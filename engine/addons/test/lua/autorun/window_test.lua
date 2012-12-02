@@ -1,13 +1,14 @@
-local mode = ffi.new("sfVideoMode")
+
+--[[local mode = VideoMode()
 mode.width = 800
 mode.height = 600
-mode.bitsPerPixel = 32
+mode.bitsPerPixel = 32]]
 
 -- Create the main window
-local window = RenderWindow(mode, "SFML window", bit.bor(sfml.libraries.window.sfResize, sfml.libraries.window.sfClose), ffi.new("sfContextSettings"))
+local window = RenderWindow(VideoMode(800, 600, 32), "SFML window", bit.bor(sfml.libraries.window.sfResize, sfml.libraries.window.sfClose), ContextSettings())
 
 -- Load a sprite to display
-local rect = ffi.new("sfIntRect", 0, 0, 100, 100)
+local rect = Rect(0, 0, 100, 100)
 
 local texture = Texture("file", "../textures/cute_image.jpg", rect)
 local sprite = Sprite()
@@ -24,12 +25,13 @@ text:SetCharacterSize(50)
 local music = Music("file", "../sound/nice_music.ogg")
 
 -- Play the music
-music:Play()
+--music:Play()
 
 local event = ffi.new("sfEvent")
 
 -- Start the game loop
 hook.Add("OnUpdate", "test", function()
+
 	if window:IsOpen() then
 	-- Process events
 		if window:PollEvent(event) then

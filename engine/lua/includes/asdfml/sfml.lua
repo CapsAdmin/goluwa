@@ -84,6 +84,26 @@ end
 
 function sfml.GenerateObjects()
 	local objects = {}
+	local structs = {}
+	local static = {}
+	
+	for file_name, header in pairs(sfml.headers) do
+		for line in header:gmatch("(.-)\n") do
+			local type = line:match(" (.-) sf")
+			if type then
+				type = type:gsub("%*", "")
+				if not type:find("%s") and type:find("%u%l", 0) then
+					type = type:sub(3)
+					if not objects[type] then
+						local data = structs[type] or {}
+						local func_name = line:match(" (sf" .. type .. "_.-)%(")
+						table.insert(data, func_name)
+						structs[type] = data
+					end
+				end
+			end
+		end
+	end
 	
 	for file_name, header in pairs(sfml.headers) do
 		for line in header:gmatch("(.-)\n") do
@@ -108,10 +128,57 @@ function sfml.GenerateObjects()
 					end
 					
 					objects[type] = tbl
+					structs[type] = nil
 				else
 					--print(line)
 				end
 			end
+		end
+	end
+	
+	for file_name, header in pairs(sfml.headers) do
+		for line in header:gmatch("(.-)\n") do
+			local type = line:match(".+(sf%u.-)_")
+			if type then
+				type = type:sub(3)
+				if not objects[type] and not structs[type] and not type:find("%s") then
+					if not objects[type] then
+						local data = static[type] or {funcs = {}}
+						local func_name = line:match(" (sf" .. type .. "_.-)%(")
+						local lib = file_name:gsub("%.h", ""):lower()
+						
+						-- hack
+						if type == "Joystick" or type == "Mouse" or type == "Keyboard" then
+							lib = "window"
+						end
+											
+						data.lib = lib
+						table.insert(data.funcs, func_name)
+						static[type] = data
+					end
+				end
+			end
+		end
+	end
+	
+	for lib_name, data in pairs(static) do
+		local lib = _G[lib_name:lower()] or {}
+		
+		for key, func in pairs(data.funcs) do
+			--sfMouse_isButtonPressed
+			local func_name = func:gsub("sf"..lib_name.."_", "")
+			func_name = func_name:sub(1,1):upper() .. func_name:sub(2)
+			lib[func_name] = sfml.libraries[data.lib][func]
+			print(lib_name, func_name)
+		end
+		
+		_G[lib_name:lower()] = lib
+	end
+	
+	for type, func_name in pairs(structs) do
+		local declaration = "sf"..type
+		_G[type] = function(...)
+			return ffi.new(declaration, ...)
 		end
 	end
 	

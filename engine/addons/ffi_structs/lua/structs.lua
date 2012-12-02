@@ -70,8 +70,14 @@ function structs.Register(META)
 		
 	META.Type = META.ClassName:lower()
 	
-	ffi.cdef("typedef struct " .. META.ClassName .. " { " .. META.NumberType .. " " .. arg_line .. "; }" .. META.ClassName .. ";")
-	local obj = ffi.metatype(META.ClassName, META)
+	local obj
+	
+	if META.StructOverride then
+		obj = META.StructOverride()
+	else
+		ffi.cdef("typedef struct " .. META.ClassName .. " { " .. META.NumberType .. " " .. arg_line .. "; }" .. META.ClassName .. ";")
+		obj = ffi.metatype(META.ClassName, META)
+	end
 	
 	if META.Constructor then
 		structs[META.ClassName] = function(...) return obj(META.Constructor(...)) end
