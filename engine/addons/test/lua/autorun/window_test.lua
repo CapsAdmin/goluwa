@@ -1,61 +1,54 @@
-
-local sfw = sfml.window
-local sfg = sfml.graphics
-local sfs = sfml.system
-local sfw = sfml.window
-local sfa = sfml.audio
-
 local mode = ffi.new("sfVideoMode")
 mode.width = 800
 mode.height = 600
 mode.bitsPerPixel = 32
 
 -- Create the main window
-local window = sfg.sfRenderWindow_create(mode, "SFML window", bit.bor(sfw.sfResize, sfw.sfClose), nil)
+local window = RenderWindow(mode, "SFML window", bit.bor(sfml.libraries.window.sfResize, sfml.libraries.window.sfClose), ffi.new("sfContextSettings"))
 
 -- Load a sprite to display
 local rect = ffi.new("sfIntRect", 0, 0, 100, 100)
 
-local texture = sfg.sfTexture_createFromFile("../textures/cute_image.jpg", rect)
-local sprite = sfg.sfSprite_create()
-sfg.sfSprite_setTexture(sprite, texture, 1)
+local texture = Texture("file", "../textures/cute_image.jpg", rect)
+local sprite = Sprite()
+sprite:SetTexture(texture, 1)
 
 -- Create a graphical text to display
-local font = sfg.sfFont_createFromFile("../fonts/arial.ttf")
-local text = sfg.sfText_create()
-sfg.sfText_setString(text, "Hello SFML")
-sfg.sfText_setFont(text, font)
-sfg.sfText_setCharacterSize(text, 50)
+local font = Font("file", "../fonts/arial.ttf")
+local text = Text()
+text:SetString("Hello SFML")
+text:SetFont(font)
+text:SetCharacterSize(50)
 
 -- Load a music to play
-local music = sfa.sfMusic_createFromFile("../sound/nice_music.ogg")
+local music = Music("file", "../sound/nice_music.ogg")
 
 -- Play the music
-sfa.sfMusic_play(music)
+music:Play()
 
 local event = ffi.new("sfEvent")
 
 -- Start the game loop
 hook.Add("OnUpdate", "test", function()
-	if sfg.sfRenderWindow_isOpen(window) then
+	if window:IsOpen() then
 	-- Process events
-		if sfg.sfRenderWindow_pollEvent(window, event) then
+		if window:PollEvent(event) then
 			-- Close window : exit
-			if event.type == sfw.sfEvtClosed then
-				sfg.sfRenderWindow_close(window)
+			if event.type == sfml.libraries.window.sfEvtClosed then
+				window:Close()
 			end
  		end
 
 		-- Clear the screen
-		sfg.sfRenderWindow_clear(window, sfg.sfBlack)
+		window:Clear(sfml.libraries.graphics.sfBlack)
 
 		-- Draw the sprite
-		sfg.sfRenderWindow_drawSprite(window, sprite, nil)
+		window:DrawSprite(sprite, nil)
 
 		-- Draw the text
-		sfg.sfRenderWindow_drawText(window, text, nil)
+		window:DrawText(text, nil)
 
 		-- Update the window
-		sfg.sfRenderWindow_display(window)
+		window:Display()
 	end
 end)
