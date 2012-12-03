@@ -87,6 +87,7 @@ function sfml.GenerateObjects()
 	local objects = {}
 	local structs = {}
 	local static = {}
+	local enums = {}
 	
 	for file_name, header in pairs(sfml.headers) do
 		for line in header:gmatch("(.-)\n") do
@@ -95,6 +96,31 @@ function sfml.GenerateObjects()
 				type = line:match("} (.-);")
 			else
 				type = line:match(" (.-) sf")
+			end
+			
+			if line:find("^ sf(%u%l-) sf(%u%l-);") then
+				enums[line:match("%l (sf%u%l-);")] = file_name:gsub("%.h", ""):lower()
+			end
+			
+			if line:find("enum") then
+				line = line:gsub(" typedef", "")
+				local i = 0
+				for enum in (line:match(" enum {(.-)}") .. ","):gmatch(" (.-),") do
+					if enum:find("=") then
+						local left, operator, right = enum:match(" = (%d) (.-) (%d)")
+						enum = enum:match("(.-) =")
+						if not operator then
+							enums[enum] = enum:match(" = (%d)")
+						elseif operator == "<<" then
+							enums[enum] = bit.lshift(left, right)
+						elseif operator == ">>" then
+							enums[enum] = bit.rshift(left, right)
+						end
+					else
+						enums[enum] = i
+						i = i + 1
+					end
+				end
 			end
 			
 			if type then
@@ -109,6 +135,15 @@ function sfml.GenerateObjects()
 					end
 				end
 			end
+		end
+	end
+	
+	for k,v in pairs(enums) do
+		local name = k:sub(3):gsub("%u", "_%1"):upper():sub(2)
+		if type(v) == "number" then
+			_G[name] = v
+		else
+			_G[name] = sfml.libraries[v][k]
 		end
 	end
 	
