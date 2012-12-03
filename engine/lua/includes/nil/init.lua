@@ -3,14 +3,14 @@ printf("mmyy: No platform name set! mmmy will use a while loop to update instead
 addons.AutorunAll()
 
 function main()
-	hook.Call("Initialize")
+	events.Call("Initialize")
 		
 	while true do
-		hook.Call("OnUpdate")
+		events.Call("OnUpdate")
 		timer.Update()
 	end
 	
-	hook.Call("ShutDown")
+	events.Call("ShutDown")
 end
 
-hook.Add("Initialized", "main", main)
+events.AddListener("Initialized", "main", main)

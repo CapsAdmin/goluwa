@@ -155,7 +155,7 @@ function class.Create(_type, name, base, override)
 		obj:DeriveFrom(base)
 	end
 
-	hook.Call("OnClassCreated", obj)
+	events.Call("OnClassCreated", obj)
 
     return obj
 end

@@ -102,7 +102,7 @@ end
 do -- tcp socket meta
 	local sockets = {}
 
-	hook.Add("LuaClose", "socket_close", function()
+	events.AddListener("LuaClose", "socket_close", function()
 		for key, sock in pairs(sockets) do
 			if sock:IsValid() then
 				sock:Remove()
