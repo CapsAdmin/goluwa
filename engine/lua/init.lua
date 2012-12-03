@@ -68,8 +68,8 @@ end
 	--print(msg)
 	if fil then
 		local str = fil:read("*a")
-		if hook then
-			hook.Call("RunString", str)
+		if events then
+			events.Call("RunString", str)
 		end
 		var, msg = loadstring(str, path)
 		fil:close()
@@ -111,8 +111,8 @@ function _include(path, ...)
 end
 
 function include(path, ...)
-	if hook then
-		local args = {hook.Call("LuaInclude", path, ...)}
+	if events then
+		local args = {events.Call("LuaInclude", path, ...)}
 		if args[1] == false then
 			return select(2, unpack(args))
 		end
@@ -182,7 +182,7 @@ table.insert(package.loaders, function(...)
 end)
 
 -- libraries
-include("includes/standard/libraries/hook.lua")
+include("includes/standard/libraries/events.lua")
 include("includes/standard/libraries/_G.lua")
 
 include("includes/standard/libraries/file.lua")
@@ -214,7 +214,7 @@ addons.LoadAll()
 addons.AutorunAll(USERNAME)
 
 print("ran init.lua")
-hook.Call("Initialized")
+events.Call("Initialized")
 
 MsgN("=========================================")
 MsgN("=========== mmyy initialized ============")

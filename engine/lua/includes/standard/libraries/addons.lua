@@ -108,4 +108,4 @@ function addons.TranslatePath(path)
 	return Path(path, true)
 end
 
-hook.Add("PathCheck", "addons", addons.TranslatePath, print)
+events.AddListener("PathCheck", "addons", addons.TranslatePath, print)

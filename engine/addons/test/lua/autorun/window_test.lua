@@ -18,15 +18,15 @@ text:SetCharacterSize(50)
 -- Play the music
 -- music:Play()
 
-local event = Event()
+local params = Event()
 
 -- Start the game loop
-hook.Add("OnUpdate", "test", function()
+events.AddListener("OnUpdate", "test", function()
 	if window:IsOpen() then
 		-- Process events
-		if window:PollEvent(event) then
+		if window:PollEvent(params) then
 			-- Close window : exit
-			if event.type == EVT_CLOSED then
+			if events.type == EVT_CLOSED then
 				window:Close()
 			end
  		end

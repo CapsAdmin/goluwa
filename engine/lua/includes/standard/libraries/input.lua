@@ -40,7 +40,7 @@ function input.SetupAccessorFunctions(tbl, name, up_id, down_id)
 	end
 end
 
-function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_hook)
+function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_event)
 	if not tbl then return end
 	if not key then return end
 	
@@ -65,11 +65,11 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_hook)
 		if press and not tbl[down_id][index] then
 			
 			if input.debug then
-				print("input_debug_down", name, key, press, skip_hook)
+				print("input_debug_down", name, key, press, skip_event)
 			end
 		
-			if not skip_hook then
-				b = hook.Call("On" .. name .. "Input", key, press)
+			if not skip_event then
+				b = events.Call("On" .. name .. "Input", key, press)
 			end
 			
 			tbl[up_id][index] = nil
@@ -77,11 +77,11 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_hook)
 		elseif not press and tbl[down_id][index] and not tbl[up_id][index] then
 			
 			if input.debug then
-				print("input_debug_up", name, key, press, skip_hook)
+				print("input_debug_up", name, key, press, skip_event)
 			end
 		
-			if not skip_hook then
-				b = hook.Call("On" .. name .. "Input", key, press)
+			if not skip_event then
+				b = events.Call("On" .. name .. "Input", key, press)
 			end
 
 			tbl[up_id][index] = os.clock()
