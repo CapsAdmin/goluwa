@@ -7,6 +7,7 @@ function sfml.LoadLibraries()
 	for file_name in pairs(file.Find(sfml.library_path .. "*", true)) do
 		local lib_name = file_name:match("sfml%-(.-)%-2.dll")
 		sfml.libraries[lib_name] = ffi.load("../" .. sfml.library_path .. file_name)
+		_G["sf"..lib_name] = sfml.libraries[lib_name]
 		printf("loaded library %s", file_name)
 	end
 end
