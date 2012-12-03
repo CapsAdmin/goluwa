@@ -12,7 +12,7 @@ local blacklist =
 }
 
 function structs.Register(META)
-	local base = util.FindMetaTable(META.ClassName)
+	local base = utilities.FindMetaTable(META.ClassName)
 	
 	if base then
 		for key, value in pairs(base) do
@@ -355,4 +355,4 @@ function structs.AddAllOperators(META)
 	structs.AddOperator(META, "math", "clamp", "Clamp", "Clamped")
 end
 
-include("structs/*")
+require("structs/*")
