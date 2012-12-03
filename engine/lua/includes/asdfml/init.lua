@@ -4,9 +4,7 @@ addons.AutorunAll()
 
 function main()
 	hook.Call("Initialize")
-	
-	print("ASDasd")
-	
+		
 	while true do
 		hook.Call("OnUpdate")
 		timer.Update()

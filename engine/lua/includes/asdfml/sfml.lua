@@ -89,7 +89,13 @@ function sfml.GenerateObjects()
 	
 	for file_name, header in pairs(sfml.headers) do
 		for line in header:gmatch("(.-)\n") do
-			local type = line:match(" (.-) sf")
+			local type
+			if line:find("}") then
+				type = line:match("} (.-);")
+			else
+				type = line:match(" (.-) sf")
+			end
+			
 			if type then
 				type = type:gsub("%*", "")
 				if not type:find("%s") and type:find("%u%l", 0) then
@@ -129,8 +135,6 @@ function sfml.GenerateObjects()
 					
 					objects[type] = tbl
 					structs[type] = nil
-				else
-					--print(line)
 				end
 			end
 		end
@@ -169,7 +173,6 @@ function sfml.GenerateObjects()
 			local func_name = func:gsub("sf"..lib_name.."_", "")
 			func_name = func_name:sub(1,1):upper() .. func_name:sub(2)
 			lib[func_name] = sfml.libraries[data.lib][func]
-			print(lib_name, func_name)
 		end
 		
 		_G[lib_name:lower()] = lib
