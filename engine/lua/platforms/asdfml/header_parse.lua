@@ -11,7 +11,7 @@ local parse_headers = false
 local cache_parse = false
 
 -- this is needed for some types
-local lib_translate = 
+local translate = 
 {
 	Window = "window",
 	Context = "window",
@@ -23,7 +23,20 @@ local lib_translate =
 	Keyboard = "window",
 }
 
+local function lib_translate(str)
+	if translate[str] then return translate[str] end
+	
+	if str:find("RenderWindow") then	
+		return "graphics"
+	end
+end
+
 -- internal
+
+if CAPSADMIN then
+	parse_headers = true
+	cache_parse = true
+end
 
 local libraries = {}
 local headers = {}
@@ -164,12 +177,12 @@ local function generate_objects()
 		for file_name, header in pairs(headers) do
 			for line in header:gmatch("(.-)\n") do
 				if line:find("_create") then
-					local type = line:match(".-(sf.-)%*")
+					local type = line:match(" (sf.-)%*")
 					if type then
 						type = type:sub(3)
 						
 						local lib = file_name:gsub("%.h", ""):lower()
-						lib = lib_translate[type] or lib
+						lib = lib_translate(type) or lib
 						
 						local tbl = objects[type] or {ctors = {}, lib = lib, funcs = {}}
 						local ctor = line:match("_createFrom(.-)%(")
@@ -178,8 +191,11 @@ local function generate_objects()
 							table.insert(tbl.ctors, ctor)
 						end
 						
-						objects[type] = tbl
-						structs[type] = nil
+						-- asdasd
+						if not type:find("_") then
+							objects[type] = tbl
+							structs[type] = nil
+						end
 					end
 				end
 			end
@@ -197,7 +213,7 @@ local function generate_objects()
 							local func_name = line:match(" (sf" .. type .. "_.-)%(")
 							local lib = file_name:gsub("%.h", ""):lower()
 							
-							lib = lib_translate[type] or lib
+							lib = lib_translate(type) or lib
 												
 							data.lib = lib
 							table.insert(data.funcs, func_name)
@@ -228,7 +244,6 @@ local function generate_objects()
 	
 	if cache_parse then
 		if luadata then
-			print("okay")
 			luadata.WriteFile(headers_path .. "../cached_parse/objects.dat", objects)
 			luadata.WriteFile(headers_path .. "../cached_parse/structs.dat", structs)
 			luadata.WriteFile(headers_path .. "../cached_parse/static.dat", static)
@@ -258,7 +273,7 @@ local function generate_objects()
 				func_name = func_name:sub(1,1):upper() .. func_name:sub(2)
 			end
 			
-			lib[func_name] = libraries[data.lib][func]
+			lib[func_name] = libraries[lib_translate(func) or data.lib][func]
 		end
 		
 		_G[lib_name:lower()] = lib
@@ -314,7 +329,7 @@ local function generate_objects()
 		for _, ctor in pairs(data.ctors) do
 			ctors[ctor:lower()] = libraries[data.lib]["sf"..type .. "_createFrom" .. ctor]
 		end
-		
+				
 		ffi.metatype("sf" .. type, META)
 	end
 end
