@@ -24,7 +24,7 @@ http = {}
 function http.HeaderToTable(header)
 	local tbl = {}
 
-	for key, line in pairs(header:Explode("\n")) do
+	for key, line in pairs(header:explode("\n")) do
 		if #line ~= 0 then
 			local key, value = line:match("(.+):%s+(.+)")
 			if key and value then
@@ -156,7 +156,7 @@ do -- tcp socket meta
 				break
 			end
 		end
-		timer.Simple(0.1, function() MakeNULL(self) end)
+		timer.Simple(0.1, function() utilities.MakeNULL(self) end)
 	end
 
 	do -- client
