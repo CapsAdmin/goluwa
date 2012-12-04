@@ -1,17 +1,17 @@
-MMYY_PLATFORM = MMYY_PLATFORM or select(1, ...) or nil
+MMYY_PLATFORM = MMYY_PLATFORM or tostring(select(1, ...) or nil)
 
 Msg = Msg or print
 MsgN = MsgN or print
 
+local time = os.clock()
+local gtime = time
+
+MsgN("loading mmyy")
+
 USERNAME = tostring(os.getenv("USERNAME")):upper():gsub(" ", "_"):gsub("%p", "")
 _G[USERNAME] = true
 
-MsgN("")
-MsgN("=========================================")
-MsgN("=========== initializing mmyy ===========")
-MsgN("============ using platform =============")
-MsgN(MMYY_PLATFORM)
-MsgN("")
+MsgN("username constant = " .. USERNAME)
 
 LUA_FOLDER = debug.getinfo(1).source:match("@(.+/)"):gsub("\\", "//")
 BASE_FOLDER = LUA_FOLDER:match("(.-)lua/")
@@ -109,14 +109,19 @@ msgpack = require("msgpack")
 
 require("null")
 
-require("platforms/"..(MMYY_PLATFORM or "nil").."/init.lua")
+MsgN("mmyy loaded (took " .. (os.clock() - time) .. " ms)")
+
+local time = os.clock()
+MsgN("loading platform " .. MMYY_PLATFORM)
+require("platforms/".. MMYY_PLATFORM .."/init.lua")
+MsgN("sucessfully loaded platform " .. MMYY_PLATFORM .. " (took " .. (os.clock() - time) .. " ms)")
+
+local time = os.clock()
+MsgN("loading addons")
 addons.LoadAll()
 addons.AutorunAll(USERNAME)
+MsgN("sucessfully loaded addons (took " .. (os.clock() - time) .. " ms)")
 
-print("ran init.lua")
+MsgN("sucessfully initialized (took " .. (os.clock() - gtime) .. " ms)")
+
 events.Call("Initialized")
-
-MsgN("=========================================")
-MsgN("=========== mmyy initialized ============")
-MsgN("=========================================")
-MsgN("")

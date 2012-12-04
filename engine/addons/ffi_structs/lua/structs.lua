@@ -17,7 +17,6 @@ function structs.Register(META)
 	if base then
 		for key, value in pairs(base) do
 			if key:sub(1, 1) ~= "_" and not META[key] and not blacklist[key] then
-				--printf("merging base function %s to %s", key, META.ClassName)
 				META[key] = value
 			end
 		end

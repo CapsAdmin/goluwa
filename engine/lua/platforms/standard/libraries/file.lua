@@ -109,7 +109,6 @@ function file.Find(path)
 	return out
 end
 
--- this is windows specific.. hmmm
 function file.FolderExists(path)
 	check(path, "string")
 	return file.Find(path .. "/*")[1] ~= nil
