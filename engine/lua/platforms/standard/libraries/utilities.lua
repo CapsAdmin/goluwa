@@ -138,7 +138,7 @@ function utilities.MonitorFileInclude(source, target)
 	return end)
 end
 
-function utilities.MakeNULL()
+function utilities.MakeNULL(var)
 	setmetatable(var, getmetatable(NULL))
 end
 

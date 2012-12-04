@@ -117,7 +117,7 @@ local _unique
 local function OnError(msg)
 	MsgN("== EVENT ERROR ==")
 	
-	for k, v in pairs(debug.traceback():Explode("\n")) do
+	for k, v in pairs(debug.traceback():explode("\n")) do
 		local source, msg = v:match("(.+): in function (.+)")
 		if source and msg then
 			MsgN((k-1) .. "    " .. source:trim() or "nil")
