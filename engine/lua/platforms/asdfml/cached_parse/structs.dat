@@ -1,0 +1,82 @@
+["Vector2u"] = {
+},
+["SocketStatus"] = {
+},
+["ContextSettings"] = {
+},
+["VideoMode"] = {
+	[1] = "sfVideoMode_getDesktopMode",
+},
+["Uint8"] = {
+},
+["Int64"] = {
+},
+["Vector2f"] = {
+},
+["IntRect"] = {
+},
+["JoystickAxis"] = {
+},
+["Bool"] = {
+},
+["Event"] = {
+},
+["Int8"] = {
+},
+["Vector3f"] = {
+},
+["Uint32"] = {
+},
+["Int32"] = {
+},
+["KeyCode"] = {
+},
+["Vertex"] = {
+},
+["BlendMode"] = {
+},
+["EventType"] = {
+},
+["MouseButton"] = {
+},
+["WindowHandle"] = {
+},
+["Glyph"] = {
+},
+["FloatRect"] = {
+},
+["Uint16"] = {
+},
+["InputStream"] = {
+},
+["Int16"] = {
+},
+["IpAddress"] = {
+	[1] = "sfIpAddress_fromString",
+	[2] = "sfIpAddress_fromBytes",
+	[3] = "sfIpAddress_fromInteger",
+	[4] = "sfIpAddress_getLocalAddress",
+	[5] = "sfIpAddress_getPublicAddress",
+},
+["Time"] = {
+},
+["Color"] = {
+	[1] = "sfColor_fromRGB",
+	[2] = "sfColor_fromRGBA",
+	[3] = "sfColor_add",
+	[4] = "sfColor_modulate",
+},
+["Vector2i"] = {
+},
+["RectangleShape"] = {
+	[1] = "sfRectangleShape_Create",
+	[2] = "sfRectangleShape_Copy",
+},
+["TextStyle"] = {
+},
+["SoundStatus"] = {
+},
+["PrimitiveType"] = {
+},
+["RenderStates"] = {
+},
