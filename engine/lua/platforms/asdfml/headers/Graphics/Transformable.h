@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,6 +30,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.h>
 #include <SFML/Graphics/Types.h>
+#include <SFML/Graphics/Transform.h>
 #include <SFML/System/Vector2.h>
 
 
@@ -49,7 +50,7 @@ CSFML_GRAPHICS_API sfTransformable* sfTransformable_create(void);
 /// \return Copied object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API sfTransformable* sfTransformable_copy(sfTransformable* transformable);
+CSFML_GRAPHICS_API sfTransformable* sfTransformable_copy(const sfTransformable* transformable);
 
 ////////////////////////////////////////////////////////////
 /// \brief Destroy an existing transformable
@@ -200,7 +201,7 @@ CSFML_GRAPHICS_API void sfTransformable_scale(sfTransformable* transformable, sf
 /// \return Transform combining the position/rotation/scale/origin of the object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API const sfTransform* sfTransformable_getTransform(const sfTransformable* transformable);
+CSFML_GRAPHICS_API sfTransform sfTransformable_getTransform(const sfTransformable* transformable);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the inverse of the combined transform of a transformable
@@ -210,7 +211,7 @@ CSFML_GRAPHICS_API const sfTransform* sfTransformable_getTransform(const sfTrans
 /// \return Inverse of the combined transformations applied to the object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API const sfTransform* sfTransformable_getInverseTransform(const sfTransformable* transformable);
+CSFML_GRAPHICS_API sfTransform sfTransformable_getInverseTransform(const sfTransformable* transformable);
 
 
 #endif // SFML_TRANSFORMABLE_H

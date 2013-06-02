@@ -17,13 +17,13 @@ function addons.Autorun(addon, autorun_folder)
 		if autorun_folder then
 			path = path .. autorun_folder .. "/"
 		end
-						
+								
 		for file_name in pairs(file.Find(path .. "*")) do
 			if file_name ~= "." and file_name ~= ".." and file_name:sub(-4) == ".lua" then
-				local fullpath = BASE_FOLDER .. path .. file_name
+				local fullpath = e.BASE_FOLDER .. path .. file_name
 				
 				_G.INFO = info
-				local ok, msg = pcall(require, fullpath)
+				local ok, msg = xpcall(dofile, OnError, fullpath)
 				_G.INFO = nil
 				if not ok then
 					print(msg)
@@ -59,7 +59,7 @@ function addons.LoadAll()
 		local path = addons.Root .. folder  .. "/"
 		
 		if file.Exists(path .. "info.lua") then
-			local func, msg = loadfile(BASE_FOLDER .. path .. "info.lua")
+			local func, msg = loadfile(e.BASE_FOLDER .. path .. "info.lua")
 
 			local info = func and func() or {}
 				info.path = path
@@ -69,7 +69,7 @@ function addons.LoadAll()
 				info.priority = info.priority or -1
 			table.insert(addons.Info, info)
 
-			_G["ADDON_" .. info.name:upper()] = info
+			_E["ADDON_" .. info.name:upper()] = info
 		else
 			local info = {}
 				info.path = path
@@ -78,7 +78,7 @@ function addons.LoadAll()
 				info.folder = folder
 				info.priority = -1
 			table.insert(addons.Info, info)
-			_G["ADDON_" .. info.name:upper()] = info
+			_E["ADDON_" .. info.name:upper()] = info
 			
 		end
 	end
@@ -86,10 +86,10 @@ function addons.LoadAll()
 	addons.SortAfterPriority()
 
 	for _, info in ipairs(addons.Info) do
-		if info.load ~= false then
+		if info.load ~= false and (MMYY_PLATFORM ~= "nil" or info.standard_lua) then
 			if info.startup then
 				_G.INFO = info
-					require(info.startup)
+					dofile(info.startup)
 				_G.INFO = nil
 			end
 
@@ -104,7 +104,7 @@ end
 function addons.HandleLoader(path)
 	local out = {}
 	for key, data in ipairs(addons.Info) do
-		table.insert(out, BASE_FOLDER .. data.path .. "lua/" .. path)
+		table.insert(out, e.BASE_FOLDER .. data.path .. path)
 	end
 	
 	return out

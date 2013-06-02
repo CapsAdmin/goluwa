@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -32,6 +32,7 @@
 #include <SFML/Graphics/Color.h>
 #include <SFML/Graphics/Rect.h>
 #include <SFML/Graphics/Types.h>
+#include <SFML/Graphics/Transform.h>
 #include <SFML/System/Vector2.h>
 #include <stddef.h>
 
@@ -64,7 +65,7 @@ CSFML_GRAPHICS_API sfText* sfText_create(void);
 /// \return Copied object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API sfText* sfText_copy(sfText* text);
+CSFML_GRAPHICS_API sfText* sfText_copy(const sfText* text);
 
 ////////////////////////////////////////////////////////////
 /// \brief Destroy an existing text
@@ -215,7 +216,7 @@ CSFML_GRAPHICS_API void sfText_scale(sfText* text, sfVector2f factors);
 /// \return Transform combining the position/rotation/scale/origin of the object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API const sfTransform* sfText_getTransform(const sfText* text);
+CSFML_GRAPHICS_API sfTransform sfText_getTransform(const sfText* text);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the inverse of the combined transform of a text
@@ -225,7 +226,7 @@ CSFML_GRAPHICS_API const sfTransform* sfText_getTransform(const sfText* text);
 /// \return Inverse of the combined transformations applied to the object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API const sfTransform* sfText_getInverseTransform(const sfText* text);
+CSFML_GRAPHICS_API sfTransform sfText_getInverseTransform(const sfText* text);
 
 ////////////////////////////////////////////////////////////
 /// \brief Set the string of a text (from an ANSI string)
@@ -256,8 +257,6 @@ CSFML_GRAPHICS_API void sfText_setUnicodeString(sfText* text, const sfUint32* st
 /// a pointer to the one that you passed to this function.
 /// If the font is destroyed and the text tries to
 /// use it, the behaviour is undefined.
-/// Texts have a valid font by default, which the built-in
-/// sfFont_getDefaultFont().
 ///
 /// \param text Text object
 /// \param font New font
@@ -301,11 +300,11 @@ CSFML_GRAPHICS_API void sfText_setStyle(sfText* text, sfUint32 style);
 CSFML_GRAPHICS_API void sfText_setColor(sfText* text, sfColor color);
 
 ////////////////////////////////////////////////////////////
-/// \brief Get the text of a text (returns an ANSI string)
+/// \brief Get the string of a text (returns an ANSI string)
 ///
 /// \param text Text object
 ///
-/// \return String an a locale-dependant ANSI string
+/// \return String as a locale-dependant ANSI string
 ///
 ////////////////////////////////////////////////////////////
 CSFML_GRAPHICS_API const char* sfText_getString(const sfText* text);
@@ -322,6 +321,10 @@ CSFML_GRAPHICS_API const sfUint32* sfText_getUnicodeString(const sfText* text);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the font used by a text
+///
+/// If the text has no font attached, a NULL pointer is returned.
+/// The returned pointer is const, which means that you can't
+/// modify the font when you retrieve it with this function.
 ///
 /// \param text Text object
 ///

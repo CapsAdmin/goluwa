@@ -1,16 +1,15 @@
-printf("mmyy: No platform name set! mmmy will use a while loop to update instead.")
+printf("Platform is nil! mmmy will use a while loop to update instead.")
 
 addons.AutorunAll()
 
 function main()
-	events.Call("Initialize")
+	event.Call("Initialize")
 		
 	while true do
-		events.Call("OnUpdate")
-		timer.Update()
+		event.Call("OnUpdate")
 	end
 	
-	events.Call("ShutDown")
+	event.Call("ShutDown")
 end
 
-events.AddListener("Initialized", "main", main)
+event.AddListener("Initialized", "main", main)

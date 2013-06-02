@@ -1,4 +1,21 @@
-local utilities = {}
+local utilities = _G.utilities or {}
+
+function utilities.SafeRemove(obj, gc)
+	if hasindex(obj) then
+		
+		if obj.IsValid and not obj:IsValid() then return end
+		
+		if type(obj.Remove) == "function" then
+			obj:Remove()
+		elseif type(obj.Close) == "function" then
+			obj:Close()
+		end
+		
+		if gc and type(obj.__gc) == "function" then
+			obj:__gc()
+		end
+	end
+end
 
 function utilities.RemoveOldObject(obj, id)
 	
@@ -99,6 +116,18 @@ function utilities.DeriveMetaFromBase(meta_name, base_name, func_name)
 	end
 end
 
+function utilities.GetMetaTables()
+	local temp = {}
+	
+	for key, val in pairs(debug.getregistry()) do
+		if type(key) == "string" and type(val) == "table" and val.Type then
+			temp[key] = val
+		end
+	end
+	
+	return temp
+end
+
 function utilities.MonitorFile(file_path, callback)
 	check(file_path, "string")
 	check(callback, "function")
@@ -128,21 +157,19 @@ function utilities.MonitorFileInclude(source, target)
 	source = source or utilities.GetCurrentPath(3)
 	target = target or source
 
-	--printf("monitoring %s", source)
-	--printf("to reload %s", target)
+	printf("monitoring %s", source)
+	printf("to reload %s", target)
 	
 	utilities.MonitorFile(source, function()
 		timer.Simple(0, function()
-			require(target)
+			dofile(target)
 		end)
-	return end)
+	end)
 end
 
 function utilities.MakeNULL(var)
 	setmetatable(var, getmetatable(NULL))
 end
-
-MONITOR_ME = utilities.MonitorFileInclude
 
 function utilities.GetCurrentPath(level)
 	return (debug.getinfo(level or 1).source:gsub("\\", "/"):sub(2):gsub("//", "/"))
@@ -174,6 +201,41 @@ end
 function utilities.GetExtensionFromPath(str)
 	str = str or utilities.GetCurrentPath()
 	return str:match(".+%.(%a+)")
+end
+
+function utilities.GetFolderFromPath(self)
+	return self:match("(.*)/") .. "/"
+end
+
+function utilities.GetFileFromPath(self)
+	return self:match(".*/(.*)")
+end
+
+do 
+	local hooks = {}
+
+	function utilities.HookOntoFunction(tag, tbl, func_name, type, callback)
+		local old = hooks[tag] or tbl[func_name]
+		
+		if type == "pre" then
+			tbl[func_name] = function(...)
+				local args = {callback(old, ...)}
+				
+				if args[1] == "abort_call" then return end
+				if #args == 0 then return old(...) end
+				
+				return unpack(args)
+			end
+		elseif type == "post" then
+			tbl[func_name] = function(...)
+				local args = {old(...)}
+				if callback(old, unpack(args)) == false then return end
+				return unpack(args)
+			end
+		end
+		
+		return old
+	end
 end
 
 return utilities

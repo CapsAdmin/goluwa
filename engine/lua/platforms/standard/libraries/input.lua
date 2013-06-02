@@ -1,4 +1,4 @@
-local input = {}
+local input = _G.input or {}
 
 input.PressedThreshold = 0.2
 
@@ -69,7 +69,7 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_event)
 			end
 		
 			if not skip_event then
-				b = events.Call("On" .. name .. "Input", key, press)
+				b = event.Call("On" .. name .. "Input", key, press)
 			end
 			
 			tbl[up_id][index] = nil
@@ -81,7 +81,7 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_event)
 			end
 		
 			if not skip_event then
-				b = events.Call("On" .. name .. "Input", key, press)
+				b = event.Call("On" .. name .. "Input", key, press)
 			end
 
 			tbl[up_id][index] = os.clock()

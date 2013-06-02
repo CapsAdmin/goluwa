@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -158,7 +158,7 @@ CSFML_AUDIO_API void sfMusic_pause(sfMusic* music);
 ///
 /// This function stops the music if it was playing or paused,
 /// and does nothing if it was already stopped.
-/// It also resets the playing position (unlike sfMusic_Pause).
+/// It also resets the playing position (unlike sfMusic_pause).
 ///
 /// \param music Music object
 ///
@@ -306,10 +306,10 @@ CSFML_AUDIO_API void sfMusic_setAttenuation(sfMusic* music, float attenuation);
 /// either paused or playing.
 ///
 /// \param music      Music object
-/// \param timeOffset New playing position, in milliseconds
+/// \param timeOffset New playing position
 ///
 ////////////////////////////////////////////////////////////
-CSFML_AUDIO_API void sfMusic_setPlayingOffset(sfMusic* music, sfUint32 timeOffset);
+CSFML_AUDIO_API void sfMusic_setPlayingOffset(sfMusic* music, sfTime timeOffset);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the pitch of a music

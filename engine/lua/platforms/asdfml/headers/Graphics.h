@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -45,6 +45,7 @@
 #include <SFML/Graphics/RenderTexture.h>
 #include <SFML/Graphics/Shader.h>
 #include <SFML/Graphics/Shape.h>
+#include <SFML/Graphics/Sprite.h>
 #include <SFML/Graphics/Text.h>
 #include <SFML/Graphics/Texture.h>
 #include <SFML/Graphics/Transform.h>
@@ -52,7 +53,6 @@
 #include <SFML/Graphics/Vertex.h>
 #include <SFML/Graphics/VertexArray.h>
 #include <SFML/Graphics/View.h>
-#include <SFML/Graphics/Sprite.h>
 
 
 #endif // SFML_GRAPHICS_H

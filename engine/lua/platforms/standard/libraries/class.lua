@@ -2,224 +2,285 @@ local class = {}
 
 class.Registered = {}
 
-function class.SetupLib(tbl, type, base)
-	base = base or "base"
-
-	function tbl.Create(name)
-		local obj = class.Create(type, name, base)
-		
-		if not obj then return end
-				
-		if obj.Initialize then
-			obj:Initialize()
-		end
-
-		return obj
-	end
-
-	function tbl.Register(META, name)
-		if not META.Base and base then
-			class.InsertIntoBaseField(META, base, 1)
-		end
-		class.Register(META, type, name)
-	end
-	
-	function tbl.GetRegistered(name)
-		return class.Get(type, name)
-	end
-
-	function tbl.GetAllRegistered()
-		return class.GetAll(type)
-	end
-end
-
 local function checkfield(tbl, key, def)
     tbl[key] = tbl[key] or def
-
+	
     if not tbl[key] then
-        error(string.format("The key %q was not found!", key), 3)
+        error(string.format("The type field %q was not found!", key), 3)
     end
 
     return tbl[key]
 end
 
 function class.GetSet(tbl, name, def)
-    tbl["Set" .. name] = function(self, var) self[name] = var end
-    tbl["Get" .. name] = function(self, var) return self[name] end
+
+    if type(def) == "number" then
+		tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = tonumber(var) end
+		tbl["Get" .. name] = tbl["Get" .. name] or function(self, var) return tonumber(self[name]) end
+	elseif type(def) == "string" then
+		tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = tostring(var) end
+		tbl["Get" .. name] = tbl["Get" .. name] or function(self, var) return tostring(self[name]) end
+	else
+		tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = var end
+		tbl["Get" .. name] = tbl["Get" .. name] or function(self, var) return self[name] end
+	end
+	
+	tbl["__def" .. name] = def
+	
     tbl[name] = def
 end
 
 function class.IsSet(tbl, name, def)
-    tbl["Set" .. name] = function(self, var) self[name] = var end
-    tbl["Is" .. name] = function(self, var) return self[name] end
+	if type(def) == "number" then
+		tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = tonumber(var) end
+	else
+		tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = var end
+	end
+    tbl["Is" .. name] = tbl["Is" .. name] or function(self, var) return self[name] end
+	tbl["__def" .. name] = def
     tbl[name] = def
 end
 
-function class.Get(type, name)
-    if not type then return end
-    if not name then return end
-    return class.Registered[type] and class.Registered[type][name] or nil
+function class.RemoveField(tbl, name)
+	tbl["Set" .. name] = nil
+    tbl["Get" .. name] = nil
+    tbl["Is" .. name] = nil
+	tbl["__def" .. name] = nil
+    tbl[name] = nil
 end
 
-function class.Register(META, type, name)
-    local type = checkfield(META, "Type", type)
+function class.Get(type_name, class_name)
+    check(type_name, "string")
+    check(class_name, "string")
+	
+    return class.Registered[type_name] and class.Registered[type_name][class_name] or nil
+end
+
+function class.GetAll(type_name)
+	check(type_name, "string")
+	return class.Registered[type_name]
+end
+
+function class.Register(META, type_name, name)
+    local type_name = checkfield(META, "Type", type_name)
     local name = checkfield(META, "ClassName", name)
 
-    class.Registered[type] = class.Registered[type] or {}
-
-    class.Registered[type][name] = META
+    class.Registered[type_name] = class.Registered[type_name] or {}
+    class.Registered[type_name][name] = META
 end
 
-function class.DeriveObjectFromVar(obj, var)
-    local T = type(var)
-
-    if T == "string" then
-        obj:DeriveFrom(var)
-    end
-
-    if T == "table" then
-        if var.Type and var.ClassName then
-            obj:DeriveFrom(var)
-        else
-            for idx, var in pairs(var) do
-                obj:DeriveFrom(var)
-            end
-        end
-    end
-end
-
-function class.SetupBases(obj)
-    for i=1, #obj.__bases do
-        local base = obj.__bases[i]
-        base.BaseClass = obj.__bases[i+1] --or base
-        setmetatable(base, { __index = obj  })
-    end
-end
-
-function class.InsertIntoBaseField(META, var, pos)
-
-	local T1 = type(META.Base)
-	local T2 = type(var)
-
-	if T1 == "table" then
-		if T2 == "table" and not var.Type then
-			for key, base in ipairs(var) do
-				table.insert(META.Base, key, base)
+function class.HandleBaseField(META, var)
+	if not var then return end
+	
+	local t = type(var)
+	
+	if t == "string" then
+		class.HandleBaseField(META, class.Get(META.Type, var))
+	elseif t == "table" then
+		-- if it's a table and does not have the Type field we assume it's a table of bases
+		if not var.Type then
+			for key, base in pairs(var) do
+				class.HandleBaseField(META, base)
 			end
 		else
-			if table.HasValue(META.Base, var) then return end
+			-- make a copy of it so we don't alter the meta template
+			var = table.copy(var)
+			
+			META.BaseList = META.BaseList or {}
+			
+			table.insert(META.BaseList, var)
+		end
+	end
+end
 
-			if pos then
-				table.insert(META.Base, pos, var)
-			else
-				table.insert(META.Base, var)
+function class.Create(type_name, class_name)
+    local META = class.Get(type_name, class_name)
+	
+    if not META then
+        printf("tried to create unknown %s %q!", type or "no type", class_name or "no class")
+        return
+    end
+	
+	local obj = table.copy(META)
+	class.HandleBaseField(obj, obj.Base)
+	class.HandleBaseField(obj, obj.TypeBase)
+
+	if obj.BaseList then	
+		if #obj.BaseList == 1 then
+			for key, val in pairs(obj.BaseList[1]) do
+				obj[key] = obj[key] or val
+			end
+			obj.BaseClass = obj.BaseList[1]
+		else		
+			local current = obj
+			for i, base in pairs(obj.BaseList) do
+				for key, val in pairs(base) do
+					obj[key] = obj[key] or val
+				end
+				current.BaseClass = base
+				current = base
 			end
 		end
 	end
-
-	if META.ClassName == var then return end
-
-	if T1 == "string" then
-		META.Base = {META.Base}
-		class.InsertIntoBaseField(META, var, pos)
-	end
-
-	if T1 == "nil" then
-		META.Base = {var}
-	end
-end
-
-function class.Create(_type, name, base, override)
-    local META = class.Get(_type, name)
-
-    if not META then
-        printf("tried to create unknown %s %q!", _type, name)
-        return
-    end
-
-	local obj = table.copy(class.Base)
-
-	if override then
-		table.merge(override, obj)
-	end
 	
-    setmetatable(override or obj, class.Base)
-
-    obj.Type = _type
-    obj.ClassName = name
-
-    obj:DeriveFrom(META)
-
-	if base then
-		obj:DeriveFrom(base)
-	end
-
-	events.Call("OnClassCreated", obj)
-
-    return obj
+	setmetatable(obj, obj)
+	
+	return obj
 end
 
-do -- base meta
-    local BASE = {}
+do -- helpers
+	function class.SetupLib(tbl, type, base)
+		base = base or "base"
 
-    BASE.__bases = {}
+		function tbl.Create(name)
+			local obj = class.Create(type, name, base)
+			
+			if not obj then return end
+					
+			if obj.Initialize then
+				obj:Initialize()
+			end
 
-    BASE.__tostring = function(self) return string.format("%s[%p][%s]", self.Type, self, self.ClassName) end
-    BASE.OnIndexNotFound= function() end
+			return obj
+		end
 
-    local value
-    function BASE:__index(key)
-        for idx, base in ipairs(self.__bases) do
-            value = rawget(base, key)
-            if value then
-                return value
-            end
-        end
-        return self:OnIndexNotFound(key)
-    end
+		function tbl.Register(META, name)
+			META.TypeBase = base
+			class.Register(META, type, name)
+		end
+		
+		function tbl.GetRegistered(name)
+			return class.Get(type, name)
+		end
 
-    function BASE:InsertBase(tbl)
-        local idx = table.insert(self.__bases, table.copy(tbl))
-        class.SetupBases(self)
-        return idx
-    end
+		function tbl.GetAllRegistered()
+			return class.GetAll(type)
+		end
+	end
 
-    function BASE:DeriveFrom(var)
-        local T = type(var)
+	function class.SetupParentingSystem(META)
+		META.OnParent = META.OnChildAdd or function() end
+		META.OnChildAdd = META.OnChildAdd or function() end
+		META.OnUnParent = META.OnUnParent or function() end
 
-        if T == "nil" then
-            return
-        end
+		function META:GetChildren()
+			return self.Children
+		end
 
-        if T == "string" then
-            var = class.Get(self.Type, var)
-            T = type(var)
-        end
+		function META:SetParent(var)
+			if not var or not var:IsValid() then
+				self:UnParent()
+				return false
+			else
+				return var:AddChild(self)
+			end
+		end
+		
+		function META:AddChild(var)		
+			if self == var or var:HasChild(self) then 
+				return false 
+			end
+		
+			var:UnParent()
+		
+			var.Parent = self
 
-        if T == "table" then
-            self:InsertBase(var)
-            if var.Base then
-                self:DeriveFrom(var.Base)
-            end
-        end
-    end
+			if not table.HasValue(self.Children, var) then
+				table.insert(self.Children, var)
+			end
+			
+			var:OnParent(self)
+			self:OnChildAdd(var)
 
-    function BASE:RemoveBase(idx)
-        if idx then
-            if type(idx) == "string" then
-                for key, base in pairs(self.__bases) do
-                    if base.ClassName == idx then
-                        table.remove(self.__bases, key)
-                    end
-                end
-            else
-                table.remove(self.__bases, idx)
-            end
-            class.SetupBases(self)
-        end
-    end
+			self:GetRoot():SortChildren() 
+			
+			return true
+		end
+			
+		local sort = function(a, b)
+			if a and b then
+				return a.DrawOrder < b.DrawOrder
+			end
+		end
+		
+		function PART:SortChildren()
+			local new = {}
+			for key, val in pairs(self.Children) do 
+				table.insert(new, val) 
+				val:SortChildren()
+			end
+			self.Children = new
+			table.sort(self.Children, sort)
+		end
 
-    class.Base = BASE
+		function META:HasParent()
+			return self:GetParent() and self:GetParent():IsValid()
+		end
+
+		function META:HasChildren()
+			return next(self.Children) ~= nil
+		end
+
+		function META:HasChild(obj)
+			for key, child in pairs(self.Children) do
+				if child == obj or child:HasChild(obj) then
+					return true
+				end
+			end
+			return false
+		end
+		
+		function META:RemoveChild(var)
+			for key, obj in pairs(self.Children) do
+				if obj == var then
+				
+					obj.Parent = NULL
+					self.Children[key] = nil
+					
+					self:GetRoot():SortChildren() 
+					
+					obj:OnUnParent(self)
+					
+					return
+				end
+			end
+		end
+		
+		function META:GetRoot()
+			if not self:HasParent() then return self end
+		
+			local temp = self
+			
+			for i = 1, 100 do
+				local parent = temp:GetParent()
+
+				if parent:IsValid() then
+					temp = parent
+				else
+					break
+				end
+			end
+			
+			return temp
+		end
+
+		function META:RemoveChildren()
+			for key, obj in pairs(self.Children) do
+				obj:RemoveChild()
+			end
+			self.Children = {}
+		end
+
+		function META:UnParent()
+			local parent = self:GetParent()
+			
+			if parent:IsValid() then
+				parent:RemoveChild(self)
+			end
+					
+			self:OnUnParent(parent)
+		end
+	end
 end
 
 return class

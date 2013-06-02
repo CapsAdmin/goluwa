@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -74,7 +74,7 @@ CSFML_GRAPHICS_API sfFont* sfFont_createFromStream(sfInputStream* stream);
 /// \return Copied object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API sfFont* sfFont_copy(sfFont* font);
+CSFML_GRAPHICS_API sfFont* sfFont_copy(const sfFont* font);
 
 ////////////////////////////////////////////////////////////
 /// \brief Destroy an existing font
@@ -114,7 +114,6 @@ CSFML_GRAPHICS_API int sfFont_getKerning(sfFont* font, sfUint32 first, sfUint32 
 /// \brief Get the line spacing value
 ///
 /// \param font          Source font
-/// \param codePoint     Unicode code point of the character to get
 /// \param characterSize Character size, in pixels
 ///
 /// \return Line spacing, in pixels
@@ -132,14 +131,6 @@ CSFML_GRAPHICS_API int sfFont_getLineSpacing(sfFont* font, unsigned int characte
 ///
 ////////////////////////////////////////////////////////////
 CSFML_GRAPHICS_API const sfTexture* sfFont_getTexture(sfFont* font, unsigned int characterSize);
-
-////////////////////////////////////////////////////////////
-/// \brief Get the built-in default font (Arial)
-///
-/// \return Pointer to the default font
-///
-////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API const sfFont* sfFont_getDefaultFont(void);
 
 
 #endif // SFML_IMAGE_H

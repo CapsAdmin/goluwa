@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -54,6 +54,17 @@
 CSFML_GRAPHICS_API sfRenderWindow* sfRenderWindow_create(sfVideoMode mode, const char* title, sfUint32 style, const sfContextSettings* settings);
 
 ////////////////////////////////////////////////////////////
+/// \brief Construct a new render window (with a UTF-32 title)
+///
+/// \param mode     Video mode to use
+/// \param title    Title of the window (UTF-32)
+/// \param style    Window style
+/// \param settings Creation settings (pass NULL to use default values)
+///
+////////////////////////////////////////////////////////////
+CSFML_GRAPHICS_API sfRenderWindow* sfRenderWindow_createUnicode(sfVideoMode mode, const sfUint32* title, sfUint32 style, const sfContextSettings* settings);
+
+////////////////////////////////////////////////////////////
 /// \brief Construct a render window from an existing control
 ///
 /// \param handle   Platform-specific handle of the control
@@ -97,12 +108,12 @@ CSFML_GRAPHICS_API sfBool sfRenderWindow_isOpen(const sfRenderWindow* renderWind
 CSFML_GRAPHICS_API sfContextSettings sfRenderWindow_getSettings(const sfRenderWindow* renderWindow);
 
 ////////////////////////////////////////////////////////////
-/// \brief Get the event on top of events stack of a render window, if any, and pop it
+/// \brief Get the event on top of event queue of a render window, if any, and pop it
 ///
 /// \param renderWindow Render window object
 /// \param event        Event to fill, if any
 ///
-/// \return sfTrue if an event was returned, sfFalse if events stack was empty
+/// \return sfTrue if an event was returned, sfFalse if event queue was empty
 ///
 ////////////////////////////////////////////////////////////
 CSFML_GRAPHICS_API sfBool sfRenderWindow_pollEvent(sfRenderWindow* renderWindow, sfEvent* event);
@@ -168,9 +179,18 @@ CSFML_GRAPHICS_API void sfRenderWindow_setSize(sfRenderWindow* renderWindow, sfV
 CSFML_GRAPHICS_API void sfRenderWindow_setTitle(sfRenderWindow* renderWindow, const char* title);
 
 ////////////////////////////////////////////////////////////
+/// \brief Change the title of a render window (with a UTF-32 string)
+///
+/// \param renderWindow Render window object
+/// \param title        New title
+///
+////////////////////////////////////////////////////////////
+CSFML_GRAPHICS_API void sfRenderWindow_setUnicodeTitle(sfRenderWindow* renderWindow, const sfUint32* title);
+
+////////////////////////////////////////////////////////////
 /// \brief Change a render window's icon
 ///
-/// \param renderWindow Renderw indow object
+/// \param renderWindow Render window object
 /// \param width        Icon's width, in pixels
 /// \param height       Icon's height, in pixels
 /// \param pixels       Pointer to the pixels in memory, format must be RGBA 32 bits
@@ -313,16 +333,60 @@ CSFML_GRAPHICS_API const sfView* sfRenderWindow_getDefaultView(const sfRenderWin
 CSFML_GRAPHICS_API sfIntRect sfRenderWindow_getViewport(const sfRenderWindow* renderWindow, const sfView* view);
 
 ////////////////////////////////////////////////////////////
-/// \brief Convert a point in window coordinates into view coordinates
+/// \brief Convert a point from window coordinates to world coordinates
+///
+/// This function finds the 2D position that matches the
+/// given pixel of the render-window. In other words, it does
+/// the inverse of what the graphics card does, to find the
+/// initial position of a rendered pixel.
+///
+/// Initially, both coordinate systems (world units and target pixels)
+/// match perfectly. But if you define a custom view or resize your
+/// render-window, this assertion is not true anymore, ie. a point
+/// located at (10, 50) in your render-window may map to the point
+/// (150, 75) in your 2D world -- if the view is translated by (140, 25).
+///
+/// This function is typically used to find which point (or object) is
+/// located below the mouse cursor.
+///
+/// This version uses a custom view for calculations, see the other
+/// overload of the function if you want to use the current view of the
+/// render-window.
 ///
 /// \param renderWindow Render window object
-/// \param point        Point to convert, relative to the window
-/// \param targetView   Target view to convert the point to (pass NULL to use the current view)
+/// \param point Pixel to convert
+/// \param view The view to use for converting the point
 ///
 /// \return The converted point, in "world" units
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API sfVector2f sfRenderWindow_convertCoords(const sfRenderWindow* renderWindow, sfVector2i point, const sfView* targetView);
+CSFML_GRAPHICS_API sfVector2f sfRenderWindow_mapPixelToCoords(const sfRenderWindow* renderWindow, sfVector2i point, const sfView* view);
+
+////////////////////////////////////////////////////////////
+/// \brief Convert a point from world coordinates to window coordinates
+///
+/// This function finds the pixel of the render-window that matches
+/// the given 2D point. In other words, it goes through the same process
+/// as the graphics card, to compute the final position of a rendered point.
+///
+/// Initially, both coordinate systems (world units and target pixels)
+/// match perfectly. But if you define a custom view or resize your
+/// render-window, this assertion is not true anymore, ie. a point
+/// located at (150, 75) in your 2D world may map to the pixel
+/// (10, 50) of your render-window -- if the view is translated by (140, 25).
+///
+/// This version uses a custom view for calculations, see the other
+/// overload of the function if you want to use the current view of the
+/// render-window.
+///
+/// \param renderWindow Render window object
+/// \param point Point to convert
+/// \param view The view to use for converting the point
+///
+/// \return The converted point, in target coordinates (pixels)
+///
+////////////////////////////////////////////////////////////
+CSFML_GRAPHICS_API sfVector2i sfRenderWindow_mapCoordsToPixel(const sfRenderWindow* renderWindow, sfVector2f point, const sfView* view);
 
 ////////////////////////////////////////////////////////////
 /// \brief Draw a drawable object to the render-target
@@ -419,6 +483,31 @@ CSFML_GRAPHICS_API void sfRenderWindow_resetGLStates(sfRenderWindow* renderWindo
 ///
 ////////////////////////////////////////////////////////////
 CSFML_GRAPHICS_API sfImage* sfRenderWindow_capture(const sfRenderWindow* renderWindow);
+
+////////////////////////////////////////////////////////////
+/// \brief Get the current position of the mouse relatively to a render-window
+///
+/// This function returns the current position of the mouse
+/// cursor relative to the given render-window, or desktop if NULL is passed.
+///
+/// \param relativeTo Reference window
+///
+/// \return Position of the mouse cursor, relative to the given render-window
+///
+////////////////////////////////////////////////////////////
+CSFML_GRAPHICS_API sfVector2i sfMouse_getPositionRenderWindow(const sfRenderWindow* relativeTo);
+
+////////////////////////////////////////////////////////////
+/// \brief Set the current position of the mouse relatively to a render-window
+///
+/// This function sets the current position of the mouse
+/// cursor relative to the given render-window, or desktop if NULL is passed.
+///
+/// \param position   New position of the mouse
+/// \param relativeTo Reference window
+///
+////////////////////////////////////////////////////////////
+CSFML_GRAPHICS_API void sfMouse_setPositionRenderWindow(sfVector2i position, const sfRenderWindow* relativeTo);
 
 
 #endif // SFML_RENDERWINDOW_H

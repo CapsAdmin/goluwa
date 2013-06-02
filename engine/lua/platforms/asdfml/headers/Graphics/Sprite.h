@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -32,6 +32,7 @@
 #include <SFML/Graphics/BlendMode.h>
 #include <SFML/Graphics/Color.h>
 #include <SFML/Graphics/Rect.h>
+#include <SFML/Graphics/Transform.h>
 #include <SFML/Graphics/Types.h>
 #include <SFML/System/Vector2.h>
 
@@ -52,7 +53,7 @@ CSFML_GRAPHICS_API sfSprite* sfSprite_create(void);
 /// \return Copied object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API sfSprite* sfSprite_copy(sfSprite* sprite);
+CSFML_GRAPHICS_API sfSprite* sfSprite_copy(const sfSprite* sprite);
 
 ////////////////////////////////////////////////////////////
 /// \brief Destroy an existing sprite
@@ -203,7 +204,7 @@ CSFML_GRAPHICS_API void sfSprite_scale(sfSprite* sprite, sfVector2f factors);
 /// \return Transform combining the position/rotation/scale/origin of the object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API const sfTransform* sfSprite_getTransform(const sfSprite* sprite);
+CSFML_GRAPHICS_API sfTransform sfSprite_getTransform(const sfSprite* sprite);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the inverse of the combined transform of a sprite
@@ -213,7 +214,7 @@ CSFML_GRAPHICS_API const sfTransform* sfSprite_getTransform(const sfSprite* spri
 /// \return Inverse of the combined transformations applied to the object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API const sfTransform* sfSprite_getInverseTransform(const sfSprite* sprite);
+CSFML_GRAPHICS_API sfTransform sfSprite_getInverseTransform(const sfSprite* sprite);
 
 ////////////////////////////////////////////////////////////
 /// \brief Change the source texture of a sprite

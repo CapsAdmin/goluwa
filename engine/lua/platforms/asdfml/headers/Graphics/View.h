@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -62,7 +62,7 @@ CSFML_GRAPHICS_API sfView* sfView_createFromRect(sfFloatRect rectangle);
 /// \return Copied object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API sfView* sfView_copy(sfView* view);
+CSFML_GRAPHICS_API sfView* sfView_copy(const sfView* view);
 
 ////////////////////////////////////////////////////////////
 /// \brief Destroy an existing view

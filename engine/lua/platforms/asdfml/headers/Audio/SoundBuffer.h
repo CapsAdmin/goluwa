@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -102,7 +102,7 @@ CSFML_AUDIO_API sfSoundBuffer* sfSoundBuffer_createFromSamples(const sfInt16* sa
 /// \return A new sfSoundBuffer object which is a copy of \a soundBuffer
 ///
 ////////////////////////////////////////////////////////////
-CSFML_AUDIO_API sfSoundBuffer* sfSoundBuffer_copy(sfSoundBuffer* soundBuffer);
+CSFML_AUDIO_API sfSoundBuffer* sfSoundBuffer_copy(const sfSoundBuffer* soundBuffer);
 
 ////////////////////////////////////////////////////////////
 /// \brief Destroy a sound buffer
@@ -132,7 +132,7 @@ CSFML_AUDIO_API sfBool sfSoundBuffer_saveToFile(const sfSoundBuffer* soundBuffer
 ///
 /// The format of the returned samples is 16 bits signed integer
 /// (sfInt16). The total number of samples in this array
-/// is given by the sfSoundBuffer_GetSampleCount function.
+/// is given by the sfSoundBuffer_getSampleCount function.
 ///
 /// \param soundBuffer Sound buffer object
 ///

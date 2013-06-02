@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -31,6 +31,7 @@
 #include <SFML/Graphics/Export.h>
 #include <SFML/Graphics/Color.h>
 #include <SFML/Graphics/Rect.h>
+#include <SFML/Graphics/Transform.h>
 #include <SFML/Graphics/Types.h>
 #include <SFML/System/Vector2.h>
 
@@ -51,7 +52,7 @@ CSFML_GRAPHICS_API sfCircleShape* sfCircleShape_create(void);
 /// \return Copied object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API sfCircleShape* sfCircleShape_copy(sfCircleShape* shape);
+CSFML_GRAPHICS_API sfCircleShape* sfCircleShape_copy(const sfCircleShape* shape);
 
 ////////////////////////////////////////////////////////////
 /// \brief Destroy an existing circle Shape
@@ -146,7 +147,7 @@ CSFML_GRAPHICS_API float sfCircleShape_getRotation(const sfCircleShape* shape);
 /// \return Current scale factors
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API sfVector2f sfCircleShape_GetScale(const sfCircleShape* shape);
+CSFML_GRAPHICS_API sfVector2f sfCircleShape_getScale(const sfCircleShape* shape);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the local origin of a circle shape
@@ -156,7 +157,7 @@ CSFML_GRAPHICS_API sfVector2f sfCircleShape_GetScale(const sfCircleShape* shape)
 /// \return Current origin
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API sfVector2f sfCircleShape_GetOrigin(const sfCircleShape* shape);
+CSFML_GRAPHICS_API sfVector2f sfCircleShape_getOrigin(const sfCircleShape* shape);
 
 ////////////////////////////////////////////////////////////
 /// \brief Move a circle shape by a given offset
@@ -202,7 +203,7 @@ CSFML_GRAPHICS_API void sfCircleShape_scale(sfCircleShape* shape, sfVector2f fac
 /// \return Transform combining the position/rotation/scale/origin of the object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API const sfTransform* sfCircleShape_getTransform(const sfCircleShape* shape);
+CSFML_GRAPHICS_API sfTransform sfCircleShape_getTransform(const sfCircleShape* shape);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the inverse of the combined transform of a circle shape
@@ -212,7 +213,7 @@ CSFML_GRAPHICS_API const sfTransform* sfCircleShape_getTransform(const sfCircleS
 /// \return Inverse of the combined transformations applied to the object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API const sfTransform* sfCircleShape_getInverseTransform(const sfCircleShape* shape);
+CSFML_GRAPHICS_API sfTransform sfCircleShape_getInverseTransform(const sfCircleShape* shape);
 
 ////////////////////////////////////////////////////////////
 /// \brief Change the source texture of a circle shape

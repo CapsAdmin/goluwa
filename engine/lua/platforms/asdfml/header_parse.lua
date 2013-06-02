@@ -1,6 +1,6 @@
 -- config
 
-local library_path = "lua/platforms/asdfml/bin32/"
+local library_path = "!/"
 local headers_path = "lua/platforms/asdfml/headers/"
 
 local make_library_globals = true
@@ -44,11 +44,14 @@ local included = {}
 
 local function load_libraries()
 	for file_name in pairs(file.Find(library_path .. "*")) do
-		local lib_name = file_name:match("sfml%-(.-)%-2.dll")
-		libraries[lib_name] = ffi.load("../" .. library_path .. file_name)
-		
-		if make_library_globals then 
-			_G[library_global_prefix .. lib_name] = libraries[lib_name]
+		local lib_name = file_name:match("csfml%-(.-)%-2.dll")
+		if lib_name then
+			local lib = ffi.load(file_name)
+			libraries[lib_name] = lib
+			
+			if make_library_globals then 
+				_G[library_global_prefix .. lib_name] = libraries[lib_name]
+			end
 		end
 	end
 end

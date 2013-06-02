@@ -1,126 +1,269 @@
-require("luasocket/ltn12.lua")
-require("luasocket/socket.lua")
-require("luasocket/mime.lua")
+--[[
 
-require("luasocket/socket/url.lua")
-require("luasocket/socket/http.lua")
-require("luasocket/socket/tp.lua")
-require("luasocket/socket/smtp.lua")
-require("luasocket/socket/ftp.lua")
+Most of these functions can be called at any time. Send queues what you send until a connection is made.
+
+Only "tcp" and "udp" is supported. Default is tcp. There isn't much of a difference between udp and tcp in this wrapper so you can easily change between the two modes.
+
+By default the socket has a 3 second timeout. The timeout count is started/restarted whenever the mesage is "timeout" and stopped otherwise
+
+luasocket.debug = true
+	will print debug messages about sending and receiving data
+	very useful for (duh) debugging!
+
+-- client
+
+	CLIENT = luasocket.Client("udp" or "tcp") -- this defaults to tcp
+
+	CLIENT:GetTimeoutDuration()
+
+	CLIENT:IsTimingOut()
+	CLIENT:IsSending()
+	CLIENT:IsConnected()
+
+	CLIENT:SetTimeout(seconds or nil)
+	CLIENT:GetTimeout()
+
+	CLIENT:SetReceiveMode("line" or "all" or bytes)
+	CLIENT:GetReceiveMode()
+	
+	CLIENT:OnReceive(str)
+
+	-- return false to prevent the socket from being removed
+	-- if the timeout duration has exceeded the max timeout duration
+
+	CLIENT:OnTimeout(count)
+
+	CLIENT:OnSend(str, bytes)
+	CLIENT:OnError(msg)
+	CLIENT:OnClose()
+
+	CLIENT:Connect(ip, port)
+--
+
+-- server
+	SERVER = luasocket.Server("udp" or "tcp") -- this defaults to tcp
+
+	SERVER:Host(ip, port)
+
+	-- returning false here will close and remove the client
+	-- returning true will call SetKeepAlive true on the client
+	SERVER:OnClientConnected(client, ip, port)
+
+
+	SERVER:OnReceive(str, client)
+	SERVER:OnClientClosed(client)
+	SERVER:OnClientError(client, msg)
+
+	SERVER:GetClients()
+	SERVER:HasClients() -- returns true if someone is connected, false otherwise
+--
+
+-- shared
+	SHARED:Send(str, instant)
+	SHARED:GetIP()
+	SHARED:GetPort()
+
+	SHARED:IsValid()
+	SHARED:Remove()
+
+	-- These have Get ones as well but they only return something if Set was called. This uses setoption.
+	SHARED:SetReuseAddress(val)
+	SHARED:SetNoDelay(val)
+	SHARED:SetLinger(val)
+	SHARED:SetKeepAlive(val)
+--
+]]
 
 local luasocket = {}
 
-luasocket.ltn12 = require("mime")
-luasocket.socket = require("socket")
-luasocket.mime = require("mime")
-luasocket.url = require("socket.url")
-luasocket.http = require("socket.http")
-luasocket.tp = require("socket.tp")
-luasocket.smtp = require("socket.smtp")
-luasocket.ftp = require("socket.ftp")
+if _G.luasocket and _G.luasocket.Panic then
+	_G.luasocket.Panic()
+end
 
-http = {}
+-- external functions
+local print = print
+local table_print = PrintTable or table.print or print
+local warning = ErrorNoHalt or print
+local check = check or function() end
+local require = require
+local cares = pcall(require,"cares") or _G.cares
 
-function http.HeaderToTable(header)
-	local tbl = {}
+function luasocket.Initialized()
+	if gmod then
+		_G.luasocket = luasocket
 
-	for key, line in pairs(header:explode("\n")) do
-		if #line ~= 0 then
-			local key, value = line:match("(.+):%s+(.+)")
+		hook.Add("Think", "socket_think", function()
+			luasocket.Update()
+		end)
+	end
+end
+
+luasocket.socket = require("socket") or _G.socket
+
+function luasocket.DebugPrint(...)
+	if luasocket.debug then
+		local tbl = {}
+
+		for i = 1, select("#", ...) do
+			tbl[i] = tostring(select(i, ...))
+		end
+
+		print(string.format(unpack(tbl)))
+	end
+end
+
+do -- helpers/usage
+
+	function luasocket.HeaderToTable(header)
+		local tbl = {}
+
+		for line in header:gmatch("(.-)\n") do
+			local key, value = line:match("(.+):%s+(.+)\13")
+
 			if key and value then
 				tbl[key] = value
 			end
 		end
+
+		return tbl
 	end
 
-	return tbl
-end
+	function luasocket.TableToHeader(tbl)
+		local str = ""
 
-function http.TableToHeader(tbl)
-	local str = ""
-
-	for key, value in pairs(tbl) do
-		str = str .. tostring(key) .. ": " .. tostring(value) .. "\n"
-	end
-
-	return str
-end
-
-function http.Get(url, callback, header)
-	check(url, "string")
-	check(header, "string", "nil")
-	check(callback, "function", "nil", "false")
-
-	url = url:gsub("http://", "")
-	callback = callback or table.print
-
-	local host, get = url:match("(.-)/(.+)")
-
-	if not get then
-		host = url:gsub("/", "")
-		get = ""
-	end	
-
-	local socket = luasocket.Client("tcp")
-	socket:Connect(host, 80)
-	
-	socket:Send(("GET /%s HTTP/1.1\r\n"):format(get))
-	socket:Send(("Host: %s\r\n"):format(host))
-	socket:Send("User-Agent: oohh\r\n")
-	socket:Send("\r\n")
-	socket:SetMaxTimeouts(5000)
-	
-	local header = ""
-	local content = ""
-	local status
-	local isheader = true
-
-	function socket:OnReceive(line)
-		if not status then
-			status = line
+		for key, value in pairs(tbl) do
+			str = str .. tostring(key) .. ": " .. tostring(value) .. "\n"
 		end
 
-		if isheader then
-			if #line == 0 then
-				isheader = false
-			else
-				header = header  .. line .. "\n"
+		return str
+	end
+
+	function luasocket.Get(url, callback)
+		check(url, "string")
+		check(callback, "function", "nil", "false")
+
+		url = url:gsub("http://", "")
+		callback = callback or table_print
+
+		local host, get = url:match("(.-)/(.+)")
+
+		if not get then
+			host = url:gsub("/", "")
+			get = ""
+		end
+
+		local socket = luasocket.Client("tcp")
+		socket:SetTimeout(5)
+		socket:Connect(host, 80)
+
+		socket:Send(("GET /%s HTTP/1.1\r\n"):format(get))
+		socket:Send(("Host: %s\r\n"):format(host))
+		socket:Send("User-Agent: gmod\r\n")
+		socket:Send("\r\n")
+
+		function socket:OnReceive(str)
+			local header, content = str:match("(.-\10\13)(.+)")
+
+			local ok, err = pcall(callback, {content = content, header = luasocket.HeaderToTable(header), status = status})
+			if err then
+				warning(err)
 			end
-		else
-			content = content .. line .. "\n"
+
+			self:Remove()
 		end
 	end
-	
-	function socket:OnClose()
-		local ok, err = pcall(callback, {content = content, header = http.HeaderToTable(header), status = status})
-		if err then
-			print(err)
+
+	function luasocket.SendUDPData(ip, port, str)
+
+		if not str and type(port) == "string" then
+			str = port
+			port = tonumber(ip:match(".-:(.+)"))
 		end
+
+		local sck = luasocket.socket.udp()
+		local ok, msg = sck:sendto(str, ip, port)
+		sck:close()
+
+		if ok then
+			luasocket.DebugPrint("SendUDPData sent data to %s:%i (%s)", ip, port, str)
+		else
+			luasocket.DebugPrint("SendUDPData failed %q", msg)
+		end
+
+		return ok, msg
 	end
 end
+
+local receive_types = {all = "*a", line = "*l"}
 
 do -- tcp socket meta
+	local NULL = {}
+
+	NULL.IsNull = true
+
+	local function FALSE()
+		return false
+	end
+
+	function NULL:__tostring()
+		return "NULL"
+	end
+
+	function NULL:__index(key)
+		if key == "ClassName" then
+			return "NULL"
+		end
+
+		if key == "Type" then
+			return "null"
+		end
+
+		if key == "IsValid" then
+			return FALSE
+		end
+
+		if type(key) == "string" and key:sub(0, 2) == "Is" then
+			return FALSE
+		end
+
+		error(("tried to index %q on a NULL socket"):format(key), 2)
+	end
+
 	local sockets = {}
 
-	events.AddListener("LuaClose", "socket_close", function()
+	function luasocket.GetSockets()
+		return sockets
+	end
+
+	function luasocket.Panic()
 		for key, sock in pairs(sockets) do
 			if sock:IsValid() then
+				sock:DebugPrintf("removed from luasocket.Panic()")
 				sock:Remove()
 			else
 				table.remove(sockets, key)
 			end
 		end
-	end)
+	end
 
-	timer.Create("socket_think", 0, 0, function()
+	function luasocket.Update()
 		for key, sock in pairs(sockets) do
 			if sock:IsValid() then
-				sock:Think()
+				local ok, err = pcall(sock.Think, sock)
+				if not ok then
+					warning(err)
+					sock:Remove()
+				end
 			else
-				table.remove(sockets, key)
+				sockets[key] = nil
+			end
+
+			if sock.remove_me then
+				sock.socket:close()
+				setmetatable(sock, NULL)
 			end
 		end
-	end)
+	end
 
 	local function assert(res, err)
 		if not res then
@@ -144,27 +287,50 @@ do -- tcp socket meta
 			obj:Initialize()
 			table.insert(sockets, obj)
 
+			obj:DebugPrintf("created")
+
 			return obj
 		end
 	end
 
 	local function remove_socket(self)
-		self.socket:close()
-		for key, sock in pairs(sockets) do
-			if sock == self then
-				table.remove(sockets, key)
-				break
+		self.remove_me = true
+	end
+
+	local options =
+	{
+		KeepAlive = "keepalive",
+		Linger = "linger",
+		ReuseAddress = "ReuseAddr",
+		NoDelay = "tcp-nodelay",
+	}
+
+	local function add_options(tbl)
+		for func_name, key in pairs(options) do
+			tbl["Set" .. func_name] = function(self, val)
+				self.socket:setoption(key, val)
+				self:DebugPrintf("option[%q] = %s", key, val)
+				self[func_name] = val
+			end
+
+			tbl["Get" .. func_name] = function(self, val)
+				return self[func_name]
 			end
 		end
-		timer.Simple(0.1, function() utilities.MakeNULL(self) end)
 	end
 
 	do -- client
 		local CLIENT = {}
 		CLIENT.__index = CLIENT
+		
+		CLIENT.Type = "socket"
+		CLIENT.ClassName = "client"
+
+		add_options(CLIENT)
 
 		function CLIENT:Initialize()
 			self.Buffer = {}
+			self:SetTimeout(3)
 		end
 
 		function CLIENT:__tostring()
@@ -172,149 +338,222 @@ do -- tcp socket meta
 		end
 
 		function CLIENT:DebugPrintf(fmt, ...)
-			if luasocket.debug then
-				nospam_printf("%s - " .. fmt, self, ...)
-			end
+			luasocket.DebugPrint("%s - " .. fmt, self, ...)
 		end
 
-		function CLIENT:Connect(ip, port)
+		function CLIENT:Connect(ip, port, skip_cares)
 			check(ip, "string")
 			check(port, "number")
 
-			self.socket:settimeout(0)
-			if self.socket_type == "tcp" then
-				self.socket:connect(ip, port)
-			else
-				self.socket:setpeername(ip, port)
+			if not skip_cares and cares and cares.Resolve then
+				self:DebugPrintf("using cares to resolve domain %s", ip)
+				
+				cares.Resolve(ip, function(_, errored, newip)
+					if not errored then
+						self:DebugPrintf("cares resolved domain from %s:%s", ip, newip)
+						self:Connect(newip, port, true)
+					else	
+						self:DebugPrintf("cares errored resolving domain %s with code %s", ip, errored)
+						self:Connect(ip, port, true)
+					end
+				end)
+				return
 			end
-			self.socket:settimeout(0)
+			
+			self:DebugPrintf("connecting to %s:%s", ip, port)
 
-			self.connecting = true
+			local ok, msg
+			
+			if self.socket_type == "tcp" then
+				ok, msg = self.socket:connect(ip, port)
+			else
+				ok, msg = self.socket:setpeername(ip, port)
+			end
+						
+			if not ok and msg and msg ~= "timeout" then
+				self:DebugPrintf("connect failed: %s", msg)
+				self:OnError(msg)
+			else
+				self.connecting = true
+			end
 		end
 
 		function CLIENT:Send(str, instant)
 			if self.socket_type == "tcp" then
 				if instant then
-					local bytes,b,c,d = self.socket:send(str)
+					local bytes, b, c, d = self.socket:send(str)
 
 					if bytes then
-						if self.OnSend then
-							self:OnSend(data, bytes, b,c,d)
-						end
-						self:DebugPrintf("sucessfully sent %q", data)
+						self:DebugPrintf("sucessfully sent %q", str)
+
+						self:OnSend(str, bytes, b,c,d)
 					end
 				else
 					table.insert(self.Buffer, str)
 				end
 			else
 				self.socket:send(str)
+				self:DebugPrintf("sent %q", str)
 			end
+		end
+
+		CLIENT.ReceiveMode = "all"
+
+		function CLIENT:SetReceiveMode(type)
+			self.ReceiveMode = type
+		end
+
+		function CLIENT:GetReceiveMode()
+			return self.ReceiveMode
 		end
 
 		function CLIENT:Think()
 			local sock = self.socket
 			sock:settimeout(0)
 
+			-- check connection
 			if self.connecting then
-				local res, err = sock:getpeername()
+				local res, msg = sock:getpeername()
+				
 				if res then
-					-- ip, port = res, err
+					self:DebugPrintf("connected to %s:%s", res, msg)
+
+					-- ip, port = res, msg
 
 					self.connected = true
 					self.connecting = nil
-					if self.OnConnect then
-						self:OnConnect(res, err)
-					end
+					self:OnConnect(res, msg)
 
-					self:DebugPrintf("connected to %s:%s", res, err)
-
-					self.Timeouts = 0
-				elseif err == "timeout" or err == "getpeername failed" then
-					self:Timeout()
+					self:Timeout(false)
+				elseif msg == "timeout" or msg == "getpeername failed" then
+					self:Timeout(true)
 				else
-					if self.OnError then
-						self:OnError(err)
-					end
-					self.connecting = nil
-					self:DebugPrintf("errored: %s", err)
+					self:DebugPrintf("errored: %s", msg)
+					self:OnError(msg)
 				end
 			end
+			
+			if self.connected then			
+				-- try send
+								
+				if self.socket_type == "tcp" then
+					for i = 1, 128 do
+						local data = self.Buffer[1]
+						if data then
+							local bytes, b, c, d = sock:send(data)
 
-			if self.socket_type == "tcp" and self.connected then
-				while true do
-					local data = self.Buffer[1]
-					if data then
-						local bytes,b,c,d = sock:send(data)
+							if bytes then
+								self:DebugPrintf("sucessfully sent %q", data)
 
-						if bytes then
-							if self.OnSend then
 								self:OnSend(data, bytes, b,c,d)
+								table.remove(self.Buffer, 1)
+							elseif b ~= "Socket is not connected" then
+								self:DebugPrintf("could not send %s : %s", data, b)
+								break
 							end
-							self:DebugPrintf("sucessfully sent %q", data)
-							table.remove(self.Buffer, 1)
+						else
+							break
 						end
-					else
-						break
 					end
 				end
+				
+				-- try receive
+				local mode
 
-				local data, err, partial = sock:receive("*l")
-				if not data and partial ~= "" then
+				if self.socket_type == "udp" then
+					mode = 1024
+				else
+					mode = receive_types[self.ReceiveMode] or self.ReceiveMode
+				end
+
+				local data, err, partial = sock:receive(mode)
+
+				if not data and partial and partial ~= "" then
 					data = partial
 				end
-
-				--self:DebugPrintf("receive: %s, %s, %s, %i", data or "", err or "", partial or "", self.Timeouts)
 				
 				if data then
-					if self.OnReceive then
-						self:OnReceive(data)
+					self:DebugPrintf("received (mode %s) %q", mode, data)
+
+					self:OnReceive(data)
+					self:Timeout(false)
+
+					if self.__server then
+						self.__server:OnReceive(data, self)
 					end
-					self:DebugPrintf("received %q", data)
-					self.Timeouts = 0
-				elseif err == "timeout" then
-					self:Timeout()
-				elseif err == "Socket is not connected" then
-					--self.connected = false
-					--self.connecting = true
+
+				elseif err == "timeout" or "Socket is not connected" then
+					self:Timeout(true)
 				elseif err == "closed" then
-					self:DebugPrintf("wants to close", client)
-					if self.OnClose then
-						self:OnClose()
+					self:DebugPrintf("closed")
+
+					if not self.__server or self.__server:OnClientClosed(self) ~= false then
+						self:Remove()
 					end
-					self:Remove()
-				elseif self.OnError then
-					self:OnError(err)
+				else
 					self:DebugPrintf("errored: %s", err)
-				end
-			end
-		end
-
-		CLIENT.MaxTimeouts = 100
-		CLIENT.Timeouts = 0
-
-		function CLIENT:Timeout()
-			if not self.OnTimeout or self:OnTimeout(self.Timeouts) ~= false then
-				self.Timeouts = self.Timeouts + 1
-				if self.Timeouts > self.MaxTimeouts then
-					if self.OnClose then
-						self:OnClose()
-					end
 					
-					self:Remove()
+					if self.__server then
+						self.__server:OnClientError(self3, err)
+					end
+
+					self:OnError(err)
 				end
 			end
 		end
 
-		function CLIENT:SetMaxTimeouts(num)
-			self.MaxTimeouts = num
+		do -- timeout
+			function CLIENT:Timeout(bool)
+				if not self.TimeoutLength then return end
+
+				if not bool then
+					self.TimeoutStart = nil
+					return
+				end
+
+				local time = os.clock()
+
+				if not self.TimeoutStart then
+					self.TimeoutStart = time + self.TimeoutLength
+				end
+
+				local seconds = time - self.TimeoutStart
+
+				if self:OnTimeout(seconds) ~= false then
+					if seconds > self.TimeoutLength then
+						self:DebugPrintf("timed out")
+						self:Remove()
+					end
+				end
+			end
+
+			function CLIENT:GetTimeoutDuration()
+				if not self.TimeoutStart then return 0 end
+
+				local t = os.clock()
+				return t - self.TimeoutStart
+			end
+
+			function CLIENT:IsTimingOut()
+				return
+			end
+
+			function CLIENT:SetTimeout(seconds)
+				self.TimeoutLength = seconds
+			end
+
+			function CLIENT:GetTimeout()
+				return self.TimeoutLength or math.huge
+			end
 		end
 
 		function CLIENT:Remove()
+			self:DebugPrintf("removed")
+			self:OnClose()
+			if self.__server then 
+				self.__server:OnClientClosed(self) 
+			end
 			remove_socket(self)
-		end
-
-		function CLIENT:OnClose()
-			self:Remove()
 		end
 
 		function CLIENT:IsConnected()
@@ -326,11 +565,13 @@ do -- tcp socket meta
 		end
 
 		function CLIENT:GetIP()
+			if not self.connected then return "nil" end
 			local ip, port = self.socket:getpeername()
 			return ip
 		end
 
 		function CLIENT:GetPort()
+			if not self.connected then return "nil" end
 			local ip, port = self.socket:getpeername()
 			return ip and port or nil
 		end
@@ -338,6 +579,13 @@ do -- tcp socket meta
 		function CLIENT:IsValid()
 			return true
 		end
+
+		function CLIENT:OnTimeout(count) end
+		function CLIENT:OnConnect(ip, port) end
+		function CLIENT:OnReceive(data) end
+		function CLIENT:OnError(msg) self:Remove() end
+		function CLIENT:OnSend(data, bytes, b,c,d) end
+		function CLIENT:OnClose() end
 
 		function luasocket.Client(typ)
 			return new_socket(nil, CLIENT, typ)
@@ -350,6 +598,11 @@ do -- tcp socket meta
 		local SERVER = {}
 		SERVER.__index = SERVER
 
+		SERVER.Type = "socket"
+		SERVER.ClassName = "server"
+		
+		add_options(SERVER)
+
 		function SERVER:Initialize()
 			self.Clients = {}
 		end
@@ -359,41 +612,57 @@ do -- tcp socket meta
 		end
 
 		function SERVER:DebugPrintf(fmt, ...)
-			if luasocket.debug then
-				printf("%s - " .. fmt, self, ...)
-			end
+			luasocket.DebugPrint("%s - " .. fmt, self, ...)
 		end
 
 		function SERVER:GetClients()
 			local copy = {}
+
 			for key, client in pairs(self.Clients) do
-				if client.IsValid and client:IsValid() then
+				if client:IsValid() then
 					table.insert(copy, client)
 				else
 					table.remove(self.Clients, key)
 				end
 			end
+
 			return copy
+		end
+		
+		function SERVER:HasClients()
+			return next(self.Clients) ~= nil
 		end
 
 		function SERVER:Host(ip, port)
 			ip = ip or "*"
 			port = port or 0
+			
+			local ok, msg
 
 			if self.socket_type == "tcp" then
-				self.socket:settimeout(0)
 				self.socket:setoption("reuseaddr", true)
-				self.socket:bind(ip, port)
-				self.socket:listen()
-				self.socket:settimeout(0)
-				self.ready = true
+				ok, msg = self.socket:bind(ip, port)
 			elseif self.socket_type == "udp" then
-				self.socket:settimeout(0)
-				self.socket:setsockname(ip, port)
-				self.socket:settimeout(0)
+				ok, msg = self.socket:setsockname(ip, port)
+			end
+			
+			if not ok and msg then
+				self:DebugPrintf("bind failed: %s", msg)
+				self:OnError(msg)
+			else
+				if self.socket_type == "tcp" then
+					ok, msg = self.socket:listen()
+					
+					if not ok and msg then	
+						self:DebugPrintf("bind failed: %s", msg)
+						self:OnError(msg)
+					end
+				end
 				self.ready = true
 			end
 		end
+
+		SERVER.Bind = SERVER.Host
 
 		function SERVER:Send(data, ip, port)
 			check(ip, "string")
@@ -411,7 +680,22 @@ do -- tcp socket meta
 			end
 		end
 
-		SERVER.Bind = SERVER.Host
+		local DUMMY = {}
+		DUMMY.__index = DUMMY
+
+		DUMMY.__tostring = function(s)
+			return string.format("dummy_client_%s[%s][%s]", "udp", s.ip or "nil", s.port or "nil")
+		end
+
+		DUMMY.GetIP = function(s) return s.ip end
+		DUMMY.GetPort = function(s) return s.port end
+		DUMMY.IsValid = function() return true end
+		DUMMY.Close = function() return end
+		DUMMY.Remove = function() return end
+
+		local function create_dummy_client(ip, port)
+			return setmetatable({ip = ip, port = port}, DUMMY)
+		end
 
 		function SERVER:Think()
 			if not self.ready then return end
@@ -419,73 +703,66 @@ do -- tcp socket meta
 			if self.socket_type == "udp" then
 				local data, ip, port = self.socket:receivefrom()
 
-				if data then
-					if self.OnReceive then
-						self:OnReceive(data, ip, port)
-					end
+				if ip == "timeout" then return end
 
+				if not data then
+					self:DebugPrintf("errored: %s", ip)
+				else
 					self:DebugPrintf("received %s from %s:%s", data, ip, port)
-				elseif ip ~= "timeout" then
-					self:DebugPrintf("%s errored: ", client, err)
+					
+					local client = create_dummy_client(ip, port)
+					local b = self:OnClientConnected(client, ip, port)
+					
+					if b == true or b == nil then
+						self:OnReceive(data, client)
+					end
+					
+					client.IsValid = function() return false end
 				end
 			elseif self.socket_type == "tcp" then
 				local sock = self.socket
 				sock:settimeout(0)
 
-				local ls_client, err = sock:accept()
+				local client, err = sock:accept()
 
-				if ls_client then
-					local client = new_socket(ls_client, luasocket.ClientMeta, "tcp")
+				if client then
+
+					client = new_socket(client, luasocket.ClientMeta, "tcp")
 					client.connected = true
-					table.insert(self.Clients, client)
-
-					if self.OnClientConnected then
-						if self:OnClientConnected(client, client:GetIP(), client:GetPort()) == false then
-							client:Remove()
-						end
-					end
+					
 					self:DebugPrintf("%s connected", client)
-				end
+					
+					table.insert(self.Clients, client)
+					client.__server = self
+					
+					local b = self:OnClientConnected(client, client:GetIP(), client:GetPort())
 
-				for _, client in pairs(self:GetClients()) do
-					local data, err, partial = client.socket:receive()
-					if data then
-
-						if self.OnReceive then
-							self:OnReceive(data, client)
-						end
-
-						if client.OnSend then
-							client:OnSend(data)
-						end
-
-						self:DebugPrintf("received %s from %s", data, client)
-
-					elseif err == "closed" then
-						self:DebugPrintf("%s wants to close", client)
-						if not self.OnClientClose or self:OnClientClose(client) ~= false then
-							if client.OnClose then
-								client:OnClose()
-							end
-							
-							client:Remove()
-						end
-					elseif err == "timeout" then
-						--client:Timeout() -- hmm
-					else
-						if self.OnClientError then
-							self:OnClientError(client, err)
-						end
-						if client.OnError then
-							client:OnError(err)
-						end
-						self:DebugPrintf("%s errored: ", client, err)
+					if b == true then
+						client:SetKeepAlive(true)
+						client:SetTimeout()
+					elseif b == false then
+						client:Remove()
 					end
 				end
 			end
 		end
+		
+		function SERVER:Broadcast(...)
+			for k,v in pairs(self:GetClients()) do
+				v:Send(...)
+			end
+		end
 
+		function SERVER:KickAllClients()
+			for k,v in pairs(self:GetClients()) do
+				v.__server = nil
+				v:Remove()
+			end
+		end
+		
 		function SERVER:Remove()
+			self:DebugPrintf("removed")
+			self:KickAllClients()			
 			remove_socket(self)
 		end
 
@@ -503,51 +780,21 @@ do -- tcp socket meta
 			return ip and port or nil
 		end
 
+		function SERVER:OnClientConnected(client, ip, port) end
+		function SERVER:OnClientClosed(client) end
+		function SERVER:OnReceive(data, client) end
+		function SERVER:OnClientError(client, err) end
+		function SERVER:OnError(msg) self:Remove() end
+
 		function luasocket.Server(typ)
 			return new_socket(nil, SERVER, typ)
 		end
 
 		luasocket.ServerMeta = SERVER
 	end
-
-	do return end
-
-	timer.Simple(1, function()
-		print("go")
-
-		do -- UDP
-			local server = luasocket.Server("udp")
-			server:Host("10.0.0.1", 888)
-
-			function server:OnReceive(data, ip, port)
-				server:Send("hi", ip, port)
-			end
-
-			local client = luasocket.Client("udp")
-				client:Connect("10.0.0.1", 888)
-				client:Send("hello")
-				client:Send("hello")
-				client:Send("hello")
-				client:Send("hello")
-		end
-
-		do -- TCP
-			local server = luasocket.Server("tcp")
-				server:Host("10.0.0.1", 555)
-
-				function server:OnReceieve(data, client)
-					self:Send("hi", client:GetIP())
-				end
-
-			local client = luasocket.Client("tcp")
-				client:Connect("10.0.0.1", 555)
-				client:Send("hello\n")
-				client:Send("hello\n")
-				client:Send("hello\n")
-				client:Send("hello\n")
-		end
-	end)
-
 end
+
+luasocket.Initialized()
+luasocket.Initialized = nil
 
 return luasocket

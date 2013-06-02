@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -89,6 +89,29 @@ typedef struct
 CSFML_WINDOW_API sfWindow* sfWindow_create(sfVideoMode mode, const char* title, sfUint32 style, const sfContextSettings* settings);
 
 ////////////////////////////////////////////////////////////
+/// \brief Construct a new window (with a UTF-32 title)
+///
+/// This function creates the window with the size and pixel
+/// depth defined in \a mode. An optional style can be passed to
+/// customize the look and behaviour of the window (borders,
+/// title bar, resizable, closable, ...). If \a style contains
+/// sfFullscreen, then \a mode must be a valid video mode.
+///
+/// The fourth parameter is a pointer to a structure specifying
+/// advanced OpenGL context settings such as antialiasing,
+/// depth-buffer bits, etc.
+///
+/// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
+/// \param title    Title of the window (UTF-32)
+/// \param style    Window style
+/// \param settings Additional settings for the underlying OpenGL context
+///
+/// \return A new sfWindow object
+///
+////////////////////////////////////////////////////////////
+CSFML_WINDOW_API sfWindow* sfWindow_createUnicode(sfVideoMode mode, const sfUint32* title, sfUint32 style, const sfContextSettings* settings);
+
+////////////////////////////////////////////////////////////
 /// \brief Construct a window from an existing control
 ///
 /// Use this constructor if you want to create an OpenGL
@@ -132,7 +155,7 @@ CSFML_WINDOW_API void sfWindow_close(sfWindow* window);
 /// \brief Tell whether or not a window is opened
 ///
 /// This function returns whether or not the window exists.
-/// Note that a hidden window (sfWindow_SetVisible(sfFalse)) will return
+/// Note that a hidden window (sfWindow_setVisible(sfFalse)) will return
 /// sfTrue.
 ///
 /// \param window Window object
@@ -158,18 +181,18 @@ CSFML_WINDOW_API sfBool sfWindow_isOpen(const sfWindow* window);
 CSFML_WINDOW_API sfContextSettings sfWindow_getSettings(const sfWindow* window);
 
 ////////////////////////////////////////////////////////////
-/// \brief Pop the event on top of events stack, if any, and return it
+/// \brief Pop the event on top of event queue, if any, and return it
 ///
 /// This function is not blocking: if there's no pending event then
 /// it will return false and leave \a event unmodified.
-/// Note that more than one event may be present in the events stack,
+/// Note that more than one event may be present in the event queue,
 /// thus you should always call this function in a loop
 /// to make sure that you process every pending event.
 ///
 /// \param window Window object
 /// \param event  Event to be returned
 ///
-/// \return sfTrue if an event was returned, or sfFalse if the events stack was empty
+/// \return sfTrue if an event was returned, or sfFalse if the event queue was empty
 ///
 ////////////////////////////////////////////////////////////
 CSFML_WINDOW_API sfBool sfWindow_pollEvent(sfWindow* window, sfEvent* event);
@@ -246,6 +269,15 @@ CSFML_WINDOW_API void sfWindow_setSize(sfWindow* window, sfVector2u size);
 ///
 ////////////////////////////////////////////////////////////
 CSFML_WINDOW_API void sfWindow_setTitle(sfWindow* window, const char* title);
+
+////////////////////////////////////////////////////////////
+/// \brief Change the title of a window (with a UTF-32 string)
+///
+/// \param window Window object
+/// \param title  New title
+///
+////////////////////////////////////////////////////////////
+CSFML_WINDOW_API void sfWindow_setUnicodeTitle(sfWindow* window, const sfUint32* title);
 
 ////////////////////////////////////////////////////////////
 /// \brief Change a window's icon
@@ -343,7 +375,7 @@ CSFML_WINDOW_API void sfWindow_display(sfWindow* window);
 /// \brief Limit the framerate to a maximum fixed frequency
 ///
 /// If a limit is set, the window will use a small delay after
-/// each call to sfWindow_Display to ensure that the current frame
+/// each call to sfWindow_display to ensure that the current frame
 /// lasted long enough to match the framerate limit.
 ///
 /// \param window Window object

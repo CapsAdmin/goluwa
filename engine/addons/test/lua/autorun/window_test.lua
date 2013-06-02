@@ -2,14 +2,14 @@
 local window = RenderWindow(VideoMode(800, 600, 32), "SFML window", bit.bor(RESIZE, CLOSE), ContextSettings())
 
 -- Load a sprite to display
-local texture = Texture("file", "../textures/cute_image.jpg",  Rect(0, 0, 100, 100))
+local texture = Texture("file", e.BASE_FOLDER .. "textures/cute_image.jpg",  Rect(0, 0, 100, 100))
 local sprite = Sprite()
 sprite:SetTexture(texture, 1)
 
 -- Create a graphical text to display
 local text = Text()
 text:SetString("Hello SFML")
-text:SetFont(Font("file", "../fonts/arial.ttf"))
+text:SetFont(Font("file", e.BASE_FOLDER .. "fonts/arial.ttf"))
 text:SetCharacterSize(50)
 
 -- Load a music to play
@@ -21,12 +21,12 @@ text:SetCharacterSize(50)
 local params = Event()
 
 -- Start the game loop
-events.AddListener("OnUpdate", "test", function()
+event.AddListener("OnUpdate", "test", function()
 	if window:IsOpen() then
 		-- Process events
 		if window:PollEvent(params) then
 			-- Close window : exit
-			if events.type == EVT_CLOSED then
+			if params.type == EVT_CLOSED then
 				window:Close()
 			end
  		end

@@ -354,4 +354,4 @@ function structs.AddAllOperators(META)
 	structs.AddOperator(META, "math", "clamp", "Clamp", "Clamped")
 end
 
-require("structs/*")
+dofile("structs/*")
