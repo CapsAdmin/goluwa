@@ -1,5 +1,5 @@
 -- Create the main window
-local window = RenderWindow(VideoMode(800, 600, 32), "SFML window", bit.bor(RESIZE, CLOSE), ContextSettings())
+local window = RenderWindow(VideoMode(800, 600, 32), "SFML window", bit.bor(e.RESIZE, e.CLOSE), ContextSettings())
 
 -- Load a sprite to display
 local texture = Texture("file", e.BASE_FOLDER .. "textures/cute_image.jpg",  Rect(0, 0, 100, 100))
@@ -26,13 +26,13 @@ event.AddListener("OnUpdate", "test", function()
 		-- Process events
 		if window:PollEvent(params) then
 			-- Close window : exit
-			if params.type == EVT_CLOSED then
+			if params.type == e.EVT_CLOSED then
 				window:Close()
 			end
  		end
 
 		-- Clear the screen
-		window:Clear(BLACK)
+		window:Clear(e.BLACK)
 
 		-- Draw the sprite
 		window:DrawSprite(sprite, nil)

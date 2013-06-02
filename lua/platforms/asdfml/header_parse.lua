@@ -258,9 +258,9 @@ local function generate_objects()
 	for k,v in pairs(enums) do
 		local name = k:sub(3):gsub("%u", "_%1"):upper():sub(2)
 		if type(v) == "number" then
-			_G[name] = v
+			_E[name] = v
 		else
-			_G[name] = libraries[v][k]
+			_E[name] = libraries[v][k]
 		end
 	end
 	
