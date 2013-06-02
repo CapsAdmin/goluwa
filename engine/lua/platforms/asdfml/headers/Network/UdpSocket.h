@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -119,7 +119,7 @@ CSFML_NETWORK_API sfSocketStatus sfUdpSocket_bind(sfUdpSocket* socket, unsigned 
 /// \param socket UDP socket object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_NETWORK_API void sfUdpSocket_Unbind(sfUdpSocket* socket);
+CSFML_NETWORK_API void sfUdpSocket_unbind(sfUdpSocket* socket);
 
 ////////////////////////////////////////////////////////////
 /// \brief Send raw data to a remote peer with a UDP socket

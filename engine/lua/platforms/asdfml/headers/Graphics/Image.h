@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -133,7 +133,7 @@ CSFML_GRAPHICS_API sfImage* sfImage_createFromStream(sfInputStream* stream);
 /// \return Copied object
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API sfImage* sfImage_copy(sfImage* image);
+CSFML_GRAPHICS_API sfImage* sfImage_copy(const sfImage* image);
 
 ////////////////////////////////////////////////////////////
 /// \brief Destroy an existing image
@@ -181,7 +181,7 @@ CSFML_GRAPHICS_API sfVector2u sfImage_getSize(const sfImage* image);
 /// \param alpha Alpha value to assign to transparent pixels
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API void sfImage_createMaskFromColor(sfColor color, sfUint8 alpha);
+CSFML_GRAPHICS_API void sfImage_createMaskFromColor(sfImage* image, sfColor color, sfUint8 alpha);
 
 ////////////////////////////////////////////////////////////
 /// \brief Copy pixels from an image onto another

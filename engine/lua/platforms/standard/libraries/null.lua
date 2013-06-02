@@ -14,6 +14,10 @@ end
 function NULL:__index(key)
 	if key == "ClassName" then
 		return "NULL"
+	end	
+	
+	if key == "Type" then
+		return "null"
 	end
 	
 	if key == "IsValid" then	
@@ -29,4 +33,4 @@ end
 
 utilities.DeclareMetaTable("null_meta", NULL)
 
-_G.NULL = setmetatable({}, NULL)
+_G.NULL = setmetatable({Type  = "null", ClassName = "ClassName"}, NULL)

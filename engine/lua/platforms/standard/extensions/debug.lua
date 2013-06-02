@@ -1,22 +1,15 @@
 function debug.trace()	
-	MsgN("")
-    MsgN("Trace: " )
+    print("Trace: " )
 	
 	for level = 1, math.huge do
 		local info = debug.getinfo(level, "Sln")
 		
 		if info then
-			if info.what == "C" then
-				MsgN(level, "\tC function")
-			else
-				MsgN(string.format("\t%i: Line %d\t\"%s\"\t%s", level, info.currentline, info.name or "unknown", info.short_src or ""))
-			end
+			printf("\t%i: Line %d\t\"%s\"\t%s", level, info.currentline, info.name or "unknown", info.short_src or "")
 		else
 			break
 		end
     end
-
-    MsgN("")
 end
 
 function debug.getparams(func)

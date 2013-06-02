@@ -3,14 +3,14 @@ require("header_parse.lua")
 addons.AutorunAll()
 
 function main()
-	events.Call("Initialize")
+	event.Call("Initialize")
 		
 	while true do
-		events.Call("OnUpdate")
+		event.Call("OnUpdate")
 		timer.Update()
 	end
 	
-	events.Call("ShutDown")
+	event.Call("ShutDown")
 end
 
-events.AddListener("Initialized", "main", main)
+event.AddListener("Initialized", "main", main)

@@ -1,6 +1,18 @@
 local file = require("lfs") or {}
 
-file.base_dir = BASE_FOLDER
+file.base_dir = e.BASE_FOLDER
+
+local function handle_path(path)
+	if path:find("^%a:/") then
+		return path
+	end
+	
+	if path:sub(0, 1) == "!" then
+		return lfs.currentdir() .. path:sub(2)
+	end
+	
+	return file.base_dir .. path
+end
 
 local function SafeClose(fil)
 	if fil and io.type(fil) == "file" then
@@ -13,7 +25,17 @@ function file.Read(path, mode)
 	mode = mode or ""
 	check(mode, "string")
 	
-	local fil, err = io.open(file.base_dir .. path, "r" .. mode)
+	path = event.Call("HandleFileIOPath", path) or path
+		
+	local fil, msg
+	
+	if path == "stdout" then
+		fil = io.stdout
+	elseif path == "stdin" then
+		fil = io.stdin
+	else
+		fil, err = io.open(handle_path(path), "r" .. mode)
+	end
 
 	if err then
 		print(err)
@@ -26,17 +48,65 @@ function file.Read(path, mode)
 	return content
 end
 
+function file.Write(path, content, mode)
+	check(path, "string")
+	mode = mode  or ""
+	check(mode, "string")
+	content = content and tostring(content) or ""
+	
+	path = event.Call("HandleFileIOPath", path) or path
+
+	local fil, err
+	
+	if path == "stdout" then
+		fil = io.stdout
+	elseif path == "stdin" then
+		fil = io.stdin
+	else
+		fil, err = io.open(handle_path(path), "w" .. mode)
+	end
+	
+	if err and err:findsimple("No such file or directory") then
+		file.CreateFoldersFromPath(path)
+		fil, err = io.open(path, "w")
+	end
+
+	if fil and fil:write(content) then
+		SafeClose(fil)
+	end
+
+	return fil, err
+end
+
+function file.Exists(path)
+	check(path, "string")
+	
+	path = event.Call("HandleFileIOPath", path) or path
+	
+	local fil, msg = io.open(handle_path(path), "r")
+	
+	local bool = fil ~= nil
+
+	SafeClose(fil)
+
+	return bool
+end
+
 function file.Rename(path, new)
 	check(path, "string")
 	check(new, "string")
+	
+	path = event.Call("HandleFileIOPath", path) or path
 
-	return os.rename(file.base_dir .. path, new)
+	return os.rename(handle_path(path), new)
 end
 
 function file.Delete(path)
-	check(path, "string")
+	check(path, "string") 
+	
+	path = event.Call("HandleFileIOPath", path) or path
 
-	return os.remove(file.base_dir .. path)
+	return os.remove(handle_path(path))
 end
 
 function file.CreateFoldersFromPath(path)
@@ -56,37 +126,6 @@ function file.CreateFoldersFromPath(path)
 	end
 end
 
-function file.Write(path, content, mode)
-	check(path, "string")
-	mode = mode  or ""
-	check(mode, "string")
-	content = content and tostring(content) or ""
-
-	local fil, err = io.open(file.base_dir .. path, "w" .. mode)
-	
-	if err and err:FindSimple("No such file or directory") then
-		file.CreateFoldersFromPath(path)
-		fil, err = io.open(path, "w")
-	end
-
-	if fil and fil:write(content) then
-		SafeClose(fil)
-	end
-
-	return fil, err
-end
-
-function file.Exists(path)
-	check(path, "string")
-	
-	local fil, msg = io.open(file.base_dir .. path, "r")
-	local bool = fil ~= nil
-
-	SafeClose(fil)
-
-	return bool
-end
-
 function file.Find(path)
 	local out = {}
 	
@@ -99,10 +138,11 @@ function file.Find(path)
 	end
 
 	path = utilities.GeFolderFromPath(path)
-						
-	for file_name in file.dir(file.base_dir .. path) do
+	path = handle_path(path)
+		
+	for file_name in file.dir(path) do
 		if file_name ~= "." and file_name ~= ".." and file_name:find(pattern) then
-			out[file_name] = file.attributes(file.base_dir .. path .. file_name)
+			out[file_name] = file.attributes(path .. file_name)
 		end
 	end
 

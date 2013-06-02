@@ -17,20 +17,7 @@ luadata.Types =
 		return ("%s"):format(var)
 	end,
 	string = function(var)
-
-		local str = ""
-
-		for char in var:gmatch(".") do
-			str = str  .. (luadata.EscapeSequences[str:byte()] or char)
-		end
-
-		if str:find('"', nil, true) then
-			str = "'" .. str .. "'"
-		else
-			str = '"' .. str .. '"'
-		end
-
-		return str
+		return ("%q"):format(var)
 	end,
 	boolean = function(var)
 		return ("%s"):format(var and "true" or "false")
@@ -105,12 +92,25 @@ end
 
 function luadata.Decode(str)
 	if not str then return {} end
-	local func, err = loadstring("return {\n" .. str .. "\n}", "luadata")
-	if not func then
-		error(err)
-		return
+
+	local func = loadstring("return {\n" .. str .. "\n}")
+	
+	if type(func) == "string" then
+		print("luadata decode error:")
+		print(err)
+		
+		return {}
 	end
-	return func()
+	
+	local ok, err = pcall(func)
+	
+	if not ok then
+		print("luadata decode error:")
+		print(err)
+		return {}
+	end
+	
+	return err
 end
 
 do -- file extension

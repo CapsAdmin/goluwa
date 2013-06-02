@@ -13,24 +13,12 @@ function math.randomf(min, max)
 	return min + (math.random() * (max-min))
 end
 
-function math.clamp(number, min, max)
-	return math.max(math.min(number,max),min)
+function math.clamp(self, min, max)
+	return math.max(math.min(self, max),min)
 end
 
 function math.lerp(m, a, b)
 	return (b - a) * m + a
-end
-
-local inf, ninf = math.huge, -math.huge
-
-function math.isvalid(num) 
-	return
-	not (
-		not num or 
-		num == inf or 
-		num == ninf or 
-		not (num >= 0 or num <= 0) 
-	)
 end
 
 function math.len(x)
@@ -60,18 +48,7 @@ function math.digit10(x, n)
 		n = n - 1
     end
 	
-    return math.floor((x % 10) + '0')
-end
-
-function math.tostring(num, base)
-	local t={}
-	local len = math.len(num)
-	
-	for i = 0, len - 1 do
-		t[len - i] = math.digit10(num, i)
-	end
-	
-	return table.concat(t)
+    return math.floor(x % 10)
 end
 
 function math.approach(cur, target, inc)
@@ -84,4 +61,25 @@ function math.approach(cur, target, inc)
     end
 	
     return target    
+end
+
+local inf, ninf = math.huge, -math.huge
+
+function math.isvalid(num) 
+	return
+		num and
+		num ~= inf and
+		num ~= ninf and
+		(num >= 0 or num <= 0)
+end
+
+function math.tostring(num, base)
+	local t = {}
+	local len = math.len(num)
+	
+	for i = 0, len - 1 do
+		t[len - i] = math.digit10(num, i)
+	end
+	
+	return table.concat(t)
 end

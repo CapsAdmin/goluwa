@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -38,19 +38,19 @@
 /// \brief Enumeration of transfer modes
 ///
 ////////////////////////////////////////////////////////////
-enum sfFtpTransferMode
+typedef enum
 {
     sfFtpBinary, ///< Binary mode (file is transfered as a sequence of bytes)
     sfFtpAscii,  ///< Text mode using ASCII encoding
     sfFtpEbcdic  ///< Text mode using EBCDIC encoding
-};
+} sfFtpTransferMode;
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Status codes possibly returned by a FTP response
 ///
 ////////////////////////////////////////////////////////////
-enum sfFtpStatus
+typedef enum
 {
     // 1xx: the requested action is being initiated,
     // expect another reply before proceeding with a new command
@@ -110,7 +110,7 @@ enum sfFtpStatus
     sfFtpConnectionFailed = 1001, ///< Connection with server failed
     sfFtpConnectionClosed = 1002, ///< Connection with server closed
     sfFtpInvalidFile      = 1003  ///< Invalid file to upload / download
-};
+} sfFtpStatus;
 
 
 ////////////////////////////////////////////////////////////
@@ -155,25 +155,25 @@ CSFML_NETWORK_API sfFtpStatus sfFtpListingResponse_getStatus(const sfFtpListingR
 CSFML_NETWORK_API const char* sfFtpListingResponse_getMessage(const sfFtpListingResponse* ftpListingResponse);
 
 ////////////////////////////////////////////////////////////
-/// \brief Return the number of filenames contained in a FTP listing response
+/// \brief Return the number of directory/file names contained in a FTP listing response
 ///
 /// \param ftpListingResponse Ftp listing response
 ///
-/// \return Total number of filenames available
+/// \return Total number of names available
 ///
 ////////////////////////////////////////////////////////////
 CSFML_NETWORK_API size_t sfFtpListingResponse_getCount(const sfFtpListingResponse* ftpListingResponse);
 
 ////////////////////////////////////////////////////////////
-/// \brief Return a filename contained in a FTP listing response
+/// \brief Return a directory/file name contained in a FTP listing response
 ///
 /// \param ftpListingResponse Ftp listing response
-/// \param index              Index of the filename to get (in range [0 .. GetCount])
+/// \param index              Index of the name to get (in range [0 .. getCount])
 ///
-/// \return Array containing the requested filenames
+/// \return The requested name
 ///
 ////////////////////////////////////////////////////////////
-CSFML_NETWORK_API const char* sfFtpListingResponse_getFilename(const sfFtpListingResponse* ftpListingResponse, size_t index);
+CSFML_NETWORK_API const char* sfFtpListingResponse_getName(const sfFtpListingResponse* ftpListingResponse, size_t index);
 
 ////////////////////////////////////////////////////////////
 /// \brief Destroy a FTP directory response
@@ -299,12 +299,12 @@ CSFML_NETWORK_API void sfFtp_destroy(sfFtp* ftp);
 /// \param ftp     Ftp object
 /// \param server  Name or address of the FTP server to connect to
 /// \param port    Port used for the connection
-/// \param timeout Maximum time to wait, in milliseconds
+/// \param timeout Maximum time to wait
 ///
 /// \return Server response to the request
 ///
 ////////////////////////////////////////////////////////////
-CSFML_NETWORK_API sfFtpResponse* sfFtp_connect(sfFtp* ftp, sfIpAddress server, unsigned short port, sfUint32 timeout);
+CSFML_NETWORK_API sfFtpResponse* sfFtp_connect(sfFtp* ftp, sfIpAddress server, unsigned short port, sfTime timeout);
 
 ////////////////////////////////////////////////////////////
 /// \brief Log in using an anonymous account

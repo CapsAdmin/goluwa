@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -49,7 +49,7 @@ CSFML_SYSTEM_API sfClock* sfClock_create(void);
 /// \return A new sfClock object which is a copy of \a clock
 ///
 ////////////////////////////////////////////////////////////
-CSFML_SYSTEM_API sfClock* sfClock_copy(sfClock* clock);
+CSFML_SYSTEM_API sfClock* sfClock_copy(const sfClock* clock);
 
 ////////////////////////////////////////////////////////////
 /// \brief Destroy a clock

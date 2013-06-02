@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,6 +30,7 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.h>
 #include <SFML/Graphics/Color.h>
+#include <SFML/Graphics/Transform.h>
 #include <SFML/Graphics/Types.h>
 #include <SFML/System/InputStream.h>
 #include <SFML/System/Vector2.h>
@@ -259,7 +260,7 @@ CSFML_GRAPHICS_API void sfShader_setVector3Parameter(sfShader* shader, const cha
 /// uniform vec4 color; // this is the variable in the shader
 /// \endcode
 /// \code
-/// sfShader_setColorParameter(shader, "color", sfColor_FromRGB(255, 128, 0));
+/// sfShader_setColorParameter(shader, "color", sfColor_fromRGB(255, 128, 0));
 /// \endcode
 ///
 /// \param shader Shader object
@@ -290,7 +291,7 @@ CSFML_GRAPHICS_API void sfShader_setColorParameter(sfShader* shader, const char*
 /// \param transform Transform to assign
 ///
 ////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API void sfShader_setTransformParameter(sfShader* shader, const char* name, const sfTransform* transform);
+CSFML_GRAPHICS_API void sfShader_setTransformParameter(sfShader* shader, const char* name, sfTransform transform);
 
 ////////////////////////////////////////////////////////////
 /// \brief Change a texture parameter of a shader
@@ -351,32 +352,25 @@ CSFML_GRAPHICS_API void sfShader_setCurrentTextureParameter(sfShader* shader, co
 ////////////////////////////////////////////////////////////
 /// \brief Bind a shader for rendering (activate it)
 ///
-/// This function is normally for internal use only, unless
-/// you want to use the shader with a custom OpenGL rendering
-/// instead of a SFML drawable.
+/// This function is not part of the graphics API, it mustn't be
+/// used when drawing SFML entities. It must be used only if you
+/// mix sfShader with OpenGL code.
+///
 /// \code
-/// sfWindow_setActive(window, sfTrue);
-/// sfShader_bind(shader);
-/// ... render OpenGL geometry ...
-/// sfShader_unbind(shader);
+/// sfShader *s1, *s2;
+/// ...
+/// sfShader_bind(s1);
+/// // draw OpenGL stuff that use s1...
+/// sfShader_bind(s2);
+/// // draw OpenGL stuff that use s2...
+/// sfShader_bind(0);
+/// // draw OpenGL stuff that use no shader...
 /// \endcode
 ///
-/// \param shader Shader to bind
+/// \param shader Shader to bind, can be null to use no shader
 ///
 ////////////////////////////////////////////////////////////
 CSFML_GRAPHICS_API void sfShader_bind(const sfShader* shader);
-
-////////////////////////////////////////////////////////////
-/// \brief Unbind a shader (deactivate it)
-///
-/// This function is normally for internal use only, unless
-/// you want to use the shader with a custom OpenGL rendering
-/// instead of a SFML drawable.
-///
-/// \param shader Shader to unbind
-///
-////////////////////////////////////////////////////////////
-CSFML_GRAPHICS_API void sfShader_unbind(const sfShader* shader);
 
 ////////////////////////////////////////////////////////////
 /// \brief Tell whether or not the system supports shaders

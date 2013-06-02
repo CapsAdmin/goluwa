@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2012 Laurent Gomila (laurent.gom@gmail.com)
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -49,7 +49,7 @@ CSFML_NETWORK_API sfSocketSelector* sfSocketSelector_create(void);
 /// \return A new sfSocketSelector object which is a copy of \a selector
 ///
 ////////////////////////////////////////////////////////////
-CSFML_NETWORK_API sfSocketSelector* sfSocketSelector_copy(sfSocketSelector* selector);
+CSFML_NETWORK_API sfSocketSelector* sfSocketSelector_copy(const sfSocketSelector* selector);
 
 ////////////////////////////////////////////////////////////
 /// \brief Destroy a socket selector
@@ -121,7 +121,7 @@ CSFML_NETWORK_API sfBool sfSocketSelector_wait(sfSocketSelector* selector, sfTim
 /// \brief Test a socket to know if it is ready to receive data
 ///
 /// This function must be used after a call to
-/// sfSocketSelector_Wait, to know which sockets are ready to
+/// sfSocketSelector_wait, to know which sockets are ready to
 /// receive data. If a socket is ready, a call to Receive will
 /// never block because we know that there is data available to read.
 /// Note that if this function returns sfTrue for a sfTcpListener,

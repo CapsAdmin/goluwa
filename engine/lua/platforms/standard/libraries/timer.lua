@@ -1,12 +1,10 @@
-local timer = {} 
+local timer = _G.timer or {} 
 
 timer.CurrentTimers = {}
+timer.SimpleTimers = {}
+timer.Thinkers = {}
 
-function timer.GetTable()
-	return timer.CurrentTimers
-end
-
-function timer.Simple(time, callback)
+function timer.Simple(time, callback, obj)
 	check(time, "number", "function")
 	check(callback, "function", "nil")
 
@@ -14,88 +12,138 @@ function timer.Simple(time, callback)
 		callback = time
 		time = 0
 	end
+	
+	if hasindex(obj) and obj.IsValid then
+		local old = callback
+		callback = function(...)
+			if obj:IsValid() then
+				return old(...)
+			end
+		end
+	end
 
 	local realtime = os.clock() + time
 
-	timer.CurrentTimers["SimpleTimer:" .. tostring(callback) .. tostring(time)] = {
+	timer.SimpleTimers[tostring(callback) .. tostring(time)] = {
 		callback = callback,
 		realtime = realtime,
 	}
 end
-
-timer.Thinkers = {}
 
 function timer.Thinker(callback, speed)
 	table.insert(timer.Thinkers, {callback = callback, speed = speed})
 end
 
-function timer.Create(tag, time, repeats, callback, run_now)
+do -- timer meta
+	local META = {}
+	META.__index = META
+	
+	function META:Pause()
+		self.paused = true
+	end
+	function META:Start()
+		self.paused = false
+	end
+	function META:IsPaused()
+		return self.paused
+	end
+	function META:SetRepeats(num)
+		self.times_ran = num
+	end
+	function META:GetRepeats()
+		return self.times_ran
+	end
+	function META:SetInterval(num)
+		self.time = num
+	end
+	function META:GetInterval()
+		return self.time
+	end
+	function META:SetCallback(func)
+		self.callback = func
+	end
+	function META:GetCallback()
+		return self.callback
+	end
+	function META:Call(...)
+		return xpcall(self.callback, OnError, ...)
+	end
+	function META:SetNextThink(num)
+		self.realtime = os.clock() + num
+	end
+	function META:Remove()
+		timer.CurrentTimers[self.id] = nil
+	end
+	
+	timer.TimerMeta = META
+end
+
+function timer.Create(id, time, repeats, callback, run_now)
 	check(time, "number")
 	check(repeats, "number")
 	check(callback, "function")
 
-	tag = tostring(tag)
+	id = tostring(id)
 	time = math.abs(time)
 	repeats = math.max(repeats, 0)
 
-
 	local realtime = os.clock() + time
-	timer.CurrentTimers[tag] = {
-		realtime = realtime,
-		tag = tag,
-		time = time,
-		repeats = repeats,
-		callback = callback,
-		times_ran = 1,
-	}
-
+	local obj = timer.CurrentTimers[id] or {}
+		
+		obj.realtime = realtime
+		obj.id = id
+		obj.time = time
+		obj.repeats = repeats
+		obj.callback = callback
+		obj.times_ran = 1
+		obj.paused = false
+		
+		setmetatable(obj, timer.TimerMeta)
+	
+	timer.CurrentTimers[id] = obj
+	
 	if run_now then
-		callback()
+		callback(repeats-1)
+		obj.repeats = obj.repeats - 1
 	end
-end
-
-function timer.Remove(tag)
-	tag = tostring(tag)
-	timer.CurrentTimers[tag] = nil
+	
+	return obj
 end
 
 function timer.Update()
 	local cur = os.clock()
 
-	for tag, data in pairs(timer.CurrentTimers) do
+	for id, data in pairs(timer.SimpleTimers) do
 		if data.realtime < cur then
-			if data.times_ran then
-				local ran, msg = pcall(data.callback, data.times_ran - 1)
-				if ran then
-					if msg == "stop" then
-						timer.CurrentTimers[tag] = nil
-					end
-					if msg == "restart" then
-						data.times_ran = 1
-					end
-					if type(msg) == "number" then
-						data.realtime = os.clock() + msg
-					end
-				else
-					print(tag, msg)
+			xpcall(data.callback, OnError)
+			timer.SimpleTimers[id] = nil
+		end
+	end	
+	
+	for id, obj in pairs(timer.CurrentTimers) do
+		if not obj:IsPaused() and obj.realtime < cur then
+			local ran, msg = obj:Call(obj:GetRepeats() - 1)
+			
+			if ran then
+				if msg == "stop" then
+					obj:Remove()
 				end
-
-				if data.times_ran == data.repeats then
-					timer.CurrentTimers[tag] = nil
-				else
-					data.times_ran = data.times_ran + 1
-					data.realtime = os.clock() + data.time
+				if msg == "restart" then
+					obj:SetRepeats(1)
+				end
+				if type(msg) == "number" then
+					obj:SetNextThink(msg)
 				end
 			else
-				local ran, err = pcall(data.callback, 0)
-
-				if not ran then
-					print(tag, err)
-				end
-
-				timer.CurrentTimers[tag] = nil
+				print(id, msg)
 			end
 
+			if obj.times_ran == obj.repeats then
+				obj:Remove()
+			else
+				obj:SetRepeats(obj:GetRepeats() + 1)
+				obj:SetNextThink(obj:GetInterval())
+			end
 		end
 	end
 
@@ -124,6 +172,8 @@ function INTERVAL(seconds)
 	end
 	return false
 end
+
+wait = INTERVAL
 
 _G.Thinker = timer.Thinker
 

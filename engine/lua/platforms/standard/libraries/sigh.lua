@@ -63,6 +63,16 @@ sigh.AddType(
 		return nil
 	end
 )
+sigh.AddType(
+	"null",
+	function(var)
+		return "\6" .. sigh.END
+	end,
+	function(var)
+		return NULL
+	end
+)
+
 
 
 function sigh.SetDecimals(num)
@@ -106,18 +116,18 @@ end
 
 function sigh.Encode(...)
 	local buffer = ""
-
+	
 	for key, arg in pairs({...}) do
 		local T = typex(arg)
 
-		if not sigh.types[T] and (getmetatable(arg) and arg.GetId) then
+		if not sigh.types[T] and (hasindex(arg) and arg.GetId) then
 			T = "entity"
 		end
-
+		
 		if sigh.types[T] then
 			buffer = buffer .. sigh.types[T].encode(arg)
 		else
-			print("cannot encode '" .. T .. "'")
+			error("cannot encode '" .. T .. "'", 2)
 		end
 	end
 
