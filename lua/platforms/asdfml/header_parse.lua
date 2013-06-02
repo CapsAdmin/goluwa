@@ -44,7 +44,7 @@ local included = {}
 
 local function load_libraries()
 	for file_name in pairs(file.Find(library_path .. "*")) do
-		local lib_name = file_name:match(WINDOWS and "csfml%-(.-)%-2.dll" or LINUX and "libcsfml%-(.-)%.so.%2%.0")
+		local lib_name = file_name:match(WINDOWS and "csfml%-(.-)%-2.dll" or LINUX and "libcsfml%-(.-)%.so%.2%.0")
 		if lib_name then
 			local lib = ffi.load(file_name)
 			libraries[lib_name] = lib
