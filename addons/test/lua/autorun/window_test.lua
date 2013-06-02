@@ -13,10 +13,10 @@ text:SetFont(Font("file", e.BASE_FOLDER .. "fonts/arial.ttf"))
 text:SetCharacterSize(50)
 
 -- Load a music to play
---local music = Music("file", "../sound/nice_music.ogg")
+local music = Music("file", e.BASE_FOLDER .. "sound/nice_music.ogg")
 
 -- Play the music
--- music:Play()
+music:Play()
 
 local params = Event()
 
