@@ -63,7 +63,8 @@ function file.Write(path, content, mode)
 	elseif path == "stdin" then
 		fil = io.stdin
 	else
-		fil, err = io.open(handle_path(path), "w" .. mode)
+		path = handle_path(path)	
+		fil, err = io.open(path, "w" .. mode)
 	end
 	
 	if err and err:findsimple("No such file or directory") then
