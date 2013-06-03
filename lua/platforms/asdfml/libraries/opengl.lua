@@ -2530,4 +2530,17 @@ for line in def:gmatch("(.-)\n") do
 	end
 end
 
-return gl
+library = ffi.load("glu32.dll")
+
+local glu = {}
+
+for line in def:gmatch("(.-)\n") do
+	local func_name = line:match(" (glu%u.-) %(")
+	if func_name then
+		glu[func_name:sub(4)] = function(...) 
+			return library[func_name](...)
+		end
+	end
+end
+
+return gl, glu
