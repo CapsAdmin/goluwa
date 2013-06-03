@@ -1,5 +1,6 @@
 dofile("header_parse/sfml")
 --dofile("header_parse/glew")
+dofile("libraries/gl_enums")
 gl = dofile("libraries/opengl")
 
 addons.AutorunAll()

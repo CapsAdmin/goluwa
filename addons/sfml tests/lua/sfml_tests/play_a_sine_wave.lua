@@ -2,7 +2,7 @@ local SAMPLES = 44100
 local SAMPLE_RATE = 44100
 local AMPLITUDE = 30000
 
-local raw = Array("Int16", SAMPLES)
+local raw = Array("sfInt16", SAMPLES)
 
 local TWO_PI = math.pi * 2
 local increment = 440/44100
