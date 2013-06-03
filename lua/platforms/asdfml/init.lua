@@ -1,4 +1,6 @@
-require("header_parse.lua")
+dofile("header_parse/sfml")
+--dofile("header_parse/glew")
+gl = dofile("libraries/opengl")
 
 addons.AutorunAll()
 

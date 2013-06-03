@@ -1,0 +1,114 @@
+["Vector2u"] = {
+},
+["SocketStatus"] = {
+},
+["SizeEvent"] = {
+},
+["MouseWheelEvent"] = {
+},
+["ContextSettings"] = {
+},
+["VideoMode"] = {
+	[1] = "sfVideoMode_getDesktopMode",
+},
+["JoystickButtonEvent"] = {
+},
+["Uint8"] = {
+},
+["Int64"] = {
+},
+["MouseButtonEvent"] = {
+},
+["Vector2f"] = {
+},
+["IntRect"] = {
+},
+["JoystickAxis"] = {
+},
+["HttpMethod"] = {
+},
+["HttpResponse"] = {
+},
+["Bool"] = {
+},
+["Event"] = {
+},
+["Int8"] = {
+},
+["Vector3f"] = {
+},
+["Uint32"] = {
+},
+["Int32"] = {
+},
+["KeyCode"] = {
+},
+["JoystickConnectEvent"] = {
+},
+["Transform"] = {
+	[1] = "sfTransform_fromMatrix",
+	[2] = "sfTransform_getInverse",
+},
+["JoystickMoveEvent"] = {
+},
+["BlendMode"] = {
+},
+["FtpListingResponse"] = {
+},
+["EventType"] = {
+},
+["KeyEvent"] = {
+},
+["Color"] = {
+	[1] = "sfColor_fromRGB",
+	[2] = "sfColor_fromRGBA",
+	[3] = "sfColor_add",
+	[4] = "sfColor_modulate",
+},
+["SoundStatus"] = {
+},
+["WindowHandle"] = {
+},
+["Glyph"] = {
+},
+["PrimitiveType"] = {
+},
+["FloatRect"] = {
+},
+["MouseButton"] = {
+},
+["Time"] = {
+},
+["HttpStatus"] = {
+},
+["Uint16"] = {
+},
+["FtpTransferMode"] = {
+},
+["Vertex"] = {
+},
+["RenderStates"] = {
+},
+["TextEvent"] = {
+},
+["IpAddress"] = {
+	[1] = "sfIpAddress_fromString",
+	[2] = "sfIpAddress_fromBytes",
+	[3] = "sfIpAddress_fromInteger",
+	[4] = "sfIpAddress_getLocalAddress",
+	[5] = "sfIpAddress_getPublicAddress",
+},
+["InputStream"] = {
+},
+["FtpStatus"] = {
+},
+["TextStyle"] = {
+},
+["Vector2i"] = {
+},
+["MouseMoveEvent"] = {
+},
+["Int16"] = {
+},
+["FtpDirectoryResponse"] = {
+},

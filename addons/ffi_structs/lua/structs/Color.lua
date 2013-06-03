@@ -2,7 +2,7 @@
 
 local META = {}
 
-META.ClassName = "Color"
+META.ClassName = "ColorF"
 
 function META.Constructor(r,g,b,a)
 	if type(r) == "string" then
@@ -147,18 +147,18 @@ function HSVToColor(hue, sat, val)
 	t = v * (1-s*(1-f))
 
 	if i == 0 then
-		return Color(v, t, p)
+		return ColorF(v, t, p)
 	elseif i == 1 then
-		return Color(q, v, p)
+		return ColorF(q, v, p)
 	elseif i == 2 then
-		return Color(p, v, t)
+		return ColorF(p, v, t)
 	elseif i == 3 then
-		return Color(p, q, v)
+		return ColorF(p, q, v)
 	elseif i == 4 then
-		return Color(t, p, v)
+		return ColorF(t, p, v)
 	end
 
-	return Color(v, p, q)
+	return ColorF(v, p, q)
 end
 
 function ColorToHSV(c)
@@ -210,5 +210,5 @@ end
 
 structs.Register(META) 
 
-color_white = Color(1,1,1,1)
-color_black = Color(0,0,0,1)
+color_white = ColorF(1,1,1,1)
+color_black = ColorF(0,0,0,1)

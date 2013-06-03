@@ -2,30 +2,7 @@ if not ffi then return end
 
 structs = structs or {}
 
-local blacklist = 
-{
-	SetTable = true,
-	GetTable = true,
-	IsValid = true,
-	Type = true,
-	GetUniqueID = true,		
-}
-
 function structs.Register(META)
-	local base = utilities.FindMetaTable(META.ClassName)
-	
-	if base then
-		for key, value in pairs(base) do
-			if key:sub(1, 1) ~= "_" and not META[key] and not blacklist[key] then
-				META[key] = value
-			end
-		end
-		
-		for key, value in pairs(META) do
-			base[key] = value
-		end
-	end
-
 	local arg_line = ""
 	local translation = {}
 	

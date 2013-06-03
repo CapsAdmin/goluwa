@@ -77,11 +77,8 @@ function typex(var)
 	if hasindex(var) then
 		-- why does ffi throw error when trying to index instead of nil?
 		local ok, res = pcall(idx, var)
-		if ok then
-			return res or type(var)
-		else
-			---print(type(var), var)
-			--error(res)
+		if ok and res then
+			return res
 		end
 	end
 
@@ -255,4 +252,36 @@ do -- negative pairs
 	function npairs(a)
 		return iter, a, #a + 1;
 	end
+end
+
+function Array(type, size)
+	local META = {}
+	
+	local ptr = ffi.new(type .. "[?]", size)
+	
+	META.__index = function(self, key) 
+		if key == "Type" then 
+			return "Array" 
+		end 
+		
+		if key == "ArrayType" then
+			return type
+		end
+		
+		if key == "data" then
+			return ptr
+		end
+		
+		return ptr[key]
+	end
+	
+	META.__newindex = function(self, key, val) 
+		ptr[key] = val 
+	end
+		
+	META.__tostring = function() 
+		return string.format("%sArray[%i]", type, size) 
+	end
+	
+	return setmetatable({}, META)
 end
