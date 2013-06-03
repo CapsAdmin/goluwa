@@ -2517,7 +2517,7 @@ local library =
 	["Other"] = "libGL.so",
 }
 
-library = ffi.load(library[ffi.os])
+local library = ffi.load(library[ffi.os])
 
 local gl = {}
 
@@ -2530,7 +2530,7 @@ for line in def:gmatch("(.-)\n") do
 	end
 end
 
-library = ffi.load("glu32.dll")
+local library = ffi.load("glu32.dll")
 
 local glu = {}
 
