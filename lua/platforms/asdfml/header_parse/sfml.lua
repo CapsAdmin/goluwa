@@ -1,7 +1,7 @@
 -- config
 
 local library_path = "!/"
-local headers_path = "lua/platforms/asdfml/headers/"
+local headers_path = "lua/platforms/asdfml/header_parse/SFML/"
 
 local make_library_globals = true
 local library_global_prefix = "sf"
@@ -213,13 +213,13 @@ local function generate_objects()
 					if not objects[type] and not structs[type] and not type:find("%s") then
 						if not objects[type] then
 							local data = static[type] or {funcs = {}}
-							local func_name = line:match(" (sf" .. type .. "_.-)%(")
+							local return_type, func_name = line:match(" (.-) (sf" .. type .. "_.-)%(")
 							local lib = file_name:gsub("%.h", ""):lower()
 							
 							lib = lib_translate(type) or lib
 												
 							data.lib = lib
-							table.insert(data.funcs, func_name)
+							table.insert(data.funcs, {return_type = return_type, name = func_name})
 							static[type] = data
 						end
 					end
@@ -232,8 +232,8 @@ local function generate_objects()
 			for file_name, header in pairs(headers) do
 				for line in header:gmatch("(.-)\n") do
 					if line:find(" sf" .. type .. "_") then
-						local func_name = line:match(" (sf" .. type .. "_.-)%(")
-						table.insert(data.funcs, func_name)
+						local return_type, func_name = line:match(" (.-) (sf" .. type .. "_.-)%(")
+						table.insert(data.funcs, {return_type = return_type, name = func_name})
 					end
 				end
 			end
@@ -268,15 +268,20 @@ local function generate_objects()
 	for lib_name, data in pairs(static) do
 		local lib = _G[lib_name:lower()] or {}
 		
-		for key, func in pairs(data.funcs) do
-			--sfMouse_isButtonPressed
-			local func_name = func:gsub("sf"..lib_name.."_", "")
+		for key, func_info in pairs(data.funcs) do
+			local func_name = func_info.name:gsub("sf"..lib_name.."_", "")
 			
 			if not lowerHigher_case then
 				func_name = func_name:sub(1,1):upper() .. func_name:sub(2)
 			end
 			
-			lib[func_name] = libraries[lib_translate(func) or data.lib][func]
+			local func = libraries[lib_translate(func_info.name) or data.lib][func_info.name]
+			
+			if func_info.return_type == "sfBool" then	
+				lib[func_name] = function(...) return func(...) == 1 end
+			else
+				lib[func_name] = func
+			end
 		end
 		
 		_G[lib_name:lower()] = lib
@@ -289,17 +294,18 @@ local function generate_objects()
 			return ffi.new(declaration, ...)
 		end
 	end
-
+	
 	-- object ctors
 	for type, data in pairs(objects) do
 		local META = {}
 		META.__index = META
 		
-		local ctors = {}		
+		local ctors = {}
+		local error_string = ""
 			
 		_G[type] = function(typ, ...)
-			local ctor = _G.type(typ) == "string" and typ:lower()
-			
+			local ctor = _G.typex(typ) == "string" and typ:lower()
+
 			if ctor then
 				return ctors[ctor](...)
 			elseif typ and ctors[""] then
@@ -307,6 +313,8 @@ local function generate_objects()
 			else
 				return ctors[""]()
 			end
+
+			error(string.format(error_string, _G.typex(var)), 2)
 		end
 		
 		function META:__tostring()
@@ -314,7 +322,8 @@ local function generate_objects()
 		end
 		
 		-- object functions
-		for _, func_name in pairs(data.funcs) do
+		for _, func_info in pairs(data.funcs) do
+			local func_name = func_info.name
 			if func_name == "sf"..type.."_create" then
 				ctors[""] = libraries[data.lib][func_name]
 			end
@@ -322,15 +331,27 @@ local function generate_objects()
 			
 			if not lowerHigher_case then
 				name = name:sub(1,1):upper() .. name:sub(2)
-			end			
+			end
 			
-			META[name] = function(self, ...)
-				return libraries[data.lib][func_name](self, ...)
+			if func_info.return_type == "sfBool" then
+				META[name] = function(self, ...)
+					return libraries[data.lib][func_name](self, ...) == 1
+				end
+			else
+				META[name] = function(self, ...)
+					return libraries[data.lib][func_name](self, ...)
+				end
 			end
 		end
 		
-		for _, ctor in pairs(data.ctors) do
+		for i, ctor in pairs(data.ctors) do
 			ctors[ctor:lower()] = libraries[data.lib]["sf"..type .. "_createFrom" .. ctor]
+			
+			if #data.ctors ~= i then
+				error_string = error_string .. ctor:lower() .. ", "
+			else
+				error_string = error_string .. ctor:lower() .. " expected got %s"
+			end
 		end
 				
 		ffi.metatype("sf" .. type, META)

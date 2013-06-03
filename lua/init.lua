@@ -75,6 +75,7 @@ MsgN("base folder = " .. e.BASE_FOLDER)
 do -- makes require work from current directory like gmod's include
 	local function load(path) 
 		local func, err = loadfile(path) 
+		
 		if err and not err:find("No such file or directory") then 
 			return nil, err
 		end 
@@ -84,13 +85,13 @@ do -- makes require work from current directory like gmod's include
 	
 	local function try_relative(path, level)
 		level = level or 4
-		local func = load(path) -- utilities.lua
+		local func, err = load(path) -- utilities.lua
 		
 		if not func then
 			local dir = debug.getinfo(level).source:match("@(.+/)") or ""
-			func = load(dir .. path) -- *cd*path
+			func, err = load(dir .. path) -- *cd*path
 			if not func then
-				func = load(dir .. path .. ".lua") -- *cd*utilities.lua
+				func, err = load(dir .. path .. ".lua") -- *cd*utilities.lua
 				
 				if not func then
 					return nil, "could not find " .. path
@@ -98,16 +99,16 @@ do -- makes require work from current directory like gmod's include
 			end
 		end
 		
-		return func
+		return func, err
 	end
 	
 	local function try_addons(path)
 		if addons and addons.HandleLoader then
 			path = "lua/" .. path
 			for _, path in ipairs(addons.HandleLoader(path)) do
-				local func = load(path)
+				local func, err = load(path)
 				if func then
-					return func
+					return func, err
 				end
 			end
 		end

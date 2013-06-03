@@ -1,0 +1,92 @@
+["Joystick"] = {
+	["lib"] = "window",
+	["funcs"] = {
+		[1] = {
+			["return_type"] = "sfBool",
+			["name"] = "sfJoystick_isConnected",
+		},
+		[2] = {
+			["return_type"] = "unsigned int",
+			["name"] = "sfJoystick_getButtonCount",
+		},
+		[3] = {
+			["return_type"] = "sfBool",
+			["name"] = "sfJoystick_hasAxis",
+		},
+		[4] = {
+			["return_type"] = "sfBool",
+			["name"] = "sfJoystick_isButtonPressed",
+		},
+		[5] = {
+			["return_type"] = "float",
+			["name"] = "sfJoystick_getAxisPosition",
+		},
+		[6] = {
+			["return_type"] = "void",
+			["name"] = "sfJoystick_update",
+		},
+	},
+},
+["Keyboard"] = {
+	["lib"] = "window",
+	["funcs"] = {
+		[1] = {
+			["return_type"] = "sfBool",
+			["name"] = "sfKeyboard_isKeyPressed",
+		},
+	},
+},
+["Mouse"] = {
+	["lib"] = "window",
+	["funcs"] = {
+		[1] = {
+			["return_type"] = "sfBool",
+			["name"] = "sfMouse_isButtonPressed",
+		},
+		[2] = {
+			["return_type"] = "sfVector2i",
+			["name"] = "sfMouse_getPosition",
+		},
+		[3] = {
+			["return_type"] = "void",
+			["name"] = "sfMouse_setPosition",
+		},
+		[4] = {
+			["return_type"] = "sfVector2i",
+			["name"] = "sfMouse_getPositionRenderWindow",
+		},
+		[5] = {
+			["return_type"] = "void",
+			["name"] = "sfMouse_setPositionRenderWindow",
+		},
+	},
+},
+["Listener"] = {
+	["lib"] = "audio",
+	["funcs"] = {
+		[1] = {
+			["return_type"] = "void",
+			["name"] = "sfListener_setGlobalVolume",
+		},
+		[2] = {
+			["return_type"] = "float",
+			["name"] = "sfListener_getGlobalVolume",
+		},
+		[3] = {
+			["return_type"] = "void",
+			["name"] = "sfListener_setPosition",
+		},
+		[4] = {
+			["return_type"] = "sfVector3f",
+			["name"] = "sfListener_getPosition",
+		},
+		[5] = {
+			["return_type"] = "void",
+			["name"] = "sfListener_setDirection",
+		},
+		[6] = {
+			["return_type"] = "sfVector3f",
+			["name"] = "sfListener_getDirection",
+		},
+	},
+},
