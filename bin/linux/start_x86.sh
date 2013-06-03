@@ -1,2 +1,2 @@
-cd bin/linux/x64/
+cd x86/
 ./luajit "-e loadfile('../../../lua/init.lua')('asdfml')"
