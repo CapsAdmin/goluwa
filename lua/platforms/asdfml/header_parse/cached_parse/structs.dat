@@ -1,4 +1,4 @@
-["Vector2u"] = {
+["TextEvent"] = {
 },
 ["SocketStatus"] = {
 },
@@ -35,6 +35,8 @@
 },
 ["Int8"] = {
 },
+["InputStream"] = {
+},
 ["Vector3f"] = {
 },
 ["Uint32"] = {
@@ -45,9 +47,7 @@
 },
 ["JoystickConnectEvent"] = {
 },
-["Transform"] = {
-	[1] = "sfTransform_fromMatrix",
-	[2] = "sfTransform_getInverse",
+["Vertex"] = {
 },
 ["JoystickMoveEvent"] = {
 },
@@ -75,21 +75,23 @@
 },
 ["FloatRect"] = {
 },
-["MouseButton"] = {
-},
 ["Time"] = {
+},
+["Vector2u"] = {
 },
 ["HttpStatus"] = {
 },
-["Uint16"] = {
+["Int16"] = {
 },
 ["FtpTransferMode"] = {
 },
-["Vertex"] = {
+["Uint16"] = {
 },
-["RenderStates"] = {
+["Transform"] = {
+	[1] = "sfTransform_fromMatrix",
+	[2] = "sfTransform_getInverse",
 },
-["TextEvent"] = {
+["MouseButton"] = {
 },
 ["IpAddress"] = {
 	[1] = "sfIpAddress_fromString",
@@ -98,17 +100,15 @@
 	[4] = "sfIpAddress_getLocalAddress",
 	[5] = "sfIpAddress_getPublicAddress",
 },
-["InputStream"] = {
-},
 ["FtpStatus"] = {
+},
+["RenderStates"] = {
 },
 ["TextStyle"] = {
 },
 ["Vector2i"] = {
 },
 ["MouseMoveEvent"] = {
-},
-["Int16"] = {
 },
 ["FtpDirectoryResponse"] = {
 },

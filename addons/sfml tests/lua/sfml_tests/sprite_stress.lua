@@ -9,7 +9,8 @@ local window = RenderWindow(VideoMode(800, 600, 32), "SFML window", bit.bor(e.RE
 local sprites = {}
 
 -- Load a sprite to display
-local texture = Texture("file", e.BASE_FOLDER .. "textures/blowfish.png",  Rect(0, 0, 100, 100))
+local texture = Texture("file", R"textures/blowfish.png",  Rect(0, 0, 100, 100))
+texture:SetSmooth(true)
 
 -- set up the random variables for each sprite
 for i = 1, NUM_SPRITES do	
@@ -38,15 +39,22 @@ for i = 1, NUM_SPRITES do
 end
 
 local clock = Clock()
-
+local tvec2 = Vec2()
+local tonumber=tonumber
+local print=print
+local math=math
+local deg=math.deg
+local rad=math.rad
+local window=window
 event.AddListener("OnUpdate", "test", function()
 	local dt = tonumber(clock:GetElapsedTime().microseconds) / 1000000
 	print(1/dt)
+	print(math.ceil(collectgarbage("count")).."KB")
 	dt = dt * 10000
 	window:Clear(e.BLACK)
     for i, val in ipairs(sprites) do
         -- update the rotation
-        val.r = math.rad(math.deg(val.r) + val.rotSpeed * dt)
+        val.r = rad(deg(val.r) + val.rotSpeed * dt)
         
         -- update the scale
         local scaleAmount = val.scaleSpeed * dt
@@ -81,8 +89,13 @@ event.AddListener("OnUpdate", "test", function()
         val.y = newLocY
         
         -- update the sprite in the sprite batch
-		val.sprite:SetScale(Vec2(1+val.scale, 1+val.scale) )
-		val.sprite:SetPosition(Vec2(val.x, val.y))
+		tvec2.x = 1+val.scale
+		tvec2.y = 1+val.scale
+		val.sprite:SetScale(tvec2)
+		
+		tvec2.x = val.x
+		tvec2.y = val.y
+		val.sprite:SetPosition(tvec2)		
 		
 		window:DrawSprite(val.sprite, nil)
     end

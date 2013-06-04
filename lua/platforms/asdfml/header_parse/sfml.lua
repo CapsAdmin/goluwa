@@ -33,17 +33,17 @@ end
 
 -- internal
 
-if CAPSADMIN then
+--if CAPSADMIN then
 	parse_headers = true
 	cache_parse = true
-end
+--end
 
 local libraries = {}
 local headers = {}
 local included = {}
 
 local function load_libraries()
-	for file_name in pairs(file.Find(library_path .. "*")) do
+	for file_name in vfs.Iterate("") do
 		local lib_name = file_name:match(WINDOWS and "csfml%-(.-)%-2.dll" or LINUX and "^libcsfml%-(.-)%.so$")
 		if lib_name then
 			local lib = ffi.load(file_name)
@@ -66,8 +66,8 @@ local function process_include(str)
 				
 				local file = line:match("#include <(.-)>")
 				file = file:gsub("SFML/", "")
-				
-				out = out .. process_include(_G.file.Read(headers_path .. file) or (" // missing header " .. file))
+
+				out = out .. process_include(vfs.Read(headers_path .. file) or (" // missing header " .. file))
 			elseif not line:find("#") then
 				out = out .. line
 			end
@@ -96,7 +96,7 @@ local function remove_whitespace(str)
 end
 
 local function process_header(header)
-	local str = file.Read(headers_path .. header) or ""
+	local str = vfs.Read(headers_path .. header) or ""
 
 	local out = process_include(str)
 	out = remove_definitions(out)
@@ -107,7 +107,7 @@ local function process_header(header)
 end
 	
 local function generate_headers()
-	for file_name in pairs(file.Find(headers_path .. "*")) do
+	for file_name in vfs.Iterate(headers_path) do
 		if file_name:find(".h", nil, true) then
 			local header = process_header(file_name)
 			ffi.cdef(header)
@@ -122,7 +122,9 @@ local function generate_objects()
 	local static = {}
 	local enums = {}
 	
+	
 	if parse_headers then
+		print("PARSING HEADERS ...")
 		for file_name, header in pairs(headers) do
 			for line in header:gmatch("(.-)\n") do
 				

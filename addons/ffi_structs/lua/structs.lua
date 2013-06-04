@@ -331,6 +331,6 @@ function structs.AddAllOperators(META)
 	structs.AddOperator(META, "math", "clamp", "Clamp", "Clamped")
 end
 
-for script in pairs(file.Find("addons/ffi_structs/lua/structs/*")) do
-	dofile("structs/" .. script)
+for script in vfs.Iterate("lua/structs/", nil, true) do
+	dofile(script)
 end

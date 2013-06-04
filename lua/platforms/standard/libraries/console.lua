@@ -1,7 +1,6 @@
 local console = {}
 local SERVER = true
 
-
 local result = ""
 
 function console.StartCapture()
@@ -32,7 +31,7 @@ end
 function console.Exec(cfg)
 	check(cfg, "string")
 
-	local content = vfs.Read("cfg/"  .. cfg .. ".cfg", true)
+	local content = vfs.Read("cfg/"  .. cfg .. ".cfg")
 
 	if content then
 		console.RunString(content)
@@ -75,34 +74,34 @@ do -- commands
 		console.CallCommand(cmd, table.concat({...}, " "), nil, ...)
 	end
 
-	local function call(data, ply, line, ...)
-		local status, message = xpcall(data.callback, OnError, ply, line, ...)
+	local function call(data, client, line, ...)
+		local status, message = xpcall(data.callback, OnError, client, line, ...)
 		if not status then
 			print(message)
 		end
 	end
 
-	function console.CallCommand(cmd, line, ply, ...)
+	function console.CallCommand(cmd, line, client, ...)
 		cmd = cmd:lower()
 
 		local data = console.AddedCommands[cmd]
 
 		if data then
-			ply = ply or NULL
+			client = client or NULL
 			
 			if CLIENT then
 				if data.server == true or data.server == "server" then
 					message.Send("cmd", cmd, ...)
 				elseif data.server == "shared" then
-					call(data, ply, line, ...)
+					call(data, client, line, ...)
 					message.Send("cmd", cmd, ...)
 				elseif not data.server or data.server == "client" then
-					call(data, ply, line, ...)
+					call(data, client, line, ...)
 				end
 			end
 
 			if SERVER then
-				call(data, ply, line, ...)
+				call(data, client, line, ...)
 			end
 		else
 			printf("the command %q does not exist", cmd)
@@ -129,23 +128,9 @@ do -- commands
 		return ret
 	end
 
-	function console.InternalCommandHook(line)
-		
-		-- CRYENGINE CONSOLE HACK
-		local line, count = line:gsub("%?%?", "=")
-		if count > 0 then
-			debug.trace()
-			print("")
-			print("cryengine console hack!!!")
-			print("\"??\" is replaced with = ")
-			print("the line is now")
-			print(line)
-			print("")
-		end
-		
-		local prefix = line:sub(0, #console.Prefix) == console.Prefix and console.Prefix or ""
-		local cmd = line:match(prefix.."(.-) ") or line:match(prefix.."(.+)") or ""
-		local arg_line = line:match(prefix..".- (.+)") or ""		
+	function console.CallCommandLine(line)
+		local cmd = line:match("(.-) ") or line:match("(.+)") or ""
+		local arg_line = line:match(".- (.+)") or ""		
 
 		cmd = cmd:lower()
 		
@@ -164,37 +149,6 @@ do -- commands
 			console.CallCommand(cmd, arg_line, nil, unpack(console.ParseCommandArgs(arg_line)))
 		end
 	end
-
-	event.AddListener("LuaCommand", "concommand", console.InternalCommandHook, print)
-
-	--[[local cvar = console.CreateVariable("con_filter", "string", "normal")
-
-	function console.IsLineAllowed(line)
-		if console.GetVariableString("con_filter") == "normal" then
-			for _, value in pairs(blacklist) do
-				if line:findsimple(value) then
-					return false
-				end
-			end
-		elseif console.GetVariableString("con_filter") == "pattern" then
-			for _, value in pairs(blacklist) do
-				if line:find(value) then
-					return false
-				end
-			end
-		end
-
-		return true
-	end
-
-
-	event.AddListener("ConsolePrint", "console_filter", function(_, line)
-		if not console.IsLineAllowed(line) then
-			return false
-		else
-			event.Call("ConsoleOutput", GAMEMODE, line)
-		end
-	end)]]
 end
 
 do -- console vars
@@ -228,7 +182,7 @@ do -- console vars
 
 		console.vars[name] = console.vars[name] or def
 
-		local func = function(ply, line, value)
+		local func = function(client, line, value)
 			if not value then
 				printf("%s = %s", name, luadata.ToString(console.vars[name]))
 			else
@@ -339,12 +293,6 @@ do -- funsong
 				if tbl[key] then
 					return tbl[key]
 				end
-				
-				-- engine cvars
-				local val = console.GetCVarString(key)
-				if val then
-					return val
-				end
 			end,
 			
 			__newindex = function(self, key, val)
@@ -355,5 +303,34 @@ do -- funsong
 		}
 	)
 end
+
+local cvar = console.CreateVariable("con_filter", "string", "normal")
+
+function console.IsLineAllowed(line)
+	if console.GetVariableString("con_filter") == "normal" then
+		for _, value in pairs(blacklist) do
+			if line:findsimple(value) then
+				return false
+			end
+		end
+	elseif console.GetVariableString("con_filter") == "pattern" then
+		for _, value in pairs(blacklist) do
+			if line:find(value) then
+				return false
+			end
+		end
+	end
+
+	return true
+end
+
+
+event.AddListener("ConsolePrint", "console_filter", function(_, line)
+	if not console.IsLineAllowed(line) then
+		return false
+	else
+		event.Call("ConsoleOutput", GAMEMODE, line)
+	end
+end)
 
 return console
