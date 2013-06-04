@@ -1,5 +1,9 @@
-ASDFML is pretty much SFML bindings for luajit. The functions are automatically bound to luajit from by parsing CSFML headers from luajit itself. 
+ASDFML is pretty much SFML bindings for luajit. 
+But not quite.. 
+It comes with alot of extra library load and it doesn't really follow the csfml style of coding either.
 
-See addons/test/lua/autorun/window_test.lua for example usage.
+The functions are automatically bound to luajit from by parsing CSFML headers from luajit itself. 
 
-The coding style is very similar to Garry's Mod Lua.
+See addons/sfml tests/lua/sfml_tests/* for some example usage.
+
+The coding style is inspired by Garry's Mod Lua.
