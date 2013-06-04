@@ -113,14 +113,14 @@ function luadata.Decode(str)
 	return err
 end
 
-do -- file extension
+do -- vfs extension
 
 	function luadata.WriteFile(path, tbl, ...)
-		file.Write(path, luadata.Encode(tbl), ...)
+		vfs.Write(path, luadata.Encode(tbl), ...)
 	end
 
 	function luadata.ReadFile(path, ...)
-		return luadata.Decode(file.Read(path, ...))
+		return luadata.Decode(vfs.Read(path, ...))
 	end
 
 	function luadata.SetKeyValueInFile(path, key, value)

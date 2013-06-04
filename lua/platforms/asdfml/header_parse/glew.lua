@@ -53,7 +53,7 @@ local function replace_idkwhat(str)
 end
 
 local function process_header(header)
-	local out = file.Read(headers_path .. header) or ""
+	local out = vfs.Read(headers_path .. header) or ""
 
 	out = remove_whitespace(out)
 	out = replace_idkwhat(out)
@@ -61,4 +61,4 @@ local function process_header(header)
 	return out
 end
 
-file.Write("test.h", process_header("glew.i"))
+vfs.Write("test.h", process_header("glew.i"))

@@ -787,77 +787,32 @@
 	},
 	["lib"] = "graphics",
 },
-["View"] = {
+["Clock"] = {
 	["funcs"] = {
 		[1] = {
-			["return_type"] = "sfView*",
-			["name"] = "sfView_create",
+			["return_type"] = "sfClock*",
+			["name"] = "sfClock_create",
 		},
 		[2] = {
-			["return_type"] = "sfView*",
-			["name"] = "sfView_createFromRect",
+			["return_type"] = "sfClock*",
+			["name"] = "sfClock_copy",
 		},
 		[3] = {
-			["return_type"] = "sfView*",
-			["name"] = "sfView_copy",
+			["return_type"] = "void",
+			["name"] = "sfClock_destroy",
 		},
 		[4] = {
-			["return_type"] = "void",
-			["name"] = "sfView_destroy",
+			["return_type"] = "sfTime",
+			["name"] = "sfClock_getElapsedTime",
 		},
 		[5] = {
-			["return_type"] = "void",
-			["name"] = "sfView_setCenter",
-		},
-		[6] = {
-			["return_type"] = "void",
-			["name"] = "sfView_setSize",
-		},
-		[7] = {
-			["return_type"] = "void",
-			["name"] = "sfView_setRotation",
-		},
-		[8] = {
-			["return_type"] = "void",
-			["name"] = "sfView_setViewport",
-		},
-		[9] = {
-			["return_type"] = "void",
-			["name"] = "sfView_reset",
-		},
-		[10] = {
-			["return_type"] = "sfVector2f",
-			["name"] = "sfView_getCenter",
-		},
-		[11] = {
-			["return_type"] = "sfVector2f",
-			["name"] = "sfView_getSize",
-		},
-		[12] = {
-			["return_type"] = "float",
-			["name"] = "sfView_getRotation",
-		},
-		[13] = {
-			["return_type"] = "sfFloatRect",
-			["name"] = "sfView_getViewport",
-		},
-		[14] = {
-			["return_type"] = "void",
-			["name"] = "sfView_move",
-		},
-		[15] = {
-			["return_type"] = "void",
-			["name"] = "sfView_rotate",
-		},
-		[16] = {
-			["return_type"] = "void",
-			["name"] = "sfView_zoom",
+			["return_type"] = "sfTime",
+			["name"] = "sfClock_restart",
 		},
 	},
 	["ctors"] = {
-		[1] = "Rect",
 	},
-	["lib"] = "graphics",
+	["lib"] = "system",
 },
 ["TcpSocket"] = {
 	["funcs"] = {
@@ -1029,132 +984,40 @@
 	},
 	["lib"] = "graphics",
 },
-["Shape"] = {
+["HttpRequest"] = {
 	["funcs"] = {
 		[1] = {
-			["return_type"] = "sfShape*",
-			["name"] = "sfShape_create",
+			["return_type"] = "sfHttpRequest*",
+			["name"] = "sfHttpRequest_create",
 		},
 		[2] = {
 			["return_type"] = "void",
-			["name"] = "sfShape_destroy",
+			["name"] = "sfHttpRequest_destroy",
 		},
 		[3] = {
 			["return_type"] = "void",
-			["name"] = "sfShape_setPosition",
+			["name"] = "sfHttpRequest_setField",
 		},
 		[4] = {
 			["return_type"] = "void",
-			["name"] = "sfShape_setRotation",
+			["name"] = "sfHttpRequest_setMethod",
 		},
 		[5] = {
 			["return_type"] = "void",
-			["name"] = "sfShape_setScale",
+			["name"] = "sfHttpRequest_setUri",
 		},
 		[6] = {
 			["return_type"] = "void",
-			["name"] = "sfShape_setOrigin",
+			["name"] = "sfHttpRequest_setHttpVersion",
 		},
 		[7] = {
-			["return_type"] = "sfVector2f",
-			["name"] = "sfShape_getPosition",
-		},
-		[8] = {
-			["return_type"] = "float",
-			["name"] = "sfShape_getRotation",
-		},
-		[9] = {
-			["return_type"] = "sfVector2f",
-			["name"] = "sfShape_getScale",
-		},
-		[10] = {
-			["return_type"] = "sfVector2f",
-			["name"] = "sfShape_getOrigin",
-		},
-		[11] = {
 			["return_type"] = "void",
-			["name"] = "sfShape_move",
-		},
-		[12] = {
-			["return_type"] = "void",
-			["name"] = "sfShape_rotate",
-		},
-		[13] = {
-			["return_type"] = "void",
-			["name"] = "sfShape_scale",
-		},
-		[14] = {
-			["return_type"] = "sfTransform",
-			["name"] = "sfShape_getTransform",
-		},
-		[15] = {
-			["return_type"] = "sfTransform",
-			["name"] = "sfShape_getInverseTransform",
-		},
-		[16] = {
-			["return_type"] = "void",
-			["name"] = "sfShape_setTexture",
-		},
-		[17] = {
-			["return_type"] = "void",
-			["name"] = "sfShape_setTextureRect",
-		},
-		[18] = {
-			["return_type"] = "void",
-			["name"] = "sfShape_setFillColor",
-		},
-		[19] = {
-			["return_type"] = "void",
-			["name"] = "sfShape_setOutlineColor",
-		},
-		[20] = {
-			["return_type"] = "void",
-			["name"] = "sfShape_setOutlineThickness",
-		},
-		[21] = {
-			["return_type"] = "const sfTexture*",
-			["name"] = "sfShape_getTexture",
-		},
-		[22] = {
-			["return_type"] = "sfIntRect",
-			["name"] = "sfShape_getTextureRect",
-		},
-		[23] = {
-			["return_type"] = "sfColor",
-			["name"] = "sfShape_getFillColor",
-		},
-		[24] = {
-			["return_type"] = "sfColor",
-			["name"] = "sfShape_getOutlineColor",
-		},
-		[25] = {
-			["return_type"] = "float",
-			["name"] = "sfShape_getOutlineThickness",
-		},
-		[26] = {
-			["return_type"] = "unsigned int",
-			["name"] = "sfShape_getPointCount",
-		},
-		[27] = {
-			["return_type"] = "sfVector2f",
-			["name"] = "sfShape_getPoint",
-		},
-		[28] = {
-			["return_type"] = "sfFloatRect",
-			["name"] = "sfShape_getLocalBounds",
-		},
-		[29] = {
-			["return_type"] = "sfFloatRect",
-			["name"] = "sfShape_getGlobalBounds",
-		},
-		[30] = {
-			["return_type"] = "void",
-			["name"] = "sfShape_update",
+			["name"] = "sfHttpRequest_setBody",
 		},
 	},
 	["ctors"] = {
 	},
-	["lib"] = "graphics",
+	["lib"] = "network",
 },
 ["Shader"] = {
 	["funcs"] = {
@@ -1696,40 +1559,28 @@
 	},
 	["lib"] = "graphics",
 },
-["TcpListener"] = {
+["Mutex"] = {
 	["funcs"] = {
 		[1] = {
-			["return_type"] = "sfTcpListener*",
-			["name"] = "sfTcpListener_create",
+			["return_type"] = "sfMutex*",
+			["name"] = "sfMutex_create",
 		},
 		[2] = {
 			["return_type"] = "void",
-			["name"] = "sfTcpListener_destroy",
+			["name"] = "sfMutex_destroy",
 		},
 		[3] = {
 			["return_type"] = "void",
-			["name"] = "sfTcpListener_setBlocking",
+			["name"] = "sfMutex_lock",
 		},
 		[4] = {
-			["return_type"] = "sfBool",
-			["name"] = "sfTcpListener_isBlocking",
-		},
-		[5] = {
-			["return_type"] = "unsigned short",
-			["name"] = "sfTcpListener_getLocalPort",
-		},
-		[6] = {
-			["return_type"] = "sfSocketStatus",
-			["name"] = "sfTcpListener_listen",
-		},
-		[7] = {
-			["return_type"] = "sfSocketStatus",
-			["name"] = "sfTcpListener_accept",
+			["return_type"] = "void",
+			["name"] = "sfMutex_unlock",
 		},
 	},
 	["ctors"] = {
 	},
-	["lib"] = "network",
+	["lib"] = "system",
 },
 ["SocketSelector"] = {
 	["funcs"] = {
@@ -1848,78 +1699,148 @@
 	},
 	["lib"] = "audio",
 },
-["Clock"] = {
+["TcpListener"] = {
 	["funcs"] = {
 		[1] = {
-			["return_type"] = "sfClock*",
-			["name"] = "sfClock_create",
+			["return_type"] = "sfTcpListener*",
+			["name"] = "sfTcpListener_create",
 		},
 		[2] = {
-			["return_type"] = "sfClock*",
-			["name"] = "sfClock_copy",
+			["return_type"] = "void",
+			["name"] = "sfTcpListener_destroy",
 		},
 		[3] = {
 			["return_type"] = "void",
-			["name"] = "sfClock_destroy",
+			["name"] = "sfTcpListener_setBlocking",
 		},
 		[4] = {
-			["return_type"] = "sfTime",
-			["name"] = "sfClock_getElapsedTime",
+			["return_type"] = "sfBool",
+			["name"] = "sfTcpListener_isBlocking",
 		},
 		[5] = {
-			["return_type"] = "sfTime",
-			["name"] = "sfClock_restart",
-		},
-	},
-	["ctors"] = {
-	},
-	["lib"] = "system",
-},
-["Font"] = {
-	["funcs"] = {
-		[1] = {
-			["return_type"] = "sfFont*",
-			["name"] = "sfFont_createFromFile",
-		},
-		[2] = {
-			["return_type"] = "sfFont*",
-			["name"] = "sfFont_createFromMemory",
-		},
-		[3] = {
-			["return_type"] = "sfFont*",
-			["name"] = "sfFont_createFromStream",
-		},
-		[4] = {
-			["return_type"] = "sfFont*",
-			["name"] = "sfFont_copy",
-		},
-		[5] = {
-			["return_type"] = "void",
-			["name"] = "sfFont_destroy",
+			["return_type"] = "unsigned short",
+			["name"] = "sfTcpListener_getLocalPort",
 		},
 		[6] = {
-			["return_type"] = "sfGlyph",
-			["name"] = "sfFont_getGlyph",
+			["return_type"] = "sfSocketStatus",
+			["name"] = "sfTcpListener_listen",
 		},
 		[7] = {
-			["return_type"] = "int",
-			["name"] = "sfFont_getKerning",
-		},
-		[8] = {
-			["return_type"] = "int",
-			["name"] = "sfFont_getLineSpacing",
-		},
-		[9] = {
-			["return_type"] = "const sfTexture*",
-			["name"] = "sfFont_getTexture",
+			["return_type"] = "sfSocketStatus",
+			["name"] = "sfTcpListener_accept",
 		},
 	},
 	["ctors"] = {
-		[1] = "File",
-		[2] = "Memory",
-		[3] = "Stream",
 	},
-	["lib"] = "graphics",
+	["lib"] = "network",
+},
+["Window"] = {
+	["funcs"] = {
+		[1] = {
+			["return_type"] = "sfWindow*",
+			["name"] = "sfWindow_create",
+		},
+		[2] = {
+			["return_type"] = "sfWindow*",
+			["name"] = "sfWindow_createUnicode",
+		},
+		[3] = {
+			["return_type"] = "sfWindow*",
+			["name"] = "sfWindow_createFromHandle",
+		},
+		[4] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_destroy",
+		},
+		[5] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_close",
+		},
+		[6] = {
+			["return_type"] = "sfBool",
+			["name"] = "sfWindow_isOpen",
+		},
+		[7] = {
+			["return_type"] = "sfContextSettings",
+			["name"] = "sfWindow_getSettings",
+		},
+		[8] = {
+			["return_type"] = "sfBool",
+			["name"] = "sfWindow_pollEvent",
+		},
+		[9] = {
+			["return_type"] = "sfBool",
+			["name"] = "sfWindow_waitEvent",
+		},
+		[10] = {
+			["return_type"] = "sfVector2i",
+			["name"] = "sfWindow_getPosition",
+		},
+		[11] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_setPosition",
+		},
+		[12] = {
+			["return_type"] = "sfVector2u",
+			["name"] = "sfWindow_getSize",
+		},
+		[13] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_setSize",
+		},
+		[14] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_setTitle",
+		},
+		[15] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_setUnicodeTitle",
+		},
+		[16] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_setIcon",
+		},
+		[17] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_setVisible",
+		},
+		[18] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_setMouseCursorVisible",
+		},
+		[19] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_setVerticalSyncEnabled",
+		},
+		[20] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_setKeyRepeatEnabled",
+		},
+		[21] = {
+			["return_type"] = "sfBool",
+			["name"] = "sfWindow_setActive",
+		},
+		[22] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_display",
+		},
+		[23] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_setFramerateLimit",
+		},
+		[24] = {
+			["return_type"] = "void",
+			["name"] = "sfWindow_setJoystickThreshold",
+		},
+		[25] = {
+			["return_type"] = "sfWindowHandle",
+			["name"] = "sfWindow_getSystemHandle",
+		},
+	},
+	["ctors"] = {
+		[1] = "Handle",
+	},
+	["lib"] = "window",
 },
 ["ConvexShape"] = {
 	["funcs"] = {
@@ -2191,171 +2112,178 @@
 	},
 	["lib"] = "graphics",
 },
-["Window"] = {
+["Shape"] = {
 	["funcs"] = {
 		[1] = {
-			["return_type"] = "sfWindow*",
-			["name"] = "sfWindow_create",
+			["return_type"] = "sfShape*",
+			["name"] = "sfShape_create",
 		},
 		[2] = {
-			["return_type"] = "sfWindow*",
-			["name"] = "sfWindow_createUnicode",
+			["return_type"] = "void",
+			["name"] = "sfShape_destroy",
 		},
 		[3] = {
-			["return_type"] = "sfWindow*",
-			["name"] = "sfWindow_createFromHandle",
+			["return_type"] = "void",
+			["name"] = "sfShape_setPosition",
 		},
 		[4] = {
 			["return_type"] = "void",
-			["name"] = "sfWindow_destroy",
+			["name"] = "sfShape_setRotation",
 		},
 		[5] = {
 			["return_type"] = "void",
-			["name"] = "sfWindow_close",
+			["name"] = "sfShape_setScale",
 		},
 		[6] = {
-			["return_type"] = "sfBool",
-			["name"] = "sfWindow_isOpen",
+			["return_type"] = "void",
+			["name"] = "sfShape_setOrigin",
 		},
 		[7] = {
-			["return_type"] = "sfContextSettings",
-			["name"] = "sfWindow_getSettings",
+			["return_type"] = "sfVector2f",
+			["name"] = "sfShape_getPosition",
 		},
 		[8] = {
-			["return_type"] = "sfBool",
-			["name"] = "sfWindow_pollEvent",
+			["return_type"] = "float",
+			["name"] = "sfShape_getRotation",
 		},
 		[9] = {
-			["return_type"] = "sfBool",
-			["name"] = "sfWindow_waitEvent",
+			["return_type"] = "sfVector2f",
+			["name"] = "sfShape_getScale",
 		},
 		[10] = {
-			["return_type"] = "sfVector2i",
-			["name"] = "sfWindow_getPosition",
+			["return_type"] = "sfVector2f",
+			["name"] = "sfShape_getOrigin",
 		},
 		[11] = {
 			["return_type"] = "void",
-			["name"] = "sfWindow_setPosition",
+			["name"] = "sfShape_move",
 		},
 		[12] = {
-			["return_type"] = "sfVector2u",
-			["name"] = "sfWindow_getSize",
+			["return_type"] = "void",
+			["name"] = "sfShape_rotate",
 		},
 		[13] = {
 			["return_type"] = "void",
-			["name"] = "sfWindow_setSize",
+			["name"] = "sfShape_scale",
 		},
 		[14] = {
-			["return_type"] = "void",
-			["name"] = "sfWindow_setTitle",
+			["return_type"] = "sfTransform",
+			["name"] = "sfShape_getTransform",
 		},
 		[15] = {
-			["return_type"] = "void",
-			["name"] = "sfWindow_setUnicodeTitle",
+			["return_type"] = "sfTransform",
+			["name"] = "sfShape_getInverseTransform",
 		},
 		[16] = {
 			["return_type"] = "void",
-			["name"] = "sfWindow_setIcon",
+			["name"] = "sfShape_setTexture",
 		},
 		[17] = {
 			["return_type"] = "void",
-			["name"] = "sfWindow_setVisible",
+			["name"] = "sfShape_setTextureRect",
 		},
 		[18] = {
 			["return_type"] = "void",
-			["name"] = "sfWindow_setMouseCursorVisible",
+			["name"] = "sfShape_setFillColor",
 		},
 		[19] = {
 			["return_type"] = "void",
-			["name"] = "sfWindow_setVerticalSyncEnabled",
+			["name"] = "sfShape_setOutlineColor",
 		},
 		[20] = {
 			["return_type"] = "void",
-			["name"] = "sfWindow_setKeyRepeatEnabled",
+			["name"] = "sfShape_setOutlineThickness",
 		},
 		[21] = {
-			["return_type"] = "sfBool",
-			["name"] = "sfWindow_setActive",
+			["return_type"] = "const sfTexture*",
+			["name"] = "sfShape_getTexture",
 		},
 		[22] = {
-			["return_type"] = "void",
-			["name"] = "sfWindow_display",
+			["return_type"] = "sfIntRect",
+			["name"] = "sfShape_getTextureRect",
 		},
 		[23] = {
-			["return_type"] = "void",
-			["name"] = "sfWindow_setFramerateLimit",
+			["return_type"] = "sfColor",
+			["name"] = "sfShape_getFillColor",
 		},
 		[24] = {
-			["return_type"] = "void",
-			["name"] = "sfWindow_setJoystickThreshold",
+			["return_type"] = "sfColor",
+			["name"] = "sfShape_getOutlineColor",
 		},
 		[25] = {
-			["return_type"] = "sfWindowHandle",
-			["name"] = "sfWindow_getSystemHandle",
+			["return_type"] = "float",
+			["name"] = "sfShape_getOutlineThickness",
+		},
+		[26] = {
+			["return_type"] = "unsigned int",
+			["name"] = "sfShape_getPointCount",
+		},
+		[27] = {
+			["return_type"] = "sfVector2f",
+			["name"] = "sfShape_getPoint",
+		},
+		[28] = {
+			["return_type"] = "sfFloatRect",
+			["name"] = "sfShape_getLocalBounds",
+		},
+		[29] = {
+			["return_type"] = "sfFloatRect",
+			["name"] = "sfShape_getGlobalBounds",
+		},
+		[30] = {
+			["return_type"] = "void",
+			["name"] = "sfShape_update",
 		},
 	},
 	["ctors"] = {
-		[1] = "Handle",
 	},
-	["lib"] = "window",
+	["lib"] = "graphics",
 },
-["HttpRequest"] = {
+["Font"] = {
 	["funcs"] = {
 		[1] = {
-			["return_type"] = "sfHttpRequest*",
-			["name"] = "sfHttpRequest_create",
+			["return_type"] = "sfFont*",
+			["name"] = "sfFont_createFromFile",
 		},
 		[2] = {
-			["return_type"] = "void",
-			["name"] = "sfHttpRequest_destroy",
+			["return_type"] = "sfFont*",
+			["name"] = "sfFont_createFromMemory",
 		},
 		[3] = {
-			["return_type"] = "void",
-			["name"] = "sfHttpRequest_setField",
+			["return_type"] = "sfFont*",
+			["name"] = "sfFont_createFromStream",
 		},
 		[4] = {
-			["return_type"] = "void",
-			["name"] = "sfHttpRequest_setMethod",
+			["return_type"] = "sfFont*",
+			["name"] = "sfFont_copy",
 		},
 		[5] = {
 			["return_type"] = "void",
-			["name"] = "sfHttpRequest_setUri",
+			["name"] = "sfFont_destroy",
 		},
 		[6] = {
-			["return_type"] = "void",
-			["name"] = "sfHttpRequest_setHttpVersion",
+			["return_type"] = "sfGlyph",
+			["name"] = "sfFont_getGlyph",
 		},
 		[7] = {
-			["return_type"] = "void",
-			["name"] = "sfHttpRequest_setBody",
+			["return_type"] = "int",
+			["name"] = "sfFont_getKerning",
+		},
+		[8] = {
+			["return_type"] = "int",
+			["name"] = "sfFont_getLineSpacing",
+		},
+		[9] = {
+			["return_type"] = "const sfTexture*",
+			["name"] = "sfFont_getTexture",
 		},
 	},
 	["ctors"] = {
+		[1] = "File",
+		[2] = "Memory",
+		[3] = "Stream",
 	},
-	["lib"] = "network",
-},
-["Mutex"] = {
-	["funcs"] = {
-		[1] = {
-			["return_type"] = "sfMutex*",
-			["name"] = "sfMutex_create",
-		},
-		[2] = {
-			["return_type"] = "void",
-			["name"] = "sfMutex_destroy",
-		},
-		[3] = {
-			["return_type"] = "void",
-			["name"] = "sfMutex_lock",
-		},
-		[4] = {
-			["return_type"] = "void",
-			["name"] = "sfMutex_unlock",
-		},
-	},
-	["ctors"] = {
-	},
-	["lib"] = "system",
+	["lib"] = "graphics",
 },
 ["Http"] = {
 	["funcs"] = {
@@ -2379,6 +2307,78 @@
 	["ctors"] = {
 	},
 	["lib"] = "network",
+},
+["View"] = {
+	["funcs"] = {
+		[1] = {
+			["return_type"] = "sfView*",
+			["name"] = "sfView_create",
+		},
+		[2] = {
+			["return_type"] = "sfView*",
+			["name"] = "sfView_createFromRect",
+		},
+		[3] = {
+			["return_type"] = "sfView*",
+			["name"] = "sfView_copy",
+		},
+		[4] = {
+			["return_type"] = "void",
+			["name"] = "sfView_destroy",
+		},
+		[5] = {
+			["return_type"] = "void",
+			["name"] = "sfView_setCenter",
+		},
+		[6] = {
+			["return_type"] = "void",
+			["name"] = "sfView_setSize",
+		},
+		[7] = {
+			["return_type"] = "void",
+			["name"] = "sfView_setRotation",
+		},
+		[8] = {
+			["return_type"] = "void",
+			["name"] = "sfView_setViewport",
+		},
+		[9] = {
+			["return_type"] = "void",
+			["name"] = "sfView_reset",
+		},
+		[10] = {
+			["return_type"] = "sfVector2f",
+			["name"] = "sfView_getCenter",
+		},
+		[11] = {
+			["return_type"] = "sfVector2f",
+			["name"] = "sfView_getSize",
+		},
+		[12] = {
+			["return_type"] = "float",
+			["name"] = "sfView_getRotation",
+		},
+		[13] = {
+			["return_type"] = "sfFloatRect",
+			["name"] = "sfView_getViewport",
+		},
+		[14] = {
+			["return_type"] = "void",
+			["name"] = "sfView_move",
+		},
+		[15] = {
+			["return_type"] = "void",
+			["name"] = "sfView_rotate",
+		},
+		[16] = {
+			["return_type"] = "void",
+			["name"] = "sfView_zoom",
+		},
+	},
+	["ctors"] = {
+		[1] = "Rect",
+	},
+	["lib"] = "graphics",
 },
 ["Thread"] = {
 	["funcs"] = {

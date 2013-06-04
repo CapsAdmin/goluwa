@@ -1,8 +1,8 @@
+do return end
 local tests = {}
-local path = "addons/sfml tests/lua/sfml_tests/"
 
-for k, v in pairs(file.Find(path .. "*")) do
-	table.insert(tests, k)
+for name in vfs.Iterate("lua/sfml_tests/.") do
+	table.insert(tests, name)
 end
 
 local last
@@ -18,7 +18,7 @@ event.AddListener("OnUpdate", "test_selector", function()
 		end
 		
 		if keyboard.IsKeyPressed(e.KEY_RETURN) then
-			dofile("sfml_tests/" .. current_test)
+			include("sfml_tests/" .. current_test)
 			
 			event.RemoveListener("OnUpdate", "test_selector")
 			return

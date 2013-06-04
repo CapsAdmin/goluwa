@@ -98,10 +98,10 @@ meta.src=function(f)
 	local src=f:source()
 	if not src:find(".lua",1,true) then return false end
 	
-	src=file.Exists(src) and src
+	src=vfs.Exists(src) and src
 	if not src then return false end
 	
-	src=file.Read(src)
+	src=vfs.Read(src)
 	if not src then return false end
 
 	local info=f:info()

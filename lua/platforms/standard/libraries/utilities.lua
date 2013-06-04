@@ -132,11 +132,11 @@ function utilities.MonitorFile(file_path, callback)
 	check(file_path, "string")
 	check(callback, "function")
 
-	local last = file.attributes(file_path)
+	local last = vfs.GetAttributes(file_path)
 	if last then
 		last = last.modification
 		timer.Create(file_path, 0, 0, function()
-			local time = file.attributes(file_path)
+			local time = vfs.GetAttributes(file_path)
 			if time then
 				time = time.modification
 				if last ~= time then

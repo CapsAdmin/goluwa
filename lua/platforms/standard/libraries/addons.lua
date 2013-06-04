@@ -7,36 +7,47 @@ function addons.SortAfterPriority()
 	table.sort(addons.Info, function(a,b) return a.priority > b.priority end)
 end
 
-function addons.Autorun(addon, autorun_folder)
-	local info = addons.GetInfo(addon)
-	local folder = info.folder
-		
-	if folder then
-		local path = addons.Root .. folder  .. "/lua/autorun/"
-			
-		if autorun_folder then
-			path = path .. autorun_folder .. "/"
-		end
-								
-		for file_name in pairs(file.Find(path .. "*")) do
-			if file_name ~= "." and file_name ~= ".." and file_name:sub(-4) == ".lua" then
-				local fullpath = e.BASE_FOLDER .. path .. file_name
+function addons.AutorunAll(folder)	
 				
-				_G.INFO = info
-				local ok, msg = xpcall(dofile, OnError, fullpath)
-				_G.INFO = nil
-				if not ok then
-					print(msg)
-				end
-			end
-		end
+	if folder then 
+		folder = folder .. "/" 
+	else
+		folder = "/"
 	end
-end
-
-function addons.AutorunAll(folder)
-	addons.SortAfterPriority()
-	for _, info in pairs(addons.Info) do
-		addons.Autorun(info.name, folder)
+		
+	for _, info in ipairs(addons.Info) do
+		if info.load ~= false then			
+			_G.INFO = info
+				
+				if info.startup then
+					if not info.startup_launched then
+						-- we want to make sure the addon loads the correct startup file (or do we???)
+						local func, err = loadfile(e.BASE_FOLDER .. info.path .. "lua/" .. info.startup)
+						if func then
+							local func, err = pcall(func)
+							
+							if not func then
+								print(err)
+							end
+						else
+							print(err)
+						end
+						
+						info.startup_launched = true
+					end
+				end
+								
+				-- autorun folders			
+				for path in vfs.Iterate(info.path .. "lua/autorun" .. folder, nil, true) do
+					local ok, err = pcall(dofile, path)
+					if not ok then
+						print(err)
+					end
+				end
+			_G.INFO = nil	
+		else
+			--printf("the addon %q does not want to be loaded", addon)
+		end
 	end
 end
 
@@ -55,12 +66,12 @@ function addons.GetAll()
 end
 
 function addons.LoadAll()
-	for folder in pairs(file.Find(addons.Root .. "*")) do
-		local path = addons.Root .. folder  .. "/"
+	for folder in vfs.Iterate(addons.Root .. ".") do		
+		local path = addons.Root ..folder .. "/"
+				
+		local func, msg = loadfile(e.BASE_FOLDER .. path .. "info.lua")
 		
-		if file.Exists(path .. "info.lua") then
-			local func, msg = loadfile(e.BASE_FOLDER .. path .. "info.lua")
-
+		if func then
 			local info = func and func() or {}
 				info.path = path
 				info.file_info = folder
@@ -86,28 +97,14 @@ function addons.LoadAll()
 	addons.SortAfterPriority()
 
 	for _, info in ipairs(addons.Info) do
-		if info.load ~= false and (MMYY_PLATFORM ~= "nil" or info.standard_lua) then
-			if info.startup then
-				_G.INFO = info
-					dofile(info.startup)
-				_G.INFO = nil
-			end
-
-			addons.Autorun(info.name)
+		if info.load ~= false then
+			print("mounting addon ", info.path)
+			vfs.Mount(e.BASE_FOLDER .. info.path)
 		else
 			--printf("the addon %q does not want to be loaded", addon)
 		end
 	end
 
-end
-
-function addons.HandleLoader(path)
-	local out = {}
-	for key, data in ipairs(addons.Info) do
-		table.insert(out, e.BASE_FOLDER .. data.path .. path)
-	end
-	
-	return out
 end
 
 return addons
