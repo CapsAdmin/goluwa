@@ -63,19 +63,30 @@ do
 end
 
 local params = Event()
+local clock = Clock()
+
+-- this sucks
+ffi.cdef("float sfTime_asSeconds(sfTime time)")
 
 function main()
 	event.Call("Initialize")
 		
 	while true do
+		local dt = sfsystem.sfTime_asSeconds(clock:Restart()) -- fix me!!!
+		
 		if window:IsOpen() then
 			if window:PollEvent(params) then
 				asdfml.HandleEvent(params)
 			end
 		end
 		
-		event.Call("OnUpdate")
 		timer.Update()
+		
+		event.Call("OnUpdate", dt)
+		
+		window:Clear(e.BLACK)
+			event.Call("OnDraw", dt)
+		window:Display()
 	end
 	
 	event.Call("ShutDown")
