@@ -248,7 +248,6 @@ msgpack = include(libraries .. "msgpack.lua")
 json = include(libraries .. "json.lua")
 console = include(libraries .. "console.lua")
 mmyy = include(libraries .. "mmyy.lua")
-curses = include(libraries .. "curses.lua")
 
 -- meta
 include(meta .. "function.lua")

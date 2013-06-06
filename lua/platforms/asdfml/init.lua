@@ -16,177 +16,217 @@ end
 
 do -- input handling
 	print(pcall(function()
-
-	ffi.cdef([[
+	
+	ffi.cdef[[
+		/* Type declarations. */
 		typedef struct {
-			unsigned char *_ptr;
-			int     _cnt;
-			unsigned char *_base;
-			unsigned char *_bufendp;
-			short _flag;
-			short _file;
-			int __stdioid;
-			char *__newbase;
-			long _unused[1];
-		} FILE;
+		  int	   y;			/* current pseudo-cursor */
+		  int	   x;
+		  int      _maxy;			/* max coordinates */
+		  int      _maxx;
+		  int      _begy;			/* origin on screen */
+		  int      _begx;
+		  int	   _flags;			/* window properties */
+		  int	   _attrs;			/* attributes of written characters */
+		  int      _tabsize;			/* tab character size */
+		  bool	   _clear;			/* causes clear at next refresh */
+		  bool	   _leave;			/* leaves cursor as it happens */
+		  bool	   _scroll;			/* allows window scrolling */
+		  bool	   _nodelay;			/* input character wait flag */
+		  bool	   _keypad;			/* flags keypad key mode active */
+		  int    **_line;			/* pointer to line pointer array */
+		  int	  *_minchng;			/* First changed character in line */
+		  int	  *_maxchng;			/* Last changed character in line */
+		  int	   _regtop;			/* Top/bottom of scrolling region */
+		  int	   _regbottom;
+		} WINDOW;
 
-		char *fgetc(FILE *f);
-		
-		typedef struct timeval {
-			long tv_sec;
-			long tv_usec;
-		} timeval;
-		
-		typedef struct fd_set {
-			unsigned int count;
-			int fd[64];
-		} fd_set;
-		
 
-		int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, const struct timeval *timeout);
+		typedef void* WINDOW;
+		WINDOW *initscr();
+		void timeout(int delay);
+		int wtimeout(WINDOW *win, int delay);
+		void halfdelay(int delay);
+		void cbreak();
+		void nocbreak();
+		void noecho();
+		int getch();
+		int wgetch(WINDOW *win);
 		
-		int _kbhit();
-		const char *_getch();
-	]])
+		int idlok(WINDOW *win, bool bf);
+		int leaveok(WINDOW *win, bool bf);
+		int keypad(WINDOW *win, bool bf);
+		int scrollok(WINDOW *win, bool bf);
+
+		int nodelay(WINDOW *win, bool b);
+		int notimeout(WINDOW *win, bool b);
+		WINDOW *derwin(WINDOW*, int nlines, int ncols, int begin_y, int begin_x);
+		int wrefresh(WINDOW *win);
+		int box(WINDOW *win, int, int);
+		int werase(WINDOW *win);
+		int hline(const char *, int);
+		int COLS;   
+		int LINES;
+		const char *killchar();
+		void keypad(WINDOW*, bool);
+		const char *keyname(int c);
+		int waddstr(WINDOW *win, const char *chstr);
+		int wmove(WINDOW *win, int y, int x);
+	]]
+
+	local curses = ffi.load("pdcurses")
+
+	local parent = curses.initscr()
+	local line_window = curses.derwin(parent, 1, 128, curses.LINES-1, 0)
+	
+	curses.cbreak()
+	curses.noecho()
+	curses.nodelay(line_window, true)
+	curses.wrefresh(line_window)
+	curses.keypad(line_window, true);
+
+	local function get_char()
+		return curses.wgetch(line_window)
+	end
 		
-	if WINDOWS then				
-		local line = ""
-		local history = {}
-		local scroll = 0
-				
-				
-		local function insert_char(char)
-			if #line == 0 then
-				line = line .. char
-			elseif subpos == #line then
-				line = line .. char
-			else
-				line = line:sub(1, curses.getx()) .. char .. line:sub(curses.getx()+1)
-			end
-						
-			curses.clear(line)
+	local function clear(str)
+		local y, x = line_window.y, line_window.x
+		curses.werase(line_window) 
+		if str then 
+			curses.waddstr(line_window, str) 
+		end 
+		if str then
+			curses.wmove(line_window, y, x) 
+		else
+			curses.wmove(line_window, y, 0) 
 		end
-		
-		function asdfml.ProcessInput()
-			--mmyy.SetWindowTitle(tostring(os.clock()))
-			local byte = curses.getch()
+		curses.wrefresh(line_window) 
+	end
+	
+	local function get_key_name(num) 
+		return curses.keyname(num) 
+	end
+	
+	local function move_cursor(x)
+		return curses.wmove(line_window, line_window.y, line_window.x + x) 
+	end
+	
+	local function set_cursor_pos(x)
+		return curses.wmove(line_window, 0, x) 
+	end
+	
+	local line = ""
+	local history = {}
+	local scroll = 0				
 			
-			if byte > 0 then				
-				if byte > 255 or byte <= 32 then
-					local key = curses.keyname(byte)					
+	local function insert_char(char)		
+		if #line == 0 then
+			line = line .. char
+		elseif subpos == #line then
+			line = line .. char
+		else
+			line = line:sub(1, line_window.x) .. char .. line:sub(line_window.x + 1)
+		end
 					
-					key = ffi.string(key)
-					mmyy.SetWindowTitle(tostring(key))
-					
-					if key == "KEY_UP" then
-						scroll = scroll - 1
-						line = history[scroll%#history+1] or line
-					elseif key == "KEY_DOWN" then
-						scroll = scroll + 1
-						line = history[scroll%#history+1] or line
-					end
-										
-					if key == "KEY_LEFT" then
-						curses.move(0, -1)
-					elseif key == "KEY_RIGHT" then
-						curses.move(0, 1)
-					end
-					
-					if key == "KEY_HOME" then
-						curses.setpos(0, 0)
-					elseif key == "KEY_END" then
-						curses.setpos(0, #line)
-					end
-					
-					-- space
-					if byte == 32 then
-						insert_char(" ")
-					end
-					
-					if byte == 9 then
-						insert_char("\t")
-					end
-					
-					-- backspace
-					if byte == 8 then						
-						if curses.getx() > 0 then
-							line = line:sub(1, curses.getx() - 1) .. line:sub(curses.getx() + 1)
-						else
-							curses.clear()
-						end
-					end	
-					
-					-- enter
-					if byte == 10 or byte == 13 then
-						curses.clear()
-						io.write("\n")
-						
-						if line ~= "" then
-							local ok, err = console.CallCommandLine(line)
-							
-							if not ok then
-								io.write(err, "\n")
+		clear(line)
+		
+		move_cursor(1)
+	end
+	
+	function asdfml.ProcessInput()
+		local byte = get_char()
+		
+		if byte > 0 then				
+			if byte > 255 or byte <= 32 then
+				local key = get_key_name(byte)					
+				
+				key = ffi.string(key)
+	
+				if key == "KEY_UP" then
+					scroll = scroll - 1
+					line = history[scroll%#history+1] or line
+					set_cursor_pos(#line)
+				elseif key == "KEY_DOWN" then
+					scroll = scroll + 1
+					line = history[scroll%#history+1] or line
+					set_cursor_pos(#line)
+				end
+									
+				if key == "KEY_LEFT" then
+					 move_cursor(-1)
+				elseif key == "KEY_RIGHT" then
+					 move_cursor(1)
+				end
+				
+				if key == "KEY_HOME" then
+					set_cursor_pos(0)
+				elseif key == "KEY_END" then
+					set_cursor_pos(#line)
+				end
+				
+				-- space
+				if byte == 32 then
+					insert_char(" ")
+				end
+				
+				if byte == 9 then
+					local start, stop, last_word = line:find("([_%a%d]-)$")
+					if last_word then
+						local pattern = "^" .. last_word
+						for k,v in pairs(_G) do
+							if k:find(pattern) then
+								line = line:sub(0, start-1) .. k
+								set_cursor_pos(#line)
+								break
 							end
-							
-							table.insert(history, line)
-							
-							scroll = 0
-							
-							line = ""					
-							curses.clear()
 						end
 					end
-					
-					curses.clear(line)
-				else					
-					local char = string.char(byte)
-					insert_char(char)
 				end
+				
+				-- backspace
+				if byte == 8 then						
+					if line_window.x > 0 then
+						line = line:sub(1, line_window.x - 1) .. line:sub(line_window.x + 1)
+						move_cursor(-1)
+					else
+						clear()
+					end
+				elseif key == "KEY_DC" then
+					if line_window.x > 0 then
+						line = line:sub(1, line_window.x) .. line:sub(line_window.x + 2)
+					else
+						clear()
+					end
+				end
+				
+				-- enter
+				if byte == 10 or byte == 13 then
+					clear()
+					io.write("\n")
+					
+					if line ~= "" then
+						local ok, err = console.CallCommandLine(line)
+						
+						if not ok then
+							io.write(err, "\n")
+						end
+						
+						table.insert(history, line)
+						
+						scroll = 0
+						
+						line = ""					
+						clear()
+					end
+				end
+				
+				clear(line)
+			else					
+				local char = string.char(byte)
+				insert_char(char)
 			end
 		end
-	end
-		
-	if LINUX then
-		-- ported from
-		-- http://cc.byexamples.com/2007/04/08/non-blocking-user-input-in-loop-without-ncurses/
-		
-		local fds = ffi.new("struct fd_set")
-		fds.count = 0
-		
-		local tv = ffi.new("struct timeval")
-		tv.tv_sec = 0
-		tv.tv_usec = 0
-		
-		local STDIN_FILENO = 0
-		
-		local clib = ffi.C
-		
-		local function kbhit()
-			if fds.count < 64 then
-				fds.fd[fds.count + 1] = 0
-			end
-			
-			clib.select(STDIN_FILENO + 1, fds, nil, nil, tv)
-					
-			for i = 0, fds.count do
-				if fds.fd[i] == STDIN_FILENO then
-					return true
-				end
-			end
-			
-			return false
-		end	
-		
-		function asdfml.ProcessInput()
-			if kbhit() then
-				local char = tostring(ffi.C.fgetc(io.stdin))
-				--print(char, "!!!!")
-			end
-		end
-	end
-	
-
-	
+	end	
 	end))
 end
 
@@ -194,6 +234,9 @@ do -- update
 	local params = Event()
 	local clock = Clock()
 
+	local smooth_fps = 0
+	local fps_fmt = "FPS: %i"
+	
 	-- this sucks
 	ffi.cdef("float sfTime_asSeconds(sfTime time)")
 	
@@ -216,6 +259,10 @@ do -- update
 		end
 		
 		local dt = sfsystem.sfTime_asSeconds(clock:Restart()) -- fix me!!!
+		
+		smooth_fps = smooth_fps + (((1/dt) - smooth_fps) * dt)
+		
+		mmyy.SetWindowTitle(string.format(fps_fmt, smooth_fps))
 		
 		if window:IsOpen() then
 			if window:PollEvent(params) then
