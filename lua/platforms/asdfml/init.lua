@@ -12,8 +12,8 @@ asdfml = {}
 function asdfml.OpenWindow(w, h, title)
 	if window and window:IsOpen() then return end
 
-	w = w or 800
-	h = h or 600
+	w = w or 640
+	h = h or 480
 	title = title or "no title"
 
 	local settings = ContextSettings()
@@ -31,7 +31,6 @@ end
 
 function asdfml.OnClosed(params)
 	window:Close()
-	os.exit()
 end
 
 do -- input handling
@@ -90,13 +89,14 @@ do -- input handling
 		const char *keyname(int c);
 		int waddstr(WINDOW *win, const char *chstr);
 		int wmove(WINDOW *win, int y, int x);
+		int resize_term(int y, int x);
 	]]
 
 	local curses = ffi.load("pdcurses")
-
 	local parent = curses.initscr()
+	
 	local line_window = curses.derwin(parent, 1, 128, curses.LINES-1, 0)
-
+	
 	curses.cbreak()
 	curses.noecho()
 	curses.nodelay(line_window, true)
@@ -136,7 +136,7 @@ do -- input handling
 	local line = ""
 	local history = {}
 	local scroll = 0
-
+	
 	local function insert_char(char)
 		if #line == 0 then
 			line = line .. char
@@ -150,6 +150,10 @@ do -- input handling
 
 		move_cursor(1)
 	end
+
+	local current_table = _G
+	local table_scroll = 0
+	local in_function
 
 	function asdfml.ProcessInput()
 		local byte = get_char()
@@ -187,15 +191,79 @@ do -- input handling
 					insert_char(" ")
 				end
 
+				-- tab
 				if byte == 9 then
 					local start, stop, last_word = line:find("([_%a%d]-)$")
 					if last_word then
 						local pattern = "^" .. last_word
-						for k,v in pairs(_G) do
-							if k:find(pattern) then
-								line = line:sub(0, start-1) .. k
-								set_cursor_pos(#line)
-								break
+										
+						if (not line:find("%(") or not line:find("%)")) and not line:find("logn") then
+							in_function = false
+						end
+										
+						if not in_function then
+							current_table = line:explode(".")
+													
+							local tbl = _G
+							
+							for k,v in pairs(current_table) do
+								if type(tbl[v]) == "table" then
+									tbl = tbl[v]
+								else
+									break
+								end
+							end
+							
+							current_table = tbl or _G						
+						end
+						
+						if in_function then
+							local start = line:match("(.+%.)")
+							if start then
+								local tbl = {}
+								
+								for k,v in pairs(current_table) do
+									table.insert(tbl, {k=k,v=v})
+								end
+								
+								if #tbl > 0 then
+									table.sort(tbl, function(a, b) return a.k > b.k end)
+									table_scroll = table_scroll + 1
+									
+									local data = tbl[table_scroll%#tbl + 1]
+									
+									if type(data.v) == "function" then
+										line = start .. data.k .. "()"
+										set_cursor_pos(#line)
+										move_cursor(-1)
+										in_function = true
+									else
+										line = "logn(" .. start .. data.k .. ")"
+										set_cursor_pos(#line)
+										move_cursor(-1)
+									end
+								end
+							end
+						else						
+							for k,v in pairs(current_table) do
+								k = tostring(k)
+								
+								if k:find(pattern) then
+									line = line:sub(0, start-1) .. k
+									if type(v) == "table" then 
+										current_table = v 
+										line = line .. "."
+										set_cursor_pos(#line)
+									elseif type(v) == "function" then
+										line = line .. "()"
+										set_cursor_pos(#line)
+										move_cursor(-1)
+										in_function = true
+									else
+										line = "logn(" .. line .. ")"
+									end
+									break
+								end
 							end
 						end
 					end
@@ -204,6 +272,12 @@ do -- input handling
 				-- backspace
 				if byte == 8 then
 					if line_window.x > 0 then
+						local char = line:sub(1, line_window.x)
+						
+						if char == "." then
+							current_table = previous_table
+						end
+						
 						line = line:sub(1, line_window.x - 1) .. line:sub(line_window.x + 1)
 						move_cursor(-1)
 					else
@@ -220,7 +294,7 @@ do -- input handling
 				-- enter
 				if byte == 10 or byte == 13 then
 					clear()
-					io.write(line, "\n")
+					log(line, "\n")
 
 					if line ~= "" then
 						local res, err = loadstring(line)
@@ -230,13 +304,14 @@ do -- input handling
 						end
 
 						if not res then
-							io.write(err, "\n")
+							log(err, "\n")
 						end
 
 						table.insert(history, line)
 
 						scroll = 0
-
+						current_table = _G
+						in_function = false
 						line = ""
 						clear()
 					end
@@ -296,7 +371,7 @@ do -- update
 			end
 
 			window:Clear(e.BLACK)
-				event.Call("OnDraw", dt)
+				event.Call("OnDraw", dt, window)
 			window:Display()
 		end
 	end

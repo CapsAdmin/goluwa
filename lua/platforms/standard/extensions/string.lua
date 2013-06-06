@@ -1,3 +1,12 @@
+function string.safeformat(str, ...)
+	local count = select(2, str:gsub("(%%)", ""))
+	local copy = {}
+	for i = 1, count do
+		table.insert(copy, tostringx(select(i, ...)))
+	end
+	return string.format(str, unpack(copy))
+end
+
 function string.findsimple(self, find)
 	return self:find(find, nil, true) ~= nil
 end

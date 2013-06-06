@@ -4,7 +4,7 @@ local HEIGHT = 1080
 local NUM_SPRITES = 40000
 local MAX_SCALE = 2
 
-local window = asdfml.OpenWindow()
+local window = asdfml.OpenWindow(WIDTH, HEIGHT)
 
 local sprites = {}
 
@@ -38,7 +38,6 @@ for i = 1, NUM_SPRITES do
 	sprites[i] = sprite
 end
 
-local clock = Clock()
 local tvec2 = Vec2()
 local tonumber=tonumber
 local logn=logn
@@ -46,12 +45,7 @@ local math=math
 local deg=math.deg
 local rad=math.rad
 local window=window
-event.AddListener("OnUpdate", "test", function()
-	local dt = tonumber(clock:GetElapsedTime().microseconds) / 1000000
-	logn(1/dt)
-	logn(math.ceil(collectgarbage("count")).."KB")
-	dt = dt * 10000
-	window:Clear(e.BLACK)
+event.AddListener("OnDraw", "test", function(dt)
     for i, val in ipairs(sprites) do
         -- update the rotation
         val.r = rad(deg(val.r) + val.rotSpeed * dt)
@@ -99,6 +93,4 @@ event.AddListener("OnUpdate", "test", function()
 		
 		window:DrawSprite(val.sprite, nil)
     end
-	window:Display()
-	clock:Restart()
 end)

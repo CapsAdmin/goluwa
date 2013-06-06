@@ -120,31 +120,23 @@ ghost.circle:SetFillColor(Color(255, 255, 255, 64))
 
 local params = Event()
 
-event.AddListener("OnUpdate", "verlet_physics", function()
-	if not window:IsOpen() then return end	
-	
-	if window:PollEvent(params) then
-		if params.type == e.EVT_CLOSED then
-			window:Close()
-		end
-		
-		if params.type == e.EVT_MOUSE_WHEEL_MOVED then
-			if params.mouseWheel.delta > 0 then
-				ghost_radius = ghost_radius + 1
-			else 
-				ghost_radius = ghost_radius - 1
-			end
-		end
-		
-		if params.type == e.EVT_MOUSE_BUTTON_RELEASED then
-			if params.mouseButton.button == e.MOUSE_LEFT then
-				local pos = window:MapPixelToCoords(ghost_position - ghost_radius, view)
-				local body = CircleBody(pos, ghost_radius)
-				table.insert(bodies, body)
-			end
-		end
+event.AddListener("OnMouseButtonReleased", "verlet_physics", function(params)
+	if params.mouseButton.button == e.MOUSE_LEFT then
+		local pos = window:MapPixelToCoords(ghost_position - ghost_radius, view)
+		local body = CircleBody(pos, ghost_radius)
+		table.insert(bodies, body)
 	end
-		
+end)
+
+event.AddListener("OnMouseWheelMoved", "verlet_physics", function(params)
+	if params.mouseWheel.delta > 0 then
+		ghost_radius = ghost_radius + 1
+	else 
+		ghost_radius = ghost_radius - 1
+	end
+end)
+
+event.AddListener("OnDraw", "verlet_physics", function(dt, window)		
 	ghost:SetRadius(ghost_radius)
 		
 	if keyboard.IsKeyPressed(e.KEY_LEFT) then
@@ -195,34 +187,31 @@ event.AddListener("OnUpdate", "verlet_physics", function()
 	if keyboard.IsKeyPressed(e.KEY_ESCAPE) then
 		window:Close()
 	end
-	
-	if true or wait(0.2) then
 		
-		for key, a in pairs(bodies) do
-			local vel = Vec2()
-			
-			for key, b in pairs(bodies) do
-				if a ~= b then					
-					local temp = (b:GetPosition() - a:GetPosition())
-					local dist = temp:GetLengthSquared()
-					
-					if dist > MAX_SPEED then
-						temp = temp / dist
-					end
-					
-					temp = temp * (a:GetMass() * b:GetMass() * 0.01 / dist)
-					vel = vel + temp
-					
-					if a:CheckCollide(b) == true then
-						a:Collide(b)
-					end
+	for key, a in pairs(bodies) do
+		local vel = Vec2()
+		
+		for key, b in pairs(bodies) do
+			if a ~= b then					
+				local temp = (b:GetPosition() - a:GetPosition())
+				local dist = temp:GetLengthSquared()
+				
+				if dist > MAX_SPEED then
+					temp = temp / dist
+				end
+				
+				temp = temp * (a:GetMass() * b:GetMass() * 0.01 / dist)
+				vel = vel + temp
+				
+				if a:CheckCollide(b) == true then
+					a:Collide(b)
 				end
 			end
-			
-			a:Update(10)
-			a.Velocity = a.Velocity + vel	
-		end	
-	end
+		end
+		
+		a:Update(dt * 100)
+		a.Velocity = a.Velocity + vel	
+	end	
 	
 	view:Zoom(zoom_factor)
 	window:SetView(view)
@@ -239,6 +228,4 @@ event.AddListener("OnUpdate", "verlet_physics", function()
 	end
 	
 	window:DrawCircleShape(ghost.circle, nil)
-	
-	window:Display()
 end)
