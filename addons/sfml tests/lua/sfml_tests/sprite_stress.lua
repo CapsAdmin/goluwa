@@ -4,7 +4,7 @@ local HEIGHT = 1080
 local NUM_SPRITES = 40000
 local MAX_SCALE = 2
 
-local window = RenderWindow(VideoMode(800, 600, 32), "SFML window", bit.bor(e.RESIZE, e.CLOSE), ContextSettings())
+local window = asdfml.OpenWindow()
 
 local sprites = {}
 

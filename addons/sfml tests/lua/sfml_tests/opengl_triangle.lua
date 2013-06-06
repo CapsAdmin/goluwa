@@ -1,12 +1,4 @@
-local settings = ContextSettings()
-
-	settings.depthBits = 24
-	settings.stencilBits = 8
-	settings.antialiasingLevel = 4
-	settings.majorVersion = 3
-	settings.minorVersion = 0
-
-local window = RenderWindow(VideoMode(800, 600, 32), "SFML window", bit.bor(e.RESIZE, e.CLOSE), settings)
+local window = asdfml.OpenWindow()
 
 gl.ClearColor(0, 1, 0, 1)
 
