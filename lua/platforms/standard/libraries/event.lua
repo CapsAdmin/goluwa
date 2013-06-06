@@ -71,7 +71,7 @@ function event.RemoveListener(a, b)
 			end
 		end
 	else
-		--print(("Tried to remove non existing event '%s:%s'"):format(event, tostring(unique)))
+		--logn(("Tried to remove non existing event '%s:%s'"):format(event, tostring(unique)))
 	end
 	
 	event.SortByPriority()
@@ -105,9 +105,9 @@ function event.UserDataCall(udata, type_, ...)
 				return unpack(args)
 			else
 				if hasindex(udata) and udata.Type and udata.ClassName then
-					printf("scripted class %s %q errored: %s", udata.Type, udata.ClassName, args[2])
+					logf("scripted class %s %q errored: %s", udata.Type, udata.ClassName, args[2])
 				else
-					printf(args[2])
+					logf(args[2])
 				end
 			end
 		end
@@ -143,7 +143,7 @@ function event.Call(type, ...)
 						data.on_error(a, type, data.unique)
 					else
 						event.RemoveListener(type, data.unique)
-						printf("event [%q][%q] removed", type, data.unique)
+						logf("event [%q][%q] removed", type, data.unique)
 					end
 
 					event.errors[type] = event.errors[type] or {}
@@ -198,7 +198,7 @@ end
 
 function event.DisableAll()
 	if event.enabled == false then
-		print("Hooks are already disabled.")
+		logn("Hooks are already disabled.")
 	else
 		event.enabled = true
 		event.__backup_events = table.Copy(event.GetTable())
@@ -208,7 +208,7 @@ end
 
 function event.EnableAll()
 	if event.enabled == true then
-		print("Hooks are already enabled.")
+		logn("Hooks are already enabled.")
 	else
 		event.enabled = false
 		table.Merge( event.GetTable(), event.__backup_events )
@@ -219,16 +219,16 @@ end
 function event.Dump()
 	local h=0
 	for k,v in pairs(event.GetTable()) do
-		print("> "..k.." ("..table.Count(v).." events):")
+		logn("> "..k.." ("..table.Count(v).." events):")
 		for name,data in pairs(v) do
 			h=h+1
-			print("   \""..name.."\" \t "..tostring(debug.getinfo(data.func).source)..":")
-			print(" Line:"..tostring(debug.getinfo(data.func).linedefined))
+			logn("   \""..name.."\" \t "..tostring(debug.getinfo(data.func).source)..":")
+			logn(" Line:"..tostring(debug.getinfo(data.func).linedefined))
 		end
-		print("")
+		logn("")
 	end
-	print("")
-	print(">>> Total events: "..h..".")
+	logn("")
+	logn(">>> Total events: "..h..".")
 end
 
 return event

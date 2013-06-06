@@ -135,7 +135,7 @@ function timer.Update()
 					obj:SetNextThink(msg)
 				end
 			else
-				print(id, msg)
+				logn(id, msg)
 			end
 
 			if obj.times_ran == obj.repeats then

@@ -34,7 +34,7 @@ function system.StartServer(ip, port)
 	server:Host(ip, port)
 
 	server.OnClientConnected = function(self, client, ip, port)
-		printf("%s:%s connected", ip, port)
+		logf("%s:%s connected", ip, port)
 
 		return true
 	end
@@ -42,7 +42,7 @@ function system.StartServer(ip, port)
 	server.OnClientClosed = function(client)
 		local user = users.GetUserFromSocket(client)
 		if user:IsValid() then
-			printf("user %s (%s:%s) left", user:GetName(), client:GetIP(), client:GetPort())
+			logf("user %s (%s:%s) left", user:GetName(), client:GetIP(), client:GetPort())
 			
 			event.Call("UserLeft", user)
 		end
@@ -54,16 +54,16 @@ function system.StartServer(ip, port)
 		local user = users.CreateUserFromSocket(client, data)
 		
 		if type == USER_JOIN then
-			printf("user %s (%s:%s) joined", user:GetName(), client:GetIP(), client:GetPort())
+			logf("user %s (%s:%s) joined", user:GetName(), client:GetIP(), client:GetPort())
 			
 			if event.Call("UserJoin", user) == false then
 				client:Remove()
 			end
 		elseif type == USER_CHAT then
-			printf("%s: %s", user:GetName(), data)
+			logf("%s: %s", user:GetName(), data)
 			event.Call("UserChat", data)
 		else
-			printf("unhandled message from user %ss %q", user:GetName(), str)
+			logf("unhandled message from user %ss %q", user:GetName(), str)
 		end
 	end
 	

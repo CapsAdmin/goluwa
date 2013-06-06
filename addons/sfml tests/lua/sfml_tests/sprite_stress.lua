@@ -41,15 +41,15 @@ end
 local clock = Clock()
 local tvec2 = Vec2()
 local tonumber=tonumber
-local print=print
+local logn=logn
 local math=math
 local deg=math.deg
 local rad=math.rad
 local window=window
 event.AddListener("OnUpdate", "test", function()
 	local dt = tonumber(clock:GetElapsedTime().microseconds) / 1000000
-	print(1/dt)
-	print(math.ceil(collectgarbage("count")).."KB")
+	logn(1/dt)
+	logn(math.ceil(collectgarbage("count")).."KB")
 	dt = dt * 10000
 	window:Clear(e.BLACK)
     for i, val in ipairs(sprites) do

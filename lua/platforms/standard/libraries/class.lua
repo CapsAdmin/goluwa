@@ -97,7 +97,7 @@ function class.Create(type_name, class_name)
     local META = class.Get(type_name, class_name)
 	
     if not META then
-        printf("tried to create unknown %s %q!", type or "no type", class_name or "no class")
+        logf("tried to create unknown %s %q!", type or "no type", class_name or "no class")
         return
     end
 	

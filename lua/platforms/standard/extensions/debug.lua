@@ -1,11 +1,11 @@
 function debug.trace()	
-    print("Trace: " )
+    logn("Trace: " )
 	
 	for level = 1, math.huge do
 		local info = debug.getinfo(level, "Sln")
 		
 		if info then
-			printf("\t%i: Line %d\t\"%s\"\t%s", level, info.currentline, info.name or "unknown", info.short_src or "")
+			logf("\t%i: Line %d\t\"%s\"\t%s", level, info.currentline, info.name or "unknown", info.short_src or "")
 		else
 			break
 		end

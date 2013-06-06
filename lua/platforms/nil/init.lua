@@ -1,4 +1,4 @@
-printf("Platform is nil! mmmy will use a while loop to update instead.")
+logf("Platform is nil! mmmy will use a while loop to update instead.")
 
 addons.AutorunAll()
 

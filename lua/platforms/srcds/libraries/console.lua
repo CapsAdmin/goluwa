@@ -7,19 +7,19 @@ local result = ""
 function console.StartCapture()
 	result = ""
 
-	Msg = function(str)
+	log = function(str)
 		result = result .. str
 	end
 
-	MsgN = function(str)
+	logn = function(str)
 		result = result .. str .. "\n"
 	end
 
 end
 
 function console.EndCapture()
-	Msg = _OLD_G.Msg
-	MsgN = _OLD_G.MsgN
+	log = _OLD_G.log
+	logn = _OLD_G.logn
 	return result
 end
 
@@ -78,7 +78,7 @@ do -- commands
 	local function call(data, ply, line, ...)
 		local status, message = xpcall(data.callback, OnError, ply, line, ...)
 		if not status then
-			print(message)
+			logn(message)
 		end
 	end
 
@@ -105,7 +105,7 @@ do -- commands
 				call(data, ply, line, ...)
 			end
 		else
-			printf("the command %q does not exist", cmd)
+			logf("the command %q does not exist", cmd)
 		end
 	end
 
@@ -135,12 +135,12 @@ do -- commands
 		local line, count = line:gsub("%?%?", "=")
 		if count > 0 then
 			debug.trace()
-			print("")
-			print("cryengine console hack!!!")
-			print("\"??\" is replaced with = ")
-			print("the line is now")
-			print(line)
-			print("")
+			logn("")
+			logn("cryengine console hack!!!")
+			logn("\"??\" is replaced with = ")
+			logn("the line is now")
+			logn(line)
+			logn("")
 		end
 		
 		local prefix = line:sub(0, #console.Prefix) == console.Prefix and console.Prefix or ""
@@ -165,7 +165,7 @@ do -- commands
 		end
 	end
 
-	event.AddListener("LuaCommand", "concommand", console.InternalCommandHook, print)
+	event.AddListener("LuaCommand", "concommand", console.InternalCommandHook, logn)
 
 	--[[local cvar = console.CreateVariable("con_filter", "string", "normal")
 
@@ -230,7 +230,7 @@ do -- console vars
 
 		local func = function(ply, line, value)
 			if not value then
-				printf("%s = %s", name, luadata.ToString(console.vars[name]))
+				logf("%s = %s", name, luadata.ToString(console.vars[name]))
 			else
 				console.SetVariable(name, value)
 				if callback then

@@ -25,7 +25,7 @@ do -- helper constants
 	do -- example
 		_F["T"] = os.clock
 		
-		-- print(T + 1) = print(os.clock() + 1)
+		-- logn(T + 1) = logn(os.clock() + 1)
 	end
 end
 
@@ -53,11 +53,61 @@ if not _OLD_G then
 	scan(_G, _OLD_G)
 end
 
-do -- logging
-	local function call(str)
-		return event and event.Call("ConsolePrint", str) ~= false
+do -- logging	
+	local pretty_prints = {}
+	
+	pretty_prints.table = function(t)
+		local str = tostring(t)
+				
+		str = str .. " [" .. table.count(t) .. " subtables]"
+		
+		-- guessing the location of a library
+		local sources = {}
+		for k,v in pairs(t) do	
+			if type(v) == "function" then
+				local src = debug.getinfo(v).short_src
+				sources[src] = (sources[src] or 0) + 1
+			end
+		end
+		
+		local tmp = {}
+		for k,v in pairs(sources) do
+			table.insert(tmp, {k=k,v=v})
+		end
+		
+		table.sort(tmp, function(a,b) return a.v > b.v end)
+		if #tmp > 0 then 
+			str = str .. "[" .. tmp[1].k:gsub("!/%.%./", "") .. "]"
+		end
+		
+		
+		return str
 	end
 	
+	local function tostringx(val)
+		local t = type(val)
+		return pretty_prints[t] and pretty_prints[t](val) or tostring(val)
+	end
+
+	local function tostring_args(...)
+		local copy = {}
+		
+		for i = 1, select("#", ...) do
+			table.insert(copy, tostringx(select(i, ...)))
+		end
+		
+		return copy
+	end
+
+	local function safeformat(str, ...)
+		local count = select(2, str:gsub("(%%)", ""))
+		local copy = {}
+		for i = 1, count do
+			table.insert(copy, tostringx(select(i, ...)))
+		end
+		return string.format(str, unpack(copy))
+	end
+		
 	local function get_verbosity_level()
 		return console and console.GetVariable("log_verbosity", 0) or 0
 	end
@@ -66,14 +116,46 @@ do -- logging
 		return console and console.GetVariable("log_debug_filter", "") or ""
 	end	
 	
-	function log(...)		
-		return io.write(...)
+	local suppress_print = false
+
+	local function can_print(args)
+		if suppress_print then return end
+		
+		if event then 
+			suppress_print = true
+			
+			if event.Call("ConsolePrint", table.concat(args, ", ")) == false then
+				suppress_print = false
+				return false
+			end
+			
+			suppress_print = false
+		end
+		
+		return true
+	end
+		
+	function log(...)
+		local args = tostring_args(...)
+		if can_print(args) then 
+			return io.write(unpack(args))
+		end
 	end
 	
-	function logc(...)	
-		
+	function logn(...)
+		local args = {...}
+		table.insert(args, "\n")
+		return log(unpack(args))
 	end
-		
+
+	function logf(str, ...)
+		logn(safeformat(str, ...))
+	end
+
+	function errorf(str, level, ...)
+		error(string.format(str, level, ...))
+	end
+
 	function warning(verbosity, ...)
 		local level = get_verbosity_level()
 		
@@ -91,21 +173,36 @@ do -- logging
 		if level <= verbosity then
 			return log(...)
 		end
+	end	
+	
+	do
+		local last = {}
+	
+		function nospam_printf(str, ...)
+			local str = string.format(str, tostring_args(...))
+			local t = os.clock()
+			
+			if not last[str] or last[str] < t then
+				logn(str)
+				last[str] = t + 3
+			end
+		end
+		
+		function nospam_print(...)
+			nospam_printf(("%s "):rep(select("#", ...)), ...)
+		end
 	end
 end
-
-Msg = Msg or print
-MsgN = MsgN or print
 
 local time = os.clock()
 local gtime = time
 
-MsgN("loading mmyy")
+logn("loading mmyy")
 
 _E.USERNAME = tostring(os.getenv("USERNAME")):upper():gsub(" ", "_"):gsub("%p", "")
 _G[e.USERNAME] = true
 
-MsgN("username constant = " .. e.USERNAME)
+logn("username constant = " .. e.USERNAME)
 
 do -- ffi
 	ffi = require("ffi")
@@ -185,27 +282,27 @@ do -- include
 			dir = previous_dir .. dir
 		end
 		
-		--print("")
-		--print(("\t"):rep(#include_stack).."TRYING REL: ", dir .. file)
+		--logn("")
+		--logn(("\t"):rep(#include_stack).."TRYING REL: ", dir .. file)
 		
 		local func, err = vfs.loadfile("lua/" .. dir .. file)
 			
 		if err and err:find("not found") then
 			func, err = vfs.loadfile("lua/" .. path)
-			--print(("\t"):rep(#include_stack).."TRYING ABS: ", dir .. file)
+			--logn(("\t"):rep(#include_stack).."TRYING ABS: ", dir .. file)
 		end
 		
 
 		if func then 
 			include_stack[#include_stack + 1] = dir
 		
-			--print(("\t"):rep(#include_stack + 1).."FILE FOUND: ", file)
-			--print(("\t"):rep(#include_stack + 1).."DIR IS NOW: ", dir)
-			--print("")
+			--logn(("\t"):rep(#include_stack + 1).."FILE FOUND: ", file)
+			--logn(("\t"):rep(#include_stack + 1).."DIR IS NOW: ", dir)
+			--logn("")
 			local res = {pcall(func, ...)}
 			
 			if not res[1] then
-				print(res[2])
+				logn(res[2])
 			end
 			
 			include_stack[#include_stack] = nil
@@ -213,7 +310,7 @@ do -- include
 			return select(2, unpack(res))
 		end
 		
-		print(path:sub(1) .. " " .. err)
+		logn(path:sub(1) .. " " .. err)
 		
 		vfs.Silence(false)
 		
@@ -264,43 +361,43 @@ intermsg = include(libraries .. "intermsg.lua")
 function OnError(msg)
 	if event.Call("OnLuaError", msg) == false then return end
 	
-	print("== LUA ERROR ==")
+	logn("== LUA ERROR ==")
 	
 	for k, v in pairs(debug.traceback():explode("\n")) do
 		local source, msg = v:match("(.+): in function (.+)")
 		if source and msg then
-			print((k-1) .. "    " .. source:trim() or "nil")
-			print("     " .. msg:trim() or "nil")
-			print("")
+			logn((k-1) .. "    " .. source:trim() or "nil")
+			logn("     " .. msg:trim() or "nil")
+			logn("")
 		end
 	end	
 
-	print("")
+	logn("")
 	local source, _msg = msg:match("(.+): (.+)")
 	if source then
-		print(source:trim())
-		print(_msg:trim())
+		logn(source:trim())
+		logn(_msg:trim())
 	else
-		print(msg)
+		logn(msg)
 	end
-	print("")
+	logn("")
 end
 
-MsgN("mmyy loaded (took " .. (os.clock() - time) .. " ms)")
+logn("mmyy loaded (took " .. (os.clock() - time) .. " ms)")
 
 local time = os.clock()
-MsgN("loading addons")
+logn("loading addons")
 	addons.LoadAll()
-MsgN("sucessfully loaded addons (took " .. (os.clock() - time) .. " ms)")
+logn("sucessfully loaded addons (took " .. (os.clock() - time) .. " ms)")
 
 local time = os.clock()
-MsgN("loading platform " .. e.PLATFORM)
+logn("loading platform " .. e.PLATFORM)
 include("platforms/".. e.PLATFORM .."/init.lua")
-MsgN("sucessfully loaded platform " .. e.PLATFORM .. " (took " .. (os.clock() - time) .. " ms)")
+logn("sucessfully loaded platform " .. e.PLATFORM .. " (took " .. (os.clock() - time) .. " ms)")
 
 addons.AutorunAll(e.USERNAME)
 
-MsgN("sucessfully initialized (took " .. (os.clock() - gtime) .. " ms)")
+logn("sucessfully initialized (took " .. (os.clock() - gtime) .. " ms)")
 
 
 if CREATED_ENV then
@@ -319,10 +416,10 @@ if CREATED_ENV then
 		if func then
 			local ok, msg = pcall(func) 
 			if not ok then
-				print("runtime error:", client, msg)
+				logn("runtime error:", client, msg)
 			end
 		else
-			print("compile error:", client, msg)
+			logn("compile error:", client, msg)
 		end
 		
 		timer.Simple(0, function() event.Call("OnConsoleEnvReceive", line) end)

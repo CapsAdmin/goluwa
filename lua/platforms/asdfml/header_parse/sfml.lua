@@ -117,7 +117,7 @@ local function generate_objects()
 	
 	
 	if parse_headers then
-		print("PARSING HEADERS ...")
+		logn("PARSING HEADERS ...")
 		for file_name, header in pairs(headers) do
 			for line in header:gmatch("(.-)\n") do
 				

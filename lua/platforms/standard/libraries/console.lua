@@ -6,19 +6,19 @@ local result = ""
 function console.StartCapture()
 	result = ""
 
-	Msg = function(str)
+	log = function(str)
 		result = result .. str
 	end
 
-	MsgN = function(str)
+	logn = function(str)
 		result = result .. str .. "\n"
 	end
 
 end
 
 function console.EndCapture()
-	Msg = _OLD_G.Msg
-	MsgN = _OLD_G.MsgN
+	log = _OLD_G.log
+	logn = _OLD_G.logn
 	return result
 end
 
@@ -181,7 +181,7 @@ do -- console vars
 
 		local func = function(client, line, value)
 			if not value then
-				printf("%s = %s", name, luadata.ToString(console.vars[name]))
+				logf("%s = %s", name, luadata.ToString(console.vars[name]))
 			else
 				console.SetVariable(name, value)
 				if callback then

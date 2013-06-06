@@ -49,7 +49,7 @@ local locinfo=function(func)
         local fenv=debug.getfenv(func)
         if fenv then
             if fenv==_G then
-                -- print nothing
+                -- logn nothing
             else
                 local key
                 for k,v in pairs(_G) do

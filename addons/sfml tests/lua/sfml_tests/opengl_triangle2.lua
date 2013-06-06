@@ -46,7 +46,7 @@ for line in data:gmatch("(.-)\n") do
 			mesh[#mesh + 1] = tonumber(parts[4])
 		end
 	else
-		print(parts[1])
+		logn(parts[1])
 	end
 end
 
