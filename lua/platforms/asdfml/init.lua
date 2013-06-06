@@ -318,7 +318,7 @@ do
 	end
 end
 
-function main()
+local function main()
 	event.Call("Initialize")
 		
 	while true do
