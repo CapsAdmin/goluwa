@@ -85,6 +85,51 @@ function typex(var)
 	return type(var)
 end
 
+local pretty_prints = {}
+
+pretty_prints.table = function(t)
+	local str = tostring(t)
+			
+	str = str .. " [" .. table.count(t) .. " subtables]"
+	
+	-- guessing the location of a library
+	local sources = {}
+	for k,v in pairs(t) do	
+		if type(v) == "function" then
+			local src = debug.getinfo(v).short_src
+			sources[src] = (sources[src] or 0) + 1
+		end
+	end
+	
+	local tmp = {}
+	for k,v in pairs(sources) do
+		table.insert(tmp, {k=k,v=v})
+	end
+	
+	table.sort(tmp, function(a,b) return a.v > b.v end)
+	if #tmp > 0 then 
+		str = str .. "[" .. tmp[1].k:gsub("!/%.%./", "") .. "]"
+	end
+	
+	
+	return str
+end
+
+function tostringx(val)
+	local t = type(val)
+	return pretty_prints[t] and pretty_prints[t](val) or tostring(val)
+end
+
+function tostring_args(...)
+	local copy = {}
+	
+	for i = 1, select("#", ...) do
+		table.insert(copy, tostringx(select(i, ...)))
+	end
+	
+	return copy
+end
+
 function istype(var, ...)
 	for _, str in pairs({...}) do
 		if typex(var) == str then

@@ -135,10 +135,32 @@ do -- logging
 		return true
 	end
 		
+	local log_file
+	local buffer = {}
+		
 	function log(...)
 		local args = tostring_args(...)
-		if can_print(args) then 
-			return io.write(unpack(args))
+		if can_print(args) then
+			
+			if vfs then
+				if not log_file then
+					log_file = io.open(e.BASE_FOLDER .. "log.txt", "w")
+					
+					if buffer then
+						for k,v in pairs(buffer) do
+							log_file:write(unpack(v))
+						end
+						
+						buffer = nil
+					end
+				end
+				
+				log_file:write(unpack(args))
+			else
+				table.insert(buffer, args)
+			end
+			
+			io.write(unpack(args))
 		end
 	end
 	
@@ -194,15 +216,20 @@ do -- logging
 	end
 end
 
-local time = os.clock()
-local gtime = time
-
-logn("loading mmyy")
-
 _E.USERNAME = tostring(os.getenv("USERNAME")):upper():gsub(" ", "_"):gsub("%p", "")
 _G[e.USERNAME] = true
 
-logn("username constant = " .. e.USERNAME)
+log("\n\n")
+log([[
+ _ __ ___  _ __ ___  _   _ _   _ 
+| '_ ` _ \| '_ ` _ \| | | | | | |
+| | | | | | | | | | | |_| | |_| |
+|_| |_| |_|_| |_| |_|\__, |\__, |
+                     |___/ |___/ 
+]])
+logf("launched on %s", os.date())
+logn("executed by " .. e.USERNAME)
+log("\n\n")
 
 do -- ffi
 	ffi = require("ffi")
@@ -383,22 +410,11 @@ function OnError(msg)
 	logn("")
 end
 
-logn("mmyy loaded (took " .. (os.clock() - time) .. " ms)")
+addons.LoadAll()
 
-local time = os.clock()
-logn("loading addons")
-	addons.LoadAll()
-logn("sucessfully loaded addons (took " .. (os.clock() - time) .. " ms)")
-
-local time = os.clock()
-logn("loading platform " .. e.PLATFORM)
 include("platforms/".. e.PLATFORM .."/init.lua")
-logn("sucessfully loaded platform " .. e.PLATFORM .. " (took " .. (os.clock() - time) .. " ms)")
 
 addons.AutorunAll(e.USERNAME)
-
-logn("sucessfully initialized (took " .. (os.clock() - gtime) .. " ms)")
-
 
 if CREATED_ENV then
 	mmyy.SetWindowTitle(TITLE)
