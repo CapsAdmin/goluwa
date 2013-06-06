@@ -7,7 +7,7 @@ Only "tcp" and "udp" is supported. Default is tcp. There isn't much of a differe
 By default the socket has a 3 second timeout. The timeout count is started/restarted whenever the mesage is "timeout" and stopped otherwise
 
 luasocket.debug = true
-	will print debug messages about sending and receiving data
+	will logn debug messages about sending and receiving data
 	very useful for (duh) debugging!
 
 -- client
@@ -81,9 +81,9 @@ if _G.luasocket and _G.luasocket.Panic then
 end
 
 -- external functions
-local print = print
-local table_print = PrintTable or table.print or print
-local warning = ErrorNoHalt or print
+local logn = logn
+local table_print = PrintTable or table.logn or logn
+local warning = ErrorNoHalt or logn
 local check = check or function() end
 local require = require
 local cares = pcall(require,"cares") or _G.cares
@@ -108,7 +108,7 @@ function luasocket.DebugPrint(...)
 			tbl[i] = tostring(select(i, ...))
 		end
 
-		print(string.format(unpack(tbl)))
+		logn(string.format(unpack(tbl)))
 	end
 end
 

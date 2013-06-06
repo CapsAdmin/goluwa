@@ -15,7 +15,7 @@ end)
 
 console.AddCommand("reload", function()
 	gserv.ReloadFastDL()
-	print("FastDL reloaded")
+	logn("FastDL reloaded")
 end)
 
 console.AddCommand("update", function()

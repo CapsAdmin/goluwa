@@ -135,7 +135,7 @@ function internal_profile_by_call(self,action)
 	-- can use that...
 	local caller_info = debug.getinfo( 3 )
 	if caller_info == nil then
-		print "No caller_info"
+		logn "No caller_info"
 		return
 	end
 	
@@ -162,7 +162,7 @@ function internal_profile_by_call(self,action)
 	end
 
 	-- Now then, are we in 'call' or 'return' ?
-	-- print("Profile:", caller_info.name, "SNP:", should_not_profile,
+	-- logn("Profile:", caller_info.name, "SNP:", should_not_profile,
 	--			 "Action:", action )
 	if action == "call" then
 		-- Making a call...
@@ -339,14 +339,14 @@ end
 --
 local function newProfiler(variant, sampledelay)
 	if profiler.running then
-		print("Profiler already running.")
+		logn("Profiler already running.")
 		return
 	end
 
 	variant = variant or "time"
 
 	if variant ~= "time" and variant ~= "call" then
-		print("Profiler method must be 'time' or 'call'.")
+		logn("Profiler method must be 'time' or 'call'.")
 		return
 	end
 	
@@ -378,7 +378,7 @@ function profiler.Start(self)
 	elseif self.variant == "call" then
 		debug.sethook( profiler_hook_wrapper_by_call, "cr" )
 	else
-		print("Profiler method must be 'time' or 'call'.")
+		logn("Profiler method must be 'time' or 'call'.")
 	end
 end
 

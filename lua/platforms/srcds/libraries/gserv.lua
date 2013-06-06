@@ -195,7 +195,7 @@ do -- server monitoring
 		ffi.C.SetErrorMode(bit.bor(0x0001, 0x0004, 0x0002, 0x8000))
 		ffi.C.CreateProcessA(nil, SRCDS .. "srcds.exe -withjit -console -game garrysmod -insecure -dev -nohltv -tickrate 100 -maxplayers 15 -ip 0.0.0.0 -port 27015 -nocrashdialog", nil, nil, 0, 0, nil, nil, startupinfo, processinfo)
 		
-		printf("created server %s", id)
+		logf("created server %s", id)
 		
 		servers[id] = processinfo
 	end
@@ -215,7 +215,7 @@ do -- server monitoring
 		for id, processinfo in pairs(servers) do
 			if ffi.C.WaitForSingleObject(processinfo.hProcess, 0) == 0 then
 				ffi.C.GetExitCodeProcess(processinfo.hProcess, status) 
-				printf("server %s stopped with error code 0x%.8X", id, status[0])
+				logf("server %s stopped with error code 0x%.8X", id, status[0])
 				
 				gserv.StartServer(id)
 			end

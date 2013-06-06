@@ -67,10 +67,10 @@ function mmyy.CreateLuaEnvironment(title, globals, id)
 		if func then
 			local ok, msg = pcall(func) 
 			if not ok then
-				print("runtime error:", client, msg)
+				logn("runtime error:", client, msg)
 			end
 		else
-			print("compile error:", client, msg)
+			logn("compile error:", client, msg)
 		end
 	end
 	
@@ -109,14 +109,14 @@ function mmyy.CreateLuaEnvironment(title, globals, id)
 end
 
 function mmyy.CreateConsole(title)
-	if CONSOLE then return print("tried to create a console in a console!!!") end
+	if CONSOLE then return logn("tried to create a console in a console!!!") end
 	local env = mmyy.CreateLuaEnvironment(title, {CONSOLE = true})
 	
 	env:Send([[
 		local __stop__
 		
 		local function clear() 
-			print(("\n"):rep(1000)) -- lol
+			logn(("\n"):rep(1000)) -- lol
 		end
 				
 		local function exit()
@@ -153,7 +153,7 @@ function mmyy.CreateConsole(title)
 		
 	event.AddListener("OnPrint", title .. "_console_output", function(...)
 		local line = tostring_args(...)
-		env:Send(string.format("print(%q)", line))
+		env:Send(string.format("logn(%q)", line))
 	end)
 	
 		

@@ -4,7 +4,7 @@ local silence
 
 local function warning(...)
 	if silence then return end
-	printf("[vfs error] %s", ...)
+	logf("[vfs error] %s", ...)
 end
 
 function vfs.Silence(b)

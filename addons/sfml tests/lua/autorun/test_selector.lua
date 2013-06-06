@@ -27,10 +27,10 @@ event.AddListener("OnUpdate", "test_selector", function()
 		current_test = tests[i%#tests + 1]
 		
 		if last ~= current_test then
-			print(("\n"):rep(1000)) -- lol
-			print("press up or down to select a test")
-			print("press enter to run it")
-			print(current_test)
+			logn(("\n"):rep(1000)) -- lol
+			logn("press up or down to select a test")
+			logn("press enter to run it")
+			logn(current_test)
 			last = current_test
 		end
 	end

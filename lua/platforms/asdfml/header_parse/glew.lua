@@ -45,7 +45,7 @@ local function replace_idkwhat(str)
 		if rt and key and idk[key] then
 			return rt .. idk[key]
 		else
-			print(what)
+			logn(what)
 		end
 	end)
 	

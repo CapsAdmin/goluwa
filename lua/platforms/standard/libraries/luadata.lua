@@ -96,8 +96,8 @@ function luadata.Decode(str)
 	local func = loadstring("return {\n" .. str .. "\n}")
 	
 	if type(func) == "string" then
-		print("luadata decode error:")
-		print(err)
+		logn("luadata decode error:")
+		logn(err)
 		
 		return {}
 	end
@@ -105,8 +105,8 @@ function luadata.Decode(str)
 	local ok, err = pcall(func)
 	
 	if not ok then
-		print("luadata decode error:")
-		print(err)
+		logn("luadata decode error:")
+		logn(err)
 		return {}
 	end
 	

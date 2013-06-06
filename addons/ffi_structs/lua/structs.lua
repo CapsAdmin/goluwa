@@ -306,7 +306,7 @@ function structs.AddOperator(META, operator, ...)
 				
 		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META)
 	else
-		print("unhandled operator " .. operator)
+		logn("unhandled operator " .. operator)
 	end
 end
 

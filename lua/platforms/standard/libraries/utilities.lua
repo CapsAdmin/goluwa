@@ -140,16 +140,16 @@ function utilities.MonitorFile(file_path, callback)
 			if time then
 				time = time.modification
 				if last ~= time then
-					printf("%s changed !", file_path)
+					logf("%s changed !", file_path)
 					last = time
 					return callback(file_path)
 				end
 			else
-				printf("%s not found", file_path)
+				logf("%s not found", file_path)
 			end
 		end)
 	else
-		printf("%s not found", file_path)
+		logf("%s not found", file_path)
 	end
 end
 
@@ -157,8 +157,8 @@ function utilities.MonitorFileInclude(source, target)
 	source = source or utilities.GetCurrentPath(3)
 	target = target or source
 
-	printf("monitoring %s", source)
-	printf("to reload %s", target)
+	logf("monitoring %s", source)
+	logf("to reload %s", target)
 	
 	utilities.MonitorFile(source, function()
 		timer.Simple(0, function()

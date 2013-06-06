@@ -27,10 +27,10 @@ function addons.AutorunAll(folder)
 							local func, err = pcall(func)
 							
 							if not func then
-								print(err)
+								logn(err)
 							end
 						else
-							print(err)
+							logn(err)
 						end
 						
 						info.startup_launched = true
@@ -41,12 +41,12 @@ function addons.AutorunAll(folder)
 				for path in vfs.Iterate(info.path .. "lua/autorun" .. folder, nil, true) do
 					local ok, err = pcall(dofile, path)
 					if not ok then
-						print(err)
+						logn(err)
 					end
 				end
 			_G.INFO = nil	
 		else
-			--printf("the addon %q does not want to be loaded", addon)
+			--logf("the addon %q does not want to be loaded", addon)
 		end
 	end
 end
@@ -98,10 +98,10 @@ function addons.LoadAll()
 
 	for _, info in ipairs(addons.Info) do
 		if info.load ~= false then
-			print("mounting addon ", info.path)
+			logn("mounting addon ", info.path)
 			vfs.Mount(e.BASE_FOLDER .. info.path)
 		else
-			--printf("the addon %q does not want to be loaded", addon)
+			--logf("the addon %q does not want to be loaded", addon)
 		end
 	end
 
