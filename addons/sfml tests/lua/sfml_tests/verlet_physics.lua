@@ -94,7 +94,7 @@ do -- circle body
 
 end
 	
-local window = RenderWindow(VideoMode(800, 600, 32), "SFML window", bit.bor(e.RESIZE, e.CLOSE), ContextSettings())
+local window = asdfml.OpenWindow()
 window:SetFramerateLimit(60)
 
 local zoom_factor = 1.0

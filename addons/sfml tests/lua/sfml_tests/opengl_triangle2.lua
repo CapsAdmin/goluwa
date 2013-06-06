@@ -1,16 +1,4 @@
-if not _G.gl_init then
-	local settings = ContextSettings()
-
-		settings.depthBits = 24
-		settings.stencilBits = 8
-		settings.antialiasingLevel = 4
-		settings.majorVersion = 3
-		settings.minorVersion = 0
-
-	window = RenderWindow(VideoMode(800, 600, 32), "SFML window", bit.bor(e.RESIZE, e.CLOSE), settings)
-
-	_G.gl_init = true
-end
+window = asdfml.OpenWindow()
 
 gl.ClearColor(0, 0.25, 0.5, 1)
 gl.LineWidth(1.5)

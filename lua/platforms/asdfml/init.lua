@@ -9,6 +9,26 @@ local window
 
 asdfml = {}
 
+function asdfml.OpenWindow(w, h, title)
+	if window and window:IsOpen() then return end
+
+	w = w or 800
+	h = h or 600
+	title = title or "no title"
+	
+	local settings = ContextSettings()
+
+	settings.depthBits = 24
+	settings.stencilBits = 8
+	settings.antialiasingLevel = 4
+	settings.majorVersion = 3
+	settings.minorVersion = 0
+
+	window = RenderWindow(VideoMode(w, h, 32), title, bit.bor(e.RESIZE, e.CLOSE), settings)
+	
+	return window
+end
+
 function asdfml.OnClosed(params)
 	window:Close()
 	os.exit()
@@ -240,45 +260,48 @@ do -- update
 
 	local smooth_fps = 0
 	local fps_fmt = "FPS: %i"
+	asdfml.max_fps = 120
 	
 	-- this sucks
 	ffi.cdef("float sfTime_asSeconds(sfTime time)")
 	
+	local sleep
+	
+	if WINDOWS then
+		ffi.cdef("void Sleep(int ms)")	
+		sleep = function(ms) ffi.C.Sleep(ms) end
+	end
+	
+	if LINUX then
+		ffi.cdef("void usleep(unsigned int ms)")	
+		sleep = function(ms) ffi.C.usleep(ms/1000) end
+	end
+	
 	function asdfml.Update()
+		sleep(1000/asdfml.max_fps)
+		
 		luasocket.Update()
 		timer.Update()
 
 		asdfml.ProcessInput()
-		
-		if not window then
-			local settings = ContextSettings()
-
-			settings.depthBits = 24
-			settings.stencilBits = 8
-			settings.antialiasingLevel = 4
-			settings.majorVersion = 3
-			settings.minorVersion = 0
-			
-			window = RenderWindow(VideoMode(800, 600, 32), "ASDFML", bit.bor(e.RESIZE, e.CLOSE), settings)
-		end
-		
+				
 		local dt = sfsystem.sfTime_asSeconds(clock:Restart()) -- fix me!!!
 		
 		smooth_fps = smooth_fps + (((1/dt) - smooth_fps) * dt)
 		
 		mmyy.SetWindowTitle(string.format(fps_fmt, smooth_fps))
 		
-		if window:IsOpen() then
+		event.Call("OnUpdate", dt)
+		
+		if window and window:IsOpen() then
 			if window:PollEvent(params) then
 				asdfml.HandleEvent(params)
 			end
+				
+			window:Clear(e.BLACK)
+				event.Call("OnDraw", dt)
+			window:Display()	
 		end
-		
-		event.Call("OnUpdate", dt)
-		
-		window:Clear(e.BLACK)
-			event.Call("OnDraw", dt)
-		window:Display()
 	end
 end
 

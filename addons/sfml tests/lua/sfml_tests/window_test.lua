@@ -1,5 +1,8 @@
 -- Create the main window
-local window = RenderWindow(VideoMode(800, 600, 32), "SFML window", bit.bor(e.RESIZE, e.CLOSE), ContextSettings())
+local window = asdfml.OpenWindow()
+
+-- this also works but i've decided to have a main window apps can use
+-- local window = RenderWindow(VideoMode(800, 600, 32), "SFML window", bit.bor(e.RESIZE, e.CLOSE), ContextSettings())
 
 -- Load a sprite to display
 local texture = Texture("file", R"textures/cute_image.jpg",  Rect(0, 0, 100, 100))
