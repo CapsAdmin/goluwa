@@ -2,7 +2,7 @@
 _E = {}
 e = _E
 
-_E.MMYY_PLATFORM = MMYY_PLATFORM or tostring(select(1, ...) or nil)
+_E.PLATFORM = PLATFORM or tostring(select(1, ...) or nil)
 
 do -- helper constants	
 	_G._F = {}
@@ -51,6 +51,47 @@ if not _OLD_G then
 	end
 	
 	scan(_G, _OLD_G)
+end
+
+do -- logging
+	local function call(str)
+		return event and event.Call("ConsolePrint", str) ~= false
+	end
+	
+	local function get_verbosity_level()
+		return console and console.GetVariable("log_verbosity", 0) or 0
+	end
+	
+	local function get_debug_filter()
+		return console and console.GetVariable("log_debug_filter", "") or ""
+	end	
+	
+	function log(...)		
+		return io.write(...)
+	end
+	
+	function logc(...)	
+		
+	end
+		
+	function warning(verbosity, ...)
+		local level = get_verbosity_level()
+		
+		-- if the level is below 0 always log
+		if level < 0 then
+			return log(...)
+		end
+		
+		-- if verbosity is a string only show warnings log_debug_filter is set to
+		if type(verbosity) == "string" and verbosity == get_debug_filter() then
+			return log(...)
+		end	
+		
+		-- otherwise check the verbosity level against the input	
+		if level <= verbosity then
+			return log(...)
+		end
+	end
 end
 
 Msg = Msg or print
@@ -207,6 +248,7 @@ msgpack = include(libraries .. "msgpack.lua")
 json = include(libraries .. "json.lua")
 console = include(libraries .. "console.lua")
 mmyy = include(libraries .. "mmyy.lua")
+curses = include(libraries .. "curses.lua")
 
 -- meta
 include(meta .. "function.lua")
@@ -253,9 +295,9 @@ MsgN("loading addons")
 MsgN("sucessfully loaded addons (took " .. (os.clock() - time) .. " ms)")
 
 local time = os.clock()
-MsgN("loading platform " .. e.MMYY_PLATFORM)
-include("platforms/".. e.MMYY_PLATFORM .."/init.lua")
-MsgN("sucessfully loaded platform " .. e.MMYY_PLATFORM .. " (took " .. (os.clock() - time) .. " ms)")
+MsgN("loading platform " .. e.PLATFORM)
+include("platforms/".. e.PLATFORM .."/init.lua")
+MsgN("sucessfully loaded platform " .. e.PLATFORM .. " (took " .. (os.clock() - time) .. " ms)")
 
 addons.AutorunAll(e.USERNAME)
 
@@ -274,6 +316,7 @@ if CREATED_ENV then
 	
 	ENV_SOCKET.OnReceive = function(self, line)		
 		local func, msg = loadstring(line)
+
 		if func then
 			local ok, msg = pcall(func) 
 			if not ok then
@@ -283,7 +326,7 @@ if CREATED_ENV then
 			print("compile error:", client, msg)
 		end
 		
-		timer.Simple(0.1, function() event.Call("OnConsoleEnvReceive", line) end)
+		timer.Simple(0, function() event.Call("OnConsoleEnvReceive", line) end)
 	end
 end
 

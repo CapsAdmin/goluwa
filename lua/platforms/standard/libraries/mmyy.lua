@@ -42,7 +42,7 @@ function mmyy.CreateLuaEnvironment(title, globals, id)
 		
 	globals = globals or {}
 	
-	globals.MMYY_PLATFORM = _G.MMYY_PLATFORM or globals.MMYY_PLATFORM
+	globals.PLATFORM = _G.PLATFORM or globals.PLATFORM
 	globals.PORT = socket:GetPort()
 	globals.CREATED_ENV = true
 	globals.TITLE = tostring(title)
@@ -52,8 +52,8 @@ function mmyy.CreateLuaEnvironment(title, globals, id)
 	end	
 	
 	arg = arg:gsub([["]], [[']])	
-	arg = ([[-e %sloadfile('%sinit.lua')()]]):format(arg, e.LUA_FOLDER)
-	
+	arg = ([[-e %sloadfile('%sinit.lua')()]]):format(arg, e.BASE_FOLDER .. "lua/")
+		
 	if WINDOWS then
 		os.execute([[start "" "luajit" "]] .. arg .. [["]])
 	elseif LINUX then
@@ -109,6 +109,7 @@ function mmyy.CreateLuaEnvironment(title, globals, id)
 end
 
 function mmyy.CreateConsole(title)
+	if CONSOLE then return print("tried to create a console in a console!!!") end
 	local env = mmyy.CreateLuaEnvironment(title, {CONSOLE = true})
 	
 	env:Send([[
@@ -120,6 +121,7 @@ function mmyy.CreateConsole(title)
 				
 		local function exit()
 			__stop__ = true
+			os.exit()
 		end
 		
 		clear()
@@ -136,7 +138,7 @@ function mmyy.CreateConsole(title)
 			elseif str == "clear" then
 				clear()
 			end
-						
+
 			if str and #str:trim() > 0 then
 				ENV_SOCKET:Send(str, true)
 			else

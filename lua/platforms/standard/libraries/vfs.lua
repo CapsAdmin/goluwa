@@ -193,7 +193,7 @@ function vfs.Find(path, invert, full_path, start, plain)
 		pattern = path
 		dir = ""
 	end
-	
+
 	for k, v in ipairs(vfs.paths) do
 		for i in lfs.dir(v .. dir) do
 			if i ~= "." and i ~= ".." then
@@ -204,7 +204,7 @@ function vfs.Find(path, invert, full_path, start, plain)
 			end
 		end
 	end
-
+	
 	local list = {}
 	
 	for k, v in pairs(unique) do
@@ -242,16 +242,16 @@ function vfs.Iterate(path, ...)
 	end
 end
 
-function vfs.loadfile(path, ...)
+function vfs.loadfile(path)
 	check(path, "string")
 	
-	local script, err = vfs.Read(path, ...)
+	local path = vfs.GetAbsolutePath(path)
 	
-	if script then
-		return loadstring(script)
+	if path  then
+		return loadfile(path)
 	end
 	
-	return script, err
+	return false, "was not found in any mounted folders"
 end
 
 function vfs.dofile(path, ...)

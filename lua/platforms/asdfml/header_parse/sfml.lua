@@ -31,13 +31,6 @@ local function lib_translate(str)
 	end
 end
 
--- internal
-
---if CAPSADMIN then
-	parse_headers = true
-	cache_parse = true
---end
-
 local libraries = {}
 local headers = {}
 local included = {}

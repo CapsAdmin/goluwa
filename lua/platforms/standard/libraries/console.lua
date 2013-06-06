@@ -75,10 +75,7 @@ do -- commands
 	end
 
 	local function call(data, client, line, ...)
-		local status, message = xpcall(data.callback, OnError, client, line, ...)
-		if not status then
-			print(message)
-		end
+		return xpcall(data.callback, OnError, client, line, ...)
 	end
 
 	function console.CallCommand(cmd, line, client, ...)
@@ -93,18 +90,16 @@ do -- commands
 				if data.server == true or data.server == "server" then
 					message.Send("cmd", cmd, ...)
 				elseif data.server == "shared" then
-					call(data, client, line, ...)
 					message.Send("cmd", cmd, ...)
+					return call(data, client, line, ...)
 				elseif not data.server or data.server == "client" then
-					call(data, client, line, ...)
+					return call(data, client, line, ...)
 				end
 			end
 
 			if SERVER then
-				call(data, client, line, ...)
+				return call(data, client, line, ...)
 			end
-		else
-			printf("the command %q does not exist", cmd)
 		end
 	end
 
@@ -133,12 +128,12 @@ do -- commands
 		local arg_line = line:match(".- (.+)") or ""		
 
 		cmd = cmd:lower()
-		
+				
 		if not console.AddedCommands[cmd] then
 			cmd, arg_line = line:match("(.-)%s-(.+)")
 			
 			if not cmd or cmd == "" then
-				cmd = arg_line
+				cmd = arg_line or ""
 				arg_line = ""
 			end
 			
@@ -146,8 +141,10 @@ do -- commands
 		end
 
 		if console.AddedCommands[cmd] then
-			console.CallCommand(cmd, arg_line, nil, unpack(console.ParseCommandArgs(arg_line)))
+			return console.CallCommand(cmd, arg_line, nil, unpack(console.ParseCommandArgs(arg_line)))
 		end
+		
+		return false, string.format("unknown command %q", cmd)
 	end
 end
 
