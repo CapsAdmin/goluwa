@@ -202,12 +202,16 @@ do -- input handling
 				-- enter
 				if byte == 10 or byte == 13 then
 					clear()
-					io.write("\n")
+					io.write(line, "\n")
 					
 					if line ~= "" then
-						local ok, err = console.CallCommandLine(line)
+						local res, err = loadstring(line)
 						
-						if not ok then
+						if res then
+							res, err = pcall(res)
+						end
+						
+						if not res then
 							io.write(err, "\n")
 						end
 						
