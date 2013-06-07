@@ -1,4 +1,4 @@
-local vfs = {}
+local vfs = _G.vfs or {}
 
 local silence
 
@@ -12,6 +12,20 @@ function vfs.Silence(b)
 end
 
 local function fix_path(path)
+	if WINDOWS then
+		path = path:gsub("%%(.-)%%", os.getenv)
+		path = path:gsub("%%", "")		
+	end
+	
+	if LINUX then
+		path = path:gsub("%$%((.-)%)", os.getenv)
+		
+		-- uh
+		path = path:gsub("%$", "")
+		path = path:gsub("%(", "")
+		path = path:gsub("%)", "")
+	end
+		
 	return path:gsub("\\", "/"):lower()
 end
 
@@ -77,6 +91,8 @@ function vfs.GetAbsolutePath(path, ...)
 			return v .. "/" .. path
 		end
 	end
+	
+	return path
 end
 
 function vfs.GetFile(path, ...)
@@ -95,7 +111,17 @@ function vfs.GetFile(path, ...)
 		end
 	end
 	
-	return false, "was not found in any mounted folders"
+	local file, err = io.open(path, ...)
+	
+	if err then
+		warning(err)
+	end
+	
+	if file then
+		return file, err
+	end
+	
+	return false, "No such file or directory"
 end
 
 function vfs.Read(path, ...)
@@ -131,11 +157,11 @@ function vfs.Delete(path, ...)
 		end
 	end
 	
-	local err = ("file not found %q"):format(path)
+	local err = ("No such file or directory %q"):format(path)
 	
 	warning(err)
 	
-	return false, err
+	return false, "No such file or directory"
 end
 
 local function create_folders_from_path(path)
@@ -166,7 +192,7 @@ function vfs.Write(path, data, mode)
 	end
 	
 	local file, err = vfs.GetFile(path, mode)
-	
+		
 	if err and err:find("No such file or directory") then
 		create_folders_from_path(path)
 		return vfs.Write(path, data, mode)
@@ -175,7 +201,11 @@ function vfs.Write(path, data, mode)
 	if file then
 		local data = file:write(data)
 		file:close()
+		
+		return true
 	end
+	
+	return false, err
 end
 
 function vfs.Find(path, invert, full_path, start, plain)
@@ -247,11 +277,11 @@ function vfs.loadfile(path)
 	
 	local path = vfs.GetAbsolutePath(path)
 	
-	if path  then
+	if path then
 		return loadfile(path)
 	end
 	
-	return false, "was not found in any mounted folders"
+	return false, "No such file or directory"
 end
 
 function vfs.dofile(path, ...)

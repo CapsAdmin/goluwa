@@ -122,29 +122,38 @@ do -- commands
 
 		return ret
 	end
-
-	function console.CallCommandLine(line)
-		local cmd = line:match("(.-) ") or line:match("(.+)") or ""
-		local arg_line = line:match(".- (.+)") or ""		
-
-		cmd = cmd:lower()
-				
-		if not console.AddedCommands[cmd] then
-			cmd, arg_line = line:match("(.-)%s-(.+)")
+	
+	function console.RunString(line)
+		local args = console.ParseCommandArgs(line)
+		
+		local cmd = args[1]
+		
+		if cmd then
 			
-			if not cmd or cmd == "" then
-				cmd = arg_line or ""
-				arg_line = ""
+			local ccmd = cmd:lower()
+			
+			if console.AddedCommands[ccmd] then
+				local arg_line = line:sub(#args[1]+1):trim()
+				return console.CallCommand(ccmd, arg_line, nil, select(2, unpack(args)))
 			end
 			
-			cmd = cmd:lower()
+			local func = _G[cmd]
+			
+			if type(func) == "function" then
+				
+				for key, val in pairs(args) do
+					args[key] = tonumber(args[key]) or val
+				end
+			
+				return pcall(func, select(2, unpack(args)))
+			end
+			
+			local func, err = loadstring(line)
+			
+			if not func then return func, err end
+			
+			return pcall(func)
 		end
-
-		if console.AddedCommands[cmd] then
-			return console.CallCommand(cmd, arg_line, nil, unpack(console.ParseCommandArgs(arg_line)))
-		end
-		
-		return false, string.format("unknown command %q", cmd)
 	end
 end
 

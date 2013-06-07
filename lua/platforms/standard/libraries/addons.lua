@@ -22,17 +22,11 @@ function addons.AutorunAll(folder)
 				if info.startup then
 					if not info.startup_launched then
 						-- we want to make sure the addon loads the correct startup file (or do we???)
-						local func, err = loadfile(e.BASE_FOLDER .. info.path .. "lua/" .. info.startup)
-						if func then
-							local func, err = pcall(func)
-							
-							if not func then
-								logn(err)
-							end
-						else
-							logn(err)
-						end
-						
+						-- update:
+						-- if we use include in the startup file, it won't work.. we need to
+						-- include it instead so it pushes the path to the include stack
+						include(e.BASE_FOLDER .. info.path .. "lua/" .. info.startup)
+												
 						info.startup_launched = true
 					end
 				end

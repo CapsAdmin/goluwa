@@ -82,7 +82,7 @@ end
 
 -- external functions
 local logn = logn
-local table_print = PrintTable or table.logn or logn
+local table_print = PrintTable or table.print or logn
 local warning = ErrorNoHalt or logn
 local check = check or function() end
 local require = require
@@ -548,12 +548,16 @@ do -- tcp socket meta
 		end
 
 		function CLIENT:Remove()
+			if self.remove_me then return end
+			
 			self:DebugPrintf("removed")
 			self:OnClose()
+			
+			remove_socket(self)
+			
 			if self.__server then 
 				self.__server:OnClientClosed(self) 
 			end
-			remove_socket(self)
 		end
 
 		function CLIENT:IsConnected()
@@ -574,6 +578,16 @@ do -- tcp socket meta
 			if not self.connected then return "nil" end
 			local ip, port = self.socket:getpeername()
 			return ip and port or nil
+		end
+				
+		function CLIENT:GetIPPort()
+			if not self.connected then return "nil" end
+			local ip, port = self.socket:getpeername()
+			return ip .. ":" .. port
+		end
+		
+		function CLIENT:GetSocketName()
+			return self.socket:getpeername()
 		end
 
 		function CLIENT:IsValid()
@@ -747,9 +761,15 @@ do -- tcp socket meta
 			end
 		end
 		
+		function SERVER:SuppressSend(client)
+			self.suppressed_send = client
+		end
+		
 		function SERVER:Broadcast(...)
 			for k,v in pairs(self:GetClients()) do
-				v:Send(...)
+				if self.suppressed_send ~= v then
+					v:Send(...)
+				end
 			end
 		end
 
@@ -778,6 +798,15 @@ do -- tcp socket meta
 		function SERVER:GetPort()
 			local ip, port = self.socket:getsockname()
 			return ip and port or nil
+		end
+		
+		function SERVER:GetIPPort()
+			local ip, port = self.socket:getsockname()
+			return ip .. ":" .. port
+		end
+		
+		function SERVER:GetSocketName()
+			return self.socket:getsockname()
 		end
 
 		function SERVER:OnClientConnected(client, ip, port) end

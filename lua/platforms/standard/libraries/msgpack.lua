@@ -496,16 +496,12 @@ local ljp_unpack = function(s,offset)
 end
 
 return {
-	pack = function(...) 
+	Encode = function(...) 
 		return ljp_pack({...}) 
 	end,
-	unpack = function(s) 
+	Decode = function(s) 
 		local offset, data = ljp_unpack(s)
 		return unpack(data)
 	end,
-	
-	encode = ljp_pack,
-	decode = ljp_unpack,
-	
-	set_fp_type = set_fp_type,
+	SetFloatingPointType = set_fp_type,
 }
