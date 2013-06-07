@@ -1,6 +1,6 @@
 users = users or {}
 
-network.AddEncodeDecodeType("user", function(var, encode)
+network.AddEncodeDecodeType("player", function(var, encode)
 	if encode then
 		return var:GetUniqueID()
 	else
@@ -12,20 +12,20 @@ users.active_users = users.active_users or {}
 	
 local ref_count = 1
 
-do -- user meta
+do -- player meta
 	local META
 
 	META = {}
 	META.__index = META
 	
-	META.Type = "user"
-	META.ClassName = "user"
+	META.Type = "player"
+	META.ClassName = "player"
 		
 	class.GetSet(META, "UniqueID", "???")
 	class.GetSet(META, "ID", -1)
 		
 	function META:__tostring()
-		return string.format("user[%s][%i]", self:GetName(), self:GetID())
+		return string.format("player[%s][%i]", self:GetName(), self:GetID())
 	end
 	
 	function META:IsValid() 
@@ -47,7 +47,7 @@ do -- user meta
 	users.user_meta = META
 end
 
-function User(uniqueid)		
+function Player(uniqueid)		
 	local self = users.active_users[uniqueid] or NULL
 
 	if self:IsValid() then
@@ -60,8 +60,6 @@ function User(uniqueid)
 	self:SetUniqueID(uniqueid)
 	self.ID = ref_count
 		
-	self.nv = nvars.CreateObject(uniqueid)
-	
 	users.active_users[self.UniqueID] = self
 	
 	return self

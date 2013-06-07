@@ -108,7 +108,8 @@ do -- input handling
 	curses.noecho()
 	curses.nodelay(line_window, true)
 	curses.wrefresh(line_window)
-	curses.keypad(line_window, true);
+	curses.keypad(line_window, true)
+	
 	
 	_E.CURSES_INIT = true
 	
@@ -311,15 +312,16 @@ do -- input handling
 				-- enter
 				if byte == 10 or byte == 13 then
 					clear()
-					log(line, "\n")
 
 					if line ~= "" then
-						event.Call("OnLineEntered", line)
-						
-						local res, err = console.RunString(line)
+						if event.Call("OnLineEntered", line) ~= false then
+							log(line, "\n")
+							
+							local res, err = console.RunString(line)
 
-						if not res then
-							log(err, "\n")
+							if not res then
+								log(err, "\n")
+							end
 						end
 						
 						for key, str in pairs(history) do
