@@ -1,15 +1,31 @@
 nvars = nvars or {}
+ 
+nvars.Environments = nvars.Environments or {} 
 
-nvars.Environments = {}
+if CLIENT then
+	message.AddListener("nv", function(env, key, value)
+		nvars.Set(key, value, env)
+	end)
+end
 
-function nvars.Set(key, value, env)
+if SERVER then
+	function nvars.FullUpdate(ply)
+		for env, vars in pairs(nvars.Environments) do
+			for key, value in pairs(vars) do
+				nvars.Set(key, value, env, ply)
+			end
+		end
+	end
+end
+
+function nvars.Set(key, value, env, ply)
 	env = env or "g"
 		
 	nvars.Environments[env] = nvars.Environments[env] or {}
 	nvars.Environments[env][key] = value
 
 	if SERVER then
-		message.Send("nv", env, key, value)
+		message.Send("nv", ply, env, key, value)
 	end
 end
 
@@ -34,14 +50,5 @@ do
 end
 
 function nvars.CreateObject(env)
-	check(env, "string")
 	return setmetatable({Env = env}, nvars.ObjectMeta)
-end
-
-function nvars.FullUpdate()
-	for env, vars in pairs(nvars.Environments) do
-		for key, value in pairs(vars) do
-			nvars.Set(key, value, env)
-		end
-	end
 end

@@ -54,45 +54,56 @@ function network.AddEncodeDecodeType(type, callback)
 	custom_types[type] = callback
 end
 
-function network.HandleEvent(socket, type, uniqueid, ...)
-	local user = User(uniqueid)
-		
+function network.HandleEvent(socket, type, uniqueid, ...)		
 	if type == e.USER_CONNECT then		
+		local player = Player(uniqueid)
+		
 		if SERVER then			
-			-- store the socket object in the user
-			user.socket = socket
 			
-			if event.Call("OnUserConnect", user) ~= false then			
+			-- store the socket in the player
+			player.socket = socket
+						
+			if event.Call("OnPlayerConnect", player) ~= false then			
 				-- tell all the clients that he just joined
 				network.Broadcast(type, uniqueid, ...)
 						
 				-- now tell him about all the other clients
 				for key, other in pairs(users.GetAll()) do
-					if other ~= user then
-						print(other:GetUniqueID())
+					if other ~= player then
 						network.SendToClient(socket, type, other:GetUniqueID(), ...)
 					end
 				end
 			end
 		end
+		
+		-- add a networked table to the player
+		player.nv = nvars.CreateObject(uniqueid)
+		
+		-- this should be done after the player is created
+		if SERVER then
+			nvars.FullUpdate(player)
+		end
 	
-		logf("user %s connected", user:GetName())		
-	elseif type == e.USER_DISCONNECT then				
-		logf("user %s disconnected (%s)", user:GetName(), reason or "unknown reason")
+		logf("player %s connected", player:GetName())
+	elseif type == e.USER_DISCONNECT then			
+		local player = Player(uniqueid)
+		
+		logf("player %s disconnected (%s)", player:GetName(), reason or "unknown reason")
 					
 		if SERVER then	
 			network.Broadcast(type, uniqueid, socket)
-			utilities.SafeRemove(user.socket)
+			utilities.SafeRemove(player.socket)
 		end
 		
-		user:Remove()
+		player:Remove()
 	elseif type == e.USER_MESSAGE then
 		if CLIENT then
 			-- the arguments start after type. uniqueid is just used by this library
-			event.Call("OnUserMessage", uniqueid, ...)
+			event.Call("OnPlayerMessage", uniqueid, ...)
 		end
 		if SERVER then
-			event.Call("OnUserMessage", user, ...)
+			local player = Player(socket:GetIPPort())
+			event.Call("OnPlayerMessage", player, uniqueid, ...)
 		end
 	end	
 end
@@ -124,7 +135,7 @@ if CLIENT then
 	end
 
 	function network.Disconnect(reason)		
-		network.SendMessage(e.USER_DISCONNECT, reason)
+		network.client_socket:Remove()
 	end
 
 	function network.SendToServer(event, ...)	
@@ -152,12 +163,12 @@ if SERVER then
 
 		function server:OnClientConnected(client, ip, port)
 			client:SetReceiveMode(receive_mode)			
-			network.HandleEvent(client, e.USER_CONNECT, client:GetIPPort(), "none")
+			network.HandleEvent(client, e.USER_CONNECT, client:GetIPPort())
 			return true
 		end
 		
 		function server:OnClientClosed(client)
-			network.HandleEvent(client, e.USER_DISCONNECT, client:GetIPPort(), "none")
+			network.HandleEvent(client, e.USER_DISCONNECT, client:GetIPPort())
 		end
 		
 		function server:OnReceive(str, client)

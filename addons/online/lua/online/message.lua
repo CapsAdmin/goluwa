@@ -1,9 +1,9 @@
 message = message or {}
 
-message.Hooks = message.Hooks or {}
+message.Listeners = message.Listeners or {}
 
-function message.Hook(tag, callback)
-	message.Hooks[tag] = callback
+function message.AddListener(tag, callback)
+	message.Listeners[tag] = callback
 end
 
 if CLIENT then
@@ -11,26 +11,26 @@ if CLIENT then
 		network.SendToServer(e.USER_MESSAGE, id, ...)
 	end
 	
-	function message.OnUserMessage(id, ...)		
-		if message.Hooks[id] then
-			message.Hooks[id](...)
+	function message.OnPlayerMessage(id, ...)		
+		if message.Listeners[id] then
+			message.Listeners[id](...)
 		end
 	end
 
-	event.AddListener("OnUserMessage", "message", message.OnUserMessage, print)
+	event.AddListener("OnPlayerMessage", "message", message.OnPlayerMessage, print)
 end
 
 if SERVER then
 	function message.Send(id, filter, ...)		
-		if typex(filter) == "user" then
+		if typex(filter) == "player" then
 			network.SendToClient(filter.socket, e.USER_MESSAGE, id, ...)
 		elseif typex(filter) == "netmsg_user_filter" then
-			for _, user in pairs(filter:GetPlayers()) do
-				network.SendToClient(usr.socket, e.USER_MESSAGE, id, ...)
+			for _, player in pairs(filter:GetAll()) do
+				network.SendToClient(player.socket, e.USER_MESSAGE, id, ...)
 			end
 		else
-			for key, usr in pairs(users.GetAll()) do
-				network.SendToClient(usr.socket, e.USER_MESSAGE, id, ...)
+			for key, ply in pairs(users.GetAll()) do
+				network.SendToClient(ply.socket, e.USER_MESSAGE, id, ...)
 			end
 		end
 	end
@@ -39,11 +39,54 @@ if SERVER then
 		return message.Send(id, nil, ...)
 	end
 	
-	function message.OnUserMessage(usr, id, ...)						
-		if message.Hooks[id] then
-			message.Hooks[id](usr, ...)
+	function message.OnPlayerMessage(ply, id, ...)
+		if message.Listeners[id] then
+			message.Listeners[id](ply, ...)
 		end
 	end
 	
-	event.AddListener("OnUserMessage", "message", message.OnUserMessage, print)
+	event.AddListener("OnPlayerMessage", "message", message.OnPlayerMessage, print)
+end
+
+do -- filter
+	local META = {}
+	META.__index = META
+
+	META.users = {}
+	META.Type = "netmsg_user_filter"
+
+	function META:AddAll()
+		for key, ply in pairs(users.GetAll()) do
+			self.users[ply:GetUniqueID()] = ply
+		end
+
+		return self
+	end
+
+	function META:AddAllExcept(ply)
+		self:AddAll()
+		self.users[ply:GetUniqueID()] = nil
+
+		return self
+	end
+
+	function META:Add(ply)
+		self.users[ply:GetUniqueID()] = ply
+
+		return self
+	end
+
+	function META:Remove(ply)
+		self.users[ply:GetUniqueID()] = nil
+
+		return self
+	end
+
+	function META:GetAll()
+		return self.users
+	end
+
+	function message.PlayerFilter()
+		return setmetatable({}, META)
+	end
 end
