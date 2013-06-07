@@ -146,6 +146,7 @@ function utilities.MonitorFile(file_path, callback)
 				end
 			else
 				logf("%s not found", file_path)
+				timer.Remove(file_path)
 			end
 		end)
 	else
@@ -164,6 +165,49 @@ function utilities.MonitorFileInclude(source, target)
 		timer.Simple(0, function()
 			dofile(target)
 		end)
+	end)
+end
+
+function utilities.MonitorEverything(b)
+	if not b then
+		timer.Remove("monitor_everything")
+		return
+	end
+
+	local full_path = lfs.currentdir():gsub("\\", "/") .. "/" .. e.BASE_FOLDER
+	local lua_files = {}
+
+	local function scan(dir)
+		for path in lfs.dir(dir) do
+			if path ~= "." and path ~= ".." then
+				if utilities.GetExtensionFromPath(path) ~= "lua" then	
+					scan(dir .. path .. "/")
+				else
+					table.insert(lua_files, {path = dir .. path})
+				end
+			end
+		end
+	end
+
+	scan(full_path .. "lua/")
+	scan(full_path .. "addons/")
+
+	timer.Create("monitor_everything", 0.1, 0, function()
+		for _, data in pairs(lua_files) do
+			local info = lfs.attributes(data.path)
+			
+			if info then
+				if not data.modification then
+					data.modification = info.modification
+				else 
+					if data.modification ~= info.modification then
+						logn("including ", utilities.GetFileNameFromPath(data.path), " due to modification")
+						include(data.path) 
+						data.modification = info.modification
+					end
+				end			
+			end
+		end
 	end)
 end
 

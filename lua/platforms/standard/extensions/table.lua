@@ -77,7 +77,7 @@ do -- table logn
 		end 
 	end
 	
-	function table.logn(...)
+	function table.print(...)
 		local tbl = {...}
 		
 		indent = 0

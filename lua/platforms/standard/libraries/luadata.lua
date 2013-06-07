@@ -86,6 +86,8 @@ function luadata.Encode(tbl, __brackets)
 	end
 
 	str = str .. ("\t"):rep(tab-1) .. (__brackets and "}" or "")
+	
+	str = str .. "\n"
 
 	return str
 end

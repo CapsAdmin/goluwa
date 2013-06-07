@@ -7,7 +7,7 @@ addons.AutorunAll()
 
 local window
 
-asdfml = {}
+asdfml = asdfml or {}
 
 function asdfml.OpenWindow(w, h, title)
 	if window and window:IsOpen() then return end
@@ -91,18 +91,27 @@ do -- input handling
 		int wmove(WINDOW *win, int y, int x);
 		int resize_term(int y, int x);
 	]]
-
+	
+	if _E.CURSES_INIT then return end
+	
+	-- whyyyyyyyyy
+	if WINDOWS then
+		os.execute("mode con:cols=140 lines=50")
+	end
+	
 	local curses = ffi.load("pdcurses")
 	local parent = curses.initscr()
 	
 	local line_window = curses.derwin(parent, 1, 128, curses.LINES-1, 0)
-	
+	 
 	curses.cbreak()
 	curses.noecho()
 	curses.nodelay(line_window, true)
 	curses.wrefresh(line_window)
 	curses.keypad(line_window, true);
-
+	
+	_E.CURSES_INIT = true
+	
 	local function get_char()
 		return curses.wgetch(line_window)
 	end
@@ -133,8 +142,16 @@ do -- input handling
 		return curses.wmove(line_window, 0, x)
 	end
 
+	local function load_history()
+		return luadata.ReadFile("%APPDATA%/asdfml/cmd_history.txt")
+	end
+	
+	local function save_history(tbl)
+		return luadata.WriteFile("%APPDATA%/asdfml/cmd_history.txt", tbl)
+	end
+	
 	local line = ""
-	local history = {}
+	local history = load_history()
 	local scroll = 0
 	
 	local function insert_char(char)
@@ -154,7 +171,7 @@ do -- input handling
 	local current_table = _G
 	local table_scroll = 0
 	local in_function
-
+	
 	function asdfml.ProcessInput()
 		local byte = get_char()
 
@@ -297,17 +314,22 @@ do -- input handling
 					log(line, "\n")
 
 					if line ~= "" then
-						local res, err = loadstring(line)
-
-						if res then
-							res, err = pcall(res)
-						end
+						event.Call("OnLineEntered", line)
+						
+						local res, err = console.RunString(line)
 
 						if not res then
 							log(err, "\n")
 						end
-
+						
+						for key, str in pairs(history) do
+							if str == line then
+								table.remove(history, key)
+							end
+						end
+						
 						table.insert(history, line)
+						save_history(history)
 
 						scroll = 0
 						current_table = _G

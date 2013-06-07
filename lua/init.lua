@@ -1,6 +1,6 @@
 -- enums
-_E = {}
-e = _E
+_E = _E or {}
+e = _E 
 
 _E.PLATFORM = PLATFORM or tostring(select(1, ...) or nil)
 
@@ -237,18 +237,31 @@ do -- ffi
 	_G[ffi.arch:upper()] = true
 
 	 -- ffi's cdef is so anti realtime
-	ffi.already_defined = {}
-	old_ffi_cdef = old_ffi_cdef or ffi.cdef
-	
-	ffi.cdef = function(str, ...)
-		local val = ffi.already_defined[str]
+	if not ffi.already_defined then
+		ffi.already_defined = {}
 		
-		if val then
-			return val
+		old_ffi_cdef = old_ffi_cdef or ffi.cdef
+		ffi.cdef = function(str, ...)
+			local val = ffi.already_defined[str]
+			
+			if val then
+				return val
+			end
+		
+			ffi.already_defined[str] = str
+			return old_ffi_cdef(str, ...)
 		end
-	
-		ffi.already_defined[str] = str
-		return old_ffi_cdef(str, ...)
+			
+		ffi.already_defined_metatypes = {}
+			
+		old_ffi_metatype = old_ffi_metatype or ffi.metatype
+		ffi.metatype = function(str, ...)
+			local res = ffi.already_defined_metatypes[str] or old_ffi_metatype(str, ...)			
+			
+			ffi.already_defined_metatypes[str] = res
+			
+			return res
+		end
 	end
 end
 
@@ -302,7 +315,7 @@ do -- include
 				
 		vfs.Silence(true)
 		
-		
+		 
 		local previous_dir = include_stack[#include_stack]		
 		
 		if previous_dir then
@@ -314,9 +327,12 @@ do -- include
 		
 		local func, err = vfs.loadfile("lua/" .. dir .. file)
 			
-		if err and err:find("not found") then
+		if err and (err:find("not found") or err:find("argument")) then
 			func, err = vfs.loadfile("lua/" .. path)
-			--logn(("\t"):rep(#include_stack).."TRYING ABS: ", dir .. file)
+			if err and (err:find("not found") or err:find("argument")) then
+				func, err = loadfile(path)
+				--logn(("\t"):rep(#include_stack).."TRYING ABS: ", dir .. file)
+			end
 		end
 		
 
@@ -397,7 +413,7 @@ function OnError(msg)
 			logn("     " .. msg:trim() or "nil")
 			logn("")
 		end
-	end	
+	end
 
 	logn("")
 	local source, _msg = msg:match("(.+): (.+)")
@@ -441,5 +457,7 @@ if CREATED_ENV then
 		timer.Simple(0, function() event.Call("OnConsoleEnvReceive", line) end)
 	end
 end
+
+utilities.MonitorEverything(true) 
 
 event.Call("Initialized")
