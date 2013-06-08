@@ -54,7 +54,7 @@ local shader = Shader("memory", vertex, fragment)
 local params = Event()
 local lol = 0
 
-event.AddListener("OnUpdate", "test", function()
+event.AddListener("OnDraw", "test", function()
 	lol = lol + 0.2
 	shader:SetFloatParameter("lol", lol)
 		
