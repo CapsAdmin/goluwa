@@ -41,27 +41,17 @@ function console.Exec(cfg)
 	return false
 end
 
-do -- commands
-	console.Prefix = "o "
-	
+do -- commands	
 	console.AddedCommands = {}
 
-	function console.AddCommand(cmd, callback, server)
+	function console.AddCommand(cmd, callback)
 		cmd = cmd:lower()
 		
-		if console.AddInternalConsoleCommand then
-			console.AddInternalConsoleCommand(cmd)
-		end
-		
-		console.AddedCommands[cmd] = {callback = callback, server = server}
+		console.AddedCommands[cmd] = callback
 	end
 
 	function console.RemoveCommand(cmd, callback)
-		cmd = cmd:lower()
-		
-		if console.RemoveInternalConsoleCommand and console.AddedCommands[cmd] then
-			console.RemoveInternalConsoleCommand(cmd)
-		end
+		cmd = cmd:lower()	
 		
 		console.AddedCommands[cmd] = nil
 	end
@@ -74,32 +64,17 @@ do -- commands
 		console.CallCommand(cmd, table.concat({...}, " "), nil, ...)
 	end
 
-	local function call(data, client, line, ...)
-		return xpcall(data.callback, OnError, client, line, ...)
+	local function call(data, line, ...)
+		return xpcall(data, OnError, line, ...)
 	end
 
-	function console.CallCommand(cmd, line, client, ...)
+	function console.CallCommand(cmd, line, ...)
 		cmd = cmd:lower()
 
 		local data = console.AddedCommands[cmd]
 
 		if data then
-			client = client or NULL
-			
-			if CLIENT then
-				if data.server == true or data.server == "server" then
-					message.Send("cmd", cmd, ...)
-				elseif data.server == "shared" then
-					message.Send("cmd", cmd, ...)
-					return call(data, client, line, ...)
-				elseif not data.server or data.server == "client" then
-					return call(data, client, line, ...)
-				end
-			end
-
-			if SERVER then
-				return call(data, client, line, ...)
-			end
+			return call(data, line, ...)
 		end
 	end
 
@@ -109,6 +84,7 @@ do -- commands
 	function console.ParseCommandArgs(line)
 		local quote = line:sub(1,1) ~= '"'
 		local ret = {}
+		
 		for chunk in string.gmatch(line, '[^"]+') do
 			quote = not quote
 			if quote then
@@ -123,13 +99,12 @@ do -- commands
 		return ret
 	end
 	
-	function console.RunString(line)
+	function console.RunString(line, skip_lua)
 		local args = console.ParseCommandArgs(line)
 		
 		local cmd = args[1]
 		
-		if cmd then
-			
+		if cmd then			
 			local ccmd = cmd:lower()
 			
 			if console.AddedCommands[ccmd] then
@@ -137,28 +112,31 @@ do -- commands
 				return console.CallCommand(ccmd, arg_line, nil, select(2, unpack(args)))
 			end
 			
-			local func = _G[cmd]
-			
-			if type(func) == "function" then
+			if not skip_lua then
 				
-				for key, val in pairs(args) do
-					args[key] = tonumber(args[key]) or val
+				local func = _G[cmd]
+				
+				if type(func) == "function" then
+					
+					for key, val in pairs(args) do
+						args[key] = tonumber(args[key]) or val
+					end
+				
+					return pcall(func, select(2, unpack(args)))
 				end
-			
-				return pcall(func, select(2, unpack(args)))
+				
+				local func, err = loadstring(line)
+				
+				if not func then return func, err end
+				
+				return pcall(func)
 			end
-			
-			local func, err = loadstring(line)
-			
-			if not func then return func, err end
-			
-			return pcall(func)
 		end
 	end
 end
 
 do -- console vars
-	console.cvar_file_name = "cvars.txt"
+	console.cvar_file_name = "%APPDATA%/asdfml/cvars.txt"
 	console.vars = nil
 	
 	-- what's the use?
@@ -213,75 +191,10 @@ do -- console vars
 		console.vars[name] = value
 		luadata.SetKeyValueInFile(console.cvar_file_name, name, value)
 	end
-	
-	event.AddListener("MenuInitialized", "cvars", function()
-		console.ReloadVariables()
-	end, 10)
 end
 
-do -- filtering
-
-	local blacklist = {}
-
-	function console.AddToBlackList(str)
-		check(str, "string")
-
-		return table.insert(blacklist, str)
-	end
-
-	function console.RemoveFromBlackList(id)
-		check(id, "number")
-
-		blacklist[id] = nil
-	end
-
-	function console.GetBlackList()
-		return blacklist
-	end
-
-	function console.ClearBlackList()
-		blacklist = {}
-	end
-	
-	console.CreateVariable("con_filter", "normal")
-
-	function console.IsLineAllowed(line)
-		local mode = console.GetVariable("con_filter")
-		
-		if mode == "normal" then
-			for _, value in pairs(blacklist) do
-				if line:findsimple(value) then
-					return false
-				end
-			end
-		elseif mode == "pattern" then
-			for _, value in pairs(blacklist) do
-				if line:find(value) then
-					return false
-				end
-			end
-		end
-
-		return true
-	end
-
-	console.SuppressPrint = false
-	event.AddListener("ConsolePrint", "console_filter", function(line)
-		--if console.SuppressPrint then return end 
-	--	console.SuppressPrint = true
-		if not console.IsLineAllowed(line) then
-	--		console.SuppressPrint = false
-			return false
-		else
-			event.Call("ConsoleOutput", line)
-		end
-	--	console.SuppressPrint = false
-	end)
-
-end
-
-do -- funsong
-	cmd = setmetatable(
+do -- for fun
+	console.cmd = setmetatable(
 		{}, 
 		{
 			__index = function(self, key)				
@@ -309,34 +222,5 @@ do -- funsong
 		}
 	)
 end
-
-local cvar = console.CreateVariable("con_filter", "string", "normal")
-
-function console.IsLineAllowed(line)
-	if console.GetVariableString("con_filter") == "normal" then
-		for _, value in pairs(blacklist) do
-			if line:findsimple(value) then
-				return false
-			end
-		end
-	elseif console.GetVariableString("con_filter") == "pattern" then
-		for _, value in pairs(blacklist) do
-			if line:find(value) then
-				return false
-			end
-		end
-	end
-
-	return true
-end
-
-
-event.AddListener("ConsolePrint", "console_filter", function(_, line)
-	if not console.IsLineAllowed(line) then
-		return false
-	else
-		event.Call("ConsoleOutput", GAMEMODE, line)
-	end
-end)
 
 return console

@@ -219,6 +219,7 @@ packers.string = function(data)
 end
 
 packers["function"] = function(data)
+	debug.trace()
 	error("unimplemented")
 end
 

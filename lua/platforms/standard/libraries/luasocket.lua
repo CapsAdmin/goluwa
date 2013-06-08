@@ -570,19 +570,38 @@ do -- tcp socket meta
 
 		function CLIENT:GetIP()
 			if not self.connected then return "nil" end
-			local ip, port = self.socket:getpeername()
+			local ip, port 
+			
+			if self.__server then 
+				ip, port = self.socket:getpeername()
+			else
+				ip, port = self.socket:getsockname()
+			end
+			
 			return ip
 		end
 
 		function CLIENT:GetPort()
 			if not self.connected then return "nil" end
-			local ip, port = self.socket:getpeername()
+			local ip, port 
+			
+			if self.__server then 
+				ip, port = self.socket:getpeername()
+			else
+				ip, port = self.socket:getsockname()
+			end
 			return ip and port or nil
 		end
 				
 		function CLIENT:GetIPPort()
 			if not self.connected then return "nil" end
-			local ip, port = self.socket:getpeername()
+			local ip, port 
+			
+			if self.__server then 
+				ip, port = self.socket:getpeername()
+			else
+				ip, port = self.socket:getsockname()
+			end
 			return ip .. ":" .. port
 		end
 		
