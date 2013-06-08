@@ -201,7 +201,7 @@ function utilities.MonitorEverything(b)
 					data.modification = info.modification
 				else 
 					if data.modification ~= info.modification then
-						logn("including ", utilities.GetFileNameFromPath(data.path), " due to modification")
+						logn("reloading ", utilities.GetFileNameFromPath(data.path))
 						include(data.path) 
 						data.modification = info.modification
 					end

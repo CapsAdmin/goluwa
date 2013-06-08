@@ -61,7 +61,7 @@ do -- commands
 	end
 	
 	function console.RunCommand(cmd, ...)
-		console.CallCommand(cmd, table.concat({...}, " "), nil, ...)
+		console.CallCommand(cmd, table.concat({...}, " "), ...)
 	end
 
 	local function call(data, line, ...)
@@ -109,7 +109,7 @@ do -- commands
 			
 			if console.AddedCommands[ccmd] then
 				local arg_line = line:sub(#args[1]+1):trim()
-				return console.CallCommand(ccmd, arg_line, nil, select(2, unpack(args)))
+				return console.CallCommand(ccmd, arg_line, select(2, unpack(args)))
 			end
 			
 			if not skip_lua then
@@ -166,7 +166,7 @@ do -- console vars
 
 		console.vars[name] = console.vars[name] or def
 
-		local func = function(client, line, value)
+		local func = function(line, value)
 			if not value then
 				logf("%s = %s", name, luadata.ToString(console.vars[name]))
 			else
