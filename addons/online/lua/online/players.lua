@@ -18,7 +18,13 @@ function players.GetByUniqueID(id)
 end
 
 function players.GetLocalPlayer()
-	return network.client_socket:IsValid() and Player(network.client_socket:GetIPPort()) or NULL
+	return players.local_player or NULL
+end
+	
+function players.BroadcastLua(str)
+	for key, ply in pairs(players.GetAll()) do
+		ply:SendLua(str)
+	end
 end
 	
 local ref_count = 1
@@ -36,6 +42,14 @@ do -- player meta
 	class.GetSet(META, "ID", -1)
 	
 	nvars.GetSet(META, "Nick", "???", "cl_nick")
+	
+	function META:GetNick()
+		for key, ply in pairs(players.GetAll()) do
+			if ply.nv.Nick == self.nv.Nick then
+				return ("%s(%i)"):format(self.nv.Nick, self.ID)
+			end
+		end
+	end
 
 	function META:__tostring()
 		return string.format("player[%s][%i]", self:GetName(), self:GetID())
@@ -46,16 +60,77 @@ do -- player meta
 	end
 
 	function META:GetName()	
-		return SERVER and self.socket:GetIPPort() or CLIENT and self:GetUniqueID()
+		return self.nv and self.nv.Nick or SERVER and self.socket:GetIPPort() or CLIENT and self:GetUniqueID()
 	end
 	
-	function META:Remove()
+	function META:Remove(reason)
 		if self.remove_me then return end
+		
 		players.active_players[self:GetUniqueID()] = nil
+				
 		self.remove_me = true
 		self.IsValid = function() return false end
 		timer.Simple(0, function() utilities.MakeNULL(self) end)
+		
 	end	
+	
+	if SERVER then
+		function META:Kick(reason)
+			network.HandleEvent(self.socket, e.USER_DISCONNECT, self.socket:GetIPPort(), reason)
+		end
+	end
+	
+	do -- ping pong	
+		nvars.GetSet(META, "Ping", 0)
+			
+		function META:GetTimeout()
+			return self.last_ping and (os.clock() - self.last_ping) or 0
+		end
+		
+		function META:IsTimingOut()
+			return self:GetTimeout() > 3
+		end
+	
+		if CLIENT then
+			message.AddListener("ping", function(...)
+				message.Send("pong", ...)
+				
+				players.GetLocalPlayer().last_ping = os.clock()
+			end)
+		end
+		
+		if SERVER then			
+			message.AddListener("pong", function(ply, time)
+				local ms = (os.clock() - tonumber(time)) * 100
+				
+				ply:SetPing(ms)
+				ply.last_ping = os.clock()
+			end)
+		end		
+		
+		timer.Create("ping_pong_players", 0.25, 0, function()
+			if not network.IsStarted() then return end
+						
+			for key, ply in pairs(players.GetAll()) do
+				message.Send("ping", ply, tostring(os.clock()))
+				
+				if ply:IsTimingOut() then
+					if SERVER then
+						ply:Kick("timeout")
+					end
+					
+					if CLIENT then
+						logf("timing out.. (%s)", ply:GetTimeout())
+						
+						if ply:IsTimingOut() then
+							network.Disconnect()
+						end
+					end
+				end
+			end
+		end)
+
+	end
 	
 	do -- send lua
 		if CLIENT then
@@ -130,7 +205,7 @@ do -- player meta
 		self.ID = ref_count
 			
 		players.active_players[self.UniqueID] = self
-		
+				
 		-- add a networked table to the player
 		self.nv = nvars.CreateObject(uniqueid)
 			

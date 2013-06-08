@@ -34,6 +34,8 @@ if CLIENT then
 	end	
 		
 	event.AddListener("OnLineEntered", "chat", function(line)
+		if not network.IsStarted() then return end
+	
 		if not console.RunString(line, true) then
 			chat.Say(line)
 		end

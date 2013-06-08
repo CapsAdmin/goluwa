@@ -54,7 +54,8 @@ function network.AddEncodeDecodeType(type, callback)
 	custom_types[type] = callback
 end
 
-function network.HandleEvent(socket, type, uniqueid, ...)		
+function network.HandleEvent(socket, type, a, b, ...)		
+	local uniqueid = a
 	if type == e.USER_CONNECT then		
 		local player = Player(uniqueid)
 				
@@ -80,29 +81,39 @@ function network.HandleEvent(socket, type, uniqueid, ...)
 		if SERVER then
 			nvars.FullUpdate(player)
 		end
+		
+		if CLIENT and uniqueid == network.client_socket:GetIPPort() then
+			event.Call("OnlineStarted")
+		end
 	
 		logf("player %s connected", player:GetName())
 	elseif type == e.USER_DISCONNECT then			
 		local player = Player(uniqueid)
+		local reason = b
 		
 		logf("player %s disconnected (%s)", player:GetName(), reason or "unknown reason")
 					
 		if SERVER then	
-			network.Broadcast(type, uniqueid, socket)
-			utilities.SafeRemove(player.socket)
+			network.Broadcast(type, uniqueid, reason)
+			player.socket:Remove()
+			player:Remove()
 		end
 		
 		player:Remove()
 	elseif type == e.USER_MESSAGE then
 		if CLIENT then
 			-- the arguments start after type. uniqueid is just used by this library
-			event.Call("OnPlayerMessage", uniqueid, ...)
+			event.Call("OnPlayerMessage", a, b, ...)
 		end
 		if SERVER then
 			local player = Player(socket:GetIPPort())
-			event.Call("OnPlayerMessage", player, uniqueid, ...)
+			event.Call("OnPlayerMessage", player, a, b, ...)
 		end
 	end	
+end
+
+function network.IsStarted()
+	return network.server_socket:IsValid() or network.client_socket:IsValid()
 end
 
 if CLIENT then
@@ -126,15 +137,24 @@ if CLIENT then
 			network.HandleEvent(nil, decode(str))
 		end
 		
+		function client:OnConnect()
+			players.local_player = Player(client:GetIPPort())
+			players.local_player.socket = client
+		end
+		
 		network.client_socket = client
 		
 		return client
 	end
 
-	function network.Disconnect(reason)		
+	function network.Disconnect(reason)	
 		network.client_socket:Remove()
 	end
 
+	function network.IsConnected()
+		return network.client_socket:IsValid()
+	end
+	
 	function network.SendToServer(event, ...)	
 		if network.client_socket:IsValid() then
 			network.client_socket:Send(encode(event, ...), buffered)
@@ -161,7 +181,7 @@ if SERVER then
 		function server:OnClientConnected(client, ip, port)
 			client:SetReceiveMode(receive_mode)			
 			network.HandleEvent(client, e.USER_CONNECT, client:GetIPPort())
-			return true
+			--return true
 		end
 		
 		function server:OnClientClosed(client)
@@ -171,6 +191,8 @@ if SERVER then
 		function server:OnReceive(str, client)
 			network.HandleEvent(client, decode(str))
 		end	
+		
+		event.Call("OnlineStarted")
 		
 		network.server_socket = server
 	end

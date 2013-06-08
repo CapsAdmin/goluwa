@@ -10,7 +10,7 @@ end
 
 if LINUX then
 	function mmyy.SetWindowTitle(title)
-		return io.write('-ne "\033]0;'..title..'\007"')
+		return io.write('\27]0;'..title..'\7')
 	end
 end
 

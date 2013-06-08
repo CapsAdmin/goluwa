@@ -2530,7 +2530,7 @@ for line in def:gmatch("(.-)\n") do
 	end
 end
 
-local library = ffi.load("glu32.dll")
+local library = ffi.load(jit.os == "Linux" and "libGLU.so" or "glu32.dll")
 
 local glu = {}
 
