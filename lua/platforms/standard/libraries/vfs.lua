@@ -227,7 +227,7 @@ function vfs.Find(path, invert, full_path, start, plain)
 	for k, v in ipairs(vfs.paths) do
 		-- fix me!! 
 		-- on linux, an invalid path will error
-		pcall(function()
+		xpcall(function()
 		for i in lfs.dir(v .. "/" .. dir) do
 			if i ~= "." and i ~= ".." then
 				if full_path then
@@ -236,7 +236,7 @@ function vfs.Find(path, invert, full_path, start, plain)
 				unique[i] = true
 			end
 		end
-		end)
+		end, OnError)
 	end
 	
 	local list = {}
@@ -294,7 +294,7 @@ function vfs.dofile(path, ...)
 	local func, err = vfs.loadfile(path)
 	
 	if func then
-		return pcall(func, ...)
+		return xpcall(func, OnError, ...)
 	end
 	
 	return func, err
@@ -352,7 +352,7 @@ do -- file monitoring
 		local function scan(dir)
 			-- fix me!! 
 			-- on linux, an invalid path will error
-			pcall(function()
+			xpcall(function()
 			for path in lfs.dir(dir) do
 				if path ~= "." and path ~= ".." then
 					if utilities.GetExtensionFromPath(path) ~= "lua" then	
@@ -362,7 +362,7 @@ do -- file monitoring
 					end
 				end
 			end
-			end)
+			end, OnError)
 		end
 
 		scan(full_path .. "lua/")

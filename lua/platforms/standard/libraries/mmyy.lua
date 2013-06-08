@@ -65,7 +65,7 @@ function mmyy.CreateLuaEnvironment(title, globals, id)
 	function env:OnReceive(line)
 		local func, msg = loadstring(line)
 		if func then
-			local ok, msg = pcall(func) 
+			local ok, msg = xpcall(func, OnError) 
 			if not ok then
 				logn("runtime error:", client, msg)
 			end

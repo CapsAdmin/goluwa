@@ -493,7 +493,7 @@ local function main()
 	event.Call("Initialize")
 
 	while true do
-		local ok, err = pcall(asdfml.Update)
+		local ok, err = xpcall(asdfml.Update, OnError)
 
 		if not ok then
 			log(err)

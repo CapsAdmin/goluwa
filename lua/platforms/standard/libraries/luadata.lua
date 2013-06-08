@@ -104,7 +104,7 @@ function luadata.Decode(str)
 		return {}
 	end
 	
-	local ok, err = pcall(func)
+	local ok, err = xpcall(func, OnError)
 	
 	if not ok then
 		logn("luadata decode error:")
