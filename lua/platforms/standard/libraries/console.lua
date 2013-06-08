@@ -122,14 +122,14 @@ do -- commands
 						args[key] = tonumber(args[key]) or val
 					end
 				
-					return pcall(func, select(2, unpack(args)))
+					return xpcall(func, OnError, select(2, unpack(args)))
 				end
 				
 				local func, err = loadstring(line)
 				
 				if not func then return func, err end
 				
-				return pcall(func)
+				return xpcall(func, OnError)
 			end
 		end
 	end

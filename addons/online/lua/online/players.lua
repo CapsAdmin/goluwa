@@ -115,12 +115,13 @@ do -- player meta
 				message.Send("ping", ply, tostring(os.clock()))
 				
 				if ply:IsTimingOut() then
+				
 					if SERVER then
 						ply:Kick("timeout")
 					end
 					
 					if CLIENT then
-						logf("timing out.. (%s)", ply:GetTimeout())
+						logn("timed out..")
 						
 						if ply:IsTimingOut() then
 							network.Disconnect()

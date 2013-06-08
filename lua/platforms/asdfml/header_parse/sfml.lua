@@ -313,7 +313,7 @@ local function generate_objects()
 		end
 		
 		function META:__tostring()
-			return ("%s [%p]"):format(type, self)
+			return ("%s [%s]"):format(type, self)
 		end
 		
 		-- object functions

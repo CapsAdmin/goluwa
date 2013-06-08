@@ -179,7 +179,7 @@ do -- logging
 	end
 
 	function errorf(str, level, ...)
-		error(string.format(str, level, ...))
+		error(safeformat(str, level, ...))
 	end
 
 	function warning(verbosity, ...)
@@ -351,7 +351,7 @@ do -- include
 			--logn(("\t"):rep(#include_stack + 1).."FILE FOUND: ", file)
 			--logn(("\t"):rep(#include_stack + 1).."DIR IS NOW: ", dir)
 			--logn("")
-			local res = {pcall(func, ...)}
+			local res = {xpcall(func, OnError or (function() end), ...)}
 			
 			if not res[1] then
 				logn(res[2])
@@ -453,7 +453,7 @@ if CREATED_ENV then
 		local func, msg = loadstring(line)
 
 		if func then
-			local ok, msg = pcall(func) 
+			local ok, msg = xpcall(func, OnError) 
 			if not ok then
 				logn("runtime error:", client, msg)
 			end

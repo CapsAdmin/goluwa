@@ -164,7 +164,7 @@ do -- helpers/usage
 		function socket:OnReceive(str)
 			local header, content = str:match("(.-\10\13)(.+)")
 
-			local ok, err = pcall(callback, {content = content, header = luasocket.HeaderToTable(header), status = status})
+			local ok, err = xpcall(callback, OnError, {content = content, header = luasocket.HeaderToTable(header), status = status})
 			if err then
 				warning(err)
 			end
@@ -249,7 +249,7 @@ do -- tcp socket meta
 	function luasocket.Update()
 		for key, sock in pairs(sockets) do
 			if sock:IsValid() then
-				local ok, err = pcall(sock.Think, sock)
+				local ok, err = xpcall(sock.Think, OnError, sock)
 				if not ok then
 					warning(err)
 					sock:Remove()
