@@ -1,10 +1,44 @@
 nvars = nvars or {}
  
 nvars.Environments = nvars.Environments or {} 
+nvars.added_cvars = {}
+
+function nvars.GetSet(tbl, name, def, cvar)
+
+	if cvar then
+		cvar = "cl_" .. name:lower()
+		nvars.added_cvars[cvar] = name
+		
+		if CLIENT then
+			console.CreateVariable(cvar, def, function(var)
+				message.Send("ncv", cvar, var)
+			end)
+		end
+	end
+
+    if type(def) == "number" then
+		tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self.nv[name] = tonumber(var) end
+		tbl["Get" .. name] = tbl["Get" .. name] or function(self, var) return tonumber(self.nv[name]) or def end
+	elseif type(def) == "string" then
+		tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self.nv[name] = tostring(var) end
+		tbl["Get" .. name] = tbl["Get" .. name] or function(self, var) return tostring(self.nv[name]) end
+	else
+		tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self.nv[name] = var end
+		tbl["Get" .. name] = tbl["Get" .. name] or function(self, var) return self.nv[name] or def end
+	end
+	
+end
 
 if CLIENT then
 	message.AddListener("nv", function(env, key, value)
 		nvars.Set(key, value, env)
+	end)
+	
+	message.AddListener("nvars_fullupdate", function()
+		for cvar in pairs(nvars.added_cvars) do
+			print(cvar, "+!?!?!?")
+			console.RunCommand(cvar, console.GetVariable(cvar))
+		end
 	end)
 end
 
@@ -15,7 +49,16 @@ if SERVER then
 				nvars.Set(key, value, env, ply)
 			end
 		end
+		
+		message.Send("nvars_fullupdate", ply)
 	end
+	
+	message.AddListener("ncv", function(ply, cvar, var)
+		local key = nvars.added_cvars[cvar]
+		if key then
+			ply.nv[key] = var
+		end
+	end)
 end
 
 function nvars.Set(key, value, env, ply)

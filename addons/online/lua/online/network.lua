@@ -19,16 +19,12 @@ local function encode(...)
 	for k, v in pairs(args) do
 		local t = typex(v)
 		local func = custom_types[t]
-		if func then
-			local val = func(v, false)
-			
-			if val then
-				args[k] = {__M = true, __T = t, __U = val}
-			end
+		if func then			
+			args[k] = {"msgpo", t, func(v, true)}
 		end	
 	end
 	
-	return msgpack.Encode(...) .. delimiter
+	return msgpack.Encode(unpack(args)) .. delimiter
 end
 
 local function decode(...)
@@ -37,8 +33,12 @@ local function decode(...)
 	
 	for k, v in pairs(args) do
 		if type(v) == "table" then
-			if v.__M == true and custom_types[v.__T] then
-				args[k] = func(v.__U, true)
+			if v[1] == "msgpo" and custom_types[v[2]] then
+				if v[3] then
+					args[k] = custom_types[v[2]](v[3], false)
+				else
+					args[k] = NULL
+				end
 			end
 		end
 	end
@@ -57,7 +57,7 @@ end
 function network.HandleEvent(socket, type, uniqueid, ...)		
 	if type == e.USER_CONNECT then		
 		local player = Player(uniqueid)
-		
+				
 		if SERVER then			
 			
 			-- store the socket in the player
@@ -68,17 +68,14 @@ function network.HandleEvent(socket, type, uniqueid, ...)
 				network.Broadcast(type, uniqueid, ...)
 						
 				-- now tell him about all the other clients
-				for key, other in pairs(users.GetAll()) do
+				for key, other in pairs(players.GetAll()) do
 					if other ~= player then
 						network.SendToClient(socket, type, other:GetUniqueID(), ...)
 					end
 				end
 			end
 		end
-		
-		-- add a networked table to the player
-		player.nv = nvars.CreateObject(uniqueid)
-		
+				
 		-- this should be done after the player is created
 		if SERVER then
 			nvars.FullUpdate(player)

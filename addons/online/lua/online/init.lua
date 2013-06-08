@@ -2,7 +2,7 @@ include("network.lua")
 include("message.lua")
 
 include("nvars.lua")
-include("users.lua")
+include("players.lua")
 
 -- some usage
 
