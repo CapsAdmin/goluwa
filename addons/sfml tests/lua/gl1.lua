@@ -4,21 +4,12 @@ gl.ClearColor(0, 1, 0, 1)
 
 local params = Event()
 
-event.AddListener("OnUpdate", "test", function()
-	if window:IsOpen() then
-		if window:PollEvent(params) and params.type == e.EVT_CLOSED then
-			window:Close()
-			os.exit()
- 		end
-		
-		gl.Clear(e.GL_COLOR_BUFFER_BIT)		
-		
-		gl.Begin(e.GL_TRIANGLES)
-			gl.Vertex3f( 0, 1, 0)
-			gl.Vertex3f(-1, -1, 0)
-			gl.Vertex3f( 1, -1, 0)
-		gl.End()
-
-		window:Display()
-	end
+event.AddListener("OnDraw", "test", function()		
+	gl.Clear(e.GL_COLOR_BUFFER_BIT)		
+	
+	gl.Begin(e.GL_TRIANGLES)
+		gl.Vertex3f( 0, 1, 0)
+		gl.Vertex3f(-1, -1, 0)
+		gl.Vertex3f( 1, -1, 0)
+	gl.End()
 end)
