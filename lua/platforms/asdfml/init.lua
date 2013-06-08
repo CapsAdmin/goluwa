@@ -1,7 +1,8 @@
 include("header_parse/sfml.lua")
---include("header_parse/glew.lua")
 include("libraries/gl_enums.lua")
 gl, glu = include("libraries/opengl.lua")
+
+include("extensions/input.lua")
 
 addons.AutorunAll()
 
@@ -173,6 +174,13 @@ do -- input handling
 	local table_scroll = 0
 	local in_function
 	
+	local translate = 
+	{
+		[32] = "KEY_SPACE",
+		[8] = "KEY_TAB",
+		[10] = "KEY_ENTER",
+	}
+	
 	function asdfml.ProcessInput()
 		local byte = get_char()
 
@@ -181,7 +189,10 @@ do -- input handling
 				local key = get_key_name(byte)
 
 				key = ffi.string(key)
-
+				key = translate[byte] or key
+				
+				if event.Call("OnConsoleKeyPressed", key) == false then return end
+				
 				if key == "KEY_UP" then
 					scroll = scroll - 1
 					line = history[scroll%#history+1] or line
@@ -205,12 +216,12 @@ do -- input handling
 				end
 
 				-- space
-				if byte == 32 then
+				if key == "KEY_SPACE" then
 					insert_char(" ")
 				end
 
 				-- tab
-				if byte == 9 then
+				if key == "KEY_TAB" then
 					local start, stop, last_word = line:find("([_%a%d]-)$")
 					if last_word then
 						local pattern = "^" .. last_word
@@ -288,7 +299,7 @@ do -- input handling
 				end
 
 				-- backspace
-				if byte == 8 then
+				if key == "KEY_BACKSPACE" then
 					if line_window.x > 0 then
 						local char = line:sub(1, line_window.x)
 						
@@ -310,7 +321,7 @@ do -- input handling
 				end
 
 				-- enter
-				if byte == 10 or byte == 13 then
+				if key == "KEY_ENTER" then
 					clear()
 
 					if line ~= "" then
@@ -343,7 +354,11 @@ do -- input handling
 
 				clear(line)
 			else
+
 				local char = string.char(byte)
+				
+				if event.Call("OnConsoleCharPressed", char) == false then return end
+				
 				insert_char(char)
 			end
 		end

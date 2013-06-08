@@ -36,7 +36,6 @@ if CLIENT then
 	
 	message.AddListener("nvars_fullupdate", function()
 		for cvar in pairs(nvars.added_cvars) do
-			print(cvar, "+!?!?!?")
 			console.RunCommand(cvar, console.GetVariable(cvar))
 		end
 	end)
