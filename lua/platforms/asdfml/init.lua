@@ -177,8 +177,9 @@ do -- input handling
 	local translate = 
 	{
 		[32] = "KEY_SPACE",
-		[8] = "KEY_TAB",
+		[9] = "KEY_TAB",
 		[10] = "KEY_ENTER",
+		[8] = "KEY_BACKSPACE",
 	}
 	
 	function asdfml.ProcessInput()

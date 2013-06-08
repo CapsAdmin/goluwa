@@ -57,6 +57,27 @@ do -- player meta
 		timer.Simple(0, function() utilities.MakeNULL(self) end)
 	end	
 	
+	do -- send lua
+		if CLIENT then
+			message.AddListener("sendlua", function(code, env)
+				local data = easylua.RunLua(me, code, env or "server")
+				if data.error then
+					print(data.error)
+				end
+			end)
+		end
+
+		if SERVER then
+			function META:SendLua(code)
+				message.Send("sendlua", self, code, env)
+			end
+			
+			function META:Cexec(str)
+				self:SendLua("console.RunString('"..str.."')")
+			end
+		end
+	end
+	
 	do -- networked input
 		local function add_event(name, check)	
 			input.SetupAccessorFunctions(META, name)
