@@ -5,12 +5,6 @@ if CLIENT then
 end
 
 if SERVER then
-
-    local function GoogleSay(msg)
-		message.Broadcast("google_say", msg)
-		chat.Append("Google", msg)
-    end
-
     event.AddListener("OnPlayerChat", "google", function(ply, question)
 		question = question:lower()
 		if question:find("google.+?") then
@@ -34,10 +28,13 @@ if SERVER then
 					local tbl = str:explode(',')
 					table.remove(tbl, 1)
 
-					GoogleSay(table.random(tbl))
+					local msg = table.random(tbl)
+					
+					chat.Append("Google", msg)
+					
+					message.Broadcast("google_say", msg)
 				end
 			)
 		end
 	end)
-
 end

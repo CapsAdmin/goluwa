@@ -14,8 +14,14 @@ end
 
 if CLIENT then
 	function easylua.PrintOnServer(...)
-
+		message.Send("prints", ...)
 	end
+end
+
+if SERVER then
+	message.AddListener("prints", function(ply, ...)
+		print(ply:GetNick(), ...)
+	end)
 end
 
 function easylua.Print(...)
@@ -26,7 +32,7 @@ function easylua.Print(...)
 		local args = {...}
 		local str = ""
 
-		logf("[EasyLua %s] ", me and me:GetNickname() or "Sv")
+		logf("[EasyLua %s] ", me and me:GetNick() or "Sv")
 
 		for key, value in pairs(args) do
 			str = str .. type(value) == "string" and value or luadata.ToString(value) or tostring(value)
@@ -62,7 +68,7 @@ function easylua.FindEntity(str)
 	end
 
 	for key, ply in pairs(players.GetAll()) do
-		if compare(ply:GetNickname(), str) then
+		if compare(ply:GetNick(), str) then
 			return ply
 		end
 	end
@@ -73,7 +79,7 @@ function easylua.CopyToClipboard(var)
 end
 
 function easylua.Start(ply)
-	ply = ply or CLIENT and entities.GetLocalPlayer() or NULL
+	ply = ply or CLIENT and players.GetLocalPlayer() or NULL
 
 	if not ply:IsValid() then return end
 
@@ -118,7 +124,7 @@ do -- env meta
 		end
 
 		if key ~= "CLIENT" or key ~= "SERVER" then -- uh oh
-			var = easylua.FindEntity(key)
+			var = easylua.FindEntity(key) or NULL
 			if var:IsValid() then
 				return var
 			end

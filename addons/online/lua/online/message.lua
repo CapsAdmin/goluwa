@@ -50,6 +50,18 @@ end
 
 do -- console extension
 	message.server_commands = message.server_commands or {}
+	
+	local player = NULL
+	
+	if SERVER then
+		function console.SetServerPlayer(ply)
+			player = ply or NULL
+		end
+		
+		function console.GetServerPlayer()
+			return player
+		end
+	end
 
 	if SERVER then
 		message.AddListener("scmd", function(ply, cmd, line, ...)
@@ -72,7 +84,7 @@ do -- console extension
 		
 		if SERVER then
 			console.AddCommand(command, function(line, ...)
-				callback(NULL, line, ...)
+				callback(player, line, ...)
 			end)
 		end
 	end

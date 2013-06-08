@@ -169,6 +169,10 @@ do -- logging
 		table.insert(args, "\n")
 		return log(unpack(args))
 	end
+	
+	function print(...)
+		logn(table.concat(tostring_args(...), ",\t"))
+	end
 
 	function logf(str, ...)
 		logn(safeformat(str, ...))
@@ -216,7 +220,7 @@ do -- logging
 	end
 end
 
-_E.USERNAME = tostring(os.getenv("USERNAME")):upper():gsub(" ", "_"):gsub("%p", "")
+_E.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):upper():gsub(" ", "_"):gsub("%p", "")
 _G[e.USERNAME] = true
 
 log("\n\n")

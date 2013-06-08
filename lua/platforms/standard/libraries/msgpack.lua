@@ -2,6 +2,8 @@ local ffi = require "ffi"
 local bit = require "bit"
 local math = require "math"
 
+local IS_LUAFFI = not rawget(_G,"jit")
+
 -- standard cdefs
 
 ffi.cdef[[
@@ -74,8 +76,6 @@ local sbuffer_append_tbl = function(self,t)
 end
 
 local sbuffer_append_intx
-local sbuffer_append_int64
-
 if LITTLE_ENDIAN then
 	sbuffer_append_intx = function(self,n,x,h)
 		local t = {h}
@@ -219,30 +219,40 @@ packers.string = function(data)
 end
 
 packers["function"] = function(data)
-	debug.trace()
-	error("unimplemented")
+	return packers["nil"](data)
 end
 
 packers.userdata = function(data)
-	error("unimplemented")
+	if IS_LUAFFI then
+		return packers.cdata(data)
+	else
+		return packers["nil"](data)
+	end
 end
 
 packers.thread = function(data)
-	error("unimplemented")
+	return packers["nil"](data)
 end
 
-packers.table = function(data)
-	local is_map,ndata,nmax = false,0,0
-	for k,_ in pairs(data) do
-		if (type(k) == "number") and (k > 0) then
-			if k > nmax then nmax = k end
-		else is_map = true end
-		ndata = ndata+1
+packers.array = function(data,ndata)
+  ndata = ndata or #data
+  if ndata < 16 then
+    sbuffer_append_byte(buffer,bor(0x90,ndata))
+  elseif ndata < 2^16 then
+    sbuffer_append_intx(buffer,ndata,16,0xdc)
+  elseif ndata < 2^32 then
+    sbuffer_append_intx(buffer,ndata,32,0xdd)
+  else
+    error("overflow")
+  end
+  for i=1,ndata do packers[type(data[i])](data[i]) end
+end
+
+packers.map = function(data,ndata)
+  if not ndata then
+    ndata = 0
+    for _ in pairs(data) do ndata = ndata+1 end
 	end
-	if (nmax ~= ndata) then -- there are holes
-		is_map = true
-	end -- else nmax == ndata == #data
-	if is_map then -- pack as map
 		if ndata < 16 then
 			sbuffer_append_byte(buffer,bor(0x80,ndata))
 		elseif ndata < 2^16 then
@@ -256,19 +266,30 @@ packers.table = function(data)
 			packers[type(k)](k)
 			packers[type(v)](v)
 		end
-	else -- pack as array
-		if ndata < 16 then
-			sbuffer_append_byte(buffer,bor(0x90,ndata))
-		elseif ndata < 2^16 then
-			sbuffer_append_intx(buffer,ndata,16,0xdc)
-		elseif ndata < 2^32 then
-			sbuffer_append_intx(buffer,ndata,32,0xdd)
-		else
-			error("overflow")
 		end
-		for i=1,ndata do packers[type(data[i])](data[i]) end
+
+local set_table_classifier = function(f)
+  packers.table = function(data)
+    local obj_type,ndata = f(data)
+    packers[obj_type](data,ndata)
+  end
 	end
+
+local default_table_classifier = function(data)
+  local is_map,ndata,nmax = false,0,0
+  for k,_ in pairs(data) do
+    if (type(k) == "number") and (k > 0) then
+      if k > nmax then nmax = k end
+    else is_map = true end
+    ndata = ndata+1
+  end
+  if (nmax ~= ndata) then -- there are holes
+    is_map = true
+  end -- else nmax == ndata == #data
+  return (is_map and "map" or "array"),ndata
 end
+
+set_table_classifier(default_table_classifier)
 
 packers.cdata = function(data) -- msgpack-js
 	local n = ffi.sizeof(data)
@@ -378,7 +399,7 @@ unpackers.dynamic = function(buf,offset)
 end
 
 unpackers.undefined = function(buf,offset)
-	error("unimplemented")
+	return unpackers["nil"](data)
 end
 
 unpackers["nil"] = function(buf,offset)
