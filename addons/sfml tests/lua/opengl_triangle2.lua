@@ -100,5 +100,3 @@ event.AddListener("OnDraw", "test", function()
 		end
 	gl.End()]]
 end)
-
-utilities.MonitorFileInclude()
