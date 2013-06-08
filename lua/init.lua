@@ -326,12 +326,17 @@ do -- include
 		--logn(("\t"):rep(#include_stack).."TRYING REL: ", dir .. file)
 		
 		local func, err = vfs.loadfile("lua/" .. dir .. file)
-			
-		if err and (err:find("not found") or err:find("argument")) then
+					
+		if err then
 			func, err = vfs.loadfile("lua/" .. path)
-			if err and (err:find("not found") or err:find("argument")) then
-				func, err = loadfile(path)
-				--logn(("\t"):rep(#include_stack).."TRYING ABS: ", dir .. file)
+			
+			if err then		
+				func, err = vfs.loadfile(dir .. file)
+				
+				if err then
+					func, err = loadfile(path)
+					--logn(("\t"):rep(#include_stack).."TRYING ABS: ", dir .. file)
+				end
 			end
 		end
 		
@@ -398,8 +403,6 @@ luasocket = include(libraries .. "luasocket.lua")
 timer.Create("socket_think", 0,0, luasocket.Update)
 event.AddListener("LuaClose", "luasocket", luasocket.Panic)
 
-intermsg = include(libraries .. "intermsg.lua") 
-
 -- this should be used for xpcall
 function OnError(msg)
 	if event.Call("OnLuaError", msg) == false then return end
@@ -455,9 +458,9 @@ if CREATED_ENV then
 		end
 		
 		timer.Simple(0, function() event.Call("OnConsoleEnvReceive", line) end)
-	end
+	end 
 end
 
-utilities.MonitorEverything(true) 
+vfs.MonitorEverything(true) 
 
 event.Call("Initialized")

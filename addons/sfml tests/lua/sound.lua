@@ -82,5 +82,3 @@ if snd then snd:Stop() end
 snd = Sound()
 snd:SetBuffer(buffer)
 snd:Play()
-
-utilities.MonitorFileInclude()

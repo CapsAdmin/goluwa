@@ -7,20 +7,15 @@ include("players.lua")
 
 -- some usage
 
-include("chat.lua")
-
-
 console.AddCommand("say", function(line)
 	chat.Say(line)
 end)
 
 console.AddCommand("lua_run", function(line)
-	logn(line)
 	easylua.RunLua(players.GetLocalPlayer(), line, nil, true)
 end)
 
 console.AddCommand("lua_open", function(line)
-	logn(line)
 	easylua.Start(players.GetLocalPlayer())
 		include(line)
 	easylua.End()
@@ -43,13 +38,15 @@ local default_ip = "localhost"
 local default_port = 1234
 
 if CLIENT then
-	logf("connecting to %s %i", default_ip, default_port)
-	network.Connect(default_ip, default_port)
+	local ip_cvar = console.CreateVariable("cl_ip", default_ip)
+	local port_cvar = console.CreateVariable("cl_port", default_port)
+	
+	logf("connecting to %s %i", ip_cvar:Get(), port_cvar:Get())
+	network.Connect(ip_cvar:Get(), port_cvar:Get())
 	
 	console.AddCommand("connect", function(line, ip, port)	
-		print(line, ip, port, "!?!?!?!?!")
-		ip = ip or default_ip
-		port = tonumber(port) or default_port
+		ip = ip or ip_cvar:Get()
+		port = tonumber(port) or port_cvar:Get()
 		
 		logf("connecting to %s:%i", ip, port)
 		
@@ -62,12 +59,15 @@ if CLIENT then
 end
 
 if SERVER then
-	logf("hosting server at %s %i", default_ip, default_port)
-	network.Host(default_ip, default_port)
+	local ip_cvar = console.CreateVariable("sv_ip", default_ip)
+	local port_cvar = console.CreateVariable("sv_port", default_port)
+	
+	logf("hosting server at %s %i", ip_cvar:Get(), port_cvar:Get())
+	network.Host(ip_cvar:Get(), port_cvar:Get())
 		
 	console.AddCommand("host", function(line, ip, port)
-		ip = ip or default_ip
-		port = tonumber(port) or default_port
+		ip = ip or ip_cvar:Get()
+		port = tonumber(port) or port_cvar:Get()
 		
 		logf("hosting at %s:%i", ip, port)
 		
