@@ -48,6 +48,42 @@ if SERVER then
 	event.AddListener("OnPlayerMessage", "message", message.OnPlayerMessage, print)
 end
 
+do -- console extension
+	message.server_commands = message.server_commands or {}
+
+	if SERVER then
+		message.AddListener("scmd", function(ply, cmd, line, ...)
+			local callback = message.server_commands[cmd]
+			
+			if callback then
+				callback(ply, line, ...)
+			end
+		end)
+	end
+
+	function console.AddServerCommand(command, callback)
+		message.server_commands[command] = callback
+		
+		if CLIENT then
+			console.AddCommand(command, function(line, ...)
+				message.Send("scmd", command, line, ...)
+			end)
+		end
+		
+		if SERVER then
+			console.AddCommand(command, function(line, ...)
+				callback(NULL, line, ...)
+			end)
+		end
+	end
+	
+	function console.RemoveServerCommand(command)
+		console.RemoveCommand(command)
+		message.server_commands[command] = nil
+	end
+
+end
+
 do -- filter
 	local META = {}
 	META.__index = META

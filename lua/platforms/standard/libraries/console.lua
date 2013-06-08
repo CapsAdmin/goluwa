@@ -209,6 +209,11 @@ do -- for fun
 				
 				-- lua cvars
 				local tbl = console.vars
+				
+				if not console.vars then
+					console.ReloadVariables()
+				end
+				
 				if tbl[key] then
 					return tbl[key]
 				end
