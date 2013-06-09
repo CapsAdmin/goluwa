@@ -1,4 +1,4 @@
-local GENERATE_BODY = 160
+local GENERATE_BODY = 160 
 local MAX_SPEED = 1e-08
 
 do -- circle body
@@ -8,8 +8,8 @@ do -- circle body
 	
 	META.updatable = true
 
-	class.GetSet(META, "Position", Vec2())
-	class.GetSet(META, "Velocity", Vec2())
+	class.GetSet(META, "Position", Vector2f())
+	class.GetSet(META, "Velocity", Vector2f())
 	class.GetSet(META, "Radius", 32)
 	class.GetSet(META, "Mass", 0)
 
@@ -75,16 +75,16 @@ do -- circle body
 		self.Radius = radius
 		self.Mass = self.Radius * self.Radius
 		
-		self.Accelleration = Vec2()
-		self.last_pos = Vec2()
+		self.Accelleration = Vector2f()
+		self.last_pos = Vector2f()
 		
 		local circle = CircleShape()
 				
 		--circle:Rotate(math.randomf(360))
 		--circle:SetPointCount(8)
 		circle:SetRadius(self.Radius)
-		circle:SetFillColor(Color(64,128,255,150))
-		circle:SetOutlineColor(Color(255,255,255,128))
+		circle:SetFillColor(sfml.Color(64,128,255,150))
+		circle:SetOutlineColor(sfml.Color(255,255,255,128))
 		circle:SetOutlineThickness(2)
 				
 		self.circle = circle
@@ -106,17 +106,17 @@ view = ffi.cast("struct sfView *", view)
 local bodies = {}
 
 for i = 0, GENERATE_BODY / 2 do
-	table.insert(bodies, CircleBody(Vec2(math.random(0, 800), math.random(0, 600)), math.randomf(1, 25))
+	table.insert(bodies, CircleBody(Vector2f(math.random(0, 800), math.random(0, 600)), math.randomf(1, 25))
 	)
 end
 
 
 local ghost_radius = 15
-local ghost_position = Vec2()
+local ghost_position = Vector2f()
 local ghost = CircleBody()
 ghost:SetRadius(ghost_radius)
 ghost.updatable = false
-ghost.circle:SetFillColor(Color(255, 255, 255, 64))
+ghost.circle:SetFillColor(sfml.Color(255, 255, 255, 64))
 
 local params = Event()
 
@@ -140,13 +140,13 @@ event.AddListener("OnDraw", "verlet_physics", function(dt, window)
 	ghost:SetRadius(ghost_radius)
 		
 	if keyboard.IsKeyPressed(e.KEY_LEFT) then
-		view:Move(Vec2(-10, 0))
+		view:Move(Vector2f(-10, 0))
 	elseif keyboard.IsKeyPressed(e.KEY_RIGHT) then
-		view:Move(Vec2(10, 0))
+		view:Move(Vector2f(10, 0))
 	elseif keyboard.IsKeyPressed(e.KEY_UP) then
-		view:Move(Vec2(0, -10))
+		view:Move(Vector2f(0, -10))
 	elseif keyboard.IsKeyPressed(e.KEY_DOWN) then
-		view:Move(Vec2(0, 10))
+		view:Move(Vector2f(0, 10))
 	elseif keyboard.IsKeyPressed(e.KEY_PAGE_UP) then
 		zoom_factor = zoom_factor + 0.01
 		zoom_up = true
@@ -189,7 +189,7 @@ event.AddListener("OnDraw", "verlet_physics", function(dt, window)
 	end
 		
 	for key, a in pairs(bodies) do
-		local vel = Vec2()
+		local vel = Vector2f()
 		
 		for key, b in pairs(bodies) do
 			if a ~= b then					
@@ -221,7 +221,7 @@ event.AddListener("OnDraw", "verlet_physics", function(dt, window)
 	ghost:SetPosition(pos)
 	ghost.circle:SetPosition(pos)
 		
-    window:Clear(Color(2, 4, 8, 10))
+    window:Clear(sfml.Color(2, 4, 8, 10))
 	
 	for key, body in pairs(bodies) do
 		window:DrawCircleShape(body.circle, nil)

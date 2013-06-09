@@ -128,7 +128,7 @@ do -- utilities
 		for char in line:gmatch("(.)") do
 			
 			local siz = graphics.GetTextSize(self.Font, char) * self.TextSize
-			local rect = RectF(x, y * (self.TextSize * 1.5) - (self.TextSize * 1.5), siz)
+			local rect = Rect(x, y * (self.TextSize * 1.5) - (self.TextSize * 1.5), siz)
 			
 			if rect:IsPosInside(pos) then
 				return char, rect, Vec2(i, y)
@@ -150,7 +150,7 @@ do -- utilities
 		local y = pos.y * (self.TextSize * 1.5) - (self.TextSize * 1.5)
 		
 		local siz = graphics.GetTextSize(self.Font, char) * self.TextSize
-		local rect = RectF(x, y, siz)
+		local rect = Rect(x, y, siz)
 		
 		return char, rect, pos
 	end	
@@ -325,7 +325,7 @@ function PANEL:OnTextChanged() end
 function PANEL:OnUnhandledChar(char) end
 
 function PANEL:OnDraw(size)	
-	graphics.DrawRect(RectF(0, 0, self:GetWide(), self:GetTall()), self:GetSkinColor("dark"), 0, 1, self:GetSkinColor("medium"))
+	graphics.DrawRect(Rect(0, 0, self:GetWide(), self:GetTall()), self:GetSkinColor("dark"), 0, 1, self:GetSkinColor("medium"))
 
 	if not self.lines then return end
 
@@ -351,8 +351,8 @@ function PANEL:OnDraw(size)
 	end		
 	
 	if false and char then
-		graphics.DrawRect(rect, ColorF(1,0,0,0.25))
-		graphics.DrawText(char .. " " .. tostring(pos), rect:GetPos(), "tahoma",  20, ColorF(0,0,0,1))
+		graphics.DrawRect(rect, Color(1,0,0,0.25))
+		graphics.DrawText(char .. " " .. tostring(pos), rect:GetPos(), "tahoma",  20, Color(0,0,0,1))
 	end
 
 end

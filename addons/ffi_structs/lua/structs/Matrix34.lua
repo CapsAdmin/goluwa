@@ -1,4 +1,3 @@
-do return end
 local META = {}
 
 META.ClassName = "Matrix34"

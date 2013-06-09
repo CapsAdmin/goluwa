@@ -1,5 +1,17 @@
-include("header_parse/sfml.lua")
+sfml = include("header_parse/sfml.lua")
+
+for k,v in pairs(sfml) do
+	if k == "e" then
+		for k, v in pairs(v) do
+			e[k] = v
+		end
+	else
+		_G[k] = v
+	end
+end
+
 include("libraries/gl_enums.lua")
+surface = include("libraries/surface.lua")
 gl, glu = include("libraries/opengl.lua")
 
 include("extensions/input.lua")
@@ -11,7 +23,7 @@ local window
 asdfml = asdfml or {}
 
 function asdfml.OpenWindow(w, h, title)
-	if window and window:IsOpen() then return end
+	if window and window:IsOpen() then return window end
 
 	w = w or 640
 	h = h or 480
@@ -391,8 +403,7 @@ do -- input handling
 			end
 
 			clear(line)
-		else
-
+		elseif byte < 255 then
 			local char = string.char(byte)
 			
 			if event.Call("OnConsoleCharPressed", char) == false then return end
@@ -404,8 +415,8 @@ end
 
 do -- update
 	local params = Event()
-	local clock = Clock()
-
+	local clock = Clock()  
+	
 	local smooth_fps = 0
 	local fps_fmt = "FPS: %i"
 	asdfml.max_fps = 120
@@ -432,14 +443,14 @@ do -- update
 		timer.Update()
 
 		asdfml.ProcessInput()
-
-		local dt = sfsystem.sfTime_asSeconds(clock:Restart()) -- fix me!!!
+		
+		local dt = clock:Restart():AsSeconds()
 
 		smooth_fps = smooth_fps + (((1/dt) - smooth_fps) * dt)
 
 		mmyy.SetWindowTitle(string.format(fps_fmt, smooth_fps))
 
-		event.Call("OnUpdate", dt)
+		event.Call("OnUpdate", dt) 
 
 		if window and window:IsOpen() then
 			if window:PollEvent(params) then
@@ -492,7 +503,7 @@ end
 local function main()
 	event.Call("Initialize")
 
-	while true do
+	while true do	
 		local ok, err = xpcall(asdfml.Update, OnError)
 
 		if not ok then

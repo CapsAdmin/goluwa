@@ -45,10 +45,12 @@ do -- player meta
 	
 	function META:GetNick()
 		for key, ply in pairs(players.GetAll()) do
-			if ply.nv.Nick == self.nv.Nick then
+			if ply ~= self and ply.nv.Nick == self.nv.Nick then
 				return ("%s(%i)"):format(self.nv.Nick, self.ID)
 			end
 		end
+		
+		return self.nv.Nick
 	end
 
 	function META:__tostring()
@@ -192,13 +194,13 @@ do -- player meta
 		
 	players.player_meta = META
 
-	function Player(uniqueid)		
+	function Player(uniqueid)
 		local self = players.active_players[uniqueid] or NULL
 
 		if self:IsValid() then
 			return self
 		end
-
+		
 		self = setmetatable({}, players.player_meta)
 		ref_count = ref_count + 1
 			

@@ -2,7 +2,7 @@
 
 local META = {}
 
-META.ClassName = "ColorF"
+META.ClassName = "Color"
 
 function META.Constructor(r,g,b,a)
 	if type(r) == "string" then
@@ -30,6 +30,10 @@ META.Args = {"r", "g", "b", "a"}
 META.ProtectedFields = {a = true}
 
 structs.AddAllOperators(META)
+
+function META:Get255()
+	return Color(self.r * 255, self.g * 255, self.b * 255, self.a * 255)
+end
 
 function META:SetHue(h)
 	local _h,s,l = ColorToHSV(self)
@@ -147,18 +151,18 @@ function HSVToColor(hue, sat, val)
 	t = v * (1-s*(1-f))
 
 	if i == 0 then
-		return ColorF(v, t, p)
+		return Color(v, t, p)
 	elseif i == 1 then
-		return ColorF(q, v, p)
+		return Color(q, v, p)
 	elseif i == 2 then
-		return ColorF(p, v, t)
+		return Color(p, v, t)
 	elseif i == 3 then
-		return ColorF(p, q, v)
+		return Color(p, q, v)
 	elseif i == 4 then
-		return ColorF(t, p, v)
+		return Color(t, p, v)
 	end
 
-	return ColorF(v, p, q)
+	return Color(v, p, q)
 end
 
 function ColorToHSV(c)
@@ -210,5 +214,5 @@ end
 
 structs.Register(META) 
 
-color_white = ColorF(1,1,1,1)
-color_black = ColorF(0,0,0,1)
+color_white = Color(1,1,1,1)
+color_black = Color(0,0,0,1)

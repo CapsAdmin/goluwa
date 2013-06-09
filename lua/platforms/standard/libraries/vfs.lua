@@ -12,19 +12,16 @@ function vfs.Silence(b)
 end
 
 local function fix_path(path)
-	if WINDOWS then
-		path = path:gsub("%%(.-)%%", os.getenv)
-		path = path:gsub("%%", "")		
-	end
+
+	-- windows
+	path = path:gsub("%%(.-)%%", os.getenv)
+	path = path:gsub("%%", "")		
+	path = path:gsub("%$%((.-)%)", os.getenv)
 	
-	if LINUX then
-		path = path:gsub("%$%((.-)%)", os.getenv)
-		
-		-- uh
-		path = path:gsub("%$", "")
-		path = path:gsub("%(", "")
-		path = path:gsub("%)", "")
-	end
+	-- linux
+	path = path:gsub("%$", "")
+	path = path:gsub("%(", "")
+	path = path:gsub("%)", "")
 		
 	return path:gsub("\\", "/")
 end
@@ -88,7 +85,7 @@ function vfs.GetAbsolutePath(path, ...)
 		
 		if file then
 			file:close()
-			return v .. "/" .. path
+			return v .. path
 		end
 	end
 	

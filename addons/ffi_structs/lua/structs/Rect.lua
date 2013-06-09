@@ -2,12 +2,8 @@ local META = {}
 
 META.ClassName = "Rect"
 
-META.NumberType = "int"
+META.NumberType = "float"
 META.Args = {"x", "y", "w", "h"}
-
-function META.StructOverride()
-	return ffi.metatype("sfIntRect", META)
-end
 
 function META.Constructor(a,b,c,d)
 	if a and not b and not c and not d then

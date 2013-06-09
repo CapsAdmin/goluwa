@@ -1,114 +1,1008 @@
-["TextEvent"] = {
-},
-["SocketStatus"] = {
-},
-["SizeEvent"] = {
-},
-["MouseWheelEvent"] = {
-},
-["ContextSettings"] = {
-},
-["VideoMode"] = {
-	[1] = "sfVideoMode_getDesktopMode",
-},
-["JoystickButtonEvent"] = {
-},
-["Uint8"] = {
-},
-["Int64"] = {
-},
-["MouseButtonEvent"] = {
-},
-["Vector2f"] = {
-},
 ["IntRect"] = {
-},
-["JoystickAxis"] = {
-},
-["HttpMethod"] = {
-},
-["HttpResponse"] = {
-},
-["Bool"] = {
-},
-["Event"] = {
-},
-["Int8"] = {
-},
-["InputStream"] = {
-},
-["Vector3f"] = {
-},
-["Uint32"] = {
-},
-["Int32"] = {
-},
-["KeyCode"] = {
-},
+	["functions"] = {
+		["sfIntRect_intersects"] = {
+			["return_type"] = "sfBool",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfIntRect*",
+					["name"] = "rect1",
+				}
+,
+				[2] = {
+					["type"] = "const sfIntRect*",
+					["name"] = "rect2",
+				}
+,
+				[3] = {
+					["type"] = "sfIntRect*",
+					["name"] = "intersection",
+				}
+,
+			}
+,
+		}
+,
+		["sfIntRect_contains"] = {
+			["return_type"] = "sfBool",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfIntRect*",
+					["name"] = "rect",
+				}
+,
+				[2] = {
+					["type"] = "int",
+					["name"] = "x",
+				}
+,
+				[3] = {
+					["type"] = "int",
+					["name"] = "y",
+				}
+,
+			}
+,
+		}
+,
+	}
+,
+	["lib"] = "graphics",
+}
+,
+["TextEvent"] = {
+}
+,
+["JoystickButtonEvent"] = {
+}
+,
 ["JoystickConnectEvent"] = {
-},
-["Vertex"] = {
-},
-["JoystickMoveEvent"] = {
-},
-["BlendMode"] = {
-},
-["FtpListingResponse"] = {
-},
-["EventType"] = {
-},
-["KeyEvent"] = {
-},
-["Color"] = {
-	[1] = "sfColor_fromRGB",
-	[2] = "sfColor_fromRGBA",
-	[3] = "sfColor_add",
-	[4] = "sfColor_modulate",
-},
-["SoundStatus"] = {
-},
-["WindowHandle"] = {
-},
-["Glyph"] = {
-},
-["PrimitiveType"] = {
-},
-["FloatRect"] = {
-},
-["Time"] = {
-},
-["Vector2u"] = {
-},
-["HttpStatus"] = {
-},
-["Int16"] = {
-},
-["FtpTransferMode"] = {
-},
-["Uint16"] = {
-},
+}
+,
 ["Transform"] = {
-	[1] = "sfTransform_fromMatrix",
-	[2] = "sfTransform_getInverse",
-},
-["MouseButton"] = {
-},
-["IpAddress"] = {
-	[1] = "sfIpAddress_fromString",
-	[2] = "sfIpAddress_fromBytes",
-	[3] = "sfIpAddress_fromInteger",
-	[4] = "sfIpAddress_getLocalAddress",
-	[5] = "sfIpAddress_getPublicAddress",
-},
-["FtpStatus"] = {
-},
+	["functions"] = {
+		["sfTransform_getMatrix"] = {
+			["return_type"] = "void",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfTransform*",
+					["name"] = "transform",
+				}
+,
+				[2] = {
+					["type"] = "float*",
+					["name"] = "matrix",
+				}
+,
+			}
+,
+		}
+,
+		["sfTransform_transformRect"] = {
+			["return_type"] = "sfFloatRect",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfTransform*",
+					["name"] = "transform",
+				}
+,
+				[2] = {
+					["type"] = "sfFloatRect",
+					["name"] = "rectangle",
+				}
+,
+			}
+,
+		}
+,
+		["sfTransform_translate"] = {
+			["return_type"] = "void",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfTransform*",
+					["name"] = "transform",
+				}
+,
+				[2] = {
+					["type"] = "float",
+					["name"] = "x",
+				}
+,
+				[3] = {
+					["type"] = "float",
+					["name"] = "y",
+				}
+,
+			}
+,
+		}
+,
+		["sfTransform_getInverse"] = {
+			["return_type"] = "sfTransform",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfTransform*",
+					["name"] = "transform",
+				}
+,
+			}
+,
+		}
+,
+		["sfTransform_fromMatrix"] = {
+			["return_type"] = "sfTransform",
+			["arguments"] = {
+				[1] = {
+					["type"] = "float",
+					["name"] = "a00",
+				}
+,
+				[2] = {
+					["type"] = "float",
+					["name"] = "a01",
+				}
+,
+				[3] = {
+					["type"] = "float",
+					["name"] = "a02",
+				}
+,
+				[4] = {
+					["type"] = "float",
+					["name"] = "a10",
+				}
+,
+				[5] = {
+					["type"] = "float",
+					["name"] = "a11",
+				}
+,
+				[6] = {
+					["type"] = "float",
+					["name"] = "a12",
+				}
+,
+				[7] = {
+					["type"] = "float",
+					["name"] = "a20",
+				}
+,
+				[8] = {
+					["type"] = "float",
+					["name"] = "a21",
+				}
+,
+				[9] = {
+					["type"] = "float",
+					["name"] = "a22",
+				}
+,
+			}
+,
+		}
+,
+		["sfTransform_rotateWithCenter"] = {
+			["return_type"] = "void",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfTransform*",
+					["name"] = "transform",
+				}
+,
+				[2] = {
+					["type"] = "float",
+					["name"] = "angle",
+				}
+,
+				[3] = {
+					["type"] = "float",
+					["name"] = "centerX",
+				}
+,
+				[4] = {
+					["type"] = "float",
+					["name"] = "centerY",
+				}
+,
+			}
+,
+		}
+,
+		["sfTransform_scale"] = {
+			["return_type"] = "void",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfTransform*",
+					["name"] = "transform",
+				}
+,
+				[2] = {
+					["type"] = "float",
+					["name"] = "scaleX",
+				}
+,
+				[3] = {
+					["type"] = "float",
+					["name"] = "scaleY",
+				}
+,
+			}
+,
+		}
+,
+		["sfTransform_rotate"] = {
+			["return_type"] = "void",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfTransform*",
+					["name"] = "transform",
+				}
+,
+				[2] = {
+					["type"] = "float",
+					["name"] = "angle",
+				}
+,
+			}
+,
+		}
+,
+		["sfTransform_transformPoint"] = {
+			["return_type"] = "sfVector2f",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfTransform*",
+					["name"] = "transform",
+				}
+,
+				[2] = {
+					["type"] = "sfVector2f",
+					["name"] = "point",
+				}
+,
+			}
+,
+		}
+,
+		["sfTransform_scaleWithCenter"] = {
+			["return_type"] = "void",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfTransform*",
+					["name"] = "transform",
+				}
+,
+				[2] = {
+					["type"] = "float",
+					["name"] = "scaleX",
+				}
+,
+				[3] = {
+					["type"] = "float",
+					["name"] = "scaleY",
+				}
+,
+				[4] = {
+					["type"] = "float",
+					["name"] = "centerX",
+				}
+,
+				[5] = {
+					["type"] = "float",
+					["name"] = "centerY",
+				}
+,
+			}
+,
+		}
+,
+		["sfTransform_combine"] = {
+			["return_type"] = "void",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfTransform*",
+					["name"] = "transform",
+				}
+,
+				[2] = {
+					["type"] = "const sfTransform*",
+					["name"] = "other",
+				}
+,
+			}
+,
+		}
+,
+	}
+,
+	["lib"] = "graphics",
+}
+,
+["JoystickMoveEvent"] = {
+}
+,
+["SizeEvent"] = {
+}
+,
+["MouseWheelEvent"] = {
+}
+,
+["FtpListingResponse"] = {
+	["functions"] = {
+		["sfFtpListingResponse_getCount"] = {
+			["return_type"] = "size_t",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFtpListingResponse*",
+					["name"] = "ftpListingResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfFtpListingResponse_getMessage"] = {
+			["return_type"] = "const char*",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFtpListingResponse*",
+					["name"] = "ftpListingResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfFtpListingResponse_getStatus"] = {
+			["return_type"] = "sfFtpStatus",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFtpListingResponse*",
+					["name"] = "ftpListingResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfFtpListingResponse_isOk"] = {
+			["return_type"] = "sfBool",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFtpListingResponse*",
+					["name"] = "ftpListingResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfFtpListingResponse_getName"] = {
+			["return_type"] = "const char*",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFtpListingResponse*",
+					["name"] = "ftpListingResponse",
+				}
+,
+				[2] = {
+					["type"] = "size_t",
+					["name"] = "index",
+				}
+,
+			}
+,
+		}
+,
+		["sfFtpListingResponse_destroy"] = {
+			["return_type"] = "void",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfFtpListingResponse*",
+					["name"] = "ftpListingResponse",
+				}
+,
+			}
+,
+		}
+,
+	}
+,
+	["lib"] = "network",
+}
+,
+["ContextSettings"] = {
+}
+,
+["VideoMode"] = {
+	["functions"] = {
+		["sfVideoMode_isValid"] = {
+			["return_type"] = "sfBool",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfVideoMode",
+					["name"] = "mode",
+				}
+,
+			}
+,
+		}
+,
+		["sfVideoMode_getDesktopMode"] = {
+			["return_type"] = "sfVideoMode",
+			["arguments"] = {
+				[1] = {
+					["type"] = "void",
+					["name"] = "none",
+				}
+,
+			}
+,
+		}
+,
+		["sfVideoMode_getFullscreenModes"] = {
+			["return_type"] = "const sfVideoMode*",
+			["arguments"] = {
+				[1] = {
+					["type"] = "size_t*",
+					["name"] = "Count",
+				}
+,
+			}
+,
+		}
+,
+	}
+,
+	["sfVideoMode_getDesktopMode"] = {
+		["return_type"] = "sfVideoMode",
+		["arguments"] = {
+			[1] = {
+				["type"] = "void",
+				["name"] = "none",
+			}
+,
+		}
+,
+	}
+,
+	["lib"] = "graphics",
+}
+,
+["KeyEvent"] = {
+}
+,
+["Color"] = {
+	["functions"] = {
+		["sfColor_fromRGBA"] = {
+			["return_type"] = "sfColor",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfUint8",
+					["name"] = "red",
+				}
+,
+				[2] = {
+					["type"] = "sfUint8",
+					["name"] = "green",
+				}
+,
+				[3] = {
+					["type"] = "sfUint8",
+					["name"] = "blue",
+				}
+,
+				[4] = {
+					["type"] = "sfUint8",
+					["name"] = "alpha",
+				}
+,
+			}
+,
+		}
+,
+		["sfColor_modulate"] = {
+			["return_type"] = "sfColor",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfColor",
+					["name"] = "color1",
+				}
+,
+				[2] = {
+					["type"] = "sfColor",
+					["name"] = "color2",
+				}
+,
+			}
+,
+		}
+,
+		["sfColor_add"] = {
+			["return_type"] = "sfColor",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfColor",
+					["name"] = "color1",
+				}
+,
+				[2] = {
+					["type"] = "sfColor",
+					["name"] = "color2",
+				}
+,
+			}
+,
+		}
+,
+		["sfColor_fromRGB"] = {
+			["return_type"] = "sfColor",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfUint8",
+					["name"] = "red",
+				}
+,
+				[2] = {
+					["type"] = "sfUint8",
+					["name"] = "green",
+				}
+,
+				[3] = {
+					["type"] = "sfUint8",
+					["name"] = "blue",
+				}
+,
+			}
+,
+		}
+,
+	}
+,
+	["lib"] = "graphics",
+}
+,
 ["RenderStates"] = {
-},
-["TextStyle"] = {
-},
-["Vector2i"] = {
-},
-["MouseMoveEvent"] = {
-},
+}
+,
+["Glyph"] = {
+}
+,
+["FloatRect"] = {
+	["functions"] = {
+		["sfFloatRect_intersects"] = {
+			["return_type"] = "sfBool",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFloatRect*",
+					["name"] = "rect1",
+				}
+,
+				[2] = {
+					["type"] = "const sfFloatRect*",
+					["name"] = "rect2",
+				}
+,
+				[3] = {
+					["type"] = "sfFloatRect*",
+					["name"] = "intersection",
+				}
+,
+			}
+,
+		}
+,
+		["sfFloatRect_contains"] = {
+			["return_type"] = "sfBool",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFloatRect*",
+					["name"] = "rect",
+				}
+,
+				[2] = {
+					["type"] = "float",
+					["name"] = "x",
+				}
+,
+				[3] = {
+					["type"] = "float",
+					["name"] = "y",
+				}
+,
+			}
+,
+		}
+,
+	}
+,
+	["lib"] = "graphics",
+}
+,
+["MouseButtonEvent"] = {
+}
+,
+["Time"] = {
+	["functions"] = {
+		["sfTime_asSeconds"] = {
+			["return_type"] = "float",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfTime",
+					["name"] = "time",
+				}
+,
+			}
+,
+		}
+,
+		["sfTime_asMicroseconds"] = {
+			["return_type"] = "sfInt64",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfTime",
+					["name"] = "time",
+				}
+,
+			}
+,
+		}
+,
+		["sfTime_asMilliseconds"] = {
+			["return_type"] = "sfInt32",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfTime",
+					["name"] = "time",
+				}
+,
+			}
+,
+		}
+,
+	}
+,
+	["lib"] = "audio",
+}
+,
 ["FtpDirectoryResponse"] = {
-},
+	["functions"] = {
+		["sfFtpDirectoryResponse_getDirectory"] = {
+			["return_type"] = "const char*",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFtpDirectoryResponse*",
+					["name"] = "ftpDirectoryResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfFtpDirectoryResponse_getStatus"] = {
+			["return_type"] = "sfFtpStatus",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFtpDirectoryResponse*",
+					["name"] = "ftpDirectoryResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfFtpDirectoryResponse_destroy"] = {
+			["return_type"] = "void",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfFtpDirectoryResponse*",
+					["name"] = "ftpDirectoryResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfFtpDirectoryResponse_getMessage"] = {
+			["return_type"] = "const char*",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFtpDirectoryResponse*",
+					["name"] = "ftpDirectoryResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfFtpDirectoryResponse_isOk"] = {
+			["return_type"] = "sfBool",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFtpDirectoryResponse*",
+					["name"] = "ftpDirectoryResponse",
+				}
+,
+			}
+,
+		}
+,
+	}
+,
+	["lib"] = "network",
+}
+,
+["Vector2u"] = {
+}
+,
+["Vector2i"] = {
+}
+,
+["FtpResponse"] = {
+	["functions"] = {
+		["sfFtpResponse_destroy"] = {
+			["return_type"] = "void",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfFtpResponse*",
+					["name"] = "ftpResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfFtpResponse_getMessage"] = {
+			["return_type"] = "const char*",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFtpResponse*",
+					["name"] = "ftpResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfFtpResponse_getStatus"] = {
+			["return_type"] = "sfFtpStatus",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFtpResponse*",
+					["name"] = "ftpResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfFtpResponse_isOk"] = {
+			["return_type"] = "sfBool",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfFtpResponse*",
+					["name"] = "ftpResponse",
+				}
+,
+			}
+,
+		}
+,
+	}
+,
+	["lib"] = "network",
+}
+,
+["HttpResponse"] = {
+	["functions"] = {
+		["sfHttpResponse_getBody"] = {
+			["return_type"] = "const char*",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfHttpResponse*",
+					["name"] = "httpResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfHttpResponse_getMajorVersion"] = {
+			["return_type"] = "unsigned int",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfHttpResponse*",
+					["name"] = "httpResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfHttpResponse_getMinorVersion"] = {
+			["return_type"] = "unsigned int",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfHttpResponse*",
+					["name"] = "httpResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfHttpResponse_getField"] = {
+			["return_type"] = "const char*",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfHttpResponse*",
+					["name"] = "httpResponse",
+				}
+,
+				[2] = {
+					["type"] = "const char*",
+					["name"] = "field",
+				}
+,
+			}
+,
+		}
+,
+		["sfHttpResponse_getStatus"] = {
+			["return_type"] = "sfHttpStatus",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const sfHttpResponse*",
+					["name"] = "httpResponse",
+				}
+,
+			}
+,
+		}
+,
+		["sfHttpResponse_destroy"] = {
+			["return_type"] = "void",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfHttpResponse*",
+					["name"] = "httpResponse",
+				}
+,
+			}
+,
+		}
+,
+	}
+,
+	["lib"] = "network",
+}
+,
+["IpAddress"] = {
+	["functions"] = {
+		["sfIpAddress_toString"] = {
+			["return_type"] = "void",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfIpAddress",
+					["name"] = "address",
+				}
+,
+				[2] = {
+					["type"] = "char*",
+					["name"] = "string",
+				}
+,
+			}
+,
+		}
+,
+		["sfIpAddress_fromBytes"] = {
+			["return_type"] = "sfIpAddress",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfUint8",
+					["name"] = "byte0",
+				}
+,
+				[2] = {
+					["type"] = "sfUint8",
+					["name"] = "byte1",
+				}
+,
+				[3] = {
+					["type"] = "sfUint8",
+					["name"] = "byte2",
+				}
+,
+				[4] = {
+					["type"] = "sfUint8",
+					["name"] = "byte3",
+				}
+,
+			}
+,
+		}
+,
+		["sfIpAddress_toInteger"] = {
+			["return_type"] = "sfUint32",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfIpAddress",
+					["name"] = "address",
+				}
+,
+			}
+,
+		}
+,
+		["sfIpAddress_fromString"] = {
+			["return_type"] = "sfIpAddress",
+			["arguments"] = {
+				[1] = {
+					["type"] = "const char*",
+					["name"] = "address",
+				}
+,
+			}
+,
+		}
+,
+		["sfIpAddress_fromInteger"] = {
+			["return_type"] = "sfIpAddress",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfUint32",
+					["name"] = "address",
+				}
+,
+			}
+,
+		}
+,
+		["sfIpAddress_getLocalAddress"] = {
+			["return_type"] = "sfIpAddress",
+			["arguments"] = {
+				[1] = {
+					["type"] = "void",
+					["name"] = "none",
+				}
+,
+			}
+,
+		}
+,
+		["sfIpAddress_getPublicAddress"] = {
+			["return_type"] = "sfIpAddress",
+			["arguments"] = {
+				[1] = {
+					["type"] = "sfTime",
+					["name"] = "timeout",
+				}
+,
+			}
+,
+		}
+,
+	}
+,
+	["lib"] = "network",
+}
+,
+["Event"] = {
+}
+,
+["MouseMoveEvent"] = {
+}
+,
+["Vector2f"] = {
+}
+,
+["InputStream"] = {
+}
+,
+["Vector3f"] = {
+}
+,
+["Vertex"] = {
+}
+,
+
