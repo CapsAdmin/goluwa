@@ -156,6 +156,7 @@ do -- logging
 				end
 				
 				log_file:write(unpack(args))
+				log_file:flush()
 			else
 				table.insert(buffer, args)
 			end
