@@ -3,7 +3,9 @@ local surface = _G.surface or {}
 local window
 local view  
 
-local state = RenderStates(e.BLEND_ALPHA, RectangleShape():GetTransform())
+local matrix = RectangleShape():GetTransform() -- what's default?
+local state = RenderStates(e.BLEND_ALPHA, matrix)
+state.transform = matrix
 
 do -- render state
 	function surface.SetShader(shader)
@@ -20,12 +22,35 @@ do -- render state
 	
 	function surface.SetTransform(transform)
 		state.transform = transform
+		matrix = transform
+	end
+end
+
+do -- transform	
+	function surface.Rotate(a, cx, cy)
+		if cx and cy then
+			matrix:RotateWithCenter(a, cx, cy)
+		else
+			matrix:Rotate(a)
+		end
+	end
+	
+	function surface.Translate(x, y)
+		matrix:Translate(x, y)
+	end
+	
+	function surface.Scale(w, h, cx, cy)
+		if cx and cy then
+			matrix:ScaleWithCenter(w, h, cx, cy)
+		else
+			matrix:Scale(w, h)
+		end
 	end
 end
 
 function surface.SetWindow(wnd)
 	window = wnd
-	view = ffi.cast("struct sfView *", window:GetView()) -- yuck
+	view = window:GetView()
 end
 
 function surface.GetWindowSize()
@@ -34,6 +59,12 @@ function surface.GetWindowSize()
 		return size.x, size.y
 	end
 end
+
+function surface.GetMousePos()
+	local position = mouse.GetPosition(ffi.cast("sfWindow *", window))
+
+	return position.x, position.y;
+end;
 
 do -- view
 	local temp_rect = FloatRect()
@@ -90,7 +121,7 @@ end
  
 do
 	local temp_vec2 = Vector2f()
-	local temp_color = Color()
+	local temp_color = sfml.Color()
 
 	local text = Text()
 
@@ -152,7 +183,7 @@ end
 
 do
 	local temp_vec2 = Vector2f()
-	local temp_color = Color()
+	local temp_color = sfml.Color()
 	
 	local rect_shape = RectangleShape()
 
@@ -204,6 +235,18 @@ do
 		end
 	end
 
+	function surface.SetOutlineThickness(amount)
+		rect_shape:SetOutlineThickness(amount);
+	end;
+
+	function surface.SetOutlineColor(r, g, b, a)
+		temp_color.r = r;
+		temp_color.g = g;
+		temp_color.b = b;
+		temp_color.a = a;
+
+		rect_shape:SetOutlineColor(temp_color);
+	end;
 end  
 
 return surface
