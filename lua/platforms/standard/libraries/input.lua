@@ -17,7 +17,7 @@ function input.SetupAccessorFunctions(tbl, name, up_id, down_id)
 				return false
 			end
 		end
-		
+		 
 		return true
 	end
 	
@@ -49,56 +49,55 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_event)
 	
 	tbl[up_id] = tbl[up_id] or {}
 	tbl[down_id] = tbl[down_id] or {}
-	
+		
 	local b
-	
-	local byte = string.byte(key)
-	local char
-	
-	if byte >= 65 and byte <= 90 then -- Uppercase letters
-		char = string.char(byte+32)
+		
+	if type(key) == "string" then
+		local byte = string.byte(key)		
+		
+		if byte >= 65 and byte <= 90 then -- Uppercase letters
+			key = string.char(byte+32)
+		end
 	end
-	
-	local index = char or key
-	
-	if key then
-		if press and not tbl[down_id][index] then
 			
+	if key then	
+		if press and not tbl[down_id][key] then
+		
 			if input.debug then
-				logn("input_debug_down", name, key, press, skip_event)
+				print("key", key, "pressed")
 			end
 		
 			if not skip_event then
 				b = event.Call("On" .. name .. "Input", key, press)
 			end
 			
-			tbl[up_id][index] = nil
-			tbl[down_id][index] = os.clock()
-		elseif not press and tbl[down_id][index] and not tbl[up_id][index] then
-			
+			tbl[up_id][key] = nil
+			tbl[down_id][key] = os.clock()
+		elseif not press and tbl[down_id][key] and not tbl[up_id][key] then
+
 			if input.debug then
-				logn("input_debug_up", name, key, press, skip_event)
+				print("key", key, "released")
 			end
 		
 			if not skip_event then
 				b = event.Call("On" .. name .. "Input", key, press)
 			end
 
-			tbl[up_id][index] = os.clock()
-			tbl[down_id][index] = nil
+			tbl[up_id][key] = os.clock()
+			tbl[down_id][key] = nil
 		end
 	end
-	
+		
 	return b
 end
 
 function input.SetupInputEvent(name)
 	local down_id = name .. "_down_time"
 	local up_id = name .. "_up_time"
-
+	
 	input[down_id] = {}
 	input[up_id] = {}
-
+	
 	input.SetupAccessorFunctions(input, name)
 	
 	return function(key, press)

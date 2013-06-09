@@ -12,6 +12,12 @@ function vfs.Silence(b)
 end
 
 local function fix_path(path)
+	
+	path = path:gsub("%%DATA%%", "%%APPDATA%%/.asdfml")
+
+	if LINUX then
+		path = path:gsub("%%APPDATA%%", "%%HOME%%")
+	end
 
 	-- windows
 	path = path:gsub("%%(.-)%%", os.getenv)
@@ -224,7 +230,7 @@ function vfs.Find(path, invert, full_path, start, plain)
 	for k, v in ipairs(vfs.paths) do
 		-- fix me!! 
 		-- on linux, an invalid path will error
-		xpcall(function()
+		pcall(function()
 		for i in lfs.dir(v .. "/" .. dir) do
 			if i ~= "." and i ~= ".." then
 				if full_path then
@@ -233,7 +239,7 @@ function vfs.Find(path, invert, full_path, start, plain)
 				unique[i] = true
 			end
 		end
-		end, OnError)
+		end)
 	end
 	
 	local list = {}
@@ -349,7 +355,7 @@ do -- file monitoring
 		local function scan(dir)
 			-- fix me!! 
 			-- on linux, an invalid path will error
-			xpcall(function()
+			pcall(function()
 			for path in lfs.dir(dir) do
 				if path ~= "." and path ~= ".." then
 					if utilities.GetExtensionFromPath(path) ~= "lua" then	
@@ -359,7 +365,7 @@ do -- file monitoring
 					end
 				end
 			end
-			end, OnError)
+			end)
 		end
 
 		scan(full_path .. "lua/")

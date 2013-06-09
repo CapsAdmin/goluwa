@@ -192,11 +192,11 @@ do -- input handling
 	end
 
 	local function load_history()
-		return luadata.ReadFile("%APPDATA%/asdfml/cmd_history.txt")
+		return luadata.ReadFile("%DATA%/cmd_history.txt")
 	end
 	
 	local function save_history(tbl)
-		return luadata.WriteFile("%APPDATA%/asdfml/cmd_history.txt", tbl)
+		return luadata.WriteFile("%DATA%/cmd_history.txt", tbl)
 	end
 	
 	local line = ""
@@ -485,6 +485,8 @@ do
 				return char:sub(2):upper()
 			end)
 		end)
+		
+		print(v)
 
 		events[k] = v
 		events[v] = {v = k, k = v}

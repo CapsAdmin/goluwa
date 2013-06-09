@@ -23,15 +23,42 @@ local fragment = [[
 		
 	}
 ]]  
-    
+     
 local shader = Shader(vertex, fragment) 
+ 
+local icons   = {}
+
+-- boo aahh isn't mounted
+for k,v in vfs.Iterate("addons/aahh/textures/silkicons/.+%.png") do
+	table.insert(icons, Texture("file", R(v), IntRect(0,0,16,16)))
+end
 
 event.AddListener("OnDraw", "surface", function()
 	surface.SetWindow(window)
-		
 	local t = os.clock()
+	local x, y = surface.GetMousePos();
 	local W, H = surface.GetWindowSize() 
+ 
+	local lastX, lastY = 0, 0;
 
+	for k,v in pairs(icons) do
+		if (k % 32 == 1) then
+			lastX = 0;
+			lastY = lastY + 20;
+		else
+			lastX = lastX + 20;
+		end;
+
+		surface.SetAngle(math.deg(math.atan2(lastY - y, lastX - x)));
+		surface.SetOrigin(8, 8);
+		surface.SetTexture(v)
+		local size = Vec2(lastX, lastY):Distance(Vec2(x, y)) / 300
+		size = -size + 2
+		size = size ^ 5
+		surface.DrawRect(lastX, lastY, size, size)
+	end
+	
+	
 	shader:SetFloatParameter("alpha", 0.25)
 	
 	surface.SetShaderTexture(test)
@@ -56,9 +83,7 @@ event.AddListener("OnDraw", "surface", function()
 	surface.SetFont(font)
 	surface.SetTextColor(255, 255, 255, 50)
 	surface.SetTextSize(20)
-	
-	local x, y = surface.GetMousePos();
-	
+		
 	for i = 1, 100 do
 		surface.SetTextPosition(x + i*math.sin(os.clock() * 0.2)*5, y + i*10)
 		surface.SetTextAngle(i * math.sin(os.clock() * 0.2)*18)

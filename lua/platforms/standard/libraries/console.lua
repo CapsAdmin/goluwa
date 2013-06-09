@@ -136,7 +136,7 @@ do -- commands
 end
 
 do -- console vars
-	console.cvar_file_name = "%APPDATA%/asdfml/cvars.txt"
+	console.cvar_file_name = "%DATA%/cvars.txt"
 	console.vars = nil
 	
 	-- what's the use?
