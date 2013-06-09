@@ -486,8 +486,6 @@ do
 			end)
 		end)
 		
-		print(v)
-
 		events[k] = v
 		events[v] = {v = k, k = v}
 	end
