@@ -20,7 +20,7 @@ function PANEL:OnDraw(size)
 		self.drag_pos = nil
 	end
  
-	graphics.DrawRect(RectF(0, 0, size), self:GetSkinColor("dark"), self:GetHeight()/2, 1, self:GetSkinColor("border"))
+	graphics.DrawRect(Rect(0, 0, size), self:GetSkinColor("dark"), self:GetHeight()/2, 1, self:GetSkinColor("border"))
 	
 	local pos = self:GetSize() / 2
 	

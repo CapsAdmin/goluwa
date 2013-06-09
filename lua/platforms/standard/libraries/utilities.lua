@@ -175,7 +175,7 @@ end
 do 
 	local hooks = {}
 
-	function utilities.HookOntoFunction(tag, tbl, func_name, type, callback)
+	function utilities.SetFunctionHook(tag, tbl, func_name, type, callback)
 		local old = hooks[tag] or tbl[func_name]
 		
 		if type == "pre" then
@@ -196,6 +196,15 @@ do
 		end
 		
 		return old
+	end
+	
+	function utilities.RemoveFunctionHook(tag, tbl, func_name)
+		local old = hooks[tag]
+		
+		if old then
+			tbl[func_name] = old
+			hooks[tag] = nil
+		end
 	end
 end
 

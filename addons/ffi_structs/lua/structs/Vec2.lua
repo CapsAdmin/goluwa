@@ -2,10 +2,6 @@ local META = {}
 
 META.ClassName = "Vec2"
 
-function META.StructOverride()
-	return ffi.metatype("sfVector2f", META)
-end
-
 META.NumberType = "float"
 META.Args = {{"x", "w", "p"}, {"y", "h", "y"}}
 

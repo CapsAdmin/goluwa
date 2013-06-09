@@ -1,4 +1,4 @@
-
+ 
 local WIDTH = 1920
 local HEIGHT = 1080
 local NUM_SPRITES = 40000
@@ -9,7 +9,7 @@ local window = asdfml.OpenWindow(WIDTH, HEIGHT)
 local sprites = {}
 
 -- Load a sprite to display
-local texture = Texture("file", R"textures/blowfish.png",  Rect(0, 0, 100, 100))
+local texture = Texture("file", R"textures/blowfish.png",  IntRect(0, 0, 100, 100))
 texture:SetSmooth(true)
 
 -- set up the random variables for each sprite
@@ -38,7 +38,7 @@ for i = 1, NUM_SPRITES do
 	sprites[i] = sprite
 end
 
-local tvec2 = Vec2()
+local tvec2 = Vector2f()
 local tonumber=tonumber
 local logn=logn
 local math=math

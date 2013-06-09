@@ -115,8 +115,8 @@ do -- meta
 	
 	aahh.GetSet(PANEL, "Pos", Vec2())
 	aahh.GetSet(PANEL, "Size", Vec2())
-	aahh.GetSet(PANEL, "Padding", RectF())
-	aahh.GetSet(PANEL, "Margin", RectF())
+	aahh.GetSet(PANEL, "Padding", Rect())
+	aahh.GetSet(PANEL, "Margin", Rect())
 	aahh.GetSet(PANEL, "MinSize", Vec2(8,8))
 	aahh.GetSet(PANEL, "TrapInsideParent", false)
 	aahh.GetSet(PANEL, "Cursor", 1)
@@ -194,11 +194,11 @@ do -- meta
 		end
 
 		function PANEL:GetRect()
-			return RectF(self.Pos.x, self.Pos.y, self.Size.w, self.Size.h)
+			return Rect(self.Pos.x, self.Pos.y, self.Size.w, self.Size.h)
 		end
 
 		function PANEL:GetParentMargin()
-			return self.Parent and self.Parent.GetMargin and self.Parent:GetMargin() or RectF()
+			return self.Parent and self.Parent.GetMargin and self.Parent:GetMargin() or Rect()
 		end
 
 		function PANEL:SetWidth(w)
@@ -483,7 +483,7 @@ do -- meta
 			if not vec then debug.trace() end
 			off = off or Vec2()
 			
-			local padding = self:GetPadding() or RectF()
+			local padding = self:GetPadding() or Rect()
 			local size = self:GetSize() + padding:GetPosSize()
 			local centerparent = self:GetParent():GetSize() * vec
 			local centerself = size * vec
@@ -593,15 +593,15 @@ do -- meta
 		function PANEL:DockLayout(um)		
 			self.SKIP_LAYOUT = true
 			
-			local dpad = self.DockPadding or RectF(1, 1, 1, 1)-- Default padding between all panels
-			local margin = self.Margin or RectF()
+			local dpad = self.DockPadding or Rect(1, 1, 1, 1)-- Default padding between all panels
+			local margin = self.Margin or Rect()
 			
 			local x = margin.x
 			local y = margin.y
 			local w = self:GetWidth() - x - margin.w
 			local h = self:GetHeight() - y - margin.h
 			
-			local area = RectF(x, y, w, h)
+			local area = Rect(x, y, w, h)
 			
 			-- Fill [CenterX CenterY] Left Right Top Bottom
 			

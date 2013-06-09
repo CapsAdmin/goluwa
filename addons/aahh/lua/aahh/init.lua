@@ -14,19 +14,11 @@ aahh.Stats =
 function aahh.StartDraw(pnl)
 	if not pnl:IsValid() then return end
 		
-	local pos = pnl:GetWorldPos()
-	
-	graphics.SetTranslation(pos.x, pos.y)
+	graphics.SetTranslation(pnl:GetWorldPos())
 end
 
 function aahh.EndDraw(pnl)	
-	graphics.SetTranslation(0, 0)
-	
-	if false and CAPSADMIN then 
-		if input.IsKeyDown("space") then return end
-
-		graphics.SetRect()
-	end
+	graphics.SetTranslation(Vec2())
 end
 
 function aahh.Draw(delta)
@@ -49,7 +41,7 @@ function aahh.Initialize()
 	aahh.UseSkin("default")
 	
 	local WORLD = aahh.Create("base")
-		WORLD:SetMargin(RectF()+5)
+		WORLD:SetMargin(Rect()+5)
 		
 		function WORLD:GetSize()
 			self.Size = graphics.GetScreenSize()
@@ -70,7 +62,7 @@ aahh.IsSet = class.IsSet
 
 function aahh.GetSet(PANEL, name, var, ...) 
 	class.GetSet(PANEL, name, var, ...)
-	if name:find("ColorF") then
+	if name:find("Color") then
 		PANEL["Set" .. name] = function(self, color) 
 			self[name] = self:HandleColor(color) or var
 		end 

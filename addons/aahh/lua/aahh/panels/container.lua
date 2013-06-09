@@ -10,7 +10,7 @@ function PANEL:Initialize()
 	self.btn.OnPress = function()
 		self:SetCollapse(not self.Collapse)
 	end
-	self:SetMargin(RectF(0,16,0,0))
+	self:SetMargin(Rect(0,16,0,0))
 end
 
 function PANEL:SetCollapse(b)

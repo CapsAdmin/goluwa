@@ -7,4 +7,6 @@ return
 	startup = "aahh/init.lua",
 	
 	priority = 10,
+	
+	load = false,
 }
