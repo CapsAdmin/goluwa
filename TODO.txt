@@ -1,0 +1,3 @@
+don't put SFML in _G. take out what's neded only and make nicer wrappers for it
+automatic cast of Window to RenderWindow
+gl enums in gl and not e
