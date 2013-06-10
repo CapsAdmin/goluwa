@@ -25,7 +25,7 @@ end
 
 function string.trim(self, char)
     char = char or "%s"
-    return self:gsub("^"..char.."*(.-)"..char.."*$", "%1" )
+    return (self:gsub("^"..char.."*(.-)"..char.."*$", "%1" ))
 end
 
 function string.getchar(self, pos)
