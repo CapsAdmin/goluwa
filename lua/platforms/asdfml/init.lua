@@ -17,7 +17,7 @@ gl, glu = include("libraries/opengl.lua")
 include("extensions/input.lua")
 
 addons.AutorunAll()
-
+ 
 local window
 
 asdfml = asdfml or {}
@@ -31,15 +31,28 @@ function asdfml.OpenWindow(w, h, title)
 
 	local settings = ContextSettings()
 
-	settings.depthBits = 24
+	settings.depthBits = 32
 	settings.stencilBits = 8
 	settings.antialiasingLevel = 4
-	settings.majorVersion = 3
-	settings.minorVersion = 0
+	settings.majorVersion = 5
+	settings.minorVersion = 3
 
 	window = RenderWindow(VideoMode(w, h, 32), title, bit.bor(e.RESIZE, e.CLOSE), settings)
+	
+	if gl and gl.InitMiniGlew then
+		gl.InitMiniGlew()
+	end
 
 	return window
+end
+
+function asdfml.OnResized(params)
+	local view = window:GetDefaultView()
+	view = ffi.cast("sfView *", view)
+	
+	view:SetViewport(FloatRect(0,0, params.size.width, params.size.height))
+	
+	window:SetView(view)
 end
 
 function asdfml.OnClosed(params)

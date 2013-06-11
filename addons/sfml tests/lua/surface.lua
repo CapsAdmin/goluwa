@@ -33,14 +33,39 @@ for k,v in vfs.Iterate("addons/aahh/textures/silkicons/.+%.png") do
 	table.insert(icons, Texture("file", R(v), IntRect(0,0,16,16)))
 end
 
-event.AddListener("OnDraw", "surface", function()
+local gridWidth = 32
+local gridHeight = 32
+local pointWidth = 32
+local pointHeight = 32
+local fadeDistance = 100
+
+event.AddListener("OnDraw", "surface", function(dt, window)
 	surface.SetWindow(window)
+
+	local W, H = surface.GetWindowSize() 
+	local x, y = W * 0.5, H * 0.5;
+
+	local w = math.sin(os.clock() * 0.5) * 64;
+	local h = math.cos(os.clock() * 0.5) * 64;
+
+	local w2 = math.sin(os.clock() * 0.25) * 64;
+	local h2 = math.cos(os.clock() * 0.25) * 64;
+
+	surface.StartPoly(3);
+		surface.AddVertex(x, y);
+		surface.AddVertex(x - w, y + h);
+		surface.AddVertex(x + w2, y + h2);
+
+		surface.SetColor(255, 255, 255, 255);
+		surface.SetOutlineColor(255, 0, 0, 255);
+		surface.SetOutlineThickness(1);
+	surface.EndPoly();
+
 	local t = os.clock()
 	local x, y = surface.GetMousePos();
-	local W, H = surface.GetWindowSize() 
  
 	local lastX, lastY = 0, 0;
-
+  
 	for k,v in pairs(icons) do
 		if (k % 32 == 1) then
 			lastX = 0;
@@ -53,8 +78,8 @@ event.AddListener("OnDraw", "surface", function()
 		surface.SetOrigin(8, 8);
 		surface.SetTexture(v)
 		local size = Vec2(lastX, lastY):Distance(Vec2(x, y)) / 300
-		size = -size + 2
-		size = size ^ 5
+		size = math.max(-size + 2, 0);
+		size = math.max(size ^ 5, 0);
 		surface.DrawRect(lastX, lastY, size, size)
 	end
 	

@@ -95,9 +95,11 @@ end
 structs.AddGetFunc(META, "Normalize", "Normalized")
 
 function META.Cross(a, b)
-	a = a.y * b.z - a.z * b.y
-	a = a.z * b.x - a.x * b.z
-	a = a.x * b.y - a.y * b.x
+	local x, y, z = a.x, a.y, a.z
+	a.x = y * b.z - z * b.y
+	a.y = z * b.x - x * b.z
+	a.z = x * b.y - y * b.x
+	return a
 end
 
 structs.AddGetFunc(META, "Cross")

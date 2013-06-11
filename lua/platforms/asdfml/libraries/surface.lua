@@ -184,41 +184,44 @@ end
 do
 	local temp_vec2 = Vector2f()
 	local temp_color = sfml.Color()
-	
-	local rect_shape = RectangleShape()
+	local temp_points = 0;
+
+	local shape = RectangleShape()
+	local shapeCache = shape;
+	local convex = ConvexShape();
 
 	function surface.SetColor(r,g,b,a)
 		temp_color.r = r
 		temp_color.g = g
 		temp_color.b = b
 		temp_color.a = a
-		rect_shape:SetFillColor(temp_color)
+		shape:SetFillColor(temp_color)
 	end
 	
 	function surface.SetTexture(tex)
-		rect_shape:SetTexture(tex, false)
+		shape:SetTexture(tex, false)
 	end
  
  	function surface.SetOrigin(x, y)
 		temp_vec2.x = x
 		temp_vec2.y = y
-		rect_shape:SetOrigin(temp_vec2)
+		shape:SetOrigin(temp_vec2)
 	end
  
 	function surface.SetAngle(angle)
-		rect_shape:SetRotation(angle)
+		shape:SetRotation(angle)
 	end
 
 	function surface.SetPosition(x, y)
 		temp_vec2.x = x
 		temp_vec2.y = y
-		rect_shape:SetPosition(temp_vec2)
+		shape:SetPosition(temp_vec2)
 	end
 
 	function surface.SetSize(w,h)
 		temp_vec2.x = w
 		temp_vec2.y = h
-		rect_shape:SetSize(temp_vec2)
+		shape:SetSize(temp_vec2)
 	end
 
 	function surface.DrawRect(x, y, w, h)
@@ -231,12 +234,12 @@ do
 		end
 		
 		if window then
-			window:DrawRectangleShape(rect_shape, state)
+			window:DrawRectangleShape(shape, state)
 		end
 	end
 
 	function surface.SetOutlineThickness(amount)
-		rect_shape:SetOutlineThickness(amount);
+		shape:SetOutlineThickness(amount);
 	end;
 
 	function surface.SetOutlineColor(r, g, b, a)
@@ -245,7 +248,36 @@ do
 		temp_color.b = b;
 		temp_color.a = a;
 
-		rect_shape:SetOutlineColor(temp_color);
+		shape:SetOutlineColor(temp_color);
+	end;
+
+	function surface.StartPoly(points)
+		shape = convex;
+		shape:SetPointCount(points);
+	end;
+
+	function surface.EndPoly()
+		if (window) then
+			window:DrawConvexShape(shape, state);
+		end;
+
+		shape = shapeCache;
+		temp_points = 0;
+	end;
+
+	function surface.GetPoints()
+		return shape:GetPointCount();
+	end;
+
+	function surface.AddVertex(x, y)
+		shape:SetPoint(temp_points, Vector2f(x, y));
+		temp_points = temp_points + 1;
+	end;
+
+	function surface.GetPointPos(index)
+		local position = shape:GetPoint(index - 1); -- Subtract 1 since indexes start at 0.
+
+		return position.x, position.y;
 	end;
 end  
 
