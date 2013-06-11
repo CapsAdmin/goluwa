@@ -1,16 +1,30 @@
 local mmyy = _G.mmyy or {}
 
-if WINDOWS then
-	ffi.cdef("int SetConsoleTitleA(const char* blah);")
+do -- title
+	local set_title
+	if WINDOWS then
+		ffi.cdef("int SetConsoleTitleA(const char* blah);")
 
-	function mmyy.SetWindowTitle(...)
-		return ffi.C.SetConsoleTitleA(...)
+		set_title = function(str)
+			return ffi.C.SetConsoleTitleA(str)
+		end
 	end
-end
 
-if LINUX then
-	function mmyy.SetWindowTitle(title)
-		return io.write('\27]0;'..title..'\7')
+	if LINUX then
+		set_title = function(str)
+			return io.write('\27]0;', str, '\7')
+		end
+	end
+	
+	local titles = {}
+	
+	function mmyy.SetWindowTitle(title, id)
+		if id then
+			titles[id] = title
+			set_title(table.concat(titles, " | "))
+		else
+			set_title(title)
+		end
 	end
 end
 
