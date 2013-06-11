@@ -46,7 +46,7 @@ function META:Normalize()
 	self.r = normalize(self.r)
 	
 	return self
-end
+end 
 
 structs.AddGetFunc(META, "Normalize", "Normalized")
 
