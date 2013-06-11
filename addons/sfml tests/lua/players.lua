@@ -1,4 +1,8 @@
-if (not CLIENT) then
+if (SERVER) then
+	event.AddListener("PlayerKeyEvent", "movement", function(client, key, press)
+		print(client, key, press);
+	end);
+
 	return;
 end;
 
@@ -14,12 +18,7 @@ event.AddListener("OnDraw", "scroller", function()
 	surface.SetTextSize(16);
 	surface.SetTextColor(255, 255, 255, 255);
 
-	local i = 0;
-
 	for k, v in pairs(players.GetAll()) do
-		surface.DrawText(v:GetNick(), 16, 16 + i*24);
-		i = i + 1;
+		surface.DrawText(v:GetNick().." ("..math.floor(v:GetPing()).." Ping)", 16, 16 + (k - 1)*24);
 	end;
 end);
-
-table.print( players.GetAll() )

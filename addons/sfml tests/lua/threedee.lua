@@ -3,83 +3,103 @@ local window = asdfml.OpenWindow()
 local frame = 0  
 
 local cam_pos = Vec3(0, 0, -10)
+
 local cam_ang = Ang3(0, 0, 0)
   
 local table_insert = table.insert
+
+ffi.cdef[[
+	struct vertex_attributes
+	{
+		float pos_x, pos_y, pos_z;
+		float norm_x, norm_y, norm_z;
+		float u, v;
+ 	};
+]]
      
-function decode_obj(data)
+local function VertexBuffer(tbl, number_type)
+	number_type = number_type or "float"
 	
-	local vertices = {}
-	local normals = {}
-	local uvs = {}
+	-- determine how 
+	local t = typex(tbl[1])
+	local row_size
 	
-	-- get all the types
-	for type, x, y, z in data:gmatch("(%S+)%s-(%S+)%s-(%S+)%s-(%S+)%s-\n") do
-		if type == "v" then
-			table.insert(vertices, Vec3(tonumber(x),tonumber(y),tonumber(z)))
-		end
-		
-		if type == "vn" then
-			table.insert(normals, Vec3(tonumber(x),tonumber(y),tonumber(z)))
-		end
-		
-		if type == "vt" then
-			table.insert(uvs, Vec2(tonumber(x),tonumber(y)))
-		end
- 	end
+	if t == "number" then
+		row_size = 1
+	elseif t == "vec2" then		
+		row_size = 2
+	elseif t == "vec3" then
+		row_size = 3
+	end
 	
-	local output = {} 
+	assert(row_size)
 	
-	-- assemble them
+	local length = #tbl * row_size	
+	local buffer = ffi.new(number_type .. " [?]", length)
 	
-	-- find this
-	-- f 5529/5456/5529 1402/4112/1402 5530/4111/5530
-	for triangle_info in data:gmatch("f (.-)\n") do
-	
-		-- split it up into 3 parts 
-		-- 5529/5456/5529, 1402/4112/1402, 5530/4111/5530
-		for vertex_info in triangle_info:gmatch("(.-)%s+") do
-			local data = {}
-			local type = 1
-			
-			-- iterate each field
-			-- 1 = 5529
-			-- 2 = 5456
-			-- 3 = 5529
-			
-			-- where index is the index position 
-			-- in one of the 3 types, vertex, uv or normals
-						
-			for index in vertex_info:gmatch("(%d+)") do
-				index = assert(tonumber(index))
-				
-				if type == 1 then
-					data.pos = assert(vertices[index])
-				elseif type == 2 then
-					data.uv = uvs[index]
-				elseif type == 3 then
-					data.normal = normals[index]
-				end
-				 
-				type = type + 1
-			end
-			
-			assert(type >= 2 and type <= 4)
-			
-			table.insert(output, data) 
+	for i = 1, #tbl / row_size do
+		i = i * row_size
+		if row_size == 1 then
+			buffer[i+0] = tbl[i]
+		elseif row_size == 2 then
+			buffer[i+0] = tbl[i].x
+			buffer[i+1] = tbl[i].y
+		elseif row_size == 3 then
+			buffer[i+0] = tbl[i].x
+			buffer[i+1] = tbl[i].y
+			buffer[i+2] = tbl[i].z
 		end
 	end
-	 
-	print(#vertices, #normals, #uvs, #output)
-	
-	return output
-end
 
-function decode_obj(data)
+	-- get an id from gl
+	local id = ffi.new("int [1]") gl.GenBuffers(1, id) id = id[0]
+
+	gl.BindBuffer(e.GL_ARRAY_BUFFER, id)	
+	gl.BufferData(e.GL_ARRAY_BUFFER, ffi.sizeof(number_type) * length, buffer, e.GL_STATIC_DRAW)
+	 	 
+	return id
+end 
+
+local function VertexBuffer(data)  
+
+	local buffer = ffi.new("struct vertex_attributes[?]", #data)
+
+	for i = 1, #data do
+		local vertex = data[i]
+		local vertex_attributes = buffer[i - 1]
+
+		if vertex.pos then
+			vertex_attributes.pos_x = vertex.pos.x
+			vertex_attributes.pos_y = vertex.pos.y
+			vertex_attributes.pos_z = vertex.pos.z
+		end
+
+		if vertex.normal then
+			vertex_attributes.norm_x = vertex.normal.x
+			vertex_attributes.norm_y = vertex.normal.y
+			vertex_attributes.norm_z = vertex.normal.z
+		end
+
+		if vertex.uv then
+			vertex_attributes.u = vertex.uv.x
+			vertex_attributes.v = vertex.uv.y
+		end
+	end
+
+	local id = ffi.new("int [1]") gl.GenBuffers(1, id) id = id[0]
+
+	gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
+	gl.BufferData(e.GL_ARRAY_BUFFER, ffi.sizeof(buffer[0]) * #data, buffer, e.GL_STATIC_DRAW)
+
+	return id
+end
+	 
+function decode_obj(data, generate_normals)
 
 	local positions = {}
 	local texcoords = {}
 	local normals = {}
+	
 	local output = {}
 	
 	local lines = {}
@@ -94,9 +114,8 @@ function decode_obj(data)
 		if parts[1] == "v" and #parts >= 4 then
 			table_insert(positions, Vec3(tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])))
 		elseif parts[1] == "vt" and #parts >= 3 then
-			table_insert(texcoords, tonumber(parts[2]))
-			table_insert(texcoords, tonumber(1 - parts[3]))
-		elseif parts[1] == "vn" and #parts >= 4 then
+			table_insert(texcoords, Vec2(tonumber(parts[2]), tonumber(1 - parts[3])))
+		elseif not generate_normals and parts[1] == "vn" and #parts >= 4 then
 			table_insert(normals, Vec3(tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])))
 		end
 	end
@@ -122,23 +141,18 @@ function decode_obj(data)
 					v1.pos = positions[tonumber(first[1])]
 					v2.pos = positions[tonumber(current[1])]
 					v3.pos = positions[tonumber(previous[1])]
-
+					
+					if #texcoords > 0 then
+						v1.uv = texcoords[tonumber(first[2])]
+						v2.uv = texcoords[tonumber(current[2])]
+						v3.uv = texcoords[tonumber(previous[2])]
+					end
+					
 					if #normals > 0 then
 						v1.normal = normals[tonumber(first[3])]
 						v2.normal = normals[tonumber(current[3])]
 						v3.normal = normals[tonumber(previous[3])]
-					end
-					
-					if #texcoords > 0 then
-						v1.u = texcoords[1 + (tonumber(first[2]) - 1) * 2 + 0]%1
-						v1.v = texcoords[1 + (tonumber(first[2]) - 1) * 2 + 1]%1
-						
-						v2.u = texcoords[1 + (tonumber(current[2]) - 1) * 2 + 0]%1
-						v2.v = texcoords[1 + (tonumber(current[2]) - 1) * 2 + 1]%1
-						
-						v3.u = texcoords[1 + (tonumber(previous[2]) - 1) * 2 + 0]%1
-						v3.v = texcoords[1 + (tonumber(previous[2]) - 1) * 2 + 1]%1
-					end
+					end				
 					
 					table_insert(output, v1)
 					table_insert(output, v2)
@@ -149,30 +163,197 @@ function decode_obj(data)
 			end
 		end
 	end
+	
+	if generate_normals then
+		local vertex_normals = {}
 
-	local vertex_normals = {}
+		for i = 1, #output/3 do
+			local a, b, c = output[1+(i-1)*3+0], output[1+(i-1)*3+1], output[1+(i-1)*3+2] 
+			local normal = (c.pos - a.pos):Cross(b.pos - a.pos):GetNormalized()
 
-	for i = 1, #output/3 do
-		local a, b, c = output[1+(i-1)*3+0], output[1+(i-1)*3+1], output[1+(i-1)*3+2] 
-		local normal = (c.pos - a.pos):Cross(b.pos - a.pos):GetNormalized()
+			vertex_normals[a.pos_index] = vertex_normals[a.pos_index] or Vec3()
+			vertex_normals[a.pos_index] = (vertex_normals[a.pos_index] + normal)
 
-		vertex_normals[a.pos_index] = vertex_normals[a.pos_index] or Vec3()
-		vertex_normals[a.pos_index] = (vertex_normals[a.pos_index] + normal):GetNormalized()
+			vertex_normals[b.pos_index] = vertex_normals[b.pos_index] or Vec3()
+			vertex_normals[b.pos_index] = (vertex_normals[b.pos_index] + normal)
 
-		vertex_normals[b.pos_index] = vertex_normals[b.pos_index] or Vec3()
-		vertex_normals[b.pos_index] = (vertex_normals[b.pos_index] + normal):GetNormalized()
+			vertex_normals[c.pos_index] = vertex_normals[c.pos_index] or Vec3()
+			vertex_normals[c.pos_index] = (vertex_normals[c.pos_index] + normal)
+		end
 
-		vertex_normals[c.pos_index] = vertex_normals[c.pos_index] or Vec3()
-		vertex_normals[c.pos_index] = (vertex_normals[c.pos_index] + normal):GetNormalized()
+		local default_normal = Vec3(0, 0, -1)
+
+		for i = 1, #output do
+			local n = vertex_normals[output[i].pos_index] or default_normal
+			n:Normalize()
+			normals[i] = n
+			output[i].normal = n
+		end
+	end
+	
+	print(output[1].uv)
+	
+	local id = VertexBuffer(output)
+
+	local vertex_shader_source = [[
+		uniform float time;
+
+		attribute vec3 position;
+		attribute vec3 normal;
+		attribute vec2 uv;
+
+		varying vec3 color;
+		varying vec2 texcoords;
+		varying vec3 normal_;
+
+		void main()
+		{
+			texcoords = uv;
+			color = gl_Color;
+			normal_ = normal;
+			gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vec4(position + normal * (0.5 + sin(time) * 0.5) + vec3(sin(position.z + time * 10.0), 0.0, 0.0), 1.0);
+		}
+	]]
+
+	
+	local fragment_shader_source = [[
+		uniform float time;
+		uniform sampler2D texture;
+
+		varying vec3 color;
+		varying vec2 texcoords;
+		varying vec3 normal_;
+
+		void main()
+		{
+			//float lol = fract((floor(texcoords.s * 32.0) + floor(texcoords.t * 32.0)) / 2);
+			vec3 final_color = tex2D(texture, texcoords) * color * clamp(dot(normal_, vec3(0.0, sin(time), cos(time))), 0.25, 1.0);
+			gl_FragColor = vec4(final_color, 1.0);
+		}
+	]]
+
+	local function CreateShader(type, source)
+		local shader = gl.CreateShader(type)
+
+		local ffisource = ffi.new("char[?]", #source)
+		ffi.copy(ffisource, source)
+
+		local grr = ffi.new("const char*[1]")
+		grr[0] = ffisource
+		local blah = ffi.new("GLint[1]")
+		blah[0] = #source
+		gl.ShaderSource(shader, 1, grr, blah)
+
+		gl.CompileShader(shader)
+
+		local compile_status = ffi.new("GLint[1]")
+		gl.GetShaderiv(shader, e.GL_COMPILE_STATUS, compile_status)
+
+		if compile_status[0] == 0 then
+			local asdsaad = ffi.new("GLsizei[1]")
+			local log = ffi.new("char[1024]")
+			gl.GetShaderInfoLog(shader, 1024, asdsaad, log)
+			print(ffi.string(log))
+			gl.DeleteShader(shader)
+			return nil
+		end
+
+		return shader
 	end
 
-	local default_normal = Vec3(0, 0, -1)
+	local function CreateProgram(vertex_shader_source, fragment_shader_source)
+		local vertex = CreateShader(e.GL_VERTEX_SHADER, vertex_shader_source)
+		local fragment = CreateShader(e.GL_FRAGMENT_SHADER, fragment_shader_source)
 
-	for i = 1, #output do
-		output[i].normal = vertex_normals[output[i].pos_index] or default_normal
+		if not vertex or not fragment then
+			print("YEAH NO")
+			return
+		end
+
+		local program = gl.CreateProgram()
+		gl.AttachShader(program, vertex)
+		gl.AttachShader(program, fragment)
+		gl.BindAttribLocation(program, 0, "position")
+		gl.BindAttribLocation(program, 1, "normal")
+		gl.BindAttribLocation(program, 2, "uv")
+		gl.LinkProgram(program)
+
+		local link_status = ffi.new("GLint[1]")
+		gl.GetProgramiv(program, e.GL_LINK_STATUS, link_status)
+
+		
+		if link_status[0] == 0 then
+			local asdsaad = ffi.new("GLsizei[1]")
+			local log = ffi.new("char[1024]")
+			gl.GetProgramInfoLog(shader, 1024, asdsaad, log)
+			print(ffi.string(log))
+			gl.DeleteProgram(program)
+			gl.DeleteShader(vertex)
+			gl.DeleteShader(fragment)
+			return nil
+		end
+
+		return program, vertex, fragment
 	end
 
-	return output
+	local program = CreateProgram(vertex_shader_source, fragment_shader_source)
+	local stride = ffi.sizeof("struct vertex_attributes")
+
+	local tex = Texture("file", R"textures/face1.png")
+	
+	return function()
+		gl.ActiveTexture(e.GL_TEXTURE0)
+		tex:Bind()
+		gl.Uniform1i(gl.GetUniformLocation(program, "texture"), 0);
+		gl.Uniform1f(gl.GetUniformLocation(program, "time"), os.clock())
+		
+		gl.Color3f(1.0, 1.0, 1.0)
+		gl.UseProgram(program)
+
+		gl.EnableVertexAttribArray(0)
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
+		gl.VertexAttribPointer(0, 3, e.GL_FLOAT, false, stride, ffi.cast("void*", 0))
+
+		gl.EnableVertexAttribArray(1)
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
+		gl.VertexAttribPointer(1, 3, e.GL_FLOAT, false, stride, ffi.cast("void*", 12))
+
+		gl.EnableVertexAttribArray(2)
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
+		gl.VertexAttribPointer(2, 2, e.GL_FLOAT, false, stride, ffi.cast("void*", 24))
+
+		gl.DrawArrays(e.GL_TRIANGLES, 0, #output - 1)
+	end
+	 		 
+	--[[		
+	local V = VertexBuffer(positions)
+	local UV = VertexBuffer(texcoords)
+	local N = VertexBuffer(normals)
+			
+	return function()
+		gl.EnableClientState(e.GL_VERTEX_ARRAY)
+		gl.EnableClientState(e.GL_TEXTURE_COORD_ARRAY)
+		
+		gl.Begin(e.GL_TRIANGLES)
+		
+			gl.BindBuffer(e.GL_ARRAY_BUFFER, V)
+			gl.VertexPointer(3, e.GL_FLOAT, 0, nil)
+			
+			gl.BindBuffer(e.GL_ARRAY_BUFFER, UV) 
+			gl.VertexPointer(2, e.GL_FLOAT, 0, nil)
+				
+			gl.BindBuffer(e.GL_ARRAY_BUFFER, N) 
+			gl.VertexPointer(3, e.GL_FLOAT, 0, nil) 
+			 
+			gl.DrawArrays(e.GL_TRIANGLES, 0, #positions)
+			
+		gl.End()
+		
+		gl.DisableClientState(e.GL_VERTEX_ARRAY)
+		gl.DisableClientState(e.GL_TEXTURE_COORD_ARRAY)			
+		
+		print(glu.GetLastError())
+	end]]
 end
   
 local active_models = {}
@@ -182,43 +363,46 @@ do -- model
 	META.__index = META
 
 	class.GetSet(META, "Pos", Vec3(0,0,0))
-	class.GetSet(META, "Angles", Vec3(0,0,0))
+	class.GetSet(META, "Angles", Ang3(0,0,0))
 	class.GetSet(META, "Scale", Vec3(1,1,1))
 	class.GetSet(META, "Size", 1)
 	class.GetSet(META, "Model", 1)
 
 	function META:SetModel(path)
-		self.obj = decode_obj(vfs.Read("models/" .. path))
+		self.obj = decode_obj(vfs.Read("models/" .. path), true)
 		self.Model = path
 	end
 	
 	function META:Draw(asdf)
 		if not self.obj then return end
 
+		
 		gl.PushMatrix()
 
-		gl.Rotated(self.ang.p, 1, 0, 0)
-		gl.Rotated(self.ang.y, 0, 1, 0)
-		gl.Rotated(self.ang.r, 0, 0, 1)
-		gl.Translated(self.pos.x, self.pos.y, self.pos.z)
+		gl.Rotated(self.Angles.p, 1, 0, 0)
+		gl.Rotated(self.Angles.y, 0, 1, 0)
+		gl.Rotated(self.Angles.r, 0, 0, 1)
+		gl.Translated(self.Pos.x, self.Pos.y, self.Pos.z)
 
 		local s = self.size
 		gl.Scaled(self.scale.x * s, self.scale.y * s, self.scale.z * s)
 	
-	
-		gl.Begin(e.GL_TRIANGLES)
-			if asdf then
-				gl.Color4f(0, 0, 0, 0.5)
-			else
-				gl.Color4f(1, 1, 1, 1)
-			end
-
+		self.obj()
+				
+		--[[gl.Begin(e.GL_TRIANGLES)
+			if asdf then gl.Color4f(0, 0, 0, 0.5) else gl.Color4f(1, 1, 1, 1) end
 			for key, data in pairs(self.obj) do
 				if data.normal then gl.Normal3f(data.normal:Unpack()) end
 				if data.u then gl.TexCoord2f(data.u, data.v) end
 				gl.Vertex3f(data.pos:Unpack())
 			end 		
-		gl.End()
+		gl.End()]]
+		
+				
+		local err = ffi.string(glu.ErrorString(gl.GetError()))
+		if err ~= "no error" then
+			print(err)
+		end
 		
 		gl.PopMatrix()
 	end
@@ -357,9 +541,9 @@ event.AddListener("OnDraw", "gl", function(dt, window)
  
  
 	for key, obj in pairs(active_models) do
-		gl.Disable(e.GL_LIGHTING)
+		--[[gl.Disable(e.GL_LIGHTING)
 		gl.PolygonMode(e.GL_FRONT_AND_BACK, e.GL_LINE)
-		obj:Draw(true)
+		obj:Draw(true)]]
 
 		gl.Enable(e.GL_LIGHTING)
 		gl.PolygonMode(e.GL_FRONT_AND_BACK, e.GL_FILL)
@@ -369,6 +553,9 @@ event.AddListener("OnDraw", "gl", function(dt, window)
 	gl.Flush() 
 end)
 
-local obj = Model()
-obj:SetModel("face.obj")
-obj:SetSize(1 )
+for i = 1, 10 do 
+	local obj = Model()
+	obj:SetModel("face.obj")
+	obj:SetSize(1)
+	obj:SetPos(Vec3Rand() * 10)
+end
