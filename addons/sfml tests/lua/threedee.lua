@@ -9,7 +9,7 @@ local last_y = 0
 local function calc_camera(window, dt)
 
 	cam_ang:Normalize()
-	local speed = dt
+	local speed = dt * 10
 
 	if input.IsKeyDown("l_control") then
 		local pos = mouse.GetPosition(ffi.cast("sfWindow * ", window))
@@ -42,25 +42,39 @@ local function calc_camera(window, dt)
 			mouse.SetPosition(Vector2i(pos.x, size.y), ffi.cast("sfWindow * ", window))
 			last_y = size.y
 		end	
-	else
+	else 
 		window:SetMouseCursorVisible(true)
 	end 
-	
+
 	if input.IsKeyDown("space") then
-		cam_pos = cam_pos - cam_ang:GetForward() * speed
-	end 
- 
-	if input.IsKeyDown("w") then
-		cam_pos = cam_pos + cam_ang:GetUp() * speed
-	elseif input.IsKeyDown("s") then
-		cam_pos = cam_pos - cam_ang:GetUp() * speed
+		cam_pos = cam_pos - Vec3(0, speed, 0);
 	end
 
+	if (input.IsKeyDown("l_shift")) then
+		cam_pos = cam_pos + Vec3(0, speed, 0);
+	end;
+
+	local offset = cam_ang:GetUp() * speed;
+	offset.x = -offset.x;
+	offset.y = -offset.y
+
+	if input.IsKeyDown("w") then
+
+		cam_pos = cam_pos + offset
+	elseif input.IsKeyDown("s") then
+		cam_pos = cam_pos - offset
+	end
+
+	offset = cam_ang:GetRight() * speed
+	offset.z = -offset.z
+
 	if input.IsKeyDown("a") then
-		cam_pos = cam_pos + cam_ang:GetRight() * speed
+		cam_pos = cam_pos + offset
 	elseif input.IsKeyDown("d") then
-		cam_pos = cam_pos - cam_ang:GetRight() * speed
+		cam_pos = cam_pos - offset
 	end  
+
+	speed = dt * 5
 
 	if input.IsKeyDown("up") then
 		cam_ang.p = cam_ang.p - speed
@@ -95,7 +109,9 @@ do -- model
 	end
 	
 	function META:SetTexture(path)
+		render.SetTextureFiltering()
 		self.tex = Texture("file", R("textures/" .. path))
+		self.tex:Bind()
 		self.Texture = path 
 	end
 	
@@ -117,14 +133,20 @@ do -- model
 		table.insert(active_models, self)
 
 		return self
-	end
+	end 
 end
 
 local size = window:GetSize()
 render.Initialize(size.x, size.y)
-	 
+
+local obj = Model()
+obj:SetModel("face.obj")
+obj:SetTexture("face1.png")
+
 event.AddListener("OnDraw", "gl", function(dt, window)
 	window:Clear(sfml.Color(100, 100, 100, 255))
+
+	obj:SetSize(math.sin(os.clock() * 0.4) * 2);
 
   	calc_camera(window, dt) 
 	render.Start()
@@ -142,13 +164,7 @@ event.AddListener("OnDraw", "gl", function(dt, window)
 		render.SetMatrixMode(e.GL_MODELVIEW)				
 			for key, obj in pairs(active_models) do
 				obj:Draw()
-			end	
-			
+			end				
 	render.End()
  
 end) 
-
-local obj = Model()
-obj:SetModel("face.obj")
-obj:SetTexture("face1.png")
-

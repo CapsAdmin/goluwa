@@ -30,6 +30,13 @@ end
 
 function render.SetTexture(tex)
 	render.active_texture = tex
+	tex:Bind()
+	render.SetTextureFiltering()
+end
+
+function render.SetTextureFiltering(blah)
+	gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MIN_FILTER, e.GL_LINEAR)
+	gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MAG_FILTER, e.GL_LINEAR)
 end
 
 function render.Start(x, y, w, h)
@@ -237,7 +244,7 @@ do -- vbo
 		gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
 		gl.BufferData(e.GL_ARRAY_BUFFER, ffi.sizeof(buffer[0]) * #data, buffer, e.GL_STATIC_DRAW)
 
-		return {Type = "VertexBuffer", id = id, length = #data-1}
+		return {Type = "VertexBuffer", id = id, length = #data}
 	end
 	
 	ffi.cdef[[

@@ -124,6 +124,16 @@ function META:GetAng3()
 	return structs.Ang3(p,y,0)
 end
 
+function META:GetRotated(axis, ang)
+	local ca, sa = math.sin(ang), math.cos(ang)
+	
+	local zax = axis * self:GetDot(axis)
+	local xax = self - zax
+	local yax = axis:GetCross(zax)
+	
+	return xax * ca + yax * sa + zax
+end
+
 --[[
 Give this function a vector, pointing from the camera to a position in the world,
 and it will return the coordinates of a pixel on your screen - this is where the world position would be projected onto your screen.
