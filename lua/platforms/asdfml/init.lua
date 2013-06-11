@@ -11,8 +11,11 @@ for k,v in pairs(sfml) do
 end
 
 include("libraries/gl_enums.lua")
-surface = include("libraries/surface.lua")
 gl, glu = include("libraries/opengl.lua")
+
+surface = include("libraries/surface.lua")
+render = include("libraries/render.lua")
+include("libraries/mesh.lua")
 
 include("extensions/input.lua")
 
