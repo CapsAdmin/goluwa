@@ -100,6 +100,7 @@ typedef int GLintptrARB;
 typedef int GLsizeiptrARB;
 typedef int GLfixed;
 typedef int GLclampx;
+
 void glAccum (GLenum op, GLfloat value);
 void glAlphaFunc (GLenum func, GLclampf ref);
 GLboolean glAreTexturesResident (GLsizei n, const GLuint *textures, GLboolean *residences);
@@ -202,7 +203,6 @@ void glGenTextures (GLsizei n, GLuint *textures);
 void glGetBooleanv (GLenum pname, GLboolean *params);
 void glGetClipPlane (GLenum plane, GLdouble *equation);
 void glGetDoublev (GLenum pname, GLdouble *params);
-GLenum glGetError (void);
 void glGetFloatv (GLenum pname, GLfloat *params);
 void glGetIntegerv (GLenum pname, GLint *params);
 void glGetLightfv (GLenum light, GLenum pname, GLfloat *params);
@@ -217,7 +217,6 @@ void glGetPixelMapuiv (GLenum map, GLuint *values);
 void glGetPixelMapusv (GLenum map, GLushort *values);
 void glGetPointerv (GLenum pname, GLvoid* *params);
 void glGetPolygonStipple (GLubyte *mask);
-const GLubyte * glGetString (GLenum name);
 void glGetTexEnvfv (GLenum target, GLenum pname, GLfloat *params);
 void glGetTexEnviv (GLenum target, GLenum pname, GLint *params);
 void glGetTexGendv (GLenum coord, GLenum pname, GLdouble *params);
@@ -436,9 +435,9 @@ void glVertex4s (GLshort x, GLshort y, GLshort z, GLshort w);
 void glVertex4sv (const GLshort *v);
 void glVertexPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 void glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
-const GLubyte* gluErrorString ( GLenum errCode);
-const wchar_t* gluErrorUnicodeStringEXT ( GLenum errCode);
-const GLubyte* gluGetString ( GLenum name);
+const GLubyte * glGetString (GLenum name);
+GLenum glGetError (void);
+
 void gluOrtho2D ( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top);
 void gluPerspective ( GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
 void gluPickMatrix ( GLdouble x, GLdouble y, GLdouble width, GLdouble height, GLint viewport[4]);
@@ -488,6 +487,10 @@ void gluNurbsCallback ( GLUnurbs *nobj, GLenum which, void (__stdcall* fn)() );
 void gluBeginPolygon( GLUtesselator *tess );
 void gluNextContour( GLUtesselator *tess, GLenum type );
 void gluEndPolygon( GLUtesselator *tess );
+
+const wchar_t* gluErrorUnicodeStringEXT ( GLenum errCode);
+const GLubyte* gluErrorString ( GLenum errCode);
+const GLubyte* gluGetString ( GLenum name);
 ]==]
 
 ffi.cdef(def)
@@ -516,6 +519,8 @@ for line in def:gmatch("(.-)\n") do
 end
 
 -- mini glew..
+-- to check if extensions exist, just check if the function exists.
+-- if gl.GenBuffers then
 function gl.InitMiniGlew()
 	local lib
 
@@ -548,7 +553,7 @@ function gl.InitMiniGlew()
 				end
 			end
 		end
-	end
+	end 
 end
 
 local library = ffi.load(jit.os == "Linux" and "libGLU.so" or "glu32.dll")
@@ -562,6 +567,10 @@ for line in def:gmatch("(.-)\n") do
 			return library[func_name](...)
 		end
 	end
+end
+
+function glu.GetLastError()	
+	return ffi.string(glu.ErrorString(gl.GetError()))
 end
 
 return gl, glu

@@ -137,7 +137,10 @@ do -- logging
 		
 	local log_file
 	local buffer = {}
-		
+	local last_line
+	local count = 0
+	local last_count_length = 0
+	
 	function log(...)
 		local args = tostring_args(...)
 		if can_print(args) then
@@ -154,9 +157,24 @@ do -- logging
 						buffer = nil
 					end
 				end
+						
+				local line = table.concat(args, "")
 				
-				log_file:write(unpack(args))
+				if line == last_line then
+					local count_str = ("[%i x] "):format(count)
+					log_file:seek("cur", -#line-1-last_count_length)
+					log_file:write(count_str, line)
+					count = count + 1
+					last_count_length = #count_str
+				else
+					log_file:write(line)
+					count = 0
+					last_count_length = 0
+				end
+				
 				log_file:flush()
+				
+				last_line = line
 			else
 				table.insert(buffer, args)
 			end
