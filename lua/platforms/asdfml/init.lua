@@ -45,17 +45,86 @@ function asdfml.OpenWindow(w, h, title)
 	if gl and gl.InitMiniGlew then
 		gl.InitMiniGlew()
 	end
+	
+	if render then
+		render.Initialize(w, h)
+	end
 
 	return window
+end
+
+function asdfml.SetMouseTrapped(b)
+	asdfml.mouse_trapped = b
+end
+
+function asdfml.GetMouseDelta()
+	return asdfml.mouse_delta or Vec2()
+end
+
+local last_x
+local last_y
+
+function asdfml.UpdateMouseMove()
+	if not window then return end
+	if asdfml.mouse_trapped and asdfml.HasFocus() and not input.IsKeyDown("escape") then
+		local pos = mouse.GetPosition(ffi.cast("sfWindow * ", window))
+		
+		local dx = (pos.x - (last_x or pos.x)) 
+		local dy = (pos.y - (last_y or pos.y))
+		
+		asdfml.mouse_delta = Vec2(dx, dy)
+			
+		last_x = pos.x 
+		last_y = pos.y
+		
+		window:SetMouseCursorVisible(false)
+		local size = window:GetSize()
+
+		if pos.x > size.x then
+			mouse.SetPosition(Vector2i(0, pos.y), ffi.cast("sfWindow * ", window))
+			last_x = 0
+		elseif pos.x < 0 then
+			mouse.SetPosition(Vector2i(size.x, pos.y), ffi.cast("sfWindow * ", window))
+			last_x = size.x
+		end 
+		
+		if pos.y > size.y then
+			mouse.SetPosition(Vector2i(pos.x, 0), ffi.cast("sfWindow * ", window))
+			last_y = 0
+		elseif pos.y < 0 then
+			mouse.SetPosition(Vector2i(pos.x, size.y), ffi.cast("sfWindow * ", window))
+			last_y = size.y
+		end	
+	else 
+		window:SetMouseCursorVisible(true)
+		last_x = nil
+		last_y = nil
+	end 
+end
+
+function asdfml.OnGainedFocus()
+	asdfml.focused = true
+end
+
+function asdfml.OnLostFocus()
+	asdfml.focused = false
+end
+
+function asdfml.HasFocus()
+	return asdfml.focused
 end
 
 function asdfml.OnResized(params)
 	local view = window:GetDefaultView()
 	view = ffi.cast("sfView *", view)
+	local w, h = params.size.width, params.size.height
 	
-	view:SetViewport(FloatRect(0,0, params.size.width, params.size.height))
-	
+	view:SetViewport(FloatRect(0,0, w, h))	
 	window:SetView(view)
+	
+	if render then
+		render.Initialize(w, h)
+	end
 end
 
 function asdfml.OnClosed(params)
@@ -459,12 +528,13 @@ do -- update
 		timer.Update()
 
 		asdfml.ProcessInput()
+		asdfml.UpdateMouseMove()
 		
 		local dt = clock:Restart():AsSeconds()
 
 		smooth_fps = smooth_fps + (((1/dt) - smooth_fps) * dt)
 
-		mmyy.SetWindowTitle(string.format(fps_fmt, smooth_fps))
+		mmyy.SetWindowTitle(string.format(fps_fmt, smooth_fps), 1)
 
 		event.Call("OnUpdate", dt) 
 
@@ -473,7 +543,7 @@ do -- update
 				asdfml.HandleEvent(params)
 			end
 
-			window:Clear(e.BLACK)
+			--window:Clear(e.BLACK)
 				event.Call("OnDraw", dt, window)
 			window:Display()
 		end

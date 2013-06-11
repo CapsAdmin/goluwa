@@ -1,12 +1,15 @@
 local render = _G.render or {}
 
-local tmp_color = sfml.Color()
-
-render.farz = 1000
-render.nearz = 0.1
-render.fov = 75  
+local tmp_color
 
 function render.Initialize(w, h)	
+	tmp_color = sfml.Color()
+	
+	render.cam_pos = Vec3(0,0,0)
+	render.farz = 32000
+	render.nearz = 0.1
+	render.fov = 75  
+
 	check(w, "number")
 	check(h, "number")
 	
@@ -60,6 +63,10 @@ function render.SetPerspective(fov, nearz, farz, ratio)
 	
 	glu.Perspective(fov, ratio, nearz, farz)
 end
+
+function render.SetCamera(pos, ang)
+	render.cam_pos = pos or Vec3()
+end
 	
 
 -- matrix stuff
@@ -78,7 +85,6 @@ do
 	
 		-- temp / helper
 		if a and s then
-
 			gl.Rotatef(a.p, 1, 0, 0)
 			gl.Rotatef(a.y, 0, 1, 0)
 			gl.Rotatef(a.r, 0, 0, 1)
@@ -174,33 +180,51 @@ do -- vbo
 
 		varying vec3 color;
 		varying vec2 texcoords;
-		varying vec3 normal_;
+		varying vec3 vertex_normal;
+		varying vec3 vertex_pos;
 
 		void main()
 		{
 			texcoords = uv;
 			color = gl_Color;
-			normal_ = normal;
+			vertex_normal = normal;
 			gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vec4(position, 1.0);
+			vertex_pos = position;
 		}
-	]] 
+	]]  
 
 	local fragment_shader_source = [[
 		uniform float time;
 		uniform sampler2D texture;
+		uniform vec3 cam_pos;
 
 		varying vec3 color;
 		varying vec2 texcoords;
-		varying vec3 normal_;
+		varying vec3 vertex_normal;
+		varying vec3 vertex_pos;
 
-		vec3 asdf()
+		vec3 light_direction = false ? vec3(0.0, 0.0, 1.0) : normalize(vec3(sin(time), 0.0, cos(time)));
+		vec3 viewer_direction = normalize(cam_pos - vertex_pos);	
+		
+		vec3 get_specular()
+		{		
+			vec3 blah = clamp(pow(dot(reflect(light_direction, vertex_normal), viewer_direction), 8.0), 0.0, 1.0);
+			
+			return blah;
+		}
+		
+		vec3 get_diffuse()
 		{
-			return color * tex2D(texture, texcoords) * dot(normal_, vec3(0.0, 0.0, 1.0));
+			vec3 texel = tex2D(texture, texcoords);
+			return vec3(0.1, 0.1, 0.1) * texel + texel * clamp(dot(vertex_normal, light_direction), 0.0, 1.0);
 		}
 
 		void main()
 		{
-			gl_FragColor = vec4(asdf(), 1.0);
+			gl_FragColor = vec4(
+				get_diffuse() + 
+				get_specular()
+			, 1);
 		}
 	]]
 	
@@ -285,7 +309,8 @@ do -- vbo
 		end
 
 		gl.Uniform1f(gl.GetUniformLocation(render.vbo_program, "time"), os.clock())
-		
+		gl.Uniform3f(gl.GetUniformLocation(render.vbo_program, "cam_pos"), render.cam_pos.x, render.cam_pos.y, render.cam_pos.z)
+
 		gl.UseProgram(render.vbo_program)
 
 		gl.EnableVertexAttribArray(0)

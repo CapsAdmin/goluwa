@@ -1,58 +1,32 @@
 local window = asdfml.OpenWindow()
  
+asdfml.SetMouseTrapped(true)
+ 
 local cam_pos = Vec3(0, 0, -10)
 local cam_ang = Ang3(0, 0, 0)     
  
-local last_x = 0
-local last_y = 0
+local last_x
+local last_y
    
 local function calc_camera(window, dt)
 
 	cam_ang:Normalize()
 	local speed = dt * 10
+	
+	local delta = asdfml.GetMouseDelta() * dt / 2
+	cam_ang.p = cam_ang.p + delta.y
+	cam_ang.y = cam_ang.y + delta.x
+	cam_ang.p = math.clamp(cam_ang.p, -math.pi/2, math.pi/2)
 
-	if input.IsKeyDown("l_control") then
-		local pos = mouse.GetPosition(ffi.cast("sfWindow * ", window))
-		
-		local dx = (pos.x - last_x) * dt
-		local dy = (pos.y - last_y) * dt
-		
-		cam_ang.p = cam_ang.p + dy
-		cam_ang.y = cam_ang.y + dx
-		cam_ang.p = math.clamp(cam_ang.p, -math.pi/2, math.pi/2)
-			
-		last_x = pos.x 
-		last_y = pos.y
-		
-		--window:SetMouseCursorVisible(false)
-		local size = window:GetSize()
-
-		if pos.x > size.x then
-			mouse.SetPosition(Vector2i(0, pos.y), ffi.cast("sfWindow * ", window))
-			last_x = 0
-		elseif pos.x < 0 then
-			mouse.SetPosition(Vector2i(size.x, pos.y), ffi.cast("sfWindow * ", window))
-			last_x = size.x
-		end 
-		
-		if pos.y > size.y then
-			mouse.SetPosition(Vector2i(pos.x, 0), ffi.cast("sfWindow * ", window))
-			last_y = 0
-		elseif pos.y < 0 then
-			mouse.SetPosition(Vector2i(pos.x, size.y), ffi.cast("sfWindow * ", window))
-			last_y = size.y
-		end	
-	else 
-		window:SetMouseCursorVisible(true)
-	end 
+	if input.IsKeyDown("l_shift") then
+		speed = speed * 4
+	elseif input.IsKeyDown("l_control") then
+		speed = speed / 4
+	end
 
 	if input.IsKeyDown("space") then
 		cam_pos = cam_pos - Vec3(0, speed, 0);
 	end
-
-	if (input.IsKeyDown("l_shift")) then
-		cam_pos = cam_pos + Vec3(0, speed, 0);
-	end;
 
 	local offset = cam_ang:GetUp() * speed;
 	offset.x = -offset.x;
@@ -105,7 +79,12 @@ do -- model
 
 	function META:SetModel(path)
 		self.Model = path
-		self.mesh = Mesh(vfs.Read("models/" .. path))
+		
+		local str = vfs.Read("models/" .. path)
+		
+		utilities.ParseObj(str, function(data)
+			self.mesh = Mesh(data)
+		end, true)
 	end
 	
 	function META:SetTexture(path)
@@ -122,7 +101,7 @@ do -- model
 			render.SetTexture(self.tex)
 		end
 		
-		render.PushMatrix(self.Pos, self.Ang, self.Scale)
+		render.PushMatrix(self.Pos, self.Angles, self.Scale * self.Size)
 			self.mesh:Draw()	
 		render.PopMatrix()
 	end
@@ -136,19 +115,25 @@ do -- model
 	end 
 end
 
-local size = window:GetSize()
-render.Initialize(size.x, size.y)
+local obj = Model()
+obj:SetModel("teapot.obj")
+obj:SetTexture("face1.png")
 
 local obj = Model()
+obj:SetPos(Vec3(5,0,0))
 obj:SetModel("face.obj")
 obj:SetTexture("face1.png")
 
+gl.ClearColor(1,1,1,0)
+
 event.AddListener("OnDraw", "gl", function(dt, window)
-	window:Clear(sfml.Color(100, 100, 100, 255))
-
-	obj:SetSize(math.sin(os.clock() * 0.4) * 2);
-
+	--window:Clear(sfml.Color(100, 100, 100, 255))
+	
   	calc_camera(window, dt) 
+  	local angle = (cam_pos - obj:GetPos()):GetAng3():GetDeg();
+
+ -- 	obj:SetAngles(angle)
+
 	render.Start()
 		render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
 		
@@ -159,7 +144,9 @@ event.AddListener("OnDraw", "gl", function(dt, window)
 			gl.Rotatef(a.p, 1, 0, 0)
 			gl.Rotatef(a.y, 0, 1, 0)
 			gl.Rotatef(a.r, 0, 0, 1)
-			gl.Translatef(cam_pos.x, cam_pos.y, cam_pos.z)			
+			gl.Translatef(cam_pos.x, cam_pos.y, cam_pos.z)	
+		
+		render.SetCamera(cam_pos) 
 		
 		render.SetMatrixMode(e.GL_MODELVIEW)				
 			for key, obj in pairs(active_models) do
