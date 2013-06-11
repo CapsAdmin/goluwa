@@ -534,7 +534,7 @@ function gl.InitMiniGlew()
 			
 			
 			if key and val then
-				_E[key] = val
+				_E[key] = tonumber(val)
 			elseif line:find("typedef") then
 				--print(line)
 			else
