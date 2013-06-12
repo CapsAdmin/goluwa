@@ -31,17 +31,6 @@ function render.Clear(flag, ...)
 	gl.Clear(bit.bor(flag, ...))
 end
 
-function render.SetTexture(tex)
-	render.active_texture = tex
-	tex:Bind()
-	render.SetTextureFiltering()
-end
-
-function render.SetTextureFiltering(blah)
-	gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MIN_FILTER, e.GL_LINEAR)
-	gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MAG_FILTER, e.GL_LINEAR)
-end
-
 function render.Start(x, y, w, h)
 	x = x or 0
 	y = y or 0
@@ -67,7 +56,90 @@ end
 function render.SetCamera(pos, ang)
 	render.cam_pos = pos or Vec3()
 end
+
+do -- textures
+	_E.TEX_CHANNEL_AUTO = 0
+	_E.TEX_CHANNEL_L = 1
+	_E.TEX_CHANNEL_LA = 2
+	_E.TEX_CHANNEL_RGB = 3
+	_E.TEX_CHANNEL_RGBA = 4
+
+	_E.TEX_FLAG_POWER_OF_TWO = 1
+	_E.TEX_FLAG_MIPMAPS = 2
+	_E.TEX_FLAG_TEXTURE_REPEATS = 4
+	_E.TEX_FLAG_MULTIPLY_ALPHA = 8
+	_E.TEX_FLAG_INVERT_Y = 16
+	_E.TEX_FLAG_COMPRESS_TO_DXT = 32
+	_E.TEX_FLAG_DDS_LOAD_DIRECT = 64
+	_E.TEX_FLAG_NTSC_SAFE_RGB = 128
+	_E.TEX_FLAG_COCG_Y = 256
+	_E.TEX_FLAG_TEXTURE_RECTANGLE = 512
+
+	function render.CreateTexture(path, channel_flags, texture_flags, prev_tex_id)
+		return soil.LoadImage(vfs.Read(path, "rb"), texture_flags, channel_flags, prev_tex_id)
+	end
 	
+	function render.SetTexture(id)
+		gl.BindTexture(e.GL_TEXTURE_2D, id)
+	end
+	
+	function render.SetTextureFiltering(blah)
+		gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MIN_FILTER, e.GL_LINEAR_MIPMAP_LINEAR)
+		gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MAG_FILTER, e.GL_LINEAR_MIPMAP_LINEAR)
+	end
+end
+
+do -- render targets
+
+	-- http://www.songho.ca/opengl/gl_fbo.html
+	function render.CreateRenderTarget(w, h, type)
+		w = w or render.w
+		h = h or render.h
+		type = type or e.GL_DEPTH24_STENCIL8
+
+		-- create a texture object
+		local tex_id = ffi.new("GLuint[1]") gl.GenTextures(1, tex_id) tex_id = tex_id[0]
+		
+		gl.BindTexture(e.GL_TEXTURE_2D, tex_id)
+		gl.TexParameterf(e.GL_TEXTURE_2D, e.GL_TEXTURE_MAG_FILTER, e.GL_LINEAR)
+		gl.TexParameterf(e.GL_TEXTURE_2D, e.GL_TEXTURE_MIN_FILTER, e.GL_LINEAR_MIPMAP_LINEAR)
+		gl.TexParameterf(e.GL_TEXTURE_2D, e.GL_TEXTURE_WRAP_S, e.GL_CLAMP_TO_EDGE)
+		gl.TexParameterf(e.GL_TEXTURE_2D, e.GL_TEXTURE_WRAP_T, e.GL_CLAMP_TO_EDGE)
+		gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_GENERATE_MIPMAP, e.GL_TRUE) -- automatic mipmap
+		gl.TexImage2D(e.GL_TEXTURE_2D, 0, e.GL_RGBA8, w, h, 0,	e.GL_RGBA, e.GL_UNSIGNED_BYTE, ffi.cast("void *", 0))
+		gl.BindTexture(e.GL_TEXTURE_2D, 0)
+
+		-- create a renderbuffer object to store depth info
+		local rbo_id = ffi.new("GLuint[1]") gl.GenRenderbuffers(1, rbo_id) rbo_id = rbo_id[0]
+		gl.BindRenderbuffer(e.GL_RENDERBUFFER, rbo_id)
+		gl.RenderbufferStorage(e.GL_RENDERBUFFER, type, w, h)
+		gl.BindRenderbuffer(e.GL_RENDERBUFFER, 0)
+
+		-- create a framebuffer object
+		local fbo_id = ffi.new("GLuint[1]") gl.GenFramebuffers(1, fbo_id) fbo_id = fbo_id[0]
+		gl.BindFramebuffer(e.GL_FRAMEBUFFER, fbo_id)
+
+		-- attach the texture to FBO color attachment point
+		gl.FramebufferTexture2D(e.GL_FRAMEBUFFER, e.GL_COLOR_ATTACHMENT0, e.GL_TEXTURE_2D, tex_id, 0)
+
+		-- attach the renderbuffer to depth attachment point
+		gl.FramebufferRenderbuffer(e.GL_FRAMEBUFFER, e.GL_DEPTH_ATTACHMENT, e.GL_RENDERBUFFER, rbo_id)
+
+		-- check FBO status
+		if(gl.CheckFramebufferStatus(e.GL_FRAMEBUFFER) ~= e.GL_FRAMEBUFFER_COMPLETE) then
+			error"!!"
+		end
+
+		-- switch back to window-system-provided framebuffer
+		gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
+		
+		return fbo_id, tex_id, rbo_id
+	end
+	
+	function render.SetRenderTarget(id)
+		gl.BindFramebuffer(e.GL_FRAMEBUFFER, id or 0)
+	end
+end
 
 -- matrix stuff
 do
