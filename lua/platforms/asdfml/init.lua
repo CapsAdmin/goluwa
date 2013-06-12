@@ -13,6 +13,7 @@ end
 include("libraries/gl_enums.lua")
 gl, glu = include("libraries/opengl.lua")
 
+soil = include("libraries/soil.lua")
 surface = include("libraries/surface.lua")
 render = include("libraries/render.lua")
 include("libraries/mesh.lua")
@@ -37,9 +38,9 @@ function asdfml.OpenWindow(w, h, title)
 	settings.depthBits = 32
 	settings.stencilBits = 8
 	settings.antialiasingLevel = 4
-	settings.majorVersion = 2
-	settings.minorVersion = 1
-
+	settings.majorVersion = 4
+	settings.minorVersion = 3
+	
 	window = RenderWindow(VideoMode(w, h, 32), title, bit.bor(e.RESIZE, e.CLOSE), settings)
 	
 	if gl and gl.InitMiniGlew then

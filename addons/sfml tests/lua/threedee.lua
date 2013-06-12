@@ -64,7 +64,7 @@ local function calc_camera(window, dt)
 end  
 
               
-local active_models = {}
+local active_models =  {}
  
 do -- model 
 	local META = {}
@@ -78,7 +78,7 @@ do -- model
 	class.GetSet(META, "Texture")
 
 	function META:SetModel(path)
-		self.Model = path
+		self.Model = path 
 		
 		local str = vfs.Read("models/" .. path)
 		
@@ -88,9 +88,7 @@ do -- model
 	end
 	
 	function META:SetTexture(path)
-		render.SetTextureFiltering()
-		self.tex = Texture("file", R("textures/" .. path))
-		self.tex:Bind()
+		self.tex = render.CreateTexture("textures/" .. path)
 		self.Texture = path 
 	end
 	
@@ -104,8 +102,8 @@ do -- model
 		render.PushMatrix(self.Pos, self.Angles, self.Scale * self.Size)
 			self.mesh:Draw()	
 		render.PopMatrix()
-	end
-   
+	end 
+    
  
 	function Model(path)
 		local self = setmetatable({}, META)
@@ -115,7 +113,7 @@ do -- model
 	end 
 end
 
-local obj = Model()
+local obj = Model() 
 obj:SetModel("teapot.obj")
 obj:SetTexture("face1.png")
 
@@ -124,16 +122,13 @@ obj:SetPos(Vec3(5,0,0))
 obj:SetModel("face.obj")
 obj:SetTexture("face1.png")
 
-gl.ClearColor(1,1,1,0)
+gl.ClearColor(1,1,1,0)  
+
+--local rt, tex = render.CreateRenderTarget() 
 
 event.AddListener("OnDraw", "gl", function(dt, window)
-	--window:Clear(sfml.Color(100, 100, 100, 255))
-	
   	calc_camera(window, dt) 
-  	local angle = (cam_pos - obj:GetPos()):GetAng3():GetDeg();
-
- -- 	obj:SetAngles(angle)
-
+	
 	render.Start()
 		render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
 		
@@ -152,6 +147,5 @@ event.AddListener("OnDraw", "gl", function(dt, window)
 			for key, obj in pairs(active_models) do
 				obj:Draw()
 			end				
-	render.End()
- 
+	render.End() 
 end) 
