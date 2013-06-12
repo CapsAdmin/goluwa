@@ -522,14 +522,16 @@ end
 -- to check if extensions exist, just check if the function exists.
 -- if gl.GenBuffers then
 function gl.InitMiniGlew()
-	local lib
+	local GetProcAddress
 
 	if WINDOWS then
-		ffi.cdef"void *wglGetProcAddress(const char *)"
+		ffi.cdef"void *wglGetProcAddress(const char *);"
+		GetProcAddress = library.wglGetProcAddress
 	end
 
 	if LINUX then
-		ffi.cdef"void *glXGetProcAddress(const char *)"
+		ffi.cdef"void *glXGetProcAddress(const char *);"
+		GetProcAddress = library.glXGetProcAddress
 	end
 
 	for path in vfs.Iterate("lua/platforms/asdfml/libraries/gl_extensions/", nil, true) do
@@ -545,10 +547,22 @@ function gl.InitMiniGlew()
 			else
 				local ret, nam, args = line:match("(.-) (gl.-) (%(.+%))")
 				if nam then
-					local func = library.wglGetProcAddress(nam:trim())
+					local func = GetProcAddress(nam:trim())
 					if func ~= nil then
-						func = ffi.cast(ret .. "(*)" ..  args, func)
-						gl[nam:sub(3)] = func
+						local ok, var = pcall(ffi.cast, ret .. "(*)" ..  args, func) 
+						if not ok and var:find("specifier expected near") then
+							local type = var:match("near.-'(.-)'")
+							ffi.cdef(("typedef struct %s {} %s;"):format(type, type))
+							ok, var = pcall(ffi.cast, ret .. "(*)" ..  args, func)
+							if not ok then 
+								logn(err)
+								logn("tried to declare type ", var, " but it didnt work") 
+							else
+								gl[nam:sub(3)] = var
+							end
+						else
+							gl[nam:sub(3)] = var
+						end
 					end
 				end
 			end

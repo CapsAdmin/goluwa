@@ -37,8 +37,8 @@ function asdfml.OpenWindow(w, h, title)
 	settings.depthBits = 32
 	settings.stencilBits = 8
 	settings.antialiasingLevel = 4
-	settings.majorVersion = 5
-	settings.minorVersion = 3
+	settings.majorVersion = 2
+	settings.minorVersion = 1
 
 	window = RenderWindow(VideoMode(w, h, 32), title, bit.bor(e.RESIZE, e.CLOSE), settings)
 	
@@ -99,6 +99,7 @@ function asdfml.UpdateMouseMove()
 		window:SetMouseCursorVisible(true)
 		last_x = nil
 		last_y = nil
+		asdfml.mouse_delta = Vec2()
 	end 
 end
 
