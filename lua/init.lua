@@ -149,7 +149,7 @@ do -- logging
 			
 			if vfs then
 				if not log_file then
-					log_file = io.open(e.BASE_FOLDER .. "log_" .. _E.USERNAME:lower() .. ".txt", "w")
+					log_file = io.open(e.BASE_FOLDER .. "log_" .. _E.USERNAME:lower() .. "_" .. jit.os:lower() .. ".txt", "w")
 					
 					if buffer then
 						for k,v in pairs(buffer) do
