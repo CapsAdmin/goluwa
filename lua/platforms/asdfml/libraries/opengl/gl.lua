@@ -503,7 +503,7 @@ function gl.InitMiniGlew()
 							ok, var = pcall(ffi.cast, ret .. "(*)" ..  args, func)
 							if not ok then 
 								logn(err)
-								logn("tried to declare type ", var, " but it didnt work") 
+								warning("gl", "tried to declare type ", var, " but it didnt work") 
 							else
 								gl[nam:sub(3)] = var
 							end
@@ -511,7 +511,7 @@ function gl.InitMiniGlew()
 							gl[nam:sub(3)] = var
 						end
 					else
-						logf("could not get the address of gl function %s! (%s)", name, line)
+						warning("gl", "could not get the address of gl function %s! (%s)", name, line)
 					end
 				end
 			end

@@ -160,9 +160,7 @@ do -- console vars
 	end
 	
 	function console.CreateVariable(name, def, callback)
-		if not console.vars then
-			console.ReloadVariables()
-		end
+		if not console.vars then console.ReloadVariables() end
 
 		console.vars[name] = console.vars[name] or def
 
@@ -184,10 +182,14 @@ do -- console vars
 	end
 
 	function console.GetVariable(var, def)
+		if not console.vars then console.ReloadVariables() end
+		
 		return console.vars[var] or def
 	end
 
 	function console.SetVariable(name, value)
+		if not console.vars then console.ReloadVariables() end
+		
 		console.vars[name] = value
 		luadata.SetKeyValueInFile(console.cvar_file_name, name, value)
 	end
