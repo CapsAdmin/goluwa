@@ -1,5 +1,5 @@
 -- pretty much everything here has a default variable and resources are created if neeeded
-local window = asdfml.GetWindow()
+local window = glw.GetWindow()
 
 graphics = graphics or {}
 
@@ -8,7 +8,7 @@ function graphics.SetTranslation(vec)
 end
 
 function graphics.GetScreenSize()
-	local size = asdfml.GetWindow():GetSize()
+	local size = glw.GetWindow():GetSize()
 	return Vec2(size.x, size.y)
 end
 
