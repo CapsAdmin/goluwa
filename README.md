@@ -1,9 +1,5 @@
-ASDFML is pretty much SFML bindings for luajit. 
-But not quite.. 
-It comes with alot of extra library load and it doesn't really follow the csfml style of coding either.
+Goluwa (good luck warrior) is a 3d "engine" written in Lua. 
 
-The functions are automatically bound to luajit from by parsing CSFML headers from luajit itself. 
-
-See addons/sfml tests/lua/sfml_tests/* for some example usage.
+It uses LuaJIT's ffi api to bind to OpenGL and all the availible extensions.
 
 The coding style is inspired by Garry's Mod Lua.
