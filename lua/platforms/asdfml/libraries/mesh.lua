@@ -147,11 +147,11 @@ function Mesh(data)
 	if vbo then 
 		return vbo
 	else	
-		vbo = render.CreateVBO(data)
+		vbo = render.Create3DVBO(data)
 		
 		local mesh = {
 			Draw = function() 
-				render.DrawVBO(vbo) 
+				render.Draw3DVBO(vbo) 
 			end, 
 			
 			GetVertexBuffer = function() 

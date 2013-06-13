@@ -24,7 +24,7 @@ local fragment = [[
 	}
 ]]  
      
-local shader = Shader(vertex, fragment) 
+local shader = Shader(vertex, fragment)   
  
 local icons   = {}
 
