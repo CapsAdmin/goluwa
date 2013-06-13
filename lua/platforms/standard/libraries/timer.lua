@@ -146,7 +146,7 @@ function timer.Update()
 			end
 		end
 	end
-
+	
 	for key, data in ipairs(timer.Thinkers) do	
 		if data.speed then
 			for i=0, data.speed do
