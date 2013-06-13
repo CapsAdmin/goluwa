@@ -203,20 +203,22 @@ do -- logging
 
 	function warning(verbosity, ...)
 		local level = get_verbosity_level()
-		
-		-- if the level is below 0 always log
-		if level < 0 then
-			return log(...)
-		end
-		
+				
 		-- if verbosity is a string only show warnings log_debug_filter is set to
-		if type(verbosity) == "string" and verbosity == get_debug_filter() then
-			return log(...)
-		end	
+		if type(verbosity) == "string" then
+			if verbosity == get_debug_filter() then
+				return log(...)
+			end
+		else
+			-- if the level is below 0 always log
+			if level < 0 then
+				return log(...)
+			end
 		
-		-- otherwise check the verbosity level against the input	
-		if level <= verbosity then
-			return log(...)
+			-- otherwise check the verbosity level against the input	
+			if level <= verbosity then
+				return log(...)
+			end
 		end
 	end	
 	

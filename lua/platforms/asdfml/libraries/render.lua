@@ -188,12 +188,12 @@ do
 		gl.PushMatrix()
 	
 		-- temp / helper
-		if a and s then
+		if a then
 			gl.Rotatef(a.p, 1, 0, 0)
 			gl.Rotatef(a.y, 0, 1, 0)
 			gl.Rotatef(a.r, 0, 0, 1)
 			gl.Translatef(p.x, p.y, p.z)
-			gl.Scalef(s.x, s.y, s.z)
+			if s then gl.Scalef(s.x, s.y, s.z) end
 		else
 			if typex(p) == "matrix44" then
 				gl.LoadMatrix(ffi.cast("float *", p))
