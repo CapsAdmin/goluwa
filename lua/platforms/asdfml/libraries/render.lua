@@ -17,7 +17,6 @@ function render.Initialize(w, h)
 	render.h = h
 	
 	gl.Enable(e.GL_BLEND)
-	gl.Enable(e.GL_DEPTH_TEST) 
 	gl.Enable(e.GL_CULL_FACE)
 
 	gl.CullFace(e.GL_FRONT) 
@@ -31,7 +30,7 @@ function render.Clear(flag, ...)
 	gl.Clear(bit.bor(flag, ...))
 end
 
-function render.Start(x, y, w, h)
+function render.SetViewport(x, y, w, h)
 	x = x or 0
 	y = y or 0
 	w = w or render.w
@@ -84,8 +83,41 @@ do -- textures
 	end
 	
 	function render.SetTextureFiltering(blah)
-		gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MIN_FILTER, e.GL_LINEAR_MIPMAP_LINEAR)
-		gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MAG_FILTER, e.GL_LINEAR_MIPMAP_LINEAR)
+		gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MIN_FILTER, e.GL_NEAREST)
+		gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MAG_FILTER, e.GL_NEAREST)
+	end
+end
+
+do -- camera helpers
+	function render.Start2D(x, y, w, h)
+		x = x or 0
+		y = y or 0
+		w = w or render.w
+		h = h or render.h
+	
+		render.SetMatrixMode(e.GL_PROJECTION)	
+		
+		gl.Ortho(x,w, y,h, -1,1)
+		gl.Disable(e.GL_DEPTH_TEST)
+		
+		render.SetMatrixMode(e.GL_MODELVIEW)
+	end
+	
+	function render.Start3D(pos, ang, fov, nearz, farz, ratio)
+		render.SetMatrixMode(e.GL_PROJECTION)
+		
+		render.SetPerspective()
+		
+		gl.Rotatef(ang.p, 1, 0, 0)
+		gl.Rotatef(ang.y, 0, 1, 0)
+		gl.Rotatef(ang.r, 0, 0, 1)
+		gl.Translatef(pos.x, pos.y, pos.z)	
+
+		gl.Enable(e.GL_DEPTH_TEST)		
+		
+		render.SetCamera(pos) 
+		
+		render.SetMatrixMode(e.GL_MODELVIEW)	
 	end
 end
 
@@ -175,73 +207,228 @@ do
 end
 
 do -- shaders
-	function render.CreateShader(type, source)
-		check(type, "number")
-		check(source, "string")
-		
-		local shader = gl.CreateShader(type)
-
-		local ffisource = ffi.new("char[?]", #source)
-		ffi.copy(ffisource, source)
-
-		local grr = ffi.new("const char*[1]")
-		grr[0] = ffisource
-		local blah = ffi.new("GLint[1]")
-		blah[0] = #source
-		gl.ShaderSource(shader, 1, grr, blah)
-
-		gl.CompileShader(shader)
-
-		local compile_status = ffi.new("GLint[1]")
-		gl.GetShaderiv(shader, e.GL_COMPILE_STATUS, compile_status)
+	local status = ffi.new("GLint[1]")
+	local shader_strings = ffi.new("const char * [1]")
+	local log = ffi.new("char[1024]")
 	
-		if compile_status[0] == 0 then
-			local asdsaad = ffi.new("GLsizei[1]")
-			local log = ffi.new("char[1024]")
-			gl.GetShaderInfoLog(shader, 1024, asdsaad, log)
-			local str = ffi.string(log)
+	local function create_shader(type, source)		
+		local shader = gl.CreateShader(type)
+		
+		shader_strings[0] = ffi.cast("const char *", source)
+		gl.ShaderSource(shader, 1, shader_strings, nil)
+		gl.CompileShader(shader)
+		gl.GetShaderiv(shader, e.GL_COMPILE_STATUS, status)		
+	
+		if status[0] == 0 then			
+		
+			gl.GetShaderInfoLog(shader, 1024, nil, log)
 			gl.DeleteShader(shader)
-			return false, str
+			
+			return false, ffi.string(log)
 		end
 
 		return shader
 	end
 
-	function render.CreateProgram(vert_source, frag_source, LOL)
+	function render.CreateShader(vert_source, frag_source)
 		check(vert_source, "string")
 		check(frag_source, "string")
 		
-		local vertex, vertex_err = render.CreateShader(e.GL_VERTEX_SHADER, vert_source)	
+		local vertex, vertex_err = create_shader(e.GL_VERTEX_SHADER, vert_source)	
 		if vertex_err then return false, vertex_err end
 		
-		local fragment, frag_err = render.CreateShader(e.GL_FRAGMENT_SHADER, frag_source)
+		local fragment, frag_err = create_shader(e.GL_FRAGMENT_SHADER, frag_source)
 		if frag_err then return false, frag_err end
 		
 		local program = gl.CreateProgram()
-		gl.AttachShader(program, vertex)
-		gl.AttachShader(program, fragment)
-		if LOL then LOL(program, vertex, fragment) end
+			gl.AttachShader(program, vertex)
+			gl.AttachShader(program, fragment)
 		gl.LinkProgram(program)
 
-		local link_status = ffi.new("GLint[1]")
-		gl.GetProgramiv(program, e.GL_LINK_STATUS, link_status)
+		gl.GetProgramiv(program, e.GL_LINK_STATUS, status)
 
-		if link_status[0] == 0 then
-			local asdsaad = ffi.new("GLsizei[1]")
-			local log = ffi.new("char[1024]")
-			gl.GetProgramInfoLog(shader, 1024, asdsaad, log)
-			local str = ffi.string(log)
+		if status[0] == 0 then
+		
+			gl.GetProgramInfoLog(program, 1024, nil, log)
 			gl.DeleteProgram(program)		
 			
-			return false, str
+			return false, ffi.string(log)
 		end
 		
 		return program
 	end
 end
 
-do -- vbo	
-	render.vbo_program = nil
+do -- vbo 3d
+	render.vbo_3d_program = nil
+	
+	local vertex_shader_source = [[
+		uniform float time;
+	
+		attribute vec3 position;
+		attribute vec3 normal;
+		attribute vec2 uv;
+
+		varying vec3 color;
+		varying vec2 texcoords;
+		varying vec3 vertex_normal;
+		varying vec3 vertex_pos;
+
+		void main()
+		{
+			texcoords = uv;
+			color = gl_Color;
+			vertex_normal = normal;
+			gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vec4(position, 1.0);
+			vertex_pos = position;
+		}
+	]]  
+
+	local fragment_shader_source = [[
+		uniform float time;
+		uniform sampler2D texture;
+		uniform vec3 cam_pos;
+
+		varying vec3 color;
+		varying vec2 texcoords;
+		varying vec3 vertex_normal;
+		varying vec3 vertex_pos;
+
+		vec3 light_direction = false ? vec3(0.0, 0.0, 1.0) : normalize(vec3(sin(time), 0.0, cos(time)));
+		vec3 viewer_direction = normalize(cam_pos - vertex_pos);	
+		
+		vec3 get_specular()
+		{		
+			vec3 blah = clamp(pow(dot(reflect(light_direction, vertex_normal), viewer_direction), 8.0), 0.0, 1.0);
+			
+			return blah;
+		}
+		
+		vec3 get_diffuse()
+		{
+			vec3 texel = tex2D(texture, texcoords);
+			return vec3(0.1, 0.1, 0.1) * texel + texel * clamp(dot(vertex_normal, light_direction), 0.0, 1.0);
+		}
+
+		void main()
+		{
+			gl_FragColor = vec4(
+				get_diffuse() + 
+				get_specular()
+			, 1);
+		}
+	]]
+	
+		
+	ffi.cdef[[
+		struct vertex_attributes_3d
+		{
+			float pos_x, pos_y, pos_z;
+			float norm_x, norm_y, norm_z;
+			float u, v;
+		};
+	]]	
+		
+	--[[
+		
+		the normal and uv fields are optional
+	
+		-- data format should be the following
+		{
+			{pos = Vec3(), normal = (), uv = Vec2()},
+			...
+		}
+	]]
+	function render.Create3DVBO(data)
+		local buffer = ffi.new("struct vertex_attributes_3d[?]", #data)
+
+		for i = 1, #data do
+			local vertex = data[i]
+			local vertex_attributes = buffer[i - 1]
+
+			if vertex.pos then
+				vertex_attributes.pos_x = vertex.pos.x
+				vertex_attributes.pos_y = vertex.pos.y
+				vertex_attributes.pos_z = vertex.pos.z
+			end
+
+			if vertex.normal then
+				vertex_attributes.norm_x = vertex.normal.x
+				vertex_attributes.norm_y = vertex.normal.y
+				vertex_attributes.norm_z = vertex.normal.z
+			end
+ 
+			if vertex.uv then
+				vertex_attributes.u = vertex.uv.x
+				vertex_attributes.v = vertex.uv.y
+			end 
+		end  
+
+		local id = ffi.new("int [1]") gl.GenBuffers(1, id) id = id[0]
+
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
+		gl.BufferData(e.GL_ARRAY_BUFFER, ffi.sizeof(buffer[0]) * #data, buffer, e.GL_STATIC_DRAW)
+
+		return {Type = "VertexBuffer", id = id, length = #data}
+	end
+	
+	local stride = ffi.sizeof("struct vertex_attributes_3d")
+	
+	local pos_stride = ffi.cast("void*", 0)
+	local normal_stride = ffi.cast("void*", 12)
+	local uv_stride = ffi.cast("void*", 24)
+	
+	render.vbo_shader_error = nil
+	
+	function render.Draw3DVBO(vbo)
+		if render.vbo_shader_error then return end
+	
+		if not render.vbo_3d_program then
+			local prog, err = render.CreateShader(vertex_shader_source, fragment_shader_source)
+						
+			if prog then
+				gl.BindAttribLocation(prog, 0, "position")
+				gl.BindAttribLocation(prog, 1, "normal")
+				gl.BindAttribLocation(prog, 2, "uv")
+			
+				render.vbo_3d_program = prog
+			else
+				logn(err)
+				render.vbo_shader_error = err
+				return
+			end			
+		end		
+		
+		if render.active_texture then
+			gl.ActiveTexture(e.GL_TEXTURE0) 
+			render.active_texture:Bind()
+			gl.Uniform1i(gl.GetUniformLocation(render.vbo_3d_program, "texture"), 0)
+		end
+
+		gl.Uniform1f(gl.GetUniformLocation(render.vbo_3d_program, "time"), os.clock())
+		gl.Uniform3f(gl.GetUniformLocation(render.vbo_3d_program, "cam_pos"), render.cam_pos.x, render.cam_pos.y, render.cam_pos.z)
+
+		gl.UseProgram(render.vbo_3d_program)
+
+		gl.EnableVertexAttribArray(0)
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
+		gl.VertexAttribPointer(0, 3, e.GL_FLOAT, false, stride, pos_stride)
+
+		gl.EnableVertexAttribArray(1)
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
+		gl.VertexAttribPointer(1, 3, e.GL_FLOAT, false, stride, normal_stride)
+
+		gl.EnableVertexAttribArray(2)
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
+		gl.VertexAttribPointer(2, 2, e.GL_FLOAT, false, stride, uv_stride)
+
+		gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
+	end	
+end
+
+
+do -- vbo 2d
+	render.vbo_2d_program = nil
 	
 	local vertex_shader_source = [[
 		uniform float time;
@@ -300,6 +487,16 @@ do -- vbo
 		}
 	]]
 	
+		
+	ffi.cdef[[
+		struct vertex_attributes_2d
+		{
+			float x, y, z;
+			float u, v;
+			unsigned char r, g, b, a;
+		};
+	]]	
+		
 	--[[
 		
 		the normal and uv fields are optional
@@ -310,56 +507,24 @@ do -- vbo
 			...
 		}
 	]]
-	function render.CreateVBO(data)
-		local buffer = ffi.new("struct vertex_attributes[?]", #data)
-
-		for i = 1, #data do
-			local vertex = data[i]
-			local vertex_attributes = buffer[i - 1]
-
-			if vertex.pos then
-				vertex_attributes.pos_x = vertex.pos.x
-				vertex_attributes.pos_y = vertex.pos.y
-				vertex_attributes.pos_z = vertex.pos.z
+	function render.Create2DVBO(data)
+		local buffer = ffi.new("struct vertex_attributes_2d[?]", #data)
+		
+		return {
+			AddVertex = function(_, x,y, u,v, r,g,b,a)
+				
 			end
-
-			if vertex.normal then
-				vertex_attributes.norm_x = vertex.normal.x
-				vertex_attributes.norm_y = vertex.normal.y
-				vertex_attributes.norm_z = vertex.normal.z
-			end
- 
-			if vertex.uv then
-				vertex_attributes.u = vertex.uv.x
-				vertex_attributes.v = vertex.uv.y
-			end 
-		end  
-
-		local id = ffi.new("int [1]") gl.GenBuffers(1, id) id = id[0]
-
-		gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
-		gl.BufferData(e.GL_ARRAY_BUFFER, ffi.sizeof(buffer[0]) * #data, buffer, e.GL_STATIC_DRAW)
-
-		return {Type = "VertexBuffer", id = id, length = #data}
+		}
 	end
 	
-	ffi.cdef[[
-		struct vertex_attributes
-		{
-			float pos_x, pos_y, pos_z;
-			float norm_x, norm_y, norm_z;
-			float u, v;
-		};
-	]]	
-	
-	local stride = ffi.sizeof("struct vertex_attributes")
+	local stride = ffi.sizeof("struct vertex_attributes_2d")
 	
 	local pos_stride = ffi.cast("void*", 0)
 	local normal_stride = ffi.cast("void*", 12)
 	local uv_stride = ffi.cast("void*", 24)
 	
-	function render.DrawVBO(vbo)
-		if not render.vbo_program then
+	function render.Draw2DVBO(vbo)
+		if not render.vbo_3d_program then
 			local prog, err = render.CreateProgram(vertex_shader_source, fragment_shader_source, function(program)
 				gl.BindAttribLocation(program, 0, "position")
 				gl.BindAttribLocation(program, 1, "normal")
@@ -367,7 +532,7 @@ do -- vbo
 			end)
 			
 			if prog then
-				render.vbo_program = prog
+				render.vbo_3d_program = prog
 			else
 				logn(err)
 				return
@@ -377,13 +542,13 @@ do -- vbo
 		if render.active_texture then
 			gl.ActiveTexture(e.GL_TEXTURE0) 
 			render.active_texture:Bind()
-			gl.Uniform1i(gl.GetUniformLocation(render.vbo_program, "texture"), 0)
+			gl.Uniform1i(gl.GetUniformLocation(render.vbo_3d_program, "texture"), 0)
 		end
 
-		gl.Uniform1f(gl.GetUniformLocation(render.vbo_program, "time"), os.clock())
-		gl.Uniform3f(gl.GetUniformLocation(render.vbo_program, "cam_pos"), render.cam_pos.x, render.cam_pos.y, render.cam_pos.z)
+		gl.Uniform1f(gl.GetUniformLocation(render.vbo_3d_program, "time"), os.clock())
+		gl.Uniform3f(gl.GetUniformLocation(render.vbo_3d_program, "cam_pos"), render.cam_pos.x, render.cam_pos.y, render.cam_pos.z)
 
-		gl.UseProgram(render.vbo_program)
+		gl.UseProgram(render.vbo_3d_program)
 
 		gl.EnableVertexAttribArray(0)
 		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)

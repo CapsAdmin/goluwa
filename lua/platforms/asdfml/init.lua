@@ -10,10 +10,11 @@ for k,v in pairs(sfml) do
 	end
 end
 
-include("libraries/gl_enums.lua")
-gl, glu = include("libraries/opengl.lua")
+gl = include("libraries/opengl/gl.lua")
+glu = include("libraries/opengl/glu.lua")
+glfw = include("libraries/opengl/glfw.lua")
+soil = include("libraries/opengl/soil.lua")
 
-soil = include("libraries/soil.lua")
 surface = include("libraries/surface.lua")
 render = include("libraries/render.lua")
 include("libraries/mesh.lua")

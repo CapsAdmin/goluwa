@@ -122,30 +122,34 @@ obj:SetPos(Vec3(5,0,0))
 obj:SetModel("face.obj")
 obj:SetTexture("face1.png")
 
-gl.ClearColor(1,1,1,0)  
-
---local rt, tex = render.CreateRenderTarget() 
+gl.ClearColor(0,0,0,0)  
 
 event.AddListener("OnDraw", "gl", function(dt, window)
   	calc_camera(window, dt) 
+	render.SetViewport() 
+
+		
+	render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
 	
-	render.Start()
-		render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
+	render.Start3D(cam_pos, cam_ang:GetDeg())
+		for key, obj in pairs(active_models) do
+			obj:Draw() 
+		end				
+	 
+	render.Start2D()
+	local w, h = 200, 200 
+	
+	render.SetTexture(0)
+	gl.UseProgram(0)
+	
+	gl.Translatef(0.5, 0.5, 0)
+	gl.Color3f(1,1,0)
+	gl.Begin(e.GL_QUADS)
+		gl.Vertex2f(0, 0)
+		gl.Vertex2f(0, h)
+		gl.Vertex2f(w, h) 
+		gl.Vertex2f(w, 0) 			
+	gl.End()
 		
-		render.SetMatrixMode(e.GL_PROJECTION)
-			render.SetPerspective()
-			
-			local a = cam_ang:GetDeg()
-			gl.Rotatef(a.p, 1, 0, 0)
-			gl.Rotatef(a.y, 0, 1, 0)
-			gl.Rotatef(a.r, 0, 0, 1)
-			gl.Translatef(cam_pos.x, cam_pos.y, cam_pos.z)	
-		
-		render.SetCamera(cam_pos) 
-		
-		render.SetMatrixMode(e.GL_MODELVIEW)				
-			for key, obj in pairs(active_models) do
-				obj:Draw()
-			end				
-	render.End() 
+	--render.End()
 end) 
