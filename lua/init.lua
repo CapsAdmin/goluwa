@@ -3,6 +3,8 @@ _E = _E or {}
 e = _E 
 
 _E.PLATFORM = PLATFORM or tostring(select(1, ...) or nil)
+_E.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):upper():gsub(" ", "_"):gsub("%p", "")
+_G[e.USERNAME] = true
 
 do -- helper constants	
 	_G._F = {}
@@ -147,7 +149,7 @@ do -- logging
 			
 			if vfs then
 				if not log_file then
-					log_file = io.open(e.BASE_FOLDER .. "log.txt", "w")
+					log_file = io.open(e.BASE_FOLDER .. "log_" .. _E.USERNAME:lower() .. ".txt", "w")
 					
 					if buffer then
 						for k,v in pairs(buffer) do
@@ -240,9 +242,6 @@ do -- logging
 		end
 	end
 end
-
-_E.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):upper():gsub(" ", "_"):gsub("%p", "")
-_G[e.USERNAME] = true
 
 log("\n\n")
 log([[
