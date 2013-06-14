@@ -1,5 +1,3 @@
-glfw.Init()
-
 local calllbacks = {}
 
 for line in glfw.header:gmatch("(.-)\n") do
@@ -17,31 +15,56 @@ calllbacks.OnError = nil
 calllbacks.OnMonitor(function() events.Call("OnMonitorConnected") end)
 calllbacks.OnMonitor = nil
 
-function Window(width, height, title)
+local META = {}
+META.__index = META
+META.Type = "glfw window"
 
-	local window = glfw.CreateWindow(width or 680, height or 440, time or "", nil, nil)
-	local obj = {Type = "glfw window"}
+function META:Remove()
+	glfw.DestroyWindow(self.__ptr)
+	utilities.MakeNULL(self)
+end
 
-	obj.ptr = window	
-	obj.availible_callbacks = {}
+function META:IsValid()
+	return true
+end
+
+function META:GetSize()
+	local x = ffi.new("int[1]")
+	local y = ffi.new("int[1]")
+	glfw.GetWindowSize(self.__ptr, x, y)
+	
+	return Vec2(x[0], y[0])
+end
+
+function Window(width, height, title)	
+	width = width or 680
+	height = height or 440
+	title = title or ""
+	
+	local ptr = glfw.CreateWindow(width, height, title, nil, nil)
+	glfw.MakeContextCurrent(ptr)
+	
+	-- this needs to be initialized once after a context has been created..
+	if gl and gl.InitMiniGlew and not gl.gl_init then
+		gl.InitMiniGlew()	
+		render.Initialize(width, height)		
+		gl.gl_init = true
+	end
+	
+	local self = setmetatable({}, META)
+	
+	self.__ptr = ptr
+
+	self.availible_callbacks = {}
 	
 	for nice, func in pairs(calllbacks) do
-		obj.availible_callbacks[nice] = nice		
-		func(window, function(self, ...)
-			if obj[nice] then 
-				obj[nice](...)
+		self.availible_callbacks[nice] = nice		
+		func(ptr, function(ptr, ...)
+			if self[nice] then 
+				self[nice](...)
 			end
 		end)
 	end
-
-	function obj:Remove()
-		glfw.DestroyWindow(window)
-		utilities.MakeNULL(self)
-	end
 	
-	function obj:IsValid()
-		return true
-	end
-	
-	return obj
+	return self
 end 

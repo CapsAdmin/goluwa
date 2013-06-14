@@ -38,8 +38,19 @@ function render.SetViewport(x, y, w, h)
 	
 	gl.Viewport(x, y, w, h)
 end
+ 
+render.current_window = render.current_window or NULL
+
+function render.Start(window)
+	glfw.MakeContextCurrent(window.__ptr)
+	render.current_window = window
+	render.SetViewport(0, 0, window:GetSize():Unpack())
+end
 
 function render.End()
+	if render.current_window:IsValid() then
+		glfw.SwapBuffers(render.current_window.__ptr)
+	end
 	gl.Flush()
 end
 
@@ -101,6 +112,8 @@ do -- camera helpers
 		gl.Disable(e.GL_DEPTH_TEST)
 		
 		render.SetMatrixMode(e.GL_MODELVIEW)
+		
+		gl.Translatef(0.5, 0.5, 0)
 	end
 	
 	function render.Start3D(pos, ang, fov, nearz, farz, ratio)
