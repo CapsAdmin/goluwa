@@ -1,10 +1,11 @@
 include("curses.lua")
 
 if not gl then
-	gl = include("libraries/opengl/gl.lua")
-	glu = include("libraries/opengl/glu.lua")
-	glfw = include("libraries/opengl/glfw.lua")
-	freeimage = include("libraries/opengl/freeimage.lua")
+	gl = include("libraries/ffi_binds/gl.lua")
+	glu = include("libraries/ffi_binds/glu.lua")
+	glfw = include("libraries/ffi_binds/glfw.lua")
+	freeimage = include("libraries/ffi_binds/freeimage.lua")
+	ftgl = include("libraries/ffi_binds/ftgl.lua")
 end
 
 --surface = include("libraries/surface.lua")

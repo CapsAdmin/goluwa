@@ -1,7 +1,4 @@
 /lua/platforms/asdfml/cached_parse
-
 /desktop.ini
 /.dropbox
-/log.txt
-
-/lua/.dropbox
+/log*.txt
