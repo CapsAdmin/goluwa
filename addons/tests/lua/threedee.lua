@@ -2,10 +2,7 @@ local window = glw.OpenWindow()
  
 local cam_pos = Vec3(0, 0, -10)
 local cam_ang = Ang3(0, 0, 0)     
- 
-local last_x
-local last_y
-   
+    
 local function calc_camera(window, dt)
 
 	cam_ang:Normalize()
@@ -122,6 +119,12 @@ obj:SetTexture("face1.png")
 
 gl.ClearColor(0,0,0,0)  
 input.SetMouseTrapped(true)
+
+-- Create a pixmap font from a TrueType file.
+local font = ftgl.CreatePixmapFont(R"fonts/arial.ttf")
+
+-- Set the font size and render a small text
+ftgl.SetFontFaceSize(font, 72, 72)
  
 event.AddListener("OnDraw", "gl", function(dt)
   	calc_camera(window, dt) 
@@ -151,6 +154,8 @@ event.AddListener("OnDraw", "gl", function(dt)
 				gl.Vertex2f(w, h) 
 				gl.Vertex2f(w, 0) 			
 			gl.End()
+			
+			ftgl.RenderFont(font, os.date(), e.FTGL_RENDER_ALL)
 	end		
 	
 	glfw.SwapBuffers(window.ptr)
