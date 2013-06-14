@@ -120,11 +120,8 @@ obj:SetTexture("face1.png")
 gl.ClearColor(0,0,0,0)  
 input.SetMouseTrapped(true)
 
--- Create a pixmap font from a TrueType file.
-local font = ftgl.CreatePixmapFont(R"fonts/arial.ttf")
-
--- Set the font size and render a small text
-ftgl.SetFontFaceSize(font, 72, 72)
+local font = Font(R"fonts/arial.ttf")
+font:SetFaceSize(72, 72)
  
 event.AddListener("OnDraw", "gl", function(dt)
   	calc_camera(window, dt) 
@@ -147,7 +144,7 @@ event.AddListener("OnDraw", "gl", function(dt)
 			gl.Translatef(0.5, 0.5, 0)
 			
 			gl.Color4f(1,1,0, 0.5)
-			
+			 
 			gl.Begin(e.GL_QUADS)
 				gl.Vertex2f(0, 0)
 				gl.Vertex2f(0, h)
@@ -155,7 +152,7 @@ event.AddListener("OnDraw", "gl", function(dt)
 				gl.Vertex2f(w, 0) 			
 			gl.End()
 			
-			ftgl.RenderFont(font, os.date(), e.FTGL_RENDER_ALL)
+			font:Render(os.date())
 	end		
 	
 	glfw.SwapBuffers(window.ptr)

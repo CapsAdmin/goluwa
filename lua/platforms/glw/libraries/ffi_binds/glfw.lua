@@ -318,36 +318,10 @@ e.GLFW_CURSOR_DISABLED = 212995
 e.GLFW_CONNECTED = 262145
 e.GLFW_DISCONNECTED = 262146
 
-ffi.cdef(header)
-
 local glfw = {}
 
-local lib = ffi.load(jit.os == "Linux" and "glfw" or "glfw3")
-
-for line in header:gmatch("(.-)\n") do
-	local name = line:match("glfw(.-)%(")
-	
-	if name then
-		glfw[name] = lib["glfw" .. name]
-	end
-end
-
-glfw.Init()
-
 for key, val in pairs(e) do
-	--glfw[key:sub(6)] = val
 	_E[key] = val
-end
-
-local calllbacks = {}
-
-for line in header:gmatch("(.-)\n") do
-	local name = line:match("(glfwSet.-Callback)")
-	if name then
-		local nice = "On" .. name:match("glfwSet(.-)Callback")
-		
-		calllbacks[nice] = lib[name]
-	end
 end
 
 local reverse_enums = {}
@@ -387,42 +361,19 @@ function glfw.MouseToString(num)
 	return mousebuttons[num]
 end
 
-calllbacks.OnError(function(code, str) logn(ffi.string(str)) end)
-calllbacks.OnError = nil
+ffi.cdef(header)
 
-calllbacks.OnMonitor(function() events.Call("OnMonitorConnected") end)
-calllbacks.OnMonitor = nil
+local lib = ffi.load(jit.os == "Linux" and "glfw" or "glfw3")
 
-glfw.CreateWindowX = glfw.CreateWindow
+glfw.header = header
+glfw.lib = lib
 
-function glfw.CreateWindow(width, height, title)
-
-
-	local window = glfw.CreateWindowX(width or 680, height or 440, time or "", nil, nil)
-	local obj = {Type = "glfw window"}
-
-	obj.ptr = window	
-	obj.availible_callbacks = {}
-	for nice, func in pairs(calllbacks) do
-		obj.availible_callbacks[nice] = nice		
-		func(window, function(self, ...)
-			if obj[nice] then 
-				obj[nice](...)
-			end
-		end)
-	end
-
-
-	function obj:Remove()
-		glfw.DestroyWindow(window)
-		utilities.MakeNULL(self)
-	end
+for line in header:gmatch("(.-)\n") do
+	local name = line:match("glfw(.-)%(")
 	
-	function obj:IsValid()
-		return true
+	if name then
+		glfw[name] = lib["glfw" .. name]
 	end
-	
-	return obj
-end 
+end
 
 return glfw
