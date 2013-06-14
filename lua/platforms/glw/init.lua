@@ -12,6 +12,8 @@ end
 render = include("libraries/render.lua")
 
 include("libraries/mesh.lua")
+include("libraries/font.lua")
+include("libraries/window.lua")
 include("extensions/input.lua")
 
 addons.AutorunAll()
@@ -25,7 +27,7 @@ function glw.OpenWindow(w, h, title)
 	h = h or 480
 	title = title or "no title"
 
-	local window = glfw.CreateWindow(w, h, title)
+	local window = Window(w, h, title)
 	glfw.MakeContextCurrent(window.ptr)
 
 	if gl and gl.InitMiniGlew then

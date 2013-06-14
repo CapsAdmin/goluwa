@@ -47,7 +47,6 @@ void ftglRenderFont(FTGLfont* font, const char *string, int mode);
 FT_Error ftglGetFontError(FTGLfont* font);	
 ]] 
 
-
 e.FTGL_RENDER_FRONT = 0x0001
 e.FTGL_RENDER_BACK = 0x0002
 e.FTGL_RENDER_SIDE = 0x0004
@@ -60,9 +59,12 @@ e.FTGL_ALIGN_JUSTIFY = 3
 
 ffi.cdef(header)  
 
+local lib = ffi.load("ftgl") 
+
 local ftgl = {}
 
-local lib = ffi.load("ftgl") 
+ftgl.header = header
+ftgl.lib = lib
 
 for line in header:gmatch("(.-)\n") do
 	local name = line:match("ftgl(.-)%(")
