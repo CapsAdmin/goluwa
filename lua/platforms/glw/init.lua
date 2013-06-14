@@ -8,7 +8,7 @@ if not gl then
 	ftgl = include("libraries/ffi_binds/ftgl.lua")
 end
 
---surface = include("libraries/surface.lua")
+surface = include("libraries/surface.lua")
 render = include("libraries/render.lua")
 
 include("libraries/mesh.lua")
@@ -21,18 +21,14 @@ addons.AutorunAll()
 glw = glw or {}
 
 function glw.OpenWindow(w, h, title)
-	if glw.window and glw.window:IsValid() then glw.window:Remove() end
+	if glw.window and glw.window:IsValid() then return glw.window end
 
 	w = w or 640
 	h = h or 480
 	title = title or "no title"
 
 	local window = Window(w, h, title)
-	glfw.MakeContextCurrent(window.ptr)
-
-	if gl and gl.InitMiniGlew then
-		gl.InitMiniGlew()
-	end
+	glfw.MakeContextCurrent(window.__ptr)
 	
 	for name in pairs(window.availible_callbacks) do
 		window[name] = function(...)
@@ -42,10 +38,8 @@ function glw.OpenWindow(w, h, title)
 		end	
 	end
 
-	if render then
-		render.Initialize(w, h)
-	end
 
+ 
 	glw.window = window
 	
 	return window
@@ -68,20 +62,20 @@ do -- input extensions
 	
 	function input.GetMousePos()
 		local x, y = ffi.new("double[1]"), ffi.new("double[1]")
-		glfw.GetCursorPos(glw.window.ptr, x, y)
+		glfw.GetCursorPos(glw.window.__ptr, x, y)
 		
 		return Vec2(x[0], y[0])
 	end
 	
 	function input.SetMousePos(pos)
-		glfw.SetCursorPos(glw.window.ptr, pos.x, pos.y)
+		glfw.SetCursorPos(glw.window.__ptr, pos.x, pos.y)
 	end
 	
 	function input.ShowCursor(b)
 		if b then
-			glfw.SetInputMode(glw.window.ptr, e.GLFW_CURSOR, e.GLFW_CURSOR_NORMAL)
+			glfw.SetInputMode(glw.window.__ptr, e.GLFW_CURSOR, e.GLFW_CURSOR_NORMAL)
 		else
-			glfw.SetInputMode(glw.window.ptr, e.GLFW_CURSOR, e.GLFW_CURSOR_HIDDEN)
+			glfw.SetInputMode(glw.window.__ptr, e.GLFW_CURSOR, e.GLFW_CURSOR_HIDDEN)
 		end
 	end
 	
@@ -96,12 +90,12 @@ do -- input extensions
 end
 
 function glw.SetWindowSize(x, y)
-	glfw.SetWindowSize(glw.window.ptr, x, y)
+	glfw.SetWindowSize(glw.window.__ptr, x, y)
 end
 
 function glw.GetWindowSize()
 	local x, y = ffi.new("int[1]"), ffi.new("int[1]")
-	glfw.GetWindowSize(glw.window.ptr, x, y)
+	glfw.GetWindowSize(glw.window.__ptr, x, y)
 	
 	return Vec2(x[0], y[0])
 end

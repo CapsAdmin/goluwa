@@ -376,4 +376,6 @@ for line in header:gmatch("(.-)\n") do
 	end
 end
 
+glfw.Init()
+
 return glfw

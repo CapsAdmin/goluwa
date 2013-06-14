@@ -26,11 +26,16 @@ for line in ftgl.header:gmatch("(.-)\n") do
 			types[type:lower()] = ftgl.lib["ftglCreate" .. type .. "Font"]
 		end
 	end
-end  
+end
 
 function Font(file_name, type)
+	check(file_name, "string")
+	check(type, "string", "nil")
+	
+	file_name = file_name:lower()
+	
 	if not type or not types[type] then 
-		type = "pixmap"
+		type = "buffer"
 	end
 	
 	local ptr = types[type](file_name)

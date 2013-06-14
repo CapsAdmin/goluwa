@@ -1,5 +1,5 @@
 local window = glw.OpenWindow()
- 
+   
 local cam_pos = Vec3(0, 0, -10)
 local cam_ang = Ang3(0, 0, 0)     
     
@@ -117,33 +117,31 @@ obj:SetPos(Vec3(5,0,0))
 obj:SetModel("face.obj")
 obj:SetTexture("face1.png")
 
-gl.ClearColor(0,0,0,0)  
-input.SetMouseTrapped(true)
-
-local font = Font(R"fonts/arial.ttf")
-font:SetFaceSize(72, 72)
+gl.ClearColor(0,0,0,0)   
+input.SetMouseTrapped(true) 
  
+local font = Font(R"fonts/arial.ttf")  
+font:SetFaceSize(72, 72) 
+
 event.AddListener("OnDraw", "gl", function(dt)
   	calc_camera(window, dt) 
-	render.SetViewport()
+	 
+	render.Start(window)	
 		
-	render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
-	
-	render.Start3D(cam_pos, cam_ang:GetDeg())
-		for key, obj in pairs(active_models) do
-			obj:Draw() 
-		end				
-	
-	if true then
+		render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
+		
+		render.Start3D(cam_pos, cam_ang:GetDeg())
+			for key, obj in pairs(active_models) do
+				obj:Draw() 
+			end		
+		
 		render.Start2D()
 			local w, h = 200, 200 
 			
 			render.SetTexture(0)
 			gl.UseProgram(0)
-			
-			gl.Translatef(0.5, 0.5, 0)
-			
-			gl.Color4f(1,1,0, 0.5)
+						 
+			gl.Color4f(1,1,0, 0.5) 
 			 
 			gl.Begin(e.GL_QUADS)
 				gl.Vertex2f(0, 0)
@@ -153,9 +151,6 @@ event.AddListener("OnDraw", "gl", function(dt)
 			gl.End()
 			
 			font:Render(os.date())
-	end		
-	
-	glfw.SwapBuffers(window.ptr)
-	
+			
 	render.End()
 end) 
