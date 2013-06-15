@@ -286,18 +286,18 @@ do -- vbo 3d
 		attribute vec3 normal;
 		attribute vec2 uv;
 
-		varying vec3 color;
-		varying vec2 texcoords;
+		varying vec3 vertex_color;
+		varying vec2 vertex_texcoords;
 		varying vec3 vertex_normal;
 		varying vec3 vertex_pos;
 
 		void main()
 		{
-			texcoords = uv;
-			color = gl_Color;
+			vertex_texcoords = uv;
+			vertex_color = gl_Color;
 			vertex_normal = normal;
-			gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vec4(position, 1.0);
 			vertex_pos = position;
+			gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vec4(vertex_pos, 1.0);
 		}
 	]]  
 
@@ -306,33 +306,40 @@ do -- vbo 3d
 		uniform sampler2D texture;
 		uniform vec3 cam_pos;
 
-		varying vec3 color;
-		varying vec2 texcoords;
+		varying vec3 vertex_color;
+		varying vec2 vertex_texcoords;
 		varying vec3 vertex_normal;
 		varying vec3 vertex_pos;
 
-		vec3 light_direction = false ? vec3(0.0, 0.0, 1.0) : normalize(vec3(sin(time), 0.0, cos(time)));
+		vec3 light_direction = normalize(vec3(sin(time), sin(time * 1.234), cos(time)));
 		vec3 viewer_direction = normalize(cam_pos - vertex_pos);	
+		vec3 texel = tex2D(texture, vertex_texcoords);
+		vec3 normal = normalize(vertex_normal);
 		
 		vec3 get_specular()
 		{		
-			vec3 blah = clamp(pow(dot(reflect(light_direction, vertex_normal), viewer_direction), 8.0), 0.0, 1.0);
-			
-			return blah;
+			float factor = clamp(dot(reflect(light_direction, normal), viewer_direction) * 0.96, 0.0, 1.0);
+			float value = pow(factor, 32.0);
+			return texel * value;
 		}
 		
 		vec3 get_diffuse()
 		{
-			vec3 texel = tex2D(texture, texcoords);
-			return vec3(0.1, 0.1, 0.1) * texel + texel * clamp(dot(vertex_normal, light_direction), 0.0, 1.0);
+			return texel * clamp(dot(normal, light_direction), 0.0, 1.0);
+		}
+
+		vec3 get_ambient()
+		{
+			return texel * 0.15;
 		}
 
 		void main()
 		{
 			gl_FragColor = vec4(
-				get_diffuse() + 
+				get_ambient() +
+				get_diffuse() +
 				get_specular()
-			, 1);
+			, 1.0);
 		}
 	]]
 	
@@ -396,6 +403,7 @@ do -- vbo 3d
 	local uv_stride = ffi.cast("void*", 24)
 	
 	render.vbo_shader_error = nil
+	render.frame = 0
 	
 	function render.Draw3DVBO(vbo)
 		if render.vbo_shader_error then return end
@@ -422,7 +430,7 @@ do -- vbo 3d
 			gl.Uniform1i(gl.GetUniformLocation(render.vbo_3d_program, "texture"), 0)
 		end
 
-		gl.Uniform1f(gl.GetUniformLocation(render.vbo_3d_program, "time"), os.clock())
+		gl.Uniform1f(gl.GetUniformLocation(render.vbo_3d_program, "time"), render.frame / 60 / 4)
 		gl.Uniform3f(gl.GetUniformLocation(render.vbo_3d_program, "cam_pos"), render.cam_pos.x, render.cam_pos.y, render.cam_pos.z)
 
 		gl.UseProgram(render.vbo_3d_program)
@@ -440,6 +448,7 @@ do -- vbo 3d
 		gl.VertexAttribPointer(2, 2, e.GL_FLOAT, false, stride, uv_stride)
 
 		gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
+		render.frame = render.frame + 1
 	end	
 end
 

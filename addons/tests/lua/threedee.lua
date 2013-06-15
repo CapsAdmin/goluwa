@@ -1,4 +1,4 @@
-local window = glw.OpenWindow()
+local window = glw.OpenWindow(1280, 720)
    
 local cam_pos = Vec3(0, 0, -10)
 local cam_ang = Ang3(0, 0, 0)     
