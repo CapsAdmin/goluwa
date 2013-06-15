@@ -27,19 +27,19 @@ standard:
 goluwa:
 	render 		- used to help and simplify opengl rendering
 	surface 	- used for drawing 2d shapes
-	
-	online:
-		players	- a player object if networking is used
-		network	- handles hosting a server and connecting to server
-		message	- to handle high level messages (similar to usermessage or net in gmod)
-		nvars	- handles persistent variables in players (similar to ent.dt in gmod)
-		chat	- for chatting between players and server
-		
+
+	players		- a player object if networking is used
+	network		- handles hosting a server and connecting to server
+	message		- to handle high level messages (similar to usermessage or net in gmod)
+	nvars		- handles persistent variables in players (similar to ent.dt in gmod)
+	chat		- for chatting between players and server
+
 constructors:
-	Mesh
-	Window
-	Font
+	Mesh		- mesh object which takes mesh data (similiar to Mesh in gmod)
+	Window		- to create a window
+	Font		- to create fonts
 	
+ffi structs:
 	Vec3
 	Vec2
 	Ang3
