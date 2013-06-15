@@ -4,6 +4,7 @@ The coding style is inspired by Garry's Mod (so also Source Engine) and CryEngin
 Here's a list of some of the libraries:
 
 non lua modules (ffi):
+
 	gl 			- rendering
 	glfw 		- window and input manager
 	ftgl 		- font rendering using freetype
@@ -11,6 +12,7 @@ non lua modules (ffi):
 	pdcurses 	- for non blocking console input on windows. ncurses is used on linux
 
 lua modules:
+
 	luasocket 	- sockets
 	lfs 		- additional file system operations
 	
@@ -25,21 +27,24 @@ standard:
 	console		- handles high level console commands and persistent console variables
 	
 goluwa:
+
 	render 		- used to help and simplify opengl rendering
 	surface 	- used for drawing 2d shapes
-	
-	online:
-		players	- a player object if networking is used
-		network	- handles hosting a server and connecting to server
-		message	- to handle high level messages (similar to usermessage or net in gmod)
-		nvars	- handles persistent variables in players (similar to ent.dt in gmod)
-		chat	- for chatting between players and server
-		
+
+	players		- a player object if networking is used
+	network		- handles hosting a server and connecting to server
+	message		- to handle high level messages (similar to usermessage or net in gmod)
+	nvars		- handles persistent variables in players (similar to ent.dt in gmod)
+	chat		- for chatting between players and server
+
 constructors:
-	Mesh
-	Window
-	Font
+
+	Mesh		- mesh object which takes mesh data (similiar to Mesh in gmod)
+	Window		- to create a window
+	Font		- to create fonts
 	
+ffi structs:
+
 	Vec3
 	Vec2
 	Ang3
