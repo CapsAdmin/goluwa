@@ -12,7 +12,7 @@ for line in ftgl.header:gmatch("(.-)\n") do
 		
 		if name == "Render" then
 			META[name] = function(self, str, mode)
-				mode = mode or e.FTGL_RENDER_ALL
+				mode = mode or e.FTGL_RENDER_FRONT 
 				func(self.__ptr, str, mode)
 			end
 		else
@@ -35,7 +35,7 @@ function Font(file_name, type)
 	file_name = file_name:lower()
 	
 	if not type or not types[type] then 
-		type = "buffer"
+		type = "texture"
 	end
 	
 	local ptr = types[type](file_name)

@@ -13,9 +13,9 @@ local function calc_camera(window, dt)
 	cam_ang.y = cam_ang.y + delta.x
 	cam_ang.p = math.clamp(cam_ang.p, -math.pi/2, math.pi/2)
 
-	if input.IsKeyDown("l_shift") then
+	if input.IsKeyDown("left_shift") then
 		speed = speed * 4
-	elseif input.IsKeyDown("l_control") then
+	elseif input.IsKeyDown("left_control") then
 		speed = speed / 4
 	end
 
@@ -140,15 +140,22 @@ event.AddListener("OnDraw", "gl", function(dt)
 			
 			render.SetTexture(0)
 			gl.UseProgram(0)
-						 
-			gl.Color4f(1,1,0, 0.5) 
-			 
-			gl.Begin(e.GL_QUADS)
-				gl.Vertex2f(0, 0)
-				gl.Vertex2f(0, h)
-				gl.Vertex2f(w, h) 
-				gl.Vertex2f(w, 0) 			
-			gl.End()
+						
+			local size = window:GetSize()		
+				
+			gl.Color4f(0, 1, 0, 0.5)
+			render.PushMatrix(Vec3(size.w - w, size.h - h), Ang3(0), Vec3(w, h))			
+				gl.Begin(e.GL_QUADS)
+					gl.Vertex2f(0, 0)
+					gl.Vertex2f(0, 1)
+					gl.Vertex2f(1, 1) 
+					gl.Vertex2f(1, 0) 			
+				gl.End()				
+			render.PopMatrix()
+			
+			gl.Scalef(1,1,1)
+			gl.Translatef(100,100,0)
+			gl.Color4f(1,1,1,1) 
 			
 			font:Render(os.date())
 			

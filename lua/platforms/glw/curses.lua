@@ -87,7 +87,7 @@ if WINDOWS then
 	os.execute("mode con:cols=140 lines=50")
 end
 
-local curses = ffi.load(jit.os == "Linux" and "libncurses.so" or "pdcurses")
+local curses = ffi.load(jit.os == "Linux" and "ncurses" or "pdcurses")
 local parent = curses.initscr()
 
 local line_window = curses.derwin(parent, 1, 128, curses.LINES-1, 0)
@@ -103,9 +103,9 @@ end
 curses.cbreak()
 curses.noecho()
 curses.nodelay(line_window, true)
-curses.wrefresh(line_window)
 curses.keypad(line_window, true)
-
+curses.wrefresh(line_window)
+curses.refresh()
 
 _E.CURSES_INIT = true
 
@@ -354,7 +354,7 @@ event.AddListener("OnUpdate", "curses", function()
 		end
 
 		clear(line)
-	elseif byte < 255 then
+	elseif byte < 256 then
 		local char = string.char(byte)
 		
 		if event.Call("OnConsoleCharPressed", char) == false then return end
