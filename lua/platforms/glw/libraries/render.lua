@@ -63,10 +63,6 @@ function render.SetPerspective(fov, nearz, farz, ratio)
 	glu.Perspective(fov, ratio, nearz, farz)
 end
 
-function render.SetCamera(pos, ang)
-	render.cam_pos = pos or Vec3()
-end
-
 do -- textures
 	_E.TEX_CHANNEL_AUTO = 0
 	_E.TEX_CHANNEL_L = 1
@@ -128,7 +124,7 @@ do -- camera helpers
 
 		gl.Enable(e.GL_DEPTH_TEST)		
 		
-		render.SetCamera(pos) 
+		render.cam_pos = pos
 		
 		render.SetMatrixMode(e.GL_MODELVIEW)	
 	end

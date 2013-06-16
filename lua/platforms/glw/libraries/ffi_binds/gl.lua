@@ -457,12 +457,27 @@ local library = ffi.load(library[ffi.os])
 
 local gl = {}
 
+local function add_gl_func(name, func)
+	gl[name] = function(...) 
+		local val = func(...)
+		
+		if name ~= "GetError" and gl.debug then
+			local str = glu.GetLastError()	
+			if str ~= "no error" then
+				local info = debug.getinfo(2)
+				
+				logf("[opengl] %q in function %s at %s:%i", str, info.name, info.short_src, info.currentline)
+			end
+		end
+		
+		return val
+	end
+end
+
 for line in header:gmatch("(.-)\n") do
 	local func_name = line:match(" (gl%u.-) %(")
 	if func_name then
-		gl[func_name:sub(3)] = function(...) 
-			return library[func_name](...)
-		end
+		add_gl_func(func_name:sub(3), library[func_name])
 	end 
 end
 
@@ -505,10 +520,10 @@ function gl.InitMiniGlew()
 								logn(err)
 								warning("gl", "tried to declare type ", var, " but it didnt work") 
 							else
-								gl[nam:sub(3)] = var
+								add_gl_func(nam:sub(3), var)
 							end
 						else
-							gl[nam:sub(3)] = var
+							add_gl_func(nam:sub(3), var)
 						end
 					else
 						warning("gl", "could not get the address of gl function %s! (%s)", name, line)
