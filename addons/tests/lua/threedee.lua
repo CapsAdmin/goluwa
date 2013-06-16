@@ -135,29 +135,30 @@ event.AddListener("OnDraw", "gl", function(dt)
 				obj:Draw() 
 			end		
 		
-		render.Start2D()
-			local w, h = 200, 200 
-			
 			render.SetTexture(0)
 			gl.UseProgram(0)
-						
+		
+		render.Start2D()
+		
+			gl.Color3f(1,1,1) 
+			gl.Color4f(1,1,1,1) 
+			
+			font:Render(os.date())
+			local w, h = 200, 200 
+									
 			local size = window:GetSize()		
 				
 			gl.Color4f(0, 1, 0, 0.5)
 			render.PushMatrix(Vec3(size.w - w, size.h - h), Ang3(0), Vec3(w, h))			
-				gl.Begin(e.GL_QUADS)
+				gl.Begin(e.GL_TRIANGLES)
 					gl.Vertex2f(0, 0)
 					gl.Vertex2f(0, 1)
 					gl.Vertex2f(1, 1) 
-					gl.Vertex2f(1, 0) 			
+
+					gl.Vertex2f(1, 1)
+					gl.Vertex2f(1, 0)
+					gl.Vertex2f(0, 0) 					
 				gl.End()				
-			render.PopMatrix()
-			
-			gl.Scalef(1,1,1)
-			gl.Translatef(100,100,0)
-			gl.Color4f(1,1,1,1) 
-			
-			font:Render(os.date())
-			
-	render.End()
+			render.PopMatrix()			
+	render.End() 
 end) 
