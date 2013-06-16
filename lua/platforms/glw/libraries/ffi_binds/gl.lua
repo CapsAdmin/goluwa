@@ -457,11 +457,28 @@ local library = ffi.load(library[ffi.os])
 
 local gl = {}
 
+local suppress = false
+
 local function add_gl_func(name, func)
 	gl[name] = function(...) 
 		local val = func(...)
 		
 		if name ~= "GetError" and gl.debug then
+						
+			if name == "End" and suppress then
+				suppress = false
+			end
+		
+			if name == "Begin" then
+				suppress = true
+				
+				return val
+			end
+			
+			if suppress then
+				return val
+			end
+		
 			local str = glu.GetLastError()	
 			if str ~= "no error" then
 				local info = debug.getinfo(2)

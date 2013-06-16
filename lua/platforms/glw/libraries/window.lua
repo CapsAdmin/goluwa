@@ -9,7 +9,7 @@ for line in glfw.header:gmatch("(.-)\n") do
 	end
 end
 
-calllbacks.OnError(function(code, str) logn(ffi.string(str)) end)
+calllbacks.OnError(function(code, str) logn("[glfw] ", ffi.string(str)) end)
 calllbacks.OnError = nil
 
 calllbacks.OnMonitor(function() events.Call("OnMonitorConnected") end)
