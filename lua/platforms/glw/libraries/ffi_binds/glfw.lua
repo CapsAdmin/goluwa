@@ -378,4 +378,14 @@ end
 
 glfw.Init()
 
+function glfw.GetVersion()
+	local major = ffi.new("int[1]")
+	local minor = ffi.new("int[1]")
+	local rev = ffi.new("int[1]")
+	
+	lib.glfwGetVersion(major, minor, rev)
+	
+	return major[0] + (minor[0] / 100), rev[0]
+end
+
 return glfw

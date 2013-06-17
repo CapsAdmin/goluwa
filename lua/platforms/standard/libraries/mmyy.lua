@@ -12,7 +12,7 @@ do -- title
 
 	if LINUX then
 		set_title = function(str)
-			return io.write('\27]0;', str, '\7')
+			return io.old_write and io.old_write('\27]0;', str, '\7') or nil
 		end
 	end
 	
