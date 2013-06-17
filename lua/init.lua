@@ -433,12 +433,12 @@ function OnError(msg)
 	
 	logn("== LUA ERROR ==")
 	
+	local base_folder = e.BASE_FOLDER:gsub("%p", "%%%1")
+		
 	for k, v in pairs(debug.traceback():explode("\n")) do
 		local source, msg = v:match("(.+): in function (.+)")
 		if source and msg then
-			logn((k-1) .. "    " .. source:trim() or "nil")
-			logn("     " .. msg:trim() or "nil")
-			logn("")
+			logn((k-1), "    ",  msg:trim() or "nil", "(", source:gsub(base_folder, ""):trim() or "nil", ")")
 		end
 	end
 

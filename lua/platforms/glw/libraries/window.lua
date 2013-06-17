@@ -45,6 +45,9 @@ function Window(width, height, title)
 	local ptr = glfw.CreateWindow(width, height, title, nil, nil)
 	glfw.MakeContextCurrent(ptr)
 	gl.Enable(e.GL_MULTISAMPLE)
+
+	logn("opengl version: ", ffi.string(glfw.GetVersionString()))
+
 	
 	-- this needs to be initialized once after a context has been created..
 	if gl and gl.InitMiniGlew and not gl.gl_init then

@@ -28,7 +28,6 @@ function glw.OpenWindow(w, h, title)
 	title = title or "no title"
 
 	local window = Window(w, h, title)
-	glfw.MakeContextCurrent(window.__ptr)
 	
 	for name in pairs(window.availible_callbacks) do
 		window[name] = function(...)

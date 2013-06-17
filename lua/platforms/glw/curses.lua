@@ -76,8 +76,15 @@ ffi.cdef[[
 	int waddstr(WINDOW *win, const char *chstr);
 	int wmove(WINDOW *win, int y, int x);
 	int resize_term(int y, int x);
+	int setscrreg(int top, int bot);
 	
 	void getyx(WINDOW *win, int y, int x);
+
+	WINDOW* stdscr;
+	int printw(const char* format, ...);
+	int wprintw(WINDOW*, const char* format, ...);
+	int mvprintw(int y, int x, const char* format, ...);
+	int start_color();
 ]]
 
 if _E.CURSES_INIT then return end
@@ -90,7 +97,8 @@ end
 local curses = ffi.load(jit.os == "Linux" and "ncurses" or "pdcurses")
 local parent = curses.initscr()
 
-local line_window = curses.derwin(parent, 1, 128, curses.LINES-1, 0)
+local log_window = curses.derwin(parent, curses.LINES - 2, curses.COLS, 0, 0)
+local line_window = curses.derwin(parent, 1, curses.COLS, curses.LINES - 1, 0)
 
 local function gety()
 	return line_window.y
@@ -99,13 +107,25 @@ end
 local function getx()	
 	return line_window.x
 end
- 
+
+--curses.start_color()
 curses.cbreak()
 curses.noecho()
-curses.nodelay(line_window, true)
-curses.keypad(line_window, true)
-curses.wrefresh(line_window)
+
+curses.nodelay(line_window, 1)
+curses.keypad(line_window, 1)
+
+curses.scrollok(log_window, 1)
+
+curses.mvprintw(curses.LINES - 2, 0, string.rep("-", curses.COLS))
 curses.refresh()
+
+io.old_write = io.old_write or io.write
+
+function io.write(a)
+	curses.wprintw(log_window, a .. "\n")
+	curses.wrefresh(log_window)
+end
 
 _E.CURSES_INIT = true
 
