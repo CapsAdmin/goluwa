@@ -211,7 +211,7 @@ function vfs.Write(path, data, mode)
 	return false, err
 end
 
-function vfs.Find(path, invert, full_path, start, plain)
+function vfs.Find(path, invert, full_path, start, plain, dont_sort)
 	check(path, "string")
 	path = fix_path(path)
 	
@@ -256,7 +256,9 @@ function vfs.Find(path, invert, full_path, start, plain)
 		end
 	end
 
-	table.sort(list) 
+	if not dont_sort then
+		table.sort(list)
+	end
 
 	return list
 end

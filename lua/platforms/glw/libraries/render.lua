@@ -290,85 +290,9 @@ end
 do -- vbo 3d
 	render.vbo_3d_program = nil
 	
-	local vertex_shader_source = [[
-		#version 330
-	
-		uniform mat4 proj_mat;
-		uniform mat4 view_mat;
-		
-		uniform float time;
-	
-		in vec3 position;
-		in vec3 normal;
-		in vec2 uv;
+	local vertex_shader_source = vfs.Read("shaders/phong/vertex.c", "rb")  
+	local fragment_shader_source = vfs.Read("shaders/phong/fragment.c", "rb")
 
-		out vec3 vertex_color;
-		out vec2 vertex_texcoords;
-		out vec3 vertex_normal;
-		out vec3 vertex_pos;
-		
-		void main()
-		{			
-			vertex_texcoords = uv;
-			vertex_color = vec3(1,1,1);
-			vertex_normal = normal;
-			vertex_pos = position;
-						
-			// multiply before passing to shader???
-			gl_Position = proj_mat * view_mat * vec4(vertex_pos, 1.0);
-		}
-	]]  
-
-	local fragment_shader_source = [[
-		#version 330
-		
-		out vec4 frag_color;
-		
-		uniform float time;
-		uniform sampler2D texture;
-		uniform vec3 cam_pos;
-
-		in vec3 vertex_color;
-		in vec2 vertex_texcoords;
-		in vec3 vertex_normal;
-		in vec3 vertex_pos;
-
-		vec3 light_direction = normalize(vec3(sin(time), sin(time * 1.234), cos(time)));
-		vec3 viewer_direction = normalize(cam_pos - vertex_pos);	
-		
-		vec4 texel = texture2D(texture, vertex_texcoords);
-		
-		vec3 normal = normalize(vertex_normal);
-		
-		vec3 get_specular()
-		{		
-			float factor = clamp(dot(reflect(light_direction, normal), viewer_direction) * 0.96, 0.0, 1.0);
-			float value = pow(factor, 32.0);
-			return texel.xyz * value;
-		}
-		
-		vec3 get_diffuse()
-		{
-			return texel.xyz * clamp(dot(normal, light_direction), 0.0, 1.0);
-		}
-
-		vec3 get_ambient()
-		{
-			return texel.xyz * 0.15;
-		}
-
-		void main()
-		{
-			frag_color = 
-			vec4(
-				get_ambient() +
-				get_diffuse() +
-				get_specular(), 
-				texel.w
-			);
-		}
-	]]
-		
 	ffi.cdef[[
 		struct vertex_attributes_3d
 		{
@@ -521,18 +445,16 @@ do -- vbo 2d
 
 		vec3 light_direction = false ? vec3(0.0, 0.0, 1.0) : normalize(vec3(sin(time), 0.0, cos(time)));
 		vec3 viewer_direction = normalize(cam_pos - vertex_pos);	
+		vec3 texel = tex2D(texture, texcoords);
 		
 		vec3 get_specular()
 		{		
-			vec3 blah = clamp(pow(dot(reflect(light_direction, vertex_normal), viewer_direction), 8.0), 0.0, 1.0);
-			
-			return blah;
+			return clamp(pow(dot(reflect(light_direction, vertex_normal), viewer_direction), 8.0), 0.0, 1.0);
 		}
 		
 		vec3 get_diffuse()
 		{
-			vec3 texel = tex2D(texture, texcoords);
-			return vec3(0.1, 0.1, 0.1) * texel + texel * clamp(dot(vertex_normal, light_direction), 0.0, 1.0);
+			return texel * 0.1 + texel * clamp(dot(vertex_normal, light_direction), 0.0, 1.0) * vec3(0.0, 0.25, 0.5);
 		}
 
 		void main()

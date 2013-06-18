@@ -2,3 +2,4 @@
 /desktop.ini
 /.dropbox
 /log*.txt
+/DONT_COMMIT_curses.h
