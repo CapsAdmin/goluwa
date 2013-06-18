@@ -13,6 +13,10 @@ if LINUX then
 		  short	   _flags;			/* window properties */
 		} WINDOW;
 	]]
+
+	function COLOR_PAIR(x)
+		return bit.lshift(x, 8)
+	end
 end
 
 if WINDOWS then
@@ -41,6 +45,10 @@ if WINDOWS then
 		  int	   _regbottom;
 		} WINDOW;
 	]]
+
+	function COLOR_PAIR(x)
+		return bit.lshift(x, 24)
+	end
 end
 
 ffi.cdef[[		
@@ -85,6 +93,14 @@ ffi.cdef[[
 	int wprintw(WINDOW*, const char* format, ...);
 	int mvprintw(int y, int x, const char* format, ...);
 	int start_color();
+	bool has_colors();
+	bool can_change_color();
+	int attron(int);
+	int attroff(int);
+	int wattron(WINDOW*, int);
+	int wattroff(WINDOW*, int);
+	int init_pair(int, int, int);
+	int use_default_colors();
 ]]
 
 if _E.CURSES_INIT then return end
@@ -96,6 +112,8 @@ end
 
 local curses = ffi.load(jit.os == "Linux" and "ncurses" or "pdcurses")
 local parent = curses.initscr()
+curses.start_color()
+--curses.use_default_colors()
 
 local log_window = curses.derwin(parent, curses.LINES - 2, curses.COLS, 0, 0)
 local line_window = curses.derwin(parent, 1, curses.COLS, curses.LINES - 1, 0)
@@ -108,7 +126,19 @@ local function getx()
 	return line_window.x
 end
 
---curses.start_color()
+local COLOR_BLACK = 0
+local COLOR_RED = 1
+local COLOR_GREEN = 2
+local COLOR_YELLOW = 3
+local COLOR_BLUE = 4
+local COLOR_MAGENTA = 5
+local COLOR_CYAN = 6
+local COLOR_WHITE = 7
+
+for i = 1, 8 do
+	curses.init_pair(i, i - 1, COLOR_BLACK)
+end
+
 curses.cbreak()
 curses.noecho()
 
@@ -117,6 +147,7 @@ curses.keypad(line_window, 1)
 
 curses.scrollok(log_window, 1)
 
+curses.attron((2 ^ (8 + 13)) + 8 * 256)
 curses.mvprintw(curses.LINES - 2, 0, string.rep("-", curses.COLS))
 curses.refresh()
 
@@ -126,6 +157,8 @@ function io.write(a)
 	curses.wprintw(log_window, a .. "\n")
 	curses.wrefresh(log_window)
 end
+
+include("syntax.lua")
 
 _E.CURSES_INIT = true
 
@@ -139,7 +172,18 @@ local function clear(str)
 	curses.wclear(line_window)
 	
 	if str then
-		curses.waddstr(line_window, str)
+		local tokens = syntax.process(str)
+
+		for i = 1, #tokens / 2 do
+			local color, lexeme = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
+			local attr = COLOR_PAIR(color + 1)
+
+			curses.wattron(line_window, attr)
+			curses.waddstr(line_window, lexeme)
+			curses.wattroff(line_window, attr)
+		end
+
+		--curses.waddstr(line_window, str)
 		curses.wmove(line_window, y, x)
 	else
 		curses.wmove(line_window, y, 0)
