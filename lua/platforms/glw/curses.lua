@@ -202,7 +202,7 @@ local function move_cursor(x)
 end
 
 local function set_cursor_pos(x)
-	curses.wmove(line_window, 0, x)
+	curses.wmove(line_window, 0, math.max(x, 0))
 	curses.wrefresh(line_window)
 end
 
@@ -241,15 +241,22 @@ local translate =
 	[32] = "KEY_SPACE",
 	[9] = "KEY_TAB",
 	[10] = "KEY_ENTER",
+	[459] = "KEY_ENTER",
 	[8] = "KEY_BACKSPACE",
 	[127] = "KEY_BACKSPACE",
+	
+	-- this is bad, fix me!!!
+	[443] = "KEY_CTRL_LEFT",
+	[444] = "KEY_CTRL_RIGHT",
+	[527] = "KEY_CTRL_DELETE",
+	[127] = "KEY_CTRL_BACKSPACE",
 }
 
 event.AddListener("OnUpdate", "curses", function()
 	local byte = get_char()
 	
 	if byte < 0 then return end
-	
+		
 	local key = translate[byte] or ffi.string(get_key_name(byte))
 	if not key:find("KEY_") then key = nil end
 			
@@ -270,8 +277,16 @@ event.AddListener("OnUpdate", "curses", function()
 
 		if key == "KEY_LEFT" then
 			 move_cursor(-1)
+		elseif key == "KEY_CTRL_LEFT" then
+			set_cursor_pos((select(2, line:sub(1, getx()):find(".*[%s%p].-[^%p%s]")) or 1) - 1)
 		elseif key == "KEY_RIGHT" then
 			 move_cursor(1)
+		elseif key == "KEY_CTRL_RIGHT" then
+			local pos = (select(2, line:find("[%s%p].-[^%p%s]", getx()+1)) or 1) - 1
+			if pos < getx() then
+				pos = #line
+			end
+			set_cursor_pos(pos)
 		end
 
 		if key == "KEY_HOME" then
@@ -377,14 +392,17 @@ event.AddListener("OnUpdate", "curses", function()
 			else
 				clear()
 			end
+		elseif key == "KEY_CTRL_BACKSPACE" then
+			local pos = (select(2, line:sub(1, getx()):find(".*[%s%p].-[^%p%s]")) or 1) - 1
+			line = line:sub(1, pos) .. line:sub(getx() + 1)
+			set_cursor_pos(pos - 1)
 		elseif key == "KEY_DC" then
-			if getx() > 0 then
-				line = line:sub(1, getx()) .. line:sub(getx() + 2)
-			else
-				clear()
-			end
+			line = line:sub(1, getx()) .. line:sub(getx() + 2)			
+		elseif key == "KEY_CTRL_DELETE" then
+			local pos = (select(2, line:find("[%s%p].-[^%p%s]", getx()+1)) or #line + 1) - 1
+			line = line:sub(1, getx()) .. line:sub(pos + 1)
 		end
-
+			
 		-- enter
 		if key == "KEY_ENTER" then
 			clear()
