@@ -153,8 +153,8 @@ curses.refresh()
 
 io.old_write = io.old_write or io.write
 
-function io.write(a)
-	curses.wprintw(log_window, a .. "\n")
+function io.write(...)	
+	curses.wprintw(log_window, table.concat({...}, ""))
 	curses.wrefresh(log_window)
 end
 
@@ -391,12 +391,12 @@ event.AddListener("OnUpdate", "curses", function()
 
 			if line ~= "" then
 				if event.Call("OnLineEntered", line) ~= false then
-					log("> ", line, "\n")
+					logn("> ", line)
 					
 					local res, err = console.RunString(line)
 
 					if not res then
-						log(err, "\n")
+						logn(err)
 					end
 				end
 				
