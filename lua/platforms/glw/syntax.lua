@@ -1,5 +1,4 @@
-syntax = {}
-local syntax = syntax
+local syntax = {}
 
 syntax.DEFAULT    = 1
 syntax.KEYWORD    = 2
@@ -100,3 +99,5 @@ function syntax.process(code)
 
 	return output
 end
+
+return syntax

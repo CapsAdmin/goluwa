@@ -158,7 +158,7 @@ function io.write(a)
 	curses.wrefresh(log_window)
 end
 
-include("syntax.lua")
+local syntax = include("syntax.lua")
 
 _E.CURSES_INIT = true
 
@@ -391,7 +391,7 @@ event.AddListener("OnUpdate", "curses", function()
 
 			if line ~= "" then
 				if event.Call("OnLineEntered", line) ~= false then
-					log(line, "\n")
+					log("> ", line, "\n")
 					
 					local res, err = console.RunString(line)
 
