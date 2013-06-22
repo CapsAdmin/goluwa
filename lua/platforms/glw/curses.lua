@@ -113,7 +113,6 @@ end
 local curses = ffi.load(jit.os == "Linux" and "ncurses" or "pdcurses")
 local parent = curses.initscr()
 curses.start_color()
---curses.use_default_colors()
 
 local log_window = curses.derwin(parent, curses.LINES - 2, curses.COLS, 0, 0)
 local line_window = curses.derwin(parent, 1, curses.COLS, curses.LINES - 1, 0)
@@ -379,7 +378,7 @@ event.AddListener("OnUpdate", "curses", function()
 		end
 
 		-- backspace
-		if key == "KEY_BACKSPACE" then
+		if key == "KEY_BACKSPACE" or (key == "KEY_CTRL_BACKSPACE" and jit.os == "Linux") then
 			if getx() > 0 then
 				local char = line:sub(1, getx())
 				
