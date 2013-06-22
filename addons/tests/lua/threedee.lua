@@ -117,7 +117,7 @@ obj:SetPos(Vec3(5,0,0))
 obj:SetModel("face.obj")
 obj:SetTexture("face1.png")
 
-gl.ClearColor(0,0,0,0)   
+gl.ClearColor(0,0,0,1)   
 input.SetMouseTrapped(true) 
  
 local font = Font(R"fonts/arial.ttf")  
@@ -148,7 +148,7 @@ event.AddListener("OnDraw", "gl", function(dt)
 									
 			local size = window:GetSize()		
 				
-			gl.Color4f(0, 1, 0, 0.5)
+			gl.Color4f(1, 1, 1, 0.5)
 			render.PushMatrix(Vec3(size.w - w, size.h - h), Ang3(0), Vec3(w, h))			
 				gl.Begin(e.GL_TRIANGLES)
 					gl.Vertex2f(0, 0)
