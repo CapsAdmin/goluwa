@@ -95,6 +95,39 @@ do -- textures
 	_E.TEX_FLAG_COCG_Y = 256
 	_E.TEX_FLAG_TEXTURE_RECTANGLE = 512
 
+	function Texture(path, channel_flags, texture_flags, prev_tex_id)
+		local self = {}
+		self.Type = "texture"
+		
+		local id, w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"), texture_flags, channel_flags, prev_tex_id)
+		local size = Vec2(w, h)
+		
+		function self:Bind()
+			gl.BindTexture(e.GL_TEXTURE_2D, id)
+		end
+		
+		function self:GetSize()
+			return size
+		end
+		
+		local size = ffi.sizeof(buffer)
+		
+		function self:GetPixelColor(x, y)
+			if x > w or y > h then return 0,0,0,0 end
+		
+			local offset = math.floor((y * w + x) * 4)
+			
+			local b = buffer[offset + 0]%256
+			local g = buffer[offset + 1]%256
+			local r = buffer[offset + 2]%256
+			local a = buffer[offset + 3]%256
+			
+			return r / 255, g / 255, b / 255, a / 255
+		end
+		
+		return self
+	end
+		
 	function render.CreateTexture(path, channel_flags, texture_flags, prev_tex_id)
 		return freeimage.LoadImage(vfs.Read(path, "rb"), texture_flags, channel_flags, prev_tex_id)
 	end
