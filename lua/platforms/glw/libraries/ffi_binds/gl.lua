@@ -455,7 +455,7 @@ local library =
 
 local library = ffi.load(library[ffi.os])
 
-local gl = {}
+local gl = _G.gl or {}
 
 local suppress = false
 
@@ -498,22 +498,20 @@ for line in header:gmatch("(.-)\n") do
 	end 
 end
 
+if WINDOWS then
+	ffi.cdef"void *wglGetProcAddress(const char *);"
+	gl.GetProcAddress = library.wglGetProcAddress
+end
+
+if LINUX then
+	ffi.cdef"void *glXGetProcAddress(const char *);"
+	gl.GetProcAddress = library.glXGetProcAddress
+end
+
 -- mini glew..
 -- to check if extensions exist, just check if the function exists.
 -- if gl.GenBuffers then
 function gl.InitMiniGlew()
-	local GetProcAddress
-
-	if WINDOWS then
-		ffi.cdef"void *wglGetProcAddress(const char *);"
-		GetProcAddress = library.wglGetProcAddress
-	end
-
-	if LINUX then
-		ffi.cdef"void *glXGetProcAddress(const char *);"
-		GetProcAddress = library.glXGetProcAddress
-	end
-
 	for path in vfs.Iterate("lua/platforms/glw/libraries/ffi_binds/gl_extensions/", nil, true) do
 		local str = vfs.Read(path)
 		for line in str:gmatch("\t(.-)\n") do
@@ -526,7 +524,7 @@ function gl.InitMiniGlew()
 			else
 				local ret, nam, args = line:match("(.-) (gl.-) (%(.+%))")
 				if nam then
-					local func = GetProcAddress(nam:trim())
+					local func = gl.GetProcAddress(nam:trim())
 					if func ~= nil then
 						local ok, var = pcall(ffi.cast, ret .. "(*)" ..  args, func) 
 						if not ok and var:find("specifier expected near") then

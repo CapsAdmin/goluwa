@@ -404,6 +404,12 @@ include(extensions .. "table.lua")
 include(extensions .. "os.lua")
 
 -- libraries
+structs = include(libraries .. "structs.lua")
+
+for script in vfs.Iterate("lua/structs/", nil, true) do
+	dofile(script)
+end
+
 event = include(libraries .. "event.lua")
 utilities = include(libraries .. "utilities.lua")
 addons = include(libraries .. "addons.lua")

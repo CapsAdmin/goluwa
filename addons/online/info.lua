@@ -2,5 +2,4 @@
 return
 {
 	load = CLIENT ~= nil or SERVER ~= nil,
-	startup = "online/init.lua",
 }
