@@ -66,6 +66,17 @@ function render.SetPerspective(fov, nearz, farz, ratio)
 	glu.Perspective(fov, ratio, nearz, farz)
 end
 
+local data = ffi.new("float[3]")
+
+function render.ReadPixels(x, y, w, h)
+	w = w or 1
+	h = h or 1
+	
+	gl.ReadPixels(x, y, w, h, e.GL_RGBA, e.GL_FLOAT, data)
+		
+	return data[0], data[1], data[2], data[3]
+end
+
 do -- textures
 	_E.TEX_CHANNEL_AUTO = 0
 	_E.TEX_CHANNEL_L = 1
