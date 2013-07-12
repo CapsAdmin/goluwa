@@ -10,11 +10,14 @@ end
 
 surface = include("libraries/surface.lua")
 render = include("libraries/render.lua")
+entities = include("libraries/entities.lua")
 
 include("libraries/mesh.lua")
 include("libraries/font.lua")
 include("libraries/window.lua")
 include("extensions/input.lua")
+
+include("libraries/network/init.lua")
 
 addons.AutorunAll()
  
@@ -36,9 +39,7 @@ function glw.OpenWindow(w, h, title)
 			end
 		end	
 	end
-
-
- 
+	
 	glw.window = window
 	
 	return window

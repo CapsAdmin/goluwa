@@ -1,6 +1,4 @@
-if not ffi then return end
-
-structs = structs or {}
+local structs = structs or {}
 
 function structs.Register(META)
 	local arg_line = ""
@@ -331,6 +329,4 @@ function structs.AddAllOperators(META)
 	structs.AddOperator(META, "math", "clamp", "Clamp", "Clamped")
 end
 
-for script in vfs.Iterate("lua/structs/", nil, true) do
-	dofile(script)
-end
+return structs

@@ -61,60 +61,13 @@ end
               
 local active_models =  {}
  
-do -- model 
-	local META = {}
-	META.__index = META
-
-	class.GetSet(META, "Pos", Vec3(0,0,0))
-	class.GetSet(META, "Angles", Ang3(0,0,0))
-	class.GetSet(META, "Scale", Vec3(1,1,1))
-	class.GetSet(META, "Size", 1)
-	class.GetSet(META, "Model")
-	class.GetSet(META, "Texture")
-
-	function META:SetModel(path)
-		self.Model = path 
-		
-		local str = vfs.Read("models/" .. path)
-		
-		utilities.ParseObj(str, function(data)
-			self.mesh = Mesh(data)
-		end, true)
-	end
-	
-	function META:SetTexture(path)
-		self.tex = render.CreateTexture("textures/" .. path)
-		self.Texture = path 
-	end
-	
-	function META:Draw()
-		if not self.mesh then return end
-		
-		if self.tex then
-			render.SetTexture(self.tex)
-		end
-		
-		render.PushMatrix(self.Pos, self.Angles, self.Scale * self.Size)
-			self.mesh:Draw()	
-		render.PopMatrix()
-	end 
-    
- 
-	function Model(path)
-		local self = setmetatable({}, META)
-		table.insert(active_models, self)
-
-		return self
-	end 
-end
-
-local obj = Model() 
-obj:SetModel("teapot.obj")
+local obj = Entity("base") 
+obj:SetObj("teapot.obj")
 obj:SetTexture("face1.png")
 
-local obj = Model()
+local obj = Entity("base")
 obj:SetPos(Vec3(5,0,0))
-obj:SetModel("face.obj")
+obj:SetObj("face.obj")
 obj:SetTexture("face1.png")
 
 gl.ClearColor(0,0,0,1)   
@@ -131,21 +84,18 @@ event.AddListener("OnDraw", "gl", function(dt)
 		render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
 		
 		render.Start3D(cam_pos, cam_ang:GetDeg())
-			for key, obj in pairs(active_models) do
-				obj:Draw() 
-			end		
+			entities.world_entity:DrawModel()
 		
 			render.SetTexture(0)
 			gl.UseProgram(0)
 		
-		render.Start2D()
-		
+		render.Start2D()		
 			gl.Color3f(1,1,1) 
 			gl.Color4f(1,1,1,1) 
 			
 			font:Render(os.date())
+			
 			local w, h = 200, 200 
-									
 			local size = window:GetSize()		
 				
 			gl.Color4f(1, 1, 1, 0.5)
