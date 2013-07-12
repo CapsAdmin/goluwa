@@ -58,8 +58,12 @@ local function calc_camera(window, dt)
 	end
 end  
 
-              
 local active_models =  {}
+
+local lol = Entity("base")
+lol:SetMesh(Mesh(utilities.ParseHeightmap(Texture("textures/cute_image.jpg"), 1024, 512))) 
+lol:SetTexture("texture.jpg")
+lol:SetAngles(Ang3(-90,0,0))
  
 local obj = Entity("base") 
 obj:SetObj("teapot.obj")

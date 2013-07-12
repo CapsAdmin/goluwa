@@ -1,4 +1,74 @@
+local cache = {}
+
+function Mesh(data)
+	check(data, "table")
+	
+	local vbo = cache[data]
+	
+	if vbo then 
+		return vbo
+	else	
+		vbo = render.Create3DVBO(data)
+		
+		local mesh = {
+			Draw = function() 
+				render.Draw3DVBO(vbo) 
+			end, 
+			
+			GetVertexBuffer = function() 
+				return vbo
+			end
+		}
+		
+		cache[data] = mesh
+		
+		return mesh
+	end
+end
+
 local table_insert = table.insert
+
+function utilities.ParseHeightmap(tex, size, res, height)	
+	
+	size = size or 1024
+	res = res or 64
+	height = height or 128
+	
+	local data = {}
+	local _size = size / res
+	
+	local function get_height(x, y)
+		local r,g,b = tex:GetPixelColor(x, y)
+		
+		return (r+g+b) / 3
+	end
+	
+	for y = 0, res do
+		for x = 0, res do			
+			local z1 = get_height(x, (y+1)) * height -- bottom left
+			local z2 = get_height(x, y) * height -- top left
+			local z3 = get_height((x+1), y) * height -- top right
+			local z4 = get_height((x+1), (y+1)) * height -- bottom right
+			
+			table_insert(data, {pos = Vec3(x * _size + _size, y * _size, z3)})
+			table_insert(data, {pos = Vec3(x * _size, y * _size, z2)})
+			table_insert(data, {pos = Vec3(x * _size, y * _size + _size, z1)})
+			
+			table_insert(data, {pos = Vec3(x * _size, y * _size + _size, z1)})
+			table_insert(data, {pos = Vec3(x * _size + _size, y * _size + _size, z4)})
+			table_insert(data, {pos = Vec3(x * _size + _size, y * _size, z3)})		
+		end
+	end
+			
+	local up = Vec3(0,0,1)
+	for _, vertex in pairs(data) do
+		vertex.normal = up
+		local uv = vertex.pos / size
+		vertex.uv = Vec2(uv.y, uv.x)		
+	end
+	
+	return data
+end
 
 function utilities.ParseObj(data, callback, generate_normals)
 	local co = coroutine.create(function()
@@ -135,32 +205,4 @@ function utilities.ParseObj(data, callback, generate_normals)
 			end
 		end
 	end, 1024 * 16)
-end
-
-local cache = {}
-
-function Mesh(data)
-	check(data, "table")
-	
-	local vbo = cache[data]
-	
-	if vbo then 
-		return vbo
-	else	
-		vbo = render.Create3DVBO(data)
-		
-		local mesh = {
-			Draw = function() 
-				render.Draw3DVBO(vbo) 
-			end, 
-			
-			GetVertexBuffer = function() 
-				return vbo
-			end
-		}
-		
-		cache[data] = mesh
-		
-		return mesh
-	end
 end

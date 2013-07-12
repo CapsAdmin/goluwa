@@ -19,11 +19,10 @@ ffi.cdef[[
 	
 ]]
 
-
-freeimage.LoadImage = function(str, texture_flags, channel_flags, prev_tex_id)
+function freeimage.LoadImage(str, texture_flags, channel_flags, prev_tex_id)
 	local buffer = ffi.cast("const unsigned char *const ", str)
 
-	local stream= lib.FreeImage_OpenMemory(buffer, #str)
+	local stream = lib.FreeImage_OpenMemory(buffer, #str)
 	local type = lib.FreeImage_GetFileTypeFromMemory(stream, #str)
 	local bitmap_ = lib.FreeImage_LoadFromMemory(type, stream, texture_flags or 0)
 	
@@ -31,27 +30,31 @@ freeimage.LoadImage = function(str, texture_flags, channel_flags, prev_tex_id)
 	lib.FreeImage_Unload(bitmap_)
 	
 	lib.FreeImage_FlipVertical(bitmap)
-	
+		
 	local id = ffi.new("GLuint[1]") gl.GenTextures(1, id) id = id[0]
 	gl.BindTexture(e.GL_TEXTURE_2D, id)
 	gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MIN_FILTER, e.GL_LINEAR)
 	gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MAG_FILTER, e.GL_LINEAR)
 	
+	local data = lib.FreeImage_GetBits(bitmap) 
+	local width = lib.FreeImage_GetWidth(bitmap)
+	local height = lib.FreeImage_GetHeight(bitmap)
+		
 	gl.TexImage2D(
 		e.GL_TEXTURE_2D, 
 		0, 
 		e.GL_RGBA, 
-		lib.FreeImage_GetWidth(bitmap), 
-		lib.FreeImage_GetHeight(bitmap), 
+		width,
+		height,
 		0, 
 		e.GL_BGRA, 
 		e.GL_UNSIGNED_BYTE, 
-		lib.FreeImage_GetBits(bitmap) 
+		data
 	)
 	
 	lib.FreeImage_Unload(bitmap)
 	
-	return id
+	return id, width, height, data
 end
 
 return freeimage

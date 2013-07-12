@@ -55,14 +55,14 @@ do -- base
 		end
 		
 		function META:SetTexture(path)
-			self.tex = render.CreateTexture("textures/" .. path)
+			self.tex = Texture("textures/" .. path)
 			self.Texture = path 
 		end
 		
-		function META:DrawModel()
+		function META:DrawModel()	
 			
 			if self.tex then
-				render.SetTexture(self.tex)
+				self.tex:Bind()
 			end
 			
 			render.PushMatrix(self.Pos, self.Angles, self.Scale * self.Size)
