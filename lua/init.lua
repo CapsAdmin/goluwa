@@ -256,15 +256,38 @@ logn("executed by " .. e.USERNAME)
 log("\n\n")
 
 do -- ffi
-	ffi = require("ffi")
+	_G.ffi = require("ffi")
+	
 	_G[ffi.os:upper()] = true
 	_G[ffi.arch:upper()] = true
 
-	 -- ffi's cdef is so anti realtime
+	_OLD_G.ffi_load = _OLD_G.ffi_load or ffi.load
+	
+	-- make ffi.load search using our file system
+	ffi.load = function(path, ...)
+		local ok, msg = pcall(_OLD_G.ffi_load, path, ...)
+		
+		if not ok then
+			if vfs then
+				for full_path in vfs.Iterate("bin/" .. ffi.os .. "/" .. ffi.arch .. "/" .. path, nil, true) do
+					local ok, msg = pcall(_OLD_G.ffi_load, full_path, ...)
+					if ok then
+						return msg
+					end
+				end
+			end
+			
+			error(msg, 2)
+		end
+		
+		return msg
+	end
+	
+	-- ffi's cdef is so anti realtime
 	if not ffi.already_defined then
 		ffi.already_defined = {}
 		
-		old_ffi_cdef = old_ffi_cdef or ffi.cdef
+		_OLD_G.ffi_cdef = _OLD_G.ffi_cdef or ffi.cdef
 		ffi.cdef = function(str, ...)
 			local val = ffi.already_defined[str]
 			
@@ -273,7 +296,7 @@ do -- ffi
 			end
 		
 			ffi.already_defined[str] = str
-			return old_ffi_cdef(str, ...)
+			return _OLD_G.ffi_cdef(str, ...)
 		end
 			
 		ffi.already_defined_metatypes = {}

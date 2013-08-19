@@ -38,8 +38,6 @@ function vfs.GetMounts()
 	return vfs.paths
 end
 
-local loaders = {}
-
 function vfs.Mount(path)
 	check(path, "string")
 	path = fix_path(path)
@@ -48,14 +46,11 @@ function vfs.Mount(path)
 		
 	table.insert(vfs.paths, path)
 	
-	local function loader(path)
-		return vfs.loadfile(path)
-	end
-	
-	loaders[path] = loader
---	table.insert(package.loaders, loader)
+	--local search_path = ";" .. path .. (WINDOWS and "?.dll" or "?")
+	--package.cpath = package.cpath .. search_path
 end
-
+	
+	
 function vfs.Unmount(path)
 	check(path, "string")
 	path = fix_path(path)
@@ -66,11 +61,11 @@ function vfs.Unmount(path)
 		end
 	end
 	
-	for k,v in pairs(package.loaders) do
-		if v == loaders[path] then
-			table.remove(package.loaders, k)
-		end
-	end
+	--local search_path = ";" .. path .. (WINDOWS and "?.dll" or "?")
+	--local startpos, endpos = package.cpath:find(search_path, nil, true)
+	--if startpos and endpos then
+	--	package.cpath = package.cpath:sub(0, startpos-1) .. package.cpath:sub(endpos+1)
+	--end
 end
 
 function vfs.GetAttributes(path, ...)
@@ -86,11 +81,21 @@ function vfs.GetAbsolutePath(path, ...)
 	check(path, "string")
 	path = fix_path(path)
 	
+	local is_folder = path:sub(-1) == "/"
+	if is_folder then
+		path = path .. "NUL"
+	end
+	
 	for k, v in ipairs(vfs.paths) do
 		local file, err = io.open(v .. "/" .. path, ...)
 		
 		if file then
 			file:close()
+			
+			if is_folder then
+				path = path:sub(0,-4)
+			end
+			
 			return v .. path
 		end
 	end

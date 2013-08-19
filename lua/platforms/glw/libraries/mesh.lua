@@ -38,7 +38,7 @@ function utilities.ParseHeightmap(tex, size, res, height)
 	local _size = size / res
 	
 	local function get_height(x, y)
-		local r,g,b = tex:GetPixelColor(x, y)
+		local r,g,b = tex:GetPixelColor(x/res, y/res)
 		
 		return (r+g+b) / 3
 	end

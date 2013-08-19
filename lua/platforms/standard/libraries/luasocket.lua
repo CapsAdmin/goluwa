@@ -173,6 +173,7 @@ do -- helpers/usage
 		end
 	end
 
+	local sck = luasocket.socket.udp()
 	function luasocket.SendUDPData(ip, port, str)
 
 		if not str and type(port) == "string" then
@@ -180,9 +181,7 @@ do -- helpers/usage
 			port = tonumber(ip:match(".-:(.+)"))
 		end
 
-		local sck = luasocket.socket.udp()
 		local ok, msg = sck:sendto(str, ip, port)
-		sck:close()
 
 		if ok then
 			luasocket.DebugPrint("SendUDPData sent data to %s:%i (%s)", ip, port, str)

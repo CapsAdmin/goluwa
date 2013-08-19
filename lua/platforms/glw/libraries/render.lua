@@ -114,6 +114,11 @@ do -- textures
 		
 		function self:GetPixelColor(x, y)
 			if x > w or y > h then return 0,0,0,0 end
+			
+			if x < 1 and y < 1 then 
+				x = x * w 
+				y = y * h 
+			end
 		
 			local offset = math.floor((y * w + x) * 4)
 			
