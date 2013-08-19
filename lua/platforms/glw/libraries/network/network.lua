@@ -2,6 +2,8 @@ network = network or {}
 network.client_socket = network.client_socket or NULL
 network.server_socket = network.server_socket or NULL
 
+network.udp_receiver = network.udp_receiver or NULL
+
 e.USER_CONNECT = 1
 e.USER_DISCONNECT = 2
 e.USER_MESSAGE = 3
@@ -144,6 +146,13 @@ if CLIENT then
 		
 		network.client_socket = client
 		
+		local udp = luasocket.Server("udp")
+		
+		udp:Host(ip, port)
+		udp.OnReceive = print
+		
+		network.udp_receiver = udp
+		
 		return client
 	end
 
@@ -195,6 +204,13 @@ if SERVER then
 		event.Call("OnlineStarted")
 		
 		network.server_socket = server
+		
+		local udp = luasocket.Server("udp")
+		
+		udp:Host(ip, port)
+		udp.OnReceive = print
+		
+		network.udp_receiver = udp
 	end
 	
 	function network.GetClients()
