@@ -72,6 +72,7 @@ local function init_love(cd, ...)
 			return old(full_path or path)
 		end
 
+		love.graphics.quad = love.graphics.polygon
 		love.graphics.drawq = love.graphics.draw
 		love.graphics.setDefaultImageFilter = love.graphics.setDefaultFilter
 		love.graphics.setIcon = function() end
@@ -93,9 +94,9 @@ local function init_love(cd, ...)
 	end
 		
 	if not love.goluwa_init then
-		local old = love.event.poll
+		local old = love.graphics.present
 		
-		function love.event.poll(...)
+		function love.graphics.present(...)
 			coroutine.yield()
 			return old(...)
 		end
