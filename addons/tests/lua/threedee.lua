@@ -60,10 +60,10 @@ end
 
 local active_models =  {}
 
-local lol = Entity("base")
-lol:SetMesh(Mesh(utilities.ParseHeightmap(Texture("textures/texture.jpg"), 1024/4, 256))) 
-lol:SetTexture("texture.jpg") 
-lol:SetAngles(Ang3(-90,0,0))
+--local lol = Entity("base")
+--lol:SetMesh(Mesh(utilities.ParseHeightmap(Texture("textures/texture.jpg"), 1024/4, 256))) 
+--lol:SetTexture("texture.jpg") 
+--lol:SetAngles(Ang3(-90,0,0))
  
 local obj = Entity("base") 
 obj:SetObj("teapot.obj")

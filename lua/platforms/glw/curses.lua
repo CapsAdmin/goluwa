@@ -152,9 +152,11 @@ curses.refresh()
 
 io.old_write = io.old_write or io.write
 
-function io.write(...)	
-	curses.wprintw(log_window, table.concat({...}, ""))
-	curses.wrefresh(log_window)
+function io.write(...)
+	if not io.suppress_console_print then
+		curses.wprintw(log_window, table.concat({...}, ""))
+		curses.wrefresh(log_window)
+	end
 end
 
 local syntax = include("syntax.lua")
