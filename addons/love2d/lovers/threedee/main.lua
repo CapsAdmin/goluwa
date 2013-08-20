@@ -139,8 +139,8 @@ function newCube(img)
 	cube.back = love.graphics.newGeometry(back)
 	return cube
 end
-cube=newHeightMap("heightmap.png","love.png")
---cube=newCube("love.png")
+--cube=newHeightMap("heightmap.png","love.png")
+cube=newCube("love.png")
 
 local shader=nil
 function love.load()
@@ -178,7 +178,7 @@ function love.load()
 end
 
 local x=0.34
-local y=0.87
+local y=2
 local z=0.32
 local lx=0
 local lz=-1
@@ -186,7 +186,7 @@ local ang_x=0
 local ang_y=0
 local deltamove=0
 local sensitive=512
-local fraction=0.00025
+local fraction=0.0025
 local setShader=love.graphics.setShader
 
 local sin=math.sin
@@ -200,7 +200,7 @@ local gprint=love.graphics.print
 local first=0
 function love.update(dt)
 	if hasFocus()==true then
-		if first<1000 then
+		if first<100 then
 			first=first+1
 		else
 			ang_x=ang_x+((love.mouse.getX()-(ScrW/2))/sensitive)
@@ -233,13 +233,13 @@ function love.update(dt)
 			y=y+fraction
 		end
 	end
-	--[[shader:send("View", lookat(x   ,  2,z,
+	shader:send("View", lookat(x   ,  y,z,
 							   x+lx, ly,z+lz,
 							   0   ,  1,0))
-	]]
-	shader:send("View", lookat(x,y,z,
+	
+	--[[shader:send("View", lookat(x,y,z,
 							   x+lx,-1024,z+lz,
-							   0,1,0))
+							   0,1,0))]]
 end
 
 local format=string.format
