@@ -446,6 +446,7 @@ msgpack = include(libraries .. "msgpack.lua")
 json = include(libraries .. "json.lua")
 console = include(libraries .. "console.lua")
 mmyy = include(libraries .. "mmyy.lua")
+system = include(libraries .. "system.lua")
 
 -- meta
 include(meta .. "function.lua")
@@ -489,7 +490,7 @@ include("platforms/".. e.PLATFORM .."/init.lua")
 addons.AutorunAll(e.USERNAME)
 
 if CREATED_ENV then
-	mmyy.SetWindowTitle(TITLE)
+	system.SetWindowTitle(TITLE)
 	
 	utilities.SafeRemove(ENV_SOCKET)
 	

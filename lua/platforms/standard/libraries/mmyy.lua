@@ -1,33 +1,5 @@
 local mmyy = _G.mmyy or {}
 
-do -- title
-	local set_title
-	if WINDOWS then
-		ffi.cdef("int SetConsoleTitleA(const char* blah);")
-
-		set_title = function(str)
-			return ffi.C.SetConsoleTitleA(str)
-		end
-	end
-
-	if LINUX then
-		set_title = function(str)
-			return io.old_write and io.old_write('\27]0;', str, '\7') or nil
-		end
-	end
-	
-	local titles = {}
-	
-	function mmyy.SetWindowTitle(title, id)
-		if id then
-			titles[id] = title
-			set_title(table.concat(titles, " | "))
-		else
-			set_title(title)
-		end
-	end
-end
-
 if mmyy.lua_environment_sockets then
 	for key, val in pairs(mmyy.lua_environment_sockets) do
 		utilities.SafeRemove(val)

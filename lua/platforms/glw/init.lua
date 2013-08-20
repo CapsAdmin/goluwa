@@ -181,7 +181,7 @@ do -- update
 
 		smooth_fps = smooth_fps + (((1/dt) - smooth_fps) * dt)
 
-		mmyy.SetWindowTitle(string.format(fps_fmt, smooth_fps), 1)
+		system.SetWindowTitle(string.format(fps_fmt, smooth_fps), 1)
 
 		event.Call("OnUpdate", dt) 
 
