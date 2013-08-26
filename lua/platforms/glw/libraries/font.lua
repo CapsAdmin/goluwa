@@ -35,7 +35,7 @@ function Font(file_name, type)
 	file_name = file_name:lower()
 	
 	if not type or not types[type] then 
-		type = "texture"
+		type = "bitmap"
 	end
 	
 	local ptr = types[type](file_name)
