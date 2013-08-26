@@ -1,11 +1,23 @@
 local function init_love(cd, ...)
 	local path = R"bin/windows/x86/love.dll"
 
-	if not package.love_loader then
-		table.insert(package.loaders, function(mod)
-			if love then 
+	-- make it so require("love") and require("graphics") work properly in love's boot lua
+	if not package.love_loader_added then
+		local loader
+
+		loader = function(mod)
+			-- there's no need for this unless _G.love exists
+			if not _G.love then 
+				for k,v in pairs(package.loaders) do 
+					if v == loader then 
+						table.remove(package.loaders, k) 
+						return 
+					end
+				end
+			else
 				mod = mod:gsub("%.", "_")
 				
+				-- see if it's a lua file first
 				local lua_path = love.current_dir .. mod .. ".lua"
 				local func = loadfile(lua_path)
 				
@@ -13,12 +25,15 @@ local function init_love(cd, ...)
 					return func
 				end
 				
+				-- maybe it's a dll
 				local dll_path = love.current_dir .. mod .. (WINDOWS and ".dll" or "")
 				local func = package.loadlib(dll_path, "luaopen_" .. mod)
+				
 				if func then
 					return func
 				end
 				
+				-- require("love.*")
 				if mod:find("love") then
 					local func = package.loadlib(path, "luaopen_" .. mod)() 
 					if func then
@@ -26,12 +41,13 @@ local function init_love(cd, ...)
 					end
 				end
 			end
-		end)
-		package.love_loader = true 
+		end
+
+		table.insert(package.loaders, loader)
+		package.love_loader_added = true 
 	end
 	
-	if not love then
-			
+	if not love then	
 		system.SetDLLDirectory(path:sub(0,-10))		
 			_G.arg = {...}
 			package.preload["love"] = package.loadlib(path, "luaopen_love") 
@@ -53,6 +69,7 @@ local function init_love(cd, ...)
 			int PHYSFS_removeFromSearchPath(const char *oldDir);
 		]]
 	
+		-- newThread doesn't use PHYSFS ..
 		local old = love.thread.newThread			
 		love.thread.newThread = function(path, nope)
 			local full_path
@@ -72,6 +89,7 @@ local function init_love(cd, ...)
 			return old(full_path or path)
 		end
 
+		-- some backwards compatibility to 0.8
 		love.graphics.quad = love.graphics.polygon
 		love.graphics.drawq = love.graphics.draw
 		love.graphics.setDefaultImageFilter = love.graphics.setDefaultFilter
@@ -103,7 +121,6 @@ local function init_love(cd, ...)
 	end
 	
 	_G.arg = {...}
-
 	
 	return coroutine.create(love.run)
 end 
@@ -120,7 +137,7 @@ local function run_lover(name, ...)
 		local ok, msg = coroutine.resume(co)
 			
 		if not ok then
-			print(msg)
+			logf("love2d %s error: %s\n", name, msg)
 			love.love_dll.PHYSFS_removeFromSearchPath(path) 
 			return true
 		end
