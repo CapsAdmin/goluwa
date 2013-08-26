@@ -1,13 +1,13 @@
 local window = glw.OpenWindow(1280, 720)
-   
+
 local cam_pos = Vec3(0, 0, -10)
-local cam_ang = Ang3(0, 0, 0)     
-    
+local cam_ang = Ang3(0, 0, 0)
+
 local function calc_camera(window, dt)
 
 	cam_ang:Normalize()
 	local speed = dt * 10
-	
+
 	local delta = input.GetMouseDelta() * dt / 2
 	cam_ang.p = cam_ang.p + delta.y
 	cam_ang.y = cam_ang.y + delta.x
@@ -41,31 +41,31 @@ local function calc_camera(window, dt)
 		cam_pos = cam_pos + offset
 	elseif input.IsKeyDown("d") then
 		cam_pos = cam_pos - offset
-	end  
+	end
 
 	speed = dt * 5
 
 	if input.IsKeyDown("up") then
 		cam_ang.p = cam_ang.p - speed
 	elseif input.IsKeyDown("down") then
-		cam_ang.p = cam_ang.p + speed 
-	end 
+		cam_ang.p = cam_ang.p + speed
+	end
 
 	if input.IsKeyDown("left") then
-		cam_ang.y = cam_ang.y - speed 
+		cam_ang.y = cam_ang.y - speed
 	elseif input.IsKeyDown("right") then
 		cam_ang.y = cam_ang.y + speed
 	end
-end  
+end
 
 local active_models =  {}
 
 --local lol = Entity("base")
---lol:SetMesh(Mesh(utilities.ParseHeightmap(Texture("textures/texture.jpg"), 1024/4, 256))) 
---lol:SetTexture("texture.jpg") 
+--lol:SetMesh(Mesh(utilities.ParseHeightmap(Texture("textures/texture.jpg"), 1024/4, 256)))
+--lol:SetTexture("texture.jpg")
 --lol:SetAngles(Ang3(-90,0,0))
- 
-local obj = Entity("base") 
+
+local obj = Entity("base")
 obj:SetObj("teapot.obj")
 obj:SetTexture("face1.png")
 
@@ -74,45 +74,65 @@ obj:SetPos(Vec3(5,0,0))
 obj:SetObj("face.obj")
 obj:SetTexture("face1.png")
 
-gl.ClearColor(0,0,0,1)   
-input.SetMouseTrapped(true) 
- 
-local font = Font(R"fonts/arial.ttf")  
-font:SetFaceSize(72, 72) 
+gl.ClearColor(0,0,0,1)
+input.SetMouseTrapped(true)
+
+local font = Font(R"fonts/arial.ttf")
+font:SetFaceSize(72, 72)
+
+local tex = Texture(R"textures/face1.png")
+local data = {}
+
+local function AddVertex(self, x,y, u,v, r,g,b,a)
+	table.insert(
+		self,
+		{
+			pos = Vec2(x, y),
+			uv = Vec2(u, v),
+			color = Color(r or 1,g or 1,b or 1,a or 1),
+		}
+	)
+end
+
+local function AddRect(self, x,y, w,h, u1,v1, u2,v2)
+	AddVertex(self, x, y, u1, v1)
+	AddVertex(self, x + w, y, u2, v1) 
+	AddVertex(self, x, y + h, u1, v2)
+
+	AddVertex(self, x + w, y, u2, v1)
+	AddVertex(self, x + w, y + h, u2, v1)
+	AddVertex(self, x, y + h, u1, v2)
+end
+
+AddRect(data, 10, 10, 100, 100, 0,0,1,1)
+
+local vbo = render.Create2DVBO(data)
 
 event.AddListener("OnDraw", "gl", function(dt)
-  	calc_camera(window, dt) 
-	 
-	render.Start(window)	
-		
+  	calc_camera(window, dt)
+
+	render.Start(window)
+
 		render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
-		
+
 		render.Start3D(cam_pos, cam_ang:GetDeg())
 			entities.world_entity:DrawModel()
-		
+
 			render.SetTexture(0)
 			gl.UseProgram(0)
-		
-		render.Start2D()		
-			gl.Color3f(1,1,1) 
-			gl.Color4f(1,1,1,1) 
-			
-			font:Render(os.date())
-			
-			local w, h = 200, 200 
-			local size = window:GetSize()		
-				
-			gl.Color4f(1, 1, 1, 0.5)
-			render.PushMatrix(Vec3(size.w - w, size.h - h), Ang3(0), Vec3(w, h))			
-				gl.Begin(e.GL_TRIANGLES)
-					gl.Vertex2f(0, 0)
-					gl.Vertex2f(0, 1)
-					gl.Vertex2f(1, 1) 
 
-					gl.Vertex2f(1, 1)
-					gl.Vertex2f(1, 0)
-					gl.Vertex2f(0, 0) 					
-				gl.End()				
-			render.PopMatrix()			
-	render.End() 
-end) 
+		render.Start2D()
+			gl.Color3f(1,1,1)
+			gl.Color4f(1,1,1,1)
+
+			font:Render(os.date())
+
+			local w, h = 200, 200
+			local size = window:GetSize()
+			gl.Color4f(1, 1, 1, 0.5)
+			render.PushMatrix(Vec3(size.w - w, size.h - h), Ang3(0), Vec3(w, h))
+				tex:Bind() 
+				render.Draw2DVBO(vbo)   
+			render.PopMatrix()
+	render.End()
+end)
