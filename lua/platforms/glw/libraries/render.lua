@@ -461,57 +461,47 @@ do -- vbo 2d
 	render.vbo_2d_program = nil
 	
 	local vertex_shader_source = [[
+		#version 330
+		
+		uniform mat4 proj_mat;
+		uniform mat4 view_mat;
 		uniform float time;
 
-		attribute vec3 position;
-		attribute vec3 normal;
-		attribute vec2 uv;
+		in vec2 position;
+		in vec2 uv;
+		in vec4 color;
 
-		varying vec3 color;
-		varying vec2 texcoords;
-		varying vec3 vertex_normal;
-		varying vec3 vertex_pos;
+		out vec2 _position;
+		out vec2 _uv;
+		out vec4 _color;
 
 		void main()
 		{
-			texcoords = uv;
-			color = gl_Color;
-			vertex_normal = normal;
-			gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vec4(position, 1.0);
-			vertex_pos = position;
+			_position = position;
+			_uv = uv;
+			_color = color;
+			
+			gl_Position = proj_mat * view_mat * vec4(position, 0.0, 1.0);
 		}
 	]]  
 
 	local fragment_shader_source = [[
+		#version 330
+		
+		out vec4 frag_color;
+		
 		uniform float time;
 		uniform sampler2D texture;
-		uniform vec3 cam_pos;
-
-		varying vec3 color;
-		varying vec2 texcoords;
-		varying vec3 vertex_normal;
-		varying vec3 vertex_pos;
-
-		vec3 light_direction = false ? vec3(0.0, 0.0, 1.0) : normalize(vec3(sin(time), 0.0, cos(time)));
-		vec3 viewer_direction = normalize(cam_pos - vertex_pos);	
-		vec3 texel = tex2D(texture, texcoords);
 		
-		vec3 get_specular()
-		{		
-			return clamp(pow(dot(reflect(light_direction, vertex_normal), viewer_direction), 8.0), 0.0, 1.0);
-		}
-		
-		vec3 get_diffuse()
-		{
-			return texel * 0.1 + texel * clamp(dot(vertex_normal, light_direction), 0.0, 1.0) * vec3(0.0, 0.25, 0.5);
-		}
+		in vec2 _position;
+		in vec2 _uv;
+		in vec4 _color;
 
+		vec4 texel = texture2D(texture, _uv);
+		
 		void main()
 		{
-			gl_FragColor = vec4(
-				get_diffuse() + 
-				get_specular()
-			, 1);
+			frag_color = texel + _color;
 		}
 	]]
 	
@@ -519,9 +509,9 @@ do -- vbo 2d
 	ffi.cdef[[
 		struct vertex_attributes_2d
 		{
-			float x, y, z;
+			float x, y;
 			float u, v;
-			unsigned char r, g, b, a;
+			float r, g, b, a;
 		};
 	]]	
 		
@@ -537,60 +527,95 @@ do -- vbo 2d
 	]]
 	function render.Create2DVBO(data)
 		local buffer = ffi.new("struct vertex_attributes_2d[?]", #data)
-		
-		return {
-			AddVertex = function(_, x,y, u,v, r,g,b,a)
-				
+
+		for i = 1, #data do
+			local vertex = data[i]
+			local vertex_attributes = buffer[i - 1]
+
+			if vertex.pos then
+				vertex_attributes.x = vertex.pos.x
+				vertex_attributes.y = vertex.pos.y
 			end
-		}
+
+			if vertex.color then
+				vertex_attributes.r = vertex.color.r
+				vertex_attributes.g = vertex.color.g
+				vertex_attributes.b = vertex.color.b
+				vertex_attributes.a = vertex.color.a
+			end
+ 
+			if vertex.uv then
+				vertex_attributes.u = vertex.uv.x
+				vertex_attributes.v = vertex.uv.y
+			end 
+		end  
+
+		local id = ffi.new("int [1]") gl.GenBuffers(1, id) id = id[0]
+
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
+		gl.BufferData(e.GL_ARRAY_BUFFER, ffi.sizeof(buffer[0]) * #data, buffer, e.GL_STATIC_DRAW)
+
+		return {Type = "VertexBuffer", id = id, length = #data}
 	end
 	
 	local stride = ffi.sizeof("struct vertex_attributes_2d")
 	
 	local pos_stride = ffi.cast("void*", 0)
-	local normal_stride = ffi.cast("void*", 12)
+	local color_stride = ffi.cast("void*", 12)
 	local uv_stride = ffi.cast("void*", 24)
 	
 	function render.Draw2DVBO(vbo)
-		if not render.vbo_3d_program then
-			local prog, err = render.CreateProgram(vertex_shader_source, fragment_shader_source, function(program)
-				gl.BindAttribLocation(program, 0, "position")
-				gl.BindAttribLocation(program, 1, "normal")
-				gl.BindAttribLocation(program, 2, "uv")
-			end)
-			
+		if not render.vbo_2d_program then			
+			local prog, err = render.CreateShader(vertex_shader_source, fragment_shader_source)
+						
 			if prog then
-				render.vbo_3d_program = prog
+				gl.BindAttribLocation(prog, 0, "position")
+				gl.BindAttribLocation(prog, 1, "uv")
+				gl.BindAttribLocation(prog, 2, "color")
+			
+				render.vbo_2d_program = prog
 			else
 				logn(err)
+				render.vbo_shader_error = err
 				return
-			end			
+			end		
 		end		
 		
 		if render.active_texture then
 			gl.ActiveTexture(e.GL_TEXTURE0) 
 			render.active_texture:Bind()
-			gl.Uniform1i(gl.GetUniformLocation(render.vbo_3d_program, "texture"), 0)
+			gl.Uniform1i(gl.GetUniformLocation(render.vbo_2d_program, "texture"), 0)
 		end
 
-		gl.Uniform1f(gl.GetUniformLocation(render.vbo_3d_program, "time"), os.clock())
-		gl.Uniform3f(gl.GetUniformLocation(render.vbo_3d_program, "cam_pos"), render.cam_pos.x, render.cam_pos.y, render.cam_pos.z)
+		gl.Uniform1f(gl.GetUniformLocation(render.vbo_2d_program, "time"), os.clock())
 
-		gl.UseProgram(render.vbo_3d_program)
+		gl.UseProgram(render.vbo_2d_program)
 
+		gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.projection_matrix)
+		gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_3d_program, "proj_mat"), 1, 0, render.projection_matrix)
+		
+		gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.view_matrix)
+		gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_3d_program, "view_mat"), 1, 0, render.view_matrix)
+		
+		gl.Uniform1f(gl.GetUniformLocation(render.vbo_3d_program, "time"), render.frame / 60 / 4)
+		
+		
 		gl.EnableVertexAttribArray(0)
 		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
-		gl.VertexAttribPointer(0, 3, e.GL_FLOAT, false, stride, pos_stride)
+		gl.VertexAttribPointer(0, 2, e.GL_FLOAT, false, stride, pos_stride)
 
 		gl.EnableVertexAttribArray(1)
 		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
-		gl.VertexAttribPointer(1, 3, e.GL_FLOAT, false, stride, normal_stride)
-
+		gl.VertexAttribPointer(1, 2, e.GL_FLOAT, false, stride, uv_stride)
+		
 		gl.EnableVertexAttribArray(2)
 		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
-		gl.VertexAttribPointer(2, 2, e.GL_FLOAT, false, stride, uv_stride)
+		gl.VertexAttribPointer(2, 4, e.GL_FLOAT, false, stride, color_stride)
+
 
 		gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
+		
+		render.frame = render.frame + 1
 	end	
 end
 
