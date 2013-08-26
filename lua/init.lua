@@ -269,8 +269,10 @@ do -- ffi
 		
 		if not ok then
 			if vfs then
-				for full_path in vfs.Iterate("bin/" .. ffi.os .. "/" .. ffi.arch .. "/" .. path, nil, true) do
+				for full_path in vfs.Iterate("bin/" .. ffi.os .. "/" .. ffi.arch .. "/" .. path, nil, true, nil, true) do
+					system.SetDLLDirectory(full_path:match("(.+/)"))
 					local ok, msg = pcall(_OLD_G.ffi_load, full_path, ...)
+					system.SetDLLDirectory()
 					if ok then
 						return msg
 					end
