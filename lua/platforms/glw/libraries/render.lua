@@ -48,6 +48,7 @@ function render.Start(window)
 	glfw.MakeContextCurrent(window.__ptr)
 	render.current_window = window
 	render.SetViewport(0, 0, window:GetSize():Unpack())
+	render.frame = render.frame or 0
 end
 
 function render.End()
@@ -55,6 +56,7 @@ function render.End()
 		glfw.SwapBuffers(render.current_window.__ptr)
 	end
 	gl.Flush()
+	render.frame = render.frame + 1
 end
 
 function render.SetPerspective(fov, nearz, farz, ratio)
@@ -339,9 +341,11 @@ end
 do -- vbo 3d
 	render.vbo_3d_program = nil
 	
+	-- load the shader sources
 	local vertex_shader_source = vfs.Read("shaders/phong/vertex.c", "rb")  
 	local fragment_shader_source = vfs.Read("shaders/phong/fragment.c", "rb")
 
+	-- this will be used in the vertex array
 	ffi.cdef[[
 		struct vertex_attributes_3d
 		{
@@ -351,8 +355,7 @@ do -- vbo 3d
 		};
 	]]	
 		
-	--[[
-		
+	--[[		
 		the normal and uv fields are optional
 	
 		-- data format should be the following
@@ -362,8 +365,11 @@ do -- vbo 3d
 		}
 	]]
 	function render.Create3DVBO(data)
+		-- create the vertex array that is #data long
 		local buffer = ffi.new("struct vertex_attributes_3d[?]", #data)
 
+		-- translate the data table to the array
+		-- maybe there should be a way to do this more directly..
 		for i = 1, #data do
 			local vertex = data[i]
 			local vertex_attributes = buffer[i - 1]
@@ -386,22 +392,35 @@ do -- vbo 3d
 			end 
 		end  
 
+		-- create 1 new buffer
 		local id = ffi.new("int [1]") gl.GenBuffers(1, id) id = id[0]
 
+		
+		-- bind it and feed it the buffer array
 		gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
-		gl.BufferData(e.GL_ARRAY_BUFFER, ffi.sizeof(buffer[0]) * #data, buffer, e.GL_STATIC_DRAW)
-
+			gl.BufferData(e.GL_ARRAY_BUFFER, ffi.sizeof(buffer[0]) * #data, buffer, e.GL_STATIC_DRAW)
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, 0)
+		
 		return {Type = "VertexBuffer", id = id, length = #data}
 	end
+
+	-- these are used in gl.VertexAttribPointer
 	
+	-- x,y,z,nx,ny,nz,u,v | x,y,z,nx,ny,nz,u,v | ...
+	
+	-- where | is the stride
+	local float_size = ffi.sizeof("float")
 	local stride = ffi.sizeof("struct vertex_attributes_3d")
 	
-	local pos_stride = ffi.cast("void*", 0)
-	local normal_stride = ffi.cast("void*", 12)
-	local uv_stride = ffi.cast("void*", 24)
+	local pos_stride = ffi.cast("void*", 0) -- > x,y,z < nx,ny,nz,u,v
+	local normal_stride = ffi.cast("void*", float_size * 3) -- x,y,z, > nx,ny,nz < u,v
+	local uv_stride = ffi.cast("void*", float_size * 3 * 2) -- x,y,z,nx,ny,nz > u,v <
+	
+	-- the steps are determined by float_size * position
+	-- so float_size * 3 would be after x y z
+	-- the length is determined by the second argument in VertexAttribPointer
 	
 	render.vbo_shader_error = nil
-	render.frame = 0
 	
 	function render.Draw3DVBO(vbo)
 		if render.vbo_shader_error then return end
@@ -429,30 +448,32 @@ do -- vbo 3d
 		end
 
 		gl.UseProgram(render.vbo_3d_program)
-		
-		gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.projection_matrix)
-		gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_3d_program, "proj_mat"), 1, 0, render.projection_matrix)
-		
-		gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.view_matrix)
-		gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_3d_program, "view_mat"), 1, 0, render.view_matrix)
-		
-		gl.Uniform1f(gl.GetUniformLocation(render.vbo_3d_program, "time"), render.frame / 60 / 4)
-		gl.Uniform3f(gl.GetUniformLocation(render.vbo_3d_program, "cam_pos"), render.cam_pos.x, render.cam_pos.y, render.cam_pos.z)
+			
+			gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.projection_matrix)
+			gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_3d_program, "proj_mat"), 1, 0, render.projection_matrix)
+			
+			gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.view_matrix)
+			gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_3d_program, "view_mat"), 1, 0, render.view_matrix)
+			
+			gl.Uniform1f(gl.GetUniformLocation(render.vbo_3d_program, "time"), render.frame / 60 / 4)
+			gl.Uniform3f(gl.GetUniformLocation(render.vbo_3d_program, "cam_pos"), render.cam_pos.x, render.cam_pos.y, render.cam_pos.z)
 
-		gl.EnableVertexAttribArray(0)
-		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
-		gl.VertexAttribPointer(0, 3, e.GL_FLOAT, false, stride, pos_stride)
+			gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
+			
+				gl.EnableVertexAttribArray(0)
+				gl.VertexAttribPointer(0, 3, e.GL_FLOAT, false, stride, pos_stride)
 
-		gl.EnableVertexAttribArray(1)
-		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
-		gl.VertexAttribPointer(1, 3, e.GL_FLOAT, false, stride, normal_stride)
+				gl.EnableVertexAttribArray(1)
+				gl.VertexAttribPointer(1, 3, e.GL_FLOAT, false, stride, normal_stride)
 
-		gl.EnableVertexAttribArray(2)
-		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
-		gl.VertexAttribPointer(2, 2, e.GL_FLOAT, false, stride, uv_stride)
+				gl.EnableVertexAttribArray(2)
+				gl.VertexAttribPointer(2, 2, e.GL_FLOAT, false, stride, uv_stride)
 
-		gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
-		render.frame = render.frame + 1
+			gl.BindBuffer(e.GL_ARRAY_BUFFER, 0)
+			
+			gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
+			
+		gl.UseProgram(0)
 	end	
 end
 
@@ -561,8 +582,8 @@ do -- vbo 2d
 	local stride = ffi.sizeof("struct vertex_attributes_2d")
 	
 	local pos_stride = ffi.cast("void*", 0)
-	local color_stride = ffi.cast("void*", 12)
-	local uv_stride = ffi.cast("void*", 24)
+	local uv_stride = ffi.cast("void*", 12-4)
+	local color_stride = ffi.cast("void*", 24+4)
 	
 	function render.Draw2DVBO(vbo)
 		if not render.vbo_2d_program then			
@@ -592,12 +613,12 @@ do -- vbo 2d
 		gl.UseProgram(render.vbo_2d_program)
 
 		gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.projection_matrix)
-		gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_3d_program, "proj_mat"), 1, 0, render.projection_matrix)
+		gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_2d_program, "proj_mat"), 1, 0, render.projection_matrix)
 		
 		gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.view_matrix)
-		gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_3d_program, "view_mat"), 1, 0, render.view_matrix)
+		gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_2d_program, "view_mat"), 1, 0, render.view_matrix)
 		
-		gl.Uniform1f(gl.GetUniformLocation(render.vbo_3d_program, "time"), render.frame / 60 / 4)
+		gl.Uniform1f(gl.GetUniformLocation(render.vbo_2d_program, "time"), render.frame / 60 / 4)
 		
 		
 		gl.EnableVertexAttribArray(0)
@@ -614,8 +635,6 @@ do -- vbo 2d
 
 
 		gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
-		
-		render.frame = render.frame + 1
 	end	
 end
 
