@@ -220,28 +220,35 @@ function vfs.Find(path, invert, full_path, start, plain, dont_sort)
 	check(path, "string")
 	path = fix_path(path)
 	
+	-- if the path ends just with an "/"
+	-- make it behave like /*
 	if path:sub(-1) == "/" then
 		path = path .. "."
 	end
-		
-	local unique = {}
+	
 	local dir, pattern = path:match("(.+)/(.+)")
 	
+	-- if there is no pattern after "/"
+	-- the path itself becomes the pattern and 
+	-- plain search is used
 	if not dir then
 		pattern = path
 		dir = ""
+		plain = true
 	end
+	
+	local unique = {}
 
-	for k, v in ipairs(vfs.paths) do
+	for _, full_dir in ipairs(vfs.paths) do
 		-- fix me!! 
 		-- on linux, an invalid path will error
 		pcall(function()
-		for i in lfs.dir(v .. "/" .. dir) do
-			if i ~= "." and i ~= ".." then
+		for file_name in lfs.dir(full_dir .. "/" .. dir) do
+			if file_name ~= "." and file_name ~= ".." then
 				if full_path then
-					i = v .. "/" .. dir .. "/" .. i
+					file_name = full_dir .. "/" .. dir .. "/" .. file_name
 				end
-				unique[i] = true
+				unique[file_name] = true
 			end
 		end
 		end)
@@ -249,15 +256,15 @@ function vfs.Find(path, invert, full_path, start, plain, dont_sort)
 	
 	local list = {}
 	
-	for k, v in pairs(unique) do
-		local found = k:lower():find(pattern, start, plain)
+	for path in pairs(unique) do
+		local found = path:lower():find(pattern, start, plain)
 		
 		if invert then
 			found = not found
 		end
 		
 		if found then
-			list[#list + 1] = k
+			list[#list + 1] = path
 		end
 	end
 
