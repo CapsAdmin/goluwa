@@ -517,6 +517,16 @@ if CREATED_ENV then
 	end 
 end
 
+if ARGS then
+	local line = table.concat(ARGS, " "):trim()
+	
+	if line ~= "" then
+		console.RunString(line)
+	end
+	
+	ARGS = nil
+end
+
 vfs.MonitorEverything(true) 
 
 event.Call("Initialized")
