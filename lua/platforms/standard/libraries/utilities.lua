@@ -21,8 +21,8 @@ function utilities.RemoveOldObject(obj, id)
 	
 	if hasindex(obj) and type(obj.Remove) == "function" then
 		UTIL_REMAKES = UTIL_REMAKES or {}
-		
-		id = id or debug.getinfo(2).short_src
+			
+		id = id or (debug.getinfo(2).currentline .. debug.getinfo(2).short_src)
 		
 		if typex(UTIL_REMAKES[id]) == typex(obj) then
 			UTIL_REMAKES[id]:Remove()
