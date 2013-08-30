@@ -1,19 +1,17 @@
 vpk = vpk or {}
 local vpk = vpk
 
-function vpk.Find(path)
+function vpk.Read(path)
 	check(path, "string")
 
-	local file, error = vfs.GetFile(path, "rb")
+	local file, error = vfs.GetFile(path .. "_dir.vpk", "rb")
 
 	if not file then
 		print("oh noes", error)
 		return
 	end
 
-	local info = {
-		header = {}
-	}
+	local info = {}
 
 	do
 		local bytes = {file:read(12):byte(1, -1)}
@@ -24,20 +22,20 @@ function vpk.Find(path)
 			return
 		end
 
-		info.header.Signature = bytes[1] * 2 ^ 0 + bytes[2] * 2 ^ 8 + bytes[3] * 2 ^ 16 + bytes[4] * 2 ^ 24
-		info.header.Version = bytes[5] * 2 ^ 0 + bytes[6] * 2 ^ 8 + bytes[7] * 2 ^ 16 + bytes[8] * 2 ^ 24
-		info.header.TreeLength = bytes[9] * 2 ^ 0 + bytes[10] * 2 ^ 8 + bytes[11] * 2 ^ 16 + bytes[12] * 2 ^ 24
-		info.header.HeaderLength = 12
+		info.Signature = bytes[1] * 2 ^ 0 + bytes[2] * 2 ^ 8 + bytes[3] * 2 ^ 16 + bytes[4] * 2 ^ 24
+		info.Version = bytes[5] * 2 ^ 0 + bytes[6] * 2 ^ 8 + bytes[7] * 2 ^ 16 + bytes[8] * 2 ^ 24
+		info.TreeLength = bytes[9] * 2 ^ 0 + bytes[10] * 2 ^ 8 + bytes[11] * 2 ^ 16 + bytes[12] * 2 ^ 24
+		info.HeaderLength = 12
 	end
 
-	if info.header.Signature ~= 0x55aa1234 then
+	if info.Signature ~= 0x55aa1234 then
 		print("grr")
 		file:close()
 		return
 	end
 
-	if info.header.Version == 2 then
-		info.header.HeaderLength = info.header.HeaderLength + 16
+	if info.Version == 2 then
+		info.HeaderLength = info.HeaderLength + 16
 
 		do
 			local bytes = {file:read(16):byte(1, -1)}
@@ -48,12 +46,12 @@ function vpk.Find(path)
 				return
 			end
 
-			info.header.Unknown1 = bytes[1] * 2 ^ 0 + bytes[2] * 2 ^ 8 + bytes[3] * 2 ^ 16 + bytes[4] * 2 ^ 24
-			info.header.FooterLength = bytes[5] * 2 ^ 0 + bytes[6] * 2 ^ 8 + bytes[7] * 2 ^ 16 + bytes[8] * 2 ^ 24
-			info.header.Unknown3 = bytes[9] * 2 ^ 0 + bytes[10] * 2 ^ 8 + bytes[11] * 2 ^ 16 + bytes[12] * 2 ^ 24
-			info.header.Unknown4 = bytes[13] * 2 ^ 0 + bytes[14] * 2 ^ 8 + bytes[15] * 2 ^ 16 + bytes[16] * 2 ^ 24
+			info.Unknown1 = bytes[1] * 2 ^ 0 + bytes[2] * 2 ^ 8 + bytes[3] * 2 ^ 16 + bytes[4] * 2 ^ 24
+			info.FooterLength = bytes[5] * 2 ^ 0 + bytes[6] * 2 ^ 8 + bytes[7] * 2 ^ 16 + bytes[8] * 2 ^ 24
+			info.Unknown3 = bytes[9] * 2 ^ 0 + bytes[10] * 2 ^ 8 + bytes[11] * 2 ^ 16 + bytes[12] * 2 ^ 24
+			info.Unknown4 = bytes[13] * 2 ^ 0 + bytes[14] * 2 ^ 8 + bytes[15] * 2 ^ 16 + bytes[16] * 2 ^ 24
 		end
-	elseif info.header.Version ~= 1 then
+	elseif info.Version ~= 1 then
 		print("boing")
 		file:close()
 		return
@@ -88,7 +86,7 @@ function vpk.Find(path)
 			if not directory or directory == "" then
 				break
 			end
- 
+
 			while true do
 				local name = read_string()
 
@@ -101,7 +99,7 @@ function vpk.Find(path)
 
 				do
 					local bytes = {file:read(18):byte(1, -1)}
-					
+
 					if #bytes ~= 18 then
 						print("heul")
 						file:close()
@@ -114,9 +112,16 @@ function vpk.Find(path)
 					fileinfo.EntryOffset = bytes[9] * 2 ^ 0 + bytes[10] * 2 ^ 8 + bytes[11] * 2 ^ 16 + bytes[12] * 2 ^ 24
 					fileinfo.EntryLength = bytes[13] * 2 ^ 0 + bytes[14] * 2 ^ 8 + bytes[15] * 2 ^ 16 + bytes[16] * 2 ^ 24
 					fileinfo.Terminator = bytes[17] * 2 ^ 0 + bytes[18] * 2 ^ 8
+
+					if fileinfo.Terminator ~= 0xffff then
+						print("what the")
+						file:close()
+						return
+					end
 				end
 
 				file:read(fileinfo.PreloadBytes)
+
 				files[#files + 1] = fileinfo.Path
 			end
 		end
@@ -124,5 +129,5 @@ function vpk.Find(path)
 
 	file:close()
 
-	return files, info
+	return files
 end
