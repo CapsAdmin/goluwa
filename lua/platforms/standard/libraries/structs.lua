@@ -214,6 +214,19 @@ function structs.AddOperator(META, operator, ...)
 		lua = lua:gsub("CTOR", "structs."..META.ClassName)
 		
 		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META)
+	elseif operator == "set" then
+		local lua = [==[
+		local META = ({...})[1]
+		META["Set"] = function(a, b)
+				a.KEY = b.KEY
+			end
+		]==]
+		
+		lua = parse_args(META, lua, "")
+		
+		lua = lua:gsub("CTOR", "structs."..META.ClassName)
+		
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META)
 	elseif operator == "copy" then
 		local lua = [==[
 		local META = ({...})[1]
@@ -322,6 +335,7 @@ function structs.AddAllOperators(META)
 	structs.AddOperator(META, "tostring")
 	structs.AddOperator(META, "zero")
 	structs.AddOperator(META, "random")
+	structs.AddOperator(META, "set")
 	structs.AddOperator(META, "math", "abs", "Abs")
 	structs.AddOperator(META, "math", "round", "Round", "Rounded")
 	structs.AddOperator(META, "math", "ceil", "Ceil", "Ceiled")
