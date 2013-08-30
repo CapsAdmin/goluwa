@@ -515,7 +515,7 @@ function gl.InitMiniGlew()
 	for path in vfs.Iterate("lua/platforms/glw/libraries/ffi_binds/gl_extensions/", nil, true) do
 		local str = vfs.Read(path)
 		for line in str:gmatch("\t(.-)\n") do
-			local key, val = line:match("([%d%u_]+) (.+)")
+			local key, val = line:match("([1-9a-Z_]+) (.+)")
 			
 			if key and val then
 				_E[key] = tonumber(val)
