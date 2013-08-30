@@ -38,48 +38,20 @@ do -- base
 	class.GetSet(META, "Angles", Ang3(0,0,0))
 	class.GetSet(META, "Scale", Vec3(1,1,1))
 	class.GetSet(META, "Size", 1)
-	
-	do -- model
-		class.GetSet(META, "Obj", "")
-		class.GetSet(META, "Mesh")
-		class.GetSet(META, "Texture")
-
-		function META:SetObj(path)
-			self.Obj = path 
-			
-			local str = vfs.Read("models/" .. path)
-			
-			utilities.ParseObj(str, function(data)
-				self.Mesh = Mesh(data)
-			end, true)
-		end
-		
-		function META:SetTexture(path)
-			self.tex = Texture("textures/" .. path)
-			self.Texture = path 
-		end
-		
-		function META:DrawModel()	
-			
-			if self.tex then
-				self.tex:Bind()
-			end
-			
-			render.PushMatrix(self.Pos, self.Angles, self.Scale * self.Size)
-				if self.Mesh then 
-					self.Mesh:Draw()
-				end
-				
-				for _, ent in pairs(self.Children) do
-					ent:DrawModel()
-				end
-			render.PopMatrix()
-		end     
-	end
 		
 	entities.Register(META)
+end 
+ 
+function entities.LoadAllEntities()
+	for relative_path, full_path in vfs.Iterate("lua/platforms/glw/libraries/entities/") do
+		vfs.dofile(full_path)
+	end
+	
+	for relative_path, full_path in vfs.Iterate("lua/entities/") do
+		vfs.dofile(full_path)
+	end
+	
+	entities.world_entity = entities.world_entity or Entity("model")
 end
-
-entities.world_entity = entities.world_entity or Entity("base")
 
 return entities

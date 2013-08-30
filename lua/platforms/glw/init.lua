@@ -19,8 +19,9 @@ include("extensions/input.lua")
 
 include("libraries/network/init.lua")
 
+entities.LoadAllEntities()
 addons.AutorunAll()
- 
+
 glw = glw or {}
 
 function glw.OpenWindow(w, h, title)
