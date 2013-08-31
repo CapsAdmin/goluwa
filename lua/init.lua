@@ -463,25 +463,83 @@ event.AddListener("LuaClose", "luasocket", luasocket.Panic)
 function OnError(msg)
 	if event.Call("OnLuaError", msg) == false then return end
 	
-	logn("== LUA ERROR ==")
+	logn("STACK TRACE:")
+	logn("{")
 	
 	local base_folder = e.BASE_FOLDER:gsub("%p", "%%%1")
+	local data = {}
+	
+	for level = 3, math.huge do
+		local info = debug.getinfo(level)
+		if info then
+			if info.currentline >= 0 then
+				local args = {}
+				
+				for arg = 1, info.nparams do
+					local key, val = debug.getlocal(level, arg)
+					val = luadata.ToString(val)
+					table.insert(args, ("%s = %s"):format(key, val))
+				end
+				
+				info.arg_line = table.concat(args, ", ")
+				
+				local source = info.short_src or ""
+				source = source:gsub(base_folder, ""):trim()
+				info.source = source
+				info.name = info.name or "unknown"
+				
+				table.insert(data, info)
+			end
+		else
+			break
+		end
+    end
+	
+	local function resize_field(tbl, field)
+		local length = 0
 		
-	for k, v in pairs(debug.traceback():explode("\n")) do
-		local source, msg = v:match("(.+): in function (.+)")
-		if source and msg then
-			logn((k-1), "    ",  msg:trim() or "nil", "(", source:gsub(base_folder, ""):trim() or "nil", ")")
+		for _, info in pairs(tbl) do
+			local str = tostring(info[field])
+			if str then
+				if #str > length then
+					length = #str
+				end
+				info[field] = str
+			end
+		end
+		
+		for _, info in pairs(tbl) do
+			local str = info[field]
+			if str then				
+				local diff = length - #str
+				
+				if diff > 0 then
+					info[field] = str .. (" "):rep(diff)
+				end
+			end
 		end
 	end
+	
+	table.insert(data, {currentline = "LINE:", source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
+	
+	resize_field(data, "currentline")
+	resize_field(data, "source")
+	resize_field(data, "name")
+	
+	for _, info in npairs(data) do
+		logf("  %s   %s   %s(%s)", info.currentline, info.source, info.name, info.arg_line)
+	end
 
-	logn("")
+	logn("}")
 	local source, _msg = msg:match("(.+): (.+)")
+	
 	if source then
 		logn(source:trim())
 		logn(_msg:trim())
 	else
 		logn(msg)
 	end
+	
 	logn("")
 end
 
