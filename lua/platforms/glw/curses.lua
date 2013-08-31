@@ -469,3 +469,34 @@ do -- curses keys
 		return ret
 	end)
 end
+
+_G.curses = {
+	GetActiveKey = function()
+		local byte = get_char()
+		
+		if byte < 0 then return end
+			
+		local key = translate[byte] or ffi.string(get_key_name(byte))
+		if not key:find("KEY_") then key = nil end
+		
+		return key
+	end,
+	
+	Clear = function()
+		curses.wclear(log_window)
+		curses.wrefresh(log_window)
+	end,
+	
+	ColorPrint = function(str)
+		local tokens = syntax.process(str)
+
+		for i = 1, #tokens / 2 do
+			local color, lexeme = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
+			local attr = COLOR_PAIR(color + 1)
+
+			curses.wattron(log_window, attr)
+			curses.waddstr(log_window, lexeme)
+			curses.wattroff(log_window, attr)
+		end
+	end
+}
