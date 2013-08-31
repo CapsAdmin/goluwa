@@ -1,3 +1,9 @@
+--[[
+    2___1
+    |  /
+   3|/	
+]]
+
 local cache = {}
 
 function Mesh(data)
@@ -11,8 +17,8 @@ function Mesh(data)
 		vbo = render.Create3DVBO(data)
 		
 		local mesh = {
-			Draw = function() 
-				render.Draw3DVBO(vbo) 
+			Draw = function(_, program) 
+				render.Draw3DVBO(vbo, program) 
 			end, 
 			
 			GetVertexBuffer = function() 
@@ -205,4 +211,201 @@ function utilities.ParseObj(data, callback, generate_normals)
 			end
 		end
 	end, 1024 * 16)
+end
+
+function utilities.GenerateNormals(data)
+	local vertex_normals = {}
+	local count = #data/3
+	
+	for i = 1, count do
+	
+		local ai = 1+(i-1)*3+0
+		local bi = 1+(i-1)*3+1
+		local ci = 1+(i-1)*3+2
+		
+		local a, b, c = data[ai], data[bi], data[ci] 
+		local normal = (c.pos - a.pos):Cross(b.pos - a.pos):GetNormalized()
+
+		data[ai].normal = normal
+		data[bi].normal = normal
+		data[ci].normal = normal
+	end
+	
+	return data
+end
+
+function utilities.CreateCube(size, texture_scale)
+	size = size or 1
+	texture_scale = texture_scale or 1
+	
+	return 
+	{
+		-- top
+		{pos = Vec3(size, size, size), uv = Vec2(texture_scale, texture_scale)},
+		{pos = Vec3(size, -size, size), uv = Vec2(texture_scale, 0)},
+		{pos = Vec3(-size, -size, size), uv = Vec2(0, 0)},
+		{pos = Vec3(-size, size, size), uv = Vec2(0, texture_scale)},
+		{pos = Vec3(size, size, size), uv = Vec2(texture_scale, texture_scale)},
+		{pos = Vec3(-size, -size, size), uv = Vec2(0, 0)},
+
+		-- bottom
+		{pos = Vec3(-size, -size, -size), uv = Vec2(0, 0)},
+		{pos = Vec3(size, -size, -size), uv = Vec2(texture_scale, 0)},
+		{pos = Vec3(-size, size, -size), uv = Vec2(0, texture_scale)},
+		{pos = Vec3(size, -size, -size), uv = Vec2(texture_scale, 0)},
+		{pos = Vec3(size, size, -size), uv = Vec2(texture_scale, texture_scale)},
+		{pos = Vec3(-size, size, -size), uv = Vec2(0, texture_scale)},
+		
+		-- left
+		{pos = Vec3(size, size, size), uv = Vec2(texture_scale, texture_scale)},
+		{pos = Vec3(size, size, -size), uv = Vec2(texture_scale, 0)},
+		{pos = Vec3(size, -size, -size), uv = Vec2(0, 0)},
+		{pos = Vec3(size, -size, size), uv = Vec2(0, texture_scale)},
+		{pos = Vec3(size, size, size), uv = Vec2(texture_scale, texture_scale)},
+		{pos = Vec3(size, -size, -size), uv = Vec2(0, 0)},
+
+		-- right
+		{pos = Vec3(-size, -size, -size), uv = Vec2(0, 0)},
+		{pos = Vec3(-size, size, -size), uv = Vec2(texture_scale, 0)},
+		{pos = Vec3(-size, -size, size), uv = Vec2(0, texture_scale)},
+		{pos = Vec3(-size, size, -size), uv = Vec2(texture_scale, 0)},
+		{pos = Vec3(-size, size, size), uv = Vec2(texture_scale, texture_scale)},
+		{pos = Vec3(-size, -size, size), uv = Vec2(0, texture_scale)},
+		
+		-- front
+		{pos = Vec3(size, -size, size), uv = Vec2(texture_scale, texture_scale)},
+		{pos = Vec3(size, -size, -size), uv = Vec2(texture_scale, 0)},
+		{pos = Vec3(-size, -size, -size), uv = Vec2(0, 0)},
+		{pos = Vec3(-size, -size, size), uv = Vec2(0, texture_scale)},
+		{pos = Vec3(size, -size, size), uv = Vec2(texture_scale, texture_scale)},
+		{pos = Vec3(-size, -size, -size), uv = Vec2(0, 0)},
+
+		-- back
+		{pos = Vec3(-size, size, -size), uv = Vec2(0, 0)},
+		{pos = Vec3(size, size, -size), uv = Vec2(texture_scale, 0)},
+		{pos = Vec3(-size, size, size), uv = Vec2(0, texture_scale)},
+		{pos = Vec3(size, size, -size), uv = Vec2(texture_scale, 0)},
+		{pos = Vec3(size, size, size), uv = Vec2(texture_scale, texture_scale)},
+		{pos = Vec3(-size, size, size), uv = Vec2(0, texture_scale)},
+	}
+end
+
+
+
+
+
+function utilities.CreateSphere(res)
+	res = 32
+	local sphereMesh = {}
+	
+	if false then
+		res = res / 2
+		
+		
+		local pi = math.pi
+		local pi2 = math.pi * 2
+		
+		local size = 1 / res
+		
+		for m = 1, res do
+		for n = 1, res do
+			local x = math.sin(pi * m/res) * math.cos(pi2 * n/res)
+			local y = math.sin(pi * m/res) * math.sin(pi2 * n/res)
+			local z = math.cos(pi * m/res)
+					   
+			table.insert(sphereMesh, {pos = Vec3(x + size, y, z)})
+			table.insert(sphereMesh, {pos = Vec3(x, y, z)})
+			table.insert(sphereMesh, {pos = Vec3(x, y + size, z)})
+			
+			table.insert(sphereMesh, {pos = Vec3(x, y + size, z)})
+			table.insert(sphereMesh, {pos = Vec3(x + size, y + size, z)})
+			table.insert(sphereMesh, {pos = Vec3(x + size, y, z)})
+		end
+		end
+		
+		return sphereMesh
+	end
+
+	local n = math.round(res * 2)
+	local ndiv2 = n/2
+
+	--[[
+	Original code by Paul Bourke
+	A more efficient contribution by Federico Dosil (below)
+	Draw a point for zero radius spheres
+	Use CCW facet ordering
+	http://paulbourke.net/texture_colour/texturemap/
+	]]
+
+	local theta2 = math.pi * 2
+	local phi1 = -math.pi / 2
+	local phi2 = math.pi / 2
+	local r = 1
+
+	local i, j
+	local theta1 = 0
+	local unodivn = 1/n
+	
+	local cte3 = (theta2-theta1)/n
+	local cte1 = (phi2-phi1)/ndiv2
+	local dosdivn = 2*unodivn
+
+	if n < 0 then
+		n = -n
+		ndiv2 = -ndiv2
+	end
+
+	if n < 4 then n = 4 ndiv2=n/2 end
+	if r <= 0 then r = 1 end
+
+	local t2 = phi1
+	local cost2 = math.cos(phi1)
+	local j1divn = 0
+
+	local jdivn,idivn,t1,t3,cost1
+	local e,p,e2,p2 = Vec3(), Vec3(), Vec3(), Vec3()
+
+	for j = 1, ndiv2 do
+
+		t1 = t2
+		t2 = t2 + cte1
+		t3 = theta1 - cte3
+		
+		cost1 = cost2
+		cost2 = math.cos(t2)
+		
+		e.y = math.sin(t1)
+		e2.y = math.sin(t2)
+		
+		p.y = r * e.y
+		p2.y = r * e2.y
+
+		idivn = 0
+		jdivn = j1divn
+		j1divn = j1divn + dosdivn
+		
+		for i = 1, n do 
+			t3 = t3 + cte3
+			
+			e.x = cost1 * math.cos(t3)
+			e.z = cost1 * math.sin(t3)
+			
+			p.x = r * e.x
+			p.z = r * e.z
+
+			table.insert(sphereMesh, {normal = e:Copy(), uv = Vec2(idivn, jdivn), pos = p:Copy()})
+
+			e2.x = cost2 * math.cos(t3)
+			e2.z = cost2 * math.sin(t3)
+			
+			p2.x = r * e2.x
+			p2.z = r * e2.z
+
+			table.insert(sphereMesh, {normal = e2:Copy(), uv = Vec2(idivn, jdivn), pos = p2:Copy()})
+
+			idivn = idivn + unodivn
+		end
+	end
+
+	return sphereMesh
 end

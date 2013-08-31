@@ -1,3 +1,6 @@
+-- add libbtcc.so!!
+if LINUX then return end
+
 local header = [[
 struct TCCState;
 typedef struct TCCState TCCState;

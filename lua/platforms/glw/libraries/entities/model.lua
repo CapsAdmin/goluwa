@@ -21,7 +21,7 @@ function META:SetTexture(path)
 	self.Texture = path 
 end
 
-function META:Draw()	
+function META:Draw(...)	
 	
 	if self.tex then
 		self.tex:Bind()
@@ -29,12 +29,12 @@ function META:Draw()
 	
 	render.PushMatrix(self.Pos, self.Angles, self.Scale * self.Size)
 		if self.Mesh then 
-			self.Mesh:Draw()
+			self.Mesh:Draw(...)
 		end
 		
 		for _, ent in pairs(self.Children) do
 			if ent.Draw then
-				ent:Draw()
+				ent:Draw(...)
 			end
 		end
 	render.PopMatrix()

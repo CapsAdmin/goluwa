@@ -22,6 +22,8 @@ function render.Initialize(w, h)
 
 	gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
 	gl.PolygonMode(e.GL_FRONT_AND_BACK, e.GL_FILL)
+		
+	render.InitializeGBuffer(w, h)
 end
 
 event.AddListener("OnWindowResize", "render", function()
@@ -97,15 +99,15 @@ do -- textures
 	_E.TEX_FLAG_COCG_Y = 256
 	_E.TEX_FLAG_TEXTURE_RECTANGLE = 512
 
-	function Texture(path, channel_flags, texture_flags, prev_tex_id)
+	function render.CreateTexture(path, channel_flags, texture_flags, prev_tex_id)
 		local self = {}
 		self.Type = "texture"
 		
 		local id, w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"), texture_flags, channel_flags, prev_tex_id)
 		local size = Vec2(w, h)
 		
-		function self:Bind()
-			gl.BindTexture(e.GL_TEXTURE_2D, id)
+		function self:Bind(...)
+			render.SetTexture(id, ...)
 		end
 		
 		function self:GetSize()
@@ -134,13 +136,19 @@ do -- textures
 		
 		return self
 	end
-		
-	function render.CreateTexture(path, channel_flags, texture_flags, prev_tex_id)
-		return freeimage.LoadImage(vfs.Read(path, "rb"), texture_flags, channel_flags, prev_tex_id)
-	end
 	
-	function render.SetTexture(id)
+	_G.Texture = render.CreateTexture
+	
+	function render.SetTexture(id, channel, location)
+		channel = channel or 0		
+	
+		gl.ActiveTexture(e.GL_TEXTURE0 + channel) 
+		gl.Enable(e.GL_TEXTURE_2D)
 		gl.BindTexture(e.GL_TEXTURE_2D, id)
+		
+		if location and render.current_program then
+			gl.Uniform1i(gl.GetUniformLocation(render.current_program, location), channel)
+		end
 	end
 	
 	function render.SetTextureFiltering(blah)
@@ -184,6 +192,160 @@ do -- camera helpers
 	end
 end
 
+do -- deffered rendering
+	-- https://github.com/jacres/of-DeferredRendering/tree/master/src
+	
+	e.GBUFFER_TEXTURE_COLOR = e.GL_COLOR_ATTACHMENT0 + 0
+	e.GBUFFER_TEXTURE_DEPTH = e.GL_COLOR_ATTACHMENT0 + 1
+	e.GBUFFER_TEXTURE_LIGHT = e.GL_COLOR_ATTACHMENT0 + 2
+	
+	e.GBUFFER_TEXTURE_STENCIL = 3
+	
+	render.frame_buffers = render.frame_buffers or {}
+
+	local function generate_texture(id, internal_format, width, height, format, type, skip_filtering)
+		local tex_id = ffi.new("GLuint[1]") gl.GenTextures(1, tex_id) tex_id = tex_id[0]	
+				
+		gl.BindTexture(e.GL_TEXTURE_2D, tex_id)			
+
+		if not skip_filtering then
+			gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MAG_FILTER, e.GL_NEAREST)
+			gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MIN_FILTER, e.GL_NEAREST)
+			gl.TexParameterf(e.GL_TEXTURE_2D, e.GL_TEXTURE_WRAP_S, e.GL_CLAMP_TO_EDGE)
+			gl.TexParameterf(e.GL_TEXTURE_2D, e.GL_TEXTURE_WRAP_T, e.GL_CLAMP_TO_EDGE)
+		end
+		
+		gl.TexImage2D(e.GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, nil)	
+		gl.FramebufferTexture2D(e.GL_FRAMEBUFFER, id, e.GL_TEXTURE_2D, tex_id, 0)
+		
+		render.frame_buffers[id] = tex_id
+		
+		return tex_id
+	end
+		
+	function render.InitializeGBuffer(width, height)
+		local fbo_id = ffi.new("GLuint[1]") gl.GenFramebuffers(1, fbo_id) fbo_id = fbo_id[0]
+		
+		gl.BindFramebuffer(e.GL_FRAMEBUFFER, fbo_id)
+			
+			-- albedo/diffuse/color
+			generate_texture(e.GBUFFER_TEXTURE_COLOR, e.GL_RGBA16F, width, height, e.GL_RGBA, e.GL_FLOAT, false)
+			
+			-- normals + depth
+			generate_texture(e.GBUFFER_TEXTURE_DEPTH, e.GL_RGBA32F, width, height, e.GL_RGBA, e.GL_FLOAT, false)
+			
+			-- lighting
+			generate_texture(e.GBUFFER_TEXTURE_LIGHT, e.GL_RGBA, width, height, e.GL_RGBA, e.GL_UNSIGNED_BYTE, false)
+			
+			-- stencil
+			local id = ffi.new("GLuint[1]") gl.GenRenderbuffers(1, id) id = id[0]	
+			gl.BindRenderbuffer(e.GL_RENDERBUFFER, id)
+			gl.RenderbufferStorage(e.GL_RENDERBUFFER, e.GL_DEPTH32F_STENCIL8, width, height)
+			gl.FramebufferRenderbuffer(e.GL_FRAMEBUFFER, e.GL_DEPTH_STENCIL_ATTACHMENT, e.GL_RENDERBUFFER, id)
+			render.frame_buffers[e.GBUFFER_TEXTURE_STENCIL] = id
+		
+		gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
+		gl.BindRenderbuffer(e.GL_RENDERBUFFER, 0)
+		gl.BindTexture(e.GL_TEXTURE_2D, 0)
+		
+		if gl.CheckFramebufferStatus(e.GL_FRAMEBUFFER) ~= e.GL_FRAMEBUFFER_COMPLETE then
+			error("!??!?!")
+		end
+			
+		render.gbuffer_id = fbo_id
+	end
+		
+	function render.BeginGeometryPass()
+		gl.BindFramebuffer(e.GL_FRAMEBUFFER, render.gbuffer_id)
+		
+		-- draw to color and depth
+		gl.DrawBuffer(e.GBUFFER_TEXTURE_COLOR)
+		gl.DrawBuffer(e.GBUFFER_TEXTURE_DEPTH)
+		
+		-- make sure depth drawing is on
+		gl.DepthMask(true)
+		gl.Enable(e.GL_DEPTH_TEST)
+		
+		-- reset it
+		gl.Clear(bit.bor(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT, e.GL_STENCIL_BUFFER_BIT))
+		
+		gl.Disable(e.GL_BLEND)
+	end
+	
+	function render.EndGeometryPass()
+		gl.DepthMask(false)
+		
+		gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
+		gl.DrawBuffer(e.GL_BACK)
+	end
+	
+	function render.BeginReading()
+		gl.BindFramebuffer(e.GL_READ_FRAMEBUFFER, render.gbuffer_id)
+	end
+	
+	function render.EndReading()
+		gl.BindFramebuffer(e.GL_READ_FRAMEBUFFER, 0)
+	end
+	
+	function render.BindStencilBuffer()
+		gl.DrawBuffer(e.GL_NONE)
+
+		gl.Enable(e.GL_STENCIL_TEST)
+		gl.Enable(e.GL_DEPTH_TEST)
+
+		gl.Disable(e.GL_CULL_FACE)
+
+		gl.StencilFunc(e.GL_ALWAYS, 0, 0)
+
+		gl.StencilOpSeparate(e.GL_BACK, e.GL_KEEP, e.GL_INCR, e.GL_KEEP)
+		gl.StencilOpSeparate(e.GL_FRONT, e.GL_KEEP, e.GL_DECR, e.GL_KEEP)
+	end
+	
+	function render.BindLightingBuffer()
+		gl.DrawBuffer(e.GBUFFER_TEXTURE_LIGHT)
+
+		gl.StencilFunc(e.GL_NOTEQUAL, 0, 0xFF)
+		gl.Disable(e.GL_DEPTH_TEST)
+		
+		gl.Enable(e.GL_BLEND)
+		gl.BlendEquation(e.GL_FUNC_ADD)
+		gl.BlendFunc(e.GL_ONE, e.GL_ONE)
+
+		gl.Enable(e.GL_CULL_FACE)
+		gl.CullFace(e.GL_FRONT)
+	end
+	
+	function render.ResetLighting()
+	  gl.BindFramebuffer(e.GL_DRAW_FRAMEBUFFER, render.gbuffer_id)
+	  gl.DrawBuffer(e.GBUFFER_TEXTURE_LIGHT)
+
+	  gl.Clear(bit.bor(e.GL_COLOR_BUFFER_BIT, e.GL_STENCIL_BUFFER_BIT))
+	end
+		
+	function render.DrawQuad()	
+		gl.Begin(e.GL_TRIANGLES)
+			gl.TexCoord2f(1, 1)
+			gl.Vertex2f(0, 0)
+			
+			gl.TexCoord2f(1, 0)
+			gl.Vertex2f(0, 1)
+			
+			gl.TexCoord2f(0, 0)
+			gl.Vertex2f(1, 1) 
+
+			
+			gl.TexCoord2f(0, 0)
+			gl.Vertex2f(1, 1)
+
+			gl.TexCoord2f(0, 1)
+			gl.Vertex2f(1, 0)
+						
+			gl.TexCoord2f(1, 1)
+			gl.Vertex2f(0, 0) 			
+		gl.End()
+	end
+end
+
 do -- render targets
 
 	-- http://www.songho.ca/opengl/gl_fbo.html
@@ -204,31 +366,33 @@ do -- render targets
 			gl.TexImage2D(e.GL_TEXTURE_2D, 0, e.GL_RGBA8, w, h, 0,	e.GL_RGBA, e.GL_UNSIGNED_BYTE, nil)
 		gl.BindTexture(e.GL_TEXTURE_2D, 0)
 
-		-- create a renderbuffer object to store depth info
+		-- create a renderbuffer to store depth info in
 		local rbo_id = ffi.new("GLuint[1]") gl.GenRenderbuffers(1, rbo_id) rbo_id = rbo_id[0]
+		
 		gl.BindRenderbuffer(e.GL_RENDERBUFFER, rbo_id)
-		gl.RenderbufferStorage(e.GL_RENDERBUFFER, type, w, h)
+			gl.RenderbufferStorage(e.GL_RENDERBUFFER, type, w, h)
 		gl.BindRenderbuffer(e.GL_RENDERBUFFER, 0)
 
-		-- create a framebuffer object
+		-- create a framebuffer that will hold the texture and render buffer
 		local fbo_id = ffi.new("GLuint[1]") gl.GenFramebuffers(1, fbo_id) fbo_id = fbo_id[0]
+		
 		gl.BindFramebuffer(e.GL_FRAMEBUFFER, fbo_id)
 
-		-- attach the texture to FBO color attachment point
-		gl.FramebufferTexture2D(e.GL_FRAMEBUFFER, e.GL_COLOR_ATTACHMENT0, e.GL_TEXTURE_2D, tex_id, 0)
+			-- attach the texture to FBO color attachment point
+			gl.FramebufferTexture2D(e.GL_FRAMEBUFFER, e.GL_COLOR_ATTACHMENT0, e.GL_TEXTURE_2D, tex_id, 0)
 
-		-- attach the renderbuffer to depth attachment point
-		gl.FramebufferRenderbuffer(e.GL_FRAMEBUFFER, e.GL_DEPTH_ATTACHMENT, e.GL_RENDERBUFFER, rbo_id)
+			-- attach the renderbuffer to depth attachment point
+			gl.FramebufferRenderbuffer(e.GL_FRAMEBUFFER, e.GL_DEPTH_ATTACHMENT, e.GL_RENDERBUFFER, rbo_id)
 
-		-- check FBO status
-		if gl.CheckFramebufferStatus(e.GL_FRAMEBUFFER) ~= e.GL_FRAMEBUFFER_COMPLETE then
-			error"!!"
-		end
+			-- check FBO status
+			if gl.CheckFramebufferStatus(e.GL_FRAMEBUFFER) ~= e.GL_FRAMEBUFFER_COMPLETE then
+				error"!!"
+			end
 
-		-- switch back to window-system-provided framebuffer
+			-- switch back to window-system-provided framebuffer
 		gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
 		
-		return fbo_id, tex_id, rbo_id
+		return fbo_id
 	end
 	
 	function render.SetRenderTarget(id)
@@ -252,10 +416,10 @@ do
 	
 		-- temp / helper
 		if a then
+			gl.Translatef(p.x, p.y, p.z)
 			gl.Rotatef(a.p, 1, 0, 0)
 			gl.Rotatef(a.y, 0, 1, 0)
 			gl.Rotatef(a.r, 0, 0, 1)
-			gl.Translatef(p.x, p.y, p.z)
 			if s then gl.Scalef(s.x, s.y, s.z) end
 		else
 			if typex(p) == "matrix44" then
@@ -274,7 +438,10 @@ do -- shaders
 	local shader_strings = ffi.new("const char * [1]")
 	local log = ffi.new("char[1024]")
 	
-	local function create_shader(type, source)		
+	function render.CreateShader(type, source)
+		check(type, "number")
+		check(source, "string")
+		
 		local shader = gl.CreateShader(type)
 		
 		shader_strings[0] = ffi.cast("const char *", source)
@@ -292,31 +459,13 @@ do -- shaders
 
 		return shader
 	end
+	
+	_G.Shader = render.CreateShader
 
-	function render.CreateShader(vert_source, frag_source, geom_source)
-		check(vert_source, "string")
-		check(frag_source, "string")
-		check(geom_source, "nil", "string")
-		
-		local vertex, vertex_err = create_shader(e.GL_VERTEX_SHADER, vert_source)	
-		if vertex_err then return false, vertex_err end
-		
-		local fragment, frag_err = create_shader(e.GL_FRAGMENT_SHADER, frag_source)
-		if frag_err then return false, frag_err end
-		
-		
-		local geom
-		
-		if geom_source then
-			geom, geom_err = create_shader(e.GL_GEOMETRY_SHADER, geom_source)
-			if geom_err then return false, geom_err end
-		end
-				
+	function render.CreateProgram(...)				
 		local program = gl.CreateProgram()
-			gl.AttachShader(program, vertex)
-			gl.AttachShader(program, fragment)
-			if geom then
-				gl.AttachShader(program, geom)
+			for _, shader_id in pairs({...}) do
+				gl.AttachShader(program, shader_id)
 			end
 		gl.LinkProgram(program)
 
@@ -333,8 +482,11 @@ do -- shaders
 		return program
 	end
 	
-	function render.SetShader(id)
+	_G.Program = render.CreateProgram
+	
+	function render.SetProgram(id)
 		gl.UseProgram(id or 0)
+		render.current_program = id
 	end
 end
 
@@ -426,7 +578,7 @@ do -- vbo 3d
 		if render.vbo_shader_error then return end
 	
 		if not render.vbo_3d_program then
-			local prog, err = render.CreateShader(vertex_shader_source, fragment_shader_source)
+			local prog, err = Program(assert(Shader(e.GL_VERTEX_SHADER, vertex_shader_source)), assert(Shader(e.GL_FRAGMENT_SHADER, fragment_shader_source)))
 						
 			if prog then
 				gl.BindAttribLocation(prog, 0, "position")
@@ -440,23 +592,25 @@ do -- vbo 3d
 				return
 			end			
 		end		
+			
+		local program = render.current_program or render.vbo_3d_program
 		
+		render.SetProgram(program)
+			
 		if render.active_texture then
-			gl.ActiveTexture(e.GL_TEXTURE0) 
 			render.active_texture:Bind()
-			gl.Uniform1i(gl.GetUniformLocation(render.vbo_3d_program, "texture"), 0)
 		end
 
-		gl.UseProgram(render.vbo_3d_program)
+		gl.UseProgram(program)
 			
 			gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.projection_matrix)
-			gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_3d_program, "proj_mat"), 1, 0, render.projection_matrix)
+			gl.UniformMatrix4fv(gl.GetUniformLocation(program, "proj_mat"), 1, 0, render.projection_matrix)
 			
 			gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.view_matrix)
-			gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_3d_program, "view_mat"), 1, 0, render.view_matrix)
+			gl.UniformMatrix4fv(gl.GetUniformLocation(program, "view_mat"), 1, 0, render.view_matrix)
 			
-			gl.Uniform1f(gl.GetUniformLocation(render.vbo_3d_program, "time"), render.frame / 60 / 4)
-			gl.Uniform3f(gl.GetUniformLocation(render.vbo_3d_program, "cam_pos"), render.cam_pos.x, render.cam_pos.y, render.cam_pos.z)
+			gl.Uniform1f(gl.GetUniformLocation(program, "time"), render.frame / 60 / 4)
+			gl.Uniform3f(gl.GetUniformLocation(program, "cam_pos"), render.cam_pos.x, render.cam_pos.y, render.cam_pos.z)
 
 			gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
 			
@@ -587,7 +741,7 @@ do -- vbo 2d
 	
 	function render.Draw2DVBO(vbo)
 		if not render.vbo_2d_program then			
-			local prog, err = render.CreateShader(vertex_shader_source, fragment_shader_source)
+			local prog, err = Program(assert(Shader(e.GL_VERTEX_SHADER, vertex_shader_source)), assert(Shader(e.GL_FRAGMENT_SHADER, fragment_shader_source)))
 						
 			if prog then
 				gl.BindAttribLocation(prog, 0, "position")

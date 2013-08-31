@@ -28,10 +28,18 @@ do -- base
 		self.pool_id = table.insert(entities.active_entities, self)
 	end
 	
+	function META:IsValid() return true end
+	
 	function META:Remove()
 		self:RemoveChildren()
 		table.remove(entities.active_entities, self.pool_id)
 		utilities.MakeNULL(self)
+	end
+	
+	function META:Create(class_name)
+		local ent = Entity(class_name)
+		ent:SetParent(self)
+		return ent
 	end
 	
 	class.GetSet(META, "Pos", Vec3(0,0,0))
