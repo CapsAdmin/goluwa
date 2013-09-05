@@ -100,6 +100,13 @@ do -- commands
 	end
 	
 	function console.RunString(line, skip_lua)
+		if line:find("\n") then
+			for line in (line .. "\n"):gmatch("(.-)\n") do
+				console.RunString(line)
+			end
+			return
+		end
+	
 		local args = console.ParseCommandArgs(line)
 		
 		local cmd = args[1]
