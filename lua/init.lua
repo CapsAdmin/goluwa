@@ -589,7 +589,7 @@ function OnError(msg)
 	if source then
 		source = source:trim()
 		
-		local path = console.GetVariable("npp_path")
+		local path = console.GetVariable("error_app")
 		
 		if path ~= "" then
 			local source, line = source:match("(.+%.lua):(.+)")
@@ -597,7 +597,10 @@ function OnError(msg)
 				line = tonumber(line)
 				
 				if vfs.Exists(source) then
-					os.execute(([[start "" "%s" -n%i %s]]):format(path, line, source))
+					path = path:gsub("%%LINE%%", line)
+					path = path:gsub("%%PATH%%", source)
+					print(path)
+					os.execute(path)
 				end
 			end
 		end
@@ -611,7 +614,7 @@ function OnError(msg)
 	logn("")
 end
 
-console.CreateVariable("npp_path", "")
+console.CreateVariable("error_app", "")
 
 console.Exec("autoexec")
 
