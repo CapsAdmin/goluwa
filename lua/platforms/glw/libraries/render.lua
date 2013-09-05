@@ -82,62 +82,7 @@ function render.ReadPixels(x, y, w, h)
 end
 
 do -- textures
-	_E.TEX_CHANNEL_AUTO = 0
-	_E.TEX_CHANNEL_L = 1
-	_E.TEX_CHANNEL_LA = 2
-	_E.TEX_CHANNEL_RGB = 3
-	_E.TEX_CHANNEL_RGBA = 4
-
-	_E.TEX_FLAG_POWER_OF_TWO = 1
-	_E.TEX_FLAG_MIPMAPS = 2
-	_E.TEX_FLAG_TEXTURE_REPEATS = 4
-	_E.TEX_FLAG_MULTIPLY_ALPHA = 8
-	_E.TEX_FLAG_INVERT_Y = 16
-	_E.TEX_FLAG_COMPRESS_TO_DXT = 32
-	_E.TEX_FLAG_DDS_LOAD_DIRECT = 64
-	_E.TEX_FLAG_NTSC_SAFE_RGB = 128
-	_E.TEX_FLAG_COCG_Y = 256
-	_E.TEX_FLAG_TEXTURE_RECTANGLE = 512
-
-	function render.CreateTexture(path, channel_flags, texture_flags, prev_tex_id)
-		local self = {}
-		self.Type = "texture"
-		
-		local id, w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"), texture_flags, channel_flags, prev_tex_id)
-		local size = Vec2(w, h)
-		
-		function self:Bind(...)
-			render.SetTexture(id, ...)
-		end
-		
-		function self:GetSize()
-			return size
-		end
-		
-		local size = ffi.sizeof(buffer)
-		
-		function self:GetPixelColor(x, y)
-			if x > w or y > h then return 0,0,0,0 end
-			
-			if x < 1 and y < 1 then 
-				x = x * w 
-				y = y * h 
-			end
-		
-			local offset = math.floor((y * w + x) * 4)
-			
-			local b = buffer[offset + 0]%256
-			local g = buffer[offset + 1]%256
-			local r = buffer[offset + 2]%256
-			local a = buffer[offset + 3]%256
-			
-			return r / 255, g / 255, b / 255, a / 255
-		end
-		
-		return self
-	end
-	
-	_G.Texture = render.CreateTexture
+	include("texture.lua")
 	
 	function render.SetTexture(id, channel, location)
 		channel = channel or 0		
@@ -151,7 +96,7 @@ do -- textures
 		end
 	end
 	
-	function render.SetTextureFiltering(blah)
+	function render.SetTextureFiltering()
 		gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MIN_FILTER, e.GL_NEAREST)
 		gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_TEXTURE_MAG_FILTER, e.GL_NEAREST)
 	end
@@ -258,7 +203,6 @@ do -- deffered rendering
 	local buffers = ffi.new("int[2]", e.GBUFFER_TEXTURE_COLOR, e.GBUFFER_TEXTURE_DEPTH)
 		
 	function render.BeginGeometryPass()
-		debug.stepin()
 		gl.BindFramebuffer(e.GL_FRAMEBUFFER, render.gbuffer_id)
 		
 		gl.Viewport(0, 0, render.w, render.h)
@@ -347,60 +291,6 @@ do -- deffered rendering
 			gl.TexCoord2f(1, 1)
 			gl.Vertex2f(0, 0) 			
 		gl.End()
-	end
-end
-
-do -- render targets
-
-	-- http://www.songho.ca/opengl/gl_fbo.html
-	function render.CreateRenderTarget(w, h, type)
-		w = w or render.w
-		h = h or render.h
-		type = type or e.GL_DEPTH24_STENCIL8
-
-		-- create a texture object
-		local tex_id = ffi.new("GLuint[1]") gl.GenTextures(1, tex_id) tex_id = tex_id[0]
-		
-		gl.BindTexture(e.GL_TEXTURE_2D, tex_id)
-			gl.TexParameterf(e.GL_TEXTURE_2D, e.GL_TEXTURE_MAG_FILTER, e.GL_NEAREST)
-			gl.TexParameterf(e.GL_TEXTURE_2D, e.GL_TEXTURE_MIN_FILTER, e.GL_NEAREST)
-			gl.TexParameterf(e.GL_TEXTURE_2D, e.GL_TEXTURE_WRAP_S, e.GL_CLAMP_TO_EDGE)
-			gl.TexParameterf(e.GL_TEXTURE_2D, e.GL_TEXTURE_WRAP_T, e.GL_CLAMP_TO_EDGE)
-			--gl.TexParameteri(e.GL_TEXTURE_2D, e.GL_GENERATE_MIPMAP, e.GL_TRUE) -- automatic mipmap
-			gl.TexImage2D(e.GL_TEXTURE_2D, 0, e.GL_RGBA8, w, h, 0,	e.GL_RGBA, e.GL_UNSIGNED_BYTE, nil)
-		gl.BindTexture(e.GL_TEXTURE_2D, 0)
-
-		-- create a renderbuffer to store depth info in
-		local rbo_id = ffi.new("GLuint[1]") gl.GenRenderbuffers(1, rbo_id) rbo_id = rbo_id[0]
-		
-		gl.BindRenderbuffer(e.GL_RENDERBUFFER, rbo_id)
-			gl.RenderbufferStorage(e.GL_RENDERBUFFER, type, w, h)
-		gl.BindRenderbuffer(e.GL_RENDERBUFFER, 0)
-
-		-- create a framebuffer that will hold the texture and render buffer
-		local fbo_id = ffi.new("GLuint[1]") gl.GenFramebuffers(1, fbo_id) fbo_id = fbo_id[0]
-		
-		gl.BindFramebuffer(e.GL_FRAMEBUFFER, fbo_id)
-
-			-- attach the texture to FBO color attachment point
-			gl.FramebufferTexture2D(e.GL_FRAMEBUFFER, e.GL_COLOR_ATTACHMENT0, e.GL_TEXTURE_2D, tex_id, 0)
-
-			-- attach the renderbuffer to depth attachment point
-			gl.FramebufferRenderbuffer(e.GL_FRAMEBUFFER, e.GL_DEPTH_ATTACHMENT, e.GL_RENDERBUFFER, rbo_id)
-
-			-- check FBO status
-			if gl.CheckFramebufferStatus(e.GL_FRAMEBUFFER) ~= e.GL_FRAMEBUFFER_COMPLETE then
-				error"!!"
-			end
-
-			-- switch back to window-system-provided framebuffer
-		gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
-		
-		return fbo_id
-	end
-	
-	function render.SetRenderTarget(id)
-		gl.BindFramebuffer(e.GL_FRAMEBUFFER, id or 0)
 	end
 end
 

@@ -6,6 +6,8 @@ class.GetSet(META, "Obj", "")
 class.GetSet(META, "Mesh")
 class.GetSet(META, "Texture")
 
+META.tex = NULL
+
 function META:SetObj(path)
 	self.Obj = path 
 	
@@ -17,13 +19,13 @@ function META:SetObj(path)
 end
 
 function META:SetTexture(path)
-	self.tex = Texture("textures/" .. path)
+	self.tex = Image("textures/" .. path)
 	self.Texture = path 
 end
 
 function META:Draw(...)	
 	
-	if self.tex then
+	if self.tex:IsValid() then
 		self.tex:Bind()
 	end
 	
