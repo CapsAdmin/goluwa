@@ -463,6 +463,12 @@ local function add_gl_func(name, func)
 	gl[name] = function(...) 
 		local val = func(...)
 		
+		if gl.logcalls then
+			setlogfile("gl_calls")
+				logf("%s = gl%s(%s)", luadata.ToString(val), name, table.concat(tostring_args(...), ",\t"))
+			setlogfile()
+		end
+		
 		if name ~= "GetError" and gl.debug then
 						
 			if name == "End" and suppress then

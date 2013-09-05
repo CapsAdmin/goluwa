@@ -55,6 +55,49 @@ if not _OLD_G then
 	scan(_G, _OLD_G)
 end
 
+do -- file system
+	lfs = require("lfs")
+
+	-- the base folder is always 3 paths up (bin/os/arch)
+	_E.BASE_FOLDER = "../../../" 
+	_E.ABSOLUTE_BASE_FOLDER = lfs.currentdir():gsub("\\", "/"):match("(.+/).-/.-/")
+	
+	-- the user folders
+	_E.USERDATA_FOLDER = _E.BASE_FOLDER .. "userdata/"
+	_E.USER_FOLDER = _E.USERDATA_FOLDER .. _E.USERNAME:lower() .. "/"
+	
+	-- create them
+	lfs.mkdir(_E.USERDATA_FOLDER)
+	lfs.mkdir(_E.USER_FOLDER)
+
+	-- this is ugly but it's because we haven't included the global extensions yet..
+	_G.check = function() end
+	vfs = dofile(_E.BASE_FOLDER .. "/lua/platforms/standard/libraries/vfs.lua")
+
+	-- mount the base folders
+	
+	-- current dir
+	vfs.Mount(lfs.currentdir())
+	
+	-- and 3 folders up
+	vfs.Mount(e.BASE_FOLDER)
+	
+	-- a nice global for loading resources externally from current dir
+	R = vfs.GetAbsolutePath
+
+	-- although vfs will add a loader for each mount, the module folder has to be an exception for modules only
+	-- this loader should support more ways of loading than just adding ".lua"
+	table.insert(package.loaders, function(path)
+		local func = vfs.loadfile("lua/modules/" .. path)
+		
+		if not func then
+			func = vfs.loadfile("lua/modules/" .. path .. ".lua")
+		end
+		
+		return func
+	end)
+end
+
 do -- logging	
 	local pretty_prints = {}
 	
@@ -136,38 +179,58 @@ do -- logging
 		
 		return true
 	end
-		
+	
+	local base_log_dir = _E.USER_FOLDER .. "logs/"
+	
+	local log_files = {}
 	local log_file
+	
+	function setlogfile(name)
+		name = name or "console"
+		
+		if not log_files[name] then
+			local file = io.open(base_log_dir .. name .. "_" .. jit.os:lower() .. ".txt", "w")
+			
+			if buffer then
+				for k,v in pairs(buffer) do
+					file:write(unpack(v))
+				end
+				
+				buffer = nil
+			end
+			
+			log_files[name] = file			
+		end
+		
+		log_file = log_files[name]
+	end
+	
 	local buffer = {}
 	local last_line
 	local count = 0
 	local last_count_length = 0
+		
+	lfs.mkdir(base_log_dir)
 	
 	function log(...)
 		local args = tostring_args(...)
 		if can_print(args) then
 			
-			if vfs then
+			if vfs then						
 				if not log_file then
-					log_file = io.open(e.BASE_FOLDER .. "log_" .. _E.USERNAME:lower() .. "_" .. jit.os:lower() .. ".txt", "w")
-					
-					if buffer then
-						for k,v in pairs(buffer) do
-							log_file:write(unpack(v))
-						end
-						
-						buffer = nil
-					end
+					setlogfile()
 				end
-						
+			
 				local line = table.concat(args, "")
 				
 				if line == last_line then
-					local count_str = ("[%i x] "):format(count)
-					log_file:seek("cur", -#line-1-last_count_length)
-					log_file:write(count_str, line)
+					if count > 0 then
+						local count_str = ("[%i x] "):format(count)
+						log_file:seek("cur", -#line-1-last_count_length)
+						log_file:write(count_str, line)
+						last_count_length = #count_str
+					end
 					count = count + 1
-					last_count_length = #count_str
 				else
 					log_file:write(line)
 					count = 0
@@ -181,7 +244,9 @@ do -- logging
 				table.insert(buffer, args)
 			end
 			
-			io.write(unpack(args))
+			if log_files.console == log_file then
+				io.write(unpack(args))
+			end
 		end
 	end
 	
@@ -270,9 +335,16 @@ do -- ffi
 		if not ok then
 			if vfs then
 				for full_path in vfs.Iterate("bin/" .. ffi.os .. "/" .. ffi.arch .. "/" .. path, nil, true, nil, true) do
+					-- look first in the vfs' bin directories
 					system.SetDLLDirectory(full_path:match("(.+/)"))
 					local ok, msg = pcall(_OLD_G.ffi_load, full_path, ...)
 					system.SetDLLDirectory()
+					if ok then
+						return msg
+					end
+					
+					-- if not try the default OS specific dll directories
+					local ok, msg = pcall(_OLD_G.ffi_load, full_path, ...)
 					if ok then
 						return msg
 					end
@@ -280,6 +352,8 @@ do -- ffi
 			end
 			
 			error(msg, 2)
+			
+			return nil
 		end
 		
 		return msg
@@ -312,41 +386,6 @@ do -- ffi
 			return res
 		end
 	end
-end
-
-do -- file system
-	lfs = require("lfs")
-
-	-- the base folder is always 3 paths up (bin/os/arch)
-	_E.BASE_FOLDER = "../../../" 
-	_E.ABSOLUTE_BASE_FOLDER = lfs.currentdir():gsub("\\", "/"):match("(.+/).-/.-/")
-
-	-- this is ugly but it's because we haven't included the global extensions yet..
-	_G.check = function() end
-	vfs = dofile(_E.BASE_FOLDER .. "/lua/platforms/standard/libraries/vfs.lua")
-
-	-- mount the base folders
-	
-	-- current dir
-	vfs.Mount(lfs.currentdir())
-	
-	-- and 3 folders up
-	vfs.Mount(e.BASE_FOLDER)
-	
-	-- a nice global for loading resources externally from current dir
-	R = vfs.GetAbsolutePath
-
-	-- although vfs will add a loader for each mount, the module folder has to be an exception for modules only
-	-- this loader should support more ways of loading than just adding ".lua"
-	table.insert(package.loaders, function(path)
-		local func = vfs.loadfile("lua/modules/" .. path)
-		
-		if not func then
-			func = vfs.loadfile("lua/modules/" .. path .. ".lua")
-		end
-		
-		return func
-	end)
 end
 
 do -- include

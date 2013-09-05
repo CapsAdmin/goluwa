@@ -255,12 +255,16 @@ do -- deffered rendering
 		render.gbuffer_id = fbo_id
 	end
 		
+	local buffers = ffi.new("int[2]", e.GBUFFER_TEXTURE_COLOR, e.GBUFFER_TEXTURE_DEPTH)
+		
 	function render.BeginGeometryPass()
+		debug.stepin()
 		gl.BindFramebuffer(e.GL_FRAMEBUFFER, render.gbuffer_id)
 		
+		gl.Viewport(0, 0, render.w, render.h)
+		
 		-- draw to color and depth
-		gl.DrawBuffer(e.GBUFFER_TEXTURE_COLOR)
-		gl.DrawBuffer(e.GBUFFER_TEXTURE_DEPTH)
+		gl.DrawBuffers(e.GL_FRAMEBUFFER, buffers)
 		
 		-- make sure depth drawing is on
 		gl.DepthMask(true)

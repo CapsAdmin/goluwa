@@ -146,12 +146,12 @@ do -- negative pairs
 		i = i - 1
 		v = a[i]
 		if v then
-			return i, v;
+			return i, v
 		end
 	end
 
 	function npairs(a)
-		return iter, a, #a + 1;
+		return iter, a, #a + 1
 	end
 end
 

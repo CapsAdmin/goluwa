@@ -1,5 +1,8 @@
 local vfs = _G.vfs or {}
 
+local data_prefix = "%DATA%"
+local data_prefix_pattern = data_prefix:gsub("(%p)", "%%%1")
+
 local silence
 
 local function warning(...)
@@ -12,11 +15,17 @@ function vfs.Silence(b)
 end
 
 local function fix_path(path)
-	
-	path = path:gsub("%%DATA%%", "%%APPDATA%%/.asdfml")
 
-	if LINUX then
-		path = path:gsub("%%APPDATA%%", "%%HOME%%")
+	if vfs.use_appdata then
+		if WINDOWS then
+			path = path:gsub(data_prefix_pattern, "%%APPDATA%%/.asdfml")
+		end
+
+		if LINUX then
+			path = path:gsub(data_prefix_pattern, "%%HOME%%/.asdfml")
+		end
+	else
+		path = path:gsub(data_prefix_pattern, e.USER_FOLDER)
 	end
 
 	-- windows
@@ -189,10 +198,19 @@ local function create_folders_from_path(path)
 	end
 end
 
-function vfs.Write(path, data, mode)
+function vfs.Write(path, data, mode, in_data)
 	check(path, "string")
-	path = fix_path(path)
+
+	if in_data == nil then
+		in_data = true
+	end
 	
+	if in_data and path:sub(0, #data_prefix) ~= data_prefix then
+		path = data_prefix .. path
+	end
+	
+	path = fix_path(path)
+		
 	if mode and not mode:find("w", nil, true) then
 		mode = mode .. "w"
 	else
