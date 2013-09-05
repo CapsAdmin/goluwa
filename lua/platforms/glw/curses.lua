@@ -150,14 +150,16 @@ curses.attron((2 ^ (8 + 13)) + 8 * 256)
 curses.mvprintw(curses.LINES - 2, 0, string.rep("-", curses.COLS))
 curses.refresh()
 
-io.old_write = io.old_write or io.write
-
 function io.write(...)
-	if not io.suppress_console_print then
-		curses.wprintw(log_window, table.concat({...}, ""))
-		curses.wrefresh(log_window)
-	end
+	curses.wprintw(log_window, table.concat({...}, ""))
+	curses.wrefresh(log_window)
 end
+
+for _, args in pairs(_G.LOG_BUFFER) do
+	io.write(unpack(args))
+end
+
+_G.LOG_BUFFER = nil
 
 local syntax = include("syntax.lua")
 
