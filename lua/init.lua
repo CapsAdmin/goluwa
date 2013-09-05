@@ -79,6 +79,9 @@ do -- file system
 	-- current dir
 	vfs.Mount(lfs.currentdir())
 	
+	-- user dir
+	vfs.Mount(e.USER_FOLDER)
+	
 	-- and 3 folders up
 	vfs.Mount(e.BASE_FOLDER)
 	
@@ -517,11 +520,11 @@ function OnError(msg)
 	
 	local base_folder = e.BASE_FOLDER:gsub("%p", "%%%1")
 	local data = {}
-	
+		
 	for level = 3, math.huge do
 		local info = debug.getinfo(level)
 		if info then
-			if info.currentline >= 0 then
+			if info.currentline >= 0 then			
 				local args = {}
 				
 				for arg = 1, info.nparams do
@@ -582,8 +585,24 @@ function OnError(msg)
 	logn("}")
 	local source, _msg = msg:match("(.+): (.+)")
 	
+	
 	if source then
-		logn(source:trim())
+		source = source:trim()
+		
+		local path = console.GetVariable("npp_path")
+		
+		if path ~= "" then
+			local source, line = source:match("(.+%.lua):(.+)")
+			if source and line then
+				line = tonumber(line)
+				
+				if vfs.Exists(source) then
+					os.execute(([[start "" "%s" -n%i %s]]):format(path, line, source))
+				end
+			end
+		end
+		
+		logn(source)
 		logn(_msg:trim())
 	else
 		logn(msg)
@@ -591,6 +610,10 @@ function OnError(msg)
 	
 	logn("")
 end
+
+console.CreateVariable("npp_path", "")
+
+console.Exec("autoexec")
 
 addons.LoadAll()
 

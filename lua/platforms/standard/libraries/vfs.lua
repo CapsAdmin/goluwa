@@ -159,7 +159,7 @@ function vfs.Exists(path, ...)
 	check(path, "string")
 	local file = vfs.GetFile(path, ...)
 
-	return file ~= nil
+	return file ~= false
 end
 
 function vfs.Delete(path, ...)
