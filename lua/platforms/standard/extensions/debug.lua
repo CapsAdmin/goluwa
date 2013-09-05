@@ -43,7 +43,7 @@ function debug.getparamsx(func)
 end
 
 function debug.dumpcall(clr_print)
-	local info = debug.getinfo(3)
+	local info = debug.getinfo(4)
 	local script = vfs.Read(info.short_src)
 	
 	logn(info.short_src)

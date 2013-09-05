@@ -518,7 +518,7 @@ end
 -- to check if extensions exist, just check if the function exists.
 -- if gl.GenBuffers then
 function gl.InitMiniGlew()
-	for path in vfs.Iterate("lua/platforms/glw/libraries/ffi_binds/gl_extensions/", nil, true) do
+	for path in vfs.Iterate("lua/platforms/glw/ffi_binds/gl_extensions/", nil, true) do
 		local str = vfs.Read(path)
 		for line in str:gmatch("\t(.-)\n") do
 			local key, val = line:match("([1-9a-Z_]+) (.+)")

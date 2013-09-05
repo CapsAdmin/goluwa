@@ -51,7 +51,7 @@ do
 		local buffer = ffi.new("GLubyte[?]", length)
 
 		gl.BindTexture(e.GL_TEXTURE_2D, self.id)
-		gl.GetTexImage(e.GL_TEXTURE_2D, mip_map_level, e.GL_RGBA, e.GL_UNSIGNED_BYTE, buffer)
+			gl.GetTexImage(e.GL_TEXTURE_2D, mip_map_level, e.GL_RGBA, e.GL_UNSIGNED_BYTE, buffer)
 		gl.BindTexture(e.GL_TEXTURE_2D, 0)
 
 		return buffer, size, length
@@ -83,7 +83,7 @@ do
 		end
 
 		gl.BindTexture(e.GL_TEXTURE_2D, self.id)
-		gl.TexImage2D(e.GL_TEXTURE_2D, 0, e.GL_RGBA, size.w, size.h, 0, e.GL_RGBA, e.GL_UNSIGNED_BYTE, buffer)
+		gl.TexImage2D(e.GL_TEXTURE_2D, 0, e.GL_RGBA, size.w, size.h, 0, e.GL_BGRA, e.GL_UNSIGNED_BYTE, buffer)
 		gl.BindTexture(e.GL_TEXTURE_2D, 0)
 	end
 
@@ -129,7 +129,7 @@ do
 
 		gl.BindTexture(e.GL_TEXTURE_2D, id)
 			render.SetTextureFiltering()
-			gl.TexImage2D(e.GL_TEXTURE_2D, 0, e.GL_RGBA, width, height, 0, e.GL_RGBA, e.GL_UNSIGNED_BYTE, buffer)
+			gl.TexImage2D(e.GL_TEXTURE_2D, 0, e.GL_RGBA, width, height, 0, e.GL_BGRA, e.GL_UNSIGNED_BYTE, buffer)
 		gl.BindTexture(e.GL_TEXTURE_2D, 0)
 		
 		return setmetatable({id = id, w = width, h = height}, META)
