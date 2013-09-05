@@ -205,12 +205,20 @@ do -- logging
 		log_file = log_files[name]
 	end
 	
+	function getlogfile(name)
+		name = name or "console" 
+		
+		return log_files[name]
+	end
+	
 	local buffer = {}
 	local last_line
 	local count = 0
 	local last_count_length = 0
 		
 	lfs.mkdir(base_log_dir)
+	
+	_G.LOG_BUFFER = {}
 	
 	function log(...)
 		local args = tostring_args(...)
@@ -246,6 +254,9 @@ do -- logging
 			
 			if log_files.console == log_file then
 				io.write(unpack(args))
+				if _G.LOG_BUFFER then
+					table.insert(_G.LOG_BUFFER, args)
+				end
 			end
 		end
 	end
