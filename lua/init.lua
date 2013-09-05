@@ -3,8 +3,8 @@ _E = _E or {}
 e = _E 
 
 _E.PLATFORM = PLATFORM or tostring(select(1, ...) or nil)
-_E.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):upper():gsub(" ", "_"):gsub("%p", "")
-_G[e.USERNAME] = true
+_E.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
+_G[e.USERNAME:upper()] = true
 
 do -- helper constants	
 	_G._F = {}
