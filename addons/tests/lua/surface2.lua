@@ -1,7 +1,7 @@
 
 local window = glw.OpenWindow() 
  
-local texture = render.CreateTexture("textures/face1.png")
+local texture = Texture("textures/face1.png")
 local font = Font(R"fonts/arial.ttf")
 font:SetFaceSize(13, 0)
 font:SetOutset(10, 1)
