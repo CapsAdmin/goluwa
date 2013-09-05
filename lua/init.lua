@@ -406,12 +406,12 @@ do -- include
 
 	local include_stack = {}
 	
-	function include(path, ...)
-		local dir, file = path:match("(.+/)(.+)")
+	function include(source, ...)
+		local dir, file = source:match("(.+/)(.+)")
 		
 		if not dir then
 			dir = ""
-			file = path
+			file = source
 		end
 				
 		vfs.Silence(true)
@@ -428,14 +428,14 @@ do -- include
 		
 		local func, err = vfs.loadfile("lua/" .. dir .. file)
 					
-		if err then
-			func, err = vfs.loadfile("lua/" .. path)
+		if err and err:find("No such file or directory", nil, true) then
+			func, err = vfs.loadfile("lua/" .. source)
 			
-			if err then		
+			if err and err:find("No such file or directory", nil, true) then		
 				func, err = vfs.loadfile(dir .. file)
 				
-				if err then
-					func, err = loadfile(path)
+				if err and err:find("No such file or directory", nil, true) then
+					func, err = loadfile(source)
 					--logn(("\t"):rep(#include_stack).."TRYING ABS: ", dir .. file)
 				end
 			end
@@ -459,7 +459,23 @@ do -- include
 			return select(2, unpack(res))
 		end
 		
-		logn(path:sub(1) .. " " .. err)
+		
+		local path = console and console.GetVariable("error_app")
+
+		if path ~= "" then
+			local source, line = err:match("(.+%.lua):(%d+)")
+			if source and line then
+				line = tonumber(line)
+				
+				if vfs.Exists(source) then
+					path = path:gsub("%%LINE%%", line)
+					path = path:gsub("%%PATH%%", source)
+					os.execute(path)
+				end
+			end
+		end
+		
+		logn(source:sub(1) .. " " .. err)
 		
 		vfs.Silence(false)
 		
