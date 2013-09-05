@@ -328,8 +328,7 @@ log([[
                      |___/ |___/ 
 ]])
 logf("launched on %s", os.date())
-logn("executed by " .. e.USERNAME)
-log("\n\n")
+logn("executed by " .. e.USERNAME, "\n")
 
 do -- ffi
 	_G.ffi = require("ffi")

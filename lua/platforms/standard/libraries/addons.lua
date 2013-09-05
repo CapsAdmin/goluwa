@@ -92,7 +92,6 @@ function addons.LoadAll()
 
 	for _, info in ipairs(addons.Info) do
 		if info.load ~= false then
-			logn("mounting addon ", info.path)
 			vfs.Mount(e.BASE_FOLDER .. info.path)
 		else
 			--logf("the addon %q does not want to be loaded", addon)
