@@ -42,6 +42,54 @@ function debug.getparamsx(func)
     return params
 end
 
+function debug.dumpcall(clr_print)
+	local info = debug.getinfo(3)
+	local script = vfs.Read(info.short_src)
+	
+	logn(info.short_src)
+	
+	if script then
+		local lines = script:explode("\n")
+		
+		for i = -10, 10 do
+			local line = lines[info.currentline + i]
+			
+			if i == 0 then
+				line = (">"):rep(string.len(info.currentline)) .. ":\t" ..  line
+			else
+				line = (info.currentline + i) .. ": " .. line
+			end
+			
+			if clr_print then
+				curses.ColorPrint(line .. "\n")
+			end
+		end
+	else
+		logn(info.short_src)
+	end
+	
+	logn("")
+	logn("LOCALS: ")
+	for _, data in pairs(debug.getparamsx(4)) do
+		if not data.key:find("(",nil,true) then
+			logf("%s = %s", data.key, luadata.ToString(data.val))
+		end
+	end
+end
+
+function debug.logcalls(b)
+	if not b then
+		debug.sethook()
+		return
+	end
+	
+	debug.sethook(function() 
+		setlogfile("lua_calls")
+			debug.dumpcall()
+		setlogfile()
+	end, "l")
+end
+
 function debug.stepin()
 	if not curses then return end
 	
@@ -53,36 +101,7 @@ function debug.stepin()
 		system.SetWindowTitle("DEBUG SETHOOK |space = exit | enter = return | down = line | pagedown = call|")
 		curses.Clear()
 		
-		local info = debug.getinfo(2)
-		local script = vfs.Read(info.short_src)
-		
-		logn(info.short_src)
-		
-		if script then
-			local lines = script:explode("\n")
-			
-			for i = -10, 10 do
-				local line = lines[info.currentline + i]
-				
-				if i == 0 then
-					line = (">"):rep(string.len(info.currentline)) .. ":\t" ..  line
-				else
-					line = (info.currentline + i) .. ": " .. line
-				end
-				
-				curses.ColorPrint(line .. "\n")
-			end
-		else
-			logn(info.short_src)
-		end
-		
-		logn("")
-		logn("LOCALS: ")
-		for _, data in pairs(debug.getparamsx(3)) do
-			if not data.key:find("(",nil,true) then
-				logf("%s = %s", data.key, luadata.ToString(data.val))
-			end
-		end
+		debug.dumpcall(true)
 		
 		while true do
 			if first_time then
