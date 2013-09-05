@@ -48,7 +48,7 @@ local function find(tbl, name, level, ...)
 		if hasindex(val) and type(val) ~= "userdata" and type(val) ~= "cdata" and val.Type and not getmetatable(val) then
 			T = "table"
 		end
-				
+						
 		if not skip[key] and T == "table" and not done[val] then
 			done[val] = true
 			find(val, name .. "." .. key, level + 1, ...)
@@ -77,7 +77,7 @@ local function find(tbl, name, level, ...)
 	end
 end
 
-console.AddCommand("lua_find", function(ply, line, ...)			
+console.AddCommand("find", function(line, ...)			
 	done = 
 	{
 		[_G] = true,
@@ -85,7 +85,7 @@ console.AddCommand("lua_find", function(ply, line, ...)
 		[package] = true,
 		[_OLD_G] = true,
 	}
-	
+		
 	logf("searched for %q", table.concat(tostring_args(...), ", "))
 	logn("globals:")
 	find(_G, "_G", 1, ...)
