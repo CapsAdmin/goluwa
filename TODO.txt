@@ -1,3 +1,0 @@
-gl enums in gl and not e ???
-font wrapper for ftgl
-move CreateTexture out of render to _G.Texture
