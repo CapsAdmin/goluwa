@@ -1,4 +1,4 @@
-local entities = _G.entities or {}
+entities = entities or {}
 
 entities.active_entities = entities.active_entities or {}
 
@@ -51,7 +51,7 @@ do -- base
 end 
  
 function entities.LoadAllEntities()
-	for relative_path, full_path in vfs.Iterate("lua/platforms/glw/libraries/entities/") do
+	for relative_path, full_path in vfs.Iterate("lua/platforms/glw/libraries/entities/default_entities/") do
 		vfs.dofile(full_path)
 	end
 	
@@ -61,5 +61,3 @@ function entities.LoadAllEntities()
 	
 	entities.world_entity = entities.world_entity or Entity("model")
 end
-
-return entities

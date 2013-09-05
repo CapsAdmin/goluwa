@@ -1,18 +1,16 @@
-include("curses.lua")
+include("libraries/curses.lua")
 
 if not gl then
-	gl = include("libraries/ffi_binds/gl.lua")
-	glu = include("libraries/ffi_binds/glu.lua")
-	glfw = include("libraries/ffi_binds/glfw.lua")
-	freeimage = include("libraries/ffi_binds/freeimage.lua")
-	ftgl = include("libraries/ffi_binds/ftgl.lua")
+	gl = include("ffi_binds/gl.lua")
+	glu = include("ffi_binds/glu.lua")
+	glfw = include("ffi_binds/glfw.lua")
+	freeimage = include("ffi_binds/freeimage.lua")
+	ftgl = include("ffi_binds/ftgl.lua")
 end
 
-surface = include("libraries/surface.lua")
-render = include("libraries/render.lua")
-entities = include("libraries/entities.lua")
+include("libraries/render/render.lua")
+include("libraries/entities/entities.lua")
 
-include("libraries/mesh.lua")
 include("libraries/font.lua")
 include("libraries/window.lua")
 include("extensions/input.lua")
@@ -22,7 +20,7 @@ include("libraries/network/init.lua")
 entities.LoadAllEntities()
 addons.AutorunAll()
 
-include("find.lua")
+include("libraries/find.lua")
 
 glw = glw or {}
 

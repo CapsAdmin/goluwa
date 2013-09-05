@@ -58,13 +58,6 @@ local function calc_camera(window, dt)
 	end
 end       
 
-local active_models =  {}
-
---local lol = Entity("model")
---lol:SetMesh(Mesh(utilities.ParseHeightmap(Texture("textures/texture.jpg"), 1024/4, 256)))
---lol:SetTexture("texture.jpg")
---lol:SetAngles(Ang3(-90,0,0))  
-
 local obj = utilities.RemoveOldObject(Entity("model"))
 obj:SetMesh(Mesh(utilities.CreateSphere(4)))
 obj:SetTexture("face1.png")
@@ -74,12 +67,22 @@ obj:SetPos(Vec3(5,0,0))
 obj:SetObj("face.obj")
 obj:SetTexture("face1.png")
 
+
 gl.ClearColor(0,0,0,1)
 input.SetMouseTrapped(true)
 
 local font = Font(R"fonts/arial.ttf")
 font:SetFaceSize(72, 72)
+local test = render.Create2DVBO({
+	{pos = Vec2(0, 0), uv = Vec2(1, 1), color = Color(0,1,0,1)},
+	{pos = Vec2(0, 1), uv = Vec2(1, 0), color = Color(0,1,0,1)},
+	{pos = Vec2(1, 1), uv = Vec2(0, 0), color = Color(0,1,0,1)},
+	{pos = Vec2(1, 1), uv = Vec2(0, 0), color = Color(0,1,0,1)},
+	{pos = Vec2(1, 0), uv = Vec2(0, 1), color = Color(0,1,0,1)},
+	{pos = Vec2(0, 0), uv = Vec2(1, 1), color = Color(0,1,0,1)},
+})
 
+   
 event.AddListener("OnDraw", "gl", function(dt)
   	calc_camera(window, dt)
 
@@ -90,20 +93,21 @@ event.AddListener("OnDraw", "gl", function(dt)
 		render.Start3D(cam_pos, cam_ang:GetDeg())
 			entities.world_entity:Draw()
 
-			render.SetTexture(0)
-			gl.UseProgram(0)
-
 		render.Start2D()
 			gl.Color3f(1,1,1)
 			gl.Color4f(1,1,1,1)
 
 			font:Render(os.date())
-
+		
 			local w, h = 200, 200
 			local size = window:GetSize()
 			gl.Color4f(1, 1, 1, 0.5)
-			render.PushMatrix(Vec3(size.w - w, size.h - h), Ang3(0), Vec3(w, h))
+			render.PushMatrix(Vec3(0, 0), Ang3(0), Vec3(size.w, size.h))
 			
+			obj.tex:Bind()
+			render.Draw2DVBO(test)
+			--render.DrawScreenQuad()
+
 			render.PopMatrix()
 	render.End()
 end)
