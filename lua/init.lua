@@ -406,6 +406,15 @@ do -- include
 
 	local include_stack = {}
 	
+	local function not_found(err)
+		return 
+			err and 
+			(
+				err:find("No such file or directory", nil, true) or 
+				err:find("Invalid argument", nil, true)
+			)
+	end
+	
 	function include(source, ...)
 		local dir, file = source:match("(.+/)(.+)")
 		
@@ -428,13 +437,13 @@ do -- include
 		
 		local func, err = vfs.loadfile("lua/" .. dir .. file)
 					
-		if err and err:find("No such file or directory", nil, true) then
+		if not_found(err) then
 			func, err = vfs.loadfile("lua/" .. source)
 			
-			if err and err:find("No such file or directory", nil, true) then		
+			if not_found(err) then
 				func, err = vfs.loadfile(dir .. file)
 				
-				if err and err:find("No such file or directory", nil, true) then
+				if not_found(err) then
 					func, err = loadfile(source)
 					--logn(("\t"):rep(#include_stack).."TRYING ABS: ", dir .. file)
 				end

@@ -413,7 +413,7 @@ do -- file monitoring
 					else 
 						if data.modification ~= info.modification then
 							logn("reloading ", utilities.GetFileNameFromPath(data.path))
-							dofile(data.path) 
+							include(data.path) 
 							data.modification = info.modification
 						end
 					end			
