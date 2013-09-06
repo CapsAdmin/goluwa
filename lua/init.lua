@@ -462,7 +462,7 @@ do -- include
 		
 		local path = console and console.GetVariable("error_app")
 
-		if path ~= "" then
+		if path and path ~= "" then
 			local source, line = err:match("(.+%.lua):(%d+)")
 			if source and line then
 				line = tonumber(line)
@@ -607,14 +607,25 @@ function OnError(msg)
 		
 		local path = console.GetVariable("error_app")
 		
-		if path ~= "" then
-			local source, line = source:match("(.+%.lua):(.+)")
-			if source and line then
+		if path and path ~= "" then
+			local lua_script, line
+			
+			-- this should be replaced with some sort of configuration
+			-- gl.lua never shows anything useful but the level above does..			
+			if source:find("gl%.lua") then
+				local info = debug.getinfo(4)
+				lua_script = info.short_src
+				line = info.currentline
+			else
+				lua_script, line = source:match("(.+%.lua):(.+)")
+			end
+						
+			if lua_script and line then
 				line = tonumber(line)
 				
-				if vfs.Exists(source) then
+				if line and vfs.Exists(lua_script) then
 					path = path:gsub("%%LINE%%", line)
-					path = path:gsub("%%PATH%%", source)
+					path = path:gsub("%%PATH%%", lua_script)
 					print(path)
 					os.execute(path)
 				end

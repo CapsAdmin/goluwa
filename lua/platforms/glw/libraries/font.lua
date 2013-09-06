@@ -1,3 +1,4 @@
+local default = "bitmap"
 local types = {}
 local META = {}
 META.__index = META
@@ -12,7 +13,7 @@ for line in ftgl.header:gmatch("(.-)\n") do
 		
 		if name == "Render" then
 			META[name] = function(self, str, mode)
-				mode = mode or e.FTGL_RENDER_FRONT 
+				mode = mode or e.FTGL_RENDER_ALL 
 				func(self.__ptr, str, mode)
 			end
 		else
@@ -34,8 +35,13 @@ function Font(file_name, type)
 	
 	file_name = file_name:lower()
 	
-	if not type or not types[type] then 
-		type = "bitmap"
+	if not type then 
+		type = default
+	elseif not types[type] then
+		logf("%s is an invalid font!\nthese are the types availble:\n", type)
+		table.print(types)	
+		logf("reverting to %s\n", default)
+		type = default		
 	end
 	
 	local ptr = types[type](file_name)

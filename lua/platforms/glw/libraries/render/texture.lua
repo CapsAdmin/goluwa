@@ -1,20 +1,4 @@
-_E.TEX_CHANNEL_AUTO = 0
-_E.TEX_CHANNEL_L = 1
-_E.TEX_CHANNEL_LA = 2
-_E.TEX_CHANNEL_RGB = 3
-_E.TEX_CHANNEL_RGBA = 4
-
-_E.TEX_FLAG_POWER_OF_TWO = 1
-_E.TEX_FLAG_MIPMAPS = 2
-_E.TEX_FLAG_TEXTURE_REPEATS = 4
-_E.TEX_FLAG_MULTIPLY_ALPHA = 8
-_E.TEX_FLAG_INVERT_Y = 16
-_E.TEX_FLAG_COMPRESS_TO_DXT = 32
-_E.TEX_FLAG_DDS_LOAD_DIRECT = 64
-_E.TEX_FLAG_NTSC_SAFE_RGB = 128
-_E.TEX_FLAG_COCG_Y = 256
-_E.TEX_FLAG_TEXTURE_RECTANGLE = 512
-
+ 
 do
 	local META = {}
 
@@ -29,87 +13,80 @@ do
 		render.SetTexture(self.id, ...)
 	end
 
-	function META:GetSize(mip_map_level)
-		mip_map_level = mip_map_level or 0
-
-		local width, height = ffi.new("GLint[1]"), ffi.new("GLint[1]")
-
-
-		gl.BindTexture(e.GL_TEXTURE_2D, self.id)
-		gl.GetTexLevelParameteriv(e.GL_TEXTURE_2D, mip_map_level, e.GL_TEXTURE_WIDTH, width)
-		gl.GetTexLevelParameteriv(e.GL_TEXTURE_2D, mip_map_level, e.GL_TEXTURE_HEIGHT, height)
-		gl.BindTexture(e.GL_TEXTURE_2D, 0)
-
-		return Vec2(width[0], height[0])
+	function META:GetSize()
+		return self.size
 	end
 
-	function META:GetBuffer(mip_map_level)
-		mip_map_level = mip_map_level or 0
-
-		local size = self:GetSize(mip_map_level)
-		local length = size.w * size.h * 4
-		local buffer = ffi.new("GLubyte[?]", length)
+	function META:Download()
+		
+		local buffer = ffi.new("GLubyte[?]", self.size.w * self.size.h * 4)
 
 		gl.BindTexture(e.GL_TEXTURE_2D, self.id)
-			gl.GetTexImage(e.GL_TEXTURE_2D, mip_map_level, e.GL_RGBA, e.GL_UNSIGNED_BYTE, buffer)
+			gl.GetTexImage(e.GL_TEXTURE_2D, 0, self.format, self.type, buffer)
 		gl.BindTexture(e.GL_TEXTURE_2D, 0)
 
-		return buffer, size, length
-	end
-
-	function META:Fill(callback, mip_map_level)
-		check(callback, "function")
-		mip_map_level = mip_map_level or 0
-
-		local buffer, size, length = self:GetBuffer(mip_map_level)
-		local w = size.w
-		local x, y = 0, 0
-
-		for i = 0, length do
-
-			if x >= w then
-				x = 0
-				y = y + 1
-			else
-				x = x + 1
-			end
-
-			local r, g, b, a = callback(x, y, buffer[i+0], buffer[i+1], buffer[i+2], buffer[i+3])
-
-			if r then buffer[i+0] = r end
-			if g then buffer[i+1] = g end
-			if b then buffer[i+2] = b end
-			if a then buffer[i+3] = a end
-		end
-
-		gl.BindTexture(e.GL_TEXTURE_2D, self.id)
-		gl.TexImage2D(e.GL_TEXTURE_2D, 0, e.GL_RGBA, size.w, size.h, 0, e.GL_BGRA, e.GL_UNSIGNED_BYTE, buffer)
-		gl.BindTexture(e.GL_TEXTURE_2D, 0)
-	end
-
-	function META:IteratePixels(mip_map_level)
-		mip_map_level = mip_map_level or 0
-		local buffer, size, length = self:GetBuffer(mip_map_level)
-		local w = size.w
-		local x, y = 0, 0
-		local i = 0
-
-		return function()
-			i = i + 1
-
-			if i >= length then return end
-
-			if x >= w then
-				x = 0
-				y = y + 1
-			else
-				x = x + 1
-			end
-
-			return x, y, buffer[i+0], buffer[i+1], buffer[i+2], buffer[i+3]
-		end
+		return buffer 
 	end
 	
+	function META:Upload(buffer, x, y, w, h)
+		x = x or 0
+		y = y or 0
+		w = w or self.size.w
+		h = h or self.size.h
+	
+		gl.BindTexture(e.GL_TEXTURE_2D, self.id)
+			gl.TexStorage2D(e.GL_TEXTURE_2D, 1, self.internal_format, self.size.w, self.size.h)
+			gl.TexSubImage2D(e.GL_TEXTURE_2D, 0, x,y,w,h, self.format, self.type, buffer)
+			--render.SetTextureFiltering()
+		gl.BindTexture(e.GL_TEXTURE_2D, 0)
+	end
+
+	function META:Fill(callback, write_only)
+		check(callback, "function")
+		
+		if write_only == nil then
+			write_only = true
+		end
+		
+		local width = self.size.w
+		local height = self.size.h		
+		local x, y = 0, 0
+		local r, g, b, a
+
+		local size = width*height*4
+		local buffer
+		
+		if write_only then
+			buffer = ffi.new("GLubyte[?]", size)
+		else
+			buffer = self:Download()
+		end
+		
+		for y = 0, height-1 do
+		for x = 0, width-1 do
+			local i = 4*width*y+4*x		
+			
+			if write_only then
+				r, g, b, a = callback(x, y)
+				
+				r = r or 1
+				g = g or 1
+				b = b or 1
+				a = a or 1
+			else
+				r, g, b, a = callback(x, y, buffer[i+0], buffer[i+1], buffer[i+2], buffer[i+3])
+			end
+		
+			if r then buffer[i+0] = r*255 end
+			if g then buffer[i+1] = g*255 end
+			if b then buffer[i+2] = b*255 end
+			if a then buffer[i+3] = a*255 end
+		end
+		end
+		
+		self:Upload(buffer)
+	end
+		
 	function META:IsValid()
 		return true
 	end
@@ -119,23 +96,58 @@ do
 		utilities.MakeNULL(self)
 	end
 
-	function Texture(width, height, buffer)
+	function Texture(width, height, buffer, format, internal_format, type)
 		check(width, "number")
 		check(height, "number")
 		check(buffer, "nil", "cdata")
+		check(format, "number", "nil")
+		
+		format = format or e.GL_BGRA
+		internal_format = internal_format or e.GL_RGBA8
+		type = type or e.GL_UNSIGNED_BYTE
 
 		-- create a new texture
 		local id = ffi.new("GLuint[1]") gl.GenTextures(1, id) id = id[0]
 
-		gl.BindTexture(e.GL_TEXTURE_2D, id)
-			render.SetTextureFiltering()
-			gl.TexImage2D(e.GL_TEXTURE_2D, 0, e.GL_RGBA, width, height, 0, e.GL_BGRA, e.GL_UNSIGNED_BYTE, buffer)
-		gl.BindTexture(e.GL_TEXTURE_2D, 0)
+		local self = setmetatable(
+			{
+				id = id, 
+				size = Vec2(width, height), 
+				format = format,
+				internal_format = internal_format,
+				type = type,
+			}, 
+			META
+		)
 		
-		return setmetatable({id = id, w = width, h = height}, META)
+		if buffer then
+			self:Upload(buffer)
+		end
+		
+		return self
 	end
 end
 
 function Image(path)
-	return Texture(freeimage.LoadImage(vfs.Read(path, "rb")))
+	if not ERROR_TEXTURE then
+		ERROR_TEXTURE = Texture(128, 128)
+		ERROR_TEXTURE:Fill(function(x, y)
+			if (y+x)%32 > 16 then
+				return 1, 0.75, 0.5, 1
+			end
+			
+			return 0,0,0, 1
+		end)
+	end
+
+	local img = vfs.Read(path, "rb")
+	
+	if not img then
+		return ERROR_TEXTURE
+	end
+	
+	local w, h, buffer = freeimage.LoadImage(img)
+	local internal_format = e.GL_RGBA8
+	
+	return Texture(w,h,buffer,nil,internal_format)
 end

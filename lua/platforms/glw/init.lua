@@ -8,7 +8,7 @@ if not gl then
 	ftgl = include("ffi_binds/ftgl.lua")
 end
 
-include("libraries/render/render.lua")
+include("libraries/render/init.lua")
 include("libraries/entities/entities.lua")
 
 include("libraries/font.lua")
@@ -78,8 +78,7 @@ do -- input extensions
 		else
 			glfw.SetInputMode(glw.window.__ptr, e.GLFW_CURSOR, e.GLFW_CURSOR_HIDDEN)
 		end
-	end
-	
+	end	
 	
 	function input.SetMouseTrapped(b)
 		input.mouse_trapped = b
@@ -170,7 +169,9 @@ do -- update
 	local last = socket.gettime()
 
 	function glw.Update()
-		sleep(1000/glw.max_fps)
+		if glw.max_fps ~= 0 then
+			sleep(1000/glw.max_fps)
+		end
 		
 		glfw.PollEvents()
 		luasocket.Update()
