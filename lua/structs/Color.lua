@@ -5,6 +5,7 @@ local META = {}
 META.ClassName = "Color"
 
 function META.Constructor(r,g,b,a)
+
 	if type(r) == "string" then
 		r,g,b = r:match("#?(..)(..)(..)")
 		r = tonumber("0x" .. r)
@@ -30,6 +31,10 @@ META.Args = {"r", "g", "b", "a"}
 META.ProtectedFields = {a = true}
 
 structs.AddAllOperators(META)
+
+function META:Unpack()
+	return self.r, self.g, self.b, self.a
+end
 
 function META:Get255()
 	return Color(self.r * 255, self.g * 255, self.b * 255, self.a * 255)
@@ -127,28 +132,18 @@ end
 
 -- http://code.google.com/p/sm-ssc/source/browse/Themes/_fallback/Scripts/02+Colors.lua?spec=svnca631130221f6ed8b9065685186fb696660bc79a&name=ca63113022&r=ca631130221f6ed8b9065685186fb696660bc79a
 
-function HSVToColor(hue, sat, val)
-	hue = hue%360
-
-	local i
-	local f, q, p, t
-	local r, g, b
-	local h, s, v
-
-	s = sat
-	v = val
+function HSVToColor(h, s, v, a)
+	h = (h%1 * 360) / 60
 
 	if s == 0 then
-		return Color(v, v, v)
+		return Color(v, v, v, a)
 	end
 
-	h = hue / 60
-
-	i = math.floor(h)
-	f = h - i
-	p = v * (1-s)
-	q = v * (1-s*f)
-	t = v * (1-s*(1-f))
+	local i = math.floor(h)
+	local f = h - i
+	local p = v * (1-s)
+	local q = v * (1-s*f)
+	local t = v * (1-s*(1-f))
 
 	if i == 0 then
 		return Color(v, t, p)
@@ -162,7 +157,7 @@ function HSVToColor(hue, sat, val)
 		return Color(t, p, v)
 	end
 
-	return Color(v, p, q)
+	return Color(v, p, q, a)
 end
 
 function ColorToHSV(c)

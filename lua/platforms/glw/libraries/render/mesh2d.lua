@@ -5,7 +5,7 @@ local vertex_shader_source = [[
 	
 	uniform mat4 proj_mat;
 	uniform mat4 view_mat;
-	uniform float time;
+	uniform vec4 global_color;
 
 	in vec2 position;
 	in vec2 uv;
@@ -30,7 +30,7 @@ local fragment_shader_source = [[
 	
 	out vec4 frag_color;
 	
-	uniform float time;
+	uniform vec4 global_color;
 	uniform sampler2D texture;
 	
 	in vec2 _position;
@@ -41,7 +41,8 @@ local fragment_shader_source = [[
 	
 	void main()
 	{
-		frag_color = texel * _color;
+		frag_color = texel * _color * global_color;
+		frag_color.w = global_color.w;
 	}
 ]]
 
@@ -105,6 +106,10 @@ local pos_stride = ffi.cast("void*", 0)
 local uv_stride = ffi.cast("void*", float_size * 2)
 local color_stride = ffi.cast("void*", float_size * 4)
 
+local proj_mat_location
+local view_mat_location
+local global_color_location
+
 function render.Draw2DVBO(vbo)
 	if not render.vbo_2d_program then			
 		local prog, err = Program(assert(Shader(e.GL_VERTEX_SHADER, vertex_shader_source)), assert(Shader(e.GL_FRAGMENT_SHADER, fragment_shader_source)))
@@ -115,6 +120,10 @@ function render.Draw2DVBO(vbo)
 			gl.BindAttribLocation(prog, 2, "color")
 		
 			render.vbo_2d_program = prog
+			
+			proj_mat_location = gl.GetUniformLocation(prog, "proj_mat")
+			view_mat_location = gl.GetUniformLocation(prog, "view_mat")
+			global_color_location = gl.GetUniformLocation(prog, "global_color")
 		else
 			logn(err)
 			render.vbo_shader_error = err
@@ -122,37 +131,35 @@ function render.Draw2DVBO(vbo)
 		end		
 	end		
 	
-	if render.active_texture then
-		gl.ActiveTexture(e.GL_TEXTURE0) 
-		render.active_texture:Bind()
-		gl.Uniform1i(gl.GetUniformLocation(render.vbo_2d_program, "texture"), 0)
-	end
-
-	gl.Uniform1f(gl.GetUniformLocation(render.vbo_2d_program, "time"), os.clock())
-
 	gl.UseProgram(render.vbo_2d_program)
 
-	gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.projection_matrix)
-	gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_2d_program, "proj_mat"), 1, 0, render.projection_matrix)
-	
-	gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.view_matrix)
-	gl.UniformMatrix4fv(gl.GetUniformLocation(render.vbo_2d_program, "view_mat"), 1, 0, render.view_matrix)
-	
-	gl.Uniform1f(gl.GetUniformLocation(render.vbo_2d_program, "time"), render.frame / 60 / 4)
-	
-	
-	gl.EnableVertexAttribArray(0)
-	gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
-	gl.VertexAttribPointer(0, 2, e.GL_FLOAT, false, stride, pos_stride)
+		if render.active_texture then
+			gl.ActiveTexture(e.GL_TEXTURE0) 
+			render.active_texture:Bind()
+			gl.Uniform1i(gl.GetUniformLocation(render.vbo_2d_program, "texture"), 0)
+		end
 
-	gl.EnableVertexAttribArray(1)
-	gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
-	gl.VertexAttribPointer(1, 2, e.GL_FLOAT, false, stride, uv_stride)
-	
-	gl.EnableVertexAttribArray(2)
-	gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
-	gl.VertexAttribPointer(2, 4, e.GL_FLOAT, false, stride, color_stride)
+		gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.projection_matrix)
+		gl.UniformMatrix4fv(proj_mat_location, 1, 0, render.projection_matrix)
+		
+		gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.view_matrix)
+		gl.UniformMatrix4fv(view_mat_location, 1, 0, render.view_matrix)
+		
+		gl.Uniform4f(global_color_location, render.r, render.g, render.b, render.a)			
+		
+		gl.EnableVertexAttribArray(0)
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
+		gl.VertexAttribPointer(0, 2, e.GL_FLOAT, false, stride, pos_stride)
 
+		gl.EnableVertexAttribArray(1)
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
+		gl.VertexAttribPointer(1, 2, e.GL_FLOAT, false, stride, uv_stride)
+		
+		gl.EnableVertexAttribArray(2)
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
+		gl.VertexAttribPointer(2, 4, e.GL_FLOAT, false, stride, color_stride)
 
-	gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
+		gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
+		
+	gl.UseProgram(0)
 end	

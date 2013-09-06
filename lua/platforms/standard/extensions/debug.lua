@@ -54,14 +54,16 @@ function debug.dumpcall(clr_print)
 		for i = -10, 10 do
 			local line = lines[info.currentline + i]
 			
-			if i == 0 then
-				line = (">"):rep(string.len(info.currentline)) .. ":\t" ..  line
-			else
-				line = (info.currentline + i) .. ": " .. line
-			end
+			if line then
+				if i == 0 then
+					line = (">"):rep(string.len(info.currentline)) .. ":\t" ..  line
+				else
+					line = (info.currentline + i) .. ": " .. line
+				end
 			
-			if clr_print then
-				curses.ColorPrint(line .. "\n")
+				if clr_print then
+					curses.ColorPrint(line .. "\n")
+				end
 			end
 		end
 	else
@@ -83,11 +85,19 @@ function debug.logcalls(b)
 		return
 	end
 	
-	debug.sethook(function() 
+	local hook
+
+	hook = function() 
+		debug.sethook()
+		
 		setlogfile("lua_calls")
 			debug.dumpcall()
 		setlogfile()
-	end, "l")
+		
+		debug.sethook(hook, "l")
+	end
+	
+	debug.sethook(hook, "l")
 end
 
 function debug.stepin()

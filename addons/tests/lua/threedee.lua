@@ -1,3 +1,4 @@
+gl.debug = true
 local window = glw.OpenWindow(1280, 720)
 
 local cam_pos = Vec3(0, 0, -10)
@@ -55,34 +56,26 @@ local function calc_camera(window, dt)
 		cam_ang.y = cam_ang.y - speed
 	elseif input.IsKeyDown("right") then
 		cam_ang.y = cam_ang.y + speed
-	end
-end       
+	end  
+end        
 
-local obj = utilities.RemoveOldObject(Entity("model"))
+local obj = utilities.RemoveOldObject(Entity("model"), "um")
 obj:SetMesh(Mesh(utilities.CreateSphere(4)))
 obj:SetTexture("face1.png")
 
-local obj = utilities.RemoveOldObject(Entity("model")) 
+local obj = utilities.RemoveOldObject(Entity("model"), "um2") 
 obj:SetPos(Vec3(5,0,0))
 obj:SetObj("face.obj")
 obj:SetTexture("face1.png")
 
-
-gl.ClearColor(0,0,0,1)
+gl.ClearColor(0.5,0.5,0.5,1)
 input.SetMouseTrapped(true)
 
-local font = Font(R"fonts/arial.ttf")
-font:SetFaceSize(72, 72)
-local test = render.Create2DVBO({
-	{pos = Vec2(0, 0), uv = Vec2(1, 1), color = Color(0,1,0,1)},
-	{pos = Vec2(0, 1), uv = Vec2(1, 0), color = Color(0,1,0,1)},
-	{pos = Vec2(1, 1), uv = Vec2(0, 0), color = Color(0,1,0,1)},
-	{pos = Vec2(1, 1), uv = Vec2(0, 0), color = Color(0,1,0,1)},
-	{pos = Vec2(1, 0), uv = Vec2(0, 1), color = Color(0,1,0,1)},
-	{pos = Vec2(0, 0), uv = Vec2(1, 1), color = Color(0,1,0,1)},
-})
-
-   
+gl.debug = true
+ftgl.debug = true
+local font = Font(R"fonts/arial.ttf", "texture")  
+font:SetFaceSize(50, 512)
+  
 event.AddListener("OnDraw", "gl", function(dt)
   	calc_camera(window, dt)
 
@@ -92,22 +85,30 @@ event.AddListener("OnDraw", "gl", function(dt)
 
 		render.Start3D(cam_pos, cam_ang:GetDeg())
 			entities.world_entity:Draw()
-
-		render.Start2D()
-			gl.Color3f(1,1,1)
-			gl.Color4f(1,1,1,1)
-
-			font:Render(os.date())
-		
-			local w, h = 200, 200
-			local size = window:GetSize()
-			gl.Color4f(1, 1, 1, 0.5)
-			render.PushMatrix(Vec3(0, 0), Ang3(0), Vec3(size.w, size.h))
 			
-			obj.tex:Bind()
-			render.Draw2DVBO(test)
-			--render.DrawScreenQuad()
-
-			render.PopMatrix()
+		surface.Start()
+			font:Render(os.date())
+			surface.SetWhiteTexture()
+			 			
+			surface.Color(1,1,1,0.5)
+			surface.DrawRect(0,0,500,500)
+			
+			surface.StartClipping(0, 0, 500, 500)			
+				ERROR_TEXTURE:Bind()
+				
+				for i = 1, 400 do
+					local c = HSVToColor(i/400, 0.75, 1)
+					c.a = (i/400) ^ 3
+					surface.Color(c:Unpack())
+					
+					local size = i/400
+					size = size * 100
+					
+					local x = math.sin(os.clock()) / 2
+					local y = math.cos(os.clock()) / 2
+					
+					surface.DrawRect(300 + (i * x), 300 + (i * y),50+size,50+size, i+os.clock()*100)
+				end			
+			surface.EndClipping()
 	render.End()
 end)
