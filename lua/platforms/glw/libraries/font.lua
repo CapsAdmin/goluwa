@@ -1,3 +1,5 @@
+do return end
+
 local default = "bitmap"
 local types = {}
 local META = {}

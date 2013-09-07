@@ -47,8 +47,8 @@ do
 			end
  
 			if vertex.uv then
-				vertex_attributes.u = vertex.uv.x
-				vertex_attributes.v = vertex.uv.y
+				vertex_attributes.u = -vertex.uv.x
+				vertex_attributes.v = -vertex.uv.y
 			end 
 		end  
 

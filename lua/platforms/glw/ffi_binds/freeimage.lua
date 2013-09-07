@@ -1,6 +1,6 @@
 local freeimage = {}
 
-local lib = ffi.load("freeimage") 
+local lib = ffi.load("libfreeimage") 
 
 ffi.cdef[[
 	typedef struct {} FI_MEMORY;
@@ -28,9 +28,7 @@ function freeimage.LoadImage(data, flags)
 	local temp = lib.FreeImage_LoadFromMemory(type, stream, flags or 0)
 	local bitmap = lib.FreeImage_ConvertTo32Bits(temp)
 	lib.FreeImage_Unload(temp)
-	
-	lib.FreeImage_FlipVertical(bitmap)
-		
+			
 	local data = lib.FreeImage_GetBits(bitmap) 
 	local width = lib.FreeImage_GetWidth(bitmap)
 	local height = lib.FreeImage_GetHeight(bitmap)

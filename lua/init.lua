@@ -526,6 +526,7 @@ json = include(libraries .. "json.lua")
 console = include(libraries .. "console.lua")
 mmyy = include(libraries .. "mmyy.lua")
 system = include(libraries .. "system.lua")
+lcpp = include(libraries .. "lcpp.lua")
 
 -- meta
 include(meta .. "function.lua")
