@@ -1,4 +1,6 @@
 gl.debug = true
+--ftgl.debug = true
+
 local window = glw.OpenWindow(1280, 720)
 
 local cam_pos = Vec3(0, 0, -10)
@@ -50,7 +52,7 @@ local function calc_camera(window, dt)
 		cam_ang.p = cam_ang.p - speed
 	elseif input.IsKeyDown("down") then
 		cam_ang.p = cam_ang.p + speed
-	end
+	end 
 
 	if input.IsKeyDown("left") then
 		cam_ang.y = cam_ang.y - speed
@@ -59,11 +61,9 @@ local function calc_camera(window, dt)
 	end  
 end        
 
-local obj = utilities.RemoveOldObject(Entity("model"), "um")
-obj:SetMesh(Mesh(utilities.CreateSphere(4)))
-obj:SetTexture("face1.png")
+entities.world_entity:RemoveChildren() 
 
-local obj = utilities.RemoveOldObject(Entity("model"), "um2") 
+local obj = Entity("model")
 obj:SetPos(Vec3(5,0,0))
 obj:SetObj("face.obj")
 obj:SetTexture("face1.png")
@@ -71,11 +71,12 @@ obj:SetTexture("face1.png")
 gl.ClearColor(0.5,0.5,0.5,1)
 input.SetMouseTrapped(true)
 
-gl.debug = true
-ftgl.debug = true
-local font = Font(R"fonts/arial.ttf", "texture")  
-font:SetFaceSize(50, 512)
-  
+--local font = Font(R"fonts/arial.ttf", "pixmap")  
+--font:SetFaceSize(50, 512)
+     
+local SOMETHING = Texture(8192, 8192, ffi.new("int[1]"), e.GL_R8)
+local scroll_pos = Vec2()
+
 event.AddListener("OnDraw", "gl", function(dt)
   	calc_camera(window, dt)
 
@@ -86,9 +87,9 @@ event.AddListener("OnDraw", "gl", function(dt)
 		render.Start3D(cam_pos, cam_ang:GetDeg())
 			entities.world_entity:Draw()
 			
-		surface.Start()
-			font:Render(os.date())
+		surface.Start()		
 			surface.SetWhiteTexture()
+			--font:Render(os.date())
 			 			
 			surface.Color(1,1,1,0.5)
 			surface.DrawRect(0,0,500,500)
@@ -110,5 +111,14 @@ event.AddListener("OnDraw", "gl", function(dt)
 					surface.DrawRect(300 + (i * x), 300 + (i * y),50+size,50+size, i+os.clock()*100)
 				end			
 			surface.EndClipping()
+			
+			if SOMETHING then
+				surface.Color(1,1,1,0.5)
+				SOMETHING:Bind()
+				
+				scroll_pos = scroll_pos + input.GetMouseDelta()
+				
+				surface.DrawRect(-scroll_pos.x, scroll_pos.y, 2048*4, 2048*4)
+			end
 	render.End()
 end)

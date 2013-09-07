@@ -5,6 +5,7 @@ if not gl then
 	glu = include("ffi_binds/glu.lua")
 	glfw = include("ffi_binds/glfw.lua")
 	freeimage = include("ffi_binds/freeimage.lua")
+	freetype = include("ffi_binds/freetype.lua")
 	ftgl = include("ffi_binds/ftgl.lua")
 end
 

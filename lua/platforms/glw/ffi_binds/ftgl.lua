@@ -1,3 +1,4 @@
+do return end
 -- http://ftgl.sourceforge.net/docs/html/ftgl-tutorial.html
 
 local header = [[

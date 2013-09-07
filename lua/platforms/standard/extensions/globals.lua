@@ -24,7 +24,7 @@ do -- check
 
 		local arg = "???"
 
-		for i=1, math.huge do
+		for i=1, 30 do
 			local key, value = debug.getlocal(2, i)
 			-- I'm not sure what to do about this part with vars that have no refference
 			if value == var then

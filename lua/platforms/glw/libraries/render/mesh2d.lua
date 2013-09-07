@@ -86,7 +86,7 @@ function render.Create2DVBO(data)
 		end
 
 		if vertex.uv then
-			vertex_attributes.u = vertex.uv.x
+			vertex_attributes.u = -vertex.uv.x
 			vertex_attributes.v = vertex.uv.y
 		end 
 	end  
@@ -145,7 +145,7 @@ function render.Draw2DVBO(vbo)
 		gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.view_matrix)
 		gl.UniformMatrix4fv(view_mat_location, 1, 0, render.view_matrix)
 		
-		gl.Uniform4f(global_color_location, render.r, render.g, render.b, render.a)			
+		gl.Uniform4f(global_color_location, render.r or 1, render.g or 1, render.b or 1, render.a or 1)	
 		
 		gl.EnableVertexAttribArray(0)
 		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)

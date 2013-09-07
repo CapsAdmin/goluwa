@@ -226,6 +226,20 @@ do -- header parse
 			end
 		end
 	end
+	
+	local macros = {}
+	
+	local function process_macros(str)
+		for line in str:gmatch("(.-\n)") do
+			if line:find("#") then
+				local type = line:match("#%s-([%l%d_]+)()")
+			
+				print(type, line)
+			end
+		end
+		
+		return str
+	end
 
 	local included = {}
 
@@ -237,10 +251,11 @@ do -- header parse
 				if line:find("#include") then
 					included[line] = true
 					
-					local path = line:match("#include.-<(.-)>")
+					local path = line:match("%s-#include.-<(.-)>")
 					
 					if path then
 						local content = read_file(path)
+						
 						if content then
 							out = out .. "// HEADER: " .. path .. ";"
 							out = out .. process_include(content)
@@ -341,6 +356,7 @@ do -- header parse
 
 		header = read_file(path)
 
+		header = process_macros(header)
 		header = process_include(header)
 		header = remove_comments(header)
 		header = remove_whitespace(header)
@@ -352,7 +368,7 @@ do -- header parse
 		return {
 			header = header, 
 			definitions = definitions, 
-			typedefs = typedes, 
+			typedefs = typedefs, 
 			enums = enums,
 		}
 	end
