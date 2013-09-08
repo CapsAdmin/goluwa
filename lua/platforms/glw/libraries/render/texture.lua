@@ -107,7 +107,7 @@ do
 		type = type or e.GL_UNSIGNED_BYTE
 
 		-- create a new texture
-		local id = ffi.new("GLuint[1]") gl.GenTextures(1, id) id = id[0]
+		local id = gl.GenTexture()
 
 		local self = setmetatable(
 			{

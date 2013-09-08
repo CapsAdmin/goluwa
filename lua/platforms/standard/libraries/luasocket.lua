@@ -116,6 +116,8 @@ do -- helpers/usage
 
 	function luasocket.HeaderToTable(header)
 		local tbl = {}
+		
+		if not header then return tbl end
 
 		for line in header:gmatch("(.-)\n") do
 			local key, value = line:match("(.+):%s+(.+)\13")
@@ -138,10 +140,10 @@ do -- helpers/usage
 		return str
 	end
 
-	function luasocket.Get(url, callback)
+	function luasocket.Get(url, callback, timeout)
 		check(url, "string")
 		check(callback, "function", "nil", "false")
-
+		
 		url = url:gsub("http://", "")
 		callback = callback or table_print
 
@@ -153,23 +155,29 @@ do -- helpers/usage
 		end
 
 		local socket = luasocket.Client("tcp")
-		socket:SetTimeout(5)
+		socket:SetTimeout(timeout or 0.5)
 		socket:Connect(host, 80)
 
 		socket:Send(("GET /%s HTTP/1.1\r\n"):format(get))
 		socket:Send(("Host: %s\r\n"):format(host))
-		socket:Send("User-Agent: gmod\r\n")
+		socket:Send("User-Agent: goluwa\r\n")
 		socket:Send("\r\n")
 
+		local content = {}
+		
 		function socket:OnReceive(str)
+			table.insert(content, str)
+		end
+		
+		function socket:OnClose()
+			local str = table.concat(content, "")
+			
 			local header, content = str:match("(.-\10\13)(.+)")
 
-			local ok, err = xpcall(callback, OnError, {content = content, header = luasocket.HeaderToTable(header), status = status})
+			local ok, err = xpcall(callback, OnError, {content = content, header = luasocket.HeaderToTable(header)})
 			if err then
 				warning(err)
 			end
-
-			self:Remove()
 		end
 	end
 
@@ -472,7 +480,11 @@ do -- tcp socket meta
 				end
 				
 				if data then
-					self:DebugPrintf("received (mode %s) %q", mode, data)
+					if data:find("\n") then
+						self:DebugPrintf("received (mode %s) %i bytes of data", mode, #data)
+					else
+						self:DebugPrintf("received (mode %s) %q", mode, data)
+					end
 
 					self:OnReceive(data)
 					self:Timeout(false)

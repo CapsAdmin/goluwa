@@ -107,7 +107,7 @@ if _E.CURSES_INIT then return end
 
 -- whyyyyyyyyy
 if WINDOWS then
-	os.execute("mode con:cols=140 lines=50")
+	os.execute("mode con:cols=130 lines=40")
 end
 
 local curses = ffi.load(jit.os == "Linux" and "ncurses" or "libcurses")
@@ -150,8 +150,50 @@ curses.attron((2 ^ (8 + 13)) + 8 * 256)
 curses.mvprintw(curses.LINES - 2, 0, string.rep("-", curses.COLS))
 curses.refresh()
 
+local function split_by_length(str, len)
+	if #str > len then
+		local tbl = {}
+		
+		local max = math.floor(#str/len)
+		local leftover = #str - (max * len)
+		
+		for i = 0, max do
+			
+			local left = i * len
+			local right = (i * len) + len
+					
+			table.insert(tbl, str:sub(left, right))
+		end
+		
+		return tbl
+	end
+	
+	return {str}
+end
+
+local max_length = 256
+
 function io.write(...)
-	curses.wprintw(log_window, table.concat({...}, ""))
+	local str = table.concat({...}, "")
+	
+	if WINDOWS and #str > max_length then
+		for k,v in pairs(split_by_length(str, max_length)) do
+			for line in v:gmatch("(.-\n)") do
+				io.write(line)
+			end
+		end
+		return
+	end
+	
+	if CAPSADMIN and false then
+		for char in str:gmatch("(.)") do
+			curses.wprintw(log_window, char)
+		end
+		curses.wrefresh(log_window)
+		return
+	end
+	
+	curses.wprintw(log_window, str)
 	curses.wrefresh(log_window)
 end
 

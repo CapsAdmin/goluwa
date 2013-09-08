@@ -217,11 +217,19 @@ function vfs.Write(path, data, mode, in_data)
 		mode = "w"
 	end
 	
-	local file, err = vfs.GetFile(path, mode)
+	local file, err = vfs.GetFile(e.BASE_FOLDER .. path, mode)
 		
 	if err and err:find("No such file or directory") then
 		create_folders_from_path(path)
-		return vfs.Write(path, data, mode)
+		return vfs.Write(path, data, mode, in_data)
+	end		
+	
+	local file, err = vfs.GetFile(path, mode)
+		
+	if err and err:find("No such file or directory") then
+		-- lets not create folders outside the sandbox
+		--create_folders_from_path(path) 
+		return vfs.Write(path, data, mode, in_data)
 	end
 		
 	if file then
@@ -271,6 +279,19 @@ function vfs.Find(path, invert, full_path, start, plain, dont_sort)
 		end
 		end)
 	end
+	
+	if not next(unique) then
+		pcall(function()
+		for file_name in lfs.dir(dir) do
+			if file_name ~= "." and file_name ~= ".." then
+				if full_path then
+					file_name = dir .. "/" .. file_name
+				end
+				unique[file_name] = true
+			end
+		end
+		end)
+	end	
 	
 	local list = {}
 	
