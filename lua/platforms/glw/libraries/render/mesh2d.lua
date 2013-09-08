@@ -91,7 +91,7 @@ function render.Create2DVBO(data)
 		end 
 	end  
 
-	local id = ffi.new("int [1]") gl.GenBuffers(1, id) id = id[0]
+	local id = gl.GenBuffer()
 
 	gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
 	gl.BufferData(e.GL_ARRAY_BUFFER, ffi.sizeof(buffer[0]) * #data, buffer, e.GL_STATIC_DRAW)

@@ -10,6 +10,7 @@ if not gl then
 end
 
 include("libraries/render/init.lua")
+include("libraries/surface.lua")
 include("libraries/entities/entities.lua")
 
 include("libraries/font.lua")

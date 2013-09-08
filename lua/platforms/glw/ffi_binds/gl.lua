@@ -553,6 +553,90 @@ function gl.InitMiniGlew()
 			end
 		end
 	end 
+	
+	-- adds gl.GenBuffer which creates and returns a single id from gl.GenBuffers 
+	-- no support for ARB stuff yet lol
+	for name, func in pairs(gl) do
+		if name:find("Gen%u%l-s$") then
+			print(name)
+			gl[name:sub(0,-2)] = function()
+				local id = ffi.new("GLint [1]") 
+				gl[name](1, id) 
+				return id[0]
+			end
+		end
+	end
+end
+
+-- the download functions work but the idea wasn't thought out properly
+-- the data from registry/specs/ is very inconsistent so parsing it
+-- would be a pain...
+
+function gl.DownloadExtensionList(callback)
+	if not luasocket then return end
+	
+	local ext_folder = "lua/platforms/glw/ffi_binds/gl_extensions/"
+	
+	local domain = "http://www.opengl.org/"
+	local base = "registry/"
+	
+	local pattern = "\"(specs/.-%.txt)"
+	
+	luasocket.Get(domain .. base, function(data) 
+		local list = {}
+
+		for url in data.content:gmatch(pattern) do 
+			local vendor, file_name = url:match("specs/(.-)/(.+)")
+			file_name = vendor .. "_" .. file_name
+			
+			local name = file_name:lower():match("(.+)%.txt")
+						
+			table.insert(list, {url = domain .. base .. url, path = ext_folder .. file_name:lower(), name = name})
+		end
+		
+		logf("found %i extensions from %q!", #list, domain .. base)
+		logf("checking extensions in %q..", ext_folder)
+		for i, data in pairs(list) do
+			local str = vfs.Read(data.path)
+			
+			if not str then
+				logf("extension %q was not found!", data.name)
+				data.not_found = true
+			end
+		end
+
+		if callback then
+			callback(list)
+		end
+	end)
+end
+
+function gl.DownloadExtensions()
+	if not luasocket then return end
+		
+	gl.DownloadExtensionList(function(list)	
+		print(table.count(list))
+		local function download()
+			local i, extension = next(list)
+			list[i] = nil
+			
+			if extension then
+				logf("downloading %q (%i left)", extension.name, table.count(list))
+				luasocket.Get(extension.url, function(data)
+					vfs.Write(extension.path, data.content, nil, false)
+					logf("saved %q (%i bytes)", extension.name, #data.content)
+					
+					download()
+				end, 3)
+			else
+				logn("finished downloading extensions")
+			end
+		end
+		
+		for i = 1, 50 do
+			download()
+		end	
+	end)
 end
 
 return gl

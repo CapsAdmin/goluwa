@@ -53,7 +53,7 @@ do
 		end  
 
 		-- create 1 new buffer
-		local id = ffi.new("int [1]") gl.GenBuffers(1, id) id = id[0]
+		local id = gl.GenBuffer()
 
 		
 		-- bind it and feed it the buffer array
