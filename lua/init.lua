@@ -1,10 +1,22 @@
 -- enums
+_G.ffi = require("ffi")
+
+_G[ffi.os:upper()] = true
+_G[ffi.arch:upper()] = true
+
 _E = _E or {}
 e = _E 
 
 _E.PLATFORM = PLATFORM or tostring(select(1, ...) or nil)
 _E.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
 _G[e.USERNAME:upper()] = true
+
+_G.LOG_BUFFER = {}
+print = function(...) 
+	local args =  {...}
+	table.insert(args, "\n")
+	table.insert(_G.LOG_BUFFER, args) 
+end
 
 do -- helper constants	
 	_G._F = {}
@@ -220,9 +232,7 @@ do -- logging
 	local last_count_length = 0
 		
 	lfs.mkdir(base_log_dir)
-	
-	_G.LOG_BUFFER = {}
-	
+		
 	function log(...)
 		local args = tostring_args(...)
 		if can_print(args) then
@@ -334,11 +344,6 @@ logf("launched on %s", os.date())
 logn("executed by " .. e.USERNAME, "\n")
 
 do -- ffi
-	_G.ffi = require("ffi")
-	
-	_G[ffi.os:upper()] = true
-	_G[ffi.arch:upper()] = true
-
 	_OLD_G.ffi_load = _OLD_G.ffi_load or ffi.load
 	
 	-- make ffi.load search using our file system
