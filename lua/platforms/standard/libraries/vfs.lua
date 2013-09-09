@@ -82,6 +82,11 @@ function vfs.Mount(path)
 	check(path, "string")
 	path = vfs.ParseVariables(path)
 		
+	
+	if is_absolute(path) and path:sub(-1) == "/" then
+		path = path:sub(0, -2)
+	end
+		
 	vfs.Unmount(path)
 		
 	table.insert(vfs.paths, path)
@@ -122,6 +127,7 @@ function vfs.GetAbsolutePath(path, ...)
 	path = vfs.ParseVariables(path)
 	
 	local is_folder = path:sub(-1) == "/"
+	
 	if is_folder then
 		path = path .. "NUL"
 	end
@@ -136,7 +142,7 @@ function vfs.GetAbsolutePath(path, ...)
 				path = path:sub(0,-4)
 			end
 			
-			return v .. path
+			return v .. "/" .. path
 		end
 	end
 	
@@ -146,10 +152,12 @@ end
 function vfs.GetFile(path, mode, ...)
 	check(path, "string")
 	path = vfs.ParseVariables(path)
-	
-	if is_absolute(path) then
-		local file, err = io.open(path, mode, ...)
 		
+	local file, err
+		
+	if is_absolute(path) then
+		file, err = io.open(path, mode, ...)
+
 		if err then
 			warning(err)
 		end		
@@ -184,6 +192,8 @@ function vfs.Read(path, ...)
 		file:close()
 		return data
 	end
+	
+	print(path,is_absolute(path), "!!!!!!!!!!!!!!!!!!!!")
 	
 	return file, err
 end
@@ -302,6 +312,7 @@ function vfs.Find(path, invert, full_path, start, plain, dont_sort)
 		for _, full_dir in ipairs(vfs.paths) do
 			-- fix me!! 
 			-- on linux, an invalid path will error
+						
 			pcall(function()
 			for file_name in lfs.dir(full_dir .. "/" .. dir) do
 				if file_name ~= "." and file_name ~= ".." then
