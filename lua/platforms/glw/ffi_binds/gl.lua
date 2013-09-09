@@ -519,7 +519,7 @@ end
 -- if gl.GenBuffers then
 function gl.InitMiniGlew()
 	for path in vfs.Iterate("lua/platforms/glw/ffi_binds/gl_extensions/", nil, true) do
-		local str = vfs.Read(path)
+		local str, err = vfs.Read(path)
 		for line in str:gmatch("\t(.-)\n") do
 			local key, val = line:match("([1-9a-Z_]+) (.+)")
 			
@@ -558,7 +558,6 @@ function gl.InitMiniGlew()
 	-- no support for ARB stuff yet lol
 	for name, func in pairs(gl) do
 		if name:find("Gen%u%l-s$") then
-			print(name)
 			gl[name:sub(0,-2)] = function()
 				local id = ffi.new("GLint [1]") 
 				gl[name](1, id) 
