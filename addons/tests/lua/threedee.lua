@@ -1,3 +1,5 @@
+print(vfs.Write("%SOURCE%test.lol", "huh"))
+
 gl.debug = true
 --ftgl.debug = true
 
@@ -60,21 +62,43 @@ local function calc_camera(window, dt)
 		cam_ang.y = cam_ang.y + speed
 	end  
 end        
-
+ 
 entities.world_entity:RemoveChildren() 
 
 local obj = Entity("model")
 obj:SetPos(Vec3(5,0,0))
 obj:SetObj("face.obj")
-obj:SetTexture("face1.png")
+obj:SetTexture("face1.png") 
 
 gl.ClearColor(0.5,0.5,0.5,1)
 input.SetMouseTrapped(true)
+ 
+local font 
+ 
+if true then
+	local ptr = ffi.new("FT_Library[1]")  
+	freetype.InitFreeType(ptr)
+	ptr = ptr[0]
 
---local font = Font(R"fonts/arial.ttf", "pixmap")  
---font:SetFaceSize(50, 512)
+	local face = ffi.new("FT_Face[1]")   
+		
+	local data = vfs.Read("fonts/arial.ttf", "rb") 
+	freetype.NewMemoryFace(ptr, data, #data, 0, face)   
+	face = face[0]	
+	
+	freetype.SetCharSize(face, 0, 32*64, 0, 0)
+		
+	local i = freetype.GetCharIndex(face, ("A"):byte())  
+	freetype.LoadGlyph(face, i, 0)
+	freetype.RenderGlyph(face.glyph, 0)
+	local bitmap = face.glyph.bitmap
+	table.print(face.glyph)
+	 	 
+	font = Texture(bitmap.width, bitmap.rows, bitmap.buffer, e.GL_LUMINANCE_ALPHA)     
+	
+end
      
-local SOMETHING = Texture(8192, 8192, ffi.new("int[1]"), e.GL_R8)
+--local SOMETHING = Texture(8192, 8192, ffi.new("int[1]"), e.GL_R8)
 local scroll_pos = Vec2()
 
 event.AddListener("OnDraw", "gl", function(dt)
@@ -88,8 +112,8 @@ event.AddListener("OnDraw", "gl", function(dt)
 			entities.world_entity:Draw()
 			
 		surface.Start()		
+						
 			surface.SetWhiteTexture()
-			--font:Render(os.date())
 			 			
 			surface.Color(1,1,1,0.5)
 			surface.DrawRect(0,0,500,500)
@@ -119,6 +143,12 @@ event.AddListener("OnDraw", "gl", function(dt)
 				scroll_pos = scroll_pos + input.GetMouseDelta()
 				
 				surface.DrawRect(-scroll_pos.x, scroll_pos.y, 2048*4, 2048*4)
+			end
+			
+			if font then
+				surface.Color(255, 255, 255, 255)
+				font:Bind()     
+				surface.DrawRect(0,0,128,128)
 			end
 	render.End()
 end)

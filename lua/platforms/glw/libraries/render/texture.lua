@@ -19,7 +19,7 @@ do
 
 	function META:Download()
 		
-		local buffer = ffi.new("GLubyte[?]", self.size.w * self.size.h * 4)
+		local buffer = ffi.new("GLubyte[?]", self.size.w * self.size.h * self.bytes_per_pixel)
 
 		gl.BindTexture(e.GL_TEXTURE_2D, self.id)
 			gl.GetTexImage(e.GL_TEXTURE_2D, 0, self.format, self.type, buffer)
@@ -53,7 +53,7 @@ do
 		local x, y = 0, 0
 		local r, g, b, a
 
-		local size = width*height*4
+		local size = width*height*self.bytes_per_pixel
 		local buffer
 		
 		if write_only then
@@ -64,17 +64,17 @@ do
 		
 		for y = 0, height-1 do
 		for x = 0, width-1 do
-			local i = 4*width*y+4*x		
+			local i = self.bytes_per_pixel*width*y+self.bytes_per_pixel*x		
 			
 			if write_only then
-				r, g, b, a = callback(x, y)
+				r, g, b, a = callback(x, y, i)
 				
 				r = r or 1
 				g = g or 1
 				b = b or 1
 				a = a or 1
 			else
-				r, g, b, a = callback(x, y, buffer[i+0], buffer[i+1], buffer[i+2], buffer[i+3])
+				r, g, b, a = callback(x, y, i, buffer[i+0], buffer[i+1], buffer[i+2], buffer[i+3])
 			end
 		
 			if r then buffer[i+0] = r*255 end
@@ -96,15 +96,17 @@ do
 		utilities.MakeNULL(self)
 	end
 
-	function Texture(width, height, buffer, format, internal_format, type)
+	function Texture(width, height, buffer, format, internal_format, type, bytes_per_pixel)
 		check(width, "number")
 		check(height, "number")
 		check(buffer, "nil", "cdata")
 		check(format, "number", "nil")
+		check(bytes_per_pixel, "number", "nil")
 		
 		format = format or e.GL_BGRA
 		internal_format = internal_format or e.GL_RGBA8
 		type = type or e.GL_UNSIGNED_BYTE
+		bytes_per_pixel = bytes_per_pixel or 4
 
 		-- create a new texture
 		local id = gl.GenTexture()
@@ -116,6 +118,7 @@ do
 				format = format,
 				internal_format = internal_format,
 				type = type,
+				bytes_per_pixel = bytes_per_pixel,
 			}, 
 			META
 		)
