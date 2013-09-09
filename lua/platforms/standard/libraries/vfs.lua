@@ -1,7 +1,53 @@
 local vfs = _G.vfs or {}
 
+vfs.use_appdata = false
+
+vfs.vars = 
+{
+	DATA = e.USER_FOLDER,
+	ROOT = e.ABSOLUTE_BASE_FOLDER,
+	BIN = lfs.currentdir,
+}
+
+if vfs.use_appdata then
+	if WINDOWS then
+		vars.DATA = "%%APPDATA%%/.asdfml"
+	end
+
+	if LINUX then
+		vars.DATA =  "%%HOME%%/.asdfml"
+	end 
+end
+
+vfs.paths = {}
+
+local function getenv(key)
+	local val = vfs.vars[key]
+	
+	if type(val) == "function" then
+		val = val()
+	end
+	
+	return val or os.getenv(key)
+end
+
+local function has_prefix(path)
+	return path:find("%%.-%%") or path:find("%$%(.-%)")
+end
+
+local function is_absolute(path)
+	if LINUX then
+		return path:sub(1,1) == "/"
+	end
+	
+	if WINDOWS then
+		return path:sub(1, 2):find("%a:") ~= nil
+	end
+end
+
 local data_prefix = "%DATA%"
 local data_prefix_pattern = data_prefix:gsub("(%p)", "%%%1")
+
 
 local silence
 
@@ -14,34 +60,19 @@ function vfs.Silence(b)
 	silence = b
 end
 
-local function fix_path(path)
-
-	if vfs.use_appdata then
-		if WINDOWS then
-			path = path:gsub(data_prefix_pattern, "%%APPDATA%%/.asdfml")
-		end
-
-		if LINUX then
-			path = path:gsub(data_prefix_pattern, "%%HOME%%/.asdfml")
-		end
-	else
-		path = path:gsub(data_prefix_pattern, e.USER_FOLDER)
-	end
-
+function vfs.ParseVariables(path)
 	-- windows
-	path = path:gsub("%%(.-)%%", os.getenv)
+	path = path:gsub("%%(.-)%%", getenv)
 	path = path:gsub("%%", "")		
-	path = path:gsub("%$%((.-)%)", os.getenv)
+	path = path:gsub("%$%((.-)%)", getenv)
 	
 	-- linux
 	path = path:gsub("%$", "")
 	path = path:gsub("%(", "")
 	path = path:gsub("%)", "")
 		
-	return path:gsub("\\", "/")
+	return (path:gsub("\\", "/"))
 end
-
-vfs.paths = {}
 
 function vfs.GetMounts()
 	return vfs.paths
@@ -49,7 +80,7 @@ end
 
 function vfs.Mount(path)
 	check(path, "string")
-	path = fix_path(path)
+	path = vfs.ParseVariables(path)
 		
 	vfs.Unmount(path)
 		
@@ -62,7 +93,7 @@ end
 	
 function vfs.Unmount(path)
 	check(path, "string")
-	path = fix_path(path)
+	path = vfs.ParseVariables(path)
 	
 	for k,v in pairs(vfs.paths) do
 		if v == path then
@@ -79,7 +110,7 @@ end
 
 function vfs.GetAttributes(path, ...)
 	check(path, "string")
-	path = fix_path(path)
+	path = vfs.ParseVariables(path)
 	
 	for k, v in ipairs(vfs.paths) do
 		return lfs.attributes(v .. "/" .. path, ...)
@@ -88,7 +119,7 @@ end
 
 function vfs.GetAbsolutePath(path, ...)
 	check(path, "string")
-	path = fix_path(path)
+	path = vfs.ParseVariables(path)
 	
 	local is_folder = path:sub(-1) == "/"
 	if is_folder then
@@ -112,26 +143,28 @@ function vfs.GetAbsolutePath(path, ...)
 	return path
 end
 
-function vfs.GetFile(path, ...)
+function vfs.GetFile(path, mode, ...)
 	check(path, "string")
-	path = fix_path(path)
+	path = vfs.ParseVariables(path)
 	
-	for k, v in ipairs(vfs.paths) do	
-		local file, err = io.open(v .. "/" .. path, ...)
+	if is_absolute(path) then
+		local file, err = io.open(path, mode, ...)
 		
 		if err then
 			warning(err)
+		end		
+	else
+		for k, v in ipairs(vfs.paths) do	
+			local file, err = io.open(v .. "/" .. path, mode, ...)
+			
+			if err then
+				warning(err)
+			end
+			
+			if file then
+				return file, err
+			end
 		end
-		
-		if file then
-			return file, err
-		end
-	end
-	
-	local file, err = io.open(path, ...)
-	
-	if err then
-		warning(err)
 	end
 	
 	if file then
@@ -181,7 +214,7 @@ function vfs.Delete(path, ...)
 	return false, "No such file or directory"
 end
 
-local function create_folders_from_path(path)
+function vfs.CreateFoldersFromPath(path)
 	local dirs = {}
 	
 	for i = 0, 10 do
@@ -198,38 +231,27 @@ local function create_folders_from_path(path)
 	end
 end
 
-function vfs.Write(path, data, mode, in_data)
+function vfs.Write(path, data, mode)
 	check(path, "string")
-
-	if in_data == nil then
-		in_data = true
-	end
 	
-	if in_data and path:sub(0, #data_prefix) ~= data_prefix then
+	-- if it's a relative path default to the data folder
+	if not is_absolute(path) and not has_prefix(path) then
 		path = data_prefix .. path
 	end
-	
-	path = fix_path(path)
-		
+			
 	if mode and not mode:find("w", nil, true) then
 		mode = mode .. "w"
 	else
 		mode = "w"
 	end
 	
-	local file, err = vfs.GetFile(e.BASE_FOLDER .. path, mode)
-		
-	if err and err:find("No such file or directory") then
-		create_folders_from_path(path)
-		return vfs.Write(path, data, mode, in_data)
-	end		
+	path = vfs.ParseVariables(path)
 	
 	local file, err = vfs.GetFile(path, mode)
 		
 	if err and err:find("No such file or directory") then
-		-- lets not create folders outside the sandbox
-		--create_folders_from_path(path) 
-		return vfs.Write(path, data, mode, in_data)
+		vfs.CreateFoldersFromPath(path)		
+		return vfs.Write(path, data, mode)
 	end
 		
 	if file then
@@ -244,7 +266,7 @@ end
 
 function vfs.Find(path, invert, full_path, start, plain, dont_sort)
 	check(path, "string")
-	path = fix_path(path)
+	path = vfs.ParseVariables(path)
 	
 	-- if the path ends just with an "/"
 	-- make it behave like /*
@@ -264,33 +286,37 @@ function vfs.Find(path, invert, full_path, start, plain, dont_sort)
 	end
 	
 	local unique = {}
-
-	for _, full_dir in ipairs(vfs.paths) do
-		-- fix me!! 
-		-- on linux, an invalid path will error
+	
+	if is_absolute(path) then
 		pcall(function()
-		for file_name in lfs.dir(full_dir .. "/" .. dir) do
-			if file_name ~= "." and file_name ~= ".." then
-				if full_path then
-					file_name = full_dir .. "/" .. dir .. "/" .. file_name
+			for file_name in lfs.dir(dir) do
+				if file_name ~= "." and file_name ~= ".." then
+					if full_path then
+						file_name = dir .. "/" .. file_name
+					end
+					unique[file_name] = true
 				end
-				unique[file_name] = true
 			end
-		end
 		end)
+	else
+		for _, full_dir in ipairs(vfs.paths) do
+			-- fix me!! 
+			-- on linux, an invalid path will error
+			pcall(function()
+			for file_name in lfs.dir(full_dir .. "/" .. dir) do
+				if file_name ~= "." and file_name ~= ".." then
+					if full_path then
+						file_name = full_dir .. "/" .. dir .. "/" .. file_name
+					end
+					unique[file_name] = true
+				end
+			end
+			end)
+		end
 	end
 	
 	if not next(unique) then
-		pcall(function()
-		for file_name in lfs.dir(dir) do
-			if file_name ~= "." and file_name ~= ".." then
-				if full_path then
-					file_name = dir .. "/" .. file_name
-				end
-				unique[file_name] = true
-			end
-		end
-		end)
+		return unique
 	end	
 	
 	local list = {}
