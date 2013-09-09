@@ -83,7 +83,7 @@ do -- file system
 	vfs.Mount(e.USER_FOLDER)
 	
 	-- and 3 folders up
-	vfs.Mount(e.BASE_FOLDER)
+	vfs.Mount(e.ABSOLUTE_BASE_FOLDER)
 	
 	-- a nice global for loading resources externally from current dir
 	R = vfs.GetAbsolutePath
@@ -539,6 +539,8 @@ event.AddListener("LuaClose", "luasocket", luasocket.Panic)
 
 -- this should be used for xpcall
 function OnError(msg)
+	if LINUX and msg == "interrupted!\n" then return end
+	
 	if event.Call("OnLuaError", msg) == false then return end
 	
 	logn("STACK TRACE:")
