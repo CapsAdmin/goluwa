@@ -19,10 +19,10 @@ do
 
 	function META:Download()
 		
-		local buffer = ffi.new("GLubyte[?]", self.size.w * self.size.h * self.bytes_per_pixel)
+		local buffer = ffi.new(self.format.buffer_type.."[?]", self.size.w * self.size.h * self.format.stride)
 
 		gl.BindTexture(e.GL_TEXTURE_2D, self.id)
-			gl.GetTexImage(e.GL_TEXTURE_2D, 0, self.format, self.type, buffer)
+			gl.GetTexImage(e.GL_TEXTURE_2D, 0, self.format.format, self.format.type, buffer)
 		gl.BindTexture(e.GL_TEXTURE_2D, 0)
 
 		return buffer 
@@ -35,8 +35,8 @@ do
 		h = h or self.size.h
 	
 		gl.BindTexture(e.GL_TEXTURE_2D, self.id)
-			gl.TexStorage2D(e.GL_TEXTURE_2D, 1, self.internal_format, self.size.w, self.size.h)
-			gl.TexSubImage2D(e.GL_TEXTURE_2D, 0, x,y,w,h, self.format, self.type, buffer)
+			gl.TexStorage2D(e.GL_TEXTURE_2D, 1, self.format.internal_format, self.size.w, self.size.h)
+			gl.TexSubImage2D(e.GL_TEXTURE_2D, 0, x,y,w,h, self.format.format, self.format.type, buffer)
 			--render.SetTextureFiltering()
 		gl.BindTexture(e.GL_TEXTURE_2D, 0)
 	end
@@ -50,37 +50,35 @@ do
 		
 		local width = self.size.w
 		local height = self.size.h		
+		local stride = self.format.stride
 		local x, y = 0, 0
-		local r, g, b, a
+		local colors
 
-		local size = width*height*self.bytes_per_pixel
 		local buffer
 		
 		if write_only then
-			buffer = ffi.new("GLubyte[?]", size)
+			buffer = ffi.new(self.format.buffer_type.."[?]", width*height*stride)
 		else
 			buffer = self:Download()
 		end
 		
-		for y = 0, height-1 do
 		for x = 0, width-1 do
-			local i = self.bytes_per_pixel*width*y+self.bytes_per_pixel*x		
+		for y = 0, height-1 do
+			local pos = (y * width + x) * stride
 			
 			if write_only then
-				r, g, b, a = callback(x, y, i)
-				
-				r = r or 1
-				g = g or 1
-				b = b or 1
-				a = a or 1
+				colors = {callback(x, y, pos)}
 			else
-				r, g, b, a = callback(x, y, i, buffer[i+0], buffer[i+1], buffer[i+2], buffer[i+3])
+				local temp = {}
+				for i = 1, stride do
+					temp[i] = buffer[pos+i-1]
+				end
+				colors = {callback(x, y, pos, unpack(temp))}
 			end
 		
-			if r then buffer[i+0] = r*255 end
-			if g then buffer[i+1] = g*255 end
-			if b then buffer[i+2] = b*255 end
-			if a then buffer[i+3] = a*255 end
+			for i = 1, stride do
+				buffer[pos+i-1] = colors[i] or 0
+			end
 		end
 		end
 		
@@ -96,17 +94,20 @@ do
 		utilities.MakeNULL(self)
 	end
 
-	function Texture(width, height, buffer, format, internal_format, type, bytes_per_pixel)
+	function Texture(width, height, buffer, format)
 		check(width, "number")
 		check(height, "number")
 		check(buffer, "nil", "cdata")
-		check(format, "number", "nil")
-		check(bytes_per_pixel, "number", "nil")
+		check(format, "table", "nil")
 		
-		format = format or e.GL_BGRA
-		internal_format = internal_format or e.GL_RGBA8
-		type = type or e.GL_UNSIGNED_BYTE
-		bytes_per_pixel = bytes_per_pixel or 4
+		format = format or {}
+		
+		format.format = format.format or e.GL_BGRA
+		format.internal_format = format.internal_format or e.GL_RGBA8
+		format.type = format.type or e.GL_UNSIGNED_BYTE
+		format.filter = format.filter ~= nil
+		format.stride = format.stride or 4
+		format.buffer_type = format.buffer_type or "unsigned char"
 
 		-- create a new texture
 		local id = gl.GenTexture()
@@ -116,9 +117,6 @@ do
 				id = id, 
 				size = Vec2(width, height), 
 				format = format,
-				internal_format = internal_format,
-				type = type,
-				bytes_per_pixel = bytes_per_pixel,
 			}, 
 			META
 		)
@@ -132,14 +130,15 @@ do
 end
 
 function Image(path)
+	local size = 16
 	if not ERROR_TEXTURE then
 		ERROR_TEXTURE = Texture(128, 128)
 		ERROR_TEXTURE:Fill(function(x, y)
-			if (y+x)%32 > 16 then
-				return 1, 0.75, 0.5, 1
+			if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
+				return 255, 0, 255, 255
+			else
+				return 0, 0, 0, 255
 			end
-			
-			return 0,0,0, 1
 		end)
 	end
 
@@ -150,7 +149,6 @@ function Image(path)
 	end
 	
 	local w, h, buffer = freeimage.LoadImage(img)
-	local internal_format = e.GL_RGBA8
 	
-	return Texture(w,h,buffer,nil,internal_format)
+	return Texture(w,h,buffer,{internal_format = e.GL_RGBA8})
 end
