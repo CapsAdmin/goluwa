@@ -1,5 +1,3 @@
-print(vfs.Write("%SOURCE%test.lol", "huh"))
-
 gl.debug = true
 --ftgl.debug = true
 
@@ -91,10 +89,18 @@ if true then
 	local i = freetype.GetCharIndex(face, ("A"):byte())  
 	freetype.LoadGlyph(face, i, 0)
 	freetype.RenderGlyph(face.glyph, 0)
-	local bitmap = face.glyph.bitmap
-	table.print(face.glyph)
-	 	 
-	font = Texture(bitmap.width, bitmap.rows, bitmap.buffer, e.GL_LUMINANCE_ALPHA)     
+	
+	local bitmap = face.glyph.bitmap 
+	
+	local w = bitmap.width
+	local h = bitmap.rows	
+	local buffer = bitmap.buffer	
+	
+	font = Texture(w, h, nil)
+
+	font:Fill(function(x, y, i)
+		return buffer[x], buffer[i+1], buffer[i+2]
+	end)
 	
 end
      

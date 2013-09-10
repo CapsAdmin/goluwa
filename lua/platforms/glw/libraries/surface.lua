@@ -11,7 +11,7 @@ function surface.Initialize()
 	})
 	
 	surface.white_texture = Texture(64,64)
-	surface.white_texture:Fill(function() return 1,1,1,1 end)
+	surface.white_texture:Fill(function() return 255, 255, 255, 255 end)
 end
 
 function surface.Start()	
