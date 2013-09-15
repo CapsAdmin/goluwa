@@ -435,7 +435,7 @@ do -- include
 	
 	function include(source, ...)
 		if vfs and source:sub(-1) == "*" then
-			for script in vfs.Iterate(source:sub(0,-2), nil, true) do
+			for script in vfs.Iterate(source:sub(0,-2) .. ".lua", nil, true) do
 				local func, err = loadfile(script)
 				
 				if func then
@@ -589,6 +589,8 @@ addons.LoadAll()
 
 include("platforms/".. e.PLATFORM .."/init.lua")
 
+-- include single lua scripts in addons/
+include(addons.Root .. "*")
 
 addons.AutorunAll(e.USERNAME)
 
