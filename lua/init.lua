@@ -434,6 +434,25 @@ do -- include
 	end
 	
 	function include(source, ...)
+		if vfs and source:sub(-1) == "*" then
+			for script in vfs.Iterate(source:sub(0,-2), nil, true) do
+				local func, err = loadfile(script)
+				
+				if func then
+					local ok, err = xpcall(func, mmyy and mmyy.OnError or (function() end), ...)
+					
+					if not ok then
+						logn(err)
+					end
+				end
+				
+				if not func then
+					logn(err)
+				end
+			end
+			return
+		end
+	
 		local dir, file = source:match("(.+/)(.+)")
 		
 		if not dir then
@@ -535,9 +554,7 @@ include(extensions .. "os.lua")
 -- libraries
 structs = include(libraries .. "structs.lua")
 
-for script in vfs.Iterate("lua/structs/", nil, true) do
-	dofile(script)
-end
+include("lua/structs/*")
 
 event = include(libraries .. "event.lua")
 utilities = include(libraries .. "utilities.lua")
@@ -571,6 +588,7 @@ console.Exec("autoexec")
 addons.LoadAll()
 
 include("platforms/".. e.PLATFORM .."/init.lua")
+
 
 addons.AutorunAll(e.USERNAME)
 
