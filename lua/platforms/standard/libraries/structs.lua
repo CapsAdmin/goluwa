@@ -285,9 +285,9 @@ function structs.AddOperator(META, operator, ...)
 		
 		structs.AddGetFunc(META, "Random")
 		
-		_G[META.ClassName .. "Rand"] = function(min, max)
-			return structs[META.ClassName]():GetRandom(min or -1, max or 1)
-		end
+		--_G[META.ClassName .. "Rand"] = function(min, max)
+		--	return structs[META.ClassName]():GetRandom(min or -1, max or 1)
+		--end
 	elseif structs.OperatorTranslate[operator] then
 		local lua = [==[
 		local META = ({...})[1]
