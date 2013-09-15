@@ -70,6 +70,25 @@ function surface.DrawRect(x,y, w,h, a)
 	gl.PopMatrix()
 end
 
+
+function surface.DrawLine(x1,y1, x2,y2, w, skip_tex)
+	
+	w = w or 1
+	
+	if not skip_tex then 
+		surface.SetWhiteTexture() 
+	end
+	
+	local dx,dy = x1-x2, y1-y2
+	local ang = math.atan2(dx, dy)
+	local dst = math.sqrt((dx * dx) + (dy * dy))
+	
+	x1 = x1 - dx * 0.5
+	y1 = y1 - dy * 0.5
+	
+	surface.DrawRect(x1, y1, w, dst, -math.deg(ang))
+end
+
 function surface.StartClipping(x, y, w, h)
 	gl.Scissor(x, y, w, h)
 	gl.Enable(e.GL_SCISSOR_TEST)
