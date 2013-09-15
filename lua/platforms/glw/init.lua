@@ -238,7 +238,7 @@ local function main()
 	event.Call("Initialize")
 
 	while true do	
-		local ok, err = xpcall(glw.Update, OnError)
+		local ok, err = xpcall(glw.Update, mmyy.OnError)
 
 		if not ok then
 			log(err)

@@ -66,7 +66,7 @@ do -- timer meta
 		return self.callback
 	end
 	function META:Call(...)
-		return xpcall(self.callback, OnError, ...)
+		return xpcall(self.callback, mmyy.OnError, ...)
 	end
 	function META:SetNextThink(num)
 		self.realtime = os.clock() + num
@@ -115,7 +115,7 @@ function timer.Update()
 
 	for id, data in pairs(timer.SimpleTimers) do
 		if data.realtime < cur then
-			xpcall(data.callback, OnError)
+			xpcall(data.callback, mmyy.OnError)
 			timer.SimpleTimers[id] = nil
 		end
 	end	

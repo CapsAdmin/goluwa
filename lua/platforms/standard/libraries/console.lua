@@ -65,7 +65,7 @@ do -- commands
 	end
 
 	local function call(data, line, ...)
-		return xpcall(data, OnError, line, ...)
+		return xpcall(data, mmyy.OnError, line, ...)
 	end
 
 	function console.CallCommand(cmd, line, ...)
@@ -135,14 +135,14 @@ do -- commands
 						args[key] = tonumber(args[key]) or val
 					end
 				
-					return xpcall(func, OnError, select(2, unpack(args)))
+					return xpcall(func, mmyy.OnError, select(2, unpack(args)))
 				end
 				
 				local func, err = loadstring(line)
 				
 				if not func then return func, err end
 				
-				return xpcall(func, OnError)
+				return xpcall(func, mmyy.OnError)
 			end
 		end
 	end

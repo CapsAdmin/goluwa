@@ -99,7 +99,7 @@ function event.UserDataCall(udata, type_, ...)
 		
 		
 		if type(func) == "function" then
-			local args = {xpcall(func, OnError, udata, ...)}
+			local args = {xpcall(func, mmyy.OnError, udata, ...)}
 			if args[1] then
 				table.remove(args, 1)
 				return unpack(args)
@@ -128,7 +128,7 @@ function event.Call(type, ...)
 				time = SysTime()
 			end
 			
-			status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or OnError, ...)
+			status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or mmyy.OnError, ...)
 
 			if event.profiler_enabled == true then
 				event.profil[type][data.unique].time = (event.profil[type][data.unique].time or 0) + (SysTime() - time)
