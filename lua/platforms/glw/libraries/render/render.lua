@@ -143,13 +143,10 @@ do -- camera helpers
 		h = h or render.h
 	
 		render.SetMatrixMode(e.GL_PROJECTION)	
-		
 		gl.Ortho(x,w, y,h, -1,1)
 		gl.Disable(e.GL_DEPTH_TEST)
 		
 		render.SetMatrixMode(e.GL_MODELVIEW)
-		
-		gl.Translatef(0.5, 0.5, 0)
 	end
 	
 	function render.Start3D(pos, ang, fov, nearz, farz, ratio)
