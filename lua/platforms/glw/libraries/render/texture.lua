@@ -117,6 +117,8 @@ do
 				id = id, 
 				size = Vec2(width, height), 
 				format = format,
+				w = width,
+				h = height,
 			}, 
 			META
 		)
