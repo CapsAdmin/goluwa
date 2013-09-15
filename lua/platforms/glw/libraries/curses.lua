@@ -110,7 +110,7 @@ if WINDOWS then
 	os.execute("mode con:cols=130 lines=40")
 end
 
-local curses = ffi.load(jit.os == "Linux" and "ncurses" or "libcurses")
+local curses = ffi.load(jit.os == "Linux" and "ncursesw" or "libcurses")
 local parent = curses.initscr()
 curses.start_color()
 
