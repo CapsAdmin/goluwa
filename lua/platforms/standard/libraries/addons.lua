@@ -33,7 +33,7 @@ function addons.AutorunAll(folder)
 								
 				-- autorun folders			
 				for path in vfs.Iterate(info.path .. "lua/autorun" .. folder, nil, true) do
-					local ok, err = xpcall(dofile, OnError, path)
+					local ok, err = xpcall(dofile, mmyy.OnError, path)
 					if not ok then
 						logn(err)
 					end

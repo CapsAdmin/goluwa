@@ -1,5 +1,121 @@
 local mmyy = _G.mmyy or {}
 
+-- this should be used for xpcall
+function mmyy.OnError(msg)
+	if LINUX and msg == "interrupted!\n" then return end
+	
+	if event.Call("OnLuaError", msg) == false then return end
+	
+	logn("STACK TRACE:")
+	logn("{")
+	
+	local base_folder = e.BASE_FOLDER:gsub("%p", "%%%1")
+	local data = {}
+		
+	for level = 3, math.huge do
+		local info = debug.getinfo(level)
+		if info then
+			if info.currentline >= 0 then			
+				local args = {}
+				
+				for arg = 1, info.nparams do
+					local key, val = debug.getlocal(level, arg)
+					val = luadata.ToString(val)
+					table.insert(args, ("%s = %s"):format(key, val))
+				end
+				
+				info.arg_line = table.concat(args, ", ")
+				
+				local source = info.short_src or ""
+				source = source:gsub(base_folder, ""):trim()
+				info.source = source
+				info.name = info.name or "unknown"
+				
+				table.insert(data, info)
+			end
+		else
+			break
+		end
+    end
+	
+	local function resize_field(tbl, field)
+		local length = 0
+		
+		for _, info in pairs(tbl) do
+			local str = tostring(info[field])
+			if str then
+				if #str > length then
+					length = #str
+				end
+				info[field] = str
+			end
+		end
+		
+		for _, info in pairs(tbl) do
+			local str = info[field]
+			if str then				
+				local diff = length - #str
+				
+				if diff > 0 then
+					info[field] = str .. (" "):rep(diff)
+				end
+			end
+		end
+	end
+	
+	table.insert(data, {currentline = "LINE:", source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
+	
+	resize_field(data, "currentline")
+	resize_field(data, "source")
+	resize_field(data, "name")
+	
+	for _, info in npairs(data) do
+		logf("  %s   %s   %s(%s)", info.currentline, info.source, info.name, info.arg_line)
+	end
+
+	logn("}")
+	local source, _msg = msg:match("(.+): (.+)")
+	
+	
+	if source then
+		source = source:trim()
+		
+		local path = console.GetVariable("error_app")
+		
+		if path and path ~= "" then
+			local lua_script, line
+			
+			-- this should be replaced with some sort of configuration
+			-- gl.lua never shows anything useful but the level above does..			
+			if source:find("gl%.lua") then
+				local info = debug.getinfo(4)
+				lua_script = info.short_src
+				line = info.currentline
+			else
+				lua_script, line = source:match("(.+%.lua):(.+)")
+			end
+						
+			if lua_script and line then
+				line = tonumber(line)
+				
+				if line and vfs.Exists(lua_script) then
+					path = path:gsub("%%LINE%%", line)
+					path = path:gsub("%%PATH%%", lua_script)
+					print(path)
+					os.execute(path)
+				end
+			end
+		end
+		
+		logn(source)
+		logn(_msg:trim())
+	else
+		logn(msg)
+	end
+	
+	logn("")
+end
+
 if mmyy.lua_environment_sockets then
 	for key, val in pairs(mmyy.lua_environment_sockets) do
 		utilities.SafeRemove(val)
@@ -51,7 +167,7 @@ function mmyy.CreateLuaEnvironment(title, globals, id)
 	function env:OnReceive(line)
 		local func, msg = loadstring(line)
 		if func then
-			local ok, msg = xpcall(func, OnError) 
+			local ok, msg = xpcall(func, mmyy.OnError) 
 			if not ok then
 				logn("runtime error:", client, msg)
 			end

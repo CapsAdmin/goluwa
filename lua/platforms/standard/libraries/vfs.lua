@@ -387,7 +387,7 @@ function vfs.dofile(path, ...)
 	local func, err = vfs.loadfile(path)
 	
 	if func then
-		return xpcall(func, OnError, ...)
+		return xpcall(func, mmyy.OnError, ...)
 	end
 	
 	return func, err
