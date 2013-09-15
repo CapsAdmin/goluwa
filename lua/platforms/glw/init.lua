@@ -34,6 +34,8 @@ function glw.OpenWindow(w, h, title)
 	title = title or "no title"
 
 	local window = Window(w, h, title)
+	window.w = w
+	window.h = h
 	
 	for name in pairs(window.availible_callbacks) do
 		window[name] = function(...)
@@ -66,8 +68,12 @@ do -- input extensions
 	function input.GetMousePos()
 		local x, y = ffi.new("double[1]"), ffi.new("double[1]")
 		glfw.GetCursorPos(glw.window.__ptr, x, y)
+		x = x[0]
+		y = y[0]
 		
-		return Vec2(x[0], y[0])
+		y = -y + glw.window.h
+		
+		return Vec2(x, y)
 	end
 	
 	function input.SetMousePos(pos)
