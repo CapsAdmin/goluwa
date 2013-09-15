@@ -103,14 +103,27 @@ do -- file system
 	-- although vfs will add a loader for each mount, the module folder has to be an exception for modules only
 	-- this loader should support more ways of loading than just adding ".lua"
 	table.insert(package.loaders, function(path)
-		local func = vfs.loadfile("lua/modules/" .. path)
-		
-		if not func then
-			func = vfs.loadfile("lua/modules/" .. path .. ".lua")
-		end
-		
-		return func
+		return vfs.loadfile("lua/modules/" .. path)
 	end)
+	
+	table.insert(package.loaders, function(path)
+		return vfs.loadfile("lua/modules/" .. path .. ".lua")
+	end)
+		
+	table.insert(package.loaders, function(path)
+		return vfs.loadfile("lua/modules/" .. path .. "/init.lua")
+	end)
+	
+	table.insert(package.loaders, function(path)
+		path = path:gsub("%.", "/")
+		return vfs.loadfile("lua/modules/" .. path .. ".lua")
+	end)
+		
+	table.insert(package.loaders, function(path)
+		path = path:gsub("%.", "/")
+		return vfs.loadfile("lua/modules/" .. path .. "/init.lua")
+	end)
+	
 end
 
 do -- logging	
