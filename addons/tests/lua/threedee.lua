@@ -99,12 +99,13 @@ if true then
 	font = Texture(w, h, nil)
 
 	font:Fill(function(x, y, i)
-		return buffer[x], buffer[i+1], buffer[i+2]
+		return buffer[x], buffer[i+1], buffer[i+2] 
 	end)
 	
 end
      
---local SOMETHING = Texture(8192, 8192, ffi.new("int[1]"), e.GL_R8)
+local SOMETHING-- = Texture(8192*2, 8192*2, ffi.new("int[4]"), {internal_format = e.GL_RGBA8, format = e.GL_R8})
+
 local scroll_pos = Vec2()
 
 event.AddListener("OnDraw", "gl", function(dt)
@@ -142,13 +143,13 @@ event.AddListener("OnDraw", "gl", function(dt)
 				end			
 			surface.EndClipping()
 			
-			if SOMETHING then
+			if SOMETHING then			
 				surface.Color(1,1,1,0.5)
 				SOMETHING:Bind()
 				
 				scroll_pos = scroll_pos + input.GetMouseDelta()
 				
-				surface.DrawRect(-scroll_pos.x, scroll_pos.y, 2048*4, 2048*4)
+				surface.DrawRect(-scroll_pos.x, scroll_pos.y, SOMETHING.w/2, SOMETHING.h/2)
 			end
 			
 			if font then
