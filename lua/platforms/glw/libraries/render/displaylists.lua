@@ -2,7 +2,8 @@ local id
 
 function render.BeginList(override)
 	if not id then
-		id = override or gl.GenList()
+		id = override or gl.GenLists(0)
+		print(id)
 		gl.NewList(id, e.GL_COMPILE)
 	else
 		error("called render.BeginList without calling render.EndList first", 2)

@@ -40,9 +40,18 @@ local fragment_shader_source = [[
 	vec4 texel = texture2D(texture, _uv);
 	
 	void main()
-	{
-		frag_color = texel * _color * global_color;
-		frag_color.w = global_color.w;
+	{	
+		// um
+		if (texel.x > 0 || texel.y > 0 || texel.z > 0)
+		{
+			frag_color = texel * _color * global_color;
+		}
+		else
+		{	
+			frag_color = texel * _color;
+			frag_color.xyz = frag_color.xyz + global_color.xyz;
+			frag_color.w = frag_color.w * global_color.w;
+		}
 	}
 ]]
 
@@ -92,11 +101,12 @@ function render.Create2DVBO(data)
 	end  
 
 	local id = gl.GenBuffer()
-
+	local size = ffi.sizeof(buffer[0]) * #data
+	
 	gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
-	gl.BufferData(e.GL_ARRAY_BUFFER, ffi.sizeof(buffer[0]) * #data, buffer, e.GL_STATIC_DRAW)
+	gl.BufferData(e.GL_ARRAY_BUFFER, size, buffer, e.GL_STATIC_DRAW)
 
-	return {Type = "VertexBuffer", id = id, length = #data}
+	return {Type = "VertexBuffer", id = id, length = #data, size = size}
 end
 
 local float_size = ffi.sizeof("float")

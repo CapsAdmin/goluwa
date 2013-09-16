@@ -3,7 +3,7 @@ do
 	local META = {}
 
 	META.__index = META
-	META.Type = "texture"
+	META.format_type = "texture"
 
 	function META:__tostring()
 		return ("texture[%s]"):format(self.id)
@@ -18,27 +18,37 @@ do
 	end
 
 	function META:Download()
-		
+		local f = self.format
 		local buffer = ffi.new(self.format.buffer_type.."[?]", self.size.w * self.size.h * self.format.stride)
 
-		gl.BindTexture(e.GL_TEXTURE_2D, self.id)
-			gl.GetTexImage(e.GL_TEXTURE_2D, 0, self.format.format, self.format.type, buffer)
-		gl.BindTexture(e.GL_TEXTURE_2D, 0)
+		gl.BindTexture(f.type, self.id)
+			gl.GetTexImage(f.type, 0, self.format.format, self.format.format_type, buffer)
+		gl.BindTexture(f.type, 0)
 
 		return buffer 
 	end
 	
-	function META:Upload(buffer, x, y, w, h)
+	function META:Upload(buffer, x, y, w, h, level)
 		x = x or 0
 		y = y or 0
 		w = w or self.size.w
 		h = h or self.size.h
+		level = level or 0
+		
+		local f = self.format
+		
+		gl.PixelStorei(e.GL_PACK_ALIGNMENT, f.stride)
+		gl.PixelStorei(e.GL_UNPACK_ALIGNMENT, f.stride)
 	
-		gl.BindTexture(e.GL_TEXTURE_2D, self.id)
-			gl.TexStorage2D(e.GL_TEXTURE_2D, 1, self.format.internal_format, self.size.w, self.size.h)
-			gl.TexSubImage2D(e.GL_TEXTURE_2D, 0, x,y,w,h, self.format.format, self.format.type, buffer)
-			--render.SetTextureFiltering()
-		gl.BindTexture(e.GL_TEXTURE_2D, 0)
+		gl.BindTexture(f.type, self.id)
+			gl.TexStorage2D(f.type, f.mip_map_levels, f.internal_format, self.size.w, self.size.h)
+			gl.TexSubImage2D(f.type, level, x,y,w,h, f.format, f.format_type, buffer)
+			
+			gl.TexParameteri(f.type, e.GL_TEXTURE_MAG_FILTER, e.GL_NEAREST)
+			gl.TexParameteri(f.type, e.GL_TEXTURE_MIN_FILTER, e.GL_NEAREST)
+			gl.GenerateMipmap(f.type)
+
+		gl.BindTexture(f.type, 0)
 	end
 
 	function META:Fill(callback, write_only)
@@ -102,12 +112,14 @@ do
 		
 		format = format or {}
 		
+		format.type = format.type or e.GL_TEXTURE_2D
 		format.format = format.format or e.GL_BGRA
 		format.internal_format = format.internal_format or e.GL_RGBA8
-		format.type = format.type or e.GL_UNSIGNED_BYTE
+		format.format_type = format.format_type or e.GL_UNSIGNED_BYTE
 		format.filter = format.filter ~= nil
 		format.stride = format.stride or 4
 		format.buffer_type = format.buffer_type or "unsigned char"
+		format.mip_map_levels = format.mip_map_levels or 4
 
 		-- create a new texture
 		local id = gl.GenTexture()

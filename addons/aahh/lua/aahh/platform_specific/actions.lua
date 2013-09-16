@@ -1,9 +1,5 @@
 function aahh.GetMousePosition()
-
-	-- grr int
-	local pos = mouse.GetPosition(ffi.cast("struct sfWindow *", glw.GetWindow()))
-	
-	return Vec2(pos.x, pos.y)
+	return input.GetMousePos()
 end
 
 

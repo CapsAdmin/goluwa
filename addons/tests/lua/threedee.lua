@@ -12,7 +12,7 @@ local function calc_camera(window, dt)
 	local speed = dt * 10
 
 	local delta = input.GetMouseDelta() * dt / 2
-	cam_ang.p = cam_ang.p + delta.y
+	cam_ang.p = cam_ang.p - delta.y
 	cam_ang.y = cam_ang.y + delta.x
 	cam_ang.p = math.clamp(cam_ang.p, -math.pi/2, math.pi/2)
 

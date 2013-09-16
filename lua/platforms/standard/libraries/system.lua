@@ -56,4 +56,60 @@ do -- dll paths
 	system.GetDLLDirectory = get
 end
 
+do -- fonts
+	local get = not_implemented
+	
+	if WINDOWS then
+		--[==[ffi.cdef[[
+				
+		typedef struct LOGFONT {
+		  long  lfHeight;
+		  long lfWidth;
+		  long  lfEscapement;
+		  long  lfOrientation;
+		  long  lfWeight;
+		  char  lfItalic;
+		  char  lfUnderline;
+		  char  lfStrikeOut;
+		  char  lfCharSet;
+		  char  lfOutPrecision;
+		  char  lfClipPrecision;
+		  char  lfQuality;
+		  char  lfPitchAndFamily;
+		  char lfFaceName[LF_FACESIZE];
+		} LOGFONT;
+
+		
+		int EnumFontFamiliesEx(void *, LOGFONT *)
+		]]]==]
+	
+		get = function()
+			
+		end
+	elseif LINUX then
+		ffi.cdef([[
+			typedef struct {} Display;
+			Display* XOpenDisplay(const char*);
+			void XCloseDisplay(Display*);
+			char** XListFonts(Display* display, char* pattern, int max_names, int* actual_names);
+		]])
+
+		local X11 = ffi.load("X11")
+
+		local display = X11.XOpenDisplay(nil)
+
+		if display == nil then
+			print("cricket")
+			return
+		end
+
+		local names = X11.XListFonts(display, "*", 65535, nil)
+
+		X11.XCloseDisplay(display)
+	end
+
+	system.GetInstalledFonts = get
+
+end
+
 return system
