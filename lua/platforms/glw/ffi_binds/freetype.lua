@@ -703,7 +703,7 @@ ffi.cdef(header)
  
 local freetype = _G.freetype or {}
  
-local lib = ffi.load("freetype") 
+local lib = ffi.load(CAPSADMIN and "freetype_d" or "freetype") 
  
 for line in header:gmatch("(.-)\n") do
 	if not line:find("typedef") and not line:find("=")  then
@@ -725,6 +725,13 @@ for line in header:gmatch("(.-)\n") do
 				
 						logf("[freetype] %q in function %s at %s:%i", errors[val] or ("unknonw error " .. val), info.name, info.short_src, info.currentline)
 					end
+					
+										
+					if freetype.logcalls then
+						setlogfile("freetype_calls")
+							logf("%s = FT_%s(%s)", luadata.ToString(val), name, table.concat(tostring_args(...), ",\t"))
+						setlogfile()
+					end					
 					
 					return val
 				end

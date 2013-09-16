@@ -36,28 +36,6 @@ function string.getbyte(self, pos)
 	return self:getchar(pos):byte() or 0
 end
 
-function string.ulen(self)
-	local len = 0
-	
-	for uchar in self:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
-		len = len + 1
-    end
-	
-	return len
-end
-
-function string.usplit(self)
-	local tbl = {}
-	local len = 0
-	local count = #uchar
-	
-	for uchar in self:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
-		tbl[#tbl + 1] = uchar
-		len = len + count
-	end
-	
-	return tbl
-end
 
 function string.explode(self, sep, pattern)
 	if not sep or sep == "" then

@@ -538,6 +538,11 @@ do -- include
 	end
 end
 
+do
+	local status, crypto = pcall(require, "crypto")
+	_G.crypto = crypto
+end
+
 local standard = "platforms/standard/"
 local extensions = standard .. "extensions/"
 local libraries = standard .. "libraries/"
@@ -556,6 +561,7 @@ structs = include(libraries .. "structs.lua")
 
 include("lua/structs/*")
 
+utf8 = include(libraries .. "utf8.lua")
 event = include(libraries .. "event.lua")
 utilities = include(libraries .. "utilities.lua")
 addons = include(libraries .. "addons.lua")
@@ -571,6 +577,7 @@ console = include(libraries .. "console.lua")
 mmyy = include(libraries .. "mmyy.lua")
 system = include(libraries .. "system.lua")
 lcpp = include(libraries .. "lcpp.lua")
+vpk = include(libraries .. "vpk.lua")
 
 -- meta
 include(meta .. "function.lua")
