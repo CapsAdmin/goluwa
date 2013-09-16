@@ -73,7 +73,8 @@ do
 			face = face, 
 			glyphs = {}, 
 			strings = {},
-			info = info
+			info = info,
+			font_data = data,
 		}		
 		
 		return name
