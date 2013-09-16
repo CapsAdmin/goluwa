@@ -74,7 +74,7 @@ do
 			glyphs = {}, 
 			strings = {},
 			info = info,
-			font_data = data,
+			font_data = data, -- not doing this will make freetype crash because the data gets garbage collected
 		}		
 		
 		return name
@@ -118,9 +118,7 @@ do
 					local tex = ft.current_font.glyphs[char]
 					
 					if not tex then
-						print(char, byte, i, "???????")
 						local i = freetype.GetCharIndex(face, byte) 
-						print(char, byte, i, "!!!!!!!")
 						freetype.LoadGlyph(face, i, 0)
 						freetype.RenderGlyph(face.glyph, 0) 
 						
