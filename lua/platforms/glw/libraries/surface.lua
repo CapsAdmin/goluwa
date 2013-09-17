@@ -23,8 +23,9 @@ end
 local X, Y = 0, 0
 local W, H = 0, 0
 
--- this might not be the best way to do it but it should do for now
-do
+do -- fonts
+	-- this might not be the best way to do it but it should do for now
+
 	freetype.debug = true
 	
 	surface.ft = surface.ft or {}
@@ -257,6 +258,15 @@ end
 
 function surface.SetWhiteTexture()
 	surface.white_texture:Bind()
+end
+
+-- completeness?
+function surface.SetTexture(tex)
+	if not tex then
+		surface.SetWhiteTexture()
+	else
+		tex:Bind()
+	end
 end
 
 function surface.DrawRect(x,y, w,h, a)	

@@ -8,7 +8,7 @@ local font = surface.CreateFont("test", {
 surface.InitFreetype()  
  
 event.AddListener("OnDraw", "gl", function(dt)
-	render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
+	--render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
 	gl.ClearColor(0.5, 0.5, 0.5, 0.5)
 
 	render.Start(window)			 

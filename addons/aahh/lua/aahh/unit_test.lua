@@ -1,13 +1,15 @@
 console.AddCommand("aahh_unit_test", function()
 
+	if not aahh.initialized then return end
+
 	local frame = utilities.RemoveOldObject(aahh.Create("frame"), "aahh_unit_test")
-	frame:SetSize(Vec2() + 500)
+	frame:SetSize(Vec2() + 300)
 	frame:Center()
 	frame:SetTitle("unit test")
-
+	
 	local tabs = frame:CreatePanel("tabbed")
 	tabs:Dock("fill")
-
+	
 	do -- tree test
 		local icons =
 		{
@@ -44,7 +46,7 @@ console.AddCommand("aahh_unit_test", function()
 		local function fill(tbl, node)		
 			for key, val in pairs(tbl.children) do
 				local node = node:AddNode(val.self.Name)
-				node:SetIcon(graphics.CreateTexture("textures/" .. icons[val.self.ClassName]))
+				node:SetIcon(Image(icons[val.self.ClassName]))
 				fill(val, node)
 			end  
 			
@@ -52,7 +54,7 @@ console.AddCommand("aahh_unit_test", function()
 			 
 		for key, val in pairs(data) do
 			local node = pnl:AddNode(val.self.Name)
-			node:SetIcon(graphics.CreateTexture("textures/" .. icons[val.self.ClassName]))
+			node:SetIcon(Image(icons[val.self.ClassName]))
 			fill(val, node)
 		end
 
@@ -83,7 +85,8 @@ console.AddCommand("aahh_unit_test", function()
 		local text = aahh.Create("textinput", grid)
 			
 	end
-	
+		do return end
+
 	do -- text
 		local tab, grid = tabs:AddTab("text input", "textinput2")
 		
@@ -91,5 +94,7 @@ console.AddCommand("aahh_unit_test", function()
 
 	tabs:SelectTab("properties")
 	frame:RequestLayout(true)
+	
+	debug.logcalls(true)
 end)
 

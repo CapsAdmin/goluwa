@@ -26,7 +26,7 @@ function PANEL:Initialize()
 	end 
 	
 	drag.OnDraw = function(s)
-		graphics.DrawRect(
+		aahh.Draw("rect", 
 			Rect(Vec2(0,0), Vec2(0, 0) + s:GetHeight()),
 			self:GetSkinColor("light2"),
 			s:GetHeight() / 2
@@ -37,7 +37,7 @@ function PANEL:Initialize()
 end
 
 function PANEL:OnDraw(size)
-	graphics.DrawRect(Rect(0,0,size), self:GetSkinColor("dark"), self:GetHeight() / 2)
+	aahh.Draw("rect", Rect(0,0,size), self:GetSkinColor("dark"), self:GetHeight() / 2)
 end
 
 function PANEL:OnRequestLayout()
