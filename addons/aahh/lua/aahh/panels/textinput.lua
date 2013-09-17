@@ -204,7 +204,7 @@ function PANEL:OnCharInput(char, press)
 end
 
 function PANEL:GetTextSize(from_caret)
-	return aahh.GetTextSize(self.Font, from_caret and self.Text:sub(1, self.CaretPos) or self.Text) * self.TextSize
+	return aahh.GetTextSize(self.Font, from_caret and self.Text:sub(1, self.CaretPos) or self.Text)
 end
 
 function PANEL:OnDraw()

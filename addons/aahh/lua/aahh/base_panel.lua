@@ -291,11 +291,11 @@ do -- align
 
 	e.ALIGN_LEFT = Vec2(0, -1)
 	e.ALIGN_RIGHT = Vec2(1, -1)
-	e.ALIGN_CENTERX = Vec2(0.5, -1)
+	e.ALIGN_CENTERX = Vec2(0.5, 0)
 
-	e.ALIGN_TOP = Vec2(-1, 0)
-	e.ALIGN_BOTTOM = Vec2(-1, 1)
-	e.ALIGN_CENTERY = Vec2(-1, 0.5)
+	e.ALIGN_TOP = Vec2(0, 0)
+	e.ALIGN_BOTTOM = Vec2(0, 1)
+	e.ALIGN_CENTERY = Vec2(0, 0.5)
 
 	e.ALIGN_TOPLEFT = Vec2(0, 0)
 	e.ALIGN_CENTERLEFT = Vec2(0, 0.5)

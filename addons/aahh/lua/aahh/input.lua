@@ -4,23 +4,17 @@ do -- events
 		return input.GetMousePos()
 	end
 
-	event.AddListener("OnKeyPressed", "aahh", function(params)
-		aahh.KeyInput(params.key.code, true)
+	event.AddListener("OnKeyInput", "aahh", function(key, press)
+		aahh.KeyInput(key, press)
 	end)
-	event.AddListener("OnKeyReleased", "aahh", function(params)
-		aahh.KeyInput(params.key.code, false)
-	end)
-
-	event.AddListener("OnTextEvent", "aahh", function(params)
-		aahh.CharInput(params.text.unicode, true)
+	
+	event.AddListener("OnChar", "aahh", function(uint)
+		local char = utf8.char(uint)
+		aahh.CharInput(char, true)
 	end)
 
-	event.AddListener("OnMouseButtonPressed", "aahh", function(params)
-		aahh.MouseInput(params.mouseButton.button, true, Vec2(params.mouseButton.x, params.mouseButton.y))
-	end)
-
-	event.AddListener("OnMouseButtonReleased", "aahh", function(params)
-		aahh.MouseInput(params.mouseButton.button, false, Vec2(params.mouseButton.x, params.mouseButton.y))
+	event.AddListener("OnMouseInput", "aahh", function(key, press)
+		aahh.MouseInput(key, press, aahh.GetMousePosition())
 	end)
 end
 

@@ -11,7 +11,7 @@ end
 
 function PANEL:CanDrag(button, press, pos)
 	return
-		button == "mouse1" and
+		button == "button_1" and
 		self:SkinCall("FrameCanDrag", pos)
 end
 
@@ -29,6 +29,7 @@ function PANEL:Initialize()
 	self.title = aahh.Create("label", self)
 	self.title:SetText(self.Title)
 	self.title:SizeToText()
+	self.title:SetAlignNormal(e.ALIGN_CENTERY)
 	
 	self:SkinCall("FrameInit")
 end
