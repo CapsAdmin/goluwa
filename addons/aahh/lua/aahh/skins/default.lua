@@ -95,7 +95,8 @@ do--frame
 
 	function SKIN:FrameDraw(pnl, c)
 		self:PanelDraw(pnl, c)
- 		aahh.Draw("rect", 	
+ 		aahh.Draw(
+			"rect", 	
 			Rect(Vec2(0,0), Vec2(pnl:GetSize().w, bar_size)):Expand(PAD/4) + Rect(0, -PAD/4, 0, 0), 
 			c.bar, 
 			PAD/2, 
@@ -128,7 +129,8 @@ do--frame
 			end
 		end
 		
-		aahh.Draw("rect", 
+		aahh.Draw(
+			"rect", 
 			Rect(Vec2(0,0), pnl:GetSize()),
 			col,
 			PAD,
@@ -151,7 +153,6 @@ do--frame
 		pnl.close:SetPadding(Rect(PAD/2, PAD/2, PAD, PAD))
 		pnl.close:Align(e.ALIGN_TOPRIGHT)
 
-		pnl.title:SetTextSize(siz)
 		pnl.title:SetPos(Vec2(PAD, 0))
 		pnl.title:SetSkinColor("text", "light")
 		pnl.title:SetIgnoreMouse(true)
@@ -190,7 +191,8 @@ do--button
 			end
 		end
 		
-		aahh.Draw("rect", 
+		aahh.Draw(
+			"rect", 
 			Rect(Vec2(0,0), pnl:GetSize()),
 			col,
 			0,
@@ -206,18 +208,14 @@ do--button
 end
 
 do--label
-	-- i'm making it so the text fits right in the panel.
-	-- this should  be done internally, but let's keep it here for now
-	--aahh.Draw("text", text, pos, font, scale, color, align_normal, shadow_dir, shadow_color, shadow_blur)
-
 	function SKIN:LabelDraw(pnl, c)
-		aahh.Draw("text", 
+		aahh.Draw(
+			"text", 
 			pnl.Text,
 			Vec2(0, 0),
 			pnl.Font or self.Fonts.aahh_default,
-			pnl.TextScale * pnl.TextSize,
 			c.text,
-			Vec2(0, 0),
+			pnl.AlignNormal,
 			pnl.ShadowDir,
 			c.shadow,
 			pnl.ShadowSize,
@@ -228,7 +226,7 @@ do--label
 	end
 
 	function SKIN:LabelLayout(pnl)
-		local scale = aahh.GetTextSize(pnl.Font, pnl.Text) * pnl.TextScale * pnl.TextSize	
+		local scale = aahh.GetTextSize(pnl.Font, pnl.Text)	
 		pnl:SetSize(scale)
 	end
 end
@@ -272,45 +270,6 @@ do -- button text
 	end
 end
 
-if false then--menuitem
-	local border = PAD/4
-	
-	function SKIN:MenuItemDraw(pnl, c)		
-		aahh.Draw("rect", Rect(Vec2(0,0), pnl:GetSize()), c.light, nil, nil, c.medium)
-	
-		if pnl:IsWorldPosInside(MPOS) then
-			local rct = Rect(Vec2(0,0), pnl:GetSize())
-			if pnl:IsDown() then
-				rct:Shrink(1)
-			end
-			
-			aahh.Draw("rect", rct, c.highlight2)
-		end
-		
-		local a = Vec2(pnl.lbl:GetPos().x - PAD, pnl:GetHeight())
-		local b = Vec2(a.x, 0)
-		aahh.Draw("line", b, a, c.border)
-	end
-
-	function SKIN:MenuItemLayout(pnl)
-		pnl:SetSize(Vec2(60, 16))
-
-		pnl.img:SetSize(Vec2() + pnl:GetHeight() * 0.9)
-		pnl.img:Align(e.ALIGN_CENTERLEFT)
-	
-		pnl.lbl:SetFont(self.Fonts.aahh_default)
-		pnl.lbl:SetTextSize(8)
-		pnl.lbl:SizeToText()
-		pnl.lbl:SetSkinColor("text", "dark")
-		pnl.lbl:SetPos(pnl.img:GetPos() + pnl.img:GetSize() + Vec2(PAD*2, 0))
-		pnl.lbl:CenterY()
-	end
-	
-	function SKIN:ContextLayout()
-		--itm:SetSize(Vec2(60, 16))
-	end
-end
-
 do--menuitem
 	local border = PAD/4
 	
@@ -336,10 +295,9 @@ do--menuitem
 
 	function SKIN:MenuItemLayout(pnl)
 		pnl.img:SetSize(Vec2() + pnl:GetHeight())
-		pnl.img:Align(e.ALIGN_CENTERLEFT)
+		pnl.img:Align(e.ALIGN_CENTERY)
 	
 		pnl.lbl:SetFont(self.Fonts.aahh_default)
-		pnl.lbl:SetTextSize(8)
 		pnl.lbl:SizeToText()
 		pnl.lbl:SetSkinColor("text", "dark")
 		pnl.lbl:SetTrapInsideParent( false )
@@ -380,7 +338,7 @@ do--textinput
 		aahh.Draw("rect", Rect(0, 0, pnl:GetWide(), pnl:GetTall()), c.light2, 0, 1, c.medium)
 		
 		-- text
-		aahh.Draw("text", pnl.Text, Vec2(PAD, 0), pnl.Font, pnl.TextSize, c.text, Vec2(0, 0))	
+		aahh.Draw("text", pnl.Text, Vec2(PAD, PAD), pnl.Font, c.text, Vec2(0, 0))	
 			
 		-- caret
 		if pnl:IsActivePanel() and T%0.5 > 0.25 then

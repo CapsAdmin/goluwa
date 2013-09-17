@@ -1,16 +1,7 @@
-local vpk = {}
+local vpk = _G.vpk or {debug = false}
 
-function vpk.ReadString(file)
-	local buffer = {}
-
-	while true do
-		local char = file:read(1)
-		if not char then print("HUH") return end
-		if char == "\0" then break end
-		buffer[#buffer + 1] = char
-	end
-
-	return table.concat(buffer)
+function vpk.Trace(format, ...)
+	print("[VPK] " .. string.format(format, ...))
 end
 
 function vpk.Open(path)
@@ -19,7 +10,7 @@ function vpk.Open(path)
 	local file, error = vfs.GetFile(path .. "_dir.vpk", "rb")
 
 	if not file then
-		print("oh noes", error)
+		vpk.Trace("Failed opening %q", path)
 		return
 	end
 
@@ -29,7 +20,7 @@ function vpk.Open(path)
 		local bytes = {file:read(12):byte(1, -1)}
 
 		if #bytes ~= 12 then
-			print("knurr")
+			vpk.Trace("Failed reading header")
 			file:close()
 			return
 		end
@@ -41,7 +32,7 @@ function vpk.Open(path)
 	end
 
 	if header.Signature ~= 0x55aa1234 then
-		print("grr")
+		vpk.Trace("Invalid signature in header")
 		file:close()
 		return
 	end
@@ -53,7 +44,7 @@ function vpk.Open(path)
 			local bytes = {file:read(16):byte(1, -1)}
 
 			if #bytes ~= 16 then
-				print("fail")
+				vpk.Trace("Failed reading extended header")
 				file:close()
 				return
 			end
@@ -64,55 +55,62 @@ function vpk.Open(path)
 			header.Unknown4 = bytes[13] * 2 ^ 0 + bytes[14] * 2 ^ 8 + bytes[15] * 2 ^ 16 + bytes[16] * 2 ^ 24
 		end
 	elseif header.Version ~= 1 then
-		print("boing")
+		vpk.Trace("Invalid version %d", header.Version)
 		file:close()
 		return
 	end
 
+	local function read_string()
+		local buffer = {}
+
+		while true do
+			local char = file:read(1)
+
+			if char == "\0" then -- Finished reading string
+				break
+			elseif not char then -- Probably EOF
+				return
+			end
+
+			buffer[#buffer + 1] = char
+		end
+
+		return table.concat(buffer)
+	end
+
+	local lookup = {}
 	local entries = {}
 	local entries_count = 0
 
-	local tree = {}
-	local list = {}
-
 	while true do
-		local extension = vpk.ReadString(file)
+		local extension = read_string()
 
 		if not extension or extension == "" then
 			break
 		end
 
-		extension = extension ~= " " and extension or ""
-		tree[extension] = {}
-
 		while true do
-			local directory = vpk.ReadString(file)
+			local directory = read_string()
 
 			if not directory or directory == "" then
 				break
 			end
 
-			directory = directory ~= " " and directory or ""
-			tree[extension][directory] = {}
-
 			while true do
-				local name = vpk.ReadString(file)
+				local name = read_string()
 
 				if not name or name == "" then
 					break
 				end
 
-				name = name ~= " " and name or ""
-
 				local entry = {}
-
-				entry.Path = (directory ~= "" and (directory .. "/") or "") .. name .. (extension ~= "" and ("." .. extension) or "")
+				entry.Path = (directory ~= " " and (directory .. "/") or "") .. (name ~= " " and name or "") .. (extension ~= " " and ("." .. extension) or "")
 
 				do
 					local bytes = {file:read(18):byte(1, -1)}
 
 					if #bytes ~= 18 then
-						print("heul")
+						vpk.Trace("Failed reading directory entry")
 						file:close()
 						return
 					end
@@ -123,9 +121,10 @@ function vpk.Open(path)
 					entry.ArchiveIndex = bytes[7] * 2 ^ 0 + bytes[8] * 2 ^ 8
 					entry.EntryOffset = bytes[9] * 2 ^ 0 + bytes[10] * 2 ^ 8 + bytes[11] * 2 ^ 16 + bytes[12] * 2 ^ 24
 					entry.EntryLength = bytes[13] * 2 ^ 0 + bytes[14] * 2 ^ 8 + bytes[15] * 2 ^ 16 + bytes[16] * 2 ^ 24
+					entry.Terminator = bytes[17] * 2 ^ 0 + bytes[18] * 2 ^ 8
 
-					if (bytes[17] * 2 ^ 0 + bytes[18] * 2 ^ 8) ~= 0xffff then
-						print("what the")
+					if entry.Terminator ~= 0xffff then
+						vpk.Trace("Invalid directory entry terminator 0x%.4x", entry.Terminator)
 						file:close()
 						return
 					end
@@ -140,8 +139,7 @@ function vpk.Open(path)
 				entries[entries_count * 6 + 5] = entry.PreloadBytes
 				entries[entries_count * 6 + 6] = entry.CRC
 
-				tree[extension][directory][name] = entries_count
-				list[entry.Path] = entries_count
+				lookup[entry.Path] = entries_count
 
 				entries_count = entries_count + 1
 			end
@@ -153,17 +151,28 @@ function vpk.Open(path)
 	local self = {
 		path = path,
 		entries = entries,
-		tree = tree,
-		list = list
+		lookup = lookup
 	}
 
+	function self:Size(path)
+		local index = self.lookup[path]
+		return index and self:SizeByIndex(index) or nil
+	end
+
+	function self:SizeByIndex(index)
+		if index < 0 or index >= #self.entries / 6 then return end
+		return self.entries[index * 6 + 5] + self.entries[index * 6 + 3]
+	end
+
 	function self:Read(path)
-		if not self.list[path] then return end
-		return self:ReadByIndex(self.list[path])
+		local index = self.lookup[path]
+		return index and self:ReadByIndex(index) or nil
 	end
 
 	function self:ReadByIndex(index)
-		if index < 0 or index >= #self.entries / 6 then return end
+		if index < 0 or index >= #self.entries / 6 then
+			return
+		end
 
 		local archive = self.entries[index * 6 + 1]
 		local offset = self.entries[index * 6 + 2]
@@ -172,14 +181,11 @@ function vpk.Open(path)
 		local preload_length = self.entries[index * 6 + 5]
 		local checksum = self.entries[index * 6 + 6]
 
-		if preload_length > 0 then
-			print("PRELOAD EEK " .. preload_length)
-		end
-
-		local file = vfs.GetFile(string.format("%s_%.3d.vpk", self.path, archive), "rb")
+		local file_path = string.format("%s_%.3d.vpk", self.path, archive)
+		local file = vfs.GetFile(file_path, "rb")
 
 		if not file then
-			print("i expected more from you")
+			vpk.Trace("Failed opening %q", file_path)
 			return
 		end
 

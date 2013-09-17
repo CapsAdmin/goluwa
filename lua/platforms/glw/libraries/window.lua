@@ -41,8 +41,6 @@ function Window(width, height, title)
 	height = height or 440
 	title = title or ""
 	
-	gl.debug = true
-
 	glfw.WindowHint(e.GLFW_SAMPLES, 4)
 	local ptr = glfw.CreateWindow(width, height, title, nil, nil)
 	glfw.MakeContextCurrent(ptr)

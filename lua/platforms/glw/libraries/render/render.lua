@@ -21,11 +21,11 @@ function render.Initialize(w, h)
 	render.h = h
 	
 	gl.Enable(e.GL_BLEND)
-	gl.Enable(e.GL_CULL_FACE)
+	--gl.Enable(e.GL_CULL_FACE)
 	gl.Enable(e.GL_TEXTURE_2D)
 	gl.Enable(e.GL_TEXTURE_3D)
 
-	gl.CullFace(e.GL_FRONT) 
+	--gl.CullFace(e.GL_FRONT) 
 
 	gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
 	gl.PolygonMode(e.GL_FRONT_AND_BACK, e.GL_FILL)
@@ -148,9 +148,11 @@ do -- camera helpers
 		h = h or render.h
 	
 		render.SetMatrixMode(e.GL_PROJECTION)	
-		gl.Ortho(x,w, y,h, -1,1)
-		gl.Disable(e.GL_DEPTH_TEST)
+			gl.Ortho(x,w, y,h, -1,1)
+			gl.Scalef(1,-1,0)
+			gl.Translatef(0,-h,0)
 		
+			gl.Disable(e.GL_DEPTH_TEST)
 		render.SetMatrixMode(e.GL_MODELVIEW)
 	end
 	

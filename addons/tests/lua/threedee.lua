@@ -1,6 +1,3 @@
-gl.debug = true
---ftgl.debug = true
-
 local window = glw.OpenWindow(1280, 720)
 
 local cam_pos = Vec3(0, 0, -10)
