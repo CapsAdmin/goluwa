@@ -703,7 +703,7 @@ ffi.cdef(header)
  
 local freetype = _G.freetype or {}
  
-local lib = ffi.load(CAPSADMIN and "freetype_d" or "freetype") 
+local lib = ffi.load("freetype") 
  
 for line in header:gmatch("(.-)\n") do
 	if not line:find("typedef") and not line:find("=")  then
