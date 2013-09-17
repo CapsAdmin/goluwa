@@ -43,7 +43,7 @@ end
 function PANEL:CalcCursor(pos)		
 	local loc = self:DockHelper(pos-self:GetPos(), self:GetSkinVar("Padding", 2))
 	
-	if not self:CanResize("mouse1", true, pos) then return end
+	if not self:CanResize("button_1", true, pos) then return end
 	
 	if loc == "Center" then
 		self:SetCursor(e.IDC_ARROW)
@@ -66,9 +66,9 @@ function PANEL:OnThink()
 	local pos = aahh.GetMousePosition()
 	
 	self:CalcCursor(pos)
-		
+			
 	-- ugh
-	if input.IsKeyDown("mouse1") then
+	if input.IsMouseDown("button_1") then
 		if self:IsResizing() then
 			local loc = self.Resizing
 			if loc ~= "Center" then

@@ -1,4 +1,16 @@
-console.AddCommand("aahh_unit_test", function()
+console.AddCommand("aahh_unit_test", function()      
+
+	local window = glw.OpenWindow(1280, 720)
+	
+	event.AddListener("OnDraw", "aahh", function(delta)
+		render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
+		gl.ClearColor(0.5, 0.5, 0.5, 0.5)
+
+		render.Start(window)			 
+			surface.Start()		
+			aahh.Update(delta)
+		render.End() 
+	end)
 
 	if not aahh.initialized then return end
 
@@ -46,7 +58,7 @@ console.AddCommand("aahh_unit_test", function()
 		local function fill(tbl, node)		
 			for key, val in pairs(tbl.children) do
 				local node = node:AddNode(val.self.Name)
-				node:SetIcon(Image(icons[val.self.ClassName]))
+				node:SetIcon(Image("textures/" .. icons[val.self.ClassName]))
 				fill(val, node)
 			end  
 			
@@ -54,7 +66,7 @@ console.AddCommand("aahh_unit_test", function()
 			 
 		for key, val in pairs(data) do
 			local node = pnl:AddNode(val.self.Name)
-			node:SetIcon(Image(icons[val.self.ClassName]))
+			node:SetIcon(Image("textures/" .. icons[val.self.ClassName]))
 			fill(val, node)
 		end
 
@@ -85,7 +97,6 @@ console.AddCommand("aahh_unit_test", function()
 		local text = aahh.Create("textinput", grid)
 			
 	end
-		do return end
 
 	do -- text
 		local tab, grid = tabs:AddTab("text input", "textinput2")
@@ -94,7 +105,5 @@ console.AddCommand("aahh_unit_test", function()
 
 	tabs:SelectTab("properties")
 	frame:RequestLayout(true)
-	
-	debug.logcalls(true)
 end)
 

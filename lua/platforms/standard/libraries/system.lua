@@ -91,7 +91,7 @@ do -- fonts
 			typedef struct {} Display;
 			Display* XOpenDisplay(const char*);
 			void XCloseDisplay(Display*);
-			char** XListFonts(Display* display, char* pattern, int max_names, int* actual_names);
+			char** XListFonts(Display* display, const char* pattern, int max_names, int* actual_names);
 		]])
 
 		local X11 = ffi.load("X11")
@@ -103,7 +103,13 @@ do -- fonts
 			return
 		end
 
-		local names = X11.XListFonts(display, "*", 65535, nil)
+		local count = ffi.new("int[1]")
+		local names = X11.XListFonts(display, "*", 65535, count)
+		count = count[0]
+
+		for i = 1, count do
+			local name = ffi.string(names[i - 1])
+		end
 
 		X11.XCloseDisplay(display)
 	end

@@ -16,6 +16,10 @@ function surface.Initialize()
 	surface.InitFreetype()
 end
 
+function surface.GetScreenSize()
+	return render.w, render.h
+end
+
 function surface.Start()	
 	render.Start2D()
 end
@@ -54,13 +58,13 @@ do -- fonts
 		surface.SetFont(surface.CreateFont("default"))	
 				
 		surface.fontmesh = render.Create2DVBO({
-			{pos = Vec2(0, 0), uv = Vec2(0, 1), color = Color(1,1,1,1)},
-			{pos = Vec2(0, 1), uv = Vec2(0, 0), color = Color(1,1,1,1)},
-			{pos = Vec2(1, 1), uv = Vec2(1, 0), color = Color(1,1,1,1)},
+			{pos = Vec2(0, 0), uv = Vec2(0, 0), color = Color(1,1,1,1)},
+			{pos = Vec2(0, 1), uv = Vec2(0, 1), color = Color(1,1,1,1)},
+			{pos = Vec2(1, 1), uv = Vec2(1, 1), color = Color(1,1,1,1)},
 
-			{pos = Vec2(1, 1), uv = Vec2(1, 0), color = Color(1,1,1,1)},
-			{pos = Vec2(1, 0), uv = Vec2(1, 1), color = Color(1,1,1,1)},
-			{pos = Vec2(0, 0), uv = Vec2(0, 1), color = Color(1,1,1,1)},
+			{pos = Vec2(1, 1), uv = Vec2(1, 1), color = Color(1,1,1,1)},
+			{pos = Vec2(1, 0), uv = Vec2(1, 0), color = Color(1,1,1,1)},
+			{pos = Vec2(0, 0), uv = Vec2(0, 0), color = Color(1,1,1,1)},
 		})
 	end
 
@@ -97,7 +101,7 @@ do -- fonts
 	end
 	
 	function surface.SetFont(name)
-		ft.current_font = ft.fonts[name]
+		ft.current_font = ft.fonts[name] or ft.fonts.default
 	end
 
 	function surface.GetFont()
@@ -120,7 +124,7 @@ do -- fonts
 		local data = ft.current_font.strings[str]
 		
 		if not data then
-			data = {glyphs = {}, h = 0}
+			data = {glyphs = {}, h = 0, w = 0}
 			
 			local info = ft.current_font.info
 			local w = 0
@@ -178,7 +182,7 @@ do -- fonts
 					
 					glyph.tex = tex
 					glyph.x = w
-					glyph.y = tex.metrics.y - tex.metrics.h
+					glyph.y = -tex.metrics.y + info.size*0.5
 					
 					glyph.x = glyph.x / info.res_multiplier
 					glyph.y = glyph.y / info.res_multiplier
@@ -213,10 +217,15 @@ do -- fonts
 		
 		if data then
 			return data.w, data.h
-		else
+		elseif ft.current_font then
 			surface.DrawText(str) 
-			return surface.GetTextSize(str)
+			data = ft.current_font and ft.current_font.strings[str]
+			if data then
+				return data.w, data.h
+			end
 		end
+		
+		return 0, 0
 	end
 end
 

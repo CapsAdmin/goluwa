@@ -15,7 +15,6 @@ include("libraries/entities/entities.lua")
 
 include("libraries/font.lua")
 include("libraries/window.lua")
-include("extensions/input.lua")
 
 include("libraries/network/init.lua")
 
@@ -48,53 +47,6 @@ function glw.OpenWindow(w, h, title)
 	glw.window = window
 	
 	return window
-end
-
-do -- input extensions
-	local trigger = input.SetupInputEvent("Key")
-
-	function glw.OnKey(key, scancode, action, mods)
-		if action == e.GLFW_REPEAT then return end
-		
-		trigger(glfw.KeyToString(key), action == e.GLFW_PRESS)
-	end
-
-	local trigger = input.SetupInputEvent("Mouse")
-
-	function glw.OnMouseButton(button, action, mods)
-		trigger(glfw.MouseToString(button), action == e.GLFW_PRESS)
-	end
-	
-	function input.GetMousePos()
-		local x, y = ffi.new("double[1]"), ffi.new("double[1]")
-		glfw.GetCursorPos(glw.window.__ptr, x, y)
-		x = x[0]
-		y = y[0]
-		
-		y = -y + glw.window.h
-		
-		return Vec2(x, y)
-	end
-	
-	function input.SetMousePos(pos)
-		glfw.SetCursorPos(glw.window.__ptr, pos.x, pos.y)
-	end
-	
-	function input.ShowCursor(b)
-		if b then
-			glfw.SetInputMode(glw.window.__ptr, e.GLFW_CURSOR, e.GLFW_CURSOR_NORMAL)
-		else
-			glfw.SetInputMode(glw.window.__ptr, e.GLFW_CURSOR, e.GLFW_CURSOR_HIDDEN)
-		end
-	end	
-	
-	function input.SetMouseTrapped(b)
-		input.mouse_trapped = b
-	end
-
-	function input.GetMouseDelta()
-		return input.mouse_delta or Vec2()
-	end
 end
 
 function glw.SetWindowSize(x, y)
@@ -239,6 +191,8 @@ do
 		end
 	end
 end
+
+include("extensions/input.lua")
 
 local function main()
 	event.Call("Initialize")

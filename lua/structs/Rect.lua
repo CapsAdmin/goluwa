@@ -69,6 +69,14 @@ function META:SetPos(var)
 	return self
 end
 
+function META:IsPosInside(v)
+	return 
+		v.x > self.x and
+		v.y > self.y and
+		v.x < self.w and
+		v.y < self.h
+end
+
 function META:SetSize(var)
 	if typex(var) == "vec2" then
 		self.w = var.x

@@ -49,7 +49,7 @@ end
 function PANEL:OnMouseInput(button, press)
 	self:MakeActivePanel()
 
-	if button == "mouse1" then
+	if button == "button_1" then
 		self.CaretPos = select(3,self:GetCharFromPixelPos(self:GetMousePosition())) or self.CaretPos
 	end
 end
@@ -127,7 +127,7 @@ do -- utilities
 		
 		for char in line:gmatch("(.)") do
 			
-			local siz = aahh.GetTextSize(self.Font, char) * self.TextSize
+			local siz = aahh.GetTextSize(self.Font, char)
 			local rect = Rect(x, y * (self.TextSize * 1.5) - (self.TextSize * 1.5), siz)
 			
 			if rect:IsPosInside(pos) then
@@ -146,10 +146,10 @@ do -- utilities
 		
 		local char = line:sub(pos.x, pos.x)
 		
-		local x = aahh.GetTextSize(self.Font, line:sub(0, pos.x)).w * self.TextSize
+		local x = aahh.GetTextSize(self.Font, line:sub(0, pos.x)).w 
 		local y = pos.y * (self.TextSize * 1.5) - (self.TextSize * 1.5)
 		
-		local siz = aahh.GetTextSize(self.Font, char) * self.TextSize
+		local siz = aahh.GetTextSize(self.Font, char)
 		local rect = Rect(x, y, siz)
 		
 		return char, rect, pos
@@ -187,7 +187,7 @@ function PANEL:LayoutText(max_width)
 	for str in self.Text:gmatch("(.)") do
 		
 		-- subtract the width of the character on max_width so it doesn't go outside the panel
-		local w = aahh.GetTextSize(self.Font, str).w * self.TextSize
+		local w = aahh.GetTextSize(self.Font, str).w
 		local max_width = max_width - w
 		
 		if current_width > max_width or str == "\n" or i == #self.Text then	
@@ -336,7 +336,7 @@ function PANEL:OnDraw(size)
 	
 		key = key - 1 -- start from 0 instead of 1 to avoid offset issues
 		h = (key + 2) * line_height
-		aahh.Draw("text", line, Vec2(0, key * line_height), self.Font, self.TextSize, self:GetSkinColor("light2"))
+		aahh.Draw("text", line, Vec2(0, key * line_height), self.Font, self:GetSkinColor("light2"))
 	
 		if h > size.h then break end
 	end
@@ -352,7 +352,7 @@ function PANEL:OnDraw(size)
 	
 	if false and char then
 		aahh.Draw("rect", rect, Color(1,0,0,0.25))
-		aahh.Draw("text", char .. " " .. tostring(pos), rect:GetPos(), "tahoma",  20, Color(0,0,0,1))
+		aahh.Draw("text", char .. " " .. tostring(pos), rect:GetPos(), "tahoma",  Color(0,0,0,1))
 	end
 
 end

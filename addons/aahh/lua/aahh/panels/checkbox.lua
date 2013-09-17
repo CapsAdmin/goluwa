@@ -10,7 +10,7 @@ end
 
 function PANEL:OnMouseInput(key, press)	
 	if not press then
-		if key == "mouse1" then
+		if key == "button_1" then
 			self.Checked = not self.Checked
 			return self:OnChecked(self.Checked)
 		end

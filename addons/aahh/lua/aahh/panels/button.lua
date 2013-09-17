@@ -16,7 +16,7 @@ function PANEL:OnMouseInput(key, press)
 	if not press and self.button_down[key] then
 		self.button_down[key] = nil
 		
-		if key == "mouse1" then
+		if key == "button_1" then
 			return self:OnPress()
 		else
 			return self:OnOtherKeyPress(key)
@@ -25,7 +25,7 @@ function PANEL:OnMouseInput(key, press)
 end
 
 function PANEL:IsDown()
-	if self.is_down and not input.IsKeyDown("mouse1") then
+	if self.is_down and not input.IsMouseDown("button_1") then
 		self.is_down = false
 	end
 	
