@@ -130,7 +130,7 @@ do -- logging
 	local pretty_prints = {}
 	
 	pretty_prints.table = function(t)
-		local str = tostring(t)
+		local str = tostring(t) or "nil"
 				
 		str = str .. " [" .. table.count(t) .. " subtables]"
 		

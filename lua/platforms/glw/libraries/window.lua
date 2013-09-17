@@ -54,10 +54,11 @@ function Window(width, height, title)
 	-- this needs to be initialized once after a context has been created..
 	if gl and gl.InitMiniGlew and not gl.gl_init then
 		gl.InitMiniGlew()	
-		render.Initialize(width, height)		
+		render.Initialize(width, height)	
+		event.Call("RenderContextInitialized")
 		gl.gl_init = true
 	end
-	
+		
 	local self = setmetatable({}, META)
 	
 	self.__ptr = ptr

@@ -2,12 +2,16 @@ local PANEL = {}
 
 PANEL.ClassName = "image"
 
-aahh.GetSet(PANEL, "Texture", graphics.CreateTexture("textures/aahh/pac.png"))
+aahh.GetSet(PANEL, "Texture", NULL)
 aahh.GetSet(PANEL, "UV")
 aahh.GetSet(PANEL, "Color")
 aahh.GetSet(PANEL, "Scale", Vec2(1,1))
 aahh.GetSet(PANEL, "Filter", true)
 aahh.GetSet(PANEL, "ResizePanelWithImage", true)
+
+function PANEL:Initialize()
+	self.Texture = Image("aahh/pac.png")
+end
 
 function PANEL:SizeToContent()
 	local siz = self.Texture:GetSize() * self.Scale

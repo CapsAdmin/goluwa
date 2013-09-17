@@ -65,12 +65,12 @@ end
 do--panel
 	function SKIN:PanelDrawInactive(pnl, c)
 		if not pnl:IsInFront() then
-			graphics.DrawRect(Rect(Vec2(0,0), pnl:GetSize()), c.inactive)
+			aahh.Draw("rect", Rect(Vec2(0,0), pnl:GetSize()), c.inactive)
 		end
 	end
 	
 	function SKIN:PanelDraw(pnl, c)
-		graphics.DrawRect(
+		aahh.Draw("rect", 
 			Rect(Vec2(0,0), pnl:GetSize()),
 			c.light,
 			PAD/2,
@@ -95,7 +95,7 @@ do--frame
 
 	function SKIN:FrameDraw(pnl, c)
 		self:PanelDraw(pnl, c)
- 		graphics.DrawRect(	
+ 		aahh.Draw("rect", 	
 			Rect(Vec2(0,0), Vec2(pnl:GetSize().w, bar_size)):Expand(PAD/4) + Rect(0, -PAD/4, 0, 0), 
 			c.bar, 
 			PAD/2, 
@@ -128,7 +128,7 @@ do--frame
 			end
 		end
 		
-		graphics.DrawRect(
+		aahh.Draw("rect", 
 			Rect(Vec2(0,0), pnl:GetSize()),
 			col,
 			PAD,
@@ -172,8 +172,6 @@ do--grid
 end
 
 do--button
-	--local close_tex = graphics.CreateTexture("aahh/defaultskin.dds", Rect(0, 224, 24, 24))
-
 	function SKIN:ButtonDraw(pnl, c)
 		
 		pnl.MouseOver = pnl:IsWorldPosInside(MPOS)
@@ -192,7 +190,7 @@ do--button
 			end
 		end
 		
-		graphics.DrawRect(
+		aahh.Draw("rect", 
 			Rect(Vec2(0,0), pnl:GetSize()),
 			col,
 			0,
@@ -210,10 +208,10 @@ end
 do--label
 	-- i'm making it so the text fits right in the panel.
 	-- this should  be done internally, but let's keep it here for now
-	--graphics.DrawText(text, pos, font, scale, color, align_normal, shadow_dir, shadow_color, shadow_blur)
+	--aahh.Draw("text", text, pos, font, scale, color, align_normal, shadow_dir, shadow_color, shadow_blur)
 
 	function SKIN:LabelDraw(pnl, c)
-		graphics.DrawText(
+		aahh.Draw("text", 
 			pnl.Text,
 			Vec2(0, 0),
 			pnl.Font or self.Fonts.aahh_default,
@@ -226,11 +224,11 @@ do--label
 			pnl.ShadowBlur
 		)
 		
-		--graphics.DrawRect(Rect(0,0, pnl:GetSize()), Color(255, 0, 0, 50))
+		--aahh.Draw("rect", Rect(0,0, pnl:GetSize()), Color(255, 0, 0, 50))
 	end
 
 	function SKIN:LabelLayout(pnl)
-		local scale = graphics.GetTextSize(pnl.Font, pnl.Text) * pnl.TextScale * pnl.TextSize	
+		local scale = aahh.GetTextSize(pnl.Font, pnl.Text) * pnl.TextScale * pnl.TextSize	
 		pnl:SetSize(scale)
 	end
 end
@@ -253,7 +251,7 @@ do -- button text
 			end
 		end
 		
-		graphics.DrawRect(
+		aahh.Draw("rect", 
 			Rect(Vec2(0,0), pnl:GetSize()),
 			col,
 			PAD,
@@ -278,7 +276,7 @@ if false then--menuitem
 	local border = PAD/4
 	
 	function SKIN:MenuItemDraw(pnl, c)		
-		graphics.DrawRect(Rect(Vec2(0,0), pnl:GetSize()), c.light, nil, nil, c.medium)
+		aahh.Draw("rect", Rect(Vec2(0,0), pnl:GetSize()), c.light, nil, nil, c.medium)
 	
 		if pnl:IsWorldPosInside(MPOS) then
 			local rct = Rect(Vec2(0,0), pnl:GetSize())
@@ -286,12 +284,12 @@ if false then--menuitem
 				rct:Shrink(1)
 			end
 			
-			graphics.DrawRect(rct, c.highlight2)
+			aahh.Draw("rect", rct, c.highlight2)
 		end
 		
 		local a = Vec2(pnl.lbl:GetPos().x - PAD, pnl:GetHeight())
 		local b = Vec2(a.x, 0)
-		graphics.DrawLine(b, a, c.border)
+		aahh.Draw("line", b, a, c.border)
 	end
 
 	function SKIN:MenuItemLayout(pnl)
@@ -323,17 +321,17 @@ do--menuitem
 				rct:Shrink(1)
 			end
 			
-			graphics.DrawRect(rct, c.highlight2)
+			aahh.Draw("rect", rct, c.highlight2)
 		end
 	end
 	
 	function SKIN:ContextDraw(pnl)
-		graphics.DrawRect(Rect(Vec2(0,0), pnl:GetSize()), c.light, nil, nil, c.medium)
+		aahh.Draw("rect", Rect(Vec2(0,0), pnl:GetSize()), c.light, nil, nil, c.medium)
 	end
 	
 	function SKIN:ContextSpaceDraw(pnl)
 		local w = pnl:GetParent().IconSize.w
-		graphics.DrawRect(Rect(Vec2(w + PAD, pnl:GetHeight() / 2), Vec2(pnl:GetParent():GetWidth() - w - PAD * 4, 2 )), c.shadow)
+		aahh.Draw("rect", Rect(Vec2(w + PAD, pnl:GetHeight() / 2), Vec2(pnl:GetParent():GetWidth() - w - PAD * 4, 2 )), c.shadow)
 	end
 
 	function SKIN:MenuItemLayout(pnl)
@@ -362,7 +360,7 @@ end
 
 do--image
 	function SKIN:ImageDraw(pnl, c)
-		graphics.DrawTexture(pnl.Texture, Rect(Vec2(0,0), pnl:GetSize()), pnl.Color, pnl.UV, pnl.Filter)
+		aahh.Draw("texture", pnl.Texture, Rect(Vec2(0,0), pnl:GetSize()), pnl.Color, pnl.UV, pnl.Filter)
 	end
 
 	function SKIN:ImageLayout(pnl)
@@ -379,14 +377,14 @@ do--textinput
 		pnl.cur_text_size = siz
 		
 		-- background
-		graphics.DrawRect(Rect(0, 0, pnl:GetWide(), pnl:GetTall()), c.light2, 0, 1, c.medium)
+		aahh.Draw("rect", Rect(0, 0, pnl:GetWide(), pnl:GetTall()), c.light2, 0, 1, c.medium)
 		
 		-- text
-		graphics.DrawText(pnl.Text, Vec2(PAD, 0), pnl.Font, pnl.TextSize, c.text, Vec2(0, 0))	
+		aahh.Draw("text", pnl.Text, Vec2(PAD, 0), pnl.Font, pnl.TextSize, c.text, Vec2(0, 0))	
 			
 		-- caret
 		if pnl:IsActivePanel() and T%0.5 > 0.25 then
-			graphics.DrawRect(Rect(Vec2(siz.w+2, center.y-siz.h/2), Vec2(1, siz.h)), c.text)
+			aahh.Draw("rect", Rect(Vec2(siz.w+2, center.y-siz.h/2), Vec2(1, siz.h)), c.text)
 		end
 	end
 end
@@ -401,7 +399,7 @@ do -- checkbox
 			col = c.dark
 		end
 		
-		graphics.DrawRect(
+		aahh.Draw("rect", 
 			Rect(Vec2(0,0), pnl:GetSize()),
 			col,
 			pnl:GetHeight() / 2,
@@ -425,7 +423,7 @@ do -- tabbed button
 			col = c.medium
 		end
 		
-		graphics.DrawRect(
+		aahh.Draw("rect", 
 			Rect(Vec2(0,0), pnl:GetSize()),
 			col,
 			8,
@@ -462,10 +460,10 @@ do -- tree
 	function SKIN:TreeNodeDraw(pnl)
 		local size = pnl:GetSize()
 		
-		graphics.DrawRect(Rect(0,0,size), pnl:IsMouseOver() and pnl:GetSkinColor("highlight2") or pnl:GetSkinColor("light2"))
+		aahh.Draw("rect", Rect(0,0,size), pnl:IsMouseOver() and pnl:GetSkinColor("highlight2") or pnl:GetSkinColor("light2"))
 		
 		if pnl:IsDown() then
-			graphics.DrawRect(Rect(0,0,size), pnl:GetSkinColor("highlight1"))
+			aahh.Draw("rect", Rect(0,0,size), pnl:GetSkinColor("highlight1"))
 		end
 	end
 end

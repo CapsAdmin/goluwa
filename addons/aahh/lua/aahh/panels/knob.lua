@@ -20,13 +20,13 @@ function PANEL:OnDraw(size)
 		self.drag_pos = nil
 	end
  
-	graphics.DrawRect(Rect(0, 0, size), self:GetSkinColor("dark"), self:GetHeight()/2, 1, self:GetSkinColor("border"))
+	aahh.Draw("rect", Rect(0, 0, size), self:GetSkinColor("dark"), self:GetHeight()/2, 1, self:GetSkinColor("border"))
 	
 	local pos = self:GetSize() / 2
 	
 	local limit = 0.125
 	local val = math.clamp(self.Value, limit, 2 - limit) - (limit/2)
-	graphics.DrawLine(pos, pos + Vec2(math.sin(val * math.pi * -2), math.cos(val * math.pi * -2)) * self:GetHeight() / 2.5, self:GetSkinColor("light"))
+	aahh.Draw("line", pos, pos + Vec2(math.sin(val * math.pi * -2), math.cos(val * math.pi * -2)) * self:GetHeight() / 2.5, self:GetSkinColor("light"))
 end
 
 function PANEL:SetValue(num)	

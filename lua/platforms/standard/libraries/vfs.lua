@@ -192,9 +192,7 @@ function vfs.Read(path, ...)
 		file:close()
 		return data
 	end
-	
-	print(path,is_absolute(path), "!!!!!!!!!!!!!!!!!!!!")
-	
+		
 	return file, err
 end
 

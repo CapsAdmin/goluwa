@@ -51,7 +51,8 @@ end
 do -- skins
 	function aahh.UseSkin(name)
 		local skin = class.Create("skin", name)
-
+		
+		skin.IsValid = function() return true end
 		skin.OnThink = skin.OnThink or function(delta) end
 		skin.DefaultDraw = skin.DrawDefault or function(panel) end
 		skin.DefaultLayout = skin.LayoutDefault or function(panel) end
@@ -76,4 +77,4 @@ do -- skins
 	end
 end
 
-include("lua/aahh/skins/*")
+include("aahh/skins/*")

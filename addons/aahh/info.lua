@@ -8,5 +8,5 @@ return
 	
 	priority = 10,
 	
-	load = false,
+	load = CAPSADMIN,
 }
