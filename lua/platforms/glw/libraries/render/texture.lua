@@ -28,6 +28,37 @@ do
 		return buffer 
 	end
 	
+	function META:Clear(val)	
+		local f = self.format
+		local length = self.size.w * self.size.h * f.stride
+		local buffer = ffi.new(f.buffer_type.."[?]", length)
+
+		ffi.fill(buffer, length, val)
+
+		gl.TexSubImage2D(
+			f.type, 
+			0, 
+			0,
+			0,
+			self.size.w,
+			self.size.h, 
+			f.format, 
+			f.format_type, 
+			buffer
+		)
+	end
+	
+	local tex_params = {}
+	for k,v in pairs(e) do
+		if k:find("GL_TEXTURE_") then
+			local friendly = k:match("GL_TEXTURE_(.+)")
+			friendly = friendly:lower()
+			tex_params[friendly] = v
+		end
+	end
+	
+	tex_params.internal_format = nil
+	
 	function META:Upload(buffer, x, y, w, h, level)
 		x = x or 0
 		y = y or 0
@@ -35,17 +66,50 @@ do
 		h = h or self.size.h
 		level = level or 0
 		
-		local f = self.format
-		
-		gl.PixelStorei(e.GL_PACK_ALIGNMENT, f.stride)
-		gl.PixelStorei(e.GL_UNPACK_ALIGNMENT, f.stride)
+		local f = self.format		
 	
 		gl.BindTexture(f.type, self.id)
-			gl.TexStorage2D(f.type, f.mip_map_levels, f.internal_format, self.size.w, self.size.h)
-			gl.TexSubImage2D(f.type, level, x,y,w,h, f.format, f.format_type, buffer)
+			gl.PixelStorei(e.GL_PACK_ALIGNMENT, f.stride)
+			gl.PixelStorei(e.GL_UNPACK_ALIGNMENT, f.stride)
+
+						 
+			for k,v in pairs(f) do
+				if tex_params[k] then
+					gl.TexParameterf(f.type, tex_params[k], v)
+				elseif type(k) == "number" then
+					gl.TexParameterf(f.type, k, v)
+				end
+			end
 			
-			gl.TexParameteri(f.type, e.GL_TEXTURE_MAG_FILTER, e.GL_NEAREST)
-			gl.TexParameteri(f.type, e.GL_TEXTURE_MIN_FILTER, e.GL_NEAREST)
+			
+			gl.TexStorage2D(
+				f.type, 
+				f.mip_map_levels, 
+				f.internal_format, 
+				self.size.w + f.border_size, 
+				self.size.h + f.border_size
+			)
+			
+			if f.clear then
+				if f.clear == true then
+					self:Clear(nil)
+				else
+					self:Clear(f.clear)
+				end
+			end
+			
+			gl.TexSubImage2D(
+				f.type, 
+				level, 
+				x + f.border_size,
+				y + f.border_size,
+				w,
+				h, 
+				f.format, 
+				f.format_type, 
+				buffer
+			)
+
 			gl.GenerateMipmap(f.type)
 
 		gl.BindTexture(f.type, 0)
@@ -120,6 +184,7 @@ do
 		format.stride = format.stride or 4
 		format.buffer_type = format.buffer_type or "unsigned char"
 		format.mip_map_levels = format.mip_map_levels or 4
+		format.border_size = format.border_size or 0
 
 		-- create a new texture
 		local id = gl.GenTexture()

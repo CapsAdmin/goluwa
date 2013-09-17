@@ -35,6 +35,11 @@ function render.Initialize(w, h)
 	end
 end
 
+
+function render.GetScreenSize()
+	return render.w, render.h
+end
+
 event.AddListener("OnWindowResize", "render", function()
 	render.Initialize(w, h)
 end)
