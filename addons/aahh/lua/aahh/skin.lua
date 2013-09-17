@@ -76,6 +76,4 @@ do -- skins
 	end
 end
 
-for script in vfs.Iterate("lua/aahh/skins/", nil, true) do
-	dofile(script)
-end
+include("lua/aahh/skins/*")
