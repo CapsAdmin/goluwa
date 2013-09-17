@@ -1163,7 +1163,4 @@ do -- meta
 end
 
 
-for script in vfs.Iterate("lua/aahh/panels/", nil, true) do
-	print(script) 
-	include(script)   
-end
+include("aahh/panels/*")

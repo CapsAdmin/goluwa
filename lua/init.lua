@@ -435,7 +435,7 @@ do -- include
 	
 	function include(source, ...)
 		if vfs and source:sub(-1) == "*" then
-			for script in vfs.Iterate(source:sub(0,-2) .. ".lua", nil, true) do
+			for script in vfs.Iterate("lua/" .. source:sub(0,-2) .. ".lua", nil, true) do
 				local func, err = loadfile(script)
 				
 				if func then
@@ -559,7 +559,7 @@ include(extensions .. "os.lua")
 -- libraries
 structs = include(libraries .. "structs.lua")
 
-include("lua/structs/*")
+include("structs/*")
 
 utf8 = include(libraries .. "utf8.lua")
 event = include(libraries .. "event.lua")
