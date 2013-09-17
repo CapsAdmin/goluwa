@@ -26,7 +26,6 @@ local W, H = 0, 0
 -- this might not be the best way to do it but it should do for now
 do
 	freetype.debug = true
-	freetype.logcalls = true
 	
 	surface.ft = surface.ft or {}
 	local ft = surface.ft
@@ -35,20 +34,35 @@ do
 	
 	ft.fonts = ft.fonts or {}
 	ft.current_font = ft.current_font
+
+	-- clear font data for reloading
+	for k,v in pairs(ft.fonts) do
+		v.glyphs = {}
+		v.strings = {}
+	end
 	
 	function surface.InitFreetype()
 		if ft.ptr then
 			surface.SetFont("default")
 		return end
 		
-		-- this is crashy
 		local ptr = ffi.new("FT_Library[1]")  
 		freetype.InitFreeType(ptr)
 		ptr = ptr[0]
 		ft.ptr = ptr
 		surface.SetFont(surface.CreateFont("default"))	
+				
+		surface.fontmesh = render.Create2DVBO({
+			{pos = Vec2(0, 0), uv = Vec2(0, 1), color = Color(1,1,1,1)},
+			{pos = Vec2(0, 1), uv = Vec2(0, 0), color = Color(1,1,1,1)},
+			{pos = Vec2(1, 1), uv = Vec2(1, 0), color = Color(1,1,1,1)},
+
+			{pos = Vec2(1, 1), uv = Vec2(1, 0), color = Color(1,1,1,1)},
+			{pos = Vec2(1, 0), uv = Vec2(1, 1), color = Color(1,1,1,1)},
+			{pos = Vec2(0, 0), uv = Vec2(0, 1), color = Color(1,1,1,1)},
+		})
 	end
-		
+
 	function surface.CreateFont(name, info)
 		if not ft.ptr then return end
 		
@@ -56,7 +70,8 @@ do
 
 		info.path = info.path or "fonts/unifont.ttf"
 		info.size = info.size or 14
-		info.spacing = info.spacing or 4
+		info.spacing = info.spacing or 0
+		info.res_multiplier = info.res_multiplier or 1
 
 		-- create a face from memory
 		local data = vfs.Read(info.path, "rb") 
@@ -65,7 +80,7 @@ do
 		freetype.NewMemoryFace(ft.ptr, data, #data, 0, face)   
 		face = face[0]	
 
-		freetype.SetCharSize(face, 0, info.size * DPI, DPI, DPI)
+		freetype.SetCharSize(face, 0, info.size * DPI * info.res_multiplier, DPI, DPI)
 		
 		ft.fonts[name] = 
 		{
@@ -105,7 +120,8 @@ do
 		
 		if not data then
 			data = {glyphs = {}, h = 0}
-
+			
+			local info = ft.current_font.info
 			local w = 0
 			
 			for _, char in pairs(utf8.totable(str)) do
@@ -125,11 +141,27 @@ do
 						local bitmap = face.glyph.bitmap 
 						local w = bitmap.width
 						local h = bitmap.rows	 
-						local buffer = bitmap.buffer	
+						local buffer = bitmap.buffer	 
 						
-						tex = Texture(w, h, buffer, {format = e.GL_ALPHA, internal_format = e.GL_ALPHA8, stride = 1})
-						
+						tex = Texture(
+							w, h, buffer, 
+							{
+								format = e.GL_ALPHA, 
+								internal_format = e.GL_ALPHA8, 
+								stride = 1, 
+								mip_map_levels = 1,  
+								mag_filter = e.GL_LINEAR,
+								min_filter = e.GL_LINEAR_MIPMAP_LINEAR,
+								mip_map_levels = 1,
+								
+								wrap_r = e.GL_MIRRORED_REPEAT,
+								wrap_s = e.GL_MIRRORED_REPEAT,
+								wrap_t = e.GL_MIRRORED_REPEAT,
+							}  
+						) 
+				
 						local m = face.glyph.metrics
+
 						tex.metrics = 
 						{
 							w = m.width / DPI,
@@ -144,17 +176,22 @@ do
 					local glyph = {}
 					
 					glyph.tex = tex
-					glyph.x = w 
-					glyph.y = tex.metrics.y - tex.h
+					glyph.x = w
+					glyph.y = tex.metrics.y - tex.metrics.h
+					
+					glyph.x = glyph.x / info.res_multiplier
+					glyph.y = glyph.y / info.res_multiplier
+					glyph.w = tex.w / info.res_multiplier
+					glyph.h = tex.h / info.res_multiplier
 					
 					table.insert(data.glyphs, glyph)
 
-					w = w + tex.metrics.w + ft.current_font.info.spacing
+					w = w + tex.metrics.w2 + info.spacing
 					
 					data.w = w
 					
-					if tex.h > data.h then
-						data.h = tex.h
+					if tex.metrics.h > data.h then
+						data.h = tex.metrics.h
 					end
 				end
 			end
@@ -164,12 +201,10 @@ do
 
 		for _, glyph in pairs(data.glyphs) do
 			glyph.tex:Bind()			
-			surface.PushMatrix(X + glyph.x, Y + glyph.y, glyph.tex.w, glyph.tex.h)
-				render.Draw2DVBO(surface.rectmesh)
+			surface.PushMatrix(X + glyph.x, Y + glyph.y, glyph.w, glyph.h)
+				render.Draw2DVBO(surface.fontmesh)
 			surface.PopMatrix()
 		end
-		
-		surface.PopMatrix()
 	end 
 	
 	function surface.GetTextSize(str)

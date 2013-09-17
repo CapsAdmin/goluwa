@@ -6,14 +6,7 @@ local disable_flags
 
 function graphics.Set2DFlags(...)
 	if disable_flags then return end
-	render.SetState(
-		bit.bor(
-			e.GS_BLSRC_SRCALPHA,
-			e.GS_BLDST_ONEMINUSSRCALPHA,
-			e.GS_NODEPTHTEST,
-			...
-		)
-	)
+
 end
 
 function graphics.DisableFlags(b)
@@ -31,7 +24,7 @@ function graphics.SetRect(rect)
 		
 		--render.SetViewport(draw_rect.x, draw_rect.y, draw_rect.w, draw_rect.h)
 		local x,y,w,h = rect:Unpack()
-		surface.StartClip(x,y,x+w,y+h)
+		surface.StartClip(x,y,w,h)
 	else
 		surface.EndClip()
 	end
@@ -41,36 +34,16 @@ local white
 
 local corner
 
-local draw_textured_rect = function(x,y,w,h, ...)
-	x = x-0.1
-	y = y-0.1
-	w = w-0.1
-	h = h-0.1
-		
-	surface.DrawTexturedRect(x,y,w,h, ...)
-end
-
-local fonts
-local size = 512
-local font_flags = {size, size, 0x00020000}
-
-local function create()
-	return {default = Font(R("fonts/LiberationMono-Regular.ttf"), unpack(font_flags))}
-end
-
 function graphics.GetFont(name)
 	return fonts[name] or fonts.default
 end
 
-function graphics.GetTextSize(font, text)
-	fonts = fonts or create()
-	
+function graphics.GetTextSize(font, text)	
 	font = font or "default"
 	text = text or "W"
 	
 	text = tostring(text)
 
-	fonts[font] = fonts[font] or Font(R("fonts/"..font), unpack(font_flags)) or fonts.default
 	local fnt = fonts[font]
 
 	if not fnt then
@@ -81,7 +54,8 @@ function graphics.GetTextSize(font, text)
 	
 	if not fnt.scale or not fnt.scale[text] then
 		fnt.scale = fnt.scale or {}
-		fnt.scale[text] = Vec2(surface.GetTextSize(fnt, text, 1)) 
+		surface.SetFont(fnt)
+		fnt.scale[text] = Vec2(surface.GetTextSize(text))
 	end
 
 	return fonts[font].scale[text] 
@@ -99,25 +73,20 @@ local function DrawText(text, pos, font, size, color, align_normal)
 	
 	if color.a == 0 then return end
 	
-	fonts[font] = fonts[font] or Font(R("fonts/"..font), unpack(font_flags)) or fonts.default
-
 	surface.SetFont(fonts[font])
-	surface.SetColor(color)
+	surface.Color(color:Unpack())
 
 	if type(size) == "number" then
 		size = Vec2() + size
 	end
 	
 	if align_normal ~= Vec2(0, 0) then
-		local scale = graphics.GetTextSize(font, text)
+		local scale = graphics.GetTextSize(text, font)
 	
 		pos = pos + (align_normal * scale)
 	end
 	
-	text = tostring(text):gsub("\n", "")
-		
-	local w,h = render.GetScreenScale()
-	surface.DrawText(text, pos.x, pos.y - (h * 2), size * Vec2(w,w), nil, nil, 1)
+	surface.DrawText(text)
 		
 	if graphics.debug then
 		graphics.DrawRect(Rect(pos.x, pos.y, graphics.GetTextSize(font, text) * size), Color(0, 0, 1, 0.25))
@@ -161,20 +130,18 @@ function graphics.DrawText(text, pos, font, scale, color, align_normal, shadow_d
 end
 
 function graphics.DrawFilledRect(rect, color, ...)
-	white = white or Texture(R("textures/defaults/white.dds")):GetId() -- ugh
-
 	color = color or Color(1,1,1,1)
 	if color.a == 0 then return end
 
 	graphics.Set2DFlags()
 	
-	surface.SetColor(color)
-	surface.SetTexture(white)
-	draw_textured_rect(rect.x, rect.y, rect.w, rect.h, ...)
+	surface.Color(color:Unpack())
+	surface.SetWhiteTexture()
+	surface.DrawRect(rect.x, rect.y, rect.w, rect.h, ...)
 end
 
 function graphics.DrawRoundedOutlinedRect(rect, size, color, tl, tr, bl, br)
-	corner = corner or Texture(R("textures/gui/corner.dds")):GetId()
+	corner = corner or Image("textures/gui/corner.png")
 	
 	if color.a == 0 then return end
 
@@ -194,7 +161,7 @@ function graphics.DrawRoundedOutlinedRect(rect, size, color, tl, tr, bl, br)
 	surface.SetColor(color)
 	surface.SetTexture(tl and corner or white)
 
-	draw_textured_rect(
+	surface.DrawRect(
 		rect.x - size * 0.5,
 		rect.y - size * 0.5,
 
@@ -203,7 +170,7 @@ function graphics.DrawRoundedOutlinedRect(rect, size, color, tl, tr, bl, br)
 	)
 
 	surface.SetTexture(tr and corner or white)
-	draw_textured_rect(
+	surface.DrawRect(
 		rect.x + rect.w + size * 0.5,
 		rect.y + rect.h + size * 0.5,
 
@@ -212,7 +179,7 @@ function graphics.DrawRoundedOutlinedRect(rect, size, color, tl, tr, bl, br)
 	)
 
 	surface.SetTexture(bl and corner or white)
-	draw_textured_rect(
+	surface.DrawRect(
 		rect.x + rect.w + size * 0.5,
 		rect.y - size * 0.5,
 
@@ -221,7 +188,7 @@ function graphics.DrawRoundedOutlinedRect(rect, size, color, tl, tr, bl, br)
 	)
 
 	surface.SetTexture(br and corner or white)
-	draw_textured_rect(
+	surface.DrawRect(
 		rect.x - size * 0.5,
 		rect.y + rect.h + size * 0.5,
 
@@ -278,16 +245,7 @@ function graphics.DrawRect(rect, color, roundness, border_size, border_color, sh
 end
 
 function graphics.CreateTexture(path, rect)
-
-	-- since textures are cached internally we
-	-- get the same pointer and texture id if
-	-- we try to create a new texture with the
-	-- same path.
-
-	-- this is a problem if we want to store
-	-- uv coordinates in the texture's table
-
-	local tex = utilities.UserDataToTable(Texture(R("textures/"..path)))
+	local tex = Image("textures/"..path)
 
 	tex.uv = {(rect or Rect(0,0,1,1)):GetUV8(Vec2(tex:GetSize()))}
 
@@ -309,15 +267,11 @@ function graphics.DrawTexture(tex, rect, color, uv, nofilter)
 	surface.SetColor(color or Color(1,1,1,1))
 	surface.SetTexture(tex)
 	
-	surface.DrawTexturedRectEx(
+	surface.DrawRect(
 		rect.x,
 		rect.y,
 		rect.w,
-		rect.h,
-
-		nofilter,
-
-		unpack(uv)
+		rect.h
 	)
 end
 
