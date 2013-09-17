@@ -10,9 +10,10 @@ function PANEL:Initialize()
 	
 	self.lbl = aahh.Create("label", self)
 	self.lbl:SetIgnoreMouse(true)
+	self.lbl:SetAlignNormal(e.ALIGN_CENTERY)
 		
 	self.img = aahh.Create("image", self)
-	self.img:SetTexture(Image("gui/heart.png"))
+	self.img:SetTexture(Image("textures/gui/heart.png"))
 	self.img:SetIgnoreMouse(true)
 
 	self:SetCursor(e.IDC_HAND)
@@ -46,10 +47,6 @@ end
 
 function PANEL:SetFont(name)
 	self.lbl:SetFont(name)
-end
-
-function PANEL:SetTextSize(siz)
-	self.lbl:SetTextSize(siz)
 end
 
 function PANEL:OnDraw()

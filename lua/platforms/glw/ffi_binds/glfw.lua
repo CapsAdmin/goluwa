@@ -337,10 +337,9 @@ end
 
 local keys = {}
 
-for k,v in pairs(reverse_enums) do
-	
-	if v:sub(0, 3) == "key" then
-		keys[k] = v:sub(5)
+for k,v in pairs(e) do
+	if k:sub(0, 8) == "GLFW_KEY" then
+		keys[v] = k:lower():sub(10)
 	end
 end
 
@@ -350,10 +349,9 @@ end
 
 local mousebuttons = {}
 
-for k,v in pairs(reverse_enums) do
-	
-	if v:sub(0, 5) == "mouse" then
-		mousebuttons[k] = v:sub(7)
+for k,v in pairs(e) do
+	if k:sub(0, 10) == "GLFW_MOUSE" then
+		mousebuttons[v] = k:lower():sub(12)
 	end
 end
 

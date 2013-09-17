@@ -45,7 +45,7 @@ function utf8.char(byte)
 	local utf8 = ""
 	
 	if byte <= 127 then
-		utf8 = byte:char()
+		utf8 = string.char(byte)
 	elseif byte < 2048 then
 		utf8 = ("%c%c"):format(
 			192 + math_floor(byte / 64), 
