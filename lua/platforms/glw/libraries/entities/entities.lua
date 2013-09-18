@@ -1,6 +1,7 @@
 entities = entities or {}
 
 entities.active_entities = entities.active_entities or {}
+entities.is_keys = entities.is_keys or {}
 
 function entities.Call(name, ...)
 	for key, ent in pairs(entities.active_entities) do
@@ -12,27 +13,47 @@ end
 
 class.SetupLib(entities, "entity")
 
+function entities.Register(META, name)
+	META.TypeBase = base
+	local _, name = class.Register(META, "entity", name)
+	
+	entities.is_keys["Is"..name:gsub("^.", function(s) return s:upper() end)] = name
+end
+	
+
 _G.Entity = entities.Create
 
 do -- base
 	local META = {}
 	
-	META.ClassName = "base"
+	META.ClassName = "base"	
+		
+	class.GetSet(META, "Pos", Vec3(0,0,0))
+	class.GetSet(META, "Angles", Ang3(0,0,0))
+	class.GetSet(META, "Scale", Vec3(1,1,1))
+	class.GetSet(META, "Size", 1)
+	class.GetSet(META, "ID", 0)
 	
 	class.SetupParentingSystem(META)
-	
+
 	function META:__init()
 		if entities.world_entity then
 			entities.world_entity:AddChild(self)
 		end
-		self.pool_id = table.insert(entities.active_entities, self)
+		self.ID = table.insert(entities.active_entities, self)
+	end
+		
+	function META:__index(key)
+		if entities.is_keys[key] then
+			return function() return entities.is_keys[key] == self.ClassName end
+		end
 	end
 	
 	function META:IsValid() return true end
 	
 	function META:Remove()
 		self:RemoveChildren()
-		table.remove(entities.active_entities, self.pool_id)
+		table.remove(entities.active_entities, self.ID)
 		utilities.MakeNULL(self)
 	end
 	
@@ -41,11 +62,6 @@ do -- base
 		ent:SetParent(self)
 		return ent
 	end
-	
-	class.GetSet(META, "Pos", Vec3(0,0,0))
-	class.GetSet(META, "Angles", Ang3(0,0,0))
-	class.GetSet(META, "Scale", Vec3(1,1,1))
-	class.GetSet(META, "Size", 1)
 		
 	entities.Register(META)
 end 
