@@ -68,7 +68,7 @@ function hasindex(var)
 	return T == "table" and meta.__index ~= nil
 end
 
-local idx = function(var) return var.Type end
+local idx = function(var) return var.TypeX or var.Type end
 
 function typex(var)
 	

@@ -66,6 +66,8 @@ function class.Register(META, type_name, name)
 
     class.Registered[type_name] = class.Registered[type_name] or {}
     class.Registered[type_name][name] = META
+	
+	return type_name, name
 end
 
 function class.HandleBaseField(META, var)
