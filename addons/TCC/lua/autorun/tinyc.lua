@@ -93,26 +93,44 @@ function TCCState()
 	self.__ptr = module.tcc_new()
 	
 	if mmyy then		
-		-- addons/*/include
-		self:AddIncludePath(R"include/")
+		-- */include
+		for dir in vfs.Iterate("/include$", nil, true) do
+			self:AddIncludePath(dir)
+		end
 		
-		-- addons/*/lib 
-		self:AddLibraryPath(R"lib/" .. ffi.arch .. "/")
+		-- */lib 
+		for dir in vfs.Iterate("/lib$", nil, true) do
+			if dir:find("lib$") then
+				self:AddLibraryPath(dir .. "/" .. ffi.os:lower() .. "/" .. ffi.arch)
+			end
+		end
 	end
 		
 	return self
 end
 
-console.AddCommand("test_tcc", function()
-	local state = TCCState()
+tcc = {}
 
-	state:CompileString([[	
-		float LOL(float* bar)
-		{	
-			return bar[0] + bar[1] + bar[2] + bar[3];
-		}
-	]])
-
-	local func = state:GetFunction("LOL", "float", "float[4]")
-	print(func(ffi.new("float[4]", {2,2,4.5,4})))
-end)
+function tcc.Autorun()
+	for file in vfs.Iterate("/C/autorun/", nil, true) do		
+		if file:find("%.c$") then
+			local state = TCCState()
+			
+			local str = vfs.Read(file)
+			
+			for script in str:gmatch("#!(.-)\n") do
+				local func = assert(loadstring(script))
+				
+				local old = _G.state
+				_G.state = state 
+				assert(pcall(func))
+				_G.state = old
+			end
+			
+			state:AddIncludePath(file:match("(.+/)"))
+			state:CompileString(str)
+			
+			state:Run(0, nil)
+		end
+	end
+end
