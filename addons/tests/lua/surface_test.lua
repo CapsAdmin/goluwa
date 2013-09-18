@@ -10,12 +10,13 @@ event.AddListener("OnDraw", "gl", function(dt)
 	gl.ClearColor(0.5, 0.5, 0.5, 0.5)
 
 	render.Start(window)			 
-		surface.Start()		
-			surface.SetWhiteTexture()
-			 
-			surface.SetFont(font)
-			surface.SetTextPos(0,0)
-			surface.Color(255, 255, 255)
-			surface.DrawText("æøå|ops汉语/漢語")
-		render.End() 
+		surface.Start()	
+		
+		surface.SetWhiteTexture()
+		 
+		surface.SetFont(font)
+		surface.SetTextPos(0,0)
+		surface.Color(255, 255, 255)
+		surface.DrawText("æøå|ops汉语/漢語")
+	render.End() 
 end)

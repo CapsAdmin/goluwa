@@ -44,9 +44,10 @@ end
 
 function debug.dumpcall(clr_print)
 	local info = debug.getinfo(4)
-	local script = vfs.Read(info.short_src)
+	local path = info.source:sub(2)
+	local script = vfs.Read(path)
 	
-	logn(info.short_src)
+	logn(path)
 	
 	if script then
 		local lines = script:explode("\n")
@@ -67,14 +68,22 @@ function debug.dumpcall(clr_print)
 			end
 		end
 	else
-		logn(info.short_src)
+		logn(path)
 	end
 	
 	logn("")
 	logn("LOCALS: ")
 	for _, data in pairs(debug.getparamsx(4)) do
 		if not data.key:find("(",nil,true) then
-			logf("%s = %s", data.key, luadata.ToString(data.val))
+			local val = luadata.ToString(data.val)
+			if val:find("\n") then 
+				if type(data.val) == "table" then
+					val = tostring(data.val)
+				else
+					val = val:match("(.-)\n") .. "...."
+				end
+			end
+			logf("%s = %s", data.key, val)
 		end
 	end
 end
