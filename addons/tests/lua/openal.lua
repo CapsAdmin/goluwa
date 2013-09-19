@@ -1,3 +1,16 @@
+local size = 2 ^ 16
+local data = ffi.new("unsigned char[?]", size)
+
+for i = 1, size do
+	data[i-1] = math.random(255)
+end
+
+local sound = Sound(data, size)
+sound:Play()
+sound:SetPitch(0.1)
+timer.Simple(1, function() sound:Stop() end)
+
+do return end
 
 al.debug = true
 
