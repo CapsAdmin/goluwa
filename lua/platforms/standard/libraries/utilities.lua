@@ -1,5 +1,31 @@
 local utilities = _G.utilities or {}
 
+do
+	-- http://cakesaddons.googlecode.com/svn/trunk/glib/lua/glib/stage1.lua
+	local size_units = 
+	{ 
+		"B", 
+		"KiB", 
+		"MiB", 
+		"GiB", 
+		"TiB", 
+		"PiB", 
+		"EiB", 
+		"ZiB", 
+		"YiB" 
+	}
+	function utilities.FormatFileSize(size)
+		local unit_index = 1
+		
+		while size >= 1024 and size_units[unit_index + 1] do
+			size = size / 1024
+			unit_index = unit_index + 1
+		end
+		
+		return tostring(math.floor(size * 100 + 0.5) / 100) .. " " .. size_units[unit_index]
+	end
+end
+
 function utilities.SafeRemove(obj, gc)
 	if hasindex(obj) then
 		
