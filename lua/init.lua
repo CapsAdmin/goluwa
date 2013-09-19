@@ -577,7 +577,6 @@ console = include(libraries .. "console.lua")
 mmyy = include(libraries .. "mmyy.lua")
 system = include(libraries .. "system.lua")
 lcpp = include(libraries .. "lcpp.lua")
-vpk = include(libraries .. "vpk.lua")
 profiler = include(libraries .. "profiler.lua")
 
 -- meta
