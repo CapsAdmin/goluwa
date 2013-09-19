@@ -2,6 +2,9 @@ include("libraries/curses.lua")
 
 if not gl then
 	gl = include("ffi_binds/gl.lua")
+	al = include("ffi_binds/al.lua")
+	alc = include("ffi_binds/alc.lua")
+	--alut = include("ffi_binds/alut.lua") -- alut.dll??
 	glu = include("ffi_binds/glu.lua")
 	glfw = include("ffi_binds/glfw.lua")
 	freeimage = include("ffi_binds/freeimage.lua")
