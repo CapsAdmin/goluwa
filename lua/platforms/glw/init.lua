@@ -16,6 +16,7 @@ include("libraries/render/init.lua")
 include("libraries/surface.lua")
 include("libraries/entities/entities.lua")
 
+include("libraries/sound.lua")
 include("libraries/font.lua")
 include("libraries/window.lua")
 
