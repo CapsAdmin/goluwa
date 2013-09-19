@@ -71,7 +71,11 @@ function vfs.ParseVariables(path)
 	path = path:gsub("%(", "")
 	path = path:gsub("%)", "")
 		
-	return (path:gsub("\\", "/"))
+	return vfs.FixPath(path)
+end
+
+function vfs.FixPath(path)
+	return path:gsub("\\", "/"):gsub("(/+)", "/")
 end
 
 function vfs.GetMounts()
@@ -338,7 +342,7 @@ function vfs.Find(path, invert, full_path, start, plain, dont_sort)
 		end
 		
 		if found then
-			list[#list + 1] = path
+			list[#list + 1] = vfs.FixPath(path)
 		end
 	end
 
