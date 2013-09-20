@@ -118,4 +118,30 @@ do -- fonts
 
 end
 
+do -- registry
+	local set = not_implemented
+	local get = not_implemented
+
+	if WINDOWS then
+		ffi.cdef([[
+			typedef void* HKEY;
+			long RegOpenKeyEx(HKEY, const char*, unsigned, unsigned, HKEY*);
+			long RegCloseKey(HKEY);
+		]])
+
+		--local advapi = ffi.load("advapi32")
+
+		--local key = advapi.RegOpenKeyEx()
+
+		--local path = "Software/Valve/Steam/SteamPath"
+	end
+	
+	if LINUX then
+		-- return empty values
+	end
+	
+	system.GetRegistryKey = get
+	system.SetRegistryKey = set
+end
+
 return system
