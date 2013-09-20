@@ -2,21 +2,21 @@ include("libraries/curses.lua")
 
 if not gl then
 	gl = include("ffi_binds/gl.lua")
-	al = include("ffi_binds/al.lua")
-	alc = include("ffi_binds/alc.lua")
-	--alut = include("ffi_binds/alut.lua") -- alut.dll??
+	al = include("ffi_binds/al/al.lua")
+	alc = include("ffi_binds/al/alc.lua")
 	glu = include("ffi_binds/glu.lua")
 	glfw = include("ffi_binds/glfw.lua")
 	freeimage = include("ffi_binds/freeimage.lua")
 	freetype = include("ffi_binds/freetype.lua")
 	ftgl = include("ffi_binds/ftgl.lua")
+	soundfile = include("ffi_binds/soundfile/soundfile.lua")
 end
 
 include("libraries/render/init.lua")
 include("libraries/surface.lua")
 include("libraries/entities/entities.lua")
 
-include("libraries/sound.lua")
+include("libraries/audio.lua")
 include("libraries/font.lua")
 include("libraries/window.lua")
 
