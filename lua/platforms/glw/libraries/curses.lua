@@ -1,57 +1,6 @@
-
-if LINUX then
-	ffi.cdef[[
-		/* Type declarations. */
-	
-		typedef struct {
-		  short	   y;			/* current pseudo-cursor */
-		  short	   x;
-		  short      _maxy;			/* max coordinates */
-		  short      _maxx;
-		  short      _begy;			/* origin on screen */
-		  short      _begx;
-		  short	   _flags;			/* window properties */
-		} WINDOW;
-	]]
-
-	function COLOR_PAIR(x)
-		return bit.lshift(x, 8)
-	end
-end
-
-if WINDOWS then
-	ffi.cdef[[
-		/* Type declarations. */
-	
-		typedef struct {
-		  int	   y;			/* current pseudo-cursor */
-		  int	   x;
-		  int      _maxy;			/* max coordinates */
-		  int      _maxx;
-		  int      _begy;			/* origin on screen */
-		  int      _begx;
-		  int	   _flags;			/* window properties */
-		  int	   _attrs;			/* attributes of written characters */
-		  int      _tabsize;			/* tab character size */
-		  bool	   _clear;			/* causes clear at next refresh */
-		  bool	   _leave;			/* leaves cursor as it happens */
-		  bool	   _scroll;			/* allows window scrolling */
-		  bool	   _nodelay;			/* input character wait flag */
-		  bool	   _keypad;			/* flags keypad key mode active */
-		  int    **_line;			/* pointer to line pointer array */
-		  int	  *_minchng;			/* First changed character in line */
-		  int	  *_maxchng;			/* Last changed character in line */
-		  int	   _regtop;			/* Top/bottom of scrolling region */
-		  int	   _regbottom;
-		} WINDOW;
-	]]
-
-	function COLOR_PAIR(x)
-		return bit.lshift(x, 24)
-	end
-end
-
 ffi.cdef[[		
+	typedef struct {} WINDOW;
+	
 	WINDOW *initscr();
 	void timeout(int delay);
 	int wtimeout(WINDOW *win, int delay);
@@ -86,7 +35,8 @@ ffi.cdef[[
 	int resize_term(int y, int x);
 	int setscrreg(int top, int bot);
 	
-	void getyx(WINDOW *win, int y, int x);
+	int getcury(WINDOW *win);
+	int getcurx(WINDOW *win);
 
 	WINDOW* stdscr;
 	int printw(const char* format, ...);
@@ -105,12 +55,24 @@ ffi.cdef[[
 
 if _E.CURSES_INIT then return end
 
--- whyyyyyyyyy
-if WINDOWS then
-	os.execute("mode con:cols=130 lines=40")
+local function COLOR_PAIR(x)
+	return bit.lshift(x, 32)
 end
 
-local curses = ffi.load(jit.os == "Linux" and "ncursesw" or "libcurses")
+local lib
+
+if LINUX then
+	lib = "ncursesw"
+end
+
+if WINDOWS then
+	lib = "pdcurses"
+	
+	ffi.cdef("int FreeConsole();")
+	ffi.C.FreeConsole()
+end
+
+local curses = ffi.load(lib)
 local parent = curses.initscr()
 curses.start_color()
 
@@ -118,11 +80,11 @@ local log_window = curses.derwin(parent, curses.LINES - 2, curses.COLS, 0, 0)
 local line_window = curses.derwin(parent, 1, curses.COLS, curses.LINES - 1, 0)
 
 local function gety()
-	return line_window.y
+	return curses.getcury(line_window)
 end
 
 local function getx()	
-	return line_window.x
+	return curses.getcurx(line_window)
 end
 
 local COLOR_BLACK = 0
@@ -148,7 +110,8 @@ curses.scrollok(log_window, 1)
 
 curses.attron((2 ^ (8 + 13)) + 8 * 256)
 curses.mvprintw(curses.LINES - 2, 0, string.rep("-", curses.COLS))
-curses.refresh()
+
+--curses.refresh()
 
 local function split_by_length(str, len)
 	if #str > len then
@@ -175,24 +138,7 @@ local max_length = 256
 
 function io.write(...)
 	local str = table.concat({...}, "")
-	
-	if WINDOWS and #str > max_length then
-		for k,v in pairs(split_by_length(str, max_length)) do
-			for line in v:gmatch("(.-\n)") do
-				io.write(line)
-			end
-		end
-		return
-	end
-	
-	if CAPSADMIN and false then
-		for char in str:gmatch("(.)") do
-			curses.wprintw(log_window, char)
-		end
-		curses.wrefresh(log_window)
-		return
-	end
-	
+		
 	curses.wprintw(log_window, str)
 	curses.wrefresh(log_window)
 end
@@ -203,7 +149,11 @@ end
 
 _G.LOG_BUFFER = nil
 
-local syntax = include("syntax.lua")
+local syntax
+
+if MORTEN then 
+	syntax = include("syntax.lua")
+end
 
 _E.CURSES_INIT = true
 
@@ -217,18 +167,23 @@ local function clear(str)
 	curses.wclear(line_window)
 	
 	if str then
-		local tokens = syntax.process(str)
+	
+		if syntax then
+			local tokens = syntax.process(str)
 
-		for i = 1, #tokens / 2 do
-			local color, lexeme = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
-			local attr = COLOR_PAIR(color + 1)
-
-			curses.wattron(line_window, attr)
-			curses.waddstr(line_window, lexeme)
-			curses.wattroff(line_window, attr)
+			for i = 1, #tokens / 2 do
+				local color, lexeme = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
+				local attr = COLOR_PAIR(color + 1)
+				
+				print("color pair = ", attr)
+				
+				curses.wattron(line_window, attr)
+				curses.waddstr(line_window, lexeme)
+				curses.wattroff(line_window, attr)
+			end
 		end
 
-		--curses.waddstr(line_window, str)
+		curses.waddstr(line_window, str)
 		curses.wmove(line_window, y, x)
 	else
 		curses.wmove(line_window, y, 0)
@@ -532,15 +487,18 @@ _G.curses = {
 	end,
 	
 	ColorPrint = function(str)
-		local tokens = syntax.process(str)
+		if syntax then
+			local tokens = syntax.process(str)
 
-		for i = 1, #tokens / 2 do
-			local color, lexeme = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
-			local attr = COLOR_PAIR(color + 1)
+			for i = 1, #tokens / 2 do
+				local color, lexeme = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
+				local attr = COLOR_PAIR(color + 1)
 
-			curses.wattron(log_window, attr)
-			curses.waddstr(log_window, lexeme)
-			curses.wattroff(log_window, attr)
+				curses.wattron(log_window, attr)
+				curses.waddstr(log_window, lexeme)
+				curses.wattroff(log_window, attr)
+			end
 		end
 	end
 }
+
