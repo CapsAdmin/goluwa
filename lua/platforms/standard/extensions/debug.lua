@@ -75,7 +75,7 @@ function debug.dumpcall(clr_print)
 	logn("LOCALS: ")
 	for _, data in pairs(debug.getparamsx(4)) do
 		if not data.key:find("(",nil,true) then
-			local val = luadata.ToString(data.val)
+			local val = luadata.ToString(data.val) or "nil"
 			if val:find("\n") then 
 				if type(data.val) == "table" then
 					val = tostring(data.val)
