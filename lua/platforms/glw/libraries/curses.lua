@@ -177,7 +177,7 @@ local function clear(str)
 	
 	if str then
 	
-		if syntax then
+		if syntax and jit.os ~= "Linux" then
 			local tokens = syntax.process(str)
 
 			for i = 1, #tokens / 2 do
@@ -190,9 +190,10 @@ local function clear(str)
 				curses.waddstr(line_window, lexeme)
 				curses.wattroff(line_window, attr)
 			end
+		else
+			curses.waddstr(line_window, str)
 		end
 
-		curses.waddstr(line_window, str)
 		curses.wmove(line_window, y, x)
 	else
 		curses.wmove(line_window, y, 0)
