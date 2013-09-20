@@ -186,13 +186,19 @@ function vfs.GetFile(path, mode, ...)
 	return false, "No such file or directory"
 end
 
-function vfs.Read(path, ...)
+function vfs.Read(path, mode, ...)
 	check(path, "string")
 	
-	local file, err = vfs.GetFile(path, ...)
+	mode = mode or "r"
+	
+	if mode == "b" then
+		mode = "rb"
+	end
+	
+	local file, err = vfs.GetFile(path, mode, ...)
 	
 	if file then
-		local data = file:read("*a")
+		local data = file:read("*all")
 		file:close()
 		return data
 	end
