@@ -1,4 +1,4 @@
-include("libraries/curses.lua")
+curses = include("ffi_binds/curses/init.lua")
 
 if not gl then
 	gl = include("ffi_binds/gl.lua")
@@ -9,8 +9,10 @@ if not gl then
 	freeimage = include("ffi_binds/freeimage.lua")
 	freetype = include("ffi_binds/freetype.lua")
 	ftgl = include("ffi_binds/ftgl.lua")
-	soundfile = include("ffi_binds/soundfile/soundfile.lua")
+	soundfile = include("ffi_binds/soundfile/soundfile.lua")	
 end
+
+include("libraries/console.lua")
 
 include("libraries/render/init.lua")
 include("libraries/surface.lua")
