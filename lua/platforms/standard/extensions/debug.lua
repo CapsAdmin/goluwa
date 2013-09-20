@@ -63,7 +63,7 @@ function debug.dumpcall(clr_print)
 				end
 			
 				if clr_print then
-					curses.ColorPrint(line .. "\n")
+					console.ColorPrint(line .. "\n")
 				end
 			end
 		end
@@ -118,7 +118,7 @@ function debug.stepin()
 	
 	step = function()
 		system.SetWindowTitle("DEBUG SETHOOK |space = exit | enter = return | down = line | pagedown = call|")
-		curses.Clear()
+		console.ClearWindow()
 		
 		debug.dumpcall(true)
 		
@@ -128,7 +128,7 @@ function debug.stepin()
 				break
 			end
 			
-			local key = curses.GetActiveKey()
+			local key = console.GetActiveKey()
 			
 			if key == "KEY_ENTER" then
 				debug.sethook(step, "r")
