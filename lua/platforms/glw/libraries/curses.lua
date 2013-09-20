@@ -42,6 +42,7 @@ ffi.cdef[[
 	int printw(const char* format, ...);
 	int wprintw(WINDOW*, const char* format, ...);
 	int mvprintw(int y, int x, const char* format, ...);
+	int wscrl(WINDOW*, int);
 	int start_color();
 	bool has_colors();
 	bool can_change_color();
@@ -76,9 +77,12 @@ local curses = ffi.load(lib)
 local parent = curses.initscr()
 curses.start_color()
 
-local log_window = curses.derwin(parent, curses.LINES - 2, curses.COLS, 0, 0)
-local line_window = curses.derwin(parent, 1, curses.COLS, curses.LINES - 1, 0)
+if WINDOWS then
+	curses.resize_term(25,130)
+end
 
+local log_window = curses.derwin(parent, curses.LINES, curses.COLS, 0, 0)
+local line_window = curses.derwin(parent, 1, curses.COLS, curses.LINES - 1, 0)
 local function gety()
 	return curses.getcury(line_window)
 end
@@ -201,16 +205,6 @@ local function get_key_name(num)
 	return curses.keyname(num)
 end
 
-local function move_cursor(x)
-	curses.wmove(line_window, gety(), getx() + x)
-	curses.wrefresh(line_window)
-end
-
-local function set_cursor_pos(x)
-	curses.wmove(line_window, 0, math.max(x, 0))
-	curses.wrefresh(line_window)
-end
-
 local function load_history()
 	return luadata.ReadFile("%DATA%/cmd_history.txt")
 end
@@ -222,6 +216,16 @@ end
 local line = ""
 local history = load_history()
 local scroll = 0
+
+local function move_cursor(x)
+	curses.wmove(line_window, gety(), math.min(getx() + x, #line))
+	curses.wrefresh(line_window)
+end
+
+local function set_cursor_pos(x)
+	curses.wmove(line_window, 0, math.max(x, 0))
+	curses.wrefresh(line_window)
+end
 
 local function insert_char(char)
 	if #line == 0 then
@@ -267,8 +271,14 @@ event.AddListener("OnUpdate", "curses", function()
 			
 	if key then					
 		key = ffi.string(key)
-		
+			
 		if event.Call("OnConsoleKeyPressed", key) == false then return end
+		
+		--[[if key == "KEY_NPAGE" then
+			curses.wscrl(parent, -5)
+		elseif key == "KEY_PPAGE" then
+			curses.wscrl(parent, 5)
+		end]]
 		
 		if key == "KEY_UP" then
 			scroll = scroll - 1
@@ -283,7 +293,7 @@ event.AddListener("OnUpdate", "curses", function()
 		if key == "KEY_LEFT" then
 			 move_cursor(-1)
 		elseif key == "KEY_CTRL_LEFT" then
-			set_cursor_pos((select(2, line:sub(1, getx()):find(".*[%s%p].-[^%p%s]")) or 1) - 1)
+			set_cursor_pos((select(2, line:sub(1, getx()+1):find(".+[^%p%s]")) or 1) - 2)
 		elseif key == "KEY_RIGHT" then
 			 move_cursor(1)
 		elseif key == "KEY_CTRL_RIGHT" then
