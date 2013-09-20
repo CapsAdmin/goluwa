@@ -111,7 +111,12 @@ curses.scrollok(log_window, 1)
 curses.attron((2 ^ (8 + 13)) + 8 * 256)
 curses.mvprintw(curses.LINES - 2, 0, string.rep("-", curses.COLS))
 
---curses.refresh()
+if WINDOWS then
+	ffi.cdef("void PDC_set_title(const char *);")
+	
+	system.SetWindowTitleRaw = curses.PDC_set_title
+	system.SetWindowTitleRaw(system.GetWindowTitle())
+end
 
 local function split_by_length(str, len)
 	if #str > len then
