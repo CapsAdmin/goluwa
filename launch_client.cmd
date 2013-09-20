@@ -1,4 +1,4 @@
-cd bin/windows/x86/
-mode con:cols=140 lines=50
-luajit.exe -e PLATFORM='glw'CLIENT=true;dofile('../../../lua/init.lua')
-pause
+cd %~dp0
+ECHO %PROCESSOR_ARCHITECTURE%|FINDSTR AMD64>NUL && SET ARCH=x64|| SET ARCH=x86
+cd bin/windows/%arch%/
+start "" "luajit.exe" "-e PLATFORM='glw'CLIENT=true;dofile('../../../lua/init.lua')"
