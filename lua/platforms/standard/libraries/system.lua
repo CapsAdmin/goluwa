@@ -18,15 +18,24 @@ do -- title
 		end
 	end
 	
+	system.SetWindowTitleRaw = set_title
+	
 	local titles = {}
+	local str = ""
 	
 	function system.SetWindowTitle(title, id)
 		if id then
 			titles[id] = title
-			set_title(table.concat(titles, " | "))
+			str = table.concat(titles, " | ")
+			system.SetWindowTitleRaw(str)
 		else
-			set_title(title)
+			str = title
+			system.SetWindowTitleRaw(title)
 		end
+	end
+	
+	function system.GetWindowTitle()
+		return str
 	end
 end
 
