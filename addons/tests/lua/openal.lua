@@ -15,7 +15,7 @@ timer.Create("um", 1,0, function()
 	end     
 	
 	local sound = Sound(data, size)
-	sound:SetEffectChannel(1) 
+	sound:SetChannel(1) 
 	sound:SetPitch(1) 
 	sound:Play()  
 	LOL_SOUND = sound 
