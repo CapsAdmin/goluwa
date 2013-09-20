@@ -310,12 +310,18 @@ end
 
 do -- sound meta
 	local META = GEN_TEMPLATE("Source", function(self, var, ...)
-		if typex(var) == "buffer" then
+		if type(var) == "cdata" then
 			local buffer = audio.CreateBuffer()
 			buffer:SetBufferData(var, ...)
 			self:SetBuffer(buffer)
 		elseif type(var) == "string" then
-			local data, info = audio.Decode(vfs.Read(var, "rb"))
+			local data = vfs.Read(var, "rb")
+			
+			if not vfs.Exists(var) then
+				data = var
+			end
+			
+			local data, info = audio.Decode(data)
 			
 			if data then
 				local buffer = audio.CreateBuffer()
