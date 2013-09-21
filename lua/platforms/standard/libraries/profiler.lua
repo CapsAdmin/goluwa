@@ -92,6 +92,11 @@ function profiler.SetClockFunction(func)
 	profiler.Restart()
 end
 
+-- call this with glfw.GetTime or something after glfw is loaded
+function profiler.SetReadFileFunction(func)
+	read_file = func
+end
+
 do
 	local function statistical_callback(thread, samples, vmstate)
 		if not active or not profiler.enabled then
