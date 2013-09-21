@@ -3,6 +3,22 @@ entities = entities or {}
 entities.active_entities = entities.active_entities or {}
 entities.is_keys = entities.is_keys or {}
 
+function entities.GetAll()
+	return entities.active_entities
+end
+
+function entities.GetAllByClass(class)
+	local out = {}
+	
+	for key, ent in pairs(entities.active_entities) do
+		if ent.ClassName == class then
+			table.insert(out, ent)
+		end
+	end
+	
+	return out
+end
+
 function entities.Call(name, ...)
 	for key, ent in pairs(entities.active_entities) do
 		if ent[name] then
@@ -52,9 +68,16 @@ do -- base
 	function META:IsValid() return true end
 	
 	function META:Remove()
+		if self.remove_me then return end
+	
+		self:OnRemove()
 		self:RemoveChildren()
 		table.remove(entities.active_entities, self.ID)
-		utilities.MakeNULL(self)
+		
+		self.remove_me = true
+		timer.Simple(0, function()
+			utilities.MakeNULL(self)
+		end)
 	end
 	
 	function META:Create(class_name)
@@ -62,6 +85,9 @@ do -- base
 		ent:SetParent(self)
 		return ent
 	end
+	
+	local not_implemented = function() end
+	META.OnRemove = not_implemented
 		
 	entities.Register(META)
 end 

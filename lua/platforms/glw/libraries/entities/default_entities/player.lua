@@ -30,15 +30,8 @@ function META:GetName()
 	return self.nv and self.nv.Nick or SERVER and self.socket:GetIPPort() or CLIENT and self:GetUniqueID()
 end
 
-function META:Remove(reason)
-	if self.remove_me then return end
-	
-	players.active_players[self:GetUniqueID()] = nil
-			
-	self.remove_me = true
-	self.IsValid = function() return false end
-	timer.Simple(0, function() utilities.MakeNULL(self) end)
-	
+function META:OnRemove(reason)	
+	players.active_players[self:GetUniqueID()] = nil	
 end	
 
 if SERVER then
