@@ -101,7 +101,6 @@ function mmyy.OnError(msg)
 				if line and vfs.Exists(lua_script) then
 					path = path:gsub("%%LINE%%", line)
 					path = path:gsub("%%PATH%%", lua_script)
-					print(path)
 					os.execute(path)
 				end
 			end
