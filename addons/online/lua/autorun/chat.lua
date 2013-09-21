@@ -1,11 +1,42 @@
 chat = {}
 
-local function add_0(n)	return n < 10 and "0"..n or n end
 local function getnick(ply)
 	return ply:IsValid() and ply:GetNick() or "server"
 end
 
-function chat.Append(var, str)	
+local enabled = console.CreateVariable("chat_timestamps", true)
+
+function chat.AddTimeStamp(tbl)
+	if not enabled:Get() then return end
+	
+	tbl = tbl or {}
+	
+	local time = os.date("*t")
+	
+	table.insert(tbl, 1, " - ")
+	table.insert(tbl, 1, Color(255, 255, 255))
+	table.insert(tbl, 1, ("%.2d:%.2d"):format(time.hour, time.min))
+	table.insert(tbl, 1, Color(118, 170, 217))
+
+	return tbl
+end
+
+function chat.GetTimeStamp()
+	local time = os.date("*t")
+
+	return ("%.2d:%.2d - "):format(time.hour, time.min)
+end
+
+function chat.Append(var, str)
+
+	if chathud then
+		local tbl = chat.AddTimeStamp()
+		table.insert(tbl, var)
+		table.insert(tbl, Color(255, 255, 255, 255))
+		table.insert(tbl, ": ")
+		table.insert(tbl, str)
+		chathud.AddText(unpack(tbl))
+	end
 
 	if typex(var) == "player" then
 		var = getnick(var)
@@ -13,11 +44,9 @@ function chat.Append(var, str)
 		var = "server"
 	else
 		var = tostring(var)
-	end
-	
-	local time = os.date("*t")
+	end	
 
-	logf("%s:%s - %s: %s", add_0(time.hour), add_0(time.min), var, str)
+	logf("%s%s: %s", chat.GetTimeStamp(), var, str)
 end
 
 if CLIENT then	
