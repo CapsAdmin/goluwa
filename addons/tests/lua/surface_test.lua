@@ -5,18 +5,24 @@ local font = surface.CreateFont("test", {
 	path = "fonts/unifont.ttf",
 })	 
    
-event.AddListener("OnDraw", "gl", function(dt)
+event.AddListener("OnDisplay", "gl", function(dt)
 	render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
 	gl.ClearColor(0.5, 0.5, 0.5, 0.5)
 
 	render.Start(window)			 
 		surface.Start()	
-		
-		surface.SetWhiteTexture()
-		 
+
 		surface.SetFont(font)
-		surface.SetTextPos(0,0)
-		surface.Color(1, 1, 1, 1)
-		surface.DrawText("æøå|ops汉语/漢語")
-	render.End() 
-end)
+		for i= 1, 1000  do
+			local c = HSVToColor(glfw.GetTime(),1,1)
+			surface.Color(c.r,c.g,c.b, 1)
+			surface.SetTextPos(i,i)
+			surface.DrawText("æøå|ops汉语/漢語")
+		end
+		
+				
+		surface.SetWhiteTexture()
+		surface.Color(1,1,1, 1)
+		surface.DrawRect(400 + math.sin(glfw.GetTime()) * 100, 400 + math.cos(glfw.GetTime()) * 100, 50, 50)
+	render.End()  
+end) 
