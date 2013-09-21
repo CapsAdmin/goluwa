@@ -42,6 +42,8 @@ function glw.OpenWindow(w, h, title)
 	window.w = w
 	window.h = h
 	
+	glfw.SwapInterval(0)
+	
 	for name in pairs(window.availible_callbacks) do
 		window[name] = function(...)
 			if event.Call(name, ...) ~= false and glw[name] then
@@ -115,53 +117,6 @@ function glw.OnWindowClose(params)
 	glw.window:Remove()
 end
 
-do -- update	
-	local smooth_fps = 0
-	local fps_fmt = "FPS: %i"
-	glw.max_fps = 120
-
-	local sleep
-
-	if WINDOWS then
-		ffi.cdef("void Sleep(int ms)")
-		sleep = function(ms) ffi.C.Sleep(ms) end
-	end
-
-	if LINUX then
-		ffi.cdef("void usleep(unsigned int ns)")
-		sleep = function(ms) ffi.C.usleep(ms*1000) end
-	end
-	
-	local last = glfw.GetTime()
-
-	function glw.Update()
-		if glw.max_fps ~= 0 then
-			sleep(1000/glw.max_fps)
-		end
-		
-		glfw.PollEvents()
-		luasocket.Update()
-		timer.Update()
-
-		
-		local t = glfw.GetTime()
-		local dt = t - last
-
-		smooth_fps = smooth_fps + (((1/dt) - smooth_fps) * dt)
-
-		system.SetWindowTitle(string.format(fps_fmt, smooth_fps), 1)
-
-		event.Call("OnUpdate", dt) 
-
-		if glw.window and glw.window:IsValid() then
-			event.Call("OnDraw", dt)
-			glw.UpdateMouseMove()
-		end
-		
-		last = t
-	end
-end
-
 function glw.GetWindow()
 	return glw.window
 end
@@ -199,23 +154,104 @@ do
 end
 
 include("extensions/input.lua")
+include("console_commands.lua")
+
+function glw.UpdateCore(dt)			
+	glfw.PollEvents()
+	luasocket.Update()
+	timer.Update()
+	
+	event.Call("OnUpdate", dt)
+	
+	return true
+end
+	
+function glw.UpdateDisplay(dt)	
+	if glw.window and glw.window:IsValid() then
+		event.Call("OnDisplay", dt)
+		
+		return true
+	end
+	
+	return false
+end
+
+function glw.UpdateInput(dt)
+	if glw.window and glw.window:IsValid() then
+		glw.UpdateMouseMove()
+		
+		return true
+	end
+	
+	return false
+end
 
 local function main()
 	event.Call("Initialize")
+	
+	local global_rate = console.CreateVariable("rate_global", 0)
+	
+	local loops = 
+	{
+		{
+			name = "core", 
+			func = glw.UpdateCore, 
+			def_rate = 30
+		},
+		{
+			name = "display", 
+			func = glw.UpdateDisplay, 
+			def_rate = 120
+		},
+		{
+			func = glw.UpdateInput, 
+			def_rate = 20
+		},
+	}
+	
+	for id, loop in pairs(loops) do
+		loop.next_update = 0
+			
+		if loop.name then
+			loop.smooth_fps = 0
+			loop.rate_cvar = console.CreateVariable("rate_" .. loop.name, loop.def_rate)
+		end
+	end
+	
+	while true do
+		local time = glfw.GetTime()
+		
+		for id, loop in pairs(loops) do	
+			if loop.next_update < time then
+				local time = glfw.GetTime()
 
-	while true do	
-		local ok, err = xpcall(glw.Update, mmyy.OnError)
-
-		if not ok then
-			log(err)
-			io.stdin:read("*l")
-			break
+				local dt = time - (loop.last_time or 0)
+				
+				local ok = loop.func(dt)
+								
+				loop.last_time = time
+				
+				if ok and loop.name then
+					local fps = 1/dt
+					loop.smooth_fps = loop.smooth_fps + ((fps - loop.smooth_fps) * dt)
+									
+					system.SetWindowTitle(("%s fps: %i"):format(loop.name, loop.smooth_fps), id)
+					
+					local rate = loop.rate_cvar:Get()
+					
+					if global_rate:Get() > 0 then
+						rate = global_rate:Get()
+					end
+					
+					rate = 1/rate
+					
+					loop.next_update = time + rate
+				end
+			end
 		end
 	end
 
 	event.Call("ShutDown")
 end
-
-include("console_commands.lua")
 
 event.AddListener("Initialized", "main", main)

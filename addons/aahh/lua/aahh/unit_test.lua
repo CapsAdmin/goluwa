@@ -4,7 +4,7 @@ console.AddCommand("aahh_unit_test", function()
 	
 	render.Initialize(1280, 720)
 	
-	event.AddListener("OnDraw", "aahh", function(delta)
+	event.AddListener("OnDisplay", "aahh", function(delta)
 		render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
 		gl.ClearColor(0.5, 0.5, 0.5, 0.5)
 
