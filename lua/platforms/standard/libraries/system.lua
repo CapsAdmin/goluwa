@@ -153,4 +153,82 @@ do -- registry
 	system.SetRegistryKey = set
 end
 
+do 
+local get = not_implemented
+	
+	if WINDOWS then
+		ffi.cdef("int GetTickCount();")
+		
+		get = function() return ffi.C.GetTickCount() end
+	end
+	
+	if LINUX then
+		ffi.cdef[[	
+			struct timezone {
+				int tz_minuteswest;     /* minutes west of Greenwich */
+				int tz_dsttime;         /* type of DST correction */
+			};
+			
+			struct timeval {
+				time_t      tv_sec;     /* seconds */
+				suseconds_t tv_usec;    /* microseconds */
+			};
+			
+			int gettimeofday(struct timeval *tv, struct timezone *tz);
+		]]
+		
+		local temp = ffi.new("timeval[1]")
+		get = function() ffi.C.gettimeofday(temp, nil) return temp[0].tv_usec*100 end
+	end
+	
+	system.GetTickCount = get
+end
+
+do -- time in ms
+	local get = not_implemented
+	
+	if WINDOWS then
+		ffi.cdef("int timeGetTime();")
+		
+		get = function() return ffi.C.timeGetTime() end
+	end
+	
+	if LINUX then
+		ffi.cdef[[	
+			struct timezone {
+				int tz_minuteswest;     /* minutes west of Greenwich */
+				int tz_dsttime;         /* type of DST correction */
+			};
+			
+			struct timeval {
+				time_t      tv_sec;     /* seconds */
+				suseconds_t tv_usec;    /* microseconds */
+			};
+			
+			int gettimeofday(struct timeval *tv, struct timezone *tz);
+		]]
+		
+		local temp = ffi.new("timeval[1]")
+		get = function() ffi.C.gettimeofday(temp, nil) return temp[0].tv_usec*100 end
+	end
+	
+	system.GetTimeMS = get
+end
+
+do -- sleep
+	local sleep = not_implemented
+	
+	if WINDOWS then
+		ffi.cdef("void Sleep(int ms)")
+		sleep = function(ms) ffi.C.Sleep(ms) end
+	end
+
+	if LINUX then
+		ffi.cdef("void usleep(unsigned int ns)")
+		sleep = function(ms) ffi.C.usleep(ms*1000) end
+	end
+	
+	system.Sleep = sleep
+end
+
 return system
