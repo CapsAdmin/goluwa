@@ -16,7 +16,7 @@ event.AddListener("OnDraw", "gl", function(dt)
 		 
 		surface.SetFont(font)
 		surface.SetTextPos(0,0)
-		surface.Color(255, 255, 255)
+		surface.Color(1, 1, 1, 1)
 		surface.DrawText("æøå|ops汉语/漢語")
 	render.End() 
 end)
