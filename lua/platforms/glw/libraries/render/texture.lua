@@ -185,6 +185,10 @@ do
 		format.buffer_type = format.buffer_type or "unsigned char"
 		format.mip_map_levels = format.mip_map_levels or 4
 		format.border_size = format.border_size or 0
+		
+		format.wrap_r = format.wrap_r or e.GL_MIRRORED_REPEAT
+		format.wrap_s = format.wrap_s or e.GL_MIRRORED_REPEAT
+		format.wrap_t = format.wrap_t or e.GL_MIRRORED_REPEAT
 
 		-- create a new texture
 		local id = gl.GenTexture()

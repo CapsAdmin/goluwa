@@ -5,7 +5,9 @@ local vertex_shader_source = [[
 	
 	uniform mat4 proj_mat;
 	uniform mat4 view_mat;
+	uniform float add_color;
 	uniform vec4 global_color;
+	
 
 	in vec2 position;
 	in vec2 uv;
@@ -30,9 +32,10 @@ local fragment_shader_source = [[
 	
 	out vec4 frag_color;
 	
+	uniform float add_color;
 	uniform vec4 global_color;
 	uniform sampler2D texture;
-	
+
 	in vec2 _position;
 	in vec2 _uv;
 	in vec4 _color;
@@ -41,16 +44,15 @@ local fragment_shader_source = [[
 	
 	void main()
 	{	
-		// um
-		if (texel.x > 0 || texel.y > 0 || texel.z > 0)
+		if (add_color > 0.5)
 		{
-			frag_color = texel * _color * global_color;
-		}
-		else
-		{	
 			frag_color = texel * _color;
 			frag_color.xyz = frag_color.xyz + global_color.xyz;
 			frag_color.w = frag_color.w * global_color.w;
+		}
+		else
+		{	
+			frag_color = texel * _color * global_color;
 		}
 	}
 ]]
@@ -119,8 +121,11 @@ local color_stride = ffi.cast("void*", float_size * 4)
 local proj_mat_location
 local view_mat_location
 local global_color_location
+local add_color_location
 
-function render.Draw2DVBO(vbo)
+function render.Draw2DVBO(vbo, additive)
+	additive = additive or 0
+	
 	if not render.vbo_2d_program then			
 		local prog, err = Program(assert(Shader(e.GL_VERTEX_SHADER, vertex_shader_source)), assert(Shader(e.GL_FRAGMENT_SHADER, fragment_shader_source)))
 					
@@ -134,6 +139,7 @@ function render.Draw2DVBO(vbo)
 			proj_mat_location = gl.GetUniformLocation(prog, "proj_mat")
 			view_mat_location = gl.GetUniformLocation(prog, "view_mat")
 			global_color_location = gl.GetUniformLocation(prog, "global_color")
+			add_color_location = gl.GetUniformLocation(prog, "add_color")
 		else
 			logn(err)
 			render.vbo_shader_error = err
@@ -155,6 +161,7 @@ function render.Draw2DVBO(vbo)
 		gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.view_matrix)
 		gl.UniformMatrix4fv(view_mat_location, 1, 0, render.view_matrix)
 		
+		gl.Uniform1f(add_color_location, additive)	
 		gl.Uniform4f(global_color_location, render.r or 1, render.g or 1, render.b or 1, render.a or 1)	
 		
 		gl.EnableVertexAttribArray(0)

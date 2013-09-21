@@ -2,12 +2,13 @@ surface = surface or {}
 
 function surface.Initialize()
 	surface.rectmesh = render.Create2DVBO({
-		{pos = Vec2(0, 0), uv = Vec2(1, 1), color = Color(1,1,1,1)},
-		{pos = Vec2(0, 1), uv = Vec2(1, 0), color = Color(1,1,1,1)},
-		{pos = Vec2(1, 1), uv = Vec2(0, 0), color = Color(1,1,1,1)},
-		{pos = Vec2(1, 1), uv = Vec2(0, 0), color = Color(1,1,1,1)},
-		{pos = Vec2(1, 0), uv = Vec2(0, 1), color = Color(1,1,1,1)},
-		{pos = Vec2(0, 0), uv = Vec2(1, 1), color = Color(1,1,1,1)},
+		{pos = Vec2(0, 0), uv = Vec2(0, 1), color = Color(1,1,1,1)},
+		{pos = Vec2(0, 1), uv = Vec2(0, 0), color = Color(1,1,1,1)},
+		{pos = Vec2(1, 1), uv = Vec2(1, 0), color = Color(1,1,1,1)},
+
+		{pos = Vec2(1, 1), uv = Vec2(1, 0), color = Color(1,1,1,1)},
+		{pos = Vec2(1, 0), uv = Vec2(1, 1), color = Color(1,1,1,1)},
+		{pos = Vec2(0, 0), uv = Vec2(0, 1), color = Color(1,1,1,1)},
 	})
 	
 	surface.white_texture = Texture(64,64)
@@ -214,7 +215,7 @@ do -- fonts
 		for _, glyph in pairs(data.glyphs) do
 			glyph.tex:Bind()			
 			surface.PushMatrix(X + glyph.x, Y + glyph.y, glyph.w, glyph.h)
-				render.Draw2DVBO(surface.fontmesh)
+				render.Draw2DVBO(surface.fontmesh, 1)
 			surface.PopMatrix()
 		end
 	end 
@@ -292,14 +293,15 @@ function surface.SetTexture(tex)
 end
 
 function surface.DrawRect(x,y, w,h, a)	
-	gl.PushMatrix()		
+	gl.PushMatrix()			
 		surface.Translate(x,y)
-	
+			
 		if a then
+			surface.Translate(w*0.5, h*0.5)
 			surface.Rotate(a)
-			surface.Translate(-w*0.5,-h*0.5)
+			surface.Translate(w*-0.5, h*-0.5)
 		end	
-		
+			
 		surface.Scale(w,h)
 	
 		render.Draw2DVBO(surface.rectmesh)
