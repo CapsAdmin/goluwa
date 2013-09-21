@@ -14,6 +14,12 @@ function surface.Initialize()
 	surface.white_texture:Fill(function() return 255, 255, 255, 255 end)
 	
 	surface.InitFreetype()
+	
+	surface.ready = true
+end
+
+function surface.IsReady()
+	return surface.ready == true
 end
 
 function surface.GetScreenSize()
@@ -26,6 +32,7 @@ end
 
 local X, Y = 0, 0
 local W, H = 0, 0
+local A = 1
 
 do -- fonts
 	-- this might not be the best way to do it but it should do for now
@@ -262,7 +269,11 @@ function surface.Color(r,g,b,a)
 	render.r = r
 	render.g = g
 	render.b = b
-	render.a = a
+	render.a = a * A
+end
+
+function surface.SetAlphaMultiplier(a)
+	A = a
 end
 
 function surface.SetWhiteTexture()
