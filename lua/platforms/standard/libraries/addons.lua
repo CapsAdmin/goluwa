@@ -12,7 +12,7 @@ function addons.AutorunAll(folder)
 	if folder then 
 		folder = folder .. "/" 
 	else
-		folder = "/"
+		folder = ""
 	end
 		
 	for _, info in ipairs(addons.Info) do
@@ -30,12 +30,14 @@ function addons.AutorunAll(folder)
 						info.startup_launched = true
 					end
 				end
-								
+				
 				-- autorun folders			
-				for path in vfs.Iterate(info.path .. "lua/autorun" .. folder, nil, true) do
-					local ok, err = xpcall(dofile, mmyy.OnError, path)
-					if not ok then
-						logn(err)
+				for path in vfs.Iterate(info.path .. "lua/autorun/" .. folder, nil, true) do
+					if path:find("%.lua") then
+						local ok, err = xpcall(include, mmyy.OnError, path)
+						if not ok then
+							logn(err)
+						end
 					end
 				end
 			_G.INFO = nil	
