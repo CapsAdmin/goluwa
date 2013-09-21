@@ -269,7 +269,9 @@ function surface.Color(r,g,b,a)
 	render.r = r
 	render.g = g
 	render.b = b
-	render.a = a * A
+	if a then
+		render.a = a * A
+	end
 end
 
 function surface.SetAlphaMultiplier(a)
