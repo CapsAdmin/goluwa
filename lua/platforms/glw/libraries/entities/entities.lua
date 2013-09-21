@@ -14,7 +14,7 @@ end
 class.SetupLib(entities, "entity")
 
 function entities.Register(META, name)
-	META.TypeBase = base
+	META.TypeBase = "base"
 	local _, name = class.Register(META, "entity", name)
 	
 	entities.is_keys["Is"..name:gsub("^.", function(s) return s:upper() end)] = name
