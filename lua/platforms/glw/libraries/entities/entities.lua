@@ -56,7 +56,12 @@ do -- base
 		if entities.world_entity then
 			entities.world_entity:AddChild(self)
 		end
-		self.ID = table.insert(entities.active_entities, self)
+		table.insert(entities.active_entities, self)
+		self.ID = #entities.active_entities
+	end
+	
+	function META:__tostring()
+		return ("%s[%i]"):format(self.ClassName, self.ID)
 	end
 		
 	function META:__index(key)
