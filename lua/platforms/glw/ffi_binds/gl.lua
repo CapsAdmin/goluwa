@@ -529,6 +529,11 @@ function gl.InitMiniGlew()
 				--print(line)
 			else
 				local ret, nam, args = line:match("(.-) (gl.-) (%(.+%))")
+				
+				if not nam then
+					ret, nam, args = line:match("(.-) (wgl.-) (%(.+%))")
+				end
+				
 				if nam then
 					local func = gl.GetProcAddress(nam:trim())
 					if func ~= nil then
@@ -541,10 +546,10 @@ function gl.InitMiniGlew()
 								logn(err)
 								warning("gl", "tried to declare type ", var, " but it didnt work") 
 							else
-								add_gl_func(nam:sub(3), var)
+								add_gl_func(nam:match(".-gl(%u.+)"), var)
 							end
 						else
-							add_gl_func(nam:sub(3), var)
+							add_gl_func(nam:match(".-gl(%u.+)"), var)
 						end
 					else
 						warning("gl", "could not get the address of gl function %s! (%s)", name, line)
