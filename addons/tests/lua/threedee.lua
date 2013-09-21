@@ -68,7 +68,7 @@ obj:SetTexture("face1.png")
 gl.ClearColor(0.5,0.5,0.5,1)
 input.SetMouseTrapped(true)
      
-event.AddListener("OnDraw", "gl", function(dt)
+event.AddListener("OnDisplay", "gl", function(dt)
   	calc_camera(window, dt)
 
 	render.Start(window)
