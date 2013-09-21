@@ -42,13 +42,9 @@ local function find(tbl, name, level, ...)
 	if level > 3 then return end
 		
 	for key, val in pairs(tbl) do	
-		local T = typex(val)
+		local T = type(val)
 		key = tostring(key)
-		
-		if hasindex(val) and type(val) ~= "userdata" and type(val) ~= "cdata" and val.Type and not getmetatable(val) then
-			T = "table"
-		end
-						
+			
 		if not skip[key] and T == "table" and not done[val] then
 			done[val] = true
 			find(val, name .. "." .. key, level + 1, ...)
@@ -56,9 +52,6 @@ local function find(tbl, name, level, ...)
 			if (T == "function" or T == "number") and (strfind(key, ...) or strfind(name, ...)) then
 				if T == "function" then
 					val = "(" .. table.concat(debug.getparams(val), ", ") .. ")"
-					if val == "()" then
-						val = "([C]UNKNOWN)"
-					end
 				elseif T ~= "table" then
 					val = luadata.ToString(val)
 				else
@@ -70,7 +63,11 @@ local function find(tbl, name, level, ...)
 				else
 					name = name:gsub("_G%.", "")
 					name = name:gsub("_M%.", "")
-					logf("\t%s.%s = %s", name, key, val)
+					if T == "function" then
+						logf("\t%s.%s%s", name, key, val)
+					else
+						logf("\t%s.%s = %s", name, key, val)
+					end
 				end
 			end
 		end
