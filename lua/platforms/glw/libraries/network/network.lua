@@ -31,7 +31,20 @@ end
 
 local function decode(...)
 	
-	local args = {msgpack.Decode(...)}
+	local ok, args = pcall(function(...) return {msgpack.Decode(...)} end, ...)
+	
+	if not ok then
+		local str = select(1, ...)
+		-- this error makes no sense and the stack trace ends here
+		-- str is usually "fffft" where t is often a random character
+		
+		--...x/goluwa/lua/platforms/glw/libraries/network/network.lua:34: bad argument #1 to 'Decode' (table expected, got number)
+		
+		--print(args)
+		--print(str, type(str))
+		
+		return {}
+	end
 	
 	for k, v in pairs(args) do
 		if type(v) == "table" then
@@ -149,7 +162,7 @@ if CLIENT then
 		local udp = luasocket.Server("udp")
 		
 		udp:Host(ip, port)
-		udp.OnReceive = print
+		udp.OnReceive = logn
 		
 		network.udp_receiver = udp
 		
@@ -208,7 +221,7 @@ if SERVER then
 		local udp = luasocket.Server("udp")
 		
 		udp:Host(ip, port)
-		udp.OnReceive = print
+		udp.OnReceive = logn
 		
 		network.udp_receiver = udp
 	end
