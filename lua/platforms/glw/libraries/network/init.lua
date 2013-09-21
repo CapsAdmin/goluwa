@@ -38,6 +38,8 @@ local default_ip = "localhost"
 local default_port = 1234
 
 if CLIENT then
+	addons.AutorunAll("client")
+
 	local ip_cvar = console.CreateVariable("cl_ip", default_ip)
 	local port_cvar = console.CreateVariable("cl_port", default_port)
 	
@@ -59,6 +61,8 @@ if CLIENT then
 end
 
 if SERVER then
+	addons.AutorunAll("server")
+
 	local ip_cvar = console.CreateVariable("sv_ip", default_ip)
 	local port_cvar = console.CreateVariable("sv_port", default_port)
 	
