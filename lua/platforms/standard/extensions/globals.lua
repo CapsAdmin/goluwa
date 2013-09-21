@@ -96,7 +96,7 @@ pretty_prints.table = function(t)
 	local sources = {}
 	for k,v in pairs(t) do	
 		if type(v) == "function" then
-			local src = debug.getinfo(v).short_src
+			local src = debug.getinfo(v).source
 			sources[src] = (sources[src] or 0) + 1
 		end
 	end
@@ -117,6 +117,9 @@ end
 
 function tostringx(val)
 	local t = type(val)
+	
+	if t == "table" and getmetatable(val) then return tostring(val) end
+	
 	return pretty_prints[t] and pretty_prints[t](val) or tostring(val)
 end
 
