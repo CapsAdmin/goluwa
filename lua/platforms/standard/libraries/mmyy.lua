@@ -1,7 +1,10 @@
 local mmyy = _G.mmyy or {}
 
 -- this should be used for xpcall
-function mmyy.OnError(msg)
+local suppress = false
+function mmyy.OnError(msg, ...)
+	if suppress then logn("supressed error: ", msg, ...) return end
+	suppress = true
 	if LINUX and msg == "interrupted!\n" then return end
 	
 	if event.Call("OnLuaError", msg) == false then return end
@@ -113,6 +116,8 @@ function mmyy.OnError(msg)
 	end
 	
 	logn("")
+	
+	suppress = false
 end
 
 if mmyy.lua_environment_sockets then
