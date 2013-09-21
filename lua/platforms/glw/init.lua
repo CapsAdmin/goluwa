@@ -1,6 +1,6 @@
-curses = include("ffi_binds/curses/init.lua")
-
 if not gl then
+	curses = include("ffi_binds/curses/init.lua")
+
 	gl = include("ffi_binds/gl.lua")
 	al = include("ffi_binds/al/al.lua")
 	alc = include("ffi_binds/al/alc.lua")
@@ -132,7 +132,7 @@ do -- update
 		sleep = function(ms) ffi.C.usleep(ms*1000) end
 	end
 	
-	local last = socket.gettime()
+	local last = glfw.GetTime()
 
 	function glw.Update()
 		if glw.max_fps ~= 0 then
@@ -144,7 +144,7 @@ do -- update
 		timer.Update()
 
 		
-		local t = socket.gettime()
+		local t = glfw.GetTime()
 		local dt = t - last
 
 		smooth_fps = smooth_fps + (((1/dt) - smooth_fps) * dt)
@@ -215,5 +215,7 @@ local function main()
 
 	event.Call("ShutDown")
 end
+
+include("console_commands.lua")
 
 event.AddListener("Initialized", "main", main)
