@@ -1,16 +1,9 @@
 players = players or {}
+
 players.active_players = players.active_players or {}
 
 function players.GetAll()
-	local out = {}
-	for key, ply in pairs(players.active_players) do
-		if ply:IsValid() then
-			table.insert(out, ply)
-		else
-			players.active_players[key] = nil
-		end
-	end
-	return out
+	return entities.GetAllByClass("player")
 end
 
 function players.GetByUniqueID(id)

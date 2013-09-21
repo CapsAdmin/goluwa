@@ -111,7 +111,6 @@ function network.HandleEvent(socket, type, a, b, ...)
 		if SERVER then	
 			network.Broadcast(type, uniqueid, reason)
 			player.socket:Remove()
-			player:Remove()
 		end
 		
 		player:Remove()
