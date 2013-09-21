@@ -461,31 +461,37 @@ do -- include
 		end
 				
 		vfs.Silence(true)		
-		 
-		local previous_dir = include_stack[#include_stack]		
 		
-		if previous_dir then
-			dir = previous_dir .. dir
-		end
-				
-		local path = "lua/" .. dir .. file
-		local func, err = vfs.loadfile(path)
-					
-		if not_found(err) then
-			path = "lua/" .. source
-			func, err = vfs.loadfile(path)
+		-- try direct first
+		local path = dir .. file
+		local func, err = loadfile(path)
+		
+		if not func then		 
+			local previous_dir = include_stack[#include_stack]		
 			
+			if previous_dir then
+				dir = previous_dir .. dir
+			end
+					
+			path = "lua/" .. dir .. file
+			func, err = vfs.loadfile(path)
+						
 			if not_found(err) then
-				path = dir .. file
+				path = "lua/" .. source
 				func, err = vfs.loadfile(path)
 				
 				if not_found(err) then
-					path = source
-					func, err = loadfile(path)
+					path = dir .. file
+					func, err = vfs.loadfile(path)
+					
+					if not_found(err) then
+						path = source
+						func, err = loadfile(path)
+					end
 				end
-			end
-		end		
-
+			end		
+		end
+		
 		if func then 
 			include_stack[#include_stack + 1] = dir
 		
