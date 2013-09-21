@@ -288,10 +288,16 @@ local function GEN_TEMPLATE(type, ctor)
 	function META:Remove()
 		audio.active_objects[self.id] = nil
 		
+		if self.Stop then
+			self:Stop()
+		end
+		
 		temp[0] = self.id
 		delete(1, temp)
 		utilities.MakeNULL(self)
 	end
+	
+	META.__gc = META.Remove
 	
 	return META
 end

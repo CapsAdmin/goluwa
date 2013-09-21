@@ -167,6 +167,8 @@ do
 		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
 		utilities.MakeNULL(self)
 	end
+	
+	META.__gc = META.Remove
 
 	function Texture(width, height, buffer, format)
 		check(width, "number")
