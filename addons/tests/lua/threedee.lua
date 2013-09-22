@@ -65,7 +65,6 @@ obj:SetPos(Vec3(5,0,0))
 obj:SetObj("face.obj")
 obj:SetTexture("face1.png") 
 
-gl.ClearColor(0.5,0.5,0.5,1)
 input.SetMouseTrapped(true)
      
 event.AddListener("OnDraw3D", "gl", function(dt)
