@@ -69,13 +69,8 @@ gl.ClearColor(0.5,0.5,0.5,1)
 input.SetMouseTrapped(true)
      
 event.AddListener("OnDisplay", "gl", function(dt)
-  	calc_camera(window, dt)
+	calc_camera(window, dt)
 
-	render.Start(window)
-
-		render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
-
-		render.Start3D(cam_pos, cam_ang:GetDeg())
-			entities.world_entity:Draw()			
-	render.End()
+	render.Start3D(cam_pos, cam_ang:GetDeg())
+		entities.world_entity:Draw()			
 end)

@@ -4,14 +4,9 @@ console.AddCommand("aahh_unit_test", function()
 	
 	render.Initialize(1280, 720)
 	
-	event.AddListener("OnDisplay", "aahh", function(delta)
-		render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
-		gl.ClearColor(0.5, 0.5, 0.5, 0.5)
-
-		render.Start(window)			 
-			surface.Start()		
-			aahh.Update(delta)
-		render.End() 
+	event.AddListener("OnDisplay", "aahh", function(delta)	 
+		render.Start2D()
+		aahh.Update(delta)
 	end)
 
 	if not aahh.initialized then return end
