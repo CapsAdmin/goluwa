@@ -41,9 +41,7 @@ function glw.OpenWindow(w, h, title)
 	local window = Window(w, h, title)
 	window.w = w
 	window.h = h
-	
-	glfw.SwapInterval(0)
-	
+		
 	for name in pairs(window.availible_callbacks) do
 		window[name] = function(...)
 			if event.Call(name, ...) ~= false and glw[name] then
@@ -86,7 +84,7 @@ function glw.UpdateMouseMove()
 		local pos = input.GetMousePos() - border_size
 
 		input.mouse_delta = (pos - (last or pos)) 
-			
+				
 		last = pos
 		
 		input.ShowCursor(false)
@@ -157,7 +155,6 @@ include("extensions/input.lua")
 include("console_commands.lua")
 
 function glw.UpdateCore(dt)			
-	glfw.PollEvents()
 	luasocket.Update()
 	timer.Update()
 	
@@ -168,17 +165,14 @@ end
 	
 function glw.UpdateDisplay(dt)	
 	if glw.window and glw.window:IsValid() then
-		event.Call("OnDisplay", dt)
-		
-		return true
-	end
+		glw.UpdateMouseMove()	
 	
-	return false
-end
+		render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
+		gl.ClearColor(0.5, 0.5, 0.5, 0.5)
 
-function glw.UpdateInput(dt)
-	if glw.window and glw.window:IsValid() then
-		glw.UpdateMouseMove()
+		render.Start(glw.window)		
+			event.Call("OnDisplay", dt)
+		render.End()
 		
 		return true
 	end
@@ -203,10 +197,6 @@ local function main()
 			func = glw.UpdateDisplay, 
 			def_rate = 120
 		},
-		{
-			func = glw.UpdateInput, 
-			def_rate = 20
-		},
 	}
 	
 	for id, loop in pairs(loops) do
@@ -219,8 +209,9 @@ local function main()
 	end
 	
 	while true do
+		glfw.PollEvents()
 		local time = glfw.GetTime()
-		
+
 		for id, loop in pairs(loops) do	
 			if loop.next_update < time then
 				local time = glfw.GetTime()

@@ -51,20 +51,31 @@ end
 
 function love.graphics.print(text,x,y,r,sx,sy)
 	r=r or 0
-	r=r/0.0174532925
+	if r > 0 then
+		r=r/0.0174532925
+	end
 	sx=sx or 1
 	sy=sy or 1
 	surface.Scale(sx,sy)
-	surface.Rotate(r/0.0174532925)
-	for i=1,#text do
-		surface.SetTextPos((x+(i*currentFontSize))*sx,y)
-		surface.DrawChar(text:sub(i,i))
+	if r==0 then
+		for i=1,#text do
+			surface.SetTextPos((x+(i*currentFontSize))*sx,y)
+			surface.DrawChar(text:sub(i,i))
+		end
+	else
+		for i=1,#text do
+			surface.SetTextPos((x+(i*currentFontSize))*sx,y)
+			surface.DrawChar(text:sub(i,i),r)
+		end
 	end
+	surface.Scale(-sx,-sy)
 end
 
 function love.graphics.printf(text,x,y,limit,align,r, sx, sy)
 	r=r or 0
-	r=r/0.0174532925
+	if r > 0 then
+		r=r/0.0174532925
+	end
 	y=y or 0
 	limit=limit or 0
 	align=align or "left"
@@ -122,6 +133,8 @@ function love.graphics.printf(text,x,y,limit,align,r, sx, sy)
 		end
 		surface.Rotate(-r)
 	end
+	
+	surface.Scale(-sx,-sy)
 end
 
 function love.graphics.line(x1,y1,x2,y2)
@@ -195,21 +208,26 @@ local delta=0
 function love.timer.getFPS()
 	return 1/delta
 end
-event.AddListener("OnDisplay", "shell32test", function(dt)
-	render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
-	gl.ClearColor(br, bg, bb, ba)
-
-	render.Start(window)		
-		delta=dt
-		surface.Start()	
-		surface.SetWhiteTexture()
-		love.draw()
-	render.End() 
+event.AddListener("OnDisplay", "shell32test", function(dt)	
+	delta=dt
+	surface.Start()	
+	surface.SetWhiteTexture()
+	love.draw()
 end)
 
 event.AddListener("OnUpdate", "shell32test", function(dt)
 	love.update(dt)
 end)
+
+function love.update(dt)
+end	
+
+function love.draw()
+end	
+
+
+
+--techdemo
 
 local text=[[
  LINE WRAP TEST! ~~~~~~~~~~
@@ -280,15 +298,20 @@ local bottom2=love.graphics.newImage("demos/top_gear_results/graphics/background
 local clouds1=love.graphics.newImage("demos/top_gear_results/graphics/cloud1.png")
 local clouds2=love.graphics.newImage("demos/top_gear_results/graphics/cloud2.png")
 
+local star=love.graphics.newImage("demos/top_gear_results/graphics/star.png")
+
 local platform=love.graphics.newImage("demos/top_gear_results/graphics/platform.png")
 local platform_x=(1280/2)-(platform.w/2)
 
 clouds_table={}
 
+stars_table={}
+
 local effect = audio.CreateEffect(e.AL_EFFECT_EAXREVERB)
 effect:SetParam(e.AL_EAXREVERB_DECAY_TIME, 10)  
 effect:BindToChannel(1)
 
+song=Sound("demos/top_gear_results/music/results.ogg")
 local music = utilities.RemoveOldObject(Sound("demos/top_gear_results/music/results.ogg"),1)
 music:Play()
 music:SetChannel(1)
@@ -310,6 +333,8 @@ local PHASE_TIME=love.timer.getTime()
 local wrap_size=640
 local wrap_last_time=0
 local characters_wrote=0
+
+local fade_color_multi=1
 local insert=table.insert
 local random=math.random
 local ceil=math.ceil
@@ -322,7 +347,7 @@ function love.draw()
 		bottom_x=bottom_x-(bottom1.w*2)
 	end
 	
-	love.graphics.setColor(255,255,255,255)
+	love.graphics.setColor(255*fade_color_multi,255*fade_color_multi,255*fade_color_multi,255*fade_color_multi)
 	love.graphics.draw(sky,0,(-((1024*5)-720))+spaceship_h,0,1280/256,5)
 	
 	love.graphics.draw(bottom1,bottom_x-(bottom1.w*2),720-bottom2.h+spaceship_h)
@@ -338,6 +363,20 @@ function love.draw()
 		end 
 	end
 	
+	if random(1,1000)<speed*5 then
+		insert(stars_table,{star,-512,720-random(1560,3072),math.random()})
+	end
+	
+	love.graphics.setColor(255*2*fade_color_multi,255*2*fade_color_multi,255*2*fade_color_multi,255*fade_color_multi)
+	for k,v in pairs(stars_table) do
+		love.graphics.draw(v[1],v[2],v[3]+spaceship_h,v[4])
+		v[2]=v[2]+speed
+		if v[2]>1280+512 then
+			stars_table[k]=nil
+		end
+	end 
+	
+	love.graphics.setColor(255*fade_color_multi,255*fade_color_multi,255*fade_color_multi,255*fade_color_multi)
 	for k,v in pairs(clouds_table) do
 		love.graphics.draw(v[1],v[2],v[3]+spaceship_h)
 		v[2]=v[2]+speed
@@ -345,6 +384,7 @@ function love.draw()
 			clouds_table[k]=nil
 		end
 	end 
+
 	
 	if PHASE==0 then
 		spaceship_h=0
@@ -352,7 +392,12 @@ function love.draw()
 		platform_x=(1280/2)-(platform.w/2)
 		love.graphics.draw(platform,platform_x,720-platform.h)
 		love.graphics.draw(spaceship1,(1280/2)-(spaceship1.w/2),((720/2)-(spaceship1.h/2))+155)
-		if love.timer.getTime()-PHASE_TIME>1 then
+		fade_color_multi=(love.timer.getTime()-PHASE_TIME)/2.5
+		if fade_color_multi>1 then
+			fade_color_multi=1
+		end
+		if love.timer.getTime()-PHASE_TIME>5 then
+			fade_color_multi=1
 			PHASE_TIME=love.timer.getTime()
 			PHASE=1
 		end
@@ -397,10 +442,21 @@ function love.draw()
 		spaceship_h=spaceship_h+(speed*spaceship_r) 
 		speed=20-(spaceship_r*5)
 		love.graphics.draw(spaceship_anim[spaceship_anim_number],((1280/2)-(spaceship_anim[spaceship_anim_number].w/2))+(sin(love.timer.getTime()*5)*10*(speed/10)),((720/2)-(spaceship_anim[spaceship_anim_number].h/2))+(cos(love.timer.getTime()*2))*15*(speed/10),spaceship_r)
-	
+		if (love.timer.getTime()-time_now)*12>#text then
+			PHASE_TIME=love.timer.getTime()
+			PHASE=4
+		end
+	elseif PHASE==4 then
+		love.graphics.draw(spaceship_anim[spaceship_anim_number],(((1280/2)-(spaceship_anim[spaceship_anim_number].w/2))+(sin(love.timer.getTime()*5)*10*(speed/10)))-((1280/2)*((love.timer.getTime()-PHASE_TIME)/5)),(((720/2)-(spaceship_anim[spaceship_anim_number].h/2))+(cos(love.timer.getTime()*2))*15*(speed/10))-((720/2)*((love.timer.getTime()-PHASE_TIME)/4)),spaceship_r)
+		fade_color_multi=1-((love.timer.getTime()-PHASE_TIME)/5)
+		if love.timer.getTime()-PHASE_TIME>5 then
+			time_now=love.timer.getTime()
+			PHASE_TIME=love.timer.getTime()
+			PHASE=0
+		end
 	end
 	
-	love.graphics.setColor(0,0,255,255)
+	love.graphics.setColor(0*fade_color_multi,0*fade_color_multi,255*fade_color_multi,255*fade_color_multi)
 	if ceil((love.timer.getTime()*12)-time_now)>characters_wrote then
 		characters_wrote=ceil((love.timer.getTime()*12)-time_now)
 		--local last_char=string.sub(text,(love.timer.getTime()-time_now)*12,(love.timer.getTime()-time_now)*12)
@@ -421,11 +477,8 @@ function love.draw()
 			wrap_size=768
 		end
 	end
+	
 	love.graphics.printf(string.sub(text,1,(love.timer.getTime()-time_now)*12),(1280/2)-(640/2),0,wrap_size)
-	if (love.timer.getTime()-time_now)*12>#text then
-		time_now=love.timer.getTime()
-		PHASE=0
-	end
 	love.graphics.setColor(0,255,255,255)
 	love.graphics.line((1280/2)-(640/2)+wrap_size,0,(1280/2)-(640/2)+wrap_size,720)
 end
