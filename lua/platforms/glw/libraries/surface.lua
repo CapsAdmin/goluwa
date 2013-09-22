@@ -365,9 +365,15 @@ end
 function surface.SetTexture(tex)
 	if not tex then
 		surface.SetWhiteTexture()
+		surface.bound_texture = surface.white_texture
 	else
 		tex:Bind()
-	end
+		surface.bound_texture = tex
+	end	
+end
+
+function surface.GetTexture()
+	return surface.bound_texture
 end
 
 function surface.DrawRect(x,y, w,h, a)	
