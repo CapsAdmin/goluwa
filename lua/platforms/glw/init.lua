@@ -171,7 +171,15 @@ function glw.UpdateDisplay(dt)
 		gl.ClearColor(0.5, 0.5, 0.5, 0.5)
 
 		render.Start(glw.window)		
-			event.Call("OnDisplay", dt)
+			event.Call("PreDisplay", dt)
+			
+			render.Start3D()
+			event.Call("OnDraw3D", dt)
+			
+			render.Start2D()
+			event.Call("OnDraw2D", dt)
+			
+			event.Call("PostDisplay", dt)
 		render.End()
 		
 		return true

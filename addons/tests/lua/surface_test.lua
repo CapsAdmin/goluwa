@@ -5,8 +5,7 @@ local font = surface.CreateFont("test", {
 	path = "fonts/unifont.ttf",
 })	 
    
-event.AddListener("OnDisplay", "gl", function(dt)		 
-	surface.Start()	
+event.AddListener("OnDraw2D", "gl", function(dt)		 
 
 	surface.SetFont(font)
 	for i= 1, 1000  do
