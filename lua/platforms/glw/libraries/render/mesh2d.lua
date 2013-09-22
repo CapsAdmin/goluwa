@@ -122,6 +122,7 @@ local proj_mat_location
 local view_mat_location
 local global_color_location
 local add_color_location
+local texture_location
 
 function render.Draw2DVBO(vbo, additive)
 	additive = additive or 0
@@ -140,6 +141,7 @@ function render.Draw2DVBO(vbo, additive)
 			view_mat_location = gl.GetUniformLocation(prog, "view_mat")
 			global_color_location = gl.GetUniformLocation(prog, "global_color")
 			add_color_location = gl.GetUniformLocation(prog, "add_color")
+			texture_location = gl.GetUniformLocation(prog, "texture")
 		else
 			logn(err)
 			render.vbo_shader_error = err
@@ -152,8 +154,10 @@ function render.Draw2DVBO(vbo, additive)
 		if render.active_texture then
 			gl.ActiveTexture(e.GL_TEXTURE0) 
 			render.active_texture:Bind()
-			gl.Uniform1i(gl.GetUniformLocation(render.vbo_2d_program, "texture"), 0)
+			gl.Uniform1i(texture_location, 0)
 		end
+		
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
 
 		gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.projection_matrix)
 		gl.UniformMatrix4fv(proj_mat_location, 1, 0, render.projection_matrix)
@@ -165,15 +169,12 @@ function render.Draw2DVBO(vbo, additive)
 		gl.Uniform4f(global_color_location, render.r or 1, render.g or 1, render.b or 1, render.a or 1)	
 		
 		gl.EnableVertexAttribArray(0)
-		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
 		gl.VertexAttribPointer(0, 2, e.GL_FLOAT, false, stride, pos_stride)
 
 		gl.EnableVertexAttribArray(1)
-		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
 		gl.VertexAttribPointer(1, 2, e.GL_FLOAT, false, stride, uv_stride)
 		
 		gl.EnableVertexAttribArray(2)
-		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
 		gl.VertexAttribPointer(2, 4, e.GL_FLOAT, false, stride, color_stride)
 
 		gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
