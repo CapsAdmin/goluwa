@@ -154,16 +154,14 @@ end
 include("extensions/input.lua")
 include("console_commands.lua")
 
-function glw.UpdateCore(dt)			
+function glw.Update(dt)	
+	glfw.PollEvents()
+		
 	luasocket.Update()
 	timer.Update()
 	
 	event.Call("OnUpdate", dt)
-	
-	return true
-end
-	
-function glw.UpdateDisplay(dt)	
+
 	if glw.window and glw.window:IsValid() then
 		glw.UpdateMouseMove()	
 	
@@ -180,72 +178,38 @@ function glw.UpdateDisplay(dt)
 			
 			event.Call("PostDisplay", dt)
 		render.End()
-		
-		return true
 	end
-	
-	return false
 end
 
 local function main()
 	event.Call("Initialize")
+		
+	local rate_cvar = console.CreateVariable("max_fps", 120)
 	
-	local global_rate = console.CreateVariable("rate_global", 0)
-	
-	local loops = 
-	{
-		{
-			name = "core", 
-			func = glw.UpdateCore, 
-			def_rate = 30
-		},
-		{
-			name = "display", 
-			func = glw.UpdateDisplay, 
-			def_rate = 120
-		},
-	}
-	
-	for id, loop in pairs(loops) do
-		loop.next_update = 0
-			
-		if loop.name then
-			loop.smooth_fps = 0
-			loop.rate_cvar = console.CreateVariable("rate_" .. loop.name, loop.def_rate)
-		end
-	end
+	local next_update = 0
+	local last_time = 0
+	local smooth_fps = 0
 	
 	while true do
-		glfw.PollEvents()
 		local time = glfw.GetTime()
-
-		for id, loop in pairs(loops) do	
-			if loop.next_update < time then
-				local time = glfw.GetTime()
-
-				local dt = time - (loop.last_time or 0)
-				
-				local ok = loop.func(dt)
-								
-				loop.last_time = time
-				
-				if ok and loop.name then
-					local fps = 1/dt
-					loop.smooth_fps = loop.smooth_fps + ((fps - loop.smooth_fps) * dt)
-									
-					system.SetWindowTitle(("%s fps: %i"):format(loop.name, loop.smooth_fps), id)
-					
-					local rate = loop.rate_cvar:Get()
-					
-					if global_rate:Get() > 0 then
-						rate = global_rate:Get()
-					end
-					
-					rate = 1/rate
-					
-					loop.next_update = time + rate
-				end
-			end
+		
+		if next_update < time then
+			local dt = time - (last_time or 0)
+			
+			local ok = glw.Update(dt)
+		
+			last_time = time
+			
+			local fps = 1/dt
+			smooth_fps = smooth_fps + ((fps - smooth_fps) * dt)
+							
+			system.SetWindowTitle(("FPS: %i"):format(smooth_fps), 1)
+			
+			local rate = rate_cvar:Get()
+			
+			rate = 1/rate
+			
+			next_update = time + rate
 		end
 	end
 
