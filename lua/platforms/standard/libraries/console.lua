@@ -129,10 +129,38 @@ do -- commands
 				
 				local func = _G[cmd]
 				
+				if not func and cmd:find("%.") then
+					local keys = cmd:explode(".")
+					if _G[keys[1]] then
+						
+						local val = _G[keys[1]]
+						
+						for i = 2, #keys do
+							if hasindex(val[keys[i]]) and val[keys[i]] then
+								last = val[keys[i]]
+							end
+						end
+						
+						func = last
+					end
+				end
+				
 				if type(func) == "function" then
 					
 					for key, val in pairs(args) do
-						args[key] = tonumber(args[key]) or val
+						local num = tonumber(args[key])
+						
+						if num then
+							val = num
+						elseif not _G[val] then
+							local ok, var = pcall(loadstring(("return %s"):format(val)))
+							
+							if ok then
+								val = var
+							end
+						end
+						
+						args[key] = val
 					end
 				
 					return xpcall(func, mmyy.OnError, select(2, unpack(args)))
