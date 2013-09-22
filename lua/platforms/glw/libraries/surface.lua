@@ -372,16 +372,15 @@ end
 
 function surface.DrawRect(x,y, w,h, a)	
 	gl.PushMatrix()			
-		surface.Translate(x,y)
-			
+		gl.Translatef(x,y,0)
+
 		if a then
-			surface.Translate(w*0.5, h*0.5)
-			surface.Rotate(a)
-			surface.Translate(w*-0.5, h*-0.5)
+			gl.Translatef(w*0.5, h*0.5,0)
+			gl.Rotatef(a, 0, 0, 1)
+			gl.Translatef(w*-0.5, h*-0.5,0)
 		end	
 			
-		surface.Scale(w,h)
-	
+		gl.Scalef(w,h,0)
 		render.Draw2DVBO(surface.rectmesh)
 	gl.PopMatrix()
 end
