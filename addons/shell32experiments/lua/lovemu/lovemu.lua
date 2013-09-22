@@ -5,27 +5,7 @@ local gl=gl
 love={}
 local love=love
 love._version="0.9.0"
-love.demoname="top_gear_results" --internal, demo folder name for the custom require function
-
-function require(str)
-	if str:sub(1,1)=="/" or str:sub(1,1)=="\\" then
-		str=str:sub(2,#str)
-	end
-	if string.find(str,".") then
-		local tab=string.split(str,".")
-		str=""
-		for _,v in pairs(tab) do
-			str=str..v.."/"
-		end
-		str=str:sub(1,#str-1)
-		if not vfs.Exists(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/demos/".. love.demoname .. "/"..str..".lua") then
-			str=str.."/init.lua"
-		end
-	end
-	
-	print("Attempt to load: "..e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/demos/".. love.demoname .. "/"..str)
-	include(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/demos/".. love.demoname .. "/"..str)
-end
+love.demoname="" --internal, demo folder name for the custom require functio
 
 local modules={
 		"lovemu/extras/util.lua",
@@ -55,18 +35,15 @@ end
 local loaded=false
 
 event.AddListener("OnDraw2D", "lovemu", function(dt)
+	love.graphics.clear()
 	if loaded==false then
 		loaded=true
 		love.load()
 	end
 	delta=dt
 	surface.SetWhiteTexture()
-	love.draw()
-	love.graphics.reset()
-end)
-
-event.AddListener("OnUpdate", "lovemu", function(dt)
 	love.update(dt)
+	love.draw()
 end)
 
 function love.load()
@@ -78,12 +55,18 @@ end
 function love.draw()
 end	
 
+
+local package_cache={}
 console.AddCommand("lovemu", function(line, time)
 
 	local window = glw.OpenWindow(1280, 720)
 
 	love.demoname=line
-	print(love.demoname)
+	if not package_cache[love.demoname] and love.demoname~="" then
+		package_cache[love.demoname]=true
+		package.path=package.path..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/demos/"..love.demoname.."/?.lua","/","\\")..";"
+		package.path=package.path..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/demos/"..love.demoname.."/?/init.lua","/","\\")..";"
+	end
 	loaded=false
 	delta=0
 	function love.load()

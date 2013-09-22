@@ -31,6 +31,10 @@ end
 
 local br,bg,bb,ba=0,0,0,0
 function love.graphics.setBackgroundColor(r,g,b,a)
+	r=r or 0
+	g=g or 0
+	b=b or 0
+	a=a or 255
 	br=r
 	bg=g
 	bb=b
@@ -39,6 +43,10 @@ end
 
 local cr,cg,cb,ca=0,0,0,0
 function love.graphics.setColor(r,g,b,a)
+	r=r or 0
+	g=g or 0
+	b=b or 0
+	a=a or 255
 	cr=r/255
 	cg=g/255
 	cb=b/255
@@ -46,7 +54,7 @@ function love.graphics.setColor(r,g,b,a)
 	surface.Color(cr,cg,cb,ca)
 end
 
-function love.graphics.getColor(r,g,b,a)
+function love.graphics.getColor()
 	return cr,cg,cb,ca
 end
 
@@ -148,7 +156,14 @@ function love.graphics.setPoint()
 end
 
 function love.graphics.reset()
-	love.graphics.setBackgroundColor(0,0,0,0)
+end
+
+function love.graphics.clear()
+	local x,y=surface.GetScreenSize()
+	surface.SetWhiteTexture()
+	surface.Color(br,bg,bb,ba)
+	surface.DrawRectEx(0,0,x,y,0,0,0)
+	surface.Color(cr,cg,cb,ca)
 end
 
 local BlendMode="alpha"
@@ -229,7 +244,6 @@ function love.timer.getTime()
 	return glfw.GetTime()
 end
 
-
 function love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
 	y=y or 0
 	r=r or 0
@@ -238,16 +252,8 @@ function love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
 	sy=sy or 1
 	ox=ox or 0
 	oy=oy or 0
-	surface.Scale(1,1)
-	if r==0 then
-		if type(drawable)=="table" and drawable.id then
-			surface.SetTexture(drawable)
-			surface.FastDrawRect(x,y,drawable.w*sx,drawable.h*sy,nil)
-		end
-	else
-		if type(drawable)=="table" and drawable.id then
-			surface.SetTexture(drawable)
-			surface.FastDrawRect(x,y,drawable.w*sx,drawable.h*sy,r)
-		end
+	if drawable.id then
+		surface.SetTexture(drawable)
+		surface.DrawRectEx(x,y,drawable.w,drawable.h,r,ox,oy)
 	end
 end

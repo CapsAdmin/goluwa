@@ -1,5 +1,6 @@
 local insert=table.insert
 local assert=assert
+local pairs=pairs
 local type=type
 local find=string.find
 local sub=string.sub
@@ -18,4 +19,19 @@ function string.split(s, delim)
 	end 
 	insert (t, sub (s, start))
 	return t
+end
+
+local split=string.split
+function string.replace(s,s2,s3)
+	local a=split(s,s2)
+	local str=""
+	if #a>1 then
+		for i=1,#a-1 do
+			str=str..a[i]..s3
+		end
+		str=str..a[#a]
+		return str
+	else
+		return s
+	end
 end
