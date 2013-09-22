@@ -163,18 +163,6 @@ function timer.Update()
 	end
 end
 
-local temp = {}
-
-function INTERVAL(seconds)
-	if not temp[seconds] or (temp[seconds] + seconds) < os.clock() then
-		temp[seconds] = os.clock()
-		return true
-	end
-	return false
-end
-
-wait = INTERVAL
-
 _G.Thinker = timer.Thinker
 
 return timer

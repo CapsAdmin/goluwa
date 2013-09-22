@@ -1,3 +1,15 @@
+do -- wait
+	local temp = {}
+	
+	function wait(seconds)
+		if not temp[seconds] or (temp[seconds] + seconds) < os.clock() then
+			temp[seconds] = os.clock()
+			return true
+		end
+		return false
+	end
+end
+
 do -- check
 	local level = 3
 
