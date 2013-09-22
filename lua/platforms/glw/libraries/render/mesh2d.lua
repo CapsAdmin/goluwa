@@ -3,8 +3,8 @@ render.vbo_2d_program = nil
 local vertex_shader_source = [[
 	#version 330
 	
-	uniform mat4 proj_mat;
-	uniform mat4 view_mat;
+	uniform mat4 camera_matrix;
+	uniform mat4 model_matrix;
 	uniform float add_color;
 	uniform vec4 global_color;
 	
@@ -23,7 +23,7 @@ local vertex_shader_source = [[
 		_uv = uv;
 		_color = color;
 		
-		gl_Position = proj_mat * view_mat * vec4(position, 0.0, 1.0);
+		gl_Position = camera_matrix * model_matrix * vec4(position, 0.0, 1.0);
 	}
 ]]  
 
@@ -137,8 +137,8 @@ function render.Draw2DVBO(vbo, additive)
 		
 			render.vbo_2d_program = prog
 			
-			proj_mat_location = gl.GetUniformLocation(prog, "proj_mat")
-			view_mat_location = gl.GetUniformLocation(prog, "view_mat")
+			proj_mat_location = gl.GetUniformLocation(prog, "camera_matrix")
+			view_mat_location = gl.GetUniformLocation(prog, "model_matrix")
 			global_color_location = gl.GetUniformLocation(prog, "global_color")
 			add_color_location = gl.GetUniformLocation(prog, "add_color")
 			texture_location = gl.GetUniformLocation(prog, "texture")
@@ -158,12 +158,17 @@ function render.Draw2DVBO(vbo, additive)
 		end
 		
 		gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
-
-		gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.projection_matrix)
-		gl.UniformMatrix4fv(proj_mat_location, 1, 0, render.projection_matrix)
+	
+		if not render.use_own_matrices then
+			gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.camera_matrix)
+		end
 		
-		gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.view_matrix)
-		gl.UniformMatrix4fv(view_mat_location, 1, 0, render.view_matrix)
+		gl.UniformMatrix4fv(proj_mat_location, 1, 0, render.camera_matrix)
+		
+		if not render.use_own_matrices then
+			gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.model_matrix)
+		end
+		gl.UniformMatrix4fv(view_mat_location, 1, 0, render.model_matrix)
 		
 		gl.Uniform1f(add_color_location, additive)	
 		gl.Uniform4f(global_color_location, render.r or 1, render.g or 1, render.b or 1, render.a or 1)	

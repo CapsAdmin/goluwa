@@ -111,11 +111,11 @@ do
 
 		gl.UseProgram(program)
 			
-			gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.projection_matrix)
-			gl.UniformMatrix4fv(gl.GetUniformLocation(program, "proj_mat"), 1, 0, render.projection_matrix)
+			gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.camera_matrix)
+			gl.UniformMatrix4fv(gl.GetUniformLocation(program, "camera_matrix"), 1, 0, render.camera_matrix)
 			
-			gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.view_matrix)
-			gl.UniformMatrix4fv(gl.GetUniformLocation(program, "view_mat"), 1, 0, render.view_matrix)
+			gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.model_matrix)
+			gl.UniformMatrix4fv(gl.GetUniformLocation(program, "model_matrix"), 1, 0, render.model_matrix)
 			
 			gl.Uniform1f(gl.GetUniformLocation(program, "time"), render.frame / 60 / 4)
 			gl.Uniform3f(gl.GetUniformLocation(program, "cam_pos"), render.cam_pos.x, render.cam_pos.y, render.cam_pos.z)
