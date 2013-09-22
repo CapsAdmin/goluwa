@@ -9,8 +9,8 @@ function render.Initialize(w, h)
 	render.nearz = 0.1
 	render.fov = 75  
 	
-	render.projection_matrix = ffi.new("float[16]")
-	render.view_matrix = ffi.new("float[16]")
+	render.camera_matrix = ffi.new("float[16]")
+	render.model_matrix = ffi.new("float[16]")
 	
 	render.r = r
 	render.g = g
