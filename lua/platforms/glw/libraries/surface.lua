@@ -16,6 +16,7 @@ function surface.Initialize()
 	
 	surface.InitFreetype()
 	
+	surface.bound_texture = surface.white_texture
 	surface.ready = true
 end
 
@@ -29,6 +30,76 @@ end
 
 function surface.Start()	
 	render.Start2D()
+end
+
+local glTranslatef = gl.Translatef
+local glRotatef = gl.Rotatef
+local glScalef = gl.Scalef
+local glPushMatrix = gl.PushMatrix
+local glPopMatrix = gl.PopMatrix
+
+function surface.EnableFastMatrix(b)
+	render.use_own_matrices = b
+	
+	if not b then
+		event.RemoveListener("PreDisplay", "matrix reset")
+		event.RemoveListener("PostDisplay", "matrix reset")
+		
+		render.model_matrix = ffi.new("float[16]")
+		
+		glTranslatef = gl.Translatef
+		glRotatef = gl.Rotatef
+		glScalef = gl.Scalef
+		glPushMatrix = gl.PushMatrix
+		glPopMatrix = gl.PopMatrix
+		
+		return
+	end
+	  
+	local stack = {}
+	 
+	for i = 1, 8 do
+		table.insert(stack, ffi.new("float[16]"))
+	end
+
+	local level = 1
+	  
+	function glTranslatef(x, y)
+		stack[level][12] = stack[level][12] + x
+		stack[level][13] = stack[level][13] + y
+	end
+	  
+	function glScalef(w, h)	
+		stack[level][0] = w
+		stack[level][5] = h
+	end
+
+	function glPushMatrix()	
+		level = level + 1
+		
+		render.model_matrix = stack[level]
+		
+		stack[level][12] = stack[level-1][12]
+		stack[level][13] = stack[level-1][13]
+		
+		stack[level][15] = 1
+	end   
+
+	function glPopMatrix()
+		level = level - 1
+		render.model_matrix = stack[level]
+	end
+
+	function glRotatef()	
+	end  
+
+	event.AddListener("PreDisplay", "matrix reset", function()
+		glPushMatrix()
+	end)
+
+	event.AddListener("PostDisplay", "matrix reset", function()
+		glPopMatrix()	
+	end)
 end
 
 local X, Y = 0, 0
@@ -183,19 +254,6 @@ do -- fonts
 		end 
 	end
 		
-	function surface.FastDrawRect(x,y,w,h,a)
-	gl.PushMatrix()			
-		gl.Translatef(x,y,0)
-		if a then
-			gl.Translatef(w*0.5, h*0.5,0)
-			gl.Rotatef(a, 0, 0, 1)
-			gl.Translatef(w*-0.5, h*-0.5,0)
-		end	
-			
-		gl.Scalef(w,h,0)
-		render.Draw2DVBO(surface.rectmesh)
-	gl.PopMatrix()
-end
 		
 	function surface.DrawText(str)
 		if not ft.ptr or not ft.current_font then return end
@@ -316,23 +374,23 @@ end
 end
 
 do -- orientation
-	function surface.Translate(x, y)
+	function surface.Translate(x, y)	
 		X = x
 		Y = y
 		
-		gl.Translatef(x, y, 0)
+		glTranslatef(x, y, 0)
 	end
 	
-	function surface.Rotate(a)
-		gl.Rotatef(a, 0, 0, 1)
+	function surface.Rotate(a)		
+		glRotatef(a, 0, 0, 1)
 	end
 	
 	function surface.Scale(w, h)
-		gl.Scalef(w, h, 0)
+		glScalef(w, h, 0)
 	end
 		
 	function surface.PushMatrix(x,y, w,h, a)
-		gl.PushMatrix()
+		glPushMatrix()
 
 		if x and y then surface.Translate(x, y, 0) end
 		if w and h then surface.Scale(w, h, 1) end
@@ -340,7 +398,7 @@ do -- orientation
 	end
 	
 	function surface.PopMatrix()
-		gl.PopMatrix() 
+		glPopMatrix() 
 	end
 end
 
@@ -373,24 +431,33 @@ function surface.SetTexture(tex)
 end
 
 function surface.GetTexture()
-	return surface.bound_texture
+	return surface.bound_texture or surface.white_texture
 end
 
 function surface.DrawRect(x,y, w,h, a)	
-	gl.PushMatrix()			
-		gl.Translatef(x,y,0)
+	glPushMatrix()			
+		glTranslatef(x,y,0)
 
 		if a then
-			gl.Translatef(w*0.5, h*0.5,0)
-			gl.Rotatef(a, 0, 0, 1)
-			gl.Translatef(w*-0.5, h*-0.5,0)
+			glTranslatef(w*0.5, h*0.5,0)
+			glRotatef(a, 0, 0, 1)
+			glTranslatef(w*-0.5, h*-0.5,0)
 		end	
 			
-		gl.Scalef(w,h,0)
+		glScalef(w,h,0)
 		render.Draw2DVBO(surface.rectmesh)
-	gl.PopMatrix()
+	glPopMatrix()
 end
 
+function surface.DrawRectEx(x,y,w,h,a,ox,oy)
+	glPushMatrix()			
+		glTranslatef(x,y,0)
+		glRotatef(a, 0, 0, 1)
+		glTranslatef(-ox, -oy,0)
+		glScalef(w,h,0)
+		render.Draw2DVBO(surface.rectmesh)
+	glPopMatrix()
+end
 
 function surface.DrawLine(x1,y1, x2,y2, w, skip_tex)
 	
