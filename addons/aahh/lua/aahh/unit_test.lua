@@ -4,8 +4,7 @@ console.AddCommand("aahh_unit_test", function()
 	
 	render.Initialize(1280, 720)
 	
-	event.AddListener("OnDisplay", "aahh", function(delta)	 
-		render.Start2D()
+	event.AddListener("OnDraw2D", "aahh", function(delta)	 
 		aahh.Update(delta)
 	end)
 

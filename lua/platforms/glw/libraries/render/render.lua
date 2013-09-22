@@ -161,14 +161,18 @@ do -- camera helpers
 		
 		render.SetPerspective()
 			
-		gl.Rotatef(ang.p, 1, 0, 0)
-		gl.Rotatef(ang.y, 0, 1, 0)
-		gl.Rotatef(ang.r, 0, 0, 1)
-		gl.Translatef(pos.x, pos.y, pos.z)	
+		if ang then
+			gl.Rotatef(ang.p, 1, 0, 0)
+			gl.Rotatef(ang.y, 0, 1, 0)
+			gl.Rotatef(ang.r, 0, 0, 1)
+		end
+		
+		if pos then
+			gl.Translatef(pos.x, pos.y, pos.z)	
+			render.cam_pos = pos
+		end
 
 		gl.Enable(e.GL_DEPTH_TEST)		
-		
-		render.cam_pos = pos
 		
 		render.SetMatrixMode(e.GL_MODELVIEW)	
 	end
