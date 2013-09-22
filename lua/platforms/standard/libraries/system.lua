@@ -224,4 +224,142 @@ do -- sleep
 	system.Sleep = sleep
 end
 
+do -- transparent window
+	local set = not_implemented
+
+	if WINDOWS then
+		set = function(window, b)
+			-- http://stackoverflow.com/questions/4052940/how-to-make-an-opengl-rendering-context-with-transparent-background
+		
+			ffi.cdef([[
+				typedef unsigned char BYTE;
+				typedef unsigned short WORD;
+				typedef unsigned long DWORD;
+				
+				typedef struct {
+					WORD  nSize;
+					WORD  nVersion;
+					DWORD dwFlags;
+					BYTE  iPixelType;
+					BYTE  cColorBits;
+					BYTE  cRedBits;
+					BYTE  cRedShift;
+					BYTE  cGreenBits;
+					BYTE  cGreenShift;
+					BYTE  cBlueBits;
+					BYTE  cBlueShift;
+					BYTE  cAlphaBits;
+					BYTE  cAlphaShift;
+					BYTE  cAccumBits;
+					BYTE  cAccumRedBits;
+					BYTE  cAccumGreenBits;
+					BYTE  cAccumBlueBits;
+					BYTE  cAccumAlphaBits;
+					BYTE  cDepthBits;
+					BYTE  cStencilBits;
+					BYTE  cAuxBuffers;
+					BYTE  iLayerType;
+					BYTE  bReserved;
+					DWORD dwLayerMask;
+					DWORD dwVisibleMask;
+					DWORD dwDamageMask;
+				} PIXELFORMATDESCRIPTOR;
+			
+				typedef struct {
+					int x,y,w,h;
+				} HRGN;
+				
+				typedef struct {
+					unsigned long dwFlags;
+					int  fEnable;
+					HRGN  hRgnBlur;
+					int  fTransitionOnMaximized;
+				} DWM_BLURBEHIND;
+				
+				void* GetDC(void*);
+				
+				int ChoosePixelFormat(
+				  void *,
+				  const PIXELFORMATDESCRIPTOR *ppfd
+				);
+			
+				long GetWindowLongA(void*, int);
+				long SetWindowLongA(void*, int, long);
+				long DwmEnableBlurBehindWindow(void*, DWM_BLURBEHIND);
+								
+				HRGN CreateRectRgn(int,int,int,int);
+				int SetPixelFormat(
+				  void *hdc,
+				  int iPixelFormat,
+				  const PIXELFORMATDESCRIPTOR *ppfd
+				);
+				DWORD GetLastError();
+			]])
+			
+			local GWL_STYLE = -16
+			local WS_OVERLAPPEDWINDOW = 0x00CF0000
+			local WS_POPUP = 0x80000000
+			local DWM_BB_ENABLE = 0x00000001
+			local DWM_BB_BLURREGION = 0x00000002
+			
+			local lib = ffi.load("dwmapi.dll")
+			
+			local style = ffi.C.GetWindowLongA(window, GWL_STYLE)
+			style = bit.band(style, bit.bnot(WS_OVERLAPPEDWINDOW))
+			style = bit.bor(style, WS_POPUP)
+			
+			ffi.C.SetWindowLongA(window, GWL_STYLE, style)
+			
+			local bb = ffi.new("DWM_BLURBEHIND",0)
+			bb.dwFlags = bit.bor(DWM_BB_ENABLE, DWM_BB_BLURREGION)
+			bb.fEnable = true
+			bb.hRgnBlur = ffi.load("Gdi32.dll").CreateRectRgn(0,0,1,1)
+			bb.fTransitionOnMaximized = 0
+			lib.DwmEnableBlurBehindWindow(window, bb)		
+			
+			local PFD_TYPE_RGBA = 0
+			local PFD_MAIN_PLANE = 0
+			local PFD_DOUBLEBUFFER = 1
+			local PFD_DRAW_TO_WINDOW = 4
+			local PFD_SUPPORT_OPENGL = 32
+			local PFD_SUPPORT_COMPOSITION = 0x00008000
+			
+			local pfd = ffi.new("PIXELFORMATDESCRIPTOR", {
+				ffi.sizeof("PIXELFORMATDESCRIPTOR"),
+				1,                                -- Version Number
+				bit.bor(
+					PFD_DRAW_TO_WINDOW      ,     -- Format Must Support Window
+					PFD_SUPPORT_OPENGL      ,     -- Format Must Support OpenGL
+					PFD_SUPPORT_COMPOSITION       -- Format Must Support Composition
+				),
+				PFD_DOUBLEBUFFER,                 -- Must Support Double Buffering
+				PFD_TYPE_RGBA,                    -- Request An RGBA Format
+				32,                               -- Select Our Color Depth
+				0, 0, 0, 0, 0, 0,                 -- Color Bits Ignored
+				8,                                -- An Alpha Buffer
+				0,                                -- Shift Bit Ignored
+				0,                                -- No Accumulation Buffer
+				0, 0, 0, 0,                       -- Accumulation Bits Ignored
+				24,                               -- 16Bit Z-Buffer (Depth Buffer)
+				8,                                -- Some Stencil Buffer
+				0,                                -- No Auxiliary Buffer
+				PFD_MAIN_PLANE,                   -- Main Drawing Layer
+				0,                                -- Reserved
+				0, 0, 0                           -- Layer Masks Ignored
+			})
+			
+			local hdc = ffi.C.GetDC(window)
+			print(ffi.C.GetLastError(), window, hdc)
+			local pxfmt = ffi.load("Gdi32.dll").ChoosePixelFormat(hdc, pfd)
+			ffi.load("Gdi32.dll").SetPixelFormat(hdc, pxfmt, pfd)
+			gl.Enable(e.GL_BLEND)
+			gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
+			
+			gl.ClearColor(0,0,0,0)
+		end
+	end
+
+	system.EnableWindowTransparency = set
+end
+
 return system
