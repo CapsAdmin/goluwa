@@ -114,11 +114,45 @@ function console.InitializeCurses()
 		system.SetWindowTitleRaw(system.GetWindowTitle())
 	end
 
-	function io.write(...)
-		local str = table.concat({...}, "")
+	do
+		local function split_by_length(str, len)
+			if #str > len then
+				local tbl = {}
+				
+				local max = math.floor(#str/len)
+				local leftover = #str - (max * len)
+				
+				for i = 0, max do
+					
+					local left = i * len
+					local right = (i * len) + len
+							
+					table.insert(tbl, str:sub(left, right))
+				end
+				
+				return tbl
+			end
 			
-		curses.wprintw(c.log_window, str)
-		curses.wrefresh(c.log_window)
+			return {str}
+		end
+
+		local max_length = 256
+		
+		function io.write(...)
+			local str = table.concat({...}, "")
+			
+			if WINDOWS and #str > max_length then
+				for k,v in pairs(split_by_length(str, max_length)) do
+					for line in v:gmatch("(.-\n)") do
+						io.write(line)
+					end
+				end
+				return
+			end
+				
+			curses.wprintw(c.log_window, str)
+			curses.wrefresh(c.log_window)
+		end
 	end
 
 	for _, args in pairs(_G.LOG_BUFFER) do
