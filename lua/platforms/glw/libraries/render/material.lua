@@ -1,25 +1,7 @@
-if not CAPSADMIN then return end
-	
-glw.OpenWindow(500, 500) 
-
 render.active_materials = render.active_materials or {}
 
 function render.CreateVertexBufferForMaterial(mat, tbl)
 	return ffi.new(mat.vtx_atrb_type.."["..#tbl.."]", tbl)
-end
-
-function render.UploadVertexBuffer(buffer, size)
-	local id = gl.GenBuffer()
-	
-	gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
-	gl.BufferData(e.GL_ARRAY_BUFFER, size, buffer, e.GL_STATIC_DRAW)
-	
-	return id
-end
-
-function render.DrawVertexBuffer(id, size)
-	gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
-	gl.DrawArrays(e.GL_TRIANGLES, 0, size)
 end
 
 do
@@ -72,33 +54,15 @@ do
 		not_implemented = function() end,
 	}
 
-	local shader_translate = {
-		vertex = e.GL_VERTEX_SHADER,
-		fragment = e.GL_FRAGMENT_SHADER,
-		geometry = e.GL_GEOMETRY_SHADER,
-		tess_eval = e.GL_TESS_EVALUATION_SHADER,
-		tess_control = e.GL_TESS_CONTROL_SHADER,
-	}
-
-	-- grab all valid shaders from enums
-	for k,v in pairs(e) do
-		local name = k:match("GL_(.+)_SHADER")
-		
-		if name then
-			shader_translate[name] = v
-			shader_translate[k] = v
-			shader_translate[v] = v
-		end
-
-	end
+	-- see beginning of render.CreateMaterial
+	local shader_translate
 
 	-- add some extra information
 	for k,v in pairs(type_info) do
 		-- names like vec3 is very generic so prepend glw_glsl_
 		-- to avoid collisions
 		v.real_type = "glw_glsl_" ..k
-
-		v.stride = ffi.cast("void*", ffi.sizeof(v.type) * v.arg_count)
+		v.size = ffi.sizeof("float")
 		
 		if not gl_enum_types[v.type] then
 			logf("gl enum type for %q is unknown", v.type)
@@ -229,15 +193,42 @@ do
 		
 		local self = {Type = "VertexBuffer", id = id, length = #data}
 		
-		self.Draw = function(s) 
+		self.Draw = function(s, mat) 
 			gl.BindBuffer(e.GL_ARRAY_BUFFER, s.id)
+			mat:Bind()
 			gl.DrawArrays(e.GL_TRIANGLES, 0, s.length)
 		end
 		
 		return self
 	end
 	
-	local function build_from_data(mat_id, data)
+	function render.CreateMaterial(mat_id, data)
+		
+		if not shader_translate then		
+			-- do this when we try to create our first 
+			-- material to ensure we have all the enums
+			
+			shader_translate = {
+				vertex = e.GL_VERTEX_SHADER,
+				fragment = e.GL_FRAGMENT_SHADER,
+				geometry = e.GL_GEOMETRY_SHADER,
+				tess_eval = e.GL_TESS_EVALUATION_SHADER,
+				tess_control = e.GL_TESS_CONTROL_SHADER,
+			}
+
+			-- grab all valid shaders from enums
+			for k,v in pairs(e) do
+				local name = k:match("GL_(.+)_SHADER")
+				
+				if name then
+					shader_translate[name] = v
+					shader_translate[k] = v
+					shader_translate[v] = v
+				end
+
+			end
+		end
+		
 			
 		local build = {}
 		local shared = data.shared
@@ -421,16 +412,20 @@ do
 				
 				self.attributes = {}
 				
+				local pos = 0
 				for id, data in pairs(build.vertex.vtx_info) do
 					gl.BindAttribLocation(prog, id-1, data.name)
+																				
 					self.attributes[id-1] = {
 						arg_count = data.info.arg_count,
 						enum = data.info.enum_type, 
 						stride = build.vertex.vtx_atrb_size,
-						type_stride = data.info.stride
+						type_stride = ffi.cast("void*", data.info.size * pos)
 					}
+					
+					pos = pos + data.info.arg_count
 				end
-				
+								
 				render.active_materials[mat_id] = self
 				
 				return self 
@@ -442,99 +437,5 @@ do
 		return NULL
 	end 
 	
-	render.CreateMaterial = build_from_data
-	Material = build_from_data
+	Material = render.CreateMaterial
 end
-	
-local data = {
-	-- these are declared as uniform on all shaders
-	shared = {
-		uniform = {
-			time = 0,
-		},
-	},
-	
-	vertex = {
-		uniform = {
-			camera_matrix = "mat4",
-			model_matrix = "mat4",
-		},			
-		attributes = {
-			position = "vec2",
-		},
-		vertex_attributes = {
-			{pos = "vec2"},
-			{uv = "vec2"},
-			{color = "vec4"},
-		},	
-		-- if main is not defined it will wrap void main() { *line here* } around the line
-		source = "gl_Position = camera_matrix * model_matrix * vec4(position, 0.0, 1.0);"
-	},
-	
-	fragment = { 
-		uniform = {
-			add_color = 0, -- guess the type and use passed var as default if not passed
-			global_color = Color(1,1,1,1), 
-			texture = Texture(16,16):Fill(function() 
-				return math.random(255), math.random(255), math.random(255),math.random(255)
-			end),
-		},		
-		-- when attributes is used outside of vertex they are simply sent from vertex shader
-		-- as "__out_foo" and then grabbed from the other shader with a macro to turn its name 
-		-- back to "foo" with #define
-		attributes = {
-			uv = "vec2",
-			color = "vec4",
-		},			
-		source = [[
-			out vec4 frag_color;
-
-			vec4 texel = texture2D(texture, uv);
-
-			void main()
-			{	
-				if (add_color > 0.5)
-				{
-					frag_color = texel * color;
-					frag_color.xyz = frag_color.xyz + global_color.xyz;
-					frag_color.w = frag_color.w * global_color.w;
-				}
-				else
-				{	
-					frag_color = texel * color * global_color;
-				}
-			}
-		]]
-	} 
-} 
- 
-local mat = Material("2d_rect", data)
-
--- this creates buffer from the vertex_attributes field
-local buffer = mat:CreateVertexBuffer(
-	{
-		{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
-		{pos = {0, 1}, uv = {0, 0}, color = {1,1,1,1}},
-		{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
-
-		{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
-		{pos = {1, 0}, uv = {1, 1}, color = {1,1,1,1}},
-		{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
-	}
-)
-
-event.AddListener("OnDraw2D", "hm", function()	
-	surface.Translate(200, 100)
-	surface.Scale(100,100)
-	
-	gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.model_matrix)
-	gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.camera_matrix)
-	
-	mat.camera_matrix = render.camera_matrix
-	mat.model_matrix = render.model_matrix
-	mat.global_color = Color(1,1,1,1)
-		
-	mat:Bind()
-	
-	buffer:Draw()
-end)
