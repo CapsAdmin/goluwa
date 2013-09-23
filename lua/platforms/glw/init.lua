@@ -59,6 +59,10 @@ function glw.SetWindowSize(x, y)
 	glfw.SetWindowSize(glw.window.__ptr, x, y)
 end
 
+function glw.SetWindowTitle(title)
+	glfw.SetWindowTitle(glw.window.__ptr, title)
+end
+
 function glw.GetWindowSize()
 	local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 	glfw.GetWindowSize(glw.window.__ptr, x, y)
