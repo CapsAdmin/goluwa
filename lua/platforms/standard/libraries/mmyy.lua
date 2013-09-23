@@ -23,7 +23,11 @@ function mmyy.OnError(msg, ...)
 				
 				for arg = 1, info.nparams do
 					local key, val = debug.getlocal(level, arg)
-					val = luadata.ToString(val)
+					if type(val) == "table" then
+						val = tostring(val)
+					else
+						val = luadata.ToString(val)
+					end
 					table.insert(args, ("%s = %s"):format(key, val))
 				end
 				
