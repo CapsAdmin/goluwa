@@ -134,6 +134,8 @@ end
 
 function HSVToColor(h, s, v, a)
 	h = (h%1 * 360) / 60
+	s = s or 1
+	v = v or 1
 
 	if s == 0 then
 		return Color(v, v, v, a)
