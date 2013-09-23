@@ -3,11 +3,13 @@ do
 	local META = {}
 
 	META.__index = META
-	META.format_type = "texture"
+	META.Type = "texture"
 
 	function META:__tostring()
 		return ("texture[%s]"):format(self.id)
 	end
+	
+	class.GetSet(META, "Channel", 0)
 
 	function META:Bind(...)
 		render.SetTexture(self.id, ...)
@@ -46,6 +48,8 @@ do
 			f.format_type, 
 			buffer
 		)
+		
+		return self
 	end
 	
 	local tex_params = {}
@@ -113,6 +117,8 @@ do
 			gl.GenerateMipmap(f.type)
 
 		gl.BindTexture(f.type, 0)
+		
+		return self
 	end
 
 	function META:Fill(callback, write_only)
@@ -157,6 +163,8 @@ do
 		end
 		
 		self:Upload(buffer)
+		
+		return self
 	end
 		
 	function META:IsValid()
