@@ -58,6 +58,8 @@ do -- check
 	end
 end
 
+local idx = function(var) return var.TypeX or var.Type end
+
 function hasindex(var)
 	if getmetatable(var) == getmetatable(NULL) then return false end
 
@@ -71,6 +73,8 @@ function hasindex(var)
 		return true
 	end
 	
+	if not pcall(idx, var) then return false end
+	
 	local meta = getmetatable(var)
 	
 	if meta == "ffi" then return true end
@@ -79,8 +83,6 @@ function hasindex(var)
 		
 	return T == "table" and meta.__index ~= nil
 end
-
-local idx = function(var) return var.TypeX or var.Type end
 
 function typex(var)
 	
