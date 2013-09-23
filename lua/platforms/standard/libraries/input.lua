@@ -64,7 +64,7 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_event)
 		if press and not tbl[down_id][key] then
 		
 			if input.debug then
-				print("key", key, "pressed")
+				print(name, "key", key, "pressed")
 			end
 		
 			if not skip_event then
@@ -76,7 +76,7 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_event)
 		elseif not press and tbl[down_id][key] and not tbl[up_id][key] then
 
 			if input.debug then
-				print("key", key, "released")
+				print(name, "key", key, "released")
 			end
 		
 			if not skip_event then
