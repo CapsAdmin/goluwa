@@ -58,7 +58,7 @@ if not _OLD_G then
 				store[key] = store[key] or {}
 				done[val] = true
 				scan(val, store[key])
-			elseif t == "function" then
+			else
 				store[key] = val
 			end
 		end
