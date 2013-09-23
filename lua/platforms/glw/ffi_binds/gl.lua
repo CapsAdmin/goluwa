@@ -460,6 +460,11 @@ local gl = _G.gl or {}
 local suppress = false
 
 local function add_gl_func(name, func)
+	
+	-- lets remove the ARB field from extensions officially approved 
+	-- by the OpenGL Architecture Review Board
+	name = name:gsub("ARB", "")
+
 	gl[name] = function(...) 
 		local val = func(...)
 		
