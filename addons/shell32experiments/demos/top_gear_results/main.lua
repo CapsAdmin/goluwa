@@ -78,21 +78,15 @@ clouds_table={}
 
 stars_table={}
 
---[[
-local effect = audio.CreateEffect(e.AL_EFFECT_EAXREVERB)
+
+--[[local effect = audio.CreateEffect(e.AL_EFFECT_EAXREVERB)
 effect:SetParam(e.AL_EAXREVERB_DECAY_TIME, 10)  
 effect:BindToChannel(1)
-
-local music = utilities.RemoveOldObject(Sound("music/results.ogg"),1)
-music:Play()
-music:SetChannel(1)
-music:SetLooping(true)
-
-local click = utilities.RemoveOldObject(Sound("music/fins_button:getWidth()av"),2) 
-click:SetChannel(2)
-click:SetLooping(false)
+]]
+music = love.audio.newSource("/music/results.ogg")
+music:play()
  
- ]]
+ 
 --stuff goes here
 local font = love.graphics.newFont("fonts/easycode.ttf",12)
 love.graphics.setFont(font)

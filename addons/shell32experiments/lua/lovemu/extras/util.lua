@@ -35,3 +35,34 @@ function string.replace(s,s2,s3)
 		return s
 	end
 end
+
+local list=nil
+function lovemu.listFilesRecursive(path,ext)
+	ext=ext or ""
+	for _,v in pairs(vfs.Find(path)) do
+		if ext~="" then
+			local info=split(v,".")
+			local str=""
+			for i=2,#info do
+				str=str..info[i]
+			end
+			if #info>1 and ext==str then 
+				insert(list,path..v)
+			else
+				lovemu.listFilesRecursive(path..v.."/",ext)
+			end
+		else
+			if #split(v,".")>1 then 
+				insert(list,path..v)
+			else
+				lovemu.listFilesRecursive(path..v.."/",ext)
+			end
+		end
+	end
+end
+
+function lovemu.listFiles(path,ext)
+	list={}
+	lovemu.listFilesRecursive(path,ext)
+	return list
+end
