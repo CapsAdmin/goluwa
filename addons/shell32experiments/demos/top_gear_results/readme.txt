@@ -1,1 +1,1 @@
-This is just a '2d tech demo'. Is not intended to be a game.
+This is just a '2D Tech Demo' based on Top Gear 3000 (SNES game).
