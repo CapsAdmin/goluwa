@@ -33,8 +33,12 @@ event.AddListener("OnMouseInput","lovemu_mouse",function(key,press)
 	local x, y = input.GetMousePos():Unpack()
 
 	if press then
-		love.mousepressed(x, y, mouse_keymap[key])
+		if love.mousepressed then
+			love.mousepressed(x, y, mouse_keymap[key])
+		end
 	else
-		love.mousereleased(x, y, mouse_keymap[key])
+		if love.mousereleased then
+			love.mousereleased(x, y, mouse_keymap[key])
+		end
 	end
 end) 
