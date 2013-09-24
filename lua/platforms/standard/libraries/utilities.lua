@@ -155,6 +155,7 @@ function utilities.GetMetaTables()
 end
 
 function utilities.MakeNULL(var)
+	var.Type = "null"
 	setmetatable(var, getmetatable(NULL))
 end
 
