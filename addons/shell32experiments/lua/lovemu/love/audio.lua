@@ -1,3 +1,5 @@
+local love=love
+local lovemu=lovemu
 love.audio={}
 
 local function getDirection(self)
@@ -25,7 +27,11 @@ local function getVelocity(self)
 end
 
 local function getVolume(self)
-	return 1
+	if self.legit==true==true then
+		return self:GetGain()
+	else
+		return 1
+	end
 end
 
 local function getVolumeLimits(self)
@@ -33,7 +39,11 @@ local function getVolumeLimits(self)
 end
 
 local function isLooping(self)
-	return false
+	if self.legit==true then
+		return self:GetLooping()
+	else
+		return false
+	end
 end
 
 local function isPaused(self)
@@ -49,7 +59,7 @@ local function isStatic(self)
 end
 
 local function isStopped(self)
-	if self.legit==true==true then
+	if self.legit==true then
 		return not self.isplaying
 	else
 		return false
@@ -88,7 +98,10 @@ end
 local function setDistance(self)
 end
 
-local function setLooping(self)
+local function setLooping(self,bool)
+	if self.legit==true then
+		self:SetLooping(bool)
+	end
 end
 
 local function setPitch(self,pitch)
@@ -123,11 +136,11 @@ local id=1
 function love.audio.newSource(path) --partial
 	local legit=false
 	local source={}
-	if vfs.Exists(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/demos/"..lovemu.demoname.."/"..path)==true then
+	if vfs.Exists(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lovers/"..lovemu.demoname.."/"..path)==true then
 		local ext=string.split(path,".")
 		ext=ext[#ext]
 		if ext=="flac" or ext=="wav" or ext=="ogg" then
-			source = utilities.RemoveOldObject(Sound("demos/"..lovemu.demoname.."/"..path),id)
+			source = utilities.RemoveOldObject(Sound("lovers/"..lovemu.demoname.."/"..path),id)
 			id=id+1
 			legit=true
 			source:SetChannel(1)

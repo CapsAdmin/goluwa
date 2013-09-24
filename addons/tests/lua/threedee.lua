@@ -1,14 +1,14 @@
-local window = glw.OpenWindow(1280, 720)
+window.Open(1280, 720)
 
 local cam_pos = Vec3(0, 0, -10)
 local cam_ang = Ang3(0, 0, 0)
 
-local function calc_camera(window, dt)
+local function calc_camera(dt)
  
 	cam_ang:Normalize()
 	local speed = dt * 10
 
-	local delta = input.GetMouseDelta() * dt / 2
+	local delta = window.GetMouseDelta() * dt / 2
 	cam_ang.p = cam_ang.p + delta.y
 	cam_ang.y = cam_ang.y + delta.x
 	cam_ang.p = math.clamp(cam_ang.p, -math.pi/2, math.pi/2)
@@ -62,13 +62,13 @@ entities.world_entity:RemoveChildren()
 
 local obj = Entity("model")
 obj:SetPos(Vec3(5,0,0))
-obj:SetObj("face.obj")
-obj:SetTexture("face1.png") 
+obj:SetMeshPath("face.obj")
+obj:SetTexturePath("face1.png") 
 
-input.SetMouseTrapped(true)
+window.SetMouseTrapped(true)
      
 event.AddListener("OnDraw3D", "gl", function(dt)
-	calc_camera(window, dt)
+	calc_camera(dt)
 
 	render.Start3D(cam_pos, cam_ang:GetDeg())
 		entities.world_entity:Draw()			

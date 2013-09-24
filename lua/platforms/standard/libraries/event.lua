@@ -10,12 +10,13 @@ event.destroy_tag = e.EVENT_DESTROY
 event.profiler_enabled = false
 
 function event.AddListener(a, b, c, d, e)
-	local type_, unique, func, on_error, priority
+	local type_, unique, func, on_error, priority, self_arg
 
-	if type(a) == "table" and type(b) == "string" then
-		type_ = b
-		unique = tostring(a)
-		func = a[b]
+	if type(b) == "table" and type(a) == "string" then
+		type_ = a
+		unique = tostring(b)
+		func = b[a]
+		self_arg = b
 	elseif type(a) == "string" and b and type(c) == "function" then
 		type_ = a
 		unique = b
@@ -47,6 +48,7 @@ function event.AddListener(a, b, c, d, e)
 			on_error = on_error,
 			priority = priority or 0,
 			unique = unique,
+			self_arg = self_arg,
 		}
 	)
 	
@@ -56,9 +58,9 @@ end
 function event.RemoveListener(a, b)
 	local type_, unique
 
-	if type(a) == "table" and type(b) == "string" then
-		type_ = b
-		unique = tostring(a)
+	if type(b) == "table" and type(a) == "string" then
+		type_ = a
+		unique = tostring(b)
 	elseif type(a) == "string" and b then
 		type_ = a
 		unique = b
@@ -119,20 +121,18 @@ local _unique
 local unique
 
 function event.Call(type, ...)
+	if event.debug then
+		event.call_count = event.call_count or 0
+		print(event.call_count, type, ...)
+		event.call_count = event.call_count + 1
+	end
 	if event.active[type] then
 		for key, data in ipairs(event.active[type]) do
-			if event.profiler_enabled == true then
-				event.profil[type] = event.profil[type] or {}
-				event.profil[type][data.unique] = event.profil[type][data.unique] or {}
-
-				time = SysTime()
-			end
 			
-			status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or mmyy.OnError, ...)
-
-			if event.profiler_enabled == true then
-				event.profil[type][data.unique].time = (event.profil[type][data.unique].time or 0) + (SysTime() - time)
-				event.profil[type][data.unique].count = (event.profil[type][data.unique].count or 0) + 1
+			if data.self_arg then
+				status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or mmyy.OnError, data.self_arg, ...)
+			else
+				status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or mmyy.OnError, ...)
 			end
 			
 			if a == event.destroy_tag then
@@ -162,56 +162,22 @@ function event.GetErrorHistory()
 	return event.errors
 end
 
-function event.GetProfilerHistory()
-	local new = {}
-
-	for type, event in pairs(event.profil) do
-		for unique, _data in pairs(event) do
-			if table.Count(_data) ~= 0 and _data.time ~= 0 and _data.count ~= 0 then
-				local data = {}
-
-				data.event = type
-				data.average =  math.Round((_data.time / _data.count) * 1000, 9)
-				local info = debug.getinfo(event.GetTable()[type][unique].func)
-				data.event = type
-				data.source = info.short_src:gsub("\\", "/")
-				data.line_defined = info.linedefined
-				data.times_ran = _data.count
-
-				if data.average ~= 0 then
-					table.insert(new, data)
-				end
-			end
-		end
-	end
-
-	table.SortByMember(new, "average")
-
-	return new
-end
-
-function event.SetProfiler(bool)
-	check(bool, "boolean")
-
-	event.profiler_enabled = bool
-end
-
 function event.DisableAll()
 	if event.enabled == false then
-		logn("Hooks are already disabled.")
+		logn("events are already disabled.")
 	else
 		event.enabled = true
-		event.__backup_events = table.Copy(event.GetTable())
-		table.Empty(event.GetTable())
+		event.__backup_events = table.copy(event.GetTable())
+		table.empty(event.GetTable())
 	end
 end
 
 function event.EnableAll()
 	if event.enabled == true then
-		logn("Hooks are already enabled.")
+		logn("events are already enabled.")
 	else
 		event.enabled = false
-		table.Merge( event.GetTable(), event.__backup_events )
+		table.merge(event.GetTable(), event.__backup_events)
 		event.__backup_events = nil
 	end
 end

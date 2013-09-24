@@ -355,7 +355,7 @@ do -- transparent window
 			gl.Enable(e.GL_BLEND)
 			gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
 			
-			gl.ClearColor(0,0,0,0)
+			render.SetClearColor(0,0,0,0)
 		end
 	end
 

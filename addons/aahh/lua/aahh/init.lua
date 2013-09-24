@@ -66,7 +66,7 @@ include("util.lua")
 
 include("unit_test.lua")
 
-event.AddListener("RenderContextInitialized", 1, function()
+event.AddListener("RenderContextInitialized", "aahh", function()
 	aahh.Initialize()
 
 	event.Call("AahhInitialized")

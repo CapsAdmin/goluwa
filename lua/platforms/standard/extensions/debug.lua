@@ -61,10 +61,8 @@ function debug.dumpcall(clr_print)
 				else
 					line = (info.currentline + i) .. ": " .. line
 				end
-			
-				if clr_print then
-					console.ColorPrint(line .. "\n")
-				end
+				
+				logn(line)
 			end
 		end
 	else
@@ -76,7 +74,7 @@ function debug.dumpcall(clr_print)
 	for _, data in pairs(debug.getparamsx(4)) do
 		if not data.key:find("(",nil,true) then
 			local val = luadata.ToString(data.val) or "nil"
-			if val:find("\n") then 
+			if false and val:find("\n") then 
 				if type(data.val) == "table" then
 					val = tostring(data.val)
 				else
@@ -88,11 +86,13 @@ function debug.dumpcall(clr_print)
 	end
 end
 
-function debug.logcalls(b)
+function debug.logcalls(b, type)
 	if not b then
 		debug.sethook()
 		return
 	end
+	
+	type = type or "r"
 	
 	local hook
 
@@ -103,10 +103,10 @@ function debug.logcalls(b)
 			debug.dumpcall()
 		setlogfile()
 		
-		debug.sethook(hook, "l")
+		debug.sethook(hook, type)
 	end
 	
-	debug.sethook(hook, "l")
+	debug.sethook(hook, type)
 end
 
 function debug.stepin()

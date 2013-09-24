@@ -1,9 +1,7 @@
 console.AddCommand("aahh_unit_test", function()      
 
-	local window = glw.OpenWindow(1280, 720)
-	
-	render.Initialize(1280, 720)
-	
+	window.Open(1280, 720)
+		
 	event.AddListener("OnDraw2D", "aahh", function(delta)	 
 		aahh.Update(delta)
 	end)

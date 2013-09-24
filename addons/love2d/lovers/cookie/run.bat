@@ -1,1 +1,0 @@
-call ..\..\..\..\launch.cmd "lover cookie"

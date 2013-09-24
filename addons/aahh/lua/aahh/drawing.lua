@@ -64,7 +64,7 @@ do
 		texture = function(tex, rect, color, uv, nofilter)
 			color = color or Color(1,1,1,1)
 
-			tex:Bind()
+			surface.SetTexture(tex)
 			surface.Color(color:Unpack())
 			surface.DrawRect(rect:Unpack())
 		end,

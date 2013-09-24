@@ -334,7 +334,7 @@ local commands =
 		
 		draw = function(self, x,y,a, path, size_mult)
 			local size = 16 * size_mult
-			self.tex:Bind()
+			surface.SetTexture(self.tex)
 			surface.DrawRect(x, y, size, size)
 		end,
 	}

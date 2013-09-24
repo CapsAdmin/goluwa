@@ -1,1 +1,0 @@
-This is just a '2D Tech Demo' based on Top Gear 3000 (SNES game).

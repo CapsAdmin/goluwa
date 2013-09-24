@@ -9,13 +9,19 @@ function mmyy.OnError(msg, ...)
 	
 	if event.Call("OnLuaError", msg) == false then return end
 	
+	if msg:find("stack overflow") then
+		logn(msg)
+		table.print(debug.getinfo(3))
+		return
+	end
+	
 	logn("STACK TRACE:")
 	logn("{")
 	
 	local base_folder = e.BASE_FOLDER:gsub("%p", "%%%1")
 	local data = {}
 		
-	for level = 3, math.huge do
+	for level = 3, 100 do
 		local info = debug.getinfo(level)
 		if info then
 			if info.currentline >= 0 then			
