@@ -1,5 +1,7 @@
 local NULL = {}
 
+NULL.Type = "null"
+NULL.TypeX = "null"
 NULL.ClassName = "NULL"
 NULL.IsNull = true
 
@@ -11,15 +13,7 @@ function NULL:__tostring()
 	return "NULL"
 end
 	
-function NULL:__index(key)
-	if key == "ClassName" then
-		return "NULL"
-	end	
-	
-	if key == "Type" then
-		return "null"
-	end
-	
+function NULL:__index(key)	
 	if key == "IsValid" then	
 		return FALSE
 	end
@@ -33,4 +27,4 @@ end
 
 utilities.DeclareMetaTable("null_meta", NULL)
 
-_G.NULL = setmetatable({Type  = "null", ClassName = "ClassName"}, NULL)
+_G.NULL = setmetatable({Type  = "null", TypeX = "null", ClassName = "ClassName"}, NULL)
