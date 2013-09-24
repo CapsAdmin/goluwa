@@ -71,19 +71,18 @@ local SHADER = {
 }
 
 function render.CreateMesh3D(data)	
-	render.mesh_3d_shader = render.mesh_3d_shader or SuperShader("mesh_3d", SHADER)
+	render.mesh_3d_shader = render.mesh_3d_shader or render.CreateSuperShader("mesh_3d", SHADER)
 	local mesh = render.mesh_3d_shader:CreateVertexBuffer(data)
 		
-	mesh.UpdateUniforms = function(self)
-		self.model_matrix = render.GetModelMatrix()
-		self.camera_matrix = render.GetCameraMatrix()
-		self.cam_pos = render.cam_pos
-	end
+	mesh.model_matrix = render.GetModelMatrix
+	mesh.camera_matrix = render.GetCameraMatrix
+	mesh.cam_pos = render.GetCamPos
 	
 	return mesh
 end
 
+
 -- for reloading
 if render.mesh_3d_shader then
-	render.mesh_3d_shader = render.CreateMesh3D(SHADER)
+	render.mesh_3d_shader = render.CreateSuperShader("mesh_3d", SHADER)
 end
