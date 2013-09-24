@@ -76,15 +76,13 @@ do
 			gl.PixelStorei(e.GL_PACK_ALIGNMENT, f.stride)
 			gl.PixelStorei(e.GL_UNPACK_ALIGNMENT, f.stride)
 
-						 
 			for k,v in pairs(f) do
 				if tex_params[k] then
 					gl.TexParameterf(f.type, tex_params[k], v)
 				elseif type(k) == "number" then
 					gl.TexParameterf(f.type, k, v)
 				end
-			end
-			
+			end			
 			
 			gl.TexStorage2D(
 				f.type, 
