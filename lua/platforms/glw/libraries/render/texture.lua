@@ -1,5 +1,13 @@
- 
-do
+
+local base = e.GL_TEXTURE0
+function render.SetTexture(id, channel)
+	channel = channel or 0		
+
+	gl.ActiveTexture(base + channel) 
+	gl.BindTexture(e.GL_TEXTURE_2D, id)
+end
+
+do -- texture object
 	local META = {}
 
 	META.__index = META
@@ -10,10 +18,6 @@ do
 	end
 	
 	class.GetSet(META, "Channel", 0)
-
-	function META:Bind(...)
-		render.SetTexture(self.id, ...)
-	end
 
 	function META:GetSize()
 		return self.size
@@ -176,7 +180,7 @@ do
 	
 	META.__gc = META.Remove
 
-	function Texture(width, height, buffer, format)
+	function render.CreateTexture(width, height, buffer, format)
 		check(width, "number")
 		check(height, "number")
 		check(buffer, "nil", "cdata")
@@ -218,28 +222,4 @@ do
 		
 		return self
 	end
-end
-
-function Image(path)
-	local size = 16
-	if not ERROR_TEXTURE then
-		ERROR_TEXTURE = Texture(128, 128)
-		ERROR_TEXTURE:Fill(function(x, y)
-			if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
-				return 255, 0, 255, 255
-			else
-				return 0, 0, 0, 255
-			end
-		end)
-	end
-
-	local img = vfs.Read(path, "rb")
-	
-	if not img then
-		return ERROR_TEXTURE
-	end
-	
-	local w, h, buffer = freeimage.LoadImage(img)
-	
-	return Texture(w,h,buffer,{internal_format = e.GL_RGBA8})
 end

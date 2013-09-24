@@ -2,35 +2,34 @@ local META = {}
 
 META.ClassName = "model"
 
-class.GetSet(META, "Obj", "")
-class.GetSet(META, "Mesh")
-class.GetSet(META, "Texture")
+class.GetSet(META, "Texture", NULL)
+class.GetSet(META, "TexturePath", NULL)
 
-META.tex = NULL
+class.GetSet(META, "Mesh", NULL)
+class.GetSet(META, "MeshPath", "")
 
-function META:SetObj(path)
-	self.Obj = path 
+function META:SetMeshPath(path)
+	self.MeshPath = path 
 	
 	local str = vfs.Read("models/" .. path)
 	
 	utilities.ParseObj(str, function(data)
-		self.Mesh = Mesh(data)
+		self.Mesh = Mesh3D(data)
 	end, true)
 end
 
-function META:SetTexture(path)
-	self.tex = Image("textures/" .. path)
-	self.Texture = path 
+function META:SetTexturePath(path)
+	self.TexturePath = path
+	self.Texture = Image("textures/" .. path)
 end
 
-function META:Draw(...)	
-	
-	if self.tex:IsValid() then
-		self.tex:Bind()
-	end
-	
+function META:Draw(...)		
 	render.PushMatrix(self.Pos, self.Angles, self.Scale * self.Size)
-		if self.Mesh then 
+		if self.Mesh:IsValid() then 				
+			if self.Texture:IsValid() then
+				self.Mesh.texture = self.Texture
+			end
+			
 			self.Mesh:Draw(...)
 		end
 		

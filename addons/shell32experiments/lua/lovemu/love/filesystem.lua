@@ -1,4 +1,5 @@
 local love=love
+local lovemu=lovemu
 local vfs=vfs
 
 love.filesystem={}

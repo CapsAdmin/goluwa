@@ -50,11 +50,11 @@ do -- check
 	end
 
 	function check(var, ...)
-		check_custom(var, _G.type, ...)
+		--check_custom(var, _G.type, ...)
 	end
 	
 	function checkx(var, ...)
-		check_custom(var, _G.typex, ...)
+		--check_custom(var, _G.typex, ...)
 	end
 end
 

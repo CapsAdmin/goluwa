@@ -1,7 +1,7 @@
 
 do -- events
 	function aahh.GetMousePosition()
-		return input.GetMousePos()
+		return window.GetMousePos()
 	end
 
 	event.AddListener("OnKeyInput", "aahh", function(key, press)

@@ -1,7 +1,11 @@
+local love=love
+local lovemu=lovemu
 love.mouse={}
 
+local input=input
+
 function love.mouse.getPosition()
-	return input.GetMousePos():Unpack()
+	return window.GetMousePos():Unpack()
 end
 
 local visible=false
@@ -30,7 +34,7 @@ for k,v in pairs(mouse_keymap) do
 end
 
 event.AddListener("OnMouseInput","lovemu_mouse",function(key,press)
-	local x, y = input.GetMousePos():Unpack()
+	local x, y = window.GetMousePos():Unpack()
 
 	if press then
 		if love.mousepressed then

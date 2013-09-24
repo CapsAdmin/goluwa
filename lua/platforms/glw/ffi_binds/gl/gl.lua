@@ -20,6 +20,8 @@ local gl = _G.gl or {}
 
 local suppress = false
 
+gl.call_count = 0
+
 local function add_gl_func(name, func)
 	
 	-- lets remove the ARB field from extensions officially approved 
@@ -28,6 +30,8 @@ local function add_gl_func(name, func)
 
 	gl[name] = function(...) 
 		local val = func(...)
+		
+		gl.call_count = gl.call_count + 1
 		
 		if gl.logcalls then
 			setlogfile("gl_calls")

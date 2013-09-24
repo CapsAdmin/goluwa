@@ -18,19 +18,19 @@ function render.CreateShader(type, source)
 		gl.GetShaderInfoLog(shader, 1024, nil, log)
 		gl.DeleteShader(shader)
 		
-		return false, ffi.string(log)
+		error(ffi.string(log), 2)
 	end
 
 	return shader
 end
 
-_G.Shader = render.CreateShader
-
 function render.CreateProgram(...)				
 	local program = gl.CreateProgram()
-		for _, shader_id in pairs({...}) do
-			gl.AttachShader(program, shader_id)
-		end
+	
+	for _, shader_id in pairs({...}) do
+		gl.AttachShader(program, shader_id)
+	end
+
 	gl.LinkProgram(program)
 
 	gl.GetProgramiv(program, e.GL_LINK_STATUS, status)
@@ -40,15 +40,8 @@ function render.CreateProgram(...)
 		gl.GetProgramInfoLog(program, 1024, nil, log)
 		gl.DeleteProgram(program)		
 		
-		return false, ffi.string(log)
+		error(ffi.string(log), 2)
 	end
 	
 	return program
-end
-
-_G.Program = render.CreateProgram
-
-function render.SetProgram(id)
-	gl.UseProgram(id or 0)
-	render.current_program = id
 end

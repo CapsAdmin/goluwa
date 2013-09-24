@@ -10,7 +10,15 @@ local lovemu=lovemu
 lovemu.demoname="" --internal, demo folder name
 lovemu.delta=0 --frametime
 
-local modules={
+local getn=table.getn
+local pairs=pairs
+local find=string.find
+local tostring=tostring
+local insert=table.insert
+local concat=table.concat
+local gsub=string.gsub
+
+lovemu.modules={
 		"lovemu/extras/util.lua",
 		"lovemu/boot.lua",
 		"lovemu/love/audio.lua",
@@ -25,24 +33,25 @@ local modules={
 		"lovemu/love/sound.lua",
 		"lovemu/love/system.lua",
 		"lovemu/love/thread.lua",
-		"lovemu/love/timer.lua"
+		"lovemu/love/timer.lua",
+		"lovemu/love/window.lua"
 	}
 
 --load modules
-for i=1,#modules do
-	include(modules[i])
+for i=1,getn(lovemu.modules) do
+	include(lovemu.modules[i])
 end
 
 lovemu.supported={}
 for _,v in pairs(lovemu.listFiles(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lua/lovemu/","lua")) do
 	for _,l in pairs(string.split(vfs.Read(v),"\n")) do
-		if string.find(l,"love.") then
+		if find(l,"love.") then
 			if string.match(l,"(.-)%b()") then
 				local isPARTIAL=false
-				if string.find(l,"--partial") then
+				if find(l,"--partial") then
 					isPARTIAL=true
 				end
-				local x1,x2=string.find(l,"love.")
+				local x1,x2=find(l,"love.")
 				l=l:sub(x2,#l)
 				l=string.match(l,"(.-)%b()")
 				if l then
@@ -68,20 +77,20 @@ function love.errhand(msg)
 
 	local err = {}
 
-	table.insert(err, "Error\n")
-	table.insert(err, msg.."\n\n")
+	insert(err, "Error\n")
+	insert(err, msg.."\n\n")
 
 	for l in string.gmatch(trace, "(.-)\n") do
 		if not string.match(l, "boot.lua") then
-			l = string.gsub(l, "stack traceback:", "Traceback\n")
-			table.insert(err, l)
+			l = gsub(l, "stack traceback:", "Traceback\n")
+			insert(err, l)
 		end
 	end
 
-	local p = table.concat(err, "\n")
+	local p = concat(err, "\n")
 
-	p = string.gsub(p, "\t", "")
-	p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
+	p = gsub(p, "\t", "")
+	p = gsub(p, "%[string \"(.-)\"%]", "%1")
 
 	local function draw()
 		love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
@@ -110,7 +119,7 @@ lovemu.error_msg=""
 event.AddListener("OnDraw2D", "lovemu", function(dt)
 	love.graphics.clear()
 	lovemu.delta=dt
-	surface.white_texture:Bind()
+	surface.SetTexture()
 	if lovemu.errored==false then
 		local err,msg=pcall(run)
 		if err==false then
@@ -154,7 +163,7 @@ console.AddCommand("lovemu", function(line)
 	elseif param[1]=="check" then
 		if param[2] then
 			local functions_list={}
-			for _,v in pairs(lovemu.listFiles(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/demos/"..param[2].."/","lua")) do
+			for _,v in pairs(lovemu.listFiles(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lovers/"..param[2].."/","lua")) do
 				for _,l in pairs(string.split(vfs.Read(v),"\n")) do
 					if string.find(l,"love.") then
 						if string.match(l,"(.-)%b()") then

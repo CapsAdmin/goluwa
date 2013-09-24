@@ -32,7 +32,7 @@ for every function called, tbl[i] looks like this:
 	["average_time"] = 0.115711487932,
 	["sample_duration"] = 34.010924339816,
 	["line"] = 131,
-	["name"] = "glw.Update()",
+	["name"] = "window.Update()",
 }
 
 ]]

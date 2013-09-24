@@ -1,22 +1,43 @@
 surface = surface or {}
 
-function surface.Initialize()
-	surface.rectmesh = render.Create2DVBO({
-		{pos = Vec2(0, 0), uv = Vec2(0, 1), color = Color(1,1,1,1)},
-		{pos = Vec2(0, 1), uv = Vec2(0, 0), color = Color(1,1,1,1)},
-		{pos = Vec2(1, 1), uv = Vec2(1, 0), color = Color(1,1,1,1)},
+surface.ft = surface.ft or {}
+local ft = surface.ft
 
-		{pos = Vec2(1, 1), uv = Vec2(1, 0), color = Color(1,1,1,1)},
-		{pos = Vec2(1, 0), uv = Vec2(1, 1), color = Color(1,1,1,1)},
-		{pos = Vec2(0, 0), uv = Vec2(0, 1), color = Color(1,1,1,1)},
+function surface.Initialize()
+		
+	surface.rectmesh = render.CreateMesh2D({
+		{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
+		{pos = {0, 1}, uv = {0, 0}, color = {1,1,1,1}},
+		{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
+
+		{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
+		{pos = {1, 0}, uv = {1, 1}, color = {1,1,1,1}},
+		{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 	})
-	
+		
 	surface.white_texture = Texture(64,64)
 	surface.white_texture:Fill(function() return 255, 255, 255, 255 end)
+	surface.SetWhiteTexture()
 	
-	surface.InitFreetype()
-	
-	surface.bound_texture = surface.white_texture
+	if not ft.ptr then
+		local ptr = ffi.new("FT_Library[1]")  
+		freetype.InitFreeType(ptr)
+		ptr = ptr[0]
+		ft.ptr = ptr	
+	end
+			
+	surface.fontmesh = render.CreateMesh2D({
+		{pos = {0, 0}, uv = {0, 0}, color = {1,1,1,1}},
+		{pos = {0, 1}, uv = {0, 1}, color = {1,1,1,1}},
+		{pos = {1, 1}, uv = {1, 1}, color = {1,1,1,1}},
+
+		{pos = {1, 1}, uv = {1, 1}, color = {1,1,1,1}},
+		{pos = {1, 0}, uv = {1, 0}, color = {1,1,1,1}},
+		{pos = {0, 0}, uv = {0, 0}, color = {1,1,1,1}},
+	})
+
+	surface.SetFont(surface.CreateFont("default"))	
+		
 	surface.ready = true
 end
 
@@ -32,88 +53,16 @@ function surface.Start()
 	render.Start2D()
 end
 
-local glTranslatef = gl.Translatef
-local glRotatef = gl.Rotatef
-local glScalef = gl.Scalef
-local glPushMatrix = gl.PushMatrix
-local glPopMatrix = gl.PopMatrix
-
-function surface.EnableFastMatrix(b)
-	render.use_own_matrices = b
-	
-	if not b then
-		event.RemoveListener("PreDisplay", "matrix reset")
-		event.RemoveListener("PostDisplay", "matrix reset")
-		
-		render.model_matrix = ffi.new("float[16]")
-		
-		glTranslatef = gl.Translatef
-		glRotatef = gl.Rotatef
-		glScalef = gl.Scalef
-		glPushMatrix = gl.PushMatrix
-		glPopMatrix = gl.PopMatrix
-		
-		return
-	end
-	  
-	local stack = {}
-	 
-	for i = 1, 8 do
-		table.insert(stack, ffi.new("float[16]"))
-	end
-
-	local level = 1
-	  
-	function glTranslatef(x, y)
-		stack[level][12] = stack[level][12] + x
-		stack[level][13] = stack[level][13] + y
-	end
-	  
-	function glScalef(w, h)	
-		stack[level][0] = w
-		stack[level][5] = h
-	end
-
-	function glPushMatrix()	
-		level = level + 1
-		
-		render.model_matrix = stack[level]
-		
-		stack[level][12] = stack[level-1][12]
-		stack[level][13] = stack[level-1][13]
-		
-		stack[level][15] = 1
-	end   
-
-	function glPopMatrix()
-		level = level - 1
-		render.model_matrix = stack[level]
-	end
-
-	function glRotatef()	
-	end  
-
-	event.AddListener("PreDisplay", "matrix reset", function()
-		glPushMatrix()
-	end)
-
-	event.AddListener("PostDisplay", "matrix reset", function()
-		glPopMatrix()	
-	end)
-end
 
 local X, Y = 0, 0
 local W, H = 0, 0
-local A = 1
+local R,G,B,A,A2 = 1,1,1,1,1
 
 do -- fonts
 	-- this might not be the best way to do it but it should do for now
 
 	freetype.debug = true
-	
-	surface.ft = surface.ft or {}
-	local ft = surface.ft
-	
+		
 	local DPI = 72
 	
 	ft.fonts = ft.fonts or {}
@@ -125,28 +74,6 @@ do -- fonts
 		v.strings = {}
 	end
 	
-	function surface.InitFreetype()
-		if ft.ptr then
-			surface.SetFont("default")
-		return end
-		
-		local ptr = ffi.new("FT_Library[1]")  
-		freetype.InitFreeType(ptr)
-		ptr = ptr[0]
-		ft.ptr = ptr
-		surface.SetFont(surface.CreateFont("default"))	
-				
-		surface.fontmesh = render.Create2DVBO({
-			{pos = Vec2(0, 0), uv = Vec2(0, 0), color = Color(1,1,1,1)},
-			{pos = Vec2(0, 1), uv = Vec2(0, 1), color = Color(1,1,1,1)},
-			{pos = Vec2(1, 1), uv = Vec2(1, 1), color = Color(1,1,1,1)},
-
-			{pos = Vec2(1, 1), uv = Vec2(1, 1), color = Color(1,1,1,1)},
-			{pos = Vec2(1, 0), uv = Vec2(1, 0), color = Color(1,1,1,1)},
-			{pos = Vec2(0, 0), uv = Vec2(0, 0), color = Color(1,1,1,1)},
-		})
-	end
-
 	function surface.CreateFont(name, info)
 		if not ft.ptr then return end
 		
@@ -288,9 +215,10 @@ do -- fonts
 		end 
 
 		for _, glyph in pairs(data.glyphs) do
-			glyph.tex:Bind()			
+			surface.SetTexture(glyph.tex)
 			surface.PushMatrix(X + glyph.x, Y + glyph.y, glyph.w, glyph.h)
-				render.Draw2DVBO(surface.fontmesh, 1)
+				surface.fontmesh.add_color = 1
+				surface.fontmesh:Draw()
 			surface.PopMatrix()
 		end
 	end 
@@ -317,19 +245,19 @@ do -- orientation
 		X = x
 		Y = y
 		
-		glTranslatef(x, y, 0)
+		render.Translate(x, y, 0)
 	end
 	
 	function surface.Rotate(a)		
-		glRotatef(a, 0, 0, 1)
+		render.Rotate(a, 0, 0, 1)
 	end
 	
 	function surface.Scale(w, h)
-		glScalef(w, h, 0)
+		render.Scale(w, h, 0)
 	end
 		
 	function surface.PushMatrix(x,y, w,h, a)
-		glPushMatrix()
+		render.PushMatrix()
 
 		if x and y then surface.Translate(x, y, 0) end
 		if w and h then surface.Scale(w, h, 1) end
@@ -337,65 +265,63 @@ do -- orientation
 	end
 	
 	function surface.PopMatrix()
-		glPopMatrix() 
+		render.PopMatrix() 
 	end
 end
 
 function surface.Color(r,g,b,a)
-	render.r = r
-	render.g = g
-	render.b = b
+	R = r
+	G = g
+	B = b
 	if a then
-		render.a = a * A
+		A = a * A2
 	end
+	
+	surface.rectmesh.global_color = Color(R,G,B,A)
 end
 
 function surface.SetAlphaMultiplier(a)
-	A = a
+	A2 = a
 end
 
-function surface.SetWhiteTexture()
-	surface.white_texture:Bind()
-end
-
--- completeness?
 function surface.SetTexture(tex)
-	if not tex then
-		surface.SetWhiteTexture()
-		surface.bound_texture = surface.white_texture
-	else
-		tex:Bind()
-		surface.bound_texture = tex
-	end	
+	tex = tex or surface.white_texture
+	
+	surface.rectmesh.texture = tex
+	surface.bound_texture = tex
 end
+
+surface.SetWhiteTexture = surface.SetTexture
 
 function surface.GetTexture()
 	return surface.bound_texture or surface.white_texture
 end
 
 function surface.DrawRect(x,y, w,h, a)	
-	glPushMatrix()			
-		glTranslatef(x,y,0)
+	render.PushMatrix()			
+		render.Translate(x,y,0)
 
 		if a then
-			glTranslatef(w*0.5, h*0.5,0)
-			glRotatef(a, 0, 0, 1)
-			glTranslatef(w*-0.5, h*-0.5,0)
+			render.Translate(w*0.5, h*0.5,0)
+			render.Rotate(a, 0, 0, 1)
+			render.Translate(w*-0.5, h*-0.5,0)
 		end	
 			
-		glScalef(w,h,0)
-		render.Draw2DVBO(surface.rectmesh)
-	glPopMatrix()
+		render.Scale(w,h,0)
+		surface.fontmesh.add_color = 0 -- because they share the same shader.....
+		surface.rectmesh:Draw()
+	render.PopMatrix()
 end
 
 function surface.DrawRectEx(x,y, w,h, a, ox,oy)
-	glPushMatrix()			
-		glTranslatef(x,y,0)
-		glRotatef(a, 0, 0, 1)
-		glTranslatef(-ox, -oy,0)
-		glScalef(w,h,0)
-		render.Draw2DVBO(surface.rectmesh)
-	glPopMatrix()
+	render.PushMatrix()			
+		render.Translate(x,y,0)
+		render.Rotate(a, 0, 0, 1)
+		render.Translate(-ox, -oy,0)
+		render.Scale(w,h,0)
+		surface.fontmesh.add_color = 0 -- because they share the same shader.....
+		surface.rectmesh:Draw()
+	render.PopMatrix()
 end
 
 function surface.DrawLine(x1,y1, x2,y2, w, skip_tex)
@@ -417,12 +343,11 @@ function surface.DrawLine(x1,y1, x2,y2, w, skip_tex)
 end
 
 function surface.StartClipping(x, y, w, h)
-	gl.Scissor(x, y, w, h)
-	gl.Enable(e.GL_SCISSOR_TEST)
+	render.ScissorRect(x, y, w, h)
 end
 
 function surface.EndClipping()
-	gl.Disable(e.GL_SCISSOR_TEST)
+	render.ScissorRect()
 end
 
 return surface

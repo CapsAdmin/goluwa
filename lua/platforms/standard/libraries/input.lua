@@ -59,7 +59,7 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_event)
 			key = string.char(byte+32)
 		end
 	end
-			
+				
 	if key then	
 		if press and not tbl[down_id][key] then
 		

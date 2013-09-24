@@ -3,14 +3,16 @@ love.graphics={}
 
 local surface=surface
 local render=render
+local freeimage=freeimage
 local gl=gl
+local window=window
 local type=type
 
-local glTranslatef = gl.Translatef
-local glRotatef = gl.Rotatef
-local glScalef = gl.Scalef
-local glPushMatrix = gl.PushMatrix
-local glPopMatrix = gl.PopMatrix
+local glTranslatef = render.Translate
+local glRotatef = render.Rotate
+local glScalef = render.Scale
+local glPushMatrix = render.PushMatrix
+local glPopMatrix = render.PopMatrix
 
 function getWidth(self,arg1)
 	if self.w then --is image
@@ -46,10 +48,10 @@ function love.graphics.newFont(font,siz)
 		return FontObject
 	else
 		local FontObject={}
-		print( love.filesystem.getAppdataDirectory()..font)
+		print("loaded font: "..font)
 		FontObject.Name=surface.CreateFont(font..siz, {
 			size = siz,
-			path = e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/demos/"..lovemu.demoname.."/"..font,
+			path = e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lovers/"..lovemu.demoname.."/"..font,
 		})
 		FontObject.Size=siz
 		FontObject.getWidth=getWidth
@@ -79,10 +81,14 @@ function love.graphics.setBackgroundColor(r,g,b,a)
 	g=g or 0
 	b=b or 0
 	a=a or 255
-	br=r/255
-	bg=g/255
-	bb=b/255
-	ba=a/255
+	br=r
+	bg=g
+	bb=b
+	ba=a
+end
+
+function love.graphics.getBackgroundColor()
+	return br,bg,bb,ba
 end
 
 local cr,cg,cb,ca=0,0,0,0
@@ -96,10 +102,7 @@ function love.graphics.setColor(r,g,b,a)
 		cg=g/255
 		cb=b/255
 		ca=a/255
-		render.r=cr
-		render.g=cg
-		render.b=cb
-		render.a=ca
+		surface.Color(cr, cg, cb, ca)
 	else
 		local tab=r
 		r=tab[1] or 0
@@ -110,10 +113,7 @@ function love.graphics.setColor(r,g,b,a)
 		cg=g/255
 		cb=b/255
 		ca=a/255
-		render.r=cr
-		render.g=cg
-		render.b=cb
-		render.a=ca
+		surface.Color(cr, cg, cb, ca)
 	end
 end
 
@@ -138,18 +138,10 @@ function love.graphics.print(text,x,y,r,sx,sy)
 	end
 	sx=sx or 1
 	sy=sy or 1
-	glScalef(sx, sy, 0)
-	if r==0 then
-		for i=1,#text do
-			surface.SetTextPos((x+(i*(currentFont.Size*0.8)))*sx,y)
-			surface.DrawChar(text:sub(i,i))
-		end
-	else
-		for i=1,#text do
-			surface.SetTextPos((x+(i*(currentFont.Size*0.8)))*sx,y)
-			surface.DrawChar(text:sub(i,i),r)
-		end
-	end
+	--render.Scale(sx*lovemu.scale_x, sy*lovemu.scale_y)
+	surface.SetTextPos((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y)
+	surface.DrawText(text,r)
+	--render.Scale(1, 1)
 end
 
 function love.graphics.printf(text,x,y,limit,align,r, sx, sy)
@@ -164,58 +156,16 @@ function love.graphics.printf(text,x,y,limit,align,r, sx, sy)
 	align=align or "left"
 	sx=sx or 1
 	sy=sy or 1
-	glScalef(sx, sy, 0)
-	
-	local accumulator_x,accumulator_y=1,1
-	local char=""
+	--render.Scale(sx*lovemu.scale_x, sy*lovemu.scale_y)
+	surface.SetTextPos((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y)
 
-	if r==0 then
-		for i=1,#text do
-			char=text:sub(i,i)
-			if char=="\t" then
-				accumulator_x=accumulator_x+4
-			elseif char=="\n" then
-				accumulator_x=1
-				accumulator_y=accumulator_y+1.5
-			else
-				if ((accumulator_x*currentFont.Size)*sx)>limit then
-					accumulator_x=1
-					accumulator_y=accumulator_y+1.5
-					surface.SetTextPos(x+((accumulator_x*(currentFont.Size*0.8))*sx),(y+((accumulator_y*currentFont.Size))*sy))
-					surface.DrawChar(text:sub(i,i))
-					accumulator_x=accumulator_x+1
-				else
-					surface.SetTextPos(x+((accumulator_x*(currentFont.Size*0.8))*sx),(y+((accumulator_y*currentFont.Size))*sy))
-					surface.DrawChar(text:sub(i,i))
-					accumulator_x=accumulator_x+1
-				end
-			end
-		end
-	else
-		glRotatef(r, 0, 0, 1)
-		for i=1,#text do
-			char=text:sub(i,i)
-			if char=="\t" then
-				accumulator_x=accumulator_x+4
-			elseif char=="\n" then
-				accumulator_x=1
-				accumulator_y=accumulator_y+1.5
-			else
-				if ((accumulator_x*currentFont.Size)*sx)>limit then
-					accumulator_x=1
-					accumulator_y=accumulator_y+1.5
-					surface.SetTextPos(x+((accumulator_x*currentFont.Size)*sx),(y+((accumulator_y*currentFont.Size))*sy))
-					surface.DrawChar(text:sub(i,i))
-					accumulator_x=accumulator_x+1
-				else
-					surface.SetTextPos(x+((accumulator_x*currentFont.Size)*sx),(y+((accumulator_y*currentFont.Size))*sy))
-					surface.DrawChar(text:sub(i,i))
-					accumulator_x=accumulator_x+1
-				end
-			end
-		end
-		glRotatef(-r, 0, 0, 1)
+	text=string.replace(text,"\t","    ")
+	local lines=string.split(text,"\n")
+	for i=1,#lines do
+		surface.SetTextPos(x,y+(currentFont.Size*i*1.25))
+		surface.DrawText(lines[i])
 	end
+	--render.Scale(1, 1)
 end
 
 function love.graphics.setLineStyle(s) --partial
@@ -231,23 +181,24 @@ function love.graphics.setPoint() --partial
 end
 
 function love.graphics.rectangle(mode,x,y,w,h)
-	surface.DrawRectEx(x,y,w,h,0,0,0)
+	x=x or 0
+	y=y or 0
+	w=w or 0
+	h=h or 0
+	if drawable.id then
+		surface.SetTexture(drawable)
+		surface.DrawRectEx((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y, w*lovemu.scale_x, h*lovemu.scale_y,r,ox,oy)
+	end
 end
 
 function love.graphics.reset()
 end
 
 function love.graphics.clear()
-	surface.white_texture:Bind()
-	render.r=br
-	render.g=bg
-	render.b=bb
-	render.a=ba
+	surface.SetTexture()
+	surface.Color(br/255,bg/255,bb/255,ba/255)
 	surface.DrawRectEx(0,0,render.w,render.h,0,0,0)
-	render.r=cr
-	render.g=cg
-	render.b=cb
-	render.a=ca
+	surface.Color(cr/255,cg/255,cb/255,ca/255)
 end
 
 local BlendMode="alpha"
@@ -269,7 +220,7 @@ function love.graphics.setLineWidth(w)
 end
 
 function love.graphics.line(x1,y1,x2,y2)
-	surface.DrawLine(x1,y1,x2,y2,w,false)
+	surface.DrawLine(x1,y1,x2,y2,LineWidth,false)
 end
 
 local DefaultFilter=e.GL_LINEAR
@@ -293,7 +244,7 @@ function setFilter(self,filter)
 end
 
 function love.graphics.newImage(path)
-	path="/demos/".. lovemu.demoname .. "/" .. path
+	path="/lovers/".. lovemu.demoname .. "/" .. path
 	local w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"))
 	
 	local tex = Texture(
@@ -301,8 +252,8 @@ function love.graphics.newImage(path)
 		{
 			stride = 0, 
 			mip_map_levels = 1,  
-			mag_filter = e.GL_LINEAR,
-			min_filter = e.GL_LINEAR_MIPMAP_LINEAR ,
+			mag_filter = e.GL_NEAREST,
+			min_filter = e.GL_NEAREST_MIPMAP_LINEAR ,
 			mip_map_levels = 1,
 			
 			wrap_r = e.GL_MIRRORED_REPEAT,
@@ -323,6 +274,7 @@ function love.graphics.setStencil(func) --partial
 end
 
 function love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
+	x=x or 0
 	y=y or 0
 	r=r or 0
 	r=(r/0.0174532925) + lovemu.angle
@@ -331,24 +283,28 @@ function love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
 	ox=ox or 0
 	oy=oy or 0
 	if drawable.id then
-		drawable:Bind()
-		surface.bound_texture=drawable
-		surface.DrawRectEx(x+lovemu.translate_x,y+lovemu.translate_y*lovemu.scale_y,drawable.w*sx,drawable.h*sy*lovemu.scale_y,r,ox,oy)
+		surface.SetTexture(drawable)
+		surface.DrawRectEx((x+lovemu.translate_x)*lovemu.scale_x,(y+lovemu.translate_y)*lovemu.scale_y, drawable.w*sx*lovemu.scale_x, drawable.h*sy*lovemu.scale_y,r,ox,oy)
 	end
 end
 
 function love.graphics.translate(x,y)
+	x=x or 0
+	y=y or 0 
 	lovemu.translate_x=lovemu.translate_x+x
 	lovemu.translate_y=lovemu.translate_y+y
 end
 
-function love.graphics.scale(sx,sy) --partial
+function love.graphics.scale(sx,sy)
+	sx=sx or 1
+	sy=sy or 1
 	lovemu.scale_x=lovemu.scale_x*sx
 	lovemu.scale_y=lovemu.scale_y*sy
 end
 
 function love.graphics.rotate(r) 
-	lovemu.angle=lovemu.angle+r
+	r=r or 0
+	glRotatef(r, 0, 0, 1)
 end
 
 function love.graphics.push()
@@ -373,5 +329,5 @@ function love.graphics.pop()
 	end
 end
 function love.graphics.setCaption(title)
-	glw.SetWindowTitle(title)
+	window.SetTitle(title)
 end

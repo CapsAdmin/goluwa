@@ -1,23 +1,32 @@
+local love=love
+local lovemu=lovemu
+
 local package_cache={}
 local hasWindow=false
+
+local getn=table.getn
+
 function lovemu.boot(folder)
+	--reload modules
+	for i=1,getn(lovemu.modules) do
+		include(lovemu.modules[i])
+	end
 	lovemu.errored=false
 	lovemu.error_msg=""
 	if hasWindow==false then
-		local window = glw.OpenWindow(800, 600)
+		window.Open(800, 600)
 	end
 
 	lovemu.demoname=folder
 	if not package_cache[lovemu.demoname] and lovemu.demoname~="" then
 		package_cache[lovemu.demoname]=true
-		package.path=package.path..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/demos/"..lovemu.demoname.."/?.lua","/","\\")..";"
-		package.path=package.path..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/demos/"..lovemu.demoname.."/?/init.lua","/","\\")..";"
+		package.path=package.path..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lovers/"..lovemu.demoname.."/?.lua","/","\\")..";"
+		package.path=package.path..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lovers/"..lovemu.demoname.."/?/init.lua","/","\\")..";"
 	end
 	
 	lovemu.delta=0
 	lovemu.translate_x,lovemu.translate_y=0,0
 	lovemu.scale_x,lovemu.scale_y=1,1
-	lovemu.angle=0
 	lovemu.stack={}
 	lovemu.stack_index=1
 	
@@ -42,6 +51,30 @@ function lovemu.boot(folder)
 	function love.keyreleased()
 	end
 	
-	include("demos/"..folder.."/main.lua")
+	lovemu.conf={}
+	lovemu.conf.screen={}
+	function love.conf(t) --partial
+		t.screen={}
+		t.screen.height = 600      
+		t.screen.width = 800  
+		t.title = "LovEmu - The Love2D for GOLUWA"      
+		t.author = "Shell32"
+	end
+
+	if vfs.Exists(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lovers/"..lovemu.demoname.."/conf.lua")==true then
+		print("LOADING CONF.LUA")
+		include("lovers/"..folder.."/conf.lua")
+	end
+	love.conf(lovemu.conf)
+	if not lovemu.conf.screen then
+		lovemu.conf.screen={}
+	end
+	local w=lovemu.conf.screen.width or 800
+	local h=lovemu.conf.screen.height or 600
+	local title=lovemu.conf.title or "LovEmu - The Love2D for GOLUWA"
+	love.window.setMode(w,h)
+	love.window.setTitle(title)
+	
+	include("lovers/"..folder.."/main.lua")
 	love.load()
 end

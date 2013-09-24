@@ -1,4 +1,4 @@
-glw.OpenWindow()
+window.Open() 
 
 local data = {
 	-- these are declared as uniform on all shaders
@@ -61,11 +61,11 @@ local data = {
 		]]
 	} 
 } 
- 
+  
 local mat = SuperShader("2d_rect", data)
 
--- this creates buffer from the vertex_attributes field in our material
-local buffer = mat:CreateVertexBuffer({
+-- this creates mesh from the vertex_attributes field in our material
+local mesh = mat:CreateVertexBuffer({
 	{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 	{pos = {0, 1}, uv = {0, 0}, color = {1,1,1,1}},
 	{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
@@ -75,19 +75,19 @@ local buffer = mat:CreateVertexBuffer({
 	{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 })
 
+mesh.UpdateUniforms = function(self)		
+	self.model_matrix = render.GetModelMatrix()
+	self.camera_matrix = render.GetCameraMatrix()
+end
+ 
 event.AddListener("OnDraw2D", "hm", function()
-
 	-- use the built in matrices cause we dont have our own (yet!)
-	gl.Translatef(50, 50, 0)
-	gl.Scalef(100, 100, 0)
+	for i = 1, 70 do
+		i = i * 4
+		surface.PushMatrix(50+i, 50+i, 10, 10)
+			mesh.global_color = HSVToColor(glfw.GetTime()+i/50) 
+			mesh:Draw()
+		surface.PopMatrix()
+	end
 	
-	gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.model_matrix)
-	gl.GetFloatv(e.GL_PROJECTION_MATRIX, render.camera_matrix)
-	
-	--set the uniform fields
-	mat.model_matrix = render.model_matrix
-	mat.camera_matrix = render.camera_matrix
-	mat.global_color = HSVToColor(glfw.GetTime()) 
-
-	buffer:Draw(mat)
 end)

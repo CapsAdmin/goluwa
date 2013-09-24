@@ -212,7 +212,7 @@ function PANEL:OnDraw()
 end
 
 function PANEL:OnThink()
-	if self.Key and not self:IsChoked() and INTERVAL(0.02) then
+	if self.Key and not self:IsChoked() and wait(0.02) then
 		self:HandleKey(self.Key)
 	end
 

@@ -1,11 +1,16 @@
+local love=love
+local lovemu=lovemu
 love.timer={}
+
+local lovemu=lovemu
+local ceil=math.ceil
 
 function love.timer.getDelta()
 	return lovemu.delta
 end
 
 function love.timer.getFPS()
-	return 1/lovemu.delta
+	return ceil(1/lovemu.delta)
 end
 
 function love.timer.getMicroTime()
@@ -13,5 +18,9 @@ function love.timer.getMicroTime()
 end
 
 function love.timer.getTime()
-	return glfw.GetTime()
+	if lovemu.version=="0.8.0" then
+		return ceil(glfw.GetTime())
+	else
+		return glfw.GetTime()
+	end
 end
