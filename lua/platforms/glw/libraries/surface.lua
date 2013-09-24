@@ -193,68 +193,7 @@ do -- fonts
 		X = x
 		Y = y
 	end
-	
-	function surface.DrawChar(str,x,y)
-		local utf8=utf8
-		local face = ft.current_font.face
 			
-		local info = ft.current_font.info
-		local w = 0
-
-		local byte = utf8.byte(str)
-		if byte == -1 then byte = str:byte() end
-		
-		if str ~= " " then			
-			local tex = ft.current_font.glyphs[str]
-			
-			if not tex then
-				local i = freetype.GetCharIndex(face, byte) 
-				freetype.LoadGlyph(face, i, 0)
-				freetype.RenderGlyph(face.glyph, 0) 
-				
-				local bitmap = face.glyph.bitmap 
-				local w = bitmap.width
-				local h = bitmap.rows	 
-				local buffer = bitmap.buffer	 
-				
-				tex = Texture(
-					w, h, buffer, 
-					{
-						format = e.GL_ALPHA, 
-						internal_format = e.GL_ALPHA8, 
-						stride = 1, 
-						mip_map_levels = 1,  
-						mag_filter = e.GL_LINEAR,
-						min_filter = e.GL_LINEAR_MIPMAP_LINEAR,
-						mip_map_levels = 1,
-						
-						wrap_r = e.GL_MIRRORED_REPEAT,
-						wrap_s = e.GL_MIRRORED_REPEAT,
-						wrap_t = e.GL_MIRRORED_REPEAT,
-					}  
-				) 
-		
-				local m = face.glyph.metrics
-
-				tex.metrics = 
-				{
-					w = m.width / DPI,
-					h = m.height / DPI,
-					x = m.horiBearingX / DPI,
-					y = m.horiBearingY / DPI,
-					w2 = m.horiAdvance / DPI,
-				}
-				ft.current_font.glyphs[str] = tex
-			end
-			
-			tex:Bind()			
-			surface.PushMatrix(X + (w / info.res_multiplier), Y + ((-tex.metrics.y + info.size*0.5)/ info.res_multiplier), tex.w / info.res_multiplier, tex.h / info.res_multiplier)
-				render.Draw2DVBO(surface.fontmesh, 1)
-			surface.PopMatrix()
-		end 
-	end
-		
-		
 	function surface.DrawText(str)
 		if not ft.ptr or not ft.current_font then return end
 		
@@ -449,7 +388,7 @@ function surface.DrawRect(x,y, w,h, a)
 	glPopMatrix()
 end
 
-function surface.DrawRectEx(x,y,w,h,a,ox,oy)
+function surface.DrawRectEx(x,y, w,h, a, ox,oy)
 	glPushMatrix()			
 		glTranslatef(x,y,0)
 		glRotatef(a, 0, 0, 1)
