@@ -48,20 +48,18 @@ local SHADER = {
 }
 
 function render.CreateMesh2D(data)
-	render.mesh_2d_shader = render.mesh_2d_shader or SuperShader("mesh_2d", SHADER)
+	render.mesh_2d_shader = render.mesh_2d_shader or render.CreateSuperShader("mesh_2d", SHADER)
 	
 	local mesh = render.mesh_2d_shader:CreateVertexBuffer(data)
 	
-	-- because we still don't have our own matrices..
-	mesh.UpdateUniforms = function(self)		
-		self.model_matrix = render.GetModelMatrix()
-		self.camera_matrix = render.GetCameraMatrix()
-	end
-	
+	mesh.model_matrix = render.GetModelMatrix
+	mesh.camera_matrix = render.GetCameraMatrix
+
 	return mesh
 end
 
 -- for reloading
 if render.mesh_2d_shader then
-	render.mesh_2d_shader = render.CreateMesh2D(SHADER)
+	render.mesh_2d_shader = render.CreateSuperShader("mesh_2d", SHADER)
+	surface.Initialize()
 end

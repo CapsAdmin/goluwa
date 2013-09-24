@@ -28,6 +28,44 @@ function render.CreateVertexBufferForSuperShader(mat, tbl)
 end
 
 do
+	local unrolled_lines = {
+		number = "gl.Uniform1f(%i, val)",
+		
+		vec2 = "gl.Uniform2f(%i, val.x, val.y)",
+		vec3 = "gl.Uniform3f(%i, val.x, val.y, val.z)",
+		
+		color = "gl.Uniform4f(%i, val.r, val.g, val.b, val.a)",
+		
+		mat4 = "gl.UniformMatrix4fv(%i, 1, 0, val)",
+		
+		texture = "gl.ActiveTexture("..e.GL_TEXTURE0.." + val.Channel) gl.BindTexture(val.format.type, val.id) gl.Uniform1i(%i, val.Channel)", 
+	} 
+	
+	local gl_enum_types = {
+		float = e.GL_FLOAT,
+	}
+
+	local arg_names = {"x", "y", "z", "w"}
+
+	local type_info =  {
+		vec2 = {type = "float", arg_count = 2},
+		vec3 = {type = "float", arg_count = 3},
+		vec4 = {type = "float", arg_count = 4},
+	}
+
+	local type_translate = {
+		color = "vec4",
+		number = "float",
+		texture = "sampler2D",
+	}
+	
+	local reverse_type_translate = {
+		number = "float",
+		vec2 = "vec2",
+		vec3 = "vec3",
+		color = "vec4",
+	}
+	
 	local template =
 [[#version 330
 
@@ -49,19 +87,7 @@ void main()
 }
 ]]
 
-	local gl_enum_types = {
-		float = e.GL_FLOAT,
-	}
-
-	local arg_names = {"x", "y", "z", "w"}
-
-	local type_info =  {
-		vec2 = {type = "float", arg_count = 2},
-		vec3 = {type = "float", arg_count = 3},
-		vec4 = {type = "float", arg_count = 4},
-	}
-
-		-- add some extra information
+	-- add some extra information
 	for k,v in pairs(type_info) do
 		-- names like vec3 is very generic so prepend glw_glsl_
 		-- to avoid collisions
@@ -74,13 +100,6 @@ void main()
 			v.enum_type = gl_enum_types[v.type]
 		end
 	end
-
-	local type_translate = {
-		color = "vec4",
-		number = "float",
-		texture = "sampler2D",
-	}
-
 	-- declare the types
 	for type, info in pairs(type_info) do
 		local line = info.type .. " "
@@ -165,23 +184,27 @@ void main()
 		gl.UseProgram(self.program_id)
 
 		-- unroll this?
+		
 		for key, data in pairs(self.uniforms) do
 			local val = self[key]
 
 			if val then
+				if type(val) == "function" then
+					val = val()
+				end
 				if data.info.type == "sampler2D" then
 					gl.ActiveTexture(base + val.Channel)
 					gl.BindTexture(val.format.type, val.id)
 					data.func(data.id, val.Channel)
-				elseif type(val) == "function" then
-					data.func(data.id, func())
 				elseif type(val) == "table" then
 					data.func(data.id, unpack(val))
 				elseif hasindex(val) and val.Unpack then
 					data.func(data.id, val:Unpack())
 				else
+					
 					data.func(data.id, val)
 				end
+
 			end
 		end
 
@@ -197,34 +220,43 @@ void main()
 		local id = gl.GenBuffer()
 		local size = ffi.sizeof(buffer[0]) * #data
 
-		gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, id) 
 		gl.BufferData(e.GL_ARRAY_BUFFER, size, buffer, e.GL_STATIC_DRAW)
 
 		local vbo = {Type = "VertexBuffer", id = id, length = #data, IsValid = function() return true end}
 
+		vbo.Draw = function(vbo)
+			gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
+			
+			if self.unrolled_bind_func then
+				gl.UseProgram(self.program_id)
+				self.unrolled_bind_func()
+				
+			else
+				if vbo.UpdateUniforms then
+					vbo:UpdateUniforms()
+				end
+				self:Bind()
+			end
+			
+			gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
+		end
+
 		-- so you can do vbo.time = 0
-		setmetatable(vbo, {
+		setmetatable(vbo, { 
 			__newindex = self,
 			__index = self,
 		})
 
-		vbo.Draw = function(vbo, ...)
-			gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
-			if vbo.UpdateUniforms then
-				vbo:UpdateUniforms(...)
-			end
-			self:Bind()
-			gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
-		end
-
+		
 		return vbo
 	end
-
+	
 	local uniform_translate
 	local shader_translate
 
 	function render.CreateSuperShader(mat_id, data)
-
+	
 		if not shader_translate then
 			-- do this when we try to create our first
 			-- material to ensure we have all the enums
@@ -424,17 +456,34 @@ void main()
 				self.program_id = prog
 				self.uniforms = {}
 				self.mat_id = mat_id
-
+				
+				local lua = ""
+				
+				unrolled_lines.vec4 = unrolled_lines.color
+				unrolled_lines.sampler2D = unrolled_lines.texture
+				unrolled_lines.float = unrolled_lines.number
+								
 				for shader, data in pairs(build) do
 					if data.uniform then
 						for key, val in pairs(data.uniform) do
 							if uniform_translate[val.type] or val.type == "function" then
+								local id = gl.GetUniformLocation(prog, key)
 								self.uniforms[key] = {
-									id = gl.GetUniformLocation(prog, key),
+									id = id,
 									func = uniform_translate[val.type],
 									info = val,
 								}
-
+																
+								local line = tostring(unrolled_lines[val.type] or val.type)
+								
+								line = line:format(id)
+																												
+								lua = lua .. "local val = self."..key.."\n" 
+								lua = lua .. "if val then\n" 
+								lua = lua .. "if type(val) == 'function' then val = val() end\n" 
+								lua = lua .. "\t" .. line .. "\n"
+								lua = lua .. "end\n\n"
+								
 								self[key] = val.default
 							else
 								errorf("%s: %s is an unknown uniform type", 2, key, val.type)
@@ -442,7 +491,7 @@ void main()
 						end
 					end
 				end
-
+				
 				self.attributes = {}
 
 				local pos = 0
@@ -458,7 +507,24 @@ void main()
 
 					pos = pos + data.info.arg_count
 				end
-
+				
+				--[[for location, data in pairs(self.attributes) do
+					gl.EnableVertexAttribArray(location)
+					gl.VertexAttribPointer(location, data.arg_count, data.enum, false, data.stride, data.type_stride)
+				end]]
+				
+				
+				for location, data in pairs(self.attributes) do
+					lua = lua .. "gl.EnableVertexAttribArray("..location..")\n"
+					lua = lua .. "gl.VertexAttribPointer("..location..",".. data.arg_count..",".. data.enum..",false,".. data.stride..",self.attributes["..location.."].type_stride)\n\n"
+				end
+				
+					
+				local func, err = loadstring(lua)
+				if not func then error(err, 2) end
+				self.unrolled_bind_func = func
+				setfenv(func, {gl = gl, self = self, loc = prog, type = type})
+				
 				render.active_super_shaders[mat_id] = self
 
 				return self
@@ -469,4 +535,10 @@ void main()
 
 		return NULL
 	end
+end
+
+
+-- for reloading
+if render.mesh_2d_shader then
+	include("mesh2d.lua")
 end
