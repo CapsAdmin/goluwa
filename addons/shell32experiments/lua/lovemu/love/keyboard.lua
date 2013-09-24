@@ -6,8 +6,12 @@ end
 
 event.AddListener("OnKeyInput","lovemu_keyboard",function(key,press)
 	if press then
-		love.keypressed(key)
+		if love.keypressed then
+			love.keypressed(key)
+		end
 	else
-		love.keyreleased(key)
+		if love.keyreleased then
+			love.keyreleased(key)
+		end
 	end
 end) 
