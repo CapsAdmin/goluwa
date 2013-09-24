@@ -15,7 +15,7 @@ function render.GetModelMatrix()
 end
 
 function render.UseModelMatrix()
-	gl.MatrixMode(e.GL_MODELVIEW_MATRIX)
+	gl.MatrixMode(e.GL_MODELVIEW)
 end
 
 
@@ -25,7 +25,7 @@ function render.GetCameraMatrix()
 end
 
 function render.UseCameraMatrix()
-	gl.MatrixMode(e.GL_PROJECTION_MATRIX)
+	gl.MatrixMode(e.GL_PROJECTION)
 end
 
 render.Translate = gl.Translatef
@@ -76,6 +76,12 @@ end
 
 
 do -- camera helpers
+	
+	-- useful for shaders
+	function render.GetCamPos()
+		return render.cam_pos
+	end
+
 	function render.Start2D(x, y, w, h)
 		x = x or 0
 		y = y or 0
