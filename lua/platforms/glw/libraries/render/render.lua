@@ -30,6 +30,8 @@ function render.Initialize(w, h)
 	gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
 	gl.PolygonMode(e.GL_FRONT_AND_BACK, e.GL_FILL)
 	
+	gl.ClearColor(0.25, 0.25, 0.25, 0.5)
+	
 	if surface then
 		surface.Initialize()
 	end
