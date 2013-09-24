@@ -1,6 +1,6 @@
-render.active_materials = render.active_materials or {}
+render.active_super_shaders = render.active_super_shaders or {}
 
-function render.CreateVertexBufferForMaterial(mat, tbl)
+function render.CreateVertexBufferForSuperShader(mat, tbl)
 	return ffi.new(mat.vtx_atrb_type.."["..#tbl.."]", tbl)
 end
 
@@ -44,17 +44,9 @@ do
 		texture = "sampler2D",
 	}
 
-	local uniform_translate = {
-		float = gl.Uniform1f,
-		vec2 = gl.Uniform2f,
-		vec3 = gl.Uniform3f,
-		vec4 = gl.Uniform4f,
-		mat4 = function(location, ptr) gl.UniformMatrix4fv(location, 1, 0, ptr) end,
-		sampler2D = gl.Uniform1i,
-		not_implemented = function() end,
-	}
+	local uniform_translate
 
-	-- see beginning of render.CreateMaterial
+	-- see beginning of render.CreateSuperShader
 	local shader_translate
 
 	-- add some extra information
@@ -183,7 +175,7 @@ do
 	end
 	
 	function META:CreateVertexBuffer(data)
-		local buffer = render.CreateVertexBufferForMaterial(self, data)
+		local buffer = render.CreateVertexBufferForSuperShader(self, data)
 		
 		local id = gl.GenBuffer()
 		local size = ffi.sizeof(buffer[0]) * #data
@@ -202,11 +194,21 @@ do
 		return self
 	end
 	
-	function render.CreateMaterial(mat_id, data)
+	function render.CreateSuperShader(mat_id, data)
 		
 		if not shader_translate then		
 			-- do this when we try to create our first 
 			-- material to ensure we have all the enums
+			uniform_translate =
+			{
+				float = gl.Uniform1f,
+				vec2 = gl.Uniform2f,
+				vec3 = gl.Uniform3f,
+				vec4 = gl.Uniform4f,
+				mat4 = function(location, ptr) gl.UniformMatrix4fv(location, 1, 0, ptr) end,
+				sampler2D = gl.Uniform1i,
+				not_implemented = function() end,
+			}
 			
 			shader_translate = {
 				vertex = e.GL_VERTEX_SHADER,
@@ -426,7 +428,7 @@ do
 					pos = pos + data.info.arg_count
 				end
 								
-				render.active_materials[mat_id] = self
+				render.active_super_shaders[mat_id] = self
 				
 				return self 
 			end
@@ -437,5 +439,5 @@ do
 		return NULL
 	end 
 	
-	Material = render.CreateMaterial
+	SuperShader = render.CreateSuperShader
 end
