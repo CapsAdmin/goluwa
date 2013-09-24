@@ -41,12 +41,24 @@ function Window(width, height, title)
 	height = height or 440
 	title = title or ""
 	
+	glfw.WindowHint(e.GLFW_CONTEXT_VERSION_MAJOR, 4)
+	glfw.WindowHint(e.GLFW_CONTEXT_VERSION_MINOR, 3)
 	glfw.WindowHint(e.GLFW_SAMPLES, 4)
+
 	local ptr = glfw.CreateWindow(width, height, title, nil, nil)
 	glfw.MakeContextCurrent(ptr)
 	gl.Enable(e.GL_MULTISAMPLE)
 
-	logn("opengl version: ", ffi.string(glfw.GetVersionString()))
+	logn("glfw version: ", ffi.string(glfw.GetVersionString()))
+	
+	local major = ffi.new("int[1]")
+	local minor = ffi.new("int[1]")
+	
+	gl.GetIntegerv(33307, major)
+	gl.GetIntegerv(33308, minor)
+	
+	
+	logf("opengl version: %i.%i", major[0], minor[0])
 
 	
 	-- this needs to be initialized once after a context has been created..
