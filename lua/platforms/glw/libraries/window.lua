@@ -41,8 +41,8 @@ function Window(width, height, title)
 	height = height or 440
 	title = title or ""
 	
-	glfw.WindowHint(e.GLFW_CONTEXT_VERSION_MAJOR, 4)
-	glfw.WindowHint(e.GLFW_CONTEXT_VERSION_MINOR, 3)
+	--glfw.WindowHint(e.GLFW_CONTEXT_VERSION_MAJOR, 4)
+	--glfw.WindowHint(e.GLFW_CONTEXT_VERSION_MINOR, 3)
 	glfw.WindowHint(e.GLFW_SAMPLES, 4)
 
 	local ptr = glfw.CreateWindow(width, height, title, nil, nil)
