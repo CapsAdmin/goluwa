@@ -1,7 +1,7 @@
 #version 330
 
-uniform mat4 proj_mat;
-uniform mat4 view_mat;
+uniform mat4 camera_matrix;
+uniform mat4 model_matrix;
 
 uniform float time;
 
@@ -22,5 +22,5 @@ void main()
 	vertex_pos = position;
 				
 	// multiply before passing to shader???
-	gl_Position = proj_mat * view_mat * vec4(vertex_pos, 1.0);
+	gl_Position = camera_matrix * model_matrix * vec4(vertex_pos, 1.0);
 }
