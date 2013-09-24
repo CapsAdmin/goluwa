@@ -1,11 +1,13 @@
 if not gl then
 	curses = include("ffi_binds/curses/init.lua")
 
-	gl = include("ffi_binds/gl.lua")
-	al = include("ffi_binds/al/al.lua")
-	alc = include("ffi_binds/al/alc.lua")
+	gl = include("ffi_binds/gl/gl.lua")
 	glu = include("ffi_binds/glu.lua")
 	glfw = include("ffi_binds/glfw.lua")
+	
+	al = include("ffi_binds/al/al.lua")
+	alc = include("ffi_binds/al/alc.lua")
+	
 	freeimage = include("ffi_binds/freeimage.lua")
 	freetype = include("ffi_binds/freetype.lua")
 	ftgl = include("ffi_binds/ftgl.lua")
