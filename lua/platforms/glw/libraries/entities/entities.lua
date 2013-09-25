@@ -34,6 +34,16 @@ function entities.Register(META, name)
 	local _, name = class.Register(META, "entity", name)
 	
 	entities.is_keys["Is"..name:gsub("^.", function(s) return s:upper() end)] = name
+	
+	-- update entity functions only
+	-- updating variables might mess things up
+	for key, ent in pairs(entities.GetAllByClass(name)) do
+		for k, v in pairs(META) do
+			if type(v) == "function" then
+				ent[k] = v
+			end
+		end
+	end	
 end
 	
 
