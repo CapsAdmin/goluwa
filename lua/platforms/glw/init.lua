@@ -87,11 +87,18 @@ function main()
 		
 			last_time = time
 			
-			local fps = 1/dt
+			local fps = dt
 			smooth_fps = smooth_fps + ((fps - smooth_fps) * dt)
 							
-			system.SetWindowTitle(("FPS: %i"):format(smooth_fps), 1)
-									
+			system.SetWindowTitle(("FPS: %i"):format(1/smooth_fps), 1)
+			
+			if 1/smooth_fps < 30 then
+				system.SetWindowTitle(("MS: %f"):format(smooth_fps*100), 3)
+			else
+				system.SetWindowTitle(nil, 3)
+			end
+			
+
 			if gl.call_count then
 				system.SetWindowTitle(("gl calls: %i"):format(gl.call_count), 2)
 				gl.call_count = 0
