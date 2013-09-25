@@ -12,4 +12,5 @@ include("mesh_util.lua")
 include("window.lua")
 include("surface.lua")
 
+include("cvars.lua")
 include("globals.lua")
