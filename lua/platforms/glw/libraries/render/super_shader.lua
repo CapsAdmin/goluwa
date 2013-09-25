@@ -38,7 +38,7 @@ do
 		
 		mat4 = "gl.UniformMatrix4fv(%i, 1, 0, val)",
 		
-		texture = "gl.ActiveTexture("..e.GL_TEXTURE0.." + val.Channel) gl.BindTexture(val.format.type, val.id) gl.Uniform1i(%i, val.Channel)", 
+		texture = "render.BindTexture(val, %i)", 
 	} 
 	
 	local gl_enum_types = {
@@ -213,7 +213,7 @@ void main()
 			gl.VertexAttribPointer(location, data.arg_count, data.enum, false, data.stride, data.type_stride)
 		end
 	end
-
+	
 	function META:CreateVertexBuffer(data)
 		local buffer = render.CreateVertexBufferForSuperShader(self, data)
 
@@ -226,10 +226,10 @@ void main()
 		local vbo = {Type = "VertexBuffer", id = id, length = #data, IsValid = function() return true end}
 
 		vbo.Draw = function(vbo)
-			gl.BindBuffer(e.GL_ARRAY_BUFFER, vbo.id)
+			render.BindArrayBuffer(vbo.id) 
 			
 			if self.unrolled_bind_func then
-				gl.UseProgram(self.program_id)
+				render.UseProgram(self.program_id)
 				self.unrolled_bind_func()
 				
 			else
@@ -523,7 +523,7 @@ void main()
 				local func, err = loadstring(lua)
 				if not func then error(err, 2) end
 				self.unrolled_bind_func = func
-				setfenv(func, {gl = gl, self = self, loc = prog, type = type})
+				setfenv(func, {gl = gl, self = self, loc = prog, type = type, render = render})
 				
 				render.active_super_shaders[mat_id] = self
 

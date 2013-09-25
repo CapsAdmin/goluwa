@@ -269,6 +269,8 @@ do -- orientation
 	end
 end
 
+local c = Color()
+
 function surface.Color(r,g,b,a)
 	R = r
 	G = g
@@ -277,7 +279,12 @@ function surface.Color(r,g,b,a)
 		A = a * A2
 	end
 	
-	surface.rectmesh.global_color = Color(R,G,B,A)
+	c.r = R
+	c.g = G
+	c.b = B
+	c.a = A
+	
+	surface.rectmesh.global_color = c
 end
 
 function surface.SetAlphaMultiplier(a)

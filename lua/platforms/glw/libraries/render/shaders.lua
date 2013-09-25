@@ -45,3 +45,34 @@ function render.CreateProgram(...)
 	
 	return program
 end
+
+local last
+
+function render.UseProgram(id)
+	if last ~= id then
+		gl.UseProgram(id)
+		last = id
+	end
+end
+
+local last
+
+function render.BindArrayBuffer(id)
+	if last ~= id then
+		gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
+		last = id
+	end
+end
+
+local last
+local last2 
+
+function render.BindTexture(tex, location)
+	if last ~= location or last2 ~= tex then
+		gl.ActiveTexture(e.GL_TEXTURE0 + tex.Channel) 
+		gl.BindTexture(tex.format.type, tex.id) 
+		gl.Uniform1i(location, tex.Channel)
+		last = location
+		last2 = tex
+	end
+end
