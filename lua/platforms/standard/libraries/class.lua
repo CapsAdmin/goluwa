@@ -155,7 +155,7 @@ do -- helpers
 
 		function tbl.Register(META, name)
 			META.TypeBase = base
-			class.Register(META, type, name)
+			return class.Register(META, type, name)
 		end
 		
 		function tbl.GetRegistered(name)
@@ -254,6 +254,10 @@ do -- helpers
 					
 					obj:OnUnParent(self)
 					
+					if obj.Remove then
+						obj:Remove()
+					end
+					
 					return
 				end
 			end
@@ -279,7 +283,7 @@ do -- helpers
 
 		function META:RemoveChildren()
 			for key, obj in pairs(self.Children) do
-				obj:RemoveChild()
+				self:RemoveChild(obj)
 			end
 			self.Children = {}
 		end
