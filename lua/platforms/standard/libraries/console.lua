@@ -205,11 +205,23 @@ do -- console vars
 
 		console.vars[name] = console.vars[name] or def
 
+		local T = type(def)
+		
 		local func = function(line, value)
 			if not value then
-				logf("%s = %s", name, luadata.ToString(console.vars[name]))
+				logf("%s = %s", name, luadata.ToString(luadata.FromString(console.vars[name] or def)))
 			else
+					
+				if T ~= "string" then
+					value = luadata.FromString(value)
+				end
+			
+				if type(value) ~= T then
+					value = def
+				end
+			
 				console.SetVariable(name, value)
+				
 				if callback then
 					callback(value)
 				end
