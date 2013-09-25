@@ -69,7 +69,7 @@ function luadata.ToString(var, key)
 end
 
 function luadata.FromString(str)
-	local func = loadstring("return " .. str .. "luadata")
+	local func = assert(loadstring("return " .. str))
 	return func()
 end
 
