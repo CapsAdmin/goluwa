@@ -61,7 +61,7 @@ function render.SetPerspective(fov, nearz, farz, ratio)
 	nearz = nearz or render.nearz
 	farz = farz or render.farz
 	ratio = ratio or render.w/render.h
-	
+		
 	glu.Perspective(fov, ratio, nearz, farz)
 end
 
@@ -104,22 +104,23 @@ do -- camera helpers
 	
 	function render.Start3D(pos, ang, fov, nearz, farz, ratio)
 		render.UseCameraMatrix()
-		
-		render.SetPerspective(fov, nearz, farz, ratio)
+			gl.LoadIdentity()
 			
-		if ang then
-			render.Rotate(ang.p, 1, 0, 0)
-			render.Rotate(ang.y, 0, 1, 0)
-			render.Rotate(ang.r, 0, 0, 1)
-		end
-		
-		if pos then
-			render.Translate(pos.x, pos.y, pos.z)	
-			render.cam_pos = pos
-		end
+			render.SetPerspective(fov, nearz, farz, ratio)
+				
+			if ang then
+				render.Rotate(ang.p, 1, 0, 0)
+				render.Rotate(ang.y, 0, 1, 0)
+				render.Rotate(ang.r, 0, 0, 1)
+			end
+			
+			if pos then
+				render.Translate(pos.x, pos.y, pos.z)	
+				render.cam_pos = pos
+			end
 
-		gl.Enable(e.GL_DEPTH_TEST)		
-		
+			gl.Enable(e.GL_DEPTH_TEST)		
+			
 		render.UseModelMatrix()	
 	end
 end
