@@ -14,7 +14,6 @@ local SHADER = {
 	
 	fragment = { 
 		uniform = {
-			add_color = 0,
 			global_color = Color(1, 1, 1, 1), 
 			texture = "sampler2D",
 		},
@@ -29,16 +28,7 @@ local SHADER = {
 
 			void main()
 			{	
-				if (add_color > 0.5)
-				{
-					frag_color = texel * color;
-					frag_color.xyz = frag_color.xyz + global_color.xyz;
-					frag_color.w = frag_color.w * global_color.w;
-				}
-				else
-				{	
-					frag_color = texel * color * global_color;
-				}
+				frag_color = texel * color * global_color;
 			}
 		]]
 	} 
@@ -51,7 +41,7 @@ function render.CreateMesh2D(data)
 	
 	mesh.model_matrix = render.GetModelMatrix
 	mesh.camera_matrix = render.GetCameraMatrix
-
+	
 	return mesh
 end
 
