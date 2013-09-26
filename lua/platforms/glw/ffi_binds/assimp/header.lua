@@ -1,7 +1,11 @@
-ffi.cdef[[
+return [[
 typedef struct{
 	float x,y;
 }aiVector2D;
+
+typedef struct {
+	float w, x, y, z;	
+}aiQuaternion;
 
 typedef struct{
 
@@ -31,6 +35,20 @@ typedef struct
 
 typedef struct
 {
+	unsigned char b,g,r,a;
+} aiTexel;
+
+typedef struct
+{
+	unsigned int mWidth;
+	unsigned int mHeight;
+	char achFormatHint[4];
+	aiTexel* pcData;
+} aiTexture;
+
+
+typedef struct
+{
 } aiFile;
 
 typedef struct {
@@ -46,6 +64,24 @@ typedef struct {
 	float b1, b2, b3;
 	float c1, c2, c3;
 }aiMatrix3x3;
+
+typedef struct
+{
+	double mTime;
+	aiVector3D mValue;
+} aiVectorKey;
+
+typedef struct
+{
+	double mTime;
+	aiQuaternion mValue;
+} aiQuatKey;
+ 
+typedef struct 
+{
+	double mTime;
+	unsigned int mValue;
+}aiMeshKey; 
 
  
 typedef enum
@@ -100,16 +136,16 @@ typedef struct
 	aiUserData UserData;
 }aiFile;
 
-enum aiDefaultLogStream	
+typedef enum	
 {
 	aiDefaultLogStream_FILE = 0x1,
 	aiDefaultLogStream_STDOUT = 0x2,
 	aiDefaultLogStream_STDERR = 0x4,
 	aiDefaultLogStream_DEBUGGER = 0x8,
 	_AI_DLS_ENFORCE_ENUM_SIZE = 0x7fffffff 
-};
+} aiDefaultLogStream;
 
-struct aiMemoryInfo
+typedef struct
 {
 	unsigned int textures;
 	unsigned int materials;
@@ -119,9 +155,9 @@ struct aiMemoryInfo
 	unsigned int cameras;
 	unsigned int lights;
 	unsigned int total;
-};
+} aiMemoryInfo;
 
-struct aiPropertyStore { char sentinel; };
+typedef struct { char sentinel; } aiPropertyStore;
 typedef bool aiBool;
 
 typedef void (*aiLogStreamCallback)(const char* /* message */, char* /* user */);
@@ -197,7 +233,7 @@ typedef enum
     aiTextureType_LIGHTMAP = 0xA,
     aiTextureType_REFLECTION = 0xB,
     aiTextureType_UNKNOWN = 0xC,
-}aiTextureType;
+}aiTextureType; 
 enum aiShadingMode
 {
     aiShadingMode_Flat = 0x1,
@@ -305,30 +341,97 @@ aiReturn aiGetMaterialTexture(const aiMaterial* mat,
 	unsigned int* flags
 ); 
 
-struct aiExportFormatDesc
+typedef struct
 {
 	const char* id; 
 	const char* description;
 	const char* fileExtension;
-};
+} aiExportFormatDesc; 
 
-typedef struct{} aiNode;
-typedef struct{} aiMesh;
-typedef struct{} aiMaterial;
-typedef struct{} aiAnimation;
-typedef struct{} aiTexture;
-typedef struct{} aiLight;
-typedef struct{} aiCamera;
-typedef struct{} aiVertexWeight;
-typedef struct{} aiFileIO;
-typedef struct{} aiPropertyStore; 
-typedef struct{} aiLogStream; 
-typedef struct{} aiDefaultLogStream; 
-typedef struct{} aiReturn; 
-typedef struct{} aiMemoryInfo; 
-typedef struct{} aiQuaternion; 
-typedef struct{} aiExportFormatDesc;
-typedef struct{} aiExportDataBlob;
+typedef struct
+{
+	aiString mName;
+	aiVector3D mPosition;
+	aiVector3D mUp;
+	aiVector3D mLookAt;
+	float mHorizontalFOV;
+	float mClipPlaneNear;
+	float mClipPlaneFar;
+	float mAspect;
+} aiCamera;
+
+
+
+typedef struct _aiNode;
+typedef struct _aiNode aiNode;
+
+typedef struct aiMaterial;
+typedef struct aiAnimation;
+typedef struct aiTexture;
+typedef struct aiLight;
+typedef struct aiVertexWeight;
+typedef struct aiFileIO;
+typedef struct aiLogStream; 
+typedef struct aiReturn; 
+typedef struct aiMemoryInfo; 
+typedef struct aiQuaternion; 
+typedef struct aiExportDataBlob;
+
+
+typedef struct
+{
+	unsigned int mNumIndices;
+	unsigned int* mIndices;   
+}aiFace;
+ 
+typedef struct
+{
+	unsigned int mVertexId;
+	float mWeight;
+}aiVertexWeight;
+
+
+typedef struct
+{
+	aiString mName;
+	unsigned int mNumWeights;
+	aiVertexWeight* mWeights;
+	aiMatrix4x4 mOffsetMatrix;
+}aiBone;
+
+
+typedef struct
+{
+	aiVector3D* mVertices;
+	aiVector3D* mNormals;
+	aiVector3D* mTangents;
+	aiVector3D* mBitangents;
+	aiColor4D* mColors[8];
+	aiVector3D* mTextureCoords[8];
+	unsigned int mNumVertices;
+} aiAnimMesh;
+
+
+typedef struct
+{
+	unsigned int mPrimitiveTypes;
+	unsigned int mNumVertices;
+	unsigned int mNumFaces;
+	aiVector3D* mVertices;
+	aiVector3D* mNormals;
+	aiVector3D* mTangents;
+	aiVector3D* mBitangents;
+	aiColor4D* mColors[8];
+	aiVector3D* mTextureCoords[8];
+	unsigned int mNumUVComponents[8];
+	aiFace* mFaces;
+	unsigned int mNumBones;
+	aiBone** mBones;
+	unsigned int mMaterialIndex;
+	aiString mName;
+	unsigned int mNumAnimMeshes;
+	aiAnimMesh** mAnimMeshes;
+}aiMesh;
 
 typedef struct
 {
@@ -338,9 +441,49 @@ typedef struct
 	unsigned int mNumChildren;
 	aiNode** mChildren;
 	unsigned int mNumMeshes;
-	unsigned int* mMeshes;
-}aiNode;
+	aiMesh** mMeshes;
+}_aiNode;
 
+
+typedef enum
+{
+	aiAnimBehaviour_DEFAULT  = 0x0,  
+	aiAnimBehaviour_CONSTANT = 0x1,
+	aiAnimBehaviour_LINEAR   = 0x2,
+	aiAnimBehaviour_REPEAT   = 0x3,
+} aiAnimBehaviour;
+
+typedef struct 
+{
+	aiString mNodeName;
+	unsigned int mNumPositionKeys;
+	aiVectorKey* mPositionKeys;
+	unsigned int mNumRotationKeys;
+	aiQuatKey* mRotationKeys;
+	unsigned int mNumScalingKeys;
+	aiVectorKey* mScalingKeys;
+	
+	aiAnimBehaviour mPreState;
+	aiAnimBehaviour mPostState;
+} aiNodeAnim;
+
+typedef struct
+{
+	aiString mName;
+	unsigned int mNumKeys;
+	aiMeshKey* mKeys;
+} aiMeshAnim; 
+
+typedef struct
+{
+	aiString mName;
+	double mDuration;
+	double mTicksPerSecond;
+	unsigned int mNumChannels;
+	aiNodeAnim** mChannels;
+	unsigned int mNumMeshChannels;
+	aiMeshAnim** mMeshChannels;
+} aiAnimation;
 
 typedef struct
 {
@@ -390,38 +533,6 @@ enum aiPostProcessSteps
 	aiProcess_Debone  = 0x4000000
 };
 
-struct aiCamera
-{
-	aiString mName;
-	aiVector3D mPosition;
-	aiVector3D mUp;
-	aiVector3D mLookAt;
-	float mHorizontalFOV;
-	float mClipPlaneNear;
-	float mClipPlaneFar;
-	float mAspect;
-};
-
-typedef struct
-{
-	unsigned int mNumIndices;
-	unsigned int* mIndices;   
-}aiFace;
-
-typedef struct
-{
-	unsigned int mVertexId;
-	float mWeight;
-}aiVertexWeight;
-
-typedef struct
-{
-	aiString mName;
-	unsigned int mNumWeights;
-	aiVertexWeight* mWeights;
-	aiMatrix4x4 mOffsetMatrix;
-}aiBone;
-
 enum aiPrimitiveType
 {
 	aiPrimitiveType_POINT       = 0x1,
@@ -429,38 +540,6 @@ enum aiPrimitiveType
 	aiPrimitiveType_TRIANGLE    = 0x4,
 	aiPrimitiveType_POLYGON     = 0x8,
 };
-
-typedef struct
-{
-	aiVector3D* mVertices;
-	aiVector3D* mNormals;
-	aiVector3D* mTangents;
-	aiVector3D* mBitangents;
-	aiColor4D* mColors[8];
-	aiVector3D* mTextureCoords[8];
-	unsigned int mNumVertices;
-} aiAnimMesh;
-
-typedef struct
-{
-	unsigned int mPrimitiveTypes;
-	unsigned int mNumVertices;
-	unsigned int mNumFaces;
-	aiVector3D* mVertices;
-	aiVector3D* mNormals;
-	aiVector3D* mTangents;
-	aiVector3D* mBitangents;
-	aiColor4D* mColors[8];
-	aiVector3D* mTextureCoords[8];
-	unsigned int mNumUVComponents[8];
-	aiFace* mFaces;
-	unsigned int mNumBones;
-	aiBone** mBones;
-	unsigned int mMaterialIndex;
-	aiString mName;
-	unsigned int mNumAnimMeshes;
-	aiAnimMesh** mAnimMeshes;
-}aiMesh;
 
 enum aiImporterFlags 
 {
@@ -482,19 +561,6 @@ struct aiImporterDesc
 	unsigned int mMaxMajor;
 	unsigned int mMaxMinor;
 	const char* mFileExtensions;
-};
-
-typedef struct
-{
-	unsigned char b,g,r,a;
-} aiTexel;
-
-struct aiTexture
-{
-	unsigned int mWidth;
-	unsigned int mHeight;
-	char achFormatHint[4];
-	aiTexel* pcData;
 };
 
 const aiScene* aiImportFile( const char* pFile, unsigned int pFlags);
@@ -533,84 +599,18 @@ const aiExportFormatDesc* aiGetExportFormatDescription( size_t pIndex);
 void aiCopyScene(const aiScene* pIn, aiScene** pOut);
 aiReturn aiExportScene(const aiScene* pScene, const char* pFormatId, const char* pFileName,  unsigned int pPreprocessing);
 aiReturn aiExportSceneEx(const aiScene* pScene,const char* pFormatId, const char* pFileName, aiFileIO* pIO,  unsigned int pPreprocessing );
-	
+
+typedef struct _aiExportDataBlob;
+typedef struct _aiExportDataBlob aiExportDataBlob;
+
 typedef struct 
 {
 	size_t size; 
 	void* data;
 	aiString name;
 	aiExportDataBlob * next;
-}aiExportDataBlob; 
+}_aiExportDataBlob; 
 
 const aiExportDataBlob* aiExportSceneToBlob( const aiScene* pScene, const char* pFormatId,  unsigned int pPreprocessing );
 void aiReleaseExportBlob( const aiExportDataBlob* pData );
 ]]
-
---[[
-
-
-#define aiProcess_ConvertToLeftHanded ( \
-	aiProcess_MakeLeftHanded     | \
-	aiProcess_FlipUVs            | \
-	aiProcess_FlipWindingOrder   | \
-	0 ) 
-
-
-#define aiProcessPreset_TargetRealtime_Fast ( \
-	aiProcess_CalcTangentSpace		|  \
-	aiProcess_GenNormals			|  \
-	aiProcess_JoinIdenticalVertices |  \
-	aiProcess_Triangulate			|  \
-	aiProcess_GenUVCoords           |  \
-	aiProcess_SortByPType           |  \
-	0 )
-
-#define aiProcessPreset_TargetRealtime_Quality ( \
-	aiProcess_CalcTangentSpace				|  \
-	aiProcess_GenSmoothNormals				|  \
-	aiProcess_JoinIdenticalVertices			|  \
-	aiProcess_ImproveCacheLocality			|  \
-	aiProcess_LimitBoneWeights				|  \
-	aiProcess_RemoveRedundantMaterials      |  \
-	aiProcess_SplitLargeMeshes				|  \
-	aiProcess_Triangulate					|  \
-	aiProcess_GenUVCoords                   |  \
-	aiProcess_SortByPType                   |  \
-	aiProcess_FindDegenerates               |  \
-	aiProcess_FindInvalidData               |  \
-	0 )
-
-
-#define aiProcessPreset_TargetRealtime_MaxQuality ( \
-	aiProcessPreset_TargetRealtime_Quality   |  \
-	aiProcess_FindInstances                  |  \
-	aiProcess_ValidateDataStructure          |  \
-	aiProcess_OptimizeMeshes                 |  \
-	aiProcess_Debone						 |  \
-	0 )
-	
-	
-#define AI_SCENE_FLAGS_INCOMPLETE	0x1
-#define AI_SCENE_FLAGS_VALIDATED	0x2
-#define AI_SCENE_FLAGS_VALIDATION_WARNING  	0x4
-#define AI_SCENE_FLAGS_NON_VERBOSE_FORMAT  	0x8
-#define AI_SCENE_FLAGS_TERRAIN 0x10
-]]
-
-local module = ffi.load("assimp")
-
-local assimp = {}
-
-function assimp.Decode(data)
-	
-	local data = module.aiImportFileFromMemory(data, #data, flags or 0, hint or "")
-		
-	if data == nil then
-		return false, ffi.string(module.aiGetErrorString())
-	end
-		
-	return data
-end
-
-local scene = assimp.Decode(vfs.Read("models/hair27.obj"))
---print(ffi.cast("aiMesh", ffi.cast("aiScene *", scene.mMeshes)[0]).mNumFaces)
