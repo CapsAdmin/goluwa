@@ -36,6 +36,9 @@ include("libraries/render/init.lua")
 -- high level implementation of OpenAl
 include("libraries/audio.lua")
 
+-- high level implementation of render 3d mesh
+include("libraries/model.lua")
+
 -- high level implementation of luasocket
 include("libraries/network/init.lua")
 

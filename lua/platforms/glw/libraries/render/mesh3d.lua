@@ -69,22 +69,8 @@ local SHADER = {
 
 function render.CreateMesh3D(data)
 	render.mesh_3d_shader = render.mesh_3d_shader or render.CreateSuperShader("mesh_3d", SHADER)
-	
-	local mesh
-	
-	if type(data) == "string" then
-	
-		data = vfs.Read(data, "b")
-		mesh = render.mesh_3d_shader:CreateVertexBuffer()
 		
-		utilities.ParseModel(data, function(data)
-			render.mesh_3d_shader:CreateVertexBuffer(data, mesh)
-		end)
-		
-	elseif type(data) == "table" then	
-	
-		mesh = render.mesh_3d_shader:CreateVertexBuffer(data)
-	end
+	local mesh = render.mesh_3d_shader:CreateVertexBuffer(data)
 	
 	mesh.model_matrix = render.GetModelMatrix
 	mesh.camera_matrix = render.GetCameraMatrix

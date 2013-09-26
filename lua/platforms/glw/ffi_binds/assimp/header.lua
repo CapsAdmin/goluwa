@@ -282,20 +282,12 @@ typedef struct
     char* mData;
 }aiMaterialProperty;
 
-
 typedef struct
 {
     aiMaterialProperty** mProperties;
     unsigned int mNumProperties;
     unsigned int mNumAllocated;
 }aiMaterial;
-
-typedef struct
-{
-    aiMaterialProperty** mProperties;
-    unsigned int mNumProperties;
-    unsigned int mNumAllocated;
-}aiMaterialaiMaterial;
 
 aiReturn aiGetMaterialProperty(
 	 const aiMaterial* pMat, 
