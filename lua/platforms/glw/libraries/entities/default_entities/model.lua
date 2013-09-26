@@ -14,28 +14,32 @@ function META:SetMeshPath(path)
 	local str = vfs.Read("models/" .. path)
 	
 	utilities.ParseObj(str, function(data)
-		self.Mesh = Mesh3D(data)
+		if self:IsValid() then
+			self.Mesh = Mesh3D(data)
+		end
 	end, true)
 end
 
 function META:SetTexturePath(path)
 	self.TexturePath = path
 	self.Texture = Image("textures/" .. path)
-end
+end 
 
-function META:Draw(...)		
-	render.PushMatrix(self.Pos, self.Angles, self.Scale * self.Size)
-		if self.Mesh:IsValid() then 				
+function META:SetScale(v) self.Scale = v self.temp_scale = v * self.Size end
+function META:SetSize(v) self.Size = v self.temp_scale = v * self.Scale end
+
+function META:Draw()		
+	render.PushMatrix(self.Pos, self.Angles, self.temp_scale)
+		if self.Mesh:IsValid() then		
 			if self.Texture:IsValid() then
 				self.Mesh.texture = self.Texture
 			end
-			
-			self.Mesh:Draw(...)
+			self.Mesh:Draw()
 		end
 		
 		for _, ent in pairs(self.Children) do
 			if ent.Draw then
-				ent:Draw(...)
+				ent:Draw()
 			end
 		end
 	render.PopMatrix()
