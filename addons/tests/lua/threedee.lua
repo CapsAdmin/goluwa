@@ -57,14 +57,17 @@ local function calc_camera(dt)
 		cam_ang.y = cam_ang.y + speed
 	end  
 end        
- 
+  
 entities.world_entity:RemoveChildren() 
 
 local obj = Entity("model")
 obj:SetPos(Vec3(5,0,0))
-obj:SetMeshPath("face.obj")
-obj:SetTexturePath("face1.png") 
+obj:SetModel(Model("spider.obj"))
 
+local obj = Entity("model")
+obj:SetPos(Vec3(5,0,0))
+obj:SetModel(Model("WusonOBJ.obj"))
+ 
 window.SetMouseTrapped(true)
      
 event.AddListener("OnDraw3D", "gl", function(dt)
