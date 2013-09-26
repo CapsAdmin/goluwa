@@ -3,9 +3,10 @@ function render.CreateMatrices()
 	render.model_matrix = ffi.new("float[16]")
 	
 	render.cam_pos = Vec3(0,0,0)
+	render.cam_ang = Ang3(0,0,0)
+	render.fov = 75 
 	render.farz = 32000
 	render.nearz = 0.1
-	render.fov = 75 
 end
 
 
@@ -77,6 +78,12 @@ end
 
 do -- camera helpers
 	
+	function render.SetCam(pos, ang, fov)
+		if pos then render.cam_pos = pos end
+		if ang then render.cam_ang = ang end
+		if fov then render.cam_fov = fov end
+	end
+	
 	-- useful for shaders
 	function render.GetCamPos()
 		return render.cam_pos
@@ -107,12 +114,21 @@ do -- camera helpers
 		render.UseCameraMatrix()
 			render.LoadIdentity()
 			
+			pos = pos or render.cam_pos
+			ang = ang or render.cam_ang
+			fov = fov or render.cam_fov
+			
 			render.SetPerspective(fov, nearz, farz, ratio)
+				
+			if fov then
+				render.cam_fov = fov
+			end
 				
 			if ang then
 				render.Rotate(ang.p, 1, 0, 0)
 				render.Rotate(ang.y, 0, 1, 0)
 				render.Rotate(ang.r, 0, 0, 1)
+				render.cam_ang = ang
 			end
 			
 			if pos then
