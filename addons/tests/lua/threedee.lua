@@ -44,30 +44,14 @@ local function calc_camera(dt)
 	end
 
 	speed = dt * 5
-  
-	if input.IsKeyDown("up") then
-		cam_ang.p = cam_ang.p - speed
-	elseif input.IsKeyDown("down") then
-		cam_ang.p = cam_ang.p + speed
-	end 
-
-	if input.IsKeyDown("left") then
-		cam_ang.y = cam_ang.y - speed
-	elseif input.IsKeyDown("right") then
-		cam_ang.y = cam_ang.y + speed
-	end  
 end        
   
 entities.world_entity:RemoveChildren() 
 
 local obj = Entity("model")
 obj:SetPos(Vec3(5,0,0))
-obj:SetModel(Model("spider.obj"))
+obj:SetModelPath("models/spider.obj")
 
-local obj = Entity("model")
-obj:SetPos(Vec3(5,0,0))
-obj:SetModel(Model("WusonOBJ.obj"))
- 
 window.SetMouseTrapped(true)
      
 event.AddListener("OnDraw3D", "gl", function(dt)
