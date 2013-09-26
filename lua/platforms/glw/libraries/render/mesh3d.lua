@@ -67,10 +67,25 @@ local SHADER = {
 	}  
 } 
 
-function render.CreateMesh3D(data)	
+function render.CreateMesh3D(data)
 	render.mesh_3d_shader = render.mesh_3d_shader or render.CreateSuperShader("mesh_3d", SHADER)
-	local mesh = render.mesh_3d_shader:CreateVertexBuffer(data)
+	
+	local mesh
+	
+	if type(data) == "string" then
+	
+		data = vfs.Read(data)
+		mesh = render.mesh_3d_shader:CreateVertexBuffer()
 		
+		utilities.ParseObj(data, function(data)
+			render.mesh_3d_shader:CreateVertexBuffer(data, mesh)
+		end, true)
+		
+	elseif type(data) == "table" then	
+	
+		mesh = render.mesh_3d_shader:CreateVertexBuffer(data)
+	end
+	
 	mesh.model_matrix = render.GetModelMatrix
 	mesh.camera_matrix = render.GetCameraMatrix
 	mesh.cam_pos = render.GetCamPos
@@ -81,4 +96,10 @@ end
 -- for reloading
 if render.mesh_3d_shader then
 	render.mesh_3d_shader = render.CreateSuperShader("mesh_3d", SHADER)
+	
+	if entities then
+		for key, ent in pairs(entities.GetAllByClass("model")) do
+			ent:SetMeshPath(ent:GetMeshPath())
+		end
+	end
 end
