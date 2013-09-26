@@ -19,10 +19,6 @@ function render.Initialize(w, h, window)
 
 	gl.Enable(e.GL_CULL_FACE)
 	
-	if render.top_left then
-		gl.CullFace(e.GL_FRONT)
-	end
-
 	gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
 	gl.PolygonMode(e.GL_FRONT_AND_BACK, e.GL_FILL)
 	
