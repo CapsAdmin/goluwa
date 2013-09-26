@@ -97,9 +97,8 @@ do -- camera helpers
 				render.Scale(1, -1 ,0)
 				render.Translate(0, -h, 0)
 			end
-		
-			gl.Disable(e.GL_DEPTH_TEST)
-			gl.CullFace(e.GL_BACK)
+			
+			gl.Disable(e.GL_DEPTH_TEST) 
 		
 		render.UseModelMatrix()
 	end
@@ -120,10 +119,9 @@ do -- camera helpers
 				render.Translate(pos.x, pos.y, pos.z)	
 				render.cam_pos = pos
 			end
-
-			gl.Enable(e.GL_DEPTH_TEST)
-			gl.CullFace(e.GL_FRONT)
 			
+			gl.Enable(e.GL_DEPTH_TEST) 
+
 		render.UseModelMatrix()	
 	end
 end

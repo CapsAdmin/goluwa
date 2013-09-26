@@ -162,7 +162,7 @@ function love.graphics.printf(text,x,y,limit,align,r, sx, sy)
 	text=string.replace(text,"\t","    ")
 	local lines=string.split(text,"\n")
 	for i=1,#lines do
-		surface.SetTextPos(x,y+(currentFont.Size*i*1.25))
+		surface.SetTextPos(x,y+(currentFont.Size*i*2.1))
 		surface.DrawText(lines[i])
 	end
 	--render.Scale(1, 1)

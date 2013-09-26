@@ -22,6 +22,9 @@ function render.Initialize(w, h, window)
 	gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
 	gl.PolygonMode(e.GL_FRONT_AND_BACK, e.GL_FILL)
 	
+	gl.Disable(e.GL_DEPTH_TEST)
+	gl.CullFace(e.GL_BACK)
+	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
 	
 	render.CreateMatrices()
