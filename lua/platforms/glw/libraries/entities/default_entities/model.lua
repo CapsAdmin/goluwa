@@ -3,6 +3,12 @@ local META = {}
 META.ClassName = "model"
 
 class.GetSet(META, "Model", NULL)
+class.GetSet(META, "ModelPath", "")
+
+function META:SetModelPath(path)
+	self.ModelPath = path
+	self:SetModel(Model(path))
+end
 
 function META:SetScale(v) self.Scale = v self.temp_scale = v * self.Size end
 function META:SetSize(v) self.Size = v self.temp_scale = v * self.Scale end

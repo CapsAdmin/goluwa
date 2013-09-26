@@ -1,7 +1,7 @@
 local SHADER = {      
 	shared = {
 		uniform = {
-			time = 2,
+			time = 0,
 		},
 	},
 	 
@@ -85,7 +85,9 @@ if render.mesh_3d_shader then
 	
 	if entities then
 		for key, ent in pairs(entities.GetAllByClass("model")) do
-			ent:SetMeshPath(ent:GetMeshPath())
+			if ent.ModelPath ~= "" then
+				ent:SetModelPath(ent.ModelPath)
+			end
 		end
 	end
 end

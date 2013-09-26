@@ -87,14 +87,17 @@ function Model(path)
 	check(path, "string")
 	
 	if false then
-		local contents, err = vfs.Read("models/" .. path, "b")
+		local contents, err = vfs.Read(path, "b")
 		if not contents then error(err, 2) end
 		
 		local models, err = utilities.ParseModel(contents)
 		if not models then error(err, 2) end
 	end
 	
-	local path = R("models/" .. path)
+	local path = R(path)
+	if not vfs.Exists(path) then
+		error(path .. " not found", 2)
+	end
 	local scene = assimp.ImportFile(path, 0)
 	
 	if not scene then
