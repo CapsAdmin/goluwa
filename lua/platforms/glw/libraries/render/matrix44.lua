@@ -88,7 +88,7 @@ do -- camera helpers
 		w = w or render.w
 		h = h or render.h
 	
-		render.UseCameraMatrix(x, y, w, h)
+		render.UseCameraMatrix()
 			render.LoadIdentity()
 			
 			render.Ortho(x,w, y,h, -1,1)
@@ -99,12 +99,14 @@ do -- camera helpers
 			end
 		
 			gl.Disable(e.GL_DEPTH_TEST)
+			gl.CullFace(e.GL_BACK)
+		
 		render.UseModelMatrix()
 	end
 	
 	function render.Start3D(pos, ang, fov, nearz, farz, ratio)
 		render.UseCameraMatrix()
-			gl.LoadIdentity()
+			render.LoadIdentity()
 			
 			render.SetPerspective(fov, nearz, farz, ratio)
 				
@@ -119,7 +121,8 @@ do -- camera helpers
 				render.cam_pos = pos
 			end
 
-			gl.Enable(e.GL_DEPTH_TEST)		
+			gl.Enable(e.GL_DEPTH_TEST)
+			gl.CullFace(e.GL_FRONT)
 			
 		render.UseModelMatrix()	
 	end
