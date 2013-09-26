@@ -75,6 +75,7 @@ do -- window meta
 
 	function META:SetMouseTrapped(b)
 		self.mouse_trapped = b
+		glfw.SetInputMode(self.__ptr, e.GLFW_CURSOR, b and e.GLFW_CURSOR_DISABLED or e.GLFW_CURSOR_NORMAL)
 	end
 
 	function META:GetMouseDelta()
@@ -83,36 +84,16 @@ do -- window meta
 	
 	local last
 	 
-	function META:UpdateMouseMove()	
-		local border_size = 140
+	function META:UpdateMouseTrap(dt)		
 		
 		if self.mouse_trapped and self:HasFocus() then
-			local size = self:GetSize() - border_size*2
-			local pos = self:GetMousePos() - border_size
+			local size = self:GetSize()
+			local pos = self:GetMousePos()
 
-			self.mouse_delta = (pos - (last or pos)) 
-					
+			self.mouse_delta = (pos - (last or pos)) * dt * 25
+			
 			last = pos
-			
-			self:ShowCursor(false)
-			
-			if pos.x > size.x then
-				self:SetMousePos(Vec2(0, pos.y) + border_size)
-				last.x = 0
-			elseif pos.x < 0 then
-				self:SetMousePos(Vec2(size.x, pos.y) + border_size)
-				last.x = size.x 
-			end 
-			
-			if pos.y > size.y then
-				self:SetMousePos(Vec2(pos.x, 0) + border_size)
-				last.y = 0
-			elseif pos.y < 0 then
-				self:SetMousePos(Vec2(pos.x, size.y) + border_size)
-				last.y = size.y
-			end	
 		else 
-			self:ShowCursor(true)
 			last = nil
 			self.mouse_delta = Vec2()
 		end 
@@ -121,8 +102,8 @@ do -- window meta
 
 	function META:OnUpdate(dt)
 		glfw.PollEvents()
-
-		self:UpdateMouseMove()	
+		
+		self:UpdateMouseTrap(dt)
 
 		render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
 
