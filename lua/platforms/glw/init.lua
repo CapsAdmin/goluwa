@@ -3,6 +3,9 @@ if not gl then
 	-- console input
 	curses = include("ffi_binds/curses/init.lua")
 	
+	-- model decoder
+	assimp = include("ffi_binds/assimp/assimp.lua")
+	
 	-- image decoder
 	freeimage = include("ffi_binds/freeimage.lua")
 	

@@ -74,12 +74,12 @@ function render.CreateMesh3D(data)
 	
 	if type(data) == "string" then
 	
-		data = vfs.Read(data)
+		data = vfs.Read(data, "b")
 		mesh = render.mesh_3d_shader:CreateVertexBuffer()
 		
-		utilities.ParseObj(data, function(data)
+		utilities.ParseModel(data, function(data)
 			render.mesh_3d_shader:CreateVertexBuffer(data, mesh)
-		end, true)
+		end)
 		
 	elseif type(data) == "table" then	
 	

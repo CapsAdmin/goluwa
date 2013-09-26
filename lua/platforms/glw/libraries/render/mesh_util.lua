@@ -5,6 +5,43 @@
    3|/	
 ]]
 
+if assimp then
+	function utilities.ParseModel(data, callback)
+		local scene = assimp.ImportFileFromMemory(data, #data, flags or 0, hint or "")
+		if scene == nil then
+			return false, ffi.string(assimp.GetErrorString())
+		end
+		
+		local out = {}
+				
+		for i = 0, scene.mNumMeshes-1 do
+			local mesh = scene.mMeshes[i]
+			for i = 0, scene.mMeshes[i].mNumVertices-1 do
+				local data = {}
+				
+				local val = mesh.mVertices[i]
+				if val then
+					data.pos = {val.x, val.y, val.z}
+				end
+				
+				local val = mesh.mNormals[i]
+				if val then
+					data.normal = {val.x, val.y, val.z}
+				end
+				
+				local val = mesh.mTextureCoords[0] and mesh.mTextureCoords[0][i]
+				if val then
+					data.uv = {val.x, val.y}
+				end
+				
+				out[#out+1] = data
+			end
+		end
+		
+		callback(out)
+	end
+end
+
 local table_insert = table.insert
 
 function utilities.ParseObj(data, callback, generate_normals)
