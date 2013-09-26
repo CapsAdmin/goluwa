@@ -17,10 +17,10 @@ function render.Initialize(w, h, window)
 	gl.Enable(e.GL_BLEND)
 	gl.Enable(e.GL_TEXTURE_2D)
 
-	--gl.Enable(e.GL_CULL_FACE)
+	gl.Enable(e.GL_CULL_FACE)
 	
 	if render.top_left then
-		--gl.CullFace(e.GL_FRONT)
+		gl.CullFace(e.GL_FRONT)
 	end
 
 	gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
