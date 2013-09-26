@@ -10,14 +10,7 @@ class.GetSet(META, "MeshPath", "")
 
 function META:SetMeshPath(path)
 	self.MeshPath = path 
-	
-	local str = vfs.Read("models/" .. path)
-	
-	utilities.ParseObj(str, function(data)
-		if self:IsValid() then
-			self.Mesh = Mesh3D(data)
-		end
-	end, true)
+	self.Mesh = Mesh3D("models/" .. path)
 end
 
 function META:SetTexturePath(path)
