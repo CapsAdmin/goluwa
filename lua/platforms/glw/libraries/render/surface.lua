@@ -25,20 +25,56 @@ function surface.Initialize()
 		ptr = ptr[0]
 		ft.ptr = ptr	
 	end
-			
-	surface.fontmesh = render.CreateMesh2D({
-		{pos = {0, 0}, uv = {0, 0}, color = {1,1,1,1}},
-		{pos = {0, 1}, uv = {0, 1}, color = {1,1,1,1}},
-		{pos = {1, 1}, uv = {1, 1}, color = {1,1,1,1}},
+				 
+	do
+		local shader = render.CreateSuperShader("glyph", {
+			fragment = {
+				uniform = {
+					smoothness = 0
+				},
+				source = [[
+					out vec4 frag_color;
 
-		{pos = {1, 1}, uv = {1, 1}, color = {1,1,1,1}},
-		{pos = {1, 0}, uv = {1, 0}, color = {1,1,1,1}},
-		{pos = {0, 0}, uv = {0, 0}, color = {1,1,1,1}},
-	})
+					void main()
+					{								
+						float mask = texture2D(texture, uv).a;
+
+						frag_color.rgb = global_color.rgb;
+						
+						mask = pow(mask, 0.75);
+				 		mask *= smoothstep(0.25, 0.75, mask);
+						mask = pow(mask, 1.25);
+						
+						frag_color.a = mask;
+					}
+				]],
+			},
+		}, "mesh_2d")
+		
+		local mesh = shader:CreateVertexBuffer({
+			{pos = {0, 0}, uv = {0, 0}, color = {1,1,1,1}},
+			{pos = {0, 1}, uv = {0, 1}, color = {1,1,1,1}},
+			{pos = {1, 1}, uv = {1, 1}, color = {1,1,1,1}},
+
+			{pos = {1, 1}, uv = {1, 1}, color = {1,1,1,1}},
+			{pos = {1, 0}, uv = {1, 0}, color = {1,1,1,1}},
+			{pos = {0, 0}, uv = {0, 0}, color = {1,1,1,1}},
+		})
+		
+		mesh.model_matrix = render.GetModelMatrix
+		mesh.camera_matrix = render.GetCameraMatrix	
+		
+		surface.fontmesh = mesh
+		surface.fontshader = shader
+	end
 
 	surface.SetFont(surface.CreateFont("default"))	
 		
 	surface.ready = true
+end
+
+if surface.ready then
+	surface.Initialize()
 end
 
 function surface.IsReady()
@@ -79,10 +115,16 @@ do -- fonts
 		
 		info = info or {}
 
-		info.path = info.path or "fonts/unifont.ttf"
-		info.size = info.size or 14
-		info.spacing = info.spacing or 0
+		info.path = info.path or "fonts/arial.ttf"
+		info.size = info.size or 14    
+		info.spacing = info.spacing or 1 
 		info.res_multiplier = info.res_multiplier or 1
+		
+		if not info.smoothness and info.size > 16 then
+			info.smoothness = 0.1
+		end
+		
+		info.smoothness = 0.01   
 
 		-- create a face from memory
 		local data = vfs.Read(info.path, "rb") 
@@ -215,9 +257,10 @@ do -- fonts
 		end 
 
 		for _, glyph in pairs(data.glyphs) do
-			surface.SetTexture(glyph.tex)
 			surface.PushMatrix(X + glyph.x, Y + glyph.y, glyph.w, glyph.h)
-				surface.fontmesh.add_color = 1
+				surface.fontmesh.texture = glyph.tex
+				surface.fontmesh.global_color = surface.rectmesh.global_color
+				surface.fontmesh.smoothness = ft.current_font.info.smoothness 
 				surface.fontmesh:Draw()
 			surface.PopMatrix()
 		end
@@ -315,7 +358,6 @@ function surface.DrawRect(x,y, w,h, a)
 		end	
 			
 		render.Scale(w,h,0)
-		surface.fontmesh.add_color = 0 -- because they share the same shader.....
 		surface.rectmesh:Draw()
 	render.PopMatrix()
 end
@@ -326,7 +368,6 @@ function surface.DrawRectEx(x,y, w,h, a, ox,oy)
 		render.Rotate(a, 0, 0, 1)
 		render.Translate(-ox, -oy,0)
 		render.Scale(w,h,0)
-		surface.fontmesh.add_color = 0 -- because they share the same shader.....
 		surface.rectmesh:Draw()
 	render.PopMatrix()
 end
