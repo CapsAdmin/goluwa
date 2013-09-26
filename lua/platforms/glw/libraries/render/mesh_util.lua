@@ -33,7 +33,7 @@ function utilities.ParseObj(data, callback, generate_normals)
 			if parts[1] == "v" and #parts >= 4 then
 				table_insert(positions, Vec3(tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])))
 			elseif parts[1] == "vt" and #parts >= 3 then
-				table_insert(texcoords, Vec2(tonumber(parts[2]), tonumber(1 - parts[3])))
+				table_insert(texcoords, Vec2(tonumber(parts[2]), tonumber(parts[3])))
 			elseif not generate_normals and parts[1] == "vn" and #parts >= 4 then
 				table_insert(normals, Vec3(tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])):GetNormalized())
 			end
