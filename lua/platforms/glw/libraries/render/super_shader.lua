@@ -192,7 +192,7 @@ void main()
 	META.Type = "super_shader"
 
 	function META:__tostring()
-		return ("super_shader[%s]"):format(self.mat_id)
+		return ("super_shader[%s]"):format(self.shader_id)
 	end
 
 	local base = e.GL_TEXTURE0
@@ -231,16 +231,21 @@ void main()
 		end
 	end
 	
-	function META:CreateVertexBuffer(data)
+	function META:CreateVertexBuffer(data, vbo_override)
+		if not data and not vbo_override then
+			return {Type = "VertexBuffer", id = gl.GenBuffer(), length = -1, IsValid = function() return true end, Draw = function() end}
+		end
+		
 		local buffer = render.CreateVertexBufferForSuperShader(self, data)
 
-		local id = gl.GenBuffer()
+		local id = vbo_override and vbo_override.id or gl.GenBuffer()
 		local size = ffi.sizeof(buffer[0]) * #data
 
 		gl.BindBuffer(e.GL_ARRAY_BUFFER, id) 
 		gl.BufferData(e.GL_ARRAY_BUFFER, size, buffer, e.GL_STATIC_DRAW)
 
-		local vbo = {Type = "VertexBuffer", id = id, length = #data, IsValid = function() return true end}
+		local vbo = vbo_override or {Type = "VertexBuffer", id = id, IsValid = function() return true end}
+		vbo.length = #data
 
 		vbo.Draw = function(vbo)
 			render.BindArrayBuffer(vbo.id) 
@@ -253,10 +258,17 @@ void main()
 				if vbo.UpdateUniforms then
 					vbo:UpdateUniforms()
 				end
+				
 				self:Bind()
 			end
 			
 			gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
+		end
+		
+		if vbo_override then
+			for key, val in pairs(self.uniforms) do
+				self[key] = vbo[key]
+			end
 		end
 
 		-- so you can do vbo.time = 0
@@ -272,7 +284,7 @@ void main()
 	local uniform_translate
 	local shader_translate
 
-	function render.CreateSuperShader(mat_id, data)
+	function render.CreateSuperShader(shader_id, data, base)
 	
 		if not shader_translate then
 			-- do this when we try to create our first
@@ -308,7 +320,22 @@ void main()
 
 			end
 		end
-
+		
+		if render.active_super_shaders[shader_id] then
+			for key, val in pairs(render.active_super_shaders) do
+				if val.base == shader_id then
+					render.CreateSuperShader(key, val.original_data, val.base)
+				end
+			end
+		end
+	
+		if base and render.active_super_shaders[base] then
+			local temp = table.copy(render.active_super_shaders[base].original_data)
+			
+			table.merge(temp, data)
+			luadata.WriteFile("hm.lua", temp)			
+			data = temp
+		end
 
 		local build = {}
 		local shared = data.shared
@@ -369,7 +396,7 @@ void main()
 				build.vertex.vtx_info = {}
 
 				do -- build and define the struct information
-					local id = mat_id
+					local id = shader_id
 					local type = "glw_vtx_atrb_" .. id
 
 					local declaration = {"struct "..type.." { "}
@@ -492,7 +519,7 @@ void main()
 				self.vtx_atrb_type = build.vertex.vtx_atrb_type
 				self.program_id = prog
 				self.uniforms = {}
-				self.mat_id = mat_id
+				self.shader_id = shader_id
 				
 				local lua = ""
 				
@@ -562,12 +589,10 @@ void main()
 				self.unrolled_bind_func = func
 				setfenv(func, {gl = gl, self = self, loc = prog, type = type, render = render})
 				
-				render.active_super_shaders[mat_id] = self
-
-				if CAPSADMIN then
-					vfs.Write("hmmm.vert", build.vertex.source)
-					vfs.Write("hmmm.frag", build.fragment.source)
-				end
+				self.original_data = data
+				self.base_shader = base
+				
+				render.active_super_shaders[shader_id] = self
 				
 				return self
 			end
