@@ -9,8 +9,8 @@ local function REMOVE_THE_NEED_FOR_THIS_FUNCTION(output)
 			found[key] = true
 		end
 	end
-
-	if found then
+	
+	if next(found) then
 		for index, struct in pairs(output) do
 			for key, val in pairs(struct) do
 				if found[key] then
@@ -138,7 +138,7 @@ void main()
 		return out
 	end
 
-	local function get_variables(type, data, append, macro)
+	local function get_variables(type, data, append, macro, layout_sort_ref)
 		local temp = {}
 
 		for key, data in pairs(translate_fields(data)) do
@@ -148,14 +148,31 @@ void main()
 				name = append .. key
 			end
 
-			temp[#temp+1] = ("%s %s %s;"):format(type, data.type, name)
+			local i = #temp+1
+			
+			if layout_sort_ref then
+				for index, data in pairs(layout_sort_ref) do
+					if data.name == key then
+						i = index
+						break
+					end
+				end
+			end
+			
+			temp[i] = ("%s %s %s;"):format(type, data.type, name)
 
 			if macro then
 				temp[#temp+1] = ("#define %s %s"):format(key, name)
 			end
 		end
-
-		return table.concat(temp, "\n")
+		
+		local ok, str = pcall(table.concat, temp, "\n")
+		
+		if not ok then
+			error("vertex_attributes fields do not match the attributes fields", 3)
+		end
+		
+		return str
 	end
 
 	local function insert(str, key, val)
@@ -303,6 +320,25 @@ void main()
 		end
 
 		if data.vertex then
+		
+			-- if vertex.attributes is defined as vertex.vertex_attributes and 
+			-- vertex.vertex_attributes doesn't exist swap them
+			if not data.vertex.vertex_attributes and data.vertex.attributes then
+				local k,v = next(data.vertex.attributes)
+				if type(v) == "table" then
+					data.vertex.vertex_attributes = data.vertex.attributes
+					data.vertex.attributes = nil
+				end
+			end 
+		
+			if not data.vertex.attributes and data.vertex.vertex_attributes then
+				data.vertex.attributes = {}
+				for k,v in pairs(data.vertex.vertex_attributes) do
+					local k,v = next(v)
+					data.vertex.attributes[k] = v					
+				end
+			end
+		
 			for shader, info in pairs(data) do
 				if shader ~= "vertex" then
 					if info.attributes then
@@ -352,6 +388,7 @@ void main()
 
 					table.insert(declaration, " };")
 					declaration = table.concat(declaration, "")
+					
 					ffi.cdef(declaration)
 
 					type = "struct " .. type
@@ -379,7 +416,7 @@ void main()
 				-- remove _ from in variables and define them
 
 				if shader == "vertex" then
-					source = insert(source, "IN", get_variables("in", table.merge(build.vertex.out, info.attributes)))
+					source = insert(source, "IN", get_variables("in", table.merge(build.vertex.out, info.attributes), nil,nil, build.vertex.vtx_info))
 					build.vertex.out = nil
 					build[shader].attributes = translate_fields(info.attributes)
 				else
@@ -504,7 +541,7 @@ void main()
 						stride = build.vertex.vtx_atrb_size,
 						type_stride = ffi.cast("void*", data.info.size * pos)
 					}
-
+					
 					pos = pos + data.info.arg_count
 				end
 				
@@ -527,6 +564,11 @@ void main()
 				
 				render.active_super_shaders[mat_id] = self
 
+				if CAPSADMIN then
+					vfs.Write("hmmm.vert", build.vertex.source)
+					vfs.Write("hmmm.frag", build.fragment.source)
+				end
+				
 				return self
 			end
 		else
