@@ -3,6 +3,13 @@ entities = entities or {}
 entities.active_entities = entities.active_entities or {}
 entities.is_keys = entities.is_keys or {}
 
+function entities.Initialize()
+	event.AddListener("OnDraw3D", "world_draw", function(dt)
+		entities.world_entity:Draw()			
+	end)
+end
+event.AddListener("RenderContextInitialized", "entities", entities.Initialize)
+
 function entities.GetAll()
 	return entities.active_entities
 end
