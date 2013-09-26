@@ -5,20 +5,17 @@ local SHADER = {
 			model_matrix = "mat4",
 		},			
 		attributes = {
-			position = "vec2",
-		},
-		vertex_attributes = {
 			{pos = "vec2"},
 			{uv = "vec2"},
 			{color = "vec4"},
 		},
-		source = "gl_Position = camera_matrix * model_matrix * vec4(position, 0.0, 1.0);"
+		source = "gl_Position = camera_matrix * model_matrix * vec4(pos, 0.0, 1.0);"
 	},
 	
 	fragment = { 
 		uniform = {
 			add_color = 0,
-			global_color = Color(1,1,1,1), 
+			global_color = Color(1, 1, 1, 1), 
 			texture = "sampler2D",
 		},
 		attributes = {

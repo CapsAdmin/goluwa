@@ -1,24 +1,21 @@
-local SHADER = {
+local SHADER = {      
 	shared = {
 		uniform = {
-			time = 0,
+			time = 2,
 		},
 	},
-	
-	vertex = {
+	 
+	vertex = { 
 		uniform = {
 			camera_matrix = "mat4",
 			model_matrix = "mat4",
 		},			
 		attributes = {
-			position = "vec3",
-		},
-		vertex_attributes = {
 			{pos = "vec3"},
 			{normal = "vec3"},
 			{uv = "vec2"},
 		},	
-		source = "gl_Position = camera_matrix * model_matrix * vec4(position, 1.0);"
+		source = "gl_Position = camera_matrix * model_matrix * vec4(pos, 1.0);"
 	},
 	
 	fragment = { 
@@ -68,7 +65,7 @@ local SHADER = {
 			}
 		]]
 	}  
-}
+} 
 
 function render.CreateMesh3D(data)	
 	render.mesh_3d_shader = render.mesh_3d_shader or render.CreateSuperShader("mesh_3d", SHADER)
@@ -80,7 +77,6 @@ function render.CreateMesh3D(data)
 	
 	return mesh
 end
-
 
 -- for reloading
 if render.mesh_3d_shader then
