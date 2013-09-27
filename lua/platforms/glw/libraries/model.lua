@@ -47,8 +47,12 @@ local function parse_scene(scene, dir)
 					sub_model.material.name = val
 				end
 				
-				if key == "tex.file" then
-					sub_model.material.path = vfs.FixPath(dir .. val:sub(2))
+				if key == "tex.file" and val then
+					if val:sub(1,1) == "." then
+						sub_model.material.path = vfs.FixPath(dir .. val:sub(2))
+					else
+						sub_model.material.path = vfs.FixPath(val)
+					end
 				end
 			end
 		end
@@ -104,8 +108,7 @@ function Model(path)
 		error(ffi.string(assimp.GetErrorString()), 2)
 	end
 	
-	models = parse_scene(scene, path:match("(.+)/"))
-	
+	models = parse_scene(scene, path:match("(.+)/"))	
 	
 	local self = setmetatable({}, META)
 	
@@ -114,7 +117,7 @@ function Model(path)
 	for i, model in pairs(models) do
 		local sub_model = {mesh = Mesh3D(model.mesh_data), name = model.name}
 		
-		if model.material then
+		if model.material and model.material.path then
 			sub_model.tex = Image(model.material.path)
 		else
 			sub_model.tex = ERROR_TEXTURE
