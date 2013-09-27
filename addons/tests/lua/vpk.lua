@@ -1,7 +1,7 @@
 local prefix = steam.GetInstallPath() .. "/SteamApps/common"
 local packs = {}
 
-print(string.format("Looking for VPKs in %q", prefix))
+logf("Looking for VPKs in %q", prefix)
 
 vfs.Traverse(prefix, function(path, mode, level)
 	if mode == "file" and path:find("_dir%.vpk$") then
@@ -9,7 +9,7 @@ vfs.Traverse(prefix, function(path, mode, level)
 	end
 end)
 
-print("Found " .. #packs .. " VPKs")
+logf("Found %i VPKs", #packs)
 
 local files = {}
 
