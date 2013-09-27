@@ -1,14 +1,5 @@
 local luadata = {}
 
-luadata.EscapeSequences = {
-	[("\a"):byte()] = [[\a]],
-	[("\b"):byte()] = [[\b]],
-	[("\f"):byte()] = [[\f]],
-	[("\t"):byte()] = [[\t]],
-	[("\r"):byte()] = [[\r]],
-	[("\v"):byte()] = [[\v]],
-}
-
 local tab = 0
 
 luadata.Types =
@@ -27,23 +18,6 @@ luadata.Types =
 		local str = luadata.Encode(var, true)
 		tab = tab - 1
 		return str
-	end,
-	["function"] = function(var, key)
-		--[[local str = "function " .. key .. "("
-		local args = {}
-
-		for i=1, math.huge do
-			local key = debug.getupvalue(var, i)
-			if key then
-				table.insert(args, key)
-			else
-				break
-			end
-		end
-
-		str = str .. table.concat(args, ", ") .. ") end"]]
-
-		return "function() end"
 	end,
 }
 
@@ -74,22 +48,20 @@ function luadata.FromString(str)
 end
 
 function luadata.Encode(tbl, __brackets)
-	local str = __brackets and "{\n" or ""
+	local str = {__brackets and "{\n" or ""}
 
 	for key, value in pairs(tbl) do
 		value = luadata.ToString(value, key)
 		key = luadata.ToString(key)
 		
 		if key and value and key ~= "__index" and value ~= _R then
-			str = str .. ("\t"):rep(tab) ..  ("[%s] = %s,\n"):format(key, value)
+			str[#str+1] = ("%s[%s] = %s,\n"):format(("\t"):rep(tab), key, value)
 		end
 	end
 
-	str = str .. ("\t"):rep(tab-1) .. (__brackets and "}" or "")
-	
-	str = str .. "\n"
+	str[#str+1] = (__brackets and "%s}\n" or "%s\n"):format(("\t"):rep(tab-1))
 
-	return str
+	return table.concat(str, "")
 end
 
 function luadata.Decode(str)
