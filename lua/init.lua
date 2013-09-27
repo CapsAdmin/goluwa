@@ -584,6 +584,8 @@ mmyy = include(libraries .. "mmyy.lua")
 system = include(libraries .. "system.lua")
 lcpp = include(libraries .. "lcpp.lua")
 profiler = include(libraries .. "profiler.lua")
+vpk = include(libraries .. "vpk.lua")
+steam = include(libraries .. "steam.lua")
 
 -- meta
 include(meta .. "function.lua")
