@@ -605,7 +605,5 @@ void main()
 end
 
 
--- for reloading
-if render.mesh_2d_shader then
-	include("mesh2d.lua")
-end
+include("platforms/glw/libraries/render/shaders/*")
+include("shaders/*")
