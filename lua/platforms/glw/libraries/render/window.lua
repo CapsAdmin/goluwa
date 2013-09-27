@@ -84,19 +84,13 @@ do -- window meta
 	
 	local last
 	 
-	function META:UpdateMouseTrap(dt)		
-		
-		if self.mouse_trapped and self:HasFocus() then
-			local size = self:GetSize()
-			local pos = self:GetMousePos()
+	function META:UpdateMouseTrap(dt)
+		local size = self:GetSize()
+		local pos = self:GetMousePos()
 
-			self.mouse_delta = (pos - (last or pos)) * dt * 25
-			
-			last = pos
-		else 
-			last = nil
-			self.mouse_delta = Vec2()
-		end 
+		self.mouse_delta = (pos - (last or pos)) * dt * 25
+		
+		last = pos
 	end
 
 
