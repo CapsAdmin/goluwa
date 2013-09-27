@@ -1,5 +1,21 @@
 local utilities = _G.utilities or {}
 
+
+
+do -- thanks etandel @ #lua!
+	function utilities.SetGCCallback(t, func)
+		func = func or t.Remove
+		
+		local ud = newproxy(true)
+		
+		debug.getmetatable(ud).__gc = function() return func(t) end
+		
+		t.__gc = ud  
+
+		return t
+	end
+end
+
 do
 	-- http://cakesaddons.googlecode.com/svn/trunk/glib/lua/glib/stage1.lua
 	local size_units = 
