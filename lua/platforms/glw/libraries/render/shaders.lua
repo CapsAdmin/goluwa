@@ -24,10 +24,11 @@ function render.CreateShader(type, source)
 	return shader
 end
 
-function render.CreateProgram(...)				
+function render.CreateProgram(...)	
+	local shaders = {...}
 	local program = gl.CreateProgram()
 	
-	for _, shader_id in pairs({...}) do
+	for _, shader_id in pairs(shaders) do
 		gl.AttachShader(program, shader_id)
 	end
 
@@ -41,6 +42,11 @@ function render.CreateProgram(...)
 		gl.DeleteProgram(program)		
 		
 		error(ffi.string(log), 2)
+	end
+	
+	for _, shader_id in pairs(shaders) do
+		gl.DetachShader(program, shader_id)
+		gl.DeleteShader(shader_id)
 	end
 	
 	return program
