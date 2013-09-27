@@ -116,23 +116,6 @@ end
 
 lovemu.errored=false
 lovemu.error_msg=""
-event.AddListener("OnDraw2D", "lovemu", function(dt)
-	love.graphics.clear()
-	lovemu.delta=dt
-	surface.SetTexture()
-	if lovemu.errored==false then
-		local err,msg=pcall(run)
-		if err==false then
-			print("\nERROR\n")
-			print(msg)
-			lovemu.errored=true
-			lovemu.error_msg=msg
-			love.errhand(lovemu.error_msg)
-		end
-	else
-		love.errhand(lovemu.error_msg)
-	end
-end)
 
 function love.load()
 end

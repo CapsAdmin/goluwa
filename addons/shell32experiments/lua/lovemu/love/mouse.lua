@@ -8,6 +8,15 @@ function love.mouse.getPosition()
 	return window.GetMousePos():Unpack()
 end
 
+function love.mouse.getX()
+	return window.GetMousePos().x
+end
+
+function love.mouse.getY()
+	return window.GetMousePos().y
+end
+
+
 local visible=false
 function love.mouse.setVisible(bool)	--partial
 	visible=bool

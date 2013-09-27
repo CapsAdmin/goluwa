@@ -98,22 +98,22 @@ function love.graphics.setColor(r,g,b,a)
 		g=g or 0
 		b=b or 0
 		a=a or 255
-		cr=r/255
-		cg=g/255
-		cb=b/255
-		ca=a/255
-		surface.Color(cr, cg, cb, ca)
+		cr=r
+		cg=g
+		cb=b
+		ca=a
+		surface.Color(cr/255, cg/255, cb/255, ca/255)
 	else
 		local tab=r
 		r=tab[1] or 0
 		g=tab[2] or 0
 		b=tab[3] or 0
 		a=tab[4] or 255
-		cr=r/255
-		cg=g/255
-		cb=b/255
-		ca=a/255
-		surface.Color(cr, cg, cb, ca)
+		cr=r
+		cg=g
+		cb=b
+		ca=a
+		surface.Color(cr/255, cg/255, cb/255, ca/255)
 	end
 end
 
@@ -180,15 +180,21 @@ end
 function love.graphics.setPoint() --partial
 end
 
+function love.graphics.newQuad() --partial
+	return {}
+end
+
+function love.graphics.drawq() --partial
+	return {}
+end
+
 function love.graphics.rectangle(mode,x,y,w,h)
 	x=x or 0
 	y=y or 0
 	w=w or 0
 	h=h or 0
-	if drawable.id then
-		surface.SetTexture(drawable)
-		surface.DrawRectEx((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y, w*lovemu.scale_x, h*lovemu.scale_y,r,ox,oy)
-	end
+	surface.SetTexture()
+	surface.DrawRectEx((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y, w*lovemu.scale_x, h*lovemu.scale_y,0,0,0)
 end
 
 function love.graphics.reset()
