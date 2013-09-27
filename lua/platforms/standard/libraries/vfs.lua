@@ -377,6 +377,23 @@ function vfs.Iterate(path, ...)
 	end
 end
 
+function vfs.Traverse(path, callback, level)
+	level = level or 1
+	local mode = lfs.symlinkattributes(path, "mode")
+	if mode then
+		local status = callback(path, mode, level)
+		if status ~= nil then return status end
+		if mode == "directory" then
+			for child in lfs.dir(path) do
+				if child ~= "." and child ~= ".." then
+					local status = vfs.Traverse(path .. "/" .. child, callback, level + 1)
+					if status ~= nil then return status end
+				end
+			end
+		end
+	end
+end
+
 function vfs.loadfile(path)
 	check(path, "string")
 	
