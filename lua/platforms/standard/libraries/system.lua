@@ -133,16 +133,37 @@ do -- registry
 
 	if WINDOWS then
 		ffi.cdef([[
-			typedef void* HKEY;
-			long RegOpenKeyEx(HKEY, const char*, unsigned, unsigned, HKEY*);
-			long RegCloseKey(HKEY);
+			typedef unsigned HKEY;
+			long __stdcall RegGetValueA(HKEY, const char*, const char*, unsigned, unsigned*, void*, unsigned*);
 		]])
 
-		--local advapi = ffi.load("advapi32")
+		local advapi = ffi.load("advapi32")
 
-		--local key = advapi.RegOpenKeyEx()
+		local HKEY_CLASSES_ROOT  = 0x80000000
+		local HKEY_CURRENT_USER = 0x80000001
+		local HKEY_LOCAL_MACHINE = 0x80000002
+		local HKEY_CURRENT_CONFIG = 0x80000005
 
-		--local path = "Software/Valve/Steam/SteamPath"
+		local RRF_RT_REG_SZ = 0x00000002
+		local RRF_RT_ANY = 0x0000ffff
+
+		local REG_NONE = 0
+		local REG_SZ = 1
+
+		local ERROR_SUCCESS = 0x0
+
+		get = function(key, key2)
+			local value = ffi.new("char[4096]")
+			local value_size = ffi.new("unsigned[1]")
+			value_size[0] = 4096
+			local grr = advapi.RegGetValueA(HKEY_CURRENT_USER, key, key2, RRF_RT_REG_SZ, nil, value, value_size)
+
+			if grr ~= ERROR_SUCCESS then
+				return
+			end
+
+			return ffi.string(value)
+		end
 	end
 	
 	if LINUX then
