@@ -33,7 +33,7 @@ function freeimage.LoadImage(data, flags)
 	local width = lib.FreeImage_GetWidth(bitmap)
 	local height = lib.FreeImage_GetHeight(bitmap)
 		
-	--lib.FreeImage_Unload(bitmap)
+	ffi.gc(bitmap, lib.FreeImage_Unload)
 	
 	return width, height, data
 end

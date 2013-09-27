@@ -1,6 +1,5 @@
 _G.audio = _G.audio or {}
 
-audio.active_objects = audio.active_objects or {}
 audio.effect_channels = audio.effect_channels or {}
 
 function audio.Open()
@@ -23,12 +22,6 @@ function audio.Open()
 end
 
 function audio.Close()	
-	for id, obj in pairs(audio.active_objects) do
-		if obj:IsValid() then	
-			obj:Remove()
-		end
-	end	 
-	
 	if audio.device then
 		alc.CloseDevice(audio.device)
 	end
@@ -273,7 +266,7 @@ local function GEN_TEMPLATE(type, ctor)
 			ctor(self, ...)
 		end
 		
-		audio.active_objects[self.id] = self
+		utilities.SetGCCallback(self)
 		
 		return self
 	end
@@ -285,9 +278,7 @@ local function GEN_TEMPLATE(type, ctor)
 	
 	local delete = al["Delete"..type.."s"]
 	local temp = ffi.new("int[1]", 0)
-	function META:Remove()
-		audio.active_objects[self.id] = nil
-		
+	function META:Remove()		
 		if self.Stop then
 			self:Stop()
 		end
@@ -296,9 +287,7 @@ local function GEN_TEMPLATE(type, ctor)
 		delete(1, temp)
 		utilities.MakeNULL(self)
 	end
-	
-	META.__gc = META.Remove
-	
+		
 	return META
 end
 

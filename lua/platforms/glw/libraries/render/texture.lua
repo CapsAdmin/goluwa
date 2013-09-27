@@ -177,15 +177,13 @@ do -- texture object
 		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
 		utilities.MakeNULL(self)
 	end
-	
-	META.__gc = META.Remove
 
 	function render.CreateTexture(width, height, buffer, format)
 		check(width, "number")
 		check(height, "number")
 		check(buffer, "nil", "cdata")
 		check(format, "table", "nil")
-		
+				
 		format = format or {}
 		
 		format.type = format.type or e.GL_TEXTURE_2D
@@ -219,6 +217,8 @@ do -- texture object
 		if buffer then
 			self:Upload(buffer)
 		end
+		
+		utilities.SetGCCallback(self)
 		
 		return self
 	end

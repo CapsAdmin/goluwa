@@ -110,6 +110,8 @@ function Model(path)
 	
 	models = parse_scene(scene, path:match("(.+)/"))	
 	
+	assimp.ReleaseImport(scene)
+	
 	local self = setmetatable({}, META)
 	
 	self.sub_models = {}
@@ -125,6 +127,6 @@ function Model(path)
 		
 		self.sub_models[i] = sub_model
 	end
-	
+		
 	return self 
 end

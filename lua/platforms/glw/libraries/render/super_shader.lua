@@ -195,6 +195,11 @@ void main()
 		return ("super_shader[%s]"):format(self.shader_id)
 	end
 
+	function META:Remove()
+		gl.DeleteProgram(self.program_id)
+		utilities.MakeNULL(self)
+	end
+	
 	local base = e.GL_TEXTURE0
 
 	function META:Bind()
@@ -264,6 +269,15 @@ void main()
 			
 			gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
 		end
+		
+		function vbo:IsValid() return true end
+		
+		function vbo:Remove()
+			gl.DeleteBuffers(1, ffi.new("GLuint[1]", vbo.id))
+			utilities.MakeNULL(self)
+		end
+		
+		utilities.SetGCCallback(vbo)
 		
 		if vbo_override then
 			for key, val in pairs(self.uniforms) do
@@ -591,8 +605,10 @@ void main()
 				
 				self.original_data = data
 				self.base_shader = base
-				
+				self.prog = prog
 				render.active_super_shaders[shader_id] = self
+				
+				utilities.SetGCCallback(self)
 				
 				return self
 			end
