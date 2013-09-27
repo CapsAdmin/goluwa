@@ -352,9 +352,8 @@ function surface.DrawRect(x,y, w,h, a)
 		render.Translate(x,y,0)
 
 		if a then
-			render.Translate(w*0.5, h*0.5,0)
 			render.Rotate(a, 0, 0, 1)
-			render.Translate(w*-0.5, h*-0.5,0)
+			--render.Translate(w*0.5, h*-0.5,0)
 		end	
 			
 		render.Scale(w,h,0)
@@ -380,13 +379,10 @@ function surface.DrawLine(x1,y1, x2,y2, w, skip_tex)
 		surface.SetWhiteTexture() 
 	end
 	
-	local dx,dy = x1-x2, y1-y2
+	local dx,dy = x2-x1, y2-y1
 	local ang = math.atan2(dx, dy)
 	local dst = math.sqrt((dx * dx) + (dy * dy))
-	
-	x1 = x1 - dx * 0.5
-	y1 = y1 - dy * 0.5
-	
+		
 	surface.DrawRect(x1, y1, w, dst, -math.deg(ang))
 end
 
