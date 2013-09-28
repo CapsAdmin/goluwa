@@ -20,6 +20,11 @@ local function parse_scene(scene, dir)
 				data.normal = {val.x, val.y, val.z}
 			end
 			
+			local val = mesh.mTangents[i]
+			if val then
+				data.tangent = {val.x, val.y, val.z}
+			end	
+						
 			local val = mesh.mTextureCoords[0] and mesh.mTextureCoords[0][i]
 			if val then
 				data.uv = {val.x, val.y}
@@ -102,7 +107,7 @@ function Model(path)
 	if not vfs.Exists(path) then
 		error(path .. " not found", 2)
 	end
-	local scene = assimp.ImportFile(path, 0)
+	local scene = assimp.ImportFile(path, 0x1)
 	
 	if not scene then
 		error(ffi.string(assimp.GetErrorString()), 2)
