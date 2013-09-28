@@ -12,10 +12,10 @@ event.AddListener("RenderContextInitialized", "skybox", function()
 	local stretch = math.pi
 
 	event.AddListener("PreDisplay", "sky", function()
-		local h = window.GetSize().h
+		local w, h = window.GetSize():Unpack()
 		local y = render.GetCamAng().p/90
 		y = (1 + y) / 2
 		surface.SetTexture(tex)
-		surface.DrawRect(0,y*-h*stretch/2, 1024, h*stretch)	
+		surface.DrawRect(0,y*-h*stretch/2, w, h*stretch)	
 	end)
 end)
