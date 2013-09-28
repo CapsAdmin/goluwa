@@ -88,6 +88,14 @@ do -- camera helpers
 	function render.GetCamPos()
 		return render.cam_pos
 	end
+	
+	function render.GetCamAng()
+		return render.cam_ang
+	end
+	
+	function render.GetCamFOV()
+		return render.cam_fov
+	end
 
 	function render.Start2D(x, y, w, h)
 		x = x or 0
