@@ -15,7 +15,7 @@ function META:Begin()
 	gl.Clear(bit.bor(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT))
 	gl.ClearColor(0, 0, 0, 1)
 
-	gl.ActiveTextureARB(e.GL_TEXTURE0_ARB)
+	gl.ActiveTextureARB(e.GL_TEXTURE0)
 	gl.Enable(e.GL_TEXTURE_2D)
 
 	gl.DrawBuffers(self.draw_buffers_size, self.draw_buffers)
@@ -26,10 +26,12 @@ function META:End()
 	gl.PopAttrib()
 end
 
-function META:GetTexture()
+function META:GetTexture(type)
 	if self.render_buffers[type] then
-		return self.render_buffers[type]
+		return self.render_buffers[type].tex
 	end
+	
+	return NULL
 end
 
 function META:Remove()
@@ -59,7 +61,7 @@ function render.CreateFrameBuffer(width, height, format)
 	self.height = height
 	self.draw_buffers = {}
 	
-	for type, info in pairs(format) do
+	for i, info in pairs(format) do
 		local id = gl.GenRenderbuffer()
 		gl.BindRenderbuffer(e.GL_RENDERBUFFER, id)
 		gl.RenderbufferStorage(e.GL_RENDERBUFFER, info.internal_format, width, height)
@@ -77,14 +79,16 @@ function render.CreateFrameBuffer(width, height, format)
 			tex_info.internal_format = info.internal_format
 			tex_info.mip_map_levels = 0
 			
-			tex = render.CreateTexture(width, height, nil, tex_info.texture_format)			
+			tex = render.CreateTexture(width, height, nil, tex_info.texture_format)
+			tex:SetChannel(i-1)
+			tex.lol = info.name
 			
 			gl.FramebufferTexture2D(e.GL_FRAMEBUFFER, info.attach, e.GL_TEXTURE_2D, tex.id, 0)
 			
 			table.insert(self.draw_buffers, info.attach)
 		end
 		
-		self.render_buffers[type] = {id = id, tex = NULL}
+		self.render_buffers[info.name] = {id = id, tex = tex}
 	end
 	
 	if gl.CheckFramebufferStatus(e.GL_FRAMEBUFFER) ~= e.GL_FRAMEBUFFER_COMPLETE then
