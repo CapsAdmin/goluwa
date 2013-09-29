@@ -558,7 +558,7 @@ void main()
 																												
 								lua = lua .. "local val = self."..key.."\n" 
 								lua = lua .. "if val then\n" 
-								lua = lua .. "if type(val) == 'function' then val = val() end\n" 
+								lua = lua .. "\tif type(val) == 'function' then val = val() end\n" 
 								lua = lua .. "\t" .. line .. "\n"
 								lua = lua .. "end\n\n"
 								
