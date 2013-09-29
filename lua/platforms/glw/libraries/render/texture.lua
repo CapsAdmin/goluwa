@@ -1,10 +1,14 @@
+local last
+local last2
 
-local base = e.GL_TEXTURE0
-function render.SetTexture(id, channel)
-	channel = channel or 0		
-
-	gl.ActiveTexture(base + channel) 
-	gl.BindTexture(e.GL_TEXTURE_2D, id)
+function render.BindTexture(tex, location)
+	if last ~= location or last2 ~= tex then
+		gl.ActiveTexture(tex.gl_channel) 
+		gl.BindTexture(tex.format.type, tex.id) 
+		gl.Uniform1i(location, tex.Channel)
+		last = location
+		last2 = tex
+	end
 end
 
 do -- texture object
@@ -18,6 +22,13 @@ do -- texture object
 	end
 	
 	class.GetSet(META, "Channel", 0)
+	META.gl_channel = e.GL_TEXTURE0
+	
+	function META:SetChannel(num)
+		self.Channel = num
+		
+		self.gl_channel = e.GL_TEXTURE0 + num
+	end
 
 	function META:GetSize()
 		return self.size
