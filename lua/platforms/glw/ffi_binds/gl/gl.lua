@@ -61,7 +61,7 @@ local function add_gl_func(name, func)
 			if str ~= "no error" then
 				local info = debug.getinfo(2)
 				
-				logf("[opengl] %q in function %s at %s:%i", str, info.name, info.short_src, info.currentline)
+				logf("[opengl] gl%s failed with %q in function %s at %s:%i", name, str, info.name, info.short_src, info.currentline)
 			end
 		end
 		
