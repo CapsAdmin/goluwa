@@ -302,7 +302,7 @@ do -- logging
 	end
 
 	function errorf(str, level, ...)
-		error(safeformat(str, level, ...))
+		error(safeformat(str, ...), level)
 	end
 
 	function warning(verbosity, ...)
