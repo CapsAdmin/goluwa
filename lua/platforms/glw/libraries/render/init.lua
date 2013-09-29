@@ -1,6 +1,7 @@
 include("render.lua")
 include("matrix44.lua")
 include("texture.lua")
+include("framebuffer.lua")
 include("shaders.lua")
 include("displaylists.lua")
 
