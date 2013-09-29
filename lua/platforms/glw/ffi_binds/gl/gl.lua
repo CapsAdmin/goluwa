@@ -18,6 +18,8 @@ local library = ffi.load(library[ffi.os])
 
 local gl = _G.gl or {}
 
+gl.lib = library
+
 local suppress = false
 
 gl.call_count = 0
@@ -88,6 +90,13 @@ end
 -- to check if extensions exist, just check if the function exists.
 -- if gl.GenBuffers then
 function gl.InitMiniGlew()
+
+	logn("parsing gl extensions..")
+	local invalid = 0
+	
+	setlogfile("unexpected_extensions")
+	
+	local time = glfw.GetTime()
 	for path in vfs.Iterate("lua/platforms/glw/ffi_binds/gl/extensions/", nil, true) do
 		local str, err = vfs.Read(path)
 		for line in str:gmatch("\t(.-)\n") do
@@ -100,12 +109,13 @@ function gl.InitMiniGlew()
 			else
 				local ret, nam, args = line:match("(.-) (gl.-) (%(.+%))")
 				
-				if not nam then
+				if not nam or nam:trim() == "" then
 					ret, nam, args = line:match("(.-) (wgl.-) (%(.+%))")
 				end
 				
 				if nam then
-					local func = gl.GetProcAddress(nam:trim())
+					nam = nam:trim()
+					local func = gl.GetProcAddress(nam)
 					if func ~= nil then
 						local ok, var = pcall(ffi.cast, ret .. "(*)" ..  args, func) 
 						if not ok and var:find("specifier expected near") then
@@ -113,8 +123,8 @@ function gl.InitMiniGlew()
 							ffi.cdef(("typedef struct %s {} %s;"):format(type, type))
 							ok, var = pcall(ffi.cast, ret .. "(*)" ..  args, func)
 							if not ok then 
-								logn(err)
-								warning("gl", "tried to declare type ", var, " but it didnt work") 
+								logn(line)
+								invalid = invalid + 1
 							else
 								add_gl_func(nam:match(".-gl(%u.+)"), var)
 							end
@@ -122,7 +132,8 @@ function gl.InitMiniGlew()
 							add_gl_func(nam:match(".-gl(%u.+)"), var)
 						end
 					else
-						warning("gl", "could not get the address of gl function %s! (%s)", name, line)
+						logn(line)
+						invalid = invalid + 1
 					end
 				end
 			end
@@ -140,6 +151,11 @@ function gl.InitMiniGlew()
 			end
 		end
 	end
+	
+	setlogfile()
+	
+	logf("glew extensions took %f ms to parse", (glfw.GetTime() - time) * 100)
+	logf("%i extensions could not be parsed. see the unexpected_extensions log for more info", invalid)
 end
 
 -- the download functions work but the idea wasn't thought out properly
