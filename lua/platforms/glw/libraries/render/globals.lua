@@ -6,6 +6,7 @@ for k,v in pairs(render) do
 end
 
 function Image(path)
+	
 	local size = 16
 	if not ERROR_TEXTURE then
 		ERROR_TEXTURE = Texture(128, 128)
@@ -25,6 +26,10 @@ function Image(path)
 	end
 	
 	local w, h, buffer = freeimage.LoadImage(img)
+	
+	if w == 0 or h == 0 then
+		errorf("could not decode %q properly (w = %i, h = %i)", 2, path, w, h)
+	end
 	
 	return Texture(w,h,buffer,{internal_format = e.GL_RGBA8})
 end
