@@ -45,10 +45,17 @@ do -- texture object
 		return buffer 
 	end
 	
+	function META:CreateBuffer()
+		local length = self.size.w * self.size.h * self.format.stride
+		local buffer = ffi.new(self.format.buffer_type.."[?]", length)
+		
+		return buffer, length
+	end
+	
 	function META:Clear(val)	
 		local f = self.format
-		local length = self.size.w * self.size.h * f.stride
-		local buffer = ffi.new(f.buffer_type.."[?]", length)
+		
+		local buffer, length = self:CreateBuffer()
 
 		ffi.fill(buffer, length, val)
 
@@ -78,6 +85,21 @@ do -- texture object
 	
 	tex_params.internal_format = nil
 	
+	function META:UpdateFormat()
+		local f = self.format		
+
+		gl.PixelStorei(e.GL_PACK_ALIGNMENT, f.stride)
+		gl.PixelStorei(e.GL_UNPACK_ALIGNMENT, f.stride)
+
+		for k,v in pairs(f) do
+			if tex_params[k] then
+				gl.TexParameterf(f.type, tex_params[k], v)
+			elseif type(k) == "number" then
+				gl.TexParameterf(f.type, k, v)
+			end
+		end
+	end
+	
 	function META:Upload(buffer, x, y, w, h, level)
 		x = x or 0
 		y = y or 0
@@ -87,26 +109,10 @@ do -- texture object
 		
 		local f = self.format		
 	
-		gl.BindTexture(f.type, self.id)
-			gl.PixelStorei(e.GL_PACK_ALIGNMENT, f.stride)
-			gl.PixelStorei(e.GL_UNPACK_ALIGNMENT, f.stride)
-
-			for k,v in pairs(f) do
-				if tex_params[k] then
-					gl.TexParameterf(f.type, tex_params[k], v)
-				elseif type(k) == "number" then
-					gl.TexParameterf(f.type, k, v)
-				end
-			end			
-			
-			gl.TexStorage2D(
-				f.type, 
-				f.mip_map_levels, 
-				f.internal_format, 
-				self.size.w + f.border_size, 
-				self.size.h + f.border_size
-			)
-			
+		gl.BindTexture(f.type, self.id)			
+				
+			self:UpdateFormat()
+		
 			if f.clear then
 				if f.clear == true then
 					self:Clear(nil)
@@ -194,6 +200,10 @@ do -- texture object
 		check(height, "number")
 		check(buffer, "nil", "cdata")
 		check(format, "table", "nil")
+		
+		if width == 0 or height == 0 then
+			errorf("bad texture size (w = %i, h = %i)", 2, width, height)
+		end
 				
 		format = format or {}
 		
@@ -225,9 +235,23 @@ do -- texture object
 			META
 		)
 		
-		if buffer then
+		gl.BindTexture(format.type, self.id)
+
+		gl.TexStorage2D(
+			format.type, 
+			format.mip_map_levels, 
+			format.internal_format, 
+			self.size.w + format.border_size, 
+			self.size.h + format.border_size
+		)
+		
+		self:UpdateFormat()
+		
+		if buffer then	
 			self:Upload(buffer)
 		end
+		
+		gl.BindTexture(format.type, 0)
 		
 		utilities.SetGCCallback(self)
 		
