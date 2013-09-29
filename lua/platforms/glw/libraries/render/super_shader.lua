@@ -39,7 +39,11 @@ do
 		mat4 = "gl.UniformMatrix4fv(%i, 1, 0, val)",
 		
 		texture = "render.BindTexture(val, %i)", 
-	} 
+	}
+	
+	unrolled_lines.vec4 = unrolled_lines.color
+	unrolled_lines.sampler2D = unrolled_lines.texture
+	unrolled_lines.float = unrolled_lines.number
 	
 	local gl_enum_types = {
 		float = e.GL_FLOAT,
@@ -347,7 +351,6 @@ void main()
 			local temp = table.copy(render.active_super_shaders[base].original_data)
 			
 			table.merge(temp, data)
-			luadata.WriteFile("hm.lua", temp)			
 			data = temp
 		end
 
@@ -536,33 +539,31 @@ void main()
 				self.shader_id = shader_id
 				
 				local lua = ""
-				
-				unrolled_lines.vec4 = unrolled_lines.color
-				unrolled_lines.sampler2D = unrolled_lines.texture
-				unrolled_lines.float = unrolled_lines.number
-								
+												
 				for shader, data in pairs(build) do
 					if data.uniform then
 						for key, val in pairs(data.uniform) do
 							if uniform_translate[val.type] or val.type == "function" then
 								local id = gl.GetUniformLocation(prog, key)
-								self.uniforms[key] = {
-									id = id,
-									func = uniform_translate[val.type],
-									info = val,
-								}
-																
-								local line = tostring(unrolled_lines[val.type] or val.type)
-								
-								line = line:format(id)
-																												
-								lua = lua .. "local val = self."..key.."\n" 
-								lua = lua .. "if val then\n" 
-								lua = lua .. "\tif type(val) == 'function' then val = val() end\n" 
-								lua = lua .. "\t" .. line .. "\n"
-								lua = lua .. "end\n\n"
-								
-								self[key] = val.default
+								if true or id > 0 then
+									self.uniforms[key] = {
+										id = id,
+										func = uniform_translate[val.type],
+										info = val,
+									}
+																	
+									local line = tostring(unrolled_lines[val.type] or val.type)
+									
+									line = line:format(id)
+																													
+									lua = lua .. "local val = self."..key.."\n" 
+									lua = lua .. "if val then\n" 
+									lua = lua .. "\tif type(val) == 'function' then val = val() end\n" 
+									lua = lua .. "\t" .. line .. "\n"
+									lua = lua .. "end\n\n"
+									
+									self[key] = val.default
+								end
 							else
 								errorf("%s: %s is an unknown uniform type", 2, key, val.type)
 							end
@@ -609,6 +610,11 @@ void main()
 				render.active_super_shaders[shader_id] = self
 				
 				utilities.SetGCCallback(self)
+				
+				if CAPSADMIN then
+					luadata.WriteFile("super_shader_debug/" .. shader_id .. "_build.lua", build)
+					vfs.Write("super_shader_debug/" .. shader_id .. "_lua_output.lua", lua)
+				end
 				
 				return self
 			end

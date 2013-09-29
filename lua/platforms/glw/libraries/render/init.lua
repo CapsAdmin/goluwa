@@ -4,6 +4,7 @@ include("texture.lua")
 include("framebuffer.lua")
 include("shaders.lua")
 include("displaylists.lua")
+include("deffered.lua")
 
 include("super_shader.lua")
 include("mesh_util.lua")

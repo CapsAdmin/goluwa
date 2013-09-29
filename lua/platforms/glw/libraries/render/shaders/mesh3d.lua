@@ -15,7 +15,15 @@ local SHADER = {
 			{normal = "vec3"},
 			{uv = "vec2"},
 		},	
-		source = "gl_Position = camera_matrix * model_matrix * vec4(pos, 1.0);"
+		source = [[
+			void main()
+			{
+				// ugh
+				//glw_out_normal = normalize(transpose(mat3(camera_matrix)) * transpose(inverse(model_matrix)) * normal);
+				
+				gl_Position = camera_matrix * model_matrix * vec4(pos, 1.0);
+			}
+		]]
 	},
 	
 	fragment = { 
@@ -29,43 +37,17 @@ local SHADER = {
 			uv = "vec2",
 		},			
 		source = [[
-			out vec4 frag_color;
-
-			vec4 texel = texture2D(texture, uv);
+			out vec4 out_data[3];
 			
-			vec3 light_direction = normalize(vec3(sin(time), sin(time * 1.234), cos(time)));
-			vec3 viewer_direction = normalize(cam_pos - pos);	
-			
-			vec3 get_specular()
-			{		
-				float factor = clamp(dot(reflect(light_direction, normal), viewer_direction) * 0.96, 0.0, 1.0);
-				float value = pow(factor, 32.0);
-				return texel.xyz * value;
-			}
-
-			vec3 get_diffuse()
+			void main() 
 			{
-				return texel.xyz * clamp(dot(normal, light_direction), 0.0, 1.0);
-			}
-
-			vec3 get_ambient()
-			{
-				return texel.xyz * 0.15;
-			}
-			
-			void main()
-			{	
-				frag_color = 
-				vec4(
-					get_ambient() +
-					get_diffuse() +
-					get_specular(), 
-					texel.w
-				);
+				out_data[0] = texture2D(texture, uv);
+				out_data[1] = out_data[0] + vec4(normal.xyz, 0);
+				out_data[2] = out_data[0] + vec4(pos.xyz, 0);				
 			}
 		]]
 	}  
-} 
+}   
 
 function render.CreateMesh3D(data)
 	render.mesh_3d_shader = render.mesh_3d_shader or render.CreateSuperShader("mesh_3d", SHADER)

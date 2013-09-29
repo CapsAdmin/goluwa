@@ -29,6 +29,8 @@ function render.Initialize(w, h, window)
 	
 	render.CreateMatrices()
 	
+	render.InitializeDeffered()
+	
 	if surface then
 		surface.Initialize()
 	end

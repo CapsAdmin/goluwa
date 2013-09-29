@@ -1,13 +1,19 @@
-local last
+local last1
 local last2
 
 function render.BindTexture(tex, location)
-	if last ~= location or last2 ~= tex then
+	if tex ~= last1 or location ~= last2 then
+
+		if tex.lol then
+			--print(tex.lol, tex.gl_channel, location)
+		end
+	
 		gl.ActiveTexture(tex.gl_channel) 
 		gl.BindTexture(tex.format.type, tex.id) 
 		gl.Uniform1i(location, tex.Channel)
-		last = location
-		last2 = tex
+
+		last1 = tex
+		last2 = location
 	end
 end
 
