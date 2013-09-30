@@ -4,7 +4,7 @@ event.AddListener("RenderContextInitialized", "fly_camera", function()
 
 	event.AddListener("OnUpdate", "fly_camera", function(dt)
 		cam_ang:Normalize()
-		local speed = dt * 10
+		local speed = dt * 100
 
 		local delta = window.GetMouseDelta() * dt / 2
 		cam_ang.p = cam_ang.p + delta.y
