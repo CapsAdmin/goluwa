@@ -385,17 +385,7 @@ function console.HandleKey(key)
 	if key == "KEY_ENTER" then
 		console.ClearInput()
 
-		if c.line ~= "" then
-			if event.Call("OnLineEntered", c.line) ~= false then
-				logn("> ", c.line)
-				
-				local res, err = console.RunString(c.line)
-
-				if not res then
-					logn(err)
-				end
-			end
-			
+		if c.line ~= "" then			
 			for key, str in pairs(history) do
 				if str == c.line then
 					table.remove(history, key)
@@ -406,10 +396,21 @@ function console.HandleKey(key)
 			luadata.WriteFile("%DATA%/cmd_history.txt", history)
 
 			c.scroll = 0
+			console.ClearInput()
+			
+			if event.Call("OnLineEntered", c.line) ~= false then
+				logn("> ", c.line)
+				
+				local res, err = console.RunString(c.line)
+
+				if not res then
+					logn(err)
+				end
+			end
+			
 			c.current_table = _G
 			c.in_function = false
 			c.line = ""
-			console.ClearInput()
 		end
 	end
 
