@@ -163,7 +163,7 @@ do -- window meta
 			end)
 		end
 		
-		event.AddListener("OnUpdate", self)
+		event.AddListener("OnUpdate", self, nil, mmyy.OnError)
 		
 		local trigger = input.SetupInputEvent("Key")
 
