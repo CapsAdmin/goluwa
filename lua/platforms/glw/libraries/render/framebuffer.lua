@@ -1,4 +1,4 @@
-gl.debug = true
+--gl.debug = true
 
 local META = {}
 META.__index = META
@@ -51,49 +51,83 @@ end
 function render.CreateFrameBuffer(width, height, format)
 	
 	local self = setmetatable({}, META)
-		
-	local id = gl.GenFramebuffer()	
-	gl.BindFramebuffer(e.GL_FRAMEBUFFER, id)
-	
+
 	self.render_buffers = {}
-	self.id = id
 	self.width = width
 	self.height = height
 	self.draw_buffers = {}
-	
+	 
 	for i, info in pairs(format) do
-		local id = gl.GenRenderbuffer()
-		gl.BindRenderbuffer(e.GL_RENDERBUFFER, id)
-		gl.RenderbufferStorage(e.GL_RENDERBUFFER, info.internal_format, width, height)
-		gl.FramebufferRenderbuffer(e.GL_FRAMEBUFFER, info.attach, e.GL_RENDERBUFFER, id)
-		
 		local tex_info = info.texture_format
+		
 		local tex = NULL
+		local id
 		
 		if tex_info then
 			tex_info.min_filter = tex_info.min_filter or e.GL_LINEAR
 			tex_info.mag_filter = tex_info.mag_filter or e.GL_LINEAR
+			
 			tex_info.wrap_s = tex_info.wrap_s or e.GL_CLAMP_TO_EDGE
 			tex_info.wrap_t = tex_info.wrap_t or e.GL_CLAMP_TO_EDGE
 			
-			tex_info.internal_format = info.internal_format
-			tex_info.mip_map_levels = 0
-			
-			tex = render.CreateTexture(width, height, nil, tex_info.texture_format)
+			tex_info.mip_map_levels = 1
+			tex_info.format = e.GL_FLOAT
+						
+			tex = render.CreateTexture(width, height, nil, tex_info)
 			tex:SetChannel(i-1)
-			tex.lol = info.name
+			id = tex.id
+		
+			tex.framebuffer_name = info.name
 			
-			gl.FramebufferTexture2D(e.GL_FRAMEBUFFER, info.attach, e.GL_TEXTURE_2D, tex.id, 0)
-			
-			table.insert(self.draw_buffers, info.attach)
+			if info.attach ~= e.GL_DEPTH_ATTACHMENT then
+				table.insert(self.draw_buffers, info.attach)
+			end
+		else
+			id = gl.GenRenderbuffer()
+			gl.BindRenderbuffer(e.GL_RENDERBUFFER, id)		
+		
+			gl.RenderbufferStorage(e.GL_RENDERBUFFER, info.internal_format, width, height)
 		end
 		
-		self.render_buffers[info.name] = {id = id, tex = tex}
+		self.render_buffers[info.name] = {id = id, tex = tex, info = info}
+	end
+
+	local id = gl.GenFramebuffer()	
+	self.id = id
+	gl.BindFramebuffer(e.GL_FRAMEBUFFER, id)
+	
+	for i, data in pairs(self.render_buffers) do
+		if data.tex:IsValid() then
+			gl.FramebufferTexture2D(e.GL_FRAMEBUFFER, data.info.attach, e.GL_TEXTURE_2D, data.id, 0)
+		else
+			gl.FramebufferRenderbuffer(e.GL_FRAMEBUFFER, data.info.attach, e.GL_RENDERBUFFER, data.id)
+		end
+		data.info = nil
 	end
 	
-	if gl.CheckFramebufferStatus(e.GL_FRAMEBUFFER) ~= e.GL_FRAMEBUFFER_COMPLETE then
+	local err = gl.CheckFramebufferStatus(e.GL_FRAMEBUFFER)
+	
+	if err ~= e.GL_FRAMEBUFFER_COMPLETE then
+		local str = "Unknown error: " .. err
+		
+		if err == e.GL_FRAMEBUFFER_UNSUPPORTED then
+			str = "format not supported"
+		elseif err == e.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT then
+			str = "incomplete attachment"
+		elseif err == e.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT then
+			str = "incomplete missing attachment"
+		elseif err == e.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS then
+			str = "attached images must have same dimensions"
+		elseif err == e.GL_FRAMEBUFFER_INCOMPLETE_FORMATS then
+			str = "attached images must have same format"
+		elseif err == e.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER then
+			str = "missing draw buffer"
+		elseif err == e.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER then
+			str = "missing read buffer"
+		end			
+		
 		self:Remove()
-		error(glu.GetLastError(), 2)
+		error(str, 2)
 	end
 	
 	self.draw_buffers_size = #self.draw_buffers
