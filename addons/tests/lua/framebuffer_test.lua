@@ -32,7 +32,7 @@ local fb = render.CreateFrameBuffer(500, 500, {
 	}
 })  
 
-local gbuff_shader = SuperShader("deffered", {
+local gbuff_shader = SuperShader("deferred", {
 	vertex = {
 		uniform = {
 			camera_matrix = "mat4",

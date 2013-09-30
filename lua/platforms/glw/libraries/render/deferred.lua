@@ -35,7 +35,7 @@ local SHADER = {
 				vec4 light = texture2D(tex_light, uv);
 				vec4 depth = texture2D(tex_depth, uv);
 	
-				vec3 light_pos = vec3(50,100,50);
+				vec3 light_pos = vec3(0,100,100);
 				vec3 light_direction = light_pos - position.xyz;
 
 				normal = normalize(normal);
@@ -48,16 +48,18 @@ local SHADER = {
 
 				vec3 half = normalize(light_direction.xyz + viewer_direction);
 				
-				out_color = dot(normal.xyz, light_direction) * diffuse + 
-				pow(max(dot(normal.xyz,half),0.0), 100);
+				out_color = 
+				dot(normal.xyz, light_direction) * 
+				diffuse + 
+				pow(max(dot(normal.xyz, half), 0.0), 100);
 								
 				
-				float fog_amount = pow(depth.a, 1000);
-				vec3 fog_color = vec3(0.5, 0.75, 1) * fog_amount;
+				float fog_amount = pow(depth.a, 15000);
+				vec3 fog_color = vec3(0.0, 0.25, 0.5);
 				
 				out_color.a = 1; 
 				
-				out_color.xyz = out_color.xyz + fog_color;
+				out_color.rgb = mix(out_color.rgb, fog_color, 0.5);
 			}
 		]]
 	}
@@ -111,7 +113,7 @@ function render.InitializeDeffered()
 		}
 	)  
 
-	local shader = render.CreateSuperShader("deffered", SHADER)
+	local shader = render.CreateSuperShader("deferred", SHADER)
 	
 	shader.model_matrix = render.GetModelMatrix
 	shader.camera_matrix = render.GetCameraMatrix
@@ -133,18 +135,18 @@ function render.InitializeDeffered()
 		{pos = {0, 0}, uv = {0, 1}},
 	})
 	
-	render.deffered_shader = shader
-	render.deffered_screen_quad = screen_quad	
+	render.deferred_shader = shader
+	render.deferred_screen_quad = screen_quad	
 	--debug.logcalls(true)
 end
 
 function render.DrawDeffered(w, h)
 	render.PushMatrix()
 		surface.Scale(w, h)		
-		render.deffered_screen_quad:Draw()
+		render.deferred_screen_quad:Draw()
 	render.PopMatrix()     
 end
 
-if render.deffered_shader then
+if render.deferred_shader then
 	render.InitializeDeffered()
 end
