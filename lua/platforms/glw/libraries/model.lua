@@ -1,32 +1,36 @@
 local function parse_scene(scene, dir)
+
+	print("PARSING SCENE")
+
 	local out = {}
 	
 	out = {}
 			
 	for i = 0, scene.mNumMeshes-1 do
 		local mesh = scene.mMeshes[i]
+		
 		local sub_model = {mesh_data = {}}
 		
 		for i = 0, scene.mMeshes[i].mNumVertices-1 do
 			local data = {}
 			
-			local val = mesh.mVertices[i]
-			if val then
+			if mesh.mVertices ~= nil then
+				local val = mesh.mVertices[i]
 				data.pos = {val.x, val.y, val.z}
 			end
-			
-			local val = mesh.mNormals[i]
-			if val then
+
+			if mesh.mNormals ~= nil then
+				local val = mesh.mNormals[i]
 				data.normal = {val.x, val.y, val.z}
 			end
-			
-			local val = mesh.mTangents[i]
-			if val then
+
+			if mesh.mTangents ~= nil then
+				local val = mesh.mTangents[i]
 				data.tangent = {val.x, val.y, val.z}
 			end	
 						
-			local val = mesh.mTextureCoords[0] and mesh.mTextureCoords[0][i]
-			if val then
+			if mesh.mTextureCoords ~= nil then
+				local val = mesh.mTextureCoords[0] and mesh.mTextureCoords[0][i]
 				data.uv = {val.x, val.y}
 			end
 			
@@ -64,7 +68,9 @@ local function parse_scene(scene, dir)
 				
 		out[i] = sub_model
 	end	
-	
+		
+	print("DONE PARSING SCENE")
+		
 	return out
 end
 
@@ -106,11 +112,13 @@ function Model(path)
 	end
 	
 	local path = R(path)
+	
 	if not vfs.Exists(path) then
 		error(path .. " not found", 2)
 	end
-	local scene = assimp.ImportFile(path, 0x1)
 	
+	local scene = assimp.ImportFile(path, 0x1)
+
 	if not scene then
 		error(ffi.string(assimp.GetErrorString()), 2)
 	end
@@ -122,23 +130,52 @@ function Model(path)
 	local self = setmetatable({}, META)
 	
 	self.sub_models = {}
+	
+	--[[local MAX = #models
+
+	local co = coroutine.create(function()
+			
+		local I = 0
+		local function yield()
+			if wait(0.5) then
+				logf("%i out of %i textures left", I, MAX, 3)
+			end
+			coroutine.yield()
+		end]]
+			
+		for i, model in pairs(models) do
+			local sub_model = {mesh = Mesh3D(model.mesh_data), name = model.name}
+			
+			if true then
+				sub_model.bump = Image("textures/debug/brain_n.jpg")
+			--	yield()
+				sub_model.bump:SetChannel(1)
+			end
+			
+			if model.material and model.material.path then
+				sub_model.diffuse = Image(model.material.path)
+			--	yield()
+			else
+				sub_model.diffuse = ERROR_TEXTURE
+			end			
 		
-	for i, model in pairs(models) do
-		local sub_model = {mesh = Mesh3D(model.mesh_data), name = model.name}
-		
-		if true then
-			sub_model.bump = Image("textures/debug/brain_n.jpg")
-			sub_model.bump:SetChannel(1)
+			self.sub_models[i] = sub_model
+			
+		--	I = i
 		end
 		
-		if model.material and model.material.path then
-			sub_model.diffuse = Image(model.material.path)
-		else
-			sub_model.diffuse = ERROR_TEXTURE
-		end			
+	--end)
 	
-		self.sub_models[i] = sub_model
-	end
+	--[[logf("loading %i textures", MAX)
+	
+	timer.Thinker(function() 
+		local ok , err = coroutine.resume(co) 
 		
+		if not ok then 
+			print(err) 
+			return false 
+		end  
+	end, 100)	]]
+	
 	return self 
 end
