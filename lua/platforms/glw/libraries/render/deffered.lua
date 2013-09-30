@@ -1,3 +1,5 @@
+gl.debug = true
+
 local SHADER = {
 	vertex = {
 		uniform = {
@@ -15,33 +17,47 @@ local SHADER = {
 			tex_diffuse = "sampler2D",
 			tex_position = "sampler2D",
 			tex_normal = "sampler2D",
+			tex_light = "sampler2D",
+			tex_depth = "sampler2D",
 			cam_pos = "vec3",
-		},
+		},  
 		attributes = {
 			uv = "vec2",
 		},
 		source = [[
 			out vec4 out_color;
-		
+
 			void main ()
 			{
 				vec4 diffuse = texture2D(tex_diffuse, uv);
-				vec4 position = texture2D(tex_normal, uv);
-				vec4 normal = texture2D(tex_position, uv);
-				
-				vec3 light = vec3(50,100,50);
-				vec3 lightDir = light - position.xyz;
+				vec4 normal = texture2D(tex_normal, uv);
+				vec4 position = texture2D(tex_position, uv);
+				vec4 light = texture2D(tex_light, uv);
+				vec4 depth = texture2D(tex_depth, uv);
+	
+				vec3 light_pos = vec3(50,100,50);
+				vec3 light_direction = light_pos - position.xyz;
 
 				normal = normalize(normal);
-				lightDir = normalize(lightDir);
+				light_direction = normalize(light_direction);
 
-				vec3 eyeDir = normalize(cam_pos-position.xyz);
-				vec3 vHalfVector = normalize(lightDir.xyz+eyeDir);
+				vec3 viewer_direction = normalize(cam_pos - position.xyz);
+				
+				float mult = clamp(dot(reflect(light_direction, normal.xyz), viewer_direction) * 0.96, 0.0, 1.0);
+				mult = pow(mult, 32.0);
 
-				out_color = max(dot(normal.xyz,lightDir),0) * diffuse + 
-				pow(max(dot(normal.xyz,vHalfVector),0.0), 100) * 1.5;
+				vec3 half = normalize(light_direction.xyz + viewer_direction);
+				
+				out_color = dot(normal.xyz, light_direction) * diffuse + 
+				pow(max(dot(normal.xyz,half),0.0), 100);
+								
+				
+				float fog_amount = pow(depth.a, 1000);
+				vec3 fog_color = vec3(0.5, 0.75, 1) * fog_amount;
 				
 				out_color.a = 1; 
+				
+				out_color.xyz = out_color.xyz + fog_color;
 			}
 		]]
 	}
@@ -55,50 +71,58 @@ function render.InitializeDeffered()
 			{
 				name = "diffuse",
 				attach = e.GL_COLOR_ATTACHMENT0,
-				internal_format = e.GL_RGBA,
 				texture_format = {
-					format_type = e.GL_UNSIGNED_BYTE,
-				}
-			},
-			{
-				name = "position",
-				attach = e.GL_COLOR_ATTACHMENT1,
-				internal_format = e.GL_RGBA32F,
-				texture_format = {
-					format_type = e.GL_FLOAT,
+					internal_format = e.GL_RGBA32F,
 				}
 			},
 			{
 				name = "normal",
 				attach = e.GL_COLOR_ATTACHMENT2,
-				internal_format = e.GL_RGBA16F,
 				texture_format = {
-					format_type = e.GL_FLOAT,
+					internal_format = e.GL_RGBA32F,
+				}
+			},
+			{
+				name = "position",
+				attach = e.GL_COLOR_ATTACHMENT1,
+				texture_format = {
+					internal_format = e.GL_RGBA32F,
+				}
+			},
+			{
+				name = "light",
+				attach = e.GL_COLOR_ATTACHMENT3,
+				texture_format = {
+					internal_format = e.GL_RGBA32F,
 				}
 			},
 			{
 				name = "depth",
 				attach = e.GL_DEPTH_ATTACHMENT,
-				internal_format = e.GL_DEPTH_COMPONENT24,
+				texture_format = {
+					internal_format = e.GL_DEPTH_COMPONENT32F,
+					
+				--	compare_mode = e.GL_COMPARE_R_TO_TEXTURE,
+				--	compare_func = e.GL_EQUAL,					 
+					[e.GL_DEPTH_TEXTURE_MODE] = e.GL_ALPHA,
+					
+				}
 			}
 		}
-	)
-	
-		
-	local noise = Texture(64,64):Fill(function() 
-		return math.random(255), math.random(255), math.random(255), math.random(255) 
-	end)  
-
+	)  
 
 	local shader = render.CreateSuperShader("deffered", SHADER)
 	
 	shader.model_matrix = render.GetModelMatrix
 	shader.camera_matrix = render.GetCameraMatrix
 	shader.cam_pos = render.GetCamPos
+	
 	shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
 	shader.tex_position = render.gbuffer:GetTexture("position") 
 	shader.tex_normal = render.gbuffer:GetTexture("normal")
-	
+	shader.tex_light = render.gbuffer:GetTexture("light")
+	shader.tex_depth = render.gbuffer:GetTexture("depth")
+
 	local screen_quad = shader:CreateVertexBuffer({
 		{pos = {0, 0}, uv = {0, 1}},
 		{pos = {0, 1}, uv = {0, 0}},
@@ -111,6 +135,7 @@ function render.InitializeDeffered()
 	
 	render.deffered_shader = shader
 	render.deffered_screen_quad = screen_quad	
+	--debug.logcalls(true)
 end
 
 function render.DrawDeffered(w, h)
