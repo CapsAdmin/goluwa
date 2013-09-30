@@ -9,7 +9,7 @@ function mmyy.OnError(msg, ...)
 	
 	if event.Call("OnLuaError", msg) == false then return end
 	
-	if msg:find("stack overflow") then
+	if msg and msg:find("stack overflow") then
 		logn(msg)
 		table.print(debug.getinfo(3))
 		return
