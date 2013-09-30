@@ -94,9 +94,6 @@ do -- texture object
 	function META:UpdateFormat()
 		local f = self.format		
 
-		gl.PixelStorei(e.GL_PACK_ALIGNMENT, f.stride)
-		gl.PixelStorei(e.GL_UNPACK_ALIGNMENT, f.stride)
-
 		for k,v in pairs(f) do
 			if tex_params[k] then
 				gl.TexParameterf(f.type, tex_params[k], v)
@@ -116,6 +113,9 @@ do -- texture object
 		local f = self.format		
 	
 		gl.BindTexture(f.type, self.id)			
+	
+			gl.PixelStorei(e.GL_PACK_ALIGNMENT, f.stride)
+			gl.PixelStorei(e.GL_UNPACK_ALIGNMENT, f.stride)
 				
 			self:UpdateFormat()
 		
@@ -223,9 +223,12 @@ do -- texture object
 		format.mip_map_levels = format.mip_map_levels or 4
 		format.border_size = format.border_size or 0
 		
-		format.wrap_r = format.wrap_r or e.GL_MIRRORED_REPEAT
-		format.wrap_s = format.wrap_s or e.GL_MIRRORED_REPEAT
 		format.wrap_t = format.wrap_t or e.GL_MIRRORED_REPEAT
+		format.wrap_s = format.wrap_s or e.GL_MIRRORED_REPEAT
+		
+		if format.type == e.GL_TEXTURE_3D then
+			format.wrap_r = format.wrap_r or e.GL_MIRRORED_REPEAT
+		end
 
 		-- create a new texture
 		local id = gl.GenTexture()
@@ -252,7 +255,7 @@ do -- texture object
 		)
 		
 		self:UpdateFormat()
-		
+				
 		if buffer then	
 			self:Upload(buffer)
 		end
