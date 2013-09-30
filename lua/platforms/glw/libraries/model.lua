@@ -117,7 +117,7 @@ function Model(path)
 		error(path .. " not found", 2)
 	end
 	
-	local scene = assimp.ImportFile(path, 0x1)
+	local scene = assimp.ImportFile(path, bit.bor(0x40, 0x1, 0x10, 0x8, 0x40000, 0x200000))
 
 	if not scene then
 		error(ffi.string(assimp.GetErrorString()), 2)
@@ -145,15 +145,22 @@ function Model(path)
 			
 		for i, model in pairs(models) do
 			local sub_model = {mesh = Mesh3D(model.mesh_data), name = model.name}
-			
-			if true then
-				sub_model.bump = Image("textures/debug/brain_n.jpg")
-			--	yield()
-				sub_model.bump:SetChannel(1)
-			end
-			
+						
 			if model.material and model.material.path then
 				sub_model.diffuse = Image(model.material.path)
+				
+				-- try to find the normal
+				local nrm = model.material.path:gsub("(.+)(%.)", "%1_n%2")
+				
+				if vfs.Exists(nrm) then
+					sub_model.bump = Image(nrm)
+				else
+					nrm = model.material.path:gsub("(.+)(%.)", "%1_ddn%2")
+					if vfs.Exists(nrm) then
+						sub_model.bump = Image(nrm)
+					end
+				end				
+
 			--	yield()
 			else
 				sub_model.diffuse = ERROR_TEXTURE
