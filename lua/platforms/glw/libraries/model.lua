@@ -74,7 +74,8 @@ META.Type = "model"
 
 function META:Draw()
 	for _, model in pairs(self.sub_models) do
-		model.mesh.texture = model.tex
+		model.mesh.diffuse = model.diffuse
+		model.mesh.bump = model.bump
 		model.mesh:Draw()
 	end
 end
@@ -85,7 +86,8 @@ end
 
 function META:Remove()
 	for _, model in pairs(self.sub_models) do
-		model.mesh.texture:Remove()
+		model.mesh.diffuse:Remove()
+		model.mesh.bump:Remove()
 		model.mesh:Remove()
 	end
 	
@@ -124,12 +126,17 @@ function Model(path)
 	for i, model in pairs(models) do
 		local sub_model = {mesh = Mesh3D(model.mesh_data), name = model.name}
 		
-		if model.material and model.material.path then
-			sub_model.tex = Image(model.material.path)
-		else
-			sub_model.tex = ERROR_TEXTURE
+		if true then
+			sub_model.bump = Image("textures/debug/brain_n.jpg")
+			sub_model.bump:SetChannel(1)
 		end
 		
+		if model.material and model.material.path then
+			sub_model.diffuse = Image(model.material.path)
+		else
+			sub_model.diffuse = ERROR_TEXTURE
+		end			
+	
 		self.sub_models[i] = sub_model
 	end
 		

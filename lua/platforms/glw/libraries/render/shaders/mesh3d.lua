@@ -15,21 +15,13 @@ local SHADER = {
 			{normal = "vec3"},
 			{uv = "vec2"},
 		},	
-		source = [[
-			void main()
-			{
-				// ugh
-				//glw_out_normal = normalize(transpose(mat3(camera_matrix)) * transpose(inverse(model_matrix)) * normal);
-				
-				gl_Position = camera_matrix * model_matrix * vec4(pos, 1.0);
-			}
-		]]
+		source = "gl_Position = camera_matrix * model_matrix * vec4(pos, 1.0);"
 	},
 	
 	fragment = { 
 		uniform = {
-			cam_pos = Vec3(0,0,0),
-			texture = "sampler2D",
+			diffuse = "sampler2D",
+			bump = "sampler2D",
 		},		
 		attributes = {
 			pos = "vec3",
@@ -41,9 +33,9 @@ local SHADER = {
 			
 			void main() 
 			{
-				out_data[0] = texture2D(texture, uv);
-				out_data[1] = out_data[0] + vec4(normal.xyz, 0);
-				out_data[2] = out_data[0] + vec4(pos.xyz, 0);				
+				out_data[0] = texture2D(diffuse, uv);
+				out_data[1] = vec4(normal.xyz * texture2D(bump, uv).xyz, 1);
+				out_data[2] = vec4(pos.xyz, 1);	
 			}
 		]]
 	}  
@@ -56,7 +48,6 @@ function render.CreateMesh3D(data)
 	
 	mesh.model_matrix = render.GetModelMatrix
 	mesh.camera_matrix = render.GetCameraMatrix
-	mesh.cam_pos = render.GetCamPos
 	
 	return mesh
 end
