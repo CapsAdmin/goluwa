@@ -2,6 +2,8 @@ local header = include("header.lua")
 
 include("enums.lua")
 
+local reverse_enums = {}
+
 ffi.cdef(header)
 
 local library = 
@@ -35,9 +37,29 @@ local function add_gl_func(name, func)
 		
 		gl.call_count = gl.call_count + 1
 		
-		if gl.logcalls then
+		if gl.logcalls and name ~= "GetError" then
 			setlogfile("gl_calls")
-				logf("%s = gl%s(%s)", luadata.ToString(val), name, table.concat(tostring_args(...), ",\t"))
+			
+				local args = {}
+				for i =  1, select("#", ...) do
+					local val = select(i, ...)
+					if type(val) == "number" and reverse_enums[val] and val > 10 then
+						args[#args+1] = reverse_enums[val]:gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
+					else
+						args[#args+1] = luadata.ToString(val)
+					end
+				end
+				
+				if not val then
+					logf("gl%s(%s)", name, table.concat(args, ", "))
+				else
+					local val = val
+					if reverse_enums[val] then
+						val = reverse_enums[val]:gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
+					end
+					
+					logf("%s = gl%s(%s)", val, name, table.concat(args, ", "))
+				end
 			setlogfile()
 		end
 		
@@ -151,6 +173,13 @@ function gl.InitMiniGlew()
 			end
 		end
 	end
+	
+	for k, v in pairs(e) do
+		if k:sub(0,3) == "GL_" and k ~= "GL_INVALID_ENUM" then
+			reverse_enums[v] = k
+		end
+	end
+
 	
 	setlogfile()
 	
