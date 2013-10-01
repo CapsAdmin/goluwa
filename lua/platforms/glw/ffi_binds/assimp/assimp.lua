@@ -1,4 +1,7 @@
-local header = include("header.lua")
+local header = include("header.lua") 
+local enums = include("enums.lua")
+ 
+for k,v in pairs(enums) do _E[k] = v end
 
 ffi.cdef(header)
 
