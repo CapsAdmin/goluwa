@@ -80,9 +80,11 @@ META.Type = "model"
 
 function META:Draw()
 	for _, model in pairs(self.sub_models) do
+		gl.logcalls = true
 		model.mesh.diffuse = model.diffuse
 		model.mesh.bump = model.bump
 		model.mesh:Draw()
+		gl.logcalls = false
 	end
 end
 
@@ -147,7 +149,11 @@ function Model(path)
 			local sub_model = {mesh = Mesh3D(model.mesh_data), name = model.name}
 						
 			if model.material and model.material.path then
-				sub_model.diffuse = Image(model.material.path)
+				if not vfs.Exists(model.material.path) then
+					logf("could not find %q", model.material.path)
+				else
+					sub_model.diffuse = Image(model.material.path)
+				end
 				
 				-- try to find the normal
 				local nrm = model.material.path:gsub("(.+)(%.)", "%1_n%2")
@@ -158,13 +164,26 @@ function Model(path)
 					nrm = model.material.path:gsub("(.+)(%.)", "%1_ddn%2")
 					if vfs.Exists(nrm) then
 						sub_model.bump = Image(nrm)
+					else
+						nrm = model.material.path:gsub("_diff%.", "_ddn%.")
+						if vfs.Exists(nrm) then
+							sub_model.bump = Image(nrm)
+						else
+							logf("could not find bumpmap for %q", model.material.path)
+						end
 					end
 				end				
 
 			--	yield()
 			else
-				sub_model.diffuse = ERROR_TEXTURE
-			end			
+				sub_model.diffuse = surface.white_texture
+			end		
+
+			if not sub_model.bump then
+				sub_model.bump = surface.white_texture
+			end
+		
+			sub_model.bump:SetChannel(2)
 		
 			self.sub_models[i] = sub_model
 			
