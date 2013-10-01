@@ -538,6 +538,7 @@ void main()
 				self.uniforms = {}
 				self.shader_id = shader_id
 				
+				local temp = {}
 				local lua = ""
 												
 				for shader, data in pairs(build) do
@@ -552,15 +553,7 @@ void main()
 										info = val,
 									}
 																	
-									local line = tostring(unrolled_lines[val.type] or val.type)
-									
-									line = line:format(id)
-																													
-									lua = lua .. "local val = self."..key.."\n" 
-									lua = lua .. "if val then\n" 
-									lua = lua .. "\tif type(val) == 'function' then val = val() end\n" 
-									lua = lua .. "\t" .. line .. "\n"
-									lua = lua .. "end\n\n"
+									table.insert(temp, {id = id, key = key, val = val})
 									
 									self[key] = val.default
 								end
@@ -569,6 +562,20 @@ void main()
 							end
 						end
 					end
+				end
+				
+				table.sort(temp, function(a, b) return a.id < b.id end)
+				
+				for i, data in pairs(temp) do
+					local line = tostring(unrolled_lines[data.val.type] or data.val.type)
+					
+					line = line:format(data.id)
+
+					lua = lua .. "local val = self."..data.key.."\n" 
+					lua = lua .. "if val then\n" 
+					lua = lua .. "\tif type(val) == 'function' then val = val() end\n" 
+					lua = lua .. "\t" .. line .. "\n"
+					lua = lua .. "end\n\n"
 				end
 				
 				self.attributes = {}

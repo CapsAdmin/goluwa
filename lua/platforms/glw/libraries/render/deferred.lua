@@ -15,8 +15,8 @@ local SHADER = {
 	fragment = {
 		uniform = {
 			tex_diffuse = "sampler2D",
-			tex_position = "sampler2D",
 			tex_normal = "sampler2D",
+			tex_position = "sampler2D", 
 			tex_light = "sampler2D",
 			tex_depth = "sampler2D",
 			cam_pos = "vec3",
@@ -35,6 +35,7 @@ local SHADER = {
 				vec4 light = texture2D(tex_light, uv);
 				vec4 depth = texture2D(tex_depth, uv);
 	
+	
 				vec3 light_pos = vec3(0,100,100);
 				vec3 light_direction = light_pos - position.xyz;
 
@@ -52,66 +53,63 @@ local SHADER = {
 				dot(normal.xyz, light_direction) * 
 				diffuse + 
 				pow(max(dot(normal.xyz, half), 0.0), 100);
-								
 				
 				float fog_amount = pow(depth.a, 15000);
-				vec3 fog_color = vec3(0.0, 0.25, 0.5);
+				vec3 fog_color = vec3(0.0, 0.25, 0.5) * fog_amount;
 				
 				out_color.a = 1; 
 				
-				out_color.rgb = mix(out_color.rgb, fog_color, 0.5);
+				out_color.rgb = mix(out_color.rgb, fog_color, 0.5) + light.xyz;
 			}
-		]]
+		]]  
 	}
 }
 
 function render.InitializeDeffered()
-	render.gbuffer = render.CreateFrameBuffer(
-		render.w, 
-		render.h, 
+
+	render.gbuffer_config = {
 		{
-			{
-				name = "diffuse",
-				attach = e.GL_COLOR_ATTACHMENT0,
-				texture_format = {
-					internal_format = e.GL_RGBA32F,
-				}
-			},
-			{
-				name = "normal",
-				attach = e.GL_COLOR_ATTACHMENT2,
-				texture_format = {
-					internal_format = e.GL_RGBA32F,
-				}
-			},
-			{
-				name = "position",
-				attach = e.GL_COLOR_ATTACHMENT1,
-				texture_format = {
-					internal_format = e.GL_RGBA32F,
-				}
-			},
-			{
-				name = "light",
-				attach = e.GL_COLOR_ATTACHMENT3,
-				texture_format = {
-					internal_format = e.GL_RGBA32F,
-				}
-			},
-			{
-				name = "depth",
-				attach = e.GL_DEPTH_ATTACHMENT,
-				texture_format = {
-					internal_format = e.GL_DEPTH_COMPONENT32F,
-					
-				--	compare_mode = e.GL_COMPARE_R_TO_TEXTURE,
-				--	compare_func = e.GL_EQUAL,					 
-					[e.GL_DEPTH_TEXTURE_MODE] = e.GL_ALPHA,
-					
-				}
+			name = "diffuse",
+			attach = e.GL_COLOR_ATTACHMENT0,
+			texture_format = {
+				internal_format = e.GL_RGBA32F,
+			}
+		},
+		{
+			name = "normal",
+			attach = e.GL_COLOR_ATTACHMENT1,
+			texture_format = {
+				internal_format = e.GL_RGBA32F,
+			}
+		},
+		{
+			name = "position",
+			attach = e.GL_COLOR_ATTACHMENT2,
+			texture_format = {
+				internal_format = e.GL_RGBA32F,
+			}
+		},
+		{
+			name = "light",
+			attach = e.GL_COLOR_ATTACHMENT3,
+			texture_format = {
+				internal_format = e.GL_RGBA32F,
+			}
+		},
+		{
+			name = "depth",
+			attach = e.GL_DEPTH_ATTACHMENT,
+			texture_format = {
+				internal_format = e.GL_DEPTH_COMPONENT32F,
+				
+			--	compare_mode = e.GL_COMPARE_R_TO_TEXTURE,
+			--	compare_func = e.GL_EQUAL,					 
+				[e.GL_DEPTH_TEXTURE_MODE] = e.GL_ALPHA,
+				
 			}
 		}
-	)  
+	} 
+	render.gbuffer = render.CreateFrameBuffer(render.w, render.h, render.gbuffer_config)  
 
 	local shader = render.CreateSuperShader("deferred", SHADER)
 	
@@ -140,11 +138,36 @@ function render.InitializeDeffered()
 	--debug.logcalls(true)
 end
 
+local size = 3
+
 function render.DrawDeffered(w, h)
 	render.PushMatrix()
 		surface.Scale(w, h)		
 		render.deferred_screen_quad:Draw()
-	render.PopMatrix()     
+	render.PopMatrix()
+	
+	if render.debug then
+		w = w / size
+		h = h / size
+		
+		local x = 0
+		local y = 0
+		
+		for i, data in pairs(render.gbuffer_config) do
+			surface.SetTexture(render.gbuffer:GetTexture(data.name))
+			surface.DrawRect(x, y, w, h)
+			
+			surface.SetTextPos(x, y + 5)
+			surface.DrawText(data.name)
+			
+			if i%size == 0 then
+				y = y + h
+				x = 0
+			else
+				x = x + w
+			end
+		end
+	end
 end
 
 if render.deferred_shader then
