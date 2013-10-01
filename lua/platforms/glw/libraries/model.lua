@@ -124,9 +124,9 @@ local function try_find(sub_model, path, key, a, b)
 	end				
 end
 
-local default_diffuse = Texture(8,8):Fill(function() return 0, 0, 0, 255 end)
-local default_specular = Texture(8,8):Fill(function() return 0, 0, 0, 255 end)
-local default_bump = Texture(8,8):Fill(function() return 255, 255, 255, 255 end)
+local default_diffuse
+local default_specular
+local default_bump
 
 function Model(path)
 	check(path, "string")
@@ -158,6 +158,12 @@ function Model(path)
 	local self = setmetatable({}, META)
 	
 	self.sub_models = {}
+	
+	if not default_diffuse then
+		default_diffuse = Texture(8,8):Fill(function() return 0, 0, 0, 255 end)
+		default_specular = Texture(8,8):Fill(function() return 0, 0, 0, 255 end)
+		default_bump = Texture(8,8):Fill(function() return 255, 255, 255, 255 end)
+	end
 	
 	--[[local MAX = #models
 
