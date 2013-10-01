@@ -22,6 +22,7 @@ local SHADER = {
 		uniform = {
 			diffuse = "sampler2D",
 			bump = "sampler2D",
+			specular = "sampler2D",
 		},		
 		attributes = {
 			pos = "vec3",
@@ -29,13 +30,14 @@ local SHADER = {
 			uv = "vec2",
 		},			
 		source = [[
-			out vec4 out_data[3];
+			out vec4 out_data[4];
 			
 			void main() 
 			{
 				out_data[0] = texture2D(diffuse, uv);
 				out_data[1] = vec4(normal.xyz * texture2D(bump, uv).xyz, 1);
 				out_data[2] = vec4(pos.xyz, 1);	
+				out_data[3] = texture2D(specular, uv);
 			}
 		]]
 	}  
