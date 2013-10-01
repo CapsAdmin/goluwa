@@ -80,11 +80,9 @@ META.Type = "model"
 
 function META:Draw()
 	for _, model in pairs(self.sub_models) do
-		gl.logcalls = true
 		model.mesh.diffuse = model.diffuse
 		model.mesh.bump = model.bump
 		model.mesh:Draw()
-		gl.logcalls = false
 	end
 end
 
@@ -119,7 +117,7 @@ function Model(path)
 		error(path .. " not found", 2)
 	end
 	
-	local scene = assimp.ImportFile(path, bit.bor(0x40, 0x1, 0x10, 0x8, 0x40000, 0x200000))
+	local scene = assimp.ImportFile(path, bit.bor(0x20, 0x40, 0x1, 0x10, 0x8, 0x40000, 0x200000))
 
 	if not scene then
 		error(ffi.string(assimp.GetErrorString()), 2)
