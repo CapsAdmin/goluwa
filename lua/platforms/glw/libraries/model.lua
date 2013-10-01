@@ -82,6 +82,7 @@ function META:Draw()
 	for _, model in pairs(self.sub_models) do
 		model.mesh.diffuse = model.diffuse
 		model.mesh.bump = model.bump
+		model.mesh.specular = model.specular
 		model.mesh:Draw()
 	end
 end
@@ -94,11 +95,38 @@ function META:Remove()
 	for _, model in pairs(self.sub_models) do
 		model.mesh.diffuse:Remove()
 		model.mesh.bump:Remove()
+		model.mesh.specular:Remove()
 		model.mesh:Remove()
 	end
 	
 	utilities.MakeNull(self)
 end
+
+
+local function try_find(sub_model, path, key, a, b)
+	-- try to find the normal
+	local nrm = path:gsub("(.+)(%.)", "%1"..a.."%2")
+	
+	if nrm ~= path and vfs.Exists(nrm) then
+		sub_model[key] = Image(nrm)
+	else
+		nrm = path:gsub("(.+)(%.)", "%1"..b.."%2")
+		if nrm ~= path and vfs.Exists(nrm) then
+			sub_model[key] = Image(nrm)
+		else
+			nrm = path:gsub("_diff%.", b.."%.")
+			if nrm ~= path and vfs.Exists(nrm) then
+				sub_model[key] = Image(nrm)
+			else
+				logf("could not find %s for %q", key, path)
+			end
+		end
+	end				
+end
+
+local default_diffuse = Texture(8,8):Fill(function() return 0, 0, 0, 255 end)
+local default_specular = Texture(8,8):Fill(function() return 0, 0, 0, 255 end)
+local default_bump = Texture(8,8):Fill(function() return 255, 255, 255, 255 end)
 
 function Model(path)
 	check(path, "string")
@@ -117,7 +145,7 @@ function Model(path)
 		error(path .. " not found", 2)
 	end
 	
-	local scene = assimp.ImportFile(path, bit.bor(0x20, 0x40, 0x1, 0x10, 0x8, 0x40000, 0x200000))
+	local scene = assimp.ImportFile(path,0)
 
 	if not scene then
 		error(ffi.string(assimp.GetErrorString()), 2)
@@ -152,37 +180,27 @@ function Model(path)
 				else
 					sub_model.diffuse = Image(model.material.path)
 				end
-				
-				-- try to find the normal
-				local nrm = model.material.path:gsub("(.+)(%.)", "%1_n%2")
-				
-				if vfs.Exists(nrm) then
-					sub_model.bump = Image(nrm)
-				else
-					nrm = model.material.path:gsub("(.+)(%.)", "%1_ddn%2")
-					if vfs.Exists(nrm) then
-						sub_model.bump = Image(nrm)
-					else
-						nrm = model.material.path:gsub("_diff%.", "_ddn%.")
-						if vfs.Exists(nrm) then
-							sub_model.bump = Image(nrm)
-						else
-							logf("could not find bumpmap for %q", model.material.path)
-						end
-					end
-				end				
-
-			--	yield()
-			else
-				sub_model.diffuse = surface.white_texture
-			end		
+	
+				try_find(sub_model, model.material.path, "bump", "_n", "_ddn")
+				try_find(sub_model, model.material.path, "specular", "_s", "_spec")
+			end
+			
+			if not sub_model.diffuse then
+				sub_model.diffuse = default_diffuse
+			end
 
 			if not sub_model.bump then
-				sub_model.bump = surface.white_texture
+				sub_model.bump = default_bump
 			end
-		
+			
+			if not sub_model.specular then
+				sub_model.specular = default_specular
+			end	
+			
+			sub_model.diffuse:SetChannel(1)
 			sub_model.bump:SetChannel(2)
-		
+			sub_model.specular:SetChannel(3)
+	
 			self.sub_models[i] = sub_model
 			
 		--	I = i

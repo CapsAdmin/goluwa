@@ -17,7 +17,7 @@ local SHADER = {
 			tex_diffuse = "sampler2D",
 			tex_normal = "sampler2D",
 			tex_position = "sampler2D", 
-			tex_light = "sampler2D",
+			tex_specular = "sampler2D",
 			tex_depth = "sampler2D",
 			cam_pos = "vec3",
 		},  
@@ -32,7 +32,7 @@ local SHADER = {
 				vec4 diffuse = texture2D(tex_diffuse, uv);
 				vec4 normal = texture2D(tex_normal, uv);
 				vec4 position = texture2D(tex_position, uv);
-				vec4 light = texture2D(tex_light, uv);
+				vec4 light = texture2D(tex_specular, uv);
 				vec4 depth = texture2D(tex_depth, uv);
 	
 	
@@ -59,7 +59,7 @@ local SHADER = {
 				
 				out_color.a = 1; 
 				
-				out_color.rgb = mix(out_color.rgb, fog_color, 0.5) + light.xyz;
+				out_color.rgb = mix(out_color.rgb, fog_color, 0.5) * light.xyz;
 			}
 		]]  
 	}
@@ -90,7 +90,7 @@ function render.InitializeDeffered()
 			}
 		},
 		{
-			name = "light",
+			name = "specular",
 			attach = e.GL_COLOR_ATTACHMENT3,
 			texture_format = {
 				internal_format = e.GL_RGBA32F,
@@ -120,7 +120,7 @@ function render.InitializeDeffered()
 	shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
 	shader.tex_position = render.gbuffer:GetTexture("position") 
 	shader.tex_normal = render.gbuffer:GetTexture("normal")
-	shader.tex_light = render.gbuffer:GetTexture("light")
+	shader.tex_specular = render.gbuffer:GetTexture("specular")
 	shader.tex_depth = render.gbuffer:GetTexture("depth")
 
 	local screen_quad = shader:CreateVertexBuffer({
