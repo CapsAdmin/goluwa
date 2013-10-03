@@ -170,9 +170,13 @@ function utilities.GetMetaTables()
 	return temp
 end
 
-function utilities.MakeNULL(var)
-	var.Type = "null"
-	setmetatable(var, getmetatable(NULL))
+function utilities.MakeNULL(tbl)
+
+	for k,v in pairs(tbl) do tbl[k] = nil end
+	tbl.Type = "null"
+	setmetatable(tbl, getmetatable(NULL))
+	
+	return var
 end
 
 function utilities.GetCurrentPath(level)
