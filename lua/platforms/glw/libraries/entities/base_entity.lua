@@ -35,6 +35,10 @@ function META:Remove()
 
 	self:OnRemove()
 	self:RemoveChildren()
+	
+	if self:HasParent() then
+		self:GetParent():RemoveChild(self)
+	end
 	table.remove(entities.active_entities, self.ID)
 	
 	self.remove_me = true
