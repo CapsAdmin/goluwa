@@ -9,15 +9,15 @@ local function FALSE()
 	return false
 end
 
+function NULL:IsValid()
+	return false
+end
+
 function NULL:__tostring()
 	return "NULL"
 end
 	
-function NULL:__index(key)	
-	if key == "IsValid" then	
-		return FALSE
-	end
-	
+function NULL:__index(key)		
 	if type(key) == "string" and key:sub(0, 2) == "Is" then
 		return FALSE
 	end
