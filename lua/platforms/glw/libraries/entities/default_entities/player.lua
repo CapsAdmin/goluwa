@@ -22,10 +22,6 @@ function META:__tostring()
 	return string.format("player[%s][%i]", self:GetName(), self:GetID())
 end
 
-function META:IsValid() 
-	return true
-end
-
 function META:GetName()	
 	return self.nv and self.nv.Nick or SERVER and self.socket:GetIPPort() or CLIENT and self:GetUniqueID()
 end
