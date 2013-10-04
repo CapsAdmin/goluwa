@@ -103,22 +103,22 @@ function META:Remove()
 end
 
 
-local function try_find(sub_model, path, key, a, b)
+local function try_find(sub_model, path, key, a, b, format)
 	-- try to find the normal
 	local nrm = path:gsub("(.+)(%.)", "%1"..a.."%2")
 	
 	if nrm ~= path and vfs.Exists(nrm) then
-		sub_model[key] = Image(nrm)
+		sub_model[key] = Image(nrm, format)
 	else
 		nrm = path:gsub("(.+)(%.)", "%1"..b.."%2")
 		if nrm ~= path and vfs.Exists(nrm) then
-			sub_model[key] = Image(nrm)
+			sub_model[key] = Image(nrm, format)
 		else
 			nrm = path:gsub("_diff%.", b.."%.")
 			if nrm ~= path and vfs.Exists(nrm) then
-				sub_model[key] = Image(nrm)
+				sub_model[key] = Image(nrm, format)
 			else
-				logf("could not find %s for %q", key, path)
+			--	logf("could not find %s for %q", key, path)
 			end
 		end
 	end				
@@ -128,17 +128,11 @@ local default_diffuse
 local default_specular
 local default_bump
 
+local format = {mip_map_levels = 4}
+
 function Model(path)
 	check(path, "string")
-	
-	if false then
-		local contents, err = vfs.Read(path, "b")
-		if not contents then error(err, 2) end
 		
-		local models, err = utilities.ParseModel(contents)
-		if not models then error(err, 2) end
-	end
-	
 	local path = R(path)
 	
 	if not vfs.Exists(path) then
@@ -184,15 +178,28 @@ function Model(path)
 				if not vfs.Exists(model.material.path) then
 					logf("could not find %q", model.material.path)
 				else
-					sub_model.diffuse = Image(model.material.path)
+					sub_model.diffuse = Image(model.material.path, format)
 				end
 	
-				try_find(sub_model, model.material.path, "bump", "_n", "_ddn")
-				try_find(sub_model, model.material.path, "specular", "_s", "_spec")
+				try_find(sub_model, model.material.path, "bump", "_n", "_ddn", format)
+				try_find(sub_model, model.material.path, "specular", "_s", "_spec", format)
+			else
+				sub_model.diffuse = Image("textures/sponza_thorn_diff.png")
 			end
 			
 			if not sub_model.diffuse then
 				sub_model.diffuse = default_diffuse
+			else
+				-- TEMPORARY			
+				sub_model.translucent = false				
+				
+				--- too slow
+				--[[sub_model.diffuse:Fill(function(x, y, i, r,g,b,a)  
+					if a < 255 then
+						sub_model.translucent = true
+						return true
+					end
+				end, false, true)]]
 			end
 
 			if not sub_model.bump then
@@ -211,6 +218,9 @@ function Model(path)
 			
 		--	I = i
 		end
+		
+		--table.sort(self.sub_models, function(a, b) return b.translucent and not a.translucent end)
+		--table.sort(self.sub_models, function(a, b) return b.translucent and not a.translucent end)
 		
 	--end)
 	
