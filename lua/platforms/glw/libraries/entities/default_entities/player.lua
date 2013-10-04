@@ -43,8 +43,10 @@ do -- ping pong
 		return self.last_ping and (os.clock() - self.last_ping) or 0
 	end
 	
+	console.CreateVariable("sv_timeout", 10)
+	
 	function META:IsTimingOut()
-		return self:GetTimeout() > 3
+		return self:GetTimeout() > console.GetVariable("sv_timeout", 3)
 	end
 
 	if CLIENT then
@@ -68,19 +70,21 @@ do -- ping pong
 		if not network.IsStarted() then return end
 					
 		for key, ply in pairs(players.GetAll()) do
-			message.Send("ping", ply, tostring(os.clock()))
-			
-			if ply:IsTimingOut() then
-			
-				if SERVER then
-					ply:Kick("timeout")
-				end
+			if ply.socket then
+				message.Send("ping", ply, tostring(os.clock()))
 				
-				if CLIENT then
-					logn("timed out..")
+				if ply:IsTimingOut() then
+				
+					if SERVER then
+						ply:Kick("timeout")
+					end
 					
-					if ply:IsTimingOut() then
-						network.Disconnect()
+					if CLIENT then
+						logn("timed out..")
+						
+						if ply:IsTimingOut() then
+							network.Disconnect()
+						end
 					end
 				end
 			end
