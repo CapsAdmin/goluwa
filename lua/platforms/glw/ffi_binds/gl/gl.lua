@@ -79,8 +79,9 @@ local function add_gl_func(name, func)
 				return val
 			end
 		
-			local str = glu.GetLastError()	
-			if str ~= "no error" then
+			local enum = gl.GetError()
+			if enum ~= e.GL_NO_ERROR then
+				local str = glu.GetLastError(enum)	
 				local info = debug.getinfo(2)
 				
 				logf("[opengl] gl%s failed with %q in function %s at %s:%i", name, str, info.name, info.short_src, info.currentline)
