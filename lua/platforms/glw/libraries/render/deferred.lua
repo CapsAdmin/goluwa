@@ -1,5 +1,3 @@
-gl.debug = true
-
 local SHADER = {
 	vertex = {
 		uniform = {
@@ -35,31 +33,7 @@ local SHADER = {
 				vec4 light = texture2D(tex_specular, uv);
 				vec4 depth = texture2D(tex_depth, uv);
 	
-	
-				vec3 light_pos = vec3(0,100,100);
-				vec3 light_direction = light_pos - position.xyz;
-
-				normal = normalize(normal);
-				light_direction = normalize(light_direction);
-
-				vec3 viewer_direction = normalize(cam_pos - position.xyz);
-				
-				float mult = clamp(dot(reflect(light_direction, normal.xyz), viewer_direction) * 0.96, 0.0, 1.0);
-				mult = pow(mult, 32.0);
-
-				vec3 half = normalize(light_direction.xyz + viewer_direction);
-				
-				out_color = 
-				dot(normal.xyz, light_direction) * 
-				diffuse + 
-				pow(max(dot(normal.xyz, half), 0.0), 100);
-				
-				float fog_amount = pow(depth.a, 15000);
-				vec3 fog_color = vec3(0.0, 0.25, 0.5) * fog_amount;
-				
-				out_color.a = 1; 
-				
-				out_color.rgb = mix(out_color.rgb, fog_color, 0.5) * light.xyz;
+				out_color = diffuse;
 			}
 		]]  
 	}
@@ -97,8 +71,17 @@ function render.InitializeDeffered()
 			}
 		},
 		{
+			name = "light",
+			attach = e.GL_COLOR_ATTACHMENT4,
+			draw_manual = true,
+			texture_format = {
+				internal_format = e.GL_RGBA32F,
+			}
+		},
+		{
 			name = "depth",
 			attach = e.GL_DEPTH_ATTACHMENT,
+			draw_manual = true,
 			texture_format = {
 				internal_format = e.GL_DEPTH_COMPONENT32F,
 				
@@ -121,6 +104,7 @@ function render.InitializeDeffered()
 	shader.tex_position = render.gbuffer:GetTexture("position") 
 	shader.tex_normal = render.gbuffer:GetTexture("normal")
 	shader.tex_specular = render.gbuffer:GetTexture("specular")
+	shader.tex_light = render.gbuffer:GetTexture("light")
 	shader.tex_depth = render.gbuffer:GetTexture("depth")
 
 	local screen_quad = shader:CreateVertexBuffer({
@@ -141,8 +125,16 @@ end
 local size = 3
 
 function render.DrawDeffered(w, h)
+	--render.Start3D()	
+	
+	--render.gbuffer:Begin("light", e.GL_TEXTURE4)
+		
+	--render.gbuffer.End()
+	
+	--render.Start2D()
+
 	render.PushMatrix()
-		surface.Scale(w, h)		
+		surface.Scale(w, h)
 		render.deferred_screen_quad:Draw()
 	render.PopMatrix()
 	
