@@ -141,7 +141,7 @@ do -- texture object
 		return self
 	end
 
-	function META:Fill(callback, write_only)
+	function META:Fill(callback, write_only, read_only)
 		check(callback, "function")
 		
 		if write_only == nil then
@@ -160,8 +160,8 @@ do -- texture object
 			buffer = ffi.new(self.format.buffer_type.."[?]", width*height*stride)
 		else
 			buffer = self:Download()
-		end
-		
+		end	
+	
 		for x = 0, width-1 do
 		for y = 0, height-1 do
 			local pos = (y * width + x) * stride
@@ -176,13 +176,21 @@ do -- texture object
 				colors = {callback(x, y, pos, unpack(temp))}
 			end
 		
-			for i = 1, stride do
-				buffer[pos+i-1] = colors[i] or 0
+			if not read_only then
+				for i = 1, stride do
+					buffer[pos+i-1] = colors[i] or 0
+				end
+			else
+				if colors[i] ~= nil then
+					return
+				end
 			end
 		end
 		end
 		
-		self:Upload(buffer)
+		if not read_only then
+			self:Upload(buffer)
+		end
 		
 		return self
 	end
