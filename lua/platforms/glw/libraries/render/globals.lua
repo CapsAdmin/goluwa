@@ -7,7 +7,7 @@ end
 
 render.active_textures = render.active_textures or {}
 
-function Image(path)
+function Image(path, format)
 	if render.active_textures[path] then 
 		return render.active_textures[path]
 	end
@@ -36,7 +36,10 @@ function Image(path)
 		errorf("could not decode %q properly (w = %i, h = %i)", 2, path, w, h)
 	end
 	
-	local tex = Texture(w,h,buffer,{internal_format = e.GL_RGBA8})
+	format = format or {}
+	format.internal_format = format.internal_format or e.GL_RGBA8
+	
+	local tex = Texture(w, h, buffer, format)
 	
 	render.active_textures[path] = tex
 	
