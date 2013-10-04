@@ -585,6 +585,7 @@ system = include(libraries .. "system.lua")
 lcpp = include(libraries .. "lcpp.lua")
 profiler = include(libraries .. "profiler.lua")
 steam = include(libraries .. "steam.lua")
+steamapi = include(libraries .. "steamapi.lua")
 
 -- meta
 include(meta .. "function.lua")
