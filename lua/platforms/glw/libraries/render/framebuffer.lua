@@ -1,13 +1,11 @@
---gl.debug = true
-
 local META = {}
 META.__index = META
 
 function META:__tostring()
-	return ("render_buffer[%i]"):format(self.id)
+	return ("frame_buffer[%i]"):format(self.id)
 end
 
-function META:Begin()
+function META:Begin(attach, channel)
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, self.id)
 	gl.PushAttrib(e.GL_VIEWPORT_BIT)
 	gl.Viewport(0, 0, self.width, self.height)	
@@ -15,10 +13,14 @@ function META:Begin()
 	gl.Clear(bit.bor(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT))
 	gl.ClearColor(0, 0, 0, 1)
 
-	gl.ActiveTextureARB(e.GL_TEXTURE0)
+	gl.ActiveTextureARB(channel or e.GL_TEXTURE0)
 	gl.Enable(e.GL_TEXTURE_2D)
 
-	gl.DrawBuffers(self.draw_buffers_size, self.draw_buffers)
+	if attach then
+		gl.DrawBuffers(1, self.buffers[attach].draw_enum)
+	else
+		gl.DrawBuffers(self.draw_buffers_size, self.draw_buffers)
+	end
 end
 
 function META:End()
@@ -27,8 +29,8 @@ function META:End()
 end
 
 function META:GetTexture(type)
-	if self.render_buffers[type] then
-		return self.render_buffers[type].tex
+	if self.buffers[type] then
+		return self.buffers[type].tex
 	end
 	
 	return NULL
@@ -37,7 +39,7 @@ end
 function META:Remove()
 	gl.DeleteFramebuffers(1, ffi.new("GLuint[1]", self.id))
 	
-	for k, v in pairs(self.render_buffers) do
+	for k, v in pairs(self.buffers) do
 		gl.DeleteRenderbuffers(1, ffi.new("GLuint[1]", v.id))
 		
 		if v.tex:IsValid() then
@@ -52,7 +54,7 @@ function render.CreateFrameBuffer(width, height, format)
 	
 	local self = setmetatable({}, META)
 
-	self.render_buffers = {}
+	self.buffers = {}
 	self.width = width
 	self.height = height
 	self.draw_buffers = {}
@@ -79,7 +81,7 @@ function render.CreateFrameBuffer(width, height, format)
 		
 			tex.framebuffer_name = info.name
 			
-			if info.attach ~= e.GL_DEPTH_ATTACHMENT then
+			if not info.draw_manual then
 				table.insert(self.draw_buffers, info.attach)
 			end
 		else
@@ -89,14 +91,14 @@ function render.CreateFrameBuffer(width, height, format)
 			gl.RenderbufferStorage(e.GL_RENDERBUFFER, info.internal_format, width, height)
 		end
 		
-		self.render_buffers[info.name] = {id = id, tex = tex, info = info}
+		self.buffers[info.name] = {id = id, tex = tex, info = info, draw_enum = ffi.new("GLenum[1]", info.attach)}
 	end
 
 	local id = gl.GenFramebuffer()	
 	self.id = id
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, id)
 	
-	for i, data in pairs(self.render_buffers) do
+	for i, data in pairs(self.buffers) do
 		if data.tex:IsValid() then
 			gl.FramebufferTexture2D(e.GL_FRAMEBUFFER, data.info.attach, e.GL_TEXTURE_2D, data.id, 0)
 		else
