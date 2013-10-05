@@ -1,0 +1,3 @@
+return {
+	startup = "menu.lua",
+}
