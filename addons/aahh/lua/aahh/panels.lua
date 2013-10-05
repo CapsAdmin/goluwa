@@ -17,8 +17,8 @@ function aahh.Create(name, parent, pos)
 		pnl:__Initialize()
 	end
 	
-	table.insert(aahh.ActivePanels, 1, pnl)
-	pnl.aahh_id = #aahh.ActivePanels
+	table.insert(aahh.active_panels, 1, pnl)
+	pnl.aahh_id = #aahh.active_panels
 	
 	if pnl.Initialize then
 		pnl:Initialize()
@@ -43,12 +43,12 @@ function aahh.GetPanel(name)
 end
 
 function aahh.GetPanels()
-	for key, pnl in pairs(aahh.ActivePanels) do
+	for key, pnl in pairs(aahh.active_panels) do
 		if not pnl:IsValid() then
-			aahh.ActivePanels[key] = nil
+			aahh.active_panels[key] = nil
 		end
 	end
-	return aahh.ActivePanels
+	return aahh.active_panels
 end
 
 function aahh.RemoveAllPanels()
@@ -57,7 +57,7 @@ function aahh.RemoveAllPanels()
 			pnl:Remove()
 		end
 	end
-	aahh.ActivePanels = {}
+	aahh.active_panels = {}
 end
 
 function aahh.CallPanelHook(name, ...)

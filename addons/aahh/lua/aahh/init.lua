@@ -1,6 +1,6 @@
 aahh = {}
 
-aahh.ActivePanels = aahh.ActivePanels or {}
+aahh.active_panels = aahh.active_panels or {}
 aahh.ActivePanel = NULL
 aahh.HoveringPanel = NULL
 aahh.World = NULL
@@ -49,11 +49,11 @@ function aahh.GetSet(PANEL, name, var, ...)
 end
 
 function aahh.Panic()
-	for key, pnl in pairs(aahh.ActivePanels) do
+	for key, pnl in pairs(aahh.active_panels) do
 		pnl:Remove()
 	end
 
-	aahh.ActivePanels = {}
+	aahh.active_panels = {}
 end
 
 aahh.LayoutRequests = {}
