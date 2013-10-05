@@ -202,13 +202,9 @@ if SERVER then
 		function server:OnClientConnected(client, ip, port)
 			client:SetReceiveMode(receive_mode)			
 			network.HandleEvent(client, e.USER_CONNECT, client:GetIPPort())
-			--return true
+			return true
 		end
-		
-		function server:OnClientClosed(client)
-			network.HandleEvent(client, e.USER_DISCONNECT, client:GetIPPort())
-		end
-		
+
 		function server:OnReceive(str, client)
 			network.HandleEvent(client, decode(str))
 		end	
