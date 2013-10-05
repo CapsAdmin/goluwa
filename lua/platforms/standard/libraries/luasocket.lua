@@ -590,7 +590,14 @@ do -- tcp socket meta
 			
 			remove_socket(self)
 			
-			if self.__server then 
+			if self.__server then
+				for k, v in pairs(self.__server.Clients) do
+					if v == self then
+						table.remove(self.__server.Clients, k)
+						break
+					end
+				end
+			
 				self.__server:OnClientClosed(self) 
 			end
 		end
@@ -684,17 +691,7 @@ do -- tcp socket meta
 		end
 
 		function SERVER:GetClients()
-			local copy = {}
-
-			for key, client in pairs(self.Clients) do
-				if client:IsValid() then
-					table.insert(copy, client)
-				else
-					table.remove(self.Clients, key)
-				end
-			end
-
-			return copy
+			return self.Clients
 		end
 		
 		function SERVER:HasClients()
@@ -802,7 +799,7 @@ do -- tcp socket meta
 					
 					table.insert(self.Clients, client)
 					client.__server = self
-					
+										
 					local b = self:OnClientConnected(client, client:GetIP(), client:GetPort())
 
 					if b == true then
