@@ -586,6 +586,7 @@ lcpp = include(libraries .. "lcpp.lua")
 profiler = include(libraries .. "profiler.lua")
 steam = include(libraries .. "steam.lua")
 steamapi = include(libraries .. "steamapi.lua")
+cookies = include(libraries .. "cookies.lua")
 
 -- meta
 include(meta .. "function.lua")
