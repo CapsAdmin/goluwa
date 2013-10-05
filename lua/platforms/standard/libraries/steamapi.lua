@@ -131,6 +131,4 @@ function steamapi.GetService(name)
 	return steamapi.services[name]
 end
 
-steamapi.Initialize()
-
 return steamapi

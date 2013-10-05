@@ -601,6 +601,7 @@ console.CreateVariable("error_app", "")
 console.Exec("autoexec")
 
 addons.LoadAll()
+steamapi.Initialize()
 
 include("platforms/".. e.PLATFORM .."/init.lua")
 
