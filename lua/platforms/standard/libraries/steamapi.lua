@@ -1,7 +1,7 @@
 local steamapi = {}
 
 steamapi.httpmethods = {
-	GET = function(interface, func_info, data, callback)
+	GET = function(interface, func_info, data, url, callback)
 		local arguments = ""
 		
 		for key, val in pairs(data) do
@@ -11,15 +11,16 @@ steamapi.httpmethods = {
 		-- remove the last &..
 		arguments = arguments:sub(0, -2)
 		
-		local url = ("http://api.steampowered.com/%s/%s/v%.4d/?%s"):format(interface.name, func_info.name, data.version or 1, arguments)
-		
-		if steamapi.debug then	
-			logf("[steamapi] http post: %s", url)
-		end
-		
+		url = url .. arguments
+	
 		luasocket.Get(url, function(data)
 			callback(json.decode(data.content))
-		end)
+		end, nil, "Steam 1291812 / iPhone")
+	end,
+	POST = function(interface, func_info, data, url, callback)
+		luasocket.Post(url, data, function(data)
+			callback(json.decode(data.content))
+		end, nil, "Steam 1291812 / iPhone")
 	end,
 }
 
@@ -62,12 +63,16 @@ function steamapi.Initialize()
 			end
 			
 			functions[info.name] = function(data, callback)
+				if not steamapi.httpmethods[info.httpmethod] then
+					errorf("http method %s is not supported", 2, info.httpmethod)
+				end
+			
 				callback = callback or table.print
 
 				if parameters.key and not data.key then
 					data.key = steamapi.key
 				end
-				
+							
 				-- check and convert parameters
 				for key, info in pairs(parameters) do
 					local t = type(data[key])
@@ -102,12 +107,14 @@ function steamapi.Initialize()
 						errorf("field %q is not a valid type (expected %s got %s)", 2, key, expected, type(data[key]))
 					end
 				end
+								
+				local url = ("http://api.steampowered.com/%s/%s/v%.4d/?"):format(interface.name, info.name, data.version or 1)
 				
-				if steamapi.httpmethods[info.httpmethod] then
-					steamapi.httpmethods[info.httpmethod](interface, info, data, callback)
-				else
-					errorf("http method %s is not supported", 2, info.httpmethod)
-				end
+				if steamapi.debug then	
+					logf("[steamapi] http url: %s", url)
+				end				
+				
+				steamapi.httpmethods[info.httpmethod](interface, info, data, url, callback)
 			end
 		end
 		
