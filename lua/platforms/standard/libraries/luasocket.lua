@@ -134,33 +134,36 @@ do -- helpers/usage
 		local str = ""
 
 		for key, value in pairs(tbl) do
-			str = str .. tostring(key) .. ": " .. tostring(value) .. "\n"
+			str = str .. tostring(key) .. ": " .. tostring(value) .. "\r\n"
 		end
 
 		return str
 	end
 
-	function luasocket.Get(url, callback, timeout)
-		check(url, "string")
-		check(callback, "function", "nil", "false")
-		
+	local function request(url, callback, method, timeout, post_data, user_agent)		
 		url = url:gsub("http://", "")
 		callback = callback or table_print
+		method = method or "GET"
+		user_agent = user_agent or "goluwa"
 
-		local host, get = url:match("(.-)/(.+)")
+		local host, location = url:match("(.-)/(.+)")
 
-		if not get then
+		if not location then
 			host = url:gsub("/", "")
-			get = ""
+			location = ""
 		end
 
 		local socket = luasocket.Client("tcp")
 		socket:SetTimeout(timeout or 0.5)
 		socket:Connect(host, 80)
 
-		socket:Send(("GET /%s HTTP/1.1\r\n"):format(get))
+		socket:Send(("%s /%s HTTP/1.1\r\n"):format(method, location))
 		socket:Send(("Host: %s\r\n"):format(host))
-		socket:Send("User-Agent: goluwa\r\n")
+		socket:Send(("User-Agent: %s\r\n"):format(user_agent))
+		if method == "POST" then
+			socket:Send(("Content-Length: %i"):format(#post_data))
+			socket:Send(post_data)
+		end
 		socket:Send("\r\n")
 
 		local content = {}
@@ -179,6 +182,27 @@ do -- helpers/usage
 				warning(err)
 			end
 		end
+	end
+	
+	function luasocket.Get(url, callback, timeout, user_agent)
+		check(url, "string")
+		check(callback, "function", "nil", "false")
+		check(user_agent, "nil", "string")
+		
+		return request(url, callback, "GET", timeout, user_agent)
+	end
+	
+	function luasocket.Post(url, post_data, callback, timeout, user_agent)
+		check(url, "string")
+		check(callback, "function", "nil", "false")
+		check(post_data, "table", "string")
+		check(user_agent, "nil", "string")
+		
+		if type(post_data) == "table" then
+			post_data = luasocket.TableToHeader(post_data)
+		end
+		
+		return request(url, callback, "POST", timeout, post_data, user_agent)
 	end
 
 	local sck = luasocket.socket.udp()
