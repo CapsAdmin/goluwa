@@ -98,11 +98,12 @@ do
 	end
 end
 
+aahh.remove_these = aahh.remove_these or {}
+
 function aahh.Update(delta)
-	for key, pnl in pairs(aahh.GetPanels()) do
-		if pnl.remove_me then
-			utilities.MakeNULL(pnl)
-		end
+	for key, pnl in pairs(aahh.remove_these) do
+		pnl:Remove(true)
+		aahh.remove_these[key] = nil
 	end
 
 	if aahh.ActivePanel:IsValid() then
@@ -130,3 +131,5 @@ function aahh.Update(delta)
 		end
 	event.Call("PostDrawMenu")
 end
+
+event.AddListener("OnDraw2D", "aahh", aahh.Update)

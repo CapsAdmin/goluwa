@@ -909,17 +909,29 @@ do -- events
 	function PANEL:Initialize() end
 	function PANEL:OnRemove() end
 	
-	function PANEL:Remove()
-		event.Call("OnPanelRemove", self)
-
-		for key, pnl in pairs(self:GetChildren()) do
-			pnl:Remove()
+	function PANEL:Remove(now)			
+		if not self.remove_me then
+			table.insert(aahh.remove_these, self)
+			self.remove_me = true
 		end
 		
-		self:OnRemove()
-		
-		self.IsValid = function() return false end
-		self.remove_me = true
+		if now then		
+			self:OnRemove()
+			self:RemoveChildren()
+			
+			if self:HasParent() then
+				self:GetParent():RemoveChild(self)
+			end
+			
+			for k,v in pairs(aahh.active_panels) do
+				if v == self then
+					table.remove(aahh.active_panels, k)
+					break
+				end
+			end
+			
+			utilities.MakeNULL(self)		
+		end
 	end
 	
 	function PANEL:OnThink()	end

@@ -2,10 +2,6 @@ console.AddCommand("aahh_unit_test", function()
 
 	window.Open(1280, 720)
 		
-	event.AddListener("OnDraw2D", "aahh", function(delta)	 
-		aahh.Update(delta)
-	end)
-
 	if not aahh.initialized then return end
 
 	local frame = utilities.RemoveOldObject(aahh.Create("frame"), "aahh_unit_test")
