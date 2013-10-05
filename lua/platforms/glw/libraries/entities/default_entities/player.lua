@@ -27,7 +27,7 @@ function META:GetName()
 end
 
 function META:OnRemove(reason)	
-	players.active_players[self:GetUniqueID()] = nil	
+	players.active_players[self:GetUniqueID()] = nil
 end	
 
 if SERVER then
@@ -66,7 +66,7 @@ do -- ping pong
 		end)
 	end		
 	
-	timer.Create("ping_pong_players", 0.25, 0, function()
+	timer.Create("ping_pong_players", 1, 0, function()
 		if not network.IsStarted() then return end
 					
 		for key, ply in pairs(players.GetAll()) do

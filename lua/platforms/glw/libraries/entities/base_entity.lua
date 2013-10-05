@@ -30,21 +30,30 @@ end
 
 function META:IsValid() return true end
 
-function META:Remove()
-	if self.remove_me then return end
+function META:Remove(now)
 
-	self:OnRemove()
-	self:RemoveChildren()
-	
-	if self:HasParent() then
-		self:GetParent():RemoveChild(self)
+	if not self.remove_me then
+		table.insert(entities.remove_these, self)
+		self.remove_me = true
 	end
-	table.remove(entities.active_entities, self.ID)
 	
-	self.remove_me = true
-	timer.Simple(0, function()
-		utilities.MakeNULL(self)
-	end)
+	if now then		
+		self:OnRemove()
+		self:RemoveChildren()
+		
+		if self:HasParent() then
+			self:GetParent():RemoveChild(self)
+		end
+		
+		for k,v in pairs(entities.active_entities) do
+			if v == self then
+				table.remove(entities.active_entities, k)
+				break
+			end
+		end
+		
+		utilities.MakeNULL(self)		
+	end
 end
 
 function META:Create(class_name)

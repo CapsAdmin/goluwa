@@ -34,6 +34,15 @@ function entities.Call(name, ...)
 	end	
 end
 
+entities.remove_these = entities.remove_these or {}
+
+event.AddListener("OnUpdate", "entities", function()
+	for k, v in pairs(entities.remove_these) do
+		v:Remove(true)
+		entities.remove_these[k] = nil
+	end
+end)
+
 class.SetupLib(entities, "entity")
 
 function entities.Register(META, name)
