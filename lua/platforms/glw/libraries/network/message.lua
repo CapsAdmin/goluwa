@@ -100,7 +100,6 @@ do -- filter
 	local META = {}
 	META.__index = META
 
-	META.players = {}
 	META.Type = "netmsg_user_filter"
 
 	function META:AddAll()
@@ -135,6 +134,6 @@ do -- filter
 	end
 
 	function message.PlayerFilter()
-		return setmetatable({}, META)
+		return setmetatable({players = {}}, META)
 	end
 end
