@@ -8,7 +8,11 @@ do -- thanks etandel @ #lua!
 		
 		local ud = newproxy(true)
 		
-		debug.getmetatable(ud).__gc = function() return func(t) end
+		debug.getmetatable(ud).__gc = function() 
+			if not t.IsValid or t:IsValid() then
+				return func(t) 
+			end
+		end
 		
 		t.__gc = ud  
 
