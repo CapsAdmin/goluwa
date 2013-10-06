@@ -38,7 +38,7 @@ end
 
 function steamapi.Initialize()
 	steamapi.key = steamapi.GetKey()
-	steamapi.supported = luadata.ReadFile("steamapi/supported.lua")
+	steamapi.supported = steamapi.supported or luadata.ReadFile("steamapi/supported.lua")
 	
 	if key == "" then
 		logn("steamapi key is not set (run steamapi_key *key*)")
@@ -129,8 +129,9 @@ function steamapi.UpdateSupported(callback)
 		local tbl = json.decode(data.content)
 		
 		luadata.WriteFile("steamapi/supported.lua", tbl)
+		steamapi.supported = tbl
 		
-		logn("[steamapi] supported api updated")
+		logn("[steamapi] supported api updated")		
 		
 		callback()
 	end)
