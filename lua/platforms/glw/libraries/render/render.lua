@@ -43,6 +43,9 @@ end
 function render.Shutdown()
 end
 
+local last_w
+local last_h
+
 function render.Start(window)
 	glfw.MakeContextCurrent(window.__ptr)
 	
@@ -51,6 +54,12 @@ function render.Start(window)
 	render.w = w
 	render.h = h
 	render.SetViewport(0, 0, w, h)
+	
+	if w ~= last_w or h ~= last_h then
+		event.Call("OnWindowResized", window, w, h)
+		last_w = w
+		last_h = h
+	end
 end
 
 function render.End()
