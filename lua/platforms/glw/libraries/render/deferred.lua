@@ -34,6 +34,7 @@ local SHADER = {
 				vec4 depth = texture2D(tex_depth, uv);
 	
 				out_color = diffuse;
+				out_color.a = 1;
 			}
 		]]  
 	}
@@ -144,6 +145,8 @@ function render.DrawDeffered(w, h)
 		
 		local x = 0
 		local y = 0
+		
+		surface.Color(1,1,1,1)
 		
 		for i, data in pairs(render.gbuffer_config) do
 			surface.SetTexture(render.gbuffer:GetTexture(data.name))
