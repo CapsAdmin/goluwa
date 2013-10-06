@@ -11,6 +11,10 @@ function aahh.Initialize()
 	aahh.World = aahh.GetWorld()
 	
 	aahh.initialized = true
+	
+	event.AddListener("OnWindowResized", "aahh_world", function(window, w,h)
+		aahh.World:RequestLayout()
+	end)
 end
  
 function aahh.GetWorld()
