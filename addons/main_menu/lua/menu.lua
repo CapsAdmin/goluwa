@@ -206,8 +206,7 @@ function menu.MakeButtons()
 					
 				grid:AddChild(btn)
 			end
-			
-			for name in lfs.dir(dir) do
+			for name in vfs.Iterate(dir, false, true) do
 				if name ~= "." and name ~= ".." then
 					local btn = aahh.Create("textbutton")
 					btn:SetText(name)
@@ -236,29 +235,29 @@ function menu.MakeButtons()
 				end
 			end
 			
-			grid:RequestLayout(true)
+			--grid:RequestLayout(true)
 			--frame:SetHeight(grid:GetCurrentSize().h + 33)
 			--frame:RequestLayout(true)
 		end
 		
-		if not MULTIPLAYER then
-			populate("../../addons/tests/lua/menu/")
-		else
-			populate("../../addons/tests/lua/")
-		end
+		populate("lua/")
 	end)
 	
 	menu.AddButtonSpace() 
  
 	menu.AddButton("Console", function() console.RunString("ConsoleShow", true, true) end)
 	menu.AddButton("Restart", function() timer.Simple(0.1, function() console.RunString("reoh", true, true) end) end)
-	menu.AddButton("Exit", function() console.RunString("quit") end)
+	menu.AddButton("Exit", function() os.exit() end)
 	
 	menu.SetupButtons()
-end
+end 
 
 window.Open(1024, 760)
-timer.Simple(0.1, function()
+menu.Close()
 menu.Open()
+
+event.AddListener("OnWindowResized", "aahh_world", function(window, w,h)
+	menu.Close()
+	menu.Open()
 end)
  
