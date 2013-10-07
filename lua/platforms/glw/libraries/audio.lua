@@ -33,7 +33,7 @@ end
 
 function audio.Decode(data)
 	-- use a dummy file so we can read from memory...
-	local file = io.open("__temp", "wb")
+	local file = assert(io.open("__temp", "wb"))
 	file:write(data)
 	file:close()   
 
