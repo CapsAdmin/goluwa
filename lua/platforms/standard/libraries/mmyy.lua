@@ -3,13 +3,14 @@ local mmyy = _G.mmyy or {}
 -- this should be used for xpcall
 local suppress = false
 function mmyy.OnError(msg, ...)
+	msg = msg or "no error"
 	if suppress then logn("supressed error: ", msg, ...) return end
 	suppress = true
 	if LINUX and msg == "interrupted!\n" then return end
 	
 	if event.Call("OnLuaError", msg) == false then return end
 	
-	if msg and msg:find("stack overflow") then
+	if msg:find("stack overflow") then
 		logn(msg)
 		table.print(debug.getinfo(3))
 		return
