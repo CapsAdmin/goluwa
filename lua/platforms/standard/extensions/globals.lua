@@ -15,46 +15,58 @@ do -- check
 
 	local function check_custom(var, method, ...)
 		local name = debug.getinfo(level, "n").name
-		local func = debug.getinfo(level, "f").func
+		
 		local types = {...}
 		local allowed = ""
 		local typ = method(var)
 
 		local matched = false
 
-		for key, value in ipairs(types) do
-			if #types ~= key then
-				allowed = allowed .. value .. " or "
-			else
-				allowed = allowed .. value
-			end
-
-			if typ == value then
+		for key, expected in ipairs(types) do
+			if typ == expected then
 				matched = true
 			end
 		end
 
-		local arg = "???"
-
-		for i=1, 30 do
-			local key, value = debug.getlocal(2, i)
-			-- I'm not sure what to do about this part with vars that have no refference
-			if value == var then
-				arg = i
-			break end
-		end
-
 		if not matched then
-			error(("bad argument #%s to '%s' (%s expected, got %s)"):format(arg, name, allowed, typ), level+1)
+			local arg = ""
+
+		for i = 1, 32 do
+			local key, value = debug.getlocal(level, i)
+				-- I'm not sure what to do about this part with vars that have no reference
+				if value == var then				
+					if #arg > 0 then
+						arg = arg .. " or #" .. i
+					else
+						arg = arg .. "#" ..i
+					end
+				end
+				
+				if not key then
+					break
+				end
+			end
+		
+			local allowed = ""
+					
+			for key, expected in ipairs(types) do
+				if #types ~= key then
+					allowed = allowed .. expected .. " or "
+				else
+					allowed = allowed .. expected
+				end
+			end
+			
+			error(("bad argument %s to '%s' (%s expected, got %s)"):format(arg, name, allowed, typ), level + 1)
 		end
 	end
 
 	function check(var, ...)
-		--check_custom(var, _G.type, ...)
+		check_custom(var, _G.type, ...)
 	end
 	
 	function checkx(var, ...)
-		--check_custom(var, _G.typex, ...)
+		check_custom(var, _G.typex, ...)
 	end
 end
 
