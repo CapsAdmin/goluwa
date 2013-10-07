@@ -16,6 +16,7 @@ local SHADER = {
 			tex_normal = "sampler2D",
 			tex_position = "sampler2D", 
 			tex_specular = "sampler2D",
+			tex_light = "sampler2D",
 			tex_depth = "sampler2D",
 			cam_pos = "vec3",
 		},  
@@ -30,15 +31,41 @@ local SHADER = {
 				vec4 diffuse = texture2D(tex_diffuse, uv);
 				vec4 normal = texture2D(tex_normal, uv);
 				vec4 position = texture2D(tex_position, uv);
-				vec4 light = texture2D(tex_specular, uv);
+				vec4 specular = texture2D(tex_specular, uv);
+				vec4 light = texture2D(tex_light, uv);
 				vec4 depth = texture2D(tex_depth, uv);
 	
-				out_color = diffuse;
+				vec3 light_color = light.xyz + vec3(1,1,1);
+				vec3 light_pos = vec3(100,50,100);//light.w * position.xyz;
+				vec3 light_dir = normalize(light_pos - position.xyz);
+				
+				normal = normalize(normal);
+				
+				vec3 eye_dir = normalize(cam_pos - position.xyz);
+				vec3 half = normalize(light_dir + eye_dir);
+				
+				out_color.rgb = 
+				(light_color * max(dot(normal.xyz, light_dir), 0)) * 
+				diffuse.rgb + 
+				pow(max(dot(normal.xyz, half), 0.0), 9) *
+				specular.r*20;
+				
+				float fog_intensity = pow(depth.a, 40000);
+				//fog_intensity = -fog_intensity + 1;
+				
+				vec3 fog_color = vec3(0.5, 0.75, 1) * fog_intensity;
+				
+				fog_color = min(fog_color, 1);
+				
+				out_color.rgb += fog_color;
+				
 				out_color.a = 1;
 			}
 		]]  
 	}
 }
+
+local sphere = NULL
 
 function render.InitializeDeffered()
 
@@ -54,21 +81,21 @@ function render.InitializeDeffered()
 			name = "normal",
 			attach = e.GL_COLOR_ATTACHMENT1,
 			texture_format = {
-				internal_format = e.GL_RGBA32F,
+				internal_format = e.GL_RGB32F,
 			}
 		},
 		{
 			name = "position",
 			attach = e.GL_COLOR_ATTACHMENT2,
 			texture_format = {
-				internal_format = e.GL_RGBA32F,
+				internal_format = e.GL_RGB32F,
 			}
 		},
 		{
 			name = "specular",
 			attach = e.GL_COLOR_ATTACHMENT3,
 			texture_format = {
-				internal_format = e.GL_RGBA32F,
+				internal_format = e.GL_R32F,
 			}
 		},
 		{
@@ -121,9 +148,16 @@ function render.InitializeDeffered()
 	render.deferred_shader = shader
 	render.deferred_screen_quad = screen_quad	
 	--debug.logcalls(true)
+	
+	sphere = Entity("model")
+	sphere:SetModelPath("models/sphere.obj")
+	sphere:SetPos(Vec3(100,50,100))
+	sphere:SetDrawManual(true) 
+	sphere:SetSize(30)
+	sphere.Model:SetTextureOverride(surface.white_texture)
 end
 
-local size = 3
+local size = 6
 
 function render.DrawDeffered(w, h)
 	--render.Start3D()	
@@ -132,7 +166,27 @@ function render.DrawDeffered(w, h)
 		
 	--render.gbuffer.End()
 	
-	--render.Start2D()
+	render.Start3D()
+	
+	gl.BindFramebuffer(e.GL_FRAMEBUFFER, render.gbuffer.id)
+	
+	gl.ActiveTextureARB(e.GL_TEXTURE4)
+	gl.Enable(e.GL_TEXTURE_2D)
+	gl.Disable(e.GL_DEPTH_TEST)
+	gl.Disable(e.GL_CULL_FACE)
+	
+	
+	if sphere:IsValid() then 
+		gl.DrawBuffers(1, render.gbuffer.buffers.light.draw_enum)
+		sphere:Draw()   
+	end
+	
+	gl.Enable(e.GL_DEPTH_TEST)
+	gl.Enable(e.GL_CULL_FACE)
+	gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
+	
+		
+	render.Start2D()
 
 	render.PushMatrix()
 		surface.Scale(w, h)
