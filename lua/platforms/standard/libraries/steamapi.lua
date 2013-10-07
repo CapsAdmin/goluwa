@@ -38,7 +38,7 @@ end
 
 function steamapi.Initialize()
 	steamapi.key = steamapi.GetKey()
-	steamapi.supported = steamapi.supported or luadata.ReadFile("steamapi/supported.lua")
+	steamapi.supported = steamapi.supported or luadata.ReadFile("steamapi_supported.lua")
 	
 	if key == "" then
 		logn("steamapi key is not set (run steamapi_key *key*)")
@@ -128,7 +128,7 @@ function steamapi.UpdateSupported(callback)
 	luasocket.Get("http://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steamapi.key, function(data)
 		local tbl = json.decode(data.content)
 		
-		luadata.WriteFile("steamapi/supported.lua", tbl)
+		luadata.WriteFile("steamapi_supported.lua", tbl)
 		steamapi.supported = tbl
 		
 		logn("[steamapi] supported api updated")		
