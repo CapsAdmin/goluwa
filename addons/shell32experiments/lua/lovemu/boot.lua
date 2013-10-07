@@ -30,8 +30,8 @@ function lovemu.boot(folder)
 	lovemu.demoname=folder
 	if not package_cache[lovemu.demoname] and lovemu.demoname~="" then
 		package_cache[lovemu.demoname]=true
-		package.path=package.path..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lovers/"..lovemu.demoname.."/?.lua","/","\\")..";"
-		package.path=package.path..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lovers/"..lovemu.demoname.."/?/init.lua","/","\\")..";"
+		package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lovers/"..lovemu.demoname.."/?.lua","/","\\")
+		package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lovers/"..lovemu.demoname.."/?/init.lua","/","\\")
 	end
 	
 	lovemu.delta=0
