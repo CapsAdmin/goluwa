@@ -78,11 +78,19 @@ local META = {}
 META.__index = META
 META.Type = "model"
 
+class.GetSet(META, "TextureOverride", NULL)
+
 function META:Draw()
 	for _, model in pairs(self.sub_models) do
-		model.mesh.diffuse = model.diffuse
-		model.mesh.bump = model.bump
-		model.mesh.specular = model.specular
+		if self.TextureOverride:IsValid() then
+			model.mesh.diffuse = self.TextureOverride
+			model.mesh.bump = self.TextureOverride
+			model.mesh.specular = self.TextureOverride
+		else
+			model.mesh.diffuse = model.diffuse
+			model.mesh.bump = model.bump
+			model.mesh.specular = model.specular
+		end
 		model.mesh:Draw()
 	end
 end
