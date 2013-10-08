@@ -129,6 +129,9 @@ function love.graphics.getHeight()
 	return render.h
 end
 
+function love.graphics.setMode() --partial
+end
+
 function love.graphics.print(text,x,y,r,sx,sy)
 	x=x+lovemu.translate_x
 	y=y+lovemu.translate_y
@@ -197,6 +200,15 @@ function love.graphics.rectangle(mode,x,y,w,h)
 	surface.DrawRectEx((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y, w*lovemu.scale_x, h*lovemu.scale_y,0,0,0)
 end
 
+function love.graphics.circle(mode,x,y,w,h) --partial
+	x=x or 0
+	y=y or 0
+	w=w or 0
+	h=h or 0
+	surface.SetTexture()
+	surface.DrawRectEx((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y, w*lovemu.scale_x, h*lovemu.scale_y,0,0,0)
+end
+
 function love.graphics.reset()
 end
 
@@ -218,6 +230,24 @@ end
 
 function love.graphics.isSupported() --partial
 	return true
+end
+
+function love.graphics.setCanvas(canvas)
+	canvas:Bind()
+end
+
+local canvas_config={
+	{
+		name = "diffuse",
+		attach = e.GL_COLOR_ATTACHMENT1,
+		texture_format = {
+			internal_format = e.GL_RGB32F,
+		}
+	}
+}
+		
+function love.graphics.newCanvas(w,h) --partial
+	return render.CreateFrameBuffer(w,h,canvas_config)
 end
 
 local LineWidth=1

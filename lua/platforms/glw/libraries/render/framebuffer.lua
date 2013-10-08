@@ -5,9 +5,11 @@ function META:__tostring()
 	return ("frame_buffer[%i]"):format(self.id)
 end
 
-function META:Begin(attach, channel)
+function META:Begin(attach, channel, skip_push)
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, self.id)
-	gl.PushAttrib(e.GL_VIEWPORT_BIT)
+	if not skip_push then
+		gl.PushAttrib(e.GL_VIEWPORT_BIT)
+	end
 	gl.Viewport(0, 0, self.width, self.height)	
 	
 	gl.Clear(bit.bor(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT))
@@ -21,6 +23,10 @@ function META:Begin(attach, channel)
 	else
 		gl.DrawBuffers(self.draw_buffers_size, self.draw_buffers)
 	end
+end
+
+function META:Bind(attach, channel)
+	self:Begin(attach, channel, true)
 end
 
 function META:End()

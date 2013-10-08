@@ -4,11 +4,10 @@ _G.ffi = require("ffi")
 _G[ffi.os:upper()] = true
 _G[ffi.arch:upper()] = true
 
-_E = _E or {}
-e = _E 
+e = e or {}
 
-_E.PLATFORM = PLATFORM or tostring(select(1, ...) or nil)
-_E.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
+e.PLATFORM = PLATFORM or tostring(select(1, ...) or nil)
+e.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
 _G[e.USERNAME:upper()] = true
 
 _G.LOG_BUFFER = {}
@@ -71,20 +70,20 @@ do -- file system
 	lfs = require("lfs")
 
 	-- the base folder is always 3 paths up (bin/os/arch)
-	_E.BASE_FOLDER = "../../../" 
-	_E.ABSOLUTE_BASE_FOLDER = lfs.currentdir():gsub("\\", "/"):match("(.+/).-/.-/")
+	e.BASE_FOLDER = "../../../" 
+	e.ABSOLUTE_BASE_FOLDER = lfs.currentdir():gsub("\\", "/"):match("(.+/).-/.-/")
 	
 	-- the user folders
-	_E.USERDATA_FOLDER = _E.BASE_FOLDER .. "userdata/"
-	_E.USER_FOLDER = _E.USERDATA_FOLDER .. _E.USERNAME:lower() .. "/"
+	e.USERDATA_FOLDER = e.BASE_FOLDER .. "userdata/"
+	e.USER_FOLDER = e.USERDATA_FOLDER .. e.USERNAME:lower() .. "/"
 	
 	-- create them
-	lfs.mkdir(_E.USERDATA_FOLDER)
-	lfs.mkdir(_E.USER_FOLDER)
+	lfs.mkdir(e.USERDATA_FOLDER)
+	lfs.mkdir(e.USER_FOLDER)
 
 	-- this is ugly but it's because we haven't included the global extensions yet..
 	_G.check = function() end
-	vfs = dofile(_E.BASE_FOLDER .. "/lua/platforms/standard/libraries/vfs.lua")
+	vfs = dofile(e.BASE_FOLDER .. "/lua/platforms/standard/libraries/vfs.lua")
 
 	-- mount the base folders
 	
@@ -208,7 +207,7 @@ do -- logging
 		return true
 	end
 	
-	local base_log_dir = _E.USER_FOLDER .. "logs/"
+	local base_log_dir = e.USER_FOLDER .. "logs/"
 	
 	local log_files = {}
 	local log_file

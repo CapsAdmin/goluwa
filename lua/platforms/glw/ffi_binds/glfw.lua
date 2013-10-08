@@ -107,8 +107,6 @@ int glfwExtensionSupported(const char* extension);
 GLFWglproc glfwGetProcAddress(const char* procname);
 ]]
 
-local e = {}
-
 e.GLFW_VERSION_MAJOR = 3
 e.GLFW_VERSION_MINOR = 0
 e.GLFW_VERSION_REVISION = 0
@@ -321,7 +319,7 @@ e.GLFW_DISCONNECTED = 262146
 local glfw = {}
 
 for key, val in pairs(e) do
-	_E[key] = val
+	e[key] = val
 end
 
 local reverse_enums = {}

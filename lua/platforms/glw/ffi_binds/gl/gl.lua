@@ -126,7 +126,7 @@ function gl.InitMiniGlew()
 			local key, val = line:match("([1-9a-Z_]+) (.+)")
 			
 			if key and val then
-				_E[key] = tonumber(val)
+				e[key] = tonumber(val)
 			elseif line:find("typedef") then
 				--print(line)
 			else

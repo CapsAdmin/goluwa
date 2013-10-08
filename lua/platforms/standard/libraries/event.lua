@@ -1,6 +1,6 @@
 local event = {}
 
-_E.EVENT_DESTROY = "??|___EVENT_DESTROY___|??" -- unique what
+e.EVENT_DESTROY = "??|___EVENT_DESTROY___|??" -- unique what
 
 event.active = {}
 event.errors = {}
