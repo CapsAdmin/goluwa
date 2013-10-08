@@ -365,32 +365,24 @@ do -- ffi
 		return msg
 	end
 	
+	local function warn_pcall(func, ...)
+		local res = {pcall(func, ...)}
+		if not res[1] then
+			logn(res[2])
+		end
+		
+		return unpack(res, 2)
+	end
+	
 	-- ffi's cdef is so anti realtime
-	if not ffi.already_defined then
-		ffi.already_defined = {}
-		
-		_OLD_G.ffi_cdef = _OLD_G.ffi_cdef or ffi.cdef
-		ffi.cdef = function(str, ...)
-			local val = ffi.already_defined[str]
-			
-			if val then
-				return val
-			end
-		
-			ffi.already_defined[str] = str
-			return _OLD_G.ffi_cdef(str, ...)
-		end
-			
-		ffi.already_defined_metatypes = {}
-			
-		old_ffi_metatype = old_ffi_metatype or ffi.metatype
-		ffi.metatype = function(str, ...)
-			local res = ffi.already_defined_metatypes[str] or old_ffi_metatype(str, ...)			
-			
-			ffi.already_defined_metatypes[str] = res
-			
-			return res
-		end
+	local cdef = ffi.cdef
+	ffi.cdef = function(str, ...)
+		return warn_pcall(cdef, str, ...)
+	end
+	
+	local metatype = ffi.metatype
+	ffi.metatype = function(str, ...)
+		return warn_pcall(metatype, str, ...)
 	end
 end
 
