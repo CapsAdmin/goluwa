@@ -6,7 +6,7 @@ META.TypeX = "player"
 class.GetSet(META, "UniqueID", "???")
 class.GetSet(META, "ID", -1)
 
-nvars.GetSet(META, "Nick", _E.USERNAME, "cl_nick")
+nvars.GetSet(META, "Nick", e.USERNAME, "cl_nick")
 
 function META:GetNick()
 	for key, ply in pairs(players.GetAll()) do

@@ -76,7 +76,7 @@ function addons.LoadAll()
 				info.priority = info.priority or -1
 			table.insert(addons.Info, info)
 
-			_E["ADDON_" .. info.name:upper()] = info
+			e["ADDON_" .. info.name:upper()] = info
 		else
 			local info = {}
 				info.path = path
@@ -85,7 +85,7 @@ function addons.LoadAll()
 				info.folder = folder
 				info.priority = -1
 			table.insert(addons.Info, info)
-			_E["ADDON_" .. info.name:upper()] = info
+			e["ADDON_" .. info.name:upper()] = info
 			
 		end
 	end

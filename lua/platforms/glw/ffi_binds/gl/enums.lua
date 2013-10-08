@@ -1,4 +1,4 @@
-setfenv(1, _E)
+setfenv(1, e)
 
 GL_VERSION_1_1 = 1
 GL_ZERO = 0

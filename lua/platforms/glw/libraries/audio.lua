@@ -139,7 +139,7 @@ local function GET_BINDER(META, object_name)
 		local get = al["Get" .. object_name .. type]
 		
 		if not enum then
-			enum = _E[name]
+			enum = e[name]
 			name = name:gsub("AL_", "")
 			name = name:gsub(object_name:upper() .. "_", "")
 			name = name:lower()

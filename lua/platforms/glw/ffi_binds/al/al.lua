@@ -20,7 +20,7 @@ for k,v in pairs(enums) do
 end
 
 for k,v in pairs(enums) do
-	_E[k] = v
+	e[k] = v
 end
  
 ffi.cdef(header)

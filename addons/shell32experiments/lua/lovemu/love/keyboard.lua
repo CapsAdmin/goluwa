@@ -40,6 +40,8 @@ for k,v in pairs(keyboard_map) do
 	keyboard_map[v] = k
 end
 
+keyboard_map[" "]="space"
+
 function love.keyboard.isDown(key) --partial
 	return input.IsKeyDown(keyboard_map[key] or key)
 end
