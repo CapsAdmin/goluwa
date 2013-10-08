@@ -99,7 +99,7 @@ do -- window meta
 		
 		self:UpdateMouseTrap(dt)
 
-		render.DrawScene(self)
+		render.DrawScene(self, dt)
 	end
 	
 	function render.CreateWindow(width, height, title)	

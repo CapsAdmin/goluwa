@@ -1,4 +1,4 @@
-function render.DrawScene(window)
+function render.DrawScene(window, dt)
 	render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
 
 	render.Start(window)
