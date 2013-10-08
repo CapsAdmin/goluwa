@@ -1,4 +1,5 @@
 include("render.lua")
+include("scene.lua")
 include("matrix44.lua")
 include("texture.lua")
 include("framebuffer.lua")
