@@ -133,7 +133,7 @@ do -- logging
 	end
 	
 	local function tostringx(val)
-		local t = type(val)
+		local t = (typex or type)(val)
 		return pretty_prints[t] and pretty_prints[t](val) or tostring(val)
 	end
 
