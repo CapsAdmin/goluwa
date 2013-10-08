@@ -1,45 +1,21 @@
--- enums
 _G.ffi = require("ffi")
 
 _G[ffi.os:upper()] = true
 _G[ffi.arch:upper()] = true
 
+-- enums table
 e = e or {}
 
 e.PLATFORM = PLATFORM or tostring(select(1, ...) or nil)
 e.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
 _G[e.USERNAME:upper()] = true
 
+-- this will be replaced later on with logn
 _G.LOG_BUFFER = {}
 print = function(...) 
 	local args =  {...}
 	table.insert(args, "\n")
 	table.insert(_G.LOG_BUFFER, args) 
-end
-
-do -- helper constants	
-	_G._F = {}
-	
-	local _F = _F
-	local _G = _G
-	local META = {}
-	
-	local val
-	function META:__index(key)
-		val = _F[key]
-		
-		if type(val) == "function" then
-			return val()
-		end
-	end
-	
-	setmetatable(_G, META)
-		
-	do -- example
-		_F["T"] = os.clock
-		
-		-- logn(T + 1) = logn(os.clock() + 1)
-	end
 end
 
 -- put all c functions in a table
