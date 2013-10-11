@@ -554,6 +554,7 @@ profiler = include(libraries .. "profiler.lua")
 steam = include(libraries .. "steam.lua")
 steamapi = include(libraries .. "steamapi.lua")
 cookies = include(libraries .. "cookies.lua")
+lpeg = include(libraries .. "lulpeg.lua")
 
 -- meta
 include(meta .. "function.lua")
