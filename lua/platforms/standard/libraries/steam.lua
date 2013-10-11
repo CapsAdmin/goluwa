@@ -90,14 +90,15 @@ function steam.FindGamePaths(force_cache_update)
 end
 
 function steam.GetInstallPath()
+	local path
+
 	if WINDOWS then
-		return 
-			system.GetRegistryKey("System\\Valve\\Steam", "SteamPath") or 
-			system.GetRegistryKey("Software\\Valve\\Steam", "SteamPath") or 
-			(X64 and "C:\\Program Files (x86)\\Steam" or "C:\\Program Files\\Steam")
+		path = system.GetRegistryKey("Software\\Valve\\Steam", "SteamPath") or (X64 and "C:\\Program Files (x86)\\Steam" or "C:\\Program Files\\Steam")
 	elseif LINUX then
-		return os.getenv("HOME") .. "/.local/share/Steam"
+		path = os.getenv("HOME") .. "/.local/share/Steam"
 	end
+
+	return lfs.symlinkattributes(path, "mode") and path or nil
 end
 
 return steam
