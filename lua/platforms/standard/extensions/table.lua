@@ -74,7 +74,7 @@ do -- table logn
 				
 				logf("%s]", tab:rep(indent))
 			elseif t == "string" then
-				logf("%s%s = %q,", tab:rep(indent), key, tostringx(val))
+				logf("%s%s = \"%s\",", tab:rep(indent), key, tostringx(val))
 			else
 				logf("%s%s = %s,", tab:rep(indent), key, tostringx(val))
 			end
