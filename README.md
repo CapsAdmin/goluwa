@@ -1,5 +1,3 @@
-Goluwa is a game engine (3d) written in LuaJIT. It uses LuaJIT's FFI api to bind OpenGL and all the available extensions.
-
-A lot of the low level libraries are made by parsing header data. So functions like "FT_Set_Char_Index" become "freetype.SetCharIndex" automatically to keep the style consistent.
+Goluwa is a game engine written in LuaJIT. It includes high level libraries to render graphics (opengl), play audio (openal soft), handle input, networking and much more. 3D is the main interest but 2D is also important.
 
 The coding style is inspired by Garry's Mod (so also Source Engine), CryEngine and SFML.
