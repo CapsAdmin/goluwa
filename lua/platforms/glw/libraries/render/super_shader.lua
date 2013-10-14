@@ -29,14 +29,14 @@ end
 
 do
 	local unrolled_lines = {
-		number = "gl.Uniform1f(%i, val)",
+		number = "render.Uniform1f(%i, val)",
 		
-		vec2 = "gl.Uniform2f(%i, val.x, val.y)",
-		vec3 = "gl.Uniform3f(%i, val.x, val.y, val.z)",
+		vec2 = "render.Uniform2f(%i, val.x, val.y)",
+		vec3 = "render.Uniform3f(%i, val.x, val.y, val.z)",
 		
-		color = "gl.Uniform4f(%i, val.r, val.g, val.b, val.a)",
+		color = "render.Uniform4f(%i, val.r, val.g, val.b, val.a)",
 		
-		mat4 = "gl.UniformMatrix4fv(%i, 1, 0, val)",
+		mat4 = "render.UniformMatrix4fv(%i, 1, 0, val)",
 		
 		texture = "render.BindTexture(val, %i)", 
 	}
@@ -583,13 +583,16 @@ void main()
 				local pos = 0
 				for id, data in pairs(build.vertex.vtx_info) do
 					gl.BindAttribLocation(prog, id-1, data.name)
-
+					local type_stride = ffi.cast("void*", data.info.size * pos)
 					self.attributes[id-1] = {
 						arg_count = data.info.arg_count,
 						enum = data.info.enum_type,
 						stride = build.vertex.vtx_atrb_size,
-						type_stride = ffi.cast("void*", data.info.size * pos)
+						type_stride = type_stride,
 					}
+					
+					gl.EnableVertexAttribArray(id-1)
+					gl.VertexAttribPointer(id-1, data.info.arg_count, data.info.enum_type, false, build.vertex.vtx_atrb_size, type_stride)
 					
 					pos = pos + data.info.arg_count
 				end
@@ -600,10 +603,13 @@ void main()
 				end]]
 				
 				
-				for location, data in pairs(self.attributes) do
-					lua = lua .. "gl.EnableVertexAttribArray("..location..")\n"
-					lua = lua .. "gl.VertexAttribPointer("..location..",".. data.arg_count..",".. data.enum..",false,".. data.stride..",self.attributes["..location.."].type_stride)\n\n"
-				end
+				--for location, data in pairs(self.attributes) do
+				--	lua = lua .. "render.EnableVertexAttribArray("..location..")\n"
+				--	lua = lua .. "render.VertexAttribPointer("..location..",".. data.arg_count..",".. data.enum..",false,".. data.stride..",self.attributes["..location.."].type_stride)\n\n"
+				--end
+				
+				--render.EnableVertexAttribArray(location)
+				--render.VertexAttribPointer(location, data.arg_count, data.enum, false, data.stride, self.attributes[location].type_stride)
 				
 					
 				local func, err = loadstring(lua)
