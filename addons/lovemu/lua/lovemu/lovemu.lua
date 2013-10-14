@@ -45,7 +45,7 @@ for i=1,getn(lovemu.modules) do
 end
 
 lovemu.supported={}
-for _,v in pairs(lovemu.listFiles(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lua/lovemu/","lua")) do
+for _,v in pairs(lovemu.listFiles(R"lua/lovemu/","lua")) do
 	for _,l in pairs(string.split(vfs.Read(v),"\n")) do
 		if find(l,"love.") then
 			if string.match(l,"(.-)%b()") then
@@ -162,7 +162,7 @@ console.AddCommand("lovemu", function(line)
 	elseif param[1]=="check" then
 		if param[2] then
 			local functions_list={}
-			for _,v in pairs(lovemu.listFiles(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lovers/"..param[2].."/","lua")) do
+			for _,v in pairs(lovemu.listFiles(R"lovers/"..param[2].."/","lua")) do
 				for _,l in pairs(string.split(vfs.Read(v),"\n")) do
 					if string.find(l,"love.") then
 						if string.match(l,"(.-)%b()") then

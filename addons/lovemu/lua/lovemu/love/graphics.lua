@@ -51,7 +51,7 @@ function love.graphics.newFont(font,siz)
 		print("loaded font: "..font)
 		FontObject.Name=surface.CreateFont(font..siz, {
 			size = siz,
-			path = e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lovers/"..lovemu.demoname.."/"..font,
+			path = R"lovers/"..lovemu.demoname.."/"..font,
 		})
 		FontObject.Size=siz
 		FontObject.getWidth=getWidth
