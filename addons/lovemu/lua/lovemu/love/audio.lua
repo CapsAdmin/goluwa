@@ -136,7 +136,7 @@ local id=1
 function love.audio.newSource(path) --partial
 	local legit=false
 	local source={}
-	if vfs.Exists(e.ABSOLUTE_BASE_FOLDER.."addons/shell32experiments/lovers/"..lovemu.demoname.."/"..path)==true then
+	if vfs.Exists(R"lovers/"..lovemu.demoname.."/"..path)==true then
 		local ext=string.split(path,".")
 		ext=ext[#ext]
 		if ext=="flac" or ext=="wav" or ext=="ogg" then
