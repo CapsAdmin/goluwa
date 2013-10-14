@@ -207,7 +207,7 @@ void main()
 	local base = e.GL_TEXTURE0
 
 	function META:Bind()
-		gl.UseProgram(self.program_id)
+		render.UseProgram(self.program_id)
 
 		-- unroll this?
 		
@@ -252,24 +252,26 @@ void main()
 
 		gl.BindBuffer(e.GL_ARRAY_BUFFER, id) 
 		gl.BufferData(e.GL_ARRAY_BUFFER, size, buffer, e.GL_STATIC_DRAW)
+				
+		local vao_id = gl.GenVertexArray()
+		gl.BindVertexArray(vao_id)
+		
+		for location, data in pairs(self.attributes) do
+			gl.EnableVertexAttribArray(location)
+			gl.VertexAttribPointer(location, data.arg_count, data.enum, false, data.stride, data.type_stride)
+		end
+		
+		gl.BindVertexArray(0)
 
 		local vbo = vbo_override or {Type = "VertexBuffer", id = id, IsValid = function() return true end}
 		vbo.length = #data
 
 		vbo.Draw = function(vbo)
-			render.BindArrayBuffer(vbo.id) 
+			render.UseProgram(self.program_id)
 			
-			if self.unrolled_bind_func then
-				render.UseProgram(self.program_id)
-				self.unrolled_bind_func()
-				
-			else
-				if vbo.UpdateUniforms then
-					vbo:UpdateUniforms()
-				end
-				
-				self:Bind()
-			end
+			render.BindArrayBuffer(vbo.id)
+			render.BindVertexArray(vao_id)
+			self.unrolled_bind_func()
 			
 			gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
 		end
@@ -309,12 +311,12 @@ void main()
 			-- material to ensure we have all the enums
 			uniform_translate =
 			{
-				float = gl.Uniform1f,
-				vec2 = gl.Uniform2f,
-				vec3 = gl.Uniform3f,
-				vec4 = gl.Uniform4f,
-				mat4 = function(location, ptr) gl.UniformMatrix4fv(location, 1, 0, ptr) end,
-				sampler2D = gl.Uniform1i,
+				float = render.Uniform1f,
+				vec2 = render.Uniform2f,
+				vec3 = render.Uniform3f,
+				vec4 = render.Uniform4f,
+				mat4 = function(location, ptr) render.UniformMatrix4fv(location, 1, 0, ptr) end,
+				sampler2D = render.Uniform1i,
 				not_implemented = function() end,
 			}
 
@@ -577,13 +579,13 @@ void main()
 					lua = lua .. "\t" .. line .. "\n"
 					lua = lua .. "end\n\n"
 				end
-				
+					
 				self.attributes = {}
-
 				local pos = 0
 				for id, data in pairs(build.vertex.vtx_info) do
 					gl.BindAttribLocation(prog, id-1, data.name)
 					local type_stride = ffi.cast("void*", data.info.size * pos)
+					
 					self.attributes[id-1] = {
 						arg_count = data.info.arg_count,
 						enum = data.info.enum_type,
@@ -591,31 +593,23 @@ void main()
 						type_stride = type_stride,
 					}
 					
-					gl.EnableVertexAttribArray(id-1)
-					gl.VertexAttribPointer(id-1, data.info.arg_count, data.info.enum_type, false, build.vertex.vtx_atrb_size, type_stride)
-					
 					pos = pos + data.info.arg_count
+				end				
+							
+				lua = lua .. "if render.current_program ~= render.super_shader_last_program then\n"
+				for location, data in pairs(self.attributes) do
+					--lua = lua .. "\tgl.EnableVertexAttribArray("..location..") \n"
+					--lua = lua .. "\tgl.VertexAttribPointer("..location..",".. data.arg_count..",".. data.enum..",false,".. data.stride..",self.attributes["..location.."].type_stride)\n\n"
+					--lua = lua .. "\tgl.BindVertexArray(self.vao_id)"
 				end
+				lua = lua .. "\trender.super_shader_last_program = render.current_program\n"
+				lua = lua .. "end\n"
 				
-				--[[for location, data in pairs(self.attributes) do
-					gl.EnableVertexAttribArray(location)
-					gl.VertexAttribPointer(location, data.arg_count, data.enum, false, data.stride, data.type_stride)
-				end]]
-				
-				
-				--for location, data in pairs(self.attributes) do
-				--	lua = lua .. "render.EnableVertexAttribArray("..location..")\n"
-				--	lua = lua .. "render.VertexAttribPointer("..location..",".. data.arg_count..",".. data.enum..",false,".. data.stride..",self.attributes["..location.."].type_stride)\n\n"
-				--end
-				
-				--render.EnableVertexAttribArray(location)
-				--render.VertexAttribPointer(location, data.arg_count, data.enum, false, data.stride, self.attributes[location].type_stride)
-				
-					
+								
 				local func, err = loadstring(lua)
 				if not func then error(err, 2) end
 				self.unrolled_bind_func = func
-				setfenv(func, {gl = gl, self = self, loc = prog, type = type, render = render})
+				setfenv(func, {gl = gl, self = self, loc = prog, type = type, render = render, print = print})
 				
 				self.original_data = data
 				self.base_shader = base
