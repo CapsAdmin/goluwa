@@ -81,7 +81,7 @@ local function add_gl_func(name, func)
 		
 			local enum = gl.GetError()
 			if enum ~= e.GL_NO_ERROR then
-				local str = glu.GetLastError(enum)	
+				local str = ffi.string(glu.ErrorString(enum))
 				local info = debug.getinfo(2)
 				
 				logf("[opengl] gl%s failed with %q in function %s at %s:%i", name, str, info.name, info.short_src, info.currentline)
@@ -166,7 +166,7 @@ function gl.InitMiniGlew()
 	-- adds gl.GenBuffer which creates and returns a single id from gl.GenBuffers 
 	-- no support for ARB stuff yet lol
 	for name, func in pairs(gl) do
-		if name:find("Gen%u%l-s$") then
+		if name:find("Gen%a-s$") then
 			gl[name:sub(0,-2)] = function()
 				local id = ffi.new("GLint [1]") 
 				gl[name](1, id) 
