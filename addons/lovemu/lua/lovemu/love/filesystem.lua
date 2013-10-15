@@ -93,7 +93,7 @@ end
 
 function love.filesystem.setIdentity(name)
 	if not type(name)=="string" then
-		Identity=""
+		Identity="generic"
 	else
 		Identity=name
 	end
