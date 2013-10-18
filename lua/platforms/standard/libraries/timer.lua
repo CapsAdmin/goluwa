@@ -3,8 +3,9 @@ local timer = _G.timer or {}
 timer.CurrentTimers = {}
 timer.SimpleTimers = {}
 timer.Thinkers = {}
+timer.clock = os.clock
 
-function timer.Simple(time, callback, obj)
+function timer.Delay(time, callback, obj)
 	check(time, "number", "function")
 	check(callback, "function", "nil")
 
@@ -22,7 +23,7 @@ function timer.Simple(time, callback, obj)
 		end
 	end
 
-	local realtime = os.clock() + time
+	local realtime = timer.clock() + time
 
 	timer.SimpleTimers[tostring(callback) .. tostring(time)] = {
 		callback = callback,
@@ -69,7 +70,7 @@ do -- timer meta
 		return xpcall(self.callback, mmyy.OnError, ...)
 	end
 	function META:SetNextThink(num)
-		self.realtime = os.clock() + num
+		self.realtime = timer.clock() + num
 	end
 	function META:Remove()
 		timer.CurrentTimers[self.id] = nil
@@ -87,7 +88,7 @@ function timer.Create(id, time, repeats, callback, run_now)
 	time = math.abs(time)
 	repeats = math.max(repeats, 0)
 
-	local realtime = os.clock() + time
+	local realtime = timer.clock() + time
 	local obj = timer.CurrentTimers[id] or {}
 		
 		obj.realtime = realtime
@@ -111,7 +112,7 @@ function timer.Create(id, time, repeats, callback, run_now)
 end
 
 function timer.Update()
-	local cur = os.clock()
+	local cur = timer.clock()
 
 	for id, data in pairs(timer.SimpleTimers) do
 		if data.realtime < cur then

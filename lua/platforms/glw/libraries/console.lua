@@ -451,7 +451,7 @@ do -- input extensions
 		local ret = trigger(key, true)
 		
 		-- :(
-		timer.Simple(0, function() trigger(key, false) end)
+		timer.Delay(0, function() trigger(key, false) end)
 		
 		return ret
 	end)
@@ -462,7 +462,7 @@ do -- input extensions
 		local ret = trigger(char, true)
 		
 		-- :(
-		timer.Simple(0, function() trigger(char, false) end)
+		timer.Delay(0, function() trigger(char, false) end)
 		
 		return ret
 	end)

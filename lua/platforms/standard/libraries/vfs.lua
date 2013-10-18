@@ -453,7 +453,7 @@ do -- file monitoring
 		target = target or source
 		
 		vfs.MonitorFile(source, function()
-			timer.Simple(0, function()
+			timer.Delay(0, function()
 				dofile(target)
 			end)
 		end)
