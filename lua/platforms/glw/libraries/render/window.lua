@@ -126,6 +126,10 @@ do -- window meta
 			
 			gl.gl_init = true
 		end
+		
+		if gl.SwapIntervalEXT then
+			gl.SwapIntervalEXT(0)
+		end
 			
 		local self = setmetatable({}, META)
 		
