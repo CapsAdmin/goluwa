@@ -601,7 +601,7 @@ if CREATED_ENV then
 			logn("compile error:", client, msg)
 		end
 		
-		timer.Simple(0, function() event.Call("OnConsoleEnvReceive", line) end)
+		timer.Delay(0, function() event.Call("OnConsoleEnvReceive", line) end)
 	end 
 end
 

@@ -154,7 +154,7 @@ function menu.MakeButtons()
 	menu.buttons = {}
 	
 	if CLIENT and players.GetLocalPlayer():IsValid() then
-		menu.AddButton("Resume", function() timer.Simple(0.1, function() menu.Close() end) end)
+		menu.AddButton("Resume", function() timer.Delay(0.1, function() menu.Close() end) end)
 		menu.AddButtonSpace()
 	end
 
@@ -246,7 +246,7 @@ function menu.MakeButtons()
 	menu.AddButtonSpace() 
  
 	menu.AddButton("Console", function() console.RunString("ConsoleShow", true, true) end)
-	menu.AddButton("Restart", function() timer.Simple(0.1, function() console.RunString("reoh", true, true) end) end)
+	menu.AddButton("Restart", function() timer.Delay(0.1, function() console.RunString("reoh", true, true) end) end)
 	menu.AddButton("Exit", function() os.exit() end)
 	
 	menu.SetupButtons()

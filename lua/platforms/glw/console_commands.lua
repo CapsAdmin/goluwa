@@ -28,7 +28,7 @@ console.AddCommand("profile", function(line, time)
 		end)
 	end
 	
-	timer.Simple(time, function()
+	timer.Delay(time, function()
 		profiler.Stop()
 		
 		local benchmark = profiler.GetBenchmark()

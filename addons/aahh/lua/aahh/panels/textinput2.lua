@@ -345,7 +345,7 @@ function PANEL:OnDraw(size)
 	local char, rect, pos = self:GetCharFromPos(self.CaretPos)
 			
 	-- caret
-	if rect and --[[self:IsActivePanel() and]] T%0.5 > 0.25 then
+	if rect and --[[self:IsActivePanel() and]] os.clock()%0.5 > 0.25 then
 		rect.w = 2
 		aahh.Draw("rect", rect, self:GetSkinColor("light2"))
 	end		
@@ -360,7 +360,7 @@ end
 aahh.RegisterPanel(PANEL)
 
 if CAPSADMIN and false then
-	timer.Simple(0.1, function()
+	timer.Delay(0.1, function()
 		local frame = utilities.RemoveOldObject(aahh.Create("frame"), "uh")
 		frame:SetPos(Vec2(50, 550))
 		frame:SetSize(Vec2(0, 0) + 400)
