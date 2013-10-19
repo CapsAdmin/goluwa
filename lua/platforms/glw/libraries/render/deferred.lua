@@ -42,12 +42,12 @@ local SHADER = {
 				normal = normalize(normal);
 				
 				vec3 eye_dir = normalize(cam_pos - position.xyz);
-				vec3 half = normalize(light_dir + eye_dir);
+				vec3 lolhalf = normalize(light_dir + eye_dir);
 				
 				out_color.rgb = 
 				(light_color * max(dot(normal.xyz, light_dir), 0)) * 
 				diffuse.rgb + 
-				pow(max(dot(normal.xyz, half), 0.0), 9) *
+				pow(max(dot(normal.xyz, lolhalf), 0.0), 9) *
 				specular.r*20;
 				
 				float fog_intensity = pow(depth.a, 40000);
@@ -147,14 +147,6 @@ function render.InitializeDeffered()
 	
 	render.deferred_shader = shader
 	render.deferred_screen_quad = screen_quad	
-	--debug.logcalls(true)
-	
-	sphere = Entity("model")
-	sphere:SetModelPath("models/sphere.obj")
-	sphere:SetPos(Vec3(100,50,100))
-	sphere:SetDrawManual(true) 
-	sphere:SetSize(30)
-	sphere.Model:SetTextureOverride(surface.white_texture)
 end
 
 local size = 6
