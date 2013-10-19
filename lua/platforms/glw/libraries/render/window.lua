@@ -88,7 +88,7 @@ do -- window meta
 		local size = self:GetSize()
 		local pos = self:GetMousePos()
 
-		self.mouse_delta = (pos - (last or pos)) * dt * 25
+		self.mouse_delta = (pos - (last or pos)) * dt * 200
 		
 		last = pos
 	end
