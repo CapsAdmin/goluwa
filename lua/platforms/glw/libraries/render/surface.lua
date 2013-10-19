@@ -129,6 +129,8 @@ do -- fonts
 		-- create a face from memory
 		local data = vfs.Read(info.path, "rb") 
 		
+		if not data then error("could not find font " .. name, 2) end
+		
 		local face = ffi.new("FT_Face[1]")   
 		freetype.NewMemoryFace(ft.ptr, data, #data, 0, face)   
 		face = face[0]	
