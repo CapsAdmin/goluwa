@@ -487,7 +487,7 @@ do -- file monitoring
 		scan(full_path .. "lua/")
 		scan(full_path .. "addons/")
 
-		timer.Create("vfs_monitor_everything", 0.1, 0, function()
+		timer.Create("vfs_monitor_everything", 0.5, 0, function()
 			for _, data in pairs(lua_files) do
 				local info = lfs.attributes(data.path)
 				
