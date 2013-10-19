@@ -132,6 +132,8 @@ local function try_find(sub_model, path, key, a, b, format)
 	end				
 end
 
+local cache = {}
+
 local default_diffuse
 local default_specular
 local default_bump
@@ -140,20 +142,24 @@ local format = {mip_map_levels = 4}
 
 function Model(path)
 	check(path, "string")
-		
-	local path = R(path)
 	
-	if not vfs.Exists(path) then
-		error(path .. " not found", 2)
+	if cache[path] then
+		return cache[path]
 	end
 	
-	local scene = assimp.ImportFile(path,0)
+	local new_path = R(path)
+	
+	if not vfs.Exists(new_path) then
+		error(new_path .. " not found", 2)
+	end
+	
+	local scene = assimp.ImportFile(new_path,0)
 
 	if not scene then
 		error(ffi.string(assimp.GetErrorString()), 2)
 	end
 	
-	models = parse_scene(scene, path:match("(.+)/"))	
+	models = parse_scene(scene, new_path:match("(.+)/"))	
 	
 	assimp.ReleaseImport(scene)
 	
@@ -242,6 +248,8 @@ function Model(path)
 			return false 
 		end  
 	end, 100)	]]
+	
+	cache[path] = self
 	
 	return self 
 end
