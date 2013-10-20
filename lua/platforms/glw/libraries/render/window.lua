@@ -138,10 +138,17 @@ do -- window meta
 		self.availible_callbacks = {}
 		
 		for nice, func in pairs(calllbacks) do
-			self.availible_callbacks[nice] = nice		
+			self.availible_callbacks[nice] = nice
 			func(ptr, function(ptr, ...)
-				if event.Call(nice, ...) ~= false and self[nice] then 
-					self[nice](self, ...)
+				if nice == "OnChar" then
+					local char = utf8.char(...)
+					if event.Call(nice, char) ~= false and self[nice] then
+						self[nice](self, char)
+					end
+				else
+					if event.Call(nice, ...) ~= false and self[nice] then
+						self[nice](self, ...)
+					end
 				end
 			end)
 		end
