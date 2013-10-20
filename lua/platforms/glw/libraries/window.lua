@@ -28,12 +28,12 @@ end
 
 function system.SetClipboard(str)
 	if window.wnd:IsValid() then
-		glfw.SetClipboardString(window.wnd, str)
+		glfw.SetClipboardString(window.wnd.__ptr, str)
 	end
 end
 
 function system.GetClipboard()
 	if window.wnd:IsValid() then
-		return glfw.GetClipboardString(window.wnd)
+		return ffi.string(glfw.GetClipboardString(window.wnd.__ptr))
 	end
 end
