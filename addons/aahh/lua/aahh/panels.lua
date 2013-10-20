@@ -31,7 +31,19 @@ end
 
 function aahh.RegisterPanel(META, name)
 	META.TypeBase = "base"
-	class.Register(META, "panel", name)
+	local _, name = class.Register(META, "panel", name)
+	
+	-- update entity functions only
+	-- updating variables might mess things up
+	for key, pnl in pairs(aahh.active_panels) do
+		if pnl.ClassName == name then
+			for k, v in pairs(META) do
+				if type(v) == "function" then
+					pnl[k] = v
+				end
+			end
+		end
+	end	
 end
 
 function aahh.GetRegisteredPanels()
