@@ -8,8 +8,7 @@ do -- events
 		aahh.KeyInput(key, press)
 	end)
 	
-	event.AddListener("OnChar", "aahh", function(uint)
-		local char = utf8.char(uint)
+	event.AddListener("OnChar", "aahh", function(char)
 		aahh.CharInput(char, true)
 	end)
 
