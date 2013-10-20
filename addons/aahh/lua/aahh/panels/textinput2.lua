@@ -209,7 +209,7 @@ end
 
 function PANEL:HandleKey(key)	
 	if key == "v" and input.IsKeyDown("lctrl") then
-		local str = system.GetClipboardTextText()
+		local str = system.GetClipboard()
 		if #str > 0 then
 			if not self.MultiLine then	 	
 				str = str:gsub("\n", "")
