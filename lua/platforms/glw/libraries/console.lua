@@ -92,7 +92,7 @@ function console.InitializeCurses()
 		end
 	end	
 
-	c.log_window = curses.derwin(c.parent_window, curses.LINES-0, curses.COLS, 0, 0)
+	c.log_window = curses.derwin(c.parent_window, curses.LINES-1, curses.COLS, 0, 0)
 	c.input_window = curses.derwin(c.parent_window, 1, curses.COLS, curses.LINES - 1, 0)
 	
 	curses.cbreak()
