@@ -127,6 +127,7 @@ do -- commands
 			
 			if not skip_lua then
 				
+				--[==[
 				local func = _G[cmd]
 				
 				if not func and cmd:find("%.") then
@@ -164,7 +165,7 @@ do -- commands
 					end
 				
 					return xpcall(func, mmyy.OnError, select(2, unpack(args)))
-				end
+				end]==]
 				
 				local func, err = loadstring(line)
 				
