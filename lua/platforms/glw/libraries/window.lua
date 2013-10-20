@@ -25,3 +25,15 @@ function window.Close()
 		window.wnd:Remove()
 	end
 end
+
+function system.SetClipboard(str)
+	if window.wnd:IsValid() then
+		glfw.SetClipboardString(window.wnd, str)
+	end
+end
+
+function system.GetClipboard()
+	if window.wnd:IsValid() then
+		return glfw.GetClipboardString(window.wnd)
+	end
+end
