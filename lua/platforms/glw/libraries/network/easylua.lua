@@ -75,7 +75,7 @@ function easylua.FindEntity(str)
 end
 
 function easylua.CopyToClipboard(var)
-	me:SendLua([[clipboard.SetText("]]..tostring(var)..[[")]])
+	me:SendLua([[system.SetClipboard("]]..tostring(var)..[[")]])
 end
 
 function easylua.Start(ply)

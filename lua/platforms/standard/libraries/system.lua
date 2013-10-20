@@ -245,6 +245,14 @@ do -- sleep
 	system.Sleep = sleep
 end
 
+do -- clipboard
+	local set = not_implemented
+	local get = not_implemented
+		
+	system.SetClipboard = set
+	system.GetClipboard = get	
+end
+
 do -- transparent window
 	local set = not_implemented
 
