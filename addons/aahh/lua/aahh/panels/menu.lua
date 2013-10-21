@@ -37,7 +37,7 @@ PANEL.Base = "grid"
 aahh.GetSet(PANEL, "IconSize", Vec2(16, 16))
 
 function PANEL:Initialize()
-	self:SetPos(aahh.GetMousePosition())
+	self:SetPos(aahh.GetMousePos())
 
 	self:SetStackRight(false)
 	self:SetSizeToWidth(false)

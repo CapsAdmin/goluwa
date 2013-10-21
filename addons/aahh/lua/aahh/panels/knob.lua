@@ -8,7 +8,7 @@ aahh.GetSet(PANEL, "DefaultValue", 0)
 function PANEL:OnDraw(size)
 
 	if self.drag_pos and input.IsMouseDown("button_1") then
-		local delta = (self.drag_pos - aahh.GetMousePosition()) / 100
+		local delta = (self.drag_pos - aahh.GetMousePos()) / 100
 		
 		if input.IsKeyDown("lshift") then
 			delta = delta / 5
@@ -49,7 +49,7 @@ function PANEL:OnMouseInput(button, press, pos, ...)
 			if input.IsKeyDown("lctrl") then
 				self:SetValue(self.DefaultValue)
 			else
-				self.drag_pos = aahh.GetMousePosition()
+				self.drag_pos = aahh.GetMousePos()
 				self.drag_value = self.Value
 			end
 		end

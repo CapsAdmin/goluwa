@@ -57,7 +57,7 @@ SKIN.Colors = c
 
 do--skin
 	function SKIN:Think()
-		MPOS = aahh.GetMousePosition()
+		MPOS = aahh.GetMousePos()
 		PAD = SKIN.Padding
 	end
 end
