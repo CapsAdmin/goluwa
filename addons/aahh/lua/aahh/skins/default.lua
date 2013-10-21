@@ -341,7 +341,7 @@ do--textinput
 		aahh.Draw("text", pnl.Text, Vec2(PAD, PAD), pnl.Font, c.text, Vec2(0, 0))	
 			
 		-- caret
-		if pnl:IsActivePanel() and T%0.5 > 0.25 then
+		if pnl:IsActivePanel() and os.clock()%0.5 > 0.25 then
 			aahh.Draw("rect", Rect(Vec2(siz.w+2, center.y-siz.h/2), Vec2(1, siz.h)), c.text)
 		end
 	end
