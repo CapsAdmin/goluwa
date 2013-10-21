@@ -124,8 +124,6 @@ do -- fonts
 			info.smoothness = 0.1
 		end
 		
-		info.smoothness = 0.01   
-
 		-- create a face from memory
 		local data = vfs.Read(info.path, "rb") 
 		
@@ -184,7 +182,9 @@ do -- fonts
 				if byte == -1 then byte = char:byte() end
 				
 				if char == " " then	
-					w = w + ft.current_font.info.size / 4
+					w = w + ft.current_font.info.size / 2
+				elseif char == "\t" then
+					w = w + ft.current_font.info.size * 2
 				else				
 					local tex = ft.current_font.glyphs[char]
 					
@@ -232,7 +232,7 @@ do -- fonts
 					
 					glyph.tex = tex
 					glyph.x = w
-					glyph.y = -tex.metrics.y + info.size*0.5
+					glyph.y = info.size - tex.metrics.y - 3
 					
 					glyph.x = glyph.x / info.res_multiplier
 					glyph.y = glyph.y / info.res_multiplier
@@ -271,9 +271,18 @@ do -- fonts
 	function surface.GetTextSize(str)
 		local data = ft.current_font and ft.current_font.strings[str]
 		
+		if ft.current_font then
+			if str == " " then
+				return ft.current_font.info.size / 2, ft.current_font.info.size
+			elseif str == "\t" then
+				return ft.current_font.info.size * 2, ft.current_font.info.size
+			end	
+		end
+		
 		if data then
 			return data.w, data.h
 		elseif ft.current_font then
+		
 			surface.DrawText(str) 
 			data = ft.current_font and ft.current_font.strings[str]
 			if data then
