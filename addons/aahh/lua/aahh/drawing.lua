@@ -132,4 +132,4 @@ function aahh.Update(delta)
 	event.Call("PostDrawMenu")
 end
 
-event.AddListener("OnDraw2D", "aahh", aahh.Update)
+event.AddListener("OnDraw2D", "aahh", aahh.Update, logn)
