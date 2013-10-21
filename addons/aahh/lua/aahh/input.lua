@@ -1,20 +1,20 @@
 
 do -- events
-	function aahh.GetMousePosition()
+	function aahh.GetMousePos()
 		return window.GetMousePos()
 	end
 
 	event.AddListener("OnKeyInput", "aahh", function(key, press)
 		aahh.KeyInput(key, press)
-	end)
+	end, logn)
 	
 	event.AddListener("OnChar", "aahh", function(char)
 		aahh.CharInput(char, true)
-	end)
+	end, logn)
 
 	event.AddListener("OnMouseInput", "aahh", function(key, press)
-		aahh.MouseInput(key, press, aahh.GetMousePosition())
-	end)
+		aahh.MouseInput(key, press, aahh.GetMousePos())
+	end, logn)
 end
 
 function aahh.CallEvent(pnl, name, ...)
