@@ -4,7 +4,7 @@ do -- events
 		return window.GetMousePos()
 	end
 
-	event.AddListener("OnKeyInput", "aahh", function(key, press)
+	event.AddListener("OnKeyInputRepeat", "aahh", function(key, press)
 		aahh.KeyInput(key, press)
 	end, logn)
 	
