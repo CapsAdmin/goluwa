@@ -152,7 +152,6 @@ function utf8.totable(str)
 end
 
 for name, func in pairs(utf8) do
-	print(name, func)
 	string["u" .. name] = func
 end
 
