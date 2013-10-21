@@ -158,9 +158,12 @@ do -- window meta
 		local trigger = input.SetupInputEvent("Key")
 
 		function self:OnKey(key, scancode, action, mods)
-			if action == e.GLFW_REPEAT then return end
 			
-			trigger(glfw.KeyToString(key), action == e.GLFW_PRESS)
+			event.Call("OnKeyInputRepeat", glfw.KeyToString(key), action == e.GLFW_PRESS or action == e.GLFW_REPEAT)
+			
+			if action ~= e.GLFW_REPEAT then 
+				trigger(glfw.KeyToString(key), action == e.GLFW_PRESS)
+			end
 		end
 
 		local trigger = input.SetupInputEvent("Mouse")
