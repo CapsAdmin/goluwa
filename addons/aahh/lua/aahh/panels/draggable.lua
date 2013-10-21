@@ -63,7 +63,7 @@ function PANEL:CalcCursor(pos)
 end
 
 function PANEL:OnThink()
-	local pos = aahh.GetMousePosition()
+	local pos = aahh.GetMousePos()
 	
 	self:CalcCursor(pos)
 			

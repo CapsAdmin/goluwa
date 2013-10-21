@@ -579,8 +579,8 @@ function PANEL:IsWorldPosInside(a)
 	return false
 end
 
-function PANEL:GetMousePosition()
-	local pos = aahh.GetMousePosition()
+function PANEL:GetMousePos()
+	local pos = aahh.GetMousePos()
 
 	if self:IsWorldPosInside(pos) then
 		return pos - self:GetWorldPos()
@@ -778,7 +778,7 @@ function PANEL:Think()
 		self:RequestLayout(true)
 	end
 
-	local mousepos = aahh.GetMousePosition()
+	local mousepos = aahh.GetMousePos()
 			
 --		if self.OnMouseMove then
 		-- Check if the mouse has moved
