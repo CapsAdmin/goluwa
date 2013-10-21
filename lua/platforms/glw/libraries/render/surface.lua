@@ -41,9 +41,13 @@ function surface.Initialize()
 
 						frag_color.rgb = global_color.rgb;
 						
-						mask = pow(mask, 0.75);
-				 		mask *= smoothstep(0.25, 0.75, mask);
-						mask = pow(mask, 1.25);
+						if (smoothness > 0)
+						{
+							mask = pow(mask, 0.75);
+							mask *= smoothstep(0.25, 0.75 * smoothness, mask);
+							mask = pow(mask, 1.25);
+							mask *= smoothness * smoothness * smoothness;
+						}
 						
 						frag_color.a = mask;
 					}
@@ -232,12 +236,12 @@ do -- fonts
 					
 					glyph.tex = tex
 					glyph.x = w
-					glyph.y = info.size - tex.metrics.y - 3
+					glyph.y = info.size - tex.metrics.y
 					
 					glyph.x = glyph.x / info.res_multiplier
 					glyph.y = glyph.y / info.res_multiplier
-					glyph.w = tex.w / info.res_multiplier
-					glyph.h = tex.h / info.res_multiplier
+					glyph.w = tex.metrics.w / info.res_multiplier
+					glyph.h = tex.metrics.h / info.res_multiplier
 					
 					table.insert(data.glyphs, glyph)
 
@@ -250,7 +254,7 @@ do -- fonts
 					data.w = w
 					
 					if tex.metrics.h > data.h then
-						data.h = tex.metrics.h
+						data.h = tex.metrics.h / info.res_multiplier
 					end
 				end
 			end
