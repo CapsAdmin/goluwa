@@ -11,10 +11,13 @@ local frame = utilities.RemoveOldObject(aahh.Create("frame"), "lol")
 	frame:Center()
 	frame:SetTitle("")
 
-	local edit = aahh.Create("text_edit", frame)
+	local edit = aahh.Create("text_input", frame)
 		edit:SetFont("lol")
 		edit:SetText(vfs.Read("lua/textbox.lua"))
 		edit:Dock("fill")
-		edit:SetWrap(false)
+		edit:SetWrap(true)
+		edit:SetLineNumbers(true)
 		edit:MakeActivePanel()
 	frame:RequestLayout(true)
+	
+	LOL = edit

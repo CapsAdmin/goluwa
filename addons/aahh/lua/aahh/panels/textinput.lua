@@ -8,6 +8,13 @@ class.GetSet(PANEL, "FixedHeight", true)
 class.GetSet(PANEL, "LineSpacing", 3)
 class.GetSet(PANEL, "CaretPos", Vec2())
 class.GetSet(PANEL, "Font", "default")
+class.GetSet(PANEL, "LineNumbers", false)
+
+
+function PANEL:SetLineNumbers(b)
+	self.LineNumbers = b
+	self:InvalidateText()
+end
 
 function PANEL:OnTextChanged(str)
 
@@ -94,6 +101,12 @@ function PANEL:InvalidateText()
 	self.markup = markup
 	self.lines = lines
 	
+	if self.LineNumbers then
+		self.margin_width = surface.GetTextSize(tostring(#self.markup.data)) + 4
+	else
+		self.margin_width = 0
+	end
+	
 	if self.Text ~= self.last_text then
 		self:OnTextChanged(self.Text)
 		self.last_text = self.Text
@@ -103,7 +116,8 @@ end
 function PANEL:OnMouseInput(button, press, pos)
 	if button == "button_1" then
 		if press then
-			local pos = self:PixelToCaretPos(self:GetMousePos())
+			pos.x = pos.x - self.margin_width
+			local pos = self:PixelToCaretPos(pos)
 
 			self:SetCaretPos(pos)
 
@@ -524,18 +538,20 @@ function PANEL:OnDraw(size)
 		select_start = temp
 	end
 
-	if self.mouse_shift_selecting then
-		if input.IsMouseDown("button_1") then
-			self.select_end = self:PixelToCaretPos(self:GetMousePos())
-		end
-	elseif self.mouse_selecting then
-		self.select_end = self:PixelToCaretPos(self:GetMousePos())
+	if self.mouse_selecting then
+		self.select_end = self:PixelToCaretPos(self:GetMousePos() - Vec2(self.margin_width, 0))
 	elseif self.shift_selecting then
 		self.select_end = self.CaretPos * 1
 	end
-
+	
+	if self.LineNumbers then
+		surface.Color(1,1,1,0.5)
+		surface.DrawLine(self.margin_width-2, 0, self.margin_width-2, size.h)
+		surface.Translate(self.margin_width, 0)
+	end
+	
 	for i, data in pairs(self.markup.data) do
-
+	
 		if select_start and select_end then
 			if select_end.y == select_start.y and select_start.y == i then
 				check_char_table_cache(data, self.Font)
@@ -577,6 +593,11 @@ function PANEL:OnDraw(size)
 			surface.Color(1, 1, 1, 1)
 			surface.SetTextPos(data.x, data.y)
 			surface.DrawText(data.str)
+			
+			if self.LineNumbers then
+				surface.SetTextPos(-self.margin_width, data.y)
+				surface.DrawText(i)
+			end
 		end
 	end
 
@@ -623,6 +644,10 @@ function PANEL:OnDraw(size)
 			
 			surface.DrawRect(x, self.selected_line.y, 1, self.selected_line.h)
 		end
+	end
+	
+	if self.LineNumbers then
+		surface.Translate(-self.margin_width, 0)
 	end
 end
 
