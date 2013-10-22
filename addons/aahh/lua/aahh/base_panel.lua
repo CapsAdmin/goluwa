@@ -295,7 +295,7 @@ do -- align
 
 	e.ALIGN_TOP = Vec2(0, 0)
 	e.ALIGN_BOTTOM = Vec2(0, 1)
-	e.ALIGN_CENTERY = Vec2(0, 0.5)
+	e.ALIGN_CENTERY = Vec2(0, -0.5)
 
 	e.ALIGN_TOPLEFT = Vec2(0, 0)
 	e.ALIGN_CENTERLEFT = Vec2(0, 0.5)

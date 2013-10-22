@@ -153,7 +153,7 @@ do--frame
 		pnl.close:SetPadding(Rect(PAD/2, PAD/2, PAD, PAD))
 		pnl.close:Align(e.ALIGN_TOPRIGHT)
 
-		pnl.title:SetPos(Vec2(PAD, 0))
+		pnl.title:SetPos(Vec2()+PAD/2)
 		pnl.title:SetSkinColor("text", "light")
 		pnl.title:SetIgnoreMouse(true)
 	end
@@ -266,7 +266,7 @@ do -- button text
 	end
 	function SKIN:ButtonTextLayout(pnl)
 		pnl.lbl:SetSkinColor("text", "light2")
-		pnl.lbl:Align(pnl.lbl.AlignNormal, pnl.lbl.TextOffset)
+		pnl.lbl:SetPos(Vec2()+PAD*2)
 	end
 end
 
