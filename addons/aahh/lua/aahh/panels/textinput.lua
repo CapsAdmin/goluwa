@@ -77,9 +77,10 @@ function PANEL:InvalidateText()
 		for _, str in pairs(surface.WrapString(line, self.Wrap and self:GetSize().w)) do
 			local w, h = surface.GetTextSize(str)
 
-			table.insert(temp, {str = str, pos = pos, w = w, h = h, x = 0, y = 0})
+			table.insert(temp, {type = "string", str = str, pos = pos, w = w, h = h, x = 0, y = 0})
 		end
 	end
+	
 
 	local y = 0
 
@@ -596,7 +597,10 @@ function PANEL:OnDraw(size)
 			
 			if self.LineNumbers then
 				surface.SetTextPos(-self.margin_width, data.y)
-				surface.DrawText(i)
+				if self.last_pos ~= data.pos then
+					surface.DrawText(data.pos)
+					self.last_pos = data.pos
+				end
 			end
 		end
 	end
