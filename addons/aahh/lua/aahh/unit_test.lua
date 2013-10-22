@@ -84,12 +84,12 @@ console.AddCommand("aahh_unit_test", function()
 		check:SetText("ummmmm")
 		check:SetValue(true)
 		
-		local text = aahh.Create("textinput", grid)
+		local text = aahh.Create("text_input", grid)
 			
 	end
 
 	do -- text
-		local tab, grid = tabs:AddTab("text input", "textinput2")
+		local tab, grid = tabs:AddTab("text input", "text_input")
 		
 	end
 
