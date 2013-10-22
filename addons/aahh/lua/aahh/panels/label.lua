@@ -9,7 +9,7 @@ aahh.GetSet(PANEL, "ShadowBlur")
 aahh.GetSet(PANEL, "ShadowSize")
 
 aahh.GetSet(PANEL, "TextOffset", Vec2(0,0))
-aahh.GetSet(PANEL, "AlignNormal", Vec2(0,0))
+aahh.GetSet(PANEL, "AlignNormal", e.ALIGN_CENTERY)
 
 aahh.GetSet(PANEL, "ResizeTextWithPanel", true)
 aahh.GetSet(PANEL, "IgnoreMouse", true)
