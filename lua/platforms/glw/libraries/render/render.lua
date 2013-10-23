@@ -123,6 +123,10 @@ function render.End()
 	render.frame = render.frame + 1
 end
 
+function render.GetFrameNumber()
+	return render.frame
+end
+
 function render.GetScreenSize()
 	if render.current_window:IsValid() then
 		return render.current_window:GetSize():Unpack()
