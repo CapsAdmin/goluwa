@@ -18,7 +18,7 @@ function PANEL:SetCollapse(b)
 	
 	if b then		
 		self.last_height = self:GetHeight()
-		self:SetHeight(16)
+		--self:StretchToBottom()
 	else
 		if self.last_height then
 			self:SetHeight(self.last_height)

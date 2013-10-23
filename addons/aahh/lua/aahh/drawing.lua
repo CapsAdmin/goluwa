@@ -83,18 +83,24 @@ do
 		end
 	end
 
-	function aahh.StartDraw(pnl)
-		if not pnl:IsValid() then return end
+	function aahh.StartDraw(pnl, clip)
 		local x,y = pnl:GetWorldPos():Unpack()
-		local w,h = pnl:GetSize():Unpack()
-		
 		surface.PushMatrix(x,y)
-		--surface.StartClipping(x,y,w,h)
 	end
 
-	function aahh.EndDraw(pnl)	
-	--	surface.EndClipping()
+	function aahh.EndDraw(pnl, clip)	
 		surface.PopMatrix()
+	end
+	
+	function aahh.StartClip(pnl)
+		local x,y = pnl:GetWorldPos():Unpack()
+		local w,h = pnl:GetSize():Unpack()
+	
+		surface.StartClipping(x,y,w,h)
+	end
+	
+	function aahh.EndClip()
+		surface.EndClipping()
 	end
 end
 

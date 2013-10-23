@@ -17,6 +17,7 @@ local frame = utilities.RemoveOldObject(aahh.Create("frame"), "lol")
 		edit:Dock("fill")
 		edit:SetWrap(true)
 		edit:SetLineNumbers(true)
+		edit:SetMultiLine(true)
 		edit:MakeActivePanel()
 	frame:RequestLayout(true)
 	

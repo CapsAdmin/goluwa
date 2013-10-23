@@ -65,11 +65,8 @@ do -- skins
 	end
 
 	function aahh.RegisterSkin(META, name)
-		class.Register(META, "skin", name)
-		
-		if name == aahh.ActiveSkin.ClassName then
-			aahh.UseSkin(name)
-		end
+		local _, name = class.Register(META, "skin", name)
+		aahh.UseSkin(name)
 	end
 
 	function aahh.GetSkin(name)

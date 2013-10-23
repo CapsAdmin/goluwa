@@ -69,7 +69,7 @@ do--panel
 		end
 	end
 	
-	function SKIN:PanelDraw(pnl, c)
+	function SKIN:PanelDraw(pnl, c)		
 		aahh.Draw("rect", 
 			Rect(Vec2(0,0), pnl:GetSize()),
 			c.light,
@@ -397,6 +397,32 @@ do -- tabbed button
 			false
 		)
 	end
+	
+	function SKIN:TabbedButtonLayout(pnl)		
+		pnl.img:SetPos(Vec2(0, 0))
+		pnl.img:SetSize(Vec2(0, 0) + pnl:GetHeight() + PAD)
+		pnl.img:SetRect(pnl.img:GetRect():Shrink(PAD/2))
+		pnl.img:CenterY()
+		
+		pnl.lbl:SetSkinColor("text", "light2")
+		pnl.lbl:SetPos(pnl.img:GetPos() + Vec2(pnl.img:GetWidth() + PAD, 0))
+		pnl.lbl:CenterY()
+	end	
+	
+	local height = PAD*4
+	
+	function SKIN:TabbedLayout(pnl)
+
+		pnl.bar:SetPos(Vec2(0, 0))
+		pnl.bar:SetSize(Vec2(pnl:GetWidth(), height))
+		
+		local tab = pnl.current_tab
+		
+		if tab:IsValid() then
+			tab:SetPos(Vec2(0, height - 1))
+			tab:SetSize(Vec2(pnl:GetWidth(), pnl:GetHeight() - height))
+		end		
+	end
 end
 
 do -- tree
@@ -404,7 +430,7 @@ do -- tree
 		pnl.expand:SetSize(Vec2(PAD*2, PAD*2))
 		pnl.expand:SetPos(Vec2(pnl.offset or 0,0))
 		
-		pnl.image:SetSize(Vec2() + PAD*4)
+		pnl.image:SetSize(Vec2() + pnl:GetHeight())
 		pnl.image:SetPos(pnl.expand:GetPos() + Vec2(pnl.expand:GetWidth() + PAD/2, 0))
 		
 		pnl.label:SizeToText()		 
@@ -424,14 +450,6 @@ do -- tree
 			aahh.Draw("rect", Rect(0,0,size), pnl:GetSkinColor("highlight1"))
 		end
 	end
-end
-
-function SKIN:TabbedLayout(pnl)
-	pnl.img:SetPos(Vec2(PAD, 0))
-	pnl.img:SetSize(Vec2(0, 0) + pnl:GetHeight())
-	
-	pnl.lbl:SetSkinColor("text", "light2")
-	pnl.lbl:SetPos(pnl.img:GetPos() + Vec2(pnl.img:GetWidth() + PAD, 0))
 end
 
 aahh.RegisterSkin(SKIN, "default")

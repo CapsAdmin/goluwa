@@ -402,7 +402,9 @@ function surface.DrawLine(x1,y1, x2,y2, w, skip_tex)
 end
 
 function surface.StartClipping(x, y, w, h)
+	y = -y + h
 	render.ScissorRect(x, y, w, h)
+	
 end
 
 function surface.EndClipping()

@@ -73,24 +73,39 @@ console.AddCommand("aahh_unit_test", function()
 		grid:SetSizeToWidth(true)
 		grid:SetStackRight(false)
 		grid:SetItemSize(Vec2()+20)
-				
+		
+		local text = aahh.Create("text_input", grid)
+
 		local slider = aahh.Create("labeled_slider", grid)
 		slider:SetValue(10)
 		
-		local knob = aahh.Create("labeled_knob", grid)
-		knob:SetValue(10)
 		
-		local check = aahh.Create("labeled_checkbox", grid)
-		check:SetText("ummmmm")
-		check:SetValue(true)
 		
-		local text = aahh.Create("text_input", grid)
+		local container = aahh.Create("container", grid)
+			container:SetHeight(100)
+
+			local grid = aahh.Create("grid", container)
 			
+			grid:SetDrawBackground(false)
+			grid:Dock("fill")
+			grid:SetSpacing(Vec2() + 5)
+			grid:SetSizeToWidth(true)
+			grid:SetStackRight(false)
+			grid:SetItemSize(Vec2()+20)
+		
+			local knob = aahh.Create("labeled_knob", container)
+			knob:SetValue(10)
+			
+			local check = aahh.Create("labeled_checkbox", container)
+			check:SetText("ummmmm")
+			check:SetValue(true)
+		
 	end
 
 	do -- text
 		local tab, grid = tabs:AddTab("text input", "text_input")
-		
+		grid:SetMultiLine(true)
+		grid:SetLineNumbers(true)
 	end
 
 	tabs:SelectTab("properties")
