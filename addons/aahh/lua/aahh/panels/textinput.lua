@@ -9,6 +9,7 @@ class.GetSet(PANEL, "LineSpacing", 3)
 class.GetSet(PANEL, "CaretPos", Vec2())
 class.GetSet(PANEL, "Font", "default")
 class.GetSet(PANEL, "LineNumbers", false)
+class.GetSet(PANEL, "MultiLine", false)
 
 
 function PANEL:SetLineNumbers(b)
@@ -66,7 +67,11 @@ function PANEL:InvalidateText()
 
 	-- lol
 	self.Text = self.Text:gsub("\r", "\n")
-
+	
+	if not self.MultiLine then
+		self.Text = self.Text:gsub("\n", " ")
+	end
+	
 	local lines = self.Text:explode("\n")
 	local markup = {w = 0, h = 0, data = {}}
 	local height = select(2, surface.GetTextSize("|"))  + self.LineSpacing
@@ -355,7 +360,7 @@ function PANEL:OnKeyInput(key, press, skip_mods)
 				else
 					self:OnCharInput("\t")
 				end
-			elseif key == "enter" then
+			elseif key == "enter" and self.MultiLine then
 				local space = line:match("^(%s+)") or ""
 
 				self:InsertString("\n" .. space, true)

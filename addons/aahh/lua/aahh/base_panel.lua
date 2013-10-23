@@ -24,6 +24,7 @@ aahh.IsSet(PANEL, "Visible", true)
 aahh.IsSet(PANEL, "ObeyMargin", true)
 aahh.IsSet(PANEL, "IgnoreMouse", false)
 aahh.IsSet(PANEL, "AlwaysReceiveMouse", false)
+aahh.GetSet(PANEL, "Clip", false)
 
 aahh.GetSet(PANEL, "Skin")
 aahh.GetSet(PANEL, "DrawBackground", true)
@@ -120,6 +121,14 @@ do -- orientation
 	PANEL.GetWide = PANEL.GetWidth
 	PANEL.GetTall = PANEL.GetHeight
 
+	function PANEL:GetParentHeight()
+		return self:HasParent() and self:GetParent():GetHeight() or self:GetHeight()
+	end
+	
+	function PANEL:GetParentWidth()
+		return self:HasParent() and self:GetParent():GetHeight() or self:GetHeight()
+	end
+	
 	function PANEL:SetWorldPos(pos)
 		local temp = self
 		
@@ -397,6 +406,10 @@ do -- fill
 			--self:SetPos(Vec2(self:GetPos().x, prev_h + h))
 			--self:SetSize(Vec2(self:GetSize().w, prev_y - h + prev_h))
 		--end
+		
+		function PANEL:StretchToBottom()
+			self:SetHeight(self:GetParentHeight() - self.Parent.Margin.h - (self.Parent:GetHeight() - self:GetPos().y))
+		end
 	end
 end
 
@@ -757,7 +770,11 @@ function PANEL:Draw()
 	if self:IsVisible() and self:VisibleInsideParent() then
 		self:Think()
 		self:Animate()
-
+	
+		if self.Clip then
+			aahh.StartClip(self)
+		end
+		
 		aahh.StartDraw(self)
 			self:OnDraw(self:GetSize())
 			self:OnPostDraw(self:GetSize())
@@ -767,6 +784,10 @@ function PANEL:Draw()
 			for key, pnl in pairs(self:GetChildren()) do
 				pnl:Draw()
 			end
+		end
+		
+		if self.Clip then
+			aahh.EndClip(self)
 		end
 	end
 end

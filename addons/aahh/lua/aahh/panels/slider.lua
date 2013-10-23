@@ -121,8 +121,6 @@ do -- label slider
 		
 		local lbl = aahh.Create("label", self)
 		self.right_label = lbl
-		
-		ummm = self
 	end
 	
 	function PANEL:SetValue(num)
@@ -159,31 +157,3 @@ do -- label slider
 	
 	aahh.RegisterPanel(PANEL)
 end
-
-if false and CAPSADMIN then
-	
-	
-	timer.Delay(0.1, function()
-		
-		local frame = utilities.RemoveOldObject(aahh.Create("frame"), "asdfg")
-		frame:SetSize(Vec2() + 500)
-		
-		local grid = aahh.Create("grid", frame)
-		grid:Dock("fill")
-		
-		local sliders = {}
-		local max = 1
-		
-		for i=1, 20 do
-			
-			local slider = aahh.Create("slider", grid)
-			slider:SetSize(Vec2(10, 100)) 
-			slider:SetSize(Vec2(20, 100)) 
-			slider:SetLockX(true) 
-			slider:Center()
-			slider:SetDragPos(Vec2(1, 0))
-					
-			sliders[i] = slider
-		end
-	end)  
-end 

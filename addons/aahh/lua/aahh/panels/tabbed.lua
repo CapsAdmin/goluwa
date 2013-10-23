@@ -54,7 +54,7 @@ function PANEL:OnDraw()
 end
 
 function PANEL:OnRequestLayout()
-	self:LayoutHook("TabbedLayout")
+	self:LayoutHook("TabbedButtonLayout")
 end
 
 aahh.RegisterPanel(PANEL)
@@ -78,18 +78,8 @@ function PANEL:Initialize()
 	self.tabs = {}
 end
 
-local height = 16 + 2
-
 function PANEL:OnRequestLayout()
-	self.bar:SetPos(Vec2(0, 0))
-	self.bar:SetSize(Vec2(self:GetWidth(), height - 2))
-	
-	local pnl = self.current_tab
-	
-	if pnl:IsValid() then
-		pnl:SetPos(Vec2(0, height - 1))
-		pnl:SetSize(Vec2(self:GetWidth(), self:GetHeight() - height + 1))
-	end
+	self:LayoutHook("TabbedLayout")
 end
 
 function PANEL:SelectTab(title)
