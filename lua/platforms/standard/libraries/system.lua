@@ -39,6 +39,70 @@ do -- title
 	end
 end
 
+do -- cursor
+	local set = not_implemented
+	
+	if WINDOWS then
+		ffi.cdef[[
+			void* SetCursor(void *);
+			void* LoadCursorA(void*, uint16_t);
+		]]
+		
+		local lib = ffi.load("user32.dll")
+		local cache = {}
+
+		
+		--[[arrow = IDC_ARROW, 
+		ibeam = IDC_IBEAM, 
+		wait = IDC_WAIT, 
+		cross = IDC_CROSS, 
+		uparrow = IDC_UPARROW, 
+		size = IDC_SIZE, 
+		icon = IDC_ICON, 
+		sizenwse = IDC_SIZENWSE, 
+		sizenesw = IDC_SIZENESW, 
+		sizewe = IDC_SIZEWE, 
+		sizens = IDC_SIZENS, 
+		sizeall = IDC_SIZEALL, 
+		no = IDC_NO, 
+		hand = IDC_HAND, 
+		appstarting = IDC_APPSTARTING, 		
+		help = IDC_HELP,]]
+		
+		e.IDC_ARROW = 32512
+		e.IDC_IBEAM = 32513
+		e.IDC_WAIT = 32514
+		e.IDC_CROSS = 32515
+		e.IDC_UPARROW = 32516
+		e.IDC_SIZE = 32640
+		e.IDC_ICON = 32641
+		e.IDC_SIZENWSE = 32642
+		e.IDC_SIZENESW = 32643
+		e.IDC_SIZEWE = 32644
+		e.IDC_SIZENS = 32645
+		e.IDC_SIZEALL = 32646
+		e.IDC_NO = 32648
+		e.IDC_HAND = 32649
+		e.IDC_APPSTARTING = 32650
+		e.IDC_HELP = 32651
+		
+		local last 
+		
+		set = function(id)
+			id = id or e.IDC_ARROW
+			cache[id] = cache[id] or lib.LoadCursorA(nil, id)
+			
+			--if last ~= id then
+				lib.SetCursor(cache[id])
+			--	last = id
+			--end
+		end
+	end
+	
+	system.SetCursor = set
+	
+end
+
 do -- dll paths
 	local set, get = not_implemented, not_implemented
 	

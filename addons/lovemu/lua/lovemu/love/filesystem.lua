@@ -5,6 +5,8 @@ local vfs=vfs
 love.filesystem={}
 
 love.filesystem.enumerate=vfs.Find
+love.filesystem.getDirectoryItems=vfs.Find
+
 love.filesystem.exists=vfs.Find
 
 local Identity="generic"
@@ -71,7 +73,10 @@ function love.filesystem.load(path,mode)
 	return vfs.GetFile(path,mode)
 end
 
-function love.filesystem.mkdir(path)
+function love.filesystem.mkdir(path) --partial
+end
+
+function love.filesystem.getDirectoryItems(path) --partial
 end
 
 function love.filesystem.read(path)

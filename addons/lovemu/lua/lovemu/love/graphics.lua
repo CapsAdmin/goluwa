@@ -270,6 +270,8 @@ function love.graphics.setDefaultFilter(filter)
 		local DefaultMipmapFilter=e.GL_LINEAR_MIPMAP_LINEAR
 	end
 end
+love.graphics.setDefaultImageFilter=setDefaultFilter
+
 
 function setFilter(self,filter)
 	if filter=="nearest" then
@@ -320,7 +322,7 @@ function love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
 	oy=oy or 0
 	if drawable.id then
 		surface.SetTexture(drawable)
-		surface.DrawRectEx((x+lovemu.translate_x)*lovemu.scale_x,(y+lovemu.translate_y)*lovemu.scale_y, drawable.w*sx*lovemu.scale_x, drawable.h*sy*lovemu.scale_y,r,ox,oy)
+		surface.DrawRectEx((x+lovemu.translate_x)*lovemu.scale_x,(y+lovemu.translate_y)*lovemu.scale_y, drawable.w*sx*lovemu.scale_x, drawable.h*sy*lovemu.scale_y,r,ox*sx*lovemu.scale_x,oy*sy*lovemu.scale_y)
 	end
 end
 
@@ -334,15 +336,15 @@ end
 function love.graphics.scale(sx,sy)
 	sx=sx or 1
 	sy=sy or 1
-	lovemu.scale_x=lovemu.scale_x*sx
-	lovemu.scale_y=lovemu.scale_y*sy
+	lovemu.scale_x=sx
+	lovemu.scale_y=sy
 end
 
 function love.graphics.rotate(r) 
 	r=r or 0
 	glRotatef(r, 0, 0, 1)
 end
-
+ 
 function love.graphics.push()
 	lovemu.stack[lovemu.stack_index]={
 										translate_x=lovemu.translate_x,

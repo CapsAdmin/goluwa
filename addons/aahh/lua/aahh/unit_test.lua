@@ -40,8 +40,11 @@ console.AddCommand("aahh_unit_test", function()
 			poseparameter = "silkicons/vector.png",
 		}
 
-		local tab, pnl = tabs:AddTab("tree", "tree")
-			
+		local tab, scroll = tabs:AddTab("tree", "scrollable")
+		local tree = scroll:CreatePanel("tree")
+		LOL = scroll
+		tree:Dock("fill")
+		
 		local data = luadata.ReadFile(R("well.txt"))
 		local done = {}
 		 
@@ -55,12 +58,12 @@ console.AddCommand("aahh_unit_test", function()
 		end 
 			 
 		for key, val in pairs(data) do
-			local node = pnl:AddNode(val.self.Name)
+			local node = tree:AddNode(val.self.Name)
 			node:SetIcon(Image("textures/" .. icons[val.self.ClassName]))
 			fill(val, node)
 		end
 
-		pnl:Stack()
+		tree:Stack()
 	end
 
 	do -- uh
@@ -92,11 +95,13 @@ console.AddCommand("aahh_unit_test", function()
 			grid:SetSizeToWidth(true)
 			grid:SetStackRight(false)
 			grid:SetItemSize(Vec2()+20)
+			grid:SetSizeToContent(true)
+			grid:SetObeyMargin(false)
 		
-			local knob = aahh.Create("labeled_knob", container)
+			local knob = aahh.Create("labeled_knob", grid)
 			knob:SetValue(10)
 			
-			local check = aahh.Create("labeled_checkbox", container)
+			local check = aahh.Create("labeled_checkbox", grid)
 			check:SetText("ummmmm")
 			check:SetValue(true)
 		
