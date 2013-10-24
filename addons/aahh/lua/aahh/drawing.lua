@@ -8,8 +8,8 @@ do
 		return Vec2(surface.GetTextSize(str))
 	end	
 		
-	function aahh.SetCursor()
-		
+	function aahh.SetCursor(id)
+		system.SetCursor(id)
 	end
 	
 	local shapes = {
@@ -133,7 +133,7 @@ function aahh.Update(delta)
 		if aahh.HoveringPanel:IsValid() then
 			aahh.SetCursor(aahh.HoveringPanel:GetCursor())
 		else
-			aahh.SetCursor(1)
+			aahh.SetCursor(e.IDC_ARROW)
 		end
 	event.Call("PostDrawMenu")
 end

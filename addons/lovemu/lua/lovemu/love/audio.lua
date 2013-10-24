@@ -2,6 +2,10 @@ local love=love
 local lovemu=lovemu
 love.audio={}
 
+local function getChannels(self)
+	return 2 --stereo
+end
+
 local function getDirection(self)
 	return 0,0,0
 end
@@ -98,6 +102,9 @@ end
 local function setDistance(self)
 end
 
+local function setAttenuationDistances(self)
+end
+
 local function setLooping(self,bool)
 	if self.legit==true then
 		self:SetLooping(bool)
@@ -153,6 +160,7 @@ function love.audio.newSource(path) --partial
 	end
 	source.playing=false
 	
+	source.getChannels=getChannels
 	source.getDirection=getDirection
 	source.getDistance=getDistance
 	source.getPitch=getPitch
@@ -171,6 +179,8 @@ function love.audio.newSource(path) --partial
 	source.seek=seek
 	source.stop=stop
 	source.setDirection=setDirection
+	source.setDistance=setDistance
+	source.setAttenuationDistances=setAttenuationDistances
 	source.setLooping=setLooping
 	source.setPitch=setPitch
 	source.setPosition=setPosition

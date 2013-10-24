@@ -1,5 +1,9 @@
 
 function aahh.StringInput(msg, default, callback, check)
+	msg = msg or "no message"
+	default = default or ""
+	callback = callback or logn
+	
 	local frame = aahh.Create("frame")
 	frame:SetResizingAllowed(false)
 	frame:SetTitle("Text Input Request")
@@ -16,7 +20,7 @@ function aahh.StringInput(msg, default, callback, check)
 	label:SetSize(label:GetSize()+Vec2(0, 4))
 	label:AppendToBottom(4)
 	
-	local textinput = aahh.Create("textinput", frame)
+	local textinput = aahh.Create("text_input", frame)
 	textinput:SetTrapInsideParent(false)
 	textinput:SetText(default)
 	textinput:SetPos(Vec2(x, y))

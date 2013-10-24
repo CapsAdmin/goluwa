@@ -17,7 +17,7 @@ aahh.GetSet(PANEL, "Padding", Rect())
 aahh.GetSet(PANEL, "Margin", Rect())
 aahh.GetSet(PANEL, "MinSize", Vec2(8,8))
 aahh.GetSet(PANEL, "TrapInsideParent", false)
-aahh.GetSet(PANEL, "Cursor", 1)
+aahh.GetSet(PANEL, "Cursor", e.IDC_ARROW)
 aahh.GetSet(PANEL, "Spacing", 0)
 aahh.GetSet(PANEL, "DockPadding", 1) -- Default padding around all child panels in docking
 aahh.IsSet(PANEL, "Visible", true)
@@ -307,9 +307,9 @@ do -- align
 	e.ALIGN_CENTERY = Vec2(0, -0.5)
 
 	e.ALIGN_TOPLEFT = Vec2(0, 0)
-	e.ALIGN_CENTERLEFT = Vec2(0, 0.5)
+	e.ALIGN_CENTERLEFT = Vec2(0, -0.5)
 	e.ALIGN_TOPRIGHT = Vec2(1, 0)
-	e.ALIGN_CENTERRIGHT = Vec2(1, 0.5)
+	e.ALIGN_CENTERRIGHT = Vec2(1, -0.5)
 
 
 	e.ALIGN_BOTTOMLEFT = Vec2(0, 1)
@@ -822,7 +822,7 @@ function PANEL:Think()
 					self.mouse_entered = true
 				end
 				
-				if self:GetCursor() ~= 1 then
+				if self:GetCursor() ~= e.IDC_ARROW then
 					aahh.HoveringPanel = self
 				end
 			else

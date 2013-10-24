@@ -32,7 +32,7 @@ function aahh.GetWorld()
 			return self.Pos
 		end
 		
-		WORLD:SetCursor(1)
+		WORLD:SetCursor(e.IDC_ARROW)
 		
 		aahh.World = WORLD
 	end
