@@ -376,17 +376,25 @@ function surface.DrawRect(x,y, w,h, a)
 	render.PopMatrix()
 end
 
-function surface.DrawRectEx(x,y, w,h, a, ox,oy)
+function surface.DrawRectEx(x,y, w,h, a, ox, oy)	
 	render.PushMatrix()			
-		render.Translate(x,y,0)
-		render.Rotate(a, 0, 0, 1)
-		render.Translate(-ox, -oy,0)
-		render.Scale(w,h,0)
+		render.Translate(x, y, 0)
+		
+		if a then
+			render.Rotate(a, 0, 0, 1)
+		end
+		if ox and oy then
+			render.Translate(-ox, -oy, 0)
+		end
+		
+		render.Scale(w, h, 0)
 		surface.rectmesh:Draw()
 	render.PopMatrix()
 end
 
-function surface.DrawLine(x1,y1, x2,y2, w, skip_tex)
+surface.DrawRect = surface.DrawRectEx
+
+function surface.DrawLine(x1,y1, x2,y2, w, skip_tex, ...)
 	
 	w = w or 1
 	
@@ -398,7 +406,7 @@ function surface.DrawLine(x1,y1, x2,y2, w, skip_tex)
 	local ang = math.atan2(dx, dy)
 	local dst = math.sqrt((dx * dx) + (dy * dy))
 		
-	surface.DrawRect(x1, y1, w, dst, -math.deg(ang))
+	surface.DrawRect(x1, y1, w, dst, -math.deg(ang), ...)
 end
 
 function surface.StartClipping(x, y, w, h)
