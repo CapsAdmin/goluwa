@@ -116,11 +116,12 @@ function render.Start(window)
 end
 
 function render.End()
+
 	if render.current_window:IsValid() then
 		glfw.SwapBuffers(render.current_window.__ptr)
 	end
-	gl.Flush()
-	render.frame = render.frame + 1
+
+	render.frame = render.frame + 1	
 end
 
 function render.GetFrameNumber()
@@ -165,6 +166,19 @@ function render.ScissorRect(x, y, w, h)
 		gl.Scissor(x, y, w, h)
 		gl.Enable(e.GL_SCISSOR_TEST)
 	end
+end
+
+function render.SetAdditive(b)
+	if b then
+		gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE)
+	else
+		gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
+		
+	end
+end
+
+function render.GetAdditive(b)
+	return render.additive
 end
 
 do
