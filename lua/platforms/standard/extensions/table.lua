@@ -1,3 +1,23 @@
+-- 12:34 - <mniip> http://codepad.org/cLaX7lVn
+function table.multiremove(tbl, locations)
+	
+	if locations[1] then
+		local off = 0
+		local idx = 1
+		
+		for i = 1, #tbl do
+			while i + off == locations[idx] do
+				off = off + 1
+				idx = idx + 1
+			end
+			
+			tbl[i] = tbl[i + off]
+		end
+	end
+	
+	return tbl
+end
+
 function table.hasvalue(tbl, val)
 	for k,v in pairs(tbl) do
 		if v == val then
