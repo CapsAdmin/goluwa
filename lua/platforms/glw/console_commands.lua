@@ -1,3 +1,50 @@
+console.AddCommand("trace_calls", function(_, line, ...)
+	line = "_G." .. line
+	local ok, old_func = assert(pcall(assert(loadstring("return " .. line))))
+
+	if ok and old_func then
+		local table_index, key = line:match("(.+)%.(.+)")
+		local idx_func = assert(loadstring(("%s[%q] = ..."):format(table_index, key)))
+		
+		local args = {...}
+		
+		for k, v in pairs(args) do
+			args[k] = select(2, assert(pcall(assert(loadstring("return " .. v)))))
+		end
+				
+		idx_func(function(...)	
+			
+			if #args > 0 then
+				local found = false
+				
+				for i = 1, select("#", ...) do
+					local v = select(i, ...)
+					if args[i] then
+						if args[i] == v then
+							found = true
+						else
+							found = false
+							break
+						end
+					end
+				end
+				
+				if found then
+					debug.trace()	
+				end
+			else
+				debug.trace()
+			end
+			
+			return old_func(...)
+		end)
+		
+		timer.Delay(1, function()
+			idx_func(old_func)
+		end)
+	end
+end)
+
 console.AddCommand("debug", function(line, lib)
 	local tbl = _G[lib]
 	
