@@ -197,7 +197,7 @@ function love.graphics.rectangle(mode,x,y,w,h)
 	w=w or 0
 	h=h or 0
 	surface.SetTexture()
-	surface.DrawRectEx((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y, w*lovemu.scale_x, h*lovemu.scale_y,0,0,0)
+	surface.DrawRect((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y, w*lovemu.scale_x, h*lovemu.scale_y,0,0,0)
 end
 
 function love.graphics.circle(mode,x,y,w,h) --partial
@@ -206,7 +206,7 @@ function love.graphics.circle(mode,x,y,w,h) --partial
 	w=w or 0
 	h=h or 0
 	surface.SetTexture()
-	surface.DrawRectEx((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y, w*lovemu.scale_x, h*lovemu.scale_y,0,0,0)
+	surface.DrawRect((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y, w*lovemu.scale_x, h*lovemu.scale_y,0,0,0)
 end
 
 function love.graphics.reset()
@@ -215,7 +215,7 @@ end
 function love.graphics.clear()
 	surface.SetTexture()
 	surface.Color(br/255,bg/255,bb/255,ba/255)
-	surface.DrawRectEx(0,0,render.w,render.h,0,0,0)
+	surface.DrawRect(0,0,render.w,render.h,0,0,0)
 	surface.Color(cr/255,cg/255,cb/255,ca/255)
 end
 
@@ -322,7 +322,7 @@ function love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
 	oy=oy or 0
 	if drawable.id then
 		surface.SetTexture(drawable)
-		surface.DrawRectEx((x+lovemu.translate_x)*lovemu.scale_x,(y+lovemu.translate_y)*lovemu.scale_y, drawable.w*sx*lovemu.scale_x, drawable.h*sy*lovemu.scale_y,r,ox*sx*lovemu.scale_x,oy*sy*lovemu.scale_y)
+		surface.DrawRect((x+lovemu.translate_x)*lovemu.scale_x,(y+lovemu.translate_y)*lovemu.scale_y, drawable.w*sx*lovemu.scale_x, drawable.h*sy*lovemu.scale_y,r,ox*sx*lovemu.scale_x,oy*sy*lovemu.scale_y)
 	end
 end
 
