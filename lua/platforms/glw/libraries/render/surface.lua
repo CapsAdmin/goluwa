@@ -1,4 +1,5 @@
 surface = surface or {}
+local surface=surface
 
 surface.ft = surface.ft or {}
 local ft = surface.ft
@@ -129,9 +130,9 @@ do -- fonts
 		end
 		
 		-- create a face from memory
-		local data = vfs.Read(info.path, "rb") 
+		local data, err = vfs.Read(info.path, "rb") 
 		
-		if not data then error("could not find font " .. name, 2) end
+		if not data then error("could not load font " .. info.path .. " : " .. err, 2) end
 		
 		local face = ffi.new("FT_Face[1]")   
 		freetype.NewMemoryFace(ft.ptr, data, #data, 0, face)   
@@ -362,21 +363,7 @@ function surface.GetTexture()
 	return surface.bound_texture or surface.white_texture
 end
 
-function surface.DrawRect(x,y, w,h, a)	
-	render.PushMatrix()			
-		render.Translate(x,y,0)
-
-		if a then
-			render.Rotate(a, 0, 0, 1)
-			--render.Translate(w*0.5, h*-0.5,0)
-		end	
-			
-		render.Scale(w,h,0)
-		surface.rectmesh:Draw()
-	render.PopMatrix()
-end
-
-function surface.DrawRectEx(x,y, w,h, a, ox, oy)	
+function surface.DrawRect(x,y, w,h, a, ox, oy)	
 	render.PushMatrix()			
 		render.Translate(x, y, 0)
 		
@@ -391,8 +378,6 @@ function surface.DrawRectEx(x,y, w,h, a, ox, oy)
 		surface.rectmesh:Draw()
 	render.PopMatrix()
 end
-
-surface.DrawRect = surface.DrawRectEx
 
 function surface.DrawLine(x1,y1, x2,y2, w, skip_tex, ...)
 	
