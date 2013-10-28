@@ -45,8 +45,8 @@ for i=1,getn(lovemu.modules) do
 end
 
 lovemu.supported={}
-for _,v in pairs(lovemu.listFiles(R"lua/lovemu/","lua")) do
-	for _,l in pairs(string.split(vfs.Read(v),"\n")) do
+for _,v in pairs(lovemu.listFiles(R("lovemu/"),"lua")) do
+	for _,l in pairs(string.explode(vfs.Read(v),"\n")) do
 		if find(l,"love.") then
 			if string.match(l,"(.-)%b()") then
 				local isPARTIAL=false
@@ -129,7 +129,7 @@ function love.draw()
 end
 
 console.AddCommand("lovemu", function(line)
-	local param=string.split(line," ")
+	local param=string.explode(line," ")
 	if param[1]=="run" then
 		if param[2] then
 			local str=""
@@ -152,18 +152,18 @@ console.AddCommand("lovemu", function(line)
 				str=str..param[i]
 			end
 			if str=="" then
-				print("Usage: lovemu run <folder name>")
+				print("Usage: lovemu runreal <folder name>")
 			else
 				lovemu.bootreal(str)
 			end
 		else
-			print("Usage: lovemu run <folder name>")
+			print("Usage: lovemu runreal <folder name>")
 		end
 	elseif param[1]=="check" then
 		if param[2] then
 			local functions_list={}
-			for _,v in pairs(lovemu.listFiles(R"lovers/"..param[2].."/","lua")) do
-				for _,l in pairs(string.split(vfs.Read(v),"\n")) do
+			for _,v in pairs(lovemu.listFiles(R("lovers/"..param[2].."/"),"lua")) do
+				for _,l in pairs(string.explode(vfs.Read(v),"\n")) do
 					if string.find(l,"love.") then
 						if string.match(l,"(.-)%b()") then
 							local x1,x2=string.find(l,"love.")
@@ -205,6 +205,7 @@ console.AddCommand("lovemu", function(line)
 		print("\tlovemu <command> <params>\n\nCommands:\n")
 		print("\tcheck      <folder name>        //check game compatibility with lovemu")
 		print("\trun        <folder name>        //runs a game  ")
+		print("\trunreal    <folder name>        //runs a game on real love2d ")
 		print("\tversion    <version>            //change internal love version, default: 0.9.0")
 	end
 end)

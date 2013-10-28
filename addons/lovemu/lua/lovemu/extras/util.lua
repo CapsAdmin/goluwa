@@ -4,26 +4,10 @@ local pairs=pairs
 local type=type
 local find=string.find
 local sub=string.sub
-function string.split(s, delim)
-	assert (type (delim) == "string" and #delim > 0,
-	"bad delimiter")
-	local start = 1
-	local t = {}
-	while true do
-		local pos = find (s, delim, start, true)
-		if not pos then
-			break
-		end
-		insert (t, sub (s, start, pos - 1))
-		start = pos + #delim
-	end 
-	insert (t, sub (s, start))
-	return t
-end
 
-local split=string.split
+local explode=string.explode
 function string.replace(s,s2,s3)
-	local a=split(s,s2)
+	local a=explode(s,s2)
 	local str=""
 	if #a>1 then
 		for i=1,#a-1 do
@@ -41,7 +25,7 @@ function lovemu.listFilesRecursive(path,ext)
 	ext=ext or ""
 	for _,v in pairs(vfs.Find(path)) do
 		if ext~="" then
-			local info=split(v,".")
+			local info=explode(v,".")
 			local str=""
 			for i=2,#info do
 				str=str..info[i]
@@ -52,7 +36,7 @@ function lovemu.listFilesRecursive(path,ext)
 				lovemu.listFilesRecursive(path..v.."/",ext)
 			end
 		else
-			if #split(v,".")>1 then 
+			if #explode(v,".")>1 then 
 				insert(list,path..v)
 			else
 				lovemu.listFilesRecursive(path..v.."/",ext)

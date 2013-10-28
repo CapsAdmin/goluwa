@@ -143,8 +143,8 @@ local id=1
 function love.audio.newSource(path) --partial
 	local legit=false
 	local source={}
-	if vfs.Exists(R"lovers/"..lovemu.demoname.."/"..path)==true then
-		local ext=string.split(path,".")
+	if vfs.Exists(R("lovers/"..lovemu.demoname.."/"..path))==true then
+		local ext=string.explode(path,".")
 		ext=ext[#ext]
 		if ext=="flac" or ext=="wav" or ext=="ogg" then
 			source = utilities.RemoveOldObject(Sound("lovers/"..lovemu.demoname.."/"..path),id)
