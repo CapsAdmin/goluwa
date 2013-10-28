@@ -7,6 +7,13 @@ function entities.Initialize()
 	event.AddListener("OnDraw3D", "world_draw", function(dt)
 		entities.world_entity:Draw()			
 	end)
+	
+	timer.Create("entity_gc", 0, 0.1, function()
+		for k, v in pairs(entities.remove_these) do
+			v:Remove(true)
+			entities.remove_these[k] = nil
+		end
+	end)
 end
 event.AddListener("RenderContextInitialized", "entities", entities.Initialize)
 
@@ -35,13 +42,6 @@ function entities.Call(name, ...)
 end
 
 entities.remove_these = entities.remove_these or {}
-
-event.AddListener("OnUpdate", "entities", function()
-	for k, v in pairs(entities.remove_these) do
-		v:Remove(true)
-		entities.remove_these[k] = nil
-	end
-end)
 
 class.SetupLib(entities, "entity")
 

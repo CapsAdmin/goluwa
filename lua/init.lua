@@ -562,7 +562,7 @@ include(meta .. "null.lua")
 
 -- luasocket
 luasocket = include(libraries .. "luasocket.lua") 
-timer.Create("socket_think", 0,0, luasocket.Update)
+timer.Create("socket_think", 0,0.1, luasocket.Update)
 event.AddListener("LuaClose", "luasocket", luasocket.Panic)
 
 console.CreateVariable("error_app", "")

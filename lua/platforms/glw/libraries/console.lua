@@ -421,7 +421,7 @@ function console.HandleChar(char)
 	console.InsertChar(char)
 end
 
-event.AddListener("OnUpdate", "curses", function()
+timer.Create("curses", 0, 0.1, function()
 	local byte = curses.wgetch(c.input_window)
 
 	if byte < 0 then return end
