@@ -22,15 +22,27 @@ do -- title
 	
 	local titles = {}
 	local str = ""
+	local last = 0
+	local last_title
 	
 	function system.SetWindowTitle(title, id)
-		if id then
-			titles[id] = title
-			str = table.concat(titles, " | ")
-			system.SetWindowTitleRaw(str)
-		else
-			str = title
-			system.SetWindowTitleRaw(title)
+		local time = os.clock()
+		
+		if last < time then
+			if id then
+				titles[id] = title
+				str = table.concat(titles, " | ")
+				if str ~= last_title then
+					system.SetWindowTitleRaw(str)
+				end
+			else
+				str = title
+				if str ~= last_title then
+					system.SetWindowTitleRaw(title)
+				end
+			end
+			last_title = str
+			last = os.clock() + 0.05
 		end
 	end
 	

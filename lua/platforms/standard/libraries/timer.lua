@@ -122,8 +122,8 @@ function timer.Update()
 	end	
 	
 	for id, obj in pairs(timer.CurrentTimers) do
-		if not obj:IsPaused() and obj.realtime < cur then
-			local ran, msg = obj:Call(obj:GetRepeats() - 1)
+		if not obj.paused and obj.realtime < cur then
+			local ran, msg = obj:Call(obj.times_ran - 1)
 			
 			if ran then
 				if msg == "stop" then
@@ -142,8 +142,8 @@ function timer.Update()
 			if obj.times_ran == obj.repeats then
 				obj:Remove()
 			else
-				obj:SetRepeats(obj:GetRepeats() + 1)
-				obj:SetNextThink(obj:GetInterval())
+				obj.times_ran = obj.times_ran + 1
+				obj.realtime = cur + obj.time
 			end
 		end
 	end

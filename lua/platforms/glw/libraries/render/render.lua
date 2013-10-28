@@ -1,4 +1,5 @@
 render = render or {}
+local render=render
 
 render.top_left = true
 

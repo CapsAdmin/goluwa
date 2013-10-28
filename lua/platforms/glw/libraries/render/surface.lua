@@ -370,7 +370,7 @@ function surface.DrawRect(x,y, w,h, a, ox, oy)
 		if a then
 			render.Rotate(a, 0, 0, 1)
 		end
-		if ox and oy then
+		if ox then
 			render.Translate(-ox, -oy, 0)
 		end
 		
