@@ -1,5 +1,5 @@
 local function init_love(cd, ...)
-	local path = R"bin/windows/x86/love.dll"
+	local path = R("bin/windows/x86/love.dll")
 
 	-- make it so require("love") and require("graphics") work properly in love's boot lua
 	if not package.love_loader_added then
@@ -127,12 +127,14 @@ end
     
 function lovemu.bootreal(name, ...)
 		 
-	local path = R"lovers/" .. name .. "/"
-	path = vfs.FixPath(path)
-	local func = assert(loadfile(path .. "/main.lua")) 
+	local path = R("lovers/" .. name .. "/main.lua")
+	local func = assert(loadfile(path))
+	path = path:gsub("/main%.lua", "/")
 	local co = init_love(path, path, ...) 
 	love.love_dll.PHYSFS_addToSearchPath(path, 1) 
-	func()	
+	func()
+	
+	love.window.setMode(1024, 768, {vsync = false})
  
 	Thinker(function()
 		local ok, msg = coroutine.resume(co)
