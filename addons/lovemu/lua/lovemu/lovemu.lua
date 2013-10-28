@@ -114,6 +114,7 @@ local function run()
 	lovemu.scale_x=1
 	lovemu.scale_y=1
 	lovemu.angle=0
+	love.graphics.clear()
 end
 
 lovemu.errored=false

@@ -143,7 +143,10 @@ function love.graphics.print(text,x,y,r,sx,sy)
 	--render.Scale(1, 1)
 end
 
+local cache = {}
+
 function love.graphics.printf(text,x,y,limit,align,r, sx, sy)
+	do return end
 	x=x+lovemu.translate_x
 	y=y+lovemu.translate_y
 	r=r or 0
@@ -157,9 +160,15 @@ function love.graphics.printf(text,x,y,limit,align,r, sx, sy)
 	sy=sy or 1
 	--render.Scale(sx*lovemu.scale_x, sy*lovemu.scale_y)
 	surface.SetTextPos((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y)
-
-	text=string.replace(text,"\t","    ")
-	local lines=string.explode(text,"\n")
+	
+	local lines = cache[text]
+	
+	if not lines then
+		text=string.replace(text,"\t","    ")
+		lines=string.explode(text,"\n")
+		cache[text] = lines
+	end
+	
 	for i=1,#lines do
 		surface.SetTextPos(x,y+(currentFont.Size*i*2.1))
 		surface.DrawText(lines[i])
@@ -311,7 +320,7 @@ function love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
 	x=x or 0
 	y=y or 0
 	r=r or 0
-	r=(r/0.0174532925) + lovemu.angle
+	r=(r/0.0174532925)
 	sx=sx or 1
 	sy=sy or 1
 	ox=ox or 0
