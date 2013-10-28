@@ -21,11 +21,11 @@ function render.DrawScene(window, dt)
 		
 		event.Call("PostDisplay", dt)
 		
-		local blur_amt = 0.5		
+		--[[local blur_amt = 0.5		
 		
 		gl.Accum(e.GL_ACCUM, 1)
 		gl.Accum(e.GL_RETURN, 1-blur_amt)
-		gl.Accum(e.GL_MULT, blur_amt)
+		gl.Accum(e.GL_MULT, blur_amt)]]
 			
 	render.End()
 end
