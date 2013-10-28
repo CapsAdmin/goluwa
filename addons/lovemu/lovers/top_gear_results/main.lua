@@ -246,3 +246,54 @@ function love.draw()
 	
 	love.graphics.printf(string.sub(text,1,(love.timer.getTime()-time_now)*12),(1280/2)-(640/2),0,wrap_size)
 end
+
+if lovemu then return end
+
+function love.run()
+	math.randomseed(os.time())
+	math.random() math.random()
+	local loading=true
+	while loading do
+		if love and love.audio and love.event and love.filesystem and love.font and love.graphics and love.image
+		and love.joystick and love.keyboard and love.mouse and love.physics and love.sound and love.thread
+		and love.timer then
+			if love.load then
+				love.load()
+			end
+			loading=false
+		end
+	end
+	local getTime=love.timer.getTime
+	local dt=getTime()
+	local update=love.update
+	local draw=love.draw
+	local present=love.graphics.present
+	local clear=love.graphics.clear
+	local origin=love.graphics.origin
+	local sleep=love.timer.sleep
+	local pump=love.event.pump
+	local poll=love.event.poll
+	local step=love.timer.step
+	local hostSleep=1
+	local time=0
+	while true do
+		time=getTime()
+		step()
+		pump()
+		for e,a,b,c,d in poll() do
+			if e == "quit" then
+				if not love.quit or not love.quit() then
+					love.audio.stop()
+					return
+				end
+			end
+			love.handlers[e](a,b,c,d)
+		end
+		update(time-dt)
+		clear()
+		origin()
+		draw()
+		present()
+		dt=time
+	end
+end
