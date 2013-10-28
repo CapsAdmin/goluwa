@@ -75,7 +75,7 @@ function vfs.ParseVariables(path)
 end
 
 function vfs.FixPath(path)
-	return path:gsub("\\", "/"):gsub("(/+)", "/")
+	return (path:gsub("\\", "/"):gsub("(/+)", "/"))
 end
 
 function vfs.GetMounts()
@@ -128,6 +128,7 @@ end
 
 function vfs.GetAbsolutePath(path, ...)
 	check(path, "string")
+
 	path = vfs.ParseVariables(path)
 	
 	local is_folder = path:sub(-1) == "/"
@@ -146,11 +147,11 @@ function vfs.GetAbsolutePath(path, ...)
 				path = path:sub(0,-4)
 			end
 			
-			return v .. "/" .. path
+			return vfs.FixPath(v .. "/" .. path)
 		end
 	end
-	
-	return path
+		
+	return vfs.FixPath(path)
 end
 
 function vfs.GetFile(path, mode, ...)
