@@ -30,8 +30,8 @@ function lovemu.boot(folder)
 	lovemu.demoname=folder
 	if not package_cache[lovemu.demoname] and lovemu.demoname~="" then
 		package_cache[lovemu.demoname]=true
-		package.path=package.path..";"..string.replace(R"lovers/"..lovemu.demoname.."/?.lua","/","\\")
-		package.path=package.path..";"..string.replace(R"lovers/"..lovemu.demoname.."/?/init.lua","/","\\")
+		package.path=package.path..";"..string.replace(R("lovers/"..lovemu.demoname.."/?.lua"),"/","\\")
+		package.path=package.path..";"..string.replace(R("lovers/"..lovemu.demoname.."/?/init.lua"),"/","\\")
 	end
 	
 	lovemu.delta=0
@@ -72,7 +72,7 @@ function lovemu.boot(folder)
 	end
 	love.conf(lovemu.conf)
 
-	if vfs.Exists(R"lovers/"..lovemu.demoname.."/conf.lua")==true then
+	if vfs.Exists(R("lovers/"..lovemu.demoname.."/conf.lua"))==true then
 		print("LOADING CONF.LUA")
 		include("lovers/"..folder.."/conf.lua")
 	end

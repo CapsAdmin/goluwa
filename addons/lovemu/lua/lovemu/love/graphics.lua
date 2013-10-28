@@ -8,13 +8,8 @@ local gl=gl
 local window=window
 local type=type
 
-local glTranslatef = render.Translate
-local glRotatef = render.Rotate
-local glScalef = render.Scale
-local glPushMatrix = render.PushMatrix
-local glPopMatrix = render.PopMatrix
 
-function getWidth(self,arg1)
+local function getWidth(self,arg1)
 	if self.w then --is image
 		return self.w
 	elseif type(self)=="string" then --is font
@@ -24,7 +19,7 @@ function getWidth(self,arg1)
 	return 32
 end
 
-function getHeight(self,arg1)
+local function getHeight(self,arg1)
 	if self.h then --is image
 		return self.h
 	elseif type(self)=="string" then --is font
@@ -38,9 +33,9 @@ function love.graphics.newFont(font,siz)
 	if type(font)=="number" then
 		siz=font
 		local FontObject={}
-		FontObject.Name=surface.CreateFont("fonts/verdana.ttf"..siz, {
+		FontObject.Name=surface.CreateFont("fonts/verdana.ttf", {
 			size = siz,
-			path = "fonts/verdana.ttf",
+			path = R("fonts/verdana.ttf"),
 		})
 		FontObject.Size=siz
 		FontObject.getWidth=getWidth
@@ -48,17 +43,18 @@ function love.graphics.newFont(font,siz)
 		return FontObject
 	else
 		local FontObject={}
-		print("loaded font: "..font)
-		FontObject.Name=surface.CreateFont(font..siz, {
+		FontObject.Name=surface.CreateFont(lovemu.demoname .. "_" .. font, {
 			size = siz,
-			path = R"lovers/"..lovemu.demoname.."/"..font,
+			path = R("lovers/"..lovemu.demoname.."/"..font),
 		})
+		print("loaded font: "..font)
 		FontObject.Size=siz
 		FontObject.getWidth=getWidth
 		FontObject.getHeight=getHeight
 		return FontObject
 	end
 end
+
 
 local currentFont=love.graphics.newFont(12)
 function love.graphics.setFont(font)
@@ -163,7 +159,7 @@ function love.graphics.printf(text,x,y,limit,align,r, sx, sy)
 	surface.SetTextPos((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y)
 
 	text=string.replace(text,"\t","    ")
-	local lines=string.split(text,"\n")
+	local lines=string.explode(text,"\n")
 	for i=1,#lines do
 		surface.SetTextPos(x,y+(currentFont.Size*i*2.1))
 		surface.DrawText(lines[i])

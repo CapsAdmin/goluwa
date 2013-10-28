@@ -976,7 +976,7 @@ function PANEL:DrawLine(line)
 	end
 end
 
-local testfont = surface.CreateFont("um", {path = R"fonts/tahoma.ttf"})
+local testfont = surface.CreateFont("um", {path = R("fonts/tahoma.ttf")})
 
 function PANEL:DrawText(element)
 	

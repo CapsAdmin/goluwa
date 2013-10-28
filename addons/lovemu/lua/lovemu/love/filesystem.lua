@@ -11,7 +11,7 @@ love.filesystem.exists=vfs.Find
 
 local Identity="generic"
 function love.filesystem.getAppdataDirectory()
-	return R"data/"..Identity.."/"
+	return R("data/"..Identity.."/")
 end
 
 function love.filesystem.getLastModified(path)
@@ -19,15 +19,15 @@ function love.filesystem.getLastModified(path)
 end
 
 function love.filesystem.getSaveDirectory()
-	return R"data/"..Identity.."save/"
+	return R("data/"..Identity.."save/")
 end
 
 function love.filesystem.getUserDirectory()
-	return R"data/"..Identity.."save/"
+	return R("data/"..Identity.."save/")
 end
 
 function love.filesystem.getWorkingDirectory()
-	return R"data/"..Identity.."/"
+	return R("data/"..Identity.."/")
 end
 
 function love.filesystem.enumerate(path)
@@ -37,8 +37,8 @@ function love.filesystem.enumerate(path)
 	if path:sub(#path,#path)~="/" or path:sub(#path,#path)~="\\" then
 		path=path.."/"
 	end
-	if not string.find(path,R"data/") then
-		path=R"data/"..Identity.."/"..path
+	if not string.find(path,R("data/")) then
+		path=R("data/"..Identity.."/"..path)
 	end
 	return vfs.Find(path)
 end
@@ -56,8 +56,8 @@ function love.filesystem.isFile(path)
 	if path:sub(1,1)=="\\" or path:sub(1,1)=="/" then
 		path=path:sub(2,#path)
 	end
-	if not string.find(path,R"data/") then
-		exists=vfs.Exists(R"data/"..Identity.."/"..path)
+	if not string.find(path,R("data/")) then
+		exists=vfs.Exists(R("data/"..Identity.."/"..path))
 	else
 		exists=vfs.Exists(path)
 	end
@@ -84,8 +84,8 @@ function love.filesystem.read(path)
 		path=path:sub(2,#path)
 	end
 	local str=""
-	if not string.find(path,R"data/") then
-		str=vfs.Read(R"data/"..Identity.."/"..path,"r")
+	if not string.find(path,R("data/")) then
+		str=vfs.Read(R("data/"..Identity.."/"..path),"r")
 	else
 		str=vfs.Read(path,"r")
 	end
@@ -108,8 +108,8 @@ function love.filesystem.write(path,data)
 	if path:sub(1,1)=="\\" or path:sub(1,1)=="/" then
 		path=path:sub(2,#path)
 	end
-	if not string.find(path,R"data/") then
-		vfs.Write(R"data/"..Identity.."/"..path,data)
+	if not string.find(path,R("data/")) then
+		vfs.Write(R("data/"..Identity.."/"..path),data)
 	else
 		vfs.Write(path,data)
 	end
