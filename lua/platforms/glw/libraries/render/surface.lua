@@ -120,16 +120,15 @@ do -- fonts
 		
 		info = info or {}
 
-		info.path = info.path or "fonts/arial.ttf"
-		info.size = info.size or 14    
+		info.path = info.path or "fonts/unifont.ttf"
+		info.size = info.size or 14     
 		info.spacing = info.spacing or 1 
 		info.res_multiplier = info.res_multiplier or 1
 		
-		if not info.smoothness and info.size > 16 then
-			info.smoothness = 0.1
-		end
-		
-		-- create a face from memory
+		info.border = math.pow2ceil(info.size) 
+		info.border_2 = info.border / 2   
+		 
+		-- create a face from memory  
 		local data, err = vfs.Read(info.path, "rb") 
 		
 		if not data then error("could not load font " .. info.path .. " : " .. err, 2) end
@@ -175,11 +174,11 @@ do -- fonts
 
 		local face = ft.current_font.face
 		local data = ft.current_font.strings[str]
-		
+		local info = ft.current_font.info 
+
 		if not data then
 			data = {glyphs = {}, h = 0, w = 0}
 			
-			local info = ft.current_font.info
 			local w = 0
 			
 			for _, char in pairs(utf8.totable(str)) do
@@ -200,25 +199,18 @@ do -- fonts
 						
 						local bitmap = face.glyph.bitmap 
 						local w = bitmap.width
-						local h = bitmap.rows	 
-						local buffer = bitmap.buffer	 
+						local h = bitmap.rows
+						local length = w * h
+											
+						-- copy the data cause we call freetype.RenderGlyph the next frame
+						local buffer = ffi.new("unsigned char[?]", length)
+						ffi.copy(buffer, bitmap.buffer, length)
 						
-						tex = Texture(
-							w, h, buffer, 
-							{
-								format = e.GL_ALPHA, 
-								internal_format = e.GL_ALPHA8, 
-								stride = 1, 
-								mip_map_levels = 1,  
-								mag_filter = e.GL_LINEAR,
-								min_filter = e.GL_LINEAR_MIPMAP_LINEAR,
-								mip_map_levels = 1,
-								
-								wrap_r = e.GL_MIRRORED_REPEAT,
-								wrap_s = e.GL_MIRRORED_REPEAT,
-								wrap_t = e.GL_MIRRORED_REPEAT,
-							}  
-						) 
+						tex = {
+							bitmap_buffer = buffer, 
+							bitmap_w = w, 
+							bitmap_h = h,
+						}
 				
 						local m = face.glyph.metrics
 
@@ -229,12 +221,13 @@ do -- fonts
 							x = m.horiBearingX / DPI,
 							y = m.horiBearingY / DPI,
 							w2 = m.horiAdvance / DPI,
+							y2 = m.vertBearingY / DPI,
 						}
-						ft.current_font.glyphs[char] = tex
+						ft.current_font.glyphs[char] = tex     
 					end
-										
-					local glyph = {}
 					
+					local glyph = {}
+
 					glyph.tex = tex
 					glyph.x = w
 					glyph.y = info.size - tex.metrics.y
@@ -259,18 +252,54 @@ do -- fonts
 					end
 				end
 			end
+						
+			local tex = Texture(
+				math.floor(data.w + info.border), math.floor(data.h + info.border), buffer, 
+				{
+					format = e.GL_ALPHA, 
+					internal_format = e.GL_ALPHA8, 
+					stride = 1,		
+				}     
+			)         
 			
+			tex:Clear()
+			
+			
+			for _, glyph in pairs(data.glyphs) do
+				tex:Upload(
+					glyph.tex.bitmap_buffer, 
+					
+					glyph.x + info.border_2,  
+					glyph.y + info.border - data.h, 
+					
+					glyph.tex.bitmap_w, 
+					glyph.tex.bitmap_h
+				)       
+			end
+			
+			data.tex = tex
+						
 			ft.current_font.strings[str] = data
 		end 
-
-		for _, glyph in pairs(data.glyphs) do
-			surface.PushMatrix(X + glyph.x, Y + glyph.y, glyph.w, glyph.h)
-				surface.fontmesh.texture = glyph.tex
-				surface.fontmesh.global_color = surface.rectmesh.global_color
-				surface.fontmesh.smoothness = ft.current_font.info.smoothness 
-				surface.fontmesh:Draw()
-			surface.PopMatrix()
+		 
+		if surface.debug then
+			surface.SetWhiteTexture()
+			surface.Color(1, 0, 0, 0.5)
+			surface.DrawRect(X, Y, data.w, data.h)
+			surface.Color(1,1,1,1,1)	
+			
+			surface.SetWhiteTexture()
+			surface.Color(0, 1, 0, 0.6)  
+			surface.DrawRect(X - info.border_2, Y - info.border_2, data.w + info.border, data.h + info.border)
+			surface.Color(1,1,1,1,1)
 		end
+		
+		surface.PushMatrix(math.floor(X - info.border_2), math.floor(Y - info.border_2), data.tex.w, data.tex.h) 
+			surface.fontmesh.texture = data.tex
+			surface.fontmesh.global_color = surface.rectmesh.global_color
+			surface.fontmesh.smoothness = ft.current_font.info.smoothness 
+			surface.fontmesh:Draw()
+		surface.PopMatrix()
 	end 
 	
 	function surface.GetTextSize(str)
