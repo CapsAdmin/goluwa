@@ -146,7 +146,6 @@ end
 local cache = {}
 
 function love.graphics.printf(text,x,y,limit,align,r, sx, sy)
-	do return end
 	x=x+lovemu.translate_x
 	y=y+lovemu.translate_y
 	r=r or 0
