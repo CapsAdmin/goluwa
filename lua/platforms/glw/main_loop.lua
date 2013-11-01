@@ -34,9 +34,14 @@ local function main()
 			last_time = time
 			
 			local fps = dt
-			smooth_fps = smooth_fps + ((fps - smooth_fps) * dt)
 			
-			system.SetWindowTitle(("FPS: %i"):format(1/smooth_fps), 1)
+			if fps < 0.0083 then
+				smooth_fps = smooth_fps + ((fps - smooth_fps) * dt)
+			
+				system.SetWindowTitle(("FPS: %i"):format(1/smooth_fps), 1)
+			else
+				system.SetWindowTitle(("FPS: %i"):format(1/fps), 1)
+			end
 			
 			if 1/smooth_fps < 30 then
 				system.SetWindowTitle(("MS: %f"):format(smooth_fps*100), 3)

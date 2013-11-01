@@ -8,7 +8,7 @@ function entities.Initialize()
 		entities.world_entity:Draw()			
 	end)
 	
-	timer.Create("entity_gc", 0, 0.1, function()
+	timer.Create("entity_gc", 0.1, 0, function()
 		for k, v in pairs(entities.remove_these) do
 			v:Remove(true)
 			entities.remove_these[k] = nil

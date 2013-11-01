@@ -1,9 +1,9 @@
 local timer = _G.timer or {} 
 
-timer.CurrentTimers = {}
-timer.SimpleTimers = {}
-timer.Thinkers = {}
-timer.clock = os.clock
+timer.CurrentTimers = timer.CurrentTimers or {}
+timer.SimpleTimers = timer.SimpleTimers or {}
+timer.Thinkers = timer.Thinkers or {}
+timer.clock = timer.clock or os.clock
 
 function timer.Delay(time, callback, obj)
 	check(time, "number", "function")
