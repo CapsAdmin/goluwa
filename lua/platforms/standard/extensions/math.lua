@@ -1,3 +1,15 @@
+function math.pow2ceil(n)
+	return 2 ^ math.ceil(math.log(n) / math.log(2))
+end
+
+function math.pow2floor(n)
+	return 2 ^ math.floor(math.log(n) / math.log(2))
+end
+
+function math.pow2round(n)
+	return 2 ^ math.round(math.log(n) / math.log(2))
+end
+
 function math.round(num, idp)
 	if idp and idp > 0 then
 		local mult = 10 ^ idp
