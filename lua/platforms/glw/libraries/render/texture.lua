@@ -53,16 +53,19 @@ do -- texture object
 		return buffer, length
 	end
 	
-	function META:Clear(val)	
+	function META:Clear(val, level)	
+		level = level or 0
 		local f = self.format
 		
 		local buffer, length = self:CreateBuffer()
 
 		ffi.fill(buffer, length, val)
 
+		gl.BindTexture(f.type, self.id)			
+
 		gl.TexSubImage2D(
 			f.type, 
-			0, 
+			level, 
 			0,
 			0,
 			self.size.w,
@@ -72,6 +75,10 @@ do -- texture object
 			buffer
 		)
 		
+		gl.GenerateMipmap(f.type)
+		
+		gl.BindTexture(f.type, 0)			
+				
 		return self
 	end
 	
@@ -96,7 +103,7 @@ do -- texture object
 				gl.TexParameterf(f.type, k, v)
 			end
 		end
-	end
+	end 
 	
 	function META:Upload(buffer, x, y, w, h, level)
 		x = x or 0
