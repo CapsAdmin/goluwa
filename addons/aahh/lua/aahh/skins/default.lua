@@ -4,10 +4,6 @@ local PAD = 4
 local MPOS
 
 SKIN.Padding = PAD -- padding which is also used for scaling
-SKIN.Fonts =
-{
-	aahh_default = "arial.ttf",
-}
 
 local c = {}
 	local dark_shift = Color(0.75, 0.85, 0.95, 1)
@@ -213,7 +209,7 @@ do--label
 			"text", 
 			pnl.Text,
 			Vec2(0, 0),
-			pnl.Font or self.Fonts.aahh_default,
+			pnl.Font,
 			c.text,
 			pnl.AlignNormal,
 			pnl.ShadowDir,
