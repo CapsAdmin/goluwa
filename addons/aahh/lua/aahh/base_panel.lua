@@ -304,17 +304,17 @@ do -- align
 
 	e.ALIGN_TOP = Vec2(0, 0)
 	e.ALIGN_BOTTOM = Vec2(0, 1)
-	e.ALIGN_CENTERY = Vec2(0, -0.5)
+	e.ALIGN_CENTERY = Vec2(0, 0)
 
 	e.ALIGN_TOPLEFT = Vec2(0, 0)
-	e.ALIGN_CENTERLEFT = Vec2(0, -0.5)
+	e.ALIGN_CENTERLEFT = Vec2(0, 0)
 	e.ALIGN_TOPRIGHT = Vec2(1, 0)
-	e.ALIGN_CENTERRIGHT = Vec2(1, -0.5)
+	e.ALIGN_CENTERRIGHT = Vec2(1, 0)
 
 
 	e.ALIGN_BOTTOMLEFT = Vec2(0, 1)
 	e.ALIGN_BOTTOMRIGHT = Vec2(1, 1)
-	e.ALIGN_CENTER = Vec2(0.5, 0.5)
+	e.ALIGN_CENTER = Vec2(0.5, 0)
 	
 	function PANEL:Align(vec, off)
 		if not vec then debug.trace() end

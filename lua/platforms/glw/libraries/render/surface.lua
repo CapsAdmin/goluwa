@@ -74,7 +74,7 @@ function surface.Initialize()
 	end
 
 	surface.SetFont(surface.CreateFont("default"))	
-		
+			
 	surface.ready = true
 end
 
@@ -176,7 +176,18 @@ do -- fonts
 		local info = ft.current_font.info 
 
 		if not data then
-			data = {chars = {}, h = info.size, w = info.size}
+			-- get the tallest character and use it as height
+			local bbox = ffi.new("FT_BBox[1]")
+			local glyph2 = ffi.new("FT_Glyph[1]")
+			
+			local i = freetype.GetCharIndex(face, ("|"):byte()) 
+			freetype.LoadGlyph(face, i, 0)
+			freetype.RenderGlyph(face.glyph, 0) 
+			freetype.GetGlyph(face.glyph, glyph2)
+			freetype.GlyphGetCBox(glyph2[0], 2, bbox)
+			bbox = bbox[0]
+			
+			data = {chars = {}, h = face.glyph.bitmap.rows - bbox.yMin + 1, w = info.size}
 			
 			local w = 0
 			
@@ -247,12 +258,8 @@ do -- fonts
 					local char = {glyph = glyph}
 
 					char.x = glyph.bx + w
-					char.y = info.size - glyph.y_max
-									
-					if str == "e" then
-						print(glyph.str, glyph.y_max)
-					end
-					
+					char.y = (info.size - glyph.y_max)
+							
 					if info.monospace then
 						w = w + info.spacing
 					else
@@ -260,23 +267,18 @@ do -- fonts
 					end
 					
 					data.w = w
-					
-					if glyph.h > data.h then
-						data.h = glyph.h
-					end
 
 					table.insert(data.chars, char)
 				end
 			end
-						
+			
 			local tex = Texture(math.floor(data.w + info.border), math.floor(data.h + info.border), buffer, {
 				format = e.GL_ALPHA, 
-				internal_format = e.GL_ALPHA8, 
-				stride = 1,		  
+				internal_format = e.GL_ALPHA8,
+				stride = 1,
 			})         
 			
 			tex:Clear()	  		
-			
 			for _, char in pairs(data.chars) do
 				tex:Upload(
 					char.glyph.buffer, 
@@ -306,7 +308,7 @@ do -- fonts
 			surface.Color(1,1,1,1,1)
 		end
 		
-		surface.PushMatrix(math.floor(X - info.border_2), math.floor(Y - info.border_2), data.tex.w, data.tex.h) 
+		surface.PushMatrix(X - info.border_2, Y - info.border_2, data.tex.w, data.tex.h) 
 			surface.fontmesh.texture = data.tex
 			surface.fontmesh.global_color = surface.rectmesh.global_color
 			surface.fontmesh.smoothness = ft.current_font.info.smoothness 
@@ -315,28 +317,25 @@ do -- fonts
 	end 
 	
 	function surface.GetTextSize(str)
-		local data = ft.current_font and ft.current_font.strings[str]
-		
-		if ft.current_font then
-			if str == " " then
-				return ft.current_font.info.size / 2, ft.current_font.info.size
-			elseif str == "\t" then
-				return ft.current_font.info.size * 2, ft.current_font.info.size
-			end	
+		if not ft.current_font then
+			return 0, 0
 		end
+	
+		local data = ft.current_font.strings[str]
 		
-		if data then
-			return data.w, data.h
-		elseif ft.current_font then
-		
+		if str == " " then
+			return ft.current_font.info.size / 2, ft.current_font.info.size
+		elseif str == "\t" then
+			return ft.current_font.info.size * 2, ft.current_font.info.size
+		elseif not data then
 			surface.DrawText(str) 
-			data = ft.current_font and ft.current_font.strings[str]
-			if data then
-				return data.w, data.h
+			data = ft.current_font.strings[str]
+			if not data then
+				return 0, 0
 			end
 		end
-		
-		return 0, 0
+	
+		return data.w, data.h
 	end
 end
 
@@ -359,7 +358,7 @@ do -- orientation
 	function surface.PushMatrix(x,y, w,h, a)
 		render.PushMatrix()
 
-		if x and y then surface.Translate(x, y, 0) end
+		if x and y then surface.Translate(math.floor(x), math.floor(y), 0) end
 		if w and h then surface.Scale(w, h, 1) end
 		if a then surface.Rotate(a) end
 	end
