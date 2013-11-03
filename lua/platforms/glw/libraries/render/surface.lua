@@ -1,5 +1,7 @@
 surface = surface or {}
-local surface=surface
+
+local surface = surface
+local render = render
 
 surface.ft = surface.ft or {}
 local ft = surface.ft
@@ -74,7 +76,7 @@ function surface.Initialize()
 	end
 
 	surface.SetFont(surface.CreateFont("default"))	
-			
+	
 	surface.ready = true
 end
 
