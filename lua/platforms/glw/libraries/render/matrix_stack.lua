@@ -94,7 +94,7 @@ if false then
 	stack.camera_matrix = {}
 	stack.model_matrix = {}
 
-	for i = 1, 8 do
+	for i = 1, 16 do
 		table.insert(stack.camera_matrix, Matrix44())
 		table.insert(stack.model_matrix, Matrix44())
 	end
@@ -107,6 +107,8 @@ if false then
 		render.fov = 75 
 		render.farz = 32000
 		render.nearz = 0.1
+		
+		render.PushMatrix()
 	end
 
 	function render.GetCurrentMatrix()
@@ -124,6 +126,7 @@ if false then
 
 
 	function render.GetCameraMatrix()
+		print(stack.camera_matrix[level])
 		return stack.camera_matrix[level].m
 	end
 
@@ -131,7 +134,7 @@ if false then
 		mode = "camera_matrix"
 		level = 1
 	end
-
+ 
 	function render.Translate(x, y, z)
 		if x == 0 and y == 0 and z == 0 then return end
 		stack[mode][level]:Translate(x, y, z)
@@ -157,7 +160,6 @@ if false then
 
 	function render.PushMatrix(p, a, s)
 		level = level + 1
-		
 		stack[mode][level]:Identity()
 
 		if p then
@@ -188,14 +190,15 @@ if false then
 		stack[mode][level]:Perspective(fov, ratio, nearz, farz)
 	end
 
-	function render.SetViewport(x, y, w, h)
+	--[[function render.SetViewport(x, y, w, h)
 		x = x or 0
 		y = y or 0
 		w = w or render.w
 		h = h or render.h
 		
-		gl.Viewport(x, y, w, h)
-	end
+		stack[mode][level]:Viewport(x, y, w, h)
+	end]]
+		
 end
 
 -- experimental..

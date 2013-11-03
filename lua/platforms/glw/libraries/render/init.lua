@@ -1,6 +1,6 @@
 include("render.lua")
-include("scene.lua")
 include("matrix_stack.lua")
+include("scene.lua")
 include("camera.lua")
 include("texture.lua")
 include("framebuffer.lua")
