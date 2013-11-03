@@ -64,6 +64,8 @@ end
 
 function PANEL:InvalidateText()
 	surface.SetFont(self.Font)
+	
+	self.FixedHeight = false
 
 	-- lol
 	self.Text = self.Text:gsub("\r", "\n")
@@ -96,7 +98,7 @@ function PANEL:InvalidateText()
 			y = y + height
 			data.h = height
 		else
-			y = y + data.h + 5
+			y = y + data.h
 		end
 
 		markup.h = markup.h + data.h

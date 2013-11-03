@@ -44,9 +44,9 @@ do
 				local x, y = pos:Unpack()
 				local w, h = surface.GetTextSize(text)
 				
-				x = x + w*align_normal.x
-				y = y + h*align_normal.y
-			
+				x = x + w * align_normal.x
+				y = y + h * align_normal.y
+
 				surface.SetTextPos(x, y)
 			end
 			
