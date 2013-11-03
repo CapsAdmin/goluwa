@@ -191,7 +191,7 @@ end
 -- in `result` to avoid allocating a new matrix. This emulates the OpenGL
 -- function `gluPerspective()`.
 local function matrix_perspective(fov, aspect, near, far, result)
-	local y = math.tan(fov * math.pi / 360) * near;
+	local y = math.tan(math.rad(fov)) * near;
 	local x = y * aspect;
 	return matrix_frustum(-x, x, -y, y, near, far, result);
 end
@@ -202,31 +202,34 @@ end
 -- matter how far away or nearby they are. You can optionally pass an existing
 -- matrix in `result` to avoid allocating a new matrix. This emulates the OpenGL
 -- function `glOrtho()`.
-local function matrix_ortho(l, r, b, t, n, f, result)
-	result = result or Matrix44();
-	local m = result.m;
 
-	m[0] = 2 / (r - l);
-	m[1] = 0;
-	m[2] = 0;
-	m[3] = -(r + l) / (r - l);
+local function matrix_ortho(left, right, bottom, top, nearval, farval, result)
+	result = result or Matrix44()
+	
+	local new = Matrix44()
+	local m = new.m
+	
+	m[0*4] = 2 / (right - left)
+	m[1*4] = 0
+	m[2*4] = 0
+	m[3*4] = -(right + left) / (right - left)
 
-	m[4] = 0;
-	m[5] = 2 / (t - b);
-	m[6] = 0;
-	m[7] = -(t + b) / (t - b);
+	m[0*4+1] = 0
+	m[1*4+1] = 2 / (top - bottom)
+	m[2*4+1] = 0
+	m[3*4+1] = -(top + bottom) / (top - bottom)
 
-	m[8] = 0;
-	m[9] = 0;
-	m[10] = -2 / (f - n);
-	m[11] = -(f + n) / (f - n);
+	m[0*4+2] = 0
+	m[1*4+2] = 0
+	m[2*4+2] = -2 / (farval - nearval)
+	m[3*4+2] = -(farval + nearval) / (farval - nearval)
 
-	m[12] = 0;
-	m[13] = 0;
-	m[14] = 0;
-	m[15] = 1;
-
-	return result;
+	m[0*4+3] = 0
+	m[1*4+3] = 0
+	m[2*4+3] = 0
+	m[3*4+3] = 1
+			
+	return matrix_multiply(result, new)
 end
 
 -- ### GL.Matrix.scale(x, y, z[, result])
@@ -237,25 +240,21 @@ local function matrix_scale(x, y, z, result)
 	result = result or Matrix44();
 	local m = result.m;
 
-	m[0] = x;
-	m[1] = 0;
-	m[2] = 0;
-	m[3] = 0;
-
-	m[4] = 0;
-	m[5] = y;
-	m[6] = 0;
-	m[7] = 0;
-
-	m[8] = 0;
-	m[9] = 0;
-	m[10] = z;
-	m[11] = 0;
-
-	m[12] = 0;
-	m[13] = 0;
-	m[14] = 0;
-	m[15] = 1;
+	m[0] = m[0] * x 
+	m[4] = m[4] * y
+	m[8] = m[8] * z
+	
+	m[1] = m[1] * x
+	m[5] = m[5] * y
+	m[9] = m[9] * z
+	
+	m[2] = m[2] * x
+	m[6] = m[6] * y
+	m[10] = m[10] * z
+	
+	m[3] = m[3] * x
+	m[7] = m[7] * y
+	m[11] = m[11] * z
 
 	return result;
 end
@@ -268,25 +267,10 @@ local function matrix_translate(x, y, z, result)
 	result = result or Matrix44();
 	local m = result.m;
 
-	m[0] = 1;
-	m[1] = 0;
-	m[2] = 0;
-	m[3] = x;
-
-	m[4] = 0;
-	m[5] = 1;
-	m[6] = 0;
-	m[7] = y;
-
-	m[8] = 0;
-	m[9] = 0;
-	m[10] = 1;
-	m[11] = z;
-
-	m[12] = 0;
-	m[13] = 0;
-	m[14] = 0;
-	m[15] = 1;
+	m[12] = m[0] * x + m[4] * y + m[8]  * z + m[12];
+	m[13] = m[1] * x + m[5] * y + m[9]  * z + m[13];
+	m[14] = m[2] * x + m[6] * y + m[10] * z + m[14];
+	m[15] = m[3] * x + m[7] * y + m[11] * z + m[15];
 
 	return result;
 end
@@ -296,41 +280,106 @@ end
 -- Returns a matrix that rotates by `a` degrees around the vector `x, y, z`.
 -- You can optionally pass an existing matrix in `result` to avoid allocating
 -- a new matrix. This emulates the OpenGL function `glRotate()`. 
-local function matrix_rotate(a, x, y, z, result)
-	if not a or (not x and not y and not z) then
+local function matrix_rotate(angle, x, y, z, result)
+	if not angle or (not x and not y and not z) then
 		return matrix_identity(result)
 	end
-
+		
 	result = result or Matrix44();
-	local m = result.m;
 
-	local d = math.sqrt(x*x + y*y + z*z);
-	a = a * math.pi / 180; x = x / d; y = y / d; z = z / d;
-	local c = math.cos(a)
-	local s = math.sin(a)
-	local t = 1 - c;
+	local new = Matrix44()
+	local m = new.m
 
-	m[0] = x * x * t + c;
-	m[1] = x * y * t - z * s;
-	m[2] = x * z * t + y * s;
-	m[3] = 0;
+	local xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c, s, c;
+	local optimized = false
 
-	m[4] = y * x * t + z * s;
-	m[5] = y * y * t + c;
-	m[6] = y * z * t - x * s;
-	m[7] = 0;
+	local s = math.sin(math.rad(angle))
+	local c = math.cos(math.rad(angle))
 
-	m[8] = z * x * t - y * s;
-	m[9] = z * y * t + x * s;
-	m[10] = z * z * t + c;
-	m[11] = 0;
+	if x == 0 then
+		if y == 0 then
+			if z ~= 0 then
+				optimized = true
 
-	m[12] = 0;
-	m[13] = 0;
-	m[14] = 0;
-	m[15] = 1;
+				m[0*4+0] = c
+				m[1*4+1] = c
 
-	return result;
+				if z < 0 then
+					m[1*4+0] = s
+					m[0*4+1] = -s
+				else
+					m[1*4+0] = -s
+					m[0*4+1] = s
+				end
+			elseif z == 0 then
+				optimized = true;
+
+				m[0*4+0] = c
+				m[2*4+2] = c
+
+				if y < 0 then
+					m[2*4+0] = -s
+					m[0*4+2] = s
+				else
+					m[2*4+0] = s
+					m[0*4+2] = -s
+				end
+			end
+		end
+	elseif y == 0 then
+		if z == 0 then
+			optimized = true
+
+			m[1*4+1] = c
+			m[2*4+2] = c
+
+			if x < 0 then
+				m[2*4+1] = s
+				m[1*4+2] = -s
+			else
+				m[2*4+1] = -s;
+				m[1*4+2] = s;
+			end
+		end
+	end
+
+	if not optimized then
+		local mag = math.sqrt(x * x + y * y + z * z)
+
+		if mag <= 1.0e-4 then
+			return
+		end
+
+		x = x / mag;
+		y = y / mag;
+		z = z / mag;
+
+		xx = x * x
+		yy = y * y
+		zz = z * z
+		xy = x * y
+		yz = y * z
+		zx = z * x
+		xs = x * s
+		ys = y * s
+		zs = z * s
+		one_c = 1 - c
+
+		m[0*4+0] = (one_c * xx) + c;
+		m[1*4+0] = (one_c * xy) - zs;
+		m[2*4+0] = (one_c * zx) + ys;
+
+		m[0*4+1] = (one_c * xy) + zs;
+		m[1*4+1] = (one_c * yy) + c;
+		m[2*4+1] = (one_c * yz) - xs;
+
+		m[0*4+2] = (one_c * zx) - ys;
+		m[1*4+2] = (one_c * yz) + xs;
+		m[2*4+2] = (one_c * zz) + c;
+
+	end
+
+	return matrix_multiply(result, new)
 end
 
 -- ### GL.Matrix.lookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz[, result])
@@ -373,7 +422,49 @@ local function matrix_look_at(ex, ey, ez, cx, cy, cz, ux, uy, uz, result)
 	return result;
 end
 
+local MAT_SX = 0
+local MAT_SY = 5
+local MAT_SZ = 10
+local MAT_TX = 12
+local MAT_TY = 13
+local MAT_TZ = 14
+
+local function matrix_viewport(x, y, width, height, z_near, z_far, depth_max, result)
+	result = result or Matrix44();
+	local m = result.m;
+	
+	m[MAT_SX] = width / 2
+	m[MAT_TX] = m[MAT_SX] + x
+	m[MAT_SY] = height / 2	
+	m[MAT_TY] = m[MAT_SY] + y
+	
+	if depth_max and z_far and z_near then
+		m[MAT_SZ] = depth_max * ((z_far - z_near) / 2)
+		m[MAT_TZ] = depth_max * ((z_far - z_near) / 2 + z_near)
+	end
+	
+	return result
+end
+
 local META = {}
+
+META.Type = "matrix44"
+
+function META:OpenGLFunc(func, ...)
+	local old = ffi.new("GLint[1]")
+	gl.GetIntegerv(e.GL_MATRIX_MODE, old)
+	gl.MatrixMode(e.GL_MODELVIEW)
+	
+	gl.PushMatrix()
+	gl.LoadIdentity()
+	gl[func](...)
+	gl.GetFloatv(e.GL_MODELVIEW_MATRIX, self.m)
+	gl.PopMatrix()
+	
+	gl.MatrixMode(old[0])
+	
+	return self
+end
 
 function META:Identity()
 	matrix_identity(self)
@@ -414,7 +505,14 @@ function META:Frustum(l, r, b, t, n, f)
 end
 
 function META:Ortho(l, r, b, t, n, f)
+	--if gl then
+	--	return self:OpenGLFunc("Ortho", l, r, b, t, n, f)
+	--end
 	return matrix_ortho(l, r, b, t, n, f, self)
+end
+
+function META:Viewport(x, y, width, height, z_near, z_far, depth_max, result)
+	return matrix_viewport(x, y, width, height, z_near, z_far, depth_max, result)
 end
 
 function META:LookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz)
