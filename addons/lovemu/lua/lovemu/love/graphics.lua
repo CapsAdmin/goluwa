@@ -1,12 +1,15 @@
 local love=love
 love.graphics={}
 
+local string=string
+local math=math
 local surface=surface
 local render=render
 local freeimage=freeimage
 local gl=gl
 local window=window
 local type=type
+local lovemu=lovemu
 
 
 local function getWidth(self,arg1)
@@ -128,6 +131,19 @@ end
 function love.graphics.setMode() --partial
 end
 
+do
+	local size = 1
+
+	function love.graphics.setPointStyle(s)
+		size = s
+	end
+
+	function love.graphics.point(x,y)
+		surface.SetWhiteTexture()
+		surface.DrawRect(x,y,size,size)
+	end
+end
+
 function love.graphics.print(text,x,y,r,sx,sy)
 	x=x+lovemu.translate_x
 	y=y+lovemu.translate_y
@@ -135,17 +151,17 @@ function love.graphics.print(text,x,y,r,sx,sy)
 	if r > 0 then
 		r=r/0.0174532925
 	end
-	sx=sx or 1
-	sy=sy or 1
-	--render.Scale(sx*lovemu.scale_x, sy*lovemu.scale_y)
+	sx=sx or lovemu.scale_x 
+	sy=sy or lovemu.scale_y
+	surface.SetTextScale(sx,sy)
 	surface.SetTextPos((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y)
 	surface.DrawText(text,r)
-	--render.Scale(1, 1)
+	surface.SetTextScale(1,1)
 end
 
 local cache = {}
 
-function love.graphics.printf(text,x,y,limit,align,r, sx, sy)
+function love.graphics.printf(text,x,y,limit,align,r, sx, sy) --partial
 	x=x+lovemu.translate_x
 	y=y+lovemu.translate_y
 	r=r or 0
@@ -155,24 +171,18 @@ function love.graphics.printf(text,x,y,limit,align,r, sx, sy)
 	y=y or 0
 	limit=limit or 0
 	align=align or "left"
-	sx=sx or 1
-	sy=sy or 1
-	--render.Scale(sx*lovemu.scale_x, sy*lovemu.scale_y)
-	surface.SetTextPos((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y)
+	sx=sx or lovemu.scale_x 
+	sy=sy or lovemu.scale_y
 	
-	local lines = cache[text]
+	local lines = cache[text] or string.explode(text,"\n")
+	cache[text] = lines 
 	
-	if not lines then
-		text=string.replace(text,"\t","    ")
-		lines=string.explode(text,"\n")
-		cache[text] = lines
-	end
-	
+	surface.SetTextScale(sx,sy)
 	for i=1,#lines do
-		surface.SetTextPos(x,y+(currentFont.Size*i*2.1))
+		surface.SetTextPos((x+lovemu.translate_x)*lovemu.scale_x,((y+lovemu.translate_y)*lovemu.scale_y)+(currentFont.Size*i*2.1))
 		surface.DrawText(lines[i])
 	end
-	--render.Scale(1, 1)
+	surface.SetTextScale(1,1)
 end
 
 function love.graphics.setLineStyle(s) --partial
@@ -187,8 +197,8 @@ end
 function love.graphics.setPoint() --partial
 end
 
-function love.graphics.newQuad() --partial
-	return {}
+function love.graphics.newQuad(...) --partial
+	return {quad = true, ...}
 end
 
 function love.graphics.drawq() --partial
@@ -196,12 +206,19 @@ function love.graphics.drawq() --partial
 end
 
 function love.graphics.rectangle(mode,x,y,w,h)
-	x=x or 0
-	y=y or 0
-	w=w or 0
-	h=h or 0
-	surface.SetTexture()
-	surface.DrawRect((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y, w*lovemu.scale_x, h*lovemu.scale_y,0,0,0)
+	if mode=="fill" then
+		surface.SetTexture()
+		surface.DrawRect((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y, w*lovemu.scale_x, h*lovemu.scale_y,0,0,0)
+	else
+		x=(x+lovemu.translate_x)*lovemu.scale_x
+		y=(y+lovemu.translate_y)*lovemu.scale_y
+		w=w*lovemu.scale_x
+		h=h*lovemu.scale_y
+		surface.DrawLine(x,y, x+w,y, LineWidth, true)
+		surface.DrawLine(x,y, x,y+h, LineWidth, true)
+		surface.DrawLine(x+w,y, x+w,y+h, LineWidth, true)
+		surface.DrawLine(x,y+h, x+w,y+h, LineWidth, true)
+	end
 end
 
 function love.graphics.circle(mode,x,y,w,h) --partial
@@ -279,9 +296,9 @@ love.graphics.setDefaultImageFilter=setDefaultFilter
 
 function setFilter(self,filter)
 	if filter=="nearest" then
-		DefaultFilter=filter
+		DefaultFilter=e.GL_NEAREST
 	elseif filter=="linear" then
-		DefaultFilter=filter
+		DefaultFilter=e.GL_LINEAR
 	end
 end
 
@@ -292,20 +309,14 @@ function love.graphics.newImage(path)
 	local tex = Texture(
 		w, h, buffer, 
 		{
-			stride = 0, 
 			mip_map_levels = 1,  
-			mag_filter = e.GL_NEAREST,
-			min_filter = e.GL_NEAREST_MIPMAP_LINEAR ,
-			mip_map_levels = 1,
-			
-			wrap_r = e.GL_MIRRORED_REPEAT,
-			wrap_s = e.GL_MIRRORED_REPEAT,
-			wrap_t = e.GL_MIRRORED_REPEAT,
+			mag_filter = e.GL_LINEAR,
+			min_filter = e.GL_LINEAR_MIPMAP_LINEAR,
 		}  
 	) 
-	tex.getWidth=getWidth
-	tex.getHeight=getHeight
-	tex.setFilter=setFilter
+	tex.getWidth=function(s) return s.w end
+	tex.getHeight=function(s) return s.h end
+	tex.setFilter=function() end
 	return tex
 end
 
@@ -325,6 +336,14 @@ function love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
 	ox=ox or 0
 	oy=oy or 0
 	if drawable.id then
+		if type(x) == "table" and x.quad then
+			--x = x[1]
+			y = x[2] * x[6]
+			sx = x[3]
+			sy = x[4]
+			
+			x = x[1] * x[5]
+		end
 		surface.SetTexture(drawable)
 		surface.DrawRect((x+lovemu.translate_x)*lovemu.scale_x,(y+lovemu.translate_y)*lovemu.scale_y, drawable.w*sx*lovemu.scale_x, drawable.h*sy*lovemu.scale_y,r,ox*sx*lovemu.scale_x,oy*sy*lovemu.scale_y)
 	end
@@ -344,10 +363,7 @@ function love.graphics.scale(sx,sy)
 	lovemu.scale_y=sy
 end
 
-function love.graphics.rotate(r) 
-	r=r or 0
-	glRotatef(r, 0, 0, 1)
-end
+love.graphics.rotate=function() end
  
 function love.graphics.push()
 	lovemu.stack[lovemu.stack_index]={

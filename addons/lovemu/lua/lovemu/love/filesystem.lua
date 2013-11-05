@@ -83,13 +83,7 @@ function love.filesystem.read(path)
 	if path:sub(1,1)=="\\" or path:sub(1,1)=="/" then
 		path=path:sub(2,#path)
 	end
-	local str=""
-	if not string.find(path,R("data/")) then
-		str=vfs.Read(R("data/"..Identity.."/"..path),"r")
-	else
-		str=vfs.Read(path,"r")
-	end
-	return str
+	return vfs.Read(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..R(lovemu.demoname.."/"..path),"r") or ""	 
 end
 
 function love.filesystem.remove(path)

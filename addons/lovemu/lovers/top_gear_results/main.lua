@@ -265,7 +265,7 @@ function love.run()
 	end
 	local getTime=love.timer.getTime
 	local dt=getTime()
-	local update=love.update
+	local update=love.update or function() end
 	local draw=love.draw
 	local present=love.graphics.present
 	local clear=love.graphics.clear
