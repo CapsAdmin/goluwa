@@ -2,6 +2,11 @@ surface = surface or {}
 
 local surface = surface
 local render = render
+local math = math
+local string = string
+local table = table
+local tostring = tostring
+local tonumber = tonumber
 
 surface.ft = surface.ft or {}
 local ft = surface.ft
@@ -162,10 +167,16 @@ do -- fonts
 	end
 	
 	local X, Y = 0,0
+	local W, H = 1,1
 	
 	function surface.SetTextPos(x, y)
 		X = x
 		Y = y
+	end
+	
+	function surface.SetTextScale(w, h)
+		W = w
+		H = h
 	end
 			
 	function surface.DrawText(str)
@@ -301,16 +312,16 @@ do -- fonts
 		if surface.debug then
 			surface.SetWhiteTexture()
 			surface.Color(1, 0, 0, 0.5)
-			surface.DrawRect(X, Y, data.w, data.h)
+			surface.DrawRect(X, Y, data.w * W, data.h * H)
 			surface.Color(1,1,1,1,1)	
 			
 			surface.SetWhiteTexture()
 			surface.Color(0, 1, 0, 0.6)  
-			surface.DrawRect(X - info.border_2, Y - info.border_2, data.w + info.border, data.h + info.border)
+			surface.DrawRect(X - info.border_2, Y - info.border_2, (data.w + info.border) * W, (data.h + info.border) * H)
 			surface.Color(1,1,1,1,1)
 		end
 		
-		surface.PushMatrix(X - info.border_2, Y - info.border_2, data.tex.w, data.tex.h) 
+		surface.PushMatrix(X - info.border_2, Y - info.border_2, data.tex.w * W, data.tex.h * H) 
 			surface.fontmesh.texture = data.tex
 			surface.fontmesh.global_color = surface.rectmesh.global_color
 			surface.fontmesh.smoothness = ft.current_font.info.smoothness 
@@ -326,9 +337,9 @@ do -- fonts
 		local data = ft.current_font.strings[str]
 		
 		if str == " " then
-			return ft.current_font.info.size / 2, ft.current_font.info.size
+			return (ft.current_font.info.size / 2) * W, ft.current_font.info.size * H
 		elseif str == "\t" then
-			return ft.current_font.info.size * 2, ft.current_font.info.size
+			return (ft.current_font.info.size * 2) * W, (ft.current_font.info.size * H)
 		elseif not data then
 			surface.DrawText(str) 
 			data = ft.current_font.strings[str]
@@ -337,7 +348,7 @@ do -- fonts
 			end
 		end
 	
-		return data.w, data.h
+		return data.w * W, data.h * H
 	end
 end
 
