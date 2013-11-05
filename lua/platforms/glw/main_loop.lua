@@ -17,9 +17,10 @@ local function main()
 	end
 	
 	while true do
+		local rate = rate_cvar:Get()
 		local time = glfw.GetTime()
 		
-		if next_update < time then
+		if rate <= 0 or next_update < time then
 			local dt = time - (last_time or 0)
 						
 			local ok, err = xpcall(update, mmyy.OnError, dt)
@@ -54,12 +55,8 @@ local function main()
 				system.SetWindowTitle(("gl calls: %i"):format(gl.call_count), 2)
 				gl.call_count = 0
 			end
-			
-			local rate = rate_cvar:Get()
-			
-			rate = 1/rate
-			
-			next_update = time + rate
+		
+			next_update = time + (1/rate)
 		end
 	end
 end
