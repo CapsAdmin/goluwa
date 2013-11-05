@@ -416,7 +416,153 @@ function surface.GetTexture()
 	return surface.bound_texture or surface.white_texture
 end
 
-function surface.DrawRect(x,y, w,h, a, ox, oy)	
+do
+	local mesh_data = {
+		{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
+		{pos = {0, 1}, uv = {0, 0}, color = {1,1,1,1}},
+		{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
+
+		{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
+		{pos = {1, 0}, uv = {1, 1}, color = {1,1,1,1}},
+		{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
+	}
+	--[[{
+		{pos = {0, 0}, uv = {xbl, ybl}, color = color_bottom_left},
+		{pos = {0, 1}, uv = {xtl, ytl}, color = color_top_left},
+		{pos = {1, 1}, uv = {xtr, ytr}, color = color_top_right},
+
+		{pos = {1, 1}, uv = {xtr, ytr}, color = color_top_right},
+		{pos = {1, 0}, uv = {xbr, ybr}, color = mesh_data[1].color},
+		{pos = {0, 0}, uv = {xbl, ybl}, color = color_bottom_left},
+	})]]
+	
+	-- sdasdasd
+	
+	local last_xtl = 0
+	local last_ytl = 0
+	local last_xtr = 1
+	local last_ytr = 0
+	
+	local last_xbl = 0
+	local last_ybl = 1
+	local last_xbr = 1
+	local last_ybr = 1
+	
+	local last_color_bottom_left = Color(1,1,1,1)
+	local last_color_top_left = Color(1,1,1,1)
+	local last_color_top_right = Color(1,1,1,1)
+	local last_color_bottom_right = Color(1,1,1,1)
+	
+	local function update_vbo()
+	
+		if 
+			last_xtl ~= mesh_data[2].uv[1] or
+			last_ytl ~= mesh_data[2].uv[2] or
+			last_xtr ~= mesh_data[4].uv[1] or
+			last_ytr ~= mesh_data[4].uv[2] or
+			
+			last_xbl ~= mesh_data[1].uv[1] or
+			last_ybl ~= mesh_data[2].uv[2] or
+			last_xbr ~= mesh_data[5].uv[1] or
+			last_ybr ~= mesh_data[5].uv[2] or
+			
+			last_color_bottom_left ~= mesh_data[1].color or
+			last_color_top_left ~= mesh_data[2].color or
+			last_color_top_right ~= mesh_data[3].color or
+			last_color_bottom_right ~= mesh_data[5].color
+		then
+		
+			surface.rectmesh:UpdateVertexBuffer(mesh_data)
+			
+			last_xtl = mesh_data[2].uv[1]
+			last_ytl = mesh_data[2].uv[2]
+			last_xtr = mesh_data[4].uv[1]
+			last_ytr = mesh_data[4].uv[2]
+			           
+			last_xbl = mesh_data[1].uv[1]
+			last_ybl = mesh_data[2].uv[2]
+			last_xbr = mesh_data[5].uv[1]
+			last_ybr = mesh_data[5].uv[2]
+			
+			last_color_bottom_left = mesh_data[1].color
+			last_color_top_left = mesh_data[2].color
+			last_color_top_right = mesh_data[3].color
+			last_color_bottom_right = mesh_data[5].color	
+		end		
+	end
+
+	function surface.SetRectUV(x,y, w,h, sx,sy)
+		sx = sx or 1
+		sy = sy or 1
+		
+		mesh_data[1].uv[1] = x / sx
+		mesh_data[1].uv[2] = (y + h) / sy
+		
+		mesh_data[2].uv[1] = x / sx
+		mesh_data[2].uv[2] = y / sy
+		
+		mesh_data[3].uv[1] = (x + w) / sx
+		mesh_data[3].uv[2] = y / sy
+		
+		--
+		
+		mesh_data[4].uv = mesh_data[3].uv
+		
+		mesh_data[5].uv[1] = (x + w) / sx
+		mesh_data[5].uv[2] = (y + h)
+		
+		mesh_data[6].uv = mesh_data[1].uv	
+	
+				
+		update_vbo()
+	end
+	
+	function surface.SetDefaultRectUV()		
+		mesh_data[1].uv[1] = 0
+		mesh_data[1].uv[2] = 1
+		
+		mesh_data[2].uv[1] = 0
+		mesh_data[2].uv[2] = 0
+		
+		mesh_data[3].uv[1] = 1
+		mesh_data[3].uv[2] = 0
+		
+		--
+		
+		mesh_data[4].uv = mesh_data[3].uv
+		
+		mesh_data[5].uv[1] = 1
+		mesh_data[5].uv[2] = 1
+		
+		mesh_data[6].uv = mesh_data[1].uv	
+		
+		update_vbo()
+	end
+		
+	function surface.SetRectColors(cbl, ctl, ctr, cbr)	
+	
+		mesh_data[1].color = {cbl:Unpack()}
+		mesh_data[2].color = {ctl:Unpack()}
+		mesh_data[3].color = {ctr:Unpack()}
+		mesh_data[4].color = mesh_data[3].color
+	    mesh_data[5].color = {cbr:Unpack()}
+		mesh_data[6].color = mesh_data[1]
+		
+		update_vbo()
+	end
+	
+	local white_t = {Color(1,1,1,1):Unpack()}
+	
+	function surface.SetDefaultRectColors()
+		for i = 1, 6 do
+			mesh_data[i].color = white_t
+		end
+		
+		update_vbo()
+	end
+end
+
+function surface.DrawRect(x,y, w,h, a, ox,oy)	
 	render.PushMatrix()			
 		render.Translate(x, y, 0)
 		
