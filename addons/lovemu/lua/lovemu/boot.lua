@@ -1,7 +1,6 @@
 local love=love
 local lovemu=lovemu
 
-local package_cache={}
 local hasWindow=false
 
 local getn=table.getn
@@ -28,11 +27,9 @@ function lovemu.boot(folder)
 	end
 
 	lovemu.demoname=folder
-	if not package_cache[lovemu.demoname] and lovemu.demoname~="" then
-		package_cache[lovemu.demoname]=true
-		package.path=package.path..";"..string.replace(R("lovers/"..lovemu.demoname.."/?.lua"),"/","\\")
-		package.path=package.path..";"..string.replace(R("lovers/"..lovemu.demoname.."/?/init.lua"),"/","\\")
-	end
+	package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..lovemu.demoname.."/?.lua","/","\\")
+	package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..lovemu.demoname.."/?/init.lua","/","\\")
+	package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..lovemu.demoname.."/?/?.lua","/","\\")
 	
 	lovemu.delta=0
 	lovemu.translate_x,lovemu.translate_y=0,0
@@ -64,6 +61,7 @@ function lovemu.boot(folder)
 	lovemu.conf={}
 	function love.conf(t) --partial
 		t.screen={}
+		t.window={}
 		t.modules={}
 		t.screen.height = 600      
 		t.screen.width = 800  
@@ -106,4 +104,5 @@ function lovemu.boot(folder)
 			love.errhand(lovemu.error_msg)
 		end
 	end)
+	love.graphics.setBackgroundColor(0,0,0)
 end
