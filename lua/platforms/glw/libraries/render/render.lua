@@ -1,6 +1,17 @@
 render = render or {}
 local render=render
 
+local event=event
+local gl=gl
+local assert=assert
+local loadstring=loadstring
+local ffi=ffi
+local math = math
+local string = string
+local table = table
+local tostring = tostring
+local tonumber = tonumber
+
 render.top_left = true
 
 local function SETUP_CACHED_UNIFORM(name, func, arg_count)	
