@@ -239,7 +239,7 @@ void main()
 			gl.VertexAttribPointer(location, data.arg_count, data.enum, false, data.stride, data.type_stride)
 		end
 	end
-	
+		
 	function META:CreateVertexBuffer(data, vbo_override)
 		if not data and not vbo_override then
 			return {Type = "VertexBuffer", id = gl.GenBuffer(), length = -1, IsValid = function() return true end, Draw = function() end}
@@ -251,7 +251,7 @@ void main()
 		local size = ffi.sizeof(buffer[0]) * #data
 
 		gl.BindBuffer(e.GL_ARRAY_BUFFER, id) 
-		gl.BufferData(e.GL_ARRAY_BUFFER, size, buffer, e.GL_STATIC_DRAW)
+		gl.BufferData(e.GL_ARRAY_BUFFER, size, buffer, e.GL_DYNAMIC_DRAW)
 				
 		local vao_id = gl.GenVertexArray()
 		gl.BindVertexArray(vao_id)
@@ -281,6 +281,15 @@ void main()
 		function vbo:Remove()
 			gl.DeleteBuffers(1, ffi.new("GLuint[1]", vbo.id))
 			utilities.MakeNULL(self)
+		end
+		
+		function vbo.UpdateVertexBuffer(vbo, data)
+			local buffer = render.CreateVertexBufferForSuperShader(self, data)
+			local size = ffi.sizeof(buffer[0]) * #data
+			
+			gl.BindBuffer(e.GL_ARRAY_BUFFER, id) 
+			gl.BufferData(e.GL_ARRAY_BUFFER, size, buffer, e.GL_DYNAMIC_DRAW)
+			gl.BindBuffer(e.GL_ARRAY_BUFFER, 0) 
 		end
 		
 		utilities.SetGCCallback(vbo)
