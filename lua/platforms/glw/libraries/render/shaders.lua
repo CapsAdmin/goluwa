@@ -77,5 +77,9 @@ function render.BindVertexArray(id)
 	if last ~= id then
 		gl.BindVertexArray(id)
 		last = id
+		
+		return true
 	end
+	
+	return false
 end
