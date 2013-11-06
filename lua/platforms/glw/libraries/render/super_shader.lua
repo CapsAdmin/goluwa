@@ -239,16 +239,28 @@ void main()
 			gl.VertexAttribPointer(location, data.arg_count, data.enum, false, data.stride, data.type_stride)
 		end
 	end
+	
+	function META:CreateVertexAttributes(size)
+		return ffi.new(self.vtx_atrb_type.."[?]", size)
+	end
 		
 	function META:CreateVertexBuffer(data, vbo_override)
 		if not data and not vbo_override then
 			return {Type = "VertexBuffer", id = gl.GenBuffer(), length = -1, IsValid = function() return true end, Draw = function() end}
 		end
 		
-		local buffer = render.CreateVertexBufferForSuperShader(self, data)
+		local buffer
+		
+		if type(data) == "number" then
+			length = data
+			buffer = self:CreateVertexAttributes(length)
+		else
+			length = #data
+			buffer = render.CreateVertexBufferForSuperShader(self, data)
+		end		
 
 		local id = vbo_override and vbo_override.id or gl.GenBuffer()
-		local size = ffi.sizeof(buffer[0]) * #data
+		local size = ffi.sizeof(buffer[0]) * length
 
 		gl.BindBuffer(e.GL_ARRAY_BUFFER, id) 
 		gl.BufferData(e.GL_ARRAY_BUFFER, size, buffer, e.GL_DYNAMIC_DRAW)
@@ -271,7 +283,8 @@ void main()
 		gl.BindVertexArray(0)
 
 		local vbo = vbo_override or {Type = "VertexBuffer", id = id, IsValid = function() return true end}
-		vbo.length = #data
+		vbo.length = length
+		vbo.buffer = buffer
 
 		vbo.Draw = function(vbo)
 			render.UseProgram(self.program_id)
@@ -301,6 +314,14 @@ void main()
 			
 			gl.BindBuffer(e.GL_ARRAY_BUFFER, id) 
 			gl.BufferData(e.GL_ARRAY_BUFFER, size, buffer, e.GL_DYNAMIC_DRAW)
+			gl.BindBuffer(e.GL_ARRAY_BUFFER, 0) 
+		end
+		
+		local length = ffi.sizeof(buffer[0]) * length
+		
+		function vbo.UpdateBuffer()
+			gl.BindBuffer(e.GL_ARRAY_BUFFER, id) 
+			gl.BufferData(e.GL_ARRAY_BUFFER, length, buffer, e.GL_DYNAMIC_DRAW)
 			gl.BindBuffer(e.GL_ARRAY_BUFFER, 0) 
 		end
 		
@@ -457,6 +478,7 @@ void main()
 					declaration = table.concat(declaration, "")
 					
 					ffi.cdef(declaration)
+					
 
 					type = "struct " .. type
 
