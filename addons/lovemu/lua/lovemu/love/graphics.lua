@@ -11,114 +11,28 @@ local window=window
 local type=type
 local lovemu=lovemu
 
-
-local function getWidth(self,arg1)
-	if self.w then --is image
-		return self.w
-	elseif type(self)=="string" then --is font
-		arg1=arg1 or "1"
-		return fonts[self]*(#arg1)
-	end
-	return 32
+function love.graphics.newQuad(...)
+	local obj = lovemu.NewObject("Quad", ...)
+	
+	obj.flip = function() end
+	obj.getViewPort = function() end
+	obj.setViewPort = function() end
+	
+	return obj
 end
 
-local function getHeight(self,arg1)
-	if self.h then --is image
-		return self.h
-	elseif type(self)=="string" then --is font
-		arg1=arg1 or "1"
-		return fonts[self]*(#arg1)
-	end
-	return 32
+love.graphics.translate = surface.Translate
+love.graphics.scale = surface.Scale
+love.graphics.rotate = surface.Rotate
+love.graphics.push = gl.PushMatrix
+love.graphics.pop = gl.PopMatrix
+
+local cr, cg, cb, ca = 0, 0, 0, 0
+
+function love.graphics.setCaption(title)
+	window.SetTitle(title)
 end
 
-function love.graphics.newFont(font,siz)
-	if type(font)=="number" then
-		siz=font
-		local FontObject={}
-		FontObject.Name=surface.CreateFont("fonts/verdana.ttf", {
-			size = siz,
-			path = R("fonts/verdana.ttf"),
-		})
-		FontObject.Size=siz
-		FontObject.getWidth=getWidth
-		FontObject.getHeight=getHeight
-		return FontObject
-	else
-		local FontObject={}
-		FontObject.Name=surface.CreateFont(lovemu.demoname .. "_" .. font, {
-			size = siz,
-			path = R("lovers/"..lovemu.demoname.."/"..font),
-		})
-		print("loaded font: "..font)
-		FontObject.Size=siz
-		FontObject.getWidth=getWidth
-		FontObject.getHeight=getHeight
-		return FontObject
-	end
-end
-
-
-local currentFont=love.graphics.newFont(12)
-function love.graphics.setFont(font)
-	currentFont=font
-	surface.SetFont(font.Name)
-end
-
-function love.graphics.setNewFont(arg1,arg2)
-	love.graphics.setFont(love.graphics.newFont(arg1,arg2))
-end
-
-function love.graphics.getFont(font)
-	return currentFont
-end
-
-
-local br,bg,bb,ba=0,0,0,0
-function love.graphics.setBackgroundColor(r,g,b,a)
-	r=r or 0
-	g=g or 0
-	b=b or 0
-	a=a or 255
-	br=r
-	bg=g
-	bb=b
-	ba=a
-end
-
-function love.graphics.getBackgroundColor()
-	return br,bg,bb,ba
-end
-
-local cr,cg,cb,ca=0,0,0,0
-function love.graphics.setColor(r,g,b,a)
-	if type(r)=="number" then
-		r=r or 0
-		g=g or 0
-		b=b or 0
-		a=a or 255
-		cr=r
-		cg=g
-		cb=b
-		ca=a
-		surface.Color(cr/255, cg/255, cb/255, ca/255)
-	else
-		local tab=r
-		r=tab[1] or 0
-		g=tab[2] or 0
-		b=tab[3] or 0
-		a=tab[4] or 255
-		cr=r
-		cg=g
-		cb=b
-		ca=a
-		surface.Color(cr/255, cg/255, cb/255, ca/255)
-	end
-end
-
-function love.graphics.getColor()
-	return cr,cg,cb,ca
-end
 
 function love.graphics.getWidth()
 	return render.w
@@ -128,92 +42,232 @@ function love.graphics.getHeight()
 	return render.h
 end
 
-function love.graphics.setMode() --partial
+function love.graphics.setMode()
+
+end
+
+function love.graphics.reset()
+	
+end
+
+function love.graphics.isSupported(what)
+	if what == "multicanvas" then
+		return false
+	end
+	return true
+end
+
+function love.graphics.setColor(r, g, b, a)
+	if type(r) == "number" then
+		cr = r or 0
+		cg = g or 0
+		cb = b or 0
+		ca = a or 255
+	else
+		cr = r[1] or 0
+		cg = r[2] or 0
+		cb = r[3] or 0
+		ca = r[4] or 255
+	end
+	
+	surface.Color(cr/255, cg/255, cb/255, ca/255)
+end
+
+function love.graphics.getColor()
+	return cr, cg, cb, ca
+end
+
+do -- background
+	local br, bg, bb, ba = 0, 0, 0, 0
+
+	function love.graphics.setBackgroundColor(r, g, b, a)
+		br = r or 0
+		bg = g or 0
+		bb = b or 0
+		ba = a or 255
+	end
+
+	function love.graphics.getBackgroundColor()
+		return br, bg, bb, ba
+	end
+
+	function love.graphics.clear()
+		surface.SetTexture()
+		surface.Color(br/255,bg/255,bb/255,ba/255)
+		surface.DrawRect(0,0,render.w,render.h,0,0,0)
+		surface.Color(cr/255,cg/255,cb/255,ca/255)
+	end
 end
 
 do
-	local size = 1
+	local MODE = "alpha"
 
-	function love.graphics.setPointStyle(s)
-		size = s
+	function love.graphics.setBlendMode(mode)
+		if mode == "alpha" then
+			gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
+		elseif mode == "multiplicative" then
+			gl.BlendFunc(e.GL_DST_COLOR, e.GL_ONE_MINUS_SRC_ALPHA)
+		elseif mode == "premultiplied" then
+			gl.BlendFunc(e.GL_ONE, e.GL_ONE_MINUS_SRC_ALPHA)
+		else
+			gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE)
+		end
+		
+		MODE = mode
+	end
+	
+	function love.graphics.getBlendMode()
+		return MODE
+	end
+end
+
+do -- points
+	local SIZE = 1
+	local STYLE = "smooth"
+
+	function love.graphics.setPointStyle(style)
+		if style == "smooth" then
+			gl.Enable(e.GL_POINT_SMOOTH)
+		else
+			gl.Disable(e.GL_POINT_SMOOTH)
+		end
+		
+		STYLE = style
+	end
+	
+	function love.graphics.getPointStyle()
+		return STYLE
+	end
+	
+	function love.graphics.setPointSize(size)
+		gl.PointSize(size)
+		SIZE = size
+	end
+	
+	function love.graphics.getPointSize()
+		return SIZE
+	end
+	
+	function love.graphics.setPoint(size, style)
+		love.graphics.setPointSize(size)
+		love.graphics.setPointStyle(style)
 	end
 
 	function love.graphics.point(x,y)
+		gl.Disable(GL_TEXTURE_2D)
+		g.lBegin(GL_POINTS)
+			gl.Vertex2f(x, y)
+		gl.End()
+		gl.Enable(GL_TEXTURE_2D)
+	end
+end
+
+
+do -- font
+
+	function love.graphics.newFont(a, b)
+		local font = R("lovers/" .. lovemu.demoname .. "/" .. a)
+		local size = b
+		
+		if not b then
+			font = R("fonts/verdana.ttf")
+			size = a
+		end
+		
+		local obj = lovemu.NewObject("Font")
+		
+		obj.Name = surface.CreateFont("lovemu_" .. font, {
+			size = size,
+			path = font,
+		})	
+
+		obj.Size = size
+		obj.getWidth = function(s) return w end
+		obj.getHeight = function(s) return h end
+				
+		return obj
+	end
+	
+	local currentFont = love.graphics.newFont(12)
+	
+	function love.graphics.setFont(font)
+		currentFont = font
+		surface.SetFont(font.Name)
+	end
+	
+	function love.graphics.getFont(font)
+		return currentFont
+	end
+
+	function love.graphics.setNewFont(...)
+		love.graphics.setFont(love.graphics.newFont(...))
+	end
+	
+	function love.graphics.print(text, x, y, r, sx, sy)
+		sx = sx or 1
+		sy = sy or 1
+		
+		if r and r > 0 then
+			r = r / 0.0174532925
+		else
+			r = 0
+		end
+		
+		surface.SetTextScale(sx, sy)
+		surface.SetTextPos(x, y)
+		surface.DrawText(text, r)
+		surface.SetTextScale(1, 1)
+	end
+
+	function love.graphics.printf(text, x, y, limit, align, r, sx, sy)
+		
+		y = y or 0
+		limit = limit or 0
+		align = align or "left"
+		sx = sx or 1
+		sy = sy or 1
+		
+		if r and r > 0 then
+			r = r / 0.0174532925
+		else
+			r = 0
+		end
+		
+		local lines = string.explode(text, "\n")
+		
+		surface.SetTextScale(sx, sy)
+		
+		for i = 1, #lines do
+			surface.SetTextPos(x, y + (currentFont.Size * i))
+			surface.DrawText(lines[i])
+		end
+		
+		surface.SetTextScale(1, 1)
+	end
+end
+
+do -- line
+	local WIDTH = 1
+	local STYLE = "huh"
+	
+	function love.graphics.setLineStyle(s)
+		STYLE = s
+	end
+	
+	function love.graphics.setLineWidth(w)
+		WIDTH = w
+	end
+
+	function love.graphics.line(x1, y1, x2, y2)
+		surface.DrawLine(x1, y1, x2, y2, WIDTH, false)
+	end
+end
+
+function love.graphics.rectangle(mode, x, y, w, h)
+	if mode == "fill" then
 		surface.SetWhiteTexture()
-		surface.DrawRect(x,y,size,size)
-	end
-end
-
-function love.graphics.print(text,x,y,r,sx,sy)
-	x=x+lovemu.translate_x
-	y=y+lovemu.translate_y
-	r=r or 0
-	if r > 0 then
-		r=r/0.0174532925
-	end
-	sx=sx or lovemu.scale_x 
-	sy=sy or lovemu.scale_y
-	surface.SetTextScale(sx,sy)
-	surface.SetTextPos((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y)
-	surface.DrawText(text,r)
-	surface.SetTextScale(1,1)
-end
-
-local cache = {}
-
-function love.graphics.printf(text,x,y,limit,align,r, sx, sy) --partial
-	x=x+lovemu.translate_x
-	y=y+lovemu.translate_y
-	r=r or 0
-	if r > 0 then
-		r=r/0.0174532925
-	end
-	y=y or 0
-	limit=limit or 0
-	align=align or "left"
-	sx=sx or lovemu.scale_x 
-	sy=sy or lovemu.scale_y
-	
-	local lines = cache[text] or string.explode(text,"\n")
-	cache[text] = lines 
-	
-	surface.SetTextScale(sx,sy)
-	for i=1,#lines do
-		surface.SetTextPos((x+lovemu.translate_x)*lovemu.scale_x,((y+lovemu.translate_y)*lovemu.scale_y)+(currentFont.Size*i*2.1))
-		surface.DrawText(lines[i])
-	end
-	surface.SetTextScale(1,1)
-end
-
-function love.graphics.setLineStyle(s) --partial
-end
-
-function love.graphics.setPointStyle() --partial
-end
-
-function love.graphics.setPointSize() --partial
-end
-
-function love.graphics.setPoint() --partial
-end
-
-function love.graphics.newQuad(...) --partial
-	return {quad = true, ...}
-end
-
-function love.graphics.drawq() --partial
-	return {}
-end
-
-function love.graphics.rectangle(mode,x,y,w,h)
-	if mode=="fill" then
-		surface.SetTexture()
-		surface.DrawRect((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y, w*lovemu.scale_x, h*lovemu.scale_y,0,0,0)
+		surface.DrawRect(x, y, w, h)
 	else
-		x=(x+lovemu.translate_x)*lovemu.scale_x
-		y=(y+lovemu.translate_y)*lovemu.scale_y
-		w=w*lovemu.scale_x
-		h=h*lovemu.scale_y
 		surface.DrawLine(x,y, x+w,y, LineWidth, true)
 		surface.DrawLine(x,y, x,y+h, LineWidth, true)
 		surface.DrawLine(x+w,y, x+w,y+h, LineWidth, true)
@@ -222,170 +276,138 @@ function love.graphics.rectangle(mode,x,y,w,h)
 end
 
 function love.graphics.circle(mode,x,y,w,h) --partial
-	x=x or 0
-	y=y or 0
-	w=w or 0
-	h=h or 0
-	surface.SetTexture()
-	surface.DrawRect((x+lovemu.translate_x)*lovemu.scale_x, (y+lovemu.translate_y)*lovemu.scale_y, w*lovemu.scale_x, h*lovemu.scale_y,0,0,0)
+	surface.SetWhiteTexture()
+	surface.DrawRect(x or 0, y or 0, w or 0, h or 0)
 end
 
-function love.graphics.reset()
-end
-
-function love.graphics.clear()
-	surface.SetTexture()
-	surface.Color(br/255,bg/255,bb/255,ba/255)
-	surface.DrawRect(0,0,render.w,render.h,0,0,0)
-	surface.Color(cr/255,cg/255,cb/255,ca/255)
-end
-
-local BlendMode="alpha"
-function love.graphics.getBlendMode() --partial
-	return BlendMode
-end
-
-function love.graphics.setBlendMode(b) --partial
-	BlendMode=b
-end
-
-function love.graphics.isSupported() --partial
-	return true
-end
-
-function love.graphics.setCanvas(canvas)
-	canvas:Bind()
-end
-
-local canvas_config={
-	{
-		name = "diffuse",
-		attach = e.GL_COLOR_ATTACHMENT1,
-		texture_format = {
-			internal_format = e.GL_RGB32F,
+do -- canvas
+	local canvas_config={
+		{
+			name = "diffuse",
+			attach = e.GL_COLOR_ATTACHMENT1,
+			texture_format = {
+				internal_format = e.GL_RGB32F,
+			}
 		}
 	}
-}
-		
-function love.graphics.newCanvas(w,h) --partial
-	return render.CreateFrameBuffer(w,h,canvas_config)
-end
-
-local LineWidth=1
-function love.graphics.setLineWidth(w)
-	LineWidth=w
-end
-
-function love.graphics.line(x1,y1,x2,y2)
-	surface.DrawLine(x1,y1,x2,y2,LineWidth,false)
-end
-
-local DefaultFilter=e.GL_LINEAR
-local DefaultMipmapFilter=e.GL_LINEAR_MIPMAP_LINEAR
-function love.graphics.setDefaultFilter(filter)
-	if filter=="nearest" then
-		local DefaultFilter=e.GL_NEAREST
-		local DefaultMipmapFilter=e.GL_NEAREST_MIPMAP_NEAREST
-	elseif filter=="linear" then
-		local DefaultFilter=e.GL_LINEAR
-		local DefaultMipmapFilter=e.GL_LINEAR_MIPMAP_LINEAR
-	end
-end
-love.graphics.setDefaultImageFilter=setDefaultFilter
-
-
-function setFilter(self,filter)
-	if filter=="nearest" then
-		DefaultFilter=e.GL_NEAREST
-	elseif filter=="linear" then
-		DefaultFilter=e.GL_LINEAR
-	end
-end
-
-function love.graphics.newImage(path)
-	path="/lovers/".. lovemu.demoname .. "/" .. path
-	local w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"))
 	
-	local tex = Texture(
-		w, h, buffer, 
-		{
-			mip_map_levels = 1,  
-			mag_filter = e.GL_LINEAR,
-			min_filter = e.GL_LINEAR_MIPMAP_LINEAR,
-		}  
-	) 
-	tex.getWidth=function(s) return s.w end
-	tex.getHeight=function(s) return s.h end
-	tex.setFilter=function() end
-	return tex
+	function love.graphics.newCanvas(w, h)
+		w = w or render.w
+		h = h or render.h
+		
+		local obj = lovemu.NewObject("Canvas")
+		
+		obj.fb = render.CreateFrameBuffer(w,h,canvas_config)
+		
+		obj.renderTo = function(cb)
+			
+		end
+		
+		return obj
+	end
+	
+	local CANVAS
+
+	function love.graphics.setCanvas(canvas)
+		if canvas then
+			canvas.fb:Begin()
+		elseif CANVAS then
+			canvas.fb:End()
+		end
+		
+		CANVAS = canvas
+	end
 end
 
-function love.graphics.newStencil(func) --partial
-end 
+do -- image
 
-function love.graphics.setStencil(func) --partial
+	local FILTER = e.GL_LINEAR
+
+	function love.graphics.setDefaultFilter(filter)
+		if filter == "nearest" then
+			FILTER = e.GL_NEAREST
+		elseif filter=="linear" then
+			FILTER = e.GL_LINEAR
+		end
+	end
+
+	love.graphics.setDefaultImageFilter = setDefaultFilter
+
+	function love.graphics.newImage(path)
+		path = "/lovers/".. lovemu.demoname .. "/" .. path
+		
+		local w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"))
+		
+		local obj = lovemu.NewObject("Image")
+		
+		obj.tex = Texture(w, h, buffer, {
+			mag_filter = FILTER,
+			min_filter = FILTER,
+		}) 
+		
+		obj.getWidth = function(s) return w end
+		obj.getHeight = function(s) return h end
+		obj.setFilter = function() end
+		
+		return obj
+	end
+
 end
 
-function love.graphics.draw(drawable,x,y,r,sx,sy,ox,oy)
+do -- stencil
+	function love.graphics.newStencil(func) --partial
+	
+	end 
+
+	function love.graphics.setStencil(func) --partial
+	
+	end
+end
+
+function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy)
 	x=x or 0
 	y=y or 0
 	r=r or 0
-	r=(r/0.0174532925)
 	sx=sx or 1
 	sy=sy or 1
 	ox=ox or 0
 	oy=oy or 0
-	if drawable.id then
+	
+	if r and r > 0 then
+		r = r / 0.0174532925
+	else
+		r = 0
+	end
+	
+	surface.SetTexture(drawable)
+	surface.SetRectUV(quad[1]*quad[5],quad[2]*quad[6],quad[3]*quad[5],quad[4]*quad[6])
+	surface.DrawRect(x,y, quad[3]*sx, quad[4]*sy,r,ox*sx,oy*sy)
+	surface.SetRectUV(0,0,1,1)
+end
+
+local drawq = love.graphics.drawq
+
+function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
+	if drawable.tex then
 		if type(x) == "table" and x.quad then
-			--x = x[1]
-			y = x[2] * x[6]
-			sx = x[3]
-			sy = x[4]
+			drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
+		else
+			x=x or 0
+			y=y or 0
+			r=r or 0
+			sx=sx or 1
+			sy=sy or 1
+			ox=ox or 0
+			oy=oy or 0
+					
+			if r and r > 0 then
+				r = r / 0.0174532925
+			else
+				r = 0
+			end
 			
-			x = x[1] * x[5]
+			surface.SetTexture(drawable.tex)
+			surface.DrawRect(x,y, drawable.tex.w*sx, drawable.tex.h*sy, r, ox*sx,oy*sy)
 		end
-		surface.SetTexture(drawable)
-		surface.DrawRect((x+lovemu.translate_x)*lovemu.scale_x,(y+lovemu.translate_y)*lovemu.scale_y, drawable.w*sx*lovemu.scale_x, drawable.h*sy*lovemu.scale_y,r,ox*sx*lovemu.scale_x,oy*sy*lovemu.scale_y)
 	end
-end
-
-function love.graphics.translate(x,y)
-	x=x or 0
-	y=y or 0 
-	lovemu.translate_x=lovemu.translate_x+x
-	lovemu.translate_y=lovemu.translate_y+y
-end
-
-function love.graphics.scale(sx,sy)
-	sx=sx or 1
-	sy=sy or 1
-	lovemu.scale_x=sx
-	lovemu.scale_y=sy
-end
-
-love.graphics.rotate=function() end
- 
-function love.graphics.push()
-	lovemu.stack[lovemu.stack_index]={
-										translate_x=lovemu.translate_x,
-										translate_y=lovemu.translate_y,
-										scale_x=lovemu.scale_x,
-										scale_y=lovemu.scale_y,
-										angle=lovemu.angle
-									}
-	lovemu.stack_index=lovemu.stack_index+1
-end
-
-function love.graphics.pop()
-	if lovemu.stack_index>1 then
-		lovemu.stack_index=lovemu.stack_index-1
-		lovemu.translate_x=lovemu.stack[lovemu.stack_index].translate_x
-		lovemu.translate_y=lovemu.stack[lovemu.stack_index].translate_y
-		lovemu.scale_x=lovemu.stack[lovemu.stack_index].scale_y
-		lovemu.scale_y=lovemu.stack[lovemu.stack_index].scale_y
-		lovemu.angle=lovemu.stack[lovemu.stack_index].angle
-	end
-end
-function love.graphics.setCaption(title)
-	window.SetTitle(title)
 end

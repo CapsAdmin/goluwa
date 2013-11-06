@@ -4,30 +4,32 @@ local vfs=vfs
 
 love.filesystem={}
 
-love.filesystem.enumerate=vfs.Find
-love.filesystem.getDirectoryItems=vfs.Find
-
-love.filesystem.exists=vfs.Find
-
 local Identity="generic"
 function love.filesystem.getAppdataDirectory()
-	return R("data/"..Identity.."/")
+	return ""
 end
 
 function love.filesystem.getLastModified(path)
-	return vfs.GetAttributes(path).modification or 0
+	return vfs.GetAttributes(e.ABSOLUTE_BASE_FOLDER.."addons\\lovemu\\lovers\\"..lovemu.demoname.."\\"..path).modification or 0
 end
 
 function love.filesystem.getSaveDirectory()
-	return R("data/"..Identity.."save/")
+	return ""
 end
 
 function love.filesystem.getUserDirectory()
-	return R("data/"..Identity.."save/")
+	return ""
 end
 
 function love.filesystem.getWorkingDirectory()
-	return R("data/"..Identity.."/")
+	return ""
+end
+
+function love.filesystem.exists(path)
+	if path:sub(1,1)=="\\" or path:sub(1,1)=="/" then
+		path=path:sub(2,#path)
+	end
+	return vfs.Exists(e.ABSOLUTE_BASE_FOLDER.."addons\\lovemu\\lovers\\"..lovemu.demoname.."\\"..path)
 end
 
 function love.filesystem.enumerate(path)
@@ -37,18 +39,45 @@ function love.filesystem.enumerate(path)
 	if path:sub(#path,#path)~="/" or path:sub(#path,#path)~="\\" then
 		path=path.."/"
 	end
-	if not string.find(path,R("data/")) then
-		path=R("data/"..Identity.."/"..path)
-	end
-	return vfs.Find(path)
+	return vfs.Find(e.ABSOLUTE_BASE_FOLDER.."addons\\lovemu\\lovers\\"..lovemu.demoname.."\\"..path)
 end
+love.filesystem.getDirectoryItems=love.filesystem.enumerate
 
 
 function love.filesystem.init()
 end
 
 function love.filesystem.isDirectory(path)
-	return false
+	local isDir=false
+
+	if string.sub(path,#path,#path)=="\\" or string.sub(path,#path,#path)=="/" then
+		isDir=true
+	else
+		path=string.replace(path,"/","\\")
+		folders=string.explode(path,"\\")
+		folder_name=folders[#folders]
+		local dir=e.ABSOLUTE_BASE_FOLDER.."addons\\lovemu\\lovers\\"..lovemu.demoname.."\\"
+		for i=1,#folders-1 do
+			dir=dir..folders[i].."\\"
+		end
+		folders=vfs.Find(dir)
+		
+		if folders then
+			local found=false
+			for i=1,#folders do
+				if folders[i]==folder_name then
+					found=true
+				end
+			end
+			if found then
+				if vfs.Read(dir.."\\"..folder_name,"r")==false then
+					isDir=true
+				end
+			end 
+		end
+	end
+	
+	return isDir
 end
 
 function love.filesystem.isFile(path)
@@ -56,16 +85,12 @@ function love.filesystem.isFile(path)
 	if path:sub(1,1)=="\\" or path:sub(1,1)=="/" then
 		path=path:sub(2,#path)
 	end
-	if not string.find(path,R("data/")) then
-		exists=vfs.Exists(R("data/"..Identity.."/"..path))
-	else
-		exists=vfs.Exists(path)
-	end
+	exists=vfs.Exists(e.ABSOLUTE_BASE_FOLDER.."addons\\lovemu\\lovers\\"..lovemu.demoname.."\\"..path)
 	return exists
 end
 
 function love.filesystem.lines(path)
-	local str=vfs.Read("r") or ""
+	local str=vfs.Read(e.ABSOLUTE_BASE_FOLDER.."addons\\lovemu\\lovers\\"..lovemu.demoname.."\\"..path,"r") or ""
 	return str,#str
 end
 
@@ -83,28 +108,19 @@ function love.filesystem.read(path)
 	if path:sub(1,1)=="\\" or path:sub(1,1)=="/" then
 		path=path:sub(2,#path)
 	end
-	return vfs.Read(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..R(lovemu.demoname.."/"..path),"r") or ""	 
+	return vfs.Read(e.ABSOLUTE_BASE_FOLDER.."addons\\lovemu\\lovers\\"..lovemu.demoname.."\\"..path,"r") or ""	 
 end
 
 function love.filesystem.remove(path)
 	print("attempted to remove folder/file "..path)
 end
 
-function love.filesystem.setIdentity(name)
-	if not type(name)=="string" then
-		Identity="generic"
-	else
-		Identity=name
-	end
+function love.filesystem.setIdentity(name) --partial
 end
 
 function love.filesystem.write(path,data)
 	if path:sub(1,1)=="\\" or path:sub(1,1)=="/" then
 		path=path:sub(2,#path)
 	end
-	if not string.find(path,R("data/")) then
-		vfs.Write(R("data/"..Identity.."/"..path),data)
-	else
-		vfs.Write(path,data)
-	end
+	vfs.Write(e.ABSOLUTE_BASE_FOLDER.."addons\\lovemu\\lovers\\"..lovemu.demoname.."\\"..path,data)
 end

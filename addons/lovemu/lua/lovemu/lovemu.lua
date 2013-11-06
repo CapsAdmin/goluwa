@@ -20,6 +20,20 @@ local insert=table.insert
 local concat=table.concat
 local gsub=string.gsub
 
+function lovemu.NewObject(name, ...)
+	local obj = {__lovemu_type = name, ...}
+		
+	obj.typeOf = function(_, str)
+		return str == name
+	end
+	
+	obj.type = function()
+		return name
+	end
+	
+	return obj
+end
+
 lovemu.modules={
 		"lovemu/extras/util.lua",
 		"lovemu/boot.lua",
@@ -45,7 +59,7 @@ for i=1,getn(lovemu.modules) do
 end
 
 lovemu.supported={}
-for _,v in pairs(lovemu.listFiles(R("lovemu/"),"lua")) do
+for _,v in pairs(lovemu.listFiles(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/")) do
 	for _,l in pairs(string.explode(vfs.Read(v),"\n")) do
 		if find(l,"love.") then
 			if string.match(l,"(.-)%b()") then

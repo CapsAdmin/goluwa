@@ -92,7 +92,7 @@ function lovemu.boot(folder)
 		lovemu.delta=dt
 		surface.SetTexture()
 		if lovemu.errored==false then
-			local err,msg=pcall(run)
+			local err,msg=xpcall(run, mmyy.OnError)
 			if err==false then
 				print("\nERROR\n")
 				print(msg)
