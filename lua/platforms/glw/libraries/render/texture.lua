@@ -132,8 +132,8 @@ do -- texture object
 			gl.TexSubImage2D(
 				f.type, 
 				level, 
-				x + f.border_size,
-				y + f.border_size,
+				x,
+				y,
 				w,
 				h, 
 				f.format, 
@@ -231,14 +231,14 @@ do -- texture object
 		format.stride = format.stride or 4
 		format.buffer_type = format.buffer_type or "unsigned char"
 		format.mip_map_levels = format.mip_map_levels or 4
-		format.border_size = format.border_size or 0
+		format.border_size = format.border_size or 4
 		
-		--format.wrap_t = format.wrap_t or e.GL_MIRRORED_REPEAT
-		--format.wrap_s = format.wrap_s or e.GL_MIRRORED_REPEAT
+		format.wrap_t = format.wrap_t or e.GL_CLAMP_TO_BORDER
+		format.wrap_s = format.wrap_s or e.GL_CLAMP_TO_BORDER
 		
-		--if format.type == e.GL_TEXTURE_3D then
-			--format.wrap_r = format.wrap_r or e.GL_MIRRORED_REPEAT
-		--end
+		if format.type == e.GL_TEXTURE_3D then
+			format.wrap_r = format.wrap_r or e.GL_CLAMP_TO_BORDER
+		end
 
 		-- create a new texture
 		local id = gl.GenTexture()
@@ -260,8 +260,8 @@ do -- texture object
 			format.type, 
 			format.mip_map_levels, 
 			format.internal_format, 
-			self.size.w + format.border_size, 
-			self.size.h + format.border_size
+			self.size.w, 
+			self.size.h
 		)
 		
 		self:UpdateFormat()
