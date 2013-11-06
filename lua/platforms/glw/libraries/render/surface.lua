@@ -365,7 +365,7 @@ do -- orientation
 	end
 	
 	function surface.Scale(w, h)
-		render.Scale(w, h, 0)
+		render.Scale(w, h or w, 0)
 	end
 		
 	function surface.PushMatrix(x,y, w,h, a)
@@ -492,74 +492,70 @@ do
 	end
 
 	function surface.SetRectUV(x,y, w,h, sx,sy)
-		sx = sx or 1
-		sy = sy or 1
+		if not x then
+			mesh_data[1].uv[1] = 0
+			mesh_data[1].uv[2] = 1
+			
+			mesh_data[2].uv[1] = 0
+			mesh_data[2].uv[2] = 0
+			
+			mesh_data[3].uv[1] = 1
+			mesh_data[3].uv[2] = 0
+			
+			--
+			
+			mesh_data[4].uv = mesh_data[3].uv
+			
+			mesh_data[5].uv[1] = 1
+			mesh_data[5].uv[2] = 1
+			
+			mesh_data[6].uv = mesh_data[1].uv	
+		else			
+			sx = sx or 1
+			sy = sy or 1
+			
+			mesh_data[1].uv[1] = x / sx
+			mesh_data[1].uv[2] = (y + h) / sy
+			
+			mesh_data[2].uv[1] = x / sx
+			mesh_data[2].uv[2] = y / sy
+			
+			mesh_data[3].uv[1] = (x + w) / sx
+			mesh_data[3].uv[2] = y / sy
+			
+			--
+			
+			mesh_data[4].uv = mesh_data[3].uv
+			
+			mesh_data[5].uv[1] = (x + w) / sx
+			mesh_data[5].uv[2] = (y + h)
+			
+			mesh_data[6].uv = mesh_data[1].uv	
+		end
 		
-		mesh_data[1].uv[1] = x / sx
-		mesh_data[1].uv[2] = (y + h) / sy
-		
-		mesh_data[2].uv[1] = x / sx
-		mesh_data[2].uv[2] = y / sy
-		
-		mesh_data[3].uv[1] = (x + w) / sx
-		mesh_data[3].uv[2] = y / sy
-		
-		--
-		
-		mesh_data[4].uv = mesh_data[3].uv
-		
-		mesh_data[5].uv[1] = (x + w) / sx
-		mesh_data[5].uv[2] = (y + h)
-		
-		mesh_data[6].uv = mesh_data[1].uv	
-	
 				
 		update_vbo()
 	end
-	
-	function surface.SetDefaultRectUV()		
-		mesh_data[1].uv[1] = 0
-		mesh_data[1].uv[2] = 1
-		
-		mesh_data[2].uv[1] = 0
-		mesh_data[2].uv[2] = 0
-		
-		mesh_data[3].uv[1] = 1
-		mesh_data[3].uv[2] = 0
-		
-		--
-		
-		mesh_data[4].uv = mesh_data[3].uv
-		
-		mesh_data[5].uv[1] = 1
-		mesh_data[5].uv[2] = 1
-		
-		mesh_data[6].uv = mesh_data[1].uv	
-		
-		update_vbo()
-	end
-		
-	function surface.SetRectColors(cbl, ctl, ctr, cbr)	
-	
-		mesh_data[1].color = {cbl:Unpack()}
-		mesh_data[2].color = {ctl:Unpack()}
-		mesh_data[3].color = {ctr:Unpack()}
-		mesh_data[4].color = mesh_data[3].color
-	    mesh_data[5].color = {cbr:Unpack()}
-		mesh_data[6].color = mesh_data[1]
-		
-		update_vbo()
-	end
-	
-	local white_t = {Color(1,1,1,1):Unpack()}
-	
-	function surface.SetDefaultRectColors()
-		for i = 1, 6 do
-			mesh_data[i].color = white_t
+
+	local white_t = {1,1,1,1}
+
+	function surface.SetRectColors(cbl, ctl, ctr, cbr)			
+		if not cbl then
+			for i = 1, 6 do
+				mesh_data[i].color = white_t
+			end
+		else
+			mesh_data[1].color = {cbl:Unpack()}
+			mesh_data[2].color = {ctl:Unpack()}
+			mesh_data[3].color = {ctr:Unpack()}
+			mesh_data[4].color = mesh_data[3].color
+			mesh_data[5].color = {cbr:Unpack()}
+			mesh_data[6].color = mesh_data[1]
 		end
 		
 		update_vbo()
 	end
+	
 end
 
 function surface.DrawRect(x,y, w,h, a, ox,oy)	
