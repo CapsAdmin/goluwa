@@ -92,7 +92,7 @@ do -- background
 	end
 
 	function love.graphics.clear()
-		surface.SetTexture()
+		surface.SetWhiteTexture()
 		surface.Color(br/255,bg/255,bb/255,ba/255)
 		surface.DrawRect(0,0,render.w,render.h,0,0,0)
 		surface.Color(cr/255,cg/255,cb/255,ca/255)
@@ -103,6 +103,8 @@ do
 	local MODE = "alpha"
 
 	function love.graphics.setBlendMode(mode)
+		gl.AlphaFunc(e.GL_GEQUAL, 0)
+		
 		if mode == "alpha" then
 			gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
 		elseif mode == "multiplicative" then
@@ -154,11 +156,11 @@ do -- points
 	end
 
 	function love.graphics.point(x,y)
-		gl.Disable(GL_TEXTURE_2D)
-		g.lBegin(GL_POINTS)
+		gl.Disable(e.GL_TEXTURE_2D)
+		gl.Begin(e.GL_POINTS)
 			gl.Vertex2f(x, y)
 		gl.End()
-		gl.Enable(GL_TEXTURE_2D)
+		gl.Enable(e.GL_TEXTURE_2D)
 	end
 end
 
@@ -179,7 +181,10 @@ do -- font
 		obj.Name = surface.CreateFont("lovemu_" .. font, {
 			size = size,
 			path = font,
-		})	
+		})
+		
+		surface.SetFont(obj.Name)
+		local w, h = surface.GetTextSize("W")
 
 		obj.Size = size
 		obj.getWidth = function(s) return w end
@@ -208,7 +213,7 @@ do -- font
 		sy = sy or 1
 		
 		if r and r > 0 then
-			r = r / 0.0174532925
+			r = math.deg(r)
 		else
 			r = 0
 		end
@@ -228,7 +233,7 @@ do -- font
 		sy = sy or 1
 		
 		if r and r > 0 then
-			r = r / 0.0174532925
+			r = math.deg(r)
 		else
 			r = 0
 		end
@@ -263,23 +268,6 @@ do -- line
 	end
 end
 
-function love.graphics.rectangle(mode, x, y, w, h)
-	if mode == "fill" then
-		surface.SetWhiteTexture()
-		surface.DrawRect(x, y, w, h)
-	else
-		surface.DrawLine(x,y, x+w,y, LineWidth, true)
-		surface.DrawLine(x,y, x,y+h, LineWidth, true)
-		surface.DrawLine(x+w,y, x+w,y+h, LineWidth, true)
-		surface.DrawLine(x,y+h, x+w,y+h, LineWidth, true)
-	end
-end
-
-function love.graphics.circle(mode,x,y,w,h) --partial
-	surface.SetWhiteTexture()
-	surface.DrawRect(x or 0, y or 0, w or 0, h or 0)
-end
-
 do -- canvas
 	local canvas_config={
 		{
@@ -297,11 +285,21 @@ do -- canvas
 		
 		local obj = lovemu.NewObject("Canvas")
 		
-		obj.fb = render.CreateFrameBuffer(w,h,canvas_config)
+		obj.fb = render.CreateFrameBuffer(w, h, canvas_config)
 		
 		obj.renderTo = function(cb)
-			
+			obj.fb:Begin()
+			cb()
+			obj.fb:End()
 		end
+		
+		obj.getWidth = function() return w end
+		obj.getHeight = function() return h end
+		obj.getImageData = function() end
+		
+		obj.setWrap = function() end
+		obj.getWrap = function() end
+		
 		
 		return obj
 	end
@@ -364,22 +362,38 @@ do -- stencil
 	end
 end
 
+function love.graphics.rectangle(mode, x, y, w, h)
+	if mode == "fill" then
+		surface.SetWhiteTexture()
+		surface.DrawRect(x, y, w, h)
+	else
+		surface.DrawLine(x,y, x+w,y, LineWidth, true)
+		surface.DrawLine(x,y, x,y+h, LineWidth, true)
+		surface.DrawLine(x+w,y, x+w,y+h, LineWidth, true)
+		surface.DrawLine(x,y+h, x+w,y+h, LineWidth, true)
+	end
+end
+
+function love.graphics.circle(mode,x,y,w,h) --partial
+	surface.SetWhiteTexture()
+	surface.DrawRect(x or 0, y or 0, w or 0, h or 0)
+end
+
 function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy)
 	x=x or 0
 	y=y or 0
-	r=r or 0
 	sx=sx or 1
 	sy=sy or 1
 	ox=ox or 0
 	oy=oy or 0
 	
 	if r and r > 0 then
-		r = r / 0.0174532925
+		r = math.deg(r)
 	else
 		r = 0
 	end
 	
-	surface.SetTexture(drawable)
+	surface.SetTexture(drawable.tex)
 	surface.SetRectUV(quad[1]*quad[5],quad[2]*quad[6],quad[3]*quad[5],quad[4]*quad[6])
 	surface.DrawRect(x,y, quad[3]*sx, quad[4]*sy,r,ox*sx,oy*sy)
 	surface.SetRectUV(0,0,1,1)
@@ -389,23 +403,22 @@ local drawq = love.graphics.drawq
 
 function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 	if drawable.tex then
-		if type(x) == "table" and x.quad then
+		if type(x) == "table" and x:typeOf("Quad") then
 			drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 		else
 			x=x or 0
 			y=y or 0
-			r=r or 0
 			sx=sx or 1
 			sy=sy or 1
 			ox=ox or 0
 			oy=oy or 0
 					
 			if r and r > 0 then
-				r = r / 0.0174532925
+				r = math.deg(r)
 			else
 				r = 0
 			end
-			
+						
 			surface.SetTexture(drawable.tex)
 			surface.DrawRect(x,y, drawable.tex.w*sx, drawable.tex.h*sy, r, ox*sx,oy*sy)
 		end
