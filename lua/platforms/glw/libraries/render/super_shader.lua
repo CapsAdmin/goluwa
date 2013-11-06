@@ -252,7 +252,14 @@ void main()
 
 		gl.BindBuffer(e.GL_ARRAY_BUFFER, id) 
 		gl.BufferData(e.GL_ARRAY_BUFFER, size, buffer, e.GL_DYNAMIC_DRAW)
-				
+
+		if false and gl.GetBufferParameterui64vNV then
+			self.nvidia_buffer_address = ffi.new("GLuint64EXT[1]")
+			gl.EnableClientState(e.GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV)
+			gl.GetBufferParameterui64vNV(e.GL_ARRAY_BUFFER, e.GL_BUFFER_GPU_ADDRESS_NV, self.nvidia_buffer_address)
+			gl.MakeBufferResidentNV(e.GL_ARRAY_BUFFER, e.GL_READ_ONLY)
+		end
+		
 		local vao_id = gl.GenVertexArray()
 		gl.BindVertexArray(vao_id)
 		
@@ -268,9 +275,14 @@ void main()
 
 		vbo.Draw = function(vbo)
 			render.UseProgram(self.program_id)
+					
+			if false and self.nvidia_buffer_address then 
+				gl.BufferAddressRangeNV(e.GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, 0, self.nvidia_buffer_address[1], size);
+			else
+				render.BindArrayBuffer(vbo.id)
+				render.BindVertexArray(vao_id)
+			end
 			
-			render.BindArrayBuffer(vbo.id)
-			render.BindVertexArray(vao_id)
 			self.unrolled_bind_func()
 			
 			gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
@@ -605,14 +617,14 @@ void main()
 					pos = pos + data.info.arg_count
 				end				
 							
-				lua = lua .. "if render.current_program ~= render.super_shader_last_program then\n"
-				for location, data in pairs(self.attributes) do
+			--	lua = lua .. "if render.current_program ~= render.super_shader_last_program then\n"
+		--		for location, data in pairs(self.attributes) do
 					--lua = lua .. "\tgl.EnableVertexAttribArray("..location..") \n"
 					--lua = lua .. "\tgl.VertexAttribPointer("..location..",".. data.arg_count..",".. data.enum..",false,".. data.stride..",self.attributes["..location.."].type_stride)\n\n"
 					--lua = lua .. "\tgl.BindVertexArray(self.vao_id)"
-				end
-				lua = lua .. "\trender.super_shader_last_program = render.current_program\n"
-				lua = lua .. "end\n"
+			--	end
+			--	lua = lua .. "\trender.super_shader_last_program = render.current_program\n"
+			--	lua = lua .. "end\n"
 				
 								
 				local func, err = loadstring(lua)
