@@ -8,6 +8,10 @@ function love.window.setTitle(title)
 	window.SetTitle(title)
 end
 
+function love.window.setCaption(title)
+	window.SetTitle(title)
+end
+
 local vec = Vec2()
 function love.window.setMode(x,y)
 	vec.x = x
