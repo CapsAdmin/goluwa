@@ -354,10 +354,7 @@ end
 
 do -- orientation
 	function surface.Translate(x, y)	
-		X = x
-		Y = y
-		
-		render.Translate(x, y, 0)
+		render.Translate(math.ceil(x), math.ceil(y), 0)
 	end
 	
 	function surface.Rotate(a)		
@@ -371,7 +368,7 @@ do -- orientation
 	function surface.PushMatrix(x,y, w,h, a)
 		render.PushMatrix()
 
-		if x and y then surface.Translate(math.floor(x), math.floor(y), 0) end
+		if x and y then surface.Translate(x, y, 0) end
 		if w and h then surface.Scale(w, h, 1) end
 		if a then surface.Rotate(a) end
 	end
@@ -560,16 +557,16 @@ end
 
 function surface.DrawRect(x,y, w,h, a, ox,oy)	
 	render.PushMatrix()			
-		render.Translate(x, y, 0)
+		surface.Translate(x, y)
 		
 		if a then
-			render.Rotate(a, 0, 0, 1)
+			surface.Rotate(a)
 		end
 		if ox then
-			render.Translate(-ox, -oy, 0)
+			surface.Translate(-ox, -oy)
 		end
-		
-		render.Scale(w, h, 0)
+				
+		surface.Scale(w, h)
 		surface.rectmesh:Draw()
 	render.PopMatrix()
 end
