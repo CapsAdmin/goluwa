@@ -31,17 +31,17 @@ end
 
 function render.Translate(x, y, z)
 	if x == 0 and y == 0 and (z == 0 or not z) then return end
-	gl.Translatef(x, y, z)
+	gl.Translated(x, y, z)
 end
 
 function render.Rotate(a, x, y, z)
 	if a == 0 then return end
-	gl.Rotatef(a, x, y, z)
+	gl.Rotated(a, x, y, z)
 end
 
 function render.Scale(x, y, z)
 	if x == 1 and y == 1 and z == 1 then return end
-	gl.Scalef(x, y, z)
+	gl.Scaled(x, y, z)
 end
 render.LoadIdentity = gl.LoadIdentity
 render.Ortho = gl.Ortho
