@@ -77,6 +77,9 @@ function lovemu.boot(folder)
 	include("lovers/"..folder.."/main.lua")
 	love.load()
 	
+	-- disables the gbuffer for better performance since 2d stuff isn't using it
+	render.EnableGBuffer(false)
+	
 	event.AddListener("OnDraw2D", "lovemu", function(dt)
 		love.graphics.clear()
 		lovemu.delta = dt
