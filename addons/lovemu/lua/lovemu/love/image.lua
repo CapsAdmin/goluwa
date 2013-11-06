@@ -67,5 +67,5 @@ function love.image.newImageData(a, b)
 		end, false, true)
 	end
 	
-	return tex
+	return obj
 end
