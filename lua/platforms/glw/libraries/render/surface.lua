@@ -378,7 +378,7 @@ do -- orientation
 	end
 end
 
-local c = Color()
+local COLOR = Color()
 
 function surface.Color(r,g,b,a)
 	R = r
@@ -388,12 +388,12 @@ function surface.Color(r,g,b,a)
 		A = a * A2
 	end
 	
-	c.r = R
-	c.g = G
-	c.b = B
-	c.a = A
+	COLOR.r = R
+	COLOR.g = G
+	COLOR.b = B
+	COLOR.a = A
 	
-	surface.rectmesh.global_color = c
+	surface.rectmesh.global_color = COLOR
 end
 
 function surface.SetAlphaMultiplier(a)
@@ -643,5 +643,73 @@ function surface.WrapString(str, max_width)
 
 	return lines
 end
+
+do -- poly
+	function surface.CreatePoly(size)
+		local poly = {Type = "Poly"}
+		
+		size = size * 6
+		local mesh = render.CreateMesh2D(size)
+		
+		local R,G,B,A = 1,1,1,1
+		
+		function poly:SetColor(r,g,b,a)
+			R = r or 1
+			G = g or 1
+			B = b or 1
+			A = a or 1
+		end
+		
+		local U1, V1, U2, V2 = 0, 0, 1, 1
+		
+		function poly:SetUV(u1,v1,u2,v2)
+			U1 = u1
+			V1 = v1
+			U2 = u2
+			V2 = v2
+		end
+		
+		function poly:SetVertex(i, x,y, u,v)
+			mesh.buffer[i-1].pos.A = x 
+			mesh.buffer[i-1].pos.B = y 
+			
+			mesh.buffer[i-1].uv.A = u
+			mesh.buffer[i-1].uv.B = v
+			
+			mesh.buffer[i-1].color.A = R
+			mesh.buffer[i-1].color.B = G
+			mesh.buffer[i-1].color.C = B
+			mesh.buffer[i-1].color.D = A
+		end
+		
+		function poly:SetRect(i, x,y,w,h, r)
+			
+			if r and r ~= 0 then
+			end
+			
+			i = (i-1)  * 6
+			
+			self:SetVertex(i + 1, x, y, U1, V1 + V2)
+			self:SetVertex(i + 2, x, y + h, U1, V1)
+			self:SetVertex(i + 3, x + w, y + h, U1 + U2, V1)
+
+			self:SetVertex(i + 4, x + w, y + h, U1 + U2, V1)
+			self:SetVertex(i + 5, x + w, y, U1 + U2, V1 + V2)
+			self:SetVertex(i + 6, x, y, U1, V1 + V2)
+		end
+		
+		poly.mesh = mesh
+						
+		return poly
+	end
+
+	function surface.DrawPoly(poly)
+		poly.mesh:UpdateBuffer()
+		poly.mesh.texture = surface.bound_texture
+		poly.mesh.global_color = COLOR
+		poly.mesh:Draw()
+	end
+end
+
 
 return surface
