@@ -36,9 +36,20 @@ function string.getbyte(self, pos)
 	return self:getchar(pos):byte() or 0
 end
 
+local cache = {}
 
 function string.explode(self, sep, pattern)
-	if not sep or sep == "" then
+	sep = sep or ""
+	pattern = pattern or false
+	
+	cache[self] = cache[self] or {}
+	cache[self][sep] = cache[self][sep] or {}
+	
+	if cache[self][sep][pattern] then
+		return cache[self][sep][pattern]
+	end
+	
+	if sep == "" then
 		local tbl = {}
 		local i = 1
 		for char in self:gmatch(".") do
@@ -50,12 +61,13 @@ function string.explode(self, sep, pattern)
 
 	local tbl = {}
 	local i, last_pos = 1,1
+	local new_sep = sep
 
 	if not pattern then
-		sep = sep:gsub("[%-%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1")
+		new_sep = new_sep:gsub("[%-%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1")
 	end
 
-	for start_pos, end_pos in self:gmatch("()"..sep.."()") do
+	for start_pos, end_pos in self:gmatch("()"..new_sep.."()") do
 		tbl[i] = self:sub(last_pos, start_pos-1)
 		last_pos = end_pos
 		i=i+1
@@ -63,6 +75,8 @@ function string.explode(self, sep, pattern)
 
 	tbl[i] = self:sub(last_pos)
 
+	cache[self][sep][pattern] = tbl
+	
 	return tbl
 end
 
