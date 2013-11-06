@@ -396,6 +396,27 @@ function vfs.Traverse(path, callback, level)
 	end
 end
 
+do 
+	local out
+	local function search(path, ext)		
+		for _,v in pairs(vfs.Find(path)) do
+			if ext and v:sub(-#ext) == ext then
+				table.insert(out, path .. v)
+			elseif not ext then
+				table.insert(out, path .. v)
+			end
+			
+			search(path .. v .. "/", ext)
+		end
+	end
+
+	function vfs.Search(path, ext)
+		out = {}
+		search(path, ext)
+		return out
+	end
+end
+
 function vfs.loadfile(path)
 	check(path, "string")
 	

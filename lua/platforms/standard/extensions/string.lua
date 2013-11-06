@@ -87,3 +87,20 @@ end
 function string.containsonly(self, pattern)
 	return self:gsub(pattern, "") == ""
 end
+
+function string.replace(self, a, b)
+	local tbl = self:explode(a)
+	local out = ""
+	
+	if #tbl > 1 then
+		for i = 1, #tbl - 1 do
+			out = out .. tbl[i] .. b
+		end
+		
+		out = out .. tbl[#tbl]
+		
+		return out
+	end
+	
+	return self
+end
