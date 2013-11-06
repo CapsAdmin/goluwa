@@ -211,12 +211,8 @@ do -- font
 	function love.graphics.print(text, x, y, r, sx, sy)
 		sx = sx or 1
 		sy = sy or 1
-		
-		if r and r > 0 then
-			r = math.deg(r)
-		else
-			r = 0
-		end
+		r=r or 0
+		r=r/0.0174532925
 		
 		surface.SetTextScale(sx, sy)
 		surface.SetTextPos(x, y)
@@ -231,12 +227,8 @@ do -- font
 		align = align or "left"
 		sx = sx or 1
 		sy = sy or 1
-		
-		if r and r > 0 then
-			r = math.deg(r)
-		else
-			r = 0
-		end
+		r=r or 0
+		r=r/0.0174532925
 		
 		local lines = string.explode(text, "\n")
 		
@@ -386,12 +378,8 @@ function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy)
 	sy=sy or 1
 	ox=ox or 0
 	oy=oy or 0
-	
-	if r and r > 0 then
-		r = math.deg(r)
-	else
-		r = 0
-	end
+	r=r or 0
+	r=r/0.0174532925
 	
 	surface.SetTexture(drawable.tex)
 	surface.SetRectUV(quad[1]*quad[5],quad[2]*quad[6],quad[3]*quad[5],quad[4]*quad[6])
@@ -412,12 +400,8 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 			sy=sy or 1
 			ox=ox or 0
 			oy=oy or 0
-					
-			if r and r > 0 then
-				r = math.deg(r)
-			else
-				r = 0
-			end
+			r=r or 0
+			r=r/0.0174532925
 						
 			surface.SetTexture(drawable.tex)
 			surface.DrawRect(x,y, drawable.tex.w*sx, drawable.tex.h*sy, r, ox*sx,oy*sy)
