@@ -10,7 +10,8 @@ function love.filesystem.getAppdataDirectory()
 end
 
 function love.filesystem.getLastModified(path)
-	return vfs.GetAttributes(e.ABSOLUTE_BASE_FOLDER.."addons\\lovemu\\lovers\\"..lovemu.demoname.."\\"..path).modification or 0
+	local attribs = vfs.GetAttributes(e.ABSOLUTE_BASE_FOLDER.."addons\\lovemu\\lovers\\"..lovemu.demoname.."\\"..path)
+	return attribs and attribs.modification or 0
 end
 
 function love.filesystem.getSaveDirectory()
@@ -95,7 +96,13 @@ function love.filesystem.lines(path)
 end
 
 function love.filesystem.load(path,mode)
-	return vfs.GetFile(path,mode)
+	local func, err = vfs.loadfile(e.ABSOLUTE_BASE_FOLDER.."addons\\lovemu\\lovers\\"..lovemu.demoname.."\\" .. path,mode)
+	
+	if func then
+		setfenv(func, getfenv(2))
+	end
+	
+	return func, err
 end
 
 function love.filesystem.mkdir(path) --partial
