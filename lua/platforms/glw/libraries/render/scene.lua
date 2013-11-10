@@ -4,6 +4,8 @@ function render.EnableGBuffer(b)
 	render.gbuffer_enabled = b
 end
 
+console.CreateVariable("render_accum", false)
+
 function render.DrawScene(window, dt)
 	render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
 
@@ -29,11 +31,13 @@ function render.DrawScene(window, dt)
 		
 		event.Call("PostDisplay", dt)
 		
-		--[[local blur_amt = 0.5		
-		
-		gl.Accum(e.GL_ACCUM, 1)
-		gl.Accum(e.GL_RETURN, 1-blur_amt)
-		gl.Accum(e.GL_MULT, blur_amt)]]
+		if console.GetVariable("render_accum") then
+			local blur_amt = 0.5		
+			
+			gl.Accum(e.GL_ACCUM, 1)
+			gl.Accum(e.GL_RETURN, 1-blur_amt)
+			gl.Accum(e.GL_MULT, blur_amt)
+		end
 			
 	render.End()
 end
