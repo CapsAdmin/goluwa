@@ -1,17 +1,14 @@
-local love=love
-local lovemu=lovemu
-
-local getn=table.getn
-
-local function run()
-	love.update(lovemu.delta)
-	love.draw()
-end
-
 function lovemu.boot(folder)
+	render.EnableGBuffer(false)
+
+	local love = {}
+	love._version = lovemu.version
+
+	_G.love = love
 	include("lovemu/love/*")
+	_G.love = nil
 	
-	window.Open(800, 600)
+	window.Open()	
 	
 	lovemu.errored = false
 	lovemu.error_msg = ""
@@ -43,6 +40,42 @@ function lovemu.boot(folder)
 	
 	function love.keyreleased()
 	end
+		
+	do -- error screen
+		local font = love.graphics.newFont(8)
+
+		function love.errhand(msg)
+			love.graphics.setFont(font)
+			msg = tostring(msg)
+			love.graphics.setBackgroundColor(89, 157, 220)
+			love.graphics.setColor(255, 255, 255, 255)
+			
+			local trace = debug.traceback()
+
+			local err = {}
+
+			table.insert(err, "Error\n")
+			table.insert(err, msg.."\n\n")
+
+			for l in string.gmatch(trace, "(.-)\n") do
+				if not string.match(l, "boot.lua") then
+					l = string.gsub(l, "stack traceback:", "Traceback\n")
+					table.insert(err, l)
+				end
+			end
+
+			local p = table.concat(err, "\n")
+
+			p = string.gsub(p, "\t", "")
+			p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
+
+			local function draw()
+				love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
+			end
+			
+			draw()
+		end
+	end
 	
 	lovemu.conf={}
 	function love.conf(t) --partial
@@ -58,7 +91,9 @@ function lovemu.boot(folder)
 
 	if vfs.Exists(R("lovers/"..lovemu.demoname.."/conf.lua"))==true then
 		print("LOADING CONF.LUA")
+		_G.love = love
 		include("lovers/"..folder.."/conf.lua")
+		_G.love = nil
 	end
 	
 	love.conf(lovemu.conf)
@@ -74,13 +109,25 @@ function lovemu.boot(folder)
 	love.window.setMode(w,h)
 	love.window.setTitle(title)
 	
-	include("lovers/"..folder.."/main.lua")
-	love.load()
+	local env = setmetatable({love = love}, {
+		__newindex = env,
+		__index = _G,
+	})
+	env._G = env
+		
+	local main = vfs.loadfile("lovers/"..folder.."/main.lua")
+	setfenv(main, env)
+	main()
+	love.load()	
 	
-	-- disables the gbuffer for better performance since 2d stuff isn't using it
-	render.EnableGBuffer(false)
+	local function run()
+		love.update(lovemu.delta)
+		love.draw()
+	end
+		
+	setfenv(run, env)
 	
-	event.AddListener("OnDraw2D", "lovemu", function(dt)
+	event.AddListener("OnDraw2D", "lovemu_" .. folder, function(dt)		
 		love.graphics.clear()
 		lovemu.delta = dt
 		surface.SetWhiteTexture()
