@@ -1,13 +1,6 @@
-local surface=surface
+lovemu = {}
 
---love table
-love={}
-local love=love
-love._version="0.9.0"
-
-lovemu={}
-local lovemu=lovemu
-
+lovemu.version = "0.9.0"
 lovemu.demoname = "" --internal, demo folder name
 lovemu.delta = 0 --frametime
 
@@ -36,46 +29,8 @@ function lovemu.NewObject(name, ...)
 	return obj
 end
 
-include("lovemu/love/*")
-
-do -- error screen
-	local font = love.graphics.newFont(8)
-
-	function love.errhand(msg)
-		love.graphics.setFont(font)
-		msg = tostring(msg)
-		love.graphics.setBackgroundColor(89, 157, 220)
-		love.graphics.setColor(255, 255, 255, 255)
-		
-		local trace = debug.traceback()
-
-		local err = {}
-
-		insert(err, "Error\n")
-		insert(err, msg.."\n\n")
-
-		for l in string.gmatch(trace, "(.-)\n") do
-			if not string.match(l, "boot.lua") then
-				l = gsub(l, "stack traceback:", "Traceback\n")
-				insert(err, l)
-			end
-		end
-
-		local p = concat(err, "\n")
-
-		p = gsub(p, "\t", "")
-		p = gsub(p, "%[string \"(.-)\"%]", "%1")
-
-		local function draw()
-			love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
-		end
-		
-		draw()
-	end
-end
-
 function lovemu.CheckSupported(demo)
-	if not love.supported then
+	if not lovemu.supported then
 		lovemu.supported = {}
 		for _,v in pairs(vfs.Search(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/", ".lua")) do
 			for _,l in pairs(string.explode(vfs.Read(v), "\n")) do
@@ -181,7 +136,7 @@ console.AddCommand("lovemu", function(line)
 	elseif command=="version" then
 	
 		if arg then
-			love._version = arg
+			lovemu.version = arg
 			logn("Changed internal version to " .. arg)
 		else
 			logn("Usage: lovemu version <version>")
