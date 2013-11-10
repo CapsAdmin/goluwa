@@ -669,33 +669,51 @@ do -- poly
 			V2 = v2
 		end
 		
-		function poly:SetVertex(i, x,y, u,v)
-			mesh.buffer[i-1].pos.A = x 
-			mesh.buffer[i-1].pos.B = y 
-			
-			mesh.buffer[i-1].uv.A = u
-			mesh.buffer[i-1].uv.B = v
-			
-			mesh.buffer[i-1].color.A = R
-			mesh.buffer[i-1].color.B = G
-			mesh.buffer[i-1].color.C = B
-			mesh.buffer[i-1].color.D = A
-		end
+		local X, Y = 0, 0
+		local R = 0
 		
-		function poly:SetRect(i, x,y,w,h, r)
+		function poly:SetVertex(i, x,y, u,v)
+			if i > size or i < 0 then logf("i = %i size = %i", i, size)error("whaat") end
 			
-			if r and r ~= 0 then
+			if false and R ~= 0 then
+				local t = glfw.GetTime()
+				x = (X-x * math.cos(R)) - (Y-y * math.sin(R))
+				y = (X-x * math.sin(R)) + (Y-y * math.cos(R))
+				
+				x = x + X
+				y = y + Y
 			end
 			
-			i = (i-1)  * 6
+			mesh.buffer[i].pos.A = x
+			mesh.buffer[i].pos.B = y
 			
-			self:SetVertex(i + 1, x, y, U1, V1 + V2)
-			self:SetVertex(i + 2, x, y + h, U1, V1)
-			self:SetVertex(i + 3, x + w, y + h, U1 + U2, V1)
+			mesh.buffer[i].uv.A = u
+			mesh.buffer[i].uv.B = v
+			
+			mesh.buffer[i].color.A = R
+			mesh.buffer[i].color.B = G
+			mesh.buffer[i].color.C = B
+			mesh.buffer[i].color.D = A
+		end
+		
+		function poly:SetRect(i, x,y,w,h, r, ox,oy)
+		
+			X = x
+			Y = y
+			R = r or 0
+			OX = ox or 0
+			OY = oy or 0
+			
+			i = i - 1
+			i = i  * 6
+			
+			self:SetVertex(i + 0, x, y, U1, V1 + V2)
+			self:SetVertex(i + 1, x, y + h, U1, V1)
+			self:SetVertex(i + 2, x + w, y + h, U1 + U2, V1)
 
-			self:SetVertex(i + 4, x + w, y + h, U1 + U2, V1)
-			self:SetVertex(i + 5, x + w, y, U1 + U2, V1 + V2)
-			self:SetVertex(i + 6, x, y, U1, V1 + V2)
+			self:SetVertex(i + 3, x + w, y + h, U1 + U2, V1)
+			self:SetVertex(i + 4, x + w, y, U1 + U2, V1 + V2)
+			self:SetVertex(i + 5, x, y, U1, V1 + V2)
 		end
 		
 		poly.mesh = mesh
