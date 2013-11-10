@@ -93,10 +93,7 @@ do -- window meta
 		last = pos
 	end
 
-
 	function META:OnUpdate(dt)
-		glfw.PollEvents()
-		
 		self:UpdateMouseTrap(dt)
 
 		render.DrawScene(self, dt)
@@ -171,6 +168,8 @@ do -- window meta
 		function self:OnMouseButton(button, action, mods)
 			trigger(glfw.MouseToString(button), action == e.GLFW_PRESS)
 		end
+		
+		timer.Create("glfw_pollevents", 1/60, 0, function() glfw.PollEvents() end)
 		
 		return self
 	end 
