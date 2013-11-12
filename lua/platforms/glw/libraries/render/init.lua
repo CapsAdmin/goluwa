@@ -16,3 +16,4 @@ include("surface.lua")
 
 include("cvars.lua")
 include("globals.lua")
+include("debug.lua")
