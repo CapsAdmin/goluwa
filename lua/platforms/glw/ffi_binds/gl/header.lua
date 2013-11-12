@@ -437,4 +437,5 @@ void glVertexPointer (GLint size, GLenum type, GLsizei stride, const GLvoid *poi
 void glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
 const GLubyte * glGetString (GLenum name);
 GLenum glGetError (void);
+typedef void (__stdcall *GLDEBUGPROC)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, void* userParam);
 ]]

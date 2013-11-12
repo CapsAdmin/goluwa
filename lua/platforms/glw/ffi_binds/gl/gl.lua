@@ -31,65 +31,9 @@ local function add_gl_func(name, func)
 	-- lets remove the ARB field from extensions officially approved 
 	-- by the OpenGL Architecture Review Board
 	--name = name:gsub("ARB", "")
-
-	gl[name] = function(...) 
-		local val = func(...)
-		
-		gl.call_count = gl.call_count + 1
-		
-		if gl.logcalls and name ~= "GetError" then
-			setlogfile("gl_calls")
-			
-				local args = {}
-				for i =  1, select("#", ...) do
-					local val = select(i, ...)
-					if type(val) == "number" and reverse_enums[val] and val > 10 then
-						args[#args+1] = reverse_enums[val]:gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
-					else
-						args[#args+1] = luadata.ToString(val)
-					end
-				end
-				
-				if not val then
-					logf("gl%s(%s)", name, table.concat(args, ", "))
-				else
-					local val = val
-					if reverse_enums[val] then
-						val = reverse_enums[val]:gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
-					end
-					
-					logf("%s = gl%s(%s)", val, name, table.concat(args, ", "))
-				end
-			setlogfile()
-		end
-		
-		if name ~= "GetError" and gl.debug then
-						
-			if name == "End" and suppress then
-				suppress = false
-			end
-		
-			if name == "Begin" then
-				suppress = true
-				
-				return val
-			end
-			
-			if suppress then
-				return val
-			end
-		
-			local enum = gl.GetError()
-			if enum ~= e.GL_NO_ERROR then
-				local str = ffi.string(glu.ErrorString(enum))
-				local info = debug.getinfo(2)
-				
-				logf("[opengl] gl%s failed with %q in function %s at %s:%i", name, str, info.name, info.short_src, info.currentline)
-			end
-		end
-		
-		return val
-	end
+	-- or not
+	
+	gl[name] = func
 end
 
 for line in header:gmatch("(.-)\n") do
@@ -118,6 +62,13 @@ function gl.InitMiniGlew()
 	local invalid = 0
 	
 	setlogfile("unexpected_extensions")
+	
+	for line in header:gmatch("(.-)\n") do
+		local func_name = line:match(" (gl%u.-) %(")
+		if func_name then
+			add_gl_func(func_name:sub(3), library[func_name])
+		end 
+	end
 	
 	local time = glfw.GetTime()
 	for path in vfs.Iterate("lua/platforms/glw/ffi_binds/gl/extensions/", nil, true) do
@@ -180,8 +131,7 @@ function gl.InitMiniGlew()
 			reverse_enums[v] = k
 		end
 	end
-
-	
+		
 	setlogfile()
 	
 	logf("glew extensions took %f ms to parse", (glfw.GetTime() - time) * 100)

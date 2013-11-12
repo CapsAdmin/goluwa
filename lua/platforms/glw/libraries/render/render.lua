@@ -65,6 +65,8 @@ function render.Initialize(w, h, window)
 	check(h, "number")
 	
 	window = window or render.CreateWindow(w, h)
+	
+	render.EnableDebug(true)
 
 	SETUP_CACHED_UNIFORM("Uniform4f", gl.Uniform4f, 5)
 	SETUP_CACHED_UNIFORM("Uniform3f", gl.Uniform3f, 4)
@@ -99,7 +101,7 @@ function render.Initialize(w, h, window)
 	if surface then
 		surface.Initialize()
 	end
-			
+	
 	event.Call("RenderContextInitialized")
 	
 	return window
