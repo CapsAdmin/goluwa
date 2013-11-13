@@ -33,7 +33,40 @@ local function add_gl_func(name, func)
 	--name = name:gsub("ARB", "")
 	-- or not
 	
-	gl[name] = func
+	gl[name] = function(...) 
+		print(name, ...)
+		local val = func(...)
+		
+		gl.call_count = gl.call_count + 1
+		
+		if gl.logcalls and name ~= "GetError" then
+			setlogfile("gl_calls")
+			
+				local args = {}
+				for i =  1, select("#", ...) do
+					local val = select(i, ...)
+					if type(val) == "number" and reverse_enums[val] and val > 10 then
+						args[#args+1] = reverse_enums[val]:gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
+					else
+						args[#args+1] = luadata.ToString(val)
+					end
+				end
+				
+				if not val then
+					logf("gl%s(%s)", name, table.concat(args, ", "))
+				else
+					local val = val
+					if reverse_enums[val] then
+						val = reverse_enums[val]:gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
+					end
+					
+					logf("%s = gl%s(%s)", val, name, table.concat(args, ", "))
+				end
+			setlogfile()
+		end
+		
+		return val
+	end
 end
 
 for line in header:gmatch("(.-)\n") do
