@@ -99,6 +99,8 @@ do -- file system
 		return vfs.loadfile("lua/modules/" .. path .. "/init.lua")
 	end)
 	
+	-- replace require with the pure lua version (lua/procure/init.lua)
+	_G.require = require("procure")	
 end
 
 do -- logging	
