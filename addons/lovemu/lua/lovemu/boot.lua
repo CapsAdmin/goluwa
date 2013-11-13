@@ -15,11 +15,6 @@ function lovemu.boot(folder)
 	lovemu.delta = 0
 	lovemu.demoname = folder
 	
-	package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..lovemu.demoname.."/?.lua","/","\\")
-	package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..lovemu.demoname.."/?/init.lua","/","\\")
-	package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..lovemu.demoname.."/?/?.lua","/","\\")
-	
-	
 	function love.load()
 	end
 
@@ -76,7 +71,26 @@ function lovemu.boot(folder)
 			draw()
 		end
 	end
+		
+	package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..lovemu.demoname.."/?.lua","/","\\")
+	package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..lovemu.demoname.."/?/init.lua","/","\\")
+	package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..lovemu.demoname.."/?/?.lua","/","\\")
+		
+	local env = setmetatable({
+		love = love, 
+		require = function(...) 
+			local func = require.load(...) 
+			setfenv(func, getfenv(2)) 
+			return require(func) 
+		end
+	}, 
+	{
+		__newindex = env,
+		__index = _G,
+	})
 	
+	env._G = env
+
 	lovemu.conf={}
 	function love.conf(t) --partial
 		t.screen={}
@@ -91,9 +105,10 @@ function lovemu.boot(folder)
 
 	if vfs.Exists(R("lovers/"..lovemu.demoname.."/conf.lua"))==true then
 		print("LOADING CONF.LUA")
-		_G.love = love
-		include("lovers/"..folder.."/conf.lua")
-		_G.love = nil
+		
+		local func = vfs.loadfile("lovers/"..folder.."/conf.lua")
+		setfenv(func, env)
+		func()
 	end
 	
 	love.conf(lovemu.conf)
@@ -109,12 +124,6 @@ function lovemu.boot(folder)
 	love.window.setMode(w,h)
 	love.window.setTitle(title)
 	
-	local env = setmetatable({love = love}, {
-		__newindex = env,
-		__index = _G,
-	})
-	env._G = env
-		
 	local main = vfs.loadfile("lovers/"..folder.."/main.lua")
 	setfenv(main, env)
 	main()
