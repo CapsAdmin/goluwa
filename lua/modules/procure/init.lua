@@ -135,7 +135,7 @@ end
 
 local function require(name)
   if package.loaded[name] == nil then
-    local result = type(name) == "function" and name() or load(name)()
+    local result = load(name)()
 
     if result ~= nil then
       package.loaded[name] = result
@@ -146,6 +146,21 @@ local function require(name)
 
   return package.loaded[name]
 end
+
+local function require_function(name)
+  if package.loaded[name] == nil then
+    local result = name()
+
+    if result ~= nil then
+      package.loaded[name] = result
+    elseif package.loaded[name] == nil then
+      package.loaded[name] = true
+    end
+  end
+
+  return package.loaded[name]
+end
+
 
 local loadermeta = {}
 
@@ -179,5 +194,6 @@ end
 
 _M.findchunk = findchunk
 _M.load = load
+_M.require_function = require_function
 
 return _M

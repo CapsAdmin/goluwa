@@ -81,7 +81,7 @@ function lovemu.boot(folder)
 		require = function(...) 
 			local func = require.load(...) 
 			setfenv(func, getfenv(2)) 
-			return require(func) 
+			return require.require_function(func) 
 		end
 	}, 
 	{
