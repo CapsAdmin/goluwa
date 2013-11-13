@@ -34,7 +34,6 @@ local function add_gl_func(name, func)
 	-- or not
 	
 	gl[name] = function(...) 
-		print(name, ...)
 		local val = func(...)
 		
 		gl.call_count = gl.call_count + 1
