@@ -51,6 +51,10 @@ console.AddCommand("debug", function(line, lib)
 	if type(tbl) == "table" then
 		tbl.debug = not tbl.debug
 		
+		if tbl.EnableDebug then
+			tbl.EnableDebug(tbl.debug)
+		end
+		
 		if tbl.debug then
 			logn(lib, " debugging enabled")
 		else
