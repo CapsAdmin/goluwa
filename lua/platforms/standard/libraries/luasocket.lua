@@ -85,7 +85,6 @@ local logn = logn
 local table_print = PrintTable or table.print or logn
 local warning = ErrorNoHalt or logn
 local check = check or function() end
-local require = require
 local cares = pcall(require,"cares") or _G.cares
 
 function luasocket.Initialized()
