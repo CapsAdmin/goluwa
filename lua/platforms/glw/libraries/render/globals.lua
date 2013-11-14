@@ -7,6 +7,8 @@ end
 
 render.active_textures = render.active_textures or {}
 
+local loading_data = vfs.Read("textures/loading.jpg", "rb")
+
 function Image(path, format)
 	if render.active_textures[path] then 
 		return render.active_textures[path]
@@ -23,25 +25,50 @@ function Image(path, format)
 			end
 		end)
 	end
+		
+	local res = luasocket.WebResource(path)
 	
-	local img = vfs.Read(path, "rb")
-	
-	if not img then
-		return ERROR_TEXTURE
+	if res then	
+		format = format or {}
+		format.internal_format = format.internal_format or e.GL_RGBA8
+		
+		local w, h, buffer = freeimage.LoadImage(loading_data)
+		local tex = Texture(w, h, buffer, format)
+
+		res:Download(function(data)
+			local w, h, buffer = freeimage.LoadImage(data)
+			
+			if w == 0 or h == 0 then
+				errorf("could not decode %q properly (w = %i, h = %i)", 2, path, w, h)
+			end
+			
+			tex:Replace(buffer, w, h) 
+			
+			render.active_textures[path] = tex
+		end)
+		
+		return tex
+	else
+			
+		local img = vfs.Read(path, "rb")
+		
+		if not img then
+			return ERROR_TEXTURE
+		end
+
+		local w, h, buffer = freeimage.LoadImage(img)
+
+		if w == 0 or h == 0 then
+			errorf("could not decode %q properly (w = %i, h = %i)", 2, path, w, h)
+		end
+		
+		format = format or {}
+		format.internal_format = format.internal_format or e.GL_RGBA8
+		
+		local tex = Texture(w, h, buffer, format)
+		
+		render.active_textures[path] = tex
+		
+		return tex		
 	end
-	
-	local w, h, buffer = freeimage.LoadImage(img)
-	
-	if w == 0 or h == 0 then
-		errorf("could not decode %q properly (w = %i, h = %i)", 2, path, w, h)
-	end
-	
-	format = format or {}
-	format.internal_format = format.internal_format or e.GL_RGBA8
-	
-	local tex = Texture(w, h, buffer, format)
-	
-	render.active_textures[path] = tex
-	
-	return tex
 end
