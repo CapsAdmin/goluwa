@@ -6,7 +6,7 @@ do -- thanks etandel @ #lua!
 	function utilities.SetGCCallback(t, func)
 		func = func or t.Remove
 		
-		local ud = newproxy(true)
+		local ud = t.__gc or newproxy(true)
 		
 		debug.getmetatable(ud).__gc = function() 
 			if not t.IsValid or t:IsValid() then
