@@ -139,7 +139,7 @@ do -- helpers/usage
 		return str
 	end
 
-	local function request(url, callback, method, timeout, post_data, user_agent)		
+	local function request(url, callback, method, timeout, post_data, user_agent, binary)		
 		url = url:gsub("http://", "")
 		callback = callback or table_print
 		method = method or "GET"
@@ -151,7 +151,7 @@ do -- helpers/usage
 			host = url:gsub("/", "")
 			location = ""
 		end
-
+		
 		local socket = luasocket.Client("tcp")
 		socket:SetTimeout(timeout or 0.5)
 		socket:Connect(host, 80)
@@ -159,39 +159,54 @@ do -- helpers/usage
 		socket:Send(("%s /%s HTTP/1.1\r\n"):format(method, location))
 		socket:Send(("Host: %s\r\n"):format(host))
 		socket:Send(("User-Agent: %s\r\n"):format(user_agent))
+		socket:Send("Connection: Keep-Alive\r\n")
+					
+		if binary then
+			socket:SetReceiveMode("all")
+		end		
+		
 		if method == "POST" then
 			socket:Send(("Content-Length: %i"):format(#post_data))
 			socket:Send(post_data)
 		end
+
 		socket:Send("\r\n")
 
-		local content = {}
+		local chunks = {}
 		
 		function socket:OnReceive(str)
-			table.insert(content, str)
+			table.insert(chunks, str)
 		end
 		
 		function socket:OnClose()
-			local str = table.concat(content, "")
+			local str = table.concat(chunks, "")
+			local content
+			local header
+				
+			header, content = str:match("(.-\10\13)(.+)")
+			header = luasocket.HeaderToTable(header)
 			
-			local header, content = str:match("(.-\10\13)(.+)")
-
-			local ok, err = xpcall(callback, mmyy.OnError, {content = content, header = luasocket.HeaderToTable(header)})
+			if header["Content-Length"] then
+				content = str:sub(-header["Content-Length"])
+			end
+			
+			local ok, err = xpcall(callback, mmyy.OnError, {content = content, header = header})
+				
 			if err then
 				warning(err)
 			end
 		end
 	end
 	
-	function luasocket.Get(url, callback, timeout, user_agent)
+	function luasocket.Get(url, callback, timeout, user_agent, binary)
 		check(url, "string")
 		check(callback, "function", "nil", "false")
 		check(user_agent, "nil", "string")
 		
-		return request(url, callback, "GET", timeout, user_agent)
+		return request(url, callback, "GET", timeout, nil, user_agent, binary)
 	end
 	
-	function luasocket.Post(url, post_data, callback, timeout, user_agent)
+	function luasocket.Post(url, post_data, callback, timeout, user_agent, binary)
 		check(url, "string")
 		check(callback, "function", "nil", "false")
 		check(post_data, "table", "string")
@@ -201,7 +216,19 @@ do -- helpers/usage
 			post_data = luasocket.TableToHeader(post_data)
 		end
 		
-		return request(url, callback, "POST", timeout, post_data, user_agent)
+		return request(url, callback, "POST", timeout, post_data, user_agent, binary)
+	end
+	
+	function luasocket.WebResource(url, callback)
+		if url:sub(0, 4) == "http" then
+			if callback then
+				luasocket.Get(url, function(data) callback(data.content) end, nil, nil, true)
+			else
+				return {Download = function(_, callback) luasocket.Get(url, function(data) callback(data.content) end, nil, nil, true) end}
+			end
+		end
+		
+		return false
 	end
 
 	local sck = luasocket.socket.udp()
@@ -506,7 +533,7 @@ do -- tcp socket meta
 					if data:find("\n") then
 						self:DebugPrintf("received (mode %s) %i bytes of data", mode, #data)
 					else
-						self:DebugPrintf("received (mode %s) %q", mode, data)
+						self:DebugPrintf("received (mode %s) %i bytes of data (%q)", mode, #data, data)
 					end
 
 					self:OnReceive(data)
