@@ -201,6 +201,20 @@ do -- texture object
 		
 		return self
 	end
+	
+	local SUPPRESS_GC = false
+	
+	function META:Replace(data, w, h)
+		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
+		
+		SUPPRESS_GC = true
+		local new = render.CreateTexture(w, h,  data, self.format)
+		SUPPRESS_GC = false
+		
+		for k, v in pairs(new) do
+			self[k] = v
+		end
+	end
 		
 	function META:IsValid()
 		return true
@@ -230,7 +244,7 @@ do -- texture object
 		format.filter = format.filter ~= nil
 		format.stride = format.stride or 4
 		format.buffer_type = format.buffer_type or "unsigned char"
-		format.mip_map_levels = format.mip_map_levels or 4
+		format.mip_map_levels = format.mip_map_levels or 1
 		format.border_size = format.border_size or 4
 		
 		format.wrap_t = format.wrap_t or e.GL_CLAMP_TO_BORDER
@@ -272,7 +286,9 @@ do -- texture object
 		
 		gl.BindTexture(format.type, 0)
 		
-		utilities.SetGCCallback(self)
+		if not SUPPRESS_GC then
+			utilities.SetGCCallback(self)
+		end
 		
 		return self
 	end
