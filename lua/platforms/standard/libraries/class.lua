@@ -13,6 +13,16 @@ local function checkfield(tbl, key, def)
     return tbl[key]
 end
 
+local __store = false
+
+function class.StartStorableVars()
+	__store = true
+end
+
+function class.EndStorableVars()
+	__store = false
+end
+
 function class.GetSet(tbl, name, def)
 
     if type(def) == "number" then
@@ -27,6 +37,12 @@ function class.GetSet(tbl, name, def)
 	end
 		
     tbl[name] = def
+	
+
+	if __store then
+		tbl.StorableVars = tbl.StorableVars or {}
+		table.insert(tbl.StorableVars, key)
+	end
 end
 
 function class.IsSet(tbl, name, def)
@@ -38,6 +54,12 @@ function class.IsSet(tbl, name, def)
     tbl["Is" .. name] = tbl["Is" .. name] or function(self, var) return self[name] end
 
     tbl[name] = def
+	
+	
+	if __store then
+		tbl.StorableVars = tbl.StorableVars or {}
+		table.insert(tbl.StorableVars, key)
+	end
 end
 
 function class.RemoveField(tbl, name)
