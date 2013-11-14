@@ -34,6 +34,9 @@ function mmyy.OnError(msg, ...)
 						val = tostring(val)
 					else
 						val = luadata.ToString(val)
+						if val and #val > 200 then
+							val = val:sub(0, 200) .. "...."
+						end
 					end
 					table.insert(args, ("%s = %s"):format(key, val))
 				end
