@@ -81,7 +81,7 @@ if _G.luasocket and _G.luasocket.Panic then
 end
 
 -- external functions
-local logn = logn
+local logn = logn or MsgN or print
 local table_print = PrintTable or table.print or logn
 local warning = ErrorNoHalt or logn
 local check = check or function() end
