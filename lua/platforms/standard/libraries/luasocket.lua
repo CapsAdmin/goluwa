@@ -81,6 +81,7 @@ if _G.luasocket and _G.luasocket.Panic then
 end
 
 -- external functions
+local on_error = mmyy and mmyy.OnError or error
 local logn = logn or MsgN or print
 local table_print = PrintTable or table.print or logn
 local warning = ErrorNoHalt or logn
@@ -190,7 +191,7 @@ do -- helpers/usage
 				content = str:sub(-header["Content-Length"])
 			end
 			
-			local ok, err = xpcall(callback, mmyy.OnError, {content = content, header = header})
+			local ok, err = xpcall(callback, on_error, {content = content, header = header})
 				
 			if err then
 				warning(err)
@@ -306,7 +307,7 @@ do -- tcp socket meta
 	function luasocket.Update()
 		for key, sock in pairs(sockets) do
 			if sock:IsValid() then
-				local ok, err = xpcall(sock.Think, mmyy.OnError, sock)
+				local ok, err = xpcall(sock.Think, on_error, sock)
 				if not ok then
 					warning(err)
 					sock:Remove()
