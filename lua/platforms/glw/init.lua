@@ -53,6 +53,8 @@ include("libraries/window.lua")
 
 include("extensions/input.lua")
 
+include("libraries/gif.lua")
+
 
 entities.LoadAllEntities()
 addons.AutorunAll()
