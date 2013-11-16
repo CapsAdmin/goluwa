@@ -408,7 +408,7 @@ do -- tcp socket meta
 				
 				cares.Resolve(ip, function(_, errored, newip)
 					if not errored then
-						self:DebugPrintf("cares resolved domain from %s:%s", ip, newip)
+						self:DebugPrintf("cares resolved domain from %q to %q", ip, newip)
 						self:Connect(newip, port, true)
 					else	
 						self:DebugPrintf("cares errored resolving domain %s with code %s", ip, errored)
