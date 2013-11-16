@@ -86,7 +86,7 @@ local logn = logn or MsgN or print
 local table_print = PrintTable or table.print or logn
 local warning = ErrorNoHalt or logn
 local check = check or function() end
-local cares = pcall(require,"cares") or _G.cares
+local cares = select(2, pcall(require,"cares")) or _G.cares
 
 function luasocket.Initialized()
 	if gmod then
