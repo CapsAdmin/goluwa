@@ -564,6 +564,7 @@ include(meta .. "null.lua")
 
 -- luasocket
 luasocket = include(libraries .. "luasocket.lua") 
+intermsg = include(libraries .. "intermsg.lua") 
 timer.Create("socket_think", 0.1, 0, luasocket.Update)
 event.AddListener("LuaClose", "luasocket", luasocket.Panic)
 
