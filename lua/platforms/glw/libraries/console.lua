@@ -137,9 +137,15 @@ function console.InitializeCurses()
 		end
 
 		local max_length = 256
+		local suppress = false
 		
 		function io.write(...)
+			if suppress then return end
 			local str = table.concat({...}, "")
+			
+			suppress = true
+			event.Call("OnConsolePrint", str)
+			suppress = false
 			
 			if WINDOWS and #str > max_length then
 				for k,v in pairs(split_by_length(str, max_length)) do
