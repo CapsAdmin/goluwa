@@ -220,7 +220,7 @@ do -- helpers/usage
 		return request(url, callback, "POST", timeout, post_data, user_agent, binary)
 	end
 	
-	function luasocket.WebResource(url, callback)
+	function luasocket.Download(url, callback)
 		if url:sub(0, 4) == "http" then
 			if callback then
 				luasocket.Get(url, function(data) callback(data.content) end, nil, nil, true)

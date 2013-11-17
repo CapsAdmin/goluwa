@@ -26,7 +26,7 @@ function Image(path, format)
 		end)
 	end
 		
-	local res = luasocket.WebResource(path)
+	local res = luasocket.Download(path)
 	
 	if res then	
 		format = format or {}
