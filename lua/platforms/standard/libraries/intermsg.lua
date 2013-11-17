@@ -3,18 +3,18 @@ local intermsg = _G.intermsg or {}
 local event_call = hook and hook.Run or event.Call
 
 intermsg.client_sockets = intermsg.client_sockets or {udp = {}, tcp = {}}
-intermsg.server_socket = intermsg.server_socket or {udp = NULL, tcp = NULL}
+intermsg.server_sockets = intermsg.server_sockets or {udp = {}, tcp = {}}
 
 function intermsg.Panic()
-	if intermsg.server_socket.udp:IsValid() then
-		intermsg.server_socket.udp:Remove()
-	end
-
-	if intermsg.server_socket.tcp:IsValid() then
-		intermsg.server_socket.tcp:Remove()
-	end
-
 	for typ, sockets in pairs(intermsg.client_sockets) do
+		for ip_part, sck in pairs(sockets) do
+			if sck:IsValid() then
+				sck:Remove()
+			end
+		end
+	end
+	
+	for typ, sockets in pairs(intermsg.server_sockets) do
 		for ip_part, sck in pairs(sockets) do
 			if sck:IsValid() then
 				sck:Remove()
@@ -23,7 +23,7 @@ function intermsg.Panic()
 	end
 
 	intermsg.client_sockets = {udp = {}, tcp = {}}
-	intermsg.server_socket = {udp = NULL, tcp = NULL}
+	intermsg.server_sockets = {udp = {}, tcp = {}}
 end
 
 function intermsg.Send(ip, port, str, typ)
@@ -38,15 +38,24 @@ function intermsg.Send(ip, port, str, typ)
 		sck:Connect(ip, port, true)
 	end
 
-	sck:Send(str .. "\n")
+	sck:Send(str)
 
 	intermsg.client_sockets[typ][ip..port] = sck
 end
 
-function intermsg.Host(ip, port, typ)
+function intermsg.CloseClient(ip, port, typ)
+	typ = typ and "udp" or "tcp"
+	local sck = intermsg.client_sockets[typ][ip..port] or NULL
+	
+	if sck:IsValid() then
+		sck:Remove()
+	end
+end
+
+function intermsg.StartServer(ip, port, callback, typ)
 	typ = typ and "udp" or "tcp"
 
-	local sck = intermsg.server_socket[typ] or NULL
+	local sck = intermsg.server_sockets[typ][ip..port] or NULL
 
 	if sck:IsValid() then sck:Remove() end
 
@@ -54,10 +63,10 @@ function intermsg.Host(ip, port, typ)
 	sck:Host(ip, port)
 
 	function sck:OnClientConnected(client, ip, port)
-		local b = event_call("IntermsgAcceptClient", ip, port, client)
+		local b = callback("connect", ip, port, client, self)
 		
 		if client.SetReceiveMode then
-			client:SetReceiveMode("line")
+			client:SetReceiveMode("all")
 		end
 		
 		if b ~= nil then
@@ -68,14 +77,24 @@ function intermsg.Host(ip, port, typ)
 	end
 
 	function sck:OnReceive(str, client)
-		local b = event_call("IntermsgReceiveMessage", client:GetIP(), client:GetPort(), str, client)
+		local b = callback("message", client:GetIP(), client:GetPort(), str, client, self)
 
 		if b ~= nil then
 			return b
 		end
 	end
 
-	intermsg.server_socket[typ] = sck
+	intermsg.server_sockets[typ][ip..port] = sck
+end
+
+function intermsg.StopServer(ip, port, typ)
+	typ = typ and "udp" or "tcp"
+
+	local sck = intermsg.server_sockets[typ][ip..port] or NULL
+	
+	if sck:IsValid() then
+		sck:Remove()
+	end
 end
 
 intermsg.Panic()
