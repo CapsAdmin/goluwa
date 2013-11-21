@@ -1,5 +1,30 @@
 local rate_cvar = console.CreateVariable("max_fps", 120)
 
+local fps_cvar = console.CreateVariable("show_fps", false)
+local smooth_fps = 0
+
+local function calc_fps(fps)	
+	if fps < 0.0083 then
+		smooth_fps = smooth_fps + ((fps - smooth_fps) * dt)
+	
+		system.SetWindowTitle(("FPS: %i"):format(1/smooth_fps), 1)
+	else
+		system.SetWindowTitle(("FPS: %i"):format(1/fps), 1)
+	end
+	
+	if 1/smooth_fps < 30 then
+		system.SetWindowTitle(("MS: %f"):format(smooth_fps*100), 3)
+	else
+		system.SetWindowTitle(nil, 3)
+	end
+	
+
+	if gl.call_count then
+		system.SetWindowTitle(("gl calls: %i"):format(gl.call_count), 2)
+		gl.call_count = 0
+	end
+end
+
 -- main loop
 
 local function main()
@@ -7,7 +32,6 @@ local function main()
 			
 	local next_update = 0
 	local last_time = 0
-	local smooth_fps = 0
 	
 	local function update(dt)
 		luasocket.Update(dt)
@@ -34,28 +58,10 @@ local function main()
 		
 			last_time = time
 			
-			local fps = dt
-			
-			if fps < 0.0083 then
-				smooth_fps = smooth_fps + ((fps - smooth_fps) * dt)
-			
-				system.SetWindowTitle(("FPS: %i"):format(1/smooth_fps), 1)
-			else
-				system.SetWindowTitle(("FPS: %i"):format(1/fps), 1)
+			if fps_cvar:Get() then
+				calc_fps(dt)
 			end
 			
-			if 1/smooth_fps < 30 then
-				system.SetWindowTitle(("MS: %f"):format(smooth_fps*100), 3)
-			else
-				system.SetWindowTitle(nil, 3)
-			end
-			
-
-			if gl.call_count then
-				system.SetWindowTitle(("gl calls: %i"):format(gl.call_count), 2)
-				gl.call_count = 0
-			end
-		
 			next_update = time + (1/rate)
 		end
 	end
