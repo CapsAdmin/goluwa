@@ -1,2 +1,5 @@
 /bin/windows/x64/__temp
 /userdata/
+/bin/bullet_src/project_files
+/bin/bullet_src/obj
+/bin/windows/x86/bullet.*
