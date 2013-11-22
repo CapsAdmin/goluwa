@@ -1,39 +1,8 @@
 local timer = _G.timer or {} 
 
-timer.CurrentTimers = timer.CurrentTimers or {}
-timer.SimpleTimers = timer.SimpleTimers or {}
-timer.Thinkers = timer.Thinkers or {}
+timer.Timers = timer.Timers or {}
+
 timer.clock = timer.clock or os.clock
-
-function timer.Delay(time, callback, obj)
-	check(time, "number", "function")
-	check(callback, "function", "nil")
-
-	if not callback then
-		callback = time
-		time = 0
-	end
-	
-	if hasindex(obj) and obj.IsValid then
-		local old = callback
-		callback = function(...)
-			if obj:IsValid() then
-				return old(...)
-			end
-		end
-	end
-
-	local realtime = timer.clock() + time
-
-	timer.SimpleTimers[tostring(callback) .. tostring(time)] = {
-		callback = callback,
-		realtime = realtime,
-	}
-end
-
-function timer.Thinker(callback, speed)
-	table.insert(timer.Thinkers, {callback = callback, speed = speed})
-end
 
 do -- timer meta
 	local META = {}
@@ -73,10 +42,35 @@ do -- timer meta
 		self.realtime = timer.clock() + num
 	end
 	function META:Remove()
-		timer.CurrentTimers[self.id] = nil
+		self.__remove_me = true
 	end
 	
 	timer.TimerMeta = META
+end
+
+function timer.Thinker(callback, speed)
+	table.insert(timer.Timers, {type == "thinker", callback = callback, speed = speed})
+end
+
+function timer.Delay(time, callback, obj)
+	check(time, "number", "function")
+	check(callback, "function", "nil")
+
+	if not callback then
+		callback = time
+		time = 0
+	end
+	
+	if hasindex(obj) and obj.IsValid then
+		local old = callback
+		callback = function(...)
+			if obj:IsValid() then
+				return old(...)
+			end
+		end
+	end
+
+	table.insert(timer.Timers, {type = "delay", callback = callback, realtime = timer.clock() + time})
 end
 
 function timer.Create(id, time, repeats, callback, run_now)
@@ -88,78 +82,99 @@ function timer.Create(id, time, repeats, callback, run_now)
 	time = math.abs(time)
 	repeats = math.max(repeats, 0)
 
-	local realtime = timer.clock() + time
-	local obj = timer.CurrentTimers[id] or {}
-		
-		obj.realtime = realtime
-		obj.id = id
-		obj.time = time
-		obj.repeats = repeats
-		obj.callback = callback
-		obj.times_ran = 1
-		obj.paused = false
-		
-		setmetatable(obj, timer.TimerMeta)
+	local data
 	
-	timer.CurrentTimers[id] = obj
+	for k,v in ipairs(timer.Timers) do
+		if v.id == id then
+			data = v
+			break
+		end
+	end
+	
+	if not data then
+		data = {}
+		table.insert(timer.Timers, data)
+	end
+	
+	data.type = "timer"
+	data.realtime = timer.clock() + time
+	data.id = id
+	data.time = time
+	data.repeats = repeats
+	data.callback = callback
+	data.times_ran = 1
+	data.paused = false
+	
+	setmetatable(data, timer.TimerMeta)	
 	
 	if run_now then
 		callback(repeats-1)
-		obj.repeats = obj.repeats - 1
+		data.repeats = data.repeats - 1
 	end
 	
-	return obj
+	return data
 end
 
 function timer.Update()
 	local cur = timer.clock()
-
-	for id, data in pairs(timer.SimpleTimers) do
-		if data.realtime < cur then
-			xpcall(data.callback, mmyy.OnError)
-			timer.SimpleTimers[id] = nil
-		end
-	end	
-	
-	for id, obj in pairs(timer.CurrentTimers) do
-		if not obj.paused and obj.realtime < cur then
-			local ran, msg = obj:Call(obj.times_ran - 1)
 			
-			if ran then
-				if msg == "stop" then
-					obj:Remove()
+	for key, data in ipairs(timer.Timers) do
+		if not data.__remove_me then			
+			if data.type == "thinker" then
+				if data.speed then
+					for i=0, data.speed do
+						if data.callback() ~= nil then
+							data.__remove_me = true
+							break
+						end	
+					end
+				else
+					if data.callback() ~= nil then
+						data.__remove_me = true
+					end
 				end
-				if msg == "restart" then
-					obj:SetRepeats(1)
+			elseif data.type == "delay" then
+				if data.realtime < cur then
+					xpcall(data.callback, mmyy.OnError)
+					data.__remove_me = true
+					break
 				end
-				if type(msg) == "number" then
-					obj:SetNextThink(msg)
-				end
-			else
-				logn(id, msg)
-			end
+			elseif data.type == "timer" then
+				if not data.paused and data.realtime < cur then
+					local ran, msg = data:Call(data.times_ran - 1)
+					
+					if ran then
+						if msg == "stop" then
+							data.__remove_me = true
+						end
+						if msg == "restart" then
+							data.times_ran = 1
+						end
+						if type(msg) == "number" then
+							data.realtime = cur + msg
+						end
+					else
+						logn(data.id, msg)
+					end
 
-			if obj.times_ran == obj.repeats then
-				obj:Remove()
-			else
-				obj.times_ran = obj.times_ran + 1
-				obj.realtime = cur + obj.time
+					if data.times_ran == data.repeats then
+						data.__remove_me = true
+					else
+						data.times_ran = data.times_ran + 1
+						data.realtime = cur + data.time
+					end
+				end
 			end
 		end
 	end
 	
-	for key, data in ipairs(timer.Thinkers) do	
-		if data.speed then
-			for i=0, data.speed do
-				if data.callback() ~= nil then
-					table.remove(timer.Thinkers, key)
-					break
-				end	
+	for key, data in ipairs(timer.Timers) do	
+		if data.__remove_me then
+			if data.type == "timer" then
+				utilities.MakeNULL(data)
 			end
-		else
-			if data.callback() ~= nil then
-				table.remove(timer.Thinkers, key)
-			end
+			table.remove(timer.Timers, key)
+			break
 		end
 	end
 end
