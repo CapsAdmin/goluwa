@@ -2,9 +2,41 @@ local addons = {}
 
 addons.Root = "addons/"
 addons.Info = {}
+addons.DisabledAddons = {}
 
 function addons.SortAfterPriority()
 	table.sort(addons.Info, function(a,b) return a.priority > b.priority end)
+end
+
+local function autorun_addon(folder, info)
+	if info.load ~= false then			
+		_G.INFO = info
+			
+			if info.startup then
+				if not info.startup_launched then
+					-- we want to make sure the addon loads the correct startup file (or do we???)
+					-- update:
+					-- if we use include in the startup file, it won't work.. we need to
+					-- include it instead so it pushes the path to the include stack
+					include(e.BASE_FOLDER .. info.path .. "lua/" .. info.startup)
+											
+					info.startup_launched = true
+				end
+			end
+			
+			-- autorun folders			
+			for path in vfs.Iterate(info.path .. "lua/autorun/" .. folder, nil, true) do
+				if path:find("%.lua") then
+					local ok, err = xpcall(include, mmyy.OnError, path)
+					if not ok then
+						logn(err)
+					end
+				end
+			end
+		_G.INFO = nil	
+	else
+		--logf("the addon %q does not want to be loaded", addon)
+	end
 end
 
 function addons.AutorunAll(folder)	
@@ -16,34 +48,7 @@ function addons.AutorunAll(folder)
 	end
 		
 	for _, info in ipairs(addons.Info) do
-		if info.load ~= false then			
-			_G.INFO = info
-				
-				if info.startup then
-					if not info.startup_launched then
-						-- we want to make sure the addon loads the correct startup file (or do we???)
-						-- update:
-						-- if we use include in the startup file, it won't work.. we need to
-						-- include it instead so it pushes the path to the include stack
-						include(e.BASE_FOLDER .. info.path .. "lua/" .. info.startup)
-												
-						info.startup_launched = true
-					end
-				end
-				
-				-- autorun folders			
-				for path in vfs.Iterate(info.path .. "lua/autorun/" .. folder, nil, true) do
-					if path:find("%.lua") then
-						local ok, err = xpcall(include, mmyy.OnError, path)
-						if not ok then
-							logn(err)
-						end
-					end
-				end
-			_G.INFO = nil	
-		else
-			--logf("the addon %q does not want to be loaded", addon)
-		end
+		autorun_addon(folder,  info)
 	end
 end
 
@@ -96,10 +101,28 @@ function addons.LoadAll()
 		if info.load ~= false then
 			vfs.Mount(e.BASE_FOLDER .. info.path)
 		else
-			--logf("the addon %q does not want to be loaded", addon)
+			table.insert(addons.DisabledAddons, info)
 		end
 	end
 
+end
+
+function addons.Reload()
+	for key, info in pairs(addons.DisabledAddons) do
+		
+		-- try to load the config again
+		local func, msg = loadfile(e.BASE_FOLDER .. info.path .. "info.lua")
+		
+		if func then
+			table.merge(info, func())
+		end
+		
+		if info.load ~= false then
+			vfs.Mount(e.BASE_FOLDER .. info.path)
+			addons.DisabledAddons[key] = nil
+			autorun_addon("", info)
+		end
+	end
 end
 
 return addons
