@@ -305,20 +305,24 @@ do -- tcp socket meta
 	end
 
 	function luasocket.Update()
-		for key, sock in pairs(sockets) do
+		for key, sock in ipairs(sockets) do
 			if sock:IsValid() then
 				local ok, err = xpcall(sock.Think, on_error, sock)
 				if not ok then
 					warning(err)
 					sock:Remove()
 				end
+				
+				if sock.remove_me then
+					sock.socket:close()
+					setmetatable(sock, NULL)
+				end
 			else
-				sockets[key] = nil
-			end
-
-			if sock.remove_me then
-				sock.socket:close()
-				setmetatable(sock, NULL)
+				-- this will of course skip updating all 
+				-- the other sockets until next frame
+				-- but i think it's fine
+				table.remove(sockets, key)
+				break
 			end
 		end
 	end
