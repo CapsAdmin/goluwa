@@ -54,7 +54,7 @@ local data_prefix_pattern = data_prefix:gsub("(%p)", "%%%1")
 local silence
 
 local function warning(...)
-	if silence then return end
+	if silence or not logf then return end
 	logf("[vfs error] %s", ...)
 end
 
