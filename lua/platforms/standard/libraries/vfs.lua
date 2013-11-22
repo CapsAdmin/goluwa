@@ -19,6 +19,8 @@ if vfs.use_appdata then
 	end 
 end
 
+vfs.delimiter = WINDOWS and "\\" or "/"
+
 vfs.paths = {}
 
 local function getenv(key)
@@ -92,6 +94,10 @@ function vfs.Mount(path)
 	end
 		
 	vfs.Unmount(path)
+
+	if lfs.attributes(path, "mode") ~= "directory" then
+		warning(string.format("Mount path %q does not exist (yet?)", path))
+	end
 		
 	table.insert(vfs.paths, path)
 	
