@@ -82,19 +82,7 @@ function timer.Create(id, time, repeats, callback, run_now)
 	time = math.abs(time)
 	repeats = math.max(repeats, 0)
 
-	local data
-	
-	for k,v in ipairs(timer.Timers) do
-		if v.id == id then
-			data = v
-			break
-		end
-	end
-	
-	if not data then
-		data = {}
-		table.insert(timer.Timers, data)
-	end
+	local data = timer.Timers[id] or {}
 	
 	data.type = "timer"
 	data.realtime = timer.clock() + time
@@ -104,6 +92,8 @@ function timer.Create(id, time, repeats, callback, run_now)
 	data.callback = callback
 	data.times_ran = 1
 	data.paused = false
+	
+	timer.Timers[id] = data
 	
 	setmetatable(data, timer.TimerMeta)	
 	
@@ -118,63 +108,50 @@ end
 function timer.Update()
 	local cur = timer.clock()
 			
-	for key, data in ipairs(timer.Timers) do
-		if not data.__remove_me then			
-			if data.type == "thinker" then
-				if data.speed then
-					for i=0, data.speed do
-						if data.callback() ~= nil then
-							data.__remove_me = true
-							break
-						end	
+	for key, data in pairs(timer.Timers) do
+		if data.type == "thinker" then
+			if data.speed then
+				for i=0, data.speed do
+					if data.callback() ~= nil then
+						timer.Timers[key] = nil
+					end	
+				end
+			else
+				if data.callback() ~= nil then
+					timer.Timers[key] = nil
+				end
+			end
+		elseif data.type == "delay" then
+			if data.realtime < cur then
+				xpcall(data.callback, mmyy.OnError)
+				timer.Timers[key] = nil
+				break
+			end
+		elseif data.type == "timer" then
+			if not data.paused and data.realtime < cur then
+				local ran, msg = data:Call(data.times_ran - 1)
+				
+				if ran then
+					if msg == "stop" then
+						data.__remove_me = true
+					end
+					if msg == "restart" then
+						data.times_ran = 1
+					end
+					if type(msg) == "number" then
+						data.realtime = cur + msg
 					end
 				else
-					if data.callback() ~= nil then
-						data.__remove_me = true
-					end
+					logn(data.id, msg)
 				end
-			elseif data.type == "delay" then
-				if data.realtime < cur then
-					xpcall(data.callback, mmyy.OnError)
-					data.__remove_me = true
-					break
-				end
-			elseif data.type == "timer" then
-				if not data.paused and data.realtime < cur then
-					local ran, msg = data:Call(data.times_ran - 1)
-					
-					if ran then
-						if msg == "stop" then
-							data.__remove_me = true
-						end
-						if msg == "restart" then
-							data.times_ran = 1
-						end
-						if type(msg) == "number" then
-							data.realtime = cur + msg
-						end
-					else
-						logn(data.id, msg)
-					end
 
-					if data.times_ran == data.repeats then
-						data.__remove_me = true
-					else
-						data.times_ran = data.times_ran + 1
-						data.realtime = cur + data.time
-					end
+				if data.times_ran == data.repeats then
+					timer.Timers[key] = nil
+				else
+					data.times_ran = data.times_ran + 1
+					data.realtime = cur + data.time
 				end
 			end
-		end
-	end
-	
-	for key, data in ipairs(timer.Timers) do	
-		if data.__remove_me then
-			if data.type == "timer" then
-				utilities.MakeNULL(data)
-			end
-			table.remove(timer.Timers, key)
-			break
 		end
 	end
 end

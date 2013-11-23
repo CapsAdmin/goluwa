@@ -34,7 +34,6 @@ local function main()
 	local last_time = 0
 	
 	local function update(dt)
-		luasocket.Update(dt)
 		timer.Update(dt)
 		
 		event.Call("OnUpdate", dt)
