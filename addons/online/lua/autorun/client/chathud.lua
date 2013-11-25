@@ -769,7 +769,7 @@ end
 
 local function add_extra(markup, find, add)
 	for i, data in pairs(markup) do
-		if data.type == "string" and data.val:find(find, nil, true) then
+		if data.type == "string" and data.val and data.val:find(find, nil, true) then
 			
 			table.insert(markup, 1, add)
 			return
@@ -870,7 +870,7 @@ local function parse_addtext(args)
 	for i, data in pairs(concatenated) do
 		if data.type == "font" then
 			SafeSetFont(data.val)
-		elseif data.type == "string" then
+		elseif data.type == "string" and data.val then
 			-- this really should be done in the previous loop..
 			for _, str in pairs(split_text(data.val, max_width)) do
 				local w, h = surface.GetTextSize(str)
