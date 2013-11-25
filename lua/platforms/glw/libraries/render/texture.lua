@@ -247,11 +247,11 @@ do -- texture object
 		format.mip_map_levels = format.mip_map_levels or 1
 		format.border_size = format.border_size or 4
 		
-		format.wrap_t = format.wrap_t or e.GL_CLAMP_TO_BORDER
-		format.wrap_s = format.wrap_s or e.GL_CLAMP_TO_BORDER
+		format.wrap_t = format.wrap_t or e.GL_REPEAT
+		format.wrap_s = format.wrap_s or e.GL_REPEAT
 		
 		if format.type == e.GL_TEXTURE_3D then
-			format.wrap_r = format.wrap_r or e.GL_CLAMP_TO_BORDER
+			format.wrap_r = format.wrap_r or e.GL_REPEAT
 		end
 
 		-- create a new texture
