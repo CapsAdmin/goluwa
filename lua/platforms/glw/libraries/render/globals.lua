@@ -65,7 +65,7 @@ function Image(path, format)
 		format = format or {}
 		format.internal_format = format.internal_format or e.GL_RGBA8
 		
-		local tex = Texture(w, h, buffer, format)
+		local tex = Texture(w, h, buffer, {mip_map_levels = 4, mag_filter = e.GL_LINEAR_MIPMAP_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,})
 		
 		render.active_textures[path] = tex
 		
