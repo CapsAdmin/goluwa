@@ -134,7 +134,7 @@ end
 
 local cache = {}
 
-local format = {mip_map_levels = 4}
+local format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR_MIPMAP_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,}
 
 function Model(path)
 	check(path, "string")
@@ -182,7 +182,7 @@ function Model(path)
 		end
 		
 		if not sub_model.specular then
-			sub_model.specular = Texture(8,8):Fill(function() return 0, 0, 0, 255 end)
+			sub_model.specular = Texture(8,8):Fill(function() return 255, 255, 255, 255 end)
 		end	
 		
 		sub_model.diffuse:SetChannel(1)

@@ -51,12 +51,12 @@ local SHADER = {
 				vec3 eye_dir = normalize(cam_pos - position.xyz);
 				vec3 lolhalf = normalize(light_dir + eye_dir);
 				
-				out_color.rgb = ambient + (light_color * max(dot(normal,light_dir),0.0)) * diffuse.rgb;
+				out_color.rgb = (ambient + (light_color * max(dot(normal,light_dir),0.0))) * diffuse.rgb;
 				
 				float fog_intensity = pow(depth.a, 25000);
 				//fog_intensity = -fog_intensity + 1;
 				
-				vec3 fog_color = vec3(0.5, 0.75, 1) * fog_intensity;
+				vec3 fog_color = vec3(0.6, 0.9, 1) * fog_intensity;
 				
 				fog_color = min(fog_color, 1);
 				
