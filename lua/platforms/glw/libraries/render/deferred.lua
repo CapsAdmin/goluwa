@@ -16,7 +16,6 @@ local SHADER = {
 			tex_normal = "sampler2D",
 			tex_position = "sampler2D", 
 			tex_specular = "sampler2D",
-			tex_light = "sampler2D",
 			tex_depth = "sampler2D",
 			cam_pos = "vec3",
 		},  
@@ -28,29 +27,33 @@ local SHADER = {
 
 			void main ()
 			{
+				const vec3 ambient = vec3(0.00226295);
+				
 				vec4 diffuse = texture2D(tex_diffuse, uv);
-				vec4 normal = texture2D(tex_normal, uv);
+				vec3 normal = texture2D(tex_normal, uv).rgb;
+				if(normal.rgb==vec3(0,0,0)) {
+					normal=vec3(0.4941,0.4980,0.9960);
+				}
 				vec4 position = texture2D(tex_position, uv);
 				vec4 specular = texture2D(tex_specular, uv);
-				vec4 light = texture2D(tex_light, uv);
+				if(specular.rgb==vec3(0,0,0) || specular.a==0) {
+					specular=vec4(0.15,0.15,0.15,0.5);
+				}
+				vec3 light = vec3(1,1,1);
 				vec4 depth = texture2D(tex_depth, uv);
 	
-				vec3 light_color = light.xyz + vec3(1,1,1);
+				vec3 light_color = vec3(1,1,1);
 				vec3 light_pos = vec3(100,50,100);//light.w * position.xyz;
 				vec3 light_dir = normalize(light_pos - position.xyz);
 				
-				normal = normalize(normal);
+				normal = normalize(normal*2 -1);
 				
 				vec3 eye_dir = normalize(cam_pos - position.xyz);
 				vec3 lolhalf = normalize(light_dir + eye_dir);
 				
-				out_color.rgb = 
-				(light_color * max(dot(normal.xyz, light_dir), 0)) * 
-				diffuse.rgb + 
-				pow(max(dot(normal.xyz, lolhalf), 0.0), 9) *
-				specular.r*20;
+				out_color.rgb = ambient + (light_color * max(dot(normal,light_dir),0.0)) * diffuse.rgb;
 				
-				float fog_intensity = pow(depth.a, 40000);
+				float fog_intensity = pow(depth.a, 25000);
 				//fog_intensity = -fog_intensity + 1;
 				
 				vec3 fog_color = vec3(0.5, 0.75, 1) * fog_intensity;
@@ -99,14 +102,6 @@ function render.InitializeDeffered()
 			}
 		},
 		{
-			name = "light",
-			attach = e.GL_COLOR_ATTACHMENT4,
-			draw_manual = true,
-			texture_format = {
-				internal_format = e.GL_RGBA32F,
-			}
-		},
-		{
 			name = "depth",
 			attach = e.GL_DEPTH_ATTACHMENT,
 			draw_manual = true,
@@ -132,7 +127,6 @@ function render.InitializeDeffered()
 	shader.tex_position = render.gbuffer:GetTexture("position") 
 	shader.tex_normal = render.gbuffer:GetTexture("normal")
 	shader.tex_specular = render.gbuffer:GetTexture("specular")
-	shader.tex_light = render.gbuffer:GetTexture("light")
 	shader.tex_depth = render.gbuffer:GetTexture("depth")
 
 	local screen_quad = shader:CreateVertexBuffer({
