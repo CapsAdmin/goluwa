@@ -5,6 +5,7 @@ console.AddCommand("toggle_menu", function()
 end)
 
 menu = menu or {}
+menu.buttons = menu.buttons or {}
 
 menu.visible = false
 
@@ -14,15 +15,9 @@ if menu.Toggle then
 end 
 
 function menu.RenderBackground()	
-
-	window.ShowCursor(true)
 	local scrw, scrh = render.GetScreenSize()
 	
-	local alpha = 1
-	
-	if CLIENT and entities.GetLocalPlayer():IsValid() then 
-		alpha = 0.75
-	end	
+	local alpha = 0.75
 
 	local steps = 8			-- Amount of detail
 	local wavelength = 30		-- Distance between dark and light
@@ -39,6 +34,8 @@ function menu.RenderBackground()
 	r = r * y
 	g = g * y 
 	b = b * y
+	
+	surface.SetWhiteTexture()
 	
 	for i=0, steps-1 do
 		local fract = i/steps
@@ -70,7 +67,7 @@ end
 
 function menu.Open()
 	if menu.visible then return end
-	window.ShowCursor(true)
+	window.SetMouseTrapped(false) 
 	menu.MakeButtons()
 	event.AddListener("PreDrawMenu", "StartupMenu", menu.RenderBackground)
 	menu.visible = true
@@ -78,7 +75,7 @@ end
 
 function menu.Close()
 	if not menu.visible then return end
-	window.ShowCursor(false)
+	window.SetMouseTrapped(true) 
 	for k,v in ipairs(menu.buttons)do
 		if type(v) == "table" and v.Remove then 
 			v:Remove() 
@@ -93,8 +90,6 @@ function menu.Remake()
 	menu.Toggle()
 	menu.Toggle()
 end
-
-menu.buttons = {}
 
 function menu.AddButton(name, func)
 
@@ -153,31 +148,35 @@ function menu.MakeButtons()
 
 	menu.buttons = {}
 	
-	if CLIENT and players.GetLocalPlayer():IsValid() then
+	if network.IsStarted() then
 		menu.AddButton("Resume", function() timer.Delay(0.1, function() menu.Close() end) end)
 		menu.AddButtonSpace()
 	end
 
 	menu.AddButton("Connect", function()
 		aahh.StringInput("Enter the server IP", cookies.Get("lastip", "localhost"), function(str)
+			console.RunString("start_client")
 			cookies.Set("lastip", str)
 			console.RunString("connect "..str .." 64090")
+			menu.Toggle()
+			menu.Toggle()
 		end)
 	end)
-	if CLIENT and players.GetLocalPlayer():IsValid() then
+		
+	if network.IsStarted() then
 		menu.AddButton("Disconnect", function()
 			console.RunString("disconnect")
+			menu.Toggle()
+			menu.Toggle()
+		end)
+	else
+		menu.AddButton("Host", function()
+			console.RunString("start_server")
 		end)
 	end
 	 
 	menu.AddButtonSpace()
-	
-	menu.AddButton("Mount", function() 
-		aahh.StringInput("Enter the game content folder and restart your game", "E:\\steam\\steamapps\\common\\crysis 2\\gamecrysis2", function(str)
-			MountGame(str)
-		end)
-	end)
-		
+
 	menu.AddButton("Tests", function()
 
 		local frame = aahh.Create("frame")
@@ -213,7 +212,7 @@ function menu.MakeButtons()
 					
 					if name:find(".lua", nil, true) then
 						function btn:OnPress()
-							easylua.Start(entities.GetLocalPlayer())
+							easylua.Start(players.GetLocalPlayer())
 							tester.Begin(name)
 								include(dir .. name)
 							tester.End()
@@ -235,9 +234,9 @@ function menu.MakeButtons()
 				end
 			end
 			
-			--grid:RequestLayout(true)
-			--frame:SetHeight(grid:GetCurrentSize().h + 33)
-			--frame:RequestLayout(true)
+			grid:RequestLayout(true)
+			frame:SetHeight(grid:GetCurrentSize().h + 33)
+			frame:RequestLayout(true)
 		end
 		
 		populate("lua/")
@@ -245,19 +244,8 @@ function menu.MakeButtons()
 	
 	menu.AddButtonSpace() 
  
-	menu.AddButton("Console", function() console.RunString("ConsoleShow", true, true) end)
-	menu.AddButton("Restart", function() timer.Delay(0.1, function() console.RunString("reoh", true, true) end) end)
 	menu.AddButton("Exit", function() os.exit() end)
 	
 	menu.SetupButtons()
-end 
-
-window.Open(1024, 760)
-menu.Close()
-menu.Open()
-
-event.AddListener("OnWindowResized", "aahh_world", function(window, w,h)
-	menu.Close()
-	menu.Open()
-end)
+end
  
