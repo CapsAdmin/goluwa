@@ -18,6 +18,8 @@ function window.Open(...)
 	local wnd = render.CreateWindow(...)
 	
 	window.wnd = wnd
+	
+	event.Call("WindowOpened", wnd)
 end
 
 function window.Close()
