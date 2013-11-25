@@ -110,8 +110,9 @@ function META:Remove()
 	utilities.MakeNull(self)
 end
 
+local format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR_MIPMAP_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,}
 
-local function try_find(sub_model, path, key, a, b, format)
+local function try_find(sub_model, path, key, a, b)
 	-- try to find the normal
 	local nrm = path:gsub("(.+)(%.)", "%1"..a.."%2")
 	
@@ -133,8 +134,6 @@ local function try_find(sub_model, path, key, a, b, format)
 end
 
 local cache = {}
-
-local format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR_MIPMAP_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,}
 
 function Model(path)
 	check(path, "string")
@@ -169,8 +168,8 @@ function Model(path)
 		if model.material and model.material.path then
 			sub_model.diffuse = Image(model.material.path, format)
 
-			try_find(sub_model, model.material.path, "bump", "_n", "_ddn", format)
-			try_find(sub_model, model.material.path, "specular", "_s", "_spec", format)
+			try_find(sub_model, model.material.path, "bump", "_n", "_ddn")
+			try_find(sub_model, model.material.path, "specular", "_s", "_spec")
 		else
 			sub_model.diffuse = Image("error")
 		end

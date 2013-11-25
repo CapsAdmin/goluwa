@@ -25,57 +25,58 @@ local SHADER = {
 		},
 		source = [[
 			out vec4 out_color;
-		
-			float rand(vec2 co){
-				return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-			}
-		
-			void main ()
+			
+			vec3 mix_fog(vec3 color, float depth)
 			{
-				vec4 diffuse = texture2D(tex_diffuse, uv);
-				vec3 normal = texture2D(tex_normal, uv).rgb;
-				
-				vec4 position = texture2D(tex_position, uv);
-				vec4 specular = texture2D(tex_specular, uv);
-				
-				//lights!!!
-
-				int  light_total = 3; 
-				vec3 light_color[3];
-				vec3 light_dir[3];
-				float light_intensity[3];
-				vec3 light_pos[3];
-				
-				light_intensity[0]=1.5;
-				light_intensity[1]=1;
-				light_intensity[2]=1;
-				light_color[0]=vec3(1,0,1);
-				light_color[1]=vec3(1,1,0);
-				light_color[2]=vec3(0,1,1);
-				light_pos[0]=vec3(-200,0,-200);
-				light_pos[1]=vec3(200,0,-100);
-				light_pos[2]=vec3(-400,0,-200);
-				
-				vec3 eye_dir = normalize(cam_pos - position.xyz);
-				normal = normalize(normal*2 -1);
-				
-				for(int i=0;i<light_total;i++)
-				{				
-					light_dir[i] = normalize(light_pos[i] - position.xyz)/light_intensity[i];
-								
-					specular.rgb = specular.rgb * pow(max(dot(normal, normalize(light_dir[i] + eye_dir)), 0.0), 96);
-					out_color.rgb += (light_color[i] * max(dot(normal,light_dir[i]),0.0)) * (diffuse.rgb + specular.rgb);
-				}				
-				
 				const vec3 ambient = vec3(0.30588236451149, 0.59607845544815, 0.88235300779343); 
-					
-				//fog
-				vec4 depth = texture2D(tex_depth, uv);
 				
-				float fog_intensity = pow(depth.a, 30000);
+				float fog_intensity = pow(depth, 30000);
 				fog_intensity = -fog_intensity + 1;
+
+				color = mix(ambient, color, fog_intensity);
 				
-				out_color.rgb = mix(min(ambient, 1), out_color.rgb, fog_intensity);
+				return color;
+			}
+			
+			vec3 calc_light(vec3 normal, vec3 position, vec3 diffuse, float specular)
+			{
+				float light_specular = 0.5;
+				float light_shininess = 1.25;
+				vec3 light_color = vec3(1,1,1);
+				
+				vec3 light_pos = vec3(100, 100, -200);
+				vec3 light_dir = light_pos - position;
+				
+				vec3 final_color = vec3(0, 0, 0);
+				vec3 N = normalize(normal);
+				vec3 L = normalize(light_dir);
+	
+				float lambert_term = dot(N, L);
+	
+				if (lambert_term > 0.0)
+				{
+					final_color += light_color * diffuse * lambert_term;	
+					
+					vec3 E = normalize(-position);
+					vec3 R = reflect(-L, N);
+					
+					final_color += light_specular * specular * pow(max(dot(R, E), 0.0), light_shininess);
+				}
+				
+				return final_color;
+			}
+			
+			void main ()
+			{	
+				vec3 diffuse = texture2D(tex_diffuse, uv).rgb;
+				vec3 normal = texture2D(tex_normal, uv).rgb;
+				vec3 position = texture2D(tex_position, uv).xyz;
+				
+				float specular = texture2D(tex_specular, uv).r;
+				float depth = texture2D(tex_depth, uv).a;
+
+				out_color.rgb += calc_light(normal, position, diffuse, specular);				
+				out_color.rgb = mix_fog(out_color.rgb, depth);
 				
 				out_color.a = 1;
 			}
@@ -97,36 +98,8 @@ local PPSHADER = {
 			out vec4 out_color;
 			
 			void main ()
-			{
-				out_color = texture2D(tex_diffuse, uv);
-				
-				float grey = 0;
-				float max = 16;
-			
-				for (float i = 0; i < max; ++i) 
-				{
-					float f = (i/max) * 3.14159265359 * 2;
-					
-					float depth = texture2D(tex_depth, uv + vec2(sin(f), cos(f)) / 100).a;
-
-					depth = pow(depth, 1000);			
-					depth = -depth + 1;
-					
-					//if (depth > 0.01)				
-						grey += depth;			
-				}
-				
-				grey = (grey / max);
-				
-				float depth = texture2D(tex_depth, uv).a;
-				depth = pow(depth, 1000);
-				depth = -depth +1;
-				
-				grey = -pow(grey / depth, 10)+1;
-				
-				out_color.rgb += vec3(0,0,0)+grey;
-				
-				out_color.a = 1;
+			{				
+				out_color = texture2D(tex_diffuse, uv);				
 			}
 		]]  
 	}
@@ -143,7 +116,6 @@ function render.InitializeDeffered()
 			attach = e.GL_COLOR_ATTACHMENT0,
 			texture_format = {
 				internal_format = e.GL_RGBA32F,
-				format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR_MIPMAP_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,},
 			}
 		},
 		{
@@ -151,7 +123,6 @@ function render.InitializeDeffered()
 			attach = e.GL_COLOR_ATTACHMENT1,
 			texture_format = {
 				internal_format = e.GL_RGB32F,
-				format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR_MIPMAP_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,},
 			}
 		},
 		{
@@ -159,7 +130,6 @@ function render.InitializeDeffered()
 			attach = e.GL_COLOR_ATTACHMENT2,
 			texture_format = {
 				internal_format = e.GL_RGB32F,
-				format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR_MIPMAP_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,},
 			}
 		},
 		{
@@ -167,7 +137,6 @@ function render.InitializeDeffered()
 			attach = e.GL_COLOR_ATTACHMENT3,
 			texture_format = {
 				internal_format = e.GL_RGB32F,
-				format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR_MIPMAP_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,},
 			}
 		},
 		{
@@ -175,10 +144,7 @@ function render.InitializeDeffered()
 			attach = e.GL_DEPTH_ATTACHMENT,
 			draw_manual = true,
 			texture_format = {
-				internal_format = e.GL_DEPTH_COMPONENT32F,
-				
-			--	compare_mode = e.GL_COMPARE_R_TO_TEXTURE,
-			--	compare_func = e.GL_EQUAL,					 
+				internal_format = e.GL_DEPTH_COMPONENT32F,	 
 				[e.GL_DEPTH_TEXTURE_MODE] = e.GL_ALPHA,
 				
 			}
