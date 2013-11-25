@@ -1,4 +1,4 @@
 return {
 	startup = "menu.lua",
-	load = false,
+	event = "WindowOpened",
 }
