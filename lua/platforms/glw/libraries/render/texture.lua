@@ -244,8 +244,10 @@ do -- texture object
 		format.filter = format.filter ~= nil
 		format.stride = format.stride or 4
 		format.buffer_type = format.buffer_type or "unsigned char"
-		format.mip_map_levels = format.mip_map_levels or 1
+		format.mip_map_levels = format.mip_map_levels or 4
 		format.border_size = format.border_size or 4
+		format.min_filter = format.min_filter or e.GL_LINEAR_MIPMAP_LINEAR
+		format.mag_filter = format.mag_filter or e.GL_LINEAR_MIPMAP_LINEAR
 		
 		format.wrap_t = format.wrap_t or e.GL_REPEAT
 		format.wrap_s = format.wrap_s or e.GL_REPEAT
