@@ -126,17 +126,13 @@ local function try_find(sub_model, path, key, a, b, format)
 			if nrm ~= path and vfs.Exists(nrm) then
 				sub_model[key] = Image(nrm, format)
 			else
-			--	logf("could not find %s for %q", key, path)
+				logf("could not find %s for %q", key, path)
 			end
 		end
 	end				
 end
 
 local cache = {}
-
-local default_diffuse
-local default_specular
-local default_bump
 
 local format = {mip_map_levels = 4}
 
@@ -166,89 +162,38 @@ function Model(path)
 	local self = setmetatable({}, META)
 	
 	self.sub_models = {}
-	
-	if not default_diffuse then
-		default_diffuse = Texture(8,8):Fill(function() return 0, 0, 0, 255 end)
-		default_specular = Texture(8,8):Fill(function() return 0, 0, 0, 255 end)
-		default_bump = Texture(8,8):Fill(function() return 255, 255, 255, 255 end)
-	end
-	
-	--[[local MAX = #models
+					
+	for i, model in pairs(models) do
+		local sub_model = {mesh = Mesh3D(model.mesh_data), name = model.name}
+					
+		if model.material and model.material.path then
+			sub_model.diffuse = Image(model.material.path, format)
 
-	local co = coroutine.create(function()
-			
-		local I = 0
-		local function yield()
-			if wait(0.5) then
-				logf("%i out of %i textures left", I, MAX, 3)
-			end
-			coroutine.yield()
-		end]]
-			
-		for i, model in pairs(models) do
-			local sub_model = {mesh = Mesh3D(model.mesh_data), name = model.name}
-						
-			if model.material and model.material.path then
-				if not vfs.Exists(model.material.path) then
-					logf("could not find %q", model.material.path)
-				else
-					sub_model.diffuse = Image(model.material.path, format)
-				end
-	
-				try_find(sub_model, model.material.path, "bump", "_n", "_ddn", format)
-				try_find(sub_model, model.material.path, "specular", "_s", "_spec", format)
-			else
-				sub_model.diffuse = Image("textures/sponza_thorn_diff.png")
-			end
-			
-			if not sub_model.diffuse then
-				sub_model.diffuse = default_diffuse
-			else
-				-- TEMPORARY			
-				sub_model.translucent = false				
-				
-				--- too slow
-				--[[sub_model.diffuse:Fill(function(x, y, i, r,g,b,a)  
-					if a < 255 then
-						sub_model.translucent = true
-						return true
-					end
-				end, false, true)]]
-			end
+			try_find(sub_model, model.material.path, "bump", "_n", "_ddn", format)
+			try_find(sub_model, model.material.path, "specular", "_s", "_spec", format)
+		else
+			sub_model.diffuse = Image("error")
+		end
 
-			if not sub_model.bump then
-				sub_model.bump = default_bump
-			end
-			
-			if not sub_model.specular then
-				sub_model.specular = default_specular
-			end	
-			
-			sub_model.diffuse:SetChannel(1)
-			sub_model.bump:SetChannel(2)
-			sub_model.specular:SetChannel(3)
-	
-			self.sub_models[i] = sub_model
-			
-		--	I = i
+		--sub_model.diffuse = Image("error")
+		
+		if not sub_model.bump then
+			sub_model.bump = Texture(8,8):Fill(function() return 255, 255, 255, 255 end)
 		end
 		
-		--table.sort(self.sub_models, function(a, b) return b.translucent and not a.translucent end)
-		--table.sort(self.sub_models, function(a, b) return b.translucent and not a.translucent end)
+		if not sub_model.specular then
+			sub_model.specular = Texture(8,8):Fill(function() return 0, 0, 0, 255 end)
+		end	
 		
-	--end)
-	
-	--[[logf("loading %i textures", MAX)
-	
-	timer.Thinker(function() 
-		local ok , err = coroutine.resume(co) 
+		sub_model.diffuse:SetChannel(1)
+		sub_model.bump:SetChannel(2)
+		sub_model.specular:SetChannel(3)
+
+		self.sub_models[i] = sub_model
 		
-		if not ok then 
-			print(err) 
-			return false 
-		end  
-	end, 100)	]]
-	
+	--	I = i
+	end
+		
 	cache[path] = self
 	
 	return self 
