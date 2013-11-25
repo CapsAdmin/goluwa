@@ -18,49 +18,113 @@ local SHADER = {
 			tex_specular = "sampler2D",
 			tex_depth = "sampler2D",
 			cam_pos = "vec3",
+			time = "float",
 		},  
 		attributes = {
 			uv = "vec2",
 		},
 		source = [[
 			out vec4 out_color;
-
+		
+			float rand(vec2 co){
+				return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+			}
+		
 			void main ()
 			{
-				const vec3 ambient = vec3(0.00226295*1.2,0.00226295*1.15,0.00226295);
-				
 				vec4 diffuse = texture2D(tex_diffuse, uv);
 				vec3 normal = texture2D(tex_normal, uv).rgb;
 				
 				vec4 position = texture2D(tex_position, uv);
 				vec4 specular = texture2D(tex_specular, uv);
 				
+				//lights!!!
 
-				//vec3 light = vec3(1,1,1);
-				vec4 depth = texture2D(tex_depth, uv);
-	
-				vec3 light_color = vec3(1,1,1);
-				vec3 light_pos = vec3(100,50,100); //light.w * position.xyz;
-				vec3 light_dir = normalize(light_pos - position.xyz);
+				int  light_total = 3; 
+				vec3 light_color[3];
+				vec3 light_dir[3];
+				float light_intensity[3];
+				vec3 light_pos[3];
+				
+				light_intensity[0]=1.5;
+				light_intensity[1]=1;
+				light_intensity[2]=1;
+				light_color[0]=vec3(1,0,1);
+				light_color[1]=vec3(1,1,0);
+				light_color[2]=vec3(0,1,1);
+				light_pos[0]=vec3(-200,0,-200);
+				light_pos[1]=vec3(200,0,-100);
+				light_pos[2]=vec3(-400,0,-200);
 				
 				vec3 eye_dir = normalize(cam_pos - position.xyz);
-				
 				normal = normalize(normal*2 -1);
 				
+				for(int i=0;i<light_total;i++)
+				{				
+					light_dir[i] = normalize(light_pos[i] - position.xyz)/light_intensity[i];
+								
+					specular.rgb = specular.rgb * pow(max(dot(normal, normalize(light_dir[i] + eye_dir)), 0.0), 96);
+					out_color.rgb += (light_color[i] * max(dot(normal,light_dir[i]),0.0)) * (diffuse.rgb + specular.rgb);
+				}				
 				
-				specular.rgb=specular.rgb * pow(max(dot(normal, normalize(light_dir + eye_dir)), 0.0), 128);
-				out_color.rgb = (ambient + (light_color * max(dot(normal,light_dir),0.0))) * (diffuse.rgb + specular.rgb);
-				//out_color.rgb = ((ambient*8) + (light_color * max(dot(normal,light_dir),0.0))) * diffuse.rgb;
-				//out_color.rgb = diffuse.rgb;
+				const vec3 ambient = vec3(0.30588236451149, 0.59607845544815, 0.88235300779343); 
+					
+				//fog
+				vec4 depth = texture2D(tex_depth, uv);
 				
-				float fog_intensity = pow(depth.a, 40000);
-				//fog_intensity = -fog_intensity + 1;
+				float fog_intensity = pow(depth.a, 30000);
+				fog_intensity = -fog_intensity + 1;
 				
-				vec3 fog_color = (ambient*1024) * fog_intensity;
+				out_color.rgb = mix(min(ambient, 1), out_color.rgb, fog_intensity);
 				
-				fog_color = min(fog_color, 1);
+				out_color.a = 1;
+			}
+		]]  
+	}
+} 
+
+local PPSHADER = {
+	vertex = SHADER.vertex,
+	fragment = {
+		uniform = {
+			tex_diffuse = "sampler2D",
+			tex_depth = "sampler2D",
+		},
+		attributes = {
+			uv = "vec2",
+		},
+		source = [[
+			out vec4 out_color;
+			
+			void main ()
+			{
+				out_color = texture2D(tex_diffuse, uv);
 				
-				out_color.rgb += fog_color;
+				float grey = 0;
+				float max = 16;
+			
+				for (float i = 0; i < max; ++i) 
+				{
+					float f = (i/max) * 3.14159265359 * 2;
+					
+					float depth = texture2D(tex_depth, uv + vec2(sin(f), cos(f)) / 100).a;
+
+					depth = pow(depth, 1000);			
+					depth = -depth + 1;
+					
+					//if (depth > 0.01)				
+						grey += depth;			
+				}
+				
+				grey = (grey / max);
+				
+				float depth = texture2D(tex_depth, uv).a;
+				depth = pow(depth, 1000);
+				depth = -depth +1;
+				
+				grey = -pow(grey / depth, 10)+1;
+				
+				out_color.rgb += vec3(0,0,0)+grey;
 				
 				out_color.a = 1;
 			}
@@ -68,6 +132,7 @@ local SHADER = {
 	}
 }
 
+ 
 local sphere = NULL
 
 function render.InitializeDeffered()
@@ -126,6 +191,7 @@ function render.InitializeDeffered()
 	shader.model_matrix = render.GetModelMatrix
 	shader.camera_matrix = render.GetCameraMatrix
 	shader.cam_pos = render.GetCamPos
+	shader.time = function() return tonumber(glfw.GetTime()) end
 	
 	shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
 	shader.tex_position = render.gbuffer:GetTexture("position") 
@@ -144,18 +210,44 @@ function render.InitializeDeffered()
 	})
 	
 	render.deferred_shader = shader
-	render.deferred_screen_quad = screen_quad	
+	render.deferred_screen_quad = screen_quad
+	
+	
+	render.pp_buffer = render.CreateFrameBuffer(render.w, render.h, {
+		{
+			name = "diffuse",
+			attach = e.GL_COLOR_ATTACHMENT0,
+			texture_format = {
+				internal_format = e.GL_RGBA32F,
+				format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR_MIPMAP_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,},
+			}
+		},
+	}) 
+	
+	local shader = render.CreateSuperShader("post_process", PPSHADER)
+	shader.model_matrix = render.GetModelMatrix
+	shader.camera_matrix = render.GetCameraMatrix
+	shader.cam_pos = render.GetCamPos
+	shader.tex_diffuse = render.pp_buffer:GetTexture("diffuse")
+	shader.tex_depth = render.gbuffer:GetTexture("depth")
+	
+	local screen_quad = shader:CreateVertexBuffer({
+		{pos = {0, 0}, uv = {0, 1}},
+		{pos = {0, 1}, uv = {0, 0}},
+		{pos = {1, 1}, uv = {1, 0}},
+
+		{pos = {1, 1}, uv = {1, 0}},
+		{pos = {1, 0}, uv = {1, 1}},
+		{pos = {0, 0}, uv = {0, 1}},
+	})
+	
+	render.pp_screen_quad = screen_quad
+	
 end
 
 local size = 6
 
 function render.DrawDeffered(w, h)
-	--render.Start3D()	
-	
-	--render.gbuffer:Begin("light", e.GL_TEXTURE4)
-		
-	--render.gbuffer.End()
-	
 	render.Start3D()
 	
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, render.gbuffer.id)
@@ -173,15 +265,23 @@ function render.DrawDeffered(w, h)
 	
 	gl.Enable(e.GL_DEPTH_TEST)
 	gl.Enable(e.GL_CULL_FACE)
-	gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
-	
 		
 	render.Start2D()
 
+	-- draw to the pp buffer
+	gl.BindFramebuffer(e.GL_FRAMEBUFFER, render.pp_buffer.id)		
+		render.PushMatrix()
+			surface.Scale(w, h)
+			render.deferred_screen_quad:Draw()
+		render.PopMatrix()		
+	gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
+
+	-- draw the pp texture as quad
 	render.PushMatrix()
 		surface.Scale(w, h)
-		render.deferred_screen_quad:Draw()
+		render.pp_screen_quad:Draw()
 	render.PopMatrix()
+	
 	
 	if render.debug then
 		w = w / size
