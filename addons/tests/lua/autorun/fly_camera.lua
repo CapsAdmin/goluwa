@@ -3,6 +3,7 @@ event.AddListener("RenderContextInitialized", "fly_camera", function()
 	local cam_ang = Ang3(0, 0, 0)
 
 	event.AddListener("OnUpdate", "fly_camera", function(dt)
+		if menu and menu.visible then return end
 		cam_ang:Normalize()
 		local speed = dt * 100
 
