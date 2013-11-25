@@ -60,21 +60,10 @@ end
  
 entities.world_entity:RemoveChildren() 
 
---[[local obj = Entity("model")
-obj:SetPos(Vec3(0.5,0,0))
-obj:SetMeshPath("jkm_fembot1.obj")
-obj:SetTexturePath("bodypartcolor.bmp") ]]
-
 tree = Entity("model")
 tree:SetPos(Vec3(5,0,0))
-tree:SetMeshPath("tree_curvedBack_02.obj")
-tree:SetTexturePath("leaf_branch_02_01_512.png") 
-tree:SetTexturePath("Bark_seamless_03_512.png") 
+tree:SetModelPath("models/tree_curvedBack_02.obj")
+--tree:SetTexturePath("textures/leaf_branch_02_01_512.png") 
+--tree:SetTexturePath("textures/Bark_seamless_03_512.png") 
 
 window.SetMouseTrapped(true)
-    
-event.AddListener("OnDraw3D", "gl", function(dt)
-	calc_camera(dt)
-	render.Start3D(cam_pos, cam_ang:GetDeg())
-		entities.world_entity:Draw()			
-end)
