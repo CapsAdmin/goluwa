@@ -2,12 +2,14 @@ console.AddCommand("start_server", function()
 	SERVER = true
 	addons.Reload()
 	include("lua/platforms/glw/libraries/network/init.lua")
+	entities.LoadAllEntities()
 end)
 
 console.AddCommand("start_client", function()
 	CLIENT = true
 	addons.Reload()
 	include("lua/platforms/glw/libraries/network/init.lua")
+	entities.LoadAllEntities()
 end)
 
 console.AddCommand("trace_calls", function(_, line, ...)
