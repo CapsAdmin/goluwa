@@ -169,7 +169,9 @@ if CLIENT then
 	end
 
 	function network.Disconnect(reason)	
-		network.client_socket:Remove()
+		if network.client_socket:IsValid() then
+			network.client_socket:Remove()
+		end
 	end
 
 	function network.IsConnected()
