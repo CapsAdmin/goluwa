@@ -1,4 +1,4 @@
-local function parse_scene(scene, dir)
+local function parse_scene(scene, dir, flip_normals, uv_mult)
 
 	print("PARSING SCENE")
 
@@ -21,7 +21,11 @@ local function parse_scene(scene, dir)
 
 			if mesh.mNormals ~= nil then
 				local val = mesh.mNormals[i]
-				data.normal = {val.x, val.y, val.z}
+				if flip_normals then
+					data.normal = {-val.x, -val.y, -val.z}
+				else
+					data.normal = {val.x, val.y, val.z}
+				end
 			end
 
 			if mesh.mTangents ~= nil then
@@ -32,6 +36,10 @@ local function parse_scene(scene, dir)
 			if mesh.mTextureCoords ~= nil then
 				local val = mesh.mTextureCoords[0] and mesh.mTextureCoords[0][i]
 				data.uv = {val.x, val.y}
+				if uv_mult then
+					data.uv[1] = data.uv[1] * uv_mult
+					data.uv[2] = data.uv[2] * uv_mult
+				end
 			end
 			
 			sub_model.mesh_data[#sub_model.mesh_data+1] = data
@@ -112,31 +120,48 @@ end
 
 local format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR_MIPMAP_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,}
 
-local function try_find(sub_model, path, key, a, b)
+local diffuse_suffixes = {
+	"_diff",
+}
+
+local function try_find(sub_model, path, key, suffixes)
 	-- try to find the normal
-	local nrm = path:gsub("(.+)(%.)", "%1"..a.."%2")
+	for _, suffix in pairs(suffixes) do
+		local new = path:gsub("(.+)(%.)", "%1" .. suffix .. "%2")
+		
+		if new ~= path and vfs.Exists(new) then
+			sub_model[key] = Image(new, format)	
+			break
+		end
+	end
 	
-	if nrm ~= path and vfs.Exists(nrm) then
-		sub_model[key] = Image(nrm, format)
-	else
-		nrm = path:gsub("(.+)(%.)", "%1"..b.."%2")
-		if nrm ~= path and vfs.Exists(nrm) then
-			sub_model[key] = Image(nrm, format)
-		else
-			nrm = path:gsub("_diff%.", b.."%.")
-			if nrm ~= path and vfs.Exists(nrm) then
-				sub_model[key] = Image(nrm, format)
-			else
-				logf("could not find %s for %q", key, path)
+	-- try again without the __diff suffix
+	if not sub_model[key] then
+		for _, diffuse_suffix in pairs(diffuse_suffixes) do
+			for _, suffix in pairs(suffixes) do
+				local new = path:gsub(diffuse_suffix .. "%.", suffix ..".")
+				
+				if new ~= path and vfs.Exists(new) then
+					sub_model[key] = Image(new, format)	
+					break
+				end
 			end
 		end
-	end				
+	end
+	
+	
+	if not sub_model[key] then
+		logf("could not find %s for %q", key, path)
+	end
 end
 
 local cache = {}
 
-function Model(path)
+function Model(path, flags, ...)
 	check(path, "string")
+	--check(flags, "number", nil)
+	
+	flags = flags or 0
 	
 	if cache[path] then
 		return cache[path]
@@ -148,13 +173,13 @@ function Model(path)
 		error(new_path .. " not found", 2)
 	end
 	
-	local scene = assimp.ImportFile(new_path,0)
+	local scene = assimp.ImportFile(new_path, flags)
 
 	if not scene then
 		error(ffi.string(assimp.GetErrorString()), 2)
 	end
 	
-	models = parse_scene(scene, new_path:match("(.+)/"))	
+	models = parse_scene(scene, new_path:match("(.+)/"), ...)	
 	
 	assimp.ReleaseImport(scene)
 	
@@ -168,8 +193,8 @@ function Model(path)
 		if model.material and model.material.path then
 			sub_model.diffuse = Image(model.material.path, format)
 
-			try_find(sub_model, model.material.path, "bump", "_n", "_ddn")
-			try_find(sub_model, model.material.path, "specular", "_s", "_spec")
+			try_find(sub_model, model.material.path, "bump", {"_n", "_ddn", "_nrm"})
+			try_find(sub_model, model.material.path, "specular", {"_s", "_spec"})
 		else
 			sub_model.diffuse = Image("error")
 		end
