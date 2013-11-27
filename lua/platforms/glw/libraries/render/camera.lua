@@ -36,12 +36,13 @@ function render.Start2D(x, y, w, h)
 		gl.Disable(e.GL_DEPTH_TEST) 
 	
 	render.UseModelMatrix()
+	render.LoadIdentity()
 end
 
 function render.Start3D(pos, ang, fov, nearz, farz, ratio)
 	render.UseCameraMatrix()
 		render.LoadIdentity()
-		
+			
 		pos = pos or render.cam_pos
 		ang = ang or render.cam_ang
 		fov = fov or render.cam_fov
@@ -51,20 +52,33 @@ function render.Start3D(pos, ang, fov, nearz, farz, ratio)
 		if fov then
 			render.cam_fov = fov
 		end
-			
+		
+		gl.Disable(e.GL_CULL_FACE)
+		
+		render.Rotate(90, 1, 0, 0)
+		render.Rotate(90, 0, 0, 1)
+		render.Scale(1, -1, 1)
+		
+	--	ang = Ang3(0,0,0)
+	--	pos = Vec3(-100,0,0)
+		 
 		if ang then
-			render.Rotate(ang.p, 1, 0, 0)
-			render.Rotate(ang.y, 0, 1, 0)
-			render.Rotate(ang.r, 0, 0, 1)
+			--render.Rotate(ang.p, 0, -1, 0)
+			--render.Rotate(ang.y, 0, 0, -1)
+			--render.Rotate(ang.r, -1, 0, 0)
+			render.Rotate(ang.p, 0, 1, 0)
+			render.Rotate(ang.y, 0, 0, 1)
+			render.Rotate(ang.r, 1, 0, 0)
 			render.cam_ang = ang
 		end
-		
+			
 		if pos then
 			render.Translate(pos.x, pos.y, pos.z)	
 			render.cam_pos = pos
 		end
-		
+				
 		gl.Enable(e.GL_DEPTH_TEST) 
-
+		
 	render.UseModelMatrix()	
+	render.LoadIdentity()
 end
