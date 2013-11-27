@@ -16,7 +16,7 @@ local function parse_scene(scene, dir, flip_normals, uv_mult)
 			
 			if mesh.mVertices ~= nil then
 				local val = mesh.mVertices[i]
-				data.pos = {val.x, val.y, val.z}
+				data.pos = {val.x, val.z, -val.y}
 			end
 
 			if mesh.mNormals ~= nil then
@@ -162,7 +162,7 @@ function Model(path, flags, ...)
 	--check(flags, "number", nil)
 	
 	flags = flags or 0
-	
+		
 	if cache[path] then
 		return cache[path]
 	end

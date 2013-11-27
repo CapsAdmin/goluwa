@@ -7,8 +7,9 @@ local SHADER = {
 	 
 	vertex = { 
 		uniform = {
-			camera_matrix = "mat4",
-			model_matrix = "mat4",
+			projection_matrix = "mat4",
+			view_matrix = "mat4",
+			world_matrix = "mat4",
 		},			
 		attributes = {
 			{pos = "vec3"},
@@ -18,13 +19,14 @@ local SHADER = {
 		source = [[		
 			void main()
 			{							
-				mat3 world_inverse = transpose(mat3(camera_matrix));
-				mat3 normal_matrix = transpose(inverse(mat3(model_matrix)));
+				mat3 world_inverse = transpose(mat3(world_matrix));
+				mat3 normal_matrix = transpose(inverse(mat3(projection_matrix)));
+				
+				
+				gl_Position = projection_matrix * world_matrix * vec4(pos, 1.0);
 				
 				glw_out_normal = normalize(world_inverse * normal_matrix * normal);
-				glw_out_pos = (model_matrix * vec4(pos, 1.0)).xyz;
-				
-				gl_Position = camera_matrix * model_matrix * vec4(pos, 1.0);
+				glw_out_pos = (view_matrix * vec4(pos, 1.0)).xyz;   
 			}
 		]]
 	},
@@ -59,8 +61,9 @@ function render.CreateMesh3D(data)
 		
 	local mesh = render.mesh_3d_shader:CreateVertexBuffer(data)
 	
-	mesh.model_matrix = render.GetModelMatrix
-	mesh.camera_matrix = render.GetCameraMatrix
+	mesh.view_matrix = render.GetViewMatrix
+	mesh.world_matrix = render.GetWorldMatrix
+	mesh.projection_matrix = render.GetProjectionMatrix
 	
 	return mesh
 end

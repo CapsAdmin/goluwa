@@ -1,14 +1,14 @@
 local SHADER = {
 	vertex = {
 		uniform = {
-			camera_matrix = "mat4",
-			model_matrix = "mat4",
+			projection_matrix = "mat4",
+			world_matrix = "mat4",
 		},			
 		attributes = {
 			{pos = "vec2"},
 			{uv = "vec2"},
 		},
-		source = "gl_Position = camera_matrix * model_matrix * vec4(pos, 0.0, 1.0);"
+		source = "gl_Position = projection_matrix * world_matrix * vec4(pos, 0.0, 1.0);"
 	},
 	fragment = {
 		uniform = {
@@ -18,7 +18,7 @@ local SHADER = {
 			tex_specular = "sampler2D",
 			tex_depth = "sampler2D",
 			time = "float",
-			model_matrix = "mat4",
+			world_matrix = "mat4",
 			cam_pos = "vec3",
 			cam_vec = "vec3",
 		},  
@@ -49,7 +49,7 @@ local SHADER = {
 				vec3 light_color = vec3(1,1,1);
 				
 				vec3 light_pos = vec3(-400, 200, -200) + vec3(sin(time), 0, cos(time)) * 300;
-				light_pos = cam_pos;
+				light_pos = vec3(0,0,0);
 			
 				vec3 light_vec = light_pos - position;
 				float light_dist = length(light_vec);
@@ -83,6 +83,7 @@ local SHADER = {
 				vec3 specular = texture2D(tex_specular, uv).xyz;
 				float depth = texture2D(tex_depth, uv).a;
 
+				//out_color.rgb = diffuse;
 				out_color.rgb += calc_light(normal, position, diffuse, specular);				
 				out_color.rgb = mix_fog(out_color.rgb, depth);
 				
@@ -162,8 +163,8 @@ function render.InitializeDeffered()
 
 	local shader = render.CreateSuperShader("deferred", SHADER)
 	
-	shader.model_matrix = render.GetModelMatrix
-	shader.camera_matrix = render.GetCameraMatrix
+	shader.world_matrix = render.GetWorldMatrix
+	shader.projection_matrix = render.GetProjectionMatrix
 	shader.cam_pos = function() return render.GetCamPos() end
 	shader.cam_vec = function() return render.GetCamAng():GetRad():GetForward() end
 	shader.time = function() return tonumber(glfw.GetTime()) end
@@ -200,8 +201,8 @@ function render.InitializeDeffered()
 	}) 
 	
 	local shader = render.CreateSuperShader("post_process", PPSHADER)
-	shader.model_matrix = render.GetModelMatrix
-	shader.camera_matrix = render.GetCameraMatrix
+	shader.world_matrix = render.GetWorldMatrix
+	shader.projection_matrix = render.GetProjectionMatrix
 	shader.cam_pos = render.GetCamPos
 	shader.tex_diffuse = render.pp_buffer:GetTexture("diffuse")
 	shader.tex_depth = render.gbuffer:GetTexture("depth")
@@ -245,17 +246,17 @@ function render.DrawDeffered(w, h)
 
 	-- draw to the pp buffer
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, render.pp_buffer.id)		
-		render.PushMatrix()
+		render.PushWorldMatrix()
 			surface.Scale(w, h)
 			render.deferred_screen_quad:Draw()
-		render.PopMatrix()		
+		render.PopWorldMatrix()		
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
 
 	-- draw the pp texture as quad
-	render.PushMatrix()
+	render.PushWorldMatrix()
 		surface.Scale(w, h)
 		render.pp_screen_quad:Draw()
-	render.PopMatrix()
+	render.PopWorldMatrix()
 	
 	
 	if render.debug then

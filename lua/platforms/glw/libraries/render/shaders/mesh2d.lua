@@ -1,15 +1,15 @@
 local SHADER = {	
 	vertex = {
 		uniform = {
-			camera_matrix = "mat4",
-			model_matrix = "mat4",
+			projection_matrix = "mat4",
+			world_matrix = "mat4",
 		},			
 		attributes = {
 			{pos = "vec2"},
 			{uv = "vec2"},
 			{color = "vec4"},
 		},
-		source = "gl_Position = camera_matrix * model_matrix * vec4(pos, 0.0, 1.0);"
+		source = "gl_Position = projection_matrix * world_matrix * vec4(pos, 0.0, 1.0);"
 	},
 	
 	fragment = { 
@@ -39,8 +39,8 @@ function render.CreateMesh2D(data)
 	
 	local mesh = render.mesh_2d_shader:CreateVertexBuffer(data)
 	
-	mesh.model_matrix = render.GetModelMatrix
-	mesh.camera_matrix = render.GetCameraMatrix
+	mesh.world_matrix = render.GetWorldMatrix
+	mesh.projection_matrix = render.GetProjectionMatrix
 	
 	return mesh
 end

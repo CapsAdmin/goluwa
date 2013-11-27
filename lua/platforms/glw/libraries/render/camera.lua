@@ -23,7 +23,7 @@ function render.Start2D(x, y, w, h)
 	w = w or render.w
 	h = h or render.h
 
-	render.UseCameraMatrix()
+	render.UseProjectionMatrix()
 		render.LoadIdentity()
 		
 		render.Ortho(x,w, y,h, -1,1)
@@ -35,50 +35,54 @@ function render.Start2D(x, y, w, h)
 		
 		gl.Disable(e.GL_DEPTH_TEST) 
 	
-	render.UseModelMatrix()
-	render.LoadIdentity()
+	render.UseWorldMatrix()
+		render.LoadIdentity()
+end
+
+render.view_matrix = ffi.new("float[16]", 0)
+
+function render.GetViewMatrix()
+	return render.view_matrix
 end
 
 function render.Start3D(pos, ang, fov, nearz, farz, ratio)
-	render.UseCameraMatrix()
+	render.UseProjectionMatrix()
 		render.LoadIdentity()
-			
+
 		pos = pos or render.cam_pos
 		ang = ang or render.cam_ang
 		fov = fov or render.cam_fov
 		
-		render.SetPerspective(fov, nearz, farz, ratio)
-			
+		gl.Enable(e.GL_DEPTH_TEST) 
+		gl.Disable(e.GL_CULL_FACE)
+		
 		if fov then
 			render.cam_fov = fov
 		end
 		
-		gl.Disable(e.GL_CULL_FACE)
-		
-		render.Rotate(90, 1, 0, 0)
-		render.Rotate(90, 0, 0, 1)
-		render.Scale(1, -1, 1)
-		
-	--	ang = Ang3(0,0,0)
-	--	pos = Vec3(-100,0,0)
-		 
-		if ang then
-			--render.Rotate(ang.p, 0, -1, 0)
-			--render.Rotate(ang.y, 0, 0, -1)
-			--render.Rotate(ang.r, -1, 0, 0)
-			render.Rotate(ang.p, 0, 1, 0)
-			render.Rotate(ang.y, 0, 0, 1)
-			render.Rotate(ang.r, 1, 0, 0)
-			render.cam_ang = ang
-		end
-			
-		if pos then
-			render.Translate(pos.x, pos.y, pos.z)	
-			render.cam_pos = pos
-		end
+		render.SetPerspective(fov, nearz, farz, ratio)
+						
+		render.UseWorldMatrix()	
+			render.LoadIdentity()				
 				
-		gl.Enable(e.GL_DEPTH_TEST) 
-		
-	render.UseModelMatrix()	
-	render.LoadIdentity()
+				if ang then
+					render.Rotate(ang.p+90, 1, 0, 0)
+					render.Rotate(-ang.r, 0, 1, 0)
+					render.Rotate(ang.y, 0, 0, 1)
+					render.cam_ang = ang
+				end
+
+				if pos then
+					render.Translate(pos.y, pos.x, pos.z)	
+					render.cam_pos = pos
+				end	
+				
+				
+				gl.GetFloatv(e.GL_MODELVIEW_MATRIX, render.view_matrix)
+
+			--render.PushWorldMatrix()
+end 
+
+function render.End3D()
+	--render.PopWorldMatrix()		
 end

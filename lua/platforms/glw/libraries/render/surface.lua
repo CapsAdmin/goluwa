@@ -73,8 +73,8 @@ function surface.Initialize()
 			{pos = {0, 0}, uv = {0, 0}, color = {1,1,1,1}},
 		})
 		
-		mesh.model_matrix = render.GetModelMatrix
-		mesh.camera_matrix = render.GetCameraMatrix	
+		mesh.world_matrix = render.GetWorldMatrix
+		mesh.projection_matrix = render.GetProjectionMatrix	
 		
 		surface.fontmesh = mesh
 		surface.fontshader = shader
@@ -366,7 +366,7 @@ do -- orientation
 	end
 		
 	function surface.PushMatrix(x,y, w,h, a)
-		render.PushMatrix()
+		render.PushWorldMatrix()
 
 		if x and y then surface.Translate(x, y, 0) end
 		if w and h then surface.Scale(w, h, 1) end
@@ -374,7 +374,7 @@ do -- orientation
 	end
 	
 	function surface.PopMatrix()
-		render.PopMatrix() 
+		render.PopWorldMatrix() 
 	end
 end
 
@@ -556,7 +556,7 @@ do
 end
 
 function surface.DrawRect(x,y, w,h, a, ox,oy)	
-	render.PushMatrix()			
+	render.PushWorldMatrix()			
 		surface.Translate(x, y)
 		
 		if a then
@@ -568,7 +568,7 @@ function surface.DrawRect(x,y, w,h, a, ox,oy)
 				
 		surface.Scale(w, h)
 		surface.rectmesh:Draw()
-	render.PopMatrix()
+	render.PopWorldMatrix()
 end
 
 function surface.DrawLine(x1,y1, x2,y2, w, skip_tex, ...)
