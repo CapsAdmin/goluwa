@@ -10,108 +10,29 @@ structs.AddAllOperators(META)
 local sin = math.sin
 local cos = math.cos
 
-function META.GetRight(a)
+function META.GetForward(a)
 	return Vec3(
-		cos(a.z) * cos(a.y),
-		sin(a.z) * cos(a.y),
-	   -sin(a.y)
+		cos(a.y) * cos(a.x),
+		sin(a.y) * cos(a.x),
+	   -sin(a.x)
 	)
 end
 
 function META.GetUp(a)
 	return Vec3(
-		sin(a.z) * sin(a.x) + cos(a.z) * sin(a.y) * cos(a.x),
-	   -cos(a.z) * sin(a.x) + sin(a.z) * sin(a.y) * cos(a.x),
-		cos(a.y) * cos(a.x)
+		sin(a.y) * sin(a.z) + cos(a.y) * sin(a.x) * cos(a.z),
+	   -cos(a.y) * sin(a.z) + sin(a.y) * sin(a.x) * cos(a.z),
+		cos(a.x) * cos(a.z)
 	)
 end
 
-function META.GetForward(a)
+function META.GetRight(a)
 	return Vec3(
-	   -sin(a.z) * cos(a.x) + cos(a.z) * sin(a.y) * sin(a.x),
-		cos(a.z) * cos(a.x) + sin(a.z) * sin(a.y) * sin(a.x),
-		cos(a.y) * sin(a.x)
+	   -sin(a.y) * cos(a.z) + cos(a.y) * sin(a.x) * sin(a.z),
+		cos(a.y) * cos(a.z) + sin(a.y) * sin(a.x) * sin(a.z),
+		cos(a.x) * sin(a.z)
 	)
 end
-
-if false then
-	--[[
-	
-	GMOD
-	
-	======90 0 0======
-	FORWARD = -1 -0 -1
-	RIGHT = 0 -1 0
-	UP = 1 0 -1
-	==================
-	
-	======0 90 0======
-	FORWARD = -1 1 -0
-	RIGHT = 1 0 -0
-	UP = 0 0 1
-	==================
-	
-	======0 0 90======
-	FORWARD = 1 0 -0
-	RIGHT = -0 0 -1
-	UP = 0 -1 -1
-	==================		
-	]]
-	
-	--[[
-	
-	ASDFML
-	
-	======90 0 0======
-	FORWARD = 0 -1 1
-	RIGHT = 1 0 -0
-	UP = 0 -1 -1
-	==================
-
-
-	======0 90 0======
-	FORWARD = 0 1 -0
-	RIGHT = -1 -0 -1
-	UP = 1 0 -1
-	==================
-
-
-	======0 0 90======
-	FORWARD = -1 -1 0
-	RIGHT = -1 1 -0
-	UP = 0 0 1
-	==================
-
-
-	]]
-
-	local msg = gmod and MsgN or logn
-
-	local printv = function(str, v)
-		msg(str .. " = " .. math.floor(v.x) .. " " .. math.floor(v.y) .. " " .. math.floor(v.z)) 
-	end
-
-	function PrintDirectons(p, y, r) 
-		local ang = gmod and Angle(p,y,r) or Ang3(math.rad(p),math.rad(y),math.rad(r)) 
-
-		msg("\n======" .. p .. " " .. y .. " " .. r .. "======")
-		if gmod then 		
-			printv("FORWARD", ang:Forward()) 
-			printv("RIGHT", ang:Right()) 
-			printv("UP", ang:Up()) 
-		else 
-			printv("FORWARD", ang:GetForward()) 
-			printv("RIGHT", ang:GetRight()) 
-			printv("UP", ang:GetUp()) 
-		end
-		msg("==================\n")
-	end
-
-	PrintDirectons(0, 0, 0)
-	PrintDirectons(180, 0, 0)
-	PrintDirectons(0, 0, 180)
-end
-
 
 local PI1 = math.pi
 local PI2 = math.pi * 2
