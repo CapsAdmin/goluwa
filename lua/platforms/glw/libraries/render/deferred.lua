@@ -17,13 +17,15 @@ local SHADER = {
 			tex_position = "sampler2D", 
 			tex_specular = "sampler2D",
 			tex_depth = "sampler2D",
-			cam_pos = "vec3",
 			time = "float",
+			model_matrix = "mat4",
+			cam_pos = "vec3",
+			cam_vec = "vec3",
 		},  
 		attributes = {
 			uv = "vec2",
 		},
-		source = [[
+		source = [[			
 			out vec4 out_color;
 			
 			vec3 mix_fog(vec3 color, float depth)
@@ -33,35 +35,41 @@ local SHADER = {
 				float fog_intensity = pow(depth, 30000);
 				fog_intensity = -fog_intensity + 1;
 
-				color = mix(ambient, color, fog_intensity);
+				color = mix(ambient * color, color, fog_intensity);
 				
 				return color;
 			}
 			
-			vec3 calc_light(vec3 normal, vec3 position, vec3 diffuse, float specular)
-			{
-				float light_specular = 0.5;
-				float light_shininess = 1.25;
+			vec3 calc_light(vec3 normal, vec3 position, vec3 diffuse, vec3 specular_map)
+			{			
+				const float method = 1;
+				float light_specular = 2;
+				float light_shininess = 32;
+				float light_radius = 600;
 				vec3 light_color = vec3(1,1,1);
 				
-				vec3 light_pos = vec3(100, 100, -200);
-				vec3 light_dir = light_pos - position;
+				vec3 light_pos = vec3(-400, 200, -200) + vec3(sin(time), 0, cos(time)) * 300;
+				light_pos = cam_pos;
+			
+				vec3 light_vec = light_pos - position;
+				float light_dist = length(light_vec);
+				vec3 light_dir = normalize(light_vec);
 				
 				vec3 final_color = vec3(0, 0, 0);
-				vec3 N = normalize(normal);
-				vec3 L = normalize(light_dir);
+
+				float lambertian = dot(light_dir, normal);
 	
-				float lambert_term = dot(N, L);
-	
-				if (lambert_term > 0.0)
-				{
-					final_color += light_color * diffuse * lambert_term;	
+				if (lambertian > 0.0)
+				{						
+					vec3 R = reflect(-light_dir, normal);
 					
-					vec3 E = normalize(-position);
-					vec3 R = reflect(-L, N);
+					vec3 half_dir = normalize(light_dir + cam_vec);
+					float spec_angle = max(dot(half_dir, normal), 0.0);
+					float S = pow(spec_angle, 16.0);
 					
-					final_color += light_specular * specular * pow(max(dot(R, E), 0.0), light_shininess);
+					final_color = vec3(0,0,0) + lambertian * diffuse + S * specular_map;
 				}
+		
 				
 				return final_color;
 			}
@@ -72,7 +80,7 @@ local SHADER = {
 				vec3 normal = texture2D(tex_normal, uv).rgb;
 				vec3 position = texture2D(tex_position, uv).xyz;
 				
-				float specular = texture2D(tex_specular, uv).r;
+				vec3 specular = texture2D(tex_specular, uv).xyz;
 				float depth = texture2D(tex_depth, uv).a;
 
 				out_color.rgb += calc_light(normal, position, diffuse, specular);				
@@ -156,7 +164,8 @@ function render.InitializeDeffered()
 	
 	shader.model_matrix = render.GetModelMatrix
 	shader.camera_matrix = render.GetCameraMatrix
-	shader.cam_pos = render.GetCamPos
+	shader.cam_pos = function() return render.GetCamPos() end
+	shader.cam_vec = function() return render.GetCamAng():GetRad():GetForward() end
 	shader.time = function() return tonumber(glfw.GetTime()) end
 	
 	shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
@@ -211,7 +220,7 @@ function render.InitializeDeffered()
 	
 end
 
-local size = 6
+local size = 4
 
 function render.DrawDeffered(w, h)
 	render.Start3D()
