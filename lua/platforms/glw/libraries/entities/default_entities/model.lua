@@ -15,7 +15,7 @@ function META:SetScale(v) self.Scale = v self.temp_scale = v * self.Size end
 function META:SetSize(v) self.Size = v self.temp_scale = v * self.Scale end
 
 function META:Draw()
-	render.PushMatrix(self.Pos, self.Angles, self.temp_scale)
+	render.PushWorldMatrix(self.Pos, self.Angles, self.temp_scale)
 							
 		if self.Model:IsValid() then		
 			self.Model:Draw()
@@ -26,7 +26,7 @@ function META:Draw()
 				ent:Draw()
 			end
 		end
-	render.PopMatrix()
+	render.PopWorldMatrix()
 end   
 
 entities.Register(META)

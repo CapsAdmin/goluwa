@@ -10,8 +10,8 @@ local data = {
 	
 	vertex = {
 		uniform = {
-			camera_matrix = "mat4",
-			model_matrix = "mat4",
+			projection_matrix = "mat4",
+			world_matrix = "mat4",
 		},			
 		attributes = {
 			position = "vec2",
@@ -22,7 +22,7 @@ local data = {
 			{color = "vec4"},
 		},	
 		-- if main is not defined it will wrap void main() { *line here* } around the line
-		source = "gl_Position = camera_matrix * model_matrix * vec4(position, 0.0, 1.0);"
+		source = "gl_Position = projection_matrix * world_matrix * vec4(position, 0.0, 1.0);"
 	},
 	
 	fragment = { 
@@ -76,8 +76,8 @@ local mesh = mat:CreateVertexBuffer({
 })
 
 mesh.UpdateUniforms = function(self)		
-	self.model_matrix = render.GetModelMatrix()
-	self.camera_matrix = render.GetCameraMatrix()
+	self.world_matrix = render.GetWorldMatrix()
+	self.projection_matrix = render.GetProjectionMatrix()
 end
  
 event.AddListener("OnDraw2D", "hm", function()

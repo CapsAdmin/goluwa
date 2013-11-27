@@ -263,11 +263,11 @@ local commands =
 			
 			mat:Translate(Vector(part.pos.x, part.pos.y))
 			
-			cam.PushModelMatrix(mat)
+			cam.PushWorldMatrix(mat)
 		end,
 		
 		post = function()
-			cam.PopModelMatrix()
+			cam.PopWorldMatrix()
 		end,
 	},
 	
@@ -287,11 +287,11 @@ local commands =
 				mat:Translate(-Vector(center_x, center_y, 0))
 			mat:Translate(-center)
 			
-			cam.PushModelMatrix(mat)
+			cam.PushWorldMatrix(mat)
 		end,
 		
 		post = function()
-			cam.PopModelMatrix()
+			cam.PopWorldMatrix()
 		end,
 	},
 	

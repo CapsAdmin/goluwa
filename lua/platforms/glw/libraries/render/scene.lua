@@ -18,8 +18,9 @@ function render.DrawScene(window, dt)
 			end
 
 			render.Start3D()
-			event.Call("OnDraw3D", dt)
-
+				event.Call("OnDraw3D", dt)
+			render.End3D()
+	
 			if render.gbuffer then
 				render.gbuffer:End()
 				render.DrawDeffered(window:GetSize():Unpack())			

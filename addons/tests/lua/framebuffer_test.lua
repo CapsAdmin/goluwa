@@ -35,14 +35,14 @@ local fb = render.CreateFrameBuffer(500, 500, {
 local gbuff_shader = SuperShader("deferred", {
 	vertex = {
 		uniform = {
-			camera_matrix = "mat4",
-			model_matrix = "mat4",
+			projection_matrix = "mat4",
+			world_matrix = "mat4",
 		},			
 		attributes = {
 			{pos = "vec2"},
 			{uv = "vec2"},
 		},
-		source = "gl_Position = camera_matrix * model_matrix * vec4(pos, 0.0, 1.0);"
+		source = "gl_Position = projection_matrix * world_matrix * vec4(pos, 0.0, 1.0);"
 	},
 	fragment = {
 		uniform = {
@@ -88,8 +88,8 @@ local screen_rect = gbuff_shader:CreateVertexBuffer({
 	{pos = {0, 0}, uv = {0, 1}},
 })
 
-screen_rect.model_matrix = render.GetModelMatrix
-screen_rect.camera_matrix = render.GetCameraMatrix
+screen_rect.world_matrix = render.GetWorldMatrix
+screen_rect.projection_matrix = render.GetProjectionMatrix
 screen_rect.cam_pos = render.GetCamPos
 
 local tex = Texture(64,64):Fill(function() 
@@ -98,7 +98,7 @@ end)
 
 event.AddListener("OnDraw2D", "lol", function()
 	
-	render.PushMatrix()
+	render.PushWorldMatrix()
 		surface.Translate(5, 5)
 		surface.Scale(500, 500)
 		
@@ -107,7 +107,7 @@ event.AddListener("OnDraw2D", "lol", function()
 		screen_rect.tex_position = fb:GetTexture("position") 
 		
 		screen_rect:Draw()
-	render.PopMatrix()   
+	render.PopWorldMatrix()   
 	
 	fb:Begin()
 		surface.Color(1,1,1,1)
