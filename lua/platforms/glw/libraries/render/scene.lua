@@ -7,9 +7,9 @@ end
 console.CreateVariable("render_accum", false)
 
 function render.DrawScene(window, dt)
+	render.delta = dt
 	render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
-
-	render.Start(window)
+	render.Start(window)	
 		event.Call("PreDisplay", dt)
 		
 		if render.gbuffer_enabled then
@@ -19,7 +19,7 @@ function render.DrawScene(window, dt)
 
 			render.Start3D()
 				event.Call("OnDraw3D", dt)
-			render.End3D()
+			render.End3D()	
 	
 			if render.gbuffer then
 				render.gbuffer:End()
@@ -28,7 +28,8 @@ function render.DrawScene(window, dt)
 		end		
 			
 		render.Start2D()
-		event.Call("OnDraw2D", dt)
+			event.Call("OnDraw2D", dt)
+		render.End2D()
 		
 		event.Call("PostDisplay", dt)
 		

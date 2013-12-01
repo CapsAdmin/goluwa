@@ -1,14 +1,13 @@
 local SHADER = {
 	vertex = {
 		uniform = {
-			projection_matrix = "mat4",
-			world_matrix = "mat4",
+			pvm_matrix = "mat4",
 		},			
 		attributes = {
 			{pos = "vec2"},
 			{uv = "vec2"},
 		},
-		source = "gl_Position = projection_matrix * world_matrix * vec4(pos, 0.0, 1.0);"
+		source = "gl_Position = pvm_matrix * vec4(pos, 0.0, 1.0);"
 	},
 	fragment = {
 		uniform = {
@@ -18,7 +17,6 @@ local SHADER = {
 			tex_specular = "sampler2D",
 			tex_depth = "sampler2D",
 			time = "float",
-			world_matrix = "mat4",
 			cam_pos = "vec3",
 			cam_vec = "vec3",
 		},  
@@ -44,7 +42,7 @@ local SHADER = {
 			{			
 				const float method = 1;
 				float light_specular = 2;
-				float light_shininess = 32;
+				float light_shininess = 128;
 				float light_radius = 600;
 				vec3 light_color = vec3(1,1,1);
 				
@@ -94,7 +92,6 @@ local SHADER = {
 } 
 
 local PPSHADER = {
-	vertex = SHADER.vertex,
 	fragment = {
 		uniform = {
 			tex_diffuse = "sampler2D",
@@ -163,8 +160,7 @@ function render.InitializeDeffered()
 
 	local shader = render.CreateSuperShader("deferred", SHADER)
 	
-	shader.world_matrix = render.GetWorldMatrix
-	shader.projection_matrix = render.GetProjectionMatrix
+	shader.pvm_matrix = render.GetPVWMatrix2D
 	shader.cam_pos = function() return render.GetCamPos() end
 	shader.cam_vec = function() return render.GetCamAng():GetRad():GetForward() end
 	shader.time = function() return tonumber(glfw.GetTime()) end
@@ -200,9 +196,9 @@ function render.InitializeDeffered()
 		},
 	}) 
 	
-	local shader = render.CreateSuperShader("post_process", PPSHADER)
-	shader.world_matrix = render.GetWorldMatrix
-	shader.projection_matrix = render.GetProjectionMatrix
+	local shader = render.CreateSuperShader("post_process", PPSHADER, "deferred")
+	shader.pvm_matrix = render.GetPVWMatrix2D
+
 	shader.cam_pos = render.GetCamPos
 	shader.tex_diffuse = render.pp_buffer:GetTexture("diffuse")
 	shader.tex_depth = render.gbuffer:GetTexture("depth")
@@ -288,3 +284,5 @@ end
 if render.deferred_shader then
 	render.InitializeDeffered()
 end
+
+event.AddListener("OnWindowResized", "gbuffer_resize", render.InitializeDeffered)

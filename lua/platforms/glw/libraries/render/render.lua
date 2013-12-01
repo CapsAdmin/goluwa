@@ -80,21 +80,21 @@ function render.Initialize(w, h, window)
 	
 	render.w = w
 	render.h = h
+	render.camera.w = w
+	render.camera.h = h
 	
 	gl.Enable(e.GL_BLEND)
 	gl.Enable(e.GL_TEXTURE_2D)
 
-	gl.Enable(e.GL_CULL_FACE)
+--	gl.Enable(e.GL_CULL_FACE)
 	
 	gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
-	gl.PolygonMode(e.GL_FRONT_AND_BACK, e.GL_FILL)
+	--gl.PolygonMode(e.GL_FRONT_AND_BACK, e.GL_FILL)
 	
 	gl.Disable(e.GL_DEPTH_TEST)
-	gl.CullFace(e.GL_BACK)
+	--gl.CullFace(e.GL_BACK)
 	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
-	
-	render.CreateMatrices()
 	
 	render.InitializeDeffered()
 	
