@@ -245,6 +245,8 @@ function love.draw()
 	end
 	
 	love.graphics.printf(string.sub(text,1,(love.timer.getTime()-time_now)*12),(1280/2)-(640/2),0,wrap_size)
+	
+	love.graphics.print(tostring(love.timer.getFPS()))
 end
 
 if lovemu then return end
