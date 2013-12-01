@@ -73,8 +73,7 @@ function surface.Initialize()
 			{pos = {0, 0}, uv = {0, 0}, color = {1,1,1,1}},
 		})
 		
-		mesh.world_matrix = render.GetWorldMatrix
-		mesh.projection_matrix = render.GetProjectionMatrix	
+		mesh.pvm_matrix = render.GetPVWMatrix2D
 		
 		surface.fontmesh = mesh
 		surface.fontshader = shader
@@ -562,6 +561,7 @@ function surface.DrawRect(x,y, w,h, a, ox,oy)
 		if a then
 			surface.Rotate(a)
 		end
+		
 		if ox then
 			surface.Translate(-ox, -oy)
 		end

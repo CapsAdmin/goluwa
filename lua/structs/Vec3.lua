@@ -157,7 +157,7 @@ Returns x, y, iVisibility.
 
 
 function META:ToScreen(ang, w, h, fov)
-	ang = ang or render.cam_ang
+	ang = ang or render.GetCamAng()
 
 	local _w, _h = surface.GetScreenSize()
 	w = w or _w
@@ -165,7 +165,7 @@ function META:ToScreen(ang, w, h, fov)
 
 	fov = fov or math.rad(render.cam_fov)
 
-	local dir = self:Copy() - render.cam_pos
+	local dir = self:Copy() - render.GetCamPos()
 	dir:Normalize()	
 			
     --Same as we did above, we found distance the camera to a rectangular slice of the camera's frustrum, whose width equals the "4:3" width corresponding to the given screen height.

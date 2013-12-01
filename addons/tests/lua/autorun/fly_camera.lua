@@ -43,6 +43,6 @@ event.AddListener("RenderContextInitialized", "fly_camera", function()
 	
 		cam_pos = cam_pos + Vec3(0,0,0)
 	
-		render.SetCam(cam_pos, cam_ang:GetDeg(), 90)
+		render.SetupView(cam_pos, cam_ang:GetDeg(), 90)
 	end) 
 end)
