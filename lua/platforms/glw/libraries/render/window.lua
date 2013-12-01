@@ -21,6 +21,7 @@ do -- window meta
 	META.Type = "glfw window"
 
 	function META:Remove()
+		if self.OnRemove then self:OnRemove() end
 		event.RemoveListener("OnUpdate", self)
 		glfw.DestroyWindow(self.__ptr)
 		utilities.MakeNULL(self)
@@ -78,6 +79,10 @@ do -- window meta
 		glfw.SetInputMode(self.__ptr, e.GLFW_CURSOR, b and e.GLFW_CURSOR_DISABLED or e.GLFW_CURSOR_NORMAL)
 	end
 
+	function META:GetMouseScrollDelta()
+		
+	end
+		
 	function META:GetMouseDelta()
 		return self.mouse_delta or Vec2()
 	end
@@ -97,6 +102,10 @@ do -- window meta
 		self:UpdateMouseTrap(dt)
 
 		render.DrawScene(self, dt)
+	end
+	
+	function META:OnWindowClose()
+		self:Remove()
 	end
 	
 	function render.CreateWindow(width, height, title)	

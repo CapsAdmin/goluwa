@@ -1,28 +1,32 @@
 local header = include("header.lua")
-
-include("enums.lua")
-
-local reverse_enums = {}
+local enums = include("enums.lua")
 
 ffi.cdef(header)
 
-local library = 
-{
-	["OSX"] = "OpenGL.framework/OpenGL",
-	["Windows"] = "OPENGL32.DLL",
-	["Linux"] = "libGL.so",
-	["BSD"] = "libGL.so",
-	["POSIX"] = "libGL.so",
-	["Other"] = "libGL.so",
+local lib = {
+	OSX = "OpenGL.framework/OpenGL",
+	Windows = "OPENGL32.DLL",
+	Linux = "libGL.so",
+	BSD = "libGL.so",
+	POSIX = "libGL.so",
+	Other = "libGL.so",
 }
 
-local library = ffi.load(library[ffi.os])
+local lib = ffi.load(lib[ffi.os])
 
 local gl = _G.gl or {}
+local e = _G.e or gl
 
-gl.lib = library
+gl.lib = lib
+gl.header = header
+gl.enums = enums
+
+for k, v in pairs(enums) do
+	e[k] = v
+end
 
 local suppress = false
+local reverse_enums = {}
 
 gl.call_count = 0
 
@@ -71,18 +75,18 @@ end
 for line in header:gmatch("(.-)\n") do
 	local func_name = line:match(" (gl%u.-) %(")
 	if func_name then
-		add_gl_func(func_name:sub(3), library[func_name])
+		add_gl_func(func_name:sub(3), lib[func_name])
 	end 
 end
 
 if WINDOWS then
 	ffi.cdef"void *wglGetProcAddress(const char *);"
-	gl.GetProcAddress = library.wglGetProcAddress
+	gl.GetProcAddress = lib.wglGetProcAddress
 end
 
 if LINUX then
 	ffi.cdef"void *glXGetProcAddress(const char *);"
-	gl.GetProcAddress = library.glXGetProcAddress
+	gl.GetProcAddress = lib.glXGetProcAddress
 end
 
 -- mini glew..
@@ -98,7 +102,7 @@ function gl.InitMiniGlew()
 	for line in header:gmatch("(.-)\n") do
 		local func_name = line:match(" (gl%u.-) %(")
 		if func_name then
-			add_gl_func(func_name:sub(3), library[func_name])
+			add_gl_func(func_name:sub(3), lib[func_name])
 		end 
 	end
 	
@@ -109,7 +113,7 @@ function gl.InitMiniGlew()
 			local key, val = line:match("([1-9a-Z_]+) (.+)")
 			
 			if key and val then
-				e[key] = tonumber(val)
+				enums[key] = tonumber(val)
 			elseif line:find("typedef") then
 				--print(line)
 			else
@@ -158,10 +162,11 @@ function gl.InitMiniGlew()
 		end
 	end
 	
-	for k, v in pairs(e) do
-		if k:sub(0,3) == "GL_" and k ~= "GL_INVALID_ENUM" then
+	for k, v in pairs(enums) do
+		if k ~= "GL_INVALID_ENUM" then
 			reverse_enums[v] = k
 		end
+		e[k] = v
 	end
 		
 	setlogfile()

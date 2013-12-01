@@ -136,7 +136,14 @@ function lovemu.boot(folder)
 		
 	setfenv(run, env)
 	
-	event.AddListener("OnDraw2D", "lovemu_" .. folder, function(dt)		
+	local id = "lovemu_" .. folder
+	
+	event.AddListener("OnWindowClose", id, function()
+		event.RemoveListener("OnDraw2D", id)
+		return e.EVENT_DESTROY
+	end)
+	
+	event.AddListener("OnDraw2D", id, function(dt)		
 		love.graphics.clear()
 		lovemu.delta = dt
 		surface.SetWhiteTexture()

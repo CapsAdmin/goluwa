@@ -64,6 +64,8 @@ function render.Initialize(w, h, window)
 	check(w, "number")
 	check(h, "number")
 	
+	glfw.Init()
+
 	window = window or render.CreateWindow(w, h)
 	
 	--render.EnableDebug(true)
@@ -103,11 +105,12 @@ function render.Initialize(w, h, window)
 	end
 	
 	event.Call("RenderContextInitialized")
-	
+		
 	return window
 end
 
 function render.Shutdown()
+	glfw.Terminate()
 end
 
 local last_w
