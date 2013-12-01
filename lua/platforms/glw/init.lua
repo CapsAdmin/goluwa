@@ -4,7 +4,7 @@ if not gl then
 	curses = include("ffi_binds/curses/init.lua")
 	
 	-- model decoder
-	assimp = include("ffi_binds/assimp/assimp.lua")
+	assimp = include("ffi_binds/assimp/init.lua")
 	
 	-- image decoder
 	freeimage = include("ffi_binds/freeimage.lua")
@@ -13,18 +13,18 @@ if not gl then
 	freetype = include("ffi_binds/freetype.lua")
 	
 	-- sound decoder
-	soundfile = include("ffi_binds/soundfile/soundfile.lua")
+	soundfile = include("ffi_binds/soundfile/init.lua")
 
 	-- OpenGL
-	gl = include("ffi_binds/gl/gl.lua")
+	gl = include("ffi_binds/gl/init.lua")
 	glu = include("ffi_binds/glu.lua")
 	
 	-- window manager
 	glfw = include("ffi_binds/glfw.lua")
 	
 	-- OpenAL
-	al = include("ffi_binds/al/al.lua")
-	alc = include("ffi_binds/al/alc.lua")
+	al = include("ffi_binds/al/init.lua")
+	alc = include("ffi_binds/alc.lua")
 end
 
 -- high level implementation of curses

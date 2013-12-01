@@ -22,6 +22,10 @@ function window.Open(...)
 	event.Call("WindowOpened", wnd)
 end
 
+function window.IsOpen()
+	return window.wnd:IsValid()
+end
+
 function window.Close()
 	if window.wnd:IsValid() then
 		window.wnd:Remove()
