@@ -3,8 +3,9 @@ local rate_cvar = console.CreateVariable("max_fps", 120)
 local fps_cvar = console.CreateVariable("show_fps", false)
 local smooth_fps = 0
 
-local function calc_fps(fps)	
-	if fps < 0.0083 then
+local function calc_fps(dt)	
+	local fps = dt
+	if dt < 0.0083 then
 		smooth_fps = smooth_fps + ((fps - smooth_fps) * dt)
 	
 		system.SetWindowTitle(("FPS: %i"):format(1/smooth_fps), 1)
