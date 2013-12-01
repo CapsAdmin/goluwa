@@ -209,6 +209,8 @@ do -- font
 	end
 	
 	function love.graphics.print(text, x, y, r, sx, sy)
+		x = x or 0
+		y = y or 0
 		sx = sx or 1
 		sy = sy or 1
 		r=r or 0
