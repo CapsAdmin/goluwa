@@ -119,7 +119,7 @@ function PANEL:AddTab(title, fill_pnl)
 		pnl:SetVisible(false)
 		pnl.OnRemove = function() 
 			btn:Remove() 
-			self.tabs[title] = nil 
+--			self.tabs[title] = nil 
 		end
 		
 	self.tabs[title] = pnl
