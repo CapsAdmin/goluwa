@@ -6,11 +6,11 @@ local lovemu=lovemu
 local ceil=math.ceil
 
 function love.timer.getDelta()
-	return lovemu.delta
+	return render.delta or 0
 end
 
 function love.timer.getFPS()
-	return ceil(1/lovemu.delta)
+	return ceil(1/render.delta or 0)
 end
 
 function love.timer.getMicroTime()
