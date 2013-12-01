@@ -272,13 +272,28 @@ do -- texture object
 		
 		gl.BindTexture(format.type, self.id)
 
-		gl.TexStorage2D(
-			format.type, 
-			format.mip_map_levels, 
-			format.internal_format, 
-			self.size.w, 
-			self.size.h
-		)
+		if gl.TexStorage2D then
+			gl.TexStorage2D(
+				format.type, 
+				format.mip_map_levels, 
+				format.internal_format, 
+				self.size.w, 
+				self.size.h
+			)
+		else
+			gl.TexImage2D(
+				format.type,
+				format.mip_map_levels,
+				format.stride,
+				self.size.w,
+				self.size.h,
+				0,
+				format.format,
+				format.internal_format,
+				nil
+			)
+				
+		end
 		
 		self:UpdateFormat()
 				
