@@ -177,15 +177,11 @@ do -- fonts
 		W = w
 		H = h
 	end
-			
-	function surface.DrawText(str)
-		if not ft.ptr or not ft.current_font then return end
-		
-		str = tostring(str) 
-
+	
+	local function get_text_data(str)
 		local face = ft.current_font.face
-		local data = ft.current_font.strings[str]
 		local info = ft.current_font.info 
+		local data = ft.current_font.strings[str]
 
 		if not data then
 			-- get the tallest character and use it as height
@@ -200,7 +196,7 @@ do -- fonts
 			bbox = bbox[0]
 			
 			data = {chars = {}, h = face.glyph.bitmap.rows - bbox.yMin + 1, w = info.size}
-			
+						
 			local w = 0
 			
 			for _, str in pairs(utf8.totable(str)) do
@@ -307,7 +303,18 @@ do -- fonts
 						
 			ft.current_font.strings[str] = data
 		end 
-		 
+		
+		return data
+	end
+			
+	function surface.DrawText(str)
+		if not ft.ptr or not ft.current_font then return end
+		
+		str = tostring(str) 
+
+		local info = ft.current_font.info 
+		local data = get_text_data(str)
+				 
 		if surface.debug then
 			surface.SetWhiteTexture()
 			surface.Color(1, 0, 0, 0.5)
@@ -329,22 +336,18 @@ do -- fonts
 	end 
 	
 	function surface.GetTextSize(str)
+		str = tostring(str)
+		
 		if not ft.current_font then
 			return 0, 0
 		end
 	
-		local data = ft.current_font.strings[str]
+		local data = get_text_data(str)
 		
 		if str == " " then
 			return (ft.current_font.info.size / 2) * W, ft.current_font.info.size * H
 		elseif str == "\t" then
 			return (ft.current_font.info.size * 2) * W, (ft.current_font.info.size * H)
-		elseif not data then
-			surface.DrawText(str) 
-			data = ft.current_font.strings[str]
-			if not data then
-				return 0, 0
-			end
 		end
 	
 		return data.w * W, data.h * H
