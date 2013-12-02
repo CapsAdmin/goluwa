@@ -1,24 +1,24 @@
 local rate_cvar = console.CreateVariable("max_fps", 120)
 
 local fps_cvar = console.CreateVariable("show_fps", false)
-local smooth_fps = 0
+
+local fps_add = 0
+local avg_fps = 1
+local count = 0
 
 local function calc_fps(dt)	
-	local fps = dt
-	if dt < 0.0083 then
-		smooth_fps = smooth_fps + ((fps - smooth_fps) * dt)
+	local fps = 1/dt
 	
-		system.SetWindowTitle(("FPS: %i"):format(1/smooth_fps), 1)
+	if count >= avg_fps / 10 then
+		avg_fps = fps_add / count
+		fps_add = 0
+		count = 0
 	else
-		system.SetWindowTitle(("FPS: %i"):format(1/fps), 1)
+		fps_add = fps_add + fps
+		count = count + 1
 	end
-	
-	if 1/smooth_fps < 30 then
-		system.SetWindowTitle(("MS: %f"):format(smooth_fps*100), 3)
-	else
-		system.SetWindowTitle(nil, 3)
-	end
-	
+
+	system.SetWindowTitle(("FPS: %i"):format(avg_fps), 1)
 
 	if gl.call_count then
 		system.SetWindowTitle(("gl calls: %i"):format(gl.call_count), 2)
