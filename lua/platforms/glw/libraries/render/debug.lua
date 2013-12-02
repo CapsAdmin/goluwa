@@ -1,3 +1,59 @@
+do
+	local spacing = 50
+	local x_offset = 10
+	local y_offset = 20
+
+	local function draw_axis(axis, x, y)
+		local w,h = surface.GetTextSize(axis)
+		surface.SetTextPos(spacing * x + x_offset, spacing * y + y_offset + h/2 - 2)
+		surface.DrawText(axis)
+	end
+
+	function render.DrawMatrix(x, y, m, name)
+		surface.PushMatrix(x, y)
+		
+		surface.SetFont("default")
+		surface.SetWhiteTexture()
+		
+		surface.Color(1, 0, 0, 0.5)
+		surface.DrawRect(0, y_offset, spacing * 3, spacing * 3)
+		
+		surface.Color(0, 1, 0, 0.5)
+		surface.DrawRect(spacing * 3, y_offset, spacing, spacing * 3)
+		draw_axis("x", 4, 0)
+		draw_axis("y", 4, 1)
+		draw_axis("z", 4, 2)
+		
+		
+		surface.Color(0, 0, 1, 0.5)
+		surface.DrawRect(0, y_offset + spacing * 3, spacing * 3, spacing - y_offset/2)
+		
+		--surface.Color(1, 0, 1, 0.5)
+		--surface.DrawRect(spacing * 3, y_offset + spacing * 3, spacing, spacing - y_offset/2)
+		
+		surface.Color(1,1,1,1)
+		
+		surface.SetTextPos(0, 0)
+		surface.DrawText(name)
+		
+		for x = 0, 3 do
+		for y = 0, 3 do
+			local str = tostring(math.round(m[x*4+y], 2))
+			local x_offset_2 = 0
+			
+			if str:sub(1, 1)  == "-" then 
+				x_offset_2 = surface.GetTextSize("-")
+			end
+			local w, h = surface.GetTextSize(str)
+			surface.SetTextPos(x*spacing + x_offset - x_offset_2, y*spacing + y_offset + h/2 - 2)
+			surface.DrawText(str)
+		end
+		end
+		
+		surface.PopMatrix()
+	end
+end
+
 local severities = {
 	[0x9146] = "important", -- high
 	[0x9147] = "warning", -- medium
