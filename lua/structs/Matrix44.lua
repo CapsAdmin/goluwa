@@ -566,13 +566,20 @@ function META:Translate(x, y, z)
 end
 
 function META:Rotate(a, x, y, z)
+	if not z then
+				matrix_rotate(a, 1, 0, 0, self)
+				matrix_rotate(x, 0, 1, 0, self)
+		return 	matrix_rotate(y, 0, 0, 1, self)
+	end	
 	return matrix_rotate(a, x, y, z, self)
 end
 
 function META:__tostring()
-	local args = {}
-	for i = 0, 15 do args[i+1] = self[i] end
-	return string.format("matrix44[%p]:\n" .. ("%f %f %f %f\n"):rep(4), self.m, unpack(args))
+	return string.format("matrix44[%p]:\n" .. ("%f %f %f %f\n"):rep(4), self.m,
+		self[0], self[4], self[8], self[12],
+		self[1], self[5], self[9], self[13],
+		self[2], self[6], self[10], self[14],
+		self[3], self[7], self[11], self[15])
 end
 
 function Matrix44(m)
