@@ -15,7 +15,7 @@ function META:GetNick()
 		end
 	end
 	
-	return self.nv.Nick
+	return self.nv.Nick or "PubePurse"
 end
 
 function META:__tostring()
