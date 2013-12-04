@@ -29,7 +29,6 @@ local function add_arch(arch)
 
 		objdir("../obj/")
 		
-		includedirs("../src/bullet/")
 		includedirs("../src/")
 
 		files("../src/**.c")
