@@ -42,6 +42,7 @@ end
 local function path_loader(name, paths, loader_func)
   local errors = {}
   local loader
+  local found_path
 
   name = sgsub(name, '%.', '/')
 
@@ -53,6 +54,7 @@ local function path_loader(name, paths, loader_func)
     loader, errmsg = loader_func(path)
 
     if loader then
+		found_path = path
       break
     else
       -- XXX error for when file isn't readable?
@@ -62,7 +64,7 @@ local function path_loader(name, paths, loader_func)
   end
 
   if loader then
-    return loader
+    return loader, found_path
   else
     return tconcat(errors, '\n') .. '\n'
   end
@@ -83,7 +85,7 @@ local function c_loader(name)
   local init_func_name = get_init_function_name(name)
 
   return path_loader(name, package.cpath, function(path)
-    return ploadlib(path, init_func_name)
+    return ploadlib(path, init_func_name), path
   end)
 end
 
@@ -92,7 +94,7 @@ local function all_in_one_loader(name)
   local base_name      = smatch(name, '^[^.]+')
 
   return path_loader(base_name, package.cpath, function(path)
-    return ploadlib(path, init_func_name)
+    return ploadlib(path, init_func_name), path
   end)
 end
 
@@ -101,20 +103,20 @@ local function findchunk(name)
   local found
 
   for _, loader in ipairs(_M.loaders) do
-    local chunk = loader(name)
-
+    local chunk, path = loader(name)
+	
     if type(chunk) == 'function' then
-      return chunk
+      return chunk, path
     elseif type(chunk) == 'string' then
       errors[#errors + 1] = chunk
     end
   end
 
   for _, loader in ipairs(package.loaders) do
-    local chunk = loader(name)
+    local chunk, path = loader(name)
 
     if type(chunk) == 'function' then
-      return chunk
+      return chunk, path
     elseif type(chunk) == 'string' then
       errors[#errors + 1] = chunk
     end
@@ -129,14 +131,16 @@ local function load(name)
     if not chunk then
       error(errors, 3)
     end
-	
-	return chunk
+		
+	return chunk, errors
 end
 
 local function require(name)
   if package.loaded[name] == nil then
-    local result = load(name)()
-
+    local func, path = load(name)
+	if path then path = path:match("(.+)[\\/]") end
+	local result = func(path)
+	
     if result ~= nil then
       package.loaded[name] = result
     elseif package.loaded[name] == nil then
@@ -147,10 +151,11 @@ local function require(name)
   return package.loaded[name]
 end
 
-local function require_function(name)
+local function require_function(name, path)
   if package.loaded[name] == nil then
-    local result = name()
-
+	if path then path = path:match("(.+)[\\/]") end
+    local result = name(path)	
+	
     if result ~= nil then
       package.loaded[name] = result
     elseif package.loaded[name] == nil then
