@@ -362,13 +362,17 @@ function PANEL:OnKeyInput(key, press, skip_mods)
 				else
 					self:OnCharInput("\t")
 				end
-			elseif key == "enter" and self.MultiLine then
-				local space = line:match("^(%s+)") or ""
+			elseif key == "enter" then
+				if self.MultiLine then
+					local space = line:match("^(%s+)") or ""
 
-				self:InsertString("\n" .. space, true)
-				self.CaretPos.x = #space
-				self.real_x = #space
-				self.CaretPos.y = self.CaretPos.y + 1
+					self:InsertString("\n" .. space, true)
+					self.CaretPos.x = #space
+					self.real_x = #space
+					self.CaretPos.y = self.CaretPos.y + 1
+				elseif self.OnEnter then
+					self:OnEnter(self.Text)
+				end
 			end
 		end
 
