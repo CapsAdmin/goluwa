@@ -79,9 +79,9 @@ function lovemu.boot(folder)
 	local env = setmetatable({
 		love = love, 
 		require = function(...) 
-			local func = require.load(...) 
+			local func, path = require.load(...) 
 			setfenv(func, getfenv(2)) 
-			return require.require_function(func) 
+			return require.require_function(func, path) 
 		end
 	}, 
 	{

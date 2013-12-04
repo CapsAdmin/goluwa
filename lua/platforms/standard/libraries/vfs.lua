@@ -429,7 +429,7 @@ function vfs.loadfile(path)
 	local path = vfs.GetAbsolutePath(path)
 	
 	if path then
-		return loadfile(path)
+		return loadfile(path), path
 	end
 	
 	return false, "No such file or directory"
