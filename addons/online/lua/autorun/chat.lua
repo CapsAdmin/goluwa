@@ -71,6 +71,72 @@ if CLIENT then
 		
 		return false
 	end)
+	
+	if aahh then
+
+		local showing = false
+		local i = 1
+		local history = {}
+		local panel = NULL
+		
+		console.AddCommand("showchat", function()
+			
+			if not showing then
+				if chatgui then chatgui.Show(1) end
+				panel = aahh.Create("text_input")
+					panel:SetPos(Vec2(50, Vec2(render.GetScreenSize()).h - 100))
+					panel:SetSize(Vec2(512, 16))
+					panel:MakeActivePanel()
+					
+					panel.OnUnhandledKey = function(_, key)	
+						local browse = false
+						
+						if key == "up" then
+							i = math.clamp(i + 1, 1, #history)
+							browse = true
+						elseif key == "down" then
+							i = math.clamp(i - 1, 1, #history)
+							browse = true
+						end
+						
+						if browse and history[i] then
+							panel:SetText(history[i])
+							panel:SetCaretPos(#history[i])
+						end
+										
+						if key == "escape" then
+							panel:OnEnter("")
+						end
+					end
+					
+					panel.OnTextChanged = function(self, str)
+						event.Call("OnChatTextChanged", str)
+					end
+					
+					panel.OnEnter = function(_, str)
+						i = 0
+						if #str > 0 then
+							chat.Say(str)
+							if history[1] ~= str then
+								table.insert(history, 1, str)
+							end
+						end
+						
+						window.ShowCursor(false)
+						showing = false
+						
+						panel:Remove()
+						
+						event.Call("OnChatTextChanged", "")
+					end
+				
+				window.ShowCursor(true)
+				showing = true
+			end
+		end)
+		
+		input.Bind("y", "showchat")
+	end
 end
 
 if SERVER then
