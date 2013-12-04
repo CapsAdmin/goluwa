@@ -18,6 +18,28 @@ print = function(...)
 	table.insert(_G.LOG_BUFFER, args) 
 end
 
+do
+	-- load useful jit libraries
+	
+	-- need to do this in order for jit/v.lua and jit/dump.lua to load its required libraries properly
+	table.insert(package.loaders, function(name)
+		name = name:gsub("%.", "/")
+		return loadfile("../../../lua/modules/" .. name .. ".lua")
+	end)
+	
+	jit.v = require("jit.v")
+	jit.dump = require("jit.dump")	
+
+	if DEBUG then
+		local base = "../../../userdata/" .. e.USERNAME:lower() .. "/logs/"
+		jit.v.on(base .. "jit_verbose_output.txt")
+		--jit.dump.on(nil, base .. "jit_dump_output.txt")
+	end
+		
+	-- remove the loader we just made. it's made more properly later on
+	table.remove(package.loaders, #package.loaders)
+end
+
 -- put all c functions in a table
 if not _OLD_G then
 	_R = debug.getregistry()

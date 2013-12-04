@@ -467,72 +467,11 @@ do -- transparent window
 	system.EnableWindowTransparency = set
 end
 
-local external = {}
-
 function system.DebugJIT(b)
 	if b then
-		jit.attach(function(what, tr, func, pc, otr, oex) 			
-			if what == "abort" then
-				setlogfile("jit_trace_debug")
-				
-				-- try to translate the external function to a name
-				local ext_name = external[oex]
-				
-				if not ext_name then
-					-- try once if it doesn't exist, maybe it'sa module
-					for k, v in pairs(_G) do
-						if type(v) == "function" then
-							external[v] = k
-						elseif type(v) == "table" then
-							for k2, v in pairs(v) do
-								if type(v) == "function" then
-									external[v] = k .. "." .. k2
-								end
-							end
-						end
-					end
-					ext_name = external[oex] or tostring(oex)
-				end				
-				
-				-- try to figure out a better name for the function that couldn't be jit compiled
-				local lua_name = func
-				local extra_info = ""
-				local info = debug.getinfo(func)
-				
-				if info.source then
-					local lua = vfs.Read(info.source:sub(2))
-					if lua then
-						lua_name = lua:explode("\n")[info.linedefined] or info.name or tostring(func)
-						extra_info = info.source .. " " .. info.linedefined .. "-" .. info.lastlinedefined
-					end
-				end	
-				
-				if lua_name then
-					lua_name = lua_name:explode("\n")[1]
-					lua_name = lua_name:trim()
-				else
-					lua_name = func
-				end
-				
-				logn("")
-				logf("could not jit compile %q", lua_name)
-				logn(extra_info)
-				logn("because of the external function ", ext_name)
-				logn("what = ", what)
-				logn("tr = ", tr)
-				logn("func = ", func)
-				logn("pc = ", pc)
-				logn("otr = ", otr)
-				logn("oex = ", oex)
-				logn("")
-				
-				
-				setlogfile()
-			end
-		end, "trace")
+		jit.v.on(R"%DATA%/logs/jit_verbose_output.txt")
 	else
-		-- how to disable?
-		jit.attach(function() end, "trace")
+		jit.v.off(R"%DATA%/logs/jit_verbose_output.txt")
 	end
 end
 
