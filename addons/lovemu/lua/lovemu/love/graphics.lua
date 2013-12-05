@@ -168,7 +168,7 @@ end
 do -- font
 
 	function love.graphics.newFont(a, b)
-		local font = R("lovers/" .. lovemu.demoname .. "/" .. a)
+		local font = a
 		local size = b
 		
 		if not b then
@@ -325,9 +325,7 @@ do -- image
 
 	love.graphics.setDefaultImageFilter = setDefaultFilter
 
-	function love.graphics.newImage(path)
-		path = "/lovers/".. lovemu.demoname .. "/" .. path
-		
+	function love.graphics.newImage(path)		
 		local w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"))
 		
 		local obj = lovemu.NewObject("Image")

@@ -14,11 +14,9 @@ function love.image.newImageData(a, b)
 		w = a
 		h = a
 	elseif not b and type(a) == "string" then
-		local path = "/lovers/".. lovemu.demoname .. "/" .. a
-		
-		if vfs.Exists(path) then
-			w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"))
-		else
+		w, h, buffer = freeimage.LoadImage(a)
+		if w == 0 and h == 0 then
+			a = vfs.Read(a, "rb")
 			w, h, buffer = freeimage.LoadImage(a)
 		end
 	end

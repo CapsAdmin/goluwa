@@ -71,11 +71,10 @@ function lovemu.boot(folder)
 			draw()
 		end
 	end
-		
-	package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..lovemu.demoname.."/?.lua","/","\\")
-	package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..lovemu.demoname.."/?/init.lua","/","\\")
-	package.path=package.path..";"..string.replace(e.ABSOLUTE_BASE_FOLDER.."addons/lovemu/lovers/"..lovemu.demoname.."/?/?.lua","/","\\")
-		
+	
+	vfs.AddModuleDirectory("lovers/" .. lovemu.demoname .. "/")
+	vfs.Mount(R("lovers/" .. lovemu.demoname .. "/"))
+			
 	local env = setmetatable({
 		love = love, 
 		require = function(...) 
@@ -103,7 +102,7 @@ function lovemu.boot(folder)
 	end
 	love.conf(lovemu.conf)
 
-	if vfs.Exists(R("lovers/"..lovemu.demoname.."/conf.lua"))==true then
+	if vfs.Exists(R("conf.lua"))==true then
 		print("LOADING CONF.LUA")
 		
 		local func = vfs.loadfile("lovers/"..folder.."/conf.lua")
