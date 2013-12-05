@@ -180,7 +180,11 @@ do -- texture object
 				for i = 1, stride do
 					temp[i] = buffer[pos+i-1]
 				end
-				colors = {callback(x, y, pos, unpack(temp))}
+				if read_only then
+					if callback(x, y, pos, unpack(temp)) ~= nil then return end
+				else
+					colors = {callback(x, y, pos, unpack(temp))}
+				end
 			end
 		
 			if not read_only then
