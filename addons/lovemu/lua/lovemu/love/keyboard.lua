@@ -2,6 +2,20 @@ local love=love
 local lovemu=lovemu
 love.keyboard={}
 
+do
+	local DELAY = 0.5
+	local INTERVAL = 0.1
+	
+	function love.keyboard.getKeyRepeat()
+		return DELAY, INTERVAL
+	end
+
+	function love.keyboard.setKeyRepeat(delay, interval)
+		DELAY = delay
+		INTERVAL = interval
+	end
+end
+
 local input=input
 
 local keyboard_map={
@@ -51,14 +65,25 @@ for k,v in pairs(keyboard_map) do
 	keyboard_map[v] = k
 end
 
+local CURRENT_CHAR
+
 event.AddListener("OnKeyInput","lovemu_keyboard",function(key,press) --partial
+	key = keyboard_map[key] or key
+	
 	if press then
 		if love.keypressed then
-			love.keypressed(keyboard_map[key] or key)
+			love.keypressed(key, CURRENT_CHAR)
 		end
 	else
 		if love.keyreleased then
-			love.keyreleased(keyboard_map[key] or key)
+			love.keyreleased(key)
 		end
+	end
+end) 
+
+event.AddListener("OnChar","lovemu_keyboard",function(char) --partial
+	CURRENT_CHAR = char
+	if love.textinput then
+		love.textinput(char)
 	end
 end) 

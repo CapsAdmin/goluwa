@@ -3,6 +3,7 @@ lovemu = {}
 lovemu.version = "0.9.0"
 lovemu.demoname = "" --internal, demo folder name
 lovemu.delta = 0 --frametime
+lovemu.textures = {}
 
 include("boot.lua")
 include("realboot.lua")

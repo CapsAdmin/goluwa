@@ -1,5 +1,9 @@
 local love=love
 local lovemu=lovemu
+
+local textures = lovemu.textures
+
+
 love.image={}
 
 function love.image.newImageData(a, b)
@@ -23,10 +27,12 @@ function love.image.newImageData(a, b)
 
 	local obj = lovemu.NewObject("ImageData")
 	
-	obj.tex = Texture(w, h, buffer, {
+	local tex = Texture(w, h, buffer, {
 		mag_filter = e.GL_LINEAR,
 		min_filter = e.GL_LINEAR_MIPMAP_LINEAR ,
 	}) 
+	
+	textures[obj] = tex
 	
 	obj.getSize = function(s) return #buffer end
 	obj.getWidth = function(s) return w end
@@ -36,23 +42,27 @@ function love.image.newImageData(a, b)
 	obj.paste = function(source, dx, dy, sx, sy, sw, sh) end
 	obj.encode = function(outfile) end
 	obj.getString = function() return buffer end
+	obj.setWrap = function()  end
+	obj.getWrap = function()  end
 	
 	
 	obj.getPixel = function(s, x,y, r,g,b,a) 
+		do return math.random(255), math.random(255), math.random(255), math.random(255) end
 		local rr, rg, rb, ra
-		s.tex:Fill(function(_x,_y, i, r,g,b,a) 
+		tex:Fill(function(_x,_y, i, r,g,b,a) 
 			if _x == x and _y == y then 
 				rr = r 
 				rg = g 
 				rb = b 
 				ra = a 
+				return true
 			end
-		end)
+		end, nil, true)
 		return rr or 0, rg or 0, rb or 0, ra or 0
 	end
 	
 	obj.setPixel = function(s, x,y, r,g,b,a) 
-		s.tex:Fill(function(_x,_y, i) 
+		tex:Fill(function(_x,_y, i) 
 			if _x == x and _y == y then 
 				return r,g,b,a
 			end
@@ -60,7 +70,7 @@ function love.image.newImageData(a, b)
 	end
 	
 	obj.mapPixel = function(s, cb) 
-		s.tex:Fill(function(x,y,i, r,g,b,a) 
+		tex:Fill(function(x,y,i, r,g,b,a) 
 			cb(x,y,r,g,b,a) 
 		end, false, true)
 	end

@@ -11,6 +11,8 @@ local window=window
 local type=type
 local lovemu=lovemu
 
+local textures = lovemu.textures
+
 function love.graphics.newQuad(...)
 	local obj = lovemu.NewObject("Quad", ...)
 	
@@ -24,8 +26,8 @@ end
 love.graphics.translate = surface.Translate
 love.graphics.scale = surface.Scale
 love.graphics.rotate = surface.Rotate
-love.graphics.push = gl.PushMatrix
-love.graphics.pop = gl.PopMatrix
+love.graphics.push = surface.PushMatrix
+love.graphics.pop = surface.PopMatrix
 
 local cr, cg, cb, ca = 0, 0, 0, 0
 
@@ -81,10 +83,17 @@ do -- background
 	local br, bg, bb, ba = 0, 0, 0, 0
 
 	function love.graphics.setBackgroundColor(r, g, b, a)
-		br = r or 0
-		bg = g or 0
-		bb = b or 0
-		ba = a or 255
+		if type(r) == "number" then
+			br = r or 0
+			bg = g or 0
+			bb = b or 0
+			ba = a or 255
+		else
+			br = r[1] or 0
+			bg = r[2] or 0
+			bb = r[3] or 0
+			ba = r[4] or 255
+		end
 	end
 
 	function love.graphics.getBackgroundColor()
@@ -187,8 +196,14 @@ do -- font
 		local w, h = surface.GetTextSize("W")
 
 		obj.Size = size
-		obj.getWidth = function(s) return w end
-		obj.getHeight = function(s) return h end
+		
+		obj.getWidth = function(_, str) 
+			return surface.GetTextSize(str)
+		end
+		
+		obj.getHeight = function(_, str) 
+			return select(2, surface.GetTextSize(str))
+		end
 				
 		return obj
 	end
@@ -302,6 +317,7 @@ do -- canvas
 		obj.getWidth = function() return w end
 		obj.getHeight = function() return h end
 		obj.getImageData = function() end
+		obj.clear = function(_, ...) obj.fb:Begin() love.graphics.clear(...) obj.fb:End() end
 		
 		obj.setWrap = function() end
 		obj.getWrap = function() end
@@ -316,7 +332,7 @@ do -- canvas
 		if canvas then
 			canvas.fb:Begin()
 		elseif CANVAS then
-			canvas.fb:End()
+			CANVAS.fb:End()
 		end
 		
 		CANVAS = canvas
@@ -336,13 +352,14 @@ do -- image
 	end
 
 	love.graphics.setDefaultImageFilter = setDefaultFilter
-
+	
 	function love.graphics.newImage(path)		
+		print("LOADING IMAGE FROM PATH "..path)
 		local w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"))
 		
 		local obj = lovemu.NewObject("Image")
 		
-		obj.tex = Texture(w, h, buffer, {
+		textures[obj] = Texture(w, h, buffer, {
 			mag_filter = FILTER,
 			min_filter = FILTER,
 		}) 
@@ -350,10 +367,31 @@ do -- image
 		obj.getWidth = function(s) return w end
 		obj.getHeight = function(s) return h end
 		obj.setFilter = function() end
+		obj.setWrap = function()  end
+		obj.getWrap = function()  end
 		
 		return obj
 	end
-
+	
+	function love.graphics.newImageData(path)		
+		print("LOADING IMAGEDATA FROM PATH "..path)
+		local w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"))
+		
+		local obj = lovemu.NewObject("Image")
+		
+		textures[obj] = Texture(w, h, buffer, {
+			mag_filter = FILTER,
+			min_filter = FILTER,
+		}) 
+		
+		obj.getWidth = function(s) return w end
+		obj.getHeight = function(s) return h end
+		obj.setFilter = function() end
+		obj.setWrap = function()  end
+		obj.getWrap = function()  end
+		
+		return obj
+	end
 end
 
 do -- stencil
@@ -393,7 +431,7 @@ function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy)
 	r=r or 0
 	r=r/0.0174532925
 	
-	surface.SetTexture(drawable.tex)
+	surface.SetTexture(textures[drawable])
 	surface.SetRectUV(quad[1]*quad[5],quad[2]*quad[6],quad[3]*quad[5],quad[4]*quad[6])
 	surface.DrawRect(x,y, quad[3]*sx, quad[4]*sy,r,ox*sx,oy*sy)
 	surface.SetRectUV(0,0,1,1)
@@ -402,7 +440,7 @@ end
 local drawq = love.graphics.drawq
 
 function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
-	if drawable.tex then
+	if textures[drawable] then
 		if type(x) == "table" and x:typeOf("Quad") then
 			drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 		else
@@ -414,9 +452,11 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 			oy=oy or 0
 			r=r or 0
 			r=r/0.0174532925
-						
-			surface.SetTexture(drawable.tex)
-			surface.DrawRect(x,y, drawable.tex.w*sx, drawable.tex.h*sy, r, ox*sx,oy*sy)
+			
+			local tex = textures[drawable]
+			
+			surface.SetTexture(tex)
+			surface.DrawRect(x,y, tex.w*sx, tex.h*sy, r, ox*sx,oy*sy)
 		end
 	end
 end
@@ -431,10 +471,15 @@ function love.graphics.setIcon() --partial
 end
 
 function love.graphics.newShader() --partial
+	local obj = lovemu.NewObject("Shader")
+	
+	obj.getWarnings = function() return "" end
+	obj.send = function() end
+	
+	return obj
 end
 
-function love.graphics.newPixelEffect() --partial
-end
+love.graphics.newPixelEffect = love.graphics.newShader 
 
 function love.graphics.setShader() --partial
 end
@@ -442,4 +487,106 @@ end
 function love.graphics.setPixelEffect() --partial
 end
 
+function love.graphics.setScissor() --partial
+end
 
+function love.graphics.isCreated()
+	return true
+end
+
+function love.graphics.getModes() --partial
+	return {
+		{width=720,height=480},
+		{width=800,height=480},
+		{width=800,height=600},
+		{width=852,height=480},
+		{width=1024,height=768},
+		{width=1152,height=768},
+		{width=1152,height=864},
+		{width=1280,height=720},
+		{width=1280,height=768},
+		{width=1280,height=800},
+		{width=1280,height=854},
+		{width=1280,height=960},
+		{width=1280,height=1024},
+		{width=1365,height=768},
+		{width=1366,height=768},
+		{width=1400,height=1050},
+		{width=1440,height=900},
+		{width=1440,height=960},
+		{width=1600,height=900},
+		{width=1600,height=1200},
+		{width=1680,height=1050},
+		{width=1920,height=1080},
+		{width=1920,height=1200},
+		{width=2048,height=1536},
+		{width=2560,height=1600},
+		{width=2560,height=2048}
+	}
+end
+
+function love.graphics.newSpriteBatch(image, size, usagehint)
+	local obj = lovemu.NewObject("SpriteBatch")
+	local poly = surface.CreatePoly(size)
+	local i = 0
+	
+	local function add_rect(x,y, r, sx,sy, ox,oy, kx,ky)
+		sx = sx or image:getWidth()
+		sy = sy or image:getWidth()
+		
+		poly:SetRect(i, x,y,sx,sy, r, ox,oy)		
+		i = i + 1
+	end
+	
+	local function set_rect(i, x,y, r, sx,sy, ox,oy, kx,ky)	
+		sx = sx or image:getWidth()
+		sy = sy or image:getWidth()
+		
+		poly:SetRect(i, x,y, sx,sy, r, ox,oy)		
+	end
+	
+	obj.add = function(_, q, ...)
+		if type(q) == "table" then
+			self:addq(q, ...)
+		else
+			add_rect(...)
+		end
+		
+		return i
+	end
+	
+	obj.addq = function(_, q, ...) 
+		
+		poly:SetUV(q[1]*q[5], q[2]*q[6], q[3]*q[5], q[4]*q[6])
+		add_rect(...)	
+		
+		return i
+	end
+	
+	obj.set = function(_, id, q, ...)
+		if type(q) == "table" then
+			set_rect(id, ...)
+		else
+			poly:SetUV(q[1]*q[5], q[2]*q[6], q[3]*q[5], q[4]*q[6])
+			set_rect(id, ...)
+		end
+	end
+	
+	obj.setq = obj.set
+	
+	obj.setColor = function(_, r,g,b,a) 
+		
+		r = r or 255 
+		g = g or 255 
+		b = b or 255 
+		a = a or 255 
+		
+		poly:SetColor(r/255,g/255,b/255,a/255) 
+	end
+	obj.clear = function() end
+	obj.getImage = function() return image end
+	obj.bind = function() end
+	obj.unbind = function() end
+	
+	return obj
+end

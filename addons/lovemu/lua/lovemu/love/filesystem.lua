@@ -10,9 +10,9 @@ function love.filesystem.getAppdataDirectory()
 end
 
 function love.filesystem.getLastModified(path)
-	print("CHECKING THE LAST MODIFIED DATE OF PATH "..path)
 	local attribs = vfs.GetAttributes(path)
-	return attribs and attribs.modification or 0
+	print("CHECKING THE LAST MODIFIED DATE OF PATH "..path.."  RETURNED: "..tostring(attribs.modification or 0))
+	return attribs.modification or 0
 end
 
 function love.filesystem.getSaveDirectory()
@@ -61,7 +61,7 @@ function love.filesystem.isDirectory(path)
 end
 
 function love.filesystem.isFile(path)
-	print("CHECKING IF PATH "..path.." IS FILE")
+	print("CHECKING IF PATH "..path.." IS FILE  RESULT: " .. tostring(vfs.GetAttributes(path).mode == "file"))
 	return vfs.GetAttributes(path).mode == "file"
 end
 
@@ -83,11 +83,9 @@ function love.filesystem.load(path ,mode)
 end
 
 function love.filesystem.mkdir(path) --partial
+	path = R("%DATA%/lovemu/" .. path)
 	print("MAKING FOLDER ON PATH "..path)
-	lfs.mkdir(R("%DATA%/lovemu/", path))
-end
-
-function love.filesystem.getDirectoryItems(path) --partial
+	lfs.mkdir(path)
 end
 
 function love.filesystem.read(path)
