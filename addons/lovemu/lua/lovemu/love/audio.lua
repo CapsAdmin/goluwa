@@ -2,6 +2,7 @@ local love=love
 local lovemu=lovemu
 love.audio={}
 
+
 local function getChannels(self)
 	return 2 --stereo
 end
@@ -31,7 +32,7 @@ local function getVelocity(self)
 end
 
 local function getVolume(self)
-	if self.legit==true==true then
+	if self.legit==true then
 		return self:GetGain()
 	else
 		return 1
@@ -51,7 +52,7 @@ local function isLooping(self)
 end
 
 local function isPaused(self)
-	if self.legit==true==true then
+	if self.legit==true then
 		return not self.isplaying
 	else
 		return false

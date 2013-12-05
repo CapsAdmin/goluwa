@@ -94,7 +94,7 @@ do -- background
 	function love.graphics.clear()
 		surface.SetWhiteTexture()
 		surface.Color(br/255,bg/255,bb/255,ba/255)
-		surface.DrawRect(0,0,render.w,render.h,0,0,0)
+		surface.DrawRect(0, 0, render.w, render.h)
 		surface.Color(cr/255,cg/255,cb/255,ca/255)
 	end
 end
@@ -237,7 +237,7 @@ do -- font
 		surface.SetTextScale(sx, sy)
 		
 		for i = 1, #lines do
-			surface.SetTextPos(x, y + (currentFont.Size * i))
+			surface.SetTextPos(x, y + (currentFont.Size+(currentFont.Size*125/100) * i))
 			surface.DrawText(lines[i])
 		end
 		
@@ -253,8 +253,20 @@ do -- line
 		STYLE = s
 	end
 	
+	function love.graphics.setLineStyle(s)
+		STYLE = s
+	end
+	
 	function love.graphics.setLineWidth(w)
 		WIDTH = w
+	end
+	
+	function love.graphics.getLineStyle(s)
+		return STYLE
+	end
+	
+	function love.graphics.getLineWidth(w)
+		return WIDTH
 	end
 
 	function love.graphics.line(x1, y1, x2, y2)
@@ -417,3 +429,17 @@ end
 
 function love.graphics.setIcon() --partial
 end
+
+function love.graphics.newShader() --partial
+end
+
+function love.graphics.newPixelEffect() --partial
+end
+
+function love.graphics.setShader() --partial
+end
+
+function love.graphics.setPixelEffect() --partial
+end
+
+

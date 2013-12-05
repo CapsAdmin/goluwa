@@ -145,7 +145,7 @@ console.AddCommand("lovemu", function(line)
 	else
 	
 		logn("Usage:")
-		logn("\tlovemu <command> <params>\n\nCommands:\n")
+		logn("\tlovemu     <command> <params>\n\nCommands:\n")
 		logn("\tcheck      <folder name>        //check game compatibility with lovemu")
 		logn("\trun        <folder name>        //runs a game  ")
 		logn("\trunreal    <folder name>        //runs a game on real love2d ")
