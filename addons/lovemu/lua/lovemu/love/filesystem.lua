@@ -6,7 +6,7 @@ love.filesystem={}
 local Identity="generic"
 function love.filesystem.getAppdataDirectory()
 	print("RETURNING APPDATA DIRECTORY")
-	return ""
+	return R("%DATA%/lovemu/")
 end
 
 function love.filesystem.getLastModified(path)
@@ -17,17 +17,17 @@ end
 
 function love.filesystem.getSaveDirectory()
 	print("RETURNING SAVE DIRECTORY ")
-	return ""
+	return R("%DATA%/lovemu/")
 end
 
 function love.filesystem.getUserDirectory()
 	print("RETURNING USER DIRECTORY ")
-	return ""
+	return R("%DATA%/lovemu/")
 end
 
 function love.filesystem.getWorkingDirectory()
 	print("RETURNING WORKING DIRECTORY ")
-	return ""
+	return R("%DATA%/lovemu/")
 end
 
 function love.filesystem.exists(path)
@@ -84,6 +84,7 @@ end
 
 function love.filesystem.mkdir(path) --partial
 	print("MAKING FOLDER ON PATH "..path)
+	lfs.mkdir(R("%DATA%/lovemu/", path))
 end
 
 function love.filesystem.getDirectoryItems(path) --partial
@@ -93,7 +94,7 @@ function love.filesystem.read(path)
 	if path:sub(1,1)=="/" or path:sub(1,1)=="/" then
 		path=path:sub(2,#path)
 	end
-	return vfs.Read(path,"r") or ""	 
+	return vfs.Read(path) or ""	 
 end
 
 function love.filesystem.remove(path)
@@ -109,6 +110,6 @@ function love.filesystem.write(path,data)
 	if path:sub(1,1)=="/" or path:sub(1,1)=="/" then
 		path=path:sub(2,#path)
 	end
-	vfs.Write(path,data)
+	vfs.Write("lovemu/" .. path,data)
 end
 print("FILE SYSTEM LOADED!")
