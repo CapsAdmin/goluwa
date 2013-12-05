@@ -43,6 +43,8 @@ local function path_loader(name, paths, loader_func)
   local errors = {}
   local loader
   local found_path
+  
+  name = name or ""
 
   name = sgsub(name, '%.', '/')
 
@@ -71,7 +73,7 @@ local function path_loader(name, paths, loader_func)
 end
 
 local function lua_loader(name)
-  return path_loader(name, package.path, loadfile)
+  return path_loader(name, package.path, loadfile), package.path
 end
 
 local function get_init_function_name(name)
@@ -101,7 +103,7 @@ end
 local function findchunk(name)
   local errors = { string.format("module '%s' not found\n", name) }
   local found
-
+  
   for _, loader in ipairs(_M.loaders) do
     local chunk, path = loader(name)
 	
