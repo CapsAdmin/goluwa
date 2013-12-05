@@ -153,7 +153,8 @@ function vfs.GetAbsolutePath(path, ...)
 				path = path:sub(0,-4)
 			end
 			
-			return vfs.FixPath(v .. "/" .. path)
+			path = v .. "/" .. path
+			break
 		end
 	end
 		
@@ -218,6 +219,11 @@ function vfs.Exists(path, ...)
 	local file = vfs.GetFile(path, ...)
 
 	return file ~= false
+end
+
+function vfs.IsDir(path, ...)
+	local attributes = vfs.GetAttributes(path, ...)
+	return attributes and attributes.mode == "directory"
 end
 
 function vfs.Delete(path, ...)
@@ -428,6 +434,7 @@ function vfs.loadfile(path)
 	
 	local path = vfs.GetAbsolutePath(path)
 	
+	
 	if path then
 		return loadfile(path), path
 	end
@@ -441,11 +448,38 @@ function vfs.dofile(path, ...)
 	local func, err = vfs.loadfile(path)
 	
 	if func then
-		return xpcall(func, mmyy.OnError, ...)
+		return xpcall(func, mmyy.OnError, ...), path
 	end
 	
 	return func, err
 end
+
+-- although vfs will add a loader for each mount, the module folder has to be an exception for modules only
+-- this loader should support more ways of loading than just adding ".lua"
+function vfs.AddModuleDirectory(dir)
+	table.insert(package.loaders, function(path)
+		return vfs.loadfile(dir .. path)
+	end)
+	
+	table.insert(package.loaders, function(path)
+		return vfs.loadfile(dir .. path .. ".lua")
+	end)
+		
+	table.insert(package.loaders, function(path)
+		return vfs.loadfile(dir .. path .. "/init.lua")
+	end)
+	
+	-- again but with . replaced with /	
+	table.insert(package.loaders, function(path)
+		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
+		return vfs.loadfile(dir .. path .. ".lua")
+	end)
+		
+	table.insert(package.loaders, function(path)
+		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
+		return vfs.loadfile(dir .. path .. "/init.lua")
+	end)
+end	
 
 do -- file monitoring
 
