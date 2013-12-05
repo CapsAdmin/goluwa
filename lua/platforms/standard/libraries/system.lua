@@ -53,7 +53,8 @@ end
 
 do -- cursor
 	local set = not_implemented
-	
+	local get = not_implemented
+
 	if WINDOWS then
 		ffi.cdef[[
 			void* SetCursor(void *);
@@ -98,6 +99,8 @@ do -- cursor
 		e.IDC_APPSTARTING = 32650
 		e.IDC_HELP = 32651
 		
+		local current
+		
 		local last 
 		
 		set = function(id)
@@ -105,13 +108,19 @@ do -- cursor
 			cache[id] = cache[id] or lib.LoadCursorA(nil, id)
 			
 			--if last ~= id then
-				lib.SetCursor(cache[id])
+				current = cache[id]
+				lib.SetCursor(current)
 			--	last = id
 			--end
+		end
+		
+		get = function()
+			return current
 		end
 	end
 	
 	system.SetCursor = set
+	system.GetCursor = get
 	
 end
 
