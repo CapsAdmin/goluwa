@@ -128,8 +128,13 @@ function vfs.GetAttributes(path, ...)
 	path = vfs.ParseVariables(path)
 	
 	for k, v in ipairs(vfs.paths) do
-		return lfs.attributes(v .. "/" .. path, ...)
+		local info = lfs.attributes(v .. "/" .. path, ...)
+		if info then
+			return info
+		end
 	end
+	
+	return {}
 end
 
 function vfs.GetAbsolutePath(path, ...)
