@@ -157,10 +157,10 @@ local function require(name)
   return package.loaded[name]
 end
 
-local function require_function(name, path)
+local function require_function(name, func, path)
   if package.loaded[name] == nil then
 	if path then path = path:match("(.+)[\\/]") end
-    local result = name(path)	
+    local result,a,b,c = func(path)
 	
     if result ~= nil then
       package.loaded[name] = result
@@ -168,7 +168,7 @@ local function require_function(name, path)
       package.loaded[name] = true
     end
   end
-
+  
   return package.loaded[name]
 end
 

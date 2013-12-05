@@ -77,13 +77,19 @@ function lovemu.boot(folder)
 			
 	local env = setmetatable({
 		love = love, 
-		require = function(...)
-			local t={...}
+		require = function(name, ...)
+			if package.loaded[name] then return package.loaded[name] end
+			local t = {name, ...}
 			print("LOADING REQUIRE PATH "..t[1])
-			local func, path = require.load(...) 
+			local func, path = require.load(name, ...) 
+			
 			if type(func) == "function" then
-				setfenv(func, getfenv(2))
-				return require.require_function(func, path) 
+				
+				if debug.getinfo(func).what ~= "C" then
+					setfenv(func, getfenv(2))
+				end
+				
+				return require.require_function(name, func, path) 
 			end
 			
 			return func
@@ -110,7 +116,7 @@ function lovemu.boot(folder)
 	if vfs.Exists(R("conf.lua"))==true then
 		print("LOADING CONF.LUA")
 		
-		local func = vfs.loadfile("conf.lua")
+		local func = assert(vfs.loadfile("conf.lua"))
 		setfenv(func, env)
 		func()
 	end
@@ -128,7 +134,7 @@ function lovemu.boot(folder)
 	love.window.setMode(w,h)
 	love.window.setTitle(title)
 		
-	local main = vfs.loadfile("main.lua")
+	local main = assert(vfs.loadfile("main.lua"))
 	setfenv(main, env)
 	xpcall(main, mmyy.OnError)
 	xpcall(love.load, mmyy.OnError)

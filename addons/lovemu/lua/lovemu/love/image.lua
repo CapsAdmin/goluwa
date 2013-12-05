@@ -39,7 +39,7 @@ function love.image.newImageData(a, b)
 	
 	
 	obj.getPixel = function(s, x,y, r,g,b,a) 
-		local rr, rg, rb, ra 
+		local rr, rg, rb, ra
 		s.tex:Fill(function(_x,_y, i, r,g,b,a) 
 			if _x == x and _y == y then 
 				rr = r 
@@ -48,7 +48,7 @@ function love.image.newImageData(a, b)
 				ra = a 
 			end
 		end)
-		return rr, rg, rb, ra 
+		return rr or 0, rg or 0, rb or 0, ra or 0
 	end
 	
 	obj.setPixel = function(s, x,y, r,g,b,a) 
