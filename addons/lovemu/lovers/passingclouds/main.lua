@@ -6,7 +6,6 @@
 -------------------------------------------------
 
 function love.load()
-	
 	-- The amazing music.
 	--music = love.audio.newSource("prondisk.xm")
 	

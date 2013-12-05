@@ -77,7 +77,9 @@ function lovemu.boot(folder)
 			
 	local env = setmetatable({
 		love = love, 
-		require = function(...) 
+		require = function(...)
+			local t={...}
+			print("LOADING REQUIRE PATH "..t[1])
 			local func, path = require.load(...) 
 			if type(func) == "function" then
 				setfenv(func, getfenv(2))
@@ -100,7 +102,7 @@ function lovemu.boot(folder)
 		t.modules={}
 		t.screen.height = 600      
 		t.screen.width = 800  
-		t.title = "LovEmu - The Love2D for GOLUWA"      
+		t.title = "LovEmu"      
 		t.author = "Shell32"
 	end
 	love.conf(lovemu.conf)
@@ -121,7 +123,7 @@ function lovemu.boot(folder)
 	
 	local w = lovemu.conf.screen.width or 800
 	local h = lovemu.conf.screen.height or 600
-	local title = lovemu.conf.title or "LovEmu - The Love2D for GOLUWA"
+	local title = lovemu.conf.title or "LovEmu"
 	
 	love.window.setMode(w,h)
 	love.window.setTitle(title)
@@ -164,6 +166,4 @@ function lovemu.boot(folder)
 			love.errhand(lovemu.error_msg)
 		end
 	end)
-	
-	love.graphics.setBackgroundColor(0,0,0)
 end
