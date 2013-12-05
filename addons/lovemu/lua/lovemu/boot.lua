@@ -79,12 +79,15 @@ function lovemu.boot(folder)
 		love = love, 
 		require = function(...) 
 			local func, path = require.load(...) 
-			setfenv(func, getfenv(2)) 
-			return require.require_function(func, path) 
+			if type(func) == "function" then
+				setfenv(func, getfenv(2))
+				return require.require_function(func, path) 
+			end
+			
+			return func
 		end
 	}, 
 	{
-		__newindex = env,
 		__index = _G,
 	})
 	
@@ -105,7 +108,7 @@ function lovemu.boot(folder)
 	if vfs.Exists(R("conf.lua"))==true then
 		print("LOADING CONF.LUA")
 		
-		local func = vfs.loadfile("lovers/"..folder.."/conf.lua")
+		local func = vfs.loadfile("conf.lua")
 		setfenv(func, env)
 		func()
 	end
@@ -122,15 +125,15 @@ function lovemu.boot(folder)
 	
 	love.window.setMode(w,h)
 	love.window.setTitle(title)
-	
-	local main = vfs.loadfile("lovers/"..folder.."/main.lua")
+		
+	local main = vfs.loadfile("main.lua")
 	setfenv(main, env)
-	main()
-	love.load()	
+	xpcall(main, mmyy.OnError)
+	xpcall(love.load, mmyy.OnError)
 	
-	local function run()
-		love.update(lovemu.delta)
-		love.draw()
+	local function run(dt)
+		love.update(dt)
+		love.draw(dt)
 	end
 		
 	setfenv(run, env)
@@ -148,7 +151,7 @@ function lovemu.boot(folder)
 		surface.SetWhiteTexture()
 		
 		if lovemu.errored == false then
-			local err, msg = xpcall(run, mmyy.OnError)
+			local err, msg = xpcall(run, mmyy.OnError, dt)
 			if err == false then
 				logn(msg)
 				

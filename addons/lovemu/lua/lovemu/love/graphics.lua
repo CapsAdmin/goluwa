@@ -408,3 +408,12 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 		end
 	end
 end
+
+function love.graphics.present() --partial
+end
+
+function love.graphics.setDefaultImageFilter() --partial
+end
+
+function love.graphics.setIcon() --partial
+end
