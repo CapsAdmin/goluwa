@@ -261,11 +261,11 @@ do -- line
 		WIDTH = w
 	end
 	
-	function love.graphics.getLineStyle(s)
+	function love.graphics.getLineStyle()
 		return STYLE
 	end
 	
-	function love.graphics.getLineWidth(w)
+	function love.graphics.getLineWidth()
 		return WIDTH
 	end
 
