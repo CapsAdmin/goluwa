@@ -436,7 +436,8 @@ function vfs.loadfile(path)
 	
 	
 	if path then
-		return loadfile(path), path
+		local ok, err = loadfile(path)
+		return ok, err, path
 	end
 	
 	return false, "No such file or directory"
@@ -448,7 +449,8 @@ function vfs.dofile(path, ...)
 	local func, err = vfs.loadfile(path)
 	
 	if func then
-		return xpcall(func, mmyy.OnError, ...), path
+		local ok, err = xpcall(func, mmyy.OnError, ...)
+		return ok, err, path
 	end
 	
 	return func, err
