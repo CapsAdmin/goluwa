@@ -97,29 +97,10 @@ do -- file system
 	-- a nice global for loading resources externally from current dir
 	R = vfs.GetAbsolutePath
 
-	-- although vfs will add a loader for each mount, the module folder has to be an exception for modules only
-	-- this loader should support more ways of loading than just adding ".lua"
-	table.insert(package.loaders, function(path)
-		return vfs.loadfile("lua/modules/" .. path)
-	end)
+	vfs.AddModuleDirectory("lua/modules/")
 	
-	table.insert(package.loaders, function(path)
-		return vfs.loadfile("lua/modules/" .. path .. ".lua")
-	end)
-		
-	table.insert(package.loaders, function(path)
-		return vfs.loadfile("lua/modules/" .. path .. "/init.lua")
-	end)
-	
-	table.insert(package.loaders, function(path)
-		path = path:gsub("%.", "/")
-		return vfs.loadfile("lua/modules/" .. path .. ".lua")
-	end)
-		
-	table.insert(package.loaders, function(path)
-		path = path:gsub("%.", "/")
-		return vfs.loadfile("lua/modules/" .. path .. "/init.lua")
-	end)
+	-- straight loading
+	vfs.AddModuleDirectory("")
 	
 	-- replace require with the pure lua version (lua/procure/init.lua)
 	_G.require = require("procure")	
