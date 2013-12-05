@@ -123,6 +123,10 @@ local function findchunk(name)
       errors[#errors + 1] = chunk
     end
   end
+  
+  if _G[name] then
+	return _G[name]
+  end
 
   return nil, table.concat(errors, '')
 end
