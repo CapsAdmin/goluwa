@@ -676,7 +676,8 @@ do -- poly
 		local R = 0
 		
 		function poly:SetVertex(i, x,y, u,v)
-			if i > size or i < 0 then logf("i = %i size = %i", i, size)error("whaat") end
+			if i > size or i < 0 then logf("i = %i size = %i", i, size) end
+			i = math.clamp(i, 0, size)
 			
 			if false and R ~= 0 then
 				local t = glfw.GetTime()

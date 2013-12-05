@@ -193,3 +193,52 @@ function love.audio.newSource(path) --partial
 	source.legit=legit
 	return source
 end
+
+
+function love.audio.getDistanceModel() --partial
+end
+
+function love.audio.getNumSources() --partial
+end
+
+function love.audio.getOrientation() --partial
+end
+
+function love.audio.getPosition() --partial
+end
+
+function love.audio.getVelocity() --partial
+end
+
+function love.audio.getVolume() --partial
+end
+
+function love.audio.pause() --partial
+end
+
+function love.audio.play() --partial
+end
+
+function love.audio.resume() --partial
+end
+
+function love.audio.rewind() --partial
+end
+
+function love.audio.setDistanceModel() --partial
+end
+
+function love.audio.setOrientation() --partial
+end
+
+function love.audio.setPosition() --partial
+end
+
+function love.audio.setVelocity() --partial
+end
+
+function love.audio.setVolume() --partial
+end
+
+function love.audio.stop() --partial
+end

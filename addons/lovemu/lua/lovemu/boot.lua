@@ -81,7 +81,7 @@ function lovemu.boot(folder)
 			if package.loaded[name] then return package.loaded[name] end
 			local t = {name, ...}
 			print("LOADING REQUIRE PATH "..t[1])
-			local func, path = require.load(name, ...) 
+			local func, err, path = require.load(name, ...) 
 			
 			if type(func) == "function" then
 				
@@ -136,8 +136,8 @@ function lovemu.boot(folder)
 		
 	local main = assert(vfs.loadfile("main.lua"))
 	setfenv(main, env)
-	xpcall(main, mmyy.OnError)
-	xpcall(love.load, mmyy.OnError)
+	if not xpcall(main, mmyy.OnError) then return end
+	if not xpcall(love.load, mmyy.OnError) then return end
 	
 	local function run(dt)
 		love.update(dt)

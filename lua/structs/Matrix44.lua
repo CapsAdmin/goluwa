@@ -193,9 +193,10 @@ end
 -- in `result` to avoid allocating a new matrix. This emulates the OpenGL
 -- function `gluPerspective()`.
 local function matrix_perspective(fov, aspect, near, far, result)
+	aspect=1280/720
 	result = result or Matrix44();
 	
-    local yScale = 1.0 / math.tan(math.rad(fov) / 2)
+    local yScale = 1.0 / math.tan((math.pi / 180.0) * fov / 2)
     local xScale = yScale / aspect
     local nearmfar = near - far
 	

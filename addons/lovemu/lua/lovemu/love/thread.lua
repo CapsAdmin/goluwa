@@ -5,7 +5,7 @@ love.thread = {}
 function love.thread.newThread(name)
 	local obj = lovemu.NewObject("thread")
 	threads[name] = obj
-	
+		
 	function obj:start() end
 	function obj:wait() end
 	function obj:set() end
@@ -17,7 +17,7 @@ function love.thread.newThread(name)
 	function obj:getKeys() return {} end
 	function obj:get() return end
 	function obj:demand() return end
-	
+		
 	return obj
 end
 
