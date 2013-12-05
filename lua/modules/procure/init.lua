@@ -66,14 +66,14 @@ local function path_loader(name, paths, loader_func)
   end
 
   if loader then
-    return loader, found_path
+    return loader, nil, found_path
   else
     return tconcat(errors, '\n') .. '\n'
   end
 end
 
 local function lua_loader(name)
-  return path_loader(name, package.path, loadfile), package.path
+  return path_loader(name, package.path, loadfile), nil, package.path
 end
 
 local function get_init_function_name(name)
@@ -87,7 +87,7 @@ local function c_loader(name)
   local init_func_name = get_init_function_name(name)
 
   return path_loader(name, package.cpath, function(path)
-    return ploadlib(path, init_func_name), path
+    return ploadlib(path, init_func_name), nil, path
   end)
 end
 
@@ -96,7 +96,7 @@ local function all_in_one_loader(name)
   local base_name      = smatch(name, '^[^.]+')
 
   return path_loader(base_name, package.cpath, function(path)
-    return ploadlib(path, init_func_name), path
+    return ploadlib(path, init_func_name), nil, path
   end)
 end
 
@@ -105,20 +105,20 @@ local function findchunk(name)
   local found
   
   for _, loader in ipairs(_M.loaders) do
-    local chunk, path = loader(name)
+    local chunk, err, path = loader(name)
 	
     if type(chunk) == 'function' then
-      return chunk, path
+      return chunk, nil, path
     elseif type(chunk) == 'string' then
       errors[#errors + 1] = chunk
     end
   end
 
   for _, loader in ipairs(package.loaders) do
-    local chunk, path = loader(name)
+    local chunk, err, path = loader(name)
 
     if type(chunk) == 'function' then
-      return chunk, path
+      return chunk, nil, path
     elseif type(chunk) == 'string' then
       errors[#errors + 1] = chunk
     end
@@ -132,18 +132,18 @@ local function findchunk(name)
 end
 
 local function load(name)
-    local chunk, errors = findchunk(name)
+    local chunk, errors, path = findchunk(name)
 
     if not chunk then
       error(errors, 3)
     end
 		
-	return chunk, errors
+	return chunk, errors, path
 end
 
 local function require(name)
   if package.loaded[name] == nil then
-    local func, path = load(name)
+    local func, err, path = load(name)
 	if path then path = path:match("(.+)[\\/]") end
 	local result = func(path)
 	
@@ -157,19 +157,36 @@ local function require(name)
   return package.loaded[name]
 end
 
-local function require_function(name, func, path)
-  if package.loaded[name] == nil then
-	if path then path = path:match("(.+)[\\/]") end
-    local result,a,b,c = func(path)
+
+local IN_MODULE
+local OLD_MODULE = _G.module
+function module(name, ...)
+	print(IN_MODULE, ...)
+	if IN_MODULE then
+		return OLD_MODULE(IN_MODULE, ...)
+	else
+		return OLD_MODULE(name, ...)
+	end
+end
+
+local function require_function(name, func, path)	
+  if package.loaded[name] == nil and package.loaded[path] == nil then
 	
-    if result ~= nil then
+	local dir = path
+	if dir then dir = dir:match("(.+)[\\/]") end
+	
+	IN_MODULE = name
+    local result = func(dir)
+	IN_MODULE = false
+	
+    if result ~= nil and not package.loaded[path] and not package.loaded[name] then
       package.loaded[name] = result
-    elseif package.loaded[name] == nil then
+    elseif package.loaded[name] == nil and package.loaded[path] == nil then
       package.loaded[name] = true
     end
   end
   
-  return package.loaded[name]
+  return package.loaded[path] or package.loaded[name] -- or package.loaded[path] in case of module(...)
 end
 
 
