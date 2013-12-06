@@ -80,7 +80,7 @@ function lovemu.boot(folder)
 		require = function(name, ...)
 			if package.loaded[name] then return package.loaded[name] end
 			local t = {name, ...}
-			print("LOADING REQUIRE PATH "..t[1])
+			if lovemu.debug then print("LOADING REQUIRE PATH "..t[1]) end
 			local func, err, path = require.load(name, ...) 
 			
 			if type(func) == "function" then

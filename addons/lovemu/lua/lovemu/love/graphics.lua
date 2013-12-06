@@ -341,7 +341,7 @@ end
 
 do -- image
 
-	local FILTER = e.GL_LINEAR
+	local FILTER = e.GL_NEAREST
 
 	function love.graphics.setDefaultFilter(filter)
 		if filter == "nearest" then
@@ -354,7 +354,7 @@ do -- image
 	love.graphics.setDefaultImageFilter = setDefaultFilter
 	
 	function love.graphics.newImage(path)		
-		print("LOADING IMAGE FROM PATH "..path)
+		if lovemu.debug then print("LOADING IMAGE FROM PATH "..path) end
 		local w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"))
 		
 		local obj = lovemu.NewObject("Image")
@@ -374,7 +374,7 @@ do -- image
 	end
 	
 	function love.graphics.newImageData(path)		
-		print("LOADING IMAGEDATA FROM PATH "..path)
+		if lovemu.debug then print("LOADING IMAGEDATA FROM PATH "..path) end
 		local w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"))
 		
 		local obj = lovemu.NewObject("Image")
@@ -523,6 +523,14 @@ function love.graphics.getModes() --partial
 		{width=2560,height=1600},
 		{width=2560,height=2048}
 	}
+end
+
+function love.graphics.setScissor(x,y,w,h)
+	render.ScissorRect(x,y,w,h)  
+end
+
+function love.graphics.getScissor()
+
 end
 
 function love.graphics.newSpriteBatch(image, size, usagehint)

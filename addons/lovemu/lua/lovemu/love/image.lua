@@ -2,6 +2,7 @@ local love=love
 local lovemu=lovemu
 
 local textures = lovemu.textures
+local FILTER = e.GL_NEAREST
 
 
 love.image={}
@@ -28,8 +29,8 @@ function love.image.newImageData(a, b)
 	local obj = lovemu.NewObject("ImageData")
 	
 	local tex = Texture(w, h, buffer, {
-		mag_filter = e.GL_LINEAR,
-		min_filter = e.GL_LINEAR_MIPMAP_LINEAR ,
+		mag_filter = FILTER,
+		min_filter = FILTER,
 	}) 
 	
 	textures[obj] = tex
