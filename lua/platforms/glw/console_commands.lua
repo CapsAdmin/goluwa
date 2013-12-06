@@ -178,7 +178,7 @@ do
 	end
 
 	local function find(tbl, name, level, ...)
-		if level > 3 then return end
+		if level >= 3 then return end
 			
 		for key, val in pairs(tbl) do	
 			local T = type(val)
@@ -229,3 +229,10 @@ do
 		find(utilities.GetMetaTables(), "_M", 1, ...)
 	end)
 end
+
+console.AddCommand("source", function(line)
+	local func = loadstring("return " .. line)()
+	if not debug.openfunction(func) then
+		print(func:src())
+	end
+end)
