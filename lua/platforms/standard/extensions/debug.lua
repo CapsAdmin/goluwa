@@ -1,3 +1,27 @@
+function debug.openscript(lua_script, line)
+	local path = console.GetVariable("error_app")
+	
+	if not path then return false end
+	lua_script = R(lua_script)
+	
+	if not vfs.Exists(lua_script) then
+		logf("gotoifle: script %q doesn't exist", lua_script)
+		return false
+	end
+	
+	path = path:gsub("%%LINE%%", line)
+	path = path:gsub("%%PATH%%", lua_script)
+	
+	os.execute(path)
+	
+	return true
+end
+
+function debug.openfunction(func)
+	local info = debug.getinfo(func)
+	return debug.openscript(info.source:sub(2), info.linedefined)
+end
+
 function debug.trace()	
     logn("Trace: " )
 	
