@@ -192,7 +192,7 @@ do -- texture object
 					buffer[pos+i-1] = colors[i] or 0
 				end
 			else
-				if colors[i] ~= nil then
+				if colors and colors[i] ~= nil then
 					return
 				end
 			end
