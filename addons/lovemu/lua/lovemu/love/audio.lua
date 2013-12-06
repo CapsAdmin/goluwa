@@ -152,12 +152,12 @@ function love.audio.newSource(path) --partial
 			id=id+1
 			legit=true
 			source:SetChannel(1)
-			print("loaded: "..path)
+			if lovemu.debug then print("loaded: "..path) end
 		else
-			print("CANT LOAD AUDIO FILE: "..path)
+			if lovemu.debug then print("CANT LOAD AUDIO FILE: "..path) end
 		end
 	else
-		print("CANT LOAD AUDIO FILE: "..path)
+		if lovemu.debug then print("CANT LOAD AUDIO FILE: "..path) end
 	end
 	source.playing=false
 	
