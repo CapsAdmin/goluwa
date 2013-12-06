@@ -2,6 +2,7 @@ local mmyy = _G.mmyy or {}
 
 -- this should be used for xpcall
 local suppress = false
+local last_openfunc = 0
 function mmyy.OnError(msg, ...)
 	msg = msg or "no error"
 	if suppress then logn("supressed error: ", msg, ...) return end
@@ -97,30 +98,19 @@ function mmyy.OnError(msg, ...)
 	if source then
 		source = source:trim()
 		
-		local path = console.GetVariable("error_app")
-		
-		if path and path ~= "" then
-			local lua_script, line
+		-- this should be replaced with some sort of configuration
+		-- gl.lua never shows anything useful but the level above does..			
+		if source:find("ffi_bind") then
+			func = debug.getinfo(4).func
+		else
+			func = debug.getinfo(2).func
+		end
 			
-			-- this should be replaced with some sort of configuration
-			-- gl.lua never shows anything useful but the level above does..			
-			if source:find("gl%.lua") then
-				local info = debug.getinfo(4)
-				lua_script = info.short_src
-				line = info.currentline
-			else
-				lua_script, line = source:match("(.+%.lua):(.+)")
-			end
-						
-			if lua_script and line then
-				line = tonumber(line)
-				
-				if line and vfs.Exists(lua_script) then
-					path = path:gsub("%%LINE%%", line)
-					path = path:gsub("%%PATH%%", lua_script)
-					os.execute(path)
-				end
-			end
+		if last_openfunc < os.clock() then
+			debug.openfunction(func)
+			last_openfunc = os.clock() + 3
+		else
+			logf("supressed os.execute(%q)", path)
 		end
 		
 		logn(source)
