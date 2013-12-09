@@ -5,25 +5,16 @@ The coding style is inspired by Garry's Mod, Source Engine and UFO (https://gith
 LuaJit's FFI api is used to bind to the following libraries:
 
 
+OpenGL - graphics
 GLFW - window and input handler
-
 OpenAL Soft - sound library
-
 FreeImage - image decoding
-
 FreeType - font decoding
-
 libsnd - sound decoding
-
 pdcurses - console
-
 lfs - additional file functions
-
 luasocket - networking
-
 assimp - model decoding
-
-opengl - graphics
 
 
 Goluwa also comes with a Love2D wrapper which is used for fun and unit testing.
