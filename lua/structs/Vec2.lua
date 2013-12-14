@@ -27,17 +27,17 @@ do
 	META.__len = META.GetLength
 
 	function META.__lt(a, b)
-		if typex(a) == META.Type and type(b) == "number" then
+		if ffi.istype(a, b) and type(b) == "number" then
 			return a:GetLength() < b
-		elseif typex(b) == META.Type and type(a) == "number" then
+		elseif ffi.istype(b, a) and type(a) == "number" then
 			return b:GetLength() < a
 		end
 	end
 
 	function META.__le(a, b)
-		if typex(a) == META.Type and type(b) == "number" then
+		if ffi.istype(a, b) and type(b) == "number" then
 			return a:GetLength() <= b
-		elseif typex(b) == META.Type and type(a) == "number" then
+		elseif ffi.istype(b, a) and type(a) == "number" then
 			return b:GetLength() <= a
 		end
 	end
@@ -103,6 +103,14 @@ function META:Rotate90CW()
 	self.y = -x
 	
 	return self
+end
+
+function META:GetRad()
+	return math.atan2(self.x, self.y)
+end
+
+function META:GetDeg()
+	return math.deg(self:GetRad())
 end
 
 structs.AddGetFunc(META, "Normalize", "Normalized")
