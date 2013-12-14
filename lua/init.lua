@@ -28,7 +28,8 @@ do
 	end)
 	
 	jit.v = require("jit.v")
-	jit.dump = require("jit.dump")	
+	jit.dump = require("jit.dump")
+	jit.p = require("jit.p")
 
 	if DEBUG then
 		local base = "../../../userdata/" .. e.USERNAME:lower() .. "/logs/"
