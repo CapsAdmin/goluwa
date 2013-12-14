@@ -174,8 +174,7 @@ function structs.AddOperator(META, operator, ...)
 		local META = ({...})[1]
 		META["__eq"] = function(a, b)
 				return
-				typex(a) == META.Type and
-				typex(b) == META.Type and
+				ffi.istype(a, b) and 
 				a.KEY == b.KEY
 			end
 		]==]
@@ -300,7 +299,7 @@ function structs.AddOperator(META, operator, ...)
 				return CTOR(
 					a OPERATOR b.KEY
 				)
-			elseif typex(a) == META.Type and typex(b) == META.Type then
+			elseif ffi.istype(a, b) then
 				return CTOR(
 					a.KEY OPERATOR b.KEY
 				)
