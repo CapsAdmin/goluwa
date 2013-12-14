@@ -1,7 +1,8 @@
 render.matrices = {
 	projection_2d = Matrix44(),
 	projection_3d = Matrix44(),
-	view = Matrix44(),
+	view_2d = Matrix44(),
+	view_3d = Matrix44(),
 	world = Matrix44(),
 }
 
@@ -14,6 +15,10 @@ render.camera = {
 	pos = Vec3(0,0,0),
 	ang = Ang3(0,0,0),
 	
+	pos2d = Vec2(0,0),
+	ang2d = 0,
+	zoom2d = 1,
+	
 	fov = 75,
 	farz = 32000,
 	nearz = 0.1,
@@ -22,6 +27,19 @@ render.camera = {
 }
 
 local cam = render.camera
+
+-- useful for shaders
+function render.GetCamPos()
+	return cam.pos
+end
+
+function render.GetCamAng()
+	return cam.ang
+end
+
+function render.GetCamFOV()
+	return cam.fov
+end
 
 -- projection  
 do
@@ -32,7 +50,7 @@ do
 		cam.w = w or cam.w
 		cam.h = h or cam.h
 		
-		cam.ratio = cam.h / cam.w 
+		cam.ratio = cam.w / cam.h 
 		
 		gl.Viewport(x, y, w, h)
 	end
@@ -107,7 +125,7 @@ do
 		end
 		
 		if pos and ang then
-			render.SetupView(pos, ang, fov)
+			render.SetupView3D(pos, ang, fov)
 		end
 				
 		gl.Enable(e.GL_DEPTH_TEST) 
@@ -121,40 +139,45 @@ do
 	end		
 end
 
--- view
-do
-	function render.SetupView(pos, ang, fov)
-		cam.pos = pos or cam.pos
-		cam.ang = ang or cam.ang
-		cam.fov = fov or cam.fov
-		
-		local view = render.matrices.view 
-		view:LoadIdentity()		
+function render.SetupView3D(pos, ang, fov)
+	cam.pos = pos or cam.pos
+	cam.ang = ang or cam.ang
+	cam.fov = fov or cam.fov
 	
-		if ang then
-			-- source engine style camera angles
-			view:Rotate(ang.p + 90, 1, 0, 0)
-			view:Rotate(-ang.r, 0, 1, 0)
-			view:Rotate(ang.y, 0, 0, 1)
-		end
-		
-		if pos then
-			view:Translate(pos.y, pos.x, pos.z)	
-		end
-		
-	end
+	local view = render.matrices.view_3d 
+	view:LoadIdentity()		
 	
-	-- useful for shaders
-	function render.GetCamPos()
-		return render.camera.pos
+	if pos then
+		view:Translate(pos.y, pos.x, pos.z)
 	end
 
-	function render.GetCamAng()
-		return render.camera.ang
+	if ang then
+		-- source engine style camera angles
+		view:Rotate(ang.p + 90, 1, 0, 0)
+		view:Rotate(ang.r, 0, 1, 0)
+		view:Rotate(ang.y, 0, 0, 1)
+	end
+end
+
+function render.SetupView2D(pos, ang, zoom)
+	cam.pos2d = pos or cam.pos2d
+	cam.ang2d = ang or cam.ang2d
+	cam.zoom2d = zoom or cam.zoom2d
+	
+	local view = render.matrices.view_2d 
+	view:LoadIdentity()		
+	
+	if pos then
+		view:Translate(pos.x, pos.y, 0)
 	end
 
-	function render.GetCamFOV()
-		return render.camera.fov
+	if ang then
+		-- source engine style camera angles
+		view:Rotate(ang, 0, 0, 1)
+	end
+	
+	if zoom then
+		view:Scale(zoom, zoom, 1)
 	end
 end
 
@@ -192,24 +215,22 @@ do
 		end	
 	end
 	
-	-- put the following list of functions in render.*
-	-- render.Translate(0, 0, 0)
-	local functions = 
-	{
-		"Translate",
-		"Rotate",
-		"Scale",
-		"LoadIdentity",
-	}
-	
-	local meta = getmetatable(render.matrices.world)
-	
-	for _, name in pairs(functions) do
-		render[name] = function(...) 
-			return render.matrices.world[name](render.matrices.world, ...) 
-		end
+	-- world matrix helper functions
+	function render.Translate(x, y, z)
+		render.matrices.world:Translate(x, y, z)
 	end
 	
+	function render.Rotate(a, x, y, z)
+		render.matrices.world:Rotate(a, x, y, z)
+	end
+	
+	function render.Scale(x, y, z)
+		render.matrices.world:Scale(x, y, z)
+	end
+	
+	function render.LoadIdentity()
+		render.matrices.world:LoadIdentity()
+	end	
 end  
  
 -- these are for shaders and they return the raw float[16] array
@@ -222,8 +243,12 @@ function render.GetProjectionMatrix2D()
 	return render.matrices.projection_2d.m
 end
 
-function render.GetViewMatrix()
-	return render.matrices.view.m
+function render.GetViewMatrix3D()
+	return render.matrices.view_3d.m
+end
+
+function render.GetViewMatrix3D()
+	return render.matrices.view_2d.m
 end
 
 function render.GetWorldMatrix()
@@ -231,9 +256,13 @@ function render.GetWorldMatrix()
 end
 
 function render.GetPVWMatrix2D()
-	return (render.matrices.world * render.matrices.projection_2d).m
+	return (render.matrices.world * render.matrices.view_2d * render.matrices.projection_2d).m
 end
 
 function render.GetPVWMatrix3D()
-	return (render.matrices.world * render.matrices.view * render.matrices.projection_3d).m
+	local m = render.matrices.world * render.matrices.view_3d * render.matrices.projection_3d
+	
+	render.matrices.world_x_view_x_proj = m
+	
+	return m.m
 end
