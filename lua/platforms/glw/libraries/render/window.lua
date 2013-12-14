@@ -86,16 +86,17 @@ do -- window meta
 	function META:GetMouseDelta()
 		return self.mouse_delta or Vec2()
 	end
-	
-	local last
-	 
+		 
 	function META:UpdateMouseTrap(dt)
+		local time = glfw.GetTime()
 		local size = self:GetSize()
 		local pos = self:GetMousePos()
-
-		self.mouse_delta = (pos - (last or pos)) * dt * 200
+	
+		if self.last_mpos then
+			self.mouse_delta = (pos - self.last_mpos)
+		end
 		
-		last = pos
+		self.last_mpos = pos
 	end
 
 	function META:OnUpdate(dt)
