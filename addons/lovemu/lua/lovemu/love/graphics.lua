@@ -341,7 +341,7 @@ end
 
 do -- image
 
-	local FILTER = e.GL_NEAREST
+	local FILTER = e.GL_LINEAR
 
 	function love.graphics.setDefaultFilter(filter)
 		if filter == "nearest" then
@@ -440,23 +440,31 @@ end
 local drawq = love.graphics.drawq
 
 function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
-	if textures[drawable] then
-		if type(x) == "table" and x:typeOf("Quad") then
-			drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
-		else
-			x=x or 0
-			y=y or 0
-			sx=sx or 1
-			sy=sy or 1
-			ox=ox or 0
-			oy=oy or 0
-			r=r or 0
-			r=r/0.0174532925
-			
-			local tex = textures[drawable]
-			
-			surface.SetTexture(tex)
-			surface.DrawRect(x,y, tex.w*sx, tex.h*sy, r, ox*sx,oy*sy)
+	if type(drawable) == "table" and drawable.typeOf then
+		if drawable:typeOf("SpriteBatch") then
+			surface.Color(1,1,1,1)
+			surface.SetTexture(textures[drawable.img])
+			surface.DrawPoly(drawable.poly) 
+		end
+	else
+		if textures[drawable] then
+			if type(x) == "table" and x:typeOf("Quad") then
+				drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
+			else
+				x=x or 0
+				y=y or 0
+				sx=sx or 1
+				sy=sy or 1
+				ox=ox or 0
+				oy=oy or 0
+				r=r or 0
+				r=r/0.0174532925
+				
+				local tex = textures[drawable]
+				
+				surface.SetTexture(tex)
+				surface.DrawRect(x,y, tex.w*sx, tex.h*sy, r, ox*sx,oy*sy)
+			end
 		end
 	end
 end
@@ -535,52 +543,44 @@ end
 
 function love.graphics.newSpriteBatch(image, size, usagehint)
 	local obj = lovemu.NewObject("SpriteBatch")
-	local poly = surface.CreatePoly(size)
+	local poly = surface.CreatePoly(size+1)
 	local i = 0
 	
-	local function add_rect(x,y, r, sx,sy, ox,oy, kx,ky)
-		sx = sx or image:getWidth()
-		sy = sy or image:getWidth()
-		
-		poly:SetRect(i, x,y,sx,sy, r, ox,oy)		
-		i = i + 1
-	end
+	obj.poly = poly
+	obj.img = image
+	
+	local W = image:getWidth()
+	local H = image:getHeight()
 	
 	local function set_rect(i, x,y, r, sx,sy, ox,oy, kx,ky)	
-		sx = sx or image:getWidth()
-		sy = sy or image:getWidth()
+		sx = sx or W
+		sy = sy or H
 		
+		sx = sx * W
+		sy = sy * H
 		poly:SetRect(i, x,y, sx,sy, r, ox,oy)		
 	end
-	
-	obj.add = function(_, q, ...)
-		if type(q) == "table" then
-			self:addq(q, ...)
-		else
-			add_rect(...)
-		end
 		
-		return i
-	end
-	
-	obj.addq = function(_, q, ...) 
-		
-		poly:SetUV(q[1]*q[5], q[2]*q[6], q[3]*q[5], q[4]*q[6])
-		add_rect(...)	
-		
-		return i
-	end
-	
 	obj.set = function(_, id, q, ...)
 		if type(q) == "table" then
-			set_rect(id, ...)
-		else
 			poly:SetUV(q[1]*q[5], q[2]*q[6], q[3]*q[5], q[4]*q[6])
 			set_rect(id, ...)
+		else
+			set_rect(id, q, ...)
 		end
 	end
 	
 	obj.setq = obj.set
+	
+	obj.add = function(_, q, ...)
+		obj:set(i, q, ...)
+		
+		i = i + 1
+		
+		return i
+	end
+	
+	obj.addq = obj.add
 	
 	obj.setColor = function(_, r,g,b,a) 
 		
