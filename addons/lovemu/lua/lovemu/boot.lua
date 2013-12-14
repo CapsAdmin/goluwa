@@ -3,6 +3,7 @@ function lovemu.boot(folder)
 
 	local love = {}
 	love._version = lovemu.version
+	love._version_major = 9
 
 	_G.love = love
 	include("lovemu/love/*")
