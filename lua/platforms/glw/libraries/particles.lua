@@ -44,9 +44,9 @@ class.GetSet(EMITTER, "PosAttractionForce", 0)
 function EMITTER:IsValid()
 	return true
 end
-
+  
 local emitters = {}
-
+ 
 function Emitter()
 	local self = setmetatable({}, EMITTER)
 	
@@ -69,13 +69,13 @@ function EMITTER:Remove()
 	
 	utilities.MakeNULL(self)
 end
-
+ 
 function EMITTER:Think(dt)
 	local time = os.clock()
 	
 	if self.Rate == 0 then
 		self:Emit()
-	else
+	elseif self.Rate ~= -1 then
 		if self.last_emit < time then 
 			self:Emit()
 			self.last_emit = time + self.Rate
@@ -135,7 +135,7 @@ function EMITTER:Think(dt)
 	self.attraction_center = center / #self.particles
 		
 	table.multiremove(self.particles, remove_these)
-end
+end  
   
 function EMITTER:Draw()
 	render.SetAdditive(self.Additive)
@@ -201,18 +201,26 @@ end
 function EMITTER:GetParticles()
 	return self.particles
 end
-
-function EMITTER:Emit()
+  
+function EMITTER:AddParticle(...)
+	local p = setmetatable({}, PARTICLE)
+	p:SetPos(self:GetPos():Copy())
+	p.life_mult = 1	
+	
+	p:SetLifeTime(1)
+	
+	self.particles[#self.particles + 1] = p
+	
+	return p
+end
+  
+function EMITTER:Emit(...)
 	for i = 1, self.EmitCount do
-		local p = setmetatable({}, PARTICLE)
-		p:SetPos(self:GetPos():Copy())
-		p.life_mult = 1	
+		self:AddParticle(...)
 		
-		p:SetLifeTime(1)
-		
-		self:OnEmit(p)
-
-		self.particles[#self.particles + 1] = p
+		if self.OnEmit then
+			self:OnEmit(p, ...)
+		end
 	end
 end
  
@@ -227,53 +235,3 @@ event.AddListener("OnUpdate", "particles", function(dt)
 		emitter:Think(dt) 
 	end
 end)
-
-window.Open(1024, 1024) 
-
--- test
-local emitter = Emitter()
-emitter:SetPos(Vec3(50,50))
-emitter:SetRate(0)
-emitter:SetEmitCount(10)
-emitter:SetCenterAttractionForce(0.5) 
-emitter:SetPosAttractionForce(0.1) 
-
-local sphere = Texture(64, 64):Fill(function(x, y) 
-	x = x / 64
-	y = y / 64
-	
-	x = x - 1
-	y = y - 1.5
-	
-	x = x * math.pi
-	y = y * math.pi
-		
-	local a = math.sin(x) * math.cos(y)
-	
-	a = a ^ 32
-		
-	return 255, 255, 255, a * 128
-end)
-
-local trail_tex = Texture(1, 255):Fill(function(x, y) return 255, 255, 255, y end)
-   
-function emitter:OnEmit(p)
-	self:SetPos(Vec3(window.GetMousePos():Unpack()))
-	p:SetDrag(0.999)
-	
-	--p:SetStartLength(Vec2(0))
-	p:SetEndLength(Vec2(0, 30))
-	
-	p:SetAngle(90)
-	
-	p:SetTexture(sphere)
-	p:SetPos(self:GetPos() + Ang3():GetRandom(-math.pi, math.pi):GetForward()*200)
-	p:SetVelocity(Ang3():GetRandom(-math.pi, math.pi):GetForward() * 500)
-	
-	p:SetLifeTime(math.randomf(0.5,1))
-	
-	p:SetStartSize(math.randomf(40,70)/2)
-	p:SetStartAlpha(0.5)
-	p:SetEndAlpha(1)
-	p:SetColor(HSVToColor(os.clock()/5, 0.5))	
-end  
