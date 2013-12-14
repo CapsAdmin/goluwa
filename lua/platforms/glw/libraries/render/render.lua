@@ -88,13 +88,9 @@ function render.Initialize(w, h, window)
 	gl.Enable(e.GL_BLEND)
 	gl.Enable(e.GL_TEXTURE_2D)
 
---	gl.Enable(e.GL_CULL_FACE)
-	
 	gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
-	--gl.PolygonMode(e.GL_FRONT_AND_BACK, e.GL_FILL)
-	
 	gl.Disable(e.GL_DEPTH_TEST)
-	--gl.CullFace(e.GL_BACK)
+	gl.DepthRangef(1, 0)
 	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
 	
