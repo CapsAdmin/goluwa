@@ -36,6 +36,9 @@ include("libraries/render/init.lua")
 -- high level implementation of OpenAl
 include("libraries/audio.lua")
 
+-- particles
+include("libraries/particles.lua")
+
 -- high level implementation of render 3d mesh
 include("libraries/model.lua")
 
