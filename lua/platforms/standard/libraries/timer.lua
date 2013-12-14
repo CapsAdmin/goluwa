@@ -105,7 +105,7 @@ function timer.Create(id, time, repeats, callback, run_now)
 	return data
 end
 
-function timer.Update()
+function timer.Update(...)
 	local cur = timer.clock()
 			
 	for key, data in pairs(timer.Timers) do
@@ -129,7 +129,7 @@ function timer.Update()
 			end
 		elseif data.type == "timer" then
 			if not data.paused and data.realtime < cur then
-				local ran, msg = data:Call(data.times_ran - 1)
+				local ran, msg = data:Call(data.times_ran - 1, ...)
 				
 				if ran then
 					if msg == "stop" then
