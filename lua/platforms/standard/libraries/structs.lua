@@ -173,7 +173,9 @@ function structs.AddOperator(META, operator, ...)
 		local lua = [==[
 		local META = ({...})[1]
 		META["__eq"] = function(a, b)
-				return
+				return 
+				a and
+				getmetatable(a) == "ffi" and
 				ffi.istype(a, b) and 
 				a.KEY == b.KEY
 			end
@@ -299,7 +301,7 @@ function structs.AddOperator(META, operator, ...)
 				return CTOR(
 					a OPERATOR b.KEY
 				)
-			elseif ffi.istype(a, b) then
+			elseif a and ffi.istype(a, b) then
 				return CTOR(
 					a.KEY OPERATOR b.KEY
 				)
