@@ -120,6 +120,11 @@ do -- fonts
 		v.glyphs = {}
 		v.strings = {}
 	end
+
+	local allowed_types = {
+		woff = true,
+		truetype = true,
+	}  
 	
 	function surface.CreateFont(name, info)
 		if not ft.ptr then return end
@@ -132,27 +137,26 @@ do -- fonts
 		
 		info.border = math.pow2ceil(info.size) 
 		info.border_2 = info.border / 2   
-		 
-		-- create a face from memory  
-		local data, err = vfs.Read(info.path, "rb") 
-		
-		if not data then error("could not load font " .. info.path .. " : " .. err, 2) end
-		
-		local face = ffi.new("FT_Face[1]")   
-		freetype.NewMemoryFace(ft.ptr, data, #data, 0, face)   
-		face = face[0]	
+				
+		if not vfs.ReadAsync(info.path, function(data)
+			local face = ffi.new("FT_Face[1]")   
+			freetype.NewMemoryFace(ft.ptr, data, #data, 0, face)   
+			face = face[0]	
 
-		freetype.SetCharSize(face, 0, info.size * DPI, DPI, DPI)
-		
-		ft.fonts[name] = 
-		{
-			name = name, 
-			face = face, 
-			glyphs = {}, 
-			strings = {},
-			info = info,
-			font_data = data, -- not doing this will make freetype crash because the data gets garbage collected
-		}		
+			freetype.SetCharSize(face, 0, info.size * DPI, DPI, DPI)
+			
+			ft.fonts[name] = 
+			{
+				name = name, 
+				face = face, 
+				glyphs = {}, 
+				strings = {},
+				info = info,
+				font_data = data, -- not doing this will make freetype crash because the data gets garbage collected
+			}		
+		end) then
+			error("could not load font " .. info.path .. " : " .. err, 2)
+		end
 		
 		return name
 	end
