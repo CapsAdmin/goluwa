@@ -222,8 +222,14 @@ do -- helpers/usage
 	
 	function luasocket.Download(url, callback)
 		if url:sub(0, 4) == "http" then
+			
+			if url:sub(0, 5) == "https" then
+				url = "http" .. url:sub(6)
+			end
+						
 			if callback then
 				luasocket.Get(url, function(data) callback(data.content) end, nil, nil, true)
+				return true
 			else
 				return {Download = function(_, callback) luasocket.Get(url, function(data) callback(data.content) end, nil, nil, true) end}
 			end
