@@ -10,7 +10,8 @@ local SHADER = {
 			--projection_matrix = "mat4",
 			--view_matrix = "mat4",
 			--world_matrix = "mat4",
-			
+			view_matrix = "mat4",
+			worldview_matrix = "mat4",
 			pvm_matrix = "mat4",
 		},			
 		attributes = {
@@ -20,15 +21,11 @@ local SHADER = {
 		},	
 		source = [[		
 			void main()
-			{							
-				//mat3 world_inverse = transpose(mat3(world_matrix));
-				//mat3 normal_matrix = transpose(inverse(mat3(projection_matrix)));
-				
-				
+			{											
 				gl_Position = pvm_matrix * vec4(pos, 1.0);
 				
-				//glw_out_normal = normalize(world_inverse * normal_matrix * normal);
-				//glw_out_pos = (view_matrix * vec4(pos, 1.0)).xyz;
+				glw_out_normal = transpose(inverse(mat3(worldview_matrix))) * normal;
+				glw_out_pos = (pvm_matrix * view_matrix * vec4(pos, 1.0)).xyz;
 			}
 		]]
 	},
@@ -64,7 +61,8 @@ function render.CreateMesh3D(data)
 	local mesh = render.mesh_3d_shader:CreateVertexBuffer(data)
 	
 	mesh.pvm_matrix = render.GetPVWMatrix3D
-	
+	mesh.view_matrix = render.GetViewMatrix3D
+	mesh.worldview_matrix = function() return (render.matrices.view_3d * render.matrices.world).m end
 	return mesh
 end
 
