@@ -48,8 +48,8 @@ do -- timer meta
 	timer.TimerMeta = META
 end
 
-function timer.Thinker(callback, speed)
-	table.insert(timer.Timers, {type == "thinker", callback = callback, speed = speed})
+function timer.Thinker(callback, speed, in_seconds)
+	table.insert(timer.Timers, {type = "thinker", realtime = timer.clock(), callback = callback, speed = speed, in_seconds = in_seconds})
 end
 
 function timer.Delay(time, callback, obj)
@@ -110,7 +110,14 @@ function timer.Update(...)
 			
 	for key, data in pairs(timer.Timers) do
 		if data.type == "thinker" then
-			if data.speed then
+			if data.in_seconds and data.speed then
+				if data.realtime < cur then
+					if data.callback() ~= nil then
+						timer.Timers[key] = nil
+					end
+					data.realtime = cur + data.speed
+				end
+			elseif data.speed then
 				for i=0, data.speed do
 					if data.callback() ~= nil then
 						timer.Timers[key] = nil
