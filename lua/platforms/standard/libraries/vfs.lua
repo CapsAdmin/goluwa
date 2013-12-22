@@ -62,375 +62,385 @@ function vfs.Silence(b)
 	silence = b
 end
 
-function vfs.ParseVariables(path)
-	-- windows
-	path = path:gsub("%%(.-)%%", getenv)
-	path = path:gsub("%%", "")		
-	path = path:gsub("%$%((.-)%)", getenv)
-	
-	-- linux
-	path = path:gsub("%$", "")
-	path = path:gsub("%(", "")
-	path = path:gsub("%)", "")
+do -- path utilities
+	function vfs.ParseVariables(path)
+		-- windows
+		path = path:gsub("%%(.-)%%", getenv)
+		path = path:gsub("%%", "")		
+		path = path:gsub("%$%((.-)%)", getenv)
 		
-	return vfs.FixPath(path)
-end
-
-function vfs.FixPath(path)
-	return (path:gsub("\\", "/"):gsub("(/+)", "/"))
-end
-
-function vfs.GetMounts()
-	return vfs.paths
-end
-
-function vfs.Mount(path)
-	check(path, "string")
-	path = vfs.ParseVariables(path)
-		
-	
-	if is_absolute(path) and path:sub(-1) == "/" then
-		path = path:sub(0, -2)
-	end
-		
-	vfs.Unmount(path)
-
-	if lfs.attributes(path, "mode") ~= "directory" then
-		warning(string.format("Mount path %q does not exist (yet?)", path))
-	end
-		
-	table.insert(vfs.paths, path)
-	
-	--local search_path = ";" .. path .. (WINDOWS and "?.dll" or "?")
-	--package.cpath = package.cpath .. search_path
-end
-	
-	
-function vfs.Unmount(path)
-	check(path, "string")
-	path = vfs.ParseVariables(path)
-	
-	for k,v in pairs(vfs.paths) do
-		if v == path then
-			table.remove(vfs.paths, k)
-		end
-	end
-	
-	--local search_path = ";" .. path .. (WINDOWS and "?.dll" or "?")
-	--local startpos, endpos = package.cpath:find(search_path, nil, true)
-	--if startpos and endpos then
-	--	package.cpath = package.cpath:sub(0, startpos-1) .. package.cpath:sub(endpos+1)
-	--end
-end
-
-function vfs.GetAttributes(path, ...)
-	check(path, "string")
-	path = vfs.ParseVariables(path)
-	
-	for k, v in ipairs(vfs.paths) do
-		local info = lfs.attributes(v .. "/" .. path, ...)
-		if info then
-			return info
-		end
-	end
-	
-	return {}
-end
-
-function vfs.GetAbsolutePath(path, ...)
-	check(path, "string")
-
-	path = vfs.ParseVariables(path)
-	
-	local is_folder = path:sub(-1) == "/"
-	
-	if is_folder then
-		path = path .. "NUL"
-	end
-	
-	for k, v in ipairs(vfs.paths) do
-		local file, err = io.open(v .. "/" .. path, ...)
-		
-		if file then
-			file:close()
+		-- linux
+		path = path:gsub("%$", "")
+		path = path:gsub("%(", "")
+		path = path:gsub("%)", "")
 			
-			if is_folder then
-				path = path:sub(0,-4)
+		return vfs.FixPath(path)
+	end
+
+	function vfs.FixPath(path)
+		return (path:gsub("\\", "/"):gsub("(/+)", "/"))
+	end
+		
+	function vfs.CreateFoldersFromPath(path)
+		local dirs = {}
+		
+		for i = 0, 10 do
+			local folder = utilities.GetParentFolder(path, i)
+			if folder ~= "" then 
+				table.insert(dirs, folder)
+			else
+				break
 			end
-			
-			path = v .. "/" .. path
-			break
+		end
+		
+		for key, dir in ipairs(dirs) do
+			lfs.mkdir(dir)
 		end
 	end
-		
-	return vfs.FixPath(path)
-end
+	
+	function vfs.GetAbsolutePath(path, ...)
+		check(path, "string")
 
-function vfs.GetFile(path, mode, ...)
-	check(path, "string")
-	path = vfs.ParseVariables(path)
+		path = vfs.ParseVariables(path)
 		
-	local file, err
+		local is_folder = path:sub(-1) == "/"
 		
-	if is_absolute(path) then
-		file, err = io.open(path, mode, ...)
-
-		if err then
-			warning(err)
-		end		
-	else
-		for k, v in ipairs(vfs.paths) do	
-			local file, err = io.open(v .. "/" .. path, mode, ...)
-			
-			if err then
-				warning(err)
-			end
+		if is_folder then
+			path = path .. "NUL"
+		end
+		
+		for k, v in ipairs(vfs.paths) do
+			local file, err = io.open(v .. "/" .. path, ...)
 			
 			if file then
-				return file, err
+				file:close()
+				
+				if is_folder then
+					path = path:sub(0,-4)
+				end
+				
+				path = v .. "/" .. path
+				break
 			end
 		end
+			
+		return vfs.FixPath(path)
 	end
-	
-	if file then
+end
+
+do -- mounting
+	function vfs.Mount(path)
+		check(path, "string")
+		path = vfs.ParseVariables(path)
+			
+		
+		if is_absolute(path) and path:sub(-1) == "/" then
+			path = path:sub(0, -2)
+		end
+			
+		vfs.Unmount(path)
+
+		if lfs.attributes(path, "mode") ~= "directory" then
+			warning(string.format("Mount path %q does not exist (yet?)", path))
+		end
+			
+		table.insert(vfs.paths, path)
+		
+		--local search_path = ";" .. path .. (WINDOWS and "?.dll" or "?")
+		--package.cpath = package.cpath .. search_path
+	end
+		
+		
+	function vfs.Unmount(path)
+		check(path, "string")
+		path = vfs.ParseVariables(path)
+		
+		for k,v in pairs(vfs.paths) do
+			if v == path then
+				table.remove(vfs.paths, k)
+			end
+		end
+		
+		--local search_path = ";" .. path .. (WINDOWS and "?.dll" or "?")
+		--local startpos, endpos = package.cpath:find(search_path, nil, true)
+		--if startpos and endpos then
+		--	package.cpath = package.cpath:sub(0, startpos-1) .. package.cpath:sub(endpos+1)
+		--end
+	end
+
+	function vfs.GetMounts()
+		return vfs.paths
+	end
+end
+
+do -- generic
+
+	function vfs.GetFile(path, mode, ...)
+		check(path, "string")
+		path = vfs.ParseVariables(path)
+			
+		local file, err
+			
+		if is_absolute(path) then
+			file, err = io.open(path, mode, ...)
+
+			if err then
+				warning(err)
+			end		
+		else
+			for k, v in ipairs(vfs.paths) do	
+				local file, err = io.open(v .. "/" .. path, mode, ...)
+				
+				if err then
+					warning(err)
+				end
+				
+				if file then
+					return file, err
+				end
+			end
+		end
+		
+		if file then
+			return file, err
+		end
+		
+		return false, "No such file or directory"
+	end
+
+	function vfs.Delete(path, ...)
+		check(path, "string")
+		local abs_path = vfs.GetAbsolutePath(path, ...)
+		
+		if abs_path then
+			local ok, err = os.remove(abs_path)
+			
+			if not ok and err then
+				warning(err)
+			end
+		end
+		
+		local err = ("No such file or directory %q"):format(path)
+		
+		warning(err)
+		
+		return false, "No such file or directory"
+	end
+
+	function vfs.Read(path, mode, ...)
+		check(path, "string")
+		
+		mode = mode or "r"
+		
+		if mode == "b" then
+			mode = "rb"
+		end
+		
+		local file, err = vfs.GetFile(path, mode, ...)
+		
+		if file then
+			local data = file:read("*all")
+			file:close()
+			return data
+		end
+			
 		return file, err
 	end
-	
-	return false, "No such file or directory"
-end
 
-function vfs.Read(path, mode, ...)
-	check(path, "string")
-	
-	mode = mode or "r"
-	
-	if mode == "b" then
-		mode = "rb"
-	end
-	
-	local file, err = vfs.GetFile(path, mode, ...)
-	
-	if file then
-		local data = file:read("*all")
-		file:close()
-		return data
-	end
+	function vfs.Write(path, data, mode)
+		check(path, "string")
 		
-	return file, err
-end
-
-function vfs.Exists(path, ...)
-	check(path, "string")
-	local file = vfs.GetFile(path, ...)
-
-	return file ~= false
-end
-
-function vfs.IsDir(path, ...)
-	local attributes = vfs.GetAttributes(path, ...)
-	return attributes and attributes.mode == "directory"
-end
-
-function vfs.Delete(path, ...)
-	check(path, "string")
-	local abs_path = vfs.GetAbsolutePath(path, ...)
-	
-	if abs_path then
-		local ok, err = os.remove(abs_path)
-		
-		if not ok and err then
-			warning(err)
+		-- if it's a relative path default to the data folder
+		if not is_absolute(path) and not has_prefix(path) then
+			path = data_prefix .. path
 		end
-	end
-	
-	local err = ("No such file or directory %q"):format(path)
-	
-	warning(err)
-	
-	return false, "No such file or directory"
-end
-
-function vfs.CreateFoldersFromPath(path)
-	local dirs = {}
-	
-	for i = 0, 10 do
-		local folder = utilities.GetParentFolder(path, i)
-		if folder ~= "" then 
-			table.insert(dirs, folder)
+				
+		if mode and not mode:find("w", nil, true) then
+			mode = "w" .. mode
 		else
-			break
+			mode = "w"
 		end
-	end
-	
-	for key, dir in ipairs(dirs) do
-		lfs.mkdir(dir)
-	end
-end
-
-function vfs.Write(path, data, mode)
-	check(path, "string")
-	
-	-- if it's a relative path default to the data folder
-	if not is_absolute(path) and not has_prefix(path) then
-		path = data_prefix .. path
-	end
+		
+		path = vfs.ParseVariables(path)
+		
+		local file, err = vfs.GetFile(path, mode)
 			
-	if mode and not mode:find("w", nil, true) then
-		mode = mode .. "w"
-	else
-		mode = "w"
-	end
-	
-	path = vfs.ParseVariables(path)
-	
-	local file, err = vfs.GetFile(path, mode)
+		if err and err:find("No such file or directory") then
+			vfs.CreateFoldersFromPath(path)		
+			return vfs.Write(path, data, mode)
+		end
+			
+		if file then
+			local data = file:write(data)
+			file:close()
+			
+			return true
+		end
 		
-	if err and err:find("No such file or directory") then
-		vfs.CreateFoldersFromPath(path)		
-		return vfs.Write(path, data, mode)
+		return false, err
 	end
-		
-	if file then
-		local data = file:write(data)
-		file:close()
-		
-		return true
+
+	function vfs.Exists(path, ...)
+		check(path, "string")
+		local file = vfs.GetFile(path, ...)
+
+		return file ~= false
 	end
-	
-	return false, err
+
+	function vfs.IsDir(path, ...)
+		local attributes = vfs.GetAttributes(path, ...)
+		return attributes and attributes.mode == "directory"
+	end
+
+	function vfs.GetAttributes(path, ...)
+		check(path, "string")
+		path = vfs.ParseVariables(path)
+		
+		for k, v in ipairs(vfs.paths) do
+			local info = lfs.attributes(v .. "/" .. path, ...)
+			if info then
+				return info
+			end
+		end
+		
+		return {}
+	end
 end
 
-function vfs.Find(path, invert, full_path, start, plain, dont_sort)
-	check(path, "string")
-	path = vfs.ParseVariables(path)
-	
-	-- if the path ends just with an "/"
-	-- make it behave like /*
-	if path:sub(-1) == "/" then
-		path = path .. "."
-	end
-	
-	local dir, pattern = path:match("(.+)/(.+)")
-	
-	-- if there is no pattern after "/"
-	-- the path itself becomes the pattern and 
-	-- plain search is used
-	if not dir then
-		pattern = path
-		dir = ""
-		plain = true
-	end
-	
-	local unique = {}
-	
-	if is_absolute(path) then
-		pcall(function()
-			for file_name in lfs.dir(dir) do
-				if file_name ~= "." and file_name ~= ".." then
-					if full_path then
-						file_name = dir .. "/" .. file_name
-					end
-					unique[file_name] = true
-				end
-			end
-		end)
-	else
-		for _, full_dir in ipairs(vfs.paths) do
-			-- fix me!! 
-			-- on linux, an invalid path will error
-						
+do -- file finding
+
+	function vfs.Find(path, invert, full_path, start, plain, dont_sort)
+		check(path, "string")
+		path = vfs.ParseVariables(path)
+		
+		-- if the path ends just with an "/"
+		-- make it behave like /*
+		if path:sub(-1) == "/" then
+			path = path .. "."
+		end
+		
+		local dir, pattern = path:match("(.+)/(.+)")
+		
+		-- if there is no pattern after "/"
+		-- the path itself becomes the pattern and 
+		-- plain search is used
+		if not dir then
+			pattern = path
+			dir = ""
+			plain = true
+		end
+		
+		local unique = {}
+		
+		if is_absolute(path) then
 			pcall(function()
-			for file_name in lfs.dir(full_dir .. "/" .. dir) do
-				if file_name ~= "." and file_name ~= ".." then
-					if full_path then
-						file_name = full_dir .. "/" .. dir .. "/" .. file_name
+				for file_name in lfs.dir(dir) do
+					if file_name ~= "." and file_name ~= ".." then
+						if full_path then
+							file_name = dir .. "/" .. file_name
+						end
+						unique[file_name] = true
 					end
-					unique[file_name] = true
 				end
-			end
 			end)
-		end
-	end
-	
-	if not next(unique) then
-		return unique
-	end	
-	
-	local list = {}
-	
-	for path in pairs(unique) do
-		local found = path:lower():find(pattern, start, plain)
-		
-		if invert then
-			found = not found
-		end
-		
-		if found then
-			list[#list + 1] = vfs.FixPath(path)
-		end
-	end
-
-	if not dont_sort then
-		table.sort(list)
-	end
-
-	return list
-end
-
-function vfs.Iterate(path, ...)
-	check(path, "string")
-	
-	local dir = path:match("(.+/)") or ""
-	local tbl = vfs.Find(path, ...)
-	local i = 1
-	
-	return function()
-		local val = tbl[i]
-		
-		i = i + 1
-		
-		if val then 
-			return val, dir .. val
-		end
-	end
-end
-
-function vfs.Traverse(path, callback, level)
-	level = level or 1
-
-	local attributes = vfs.GetAttributes(path)
-
-	if attributes then
-		callback(path, attributes, level)
-
-		if attributes.mode == "directory" then
-			for child in vfs.Iterate(path) do
-				if child ~= "." and child ~= ".." then
-					vfs.Traverse(path .. "/" .. child, callback, level + 1)
+		else
+			for _, full_dir in ipairs(vfs.paths) do
+				-- fix me!! 
+				-- on linux, an invalid path will error
+							
+				pcall(function()
+				for file_name in lfs.dir(full_dir .. "/" .. dir) do
+					if file_name ~= "." and file_name ~= ".." then
+						if full_path then
+							file_name = full_dir .. "/" .. dir .. "/" .. file_name
+						end
+						unique[file_name] = true
+					end
 				end
+				end)
 			end
 		end
-	end
-end
-
-do 
-	local out
-	local function search(path, ext)		
-		for _,v in pairs(vfs.Find(path)) do
-			if ext and v:sub(-#ext) == ext then
-				table.insert(out, path .. v)
-			elseif not ext then
-				table.insert(out, path .. v)
+		
+		if not next(unique) then
+			return unique
+		end	
+		
+		local list = {}
+		
+		for path in pairs(unique) do
+			local found = path:lower():find(pattern, start, plain)
+			
+			if invert then
+				found = not found
 			end
 			
-			search(path .. v .. "/", ext)
+			if found then
+				list[#list + 1] = vfs.FixPath(path)
+			end
+		end
+
+		if not dont_sort then
+			table.sort(list)
+		end
+
+		return list
+	end
+
+	function vfs.Iterate(path, ...)
+		check(path, "string")
+		
+		local dir = path:match("(.+/)") or ""
+		local tbl = vfs.Find(path, ...)
+		local i = 1
+		
+		return function()
+			local val = tbl[i]
+			
+			i = i + 1
+			
+			if val then 
+				return val, dir .. val
+			end
 		end
 	end
 
-	function vfs.Search(path, ext)
-		out = {}
-		search(path, ext)
-		return out
+	function vfs.Traverse(path, callback, level)
+		level = level or 1
+
+		local attributes = vfs.GetAttributes(path)
+
+		if attributes then
+			callback(path, attributes, level)
+
+			if attributes.mode == "directory" then
+				for child in vfs.Iterate(path) do
+					if child ~= "." and child ~= ".." then
+						vfs.Traverse(path .. "/" .. child, callback, level + 1)
+					end
+				end
+			end
+		end
+	end
+
+	do 
+		local out
+		local function search(path, ext)		
+			for _,v in pairs(vfs.Find(path)) do
+				if ext and v:sub(-#ext) == ext then
+					table.insert(out, path .. v)
+				elseif not ext then
+					table.insert(out, path .. v)
+				end
+				
+				search(path .. v .. "/", ext)
+			end
+		end
+
+		function vfs.Search(path, ext)
+			out = {}
+			search(path, ext)
+			return out
+		end
 	end
 end
 
@@ -487,6 +497,48 @@ function vfs.AddModuleDirectory(dir)
 		return vfs.loadfile(dir .. path .. "/init.lua")
 	end)
 end	
+
+do -- async reading
+	vfs.async_readers = {
+		file = function(path, callback, mbps)
+			local file = vfs.GetFile(path, "rb")
+			if file then
+				local content = {}
+				timer.Thinker(function()
+					local str = file:read(1048576 * mbps) -- 5 mb per tick
+					if str then
+						content[#content + 1] = str
+						print(#str)
+					else
+						callback(table.concat(content))
+						return false
+					end
+				end, 1, true)
+				return true				
+			end
+		end,
+		luasocket = function(path, callback, mbps)	
+			if luasocket.Download(path, callback) then
+				return true
+			end
+		end,
+	}
+
+	function vfs.ReadAsync(path, callback, mbps)
+		check(path, "string")
+		check(callback, "function")
+		check(mbps, "nil", "number")
+		mbps = mbps or 1
+		
+		for name, func in pairs(vfs.async_readers) do
+			if func(path, callback, mbps) then
+				return true
+			end
+		end 
+		
+		return false
+	end
+end
 
 do -- file monitoring
 
