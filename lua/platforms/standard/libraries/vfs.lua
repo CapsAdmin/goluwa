@@ -508,7 +508,6 @@ do -- async reading
 					local str = file:read(1048576 * mbps) -- 5 mb per tick
 					if str then
 						content[#content + 1] = str
-						print(#str)
 					else
 						callback(table.concat(content))
 						return false
