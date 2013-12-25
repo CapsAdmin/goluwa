@@ -1,6 +1,22 @@
 local utilities = _G.utilities or {}
 
-
+function utilities.CreateBaseObject(class_name)
+	local self = {}
+	
+	self.Type = class_name -- if type differs it might be a better idea to use _G.class
+	self.ClassName = class_name
+	
+	function self:Remove()
+		if self.OnRemove then 
+			self:OnRemove() 
+		end
+		utilities.MakeNULL(self)
+	end
+	
+	utilities.SetGCCallback(self)
+	
+	return self	
+end
 
 do -- thanks etandel @ #lua!
 	function utilities.SetGCCallback(t, func)
