@@ -79,7 +79,7 @@ function surface.Initialize()
 		surface.fontshader = shader
 	end
 
-	surface.SetFont(surface.CreateFont("default"))	
+	surface.SetFont(surface.CreateFont("default", {read_speed = 50}))	
 	
 	surface.ready = true
 end
@@ -127,7 +127,7 @@ do -- fonts
 	}  
 	
 	function surface.CreateFont(name, info)
-		if not ft.ptr then return end
+		if not ft.ptr then return name end
 		
 		info = info or {}
 
@@ -137,6 +137,14 @@ do -- fonts
 		
 		info.border = math.pow2ceil(info.size) 
 		info.border_2 = info.border / 2   
+		
+		ft.fonts[name] = 
+		{
+			name = name, 
+			glyphs = {}, 
+			strings = {},
+			info = info,
+		}
 				
 		if not vfs.ReadAsync(info.path, function(data)
 			local face = ffi.new("FT_Face[1]")   
@@ -145,16 +153,10 @@ do -- fonts
 
 			freetype.SetCharSize(face, 0, info.size * DPI, DPI, DPI)
 			
-			ft.fonts[name] = 
-			{
-				name = name, 
-				face = face, 
-				glyphs = {}, 
-				strings = {},
-				info = info,
-				font_data = data, -- not doing this will make freetype crash because the data gets garbage collected
-			}		
-		end) then
+			 -- not doing this will make freetype crash because the data gets garbage collected
+			ft.fonts[name].face = face
+			ft.fonts[name].font_data = data
+		end, info.read_speed) then
 			error("could not load font " .. info.path .. " : " .. err, 2)
 		end
 		
@@ -184,6 +186,9 @@ do -- fonts
 	
 	local function get_text_data(str)
 		local face = ft.current_font.face
+		
+		if not face then return end
+		
 		local info = ft.current_font.info 
 		local data = ft.current_font.strings[str]
 
@@ -318,6 +323,8 @@ do -- fonts
 
 		local info = ft.current_font.info 
 		local data = get_text_data(str)
+		
+		if not data then return end
 				 
 		if surface.debug then
 			surface.SetWhiteTexture()
@@ -347,6 +354,8 @@ do -- fonts
 		end
 	
 		local data = get_text_data(str)
+		
+		if not data then return 0, 0 end
 		
 		if str == " " then
 			return (ft.current_font.info.size / 2) * W, ft.current_font.info.size * H
