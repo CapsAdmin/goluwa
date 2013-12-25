@@ -1,5 +1,5 @@
 function Gif(path)
-	local self = {Type = "gif"}
+	local self = utilities.CreateBaseObject("gif")	
 
 	local data = vfs.Read(path, "rb")
 	local frames = freeimage.LoadMultiPageImage(data)
@@ -41,16 +41,10 @@ function Gif(path)
 		surface.DrawRect(x, y, tex.w, tex.h)
 	end
 	
-	function self:IsValid()
-		return true
-	end
-	
-	function self:Remove()
+	function self:OnRemove()
 		for _, tex in pairs(frames) do
 			tex:Remove()
 		end
-	
-		utilities.SetGCCallback(self)
 	end
 	
 	return self
