@@ -30,8 +30,11 @@ end
 -- high level implementation of curses
 include("libraries/console.lua")
 
--- high level implementation of OpenGL
+-- OpenGL abstraction
 include("libraries/render/init.lua")
+
+-- high level 2d rendering of the render library
+include("libraries/surface.lua")
 
 -- high level implementation of OpenAl
 include("libraries/audio.lua")
@@ -56,6 +59,7 @@ include("libraries/window.lua")
 
 include("extensions/input.lua")
 
+include("libraries/image.lua")
 include("libraries/gif.lua")
 
 
