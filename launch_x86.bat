@@ -12,12 +12,12 @@ fi 2> /dev/null
 
 ARCH=$(getconf LONG_BIT)
 
-cd bin/linux/x86
+cd .base/bin/linux/x86
 
 fi
 
 while true; do
-	$(hash screen 2> /dev/null && echo "screen") env LD_LIBRARY_PATH=. ./luajit -e 'PLATFORM = "glw" dofile("../../../lua/init.lua")'
+	$(hash screen 2> /dev/null && echo "screen") env LD_LIBRARY_PATH=. ./luajit -e 'dofile("../../../lua/init.lua")'
 	# BROKE (when using screen) ==> if [ $? -eq 0 ] || [ $? -ge 128 ]; then echo "im outta here"; break; fi
 	sleep 1
 done
@@ -29,5 +29,5 @@ done
 :WINDOWS
 
 cd %~dp0
-cd bin/windows/x86/
-start "" "luajit.exe" "-e PLATFORM='glw'ARGS={'%1','%2','%3','%3','%5','%6','%7','%8','%9'}dofile('../../../lua/init.lua')"
+cd .base/bin/windows/x86/
+start "" "luajit.exe" "-e ARGS={'%1','%2','%3','%3','%5','%6','%7','%8','%9'}dofile('../../../lua/init.lua')"

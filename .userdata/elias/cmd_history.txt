@@ -1,0 +1,13 @@
+[1] = "lovemu run top_gear_results",
+[2] = "זרר",
+[3] = "table.print(addons.GetAll())",
+[4] = "table.print(vfs.Find(\"\"))",
+[5] = "table.print(vfs.Find(\"lua/.\"))",
+[6] = "addons.AutorunAll()",
+[7] = "for k,v in pairs(addons.Info) print(k) end",
+[8] = "for k,v in pairs(addons.Info) do print(k) end",
+[9] = "for k,v in pairs(addons.Info) do print(v.name) end",
+[10] = "table.print(vfs.paths)",
+[11] = "lovemu run passingclouds",
+[12] = "include \"sponza.lua\"",
+
