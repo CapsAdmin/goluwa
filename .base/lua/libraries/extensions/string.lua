@@ -1,3 +1,24 @@
+function string.lengthsplit(str, len)
+	if #str > len then
+		local tbl = {}
+		
+		local max = math.floor(#str/len)
+		local leftover = #str - (max * len)
+		
+		for i = 0, max do
+			
+			local left = i * len + 1
+			local right = (i * len) + len
+					
+			table.insert(tbl, str:sub(left, right))
+		end
+		
+		return tbl
+	end
+	
+	return {str}
+end
+
 function string.safeformat(str, ...)
 	local count = select(2, str:gsub("(%%)", ""))
 	local copy = {}
