@@ -142,14 +142,15 @@ function console.InitializeCurses()
 		function io.write(...)
 			if suppress then return end
 			local str = table.concat({...}, "")
-			
+			str = str:gsub("\r", "\\r")
+
 			suppress = true
 			event.Call("OnConsolePrint", str)
 			suppress = false
 			
 			if WINDOWS and #str > max_length then
 				for k,v in pairs(split_by_length(str, max_length)) do
-					for line in v:gmatch("(.-\n)") do
+					for line in v:gmatch("(.-)\n") do
 						io.write(line)
 					end
 				end
