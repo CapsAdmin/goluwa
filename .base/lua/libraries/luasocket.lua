@@ -448,7 +448,7 @@ do -- tcp socket meta
 					local bytes, b, c, d = self.socket:send(str)
 
 					if bytes then
-						self:DebugPrintf("sucessfully sent %s (%i/%i)",  utilities.FormatFileSize(#packet), i, split_size)
+						self:DebugPrintf("sucessfully sent %s",  utilities.FormatFileSize(#str))
 
 						self:OnSend(packet, bytes, b,c,d)
 					end
