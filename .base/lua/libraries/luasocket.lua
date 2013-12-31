@@ -443,22 +443,28 @@ do -- tcp socket meta
 		end
 
 		function CLIENT:Send(str, instant)
-			if self.socket_type == "tcp" then
+			if self.socket_type == "tcp" then				
 				if instant then
 					local bytes, b, c, d = self.socket:send(str)
 
 					if bytes then
-						self:DebugPrintf("sucessfully sent %q", str)
+						self:DebugPrintf("sucessfully sent %s (%i/%i)",  utilities.FormatFileSize(#packet), i, split_size)
 
-						self:OnSend(str, bytes, b,c,d)
+						self:OnSend(packet, bytes, b,c,d)
 					end
-				else
-					table.insert(self.Buffer, str)
+				else					
+					for i, packet in pairs(str:lengthsplit(65536)) do
+						table.insert(self.Buffer, packet)
+					end
 				end
 			else
 				self.socket:send(str)
 				self:DebugPrintf("sent %q", str)
 			end
+		end
+		
+		function CLIENT:CloseWhenDoneSending(b)
+			self.close_when_done = b
 		end
 
 		CLIENT.ReceiveMode = "all"
@@ -516,6 +522,9 @@ do -- tcp socket meta
 								break
 							end
 						else
+							if self.close_when_done then
+								self:Remove()
+							end
 							break
 						end
 					end
