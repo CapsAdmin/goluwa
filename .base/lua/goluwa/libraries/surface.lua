@@ -285,7 +285,7 @@ do -- fonts
 					
 					data.w = w
 
-					table.insert(data.chars, char)
+					data.chars[#data.chars+1] = char
 				end
 			end
 			
@@ -636,10 +636,10 @@ function surface.WrapString(str, max_width)
 		if line_width + w >= max_width then
 
 			if space_pos then
-				table.insert(lines, str:usub(last_pos+1, space_pos))
+				lines[#lines+1] = str:usub(last_pos+1, space_pos)
 				last_pos = space_pos
 			else
-				table.insert(lines, str:usub(last_pos+1, pos))
+				lines[#lines+1] = str:usub(last_pos+1, pos)
 				last_pos = pos
 			end
 
@@ -652,9 +652,9 @@ function surface.WrapString(str, max_width)
 	end
 
 	if found then
-		table.insert(lines, str:usub(last_pos+1, pos))
+		lines[#lines+1] = str:usub(last_pos+1, pos)
 	else
-		table.insert(lines, str)
+		lines[#lines+1] = str
 	end
 
 	return lines

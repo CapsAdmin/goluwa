@@ -49,7 +49,7 @@ do -- timer meta
 end
 
 function timer.Thinker(callback, speed, in_seconds)
-	table.insert(timer.Timers, {type = "thinker", realtime = timer.clock(), callback = callback, speed = speed, in_seconds = in_seconds})
+	timer.Timers[#timer.Timers+1] = {type = "thinker", realtime = timer.clock(), callback = callback, speed = speed, in_seconds = in_seconds}
 end
 
 function timer.Delay(time, callback, obj)
@@ -70,7 +70,7 @@ function timer.Delay(time, callback, obj)
 		end
 	end
 
-	table.insert(timer.Timers, {type = "delay", callback = callback, realtime = timer.clock() + time})
+	timer.Timers[#timer.Timers+1] = {type = "delay", callback = callback, realtime = timer.clock() + time}
 end
 
 function timer.Create(id, time, repeats, callback, run_now)
