@@ -236,3 +236,7 @@ console.AddCommand("source", function(line)
 		print(func:src())
 	end
 end)
+
+console.AddCommand("open", function(line)
+	include(line .. ".lua")
+end)
