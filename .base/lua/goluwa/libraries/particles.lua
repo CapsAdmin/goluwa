@@ -1,3 +1,5 @@
+local lerp,deg,randomf,clamp = math.lerp,math.deg,math.randomf,math.clamp
+
 local PARTICLE = {}
 PARTICLE.__index = PARTICLE
 
@@ -53,8 +55,8 @@ function Emitter()
 	self.particles = {}
 	self.last_emit = 0
 	self.next_think = 0
-	
-	table.insert(emitters, self)
+
+	emitters[#emitters+1] = self
 	
 	return self
 end
@@ -62,7 +64,8 @@ end
 function EMITTER:Remove()
 	for k,v in pairs(emitters) do 
 		if v == self then 
-			table.remove(emitters, k) 
+			--table.remove(emitters, k) 
+			emitters[k] = nil
 			break 
 		end 
 	end
@@ -124,7 +127,7 @@ function EMITTER:Think(dt)
 				p.Velocity.z = p.Velocity.z * p.Drag
 			end
 		
-			p.life_mult = math.clamp((p.life_end - time) / p.LifeTime, 0, 1)
+			p.life_mult = clamp((p.life_end - time) / p.LifeTime, 0, 1)
 
 			if self.CenterAttractionForce ~= 0 then
 				center = center + p.Pos
@@ -150,15 +153,15 @@ function EMITTER:Draw()
 				surface.SetWhiteTexture()
 			end
 		
-			local size = math.lerp(p.life_mult, p.EndSize, p.StartSize)
-			local alpha = math.lerp(p.life_mult, p.EndAlpha, p.StartAlpha)
-			local length_x = math.lerp(p.life_mult, p.EndLength.x, p.StartLength.x)
-			local length_y = math.lerp(p.life_mult, p.EndLength.y, p.StartLength.y)
-			local jitter = math.lerp(p.life_mult, p.EndJitter, p.StartJitter)
+			local size = lerp(p.life_mult, p.EndSize, p.StartSize)
+			local alpha = lerp(p.life_mult, p.EndAlpha, p.StartAlpha)
+			local length_x = lerp(p.life_mult, p.EndLength.x, p.StartLength.x)
+			local length_y = lerp(p.life_mult, p.EndLength.y, p.StartLength.y)
+			local jitter = lerp(p.life_mult, p.EndJitter, p.StartJitter)
 			
 			if jitter ~= 0 then
-				size = size + math.randomf(-jitter, jitter)
-				alpha = alpha + math.randomf(-jitter, jitter)
+				size = size + randomf(-jitter, jitter)
+				alpha = alpha + randomf(-jitter, jitter)
 			end
 			
 			local w = size * p.Size.x
@@ -167,7 +170,7 @@ function EMITTER:Draw()
 			
 					
 			if not (length_x == 0 and length_y == 0) and self.Mode2D then
-				a = math.deg(p.Velocity:GetAng3().y)
+				a = deg(p.Velocity:GetAng3().y)
 				
 				if length_x ~= 0 then
 					w = w * length_x

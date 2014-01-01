@@ -26,7 +26,7 @@ function entities.GetAllByClass(class)
 	
 	for key, ent in pairs(entities.active_entities) do
 		if ent.ClassName == class then
-			table.insert(out, ent)
+			out[#out+1] = ent
 		end
 	end
 	
