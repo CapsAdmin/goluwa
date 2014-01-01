@@ -507,27 +507,27 @@ do -- tcp socket meta
 				-- try send
 								
 				if self.socket_type == "tcp" then
-					for i = 1, 128 do
+				--	for i = 1, 128 do
 						local data = self.Buffer[1]
 						if data then
 							local bytes, b, c, d = sock:send(data)
 
 							if bytes then
-								self:DebugPrintf("sucessfully sent %q", data)
+								self:DebugPrintf("sucessfully sent %s",  utilities.FormatFileSize(bytes))
 
 								self:OnSend(data, bytes, b,c,d)
 								table.remove(self.Buffer, 1)
 							elseif b ~= "Socket is not connected" then
-								self:DebugPrintf("could not send %s : %s", data, b)
-								break
+								self:DebugPrintf("could not send %s of data : %s", utilities.FormatFileSize(#data), b)
+--								break
 							end
 						else
 							if self.close_when_done then
 								self:Remove()
 							end
-							break
+--							break
 						end
-					end
+				--	end
 				end
 				
 				-- try receive
@@ -546,7 +546,7 @@ do -- tcp socket meta
 				end
 				
 				if data then
-					if data:find("\n") then
+					if #data > 256 then
 						self:DebugPrintf("received (mode %s) %i bytes of data", mode, #data)
 					else
 						self:DebugPrintf("received (mode %s) %i bytes of data (%q)", mode, #data, data)
