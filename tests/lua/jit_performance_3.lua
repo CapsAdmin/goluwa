@@ -10,7 +10,7 @@ local function test1()
 	local foo = {}
 	
 	for i = 1, 10000000 do
-		table.insert(foo, math.random())
+		foo[#foo+1] = math.random()
 	end
 	
 	local bar = 0

@@ -112,12 +112,12 @@ end
 tcc = {}
 
 function tcc.Autorun()
-	for file in vfs.Iterate("/C/autorun/", nil, true) do		
+	for file in vfs.Iterate("C/autorun/", nil, true) do		
 		if file:find("%.c$") then
 			local state = TCCState()
 			
 			local str = vfs.Read(file)
-			
+						
 			for script in str:gmatch("#!(.-)\n") do
 				local func = assert(loadstring(script))
 				

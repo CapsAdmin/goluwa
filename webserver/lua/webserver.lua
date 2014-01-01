@@ -65,4 +65,4 @@ end
 
 server:Host("*", server.port) 
 
-os.execute("explorer http://localhost:" .. server.port .. "/images/preview.jpg")
+os.execute("explorer http://localhost:" .. server.port)
