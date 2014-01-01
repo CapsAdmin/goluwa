@@ -13,9 +13,9 @@ fi 2> /dev/null
 ARCH=$(getconf LONG_BIT)
 
 if [ $ARCH -eq "64" ]; then
-	cd bin/linux/x64
+	cd .base/bin/linux/x64
 else
-	cd bin/linux/x86
+	cd .base/bin/linux/x86
 fi
 
 while true; do
