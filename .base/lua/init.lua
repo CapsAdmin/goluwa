@@ -1,3 +1,4 @@
+DEBUG = true
 _G.ffi = require("ffi")
 
 _G[ffi.os:upper()] = true
@@ -103,6 +104,12 @@ do -- file system
 	
 	-- replace require with the pure lua version (lua/procure/init.lua)
 	_G.require = require("procure")	
+	
+	-- use strung
+	if USE_STRUNG then
+		_G.strung = require("strung")
+		_G.strung.install()
+	end
 end
 
 do -- logging	
