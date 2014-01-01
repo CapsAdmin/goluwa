@@ -9,15 +9,30 @@ server.version = "0.1.0"
 server.file_types = {
 	png = "rb",
 	jpg = "rb",
+	gif = "rb",
 }
 
 function server:OnReceive(str, client)
 	local top, rest = str:match("(.-)\n(.+)")
 	local type, path, protocol = top:match("(%S-) (/%S-) (%S+)")
+	local parameters = {}
+	
+	if path:find("?") then
+		local new_path, param_line = path:match("(.+)?(.+)")
+		
+		param_line = "&" .. param_line
+		
+		for key, val in param_line:gmatch("&(.+)=(.+)") do
+			parameters[key] = val
+		end
+		
+		path = new_path
+	end
+	
 	local extension = path:match(".+%.(.+)")
 	
 	if path == "/" then path = path .. "index.html" end
-
+	
 	path = server.content_folder .. path
 
 	if type == "GET" then
