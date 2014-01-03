@@ -220,7 +220,7 @@ local commands =
 			
 			local part = self.part
 			
-			local center = Vector(x, y - 10, 0)
+			local center = Vec3(x, y - 10, 0)
 			local W, H = max_width/2, ScrH()
 			
 			W = W - center.x
@@ -259,15 +259,11 @@ local commands =
 				part.vel.y = part.vel.y * -part.drag
 			end
 			
-			local mat = Matrix()
-			
-			mat:Translate(Vector(part.pos.x, part.pos.y))
-			
-			cam.PushWorldMatrix(mat)
+			surface.PushMatrix(part.pos.x, part.pos.y)
 		end,
 		
 		post = function()
-			cam.PopWorldMatrix()
+			surface.PopMatrix()
 		end,
 	},
 	
@@ -276,22 +272,11 @@ local commands =
 		arguments = {0, 0, 1, 1, 0, 0, 0},
 		
 		draw = function(self, x,y,a, pos_x, pos_y, scale_x, scale_y, angle, center_x, center_y)
-			local mat = Matrix()
-			
-			local center = Vector(x, y, 0)
-			mat:Translate(center)
-				mat:Translate(Vector(pos_x, pos_y, 0))
-				mat:Scale(Vector(scale_x, scale_y, 1))
-				mat:Translate(Vector(center_x, center_y, 0))
-					mat:Rotate(Angle(0, angle, 0))
-				mat:Translate(-Vector(center_x, center_y, 0))
-			mat:Translate(-center)
-			
-			cam.PushWorldMatrix(mat)
+			surface.PushMatrix(pos_x, pos_y, scale_x, scale_y, angle)
 		end,
 		
 		post = function()
-			cam.PopWorldMatrix()
+			surface.PopMatrix()
 		end,
 	},
 	
@@ -339,10 +324,6 @@ local commands =
 		end,
 	}
 }
-
-commands.matrix = nil
-commands.font = nil
-commands.physics = nil
 
 local function run_tag(line, name, ...)
 	if not line.val.cmd then return end
