@@ -335,7 +335,8 @@ local function matrix_rotate(a, x, y, z, result)
 		if y == 0 then
 			if z ~= 0 then
 				optimized = true
-
+				-- rotate only around z axis
+				
 				m[0*4+0] = c
 				m[1*4+1] = c
 
@@ -348,7 +349,8 @@ local function matrix_rotate(a, x, y, z, result)
 				end
 			elseif z == 0 then
 				optimized = true;
-
+				-- rotate only around y axis
+				
 				m[0*4+0] = c
 				m[2*4+2] = c
 
@@ -364,7 +366,8 @@ local function matrix_rotate(a, x, y, z, result)
 	elseif y == 0 then
 		if z == 0 then
 			optimized = true
-
+			-- rotate only around x axis
+			
 			m[1*4+1] = c
 			m[2*4+2] = c
 
@@ -413,7 +416,7 @@ local function matrix_rotate(a, x, y, z, result)
 		m[2*4+2] = (one_c * zz) + c;
 
 	end
-
+	
 	return result
 end
 
@@ -571,8 +574,19 @@ function META:Rotate(a, x, y, z)
 				matrix_rotate(a, 1, 0, 0, self)
 				matrix_rotate(x, 0, 1, 0, self)
 		return 	matrix_rotate(y, 0, 0, 1, self)
-	end	
-	return matrix_rotate(a, x, y, z, self)
+	end
+	
+	matrix_multiply(self:Copy(),matrix_rotate(a, x, y, z), self)
+end
+
+function META:Copy()
+	local result = Matrix44()
+	
+	for i = 0, 16-1 do
+		result.m[i] = self.m[i]
+	end
+	
+	return result
 end
 
 function META:__tostring()
