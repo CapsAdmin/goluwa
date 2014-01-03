@@ -660,12 +660,7 @@ void main()
 				render.active_super_shaders[shader_id] = self
 				
 				utilities.SetGCCallback(self)
-				
-				if CAPSADMIN then
-					luadata.WriteFile("super_shader_debug/" .. shader_id .. "_build.lua", build)
-					vfs.Write("super_shader_debug/" .. shader_id .. "_lua_output.lua", lua)
-				end
-				
+
 				return self
 			end
 		else
