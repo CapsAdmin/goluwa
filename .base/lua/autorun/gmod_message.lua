@@ -1,4 +1,4 @@
-if not CAPSADMIN then return end
+if not ELIAS then return end
 
 local allowed_ips = {
 	["88.191.104.162"] = true, 
