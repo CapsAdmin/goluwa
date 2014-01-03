@@ -24,8 +24,8 @@ local SHADER = {
 			{											
 				gl_Position = pvm_matrix * vec4(pos, 1.0);
 				
-				glw_out_normal = transpose(inverse(mat3(worldview_matrix))) * normal;
-				glw_out_pos = (pvm_matrix * view_matrix * vec4(pos, 1.0)).xyz;
+				//glw_out_normal = transpose(inverse(mat3(worldview_matrix))) * normal;
+				//glw_out_pos = (worldview_matrix * view_matrix * vec4(pos, 1.0)).xyz;
 			}
 		]]
 	},
@@ -60,9 +60,10 @@ function render.CreateMesh3D(data)
 		
 	local mesh = render.mesh_3d_shader:CreateVertexBuffer(data)
 	
-	mesh.pvm_matrix = render.GetPVWMatrix3D
-	mesh.view_matrix = render.GetViewMatrix3D
+	mesh.pvm_matrix = function() return render.GetPVWMatrix3D() end
+	mesh.view_matrix = function() return render.GetViewMatrix3D() end
 	mesh.worldview_matrix = function() return (render.matrices.view_3d * render.matrices.world).m end
+	
 	return mesh
 end
 

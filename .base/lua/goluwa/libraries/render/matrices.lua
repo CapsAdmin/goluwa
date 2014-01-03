@@ -147,15 +147,15 @@ function render.SetupView3D(pos, ang, fov)
 	local view = render.matrices.view_3d 
 	view:LoadIdentity()		
 	
-	if pos then
-		view:Translate(pos.y, pos.x, pos.z)
-	end
-
 	if ang then
 		-- source engine style camera angles
-		view:Rotate(ang.p + 90, 1, 0, 0)
-		view:Rotate(ang.r, 0, 1, 0)
 		view:Rotate(ang.y, 0, 0, 1)
+		view:Rotate(ang.r, 0, 1, 0)
+		view:Rotate(ang.p + 90, 1, 0, 0)
+	end
+	
+	if pos then
+		view:Translate(pos.y, pos.x, pos.z)
 	end
 end
 
@@ -194,13 +194,13 @@ do
 			
 			-- source engine style world orientation
 			if pos then
-				render.Translate(-pos.y, -pos.x, -pos.z)	
+				render.Translate(-pos.y, -pos.z, -pos.x)	
 			end
 			
 			if ang then
-				render.Rotate(-ang.y, 0, 0, 1)
-				render.Rotate(-ang.r, 0, 1, 0)
-				render.Rotate(-ang.p, 1, 0, 0)
+				render.Rotate(-ang.r, 0, 0, 1)
+				render.Rotate(-ang.y, 0, 1, 0)
+				render.Rotate(-ang.p, 1, 0, 0) 
 			end
 			
 			if scale then 
