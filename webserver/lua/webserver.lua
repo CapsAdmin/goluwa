@@ -7,9 +7,22 @@ server.content_folder = "www"
 server.version = "0.1.0"
 
 server.file_types = {
-	png = "rb",
-	jpg = "rb",
-	gif = "rb",
+	default = {
+		read_mode = "r",
+		mime = "text/html",
+	},
+	png = {
+		read_mode = "rb",
+		mime = "image/png",
+	},
+	jpg = {
+		read_mode = "rb",
+		mime = "image/jpeg",
+	},
+	gif = {
+		read_mode = "rb",
+		mime = "image/gif",
+	},
 }
 
 function server:OnReceive(str, client)
@@ -38,8 +51,19 @@ function server:OnReceive(str, client)
 	if type == "GET" then
 		local data = luasocket.HeaderToTable(rest)
 
-		if vfs.Exists(path) then	
-			client:Send(vfs.Read(path, server.file_types[extension]))
+		if vfs.Exists(path) then
+			local info = server.file_types[extension] or server.file_types.default
+			local data = vfs.Read(path, info.read_mode)
+			
+			local header = luasocket.TableToHeader({
+			--	["Content-Type"] = info.mime,
+				["Accept-Ranges"] = "bytes",
+				["Content-Length"] = #data,
+				["Connection"] = "Keep-Alive",
+			})
+			
+			client:Send("HTTP/1.1 200 OK\r\n" .. header .. "\r\n" .. data)
+			vfs.Write("header.txt", "HTTP/1.1 200 OK\r\n" .. header)
 		else
 			client:Send(self:NotFound(path)) 
 		end
