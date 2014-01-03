@@ -317,6 +317,18 @@ function structs.AddOperator(META, operator, ...)
 		lua = lua:gsub("PROTECT", "a.")
 				
 		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META)
+	elseif operator == "iszero" then
+		local lua = [==[
+		local META = ({...})[1]
+		META["IsZero"] = function(a)
+				return 
+				a.KEY == 0
+			end
+		]==]
+		
+		lua = parse_args(META, lua, " and ")
+
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META)
 	else
 		logn("unhandled operator " .. operator)
 	end
@@ -332,6 +344,7 @@ function structs.AddAllOperators(META)
 	structs.AddOperator(META, "%")
 	structs.AddOperator(META, "==")
 	structs.AddOperator(META, "copy")
+	structs.AddOperator(META, "iszero")
 	structs.AddOperator(META, "unpack")
 	structs.AddOperator(META, "tostring")
 	structs.AddOperator(META, "zero")
