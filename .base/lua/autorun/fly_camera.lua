@@ -13,9 +13,6 @@ event.AddListener("OnUpdate", "fly_camera", function(dt)
 	local speed = dt * 100
 
 	local delta = window.GetMouseDelta() / 100
-		
-	cam_ang.p = math.clamp(cam_ang.p + delta.y, -math.pi/2, math.pi/2)
-	cam_ang.y = cam_ang.y - delta.x		
 	
 	if input.IsKeyDown("r") then
 		cam_ang.r = 0
@@ -25,9 +22,12 @@ event.AddListener("OnUpdate", "fly_camera", function(dt)
 	end
 	
 	if input.IsMouseDown("button_2") then
-		cam_fov = math.clamp(cam_fov + delta.y * 1000, 0, 180)
+		cam_fov = math.clamp(cam_fov + delta.y * 100, 0.1, 120)
 		cam_ang.r = cam_ang.r - delta.x
 		zoom = math.clamp(zoom + delta.y, 0.1, 5)
+	else
+		cam_ang.p = math.clamp(cam_ang.p + delta.y, -math.pi/2, math.pi/2)
+		cam_ang.y = cam_ang.y - delta.x
 	end
 
 	if input.IsKeyDown("left_shift") then
