@@ -194,12 +194,12 @@ do
 			
 			-- source engine style world orientation
 			if pos then
-				render.Translate(-pos.y, -pos.z, -pos.x)	
+				render.Translate(-pos.y, -pos.x, -pos.z) -- Vec3(left/right, back/forth, down/up)	
 			end
 			
 			if ang then
-				render.Rotate(-ang.r, 0, 0, 1)
-				render.Rotate(-ang.y, 0, 1, 0)
+				render.Rotate(-ang.y, 0, 0, 1)
+				render.Rotate(-ang.r, 0, 1, 0)
 				render.Rotate(-ang.p, 1, 0, 0) 
 			end
 			
