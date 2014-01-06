@@ -35,7 +35,7 @@ function Gif(path)
 	end
 	
 	function self:Draw(x, y)
-		local tex = self:GetTexture(glfw.GetTime() * frame_speed)
+		local tex = self:GetTexture(timer.clock() * frame_speed)
 		surface.SetTexture(tex)
 
 		surface.DrawRect(x, y, tex.w, tex.h)

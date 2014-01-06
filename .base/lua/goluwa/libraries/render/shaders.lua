@@ -6,6 +6,8 @@ function render.CreateShader(type, source)
 	check(type, "number")
 	check(source, "string")
 	
+	if not render.CheckSupport("CreateShader") then return 0 end
+	
 	local shader = gl.CreateShader(type)
 	
 	shader_strings[0] = ffi.cast("const char *", source)
@@ -25,6 +27,9 @@ function render.CreateShader(type, source)
 end
 
 function render.CreateProgram(...)	
+
+	if not render.CheckSupport("CreateProgram") then return 0 end
+
 	local shaders = {...}
 	local program = gl.CreateProgram()
 	

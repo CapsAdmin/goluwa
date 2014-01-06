@@ -106,7 +106,7 @@ function gl.InitMiniGlew()
 		end 
 	end
 	
-	local time = glfw.GetTime()
+	local time = timer.clock()
 	for path in vfs.Iterate("lua/goluwa/ffi_binds/gl/extensions/", nil, true) do
 		local str, err = vfs.Read(path)
 		for line in str:gmatch("\t(.-)\n") do
@@ -171,7 +171,7 @@ function gl.InitMiniGlew()
 		
 	setlogfile()
 	
-	logf("glew extensions took %f ms to parse", (glfw.GetTime() - time) * 100)
+	logf("glew extensions took %f ms to parse", (timer.clock() - time) * 100)
 	logf("%i extensions could not be parsed. see the unexpected_extensions log for more info", invalid)
 end
 

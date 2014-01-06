@@ -179,16 +179,10 @@ do -- generic
 	function vfs.GetFile(path, mode, ...)
 		check(path, "string")
 		path = vfs.ParseVariables(path)
-			
-		local file, err
-			
-		if is_absolute(path) then
-			file, err = io.open(path, mode, ...)
+				
+		local file, err = io.open(path, mode, ...)
 
-			if err then
-				warning(err)
-			end		
-		else
+		if not file then
 			for k, v in ipairs(vfs.paths) do	
 				file, err = io.open(v .. "/" .. path, mode, ...)
 				
@@ -211,7 +205,7 @@ do -- generic
 			return file, err
 		end
 		
-		return false, "No such file or directory"
+		return false, err or "No such file or directory"
 	end
 
 	function vfs.Delete(path, ...)

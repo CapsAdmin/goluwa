@@ -14,13 +14,13 @@ function love.timer.getFPS()
 end
 
 function love.timer.getMicroTime()
-	return glfw.GetTime()
+	return timer.clock()
 end
 
 function love.timer.getTime()
 	if lovemu.version=="0.8.0" then
-		return ceil(glfw.GetTime())
+		return ceil(timer.clock())
 	else
-		return glfw.GetTime()
+		return timer.clock()
 	end
 end

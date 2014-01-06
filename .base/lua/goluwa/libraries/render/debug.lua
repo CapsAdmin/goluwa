@@ -80,6 +80,7 @@ local types = {
 
 
 function render.EnableDebug(b)
+	do return end-- this just crashes for some weird reason
 	if gl.DebugMessageCallback then
 		if b then		
 			gl.Enable(e.GL_DEBUG_OUTPUT_ARB)
@@ -90,7 +91,7 @@ function render.EnableDebug(b)
 				type = types[type]
 				severity = severities[severity]
 				message = ffi.string(message, length)
-				
+								
 				render.OnError(source, type, id, severity, message)
 			end, nil)
 		else

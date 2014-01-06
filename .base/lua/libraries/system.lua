@@ -31,7 +31,10 @@ do -- title
 		if last < time then
 			if id then
 				titles[id] = title
-				str = table.concat(titles, " | ")
+				str = "| "
+				for k,v in pairs(titles) do
+					str = str ..  v .. " | "
+				end
 				if str ~= last_title then
 					system.SetWindowTitleRaw(str)
 				end

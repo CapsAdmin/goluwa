@@ -16,11 +16,11 @@ voice:SetChannel(1)
 timer.Create("shame", 1, 0, function()
 	voice:Play()
 
-	voice:SetPosition(math.sin(glfw.GetTime()), math.cos(glfw.GetTime()),0)
+	voice:SetPosition(math.sin(timer.clock()), math.cos(timer.clock()),0)
 end) 
 
 timer.Create("pitchy",0,0,function()
-	music:SetPitch(1 + math.sin(glfw.GetTime()*10)/30)
+	music:SetPitch(1 + math.sin(timer.clock()*10)/30)
 	local gain = math.abs(math.sin(os.clock()/10))
 	
 	effect:SetParam(e.AL_EAXREVERB_GAIN, gain)

@@ -5,13 +5,13 @@ local function test1()
 		bar = bar + 1
 	end
 
-	local start = glfw.GetTime()
+	local start = timer.clock()
 
 	for i = 1, 100000000 do
 		foo()
 	end
 
-	return glfw.GetTime() - start
+	return timer.clock() - start
 end
 
 logf("test1 took %s ms with jit ON", test1())

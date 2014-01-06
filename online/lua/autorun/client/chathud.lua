@@ -2,7 +2,7 @@
 -- lol
 surface.SetTextColor = surface.Color
 surface.SetDrawColor = surface.Color
-local RealTime = glfw.GetTime
+local RealTime = timer.clock
 
 local default_font = "chathud"
 

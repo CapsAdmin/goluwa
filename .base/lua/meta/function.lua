@@ -79,6 +79,17 @@ meta.__tostring = function(self)
 	return out
 end
 
+meta.name = function(self)
+	local info = debug.getinfo(self)
+	if info.source then
+		local line = vfs.Read(info.source:sub(2)):explode("\n")[info.linedefined]	
+		line = line:trim()
+		return line
+	end
+	
+	return "no source"
+end
+
 meta.info=debug.getinfo
 meta.getinfo=debug.getinfo
 meta.getparams=debug.getparams

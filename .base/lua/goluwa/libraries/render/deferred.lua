@@ -157,13 +157,18 @@ function render.InitializeDeffered()
 		}
 	} 
 	render.gbuffer = render.CreateFrameBuffer(render.w, render.h, render.gbuffer_config)  
+	
+	if not render.gbuffer:IsValid() then
+		logn("[render] failed to initialize deffered rendering")
+		return
+	end
 
 	local shader = render.CreateSuperShader("deferred", SHADER)
 	
 	shader.pvm_matrix = render.GetPVWMatrix2D
 	shader.cam_pos = function() return render.GetCamPos() end
 	shader.cam_vec = function() return render.GetCamAng():GetRad():GetForward() end
-	shader.time = function() return tonumber(glfw.GetTime()) end
+	shader.time = function() return tonumber(timer.clock()) end
 	
 	shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
 	shader.tex_position = render.gbuffer:GetTexture("position") 

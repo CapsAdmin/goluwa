@@ -348,6 +348,8 @@ void main()
 
 	function render.CreateSuperShader(shader_id, data, base)
 	
+		if not render.CheckSupport("CreateShader") then return NULL end
+	
 		if not shader_translate then
 			-- do this when we try to create our first
 			-- material to ensure we have all the enums

@@ -15,13 +15,13 @@ jit.flush(true)
 
 print("initial address :"..tostring(bullshit.func3))
 
-start = glfw.GetTime()
+start = timer.clock()
 
 for i=1,10000000000 do
 	bullshit.func4(1) 
 end
 
-print("Took: "..glfw.GetTime()-start)
+print("Took: "..timer.clock()-start)
 
 --oops! lets replace the func3 again :p
 bullshit.func3=function(c) bullshit.func2(c) end
@@ -30,13 +30,13 @@ jit.flush(true)
 
 print("final address :"..tostring(bullshit.func3))
 
-start = glfw.GetTime()
+start = timer.clock()
 
 for i=1,10000000000 do
 	bullshit.func4(1)
 end
 
-print("Took: "..glfw.GetTime()-start)
+print("Took: "..timer.clock()-start)
 
 
 print("SETS CASE: ")
@@ -55,13 +55,13 @@ print("tab:SetVar(v) test")
 local garbage=0
 garbage=collectgarbage("count")
 
-start = glfw.GetTime()
+start = timer.clock()
 
 for i=1,10000000000 do
 	nomnom:SetHealth(100) 
 end
 
-print("Took: "..glfw.GetTime()-start .. " garbage: "..collectgarbage("count")-garbage)
+print("Took: "..timer.clock()-start .. " garbage: "..collectgarbage("count")-garbage)
 collectgarbage()
 
 function nomnom.SetHealth2(h)
@@ -71,26 +71,26 @@ end
 print("tab.SetVar(v) test")
 garbage=collectgarbage("count")
 
-start = glfw.GetTime()
+start = timer.clock()
 
 for i=1,10000000000 do
 	nomnom.SetHealth2(100) 
 end
 
-print("Took: "..glfw.GetTime()-start .. " garbage: "..collectgarbage("count")-garbage)
+print("Took: "..timer.clock()-start .. " garbage: "..collectgarbage("count")-garbage)
 collectgarbage()
 
 
 print("tab.Var= test")
 garbage=collectgarbage("count")
 
-start = glfw.GetTime()
+start = timer.clock()
 
 for i=1,10000000000 do
 	nomnom.Health=100
 end
 
-print("Took: "..glfw.GetTime()-start .. " garbage: "..collectgarbage("count")-garbage)
+print("Took: "..timer.clock()-start .. " garbage: "..collectgarbage("count")-garbage)
 collectgarbage()
 
 

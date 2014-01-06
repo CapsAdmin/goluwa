@@ -5,7 +5,7 @@ local function test1()
 		bar = bar + 1
 	end
 
-	local start = glfw.GetTime()
+	local start = timer.clock()
 
 	local foo = {}
 	
@@ -20,7 +20,7 @@ local function test1()
 	
 	print(bar)
 		
-	return glfw.GetTime() - start
+	return timer.clock() - start
 end
 
 jit.on(test1) 

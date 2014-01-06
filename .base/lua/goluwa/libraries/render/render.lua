@@ -64,7 +64,11 @@ function render.Initialize(w, h, window)
 	check(w, "number")
 	check(h, "number")
 	
-	glfw.Init()
+	if sdl then
+		sdl.Init(e.SDL_INIT_VIDEO)
+	else
+		glfw.Init()
+	end
 
 	window = window or render.CreateWindow(w, h)
 	
@@ -90,7 +94,10 @@ function render.Initialize(w, h, window)
 
 	gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
 	gl.Disable(e.GL_DEPTH_TEST)
-	gl.DepthRangef(1, 0)
+	
+	if gl.DepthRangef then
+		gl.DepthRangef(1, 0)
+	end
 	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
 	
@@ -102,18 +109,28 @@ function render.Initialize(w, h, window)
 	
 	event.Call("RenderContextInitialized")
 		
+	system.SetWindowTitle("OpenGL " .. render.GetVersion(), "glversion")
+	
 	return window
 end
 
 function render.Shutdown()
-	glfw.Terminate()
+	if sdl then
+		sdl.Quit()
+	else	
+		glfw.Terminate()
+	end
 end
 
 local last_w
 local last_h
 
 function render.Start(window)
-	glfw.MakeContextCurrent(window.__ptr)
+	if sdl then 
+		sdl.GL_MakeCurrent(window.__ptr, render.sdl_context) 
+	else 
+		glfw.MakeContextCurrent(window.__ptr) 
+	end
 		
 	render.current_window = window
 	local w, h = window:GetSize():Unpack()
@@ -131,7 +148,11 @@ end
 function render.End()
 
 	if render.current_window:IsValid() then
-		glfw.SwapBuffers(render.current_window.__ptr)
+		if sdl then
+			sdl.GL_SwapWindow(render.current_window.__ptr)
+		else
+			glfw.SwapBuffers(render.current_window.__ptr)
+		end
 	end
 
 	render.frame = render.frame + 1	
@@ -149,18 +170,17 @@ function render.GetScreenSize()
 	return 0, 0
 end
 
+function render.GetVersion()		
+	return ffi.string(gl.GetString(e.GL_VERSION))
+end
 
-do
-	local major = ffi.new("int[1]")
-	local minor = ffi.new("int[1]")
-	
-	function render.GetVersion()		
-
-		gl.GetIntegerv(33307, major)
-		gl.GetIntegerv(33308, minor)
-		
-		return major[0] .. "." .. minor[0]
+function render.CheckSupport(func)
+	if not gl[func] then
+		logf("%s: the function gl.%s does not exist", debug.getinfo(2).func:name(), func)
+		return false
 	end
+	
+	return true
 end
 
 function render.SetClearColor(r,g,b,a)
