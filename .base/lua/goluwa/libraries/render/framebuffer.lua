@@ -5,6 +5,10 @@ function META:__tostring()
 	return ("frame_buffer[%i]"):format(self.id)
 end
 
+function META:IsValid()
+	return true
+end
+
 function META:Begin(attach, channel, skip_push)
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, self.id)
 	if not skip_push then
@@ -57,6 +61,8 @@ function META:Remove()
 end
 
 function render.CreateFrameBuffer(width, height, format)
+
+	if not render.CheckSupport("GenFramebuffer") then return NULL end
 	
 	local self = setmetatable({}, META)
 
@@ -100,7 +106,7 @@ function render.CreateFrameBuffer(width, height, format)
 		self.buffers[info.name] = {id = id, tex = tex, info = info, draw_enum = ffi.new("GLenum[1]", info.attach)}
 	end
 
-	local id = gl.GenFramebuffer()	
+	local id = gl.GenFramebuffer()
 	self.id = id
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, id)
 	
@@ -132,7 +138,7 @@ function render.CreateFrameBuffer(width, height, format)
 			str = "missing draw buffer"
 		elseif err == e.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER then
 			str = "missing read buffer"
-		end			
+		end
 		
 		self:Remove()
 		error(str, 2)

@@ -22,6 +22,9 @@ if not gl then
 	-- window manager
 	glfw = include("ffi_binds/glfw.lua")
 	
+	-- window manager
+	sdl = include("ffi_binds/sdl/init.lua")
+	
 	-- OpenAL
 	al = include("ffi_binds/al/init.lua")
 	alc = include("ffi_binds/alc.lua")

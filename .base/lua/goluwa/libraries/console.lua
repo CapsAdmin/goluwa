@@ -428,7 +428,7 @@ function console.HandleChar(char)
 	console.InsertChar(char)
 end
 
-timer.Create("curses", 1/60, 0, function()
+timer.Create("curses", 0, 0, function()
 	local byte = curses.wgetch(c.input_window)
 
 	if byte < 0 then return end

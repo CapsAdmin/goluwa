@@ -4,7 +4,7 @@ local cache = {}
 
 event.AddListener("OnDraw2D", "lol", function()
 	surface.SetWhiteTexture()
-	local time = glfw.GetTime()
+	local time = timer.clock()
 	
 	for x = 1, 512 do
 	for y = 1, 512 do

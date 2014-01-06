@@ -18,10 +18,10 @@ local function calc_fps(dt)
 		count = count + 1
 	end
 
-	system.SetWindowTitle(("FPS: %i"):format(avg_fps), 1)
+	system.SetWindowTitle(("FPS: %i"):format(avg_fps), "fps")
 
 	if gl.call_count then
-		system.SetWindowTitle(("gl calls: %i"):format(gl.call_count), 2)
+		system.SetWindowTitle(("gl calls: %i"):format(gl.call_count), "glcalls")
 		gl.call_count = 0
 	end
 end
@@ -42,7 +42,7 @@ local function main()
 	
 	while true do
 		local rate = rate_cvar:Get()
-		local time = glfw.GetTime()
+		local time = timer.clock()
 		
 		if rate <= 0 or next_update < time then
 			local dt = time - (last_time or 0)

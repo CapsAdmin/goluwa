@@ -85,7 +85,7 @@ event.AddListener("OnDraw2D", "hm", function()
 	for i = 1, 70 do
 		i = i * 4
 		surface.PushMatrix(50+i, 50+i, 10, 10)
-			mesh.global_color = HSVToColor(glfw.GetTime()+i/50) 
+			mesh.global_color = HSVToColor(timer.clock()+i/50) 
 			mesh:Draw()
 		surface.PopMatrix()
 	end

@@ -1,5 +1,5 @@
-local cam_pos = Vec3(0, 0, -10) 
-local cam_ang = Ang3(0, 0, 0)
+local cam_pos = Vec3(0, 0, 200) 
+local cam_ang = Ang3(0, 0, 0)  
 local cam_fov = 90
 
 local pos_2d = Vec2(0, 0)
@@ -10,7 +10,7 @@ event.AddListener("OnUpdate", "fly_camera", function(dt)
 	
 	if menu and menu.visible then return end
 	cam_ang:Normalize()
-	local speed = dt * 100
+	local speed = dt * 1000
 
 	local delta = window.GetMouseDelta() / 100
 	

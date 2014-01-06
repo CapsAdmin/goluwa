@@ -39,15 +39,20 @@ function META:Draw(parent)
 	if true or self.rebuild_matrix then
 		local m = self.Matrix
 		
-		m:Identity() 
-
-		m:Translate(-self.Pos.x, self.Pos.y, -self.Pos.z) -- Vec3(left/right, back/forth, down/up)	
+		m:Identity()
 		
-		m:Rotate(-self.Angles.y, 0, 0, 1)
+		m:Translate(-self.Pos.x, -self.Pos.y, -self.Pos.z)	
+		
 		m:Rotate(self.Angles.p, 0, 1, 0)
-		m:Rotate(-self.Angles.r, 1, 0, 0)
+		m:Rotate(-self.Angles.y, 0, 0, 1)
+		m:Rotate(-self.Angles.r, 1, 0, 0)				
 		
 		m:Scale(self.Scale.x * self.Size, self.Scale.y * self.Size, self.Scale.z * self.Size) 
+
+		if parent and parent.Matrix then
+			m:GetMultiplied(parent.Matrix)
+		end
+
 		
 		self.rebuild_matrix = false
 	end
