@@ -1,6 +1,7 @@
 local META = {}
 
 META.Type = "matrix44"
+META.TypeX = "matrix44"
 
 function META:__index(key)
 	return META[key] or self.m[key]
@@ -168,107 +169,148 @@ function META:Translate(x, y, z)
 	return self;
 end
 
-function META:Rotate(a, x, y, z, out)	
+function META:Rotate(a, x, y, z, out)
 	if a == 0 then return self end
+	
+	if false and ELIAS then
+		out = out or Matrix44()
+		local m = out.m
+		
+		local d = math.sqrt(x*x + y*y + z*z)
+		a = a * math.pi / 180;
+		
+		x = x / d 
+		y = y / d
+		z = z / d
+		
+		local c = math.cos(a)
+		local s = math.sin(a)
+		local t = 1 - c
 
-	out = out or Matrix44()
-	local m = out.m
+		m[0] = x * x * t + c;
+		m[1] = x * y * t - z * s;
+		m[2] = x * z * t + y * s;
+		m[3] = 0;
 
-	local xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c, s, c;
-	local optimized = false
+		m[4] = y * x * t + z * s;
+		m[5] = y * y * t + c;
+		m[6] = y * z * t - x * s;
+		m[7] = 0;
 
-	local s = math.sin(math.rad(a))
-	local c = math.cos(math.rad(a))
+		m[8] = z * x * t - y * s;
+		m[9] = z * y * t + x * s;
+		m[10] = z * z * t + c;
+		m[11] = 0;
 
-	if x == 0 then
-		if y == 0 then
-			if z ~= 0 then
-				optimized = true
-				-- rotate only around z axis
-				
-				m[0*4+0] = c
-				m[1*4+1] = c
+		m[12] = 0;
+		m[13] = 0;
+		m[14] = 0;
+		m[15] = 1;
+		
+		self.GetMultiplied(self:Copy(), out, self)
+		
+		return self
+	else
 
-				if z < 0 then
-					m[1*4+0] = s
-					m[0*4+1] = -s
-				else
-					m[1*4+0] = -s
-					m[0*4+1] = s
+		out = out or Matrix44()
+		local m = out.m
+
+		local xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c, s, c;
+		local optimized = false
+
+		local s = math.sin(math.rad(a))
+		local c = math.cos(math.rad(a))
+
+		if x == 0 then
+			if y == 0 then
+				if z ~= 0 then
+					optimized = true
+					-- rotate only around z axis
+					
+					m[0*4+0] = c
+					m[1*4+1] = c
+
+					if z < 0 then
+						m[1*4+0] = s
+						m[0*4+1] = -s
+					else
+						m[1*4+0] = -s
+						m[0*4+1] = s
+					end
+				elseif z == 0 then
+					optimized = true;
+					-- rotate only around y axis
+					
+					m[0*4+0] = c
+					m[2*4+2] = c
+
+					if y < 0 then
+						m[2*4+0] = -s
+						m[0*4+2] = s
+					else
+						m[2*4+0] = s
+						m[0*4+2] = -s
+					end
 				end
-			elseif z == 0 then
-				optimized = true;
-				-- rotate only around y axis
+			end
+		elseif y == 0 then
+			if z == 0 then
+				optimized = true
+				-- rotate only around x axis
 				
-				m[0*4+0] = c
+				m[1*4+1] = c
 				m[2*4+2] = c
 
-				if y < 0 then
-					m[2*4+0] = -s
-					m[0*4+2] = s
+				if x < 0 then
+					m[2*4+1] = s
+					m[1*4+2] = -s
 				else
-					m[2*4+0] = s
-					m[0*4+2] = -s
+					m[2*4+1] = -s;
+					m[1*4+2] = s;
 				end
 			end
 		end
-	elseif y == 0 then
-		if z == 0 then
-			optimized = true
-			-- rotate only around x axis
-			
-			m[1*4+1] = c
-			m[2*4+2] = c
 
-			if x < 0 then
-				m[2*4+1] = s
-				m[1*4+2] = -s
-			else
-				m[2*4+1] = -s;
-				m[1*4+2] = s;
+		if not optimized then
+			local mag = math.sqrt(x * x + y * y + z * z)
+
+			if mag <= 1.0e-4 then
+				return
 			end
+
+			x = x / mag;
+			y = y / mag;
+			z = z / mag;
+
+			xx = x * x
+			yy = y * y
+			zz = z * z
+			xy = x * y
+			yz = y * z
+			zx = z * x
+			xs = x * s
+			ys = y * s
+			zs = z * s
+			one_c = 1 - c
+
+			m[0*4+0] = (one_c * xx) + c;
+			m[1*4+0] = (one_c * xy) - zs;
+			m[2*4+0] = (one_c * zx) + ys;
+
+			m[0*4+1] = (one_c * xy) + zs;
+			m[1*4+1] = (one_c * yy) + c;
+			m[2*4+1] = (one_c * yz) - xs;
+
+			m[0*4+2] = (one_c * zx) - ys;
+			m[1*4+2] = (one_c * yz) + xs;
+			m[2*4+2] = (one_c * zz) + c;
+
 		end
-	end
-
-	if not optimized then
-		local mag = math.sqrt(x * x + y * y + z * z)
-
-		if mag <= 1.0e-4 then
-			return
-		end
-
-		x = x / mag;
-		y = y / mag;
-		z = z / mag;
-
-		xx = x * x
-		yy = y * y
-		zz = z * z
-		xy = x * y
-		yz = y * z
-		zx = z * x
-		xs = x * s
-		ys = y * s
-		zs = z * s
-		one_c = 1 - c
-
-		m[0*4+0] = (one_c * xx) + c;
-		m[1*4+0] = (one_c * xy) - zs;
-		m[2*4+0] = (one_c * zx) + ys;
-
-		m[0*4+1] = (one_c * xy) + zs;
-		m[1*4+1] = (one_c * yy) + c;
-		m[2*4+1] = (one_c * yz) - xs;
-
-		m[0*4+2] = (one_c * zx) - ys;
-		m[1*4+2] = (one_c * yz) + xs;
-		m[2*4+2] = (one_c * zz) + c;
-
-	end
-	
-	self.GetMultiplied(self:Copy(), out, self)
 		
-	return self
+		self.GetMultiplied(out, self:Copy(), self)
+		
+		return self
+	end
 end
 
 function META:Scale(x, y, z)
