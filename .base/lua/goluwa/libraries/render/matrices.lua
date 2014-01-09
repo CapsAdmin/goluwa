@@ -149,9 +149,9 @@ function render.SetupView3D(pos, ang, fov)
 	
 	if ang then
 		-- source engine style camera angles
-		view:Rotate(ang.y, 0, 0, 1)
-		view:Rotate(ang.r, 0, 1, 0)
 		view:Rotate(ang.p + 90, 1, 0, 0)
+		view:Rotate(ang.r, 0, 1, 0)
+		view:Rotate(ang.y, 0, 0, 1)
 	end
 	
 	if pos then
