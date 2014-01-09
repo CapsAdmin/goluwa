@@ -7,14 +7,22 @@ gl.PushMatrix()
 gl.LoadIdentity()
 
 local function test(lua_func, gl_func, ...)
-	m = m[lua_func](m, ...)
+	m[lua_func](m, ...)
 	
 	local copy = ffi.new("float[16]")
 	for i = 0, 15 do
 		copy[i] = m.m[i]
 	end
+	
+	local args = {}
+	for k,v in pairs({...}) do
+		if typex(v) == "matrix44" then
+			v = v.m
+		end
+		args[k] = v
+	end
 
-	gl_func(...)
+	gl_func(unpack(args))
 	gl.GetFloatv(e.GL_MODELVIEW_MATRIX, m.m)
 	
 	local equal = true
@@ -31,7 +39,7 @@ local function test(lua_func, gl_func, ...)
 	end
 		
 	if equal then
-		logf("%s results are equal", lua_func)
+	--	logf("%s results are equal", lua_func)
 		
 		return true
 	end
@@ -50,13 +58,26 @@ local function test(lua_func, gl_func, ...)
 	return false
 end
 
+local function random_matrix()
+	local m = Matrix44()
+	
+	for i = 1, 15 do
+		m[i] = math.randomf(-100,100)
+	end
+	
+	return m
+end
 
 for i = 1, 20 do 
 	if not test("Translate", gl.Translatef, math.randomf(-100, 100), math.randomf(-100, 100), math.randomf(-100, 100)) then break end
-	if not test("Rotate", gl.Rotatef, math.randomf(-100, 100), math.randomf(-1, 1), math.randomf(-1, 1), math.randomf(-1, 1)) then break end
+	if not test("Multiply", gl.MultMatrixf, random_matrix()) then break end
+	if not test("Rotate", gl.Rotatef, math.randomf(-360, 360), math.randomf(-1, 1), math.randomf(-1, 1), math.randomf(-1, 1)) then break end
+	if not test("Multiply", gl.MultMatrixf, random_matrix()) then break end
 	if not test("Scale", gl.Scalef, math.randomf(-100, 100), math.randomf(-100, 100), math.randomf(-100, 100)) then break end
-	if not test("Ortho", gl.Ortho, math.randomf(-100, 100), math.randomf(-100, 100), math.randomf(-100, 100), math.randomf(-100, 100), math.randomf(-100, 100), math.randomf(-100, 100)) then break end
+	if not test("Multiply", gl.MultMatrixf, random_matrix()) then break end
 end
-     
+   
+print(m) 
+
 --test("Ortho", gl.Ortho, 0, 512, 0, 512, -1, 1) 
 --test("Perspective", glu.Perspective, 70, 0.35, 200, 1.23)  
