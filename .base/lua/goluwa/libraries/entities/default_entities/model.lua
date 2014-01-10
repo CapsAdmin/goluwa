@@ -36,7 +36,7 @@ function META:InvalidateMatrix()
 	self.rebuild_matrix = true
 end
 function META:Draw(parent)
-	if true or self.rebuild_matrix then
+	if self.rebuild_matrix then
 		local m = self.Matrix
 		
 		m:Identity()
@@ -48,11 +48,6 @@ function META:Draw(parent)
 		m:Rotate(-self.Angles.r, 1, 0, 0)				
 		
 		m:Scale(self.Scale.x * self.Size, self.Scale.y * self.Size, self.Scale.z * self.Size) 
-
-		if parent and parent.Matrix then
-			m:GetMultiplied(parent.Matrix)
-		end
-
 		
 		self.rebuild_matrix = false
 	end

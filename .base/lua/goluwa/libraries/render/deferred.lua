@@ -47,7 +47,7 @@ local SHADER = {
 				vec3 light_color = vec3(1,1,1);
 				
 				vec3 light_pos = vec3(-400, 200, -200) + vec3(sin(time), 0, cos(time)) * 300;
-				light_pos = vec3(0,0,0);
+				light_pos = cam_pos;
 			
 				vec3 light_vec = light_pos - position;
 				float light_dist = length(light_vec);
@@ -73,7 +73,7 @@ local SHADER = {
 			}
 			
 			void main ()
-			{	
+			{				
 				vec3 diffuse = texture2D(tex_diffuse, uv).rgb;
 				vec3 normal = texture2D(tex_normal, uv).rgb;
 				vec3 position = texture2D(tex_position, uv).xyz;
@@ -84,6 +84,8 @@ local SHADER = {
 				//out_color.rgb = diffuse;
 				out_color.rgb += calc_light(normal, position, diffuse, specular);				
 				out_color.rgb = mix_fog(out_color.rgb, depth);
+				
+				//out_color.rgb = mod(position, vec3(100,100,100))/100;
 				
 				out_color.a = 1;
 			}
