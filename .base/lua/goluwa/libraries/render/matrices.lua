@@ -247,7 +247,7 @@ function render.GetViewMatrix3D()
 	return render.matrices.view_3d.m
 end
 
-function render.GetViewMatrix3D()
+function render.GetViewMatrix2D()
 	return render.matrices.view_2d.m
 end
 
@@ -260,9 +260,5 @@ function render.GetPVWMatrix2D()
 end
 
 function render.GetPVWMatrix3D()
-	local m = render.matrices.world * render.matrices.view_3d * render.matrices.projection_3d
-	
-	render.matrices.world_x_view_x_proj = m
-	
-	return m.m
+	return (render.matrices.world * render.matrices.view_3d * render.matrices.projection_3d).m
 end
