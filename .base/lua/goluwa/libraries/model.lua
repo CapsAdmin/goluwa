@@ -32,6 +32,11 @@ local function parse_scene(scene, dir, flip_normals, uv_mult)
 				local val = mesh.mTangents[i]
 				data.tangent = {val.x, val.y, val.z}
 			end	
+
+			if mesh.mBitangents ~= nil then
+				local val = mesh.mBitangents[i]
+				data.bitangent = {val.x, val.y, val.z}
+			end	
 						
 			if mesh.mTextureCoords ~= nil then
 				local val = mesh.mTextureCoords[0] and mesh.mTextureCoords[0][i]
@@ -159,9 +164,8 @@ local cache = {}
 
 function Model(path, flags, ...)
 	check(path, "string")
-	--check(flags, "number", nil)
 	
-	flags = flags or 0
+	flags = flags or bit.bor(e.aiProcess_CalcTangentSpace, e.aiProcess_GenSmoothNormals)
 		
 	if cache[path] then
 		return cache[path]
