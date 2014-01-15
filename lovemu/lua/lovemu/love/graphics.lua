@@ -13,12 +13,65 @@ local lovemu=lovemu
 
 local textures = lovemu.textures
 
+local function ADD_FILTER(obj)
+	obj.setFilter = function(s, min, mag, anistropy) 
+		
+		textures[s].format.min_filter = min == "linear" and e.GL_LINEAR or e.GL_NEAREST
+		textures[s].format.mag_filter = mag == "linear" and e.GL_LINEAR or e.GL_NEAREST
+				
+		textures[s]:UpdateFormat()
+		
+		s.filter_min = min
+		s.filter_mag = mag
+		s.filter_anistropy = anistropy
+	end
+	
+	obj.getFilter = function() return s.filter_min, s.filter_mag, s.filter_anistropy end
+end
+
 function love.graphics.newQuad(...)
 	local obj = lovemu.NewObject("Quad", ...)
 	
+	-- FFI THIS!!!!!!!!!!!!!!!!!!!!!
+	
+	local vertices = {}
+	
+	for i = 0, 3 do
+		vertices[i] = {x = 0, y = 0, s = 0, t = 0}
+	end
+	
+	obj.vertices = vertices
+	
+	local function refresh(x,y,w,h, sw, sh)
+		
+		vertices[0].x = 0;
+		vertices[0].y = 0;
+		vertices[1].x = 0;
+		vertices[1].y = h;
+		vertices[2].x = w;
+		vertices[2].y = h;
+		vertices[3].x = w;
+		vertices[3].y = 0;
+
+		vertices[0].s = x/sw;
+		vertices[0].t = y/sh;
+		vertices[1].s = x/sw;
+		vertices[1].t = (y+h)/sh;
+		vertices[2].s = (x+w)/sw;
+		vertices[2].t = (y+h)/sh;
+		vertices[3].s = (x+w)/sw;
+		vertices[3].t = y/sh;
+	end
+	
 	obj.flip = function() end
-	obj.getViewPort = function() end
-	obj.setViewPort = function() end
+	obj.getViewport = function(s) return s[1], s[2], s[3], s[4] end
+	obj.setViewport = function(s, x,y,w,h) 
+		s[1] = x
+		s[2] = y
+		s[3] = w
+		s[4] = h
+		refresh(x,y,w,h, s[3], s[4]) 
+	end
 	
 	return obj
 end
@@ -289,24 +342,21 @@ do -- line
 	end
 end
 
-do -- canvas
-	local canvas_config={
-		{
-			name = "diffuse",
-			attach = e.GL_COLOR_ATTACHMENT1,
-			texture_format = {
-				internal_format = e.GL_RGB32F,
-			}
-		}
-	}
-	
+do -- canvas	
 	function love.graphics.newCanvas(w, h)
 		w = w or render.w
 		h = h or render.h
-		
+				
 		local obj = lovemu.NewObject("Canvas")
 		
-		obj.fb = render.CreateFrameBuffer(w, h, canvas_config)
+		obj.fb = render.CreateFrameBuffer(w, h, {
+			attach = e.GL_COLOR_ATTACHMENT1,
+			texture_format = {
+				internal_format = e.GL_RGB32F,
+				mag_filter = FILTER,
+				min_filter = FILTER,
+			}
+		})
 		
 		obj.renderTo = function(cb)
 			obj.fb:Begin()
@@ -317,11 +367,13 @@ do -- canvas
 		obj.getWidth = function() return w end
 		obj.getHeight = function() return h end
 		obj.getImageData = function() end
+		ADD_FILTER(obj)
 		obj.clear = function(_, ...) obj.fb:Begin() love.graphics.clear(...) obj.fb:End() end
 		
 		obj.setWrap = function() end
 		obj.getWrap = function() end
 		
+		textures[obj] = obj.fb:GetTexture("diffuse")
 		
 		return obj
 	end
@@ -336,6 +388,10 @@ do -- canvas
 		end
 		
 		CANVAS = canvas
+	end
+	
+	function love.graphics.getCanvas()
+		return CANVAS
 	end
 end
 
@@ -366,7 +422,7 @@ do -- image
 		
 		obj.getWidth = function(s) return w end
 		obj.getHeight = function(s) return h end
-		obj.setFilter = function() end
+		ADD_FILTER(obj)
 		obj.setWrap = function()  end
 		obj.getWrap = function()  end
 		
@@ -386,9 +442,10 @@ do -- image
 		
 		obj.getWidth = function(s) return w end
 		obj.getHeight = function(s) return h end
-		obj.setFilter = function() end
 		obj.setWrap = function()  end
 		obj.getWrap = function()  end
+		
+		ADD_FILTER(obj)
 		
 		return obj
 	end
@@ -455,10 +512,16 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 				sy=sy or 1
 				ox=ox or 0
 				oy=oy or 0
-				r=r or 0
-				r=r/0.0174532925
+				
+				if r then
+					r = r / 0.0174532925
+				else
+					r = 0
+				end
 				
 				local tex = textures[drawable]
+				
+				--if drawable.fb then  sx = 5 sy = 6 end
 				
 				surface.SetTexture(tex)
 				surface.DrawRect(x,y, tex.w*sx, tex.h*sy, r, ox*sx,oy*sy)
@@ -536,6 +599,10 @@ function love.graphics.setScissor(x,y,w,h)
 end
 
 function love.graphics.getScissor()
+
+end
+
+function love.graphics.polygon()
 
 end
 
