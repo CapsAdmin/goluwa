@@ -30,7 +30,60 @@ ffi.cdef[[
 	__stdcall FI_TAG *FreeImage_CreateTag();
 	__stdcall void FreeImage_DeleteTag(FI_TAG *tag); 
 	
+	
+	typedef struct
+	{
+		uint8_t r; 
+		uint8_t g; 
+		uint8_t b; 
+		uint8_t a;
+	} FI_RGB;
+	
+	__stdcall FI_BITMAP * FreeImage_Allocate(int w, int h, int bpp, unsigned,unsigned,unsigned);
+	__stdcall int FreeImage_SetPixelColor(FI_BITMAP *, unsigned x, unsigned y, FI_RGB * color);
+	__stdcall int FreeImage_Save(int type, FI_BITMAP *, const char *file_name, int flags);
+	
 ]]
+
+local e = {
+	FIF_UNKNOWN = -1,
+	FIF_BMP = 0,
+	FIF_ICO = 1,
+	FIF_JPEG = 2,
+	FIF_JNG = 3,
+	FIF_KOALA = 4,
+	FIF_LBM = 5,
+	FIF_IFF = FIF_LBM,
+	FIF_MNG = 6,
+	FIF_PBM = 7,
+	FIF_PBMRAW = 8,
+	FIF_PCD = 9,
+	FIF_PCX = 10,
+	FIF_PGM = 11,
+	FIF_PGMRAW = 12,
+	FIF_PNG = 13,
+	FIF_PPM = 14,
+	FIF_PPMRAW = 15,
+	FIF_RAS = 16,
+	FIF_TARGA = 17,
+	FIF_TIFF = 18,
+	FIF_WBMP = 19,
+	FIF_PSD = 20,
+	FIF_CUT = 21,
+	FIF_XBM = 22,
+	FIF_XPM = 23,
+	FIF_DDS = 24,
+	FIF_GIF = 25,
+	FIF_HDR = 26,
+	FIF_FAXG3 = 27,
+	FIF_SGI = 28,
+	FIF_EXR = 29,
+	FIF_J2K = 30,
+	FIF_JP2 = 31,
+	FIF_PFM = 32,
+	FIF_PICT = 33,
+	FIF_RAW = 34,
+}
 
 local FIMD_NODATA = -1 -- no data
 local FIMD_COMMENTS = 0 -- comment or keywords
@@ -121,5 +174,40 @@ function freeimage.GetColorFromBuffer(buffer, x, y, w, h)
 	
 	return r / 255, g / 255, b / 255, a / 255
 end
+
+function freeimage.Save(path, buffer, length, w, h, bpp)
+	local bitmap = lib.FreeImage_Allocate(w, h, bpp, 0,0,0)
+		
+	local color = ffi.new("FI_RGB")
+	
+	for x = 0, w-1 do
+	for y = 0, h-1 do
+		local i = (y * w + x)
+		color = buffer[i]
+				
+		if i < length then
+			lib.FreeImage_SetPixelColor(bitmap, x, y, color)
+		else
+			break
+		end
+	end
+	end
+	
+	lib.FreeImage_Save(e.FIF_PNG, bitmap, path, 0)
+	lib.FreeImage_Unload(bitmap)
+end
+
+--[[
+local buffer = ffi.new("FI_RGB[?]", 512*512)
+
+for i = 0, 512*512 do
+	local color = buffer[i]
+	color.r = math.random(255)
+	color.g = math.random(255)
+	color.b = math.random(255)
+	color.a = 255
+end
+
+freeimage.Save("test.png", buffer, 512*512, 512, 512, 24)]]
 
 return freeimage
