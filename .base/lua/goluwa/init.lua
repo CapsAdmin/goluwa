@@ -17,7 +17,6 @@ if not gl then
 
 	-- OpenGL
 	gl = include("ffi_binds/gl/init.lua")
-	glu = include("ffi_binds/glu.lua")
 	
 	-- window manager
 	glfw = include("ffi_binds/glfw.lua")
