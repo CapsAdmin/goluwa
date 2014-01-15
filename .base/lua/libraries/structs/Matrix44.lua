@@ -425,7 +425,7 @@ end
 
 do -- helpers
 	function META:OpenGLFunc(func, ...)
-		func = gl[func] or glu[func]
+		func = gl[func]
 		local old = ffi.new("GLint[1]")
 		gl.GetIntegerv(e.GL_MATRIX_MODE, old)
 		gl.MatrixMode(e.GL_MODELVIEW)

@@ -80,4 +80,3 @@ end
 print(m) 
 
 --test("Ortho", gl.Ortho, 0, 512, 0, 512, -1, 1) 
---test("Perspective", glu.Perspective, 70, 0.35, 200, 1.23)  
