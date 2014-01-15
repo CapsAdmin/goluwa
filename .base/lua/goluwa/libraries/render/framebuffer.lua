@@ -39,6 +39,7 @@ function META:End()
 end
 
 function META:GetTexture(type)
+	type = type or "default"
 	if self.buffers[type] then
 		return self.buffers[type].tex
 	end
@@ -70,6 +71,11 @@ function render.CreateFrameBuffer(width, height, format)
 	self.width = width
 	self.height = height
 	self.draw_buffers = {}
+	
+	if not format[1] then 
+		format.name = format.name or "default"
+		format = {format} 
+	end
 	 
 	for i, info in pairs(format) do
 		local tex_info = info.texture_format
@@ -105,7 +111,7 @@ function render.CreateFrameBuffer(width, height, format)
 		
 		self.buffers[info.name] = {id = id, tex = tex, info = info, draw_enum = ffi.new("GLenum[1]", info.attach)}
 	end
-
+	
 	local id = gl.GenFramebuffer()
 	self.id = id
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, id)
