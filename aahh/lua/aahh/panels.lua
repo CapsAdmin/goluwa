@@ -5,14 +5,8 @@ function aahh.Create(name, parent, pos)
 	
 	local pnl = class.Create("panel", name, "base")
 	
-	if not pnl then return end
-	
-	for key, val in pairs(pnl) do
-		if hasindex(val) and val.Copy then
-			pnl[key] = val:Copy()
-		end
-	end
-	
+	if not pnl then return NULL end
+		
 	if pnl.__Initialize then
 		pnl:__Initialize()
 	end
