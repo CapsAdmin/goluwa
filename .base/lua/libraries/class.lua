@@ -303,7 +303,7 @@ do -- helpers
 			return false
 		end
 		
-		function META:RemoveChild(var)
+		function META:UnparentChild(var)
 			for key, obj in pairs(self.Children) do
 				if obj == var then
 				
@@ -312,10 +312,6 @@ do -- helpers
 					self:GetRoot():SortChildren() 
 					
 					obj:OnUnParent(self)
-					
-					if obj.Remove then
-						--obj:Remove()
-					end
 					
 					return
 				end
@@ -342,7 +338,10 @@ do -- helpers
 
 		function META:RemoveChildren()
 			for key, obj in pairs(self.Children) do
-				self:RemoveChild(obj)
+				self:UnparentChild(obj)
+				if obj.Remove then
+					obj:Remove()
+				end
 				self.Children[key] = nil
 			end
 		end
@@ -351,7 +350,7 @@ do -- helpers
 			local parent = self:GetParent()
 			
 			if parent:IsValid() then
-				parent:RemoveChild(self)
+				parent:UnparentChild(self)
 			end
 					
 			self:OnUnParent(parent)
