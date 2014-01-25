@@ -48,8 +48,15 @@ do -- timer meta
 	timer.TimerMeta = META
 end
 
-function timer.Thinker(callback, speed, in_seconds)
-	timer.Timers[#timer.Timers+1] = {type = "thinker", realtime = timer.clock(), callback = callback, speed = speed, in_seconds = in_seconds}
+function timer.Thinker(callback, speed, in_seconds, run_now)
+	local key = #timer.Timers+1
+	
+	if run_now and callback() ~= nil then
+		timer.Timers[key] = nil
+		return
+	end
+	
+	timer.Timers[key] = {type = "thinker", realtime = timer.clock(), callback = callback, speed = speed, in_seconds = in_seconds}
 end
 
 function timer.Delay(time, callback, obj)

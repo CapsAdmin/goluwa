@@ -528,7 +528,7 @@ do -- async reading
 						callback(table.concat(content))
 						return false
 					end
-				end, 1, true)
+				end, 1, true, true)
 				return true				
 			end
 		end,
