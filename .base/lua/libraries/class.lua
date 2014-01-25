@@ -116,6 +116,35 @@ function class.HandleBaseField(META, var)
 	end
 end
 
+class.active_classes = {}
+-- class.GetAll("panel_textbutton"):SetText("asdfasd")
+function class.GetAll(type_name, class_name)
+	
+	if not class_name then
+		type_name, class_name = type_name:match("(.-)_(.+)")
+	end
+	
+	local META = class.Get(type_name, class_name)
+	local types = class.active_classes[type_name]
+	if types then
+		local objects = types[class_name] 
+		if objects then
+			return setmetatable(
+				{},
+				{
+					__index = function(_, key)
+						return function(_, ...)
+							for k,v in pairs(objects) do
+								META[key](v, ...)
+							end
+						end
+					end,
+				}
+			)
+		end
+	end
+end
+
 function class.Create(type_name, class_name)
     local META = class.Get(type_name, class_name)
 	
@@ -150,6 +179,17 @@ function class.Create(type_name, class_name)
 
 	setmetatable(obj, obj)
 	
+	-- copy all structs and such
+	for key, val in pairs(obj) do
+		if hasindex(val) and val.Copy then
+			obj[key] = val:Copy()
+		end
+	end
+	
+	class.active_classes[type_name] = class.active_classes[type_name] or {}
+	class.active_classes[type_name][class_name] = class.active_classes[type_name][class_name] or {}
+	table.insert(class.active_classes[type_name][class_name], obj)
+			
 	return obj
 end
 
@@ -195,9 +235,8 @@ do -- helpers
 		META.OnUnParent = META.OnUnParent or function() end
 		
 		class.GetSet(META, "Parent", NULL)
-		
 		META.Children = {}
-
+		
 		function META:GetChildren()
 			return self.Children
 		end
@@ -245,7 +284,6 @@ do -- helpers
 				val:SortChildren()
 			end
 			self.Children = new
-			--table.sort(self.Children, sort)
 		end
 
 		function META:HasParent()
@@ -270,14 +308,13 @@ do -- helpers
 				if obj == var then
 				
 					obj.Parent = NULL
-					self.Children[key] = nil
-					
+					self.Children[key] = nil	
 					self:GetRoot():SortChildren() 
 					
 					obj:OnUnParent(self)
 					
 					if obj.Remove then
-						obj:Remove()
+						--obj:Remove()
 					end
 					
 					return
@@ -306,8 +343,8 @@ do -- helpers
 		function META:RemoveChildren()
 			for key, obj in pairs(self.Children) do
 				self:RemoveChild(obj)
+				self.Children[key] = nil
 			end
-			self.Children = {}
 		end
 
 		function META:UnParent()
