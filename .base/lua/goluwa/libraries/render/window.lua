@@ -150,8 +150,8 @@ do -- window meta
 	end
 	
 	function render.CreateWindow(width, height, title)	
-		width = width or 680
-		height = height or 440
+		width = width or 800
+		height = height or 600
 		title = title or ""
 		
 		if glfw then
@@ -280,6 +280,10 @@ do -- window meta
 		
 		self.last_mpos = Vec2()
 		self.mouse_delta = Vec2()
+		
+		timer.Delay(0, function()
+			event.Call("OnFramebufferSize", self, width, height)
+		end)
 		
 		return self
 	end 
