@@ -50,16 +50,15 @@ do -- open close
 
 	function menu.FadeIn()
 		local i = 1 
-		event.AddListener("PostDrawMenu", "StartupMenu", function()
-			i = i - (i*1.5) * FT * 5
+		event.AddListener("PostDrawMenu", "StartupMenu", function(dt)
+			i = i - (i*1.5) * dt * 5
 			surface.Color(0,0,0,i)
-			surface.DraRect(0,0,surface.GetScreenSize())
+			surface.DrawRect(0,0,surface.GetScreenSize())
 			if i < 0 then
 				return HOOK_DESTROY
 			end
 		end)
 	end
-
 end
 
 function menu.RenderBackground()	
@@ -192,16 +191,15 @@ function menu.MakeButtons()
 			frame:RequestLayout(true)
 		end
 		
-		populate("lua/")
-				
-		LOL = grid
+		populate("lua/tests/")
 	end)
 	
 	menu.AddButtonSpace() 
  
 	menu.AddButton("Exit", function() os.exit() end)
 	
-	menu.SetupButtons()
+	-- the world has to be setup..hmm
+	event.AddListener("OnWorldPanelLayout", "menu_resize", menu.SetupButtons)
 end
 
 function menu.AddButton(name, func)
@@ -233,7 +231,7 @@ end
 
 function menu.SetupButtons()
 	local sw, sh = render.GetScreenSize()
-	
+			
 	local margin = 50
 	local x = sw/2
 	local y = sh/1.5
@@ -252,3 +250,7 @@ function menu.SetupButtons()
 	
 end
  
+if not network.IsStarted() then
+	menu.Open()
+	menu.FadeIn()
+end
