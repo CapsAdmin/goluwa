@@ -162,7 +162,7 @@ function mmyy.CreateLuaEnvironment(title, globals, id)
 	end	
 	
 	arg = arg:gsub([["]], [[']])	
-	arg = ([[-e %sloadfile('%sinit.lua')()]]):format(arg, e.ROOT_FOLDER .. "lua/")
+	arg = ([[-e %sloadfile('%sinit.lua')()]]):format(arg, e.ROOT_FOLDER .. "/.base/lua/")
 		
 	if WINDOWS then
 		os.execute([[start "" "luajit" "]] .. arg .. [["]])
