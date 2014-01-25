@@ -62,6 +62,12 @@ do -- skins
 		if skin.Initialize then
 			skin:Initialize()
 		end
+		
+		for k,v in pairs(aahh.active_panels) do
+			if v.Skin and v.Skin.ClassName == name then
+				v.Skin = skin
+			end
+		end
 	end
 
 	function aahh.RegisterSkin(META, name)
