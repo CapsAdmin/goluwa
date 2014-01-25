@@ -238,5 +238,7 @@ console.AddCommand("source", function(line)
 end)
 
 console.AddCommand("open", function(line)
-	include(line .. ".lua")
+	if not include(line .. ".lua") then
+		include("tests/" .. line .. ".lua")
+	end
 end)
