@@ -8,9 +8,6 @@ function PANEL:__tostring()
 	return string.format("%s[%s][%i]", self.Type, self.ClassName, self.aahh_id or 0)
 end
 
-aahh.GetSet(PANEL, "Children")
-aahh.GetSet(PANEL, "Parent")
-
 aahh.GetSet(PANEL, "Pos", Vec2())
 aahh.GetSet(PANEL, "Size", Vec2())
 aahh.GetSet(PANEL, "Padding", Rect())
@@ -30,9 +27,7 @@ aahh.GetSet(PANEL, "Skin")
 aahh.GetSet(PANEL, "DrawBackground", true)
 
 function PANEL:__Initialize()
-	self.Children = {}
 	self.Colors = {}
-	self.Parent = NULL
 	
 	self.Skin = aahh.ActiveSkin
 	self:UpdateSkinColors()
@@ -459,7 +454,7 @@ do -- dock
 		local pad
 		
 		-- Grab one of each dock type
-		for _, pnl in ipairs(self:GetChildren()) do
+		for _, pnl in pairs(self:GetChildren()) do
 			if pnl.DockInfo then
 				if not fill and pnl.DockInfo == "fill" then
 					fill = pnl
@@ -625,7 +620,7 @@ function PANEL:GetNextSpace()
 	local width = 0
 	local height = 0
 	
-	for _,child in ipairs(children)do
+	for _,child in pairs(children)do
 		local x = child:GetPos().x + child:GetSize().w + child:GetPadding().w
 		local y = child:GetPos().y + child:GetSize().h + child:GetPadding().h
 		width = math.max(width, x)
@@ -641,7 +636,7 @@ function PANEL:GetNextSpaceX()
 	
 	local width = 0
 	
-	for _,child in ipairs(children)do
+	for _,child in pairs(children)do
 		local x = child:GetPos().x + child:GetSize().w + child:GetPadding().w
 		width = math.max(width, x)
 	end
@@ -655,7 +650,7 @@ function PANEL:GetNextSpaceY()
 	
 	local height = 8
 	
-	for _,child in ipairs(children)do
+	for _,child in pairs(children)do
 		local y = child:GetPos().y + child:GetSize().h + child:GetPadding().h
 		height = math.max(height, y)
 	end
