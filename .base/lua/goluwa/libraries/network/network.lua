@@ -165,6 +165,13 @@ if CLIENT then
 		
 		network.udp_receiver = udp
 		
+		timer.Delay(1, function()
+			if not client:IsConnected() then
+				network.Connect(ip, port)
+				logf("retrying %s:%s..", ip, port)
+			end
+		end)
+		
 		return client
 	end
 
@@ -175,7 +182,7 @@ if CLIENT then
 	end
 
 	function network.IsConnected()
-		return network.client_socket:IsValid()
+		return network.client_socket:IsValid() and networ.client_socket:IsConnected()
 	end
 	
 	function network.SendToServer(event, ...)	
