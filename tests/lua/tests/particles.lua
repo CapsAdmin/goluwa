@@ -77,11 +77,13 @@ local function calc_collision(p)
 end
 
 render.SetClearColor(0,0,0,0)
-gl.Enable(e.GL_BLEND)
-gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE)
 
 event.AddListener("OnDraw2D", "sand", function(dt)
 	dt = dt  * 25
+	
+	render.SetAdditive(true)
+	
+	W,H = surface.GetScreenSize()
 			
 	local ext_vel_x, ext_vel_y = (window.GetMouseDelta()*0.1):Unpack()
 	
@@ -124,4 +126,7 @@ event.AddListener("OnDraw2D", "sand", function(dt)
 			size, size
 		)		
 	end
+	
+	render.SetAdditive(false)
+	
 end)                
