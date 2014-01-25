@@ -262,7 +262,7 @@ do -- button text
 	end
 	function SKIN:ButtonTextLayout(pnl)
 		pnl.lbl:SetSkinColor("text", "light2")
-		pnl.lbl:SetPos(Vec2()+PAD*2)
+		pnl.lbl:SetPos(Vec2()+PAD)
 	end
 end
 
