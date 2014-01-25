@@ -40,12 +40,13 @@ do
 		text = function(text, pos, font, color, align_normal, shadow_dir, shadow_color, shadow_size, shadow_blur)			
 			surface.SetFont(font)
 			
+			local x, y = pos:Unpack()
+			
 			if align_normal then
-				local x, y = pos:Unpack()
 				local w, h = surface.GetTextSize(text)
 				
-				x = x + w * align_normal.x
-				y = y + h * align_normal.y
+				x = x + (w * align_normal.x)
+				y = y + (h * align_normal.y)
 
 				surface.SetTextPos(x, y)
 			end
@@ -53,11 +54,11 @@ do
 			surface.Color(color:Unpack())
 			surface.DrawText(text)
 			
-			if aahh.debug then
+			if aahh.debug then			
 				surface.Color(1,0,0,0.25)
 				surface.SetWhiteTexture()
 				local w, h = surface.GetTextSize(text)
-				surface.DrawRect(pos.x, pos.y, w, h)
+				surface.DrawRect(x, y, w, h)
 			end
 		end,
 		
@@ -84,8 +85,18 @@ do
 	end
 
 	function aahh.StartDraw(pnl, clip)
-		local x,y = pnl:GetWorldPos():Unpack()
-		surface.PushMatrix(x,y)
+		local x, y = pnl:GetWorldPos():Unpack()
+						
+		surface.PushMatrix(x, y)
+			
+		if aahh.debug then
+			if pnl.ClassName == "textbutton" then 
+				surface.Color(1,1,0,1)
+			else
+				surface.Color(1,0,0,1)
+			end
+			surface.DrawRect(0,0,3,3)
+		end
 	end
 
 	function aahh.EndDraw(pnl, clip)	
