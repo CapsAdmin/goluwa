@@ -129,9 +129,9 @@ function aahh.Update(delta)
 		input.DisableFocus = false
 	end
 	
-	event.Call("DrawHUD")
+	event.Call("DrawHUD", delta)
 	
-	event.Call("PreDrawMenu")
+	event.Call("PreDrawMenu", delta)
 		if aahh.ActiveSkin:IsValid() then
 			aahh.ActiveSkin.FT = delta
 			aahh.ActiveSkin:Think(delta)
@@ -146,7 +146,7 @@ function aahh.Update(delta)
 		else
 			aahh.SetCursor(e.IDC_ARROW)
 		end
-	event.Call("PostDrawMenu")
+	event.Call("PostDrawMenu", delta)
 end
 
 event.AddListener("OnDraw2D", "aahh", aahh.Update, logn)
