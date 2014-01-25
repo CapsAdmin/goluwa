@@ -936,7 +936,7 @@ do -- events
 			self:RemoveChildren()
 			
 			if self:HasParent() then
-				self:GetParent():RemoveChild(self)
+				self:GetParent():UnparentChild(self)
 			end
 			
 			for k,v in pairs(aahh.active_panels) do
@@ -994,7 +994,7 @@ function PANEL:RequestLayout(now)
 	
 	aahh.Stats.layout_count = aahh.Stats.layout_count + 1
 	
-	if self:HasParent() then 
+	if self:HasParent() or self == aahh.World then 
 		self:OnRequestLayout(self.Parent, self:GetSize())
 	end
 	

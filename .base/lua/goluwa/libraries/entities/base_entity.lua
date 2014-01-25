@@ -42,7 +42,7 @@ function META:Remove(now)
 		self:RemoveChildren()
 		
 		if self:HasParent() then
-			self:GetParent():RemoveChild(self)
+			self:GetParent():UnparentChild(self)
 		end
 		
 		for k,v in pairs(entities.active_entities) do
