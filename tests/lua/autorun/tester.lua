@@ -21,6 +21,7 @@ function tester.End()
 		frm:SetTitle(tester.name)
 		frm:SetSize(Vec2(200, 200))
 		frm:Center()
+		
 		frm.OnClose = function()
 			frm:Remove()
 			for event, id in pairs(tester.hooks) do
@@ -31,14 +32,23 @@ function tester.End()
 		local grd = aahh.Create("grid", frm)
 		grd:SetSize(Vec2(100, 100))
 		grd:Dock("fill")
-		
-		for k,v in pairs(tester.hooks) do
-			local x = 8
-			local y = 8
-			
+		grd:SetSizeToWidth(true)
+		grd:SetItemSize(Vec2()+25)
+
+		for k,v in pairs(tester.hooks) do			
 			local lbl = aahh.Create("textbutton", grd)
 			lbl:SetText(k .. " " .. v)
-			lbl:SetSize(Vec2(16, 16))
+		end
+		
+		grd:RequestLayout()
+		frm:RequestLayout(true)
+		frm:MakeActivePanel()
+		
+		function frm:OnKeyInput(key)
+			if key == "escape" then
+				frm:OnClose()
+				frm:Remove()
+			end
 		end
 	end
 end
