@@ -12,9 +12,11 @@ function aahh.Initialize()
 	
 	aahh.initialized = true
 	
-	event.AddListener("OnWindowResized", "aahh_world", function(window, w,h)
+	event.AddListener("OnFramebufferSize", "aahh_world", function(window, w,h)
 		aahh.World:RequestLayout()
 	end)
+	
+	aahh.World:RequestLayout()
 end
  
 function aahh.GetWorld()
@@ -30,6 +32,10 @@ function aahh.GetWorld()
 		function WORLD:GetPos()
 			self.Pos = Vec2(0, 0)
 			return self.Pos
+		end
+		
+		function WORLD:OnRequestLayout()
+			event.Call("OnWorldPanelLayout")
 		end
 		
 		WORLD:SetCursor(e.IDC_ARROW)
