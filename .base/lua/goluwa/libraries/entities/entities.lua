@@ -7,13 +7,6 @@ function entities.Initialize()
 	event.AddListener("OnDraw3D", "world_draw", function(dt)
 		entities.world_entity:Draw()			
 	end)
-	
-	timer.Create("entity_gc", 0.1, 0, function()
-		for k, v in pairs(entities.remove_these) do
-			v:Remove(true)
-			entities.remove_these[k] = nil
-		end
-	end)
 end
 event.AddListener("RenderContextInitialized", "entities", entities.Initialize)
 
@@ -77,4 +70,11 @@ function entities.LoadAllEntities()
 	end
 	
 	entities.world_entity = entities.world_entity or Entity("model")
+	
+	timer.Create("entity_gc", 0.1, 0, function()
+		for k, v in pairs(entities.remove_these) do
+			v:Remove(true)
+			entities.remove_these[k] = nil
+		end
+	end)
 end

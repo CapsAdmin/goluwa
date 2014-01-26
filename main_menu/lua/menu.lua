@@ -101,7 +101,7 @@ function menu.MakeButtons()
 
 	menu.buttons = {}
 	
-	if network.IsStarted() and CLIENT then
+	if CLIENT and network.IsConnected() then
 		menu.AddButton("Resume", function() timer.Delay(0.1, function() menu.Close() end) end)
 		menu.AddButtonSpace()
 	end
@@ -112,30 +112,25 @@ function menu.MakeButtons()
 			aahh.StringInput("Enter the server IP", cookies.Get("lastip", "localhost"), function(str)
 				console.RunString("start_client")
 				cookies.Set("lastip", str)
-				console.RunString("connect "..str .." 64090")
+				console.RunString("connect "..str .." 1234")
 				menu.Close()
 			end)
 		end)
 		
-		if network.IsStarted() then
+		if CLIENT and network.IsConnected() then
 			menu.AddButton("Disconnect", function()
 				console.RunString("disconnect")
 				menu.Remake()
 			end)
-		elseif not menu.server_env then
+		else
 			menu.AddButton("Host", function()
-				--[==[console.RunString("start_server")
-				menu.Remake()
-				window.Close()]==]
-				
-				
-				local env = mmyy.CreateLuaEnvironment("server")
-				env:Send([[console.RunString("start_server")]])
-				menu.server_env = env
+				mmyy.StartLuaInstance("start_server", "host")
 				menu.Remake()
 				
-				console.RunString("start_client")
-				console.RunString("connect localhost 64090")
+				timer.Delay(0.25, function()
+					console.RunString("start_client")
+					console.RunString("connect localhost 1234")
+				end)
 				menu.Close()
 			end)
 		end

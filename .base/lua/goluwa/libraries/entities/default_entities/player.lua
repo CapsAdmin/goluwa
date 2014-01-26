@@ -28,6 +28,9 @@ end
 
 function META:OnRemove(reason)	
 	players.active_players[self:GetUniqueID()] = nil
+	if SERVER and self.socket then
+		self.socket:Remove()
+	end
 end	
 
 if SERVER then
@@ -69,7 +72,7 @@ do -- ping pong
 	timer.Create("ping_pong_players", 1, 0, function()
 		if not network.IsStarted() then return end
 					
-		for key, ply in pairs(players.GetAll()) do
+		for key, ply in pairs(players.GetAll()) do			
 			if ply.socket then
 				message.Send("ping", ply, tostring(os.clock()))
 				

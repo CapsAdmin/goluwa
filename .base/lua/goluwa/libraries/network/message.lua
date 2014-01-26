@@ -11,13 +11,13 @@ if CLIENT then
 		network.SendToServer(e.USER_MESSAGE, id, ...)
 	end
 	
-	function message.OnPlayerMessage(id, ...)		
+	function message.OnUserMessage(id, ...)		
 		if message.Listeners[id] then
 			message.Listeners[id](...)
 		end
 	end
 
-	event.AddListener("OnPlayerMessage", "message", message.OnPlayerMessage, print)
+	event.AddListener("OnUserMessage", "message", message.OnUserMessage, print)
 end
 
 if SERVER then
@@ -39,13 +39,13 @@ if SERVER then
 		return message.Send(id, nil, ...)
 	end
 	
-	function message.OnPlayerMessage(ply, id, ...)
+	function message.OnUserMessage(ply, id, ...)
 		if message.Listeners[id] then
 			message.Listeners[id](ply, ...)
 		end
 	end
 	
-	event.AddListener("OnPlayerMessage", "message", message.OnPlayerMessage, print)
+	event.AddListener("OnUserMessage", "message", message.OnUserMessage, print)
 end
 
 do -- console extension
