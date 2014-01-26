@@ -99,7 +99,7 @@ end
 function META:GetTranspose(out)
 	out = out or Matrix44()
 	local r = out.m
-	local m = matrix.m
+	local m = self.m
 	
 	r[0] = m[0]; 
 	r[1] = m[4]; 
