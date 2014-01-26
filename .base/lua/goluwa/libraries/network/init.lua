@@ -43,10 +43,10 @@ if CLIENT then
 	local ip_cvar = console.CreateVariable("cl_ip", default_ip)
 	local port_cvar = console.CreateVariable("cl_port", default_port)
 	
-	logf("connecting to %s %i", ip_cvar:Get(), port_cvar:Get())
-	network.Connect(ip_cvar:Get(), port_cvar:Get())
+	--logf("connecting to %s %i", ip_cvar:Get(), port_cvar:Get())
+	--network.Connect(ip_cvar:Get(), port_cvar:Get())
 	
-	console.AddCommand("connect", function(line, ip, port)	
+	console.AddCommand("connect", function(line, ip, port)		
 		ip = ip or ip_cvar:Get()
 		port = tonumber(port) or port_cvar:Get()
 		
@@ -66,8 +66,8 @@ if SERVER then
 	local ip_cvar = console.CreateVariable("sv_ip", default_ip)
 	local port_cvar = console.CreateVariable("sv_port", default_port)
 	
-	logf("hosting server at %s %i", ip_cvar:Get(), port_cvar:Get())
-	network.Host(ip_cvar:Get(), port_cvar:Get())
+	--logf("hosting server at %s %i", ip_cvar:Get(), port_cvar:Get())
+	--network.Host(ip_cvar:Get(), port_cvar:Get())
 		
 	console.AddCommand("host", function(line, ip, port)
 		ip = ip or ip_cvar:Get()

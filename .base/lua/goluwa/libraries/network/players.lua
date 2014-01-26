@@ -36,6 +36,10 @@ function players.Create(uniqueid)
 			
 	-- add a networked table to the player
 	self.nv = nvars.CreateObject(uniqueid)
+	
+	-- i dont like that this is here..
+	-- event system for class?
+	self.last_ping = os.clock()
 		
 	return self
 end
