@@ -617,15 +617,14 @@ if CREATED_ENV then
 end
 
 if ARGS then
-	local line = table.concat(ARGS, " "):trim()
 	
-	if line ~= "" then
-		console.RunString(line)
+	for _, arg in pairs(ARGS) do
+		console.RunString(tostring(arg))
 	end
 	
 	ARGS = nil
 end
 
-vfs.MonitorEverything(true) 
+vfs.MonitorEverything(true)
 
 event.Call("Initialized")

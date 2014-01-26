@@ -130,6 +130,28 @@ if mmyy.lua_environment_sockets then
 	end
 end
 
+function mmyy.StartLuaInstance(...)
+	local args = {...}
+	local arg_line = ""
+	
+	for k,v in pairs(args) do
+		arg_line = arg_line .. luadata.ToString(v)
+		if #args ~= k then
+			arg_line = arg_line .. ", "
+		end
+	end
+	
+	arg_line = arg_line:gsub('"', "'")
+	
+	local arg = ([[-e ARGS={%s}loadfile('%sinit.lua')()]]):format(arg_line, e.ROOT_FOLDER .. "/.base/lua/")
+		
+	if WINDOWS then
+		os.execute([[start "" "luajit" "]] .. arg .. [["]])
+	elseif LINUX then
+		os.execute([[luajit "]] .. arg .. [[" &]])
+	end
+end
+
 mmyy.lua_environment_sockets = {}
 
 function mmyy.CreateLuaEnvironment(title, globals, id)	
