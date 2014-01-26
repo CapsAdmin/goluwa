@@ -46,6 +46,8 @@ local function main()
 		
 		if rate <= 0 or next_update < time then
 			local dt = time - (last_time or 0)
+			
+			timer.ft = dt
 						
 			local ok, err = xpcall(update, mmyy.OnError, dt)
 			
