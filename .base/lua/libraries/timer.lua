@@ -3,6 +3,11 @@ local timer = _G.timer or {}
 timer.Timers = timer.Timers or {}
 
 timer.clock = timer.clock or os.clock
+timer.GetTime = timer.clock
+
+function timer.GetFrameTime()
+	return timer.ft or 0.1
+end
 
 do -- timer meta
 	local META = {}
