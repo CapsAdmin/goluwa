@@ -209,10 +209,16 @@ do
 
 		end
 		
+		function render.PushWorldMatrixEx(mat)
+			stack[i] = render.matrices.world	
+			i = i + 1
+			render.matrices.world = mat * stack[i-1]
+		end
+		
 		function render.PopWorldMatrix()
 			i = i - 1
 			render.matrices.world = stack[i]
-		end	
+		end
 	end
 	
 	-- world matrix helper functions
