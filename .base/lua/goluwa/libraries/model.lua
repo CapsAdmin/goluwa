@@ -123,7 +123,7 @@ function META:Remove()
 	utilities.MakeNull(self)
 end
 
-local format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR_MIPMAP_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,}
+local format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,}
 
 local diffuse_suffixes = {
 	"_diff",
