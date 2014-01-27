@@ -29,7 +29,7 @@ end
 
 function chat.Append(var, str)
 
-	if chathud then
+	if CLIENT then
 		local tbl = chat.AddTimeStamp()
 		table.insert(tbl, var)
 		table.insert(tbl, Color(255, 255, 255, 255))
@@ -59,7 +59,9 @@ if CLIENT then
 	function chat.Say(str)
 		str = tostring(str)		
 		message.Send("say", str)
-		chat.Append(players.GetLocalPlayer(), str)
+		if event.Call("OnPlayerChat", players.GetLocalPlayer(), str) ~= false then
+			chat.Append(players.GetLocalPlayer(), str)
+		end
 	end	
 		
 	event.AddListener("OnLineEntered", "chat", function(line)
@@ -101,7 +103,7 @@ if CLIENT then
 						
 						if browse and history[i] then
 							panel:SetText(history[i])
-							panel:SetCaretPos(#history[i])
+							panel:SetCaretPos(Vec2(#history[i], 0))
 						end
 										
 						if key == "escape" then
