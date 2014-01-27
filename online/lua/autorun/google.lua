@@ -1,6 +1,22 @@
 if CLIENT then
     message.AddListener("google_say", function(str)
-		chat.Append("Google", str)		
+		local tbl = chat.AddTimeStamp()
+		table.insert(tbl, Color(29,113,239))
+		table.insert(tbl, "G")
+		table.insert(tbl, Color(214,68,48))
+		table.insert(tbl, "o")
+		table.insert(tbl, Color(255,184,10))
+		table.insert(tbl, "o")
+		table.insert(tbl, Color(29,113,239))
+		table.insert(tbl, "g")
+		table.insert(tbl, Color(5,163,94))
+		table.insert(tbl, "l")
+		table.insert(tbl, Color(214,68,48))
+		table.insert(tbl, "e")		
+		table.insert(tbl, Color(255, 255, 255, 255))
+		table.insert(tbl, ": ")
+		table.insert(tbl, str)
+		chathud.AddText(unpack(tbl))
     end)
 end
 
