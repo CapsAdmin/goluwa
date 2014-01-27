@@ -5,7 +5,7 @@ local loading_data = vfs.Read("textures/loading.jpg", "rb")
 
 function Image(path, format)
 	if render.active_textures[path] then 
-		return render.active_textures[path]
+		return render.active_textures[path] 
 	end
 	
 	local size = 16
@@ -21,22 +21,32 @@ function Image(path, format)
 	end
 		
 	format = format or {}
-	format.internal_format = format.internal_format or e.GL_RGBA8
 	
 	local w, h, buffer = freeimage.LoadImage(loading_data)
 	local tex = Texture(w, h, buffer, format)
+	
+	tex.loading = true
 
 	vfs.ReadAsync(path, function(data)
-
+		tex.loading = false
+		
+		if not data then
+			logf("failed to download %q", path)
+			logf("data is nil!")
+			return
+		end
+		
 		local w, h, buffer = freeimage.LoadImage(data)
 		
 		if w == 0 or h == 0 then
-			errorf("could not decode %q properly (w = %i, h = %i)", 2, path, w, h)
+			logf("could not decode %q properly (w = %i, h = %i)", 2, path, w, h)
+			logf("data is %s", utilities.FormatFileSize(#data))
+			return
 		end
 		
 		tex:Replace(buffer, w, h) 
 		
-		render.active_textures[path] = tex
+		render.active_textures[path] = tex		
 	end)
 	
 	return tex

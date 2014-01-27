@@ -228,6 +228,10 @@ do -- texture object
 		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
 		utilities.MakeNULL(self)
 	end
+	
+	function META:IsLoading()
+		return self.loading
+	end
 
 	function render.CreateTexture(width, height, buffer, format)
 		check(width, "number")
@@ -248,13 +252,13 @@ do -- texture object
 		format.filter = format.filter ~= nil
 		format.stride = format.stride or 4
 		format.buffer_type = format.buffer_type or "unsigned char"
-		format.mip_map_levels = format.mip_map_levels or 4
+		format.mip_map_levels = format.mip_map_levels or 2
 		format.border_size = format.border_size or 4
 		format.min_filter = format.min_filter or e.GL_LINEAR_MIPMAP_LINEAR
-		format.mag_filter = format.mag_filter or e.GL_LINEAR_MIPMAP_LINEAR
-		
-		format.wrap_t = format.wrap_t or e.GL_REPEAT
+		format.mag_filter = format.mag_filter or e.GL_LINEAR
+				
 		format.wrap_s = format.wrap_s or e.GL_REPEAT
+		format.wrap_t = format.wrap_t or e.GL_REPEAT
 		
 		if format.type == e.GL_TEXTURE_3D then
 			format.wrap_r = format.wrap_r or e.GL_REPEAT
