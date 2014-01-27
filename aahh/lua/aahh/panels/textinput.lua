@@ -520,6 +520,10 @@ function PANEL:OnKeyInput(key, press, skip_mods)
 		end
 
 		self:SetCaretPos(self.CaretPos)
+		
+		if self.OnUnhandledKey then
+			self:OnUnhandledKey(key)	
+		end
 	end
 end
 
