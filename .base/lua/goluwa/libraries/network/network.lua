@@ -213,7 +213,7 @@ if CLIENT then
 		network.udp_receiver = udp
 		
 		if retries > 0 then
-			timer.Delay(1, function()
+			timer.Delay(3, function()
 				if not network.IsConnected() then
 					logf("retrying %s:%s (%i retries left)..", ip, port, retries)
 					network.Connect(ip, port, retries - 1)
