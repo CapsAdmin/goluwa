@@ -30,6 +30,17 @@ local reverse_enums = {}
 
 gl.call_count = 0
 
+local errors = {
+	[0] = "no error",
+	[1280] = "invalid enum",
+	[1281] = "invalid value",
+	[1282] = "invalid operation",
+	[1283] = "stack overflow",
+	[1284] = "stack underflow",	
+	[1285] = "out of memory",
+	[1286] = "invalid framebuffer operation",
+}
+
 local function add_gl_func(name, func)
 	
 	-- lets remove the ARB field from extensions officially approved 
@@ -42,30 +53,42 @@ local function add_gl_func(name, func)
 		
 		gl.call_count = gl.call_count + 1
 		
-		if gl.logcalls and name ~= "GetError" then
-			setlogfile("gl_calls")
-			
-				local args = {}
-				for i =  1, select("#", ...) do
-					local val = select(i, ...)
-					if type(val) == "number" and reverse_enums[val] and val > 10 then
-						args[#args+1] = reverse_enums[val]:gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
-					else
-						args[#args+1] = luadata.ToString(val)
-					end
-				end
+		if name ~= "GetError" then			
+			if gl.debug then	
+				local val = gl.GetError()
+				if val ~= 0 then
+					val = errors[val] or val
+					local info = debug.getinfo(2)
 				
-				if not val then
-					logf("gl%s(%s)", name, table.concat(args, ", "))
-				else
-					local val = val
-					if reverse_enums[val] then
-						val = reverse_enums[val]:gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
+					logf("[gl] %q in function %s at %s:%i", val, info.name, info.short_src, info.currentline)
+				end
+			end
+			
+			if gl.logcalls then
+				setlogfile("gl_calls")
+				
+					local args = {}
+					for i =  1, select("#", ...) do
+						local val = select(i, ...)
+						if type(val) == "number" and reverse_enums[val] and val > 10 then
+							args[#args+1] = reverse_enums[val]:gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
+						else
+							args[#args+1] = luadata.ToString(val)
+						end
 					end
 					
-					logf("%s = gl%s(%s)", val, name, table.concat(args, ", "))
-				end
-			setlogfile()
+					if not val then
+						logf("gl%s(%s)", name, table.concat(args, ", "))
+					else
+						local val = val
+						if reverse_enums[val] then
+							val = reverse_enums[val]:gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
+						end
+						
+						logf("%s = gl%s(%s)", val, name, table.concat(args, ", "))
+					end
+				setlogfile()
+			end
 		end
 		
 		return val
