@@ -85,7 +85,7 @@ function render.CreateFrameBuffer(width, height, format)
 		
 		if tex_info then
 			tex_info.min_filter = tex_info.min_filter or e.GL_LINEAR_MIPMAP_LINEAR
-			tex_info.mag_filter = tex_info.mag_filter or e.GL_LINEAR_MIPMAP_LINEAR
+			tex_info.mag_filter = tex_info.mag_filter or e.GL_LINEAR
 			
 			tex_info.wrap_s = tex_info.wrap_s or e.GL_CLAMP_TO_EDGE
 			tex_info.wrap_t = tex_info.wrap_t or e.GL_CLAMP_TO_EDGE

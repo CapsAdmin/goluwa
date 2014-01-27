@@ -198,7 +198,7 @@ function render.InitializeDeffered()
 			attach = e.GL_COLOR_ATTACHMENT0,
 			texture_format = {
 				internal_format = e.GL_RGBA32F,
-				format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR_MIPMAP_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,},
+				format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,},
 			}
 		},
 	}) 
