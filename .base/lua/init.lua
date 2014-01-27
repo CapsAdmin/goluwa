@@ -1,4 +1,4 @@
-DEBUG = true
+DEBUG = false
 _G.ffi = require("ffi")
 
 _G[ffi.os:upper()] = true
@@ -182,7 +182,7 @@ do -- logging
 		if event then 
 			suppress_print = true
 			
-			if event.Call("ConsolePrint", table.concat(args, ", ")) == false then
+			if event.Call("ConsolePrint", table.concat(args, "")) == false then
 				suppress_print = false
 				return false
 			end
