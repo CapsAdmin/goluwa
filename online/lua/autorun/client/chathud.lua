@@ -1,3 +1,5 @@
+if SERVER then return end
+
 setfenv(1, _G)
 
 -- sorry but I use this somewhere else as well
@@ -11,6 +13,7 @@ local GMOD = gmod ~= nil
 local FONT = "chathud"
 local R, G, B, A = 255, 255, 255, 255
 local X, Y = 0, 0
+local C -- shortcut for config
 
 if GMOD then
 	local TEMP_CLR = Color(R,G,B,A)
@@ -627,7 +630,7 @@ end
 
 -- internal
 
-local C = chathud.config
+C = chathud.config
 
 local history = {}
 local variables = {}
@@ -1082,7 +1085,7 @@ do
 				elseif is_font(var) then
 					table.insert(markup, {type = "font", val = var[1]})
 				end
-			else
+			elseif t ~= "cdata" then
 				EXT.FormatPrint("tried to parse unknown type %q", t)
 			end
 
