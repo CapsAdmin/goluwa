@@ -18,3 +18,7 @@ assimp - model decoding
 
 
 Goluwa also comes with a Love2D wrapper which is used for fun and unit testing.
+
+
+I can't guarantee that Goluwa will run out of box if you download it at the moment. There is a "dropbox" version that I could invite you to if you're interested but that means you'll have to contact me.
+My goal with this isn't very clear. I just like to write code!
