@@ -123,7 +123,7 @@ function PANEL:OnRequestLayout()
 end
 
 function PANEL:OnDraw()
-	--self:DrawHook("GridDraw")
+	self:DrawHook("GridDraw")
 end
 
 aahh.RegisterPanel(PANEL)
