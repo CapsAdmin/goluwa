@@ -8,7 +8,7 @@ end
 
 if CLIENT then
 	function message.Send(id, ...)
-		network.SendToServer(e.USER_MESSAGE, id, ...)
+		network.SendToServer(network.MESSAGE, id, ...)
 	end
 	
 	function message.OnUserMessage(id, ...)		
@@ -23,14 +23,14 @@ end
 if SERVER then
 	function message.Send(id, filter, ...)		
 		if typex(filter) == "player" then
-			network.SendToClient(filter.socket, e.USER_MESSAGE, id, ...)
+			network.SendToClient(filter.socket, network.MESSAGE, id, ...)
 		elseif typex(filter) == "netmsg_user_filter" then
 			for _, player in pairs(filter:GetAll()) do
-				network.SendToClient(player.socket, e.USER_MESSAGE, id, ...)
+				network.SendToClient(player.socket, network.MESSAGE, id, ...)
 			end
 		else
 			for key, ply in pairs(players.GetAll()) do
-				network.SendToClient(ply.socket, e.USER_MESSAGE, id, ...)
+				network.SendToClient(ply.socket, network.MESSAGE, id, ...)
 			end
 		end
 	end

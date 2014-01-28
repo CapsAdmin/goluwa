@@ -4,10 +4,10 @@ network.server_socket = network.server_socket or NULL
 
 network.udp_receiver = network.udp_receiver or NULL
 
-e.USER_CONNECT = 1
-e.USER_DISCONNECT = 2
-e.USER_ACCEPTED = 3
-e.USER_MESSAGE = 4
+network.CONNECT = 1
+network.DISCONNECT = 2
+network.ACCEPT = 3
+network.MESSAGE = 4
 
 -- packet handling
 local delimiter = "\n"
@@ -70,6 +70,10 @@ function network.AddEncodeDecodeType(type, callback)
 	custom_types[type] = callback
 end
 
+local function ipport_to_uid(ipport)
+	return tostring(123456789 + ipport:gsub("%D", "")%255255255255)
+end
+
 function network.HandleEvent(socket, type, a, b, ...)		
 	local uniqueid
 	
@@ -78,11 +82,10 @@ function network.HandleEvent(socket, type, a, b, ...)
 	end
 	
 	if SERVER then
-		uniqueid = socket:GetIPPort()
+		uniqueid = ipport_to_uid(socket:GetIPPort())
 	end
-
 	
-	if type == e.USER_CONNECT then		
+	if type == network.CONNECT then		
 		local player = Player(uniqueid)
 				
 		if SERVER then			
@@ -100,7 +103,7 @@ function network.HandleEvent(socket, type, a, b, ...)
 					end
 				end
 				
-				network.SendToClient(socket, e.USER_ACCEPTED)
+				network.SendToClient(socket, network.ACCEPT, uniqueid)
 			else
 				if network.debug then
 					debug.trace()
@@ -108,18 +111,17 @@ function network.HandleEvent(socket, type, a, b, ...)
 				end
 				player:Remove()
 			end
-		end
 				
-		-- this should be done after the player is created
-		if SERVER then
+			-- this should be done after the player is created
+			
 			nvars.FullUpdate(player)
+			
+			logf("%s connected", socket:GetIPPort())
 		end
 		
-		if CLIENT and uniqueid == network.client_socket:GetIPPort() then
-			event.Call("OnlineStarted")
+		if CLIENT then
+			event.Call("OnPlayerConnect", player) 
 		end
-	
-		logf("player %s connected", player:GetName())
 	end
 	
 	
@@ -134,18 +136,23 @@ function network.HandleEvent(socket, type, a, b, ...)
 		end
 	end
 	
-	if type == e.USER_ACCEPTED then		
+	if type == network.ACCEPT then		
 		if CLIENT then
 			network.accepted = true
 			logf("successfully connected to server")
+			
+			players.local_player = Player(uniqueid)
+			players.local_player.socket = network.client_socket
+						
+			event.Call("OnlineStarted")
 		end
-	elseif type == e.USER_DISCONNECT then
+	elseif type == network.DISCONNECT then
 
 		if SERVER then
 			local player = Player(uniqueid)
 			local reason = a
 			
-			logf("player %s disconnected (%s)", player:GetName(), reason or "unknown reason")
+			logf("%s disconnected (%s)", socket:GetIPPort(), reason or "unknown reason")
 						
 			if SERVER then	
 				network.Broadcast(type, uniqueid, reason)
@@ -155,9 +162,11 @@ function network.HandleEvent(socket, type, a, b, ...)
 		end
 		
 		if CLIENT then
-				
+			local player = Player(uniqueid)
+
+			player:Remove()
 		end
-	elseif type == e.USER_MESSAGE then
+	elseif type == network.MESSAGE then
 		if CLIENT then
 			-- the arguments start after type. uniqueid is just used by this library
 			event.Call("OnUserMessage", a, b, ...)
@@ -198,19 +207,14 @@ if CLIENT then
 			network.HandleEvent(nil, decode(str))
 		end
 		
-		function client:OnConnect()
-			players.local_player = Player(client:GetIPPort())
-			players.local_player.socket = client
-		end
-		
 		network.client_socket = client
 		
-		local udp = luasocket.Server("udp")
+		--[[local udp = luasocket.Server("udp")
 		
 		udp:Host(ip, port)
 		udp.OnReceive = logn
 		
-		network.udp_receiver = udp
+		network.udp_receiver = udp]]
 		
 		if retries > 0 then
 			timer.Delay(3, function()
@@ -230,7 +234,7 @@ if CLIENT then
 		reason = reason or "left"
 		
 		if network.IsConnected() then
-			network.SendToServer(e.USER_DISCONNECT, reason)
+			network.SendToServer(network.DISCONNECT, reason)
 			network.client_socket:Remove()
 			
 			players.GetLocalPlayer():Remove()
@@ -273,7 +277,7 @@ if SERVER then
 
 		function server:OnClientConnected(client, ip, port)
 			client:SetReceiveMode(receive_mode)			
-			network.HandleEvent(client, e.USER_CONNECT, client:GetIPPort())
+			network.HandleEvent(client, network.CONNECT)
 			return true
 		end
 
@@ -300,7 +304,7 @@ if SERVER then
 	end
 		
 	function network.SendToClient(client, event, ...)
-		if not client then debug.trace() end
+		if not client or not client:IsValid() then debug.trace() end
 		client:Send(encode(event, ...), buffered)
 	end
 	

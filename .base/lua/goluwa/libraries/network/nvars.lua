@@ -1,7 +1,7 @@
 nvars = nvars or {}
  
 nvars.Environments = nvars.Environments or {} 
-nvars.added_cvars = {}
+nvars.added_cvars = nvars.added_cvars or {}
 
 function nvars.GetSet(tbl, name, def, cvar)
 
@@ -38,6 +38,11 @@ if CLIENT then
 		for cvar in pairs(nvars.added_cvars) do
 			console.RunCommand(cvar, console.GetVariable(cvar))
 		end
+		message.Send("nvars_update_done")
+	end)
+	
+	message.AddListener("player_spawn", function(ply)
+		event.Call("PlayerSpawned", ply)
 	end)
 end
 
@@ -57,6 +62,11 @@ if SERVER then
 		if key then
 			ply.nv[key] = var
 		end
+	end)
+	
+	message.AddListener("nvars_update_done", function(ply)
+		event.Call("PlayerSpawned", ply)
+		message.Send("player_spawn", nil, ply)
 	end)
 end
 
