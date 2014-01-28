@@ -1,6 +1,7 @@
 players = players or {}
 
 players.active_players = players.active_players or {}
+players.local_player = players.local_player or NULL
 
 function players.GetAll()
 	return entities.GetAllByClass("player")

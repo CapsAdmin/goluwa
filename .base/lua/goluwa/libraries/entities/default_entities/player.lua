@@ -3,6 +3,8 @@ local META = {}
 META.ClassName = "player"
 META.TypeX = "player"
 
+META.socket = NULL
+
 class.GetSet(META, "UniqueID", "???")
 class.GetSet(META, "ID", -1)
 
@@ -23,19 +25,24 @@ function META:__tostring()
 end
 
 function META:GetName()	
-	return self.nv and self.nv.Nick or SERVER and self.socket:GetIPPort() or CLIENT and self:GetUniqueID()
+	return self.nv and self.nv.Nick or self:GetUniqueID()
 end
 
 function META:OnRemove(reason)	
 	players.active_players[self:GetUniqueID()] = nil
-	if SERVER and self.socket then
+	if SERVER and self.socket:IsValid() then
 		self.socket:Remove()
 	end
 end	
 
+function META:GetUniqueColor()
+	local r,g,b = self:GetUniqueID():match(("(%d%d%d)"):rep(3))
+	return Color(tonumber(r), tonumber(g), tonumber(b))
+end
+
 if SERVER then
 	function META:Kick(reason)
-		network.HandleEvent(self.socket, e.USER_DISCONNECT, self.socket:GetIPPort(), reason)
+		network.HandleEvent(self.socket, network.DISCONNECT, self:GetUniqueID(), reason or "kicked")
 	end
 end
 
@@ -71,24 +78,26 @@ do -- ping pong
 	
 	timer.Create("ping_pong_players", 1, 0, function()
 		if not network.IsStarted() then return end
-					
-		for key, ply in pairs(players.GetAll()) do			
-			if ply.socket then
+		
+		
+		if SERVER then
+			for key, ply in pairs(players.GetAll()) do			
 				message.Send("ping", ply, tostring(os.clock()))
 				
-				if ply:IsTimingOut() then
+				if ply:IsTimingOut() then			
+					ply:Kick("timeout")
+				end
+			end
+		end
+		
+		if CLIENT then
+			local ply = players.GetLocalPlayer()
+			
+			if ply:IsTimingOut() then
+				logn("timing out from server..")
 				
-					if SERVER then
-						ply:Kick("timeout")
-					end
-					
-					if CLIENT then
-						logn("timed out..")
-						
-						if ply:IsTimingOut() then
-							network.Disconnect()
-						end
-					end
+				if ply:IsTimingOut() then
+					network.Disconnect()
 				end
 			end
 		end
