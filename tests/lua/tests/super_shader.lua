@@ -10,84 +10,66 @@ local data = {
 	
 	vertex = {
 		uniform = {
-			projection_matrix = "mat4",
-			world_matrix = "mat4",
+			pwm_matrix = "mat4",
 		},			
 		attributes = {
-			position = "vec2",
-		},
-		vertex_attributes = {
 			{pos = "vec2"},
 			{uv = "vec2"},
-			{color = "vec4"},
 		},	
 		-- if main is not defined it will wrap void main() { *line here* } around the line
-		source = "gl_Position = projection_matrix * world_matrix * vec4(position, 0.0, 1.0);"
+		source = "gl_Position = pwm_matrix * vec4(pos, 0, 1);"
 	},
 	
 	fragment = { 
 		uniform = {
-			add_color = 0, -- guess the type and use passed var as default if not passed
-			global_color = Color(1,1,1,1), 
-			texture = Texture(16,16):Fill(function() 
-				return 255, 255, 255, 255
-			end),
+			global_color = Color(1,1,1,1),
+			texture = "texture",
 		},		
 		-- when attributes is used outside of vertex they are simply sent from vertex shader
 		-- as "__out_foo" and then grabbed from the other shader with a macro to turn its name 
 		-- back to "foo" with #define
 		attributes = {
 			uv = "vec2",
-			color = "vec4",
 		},			
 		source = [[
 			out vec4 frag_color;
-
-			vec4 texel = texture2D(texture, uv);
+			vec4 color = texture2D(texture, uv);
+			
+			// 0 to 1
+			float x = uv.x;
+			float y = uv.y;
 
 			void main()
-			{	
-				if (add_color > 0.5)
-				{
-					frag_color = texel * color;
-					frag_color.xyz = frag_color.xyz + global_color.xyz;
-					frag_color.w = frag_color.w * global_color.w;
-				}
-				else
-				{	
-					frag_color = texel * color * global_color;
-				}
+			{
+				frag_color = color * global_color;
+				
+				frag_color.r = sin(x*100);
+				frag_color.g = cos(time+x*100);
 			}
 		]]
 	} 
 } 
-  
-local mat = SuperShader("2d_rect", data)
+ 
+local shader = SuperShader("test", data)
 
--- this creates mesh from the vertex_attributes field in our material
-local mesh = mat:CreateVertexBuffer({
-	{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
-	{pos = {0, 1}, uv = {0, 0}, color = {1,1,1,1}},
-	{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
+-- this creates mesh from the attributes field
+local mesh = shader:CreateVertexBuffer({
+	{pos = {0, 0}, uv = {0, 1}},
+	{pos = {0, 1}, uv = {0, 0}},
+	{pos = {1, 1}, uv = {1, 0}},
 
-	{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
-	{pos = {1, 0}, uv = {1, 1}, color = {1,1,1,1}},
-	{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
+	{pos = {1, 1}, uv = {1, 0}},
+	{pos = {1, 0}, uv = {1, 1}},
+	{pos = {0, 0}, uv = {0, 1}},
 })
 
-mesh.UpdateUniforms = function(self)		
-	self.world_matrix = render.GetWorldMatrix()
-	self.projection_matrix = render.GetProjectionMatrix()
-end
+mesh.pwm_matrix = render.GetPVWMatrix2D
  
 event.AddListener("OnDraw2D", "hm", function()
-	-- use the built in matrices cause we dont have our own (yet!)
-	for i = 1, 70 do
-		i = i * 4
-		surface.PushMatrix(50+i, 50+i, 10, 10)
-			mesh.global_color = HSVToColor(timer.clock()+i/50) 
-			mesh:Draw()
-		surface.PopMatrix()
-	end
-	
-end)
+	surface.PushMatrix(0, 0, surface.GetScreenSize())
+		mesh.global_color = HSVToColor(timer.GetTime())
+		mesh.time = timer.GetTime()
+		mesh.texture = tex	
+		mesh:Draw()
+	surface.PopMatrix()
+end) 
