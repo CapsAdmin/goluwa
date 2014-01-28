@@ -128,7 +128,7 @@ else
 		CreateConVar = console.CreateVariable,
 		GetConVarFloat = function(c) return c:Get() end,
 		
-		HSVToColor = function(h,s,v) local c = HSVToColor(h,s,v) return c.r, c.g, c.b end,
+		HSVToColor = function(h,s,v) return HSVToColor(h,s,v):Unpack() end,
 		
 		SetMaterial = surface.SetTexture,
 		SetColor = function(r,g,b,a) 
@@ -199,6 +199,7 @@ chathud = {
 			niggly = "<texture=masks/niggly>",
 			colbert = "<texture=masks/colbert>",
 			eli = "<texture=models/eli/eli_tex4z,4>",
+			grin = "<rotate=90>:D<rotate=-90>",
 		}
 		
 	},
@@ -1050,7 +1051,7 @@ do
 				if t == "color" then
 					table.insert(markup, {type = "color", val = var})
 				elseif t == "player" then
-					table.insert(markup, {type = "color", val = Color(0.25,0.75,1)})
+					table.insert(markup, {type = "color", val = var:GetUniqueColor()})
 					table.insert(markup, {type = "string", val = var:GetNick()}) 
 					table.insert(markup, {type = "color", val = Color(1,1,1,1)})
 				end
@@ -1384,7 +1385,7 @@ else
 		return true
 	end
 	
-	event.AddListener("OnDraw2D", "chathud", function()
+	event.AddListener("PreDrawMenu", "chathud", function()
 		chathud.Draw()
 	end)
 end
