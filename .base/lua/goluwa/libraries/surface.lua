@@ -283,10 +283,10 @@ do -- fonts
 						w = w + glyph.x_max + 1 + info.spacing
 					end
 					
-					data.w = w
-
 					data.chars[#data.chars+1] = char
 				end
+				
+				data.w = w
 			end
 			
 			local tex = Texture(math.floor(data.w + info.border), math.floor(data.h + info.border), buffer, {
