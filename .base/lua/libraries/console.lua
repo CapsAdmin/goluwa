@@ -1,4 +1,4 @@
-local console = {}
+local console = _G.console or {}
 local SERVER = true
 
 local result = ""
@@ -82,7 +82,7 @@ do -- commands
 	-- http://www.facepunch.com/showthread.php?t=827179
 
 	function console.ParseCommandArgs(line)
-		local cmd, val = line:match("(.-)=(.+)")
+		local cmd, val = line:match("(%S-)%s-=%s+(.+)")
 		
 		if cmd and val then
 			return {cmd:trim(), val:trim()}
@@ -209,8 +209,14 @@ do -- console vars
 		local T = type(def)
 		
 		local func = function(line, value)
-			if not value then
-				logf("%s = %s", name, luadata.ToString(luadata.FromString(console.vars[name] or def)))
+			if not value then	
+				value = console.vars[name] or def
+				
+				if T == "string" then
+					value = ("%q"):format(value)
+				end
+				
+				logf("%s = %s", name, luadata.ToString(luadata.FromString(value)))
 			else
 					
 				if T ~= "string" then
@@ -226,8 +232,10 @@ do -- console vars
 				if callback then
 					callback(value)
 				end
+				
+				logf("%s = %s", name, value)
 			end
-
+			
 		end
 
 		console.AddCommand(name, func)
