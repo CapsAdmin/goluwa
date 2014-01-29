@@ -29,16 +29,15 @@ end
 
 function chat.Append(var, str)
 
-	if CLIENT then
-		local tbl = chat.AddTimeStamp()
-		table.insert(tbl, var)
-		table.insert(tbl, Color(255, 255, 255, 255))
-		table.insert(tbl, ": ")
-		table.insert(tbl, str)
-		chathud.AddText(unpack(tbl))
+	if not str then
+		str = var
+		var = NULL
 	end
 
+	local ply = NULL
+	
 	if typex(var) == "player" then
+		ply = var
 		var = getnick(var)
 	elseif typex(var) == "null" then
 		var = "server"
@@ -46,6 +45,20 @@ function chat.Append(var, str)
 		var = tostring(var)
 	end	
 
+	if CLIENT then
+		local tbl = chat.AddTimeStamp()
+		
+		if ply:IsValid() then
+			table.insert(tbl, ply:GetUniqueColor())
+		end
+		
+		table.insert(tbl, var)
+		table.insert(tbl, Color(255, 255, 255, 255))
+		table.insert(tbl, ": ")
+		table.insert(tbl, str)
+		chathud.AddText(unpack(tbl))
+	end
+	
 	logf("%s%s: %s", chat.GetTimeStamp(), var, str)
 end
 
@@ -83,8 +96,7 @@ if CLIENT then
 		
 		console.AddCommand("showchat", function()
 			
-			if not showing then
-				if chatgui then chatgui.Show(1) end
+			if not showing then				
 				panel = aahh.Create("text_input")
 					panel:SetPos(Vec2(50, Vec2(render.GetScreenSize()).h - 100))
 					panel:SetSize(Vec2(512, 16))
@@ -105,13 +117,21 @@ if CLIENT then
 							panel:SetText(history[i])
 							panel:SetCaretPos(Vec2(#history[i], 0))
 						end
-										
+
 						if key == "escape" then
 							panel:OnEnter("")
 						end
 					end
 					
+					local suppress = true -- stupid
+					timer.Delay(0.1, function() suppress = false end) -- stupid
+					
 					panel.OnTextChanged = function(self, str)
+						if suppress then -- stupid
+							suppress = false -- stupid
+							self:SetText("") -- stupid
+							suppress = true -- stupid
+						end
 						event.Call("OnChatTextChanged", str)
 					end
 					
