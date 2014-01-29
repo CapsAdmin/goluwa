@@ -1,6 +1,6 @@
 if CLIENT then
 	message.AddListener("print", function(line)
-		chat.Append("server", line)
+		logn("server >> ", line)
 	end)
 end
 
