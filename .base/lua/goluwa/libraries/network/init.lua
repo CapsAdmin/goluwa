@@ -34,7 +34,7 @@ console.AddServerCommand("lua_open_sv", function(ply, line)
 end)
 
 
-local default_ip = "localhost"
+local default_ip = "*"
 local default_port = 1234
 
 if CLIENT then
@@ -56,7 +56,7 @@ if CLIENT then
 	end)
 
 	console.AddCommand("disconnect", function(line)	
-		network.Disconnect()
+		network.Disconnect(line)
 	end)
 end
 

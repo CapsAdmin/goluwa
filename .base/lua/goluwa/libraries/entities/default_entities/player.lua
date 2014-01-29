@@ -97,7 +97,7 @@ do -- ping pong
 				logn("timing out from server..")
 				
 				if ply:IsTimingOut() then
-					network.Disconnect()
+					network.Disconnect("timed out")
 				end
 			end
 		end
