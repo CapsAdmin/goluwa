@@ -151,6 +151,9 @@ function network.HandleEvent(socket, type, a, b, ...)
 		if SERVER then
 			local player = Player(uniqueid)
 			local reason = a
+						
+			event.Call("PlayerLeft", player:GetName(), uniqueid, reason, player)
+			event.BroadcastCall("PlayerLeft", player:GetName(), uniqueid, reason)
 			
 			logf("%s disconnected (%s)", socket:GetIPPort(), reason or "unknown reason")
 						
@@ -185,7 +188,7 @@ end
 
 if CLIENT then
 	function network.Connect(ip, port, retries)
-		network.Disconnect()
+		network.Disconnect("already connected")
 		
 		ip = tostring(ip)
 		port = tonumber(port) or check(port, "number")
@@ -239,9 +242,11 @@ if CLIENT then
 			
 			players.GetLocalPlayer():Remove()
 			
-			logf("disconnected from server")
+			logf("disconnected from server (%s)", reason or "unknown reason")
 			network.just_disconnected = true
 			network.accepted = false
+			
+			event.Call("Disconnected", reason)
 		end
 	end
 

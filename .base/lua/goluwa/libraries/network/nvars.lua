@@ -40,10 +40,6 @@ if CLIENT then
 		end
 		message.Send("nvars_update_done")
 	end)
-	
-	message.AddListener("player_spawn", function(ply)
-		event.Call("PlayerSpawned", ply)
-	end)
 end
 
 if SERVER then
@@ -66,7 +62,7 @@ if SERVER then
 	
 	message.AddListener("nvars_update_done", function(ply)
 		event.Call("PlayerSpawned", ply)
-		message.Send("player_spawn", nil, ply)
+		event.BroadcastCall("PlayerSpawned", ply)
 	end)
 end
 

@@ -137,3 +137,21 @@ do -- filter
 		return setmetatable({players = {}}, META)
 	end
 end
+
+do -- event extension
+	if CLIENT then
+		message.AddListener("evtmsg", function(...)
+			event.Call(...)
+		end)
+	end
+	
+	if SERVER then
+		function event.CallOnClient(event, filter, ...)
+			message.Send("evtmsg", filter, event, ...)
+		end
+		
+		function event.BroadcastCall(event, ...)
+			_G.event.CallOnClient(event, nil, ...)
+		end
+	end
+end
