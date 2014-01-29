@@ -135,9 +135,9 @@ else
 			R=r G=g B=b A=a or 1 
 			
 			if R>1 then R=R/255 end 
-			if G>1 then R=G/255 end 
-			if B>1 then R=B/255 end 
-			if A>1 then R=A/255 end 
+			if G>1 then G=G/255 end 
+			if B>1 then B=B/255 end 
+			if A>1 then A=A/255 end 
 			
 			surface.Color(R,G,B,A) 
 		end,
@@ -237,7 +237,6 @@ chathud = {
 			draw = function(self, x,y,a, h, s, v)
 				local r,g,b = EXT.HSVToColor(h, s, v)
 				EXT.SetColor(r, g, b, 255)
-				EXT.SetColor(r, g, b, 255)
 			end,
 		},
 		
@@ -246,7 +245,6 @@ chathud = {
 			arguments = {255, 255, 255, 255},
 			
 			draw = function(self, x,y,a, r,g,b,a)
-				EXT.SetColor(r, g, b, a)
 				EXT.SetColor(r, g, b, a)
 			end,
 		},
