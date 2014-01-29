@@ -1,5 +1,6 @@
 console = _G.console or {}
 
+console.history = console.history or {}
 console.curses = console.curses or {}
 local c = console.curses
 
@@ -71,26 +72,11 @@ function console.InitializeCurses()
 
 	c.parent_window = curses.initscr()
 
+	curses.start_color()
+
 	if WINDOWS then
 		curses.resize_term(25,130)
 	end
-
-	if MORTEN then
-		curses.start_color()
-		
-		local COLOR_BLACK = 0
-		local COLOR_RED = 1
-		local COLOR_GREEN = 2
-		local COLOR_YELLOW = 3
-		local COLOR_BLUE = 4
-		local COLOR_MAGENTA = 5
-		local COLOR_CYAN = 6
-		local COLOR_WHITE = 7
-
-		for i = 1, 8 do
-			curses.init_pair(i, i - 1, COLOR_BLACK)
-		end
-	end	
 
 	c.log_window = curses.derwin(c.parent_window, curses.LINES-1, curses.COLS, 0, 0)
 	c.input_window = curses.derwin(c.parent_window, 1, curses.COLS, curses.LINES - 1, 0)
@@ -101,10 +87,24 @@ function console.InitializeCurses()
 	curses.nodelay(c.input_window, 1)
 	curses.keypad(c.input_window, 1)
 
+	curses.attron((2 ^ (8 + 13)) + 8 * 256)
 	curses.scrollok(c.log_window, 1)
 
-	curses.attron((2 ^ (8 + 13)) + 8 * 256)
 		
+	local COLOR_BLACK = 0
+	local COLOR_RED = 1
+	local COLOR_GREEN = 2
+	local COLOR_YELLOW = 3
+	local COLOR_BLUE = 4
+	local COLOR_MAGENTA = 5
+	local COLOR_CYAN = 6
+	local COLOR_WHITE = 7
+
+	for i = 0, curses.COLORS do
+		curses.init_pair(i, i, COLOR_BLACK)
+	end
+	
+	
 	-- replace some functions
 	
 	if WINDOWS then
@@ -156,9 +156,12 @@ function console.InitializeCurses()
 				end
 				return
 			end
-				
+			
+			table.insert(console.history, str)
+			
 			curses.wprintw(c.log_window, str)
 			curses.wrefresh(c.log_window)
+			if console.Scroll then console.Scroll(0) end
 		end
 	end
 
@@ -185,7 +188,7 @@ do -- colors
 	
 	if WINDOWS then
 		COLOR_PAIR = function(x)
-			return bit.lshift(x, 24)
+			return bit.lshift(x, 8)
 		end
 	end
 
@@ -203,8 +206,38 @@ do -- colors
 			curses.wattroff(c.input_window, attr)
 		end
 	end
+	
+	function console.Color(i, str)
+		curses.wattron(c.log_window, i)
+		io.write(str)
+		curses.wattroff(c.log_window, i)
+	end
 end
 
+console.scroll_index = 0
+
+function console.Scroll(offset)
+	console.scroll_index = console.scroll_index - offset
+	
+	if console.scroll_index == 0 then return end
+	
+	console.ClearWindow()
+	
+	local lines = curses.LINES-1
+	local count = #console.history
+	
+	for i = 1, lines  do
+		i = -i + lines
+		i = math.clamp(count + console.scroll_index - i, 1, count)
+		
+		local str = console.history[i]
+		
+		if i == count then str = "" end
+		
+		curses.wprintw(c.log_window, str)
+	end
+	curses.wrefresh(c.log_window)
+end
 
 function console.ClearInput(str)
 	local y, x = gety(), getx()
@@ -244,12 +277,12 @@ function console.GetActiveKey()
 end
 
 function console.HandleKey(key)
-	--[[if key == "KEY_NPAGE" then
-		curses.wscrl(c.parent_window, -5)
+	if key == "KEY_NPAGE" then
+		console.Scroll(-1)
 	elseif key == "KEY_PPAGE" then
-		curses.wscrl(c.parent_window, 5)
-	end]]
-		
+		console.Scroll(1)
+	end
+				
 	if key == "KEY_UP" then
 		c.scroll = c.scroll - 1
 		c.line = history[c.scroll%#history+1] or c.line
@@ -432,6 +465,7 @@ timer.Create("curses", 0, 0, function()
 	local byte = curses.wgetch(c.input_window)
 
 	if byte < 0 then return end
+	
 		
 	local key = translate[byte] or ffi.string(curses.keyname(byte))
 	if not key:find("KEY_") then key = nil end
