@@ -13,6 +13,7 @@ function META:Begin(attach, channel, skip_push)
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, self.id)
 	if not skip_push then
 		gl.PushAttrib(e.GL_VIEWPORT_BIT)
+		self.attrib_pushed = true
 	end
 	gl.Viewport(0, 0, self.width, self.height)	
 	
@@ -35,16 +36,21 @@ end
 
 function META:End()
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
-	gl.PopAttrib()
+	
+	if self.attrib_pushed then
+		gl.PopAttrib()
+		self.attrib_pushed = false
+	end
 end
 
 function META:GetTexture(type)
 	type = type or "default"
+	
 	if self.buffers[type] then
 		return self.buffers[type].tex
 	end
 	
-	return NULL
+	return render.GetErrorTexture()
 end
 
 function META:Remove()
@@ -71,6 +77,15 @@ function render.CreateFrameBuffer(width, height, format)
 	self.width = width
 	self.height = height
 	self.draw_buffers = {}
+	
+	if not format then
+		format = {
+			attach = e.GL_COLOR_ATTACHMENT1,
+			texture_format = {
+				internal_format = e.GL_RGB32F,
+			}
+		}
+	end
 	
 	if not format[1] then 
 		format.name = format.name or "default"
