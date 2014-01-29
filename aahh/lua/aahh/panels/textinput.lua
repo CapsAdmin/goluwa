@@ -58,7 +58,7 @@ local is_caret_move = {
 PANEL.real_x = 0
 
 function PANEL:SetText(str)
-	self.Text = str
+	self.Text = tostring(str)
 	self:InvalidateText()
 end
 
