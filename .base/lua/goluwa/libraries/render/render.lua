@@ -216,6 +216,22 @@ function render.GetAdditive(b)
 	return render.additive
 end
 
+function render.GetErrorTexture()
+
+	if not render.error_tex then
+		local size = 16
+		render.error_tex:Fill(function(x, y)
+			if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
+				return 255, 0, 255, 255
+			else
+				return 0, 0, 0, 255
+			end
+		end)
+	end
+	
+	return render.error_tex
+end
+
 do
 	local data = ffi.new("float[3]")
 
