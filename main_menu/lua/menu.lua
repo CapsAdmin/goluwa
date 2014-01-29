@@ -59,6 +59,8 @@ do -- open close
 			end
 		end)
 	end
+	
+	event.AddListener("Disconnected", "main_menu", menu.Open)
 end
 
 function menu.RenderBackground()	
@@ -119,7 +121,7 @@ function menu.MakeButtons()
 		
 		if CLIENT and network.IsConnected() then
 			menu.AddButton("Disconnect", function()
-				console.RunString("disconnect")
+				console.RunString("disconnect menu disconnect")
 				menu.Remake()
 			end)
 		else
