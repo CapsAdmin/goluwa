@@ -11,7 +11,7 @@ local frame = utilities.RemoveOldObject(aahh.Create("frame"), "lol")
 		edit:SetWrap(false)
 		edit:SetLineNumbers(true)
 		edit:SetMultiLine(true)
-		edit:SetText(vfs.Read("lua/textbox.lua"))
+		edit:SetText(vfs.Read("lua/tests/textbox.lua"))
 		edit:MakeActivePanel()
 	frame:RequestLayout(true)
 	
