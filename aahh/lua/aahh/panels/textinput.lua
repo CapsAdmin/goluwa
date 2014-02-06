@@ -56,6 +56,7 @@ local is_caret_move = {
 }
 
 PANEL.real_x = 0
+PANEL.history = {}
 
 function PANEL:SetText(str)
 	self.Text = tostring(str)
@@ -118,6 +119,10 @@ function PANEL:InvalidateText()
 	if self.Text ~= self.last_text then
 		self:OnTextChanged(self.Text)
 		self.last_text = self.Text
+		
+		if not self.suppress_history then
+			table.insert(self.history, 1, {str = self.Text, pos = self.CaretPos:Copy()})
+		end
 	end
 end
 
@@ -333,7 +338,43 @@ function PANEL:OnCharInput(char)
 	self:InsertString(char)
 end
 
-function PANEL:OnKeyInput(key, press, skip_mods)
+function PANEL:FindNearestFromCaret(where)
+	local line = self.selected_line.str
+	local pos = self.CaretPos.x
+	local x
+	
+	if where == "right" then					
+		-- if the next character is punctation, try to find punctation until the the last non punctation
+		-- otherwise invert
+		if line:sub(pos + 1, pos + 1):find("[^_%a%d]") then
+			x = (select(2, line:find("[^_%a%d%s]-[%s_%a%d]", pos + 1)) or #line+1) - 1
+		else
+			x = (select(2, line:find("[_%a%d]-[^_%a%d]", pos + 1)) or #line+1) - 1
+		end
+		
+		if line:sub(x+1, x+1):find("%s") then
+			x = (select(2, line:sub(0, x+1):find("%s+", x)) or 1)
+		end
+			
+		if x == pos then
+			x = math.huge -- go to the next line
+		end
+	elseif where == "left" then		
+		if line:sub(pos, pos) == "" then 
+			x = 0 
+		else
+			if line:sub(pos, pos):find("[^_%a%d]") then
+				x = (select(2, line:sub(0, pos - 1):find(".*[%a%d_]")) or 0)
+			else
+				x = (select(2, line:sub(0, pos - 1):find(".*[^%a%d_]")) or 0)
+			end
+		end
+	end
+
+	return x
+end
+
+function PANEL:OnKeyInput(key, press)
 
 	if not self.selected_line or not self.selected_char then
 		self:SelectPos(Vec2(0, 0))
@@ -347,7 +388,7 @@ function PANEL:OnKeyInput(key, press, skip_mods)
 	if press then
 		local line = self.selected_line.str
 		local sub_pos = self:GetSubPosFromPos(self.CaretPos)
-		local ctrl_down =  not skip_mods and input.IsKeyDown("left_control") or input.IsKeyDown("right_control")
+		local ctrl_down = input.IsKeyDown("left_control") or input.IsKeyDown("right_control")
 
 		do -- special characters
 			if key == "tab" then
@@ -355,12 +396,44 @@ function PANEL:OnKeyInput(key, press, skip_mods)
 					if self.Text:usub(sub_pos, sub_pos) == "\t" then
 						self:OnKeyInput("backspace", true)
 					else
-						-- wip
-						--print(self.Text:usub(sub_pos - #line, self.CaretPos.x):find("$\t-"))
+						self.select_start.x = 0
+						self.select_end.x = math.huge
+						
+						local select_start = self.select_start
+						local select_end = self.select_end
 
+						local str = self:GetSelection()
+						self:DeleteSelection()
+						str = str:gsub("^\t", "")
+						local str, count = str:gsub("\n\t\t", "\n\t")
+						if count == 0 then
+							str = str:gsub("\n\t", "\n") 
+						end 
+						self:InsertString(str)
+											
+						self.select_start = select_start
+						self.select_end = select_end
 					end
 				else
-					self:OnCharInput("\t")
+					if self.select_end then
+						self.select_start.x = 0
+						self.select_end.x = math.huge
+						
+						local select_start = self.select_start
+						local select_end = self.select_end
+
+						local str = self:GetSelection()
+						self:DeleteSelection()
+						str = "\t" .. str:gsub("\n", "\n\t")
+						self:InsertString(str)
+											
+						self.select_start = select_start
+						self.select_end = select_end
+						
+						return
+					else
+						self:OnCharInput("\t")
+					end
 				end
 			elseif key == "enter" then
 				if self.MultiLine then
@@ -396,38 +469,58 @@ function PANEL:OnKeyInput(key, press, skip_mods)
 
 		do -- deletion
 			if key == "backspace" then
-				if sub_pos == 0 then return end
-
-				local prev_line = self.markup.data[self.selected_line.pos-1]
+				local prev_line = self.markup.data[self.selected_line.pos - 1] or ""
 
 				if not self:DeleteSelection() then
 					if ctrl_down then
-						local x = (select(2, self.Text:usub(sub_pos - #line, self.CaretPos.x):find(".*%f[_%a].-[%a]")) or 1) - 1
-						self.Text = self.Text:usub(1, x) .. self.Text:usub(sub_pos + 1)
-
-						self.CaretPos.x = x - 1
-						self.real_x = self.CaretPos.x
-					else
+						local pos = self.CaretPos:Copy()
+						
+						self:StartSelect(pos)
+						pos = pos:Copy()
+						pos.x = self:FindNearestFromCaret("left") 
+						self:EndSelect(pos)
+						self:DeleteSelection() 
+						
+						if pos.x <= 0 then
+							self.CaretPos.y = self.CaretPos.y - 1
+							local line = self.lines[self.CaretPos.y] or ""
+							self.CaretPos.x = #line
+							local sub_pos = self:GetSubPosFromPos(self.CaretPos)
+							self.Text = self.Text:usub(1, sub_pos) .. self.Text:usub(sub_pos + 2)
+						end
+						
+						self.real_x = self.CaretPos.x - 1
+					else 
+						if self.CaretPos.x <= 0 then
+							self.CaretPos.y = self.CaretPos.y - 1
+							local line = self.lines[self.CaretPos.y] or ""
+							self.CaretPos.x = line:ulength() + 1
+						end
 						self.Text = self.Text:usub(1, sub_pos - 1) .. self.Text:usub(sub_pos + 1)
-					end
-
-					if self.CaretPos.x == 0 then
-						self.CaretPos.x = prev_line.str:ulength()+1
-						self.real_x = prev_line.str:ulength()+1
-						self.CaretPos.y = self.CaretPos.y - 1
-					end
-
-					self.CaretPos.x = self.CaretPos.x - 1
-					self.real_x = self.CaretPos.x
+						self.CaretPos.x = self.CaretPos.x - 1
+					end					
 				end
 
 				self:InvalidateText()
 			elseif key == "delete" then
 
-				if not self:DeleteSelection() then
-					if ctrl_down then
-						local pos = (select(2, self.Text:find("[%a_].-[%a]", sub_pos + 1)) or self.Text:ulength() + 1) - 1
-						self.Text = self.Text:usub(1, sub_pos) .. self.Text:usub(pos + 1)
+				if not self:DeleteSelection() then				
+					if ctrl_down then 
+						local pos = self.CaretPos:Copy() 
+						
+						self:StartSelect(pos)
+						pos = pos:Copy()
+						pos.x = self:FindNearestFromCaret("right")
+						self:EndSelect(pos) 
+						self:DeleteSelection()
+												
+						if pos.x > #line then
+							local start_pos, end_pos = self.Text:usub(sub_pos + 2):find("%s*") 
+							if end_pos then
+								self.Text = self.Text:usub(1, sub_pos) .. self.Text:usub(sub_pos + 2 + end_pos)
+							end
+							self.real_x = 0
+						end
 					else
 						self.Text = self.Text:usub(1, sub_pos) .. self.Text:usub(sub_pos + 2)
 					end
@@ -440,13 +533,7 @@ function PANEL:OnKeyInput(key, press, skip_mods)
 		do -- caret movement
 			if key == "right" then
 				if ctrl_down then
-					local x = (select(1, line:find("%f[_%a].-", self.CaretPos.x + 2)) or #line+1) - 1
-
-					if x == self.CaretPos.x then
-						x = math.huge -- go to the next line
-					end
-
-					self.CaretPos.x = x
+					self.CaretPos.x = self:FindNearestFromCaret("right")
 				else
 					self.CaretPos.x = self.CaretPos.x + 1
 				end
@@ -454,9 +541,13 @@ function PANEL:OnKeyInput(key, press, skip_mods)
 				self.real_x = self.CaretPos.x
 			elseif key == "left" then
 				if ctrl_down then
-					local x = (select(2, line:usub(1, self.CaretPos.x):find(".*%f[_%a].-[%a]")) or -1) - 1
-
-					self.CaretPos.x = x
+					self.CaretPos.x = self:FindNearestFromCaret("left")
+					
+					if self.CaretPos.x <= 0 then
+						self.CaretPos.y = self.CaretPos.y - 1
+						local line = self.lines[self.CaretPos.y] or ""
+						self.CaretPos.x = #line
+					end
 				else
 					self.CaretPos.x = self.CaretPos.x - 1
 				end
@@ -494,8 +585,14 @@ function PANEL:OnKeyInput(key, press, skip_mods)
 
 			-- if we're at the end of the line, got to the next
 			if x ~= self.CaretPos.x and #self.lines > 1 then
-				if key == "right" then
-					self.CaretPos.x = 0
+				if key == "right" then					
+					-- if ctrl is down find the next space
+					if ctrl_down then
+						local line = self.lines[self.CaretPos.y+1] or ""
+						self.CaretPos.x = (select(2, line:find("%s-%S", 0)) or 1) - 1
+					else				
+						self.CaretPos.x = 0
+					end
 					self.CaretPos.y = self.CaretPos.y + 1
 					self:SetCaretPos(self.CaretPos)
 				elseif key == "left" then
@@ -505,17 +602,43 @@ function PANEL:OnKeyInput(key, press, skip_mods)
 				end
 			end
 		end
-
-		do -- other shortcuts
-			if key == "a" and ctrl_down then
-				self.select_start = Vec2(0,0)
-				self.select_end = Vec2(math.huge,math.huge)
-			end
-		end
 		
 		if is_caret_move[key] then
 			if not input.IsKeyDown("left_shift") then
 				self:Unselect()
+			end
+		end
+		
+		do -- other shortcuts
+			if  ctrl_down then
+				if key == "a" then
+					self:Unselect()
+					self:SetCaretPos(Vec2(0,0))
+					self:StartSelect(Vec2(0,0))
+					self:EndSelect(Vec2(math.huge, math.huge))
+				else
+					local ok = false
+					self.history_index = self.history_index or 0
+					
+					if key == "z" then
+						self.history_index = math.clamp(self.history_index + 1, 1, #self.history)
+						ok = true
+					elseif key == "y" then
+						self.history_index = math.clamp(self.history_index - 1, 1, #self.history)
+						ok = true
+					end
+					
+					if ok then					
+						local data = self.history[self.history_index]
+						
+						if data then 
+							self.suppress_history = true
+							self:SetText(data.str)
+							self:SetCaretPos(data.pos)
+							self.suppress_history = nil
+						end
+					end
+				end
 			end
 		end
 
@@ -671,3 +794,27 @@ function PANEL:OnDraw(size)
 end
 
 aahh.RegisterPanel(PANEL)
+
+if ELIAS then
+	timer.Delay(0.1, function()
+		window.Open(1000, 1000) 
+
+		local frame = utilities.RemoveOldObject(aahh.Create("frame"), "lol")
+			frame:SetSize(Vec2()+1000)
+			frame:Center()
+			frame:SetTitle("")
+
+			local edit = aahh.Create("text_input", frame)
+				edit:SetFont("default")
+				edit:Dock("fill")
+				edit:SetWrap(false)
+				edit:SetLineNumbers(true)
+				edit:SetMultiLine(true)
+				edit:SetText(vfs.Read("lua/tests/textbox.lua"))
+				edit:MakeActivePanel()
+			frame:RequestLayout(true)
+			
+			LOL = edit
+		  
+	end)
+end
