@@ -1,5 +1,103 @@
 local utilities = _G.utilities or {}
 
+
+do -- find value
+	local found =  {}
+	local done = {}
+
+	local skip =
+	{
+		UTIL_REMAKES = true,
+		ffi = true,
+	}
+
+	local keywords =
+	{
+		AND = function(a, func, x,y) return func(a, x) and func(a, y) end	
+	}
+
+	local function args_call(a, func, ...)
+		local tbl = {...}
+		
+		for i = 1, #tbl do
+			local val = tbl[i]
+			
+			if not keywords[val] then
+				local keyword = tbl[i+1]
+				if keywords[keyword] and tbl[i+2] then
+					local ret = keywords[keyword](a, func, val, tbl[i+2])
+					if ret ~= nil then
+						return ret
+					end
+				else
+					local ret = func(a, val)
+					if ret ~= nil then
+						return ret
+					end
+				end
+			end
+		end
+	end
+
+	local function strfind(str, ...)
+		return args_call(str, string.compare, ...) or args_call(str, string.find, ...)
+	end
+
+	local function find(tbl, name, level, ...)
+		if level >= 3 then return end
+			
+		for key, val in pairs(tbl) do	
+			local T = type(val)
+			key = tostring(key)
+				
+			if not skip[key] and T == "table" and not done[val] then
+				done[val] = true
+				find(val, name .. "." .. key, level + 1, ...)
+			else
+				if (T == "function" or T == "number") and (strfind(key, ...) or strfind(name, ...)) then					
+					
+					local nice_name
+					
+					if type(val) == "function" then
+						nice_name = ("%s(%s)"):format(key, table.concat(debug.getparams(val), ", "))
+					else
+						nice_name = ("%s = %s"):format(key, val)
+					end
+				
+					if name == "_G" or name == "_M" then
+						table.insert(found, {key = key, val = val, name = name, nice_name = nice_name})
+					else
+						name = name:gsub("_G%.", "")
+						name = name:gsub("_M%.", "")
+						table.insert(found, {key = ("%s.%s"):format(name, key), val = val, name = name, nice_name = nice_name})
+					end
+				end
+			end
+		end
+	end
+
+	function utilities.FindValue(...)		
+		found = {}
+		done = 
+		{
+			[_G] = true,
+			[_R] = true,
+			[package] = true,
+			[_OLD_G] = true,
+		}
+			
+		find(_G, "_G", 1, ...)
+		find(utilities.GetMetaTables(), "_M", 1, ...)
+		for cmd, v in pairs(console.GetCommands()) do
+			if strfind(cmd, ...) then
+				table.insert(found, {key = cmd, val = v.callback, name = ("console.GetCommands().%s.callback"):format(cmd), nice_name = cmd})
+			end
+		end
+		
+		return found
+	end
+end
+
 function utilities.CreateBaseObject(class_name)
 	local self = {}
 	

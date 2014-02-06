@@ -136,109 +136,68 @@ console.AddCommand("profile", function(line, time)
 	end)	
 end)
 
-do
-	local done = {}
+console.AddCommand("find", function(line, ...)
+	local data = utilities.FindValue(...)
+	
+	for k,v in pairs(data) do
+		logn("\t", v.nice_name) 
+	end
+end)
 
-	local skip =
-	{
-		UTIL_REMAKES = true,
-		ffi = true,
-	}
-
-	local keywords =
-	{
-		AND = function(a, func, x,y) return func(a, x) and func(a, y) end	
-	}
-
-	local function args_call(a, func, ...)
-		local tbl = {...}
+console.AddCommand("source", function(line, ...)
+	local data = utilities.FindValue(...)
 		
-		for i = 1, #tbl do
-			local val = tbl[i]
-			
-			if not keywords[val] then
-				local keyword = tbl[i+1]
-				if keywords[keyword] and tbl[i+2] then
-					local ret = keywords[keyword](a, func, val, tbl[i+2])
-					if ret ~= nil then
-						return ret
-					end
-				else
-					local ret = func(a, val)
-					if ret ~= nil then
-						return ret
-					end
-				end
-			end
+	local func
+	local name
+	
+	for k,v in pairs(data) do
+		if type(v.val) == "function" then
+			func = v.val
+			name = v.nice_name
+			break
 		end
 	end
-
-	local function strfind(str, ...)
-		return args_call(str, string.compare, ...) or args_call(str, string.find, ...)
-	end
-
-	local function find(tbl, name, level, ...)
-		if level >= 3 then return end
-			
-		for key, val in pairs(tbl) do	
-			local T = type(val)
-			key = tostring(key)
-				
-			if not skip[key] and T == "table" and not done[val] then
-				done[val] = true
-				find(val, name .. "." .. key, level + 1, ...)
-			else
-				if (T == "function" or T == "number") and (strfind(key, ...) or strfind(name, ...)) then
-					if T == "function" then
-						val = "(" .. table.concat(debug.getparams(val), ", ") .. ")"
-					elseif T ~= "table" then
-						val = luadata.ToString(val)
-					else
-						val = tostring(val)	
-					end
-					
-					if name == "_G" or name == "_M" then
-						logf("\t%s = %s", key, val)
-					else
-						name = name:gsub("_G%.", "")
-						name = name:gsub("_M%.", "")
-						if T == "function" then
-							logf("\t%s.%s%s", name, key, val)
-						else
-							logf("\t%s.%s = %s", name, key, val)
-						end
-					end
-				end
-			end
+	
+	if func then
+		logn("--> ", name)
+		
+		table.remove(data, 1)
+		
+		if not debug.openfunction(func) then
+			print(func:src())
 		end
+	else
+		logf("function %q could not be found in _G or in added commands", line)
 	end
-
-	console.AddCommand("find", function(line, ...)			
-		done = 
-		{
-			[_G] = true,
-			[_R] = true,
-			[package] = true,
-			[_OLD_G] = true,
-		}
+	
+	if #data > 0 then
+		
+		if #data < 10 then
+			logf("also found:")
 			
-		logf("searched for %q", table.concat(tostring_args(...), ", "))
-		logn("globals:")
-		find(_G, "_G", 1, ...)
-		logn("metatables:")
-		find(utilities.GetMetaTables(), "_M", 1, ...)
-	end)
-end
-
-console.AddCommand("source", function(line)
-	local func = loadstring("return " .. line)()
-	if not debug.openfunction(func) then
-		print(func:src())
+			for k,v in pairs(data) do
+				logn("\t", v.nice_name) 
+			end
+		else
+			logf("%i results were also found", #data)
+		end
 	end
 end)
 
 console.AddCommand("open", function(line)
 	if not include(line .. ".lua") then
 		include("tests/" .. line .. ".lua")
+	end
+end)
+
+console.AddCommand("help", function(line)
+	local info = console.GetCommands()[line]
+	if info then
+		if not help then
+			logn("\tno help was found for ", line)
+			logf("\ttype %q to go to this function", "source " .. line)
+			logn("\tdebug info:")
+			logn("\t", tostring(info.callback))
+		end
 	end
 end)
