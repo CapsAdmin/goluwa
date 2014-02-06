@@ -11,6 +11,7 @@ end
 
 function META:Begin(attach, channel, skip_push)
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, self.id)
+	
 	if not skip_push then
 		gl.PushAttrib(e.GL_VIEWPORT_BIT)
 		self.attrib_pushed = true
@@ -18,7 +19,7 @@ function META:Begin(attach, channel, skip_push)
 	gl.Viewport(0, 0, self.width, self.height)	
 	
 	gl.Clear(bit.bor(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT))
-	gl.ClearColor(0, 0, 0, 1)
+	gl.ClearColor(0, 0, 0, 0)
 
 	gl.ActiveTextureARB(channel or e.GL_TEXTURE0)
 	gl.Enable(e.GL_TEXTURE_2D)
@@ -82,7 +83,7 @@ function render.CreateFrameBuffer(width, height, format)
 		format = {
 			attach = e.GL_COLOR_ATTACHMENT1,
 			texture_format = {
-				internal_format = e.GL_RGB32F,
+				internal_format = e.GL_RGBA32F,
 			}
 		}
 	end
