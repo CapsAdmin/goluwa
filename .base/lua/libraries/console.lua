@@ -44,10 +44,10 @@ end
 do -- commands	
 	console.AddedCommands = {}
 
-	function console.AddCommand(cmd, callback)
+	function console.AddCommand(cmd, callback, help)
 		cmd = cmd:lower()
 		
-		console.AddedCommands[cmd] = callback
+		console.AddedCommands[cmd] = {callback = callback, help = help}
 	end
 
 	function console.RemoveCommand(cmd, callback)
@@ -74,7 +74,7 @@ do -- commands
 		local data = console.AddedCommands[cmd]
 
 		if data then
-			return call(data, line, ...)
+			return call(data.callback, line, ...)
 		end
 	end
 
