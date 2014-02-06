@@ -96,8 +96,12 @@ function surface.GetScreenSize()
 	return render.w, render.h
 end
 
-function surface.Start()	
-	render.Start2D()
+function surface.Start(...)	
+	render.Start2D(...)
+end
+
+function surface.End(...)	
+	render.End2D(...)
 end
 
 
@@ -212,7 +216,7 @@ do -- fonts
 				local byte = utf8.byte(str)
 				if byte == -1 then byte = str:byte() end
 				
-				if str == " " then	
+				if str == " " or str == "" then	
 					w = w + ft.current_font.info.size / 2
 				elseif str == "\t" then
 					w = w + ft.current_font.info.size * 2
@@ -296,6 +300,7 @@ do -- fonts
 			})         
 			
 			tex:Clear()	  		
+			
 			for _, char in pairs(data.chars) do
 				tex:Upload(
 					char.glyph.buffer, 
@@ -383,7 +388,7 @@ do -- orientation
 	function surface.PushMatrix(x,y, w,h, a)
 		render.PushWorldMatrix()
 
-		if x and y then surface.Translate(x, y, 0) end
+		if x and y then surface.Translate(x, y) end
 		if w and h then surface.Scale(w, h) end
 		if a then surface.Rotate(a) end
 	end
