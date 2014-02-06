@@ -71,7 +71,7 @@ meta.__tostring = function(self)
 	local out = ("function[%p]"):format(self)
 	
 	out = out .. "["..locinfo(self).."]"
-	out = out .. "[" .. table.concat(debug.getparams(self), ", ") .. "]"
+	out = out .. "(" .. table.concat(debug.getparams(self), ", ") .. ")"
 	if out == "()" then
 		out = "([C]UNKNOWN)"
 	end
@@ -81,10 +81,13 @@ end
 
 meta.name = function(self)
 	local info = debug.getinfo(self)
-	if info.source then
-		local line = vfs.Read(info.source:sub(2)):explode("\n")[info.linedefined]	
-		line = line:trim()
-		return line
+	if info and info.source then
+		local line = vfs.Read(info.source:sub(2))
+		if line then
+			line = line:explode("\n")[info.linedefined]	
+			line = line:trim()
+			return line
+		end
 	end
 	
 	return "no source"
