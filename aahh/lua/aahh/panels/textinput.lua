@@ -64,9 +64,10 @@ function PANEL:SetText(str)
 end
 
 function PANEL:InvalidateText()
+	if self.pause_invalidate then return end
 	surface.SetFont(self.Font)
 	
-	self.FixedHeight = false
+	--self.FixedHeight = false
 
 	-- lol
 	self.Text = self.Text:gsub("\r", "\n")
@@ -111,7 +112,7 @@ function PANEL:InvalidateText()
 	self.lines = lines
 	
 	if self.LineNumbers then
-		self.margin_width = surface.GetTextSize(tostring(#self.markup.data)) + 4
+		self.margin_width = surface.GetTextSize(tostring(#self.markup.data)) + 10
 	else
 		self.margin_width = 0
 	end
@@ -121,14 +122,14 @@ function PANEL:InvalidateText()
 		self.last_text = self.Text
 		
 		if not self.suppress_history then
-			table.insert(self.history, 1, {str = self.Text, pos = self.CaretPos:Copy()})
+			table.insert(self.history, 1, {str = self:GetText(), pos = self.CaretPos:Copy()})
 		end
 	end
 end
 
 function PANEL:OnMouseInput(button, press, pos)
 	if button == "button_1" then
-		if press then
+		if press then			
 			pos.x = pos.x - self.margin_width
 			local pos = self:PixelToCaretPos(pos)
 
@@ -139,11 +140,16 @@ function PANEL:OnMouseInput(button, press, pos)
 			end
 			
 			self:MakeActivePanel()
-
+			
 			self.mouse_selecting = true
 			self.shift_selecting = false
 		else
 			self.mouse_selecting = false
+			
+			pos.x = pos.x - self.margin_width
+			if self:PixelToCaretPos(pos) == self.CaretPos then
+				self:Unselect()
+			end
 		end
 	end
 end
@@ -347,7 +353,7 @@ function PANEL:FindNearestFromCaret(where)
 		-- if the next character is punctation, try to find punctation until the the last non punctation
 		-- otherwise invert
 		if line:sub(pos + 1, pos + 1):find("[^_%a%d]") then
-			x = (select(2, line:find("[^_%a%d%s]-[%s_%a%d]", pos + 1)) or #line+1) - 1
+			x = (select(2, line:find("[^_%a%d%s]+[_%a%d%s]", pos + 1)) or #line+1) - 1
 		else
 			x = (select(2, line:find("[_%a%d]-[^_%a%d]", pos + 1)) or #line+1) - 1
 		end
@@ -392,10 +398,8 @@ function PANEL:OnKeyInput(key, press)
 
 		do -- special characters
 			if key == "tab" then
-				if input.IsKeyDown("left_shift") then
-					if self.Text:usub(sub_pos, sub_pos) == "\t" then
-						self:OnKeyInput("backspace", true)
-					else
+				if input.IsKeyDown("left_shift") then 
+					if self.select_end and self.select_start and self.select_start.y ~= self.select_end.y then
 						self.select_start.x = 0
 						self.select_end.x = math.huge
 						
@@ -403,34 +407,43 @@ function PANEL:OnKeyInput(key, press)
 						local select_end = self.select_end
 
 						local str = self:GetSelection()
+						self.pause_invalidate = true
 						self:DeleteSelection()
+						self.pause_invalidate = false
+						
 						str = str:gsub("^\t", "")
 						local str, count = str:gsub("\n\t\t", "\n\t")
 						if count == 0 then
 							str = str:gsub("\n\t", "\n") 
 						end 
 						self:InsertString(str)
-											
+											 
 						self.select_start = select_start
 						self.select_end = select_end
+						self.mouse_selecting = false
+					else
+						if self.Text:usub(sub_pos, sub_pos) == "\t" then
+							self:OnKeyInput("backspace", true)
+						end
 					end
 				else
-					if self.select_end then
+					if self.select_end and self.select_start and self.select_start.y ~= self.select_end.y then
 						self.select_start.x = 0
 						self.select_end.x = math.huge
 						
 						local select_start = self.select_start
 						local select_end = self.select_end
-
+											
 						local str = self:GetSelection()
+						self.pause_invalidate = true
 						self:DeleteSelection()
+						self.pause_invalidate = false
 						str = "\t" .. str:gsub("\n", "\n\t")
 						self:InsertString(str)
 											
 						self.select_start = select_start
 						self.select_end = select_end
-						
-						return
+						self.mouse_selecting = false
 					else
 						self:OnCharInput("\t")
 					end
@@ -628,14 +641,15 @@ function PANEL:OnKeyInput(key, press)
 						ok = true
 					end
 					
-					if ok then					
+					if ok then			
 						local data = self.history[self.history_index]
 						
 						if data then 
 							self.suppress_history = true
 							self:SetText(data.str)
-							self:SetCaretPos(data.pos)
 							self.suppress_history = nil
+							self:InvalidateText()
+							self:SetCaretPos(data.pos)
 						end
 					end
 				end
@@ -643,7 +657,7 @@ function PANEL:OnKeyInput(key, press)
 		end
 
 		self:SetCaretPos(self.CaretPos)
-		
+				
 		if self.OnUnhandledKey then
 			self:OnUnhandledKey(key)	
 		end
@@ -734,7 +748,7 @@ function PANEL:OnDraw(size)
 			surface.DrawText(data.str)
 			
 			if self.LineNumbers then
-				surface.SetTextPos(-self.margin_width, data.y)
+				surface.SetTextPos(-self.margin_width + 4, data.y)
 				if self.last_pos ~= data.pos then
 					surface.DrawText(data.pos)
 					self.last_pos = data.pos
@@ -794,27 +808,3 @@ function PANEL:OnDraw(size)
 end
 
 aahh.RegisterPanel(PANEL)
-
-if ELIAS then
-	timer.Delay(0.1, function()
-		window.Open(1000, 1000) 
-
-		local frame = utilities.RemoveOldObject(aahh.Create("frame"), "lol")
-			frame:SetSize(Vec2()+1000)
-			frame:Center()
-			frame:SetTitle("")
-
-			local edit = aahh.Create("text_input", frame)
-				edit:SetFont("default")
-				edit:Dock("fill")
-				edit:SetWrap(false)
-				edit:SetLineNumbers(true)
-				edit:SetMultiLine(true)
-				edit:SetText(vfs.Read("lua/tests/textbox.lua"))
-				edit:MakeActivePanel()
-			frame:RequestLayout(true)
-			
-			LOL = edit
-		  
-	end)
-end
