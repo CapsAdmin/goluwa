@@ -1,7 +1,3 @@
-if SERVER then return end
-
-setfenv(1, _G)
-
 local META = {}
 META.__index = META
 
@@ -545,7 +541,7 @@ local function parse_tag_arguments(self, str)
 end
 
 local function parse_tags(self, str)
-	local data = {}
+	local chunks = {}
 	local found = false
 
 	local in_tag = false
@@ -557,7 +553,7 @@ local function parse_tags(self, str)
 
 			-- if we've been parsing a string add it
 			if current_string then
-				table.insert(data, table.concat(current_string, ""))
+				table.insert(chunks, table.concat(current_string, ""))
 			end
 
 			-- stat a new tag
@@ -625,7 +621,7 @@ local function parse_tags(self, str)
 					found = true
 
 					local tag = {tag = info, type = tag, args = args}
-					table.insert(data, tag)
+					table.insert(chunks, tag)
 				end
 			end
 
@@ -641,12 +637,12 @@ local function parse_tags(self, str)
 	end
 
 	if found then
-		table.insert(data, table.concat(current_string, ""))
+		table.insert(chunks, table.concat(current_string, ""))
 	else
-		data = {str}
+		chunks = {str}
 	end
 
-	return data
+	return chunks
 end
 
 function META:Invalidate()
@@ -658,7 +654,7 @@ function META:Invalidate()
 	-- markup:SetTable({Color(1,1,1), "asdasd", {"asdasd"}, ...})
 	local temp = {}
 
-	for i, var in pairs(self.Table) do
+	for i, var in ipairs(self.Table) do
 		local t = typex(var)
 
 		if t == "color" then
@@ -667,14 +663,22 @@ function META:Invalidate()
 			-- solve strings such as
 			-- <color=1,2,3>
 			-- this markup does not have a pop variant (there's no need for "</color>")
-			for i, var in pairs(parse_tags(self, var)) do
+			for i, var in ipairs(parse_tags(self, var)) do
 				if type(var) == "string"  then
 					-- don't insert empty strings
 					if var ~= "" then
 						table.insert(temp, {type = "string", val = var})
 					end
 				else
-					table.insert(temp, {type = "custom", val = var})
+					-- if this is a string tag just put color and font as if they were var args for better performance
+					if var.type == "font" then
+						table.insert(temp, {type = "font", val = var.args[1]})
+						
+					elseif var.type == "color" then
+						table.insert(temp, {type = "color", val = Color(unpack(var.args))})
+					else
+						table.insert(temp, {type = "custom", val = var})
+					end
 				end
 			end
 		elseif t == "table" and val.type and val.cal then
@@ -687,73 +691,79 @@ function META:Invalidate()
 
 
 
-	-- solve newlines
+	-- solve white space and punctation
 	local temp2 = {}
 
-	for i, data in pairs(temp) do
-		if data.type == "string" and data.val:find("\n") then
-		
+	for i, chunk in ipairs(temp) do
+		if chunk.type == "string" and chunk.val:find("[%p%s]") then
 			local str = ""
 			
-			for i, char in pairs(utf8.totable(data.val)) do
-				if char == "\n" then
+			for i, char in ipairs(utf8.totable(chunk.val)) do
+				if char:find("%s") then
 					if str ~= "" then
 						table.insert(temp2, {type = "string", val = str})
 						str = ""
 					end
-				
-					table.insert(temp2, {type = "newline"})
+					
+					if char == "\n" then
+						table.insert(temp2, {type = "newline"})
+					else
+						table.insert(temp2, {type = "string", val = char, whitespace = true})
+					end
 				else
 					str = str .. char
 				end
 			end
-			
+
 			if str ~= "" then
 				table.insert(temp2, {type = "string", val = str})
-			end
+			end			
 			
 		else
-			table.insert(temp2, data)
+			table.insert(temp2, chunk)
 		end
 	end
 
 
 
-	
+
 	-- get the size of each object
 	local temp = {}
 
-	for i, data in pairs(temp2) do
-		if data.type == "font" then
+	for i, chunk in ipairs(temp2) do
+		if chunk.type == "font" then
 			-- set the font so GetTextSize will be correct
-			EXT.SetFont(data.val)
-		elseif data.type == "string" then
-			local w, h = EXT.GetTextSize(data.val)
+			EXT.SetFont(chunk.val)
+		elseif chunk.type == "string" then
+			local w, h = EXT.GetTextSize(chunk.val)
 
-			data.w = w
-			data.h = h
-		elseif data.type == "custom" then
-			local w, h = call_tag_func(self, data, "get_size")
+			if chunk.val:trim() == "" then
+				h = 0
+			end
+			
+			chunk.w = w
+			chunk.h = h
+		elseif chunk.type == "custom" then
+			local w, h = call_tag_func(self, chunk, "get_size")
 
-			data.w = w
-			data.h = h
+			chunk.w = w
+			chunk.h = h
 
-			call_tag_func(self, data, "pre")
+			call_tag_func(self, chunk, "pre")
 		end
 
 		-- for consistency everything should have x y w h
-		data.x = data.x or 0
-		data.y = data.y or 0
-		data.w = data.w or 0
-		data.h = data.h or 0
+		chunk.x = chunk.x or 0
+		chunk.y = chunk.y or 0
+		chunk.w = chunk.w or 0
+		chunk.h = chunk.h or 0
 
-		table.insert(temp, data)
+		table.insert(temp, chunk)
 	end
 
-	
-	
-	
-	
+
+
+
 	-- solve max width
 	local temp2 = {}
 
@@ -762,103 +772,229 @@ function META:Invalidate()
 
 	local chunk_height = 0 -- the height to advance y in
 
-	for i, data in pairs(temp) do	
+	for i, chunk in ipairs(temp) do				
 		-- is the previous line a newline?
 		local newline = temp[i - 1] and temp[i - 1].type == "newline"
-		
+
 		-- figure out the tallest chunk before going to a new line
-		if data.h > chunk_height then
-			chunk_height = data.h
+		if chunk.h > chunk_height then
+			chunk_height = chunk.h
 		end
 
 		-- is this a new line or are we going to exceed the maximum width?
-		if newline or current_x + data.w >= self.MaxWidth then		
+		if newline or current_x + chunk.w >= self.MaxWidth then		
+		
+			-- if this is whitespace just get rid of it and pretend it wasn't there
+			-- this causes issues with newlines
+			--[[if chunk.whitespace then
+				current_x = current_x - chunk.w
+				goto continue
+			end]]
+		
+			-- reset the width
+			current_x = 0
+			
 			-- advance y with the height of the tallest chunk
 			current_y = current_y + chunk_height
-
-			current_x = 0
-			--chunk_height = 0
 		end
+		
+		chunk.newlined = newline
+		chunk.x = current_x
+		chunk.y = current_y
 
-		data.x = current_x
-		data.y = current_y
+		current_x = current_x + chunk.w
 
-		current_x = current_x + data.w
-
-		table.insert(temp2, data)
+		table.insert(temp2, chunk)
+		
+		::continue::
 	end
-	
-	
-	
+
 	-- solve max width once more but for every letter
-	-- WIP / SLOW / USELSS?
+	-- note: slow and useless?
 	local temp = {}
 
-	for i, data in pairs(temp2) do
-		
+	for i, chunk in ipairs(temp2) do
 		local split = false
+
+		if chunk.type == "font" then
+			-- set the font so GetTextSize will be correct
+			EXT.SetFont(chunk.val)
+		elseif chunk.type == "string" then
 		
-		if data.type == "string" then
-			if data.x + data.w >= self.MaxWidth then
-				local y = data.y
-				for i, str in pairs(surface.WrapString(data.val, self.MaxWidth)) do
-					local w, h = surface.GetTextSize(str)
-					table.insert(temp, {type = "string", val = str, x = 0, y = y, w = w, h = h})
-					y = y + h
-					split = true
+			-- if x+w exceeds maxwidth split!
+			if chunk.x + chunk.w >= self.MaxWidth then
+
+				-- start from the chunk's y
+				local current_x = chunk.x 
+				local current_y = chunk.y
+				local chunk_height = 0 -- the height to advance y in
+				
+				local str = ""
+
+				for i, char in ipairs(utf8.totable(chunk.val)) do		
+					local w, h = surface.GetTextSize(char)
+					
+					if h > chunk_height then
+						chunk_height = h
+					end
+					
+					str = str .. char
+					current_x = current_x + w  
+					
+					if current_x + w > self.MaxWidth then
+						table.insert(temp, {type = "string", val = str, x = 0, y = current_y, w = current_x, h = chunk_height})
+						current_y = current_y + chunk_height
+						
+						current_x = 0
+						chunk_height = 0 
+						split = true	
+						str = ""
+					end
+					
+					
+				end
+
+				if split then
+					table.insert(temp, {type = "string", val = str, x = 0, y = current_y, w = current_x, h = chunk_height})
 				end
 			end
+
 		end
-		
+ 
 		if not split then
-			table.insert(temp, data)
+			table.insert(temp, chunk)
 		end
 	end
+
 	
+	-- one extra step..
+	-- this should be in a while loop
+	-- but i choose not for performance reasons
+	local temp2 = {}
+
+	local current_x = 0
+	local current_y = 0
+
+	local chunk_height = 0 -- the height to advance y in
+
+	for i, chunk in ipairs(temp) do	
+				
+		-- is the previous line a newline?
+		local newline = temp[i - 1] and temp[i - 1].type == "newline"
+		
+		if newline and chunk.type == "string" and not chunk.whitespace then
+
+			-- figure out the tallest chunk before going to a new line
+			if chunk.h > chunk_height then
+				chunk_height = chunk.h
+			end
+
+			-- is this a new line or are we going to exceed the maximum width?
+			if newline or current_x + chunk.w >= self.MaxWidth then		
+				-- reset the width
+				current_x = 0
+				
+				-- advance y with the height of the tallest chunk
+				current_y = current_y + chunk_height
+				current_y = chunk.y
+			end
+
+			chunk.x = current_x
+			chunk.y = current_y
+
+			current_x = current_x + chunk.w
+
+		end
+		
+		table.insert(temp2, chunk)
+	end
 	
-	
+	local chunks = temp2
 
 	-- this is for expressions to be use d like line.i+time()
-	for i, data in pairs(temp) do
-		data.exp_env = {
-			i = i, 
-			w = data.w, 
-			h = data.h, 
-			x = data.x, 
-			y = data.y, 
+	for i, chunk in ipairs(chunks) do
+		chunk.exp_env = {
+			i = i,
+			w = chunk.w,
+			h = chunk.h,
+			x = chunk.x,
+			y = chunk.y,
 			rand = math.random()
 		}
 	end
 	
-	
-	
-	
-
-	-- build linked list (mainly for matrices)
-	local prev = nil
-	
-	for _, data in ipairs(temp) do
-		if prev then
-			prev.next = data
+	do -- store some extra info
+		local line = 0
+		local width = 0
+		local height = 0
+		local last_y 
+		
+		for _, chunk in ipairs(chunks) do
+			local w = chunk.x + chunk.w
+			if w > width then
+				width = w
+			end
+			
+			local h = chunk.y + chunk.h
+			if w > height then
+				height = h
+			end
+			
+			if chunk.y ~= last_y then
+				line =  line + 1
+				last_y = chunk.y
+			end
+			
+			chunk.line = line
 		end
-		prev = data
+		
+		self.lines = line
+		self.width = width
+		self.height = height
+	end
+	
+	do -- align the y axis properly
+		local h = 0
+		
+		for _, chunk in ipairs(chunks) do
+			if chunk.line == 1 then
+				if chunk.h > h then
+					h = chunk.h
+				end
+			else
+				break
+			end
+		end
+				
+		for _, chunk in ipairs(chunks) do
+			chunk.y = chunk.y - chunk.h + h
+		end
 	end
 
-	for i, data in pairs(temp) do
+	-- build linked list (mainly for matrices)
+	local prev = nil	
+	for _, chunk in ipairs(chunks) do
+		if prev then
+			prev.next = chunk
+		end
+		prev = chunk
+	end
+
+	for i, chunk in ipairs(chunks) do
 		local w = 0
 		local h = 0
-		local node = data.next
+		local node = chunk.next
 		while node do
 			w = w + node.w
 			h = math.max (h, node.h)
 			node = node.next
 		end
 
-		data.message_width = w
-		data.message_height = h
+		chunk.message_width = w
+		chunk.message_height = h
 	end
-
-	self.data = temp
+	
+	self.chunks = chunks
 end
 
 function META:Draw()
@@ -869,34 +1005,34 @@ function META:Draw()
 
 	local w, h = surface.GetScreenSize()
 
-	for i, data in pairs(self.data) do
-		local x = data.x
-		local y = data.y
+	for i, chunk in ipairs(self.chunks) do
+		local x = chunk.x
+		local y = chunk.y
 
 		if x > w then break end
 		if y > h then break end
 
-		if data.type == "font" then
-			EXT.SetFont(data.val)
-		elseif data.type == "string" then
-			EXT.SetTextPos(data.x, data.y)
-			EXT.DrawText(data.val)
-		elseif data.type == "color" then
-			local c = data.val
-
+		if chunk.type == "font" then
+			EXT.SetFont(chunk.val)
+		elseif chunk.type == "string" then
+			EXT.SetTextPos(chunk.x, chunk.y)
+			EXT.DrawText(chunk.val)
+		elseif chunk.type == "color" then
+			local c = chunk.val
+			
 			EXT.SetColor(c.r, c.g, c.b, c.a)
-		elseif data.type == "custom" and not data.stop then
-			data.started = true
-			call_tag_func(self, data, "draw", data.x, data.y)
+		elseif chunk.type == "custom" and not chunk.stop then
+			chunk.started = true
+			call_tag_func(self, chunk, "draw", chunk.x, chunk.y)
 		end
 
 	end
 
-	for _, data in pairs(self.data) do
-		if data.type == "custom" then
-			if not data.stop and data.started and data.val.tag and data.val.tag.post then
-				data.started = false
-				call_tag_func(self, data, "post")
+	for _, chunk in ipairs(self.chunks) do
+		if chunk.type == "custom" then
+			if not chunk.stop and chunk.started and chunk.val.tag and chunk.val.tag.post then
+				chunk.started = false
+				call_tag_func(self, chunk, "post")
 			end
 		end
 	end
@@ -916,7 +1052,7 @@ function META:SetMaxWidth(w)
 end
 
 function _G.Markup(a, ...)
-	local self = {w = 0, h = 0, data = {}}
+	local self = {w = 0, h = 0, chunk = {}}
 	setmetatable(self, META)
 
 	if a then
@@ -925,3 +1061,5 @@ function _G.Markup(a, ...)
 
 	return self
 end
+
+include("tests/markup.lua")  
