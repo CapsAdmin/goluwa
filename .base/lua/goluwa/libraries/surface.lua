@@ -338,7 +338,7 @@ do -- fonts
 			surface.Color(1,1,1,1,1)	
 			
 			surface.SetWhiteTexture()
-			surface.Color(0, 1, 0, 0.6)  
+			surface.Color(0, 1, 0, 0.1)  
 			surface.DrawRect(X - info.border_2, Y - info.border_2, (data.w + info.border) * W, (data.h + info.border) * H)
 			surface.Color(1,1,1,1,1)
 		end
@@ -618,12 +618,11 @@ function surface.EndClipping()
 end
 
 function surface.WrapString(str, max_width)
-	local lines = {}
-
 	if not max_width or max_width == 0 then
-		lines[1] = str
-		return lines
+		return str:explode("")
 	end
+	
+	local lines = {}
 	
 	local last_pos = 0
 	local line_width = 0
@@ -755,6 +754,8 @@ do -- poly
 		poly.mesh:Draw()
 	end
 end
+
+include("markup.lua")
 
 
 return surface
