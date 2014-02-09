@@ -61,6 +61,8 @@ do -- texture object
 
 		ffi.fill(buffer, length, val)
 
+		gl.Enable(f.type)
+		
 		gl.BindTexture(f.type, self.id)			
 
 		gl.TexSubImage2D(
@@ -113,6 +115,8 @@ do -- texture object
 		level = level or 0
 		
 		local f = self.format		
+	
+		gl.Enable(f.type)
 	
 		gl.BindTexture(f.type, self.id)			
 	
@@ -238,7 +242,7 @@ do -- texture object
 		check(height, "number")
 		check(buffer, "nil", "cdata")
 		check(format, "table", "nil")
-		
+				
 		if width == 0 or height == 0 then
 			errorf("bad texture size (w = %i, h = %i)", 2, width, height)
 		end
@@ -278,6 +282,8 @@ do -- texture object
 			META
 		)
 		
+		gl.Enable(format.type)
+		
 		gl.BindTexture(format.type, self.id)
 
 		if gl.TexStorage2D then
@@ -313,6 +319,10 @@ do -- texture object
 		
 		if not SUPPRESS_GC then
 			utilities.SetGCCallback(self)
+		end
+		
+		if render.debug then
+			logf("creating texture w = %s h = %s buffer size = %s", w, h, utilities.FormatFileSize(buffer and ffi.sizeof(buffer) or 0))
 		end
 		
 		return self
