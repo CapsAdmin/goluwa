@@ -85,6 +85,8 @@ do
 	end
 
 	function aahh.StartDraw(pnl, clip)
+		if pnl.NoMatrix then return end
+		
 		local x, y = pnl:GetWorldPos():Unpack()
 						
 		surface.PushMatrix(x, y)
@@ -100,6 +102,7 @@ do
 	end
 
 	function aahh.EndDraw(pnl, clip)	
+		if pnl.NoMatrix then return end
 		surface.PopMatrix()
 	end
 	
