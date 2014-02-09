@@ -128,14 +128,18 @@ function steamapi.UpdateSupported(callback)
 	logn("[steamapi] fetching supported api..")
 	
 	luasocket.Get("http://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steamapi.key, function(data)
-		local tbl = json.decode(data.content)
-		
-		luadata.WriteFile("steamapi_supported.lua", tbl)
-		steamapi.supported = tbl
-		
-		logn("[steamapi] supported api updated")		
-		
-		callback()
+		if data.content then
+			local tbl = json.decode(data.content)
+			
+			luadata.WriteFile("steamapi_supported.lua", tbl)
+			steamapi.supported = tbl
+			
+			logn("[steamapi] supported api updated")		
+			
+			callback()
+		else
+			logn("[steamapi] could not fetch api, no content!")
+		end
 	end)
 end
 
