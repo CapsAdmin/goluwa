@@ -61,6 +61,15 @@ do
 	local last_h
 
 	function render.Start2D(x, y, w, h)		
+	
+		if not x and not y and not w and not h then
+			x = 0
+			y = 0
+			w, h = render.GetScreenSize()
+		else
+			render.PushWorldMatrix()
+		end
+	
 		cam.x = x or cam.x
 		cam.y = y or cam.y
 		cam.w = w or cam.w
@@ -89,13 +98,16 @@ do
 			last_h = cam.h
 		end
 		
-		gl.Disable(e.GL_DEPTH_TEST)		
-		
-		render.PushWorldMatrix()
+		gl.Disable(e.GL_DEPTH_TEST)				
+	end
+	
+	function render.Reset2D()
+		render.Start2D()
 	end
 	
 	function render.End2D()
 		render.PopWorldMatrix()
+		render.Reset2D()
 	end
 		
 	local last_farz
@@ -169,16 +181,16 @@ function render.SetupView2D(pos, ang, zoom)
 	
 	if pos then
 		view:Translate(pos.x, pos.y, 0)
+	end	
+	if zoom then
+		view:Scale(zoom, zoom, 1)
 	end
 
 	if ang then
 		-- source engine style camera angles
 		view:Rotate(ang, 0, 0, 1)
 	end
-	
-	if zoom then
-		view:Scale(zoom, zoom, 1)
-	end
+
 end
 
 -- world
@@ -188,9 +200,8 @@ do
 		local i = 0
 		
 		function render.PushWorldMatrix(pos, ang, scale)
-			stack[i] = render.matrices.world	
-			i = i + 1
-			render.matrices.world = Matrix44() * stack[i-1]
+			stack[i] = render.matrices.world or Matrix44()
+			render.matrices.world = Matrix44() * stack[i]
 			
 			-- source engine style world orientation
 			if pos then
@@ -206,7 +217,8 @@ do
 			if scale then 
 				render.Scale(scale.x, scale.y, scale.z) 
 			end	
-
+	
+			i = i + 1
 		end
 		
 		function render.PushWorldMatrixEx(mat)
