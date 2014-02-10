@@ -1,5 +1,37 @@
+-- finihs caret movement port from text iput
+
 local META = {}
 META.__index = META
+
+function _G.Markup(a, ...)
+	local self = {w = 0, h = 0, chunk = {}}
+	setmetatable(self, META)
+
+	if a then
+		self:SetTable({a, ...})
+	end
+
+	return self
+end
+
+class.GetSet(META, "Table", {})
+class.GetSet(META, "MaxWidth", 500)
+class.GetSet(META, "EditMode", false)
+ 
+function META:SetEditMode(b)
+	self.EditMode = b
+	self.need_layout = true
+end
+
+function META:SetTable(tbl)
+	self.Table = tbl
+	self.need_layout = true
+end
+
+function META:SetMaxWidth(w)
+	self.MaxWidth = w
+	self.need_layout = true
+end
 
 -- these are used by EXT.SetColor, EXT.SetFont etc
 local FONT = "markup"
@@ -736,10 +768,6 @@ function META:Invalidate()
 			EXT.SetFont(chunk.val)
 		elseif chunk.type == "string" then
 			local w, h = EXT.GetTextSize(chunk.val)
-
-			if chunk.val:trim() == "" then
-				h = 0
-			end
 			
 			chunk.w = w
 			chunk.h = h
@@ -798,7 +826,6 @@ function META:Invalidate()
 			current_y = current_y + chunk_height
 		end
 		
-		chunk.newlined = newline
 		chunk.x = current_x
 		chunk.y = current_y
 
@@ -929,7 +956,46 @@ function META:Invalidate()
 		local height = 0
 		local last_y 
 		
+		local font = "default"
+		local color = Color(1,1,1,1)
+		
+		local function build_chars(chunk)
+			if not chunk.chars then
+				EXT.SetFont(chunk.font)
+				chunk.chars = {}
+				local width = 0
+				for i, char in ipairs(utf8.totable(chunk.val)) do
+					local char_width, char_height = surface.GetTextSize(char)
+					local x = chunk.x + width
+					local y = chunk.y
+					
+					chunk.chars[i] = {
+						x = x, 
+						y = chunk.y, 
+						w = char_width,  
+						h = char_height,
+						right = x + char_width,
+						top = y + char_height,
+						char = char,
+						i  = i,
+						chunk = chunk,
+					}
+					width = width + char_width
+				end
+			end
+		end
+		
 		for _, chunk in ipairs(chunks) do
+			
+			if chunk.type == "font" then
+				font = chunk.val
+			elseif chunk.type == "color" then
+				color = chunk.val
+			elseif chunk.type == "string" then
+				chunk.font = font
+				chunk.color = color
+			end
+		
 			local w = chunk.x + chunk.w
 			if w > width then
 				width = w
@@ -946,6 +1012,7 @@ function META:Invalidate()
 			end
 			
 			chunk.line = line
+			chunk.build_chars = build_chars
 		end
 		
 		self.lines = line
@@ -968,6 +1035,10 @@ function META:Invalidate()
 				
 		for _, chunk in ipairs(chunks) do
 			chunk.y = chunk.y - chunk.h + h
+			
+			-- mouse testing
+			chunk.right = chunk.x + chunk.w
+			chunk.top = chunk.y + chunk.h			
 		end
 	end
 
@@ -994,72 +1065,692 @@ function META:Invalidate()
 		chunk.message_height = h
 	end
 	
+	self.chars = nil	
+	
+	if self.EditMode then		
+		self.chars = {}
+		self.lines = {}
+		
+		local line = 1
+		local line_pos = 1
+		local line_str = {}
+		
+		for i, chunk in ipairs(chunks) do	
+			if chunk.type == "string" then
+				chunk:build_chars()
+				
+				for i2, char in pairs(chunk.chars) do
+					table.insert(self.chars, {
+						chunk = chunk, 
+						i = i, 
+						str = char.char, 
+						data = char, 
+						y = line, 
+						x = line_pos,
+					})
+					
+					line_pos = line_pos + 1
+					
+					table.insert(line_str, char.char)
+				end
+				
+				table.insert(self.lines, table.concat(line_str, ""))
+				
+			elseif chunk.type == "newline" then
+				table.insert(self.chars, {chunk = chunk, i = i, str = "\n", data = chunk, y = line, x = line_pos})
+				line = line + 1
+				line_pos = 0
+			end
+		end
+	end
+	
 	self.chunks = chunks
 end
 
-function META:Draw()
-	-- reset font and color for every line
-	EXT.SetFont(self.fonts.default.name)
-	EXT.SetColor(255, 255, 255, 255)
-	EXT.SetColor(255, 255, 255, 255)
+function META:GetSelectedString(skip_tags)
 
+	local out = {}
+
+	local START = self.select_start
+	local END = self.select_end
+
+	if START and END then
+		if self.EditMode then
+			for i = START.i, END.i do
+				local char = self.chars[i]
+				local data = char.data
+				table.insert(out, char.str) 
+			end
+		else		
+			local last_font  
+			local last_color
+				
+			for i, chunk in ipairs(self.chunks) do
+				if i >= START.i and i <= END.i then
+					if chunk.type == "string" then
+						-- this will ensure a clean output
+						-- but maybe this should be cleaned in the invalidate function instead?
+						if last_font ~= chunk.font then
+							table.insert(out, ("<font=%s>"):format(chunk.font))
+							last_font = chunk.font
+						end
+						
+						if last_color ~= chunk.color then
+							table.insert(out, ("<color=%s,%s,%s,%s>"):format(math.round(chunk.color.r, 2), math.round(chunk.color.g, 2), math.round(chunk.color.b, 2), math.round(chunk.color.a, 2)))
+							last_color = chunk.color
+						end
+					
+						if START.char and END.char and START.i == END.i then
+							for i, char in ipairs(START.char.chunk.chars) do
+								if i >= START.char.i and i <= END.char.i then
+									table.insert(out, char.char)
+								end
+							end
+							break
+						else		
+							if i == START.i then
+								if START.char then
+									for i, char in ipairs(START.char.chunk.chars) do
+										if i >= START.char.i then
+											table.insert(out, char.char)
+										end
+									end
+								end
+							elseif i == END.i then	
+								if END.char then
+									for i, char in ipairs(END.char.chunk.chars) do
+										if i < END.char.i then
+											table.insert(out, char.char)
+										end
+									end
+								end
+							elseif i > START.i and i < END.i and START.i ~= END.i then
+								table.insert(out, chunk.val)
+							end
+						end
+					elseif chunk.type == "newline" then
+						table.insert(out, "\n")
+					elseif chunk.type == "custom" then
+						if chunk.val.type == "texture" then
+							table.insert(out, ("<texture=%s>"):format(chunk.val.args[1]))
+						end
+					end
+				end
+			end
+		end
+	end
+	
+	return table.concat(out, "")
+end
+ 
+function META:CaretFromPixels(x, y)
+	-- todo: 
+	-- select closest to middle of char
+	-- select closest char when going out of bounds
+		
 	local w, h = surface.GetScreenSize()
-
-	for i, chunk in ipairs(self.chunks) do
-		local x = chunk.x
-		local y = chunk.y
-
-		if x > w then break end
-		if y > h then break end
-
-		if chunk.type == "font" then
-			EXT.SetFont(chunk.val)
-		elseif chunk.type == "string" then
-			EXT.SetTextPos(chunk.x, chunk.y)
-			EXT.DrawText(chunk.val)
-		elseif chunk.type == "color" then
-			local c = chunk.val
+	
+	if self.EditMode then
+				
+		for i, char in ipairs(self.chars) do
+			local data = char.data
 			
-			EXT.SetColor(c.r, c.g, c.b, c.a)
-		elseif chunk.type == "custom" and not chunk.stop then
-			chunk.started = true
-			call_tag_func(self, chunk, "draw", chunk.x, chunk.y)
+			if 
+				x > data.x and y > data.y and
+				x < data.right and y < data.top
+			then
+				return {
+					x = data.x,
+					y = data.y,
+					h = data.h,
+					i = i,
+					char = char,
+				}
+			end
+		end
+		
+	else
+	
+		local chunk = self.chunks[#self.chunks]
+		
+		for i, chunk in ipairs(self.chunks) do	
+			if chunk.x > w then break end
+			if chunk.y > h then break end
+		
+			if 
+				x > chunk.x and y > chunk.y and
+				x < chunk.right and y < chunk.top
+			then			
+				if chunk.type == "string" then
+					
+					chunk:build_chars()
+					
+					for _, char in ipairs(chunk.chars) do
+						if 
+							x > char.x and y > char.y and
+							x < char.right and y < char.top
+						then
+							return {
+								x = char.x,
+								y = char.y,
+								h = char.h,
+								i = i,
+								char = char,
+							}
+						end
+					end
+				else
+					return {
+						x = chunk.x,
+						y = chunk.y,
+						h = chunk.h,
+						i = i
+					}
+				end
+			end
+		end	
+	end
+end
+
+function META:OnMouseInput(button, press, x, y)	
+	if press then
+		self.select_start = self:CaretFromPixels(x, y)
+		self.select_end = nil
+		self.is_selecting = true
+	else
+		self.is_selecting = false
+	end
+end
+
+do -- caret movement
+	local is_caret_move = {
+		up = true,
+		down = true,
+		left = true,
+		right = true,
+		
+		home = true,
+		["end"] = true,
+	}
+	
+	
+	function META:DeleteSelection()
+		if self.select_start and self.select_end then
+			local start_pos = self:GetSubPosFromPos(self.select_start)
+			local end_pos = self:GetSubPosFromPos(self.select_end)
+			
+			if start_pos > end_pos then
+				local temp = end_pos
+				end_pos = start_pos
+				start_pos = temp
+				
+				self.caret_pos = self.select_end
+			else
+				self.caret_pos = self.select_start
+			end
+
+			self.Text = self.Text:usub(1, start_pos) .. self.Text:usub(end_pos + 1)
+
+			self.select_start = nil
+			self.select_end = nil
+			
+			self:InvalidateText()
+
+			return true
 		end
 
+		return false
 	end
 
-	for _, chunk in ipairs(self.chunks) do
-		if chunk.type == "custom" then
-			if not chunk.stop and chunk.started and chunk.val.tag and chunk.val.tag.post then
-				chunk.started = false
-				call_tag_func(self, chunk, "post")
+	function META:GetSubPosFromPos(x, y)
+
+		if x == math.huge and y == math.huge then
+			return #self.chars
+		end
+
+		if x == 0 and y == 0 then
+			return 0
+		end
+
+		for sub_pos, char in pairs(self.chars) do
+			if char.x == x and char.y == y then
+				return sub_pos
+			end
+		end
+
+		return 0
+	end
+
+	function META:InsertString(str, skip_move)
+		local sub_pos = self:GetSubPosFromPos(self.CaretPos)
+
+		self:DeleteSelection()
+
+		if #self.Text == 0 then
+			self.Text = self.Text .. str
+		elseif sub_pos == #self.Text then
+			self.Text = self.Text .. str
+		else
+			self.Text = self.Text:usub(1, sub_pos) .. str .. self.Text:usub(sub_pos + 1)
+		end
+
+		self:InvalidateText()
+
+		if not skip_move then
+			self.CaretPos.x = self.CaretPos.x + str:ulength()
+			self.CaretPos.y = self.CaretPos.y + str:count("\n")
+			self.real_x = self.CaretPos.x
+			self:SetCaretPos(self.CaretPos)
+		end		
+	end
+	
+	function META:OnKeyInput(button, press)
+
+		if not self.selected_line or not self.selected_char then
+			self:SelectPos(Vec2(0, 0))
+		end
+
+		if is_caret_move[key] then
+			self.shift_selecting = input.IsKeyDown("left_shift")
+			self:StartSelect(self.CaretPos:Copy())
+		end
+
+		if press then
+			local line = self.selected_line.str
+			local sub_pos = self:GetSubPosFromPos(self.CaretPos)
+			local ctrl_down = input.IsKeyDown("left_control") or input.IsKeyDown("right_control")
+
+			do -- special characters
+				if key == "tab" then
+					if input.IsKeyDown("left_shift") then 
+						if self.select_end and self.select_start and self.select_start.y ~= self.select_end.y then
+							self.select_start.x = 0
+							self.select_end.x = math.huge
+							
+							local select_start = self.select_start
+							local select_end = self.select_end
+
+							local str = self:GetSelection()
+							self.pause_invalidate = true
+							self:DeleteSelection()
+							self.pause_invalidate = false
+							
+							str = str:gsub("^\t", "")
+							local str, count = str:gsub("\n\t\t", "\n\t")
+							if count == 0 then
+								str = str:gsub("\n\t", "\n") 
+							end 
+							self:InsertString(str)
+												 
+							self.select_start = select_start
+							self.select_end = select_end
+							self.mouse_selecting = false
+						else
+							if self.Text:usub(sub_pos, sub_pos) == "\t" then
+								self:OnKeyInput("backspace", true)
+							end
+						end
+					else
+						if self.select_end and self.select_start and self.select_start.y ~= self.select_end.y then
+							self.select_start.x = 0
+							self.select_end.x = math.huge
+							
+							local select_start = self.select_start
+							local select_end = self.select_end
+												
+							local str = self:GetSelection()
+							self.pause_invalidate = true
+							self:DeleteSelection()
+							self.pause_invalidate = false
+							str = "\t" .. str:gsub("\n", "\n\t")
+							self:InsertString(str)
+												
+							self.select_start = select_start
+							self.select_end = select_end
+							self.mouse_selecting = false
+						else
+							self:OnCharInput("\t")
+						end
+					end
+				elseif key == "enter" then
+					if self.MultiLine then
+						local space = line:match("^(%s+)") or ""
+
+						self:InsertString("\n" .. space, true)
+						self.CaretPos.x = #space
+						self.real_x = #space
+						self.CaretPos.y = self.CaretPos.y + 1
+					elseif self.OnEnter then
+						self:OnEnter(self.Text)
+					end
+				end
+			end
+
+			do -- clipboard
+				if key == "c" and ctrl_down then
+					system.SetClipboard(self:GetSelection())
+				elseif key == "x" and ctrl_down then
+					system.SetClipboard(self:GetSelection())
+					self:DeleteSelection()
+				elseif key == "v" and ctrl_down then
+					local str = system.GetClipboard()
+
+					str = str:gsub("\r", "\n")
+					str = str:gsub("\n\n", "\n")
+
+					if #str > 0 then
+						self:InsertString(str)
+					end
+				end
+			end
+
+			do -- deletion
+				if key == "backspace" then
+					local prev_line = self.markup.data[self.selected_line.pos - 1] or ""
+
+					if not self:DeleteSelection() then
+						if ctrl_down then
+							local pos = self.CaretPos:Copy()
+							
+							self:StartSelect(pos)
+							pos = pos:Copy()
+							pos.x = self:FindNearestFromCaret("left") 
+							self:EndSelect(pos)
+							self:DeleteSelection() 
+							
+							if pos.x <= 0 then
+								self.CaretPos.y = self.CaretPos.y - 1
+								local line = self.lines[self.CaretPos.y] or ""
+								self.CaretPos.x = #line
+								local sub_pos = self:GetSubPosFromPos(self.CaretPos)
+								self.Text = self.Text:usub(1, sub_pos) .. self.Text:usub(sub_pos + 2)
+							end
+							
+							self.real_x = self.CaretPos.x - 1
+						else 
+							if self.CaretPos.x <= 0 then
+								self.CaretPos.y = self.CaretPos.y - 1
+								local line = self.lines[self.CaretPos.y] or ""
+								self.CaretPos.x = line:ulength() + 1
+							end
+							self.Text = self.Text:usub(1, sub_pos - 1) .. self.Text:usub(sub_pos + 1)
+							self.CaretPos.x = self.CaretPos.x - 1
+						end					
+					end
+
+					self:InvalidateText()
+				elseif key == "delete" then
+
+					if not self:DeleteSelection() then				
+						if ctrl_down then 
+							local pos = self.CaretPos:Copy() 
+							
+							self:StartSelect(pos)
+							pos = pos:Copy()
+							pos.x = self:FindNearestFromCaret("right")
+							self:EndSelect(pos) 
+							self:DeleteSelection()
+													
+							if pos.x > #line then
+								local start_pos, end_pos = self.Text:usub(sub_pos + 2):find("%s*") 
+								if end_pos then
+									self.Text = self.Text:usub(1, sub_pos) .. self.Text:usub(sub_pos + 2 + end_pos)
+								end
+								self.real_x = 0
+							end
+						else
+							self.Text = self.Text:usub(1, sub_pos) .. self.Text:usub(sub_pos + 2)
+						end
+					end
+
+					self:InvalidateText()
+				end
+			end
+
+			do -- caret movement
+				if key == "right" then
+					if ctrl_down then
+						self.CaretPos.x = self:FindNearestFromCaret("right")
+					else
+						self.CaretPos.x = self.CaretPos.x + 1
+					end
+
+					self.real_x = self.CaretPos.x
+				elseif key == "left" then
+					if ctrl_down then
+						self.CaretPos.x = self:FindNearestFromCaret("left")
+						
+						if self.CaretPos.x <= 0 then
+							self.CaretPos.y = self.CaretPos.y - 1
+							local line = self.lines[self.CaretPos.y] or ""
+							self.CaretPos.x = #line
+						end
+					else
+						self.CaretPos.x = self.CaretPos.x - 1
+					end
+
+					self.real_x = self.CaretPos.x
+				end
+
+				if key == "up" then
+					self.CaretPos.y = self.CaretPos.y - 1
+					self.CaretPos.x = self.real_x
+				elseif key == "down" then
+					self.CaretPos.y = self.CaretPos.y + 1
+					self.CaretPos.x = self.real_x
+				end
+
+				if key == "home" then
+					local pos = (select(2, line:find("^%s+(.)")) or 1) - 1
+
+					if self.CaretPos.x == pos then
+						pos = 0
+					end
+
+					self.CaretPos.x = pos
+					self.real_x = self.CaretPos.x
+				elseif key == "end" then
+					-- this should be #line if you compare to
+					-- scintillia but in a way it makes sense to have it like this
+					self.CaretPos.x = #line
+					self.real_x = self.CaretPos.x
+				end
+
+				local x = self.CaretPos.x
+
+				self:SetCaretPos(self.CaretPos)
+
+				-- if we're at the end of the line, got to the next
+				if x ~= self.CaretPos.x and #self.lines > 1 then
+					if key == "right" then					
+						-- if ctrl is down find the next space
+						if ctrl_down then
+							local line = self.lines[self.CaretPos.y+1] or ""
+							self.CaretPos.x = (select(2, line:find("%s-%S", 0)) or 1) - 1
+						else				
+							self.CaretPos.x = 0
+						end
+						self.CaretPos.y = self.CaretPos.y + 1
+						self:SetCaretPos(self.CaretPos)
+					elseif key == "left" then
+						self.CaretPos.x = math.huge
+						self.CaretPos.y = self.CaretPos.y - 1
+						self:SetCaretPos(self.CaretPos)
+					end
+				end
+			end
+			
+			if is_caret_move[key] then
+				if not input.IsKeyDown("left_shift") then
+					self:Unselect()
+				end
+			end
+			
+			do -- other shortcuts
+				if  ctrl_down then
+					if key == "a" then
+						self:Unselect()
+						self:SetCaretPos(Vec2(0,0))
+						self:StartSelect(Vec2(0,0))
+						self:EndSelect(Vec2(math.huge, math.huge))
+					else
+						local ok = false
+						self.history_index = self.history_index or 0
+						
+						if key == "z" then
+							self.history_index = math.clamp(self.history_index + 1, 1, #self.history)
+							ok = true
+						elseif key == "y" then
+							self.history_index = math.clamp(self.history_index - 1, 1, #self.history)
+							ok = true
+						end
+						
+						if ok then			
+							local data = self.history[self.history_index]
+							
+							if data then 
+								self.suppress_history = true
+								self:SetText(data.str)
+								self.suppress_history = nil
+								self:InvalidateText()
+								self:SetCaretPos(data.pos)
+							end
+						end
+					end
+				end
+			end
+			
+			self:SetCaretPos(self.CaretPos)
+					
+			if self.OnUnhandledKey then
+				self:OnUnhandledKey(key)	
 			end
 		end
 	end
 end
 
-class.GetSet(META, "Table", {})
-class.GetSet(META, "MaxWidth", 500)
+do -- drawing
 
-function META:SetTable(tbl)
-	self.Table = tbl
-	self:Invalidate()
-end
+	function META:Draw()
+		if self.need_layout then
+			self:Invalidate()
+			self.need_layout = false
+		end
 
-function META:SetMaxWidth(w)
-	self.MaxWidth = w
-	self:Invalidate()
-end
+		-- reset font and color for every line
+		EXT.SetFont(self.fonts.default.name)
+		EXT.SetColor(255, 255, 255, 255)
+		EXT.SetColor(255, 255, 255, 255)
 
-function _G.Markup(a, ...)
-	local self = {w = 0, h = 0, chunk = {}}
-	setmetatable(self, META)
+		local w, h = surface.GetScreenSize()
+			
+		for i, chunk in ipairs(self.chunks) do
 
-	if a then
-		self:SetTable({a, ...})
+			if chunk.x > w then break end
+			if chunk.y > h then break end
+			
+			if chunk.type == "font" then
+				EXT.SetFont(chunk.val)
+			elseif chunk.type == "string" then
+				EXT.SetTextPos(chunk.x, chunk.y)
+				EXT.DrawText(chunk.val)			
+			elseif chunk.type == "color" then
+				local c = chunk.val
+				
+				EXT.SetColor(c.r, c.g, c.b, c.a)
+			elseif chunk.type == "custom" and not chunk.stop then
+				chunk.started = true
+				call_tag_func(self, chunk, "draw", chunk.x, chunk.y)
+			end
+		end
+
+		for _, chunk in ipairs(self.chunks) do
+			if chunk.x > w then break end
+			if chunk.y > h then break end
+			
+			if chunk.type == "custom" then
+				if not chunk.stop and chunk.started and chunk.val.tag and chunk.val.tag.post then
+					chunk.started = false
+					call_tag_func(self, chunk, "post")
+				end
+			end
+		end
+		
+		self:DrawSelection()
 	end
 
-	return self
+	function META:DrawSelection()
+
+		if self.is_selecting then
+			local caret = self:CaretFromPixels(window.GetMousePos():Unpack())
+			if caret then
+				self.select_end = caret
+			end
+		end
+					
+		local START = self.select_start
+		local END = self.select_end
+			
+		if START and END then
+		
+			if START.i == END.i and not self.is_selecting then 
+				self.select_end = nil 
+			return end
+			
+			surface.SetWhiteTexture()
+			surface.Color(1, 1, 1, 0.5)
+			
+			if self.EditMode then	
+				for i = START.i, END.i do
+					local char = self.chars[i]
+					local data = char.data
+					surface.DrawRect(data.x, data.y, data.w, data.h)
+				end
+			else			
+				for i, chunk in ipairs(self.chunks) do
+					if START.char and END.char and START.i == END.i then
+						for i, char in ipairs(START.char.chunk.chars) do
+							if i >= START.char.i and i <= END.char.i then
+								surface.DrawRect(char.x, char.y, char.w, char.h)
+							end
+						end
+						break
+					else		
+						if i == START.i then
+							if START.char then
+								for i, char in ipairs(START.char.chunk.chars) do
+									if i >= START.char.i then
+										surface.DrawRect(char.x, char.y, char.w, char.h)
+									end
+								end
+							else
+								surface.DrawRect(chunk.x, chunk.y, chunk.w, chunk.h)
+							end
+						elseif i == END.i then	
+							if END.char then
+								for i, char in ipairs(END.char.chunk.chars) do
+									if i < END.char.i then
+										surface.DrawRect(char.x, char.y, char.w, char.h)
+									end
+								end
+							else
+								surface.DrawRect(chunk.x, chunk.y, chunk.w, chunk.h)
+							end
+						elseif i > START.i and i <= END.i and START.i ~= END.i then
+							surface.DrawRect(chunk.x, chunk.y, chunk.w, chunk.h)
+						end
+					end
+				end
+			end
+		end
+			
+		if self.caret_pos then
+			surface.Color(1,1,1,timer.GetTime()%0.5 > 0.25 and 1 or 0)
+			surface.DrawRect(self.caret_pos.x, self.caret_pos.y, 2, self.caret_pos.h)
+		end
+	end
+
 end
+
 
 include("tests/markup.lua")  
