@@ -18,6 +18,20 @@ function table.multiremove(tbl, locations)
 	return tbl
 end
 
+function table.fixindices(tbl)
+	local temp = {}
+	local i = 1
+	for k, v in pairs(tbl) do
+		temp[i] = v
+		tbl[k] = nil
+		i = i + 1
+	end
+	
+	for k, v in ipairs(temp) do
+		tbl[k] = v
+	end
+end
+
 function table.hasvalue(tbl, val)
 	for k,v in pairs(tbl) do
 		if v == val then
