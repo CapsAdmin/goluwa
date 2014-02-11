@@ -363,9 +363,11 @@ do -- fonts
 		if not data then return 0, 0 end
 		
 		if str == " " then
-			return (ft.current_font.info.size / 2) * W, ft.current_font.info.size * H
+			local _, h = surface.GetTextSize("|")
+			return (ft.current_font.info.size / 2) * W, h
 		elseif str == "\t" then
-			return (ft.current_font.info.size * 2) * W, (ft.current_font.info.size * H)
+			local _, h = surface.GetTextSize("|")
+			return (ft.current_font.info.size * 2) * W, h
 		end
 	
 		return data.w * W, data.h * H
