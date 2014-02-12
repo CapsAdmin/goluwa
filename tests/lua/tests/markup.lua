@@ -56,48 +56,68 @@ local function syntax_process(str)
 		if ls.token == "TK_eof" then break end
 	end
 
-	table.insert(out, str:sub(last_pos-1, last_pos))
+	out[#out] = out[#out] .. str:sub(last_pos-1, last_pos)
 	
 	--table.print(syntax.)
 	
 	return out
 end 
-
-local str = vfs.Read("lua/goluwa/libraries/markup.lua"):sub(0, 505)
  
-local m = Markup()
-m:SetEditMode(true)
-     
-m:SetTable(syntax_process(str))
+local str = vfs.Read("lua/goluwa/libraries/markup.lua"):sub(0, 503)
+  
+if markup_frame then markup_frame:Remove() end
+  
+local frame = aahh.Create("frame")
+local panel = frame:CreatePanel("panel")
+panel:Dock("fill")
 
-m.OnTextChanged = function(self, str)
+frame:SetSize(500, 500)
+ 
+local markup = Markup()
+markup:SetEditMode(true)
+     
+markup:SetTable(syntax_process(str))
+
+markup.OnTextChanged = function(self, str)
 	self:SetTable(syntax_process(str))
+end 
+
+function panel:OnDraw(size)
+	surface.Color(0.1, 0.1, 0.1, 1)
+	surface.DrawRect(0,0, size:Unpack())
+	-- this is needed for proper mouse coordinates
+	markup:UpdatePos(self:GetWorldPos():Unpack())
+	markup:Draw(x, y, size:Unpack())
 end
 
-M = m
+function panel:OnRequestLayout()
+	markup:SetMaxWidth(self:GetWidth()) 
+end
 
-event.AddListener("OnDraw2D", "markup", function()
+function panel:OnMouseInput(button, press)
+	markup:OnMouseInput(button, press, window.GetMousePos():Unpack())
+end
+
+function panel:OnKeyInput(key, press)
 	
-	if input.IsMouseDown("button_2") then
-		local x = window.GetMousePos().x
+	if key == "left_shift" or key == "right_shift" then  markup:SetShiftDown(press) end
+	if key == "left_control" or key == "right_control" then  markup:SetControlDown(press) end
+	
+	if press then
+		markup:OnKeyInput(key)
 		
-		m:SetMaxWidth(x) 
-		
-		surface.Color(1,1,1,1)
-		surface.DrawLine(x, 0, x, 1000)
+		if markup.ControlDown and key == "z" then
+			include("tests/markup.lua")
+		end
 	end
+end
 
-	m:Draw()
-end)     
+function panel:OnCharInput(char)
+	markup:OnCharInput(char)
+end
 
-event.AddListener("OnMouseInput", "markup", function(button, press)
-	m:OnMouseInput(button, press, window.GetMousePos():Unpack())
-end)
+panel:MakeActivePanel()
+frame:RequestLayout(true) 
 
-event.AddListener("OnKeyInput", "markup", function(key, press)
-	m:OnKeyInput(key, press)
-end)
-
-event.AddListener("OnChar", "markup", function(char)
-	m:OnCharInput(char)
-end)
+M = markup
+markup_frame = frame
