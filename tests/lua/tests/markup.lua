@@ -1,6 +1,6 @@
 local lex_setup = require("langtoolkit.lexer")
 local reader = require("langtoolkit.reader")
-
+ 
 local colors = {
 	default = Color(255, 255, 255),
 	keyword = Color(127, 159, 191),
@@ -31,6 +31,15 @@ local translate = {
 }
 
 local function syntax_process(str)
+	do 
+	str = str:explode(" ")
+	local lol = {}
+	for k,v in pairs(str) do	
+		table.insert(lol,  HSVToColor(math.random(), 0.75, 1))
+		table.insert(lol, v)
+		table.insert(lol, " ")
+	end
+	return lol end   
 
 	reader.string_init(str)
 	local ls = lex_setup(reader.string, str)
@@ -43,7 +52,6 @@ local function syntax_process(str)
 		 
 		if not ok then
 			local tbl = msg:explode("\n")
-			print(tbl[#tbl])
 			table.insert(out, str:sub(-ls.p))
 			break
 		end
@@ -61,11 +69,11 @@ local function syntax_process(str)
 	--table.print(syntax.)
 	
 	return out
-end 
- 
-local str = vfs.Read("lua/goluwa/libraries/markup.lua"):sub(0, 503)
+end  
   
-if markup_frame then markup_frame:Remove() end
+local str = vfs.Read("lua/goluwa/libraries/markup.lua")
+  
+if markup_frame then markup_frame:Remove() end 
   
 local frame = aahh.Create("frame")
 local panel = frame:CreatePanel("panel")
@@ -80,7 +88,11 @@ markup:SetTable(syntax_process(str))
 
 markup.OnTextChanged = function(self, str)
 	self:SetTable(syntax_process(str))
-end 
+end
+
+markup.OnInvalidate = function()
+	--markup:SetTable()
+end
 
 function panel:OnDraw(size)
 	surface.Color(0.1, 0.1, 0.1, 1)
