@@ -19,6 +19,21 @@ function string.lengthsplit(str, len)
 	return {str}
 end
 
+function string.getchartype(char)
+
+	if char:find("%p") and char ~= "_" then
+		return "punctation"
+	elseif char:find("%s") then
+		return "space"
+	elseif char:find("%d") then
+		return "digit"
+	elseif char:find("%a") or char == "_" then
+		return "letters"
+	end
+	
+	return "unknown"
+end
+
 function string.safeformat(str, ...)
 	local count = select(2, str:gsub("(%%)", ""))
 	local copy = {}
