@@ -31,16 +31,6 @@ local translate = {
 }
 
 local function syntax_process(str)
-	do 
-	str = str:explode(" ")
-	local lol = {}
-	for k,v in pairs(str) do	
-		table.insert(lol,  HSVToColor(math.random(), 0.75, 1))
-		table.insert(lol, v)
-		table.insert(lol, " ")
-	end
-	return lol end   
-
 	reader.string_init(str)
 	local ls = lex_setup(reader.string, str)
 
@@ -59,7 +49,7 @@ local function syntax_process(str)
 		table.insert(out, translate[ls.token] or colors.keyword)
 		table.insert(out, str:sub(last_pos-1, ls.p-2))
 		
-		last_pos = ls.p
+		last_pos = ls.p 
 		
 		if ls.token == "TK_eof" then break end
 	end
@@ -71,9 +61,10 @@ local function syntax_process(str)
 	return out
 end  
   
-local str = vfs.Read("lua/goluwa/libraries/markup.lua")
+local str = vfs.Read("lua/goluwa/libraries/markup.lua"):sub(0, 1000)
   
-if markup_frame then markup_frame:Remove() end 
+if markup_frame and markup_frame:IsValid()
+ then markup_frame:Remove() end 
   
 local frame = aahh.Create("frame")
 local panel = frame:CreatePanel("panel")
@@ -82,12 +73,13 @@ panel:Dock("fill")
 frame:SetSize(500, 500)
  
 local markup = Markup()
-markup:SetEditMode(true)
-     
+markup.chunk_fix = true
 markup:SetTable(syntax_process(str))
 
 markup.OnTextChanged = function(self, str)
-	self:SetTable(syntax_process(str))
+	if not markup.chunk_fix then
+		self:SetTable(syntax_process(str))
+	end
 end
 
 markup.OnInvalidate = function()
@@ -98,7 +90,7 @@ function panel:OnDraw(size)
 	surface.Color(0.1, 0.1, 0.1, 1)
 	surface.DrawRect(0,0, size:Unpack())
 	-- this is needed for proper mouse coordinates
-	markup:UpdatePos(self:GetWorldPos():Unpack())
+	local x, y = self:GetWorldPos():Unpack()
 	markup:Draw(x, y, size:Unpack())
 end
 
