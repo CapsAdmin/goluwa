@@ -1,22 +1,25 @@
+ 
 --[[ 
 	todo:
 		caret real_x should prioritise pixel width
 		y axis caret movement when the text is being wrapped
-		partial chunk rebuild
-		better non edit mode select
+		divide this up in cells
+		sometimes when pressing enter something is out of balance
 ]]
 
 if ELIAS then
-	timer.Delay(0, function()
-		include("tests/markup.lua")
-	end)
+	if window and #window.GetSize() > 5 then 
+		timer.Delay(0, function()
+			include("tests/markup.lua")
+		end)
+	end
 end
 
 local META = {}
 META.__index = META
 
 function _G.Markup(a, ...)
-	local self = {w = 0, h = 0, chunks = {}}
+	local self = {w = 0, h = 0, chunks = {}, current_x = 0, current_y = 0, current_width = 0, current_height = 0}
 	setmetatable(self, META)
 
 	if a then
@@ -28,15 +31,9 @@ end
 
 class.GetSet(META, "Table", {})
 class.GetSet(META, "MaxWidth", 500)
-class.GetSet(META, "EditMode", false)
 class.GetSet(META, "ControlDown", false)
 class.GetSet(META, "LineWrap", true)
 class.GetSet(META, "ShiftDown", false)
-
-function META:SetEditMode(b)
-	self.EditMode = b
-	self.need_layout = true
-end
 
 function META:SetMaxWidth(w)
 	self.MaxWidth = w
@@ -46,11 +43,6 @@ end
 function META:SetLineWrap(b)
 	self.LineWrap = b
 	self.need_layout = true
-end
-
-function META:UpdatePos(x, y)
-	self.wx = x
-	self.wy = y
 end
 
 -- these are used by EXT.SetColor, EXT.SetFont etc
@@ -157,7 +149,7 @@ do -- tags
 
 		META.tags.physics =
 		{
-			arguments = {1, 0, 0, 0, 0.99, 0.1},
+			arguments = {1, 0, 0, 0, 0.998, 0.1},
 
 			pre = function(markup, self, gx, gy, vx, vy, drag, rand_mult)
 				local part = {}
@@ -166,7 +158,7 @@ do -- tags
 				{
 					pos = {x = 0, y = 0},
 					vel = {x = vx, y = vy},
-					siz = 10,
+					siz = {w = self.tag_width, h = self.tag_height},
 					rand_mult = rand_mult,
 					drag = drag,
 				}
@@ -179,17 +171,19 @@ do -- tags
 
 				local part = self.part
 
-				local cx = x
-				local cy = y - 10
-
-				local W, H = markup.MaxWidth/2, EXT.GetScreenHeight()
-
-				W = W - cx
-				H = H - cy
+				local W, H = markup.current_width, markup.current_height
+				W = W - self.x
+				H = H - self.y + self.line_height
+				
+				local xvel = (self.last_world_x or markup.current_x) - markup.current_x
+				local yvel = (self.last_world_y or markup.current_y) - markup.current_y
+				
+				self.last_world_x = markup.current_x or 0
+				self.last_world_y = markup.current_y or 0
 
 				-- random velocity for some variation
-				part.vel.y = part.vel.y + gravity_y + (EXT.Rand(-1,1) * rand_mult)
-				part.vel.x = part.vel.x + gravity_x + (EXT.Rand(-1,1) * rand_mult)
+				part.vel.y = part.vel.y + gravity_y + (EXT.Rand(-1,1) * rand_mult) + yvel
+				part.vel.x = part.vel.x + gravity_x + (EXT.Rand(-1,1) * rand_mult) + xvel
 
 				-- velocity
 				part.pos.x = part.pos.x + (part.vel.x * delta)
@@ -200,23 +194,23 @@ do -- tags
 				part.vel.y = part.vel.y * part.drag
 
 				-- collision
-				if part.pos.x - part.siz < -cx then
-					part.pos.x = -cx + part.siz
+				if part.pos.x - part.siz.w < 0 then
+					part.pos.x = part.siz.w
 					part.vel.x = part.vel.x * -part.drag
 				end
 
-				if part.pos.x + part.siz > W then
-					part.pos.x = W - part.siz
+				if part.pos.x + part.siz.w > W then
+					part.pos.x = W - part.siz.w
 					part.vel.x = part.vel.x * -part.drag
 				end
 
-				if part.pos.y - part.siz < -cy then
-					part.pos.y = -cy + part.siz
+				if part.pos.y - part.siz.h < 0 then
+					part.pos.y = part.siz.h
 					part.vel.y = part.vel.y * -part.drag
 				end
 
-				if part.pos.y + part.siz > H then
-					part.pos.y = H - part.siz
+				if part.pos.y + part.siz.h > H then
+					part.pos.y = H - part.siz.h
 					part.vel.y = part.vel.y * -part.drag
 				end
 
@@ -335,13 +329,13 @@ do -- tags
 					scaleX, scaleY = scaleV2(scaleX, scaleY, 10)
 				end
 
-				local centerY = y - self.message_height / 2
+				local centerY = y - self.line_height / 2
 
 				EXT.TranslateMatrix(mat, x, centerY)
 					EXT.ScaleMatrix(mat, scaleX, scaleY)
 
 					if scaleX < 0 then
-						EXT.TranslateMatrix(mat, -self.message_width, 0)
+						EXT.TranslateMatrix(mat, -self.line_width, 0)
 					end
 				EXT.TranslateMatrix(mat, -x, -centerY)
 
@@ -365,10 +359,10 @@ do -- tags
 
 			draw = function(markup, self, x, y, angleInDegrees)
 				local mat = EXT.CreateMatrix()
-
-				local centerX = x + self.message_width / 2
-				local centerY = y - self.message_height / 2
-
+				
+				local centerX = self.tag_center_x
+				local centerY = self.tag_center_y
+				
 				EXT.TranslateMatrix(mat, centerX, centerY)
 					EXT.RotateMatrix(mat, angleInDegrees)
 				EXT.TranslateMatrix(mat, -centerX, -centerY)
@@ -395,14 +389,14 @@ do -- tags
 					scaleX, scaleY = scaleV2(scaleX, scaleY, 10)
 				end
 
-				local centerX = self.message_width / 2
-				local centerY = y - self.message_height / 2
+				local centerX = self.line_width / 2
+				local centerY = y - self.line_height / 2
 
 				EXT.TranslateMatrix(mat, x, centerY)
 					EXT.TranslateMatrix(mat, X,Y)
 					EXT.ScaleMatrix(mat, scaleX, scaleY)
 					if scaleX < 0 then
-						EXT.TranslateMatrix(mat, -self.message_width, 0)
+						EXT.TranslateMatrix(mat, -self.line_width, 0)
 					end
 					if angleInDegrees ~= 0 then
 						EXT.TranslateMatrix(mat, centerX)
@@ -530,6 +524,16 @@ end
 -- go through every argument
 -- markup:SetTable({Color(1,1,1), "asdasd", {"asdasd"}, ...})
 
+function META:NewCell()
+	self.cells = self.cells or {}
+	
+	local cell = {}
+	
+	self.current_cell = cell
+	
+	table.insert(self.cells, cell)
+end
+
 function META:Clear()
 	self.chunks = {}
 	self.need_layout = true
@@ -553,13 +557,8 @@ end
 function META:AddString(str)
 	str = tostring(str)
 
-	if self.EditMode then
-		table.insert(self.chunks, {type = "string", val = str})
-	else
-		for _, chunk in pairs(self:StringTagsToTable(str)) do
-			table.insert(self.chunks, chunk)
-		end
-	end
+	table.insert(self.chunks, {type = "string", val = str})
+	
 	self.need_layout = true
 end
 
@@ -675,55 +674,69 @@ do
 				-- maybe the string was "sdasd :> sdsadasd <color123>..."
 				if current_tag then
 					local tag_str = table.concat(current_tag, "") .. ">"
-					local tag, args = tag_str:match("<(.-)[?=](.+)>")
+					local tag, arg_str = tag_str:match("<(.-)=(.+)>")
+					local stop_tag = false
+					
+					if not tag or not self.tags[tag] then
+						tag = tag_str:match("<(.-)>")
+					end
+					
+					if not tag or not self.tags[tag] then
+						tag = tag_str:match("</(.-)>")
+						stop_tag = true
+					end
 
 					local info = self.tags[tag]
 
 					if info then
-						local args = parse_tag_arguments(self, args or "")
+						local args = {}
+						
+						if not stop_tag then
+							args = parse_tag_arguments(self, arg_str or "")
 
-						for i = 1, #info.arguments do
-							local arg = args[i]
-							local default = info.arguments[i]
-							local t = type(default)
+							for i = 1, #info.arguments do
+								local arg = args[i]
+								local default = info.arguments[i]
+								local t = type(default)
 
-							if t == "number" then
-								local num = tonumber(arg)
-
-								if not num and type(arg) == "function" then
-									num = arg
-								end
-
-								args[i] = num or default
-							elseif t == "string" then
-								if not arg or arg == "" then
-									arg = default
-								end
-
-								args[i] = arg
-							elseif t == "table" then
-								if default.min or default.max or default.default then
+								if t == "number" then
 									local num = tonumber(arg)
 
-									if num then
-										if default.min and default.max then
-											args[i] = math.min(math.max(num, default.min), default.max)
-										elseif default.min then
-											args[i] = math.min(num, default.min)
-										elseif default.max then
-											args[i] = math.max(num, default.max)
-										end
-									else
-										if type(arg) == "function" then
+									if not num and type(arg) == "function" then
+										num = arg
+									end
+
+									args[i] = num or default
+								elseif t == "string" then
+									if not arg or arg == "" then
+										arg = default
+									end
+
+									args[i] = arg
+								elseif t == "table" then
+									if default.min or default.max or default.default then
+										local num = tonumber(arg)
+
+										if num then
 											if default.min and default.max then
-												args[i] = function(...) return math.min(math.max(arg(...) or default.default, default.min), default.max) end
+												args[i] = math.min(math.max(num, default.min), default.max)
 											elseif default.min then
-												args[i] = function(...) return math.min(arg(...) or default.default, default.min) end
+												args[i] = math.min(num, default.min)
 											elseif default.max then
-												args[i] = function(...) return math.max(arg(...) or default.default, default.max) end
+												args[i] = math.max(num, default.max)
 											end
 										else
-											args[i] = default.default
+											if type(arg) == "function" then
+												if default.min and default.max then
+													args[i] = function(...) return math.min(math.max(arg(...) or default.default, default.min), default.max) end
+												elseif default.min then
+													args[i] = function(...) return math.min(arg(...) or default.default, default.min) end
+												elseif default.max then
+													args[i] = function(...) return math.max(arg(...) or default.default, default.max) end
+												end
+											else
+												args[i] = default.default
+											end
 										end
 									end
 								end
@@ -738,7 +751,7 @@ do
 						elseif type == "color" then
 							table.insert(chunks, {type = "color", val = Color(unpack(args))})
 						else
-							table.insert(chunks, {type = "custom", val = {tag = info, type = tag, args = args}})
+							table.insert(chunks, {type = "custom", val = {tag = info, type = tag, args = args, stop_tag = stop_tag}})
 						end
 
 					end
@@ -765,19 +778,9 @@ do
 	end
 end
 
-function META:OnInvalidate()
-
-end
-
-function META:Invalidate()
-	self:OnInvalidate()
-	
+function META:Invalidate()	
 	EXT.SetFont(self.fonts.default.name)
 	
-	-- we add one empty space at the end of this function 
-	-- to keep things consistent so remove this one first 
-
-
 	-- this is needed when invalidating the chunks table again
 	-- anything that need to add more chunks need to store the
 	-- old chunk as old_chunk key
@@ -788,6 +791,8 @@ function META:Invalidate()
 	local skipped = 0
 
 	for i, chunk in ipairs(self.chunks) do
+		if chunk.internal or chunk.type == "string" and chunk.val == "" then goto continue end
+		
 		local old = chunk.old_chunk
 
 		if old then
@@ -797,9 +802,11 @@ function META:Invalidate()
 				table.insert(temp, old)
 				old_chunks[old] = true
 			end
-		elseif not chunk.internal then
+		else
 			table.insert(temp, chunk)
 		end
+		
+		::continue::
 	end
 
 	--[[
@@ -856,8 +863,7 @@ function META:Invalidate()
 	end
 
 	
-	local height = 0
-	local line_height = 0
+	
 	
 	-- get the size of each object
 	for i, chunk in ipairs(temp2) do
@@ -866,27 +872,15 @@ function META:Invalidate()
 			EXT.SetFont(chunk.val)
 		elseif chunk.type == "string" then
 			local w, h = EXT.GetTextSize(chunk.val)
-			
-			if h > line_height then
-				line_height = h
-			end
-			
+						
 			chunk.w = w
 			chunk.h = h
-		elseif chunk.type == "custom" then
+		elseif chunk.type == "custom" and not chunk.val.stop_tag  then
 			local w, h = call_tag_func(self, chunk, "get_size")
-
-			if h and h > line_height then
-				line_height = h
-			end
-			
 			chunk.w = w
 			chunk.h = h
 
-			call_tag_func(self, chunk, "pre")
-		elseif chunk.type == "newline" then
-			height = height + line_height
-			line_height = 0
+			call_tag_func(self, chunk, "pre")			
 		end
 
 		-- for consistency everything should have x y w h
@@ -894,10 +888,6 @@ function META:Invalidate()
 		chunk.y = chunk.y or 0
 		chunk.w = chunk.w or 0
 		chunk.h = chunk.h or 0
-		
-		if self.current_height and height > self.current_height then
-			--chunk.skip_process = true -- this doesn't work well..
-		end
 	end
 
 
@@ -910,8 +900,7 @@ function META:Invalidate()
 	local chunk_height = 0 -- the height to advance y in
 
 	for i, chunk in ipairs(temp2) do
-		if chunk.skip_process then break end
-	
+			
 		-- is the previous line a newline?
 		local newline = temp2[i - 1] and temp2[i - 1].type == "newline"
 
@@ -935,6 +924,8 @@ function META:Invalidate()
 
 			-- advance y with the height of the tallest chunk
 			current_y = current_y + chunk_height
+			
+			chunk_height = 0
 		end
 
 		chunk.x = current_x
@@ -952,8 +943,7 @@ function META:Invalidate()
 	if self.LineWrap then
 		temp = {}
 		for i, chunk in ipairs(temp2) do
-			if chunk.skip_process then break end
-			
+						
 			local split = false
 
 			if chunk.type == "font" then
@@ -1025,8 +1015,7 @@ function META:Invalidate()
 	local chunk_height = 0 -- the height to advance y in
 
 	for i, chunk in ipairs(temp) do
-		if chunk.skip_process then break end
-
+		
 		-- is the previous line a newline?
 		local newline = temp[i - 1] and temp[i - 1].type == "newline"
 
@@ -1062,8 +1051,7 @@ function META:Invalidate()
 
 	-- this is for expressions to be use d like line.i+time()
 	for i, chunk in ipairs(chunks) do
-		if chunk.skip_process then break end
-		
+				
 		chunk.exp_env = {
 			i = i,
 			w = chunk.w,
@@ -1112,10 +1100,17 @@ function META:Invalidate()
 				end
 			end
 		end
-
+					
+		local chunk_line = {}
+		local line_height = 0
+		local line_width = 0
+		
+		local tag_line = {}
+		local tag_height = 0
+		local tag_width = 0
+		
 		for i, chunk in ipairs(chunks) do
-			if chunk.skip_process then break end
-			
+						
 			if chunk.type == "font" then
 				font = chunk.val
 			elseif chunk.type == "color" then
@@ -1134,15 +1129,84 @@ function META:Invalidate()
 			if w > height then
 				height = h
 			end
+			
+			if chunk.h > line_height then
+				line_height = chunk.h
+			end
+			
+			line_width = line_width + chunk.w
 
 			if chunk.y ~= last_y then
 				line =  line + 1
 				last_y = chunk.y
+
+				for i, chunk in pairs(chunk_line) do
+					chunk.line_height = line_height
+					chunk.line_width = line_width
+					chunk_line[i] = nil
+				end
+				
+				line_height = 0
+				line_width = 0
+			end
+			
+			
+			if in_tag then
+				if chunk.h > tag_height then
+					tag_height = chunk.h
+				end
+			
+				tag_width = tag_width + chunk.w
+			
+				table.insert(tag_line, chunk)
+			end
+			
+			if chunk.type == "custom" then
+				if in_tag == chunk.val.type and chunk.val.stop_tag then
+					local center_x = tag_line[1].x + tag_width / 2
+					local center_y = tag_line[1].y + tag_height / 2
+					for i, chunk in pairs(tag_line) do
+						chunk.tag_center_x = center_x
+						chunk.tag_center_y = center_y
+						chunk.tag_height = tag_height
+						chunk.tag_width = tag_width
+						tag_line[i] = nil
+					end
+
+					tag_width = 0
+					tag_height = 0
+					in_tag = false
+				else
+					in_tag = chunk.val.type
+					table.insert(tag_line, chunk)
+				end
 			end
 
 			chunk.line = line
 			chunk.build_chars = build_chars
 			chunk.i = i
+			
+			table.insert(chunk_line, chunk) 
+		end
+		
+		do
+			local start_chunk = tag_line[1] or chunk_line[1] or chunks[1]
+			local center_x = start_chunk.x + line_height / 2
+			local center_y = start_chunk.y + line_width / 2
+			
+			for i, chunk in pairs(tag_line) do
+				chunk.tag_center_x = center_x 
+				chunk.tag_center_y = center_y
+				chunk.tag_height = line_height
+				chunk.tag_width = line_width
+				tag_line[i] = nil
+			end
+		end
+		
+		for i, chunk in pairs(chunk_line) do
+			chunk.line_height = line_height
+			chunk.line_width = line_width
+			chunk_line[i] = nil
 		end
 
 		self.lines = line
@@ -1156,11 +1220,19 @@ function META:Invalidate()
 
 
 	do -- align the y axis properly
+	
+		if true then
+			for _, chunk in ipairs(chunks) do
+				chunk.y = chunk.y - chunk.h + chunk.line_height
+
+				-- mouse testing
+				chunk.right = chunk.x + chunk.w
+				chunk.top = chunk.y + chunk.h
+			end
+		else
 		local h = 0
 
 		for _, chunk in ipairs(chunks) do
-			if chunk.skip_process then break end
-					
 			if chunk.line == 1 then
 				if chunk.h > h then
 					h = chunk.h
@@ -1171,618 +1243,500 @@ function META:Invalidate()
 		end
 
 		for _, chunk in ipairs(chunks) do
-			if chunk.skip_process then break end
-
-			chunk.y = chunk.y - chunk.h + h
+			
+			
+			
+			if chunk.type == "custom" then	
+				print(chunk.line_height, chunk.h)
+			else
+				chunk.y = chunk.y - chunk.h + h
+			end
 
 			-- mouse testing
 			chunk.right = chunk.x + chunk.w
 			chunk.top = chunk.y + chunk.h
 		end
-	end
-
-
-
-
-
-	-- SLOOOOOOW
-	if false then
-	timer.Measure("linked list")
-	-- build linked list (mainly for matrices)
-	local prev = nil
-	for _, chunk in ipairs(chunks) do
-		if prev then
-			prev.next = chunk
 		end
-		prev = chunk
 	end
+
+	
+	do-- TODO: STUPID			
+		local dummy = {
+			type = "string", 
+			val = "", 
+			x = 0, 
+			y = 0, 
+			w = 0, 
+			h = 0, 
+			top = 0, 
+			right = 0, 
+			build_chars = function(chunk) 				
+				chunk.chars = {{
+					x = 0,
+					y = 0,
+					w = 0,
+					h = 0,
+					right = 0,
+					top = 0,
+					char = "",
+					i  = 0,
+					chunk = chunk,
+					length = 0,
+					internal = true,
+				}}
+			end, 
+			internal = true
+		}
+	
+		table.insert(chunks, dummy)
+	end
+
+	self.chars = {}
+	self.lines = {}
+
+	local line = 1
+	local line_pos = 0
+	local line_str = {}
 
 	for i, chunk in ipairs(chunks) do
-		local w = 0
-		local h = 0
-		local node = chunk.next
-		while node do
-			w = w + node.w
-			h = math.max (h, node.h)
-			node = node.next
-		end
-
-		chunk.message_width = w
-		chunk.message_height = h
-	end
-	timer.Measure("linked list")
-	end
-
-
-
-	self.chars = nil
-
-	if self.EditMode then
-	
-
-		do -- TODO: STUPID			
-			local dummy = {
-				type = "string", 
-				val = "", 
-				x = 0, 
-				y = 0, 
-				w = 0, 
-				h = 0, 
-				top = 0, 
-				right = 0, 
-				build_chars = function(chunk) 				
-					chunk.chars = {{
-						x = 0,
-						y = 0,
-						w = 0,
-						h = 0,
-						right = 0,
-						top = 0,
-						char = "",
-						i  = 0,
-						chunk = chunk,
-						length = 0,
-						internal = true,
-					}}
-				end, 
-				internal = true
-			}
 		
-			table.insert(chunks, dummy)
-		end
-	
-		self.chars = {}
-		self.lines = {}
+		chunk.chars = nil
 
-		local line = 1
-		local line_pos = 0
-		local line_str = {}
+		if chunk.type == "string" then
+			chunk:build_chars()
 
-		for i, chunk in ipairs(chunks) do
-			if chunk.skip_process then break end
-
-			chunk.chars = nil
-
-			if chunk.type == "string" then
-				chunk:build_chars()
-
-				for i2, char in pairs(chunk.chars) do
-					table.insert(self.chars, {
-						chunk = chunk,
-						i = i,
-						str = char.char,
-						data = char,
-						y = line,
-						x = line_pos,
-						unicode = char.unicode,
-						length = char.length,
-						internal = char.internal,
-					})
-					
-					line_pos = line_pos + 1 
-
-					table.insert(line_str, char.char)
-				end
-
-			elseif chunk.type == "newline" then
-				local data = {}
-
-				local w, h = surface.GetTextSize("|")
-				data.w = w
-				data.h = h
-				data.x = chunk.x
-				data.y = chunk.y - data.h
-				data.right = chunk.right
-				data.top = chunk.top
-
-				table.insert(self.chars, {chunk = chunk, i = i, str = "\n", data = data, y = line, x = line_pos})
-				line = line + 1
-				line_pos = 0
-
-				table.insert(self.lines, table.concat(line_str, ""))
-				line_str = {}
-			end
-		end
+			for i2, char in pairs(chunk.chars) do
+				table.insert(self.chars, {
+					chunk = chunk,
+					i = i,
+					str = char.char,
+					data = char,
+					y = line,
+					x = line_pos,
+					unicode = char.unicode,
+					length = char.length,
+					internal = char.internal,
+				})
 				
-		if #self.chars > 0 then
-			self.chars[#self.chars].the_end = true
-		end
-		
-		-- add the last line since there's probably not a newline at the very end
-		table.insert(self.lines, table.concat(line_str, ""))
+				line_pos = line_pos + 1 
 
-		self.text = table.concat(self.lines, "\n")
-		--timer.Measure("chars build")
+				table.insert(line_str, char.char)
+			end
+
+		elseif chunk.type == "newline" then
+			local data = {}
+
+			local w, h = surface.GetTextSize("|")
+			data.w = w
+			data.h = h
+			data.x = chunk.x
+			data.y = chunk.y - data.h
+			data.right = chunk.right
+			data.top = chunk.top
+
+			table.insert(self.chars, {chunk = chunk, i = i, str = "\n", data = data, y = line, x = line_pos})
+			line = line + 1
+			line_pos = 0
+
+			table.insert(self.lines, table.concat(line_str, ""))
+			line_str = {}
+		end
 	end
+	
+	-- add the last line since there's probably not a newline at the very end
+	table.insert(self.lines, table.concat(line_str, ""))
+
+	self.text = table.concat(self.lines, "\n")
+	--timer.Measure("chars build")
 
 	self.chunks = chunks
 
 	-- preserve caret positions
-	if self.caret_pos and self.EditMode then
-		self:SetCaretPos(self.caret_pos.char.x, self.caret_pos.char.y)
+	if self.caret_pos then
+		self:SetCaretPos(self.caret_pos.x, self.caret_pos.y)
 	else
 		self.caret_pos = nil
 	end
 
 	if self.select_start then
-		self:SelectStart(self.select_start.char.x, self.select_start.char.y)
+		self:SelectStart(self.select_start.x, self.select_start.y)
 	end
 
 	if self.select_stop then
-		self:SelectStop(self.select_stop.char.x, self.select_stop.char.y)
+		self:SelectStop(self.select_stop.x, self.select_stop.y)
 	end
 end
 
-function META:GetSelectedString(skip_tags)
+function META:GetNextCharacterClassPos(delta, next_space)	
 
-	local out = {}
-
-	local START = self:GetSelectStop()
-	local END = self:GetSelectStart()
-
-	if START and END then
-		if self.EditMode then
-			local start_pos = self:GetSelectStartSubPos()
-			local end_pos = self:GetSelectStopSubPos()
-		
-			return self.text:usub(start_pos, end_pos - 1)
-		else
-			local last_font
-			local last_color
-			 
-			for i, chunk in ipairs(self.chunks) do
-				if i >= END.i and i <= START.i then 
-					if chunk.type == "string" then
-					
-						if not skip_tags then
-							-- this will ensure a clean output
-							-- but maybe this should be cleaned in the invalidate function instead?
-							if last_font ~= chunk.font then
-								table.insert(out, ("<font=%s>"):format(chunk.font))
-								last_font = chunk.font
-							end
-
-							if last_color ~= chunk.color then
-								table.insert(out, ("<color=%s,%s,%s,%s>"):format(math.round(chunk.color.r, 2), math.round(chunk.color.g, 2), math.round(chunk.color.b, 2), math.round(chunk.color.a, 2)))
-								last_color = chunk.color
-							end
-						end
-
-						if END.char and START.char and END.i == START.i then
-							for i, char in ipairs(END.char.chunk.chars) do
-								if i >= END.char.i and i <= START.char.i then
-									table.insert(out, char.char)
-								end
-							end
-							break
-						else
-							if i == END.i then
-								if END.char then
-									for i, char in ipairs(END.char.chunk.chars) do
-										if i >= END.char.i then
-											table.insert(out, char.char)
-										end
-									end
-								end
-							elseif i == START.i then
-								if START.char then
-									for i, char in ipairs(START.char.chunk.chars) do
-										if i < START.char.i then
-											table.insert(out, char.char)
-										end
-									end
-								end
-							elseif i > END.i and i < START.i and END.i ~= START.i then
-								table.insert(out, chunk.val)
-							end
-						end
-					elseif chunk.type == "newline" then
-						table.insert(out, "\n")
-					elseif not skip_tags and chunk.type == "custom" then
-						if chunk.val.type == "texture" then
-							table.insert(out, ("<texture=%s>"):format(chunk.val.args[1]))
-						end
-					end
-				end
-			end
-		end
-	end
- 
-	return table.concat(out, "")
-end
-
-function META:CaretFromPixels(x, y)
-
-	if self.wx then
-		x = x - self.wx
-		y = y - self.wy
+	if next_space == nil then
+		next_space = not self.caret_shift_pos
 	end
 
-	if self.EditMode then
-		
-		--x = x - 30
-
-		for i, char in ipairs(self.chars) do
-			local data = char.data
-
-			if 
-				x > data.x and y > data.y and
-				x < data.right and y < data.top
-			then
-				data = char.data
-				
-				return {
-					x = data.x,
-					y = data.y,
-					w = data.w,
-					h = data.h,
-					i = i,
-					char = char,
-				}
-			end
-		end
-		
-		-- if nothing was found we need to check things differently
-		local line = {}
-
-		for i, char in ipairs(self.chars) do
-			local data = char.data
-			if y > data.y and y < data.top + 1 then -- todo: remove +1
-				table.insert(line, {i, char})
-			end
-		end
-
-		if #line == 0 then
-			for i, char in ipairs(self.chars) do
-				if char.chunk.line == #self.lines then
-					local data = char.data
-					if y > data.y then
-						table.insert(line, {i, char})
-					end
-				end
-			end
-		end
-
-		if #line > 0 and x > line[#line][2].data.right then
-			local i, char = unpack(line[#line])
-
-			local data = char.data
+	local pos = self.caret_pos.i
+	
+	if delta > 0 then
+		pos = pos + 1
+	end
+	
+	if delta > 0 then
+	
+		if pos > 0 then
+			local type = self.chars[pos-1].str:getchartype()
 			
-			return {
-				x = data.x,
-				y = data.y,
-				w = data.w,
-				h = data.h,
-				i = i,
-				char = char,
-			}
+			while pos > 0 and self.chars[pos].str:getchartype() == type do
+				pos = pos + 1
+			end
 		end
-
-		for i, v in ipairs(line) do
-			local i, char = unpack(v)
-
-			local data = char.data
-
-			if x < data.right then
+		
+		if next_space then
+			while pos > 0 and self.chars[pos].str:getchartype() == "space" and self.chars[pos].str ~= "\n" do
+				pos = pos + 1
+			end
+		end
 				
-				i = i - 1
-				char = self.chars[i]
-				data = char.data
-
-				return {
-					x = data.x,
-					y = data.y,
-					w = data.w,
-					h = data.h,
-					i = i,
-					char = char,
-				}
-			end
-		end
-
-
-		local char = self.chars[#self.chars]
-		local data = char.data
-
-		return {
-			x = data.x,
-			y = data.y,
-			w = data.w,
-			h = data.h,
-			i = #self.chars,
-			char = char,
-		}
-
+		return self.chars[pos-1].x, self.chars[pos-1].y
 	else
-		local chunk = self.chunks[#self.chunks]
-
-		for i, chunk in ipairs(self.chunks) do
-			if
-				x > chunk.x and y > chunk.y and
-				x < chunk.right and y < chunk.top
-			then
-				if chunk.type == "string" then
-
-					chunk:build_chars()
-
-					for _, char in ipairs(chunk.chars) do
-						if
-							x > char.x and y > char.y and
-							x < char.right and y < char.top
-						then
-							return {
-								x = char.x,
-								y = char.y,
-								w = char.w,
-								h = char.h,
-								i = i,
-								char = char,
-							}
-						end
-					end
-				else
-					return {
-						x = chunk.x,
-						y = chunk.y,
-						w = chunk.w,
-						h = chunk.h,
-						i = i
-					}
-				end
+		
+		-- this isn't really scintilla behaviour but I think it makes sense
+		if next_space then
+			while pos > 0 and self.chars[pos - 1].str:getchartype() == "space" and self.chars[pos - 1].str ~= "\n" do
+				pos = pos - 1
 			end
 		end
+	
+		local type = self.chars[pos - 1].str:getchartype()
+
+		while pos < #self.text and self.chars[pos - 1].str:getchartype() == type do
+			pos = pos - 1
+		end			
+	
+		
+		return self.chars[pos+1].x, self.chars[pos+1].y
 	end
 end
 
-do -- edit mode
-	local is_caret_move = {
-		up = true,
-		down = true,
-		left = true,
-		right = true,
+function META:InsertString(str, skip_move, start_offset, stop_offset)		
 
-		home = true,
-		["end"] = true,
-	}
+	start_offset = start_offset or 0
+	stop_offset = stop_offset or 0
+	
+	local sub_pos = self:GetCaretSubPos()
 
-	function META:InvalidateEditedText()
-		if self.text ~= self.last_text then
-			self:OnTextChanged(self.text)
-			self.last_text = self.text
+	self:DeleteSelection(true)
+	
+	do
+		local x, y = self.caret_pos.x, self.caret_pos.y
+		
+		for i = 1, start_offset do
+			x = x - 1
+			
+			if x <= 0 then
+				y = y - 1
+				x = self.lines[y]:ulength()
+			end
+		end
+	
+		self:SelectStart(x, y)
+		
+		local x, y = self.caret_pos.x, self.caret_pos.y
+
+		for i = 1, stop_offset do			
+			x = x + 1
+			
+			if x >= self.lines[y]:ulength() then
+				y = y + 1
+				x = 0
+			end
+		end
+
+		self:SelectStop(x, y)
+		
+		self:DeleteSelection(true)
+	end
+		
+	self.text = self.text:usub(1, sub_pos - 1) .. str .. self.text:usub(sub_pos)
+	
+	if self.chunk_fix then -- fix chunks
+		local sub_pos = self.caret_pos.char.data.i
+		local chunk = self.caret_pos.char.chunk
+		
+		-- if we're in a sea of non strings we need to make one
+		if chunk.type ~= "string" and (self.chunks[chunk.i-1].type ~= "string" or self.chunks[chunk.i+1].type ~= "string") then
+			table.insert(self.chunks, chunk.i, {type = "string", val = str})
+			self:Invalidate()
+		else			
+			do -- sub the start
+				local pos = chunk.i
+				
+				while chunk.type ~= "string" and pos < #self.chunks do
+					pos = pos - 1
+					chunk = self.chunks[pos]
+				end
+			end
+					
+			if chunk.type == "string" then
+				if not sub_pos then
+					sub_pos = #chunk.chars + 1
+				end
+				
+				chunk.val = chunk.val:usub(1, sub_pos - 1) .. str .. chunk.val:usub(sub_pos) 
+			else
+				table.remove(self.chunks, chunk.i)
+			end
+		end
+		
+		self:Invalidate()  
+	end
+
+	if not skip_move then
+		local x = self.caret_pos.x + str:ulength()
+		local y = self.caret_pos.y + str:count("\n")
+
+		if self.caret_pos.char.str == "\n" then
+			self.move_caret_right = true
+			x = x + 1
+		end
+
+		self.real_x = x
+
+		self:SetCaretPos(x, y)
+	end
+
+	self:InvalidateEditedText()
+
+	self.caret_shift_pos = nil
+end
+
+function META:Backspace()
+	local sub_pos = self:GetCaretSubPos()
+
+	local prev_line = self.lines[self.caret_pos.y - 1]
+
+	if not self:DeleteSelection() and sub_pos ~= 1 then
+		if self.ControlDown then
+		
+			local x, y = self:GetNextCharacterClassPos(-1, true) 
+			x = x - 1
+			
+			if x <= 0 then
+				x = math.huge
+				y = y - 1
+			end
+			
+			self:SelectStart(self.caret_pos.x, self.caret_pos.y)
+			self:SelectStop(x, y)
+			self:DeleteSelection()
+						
+			self.real_x = x
+		else
+			local x, y = self.caret_pos.x, self.caret_pos.y
+			
+			x = self.chars[self.caret_pos.i - 1].x
+			y = self.chars[self.caret_pos.i - 1].y			
+					 
+			self:SelectStart(self.caret_pos.x, self.caret_pos.y) 
+			self:SelectStop(x, y)  
+			
+			self:DeleteSelection()
 		end
 	end
 
-	function META:GetSubPosFromPos(x, y)
+	self:InvalidateEditedText()
+end
 
-		if x == math.huge and y == math.huge then
-			return #self.chars
-		end
+function META:Delete() 
+	local line = self.lines[self.caret_pos.y + 1]
+	local sub_pos = self:GetCaretSubPos()
 
-		if x == 0 and y == 0 then
-			return 0
-		end
-
-		for sub_pos, char in pairs(self.chars) do
-			if char.x == x and char.y == y then
-				return sub_pos
-			end
-		end		
+	if not self:DeleteSelection() then
+		local ok = false
 		
-		if x == math.huge then
-			for sub_pos, char in pairs(self.chars) do
-				if char.y == y and char.str == "\n" then
-					return sub_pos - 1
-				end
-			end
-			return self.chars[#self.chars]
+		if self.ControlDown then
+			local x, y = self:GetNextCharacterClassPos(1, true)
+			
+			x = x + 1
+			
+			self:SelectStart(self.caret_pos.x, self.caret_pos.y)
+			self:SelectStop(x, y)
+			
+			ok = self:DeleteSelection()			
 		end
-		
-		if y == math.huge then
-			for i = 1, self.chars do
-				i = -i + #self.chars
-				local char = self.chars[i]
 				
-				if char.x == x then
-					return sub_pos - 1
-				end
-			end
+		if not ok then
+			local x, y = self.caret_pos.x, self.caret_pos.y
+			
+			x = self.chars[self.caret_pos.i + 1].x
+			y = self.chars[self.caret_pos.i + 1].y
+					
+			self:SelectStart(self.caret_pos.x, self.caret_pos.y)
+			self:SelectStop(x, y)
+			self:DeleteSelection()
 		end
-		
+	end
+
+	self:InvalidateEditedText()
+end
+
+function META:InvalidateEditedText()
+	if self.text ~= self.last_text and self.OnTextChanged then
+		self:OnTextChanged(self.text)
+		self.last_text = self.text
+	end
+end
+
+function META:GetSubPosFromPos(x, y)
+
+	if x == math.huge and y == math.huge then
+		return #self.chars
+	end
+
+	if x == 0 and y == 0 then
 		return 0
 	end
 
-	function META:GetNextCharacterClassPos(delta, next_space)	
-
-		if next_space == nil then
-			next_space = not self.caret_shift_pos
+	for sub_pos, char in pairs(self.chars) do
+		if char.x == x and char.y == y then
+			return sub_pos
 		end
+	end		
 	
-		local pos = self.caret_pos.i
-		
-		if delta > 0 then
-			pos = pos + 1
+	if x == math.huge then
+		for sub_pos, char in pairs(self.chars) do
+			if char.y == y and char.str == "\n" then
+				return sub_pos - 1
+			end
 		end
+		return self.chars[#self.chars]
+	end
 	
-		if delta > 0 then
-		
-			if pos > 0 then
-				local type = self.chars[pos-1].str:getchartype()
-								
-				while pos > 0 and self.chars[pos].str:getchartype() == type do
-					pos = pos + 1
-				end
+	if y == math.huge then
+		for i = 1, self.chars do
+			i = -i + #self.chars
+			local char = self.chars[i]
+			
+			if char.x == x then
+				return sub_pos - 1
 			end
-			
-			if next_space then
-				while pos > 0 and self.chars[pos].str:getchartype() == "space" and self.chars[pos].str ~= "\n" do
-					pos = pos + 1
-				end
-			end
-			
-			return self.chars[pos-1].x, self.chars[pos-1].y
-		else
-			
-			-- this isn't really scintilla behaviour but I think it makes sense
-			if next_space then
-				while pos > 0 and self.chars[pos - 1].str:getchartype() == "space" and self.chars[pos - 1].str ~= "\n" do
-					pos = pos - 1
-				end
-			end
-		
-			local type = self.chars[pos - 1].str:getchartype()
-
-			while pos < #self.text and self.chars[pos - 1].str:getchartype() == type do
-				pos = pos - 1
-			end			
-		
-			
-			return self.chars[pos+1].x, self.chars[pos+1].y
 		end
 	end
 	
-	function META:CaretFromPos(x, y)
-		if self.EditMode then
-				
-			x = x or 0
-			y = y or 0
+	return 0
+end
 
-			y = math.clamp(y, 1, #self.lines)
-			x = math.clamp(x, 0, self.lines[y] and self.lines[y]:ulength() or 0)
-						
-			for i, char in ipairs(self.chars) do
-				
-				if char.y == y and char.x == x then
-					local data = char.data
-					
-					return {
-						x = data.x,
-						y = data.y,
-						h = data.h,
-						w = data.w,
-						i = i,
-						char = char,
-					}
-				end
+function META:Indent(back)
+	local sub_pos = self:GetCaretSubPos()
+
+	local select_start = self:GetSelectStart()
+	local select_stop = self:GetSelectStop()
+	
+	if select_start and select_start.y ~= select_stop.y then
+	
+		-- first select everything
+		self:SelectStart(0, select_start.y)
+		self:SelectStop(math.huge, select_stop.y)
+
+		-- and move the caret to bottom
+		self:SetCaretPos(select_stop.x, select_stop.y)
+
+		local select_start = self:GetSelectStart()
+		local select_stop = self:GetSelectStop()
+
+		local text = self.text:usub(select_start.sub_pos, select_stop.sub_pos)
+
+		if back then
+			if text:sub(1, 1) == "\t" then
+				text = text:sub(2)
 			end
-			
-			if x == self.lines[#self.lines]:ulength() then
-				local i = #self.chars
-				local  char = self.chars[i]
-				
-				local data = char.data
-
-				return {
-					x = data.x + data.w,
-					y = data.y,
-					h = data.h,
-					w = data.w,
-					i = i,
-					char = char,
-				}
-			end
-			
-			
-			local char
-			local i
-			local data
-			
-			if y <= 1 then
-				if x <= 0 then
-					char = self.chars[1]
-					i = 1
-				else
-					char = self.chars[x + 1]
-					i = x + 1
-				end
-			elseif y >= #self.lines then
-				if x >= self.lines[#self.lines]:ulength() then
-					char = self.chars[#self.chars]
-					local data = char.data
-					i = #self.chars
-										
-					return {
-						x = data.x + data.w,
-						y = data.y,
-						h = data.h,
-						w = data.w,
-						i = i,
-						char = char,
-						the_end = true,
-					}
-				else
-					local pos = #self.chars - self.lines[#self.lines]:ulength() + x + 1
-					char = self.chars[pos]
-					i = pos
-				end
-			end
-					
-			if not char then char = self.chars[1] end
-
-			data = char.data
-
-			return {
-				x = data.x,
-				y = data.y,
-				h = data.h,
-				w = data.w,
-				i = i,
-				char = char,
-			}
+			text = text:gsub("\n\t", "\n")
 		else
-			local chunk = self.chunks[#self.chunks]
+			text = "\t" .. text
+			text = text:gsub("\n", "\n\t")
 
-			for i, chunk in ipairs(self.chunks) do
-				if chunk.type == "string" then
-
-					chunk:build_chars()
-
-					for _, char in ipairs(chunk.chars) do
-						if char.x == x and char.y == y then
-							return {
-								x = char.x,
-								y = char.y,
-								h = char.h,
-								w = char.w,
-								i = i,
-								char = char,
-							}
-						end
-					end
-				else
-					if i == x and y == chunk.line then
-						return {
-							x = chunk.x,
-							y = chunk.y,
-							h = chunk.h,
-							w = chunk.w,
-							i = i
-						}
-					end
-				end
+			-- ehhh, don't add \t at the next line..
+			if text:sub(-1) == "\t" then
+				text = text:sub(0, -2)
 			end
 		end
+
+		self.text = self.text:usub(1, select_start.sub_pos - 1) .. text .. self.text:usub(select_stop.sub_pos + 1)
+	else
+		-- TODO
+		if back and self.text:sub(sub_pos-1, sub_pos-1) == "\t" then
+			self:Backspace()
+		else
+			self:InsertString("\t")
+		end
+	end
+	
+	self:InvalidateEditedText()
+end
+
+function META:Enter()
+	local sub_pos = self:GetCaretSubPos()
+
+	self:DeleteSelection(true)
+
+	local x = 0
+	local y = self.caret_pos.y + 1
+
+	-- if the next line already contains space in the beginning
+	-- we replce the currents line space with it
+	local next_line = self.lines[y]
+	local next_space = next_line:match("^(%s*)")
+
+	if next_line and next_space then
+		local cur_space = self.text:usub(sub_pos):match("^(%s*)")
+		local space = next_space
+
+		-- but if this lines indention is higher than the previous line
+		-- we need to use its starting space instead
+
+		local prev_line = self.lines[y - 1]
+		if prev_line then
+			local prev_space = prev_line:match("^(%s+)")
+			if prev_space and #prev_space > #space then
+				space = prev_space
+			end
+		end
+		
+		local start_offset 
+		local stop_offset
+		
+		if cur_space then
+			-- relace current space with next's space
+			-- "\t\tfoo| bar" -> "\t\tbar"
+
+			if  self.caret_pos.char.str == "\n" then
+				x = x + 1
+				space = space .. cur_space
+				x = x - #cur_space
+			end
+			
+			start_offset = 0
+			stop_offset = #cur_space
+		else			
+			start_offset = -#next_space
+			stop_chunk = -#next_space + 1
+		end
+				
+		self:InsertString("\n" .. space, true, start_offset, stop_offset)
+		
+		x = x + #space
+	else
+		self:InsertString("\n", true)
+		x = x + 2
+		y = y + 1
 	end
 
+	self:InvalidateEditedText()
+
+	self.real_x = x
+
+	self:SetCaretPos(x, y, true)
+end
+
+do -- caret
 	function META:SetCaretPos(x, y, later)
 		if later then
 			self.caret_later_pos = {x,y}
@@ -1793,40 +1747,217 @@ do -- edit mode
 	
 	function META:GetCaretSubPos()
 		local caret = self.caret_pos
-		return self:GetSubPosFromPos(caret.char.x, caret.char.y)
+		return self:GetSubPosFromPos(caret.x, caret.y)
 	end
 
-	function META:DeleteSelection(skip_move)
-		local caret = self:GetSelectStart()
+	function META:CaretFromPixels(x, y)
+
+		if self.current_x then
+			x = x - self.current_x
+			y = y - self.current_y
+		end
 		
-		if caret then		
-			local start_pos = self:GetSelectStartSubPos()
-			local end_pos = self:GetSelectStopSubPos()
+		local CHAR
+		local POS
 
-			if not skip_move then
-				self:SetCaretPos(caret.char.x, caret.char.y)
+		for i, char in ipairs(self.chars) do		
+			if 
+				x > char.data.x and y > char.data.y and
+				x < char.data.right and y < char.data.top
+			then			
+				POS = i
+				CHAR = char			
+				break
+			end
+		end
+		
+		-- if nothing was found we need to check things differently
+		
+		if not CHAR then	
+			local line = {}
+
+			for i, char in ipairs(self.chars) do
+				if y > char.data.y and y < char.data.top + 1 then -- todo: remove +1
+					table.insert(line, {i, char})
+				end
 			end
 
-			end_pos = end_pos - 1 
-
-			-- preserve the newline if it's at the end of the line
-			if self.text:usub(end_pos,end_pos) == "\n" then
-			--	end_pos = end_pos - 1
+			if #line == 0 then
+				for i, char in ipairs(self.chars) do
+					if char.chunk.line == #self.lines then
+						if y > char.data.y then
+							table.insert(line, {i, char})
+						end
+					end
+				end
 			end
 
-			self.text = self.text:usub(1, start_pos - 1) .. self.text:usub(end_pos + 1)
+			if #line > 0 and x > line[#line][2].data.right then
+				POS, CHAR = unpack(line[#line])
+			end
+			
+			if not CHAR then
+				for i, v in ipairs(line) do
+					local i, char = unpack(v)
+					if x < char.data.right then
+						POS = i - 1
+						CHAR = self.chars[POS]
+						break
+					end
+				end
+			end
 
-			self.select_start = nil
-			self.select_stop = nil
-
-			self:InvalidateEditedText()
-
-			return true
+			if not CHAR then 
+				CHAR = self.chars[#self.chars]
+				POS = #self.chars
+			end
 		end
 
-		return false
-	end 
+		
+		local data = CHAR.data
+
+		return {
+			px = data.x,
+			py = data.y,
+			x = CHAR.x,
+			y = CHAR.y,
+			w = data.w,
+			h = data.h,
+			i = POS,
+			char = CHAR,
+			sub_pos = self:GetSubPosFromPos(CHAR.x, CHAR.y),
+		}
+	end
 	
+	function META:CaretFromPos(x, y)	
+		x = x or 0
+		y = y or 0
+
+		y = math.clamp(y, 1, #self.lines)
+		x = math.clamp(x, 0, self.lines[y] and self.lines[y]:ulength() or 0)
+		
+		local CHAR
+		local POS
+					
+		for i, char in ipairs(self.chars) do			
+			if char.y == y and char.x == x then
+				CHAR = char
+				POS = i
+				break
+			end
+		end
+		
+		if not CHAR then
+			if x == self.lines[#self.lines]:ulength() then
+				POS = #self.chars
+				CHAR = self.chars[i]
+			end
+		end
+		
+		if not CHAR then
+			if y <= 1 then
+				if x <= 0 then
+					CHAR = self.chars[1]
+					POS = 1
+				else
+					CHAR = self.chars[x + 1]
+					POS = x + 1
+				end
+			elseif y >= #self.lines then
+				local i = #self.chars - self.lines[#self.lines]:ulength() + x + 1
+				CHAR = self.chars[i]
+				POS = i
+			end
+		end
+				
+		if not CHAR then 
+			CHAR = self.chars[1] -- something is wrong!
+		end
+
+		local data = CHAR.data
+
+		return {
+			px = data.x,
+			py = data.y,
+			x = CHAR.x,
+			y = CHAR.y,
+			h = data.h,
+			w = data.w,
+			i = POS,
+			char = CHAR,
+			sub_pos = self:GetSubPosFromPos(CHAR.x, CHAR.y),
+		}
+	end
+		
+	function META:AdvanceCaret(X, Y)
+		
+		if self.ControlDown then
+			if X < 0 then
+				self:SetCaretPos(self:GetNextCharacterClassPos(-1))
+			elseif X > 0 then
+				self:SetCaretPos(self:GetNextCharacterClassPos(1))
+			end
+		end
+
+		local line = self.lines[self.caret_pos.y]
+		local x, y = self.caret_pos.x, self.caret_pos.y
+	
+		if Y ~= 0 then
+			x = self.real_x
+			y = y + Y
+		end
+
+		if X ~= math.huge and X ~= -math.huge then
+			x = x + X
+			
+			if Y == 0 then
+				self.real_x = x
+			end
+			
+			-- move to next or previous line
+			if X > 0 and x > line:ulength() and #self.lines > 1 then
+				x = 0
+				y = y + 1
+
+				if self.ControlDown then
+					local line = self.lines[self.caret_pos.y + 1] or ""
+					x = line:find("%s-%S", 0) or 1
+					x = x - 1				
+				end
+			elseif X < 0 and x < 0 and y > 0 and self.lines[self.caret_pos.y - 1] then
+				x = self.lines[self.caret_pos.y - 1]:ulength()
+				y = y - 1
+			end
+			
+		else			
+			if X == math.huge then
+				x = line:ulength()
+			elseif X == -math.huge then
+				local pos = #(line:match("^(%s*)") or "")
+							
+				if x == pos then
+					pos = 0
+				end
+
+				x = pos
+			end
+		end
+		
+		if x ~= self.caret_pos.x or y ~= self.caret_pos.y then
+			if x < self.caret_pos.x then
+				self.suppress_end_char = true
+			end
+			
+			self:SetCaretPos(x, y)
+			
+			self.suppress_end_char = false
+		end
+		
+		self.blink_offset = timer.GetTime() + 0.25
+	end
+end
+
+do -- selection
 	function META:SelectStart(x, y)
 		self.select_start = self:CaretFromPos(x, y)
 	end
@@ -1838,19 +1969,11 @@ do -- edit mode
 	function META:GetSelectStart()
 		if self.select_start and self.select_stop then
 			if self.select_start.i == self.select_stop.i  then return end
-
-			if self.EditMode then				
-				if self.select_start.i > self.select_stop.i then
-					return self.select_stop
-				else
-					return self.select_start
-				end
-			else				
-				if self.select_start.i > self.select_stop.i then
-					return self.select_stop
-				else
-					return self.select_start
-				end
+			
+			if self.select_start.i < self.select_stop.i then
+				return self.select_start
+			else
+				return self.select_stop
 			end
 		end
 	end
@@ -1858,37 +1981,32 @@ do -- edit mode
 	function META:GetSelectStop()
 		if self.select_start and self.select_stop then
 			if self.select_start.i == self.select_stop.i then return end
-			
-			if self.EditMode then
-				if self.select_start.i < self.select_stop.i then
-					return self.select_stop
-				else
-					return self.select_start
-				end
+				
+			if self.select_start.i > self.select_stop.i then
+				return self.select_start
 			else
-				if self.select_start.i < self.select_stop.i then
-					return self.select_stop
-				else
-					return self.select_start
-				end
+				return self.select_stop
 			end
 		end
 	end
 	
-	function META:GetSelectStartSubPos()
-		local caret = self:GetSelectStart()
-		return self:GetSubPosFromPos(caret.char.x, caret.char.y)
-	end
-	
-	function META:GetSelectStopSubPos()
-		local caret = self:GetSelectStop()
-		return self:GetSubPosFromPos(caret.char.x, caret.char.y)
-	end
-
 	function META:SelectAll()
 		self:SetCaretPos(0, 0)
 		self:SelectStart(0, 0)
 		self:SelectStop(math.huge, math.huge)
+	end
+	
+	function META:SelectCurrentWord()
+		local x, y = self:GetNextCharacterClassPos(-1, false)
+		self:SelectStart(x - 1, y)
+		
+		local x, y = self:GetNextCharacterClassPos(1, false)
+		self:SelectStop(x + 1, y) 
+	end
+	
+	function META:SelectCurrentLine()
+		self:SelectStart(0, self.caret_pos.y)
+		self:SelectStop(math.huge, self.caret_pos.y)
 	end
 
 	function META:Unselect()
@@ -1896,164 +2014,122 @@ do -- edit mode
 		self.select_stop = nil
 		self.caret_shift_pos = nil
 	end
+	
+	function META:GetSelection(tags) 
+		local out = {}
 
-	function META:InsertString(str, skip_move)		
-		if self.text:ulength() == 1 then
-			self:SetCaretPos(1, 0)
-		end
-				
-		local sub_pos = self:GetCaretSubPos()
+		local START = self:GetSelectStart()
+		local STOP = self:GetSelectStop()
 
-		self:DeleteSelection()
-		
-		if sub_pos == self.text:ulength() then
-			self.text = self.text .. str
-		else
-			self.text = self.text:usub(1, sub_pos - 1) .. str .. self.text:usub(sub_pos)
-		end
-
-		if not skip_move then
-			local x = self.caret_pos.char.x + str:ulength()
-			local y = self.caret_pos.char.y + str:count("\n")
-
-			if self.caret_pos.the_end or self.caret_pos.char.str == "\n" then
-				self.move_caret_right = true
-				x = x + 1
-			end
-
-			self.real_x = x
-
-			self:SetCaretPos(x, y, self.caret_pos.char.the_end)
-		end
-
-		self:InvalidateEditedText()
-
-		if self.caret_pos.the_end or self.caret_pos.char.the_end then
-			self.move_caret_right = true
-		end
-
-		self.caret_shift_pos = nil
-	end
-
-	function META:Indent(back)
-		local sub_pos = self:GetCaretSubPos()
-
-		if self.select_start and self.select_stop and self.select_start.char.y ~= self.select_stop.char.y then
-
-			local select_start = self:GetSelectStart()
-			local select_stop = self:GetSelectStop()
-		
-			-- first select everything
-			self:SelectStart(0, select_start.char.y)
-			self:SelectStop(math.huge, select_stop.char.y)
-
-			-- and move the caret to bottom
-			self:SetCaretPos(select_stop.char.x, select_stop.char.y)
-
-			local start_pos = self:GetSelectStartSubPos()
-			local end_pos = self:GetSelectStopSubPos()
-
-			local text = self.text:usub(start_pos, end_pos)
-
-			if back then
-				if text:sub(1, 1) == "\t" then
-					text = text:sub(2)
-				end
-				text = text:gsub("\n\t", "\n")
+		if START and STOP then
+			if not tags then
+				return self.text:usub(START.sub_pos, STOP.sub_pos - 1)
 			else
-				text = "\t" .. text
-				text = text:gsub("\n", "\n\t")
+				local last_chunk
+				local last_font
+				local last_color
+				  
+				for i = START.i, STOP.i do
+					local char = self.chars[i]
+					local chunk = char.chunk
+												
+					-- this will ensure a clean output
+					-- but maybe this should be cleaned in the invalidate function instead?
+					if chunk.font and last_font ~= chunk.font then
+						table.insert(out, ("<font=%s>"):format(chunk.font))
+						last_font = chunk.font
+					end
 
-				-- ehhh, don't add \t at the next line..
-				if text:sub(-1) == "\t" then
-					text = text:sub(0, -2)
-				end
-			end
+					if chunk.color and last_color ~= chunk.color then
+						table.insert(out, ("<color=%s,%s,%s,%s>"):format(math.round(chunk.color.r, 2), math.round(chunk.color.g, 2), math.round(chunk.color.b, 2), math.round(chunk.color.a, 2)))
+						last_color = chunk.color
+					end
+					
+					table.insert(out, char.str)
 
-			self.text = self.text:usub(1, start_pos - 1) .. text .. self.text:usub(end_pos + 1)
-		else
-			-- TODO
-			if back and self.text:sub(sub_pos-1, sub_pos-1) == "\t" then
-				local sub_pos = sub_pos - 1
-				self.text = self.text:usub(1, sub_pos - 1) .. self.text:usub(sub_pos + 1)
-				self:SetCaretPos(self.caret_pos.char.x - 1, self.caret_pos.char.y)
-			else
-				self:InsertString("\t")
-			end
-		end
-		
-		self:InvalidateEditedText()
-	end
-
-	function META:Enter()
-		local sub_pos = self:GetCaretSubPos()
-
-		self:DeleteSelection(true)
-
-		local x = 0
-		local y = self.caret_pos.char.y + 1
-
-		-- if the next line already contains space in the beginning
-		-- we replce the currents line space with it
-		local next_line = self.lines[y]
-
-		if next_line then
-			local cur_space = self.text:usub(sub_pos):match("^(%s*)")
-			local next_space = next_line:match("^(%s*)")
-		
-			if next_space then
-
-				local space = next_space
-
-				-- but if this lines indention is higher than the previous line
-				-- we need to use its starting space instead
-
-				local prev_line = self.lines[y - 1]
-				if prev_line then
-					local prev_space = prev_line:match("^(%s+)")
-					if prev_space and #prev_space > #space then
-						space = prev_space
+					if chunk.type == "custom" then
+						if chunk.val.type == "texture" then
+							table.insert(out, ("<texture=%s>"):format(chunk.val.args[1]))
+						end
 					end
 				end
-				
-				if cur_space then
-					-- relace current space with next's space
-					-- "\t\tfoo| bar" -> "\t\tbar"
+			end
+		end
+	 
+		return table.concat(out, "")
+	end
+		
+	function META:DeleteSelection(skip_move)
+		local start = self:GetSelectStart()
+		local stop = self:GetSelectStop()
 
-					if  self.caret_pos.char.str == "\n" then
-						self.text = self.text:usub(1, sub_pos - 1) .. "\n".. space .. cur_space  .. self.text:usub(sub_pos + #cur_space) 
-						x = x + 1
+		if start then
+
+			if not skip_move then
+				self:SetCaretPos(start.x, start.y)
+			end
+
+			self.text = self.text:usub(1, start.sub_pos - 1) .. self.text:usub(stop.sub_pos)
+
+			self:Unselect()
+						
+			if self.chunk_fix then -- fix chunks	
+			
+				local need_fix = false
+				
+				for i = start.char.chunk.i + 1, stop.char.chunk.i - 1 do 
+					self.chunks[i] = nil
+					need_fix = true
+				end
+							
+				local start_chunk = start.char.chunk
+				local stop_chunk = stop.char.chunk
+				
+				if start_chunk.type == "string" then
+					if stop_chunk == start_chunk then						
+						start_chunk.val = start_chunk.val:usub(1, start.char.data.i - 1) .. start_chunk.val:usub(stop.char.data.i)
 					else
-						self.text = self.text:usub(1, sub_pos - 1) .. "\n" .. space .. self.text:usub(sub_pos + #cur_space) 
-					end
-					x = x + #space
-
+						start_chunk.val = start_chunk.val:usub(1, start.char.data.i - 1) 
+					end 
 				else
-					x = x + #space
-					self.text = self.text:usub(1, sub_pos - #next_space) .. "\n" .. space .. self.text:usub(sub_pos - #next_space + 1)
+					self.chunks[start_chunk.i] = nil
+					need_fix = true
+				end 
+				
+				if stop_chunk ~= start_chunk then
+					if stop_chunk.type == "string" then
+						local sub_pos = stop.char.data.i
+						stop_chunk.val = stop_chunk.val:usub(sub_pos)  
+					elseif stop_chunk.type ~= "newline" then
+						self.chunks[stop_chunk.i] = nil
+						need_fix = true
+					end
 				end
-			else
-				self.text = self.text:usub(1, sub_pos - 1) .. "\n" .. self.text:usub(sub_pos)
+ 			
+				if need_fix then
+					table.fixindices(self.chunks)
+				end	
+			
+				self:Invalidate()
 			end
-		else
-			self.text = self.text:usub(1, sub_pos) .. "\n" .. self.text:usub(sub_pos + 1)
-			x = x + 2
-			y = y + 1
+			
+			self:InvalidateEditedText()
+
+			return true
 		end
 
-		self:InvalidateEditedText()
-
-		self.real_x = x
-
-		self:SetCaretPos(x, y, true)
+		return false
 	end
 
+end
+	
+do -- clipboard
 	function META:Copy()
-		return self:GetSelectedString()
+		return self:GetSelection()
 	end
 
 	function META:Cut()
-		local str = self:GetSelectedString()
+		local str = self:GetSelection()
 		self:DeleteSelection()
 		return str
 	end
@@ -2064,227 +2140,65 @@ do -- edit mode
 		self:DeleteSelection()
 
 		if #str > 0 then
-			local old = self.text
-			self:InsertString(str, true)
+			self:InsertString(str, (str:find("\n"))) 
 			self:InvalidateEditedText()
 			
-			self:SetCaretPos(math.huge, self.caret_pos.char.y + str:count("\n"), true)
-		end
-	end
-
-	function META:Backspace()
-		local sub_pos = self:GetCaretSubPos()
-
-		local prev_line = self.lines[self.caret_pos.char.y - 1]
-
-		if not self:DeleteSelection() and sub_pos ~= 1 then
-			if self.ControlDown then
-			
-				local x, y = self:GetNextCharacterClassPos(-1, true)
-				x = x - 1
-				
-				if x <= 0 then
-					x = math.huge
-					y = y - 1
-				end
-				
-				self:SelectStart(self.caret_pos.char.x, self.caret_pos.char.y)
-				self:SelectStop(x, y)
-				self:DeleteSelection()
-				
-				self.real_x = x
-			else
-				if sub_pos == #self.text then
-					self.text = self.text:usub(1, sub_pos - 1)
-				else
-					self.text = self.text:usub(1, sub_pos - 2) .. self.text:usub(sub_pos)
-
-					if self.caret_pos.char.x <= 0 then
-						self:SetCaretPos(math.huge, self.caret_pos.char.y - 1)
-					else
-						self:SetCaretPos(self.caret_pos.char.x - 1, self.caret_pos.char.y)
-					end
-
-					self.real_x = self.caret_pos.char.x
-				end
+			if str:find("\n") then
+				self:SetCaretPos(math.huge, self.caret_pos.y + str:count("\n"), true)
 			end
 		end
-
-		self:InvalidateEditedText()
 	end
- 
-	function META:Delete() 
-		if self.caret_pos.the_end then return end 
+end
 
-		local line = self.lines[self.caret_pos.char.y + 1]
-		local sub_pos = self:GetCaretSubPos()
-
-		if not self:DeleteSelection() then
-			if self.ControlDown then
-				
-				local x, y = self:GetNextCharacterClassPos(1, true)
-				x = x + 1				
-				self:SelectStart(self.caret_pos.char.x, self.caret_pos.char.y)
-				self:SelectStop(x, y)
-				self:DeleteSelection()
-				
-			else
-				self.text = self.text:usub(1, sub_pos - 1) .. self.text:usub(sub_pos + 1)
-			end
-		end
-
-		self:InvalidateEditedText()
-	end
-
-	function META:MoveCaret(key)
-		
-		if self.ControlDown then
-			if key == "left" then
-				self:SetCaretPos(self:GetNextCharacterClassPos(-1))
-			elseif key == "right" then
-				self:SetCaretPos(self:GetNextCharacterClassPos(1))
-			end
-		end
+do -- input
 	
-		local line = self.lines[self.caret_pos.char.y]
-		local x, y = self.caret_pos.char.x, self.caret_pos.char.y
+	function META:OnCharInput(char)
+		timer.Delay(0, function() self:InsertString(char) end)  
+	end
+	
+	local is_caret_move = {
+		up = true,
+		down = true,
+		left = true,
+		right = true,
 
-		if key == "right" then
-			x = x + 1
-			self.real_x = x
-		elseif key == "left" then
-			x = x - 1
-			self.real_x = x
-		end
+		home = true,
+		["end"] = true,
+	}
+	
+	function META:OnKeyInput(key)
 
-		if key == "up" then
-			y = y - 1
-			x = self.real_x
-		elseif key == "down" then
-			y = y + 1
-			x = self.real_x
-		end
+		if not self.caret_pos then return end
 
-		if key == "page_up" then
-			y = y - 10
-			x = self.real_x
-		elseif key == "page_down" then
-			y = y + 10
-			x = self.real_x
-		end
-
-
-		if key == "home" then
-			local pos = #(line:match("^(%s*)") or "")
-						
-			if x == pos then
-				pos = 0
-			end
-
-			x = pos
+		do
+			local x, y = 0, 0
 			
-			self.real_x = x
-		elseif key == "end" then
-			x = line:ulength()
+			if key == "up" then
+				y = -1
+			elseif key == "down" then
+				y = 1
+			elseif key == "left" then
+				x = -1
+			elseif key == "right" then
+				x = 1
+			elseif key == "home" then
+				x = -math.huge
+			elseif key == "end" then
+				x = math.huge
+			elseif key == "page_up" then
+				y = -10
+			elseif key == "page_down" then
+				y = 10
+			end 
 			
-			self.real_x = x
-		end
-
-		if key == "right" and x > line:ulength() and #self.lines > 1 then
-			x = 0
-			y = y + 1
-
-			if self.ControlDown then
-				local line = self.lines[self.caret_pos.char.y + 1] or ""
-				x = line:find("%s-%S", 0) or 1
-				x = x - 1				
-			end
-		elseif key == "left" and x < 0 and y > 0 and self.lines[self.caret_pos.char.y - 1] then
-			x = self.lines[self.caret_pos.char.y - 1]:ulength()
-			y = y - 1
+			self:AdvanceCaret(x, y)
 		end
 		
-		if x ~= self.caret_pos.char.x or y ~= self.caret_pos.char.y then
-			if x < self.caret_pos.char.x then
-				self.suppress_end_char = true
-			end
-			
-			self:SetCaretPos(x, y)
-			
-			self.suppress_end_char = false
-		end
-
 		if is_caret_move[key] then
 			if not self.ShiftDown then
 				self:Unselect()
 			end
 		end
-		
-		self.blink_offset = timer.GetTime() + 0.25
-	end
-	
-	function META:SelectCurrentWord()
-		self:SelectStart(self:GetNextCharacterClassPos(-1))
-		self:SelectStop(self:GetNextCharacterClassPos(1))
-	end
-	
-	function META:SelectCurrentLine()
-		self:SelectStart(0, self.caret_pos.char.y)
-		self:SelectStop(math.huge, self.caret_pos.char.y)
-	end
-	
-	function META:OnMouseInput(button, press, x, y)
-
-		if button == "button_2" then
-			if self.EditMode then
-				self.caret_pos = self:CaretFromPixels(x, y)
-				
-				if self.caret_pos and self.caret_pos.char then
-					self.real_x = self.caret_pos.char.x
-				end
-				
-				self:SelectCurrentWord()
-			else
-				if press then
-					self.select_start = self:CaretFromPixels(x, y)
-					self.select_stop = nil
-					self.mouse_selecting = true
-				elseif self.select_stop then
-					system.SetClipboard(self:GetSelectedString())
-					self.select_stop = nil
-					self.mouse_selecting = false
-				end
-			end
-		end
-	
-		if button == "button_1" then
-			if press then
-				self.select_start = self:CaretFromPixels(x, y)
-				self.select_stop = nil
-				self.mouse_selecting = true
-				
-				if self.EditMode then
-					self.caret_pos = self:CaretFromPixels(x, y)
-					
-					if self.caret_pos and self.caret_pos.char then
-						self.real_x = self.caret_pos.char.x
-					end
-				end
-			else
-				if not self.EditMode and self.select_stop then
-					system.SetClipboard(self:GetSelectedString(true))
-					self.select_stop = nil
-				end
-				self.mouse_selecting = false
-			end
-		end
-	end
-
-	function META:OnKeyInput(key)
-
-		if not self.caret_pos then return end
-
-		self:MoveCaret(key)
 		
 		if key == "tab" then
 			self:Indent(self.ShiftDown)
@@ -2301,6 +2215,15 @@ do -- edit mode
 				self:Paste(system.GetClipboard())
 			elseif key == "a" then
 				self:SelectAll()
+			elseif key == "t" then
+				local str = self:GetSelection()
+				self:DeleteSelection()
+				
+				for i, chunk in pairs(self:StringTagsToTable(str)) do
+					table.insert(self.chunks, self.caret_pos.char.chunk.i + i - 1, chunk)
+				end
+				
+				self:Invalidate()
 			end
 		end
 
@@ -2314,27 +2237,44 @@ do -- edit mode
 			if key ~= "tab" then
 				if self.ShiftDown then
 					if self.caret_shift_pos then
-						self:SelectStart(self.caret_shift_pos.char.x, self.caret_shift_pos.char.y)
-						self:SelectStop(self.caret_pos.char.x, self.caret_pos.char.y)
+						self:SelectStart(self.caret_shift_pos.x, self.caret_shift_pos.y)
+						self:SelectStop(self.caret_pos.x, self.caret_pos.y) 
 					end
-					self.shift_unselect = false
 				elseif is_caret_move[key] then
-					if not self.shift_unselect then
-						self:Unselect()
-						self.shift_unselect = true
-					end
+					self:Unselect()
 				end
 			end
 		end
+	end 
+	
+	function META:OnMouseInput(button, press, x, y)
+
+		if button == "button_2" then
+			self.caret_pos = self:CaretFromPixels(x, y)
+			
+			if self.caret_pos and self.caret_pos.char then
+				self.real_x = self.caret_pos.x
+			end
+			
+			self:SelectCurrentWord()
+		end
+
+		if button == "button_1" then
+			if press then
+				self.select_start = self:CaretFromPixels(x, y)
+				self.select_stop = nil
+				self.mouse_selecting = true
+				
+				self.caret_pos = self:CaretFromPixels(x, y)
+				
+				if self.caret_pos and self.caret_pos.char then
+					self.real_x = self.caret_pos.x
+				end
+			else
+				self.mouse_selecting = false
+			end
+		end
 	end
-end
-
-function META:OnCharInput(char)
-	timer.Delay(0, function() self:InsertString(char) end)  
-end
-
-function META:OnTextChanged(str)
-
 end
 
 do -- drawing
@@ -2383,8 +2323,7 @@ do -- drawing
 		end
 
 		for i, chunk in ipairs(self.chunks) do
-			if chunk.skip_process then break end
-
+			
 			if not chunk.internal then
 				if chunk.x < w and chunk.y < h then
 					if chunk.type == "font" then
@@ -2396,27 +2335,33 @@ do -- drawing
 						local c = chunk.val
 
 						EXT.SetColor(c.r, c.g, c.b, c.a)
-					elseif chunk.type == "custom" and not chunk.stop then
-						chunk.started = true
-						call_tag_func(self, chunk, "draw", chunk.x, chunk.y)
+					elseif chunk.type == "custom" then
+						-- todo: proper stack
+						
+						self.started_tags = self.started_tags or {}
+						
+						if not chunk.val.stop_tag then
+							call_tag_func(self, chunk, "draw", chunk.x, chunk.y)
+							self.started_tags[chunk.val.type] = chunk
+						elseif self.started_tags[chunk.val.type] then
+							local chunk = self.started_tags[chunk.val.type]
+							call_tag_func(self, chunk, "post", chunk.x, chunk.y)
+							self.started_tags[chunk.val.type] = nil
+						end
 					end
 				end
 			end
 		end
 
-		for _, chunk in ipairs(self.chunks) do
-			if chunk.skip_process then break end
-			
-			if chunk.x < w and chunk.y < h then
-				if chunk.type == "custom" then
-					if not chunk.stop and chunk.started and chunk.val.tag and chunk.val.tag.post then
-						chunk.started = false
-						call_tag_func(self, chunk, "post")
-					end
-				end
+		if self.started_tags then
+			for _, chunk in pairs(self.started_tags) do
+				call_tag_func(self, chunk, "post")
+				self.started_tags[chunk.val.type] = nil
 			end
 		end
-		
+				
+		self.current_x = x
+		self.current_y = y
 		self.current_width = w
 		self.current_height = h
 
@@ -2440,7 +2385,7 @@ do -- drawing
 
 		if self.ShiftDown then
 			if not self.caret_shift_pos then
-				self.caret_shift_pos = self:CaretFromPos(self.caret_pos.char.x, self.caret_pos.char.y)
+				self.caret_shift_pos = self:CaretFromPos(self.caret_pos.x, self.caret_pos.y)
 			end
 		else
 			self.caret_shift_pos = nil
@@ -2453,58 +2398,24 @@ do -- drawing
 			surface.SetWhiteTexture()
 			surface.Color(1, 1, 1, 0.5)
 
-			if self.EditMode then
-				for i = START.i, END.i - 1 do
-					local char = self.chars[i]
-					if char then
-						local data = char.data
-						surface.DrawRect(data.x, data.y, data.w, data.h)
-					end
-				end
-			else
-				for i, chunk in ipairs(self.chunks) do
-					if chunk.skip_process then break end
-					
-					if START.char and END.char and START.i == END.i then
-						for i, char in ipairs(START.char.chunk.chars) do
-							if i >= START.char.i and i <= END.char.i then
-								surface.DrawRect(char.x, char.y, char.w, char.h)
-							end
-						end
-						break
-					else
-						if i == START.i then
-							if START.char then
-								for i, char in ipairs(START.char.chunk.chars) do
-									if i >= START.char.i then
-										surface.DrawRect(char.x, char.y, char.w, char.h)
-									end
-								end
-							else
-								surface.DrawRect(chunk.x, chunk.y, chunk.w, chunk.h)
-							end
-						elseif i == END.i then
-							if END.char then
-								for i, char in ipairs(END.char.chunk.chars) do
-									if i < END.char.i then
-										surface.DrawRect(char.x, char.y, char.w, char.h)
-									end
-								end
-							else
-								surface.DrawRect(chunk.x, chunk.y, chunk.w, chunk.h)
-							end
-						elseif i > START.i and i <= END.i and START.i ~= END.i then
-							surface.DrawRect(chunk.x, chunk.y, chunk.w, chunk.h)
-						end
-					end
+			for i = START.i, END.i - 1 do
+				local char = self.chars[i]
+				if char then
+					local data = char.data
+					surface.DrawRect(data.x, data.y, data.w, data.h)
 				end
 			end
 		else
-			if self.caret_pos then
-				self.blink_offset = self.blink_offset or 0
-				surface.Color(1, 1, 1, (timer.GetTime() - self.blink_offset)%0.5 > 0.25 and 1 or 0)
-				surface.DrawRect(self.caret_pos.x, self.caret_pos.y, 2, self.caret_pos.h)
-			end
+			self:DrawCaret()
+		end
+	end
+	
+	function META:DrawCaret()
+		if self.caret_pos then
+			surface.SetWhiteTexture()
+			self.blink_offset = self.blink_offset or 0
+			surface.Color(1, 1, 1, (timer.GetTime() - self.blink_offset)%0.5 > 0.25 and 1 or 0)
+			surface.DrawRect(self.caret_pos.px, self.caret_pos.py, 2, self.caret_pos.h)
 		end
 	end
 end
