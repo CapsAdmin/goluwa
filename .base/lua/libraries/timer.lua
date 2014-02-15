@@ -5,6 +5,26 @@ timer.Timers = timer.Timers or {}
 timer.clock = timer.clock or os.clock
 timer.GetTime = timer.clock
 
+do -- profiling
+	local time
+
+	function timer.Measure(str)
+		if time then
+			local delta = timer.GetTime() - time
+			
+			time = nil
+			
+			if str then	
+				logf("%s: %s", str, math.round(delta, 3))
+			end
+			
+			return delta
+		else
+			time = timer.GetTime()
+		end
+	end
+end
+
 function timer.GetFrameTime()
 	return timer.ft or 0.1
 end
@@ -53,15 +73,20 @@ do -- timer meta
 	timer.TimerMeta = META
 end
 
-function timer.Thinker(callback, speed, in_seconds, run_now)
-	local key = #timer.Timers+1
-	
+function timer.Thinker(callback, speed, in_seconds, run_now)	
 	if run_now and callback() ~= nil then
-		timer.Timers[key] = nil
 		return
 	end
 	
-	timer.Timers[key] = {type = "thinker", realtime = timer.clock(), callback = callback, speed = speed, in_seconds = in_seconds}
+	local key = #timer.Timers+1
+	
+	timer.Timers[key] = {
+		type = "thinker", 
+		realtime = timer.clock(), 
+		callback = callback, 
+		speed = speed, 
+		in_seconds = in_seconds
+	}
 end
 
 function timer.Delay(time, callback, obj)
@@ -82,7 +107,11 @@ function timer.Delay(time, callback, obj)
 		end
 	end
 
-	timer.Timers[#timer.Timers+1] = {type = "delay", callback = callback, realtime = timer.clock() + time}
+	timer.Timers[#timer.Timers+1] = {
+		type = "delay", 
+		callback = callback, 
+		realtime = timer.clock() + time
+	}
 end
 
 function timer.Create(id, time, repeats, callback, run_now)
