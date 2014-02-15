@@ -61,6 +61,7 @@ include("extensions/input.lua")
 
 include("libraries/image.lua")
 include("libraries/gif.lua")
+include("libraries/markup.lua")
 
 
 entities.LoadAllEntities()

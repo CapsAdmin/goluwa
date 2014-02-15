@@ -767,7 +767,4 @@ do -- poly
 	end
 end
 
-include("markup.lua")
-
-
 return surface
