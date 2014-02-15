@@ -4,6 +4,8 @@
 		caret real_x should prioritise pixel width
 		y axis caret movement when the text is being wrapped
 		divide this up in cells
+		newline height in variable line height mode
+		start stop tags aren't working properly (only last is caluclated)
 ]]
 
 if ELIAS then
@@ -17,13 +19,18 @@ end
 local META = {}
 META.__index = META
 
-function _G.Markup(a, ...)
-	local self = {w = 0, h = 0, chunks = {}, current_x = 0, current_y = 0, current_width = 0, current_height = 0}
+function Markup()
+	local self = {
+		w = 0, 
+		h = 0, 
+		chunks = {}, 
+		current_x = 0, 
+		current_y = 0, 
+		current_width = 0, 
+		current_height = 0
+	}
+	
 	setmetatable(self, META)
-
-	if a then
-		self:SetTable({a, ...})
-	end
 
 	return self
 end
@@ -276,7 +283,7 @@ do -- tags
 				EXT.SetFont(font)
 			end,
 		}
-
+ 
 		META.tags.texture =
 		{
 			arguments = {"error", {default = 1, min = 1, max = 4}},
@@ -614,10 +621,16 @@ function META:AddColor(color)
 	self.need_layout = true
 end
 
-function META:AddString(str)
+function META:AddString(str, tags)
 	str = tostring(str)
 
-	table.insert(self.chunks, {type = "string", val = str})
+	if tags then
+		for _, chunk in pairs(self:StringTagsToTable(str)) do
+			table.insert(self.chunks, chunk)
+		end
+	else
+		table.insert(self.chunks, {type = "string", val = str})
+	end
 	
 	self.need_layout = true
 end
@@ -635,8 +648,8 @@ function META:Add(var)
 		self:AddColor(var)
 	elseif t == "string" or t == "number" then
 		self:AddString(var)
-	elseif t == "table" and val.type and val.cal then
-		table.insert(temp, val)
+	elseif t == "table" and var.type and var.val then
+		table.insert(chunks, var)
 	elseif t ~= "cdata" then
 		logf("tried to parse unknown type %q", t)
 	end
@@ -843,6 +856,8 @@ function META:Invalidate()
 	-- anything that need to add more chunks need to store the
 	-- old chunk as old_chunk key
 	
+	if #self.chunks == 0 then return end
+	
 	local temp = {}
 	local old_chunks = {}
 
@@ -951,6 +966,7 @@ function META:Invalidate()
 		end
 
 		-- for consistency everything should have x y w h
+		
 		chunk.x = chunk.x or 0
 		chunk.y = chunk.y or 0
 		chunk.w = chunk.w or 0
@@ -1380,6 +1396,10 @@ function META:Invalidate()
 
 	if self.select_stop then
 		self:SelectStop(self.select_stop.x, self.select_stop.y)
+	end
+	
+	if self.OnInvalidate then
+		self:OnInvalidate()
 	end
 end
 
@@ -2328,6 +2348,8 @@ end
 do -- drawing
 
 	function META:Draw(x,y, w,h)
+		if #self.chunks == 0 then return end
+	
 		if self.need_layout then
 			self:Invalidate()
 			self.need_layout = false
