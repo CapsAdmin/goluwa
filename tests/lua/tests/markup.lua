@@ -83,6 +83,7 @@ markup todo:
 	divide this up in cells (new object?)
 	proper tag stack
 	the ability to edit (remove and copy) custom tags that have a size (like textures)
+	alignment tags 
 	]]
 	
 	local small_font = surface.CreateFont("small", {size = 8, read_speed = 100})
@@ -94,6 +95,13 @@ markup todo:
 
 	markup:AddFont("default")
 	markup:AddString("back to normal!\n\n") 
+	
+	local small_font = surface.CreateFont("small4", {size = 14, read_speed = 100, monospace = true})  
+	markup:AddFont(small_font)
+	markup:AddString("monospace\n")
+	markup:AddString("░█░█░█▀█░█▀█░█▀█░█░█░\n░█▀█░█▀█░█▀▀░█▀▀░▀█▀░\n░▀░▀░▀░▀░▀░░░▀░░░░▀░░\n")
+	markup:AddString("it's kinda like fullwidth\n")
+	markup:AddFont("default")
 
 	do	
 		local icons = vfs.Find("textures/silkicons/.")
@@ -104,7 +112,6 @@ markup todo:
 		end
 		
 		markup:AddString(tags, true) 
-		markup:AddString("\n\n")
 	end	
 
 	syntax_process(
@@ -136,6 +143,7 @@ end
 	--markup:AddString("rotated grin<rotate=90>:D</rotate> \n", true)	
 	--markup:AddString("that's <wrong>WRONG</wrong>\n", true)
 	markup:AddString("Hey look it's gordon freeman!\n")
+	markup:AddString("<click>http://www.google.com</click>\n", true)
 	markup:AddString("did you forget your <mark>eggs</mark>?\n", true)
 	markup:AddString("no but that's <wrong>wierd</wrong>\n", true)
 	markup:AddString("what's so <rotate=-3>wierd</rotate> about that?\n", true)
