@@ -137,10 +137,15 @@ do -- fonts
 
 		info.path = info.path or "fonts/unifont.ttf"
 		info.size = info.size or 14     
-		info.spacing = info.spacing or 0
 		
 		info.border = math.pow2ceil(info.size) 
 		info.border_2 = info.border / 2   
+		
+		if info.monospace and not info.spacing then
+			info.spacing = info.size
+		end
+		
+		info.spacing = info.spacing or 0
 		
 		ft.fonts[name] = 
 		{
@@ -364,10 +369,10 @@ do -- fonts
 		
 		if str == " " then
 			local _, h = surface.GetTextSize("|")
-			return (ft.current_font.info.size / 2) * W, h
+			return (ft.current_font.info.size / 2) * W + ft.current_font.info.spacing, h
 		elseif str == "\t" then
 			local _, h = surface.GetTextSize("|")
-			return (ft.current_font.info.size * 2) * W, h
+			return (ft.current_font.info.size * 2) * W + ft.current_font.info.spacing, h
 		end
 	
 		return data.w * W, data.h * H
