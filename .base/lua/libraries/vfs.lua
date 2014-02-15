@@ -520,13 +520,17 @@ do -- async reading
 			local file = vfs.GetFile(path, "rb")
 			if file then
 				local content = {}
+				mbps = mbps / 2
 				timer.Thinker(function()
-					local str = file:read(1048576 * mbps) -- 5 mb per tick
-					if str then
-						content[#content + 1] = str
-					else
-						callback(table.concat(content))
-						return false
+					-- in case mbps is higher than the file size
+					for i = 1, 2 do
+						local str = file:read(1048576 * mbps) -- 5 mb per tick
+						if str then
+							content[#content + 1] = str
+						else
+							callback(table.concat(content))
+							return false
+						end
 					end
 				end, 1, true, true)
 				return true				
