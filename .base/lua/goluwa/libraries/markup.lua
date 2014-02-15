@@ -1,12 +1,12 @@
  
 --[[ 
-	todo:
-		caret real_x should prioritise pixel width
-		y axis caret movement when the text is being wrapped
-		divide this up in cells
-		newline height in variable line height mode
-		start stop tags aren't working properly (only last is caluclated)
-]]
+todo:
+	caret real_x should prioritise pixel width
+	y axis caret movement when the text is being wrapped
+	divide this up in cells (new object?)
+	proper tag stack
+	the ability to edit (remove and copy) custom tags that have a size (like textures)
+]] 
 
 if ELIAS then
 	if window and #window.GetSize() > 5 then 
@@ -190,7 +190,7 @@ do -- tags
 			draw = function(markup, self, x,y, r,g,b,a)
 				EXT.SetColor(r, g, b, a)
 			end,
-		}
+		} 
 
 		META.tags.physics =
 		{
@@ -216,9 +216,9 @@ do -- tags
 
 				local part = self.part
 
-				local W, H = markup.current_width, markup.current_height
+				local W, H = markup.width, markup.height
 				W = W - self.x
-				H = H - self.y + self.line_height
+				H = H - self.y + part.siz.h
 				
 				local xvel = (self.last_world_x or markup.current_x) - markup.current_x
 				local yvel = (self.last_world_y or markup.current_y) - markup.current_y
@@ -239,7 +239,7 @@ do -- tags
 				part.vel.y = part.vel.y * part.drag
 
 				-- collision
-				if part.pos.x - part.siz.w < 0 then
+				if part.pos.x + part.siz.w < 0 then
 					part.pos.x = part.siz.w
 					part.vel.x = part.vel.x * -part.drag
 				end
@@ -248,8 +248,8 @@ do -- tags
 					part.pos.x = W - part.siz.w
 					part.vel.x = part.vel.x * -part.drag
 				end
-
-				if part.pos.y - part.siz.h < 0 then
+ 
+				if part.pos.y + part.siz.h < 0 then
 					part.pos.y = part.siz.h
 					part.vel.y = part.vel.y * -part.drag
 				end
@@ -1008,7 +1008,7 @@ function META:Invalidate()
 			-- advance y with the height of the tallest chunk
 			current_y = current_y + chunk_height
 			
-			--chunk_height = 0
+			chunk_height = chunk.h
 		end
 
 		chunk.x = current_x
@@ -1095,27 +1095,19 @@ function META:Invalidate()
 	local current_x = 0
 	local current_y = 0
 
-	local chunk_height = 0 -- the height to advance y in
-
 	for i, chunk in ipairs(temp) do
 		
 		-- is the previous line a newline?
 		local newline = temp[i - 1] and temp[i - 1].type == "newline"
 
 		if newline and chunk.type == "string" and not chunk.whitespace then
-
-			-- figure out the tallest chunk before going to a new line
-			if chunk.h > chunk_height then
-				chunk_height = chunk.h
-			end
-
+ 
 			-- is this a new line or are we going to exceed the maximum width?
 			if newline or current_x + chunk.w >= self.MaxWidth then
 				-- reset the width
 				current_x = 0
 
 				-- advance y with the height of the tallest chunk
-				current_y = current_y + chunk_height
 				current_y = chunk.y
 			end
 
@@ -1224,13 +1216,17 @@ function META:Invalidate()
 				last_y = chunk.y
 
 				for i, chunk in pairs(chunk_line) do
+					--if type(chunk.val) == "string" and chunk.val:find("bigtable") then print("\n\n",chunk,"\n\n")  end
+			--		log(chunk.type == "string" and chunk.val or ( "<"..  chunk.type .. ">"))
 					chunk.line_height = line_height
 					chunk.line_width = line_width
 					chunk_line[i] = nil
 				end
 				
-				line_height = 0
-				line_width = 0
+		--		log(chunk.y - chunks[i+1].y, "\n") 
+				
+				line_height = chunk.h
+				line_width = chunk.w
 			end
 			
 			
@@ -1253,6 +1249,7 @@ function META:Invalidate()
 						chunk.tag_center_y = center_y
 						chunk.tag_height = tag_height
 						chunk.tag_width = tag_width
+						chunk.chunks_inbetween = tag_line
 					end
 
 					tag_width = 0
@@ -1269,7 +1266,7 @@ function META:Invalidate()
 			chunk.line = line
 			chunk.build_chars = build_chars
 			chunk.i = i
-			
+						
 			table.insert(chunk_line, chunk) 
 		end
 		
@@ -1277,7 +1274,7 @@ function META:Invalidate()
 			local start_chunk = tag_line[1] or chunk_line[1] or chunks[1]
 			local center_x = start_chunk.x + line_height / 2
 			local center_y = start_chunk.y + line_width / 2
-			
+		
 			for i, chunk in pairs(tag_line) do
 				chunk.tag_center_x = center_x 
 				chunk.tag_center_y = center_y
@@ -1288,10 +1285,14 @@ function META:Invalidate()
 		end
 		
 		for i, chunk in pairs(chunk_line) do
+	--		log(chunk.type == "string" and chunk.val or ( "<"..  chunk.type .. ">"))
+
 			chunk.line_height = line_height
 			chunk.line_width = line_width
 			chunk_line[i] = nil
 		end
+		
+	--	log(line_height, "\n")
 
 		self.line_count = line
 		self.width = width
@@ -1299,13 +1300,15 @@ function META:Invalidate()
 	end
 
 
-
+ 
 
 
 
 	 -- align the y axis properly
 	for _, chunk in ipairs(chunks) do
-		chunk.y = chunk.y - chunk.h + chunk.line_height
+		if chunk.type ~= "newline" then
+			chunk.y = chunk.y - chunk.h + chunk.line_height
+		end
 
 		-- mouse testing
 		chunk.right = chunk.x + chunk.w
@@ -2414,7 +2417,7 @@ do -- drawing
 						end
 						
 						self.started_tags = self.started_tags or {}
-						
+	
 						if chunk.chunks_inbetween and chunk.chunks_inbetween[#chunk.chunks_inbetween] == chunk then
 							for i, chunk in ipairs(chunk.chunks_inbetween) do
 								call_tag_func(self, chunk.chunks_inbetween[1], "draw_over", chunk)
