@@ -401,8 +401,11 @@ do -- orientation
 end
 
 local COLOR = Color()
+local oldr, oldg, oldb, olda
 
 function surface.Color(r,g,b,a)
+	oldr, oldg, oldb, olda = R,G,B,A
+	
 	R = r
 	G = g
 	B = b
@@ -416,6 +419,8 @@ function surface.Color(r,g,b,a)
 	COLOR.a = A
 	
 	surface.rectmesh.global_color = COLOR
+	
+	return oldr, oldg, oldb, olda
 end
 
 function surface.SetAlphaMultiplier(a)
