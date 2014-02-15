@@ -66,7 +66,7 @@ local function syntax_process(str)
 	return out
 end  
   
-local str = vfs.Read("lua/goluwa/libraries/markup.lua"):sub(0, 1000)
+local str = vfs.Read("lua/goluwa/libraries/markup.lua"):sub(0, 500)
   
 if markup_frame and markup_frame:IsValid()
  then markup_frame:Remove() end 
@@ -92,8 +92,14 @@ markup.OnInvalidate = function()
 end
 
 function panel:OnDraw(size)
+	local w,h = size:Unpack()
+	
 	surface.Color(0.1, 0.1, 0.1, 1)
-	surface.DrawRect(0,0, size:Unpack())
+	surface.DrawRect(0,0, w, h)
+	
+	surface.Color(1, 1, 1, 0.1)
+	surface.DrawRect(0,0, markup.width or w, markup.height or h)
+	
 	-- this is needed for proper mouse coordinates
 	local x, y = self:GetWorldPos():Unpack()
 	markup:Draw(x, y, size:Unpack())

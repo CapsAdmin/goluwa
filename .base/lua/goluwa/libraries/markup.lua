@@ -126,7 +126,46 @@ do -- tags
 	META.tags = {}
 
 	do -- base
-
+		META.tags.click = 
+		{
+			arguments = {},
+			
+			mouse = function(markup, self, button, press, x, y)
+				if button == "button_1" and press then
+					print(self)
+				end
+			end,
+						
+			draw_over = function(markup, self, chunk)
+				surface.DrawLine(chunk.x, chunk.top, chunk.right, chunk.top)
+			end,
+		}
+		
+		META.tags.wrong = 
+		{
+			arguments = {},						
+			draw_over = function(markup, self, chunk)
+				local r,g,b,a = surface.Color(1, 0, 0, 1)
+				-- todo: LOL
+				for x = chunk.x, chunk.right do 
+					surface.DrawLine(x, chunk.top + math.sin(x), x+1, chunk.top +math.sin(x))
+				end
+				
+				surface.Color(r,g,b,a)
+			end,
+		}
+		
+		META.tags.mark = 
+		{
+			arguments = {},						
+			draw_over = function(markup, self, chunk)
+				local r, g, b, a = surface.Color(1, 1, 0, 0.25)
+				surface.SetWhiteTexture()
+				surface.DrawRect(chunk.x, chunk.y, chunk.w, chunk.h)
+				surface.Color(r, g, b, a)
+			end,
+		}
+				
 		META.tags.hsv =
 		{
 			arguments = {0, 1, 1},
@@ -150,7 +189,7 @@ do -- tags
 		{
 			arguments = {1, 0, 0, 0, 0.998, 0.1},
 
-			pre = function(markup, self, gx, gy, vx, vy, drag, rand_mult)
+			init = function(markup, self, gx, gy, vx, vy, drag, rand_mult)
 				local part = {}
 
 				part =
@@ -233,7 +272,7 @@ do -- tags
 				EXT.SetFont(font)
 			end,
 
-			pre = function(markup, self, font)
+			init = function(markup, self, font)
 				EXT.SetFont(font)
 			end,
 		}
@@ -242,12 +281,30 @@ do -- tags
 		{
 			arguments = {"error", {default = 1, min = 1, max = 4}},
 
-			pre = function(markup, self, path)
+			init = function(markup, self, path)
 				self.mat = EXT.FindMaterial(path)
 			end,
 
 			get_size = function(markup, self, path, size_mult)
 				return 8 * size_mult, 8 * size_mult
+			end,
+
+			draw = function(markup, self, x,y,a, path)
+				EXT.SetMaterial(self.mat)
+				EXT.DrawRect(x, y, self.w, self.h)
+			end,
+		}
+		
+		META.tags.silkicon =
+		{
+			arguments = {"world", {default = 1}},
+
+			init = function(markup, self, path)
+				self.mat = EXT.FindMaterial("textures/silkicons/" .. path .. ".png")
+			end,
+
+			get_size = function(markup, self, path, size_mult)
+				return 16, 16
 			end,
 
 			draw = function(markup, self, x,y,a, path)
@@ -317,7 +374,7 @@ do -- tags
 		{
 			arguments = {1, nil},
 			
-			pre = function()
+			init = function()
 				
 			end,
 
@@ -1136,7 +1193,7 @@ function META:Invalidate()
 			end
 
 			local h = chunk.y + chunk.h
-			if w > height then
+			if h > height then
 				height = h
 			end
 			
@@ -1180,15 +1237,16 @@ function META:Invalidate()
 						chunk.tag_center_y = center_y
 						chunk.tag_height = tag_height
 						chunk.tag_width = tag_width
-						tag_line[i] = nil
 					end
 
 					tag_width = 0
 					tag_height = 0
-					in_tag = false
+					in_tag = false					
 				else
 					in_tag = chunk.val.type
+					tag_line = {}
 					table.insert(tag_line, chunk)
+					chunk.chunks_inbetween = tag_line
 				end
 			end
 
@@ -1209,7 +1267,7 @@ function META:Invalidate()
 				chunk.tag_center_y = center_y
 				chunk.tag_height = line_height
 				chunk.tag_width = line_width
-				tag_line[i] = nil
+				chunk.chunks_inbetween = tag_line
 			end
 		end
 		
@@ -1249,40 +1307,6 @@ function META:Invalidate()
 	end
 	
 	
-	
-	
-	
-	do-- TODO: STUPID			
-		local dummy = {
-			type = "string", 
-			val = "", 
-			x = 0, 
-			y = 0, 
-			w = 0, 
-			h = 0, 
-			top = 0, 
-			right = 0, 
-			i = #chunks,
-			build_chars = function(chunk) 				
-				chunk.chars = {{
-					x = 0,
-					y = 0,
-					w = 0,
-					h = 0,
-					right = 0,
-					top = 0,
-					char = "",
-					i  = 0,
-					chunk = chunk,
-					length = 0,
-					internal = true,
-				}}
-			end, 
-			internal = true
-		}
-	
-		--table.insert(chunks, dummy)
-	end
 
 	self.chars = {}
 	self.lines = {}
@@ -1347,7 +1371,7 @@ function META:Invalidate()
 	if self.caret_pos then
 		self:SetCaretPos(self.caret_pos.x, self.caret_pos.y)
 	else
-		self.caret_pos = nil
+		self:SetCaretPos(0, 0)
 	end
 
 	if self.select_start then
@@ -1895,7 +1919,7 @@ do -- caret
 		end
 
 		local line = self.lines[self.caret_pos.y]
-		local x, y = self.caret_pos.x, self.caret_pos.y
+		local x, y = self.caret_pos.x or 0, self.caret_pos.y or 0
 	
 		if Y ~= 0 then
 			x = self.real_x
@@ -2245,17 +2269,45 @@ do -- input
 	
 	function META:OnMouseInput(button, press, x, y)
 
-		if button == "button_2" then
-			self.caret_pos = self:CaretFromPixels(x, y)
-			
-			if self.caret_pos and self.caret_pos.char then
-				self.real_x = self.caret_pos.x
-			end
-			
-			self:SelectCurrentWord()
+		local chunk = self:CaretFromPixels(x, y).char.chunk
+		
+		if chunk.type == "string" and chunk.chunks_inbetween then
+			chunk = chunk.chunks_inbetween[1]
 		end
-
+		
+		if 
+			chunk.type == "custom" and
+			call_tag_func(self, chunk, "mouse", button, press, x, y) == false 
+		then 
+			return 
+		end
+	
 		if button == "button_1" then
+		
+			
+			if press then
+				if self.last_click and self.last_click > os.clock() then
+					self.times_clicked = (self.times_clicked or 1) + 1
+				else
+					self.times_clicked = 1
+				end
+								
+				if self.times_clicked == 2 then
+					self.caret_pos = self:CaretFromPixels(x, y)
+					
+					if self.caret_pos and self.caret_pos.char then
+						self.real_x = self.caret_pos.x
+					end
+					
+					self:SelectCurrentWord()
+				elseif self.times_clicked == 3  then
+					self:SelectCurrentLine()
+				end
+				
+				self.last_click = os.clock() + 0.2
+				if self.times_clicked > 1 then return end
+			end
+		
 			if press then
 				self.select_start = self:CaretFromPixels(x, y)
 				self.select_stop = nil
@@ -2334,12 +2386,18 @@ do -- drawing
 					elseif chunk.type == "custom" then
 						-- todo: proper stack
 						
-						if not chunk.pre_called then
-							call_tag_func(self, chunk, "pre")
+						if not chunk.pre_called and not chunk.val.stop_tag then
+							call_tag_func(self, chunk, "init")
 							chunk.pre_called = true
 						end
 						
 						self.started_tags = self.started_tags or {}
+						
+						if chunk.chunks_inbetween and chunk.chunks_inbetween[#chunk.chunks_inbetween] == chunk then
+							for i, chunk in ipairs(chunk.chunks_inbetween) do
+								call_tag_func(self, chunk.chunks_inbetween[1], "draw_over", chunk)
+							end
+						end
 						
 						if not chunk.val.stop_tag then
 							call_tag_func(self, chunk, "draw", chunk.x, chunk.y)
@@ -2367,10 +2425,6 @@ do -- drawing
 		self.current_height = h
 
 		self:DrawSelection()
-		
-		if false and self.EditMode then
-			surface.PopMatrix()
-		end
 	end
 
 	function META:DrawSelection()
@@ -2406,9 +2460,18 @@ do -- drawing
 					surface.DrawRect(data.x, data.y, data.w, data.h)
 				end
 			end
+			
+			self:DrawLineHighlight(self.select_stop.y)
 		else
 			self:DrawCaret()
+			self:DrawLineHighlight(self.caret_pos.char.y)
 		end
+	end
+	
+	function META:DrawLineHighlight(y)
+		local start_chunk = self:CaretFromPos(0, y).char.chunk
+		surface.Color(1, 1, 1, 0.1)
+		surface.DrawRect(start_chunk.x, start_chunk.y, self.width, start_chunk.line_height)
 	end
 	
 	function META:DrawCaret()
