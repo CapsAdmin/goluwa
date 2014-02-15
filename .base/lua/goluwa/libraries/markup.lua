@@ -139,7 +139,17 @@ do -- tags
 			
 			mouse = function(markup, self, button, press, x, y)
 				if button == "button_1" and press then
-					print(self)
+					local str = ""
+					for i = self.i+1, math.huge do
+						local chunk = markup.chunks[i]
+						if chunk.type == self.type or i > #markup.chunks then
+							os.execute("explorer " .. str)
+							break
+						elseif chunk.type == "string" then
+							str = str .. chunk.val
+						end
+					end
+					return false
 				end
 			end,
 						
@@ -240,7 +250,7 @@ do -- tags
 
 				-- collision
 				if part.pos.x + part.siz.w < 0 then
-					part.pos.x = part.siz.w
+					part.pos.x = -part.siz.w
 					part.vel.x = part.vel.x * -part.drag
 				end
 
@@ -250,7 +260,7 @@ do -- tags
 				end
  
 				if part.pos.y + part.siz.h < 0 then
-					part.pos.y = part.siz.h
+					part.pos.y = -part.siz.h
 					part.vel.y = part.vel.y * -part.drag
 				end
 
