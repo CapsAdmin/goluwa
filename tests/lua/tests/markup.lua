@@ -21,6 +21,7 @@ local translate = {
 	TK_eq = colors.operator,
 	TK_label = colors.operator,
 	
+	TK_dots = colors.operator,
 	TK_number = colors.number,
 	TK_string = colors.string,
 	TK_name = colors.default,
@@ -36,24 +37,28 @@ local function syntax_process(str)
 
 	local last_pos = 1
 	local out = {}
-	
+		
 	for i = 1, 10000 do
 		local ok, msg = pcall(ls.next, ls)
-		 
+		
 		if not ok then
 			local tbl = msg:explode("\n")
 			table.insert(out, str:sub(-ls.p))
 			break
 		end
-		
-		table.insert(out, translate[ls.token] or colors.keyword)
+			
+		if #ls.token == 1 then
+			table.insert(out, colors.operator)
+		else
+			table.insert(out, translate[ls.token] or colors.keyword)
+		end
 		table.insert(out, str:sub(last_pos-1, ls.p-2))
 		
 		last_pos = ls.p 
-		
+				
 		if ls.token == "TK_eof" then break end
 	end
-
+	
 	out[#out] = out[#out] .. str:sub(last_pos-1, last_pos)
 	
 	--table.print(syntax.)
