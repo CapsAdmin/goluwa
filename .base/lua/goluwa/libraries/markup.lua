@@ -9,7 +9,7 @@ todo:
 ]] 
 
 if ELIAS then
-	if window and #window.GetSize() > 5 then 
+	if window and window.GetSize and #window.GetSize() > 5 then 
 		timer.Delay(0, function()
 			include("tests/markup.lua")
 		end)
