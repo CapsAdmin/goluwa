@@ -205,7 +205,10 @@ local frame = aahh.Create("frame")
 local panel = frame:CreatePanel("panel")
 
 panel:Dock("fill")
+window.SetSize(Vec2(1680, 1050))
+timer.Delay(0.1, function()
 frame:SetSize(1000, 1000)
+end)
 panel:MakeActivePanel()
 frame:RequestLayout(true) 
 
