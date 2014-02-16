@@ -114,12 +114,13 @@ function PANEL:Stack(list)
 end
 
 function PANEL:OnRequestLayout()
-	self:LayoutHook("GridLayout")
 	local siz = self:Stack()
 	
 	if self.SizeToContent then
 		self:SetSize(siz)
 	end
+	
+	self:LayoutHook("GridLayout")
 end
 
 function PANEL:OnDraw()

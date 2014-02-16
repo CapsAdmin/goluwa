@@ -26,7 +26,7 @@ function PANEL:SetResizing(loc)
 end
 
 function PANEL:OnMouseInput(button, press, pos)
-	local loc = self:DockHelper(pos, self:GetSkinVar("Padding", 2))
+	local loc = self:DockHelper(pos, self:GetSkinVar("Padding", 2) * 2)
 	if self:IsResizingAllowed() and self:CanResize(button, press, pos) and loc ~= "Center" then
 		self:SetResizing(loc)
 	end
@@ -41,15 +41,15 @@ function PANEL:CalcBounds()
 end
 
 function PANEL:CalcCursor(pos)		
-	local loc = self:DockHelper(pos-self:GetPos(), self:GetSkinVar("Padding", 2))
+	local loc = self:DockHelper(pos - self:GetPos(), self:GetSkinVar("Padding", 2)*2)
 	
 	if not self:CanResize("button_1", true, pos) then return end
 	
 	if loc == "Center" then
 		self:SetCursor(e.IDC_ARROW)
-	elseif loc == "Top" or loc == "bottom" then
+	elseif loc == "Top" or loc == "Bottom" then
 		self:SetCursor(e.IDC_SIZENS)
-	elseif loc == "Left" or loc == "right" then
+	elseif loc == "Left" or loc == "Right" then
 		self:SetCursor(e.IDC_SIZEWE)
 	elseif loc == "TopLeft" then
 		self:SetCursor(e.IDC_SIZENWSE)
@@ -64,16 +64,17 @@ end
 
 function PANEL:OnThink()
 	local pos = aahh.GetMousePos()
-	
+
 	self:CalcCursor(pos)
-			
+		
 	-- ugh
 	if input.IsMouseDown("button_1") then
 		if self:IsResizing() then
 			local loc = self.Resizing
 			if loc ~= "Center" then
 				local siz = pos - self:GetWorldPos()
-
+				siz = siz + self:GetSkinVar("Padding", 2)
+								
 				if loc  == "Right" then
 					siz.h = self.PrevSize.h
 					self:SetSize(siz)
@@ -147,6 +148,7 @@ function PANEL:OnThink()
 		self.PrevSize = nil
 		self.PrevPos = nil
 	end
+	
 end
 
 function PANEL:OnDraw()

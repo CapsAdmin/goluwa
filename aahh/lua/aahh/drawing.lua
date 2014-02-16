@@ -87,10 +87,10 @@ do
 	function aahh.StartDraw(pnl, clip)
 		if pnl.NoMatrix then return end
 		
-		local x, y = pnl:GetWorldPos():Unpack()
+		local x, y = pnl:GetPos():Unpack()
 						
 		surface.PushMatrix(x, y)
-			
+				
 		if aahh.debug then
 			if pnl.ClassName == "textbutton" then 
 				surface.Color(1,1,0,1)
@@ -106,14 +106,23 @@ do
 		surface.PopMatrix()
 	end
 	
-	function aahh.StartClip(pnl)
-		local x,y = pnl:GetWorldPos():Unpack()
-		local w,h = pnl:GetSize():Unpack()
+	-- i'm not sure what i'm doing here..
 	
-		surface.StartClipping(x,y,w,h)
+	function aahh.StartClip(pnl)		
+		if pnl:HasParent() then	
+			local w, h = pnl.Parent:GetSize():Unpack()
+			local x, y = pnl.Parent:GetWorldPos():Unpack()
+			
+			surface.StartClipping(x, y, w, h)
+		else
+			local x,y = pnl:GetWorldPos():Unpack()		
+
+			surface.StartClipping(x, y, pnl:GetSize():Unpack())
+		end
 	end
 	
 	function aahh.EndClip()
+
 		surface.EndClipping()
 	end
 end
@@ -143,6 +152,8 @@ function aahh.Update(delta)
 		if aahh.World:IsValid() then
 			aahh.World:Draw()
 		end
+		
+		aahh.EndClip()
 		
 		if aahh.HoveringPanel:IsValid() then
 			aahh.SetCursor(aahh.HoveringPanel:GetCursor())

@@ -68,6 +68,10 @@ do -- skins
 				v.Skin = skin
 			end
 		end
+		
+		if aahh.World:IsValid() then
+			aahh.World:RequestLayout()
+		end
 	end
 
 	function aahh.RegisterSkin(META, name)
