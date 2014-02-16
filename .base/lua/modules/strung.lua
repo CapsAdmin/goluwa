@@ -333,7 +333,7 @@ local charclass = setmetatable({}, {__index = function(self, c)
   local func = ccref[c:lower()]
   local cc0, cc1 = ffi.new('uint32_t[8]'), ffi.new('uint32_t[8]')
   for i = 0, 255 do
-    if C[func](i) ~= 0 then
+    if func and C[func](i) ~= 0 then
       bitset(cc0, i)
     else
       bitset(cc1, i)

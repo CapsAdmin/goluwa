@@ -1,4 +1,5 @@
-DEBUG = false
+DEBUG = true
+USE_STRUNG = true
 _G.ffi = require("ffi")
 
 _G[ffi.os:upper()] = true
@@ -27,14 +28,13 @@ do
 		return loadfile("../../../lua/modules/" .. name .. ".lua")
 	end)
 	
-	jit.v = require("jit.v")
+	jit.verbose = require("jit.v")
 	jit.dump = require("jit.dump")
-	jit.p = require("jit.p")
-
+	jit.profiler = require("jit.p")
+	
 	if DEBUG then
 		local base = "../../../../.userdata/" .. e.USERNAME:lower() .. "/logs/"
-		jit.v.on(base .. "jit_verbose_output.txt")
-		--jit.dump.on(nil, base .. "jit_dump_output.txt")
+		jit.verbose.on(base .. "jit_verbose_output.txt")
 	end
 		
 	-- remove the loader we just made. it's made more properly later on
