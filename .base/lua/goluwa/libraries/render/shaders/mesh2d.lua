@@ -15,6 +15,7 @@ local SHADER = {
 		uniform = {
 			global_color = Color(1, 1, 1, 1), 
 			texture = "sampler2D",
+			alpha_multiplier = 1,
 		},
 		attributes = {
 			uv = "vec2",
@@ -28,6 +29,7 @@ local SHADER = {
 			void main()
 			{	
 				frag_color = texel * global_color;
+				frag_color.a = frag_color.a * alpha_multiplier;
 			}
 		]]
 	} 

@@ -38,7 +38,8 @@ function surface.Initialize()
 		local shader = render.CreateSuperShader("glyph", {
 			fragment = {
 				uniform = {
-					smoothness = 0
+					smoothness = 0,
+					alpha_multiplier = 1,
 				},
 				source = [[
 					out vec4 frag_color;
@@ -57,7 +58,7 @@ function surface.Initialize()
 							mask *= smoothness * smoothness * smoothness;
 						}
 						
-						frag_color.a = mask;
+						frag_color.a = mask * alpha_multiplier;
 					}
 				]],
 			},
@@ -415,7 +416,7 @@ function surface.Color(r,g,b,a)
 	G = g
 	B = b
 	if a then
-		A = a * A2
+		A = a
 	end
 	
 	COLOR.r = R
@@ -430,6 +431,8 @@ end
 
 function surface.SetAlphaMultiplier(a)
 	A2 = a
+	surface.fontmesh.alpha_multiplier = A2
+	surface.rectmesh.alpha_multiplier = A2
 end
 
 function surface.SetTexture(tex)
@@ -620,9 +623,8 @@ function surface.DrawLine(x1,y1, x2,y2, w, skip_tex, ...)
 end
 
 function surface.StartClipping(x, y, w, h)
-	y = -y + h
-	render.ScissorRect(x, y, w, h)
-	
+	local sw,sh = surface.GetScreenSize()
+	render.ScissorRect(x, (-y+sh-h), w, h)
 end
 
 function surface.EndClipping()
