@@ -21,7 +21,7 @@ aahh.IsSet(PANEL, "Visible", true)
 aahh.IsSet(PANEL, "ObeyMargin", true)
 aahh.IsSet(PANEL, "IgnoreMouse", false)
 aahh.IsSet(PANEL, "AlwaysReceiveMouse", false)
-aahh.GetSet(PANEL, "Clip", false)
+aahh.GetSet(PANEL, "Clip", true)
 
 aahh.GetSet(PANEL, "Skin")
 aahh.GetSet(PANEL, "DrawBackground", true)
@@ -67,6 +67,18 @@ do -- orientation
 			self:CalcTrap()
 			self.last_pos = vec
 		end
+	end
+	
+	function PANEL:SetX(x)
+		local pos = self:GetPos()
+		pos.x = x
+		self:SetPos(pos)
+	end
+	
+	function PANEL:SetY(y)
+		local pos = self:GetPos()
+		pos.y = y
+		self:SetPos(pos)
 	end
 
 	function PANEL:SetSize(vec)
@@ -124,18 +136,11 @@ do -- orientation
 		return self:HasParent() and self:GetParent():GetHeight() or self:GetHeight()
 	end
 	
-	function PANEL:SetWorldPos(pos)
-		local temp = self
+	function PANEL:SetWorldPos(pos)		
+		if not self.parent_list then self:BuildParentList() end
 		
-		for i = 1, 100 do
-			local parent = temp:GetParent()
-			
-			if parent:IsValid() then
-				pos = pos - parent:GetPos()
-				temp = parent
-			else
-				break
-			end
+		for _, parent in ipairs(self.parent_list) do			
+			pos = pos - parent:GetPos()
 		end			
 
 		self:SetPos(pos)
@@ -143,18 +148,12 @@ do -- orientation
 
 	function PANEL:GetWorldPos()
 		local pos = self:GetPos()	
-		local temp = self
 	
-		for i = 1, 100 do
-			local parent = temp:GetParent()
-			
-			if parent:IsValid() then
-				pos = pos + parent:GetPos()
-				temp = parent
-			else
-				break
-			end
-		end
+		if not self.parent_list then self:BuildParentList() end
+		
+		for _, parent in ipairs(self.parent_list) do	
+			pos = pos + parent:GetPos()
+		end	
 
 		return pos
 	end
@@ -166,19 +165,11 @@ do -- orientation
 			if self == aahh.World then return false end
 			if self == aahh.FrontPanel then return true end
 			
-			local temp = self
+			if not self.parent_list then self:BuildParentList() end
 			
-			for i = 1, 100 do
-				local parent = temp:GetParent()
-				
-				if parent:IsValid() then
-					if parent == aahh.FrontPanel then
-						return true
-					else
-						temp = parent
-					end
-				else
-					break
+			for _, parent in ipairs(self.parent_list) do			
+				if parent == aahh.FrontPanel then
+					return true
 				end
 			end
 			
@@ -242,6 +233,7 @@ do -- parenting
 		
 		var:OnParent(self)
 		self:OnChildAdd(var)
+		var:BuildParentList()
 		
 		var:RequestLayout()
 		self:RequestLayout()
@@ -256,19 +248,11 @@ do -- parenting
 	function PANEL:IsVisible()
 		if self.Visible == false then return false end
 		
-		local temp = self
+		if not self.parent_list then self:BuildParentList() end
 		
-		for i = 1, 100 do
-			local parent = temp:GetParent()
-			
-			if parent:IsValid() then
-				if not parent.Visible then
-					return false
-				else
-					temp = parent
-				end
-			else
-				break
+		for _, parent in ipairs(self.parent_list) do			
+			if not parent.Visible then
+				return false
 			end
 		end
 		
@@ -565,7 +549,7 @@ do -- dock
 		if pos.y > siz.h - offset and pos.y < siz.h then
 			return "Bottom"
 		end
-
+		
 		if pos.y > 0 and pos.y < offset then
 			return "Top"
 		end
@@ -765,7 +749,7 @@ function PANEL:Draw()
 	if self:IsVisible() and self:VisibleInsideParent() then
 		self:Think()
 		self:Animate()
-	
+		
 		if self.Clip then
 			aahh.StartClip(self)
 		end
@@ -773,17 +757,13 @@ function PANEL:Draw()
 		aahh.StartDraw(self)
 			self:OnDraw(self:GetSize())
 			self:OnPostDraw(self:GetSize())
-		aahh.EndDraw(self)
-		
-		if not self.HideChildren then
-			for key, pnl in pairs(self:GetChildren()) do
-				pnl:Draw()
+
+			if not self.HideChildren then
+				for key, pnl in ipairs(self:GetChildren()) do
+					pnl:Draw()
+				end
 			end
-		end
-		
-		if self.Clip then
-			aahh.EndClip(self)
-		end
+		aahh.EndDraw(self)
 	end
 end
 	
@@ -980,7 +960,7 @@ function PANEL:RequestLayout(now)
 		
 		return
 	end
-	
+		
 	if self.SKIP_LAYOUT then return end
 			
 	if now then
@@ -989,7 +969,6 @@ function PANEL:RequestLayout(now)
 		end
 	end
 	
-	self:DockLayout()
 	self:CalcTrap()
 	
 	aahh.Stats.layout_count = aahh.Stats.layout_count + 1
@@ -997,6 +976,8 @@ function PANEL:RequestLayout(now)
 	if self:HasParent() or self == aahh.World then 
 		self:OnRequestLayout(self.Parent, self:GetSize())
 	end
+
+	self:DockLayout()
 	
 	self.LayMeOut = false
 end
