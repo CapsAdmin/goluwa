@@ -111,8 +111,8 @@ do -- cursor
 			cache[id] = cache[id] or lib.LoadCursorA(nil, id)
 			
 			--if last ~= id then
-				current = cache[id]
-				lib.SetCursor(current)
+				current = id
+				lib.SetCursor(cache[id])
 			--	last = id
 			--end
 		end

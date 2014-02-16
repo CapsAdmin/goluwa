@@ -149,6 +149,10 @@ do -- window meta
 		self:Remove()
 	end
 	
+	function META:OnCursorPos()
+		if system then system.SetCursor(system.GetCursor()) end
+	end
+	
 	function render.CreateWindow(width, height, title)	
 		width = width or 800
 		height = height or 600
