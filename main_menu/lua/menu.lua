@@ -149,10 +149,8 @@ function menu.MakeButtons()
 		
 		local grid = aahh.Create("grid", frame)
 		grid:Dock("fill")
-		grid:SetSizeToContent(true)
 		grid:SetSizeToWidth(true)
 		grid:SetStackRight(false)
-		
 		grid:SetItemSize(Vec2()+25)
 
 		local function populate(dir)
@@ -194,11 +192,7 @@ function menu.MakeButtons()
 					
 					grid:AddChild(btn)  
 				end
-			end 
-			  			
-			grid:RequestLayout(true)
-			frame:SetHeight(grid:GetHeight() + 33)
-			frame:RequestLayout(true)
+			end
 		end
 		
 		populate("lua/tests/")
