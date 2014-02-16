@@ -8,16 +8,10 @@ todo:
 	the ability to edit (remove and copy) custom tags that have a size (like textures)
 ]] 
 
-if ELIAS then
-	if window and window.GetSize and #window.GetSize() > 5 then 
-		timer.Delay(0, function()
-			include("tests/markup.lua")
-		end)
-	end
-end
-
 local META = {}
 META.__index = META
+
+META.chunk_fix = true
 
 function Markup()
 	local self = {
@@ -31,6 +25,8 @@ function Markup()
 	}
 	
 	setmetatable(self, META)
+	
+	self:Invalidate()
 
 	return self
 end
@@ -40,6 +36,8 @@ class.GetSet(META, "MaxWidth", 500)
 class.GetSet(META, "ControlDown", false)
 class.GetSet(META, "LineWrap", true)
 class.GetSet(META, "ShiftDown", false)
+class.GetSet(META, "Editable", true)
+class.GetSet(META, "Multiline", true)
 
 function META:SetMaxWidth(w)
 	self.MaxWidth = w
@@ -616,13 +614,13 @@ function META:Clear()
 	self.need_layout = true
 end
 
-function META:SetTable(tbl)
+function META:SetTable(tbl, tags)
 	self.Table = tbl
 
 	self:Clear()
 
 	for i, var in ipairs(tbl) do
-		self:Add(var)
+		self:Add(var, tags)
 	end
 end
 
@@ -650,14 +648,14 @@ function META:AddFont(font)
 	self.need_layout = true
 end
 
-function META:Add(var)
+function META:Add(var, tags)
 	local chunks = self.chunks
 	local t = typex(var)
 
 	if t == "color" then
 		self:AddColor(var)
 	elseif t == "string" or t == "number" then
-		self:AddString(var)
+		self:AddString(var, tags)
 	elseif t == "table" and var.type and var.val then
 		table.insert(chunks, var)
 	elseif t ~= "cdata" then
@@ -865,9 +863,7 @@ function META:Invalidate()
 	-- this is needed when invalidating the chunks table again
 	-- anything that need to add more chunks need to store the
 	-- old chunk as old_chunk key
-	
-	if #self.chunks == 0 then return end
-	
+		
 	local temp = {}
 	local old_chunks = {}
 
@@ -892,9 +888,11 @@ function META:Invalidate()
 		::continue::
 	end
 
-	table.insert(self.chunks, 1, {type = "font", val = self.fonts.default.name, internal = true})
-	table.insert(self.chunks, 1, {type = "color", val = Color(255, 255, 255), internal = true})
-	table.insert(self.chunks, 1, {type = "string", val = "", internal = true})
+	for i = 1, 3 do table.insert(temp, {type = "string", val = "", internal = true}) end
+	table.insert(temp, {type = "font", val = self.fonts.default.name, internal = true})
+	table.insert(temp, {type = "color", val = Color(255, 255, 255), internal = true})	
+	for i = 1, 3 do table.insert(temp, {type = "string", val = "", internal = true}) end
+
 	
 	--[[
 	-- uncomment this if chunk leaks occur
@@ -959,9 +957,16 @@ function META:Invalidate()
 			EXT.SetFont(chunk.val)
 		elseif chunk.type == "string" then
 			local w, h = EXT.GetTextSize(chunk.val)
-						
+			
 			chunk.w = w
 			chunk.h = h
+			
+			if chunk.internal then
+				chunk.w = 0
+				chunk.h = 0
+				chunk.real_h = h
+				chunk.real_w = w
+			end
 		elseif chunk.type == "newline" then
 			local w, h = EXT.GetTextSize("|")
 						
@@ -1161,7 +1166,14 @@ function META:Invalidate()
 				EXT.SetFont(chunk.font)
 				chunk.chars = {}
 				local width = 0
-				for i, char in ipairs(utf8.totable(chunk.val)) do
+				
+				local str = chunk.val
+				
+				if str == "" and chunk.internal then
+					str = " "
+				end
+				
+				for i, char in ipairs(utf8.totable(str)) do
 					local char_width, char_height = surface.GetTextSize(char)
 					local x = chunk.x + width
 					local y = chunk.y
@@ -1182,6 +1194,16 @@ function META:Invalidate()
 					chunk.chars[i].length = #char
 					
 					width = width + char_width
+				end
+				
+				if str == " " and chunk.internal then
+					chunk.chars[1].char = ""
+					chunk.chars[1].w = 0
+					chunk.chars[1].h = 0
+					chunk.chars[1].x = 0
+					chunk.chars[1].y = 0
+					chunk.chars[1].top = 0
+					chunk.chars[1].right = 0
 				end
 			end
 		end
@@ -1521,7 +1543,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 		
 		-- if we're in a sea of non strings we need to make one
 		if chunk.internal or chunk.type ~= "string" and (self.chunks[chunk.i-1].type ~= "string" or self.chunks[chunk.i+1].type ~= "string") then
-			table.insert(self.chunks, chunk.internal and 1 or chunk.i , {type = "string", val = str})
+			table.insert(self.chunks, chunk.internal and #self.chunks or chunk.i , {type = "string", val = str})
 			self:Invalidate()
 		else			
 			do -- sub the start
@@ -1858,11 +1880,11 @@ do -- caret
 					end
 				end
 			end
-
-			if not CHAR then 
-				CHAR = self.chars[#self.chars]
-				POS = #self.chars
-			end
+		end
+		
+		if not CHAR then 
+			CHAR = self.chars[#self.chars]
+			POS = #self.chars
 		end
 
 		
@@ -1925,6 +1947,7 @@ do -- caret
 		if not CHAR then 
 			CHAR = self.chars[#self.chars] -- something is wrong!
 		end
+		
 
 		local data = CHAR.data
 
@@ -2067,6 +2090,25 @@ do -- selection
 		self.caret_shift_pos = nil
 	end
 	
+	function META:GetText(tags)
+		local start, stop = self:GetSelectStart(), self:GetSelectStop()
+		local caret = self.caret_pos
+		
+		self:SelectAll()
+		local str = self:GetSelection(tags)
+		
+		if start and stop then
+			self:SelectStart(start.x, start.y)
+			self:SelectStop(stop.x, stop.y)
+		else
+			self:Unselect()
+		end	
+		
+		self:SetCaretPos(caret.x, caret.y)
+		
+		return str
+	end
+	
 	function META:GetSelection(tags) 
 		local out = {}
 
@@ -2177,8 +2219,8 @@ do -- selection
 end
 	
 do -- clipboard
-	function META:Copy()
-		return self:GetSelection()
+	function META:Copy(tags)
+		return self:GetSelection(tags)
 	end
 
 	function META:Cut()
@@ -2219,16 +2261,17 @@ do -- input
 		["end"] = true,
 	}
 	
-	function META:OnKeyInput(key)
+	function META:OnKeyInput(key, press)
+		if not self.Editable or #self.chunks == 0 then return end
 
 		if not self.caret_pos then return end
 
 		do
 			local x, y = 0, 0
 			
-			if key == "up" then
+			if key == "up" and self.Multiline then
 				y = -1
-			elseif key == "down" then
+			elseif key == "down" and self.Multiline then
 				y = 1
 			elseif key == "left" then
 				x = -1
@@ -2238,11 +2281,11 @@ do -- input
 				x = -math.huge
 			elseif key == "end" then
 				x = math.huge
-			elseif key == "page_up" then
+			elseif key == "page_up" and self.Multiline then
 				y = -10
-			elseif key == "page_down" then
+			elseif key == "page_down" and self.Multiline then
 				y = 10
-			end 
+			end
 			
 			self:AdvanceCaret(x, y)
 		end
@@ -2255,7 +2298,7 @@ do -- input
 		
 		if key == "tab" then
 			self:Indent(self.ShiftDown)
-		elseif key == "enter" then
+		elseif key == "enter" and self.Multiline then
 			self:Enter()
 		end
 
@@ -2301,6 +2344,7 @@ do -- input
 	end 
 	
 	function META:OnMouseInput(button, press, x, y)
+		if #self.chunks == 0 then return end
 
 		local chunk = self:CaretFromPixels(x, y).char.chunk
 		
@@ -2314,7 +2358,7 @@ do -- input
 		then 
 			return 
 		end
-	
+			
 		if button == "button_1" then
 		
 			
@@ -2352,6 +2396,12 @@ do -- input
 					self.real_x = self.caret_pos.x
 				end
 			else
+				if not self.Editable then
+					print(self:GetSelectStart(), self:GetSelectStop())
+					system.SetClipboard(self:Copy(true))
+					self:Unselect()
+				end
+			
 				self.mouse_selecting = false
 			end
 		end
@@ -2360,14 +2410,14 @@ end
 
 do -- drawing
 
-	function META:Draw(x,y, w,h)
-		if #self.chunks == 0 then return end
-	
+	function META:Draw(x,y, w,h)	
 		if self.need_layout then
 			self:Invalidate()
 			self.need_layout = false
 		end
 
+		if #self.chunks == 0 then return end
+		
 		-- this is to move the caret to the right at the end of a line or the very end of the text
 		if self.move_caret_right then
 			self.move_caret_right = false
@@ -2408,6 +2458,8 @@ do -- drawing
 		for i, chunk in ipairs(self.chunks) do
 			
 			if not chunk.internal then
+				if not chunk.x then return end -- UMM
+				
 				if chunk.x < w and chunk.y < h then
 					if chunk.type == "font" then
 						EXT.SetFont(chunk.val)
@@ -2496,8 +2548,10 @@ do -- drawing
 				end
 			end
 			
-			self:DrawLineHighlight(self.select_stop.y)
-		else
+			if self.Editable then
+				self:DrawLineHighlight(self.select_stop.y)
+			end
+		elseif self.Editable then
 			self:DrawCaret()
 			self:DrawLineHighlight(self.caret_pos.char.y)
 		end
@@ -2511,10 +2565,27 @@ do -- drawing
 	
 	function META:DrawCaret()
 		if self.caret_pos then
+			local x = self.caret_pos.px
+			local y = self.caret_pos.py
+			local h = self.caret_pos.h
+			
+			if self.caret_pos.char.chunk.internal then
+				local chunk = self.chunks[self.caret_pos.char.chunk.i - 1]
+				if chunk then
+					x = chunk.right
+					y = chunk.y
+					h = chunk.h
+				else	
+					x = 0
+					y = 0
+					h = self.caret_pos.char.chunk.real_h
+				end
+			end
+			
 			surface.SetWhiteTexture()
 			self.blink_offset = self.blink_offset or 0
 			surface.Color(1, 1, 1, (timer.GetTime() - self.blink_offset)%0.5 > 0.25 and 1 or 0)
-			surface.DrawRect(self.caret_pos.px, self.caret_pos.py, 2, self.caret_pos.h)
+			surface.DrawRect(x, y, 2, h)
 		end
 	end
 end

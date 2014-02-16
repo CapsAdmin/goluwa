@@ -101,6 +101,7 @@ if CLIENT then
 					panel:SetPos(Vec2(50, Vec2(render.GetScreenSize()).h - 100))
 					panel:SetSize(Vec2(512, 16))
 					panel:MakeActivePanel()
+					panel:SetMultiline(false)
 					
 					panel.OnUnhandledKey = function(_, key)	
 						local browse = false
