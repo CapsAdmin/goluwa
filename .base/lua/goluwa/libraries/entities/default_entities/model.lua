@@ -57,7 +57,7 @@ function META:Draw(parent)
 		self.Model:Draw()
 	end
 	
-	for _, ent in pairs(self:GetChildren()) do
+	for _, ent in ipairs(self:GetChildren()) do
 		if ent.Draw and not ent.DrawManual then
 			ent:Draw(self)
 		end
