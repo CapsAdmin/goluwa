@@ -321,19 +321,11 @@ do -- helpers
 		function META:GetRoot()
 			if not self:HasParent() then return self end
 		
-			local temp = self
-			
-			for i = 1, 100 do
-				local parent = temp:GetParent()
-
-				if parent:IsValid() then
-					temp = parent
-				else
-					break
-				end
+			if not self.RootPart:IsValid() then
+				self:BuildParentList()
 			end
 			
-			return temp
+			return self.RootPart
 		end
 
 		function META:RemoveChildren()
@@ -355,6 +347,35 @@ do -- helpers
 					
 			self:OnUnParent(parent)
 		end
+		
+		function META:BuildParentList()
+	
+			self.parent_list = {}
+
+			if not self:HasParent() then return end
+						
+			local temp = self:GetParent()
+			table.insert(self.parent_list, temp)
+			
+			while true do
+				local parent = temp:GetParent()
+				
+				if parent:IsValid() then
+					table.insert(self.parent_list, parent)
+					temp = parent
+				else
+					break
+				end
+			end
+			
+			
+			self.RootPart = temp
+			
+			for key, obj in pairs(self.Children) do
+				obj:BuildParentList()
+			end
+		end		
+		
 	end
 end
 
