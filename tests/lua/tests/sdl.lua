@@ -1,3 +1,5 @@
+local sdl = include("goluwa/ffi_binds/sdl/init.lua")
+
 local function sdldie(msg)
     logf("%s: %s\n", msg, sdl.GetError())
     sdl.Quit()

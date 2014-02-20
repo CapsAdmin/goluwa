@@ -3,9 +3,9 @@ local W, H = 1024, 768
 window.Open(W, H) 
 
 local trail_tex = Texture(1, 255):Fill(function(x, y) return 255, 255, 255, y end)
-local head_tex = Texture(512, 512):Fill(function(x, y) 
-	x = x / 512
-	y = y / 512
+local head_tex = Texture(128, 128):Fill(function(x, y) 
+	x = x / 128
+	y = y / 128
 	
 	x = x - 1
 	y = y - 1.5

@@ -1,6 +1,6 @@
-local canvas = utilities.RemoveOldObject(aahh.Create("canvas"))
+local canvas = utilities.RemoveOldObject((aahh.Create("canvas"))) 
 canvas:SetSize(Vec2(512, 512))
-canvas:Center()     
+canvas:Center()                  
    
 	local frame = aahh.Create("frame", canvas)
 	frame:Center() 
@@ -112,6 +112,6 @@ canvas:Center()
 	end
 
 	tabs:SelectTab("properties")
-	frame:RequestLayout(true)
-
+	frame:RequestLayout(true) 
+ 
       

@@ -6,6 +6,7 @@ local gif3 = Gif("textures/envy.gif")
 local gif4 = Gif("textures/greenkid.gif")
 
 event.AddListener("OnDraw2D", "gif", function()
+	surface.Color(1, 1, 1, 1)
 	gif1:Draw(0, 0)	
 	gif2:Draw(291, 0)
 	gif3:Draw(291, 215)
