@@ -69,6 +69,7 @@ function PANEL:Initialize()
 	bar:SetSpacing(Vec2())
 	bar:SetSizeToHeight(true)
 	bar:SetNoPadding(true)
+	bar:SetStackDown(false)
 	
 	bar.OnDraw = function() end
 	self.bar = bar

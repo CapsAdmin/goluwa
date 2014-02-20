@@ -33,6 +33,10 @@ end
 
 function PANEL:OnRequestLayout()
 	self:LayoutHook("ImageLayout")
+	
+	if self.ResizePanelWithImage then
+		self:SizeToContent()
+	end
 end
 
 aahh.RegisterPanel(PANEL)

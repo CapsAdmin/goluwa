@@ -3,8 +3,6 @@ local PANEL = {}
 PANEL.ClassName = "draggable"
 PANEL.Base = "panel"
 
-PANEL.PrevSize = Vec2(0,0)
-
 aahh.IsSet(PANEL, "Dragging", false)
 aahh.IsSet(PANEL, "Resizing", false)
 
@@ -21,18 +19,22 @@ end
 
 function PANEL:SetResizing(loc)
 	self.Resizing = loc
-	self.PrevSize = self:GetSize()
-	self.PrevPos = self:GetPos()
+	self.prev_size = self:GetSize()
+	self.prev_pos = self:GetWorldPos()
 end
+
 
 function PANEL:OnMouseInput(button, press, pos)
 	local loc = self:DockHelper(pos, self:GetSkinVar("Padding", 2) * 2)
+	
 	if self:IsResizingAllowed() and self:CanResize(button, press, pos) and loc ~= "Center" then
 		self:SetResizing(loc)
+		self.lpos = pos
 	end
 		
 	if self:IsDraggingAllowed() and self:CanDrag(button, press, pos) then
-		self:SetDragging(press and pos)
+		self:SetDragging(press)
+		self.lpos = pos
 	end
 end
 
@@ -41,7 +43,7 @@ function PANEL:CalcBounds()
 end
 
 function PANEL:CalcCursor(pos)		
-	local loc = self:DockHelper(pos - self:GetPos(), self:GetSkinVar("Padding", 2)*2)
+	local loc = self:DockHelper(pos, self:GetSkinVar("Padding", 2)*2)
 	
 	if not self:CanResize("button_1", true, pos) then return end
 	
@@ -62,91 +64,98 @@ function PANEL:CalcCursor(pos)
 	end
 end
 
-function PANEL:OnThink()
-	local pos = aahh.GetMousePos()
+function PANEL:OnMouseMove(lpos, inside)
 
-	self:CalcCursor(pos)
+	pos = aahh.GetMousePos()
+		
+	self:CalcCursor(pos - self:GetWorldPos())
 		
 	-- ugh
-	if input.IsMouseDown("button_1") then
+	if aahh.IsMouseDown("button_1") then
 		if self:IsResizing() then
 			local loc = self.Resizing
 			if loc ~= "Center" then
-				local siz = pos - self:GetWorldPos()
+				
+				local prev_size = self.prev_size
+				local prev_pos = self.prev_pos
+				
+				local siz = pos * 1
 				siz = siz + self:GetSkinVar("Padding", 2)
 								
 				if loc  == "Right" then
-					siz.h = self.PrevSize.h
-					self:SetSize(siz)
+					self:SetWidth(lpos.x)
 				end
 
 				if loc  == "Bottom" then
-					siz.w = self.PrevSize.w
-					self:SetSize(siz)
+					self:SetHeight(lpos.y)
 				end
 
 				if loc  == "Top" then
-					pos.x = self.PrevPos.x
-					pos.y = math.min(pos.y, (self.PrevPos.y + self.PrevSize.y) - self.MinSize.y)
-					self:SetPos(pos)
+					pos.x = prev_pos.x
+					pos.y = math.min(pos.y, (prev_pos.y + prev_size.y) - self.MinSize.y)
+					self:SetWorldPos(pos)
 
-					siz.w = self.PrevSize.w
-					siz.h = self.PrevPos.y - pos.y + self.PrevSize.h
+					siz.w = prev_size.w
+					siz.h = prev_pos.y - pos.y + prev_size.h 
 					self:SetSize(siz)
 				end
 
 				if loc  == "Left" then
-					pos.y = self.PrevPos.y
-					pos.x = math.min(pos.x, (self.PrevPos.x + self.PrevSize.x) - self.MinSize.x)
-					self:SetPos(pos)
+					pos.y = prev_pos.y
+					pos.x = math.min(pos.x, (prev_pos.x + prev_size.x) - self.MinSize.x)
+					self:SetWorldPos(pos)
 
-					siz.h = self.PrevSize.h
-					siz.w = self.PrevPos.x - pos.x + self.PrevSize.w
+					siz.h = prev_size.h
+					siz.w = prev_pos.x - pos.x + prev_size.w
 					self:SetSize(siz)
 				end
 
 				if loc  == "Topleft" then
-					pos.x = math.min(pos.x, (self.PrevPos.x + self.PrevSize.x) - self.MinSize.x)
-					pos.y = math.min(pos.y, (self.PrevPos.y + self.PrevSize.y) - self.MinSize.y)
+					pos.x = math.min(pos.x, (prev_pos.x + prev_size.x) - self.MinSize.x)
+					pos.y = math.min(pos.y, (prev_pos.y + prev_size.y) - self.MinSize.y)
 
-					self:SetPos(pos)
-					self:SetSize((self.PrevPos - pos) + self.PrevSize)
+					self:SetWorldPos(pos)
+					self:SetSize((prev_pos - pos) + prev_size)
 				end
 
 				if loc  == "BottomRight" then
-					self:SetSize((pos - self.PrevPos))
+					self:SetSize((pos - prev_pos))
 				end
 
 				if loc  == "BottomLeft" then
-					pos.x = math.min(pos.x, (self.PrevPos.x + self.PrevSize.x) - self.MinSize.x)
-					self:SetPos(Vec2(pos.x, self.PrevPos.y))
+					pos.x = math.min(pos.x, (prev_pos.x + prev_size.x) - self.MinSize.x)
+					self:SetWorldPos(Vec2(pos.x, prev_pos.y))
 
-					siz = self.PrevSize
-					siz = self.PrevPos - pos + self.PrevSize
-					siz.h = -siz.h + self.PrevSize.h
+					siz = prev_size
+					siz = prev_pos - pos + prev_size
+					siz.h = -siz.h + prev_size.h
 					self:SetSize(siz)			end
 
 				if loc  == "TopRight" then
-					pos.y = math.min(pos.y, (self.PrevPos.y + self.PrevSize.y) - self.MinSize.y)
-					self:SetPos(Vec2(self.PrevPos.x, pos.y))
+					pos.y = math.min(pos.y, (prev_pos.y + prev_size.y) - self.MinSize.y)
+					self:SetWorldPos(Vec2(prev_pos.x, pos.y))
 
-					siz = self.PrevSize
-					siz = self.PrevPos - pos + self.PrevSize
-					siz.w = -siz.w + self.PrevSize.w
+					siz = prev_size
+					siz = prev_pos - pos + prev_size
+					siz.w = -siz.w + prev_size.w
 					self:SetSize(siz)
 				end
+				
+				self:RequestParentLayout(true)
 			end
 		elseif self:IsDragging() then
-			self:SetWorldPos(pos - self.Dragging)
-			self.Resizing = false
+			self:SetWorldPos(pos - self.lpos)
+			self:SetResizing(false)
+			self:RequestParentLayout(true)
 		end
 		
 		self:CalcBounds()
 	else
 		self.Dragging = false
 		self.Resizing = false
-		self.PrevSize = nil
-		self.PrevPos = nil
+		self.prev_size = nil
+		self.prev_pos = nil
+		self.lpos = nil
 	end
 	
 end

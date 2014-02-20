@@ -25,7 +25,7 @@ function PANEL:OnMouseInput(key, press)
 end
 
 function PANEL:IsDown()
-	if self.is_down and not input.IsMouseDown("button_1") then
+	if self.is_down and not aahh.IsMouseDown("button_1") then
 		self.is_down = false
 	end
 	

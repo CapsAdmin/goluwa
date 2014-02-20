@@ -3,6 +3,10 @@ do -- events
 	function aahh.GetMousePos()
 		return window.GetMousePos()
 	end
+	
+	function aahh.IsMouseDown(button)
+		return input.IsMouseDown(button)
+	end
 
 	event.AddListener("OnKeyInputRepeat", "aahh", function(key, press)
 		aahh.KeyInput(key, press)

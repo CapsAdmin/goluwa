@@ -14,6 +14,7 @@ aahh.GetSet(PANEL, "Padding", Rect())
 aahh.GetSet(PANEL, "Margin", Rect())
 aahh.GetSet(PANEL, "MinSize", Vec2(8,8))
 aahh.GetSet(PANEL, "TrapInsideParent", false)
+aahh.GetSet(PANEL, "TrapChildren", true)
 aahh.GetSet(PANEL, "Cursor", e.IDC_ARROW)
 aahh.GetSet(PANEL, "Spacing", 0)
 aahh.GetSet(PANEL, "DockPadding", 1) -- Default padding around all child panels in docking
@@ -389,6 +390,10 @@ do -- fill
 		function PANEL:StretchToBottom()
 			self:SetHeight(self:GetParentHeight() - self.Parent.Margin.h - (self.Parent:GetHeight() - self:GetPos().y))
 		end
+		
+		function PANEL:StretchToRight()
+			self:SetWidth(self:GetParentWidth() - self.Parent.Margin.w - (self.Parent:GetWidth() - self:GetPos().x))
+		end
 	end
 end
 
@@ -416,12 +421,15 @@ do -- dock
 		if type(loc) ~= "string" then return end
 					
 		self.DockInfo = string.lower(loc)
+--		self:SetTrapInsideParent(false)
+	--	self:SetTrapChildren(false)
+		
 		self:RequestLayout()
 	end
 	
-	function PANEL:DockLayout(um)		
+	function PANEL:DockLayout()		
 		self.SKIP_LAYOUT = true
-		
+				
 		local dpad = self.DockPadding or Rect(1, 1, 1, 1)-- Default padding between all panels
 		local margin = self.Margin or Rect()
 		
@@ -434,7 +442,7 @@ do -- dock
 		
 		-- Fill [CenterX CenterY] Left Right Top Bottom
 		
-		local fill, left, right, top, bottom
+		local fill, left, right, top, bottom, center
 		local pad
 		
 		-- Grab one of each dock type
@@ -442,6 +450,9 @@ do -- dock
 			if pnl.DockInfo then
 				if not fill and pnl.DockInfo == "fill" then
 					fill = pnl
+				end
+				if not center and pnl.DockInfo == "center" then
+					center = pnl
 				end
 				if not left and pnl.DockInfo == "left" then
 					left = pnl
@@ -463,6 +474,7 @@ do -- dock
 			
 			top:SetPos(area:GetPos() + pad:GetPos())
 			top:SetWidth(area.w - pad:GetXW())
+
 			area.y = area.y + top:GetHeight() + pad:GetYH()
 			area.h = area.h - top:GetHeight() - pad:GetYH()
 		end
@@ -497,6 +509,10 @@ do -- dock
 			
 			fill:SetPos(area:GetPos() + pad:GetPos())
 			fill:SetSize(area:GetSize() - pad:GetPosSize())
+		end
+		
+		if center then			
+			center:Center()
 		end
 						
 		self.SKIP_LAYOUT = false
@@ -560,6 +576,10 @@ end
 
 function PANEL:IsWorldPosInside(a)
 	local b, s = self:GetWorldPos(), self:GetSize()
+	
+	if self:HasParent() and not self.Parent:IsWorldPosInside(a) then
+		return false
+	end
 	
 	if
 		a.x > b.x and a.x < b.x + s.w and
@@ -683,7 +703,7 @@ function PANEL:CalcTrap()
 	
 	local parent = self:GetParent()
 	
-	if parent:IsValid() then
+	if parent:IsValid() and parent.TrapChildren then
 		local pad = self:GetSkinVar("Padding", 1)
 		pad = 0
 		
@@ -692,6 +712,7 @@ function PANEL:CalcTrap()
 			local m = self:GetParentMargin()
 
 			if m.w ~= 0 then
+				--print(psize, self, self.Parent and self.Parent.container, parent.TrapChildren)
 				self.Size.w = math.min(self.Size.w, psize.w - m.w)
 				self.Size.h = math.min(self.Size.h, psize.h - m.h)
 			end
@@ -746,7 +767,7 @@ end
 
 function PANEL:Draw()		
 	
-	if self:IsVisible() and self:VisibleInsideParent() then
+	if self:IsVisible() and self:VisibleInsideParent() and not self.DrawManual then
 		self:Think()
 		self:Animate()
 		
@@ -784,11 +805,7 @@ function PANEL:Think()
 			local localpos = mousepos - self:GetWorldPos()
 			
 			-- Check if it is in panel
-			if
-				localpos.x > 0 and localpos.y > 0 and
-				localpos.x < self:GetWidth() and
-				localpos.y < self:GetHeight() 
-			then				
+			if self:IsWorldPosInside(mousepos) then				
 				-- Make a call
 				self:OnMouseMove(localpos, true)
 				
@@ -797,9 +814,7 @@ function PANEL:Think()
 					self.mouse_entered = true
 				end
 				
-				if self:GetCursor() ~= e.IDC_ARROW then
-					aahh.HoveringPanel = self
-				end
+				aahh.HoveringPanel = self
 			else
 				if aahh.HoveringPanel == self then
 					aahh.HoveringPanel = NULL
@@ -980,6 +995,12 @@ function PANEL:RequestLayout(now)
 	self:DockLayout()
 	
 	self.LayMeOut = false
+end
+
+function PANEL:RequestParentLayout(...)
+	if self:HasParent() then
+		self.Parent:RequestLayout(...)
+	end
 end
 
 function PANEL:SkinCall(func_name, ...)

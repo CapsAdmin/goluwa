@@ -63,13 +63,23 @@ do -- tree node
 		return pnl
 	end
 	
-	function PANEL:SetExpand(b)
-		::again::
+	function PANEL:SetExpandInternal(b)
+		self:SetVisible(b)
+		
+		if b and not self.Expand then return end
+		
 		for pos, pnl in pairs(self.tree.CustomList) do
-			if pnl.node_parent == self and pnl:GetExpand() ~= b then
-				pnl:SetExpand(b)
-				pnl:SetVisible(b) 
-				goto again
+			if pnl.node_parent == self then
+				pnl:SetExpandInternal(b)
+			end
+		end		
+	end
+	
+	function PANEL:SetExpand(b)
+		
+		for pos, pnl in pairs(self.tree.CustomList) do
+			if pnl.node_parent == self then
+				pnl:SetExpandInternal(b)
 			end
 		end
 		
