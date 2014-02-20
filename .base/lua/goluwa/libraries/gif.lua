@@ -27,7 +27,7 @@ function Gif(path)
 	end
 	
 	function self:GetTexture(num)
-		return frames[math.ceil(num%frame_count)]
+		return frames[math.ceil(math.clamp(num%frame_count, 1, frame_count))]
 	end
 	
 	function self:GetTextures()
@@ -35,7 +35,7 @@ function Gif(path)
 	end
 	
 	function self:Draw(x, y)
-		local tex = self:GetTexture(timer.clock() * frame_speed)
+		local tex = self:GetTexture(os.clock() * frame_speed)
 		surface.SetTexture(tex)
 
 		surface.DrawRect(x, y, tex.w, tex.h)
@@ -43,7 +43,9 @@ function Gif(path)
 	
 	function self:OnRemove()
 		for _, tex in pairs(frames) do
-			tex:Remove()
+			if tex:IsValid() then -- might've been garbage collected
+				tex:Remove()
+			end
 		end
 	end
 	
