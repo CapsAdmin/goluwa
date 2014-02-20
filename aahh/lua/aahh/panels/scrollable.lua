@@ -9,8 +9,7 @@ aahh.GetSet(PANEL, "XScroll", false)
 aahh.GetSet(PANEL, "ScrollPos", Vec2())
 
 function PANEL:Initialize()	
-	self:SetTrapInsideParent(false)
-	self:SetObeyMargin(false)
+	self:SetTrapChildren(false)
 	
 	self:SetXScroll(self:GetXScroll())
 	self:SetYScroll(self:GetYScroll())
@@ -18,33 +17,52 @@ function PANEL:Initialize()
 	self:SetAlwaysReceiveMouse(true)
 end
 
+function PANEL:SetPanel(pnl)	
+	self.container = pnl
+	pnl:SetParent(self)
+	pnl.DrawManual = true
+end
+
+function PANEL:OnMouseMove(pos, inside)	
+	if self.start_y then
+		if aahh.IsMouseDown("button_1") then
+			
+			local y = pos.y - self.start_y.y
+			local max = self:GetHeight() - self.y_bar:GetHeight()
+			y = math.clamp(y, 0, max)
+			
+			self.y_bar:SetY(y)
+			y = y / max
+			
+			self:SetScrollFraction(Vec2(0, -y))
+			
+			self:OnRequestLayout()
+		else
+			self.start_y = nil
+		end
+	end
+end
+
 PANEL.y_bar = NULL
 
 function PANEL:SetYScroll(b)
 	if b then
-		local pnl = aahh.Create("draggable", self)
+		if self.y_bar:IsValid() then self.y_bar.Remove() end
+		
+		local pnl = aahh.Create("panel", self)
+		
 		pnl:SetTrapInsideParent(false)
 		pnl:SetObeyMargin(false)
-	
-		pnl.CalcBounds = function(s)
-			local y = s:GetPos().y
-			
-			s:SetPos(Vec2(self:GetWidth() - 10, y))
-			s:SetSize(Vec2(10, self.ScrollHeight))
-			
-			local delta = y - (self.last_y or 0)
-			self:Scroll(Vec2(0, delta))		
-			self.last_y = y
-		end
-		
-		local old = pnl.OnMouseInput
-		
-		pnl.OnMouseInput = function(s, ...) 
-			self.OnMouseInput(self, ...)
-			old(s, ...)
+					
+		pnl.OnMouseInput = function(s, button, press, pos)
+			if button == "button_1" and press then
+				self.start_y = pos
+			end
 		end
 		
 		self.y_bar = pnl
+		self:SetMargin(Rect(0,0,10,0))
+		self:RequestLayout()
 	else
 		if self.y_bar:IsValid() then
 			self.y_bar:Remove()
@@ -56,6 +74,8 @@ PANEL.x_bar = NULL
 
 function PANEL:SetXScroll(b)
 	if b then
+		if self.x_bar:IsValid() then self.x_bar.Remove() end
+		
 		local pnl = aahh.Create("draggable", self)
 		pnl:SetTrapInsideParent(false)
 		pnl:SetObeyMargin(false)
@@ -86,22 +106,6 @@ function PANEL:SetXScroll(b)
 	end
 end
 
-function PANEL:IsWorldPosInside(a)
-	local b, s = self:GetWorldPos(), self:GetSize()
-	
-	b = b + self.ScrollPos
-	s = s - self.ScrollPos
-	
-	if
-		a.x > b.x and a.x < b.x + s.w and
-		a.y > b.y and a.y < b.y + s.h
-	then
-		return true
-	end
-	
-	return false
-end
-
 function PANEL:Scroll(vec)
 	
 	if self.y_bar:IsValid() then self.y_bar:SetPos(self.y_bar:GetPos() + vec) end
@@ -119,7 +123,21 @@ function PANEL:Scroll(vec)
 	self.ScrollPos = self.ScrollPos + vec
 end
 
+function PANEL:SetScrollFraction(vec)
+		
+	vec = vec * size 
+		
+	self.container:SetPos(vec)
+	--self.container:StretchToRight()
+
+	self.ScrollPos = vec
+end
+
 function PANEL:OnRequestLayout()
+	if self.y_bar:IsValid() then
+		self.y_bar:SetPos(Vec2(self:GetWidth() - 10, self.y_bar:GetPos().y))
+		self.y_bar:SetSize(Vec2(10, self.ScrollHeight))
+	end
 	
 end
 
@@ -131,6 +149,13 @@ function PANEL:OnMouseInput(key, press)
 			self:Scroll(Vec2(0, -1) * 10)
 		end
 	end
+end
+
+function PANEL:OnDraw()
+	if not self.container:IsValid() then return end
+	self.container.DrawManual = false
+	self.container:Draw()
+	self.container.DrawManual = true
 end
 
 aahh.RegisterPanel(PANEL)

@@ -114,10 +114,6 @@ do
 			local x, y = pnl.Parent:GetWorldPos():Unpack()
 			
 			surface.StartClipping(x, y, w, h)
-		else
-			local x,y = pnl:GetWorldPos():Unpack()		
-
-			surface.StartClipping(x, y, pnl:GetSize():Unpack())
 		end
 	end
 	
