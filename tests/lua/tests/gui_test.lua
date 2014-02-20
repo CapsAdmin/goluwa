@@ -2,14 +2,16 @@ window.Open(1280, 720)
 	
 if not aahh.initialized then return end
 
-local frame = utilities.RemoveOldObject(aahh.Create("frame"), "aahh_unit_test")
-frame:SetSize(Vec2() + 300)
+local frame = utilities.RemoveOldObject(aahh.Create("frame"), "aahh_unit_test") 
+frame:SetSize(Vec2() + 500)
 frame:Center()
 frame:SetTitle("unit test")
 
 local tabs = frame:CreatePanel("tabbed")
 tabs:Dock("fill")
-
+        
+LOL = tabs     
+  
 do -- tree test
 	local icons =
 	{
@@ -39,10 +41,13 @@ do -- tree test
 	}
 
 	local tab, scroll = tabs:AddTab("tree", "scrollable")
-	local tree = scroll:CreatePanel("tree")
+	--if false then
+	local tree = aahh.Create("tree")
+	scroll:SetPanel(tree)
+	tree:SetTrapInsideParent(false)
 	LOL = scroll
-	tree:Dock("fill")
-	
+	--tree:Dock("fill")
+	  
 	local data = luadata.ReadFile(R("well.txt"))
 	local done = {}
 	 
@@ -62,6 +67,7 @@ do -- tree test
 	end
 
 	tree:Stack()
+	--end
 end
 
 do -- uh
@@ -80,10 +86,8 @@ do -- uh
 	local slider = aahh.Create("labeled_slider", grid)
 	slider:SetValue(10)
 	
-	
-	
 	local container = aahh.Create("container", grid)
-		container:SetHeight(100)
+		container:SetSizeToContent(true)
 
 		local grid = aahh.Create("grid", container)
 		
@@ -111,5 +115,5 @@ do -- text
 	grid:SetLineNumbers(true)
 end
 
-tabs:SelectTab("properties")
+tabs:SelectTab("tree")
 frame:RequestLayout(true)

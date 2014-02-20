@@ -30,7 +30,6 @@ function tester.End()
 		end
 
 		local grd = aahh.Create("grid", frm)
-		grd:SetSize(Vec2(100, 100))
 		grd:Dock("fill")
 		grd:SetSizeToWidth(true)
 		grd:SetItemSize(Vec2()+25)
@@ -40,8 +39,6 @@ function tester.End()
 			lbl:SetText(k .. " " .. v)
 		end
 		
-		grd:RequestLayout()
-		frm:RequestLayout(true)
 		frm:MakeActivePanel()
 		
 		function frm:OnKeyInput(key)

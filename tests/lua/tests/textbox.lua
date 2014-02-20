@@ -6,7 +6,6 @@ local frame = utilities.RemoveOldObject(aahh.Create("frame"), "lol")
 	frame:SetTitle("")
 
 	local edit = aahh.Create("text_input", frame)
-		edit:SetFont("default")
 		edit:Dock("fill")
 		edit:SetWrap(false)
 		edit:SetLineNumbers(true)
