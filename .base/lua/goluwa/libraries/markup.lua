@@ -1,3 +1,4 @@
+﻿setfenv(1, _G)
  
 --[[ 
 todo:
@@ -10,8 +11,6 @@ todo:
 
 local META = {}
 META.__index = META
-
-META.chunk_fix = true
 
 function Markup()
 	local self = {
@@ -50,82 +49,235 @@ function META:SetLineWrap(b)
 end
 
 -- these are used by EXT.SetColor, EXT.SetFont etc
-local FONT = "markup"
-local R, G, B, A = 255, 255, 255, 255
+local R, G, B, A = 1,1,1,1
 local X, Y = 0, 0
 
-local EXT = {
-	Rand = math.randomf,
-	FormatPrint = logf,
-	GetFrameTime = timer.GetFrameTime,
-	GetTime = timer.GetTime,
-	LoadString = loadstring,
-	CreateConVar = console.CreateVariable,
-	GetConVarFloat = function(c) return c:Get() end,
+local EXT
 
-	HSVToColor = function(h,s,v) return HSVToColor(h,s,v):Unpack() end,
+if gmod then
+	local TEMP_CLR = Color(R,G,B,A)
+	local TEMP_VEC = Vector(0, 0, 0)
+	local TEMP_ANG = Angle(0, 0, 0)
 
-	SetMaterial = surface.SetTexture,
-	SetColor = function(r,g,b,a)
-		R=r G=g B=b A=a or 1
+	local white = Material("vgui/white")
+	
+	EXT = {
+		SetClipboard = SetClipboardText,
+		GetClipboard = function() return "gmod has no way to get clipboard data!" end,
+		TypeOf = function(v) 
+		
+			if type(v) == "table" and 
+				type(v.r) == "number" and
+				type(v.g) == "number" and
+				type(v.b) == "number"
+			then
+				return "color"
+			end
+			
+			return type(v)
+		end,
+		Rand = math.Rand,
+		LogF = function(fmt, ...) MsgN(string.format(fmt, ...)) end,
+		GetFrameTime = FrameTime,
+		GetTime = RealTime,
+		
+		Color = Color,
+		
+		UTF8StringToTable = string.usplit,
+		UTF8Length = GLib.UTF8.Length,
+		UTF8Sub = GLib.UTF8.Sub,
+		
+		CreateConVar = function(name, def) return CreateClientConVar(name, tostring(def), true, false) end,
+		GetConVarFloat = function(c) return c:GetFloat() end,
+		
+		HSVToColor = function(h,s,v) local c = HSVToColor(h%360, s, v) return c.r, c.g, c.b end,
+		SetMaterial = function(mat) surface.SetMaterial(mat or white) end,
+		SetWhiteTexture = function(mat) surface.SetMaterial(white) end,
+		DrawLine = surface.DrawLine,
+		SetColor = function(r,g,b,a) 
+			R=r or 1
+			G=g or 1
+			B=b or 1
+			A=a or 1
+			
+			if R<=1 then R=R*255 end
+			if G<=1 then G=G*255 end
+			if B<=1 then B=B*255 end
+			if A<=1 then A=A*255 end
+			
+			surface.SetTextColor(R,G,B,A) 
+			surface.SetDrawColor(R,G,B,A) 
+		end,
+		DrawRect = surface.DrawTexturedRect,
+		CreateFont = surface.CreateFont,
+		
+		DrawText = surface.DrawText,
+		GetTextSize = function(str) 
+			if #str == 0 then str = "  " end
+			
+			str = str:gsub("&", "¤")
+			
+			local w, h = surface.GetTextSize(str) 
 
-		if R>1 then R=R/255 end
-		if G>1 then G=G/255 end
-		if B>1 then B=B/255 end
-		if A>1 then A=A/255 end
+			return w, h
+		end,
+		
+		SetTextPos = function(x, y) X=x Y=y surface.SetTextPos(x,y) end,
+		SetFont = surface.SetFont,
+		GetScreenHeight = ScrH,
+		GetScreenWidth = ScrW,
+		GetMousePos = function() return gui.MousePos() end,
+		
+		SetCullClockWise = function(b) render.CullMode(b and MATERIAL_CULLMODE_CW or MATERIAL_CULLMODE_CCW) end,
+		FindMaterial = function(path)			
+			if _G.pac and path:find("http") then
+				local mat = CreateMaterial("chathud_texture_tag" .. util.CRC(path) .. "_" .. FrameNumber(), "UnlitGeneric", {})
 
-		surface.Color(R,G,B,A)
-	end,
-	DrawRect = surface.DrawRect,
-	DrawText = surface.DrawText,
-	SetTextPos = function(x, y) X=x Y=y surface.SetTextPos(x,y) end,
-	SetFont = function(str)
-		FONT = str
-		surface.SetFont(str)
-	end,
-	GetTextSize = surface.GetTextSize,
-	SetAlphaMultiplier = surface.SetAlphaMultiplier,
-	GetScreenHeight = function() return select(2, surface.GetScreenSize()) end,
-	GetScreenWidth = function() return (surface.GetScreenSize()) end,
+				pac.urltex.GetMaterialFromURL(path, function(_mat)
+					mat:SetTexture("$basetexture", _mat:GetTexture("$basetexture"))
+				end, nil, "UnlitGeneric", size, false)
 
-	SetCullClockWise = function(b) end,
-	FindMaterial = Image,
-	CreateMatrix = Matrix44,
+				mat:SetFloat("$alpha", 0.999)
+			
+				return mat
+			else
+				local mat = Material(path)
+				local shader = mat:GetShader()
+				
+				if shader == "VertexLitGeneric" or shader == "Cable" then
+					local tex_path = mat:GetString("$basetexture")
+					
+					if tex_path then
+						local params = {}
+						
+						params["$basetexture"] = tex_path
+						params["$vertexcolor"] = 1
+						params["$vertexalpha"] = 1
+						
+						mat = CreateMaterial("markup_fixmat_" .. tex_path, "UnlitGeneric", params)
+					end	
+				end
 
-	TranslateMatrix = function(m, x, y) m:Translate(x or 0, y or 0, 0) end,
-	ScaleMatrix = function(m, x, y) m:Scale(x or 0, y or 0, 1) end,
-	RotateMatrix = function(m, a) m:Rotate(a, 0, 0, 1) end,
+				return mat
+			end
+		end,
+				
+		CreateMatrix = Matrix,
+		
+		TranslateMatrix = function(m, x, y, z) TEMP_VEC.x=x or 0 TEMP_VEC.y=y or 0 m:Translate(TEMP_VEC) end,
+		ScaleMatrix = function(m, x, y, z) TEMP_VEC.x=x or 0 TEMP_VEC.y=y or 0 m:Scale(TEMP_VEC) end,
+		RotateMatrix = function(m, a) TEMP_ANG.y=a or 0 m:Rotate(TEMP_ANG) end,
+		
+		PushMatrix = cam.PushModelMatrix,
+		PopMatrix = cam.PopModelMatrix,
+	}
+else
+	EXT = {
+		SetClipboard = system.SetClipboard,
+		GetClipboard = system.GetClipboard,
+		Rand = math.randomf,
+		LogF = logf,
+		TypeOf = typex,
+		GetFrameTime = timer.GetFrameTime,
+		GetTime = timer.GetTime,
+		CreateConVar = console.CreateVariable,
+		GetConVarFloat = function(c) return c:Get() end,
 
-	PushMatrix = render.PushWorldMatrixEx,
-	PopMatrix = render.PopWorldMatrix,
-} 
+		HSVToColor = function(h,s,v) return HSVToColor(h,s,v):Unpack() end,
+		Color = Color,
+		SetMaterial = surface.SetTexture,
+		SetColor = function(r,g,b,a)
+			R=r or 1 
+			G=g or 1 
+			B=b or 1 
+			A=a or 1
+
+			if R>1 then R=R/255 end
+			if G>1 then G=G/255 end
+			if B>1 then B=B/255 end
+			if A>1 then A=A/255 end
+
+			surface.Color(R,G,B,A)
+		end,
+		CreateFont = surface.CreateFont,
+		SetWhiteTexture = surface.SetWhiteTexture,
+		DrawLine = surface.DrawLine,
+		DrawRect = surface.DrawRect,
+		DrawText = surface.DrawText,
+		SetTextPos = function(x, y) X=x Y=y surface.SetTextPos(x,y) end,
+		SetFont = surface.SetFont,
+		GetTextSize = surface.GetTextSize,
+		GetScreenHeight = function() return select(2, surface.GetScreenSize()) end,
+		GetScreenWidth = function() return (surface.GetScreenSize()) end,
+		GetMousePos = function() return window.GetMousePos():Unpack() end,
+		
+		UTF8StringToTable = utf8.totable,
+		UTF8Length = utf8.length,
+		UTF8Sub = utf8.sub,
+
+		SetCullClockWise = function(b) end,
+		FindMaterial = Image,
+		CreateMatrix = Matrix44,
+
+		TranslateMatrix = function(m, x, y) m:Translate(x or 0, y or 0, 0) end,
+		ScaleMatrix = function(m, x, y) m:Scale(x or 0, y or 0, 1) end,
+		RotateMatrix = function(m, a) m:Rotate(a, 0, 0, 1) end,
+
+		PushMatrix = render.PushWorldMatrixEx,
+		PopMatrix = render.PopWorldMatrix,
+	} 
+end
+
+EXT.CountChar = function(str, pattern)
+	return select(2, str:gsub(pattern, ""))
+end
+
+function EXT.GetCharType(char)
+
+	if char:find("%p") and char ~= "_" then
+		return "punctation"
+	elseif char:find("%s") then
+		return "space"
+	elseif char:find("%d") then
+		return "digit"
+	elseif char:find("%a") or char == "_" then
+		return "letters"
+	end
+	
+	return "unknown"
+end
+
+function EXT.FixIndices(tbl)
+	local temp = {}
+	local i = 1
+	for k, v in pairs(tbl) do
+		temp[i] = v
+		tbl[k] = nil
+		i = i + 1
+	end
+	
+	for k, v in ipairs(temp) do
+		tbl[k] = v
+	end
+end
 
 -- config start
 
-META.fonts = {
-	default = {
+do
+	META.default_font = {
 		name = "markup_default",
-		data = {
-			font = "DejaVu Sans",
-			size = 14,
-			antialias = true,
-			outline = false,
-			weight = 580,
-		} ,
-	},
-
-	chatprint = {
-		name = "markup_chatprint",
-		color = Color(201, 255, 41, 255),
 		data = {
 			font = "Verdana",
 			size = 16,
 			weight = 600,
 			antialias = true,
 			shadow = true,
-		},
-	},
-}
+			prettyblur = 1,
+		} ,
+	}
+
+	EXT.CreateFont(META.default_font.name, META.default_font.data)
+end
 
 do -- tags
 	META.tags = {}
@@ -152,7 +304,7 @@ do -- tags
 			end,
 						
 			draw_over = function(markup, self, chunk)
-				surface.DrawLine(chunk.x, chunk.top, chunk.right, chunk.top)
+				EXT.DrawLine(chunk.x, chunk.top, chunk.right, chunk.top)
 			end,
 		}
 		
@@ -160,13 +312,13 @@ do -- tags
 		{
 			arguments = {},						
 			draw_over = function(markup, self, chunk)
-				local r,g,b,a = surface.Color(1, 0, 0, 1)
+				local r,g,b,a = EXT.SetColor(1, 0, 0, 1)
 				-- todo: LOL
 				for x = chunk.x, chunk.right do 
-					surface.DrawLine(x, chunk.top + math.sin(x), x+1, chunk.top +math.sin(x))
+					EXT.DrawLine(x, chunk.top + math.sin(x), x+1, chunk.top +math.sin(x))
 				end
 				
-				surface.Color(r,g,b,a)
+				EXT.SetColor(r,g,b,a)
 			end,
 		}
 		
@@ -174,10 +326,10 @@ do -- tags
 		{
 			arguments = {},						
 			draw_over = function(markup, self, chunk)
-				local r, g, b, a = surface.Color(1, 1, 0, 0.25)
-				surface.SetWhiteTexture()
-				surface.DrawRect(chunk.x, chunk.y, chunk.w, chunk.h)
-				surface.Color(r, g, b, a)
+				local r, g, b, a = EXT.SetColor(1, 1, 0, 0.25)
+				EXT.SetWhiteTexture()
+				EXT.DrawRect(chunk.x, chunk.y, chunk.w, chunk.h)
+				EXT.SetColor(r, g, b, a)
 			end,
 		}
 				
@@ -187,13 +339,13 @@ do -- tags
 
 			draw = function(markup, self, x,y, h, s, v)
 				local r,g,b = EXT.HSVToColor(h, s, v)
-				EXT.SetColor(r, g, b, 255)
+				EXT.SetColor(r, g, b, 1)
 			end,
 		}
 
 		META.tags.color =
 		{
-			arguments = {255, 255, 255, 255},
+			arguments = {1, 1, 1, 1},
 
 			draw = function(markup, self, x,y, r,g,b,a)
 				EXT.SetColor(r, g, b, a)
@@ -294,39 +446,41 @@ do -- tags
  
 		META.tags.texture =
 		{
-			arguments = {"error", {default = 1, min = 1, max = 4}},
+			arguments = {"error", {default = 16, min = 4, max = 64}},
 
 			init = function(markup, self, path)
 				self.mat = EXT.FindMaterial(path)
 			end,
 
-			get_size = function(markup, self, path, size_mult)
-				return 8 * size_mult, 8 * size_mult
+			get_size = function(markup, self, path, size)
+				return size, size
 			end,
 
-			draw = function(markup, self, x,y,a, path)
+			draw = function(markup, self, x,y, path, size)
 				EXT.SetMaterial(self.mat)
-				EXT.DrawRect(x, y, self.w, self.h)
+				EXT.DrawRect(x, y, size, size)
 			end,
 		}
 		
-		META.tags.silkicon =
-		{
-			arguments = {"world", {default = 1}},
+		if not gmod then
+			META.tags.silkicon =
+			{
+				arguments = {"world", {default = 1}},
 
-			init = function(markup, self, path)
-				self.mat = EXT.FindMaterial("textures/silkicons/" .. path .. ".png")
-			end,
+				init = function(markup, self, path)
+					self.mat = EXT.FindMaterial("textures/silkicons/" .. path .. ".png")
+				end,
 
-			get_size = function(markup, self, path, size_mult)
-				return 16, 16
-			end,
+				get_size = function(markup, self, path, size_mult)
+					return 16, 16
+				end,
 
-			draw = function(markup, self, x,y,a, path)
-				EXT.SetMaterial(self.mat)
-				EXT.DrawRect(x, y, self.w, self.h)
-			end,
-		}
+				draw = function(markup, self, x,y, path)
+					EXT.SetMaterial(self.mat)
+					EXT.DrawRect(x, y, self.w, self.h)
+				end,
+			}
+		end
 
 	end
 
@@ -387,7 +541,7 @@ do -- tags
 
 		META.tags.scale =
 		{
-			arguments = {1, nil},
+			arguments = {1},
 			
 			init = function()
 				
@@ -517,9 +671,9 @@ do -- tags
 				-- |     c    d - ? |
 				--
 				-- (a - ?) (d - ?) - bc = 0
-				-- ?� + (-a - d) ? + ad - bc = 0
+				-- ?² + (-a - d) ? + ad - bc = 0
 				--
-				--     a + d � sqrt ((a + d)� - 4 (ad - bc))
+				--     a + d ± sqrt ((a + d)² - 4 (ad - bc))
 				-- ? = -------------------------------------
 				--                      2
 
@@ -599,16 +753,6 @@ end
 -- go through every argument
 -- markup:SetTable({Color(1,1,1), "asdasd", {"asdasd"}, ...})
 
-function META:NewCell()
-	self.cells = self.cells or {}
-	
-	local cell = {}
-	
-	self.current_cell = cell
-	
-	table.insert(self.cells, cell)
-end
-
 function META:Clear()
 	self.chunks = {}
 	self.need_layout = true
@@ -649,17 +793,16 @@ function META:AddFont(font)
 end
 
 function META:Add(var, tags)
-	local chunks = self.chunks
-	local t = typex(var)
+	local t = EXT.TypeOf(var)
 
 	if t == "color" then
 		self:AddColor(var)
 	elseif t == "string" or t == "number" then
 		self:AddString(var, tags)
 	elseif t == "table" and var.type and var.val then
-		table.insert(chunks, var)
+		table.insert(self.chunks, var)
 	elseif t ~= "cdata" then
-		logf("tried to parse unknown type %q", t)
+		EXT.LogF("tried to parse unknown type %q", t)
 	end
 end
 
@@ -694,7 +837,7 @@ local function call_tag_func(self, chunk, name, ...)
 			local args = {pcall(func, unpack(sigh))}
 
 			if not args[1] then
-				logf("tag error %s", args[2])
+				EXT.LogF("tag error %s", args[2])
 			else
 				return select(2, unpack(args))
 			end
@@ -716,12 +859,12 @@ do
 		end)
 
 		for arg in str:gmatch("(.-),") do
-			if expressions[arg]	 then
+			if expressions[arg] and expression then
 				local ok, func = expression.Compile(expressions[arg])
 				if func then
 					table.insert(out, func)
 				else
-					logf("markup expression error: %s", func)
+					EXT.LogF("markup expression error: %s", func)
 					table.insert(out, 0)
 				end
 			else
@@ -740,7 +883,7 @@ do
 		local current_string = {}
 		local current_tag = {}
 
-		for i, char in pairs(utf8.totable(str)) do
+		for i, char in pairs(EXT.UTF8StringToTable(str)) do
 			if char == "<" then
 
 				-- if we've been parsing a string add it
@@ -870,7 +1013,7 @@ function META:Invalidate()
 	local skipped = 0
 
 	for i, chunk in ipairs(self.chunks) do
-		if chunk.internal or chunk.type == "string" and chunk.val == "" then goto continue end
+		if chunk.internal or chunk.type == "string" and chunk.val == "" then goto continue_ end
 		
 		local old = chunk.old_chunk
 
@@ -885,14 +1028,13 @@ function META:Invalidate()
 			table.insert(temp, chunk)
 		end
 		
-		::continue::
+		::continue_::
 	end
 
+	table.insert(temp, {type = "font", val = self.default_font.name, internal = true})
+	table.insert(temp, {type = "color", val = EXT.Color(255, 255, 255), internal = true})	
 	for i = 1, 3 do table.insert(temp, {type = "string", val = "", internal = true}) end
-	table.insert(temp, {type = "font", val = self.fonts.default.name, internal = true})
-	table.insert(temp, {type = "color", val = Color(255, 255, 255), internal = true})	
-	for i = 1, 3 do table.insert(temp, {type = "string", val = "", internal = true}) end
-
+	
 	
 	--[[
 	-- uncomment this if chunk leaks occur
@@ -907,8 +1049,8 @@ function META:Invalidate()
 	
 	logn("")
 	logn("==")
-	logf("chunk count      = %i", #self.chunks)
-	logf("old chunks count = %i", table.count(old_chunks))
+	EXT.LogF("chunk count      = %i", #self.chunks)
+	EXT.LogF("old chunks count = %i", table.count(old_chunks))
 	logn("")
 
 	]]
@@ -921,7 +1063,7 @@ function META:Invalidate()
 		if chunk.type == "string" and chunk.val:find("%s") and not chunk.internal then
 			local str = ""
 
-			for i, char in ipairs(utf8.totable(chunk.val)) do
+			for i, char in ipairs(EXT.UTF8StringToTable(chunk.val)) do
 				if char:find("%s") then
 					if str ~= "" then
 						table.insert(temp2, {type = "string", val = str, old_chunk = chunk})
@@ -1014,7 +1156,7 @@ function META:Invalidate()
 			-- this causes issues with newlines
 			--[[if chunk.whitespace then
 				current_x = current_x - chunk.w
-				goto continue
+				goto continue_
 			end]]
 
 			-- reset the width
@@ -1058,8 +1200,8 @@ function META:Invalidate()
 
 					local str = ""
 
-					for i, char in ipairs(utf8.totable(chunk.val)) do
-						local w, h = surface.GetTextSize(char)
+					for i, char in ipairs(EXT.UTF8StringToTable(chunk.val)) do
+						local w, h = EXT.GetTextSize(char)
 
 						if h > chunk_height then
 							chunk_height = h
@@ -1158,7 +1300,7 @@ function META:Invalidate()
 		local height = 0
 		local last_y
 
-		local font = "default"
+		local font = self.default_font.name
 		local color = Color(1,1,1,1)
 
 		local function build_chars(chunk)
@@ -1173,8 +1315,8 @@ function META:Invalidate()
 					str = " "
 				end
 				
-				for i, char in ipairs(utf8.totable(str)) do
-					local char_width, char_height = surface.GetTextSize(char)
+				for i, char in ipairs(EXT.UTF8StringToTable(str)) do
+					local char_width, char_height = EXT.GetTextSize(char)
 					local x = chunk.x + width
 					local y = chunk.y
 
@@ -1453,9 +1595,9 @@ function META:GetNextCharacterClassPos(delta, next_space)
 	if delta > 0 then
 	
 		if pos > 0 and self.chars[pos-1] then
-			local type = self.chars[pos-1].str:getchartype()
+			local type = EXT.GetCharType(self.chars[pos-1].str)
 			
-			while pos > 0 and self.chars[pos] and self.chars[pos].str:getchartype() == type do
+			while pos > 0 and self.chars[pos] and EXT.GetCharType(self.chars[pos].str) == type do
 				pos = pos + 1
 			end
 		end
@@ -1465,7 +1607,7 @@ function META:GetNextCharacterClassPos(delta, next_space)
 		end
 				
 		if next_space then
-			while pos > 0 and self.chars[pos] and self.chars[pos].str:getchartype() == "space" and self.chars[pos].str ~= "\n" do
+			while pos > 0 and self.chars[pos] and EXT.GetCharType(self.chars[pos].str) == "space" and self.chars[pos].str ~= "\n" do
 				pos = pos + 1
 			end
 		end		
@@ -1475,15 +1617,15 @@ function META:GetNextCharacterClassPos(delta, next_space)
 		
 		-- this isn't really scintilla behaviour but I think it makes sense
 		if next_space then
-			while pos > 1 and self.chars[pos - 1].str:getchartype() == "space" and self.chars[pos - 1].str ~= "\n" do
+			while pos > 1 and EXT.GetCharType(self.chars[pos - 1].str) == "space" and self.chars[pos - 1].str ~= "\n" do
 				pos = pos - 1
 			end
 		end
 	
 		if self.chars[pos - 1] then
-			local type = self.chars[pos - 1].str:getchartype()
+			local type = EXT.GetCharType(self.chars[pos - 1].str)
 
-			while pos > 1 and self.chars[pos - 1].str:getchartype() == type do
+			while pos > 1 and EXT.GetCharType(self.chars[pos - 1].str) == type do
 				pos = pos - 1
 			end
 		end
@@ -1513,7 +1655,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 			
 			if x <= 0 then
 				y = y - 1
-				x = self.lines[y]:ulength()
+				x = EXT.UTF8Length(self.lines[y])
 			end
 		end
 	
@@ -1524,7 +1666,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 		for i = 1, stop_offset do			
 			x = x + 1
 			
-			if x >= self.lines[y]:ulength() then
+			if x >= EXT.UTF8Length(self.lines[y]) then
 				y = y + 1
 				x = 0
 			end
@@ -1535,9 +1677,9 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 		self:DeleteSelection(true)
 	end
 		
-	self.text = self.text:usub(1, sub_pos - 1) .. str .. self.text:usub(sub_pos)
+	self.text = EXT.UTF8Sub(self.text, 1, sub_pos - 1) .. str .. EXT.UTF8Sub(self.text, sub_pos)
 	
-	if self.chunk_fix then -- fix chunks
+	do -- fix chunks
 		local sub_pos = self.caret_pos.char.data.i
 		local chunk = self.caret_pos.char.chunk
 		
@@ -1560,7 +1702,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 					sub_pos = #chunk.chars + 1
 				end
 				
-				chunk.val = chunk.val:usub(1, sub_pos - 1) .. str .. chunk.val:usub(sub_pos) 
+				chunk.val = EXT.UTF8Sub(chunk.val, 1, sub_pos - 1) .. str .. EXT.UTF8Sub(chunk.val, sub_pos) 
 			else
 				table.remove(self.chunks, chunk.i)
 			end
@@ -1570,8 +1712,8 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 	end
 
 	if not skip_move then
-		local x = self.caret_pos.x + str:ulength()
-		local y = self.caret_pos.y + str:count("\n")
+		local x = self.caret_pos.x + EXT.UTF8Length(str)
+		local y = self.caret_pos.y + EXT.CountChar(str, "\n")
 
 		if self.caret_pos.char.str == "\n" then
 			self.move_caret_right = true
@@ -1726,7 +1868,7 @@ function META:Indent(back)
 		local select_start = self:GetSelectStart()
 		local select_stop = self:GetSelectStop()
 
-		local text = self.text:usub(select_start.sub_pos, select_stop.sub_pos)
+		local text = EXT.UTF8Sub(self.text, select_start.sub_pos, select_stop.sub_pos)
 
 		if back then
 			if text:sub(1, 1) == "\t" then
@@ -1743,9 +1885,9 @@ function META:Indent(back)
 			end
 		end
 
-		self.text = self.text:usub(1, select_start.sub_pos - 1) .. text .. self.text:usub(select_stop.sub_pos + 1)
+		self.text = EXT.UTF8Sub(self.text, 1, select_start.sub_pos - 1) .. text .. EXT.UTF8Sub(self.text, select_stop.sub_pos + 1)
 		
-		if self.chunk_fix then
+		do -- fix chunks
 			for i = select_start.char.chunk.i-1, select_stop.char.chunk.i-1 do
 				local chunk = self.chunks[i]
 				if chunk.type == "newline" then 
@@ -1792,7 +1934,7 @@ function META:Enter()
 	local x = 0
 	local y = self.caret_pos.y
 
-	local cur_space = self.lines[y]:usub(1, self.caret_pos.x):match("^(%s*)") or ""
+	local cur_space = EXT.UTF8Sub(self.lines[y], 1, self.caret_pos.x):match("^(%s*)") or ""
 	x = x + #cur_space
 	
 	if x == 0 and #self.lines == 1 then
@@ -1908,7 +2050,7 @@ do -- caret
 		y = y or 0
 
 		y = math.clamp(y, 1, #self.lines)
-		x = math.clamp(x, 0, self.lines[y] and self.lines[y]:ulength() or 0)
+		x = math.clamp(x, 0, self.lines[y] and EXT.UTF8Length(self.lines[y]) or 0)
 		
 		local CHAR
 		local POS
@@ -1922,7 +2064,7 @@ do -- caret
 		end
 		
 		if not CHAR then
-			if x == self.lines[#self.lines]:ulength() then
+			if x == EXT.UTF8Length(self.lines[#self.lines]) then
 				POS = #self.chars
 				CHAR = self.chars[i]
 			end
@@ -1938,7 +2080,7 @@ do -- caret
 					POS = x + 1
 				end
 			elseif y >= #self.lines then
-				local i = #self.chars - self.lines[#self.lines]:ulength() + x + 1
+				local i = #self.chars - EXT.UTF8Length(self.lines[#self.lines]) + x + 1
 				CHAR = self.chars[i]
 				POS = i
 			end
@@ -1990,7 +2132,7 @@ do -- caret
 			end
 			
 			-- move to next or previous line
-			if X > 0 and x > line:ulength() and #self.lines > 1 then
+			if X > 0 and x > EXT.UTF8Length(line) and #self.lines > 1 then
 				x = 0
 				y = y + 1
 
@@ -2000,13 +2142,13 @@ do -- caret
 					x = x - 1				
 				end
 			elseif X < 0 and x < 0 and y > 0 and self.lines[self.caret_pos.y - 1] then
-				x = self.lines[self.caret_pos.y - 1]:ulength()
+				x = EXT.UTF8Length(self.lines[self.caret_pos.y - 1])
 				y = y - 1
 			end
 			
 		else			
 			if X == math.huge then
-				x = line:ulength()
+				x = EXT.UTF8Length(line)
 			elseif X == -math.huge then
 				local pos = #(line:match("^(%s*)") or "")
 							
@@ -2028,7 +2170,7 @@ do -- caret
 			self.suppress_end_char = false
 		end
 		
-		self.blink_offset = timer.GetTime() + 0.25
+		self.blink_offset = EXT.GetTime() + 0.25
 	end
 end
 
@@ -2117,7 +2259,7 @@ do -- selection
 
 		if START and STOP then
 			if not tags then
-				return self.text:usub(START.sub_pos, STOP.sub_pos - 1)
+				return EXT.UTF8Sub(self.text, START.sub_pos, STOP.sub_pos - 1)
 			else
 				local last_chunk
 				local last_font
@@ -2163,11 +2305,11 @@ do -- selection
 				self:SetCaretPos(start.x, start.y)
 			end
 
-			self.text = self.text:usub(1, start.sub_pos - 1) .. self.text:usub(stop.sub_pos)
+			self.text = EXT.UTF8Sub(self.text, 1, start.sub_pos - 1) .. EXT.UTF8Sub(self.text, stop.sub_pos)
 
 			self:Unselect()
 						
-			if self.chunk_fix then -- fix chunks	
+			do -- fix chunks	
 			
 				local need_fix = false
 				for i = start.char.chunk.i + 1, stop.char.chunk.i - 1 do
@@ -2182,9 +2324,9 @@ do -- selection
 				
 				if start_chunk.type == "string" then
 					if stop_chunk == start_chunk then						
-						start_chunk.val = start_chunk.val:usub(1, start.char.data.i - 1) .. start_chunk.val:usub(stop.char.data.i)
+						start_chunk.val = EXT.UTF8Sub(start_chunk.val, 1, start.char.data.i - 1) .. EXT.UTF8Sub(start_chunk.val, stop.char.data.i)
 					else
-						start_chunk.val = start_chunk.val:usub(1, start.char.data.i - 1) 
+						start_chunk.val = EXT.UTF8Sub(start_chunk.val, 1, start.char.data.i - 1) 
 					end 
 				elseif not self.chunks[start_chunk.i].internal then
 					self.chunks[start_chunk.i] = nil
@@ -2194,7 +2336,7 @@ do -- selection
 				if stop_chunk ~= start_chunk then
 					if stop_chunk.type == "string" then
 						local sub_pos = stop.char.data.i
-						stop_chunk.val = stop_chunk.val:usub(sub_pos)  
+						stop_chunk.val = EXT.UTF8Sub(stop_chunk.val, sub_pos)  
 					elseif stop_chunk.type ~= "newline" and not stop_chunk.internal then
 						self.chunks[stop_chunk.i] = nil
 						need_fix = true
@@ -2202,7 +2344,7 @@ do -- selection
 				end
  			
 				if need_fix then
-					table.fixindices(self.chunks)
+					EXT.FixIndices(self.chunks)
 				end	
 			
 				self:Invalidate()
@@ -2239,7 +2381,7 @@ do -- clipboard
 			self:InvalidateEditedText()
 			
 			if str:find("\n") then
-				self:SetCaretPos(math.huge, self.caret_pos.y + str:count("\n"), true)
+				self:SetCaretPos(math.huge, self.caret_pos.y + EXT.CountChar(str, "\n"), true)
 			end
 		end
 	end
@@ -2248,7 +2390,7 @@ end
 do -- input
 	
 	function META:OnCharInput(char)
-		timer.Delay(0, function() self:InsertString(char) end)  
+		self:InsertString(char)
 	end
 	
 	local is_caret_move = {
@@ -2304,11 +2446,11 @@ do -- input
 
 		if self.ControlDown then
 			if key == "c" then
-				system.SetClipboard(self:Copy())
+				EXT.SetClipboard(self:Copy())
 			elseif key == "x" then
-				system.SetClipboard(self:Cut())
+				EXT.SetClipboard(self:Cut())
 			elseif key == "v" then
-				self:Paste(system.GetClipboard())
+				self:Paste(EXT.GetClipboard())
 			elseif key == "a" then
 				self:SelectAll()
 			elseif key == "t" then
@@ -2397,8 +2539,7 @@ do -- input
 				end
 			else
 				if not self.Editable then
-					print(self:GetSelectStart(), self:GetSelectStop())
-					system.SetClipboard(self:Copy(true))
+					EXT.SetClipboard(self:Copy(true))
 					self:Unselect()
 				end
 			
@@ -2430,31 +2571,10 @@ do -- drawing
 		end
 
 		-- reset font and color for every line
-		EXT.SetFont(self.fonts.default.name)
-		EXT.SetColor(255, 255, 255, 255)
-		EXT.SetColor(255, 255, 255, 255)
+		EXT.SetFont(self.default_font.name)
+		EXT.SetColor(1, 1, 1, 1)
+		EXT.SetColor(1, 1, 1, 1)
 		
-		if false and self.EditMode then		
-			local last_line
-			local offset
-			
-			surface.Color(0.5,0.5,0.5,1)
-		
-			for i, chunk in ipairs(self.chunks) do				
-				if not offset and chunk.h > 0 then
-					offset = chunk.h
-				end
-				
-				if chunk.line ~= last_line and offset and chunk.type == "string" then
-					surface.SetTextPos(chunk.x + 5, chunk.top - offset) 
-					surface.DrawText(chunk.chars[1].y)
-					last_line = chunk.line
-				end			
-			end
-			
-			surface.PushMatrix(30, 0)
-		end
-
 		for i, chunk in ipairs(self.chunks) do
 			
 			if not chunk.internal then
@@ -2517,7 +2637,7 @@ do -- drawing
 	function META:DrawSelection()
 	
 		if self.mouse_selecting then
-			local x, y = window.GetMousePos():Unpack()
+			local x, y = EXT.GetMousePos()
 			local caret = self:CaretFromPixels(x, y, true)
 			
 			if caret then
@@ -2537,14 +2657,14 @@ do -- drawing
 		local END = self:GetSelectStop()
 		
 		if START and END then
-			surface.SetWhiteTexture()
-			surface.Color(1, 1, 1, 0.5)
+			EXT.SetWhiteTexture()
+			EXT.SetColor(1, 1, 1, 0.5)
 
 			for i = START.i, END.i - 1 do
 				local char = self.chars[i]
 				if char then
 					local data = char.data
-					surface.DrawRect(data.x, data.y, data.w, data.h)
+					EXT.DrawRect(data.x, data.y, data.w, data.h)
 				end
 			end
 			
@@ -2559,8 +2679,8 @@ do -- drawing
 	
 	function META:DrawLineHighlight(y)
 		local start_chunk = self:CaretFromPos(0, y).char.chunk
-		surface.Color(1, 1, 1, 0.1)
-		surface.DrawRect(start_chunk.x, start_chunk.y, self.width, start_chunk.line_height)
+		EXT.SetColor(1, 1, 1, 0.1)
+		EXT.DrawRect(start_chunk.x, start_chunk.y, self.width, start_chunk.line_height)
 	end
 	
 	function META:DrawCaret()
@@ -2582,10 +2702,264 @@ do -- drawing
 				end
 			end
 			
-			surface.SetWhiteTexture()
+			EXT.SetWhiteTexture()
 			self.blink_offset = self.blink_offset or 0
-			surface.Color(1, 1, 1, (timer.GetTime() - self.blink_offset)%0.5 > 0.25 and 1 or 0)
-			surface.DrawRect(x, y, 2, h)
+			EXT.SetColor(1, 1, 1, (EXT.GetTime() - self.blink_offset)%0.5 > 0.25 and 1 or 0)
+			EXT.DrawRect(x, y, 2, h)
 		end
 	end
+end
+
+do -- test case
+	function META:Test()
+		self:AddString("Hello markup test!\n\n有一些中國\nそして、いくつかの日本の\nكيف حول بعض عربية")
+
+		self:AddString[[
+		
+		
+markup todo:
+	caret real_x should prioritise pixel width
+	y axis caret movement when the text is being wrapped
+	divide this up in cells (new object?)
+	proper tag stack
+	the ability to edit (remove and copy) custom tags that have a size (like textures)
+	alignment tags 
+		]]
+		
+		local small_font = "markup_small"
+		EXT.CreateFont(small_font, {size = 8, read_speed = 100})
+
+		self:AddFont(small_font)
+		self:AddString("\nhere's some text in chinese:\n我寫了這個在谷歌翻譯，所以我可以測試我的標記語言使用Unicode正確。它似乎做工精細！\n")
+		self:AddString("some normal string again\n")
+		self:AddString("and another one\n")
+
+		self:AddFont("markup_default")
+		self:AddString("back to normal!\n\n") 
+		
+		local small_font = "markup_small4"
+		EXT.CreateFont(small_font, {size = 14, read_speed = 100, monospace = true})  
+		
+		self:AddFont(small_font)
+		self:AddString("monospace\n")
+		self:AddString("░█░█░█▀█░█▀█░█▀█░█░█░\n░█▀█░█▀█░█▀▀░█▀▀░▀█▀░\n░▀░▀░▀░▀░▀░░░▀░░░░▀░░\n")
+		self:AddString("it's kinda like fullwidth\n")
+		self:AddFont("markup_default")
+
+		do	
+			local icons = file.Find("materials/icon16/*", "GAME")
+			local tags = ""
+			for i = 1, 32 do
+				local path = table.Random(icons)
+				tags = tags .. ("<texture=icon16/%s,2>%s"):format(path, i%16 == 0 and "\n" or "")
+			end
+			
+			self:AddString(tags, true) 
+		end	
+
+		self:AddString([[<font=markup_default><color=0.5,0.62,0.75,1>if<color=1,1,1,1> CLIENT<color=0.5,0.62,0.75,1> then
+	if<color=1,1,1,1> window<color=0.5,0.62,0.75,1> and<color=0.75,0.75,0.62,1> #<color=1,1,1,1>window<color=0.75,0.75,0.62,1>.<color=1,1,1,1>GetSize<color=0.75,0.75,0.62,1>() ><color=0.5,0.75,0.5,1> 5<color=0.5,0.62,0.75,1> then<color=1,1,1,1> 
+		timer<color=0.75,0.75,0.62,1>.<color=1,1,1,1>Delay<color=0.75,0.75,0.62,1>(<color=0.5,0.75,0.5,1>0<color=0.75,0.75,0.62,1>,<color=0.5,0.62,0.75,1> function<color=0.75,0.75,0.62,1>()
+<color=1,1,1,1>			include<color=0.75,0.75,0.62,1>(<color=0.75,0.5,0.5,1>"tests/markup.lua"<color=0.75,0.75,0.62,1>)
+<color=0.5,0.62,0.75,1>		end<color=0.75,0.75,0.62,1>)
+<color=0.5,0.62,0.75,1>	end
+end
+	]], true)
+		
+		local big_font = "markup_test_big"
+		EXT.CreateFont(big_font, {font = "arial", size = 30, read_speed = 100})
+		 
+		self:AddFont(big_font)
+		self:AddColor(Color(0,255,0,255))
+		self:AddString("This font is huge and green for some reason!\n")
+		self:AddColor(Color(255, 255, 255, 255))
+		self:AddFont("markup_default")  
+		
+		local big_font = "markup_big2"
+		EXT.CreateFont(big_font, {font = "verdana", size = 20, read_speed = 100})
+		 
+		self:AddFont(big_font)
+		self:AddColor(Color(255,0,255,255))
+		self:AddString("This one is slightly smaller bug with a different font\n")
+		self:AddColor(Color(255, 255, 255, 255))
+		self:AddFont("markup_default")  
+		
+		--self:AddString("rotated grin<rotate=90>:D</rotate> \n", true)	
+		--self:AddString("that's <wrong>WRONG</wrong>\n", true)
+		self:AddString("Hey look it's gordon freeman!\n")
+		self:AddString("<click>http://www.google.com</click>\n", true)
+		self:AddString("did you forget your <mark>eggs</mark>?\n", true)
+		self:AddString("no but that's <wrong>wierd</wrong>\n", true)
+		self:AddString("what's so <rotate=-3>wierd</rotate> about that?\n", true)
+		self:AddString("<hsv=[t()+input.rand/10],[(t()+input.rand)/100]>", true)
+		self:AddString("<rotate=1>i'm not sure it seems to be</rotate><rotate=-1>some kind of</rotate><physics=0,0>interference</physics>\n", true)
+		self:AddString("<scale=[((t()/10)%5^5)+1],1>you don't say</scale>\n", true)
+		
+		self:AddString("smileys?")
+		self:AddString("\n")
+		self:AddString("<rotate=90>:D</rotate>", true)
+		self:AddString("<rotate=90>:)</rotate>", true)
+		self:AddString("<rotate=90>:(</rotate>", true)
+		self:AddString("<rotate=90>:P</rotate>", true)
+		self:AddString("<rotate=90>:O</rotate>", true)
+		self:AddString("<rotate=90>:]</rotate>", true)
+		self:AddString("<rotate=90></rotate>", true)-- FIX ME
+		self:AddString("\n")
+		self:AddString("maybe..\n\n")
+		
+		local big_font = "markup_big3"
+		EXT.CreateFont(big_font, {font = "looney", size = 50, read_speed = 100})
+		self:AddFont(big_font)
+		local str = "That's all folks!"
+			
+		self:AddFont("markup_default")
+		self:AddString("\n")
+		self:AddString([[
+© 2012, Author
+Self publishing
+(Possibly email address or contact data)]])
+	end
+end
+
+if gmod then -- register a panel
+
+	function MarkupTest()
+		if markup_frame and markup_frame:IsValid() then 
+			markup_frame:Remove() 
+		end
+
+		local frame = vgui.Create("DFrame")
+		local markup = vgui.Create("Markup", frame)
+
+		markup:Dock(FILL)
+		markup:Test()
+
+		frame:SetSize(1000, 1000)
+		frame:SetSizable(true)
+
+		markup_frame = frame
+	end
+
+	local PANEL = {}
+	
+	for k,v in pairs(META) do
+		if type(v) == "function" then
+			PANEL[k] = function(s, ...)
+				s.markup[k](s.markup, ...)
+			end
+		end
+	end
+	
+	function PANEL:Init()
+		self.markup = Markup()
+		self:SetupTextEntryHack()
+	end
+	
+	function PANEL:Paint(w, h)
+		local markup =  self.markup
+
+		markup:SetShiftDown(input.IsKeyDown(KEY_LSHIFT) or input.IsKeyDown(KEY_RSHIFT)) 
+		markup:SetControlDown(input.IsKeyDown(KEY_LCONTROL) or input.IsKeyDown(KEY_RCONTROL)) 
+				
+		-- this is needed for proper mouse coordinates
+		local x, y = self:LocalToScreen(0, 0)
+			
+		markup:Draw(x, y, w, h)
+	end
+
+	function PANEL:PerformLayout()
+		self.markup:SetMaxWidth(self:GetWide()) 
+	end
+	
+	do -- mouse input
+		local translate = {
+			[MOUSE_LEFT] = "button_1",
+			[MOUSE_RIGHT] = "button_2",
+		}
+
+		function PANEL:OnMousePressed(button)
+			self.markup:OnMouseInput(translate[button], true, gui.MousePos())
+			
+			local pnl = self.text_entry_hack
+			if pnl:IsValid() then
+				pnl:MakePopup()
+				pnl:RequestFocus()
+			end
+		end
+
+		function PANEL:OnMouseReleased(button)
+			self.markup:OnMouseInput(translate[button], false, gui.MousePos())
+		end
+		
+	end
+
+	do -- keyboard input
+		local translate = {
+			[KEY_BACKSPACE] = "backspace",
+			[KEY_TAB] = "tab",
+			[KEY_DELETE] = "delete",
+			[KEY_HOME] = "home",
+			[KEY_END] = "end",
+			[KEY_TAB] = "tab",
+			[KEY_ENTER] = "enter",
+			[KEY_C] = "c",
+			[KEY_X] = "x",
+			[KEY_V] = "v",
+			[KEY_A] = "a",
+			[KEY_T] = "t",
+			[KEY_UP] = "up",
+			[KEY_DOWN] = "down",
+			[KEY_LEFT] = "left",
+			[KEY_RIGHT] = "right",
+			[KEY_PAGEUP] = "page_up",
+			[KEY_PAGEDOWN] = "page_down",
+			[KEY_LSHIFT] = "left_shift",
+			[KEY_RSHIFT] = "right_shift",
+			[KEY_RCONTROL] = "right_control",
+			[KEY_LCONTROL] = "left_control",	
+		}
+
+		function PANEL:OnKeyCodePressed(key)
+			key = translate[key]
+			
+			if key then
+				self.markup:OnKeyInput(key)
+			end
+		end
+		
+		function PANEL:OnCharInput(char)
+			self.markup:OnCharInput(char)
+		end
+	end
+
+	function PANEL:SetupTextEntryHack()
+		if IsValid(self.text_entry_hack) then
+			self.text_entry_hack:Remove()
+		end
+		
+		local pnl = vgui.Create("DTextEntry", self)
+		
+		pnl:MakePopup()
+		pnl:RequestFocus()
+		pnl:SetSize(0,0)
+		pnl:SetPos(self:LocalToScreen())
+		pnl:SetHistoryEnabled(false)
+		pnl:SetAllowNonAsciiCharacters(true)
+		
+		pnl.OnTextChanged = function(pnl) 		
+			local str = pnl:GetValue()
+			if str ~= "" then
+				self:OnCharInput(str)
+				pnl:SetText("")
+			end
+		end
+		
+		pnl.OnKeyCodeTyped = function(pnl, key) 
+			self:OnKeyCodePressed(key) 
+		end
+		
+		self.text_entry_hack = pnl
+	end
+	
+	vgui.Register("Markup", PANEL, "Panel")
 end
