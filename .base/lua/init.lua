@@ -34,7 +34,9 @@ do
 	
 	if DEBUG then
 		local base = "../../../../.userdata/" .. e.USERNAME:lower() .. "/logs/"
-		jit.verbose.on(base .. "jit_verbose_output.txt")
+		if io.open(base) then
+			jit.verbose.on(base .. "jit_verbose_output.txt")
+		end
 	end
 		
 	-- remove the loader we just made. it's made more properly later on
@@ -564,6 +566,7 @@ steamapi = include(libraries .. "steamapi.lua")
 cookies = include(libraries .. "cookies.lua")
 lpeg = include(libraries .. "lulpeg.lua")
 expression = include(libraries .. "expression.lua")
+crypto = include(libraries .. "crypto.lua")
 
 -- meta
 include(meta .. "function.lua")
@@ -573,7 +576,7 @@ include(meta .. "null.lua")
 do 
 	luasocket = include(libraries .. "luasocket.lua") 
 	intermsg = include(libraries .. "intermsg.lua") 
-	timer.Create("socket_think", 0.1, 0, luasocket.Update)
+	event.AddListener("OnUpdate", "luasocket", luasocket.Update)
 	event.AddListener("LuaClose", "luasocket", luasocket.Panic)
 end
 
