@@ -28,6 +28,10 @@ do -- open close
 		event.RemoveListener("PreDrawMenu", "StartupMenu")
 		menu.visible = false
 	end
+	
+	function menu.IsVisible()
+		return menu.visible
+	end
 
 	function menu.Toggle()
 		if menu.visible then
@@ -205,13 +209,15 @@ function menu.MakeButtons()
 	-- the world has to be setup..hmm
 	event.AddListener("OnWorldPanelLayout", "menu_resize", menu.SetupButtons)
 end
+ 
+surface.CreateFont("impact", {path = "Rosario", size = 20})   
 
 function menu.AddButton(name, func)
 
 	local pnl = aahh.Create("label")
 		pnl:SetSkinColor("text", "light")
 		pnl:SetSkinColor("shadow", Color(0,0,0,0.1)) 
-		pnl:SetFont("impact.ttf")
+		pnl:SetFont("impact")
 		pnl:SetText(name)
 		pnl:SetCursor(e.IDC_HAND)
 		
