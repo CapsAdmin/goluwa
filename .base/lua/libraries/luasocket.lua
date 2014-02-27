@@ -120,10 +120,10 @@ do -- helpers/usage
 		if not header then return tbl end
 
 		for line in header:gmatch("(.-)\n") do
-			local key, value = line:match("(.+):%s+(.+)\13")
+			local key, value = line:match("(.+):%s+(.+)\r")
 
 			if key and value then
-				tbl[key] = value
+				tbl[key] = tonumber(value) or value
 			end
 		end
 
@@ -142,9 +142,9 @@ do -- helpers/usage
 
 	local function request(url, callback, method, timeout, post_data, user_agent, binary)		
 		url = url:gsub("http://", "")
-		callback = callback or table_print
+		callback = callback or table.print
 		method = method or "GET"
-		user_agent = user_agent or "goluwa"
+		user_agent = user_agent or "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.117 Safari/537.36"
 
 		local host, location = url:match("(.-)/(.+)")
 
@@ -154,13 +154,14 @@ do -- helpers/usage
 		end
 		
 		local socket = luasocket.Client("tcp")
-		socket:SetTimeout(timeout or 0.5)
+		socket:SetTimeout(timeout or 2)
 		socket:Connect(host, 80)
 
 		socket:Send(("%s /%s HTTP/1.1\r\n"):format(method, location))
 		socket:Send(("Host: %s\r\n"):format(host))
 		socket:Send(("User-Agent: %s\r\n"):format(user_agent))
 		socket:Send("Connection: Keep-Alive\r\n")
+		socket:SetReceiveMode(61440)
 					
 		if binary then
 			socket:SetReceiveMode("all")
@@ -173,28 +174,52 @@ do -- helpers/usage
 
 		socket:Send("\r\n")
 
-		local chunks = {}
+		local header = {}
+		local content = {}
+		local temp = {}
+		local length = 0
+		local in_header = true
 		
 		function socket:OnReceive(str)
-			table.insert(chunks, str)
-		end
-		
-		function socket:OnClose()
-			local str = table.concat(chunks, "")
-			local content
-			local header
+			if in_header then
+				table.insert(temp, str)
 				
-			header, content = str:match("(.-\10\13)(.+)")
-			header = luasocket.HeaderToTable(header)
-			
-			if header["Content-Length"] then
-				content = str:sub(-header["Content-Length"])
+				local str = table.concat(temp, "")
+				local header_data, content_data = str:match("(.-\r\n\r\n)(.+)")
+				if header_data then
+					header = luasocket.HeaderToTable(header_data)
+					
+					if content_data then
+						table.insert(content, content_data)
+						length = length + #content_data
+					end
+										
+					in_header = false
+				end
+			else
+				table.insert(content, str)
+				length = length + #str
+				if 	
+					(header["Content-Length"] and length >= header["Content-Length"]) or 
+					(header["Transfer-Encoding"] == "chunked" and content[#content - 2] == "" and str == "0") 
+				then
+					self:Remove()
+				end				
 			end
 			
-			local ok, err = xpcall(callback, on_error, {content = content, header = header})
+		end
+		
+		function socket:OnClose()			
+			local content = table.concat(content, "")
+
+			if content ~= "" then
+				local ok, err = xpcall(callback, on_error, {content = content, header = header})
 				
-			if err then
-				warning(err)
+				if err then
+					warning(err)
+				end
+			else
+				warning("no content was found")
 			end
 		end
 	end
