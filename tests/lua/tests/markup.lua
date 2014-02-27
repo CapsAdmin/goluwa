@@ -124,7 +124,7 @@ markup todo:
 end
 ]], markup)
 	
-	local big_font = surface.CreateFont("big", {path = "fonts/arial.ttf", size = 30, read_speed = 100})
+	local big_font = surface.CreateFont("big", {path = "Arial Black", size = 30, read_speed = 100})
 	 
 	markup:AddFont(big_font)
 	markup:AddColor(Color(0,255,0,255))
