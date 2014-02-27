@@ -10,8 +10,8 @@ network.ACCEPT = 3
 network.MESSAGE = 4
 
 -- packet handling
-local delimiter = "\n"
-local receive_mode = "line"
+local delimiter = "\1\3\2"
+local receive_mode = 61440
 local buffered = true
 local custom_types = {}
 
@@ -205,9 +205,21 @@ if CLIENT then
 		client:SetTimeout()
 		client:Connect(ip, port)
 				
-		-- because this will always index network so we can easier reload the script
+		local temp = ""
+		
 		function client:OnReceive(str)
-			network.HandleEvent(nil, decode(str))
+			temp = temp .. str
+			
+			local found = 0
+			
+			for message in temp:gmatch("(.-)" .. delimiter) do
+				network.HandleEvent(nil, decode(message))
+				found = found + 1
+			end
+			
+			if found > 0 then
+				temp = temp:match("^.+"..delimiter.."(.*)$") or ""
+			end
 		end
 		
 		network.client_socket = client
@@ -285,12 +297,24 @@ if SERVER then
 			network.HandleEvent(client, network.CONNECT)
 			return true
 		end
-
+		
 		function server:OnReceive(str, client)
-			if network.HandleEvent(client, decode(str)) == false then
-				client:Remove()
+			client.temp = client.temp or ""
+			client.temp = client.temp .. str
+			
+			local found = 0
+			
+			for message in client.temp:gmatch("(.-)" .. delimiter) do
+				if network.HandleEvent(client, decode(message)) == false then
+					client:Remove()
+				end
+				found = found + 1
 			end
-		end	
+			
+			if found > 0 then
+				client.temp = client.temp:match("^.+"..delimiter.."(.*)$") or ""
+			end
+		end
 		
 		event.Call("OnlineStarted")
 		
