@@ -1,6 +1,7 @@
 local vfs = _G.vfs or {}
 
 vfs.use_appdata = false
+vfs.paths = vfs.paths or {}
 
 vfs.vars = 
 {
@@ -21,8 +22,6 @@ if vfs.use_appdata then
 end
 
 vfs.delimiter = WINDOWS and "\\" or "/"
-
-vfs.paths = {}
 
 local function getenv(key)
 	local val = vfs.vars[key]
@@ -183,16 +182,22 @@ do -- generic
 		local file, err = io.open(path, mode, ...)
 
 		if not file then
-			for k, v in ipairs(vfs.paths) do	
-				file, err = io.open(v .. "/" .. path, mode, ...)
-				
-				if err then
-					warning(err)
-				end
-				
-				if file then
-					path = v .. "/" .. path
-					break
+		
+			if mode and mode:find("w") then
+				vfs.CreateFoldersFromPath(path)		
+				return vfs.GetFile(path, mode)
+			else
+				for k, v in ipairs(vfs.paths) do	
+					file, err = io.open(v .. "/" .. path, mode, ...)
+					
+					if err then
+						warning(err)
+					end
+					
+					if file then
+						path = v .. "/" .. path
+						break
+					end
 				end
 			end
 		end
@@ -516,7 +521,7 @@ end
 
 do -- async reading
 	vfs.async_readers = {
-		file = function(path, callback, mbps)
+		file = function(path, callback, mbps, context)
 			local file = vfs.GetFile(path, "rb")
 			if file then
 				local content = {}
@@ -524,7 +529,7 @@ do -- async reading
 				timer.Thinker(function()
 					-- in case mbps is higher than the file size
 					for i = 1, 2 do
-						local str = file:read(1048576 * mbps) -- 5 mb per tick
+						local str = file:read(1048576 * mbps)
 						if str then
 							content[#content + 1] = str
 						else
@@ -536,21 +541,55 @@ do -- async reading
 				return true				
 			end
 		end,
-		luasocket = function(path, callback, mbps)	
-			if luasocket.Download(path, callback) then
-				return true
+		luasocket = function(path, callback, mbps, context)
+		
+		
+			-- for font names only
+			if context:find("font") and not path:find("%p") then			
+				local cache_path = "fonts/" .. path .. ".woff"
+				
+				if vfs.Exists(cache_path) then
+					return vfs.async_readers.file(cache_path, callback, mbps, context)
+				else
+					if luasocket.Download("http://fonts.googleapis.com/css?family=" .. path:gsub("%s", "+"), 
+						function(data)
+							local url = data:match("url%((.-)%)")
+							local format = data:match("format%('(.-)'%)")
+							luasocket.Download(url, function(data) 
+								vfs.Write("fonts/" .. path .. "." .. format, data, "b")
+								callback(data)
+							end)
+						end)
+					then
+						return true
+					end
+				end
+			end
+			
+			local ext = path:match(".+(%.%a+)") or ".dat"
+			local cache_path = "download_cache/" .. crypto.CRC32(path) .. ext
+			if vfs.Exists(cache_path) then
+				return vfs.async_readers.file(cache_path, callback, mbps, context)
+			else
+				if luasocket.Download(path, function(data) 
+						vfs.Write(cache_path, data, "b")
+						callback(data)
+					end) 
+				then
+					return true
+				end
 			end
 		end,
 	}
 
-	function vfs.ReadAsync(path, callback, mbps)
+	function vfs.ReadAsync(path, callback, mbps, context)
 		check(path, "string")
 		check(callback, "function")
 		check(mbps, "nil", "number")
 		mbps = mbps or 1
 		
 		for name, func in pairs(vfs.async_readers) do
-			if func(path, callback, mbps) then
+			if func(path, callback, mbps, context or "none") then
 				return true
 			end
 		end 
