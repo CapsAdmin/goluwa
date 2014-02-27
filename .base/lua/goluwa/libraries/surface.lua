@@ -155,8 +155,12 @@ do -- fonts
 			strings = {},
 			info = info,
 		}
-						
+		
+		ft.fonts[name].loading = true
+		
 		if not vfs.ReadAsync(info.path, function(data)
+			ft.fonts[name].loading = false
+			
 			local face = ffi.new("FT_Face[1]")
 			if freetype.NewMemoryFace(ft.ptr, data, #data, 0, face) == 0 then
 				face = face[0]	
@@ -345,8 +349,18 @@ do -- fonts
 		if not ft.ptr or not ft.current_font then return end
 		
 		str = tostring(str) 
-
+		
 		local info = ft.current_font.info 
+		
+		if ft.current_font.loading then
+			local tex = render.GetLoadingTexture()
+			surface.SetTexture(tex)
+			for i = 1, #str do
+				surface.DrawRect(X + (i * info.size)  - info.border_2, Y, info.size, info.size)
+			end
+			return
+		end
+		
 		local data = get_text_data(ft.current_font, str)
 		
 		if not data then return end
