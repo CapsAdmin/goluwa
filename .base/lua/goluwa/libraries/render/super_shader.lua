@@ -1,5 +1,6 @@
 render.active_super_shaders = render.active_super_shaders or {}
 
+local defined = {}
 
 local function REMOVE_THE_NEED_FOR_THIS_FUNCTION(output)
 	local found = {}
@@ -479,7 +480,11 @@ void main()
 					table.insert(declaration, " };")
 					declaration = table.concat(declaration, "")
 					
-					ffi.cdef(declaration)
+					
+					if not defined[declaration] then
+						ffi.cdef(declaration)
+						defined[declaration] = true 
+					end
 					
 
 					type = "struct " .. type
