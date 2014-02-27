@@ -195,7 +195,7 @@ function gl.InitMiniGlew()
 	setlogfile()
 	
 	logf("glew extensions took %f ms to parse", (timer.clock() - time) * 100)
-	logf("%i extensions could not be parsed. see the unexpected_extensions log for more info", invalid)
+	--logf("%i extensions could not be parsed. see the unexpected_extensions log for more info", invalid)
 end
 
 -- the download functions work but the idea wasn't thought out properly

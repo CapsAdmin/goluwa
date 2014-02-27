@@ -74,8 +74,6 @@ include("drawing.lua")
 include("skin.lua")
 include("util.lua")
 
-include("unit_test.lua")
-
 event.AddListener("RenderContextInitialized", "aahh", function()
 	aahh.Initialize()
 

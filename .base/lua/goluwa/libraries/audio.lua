@@ -447,4 +447,4 @@ end
  
 _G.Sound = audio.CreateSource
 audio.Close()
-audio.Open()
+timer.Delay(0.1, function() audio.Open() end) 
