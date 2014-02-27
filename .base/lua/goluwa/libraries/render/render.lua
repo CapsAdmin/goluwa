@@ -219,6 +219,7 @@ end
 function render.GetErrorTexture()
 
 	if not render.error_tex then
+		render.error_tex = Texture(256, 256)
 		local size = 16
 		render.error_tex:Fill(function(x, y)
 			if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
@@ -230,6 +231,16 @@ function render.GetErrorTexture()
 	end
 	
 	return render.error_tex
+end
+
+function render.GetLoadingTexture()
+	
+	if not render.loading_texture then
+		local w, h, buffer = freeimage.LoadImage(vfs.Read("textures/loading.jpg", "b"))
+		render.loading_texture = render.CreateTexture(w, h, buffer)
+	end
+	
+	return render.loading_texture
 end
 
 do
