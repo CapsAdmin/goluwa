@@ -14,6 +14,8 @@ ARCH=$(getconf LONG_BIT)
 
 cd .base/bin/linux/x86
 
+
+
 fi
 
 while true; do
