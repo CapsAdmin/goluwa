@@ -219,16 +219,26 @@ do
 			end	
 	
 			i = i + 1
+			
+			return render.matrices.world
 		end
 		
 		function render.PushWorldMatrixEx(mat)
-			stack[i] = render.matrices.world	
+			stack[i] = render.matrices.world or Matrix44()
+			render.matrices.world = stack[i] * mat
+			
 			i = i + 1
-			render.matrices.world = mat * stack[i-1]
+			
+			return render.matrices.world
 		end
 		
 		function render.PopWorldMatrix()
 			i = i - 1
+			
+			if i < 0 then
+				error("stack underflow", 2)
+			end
+			
 			render.matrices.world = stack[i]
 		end
 	end
