@@ -6,14 +6,23 @@ LuaJit's FFI api is used to bind to the following libraries:
 
 
 OpenGL - graphics
+
 GLFW - window and input handler
+
 OpenAL Soft - sound library
+
 FreeImage - image decoding
+
 FreeType - font decoding
+
 libsnd - sound decoding
+
 pdcurses - console
+
 lfs - additional file functions
+
 luasocket - networking
+
 assimp - model decoding
 
 
