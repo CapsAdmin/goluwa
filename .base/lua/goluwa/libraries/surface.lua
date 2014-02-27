@@ -155,19 +155,20 @@ do -- fonts
 			strings = {},
 			info = info,
 		}
-				
+						
 		if not vfs.ReadAsync(info.path, function(data)
-			local face = ffi.new("FT_Face[1]")   
-			freetype.NewMemoryFace(ft.ptr, data, #data, 0, face)   
-			face = face[0]	
-
-			freetype.SetCharSize(face, 0, info.size * DPI, DPI, DPI)
-			
-			 -- not doing this will make freetype crash because the data gets garbage collected
-			ft.fonts[name].face = face
-			ft.fonts[name].font_data = data
-		end, info.read_speed) then
-			error("could not load font " .. info.path .. " : " .. err, 2)
+			local face = ffi.new("FT_Face[1]")
+			if freetype.NewMemoryFace(ft.ptr, data, #data, 0, face) == 0 then
+				face = face[0]	
+		
+				 -- not doing this will make freetype crash because the data gets garbage collected
+				ft.fonts[name].face = face
+				ft.fonts[name].font_data = data
+				
+				event.Call("FontChanged", name, info)
+			end
+		end, info.read_speed, "font") then
+			error("could not load font " .. info.path .. " : could not find anything with the path field", 2)
 		end
 		
 		return name
@@ -194,13 +195,15 @@ do -- fonts
 		H = h
 	end
 	
-	local function get_text_data(str)
-		local face = ft.current_font.face
+	local function get_text_data(font, str)
+		local face = font.face
 		
 		if not face then return end
 		
-		local info = ft.current_font.info 
-		local data = ft.current_font.strings[str]
+		local info = font.info 
+		local data = font.strings[str]
+		
+		freetype.SetCharSize(face, 0, info.size * DPI, DPI, DPI)
 
 		if not data then
 			-- get the tallest character and use it as height
@@ -223,16 +226,25 @@ do -- fonts
 				if byte == -1 then byte = str:byte() end
 				
 				if str == " " or str == "" then	
-					w = w + ft.current_font.info.size / 2
+					w = w + font.info.size / 2
 				elseif str == "\t" then
-					w = w + ft.current_font.info.size * 2
+					w = w + font.info.size * 2
 				else				
-					local glyph = ft.current_font.glyphs[str]
+					local glyph = font.glyphs[str]
 					
 					if not glyph then
-						local i = freetype.GetCharIndex(face, byte) 
+						local face = face
+						local i = freetype.GetCharIndex(face, byte)
+						
+						-- try the default font
+						if i == 0 then
+							face = ft.fonts.default.face
+							i = freetype.GetCharIndex(face, byte)
+							freetype.SetCharSize(face, 0, info.size * DPI, DPI, DPI)
+						end
+						
 						freetype.LoadGlyph(face, i, 0)
-						freetype.RenderGlyph(face.glyph, 0) 
+						freetype.RenderGlyph(face.glyph, 0)
 						
 						local bitmap = face.glyph.bitmap 
 						local m = face.glyph.metrics
@@ -276,10 +288,12 @@ do -- fonts
 							y_min = y_min,
 							y_max = y_max,
 							
+							i = i,
+							
 							str = str,
 						}
-						
-						ft.current_font.glyphs[str] = glyph
+							
+						font.glyphs[str] = glyph
 					end
 					
 					local char = {glyph = glyph}
@@ -321,7 +335,7 @@ do -- fonts
 			
 			data.tex = tex
 						
-			ft.current_font.strings[str] = data
+			font.strings[str] = data
 		end 
 		
 		return data
@@ -333,7 +347,7 @@ do -- fonts
 		str = tostring(str) 
 
 		local info = ft.current_font.info 
-		local data = get_text_data(str)
+		local data = get_text_data(ft.current_font, str)
 		
 		if not data then return end
 				 
@@ -364,7 +378,7 @@ do -- fonts
 			return 0, 0
 		end
 	
-		local data = get_text_data(str)
+		local data = get_text_data(ft.current_font, str)
 		
 		if not data then return 0, 0 end
 		
