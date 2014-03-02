@@ -438,7 +438,7 @@ function console.HandleKey(key)
 			c.scroll = 0
 			console.ClearInput()
 			
-			if event.Call("OnLineEntered", c.line) ~= false then
+			if event.Call("ConsoleLineEntered", c.line) ~= false then
 				logn("> ", c.line)
 				
 				local res, err = console.RunString(c.line)
