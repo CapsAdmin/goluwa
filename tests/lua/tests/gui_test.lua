@@ -44,8 +44,7 @@ do -- tree test
 	--if false then
 	local tree = aahh.Create("tree")
 	scroll:SetPanel(tree)
-	tree:SetTrapInsideParent(false)
-	LOL = scroll
+
 	--tree:Dock("fill")
 	  
 	local data = luadata.ReadFile(R("well.txt"))
@@ -65,8 +64,6 @@ do -- tree test
 		node:SetIcon(Image("textures/" .. icons[val.self.ClassName]))
 		fill(val, node)
 	end
-
-	tree:Stack()
 	--end
 end
 
@@ -81,14 +78,15 @@ do -- uh
 	grid:SetStackRight(false)
 	grid:SetItemSize(Vec2()+20)
 	
+	LOL = grid
+	
 	local text = aahh.Create("text_input", grid)
 
 	local slider = aahh.Create("labeled_slider", grid)
 	slider:SetValue(10)
 	
 	local container = aahh.Create("container", grid)
-		container:SetSizeToContent(true)
-
+	
 		local grid = aahh.Create("grid", container)
 		
 		grid:SetDrawBackground(false)
@@ -97,7 +95,6 @@ do -- uh
 		grid:SetSizeToWidth(true)
 		grid:SetStackRight(false)
 		grid:SetItemSize(Vec2()+20)
-		grid:SetSizeToContent(true)
 		grid:SetObeyMargin(false)
 	
 		local knob = aahh.Create("labeled_knob", grid)
@@ -106,7 +103,10 @@ do -- uh
 		local check = aahh.Create("labeled_checkbox", grid)
 		check:SetText("ummmmm")
 		check:SetValue(true)
-	
+		
+	container:SizeToContents()
+	grid:SizeToContents()
+		
 end
 
 do -- text
