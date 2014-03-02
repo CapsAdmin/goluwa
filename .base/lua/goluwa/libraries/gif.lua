@@ -54,14 +54,6 @@ function Gif(path)
 
 		surface.DrawRect(x, y, tex.w, tex.h)
 	end
-	
-	function self:OnRemove()
-		for _, tex in pairs(self.frames) do
-			if tex:IsValid() then -- might've been garbage collected
-				tex:Remove()
-			end
-		end
-	end
-	
+		
 	return self
 end

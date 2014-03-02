@@ -59,10 +59,6 @@ function META:Remove()
 	
 	for k, v in pairs(self.buffers) do
 		gl.DeleteRenderbuffers(1, ffi.new("GLuint[1]", v.id))
-		
-		if v.tex:IsValid() then
-			v.tex:Remove()
-		end
 	end
 		
 	utilities.MakeNULL(self)
@@ -107,7 +103,7 @@ function render.CreateFrameBuffer(width, height, format)
 			tex_info.wrap_t = tex_info.wrap_t or e.GL_CLAMP_TO_EDGE
 			
 			tex_info.mip_map_levels = 1
-			tex_info.format = e.GL_FLOAT
+			tex_info.format = e.GL_BGRA
 						
 			tex = render.CreateTexture(width, height, nil, tex_info)
 			tex:SetChannel(i-1)
