@@ -110,8 +110,17 @@ do
 	
 	function aahh.StartClip(pnl)		
 		if pnl:HasParent() then	
-			local w, h = pnl.Parent:GetSize():Unpack()
-			local x, y = pnl.Parent:GetWorldPos():Unpack()
+			local offset = pnl.Parent:GetOffset()
+			local siz = pnl.Parent:GetSize()
+			local pos = pnl.Parent:GetWorldPos()
+			
+			if not offset:IsZero() then
+				pos = pos - offset
+				siz = siz + offset
+			end
+			
+			local w, h = siz:Unpack()
+			local x, y = pos:Unpack()
 			
 			surface.StartClipping(x, y, w, h)
 		end

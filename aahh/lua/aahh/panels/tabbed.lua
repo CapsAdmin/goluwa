@@ -80,6 +80,7 @@ function PANEL:Initialize()
 end
 
 function PANEL:OnRequestLayout()
+	self.bar:SizeToContents()
 	self:LayoutHook("TabbedLayout")
 end
 
@@ -131,7 +132,7 @@ function PANEL:AddTab(title, fill_pnl)
 		
 		return pnl, fill_pnl
 	end
-		
+			
 	return pnl
 end
 

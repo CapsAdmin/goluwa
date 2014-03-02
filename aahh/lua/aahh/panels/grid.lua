@@ -12,8 +12,6 @@ aahh.GetSet(PANEL, "SizeToWidth", false)
 aahh.GetSet(PANEL, "SizeToHeight", false)
 aahh.GetSet(PANEL, "NoPadding", false)
 
-aahh.GetSet(PANEL, "SizeToContent", false)
-
 
 -- this is meant to keep the grid from rarranging due to how children are handled
 PANEL.grid_i = 0
@@ -107,19 +105,18 @@ function PANEL:Stack(list)
 	end
 	
 	if self.SizeToWidth then
-		w = self:GetWidth()
+		w = self:GetWidth() - pad * 2
 	end
+
 
 	return Vec2(w, h) + pad * 2
 end
 
+function PANEL:SizeToContents()
+	self:SetSize(self:Stack())
+end
+
 function PANEL:OnRequestLayout()
-	local siz = self:Stack()
-	
-	if self.SizeToContent then
-		self:SetSize(siz)
-	end
-	
 	self:LayoutHook("GridLayout")
 end
 

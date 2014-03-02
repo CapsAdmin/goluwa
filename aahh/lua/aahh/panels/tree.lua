@@ -65,7 +65,8 @@ do -- tree node
 	
 	function PANEL:SetExpandInternal(b)
 		self:SetVisible(b)
-		
+		self:GetRoot():RequestLayout()
+
 		if b and not self.Expand then return end
 		
 		for pos, pnl in pairs(self.tree.CustomList) do
@@ -84,9 +85,7 @@ do -- tree node
 		end
 		
 		self.Expand = b
-	
-		self.tree:RequestLayout()
-		
+			
 		self.expand:SetChecked(b)
 	end
 	

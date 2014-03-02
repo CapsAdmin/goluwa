@@ -23,6 +23,7 @@ aahh.IsSet(PANEL, "ObeyMargin", true)
 aahh.IsSet(PANEL, "IgnoreMouse", false)
 aahh.IsSet(PANEL, "AlwaysReceiveMouse", false)
 aahh.GetSet(PANEL, "Clip", true)
+aahh.GetSet(PANEL, "Offset", Vec2())
 
 aahh.GetSet(PANEL, "Skin")
 aahh.GetSet(PANEL, "DrawBackground", true)
@@ -60,13 +61,19 @@ do -- colors
 end
 
 do -- orientation
-	function PANEL:SetPos(vec)
-		vec = type(vec) == "number" and Vec2() + size or typex(vec) == "vec2" and vec or Vec2(0, 0)
-		self.Pos = vec
+	function PANEL:SetPos(a, b)
+		if b then
+			self.Pos.x = a
+			self.Pos.y = b
+		elseif typex(a) == "vec2" then
+			self.Pos = a
+		else
+			self.Pos:Zero()
+		end
 		
-		if self.last_pos ~= vec then
+		if self.last_pos ~= self.Pos then
 			self:CalcTrap()
-			self.last_pos = vec
+			self.last_pos = self.Pos
 		end
 	end
 	
@@ -509,6 +516,10 @@ do -- dock
 			
 			fill:SetPos(area:GetPos() + pad:GetPos())
 			fill:SetSize(area:GetSize() - pad:GetPosSize())
+			
+			if fill.SizeToContens then
+				fill:SizeToContents()
+			end
 		end
 		
 		if center then			
@@ -663,6 +674,7 @@ function PANEL:GetNextSpaceY()
 end
 
 function PANEL:SizeToContents(offx, offy)
+	do return end
 	local offset = Vec2(offx or 0, offy or 0)
 	
 	self:SetSize(self:GetNextSpace() + self:GetMargin():GetSize() + offset)
@@ -748,20 +760,31 @@ function PANEL:SetVisible(b)
 	end
 end
 
-function PANEL:VisibleInsideParent()
-	local parent = self:GetParent()
+function PANEL:VisibleInsideParent()	
+	if not self:GetOffset():IsZero() then return true end
+
+	local apos = self:GetWorldPos()
+	local asiz = self:GetSize()
 	
-	if parent:IsValid() then
-		local a = self:GetPos()
-		local b = self:GetSize()
-		local c = parent:GetSize()
-		return 	
-			a.x > -b.w and
-			a.y > -b.h and
-			a.x < c.w and
-			a.y < c.h
-	end
+	if not self.parent_list then self:BuildParentList() end
 	
+	for _, parent in ipairs(self.parent_list) do
+		local bpos = parent:GetWorldPos()
+		local bsiz = parent:GetSize()	
+		
+		if apos.x + asiz.w < bpos.x or apos.y + asiz.h < bpos.y then
+			return false
+		end
+		
+		bpos = bpos + bsiz
+		
+		--print(apos, bpos)
+		
+		if apos.x > bpos.x or apos.y > bpos.y then
+			return false
+		end
+	end	
+		
 	return true
 end
 
