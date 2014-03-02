@@ -30,13 +30,114 @@ function Markup()
 	return self
 end
 
-class.GetSet(META, "Table", {})
-class.GetSet(META, "MaxWidth", 500)
-class.GetSet(META, "ControlDown", false)
-class.GetSet(META, "LineWrap", true)
-class.GetSet(META, "ShiftDown", false)
-class.GetSet(META, "Editable", true)
-class.GetSet(META, "Multiline", true)
+local function get_set(tbl, name, def)
+    tbl["Set" .. name] = function(self, var) self[name] = var end
+    tbl["Get" .. name] = function(self, var) return self[name] end
+    tbl[name] = def
+end
+
+local utf8 = {}
+
+-- some of this was taken from 
+-- http://cakesaddons.googlecode.com/svn/trunk/glib/lua/glib/unicode/utf8.lua
+-- and http://www.curse.com/addons/wow/utf8/546587
+
+function utf8.byte(char, offset)
+	if char == "" then return -1 end
+	offset = offset or 1
+	
+	local byte = char:byte(offset)
+	local length = 1
+	if byte >= 128 then
+		if byte >= 240 then
+			-- 4 byte sequence
+			length = 4
+			if #char < 4 then return -1, length end
+			byte = (byte % 8) * 262144
+			byte = byte + (char:byte(offset + 1) % 64) * 4096
+			byte = byte + (char:byte(offset + 2) % 64) * 64
+			byte = byte + (char:byte(offset + 3) % 64)
+		elseif byte >= 224 then
+			-- 3 byte sequence
+			length = 3
+			if #char < 3 then return -1, length end
+			byte = (byte % 16) * 4096
+			byte = byte + (char:byte(offset + 1) % 64) * 64
+			byte = byte + (char:byte(offset + 2) % 64)
+		elseif byte >= 192 then
+			-- 2 byte sequence
+			length = 2
+			if #char < 2 then return -1, length end
+			byte = (byte % 32) * 64
+			byte = byte + (char:byte(offset + 1) % 64)
+		else
+			-- invalid sequence
+			byte = -1
+		end
+	end
+	return byte, length
+end
+
+function utf8.sub(str, i, j)
+	j = j or -1
+
+	local pos = 1
+	local bytes = #str
+	local length = 0
+
+	-- only set l if i or j is negative
+	local l = (i >= 0 and j >= 0) or utf8.length(str)
+	local start_char = (i >= 0) and i or l + i + 1
+	local end_char   = (j >= 0) and j or l + j + 1
+
+	-- can't have start before end!
+	if start_char > end_char then
+		return ""
+	end
+
+	-- byte offsets to pass to string.sub
+	local start_byte, end_byte = 1, bytes
+
+	while pos <= bytes do
+		length = length + 1
+
+		if length == start_char then
+			start_byte = pos
+		end
+
+		pos = pos + select(2, utf8.byte(str, pos))
+
+		if length == end_char then
+			end_byte = pos - 1
+			break
+		end
+	end
+
+	return str:sub(start_byte, end_byte)
+end
+
+function utf8.length(str)
+	local _, length = str:gsub("[^\128-\191]", "")
+	return length
+end
+
+function utf8.totable(str)
+	local tbl = {}
+	
+	for uchar in str:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
+		tbl[#tbl + 1] = uchar
+	end
+	
+	return tbl
+end
+
+get_set(META, "Table", {})
+get_set(META, "MaxWidth", 500)
+get_set(META, "ControlDown", false)
+get_set(META, "LineWrap", true)
+get_set(META, "ShiftDown", false)
+get_set(META, "Editable", true)
+get_set(META, "Multiline", true)
 
 function META:SetMaxWidth(w)
 	self.MaxWidth = w
@@ -133,10 +234,6 @@ if gmod then
 		GetTime = RealTime,
 
 		Color = Color,
-
-		UTF8StringToTable = string.usplit,
-		UTF8Length = GLib.UTF8.Length,
-		UTF8Sub = GLib.UTF8.Sub,
 
 		CreateConVar = function(name, def) return CreateClientConVar(name, tostring(def), true, false) end,
 		GetConVarFloat = function(c) return c:GetFloat() end,
@@ -277,10 +374,6 @@ else
 		GetScreenWidth = function() return (surface.GetScreenSize()) end,
 		GetMousePos = function() return window.GetMousePos():Unpack() end,
 
-		UTF8StringToTable = utf8.totable,
-		UTF8Length = utf8.length,
-		UTF8Sub = utf8.sub,
-
 		SetCullClockWise = function(b) end,
 		FindMaterial = Image,
 
@@ -380,7 +473,7 @@ do -- tags
 			META.tags.anime =
 			{
 				arguments = {},
-				modify_text = function(str)
+				modify_text = function(markup, self, str)
 					return str:anime()
 				end,
 			}
@@ -471,7 +564,43 @@ do -- tags
 				EXT.SetColor(r, g, b, a)
 			end,
 		}
+		
 
+		META.tags.blackhole = {
+			arguments = {1},
+			
+			pre_draw = function(markup, self, x,y, force)
+				local delta = FrameTime() * 2
+				
+				for k,v in ipairs(markup.chunks) do
+					if v ~= self and v.w > 0 and v.h > 0 then
+						if not v.phys then
+							v.phys = {
+								pos = {x = v.x, y = v.y},
+								vel = {x = 0, y = 0},
+							}	
+						end
+						
+						local phys = v.phys
+						
+						phys.vel.x = phys.vel.x + ((self.x - phys.pos.x) * 0.01 * force)
+						phys.vel.y = phys.vel.y + ((self.y - phys.pos.y) * 0.01 * force)
+						
+						-- velocity
+						phys.pos.x = phys.pos.x + (phys.vel.x * delta)
+						phys.pos.y = phys.pos.y + (phys.vel.y * delta)
+
+						-- friction
+						phys.vel.x = phys.vel.x * 0.97
+						phys.vel.y = phys.vel.y * 0.97
+						
+						v.x = phys.pos.x
+						v.y = phys.pos.y
+					end
+				end
+			end,
+		}
+		
 		META.tags.physics =
 		{
 			arguments = {1, 0, 0, 0, 0.997, 0.1},
@@ -1046,7 +1175,7 @@ do
         local str = {}
         local in_lua = false
         
-        for i, char in pairs(EXT.UTF8StringToTable(arg_line)) do
+        for i, char in pairs(utf8.totable(arg_line)) do
             if char == "[" then
 				in_lua = true
 			elseif in_lua and char == "]" then -- todo: longest match
@@ -1085,14 +1214,30 @@ do
 	end
 
 	function META:StringTagsToTable(str)
+
+		str = tostring(str)
+		
+		str = str:gsub("<rep=(%d+)>(.-)</rep>", function(count, str) 
+			count = math.max(math.min(tonumber(count), 1), 500)
+			
+			if #str:rep(count):gsub("<(.-)=(.-)>", ""):gsub("</(.-)>", ""):gsub("%^%d","") > 500 then 
+				return "rep limit reached" 
+			end
+			
+			return str:rep(count)
+		end)
+		
 		local chunks = {}
 		local found = false
 
 		local in_tag = false
 		local current_string = {}
 		local current_tag = {}
+		
+		local last_font
+		local last_color
 
-		for i, char in pairs(EXT.UTF8StringToTable(str)) do
+		for i, char in pairs(utf8.totable(str)) do
 			if char == "<" then
 
 				-- if we've been parsing a string add it
@@ -1187,9 +1332,23 @@ do
 
 						-- if this is a string tag just put color and font as if they were var args for better performance
 						if not is_expression and tag == "font" then
-							table.insert(chunks, {type = "font", val = args[1]})
+							if stop_tag then
+								if last_font then
+									table.insert(chunks, {type = "font", val = last_font})
+								end
+							else
+								table.insert(chunks, {type = "font", val = args[1]})
+								last_font = args[1]
+							end
 						elseif not is_expression and tag == "color" then
-							table.insert(chunks, {type = "color", val = Color(unpack(args))})
+							if stop_tag then
+								if last_color then
+									table.insert(chunks, {type = "color", val = Color(unpack(last_color))})
+								end
+							else
+								table.insert(chunks, {type = "color", val = Color(unpack(args))})
+								last_color = args
+							end
 						else
 							table.insert(chunks, {type = "custom", val = {tag = info, type = tag, args = args, stop_tag = stop_tag}})
 						end
@@ -1227,7 +1386,7 @@ do
 					local chunk = chunks[i]
 					
 					if chunk.type == "string" then
-						chunk.val = func(chunk.val, chunk, i, chunks) or chunk.val
+						chunk.val = func(self, chunk, chunk.val, unpack(start_chunk.val.args)) or chunk.val
 					end
 					
 					if chunk.type == "tag_stopper" or (chunk.type == "custom" and chunk.val.type == start_chunk.val.type and chunk.val.stop_tag) then
@@ -1303,7 +1462,7 @@ function META:Invalidate()
 		if chunk.type == "string" and chunk.val:find("%s") and not chunk.internal then
 			local str = ""
 
-			for i, char in ipairs(EXT.UTF8StringToTable(chunk.val)) do
+			for i, char in ipairs(utf8.totable(chunk.val)) do
 				if char:find("%s") then
 					if str ~= "" then
 						table.insert(temp2, {type = "string", val = str, old_chunk = chunk})
@@ -1440,7 +1599,7 @@ function META:Invalidate()
 
 					local str = ""
 
-					for i, char in ipairs(EXT.UTF8StringToTable(chunk.val)) do
+					for i, char in ipairs(utf8.totable(chunk.val)) do
 						local w, h = EXT.GetTextSize(char)
 
 						if h > chunk_height then
@@ -1477,6 +1636,33 @@ function META:Invalidate()
 				chunk.old_chunk = chunk
 
 				table.insert(temp, chunk)
+			end
+			
+			if true then
+				local current_y = 0
+				local last_y = 0
+				local chunk_height = 0 -- the height to advance y in
+
+				local line = {}
+				
+				for i, chunk in ipairs(temp) do
+				
+					if chunk.h > chunk_height then
+						chunk_height = chunk.h
+					end
+				
+					if last_y ~= chunk.y then
+						for k,v in ipairs(line) do
+							v.y = current_y
+						end
+						current_y = current_y + chunk_height
+						chunk_height = 0
+						line = {}
+					end
+					
+					last_y = chunk.y 
+					table.insert(line, chunk)
+				end
 			end
 		end
 	else
@@ -1542,7 +1728,7 @@ function META:Invalidate()
 					str = " "
 				end
 
-				for i, char in ipairs(EXT.UTF8StringToTable(str)) do
+				for i, char in ipairs(utf8.totable(str)) do
 					local char_width, char_height = EXT.GetTextSize(char)
 					local x = chunk.x + width
 					local y = chunk.y
@@ -1950,7 +2136,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 
 			if x <= 0 then
 				y = y - 1
-				x = EXT.UTF8Length(self.lines[y])
+				x = utf8.length(self.lines[y])
 			end
 		end
 
@@ -1961,7 +2147,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 		for i = 1, stop_offset do
 			x = x + 1
 
-			if x >= EXT.UTF8Length(self.lines[y]) then
+			if x >= utf8.length(self.lines[y]) then
 				y = y + 1
 				x = 0
 			end
@@ -1972,7 +2158,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 		self:DeleteSelection(true)
 	end
 
-	self.text = EXT.UTF8Sub(self.text, 1, sub_pos - 1) .. str .. EXT.UTF8Sub(self.text, sub_pos)
+	self.text = utf8.sub(self.text, 1, sub_pos - 1) .. str .. utf8.sub(self.text, sub_pos)
 
 	do -- fix chunks
 		local sub_pos = self.caret_pos.char.data.i
@@ -1997,7 +2183,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 					sub_pos = #chunk.chars + 1
 				end
 
-				chunk.val = EXT.UTF8Sub(chunk.val, 1, sub_pos - 1) .. str .. EXT.UTF8Sub(chunk.val, sub_pos)
+				chunk.val = utf8.sub(chunk.val, 1, sub_pos - 1) .. str .. utf8.sub(chunk.val, sub_pos)
 			else
 				table.remove(self.chunks, chunk.i)
 			end
@@ -2007,7 +2193,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 	end
 
 	if not skip_move then
-		local x = self.caret_pos.x + EXT.UTF8Length(str)
+		local x = self.caret_pos.x + utf8.length(str)
 		local y = self.caret_pos.y + EXT.CountChar(str, "\n")
 
 		if self.caret_pos.char.str == "\n" then
@@ -2163,7 +2349,7 @@ function META:Indent(back)
 		local select_start = self:GetSelectStart()
 		local select_stop = self:GetSelectStop()
 
-		local text = EXT.UTF8Sub(self.text, select_start.sub_pos, select_stop.sub_pos)
+		local text = utf8.sub(self.text, select_start.sub_pos, select_stop.sub_pos)
 
 		if back then
 			if text:sub(1, 1) == "\t" then
@@ -2180,7 +2366,7 @@ function META:Indent(back)
 			end
 		end
 
-		self.text = EXT.UTF8Sub(self.text, 1, select_start.sub_pos - 1) .. text .. EXT.UTF8Sub(self.text, select_stop.sub_pos + 1)
+		self.text = utf8.sub(self.text, 1, select_start.sub_pos - 1) .. text .. utf8.sub(self.text, select_stop.sub_pos + 1)
 
 		do -- fix chunks
 			for i = select_start.char.chunk.i-1, select_stop.char.chunk.i-1 do
@@ -2229,7 +2415,7 @@ function META:Enter()
 	local x = 0
 	local y = self.caret_pos.y
 
-	local cur_space = EXT.UTF8Sub(self.lines[y], 1, self.caret_pos.x):match("^(%s*)") or ""
+	local cur_space = utf8.sub(self.lines[y], 1, self.caret_pos.x):match("^(%s*)") or ""
 	x = x + #cur_space
 
 	if x == 0 and #self.lines == 1 then
@@ -2343,8 +2529,8 @@ do -- caret
 		x = x or 0
 		y = y or 0
 
-		y = math.clamp(y, 1, #self.lines)
-		x = math.clamp(x, 0, self.lines[y] and EXT.UTF8Length(self.lines[y]) or 0)
+		y = math.max(math.min(y, 1), #self.lines)
+		x = math.max(math.min(x, 0), self.lines[y] and utf8.length(self.lines[y]) or 0)
 
 		local CHAR
 		local POS
@@ -2358,7 +2544,7 @@ do -- caret
 		end
 
 		if not CHAR then
-			if x == EXT.UTF8Length(self.lines[#self.lines]) then
+			if x == utf8.length(self.lines[#self.lines]) then
 				POS = #self.chars
 				CHAR = self.chars[i]
 			end
@@ -2374,7 +2560,7 @@ do -- caret
 					POS = x + 1
 				end
 			elseif y >= #self.lines then
-				local i = #self.chars - EXT.UTF8Length(self.lines[#self.lines]) + x + 1
+				local i = #self.chars - utf8.length(self.lines[#self.lines]) + x + 1
 				CHAR = self.chars[i]
 				POS = i
 			end
@@ -2426,7 +2612,7 @@ do -- caret
 			end
 
 			-- move to next or previous line
-			if X > 0 and x > EXT.UTF8Length(line) and #self.lines > 1 then
+			if X > 0 and x > utf8.length(line) and #self.lines > 1 then
 				x = 0
 				y = y + 1
 
@@ -2436,13 +2622,13 @@ do -- caret
 					x = x - 1
 				end
 			elseif X < 0 and x < 0 and y > 0 and self.lines[self.caret_pos.y - 1] then
-				x = EXT.UTF8Length(self.lines[self.caret_pos.y - 1])
+				x = utf8.length(self.lines[self.caret_pos.y - 1])
 				y = y - 1
 			end
 
 		else
 			if X == math.huge then
-				x = EXT.UTF8Length(line)
+				x = utf8.length(line)
 			elseif X == -math.huge then
 				local pos = #(line:match("^(%s*)") or "")
 
@@ -2559,7 +2745,7 @@ do -- selection
 
 		if START and STOP then
 			if not tags then
-				return EXT.UTF8Sub(self.text, START.sub_pos, STOP.sub_pos - 1)
+				return utf8.sub(self.text, START.sub_pos, STOP.sub_pos - 1)
 			else
 				local last_chunk
 				local last_font
@@ -2605,7 +2791,7 @@ do -- selection
 				self:SetCaretPos(start.x, start.y)
 			end
 
-			self.text = EXT.UTF8Sub(self.text, 1, start.sub_pos - 1) .. EXT.UTF8Sub(self.text, stop.sub_pos)
+			self.text = utf8.sub(self.text, 1, start.sub_pos - 1) .. utf8.sub(self.text, stop.sub_pos)
 
 			self:Unselect()
 
@@ -2624,9 +2810,9 @@ do -- selection
 
 				if start_chunk.type == "string" then
 					if stop_chunk == start_chunk then
-						start_chunk.val = EXT.UTF8Sub(start_chunk.val, 1, start.char.data.i - 1) .. EXT.UTF8Sub(start_chunk.val, stop.char.data.i)
+						start_chunk.val = utf8.sub(start_chunk.val, 1, start.char.data.i - 1) .. utf8.sub(start_chunk.val, stop.char.data.i)
 					else
-						start_chunk.val = EXT.UTF8Sub(start_chunk.val, 1, start.char.data.i - 1)
+						start_chunk.val = utf8.sub(start_chunk.val, 1, start.char.data.i - 1)
 					end
 				elseif not self.chunks[start_chunk.i].internal then
 					self.chunks[start_chunk.i] = nil
@@ -2636,7 +2822,7 @@ do -- selection
 				if stop_chunk ~= start_chunk then
 					if stop_chunk.type == "string" then
 						local sub_pos = stop.char.data.i
-						stop_chunk.val = EXT.UTF8Sub(stop_chunk.val, sub_pos)
+						stop_chunk.val = utf8.sub(stop_chunk.val, sub_pos)
 					elseif stop_chunk.type ~= "newline" and not stop_chunk.internal then
 						self.chunks[stop_chunk.i] = nil
 						need_fix = true
@@ -2893,7 +3079,12 @@ do -- drawing
 			if not chunk.internal then
 				if not chunk.x then return end -- UMM
 
-				if chunk.x < w and chunk.y < h then
+				if 
+					chunk.x < w and chunk.y < h or 
+					-- these are important since they will remove anything in between
+					(chunk.type == "start_fade" or chunk.type == "end_fade") or
+					start_remove
+				then
 					if chunk.type == "start_fade" then
 						chunk.alpha = math.min(math.max(chunk.val - os.clock(), 0), 1) ^ 5
 						EXT.SetAlphaMultiplier(chunk.alpha)
