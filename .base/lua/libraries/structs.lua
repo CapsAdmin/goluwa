@@ -207,6 +207,7 @@ function structs.AddOperator(META, operator, ...)
 		local META = ({...})[1]
 		META["Zero"] = function(a)
 				a.KEY = 0
+				return a
 			end
 		]==]
 		
@@ -305,6 +306,8 @@ function structs.AddOperator(META, operator, ...)
 				return CTOR(
 					a.KEY OPERATOR b.KEY
 				)
+			else
+				error(("tried to use operator OPERATOR on a %s value"):format(typex(b)), 2)
 			end
 		end
 		]==]
