@@ -98,7 +98,15 @@ function chathud.AddText(...)
 			table.insert(args, Color(255, 255, 255, 255))
 		elseif t == "string" then
 		
-			v = v:gsub("(:[%a]-:)", function(str)
+			if v == ": sh" or v:find("%ssh%s") then
+				chathud.markup:TagPanic()
+			end
+		
+			v = v:gsub("<remember=(.-)>(.-)</remember>", function(key, val) 
+				chathud.config.shortcuts[key] = val
+			end)
+		
+			v = v:gsub("(:[%a%d]-:)", function(str)
 				str = str:sub(2, -2)
 				if chathud.config.shortcuts[str] then
 					return chathud.config.shortcuts[str]
@@ -108,6 +116,12 @@ function chathud.AddText(...)
 			v = v:gsub("\\n", "\n")
 			v = v:gsub("\\t", "\t")
 			
+			for pattern, font in pairs(chathud.config.extras) do
+				if v:find(pattern, nil, true) then
+					table.insert(args, #args-1, font)
+				end
+			end
+						
 			table.insert(args, v)
 		else
 			table.insert(args, v)
