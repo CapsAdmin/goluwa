@@ -211,6 +211,69 @@ do -- texture object
 		return self
 	end
 	
+	function META:Shade(fragment_shader, vars)
+		local data = {
+			shared = {
+				uniform = vars,
+			},
+			
+			vertex = {
+				uniform = {
+					pwm_matrix = "mat4",
+				},			
+				attributes = {
+					{pos = "vec2"},
+					{uv = "vec2"},
+				},	
+				source = "gl_Position = pwm_matrix * vec4(pos, 0, 1);"
+			},
+			
+			fragment = { 
+				uniform = {
+					self = "texture",
+				},		
+				attributes = {
+					uv = "vec2",
+				},			
+				source = fragment_shader,
+			} 
+		} 
+		 
+		local shader = SuperShader("temp_" .. tostring(os.clock()):gsub("%p", ""), data)
+
+		local mesh = shader:CreateVertexBuffer({
+			{pos = {0, 0}, uv = {0, 1}},
+			{pos = {0, 1}, uv = {0, 0}},
+			{pos = {1, 1}, uv = {1, 0}},
+
+			{pos = {1, 1}, uv = {1, 0}},
+			{pos = {1, 0}, uv = {1, 1}},
+			{pos = {0, 0}, uv = {0, 1}},
+		})
+
+		mesh.pwm_matrix = render.GetPVWMatrix2D
+		
+		local fb = render.CreateFrameBuffer(self.w, self.h, {
+			attach = e.GL_COLOR_ATTACHMENT1,
+			texture_format = self.format,
+		})
+			
+	 	fb:Begin()
+			surface.PushMatrix(0, 0, surface.GetScreenSize())
+				mesh.self = self
+				mesh:Draw()
+			surface.PopMatrix()
+		fb:End()
+		
+		local tex = fb:GetTexture()
+		local buffer = tex:Download()
+		
+		tex:Remove()
+		shader:Remove()
+		
+		self:Replace(buffer, self.w, self.h)
+	end
+	
 	local SUPPRESS_GC = false
 	
 	function META:Replace(data, w, h)
@@ -329,3 +392,5 @@ do -- texture object
 		return self
 	end
 end
+
+Texture = render.CreateTexture -- reload!
