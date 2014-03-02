@@ -77,7 +77,7 @@ if CLIENT then
 		end
 	end	
 		
-	event.AddListener("OnLineEntered", "chat", function(line)
+	event.AddListener("ConsoleLineEntered", "chat", function(line)
 		if not network.IsStarted() then return end
 	
 		if not console.RunString(line, true) then
