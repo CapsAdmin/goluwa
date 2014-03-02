@@ -85,7 +85,7 @@ end
 
 function sdl.GenerateHeader()
 	-- this requires mingw installed
-	os.execute("gcc -E " .. R("lua/goluwa/ffi_binds/sdl/include/sdl.h") .. " -o gcc_output.h")
+	os.execute("gcc -E " .. R("lua/libraries/low_level/ffi_binds/sdl/include/sdl.h") .. " -o gcc_output.h")
 	local content = vfs.Read("gcc_output.h")
 
 	
@@ -98,7 +98,7 @@ function sdl.GenerateHeader()
 	content = content:gsub(";[^']", ";\n")
 	content = content:gsub("({.-})", function(str) return str:gsub(",[^']", ",\n") end)
 	
-	vfs.Write(e.ROOT_FOLDER .. "/.base/lua/goluwa/ffi_binds/sdl/header.lua", "return [[" .. content .. "]]") 
+	vfs.Write(e.ROOT_FOLDER .. "/.base/lua/libraries/low_level/ffi_binds/sdl/header.lua", "return [[" .. content .. "]]") 
 	
 	-- eww
 	local enums = ""
@@ -122,7 +122,7 @@ function sdl.GenerateHeader()
 		end
 	end
  
-	vfs.Write(e.ROOT_FOLDER .. "/.base/lua/goluwa/ffi_binds/sdl/enums.lua", "return {" .. enums .. "}") 
+	vfs.Write(e.ROOT_FOLDER .. "/.base/lua/libraries/low_level/sdl/enums.lua", "return {" .. enums .. "}") 
 end
  
 sdl.events = {

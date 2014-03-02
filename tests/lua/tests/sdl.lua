@@ -1,4 +1,4 @@
-local sdl = include("goluwa/ffi_binds/sdl/init.lua")
+local sdl = include("libraries/low_level/ffi_binds/sdl/init.lua")
 
 local function sdldie(msg)
     logf("%s: %s\n", msg, sdl.GetError())

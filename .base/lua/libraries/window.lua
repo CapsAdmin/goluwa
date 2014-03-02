@@ -1,4 +1,4 @@
-window = {}
+window = _G.window or {}
 
 window.wnd = window.wnd or NULL
 
