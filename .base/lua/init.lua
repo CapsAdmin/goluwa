@@ -84,7 +84,7 @@ do -- file system
 
 	-- this is ugly but it's because we haven't included the global extensions yet..
 	_G.check = function() end
-	vfs = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/vfs.lua")
+	vfs = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/low_level/vfs.lua")
 
 	-- mount the base folders
 	
@@ -463,9 +463,13 @@ do -- include
 					if not_found(err) then
 						path = source
 						func, err = loadfile(path)
+					else
+						path = source
 					end
 				end
-			end		
+			else
+				path = dir .. file
+			end
 		end
 		
 		if func then
@@ -526,58 +530,92 @@ do
 	_G.crypto = crypto
 end
 
-local extensions = "libraries/extensions/"
-local libraries = "libraries/"
-local meta = "meta/"
+do -- tier 0 
 
--- library extensions
-include(extensions .. "globals.lua")
-include(extensions .. "debug.lua")
-include(extensions .. "math.lua")
-include(extensions .. "string.lua")
-include(extensions .. "table.lua")
-include(extensions .. "os.lua")
+	local libraries = "libraries/low_level/"
+	local extensions = libraries .. "extensions/"
 
--- libraries
-structs = include(libraries .. "structs.lua")
+	-- library extensions
+	include(extensions .. "globals.lua")
+	include(extensions .. "debug.lua")
+	include(extensions .. "math.lua")
+	include(extensions .. "string.lua")
+	include(extensions .. "table.lua")
+	include(extensions .. "os.lua")
 
-include("libraries/structs/*")
+	-- libraries
+	structs = include(libraries .. "structs.lua")
 
-utf8 = include(libraries .. "utf8.lua")
-event = include(libraries .. "event.lua")
-utilities = include(libraries .. "utilities.lua")
-addons = include(libraries .. "addons.lua")
-class = include(libraries .. "class.lua")
-luadata = include(libraries .. "luadata.lua")
-von = include(libraries .. "von.lua")
-timer = include(libraries .. "timer.lua")
-sigh = include(libraries .. "sigh.lua")
-base64 = include(libraries .. "base64.lua")
-input = include(libraries .. "input.lua")
-msgpack = include(libraries .. "msgpack.lua")
-json = include(libraries .. "json.lua")
-console = include(libraries .. "console.lua")
-mmyy = include(libraries .. "mmyy.lua")
-system = include(libraries .. "system.lua")
-lcpp = include(libraries .. "lcpp.lua")
-profiler = include(libraries .. "profiler.lua")
-steam = include(libraries .. "steam.lua")
-steamapi = include(libraries .. "steamapi.lua")
-cookies = include(libraries .. "cookies.lua")
-lpeg = include(libraries .. "lulpeg.lua")
-expression = include(libraries .. "expression.lua")
-crypto = include(libraries .. "crypto.lua")
+	include(libraries .. "structs/*")
 
--- meta
-include(meta .. "function.lua")
-include(meta .. "null.lua")
+	utf8 = include(libraries .. "utf8.lua")
+	event = include(libraries .. "event.lua")
+	utilities = include(libraries .. "utilities.lua")
+	addons = include(libraries .. "addons.lua")
+	class = include(libraries .. "class.lua")
+	luadata = include(libraries .. "luadata.lua")
+	von = include(libraries .. "von.lua")
+	timer = include(libraries .. "timer.lua")
+	sigh = include(libraries .. "sigh.lua")
+	base64 = include(libraries .. "base64.lua")
+	input = include(libraries .. "input.lua")
+	msgpack = include(libraries .. "msgpack.lua")
+	json = include(libraries .. "json.lua")
+	console = include(libraries .. "console.lua")
+	mmyy = include(libraries .. "mmyy.lua")
+	system = include(libraries .. "system.lua")
+	lcpp = include(libraries .. "lcpp.lua")
+	profiler = include(libraries .. "profiler.lua")
+	steam = include(libraries .. "steam.lua")
+	steamapi = include(libraries .. "steamapi.lua")
+	cookies = include(libraries .. "cookies.lua")
+	lpeg = include(libraries .. "lulpeg.lua")
+	expression = include(libraries .. "expression.lua")
+	crypto = include(libraries .. "crypto.lua")
 
--- luasocket
-do 
-	luasocket = include(libraries .. "luasocket.lua") 
-	intermsg = include(libraries .. "intermsg.lua") 
-	event.AddListener("OnUpdate", "luasocket", luasocket.Update)
-	event.AddListener("LuaClose", "luasocket", luasocket.Panic)
+	-- meta
+	include(extensions .. "function.lua")
+	include(libraries .. "null.lua")
+
+	-- luasocket
+	do 
+		luasocket = include(libraries .. "luasocket.lua") 
+		intermsg = include(libraries .. "intermsg.lua") 
+		event.AddListener("OnUpdate", "luasocket", luasocket.Update)
+		event.AddListener("LuaClose", "luasocket", luasocket.Panic)
+	end
+
+	-- ffi libraries
+	if not gl then
+		-- console input
+		curses = include(libraries .. "ffi_binds/curses/init.lua")
+		
+		-- model decoder
+		assimp = include(libraries .. "ffi_binds/assimp/init.lua")
+		
+		-- image decoder
+		freeimage = include(libraries .. "ffi_binds/freeimage.lua")
+		
+		-- font decoder
+		freetype = include(libraries .. "ffi_binds/freetype.lua")
+		
+		-- sound decoder
+		soundfile = include(libraries .. "ffi_binds/soundfile/init.lua")
+
+		-- OpenGL
+		gl = include(libraries .. "ffi_binds/gl/init.lua")
+		
+		-- window manager
+		glfw = include(libraries .. "ffi_binds/glfw.lua")
+		
+		-- window manager
+		--sdl = include(libraries .. "ffi_binds/sdl/init.lua")
+		
+		-- OpenAL
+		al = include(libraries .. "ffi_binds/al/init.lua")
+		alc = include(libraries .. "ffi_binds/alc.lua")
+	end
+
 end
 
 console.CreateVariable("error_app", "")
@@ -585,7 +623,44 @@ console.CreateVariable("error_app", "")
 addons.LoadAll()
 steamapi.Initialize()
 
-include("lua/goluwa/init.lua")
+do -- tier 1
+
+	-- high level implementation of curses
+	include("libraries/console.lua")
+
+	-- OpenGL abstraction
+	include("libraries/render/render.lua")
+
+	-- high level 2d rendering of the render library
+	include("libraries/surface.lua")
+
+	-- high level implementation of OpenAl
+	include("libraries/audio.lua")
+
+	-- particles
+	include("libraries/particles.lua")
+
+	-- high level implementation of render 3d mesh
+	include("libraries/model.lua")
+
+	-- high level implementation of luasocket
+	include("libraries/network/network.lua")
+
+	-- entities
+	include("libraries/entities/entities.lua")
+
+	-- high level window implementation
+	include("libraries/window.lua")
+
+	include("libraries/extensions/input.lua")
+
+	include("libraries/gif.lua")
+	include("libraries/markup.lua")
+end
+
+entities.LoadAllEntities()
+addons.AutorunAll()
+timer.clock = glfw.GetTime
 
 console.Exec("autoexec")
 
@@ -631,4 +706,4 @@ end
 
 vfs.MonitorEverything(true)
 
-event.Call("Initialized")
+include("main_loop.lua")

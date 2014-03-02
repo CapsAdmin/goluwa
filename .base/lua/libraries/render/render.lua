@@ -255,3 +255,20 @@ do
 		return data[0], data[1], data[2], data[3]
 	end
 end
+
+include("matrices.lua")
+include("scene.lua")
+include("texture.lua")
+include("framebuffer.lua")
+include("shaders.lua")
+include("deferred.lua")
+include("image.lua")
+
+include("super_shader.lua")
+include("mesh_util.lua")
+
+include("window.lua")
+
+include("cvars.lua")
+include("globals.lua")
+include("debug.lua")

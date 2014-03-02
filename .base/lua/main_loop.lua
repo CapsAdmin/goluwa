@@ -69,4 +69,4 @@ local function main()
 	end
 end
 
-event.AddListener("Initialized", "main", main)
+main()

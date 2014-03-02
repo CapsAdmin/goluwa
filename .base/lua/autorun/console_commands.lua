@@ -1,14 +1,14 @@
 console.AddCommand("start_server", function()
 	SERVER = true
 	addons.Reload()
-	include("lua/goluwa/libraries/network/init.lua")
+	include("lua/libraries/network/network.lua")
 	entities.LoadAllEntities()
 end)
 
 console.AddCommand("start_client", function()
 	CLIENT = true
 	addons.Reload()
-	include("lua/goluwa/libraries/network/init.lua")
+	include("lua/libraries/network/network.lua")
 	entities.LoadAllEntities()
 end)
 

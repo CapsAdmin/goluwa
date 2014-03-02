@@ -1,4 +1,4 @@
-_G.audio = _G.audio or {}
+audio = _G.audio or {}
 
 audio.effect_channels = audio.effect_channels or {}
 
@@ -447,4 +447,4 @@ end
  
 _G.Sound = audio.CreateSource
 audio.Close()
-timer.Delay(0.1, function() audio.Open() end) 
+timer.Delay(0.1, function() audio.Open() end)

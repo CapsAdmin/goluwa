@@ -2,12 +2,6 @@ menu = menu or {}
 menu.buttons = menu.buttons or {}
 
 do -- open close  
-
-	-- remake the menu on reload 
-	if menu.Remake then 
-		menu.Remake() 
-	end
-
 	function menu.Open()
 		if menu.visible then return end
 		window.SetMouseTrapped(false) 
@@ -151,11 +145,15 @@ function menu.MakeButtons()
 		frame:SetSize(Vec2(512, 512))
 		frame:Center()
 		
-		local grid = aahh.Create("grid", frame)
-		grid:Dock("fill")
-		grid:SetSizeToWidth(true)
-		grid:SetStackRight(false)
-		grid:SetItemSize(Vec2()+25)
+		local scroll = aahh.Create("scrollable", frame)
+		scroll:Dock("fill")
+		
+			local grid = aahh.Create("grid")
+			grid:SetSizeToWidth(true)	
+			grid:SetStackRight(false)
+			grid:SetItemSize(Vec2()+25)
+		
+		scroll:SetPanel(grid)
 
 		local function populate(dir)
 			frame:SetTitle(dir)
@@ -197,9 +195,14 @@ function menu.MakeButtons()
 					grid:AddChild(btn)  
 				end
 			end
+			
+					
+			grid:SizeToContents()
+			grid:SetWidth(500)
+			LOL = grid
 		end
 		
-		populate("lua/tests/")
+		populate("lua/tests/") 
 	end)
 	
 	menu.AddButtonSpace() 
@@ -263,4 +266,9 @@ end
 if not network.IsStarted() then
 	menu.Open()
 	menu.FadeIn()
+end
+
+-- remake the menu on reload 
+if menu.Remake then 
+	menu.Remake() 
 end

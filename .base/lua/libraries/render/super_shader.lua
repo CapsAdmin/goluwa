@@ -687,5 +687,5 @@ void main()
 end
 
 
-include("goluwa/libraries/render/shaders/*")
+include("libraries/render/shaders/*")
 include("shaders/*")

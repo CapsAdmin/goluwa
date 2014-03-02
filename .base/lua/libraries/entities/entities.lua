@@ -1,4 +1,4 @@
-entities = entities or {}
+entities = _G.entities or {}
 
 entities.active_entities = entities.active_entities or {}
 entities.is_keys = entities.is_keys or {}
@@ -61,7 +61,7 @@ _G.Entity = entities.Create
 include("base_entity.lua")
  
 function entities.LoadAllEntities()
-	for relative_path, full_path in vfs.Iterate("lua/goluwa/libraries/entities/default_entities/") do
+	for relative_path, full_path in vfs.Iterate("lua/libraries/entities/default_entities/") do
 		vfs.dofile(full_path)
 	end
 	

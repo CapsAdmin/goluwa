@@ -1,4 +1,4 @@
-surface = surface or {}
+surface = _G.surface or {}
 
 local surface = surface
 local render = render
@@ -796,5 +796,3 @@ do -- poly
 		poly.mesh:Draw()
 	end
 end
-
-return surface

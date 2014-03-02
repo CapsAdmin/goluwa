@@ -130,7 +130,7 @@ function gl.InitMiniGlew()
 	end
 	
 	local time = timer.clock()
-	for path in vfs.Iterate("lua/goluwa/ffi_binds/gl/extensions/", nil, true) do
+	for path in vfs.Iterate("lua/libraries/low_level/ffi_binds/gl/extensions/", nil, true) do
 		local str, err = vfs.Read(path)
 		for line in str:gmatch("\t(.-)\n") do
 			local key, val = line:match("([1-9a-Z_]+) (.+)")
@@ -205,7 +205,7 @@ end
 function gl.DownloadExtensionList(callback)
 	if not luasocket then return end
 	
-	local ext_folder = e.BASE_FOLDER .. "lua/goluwa/ffi_binds/gl/extensions/"
+	local ext_folder = e.BASE_FOLDER .. "lua/libraries/low_level/ffi_binds/gl/extensions/"
 	
 	local domain = "http://www.opengl.org/"
 	local base = "registry/"
