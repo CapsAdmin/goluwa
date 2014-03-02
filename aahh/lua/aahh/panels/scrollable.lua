@@ -7,6 +7,7 @@ aahh.GetSet(PANEL, "ScrollWidth", 50)
 aahh.GetSet(PANEL, "YScroll", true)
 aahh.GetSet(PANEL, "XScroll", false)
 aahh.GetSet(PANEL, "ScrollPos", Vec2())
+aahh.GetSet(PANEL, "ScrollFraction", Vec2())
 
 function PANEL:Initialize()	
 	self:SetTrapChildren(false)
@@ -20,7 +21,7 @@ end
 function PANEL:SetPanel(pnl)	
 	self.container = pnl
 	pnl:SetParent(self)
-	pnl.DrawManual = true
+	self:RequestLayout()
 end
 
 function PANEL:OnMouseMove(pos, inside)	
@@ -33,7 +34,7 @@ function PANEL:OnMouseMove(pos, inside)
 			
 			self.y_bar:SetY(y)
 			y = y / max
-			
+						
 			self:SetScrollFraction(Vec2(0, -y))
 			
 			self:OnRequestLayout()
@@ -49,8 +50,10 @@ function PANEL:SetYScroll(b)
 	if b then
 		if self.y_bar:IsValid() then self.y_bar.Remove() end
 		
-		local pnl = aahh.Create("panel", self)
+		local pnl = aahh.Create("button", self)
 		
+		
+		pnl:SetCursor(e.IDC_ARROW)
 		pnl:SetTrapInsideParent(false)
 		pnl:SetObeyMargin(false)
 					
@@ -124,21 +127,47 @@ function PANEL:Scroll(vec)
 end
 
 function PANEL:SetScrollFraction(vec)
-		
-	vec = vec * size 
-		
-	self.container:SetPos(vec)
-	--self.container:StretchToRight()
-
+	self.ScrollFraction = vec	
 	self.ScrollPos = vec
+	self:RequestLayout(true)
 end
 
-function PANEL:OnRequestLayout()
-	if self.y_bar:IsValid() then
-		self.y_bar:SetPos(Vec2(self:GetWidth() - 10, self.y_bar:GetPos().y))
-		self.y_bar:SetSize(Vec2(10, self.ScrollHeight))
+function PANEL:OnRequestLayout()	
+	if self.container:IsValid() then
+		self.container:SizeToContents()	
+		
+		local vec = self.ScrollFraction
+		self.container:SizeToContents()
+		local size = self.container:GetSize()
+		local h = -(size.h - self:GetHeight()) + self:GetHeight()
+		local hm = Vec2(1, (self:GetHeight()-h) / size.h)
+		vec = vec * size * hm
+
+		vec.y = math.clamp(vec.y, -size.h + self:GetHeight(), 0)
+		
+		if self:GetHeight() > size.h then
+			vec.y = 0
+		end
+		
+		h = math.max(h, 20)
+		
+		if self.y_bar:IsValid() then
+			self.y_bar:SetPos(Vec2(self:GetWidth() - 10, math.clamp(self.y_bar:GetPos().y, 0, self:GetHeight() - h)))
+		end
+			
+		self.container:SetPos(vec)
+		self.container:SetOffset(vec)
+				
+		if h >= self:GetHeight() then
+			self.y_bar:SetVisible(false)
+			self.container:SetWidth(self:GetWidth())
+		else
+			self.container:SetWidth(self:GetWidth() - 10)
+			self.y_bar:SetVisible(true)
+			self.y_bar:SetSize(Vec2(10, h))
+		end
+		
 	end
-	
 end
 
 function PANEL:OnMouseInput(key, press)
@@ -149,13 +178,6 @@ function PANEL:OnMouseInput(key, press)
 			self:Scroll(Vec2(0, -1) * 10)
 		end
 	end
-end
-
-function PANEL:OnDraw()
-	if not self.container:IsValid() then return end
-	self.container.DrawManual = false
-	self.container:Draw()
-	self.container.DrawManual = true
 end
 
 aahh.RegisterPanel(PANEL)

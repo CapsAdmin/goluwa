@@ -4,9 +4,8 @@ PANEL.ClassName = "canvas"
 PANEL.canvas = NULL
 
 function PANEL:Initialize()
-	self.HideChildren = true
-	self.NoMatrix = true 
 	self:SetIgnoreMouse(true)
+	self.HideChildren = true
 end
  
 function PANEL:OnRequestLayout()
@@ -24,31 +23,29 @@ function PANEL:OnRequestLayout()
 	self.needs_update = true
 end 
  
-function PANEL:DrawChildren(pos, size)
+function PANEL:DrawChildren(size)
 
-	surface.Start(0, 0, size.x, size.y)
-	surface.Translate(-pos.x, -pos.y)
+	--surface.Start(0, 0, size.x, size.y)
 	self.canvas:Begin() 
 		for key, pnl in pairs(self:GetChildren()) do
 			pnl:Draw()
 		end 
-	self.canvas:End()
+	self.canvas:End()	
 	
-	
-	surface.End()
+	--surface.End()
 end 
 
 function PANEL:OnDraw(size)
-	local pos = self:GetWorldPos()
 	
-	if self.needs_update then
-		self:DrawChildren(pos, size)
+	if true or self.needs_update then
+		self:DrawChildren(size)
 		self.needs_update = false
 	end
 
 	if self.canvas:IsValid() then
 		surface.Color(1, 1, 1, 1)
 		surface.SetTexture(self.canvas:GetTexture())
+		local pos = self:GetWorldPos()
 		surface.DrawRect(pos.x, pos.y, size.w, size.h)
 	end
 end

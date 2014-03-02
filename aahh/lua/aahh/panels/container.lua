@@ -1,10 +1,9 @@
 local PANEL = {}
 
-PANEL.Base = "panel"
+PANEL.Base = "grid"
 PANEL.ClassName = "container"
 
 aahh.GetSet(PANEL, "Collapse", false)
-aahh.GetSet(PANEL, "SizeToContent", false)
 
 function PANEL:Initialize()
 	self.btn = aahh.Create("textbutton", self)
@@ -20,32 +19,14 @@ function PANEL:SetCollapse(b)
 	self.Collapse = b
 	
 	if b then		
-		self.last_height = self:GetHeight()
 		self:SetHeight(16)
-	else
-		if self.SizeToContent then
-			local h = 16
-		
-			for _, pnl in pairs(self:GetChildren()) do
-				h = h + pnl:GetHeight()
-			end
-			
-			self:SetHeight(h)
-		elseif self.last_height then
-				self:SetHeight(self.last_height)
-				self.last_height = nil
-			end
+	else	
+		self:SizeToContents()
 	end
-
-	self:RequestLayout()
 end
 
 function PANEL:SetText(...)
 	self.btn:SetText(...)
-end
-
-function PANEL:OnRequestLayout()
-	self.btn:SetSize(Vec2(self:GetWidth(), 16))
 end
 
 aahh.RegisterPanel(PANEL)
