@@ -1,3 +1,5 @@
+-- REWRITE ME
+
 render.active_super_shaders = render.active_super_shaders or {}
 
 local defined = {}
@@ -244,6 +246,8 @@ void main()
 	function META:CreateVertexAttributes(size)
 		return ffi.new(self.vtx_atrb_type.."[?]", size)
 	end
+	
+	function META:IsValid() return true end
 		
 	function META:CreateVertexBuffer(data, vbo_override)
 		if not data and not vbo_override then
@@ -388,8 +392,12 @@ void main()
 		
 		if render.active_super_shaders[shader_id] then
 			for key, val in pairs(render.active_super_shaders) do
-				if val.base == shader_id then
-					render.CreateSuperShader(key, val.original_data, val.base)
+				if val:IsValid() then
+					if val.base == shader_id then
+						render.CreateSuperShader(key, val.original_data, val.base)
+					end
+				else
+					render.active_super_shaders[key] = nil
 				end
 			end
 		end
