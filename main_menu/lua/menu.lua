@@ -147,14 +147,12 @@ function menu.MakeButtons()
 		
 		local scroll = aahh.Create("scrollable", frame)
 		scroll:Dock("fill")
+	
+		local grid = aahh.Create("grid")
+		grid:SetSizeToWidth(true)	
+		grid:SetStackRight(false)
+		grid:SetItemSize(Vec2()+25)
 		
-			local grid = aahh.Create("grid")
-			grid:SetSizeToWidth(true)	
-			grid:SetStackRight(false)
-			grid:SetItemSize(Vec2()+25)
-		
-		scroll:SetPanel(grid)
-
 		local function populate(dir)
 			frame:SetTitle(dir)
 			
@@ -169,6 +167,7 @@ function menu.MakeButtons()
 					
 				grid:AddChild(btn)
 			end
+			
 			for name in vfs.Iterate(dir) do 
 				if name ~= "." and name ~= ".." then
 					local btn = aahh.Create("textbutton")
@@ -195,14 +194,15 @@ function menu.MakeButtons()
 					grid:AddChild(btn)  
 				end
 			end
-			
-					
-			grid:SizeToContents()
-			grid:SetWidth(500)
 			LOL = grid
 		end
 		
 		populate("lua/tests/") 
+				
+		grid:SizeToContents()
+		grid:SetWidth(500)
+		
+		scroll:SetPanel(grid)
 	end)
 	
 	menu.AddButtonSpace() 
