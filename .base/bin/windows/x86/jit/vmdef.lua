@@ -4,11 +4,11 @@ return {
 
 bcnames = "ISLT  ISGE  ISLE  ISGT  ISEQV ISNEV ISEQS ISNES ISEQN ISNEN ISEQP ISNEP ISTC  ISFC  IST   ISF   ISTYPEISNUM MOV   NOT   UNM   LEN   ADDVN SUBVN MULVN DIVVN MODVN ADDNV SUBNV MULNV DIVNV MODNV ADDVV SUBVV MULVV DIVVV MODVV POW   CAT   KSTR  KCDATAKSHORTKNUM  KPRI  KNIL  UGET  USETV USETS USETN USETP UCLO  FNEW  TNEW  TDUP  GGET  GSET  TGETV TGETS TGETB TGETR TSETV TSETS TSETB TSETM TSETR CALLM CALL  CALLMTCALLT ITERC ITERN VARG  ISNEXTRETM  RET   RET0  RET1  FORI  JFORI FORL  IFORL JFORL ITERL IITERLJITERLLOOP  ILOOP JLOOP JMP   FUNCF IFUNCFJFUNCFFUNCV IFUNCVJFUNCVFUNCC FUNCCW",
 
-irnames = "LT    GE    LE    GT    ULT   UGE   ULE   UGT   EQ    NE    ABC   RETF  NOP   BASE  PVAL  GCSTEPHIOP  LOOP  USE   PHI   RENAMEPROF  KPRI  KINT  KGC   KPTR  KKPTR KNULL KNUM  KINT64KSLOT BNOT  BSWAP BAND  BOR   BXOR  BSHL  BSHR  BSAR  BROL  BROR  ADD   SUB   MUL   DIV   MOD   POW   NEG   ABS   ATAN2 LDEXP MIN   MAX   FPMATHADDOV SUBOV MULOV AREF  HREFK HREF  NEWREFUREFO UREFC FREF  STRREFALOAD HLOAD ULOAD FLOAD XLOAD SLOAD VLOAD ASTOREHSTOREUSTOREFSTOREXSTORESNEW  XSNEW TNEW  TDUP  CNEW  CNEWI BUFHDRBUFPUTBUFSTRTBAR  OBAR  XBAR  CONV  TOBIT TOSTR STRTO CALLN CALLL CALLS CALLXSCARG  ",
+irnames = "LT    GE    LE    GT    ULT   UGE   ULE   UGT   EQ    NE    ABC   RETF  NOP   BASE  PVAL  GCSTEPHIOP  LOOP  USE   PHI   RENAMEPROF  KPRI  KINT  KGC   KPTR  KKPTR KNULL KNUM  KINT64KSLOT BNOT  BSWAP BAND  BOR   BXOR  BSHL  BSHR  BSAR  BROL  BROR  ADD   SUB   MUL   DIV   MOD   POW   NEG   ABS   ATAN2 LDEXP MIN   MAX   FPMATHADDOV SUBOV MULOV AREF  HREFK HREF  NEWREFUREFO UREFC FREF  STRREFLREF  ALOAD HLOAD ULOAD FLOAD XLOAD SLOAD VLOAD ASTOREHSTOREUSTOREFSTOREXSTORESNEW  XSNEW TNEW  TDUP  CNEW  CNEWI BUFHDRBUFPUTBUFSTRTBAR  OBAR  XBAR  CONV  TOBIT TOSTR STRTO CALLN CALLA CALLL CALLS CALLXSCARG  ",
 
 irfpm = { [0]="floor", "ceil", "trunc", "sqrt", "exp", "exp2", "log", "log2", "log10", "sin", "cos", "tan", "other", },
 
-irfield = { [0]="str.len", "func.env", "func.pc", "tab.meta", "tab.array", "tab.node", "tab.asize", "tab.hmask", "tab.nomm", "udata.meta", "udata.udtype", "udata.file", "cdata.ctypeid", "cdata.ptr", "cdata.int", "cdata.int64", "cdata.int64_4", },
+irfield = { [0]="str.len", "func.env", "func.pc", "func.ffid", "thread.env", "tab.meta", "tab.array", "tab.node", "tab.asize", "tab.hmask", "tab.nomm", "udata.meta", "udata.udtype", "udata.file", "cdata.ctypeid", "cdata.ptr", "cdata.int", "cdata.int64", "cdata.int64_4", },
 
 ircall = {
 [0]="lj_str_cmp",
@@ -36,8 +36,10 @@ ircall = {
 "lj_buf_putstr_rep",
 "lj_buf_puttab",
 "lj_buf_tostr",
+"lj_tab_new_ah",
 "lj_tab_new1",
 "lj_tab_dup",
+"lj_tab_clear",
 "lj_tab_newkey",
 "lj_tab_len",
 "lj_gc_step_jit",
@@ -113,6 +115,7 @@ ircall = {
 
 traceerr = {
 [0]="error thrown or hook called during recording",
+"trace too short",
 "trace too long",
 "trace too deep",
 "too many snapshots",
@@ -122,11 +125,9 @@ traceerr = {
 "inner loop in root trace",
 "loop unroll limit reached",
 "bad argument type",
-"call to JIT-disabled function",
+"JIT compilation disabled for function",
 "call unroll limit reached",
 "down-recursion, restarting",
-"NYI: C function %p",
-"NYI: FastFunc %s",
 "NYI: unsupported variant of FastFunc %s",
 "NYI: return to lower frame",
 "store with nil or NaN key",
@@ -243,6 +244,8 @@ ffnames = {
 "table.insert",
 "table.concat",
 "table.sort",
+"table.new",
+"table.clear",
 "io.method.close",
 "io.method.read",
 "io.method.write",
