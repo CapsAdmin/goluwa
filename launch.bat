@@ -12,10 +12,10 @@ fi 2> /dev/null
 
 ARCH=$(getconf LONG_BIT)
 
-if [ $ARCH -eq "64" ]; then
-	cd .base/bin/linux/x64
-else
-	cd .base/bin/linux/x86
+cd .base/bin/linux/x86
+
+
+
 fi
 
 while true; do
@@ -31,7 +31,5 @@ done
 :WINDOWS
 
 cd %~dp0
-ECHO %PROCESSOR_ARCHITECTURE%|FINDSTR AMD64>NUL && SET ARCH=x64|| SET ARCH=x86
-cd .base/bin/windows/%arch%/
-luajit.exe ../../../lua/init.lua -g
-pause
+cd .base/bin/windows/x86/
+start luajit.exe ../../../lua/init.lua -g
