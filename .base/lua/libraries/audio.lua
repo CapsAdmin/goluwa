@@ -344,6 +344,24 @@ do -- sound meta
 	function META:Rewind()
 		al.SourceRewind(self.id)
 	end
+		
+	do 
+		local buffers = ffi.new("ALuint[1]")
+		local pushed = {}
+		
+		function META:PushBuffer(buffer)
+			buffers[0] = buffer.id
+			pushed[buffer.id] = buffer
+			al.SourceQueueBuffers(self.id, 1, buffers)
+		end
+			
+		local buffers = ffi.new("ALuint[1]")
+
+		function META:PopBuffer()	
+			al.SourceUnqueueBuffers(self.id, 1, buffers)	
+			return pushed[buffers[0]]
+		end
+	end 
 	
 	do
 		-- http://wiki.delphigl.com/index.php/alGetSource
@@ -375,7 +393,11 @@ do -- sound meta
 end
 
 do -- buffer
-	local META = GEN_TEMPLATE("Buffer")
+	local META = GEN_TEMPLATE("Buffer", function(self, data, size)
+		if data and size then
+			self:SetBufferData(data, size)
+		end
+	end)
 	
 	class.GetSet(META, "Format", e.AL_FORMAT_MONO8)
 	class.GetSet(META, "SampleRate", 44100)
@@ -446,5 +468,59 @@ do -- auxiliary effect slot
 end
  
 _G.Sound = audio.CreateSource
+
+do -- microphone
+	
+	function audio.CreateAudioCapture(sample_rate, format, max_size)
+		sample_rate = sample_rate or 44100
+		format = format or e.AL_FORMAT_MONO8
+		max_size = max_size or 4096
+		
+		local self = utilities.CreateBaseObject("audio_capture")
+		
+		local id = alc.CaptureOpenDevice(nil, sample_rate, format, max_size)
+		
+		self.id = id
+		
+		function self:OnRemove(s)
+			alc.CaptureCloseDevice(self.id)
+		end
+		
+		function self:Start()
+			alc.CaptureStart(self.id)
+		end
+		
+		function self:Stop()
+			alc.CaptureStop(self.id)
+		end
+		
+		local val = ffi.new("ALint[1]")
+		
+		function self:GetCapturedSamples()			
+			alc.GetIntegerv(id, e.ALC_CAPTURE_SAMPLES, 1, val)	
+			return val[0]
+		end
+		
+		function self:IsFull()
+			return self:GetCapturedSamples() >= max_size
+		end
+		
+		function self:Read()
+			local size = self:GetCapturedSamples()
+			local buffer = ffi.new("ALshort[?]", size)
+			
+			alc.CaptureSamples(id, buffer, size)
+			
+			return buffer, size
+		end
+				
+		return self
+	end
+	
+end
+
 audio.Close()
-timer.Delay(0.1, function() audio.Open() end)
+
+timer.Delay(0.1, function() 
+	audio.Open() 
+end)
