@@ -64,8 +64,8 @@ do -- skins
 		end
 		
 		for k,v in pairs(aahh.active_panels) do
-			if v.Skin and v.Skin.ClassName == name then
-				v.Skin = skin
+			if v.current_skin and v.current_skin.ClassName == name then
+				v.current_skin = skin
 			end
 		end
 		
