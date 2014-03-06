@@ -1,5 +1,5 @@
 DEBUG = true
-USE_STRUNG = true
+USE_STRUNG = false
 _G.ffi = require("ffi")
 
 _G[ffi.os:upper()] = true
@@ -606,7 +606,7 @@ do -- tier 0
 		gl = include(libraries .. "ffi_binds/gl/init.lua")
 		
 		-- window manager
-		glfw = include(libraries .. "ffi_binds/glfw.lua")
+		glfw = include(libraries .. "ffi_binds/glfw/init.lua")
 		
 		-- window manager
 		--sdl = include(libraries .. "ffi_binds/sdl/init.lua")
