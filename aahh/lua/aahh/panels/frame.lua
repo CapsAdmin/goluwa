@@ -5,8 +5,14 @@ PANEL.Base = "draggable"
 
 aahh.GetSet(PANEL, "Title", "no title")
 
+PANEL.close = NULL
+PANEL.title = NULL
+
 function PANEL:SetTitle(str)
-	self.title:SetText(str)
+	self.Title = str
+	if self.title:IsValid() then
+		self.title:SetText(str)
+	end
 end
 
 function PANEL:CanDrag(button, press, pos)
