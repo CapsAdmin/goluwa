@@ -92,7 +92,7 @@ do -- tree node
 	function PANEL:OnDraw(size)
 		self:DrawHook("TreeNodeDraw")
 	end
-	
+		
 	aahh.RegisterPanel(PANEL)
 end
 

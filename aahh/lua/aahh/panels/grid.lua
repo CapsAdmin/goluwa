@@ -43,9 +43,7 @@ function PANEL:Stack(list)
 		
 	for key, pnl in pairs(list) do
 		if not pnl:IsVisible() then goto NEXT end
-	
-		pnl:SetTrapInsideParent(false)
-		
+			
 		local siz = pnl:GetSize()
 		
 		if self.ItemSize then

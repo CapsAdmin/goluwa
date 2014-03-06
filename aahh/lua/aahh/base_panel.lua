@@ -31,13 +31,13 @@ aahh.GetSet(PANEL, "DrawBackground", true)
 function PANEL:__Initialize()
 	self.Colors = {}
 	
-	self.Skin = aahh.ActiveSkin
+	self.current_skin = aahh.ActiveSkin
 	self:UpdateSkinColors()
 end
 		
 do -- colors
 	function PANEL:UpdateSkinColors()
-		local skin = self.Skin
+		local skin = self.current_skin
 		if skin:IsValid() and skin.Colors then	
 			for key, val in pairs(skin.Colors) do
 				self.Colors[key] = self.Colors[key] or val
@@ -46,17 +46,18 @@ do -- colors
 	end
 	
 	function PANEL:SetSkin(name)
-		self.Skin = aahh.GetSkin(name)
+		self.Skin = name
+		self.current_skin = aahh.GetSkin(name)
 	end
 	
 	function PANEL:SetSkinColor(key, val)
-		self.Colors[key] = aahh.GetSkinColor(val, self.Skin, false)
+		self.Colors[key] = aahh.GetSkinColor(val, self.current_skin, false)
 		self:UpdateSkinColors()
 	end
 	
 	function PANEL:GetSkinColor(key, def)
 		self:UpdateSkinColors()
-		return self.Colors[key] or aahh.GetSkinColor(key, self.Skin, def)
+		return self.Colors[key] or aahh.GetSkinColor(key, self.current_skin, def)
 	end	
 end
 
@@ -1027,19 +1028,19 @@ function PANEL:RequestParentLayout(...)
 end
 
 function PANEL:SkinCall(func_name, ...)
-	return aahh.SkinCall(self, func_name, self.Skin, ...)
+	return aahh.SkinCall(self, func_name, self.current_skin, ...)
 end
 
 function PANEL:DrawHook(func_name, ...)
-	return aahh.SkinDrawHook(self, func_name, self.Skin, ...)
+	return aahh.SkinDrawHook(self, func_name, self.current_skin, ...)
 end
 
 function PANEL:LayoutHook(func_name, ...)
-	return aahh.SkinLayoutHook(self, func_name, self.Skin, ...)
+	return aahh.SkinLayoutHook(self, func_name, self.current_skin, ...)
 end
 
 function PANEL:GetSkinVar(key, def)
-	return aahh.GetSkinVar(key, self.Skin) or def
+	return aahh.GetSkinVar(key, self.current_skin) or def
 end
 
 function PANEL:OnKeyInput(key, press) end
