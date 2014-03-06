@@ -83,7 +83,7 @@ console.AddCommand("profile", function(line, time)
 
 	time = tonumber(time)
 	
-	profiler.Start()
+	profiler.Start(nil, "statistical")
 	
 	logn("starting profiler for ", time, " seconds")
 	
@@ -94,13 +94,13 @@ console.AddCommand("profile", function(line, time)
 	end
 	
 	timer.Delay(time, function()
-		profiler.Stop()
+		profiler.Stop("statistical")
 		
 		local benchmark = profiler.GetBenchmark()
 		local top = {}
 		
 		for k,v in pairs(benchmark) do
-			if v.times_called > 50 and v.average_time > 0 then
+			if v.times_called > 50 then
 				table.insert(top, v)
 			end
 		end
