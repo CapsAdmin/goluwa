@@ -277,6 +277,43 @@ do -- window meta
 				trigger(glfw.MouseToString(button), action == e.GLFW_PRESS)
 			end
 			
+			function self:OnScroll(x, y)
+				if y ~= 0 then
+					for i = 1, math.abs(y) do
+						if y > 0 then
+							trigger("mwheel_up", true)
+						else
+							trigger("mwheel_down", true)
+						end
+					end
+					
+					timer.Delay(0, function()
+						if y > 0 then
+							trigger("mwheel_up", false)
+						else
+							trigger("mwheel_down", false)
+						end
+					end)
+				end
+				
+				if x ~= 0 then	
+					for i = 1, math.abs(x) do
+						if x > 0 then
+							trigger("mwheel_left", true)
+						else
+							trigger("mwheel_right", true)
+						end
+					end
+					timer.Delay(0, function()
+						if x > 0 then
+							trigger("mwheel_left", false)
+						else
+							trigger("mwheel_right", false)
+						end
+					end)
+				end
+			end
+			
 			timer.Create("glfw_pollevents", 1/60, 0, function() glfw.PollEvents() end)
 		end
 		
