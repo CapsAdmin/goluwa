@@ -103,11 +103,11 @@ do
 			profiler.Stop()
 		return end
 		
-		profiler.jitpf.dumpstack(thread, profiler.dump_format, profiler.dump_depth):gsub("(.-):(%d+)", function(path, line)
-			
+		
+		profiler.jitpf.dumpstack(thread, profiler.dump_format, profiler.dump_depth):gsub("(.-):(%d+)", function(path, line)			
 			data[zone] = data[zone] or {}
 			data[zone][path] = data[zone][path] or {}
-			data[zone][path][line] = data[zone][path][line] or {total_time = 0, samples = 0}
+			data[zone][path][line] = data[zone][path][line] or {total_time = 0, samples = 0, statistical = true}
 			
 			data[zone][path][line].samples = data[zone][path][line].samples + samples
 			data[zone][path][line].start_time = data[zone][path][line].start_time or clock()
@@ -129,7 +129,7 @@ do
 				
 		data[zone] = data[zone] or {}
 		data[zone][path] = data[zone][path] or {}
-		data[zone][path][line] = data[zone][path][line] or {total_time = 0, samples = 0, total_garbage = 0, func = info.func, func_name = info.name}
+		data[zone][path][line] = data[zone][path][line] or {total_time = 0, samples = 0, total_garbage = 0, func = info.func, func_name = info.name, instrumental = true}
 		
 		data[zone][path][line].samples = data[zone][path][line].samples + 1
 		data[zone][path][line].start_time = data[zone][path][line].start_time or clock()
@@ -143,7 +143,7 @@ do
 		end
 	end
 
-	function profiler.Start(zone)
+	function profiler.Start(zone, type)
 		if not profiler.enabled then return end
 				
 		if not zone then
@@ -155,9 +155,9 @@ do
 		
 		zone = zone or profiler.default_zone
 		
-		if profiler.type == "statistical" then
+		if type == "statistical" then
 			profiler.jitpf.start(profiler.default_mode, statistical_callback)
-		elseif profiler.type == "instrumental" then
+		else
 			debug.sethook(instrumental_callback, "cr")
 		end
 		
@@ -165,12 +165,12 @@ do
 	end
 end
 
-function profiler.Stop()
+function profiler.Stop(type)
 	if not profiler.enabled then return end
 	
-	if profiler.type == "statistical" then
+	if type == "statistical" then
 		profiler.jitpf.stop()
-	elseif profiler.type == "instrumental" then
+	else
 		debug.sethook()
 	end
 	
@@ -186,7 +186,7 @@ function profiler.GetZone()
 	return zone
 end
 
-function profiler.GetBenchmark()
+function profiler.GetBenchmark(type)
 	local out = {}
 	
 	for zone, file_data in pairs(data) do
