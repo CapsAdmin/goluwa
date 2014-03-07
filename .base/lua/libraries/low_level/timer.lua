@@ -78,9 +78,7 @@ function timer.Thinker(callback, speed, in_seconds, run_now)
 		return
 	end
 	
-	local key = #timer.Timers+1
-	
-	timer.Timers[key] = {
+	timer.Timers[callback] = {
 		type = "thinker", 
 		realtime = timer.clock(), 
 		callback = callback, 
@@ -107,7 +105,7 @@ function timer.Delay(time, callback, obj)
 		end
 	end
 
-	timer.Timers[#timer.Timers+1] = {
+	timer.Timers[callback] = {
 		type = "delay", 
 		callback = callback, 
 		realtime = timer.clock() + time
@@ -153,19 +151,22 @@ function timer.Update(...)
 		if data.type == "thinker" then
 			if data.in_seconds and data.speed then
 				if data.realtime < cur then
-					if data.callback() ~= nil then
+					local ok, res = xpcall(data.callback, mmyy.OnError)
+					if not ok or res ~= nil then
 						timer.Timers[key] = nil
 					end
 					data.realtime = cur + data.speed
 				end
 			elseif data.speed then
 				for i=0, data.speed do
-					if data.callback() ~= nil then
+					local ok, res = xpcall(data.callback, mmyy.OnError)
+					if not ok or res ~= nil then
 						timer.Timers[key] = nil
 					end	
 				end
 			else
-				if data.callback() ~= nil then
+				local ok, res = xpcall(data.callback, mmyy.OnError)
+				if not ok or res ~= nil then
 					timer.Timers[key] = nil
 				end
 			end
@@ -191,6 +192,7 @@ function timer.Update(...)
 					end
 				else
 					logn(data.id, msg)
+					timer.Timers[key] = nil
 				end
 
 				if data.times_ran == data.repeats then
