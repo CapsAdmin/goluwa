@@ -1,9 +1,18 @@
-audio = _G.audio or {}
+audio = _G.audio or {} 
 
+audio.objects = audio.objects or {}
 audio.effect_channels = audio.effect_channels or {}
-
-function audio.Open()
-	local device = alc.OpenDevice(nil)
+   
+function audio.Open(name)
+	audio.Close()
+	
+	if not name then
+		name = audio.GetAllOutputDevices()[1]
+	end
+	
+	logf("[audio] opening device %q for sound output", name)
+	
+	local device = alc.OpenDevice(name)
 
 	-- needed to provide debugging info for alc
 	alc.device = device 
@@ -18,77 +27,68 @@ function audio.Open()
 		
 	for i = 1, 4 do
 		audio.effect_channels[i] = audio.CreateAuxiliaryEffectSlot()
-	end
+	end     
 end
-
-function audio.Close()	
-	if audio.device then
-		alc.CloseDevice(audio.device)
+ 
+function audio.Close()	 
+	for k, v in pairs(audio.objects) do
+		v:Remove()
 	end
-	
+
 	if audio.context then
 		alc.DestroyContext(audio.context)	
 	end
-end
-
-function audio.Decode(data)
-	-- use a dummy file so we can read from memory...
-	local file = assert(io.open("__temp", "wb"))
-	file:write(data)
-	file:close()   
-
-	local info = ffi.new("SF_INFO[1]")
-	local file = soundfile.Open("__temp", e.SFM_READ, info)
-	info = info[0]
-
-	local err = ffi.string(soundfile.StringError(file))
 	
-	if err ~= "No Error." then
-		return false, err
-	end	
-	
-	local typename
-	local extension
-	local subname
-	
-	do
-		local data = ffi.new("SF_FORMAT_INFO[1]")
-		data[0].format = info.format
-		soundfile.Command(nil, e.SFC_GET_FORMAT_INFO, data, ffi.sizeof("SF_FORMAT_INFO"))
-		
-		typename = ffi.string(data[0].name)
-		extension = ffi.string(data[0].extension)
-
-		data[0].format = bit.band(info.format , e.SF_FORMAT_SUBMASK)
-		soundfile.Command(nil, e.SFC_GET_FORMAT_INFO, data, ffi.sizeof("SF_FORMAT_INFO"))
-		subname = ffi.string(data[0].name)
+	if audio.device then
+		alc.CloseDevice(audio.device)
 	end
-	
-	local info = {
-		frames = tonumber(info.frames), 
-		channels = info.channels,
-		format = format,
-		sections = info.sections,
-		seekable = info.seekable ~= 0,
-		subname = subname,
-		extension = extension,
-		typename = typename,
-		samplerate = info.samplerate,
-		buffer_length = info.frames * info.channels * ffi.sizeof("ALshort"),
-	}
-		
-	local buffer = ffi.new("ALshort[?]", info.buffer_length)
-	-- just read everything  
-	-- maybe have a callback later using coroutines
-	soundfile.ReadShort(file, buffer, info.buffer_length)
-	
-	soundfile.Close(file)  
-	
-	os.remove("__temp")
-	
-	return buffer, info
 end
 
+function audio.GetAllOutputDevices()
+	local list = alc.GetString(nil, e.ALC_ALL_DEVICES_SPECIFIER)
+
+	local devices = {}
+
+	local temp = {}
+
+	for i = 0, 1000 do
+		local byte = list[i]
+		
+		if byte == 0 then
+			table.insert(devices, table.concat(temp))
+			temp = {}
+		else
+			table.insert(temp, string.char(byte))
+		end
+		
+		if byte == 0 and list[i + 1] == 0 then break end
+	end 
+	
+	return devices
+end   
+
+function audio.GetAllInputDevices()
+	local list = alc.GetString(nil, e.ALC_CAPTURE_DEVICE_SPECIFIER)
+
+	local devices = {}
+
+	local temp = {}
+
+	for i = 0, 1000 do
+		local byte = list[i]
+		
+		if byte == 0 then
+			table.insert(devices, table.concat(temp))
+			temp = {}
+		else
+			table.insert(temp, string.char(byte))
+		end
+		
+		if byte == 0 and list[i + 1] == 0 then break end
+	end 
+	
+	return devices
+end
 
 function audio.GetEffectChannel(i)
 	i = i or 1
@@ -245,7 +245,7 @@ local function GEN_TEMPLATE(type, ctor)
 		end
 		
 	end
-	
+	 
 	local get_fv = al[type.."Getfv"]
 	local temp = ffi.new("float[3]")
 
@@ -268,6 +268,9 @@ local function GEN_TEMPLATE(type, ctor)
 		
 		utilities.SetGCCallback(self)
 		
+		-- this kind of wont really make gc of any use
+		audio.objects[self] = self
+		
 		return self
 	end
 
@@ -282,6 +285,8 @@ local function GEN_TEMPLATE(type, ctor)
 		if self.Stop then
 			self:Stop()
 		end
+		
+		audio.objects[self] = nil 
 		
 		temp[0] = self.id
 		delete(1, temp)
@@ -471,14 +476,20 @@ _G.Sound = audio.CreateSource
 
 do -- microphone
 	
-	function audio.CreateAudioCapture(sample_rate, format, max_size)
+	function audio.CreateAudioCapture(name, sample_rate, format, buffer_size)
 		sample_rate = sample_rate or 44100
 		format = format or e.AL_FORMAT_MONO8
-		max_size = max_size or 4096
+		buffer_size = buffer_size or 4096
+		
+		if not name then
+			name = audio.GetAllInputDevices()[1]
+		end
+		
+		logf("[audio] opening device %q for input", name)
 		
 		local self = utilities.CreateBaseObject("audio_capture")
 		
-		local id = alc.CaptureOpenDevice(nil, sample_rate, format, max_size)
+		local id = alc.CaptureOpenDevice(name, sample_rate, format, buffer_size)
 		
 		self.id = id
 		
@@ -502,7 +513,7 @@ do -- microphone
 		end
 		
 		function self:IsFull()
-			return self:GetCapturedSamples() >= max_size
+			return self:GetCapturedSamples() >= buffer_size
 		end
 		
 		function self:Read()
@@ -519,8 +530,64 @@ do -- microphone
 	
 end
 
-audio.Close()
 
-timer.Delay(0.1, function() 
-	audio.Open() 
-end)
+function audio.Decode(data)
+	-- use a dummy file so we can read from memory...
+	local  name = os.tmpname()
+	local file = assert(io.open(name, "wb"))
+	file:write(data)
+	file:close()   
+
+	local info = ffi.new("SF_INFO[1]")
+	local file = soundfile.Open(name, e.SFM_READ, info)
+	info = info[0]
+
+	local err = ffi.string(soundfile.StringError(file))
+	
+	if err ~= "No Error." then
+		return false, err
+	end	
+	
+	local typename
+	local extension
+	local subname
+	
+	do
+		local data = ffi.new("SF_FORMAT_INFO[1]")
+		data[0].format = info.format
+		soundfile.Command(nil, e.SFC_GET_FORMAT_INFO, data, ffi.sizeof("SF_FORMAT_INFO"))
+		
+		typename = ffi.string(data[0].name)
+		extension = ffi.string(data[0].extension)
+
+		data[0].format = bit.band(info.format , e.SF_FORMAT_SUBMASK)
+		soundfile.Command(nil, e.SFC_GET_FORMAT_INFO, data, ffi.sizeof("SF_FORMAT_INFO"))
+		subname = ffi.string(data[0].name)
+	end
+	
+	local info = {
+		frames = tonumber(info.frames), 
+		channels = info.channels,
+		format = format,
+		sections = info.sections,
+		seekable = info.seekable ~= 0,
+		subname = subname,
+		extension = extension,
+		typename = typename,
+		samplerate = info.samplerate,
+		buffer_length = info.frames * info.channels * ffi.sizeof("ALshort"),
+	}
+		
+	local buffer = ffi.new("ALshort[?]", info.buffer_length)
+	-- just read everything  
+	-- maybe have a callback later using coroutines
+	soundfile.ReadShort(file, buffer, info.buffer_length)
+	
+	soundfile.Close(file)  
+	
+	os.remove(name)
+	
+	return buffer, info
+end
+
+audio.Open() 
