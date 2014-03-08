@@ -1218,7 +1218,7 @@ do
 		str = tostring(str)
 		
 		str = str:gsub("<rep=(%d+)>(.-)</rep>", function(count, str) 
-			count = math.max(math.min(tonumber(count), 1), 500)
+			count = math.min(math.max(tonumber(count), 1), 500)
 			
 			if #str:rep(count):gsub("<(.-)=(.-)>", ""):gsub("</(.-)>", ""):gsub("%^%d","") > 500 then 
 				return "rep limit reached" 
@@ -2529,8 +2529,8 @@ do -- caret
 		x = x or 0
 		y = y or 0
 
-		y = math.max(math.min(y, 1), #self.lines)
-		x = math.max(math.min(x, 0), self.lines[y] and utf8.length(self.lines[y]) or 0)
+		y = math.min(math.max(y, 1), #self.lines)
+		x = math.min(math.max(x, 0), self.lines[y] and utf8.length(self.lines[y]) or 0)
 
 		local CHAR
 		local POS
