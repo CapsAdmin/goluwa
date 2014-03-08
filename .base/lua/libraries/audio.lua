@@ -364,7 +364,7 @@ do -- sound meta
 
 		function META:PopBuffer()	
 			al.SourceUnqueueBuffers(self.id, 1, buffers)	
-			return pushed[buffers[0]]
+			return pushed[buffers[0]] or NULL
 		end
 	end 
 	
@@ -497,12 +497,44 @@ do -- microphone
 			alc.CaptureCloseDevice(self.id)
 		end
 		
-		function self:Start()
+		function self:Start(func)
 			alc.CaptureStart(self.id)
+		end
+		
+		function self:FeedSource(source)
+		
+			-- fill it with some silence first so we can pop safely
+			source:PushBuffer(audio.CreateBuffer(ffi.new("ALshort[4096]"), 4096))
+			source:PushBuffer(audio.CreateBuffer(ffi.new("ALshort[4096]"), 4096))
+			source:PushBuffer(audio.CreateBuffer(ffi.new("ALshort[4096]"), 4096))
+
+			timer.Thinker(function()
+				if not self:IsValid() or self.stopped then return true end
+				
+				if self:IsFull() then
+					local buffer = source:PopBuffer()	
+						if buffer:IsValid() then
+							local data, size = self:Read()
+							
+							if self.OnBufferData then
+								local a, b = self:OnBufferData(data, size)
+								
+								if a and b then
+									data = a
+									size = b
+								end
+							end
+							
+							buffer:SetBufferData(data, size)
+						source:PushBuffer(buffer)
+					end
+				end
+			end)			   
 		end
 		
 		function self:Stop()
 			alc.CaptureStop(self.id)
+			self.stopped = true
 		end
 		
 		local val = ffi.new("ALint[1]")
