@@ -111,6 +111,10 @@ function utilities.CreateBaseObject(class_name)
 		utilities.MakeNULL(self)
 	end
 	
+	function self:IsValid()
+		return true
+	end
+	
 	utilities.SetGCCallback(self)
 	
 	return self	
