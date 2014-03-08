@@ -1,32 +1,18 @@
 local mic_out = utilities.RemoveOldObject(Sound())
 mic_out:SetChannel(1)
 
-local mic_in = audio.CreateAudioCapture()
+	local mic_in = audio.CreateAudioCapture()
+	mic_in:Start()  
+	mic_in:FeedSource(mic_out)
 
--- fill it with some silence first so we can pop safely
-mic_out:PushBuffer(audio.CreateBuffer(ffi.new("ALshort[4096]"), 4096))
-mic_out:PushBuffer(audio.CreateBuffer(ffi.new("ALshort[4096]"), 4096))
-mic_out:PushBuffer(audio.CreateBuffer(ffi.new("ALshort[4096]"), 4096))
-
-timer.Thinker(function()
-	if mic_in:IsFull() then
-		local buffer = mic_out:PopBuffer()		
-			local data, size = mic_in:Read()
-			
-			-- do something here!
-			--for i = 0, size-1 do 
-				--data[i] = data[i]
-			--end
-			
-			buffer:SetBufferData(data, size)
-		mic_out:PushBuffer(buffer)
+	function mic_in:OnBufferData(data, size)
+		for i = 0, size - 1 do
+			-- ??
+		end
 	end
-end)
-   
+
 mic_out:Play() 
- 
-mic_in:Start()     
- 
+  
 local reverb = audio.CreateEffect(e.AL_EFFECT_EAXREVERB)
 reverb:SetParam(e.AL_EAXREVERB_DECAY_TIME, 10) 
 
