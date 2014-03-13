@@ -1,3 +1,6 @@
+table.new = require("table.new")
+table.clear = require("table.clear")
+
 -- 12:34 - <mniip> http://codepad.org/cLaX7lVn
 function table.multiremove(tbl, locations)
 	
