@@ -72,9 +72,12 @@ local VKTRUE  = 2
 
 local NO_JMP = bit.bnot(0)
 
+-- Type codes for the GC constants of a prototype. Plus length for strings.
 local KOBJ = enum {
    [0] = "CHILD", "TAB", "I64", "U64", "COMPLEX", "STR",
 }
+
+-- Type codes for the keys/values of a constant table.
 local KTAB = enum {
    [0] = "NIL", "FALSE", "TRUE", "INT", "NUM", "STR",
 }
@@ -223,6 +226,9 @@ function Ins.new(op, a, b, c)
       c or 0;
    }, Ins)
 end
+function Ins.__index:rewrite(op, a, b, c)
+   self[1], self[2], self[3], self[4] = op, a or 0, b or 0, c or 0
+end
 function Ins.__index:write(buf)
    local op, a = self[1], self[2]
    buf:put(op)
@@ -241,6 +247,33 @@ function Ins.__index:write(buf)
    else
       error("bad instruction ["..tostring(op).."] (op mode unknown)")
    end
+end
+local function hsize2hbits(s)
+   if s <= 0 then
+      return 0
+   elseif s == 1 then
+      return 1
+   end
+   s = s - 1
+   local c = 0
+   while s > 0 do
+      s = bit.rshift(s, 1)
+      c = c + 1
+   end
+   return c
+end
+function Ins.__index.tnewsize(narry, nhash)
+   if narry then
+      if narry < 3 then
+         narry = 3
+      elseif narry > 0x7ff then
+         narry = 0x7ff
+      end
+   else
+      narry = 0
+   end
+   nhash = nhash or 0
+   return bit.bor(narry, bit.lshift(hsize2hbits(nhash), 11))
 end
 
 KObj = { }
@@ -289,11 +322,45 @@ function KObj.__index:write_kcdata(buf, v)
       assert('Unknown KCDATA : ' .. tostring(v))
    end
 end
+
+local function num_is_int32(x)
+   return x % 1 == 0 and x >= -2^31 and x < 2^31
+end
+
+local function write_ktabk(buf, val, narrow)
+   local tp = type(val)
+   if tp == "string" then
+      buf:put_uleb128(KTAB.STR + #val)
+      buf:put_bytes(val)
+   elseif tp == "number" then
+      if narrow and num_is_int32(val) then
+         buf:put(KTAB.INT)
+         buf:put_uleb128(val)
+         return
+      end
+      local u32_lo, u32_hi = dword_get_u32(double_new, val)
+      buf:put(KTAB.NUM)
+      buf:put_uleb128(u32_lo[0])
+      buf:put_uleb128(u32_hi[0])
+   elseif tp == "boolean" then
+      buf:put(val and KTAB.TRUE or KTAB.FALSE)
+   elseif tp == "nil" then
+      buf:put(KTAB.NIL)
+   else
+      assert(false, "error with constant in ktabk")
+   end
+end
+
 function KObj.__index:write_table(buf, v)
-   error("NYI")
-   local seen = { }
-   for i, v in ipairs(v) do
-      seen[i] = true
+   buf:put_uleb128(KOBJ.TAB)
+   buf:put_uleb128(v.narray)
+   buf:put_uleb128(v.nhash)
+   for i = 0, v.narray - 1 do
+      write_ktabk(buf, v.array[i], true)
+   end
+   for i = 1, v.nhash do
+      write_ktabk(buf, v.hash_keys[i], false)
+      write_ktabk(buf, v.hash_values[i], true)
    end
 end
 
@@ -328,11 +395,16 @@ function Proto.new(flags, outer)
       tohere = { };
       kcache = { };
       varinfo = { };
-      actvars = { };
+      scope  = {
+         actvars = { };
+         basereg = 0;
+         need_uclo = false;
+      };
       freereg   = 0;
       currline  = 1;
+      lastline  = 1;
       firstline = 1;
-      numlines  = 1;
+      numlines  = 0;
       framesize = 0;
       explret = false;
    }, Proto)
@@ -353,20 +425,32 @@ function Proto.__index:setreg(reg)
       self.framesize = self.freereg
    end
 end
+function Proto.__index:getbase()
+   return self.scope.basereg + #self.scope.actvars
+end
 function Proto.__index:enter()
-   local outer = self.actvars
-   self.actvars = setmetatable({ }, {
-      freereg = self.freereg;
-      __index = outer;
-   })
+   local outer = self.scope
+   self.scope = {
+      actvars   = { };
+      basereg   = self.freereg;
+      need_uclo = false;
+      outer     = outer;
+   }
+   return self.scope
 end
 function Proto.__index:is_root_scope()
-   return (getmetatable(self.actvars) == nil)
+   return (self.scope.outer == nil)
 end
 function Proto.__index:leave()
-   local scope = assert(getmetatable(self.actvars), "cannot leave main scope")
-   self.freereg = scope.freereg
-   self.actvars = scope.__index
+   for i=1, #self.scope.actvars do
+      self.scope.actvars[i].endpc = #self.code
+   end
+   self.scope   = self.scope.outer
+   self.freereg = self:getbase()
+end
+function Proto.__index:set_line(firstline, lastline)
+   self.firstline = firstline
+   self.numlines = lastline - firstline
 end
 function Proto.__index:child(flags)
    self.flags = bit.bor(self.flags, Proto.CHILD)
@@ -407,11 +491,15 @@ function Proto.__index:const(val)
    end
    return self.kcache[val].idx
 end
+function Proto.__index:new_table_template()
+   local t = { array = {}, hash_keys = {}, hash_values = {} }
+   local item = KObj.new(t)
+   item.idx = #self.kobj
+   self.kobj[#self.kobj + 1] = item
+   return item.idx, t
+end
 function Proto.__index:line(ln)
    self.currline = ln
-   if ln > self.currline then
-      self.numlines = ln
-   end
 end
 function Proto.__index:emit(op, a, b, c)
    --print(("Ins:%s %s %s %s"):format(BC[op], a, b, c))
@@ -521,39 +609,41 @@ function Proto.__index:write_debug(buf)
       lastpc = startpc
    end
 end
-function Proto.__index:newvar(name, reg, ofs)
-   if not reg then reg = self:nextreg() end
-   if not ofs then ofs = #self.code end
-   local var = {
-      idx      = reg;
-      startpc  = ofs;
-      endpc    = ofs;
+function Proto.__index:newvar(name, dest)
+   dest = dest or self:nextreg()
+   local vinfo = {
+      idx      = dest;
+      startpc  = #self.code;
+      endpc    = #self.code;
       name     = name;
    }
-   self.actvars[name] = var
+   -- scoped variable info
+   self.scope.actvars[name] = vinfo
+   self.scope.actvars[#self.scope.actvars + 1] = vinfo
 
-   self.varinfo[name] = var
-   var.vidx = #self.varinfo
-   self.varinfo[#self.varinfo + 1] = var
-   return var
+   -- for the debug segment only
+   vinfo.vidx = #self.varinfo
+   self.varinfo[#self.varinfo + 1] = vinfo
+
+   return vinfo
+end
+local function scope_var_lookup(scope, name)
+   while scope do
+      local var = scope.actvars[name]
+      if var then return var, scope end
+      scope = scope.outer
+   end
 end
 function Proto.__index:lookup(name)
-   if self.actvars[name] then
-      return self.actvars[name], false
+   local var = scope_var_lookup(self.scope, name)
+   if var then
+      return var, false
    elseif self.outer then
       local v = self.outer:lookup(name)
       if v then return v, true end
    end
+   -- Global variable.
    return nil, false
-end
-function Proto.__index:getvar(name)
-   local info = self.actvars[name]
-   if not info then return nil end
-   if not info.startpc then
-      info.startpc = #self.code
-   end
-   info.endpc = #self.code
-   return info.idx
 end
 function Proto.__index:param(...)
    local var = self:newvar(...)
@@ -563,30 +653,30 @@ function Proto.__index:param(...)
 end
 function Proto.__index:upval(name)
    if not self.upvals[name] then
-      local proto, upval, vinfo = self.outer, { }
+      local proto, upval = self.outer, { }
+      local var, scope
       while proto do
-         if proto.actvars[name] then
+         var, scope = scope_var_lookup(proto.scope, name)
+         if var then
             break
          end
          proto = proto.outer
       end
-      vinfo = assert(self:lookup(name), "no upvalue found for "..name)
 
-      upval = { vinfo = vinfo; proto = proto; }
+      upval = { vinfo = var; proto = proto; }
 
       -- for each upval we set either outer_idx or outer_uv
       if proto == self.outer then
          -- The variable is in the enclosing function's scope.
          -- We store just its register index.
-         upval.outer_idx = vinfo.idx
+         upval.outer_idx = var.idx
+         scope.need_uclo = true
       else
          -- The variable is in the outer scope of the enclosing
          -- function. We register this variable as an upvalue for
          -- the enclosing function. Then we store the upvale index.
          upval.outer_uv = self.outer:upval(name)
       end
-
-      proto.need_close = true
 
       self.upvals[name] = upval
       upval.idx = #self.upvals
@@ -621,20 +711,44 @@ function Proto.__index:enable_jump(name)
    end
    here[#here + 1] = #self.code + 1
 end
-function Proto.__index:jump(name, freereg)
-   freereg = freereg or self.freereg
+local function locate_jump(self, name)
    if self.labels[name] then
       -- backward jump
-      local offs = self.labels[name]
-      if self.need_close then
-         return self:emit(BC.UCLO, freereg, offs - #self.code)
-      else
-         return self:emit(BC.JMP, freereg, offs - #self.code)
-      end
+      return self.labels[name] - #self.code
    else
       -- forward jump
       self:enable_jump(name)
-      return self:emit(BC.JMP, freereg, NO_JMP)
+      return NO_JMP
+   end
+end
+function Proto.__index:scope_jump(name, basereg, need_uclo)
+   local jump = locate_jump(self, name)
+   return self:emit(need_uclo and BC.UCLO or BC.JMP, basereg, jump)
+end
+function Proto.__index:jump(name, basereg)
+   local jump = locate_jump(self, name)
+   return self:emit(BC.JMP, basereg, jump)
+end
+function Proto.__index:loop_register(exit, exit_reg)
+   self.scope.loop_exit = exit
+   self.scope.loop_basereg = exit_reg
+end
+function Proto.__index:current_loop()
+   local scope = self.scope
+   local need_uclo = false
+   while scope do
+      need_uclo = need_uclo or scope.need_uclo
+      if scope.loop_exit then break end
+      scope = scope.outer
+   end
+   assert(scope, "no loop to break")
+   return scope.loop_basereg, scope.loop_exit, need_uclo
+end
+function Proto.__index:global_uclo()
+   local scope = self.scope
+   while scope do
+      if scope.need_uclo then return true end
+      scope = scope.outer
    end
 end
 function Proto.__index:loop(name)
@@ -648,8 +762,8 @@ function Proto.__index:loop(name)
       return self:emit(BC.LOOP, self.freereg, NO_JMP)
    end
 end
-function Proto.__index:op_jump(delta)
-   return self:emit(BC.JMP, self.freereg, delta)
+function Proto.__index:op_jump(jump, base)
+   return self:emit(BC.JMP, base, jump)
 end
 function Proto.__index:op_loop(delta)
    return self:emit(BC.LOOP, self.freereg, delta)
@@ -747,22 +861,11 @@ function Proto.__index:op_load(dest, val)
       error("cannot load as constant: "..tostring(val))
    end
 end
-function Proto.__index:op_tnew(dest, narry, nhash)
-   if narry then
-      if narry < 3 then
-         narry = 3
-      elseif narry > 0x7ff then
-         narry = 0x7ff
-      end
-   else
-      narry = 0
-   end
-   if nhash then
-      nhash = math.ceil(nhash / 2)
-   else
-      nhash = 0
-   end
-   return self:emit(BC.TNEW, dest, bit.bor(narry, bit.lshift(nhash, 11)))
+function Proto.__index:op_tdup(dest, index)
+   return self:emit(BC.TDUP, dest, index)
+end
+function Proto.__index:op_tnew(dest, size)
+   return self:emit(BC.TNEW, dest, size)
 end
 function Proto.__index:op_tget(dest, tab, ktag, key)
    local ins_name = 'TGET' .. ktag
@@ -783,24 +886,21 @@ end
 function Proto.__index:op_fnew(dest, pidx)
    return self:emit(BC.FNEW, dest, pidx)
 end
-function Proto.__index:op_uclo(jump)
-   return self:emit(BC.UCLO, #self.actvars, jump or 0)
+function Proto.__index:op_uclo(base, jump)
+   return self:emit(BC.UCLO, base, jump)
 end
-function Proto.__index:op_uset(name, vtag, val)
+function Proto.__index:op_uset(uv, vtag, val)
    local ins = BC['USET' .. vtag]
-   local slot = self:upval(name)
-   self:emit(ins, slot, val)
+   self:emit(ins, uv, val)
 end
-function Proto.__index:op_uget(dest, name)
-   local slot = self:upval(name)
-   return self:emit(BC.UGET, dest, slot)
+function Proto.__index:op_uget(dest, uv)
+   return self:emit(BC.UGET, dest, uv)
 end
-function Proto.__index:close_block_uvals(reg, exit)
-   -- the condition on reg ensure that UCLO is emitted only if
-   -- local variables were declared in the block
-   local block_uclo = (reg < self.freereg) and not self:is_root_scope()
-
-   if self.need_close and block_uclo then
+-- Generate the UCLO + JMP instruction at the end of a block.
+-- The UCLO is generated only if there are open upvalues. The "exit"
+-- parameter is optional. If omitted there will be no JMP instruction.
+function Proto.__index:close_block(reg, exit)
+   if self.scope.need_uclo then
       if exit then
          assert(not self.labels[name], "expected forward jump")
          self:enable_jump(exit)
@@ -808,6 +908,7 @@ function Proto.__index:close_block_uvals(reg, exit)
       else
          self:emit(BC.UCLO, reg, 0)
       end
+      self.scope.need_uclo = false
    else
       if exit then
          assert(not self.labels[name], "expected forward jump")
@@ -817,24 +918,20 @@ function Proto.__index:close_block_uvals(reg, exit)
    end
 end
 function Proto.__index:close_uvals()
-   if self.need_close then
-      self:emit(BC.UCLO, #self.actvars, 0)
+   if self:global_uclo() then
+      self:emit(BC.UCLO, 0, 0)
    end
 end
 function Proto.__index:op_ret(base, rnum)
-   self:close_uvals()
    return self:emit(BC.RET, base, rnum + 1)
 end
 function Proto.__index:op_ret0()
-   self:close_uvals()
    return self:emit(BC.RET0, 0, 1)
 end
 function Proto.__index:op_ret1(base)
-   self:close_uvals()
    return self:emit(BC.RET1, base, 2)
 end
 function Proto.__index:op_retm(base, rnum)
-   self:close_uvals()
    return self:emit(BC.RETM, base, rnum)
 end
 function Proto.__index:op_varg(base, want)
@@ -844,14 +941,12 @@ function Proto.__index:op_call(base, want, narg)
    return self:emit(BC.CALL, base, want + 1, narg + 1)
 end
 function Proto.__index:op_callt(base, narg)
-   self:close_uvals()
    return self:emit(BC.CALLT, base, narg + 1)
 end
 function Proto.__index:op_callm(base, want, narg)
    return self:emit(BC.CALLM, base, want + 1, narg)
 end
 function Proto.__index:op_callmt(base, narg)
-   self:close_uvals()
    return self:emit(BC.CALLMT, base, narg)
 end
 function Proto.__index:op_fori(base, stop, step)
@@ -900,7 +995,7 @@ function Dump.__index:write_header(buf)
    buf:put(Dump.HEAD_3)
    buf:put(Dump.VERS)
    buf:put(self.flags)
-   local name = self.name
+   local name = string.gsub(self.name, "[^/]+/", "")
    if bit.band(self.flags, Dump.STRIP) == 0 then
       if not name then
          name = '(binary)'
