@@ -1,5 +1,5 @@
 DEBUG = true
-USE_STRUNG = false
+USE_STRUNG = true
 _G.ffi = require("ffi")
 
 _G[ffi.os:upper()] = true
