@@ -109,6 +109,7 @@ do
 	-- i'm not sure what i'm doing here..
 	
 	function aahh.StartClip(pnl)		
+		if aahh.noclip then return end
 		if pnl:HasParent() then	
 			local offset = pnl.Parent:GetOffset()
 			local siz = pnl.Parent:GetSize()
@@ -127,7 +128,7 @@ do
 	end
 	
 	function aahh.EndClip()
-
+		if aahh.noclip then return end
 		surface.EndClipping()
 	end
 end

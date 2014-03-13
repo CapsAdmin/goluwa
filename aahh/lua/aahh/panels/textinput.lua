@@ -8,6 +8,7 @@ class.GetSet(PANEL, "FixedHeight", true)
 class.GetSet(PANEL, "LineSpacing", 3)
 class.GetSet(PANEL, "MultiLine", false)
 class.GetSet(PANEL, "LineNumbers", true)
+class.GetSet(PANEL, "EditorMode", false)
 
 function PANEL:SetCaretPos(pos)
 	self.markup:SetCaretPos(pos.x, pos.y)
@@ -83,6 +84,25 @@ function PANEL:SetText(str)
 	self.markup:SelectAll()
 	self.markup:DeleteSelection()
 	self.markup:AddString(str)
+	
+	self.Text = str
+end
+
+function PANEL:SetContent(str)
+	self.Content = str
+	self.lines = str:explode("\n")
+	
+	local w, h = surface.GetTextSize("W")
+	
+	self.height = #self.lines * h
+end
+
+function PANEL:SizeToContents()
+	if self.EditorMode then
+		self:SetSize(self:GetWidth(), self.height)
+	else
+		self:SetSize(Vec2(self:GetWidth(), self.markup.height))
+	end
 end
 
 aahh.RegisterPanel(PANEL)

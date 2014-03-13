@@ -24,6 +24,8 @@ end
 
 function PANEL:Stack(list)
 
+	self:RequestLayout(true)
+
 	list = list or self.CustomList
 
 	if not list then

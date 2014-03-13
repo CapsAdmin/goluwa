@@ -17,6 +17,8 @@ function PANEL:Initialize()
 	self:SetAlwaysReceiveMouse(true)
 end
 
+PANEL.container = NULL
+
 function PANEL:SetPanel(pnl)	
 	self.container = pnl
 	pnl:SetParent(self)
