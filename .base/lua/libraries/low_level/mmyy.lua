@@ -110,7 +110,7 @@ function mmyy.OnError(msg, ...)
 			debug.openfunction(func)
 			last_openfunc = os.clock() + 3
 		else
-			logf("supressed os.execute(%q)", path)
+			--logf("debug.openfunction(%q)", source)
 		end
 		
 		logn(source)
