@@ -70,7 +70,7 @@ for line in header:gmatch("(.-)\n") do
 	end 
 end
 
-for type, name in pairs(extensions) do
+for name, type in pairs(extensions) do
 	local func = al.GetProcAddress(name)
 	func = ffi.cast(type, func)
 	

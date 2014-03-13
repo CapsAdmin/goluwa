@@ -28,6 +28,8 @@ typedef int ALenum;
 typedef float ALfloat;
 typedef double ALdouble;
 typedef void ALvoid;
+typedef uint64_t ALuint64SOFT;
+typedef int64_t ALint64SOFT;
 
 
 typedef ALCcontext*    (__cdecl *LPALCCREATECONTEXT)(ALCdevice *device, const ALCint *attrlist);
