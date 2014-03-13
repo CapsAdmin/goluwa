@@ -26,16 +26,30 @@ end
 
 function debug.trace()	
     logn("Trace: " )
+	local lines = {}
 	
 	for level = 1, math.huge do
 		local info = debug.getinfo(level, "Sln")
 		
 		if info then
-			logf("\t%i: Line %d\t\"%s\"\t%s", level, info.currentline, info.name or "unknown", info.short_src or "")
+			lines[#lines + 1] = ("\t%i: Line %d\t\"%s\"\t%s"):format(level, info.currentline, info.name or "unknown", info.short_src or "")
 		else
 			break
 		end
     end
+	
+	-- this doesn't really be long here..
+	local stop = #lines
+	
+	for i = 2, #lines do
+		if lines[i]:find("event") then
+			stop = i - 2
+		end
+	end
+	
+	for i = 2, stop do
+		logn(lines[i])
+	end
 end
 
 function debug.getparams(func)
