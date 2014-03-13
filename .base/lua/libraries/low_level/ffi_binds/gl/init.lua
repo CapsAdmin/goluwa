@@ -49,6 +49,8 @@ local function add_gl_func(name, func)
 	-- or not
 	
 	gl[name] = function(...) 
+		if gl.mute then return end
+		
 		local val = func(...)
 		
 		gl.call_count = gl.call_count + 1
