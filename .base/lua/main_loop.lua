@@ -51,8 +51,8 @@ local function main()
 						
 			local ok, err = xpcall(update, mmyy.OnError, dt)
 			
-			if not ok then				
-				logn("shutting down")
+			if not ok and err then				
+				log("shutting down (", err, ")\n")
 				
 				event.Call("ShutDown")
 				return 
