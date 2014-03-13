@@ -203,6 +203,7 @@ void main()
 	end
 
 	function META:Remove()
+		render.active_super_shaders[self.shader_id] = nil
 		gl.DeleteProgram(self.program_id)
 		utilities.MakeNULL(self)
 	end
@@ -292,6 +293,8 @@ void main()
 		vbo.buffer = buffer
 
 		vbo.Draw = function(vbo)
+			if not self:IsValid() then vbo:Remove() return end
+			
 			render.UseProgram(self.program_id)
 					
 			if false and self.nvidia_buffer_address then 
@@ -672,7 +675,23 @@ void main()
 				self.original_data = data
 				self.base_shader = base
 				self.prog = prog
-				render.active_super_shaders[shader_id] = self
+				self.shaders = shaders
+				
+				local old = render.active_super_shaders[shader_id]
+				
+				if old and false then
+					for k,v in pairs(old) do
+						old[k] = nil
+					end
+					
+					for k,v in pairs(self) do
+						old[k] = v
+					end
+					
+					self = old
+				else
+					render.active_super_shaders[shader_id] = self
+				end
 				
 				utilities.SetGCCallback(self)
 
