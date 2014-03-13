@@ -35,8 +35,8 @@ chathud = {
 		default = {
 			name = "chathud_default",
 			data = {
-				font = "Verdana",
-				size = 36,
+				font = "Roboto",
+				size = 15,
 				weight = 600,
 				antialias = true,
 				shadow = true,
@@ -71,8 +71,8 @@ if surface.DrawFlag then
 	}
 end
 
-for _, v in pairs(vfs.Find("materials/icon16/*.png")) do
-	chathud.config.shortcuts[v:gsub("(%.png)$","")] = "<texture=materials/icon16/" .. v .. ",16>"
+for _, v in pairs(vfs.Find("textures/silkicons/")) do
+	chathud.config.shortcuts[v:gsub("(%.png)$","")] = "<texture=textures/silkicons/" .. v .. ",16>"
 end
 
 for name, data in pairs(chathud.fonts) do
@@ -98,7 +98,7 @@ function chathud.AddText(...)
 			table.insert(args, Color(255, 255, 255, 255))
 		elseif t == "string" then
 		
-			if v == ": sh" or v:find("%ssh%s") then
+			if v == ": sh" or v == "sh" or v:find("%ssh%s") then
 				chathud.markup:TagPanic()
 			end
 		
@@ -132,7 +132,7 @@ function chathud.AddText(...)
 	
 	markup:BeginLifeTime(chathud.life_time)
 		-- this will make everything added here get removed after said life time
-		markup:AddFont("markup_default") -- also reset the font just in case
+		markup:AddFont("chathud_default") -- also reset the font just in case
 		markup:AddTable(args, true)
 		markup:AddTagStopper()
 		markup:AddString("\n")
