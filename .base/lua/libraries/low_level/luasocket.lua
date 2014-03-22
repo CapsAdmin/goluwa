@@ -74,7 +74,7 @@ luasocket.debug = true
 --
 ]]
 
-local luasocket = {}
+local luasocket = _G.luasocket or {}
 
 if _G.luasocket and _G.luasocket.Panic then
 	_G.luasocket.Panic()

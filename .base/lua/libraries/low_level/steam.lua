@@ -1,4 +1,4 @@
-local steam = {}
+local steam = _G.steam or {}
 
 steam.cache_path = "gamepaths.txt"
 

@@ -1,4 +1,4 @@
-local structs = structs or {}
+local structs = _G.structs or {}
 
 function structs.Register(META)
 	local arg_line = ""

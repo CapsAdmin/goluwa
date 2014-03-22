@@ -1,4 +1,4 @@
-local system = system or {}
+local system = _G.system or {}
 
 local function not_implemented() debug.trace() logn("this function is not yet implemented!") end
 

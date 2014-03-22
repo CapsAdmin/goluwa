@@ -1,4 +1,4 @@
-local addons = {}
+local addons = _G.addons or {}
 
 addons.Info = {}
 addons.DisabledAddons = {}

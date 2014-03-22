@@ -1,4 +1,4 @@
-players = players or {}
+players = _G.players or {}
 
 players.active_players = players.active_players or {}
 players.local_player = players.local_player or NULL

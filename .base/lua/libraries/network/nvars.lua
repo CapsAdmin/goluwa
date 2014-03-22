@@ -1,4 +1,4 @@
-nvars = nvars or {}
+nvars = _G.nvars or {}
  
 nvars.Environments = nvars.Environments or {} 
 nvars.added_cvars = nvars.added_cvars or {}

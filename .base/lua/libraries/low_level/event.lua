@@ -1,4 +1,4 @@
-local event = {}
+local event = _G.event or {}
 
 e.EVENT_DESTROY = "??|___EVENT_DESTROY___|??" -- unique what
 

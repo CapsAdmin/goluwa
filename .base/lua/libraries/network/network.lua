@@ -1,4 +1,4 @@
-network = network or {}
+network = _G.network or {}
 network.client_socket = network.client_socket or NULL
 network.server_socket = network.server_socket or NULL
 

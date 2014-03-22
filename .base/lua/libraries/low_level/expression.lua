@@ -1,5 +1,7 @@
 -- used like <tag=[pi * rand()]>
 
+local expression = _G.expression or {}
+
 local lib =
 {
 	PI = math.pi,
@@ -54,7 +56,7 @@ local blacklist = {"repeat", "until", "function", "end"}
 
 local expressions = {}
 
-local function compile_expression(str, extra_lib)
+function expression.Compile(str, extra_lib)
 	local source = str
 
 	for _, word in pairs(blacklist) do
@@ -89,4 +91,4 @@ local function compile_expression(str, extra_lib)
 	end
 end
 
-return {Compile = compile_expression}
+return expression

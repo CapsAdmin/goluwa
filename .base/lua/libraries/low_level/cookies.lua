@@ -1,6 +1,6 @@
 -- whats the point
 
-local cookies = {}
+local cookies = _G.cookies or {}
 
 function cookies.Set(key, value)
 	if not cookies.current then	

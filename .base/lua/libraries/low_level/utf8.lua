@@ -1,4 +1,4 @@
-local utf8 = {}
+local utf8 = _G.utf8 or {}
 
 local math_floor = math.floor
 

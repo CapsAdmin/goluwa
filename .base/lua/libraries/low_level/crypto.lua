@@ -1,6 +1,6 @@
 -- https://github.com/alexgorbatchev/node-crc
 
-local crypto = {}
+local crypto = _G.crypto or {}
 local bit = require("bit")
 local function Array(t) local out = {} for k,v in pairs(t) do out[k-1] = v end return out end -- lol
 

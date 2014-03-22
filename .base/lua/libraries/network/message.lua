@@ -1,4 +1,4 @@
-message = message or {}
+message = _G.message or {}
 
 message.Listeners = message.Listeners or {}
 
