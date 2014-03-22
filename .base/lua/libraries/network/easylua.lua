@@ -1,4 +1,4 @@
-easylua = {}
+easylua = _G.easylua or {}
 local s = easylua
 
 local function compare(a, b)

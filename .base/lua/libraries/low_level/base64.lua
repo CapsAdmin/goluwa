@@ -4,7 +4,7 @@
 -- character table string
 local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
-local base64 = {}
+local base64 = _G.base64 or {}
 
 -- encoding
 function base64.encode(data)

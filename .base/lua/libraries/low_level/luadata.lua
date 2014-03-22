@@ -1,4 +1,4 @@
-local luadata = {}
+local luadata = _G.luadata or {}
 
 local tab = 0
 

@@ -1,4 +1,4 @@
-local sigh = {}
+local sigh = _G.sigh or {}
 
 sigh.END = "\1"
 

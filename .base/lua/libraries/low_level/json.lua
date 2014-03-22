@@ -11,7 +11,8 @@ local getmetatable = debug.getmetatable
 
 local _ENV = nil -- blocking globals in Lua 5.2
 
-local json = { version = "dkjson 2.2" }
+local json = _G.json or {}
+json.version = "dkjson 2.2" 
 
 
 json.null = setmetatable ({}, {

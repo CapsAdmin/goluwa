@@ -1,4 +1,4 @@
-local steamapi = {}
+local steamapi = _G.steamapi or {}
 
 steamapi.httpmethods = {
 	GET = function(interface, func_info, data, url, callback)
