@@ -1,14 +1,17 @@
 local META = {}
 
+class.SetupParentingSystem(META)
+
 META.ClassName = "base"	
 	
-class.GetSet(META, "Pos", Vec3(0,0,0))
-class.GetSet(META, "Angles", Ang3(0,0,0))
-class.GetSet(META, "Scale", Vec3(1,1,1))
-class.GetSet(META, "Size", 1)
-class.GetSet(META, "ID", 0)
+entities.GetSet(META, "ID", 0)
 
-class.SetupParentingSystem(META)
+entities.StartStorableProperties()
+	entities.GetSet(META, "Pos", Vec3(0,0,0))
+	entities.GetSet(META, "Angles", Ang3(0,0,0))
+	entities.GetSet(META, "Scale", Vec3(1,1,1))
+	entities.GetSet(META, "Size", 1)
+entities.EndStorableProperties()
 
 function META:__init()
 	if entities.world_entity then

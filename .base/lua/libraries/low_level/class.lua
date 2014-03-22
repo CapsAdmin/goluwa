@@ -15,11 +15,11 @@ end
 
 local __store = false
 
-function class.StartStorableVars()
+function class.StartStorableProperties()
 	__store = true
 end
 
-function class.EndStorableVars()
+function class.EndStorableProperties()
 	__store = false
 end
 
@@ -40,8 +40,8 @@ function class.GetSet(tbl, name, def)
 	
 
 	if __store then
-		tbl.StorableVars = tbl.StorableVars or {}
-		table.insert(tbl.StorableVars, key)
+		tbl.StorableProperties = tbl.StorableProperties or {}
+		table.insert(tbl.StorableProperties, key)
 	end
 end
 
@@ -57,8 +57,8 @@ function class.IsSet(tbl, name, def)
 	
 	
 	if __store then
-		tbl.StorableVars = tbl.StorableVars or {}
-		table.insert(tbl.StorableVars, key)
+		tbl.StorableProperties = tbl.StorableProperties or {}
+		table.insert(tbl.StorableProperties, key)
 	end
 end
 
@@ -226,6 +226,153 @@ do -- helpers
 
 		function tbl.GetAllRegistered()
 			return class.GetAll(type)
+		end
+	end
+	
+	function class.SetupSerializing(lib)
+		local variable_order = {}
+		
+		local function insert_key(key)
+			for k,v in pairs(variable_order) do
+				if k == key then
+					return
+				end
+			end
+			
+			table.insert(variable_order, key)
+		end
+		
+		local __store = false
+
+		function lib.StartStorableProperties()
+			__store = true
+		end
+
+		function lib.EndStorableProperties()
+			__store = false
+		end
+		
+		function lib.GetVariableOrder()	
+			return variable_order
+		end
+
+		function lib.GetSet(tbl, key, ...)
+			insert_key(key)
+			
+			class.GetSet(tbl, key, ...)
+
+			if __store then
+				tbl.StorableProperties = tbl.StorableProperties or {}
+				tbl.StorableProperties[key] = key
+			end
+		end
+
+		function lib.IsSet(tbl, key, ...)
+			insert_key(key)
+			class.IsSet(tbl, key, ...)
+
+			if __store then
+				tbl.StorableProperties = tbl.StorableProperties or {}
+				tbl.StorableProperties[key] = key
+			end
+		end
+		
+		
+		-- todo
+		do return end
+		function lib.SetupPartName(PART, key)		
+			PART.PartNameResolvers = PART.PartNameResolvers or {}
+					
+			local part_key = key
+			local part_set_key = "Set" .. part_key
+			
+			local uid_key = part_key .. "UID"
+			local name_key = key.."Name"
+			local name_set_key = "Set" .. name_key
+			
+			local last_name_key = "last_" .. name_key:lower()
+			local last_uid_key = "last_" .. uid_key:lower()
+			local try_key = "try_" .. name_key:lower()
+			
+			local name_find_count_key = name_key:lower() .. "_try_count"
+			
+			-- these keys are ignored when table is set. it's kind of a hack..
+			PART.IngoreSetKeys = PART.IgnoreSetKeys or {}
+			PART.IngoreSetKeys[name_key] = true
+			
+			lib.EndStorableProperties()
+				lib.GetSet(PART, part_key, lib.NULL)
+			lib.StartStorableProperties()
+			
+			lib.GetSet(PART, name_key, "")
+			lib.GetSet(PART, uid_key, "")
+						
+			PART.ResolvePartNames = PART.ResolvePartNames or function(self, force)
+				for key, func in pairs(self.PartNameResolvers) do
+					func(self, force)
+				end
+			end		
+					
+			PART["Resolve" .. name_key] = function(self, force)
+				PART.PartNameResolvers[part_key](self, force)
+			end
+			
+			PART.PartNameResolvers[part_key] = function(self, force)
+		
+				if self[uid_key] == "" and self[name_key] == "" then return end 
+		
+				if force or self[try_key] or self[uid_key] ~= "" and not self[part_key]:IsValid() then
+					
+					-- match by name instead
+					if self[try_key] and not self.supress_part_name_find then
+						for key, part in pairs(lib.GetParts()) do
+							if 
+								part ~= self and 
+								self[part_key] ~= part and 
+								part:GetPlayerOwner() == self:GetPlayerOwner() and 
+								part.Name == self[name_key] 
+							then
+								self[name_set_key](self, part)
+								break
+							end
+							
+							self[last_uid_key] = self[uid_key] 
+						end
+						self[try_key] = false
+					else
+						local part = lib.GetPartFromUniqueID(self.owner_id, self[uid_key])
+						
+						if part:IsValid() and part ~= self and self[part_key] ~= part then 
+							self[name_set_key](self, part)
+						end
+						
+						self[last_uid_key] = self[uid_key] 
+					end
+				end
+			end
+			
+			PART[name_set_key] = function(self, var)
+				self[name_find_count_key] = 0
+				
+				if type(var) == "string" then
+					
+					self[name_key] = var
+
+					if var == "" then
+						self[uid_key] = ""
+						self[part_key] = lib.NULL
+						return
+					else
+						self[try_key] = true
+					end
+				
+					PART.PartNameResolvers[part_key](self)
+				else
+					self[name_key] = var.Name
+					self[uid_key] = var.UniqueID
+					self[part_set_key](self, var)
+				end
+			end			
 		end
 	end
 
