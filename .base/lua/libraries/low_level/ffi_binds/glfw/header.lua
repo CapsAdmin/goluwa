@@ -89,6 +89,7 @@ int glfwGetMouseButton(GLFWwindow* window, int button);
 void glfwGetCursorPos(GLFWwindow* window, double* xpos, double* ypos);
 void glfwSetCursorPos(GLFWwindow* window, double xpos, double ypos);
 GLFWkeyfun glfwSetKeyCallback(GLFWwindow* window, GLFWkeyfun cbfun);
+GLFWcharfun glfwSetCharCallback(GLFWwindow* window, GLFWcharfun cbfun);
 GLFWmousebuttonfun glfwSetMouseButtonCallback(GLFWwindow* window, GLFWmousebuttonfun cbfun);
 GLFWcursorposfun glfwSetCursorPosCallback(GLFWwindow* window, GLFWcursorposfun cbfun);
 GLFWcursorenterfun glfwSetCursorEnterCallback(GLFWwindow* window, GLFWcursorenterfun cbfun);
