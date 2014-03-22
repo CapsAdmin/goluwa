@@ -2,10 +2,13 @@ local META = {}
 
 META.ClassName = "model"
 
-class.GetSet(META, "Model", NULL)
-class.GetSet(META, "ModelPath", "")
-class.GetSet(META, "DrawManual", false)
-class.GetSet(META, "Matrix", Matrix44())
+entities.GetSet(META, "Model", NULL)
+entities.GetSet(META, "Matrix", Matrix44())
+
+entities.StartStorableProperties()
+	entities.GetSet(META, "ModelPath", "")
+	entities.GetSet(META, "DrawManual", false)
+entities.EndStorableProperties()
 
 function META:SetModelPath(path, ...)
 	self.ModelPath = path
@@ -23,18 +26,21 @@ function META:SetAngles(ang)
 end
 
 function META:SetScale(v) 
-	self.Scale = v self.temp_scale = v * self.Size 
+	self.Scale = v 
+	self.temp_scale = v * self.Size 
 	self:InvalidateMatrix()
 end
 
 function META:SetSize(v) 
-	self.Size = v self.temp_scale = v * self.Scale 
+	self.Size = v 
+	self.temp_scale = v * self.Scale 
 	self:InvalidateMatrix()
 end
 
 function META:InvalidateMatrix()
 	self.rebuild_matrix = true
 end
+
 function META:Draw(parent)
 	if self.rebuild_matrix then
 		local m = self.Matrix

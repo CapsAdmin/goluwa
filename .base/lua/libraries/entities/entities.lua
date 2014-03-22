@@ -37,6 +37,7 @@ end
 entities.remove_these = entities.remove_these or {}
 
 class.SetupLib(entities, "entity")
+class.SetupSerializing(entities)
 
 function entities.Register(META, name)
 	META.TypeBase = "base"
