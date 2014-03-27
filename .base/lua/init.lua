@@ -525,11 +525,6 @@ do -- include
 	end
 end
 
-do
-	local status, crypto = pcall(require, "crypto")
-	_G.crypto = crypto
-end
-
 do -- tier 0 
 
 	local libraries = "libraries/low_level/"
