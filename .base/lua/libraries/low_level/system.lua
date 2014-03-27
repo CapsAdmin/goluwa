@@ -25,10 +25,12 @@ do -- title
 	local last = 0
 	local last_title
 	
+	local lasttbl = {}
+	
 	function system.SetWindowTitle(title, id)
 		local time = os.clock()
 		
-		if last < time then
+		if not lasttbl[id] or lasttbl[id] < time then
 			if id then
 				titles[id] = title
 				str = "| "
@@ -45,7 +47,7 @@ do -- title
 				end
 			end
 			last_title = str
-			last = os.clock() + 0.05
+			lasttbl[id] = os.clock() + 0.05
 		end
 	end
 	
