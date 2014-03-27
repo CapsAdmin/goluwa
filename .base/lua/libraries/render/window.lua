@@ -171,7 +171,17 @@ do -- window meta
 			for nice, func in pairs(calllbacks) do
 				self.availible_callbacks[nice] = nice
 				
-				if nice == "OnChar" then			
+				if nice == "OnDrop" then
+					func(ptr, function(ptr, count, strings)
+						local t = {}
+						for i = 1, count do
+							t[i] = ffi.string(strings[i-1])
+						end
+						if event.Call(nice, t) ~= false and self[nice] then
+							self[nice](self, t)
+						end
+					end)					
+				elseif nice == "OnChar" then			
 					func(ptr, function(ptr, uint)
 						local char = utf8.char(uint)
 						if event.Call(nice, char) ~= false and self[nice] then
