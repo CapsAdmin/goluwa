@@ -1,4 +1,4 @@
-local function parse_scene(scene, dir, flip_normals, uv_mult)
+local function parse_scene(scene, dir, flip_normals, uv_mult) --Changed Image() to render.CreateImage() because i think Image() is depreciated
 
 	print("PARSING SCENE")
 
@@ -135,7 +135,7 @@ local function try_find(sub_model, path, key, suffixes)
 		local new = path:gsub("(.+)(%.)", "%1" .. suffix .. "%2")
 		
 		if new ~= path and vfs.Exists(new) then
-			sub_model[key] = Image(new, format)	
+			sub_model[key] = render.CreateImage(new, format)	
 			break
 		end
 	end
@@ -147,7 +147,7 @@ local function try_find(sub_model, path, key, suffixes)
 				local new = path:gsub(diffuse_suffix .. "%.", suffix ..".")
 				
 				if new ~= path and vfs.Exists(new) then
-					sub_model[key] = Image(new, format)	
+					sub_model[key] = render.CreateImage(new, format)	
 					break
 				end
 			end
@@ -195,15 +195,15 @@ function Model(path, flags, ...)
 		local sub_model = {mesh = Mesh3D(model.mesh_data), name = model.name}
 					
 		if model.material and model.material.path then
-			sub_model.diffuse = Image(model.material.path, format)
+			sub_model.diffuse = render.CreateImage(model.material.path, format)
 
 			try_find(sub_model, model.material.path, "bump", {"_n", "_ddn", "_nrm"})
 			try_find(sub_model, model.material.path, "specular", {"_s", "_spec"})
 		else
-			sub_model.diffuse = Image("error")
+			sub_model.diffuse = render.CreateImage("error")
 		end
 
-		--sub_model.diffuse = Image("error")
+		--sub_model.diffuse = render.CreateImage("error")
 		
 		if not sub_model.bump then
 			sub_model.bump = Texture(8,8):Fill(function() return 255, 255, 255, 255 end)
