@@ -63,12 +63,8 @@ end
 function render.Initialize(w, h, window)		
 	check(w, "number")
 	check(h, "number")
-	
-	if sdl then
-		sdl.Init(e.SDL_INIT_VIDEO)
-	else
-		glfw.Init()
-	end
+
+	glfw.Init()
 
 	window = window or render.CreateWindow(w, h)
 	
@@ -100,6 +96,10 @@ function render.Initialize(w, h, window)
 	if gl.DepthRangef then
 		gl.DepthRangef(1, 0)
 	end
+
+	if gl.SwapIntervalEXT then
+		gl.SwapIntervalEXT(0)
+	end
 	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
 	
@@ -116,23 +116,15 @@ function render.Initialize(w, h, window)
 	return window
 end
 
-function render.Shutdown()
-	if sdl then
-		sdl.Quit()
-	else	
-		glfw.Terminate()
-	end
+function render.Shutdown()	
+	glfw.Terminate()
 end
 
 local last_w
 local last_h
 
 function render.Start(window)
-	if sdl then 
-		sdl.GL_MakeCurrent(window.__ptr, render.sdl_context) 
-	else 
-		glfw.MakeContextCurrent(window.__ptr) 
-	end
+	glfw.MakeContextCurrent(window.__ptr) 
 		
 	render.current_window = window
 	local w, h = window:GetSize():Unpack()
@@ -141,7 +133,7 @@ function render.Start(window)
 	render.SetViewport(0, 0, w, h)
 	
 	if w ~= last_w or h ~= last_h then
-		event.Call("OnWindowResized", window, w, h)
+		event.Call("OnResized", window, w, h)
 		last_w = w
 		last_h = h
 	end
@@ -150,11 +142,7 @@ end
 function render.End()
 
 	if render.current_window:IsValid() then
-		if sdl then
-			sdl.GL_SwapWindow(render.current_window.__ptr)
-		else
-			glfw.SwapBuffers(render.current_window.__ptr)
-		end
+		glfw.SwapBuffers(render.current_window.__ptr)
 	end
 
 	render.frame = render.frame + 1	
@@ -215,7 +203,7 @@ end
 function render.GetAdditive(b)
 	return render.additive
 end
-
+ 
 function render.GetErrorTexture()
 
 	if not render.error_tex then
@@ -236,7 +224,7 @@ end
 function render.GetLoadingTexture()
 	
 	if not render.loading_texture then
-		local w, h, buffer = freeimage.LoadImage(vfs.Read("textures/loading.jpg", "b"))
+		local w, h, buffer = freeimage.LoadImage(vfs.Read("textures/loading.jpg", "b")) --rb flags used on old one.
 		render.loading_texture = render.CreateTexture(w, h, buffer)
 	end
 	
