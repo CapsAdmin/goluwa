@@ -149,7 +149,7 @@ function lovemu.boot(folder)
 	
 	local id = "lovemu_" .. folder
 	
-	event.AddListener("OnWindowClose", id, function()
+	event.AddListener("OnClose", id, function()
 		event.RemoveListener("OnDraw2D", id)
 		return e.EVENT_DESTROY
 	end)

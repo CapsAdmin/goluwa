@@ -247,49 +247,49 @@ function render.DrawDeffered(w, h)
 		
 	render.Start2D()
 
-	-- draw to the pp buffer
-	gl.BindFramebuffer(e.GL_FRAMEBUFFER, render.pp_buffer.id)		
+		-- draw to the pp buffer
+		gl.BindFramebuffer(e.GL_FRAMEBUFFER, render.pp_buffer.id)		
+			render.PushWorldMatrix()
+				surface.Scale(w, h)
+				render.deferred_screen_quad:Draw()
+			render.PopWorldMatrix()		
+		gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
+
+		-- draw the pp texture as quad
 		render.PushWorldMatrix()
 			surface.Scale(w, h)
-			render.deferred_screen_quad:Draw()
-		render.PopWorldMatrix()		
-	gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
-
-	-- draw the pp texture as quad
-	render.PushWorldMatrix()
-		surface.Scale(w, h)
-		render.pp_screen_quad:Draw()
-	render.PopWorldMatrix()
-	
-	
-	if render.debug then
-		w = w / size
-		h = h / size
+			render.pp_screen_quad:Draw()
+		render.PopWorldMatrix()
 		
-		local x = 0
-		local y = 0
 		
-		surface.Color(1,1,1,1)
-		
-		for i, data in pairs(render.gbuffer_config) do
-			surface.SetTexture(render.gbuffer:GetTexture(data.name))
-			surface.DrawRect(x, y, w, h)
+		if render.debug then
+			w = w / size
+			h = h / size
 			
-			surface.SetTextPos(x, y + 5)
-			surface.DrawText(data.name)
+			local x = 0
+			local y = 0
 			
-			if i%size == 0 then
-				y = y + h
-				x = 0
-			else
-				x = x + w
+			surface.Color(1,1,1,1)
+			
+			for i, data in pairs(render.gbuffer_config) do
+				surface.SetTexture(render.gbuffer:GetTexture(data.name))
+				surface.DrawRect(x, y, w, h)
+				
+				surface.SetTextPos(x, y + 5)
+				surface.DrawText(data.name)
+				
+				if i%size == 0 then
+					y = y + h
+					x = 0
+				else
+					x = x + w
+				end
 			end
 		end
-	end
 end
 
 if render.deferred_shader then
 	render.InitializeDeffered()
 end
 
-event.AddListener("OnWindowResized", "gbuffer_resize", render.InitializeDeffered)
+event.AddListener("OnResized", "gbuffer_resize", render.InitializeDeffered)
