@@ -94,7 +94,7 @@ function surface.IsReady()
 end
 
 function surface.GetScreenSize()
-	return render.w, render.h
+	return render.camera.w, render.camera.h
 end
 
 function surface.Start(...)	
@@ -758,10 +758,10 @@ do -- poly
 			buffer[i].uv.A = u
 			buffer[i].uv.B = v
 			
-			buffer[i].color.A = R
-			buffer[i].color.B = G
-			buffer[i].color.C = B
-			buffer[i].color.D = A
+			--buffer[i].color.A = R
+			--buffer[i].color.B = G
+			--buffer[i].color.C = B
+			--buffer[i].color.D = A
 		end
 		
 		function poly:SetRect(i, x,y,w,h, r, ox,oy)
@@ -795,4 +795,30 @@ do -- poly
 		poly.mesh.global_color = COLOR
 		poly.mesh:Draw()
 	end
+end
+
+function surface.GetMousePos()
+	local x, y = window.GetMousePos():Unpack()
+	return x, y
+end
+
+local last_x = 0
+local last_y = 0
+local last_diff = 0
+
+function surface.GetMouseVel()
+	local x, y = surface.GetMousePos()
+	
+	local vx = x - last_x
+	local vy = y - last_y
+	
+	local time = timer.clock()
+	
+	if last_diff < time then
+		last_x = x
+		last_y = y
+		last_diff = time + 0.1
+	end
+	
+	return vx, vy
 end
