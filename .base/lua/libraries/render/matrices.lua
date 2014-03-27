@@ -49,7 +49,7 @@ do
 		cam.y = y or cam.y
 		cam.w = w or cam.w
 		cam.h = h or cam.h
-		
+				
 		cam.ratio = cam.w / cam.h 
 		
 		gl.Viewport(x, y, w, h)
@@ -66,14 +66,16 @@ do
 			x = 0
 			y = 0
 			w, h = render.GetScreenSize()
-		else
-			render.PushWorldMatrix()
 		end
-	
+		
+		render.PushWorldMatrix()
+		
 		cam.x = x or cam.x
 		cam.y = y or cam.y
 		cam.w = w or cam.w
 		cam.h = h or cam.h
+		
+		render.Translate(x, y, 0) 
 		
 		if 
 			last_x ~= cam.x or
@@ -86,30 +88,22 @@ do
 			local proj = render.matrices.projection_2d
 		
 			proj:LoadIdentity()
-			proj:Ortho(cam.x,cam.w, cam.y,cam.h, -1,1)
-		
-			-- convert to top left
-			proj:Scale(1, -1 ,0)
-			proj:Translate(0, -cam.h, 0)
-			
+			proj:Ortho(0, cam.w, cam.h, 0, -1, 1)
+						
 			last_x = cam.x
 			last_y = cam.y
 			last_w = cam.w
 			last_h = cam.h
 		end
-		
+				
 		gl.Disable(e.GL_DEPTH_TEST)				
 	end
 	
-	function render.Reset2D()
-		render.Start2D()
+	function render.End2D()	
+		--render.PopViewport()
+		render.PopWorldMatrix()
 	end
 	
-	function render.End2D()
-		render.PopWorldMatrix()
-		render.Reset2D()
-	end
-		
 	local last_farz
 	local last_nearz
 	local last_fov
