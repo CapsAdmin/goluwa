@@ -315,26 +315,23 @@ do -- sound meta
 			buffer:SetBufferData(var, ...)
 			self:SetBuffer(buffer)
 		elseif type(var) == "string" then
-			local data = vfs.Read(var, "rb")
-			
-			if not vfs.Exists(var) then
-				data = var
-			end
-			
-			local data, info = audio.Decode(data)
-			
-			if data then
-				local buffer = audio.CreateBuffer()
-				buffer:SetFormat(info.channels == 1 and e.AL_FORMAT_MONO16 or e.AL_FORMAT_STEREO16)  
-				buffer:SetSampleRate(info.samplerate)
-				buffer:SetBufferData(data, info.buffer_length)
 				
-				self:SetBuffer(buffer)
+			vfs.ReadAsync(var, function(data)
 				
-				self.decode_info = info
-			end
+				local data, info = audio.Decode(data)
+				
+				if data then
+					local buffer = audio.CreateBuffer()
+					buffer:SetFormat(info.channels == 1 and e.AL_FORMAT_MONO16 or e.AL_FORMAT_STEREO16)  
+					buffer:SetSampleRate(info.samplerate)
+					buffer:SetBufferData(data, info.buffer_length)
+					
+					self:SetBuffer(buffer)
+					
+					self.decode_info = info
+				end
 			
-			return data, info
+			end)
 		end
 	end)
 		
