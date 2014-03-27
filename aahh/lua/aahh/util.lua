@@ -7,6 +7,7 @@ function aahh.StringInput(msg, default, callback, check)
 	local frame = aahh.Create("frame")
 	frame:SetResizingAllowed(false)
 	frame:SetTitle("Text Input Request")
+	frame:SetSize(Vec2(420, 125)) -- Should probably be based off their screen size...
 	
 	local x = 8
 	local y = 8

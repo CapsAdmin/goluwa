@@ -26,6 +26,7 @@ local c = {}
 	c.border = 		Color(0.25, 0.25, 0.25, 1.00)
 	c.shadow = 		Color(0.10, 0.10, 0.10, 0.20)
 	c.inactive = 	Color(0.50, 0.50, 0.50, 0.10) * light_shift
+	c.inactive2 = 	Color(0.50, 0.50, 0.50, 0.50) * light_shift
 
 	c.highlight1 =	Color(0.50, 0.50, 0.75, 0.125) * light_shift
 	c.highlight2 =	Color(0.50, 0.50, 0.50, 0.50) * light_shift
@@ -223,8 +224,8 @@ do--label
 	end
 
 	function SKIN:LabelLayout(pnl)
-		local scale = aahh.GetTextSize(pnl.Font, pnl.Text)	
-		pnl:SetSize(scale)
+		local size = aahh.GetTextSize(pnl.Font, pnl.Text)	
+		pnl:SetSize(size)
 	end
 end
 
@@ -369,19 +370,11 @@ do -- checkbox
 	end
 end
 
-do -- tabbed button
-	function SKIN:TabbedButtonDraw(pnl, c) 
-		local col
-		
-		if pnl.selected then
-			col = c.medium * 2
-		else			
-			col = c.medium
-		end
-		
+do -- tab_bar button
+	function SKIN:TabButtonDraw(pnl, c) 		
 		aahh.Draw("rect", 
 			Rect(Vec2(0,0), pnl:GetSize()),
-			col,
+			c.medium,
 			8,
 			PAD/4,
 			c.border,
@@ -396,7 +389,17 @@ do -- tabbed button
 		)
 	end
 	
-	function SKIN:TabbedButtonLayout(pnl)		
+	function SKIN:TabButtonPostDraw(pnl, c) 		
+		if not pnl.selected then
+			aahh.Draw(
+				"rect",
+				Rect(Vec2(0,0), pnl:GetSize()),
+				c.inactive2
+			)
+		end
+	end
+	
+	function SKIN:TabBarButtonLayout(pnl)		
 		pnl.img:SetPos(Vec2(0, 0))
 		pnl.img:SetSize(Vec2(0, 0) + pnl:GetHeight() + PAD)
 		pnl.img:SetRect(pnl.img:GetRect():Shrink(PAD/2))
@@ -409,7 +412,7 @@ do -- tabbed button
 	
 	local height = PAD*4
 	
-	function SKIN:TabbedLayout(pnl)
+	function SKIN:TabBarLayout(pnl)
 
 		pnl.bar:SetPos(Vec2(0, 0))
 		pnl.bar:SetSize(Vec2(pnl:GetWidth(), height))

@@ -7,11 +7,11 @@ frame:SetSize(Vec2() + 500)
 frame:Center()
 frame:SetTitle("unit test")
 
-local tabs = frame:CreatePanel("tabbed")
-tabs:Dock("fill")
-        
-LOL = tabs     
-  
+
+
+local tabs = frame:CreatePanel("tab_bar")
+tabs:Dock("fill") 
+
 do -- tree test
 	local icons =
 	{

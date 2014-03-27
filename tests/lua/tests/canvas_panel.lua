@@ -1,15 +1,18 @@
-local canvas = utilities.RemoveOldObject((aahh.Create("canvas"))) 
+local canvas = utilities.RemoveOldObject((aahh.Create("canvas")))  
 canvas:SetSize(Vec2(512, 512))
 canvas:Center()                  
    
-	local frame = aahh.Create("frame", canvas)
-	frame:Center() 
-	frame:SetSize(Vec2() + 300)
-	frame:SetTitle("unit test")     
-	
-	local tabs = frame:CreatePanel("tabbed")
+		  
+	local frame = utilities.RemoveOldObject(aahh.Create("frame", canvas), "aahh_unit_test") 
+	frame:SetSize(Vec2() + 500)
+--	frame:Center()
+	frame:SetTitle("unit test")
+
+	local tabs = frame:CreatePanel("tab_bar")
 	tabs:Dock("fill")
-   	
+			
+	LOL = tabs     
+	  
 	do -- tree test
 		local icons =
 		{
@@ -39,10 +42,12 @@ canvas:Center()
 		}
 
 		local tab, scroll = tabs:AddTab("tree", "scrollable")
-		local tree = scroll:CreatePanel("tree")
-		LOL = scroll
-		tree:Dock("fill")
-		
+		--if false then
+		local tree = aahh.Create("tree")
+		scroll:SetPanel(tree)
+
+		--tree:Dock("fill")
+		  
 		local data = luadata.ReadFile(R("well.txt"))
 		local done = {}
 		 
@@ -60,8 +65,7 @@ canvas:Center()
 			node:SetIcon(Image("textures/" .. icons[val.self.ClassName]))
 			fill(val, node)
 		end
-
-		tree:Stack()
+		--end
 	end
 
 	do -- uh
@@ -74,17 +78,16 @@ canvas:Center()
 		grid:SetSizeToWidth(true)
 		grid:SetStackRight(false)
 		grid:SetItemSize(Vec2()+20)
-		 
+		
+		LOL = grid
+		
 		local text = aahh.Create("text_input", grid)
 
 		local slider = aahh.Create("labeled_slider", grid)
 		slider:SetValue(10)
 		
-		
-		
 		local container = aahh.Create("container", grid)
-			container:SetHeight(100)
-
+		
 			local grid = aahh.Create("grid", container)
 			
 			grid:SetDrawBackground(false)
@@ -93,7 +96,6 @@ canvas:Center()
 			grid:SetSizeToWidth(true)
 			grid:SetStackRight(false)
 			grid:SetItemSize(Vec2()+20)
-			grid:SetSizeToContent(true)
 			grid:SetObeyMargin(false)
 		
 			local knob = aahh.Create("labeled_knob", grid)
@@ -102,7 +104,10 @@ canvas:Center()
 			local check = aahh.Create("labeled_checkbox", grid)
 			check:SetText("ummmmm")
 			check:SetValue(true)
-		
+			
+		container:SizeToContents()
+		grid:SizeToContents()
+			
 	end
 
 	do -- text
@@ -111,7 +116,5 @@ canvas:Center()
 		grid:SetLineNumbers(true)
 	end
 
-	tabs:SelectTab("properties")
-	frame:RequestLayout(true) 
- 
-      
+	tabs:SelectTab("tree")
+	frame:RequestLayout(true)
