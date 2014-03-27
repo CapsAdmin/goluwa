@@ -800,14 +800,16 @@ function PANEL:Draw()
 		end
 		
 		aahh.StartDraw(self)
-			self:OnDraw(self:GetSize())
-			self:OnPostDraw(self:GetSize())
+			local size = self:GetSize()
+			self:OnDraw(size)
 
 			if not self.HideChildren then
 				for key, pnl in ipairs(self:GetChildren()) do
 					pnl:Draw()
 				end
 			end
+			
+			self:OnPostDraw(size)
 		aahh.EndDraw(self)
 	end
 end

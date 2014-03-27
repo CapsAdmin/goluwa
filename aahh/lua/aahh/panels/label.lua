@@ -53,7 +53,6 @@ event.AddListener("FontChanged", "aahh_font_change", function(name, info)
 	for k,v in pairs(aahh.active_panels) do
 		if v.Font == name then
 			aahh.World:RequestLayout()
-			print("huh") 
 			break
 		end
 	end
