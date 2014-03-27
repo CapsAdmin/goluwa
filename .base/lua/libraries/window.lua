@@ -34,20 +34,12 @@ end
 
 function system.SetClipboard(str)
 	if window.wnd:IsValid() then
-		if sdl then
-			sdl.SetClipboardText(str)
-		else
-			glfw.SetClipboardString(window.wnd.__ptr, str)
-		end
+		glfw.SetClipboardString(window.wnd.__ptr, str)
 	end
 end
 
 function system.GetClipboard()
 	if window.wnd:IsValid() then
-		if sdl then
-			ffi.string(sdl.GetClipboardText(str))
-		else
-			return ffi.string(glfw.GetClipboardString(window.wnd.__ptr))
-		end
+		return ffi.string(glfw.GetClipboardString(window.wnd.__ptr))
 	end
 end
