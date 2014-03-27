@@ -101,4 +101,27 @@ function steam.GetInstallPath()
 	return lfs.symlinkattributes(path, "mode") and path or nil
 end
 
+function steam.GetLibraryFolders()
+	local base = steam.GetInstallPath()
+	
+	local tbl = {base .. "/SteamApps/"}
+	
+	local cfg = assert(vfs.Read(base .. "/config/config.vdf", "r"))
+	
+	for path in cfg:gmatch([["BaseInstallFolder.."%s-"(.-)"]]) do
+		table.insert(tbl, vfs.FixPath(path) .. "/SteamApps/")
+	end
+	
+	return tbl
+end
+
+function steam.GetGamePath(game)
+	for _, dir in pairs(steam.GetLibraryFolders()) do
+		local path = dir .. "Common/" .. game .. "/"
+		if vfs.Exists(path .. "nul") then
+			return path
+		end
+	end
+end
+
 return steam
