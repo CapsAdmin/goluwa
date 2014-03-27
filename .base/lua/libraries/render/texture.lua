@@ -386,7 +386,7 @@ do -- texture object
 		end
 		
 		if render.debug then
-			logf("creating texture w = %s h = %s buffer size = %s", w, h, utilities.FormatFileSize(buffer and ffi.sizeof(buffer) or 0))
+			logf("creating texture w = %s h = %s buffer size = %s", self.w, self.h, utilities.FormatFileSize(buffer and ffi.sizeof(buffer) or 0)) --The texture size was never broken... someone used two non-existant variables w,h
 		end
 		
 		return self
