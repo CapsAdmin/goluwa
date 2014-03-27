@@ -16,10 +16,8 @@ function META:Begin(attach, channel, skip_push)
 		gl.PushAttrib(e.GL_VIEWPORT_BIT)
 		self.attrib_pushed = true
 	end
-	gl.Viewport(0, 0, self.width, self.height)	
 	
-	gl.Clear(bit.bor(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT))
-	gl.ClearColor(0, 0, 0, 0)
+	gl.Viewport(0, 0, self.width, self.height)
 
 	gl.ActiveTextureARB(channel or e.GL_TEXTURE0)
 	gl.Enable(e.GL_TEXTURE_2D)
@@ -37,11 +35,16 @@ end
 
 function META:End()
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
-	
 	if self.attrib_pushed then
 		gl.PopAttrib()
 		self.attrib_pushed = false
 	end
+	
+end
+
+function META:Clear(r,g,b,a)
+	gl.ClearColor(r or 0, g or 0, b or 0, a or 0)
+	gl.Clear(bit.bor(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT))
 end
 
 function META:GetTexture(type)
