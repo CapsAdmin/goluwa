@@ -314,24 +314,24 @@ do -- sound meta
 			local buffer = audio.CreateBuffer()
 			buffer:SetBufferData(var, ...)
 			self:SetBuffer(buffer)
-		elseif type(var) == "string" then
-				
-			vfs.ReadAsync(var, function(data)
-				
-				local data, info = audio.Decode(data)
-				
+		elseif type(var) == "string" then		
+			vfs.ReadAsync(var, function(data)				
+				local data, length, info = audio.Decode(data)
+								
 				if data then
 					local buffer = audio.CreateBuffer()
 					buffer:SetFormat(info.channels == 1 and e.AL_FORMAT_MONO16 or e.AL_FORMAT_STEREO16)  
 					buffer:SetSampleRate(info.samplerate)
-					buffer:SetBufferData(data, info.buffer_length)
+					buffer:SetBufferData(data, length)
 					
 					self:SetBuffer(buffer)
 					
 					self.decode_info = info
-				end
-			
-			end)
+					self.ready = true
+				else
+					print(length)
+				end			
+			end, 20)
 		end
 	end)
 		
@@ -401,7 +401,7 @@ do -- buffer
 		end
 	end)
 	
-	class.GetSet(META, "Format", e.AL_FORMAT_MONO8)
+	class.GetSet(META, "Format", e.AL_FORMAT_MONO16)
 	class.GetSet(META, "SampleRate", 44100)
 
 	do
@@ -475,7 +475,7 @@ do -- microphone
 	
 	function audio.CreateAudioCapture(name, sample_rate, format, buffer_size)
 		sample_rate = sample_rate or 44100
-		format = format or e.AL_FORMAT_MONO8
+		format = format or e.AL_FORMAT_MONO16
 		buffer_size = buffer_size or 4096
 		
 		if not name then
@@ -560,7 +560,12 @@ do -- microphone
 end
 
 
-function audio.Decode(data)
+function audio.Decode(data, length)
+	
+	if type(length) == "number" and type(data) == "cdata" then
+		data = ffi.string(data, length)
+	end
+
 	-- use a dummy file so we can read from memory...
 	local  name = os.tmpname()
 	local file = assert(io.open(name, "wb"))
@@ -616,7 +621,7 @@ function audio.Decode(data)
 	
 	os.remove(name)
 	
-	return buffer, info
+	return buffer, info.buffer_length, info
 end
 
 audio.Open() 

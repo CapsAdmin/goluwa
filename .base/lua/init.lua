@@ -600,6 +600,9 @@ do -- tier 0
 		-- OpenGL
 		gl = include(libraries .. "ffi_binds/gl/init.lua")
 		
+		-- HLLib
+		hl = include(libraries .. "ffi_binds/hllib/init.lua")
+		
 		-- window manager
 		glfw = include(libraries .. "ffi_binds/glfw/init.lua")
 		
@@ -646,9 +649,12 @@ do -- tier 1
 
 	-- high level window implementation
 	include("libraries/window.lua")
+	
+	-- valve package format
+	include("libraries/vpk.lua")
 
 	include("libraries/extensions/input.lua")
-
+	
 	include("libraries/gif.lua")
 	include("libraries/markup.lua")
 end
