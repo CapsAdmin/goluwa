@@ -40,6 +40,8 @@ local function main()
 		event.Call("OnUpdate", dt)
 	end
 	
+	timer.realtime = 0
+	
 	while true do
 		local rate = rate_cvar:Get()
 		local time = timer.clock()
@@ -47,7 +49,8 @@ local function main()
 		if rate <= 0 or next_update < time then
 			local dt = time - (last_time or 0)
 			
-			timer.ft = dt
+			timer.frame_time = dt
+			timer.total_time = timer.total_time + dt
 						
 			local ok, err = xpcall(update, mmyy.OnError, dt)
 			

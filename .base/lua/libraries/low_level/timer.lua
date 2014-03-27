@@ -4,6 +4,7 @@ timer.Timers = timer.Timers or {}
 
 timer.clock = timer.clock or os.clock
 timer.GetTime = timer.clock
+timer.total_time = 0
 
 do -- profiling
 	local time
@@ -26,7 +27,11 @@ do -- profiling
 end
 
 function timer.GetFrameTime()
-	return timer.ft or 0.1
+	return timer.frame_time or 0.1
+end
+
+function timer.GetTotalTime()
+	return timer.total_time
 end
 
 do -- timer meta
