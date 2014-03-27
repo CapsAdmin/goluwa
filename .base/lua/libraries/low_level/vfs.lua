@@ -70,9 +70,7 @@ do -- path utilities
 		path = path:gsub("%$%((.-)%)", getenv)
 		
 		-- linux
-		path = path:gsub("%$", "")
-		path = path:gsub("%(", "")
-		path = path:gsub("%)", "")
+		path = path:gsub("%$%((.-)%)", "%1")
 			
 		return vfs.FixPath(path)
 	end
@@ -667,8 +665,10 @@ function vfs.AddModuleDirectory(dir)
 end	
 
 do -- async reading
+	local queue = {}
+
 	vfs.async_readers = {
-		file = function(path, callback, mbps, context)
+		file = function(path, mbps, context)
 			local file = vfs.GetFile(path, "rb")
 			if file then
 				local content = {}
@@ -680,7 +680,7 @@ do -- async reading
 						if str then
 							content[#content + 1] = str
 						else
-							callback(table.concat(content))
+							queue[path].callback(table.concat(content))
 							return false
 						end
 					end
@@ -688,7 +688,7 @@ do -- async reading
 				return true				
 			end
 		end,
-		luasocket = function(path, callback, mbps, context)
+		luasocket = function(path, mbps, context)
 		
 		
 			-- for font names only
@@ -696,15 +696,15 @@ do -- async reading
 				local cache_path = "fonts/" .. path .. ".woff"
 				
 				if vfs.Exists(cache_path) then
-					return vfs.async_readers.file(cache_path, callback, mbps, context)
+					return vfs.ReadAsync(cache_path, queue[path].callback, mbps, context, "file")
 				else
 					if luasocket.Download("http://fonts.googleapis.com/css?family=" .. path:gsub("%s", "+"), 
 						function(data)
 							local url = data:match("url%((.-)%)")
 							local format = data:match("format%('(.-)'%)")
 							luasocket.Download(url, function(data) 
-								vfs.Write("fonts/" .. path .. "." .. format, data, "b")
-								callback(data)
+								vfs.Write("fonts/" .. path .. "." .. format, data, "b")				
+								queue[path].callback(data)
 							end)
 						end)
 					then
@@ -716,11 +716,11 @@ do -- async reading
 			local ext = path:match(".+(%.%a+)") or ".dat"
 			local cache_path = "download_cache/" .. crypto.CRC32(path) .. ext
 			if vfs.Exists(cache_path) then
-				return vfs.async_readers.file(cache_path, callback, mbps, context)
+				return vfs.ReadAsync(cache_path, queue[path].callback, mbps, context, "file")
 			else
 				if luasocket.Download(path, function(data) 
-						vfs.Write(cache_path, data, "b")
-						callback(data)
+						vfs.Write(cache_path, data, "b")			
+						queue[path].callback(data)
 					end) 
 				then
 					return true
@@ -728,18 +728,44 @@ do -- async reading
 			end
 		end,
 	}
-
-	function vfs.ReadAsync(path, callback, mbps, context)
+	
+	local cache = {}
+		
+	function vfs.ReadAsync(path, callback, mbps, context, reader)
 		check(path, "string")
 		check(callback, "function")
 		check(mbps, "nil", "number")
 		mbps = mbps or 1
 		
+		if cache[path] then
+			callback(cache[path])
+			return true
+		end
+			
+		-- if it's already being downloaded, append the callback to the current download
+		if queue[path] then
+			local old = queue[path].callback
+			queue[path].callback = function(data)
+				callback(data)
+				old(data)
+				queue[path] = nil
+			end
+			return
+		end
+				
+		queue[path] = {callback = function(data)
+			cache[path] = data
+			callback(data)
+			queue[path] = nil
+		end}
+					
 		for name, func in pairs(vfs.async_readers) do
-			if func(path, callback, mbps, context or "none") then
+			if (not reader or reader == name) and func(path, mbps, context or "none") then
 				return true
 			end
 		end 
+		
+		queue[path] = nil
 		
 		return false
 	end
