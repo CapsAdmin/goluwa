@@ -7,16 +7,21 @@ local fb = render.CreateFrameBuffer(512, 512, {
 	}
 })
 
-timer.Create("fb_update", 0.2, 0, function()
-	fb:Begin()
-		surface.SetWhiteTexture()
-		surface.Color(math.randomf(), math.randomf(), math.randomf())
-		surface.DrawRect(math.random(512), math.random(512), 100, 100)
-	fb:End()
-end)
-
 event.AddListener("OnDraw2D", "fb", function()
+	
+	if true or wait(0.2) then
+		fb:Begin()   
+			surface.Start(0, 0, 512, 512) 
+				fb:Clear()
+				
+				surface.SetWhiteTexture()
+				surface.Color(math.randomf(), math.randomf(), math.randomf())
+				surface.DrawRect(math.random(512), math.random(512), 100, 100)
+			surface.End()
+		fb:End()
+	end
+
 	surface.SetTexture(fb:GetTexture())
 	surface.Color(1,1,1,1)
-	surface.DrawRect(100, 100, 100, 100, timer.clock()*100)
-end) 
+	surface.DrawRect(128, 128, 128, 128, timer.clock()*100, 64, 64)
+end)    
