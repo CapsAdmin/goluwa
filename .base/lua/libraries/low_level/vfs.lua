@@ -110,7 +110,20 @@ do -- path utilities
 		end
 		
 		for k, v in ipairs(vfs.paths) do
-			local file, err = io.open(v .. "/" .. path, ...)
+		
+			local file, err
+			
+			if type(v) == "table" then
+				local handle, reason = v.callback("file", "open", v.root .. "/" .. path, ...)
+				
+				if handle then
+					file = vfs.CreateDummyFile(handle, v)
+				else	
+					err = reason
+				end
+			else
+				file, err = io.open(v .. "/" .. path, ...)
+			end
 			
 			if file then
 				file:close()
@@ -130,21 +143,29 @@ end
 
 do -- mounting
 	function vfs.Mount(path)
-		check(path, "string")
-		path = vfs.ParseVariables(path)
-			
 		
-		if is_absolute(path) and path:sub(-1) == "/" then
-			path = path:sub(0, -2)
-		end
+		if type(path) == "string" then
+			path = vfs.ParseVariables(path)			
 			
-		vfs.Unmount(path)
+			if is_absolute(path) and path:sub(-1) == "/" then
+				path = path:sub(0, -2)
+			end
+				
+			vfs.Unmount(path)
 
-		if lfs.attributes(path, "mode") ~= "directory" then
-			warning(string.format("Mount path %q does not exist (yet?)", path))
-		end
+			if lfs.attributes(path, "mode") ~= "directory" then
+				warning(string.format("Mount path %q does not exist (yet?)", path))
+			end
 			
-		table.insert(vfs.paths, path)
+			table.insert(vfs.paths, path)
+		else
+			check(path.id, "string")
+			check(path.callback, "function")
+			
+			vfs.Unmount(path)
+			
+			table.insert(vfs.paths, path)
+		end
 		
 		--local search_path = ";" .. path .. (WINDOWS and "?.dll" or "?")
 		--package.cpath = package.cpath .. search_path
@@ -152,12 +173,22 @@ do -- mounting
 		
 		
 	function vfs.Unmount(path)
-		check(path, "string")
-		path = vfs.ParseVariables(path)
 		
-		for k,v in pairs(vfs.paths) do
-			if v == path then
-				table.remove(vfs.paths, k)
+		if type(path) == "string" then
+			path = vfs.ParseVariables(path)
+			
+			for k,v in pairs(vfs.paths) do
+				if v == path then
+					table.remove(vfs.paths, k)
+				end
+			end
+		else
+			check(path.id, "string")
+
+			for k,v in pairs(vfs.paths) do
+				if type(v) == "table" and v.id == path.id then
+					table.remove(vfs.paths, k)
+				end
 			end
 		end
 		
@@ -173,6 +204,84 @@ do -- mounting
 	end
 end
 
+do -- WIP	
+	local META = {}
+	META.__index = META
+
+	function META:__tostring()
+		return ("file (%p)"):format(self)
+	end
+
+	function META:write(...)
+		local str = ""
+
+		for i = 1, select("#", ...) do
+			str = str .. tostring(select(i, ...))
+		end
+
+		return self.env.callback("file", "write", self.udata, str)
+	end
+
+	local function read(self, format)
+		format = format or "*line"
+
+		if type(format) == "number" then	
+			return self.env.callback("file", "read", self.udata, "bytes", format)
+		elseif format:sub(1, 2) == "*a" then
+			return self.env.callback("file", "read", self.udata, "all")
+		elseif format:sub(1, 2) == "*l" then
+			return self.env.callback("file", "read", self.udata, "line")
+		elseif format:sub(1, 2) == "*n" then
+			return self.env.callback("file", "read", self.udata, "newline")
+		end
+	end
+
+	function META:read(...)
+		local args = {...}
+
+		for k, v in pairs(args) do
+			args[k] = read(self, v) or nil
+		end
+
+		return unpack(args) or nil
+	end
+
+	function META:close()
+		self.env.callback("file", "close", self.udata)
+	end
+
+	function META:flush()
+		self.env.callback("file", "flush", self.udata)
+	end
+
+	function META:seek(whence, offset)
+		whence = whence or "cur"
+		offset = offset or 0
+
+		self.env.callback("file", "seek", self.udata, whence, offset)
+	end
+
+	function META:lines()
+		self.env.callback("file", "read", self.udata, "lines")
+	end
+
+	function META:setvbuf()
+		self.env.callback("file", "read", self.udata, "setvbuf")
+	end
+
+	function vfs.CreateDummyFile(udata, env)
+		mode = mode or "r"
+
+		local self = setmetatable({}, META)
+		
+		self.udata = udata
+		self.env = env
+		self.__mode = mode
+
+		return self
+	end
+end
+
 do -- generic
 
 	function vfs.GetFile(path, mode, ...)
@@ -182,23 +291,37 @@ do -- generic
 		local file, err = io.open(path, mode, ...)
 
 		if not file then
-		
-			if mode and mode:find("w") then
-				vfs.CreateFoldersFromPath(path)		
-				return vfs.GetFile(path, mode)
-			else
-				for k, v in ipairs(vfs.paths) do	
-					file, err = io.open(v .. "/" .. path, mode, ...)
-					
-					if err then
-						warning(err)
+			
+			for k, v in ipairs(vfs.paths) do
+				if type(v) == "table" then
+					local handle, reason = v.callback("file", "open", v.root .. "/" .. path, mode, ...)
+				
+					if handle then
+						file = vfs.CreateDummyFile(handle, v)
+						path = v.root .. "/" .. path
+					else	
+						err = reason
 					end
-					
+				else
+					file, err = io.open(v .. "/" .. path, mode, ...)
 					if file then
 						path = v .. "/" .. path
-						break
 					end
 				end
+				
+			
+				if err then
+					warning(err)
+				end
+				
+				if file then
+					break
+				end
+			end
+					
+			if not file and mode and mode:find("w") then
+				vfs.CreateFoldersFromPath(path)		
+				return vfs.GetFile(path, mode)
 			end
 		end
 		
@@ -308,7 +431,14 @@ do -- generic
 		end
 			
 		for k, v in ipairs(vfs.paths) do
-			local info = lfs.attributes(v .. "/" .. path, ...)
+			local info
+			
+			if type(v) == "table" then
+				info = v.callback("attributes", v.root .. "/" .. path, ...)
+			else
+				info = lfs.attributes(v .. "/" .. path, ...)
+			end
+			
 			if info then
 				return info
 			end
@@ -367,19 +497,36 @@ do -- file finding
 			end)
 		else
 			for _, full_dir in ipairs(vfs.paths) do
-				-- fix me!! 
-				-- on linux, an invalid path will error
-							
-				pcall(function()
-				for file_name in lfs.dir(full_dir .. "/" .. dir) do
-					if file_name ~= "." and file_name ~= ".." then
-						if full_path then
-							file_name = full_dir .. "/" .. dir .. "/" .. file_name
+			
+				local files = {}
+			
+				if type(full_dir) == "table" then
+					local res = full_dir.callback("find", full_dir.root .. "/" .. dir)
+
+					if res then
+						for i, file_name in pairs(res) do
+							table.insert(files, file_name)
 						end
-						unique[file_name] = true
 					end
+				else					
+					-- fix me!! 
+					-- on linux, an invalid path will error
+								
+					pcall(function()
+						for file_name in lfs.dir(full_dir .. "/" .. dir) do
+							if file_name ~= "." and file_name ~= ".." then
+								table.insert(files, file_name)
+							end
+						end
+					end)
 				end
-				end)
+				
+				for _, path in pairs(files) do
+					if full_path then
+						path = full_dir .. "/" .. dir .. "/" .. path
+					end
+					unique[path] = true
+				end
 			end
 		end
 				
