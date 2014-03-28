@@ -85,6 +85,12 @@ end
 function debug.dumpcall(clr_print)
 	local info = debug.getinfo(4)
 	local path = info.source:sub(2)
+	
+	if info.source:find("string%.lua") then return end
+	if info.source:find("globals%.lua") then return end
+	if info.source:find("strung%.lua") then return end
+	if path == "../../../lua/init.lua" then return end
+	
 	local script = vfs.Read(path)
 	
 	logn(path)
