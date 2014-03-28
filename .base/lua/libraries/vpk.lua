@@ -192,6 +192,8 @@ function META:ReadEasy(path)
 end
 
 function META:Open(path, mode)
+	hl.BindPackage(self.id)
+
 	-- get the file we're looking for
 	local file = hl.FolderGetItemByPath(hl.PackageGetRoot(), path, e.HL_FIND_ALL)
 	hl.PackageCreateStream(file, stream)
@@ -202,7 +204,8 @@ function META:Open(path, mode)
 end
 
 function META:Read(handle, bytes)
-	
+	hl.BindPackage(self.id)
+
 	if not bytes then
 		bytes = self:GetSize(handle)
 	end
@@ -215,11 +218,15 @@ function META:Read(handle, bytes)
 end
 
 function META:GetSize(handle)
+	hl.BindPackage(self.id)
+
 	hl.ItemGetSize(handle.file, size) 
 	return size[0]
 end
 
 function META:Seek(handle, offset, mode)
+	hl.BindPackage(self.id)
+
 	mode = mode or e.HL_SEEK_CURRENT
 	return hl.StreamSeekEx(handle.stream, offset, mode)
 end
