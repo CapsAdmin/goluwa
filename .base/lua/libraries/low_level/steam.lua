@@ -122,6 +122,8 @@ function steam.GetGamePath(game)
 			return path
 		end
 	end
+	
+	return ""
 end
 
 return steam
