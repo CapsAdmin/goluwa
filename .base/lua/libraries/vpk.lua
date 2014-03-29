@@ -1,75 +1,75 @@
 local vpk = _G.vpk or {}
 
-function vpk.Mount(path)
-	local pack = vpk.Open(path)
-	  
-	vfs.Mount({
-		id = path, 
-		root = "",
-		callback = function(type, a, b, c, d, ...)  		
-			if type == "find" then
-				local path = a
-				
-				path = path:sub(2) 
-				path = path .. "/"
-
-				return pack:Find(path)
-			elseif type == "file" then
-				local type = a
-				
-				if type == "open" then
-					local path = b
+event.AddListener("VFSMountFile", "vpk_mount", function(path, mount)
+	if mount then
+		local pack = vpk.Open(path)
+		  
+		vfs.Mount({
+			id = path, 
+			root = "",
+			callback = function(type, a, b, c, d, ...)  		
+				if type == "find" then
+					local path = a
+					
 					path = path:sub(2) 
-					
-					if not pack:Exists(path) then
-						return false, "File does not exist"
-					end
-					 
-					local mode = e.HL_MODE_INVALID
-						
-					do -- modes
-						local str = c
-						str = str:lower()
-						
-						if str:find("w") then
-							mode = bit.bor(mode, e.HL_MODE_WRITE)
-						end
-						
-						if str:find("r") then
-							mode = bit.bor(mode, e.HL_MODE_READ)
-						end
-					end
-									
-					return pack:Open(path, mode)
-				elseif type == "read" then
-					local handle = b
-					local type = c
-					local bytes = d
+					path = path .. "/"
 
-					if type == "bytes" then 
-						local buffer, length = pack:Read(handle, bytes)
+					return pack:Find(path)
+				elseif type == "file" then
+					local type = a
+					
+					if type == "open" then
+						local path = b
+						path = path:sub(2) 
 						
-						if length == 0 then return end
+						if not pack:Exists(path) then
+							return false, "File does not exist"
+						end
+						 
+						local mode = e.HL_MODE_INVALID
+							
+						do -- modes
+							local str = c
+							str = str:lower()
+							
+							if str:find("w") then
+								mode = bit.bor(mode, e.HL_MODE_WRITE)
+							end
+							
+							if str:find("r") then
+								mode = bit.bor(mode, e.HL_MODE_READ)
+							end
+						end
+										
+						return pack:Open(path, mode)
+					elseif type == "read" then
+						local handle = b
+						local type = c
+						local bytes = d
+
+						if type == "bytes" then 
+							local buffer, length = pack:Read(handle, bytes)
+							
+							if length == 0 then return end
+							
+							return ffi.string(buffer, length)
+						end
 						
-						return ffi.string(buffer, length)
+						-- WIP
+						-- otherwise just read everything.. 
+						return pack:Read(handle)
+					elseif type == "close" then
+						local handle = a
+						
+						pack:Close(handle)
 					end
-					
-					-- WIP
-					-- otherwise just read everything.. 
-					return pack:Read(handle)
-				elseif type == "close" then
-					local handle = a
-					
-					pack:Close(handle)
 				end
-			end
-		end 
-	})
-end
-
-function vpk.Unmount(path)
-	vfs.Unmount({id = path})
-end
+			end 
+		})
+	else
+		vfs.Unmount({id = path})
+	end
+end)
 
 vpk.opened = {}
 
