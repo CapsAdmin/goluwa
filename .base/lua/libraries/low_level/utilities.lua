@@ -54,12 +54,12 @@ do -- find value
 				done[val] = true
 				find(val, name .. "." .. key, level + 1, ...)
 			else
-				if (T == "function" or T == "number") and (strfind(key, ...) or strfind(name, ...)) then					
+				if (T == "function" or T == "number") and strfind(name .. "." .. key, ...) then					
 					
 					local nice_name
 					
 					if type(val) == "function" then
-						nice_name = ("%s(%s)"):format(key, table.concat(debug.getparams(val), ", "))
+						nice_name = ("%s.%s(%s)"):format(name, key, table.concat(debug.getparams(val), ", "))
 					else
 						nice_name = ("%s = %s"):format(key, val)
 					end
@@ -90,9 +90,17 @@ do -- find value
 		find(utilities.GetMetaTables(), "_M", 1, ...)
 		for cmd, v in pairs(console.GetCommands()) do
 			if strfind(cmd, ...) then
-				table.insert(found, {key = cmd, val = v.callback, name = ("console.GetCommands().%s.callback"):format(cmd), nice_name = cmd})
+				local arg_line = table.concat(debug.getparams(v.callback), ", ")
+				arg_line = arg_line:gsub("line, ", "")
+				arg_line = arg_line:gsub("line", "")
+				
+				table.insert(found, {key = cmd, val = v.callback, name = ("console.GetCommands().%s.callback"):format(cmd), nice_name = ("command->%s(%s)"):format(cmd, arg_line)})
 			end
 		end
+		
+		table.sort(found, function(a, b) 
+			return #a.key < #b.key
+		end)
 		
 		return found
 	end
