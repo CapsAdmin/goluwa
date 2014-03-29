@@ -57,9 +57,9 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount)
 						
 						-- WIP
 						-- otherwise just read everything.. 
-						return pack:Read(handle)
+						return ffi.string(pack:Read(handle))
 					elseif type == "close" then
-						local handle = a
+						local handle = b
 						
 						pack:Close(handle)
 					end
@@ -167,30 +167,6 @@ end
 local stream = ffi.new("void *[1]")
 local size = ffi.new("unsigned int[1]")
 
-function META:ReadEasy(path)
-	hl.BindPackage(self.id)
-
-	-- get the file we're looking for
-	local file = hl.FolderGetItemByPath(hl.PackageGetRoot(), path, e.HL_FIND_ALL)
-	hl.PackageCreateStream(file, stream)
-	
-	hl.StreamOpen(stream[0], e.HL_MODE_READ)
-							
-		hl.ItemGetSize(file, size) 
-		
-		local buffer = ffi.new("hlByte[?]", size[0])
-
-		hl.StreamRead(stream[0], buffer, size[0])
-
-	hl.StreamClose(file) 
-	
-	timer.Delay(0, function()
-		hl.BindPackage(0)
-	end)
-	
-	return buffer, size[0]
-end
-
 function META:Open(path, mode)
 	hl.BindPackage(self.id)
 
@@ -211,9 +187,9 @@ function META:Read(handle, bytes)
 	end
 	
 	local buffer = ffi.new("hlByte[?]", bytes)
-
-	bytes = hl.StreamRead(handle.stream, buffer, bytes)
 	
+	bytes = hl.StreamRead(handle.stream, buffer, bytes)
+		
 	return buffer, bytes
 end
 
@@ -221,6 +197,7 @@ function META:GetSize(handle)
 	hl.BindPackage(self.id)
 
 	hl.ItemGetSize(handle.file, size) 
+	
 	return size[0]
 end
 
