@@ -602,6 +602,7 @@ do -- tier 0
 		
 		-- HLLib
 		hl = include(libraries .. "ffi_binds/hllib/init.lua")
+		vl = include(libraries .. "ffi_binds/vtflib/init.lua")
 		
 		-- window manager
 		glfw = include(libraries .. "ffi_binds/glfw/init.lua")
