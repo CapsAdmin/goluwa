@@ -1,3 +1,31 @@
+function string.levenshtein(a, b)		
+	local distance = {}
+	
+	for i = 0, #a do
+	  distance[i] = {}
+	  distance[i][0] = i
+	end
+
+	for i = 0, #b do
+	  distance[0][i] = i
+	end
+	
+	local str1 = utf8.totable(a)
+	local str2 = utf8.totable(b)
+	
+	for i = 1, #a do
+		for j = 1, #b do				
+			distance[i][j] = math.min(
+				distance[i-1][j] + 1, 
+				distance[i][j-1] + 1, 
+				distance[i-1][j-1] + (str1[i-1] == str2[j-1] and 0 or 1)
+			)
+		end
+	end
+	
+	return distance[#a][#b]
+end
+
 function string.lengthsplit(str, len)
 	if #str > len then
 		local tbl = {}
