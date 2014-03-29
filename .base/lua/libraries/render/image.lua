@@ -24,6 +24,10 @@ function render.CreateImage(path, format)
 		local w, h, buffer = freeimage.LoadImage(data)
 		
 		if w == 0 or h == 0 then
+			w, h, buffer = vl.LoadImage(data)
+		end
+			
+		if w == 0 or h == 0 then
 			logf("could not decode %q properly (w = %i, h = %i)", 2, path, w, h)
 			logf("data is %s", utilities.FormatFileSize(#data))
 			return
