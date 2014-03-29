@@ -17,10 +17,10 @@ function debug.openscript(lua_script, line)
 	return true
 end
 
-function debug.openfunction(func)
+function debug.openfunction(func, line)
 	local info = debug.getinfo(func)
 	if info.what == "Lua" then
-		return debug.openscript(info.source:sub(2), info.linedefined)
+		return debug.openscript(info.source:sub(2), line or info.linedefined)
 	end
 end
 
