@@ -98,16 +98,18 @@ function mmyy.OnError(msg, ...)
 	if source then
 		source = source:trim()
 		
+		local info
+		
 		-- this should be replaced with some sort of configuration
 		-- gl.lua never shows anything useful but the level above does..			
 		if source:find("ffi_bind") then
-			func = debug.getinfo(4).func
+			info = debug.getinfo(4)
 		else
-			func = debug.getinfo(2).func
+			info = debug.getinfo(2)
 		end
 			
 		if last_openfunc < os.clock() then
-			debug.openfunction(func)
+			debug.openfunction(info.func, info.currentline)
 			last_openfunc = os.clock() + 3
 		else
 			--logf("debug.openfunction(%q)", source)
