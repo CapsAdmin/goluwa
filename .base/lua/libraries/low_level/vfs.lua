@@ -143,7 +143,13 @@ do -- mounting
 	function vfs.Mount(path)
 		
 		if type(path) == "string" then
+		
 			path = vfs.ParseVariables(path)			
+			
+			if not vfs.IsDir(path) then
+				event.Call("VFSMountFile", path, true)
+				return
+			end
 			
 			if is_absolute(path) and path:sub(-1) == "/" then
 				path = path:sub(0, -2)
@@ -174,6 +180,11 @@ do -- mounting
 		
 		if type(path) == "string" then
 			path = vfs.ParseVariables(path)
+			
+			if not vfs.IsDir(path) then
+				event.Call("VFSMountFile", path, false)
+				return
+			end
 			
 			for k,v in pairs(vfs.paths) do
 				if v == path then
