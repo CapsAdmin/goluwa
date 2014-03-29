@@ -19,6 +19,10 @@ local function calc_fps(dt)
 	end
 
 	system.SetWindowTitle(("FPS: %i"):format(avg_fps), "fps")
+	
+	if utilities and utilities.FormatFileSize then
+		system.SetWindowTitle(("GARBAGE: %s"):format(utilities.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
+	end
 
 	if gl.call_count then
 		system.SetWindowTitle(("gl calls: %i"):format(gl.call_count), "glcalls")
