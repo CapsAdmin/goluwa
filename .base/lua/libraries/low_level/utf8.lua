@@ -2,44 +2,52 @@ local utf8 = _G.utf8 or {}
 
 local math_floor = math.floor
 
--- a lot of this was taken from 
--- http://cakesaddons.googlecode.com/svn/trunk/glib/lua/glib/unicode/utf8.lua
--- and http://www.curse.com/addons/wow/utf8/546587
-
 function utf8.byte(char, offset)
 	if char == "" then return -1 end
+	
 	offset = offset or 1
 	
 	local byte = char:byte(offset)
-	local length = 1
+
 	if byte >= 128 then
 		if byte >= 240 then
-			-- 4 byte sequence
-			length = 4
-			if #char < 4 then return -1, length end
+			if #char < 4 then return -1 end
 			byte = (byte % 8) * 262144
 			byte = byte + (char:byte(offset + 1) % 64) * 4096
 			byte = byte + (char:byte(offset + 2) % 64) * 64
 			byte = byte + (char:byte(offset + 3) % 64)
 		elseif byte >= 224 then
-			-- 3 byte sequence
-			length = 3
-			if #char < 3 then return -1, length end
+			if #char < 3 then return -1 end
 			byte = (byte % 16) * 4096
 			byte = byte + (char:byte(offset + 1) % 64) * 64
 			byte = byte + (char:byte(offset + 2) % 64)
 		elseif byte >= 192 then
-			-- 2 byte sequence
-			length = 2
-			if #char < 2 then return -1, length end
+			if #char < 2 then return -1 end
 			byte = (byte % 32) * 64
 			byte = byte + (char:byte(offset + 1) % 64)
 		else
-			-- invalid sequence
 			byte = -1
 		end
 	end
-	return byte, length
+	
+	return byte
+end
+
+function utf8.bytelength(char, offset)	
+	local byte = char:byte(offset or 1)
+	local length = 1
+	
+	if byte >= 128 then
+		if byte >= 240 then
+			length = 4
+		elseif byte >= 224 then
+			length = 3
+		elseif byte >= 192 then
+			length = 2
+		end
+	end
+	
+	return length
 end
 
 function utf8.char(byte)
@@ -97,7 +105,7 @@ function utf8.sub(str, i, j)
 			start_byte = pos
 		end
 
-		pos = pos + select(2, utf8.byte(str, pos))
+		pos = pos + utf8.bytelength(str, pos)
 
 		if length == end_char then
 			end_byte = pos - 1
@@ -115,7 +123,7 @@ local function utf8replace(str, mapping)
 	local new_str = ""
 
 	while pos <= bytes do
-		char_bytes = select(2, utf8.byte(str, pos))
+		char_bytes = utf8.bytelength(str, pos)
 		local c = str:sub(pos, pos + char_bytes - 1)
 
 		new_str = new_str .. (mapping[c] or c)
