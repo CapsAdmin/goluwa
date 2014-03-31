@@ -1557,7 +1557,7 @@ do
 				EXT.SetFont(chunk.val)
 			end
 
-			if chunk.type ~= "newline" then
+			if true or chunk.type ~= "newline" then
 
 				-- is the previous line a newline?
 				local newline = chunks[i - 1] and chunks[i - 1].type == "newline"
@@ -2639,11 +2639,14 @@ do -- selection
 
 		local x, y = self:GetNextCharacterClassPos(1, false)
 		self:SelectStop(x + 1, y)
+		
+		self:SetCaretPos(x + 1, y)
 	end
 
 	function META:SelectCurrentLine()
 		self:SelectStart(0, self.caret_pos.y)
 		self:SelectStop(math.huge, self.caret_pos.y)
+		self:SetCaretPos(math.huge, self.caret_pos.y)
 	end
 
 	function META:Unselect()
@@ -2800,8 +2803,6 @@ do -- clipboard
 	function META:Paste(str)
 		str = str:gsub("\r", "")
 		
-		print(str)
-
 		self:DeleteSelection()
 
 		if #str > 0 then
@@ -2903,8 +2904,8 @@ do -- input
 			if key ~= "tab" then
 				if self.ShiftDown then
 					if self.caret_shift_pos then
-						self:SelectStart(self.caret_shift_pos.x, self.caret_shift_pos.y)
-						self:SelectStop(self.caret_pos.x, self.caret_pos.y)
+						self:SelectStart(self.caret_pos.x, self.caret_pos.y)
+						self:SelectStop(self.caret_shift_pos.x, self.caret_shift_pos.y)
 					end
 				elseif is_caret_move[key] then
 					self:Unselect()
@@ -3170,8 +3171,22 @@ do -- drawing
 
 		if self.ShiftDown then
 			if not self.caret_shift_pos then
-				self.caret_shift_pos = self:CaretFromPos(self.caret_pos.x, self.caret_pos.y)
+				local START = self:GetSelectStart()
+				local END = self:GetSelectStop()
+				
+				
+				if START and END then
+					if self.caret_pos.i < END.i then
+						self.caret_shift_pos = self:CaretFromPos(END.x, END.y)
+					else
+						self.caret_shift_pos = self:CaretFromPos(START.x, START.y)
+					end
+				else
+					self.caret_shift_pos = self:CaretFromPos(self.caret_pos.x, self.caret_pos.y)
+				end
 			end
+			
+		
 		else
 			self.caret_shift_pos = nil
 		end
