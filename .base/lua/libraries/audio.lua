@@ -45,7 +45,7 @@ function audio.Close()
 end
 
 function audio.GetAllOutputDevices()
-	local list = alc.GetString(nil, e.ALC_ALL_DEVICES_SPECIFIER)
+	local list = ffi.cast("unsigned char *", alc.GetString(nil, e.ALC_ALL_DEVICES_SPECIFIER))
 
 	local devices = {}
 
