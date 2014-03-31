@@ -57,8 +57,8 @@ function PANEL:OnMouseInput(button, press)
 end
 
 function PANEL:OnKeyInput(key, press)	
-	if key == "left_shift" or key == "right_shift" then  self.markup:SetShiftDown(press) end
-	if key == "left_control" or key == "right_control" then  self.markup:SetControlDown(press) end
+	if key == "left_shift" or key == "right_shift" then  self.markup:SetShiftDown(press) return end
+	if key == "left_control" or key == "right_control" then  self.markup:SetControlDown(press) return end
 	
 	if press then
 		
