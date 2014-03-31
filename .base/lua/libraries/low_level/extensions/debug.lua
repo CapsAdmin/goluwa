@@ -1,5 +1,5 @@
 function debug.openscript(lua_script, line)
-	local path = console.GetVariable("error_app")
+	local path = console.GetVariable("editor_path")
 	
 	if not path then return false end
 	lua_script = R(lua_script)
