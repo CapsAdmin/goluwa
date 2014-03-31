@@ -502,7 +502,7 @@ do -- include
 			return select(2, unpack(res))
 		end		
 		
-		local path = console and console.GetVariable("error_app")
+		local path = console and console.GetVariable("editor_path")
 
 		if path and path ~= "" then
 			local source, line = err:match("(.+%.lua):(%d+)")
@@ -617,7 +617,7 @@ do -- tier 0
 
 end
 
-console.CreateVariable("error_app", "")
+console.CreateVariable("editor_path", "")
 
 addons.LoadAll()
 steamapi.Initialize()
