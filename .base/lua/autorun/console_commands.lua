@@ -81,59 +81,55 @@ console.AddCommand("profile", function(line, time)
 	profiler.SetClockFunction(timer.clock)
 	profiler.SetReadFileFunction(vfs.Read)
 
-	time = tonumber(time)
+	time = tonumber(time) or 1
 	
-	profiler.Start(nil, "statistical")
+	profiler.Start(nil, "instrumental")
 	
 	logn("starting profiler for ", time, " seconds")
 	
-	if time > 2 then
-		timer.Create("profile_status", 1, time-1, function()
-			logn("profiling...")
-		end)
-	end
+	timer.Create("profile_status", 1, time, function(i)
+		logn("profiling...")
+		if time == i+1 then
+			profiler.Stop("instrumental")
 	
-	timer.Delay(time, function()
-		profiler.Stop("statistical")
-		
-		local benchmark = profiler.GetBenchmark()
-		local top = {}
-		
-		for k,v in pairs(benchmark) do
-			if v.times_called > 50 then
-				table.insert(top, v)
-			end
-		end
-		
-		table.sort(top, function(a, b)
-			return a.average_time > b.average_time
-		end)
-		
-		local max = 0
-		local max2 = 0
-		for k, v in pairs(top) do
-			if #v.name > max then
-				max = #v.name
+			local benchmark = profiler.GetBenchmark()
+			local top = {}
+			
+			for k,v in pairs(benchmark) do
+				if v.times_called > 50 then
+					table.insert(top, v)
+				end
 			end
 			
-			v.average_time = tostring(v.average_time * 100)
+			table.sort(top, function(a, b)
+				return a.average_time > b.average_time
+			end)
 			
-			if #v.average_time > max2 then
-				max2 = #v.average_time
+			local max = 0
+			local max2 = 0
+			for k, v in pairs(top) do
+				if #v.name > max then
+					max = #v.name
+				end
+				
+				v.average_time = tostring(v.average_time * 100)
+				
+				if #v.average_time > max2 then
+					max2 = #v.average_time
+				end
 			end
+			
+			
+			
+			logn(("_"):rep(max+max2+11+10))
+			logn("| NAME:", (" "):rep(max-4), "| MS:", (" "):rep(max2-2), "| CALLS:")
+			logn("|", ("_"):rep(max+2), "|", ("_"):rep(max2+2), "|", ("_"):rep(4+10))
+			for k,v in pairs(top) do
+				logf("| %s%s | %s%s | %s", v.name, (" "):rep(max-#v.name), v.average_time, (" "):rep(max2 - #v.average_time), v.times_called) 
+			end
+			logn("")
 		end
-		
-		
-		
-		logn(("_"):rep(max+max2+11+10))
-		logn("| NAME:", (" "):rep(max-4), "| MS:", (" "):rep(max2-2), "| CALLS:")
-		logn("|", ("_"):rep(max+2), "|", ("_"):rep(max2+2), "|", ("_"):rep(4+10))
-		for k,v in pairs(top) do
-			logf("| %s%s | %s%s | %s", v.name, (" "):rep(max-#v.name), v.average_time, (" "):rep(max2 - #v.average_time), v.times_called) 
-		end
-		logn("")
-		
-	end)	
+	end)
 end)
 
 console.AddCommand("find", function(line, ...)
@@ -185,19 +181,11 @@ console.AddCommand("source", function(line, ...)
 end)
 
 console.AddCommand("open", function(line)
-	if not include(line .. ".lua") then
-		include("tests/" .. line .. ".lua")
+	if vfs.Exists(line .. ".lua") then 
+		include(line .. ".lua")
+	elseif vfs.Exists("tests/" .. line .. ".lua") then
+		include("tests/" .. line .. ".lua")  
+	else
+		return false, ("lua/%s.lua and lua/tests/%s.lua was not found"):format(line, line)
 	end
-end)
-
-console.AddCommand("help", function(line)
-	local info = console.GetCommands()[line]
-	if info then
-		if not help then
-			logn("\tno help was found for ", line)
-			logf("\ttype %q to go to this function", "source " .. line)
-			logn("\tdebug info:")
-			logn("\t", tostring(info.callback))
-		end
-	end
-end)
+end, "calls include(*input*.lua) or include(tests/*input*.lua) if the former failed")

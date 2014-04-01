@@ -42,7 +42,7 @@ function console.Exec(cfg)
 end
 
 do -- commands	
-	console.AddedCommands = {}
+	console.AddedCommands = console.AddedCommands or {}
 
 	function console.AddCommand(cmd, callback, help)
 		cmd = cmd:lower()
@@ -61,11 +61,28 @@ do -- commands
 	end
 	
 	function console.RunCommand(cmd, ...)
-		console.CallCommand(cmd, table.concat({...}, " "), ...)
+		local ok, reason = console.CallCommand(cmd, table.concat({...}, " "), ...)
+		
+		if not ok then
+			logn("failed to execute command ", cmd, "!")
+			logn(reason) 
+			
+			table.print(console.AddedCommands[cmd])
+			
+			if console.AddedCommands[cmd].help then
+				logn(console.AddedCommands[cmd].help)
+			end
+		end
 	end
 
 	local function call(data, line, ...)
-		return xpcall(data, mmyy.OnError, line, ...)
+		local a, b, c = xpcall(data, mmyy.OnError, line, ...)
+		
+		if a then
+			return b, c
+		end
+		
+		return a, b
 	end
 
 	function console.CallCommand(cmd, line, ...)
@@ -291,5 +308,21 @@ do -- for fun
 		}
 	)
 end
+
+ 
+console.AddCommand("help", function(line)
+	local info = console.GetCommands()[line]
+	if info then
+		if not info.help then
+			logn("\tno help was found for ", line)
+			logf("\ttype %q to go to this function", "source " .. line)
+			logn("\tdebug info:")
+			logn("\t\targuments\t=\t", table.concat(debug.getparams(info.callback), ", "))
+			logn("\t\tfunction\t=\t", tostring(info.callback))
+		else
+			logn(info.help)
+		end
+	end
+end)
 
 return console
