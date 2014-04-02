@@ -109,7 +109,7 @@ function render.CreateFrameBuffer(width, height, format)
 			tex_info.format = e.GL_BGRA
 						
 			tex = render.CreateTexture(width, height, nil, tex_info)
-			tex:SetChannel(i-1)
+			tex.channel = i-1
 			id = tex.id
 		
 			tex.framebuffer_name = info.name

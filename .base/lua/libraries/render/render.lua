@@ -204,33 +204,6 @@ function render.GetAdditive(b)
 	return render.additive
 end
  
-function render.GetErrorTexture()
-
-	if not render.error_tex then
-		render.error_tex = Texture(256, 256)
-		local size = 16
-		render.error_tex:Fill(function(x, y)
-			if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
-				return 255, 0, 255, 255
-			else
-				return 0, 0, 0, 255
-			end
-		end)
-	end
-	
-	return render.error_tex
-end
-
-function render.GetLoadingTexture()
-	
-	if not render.loading_texture then
-		local w, h, buffer = freeimage.LoadImage(vfs.Read("textures/loading.jpg", "b")) --rb flags used on old one.
-		render.loading_texture = render.CreateTexture(w, h, buffer)
-	end
-	
-	return render.loading_texture
-end
-
 do
 	local data = ffi.new("float[3]")
 
@@ -244,6 +217,7 @@ do
 	end
 end
 
+include("generated_textures.lua")
 include("matrices.lua")
 include("scene.lua")
 include("texture.lua")
@@ -251,6 +225,7 @@ include("framebuffer.lua")
 include("shaders.lua")
 include("deferred.lua")
 include("image.lua")
+include("model.lua")
 
 include("super_shader.lua")
 include("mesh_util.lua")

@@ -23,8 +23,6 @@ function surface.Initialize()
 		{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 	})
 		
-	surface.white_texture = Texture(64,64)
-	surface.white_texture:Fill(function() return 255, 255, 255, 255 end)
 	surface.SetWhiteTexture()
 	
 	if not ft.ptr then
@@ -464,7 +462,7 @@ function surface.SetAlphaMultiplier(a)
 end
 
 function surface.SetTexture(tex)
-	tex = tex or surface.white_texture
+	tex = tex or render.GetWhiteTexture()
 	
 	surface.rectmesh.texture = tex
 	surface.bound_texture = tex
@@ -473,7 +471,7 @@ end
 surface.SetWhiteTexture = surface.SetTexture
 
 function surface.GetTexture()
-	return surface.bound_texture or surface.white_texture
+	return surface.bound_texture or render.GetWhiteTexture()
 end
 
 do

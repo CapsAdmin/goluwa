@@ -1,14 +1,49 @@
 local last1
 local last2
 
+local base = e.GL_TEXTURE0
+
 function render.BindTexture(tex, location, channel)
-	if tex ~= last1 or location ~= last2 then	
-		gl.ActiveTexture(channel and (e.GL_TEXTURE0 + channel) or tex.gl_channel) 
+	if tex ~= last1 or location ~= last2 then
+		
+		channel = channel or 0
+		
+		gl.ActiveTexture(base + channel) 
 		gl.BindTexture(tex.format.type, tex.id) 
-		gl.Uniform1i(location, channel or tex.Channel)
+		gl.Uniform1i(location, channel)
 
 		last1 = tex
 		last2 = location
+	end
+end
+
+local diffuse_suffixes = {
+	"_diff",
+	"_d",
+}
+
+function render.FindTextureFromSuffix(path, ...)
+
+	local suffixes = {...}
+
+	-- try to find the normal texture
+	for _, suffix in pairs(suffixes) do
+		local new = path:gsub("(.+)(%.)", "%1" .. suffix .. "%2")
+		
+		if new ~= path and vfs.Exists(new) then
+			return new
+		end
+	end
+	
+	-- try again without the __diff suffix
+	for _, diffuse_suffix in pairs(diffuse_suffixes) do
+		for _, suffix in pairs(suffixes) do
+			local new = path:gsub(diffuse_suffix .. "%.", suffix ..".")
+			
+			if new ~= path and vfs.Exists(new) then
+				return new
+			end
+		end
 	end
 end
 
@@ -22,15 +57,6 @@ do -- texture object
 		return ("texture[%s]"):format(self.id)
 	end
 	
-	class.GetSet(META, "Channel", 0)
-	META.gl_channel = e.GL_TEXTURE0
-	
-	function META:SetChannel(num)
-		self.Channel = num
-		
-		self.gl_channel = e.GL_TEXTURE0 + num
-	end
-
 	function META:GetSize()
 		return self.size
 	end
@@ -293,6 +319,7 @@ do -- texture object
 	end
 	
 	function META:Remove()
+		if self.format.no_remove then return end
 		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
 		utilities.MakeNULL(self)
 	end
