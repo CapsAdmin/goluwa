@@ -2,7 +2,10 @@ local utf8 = _G.utf8 or {}
 
 local math_floor = math.floor
 
+local cache = {}
+
 function utf8.byte(char, offset)
+	if cache[char] and cache[char][offset] then return cache[char][offset] end
 	if char == "" then return -1 end
 	
 	offset = offset or 1
@@ -29,6 +32,9 @@ function utf8.byte(char, offset)
 			byte = -1
 		end
 	end
+	
+	cache[char] = cache[char] or {}
+	cache[char][offset] = byte
 	
 	return byte
 end
@@ -149,12 +155,18 @@ function utf8.length(str)
 	return length
 end
 
+local cache = {}
+
 function utf8.totable(str)
+	if cache[str] then return cache[str] end
+	
 	local tbl = {}
 	
 	for uchar in str:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
 		tbl[#tbl + 1] = uchar
 	end
+	
+	cache[str] = tbl
 	
 	return tbl
 end
