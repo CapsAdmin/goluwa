@@ -234,7 +234,7 @@ do -- font
 		local size = b
 		
 		if not b then
-			font = R("fonts/verdana.ttf")
+			font = R("fonts/vera.ttf")
 			size = a
 		end
 		
