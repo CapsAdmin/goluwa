@@ -181,9 +181,9 @@ console.AddCommand("source", function(line, ...)
 end)
 
 console.AddCommand("open", function(line)
-	if vfs.Exists(line .. ".lua") then 
+	if vfs.Exists("lua/" .. line .. ".lua") then 
 		include(line .. ".lua")
-	elseif vfs.Exists("tests/" .. line .. ".lua") then
+	elseif vfs.Exists("lua/tests/" .. line .. ".lua") then
 		include("tests/" .. line .. ".lua")  
 	else
 		return false, ("lua/%s.lua and lua/tests/%s.lua was not found"):format(line, line)
