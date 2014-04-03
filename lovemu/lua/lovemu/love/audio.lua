@@ -2,33 +2,59 @@ local love=love
 local lovemu=lovemu
 love.audio={}
 
+local sources = {}
+
 
 local function getChannels(self)
 	return 2 --stereo
 end
 
 local function getDirection(self)
-	return 0,0,0
+	if self.legit==true then
+		return	self:GetDirection()
+	else
+		return 0,0,0
+	end
 end
 
 local function getDistance(self)
-	return 0,0
+	if self.legit==true then
+		return self:GetReferenceDistance(),self:GetMaxDistance()
+	else
+		return 0,0
+	end
 end
 
 local function getPitch(self)
-	return 1
+	if self.legit==true then
+		return self:GetPitch()
+	else
+		return 1
+	end
 end
 
 local function getPosition(self)
-	return 0,0,0
+	if self.legit==true then
+		return self:GetPosition()
+	else
+		return 0,0,0
+	end
 end
 
 local function getRolloff(self)
-	return 0
+	if self.legit==true then
+		return self:GetRolloffFactor()
+	else
+		return 1
+	end
 end
 
 local function getVelocity(self)
-	return 0,0,0
+	if self.legit==true then
+		return self:GetVelocity()
+	else
+		return 0,0,0
+	end
 end
 
 local function getVolume(self)
@@ -72,6 +98,9 @@ local function isStopped(self)
 end
 
 local function pause(self)
+	if self.legit==true then
+		self:Pause()
+	end
 end
 
 local function play(self)
@@ -82,28 +111,52 @@ local function play(self)
 end
 
 local function resume(self)
+	if self.legit==true then
+		self:Resume()
+	end
 end
 
 local function rewind(self)
+	if self.legit==true then
+		self:Rewind()
+	end
 end
 
-local function seek(self)
+local function seek(self,offset,type)
+	if self.legit==true then
+		if type~="samples" then
+			offset = offset * self:GetBuffer():GetSampleRate()
+		end
+		
+		self:SetSampleOffset(offset)
+	end
 end
 
 local function stop(self)
 	if self.legit==true then
-		self.playing=false
 		self:Stop()
+		self.playing=false
 	end
 end
 
-local function setDirection(self)
+local function setDirection(self,x,y,z)
+	if self.legit==true then
+		self:SetDirection(x,y,z)
+	end
 end
 
-local function setDistance(self)
+local function setDistance(self,ref,max)
+	if self.legit==true then
+		self:SetReferenceDistance(ref)
+		self:SetMaxDistance(max)
+	end
 end
 
-local function setAttenuationDistances(self)
+local function setAttenuationDistances(self,ref,max)
+	if self.legit==true then
+		self:SetReferenceDistance(ref)
+		self:SetMaxDistance(max)
+	end
 end
 
 local function setLooping(self,bool)
@@ -118,13 +171,22 @@ local function setPitch(self,pitch)
 	end
 end
 
-local function setPosition(self)
+local function setPosition(self,x,y,z)
+	if self.legit==true then
+		self:SetPosition(x,y,z)
+	end
 end
 
-local function setRolloff(self)
+local function setRolloff(self,x)
+	if self.legit==true then
+		self:SetRolloffFactor(x)
+	end
 end
 
-local function setVelocity(self)
+local function setVelocity(self,x,y,z)
+	if self.legit==true then
+		self:SetVelocity(x,y,z)
+	end
 end
 
 local function setVolume(self,vol)
@@ -136,18 +198,26 @@ end
 local function setVolumeLimits(self)
 end
 
-local function tell(self)
-	return 1
+local function tell(self,type)
+	if self.legit==true then
+		if type=="samples" then
+			return self:GetSampleOffset()
+		else
+			return self:GetSampleOffset() / self:GetBuffer():GetSampleRate()
+		end
+	else
+		return 1
+	end
 end
 
-local id=1
+local id=0
 function love.audio.newSource(path) --partial
 	local legit=false
-	local source={}
-	if vfs.Exists(R(path))==true then
-		local ext=string.explode(path,".")
-		ext=ext[#ext]
-		if ext=="flac" or ext=="wav" or ext=="ogg" then
+	local source=lovemu.NewObject("source")
+	
+	if vfs.Exists(path) then
+		local ext = path:match(".+%.(.+)")
+		if ext == "flac" or ext == "wav" or ext == "ogg" then
 			source = utilities.RemoveOldObject(Sound(path),id)
 			id=id+1
 			legit=true
@@ -191,54 +261,90 @@ function love.audio.newSource(path) --partial
 	source.setVolumeLimits=setVolumeLimits
 	source.tell=tell
 	source.legit=legit
+	
+	sources[id] = source
+	
 	return source
 end
 
-
-function love.audio.getDistanceModel() --partial
+local DistanceModel="none"
+function love.audio.getDistanceModel()
+	return DistanceModel
 end
 
-function love.audio.getNumSources() --partial
+function love.audio.getNumSources()
+	return table.count(sources)
 end
 
-function love.audio.getOrientation() --partial
+function love.audio.getOrientation()
+	return audio.GetListenerOrientation()
 end
 
-function love.audio.getPosition() --partial
+function love.audio.getPosition()
+	return audio.GetListenerPosition()
 end
 
-function love.audio.getVelocity() --partial
+function love.audio.getVelocity()
+	return audio.GetListenerVelocity()
 end
 
-function love.audio.getVolume() --partial
+function love.audio.getVolume()
+	return audio.GetListenerGain()
 end
 
-function love.audio.pause() --partial
+function love.audio.pause()
+	for k,v in pairs(sources) do v:Pause() end
 end
 
-function love.audio.play() --partial
+function love.audio.play()
+	for k,v in pairs(sources) do v:Play() end
 end
 
-function love.audio.resume() --partial
+function love.audio.resume()
+	for k,v in pairs(sources) do v:Resume() end
 end
 
-function love.audio.rewind() --partial
+function love.audio.rewind()
+	for k,v in pairs(sources) do v:Rewind() end
 end
 
-function love.audio.setDistanceModel() --partial
+function love.audio.setDistanceModel(name)
+	name = name or "none"
+	if name=="none" then
+		audio.SetDistanceModel(e.AL_NONE)
+	elseif name=="inverse" then
+		audio.SetDistanceModel(e.AL_INVERSE_DISTANCE)
+	elseif name=="inverse clamped" then
+		audio.SetDistanceModel(e.AL_INVERSE_DISTANCE_CLAMPED)
+	elseif name=="linear" then
+		audio.SetDistanceModel(e.AL_LINEAR_DISTANCE)
+	elseif name=="linear clamped" then
+		audio.SetDistanceModel(e.AL_LINEAR_DISTANCE_CLAMPED)
+	elseif name=="exponent" then
+		audio.SetDistanceModel(e.AL_EXPONENT_DISTANCE)
+	else
+		audio.SetDistanceModel(e.AL_EXPONENT_DISTANCE_CLAMPED)
+	end
+	
+	DistanceModel=name
 end
 
-function love.audio.setOrientation() --partial
+function love.audio.setOrientation(x,y,z,x2,y2,z2)
+	audio.SetListenerOrientation(x,y,z,x2,y2,z2)
 end
 
-function love.audio.setPosition() --partial
+function love.audio.setPosition(x,y,z)
+	audio.SetListenerPosition(x,y,z)
 end
 
-function love.audio.setVelocity() --partial
+function love.audio.setVelocity(x,y,z)
+	audio.SetListenerVelocity(x,y,z)
 end
 
-function love.audio.setVolume() --partial
+function love.audio.setVolume(vol)
+	audio.SetListenerGain(vol)
 end
 
-function love.audio.stop() --partial
+function love.audio.stop()
+	for k,v in pairs(sources) do v:Stop() end
 end
