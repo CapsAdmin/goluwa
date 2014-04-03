@@ -75,7 +75,7 @@ function console.InitializeCurses()
 	curses.start_color()
 
 	if WINDOWS then
-		curses.resize_term(25,130)
+		curses.resize_term(50,150)
 	end
 
 	c.log_window = curses.derwin(c.parent_window, curses.LINES-1, curses.COLS, 0, 0)
@@ -139,6 +139,20 @@ function console.InitializeCurses()
 		local max_length = 256
 		local suppress = false
 		
+		local bad = "["
+		
+		for i = 1, 32 do
+			if 
+				i ~= ("\n"):byte() and
+				i ~= ("\t"):byte() and
+				i ~= (" "):byte()
+			then
+				bad = bad .. string.char(i)
+			end
+		end
+		
+		bad = bad .. "]"
+		
 		function io.write(...)
 			if suppress then return end
 			local str = table.concat({...}, "")
@@ -157,7 +171,11 @@ function console.InitializeCurses()
 				return
 			end
 			
-			table.insert(console.history, str)
+			if not debug.debugging then 
+				table.insert(console.history, str)
+			end
+			
+			str = str:gsub("%%", "%%%%")
 			
 			curses.wprintw(c.log_window, str)
 			curses.wrefresh(c.log_window)
@@ -192,7 +210,7 @@ do -- colors
 		end
 	end
 
-	local syntax = include("syntax.lua")
+	local syntax = include("libraries/syntax.lua")
 
 	function console.ColorPrint(str)
 		local tokens = syntax.process(str)
@@ -214,28 +232,26 @@ do -- colors
 	end
 end
 
-console.scroll_index = 0
+console.scroll_index = 0 
 
 function console.Scroll(offset)
-	console.scroll_index = console.scroll_index - offset
-	
-	if console.scroll_index == 0 then return end
+	if offset == 0 then 
+		console.scroll_index = #console.history
+	return end
 	
 	console.ClearWindow()
 	
 	local lines = curses.LINES-1
 	local count = #console.history
 	
+	console.scroll_index = math.clamp(console.scroll_index - offset, -2, count - lines)
+	
 	for i = 1, lines  do
-		i = -i + lines
-		i = math.clamp(count + console.scroll_index - i, 1, count)
-		
-		local str = console.history[i]
-		
-		if i == count then str = "" end
+		local str = console.history[i + console.scroll_index] or ""
 		
 		curses.wprintw(c.log_window, str)
 	end
+	
 	curses.wrefresh(c.log_window)
 end
 
