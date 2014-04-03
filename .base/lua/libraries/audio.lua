@@ -100,26 +100,54 @@ function audio.SetEffect(channel, effect)
 	aux:SetEffect(effect)
 end
 
-local function ADD_LISTENER_FUNCTION(name, func, enum, val, vec)
+function audio.SetDistanceModel(enum)
+	al.DistanceModel(enum)
+	audio.distance_model = enum
+end
+
+function audio.GetDistanceModel()
+	return audio.distance_model
+end
+
+local function ADD_LISTENER_FUNCTION(name, func, enum, val, vec, sigh)
 	if vec then
-		audio["SetListener" .. name] = function(x, y, z)
+		if sigh then
+			audio["SetListener" .. name] = function(x, y, z, a, b, c)
+				
+				val[0] = x or 0
+				val[1] = y or 0
+				val[2] = z or 0
+				
+				val[3] = a or 0
+				val[4] = b or 0
+				val[5] = c or 0
+				
+				func(enum, val)
+			end
 			
-			val[0] = x or 0
-			val[1] = y or 0
-			val[2] = z or 0
+			audio["GetListener" .. name] = function()
+				return val[0], val[1], val[2], val[3], val[4], val[5]
+			end
+		else
+			audio["SetListener" .. name] = function(x, y, z)
+				
+				val[0] = x or 0
+				val[1] = y or 0
+				val[2] = z or 0
+				
+				func(enum, val)
+			end
 			
-			al[func](enum, val)
-		end
-		
-		audio["GetListener" .. name] = function()
-			return val[0], val[1], val[2]
+			audio["GetListener" .. name] = function()
+				return val[0], val[1], val[2]
+			end
 		end
 	else
 		audio["SetListener" .. name] = function(x)
 			
 			val[0] = x
 			
-			al[func](enum, val)
+			func(enum, val)
 		end
 		
 		audio["GetListener" .. name] = function()
@@ -128,9 +156,10 @@ local function ADD_LISTENER_FUNCTION(name, func, enum, val, vec)
 	end
 end
 
-ADD_LISTENER_FUNCTION("Position", al.Listenerfv, ffi.new("float[3]", 0, 0, 0), true)
-ADD_LISTENER_FUNCTION("Velocity", al.Listenerfv, ffi.new("float[3]", 0, 0, 0), true)
-ADD_LISTENER_FUNCTION("Orientation", al.Listenerfv, ffi.new("float[3]", 0, 0, 0), true)
+ADD_LISTENER_FUNCTION("Gain", al.Listenerfv, e.AL_GAIN, ffi.new("float[1]"))
+ADD_LISTENER_FUNCTION("Position", al.Listenerfv, e.AL_POSITION, ffi.new("float[3]"), true)
+ADD_LISTENER_FUNCTION("Velocity", al.Listenerfv, e.AL_VELOCITY, ffi.new("float[3]"), true)
+ADD_LISTENER_FUNCTION("Orientation", al.Listenerfv, e.AL_ORIENTATION, ffi.new("float[6]"), true, true)
 
 local function GET_BINDER(META, object_name)
 	return function(name, type, enum)
@@ -292,6 +321,8 @@ local function GEN_TEMPLATE(type, ctor)
 		delete(1, temp)
 		utilities.MakeNULL(self)
 	end
+	
+	debug.getregistry()[type] = META
 		
 	return META
 end
@@ -312,7 +343,7 @@ do -- sound meta
 	local META = GEN_TEMPLATE("Source", function(self, var, ...)
 		if type(var) == "cdata" then
 			local buffer = audio.CreateBuffer()
-			buffer:SetBufferData(var, ...)
+			buffer:SetData(var, ...)
 			self:SetBuffer(buffer)
 		elseif type(var) == "string" then		
 			vfs.ReadAsync(var, function(data)				
@@ -322,7 +353,7 @@ do -- sound meta
 					local buffer = audio.CreateBuffer()
 					buffer:SetFormat(info.channels == 1 and e.AL_FORMAT_MONO16 or e.AL_FORMAT_STEREO16)  
 					buffer:SetSampleRate(info.samplerate)
-					buffer:SetBufferData(data, length)
+					buffer:SetData(data, length)
 					
 					self:SetBuffer(buffer)
 					
@@ -339,10 +370,14 @@ do -- sound meta
 		al.SourcePlay(self.id)
 	end
 	
+	function META:Pause()
+		al.SourcePause(self.id)
+	end
+	
 	function META:Stop()
 		al.SourceStop(self.id)
 	end
-	
+		
 	function META:Rewind()
 		al.SourceRewind(self.id)
 	end
@@ -375,6 +410,8 @@ do -- sound meta
 		ADD_FUNCTION("AL_LOOPING", "b")
 		ADD_FUNCTION("AL_MAX_GAIN", "f")
 		ADD_FUNCTION("AL_MAX_DISTANCE", "f")
+		ADD_FUNCTION("AL_REFERENCE_DISTANCE", "f")
+		ADD_FUNCTION("AL_ROLLOFF_FACTOR", "f")
 		ADD_FUNCTION("AL_PITCH", "f")
 		ADD_FUNCTION("AL_SOURCE_RELATIVE", "b")
 		ADD_FUNCTION("AL_SOURCE_STATE", "i")
@@ -397,7 +434,7 @@ end
 do -- buffer
 	local META = GEN_TEMPLATE("Buffer", function(self, data, size)
 		if data and size then
-			self:SetBufferData(data, size)
+			self:SetData(data, size)
 		end
 	end)
 	
@@ -416,8 +453,18 @@ do -- buffer
 		
 	end
 	
-	function META:SetBufferData(data, size)	
+	function META:SetData(data, size)	
 		al.BufferData(self.id, self.Format, data, size, self.SampleRate)
+		
+		self.buffer_data = {data, size}
+	end
+	
+	function META:GetData()
+		if self.buffer_data then
+			return unpack(self.buffer_data)
+		end
+		
+		return nil, 0
 	end
 end 
 
@@ -522,7 +569,7 @@ do -- microphone
 								end
 							end
 							
-							buffer:SetBufferData(data, size)
+							buffer:SetData(data, size)
 						source:PushBuffer(buffer)
 					end
 				end
