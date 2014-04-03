@@ -1,3 +1,5 @@
+if ffi and lfs then lfs.chdir("../../../../") os.execute("launch.bat") os.exit() return end 
+
 DEBUG = true
 USE_STRUNG = true
 _G.ffi = require("ffi")
@@ -638,9 +640,6 @@ do -- tier 1
 
 	-- particles
 	include("libraries/particles.lua")
-
-	-- high level implementation of render 3d mesh
-	include("libraries/model.lua")
 
 	-- high level implementation of luasocket
 	include("libraries/network/network.lua")
