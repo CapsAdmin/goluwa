@@ -82,54 +82,83 @@ function debug.getparamsx(func)
     return params
 end
 
-function debug.dumpcall(clr_print)
-	local info = debug.getinfo(4)
+function debug.dumpcall(level, line, info_match)
+	level = level + 1
+	local info = debug.getinfo(level)
 	local path = info.source:sub(2)
+	local currentline = info.currentline
 	
+	if info_match and info.func ~= info_match.func then 
+		return 
+	end
+	
+	if info.source == "=[C]" then return end
+	if info.source:find("ffi_binds") then return end
+	if info.source:find("console%.lua") then return end
 	if info.source:find("string%.lua") then return end
 	if info.source:find("globals%.lua") then return end
 	if info.source:find("strung%.lua") then return end
 	if path == "../../../lua/init.lua" then return end
 	
 	local script = vfs.Read(path)
-	
-	logn(path)
-	
+		
 	if script then
 		local lines = script:explode("\n")
 		
-		for i = -10, 10 do
-			local line = lines[info.currentline + i]
+		for i = -20, 20 do
+			local line = lines[currentline + i]
 			
 			if line then
+				line = line:gsub("\t", "  ")
 				if i == 0 then
-					line = (">"):rep(string.len(info.currentline)) .. ":\t" ..  line
+					line = (currentline + i) .. ":==>\t" ..  line
 				else
-					line = (info.currentline + i) .. ": " .. line
+					line = (currentline + i) .. ":\t" .. line
 				end
 				
 				logn(line)
+			else
+				if i == 0 then
+					line = (">"):rep(string.len(currentline)) .. ":"
+				else
+					line = (currentline + i) .. ":"
+				end
+				
+				logn(line, " ", "This line does not exist. It may be due to inlining so try running jit.off()")
 			end
 		end
-	else
-		logn(path)
 	end
 	
-	logn("")
+	logn(path)
+	
+	
 	logn("LOCALS: ")
-	for _, data in pairs(debug.getparamsx(4)) do
-		if not data.key:find("(",nil,true) then
-			local val = luadata.ToString(data.val) or "nil"
-			if false and val:find("\n") then 
-				if type(data.val) == "table" then
-					val = tostring(data.val)
-				else
-					val = val:match("(.-)\n") .. "...."
+	for _, data in pairs(debug.getparamsx(level+1)) do
+		--if not data.key:find("(",nil,true) then
+			local val
+			
+			if type(data.val) == "table" then
+				val = tostring(data.val)
+			elseif type(data.val) == "string" then
+				val = data.val:sub(0, 10)
+				
+				if val ~= data.val then
+					val = val .. " .. " .. utilities.FormatFileSize(#data.val)
 				end
+			else
+				val = luadata.ToString(data.val)
 			end
+			
 			logf("%s = %s", data.key, val)
-		end
+		--end
 	end
+	
+	if info_match then
+		print(info_match.func)
+		print(info.func)
+	end
+	
+	return true
 end
 
 function debug.logcalls(b, type)
@@ -158,39 +187,53 @@ end
 function debug.stepin()
 	if not curses then return end
 	
+	debug.debugging = true
+	
 	local first_time = true
+	local curinfo
 
 	local step
 	
-	step = function()
-		system.SetWindowTitle("DEBUG SETHOOK |space = exit | enter = return | down = line | pagedown = call|")
+	step = function(mode, line)	
 		console.ClearWindow()
 		
-		debug.dumpcall(true)
+		local ok = debug.dumpcall(2, line, curinfo)
 		
-		while true do
+		while ok do
 			if first_time then
 				first_time = false
 				break
 			end
+					
+			local key = console.GetActiveKey()			
 			
-			local key = console.GetActiveKey()
-			
-			if key == "KEY_ENTER" then
+			if key == "KEY_SPACE" then
+				debug.debugging = false
+				debug.sethook()
+				console.Scroll(1)
+				break
+			elseif key == "KEY_ENTER" then
+				curinfo = nil
 				debug.sethook(step, "r")
 				break
-			elseif key == "KEY_DOWN" then
+			elseif key == "KEY_LEFT" then
+				debug.sethook(step, "r")
+				break
+			elseif key == "KEY_RIGHT" then
+				curinfo = nil
 				debug.sethook(step, "l")
 				break
 			elseif key == "KEY_NPAGE" then
+				curinfo = nil
 				debug.sethook(step, "c")
 				break
-			elseif key == "KEY_SPACE" then
-				debug.sethook()
+			elseif key == "KEY_DOWN" then
+				curinfo = debug.getinfo(2) 
+				debug.sethook(step, "l")				
 				break
 			end
 		end
 	end
 	
-	debug.sethook(step, "l")
+	debug.sethook(step, "c")
 end
