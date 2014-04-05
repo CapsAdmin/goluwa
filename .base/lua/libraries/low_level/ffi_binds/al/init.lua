@@ -29,6 +29,70 @@ local library = ffi.load(WINDOWS and "openal32" or "openal")
 
 local al = _G.al or {}
 
+local function gen_available_params(type, user_unavailable) -- effect params
+	local available = {}
+
+	local unavailable = {
+		last_parameter = true,
+		first_parameter = true,
+		type = true,
+		null = true,
+	}
+	
+	for k,v in pairs(user_unavailable) do
+		unavailable[v] = true
+	end
+	
+	local type_pattern = "AL_"..type:upper().."_(.+)"
+
+	for key, val in pairs(enums) do
+		local type = key:match(type_pattern)
+		
+		if type then 
+			type = type:lower()
+			if not unavailable[type] then
+				available[type] = {enum = val, params = {}}
+			end
+		end
+	end
+
+	for name, data in pairs(available) do
+		for key, val in pairs(enums) do
+			local param = key:match("AL_" .. name:upper() .. "_(.+)")
+			
+			if param then
+				local name = param:lower() 
+				
+				if param:find("DEFAULT_") then
+					name = param:match("DEFAULT_(.+)")
+					key = "default"
+				elseif param:find("MIN_") then
+					name = param:match("MIN_(.+)")
+					key = "min"
+				elseif param:find("MAX_") then
+					name = param:match("MAX_(.+)")
+					key = "max"
+				else
+					key = "enum" 
+				end
+				
+				name = name:lower()
+				
+				data.params[name] = data.params[name] or {}
+				data.params[name][key] = val
+			end
+		end
+	end
+	
+	al["GetAvailable" .. type .. "s"] = function()
+		return available
+	end
+
+end
+
+gen_available_params("Effect", {"pitch_shifter", "vocal_morpher", "frequency_shifter"})
+gen_available_params("Filter", {"highpass", "bandpass"})
+
 local function add_al_func(name, func)
 	al[name] = function(...) 
 		local val = func(...)
