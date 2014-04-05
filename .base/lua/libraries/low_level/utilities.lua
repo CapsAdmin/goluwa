@@ -107,25 +107,33 @@ do -- find value
 end
 
 function utilities.CreateBaseObject(class_name)
-	local self = {}
+	local self = utilities.CreateBaseMeta(class_name)
 	
-	self.Type = class_name -- if type differs it might be a better idea to use _G.class
-	self.ClassName = class_name
+	utilities.SetGCCallback(self)
 	
-	function self:Remove()
+	return self	
+end
+
+function utilities.CreateBaseMeta(class_name)
+	local META = {}
+	
+	META.Type = class_name -- if type differs from classname it might be a better idea to use _G.class
+	META.ClassName = class_name
+	
+	function META:Remove()
 		if self.OnRemove then 
 			self:OnRemove() 
 		end
 		utilities.MakeNULL(self)
 	end
 	
-	function self:IsValid()
+	function META:IsValid()
 		return true
 	end
 	
-	utilities.SetGCCallback(self)
+	utilities.DeclareMetaTable(META)
 	
-	return self	
+	return META	
 end
 
 do -- thanks etandel @ #lua!
@@ -254,10 +262,14 @@ function utilities.FindMetaTable(var)
 end
 
 function utilities.DeclareMetaTable(name, tbl)
-	check(name, "string")
-	check(tbl, "table")
-
-	debug.getregistry()[name:lower()] = tbl
+	check(name, "string", "table")
+	check(tbl, "table", "nil")
+	
+	if not tbl then
+		debug.getregistry()[name.Type:lower()] = name
+	else
+		debug.getregistry()[name:lower()] = tbl
+	end
 end
 
 function utilities.DeriveMetaFromBase(meta_name, base_name, func_name)
