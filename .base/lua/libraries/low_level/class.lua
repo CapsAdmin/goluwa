@@ -1,5 +1,5 @@
 local printf = function(fmt, ...) logn(string.format(fmt, ...)) end
-local class = {}
+local class = _G.class or {}
 
 class.Registered = {}
 
@@ -80,6 +80,10 @@ end
 function class.GetAll(type_name)
 	check(type_name, "string")
 	return class.Registered[type_name]
+end
+
+function class.GetAllTypes()
+	return class.Registered
 end
 
 function class.Register(META, type_name, name)
