@@ -9,7 +9,7 @@ todo:
 	the ability to edit (remove and copy) custom tags that have a size (like textures)
 ]]
 
-local META = {}
+local META = utilities.CreateBaseMeta("markup")
 META.__index = META
 
 function Markup()
@@ -432,8 +432,8 @@ do
 	META.default_font = {
 		name = "markup_default",
 		data = {
-			font = "Verdana",
-			size = 16,
+			font = "fonts/unifont.ttf",
+			size = 14,
 			weight = 600,
 			antialias = true,
 			shadow = true,
@@ -1460,32 +1460,48 @@ do
 				
 		for i, chunk in ipairs(chunks) do		
 			if chunk.type == "string" and chunk.val:find("%s") and not chunk.internal then
-				local str = {}
+			
+				if self.LineWrap then
+					local str = {}
 
-				for i, char in ipairs(utf8.totable(chunk.val)) do
-					if char:find("%s") then
-						if #str ~= 0 then
-							table.insert(out, {type = "string", val = table.concat(str)})
-							if table.clear then
-								str = {}
-							else
-								table.clear(str)
+					for i, char in ipairs(utf8.totable(chunk.val)) do
+						if char:find("%s") then
+							if #str ~= 0 then
+								table.insert(out, {type = "string", val = table.concat(str)})
+								if table.clear then
+									str = {}
+								else
+									table.clear(str)
+								end
 							end
-						end
 
-						if char == "\n" then
-							table.insert(out, {type = "newline"})
+							if char == "\n" then
+								table.insert(out, {type = "newline"})
+							else
+								table.insert(out, {type = "string", val = char, whitespace = true})
+							end
 						else
-							table.insert(out, {type = "string", val = char, whitespace = true})
+							table.insert(str, char)
 						end
-					else
-						table.insert(str, char)
 					end
-				end
 
+					if #str ~= 0 then
+						table.insert(out, {type = "string", val = table.concat(str)})
+					end
+				else	
+					if chunk.val:find("\n", nil, true) then
+						for line in chunk.val:gmatch("(.-)\n") do
+							table.insert(out, {type = "string", val = line})
+							table.insert(out, {type = "newline"})
+						end
 
-				if #str ~= 0 then
-					table.insert(out, {type = "string", val = table.concat(str)})
+							local rest = chunk.val:match(".*\n(.+)")
+							if rest then
+								table.insert(out, {type = "string", val = rest})
+							end
+						else
+						table.insert(out, {type = "string", val = chunk.val})
+					end
 				end
 			else
 				table.insert(out, chunk)
@@ -1962,14 +1978,17 @@ do
 			chunk.x = 0
 		end		
 	end
-		
+			
 	function META:Invalidate()		
 		local chunks = prepare_chunks(self)
 		chunks = split_by_space_and_punctation(self, chunks)
 		chunks = get_size_info(self, chunks)		
 		
 		chunks = solve_max_width(self, chunks)
-		chunks = solve_max_width(self, chunks)
+		
+		if self.LineWrap then
+			chunks = solve_max_width(self, chunks)
+		end
 		
 	--	chunks = string_wrap(self, chunks)
 		

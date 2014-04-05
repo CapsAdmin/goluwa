@@ -193,11 +193,9 @@ void main()
 	local reserve_prepend = "glw_out_"
 
 
-	local META = {}
+	local META = utilities.CreateBaseMeta("super_shader")
 	META.__index = META
-
-	META.Type = "super_shader"
-
+	
 	function META:__tostring()
 		return ("super_shader[%s]"):format(self.shader_id)
 	end
@@ -247,9 +245,7 @@ void main()
 	function META:CreateVertexAttributes(size)
 		return ffi.new(self.vtx_atrb_type.."[?]", size)
 	end
-	
-	function META:IsValid() return true end
-		
+			
 	function META:CreateVertexBuffer(data, vbo_override)
 		if not data and not vbo_override then
 			return {Type = "VertexBuffer", id = gl.GenBuffer(), length = -1, IsValid = function() return true end, Draw = function() end}

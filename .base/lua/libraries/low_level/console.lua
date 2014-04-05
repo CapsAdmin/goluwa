@@ -200,7 +200,7 @@ do -- console vars
 	
 	-- what's the use?
 	do -- cvar meta
-		local META = {}
+		local META = utilities.CreateBaseMeta("cvar")
 		META.__index = META
 		
 		function META:Get()
