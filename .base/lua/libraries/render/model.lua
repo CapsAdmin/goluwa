@@ -7,10 +7,9 @@ local default_texture_format = {
 render.model_cache = render.model_cache or {}
 
 do -- model meta
-	local META = {}
+	local META = utilities.CreateBaseMeta("model")
 
 	META.__index = META
-	META.Type = "model"
 
 	class.GetSet(META, "TextureOverride", NULL)
 
@@ -82,8 +81,6 @@ do -- model meta
 			model.mesh.specular:Remove()
 			model.mesh:Remove()
 		end
-
-		utilities.MakeNull(self)
 	end
 
 	function META:Draw()

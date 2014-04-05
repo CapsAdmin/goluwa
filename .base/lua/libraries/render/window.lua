@@ -18,9 +18,8 @@ calllbacks.OnMonitor(function() events.Call("OnMonitorConnected") end)
 calllbacks.OnMonitor = nil
 
 do -- window meta
-	local META = {}
+	local META = utilities.CreateBaseMeta("render_window")
 	META.__index = META
-	META.Type = "render_window"
 
 	function META:Remove()
 		if self.OnRemove then self:OnRemove() end
@@ -30,11 +29,6 @@ do -- window meta
 		glfw.DestroyWindow(self.__ptr)
 		
 		utilities.MakeNULL(self)
-		
-	end
-
-	function META:IsValid()
-		return true
 	end
 
 	local x = ffi.new("int[1]")

@@ -73,7 +73,7 @@ end)
 
 vpk.opened = {}
 
-local META = {}
+local META = utilities.CreateBaseMeta("vpk")
 META.__index = META
 
 function META:__tostring()

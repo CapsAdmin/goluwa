@@ -48,10 +48,8 @@ function render.FindTextureFromSuffix(path, ...)
 end
 
 do -- texture object
-	local META = {}
-
+	local META = utilities.CreateBaseMeta("texture")
 	META.__index = META
-	META.Type = "texture"
 
 	function META:__tostring()
 		return ("texture[%s]"):format(self.id)
@@ -312,10 +310,6 @@ do -- texture object
 		for k, v in pairs(new) do
 			self[k] = v
 		end
-	end
-		
-	function META:IsValid()
-		return true
 	end
 	
 	function META:Remove()

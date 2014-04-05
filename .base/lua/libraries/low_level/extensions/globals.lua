@@ -184,10 +184,8 @@ do -- negative pairs
 	end
 end
 
-function Array(type, size)
-	local META = {}
-	
-	local ptr = ffi.new(type .. "[?]", size)
+do
+	local META = utilities.CreateBaseMeta("array")
 	
 	META.__index = function(self, key) 
 		if key == "Type" then 
@@ -195,23 +193,25 @@ function Array(type, size)
 		end 
 		
 		if key == "ArrayType" then
-			return type
+			return self.type
 		end
 		
 		if key == "data" then
-			return ptr
+			return self.ptr
 		end
 		
-		return ptr[key]
+		return self.ptr[key]
 	end
-	
+
 	META.__newindex = function(self, key, val) 
-		ptr[key] = val 
+		self.ptr[key] = val 
 	end
 		
-	META.__tostring = function() 
-		return string.format("%sArray[%i]", type, size) 
+	META.__tostring = function(self) 
+		return string.format("%sArray[%i]", self.type, self.size) 
 	end
 	
-	return setmetatable({}, META)
+	function Array(type, size)	
+		return setmetatable({type = type, size = size, ptr = ffi.new(type .. "[?]", size)}, META)
+	end
 end

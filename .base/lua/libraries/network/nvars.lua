@@ -84,7 +84,7 @@ function nvars.Get(key, def, env)
 end
 
 do
-	local META = {}
+	local META = utilities.CreateBaseMeta("nvar")
 
 	function META:__index(key)
 		return nvars.Get(key, nil, self.Env)

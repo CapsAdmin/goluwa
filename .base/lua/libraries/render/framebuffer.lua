@@ -1,12 +1,8 @@
-local META = {}
+local META = utilities.CreateBaseMeta("framebuffer")
 META.__index = META
 
 function META:__tostring()
 	return ("frame_buffer[%i]"):format(self.id)
-end
-
-function META:IsValid()
-	return true
 end
 
 function META:Begin(attach, channel, skip_push)
