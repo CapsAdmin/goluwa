@@ -25,10 +25,6 @@ function audio.Open(name)
 	
 	audio.device = device
 	audio.context = context
-				
-	for i = 1, 4 do
-	--	audio.effect_channels[i] = audio.CreateAuxiliaryEffectSlot()
-	end     
 end
  
 function audio.Close()	 
@@ -93,6 +89,7 @@ end
 
 function audio.GetEffectChannel(i)
 	i = i or 1
+	audio.effect_channels[i] = audio.effect_channels[i] or audio.CreateAuxiliaryEffectSlot()
 	return audio.effect_channels[i]
 end
 
@@ -260,7 +257,17 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	
 	function META:SetParam(key, x, y, z)
 		
-		if y and z then
+		if self.params and self.params[key] then
+			local val = x or self.params[key].default
+			
+			if self.params[key].min and self.params[key].max then
+				val = math.clamp(val, self.params[key].min, self.params[key].max)
+			end
+			
+			set_f(self.id, self.params[key].enum, val)
+			
+			self.params[key].val = val
+		elseif y and z then
 			temp[0] = x
 			temp[1] = y
 			temp[2] = z
@@ -307,11 +314,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	local temp = ffi.new("int[1]", 0)
 	function META:OnRemove()				
 		if on_remove then on_remove(self) end
-	
-		if self.Stop then
-			self:Stop()
-		end
-		
+			
 		audio.objects[self] = nil 
 		
 		temp[0] = self.id
@@ -356,13 +359,18 @@ do -- source
 					
 					self.decode_info = info
 					self.ready = true
+					
+					-- in case it's instantly loaded and OnLoad is defined the same frame
+					timer.Delay(0, function() if self.OnLoad then self:OnLoad(info) end end)
 				end
 			end, 20)
 		end
 	end, 
 	function(self)
 		for i,v in pairs(self.effects) do
-			v.slot:Remove()
+			if v.slot:IsValid() then 
+				v.slot:Remove()
+			end
 		end
 	end
 	)
@@ -494,13 +502,24 @@ do -- buffer
 end 
 
 do -- effect
-	local META = GEN_TEMPLATE("Effect", function(self, type)
-		self:SetType(type)
+	local available = al.GetAvailableEffects()
+	
+	local META = GEN_TEMPLATE("Effect", function(self, var, override_params)
+		if available[var] then
+			self:SetType(available[var].enum)
+			self.params = table.copy(available[var].params)
+			if override_params then
+				for k,v in pairs(override_params) do self:SetParam(k, v) end
+			else
+				for k,v in pairs(self.params) do v.val = v.default end
+			end
+		else
+			self:SetType(var)
+		end
 	end)
 	
 	do
 		local ADD_FUNCTION = GET_BINDER(META, "Effect")
-		
 		ADD_FUNCTION("Type", "i", e.AL_EFFECT_TYPE)
 	end
 	
@@ -511,19 +530,33 @@ do -- effect
 	function META:UnbindFromChannel()
 		audio.SetEffect(channel, self)
 	end
+	
+	function META:GetParams()
+		return self.params
+	end
 end
 
 do -- filter
-	local META = GEN_TEMPLATE("Filter", function(self, type)
-		self:SetType(type)
+	local available = al.GetAvailableFilters()
+	
+	local META = GEN_TEMPLATE("Filter", function(self, var, override_params)
+		if available[var] then
+			self:SetType(available[var].enum)
+			self.params = table.copy(available[var].params)
+			if override_params then
+				for k,v in pairs(override_params) do self:SetParam(k, v) end
+			else
+				for k,v in pairs(self.params) do v.val = v.default end
+			end		else
+			self:SetType(var)
+		end
 	end)
 	
 	do
 		local ADD_FUNCTION = GET_BINDER(META, "Filter")
-		
+		ADD_FUNCTION("Type", "i", e.AL_FILTER_TYPE)
 	end
 end
-
 
 do -- auxiliary effect slot 
 	local META = GEN_TEMPLATE("AuxiliaryEffectSlot", function(self, effect)
@@ -538,7 +571,10 @@ do -- auxiliary effect slot
 		ADD_FUNCTION("AL_EFFECTSLOT_GAIN", "f")
 		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Effect", "i", e.AL_EFFECTSLOT_EFFECT)
 	end
-
+		
+	function META:GetParams()
+		return self.params
+	end
 end
  
 _G.Sound = audio.CreateSource
