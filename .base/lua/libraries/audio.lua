@@ -4,6 +4,7 @@ audio.objects = audio.objects or {}
 audio.effect_channels = audio.effect_channels or {}
    
 function audio.Open(name)
+	os.setenv("ALSOFT_CONF", lfs.currentdir() .. "\\" .. "al_config.ini")
 	audio.Close()
 	
 	if not name then
@@ -24,9 +25,9 @@ function audio.Open(name)
 	
 	audio.device = device
 	audio.context = context
-		
+				
 	for i = 1, 4 do
-		audio.effect_channels[i] = audio.CreateAuxiliaryEffectSlot()
+	--	audio.effect_channels[i] = audio.CreateAuxiliaryEffectSlot()
 	end     
 end
  
@@ -242,16 +243,12 @@ local function GET_BINDER(META, object_name)
 	end
 end
 
-local function GEN_TEMPLATE(type, ctor)
+local function GEN_TEMPLATE(type, ctor, on_remove)
 	local type2 = type:lower()
 	
-	local META = {}
-	
-	local META = {}
+	local META = utilities.CreateBaseMeta(type2)
 	META.__index = META
-	
-	META.Type = type2
-	
+		
 	local fmt = type2 .. "[%i]"
 	function META:__tostring()
 		return (fmt):format(self.id)
@@ -305,12 +302,12 @@ local function GEN_TEMPLATE(type, ctor)
 
 	audio["Create".. type] = create
 	--_G[type] = create
-	
-	function META:IsValid() return true end
-	
+		
 	local delete = al["Delete"..type.."s"]
 	local temp = ffi.new("int[1]", 0)
-	function META:Remove()		
+	function META:OnRemove()				
+		if on_remove then on_remove(self) end
+	
 		if self.Stop then
 			self:Stop()
 		end
@@ -319,10 +316,7 @@ local function GEN_TEMPLATE(type, ctor)
 		
 		temp[0] = self.id
 		delete(1, temp)
-		utilities.MakeNULL(self)
 	end
-	
-	debug.getregistry()[type] = META
 		
 	return META
 end
@@ -339,8 +333,11 @@ local function ADD_SET_GET_OBJECT(META, ADD_FUNCTION, name, ...)
 	end
 end
 
-do -- sound meta
+do -- source
 	local META = GEN_TEMPLATE("Source", function(self, var, ...)
+	
+		self.effects = {}
+		
 		if type(var) == "cdata" then
 			local buffer = audio.CreateBuffer()
 			buffer:SetData(var, ...)
@@ -359,12 +356,16 @@ do -- sound meta
 					
 					self.decode_info = info
 					self.ready = true
-				else
-					print(length)
-				end			
+				end
 			end, 20)
 		end
-	end)
+	end, 
+	function(self)
+		for i,v in pairs(self.effects) do
+			v.slot:Remove()
+		end
+	end
+	)
 		
 	function META:Play()
 		al.SourcePlay(self.id)
@@ -428,6 +429,30 @@ do -- sound meta
 	
 	function META:SetChannel(channel, ...)
 		self:SetAuxiliaryEffectSlot(audio.GetEffectChannel(channel), ...)
+	end
+	
+	function META:AddEffect(effect, id)
+		id = id or effect
+		
+		self:RemoveEffect(id)
+	
+		local slot = audio.CreateAuxiliaryEffectSlot()
+		slot:SetEffect(effect)
+		
+		table.insert(self.effects, {id = id, slot = slot, effect = effect})
+		
+		self:SetAuxiliaryEffectSlot(slot, #self.effects)
+	end
+	
+	function META:RemoveEffect(id)		
+		for i,v in pairs(self.effects) do
+			if v.id == id then
+				v.slot:Remove()
+				self:SetAuxiliaryEffectSlot(nil, i) 
+				table.remove(self.effects, i)
+				break
+			end
+		end
 	end
 end
 
@@ -511,7 +536,7 @@ do -- auxiliary effect slot
 		local ADD_FUNCTION = GET_BINDER(META, "AuxiliaryEffectSlot")
 		
 		ADD_FUNCTION("AL_EFFECTSLOT_GAIN", "f")
-		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Effect", "iv", e.AL_EFFECTSLOT_EFFECT)
+		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Effect", "i", e.AL_EFFECTSLOT_EFFECT)
 	end
 
 end
