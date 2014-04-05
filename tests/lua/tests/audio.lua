@@ -1,55 +1,30 @@
+local music = utilities.RemoveOldObject(audio.CreateSource("sounds/cantina.ogg"))
+music:Play() 
+music:SetLooping(true)
 
-if false then
-local mic_out = utilities.RemoveOldObject(Sound())
-mic_out:SetChannel(1)
-
-	local mic_in = audio.CreateAudioCapture()
-	mic_in:Start()  
-	mic_in:FeedSource(mic_out)
-
-	function mic_in:OnBufferData(data, size)
-		for i = 0, size - 1 do
-			-- ??
-		end
-	end
-
-mic_out:Play()  
- 
-end
-    
-local distortion = audio.CreateEffect(e.AL_EFFECT_DISTORTION)
-distortion:SetParam(e.AL_DISTORTION_LOWPASS_CUTOFF,1000)  
-distortion:SetParam(e.AL_DISTORTION_GAIN, 1)  
-
-local reverb = audio.CreateEffect(e.AL_EFFECT_EAXREVERB)
-reverb:SetParam(e.AL_EAXREVERB_DECAY_TIME, 5)  
-reverb:SetParam(e.AL_EAXREVERB_DIFFUSION, 5)  
-reverb:SetParam(e.AL_EAXREVERB_GAIN, 1)  
-
-	local music = utilities.RemoveOldObject(Sound("sounds/cantina.ogg"), "cantina")
-	table.print(music.decode_info)
-	music:Play() 
-	music:SetLooping(true)
-          
+local distortion = audio.CreateEffect("distortion")
+distortion:SetParam("lowpass_cutoff", 1000)  
+distortion:SetParam("gain", 1)  
 music:AddEffect(distortion)  
-music:AddEffect(reverb)   
 
-LOL = music
-LOL2 = reverb
- 
-local voice = utilities.RemoveOldObject(Sound("sounds/what a shame.ogg"), "what a shame")
+local reverb = audio.CreateEffect("eaxreverb", {decay_time = 5, diffusion = 5, gain = 1}) -- whatever floats your boat!
+music:AddEffect(reverb)
+  
+local voice = utilities.RemoveOldObject(audio.CreateSource("http://chatsoundsforgmod.googlecode.com/svn/trunk/sound/chatsounds/autoadd/deusex/what%20a%20shame.ogg"))
 voice:Play() 
-voice:SetGain(0.25)
+voice:SetGain(5)
+voice.OnLoad = function(self, info) table.print(info) end
+
+local filter = audio.CreateFilter("lowpass")
+filter:SetParam("gainhf", 0.1)  
+voice:SetFilter(filter)  
 
 timer.Create("shame", 1, 0, function()
 	voice:Play()
-
 	voice:SetPosition(math.sin(timer.clock()), math.cos(timer.clock()),0)
 end) 
 
-timer.Create("pitchy",0,0,function()
-	music:SetPitch(1 + math.sin(timer.clock()*10)/30)
-	local gain = math.abs(math.sin(os.clock()/10))
-	
-	--reverb:SetParam(e.AL_EAXREVERB_GAIN, gain)
-end)
+event.AddListener("OnUpdate", "hmm", function()
+	music:SetPitch(1 + math.sin(timer.clock()*10)/30)	
+	reverb:SetParam("gain", math.abs(math.sin(os.clock()/10)))
+end) 
