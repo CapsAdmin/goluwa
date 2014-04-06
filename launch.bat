@@ -32,4 +32,4 @@ done
 
 cd %~dp0
 cd .base/bin/windows/x86/
-start luajit.exe ../../../lua/init.lua -g
+start luajit.exe ../../../lua/init.lua
