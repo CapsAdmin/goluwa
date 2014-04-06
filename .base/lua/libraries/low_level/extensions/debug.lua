@@ -175,7 +175,7 @@ function debug.logcalls(b, type)
 		debug.sethook()
 		
 		setlogfile("lua_calls")
-			debug.dumpcall()
+			debug.dumpcall(2)
 		setlogfile()
 		
 		debug.sethook(hook, type)
