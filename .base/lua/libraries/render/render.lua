@@ -164,6 +164,10 @@ function render.GetVersion()
 	return ffi.string(gl.GetString(e.GL_VERSION))
 end
 
+function render.GetVendor()		
+	return ffi.string(gl.GetString(e.GL_VENDOR))
+end
+
 function render.CheckSupport(func)
 	if not gl[func] then
 		logf("%s: the function gl.%s does not exist", debug.getinfo(2).func:name(), func)

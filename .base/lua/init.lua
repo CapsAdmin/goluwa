@@ -1,4 +1,4 @@
-if ffi and lfs then lfs.chdir("../../../../") os.execute("launch.bat") os.exit() return end 
+if mmyy and mmyy.Restart then mmyy.Restart() return end 
 
 DEBUG = true
 USE_STRUNG = true

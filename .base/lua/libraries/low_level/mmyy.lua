@@ -1,5 +1,11 @@
 local mmyy = _G.mmyy or {}
 
+function mmyy.Restart()
+	lfs.chdir("../../../../") 
+	os.execute("launch.bat") 
+	os.exit()
+end
+
 -- this should be used for xpcall
 local suppress = false
 local last_openfunc = 0
