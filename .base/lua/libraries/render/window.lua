@@ -147,7 +147,7 @@ do -- window meta
 
 		if WINDOWS and X64 and NVIDIA then
 			system.MessageBox("fatal error!!!!!", "Nvidia on x64 is not supported because for some weird reason it freezes.\nThe next time you launch it will launch the x86 version instead.\nPress OK to relaunch.")
-			mmyy.Restart()
+			goluwa.Restart()
 		end
 
 		gl.GetProcAddress = glfw.GetProcAddress
@@ -166,7 +166,7 @@ do -- window meta
 						
 		timer.Create("glfw_pollevents", 1/60, 0, function() glfw.PollEvents() end)
 		
-		event.AddListener("OnUpdate", self, nil, mmyy.OnError)
+		event.AddListener("OnUpdate", self, nil, goluwa.OnError)
 				
 		timer.Delay(0, function()
 			event.Call("OnFramebufferSize", self, width, height)

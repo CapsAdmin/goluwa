@@ -165,7 +165,7 @@ function easylua.RunLua(ply, code, env_name, print_error)
 		if type(func) == "function" then
 			setfenv(func, easylua.EnvMeta)
 
-			local args = {xpcall(func, mmyy.OnError)}
+			local args = {xpcall(func, goluwa.OnError)}
 
 			if args[1] == false then
 				data.error = args[2]

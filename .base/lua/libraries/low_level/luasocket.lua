@@ -81,7 +81,7 @@ if _G.luasocket and _G.luasocket.Panic then
 end
 
 -- external functions
-local on_error = mmyy and mmyy.OnError or error
+local on_error = goluwa and goluwa.OnError or error
 local logn = logn or MsgN or print
 local table_print = PrintTable or table.print or logn
 local warning = ErrorNoHalt or logn

@@ -124,7 +124,7 @@ function menu.MakeButtons()
 			end)
 		else
 			menu.AddButton("Host", function()
-				mmyy.StartLuaInstance("start_server", "host")
+				goluwa.StartLuaInstance("start_server", "host")
 				menu.Remake()
 				
 				timer.Delay(0.25, function()

@@ -1162,7 +1162,7 @@ local function call_tag_func(self, chunk, name, ...)
 				table.insert(args, val)
 			end
 			
-			args = {xpcall(func, debug.Trace or mmyy.OnError, unpack(args))}
+			args = {xpcall(func, debug.Trace or goluwa.OnError, unpack(args))}
 
 			if not args[1] then
 				EXT.LogF("tag error %s", args[2])

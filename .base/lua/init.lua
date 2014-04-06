@@ -1,4 +1,4 @@
-if mmyy and mmyy.Restart then mmyy.Restart() return end 
+if goluwa and goluwa.Restart then goluwa.Restart() return end 
 
 DEBUG = true
 USE_STRUNG = true
@@ -413,7 +413,7 @@ do -- include
 				local func, err = loadfile(script)
 				
 				if func then
-					local ok, err = xpcall(func, mmyy and mmyy.OnError or (function() end), ...)
+					local ok, err = xpcall(func, goluwa and goluwa.OnError or (function() end), ...)
 					
 					if not ok then
 						logn(err)
@@ -478,7 +478,7 @@ do -- include
 			dir = path:match("(.+/)(.+)")
 			include_stack[#include_stack + 1] = dir
 					
-			local res = {xpcall(func, mmyy and mmyy.OnError or (function() end), ...)}
+			local res = {xpcall(func, goluwa and goluwa.OnError or (function() end), ...)}
 			
 			if not res[1] then
 				logn(res[2])
@@ -559,7 +559,7 @@ do -- tier 0
 	msgpack = include(libraries .. "msgpack.lua")
 	json = include(libraries .. "json.lua")
 	console = include(libraries .. "console.lua")
-	mmyy = include(libraries .. "mmyy.lua")
+	goluwa = include(libraries .. "goluwa.lua")
 	system = include(libraries .. "system.lua")
 	lcpp = include(libraries .. "lcpp.lua")
 	profiler = include(libraries .. "profiler.lua")
@@ -684,7 +684,7 @@ if CREATED_ENV then
 		local func, msg = loadstring(line)
 
 		if func then
-			local ok, msg = xpcall(func, mmyy.OnError) 
+			local ok, msg = xpcall(func, goluwa.OnError) 
 			if not ok then
 				logn("runtime error:", client, msg)
 			end
