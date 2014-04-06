@@ -176,6 +176,8 @@ do -- texture object
 		
 		return self
 	end
+	
+	local colors = ffi.new("char[4]")
 
 	function META:Fill(callback, write_only, read_only)
 		check(callback, "function")
@@ -188,7 +190,7 @@ do -- texture object
 		local height = self.size.h		
 		local stride = self.format.stride
 		local x, y = 0, 0
-		local colors
+		
 
 		local buffer
 		
@@ -198,36 +200,32 @@ do -- texture object
 			buffer = self:Download()
 		end	
 	
-		for x = 0, width-1 do
 		for y = 0, height-1 do
+		for x = 0, width-1 do
 			local pos = (y * width + x) * stride
 			
 			if write_only then
-				colors = {callback(x, y, pos)}
+				colors[0], colors[1], colors[2], colors[3] = callback(x, y, pos)
 			else
 				local temp = {}
-				for i = 1, stride do
-					temp[i] = buffer[pos+i-1]
+				for i = 0, stride-1 do
+					temp[i] = buffer[pos+i]
 				end
 				if read_only then
 					if callback(x, y, pos, unpack(temp)) ~= nil then return end
 				else
-					colors = {callback(x, y, pos, unpack(temp))}
+					colors[0], colors[1], colors[2], colors[3] = callback(x, y, pos, unpack(temp))
 				end
 			end
 		
 			if not read_only then
-				for i = 1, stride do
-					buffer[pos+i-1] = colors[i] or 0
-				end
-			else
-				if colors and colors[i] ~= nil then
-					return
+				for i = 0, stride-1 do
+					buffer[pos+i] = colors[i]
 				end
 			end
 		end
 		end
-		
+
 		if not read_only then
 			self:Upload(buffer)
 		end
@@ -341,8 +339,9 @@ do -- texture object
 		format.filter = format.filter ~= nil
 		format.stride = format.stride or 4
 		format.buffer_type = format.buffer_type or "unsigned char"
-		format.mip_map_levels = format.mip_map_levels or 2
 		format.border_size = format.border_size or 4
+
+		format.mip_map_levels = math.max(format.mip_map_levels or 3, 3) --ATI doesn't like level under 3
 		format.min_filter = format.min_filter or e.GL_LINEAR_MIPMAP_LINEAR
 		format.mag_filter = format.mag_filter or e.GL_LINEAR
 				
