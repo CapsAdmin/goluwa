@@ -2,6 +2,20 @@ local system = _G.system or {}
 
 local function not_implemented() debug.trace() logn("this function is not yet implemented!") end
 
+do -- message box
+	local set = not_implemented
+	
+	if WINDOWS then		
+		ffi.cdef("int MessageBoxA(void *w, const char *txt, const char *cap, int type);")
+		
+		set = function(title, message)
+			ffi.C.MessageBoxA(nil, message, title, 0)
+		end
+	end
+	
+	system.MessageBox = set
+end
+
 do -- title
 	local set_title
 	if WINDOWS then
