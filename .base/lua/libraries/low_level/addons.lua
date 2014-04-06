@@ -27,7 +27,7 @@ local function autorun_addon(folder, info)
 				-- autorun folders			
 				for path in vfs.Iterate(e.ROOT_FOLDER .. info.path .. "lua/autorun/" .. folder, nil, true) do
 					if path:find("%.lua") then
-						local ok, err = xpcall(include, mmyy.OnError, path)
+						local ok, err = xpcall(include, goluwa.OnError, path)
 						if not ok then
 							logn(err)
 						end

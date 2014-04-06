@@ -1,6 +1,6 @@
-local mmyy = _G.mmyy or {}
+local goluwa = _G.goluwa or {}
 
-function mmyy.Restart()
+function goluwa.Restart()
 	lfs.chdir("../../../../") 
 	os.execute("launch.bat") 
 	os.exit()
@@ -9,7 +9,7 @@ end
 -- this should be used for xpcall
 local suppress = false
 local last_openfunc = 0
-function mmyy.OnError(msg, ...)
+function goluwa.OnError(msg, ...)
 	msg = msg or "no error"
 	if suppress then logn("supressed error: ", msg, ...) return end
 	suppress = true
@@ -132,13 +132,13 @@ function mmyy.OnError(msg, ...)
 	suppress = false
 end
 
-if mmyy.lua_environment_sockets then
-	for key, val in pairs(mmyy.lua_environment_sockets) do
+if goluwa.lua_environment_sockets then
+	for key, val in pairs(goluwa.lua_environment_sockets) do
 		utilities.SafeRemove(val)
 	end
 end
 
-function mmyy.StartLuaInstance(...)
+function goluwa.StartLuaInstance(...)
 	local args = {...}
 	local arg_line = ""
 	
@@ -160,13 +160,13 @@ function mmyy.StartLuaInstance(...)
 	end
 end
 
-mmyy.lua_environment_sockets = {}
+goluwa.lua_environment_sockets = {}
 
-function mmyy.CreateLuaEnvironment(title, globals, id)	
+function goluwa.CreateLuaEnvironment(title, globals, id)	
 	check(globals, "table", "nil")
 	id = id or title
 	
-	local socket = mmyy.lua_environment_sockets[id] or NULL
+	local socket = goluwa.lua_environment_sockets[id] or NULL
 	
 	if socket:IsValid() then 
 		socket:Send("exit")
@@ -176,7 +176,7 @@ function mmyy.CreateLuaEnvironment(title, globals, id)
 	local socket = luasocket.Server()
 	socket:Host("*", 0)
 					
-	mmyy.lua_environment_sockets[id] = socket
+	goluwa.lua_environment_sockets[id] = socket
 	
 	local arg = ""
 		
@@ -205,7 +205,7 @@ function mmyy.CreateLuaEnvironment(title, globals, id)
 	function env:OnReceive(line)
 		local func, msg = loadstring(line)
 		if func then
-			local ok, msg = xpcall(func, mmyy.OnError) 
+			local ok, msg = xpcall(func, goluwa.OnError) 
 			if not ok then
 				logn("runtime error:", client, msg)
 			end
@@ -248,9 +248,9 @@ function mmyy.CreateLuaEnvironment(title, globals, id)
 	return env
 end
 
-function mmyy.CreateConsole(title)
+function goluwa.CreateConsole(title)
 	if CONSOLE then return logn("tried to create a console in a console!!!") end
-	local env = mmyy.CreateLuaEnvironment(title, {CONSOLE = true})
+	local env = goluwa.CreateLuaEnvironment(title, {CONSOLE = true})
 	
 	env:Send([[
 		local __stop__
@@ -307,4 +307,4 @@ function mmyy.CreateConsole(title)
 	return env
 end
 
-return mmyy
+return goluwa

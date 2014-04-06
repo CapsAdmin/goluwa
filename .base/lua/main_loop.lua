@@ -56,7 +56,7 @@ local function main()
 			timer.frame_time = dt
 			timer.total_time = timer.total_time + dt
 						
-			local ok, err = xpcall(update, mmyy.OnError, dt)
+			local ok, err = xpcall(update, goluwa.OnError, dt)
 			
 			if not ok and err then				
 				log("shutting down (", err, ")\n")
