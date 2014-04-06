@@ -121,7 +121,7 @@ if gmod then
 		end
 
 		function self:GetDuration()
-			return SoundDuration(self.path) or 0
+			return SoundDuration(self.path) or 2
 		end
 
 		return self
@@ -805,9 +805,9 @@ end
 
 
 if gmod then
-	hook.Add("Think",1,chatsounds.Update)
+	hook.Add("Think", "chatsounds", chatsounds.Update)
 
-	hook.Add("OnPlayerChat",1, function(ply, text)
+	hook.Add("OnPlayerChat", "chatsounds", function(ply, text)
 		--if ply == LocalPlayer() then
 		--	chatsounds.Say(ply, text, CurTime())
 		--end

@@ -23,6 +23,11 @@ function PANEL:SetMultiline(b)
 	self.markup:SetMultiline(b)
 end
 
+function PANEL:SetWrap(b)
+	self.Wrap = b
+	self.markup:SetLineWrap(b)
+end
+
 function PANEL:Initialize()
 	self.markup = Markup()
 end
@@ -98,11 +103,7 @@ function PANEL:SetContent(str)
 end
 
 function PANEL:SizeToContents()
-	if self.EditorMode then
-		self:SetSize(self:GetWidth(), self.height)
-	else
-		self:SetSize(Vec2(self:GetWidth(), self.markup.height))
-	end
+	self:SetSize(Vec2(self:GetWidth(), self.markup.height))
 end
 
 aahh.RegisterPanel(PANEL)

@@ -99,3 +99,5 @@ function syntax.process(code)
 
 	return output
 end
+
+return syntax
