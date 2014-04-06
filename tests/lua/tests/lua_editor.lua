@@ -110,9 +110,7 @@ do
 			markup:AddString(str:sub(last_pos-1, ls.p-2))
 			
 			last_pos = ls.p 
-			
-			table.print(ls)
-					
+								
 			if ls.token == "TK_eof" then break end
 		end
 		
@@ -132,11 +130,13 @@ scroll:Dock("fill")
 local markup = aahh.Create("text_input")  
 markup:SetMultiLine(true)
 markup:SetEditorMode(true)
+markup:SetWrap(false )
+markup.markup:SetFastMode(true)
 scroll:SetPanel(markup)  
 
 function markup:OnTextChanged()
 	self:SizeToContents()
-end 
+end    
  
 syntax_process("local hello = ''\n asdasdasd = 1234\n --[[it's a comment]] local test \n --it's really powerful\n", markup.markup)  
 
