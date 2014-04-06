@@ -1,6 +1,6 @@
 local freeimage = {}
 
-local lib = ffi.load("libfreeimage") 
+local lib = ffi.load("freeimage") 
 
 ffi.cdef[[
 	typedef struct {} FI_MEMORY;
