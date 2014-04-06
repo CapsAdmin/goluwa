@@ -141,6 +141,12 @@ console.AddCommand("find", function(line, ...)
 end)
 
 console.AddCommand("source", function(line, ...)
+
+	if vfs.Exists(line) then
+		debug.openscript(line)
+		return
+	end
+
 	local data = utilities.FindValue(...)
 		
 	local func
