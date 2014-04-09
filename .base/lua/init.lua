@@ -30,9 +30,11 @@ do
 		return loadfile("../../../lua/modules/" .. name .. ".lua")
 	end)
 	
-	jit.verbose = require("jit.v")
-	jit.dump = require("jit.dump")
-	jit.profiler = require("jit.p")
+	pcall(function()
+		jit.verbose = require("jit.v")
+		jit.dump = require("jit.dump")
+		jit.profiler = require("jit.p")
+	end)
 	
 	if DEBUG then
 		local base = "../../../../.userdata/" .. e.USERNAME:lower() .. "/logs/"
