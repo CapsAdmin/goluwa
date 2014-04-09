@@ -13,4 +13,5 @@
 /.base/bin/pdcurses_src/win32a/worm.exe
 /.base/bin/pdcurses_src/win32a/xmas.exe
 /.base/bin/windows/x86/build_scripts/temp
-/.base/bin/windows/x86/jit
+/.base/bin/windows/x86/jit/.gitignore
+/.base/bin/linux/x64/jit/.gitignore
