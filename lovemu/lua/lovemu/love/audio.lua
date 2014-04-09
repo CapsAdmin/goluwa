@@ -124,11 +124,7 @@ end
 
 local function seek(self,offset,type)
 	if self.legit==true then
-		if type~="samples" then
-			offset = offset * self:GetBuffer():GetSampleRate()
-		end
-		
-		self:SetSampleOffset(offset)
+		self:Seek(offset, type)
 	end
 end
 
@@ -200,11 +196,7 @@ end
 
 local function tell(self,type)
 	if self.legit==true then
-		if type=="samples" then
-			return self:GetSampleOffset()
-		else
-			return self:GetSampleOffset() / self:GetBuffer():GetSampleRate()
-		end
+		self:Tell(self, type)
 	else
 		return 1
 	end
