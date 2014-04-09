@@ -1,3 +1,71 @@
+do
+	local started = {}	
+
+	function debug.LogLibrary(library, filter, post_calls_only, lib_name) 
+		lib_name = lib_name or ""
+		
+		if type(library) == "string" then
+			lib_name = library
+			library = _G[library]
+		end
+		
+		if started[library] then
+			for name, func in pairs(started[library]) do
+				library[name] = func
+			end
+		else
+			if type(filter) == "string" then
+				filter = {filter}
+			end
+			
+			filter = filter or {}
+			
+			for k,v in pairs(filter) do filter[v] = true end		
+		
+			started[library] = {}
+			
+			for name, func in pairs(library) do
+				if type(func) == "function" then
+					library[name] = function(...)
+						if not post_calls_only and not filter[name] then
+							logn(name, ...)
+						end
+						
+						local args = {func(...)}
+						
+						if not filter[name] then
+							if post_calls_only then
+								
+								local temp = {}
+								
+								for i = 1, select("#", ...) do 
+									table.insert(temp, luadata.ToString(select(i, ...))) 
+								end
+								
+								local ret = {}
+								for k, v in pairs(args) do
+									table.insert(ret, luadata.ToString(v)) 
+								end
+								
+								if #ret == 0 then ret[1] = "nil" end
+								
+								logf("%s\t=\t%s.%s(%s)", table.concat(ret, ", "), lib_name, name, table.concat(temp, ", ")) 
+							else
+								logn(unpack(args))
+							end
+						end
+						
+						return unpack(args)
+					end
+					
+					started[library][name] = func
+				end
+			end
+		end
+	end
+
+end
+
 function debug.openscript(lua_script, line)
 	local path = console.GetVariable("editor_path")
 	
