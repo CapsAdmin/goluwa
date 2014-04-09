@@ -19,6 +19,9 @@ luadata.Types =
 		tab = tab - 1
 		return str
 	end,
+	cdata = function(var)
+		return tostring(var)
+	end,
 }
 
 function luadata.SetModifier(type, callback)
