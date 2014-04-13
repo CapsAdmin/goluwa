@@ -1,5 +1,54 @@
 local steam = _G.steam or {}
 
+do 
+	local lib = ffi.load("steamfriends")
+	
+	ffi.cdef[[
+		const char *steamGetLastError();
+		int steamInitialize();
+		
+		typedef struct
+		{
+			const char *text;
+			const char *sender_steam_id;
+			const char *receiver_steam_id;
+		}message;
+		
+		message *steamGetLastChatMessage();
+		int steamSendChatMessage(const char *steam_id, const char *text);
+		const char *steamGetNickFromSteamID(const char *steam_id);
+		const char *steamGetClientSteamID();
+	]] 
+	
+	if lib.steamInitialize() == 1 then
+		logn(ffi.string(lib.steamGetLastError()))
+	else
+		timer.Thinker(function()
+			local msg = lib.steamGetLastChatMessage()
+
+			if msg ~= nil then
+				local sender_steam_id = ffi.string(msg.sender_steam_id)
+				local receiver_steam_id = ffi.string(msg.receiver_steam_id)
+				local text = ffi.string(msg.text)
+				
+				event.Call("SteamFriendsMessage", sender_steam_id, text, receiver_steam_id)
+			end
+		end)
+	end
+	
+	function steam.SendChatMessage(steam_id, text)
+		return lib.steamSendChatMessage(steam_id, text)
+	end
+	
+	function steam.GetNickFromSteamID(steam_id)
+		return ffi.string(lib.steamGetNickFromSteamID(steam_id))
+	end
+	
+	function steam.GetClientSteamID()
+		return ffi.string(lib.steamGetClientSteamID())
+	end
+end
+
 steam.cache_path = "gamepaths.txt"
 
 local function traverse(path, callback)
