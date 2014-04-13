@@ -659,6 +659,8 @@ do -- tier 1
 	
 	include("libraries/gif.lua")
 	include("libraries/markup.lua")
+	
+	include("libraries/chatsounds.lua")
 end
 
 entities.LoadAllEntities()
