@@ -687,6 +687,6 @@ if ARGS then
 	ARGS = nil
 end
 
---vfs.MonitorEverything(true)
+vfs.MonitorEverything(true)
 
 include("main_loop.lua")
