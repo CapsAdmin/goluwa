@@ -269,10 +269,14 @@ function chatsounds.BuildLists()
 				break
 			end
 		end
+		
+		for path in vfs.Iterate(addons, nil, true) do 
+			if vfs.IsDir(path) then 
+				vfs.Mount(path)  
+			end 
+		end
 
 		addon_dir = addon_dir .. "/"
-
-		vfs.Mount(addon_dir)
 
 		local nosend = addon_dir .. "lua/chatsounds/lists_nosend/"
 		local send = addon_dir .. "lua/chatsounds/lists_send/"
