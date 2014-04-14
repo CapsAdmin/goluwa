@@ -18,6 +18,8 @@ do
 		int steamSendChatMessage(const char *steam_id, const char *text);
 		const char *steamGetNickFromSteamID(const char *steam_id);
 		const char *steamGetClientSteamID();
+		unsigned steamGetFriendCount();
+		const char *steamGetFriendByIndex(unsigned i);
 	]] 
 	
 	if lib.steamInitialize() == 1 then
@@ -46,6 +48,16 @@ do
 	
 	function steam.GetClientSteamID()
 		return ffi.string(lib.steamGetClientSteamID())
+	end
+	
+	function steam.GetFriends()
+		local out = {}
+		
+		for i = 1, lib.steamGetFriendCount() do
+			table.insert(out, ffi.string(lib.steamGetFriendByIndex(i - 1)))
+		end
+		
+		return out
 	end
 end
 
