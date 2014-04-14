@@ -163,11 +163,16 @@ if CLIENT then
 end
 
 if SERVER then
-	message.AddListener("say", function(ply, str)
+
+	function chat.PlayerSay(ply, str, filter, skip_log)
 		if event.Call("OnPlayerChat", ply, str) ~= false then
-			chat.Append(ply, str)
-			message.Send("say", message.PlayerFilter():AddAllExcept(ply), ply, str)
+			if skip_log then chat.Append(ply, str) end
+			message.Send("say", filter, ply, str)
 		end
+	end
+
+	message.AddListener("say", function(ply, str)
+		chat.PlayerSay(ply, str, message.PlayerFilter():AddAllExcept(ply))
 	end)
 
 	function chat.Say(str)

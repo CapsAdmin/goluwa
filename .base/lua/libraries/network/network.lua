@@ -333,7 +333,7 @@ if SERVER then
 	end
 		
 	function network.SendToClient(client, event, ...)
-		if not client or not client:IsValid() then debug.trace() end
+		if not client:IsValid() then return end
 		client:Send(encode(event, ...), buffered)
 	end
 	
