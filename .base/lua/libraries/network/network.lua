@@ -423,3 +423,17 @@ if SERVER then
 		network.Host(ip, port)
 	end)
 end
+
+console.AddCommand("start_server", function()
+	_G.SERVER = true
+	addons.Reload()
+	include("lua/libraries/network/network.lua")
+	entities.LoadAllEntities()
+end)
+
+console.AddCommand("start_client", function()
+	_G.CLIENT = true
+	addons.Reload()
+	include("lua/libraries/network/network.lua")
+	entities.LoadAllEntities()
+end)
