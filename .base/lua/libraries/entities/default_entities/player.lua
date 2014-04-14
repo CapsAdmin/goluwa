@@ -10,6 +10,10 @@ class.GetSet(META, "ID", -1)
 
 nvars.GetSet(META, "Nick", e.USERNAME, "cl_nick")
 
+function META:IsBot()
+	return self.is_bot == true
+end
+
 function META:GetNick()
 	for key, ply in pairs(players.GetAll()) do
 		if ply ~= self and ply.nv.Nick == self.nv.Nick then
@@ -28,21 +32,33 @@ function META:GetName()
 	return self.nv and self.nv.Nick or self:GetUniqueID()
 end
 
-function META:OnRemove(reason)	
+function META:OnRemove()	
 	players.active_players[self:GetUniqueID()] = nil
-	if SERVER and self.socket:IsValid() then
-		self.socket:Remove()
+	if SERVER then 
+		if self.socket:IsValid() then
+			self.socket:Remove()
+		end
 	end
 end	
 
 function META:GetUniqueColor()
-	local r,g,b = self:GetUniqueID():match(("(%d%d%d)"):rep(3))
+	local r,g,b = tostring(crypto.CRC32(self:GetUniqueID())):match(("(%d%d%d)"):rep(3))
 	return Color(tonumber(r), tonumber(g), tonumber(b))
 end
 
 if SERVER then
 	function META:Kick(reason)
-		network.HandleEvent(self.socket, network.DISCONNECT, self:GetUniqueID(), reason or "kicked")
+		if self.socket:IsValid() then
+			network.HandleEvent(self.socket, network.DISCONNECT, self:GetUniqueID(), reason or "kicked")
+		end
+		
+		if self:IsBot() then
+			event.Call("PlayerLeft", self:GetName(), self:GetUniqueID(), reason, self)
+			event.BroadcastCall("PlayerLeft", self:GetName(), self:GetUniqueID(), reason)
+			network.Broadcast(network.DISCONNECT, self:GetUniqueID(), reason)
+		
+			self:Remove()
+		end
 	end
 end
 
@@ -50,13 +66,13 @@ do -- ping pong
 	nvars.GetSet(META, "Ping", 0)
 		
 	function META:GetTimeout()
-		return self.last_ping and (os.clock() - self.last_ping) or 0
+		return (self.socket:IsValid() and self.last_ping) and (os.clock() - self.last_ping) or 0
 	end
 	
 	console.CreateVariable("sv_timeout", 10)
 	
-	function META:IsTimingOut()
-		return self:GetTimeout() > console.GetVariable("sv_timeout", 3)
+	function META:IsTimingOut() 
+		return self.socket:IsValid() and self:GetTimeout() > console.GetVariable("sv_timeout", 3)
 	end
 
 	if CLIENT then
