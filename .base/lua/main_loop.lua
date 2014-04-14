@@ -1,6 +1,6 @@
 local rate_cvar = console.CreateVariable("max_fps", 120)
 
-local fps_cvar = console.CreateVariable("show_fps", false)
+local fps_cvar = console.CreateVariable("show_fps", true)
 
 local fps_add = 0
 local avg_fps = 1
