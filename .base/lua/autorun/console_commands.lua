@@ -1,17 +1,3 @@
-console.AddCommand("start_server", function()
-	SERVER = true
-	addons.Reload()
-	include("lua/libraries/network/network.lua")
-	entities.LoadAllEntities()
-end)
-
-console.AddCommand("start_client", function()
-	CLIENT = true
-	addons.Reload()
-	include("lua/libraries/network/network.lua")
-	entities.LoadAllEntities()
-end)
-
 console.AddCommand("trace_calls", function(_, line, ...)
 	line = "_G." .. line
 	local ok, old_func = assert(pcall(assert(loadstring("return " .. line))))
