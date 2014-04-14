@@ -99,8 +99,8 @@ do -- commands
 	-- http://www.facepunch.com/showthread.php?t=827179
 
 	function console.ParseCommandArgs(line)
-		local cmd, val = line:match("(%S-)%s-=%s+(.+)")
-		
+		local cmd, val = line:match("^(%S-)%s-=%s+(.+)$")
+				
 		if cmd and val then
 			return {cmd:trim(), val:trim()}
 		end
