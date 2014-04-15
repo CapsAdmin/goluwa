@@ -77,7 +77,7 @@ if CLIENT then
 		end
 	end	
 		
-	event.AddListener("ConsoleLineEntered", "chat", function(line)
+	--[[event.AddListener("ConsoleLineEntered", "chat", function(line)
 		if not network.IsStarted() then return end
 	
 		if not console.RunString(line, true) then
@@ -85,7 +85,7 @@ if CLIENT then
 		end
 		
 		return false
-	end)
+	end)]]
 	
 	if aahh then
 
@@ -162,14 +162,14 @@ if CLIENT then
 	end
 end
 
-if SERVER then
-
-	function chat.PlayerSay(ply, str, filter, skip_log)
-		if event.Call("OnPlayerChat", ply, str) ~= false then
-			if skip_log then chat.Append(ply, str) end
-			message.Send("say", filter, ply, str)
-		end
+function chat.PlayerSay(ply, str, filter, skip_log)
+	if event.Call("OnPlayerChat", ply, str) ~= false then
+		if skip_log then chat.Append(ply, str) end
+		if SERVER then message.Send("say", filter, ply, str) end
 	end
+end
+
+if SERVER then
 
 	message.AddListener("say", function(ply, str)
 		chat.PlayerSay(ply, str, message.PlayerFilter():AddAllExcept(ply))
