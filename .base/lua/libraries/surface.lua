@@ -202,143 +202,146 @@ do -- fonts
 		
 		if not face then return end
 		
-		local info = font.info 
 		local data = font.strings[str]
 		
+		if data then
+			return data
+		end
+			
+		local info = font.info 
+		
 		freetype.SetCharSize(face, 0, info.size * DPI, DPI, DPI)
-
-		if not data then
-			-- get the tallest character and use it as height
-			local bbox = ffi.new("FT_BBox[1]")
-			local glyph2 = ffi.new("FT_Glyph[1]")
-			
-			local i = freetype.GetCharIndex(face, ("|"):byte()) 
-			freetype.LoadGlyph(face, i, 0)
-			freetype.RenderGlyph(face.glyph, 0) 
-			freetype.GetGlyph(face.glyph, glyph2)
-			freetype.GlyphGetCBox(glyph2[0], 2, bbox)
-			bbox = bbox[0]
-			
-			data = {chars = {}, h = face.glyph.bitmap.rows - bbox.yMin + 1, w = info.size}
-						
-			local w = 0
-			
-			for _, str in pairs(utf8.totable(str)) do
-				local byte = utf8.byte(str)
-				if byte == -1 then byte = str:byte() end
-				
-				if str == " " or str == "" then	
-					w = w + font.info.size / 2
-				elseif str == "\t" then
-					w = w + font.info.size * 2
-				else				
-					local glyph = font.glyphs[str]
+		
+		-- get the tallest character and use it as height
+		local bbox = ffi.new("FT_BBox[1]")
+		local glyph2 = ffi.new("FT_Glyph[1]")
+		
+		local i = freetype.GetCharIndex(face, ("|"):byte()) 
+		freetype.LoadGlyph(face, i, 0)
+		freetype.RenderGlyph(face.glyph, 0) 
+		freetype.GetGlyph(face.glyph, glyph2)
+		freetype.GlyphGetCBox(glyph2[0], 2, bbox)
+		bbox = bbox[0]
+		
+		data = {chars = {}, h = face.glyph.bitmap.rows - bbox.yMin + 1, w = info.size}
 					
-					if not glyph then
-						local face = face
-						local i = freetype.GetCharIndex(face, byte)
-						
-						-- try the default font
-						if i == 0 then
-							face = ft.fonts.default.face
-							i = freetype.GetCharIndex(face, byte)
-							freetype.SetCharSize(face, 0, info.size * DPI, DPI, DPI)
-						end
-						
-						freetype.LoadGlyph(face, i, 0)
-						freetype.RenderGlyph(face.glyph, 0)
-						
-						local bitmap = face.glyph.bitmap 
-						local m = face.glyph.metrics
-						
-						-- bboox
-						local glyph2 = ffi.new("FT_Glyph[1]")
-						freetype.GetGlyph(face.glyph, glyph2)
-						
-						local bbox = ffi.new("FT_BBox[1]")
-						freetype.GlyphGetCBox(glyph2[0], 2, bbox)
-						bbox = bbox[0]
-						
-						local x_min = bbox.xMin
-						local x_max = bbox.xMax
-						
-						local y_min = bbox.yMin
-						local y_max = bbox.yMax
-						
-						
-						-- copy the data cause we call freetype.RenderGlyph the next frame
-						local length = bitmap.width * bitmap.rows
-						local buffer = ffi.new("unsigned char[?]", length)
-						ffi.copy(buffer, bitmap.buffer, length)
-						
-						glyph = {
-							buffer = buffer, 
-							left = face.glyph.bitmap_left,
-							top = face.glyph.bitmap_top,
+		local w = 0
+		
+		for _, str in pairs(utf8.totable(str)) do
+			local byte = utf8.byte(str)
+			if byte == -1 then byte = str:byte() end
+			
+			if str == " " or str == "" then	
+				w = w + font.info.size / 2
+			elseif str == "\t" then
+				w = w + font.info.size * 2
+			else				
+				local glyph = font.glyphs[str]
 				
-							w = bitmap.width, 
-							h = bitmap.rows,
-							
-							w2 = face.glyph.advance.x / DPI,
-							w3 = face.glyph.linearHoriAdvance / DPI,
-							
-							bx = m.horiBearingX / DPI,
-							by = m.horiBearingY / DPI,
-							
-							x_min = x_min,
-							x_max = x_max,
-							y_min = y_min,
-							y_max = y_max,
-							
-							i = i,
-							
-							str = str,
-						}
-							
-						font.glyphs[str] = glyph
+				if not glyph then
+					local face = face
+					local i = freetype.GetCharIndex(face, byte)
+					
+					-- try the default font
+					if i == 0 then
+						face = ft.fonts.default.face
+						i = freetype.GetCharIndex(face, byte)
+						freetype.SetCharSize(face, 0, info.size * DPI, DPI, DPI)
 					end
 					
-					local char = {glyph = glyph}
-
-					char.x = glyph.bx + w
-					char.y = (info.size - glyph.y_max)
-							
-					if info.monospace then
-						w = w + info.spacing
-					else
-						w = w + glyph.x_max + 1 + info.spacing
-					end
+					freetype.LoadGlyph(face, i, 0)
+					freetype.RenderGlyph(face.glyph, 0)
 					
-					data.chars[#data.chars+1] = char
+					local bitmap = face.glyph.bitmap 
+					local m = face.glyph.metrics
+					
+					-- bboox
+					local glyph2 = ffi.new("FT_Glyph[1]")
+					freetype.GetGlyph(face.glyph, glyph2)
+					
+					local bbox = ffi.new("FT_BBox[1]")
+					freetype.GlyphGetCBox(glyph2[0], 2, bbox)
+					bbox = bbox[0]
+					
+					local x_min = bbox.xMin
+					local x_max = bbox.xMax
+					
+					local y_min = bbox.yMin
+					local y_max = bbox.yMax
+					
+					
+					-- copy the data cause we call freetype.RenderGlyph the next frame
+					local length = bitmap.width * bitmap.rows
+					local buffer = ffi.new("unsigned char[?]", length)
+					ffi.copy(buffer, bitmap.buffer, length)
+					
+					glyph = {
+						buffer = buffer, 
+						left = face.glyph.bitmap_left,
+						top = face.glyph.bitmap_top,
+			
+						w = bitmap.width, 
+						h = bitmap.rows,
+						
+						w2 = face.glyph.advance.x / DPI,
+						w3 = face.glyph.linearHoriAdvance / DPI,
+						
+						bx = m.horiBearingX / DPI,
+						by = m.horiBearingY / DPI,
+						
+						x_min = x_min,
+						x_max = x_max,
+						y_min = y_min,
+						y_max = y_max,
+						
+						i = i,
+						
+						str = str,
+					}
+						
+					font.glyphs[str] = glyph
 				end
 				
-				data.w = w
-			end
-			
-			local tex = Texture(math.floor(data.w + info.border), math.floor(data.h + info.border), buffer, {
-				format = e.GL_ALPHA, 
-				internal_format = e.GL_ALPHA8,
-				stride = 1,
-			})         
-			
-			tex:Clear()	  		
-			
-			for _, char in pairs(data.chars) do
-				tex:Upload(
-					char.glyph.buffer, 
-					
-					char.x + info.border_2,  
-					char.y + info.border_2, 
-					
-					char.glyph.w, 
-					char.glyph.h
-				)       
-			end
-			
-			data.tex = tex
+				local char = {glyph = glyph}
+
+				char.x = glyph.bx + w
+				char.y = (info.size - glyph.y_max)
 						
-			font.strings[str] = data
-		end 
+				if info.monospace then
+					w = w + info.spacing
+				else
+					w = w + glyph.x_max + 1 + info.spacing
+				end
+				
+				data.chars[#data.chars+1] = char
+			end
+			
+			data.w = w
+		end
+		
+		local tex = Texture(math.floor(data.w + info.border), math.floor(data.h + info.border), buffer, {
+			format = e.GL_ALPHA, 
+			internal_format = e.GL_ALPHA8,
+			stride = 1,
+		})         
+		
+		tex:Clear()	  		
+		
+		for _, char in pairs(data.chars) do
+			tex:Upload(
+				char.glyph.buffer, 
+				
+				char.x + info.border_2,  
+				char.y + info.border_2, 
+				
+				char.glyph.w, 
+				char.glyph.h
+			)       
+		end
+		
+		data.tex = tex
+					
+		font.strings[str] = data
 		
 		return data
 	end
