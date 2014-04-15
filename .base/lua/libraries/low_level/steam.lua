@@ -1,7 +1,7 @@
 local steam = _G.steam or {}
 
 do 
-	local lib = ffi.load("steamfriends")
+	local ok, lib = pcall(ffi.load, "steamfriends")
 	
 	ffi.cdef[[
 		const char *steamGetLastError();
@@ -22,8 +22,12 @@ do
 		const char *steamGetFriendByIndex(unsigned i);
 	]] 
 	
-	if lib.steamInitialize() == 1 then
+	if not ok then
+		logn("steamfriends module not availible")
+		lib = nil
+	elseif lib.steamInitialize() == 1 then
 		logn(ffi.string(lib.steamGetLastError()))
+		lib = nil
 	else
 		timer.Thinker(function()
 			local msg = lib.steamGetLastChatMessage()
@@ -39,18 +43,22 @@ do
 	end
 	
 	function steam.SendChatMessage(steam_id, text)
+		if not lib then logn("steamfriends module not availible") return 1 end
 		return lib.steamSendChatMessage(steam_id, text)
 	end
 	
 	function steam.GetNickFromSteamID(steam_id)
+		if not lib then logn("steamfriends module not availible") return "" end
 		return ffi.string(lib.steamGetNickFromSteamID(steam_id))
 	end
 	
 	function steam.GetClientSteamID()
+		if not lib then logn("steamfriends module not availible") return "" end
 		return ffi.string(lib.steamGetClientSteamID())
 	end
 	
 	function steam.GetFriends()
+		if not lib then logn("steamfriends module not availible") return {} end
 		local out = {}
 		
 		for i = 1, lib.steamGetFriendCount() do
