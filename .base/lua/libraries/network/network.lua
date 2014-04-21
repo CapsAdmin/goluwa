@@ -333,7 +333,7 @@ if SERVER then
 	end
 		
 	function network.SendToClient(client, event, ...)
-		if not client or not client:IsValid() then debug.trace() end
+		if not client:IsValid() then return end
 		client:Send(encode(event, ...), buffered)
 	end
 	
@@ -423,3 +423,17 @@ if SERVER then
 		network.Host(ip, port)
 	end)
 end
+
+console.AddCommand("start_server", function()
+	_G.SERVER = true
+	addons.Reload()
+	include("lua/libraries/network/network.lua")
+	entities.LoadAllEntities()
+end)
+
+console.AddCommand("start_client", function()
+	_G.CLIENT = true
+	addons.Reload()
+	include("lua/libraries/network/network.lua")
+	entities.LoadAllEntities()
+end)

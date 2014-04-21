@@ -6,7 +6,6 @@ lovemu.delta = 0 --frametime
 lovemu.textures = {}
 
 include("boot.lua")
-include("realboot.lua")
 
 local getn=table.getn
 local pairs=pairs
@@ -108,22 +107,6 @@ console.AddCommand("lovemu", function(line)
 			end
 		else
 			logn("Usage: lovemu run <folder name>")
-		end
-		
-	elseif command == "runreal" then
-	
-		if arg then
-			local str=""
-			for i=2,#params do
-				str=str..params[i]
-			end
-			if str=="" then
-				logn("Usage: lovemu runreal <folder name>")
-			else
-				lovemu.bootreal(str)
-			end
-		else
-			logn("Usage: lovemu runreal <folder name>")
 		end
 		
 	elseif command=="check" then

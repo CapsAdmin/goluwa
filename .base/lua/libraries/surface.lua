@@ -202,143 +202,146 @@ do -- fonts
 		
 		if not face then return end
 		
-		local info = font.info 
 		local data = font.strings[str]
 		
+		if data then
+			return data
+		end
+			
+		local info = font.info 
+		
 		freetype.SetCharSize(face, 0, info.size * DPI, DPI, DPI)
-
-		if not data then
-			-- get the tallest character and use it as height
-			local bbox = ffi.new("FT_BBox[1]")
-			local glyph2 = ffi.new("FT_Glyph[1]")
-			
-			local i = freetype.GetCharIndex(face, ("|"):byte()) 
-			freetype.LoadGlyph(face, i, 0)
-			freetype.RenderGlyph(face.glyph, 0) 
-			freetype.GetGlyph(face.glyph, glyph2)
-			freetype.GlyphGetCBox(glyph2[0], 2, bbox)
-			bbox = bbox[0]
-			
-			data = {chars = {}, h = face.glyph.bitmap.rows - bbox.yMin + 1, w = info.size}
-						
-			local w = 0
-			
-			for _, str in pairs(utf8.totable(str)) do
-				local byte = utf8.byte(str)
-				if byte == -1 then byte = str:byte() end
-				
-				if str == " " or str == "" then	
-					w = w + font.info.size / 2
-				elseif str == "\t" then
-					w = w + font.info.size * 2
-				else				
-					local glyph = font.glyphs[str]
+		
+		-- get the tallest character and use it as height
+		local bbox = ffi.new("FT_BBox[1]")
+		local glyph2 = ffi.new("FT_Glyph[1]")
+		
+		local i = freetype.GetCharIndex(face, ("|"):byte()) 
+		freetype.LoadGlyph(face, i, 0)
+		freetype.RenderGlyph(face.glyph, 0) 
+		freetype.GetGlyph(face.glyph, glyph2)
+		freetype.GlyphGetCBox(glyph2[0], 2, bbox)
+		bbox = bbox[0]
+		
+		data = {chars = {}, h = face.glyph.bitmap.rows - bbox.yMin + 1, w = info.size}
 					
-					if not glyph then
-						local face = face
-						local i = freetype.GetCharIndex(face, byte)
-						
-						-- try the default font
-						if i == 0 then
-							face = ft.fonts.default.face
-							i = freetype.GetCharIndex(face, byte)
-							freetype.SetCharSize(face, 0, info.size * DPI, DPI, DPI)
-						end
-						
-						freetype.LoadGlyph(face, i, 0)
-						freetype.RenderGlyph(face.glyph, 0)
-						
-						local bitmap = face.glyph.bitmap 
-						local m = face.glyph.metrics
-						
-						-- bboox
-						local glyph2 = ffi.new("FT_Glyph[1]")
-						freetype.GetGlyph(face.glyph, glyph2)
-						
-						local bbox = ffi.new("FT_BBox[1]")
-						freetype.GlyphGetCBox(glyph2[0], 2, bbox)
-						bbox = bbox[0]
-						
-						local x_min = bbox.xMin
-						local x_max = bbox.xMax
-						
-						local y_min = bbox.yMin
-						local y_max = bbox.yMax
-						
-						
-						-- copy the data cause we call freetype.RenderGlyph the next frame
-						local length = bitmap.width * bitmap.rows
-						local buffer = ffi.new("unsigned char[?]", length)
-						ffi.copy(buffer, bitmap.buffer, length)
-						
-						glyph = {
-							buffer = buffer, 
-							left = face.glyph.bitmap_left,
-							top = face.glyph.bitmap_top,
+		local w = 0
+		
+		for _, str in pairs(utf8.totable(str)) do
+			local byte = utf8.byte(str)
+			if byte == -1 then byte = str:byte() end
+			
+			if str == " " or str == "" then	
+				w = w + font.info.size / 2
+			elseif str == "\t" then
+				w = w + font.info.size * 2
+			else				
+				local glyph = font.glyphs[str]
 				
-							w = bitmap.width, 
-							h = bitmap.rows,
-							
-							w2 = face.glyph.advance.x / DPI,
-							w3 = face.glyph.linearHoriAdvance / DPI,
-							
-							bx = m.horiBearingX / DPI,
-							by = m.horiBearingY / DPI,
-							
-							x_min = x_min,
-							x_max = x_max,
-							y_min = y_min,
-							y_max = y_max,
-							
-							i = i,
-							
-							str = str,
-						}
-							
-						font.glyphs[str] = glyph
+				if not glyph then
+					local face = face
+					local i = freetype.GetCharIndex(face, byte)
+					
+					-- try the default font
+					if i == 0 then
+						face = ft.fonts.default.face
+						i = freetype.GetCharIndex(face, byte)
+						freetype.SetCharSize(face, 0, info.size * DPI, DPI, DPI)
 					end
 					
-					local char = {glyph = glyph}
-
-					char.x = glyph.bx + w
-					char.y = (info.size - glyph.y_max)
-							
-					if info.monospace then
-						w = w + info.spacing
-					else
-						w = w + glyph.x_max + 1 + info.spacing
-					end
+					freetype.LoadGlyph(face, i, 0)
+					freetype.RenderGlyph(face.glyph, 0)
 					
-					data.chars[#data.chars+1] = char
+					local bitmap = face.glyph.bitmap 
+					local m = face.glyph.metrics
+					
+					-- bboox
+					local glyph2 = ffi.new("FT_Glyph[1]")
+					freetype.GetGlyph(face.glyph, glyph2)
+					
+					local bbox = ffi.new("FT_BBox[1]")
+					freetype.GlyphGetCBox(glyph2[0], 2, bbox)
+					bbox = bbox[0]
+					
+					local x_min = bbox.xMin
+					local x_max = bbox.xMax
+					
+					local y_min = bbox.yMin
+					local y_max = bbox.yMax
+					
+					
+					-- copy the data cause we call freetype.RenderGlyph the next frame
+					local length = bitmap.width * bitmap.rows
+					local buffer = ffi.new("unsigned char[?]", length)
+					ffi.copy(buffer, bitmap.buffer, length)
+					
+					glyph = {
+						buffer = buffer, 
+						left = face.glyph.bitmap_left,
+						top = face.glyph.bitmap_top,
+			
+						w = bitmap.width, 
+						h = bitmap.rows,
+						
+						w2 = face.glyph.advance.x / DPI,
+						w3 = face.glyph.linearHoriAdvance / DPI,
+						
+						bx = m.horiBearingX / DPI,
+						by = m.horiBearingY / DPI,
+						
+						x_min = x_min,
+						x_max = x_max,
+						y_min = y_min,
+						y_max = y_max,
+						
+						i = i,
+						
+						str = str,
+					}
+						
+					font.glyphs[str] = glyph
 				end
 				
-				data.w = w
-			end
-			
-			local tex = Texture(math.floor(data.w + info.border), math.floor(data.h + info.border), buffer, {
-				format = e.GL_ALPHA, 
-				internal_format = e.GL_ALPHA8,
-				stride = 1,
-			})         
-			
-			tex:Clear()	  		
-			
-			for _, char in pairs(data.chars) do
-				tex:Upload(
-					char.glyph.buffer, 
-					
-					char.x + info.border_2,  
-					char.y + info.border_2, 
-					
-					char.glyph.w, 
-					char.glyph.h
-				)       
-			end
-			
-			data.tex = tex
+				local char = {glyph = glyph}
+
+				char.x = glyph.bx + w
+				char.y = (info.size - glyph.y_max)
 						
-			font.strings[str] = data
-		end 
+				if info.monospace then
+					w = w + info.spacing
+				else
+					w = w + glyph.x_max + 1 + info.spacing
+				end
+				
+				data.chars[#data.chars+1] = char
+			end
+			
+			data.w = w
+		end
+		
+		local tex = Texture(math.floor(data.w + info.border), math.floor(data.h + info.border), buffer, {
+			format = e.GL_ALPHA, 
+			internal_format = e.GL_ALPHA8,
+			stride = 1,
+		})         
+		
+		tex:Clear()	  		
+		
+		for _, char in pairs(data.chars) do
+			tex:Upload(
+				char.glyph.buffer, 
+				
+				char.x + info.border_2,  
+				char.y + info.border_2, 
+				
+				char.glyph.w, 
+				char.glyph.h
+			)       
+		end
+		
+		data.tex = tex
+					
+		font.strings[str] = data
 		
 		return data
 	end
@@ -704,97 +707,6 @@ function surface.WrapString(str, max_width)
 	return lines
 end
 
-do -- poly
-	function surface.CreatePoly(size)
-		local poly = {Type = "Poly"}
-		
-		size = size * 6
-		local mesh = render.CreateMesh2D(size)
-		local buffer = mesh.buffer
-	
-		local X, Y = 0, 0
-		local ROT = 0	
-		local R,G,B,A = 1,1,1,1
-		local U1, V1, U2, V2 = 0, 0, 1, 1
-	
-		function poly:SetColor(r,g,b,a)
-			R = r or 1
-			G = g or 1
-			B = b or 1
-			A = a or 1
-		end
-			
-		function poly:SetUV(u1,v1,u2,v2)
-			U1 = u1
-			V1 = v1
-			U2 = u2
-			V2 = v2
-		end
-		
-		function poly:SetVertex(i, x,y, u,v)
-			if i > size or i < 0 then logf("i = %i size = %i", i, size) return end
-			
-			x = x or 0
-			y = y or 0
-			u = u or 0
-			v = v or 1
-			
-			if ROT ~= 0 then				
-				x = x - X
-				y = y - Y				
-				
-				local new_x = x * math.cos(ROT) - y * math.sin(ROT)
-				local new_y = x * math.sin(ROT) + y * math.cos(ROT)
-				
-				x = new_x + X
-				y = new_y + Y				
-			end
-			
-			buffer[i].pos.A = x
-			buffer[i].pos.B = y
-			
-			buffer[i].uv.A = u
-			buffer[i].uv.B = v
-			
-			--buffer[i].color.A = R
-			--buffer[i].color.B = G
-			--buffer[i].color.C = B
-			--buffer[i].color.D = A
-		end
-		
-		function poly:SetRect(i, x,y,w,h, r, ox,oy)
-		
-			X = x or 0
-			Y = y or 0
-			ROT = r or 0
-			OX = ox or 0
-			OY = oy or 0
-			
-			i = i - 1
-			i = i * 6
-						
-			self:SetVertex(i + 0, X + OX, Y + OY, U1, V1 + V2)
-			self:SetVertex(i + 1, X + OX, Y + h + OY, U1, V1)
-			self:SetVertex(i + 2, X + w + OX, Y + h + OY, U1 + U2, V1)
-
-			self:SetVertex(i + 3, X + w + OX, Y + h + OY, U1 + U2, V1)
-			self:SetVertex(i + 4, X + w + OX, Y + OY, U1 + U2, V1 + V2)
-			self:SetVertex(i + 5, X + OX, Y + OY, U1, V1 + V2)
-		end
-		
-		poly.mesh = mesh
-						
-		return poly
-	end
-
-	function surface.DrawPoly(poly)
-		poly.mesh:UpdateBuffer()
-		poly.mesh.texture = surface.bound_texture
-		poly.mesh.global_color = COLOR
-		poly.mesh:Draw()
-	end
-end
-
 function surface.GetMousePos()
 	local x, y = window.GetMousePos():Unpack()
 	return x, y
@@ -819,4 +731,97 @@ function surface.GetMouseVel()
 	end
 	
 	return vx, vy
+end
+
+do -- poly
+	local META = utilities.CreateBaseObject("poly")
+
+	function META:SetColor(r,g,b,a)
+		R = r or 1
+		G = g or 1
+		B = b or 1
+		A = a or 1
+	end
+		
+	function META:SetUV(u1,v1,u2,v2)
+		U1 = u1
+		V1 = v1
+		U2 = u2
+		V2 = v2
+	end
+
+	function META:SetVertex(i, x,y, u,v)
+		if i > size or i < 0 then logf("i = %i size = %i", i, size) return end
+		
+		x = x or 0
+		y = y or 0
+		u = u or 0
+		v = v or 1
+		
+		if ROT ~= 0 then				
+			x = x - X
+			y = y - Y				
+			
+			local new_x = x * math.cos(ROT) - y * math.sin(ROT)
+			local new_y = x * math.sin(ROT) + y * math.cos(ROT)
+			
+			x = new_x + X
+			y = new_y + Y				
+		end
+		
+		buffer[i].pos.A = x
+		buffer[i].pos.B = y
+		
+		buffer[i].uv.A = u
+		buffer[i].uv.B = v
+		
+		--buffer[i].color.A = R
+		--buffer[i].color.B = G
+		--buffer[i].color.C = B
+		--buffer[i].color.D = A
+	end
+
+	function META:SetRect(i, x,y,w,h, r, ox,oy)
+
+		X = x or 0
+		Y = y or 0
+		ROT = r or 0
+		OX = ox or 0
+		OY = oy or 0
+		
+		i = i - 1
+		i = i * 6
+					
+		self:SetVertex(i + 0, X + OX, Y + OY, U1, V1 + V2)
+		self:SetVertex(i + 1, X + OX, Y + h + OY, U1, V1)
+		self:SetVertex(i + 2, X + w + OX, Y + h + OY, U1 + U2, V1)
+
+		self:SetVertex(i + 3, X + w + OX, Y + h + OY, U1 + U2, V1)
+		self:SetVertex(i + 4, X + w + OX, Y + OY, U1 + U2, V1 + V2)
+		self:SetVertex(i + 5, X + OX, Y + OY, U1, V1 + V2)
+	end
+
+	function META:Draw()
+		self.mesh:UpdateBuffer()
+		self.mesh.texture = surface.bound_texture
+		self.mesh.global_color = COLOR
+		self.mesh:Draw()
+	end
+
+	function surface.CreatePoly(size)		
+		size = size * 6
+		local mesh = render.CreateMesh2D(size)
+		local buffer = mesh.buffer
+
+		local X, Y = 0, 0
+		local ROT = 0	
+		local R,G,B,A = 1,1,1,1
+		local U1, V1, U2, V2 = 0, 0, 1, 1
+
+		local self = setmetatable({}, META)
+
+		self.mesh = mesh
+						
+		return self
+	end
 end

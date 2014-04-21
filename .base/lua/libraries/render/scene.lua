@@ -15,6 +15,7 @@ function render.DrawScene(window, dt)
 		if render.gbuffer_enabled then
 			if render.gbuffer then
 				render.gbuffer:Begin()
+				render.gbuffer:Clear()
 			end
 
 			render.Start3D()

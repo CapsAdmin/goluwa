@@ -35,7 +35,7 @@ window.Open(1024, 1024)
 	return 255, 255, 255, a * 128
 end)
  
-local emitter = utilities.RemoveOldObject(Emitter())
+local emitter = utilities.RemoveOldObject(ParticleEmitter())
 --emitter:SetCenterAttractionForce(0.1) 
 --emitter:SetPosAttractionForce(0.1) 
 emitter:SetRate(-1)

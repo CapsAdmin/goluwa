@@ -179,26 +179,7 @@ do -- logging
 	local function get_debug_filter()
 		return console and console.GetVariable("log_debug_filter", "") or ""
 	end	
-	
-	local suppress_print = false
-
-	local function can_print(args)
-		if suppress_print then return end
 		
-		if event then 
-			suppress_print = true
-			
-			if event.Call("ConsolePrint", table.concat(args, "")) == false then
-				suppress_print = false
-				return false
-			end
-			
-			suppress_print = false
-		end
-		
-		return true
-	end
-	
 	local base_log_dir = e.USERDATA_FOLDER .. "logs/"
 	
 	local log_files = {}
@@ -239,41 +220,39 @@ do -- logging
 		
 	function log(...)
 		local args = tostring_args(...)
-		if can_print(args) then
-			
-			if vfs then						
-				if not log_file then
-					setlogfile()
+		
+		if vfs then						
+			if not log_file then
+				setlogfile()
+			end
+		
+			local line = table.concat(args, "")
+							
+			if line == last_line then
+				if count > 0 then
+					local count_str = ("[%i x] "):format(count)
+					log_file:seek("cur", -#line-1-last_count_length)
+					log_file:write(count_str, line)
+					last_count_length = #count_str
 				end
-			
-				local line = table.concat(args, "")
-								
-				if line == last_line then
-					if count > 0 then
-						local count_str = ("[%i x] "):format(count)
-						log_file:seek("cur", -#line-1-last_count_length)
-						log_file:write(count_str, line)
-						last_count_length = #count_str
-					end
-					count = count + 1
-				else
-					log_file:write(line)
-					count = 0
-					last_count_length = 0
-				end
-				
-				log_file:flush()
-				
-				last_line = line
+				count = count + 1
 			else
-				table.insert(buffer, args)
+				log_file:write(line)
+				count = 0
+				last_count_length = 0
 			end
 			
-			if log_files.console == log_file then
-				io.write(unpack(args))
-				if _G.LOG_BUFFER then
-					table.insert(_G.LOG_BUFFER, args)
-				end
+			log_file:flush()
+			
+			last_line = line
+		else
+			table.insert(buffer, args)
+		end
+		
+		if log_files.console == log_file then
+			io.write(unpack(args))
+			if _G.LOG_BUFFER then
+				table.insert(_G.LOG_BUFFER, args)
 			end
 		end
 	end
@@ -627,10 +606,6 @@ addons.LoadAll()
 steamapi.Initialize()
 
 do -- tier 1
-
-	-- high level implementation of curses
-	include("libraries/console.lua")
-
 	-- OpenGL abstraction
 	include("libraries/render/render.lua")
 
@@ -659,6 +634,11 @@ do -- tier 1
 	
 	include("libraries/gif.lua")
 	include("libraries/markup.lua")
+	
+	include("libraries/chatsounds.lua")
+	
+	-- high level implementation of curses
+	include("libraries/console.lua")
 end
 
 entities.LoadAllEntities()

@@ -1,5 +1,33 @@
+local META = utilities.CreateBaseMeta("gif")
+META.__index = META
+
+function META:GetFrameCount()
+	return self.frame_count
+end
+
+function META:SetFPS(fps)
+	self.frame_speed = fps
+end
+
+function META:GetTexture(num)
+	if self.error then return render.GetErrorTexture() end
+	if self.loading then return render.GetLoadingTexture() end
+	return self.frames[math.ceil(math.clamp(num%self.frame_count, 1, self.frame_count))]
+end
+
+function META:GetTextures()
+	return self.frames
+end
+
+function META:Draw(x, y)
+	local tex = self:GetTexture(os.clock() * self.frame_speed)
+	surface.SetTexture(tex)
+
+	surface.DrawRect(x, y, tex.w, tex.h)
+end
+	
 function Gif(path)
-	local self = utilities.CreateBaseObject("gif")	
+	local self = setmetatable({}, META)
 		
 	self.frames = {}
 	self.frame_count = 1
@@ -29,31 +57,6 @@ function Gif(path)
 			self.error = true
 		end
 	end)
-	
-	function self:GetFrameCount()
-		return self.frame_count
-	end
-	
-	function self:SetFPS(fps)
-		self.frame_speed = fps
-	end
-	
-	function self:GetTexture(num)
-		if self.error then return render.GetErrorTexture() end
-		if self.loading then return render.GetLoadingTexture() end
-		return self.frames[math.ceil(math.clamp(num%self.frame_count, 1, self.frame_count))]
-	end
-	
-	function self:GetTextures()
-		return self.frames
-	end
-	
-	function self:Draw(x, y)
-		local tex = self:GetTexture(os.clock() * self.frame_speed)
-		surface.SetTexture(tex)
-
-		surface.DrawRect(x, y, tex.w, tex.h)
-	end
 		
 	return self
 end

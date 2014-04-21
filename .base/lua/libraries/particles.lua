@@ -1,6 +1,6 @@
 local lerp,deg,randomf,clamp = math.lerp,math.deg,math.randomf,math.clamp
 
-local PARTICLE = {}
+local PARTICLE = utilities.CreateBaseMeta("particle")
 PARTICLE.__index = PARTICLE
 
 class.GetSet(PARTICLE, "Pos", Vec3(0,0,0))
@@ -30,7 +30,7 @@ function PARTICLE:SetLifeTime(n)
 	self.life_end = os.clock() + n
 end
 
-local EMITTER = {}
+local EMITTER = utilities.CreateBaseMeta("particle_emitter")
 EMITTER.__index = EMITTER
 
 class.GetSet(EMITTER, "Speed", 1)
@@ -43,13 +43,9 @@ class.GetSet(EMITTER, "ThinkTime", 0.1)
 class.GetSet(EMITTER, "CenterAttractionForce", 0)
 class.GetSet(EMITTER, "PosAttractionForce", 0)
 
-function EMITTER:IsValid()
-	return true
-end
-  
 local emitters = {}
  
-function Emitter()
+function ParticleEmitter()
 	local self = setmetatable({}, EMITTER)
 	
 	self.particles = {}
@@ -61,7 +57,7 @@ function Emitter()
 	return self
 end
 
-function EMITTER:Remove()
+function EMITTER:OnRemove()
 	for k,v in pairs(emitters) do 
 		if v == self then 
 			--table.remove(emitters, k) 
@@ -69,8 +65,6 @@ function EMITTER:Remove()
 			break 
 		end 
 	end
-	
-	utilities.MakeNULL(self)
 end
  
 function EMITTER:Think(dt)
