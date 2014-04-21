@@ -1,15 +1,13 @@
-console.AddCommand("start_server", function()
-	SERVER = true
-	addons.Reload()
-	include("lua/libraries/network/network.lua")
-	entities.LoadAllEntities()
+console.AddCommand("l", function(line)
+	console.RunString(line)
 end)
 
-console.AddCommand("start_client", function()
-	CLIENT = true
-	addons.Reload()
-	include("lua/libraries/network/network.lua")
-	entities.LoadAllEntities()
+console.AddCommand("print", function(line)
+	console.RunString(("log(%s)"):format(line))
+end)
+
+console.AddCommand("table", function(line)
+	console.RunString(("table.print(%s)"):format(line))
 end)
 
 console.AddCommand("trace_calls", function(_, line, ...)

@@ -52,14 +52,21 @@ local data_prefix_pattern = data_prefix:gsub("(%p)", "%%%1")
 
 
 local silence
+local function logf(fmt, ...)
+	if silence then return end
+	if _G.logf then _G.logf(fmt, ...) return end
+	print(fmt:format(...))
+end
 
 local function warning(...)
-	if silence or not logf then return end
+	if silence then return end
 	logf("[vfs error] %s", ...)
 end
 
 function vfs.Silence(b)
+	local old = silence
 	silence = b
+	return old == nil and b or old
 end
 
 do -- path utilities
@@ -146,8 +153,7 @@ do -- mounting
 		
 			path = vfs.ParseVariables(path)			
 			
-			if not vfs.IsDir(path) then
-				event.Call("VFSMountFile", path, true)
+			if not vfs.IsDir(path) and vfs.Exists(path) and event.Call("VFSMountFile", path, true, path:match(".+%.(.+)")) then
 				return
 			end
 			
@@ -181,8 +187,7 @@ do -- mounting
 		if type(path) == "string" then
 			path = vfs.ParseVariables(path)
 			
-			if not vfs.IsDir(path) then
-				event.Call("VFSMountFile", path, false)
+			if not vfs.IsDir(path) and vfs.Exists(path) and event.Call("VFSMountFile", path, false) then
 				return
 			end
 			

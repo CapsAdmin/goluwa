@@ -35,31 +35,18 @@ chathud = {
 		default = {
 			name = "chathud_default",
 			data = {
-				font = "Roboto",
+				path = "Roboto",
 				size = 15,
 				weight = 600,
 				antialias = true,
 				shadow = true,
 				prettyblur = 1,
 			} ,
-		},
-		
-		chatprint = {
-			name = "chathud_chatprint",
-			color = Color(201, 255, 41, 255),
-			data = {
-				font = "Verdana",
-				size = 16,
-				weight = 600,
-				antialias = true,
-				shadow = true,
-				prettyblur = 1,
-			},
-		},
+		}
 	},
 	tags = {},
 }
-
+ 
 if surface.DrawFlag then
 	chathud.tags.flag =
 	{		
@@ -162,7 +149,6 @@ function chathud.MouseInput(button, press, x, y)
 	chathud.markup:OnMouseInput(button, press, x, y)
 end
 
-
 event.AddListener("PreDrawMenu", "chathud", function()
 	chathud.Draw()
 end)
@@ -170,3 +156,5 @@ end)
 event.AddListener("OnMouseInput", "chathud", function(button, press)
 	chathud.MouseInput(button, press, window.GetMousePos():Unpack())
 end)
+
+include("tradingcard_emotes.lua")

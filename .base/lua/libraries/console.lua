@@ -4,7 +4,9 @@ console.history = console.history or {}
 console.curses = console.curses or {}
 local c = console.curses
 
-c.line = c.line or ""
+local markup = Markup()
+markup:SetMultiline(false)
+
 c.scroll = c.scroll or 0
 c.current_table = c.current_table or G
 c.table_scroll = c.table_scroll or 0
@@ -13,18 +15,11 @@ local history = luadata.ReadFile("%DATA%/cmd_history.txt")
 
 local translate = 
 {
-	[32] = "KEY_SPACE",
-	[9] = "KEY_TAB",
 	[10] = "KEY_ENTER",
 	[459] = "KEY_ENTER",
 	[8] = "KEY_BACKSPACE",
-	[127] = "KEY_BACKSPACE",
-	
-	-- this is bad, fix me!!!
-	[443] = "KEY_CTRL_LEFT",
-	[444] = "KEY_CTRL_RIGHT",
-	[527] = "KEY_CTRL_DELETE",
-	[127] = "KEY_CTRL_BACKSPACE",
+	[127] = "CTL_BACKSPACE",
+	PADENTER = "KEY_ENTER",
 }
 
 -- some helpers
@@ -48,21 +43,11 @@ local function set_cursor_pos(x)
 end
 
 function console.InsertChar(char)
-	if #c.line == 0 then
-		c.line = c.line .. char
-	elseif subpos == #c.line then
-		c.line = c.line .. char
-	else
-		c.line = c.line:sub(1, getx()) .. char .. c.line:sub(getx() + 1)
-	end
-
-	console.ClearInput(c.line)
-
-	move_cursor(1)
+	markup:OnCharInput(char)
 end
 
 function console.GetCurrentLine()
-	return c.line
+	return markup:GetText()
 end
  
 function console.InitializeCurses()
@@ -127,7 +112,7 @@ function console.InitializeCurses()
 					local left = i * len
 					local right = (i * len) + len
 							
-					table.insert(tbl, str:sub(left, right))
+					table.insert(tbl, str:usub(left, right))
 				end
 				
 				return tbl
@@ -137,7 +122,24 @@ function console.InitializeCurses()
 		end
 
 		local max_length = 256
-		local suppress = false
+		local suppress_print = false
+
+		local function can_print(str)
+			if suppress_print then return end
+			
+			if event then 
+				suppress_print = true
+				
+				if event.Call("ConsolePrint", str) == false then
+					suppress_print = false
+					return false
+				end
+				
+				suppress_print = false
+			end
+			
+			return true
+		end
 		
 		local bad = "["
 		
@@ -154,13 +156,10 @@ function console.InitializeCurses()
 		bad = bad .. "]"
 		
 		function io.write(...)
-			if suppress then return end
 			local str = table.concat({...}, "")
 			str = str:gsub("\r", "\\r")
 
-			suppress = true
-			event.Call("OnConsolePrint", str)
-			suppress = false
+			if not can_print(str) then return end
 			
 			if WINDOWS and #str > max_length then
 				for k,v in pairs(split_by_length(str, max_length)) do
@@ -292,6 +291,42 @@ function console.GetActiveKey()
 	return key
 end
 
+local markup_translate = {
+	["KEY_BACKSPACE"] = "backspace",
+	["KEY_TAB"] = "tab",
+	["KEY_DC"] = "delete",
+	["KEY_HOME"] = "home",
+	["KEY_END"] = "end",
+	["KEY_TAB"] = "tab",
+	["KEY_ENTER"] = "enter",
+	["KEY_C"] = "c",
+	["KEY_X"] = "x",
+	["KEY_V"] = "v",
+	["KEY_A"] = "a",
+	["KEY_T"] = "t",
+	["KEY_UP"] = "up",
+	["KEY_DOWN"] = "down",
+	
+	["KEY_SLEFT"] = "left",
+	["KEY_SRIGHT"] = "right",
+		
+	["CTL_LEFT"] = "left",
+	["CTL_RIGHT"] = "right",
+	
+	["KEY_LEFT"] = "left",
+	["KEY_RIGHT"] = "right",
+	
+	["CTL_DEL"] = "delete",
+	["CTL_BACKSPACE"] = "backspace",
+	
+	["KEY_PAGEUP"] = "page_up",
+	["KEY_PAGEDOWN"] = "page_down",
+	["KEY_LSHIFT"] = "left_shift",
+	["KEY_RSHIFT"] = "right_shift",
+	["KEY_RCONTROL"] = "right_control",
+	["KEY_LCONTROL"] = "left_control",
+}
+
 function console.HandleKey(key)
 	if key == "KEY_NPAGE" then
 		console.Scroll(-1)
@@ -301,163 +336,36 @@ function console.HandleKey(key)
 				
 	if key == "KEY_UP" then
 		c.scroll = c.scroll - 1
-		c.line = history[c.scroll%#history+1] or c.line
-		set_cursor_pos(#c.line)
+		markup:SetText(history[c.scroll%#history+1])
+		set_cursor_pos(#markup:GetText())
 	elseif key == "KEY_DOWN" then
 		c.scroll = c.scroll + 1
-		c.line = history[c.scroll%#history+1] or c.line
-		set_cursor_pos(#c.line)
+		markup:SetText(history[c.scroll%#history+1])
+		set_cursor_pos(#markup:GetText())
 	end
 
-	if key == "KEY_LEFT" then
-		 move_cursor(-1)
-	elseif key == "KEY_CTRL_LEFT" then
-		set_cursor_pos((select(2, c.line:sub(1, getx()+1):find(".+[^%p%s]")) or 1) - 2)
-	elseif key == "KEY_RIGHT" then
-		 move_cursor(1)
-	elseif key == "KEY_CTRL_RIGHT" then
-		local pos = (select(2, c.line:find("[%s%p].-[^%p%s]", getx()+1)) or 1) - 1
-		if pos < getx() then
-			pos = #c.line
-		end
-		set_cursor_pos(pos)
-	end
-
-	if key == "KEY_HOME" then
-		set_cursor_pos(0)
-	elseif key == "KEY_END" then
-		set_cursor_pos(#c.line)
-	end
-
-	-- space
-	if key == "KEY_SPACE" then
-		console.InsertChar(" ")
-	end
-
-	-- tab
-	if key == "KEY_TAB" then
-		local start, stop, last_word = c.line:find("([_%a%d]-)$")
-		if last_word then
-			local pattern = "^" .. last_word
-							
-			if (not c.line:find("%(") or not c.line:find("%)")) and not c.line:find("logn") then
-				c.in_function = false
-			end
-							
-			if not c.in_function then
-				c.current_table = c.line:explode(".")
-										
-				local tbl = _G
-				
-				for k,v in pairs(c.current_table) do
-					if type(tbl[v]) == "table" then
-						tbl = tbl[v]
-					else
-						break
-					end
-				end
-				
-				c.current_table = tbl or _G						
-			end
-			
-			if c.in_function then
-				local start = c.line:match("(.+%.)")
-				if start then
-					local tbl = {}
-					
-					for k,v in pairs(c.current_table) do
-						table.insert(tbl, {k=k,v=v})
-					end
-					
-					if #tbl > 0 then
-						table.sort(tbl, function(a, b) return a.k > b.k end)
-						c.table_scroll = c.table_scroll + 1
-						
-						local data = tbl[c.table_scroll%#tbl + 1]
-						
-						if type(data.v) == "function" then
-							c.line = start .. data.k .. "()"
-							set_cursor_pos(#c.line)
-							move_cursor(-1)
-							c.in_function = true
-						else
-							c.line = "logn(" .. start .. data.k .. ")"
-							set_cursor_pos(#c.line)
-							move_cursor(-1)
-						end
-					end
-				end
-			else						
-				for k,v in pairs(c.current_table) do
-					k = tostring(k)
-					
-					if k:find(pattern) then
-						c.line = c.line:sub(0, start-1) .. k
-						if type(v) == "table" then 
-							c.current_table = v 
-							c.line = c.line .. "."
-							set_cursor_pos(#c.line)
-						elseif type(v) == "function" then
-							c.line = c.line .. "()"
-							set_cursor_pos(#c.line)
-							move_cursor(-1)
-							c.in_function = true
-						else
-							c.line = "logn(" .. c.line .. ")"
-						end
-						break
-					end
-				end
-			end
-		end
-	end
-
-	-- backspace
-	if key == "KEY_BACKSPACE" or (key == "KEY_CTRL_BACKSPACE" and jit.os == "Linux") then
-		if getx() > 0 then
-			local char = c.line:sub(1, getx())
-			
-			if char == "." then
-				c.current_table = previous_table
-			end
-			
-			c.line = c.line:sub(1, getx() - 1) .. c.line:sub(getx() + 1)
-			move_cursor(-1)
-		else
-			console.ClearInput()
-		end
-	elseif key == "KEY_CTRL_BACKSPACE" then
-		local pos = (select(2, c.line:sub(1, getx()):find(".*[%s%p].-[^%p%s]")) or 1) - 1
-		c.line = c.line:sub(1, pos) .. c.line:sub(getx() + 1)
-		set_cursor_pos(pos - 1)
-	elseif key == "KEY_DC" then
-		c.line = c.line:sub(1, getx()) .. c.line:sub(getx() + 2)			
-	elseif key == "KEY_CTRL_DELETE" then
-		local pos = (select(2, c.line:find("[%s%p].-[^%p%s]", getx()+1)) or #c.line + 1) - 1
-		c.line = c.line:sub(1, getx()) .. c.line:sub(pos + 1)
-	end
-		
 	-- enter
 	if key == "KEY_ENTER" then
 		console.ClearInput()
-
-		if c.line ~= "" then			
+		local line = markup:GetText()
+		
+		if line ~= "" then			
 			for key, str in pairs(history) do
-				if str == c.line then
+				if str == line then
 					table.remove(history, key)
 				end
 			end
 			
-			table.insert(history, c.line)
+			table.insert(history, line)
 			luadata.WriteFile("%DATA%/cmd_history.txt", history)
 
 			c.scroll = 0
 			console.ClearInput()
 			
-			if event.Call("ConsoleLineEntered", c.line) ~= false then
-				logn("> ", c.line)
+			if event.Call("ConsoleLineEntered", line) ~= false then
+				logn("> ", line)
 				
-				local res, err = console.RunString(c.line)
+				local res, err = console.RunString(line)
 
 				if not res then
 					logn(err)
@@ -466,41 +374,52 @@ function console.HandleKey(key)
 			
 			c.current_table = _G
 			c.in_function = false
-			c.line = ""
+			markup:SetText("")
 		end
 	end
-
-	console.ClearInput(c.line)
+				
+	if markup_translate[key] then
+		markup:OnKeyInput(markup_translate[key])
+	end
 end
 
 function console.HandleChar(char)
 	console.InsertChar(char)
 end
 
+
 timer.Create("curses", 0, 0, function()
 	local byte = curses.wgetch(c.input_window)
 
 	if byte < 0 then return end
-	
 		
 	local key = translate[byte] or ffi.string(curses.keyname(byte))
-	if not key:find("KEY_") then key = nil end
-			
-	if key then					
+	
+	key = translate[key] or key
+	
+	markup:SetControlDown(key == "CTL_LEFT" or key == "CTL_RIGHT" or key == "CTL_DEL" or key == "CTL_BACKSPACE")
+	markup:SetShiftDown(key == "KEY_SLEFT" or key == "KEY_SRIGHT")
+					
+	if key:find("KEY_") or key:find("CTL_") then					
 		key = ffi.string(key)
 			
 		if event.Call("OnConsoleKeyPressed", key) == false then return end
 		
-		console.HandleKey(key)
-	elseif byte < 256 then
-		local char = string.char(byte)
+		console.HandleKey(key)		
+	elseif byte >= 32 then
+		local char = utf8.char(byte)
 		
 		if event.Call("OnConsoleCharPressed", char) == false then return end
 		
+		if char == "\t" then char = "    " end
+				
 		console.HandleChar(char)
 	end
+	
+	set_cursor_pos(markup:GetCaretSubPos()-1)	
+	console.ClearInput(markup:GetText())
 end)
-
+ 
 do -- input extensions
 	local trigger = input.SetupInputEvent("ConsoleKey")
 

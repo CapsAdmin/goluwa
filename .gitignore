@@ -15,3 +15,5 @@
 /.base/bin/windows/x86/build_scripts/temp
 /.base/bin/windows/x86/jit/.gitignore
 /.base/bin/linux/x64/jit/.gitignore
+*.exp
+*.lib

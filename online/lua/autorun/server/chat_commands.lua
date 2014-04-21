@@ -6,6 +6,10 @@ console.AddCommand("print", function(line)
 	easylua.RunLua(SERVER and console.GetServerPlayer() or NULL, ("log(%s)"):format(line), nil, true)
 end)
 
+console.AddCommand("table", function(line)
+	easylua.RunLua(SERVER and console.GetServerPlayer() or NULL, ("table.print(%s)"):format(line), nil, true)
+end)
+
 console.AddCommand("printc", function(line)
 	players.BroadcastLua(("easylua.PrintOnServer(%s)"):format(line))
 end)

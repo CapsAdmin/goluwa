@@ -500,7 +500,7 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 	if type(drawable) == "table" and drawable.typeOf and drawable:typeOf("SpriteBatch") then
 		surface.Color(1,1,1,1)
 		surface.SetTexture(textures[drawable.img])
-		surface.DrawPoly(drawable.poly) 	
+		drawable.poly:Draw()
 	else
 		if textures[drawable] then
 			if type(x) == "table" and x:typeOf("Quad") then

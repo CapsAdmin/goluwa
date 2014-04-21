@@ -163,9 +163,7 @@ do -- window meta
 		
 		self.last_mpos = Vec2()
 		self.mouse_delta = Vec2()
-						
-		timer.Create("glfw_pollevents", 1/60, 0, function() glfw.PollEvents() end)
-		
+
 		event.AddListener("OnUpdate", self, nil, goluwa.OnError)
 				
 		timer.Delay(0, function()
@@ -270,3 +268,6 @@ do -- window meta
 		return self
 	end
 end
+
+-- this is needed regardless of wether a window exists or not or else the console will freeze..???
+timer.Create("glfw_pollevents", 1/60, 0, function() glfw.PollEvents() end)

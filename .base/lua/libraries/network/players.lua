@@ -21,8 +21,7 @@ function players.BroadcastLua(str)
 	end
 end
 	
-		
-function players.Create(uniqueid)
+function players.Create(uniqueid, is_bot)
 	local self = players.active_players[uniqueid] or NULL
 
 	if self:IsValid() then
@@ -41,6 +40,15 @@ function players.Create(uniqueid)
 	-- i dont like that this is here..
 	-- event system for class?
 	self.last_ping = os.clock()
+	
+	if is_bot and not CLIENT then	
+		self.is_bot = true
+		if event.Call("OnPlayerConnect", self) ~= false then
+			network.Broadcast(network.CONNECT, uniqueid)
+			event.Call("PlayerSpawned", self)
+			event.BroadcastCall("PlayerSpawned", self)
+		end
+	end
 		
 	return self
 end

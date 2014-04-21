@@ -79,14 +79,19 @@ end
 
 function addons.LoadAll()
 	for folder in vfs.Iterate(e.ROOT_FOLDER .. ".") do
-		local path = folder .. "/"
+		if folder:sub(1, 1) ~= "." or folder == ".base" then
+			local path = folder .. "/"
+					
+			if vfs.IsDir(e.ROOT_FOLDER .. path) then					
+				local func, msg = loadfile(e.ROOT_FOLDER .. path .. "info.lua")
 				
-		if vfs.IsDir(e.ROOT_FOLDER .. path) then					
-			local func, msg = loadfile(e.ROOT_FOLDER .. path .. "info.lua")
+				local info = {}
+				
+				if func then
+					info = func() or {}
+				end
 			
-			if func then
-				local info = func and func() or {}
-					info.path = path
+				info.path = path
 					info.file_info = folder
 					info.name = info.name or folder
 					info.folder = folder
@@ -94,16 +99,6 @@ function addons.LoadAll()
 				table.insert(addons.Info, info)
 
 				e["ADDON_" .. info.name:upper()] = info
-			else
-				local info = {}
-					info.path = path
-					info.file_info = folder
-					info.name = folder
-					info.folder = folder
-					info.priority = -1
-				table.insert(addons.Info, info)
-				e["ADDON_" .. info.name:upper()] = info
-				
 			end
 		end
 	end

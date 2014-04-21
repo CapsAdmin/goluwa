@@ -15,5 +15,5 @@ event.AddListener("OnDraw2D", "lol", function()
 	surface.Color(1,1,1,1)
 	surface.SetTexture(tex)
   	
-	surface.DrawPoly(poly)	
+	poly:Draw()	
 end)                                   
