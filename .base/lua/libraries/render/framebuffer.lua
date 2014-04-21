@@ -15,6 +15,9 @@ function META:Begin(attach, channel, skip_push)
 	
 	gl.Viewport(0, 0, self.width, self.height)
 
+	gl.Clear(bit.bor(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT))	
+	gl.ClearColor(0, 0, 0, 1)
+
 	gl.ActiveTextureARB(channel or e.GL_TEXTURE0)
 	gl.Enable(e.GL_TEXTURE_2D)
 
