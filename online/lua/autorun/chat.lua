@@ -39,6 +39,8 @@ function chat.Append(var, str)
 	if typex(var) == "player" then
 		ply = var
 		var = getnick(var)
+	elseif not network.IsConnected() then
+		var = "disconnected"
 	elseif typex(var) == "null" then
 		var = "server"
 	else
