@@ -266,7 +266,7 @@ if CLIENT then
 		if network.just_disconnected then	
 			return false
 		end
-		return network.client_socket:IsValid() and network.client_socket:IsConnected() and network.accepted
+		return network.client_socket:IsValid() and network.client_socket:IsConnected() and network.accepted or false
 	end
 	
 	function network.SendToServer(event, ...)	
