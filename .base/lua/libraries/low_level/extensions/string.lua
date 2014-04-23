@@ -1,3 +1,17 @@
+function string.endswith(a, b)
+	if type(b) == "table" then
+		for k, b in pairs(b) do
+			if a:sub(-#b) == b then
+				return true
+			end
+		end
+		
+		return false
+	end
+	
+	return a:sub(-#b) == b
+end
+
 function string.levenshtein(a, b)		
 	local distance = {}
 	
