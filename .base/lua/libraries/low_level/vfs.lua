@@ -128,17 +128,17 @@ do -- path utilities
 				end
 			else
 				file, err = io.open(v .. "/" .. path, ...)
-			end
-			
-			if file then
-				file:close()
 				
-				if is_folder then
-					path = path:sub(0,-4)
+				if file then
+					file:close()
+					
+					if is_folder then
+						path = path:sub(0,-4)
+					end
+					
+					path = v .. "/" .. path
+					break
 				end
-				
-				path = v .. "/" .. path
-				break
 			end
 		end
 			
@@ -772,6 +772,10 @@ do -- async reading
 		check(callback, "function")
 		check(mbps, "nil", "number")
 		mbps = mbps or 1
+		
+		if vfs.debug then
+			logf("[VFS] vfs.ReadAsync(%q)", path)
+		end
 		
 		if cache[path] then
 			callback(cache[path])
