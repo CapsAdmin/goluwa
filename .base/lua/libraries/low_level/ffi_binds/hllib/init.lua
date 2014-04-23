@@ -25,6 +25,11 @@ for line in header:gmatch("(.-)\n") do
 			if hl.debug and name ~= "GetString" then
 				local str = hl.GetString(hl.enums.HL_ERROR_LONG_FORMATED)
 				str = ffi.string(str)
+				
+				-- this has to be some bug in hllib because CreateDirectory() is called in some ::Extract function which isn't being called by goluwa
+				if str:find("CreateDirectory() failed", nil, true) then return val end
+				
+				
 				if str ~= "<No error reported.>" and  str ~= hl.last_error then
 					hl.last_error = str
 					error("HLLib " .. str, 2)
