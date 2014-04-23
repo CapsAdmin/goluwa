@@ -341,18 +341,27 @@ local function ADD_SET_GET_OBJECT(META, ADD_FUNCTION, name, ...)
 end
 
 do -- source
-	local META = GEN_TEMPLATE("Source", function(self, var, ...)
+	local META = GEN_TEMPLATE("Source", function(self, var, length, info)
 
 		self.effects = {}
-
-		if type(var) == "cdata" then
+		
+		if type(var) == "cdata" and type(length) == "cdata" then
+			
 			local buffer = audio.CreateBuffer()
-			buffer:SetData(var, ...)
+			
+			if type(info) == "table" and info.samplerate and info.channels then
+				buffer:SetFormat(info.channels == 1 and e.AL_FORMAT_MONO16 or e.AL_FORMAT_STEREO16)
+				buffer:SetSampleRate(info.samplerate)
+				self.decode_info = info
+			end
+			
+			buffer:SetData(var, length)
 			self:SetBuffer(buffer)
+			
 		elseif type(var) == "string" then
 			vfs.ReadAsync(var, function(data)
 				local data, length, info = audio.Decode(data)
-
+				
 				if data then
 					local buffer = audio.CreateBuffer()
 					buffer:SetFormat(info.channels == 1 and e.AL_FORMAT_MONO16 or e.AL_FORMAT_STEREO16)
