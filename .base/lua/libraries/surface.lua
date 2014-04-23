@@ -467,11 +467,12 @@ end
 function surface.SetTexture(tex)
 	tex = tex or render.GetWhiteTexture()
 	
-	surface.rectmesh.texture = tex
 	surface.bound_texture = tex
 end
 
-surface.SetWhiteTexture = surface.SetTexture
+function surface.SetWhiteTexture()
+	surface.bound_texture = render.GetWhiteTexture() 
+end
 
 function surface.GetTexture()
 	return surface.bound_texture or render.GetWhiteTexture()
@@ -632,6 +633,8 @@ function surface.DrawRect(x,y, w,h, a, ox,oy)
 		end
 				
 		surface.Scale(w, h)
+		
+		surface.rectmesh.texture = surface.bound_texture
 		surface.rectmesh:Draw()
 	render.PopWorldMatrix()
 end

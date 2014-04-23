@@ -41,7 +41,7 @@ do
 		
 		mat4 = "render.UniformMatrix4fv(%i, 1, 0, val)",
 		
-		texture = "render.BindTexture(val, %i)", 
+		texture = "render.BindTexture(val) gl.Uniform1i(%i, 0)", 
 	}
 	
 	unrolled_lines.vec4 = unrolled_lines.color
@@ -205,43 +205,7 @@ void main()
 		gl.DeleteProgram(self.program_id)
 		utilities.MakeNULL(self)
 	end
-	
-	local base = e.GL_TEXTURE0
-
-	function META:Bind()
-		render.UseProgram(self.program_id)
-
-		-- unroll this?
 		
-		for key, data in pairs(self.uniforms) do
-			local val = self[key]
-
-			if val then
-				if type(val) == "function" then
-					val = val()
-				end
-				if data.info.type == "sampler2D" then
-					gl.ActiveTexture(base + val.Channel)
-					gl.BindTexture(val.format.type, val.id)
-					data.func(data.id, val.Channel)
-				elseif type(val) == "table" then
-					data.func(data.id, unpack(val))
-				elseif hasindex(val) and val.Unpack then
-					data.func(data.id, val:Unpack())
-				else
-					
-					data.func(data.id, val)
-				end
-
-			end
-		end
-
-		for location, data in pairs(self.attributes) do
-			gl.EnableVertexAttribArray(location)
-			gl.VertexAttribPointer(location, data.arg_count, data.enum, false, data.stride, data.type_stride)
-		end
-	end
-	
 	function META:CreateVertexAttributes(size)
 		return ffi.new(self.vtx_atrb_type.."[?]", size)
 	end
