@@ -11,7 +11,12 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 				id = path, 
 				root = "",
 				callback = function(type, a, b, c, d, ...)  		
-					if type == "find" then
+					if type == "attributes" then
+						local path = a
+						path = path:sub(2) 
+
+						return pack:GetAttributes(path)
+					elseif type == "find" then
 						local path = a
 						
 						path = path:sub(2) 
@@ -76,7 +81,7 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 	end
 end)
 
-vpk.opened = {}
+vpk.opened = vpk.opened or {}
 
 local META = utilities.CreateBaseMeta("vpk")
 META.__index = META
@@ -86,7 +91,8 @@ function META:__tostring()
 end
  
 function vpk.Open(path, mode)
-	
+	path = path:lower()
+
 	if vpk.opened[path] and vpk.opened[path]:IsValid() then 
 		vpk.opened[path]:Remove()
 	end
@@ -94,9 +100,7 @@ function vpk.Open(path, mode)
 	local self = utilities.CreateBaseObject("vpk")
 	
 	setmetatable(self, META)
-	
-	path = path:lower()
-	
+		
 	local type = hl.GetPackageTypeFromName(path)
 
 	local id = ffi.new("unsigned int[1]", 0)
@@ -113,14 +117,23 @@ function vpk.Open(path, mode)
 			local item = hl.FolderFindFirst(hl.PackageGetRoot(), "*", e.HL_FIND_ALL)
 
 			while item ~= nil do
-				--local type = hl.ItemGetType(item)
+				local type = hl.ItemGetType(item)
+				
+				if type == e.HL_ITEM_FILE then 
+					type = "file"
+				elseif type == e.HL_ITEM_FOLDER then
+					type = "directory"
+				else
+					type = "other"
+				end
 				
 				hl.ItemGetPath(item, temp, 256)
 				
 				local str = ffi.string(temp)
 				str = str:gsub("\\", "/")
 				str = str:gsub("root/", "")
-				table.insert(paths, str)
+								
+				table.insert(paths, {path = str, type = type})
 
 				item = hl.FolderFindNext(hl.PackageGetRoot(), item, "*", e.HL_FIND_ALL)
 			end
@@ -134,7 +147,7 @@ function vpk.Open(path, mode)
 			local exists = {}
 			
 			for k,v in pairs(paths) do
-				exists[v] = true
+				exists[v.path] = v.type
 			end
 			
 			self.exists = exists
@@ -143,6 +156,7 @@ function vpk.Open(path, mode)
 	hl.BindPackage(0)
 	
 	vpk.opened[path] = self
+	self.vpk_path = path
 
 	return self
 end
@@ -157,15 +171,37 @@ end
 function META:Find(path)
 	local out = {}
 	
-	local dir_level = select(2, path:gsub("/", ""))
+	if path:sub(-1) == "/" then
+		path = path .. "."
+	end
 	
-	for k,v in pairs(self.paths) do
-		if v:find(path) and select(2, v:gsub("/", "")) == dir_level then
-			table.insert(out, v)
+	local dir = path:match("(.+)/")
+		
+	for k, v in pairs(self.paths) do
+		if v.path:find(path) and v.path:match("(.+)/") == dir then
+			table.insert(out, v.path:match(".+/(.+)") or v.path)
 		end 
 	end
 	
 	return out
+end
+
+function META:GetAttributes(path)
+	local handle = self:Open(path)
+		
+	if self.exists[path:lower()] or handle then
+		local base = lfs.attributes(self.vpk_path)
+		return {
+			mode = self.exists[path:lower()],
+			size = handle and self:GetSize(handle) or 0,
+			uid = 0,
+			gid = 0,
+			nlink = 0,
+			access = base.access,
+			modification = base.modification,
+			change = base.change,
+		}
+	end
 end
 
 -- create a stream for the file for reading
@@ -174,14 +210,20 @@ local size = ffi.new("unsigned int[1]")
 
 function META:Open(path, mode)
 	hl.BindPackage(self.id)
+	mode = mode or e.HL_MODE_READ
 
 	-- get the file we're looking for
 	local file = hl.FolderGetItemByPath(hl.PackageGetRoot(), path, e.HL_FIND_ALL)
-	hl.PackageCreateStream(file, stream)
 	
-	hl.StreamOpen(stream[0], mode)
-	
-	return {file = file, stream = stream[0]}
+	if file ~= nil then
+		hl.PackageCreateStream(file, stream)
+		
+		if stream[0] ~= nil then
+			hl.StreamOpen(stream[0], mode)
+		
+			return {file = file, stream = stream[0]}
+		end
+	end
 end
 
 function META:Read(handle, bytes)
@@ -218,7 +260,7 @@ function META:Close(handle)
 end
 
 function META:Exists(path)
-	return self.exists[path:lower()]
+	return self.exists[path:lower()] ~= nil
 end
 
 _G.vpk = vpk
