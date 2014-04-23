@@ -1,28 +1,240 @@
-local vpk = _G.vpk or {}
+-- vpk reader by https://github.com/animorten
+
+local function read_integer(file, byte_count)
+	local bytes = {file:read(byte_count):byte(1, -1)}
+
+	if #bytes < byte_count then
+		return
+	end
+
+	local result = 0
+
+	for i = 1, #bytes do
+		result = result + bytes[i] * 2 ^ ((i - 1) * 8)
+	end
+
+	return result
+end
+
+local function read_string(file)
+	local buffer = {}
+
+	while true do
+		local char = file:read(1)
+
+		if char == "\0" then
+			break
+		elseif not char then
+			return
+		end
+
+		buffer[#buffer + 1] = char
+	end
+
+	return table.concat(buffer)
+end
+
+local function iterate_strings(file)
+	return function()
+		local value = read_string(file)
+		return value ~= "" and value or nil
+	end
+end
+
+local function read_header(file)
+	local header = {}
+
+	header.signature = read_integer(file, 4)
+	header.version = read_integer(file, 4)
+	header.tree_length = read_integer(file, 4)
+
+	if not header.tree_length then
+		return nil, "Unexpected end-of-file"
+	end
+
+	if header.signature ~= 0x55aa1234 then
+		return nil, string.format("Invalid signature 0x%.8x", header.signature)
+	end
+
+	if header.version == 2 then
+		header.unknown_1 = read_integer(file, 4)
+		header.footer_length = read_integer(file, 4)
+		header.unknown_3 = read_integer(file, 4)
+		header.unknown_4 = read_integer(file, 4)
+
+		if not header.unknown_4 then
+			return nil, "Unexpected end-of-file"
+		end
+	elseif header.version ~= 1 then
+		return nil, string.format("Invalid version %d", header.version)
+	end
+
+	return header, "Success"
+end
+
+local function read_entry(file, extension, directory, name)
+	local entry = {}
+
+	entry.path = (directory ~= " " and directory .. "/" or "") .. (name ~= " " and name or "") .. (extension ~= " " and "." .. extension or "")
+
+	entry.crc = read_integer(file, 4)
+	entry.preload_bytes = read_integer(file, 2)
+	entry.archive_index = read_integer(file, 2)
+	entry.entry_offset = read_integer(file, 4)
+	entry.entry_length = read_integer(file, 4)
+	
+	local terminator = read_integer(file, 2)
+
+	if not terminator then
+		return nil, "Unexpected end-of-file"
+	end
+
+	if terminator ~= 0xffff then
+		return nil, string.format("Invalid entry terminator 0x%.4x", terminator)
+	end
+
+	entry.preload_offset = file:seek()
+
+	if file:seek("cur", entry.preload_bytes) ~= entry.preload_offset + entry.preload_bytes then
+		return nil, "Skipping preload data failed"
+	end
+
+	return entry, "Success"
+end
+
+local function read_tree(file)
+	local tree = {}
+
+	for extension in iterate_strings(file) do
+		for directory in iterate_strings(file) do
+			for name in iterate_strings(file) do
+				local entry, error_message = read_entry(file, extension, directory, name)
+
+				if not entry then
+					return nil, "Parsing entry failed: " .. error_message
+				end
+
+				tree[#tree + 1] = entry
+			end
+		end
+	end
+
+	return tree, "Success"
+end
+
+local function read_footer(file)
+	local footer = {}
+	return footer, "Success"
+end
+
+local function read_file(file)
+	local self = {}
+	local error_message
+
+	self.header, error_message = read_header(file)
+
+	if not self.header then
+		return nil, "Failed parsing header: " .. error_message
+	end
+
+	self.tree, error_message = read_tree(file)
+
+	if not self.tree then
+		return nil, "Failed parsing tree: " .. error_message
+	end
+
+	if self.header.version == 2 then
+		self.footer, error_message = read_footer()
+
+		if not self.footer then
+			return nil, "Failed parsing footer: " .. error_message
+		end
+	end
+
+	return self, "Success"
+end
+
+local function read_vpk_dir(path)
+	check(path, "string")
+
+	local file, error_message = io.open(path, "rb")
+
+	if not file then
+		return nil, "Failed opening VPK: " .. error_message
+	end
+
+	local self, error_message = read_file(file)
+	file:close()
+
+	if not self then
+		return nil, "Failed parsing: " .. error_message
+	end
+
+	return self, "Success"
+end
+ 
+--[[local data = read_vpk_dir("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk")
+local _, data = next(data.tree)
+
+table.print(data)
+
+local file = io.open(("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_%03d.vpk"):format(data.archive_index), "rb")
+file:seek("set", data.entry_offset)
+local buffer = file:read(data.entry_length)
+
+local snd = audio.CreateSource(audio.Decode(buffer))
+snd:Play()
+
+table.print(snd.decode_info)
+
+io.close(file)]]
 
 event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 	
 	if ext == "vpk" then
 		
 		if mount then
-			local pack = vpk.Open(path)
+			local vpk = read_vpk_dir(path)
+			local exists = {}
+			
+			local files = {}
+			
+			for k,v in pairs(vpk.tree) do
+				v.archive_path = path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(v.archive_index) end)
+				exists[v.path] = v
+				files[v.archive_path] = files[v.archive_path] or io.open(v.archive_path, "rb")
+			end
 			  
 			vfs.Mount({
 				id = path, 
 				root = "",
-				callback = function(type, a, b, c, d, ...)  		
+				callback = function(type, a, b, c, d, ...)  	
 					if type == "attributes" then
 						local path = a
 						path = path:sub(2) 
 
-						return pack:GetAttributes(path)
+						--return pack:GetAttributes(path)
 					elseif type == "find" then
 						local path = a
 						
 						path = path:sub(2) 
 						path = path .. "/"
 
-						return pack:Find(path)
+						local out = {}
+	
+						if path:sub(-1) == "/" then
+							path = path .. "."
+						end
+						
+						local dir = path:match("(.+)/")
+							
+						for k, v in pairs(vpk.tree) do
+							if v.path:find(path) and v.path:match("(.+)/") == dir then
+								table.insert(out, v.path:match(".+/(.+)") or v.path)
+							end 
+						end
+						
+						return out
 					elseif type == "file" then
 						local type = a
 						
@@ -30,237 +242,54 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 							local path = b
 							path = path:sub(2) 
 							
-							if not pack:Exists(path) then
+							local data = exists[path]
+							
+							if not data then
 								return false, "File does not exist"
 							end
+							
+							local file = files[data.archive_path]
+							file:seek("set", data.entry_offset)
 							 
-							local mode = e.HL_MODE_INVALID
-								
-							do -- modes
-								local str = c
-								str = str:lower()
-								
-								if str:find("w") then
-									mode = bit.bor(mode, e.HL_MODE_WRITE)
-								end
-								
-								if str:find("r") then
-									mode = bit.bor(mode, e.HL_MODE_READ)
-								end
-							end
-											
-							return pack:Open(path, mode)
+							return {data = data, file = file, offset = 0}
+						elseif type == "seek" then
+							--[[local handle = b
+							local whence = c
+							local offset = d 
+							
+							handle.offset = math.clamp(handle.offset + bytes, 0, handle.data.entry_length)]]
 						elseif type == "read" then
 							local handle = b
 							local type = c
 							local bytes = d
 
-							if type == "bytes" then 
-								local buffer, length = pack:Read(handle, bytes)
+							if type == "bytes" then							
+								if handle.offset == handle.data.entry_length then
+									return
+								end
+							
+								handle.offset = math.clamp(handle.offset + bytes, 0, handle.data.entry_length)
+
+								local content = handle.file:read(handle.offset)
 								
-								if length == 0 then return end
-								
-								return ffi.string(buffer, length)
+								return content
 							end
 							
 							-- WIP
 							-- otherwise just read everything.. 
-							return ffi.string(pack:Read(handle))
+							return handle.file:read(handle.data.entry_length)
 						elseif type == "close" then
-							local handle = b
 							
-							pack:Close(handle)
 						end
 					end
 				end 
 			})
 		else
 			vfs.Unmount({id = path})
+			for k,v in pairs(files) do
+				io.close(v)
+			end
 		end
 		return true
 	end
 end)
-
-vpk.opened = vpk.opened or {}
-
-local META = utilities.CreateBaseMeta("vpk")
-META.__index = META
-
-function META:__tostring()
-	return ("vpk[%i]"):format(self.id)
-end
- 
-function vpk.Open(path, mode)
-	path = path:lower()
-
-	if vpk.opened[path] and vpk.opened[path]:IsValid() then 
-		vpk.opened[path]:Remove()
-	end
-	
-	local self = utilities.CreateBaseObject("vpk")
-	
-	setmetatable(self, META)
-		
-	local type = hl.GetPackageTypeFromName(path)
-
-	local id = ffi.new("unsigned int[1]", 0)
-	hl.CreatePackage(type, id)
-	self.id = id[0]
-	
-	hl.BindPackage(self.id)
-		hl.PackageOpenFile(path, bit.bor(e.HL_MODE_READ, e.HL_MODE_VOLATILE))
-	
-		do -- cache all paths (this is fast anyway)
-			local paths = {}
-			local temp = ffi.new("char[512]")
-			
-			local item = hl.FolderFindFirst(hl.PackageGetRoot(), "*", e.HL_FIND_ALL)
-
-			while item ~= nil do
-				local type = hl.ItemGetType(item)
-				
-				if type == e.HL_ITEM_FILE then 
-					type = "file"
-				elseif type == e.HL_ITEM_FOLDER then
-					type = "directory"
-				else
-					type = "other"
-				end
-				
-				hl.ItemGetPath(item, temp, 256)
-				
-				local str = ffi.string(temp)
-				str = str:gsub("\\", "/")
-				str = str:gsub("root/", "")
-								
-				table.insert(paths, {path = str, type = type})
-
-				item = hl.FolderFindNext(hl.PackageGetRoot(), item, "*", e.HL_FIND_ALL)
-			end
-			
-			if item ~= nil then
-				hl.StreamClose(pSubItem) 
-			end
-						
-			self.paths = paths
-			
-			local exists = {}
-			
-			for k,v in pairs(paths) do
-				exists[v.path] = v.type
-			end
-			
-			self.exists = exists
-		end
-
-	hl.BindPackage(0)
-	
-	vpk.opened[path] = self
-	self.vpk_path = path
-
-	return self
-end
-
-function META:OnRemove()
-	hl.BindPackage(self.id)
-		hl.PackageClose()
-		hl.DeletePackage(self.id)
---	hl.BindPackage(0)
-end
-
-function META:Find(path)
-	local out = {}
-	
-	if path:sub(-1) == "/" then
-		path = path .. "."
-	end
-	
-	local dir = path:match("(.+)/")
-		
-	for k, v in pairs(self.paths) do
-		if v.path:find(path) and v.path:match("(.+)/") == dir then
-			table.insert(out, v.path:match(".+/(.+)") or v.path)
-		end 
-	end
-	
-	return out
-end
-
-function META:GetAttributes(path)
-	local handle = self:Open(path)
-		
-	if self.exists[path:lower()] or handle then
-		local base = lfs.attributes(self.vpk_path)
-		return {
-			mode = self.exists[path:lower()],
-			size = handle and self:GetSize(handle) or 0,
-			uid = 0,
-			gid = 0,
-			nlink = 0,
-			access = base.access,
-			modification = base.modification,
-			change = base.change,
-		}
-	end
-end
-
--- create a stream for the file for reading
-local stream = ffi.new("void *[1]")
-local size = ffi.new("unsigned int[1]")
-
-function META:Open(path, mode)
-	hl.BindPackage(self.id)
-	mode = mode or e.HL_MODE_READ
-
-	-- get the file we're looking for
-	local file = hl.FolderGetItemByPath(hl.PackageGetRoot(), path, e.HL_FIND_ALL)
-	
-	if file ~= nil then
-		hl.PackageCreateStream(file, stream)
-		
-		if stream[0] ~= nil then
-			hl.StreamOpen(stream[0], mode)
-		
-			return {file = file, stream = stream[0]}
-		end
-	end
-end
-
-function META:Read(handle, bytes)
-	hl.BindPackage(self.id)
-
-	if not bytes then
-		bytes = self:GetSize(handle)
-	end
-	
-	local buffer = ffi.new("hlByte[?]", bytes)
-	
-	bytes = hl.StreamRead(handle.stream, buffer, bytes)
-		
-	return buffer, bytes
-end
-
-function META:GetSize(handle)
-	hl.BindPackage(self.id)
-
-	hl.ItemGetSize(handle.file, size) 
-	
-	return size[0]
-end
-
-function META:Seek(handle, offset, mode)
-	hl.BindPackage(self.id)
-
-	mode = mode or e.HL_SEEK_CURRENT
-	return hl.StreamSeekEx(handle.stream, offset, mode)
-end
-
-function META:Close(handle)
-	hl.StreamClose(handle.file) 
-end
-
-function META:Exists(path)
-	return self.exists[path:lower()] ~= nil
-end
-
-_G.vpk = vpk
