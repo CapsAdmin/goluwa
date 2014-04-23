@@ -3,18 +3,11 @@ local last2
 
 local base = e.GL_TEXTURE0
 
-function render.BindTexture(tex, location, channel)
-	if tex ~= last1 or location ~= last2 then
-		
-		channel = channel or 0
-		
-		gl.ActiveTexture(base + channel) 
-		gl.BindTexture(tex.format.type, tex.id) 
-		gl.Uniform1i(location, channel)
-
-		last1 = tex
-		last2 = location
-	end
+function render.BindTexture(tex, channel)
+	channel = channel or 0
+			
+	--gl.ActiveTexture(base + channel) 
+	gl.BindTexture(tex.format.type, tex.id) 
 end
 
 local diffuse_suffixes = {

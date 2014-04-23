@@ -231,7 +231,7 @@ function render.DrawDeffered(w, h)
 	
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, render.gbuffer.id)
 	
-	gl.ActiveTextureARB(e.GL_TEXTURE4)
+	--gl.ActiveTextureARB(e.GL_TEXTURE4)
 	gl.Enable(e.GL_TEXTURE_2D)
 	gl.Disable(e.GL_DEPTH_TEST)
 	gl.Disable(e.GL_CULL_FACE)
