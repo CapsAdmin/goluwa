@@ -443,23 +443,39 @@ do -- generic
 			-- lfs doesn't like / at the end of folders
 			path = path:sub(0, -2)
 		end
+		
+		if vfs.debug then
+			logf("[VFS] requesting attributes on %q", path)
+		end
 			
 		for k, v in ipairs(vfs.paths) do
 			local info
+			local _path
 			
 			if type(v) == "table" then
-				info = v.callback("attributes", v.root .. "/" .. path, ...)
+				_path = v.root .. "/" .. path
+				info = v.callback("attributes", _path, ...)
 			else
-				info = lfs.attributes(v .. "/" .. path, ...)
+				_path = v .. "/" .. path
+				info = lfs.attributes(_path, ...)
 			end
 			
 			if info then
+				if vfs.debug then
+					logf("[VFS] attributes found on [%s]%q", v.id, _path)
+				end
+			
 				return info
 			end
 		end
 
 		local info = lfs.attributes(path, ...)
 		if info then
+			
+			if vfs.debug then
+				logf("[VFS] attributes found on %q", path)
+			end
+		
 			return info
 		end
 		
@@ -607,21 +623,25 @@ do -- file finding
 
 	do 
 		local out
-		local function search(path, ext)		
+		local function search(path, ext, callback)		
 			for _,v in pairs(vfs.Find(path)) do
-				if ext and v:sub(-#ext) == ext then
-					table.insert(out, path .. v)
-				elseif not ext then
+				if not ext or v:endswith(ext) then
+					if callback and callback(path .. v) ~= nil then
+						return
+					end
+					
 					table.insert(out, path .. v)
 				end
 				
-				search(path .. v .. "/", ext)
+				if vfs.GetAttributes(path .. v).mode == "directory" then
+					search(path .. v .. "/", ext, callback)
+				end
 			end
 		end
 
-		function vfs.Search(path, ext)
+		function vfs.Search(path, ext, callback)
 			out = {}
-			search(path, ext)
+			search(path, ext, callback)
 			return out
 		end
 	end
