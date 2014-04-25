@@ -527,7 +527,10 @@ do -- tier 0
 	include(libraries .. "structs/*")
 
 	utf8 = include(libraries .. "utf8.lua")
+	
 	event = include(libraries .. "event.lua")
+	events = event.events
+	
 	utilities = include(libraries .. "utilities.lua")
 	addons = include(libraries .. "addons.lua")
 	class = include(libraries .. "class.lua")

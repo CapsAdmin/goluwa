@@ -14,14 +14,24 @@ function event.AddListener(a, b, c, d, e)
 
 	if type(b) == "table" and type(a) == "string" then
 		type_ = a
-		unique = tostring(b)
 		func = b[a]
 		self_arg = b
-	elseif type(a) == "string" and b and type(c) == "function" then
+	elseif type(a) == "string" then
 		type_ = a
-		unique = b
 		func = c
 	end
+	
+	unique = b
+	
+	if not unique then
+		local info = debug.getinfo(3)
+		if info.source:sub(1, 1) == "@" then
+			unique = info.source
+		else
+			unique = tostring(info.func) .. info.name
+		end
+	end
+	
 	
 	if type(d) == "number" then
 		priority = d
@@ -34,11 +44,13 @@ function event.AddListener(a, b, c, d, e)
 	else
 		priority = 0
 	end
-	
+		
 	check(type_, "string")
-	check(func, "function")
-
+	--check(func, "function")
+		
 	event.RemoveListener(type_, unique)
+	
+	if not func then return end
 	
 	event.active[type_] = event.active[type_] or {}
 	table.insert(
@@ -61,7 +73,7 @@ function event.RemoveListener(a, b)
 	if type(b) == "table" and type(a) == "string" then
 		type_ = a
 		unique = tostring(b)
-	elseif type(a) == "string" and b then
+	elseif type(a) == "string" then
 		type_ = a
 		unique = b
 	end
@@ -196,5 +208,18 @@ function event.Dump()
 	logn("")
 	logn(">>> Total events: "..h..".")
 end
+
+event.events = setmetatable({}, {
+	__index = function(_, unique)
+		return setmetatable({}, {
+			__newindex = function(_, event_name, func)
+				event.AddListener(event_name, unique, func)
+			end,
+		})
+	end,
+	__newindex = function(_, event_name, func)
+		event.AddListener(event_name, nil, func)
+	end,
+})
 
 return event
