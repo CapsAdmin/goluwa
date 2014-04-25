@@ -173,17 +173,23 @@ function render.SetupView2D(pos, ang, zoom)
 	local view = render.matrices.view_2d 
 	view:LoadIdentity()		
 	
+	if zoom then
+		local x, y = cam.w/2, cam.h/2
+		view:Translate(x, y, 0)
+		view:Scale(zoom, zoom, 1)
+		view:Translate(-x, -y, 0)
+	end
+	
+	if ang then
+		local x, y = cam.w/2, cam.h/2
+		view:Translate(x, y, 0)
+		view:Rotate(ang, 0, 0, 1)
+		view:Translate(-x, -y, 0)
+	end
 	if pos then
 		view:Translate(pos.x, pos.y, 0)
 	end	
-	if zoom then
-		view:Scale(zoom, zoom, 1)
-	end
 
-	if ang then
-		-- source engine style camera angles
-		view:Rotate(ang, 0, 0, 1)
-	end
 
 end
 
