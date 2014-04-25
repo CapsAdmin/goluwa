@@ -1,3 +1,5 @@
+include("string_anime.lua")
+
 function string.endswith(a, b)
 	if type(b) == "table" then
 		for k, b in pairs(b) do
