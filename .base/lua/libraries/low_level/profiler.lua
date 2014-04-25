@@ -39,9 +39,10 @@ for every function called, tbl[i] looks like this:
 
 local profiler = _G.profiler or {}
 
-profiler.type = "instrumental"
-profiler.default_zone = "no zone"
+profiler.type = "statistical"
 profiler.enabled = true
+
+local vmdef = require("jit.vmdef")
 
 local clock = os.clock -- see SetClockFunction
 
@@ -67,7 +68,6 @@ end
 profiler.data = profiler.data or {}
 
 local active = false
-local zone = profiler.default_zone
 local data = profiler.data
 local read_file
 
@@ -88,31 +88,67 @@ end
 
 -- call this with timer.clock or something after glfw is loaded
 function profiler.SetClockFunction(func)
-	time = func
+	clock = func
 	profiler.Restart()
 end
 
--- call this with timer.clock or something after glfw is loaded
 function profiler.SetReadFileFunction(func)
 	read_file = func
 end
 
 do
-	local function statistical_callback(thread, samples, vmstate)
+	local function statistical_callback(thread, samples, vmstate, ...)
 		if not active or not profiler.enabled then
 			profiler.Stop()
 		return end
+						
+		local str = profiler.jitpf.dumpstack(thread, profiler.dump_format, profiler.dump_depth)
+		local children = {}
 		
+		for line in str:gmatch("(.-)\n") do
+			local path, line_number = line:match("(.+):(%d+)")
+			
+			if not path and not line_number then
+				line = line:gsub("%[builtin#(%d+)%]", function(x)
+				  return vmdef.ffnames[tonumber(x)]
+				end)
+								
+				table.insert(children, {name = line, external_function = true})
+			else
+				table.insert(children, {path = path, line = tonumber(line_number), external_function = false})
+			end
+		end
 		
-		profiler.jitpf.dumpstack(thread, profiler.dump_format, profiler.dump_depth):gsub("(.-):(%d+)", function(path, line)			
-			data[zone] = data[zone] or {}
-			data[zone][path] = data[zone][path] or {}
-			data[zone][path][line] = data[zone][path][line] or {total_time = 0, samples = 0, statistical = true}
+		local info = children[#children]
+		table.remove(children, #children)
+		
+		local path = info.path or info.name
+		local line = tonumber(info.line) or -1
+		
+		data[path] = data[path] or {}
+		data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, statistical = true, ready = false}
+		
+		data[path][line].samples = data[path][line].samples + samples
+		data[path][line].start_time = data[path][line].start_time or clock()	
+		
+		local parent = data[path][line]
+				
+		for _, info in pairs(children) do
+			local path = info.path or info.name
+			local line = tonumber(info.line) or -1
+				
+			data[path] = data[path] or {}
+			data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, statistical = true, ready = false}
 			
-			data[zone][path][line].samples = data[zone][path][line].samples + samples
-			data[zone][path][line].start_time = data[zone][path][line].start_time or clock()
+			data[path][line].samples = data[path][line].samples + samples
+			data[path][line].start_time = data[path][line].start_time or clock()	
 			
-		end)
+			data[path][line].parents[tostring(parent)] = parent
+			parent.children[tostring(data[path][line])] = data[path][line]
+			
+			--table.insert(data[path][line].parents, parent)
+			--table.insert(parent.children, data[path][line])
+		end
 	end
 	
 	local function instrumental_callback(type)
@@ -127,36 +163,35 @@ do
 		local path = info.source
 		local line = info.linedefined
 				
-		data[zone] = data[zone] or {}
-		data[zone][path] = data[zone][path] or {}
-		data[zone][path][line] = data[zone][path][line] or {total_time = 0, samples = 0, total_garbage = 0, func = info.func, func_name = info.name, instrumental = true}
+		data = data or {}
+		data[path] = data[path] or {}
+		data[path][line] = data[path][line] or {total_time = 0, samples = 0, total_garbage = 0, func = info.func, func_name = info.name, instrumental = true}
 		
-		data[zone][path][line].samples = data[zone][path][line].samples + 1
-		data[zone][path][line].start_time = data[zone][path][line].start_time or clock()
+		data[path][line].samples = data[path][line].samples + 1
+		data[path][line].start_time = data[path][line].start_time or clock()
 		
 		if type == "call" then
-			data[zone][path][line].call_time = clock()
-			data[zone][path][line].call_garbage = collectgarbage("count")
-		elseif type == "return" and data[zone][path][line].call_time then
-			data[zone][path][line].total_time = data[zone][path][line].total_time + (clock() - data[zone][path][line].call_time)
-			data[zone][path][line].total_garbage = data[zone][path][line].total_garbage + (collectgarbage("count") - data[zone][path][line].call_garbage)
+			data[path][line].call_time = clock()
+			data[path][line].call_garbage = collectgarbage("count")
+		elseif type == "return" and data[path][line].call_time then
+			data[path][line].total_time = data[path][line].total_time + (clock() - data[path][line].call_time)
+			data[path][line].total_garbage = data[path][line].total_garbage + (collectgarbage("count") - data[path][line].call_garbage)
 		end
 	end
 
-	function profiler.Start(zone, type)
+	function profiler.Start(type)
+		type = type or profiler.type
+		
 		if not profiler.enabled then return end
-				
-		if not zone then
-			local info = debug.getinfo(2)
-			if info then
-				zone = info.name
-			end
-		end
-		
-		zone = zone or profiler.default_zone
-		
+						
 		if type == "statistical" then
-			profiler.jitpf.start(profiler.default_mode, statistical_callback)
+			profiler.jitpf.start(profiler.default_mode, function(...) 
+				local ok, err = xpcall(statistical_callback, goluwa.OnError, ...)
+				if not ok then
+					logn(err)
+					profiler.Stop()
+				end
+			end)
 		else
 			debug.sethook(instrumental_callback, "cr")
 		end
@@ -166,6 +201,8 @@ do
 end
 
 function profiler.Stop(type)
+	type = type or profiler.type
+	
 	if not profiler.enabled then return end
 	
 	if type == "statistical" then
@@ -182,78 +219,78 @@ function profiler.Restart()
 	data = profiler.data
 end
 
-function profiler.GetZone()
-	return zone
+function profiler.Running() 
+	return active
 end
 
 function profiler.GetBenchmark(type)
-	local out = {}
+	type = type or profiler.type
 	
-	for zone, file_data in pairs(data) do
-		for path, lines in pairs(file_data) do
-			for line, data in pairs(lines) do
-				
-				line =  tonumber(line)
-				
-				local path = fix_path(path:gsub("%[.-%]", ""):gsub("@", ""))
-				local name
-				local debug_info
-				
-				if data.func then					
-					debug_info = debug.getinfo(data.func)
-					
-					-- remove some useless fields
-					debug_info.source = nil
-					debug_info.short_src = nil
-					debug_info.currentline = nil
-					debug_info.func = nil
-				end
+	local out = {}
+
+	for path, lines in pairs(data) do
+		for line, data in pairs(lines) do
 			
-				if read_file then
-					local content = read_file(path)
-					
-					if content then
-						name = content:explode("\n")[line]
-						if name then
-							name = name:gsub("function ", "")
-							name = name:trim()			
-						else
-							name = "unknown(line not found)"
-						end
-					else
-						name = "unknown(file not found)"
-					end
-				elseif data.func then		
-					name = ("%s(%s)"):format(data.func_name, table.concat(getparams(data.func), ", "))
-				end
+			line =  tonumber(line)
+			
+			local path = fix_path(path:gsub("%[.-%]", ""):gsub("@", "")) or path
+			local name
+			local debug_info
+			
+			if data.func then					
+				debug_info = debug.getinfo(data.func)
 				
-				local temp = {
-					zone = zone ~= "no zone" and zone or nil, 
-					path = path,
-					
-					line = line,
-					name = name,
-					debug_info = debug_info,
-				}
-				
-				if data.total_time then
-					temp.average_time = data.total_time / data.samples
-					temp.total_time = data.total_time
-				end
-				
-				if data.total_garbage and data.total_garbage > 0 then
-					temp.average_garbage = math.floor(data.total_garbage / data.samples)
-					temp.total_garbage = data.total_garbage
-				end
-								
-				temp.sample_duration = clock() - data.start_time
-				temp.times_called = data.samples
-				
-				table.insert(out, temp)
+				-- remove some useless fields
+				debug_info.source = nil
+				debug_info.short_src = nil
+				debug_info.currentline = nil
+				debug_info.func = nil
 			end
+		
+			if read_file then
+				local content = read_file(path)
+				
+				if content then
+					name = content:explode("\n")[line]
+					if name then
+						name = name:gsub("function ", "")
+						name = name:trim()			
+					end
+				end
+
+		
+				name = name or "unknown(file not found)"
+				
+				name = name:trim()
+				
+			elseif data.func then		
+				name = ("%s(%s)"):format(data.func_name, table.concat(getparams(data.func), ", "))
+			end
+
+			data.path = path
+			data.file_name = path:match(".+/(.+)%.") or path
+			data.line = line
+			data.name = name
+			data.debug_info = debug_info
+			data.ready = true
+			
+			if data.total_time then
+				data.average_time = data.total_time / data.samples
+				data.total_time = data.total_time
+			end
+			
+			if data.total_garbage and data.total_garbage > 0 then
+				data.average_garbage = math.floor(data.total_garbage / data.samples)
+				data.total_garbage = data.total_garbage
+			end
+											
+			data.sample_duration = clock() - data.start_time
+			data.times_called = data.samples
+			
+			table.insert(out, data)
 		end
 	end
-
+	
 	return out
 end
 
