@@ -66,7 +66,7 @@ do -- timer meta
 		return self.callback
 	end
 	function META:Call(...)
-		return xpcall(self.callback, goluwa.OnError, ...)
+		return xpcall(self.callback, system.OnError, ...)
 	end
 	function META:SetNextThink(num)
 		self.realtime = timer.clock() + num
@@ -156,7 +156,7 @@ function timer.Update(...)
 		if data.type == "thinker" then
 			if data.in_seconds and data.speed then
 				if data.realtime < cur then
-					local ok, res = xpcall(data.callback, goluwa.OnError)
+					local ok, res = xpcall(data.callback, system.OnError)
 					if not ok or res ~= nil then
 						timer.Timers[key] = nil
 					end
@@ -164,20 +164,20 @@ function timer.Update(...)
 				end
 			elseif data.speed then
 				for i=0, data.speed do
-					local ok, res = xpcall(data.callback, goluwa.OnError)
+					local ok, res = xpcall(data.callback, system.OnError)
 					if not ok or res ~= nil then
 						timer.Timers[key] = nil
 					end	
 				end
 			else
-				local ok, res = xpcall(data.callback, goluwa.OnError)
+				local ok, res = xpcall(data.callback, system.OnError)
 				if not ok or res ~= nil then
 					timer.Timers[key] = nil
 				end
 			end
 		elseif data.type == "delay" then
 			if data.realtime < cur then
-				xpcall(data.callback, goluwa.OnError)
+				xpcall(data.callback, system.OnError)
 				timer.Timers[key] = nil
 				break
 			end

@@ -147,7 +147,7 @@ do -- window meta
 
 		if WINDOWS and X64 and NVIDIA then
 			system.MessageBox("fatal error!!!!!", "Nvidia on x64 is not supported because for some weird reason it freezes.\nThe next time you launch it will launch the x86 version instead.\nPress OK to relaunch.")
-			goluwa.Restart()
+			system.Restart()
 		end
 
 		gl.GetProcAddress = glfw.GetProcAddress
@@ -164,7 +164,7 @@ do -- window meta
 		self.last_mpos = Vec2()
 		self.mouse_delta = Vec2()
 
-		event.AddListener("OnUpdate", self, nil, goluwa.OnError)
+		event.AddListener("OnUpdate", self, nil, system.OnError)
 				
 		timer.Delay(0, function()
 			event.Call("OnFramebufferSize", self, width, height)

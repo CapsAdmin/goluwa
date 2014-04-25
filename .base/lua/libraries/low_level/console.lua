@@ -76,7 +76,7 @@ do -- commands
 	end
 
 	local function call(data, line, ...)
-		local a, b, c = xpcall(data, goluwa.OnError, line, ...)
+		local a, b, c = xpcall(data, system.OnError, line, ...)
 		
 		if a then
 			return b, c
@@ -181,14 +181,14 @@ do -- commands
 						args[key] = val
 					end
 				
-					return xpcall(func, goluwa.OnError, select(2, unpack(args)))
+					return xpcall(func, system.OnError, select(2, unpack(args)))
 				end]==]
 				
 				local func, err = loadstring(line)
 				
 				if not func then return func, err end
 				
-				return xpcall(func, goluwa.OnError)
+				return xpcall(func, system.OnError)
 			end
 		end
 	end

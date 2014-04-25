@@ -79,7 +79,7 @@ function luadata.Decode(str)
 		return {}
 	end
 	
-	local ok, err = xpcall(func, goluwa.OnError)
+	local ok, err = xpcall(func, system.OnError)
 	
 	if not ok then
 		logn("luadata decode error:")

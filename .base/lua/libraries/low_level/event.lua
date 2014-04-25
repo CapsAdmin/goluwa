@@ -113,7 +113,7 @@ function event.UserDataCall(udata, type_, ...)
 		
 		
 		if type(func) == "function" then
-			local args = {xpcall(func, goluwa.OnError, udata, ...)}
+			local args = {xpcall(func, system.OnError, udata, ...)}
 			if args[1] then
 				table.remove(args, 1)
 				return unpack(args)
@@ -142,9 +142,9 @@ function event.Call(type, ...)
 		for key, data in ipairs(event.active[type]) do
 			
 			if data.self_arg then
-				status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or goluwa.OnError, data.self_arg, ...)
+				status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or system.OnError, data.self_arg, ...)
 			else
-				status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or goluwa.OnError, ...)
+				status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or system.OnError, ...)
 			end
 			
 			if a == event.destroy_tag then

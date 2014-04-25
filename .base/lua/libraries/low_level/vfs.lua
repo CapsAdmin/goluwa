@@ -666,7 +666,7 @@ function vfs.dofile(path, ...)
 	local func, err = vfs.loadfile(path)
 	
 	if func then
-		local ok, err = xpcall(func, goluwa.OnError, ...)
+		local ok, err = xpcall(func, system.OnError, ...)
 		return ok, err, path
 	end
 	
