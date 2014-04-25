@@ -57,8 +57,6 @@ function console.InitializeCurses()
 
 	c.parent_window = curses.initscr()
 
-	curses.start_color()
-
 	if WINDOWS then
 		curses.resize_term(50,150)
 	end
@@ -84,11 +82,12 @@ function console.InitializeCurses()
 	local COLOR_MAGENTA = 5
 	local COLOR_CYAN = 6
 	local COLOR_WHITE = 7
-
-	for i = 0, curses.COLORS do
-		curses.init_pair(i, i, COLOR_BLACK)
-	end
 	
+	curses.start_color()
+
+	for i = 0, 7 do
+		curses.init_pair(i, COLOR_BLACK, i)
+	end
 	
 	-- replace some functions
 	
@@ -224,10 +223,10 @@ do -- colors
 		end
 	end
 	
-	function console.Color(i, str)
-		curses.wattron(c.log_window, i)
+	function console.Color(i, str)		
+		curses.wattron(c.log_window, COLOR_PAIR(i))
 		io.write(str)
-		curses.wattroff(c.log_window, i)
+		curses.wattroff(c.log_window, COLOR_PAIR(i))
 	end
 end
 
