@@ -57,7 +57,7 @@ local function callback()
 	end)
 end
 	   
-local co = coroutine.create(function() return xpcall(callback, goluwa.OnError) end)
+local co = coroutine.create(function() return xpcall(callback, system.OnError) end)
 
 event.AddListener("OnUpdate", "lol", function()
 	local ok, err = coroutine.resume(co)

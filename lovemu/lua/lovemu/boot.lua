@@ -137,8 +137,8 @@ function lovemu.boot(folder)
 		
 	local main = assert(vfs.loadfile("main.lua"))
 	setfenv(main, env)
-	if not xpcall(main, goluwa.OnError) then return end
-	if not xpcall(love.load, goluwa.OnError) then return end
+	if not xpcall(main, system.OnError) then return end
+	if not xpcall(love.load, system.OnError) then return end
 	
 	local function run(dt)
 		love.update(dt)
@@ -160,7 +160,7 @@ function lovemu.boot(folder)
 		surface.SetWhiteTexture()
 		
 		if lovemu.errored == false then
-			local err, msg = xpcall(run, goluwa.OnError, dt)
+			local err, msg = xpcall(run, system.OnError, dt)
 			if err == false then
 				logn(msg)
 				

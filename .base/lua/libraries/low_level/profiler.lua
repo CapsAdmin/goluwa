@@ -186,7 +186,7 @@ do
 						
 		if type == "statistical" then
 			profiler.jitpf.start(profiler.default_mode, function(...) 
-				local ok, err = xpcall(statistical_callback, goluwa.OnError, ...)
+				local ok, err = xpcall(statistical_callback, system.OnError, ...)
 				if not ok then
 					logn(err)
 					profiler.Stop()
