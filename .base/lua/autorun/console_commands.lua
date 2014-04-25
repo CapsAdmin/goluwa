@@ -75,24 +75,36 @@ console.AddCommand("debug", function(line, lib)
 	end
 end)
 
-console.AddCommand("profile", function(line, time)
+console.AddCommand("profile", function(line, time, ptype)
 	profiler.SetClockFunction(timer.clock)
 	profiler.SetReadFileFunction(vfs.Read)
 
 	time = tonumber(time) or 1
 	
-	profiler.Start(nil, "instrumental")
+	if type(ptype) == "string" then
+		if ptype:sub(1,1) == "i" then 
+			ptype = "instrumental"
+		elseif ptype:sub(1,1) == "s" then 
+			ptype = "statistical"
+		end
+	else
+		ptype = profiler.type
+	end
+	
+	profiler.Start(nil, ptype)
 	
 	logn("starting profiler for ", time, " seconds")
 	
 	timer.Create("profile_status", 1, time, function(i)
 		logn("profiling...")
-		if time == i+1 then
-			profiler.Stop("instrumental")
-	
-			local benchmark = profiler.GetBenchmark()
-			local top = {}
-			
+		if time ~= i+1 then return end
+		
+		profiler.Stop(ptype)
+
+		local benchmark = profiler.GetBenchmark()
+		local top = {}
+		
+		if ptype == "instrumental" then				
 			for k,v in pairs(benchmark) do
 				if v.times_called > 50 then
 					table.insert(top, v)
@@ -116,9 +128,7 @@ console.AddCommand("profile", function(line, time)
 					max2 = #v.average_time
 				end
 			end
-			
-			
-			
+				
 			logn(("_"):rep(max+max2+11+10))
 			logn("| NAME:", (" "):rep(max-4), "| MS:", (" "):rep(max2-2), "| CALLS:")
 			logn("|", ("_"):rep(max+2), "|", ("_"):rep(max2+2), "|", ("_"):rep(4+10))
@@ -126,7 +136,60 @@ console.AddCommand("profile", function(line, time)
 				logf("| %s%s | %s%s | %s", v.name, (" "):rep(max-#v.name), v.average_time, (" "):rep(max2 - #v.average_time), v.times_called) 
 			end
 			logn("")
-		end
+			
+		elseif ptype == "statistical" then
+			for k,v in pairs(benchmark) do
+				table.insert(top, v)
+			end
+			
+			table.sort(top, function(a, b)
+				return a.times_called > b.times_called
+			end)
+					
+			local max = 0
+			local max2 = 0
+			for k, v in pairs(top) do
+				if #v.name > max then
+					max = #v.name
+				end
+				
+				v.percent = tostring(math.round((v.times_called / top[1].times_called) * 100, 2))
+							
+				if #v.percent > max2 then
+					max2 = #v.percent
+				end
+				
+				--[[local sigh = 0
+				
+				for i, v in pairs(v.children) do
+					if v.name then
+						if v.name and #v.name > max then
+							max = #v.name + i
+						end
+						sigh = sigh + 1
+						v.i = sigh
+					end
+				end
+				
+				v.sigh = sigh]]
+			end
+			
+			logn(("_"):rep(max+max2+11+10))
+			logn("| NAME:", (" "):rep(max-4), "| CALLS:")
+			logn("|", ("_"):rep(max+2), "|", ("_"):rep(4+10))
+			for k,v in npairs(top) do
+				logf("| %s%s | %s", v.name, (" "):rep(max-#v.name), v.percent)
+				--[[local sigh = v.sigh
+				local max = #v.call_stack
+				for i, v in npairs(v.call_stack) do
+					if v.line_name and i ~= max then
+						logf("| %s%s%s |", (" "):rep(-v.i + sigh), v.line_name, (" "):rep(max - #v.line_name + v.i - sigh))
+					end
+				end]]
+			end
+			logn("")
+			
+		end			
 	end)
 end)
 
