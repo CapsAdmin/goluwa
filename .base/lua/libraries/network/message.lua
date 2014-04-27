@@ -98,7 +98,6 @@ end
 
 do -- filter
 	local META = utilities.CreateBaseMeta("netmsg_user_filter")
-	META.__index = META
 
 	function META:AddAll()
 		for key, ply in pairs(players.GetAll()) do
@@ -132,7 +131,7 @@ do -- filter
 	end
 
 	function message.PlayerFilter()
-		return setmetatable({players = {}}, META)
+		return META:New({players = {}})
 	end
 end
 

@@ -1,7 +1,6 @@
 local lerp,deg,randomf,clamp = math.lerp,math.deg,math.randomf,math.clamp
 
 local PARTICLE = utilities.CreateBaseMeta("particle")
-PARTICLE.__index = PARTICLE
 
 class.GetSet(PARTICLE, "Pos", Vec3(0,0,0))
 class.GetSet(PARTICLE, "Velocity", Vec3(0,0,0))
@@ -31,7 +30,6 @@ function PARTICLE:SetLifeTime(n)
 end
 
 local EMITTER = utilities.CreateBaseMeta("particle_emitter")
-EMITTER.__index = EMITTER
 
 class.GetSet(EMITTER, "Speed", 1)
 class.GetSet(EMITTER, "Rate", 0.1)
@@ -46,7 +44,7 @@ class.GetSet(EMITTER, "PosAttractionForce", 0)
 local emitters = {}
  
 function ParticleEmitter()
-	local self = setmetatable({}, EMITTER)
+	local self = EMITTER()
 	
 	self.particles = {}
 	self.last_emit = 0
@@ -200,7 +198,7 @@ function EMITTER:GetParticles()
 end
   
 function EMITTER:AddParticle(...)
-	local p = setmetatable({}, PARTICLE)
+	local p = PARTICLE()
 	p:SetPos(self:GetPos():Copy())
 	p.life_mult = 1	
 	

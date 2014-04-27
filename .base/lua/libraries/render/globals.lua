@@ -1,5 +1,5 @@
 for k,v in pairs(render) do	
-	if k:sub(0,6) == "Create" then
+	if k:sub(0,6) == "Create" and not k:find("From") then
 		local name = k:sub(7)
 		_G[name] = render["Create" .. name]
 	end

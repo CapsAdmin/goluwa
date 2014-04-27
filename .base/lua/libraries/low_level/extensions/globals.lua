@@ -212,6 +212,6 @@ do
 	end
 	
 	function Array(type, size)	
-		return setmetatable({type = type, size = size, ptr = ffi.new(type .. "[?]", size)}, META)
+		return META:New({type = type, size = size, ptr = ffi.new(type .. "[?]", size)})
 	end
 end

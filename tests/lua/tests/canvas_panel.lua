@@ -54,7 +54,7 @@ canvas:Center()
 		local function fill(tbl, node)		
 			for key, val in pairs(tbl.children) do
 				local node = node:AddNode(val.self.Name)
-				node:SetIcon(Image("textures/" .. icons[val.self.ClassName]))
+				node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
 				fill(val, node)
 			end  
 			
@@ -62,7 +62,7 @@ canvas:Center()
 			 
 		for key, val in pairs(data) do
 			local node = tree:AddNode(val.self.Name)
-			node:SetIcon(Image("textures/" .. icons[val.self.ClassName]))
+			node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
 			fill(val, node)
 		end
 		--end

@@ -84,7 +84,7 @@ do
 		local last_pos = 1
 		local last_color
 			
-		for i = 1, 100 do
+		for i = 1, 1000 do
 			local ok, msg = pcall(ls.next, ls)
 			
 			if not ok then
@@ -138,6 +138,6 @@ function markup:OnTextChanged()
 	self:SizeToContents()
 end    
  
-syntax_process("local hello = ''\n asdasdasd = 1234\n --[[it's a comment]] local test \n --it's really powerful\n", markup.markup)  
+syntax_process(vfs.Read("lua/tests/lua_editor.lua") or "local hello = ''\n asdasdasd = 1234\n --[[it's a comment]] local test \n --it's really powerful\n", markup.markup)  
 
-window.SetSize(Vec2(1680, 1050))
+window.SetSize(Vec2(1680, 1050)) 

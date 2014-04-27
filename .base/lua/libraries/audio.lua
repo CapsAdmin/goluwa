@@ -248,7 +248,6 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	local type2 = type:lower()
 
 	local META = utilities.CreateBaseMeta(type2)
-	META.__index = META
 
 	local fmt = type2 .. "[%i]"
 	function META:__tostring()
@@ -295,7 +294,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	local key = "Gen" .. type
 
 	local create = function(...)
-		local self = setmetatable({}, META)
+		local self = META:New()
 
 		self.id = al[key]()
 
@@ -620,7 +619,6 @@ _G.Sound = audio.CreateSource
 
 do -- microphone
 	local META = utilities.CreateBaseMeta("audio_capture")
-	META.__index = META
 
 	function META:Start(func)
 		alc.CaptureStart(self.id)
@@ -697,7 +695,7 @@ do -- microphone
 
 		logf("[audio] opening device %q for input", name)
 
-		local self = setmetatable({}, META)
+		local self = META:New()
 
 		utilities.SetGCCallback(self)
 

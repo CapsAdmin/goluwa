@@ -23,7 +23,7 @@ do -- tree node
 		
 		lbl:SetIgnoreMouse(true)
 		img:SetIgnoreMouse(true)
-		img:SetTexture(Image("textures/gui/heart.png"))
+		img:SetTexture(Texture("textures/gui/heart.png"))
 				
 		self.expand = exp
 		self.label = lbl

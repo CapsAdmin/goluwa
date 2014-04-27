@@ -19,7 +19,6 @@ calllbacks.OnMonitor = nil
 
 do -- window meta
 	local META = utilities.CreateBaseMeta("render_window")
-	META.__index = META
 
 	function META:Remove()
 		if self.OnRemove then self:OnRemove() end
@@ -159,7 +158,7 @@ do -- window meta
 			gl.gl_init = true
 		end
 					
-		local self = setmetatable({}, META)
+		local self = META:New()
 		
 		self.last_mpos = Vec2()
 		self.mouse_delta = Vec2()

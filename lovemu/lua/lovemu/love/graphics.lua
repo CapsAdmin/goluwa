@@ -222,7 +222,6 @@ do -- points
 		gl.Begin(e.GL_POINTS)
 			gl.Vertex2f(x, y)
 		gl.End()
-		gl.Enable(e.GL_TEXTURE_2D)
 	end
 end
 

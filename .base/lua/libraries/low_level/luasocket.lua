@@ -286,38 +286,6 @@ end
 local receive_types = {all = "*a", line = "*l"}
 
 do -- tcp socket meta
-	local NULL = {}
-
-	NULL.IsNull = true
-
-	local function FALSE()
-		return false
-	end
-
-	function NULL:__tostring()
-		return "NULL"
-	end
-
-	function NULL:__index(key)
-		if key == "ClassName" then
-			return "NULL"
-		end
-
-		if key == "Type" then
-			return "null"
-		end
-
-		if key == "IsValid" then
-			return FALSE
-		end
-
-		if type(key) == "string" and key:sub(0, 2) == "Is" then
-			return FALSE
-		end
-
-		error(("tried to index %q on a NULL socket"):format(key), 2)
-	end
-
 	local sockets = {}
 
 	function luasocket.GetSockets()
@@ -343,13 +311,13 @@ do -- tcp socket meta
 					warning(err)
 					sock:Remove()
 				end
+				
+				if sock.remove_me then
+					sock.socket:close()
+					utilities.MakeNULL(sock)
+				end
 			else
 				sockets[key] = nil
-			end
-
-			if sock.remove_me then
-				sock.socket:close()
-				setmetatable(sock, NULL)
 			end
 		end
 	end
@@ -366,19 +334,17 @@ do -- tcp socket meta
 		typ = typ:lower()
 
 		if typ == "udp" or typ == "tcp" then
-			local self = {}
+			local self = META:New()
 
 			self.socket = override or assert(luasocket.socket[typ]())
 			self.socket:settimeout(0)
 			self.socket_type = typ
+			self:Initialize()
+			table.insert(sockets, self)
 
-			local obj = setmetatable(self, META)
-			obj:Initialize()
-			table.insert(sockets, obj)
+			self:DebugPrintf("created")
 
-			obj:DebugPrintf("created")
-
-			return obj
+			return self
 		end
 	end
 
@@ -409,12 +375,8 @@ do -- tcp socket meta
 	end
 
 	do -- client
-		local CLIENT = {}
-		CLIENT.__index = CLIENT
+		local CLIENT = utilities.CreateBaseMeta("socket_client")
 		
-		CLIENT.Type = "socket"
-		CLIENT.ClassName = "client"
-
 		add_options(CLIENT)
 
 		function CLIENT:Initialize()
@@ -737,11 +699,7 @@ do -- tcp socket meta
 	end
 
 	do -- server
-		local SERVER = {}
-		SERVER.__index = SERVER
-
-		SERVER.Type = "socket"
-		SERVER.ClassName = "server"
+		local SERVER = utilities.CreateBaseMeta("socket_server")
 		
 		add_options(SERVER)
 

@@ -18,6 +18,7 @@ typedef void (* GLFWkeyfun)(GLFWwindow*,int,int,int,int);
 typedef void (* GLFWcharfun)(GLFWwindow*,unsigned int);
 typedef void (* GLFWdropfun)(GLFWwindow*,int,const char**);
 typedef void (* GLFWmonitorfun)(GLFWmonitor*,int);
+typedef struct GLFWcursor GLFWcursor;
 typedef struct GLFWvidmode
 {
     int width;
@@ -27,7 +28,6 @@ typedef struct GLFWvidmode
     int blueBits;
     int refreshRate;
 } GLFWvidmode;
-
 typedef struct GLFWgammaramp
 {
     unsigned short* red;
@@ -35,6 +35,15 @@ typedef struct GLFWgammaramp
     unsigned short* blue;
     unsigned int size;
 } GLFWgammaramp;
+typedef struct GLFWimage
+{
+    int width;
+    int height;
+    unsigned char* pixels;
+} GLFWimage;
+GLFWcursor* glfwCreateCursor(const GLFWimage* image, int xhot, int yhot);
+void glfwDestroyCursor(GLFWcursor* cursor);
+void glfwSetCursor(GLFWwindow* window, GLFWcursor* cursor);
 
 int glfwInit(void);
 void glfwTerminate(void);

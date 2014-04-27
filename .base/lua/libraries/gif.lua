@@ -1,5 +1,4 @@
 local META = utilities.CreateBaseMeta("gif")
-META.__index = META
 
 function META:GetFrameCount()
 	return self.frame_count
@@ -10,6 +9,7 @@ function META:SetFPS(fps)
 end
 
 function META:GetTexture(num)
+	num = num or (os.clock() * self.frame_speed)
 	if self.error then return render.GetErrorTexture() end
 	if self.loading then return render.GetLoadingTexture() end
 	return self.frames[math.ceil(math.clamp(num%self.frame_count, 1, self.frame_count))]
@@ -20,14 +20,14 @@ function META:GetTextures()
 end
 
 function META:Draw(x, y)
-	local tex = self:GetTexture(os.clock() * self.frame_speed)
+	local tex = self:GetTexture()
 	surface.SetTexture(tex)
 
 	surface.DrawRect(x, y, tex.w, tex.h)
 end
 	
 function Gif(path)
-	local self = setmetatable({}, META)
+	local self = META:New()
 		
 	self.frames = {}
 	self.frame_count = 1
