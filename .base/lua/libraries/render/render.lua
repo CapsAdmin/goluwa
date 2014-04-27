@@ -228,7 +228,6 @@ include("texture.lua")
 include("framebuffer.lua")
 include("shaders.lua")
 include("deferred.lua")
-include("image.lua")
 include("model.lua")
 
 include("super_shader.lua")
