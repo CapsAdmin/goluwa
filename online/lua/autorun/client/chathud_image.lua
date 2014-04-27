@@ -46,19 +46,17 @@ local function show_image(url)
 		end
 	end
 	
-	print(url)
-	
 	local tex = Texture(url)
 	
-	local start = os.clock()
+	local start = timer.GetTotalTime()
 	
 	event.AddListener("OnDraw2D", "chathud_image_url", function()
 		if tex:IsLoading() then
-			start = os.clock()
+			start = timer.GetTotalTime()
 			return
 		end
 		
-		local t = os.clock() - start
+		local t = timer.GetTotalTime() - start
 		
 		if t > totalDuration then
 			event.RemoveListener("OnDraw2D", "chathud_image_url")
@@ -119,8 +117,6 @@ event.AddListener("OnPlayerChat", "chathud_image_url", function(ply, str)
 		end
 		
 		url = url:trim()
-		
-		print(url, "!!!!!!")
 		
 		table.insert(queue, url)
 	end

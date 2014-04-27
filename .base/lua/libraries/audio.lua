@@ -302,8 +302,6 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 			ctor(self, ...)
 		end
 
-		utilities.SetGCCallback(self)
-
 		-- this kind of wont really make gc of any use
 		audio.objects[self] = self
 
@@ -696,8 +694,6 @@ do -- microphone
 		logf("[audio] opening device %q for input", name)
 
 		local self = META:New()
-
-		utilities.SetGCCallback(self)
 
 		self.buffer_size = buffer_size
 
