@@ -416,11 +416,7 @@ do -- texture object
 		end
 		
 		gl.BindTexture(format.type, 0)
-		
-		if not SUPPRESS_GC then
-			utilities.SetGCCallback(self)
-		end
-				
+						
 		if render.debug then
 			logf("creating texture w = %s h = %s buffer size = %s", self.w, self.h, utilities.FormatFileSize(buffer and ffi.sizeof(buffer) or 0)) --The texture size was never broken... someone used two non-existant variables w,h
 		end
