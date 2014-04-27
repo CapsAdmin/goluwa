@@ -67,8 +67,6 @@ do -- commands
 			logn("failed to execute command ", cmd, "!")
 			logn(reason) 
 			
-			table.print(console.AddedCommands[cmd])
-			
 			if console.AddedCommands[cmd].help then
 				logn(console.AddedCommands[cmd].help)
 			end
@@ -77,8 +75,8 @@ do -- commands
 
 	local function call(data, line, ...)
 		local a, b, c = xpcall(data, system.OnError, line, ...)
-		
-		if a then
+
+		if a and b ~= nil and c then
 			return b, c
 		end
 		
@@ -201,7 +199,6 @@ do -- console vars
 	-- what's the use?
 	do -- cvar meta
 		local META = utilities.CreateBaseMeta("cvar")
-		META.__index = META
 		
 		function META:Get()
 			return console.vars[self.cvar]
@@ -211,7 +208,7 @@ do -- console vars
 			console.SetVariable(self.cvar, var)
 		end
 			
-		console.CVarMeta = META
+		console.cvar_meta = META
 	end
 	
 	function console.ReloadVariables()
@@ -257,7 +254,7 @@ do -- console vars
 
 		console.AddCommand(name, func)
 		
-		return setmetatable({cvar = name}, console.CVarMeta)
+		return console.cvar_meta:New({cvar = name})
 	end
 
 	function console.GetVariable(var, def)

@@ -41,7 +41,7 @@ do
 		
 		mat4 = "render.UniformMatrix4fv(%i, 1, 0, val)",
 		
-		texture = "render.BindTexture(val) gl.Uniform1i(%i, 0)", 
+		texture = "render.Uniform1i(%i, 0)\n\trender.BindTexture(val)", 
 	}
 	
 	unrolled_lines.vec4 = unrolled_lines.color
@@ -626,7 +626,8 @@ void main()
 			--	lua = lua .. "\trender.super_shader_last_program = render.current_program\n"
 			--	lua = lua .. "end\n"
 				
-								
+				vfs.Write("unrolled_lines.lua", lua)
+				
 				local func, err = loadstring(lua)
 				if not func then error(err, 2) end
 				self.unrolled_bind_func = func

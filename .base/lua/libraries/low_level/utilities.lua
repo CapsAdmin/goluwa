@@ -106,19 +106,33 @@ do -- find value
 	end
 end
 
-function utilities.CreateBaseObject(class_name)
-	local self = utilities.CreateBaseMeta(class_name)
-	
-	utilities.SetGCCallback(self)
-	
-	return self	
+local objects = setmetatable({}, { __mode = 'v' })
+
+function utilities.GetAllObjects()
+	return objects
 end
 
-function utilities.CreateBaseMeta(class_name)
+function utilities.CreateBaseMeta(class_name, skip_gc_callback)
 	local META = {}
+	META.__index = META
 	
 	META.Type = class_name -- if type differs from classname it might be a better idea to use _G.class
 	META.ClassName = class_name
+	
+	function META:__tostring()
+		return ("%s[%p]"):format(class_name, self)
+	end
+	
+	function META:New(tbl)
+		tbl = tbl or {}
+		local self = setmetatable(tbl, META) 
+		if not skip_gc_callback then
+			utilities.SetGCCallback(self)
+		end
+		self.trace = debug.trace(true)
+		table.insert(objects, self)
+		return self
+	end
 	
 	function META:Remove()
 		if self.OnRemove then 
@@ -131,14 +145,22 @@ function utilities.CreateBaseMeta(class_name)
 		return true
 	end
 	
+	function META:GetTrace()
+		return self.trace or ""
+	end
+	
 	utilities.DeclareMetaTable(META)
 	
-	return META	
+	return META
 end
 
 do -- thanks etandel @ #lua!
 	function utilities.SetGCCallback(t, func)
 		func = func or t.Remove
+		
+		if not func then 
+			error("could not find remove function", 2)
+		end
 		
 		local ud = t.__gc or newproxy(true)
 		

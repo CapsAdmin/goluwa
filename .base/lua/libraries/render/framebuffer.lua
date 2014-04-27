@@ -1,43 +1,26 @@
+render.framebuffers = setmetatable({}, { __mode = 'v' })
+
+function render.GetFramebuffers()
+	return render.framebuffers
+end
+
 local META = utilities.CreateBaseMeta("framebuffer")
-META.__index = META
 
 function META:__tostring()
 	return ("frame_buffer[%i]"):format(self.id)
 end
 
-function META:Begin(attach, channel, skip_push)	
-
-	if not skip_push then
-	--	gl.PushAttrib(e.GL_VIEWPORT_BIT)
-		self.attrib_pushed = true
-	end
-	
-	gl.BindFramebuffer(e.GL_DRAW_FRAMEBUFFER, self.id)
+function META:Begin()	
+	gl.BindFramebuffer(e.GL_FRAMEBUFFER, self.id)
 	gl.Viewport(0, 0, self.width, self.height)
-
-	self:Clear()
-	
-	--gl.ActiveTextureARB(channel or e.GL_TEXTURE0)
-
-	if attach then
-		--gl.DrawBuffers(1, self.buffers[attach].draw_enum)
-	else
-		--gl.DrawBuffers(self.draw_buffers_size, self.draw_buffers)
-	end
 end
 
-function META:Bind(attach, channel)
-	self:Begin(attach, channel, true)
+function META:Bind()
+	self:Begin()
 end
 
 function META:End()
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
-	
-	if self.attrib_pushed then
-	--	gl.PopAttrib()
-		self.attrib_pushed = false
-	end
-	
 end
 
 function META:Clear(r,g,b,a)
@@ -69,7 +52,7 @@ function render.CreateFrameBuffer(width, height, format)
 
 	if not render.CheckSupport("GenFramebuffer") then return NULL end
 	
-	local self = setmetatable({}, META)
+	local self = META:New()
 
 	self.buffers = {}
 	self.width = width
@@ -78,7 +61,7 @@ function render.CreateFrameBuffer(width, height, format)
 	
 	if not format then
 		format = {
-			attach = e.GL_COLOR_ATTACHMENT1,
+			attach = e.GL_COLOR_ATTACHMENT0,
 			texture_format = {
 				internal_format = e.GL_RGBA32F,
 			}
@@ -103,13 +86,13 @@ function render.CreateFrameBuffer(width, height, format)
 		
 		if tex_info then
 			tex_info.format = e.GL_BGRA
+			tex_info.channel = i-1
 						
 			tex = render.CreateTexture(width, height, nil, tex_info)
-			tex.channel = i-1
 			id = tex.id
 		
 			tex.framebuffer_name = info.name
-			
+						
 			if not info.draw_manual then
 				table.insert(self.draw_buffers, info.attach)
 			end
@@ -125,7 +108,7 @@ function render.CreateFrameBuffer(width, height, format)
 
 	for i, data in pairs(self.buffers) do
 		if data.tex:IsValid() then
-			gl.FramebufferTexture(e.GL_FRAMEBUFFER, data.info.attach, data.id, 0)
+			gl.FramebufferTexture2D(e.GL_FRAMEBUFFER, data.info.attach, e.GL_TEXTURE_2D, data.id, 0)
 		else
 			gl.FramebufferRenderbuffer(e.GL_FRAMEBUFFER, data.info.attach, e.GL_RENDERBUFFER, data.id)
 		end
@@ -134,7 +117,7 @@ function render.CreateFrameBuffer(width, height, format)
 	
 	self.draw_buffers_size = #self.draw_buffers
 	self.draw_buffers = ffi.new("GLenum["..self.draw_buffers_size.."]", self.draw_buffers)
-
+	
 	gl.DrawBuffers(self.draw_buffers_size, self.draw_buffers)
 		
 	local err = gl.CheckFramebufferStatus(e.GL_FRAMEBUFFER)
@@ -165,6 +148,8 @@ function render.CreateFrameBuffer(width, height, format)
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
 	
 	utilities.SetGCCallback(self)
+	
+	render.framebuffers[id] = self
 	
 	return self
 end

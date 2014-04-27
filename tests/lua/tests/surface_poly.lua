@@ -1,6 +1,6 @@
 window.Open(500, 500)
 
-local tex = Image("textures/aahh/pac.png")
+local tex = Texture("textures/aahh/pac.png")
 local count = 1
 local poly = surface.CreatePoly(count)
  

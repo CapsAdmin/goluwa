@@ -12,7 +12,7 @@ do -- button
 		self.lbl:SetAlignNormal(e.ALIGN_CENTERY)
 			
 		self.img = aahh.Create("image", self)
-		self.img:SetTexture(Image("textures/gui/heart.png"))
+		self.img:SetTexture(Texture("textures/gui/heart.png"))
 		self.img:SetIgnoreMouse(true)
 
 		self:SetCursor(e.IDC_HAND)

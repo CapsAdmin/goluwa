@@ -38,7 +38,7 @@ local function lol(base)
 		local eye = base:CreatePanel("image")
 		eye:SetResizePanelWithImage(false)
 		eye:SetSize(size) 
-		eye:SetTexture(Image("textures/silkicons/eye.png"))
+		eye:SetTexture(Texture("textures/silkicons/eye.png"))
 		eye:Dock("center") 
 	end           
 

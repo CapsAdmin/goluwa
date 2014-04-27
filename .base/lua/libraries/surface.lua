@@ -737,7 +737,7 @@ function surface.GetMouseVel()
 end
 
 do -- poly
-	local META = utilities.CreateBaseObject("poly")
+	local META = utilities.CreateBaseMeta("poly")
 
 	function META:SetColor(r,g,b,a)
 		R = r or 1
@@ -821,7 +821,7 @@ do -- poly
 		local R,G,B,A = 1,1,1,1
 		local U1, V1, U2, V2 = 0, 0, 1, 1
 
-		local self = setmetatable({}, META)
+		local self = META:New()
 
 		self.mesh = mesh
 						

@@ -10,10 +10,9 @@ todo:
 ]]
 
 local META = utilities.CreateBaseMeta("markup")
-META.__index = META
 
 function Markup()
-	local self = {
+	local self = META:New({
 		w = 0,
 		h = 0,
 		chunks = {},
@@ -21,9 +20,7 @@ function Markup()
 		current_y = 0,
 		current_width = 0,
 		current_height = 0
-	}
-
-	setmetatable(self, META)
+	})
 
 	self:Invalidate()
 
@@ -379,7 +376,7 @@ else
 		GetMousePos = function() return window.GetMousePos():Unpack() end,
 
 		SetCullClockWise = function(b) end,
-		FindMaterial = Image,
+		FindMaterial = Texture,
 
 		TranslateMatrix = function(x, y) surface.Translate(x or 0, y or 0) end,
 		ScaleMatrix = function(x, y) surface.Scale(x or 0, y or 0) end,
@@ -3344,7 +3341,7 @@ end
 		self:AddFont("markup_default")
 
 		local big_font = "markup_big2"
-		EXT.CreateFont(big_font, gmod and {font = "verdana", size = 20, read_speed = 100} or {path = "fonts/verdana.ttf", size = 20, read_speed = 100})
+		EXT.CreateFont(big_font, gmod and {font = "verdana", size = 20, read_speed = 100} or {path = "Roboto", size = 20, read_speed = 100})
 
 		self:AddFont(big_font)
 		self:AddColor(Color(255,0,255,255))

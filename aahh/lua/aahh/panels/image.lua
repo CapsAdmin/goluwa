@@ -10,7 +10,7 @@ aahh.GetSet(PANEL, "Filter", true)
 aahh.GetSet(PANEL, "ResizePanelWithImage", true)
 
 function PANEL:Initialize()
-	self.Texture = Image("textures/aahh/pac.png")
+	self.Texture = Texture("textures/aahh/pac.png")
 end
 
 function PANEL:SizeToContent()

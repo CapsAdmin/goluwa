@@ -864,7 +864,7 @@ do -- file monitoring
 			-- on linux, an invalid path will error
 			pcall(function()
 			for path in lfs.dir(dir) do
-				if path ~= "." and path ~= ".." then
+				if path ~= "." and path ~= ".." and path ~= ".userdata" then
 					if utilities.GetExtensionFromPath(path) ~= "lua" then	
 						scan(dir .. path .. "/")
 					else

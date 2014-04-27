@@ -157,7 +157,7 @@ local data = {
 	} 
 }  
 
-local tex = Image("textures/debug/brain.jpg")
+local tex = Texture("textures/debug/brain.jpg")
 
 local shader = SuperShader("test", data)
 

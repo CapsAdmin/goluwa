@@ -48,7 +48,7 @@ local function show_image(url)
 	
 	print(url)
 	
-	local tex = Image(url)
+	local tex = Texture(url)
 	
 	local start = os.clock()
 	

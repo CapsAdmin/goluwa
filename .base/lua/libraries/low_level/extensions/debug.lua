@@ -92,32 +92,48 @@ function debug.openfunction(func, line)
 	end
 end
 
-function debug.trace()	
-    logn("Trace: " )
+function debug.trace(skip_print)	
 	local lines = {}
 	
 	for level = 1, math.huge do
 		local info = debug.getinfo(level, "Sln")
 		
 		if info then
-			lines[#lines + 1] = ("\t%i: Line %d\t\"%s\"\t%s"):format(level, info.currentline, info.name or "unknown", info.short_src or "")
+			lines[#lines + 1] = ("%i: Line %d\t\"%s\"\t%s"):format(level, info.currentline, info.name or "unknown", info.short_src or "")
 		else
 			break
 		end
     end
 	
-	-- this doesn't really be long here..
-	local stop = #lines
+		
+	local str
 	
-	for i = 2, #lines do
-		if lines[i]:find("event") then
-			stop = i - 2
+	if debug.debugging then
+		str = {}
+		
+		-- this doesn't really be long here..
+		local stop = #lines
+		
+		for i = 2, #lines do
+			if lines[i]:find("event") then
+				stop = i - 2
+			end
 		end
+		
+		for i = 2, stop do
+			table.insert(str, lines[i])
+		end
+	else
+		str = lines
+	end
+
+	str = table.concat(str, "\n")
+	
+	if not skip_print then
+		logn(str)
 	end
 	
-	for i = 2, stop do
-		logn(lines[i])
-	end
+	return str
 end
 
 function debug.getparams(func)

@@ -1,14 +1,9 @@
-local last1
-local last2
+render.textures = setmetatable({}, { __mode = 'v' })
 
-local base = e.GL_TEXTURE0
-
-function render.BindTexture(tex, channel)
-	channel = channel or 0
-			
-	--gl.ActiveTexture(base + channel) 
-	gl.BindTexture(tex.format.type, tex.id) 
+function render.GetTextures()
+	return render.textures
 end
+
 
 local diffuse_suffixes = {
 	"_diff",
@@ -40,10 +35,37 @@ function render.FindTextureFromSuffix(path, ...)
 	end
 end
 
+do -- texture binding
+	do
+		local last
+		
+		function render.ActiveTexture(id)
+			if id ~= last then
+				gl.ActiveTexture(id)
+				last = id
+			end
+		end
+	end
+
+	do
+		local last
+		
+		function render.BindTexture(tex)
+			if tex ~= last then
+				if typex(tex) == "gif" then
+					tex = tex:GetTexture()
+				end
+				
+				render.ActiveTexture(tex.texture_channel)
+				gl.BindTexture(tex.format.type, tex.id) 
+			end
+		end
+	end
+end
+
 do -- texture object
 	local META = utilities.CreateBaseMeta("texture")
-	META.__index = META
-
+	
 	function META:__tostring()
 		return ("texture[%s]"):format(self.id)
 	end
@@ -52,15 +74,15 @@ do -- texture object
 		return self.size
 	end
 
-	function META:Download()
+	function META:Download(level, format)
 		local f = self.format
-		local buffer = ffi.new(self.format.buffer_type.."[?]", self.size.w * self.size.h * self.format.stride)
+		local buffer = self:CreateBuffer()
 
 		gl.BindTexture(f.type, self.id)
-			gl.GetTexImage(f.type, 0, self.format.format, self.format.format_type, buffer)
+			gl.GetTexImage(f.type, level or 0, f.format, format or f.internal_format, buffer)
 		gl.BindTexture(f.type, 0)
 
-		return buffer 
+		return buffer
 	end
 	
 	function META:CreateBuffer()
@@ -78,8 +100,6 @@ do -- texture object
 		local buffer, length = self:CreateBuffer()
 
 		ffi.fill(buffer, length, val)
-
-		gl.Enable(f.type)
 		
 		gl.BindTexture(f.type, self.id)			
 
@@ -133,9 +153,7 @@ do -- texture object
 		level = level or 0
 		
 		local f = self.format		
-	
-		gl.Enable(f.type)
-	
+		
 		gl.BindTexture(f.type, self.id)			
 	
 			gl.PixelStorei(e.GL_PACK_ALIGNMENT, f.stride)
@@ -314,6 +332,10 @@ do -- texture object
 	end
 
 	function render.CreateTexture(width, height, buffer, format)
+		if type(width) == "string" and not buffer and not format and (not height or type(height) == "table") then
+			return render.CreateTextureFromPath(width, height)
+		end
+		
 		check(width, "number")
 		check(height, "number")
 		check(buffer, "nil", "cdata")
@@ -333,9 +355,10 @@ do -- texture object
 		format.stride = format.stride or 4
 		format.buffer_type = format.buffer_type or "unsigned char"
 		format.border_size = format.border_size or 4
+		format.channel = format.channel or 0
 
 		format.mip_map_levels = math.max(format.mip_map_levels or 3, 3) --ATI doesn't like level under 3
-		format.min_filter = format.min_filter or e.GL_LINEAR_MIPMAP_LINEAR
+		format.min_filter = format.min_filter or e.GL_LINEAR
 		format.mag_filter = format.mag_filter or e.GL_LINEAR
 				
 		format.wrap_s = format.wrap_s or e.GL_REPEAT
@@ -348,18 +371,18 @@ do -- texture object
 		-- create a new texture
 		local id = gl.GenTexture()
 
-		local self = setmetatable(
+		local self = META:New(
 			{
 				id = id, 
 				size = Vec2(width, height), 
 				format = format,
 				w = width,
 				h = height,
-			}, 
-			META
+			},
+			SUPPRESS_GC
 		)
 		
-		gl.Enable(format.type)
+		self.texture_channel = e.GL_TEXTURE0 + format.channel
 		
 		gl.BindTexture(format.type, self.id)
 
@@ -397,13 +420,59 @@ do -- texture object
 		if not SUPPRESS_GC then
 			utilities.SetGCCallback(self)
 		end
-		
+				
 		if render.debug then
 			logf("creating texture w = %s h = %s buffer size = %s", self.w, self.h, utilities.FormatFileSize(buffer and ffi.sizeof(buffer) or 0)) --The texture size was never broken... someone used two non-existant variables w,h
 		end
 		
+		render.textures[id] = self
+		
 		return self
 	end
+end
+
+
+render.texture_path_cache = render.texture_path_cache or setmetatable({}, { __mode = 'v' })
+
+function render.CreateTextureFromPath(path, format)
+	if render.texture_path_cache[path] then 
+		return render.texture_path_cache[path] 
+	end
+			
+	format = format or {}
+	
+	local loading = render.GetLoadingTexture()
+	local tex = Texture(loading.w, loading.h, loading.buffer, format)
+	
+	tex.loading = true
+
+	vfs.ReadAsync(path, function(data)
+		tex.loading = false
+		
+		if not data then
+			logf("failed to download %q", path)
+			logf("data is nil!")
+			return
+		end
+		
+		local w, h, buffer = freeimage.LoadImage(data)
+		
+		if w == 0 or h == 0 then
+			w, h, buffer = vl.LoadImage(data)
+		end
+			
+		if w == 0 or h == 0 then
+			logf("could not decode %q properly (w = %i, h = %i)", 2, path, w, h)
+			logf("data is %s", utilities.FormatFileSize(#data))
+			return
+		end
+		
+		tex:Replace(buffer, w, h) 
+		
+		render.texture_path_cache[path] = tex		
+	end)
+	
+	return tex
 end
 
 Texture = render.CreateTexture -- reload!

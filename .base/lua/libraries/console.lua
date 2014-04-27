@@ -159,7 +159,14 @@ function console.InitializeCurses()
 			str = str:gsub("\r", "\\r")
 
 			if not can_print(str) then return end
-			
+						
+			if str:count("\n") > 1 then
+				for line in str:gmatch("(.-\n)") do
+					io.write(line)
+				end
+				return
+			end
+		
 			if WINDOWS and #str > max_length then
 				for k,v in pairs(split_by_length(str, max_length)) do
 					for line in v:gmatch("(.-)\n") do

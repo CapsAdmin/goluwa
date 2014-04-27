@@ -28,7 +28,7 @@ function event.AddListener(a, b, c, d, e)
 		if info.source:sub(1, 1) == "@" then
 			unique = info.source
 		else
-			unique = tostring(info.func) .. info.name
+			unique = "temp"
 		end
 	end
 	
