@@ -2984,8 +2984,11 @@ do -- input
 				end
 			else
 				if not self.Editable then
-					EXT.SetClipboard(self:Copy(true))
-					self:Unselect()
+					local str = self:Copy(true)
+					if str ~= "" then
+						EXT.SetClipboard(str)
+						self:Unselect()
+					end
 				end
 
 				self.mouse_selecting = false

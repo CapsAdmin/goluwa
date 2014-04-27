@@ -1,6 +1,10 @@
 -- REWRITE ME
 
-render.active_super_shaders = render.active_super_shaders or {}
+render.super_shaders = setmetatable({}, { __mode = 'v' })
+
+function render.GetSuperShaders()
+	return render.super_shaders
+end
 
 local defined = {}
 
@@ -201,7 +205,7 @@ void main()
 	end
 
 	function META:Remove()
-		render.active_super_shaders[self.shader_id] = nil
+		render.super_shaders[self.shader_id] = nil
 		gl.DeleteProgram(self.program_id)
 		utilities.MakeNULL(self)
 	end
@@ -353,20 +357,20 @@ void main()
 			end
 		end
 		
-		if render.active_super_shaders[shader_id] then
-			for key, val in pairs(render.active_super_shaders) do
+		if render.super_shaders[shader_id] then
+			for key, val in pairs(render.super_shaders) do
 				if val:IsValid() then
 					if val.base == shader_id then
 						render.CreateSuperShader(key, val.original_data, val.base)
 					end
 				else
-					render.active_super_shaders[key] = nil
+					render.super_shaders[key] = nil
 				end
 			end
 		end
 	
-		if base and render.active_super_shaders[base] then
-			local temp = table.copy(render.active_super_shaders[base].original_data)
+		if base and render.super_shaders[base] then
+			local temp = table.copy(render.super_shaders[base].original_data)
 			
 			table.merge(temp, data)
 			data = temp
@@ -638,24 +642,8 @@ void main()
 				self.prog = prog
 				self.shaders = shaders
 				
-				local old = render.active_super_shaders[shader_id]
+				render.super_shaders[shader_id] = self
 				
-				if old and false then
-					for k,v in pairs(old) do
-						old[k] = nil
-					end
-					
-					for k,v in pairs(self) do
-						old[k] = v
-					end
-					
-					self = old
-				else
-					render.active_super_shaders[shader_id] = self
-				end
-				
-				utilities.SetGCCallback(self)
-
 				return self
 			end
 		else

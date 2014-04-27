@@ -146,9 +146,7 @@ function render.CreateFrameBuffer(width, height, format)
 	end
 	
 	gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
-	
-	utilities.SetGCCallback(self)
-	
+		
 	render.framebuffers[id] = self
 	
 	return self
