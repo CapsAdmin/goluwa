@@ -112,7 +112,7 @@ function utilities.GetAllObjects()
 	return objects
 end
 
-function utilities.CreateBaseMeta(class_name, skip_gc_callback)
+function utilities.CreateBaseMeta(class_name)
 	local META = {}
 	META.__index = META
 	
@@ -123,7 +123,7 @@ function utilities.CreateBaseMeta(class_name, skip_gc_callback)
 		return ("%s[%p]"):format(class_name, self)
 	end
 	
-	function META:New(tbl)
+	function META:New(tbl, skip_gc_callback)
 		tbl = tbl or {}
 		local self = setmetatable(tbl, META) 
 		if not skip_gc_callback then
