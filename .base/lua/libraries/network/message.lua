@@ -97,7 +97,7 @@ do -- console extension
 end
 
 do -- filter
-	local META = utilities.CreateBaseMeta("netmsg_user_filter")
+	local META = utilities.CreateBaseMeta("netmsg_user_filter", true)
 
 	function META:AddAll()
 		for key, ply in pairs(players.GetAll()) do
