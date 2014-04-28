@@ -371,7 +371,7 @@ do -- source
 					self.ready = true
 
 					-- in case it's instantly loaded and OnLoad is defined the same frame
-					timer.Delay(0, function() if self.OnLoad then self:OnLoad(info) end end)
+					timer.Delay(0, function() if self:IsValid() and self.OnLoad then self:OnLoad(info) end end)
 				end
 			end, 20)
 		end
