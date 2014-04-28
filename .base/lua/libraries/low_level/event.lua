@@ -142,7 +142,15 @@ function event.Call(type, ...)
 		for key, data in ipairs(event.active[type]) do
 			
 			if data.self_arg then
-				status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or system.OnError, data.self_arg, ...)
+				if data.self_arg:IsValid() then
+					status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or system.OnError, data.self_arg, ...)
+				else
+					event.RemoveListener(type, data.unique)
+					event.active[type][key] = nil
+					event.SortByPriority()
+					logf("event [%q][%q] removed because self is invalid", type, data.unique)
+					return
+				end
 			else
 				status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or system.OnError, ...)
 			end
