@@ -82,6 +82,7 @@ local function read_entry(file, extension, directory, name)
 	entry.archive_index = read_integer(file, 2)
 	entry.entry_offset = read_integer(file, 4)
 	entry.entry_length = read_integer(file, 4)
+	entry.is_file = true
 	
 	local terminator = read_integer(file, 2)
 
@@ -116,6 +117,7 @@ local function read_tree(file)
 
 				tree[#tree + 1] = entry
 			end
+			tree[#tree + 1] = {path = directory, is_dir = true}
 		end
 	end
 
@@ -195,14 +197,17 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 		
 		if mount then
 			local vpk = read_vpk_dir(path)
+			local base_info = lfs.attributes(path)
 			local exists = {}
 			
 			local files = {}
 			
 			for k,v in pairs(vpk.tree) do
-				v.archive_path = path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(v.archive_index) end)
+				if v.is_file then
+					v.archive_path = path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(v.archive_index) end)
+					files[v.archive_path] = files[v.archive_path] or io.open(v.archive_path, "rb")
+				end
 				exists[v.path] = v
-				files[v.archive_path] = files[v.archive_path] or io.open(v.archive_path, "rb")
 			end
 			  
 			vfs.Mount({
@@ -212,8 +217,17 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 					if type == "attributes" then
 						local path = a
 						path = path:sub(2) 
-
-						--return pack:GetAttributes(path)
+						
+						if exists[path] then
+							local info = exists[path]
+							local out = {}
+							table.merge(out, base_info)
+							
+							out.mode = info.is_file and "file" or info.is_dir and "directory"
+							out.size = info.entry_length or 0
+							
+							return out
+						end
 					elseif type == "find" then
 						local path = a
 						
