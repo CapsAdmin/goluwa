@@ -78,6 +78,27 @@ if CLIENT then
 			chat.Append(players.GetLocalPlayer(), str)
 		end
 	end	
+	
+	chat.panel = NULL
+	
+	function chat.IsVisible()
+		return chat.panel:IsValid()
+	end
+		
+	function chat.SetInputText(str)
+		if not chat.IsVisible() then return end
+		chat.panel:SetText(str)
+	end
+	
+	function chat.GetInputText()
+		if not chat.IsVisible() then return "" end
+		return chat.panel:GetText()
+	end	
+	
+	function chat.GetInputPos()
+		if not chat.IsVisible() then return 0, 0 end
+		return chat.panel:GetPos()
+	end
 		
 	--[[event.AddListener("ConsoleLineEntered", "chat", function(line)
 		if not network.IsStarted() then return end
@@ -91,21 +112,23 @@ if CLIENT then
 	
 	if aahh then
 
-		local showing = false
 		local i = 1
 		local history = {}
-		local panel = NULL
+		local visible
 		
 		console.AddCommand("showchat", function()
+		
+			local panel =  chat.panel
 			
-			if not showing then				
+			if not visible then				
 				panel = aahh.Create("text_input")
 					panel:SetPos(Vec2(50, Vec2(render.GetScreenSize()).h - 100))
 					panel:SetSize(Vec2(512, 16))
 					panel:MakeActivePanel()
 					panel:SetMultiline(false)
 					
-					panel.OnUnhandledKey = function(_, key)	
+					panel.OnUnhandledKey = function(_, key)
+						
 						local browse = false
 						
 						if key == "up" then
@@ -123,6 +146,14 @@ if CLIENT then
 
 						if key == "escape" then
 							panel:OnEnter("")
+						end
+						
+						if key == "tab" then
+							local str = event.Call("OnChatTab", panel:GetText())
+								
+							if str then 
+								panel:SetText(str)
+							end
 						end
 					end
 					
@@ -148,7 +179,7 @@ if CLIENT then
 						end
 						
 						window.ShowCursor(false)
-						showing = false
+						visible = false
 						
 						panel:Remove()
 						
@@ -156,8 +187,10 @@ if CLIENT then
 					end
 				
 				window.ShowCursor(true)
-				showing = true
+				visible = true
 			end
+			
+			chat.panel = panel
 		end)
 		
 		input.Bind("y", "showchat")
