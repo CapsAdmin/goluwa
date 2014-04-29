@@ -105,6 +105,7 @@ end
 
 local function read_tree(file)
 	local tree = {}
+	local done_directories = {}
 
 	for extension in iterate_strings(file) do
 		for directory in iterate_strings(file) do
@@ -118,6 +119,16 @@ local function read_tree(file)
 				tree[#tree + 1] = entry
 			end
 			tree[#tree + 1] = {path = directory, is_dir = true}
+			
+			for i = 0, 100 do
+				local dir = utilities.GetParentFolder(directory, i)
+				if dir ~= "" and not done_directories[dir] then
+					tree[#tree + 1] = {path = dir:sub(0, -2), is_dir = true}
+					done_directories[dir] = true
+				else
+					break
+				end
+			end
 		end
 	end
 
@@ -212,11 +223,10 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 			  
 			vfs.Mount({
 				id = path, 
-				root = "",
+				root = path,
 				callback = function(type, a, b, c, d, ...)  	
 					if type == "attributes" then
-						local path = a
-						path = path:sub(2) 
+						local path = a:match(".+%.vpk/(.+)") or a
 						
 						if exists[path] then
 							local info = exists[path]
@@ -229,11 +239,10 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 							return out
 						end
 					elseif type == "find" then
-						local path = a
+						local path = a:match(".+%.vpk/(.+)") or a
 						
-						path = path:sub(2) 
 						path = path .. "/"
-
+						
 						local out = {}
 	
 						if path:sub(-1) == "/" then
@@ -241,7 +250,7 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 						end
 						
 						local dir = path:match("(.+)/")
-							
+
 						for k, v in pairs(vpk.tree) do
 							if v.path:find(path) and v.path:match("(.+)/") == dir then
 								table.insert(out, v.path:match(".+/(.+)") or v.path)
@@ -253,8 +262,8 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 						local type = a
 						
 						if type == "open" then
-							local path = b
-							path = path:sub(2) 
+							local path = b:match(".+%.vpk/(.+)") or b
+							LOL = {path, b}
 							
 							local data = exists[path]
 							
