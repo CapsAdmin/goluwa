@@ -351,44 +351,286 @@ do -- list parsing
 		local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
 
 		for path in vfs.Iterate(addons, nil, true) do 
-			if vfs.IsDir(path) then 
-				vfs.Mount(path)  
+			if vfs.IsDir(path) and path:lower():find("chatsound") then 
+				vfs.Mount(path)
 			end 
 		end
+	
+		vfs.Mount(steam.GetGamePath("left 4 dead") .. "/left4dead/")
+		vfs.Mount(steam.GetGamePath("left 4 dead") .. "/left4dead_dlc3/")
+		vfs.Mount(steam.GetGamePath("left 4 dead") .. "/left4dead/pak01_dir.vpk")
+		vfs.Mount(steam.GetGamePath("left 4 dead") .. "/left4dead_dlc3/pak01_dir.vpk")
+		
+		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2/") 
+		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2_dlc1/") 
+		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2_dlc2/") 
+		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2_dlc3/") 
+		
+		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2/pak01_dir.vpk") 
+		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2_dlc1/pak01_dir.vpk") 
+		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2_dlc2/pak01_dir.vpk") 
+		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2_dlc3/pak01_dir.vpk") 
 
-		if not CAPS then
-			vfs.Mount(steam.GetGamePath("left 4 dead") .. "/left4dead/")
-			vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2/") 
+		vfs.Mount(steam.GetGamePath("Counter-Strike Global Offensive") .. "/csgo/pak01_dir.vpk")
+		vfs.Mount(steam.GetGamePath("Counter-Strike Global Offensive") .. "/csgo/")
+		
+		vfs.Mount(steam.GetGamePath("Portal 2") .. "/portal2/")
+		vfs.Mount(steam.GetGamePath("Portal 2") .. "/portal2_dlc1/")
+		vfs.Mount(steam.GetGamePath("Portal 2") .. "/portal2/pak01_dir.vpk")
+		
+		vfs.Mount(steam.GetGamePath("Portal") .. "/portal/")
+		vfs.Mount(steam.GetGamePath("Portal") .. "/portal/portal_pak_dir.vpk")
+		
+		vfs.Mount(steam.GetGamePath("Half-Life 2") .. "/ep2/ep2_pak_dir.vpk")
+		vfs.Mount(steam.GetGamePath("Half-Life 2") .. "/ep2/")
+		
+		vfs.Mount(steam.GetGamePath("Half-Life 2") .. "/episodic/ep1_pak_dir.vpk")
+		vfs.Mount(steam.GetGamePath("Half-Life 2") .. "/episodic/")
+		
+		vfs.Mount(steam.GetGamePath("Counter-Strike Source") .. "/cstrike/")  
+		vfs.Mount(steam.GetGamePath("Counter-Strike Source") .. "/cstrike/cstrike_pak_dir.vpk")  
 
-			vfs.Mount(steam.GetGamePath("Half-Life 2") .. "/ep2/ep2_pak_dir.vpk")
-			vfs.Mount(steam.GetGamePath("Half-Life 2") .. "/episodic/ep1_pak_dir.vpk")
-			vfs.Mount(steam.GetGamePath("Team Fortress 2") .. "tf/tf2_sound_vo_english_dir.vpk")
-			vfs.Mount(steam.GetGamePath("Counter-Strike Source") .. "/cstrike/cstrike_pak_dir.vpk")  
-		end
-
+		vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/") 
 		vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_sound_vo_english_dir.vpk") 
 		vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_sound_misc_dir.vpk")     
 	end
+		
+	function chatsounds.GetSoundData(snd)
+		local out = {}
+		local content = snd:match(".+VDAT.-(VERSION.+)")
+		out.plaintext = content:match("PLAINTEXT%s-{%s+(.-)%s-}")
+		
+		out.words = {}
+		for word, start, stop, phonemes in content:match("WORDS%s-{(.+)"):gmatch("WORD%s-(%S-)%s-(%S-)%s-(%S-)%s-{(.-)}") do
+			local tbl = {}
+			for line in (phonemes .. "\n"):gmatch("(.-)\n") do
+				local d = (line .. " "):explode(" ")
+				if #d > 2 then
+					table.insert(tbl, {str = d[2], start = tonumber(d[3]), stop = tonumber(d[4]), num1 = tonumber(d[1]),  num2 = tonumber(d[5])})
+				end
+			end
+			table.insert(out.words, {word = word, start = tonumber(start), stop = tonumber(stop), phonemes = tbl})
+		end
+		
+		return out
+	end 
+	
+	local function clean_sentence(sentence)
 
+		sentence = sentence:lower()
+		sentence = sentence:gsub("_", " ")
+		sentence = sentence:gsub("%p", "")
+		sentence = sentence:gsub("%s+", " ")
+		
+		return sentence
+	end
+	
+	function chatsounds.BuildSoundInfo()
+		local out = {}
+
+		local co = coroutine.create(function()
+			local sound_info = {}
+			for path in vfs.Iterate("scripts/", nil, true) do
+				if path:find("_sounds") and not path:find("manifest") then
+					table.merge(sound_info, steam.VDFToTable(vfs.Read(path)))
+					coroutine.yield("reading /scripts/*")
+				end 
+			end
+			
+			for sound_name, info in pairs(sound_info) do
+				sound_info[sound_name] = nil
+				sound_info[sound_name:lower()] = info
+				info.real_name = sound_name
+			end
+		
+			local captions = {}
+			for path in vfs.Iterate("resource/", nil, true) do
+				if path:find("english") and path:find("%.txt") then
+					
+					
+					local str = vfs.Read(path)
+					-- stupid hack because some caption files are encoded weirdly which would break lua patterns
+					local tbl = {}
+					for uchar in str:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
+						tbl[#tbl + 1] = uchar
+					end
+					str = table.concat(tbl, "")	
+					str = str:gsub("//.-\n", "")
+					-- stupid hack
+					
+					local tbl = steam.VDFToTable(str)
+					table.merge(captions, tbl)
+					coroutine.yield("reading /resource/*")
+				end 
+			end
+			
+			if captions.lang then
+				
+				local found = 0
+				local lost = 0
+				
+				for sound_name, text in pairs(captions.lang.Tokens) do
+					sound_name = sound_name:lower()
+					
+					if sound_info[sound_name] then
+						if type(text) == "table" then
+							text = text[1]
+						end
+						
+						local data = {}
+											
+						text = text:gsub("(<.->)", function(tag)
+							data.tags = data.tags or {}
+							table.insert(data.tags, tag)
+							
+							return ""
+						end)
+						
+						if data.tags then
+							for i, tag in ipairs(data.tags) do
+								local key, args = tag:match("<(.-):(.+)>")
+								if key and args then
+									args = args:explode(",")
+									for k,v in pairs(args) do args[k] = tonumber(v) or v end
+								else
+									key = tag:match("<(.-)>")
+								end
+								
+								data.tags[i] = {type = key, args = args}
+							end
+						end
+						
+						local name, rest = text:match("(.-):(.+)")
+						
+						if name then
+							data.name = name
+							data.text = rest
+						else
+							data.text = text
+						end
+						
+						data.text = data.text:trim()
+						
+						sound_info[sound_name].caption = data
+						found = found + 1
+					else
+						lost = lost + 1
+					end
+				end
+				
+				logf("%i captions matched sound info but %i captions are unknown", found, lost)
+			else
+				logn("no captions found!")
+			end
+			
+			for sound_name, info in pairs(sound_info) do
+				local paths
+				
+				if info.rndwave then
+					if type(info.rndwave.wave) == "table" then
+						paths = info.rndwave.wave
+					else
+						paths = {info.rndwave.wave} -- ugh
+					end
+				elseif type(info.wave) == "table" then
+					paths = info.wave
+				else
+					paths = {info.wave} -- ugh
+				end
+									
+				for k, v in pairs(paths) do
+					v = v:lower()
+					v = v:gsub("\\", "/")
+					
+					local start_symbol
+					
+					if v:sub(1, 1):find("%p") then
+						start_symbol, v = v:match("(%p+)(.+)")
+					end
+					
+					v = "sound/" .. v
+					
+					out[v] = out[v] or {}
+					
+					out[v].name = info.real_name
+					out[v].path_symbol = start_symbol
+					
+					table.merge(out[v], info)
+					
+					if type(out[v].pitch) == "string" and out[v].pitch:find(",") then 
+						out[v].pitch = out[v].pitch:gsub("%s+", ""):explode(",")
+						for k,n in pairs(out[v].pitch) do out[v].pitch[k] = tonumber(n) or n end
+					end
+					
+					out[v].operator_stacks = nil
+					out[v].real_name = nil
+					out[v].rndwave = nil
+					out[v].wave = nil
+				end
+				
+				coroutine.yield("building table")
+			end
+			
+			local list = chatsounds.ListToTable(vfs.Read("data/chatsounds/game.list"))
+				
+			logn("translating game.list")
+			local found = 0
+			for realm, list in pairs(list) do
+				for trigger, sounds in pairs(list) do	
+					for i, data in ipairs(sounds) do
+						local info = out[data.path:lower()]
+						if info and info.caption then
+							local text = clean_sentence(info.caption.text)
+							if text ~= "" then
+								list[trigger] = nil
+								list[text] = sounds
+								found = found + 1
+							end
+						end
+					end
+				end
+			end
+			logf("translated %i paths", found)
+			
+			logn("saving game list")
+			local game_list = chatsounds.TableToList(list)				
+			vfs.Write("data/chatsounds/game.list", game_list)				
+			vfs.Write("data/chatsounds/game.tree", msgpack.Encode(chatsounds.TableToTree(list)), "b")
+
+			
+			logn("finished building the sound info table")
+			logf("found sound info for %i paths", table.count(out))
+			
+			vfs.Write("data/chatsounds/sound_info.table", msgpack.Encode(out))
+			vfs.Write("data/chatsounds/sound_info.lua", luadata.Encode(out))
+			
+			chatsounds.sound_info = out
+		end) 
+		
+		event.AddListener("OnUpdate", "chatsounds_soundinfo", function()
+			local ok, msg = coroutine.resume(co)		
+			
+			if ok then 
+				if wait(1) then
+					print(msg)
+				end			
+			elseif msg == "cannot resume dead coroutine" then
+				return e.EVENT_DESTROY
+			else
+				error(msg) 
+			end
+		end)
+	end
+	
 	function chatsounds.BuildListFromMountedContent()
 		
 		window.Close()
 		chatsounds.MountPaks()
-
-		local function clean_sentence(sentence)
-
-			sentence = sentence:lower()
-			sentence = sentence:gsub("_", " ")
-			sentence = sentence:gsub("%p", "")
-			sentence = sentence:gsub("%s+", " ")
-			
-			return sentence
-		end
-		 
+		
 		local found = {}
 			
 		local function callback()
-			vfs.Search("sound/", {"wav", "ogg"}, function(path) 			
+			vfs.Search("sound/", {"wav", "ogg", "mp3"}, function(path) 			
 				local sentence
 				
 				if path:find("%.wav") then
@@ -415,7 +657,7 @@ do -- list parsing
 				
 				found[realm] = found[realm] or {}
 				
-				table.insert(found[realm], path .. "=" .. sentence)
+				table.insert(found[realm], path:lower() .. "=" .. sentence)
 				
 				coroutine.yield()
 			end)
@@ -450,11 +692,25 @@ do -- list parsing
 					end
 				end
 				
-				vfs.Write("data/chatsounds/game.list", table.concat(game, ""))
-				vfs.Write("data/chatsounds/custom.list", table.concat(custom, ""))
+				local game_list = table.concat(game, "")
+				local custom_list = table.concat(custom, "")
+				
+				vfs.Write("data/chatsounds/game.list", game_list)
+				vfs.Write("data/chatsounds/custom.list", custom_list)
+				
+				vfs.Write("data/chatsounds/game.tree", msgpack.Encode(chatsounds.TableToTree(chatsounds.ListToTable(game_list))), "b")
+				vfs.Write("data/chatsounds/custom.tree", msgpack.Encode(chatsounds.TableToTree(chatsounds.ListToTable(custom_list))), "b")
 			end
 			
-			if not ok and err then error(err) end
+			if not ok then
+				if err == "cannot resume dead coroutine" then 
+					chatsounds.BuildSoundInfo()
+					print("done!")					
+					return e.EVENT_DESTROY
+				else
+					error(err) 
+				end
+			end
 		end) 
 	end
 		
@@ -481,6 +737,24 @@ do -- list parsing
 			end
 		end
 		return list
+	end
+	
+	function chatsounds.TableToList(tbl)
+		local str = {}
+		for realm, list in pairs(tbl) do
+			str[#str + 1] = "realm="..realm
+			local done = {}
+			for trigger, sounds in pairs(list) do
+				for i, data in ipairs(sounds) do
+					local val = data.path .. "=" .. trigger
+					if not done[val] then
+						str[#str + 1] = val
+						done[val] = true
+					end
+				end
+			end
+		end
+		return table.concat(str, "\n")
 	end
 		
 	function chatsounds.TableToTree(tbl)
@@ -1096,6 +1370,8 @@ function chatsounds.Say(ply, str, seed)
 		str = ply
 		ply = nil
 	end
+	
+	str = str:lower()
 
 	if str == "sh" or (str:find("sh%s") and not str:find("%Ssh")) or (str:find("%ssh") and not str:find("sh%S")) then
 		chatsounds.Panic()
@@ -1125,8 +1401,5 @@ function chatsounds.Initialize()
 	
 	event.AddListener("OnUpdate", "chatsounds", chatsounds.Update)
 end
-
---vfs.Write("data/chatsounds/custom.tree", msgpack.Encode(chatsounds.TableToTree(chatsounds.ListToTable(vfs.Read("data/chatsounds/custom.list")))), "b")
---vfs.Write("data/chatsounds/game.tree", msgpack.Encode(chatsounds.TableToTree(chatsounds.ListToTable(vfs.Read("data/chatsounds/game.list")))), "b")
 
 return chatsounds
