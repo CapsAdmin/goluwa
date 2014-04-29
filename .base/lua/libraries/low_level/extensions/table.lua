@@ -1,5 +1,5 @@
-table.new = require("table.new")
-table.clear = require("table.clear")
+table.new = require("table.new") or function() return {} end
+table.clear = require("table.clear") or function(t) for k,v in pairs(t) do t[k] = nil end end
 
 -- 12:34 - <mniip> http://codepad.org/cLaX7lVn
 function table.multiremove(tbl, locations)
