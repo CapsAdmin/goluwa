@@ -93,6 +93,10 @@ function PANEL:SetText(str)
 	self.Text = str
 end
 
+function PANEL:GetText()
+	return self.markup:GetText()
+end
+
 function PANEL:SetContent(str)
 	self.Content = str
 	self.lines = str:explode("\n")
