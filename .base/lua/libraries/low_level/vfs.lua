@@ -538,6 +538,13 @@ do -- file finding
 							table.insert(files, file_name)
 						end
 					end
+					
+					for _, path in pairs(files) do
+						if full_path then
+							path = full_dir.root .. "/" .. dir .. "/" .. path
+						end
+						unique[path] = true
+					end
 				else					
 					-- fix me!! 
 					-- on linux, an invalid path will error
@@ -549,13 +556,13 @@ do -- file finding
 							end
 						end
 					end)
-				end
-				
-				for _, path in pairs(files) do
-					if full_path then
-						path = full_dir .. "/" .. dir .. "/" .. path
+					
+					for _, path in pairs(files) do
+						if full_path then
+							path = full_dir .. "/" .. dir .. "/" .. path
+						end
+						unique[path] = true
 					end
-					unique[path] = true
 				end
 			end
 		end
