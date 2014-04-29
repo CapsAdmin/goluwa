@@ -122,6 +122,87 @@ function steam.SaveGamePaths()
 	luadata.WriteFile(steam.cache_path, steam.paths)
 end
 
+function steam.VDFToTable(str)
+	str = str:gsub("//.-\n", "")
+	
+	local tbl = {}
+	
+	for uchar in str:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
+		tbl[#tbl + 1] = uchar
+	end
+
+	local in_string = false
+	local capture = {}
+	local no_quotes = false
+
+	local out = {}
+	local current = out
+	local stack = {current}
+	
+	local key, val
+
+	for i = 1, #tbl do
+		local char = tbl[i]
+			
+		if (char == [["]] or (no_quotes and char:find("%s"))) and tbl[i-1] ~= "\\" then
+			if in_string then
+				
+				if key then
+					local val = table.concat(capture, "")
+					
+				
+					if val:lower() == "false" then 
+						val = false
+					elseif val:lower() ==  "true" then
+						val =  true
+					else
+						val = tonumber(val) or val
+					end	
+					
+					if type(current[key]) == "table" then
+						table.insert(current[key], val)
+					elseif current[key] then
+						current[key] = {current[key], val}
+					else
+						current[key] = val
+					end
+					
+					key = nil
+				else
+					key = table.concat(capture, "")
+				end
+				
+				in_string = false
+				no_quotes = false
+				capture = {}
+			else
+				in_string = true
+			end
+		else
+			if in_string then
+				table.insert(capture, char)
+			elseif char == [[{]] then
+				if key then
+					table.insert(stack, current)
+					current[key] = {}
+					current = current[key]
+					key = nil
+				else
+					return nil, "stack imbalance"
+				end
+			elseif char == [[}]] then
+				current = table.remove(stack) or out
+			elseif not char:find("%s") then
+				in_string = true
+				no_quotes = true
+				table.insert(capture, char)
+			end
+		end
+	end
+	
+	return out
+end
+
 function steam.FindGamePaths(force_cache_update)
 	steam.paths = {}
 
@@ -174,11 +255,14 @@ function steam.GetLibraryFolders()
 	local base = steam.GetInstallPath()
 	
 	local tbl = {base .. "/SteamApps/"}
-	
-	local cfg = assert(vfs.Read(base .. "/config/config.vdf", "r"))
-	
-	for path in cfg:gmatch([["BaseInstallFolder.."%s-"(.-)"]]) do
-		table.insert(tbl, vfs.FixPath(path) .. "/SteamApps/")
+		
+	local config = steam.VDFToTable(assert(vfs.Read(base .. "/config/config.vdf", "r")))
+
+	for key, path in pairs(config.InstallConfigStore.Software.Valve.Steam) do
+		
+		if key:find("BaseInstallFolder_") then
+			table.insert(tbl, vfs.FixPath(path) .. "/SteamApps/")
+		end
 	end
 	
 	return tbl
