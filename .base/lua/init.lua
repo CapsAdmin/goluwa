@@ -352,6 +352,13 @@ do -- ffi
 		return msg
 	end
 	
+	ffi.cdef("void* malloc(size_t size); void free (void* ptr);")
+	function ffi.malloc(t, size)
+		local val = ffi.cast(t, ffi.gc(ffi.C.malloc(size), ffi.C.free))
+		ffi.fill(val, size)
+		return val
+	end
+	
 	local function warn_pcall(func, ...)
 		local res = {pcall(func, ...)}
 		if not res[1] then
