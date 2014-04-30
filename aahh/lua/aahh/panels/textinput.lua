@@ -88,13 +88,13 @@ end
 function PANEL:SetText(str)
 	self.markup:SelectAll()
 	self.markup:DeleteSelection()
-	self.markup:AddString(str)
+	self.markup:Paste(str)
 	
 	self.Text = str
 end
 
-function PANEL:GetText()
-	return self.markup:GetText()
+function PANEL:GetText(b)
+	return self.markup:GetText(b)
 end
 
 function PANEL:SetContent(str)
