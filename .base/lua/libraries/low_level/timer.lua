@@ -149,6 +149,10 @@ function timer.Create(id, time, repeats, callback, run_now)
 	return data
 end
 
+function timer.Remove(id)
+	timer.Timers[id] = nil
+end
+
 function timer.Update(...)
 	local cur = timer.clock()
 			
@@ -187,7 +191,8 @@ function timer.Update(...)
 				
 				if ran then
 					if msg == "stop" then
-						data.__remove_me = true
+						timer.Timers[key] = nil
+						break
 					end
 					if msg == "restart" then
 						data.times_ran = 1
