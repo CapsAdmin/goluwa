@@ -1,19 +1,8 @@
-return [[
-int av_strerror(int errnum, char *errbuf, size_t errbuf_size);
-void *av_malloc(size_t size) __attribute__((__malloc__)) __attribute__((alloc_size(__VA_ARGS__)));
-typedef struct AVRational{
-    int num;
-    int den;
-} AVRational;
-int av_reduce(int *dst_num, int *dst_den, int64_t num, int64_t den, int64_t max);
-AVRational av_mul_q(AVRational b, AVRational c) __attribute__((const));
-AVRational av_div_q(AVRational b, AVRational c) __attribute__((const));
-AVRational av_add_q(AVRational b, AVRational c) __attribute__((const));
-AVRational av_sub_q(AVRational b, AVRational c) __attribute__((const));
-AVRational av_d2q(double d, int max) __attribute__((const));
-int av_nearer_q(AVRational q, AVRational q1, AVRational q2);
-int av_find_nearest_q_idx(AVRational q, const AVRational* q_list);
-unsigned avutil_version(void);
+-- built with
+-- C:\mingw-builds\x64-4.8.1-posix-seh-rev5\mingw64\bin>gcc -E -o lol -I C:\goluwa\.base\bin\src\ffmpeg\include C:\goluwa\.base\bin\src\ffmpeg\include\main.c
+-- and some manual work in notepad++ afterwards
+
+return [[unsigned avutil_version(void);
 const char *avutil_configuration(void);
 const char *avutil_license(void);
 enum AVMediaType {
@@ -37,9 +26,15 @@ enum AVPictureType {
     AV_PICTURE_TYPE_BI,
 };
 char av_get_picture_type_char(enum AVPictureType pict_type);
+extern __attribute__((deprecated)) const uint8_t av_reverse[256];
+__attribute__((const)) int av_log2(unsigned v);
+__attribute__((const)) int av_log2_16bit(unsigned v);
+void *av_malloc(size_t size) __attribute__((__malloc__)) __attribute__((alloc_size(1)));
 void *av_realloc(void *ptr, size_t size) __attribute__((alloc_size(2)));
 void *av_realloc_f(void *ptr, size_t nelem, size_t elsize);
 int av_reallocp(void *ptr, size_t size);
+__attribute__((alloc_size(2, 3))) void *av_realloc_array(void *ptr, size_t nmemb, size_t size);
+__attribute__((alloc_size(2, 3))) int av_reallocp_array(void *ptr, size_t nmemb, size_t size);
 void av_free(void *ptr);
 void *av_mallocz(size_t size) __attribute__((__malloc__)) __attribute__((alloc_size(1)));
 void *av_calloc(size_t nmemb, size_t size) __attribute__((__malloc__));
@@ -54,6 +49,26 @@ void av_max_alloc(size_t max);
 void av_memcpy_backptr(uint8_t *dst, int back, int cnt);
 void *av_fast_realloc(void *ptr, unsigned int *size, size_t min_size);
 void av_fast_malloc(void *ptr, unsigned int *size, size_t min_size);
+typedef struct AVRational{
+    int num;
+    int den;
+} AVRational;
+int av_reduce(int *dst_num, int *dst_den, int64_t num, int64_t den, int64_t max);
+AVRational av_mul_q(AVRational b, AVRational c) __attribute__((const));
+AVRational av_div_q(AVRational b, AVRational c) __attribute__((const));
+AVRational av_add_q(AVRational b, AVRational c) __attribute__((const));
+AVRational av_sub_q(AVRational b, AVRational c) __attribute__((const));
+AVRational av_d2q(double d, int max) __attribute__((const));
+int av_nearer_q(AVRational q, AVRational q1, AVRational q2);
+int av_find_nearest_q_idx(AVRational q, const AVRational* q_list);
+union av_intfloat32 {
+    uint32_t i;
+    float f;
+};
+union av_intfloat64 {
+    uint64_t i;
+    double f;
+};
 enum AVRounding {
     AV_ROUND_ZERO = 0,
     AV_ROUND_INF = 1,
@@ -406,20 +421,6 @@ unsigned av_int_list_length_for_size(unsigned elsize,
                                      const void *list, uint64_t term) __attribute__((pure));
 FILE *av_fopen_utf8(const char *path, const char *mode);
 AVRational av_get_time_base_q(void);
-typedef struct AVDictionaryEntry {
-    char *key;
-    char *value;
-} AVDictionaryEntry;
-typedef struct AVDictionary AVDictionary;
-AVDictionaryEntry *
-av_dict_get(const AVDictionary *m, const char *key, const AVDictionaryEntry *prev, int flags);
-int av_dict_count(const AVDictionary *m);
-int av_dict_set(AVDictionary **pm, const char *key, const char *value, int flags);
-int av_dict_parse_string(AVDictionary **pm, const char *str,
-                         const char *key_val_sep, const char *pairs_sep,
-                         int flags);
-void av_dict_copy(AVDictionary **dst, const AVDictionary *src, int flags);
-void av_dict_free(AVDictionary **m);
 enum AVSampleFormat {
     AV_SAMPLE_FMT_NONE = -1,
     AV_SAMPLE_FMT_U8,
@@ -459,127 +460,6 @@ int av_samples_copy(uint8_t **dst, uint8_t * const *src, int dst_offset,
                     enum AVSampleFormat sample_fmt);
 int av_samples_set_silence(uint8_t **audio_data, int offset, int nb_samples,
                            int nb_channels, enum AVSampleFormat sample_fmt);
-enum AVOptionType{
-    AV_OPT_TYPE_FLAGS,
-    AV_OPT_TYPE_INT,
-    AV_OPT_TYPE_INT64,
-    AV_OPT_TYPE_DOUBLE,
-    AV_OPT_TYPE_FLOAT,
-    AV_OPT_TYPE_STRING,
-    AV_OPT_TYPE_RATIONAL,
-    AV_OPT_TYPE_BINARY,
-    AV_OPT_TYPE_CONST = 128,
-    AV_OPT_TYPE_IMAGE_SIZE = (('E') | (('Z') << 8) | (('I') << 16) | ((unsigned)('S') << 24)),
-    AV_OPT_TYPE_PIXEL_FMT = (('T') | (('M') << 8) | (('F') << 16) | ((unsigned)('P') << 24)),
-    AV_OPT_TYPE_SAMPLE_FMT = (('T') | (('M') << 8) | (('F') << 16) | ((unsigned)('S') << 24)),
-    AV_OPT_TYPE_VIDEO_RATE = (('T') | (('A') << 8) | (('R') << 16) | ((unsigned)('V') << 24)),
-    AV_OPT_TYPE_DURATION = ((' ') | (('R') << 8) | (('U') << 16) | ((unsigned)('D') << 24)),
-    AV_OPT_TYPE_COLOR = (('R') | (('L') << 8) | (('O') << 16) | ((unsigned)('C') << 24)),
-    AV_OPT_TYPE_CHANNEL_LAYOUT = (('A') | (('L') << 8) | (('H') << 16) | ((unsigned)('C') << 24)),
-    FF_OPT_TYPE_FLAGS = 0,
-    FF_OPT_TYPE_INT,
-    FF_OPT_TYPE_INT64,
-    FF_OPT_TYPE_DOUBLE,
-    FF_OPT_TYPE_FLOAT,
-    FF_OPT_TYPE_STRING,
-    FF_OPT_TYPE_RATIONAL,
-    FF_OPT_TYPE_BINARY,
-    FF_OPT_TYPE_CONST=128,
-};
-typedef struct AVOption {
-    const char *name;
-    const char *help;
-    int offset;
-    enum AVOptionType type;
-    union {
-        int64_t i64;
-        double dbl;
-        const char *str;
-        AVRational q;
-    } default_val;
-    double min;
-    double max;
-    int flags;
-    const char *unit;
-} AVOption;
-typedef struct AVOptionRange {
-    const char *str;
-    double value_min, value_max;
-    double component_min, component_max;
-    int is_range;
-} AVOptionRange;
-typedef struct AVOptionRanges {
-    AVOptionRange **range;
-    int nb_ranges;
-    int nb_components;
-} AVOptionRanges;
-__attribute__((deprecated))
-const AVOption *av_find_opt(void *obj, const char *name, const char *unit, int mask, int flags);
-__attribute__((deprecated))
-int av_set_string3(void *obj, const char *name, const char *val, int alloc, const AVOption **o_out);
-__attribute__((deprecated)) const AVOption *av_set_double(void *obj, const char *name, double n);
-__attribute__((deprecated)) const AVOption *av_set_q(void *obj, const char *name, AVRational n);
-__attribute__((deprecated)) const AVOption *av_set_int(void *obj, const char *name, int64_t n);
-double av_get_double(void *obj, const char *name, const AVOption **o_out);
-AVRational av_get_q(void *obj, const char *name, const AVOption **o_out);
-int64_t av_get_int(void *obj, const char *name, const AVOption **o_out);
-__attribute__((deprecated)) const char *av_get_string(void *obj, const char *name, const AVOption **o_out, char *buf, int buf_len);
-__attribute__((deprecated)) const AVOption *av_next_option(void *obj, const AVOption *last);
-int av_opt_show2(void *obj, void *av_log_obj, int req_flags, int rej_flags);
-void av_opt_set_defaults(void *s);
-__attribute__((deprecated))
-void av_opt_set_defaults2(void *s, int mask, int flags);
-int av_set_options_string(void *ctx, const char *opts,
-                          const char *key_val_sep, const char *pairs_sep);
-int av_opt_set_from_string(void *ctx, const char *opts,
-                           const char *const *shorthand,
-                           const char *key_val_sep, const char *pairs_sep);
-void av_opt_free(void *obj);
-int av_opt_flag_is_set(void *obj, const char *field_name, const char *flag_name);
-int av_opt_set_dict(void *obj, struct AVDictionary **options);
-int av_opt_get_key_value(const char **ropts,
-                         const char *key_val_sep, const char *pairs_sep,
-                         unsigned flags,
-                         char **rkey, char **rval);
-enum {
-    AV_OPT_FLAG_IMPLICIT_KEY = 1,
-};
-int av_opt_eval_flags (void *obj, const AVOption *o, const char *val, int *flags_out);
-int av_opt_eval_int (void *obj, const AVOption *o, const char *val, int *int_out);
-int av_opt_eval_int64 (void *obj, const AVOption *o, const char *val, int64_t *int64_out);
-int av_opt_eval_float (void *obj, const AVOption *o, const char *val, float *float_out);
-int av_opt_eval_double(void *obj, const AVOption *o, const char *val, double *double_out);
-int av_opt_eval_q (void *obj, const AVOption *o, const char *val, AVRational *q_out);
-const AVOption *av_opt_find(void *obj, const char *name, const char *unit,
-                            int opt_flags, int search_flags);
-const AVOption *av_opt_find2(void *obj, const char *name, const char *unit,
-                             int opt_flags, int search_flags, void **target_obj);
-const AVOption *av_opt_next(void *obj, const AVOption *prev);
-void *av_opt_child_next(void *obj, void *prev);
-const AVClass *av_opt_child_class_next(const AVClass *parent, const AVClass *prev);
-int av_opt_set (void *obj, const char *name, const char *val, int search_flags);
-int av_opt_set_int (void *obj, const char *name, int64_t val, int search_flags);
-int av_opt_set_double(void *obj, const char *name, double val, int search_flags);
-int av_opt_set_q (void *obj, const char *name, AVRational val, int search_flags);
-int av_opt_set_bin (void *obj, const char *name, const uint8_t *val, int size, int search_flags);
-int av_opt_set_image_size(void *obj, const char *name, int w, int h, int search_flags);
-int av_opt_set_pixel_fmt (void *obj, const char *name, enum AVPixelFormat fmt, int search_flags);
-int av_opt_set_sample_fmt(void *obj, const char *name, enum AVSampleFormat fmt, int search_flags);
-int av_opt_set_video_rate(void *obj, const char *name, AVRational val, int search_flags);
-int av_opt_set_channel_layout(void *obj, const char *name, int64_t ch_layout, int search_flags);
-int av_opt_get (void *obj, const char *name, int search_flags, uint8_t **out_val);
-int av_opt_get_int (void *obj, const char *name, int search_flags, int64_t *out_val);
-int av_opt_get_double(void *obj, const char *name, int search_flags, double *out_val);
-int av_opt_get_q (void *obj, const char *name, int search_flags, AVRational *out_val);
-int av_opt_get_image_size(void *obj, const char *name, int search_flags, int *w_out, int *h_out);
-int av_opt_get_pixel_fmt (void *obj, const char *name, int search_flags, enum AVPixelFormat *out_fmt);
-int av_opt_get_sample_fmt(void *obj, const char *name, int search_flags, enum AVSampleFormat *out_fmt);
-int av_opt_get_video_rate(void *obj, const char *name, int search_flags, AVRational *out_val);
-int av_opt_get_channel_layout(void *obj, const char *name, int search_flags, int64_t *ch_layout);
-void *av_opt_ptr(const AVClass *avclass, void *obj, const char *name);
-void av_opt_freep_ranges(AVOptionRanges **ranges);
-int av_opt_query_ranges(AVOptionRanges **, void *obj, const char *key, int flags);
-int av_opt_query_ranges_default(AVOptionRanges **, void *obj, const char *key, int flags);
 typedef struct AVBuffer AVBuffer;
 typedef struct AVBufferRef {
     AVBuffer *buffer;
@@ -633,6 +513,20 @@ const char *av_get_channel_name(uint64_t channel);
 const char *av_get_channel_description(uint64_t channel);
 int av_get_standard_channel_layout(unsigned index, uint64_t *layout,
                                    const char **name);
+typedef struct AVDictionaryEntry {
+    char *key;
+    char *value;
+} AVDictionaryEntry;
+typedef struct AVDictionary AVDictionary;
+AVDictionaryEntry *
+av_dict_get(const AVDictionary *m, const char *key, const AVDictionaryEntry *prev, int flags);
+int av_dict_count(const AVDictionary *m);
+int av_dict_set(AVDictionary **pm, const char *key, const char *value, int flags);
+int av_dict_parse_string(AVDictionary **pm, const char *str,
+                         const char *key_val_sep, const char *pairs_sep,
+                         int flags);
+void av_dict_copy(AVDictionary **dst, const AVDictionary *src, int flags);
+void av_dict_free(AVDictionary **m);
 enum AVColorSpace{
     AVCOL_SPC_RGB = 0,
     AVCOL_SPC_BT709 = 1,
@@ -2238,62 +2132,178 @@ int av_codec_is_decoder(const AVCodec *codec);
 const AVCodecDescriptor *avcodec_descriptor_get(enum AVCodecID id);
 const AVCodecDescriptor *avcodec_descriptor_next(const AVCodecDescriptor *prev);
 const AVCodecDescriptor *avcodec_descriptor_get_by_name(const char *name);
-typedef struct AVComponentDescriptor{
-    uint16_t plane :2;
-    uint16_t step_minus1 :3;
-    uint16_t offset_plus1 :3;
-    uint16_t shift :3;
-    uint16_t depth_minus1 :4;
-}AVComponentDescriptor;
-typedef struct AVPixFmtDescriptor{
+typedef float FFTSample;
+typedef struct FFTComplex {
+    FFTSample re, im;
+} FFTComplex;
+typedef struct FFTContext FFTContext;
+FFTContext *av_fft_init(int nbits, int inverse);
+void av_fft_permute(FFTContext *s, FFTComplex *z);
+void av_fft_calc(FFTContext *s, FFTComplex *z);
+void av_fft_end(FFTContext *s);
+FFTContext *av_mdct_init(int nbits, int inverse, double scale);
+void av_imdct_calc(FFTContext *s, FFTSample *output, const FFTSample *input);
+void av_imdct_half(FFTContext *s, FFTSample *output, const FFTSample *input);
+void av_mdct_calc(FFTContext *s, FFTSample *output, const FFTSample *input);
+void av_mdct_end(FFTContext *s);
+enum RDFTransformType {
+    DFT_R2C,
+    IDFT_C2R,
+    IDFT_R2C,
+    DFT_C2R,
+};
+typedef struct RDFTContext RDFTContext;
+RDFTContext *av_rdft_init(int nbits, enum RDFTransformType trans);
+void av_rdft_calc(RDFTContext *s, FFTSample *data);
+void av_rdft_end(RDFTContext *s);
+typedef struct DCTContext DCTContext;
+enum DCTTransformType {
+    DCT_II = 0,
+    DCT_III,
+    DCT_I,
+    DST_I,
+};
+DCTContext *av_dct_init(int nbits, enum DCTTransformType type);
+void av_dct_calc(DCTContext *s, FFTSample *data);
+void av_dct_end (DCTContext *s);
+struct vaapi_context {
+    void *display;
+    uint32_t config_id;
+    uint32_t context_id;
+    uint32_t pic_param_buf_id;
+    uint32_t iq_matrix_buf_id;
+    uint32_t bitplane_buf_id;
+    uint32_t *slice_buf_ids;
+    unsigned int n_slice_buf_ids;
+    unsigned int slice_buf_ids_alloc;
+    void *slice_params;
+    unsigned int slice_param_size;
+    unsigned int slice_params_alloc;
+    unsigned int slice_count;
+    const uint8_t *slice_data;
+    uint32_t slice_data_size;
+};
+enum AVOptionType{
+    AV_OPT_TYPE_FLAGS,
+    AV_OPT_TYPE_INT,
+    AV_OPT_TYPE_INT64,
+    AV_OPT_TYPE_DOUBLE,
+    AV_OPT_TYPE_FLOAT,
+    AV_OPT_TYPE_STRING,
+    AV_OPT_TYPE_RATIONAL,
+    AV_OPT_TYPE_BINARY,
+    AV_OPT_TYPE_CONST = 128,
+    AV_OPT_TYPE_IMAGE_SIZE = (('E') | (('Z') << 8) | (('I') << 16) | ((unsigned)('S') << 24)),
+    AV_OPT_TYPE_PIXEL_FMT = (('T') | (('M') << 8) | (('F') << 16) | ((unsigned)('P') << 24)),
+    AV_OPT_TYPE_SAMPLE_FMT = (('T') | (('M') << 8) | (('F') << 16) | ((unsigned)('S') << 24)),
+    AV_OPT_TYPE_VIDEO_RATE = (('T') | (('A') << 8) | (('R') << 16) | ((unsigned)('V') << 24)),
+    AV_OPT_TYPE_DURATION = ((' ') | (('R') << 8) | (('U') << 16) | ((unsigned)('D') << 24)),
+    AV_OPT_TYPE_COLOR = (('R') | (('L') << 8) | (('O') << 16) | ((unsigned)('C') << 24)),
+    AV_OPT_TYPE_CHANNEL_LAYOUT = (('A') | (('L') << 8) | (('H') << 16) | ((unsigned)('C') << 24)),
+    FF_OPT_TYPE_FLAGS = 0,
+    FF_OPT_TYPE_INT,
+    FF_OPT_TYPE_INT64,
+    FF_OPT_TYPE_DOUBLE,
+    FF_OPT_TYPE_FLOAT,
+    FF_OPT_TYPE_STRING,
+    FF_OPT_TYPE_RATIONAL,
+    FF_OPT_TYPE_BINARY,
+    FF_OPT_TYPE_CONST=128,
+};
+typedef struct AVOption {
     const char *name;
-    uint8_t nb_components;
-    uint8_t log2_chroma_w;
-    uint8_t log2_chroma_h;
-    uint8_t flags;
-    AVComponentDescriptor comp[4];
-}AVPixFmtDescriptor;
-extern __attribute__((deprecated)) const AVPixFmtDescriptor av_pix_fmt_descriptors[];
-void av_read_image_line(uint16_t *dst, const uint8_t *data[4], const int linesize[4],
-                        const AVPixFmtDescriptor *desc, int x, int y, int c, int w, int read_pal_component);
-void av_write_image_line(const uint16_t *src, uint8_t *data[4], const int linesize[4],
-                         const AVPixFmtDescriptor *desc, int x, int y, int c, int w);
-enum AVPixelFormat av_get_pix_fmt(const char *name);
-const char *av_get_pix_fmt_name(enum AVPixelFormat pix_fmt);
-char *av_get_pix_fmt_string (char *buf, int buf_size, enum AVPixelFormat pix_fmt);
-int av_get_bits_per_pixel(const AVPixFmtDescriptor *pixdesc);
-int av_get_padded_bits_per_pixel(const AVPixFmtDescriptor *pixdesc);
-const AVPixFmtDescriptor *av_pix_fmt_desc_get(enum AVPixelFormat pix_fmt);
-const AVPixFmtDescriptor *av_pix_fmt_desc_next(const AVPixFmtDescriptor *prev);
-enum AVPixelFormat av_pix_fmt_desc_get_id(const AVPixFmtDescriptor *desc);
-int av_pix_fmt_get_chroma_sub_sample(enum AVPixelFormat pix_fmt,
-                                     int *h_shift, int *v_shift);
-int av_pix_fmt_count_planes(enum AVPixelFormat pix_fmt);
-void ff_check_pixfmt_descriptors(void);
-enum AVPixelFormat av_pix_fmt_swap_endianness(enum AVPixelFormat pix_fmt);
-void av_image_fill_max_pixsteps(int max_pixsteps[4], int max_pixstep_comps[4],
-                                const AVPixFmtDescriptor *pixdesc);
-int av_image_get_linesize(enum AVPixelFormat pix_fmt, int width, int plane);
-int av_image_fill_linesizes(int linesizes[4], enum AVPixelFormat pix_fmt, int width);
-int av_image_fill_pointers(uint8_t *data[4], enum AVPixelFormat pix_fmt, int height,
-                           uint8_t *ptr, const int linesizes[4]);
-int av_image_alloc(uint8_t *pointers[4], int linesizes[4],
-                   int w, int h, enum AVPixelFormat pix_fmt, int align);
-void av_image_copy_plane(uint8_t *dst, int dst_linesize,
-                         const uint8_t *src, int src_linesize,
-                         int bytewidth, int height);
-void av_image_copy(uint8_t *dst_data[4], int dst_linesizes[4],
-                   const uint8_t *src_data[4], const int src_linesizes[4],
-                   enum AVPixelFormat pix_fmt, int width, int height);
-int av_image_fill_arrays(uint8_t *dst_data[4], int dst_linesize[4],
-                         const uint8_t *src,
-                         enum AVPixelFormat pix_fmt, int width, int height, int align);
-int av_image_get_buffer_size(enum AVPixelFormat pix_fmt, int width, int height, int align);
-int av_image_copy_to_buffer(uint8_t *dst, int dst_size,
-                            const uint8_t * const src_data[4], const int src_linesize[4],
-                            enum AVPixelFormat pix_fmt, int width, int height, int align);
-int av_image_check_size(unsigned int w, unsigned int h, int log_offset, void *log_ctx);
-int avpriv_set_systematic_pal2(uint32_t pal[256], enum AVPixelFormat pix_fmt);
+    const char *help;
+    int offset;
+    enum AVOptionType type;
+    union {
+        int64_t i64;
+        double dbl;
+        const char *str;
+        AVRational q;
+    } default_val;
+    double min;
+    double max;
+    int flags;
+    const char *unit;
+} AVOption;
+typedef struct AVOptionRange {
+    const char *str;
+    double value_min, value_max;
+    double component_min, component_max;
+    int is_range;
+} AVOptionRange;
+typedef struct AVOptionRanges {
+    AVOptionRange **range;
+    int nb_ranges;
+    int nb_components;
+} AVOptionRanges;
+__attribute__((deprecated))
+const AVOption *av_find_opt(void *obj, const char *name, const char *unit, int mask, int flags);
+__attribute__((deprecated))
+int av_set_string3(void *obj, const char *name, const char *val, int alloc, const AVOption **o_out);
+__attribute__((deprecated)) const AVOption *av_set_double(void *obj, const char *name, double n);
+__attribute__((deprecated)) const AVOption *av_set_q(void *obj, const char *name, AVRational n);
+__attribute__((deprecated)) const AVOption *av_set_int(void *obj, const char *name, int64_t n);
+double av_get_double(void *obj, const char *name, const AVOption **o_out);
+AVRational av_get_q(void *obj, const char *name, const AVOption **o_out);
+int64_t av_get_int(void *obj, const char *name, const AVOption **o_out);
+__attribute__((deprecated)) const char *av_get_string(void *obj, const char *name, const AVOption **o_out, char *buf, int buf_len);
+__attribute__((deprecated)) const AVOption *av_next_option(void *obj, const AVOption *last);
+int av_opt_show2(void *obj, void *av_log_obj, int req_flags, int rej_flags);
+void av_opt_set_defaults(void *s);
+__attribute__((deprecated))
+void av_opt_set_defaults2(void *s, int mask, int flags);
+int av_set_options_string(void *ctx, const char *opts,
+                          const char *key_val_sep, const char *pairs_sep);
+int av_opt_set_from_string(void *ctx, const char *opts,
+                           const char *const *shorthand,
+                           const char *key_val_sep, const char *pairs_sep);
+void av_opt_free(void *obj);
+int av_opt_flag_is_set(void *obj, const char *field_name, const char *flag_name);
+int av_opt_set_dict(void *obj, struct AVDictionary **options);
+int av_opt_get_key_value(const char **ropts,
+                         const char *key_val_sep, const char *pairs_sep,
+                         unsigned flags,
+                         char **rkey, char **rval);
+enum {
+    AV_OPT_FLAG_IMPLICIT_KEY = 1,
+};
+int av_opt_eval_flags (void *obj, const AVOption *o, const char *val, int *flags_out);
+int av_opt_eval_int (void *obj, const AVOption *o, const char *val, int *int_out);
+int av_opt_eval_int64 (void *obj, const AVOption *o, const char *val, int64_t *int64_out);
+int av_opt_eval_float (void *obj, const AVOption *o, const char *val, float *float_out);
+int av_opt_eval_double(void *obj, const AVOption *o, const char *val, double *double_out);
+int av_opt_eval_q (void *obj, const AVOption *o, const char *val, AVRational *q_out);
+const AVOption *av_opt_find(void *obj, const char *name, const char *unit,
+                            int opt_flags, int search_flags);
+const AVOption *av_opt_find2(void *obj, const char *name, const char *unit,
+                             int opt_flags, int search_flags, void **target_obj);
+const AVOption *av_opt_next(void *obj, const AVOption *prev);
+void *av_opt_child_next(void *obj, void *prev);
+const AVClass *av_opt_child_class_next(const AVClass *parent, const AVClass *prev);
+int av_opt_set (void *obj, const char *name, const char *val, int search_flags);
+int av_opt_set_int (void *obj, const char *name, int64_t val, int search_flags);
+int av_opt_set_double(void *obj, const char *name, double val, int search_flags);
+int av_opt_set_q (void *obj, const char *name, AVRational val, int search_flags);
+int av_opt_set_bin (void *obj, const char *name, const uint8_t *val, int size, int search_flags);
+int av_opt_set_image_size(void *obj, const char *name, int w, int h, int search_flags);
+int av_opt_set_pixel_fmt (void *obj, const char *name, enum AVPixelFormat fmt, int search_flags);
+int av_opt_set_sample_fmt(void *obj, const char *name, enum AVSampleFormat fmt, int search_flags);
+int av_opt_set_video_rate(void *obj, const char *name, AVRational val, int search_flags);
+int av_opt_set_channel_layout(void *obj, const char *name, int64_t ch_layout, int search_flags);
+int av_opt_get (void *obj, const char *name, int search_flags, uint8_t **out_val);
+int av_opt_get_int (void *obj, const char *name, int search_flags, int64_t *out_val);
+int av_opt_get_double(void *obj, const char *name, int search_flags, double *out_val);
+int av_opt_get_q (void *obj, const char *name, int search_flags, AVRational *out_val);
+int av_opt_get_image_size(void *obj, const char *name, int search_flags, int *w_out, int *h_out);
+int av_opt_get_pixel_fmt (void *obj, const char *name, int search_flags, enum AVPixelFormat *out_fmt);
+int av_opt_get_sample_fmt(void *obj, const char *name, int search_flags, enum AVSampleFormat *out_fmt);
+int av_opt_get_video_rate(void *obj, const char *name, int search_flags, AVRational *out_val);
+int av_opt_get_channel_layout(void *obj, const char *name, int search_flags, int64_t *ch_layout);
+void *av_opt_ptr(const AVClass *avclass, void *obj, const char *name);
+void av_opt_freep_ranges(AVOptionRanges **ranges);
+int av_opt_query_ranges(AVOptionRanges **, void *obj, const char *key, int flags);
+int av_opt_query_ranges_default(AVOptionRanges **, void *obj, const char *key, int flags);
 typedef struct AVIOInterruptCB {
     int (*callback)(void*);
     void *opaque;
@@ -2352,10 +2362,6 @@ int avio_put_str(AVIOContext *s, const char *str);
 int avio_put_str16le(AVIOContext *s, const char *str);
 int64_t avio_seek(AVIOContext *s, int64_t offset, int whence);
 int64_t avio_skip(AVIOContext *s, int64_t offset);
-static __attribute__((always_inline)) inline int64_t avio_tell(AVIOContext *s)
-{
-    return avio_seek(s, 0, 1);
-}
 int64_t avio_size(AVIOContext *s);
 int url_feof(AVIOContext *s);
 int avio_printf(AVIOContext *s, const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
@@ -2685,7 +2691,7 @@ int av_probe_input_buffer2(AVIOContext *pb, AVInputFormat **fmt,
 int av_probe_input_buffer(AVIOContext *pb, AVInputFormat **fmt,
                           const char *filename, void *logctx,
                           unsigned int offset, unsigned int max_probe_size);
-int avformat_open_input(AVFormatContext **ps, const char *filename, AVInputFormat *fmt, AVDictionary **options); 
+int avformat_open_input(AVFormatContext **ps, const char *filename, AVInputFormat *fmt, AVDictionary **options);
 __attribute__((deprecated))
 int av_demuxer_open(AVFormatContext *ic);
 __attribute__((deprecated))
@@ -2769,6 +2775,789 @@ AVRational av_guess_frame_rate(AVFormatContext *ctx, AVStream *stream, AVFrame *
 int avformat_match_stream_specifier(AVFormatContext *s, AVStream *st,
                                     const char *spec);
 int avformat_queue_attached_pictures(AVFormatContext *s);
+unsigned avdevice_version(void);
+const char *avdevice_configuration(void);
+const char *avdevice_license(void);
+void avdevice_register_all(void);
+AVInputFormat *av_input_audio_device_next(AVInputFormat *d);
+AVInputFormat *av_input_video_device_next(AVInputFormat *d);
+AVOutputFormat *av_output_audio_device_next(AVOutputFormat *d);
+AVOutputFormat *av_output_video_device_next(AVOutputFormat *d);
+typedef struct AVDeviceRect {
+    int x;
+    int y;
+    int width;
+    int height;
+} AVDeviceRect;
+enum AVAppToDevMessageType {
+    AV_APP_TO_DEV_NONE = (('E') | (('N') << 8) | (('O') << 16) | ((unsigned)('N') << 24)),
+    AV_APP_TO_DEV_WINDOW_SIZE = (('M') | (('O') << 8) | (('E') << 16) | ((unsigned)('G') << 24)),
+    AV_APP_TO_DEV_WINDOW_REPAINT = (('A') | (('P') << 8) | (('E') << 16) | ((unsigned)('R') << 24)),
+    AV_APP_TO_DEV_PAUSE = ((' ') | (('U') << 8) | (('A') << 16) | ((unsigned)('P') << 24)),
+    AV_APP_TO_DEV_PLAY = (('Y') | (('A') << 8) | (('L') << 16) | ((unsigned)('P') << 24)),
+    AV_APP_TO_DEV_TOGGLE_PAUSE = (('T') | (('U') << 8) | (('A') << 16) | ((unsigned)('P') << 24)),
+    AV_APP_TO_DEV_SET_VOLUME = (('L') | (('O') << 8) | (('V') << 16) | ((unsigned)('S') << 24)),
+    AV_APP_TO_DEV_MUTE = (('T') | (('U') << 8) | (('M') << 16) | ((unsigned)(' ') << 24)),
+    AV_APP_TO_DEV_UNMUTE = (('T') | (('U') << 8) | (('M') << 16) | ((unsigned)('U') << 24)),
+    AV_APP_TO_DEV_TOGGLE_MUTE = (('T') | (('U') << 8) | (('M') << 16) | ((unsigned)('T') << 24)),
+    AV_APP_TO_DEV_GET_VOLUME = (('L') | (('O') << 8) | (('V') << 16) | ((unsigned)('G') << 24)),
+    AV_APP_TO_DEV_GET_MUTE = (('T') | (('U') << 8) | (('M') << 16) | ((unsigned)('G') << 24)),
+};
+enum AVDevToAppMessageType {
+    AV_DEV_TO_APP_NONE = (('E') | (('N') << 8) | (('O') << 16) | ((unsigned)('N') << 24)),
+    AV_DEV_TO_APP_CREATE_WINDOW_BUFFER = (('E') | (('R') << 8) | (('C') << 16) | ((unsigned)('B') << 24)),
+    AV_DEV_TO_APP_PREPARE_WINDOW_BUFFER = (('E') | (('R') << 8) | (('P') << 16) | ((unsigned)('B') << 24)),
+    AV_DEV_TO_APP_DISPLAY_WINDOW_BUFFER = (('S') | (('I') << 8) | (('D') << 16) | ((unsigned)('B') << 24)),
+    AV_DEV_TO_APP_DESTROY_WINDOW_BUFFER = (('S') | (('E') << 8) | (('D') << 16) | ((unsigned)('B') << 24)),
+    AV_DEV_TO_APP_BUFFER_OVERFLOW = (('L') | (('F') << 8) | (('O') << 16) | ((unsigned)('B') << 24)),
+    AV_DEV_TO_APP_BUFFER_UNDERFLOW = (('L') | (('F') << 8) | (('U') << 16) | ((unsigned)('B') << 24)),
+    AV_DEV_TO_APP_BUFFER_READABLE = ((' ') | (('D') << 8) | (('R') << 16) | ((unsigned)('B') << 24)),
+    AV_DEV_TO_APP_BUFFER_WRITABLE = ((' ') | (('R') << 8) | (('W') << 16) | ((unsigned)('B') << 24)),
+    AV_DEV_TO_APP_MUTE_STATE_CHANGED = (('T') | (('U') << 8) | (('M') << 16) | ((unsigned)('C') << 24)),
+    AV_DEV_TO_APP_VOLUME_LEVEL_CHANGED = (('L') | (('O') << 8) | (('V') << 16) | ((unsigned)('C') << 24)),
+};
+int avdevice_app_to_dev_control_message(struct AVFormatContext *s,
+                                        enum AVAppToDevMessageType type,
+                                        void *data, size_t data_size);
+int avdevice_dev_to_app_control_message(struct AVFormatContext *s,
+                                        enum AVDevToAppMessageType type,
+                                        void *data, size_t data_size);
+typedef struct AVDeviceCapabilitiesQuery {
+    const AVClass *av_class;
+    AVFormatContext *device_context;
+    enum AVCodecID codec;
+    enum AVSampleFormat sample_format;
+    enum AVPixelFormat pixel_format;
+    int sample_rate;
+    int channels;
+    int64_t channel_layout;
+    int window_width;
+    int window_height;
+    int frame_width;
+    int frame_height;
+    AVRational fps;
+} AVDeviceCapabilitiesQuery;
+extern const AVOption av_device_capabilities[];
+int avdevice_capabilities_create(AVDeviceCapabilitiesQuery **caps, AVFormatContext *s,
+                                 AVDictionary **device_options);
+void avdevice_capabilities_free(AVDeviceCapabilitiesQuery **caps, AVFormatContext *s);
+typedef struct AVDeviceInfo {
+    char *device_name;
+    char *device_description;
+} AVDeviceInfo;
+typedef struct AVDeviceInfoList {
+    AVDeviceInfo **devices;
+    int nb_devices;
+    int default_device;
+} AVDeviceInfoList;
+int avdevice_list_devices(struct AVFormatContext *s, AVDeviceInfoList **device_list);
+void avdevice_free_list_devices(AVDeviceInfoList **device_list);
+unsigned avfilter_version(void);
+const char *avfilter_configuration(void);
+const char *avfilter_license(void);
+typedef struct AVFilterContext AVFilterContext;
+typedef struct AVFilterLink AVFilterLink;
+typedef struct AVFilterPad AVFilterPad;
+typedef struct AVFilterFormats AVFilterFormats;
+typedef struct AVFilterBuffer {
+    uint8_t *data[8];
+    uint8_t **extended_data;
+    int linesize[8];
+    void *priv;
+    void (*free)(struct AVFilterBuffer *buf);
+    int format;
+    int w, h;
+    unsigned refcount;
+} AVFilterBuffer;
+typedef struct AVFilterBufferRefAudioProps {
+    uint64_t channel_layout;
+    int nb_samples;
+    int sample_rate;
+    int channels;
+} AVFilterBufferRefAudioProps;
+typedef struct AVFilterBufferRefVideoProps {
+    int w;
+    int h;
+    AVRational sample_aspect_ratio;
+    int interlaced;
+    int top_field_first;
+    enum AVPictureType pict_type;
+    int key_frame;
+    int qp_table_linesize;
+    int qp_table_size;
+    int8_t *qp_table;
+} AVFilterBufferRefVideoProps;
+typedef struct AVFilterBufferRef {
+    AVFilterBuffer *buf;
+    uint8_t *data[8];
+    uint8_t **extended_data;
+    int linesize[8];
+    AVFilterBufferRefVideoProps *video;
+    AVFilterBufferRefAudioProps *audio;
+    int64_t pts;
+    int64_t pos;
+    int format;
+    int perms;
+    enum AVMediaType type;
+    AVDictionary *metadata;
+} AVFilterBufferRef;
+__attribute__((deprecated))
+void avfilter_copy_buffer_ref_props(AVFilterBufferRef *dst, const AVFilterBufferRef *src);
+__attribute__((deprecated))
+AVFilterBufferRef *avfilter_ref_buffer(AVFilterBufferRef *ref, int pmask);
+__attribute__((deprecated))
+void avfilter_unref_buffer(AVFilterBufferRef *ref);
+__attribute__((deprecated))
+void avfilter_unref_bufferp(AVFilterBufferRef **ref);
+__attribute__((deprecated))
+int avfilter_ref_get_channels(AVFilterBufferRef *ref);
+struct AVFilterPad {
+    const char *name;
+    enum AVMediaType type;
+    __attribute__((deprecated)) int min_perms;
+    __attribute__((deprecated)) int rej_perms;
+    int (*start_frame)(AVFilterLink *link, AVFilterBufferRef *picref);
+    AVFrame *(*get_video_buffer)(AVFilterLink *link, int w, int h);
+    AVFrame *(*get_audio_buffer)(AVFilterLink *link, int nb_samples);
+    int (*end_frame)(AVFilterLink *link);
+    int (*draw_slice)(AVFilterLink *link, int y, int height, int slice_dir);
+    int (*filter_frame)(AVFilterLink *link, AVFrame *frame);
+    int (*poll_frame)(AVFilterLink *link);
+    int (*request_frame)(AVFilterLink *link);
+    int (*config_props)(AVFilterLink *link);
+    int needs_fifo;
+    int needs_writable;
+};
+int avfilter_pad_count(const AVFilterPad *pads);
+const char *avfilter_pad_get_name(const AVFilterPad *pads, int pad_idx);
+enum AVMediaType avfilter_pad_get_type(const AVFilterPad *pads, int pad_idx);
+typedef struct AVFilter {
+    const char *name;
+    const char *description;
+    const AVFilterPad *inputs;
+    const AVFilterPad *outputs;
+    const AVClass *priv_class;
+    int flags;
+    int (*init)(AVFilterContext *ctx);
+    int (*init_dict)(AVFilterContext *ctx, AVDictionary **options);
+    void (*uninit)(AVFilterContext *ctx);
+    int (*query_formats)(AVFilterContext *);
+    int priv_size;
+    struct AVFilter *next;
+    int (*process_command)(AVFilterContext *, const char *cmd, const char *arg, char *res, int res_len, int flags);
+    int (*init_opaque)(AVFilterContext *ctx, void *opaque);
+} AVFilter;
+typedef struct AVFilterInternal AVFilterInternal;
+struct AVFilterContext {
+    const AVClass *av_class;
+    const AVFilter *filter;
+    char *name;
+    AVFilterPad *input_pads;
+    AVFilterLink **inputs;
+    __attribute__((deprecated)) unsigned input_count;
+    unsigned nb_inputs;
+    AVFilterPad *output_pads;
+    AVFilterLink **outputs;
+    __attribute__((deprecated)) unsigned output_count;
+    unsigned nb_outputs;
+    void *priv;
+    struct AVFilterGraph *graph;
+    int thread_type;
+    AVFilterInternal *internal;
+    struct AVFilterCommand *command_queue;
+    char *enable_str;
+    void *enable;
+    double *var_values;
+    int is_disabled;
+};
+struct AVFilterLink {
+    AVFilterContext *src;
+    AVFilterPad *srcpad;
+    AVFilterContext *dst;
+    AVFilterPad *dstpad;
+    enum AVMediaType type;
+    int w;
+    int h;
+    AVRational sample_aspect_ratio;
+    uint64_t channel_layout;
+    int sample_rate;
+    int format;
+    AVRational time_base;
+    AVFilterFormats *in_formats;
+    AVFilterFormats *out_formats;
+    AVFilterFormats *in_samplerates;
+    AVFilterFormats *out_samplerates;
+    struct AVFilterChannelLayouts *in_channel_layouts;
+    struct AVFilterChannelLayouts *out_channel_layouts;
+    int request_samples;
+    enum {
+        AVLINK_UNINIT = 0,
+        AVLINK_STARTINIT,
+        AVLINK_INIT
+    } init_state;
+    struct AVFilterPool *pool;
+    struct AVFilterGraph *graph;
+    int64_t current_pts;
+    int age_index;
+    AVRational frame_rate;
+    AVFrame *partial_buf;
+    int partial_buf_size;
+    int min_samples;
+    int max_samples;
+    AVFilterBufferRef *cur_buf_copy;
+    int closed;
+    int channels;
+    unsigned frame_requested;
+    unsigned flags;
+    int64_t frame_count;
+};
+int avfilter_link(AVFilterContext *src, unsigned srcpad,
+                  AVFilterContext *dst, unsigned dstpad);
+void avfilter_link_free(AVFilterLink **link);
+int avfilter_link_get_channels(AVFilterLink *link);
+void avfilter_link_set_closed(AVFilterLink *link, int closed);
+int avfilter_config_links(AVFilterContext *filter);
+__attribute__((deprecated))
+AVFilterBufferRef *
+avfilter_get_video_buffer_ref_from_arrays(uint8_t * const data[4], const int linesize[4], int perms,
+                                          int w, int h, enum AVPixelFormat format);
+__attribute__((deprecated))
+AVFilterBufferRef *avfilter_get_audio_buffer_ref_from_arrays(uint8_t **data,
+                                                             int linesize,
+                                                             int perms,
+                                                             int nb_samples,
+                                                             enum AVSampleFormat sample_fmt,
+                                                             uint64_t channel_layout);
+__attribute__((deprecated))
+AVFilterBufferRef *avfilter_get_audio_buffer_ref_from_arrays_channels(uint8_t **data,
+                                                                      int linesize,
+                                                                      int perms,
+                                                                      int nb_samples,
+                                                                      enum AVSampleFormat sample_fmt,
+                                                                      int channels,
+                                                                      uint64_t channel_layout);
+int avfilter_process_command(AVFilterContext *filter, const char *cmd, const char *arg, char *res, int res_len, int flags);
+void avfilter_register_all(void);
+__attribute__((deprecated))
+void avfilter_uninit(void);
+int avfilter_register(AVFilter *filter);
+AVFilter *avfilter_get_by_name(const char *name);
+const AVFilter *avfilter_next(const AVFilter *prev);
+__attribute__((deprecated))
+AVFilter **av_filter_next(AVFilter **filter);
+__attribute__((deprecated))
+int avfilter_open(AVFilterContext **filter_ctx, AVFilter *filter, const char *inst_name);
+__attribute__((deprecated))
+int avfilter_init_filter(AVFilterContext *filter, const char *args, void *opaque);
+int avfilter_init_str(AVFilterContext *ctx, const char *args);
+int avfilter_init_dict(AVFilterContext *ctx, AVDictionary **options);
+void avfilter_free(AVFilterContext *filter);
+int avfilter_insert_filter(AVFilterLink *link, AVFilterContext *filt,
+                           unsigned filt_srcpad_idx, unsigned filt_dstpad_idx);
+__attribute__((deprecated))
+int avfilter_copy_frame_props(AVFilterBufferRef *dst, const AVFrame *src);
+__attribute__((deprecated))
+int avfilter_copy_buf_props(AVFrame *dst, const AVFilterBufferRef *src);
+const AVClass *avfilter_get_class(void);
+typedef struct AVFilterGraphInternal AVFilterGraphInternal;
+typedef int (avfilter_action_func)(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs);
+typedef int (avfilter_execute_func)(AVFilterContext *ctx, avfilter_action_func *func,
+                                    void *arg, int *ret, int nb_jobs);
+typedef struct AVFilterGraph {
+    const AVClass *av_class;
+    __attribute__((deprecated))
+    unsigned filter_count_unused;
+    AVFilterContext **filters;
+    char *scale_sws_opts;
+    char *resample_lavr_opts;
+    unsigned nb_filters;
+    int thread_type;
+    int nb_threads;
+    AVFilterGraphInternal *internal;
+    void *opaque;
+    avfilter_execute_func *execute;
+    char *aresample_swr_opts;
+    AVFilterLink **sink_links;
+    int sink_links_count;
+    unsigned disable_auto_convert;
+} AVFilterGraph;
+AVFilterGraph *avfilter_graph_alloc(void);
+AVFilterContext *avfilter_graph_alloc_filter(AVFilterGraph *graph,
+                                             const AVFilter *filter,
+                                             const char *name);
+AVFilterContext *avfilter_graph_get_filter(AVFilterGraph *graph, const char *name);
+__attribute__((deprecated))
+int avfilter_graph_add_filter(AVFilterGraph *graphctx, AVFilterContext *filter);
+int avfilter_graph_create_filter(AVFilterContext **filt_ctx, const AVFilter *filt,
+                                 const char *name, const char *args, void *opaque,
+                                 AVFilterGraph *graph_ctx);
+void avfilter_graph_set_auto_convert(AVFilterGraph *graph, unsigned flags);
+enum {
+    AVFILTER_AUTO_CONVERT_ALL = 0,
+    AVFILTER_AUTO_CONVERT_NONE = -1,
+};
+int avfilter_graph_config(AVFilterGraph *graphctx, void *log_ctx);
+void avfilter_graph_free(AVFilterGraph **graph);
+typedef struct AVFilterInOut {
+    char *name;
+    AVFilterContext *filter_ctx;
+    int pad_idx;
+    struct AVFilterInOut *next;
+} AVFilterInOut;
+AVFilterInOut *avfilter_inout_alloc(void);
+void avfilter_inout_free(AVFilterInOut **inout);
+__attribute__((deprecated))
+int avfilter_graph_parse(AVFilterGraph *graph, const char *filters,
+                         AVFilterInOut **inputs, AVFilterInOut **outputs,
+                         void *log_ctx);
+int avfilter_graph_parse_ptr(AVFilterGraph *graph, const char *filters,
+                             AVFilterInOut **inputs, AVFilterInOut **outputs,
+                             void *log_ctx);
+int avfilter_graph_parse2(AVFilterGraph *graph, const char *filters,
+                          AVFilterInOut **inputs,
+                          AVFilterInOut **outputs);
+int avfilter_graph_send_command(AVFilterGraph *graph, const char *target, const char *cmd, const char *arg, char *res, int res_len, int flags);
+int avfilter_graph_queue_command(AVFilterGraph *graph, const char *target, const char *cmd, const char *arg, int flags, double ts);
+char *avfilter_graph_dump(AVFilterGraph *graph, const char *options);
+int avfilter_graph_request_oldest(AVFilterGraph *graph);
+__attribute__((deprecated))
+int av_asrc_buffer_add_samples(AVFilterContext *abuffersrc,
+                               uint8_t *data[8], int linesize[8],
+                               int nb_samples, int sample_rate,
+                               int sample_fmt, int64_t ch_layout, int planar,
+                               int64_t pts, int __attribute__((unused)) flags);
+__attribute__((deprecated))
+int av_asrc_buffer_add_buffer(AVFilterContext *abuffersrc,
+                              uint8_t *buf, int buf_size,
+                              int sample_rate,
+                              int sample_fmt, int64_t ch_layout, int planar,
+                              int64_t pts, int __attribute__((unused)) flags);
+__attribute__((deprecated))
+int av_asrc_buffer_add_audio_buffer_ref(AVFilterContext *abuffersrc,
+                                        AVFilterBufferRef *samplesref,
+                                        int __attribute__((unused)) flags);
+__attribute__((deprecated))
+AVFilterBufferRef *avfilter_get_video_buffer_ref_from_frame(const AVFrame *frame, int perms);
+__attribute__((deprecated))
+AVFilterBufferRef *avfilter_get_audio_buffer_ref_from_frame(const AVFrame *frame,
+                                                            int perms);
+__attribute__((deprecated))
+AVFilterBufferRef *avfilter_get_buffer_ref_from_frame(enum AVMediaType type,
+                                                      const AVFrame *frame,
+                                                      int perms);
+__attribute__((deprecated))
+int avfilter_fill_frame_from_audio_buffer_ref(AVFrame *frame,
+                                              const AVFilterBufferRef *samplesref);
+__attribute__((deprecated))
+int avfilter_fill_frame_from_video_buffer_ref(AVFrame *frame,
+                                              const AVFilterBufferRef *picref);
+__attribute__((deprecated))
+int avfilter_fill_frame_from_buffer_ref(AVFrame *frame,
+                                        const AVFilterBufferRef *ref);
+__attribute__((deprecated))
+int av_buffersink_get_buffer_ref(AVFilterContext *buffer_sink,
+                                 AVFilterBufferRef **bufref, int flags);
+__attribute__((deprecated))
+int av_buffersink_poll_frame(AVFilterContext *ctx);
+__attribute__((deprecated))
+int av_buffersink_read(AVFilterContext *ctx, AVFilterBufferRef **buf);
+__attribute__((deprecated))
+int av_buffersink_read_samples(AVFilterContext *ctx, AVFilterBufferRef **buf,
+                               int nb_samples);
+int av_buffersink_get_frame_flags(AVFilterContext *ctx, AVFrame *frame, int flags);
+typedef struct {
+    const enum AVPixelFormat *pixel_fmts;
+} AVBufferSinkParams;
+AVBufferSinkParams *av_buffersink_params_alloc(void);
+typedef struct {
+    const enum AVSampleFormat *sample_fmts;
+    const int64_t *channel_layouts;
+    const int *channel_counts;
+    int all_channel_counts;
+    int *sample_rates;
+} AVABufferSinkParams;
+AVABufferSinkParams *av_abuffersink_params_alloc(void);
+void av_buffersink_set_frame_size(AVFilterContext *ctx, unsigned frame_size);
+AVRational av_buffersink_get_frame_rate(AVFilterContext *ctx);
+int av_buffersink_get_frame(AVFilterContext *ctx, AVFrame *frame);
+int av_buffersink_get_samples(AVFilterContext *ctx, AVFrame *frame, int nb_samples);
+enum {
+    AV_BUFFERSRC_FLAG_NO_CHECK_FORMAT = 1,
+    AV_BUFFERSRC_FLAG_NO_COPY = 2,
+    AV_BUFFERSRC_FLAG_PUSH = 4,
+    AV_BUFFERSRC_FLAG_KEEP_REF = 8,
+};
+int av_buffersrc_add_ref(AVFilterContext *buffer_src,
+                         AVFilterBufferRef *picref, int flags);
+unsigned av_buffersrc_get_nb_failed_requests(AVFilterContext *buffer_src);
+__attribute__((deprecated))
+int av_buffersrc_buffer(AVFilterContext *ctx, AVFilterBufferRef *buf);
+int av_buffersrc_write_frame(AVFilterContext *ctx, const AVFrame *frame);
+int av_buffersrc_add_frame(AVFilterContext *ctx, AVFrame *frame);
+int av_buffersrc_add_frame_flags(AVFilterContext *buffer_src,
+                                 AVFrame *frame, int flags);
+unsigned long av_adler32_update(unsigned long adler, const uint8_t *buf,
+                                unsigned int len) __attribute__((pure));
+extern const int av_aes_size;
+struct AVAES;
+struct AVAES *av_aes_alloc(void);
+int av_aes_init(struct AVAES *a, const uint8_t *key, int key_bits, int decrypt);
+void av_aes_crypt(struct AVAES *a, uint8_t *dst, const uint8_t *src, int count, uint8_t *iv, int decrypt);
+typedef struct AVFifoBuffer {
+    uint8_t *buffer;
+    uint8_t *rptr, *wptr, *end;
+    uint32_t rndx, wndx;
+} AVFifoBuffer;
+AVFifoBuffer *av_fifo_alloc(unsigned int size);
+void av_fifo_free(AVFifoBuffer *f);
+void av_fifo_reset(AVFifoBuffer *f);
+int av_fifo_size(AVFifoBuffer *f);
+int av_fifo_space(AVFifoBuffer *f);
+int av_fifo_generic_read(AVFifoBuffer *f, void *dest, int buf_size, void (*func)(void*, void*, int));
+int av_fifo_generic_write(AVFifoBuffer *f, void *src, int size, int (*func)(void*, void*, int));
+int av_fifo_realloc2(AVFifoBuffer *f, unsigned int size);
+int av_fifo_grow(AVFifoBuffer *f, unsigned int additional_space);
+void av_fifo_drain(AVFifoBuffer *f, int size);
+
+typedef struct AVAudioFifo AVAudioFifo;
+void av_audio_fifo_free(AVAudioFifo *af);
+AVAudioFifo *av_audio_fifo_alloc(enum AVSampleFormat sample_fmt, int channels,
+                                 int nb_samples);
+int av_audio_fifo_realloc(AVAudioFifo *af, int nb_samples);
+int av_audio_fifo_write(AVAudioFifo *af, void **data, int nb_samples);
+int av_audio_fifo_read(AVAudioFifo *af, void **data, int nb_samples);
+int av_audio_fifo_drain(AVAudioFifo *af, int nb_samples);
+void av_audio_fifo_reset(AVAudioFifo *af);
+int av_audio_fifo_size(AVAudioFifo *af);
+int av_audio_fifo_space(AVAudioFifo *af);
+int av_strstart(const char *str, const char *pfx, const char **ptr);
+int av_stristart(const char *str, const char *pfx, const char **ptr);
+char *av_stristr(const char *haystack, const char *needle);
+char *av_strnstr(const char *haystack, const char *needle, size_t hay_length);
+size_t av_strlcpy(char *dst, const char *src, size_t size);
+size_t av_strlcat(char *dst, const char *src, size_t size);
+size_t av_strlcatf(char *dst, size_t size, const char *fmt, ...) __attribute__((__format__(__printf__, 3, 4)));
+
+char *av_asprintf(const char *fmt, ...) __attribute__((__format__(__printf__, 1, 2)));
+char *av_d2str(double d);
+char *av_get_token(const char **buf, const char *term);
+char *av_strtok(char *s, const char *delim, char **saveptr);
+int av_isdigit(int c);
+int av_isgraph(int c);
+int av_isspace(int c);
+
+int av_isxdigit(int c);
+int av_strcasecmp(const char *a, const char *b);
+int av_strncasecmp(const char *a, const char *b, size_t n);
+const char *av_basename(const char *path);
+const char *av_dirname(char *path);
+enum AVEscapeMode {
+    AV_ESCAPE_MODE_AUTO,
+    AV_ESCAPE_MODE_BACKSLASH,
+    AV_ESCAPE_MODE_QUOTE,
+};
+int av_escape(char **dst, const char *src, const char *special_chars,
+              enum AVEscapeMode mode, int flags);
+int av_utf8_decode(int32_t *codep, const uint8_t **bufp, const uint8_t *buf_end,
+                   unsigned int flags);
+int av_base64_decode(uint8_t *out, const char *in, int out_size);
+char *av_base64_encode(char *out, int out_size, const uint8_t *in, int in_size);
+typedef struct AVBlowfish {
+    uint32_t p[16 + 2];
+    uint32_t s[4][256];
+} AVBlowfish;
+void av_blowfish_init(struct AVBlowfish *ctx, const uint8_t *key, int key_len);
+void av_blowfish_crypt_ecb(struct AVBlowfish *ctx, uint32_t *xl, uint32_t *xr,
+                           int decrypt);
+void av_blowfish_crypt(struct AVBlowfish *ctx, uint8_t *dst, const uint8_t *src,
+                       int count, uint8_t *iv, int decrypt);
+typedef struct AVBPrint {
+    char *str; unsigned len; unsigned size; unsigned size_max; char reserved_internal_buffer[1]; char reserved_padding[1024 - sizeof(struct { char *str; unsigned len; unsigned size; unsigned size_max; char reserved_internal_buffer[1]; })];
+} AVBPrint;
+void av_bprint_init(AVBPrint *buf, unsigned size_init, unsigned size_max);
+void av_bprint_init_for_buffer(AVBPrint *buf, char *buffer, unsigned size);
+void av_bprintf(AVBPrint *buf, const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
+void av_vbprintf(AVBPrint *buf, const char *fmt, va_list vl_arg);
+void av_bprint_chars(AVBPrint *buf, char c, unsigned n);
+void av_bprint_append_data(AVBPrint *buf, const char *data, unsigned size);
+struct tm;
+void av_bprint_strftime(AVBPrint *buf, const char *fmt, const struct tm *tm);
+void av_bprint_get_buffer(AVBPrint *buf, unsigned size,
+                          unsigned char **mem, unsigned *actual_size);
+void av_bprint_clear(AVBPrint *buf);
+
+int av_bprint_finalize(AVBPrint *buf, char **ret_str);
+void av_bprint_escape(AVBPrint *dstbuf, const char *src, const char *special_chars,
+                      enum AVEscapeMode mode, int flags);
+
+typedef uint32_t AVCRC;
+typedef enum {
+    AV_CRC_8_ATM,
+    AV_CRC_16_ANSI,
+    AV_CRC_16_CCITT,
+    AV_CRC_32_IEEE,
+    AV_CRC_32_IEEE_LE,
+    AV_CRC_16_ANSI_LE,
+    AV_CRC_24_IEEE = 12,
+    AV_CRC_MAX,
+}AVCRCId;
+int av_crc_init(AVCRC *ctx, int le, int bits, uint32_t poly, int ctx_size);
+const AVCRC *av_crc_get_table(AVCRCId crc_id);
+uint32_t av_crc(const AVCRC *ctx, uint32_t crc,
+                const uint8_t *buffer, size_t length) __attribute__((pure));
+enum AVDownmixType {
+    AV_DOWNMIX_TYPE_UNKNOWN,
+    AV_DOWNMIX_TYPE_LORO,
+    AV_DOWNMIX_TYPE_LTRT,
+    AV_DOWNMIX_TYPE_DPLII,
+    AV_DOWNMIX_TYPE_NB
+};
+typedef struct AVDownmixInfo {
+    enum AVDownmixType preferred_downmix_type;
+    double center_mix_level;
+    double center_mix_level_ltrt;
+    double surround_mix_level;
+    double surround_mix_level_ltrt;
+    double lfe_mix_level;
+} AVDownmixInfo;
+AVDownmixInfo *av_downmix_info_update_side_data(AVFrame *frame);
+typedef struct AVExpr AVExpr;
+int av_expr_parse_and_eval(double *res, const char *s,
+                           const char * const *const_names, const double *const_values,
+                           const char * const *func1_names, double (* const *funcs1)(void *, double),
+                           const char * const *func2_names, double (* const *funcs2)(void *, double, double),
+                           void *opaque, int log_offset, void *log_ctx);
+int av_expr_parse(AVExpr **expr, const char *s,
+                  const char * const *const_names,
+                  const char * const *func1_names, double (* const *funcs1)(void *, double),
+                  const char * const *func2_names, double (* const *funcs2)(void *, double, double),
+                  int log_offset, void *log_ctx);
+double av_expr_eval(AVExpr *e, const double *const_values, void *opaque);
+void av_expr_free(AVExpr *e);
+double av_strtod(const char *numstr, char **tail);
+int av_file_map(const char *filename, uint8_t **bufptr, size_t *size,
+                int log_offset, void *log_ctx);
+void av_file_unmap(uint8_t *bufptr, size_t size);
+int av_tempfile(const char *prefix, char **filename, int log_offset, void *log_ctx);
+enum AVHMACType {
+    AV_HMAC_MD5,
+    AV_HMAC_SHA1,
+    AV_HMAC_SHA224 = 10,
+    AV_HMAC_SHA256,
+    AV_HMAC_SHA384,
+    AV_HMAC_SHA512,
+};
+typedef struct AVHMAC AVHMAC;
+AVHMAC *av_hmac_alloc(enum AVHMACType type);
+void av_hmac_free(AVHMAC *ctx);
+void av_hmac_init(AVHMAC *ctx, const uint8_t *key, unsigned int keylen);
+void av_hmac_update(AVHMAC *ctx, const uint8_t *data, unsigned int len);
+int av_hmac_final(AVHMAC *ctx, uint8_t *out, unsigned int outlen);
+int av_hmac_calc(AVHMAC *ctx, const uint8_t *data, unsigned int len,
+                 const uint8_t *key, unsigned int keylen,
+                 uint8_t *out, unsigned int outlen);
+typedef struct AVComponentDescriptor{
+    uint16_t plane :2;
+    uint16_t step_minus1 :3;
+    uint16_t offset_plus1 :3;
+    uint16_t shift :3;
+    uint16_t depth_minus1 :4;
+}AVComponentDescriptor;
+typedef struct AVPixFmtDescriptor{
+    const char *name;
+    uint8_t nb_components;
+    uint8_t log2_chroma_w;
+    uint8_t log2_chroma_h;
+    uint8_t flags;
+    AVComponentDescriptor comp[4];
+}AVPixFmtDescriptor;
+extern __attribute__((deprecated)) const AVPixFmtDescriptor av_pix_fmt_descriptors[];
+void av_read_image_line(uint16_t *dst, const uint8_t *data[4], const int linesize[4],
+                        const AVPixFmtDescriptor *desc, int x, int y, int c, int w, int read_pal_component);
+void av_write_image_line(const uint16_t *src, uint8_t *data[4], const int linesize[4],
+                         const AVPixFmtDescriptor *desc, int x, int y, int c, int w);
+enum AVPixelFormat av_get_pix_fmt(const char *name);
+const char *av_get_pix_fmt_name(enum AVPixelFormat pix_fmt);
+char *av_get_pix_fmt_string (char *buf, int buf_size, enum AVPixelFormat pix_fmt);
+int av_get_bits_per_pixel(const AVPixFmtDescriptor *pixdesc);
+int av_get_padded_bits_per_pixel(const AVPixFmtDescriptor *pixdesc);
+const AVPixFmtDescriptor *av_pix_fmt_desc_get(enum AVPixelFormat pix_fmt);
+const AVPixFmtDescriptor *av_pix_fmt_desc_next(const AVPixFmtDescriptor *prev);
+enum AVPixelFormat av_pix_fmt_desc_get_id(const AVPixFmtDescriptor *desc);
+int av_pix_fmt_get_chroma_sub_sample(enum AVPixelFormat pix_fmt,
+                                     int *h_shift, int *v_shift);
+int av_pix_fmt_count_planes(enum AVPixelFormat pix_fmt);
+void ff_check_pixfmt_descriptors(void);
+enum AVPixelFormat av_pix_fmt_swap_endianness(enum AVPixelFormat pix_fmt);
+void av_image_fill_max_pixsteps(int max_pixsteps[4], int max_pixstep_comps[4],
+                                const AVPixFmtDescriptor *pixdesc);
+int av_image_get_linesize(enum AVPixelFormat pix_fmt, int width, int plane);
+int av_image_fill_linesizes(int linesizes[4], enum AVPixelFormat pix_fmt, int width);
+int av_image_fill_pointers(uint8_t *data[4], enum AVPixelFormat pix_fmt, int height,
+                           uint8_t *ptr, const int linesizes[4]);
+int av_image_alloc(uint8_t *pointers[4], int linesizes[4],
+                   int w, int h, enum AVPixelFormat pix_fmt, int align);
+void av_image_copy_plane(uint8_t *dst, int dst_linesize,
+                         const uint8_t *src, int src_linesize,
+                         int bytewidth, int height);
+void av_image_copy(uint8_t *dst_data[4], int dst_linesizes[4],
+                   const uint8_t *src_data[4], const int src_linesizes[4],
+                   enum AVPixelFormat pix_fmt, int width, int height);
+int av_image_fill_arrays(uint8_t *dst_data[4], int dst_linesize[4],
+                         const uint8_t *src,
+                         enum AVPixelFormat pix_fmt, int width, int height, int align);
+int av_image_get_buffer_size(enum AVPixelFormat pix_fmt, int width, int height, int align);
+int av_image_copy_to_buffer(uint8_t *dst, int dst_size,
+                            const uint8_t * const src_data[4], const int src_linesize[4],
+                            enum AVPixelFormat pix_fmt, int width, int height, int align);
+int av_image_check_size(unsigned int w, unsigned int h, int log_offset, void *log_ctx);
+int avpriv_set_systematic_pal2(uint32_t pal[256], enum AVPixelFormat pix_fmt);
+typedef struct AVExtFloat {
+    uint8_t exponent[2];
+    uint8_t mantissa[8];
+} AVExtFloat;
+__attribute__((deprecated)) double av_int2dbl(int64_t v) __attribute__((const));
+__attribute__((deprecated)) float av_int2flt(int32_t v) __attribute__((const));
+__attribute__((deprecated)) double av_ext2dbl(const AVExtFloat ext) __attribute__((const));
+__attribute__((deprecated)) int64_t av_dbl2int(double d) __attribute__((const));
+__attribute__((deprecated)) int32_t av_flt2int(float d) __attribute__((const));
+__attribute__((deprecated)) AVExtFloat av_dbl2ext(double d) __attribute__((const));
+typedef union {
+    uint64_t u64;
+    uint32_t u32[2];
+    uint16_t u16[4];
+    uint8_t u8 [8];
+    double f64;
+    float f32[2];
+} __attribute__((may_alias)) av_alias64;
+typedef union {
+    uint32_t u32;
+    uint16_t u16[2];
+    uint8_t u8 [4];
+    float f32;
+} __attribute__((may_alias)) av_alias32;
+typedef union {
+    uint16_t u16;
+    uint8_t u8 [2];
+} __attribute__((may_alias)) av_alias16;
+union unaligned_64 { uint64_t l; } __attribute__((packed)) __attribute__((may_alias));
+union unaligned_32 { uint32_t l; } __attribute__((packed)) __attribute__((may_alias));
+union unaligned_16 { uint16_t l; } __attribute__((packed)) __attribute__((may_alias));
+typedef struct AVLFG {
+    unsigned int state[64];
+    int index;
+} AVLFG;
+void av_lfg_init(AVLFG *c, unsigned int seed);
+
+void av_bmg_get(AVLFG *lfg, double out[2]);
+int av_lzo1x_decode(void *out, int *outlen, const void *in, int *inlen);
+extern const int av_md5_size;
+struct AVMD5;
+struct AVMD5 *av_md5_alloc(void);
+void av_md5_init(struct AVMD5 *ctx);
+void av_md5_update(struct AVMD5 *ctx, const uint8_t *src, int len);
+void av_md5_final(struct AVMD5 *ctx, uint8_t *dst);
+void av_md5_sum(uint8_t *dst, const uint8_t *src, const int len);
+struct AVMurMur3 *av_murmur3_alloc(void);
+void av_murmur3_init_seeded(struct AVMurMur3 *c, uint64_t seed);
+void av_murmur3_init(struct AVMurMur3 *c);
+void av_murmur3_update(struct AVMurMur3 *c, const uint8_t *src, int len);
+void av_murmur3_final(struct AVMurMur3 *c, uint8_t dst[16]);
+int av_parse_ratio(AVRational *q, const char *str, int max,
+                   int log_offset, void *log_ctx);
+int av_parse_video_size(int *width_ptr, int *height_ptr, const char *str);
+int av_parse_video_rate(AVRational *rate, const char *str);
+int av_parse_color(uint8_t *rgba_color, const char *color_string, int slen,
+                   void *log_ctx);
+const char *av_get_known_color_name(int color_idx, const uint8_t **rgb);
+int av_parse_time(int64_t *timeval, const char *timestr, int duration);
+char *av_small_strptime(const char *p, const char *fmt, struct tm *dt);
+int av_find_info_tag(char *arg, int arg_size, const char *tag1, const char *info);
+void *av_timegm(struct tm *tm);
+uint32_t av_get_random_seed(void);
+typedef struct AVReplayGain {
+    int32_t track_gain;
+    uint32_t track_peak;
+    int32_t album_gain;
+    uint32_t album_peak;
+} AVReplayGain;
+extern const int av_ripemd_size;
+struct AVRIPEMD;
+struct AVRIPEMD *av_ripemd_alloc(void);
+int av_ripemd_init(struct AVRIPEMD* context, int bits);
+void av_ripemd_update(struct AVRIPEMD* context, const uint8_t* data, unsigned int len);
+void av_ripemd_final(struct AVRIPEMD* context, uint8_t *digest);
+extern const int av_sha_size;
+struct AVSHA;
+struct AVSHA *av_sha_alloc(void);
+int av_sha_init(struct AVSHA* context, int bits);
+void av_sha_update(struct AVSHA* context, const uint8_t* data, unsigned int len);
+void av_sha_final(struct AVSHA* context, uint8_t *digest);
+extern const int av_sha512_size;
+struct AVSHA512;
+struct AVSHA512 *av_sha512_alloc(void);
+int av_sha512_init(struct AVSHA512* context, int bits);
+void av_sha512_update(struct AVSHA512* context, const uint8_t* data, unsigned int len);
+void av_sha512_final(struct AVSHA512* context, uint8_t *digest);
+enum AVStereo3DType {
+    AV_STEREO3D_2D,
+    AV_STEREO3D_SIDEBYSIDE,
+    AV_STEREO3D_TOPBOTTOM,
+    AV_STEREO3D_FRAMESEQUENCE,
+    AV_STEREO3D_CHECKERBOARD,
+    AV_STEREO3D_SIDEBYSIDE_QUINCUNX,
+    AV_STEREO3D_LINES,
+    AV_STEREO3D_COLUMNS,
+};
+typedef struct AVStereo3D {
+    enum AVStereo3DType type;
+    int flags;
+} AVStereo3D;
+AVStereo3D *av_stereo3d_alloc(void);
+AVStereo3D *av_stereo3d_create_side_data(AVFrame *frame);
+int64_t av_gettime(void);
+int av_usleep(unsigned usec);
+enum AVTimecodeFlag {
+    AV_TIMECODE_FLAG_DROPFRAME = 1<<0,
+    AV_TIMECODE_FLAG_24HOURSMAX = 1<<1,
+    AV_TIMECODE_FLAG_ALLOWNEGATIVE = 1<<2,
+};
+typedef struct {
+    int start;
+    uint32_t flags;
+    AVRational rate;
+    unsigned fps;
+} AVTimecode;
+int av_timecode_adjust_ntsc_framenum2(int framenum, int fps);
+uint32_t av_timecode_get_smpte_from_framenum(const AVTimecode *tc, int framenum);
+char *av_timecode_make_string(const AVTimecode *tc, char *buf, int framenum);
+char *av_timecode_make_smpte_tc_string(char *buf, uint32_t tcsmpte, int prevent_df);
+char *av_timecode_make_mpeg_tc_string(char *buf, uint32_t tc25bit);
+int av_timecode_init(AVTimecode *tc, AVRational rate, int flags, int frame_start, void *log_ctx);
+int av_timecode_init_from_string(AVTimecode *tc, AVRational rate, const char *str, void *log_ctx);
+int av_timecode_check_frame_rate(AVRational rate);
+
+typedef struct AVXTEA {
+    uint32_t key[16];
+} AVXTEA;
+void av_xtea_init(struct AVXTEA *ctx, const uint8_t key[16]);
+void av_xtea_crypt(struct AVXTEA *ctx, uint8_t *dst, const uint8_t *src,
+                   int count, uint8_t *iv, int decrypt);
+unsigned postproc_version(void);
+const char *postproc_configuration(void);
+const char *postproc_license(void);
+typedef void pp_context;
+typedef void pp_mode;
+extern const char pp_help[];
+void pp_postprocess(const uint8_t * src[3], const int srcStride[3],
+                     uint8_t * dst[3], const int dstStride[3],
+                     int horizontalSize, int verticalSize,
+                     const int8_t *QP_store, int QP_stride,
+                     pp_mode *mode, pp_context *ppContext, int pict_type);
+pp_mode *pp_get_mode_by_name_and_quality(const char *name, int quality);
+void pp_free_mode(pp_mode *mode);
+pp_context *pp_get_context(int width, int height, int flags);
+void pp_free_context(pp_context *ppContext);
 unsigned swscale_version(void);
 const char *swscale_configuration(void);
 const char *swscale_license(void);
