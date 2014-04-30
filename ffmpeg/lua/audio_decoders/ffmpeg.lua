@@ -1,4 +1,4 @@
-local ffmpeg = include("libraries/low_level/ffi_binds/ffmpeg/init.lua")
+ffmpeg = include("libraries/low_level/ffi_binds/ffmpeg/init.lua")
 
 local INBUF_SIZE = 4096
 local AUDIO_INBUF_SIZE = 20480
@@ -17,11 +17,28 @@ local out_sample_rate = 44100
 local audio_chunk
 
 local dbg = function() end
-   
+
+ffi.cdef[[int sprintf(char *str, const char *format, ...);]]
+
+ffmpeg.av_log_set_callback(function(huh, level, fmt, va_list)
+	if not ffmpeg.debug then return end
+	local buffer = ffi.new("char[256]")
+	ffi.C.sprintf(buffer, fmt, va_list)
+	log("[ffmpeg] ", ffi.string(buffer))
+end)
+
 ffmpeg.av_register_all() 
 ffmpeg.avcodec_register_all() 
 
+
 audio.AddDecoder("ffmpeg", function(data, length, path_hint)
+
+	if ffmpeg.debug then 
+		ffmpeg.av_log_set_level(10) 
+	else
+		ffmpeg.av_log_set_level(0)   
+	end
+	
 	local buffer_out = {}
 		
 	-- make a dummy file
