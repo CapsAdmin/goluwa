@@ -73,7 +73,7 @@ function vl.LoadImage(data, format)
 
 	vl.ImageConvert(vl.ImageGetData(0, 0, 0, 0), buffer, w, h, vl.ImageGetFormat(), format)
 
-	return w, h, buffer
+	return buffer, w, h
 end
 
 vl.Initialize() 
