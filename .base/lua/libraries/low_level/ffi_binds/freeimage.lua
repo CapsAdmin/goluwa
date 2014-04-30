@@ -156,7 +156,7 @@ function freeimage.LoadImage(data, flags)
 		
 	ffi.gc(bitmap, lib.FreeImage_Unload)
 	
-	return width, height, data
+	return data, width, height
 end
 
 function freeimage.GetColorFromBuffer(buffer, x, y, w, h)	
