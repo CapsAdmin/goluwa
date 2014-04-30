@@ -497,13 +497,16 @@ function META:TransformVector(v)
 	);
 end
 
+local t = ffi.typeof("float[16]")
+local new = ffi.new
+
 function Matrix44(m)
 	local self = setmetatable({}, META)
 	
 	if m then
 		self.m = m
 	else
-		self.m = ffi.new("float[16]")
+		self.m = new(t)
 		self:Identity()
 	end
 	
