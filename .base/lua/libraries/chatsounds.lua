@@ -1365,7 +1365,7 @@ function chatsounds.Update()
 end
 
 function chatsounds.Say(ply, str, seed)
-	if type(ply) == "str" then
+	if type(ply) == "string" then
 		seed = str
 		str = ply
 		ply = nil
