@@ -357,7 +357,7 @@ do -- source
 			
 		elseif type(var) == "string" then
 			vfs.ReadAsync(var, function(data)
-				local data, length, info = audio.Decode(data)
+				local data, length, info = audio.Decode(data, nil, var)
 				
 				if data then
 					local buffer = audio.CreateBuffer()
@@ -706,8 +706,23 @@ do -- microphone
 
 end
 
-function audio.Decode(data, length)
+audio.decoders = {}
 
+function audio.AddDecoder(id, callback)
+	audio.RemoveDecoder(id)
+	table.insert(audio.decoders, {id = id, callback = callback})
+end
+
+function audio.RemoveDecoder(id)
+	for k,v in pairs(audio.decoders) do
+		if v.id == id then
+			table.remove(audio.decoders)
+			return true
+		end
+	end
+end
+
+audio.AddDecoder("libsoundfile", function(data, length, path_hint)
 	if type(length) == "number" and type(data) == "cdata" then
 		data = ffi.string(data, length)
 	end
@@ -766,8 +781,27 @@ function audio.Decode(data, length)
 	soundfile.Close(file)
 
 	os.remove(name)
-
+	
 	return buffer, info.buffer_length, info
+end)
+
+function audio.Decode(data, length, path_hint)
+	for i, decoder in ipairs(audio.decoders) do
+		local ok, buffer, length, info = pcall(decoder.callback, data, length, path_hint)
+		if ok then 
+			if buffer and length then
+				return buffer, length, info or {}
+			else
+				logf("[audio] %s failed to decode %s: %s", decoder.id, path_hint or "", length)
+			end
+		else
+			logf("[audio] decoder %q errored: %s", decoder.id, buffer)
+		end
+	end
+end
+
+for path in vfs.Iterate("lua/audio_decoders/", nil, true) do
+	include(path)
 end
 
 audio.Open()
