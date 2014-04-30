@@ -88,7 +88,7 @@ do -- texture object
 	function META:CreateBuffer()
 		-- +1 to height cause there seems to always be some noise on the last line :s
 		local length = self.size.w * (self.size.h+1) * self.format.stride
-		local buffer = ffi.new(self.format.buffer_type.."[?]", length)
+		local buffer = ffi.malloc(self.format.buffer_type.. "*", length)--ffi.new(self.format.buffer_type.."[?]", length)
 		
 		return buffer, length
 	end
@@ -206,7 +206,7 @@ do -- texture object
 		local buffer
 		
 		if write_only then
-			buffer = ffi.new(self.format.buffer_type.."[?]", width*height*stride)
+			buffer = self:CreateBuffer()
 		else
 			buffer = self:Download()
 		end	
@@ -427,7 +427,6 @@ do -- texture object
 	end
 end
 
-
 render.texture_path_cache = render.texture_path_cache or setmetatable({}, { __mode = 'v' })
 
 function render.CreateTextureFromPath(path, format)
@@ -445,30 +444,66 @@ function render.CreateTextureFromPath(path, format)
 	vfs.ReadAsync(path, function(data)
 		tex.loading = false
 		
-		if not data then
-			logf("failed to download %q", path)
-			logf("data is nil!")
-			return
+		local buffer, w, h, info = render.DecodeTexture(data, length, path_hint)
+		
+		if not buffer then
+			local err = render.GetErrorTexture()
+			buffer = err:Download()
+			w = err.w
+			h = err.h
 		end
 		
-		local w, h, buffer = freeimage.LoadImage(data)
-		
-		if w == 0 or h == 0 then
-			w, h, buffer = vl.LoadImage(data)
-		end
-			
-		if w == 0 or h == 0 then
-			logf("could not decode %q properly (w = %i, h = %i)", 2, path, w, h)
-			logf("data is %s", utilities.FormatFileSize(#data))
-			return
-		end
-		
-		tex:Replace(buffer, w, h) 
+		tex:Replace(buffer, w, h)
+		tex.decode_info = info
 		
 		render.texture_path_cache[path] = tex		
 	end)
 	
 	return tex
+end
+
+
+render.texture_decoders = {}
+
+function render.AddTextureDecoder(id, callback)
+	render.RemoveTextureDecoder(id)
+	table.insert(render.texture_decoders, {id = id, callback = callback})
+end
+
+function render.RemoveTextureDecoder(id)
+	for k,v in pairs(render.texture_decoders) do
+		if v.id == id then
+			table.remove(render.texture_decoders)
+			return true
+		end
+	end
+end
+
+render.AddTextureDecoder("freeimage", function(data, path_hint)
+	return freeimage.LoadImage(data)
+end)
+
+render.AddTextureDecoder("vtflib", function(data, path_hint)
+	return vl.LoadImage(data)
+end)
+
+function render.DecodeTexture(data, path_hint)
+	for i, decoder in ipairs(render.texture_decoders) do
+		local ok, buffer, w, h, info = pcall(decoder.callback, data, path_hint)
+		if ok then 
+			if buffer and w then
+				return buffer, w, h, info or {}
+			else
+				logf("[render] %s failed to decode %s: %s", decoder.id, path_hint or "", w)
+			end
+		else
+			logf("[render] decoder %q errored: %s", decoder.id, buffer)
+		end
+	end
+end
+
+for path in vfs.Iterate("lua/texture_decoders/", nil, true) do
+	include(path)
 end
 
 Texture = render.CreateTexture -- reload!
