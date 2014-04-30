@@ -125,23 +125,28 @@ if CLIENT then
 					panel:SetPos(Vec2(50, Vec2(render.GetScreenSize()).h - 100))
 					panel:SetSize(Vec2(512, 16))
 					panel:MakeActivePanel()
-					panel:SetMultiline(false)
+					panel:SetMultiline(true)
 					
-					panel.OnUnhandledKey = function(_, key)
+					panel.OnUnhandledKey = function(self, key)									
+						local str = self:GetText():trim()
 						
-						local browse = false
+						local ctrl = input.IsKeyDown("left_control") or input.IsKeyDown("right_control")
 						
-						if key == "up" then
-							i = math.clamp(i + 1, 1, #history)
-							browse = true
-						elseif key == "down" then
-							i = math.clamp(i - 1, 1, #history)
-							browse = true
-						end
-						
-						if browse and history[i] then
-							panel:SetText(history[i])
-							panel:SetCaretPos(Vec2(#history[i], 0))
+						if ctrl or str == "" then
+							local browse = false
+							
+							if key == "up" then
+								i = math.clamp(i + 1, 1, #history)
+								browse = true
+							elseif key == "down" then
+								i = math.clamp(i - 1, 1, #history)
+								browse = true
+							end
+							
+							if browse and history[i] then
+								panel:SetText(history[i])
+								panel:SetCaretPos(Vec2(#history[i], 0))
+							end
 						end
 
 						if key == "escape" then
@@ -149,12 +154,29 @@ if CLIENT then
 						end
 						
 						if key == "tab" then
-							local str = event.Call("OnChatTab", panel:GetText())
+							local str = event.Call("OnChatTab", str)
 								
 							if str then 
 								panel:SetText(str)
 							end
 						end
+						
+						if key == "enter" and not ctrl then
+							i = 0
+							if #str > 0 then
+								chat.Say(str)
+								if history[1] ~= str then
+									table.insert(history, 1, str)
+								end
+							end
+							
+							window.ShowCursor(false)
+							visible = false
+							
+							panel:Remove()
+							
+							event.Call("OnChatTextChanged", "")
+						end	
 					end
 					
 					local suppress = true -- stupid
@@ -167,25 +189,11 @@ if CLIENT then
 							suppress = true -- stupid
 						end
 						event.Call("OnChatTextChanged", str)
+						
+						self:SetPos(Vec2(50, Vec2(render.GetScreenSize()).h - 100))
+						self:SizeToContents()
 					end
 					
-					panel.OnEnter = function(_, str)
-						i = 0
-						if #str > 0 then
-							chat.Say(str)
-							if history[1] ~= str then
-								table.insert(history, 1, str)
-							end
-						end
-						
-						window.ShowCursor(false)
-						visible = false
-						
-						panel:Remove()
-						
-						event.Call("OnChatTextChanged", "")
-					end
-				
 				window.ShowCursor(true)
 				visible = true
 			end
