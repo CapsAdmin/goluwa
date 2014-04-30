@@ -189,6 +189,16 @@ do -- helpers/usage
 				if header_data then
 					header = luasocket.HeaderToTable(header_data)
 					
+					if header.location then
+						if header.location:sub(0, 5) == "https" then header.location = "http" .. header.location:sub(6) end
+						
+						if header.location ~= "" then
+							request(header.location, callback, method, timeout, post_data, user_agent, binary)
+							self:Remove()
+							return
+						end
+					end
+					
 					if content_data then
 						table.insert(content, content_data)
 						length = length + #content_data
@@ -208,6 +218,7 @@ do -- helpers/usage
 			end
 			
 		end
+
 		
 		function socket:OnClose()			
 			local content = table.concat(content, "")
@@ -256,7 +267,7 @@ do -- helpers/usage
 				luasocket.Get(url, function(data) callback(data.content) end, nil, nil, true)
 				return true
 			else
-				return {Download = function(_, callback) luasocket.Get(url, function(data) callback(data.content) end, nil, nil, true) end}
+				return {Download = function(_, callback) luasocket.Get(url, function(data) callback(data.content, data.header) end, nil, nil, true) end}
 			end
 		end
 		
