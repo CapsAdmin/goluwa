@@ -37,7 +37,7 @@ do -- editors
 					end
 					
 					if with_args and v.args then 
-						path = path .. " "
+						path = path .. " " .. v.args
 					end
 					
 					return path
