@@ -815,6 +815,26 @@ do -- async reading
 end
 
 do -- file monitoring
+	local included = {}
+	
+	local function store(path)
+		local path = vfs.FixPath(path:lower())
+		included[path] = lfs.attributes(path)
+	end
+	
+	function loadfile(path, ...)		
+		store(path)
+		return _OLD_G.loadfile(path, ...)
+	end
+	
+	function dofile(path, ...)
+		store(path)		
+		return _OLD_G.dofile(path, ...)
+	end
+		
+	function vfs.GetLoadedLuaFiles()
+		return included
+	end
 
 	function vfs.MonitorFile(file_path, callback)
 		check(file_path, "string")
@@ -860,37 +880,17 @@ do -- file monitoring
 			return
 		end
 
-		local lua_files = {}
-
-		local function scan(dir)
-			-- fix me!! 
-			-- on linux, an invalid path will error
-			pcall(function()
-			for path in lfs.dir(dir) do
-				if path ~= "." and path ~= ".." and path ~= ".userdata" then
-					if utilities.GetExtensionFromPath(path) ~= "lua" then	
-						scan(dir .. path .. "/")
-					else
-						table.insert(lua_files, {path = dir .. path})
-					end
-				end
-			end
-			end)
-		end
-
-		scan(e.ROOT_FOLDER)
-
-		timer.Create("vfs_monitor_everything", 0.5, 0, function()
-			for _, data in pairs(lua_files) do
-				local info = lfs.attributes(data.path)
+		timer.Create("vfs_monitor_everything", 0.1, 0, function()
+			for path, data in pairs(vfs.GetLoadedLuaFiles()) do
+				local info = lfs.attributes(path)
 				
 				if info then
 					if not data.modification then
 						data.modification = info.modification
 					else 
 						if data.modification ~= info.modification then
-							logn("reloading ", utilities.GetFileNameFromPath(data.path))
-							include(data.path) 
+							logn("reloading ", utilities.GetFileNameFromPath(path))
+							include(path) 
 							data.modification = info.modification
 						end
 					end			
