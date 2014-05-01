@@ -1,5 +1,24 @@
 local utilities = _G.utilities or {}
 
+do -- profiling
+	local stack = {}
+
+	function utilities.PushTimeMeasure(str)
+		table.insert(stack, {str = str, time = timer.GetTime()})
+	end
+	
+	function utilities.PopTimeMeasure(no_print)
+		local time = timer.GetTime()
+		local data = table.remove(stack)
+		local delta = time - data.time
+		
+		if not no_print then
+			logf("%s: %s", data.str, math.round(delta, 3))
+		end
+		
+		return delta
+	end
+end
 
 do -- find value
 	local found =  {}

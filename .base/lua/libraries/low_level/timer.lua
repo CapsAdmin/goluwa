@@ -6,26 +6,6 @@ timer.clock = timer.clock or os.clock
 timer.GetTime = timer.clock
 timer.total_time = 0
 
-do -- profiling
-	local time
-
-	function timer.Measure(str)
-		if time then
-			local delta = timer.GetTime() - time
-			
-			time = nil
-			
-			if str then	
-				logf("%s: %s", str, math.round(delta, 3))
-			end
-			
-			return delta
-		else
-			time = timer.GetTime()
-		end
-	end
-end
-
 function timer.GetFrameTime()
 	return timer.frame_time or 0.1
 end
@@ -171,6 +151,7 @@ function timer.Update(...)
 					local ok, res = xpcall(data.callback, system.OnError)
 					if not ok or res ~= nil then
 						timer.Timers[key] = nil
+						break
 					end	
 				end
 			else
