@@ -125,6 +125,21 @@ end
 function steam.VDFToTable(str)
 	str = str:gsub("//.-\n", "")
 	
+	str = str:gsub("(%b\"\"%s-)%[$(%S-)%](%s-%b{})", function(start, def, stop) 
+		if def ~= "WIN32" then
+			return ""
+		end
+		
+		return start .. stop
+	end) 
+	
+	str = str:gsub("(%b\"\"%s-)(%b\"\"%s-)%[$(%S-)%]", function(start, stop, def) 
+		if def ~= "WIN32" then
+			return ""
+		end		
+		return start .. stop
+	end) 
+	
 	local tbl = {}
 	
 	for uchar in str:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
@@ -270,8 +285,8 @@ end
 
 function steam.GetGamePath(game)
 	for _, dir in pairs(steam.GetLibraryFolders()) do
-		local path = dir .. "Common/" .. game .. "/"
-		if vfs.Exists(path .. "nul") then
+		local path = dir .. "common/" .. game .. "/"
+		if vfs.IsDir(path) then
 			return path
 		end
 	end
