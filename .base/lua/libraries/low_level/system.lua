@@ -2,6 +2,51 @@ local system = _G.system or {}
 
 local function not_implemented() debug.trace() logn("this function is not yet implemented!") end
 
+do -- editors
+	local editors = {
+		{	
+			-- if you have sublime installed you most likely don't have any other editor installed
+			name = "sublime",
+			args = "%PATH%:%LINE%",
+		},
+		{
+			name = "notepad2",
+			args = "/g %LINE% %PATH%",
+		},
+		{
+			name = "notepad++",
+			args = "%PATH% -n%LINE%",
+		},
+		{
+			name = "notepad",
+			args = "/A %PATH%",
+		},
+	}
+
+	function system.FindFirstEditor(os_execute, with_args)
+		for k, v in pairs(editors) do
+			if WINDOWS then
+				local path = system.GetRegistryValue("ClassesRoot/Applications/"..v.name..".exe/shell/open/command/default")
+				
+				if path then
+					if os_execute then
+						path = path:match([[(".-")]])
+						path = "start \"\" " .. path
+					else
+						path = path:match([["(.-)"]])
+					end
+					
+					if with_args and v.args then 
+						path = path .. " "
+					end
+					
+					return path
+				end
+			end
+		end
+	end
+end
+
 do -- message box
 	local set = not_implemented
 	
