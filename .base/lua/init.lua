@@ -607,8 +607,7 @@ do -- tier 0
 	end
 
 end
-
-console.CreateVariable("editor_path", "")
+console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
 
 addons.LoadAll()
 steamapi.Initialize()
