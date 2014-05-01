@@ -1,6 +1,16 @@
 table.new = require("table.new") or function() return {} end
 table.clear = require("table.clear") or function(t) for k,v in pairs(t) do t[k] = nil end end
 
+-- http://stackoverflow.com/questions/6077006/how-can-i-check-if-a-lua-table-contains-only-sequential-numeric-indices
+function table.isarray(t)
+	local i = 0
+	for _ in pairs(t) do
+		i = i + 1
+		if t[i] == nil then return false end
+	end
+	return true
+end
+
 -- 12:34 - <mniip> http://codepad.org/cLaX7lVn
 function table.multiremove(tbl, locations)
 	
