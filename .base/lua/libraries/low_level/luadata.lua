@@ -1,6 +1,5 @@
 local luadata = _G.luadata or {}
-
-local tab = 0
+local encode_table
 
 luadata.Types =
 {
@@ -11,13 +10,58 @@ luadata.Types =
 		return ("%q"):format(var)
 	end,
 	boolean = function(var)
-		return ("%s"):format(var and "true" or "false")
+		return var and "true" or "false"
 	end,
-	table = function(var)
-		tab = tab + 1
-		local str = luadata.Encode(var, true)
-		tab = tab - 1
-		return str
+	table = function(tbl, context)
+		local str
+		
+		context.tab = context.tab + 1
+		
+		if context.tab == 0 then 	
+			str = {}
+		else
+			str = {"{\n"} 
+		end
+		
+		if table.isarray(tbl) then
+			for i = 1, #tbl do
+				str[#str+1] = ("%s%s,\n"):format(("\t"):rep(context.tab), luadata.ToString(tbl[i], context))
+				
+				if context.yield then 
+					coroutine.yield() 
+				end
+			end
+		else
+			for key, value in pairs(tbl) do
+				value = luadata.ToString(value, context)
+				
+				if value then	
+					if type(key) == "string" and key:find("^%a[%w_]+$") then
+						str[#str+1] = ("%s%s = %s,\n"):format(("\t"):rep(context.tab), key, value)
+					else
+						key = luadata.ToString(key, context)
+						
+						if key then
+							str[#str+1] = ("%s[%s] = %s,\n"):format(("\t"):rep(context.tab), key, value)
+						end
+					end
+				end
+
+				if context.yield then 
+					coroutine.yield() 
+				end
+			end
+		end
+		
+		if context.tab == 0 then
+			str[#str+1] = "\n"
+		else
+			str[#str+1] = ("%s}"):format(("\t"):rep(context.tab))
+		end
+			
+		context.tab = context.tab - 1
+		
+		return table.concat(str, "")
 	end,
 	cdata = function(var)
 		return tostring(var)
@@ -40,9 +84,13 @@ function luadata.Type(var)
 	return t
 end
 
-function luadata.ToString(var, key)
+function luadata.ToString(var, context)
+	context = context or {}
+	context.tab = context.tab or -1
+	context.out = context.out or {}
+	
 	local func = luadata.Types[luadata.Type(var)]
-	return func and func(var, key)
+	return func and func(var, context)
 end
 
 function luadata.FromString(str)
@@ -50,39 +98,43 @@ function luadata.FromString(str)
 	return func()
 end
 
-function luadata.Encode(tbl, __brackets)
-	local str = {__brackets and "{\n" or ""}
-
-	for key, value in pairs(tbl) do
-		value = luadata.ToString(value, key)
-		key = luadata.ToString(key)
-		
-		if key and value and key ~= "__index" and value ~= _R then
-			str[#str+1] = ("%s[%s] = %s,\n"):format(("\t"):rep(tab), key, value)
-		end
+function luadata.Encode(tbl, callback, speed)
+	if callback then
+		local co = coroutine.create(function() 
+			return luadata.ToString(tbl, {yield = true})
+		end)
+		timer.Thinker(function()
+			local ok, data = coroutine.resume(co)
+			if ok then
+				if data then
+					xpcall(callback, system.OnError, data)
+					return true
+				end
+			else
+				xpcall(callback, system.OnError, false, data)
+				return true
+			end
+		end, speed)
+	else
+		return luadata.ToString(tbl)
 	end
-
-	str[#str+1] = (__brackets and "%s}\n" or "%s\n"):format(("\t"):rep(tab-1))
-
-	return table.concat(str, "")
 end
 
 function luadata.Decode(str)
 	if not str then return {} end
 
-	local func = loadstring("return {\n" .. str .. "\n}")
+	local func, err = loadstring("return {\n" .. str .. "\n}")
 	
-	if type(func) == "string" then
-		logn("luadata decode error:")
-		logn(err)
-		
+	if not func then
+		logn("luadata syntax error:")
+		logn(err)		
 		return {}
 	end
 	
 	local ok, err = xpcall(func, system.OnError)
 	
 	if not ok then
-		logn("luadata decode error:")
+		logn("luadata runtime error:")
 		logn(err)
 		return {}
 	end
