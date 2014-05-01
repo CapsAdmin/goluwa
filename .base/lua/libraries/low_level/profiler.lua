@@ -257,16 +257,15 @@ function profiler.GetBenchmark(type)
 						name = name:trim()			
 					end
 				end
-
-		
-				name = name or "unknown(file not found)"
-				
-				name = name:trim()
 				
 			elseif data.func then		
 				name = ("%s(%s)"):format(data.func_name, table.concat(getparams(data.func), ", "))
 			end
-
+			
+			name = name or "unknown(file not found)"
+				
+			name = name:trim()
+				
 			data.path = path
 			data.file_name = path:match(".+/(.+)%.") or path
 			data.line = line
@@ -292,6 +291,101 @@ function profiler.GetBenchmark(type)
 	end
 	
 	return out
+end
+
+function profiler.PrintBenchmark(benchmark, type)
+	type = type or profiler.type
+
+	local top = {}
+	
+	if type == "instrumental" then				
+		for k,v in pairs(benchmark) do
+			if v.times_called > 50 then
+				table.insert(top, v)
+			end
+		end
+		
+		table.sort(top, function(a, b)
+			return a.average_time > b.average_time
+		end)
+		
+		local max = 0
+		local max2 = 0
+		for k, v in pairs(top) do
+			if #v.name > max then
+				max = #v.name
+			end
+			
+			v.average_time = tostring(v.average_time * 100)
+			
+			if #v.average_time > max2 then
+				max2 = #v.average_time
+			end
+		end
+			
+		logn(("_"):rep(max+max2+11+10))
+		logn("| NAME:", (" "):rep(max-4), "| MS:", (" "):rep(max2-2), "| CALLS:")
+		logn("|", ("_"):rep(max+2), "|", ("_"):rep(max2+2), "|", ("_"):rep(4+10))
+		for k,v in pairs(top) do
+			logf("| %s%s | %s%s | %s", v.name, (" "):rep(max-#v.name), v.average_time, (" "):rep(max2 - #v.average_time), v.times_called) 
+		end
+		logn("")
+		
+	elseif type == "statistical" then
+		for k,v in pairs(benchmark) do
+			if v.name then
+				table.insert(top, v)
+			end
+		end
+		
+		table.sort(top, function(a, b)
+			return a.times_called > b.times_called
+		end)
+				
+		local max = 0
+		local max2 = 0
+		for k, v in pairs(top) do
+			if #v.name > max then
+				max = #v.name
+			end
+			
+			v.percent = tostring(math.round((v.times_called / top[1].times_called) * 100, 2))
+						
+			if #v.percent > max2 then
+				max2 = #v.percent
+			end
+			
+			--[[local sigh = 0
+			
+			for i, v in pairs(v.children) do
+				if v.name then
+					if v.name and #v.name > max then
+						max = #v.name + i
+					end
+					sigh = sigh + 1
+					v.i = sigh
+				end
+			end
+			
+			v.sigh = sigh]]
+		end
+		
+		logn(("_"):rep(max+max2+11+10))
+		logn("| NAME:", (" "):rep(max-4), "| CALLS:")
+		logn("|", ("_"):rep(max+2), "|", ("_"):rep(4+10))
+		for k,v in npairs(top) do
+			logf("| %s%s | %s", v.name, (" "):rep(max-#v.name), v.percent)
+			--[[local sigh = v.sigh
+			local max = #v.call_stack
+			for i, v in npairs(v.call_stack) do
+				if v.line_name and i ~= max then
+					logf("| %s%s%s |", (" "):rep(-v.i + sigh), v.line_name, (" "):rep(max - #v.line_name + v.i - sigh))
+				end
+			end]]
+		end
+		logn("")
+		
+	end		
 end
 
 return profiler
