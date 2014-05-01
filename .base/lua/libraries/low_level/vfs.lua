@@ -108,11 +108,7 @@ do -- path utilities
 
 		path = vfs.ParseVariables(path)
 		
-		local is_folder = path:sub(-1) == "/"
-		
-		if is_folder then
-			path = path .. "NUL"
-		end
+		local is_folder = vfs.IsDir(path)
 		
 		for k, v in ipairs(vfs.paths) do
 		
