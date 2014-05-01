@@ -1,25 +1,20 @@
 -- vpk reader by https://github.com/animorten
 
 local function read_integer(file, byte_count)
-	local bytes = {file:read(byte_count):byte(1, -1)}
-
-	if #bytes < byte_count then
-		return
+	local str = file:read(byte_count)
+	local num = 0
+	
+	for i = 1, byte_count do 
+		num = (num*256) + str:byte(-i) 
 	end
-
-	local result = 0
-
-	for i = 1, #bytes do
-		result = result + bytes[i] * 2 ^ ((i - 1) * 8)
-	end
-
-	return result
+	
+	return num
 end
 
 local function read_string(file)
 	local buffer = {}
 
-	while true do
+	for i = 1, math.huge do
 		local char = file:read(1)
 
 		if char == "\0" then
@@ -28,7 +23,7 @@ local function read_string(file)
 			return
 		end
 
-		buffer[#buffer + 1] = char
+		buffer[i] = char
 	end
 
 	return table.concat(buffer)
@@ -122,12 +117,9 @@ local function read_tree(file)
 			
 			for i = 0, 100 do
 				local dir = utilities.GetParentFolder(directory, i)
-				if dir ~= "" and not done_directories[dir] then
-					tree[#tree + 1] = {path = dir:sub(0, -2), is_dir = true}
-					done_directories[dir] = true
-				else
-					break
-				end
+				if dir == "" or done_directories[dir] then break end
+				tree[#tree + 1] = {path = dir:sub(0, -2), is_dir = true}
+				done_directories[dir] = true
 			end
 		end
 	end
@@ -169,7 +161,14 @@ end
 
 local function read_vpk_dir(path)
 	check(path, "string")
-
+	
+	local cache_path = "%DATA%/vpk_cache/" .. crypto.CRC32(path)
+	
+	if vfs.Exists(cache_path) then
+		local str = vfs.Read(cache_path, "b")
+		return luadata.Decode(str), "Success"
+	end
+	
 	local file, error_message = io.open(path, "rb")
 
 	if not file then
@@ -182,6 +181,13 @@ local function read_vpk_dir(path)
 	if not self then
 		return nil, "Failed parsing: " .. error_message
 	end
+	
+	luadata.Encode(self, function(data, err)
+		if data then
+			logn("saved cache of vpk tree ", path)
+			vfs.Write(cache_path, data)
+		end
+	end, 1000)
 
 	return self, "Success"
 end
@@ -207,7 +213,10 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 	if ext == "vpk" then
 		
 		if mount then
-			local vpk = read_vpk_dir(path)
+			local vpk, err = read_vpk_dir(path)
+			
+			if not vpk then logn(err) return end
+			
 			local base_info = lfs.attributes(path)
 			local exists = {}
 			
@@ -216,7 +225,6 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 			for k,v in pairs(vpk.tree) do
 				if v.is_file then
 					v.archive_path = path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(v.archive_index) end)
-					files[v.archive_path] = files[v.archive_path] or io.open(v.archive_path, "rb")
 				end
 				exists[v.path] = v
 			end
@@ -262,16 +270,14 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 						local type = a
 						
 						if type == "open" then
-							local path = b:match(".+%.vpk/(.+)") or b
-							LOL = {path, b}
-							
+							local path = b:match(".+%.vpk/(.+)") or b							
 							local data = exists[path]
 							
 							if not data then
 								return false, "File does not exist"
 							end
 							
-							local file = files[data.archive_path]
+							local file = io.open(data.archive_path, "rb")
 							file:seek("set", data.entry_offset)
 							 
 							return {data = data, file = file, offset = 0}
@@ -302,7 +308,9 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 							-- otherwise just read everything.. 
 							return handle.file:read(handle.data.entry_length)
 						elseif type == "close" then
+							local handle = b
 							
+							handle.file:close()
 						end
 					end
 				end 
