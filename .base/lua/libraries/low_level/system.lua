@@ -136,6 +136,9 @@ do -- cursor
 		get = function()
 			return current
 		end
+	else
+		get = function() end
+		set = get
 	end
 	
 	system.SetCursor = set
@@ -249,20 +252,32 @@ do -- registry
 		local HKEY_CURRENT_CONFIG = 0x80000005
 
 		local RRF_RT_REG_SZ = 0x00000002
-		local RRF_RT_ANY = 0x0000ffff
-
-		local REG_NONE = 0
-		local REG_SZ = 1
-
-		local ERROR_SUCCESS = 0x0
-
-		get = function(key, key2)
+	
+		local translate = {
+			HKEY_CLASSES_ROOT  = 0x80000000,
+			HKEY_CURRENT_USER = 0x80000001,
+			HKEY_LOCAL_MACHINE = 0x80000002,
+			HKEY_CURRENT_CONFIG = 0x80000005,
+			
+			ClassesRoot  = 0x80000000,
+			CurrentUser = 0x80000001,
+			LocalMachine = 0x80000002,
+			CurrentConfig = 0x80000005,
+		}
+		
+		get = function(str)
+			local where, key1, key2 = str:match("(.-)/(.+)/(.*)")
+									
+			where = translate[where] or where
+			key1 = key1:gsub("/", "\\")
+			
 			local value = ffi.new("char[4096]")
 			local value_size = ffi.new("unsigned[1]")
 			value_size[0] = 4096
-			local grr = advapi.RegGetValueA(HKEY_CURRENT_USER, key, key2, RRF_RT_REG_SZ, nil, value, value_size)
+			
+			local err = advapi.RegGetValueA(where, key1, key2, RRF_RT_REG_SZ, nil, value, value_size)
 
-			if grr ~= ERROR_SUCCESS then
+			if err ~= ERROR_SUCCESS then
 				return
 			end
 
@@ -274,8 +289,8 @@ do -- registry
 		-- return empty values
 	end
 	
-	system.GetRegistryKey = get
-	system.SetRegistryKey = set
+	system.GetRegistryValue = get
+	system.SetRegistryValue = set
 end
 
 do 

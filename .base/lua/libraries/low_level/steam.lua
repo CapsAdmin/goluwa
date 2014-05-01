@@ -258,7 +258,7 @@ function steam.GetInstallPath()
 	local path
 
 	if WINDOWS then
-		path = system.GetRegistryKey("Software\\Valve\\Steam", "SteamPath") or (X64 and "C:\\Program Files (x86)\\Steam" or "C:\\Program Files\\Steam")
+		path = system.GetRegistryValue("CurrentUser/Software/Valve/Steam/SteamPath") or (X64 and "C:\\Program Files (x86)\\Steam" or "C:\\Program Files\\Steam")
 	elseif LINUX then
 		path = os.getenv("HOME") .. "/.local/share/Steam"
 	end
