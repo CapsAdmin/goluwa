@@ -246,6 +246,7 @@ do -- registry
 
 		local advapi = ffi.load("advapi32")
 
+		local ERROR_SUCCESS = 0
 		local HKEY_CLASSES_ROOT  = 0x80000000
 		local HKEY_CURRENT_USER = 0x80000001
 		local HKEY_LOCAL_MACHINE = 0x80000002
@@ -267,16 +268,23 @@ do -- registry
 		
 		get = function(str)
 			local where, key1, key2 = str:match("(.-)/(.+)/(.*)")
+			
+			if where then
+				where, key1 = str:match("(.-)/(.+)/")
+			end
 									
 			where = translate[where] or where
 			key1 = key1:gsub("/", "\\")
+			key2 = key2 or ""
+			
+			if key2 == "default" then key2 = nil end
 			
 			local value = ffi.new("char[4096]")
 			local value_size = ffi.new("unsigned[1]")
 			value_size[0] = 4096
-			
+						
 			local err = advapi.RegGetValueA(where, key1, key2, RRF_RT_REG_SZ, nil, value, value_size)
-
+			
 			if err ~= ERROR_SUCCESS then
 				return
 			end
