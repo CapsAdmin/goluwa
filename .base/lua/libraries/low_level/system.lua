@@ -213,8 +213,19 @@ do -- dll paths
 		end
 	end
 	
-	system.SetDLLDirectory = set
-	system.GetDLLDirectory = get
+	if LINUX then
+		set = function(path)
+			logn("seting LD_LIBRARY_PATH to ", path)
+			os.setenv("LD_LIBRARY_PATH", path)
+		end
+		
+		get = function()
+			return os.getenv("LD_LIBRARY_PATH") or ""
+		end
+	end
+	
+	system.SetSharedLibraryPath = set
+	system.GetSharedLibraryPath = get
 end
 
 do -- fonts

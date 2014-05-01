@@ -329,9 +329,11 @@ do -- ffi
 			if vfs then
 				for full_path in vfs.Iterate("bin/" .. ffi.os .. "/" .. ffi.arch .. "/" .. path, nil, true, nil, true) do
 					-- look first in the vfs' bin directories
-					system.SetDLLDirectory(full_path:match("(.+/)"))
+					local old = system.GetSharedLibraryPath()
+					system.SetSharedLibraryPath(full_path:match("(.+/)"))
 					local ok, msg = pcall(_OLD_G.ffi_load, full_path, ...)
-					system.SetDLLDirectory()
+					system.SetSharedLibraryPath(old)
+					
 					if ok then
 						return msg
 					end
