@@ -355,21 +355,25 @@ do -- list parsing
 				vfs.Mount(path)
 			end 
 		end
+		
+		vfs.Mount(steam.GetGamePath("Team Fortress 2") .. "/tf/tf2_misc_dir.vpk")
+		vfs.Mount(steam.GetGamePath("Team Fortress 2") .. "/tf/tf2_sound_misc_dir.vpk")
+		vfs.Mount(steam.GetGamePath("Team Fortress 2") .. "/tf/tf2_sound_vo_english_dir.vpk")
 	
-		vfs.Mount(steam.GetGamePath("left 4 dead") .. "/left4dead/")
-		vfs.Mount(steam.GetGamePath("left 4 dead") .. "/left4dead_dlc3/")
-		vfs.Mount(steam.GetGamePath("left 4 dead") .. "/left4dead/pak01_dir.vpk")
-		vfs.Mount(steam.GetGamePath("left 4 dead") .. "/left4dead_dlc3/pak01_dir.vpk")
+		vfs.Mount(steam.GetGamePath("Left 4 Dead") .. "/left4dead/")
+		vfs.Mount(steam.GetGamePath("Left 4 Dead") .. "/left4dead_dlc3/")
+		vfs.Mount(steam.GetGamePath("Left 4 Dead") .. "/left4dead/pak01_dir.vpk")
+		vfs.Mount(steam.GetGamePath("Left 4 Dead") .. "/left4dead_dlc3/pak01_dir.vpk")
 		
-		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2/") 
-		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2_dlc1/") 
-		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2_dlc2/") 
-		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2_dlc3/") 
+		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2/") 
+		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2_dlc1/") 
+		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2_dlc2/") 
+		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2_dlc3/") 
 		
-		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2/pak01_dir.vpk") 
-		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2_dlc1/pak01_dir.vpk") 
-		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2_dlc2/pak01_dir.vpk") 
-		vfs.Mount(steam.GetGamePath("left 4 dead 2") .. "/left4dead2_dlc3/pak01_dir.vpk") 
+		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2/pak01_dir.vpk") 
+		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2_dlc1/pak01_dir.vpk") 
+		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2_dlc2/pak01_dir.vpk") 
+		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2_dlc3/pak01_dir.vpk") 
 
 		vfs.Mount(steam.GetGamePath("Counter-Strike Global Offensive") .. "/csgo/pak01_dir.vpk")
 		vfs.Mount(steam.GetGamePath("Counter-Strike Global Offensive") .. "/csgo/")
@@ -431,41 +435,51 @@ do -- list parsing
 		local co = coroutine.create(function()
 			local sound_info = {}
 			for path in vfs.Iterate("scripts/", nil, true) do
-				if path:find("_sounds") and not path:find("manifest") then
-					table.merge(sound_info, steam.VDFToTable(vfs.Read(path)))
+				if path:find("_sounds") and not path:find("manifest") and path:find("%.txt") then
+					local t, err = steam.VDFToTable(vfs.Read(path))
+					if t then
+						table.merge(sound_info, t)
+					else
+						print(path, err)
+					end
 					coroutine.yield("reading /scripts/*")
 				end 
 			end
 			
 			for sound_name, info in pairs(sound_info) do
-				sound_info[sound_name] = nil
-				sound_info[sound_name:lower()] = info
-				info.real_name = sound_name
+				--if type(info) == "table" then 
+					sound_info[sound_name] = nil
+					sound_info[sound_name:lower()] = info
+					info.real_name = sound_name
+				--else
+				--	sound_info[sound_name] = nil
+				--end
 			end
-		
+			
 			local captions = {}
 			for path in vfs.Iterate("resource/", nil, true) do
 				if path:find("english") and path:find("%.txt") then
-					
-					
+				
+				
 					local str = vfs.Read(path)
 					-- stupid hack because some caption files are encoded weirdly which would break lua patterns
 					local tbl = {}
 					for uchar in str:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
-						tbl[#tbl + 1] = uchar
+						if uchar ~= "\0" then
+							tbl[#tbl + 1] = uchar
+						end
 					end
 					str = table.concat(tbl, "")	
 					str = str:gsub("//.-\n", "")
 					-- stupid hack
-					
+										
 					local tbl = steam.VDFToTable(str)
 					table.merge(captions, tbl)
 					coroutine.yield("reading /resource/*")
 				end 
 			end
 			
-			if captions.lang then
-				
+			if captions.lang then				
 				local found = 0
 				local lost = 0
 				
@@ -1336,9 +1350,6 @@ function chatsounds.Update()
 				if not sound.started then
 					sound:play()
 					sound.started = true
-					if not gmod then
-						system.SetWindowTitle(sound.trigger, "chatsounds")
-					end
 				end
 			end
 
@@ -1350,10 +1361,6 @@ function chatsounds.Update()
 				if sound.stop_time < time then
 					sound:remove()
 					table.remove(track, i)
-
-					if not gmod then
-					--	system.SetWindowTitle(nil, "chatsounds")
-					end
 				end
 			end
 		end
