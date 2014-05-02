@@ -1406,6 +1406,26 @@ function chatsounds.Initialize()
 	chatsounds.BuildTree("game")
 	chatsounds.BuildTree("custom")
 	
+	if autocomplete then
+		local temp = {}
+
+		for realm, sounds in pairs(chatsounds.list) do
+			for key, val in pairs(sounds) do
+				temp[key] = true
+			end
+		end
+
+		local list = {}
+
+		for k,v in pairs(temp) do
+			table.insert(list, k)
+		end
+		
+		table.sort(list, function(a, b) return #a < #b end)
+
+		autocomplete.AddList("chatsounds", list)
+	end
+	
 	event.AddListener("OnUpdate", "chatsounds", chatsounds.Update)
 end
 

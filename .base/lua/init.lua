@@ -644,6 +644,7 @@ do -- tier 1
 	include("libraries/gif.lua")
 	include("libraries/markup.lua")
 	
+	include("libraries/autocomplete.lua")
 	include("libraries/chatsounds.lua")
 	
 	-- high level implementation of curses
