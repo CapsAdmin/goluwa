@@ -115,10 +115,19 @@ if CLIENT then
 		local i = 1
 		local history = {}
 		local visible
-		
+		local last_history
+				
 		console.AddCommand("showchat", function()
 		
 			local panel =  chat.panel
+			
+			local tab_str
+			local tab_autocomplete
+			
+			local last_str
+			local found_autocomplete = {}
+			
+			local pause_autocomplete
 			
 			if not visible then				
 				panel = aahh.Create("text_input")
@@ -127,12 +136,12 @@ if CLIENT then
 					panel:MakeActivePanel()
 					panel:SetMultiline(true)
 					
-					panel.OnUnhandledKey = function(self, key)									
-						local str = self:GetText():trim()
+					panel.OnPreKeyInput = function(self, key)									
+						local str = self:GetText()
 						
 						local ctrl = input.IsKeyDown("left_control") or input.IsKeyDown("right_control")
 						
-						if ctrl or str == "" then
+						if ctrl or str == "" or str == last_history then
 							local browse = false
 							
 							if key == "up" then
@@ -143,30 +152,63 @@ if CLIENT then
 								browse = true
 							end
 							
-							if browse and history[i] then
-								panel:SetText(history[i])
-								panel:SetCaretPos(Vec2(#history[i], 0))
+							local found = history[i]
+							if browse and found then
+								panel:SetText(found)
+								panel:SetCaretPos(Vec2(#found, 0))
+								last_history = found
 							end
 						end
+						 
+						if last_str and #last_str > #str and key ~= "tab" then
+							tab_str = nil
+							tab_autocomplete = nil
+							pause_autocomplete = false
+						end
 
-						if key == "escape" then
-							panel:OnEnter("")
+						if not pause_autocomplete then 
+							found_autocomplete = autocomplete.Search(tab_str or str, tab_autocomplete)
+							
+							if #found_autocomplete == 0 then 
+								pause_autocomplete = str 
+							end
+						else
+							if #pause_autocomplete > #str then
+								pause_autocomplete = false
+							end
 						end
 						
 						if key == "tab" then
+							autocomplete.ScrollFound(tab_autocomplete or found_autocomplete, input.IsKeyDown("left_shift") and -1 or 1)
+							
+							if #found_autocomplete > 0 then 
+								panel:SetText(found_autocomplete[1])
+								if not tab_str then
+									tab_str = str
+									tab_autocomplete = found_autocomplete
+								end
+								last_str = str
+								return false 
+							end
+							
 							local str = event.Call("OnChatTab", str)
 								
 							if str then 
 								panel:SetText(str)
+								
+								return false	
 							end
 						end
 						
-						if key == "enter" and not ctrl then
-							i = 0
-							if #str > 0 then
-								chat.Say(str)
-								if history[1] ~= str then
-									table.insert(history, 1, str)
+						if key == "enter" and not ctrl or key == "escape" then
+						
+							if key ~= "escape" then
+								i = 0
+								if #str > 0 then
+									chat.Say(str)
+									if history[1] ~= str then
+										table.insert(history, 1, str)
+									end
 								end
 							end
 							
@@ -176,7 +218,12 @@ if CLIENT then
 							panel:Remove()
 							
 							event.Call("OnChatTextChanged", "")
+							
+							return
 						end	
+						
+						event.Call("OnChatTextChanged", str)
+						last_str = str
 					end
 					
 					local suppress = true -- stupid
@@ -192,6 +239,12 @@ if CLIENT then
 						
 						self:SetPos(Vec2(50, Vec2(render.GetScreenSize()).h - 100))
 						self:SizeToContents()
+					end
+					
+					panel.OnPostDraw = function()
+						if #found_autocomplete > 0 then
+							autocomplete.DrawFound(0, panel:GetHeight(), found_autocomplete, nil, 2) 
+						end
 					end
 					
 				window.ShowCursor(true)
