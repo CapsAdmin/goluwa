@@ -1,6 +1,22 @@
 table.new = require("table.new") or function() return {} end
 table.clear = require("table.clear") or function(t) for k,v in pairs(t) do t[k] = nil end end
 
+function table.scroll(tbl, offset)
+	if offset == 0 then return end
+	
+	if offset > 0 then
+		for i = 1, offset do
+			local val = table.remove(tbl, 1)
+			table.insert(tbl, val)
+		end
+	else
+		for i = 1, math.abs(offset) do
+			local val = table.remove(tbl)
+			table.insert(tbl, 1, val)
+		end
+	end
+end
+
 -- http://stackoverflow.com/questions/6077006/how-can-i-check-if-a-lua-table-contains-only-sequential-numeric-indices
 function table.isarray(t)
 	local i = 0
