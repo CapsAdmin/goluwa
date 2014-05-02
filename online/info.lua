@@ -2,4 +2,5 @@
 return
 {
 	load = CLIENT ~= nil or SERVER ~= nil,
+	event = "OnlineStarted",
 }
