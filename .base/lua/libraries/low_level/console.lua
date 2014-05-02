@@ -120,8 +120,8 @@ do -- commands
 		return ret
 	end
 	
-	function console.RunString(line, skip_lua)
-		if line:find("\n") then
+	function console.RunString(line, skip_lua, skip_split)
+		if not skip_split and line:find("\n") then
 			for line in (line .. "\n"):gmatch("(.-)\n") do
 				console.RunString(line)
 			end
@@ -201,6 +201,8 @@ do -- console vars
 		local META = utilities.CreateBaseMeta("cvar")
 		
 		function META:Get()
+			if not console.vars then console.ReloadVariables() end
+			
 			return console.vars[self.cvar]
 		end
 		

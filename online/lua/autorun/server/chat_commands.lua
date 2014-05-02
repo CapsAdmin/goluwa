@@ -18,6 +18,11 @@ console.AddCommand("lc", function(line)
 	players.BroadcastLua(line)
 end)
 
+console.AddCommand("lm", function(line)
+	local ply = console.GetServerPlayer()
+	ply:SendLua(line)
+end)
+
 local prefix = "[!|/|%.]" 
 
 event.AddListener("OnPlayerChat", "chat_commands", function(ply, txt) 
@@ -30,7 +35,7 @@ event.AddListener("OnPlayerChat", "chat_commands", function(ply, txt)
 		-- when calling server commands, the player is null
 		-- but with console.SetServerPlayer(ply) we can change that
 		if SERVER then console.SetServerPlayer(ply) end
-			console.RunString(cmd .. " " .. line)
+			console.RunString(cmd .. " " .. line, true, true)
 		if SERVER then console.SetServerPlayer(NULL) end
 	end
 end)
