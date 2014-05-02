@@ -1,33 +1,23 @@
-Goluwa is an experimental framework written in LuaJIT targeted at games. It includes high level libraries to render graphics, play audio, handle input, networking and much more. 3D is the main interest but 2D is also important.
+Goluwa is an experimental game engine/framework/personal toolbox written in LuaJIT targeted at games. It includes high level libraries to render graphics, play audio, handle input, networking and much more. 3D is the main interest but 2D is also important.
 
-The coding style is inspired by Garry's Mod, Source Engine and UFO (https://github.com/malkia/ufo).
+The coding style is inspired by Garry's Mod, Source Engine. UFO (https://github.com/malkia/ufo) gave me the idea and motivation.
 
-LuaJit's FFI api is used to bind to the following libraries:
+I can't guarantee that Goluwa will run out of box if you download it at the moment. There is a BitSync version that I could invite you to if you're interested but that means you'll have to contact me.
 
+My goal with this isn't very clear either. I just like to code.
 
-OpenGL - graphics
+LuaJit's FFI api is used to bind to the following shared libraries:
 
-GLFW - window and input handler
+* OpenGL - graphics
+* GLFW - window and input handler
+* OpenAL Soft - sound library
+* FreeType - font decoding
+* Libsndfile - sound decoding
+* FreeImage - image decoding
+* FFMpeg - sound decoding (mp3)
+* VTFLib - image decoding (valves texture format)
+* PDCurses - console
+* Assimp - model decoding
+* steamfriends - steam friends communication
 
-OpenAL Soft - sound library
-
-FreeImage - image decoding
-
-FreeType - font decoding
-
-libsnd - sound decoding
-
-pdcurses - console
-
-lfs - additional file functions
-
-luasocket - networking
-
-assimp - model decoding
-
-
-Goluwa also comes with a Love2D wrapper which is used for fun and unit testing.
-
-
-I can't guarantee that Goluwa will run out of box if you download it at the moment. There is a "dropbox" version that I could invite you to if you're interested but that means you'll have to contact me.
-My goal with this isn't very clear. I just like to write code!
+Goluwa also has a Love2D wrapper which is used for fun and unit testing for 2D graphics.
