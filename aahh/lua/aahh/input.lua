@@ -10,15 +10,15 @@ do -- events
 
 	event.AddListener("OnKeyInputRepeat", "aahh", function(key, press)
 		aahh.KeyInput(key, press)
-	end, logn)
+	end, system.OnError)
 	
 	event.AddListener("OnChar", "aahh", function(char)
 		aahh.CharInput(char, true)
-	end, logn)
+	end, system.OnError)
 
 	event.AddListener("OnMouseInput", "aahh", function(key, press)
 		aahh.MouseInput(key, press, aahh.GetMousePos())
-	end, logn)
+	end, system.OnError)
 end
 
 function aahh.CallEvent(pnl, name, ...)
