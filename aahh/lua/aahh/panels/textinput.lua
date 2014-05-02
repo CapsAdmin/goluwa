@@ -66,6 +66,8 @@ function PANEL:OnKeyInput(key, press)
 	if key == "left_control" or key == "right_control" then  self.markup:SetControlDown(press) return end
 	
 	if press then
+	
+		if self.OnPreKeyInput and self:OnPreKeyInput(key, press) ~= nil then return end
 		
 		if key == "enter" and not self.MultiLine then
 			if self.OnEnter then
