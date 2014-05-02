@@ -179,9 +179,10 @@ function class.Create(type_name, class_name)
 		end
 	end
 		
+	META.__index = META
 	obj.MetaTable = META
 
-	setmetatable(obj, obj)
+	setmetatable(obj, META)
 	
 	-- copy all structs and such
 	for key, val in pairs(obj) do
