@@ -42,7 +42,7 @@ function players.Create(uniqueid, is_bot)
 	self.last_ping = os.clock()
 	
 	if is_bot and not CLIENT then	
-		self.is_bot = true
+		self:SetBot(true)
 		if event.Call("OnPlayerConnect", self) ~= false then
 			network.Broadcast(network.CONNECT, uniqueid)
 			event.Call("PlayerSpawned", self)

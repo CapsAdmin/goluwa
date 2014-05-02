@@ -7,11 +7,12 @@ META.socket = NULL
 
 class.GetSet(META, "UniqueID", "???")
 class.GetSet(META, "ID", -1)
+class.IsSet(META, "Bot", false)
 
 nvars.GetSet(META, "Nick", e.USERNAME, "cl_nick")
 
 function META:IsBot()
-	return self.is_bot == true
+	return not self.socket:IsValid()
 end
 
 function META:GetNick()
@@ -180,4 +181,5 @@ do -- networked input
 	add_event("Char")
 end
 
+utilities.DeclareMetaTable(META.ClassName, META)
 entities.Register(META)
