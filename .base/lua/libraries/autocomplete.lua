@@ -33,6 +33,8 @@ end
 local function search(list, str, found, found_list)
 	local pattern = "^.-" .. str
 	
+	if not pcall(string.find, "", pattern) then return found end
+
 	if type(list) == "table" then
 		if str == "" then
 			for i = 1, 100 do
@@ -56,6 +58,9 @@ end
 function autocomplete.Search(str, id)
 	
 	local found = {}
+	
+	-- check if it's a valid string pattern
+	if not pcall(string.find, "", str) then return found end
 	
 	if type(id) == "string" then
 		local data = chatsounds.GetList(id)
