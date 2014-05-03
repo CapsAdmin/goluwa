@@ -22,12 +22,29 @@ local ffmpeg = {
 
 for line in header:gmatch("(.-)\n") do
 	if not line:find("typedef") then
-		local func = line:match("(av.-)%s-%(") or line:match("(sw[rs]_.-)%s-%(")
-		if func then
+		local name = line:match("(av.-)%s-%(") or line:match("(sw[rs]_.-)%s-%(")
+		if name then
 			for k,v in pairs(ffmpeg.libs) do
 				local ok , err = pcall(function()
-					ffmpeg[func] = v[func]
+					ffmpeg[name] = v[name]
 				end)
+			end
+			
+			local func = ffmpeg[name]
+			ffmpeg[name] = function(...)
+				if ffmpeg.logcalls then
+					setlogfile("ffmpeg_calls")
+					logf("%s(%s)", name, table.concat(tostring_args(...), ",\t"))
+				end
+				
+				local val = func(...)
+				
+				if ffmpeg.logcalls then
+					logf(">> %s", luadata.ToString(val))
+					setlogfile()
+				end
+				
+				return val
 			end
 		end
 	end
