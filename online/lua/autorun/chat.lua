@@ -65,8 +65,8 @@ function chat.Append(var, str)
 end
 
 if CLIENT then	
-	message.AddListener("say", function(ply, str)
-		if event.Call("OnPlayerChat", ply, str) ~= false then
+	message.AddListener("say", function(ply, str, seed)
+		if event.Call("OnPlayerChat", ply, str, seed) ~= false then
 			chat.Append(ply, str)
 		end
 	end)
@@ -74,9 +74,6 @@ if CLIENT then
 	function chat.Say(str)
 		str = tostring(str)		
 		message.Send("say", str)
-		if event.Call("OnPlayerChat", players.GetLocalPlayer(), str) ~= false then
-			chat.Append(players.GetLocalPlayer(), str)
-		end
 	end	
 	
 	chat.panel = NULL
@@ -258,17 +255,19 @@ if CLIENT then
 	end
 end
 
-function chat.PlayerSay(ply, str, filter, skip_log)
-	if event.Call("OnPlayerChat", ply, str) ~= false then
+local seed = 0
+
+function chat.PlayerSay(ply, str, skip_log)
+	if event.Call("OnPlayerChat", ply, str, seed) ~= false then
 		if skip_log then chat.Append(ply, str) end
-		if SERVER then message.Send("say", filter, ply, str) end
+		if SERVER then message.Broadcast("say", ply, str, seed) seed = seed + 1 end
 	end
 end
 
 if SERVER then
 
 	message.AddListener("say", function(ply, str)
-		chat.PlayerSay(ply, str, message.PlayerFilter():AddAllExcept(ply))
+		chat.PlayerSay(ply, str)
 	end)
 
 	function chat.Say(str)
