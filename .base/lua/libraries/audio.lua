@@ -13,7 +13,12 @@ function audio.Open(name)
 
 	logf("[audio] opening device %q for sound output", name)
 
-	local device = alc.OpenDevice(name)
+	local device = alc.OpenDevice(nil)
+
+	if device == nil then
+		logf("[audio] opening device failed")
+		return
+	end
 
 	-- needed to provide debugging info for alc
 	alc.device = device
@@ -359,6 +364,8 @@ do -- source
 			vfs.ReadAsync(var, function(data)
 				local data, length, info = audio.Decode(data, nil, var)
 				
+				print(data, length, info)
+				
 				if data then
 					local buffer = audio.CreateBuffer()
 					buffer:SetFormat(info.channels == 1 and e.AL_FORMAT_MONO16 or e.AL_FORMAT_STEREO16)
@@ -399,6 +406,10 @@ do -- source
 
 	function META:Rewind()
 		al.SourceRewind(self.id)
+	end
+	
+	function META:IsPlaying()
+		return self:GetState() == e.AL_PLAYING
 	end
 
 	do -- length stuff
@@ -465,6 +476,7 @@ do -- source
 		ADD_FUNCTION("AL_DIRECTION", "fv")
 		ADD_FUNCTION("AL_POSITION", "fv")
 		ADD_FUNCTION("AL_BYTE_OFFSET", "i")
+		ADD_FUNCTION("AL_BUFFERS_PROCESSED", "i")
 
 		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "AuxiliaryEffectSlot", "iv", e.AL_AUXILIARY_SEND_FILTER)
 		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Buffer", "i", e.AL_BUFFER)
@@ -639,19 +651,19 @@ do -- microphone
 
 			if self:IsFull() then
 				local buffer = source:PopBuffer()
-					if buffer:IsValid() then
-						local data, size = self:Read()
+				if buffer:IsValid() then
+					local data, size = self:Read()
 
-						if self.OnBufferData then
-							local a, b = self:OnBufferData(data, size)
+					if self.OnBufferData then
+						local a, b = self:OnBufferData(data, size)
 
-							if a and b then
-								data = a
-								size = b
-							end
+						if a and b then
+							data = a
+							size = b
 						end
+					end
 
-						buffer:SetData(data, size)
+					buffer:SetData(data, size)
 					source:PushBuffer(buffer)
 				end
 			end
