@@ -32,7 +32,7 @@ function easylua.Print(...)
 		local args = {...}
 		local str = ""
 
-		logf("[EasyLua %s] ", me and me:GetNick() or "Sv")
+		logf("[EasyLua %s] \n", me and me:GetNick() or "Sv")
 
 		for key, value in pairs(args) do
 			str = str .. type(value) == "string" and value or luadata.ToString(value) or tostring(value)

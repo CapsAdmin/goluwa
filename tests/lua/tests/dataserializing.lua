@@ -26,7 +26,7 @@ end
 local function test(func, name)
 	local start = glfw.GetTime()
 	func(data)
-	logf("%s spent %s seconds to serialize", name, glfw.GetTime() - start)
+	logf("%s spent %s seconds to serialize\n", name, glfw.GetTime() - start)
 end
 
 test(von.serialize, "von")

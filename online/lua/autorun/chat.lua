@@ -61,7 +61,7 @@ function chat.Append(var, str)
 		chathud.AddText(unpack(tbl))
 	end
 	
-	logf("%s%s: %s", chat.GetTimeStamp(), var, str)
+	logf("%s%s: %s\n", chat.GetTimeStamp(), var, str)
 end
 
 if CLIENT then	

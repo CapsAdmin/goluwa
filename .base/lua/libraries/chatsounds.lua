@@ -532,7 +532,7 @@ do -- list parsing
 					end
 				end
 				
-				logf("%i captions matched sound info but %i captions are unknown", found, lost)
+				logf("%i captions matched sound info but %i captions are unknown\n", found, lost)
 			else
 				logn("no captions found!")
 			end
@@ -604,7 +604,7 @@ do -- list parsing
 					end
 				end
 			end
-			logf("translated %i paths", found)
+			logf("translated %i paths\n", found)
 			
 			logn("saving game list")
 			local game_list = chatsounds.TableToList(list)				
@@ -613,7 +613,7 @@ do -- list parsing
 
 			
 			logn("finished building the sound info table")
-			logf("found sound info for %i paths", table.count(out))
+			logf("found sound info for %i paths\n", table.count(out))
 			
 			vfs.Write("data/chatsounds/sound_info.table", msgpack.Encode(out))
 			vfs.Write("data/chatsounds/sound_info.lua", luadata.Encode(out))

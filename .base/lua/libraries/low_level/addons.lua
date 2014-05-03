@@ -46,7 +46,7 @@ local function autorun_addon(folder, info)
 			
 		_G.INFO = nil	
 	else
-		--logf("the addon %q does not want to be loaded", info.name)
+		--logf("the addon %q does not want to be loaded\n", info.name)
 	end
 end
 

@@ -11,12 +11,12 @@ function audio.Open(name)
 		name = audio.GetAllOutputDevices()[1]
 	end
 
-	logf("[audio] opening device %q for sound output", name)
+	logf("[audio] opening device %q for sound output\n", name)
 
 	local device = alc.OpenDevice(nil)
 
 	if device == nil then
-		logf("[audio] opening device failed")
+		logf("[audio] opening device failed\n")
 		return
 	end
 
@@ -703,7 +703,7 @@ do -- microphone
 			name = audio.GetAllInputDevices()[1]
 		end
 
-		logf("[audio] opening device %q for input", name)
+		logf("[audio] opening device %q for input\n", name)
 
 		local self = META:New()
 
@@ -804,10 +804,10 @@ function audio.Decode(data, length, path_hint)
 			if buffer and length then
 				return buffer, length, info or {}
 			else
-				logf("[audio] %s failed to decode %s: %s", decoder.id, path_hint or "", length)
+				logf("[audio] %s failed to decode %s: %s\n", decoder.id, path_hint or "", length)
 			end
 		else
-			logf("[audio] decoder %q errored: %s", decoder.id, buffer)
+			logf("[audio] decoder %q errored: %s\n", decoder.id, buffer)
 		end
 	end
 end

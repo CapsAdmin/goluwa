@@ -127,19 +127,19 @@ do -- table logn
 			local t = typex(val)
 			
 			if t == "table" and not done[val] and indent < max_level then
-				logf("%s%s = table[%p]", tab:rep(indent), key, val)
-				logf("%s[", tab:rep(indent))
+				logf("%s%s = table[%p]\n", tab:rep(indent), key, val)
+				logf("%s[\n", tab:rep(indent))
 				
 				done[val] = tostringx(val)
 				indent = indent + 1
 				dump(val)
 				indent = indent - 1
 				
-				logf("%s]", tab:rep(indent))
+				logf("%s]\n", tab:rep(indent))
 			elseif t == "string" then
-				logf("%s%s = \"%s\",", tab:rep(indent), key, tostringx(val))
+				logf("%s%s = \"%s\",\n", tab:rep(indent), key, tostringx(val))
 			else
-				logf("%s%s = %s,", tab:rep(indent), key, tostringx(val))
+				logf("%s%s = %s,\n", tab:rep(indent), key, tostringx(val))
 			end
 		end 
 	end

@@ -13,7 +13,7 @@ do -- profiling
 		local delta = time - data.time
 		
 		if not no_print then
-			logf("%s: %s", data.str, math.round(delta, 3))
+			logf("%s: %s\n", data.str, math.round(delta, 3))
 		end
 		
 		return delta

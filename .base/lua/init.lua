@@ -268,7 +268,7 @@ do -- logging
 	end
 
 	function logf(str, ...)
-		logn(safeformat(str, ...))
+		log(safeformat(str, ...))
 	end
 
 	function errorf(str, level, ...)
@@ -315,7 +315,7 @@ do -- logging
 	end
 end
 
-logf("launched on %s", os.date())
+logf("launched on %s\n", os.date())
 logn("executed by " .. e.USERNAME, "\n")
 
 do -- ffi

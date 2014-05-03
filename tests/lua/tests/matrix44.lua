@@ -30,7 +30,7 @@ local function test(lua_func, gl_func, ...)
 	for i = 0, 15 do
 		if math.round(copy[i], 3) ~= math.round(m.m[i], 3) then
 			
-			logf("member %i is not equal", i)
+			logf("member %i is not equal\n", i)
 			logn("lua: ", copy[i])
 			logn("ogl: ", m.m[i])
 			
@@ -39,12 +39,12 @@ local function test(lua_func, gl_func, ...)
 	end
 		
 	if equal then
-	--	logf("%s results are equal", lua_func)
+	--	logf("%s results are equal\n", lua_func)
 		
 		return true
 	end
 	
-	logf("%s results are not equal!", lua_func)
+	logf("%s results are not equal!\n", lua_func)
 	
 	local old = m.m
 	m.m = copy

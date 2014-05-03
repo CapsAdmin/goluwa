@@ -418,7 +418,7 @@ do -- texture object
 		gl.BindTexture(format.type, 0)
 						
 		if render.debug then
-			logf("creating texture w = %s h = %s buffer size = %s", self.w, self.h, utilities.FormatFileSize(buffer and ffi.sizeof(buffer) or 0)) --The texture size was never broken... someone used two non-existant variables w,h
+			logf("creating texture w = %s h = %s buffer size = %s\n", self.w, self.h, utilities.FormatFileSize(buffer and ffi.sizeof(buffer) or 0)) --The texture size was never broken... someone used two non-existant variables w,h
 		end
 		
 		render.textures[id] = self
@@ -494,10 +494,10 @@ function render.DecodeTexture(data, path_hint)
 			if buffer and w then
 				return buffer, w, h, info or {}
 			else
-				logf("[render] %s failed to decode %s: %s", decoder.id, path_hint or "", w)
+				logf("[render] %s failed to decode %s: %s\n", decoder.id, path_hint or "", w)
 			end
 		else
-			logf("[render] decoder %q errored: %s", decoder.id, buffer)
+			logf("[render] decoder %q errored: %s\n", decoder.id, buffer)
 		end
 	end
 end

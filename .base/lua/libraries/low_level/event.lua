@@ -119,7 +119,7 @@ function event.UserDataCall(udata, type_, ...)
 				return unpack(args)
 			else
 				if hasindex(udata) and udata.Type and udata.ClassName then
-					logf("scripted class %s %q errored: %s", udata.Type, udata.ClassName, args[2])
+					logf("scripted class %s %q errored: %s\n", udata.Type, udata.ClassName, args[2])
 				else
 					logf(args[2])
 				end
@@ -148,7 +148,7 @@ function event.Call(type, ...)
 					event.RemoveListener(type, data.unique)
 					event.active[type][key] = nil
 					event.SortByPriority()
-					logf("event [%q][%q] removed because self is invalid", type, data.unique)
+					logf("event [%q][%q] removed because self is invalid\n", type, data.unique)
 					return
 				end
 			else
@@ -163,7 +163,7 @@ function event.Call(type, ...)
 						data.on_error(a, type, data.unique)
 					else
 						event.RemoveListener(type, data.unique)
-						logf("event [%q][%q] removed", type, data.unique)
+						logf("event [%q][%q] removed\n", type, data.unique)
 					end
 
 					event.errors[type] = event.errors[type] or {}

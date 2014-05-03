@@ -107,7 +107,7 @@ function network.HandleEvent(socket, type, a, b, ...)
 			else
 				if network.debug then
 					debug.trace()
-					logf("player %s removed because OnPlayerConnect returned false", player)
+					logf("player %s removed because OnPlayerConnect returned false\n", player)
 				end
 				player:Remove()
 			end
@@ -116,7 +116,7 @@ function network.HandleEvent(socket, type, a, b, ...)
 			
 			nvars.FullUpdate(player)
 			
-			logf("%s connected", socket:GetIPPort())
+			logf("%s connected\n", socket:GetIPPort())
 		end
 		
 		if CLIENT then
@@ -139,7 +139,7 @@ function network.HandleEvent(socket, type, a, b, ...)
 	if type == network.ACCEPT then		
 		if CLIENT then
 			network.accepted = true
-			logf("successfully connected to server")
+			logf("successfully connected to server\n")
 			
 			players.local_player = Player(uniqueid)
 			players.local_player.socket = network.client_socket
@@ -155,7 +155,7 @@ function network.HandleEvent(socket, type, a, b, ...)
 			event.Call("PlayerLeft", player:GetName(), uniqueid, reason, player)
 			event.BroadcastCall("PlayerLeft", player:GetName(), uniqueid, reason)
 			
-			logf("%s disconnected (%s)", socket:GetIPPort(), reason or "unknown reason")
+			logf("%s disconnected (%s)\n", socket:GetIPPort(), reason or "unknown reason")
 						
 			if SERVER then	
 				network.Broadcast(type, uniqueid, reason)
@@ -234,7 +234,7 @@ if CLIENT then
 		if retries > 0 then
 			timer.Delay(3, function()
 				if not network.IsConnected() then
-					logf("retrying %s:%s (%i retries left)..", ip, port, retries)
+					logf("retrying %s:%s (%i retries left)..\n", ip, port, retries)
 					network.Connect(ip, port, retries - 1)
 				end	
 			end)
@@ -254,7 +254,7 @@ if CLIENT then
 			
 			players.GetLocalPlayer():Remove()
 			
-			logf("disconnected from server (%s)", reason or "unknown reason")
+			logf("disconnected from server (%s)\n", reason or "unknown reason")
 			network.just_disconnected = true
 			network.accepted = false
 			
@@ -388,14 +388,14 @@ if CLIENT then
 	local ip_cvar = console.CreateVariable("cl_ip", default_ip)
 	local port_cvar = console.CreateVariable("cl_port", default_port)
 	
-	--logf("connecting to %s %i", ip_cvar:Get(), port_cvar:Get())
+	--logf("connecting to %s %i\n", ip_cvar:Get(), port_cvar:Get())
 	--network.Connect(ip_cvar:Get(), port_cvar:Get())
 	
 	console.AddCommand("connect", function(line, ip, port)		
 		ip = ip or ip_cvar:Get()
 		port = tonumber(port) or port_cvar:Get()
 		
-		logf("connecting to %s:%i", ip, port)
+		logf("connecting to %s:%i\n", ip, port)
 		
 		network.Connect(ip, port)
 	end)
@@ -411,14 +411,14 @@ if SERVER then
 	local ip_cvar = console.CreateVariable("sv_ip", default_ip)
 	local port_cvar = console.CreateVariable("sv_port", default_port)
 	
-	--logf("hosting server at %s %i", ip_cvar:Get(), port_cvar:Get())
+	--logf("hosting server at %s %i\n", ip_cvar:Get(), port_cvar:Get())
 	--network.Host(ip_cvar:Get(), port_cvar:Get())
 		
 	console.AddCommand("host", function(line, ip, port)
 		ip = ip or ip_cvar:Get()
 		port = tonumber(port) or port_cvar:Get()
 		
-		logf("hosting at %s:%i", ip, port)
+		logf("hosting at %s:%i\n", ip, port)
 		
 		network.Host(ip, port)
 	end)

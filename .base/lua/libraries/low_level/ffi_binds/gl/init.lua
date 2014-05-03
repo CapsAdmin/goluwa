@@ -62,7 +62,7 @@ local function add_gl_func(name, func)
 					val = errors[val] or val
 					local info = debug.getinfo(2)
 				
-					logf("[gl] %q in function %s at %s:%i", val, info.name, info.short_src, info.currentline)
+					logf("[gl] %q in function %s at %s:%i\n", val, info.name, info.short_src, info.currentline)
 				end
 			end
 			
@@ -80,14 +80,14 @@ local function add_gl_func(name, func)
 					end
 					
 					if not val then
-						logf("gl%s(%s)", name, table.concat(args, ", "))
+						logf("gl%s(%s)\n", name, table.concat(args, ", "))
 					else
 						local val = val
 						if reverse_enums[val] then
 							val = reverse_enums[val]:gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
 						end
 						
-						logf("%s = gl%s(%s)", val, name, table.concat(args, ", "))
+						logf("%s = gl%s(%s)\n", val, name, table.concat(args, ", "))
 					end
 				setlogfile()
 			end
@@ -196,8 +196,8 @@ function gl.InitMiniGlew()
 		
 	setlogfile()
 	
-	logf("glew extensions took %f ms to parse", (timer.clock() - time) * 100)
-	--logf("%i extensions could not be parsed. see the unexpected_extensions log for more info", invalid)
+	logf("glew extensions took %f ms to parse\n", (timer.clock() - time) * 100)
+	--logf("%i extensions could not be parsed. see the unexpected_extensions log for more info\n", invalid)
 end
 
 -- the download functions work but the idea wasn't thought out properly
@@ -226,13 +226,13 @@ function gl.DownloadExtensionList(callback)
 			table.insert(list, {url = domain .. base .. url, path = ext_folder .. file_name:lower(), name = name})
 		end
 		
-		logf("found %i extensions from %q!", #list, domain .. base)
-		logf("checking extensions in %q..", ext_folder)
+		logf("found %i extensions from %q!\n", #list, domain .. base)
+		logf("checking extensions in %q..\n", ext_folder)
 		for i, data in pairs(list) do
 			local str = vfs.Read(data.path)
 			
 			if not str then
-				logf("extension %q was not found!", data.name)
+				logf("extension %q was not found!\n", data.name)
 				data.not_found = true
 			end
 		end
@@ -253,10 +253,10 @@ function gl.DownloadExtensions()
 			list[i] = nil
 			
 			if extension then
-				logf("downloading %q (%i left)", extension.name, table.count(list))
+				logf("downloading %q (%i left)\n", extension.name, table.count(list))
 				luasocket.Get(extension.url, function(data)
 					vfs.Write(extension.path, data.content, nil, false)
-					logf("saved %q (%i bytes)", extension.name, #data.content)
+					logf("saved %q (%i bytes)\n", extension.name, #data.content)
 					
 					download()
 				end, 3)
