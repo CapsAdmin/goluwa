@@ -129,8 +129,8 @@ do -- window meta
 		gl.Enable(e.GL_MULTISAMPLE)
 
 		logn("glfw version: ", ffi.string(glfw.GetVersionString()))
-		logf("opengl version: %s", render.GetVersion())
-		logf("vendor: %s", render.GetVendor())
+		logf("opengl version: %s\n", render.GetVersion())
+		logf("vendor: %s\n", render.GetVendor())
 		
 		local vendor = render.GetVendor()
 		

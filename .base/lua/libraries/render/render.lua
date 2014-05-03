@@ -170,7 +170,7 @@ end
 
 function render.CheckSupport(func)
 	if not gl[func] then
-		logf("%s: the function gl.%s does not exist", debug.getinfo(2).func:name(), func)
+		logf("%s: the function gl.%s does not exist\n", debug.getinfo(2).func:name(), func)
 		return false
 	end
 	

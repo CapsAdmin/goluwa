@@ -110,7 +110,7 @@ function steamapi.Initialize()
 					local url = ("http://api.steampowered.com/%s/%s/v%.4d/?"):format(interface.name, info.name, data.version or 1)
 					
 					if steamapi.debug then	
-						logf("[steamapi] http url: %s", url)
+						logf("[steamapi] http url: %s\n", url)
 					end				
 					
 					steamapi.httpmethods[info.httpmethod](interface, info, data, url, callback)

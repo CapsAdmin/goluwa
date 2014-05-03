@@ -41,14 +41,14 @@ for line in header:gmatch("(.-)\n") do
 							end
 							
 							if not val then
-								logf("SDL_%s(%s)", name, table.concat(args, ", "))
+								logf("SDL_%s(%s)\n", name, table.concat(args, ", "))
 							else
 								local val = val
 								if sdl.reverse_enums[val] then
 									val = sdl.reverse_enums[val]
 								end
 								
-								logf("%s = SDL_%s(%s)", val, name, table.concat(args, ", "))
+								logf("%s = SDL_%s(%s)\n", val, name, table.concat(args, ", "))
 							end
 						setlogfile()
 					end

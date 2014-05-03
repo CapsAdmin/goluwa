@@ -232,7 +232,7 @@ do -- console vars
 					value = ("%q"):format(value)
 				end
 				
-				logf("%s = %s", name, luadata.ToString(luadata.FromString(value)))
+				logf("%s = %s\n", name, luadata.ToString(luadata.FromString(value)))
 			else
 					
 				if T ~= "string" then
@@ -249,7 +249,7 @@ do -- console vars
 					callback(value)
 				end
 				
-				logf("%s = %s", name, value)
+				logf("%s = %s\n", name, value)
 			end
 			
 		end
@@ -314,7 +314,7 @@ console.AddCommand("help", function(line)
 	if info then
 		if not info.help then
 			logn("\tno help was found for ", line)
-			logf("\ttype %q to go to this function", "source " .. line)
+			logf("\ttype %q to go to this function\n", "source " .. line)
 			logn("\tdebug info:")
 			logn("\t\targuments\t=\t", table.concat(debug.getparams(info.callback), ", "))
 			logn("\t\tfunction\t=\t", tostring(info.callback))

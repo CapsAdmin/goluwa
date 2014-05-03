@@ -327,7 +327,7 @@ function profiler.PrintBenchmark(benchmark, type)
 		logn("| NAME:", (" "):rep(max-4), "| MS:", (" "):rep(max2-2), "| CALLS:")
 		logn("|", ("_"):rep(max+2), "|", ("_"):rep(max2+2), "|", ("_"):rep(4+10))
 		for k,v in pairs(top) do
-			logf("| %s%s | %s%s | %s", v.name, (" "):rep(max-#v.name), v.average_time, (" "):rep(max2 - #v.average_time), v.times_called) 
+			logf("| %s%s | %s%s | %s\n", v.name, (" "):rep(max-#v.name), v.average_time, (" "):rep(max2 - #v.average_time), v.times_called) 
 		end
 		logn("")
 		
@@ -374,12 +374,12 @@ function profiler.PrintBenchmark(benchmark, type)
 		logn("| NAME:", (" "):rep(max-4), "| CALLS:")
 		logn("|", ("_"):rep(max+2), "|", ("_"):rep(4+10))
 		for k,v in npairs(top) do
-			logf("| %s%s | %s", v.name, (" "):rep(max-#v.name), v.percent)
+			logf("| %s%s | %s\n", v.name, (" "):rep(max-#v.name), v.percent)
 			--[[local sigh = v.sigh
 			local max = #v.call_stack
 			for i, v in npairs(v.call_stack) do
 				if v.line_name and i ~= max then
-					logf("| %s%s%s |", (" "):rep(-v.i + sigh), v.line_name, (" "):rep(max - #v.line_name + v.i - sigh))
+					logf("| %s%s%s |\n", (" "):rep(-v.i + sigh), v.line_name, (" "):rep(max - #v.line_name + v.i - sigh))
 				end
 			end]]
 		end

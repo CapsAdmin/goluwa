@@ -754,7 +754,7 @@ do -- poly
 	end
 
 	function META:SetVertex(i, x,y, u,v)
-		if i > size or i < 0 then logf("i = %i size = %i", i, size) return end
+		if i > size or i < 0 then logf("i = %i size = %i\n", i, size) return end
 		
 		x = x or 0
 		y = y or 0

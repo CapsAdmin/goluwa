@@ -60,7 +60,7 @@ end
 
 local function warning(...)
 	if silence then return end
-	logf("[vfs error] %s", ...)
+	logf("[vfs error] %s\n", ...)
 end
 
 function vfs.Silence(b)
@@ -337,7 +337,7 @@ do -- generic
 		
 		if file then
 			if vfs.debug then
-				logf("[VFS] file access mode %s %q", mode, path)
+				logf("[VFS] file access mode %s %q\n", mode, path)
 			end
 			
 			return file, err
@@ -441,7 +441,7 @@ do -- generic
 		end
 		
 		if vfs.debug then
-			logf("[VFS] requesting attributes on %q", path)
+			logf("[VFS] requesting attributes on %q\n", path)
 		end
 			
 		for k, v in ipairs(vfs.paths) do
@@ -458,7 +458,7 @@ do -- generic
 			
 			if info then
 				if vfs.debug then
-					logf("[VFS] attributes found on [%s]%q", v.id, _path)
+					logf("[VFS] attributes found on [%s]%q\n", v.id, _path)
 				end
 			
 				return info
@@ -469,7 +469,7 @@ do -- generic
 		if info then
 			
 			if vfs.debug then
-				logf("[VFS] attributes found on %q", path)
+				logf("[VFS] attributes found on %q\n", path)
 			end
 		
 			return info
@@ -777,7 +777,7 @@ do -- async reading
 		mbps = mbps or 1
 		
 		if vfs.debug then
-			logf("[VFS] vfs.ReadAsync(%q)", path)
+			logf("[VFS] vfs.ReadAsync(%q)\n", path)
 		end
 		
 		if cache[path] then
@@ -849,17 +849,17 @@ do -- file monitoring
 				if time then
 					time = time.modification
 					if last ~= time then
-						logf("[vfs monitor] %s changed!", file_path)
+						logf("[vfs monitor] %s changed!\n", file_path)
 						last = time
 						return callback(file_path)
 					end
 				else
-					logf("[vfs monitor] %s was removed", file_path)
+					logf("[vfs monitor] %s was removed\n", file_path)
 					timer.Remove(file_path)
 				end
 			end)
 		else
-			logf("[vfs monitor] %s was not found", file_path)
+			logf("[vfs monitor] %s was not found\n", file_path)
 		end
 	end
 

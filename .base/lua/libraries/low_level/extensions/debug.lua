@@ -49,7 +49,7 @@ do
 								
 								if #ret == 0 then ret[1] = "nil" end
 								
-								logf("%s\t=\t%s.%s(%s)", table.concat(ret, ", "), lib_name, name, table.concat(temp, ", ")) 
+								logf("%s\t=\t%s.%s(%s)\n", table.concat(ret, ", "), lib_name, name, table.concat(temp, ", ")) 
 							else
 								logn(unpack(args))
 							end
@@ -73,7 +73,7 @@ function debug.openscript(lua_script, line)
 	lua_script = R(lua_script)
 	
 	if not vfs.Exists(lua_script) then
-		logf("debug.openscript: script %q doesn't exist", lua_script)
+		logf("debug.openscript: script %q doesn't exist\n", lua_script)
 		return false
 	end
 	
@@ -233,7 +233,7 @@ function debug.dumpcall(level, line, info_match)
 				val = luadata.ToString(data.val)
 			end
 			
-			logf("%s = %s", data.key, val)
+			logf("%s = %s\n", data.key, val)
 		--end
 	end
 	

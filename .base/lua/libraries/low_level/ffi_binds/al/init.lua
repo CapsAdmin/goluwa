@@ -99,7 +99,7 @@ local function add_al_func(name, func)
 		
 		if al.logcalls then
 			setlogfile("al_calls")
-				logf("%s = al%s(%s)", luadata.ToString(val), name, table.concat(tostring_args(...), ",\t"))
+				logf("%s = al%s(%s)\n", luadata.ToString(val), name, table.concat(tostring_args(...), ",\t"))
 			setlogfile()
 		end
 		
@@ -119,7 +119,7 @@ local function add_al_func(name, func)
 					end
 				end
 				
-				logf("[openal] %q in function %s at %s:%i", str, info.name, info.short_src, info.currentline)
+				logf("[openal] %q in function %s at %s:%i\n", str, info.name, info.short_src, info.currentline)
 			end
 		end
 		

@@ -677,7 +677,7 @@ function system.OnError(msg, ...)
 	resize_field(data, "name")
 	
 	for _, info in npairs(data) do
-		logf("  %s   %s   %s(%s)", info.currentline, info.source, info.name, info.arg_line)
+		logf("  %s   %s   %s(%s)\n", info.currentline, info.source, info.name, info.arg_line)
 	end
 
 	logn("}")
@@ -701,7 +701,7 @@ function system.OnError(msg, ...)
 			debug.openfunction(info.func, info.currentline)
 			last_openfunc = os.clock() + 3
 		else
-			--logf("debug.openfunction(%q)", source)
+			--logf("debug.openfunction(%q)\n", source)
 		end
 		
 		logn(source)

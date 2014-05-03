@@ -111,13 +111,13 @@ function steam._Traverse(path, callback)
 end
 
 function steam.LoadGamePaths()
-	logf("Loading game paths")
+	logf("Loading game paths\n")
 
 	steam.paths = luadata.ReadFile(steam.cache_path)
 end
 
 function steam.SaveGamePaths()
-	--logf("Saving game paths")
+	--logf("Saving game paths\n")
 
 	luadata.WriteFile(steam.cache_path, steam.paths)
 end
@@ -239,7 +239,7 @@ function steam.FindGamePaths(force_cache_update)
 							path = path:match("^(.-)/?[^/]*$")
 						}
 						
-						logf("found %s with appid %s", name, appid)
+						logf("found %s with appid %s\n", name, appid)
 												
 						--table.sort(steam.paths)
 
@@ -248,7 +248,7 @@ function steam.FindGamePaths(force_cache_update)
 				end
 			end
 			if wait(1) then
-				logf("found %i files..", count)
+				logf("found %i files..\n", count)
 			end
 		end)
 	end

@@ -723,13 +723,13 @@ for line in header:gmatch("(.-)\n") do
 					if return_type == "FT_Error" and val ~= 0 then
 						local info = debug.getinfo(2)
 				
-						logf("[freetype] %q in function %s at %s:%i", errors[val] or ("unknonw error " .. val), info.name, info.short_src, info.currentline)
+						logf("[freetype] %q in function %s at %s:%i\n", errors[val] or ("unknonw error " .. val), info.name, info.short_src, info.currentline)
 					end
 					
 										
 					if freetype.logcalls then
 						setlogfile("freetype_calls")
-							logf("%s = FT_%s(%s)", luadata.ToString(val), name, table.concat(tostring_args(...), ",\t"))
+							logf("%s = FT_%s(%s)\n", luadata.ToString(val), name, table.concat(tostring_args(...), ",\t"))
 						setlogfile()
 					end					
 					

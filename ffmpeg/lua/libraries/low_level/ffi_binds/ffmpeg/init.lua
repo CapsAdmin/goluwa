@@ -34,13 +34,13 @@ for line in header:gmatch("(.-)\n") do
 			ffmpeg[name] = function(...)
 				if ffmpeg.logcalls then
 					setlogfile("ffmpeg_calls")
-					logf("%s(%s)", name, table.concat(tostring_args(...), ",\t"))
+					logf("%s(%s)\n", name, table.concat(tostring_args(...), ",\t"))
 				end
 				
 				local val = func(...)
 				
 				if ffmpeg.logcalls then
-					logf(">> %s", luadata.ToString(val))
+					logf(">> %s\n", luadata.ToString(val))
 					setlogfile()
 				end
 				

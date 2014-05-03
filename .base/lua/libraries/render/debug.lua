@@ -115,6 +115,6 @@ function render.OnError(source, type, id, severity, message)
 		info.name = info.short_src
 	end
 	
-	logf("%s at %s:%i", info.name, info.short_src, info.currentline)
+	logf("%s at %s:%i\n", info.name, info.short_src, info.currentline)
 	logn("\t", message, "\n")
 end

@@ -76,7 +76,7 @@ function glfw.GetVersion()
 	return major[0] + (minor[0] / 100), rev[0]
 end
 
-glfw.SetErrorCallback(function(code, msg) logf("[glfw error] %s", ffi.string(msg)) end)
+glfw.SetErrorCallback(function(code, msg) logf("[glfw error] %s\n", ffi.string(msg)) end)
 
 glfw.Init()
 
