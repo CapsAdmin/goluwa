@@ -137,7 +137,7 @@ do -- table logn
 				
 				logf("%s]\n", tab:rep(indent))
 			elseif t == "string" then
-				logf("%s%s = \"%s\",\n", tab:rep(indent), key, tostringx(val))
+				logf("%s%s = %q,\n", tab:rep(indent), key, tostringx(val))
 			else
 				logf("%s%s = %s,\n", tab:rep(indent), key, tostringx(val))
 			end
