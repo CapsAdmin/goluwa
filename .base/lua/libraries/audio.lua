@@ -1,7 +1,7 @@
 audio = _G.audio or {}
 
-audio.objects = audio.objects or {}
-audio.effect_channels = audio.effect_channels or {}
+audio.objects = audio.objects or setmetatable({}, { __mode = 'v' })
+audio.effect_channels = audio.effect_channels or setmetatable({}, { __mode = 'v' })
 
 function audio.Open(name)
 	os.setenv("ALSOFT_CONF", lfs.currentdir() .. "\\" .. "al_config.ini")
@@ -248,7 +248,7 @@ local function GET_BINDER(META, object_name)
 		end
 	end
 end
-
+ 
 local function GEN_TEMPLATE(type, ctor, on_remove)
 	local type2 = type:lower()
 
@@ -297,7 +297,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	end
 
 	local key = "Gen" .. type
-
+ 
 	local create = function(...)
 		local self = META:New()
 
@@ -307,7 +307,6 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 			ctor(self, ...)
 		end
 
-		-- this kind of wont really make gc of any use
 		audio.objects[self] = self
 
 		return self
@@ -455,7 +454,59 @@ do -- source
 			return pushed[buffers[0]] or NULL
 		end
 	end
+	
+	do -- streaming
+		class.GetSet(META, "StreamingFormat", e.AL_FORMAT_STEREO16)
 
+		local source = audio.CreateSource()
+		
+		function META:StartStreaming(callback, ...)
+			check(callback, "function")
+						
+			for i = 1, 3 do
+				local buffer = audio.CreateBuffer()
+				buffer:SetFormat(self.StreamingFormat)
+				buffer:SetData(callback(...))
+				self:PushBuffer(buffer)
+			end  
+			
+			timer.Thinker(function()
+				if not self:IsValid() or not self.streaming_callback then return false end
+				local val = self:GetBuffersProcessed()
+				
+				while val > 0 do
+					local buffer, length = self.streaming_callback[1](select(2, unpack(self.streaming_callback)))
+					
+					if buffer then
+						local bo = self:PopBuffer()
+						if bo:IsValid() then
+							bo:SetFormat(self.StreamingFormat)
+							bo:SetData(buffer, length)
+							self:PushBuffer(bo)
+						end
+					end
+
+					val = val - 1
+				end
+				
+				if not self:IsPlaying() then
+					self:Play()
+				end
+			end)
+			
+			self.streaming_callback = {callback, ...}
+		end
+		
+		function META:IsStreaming()
+			return self.streaming_callback ~= nil
+		end
+		
+		function META:StopStreaming()
+			self:Stop()		
+			self.streaming_callback = false
+		end
+	end
+ 
 	do
 		-- http://wiki.delphigl.com/index.php/alGetSource
 
