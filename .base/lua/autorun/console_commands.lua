@@ -142,19 +142,19 @@ console.AddCommand("source", function(line, ...)
 			print(func:src())
 		end
 	else
-		logf("function %q could not be found in _G or in added commands", line)
+		logf("function %q could not be found in _G or in added commands\n", line)
 	end
 	
 	if #data > 0 then
 		
 		if #data < 10 then
-			logf("also found:")
+			logf("also found:\n")
 			
 			for k,v in pairs(data) do
 				logn("\t", v.nice_name) 
 			end
 		else
-			logf("%i results were also found", #data)
+			logf("%i results were also found\n", #data)
 		end
 	end
 end)
