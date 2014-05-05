@@ -144,7 +144,7 @@ do -- helpers/usage
 		url = url:gsub("http://", "")
 		callback = callback or table.print
 		method = method or "GET"
-		user_agent = user_agent or "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.117 Safari/537.36"
+		user_agent = user_agent or "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
 
 		local host, location = url:match("(.-)/(.+)")
 
