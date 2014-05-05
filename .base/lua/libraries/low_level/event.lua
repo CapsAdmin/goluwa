@@ -2,9 +2,9 @@ local event = _G.event or {}
 
 e.EVENT_DESTROY = "??|___EVENT_DESTROY___|??" -- unique what
 
-event.active = {}
-event.errors = {}
-event.profil = {}
+event.active = event.active or {}
+event.errors = event.errors or {}
+event.profil = event.profil or {}
 event.destroy_tag = e.EVENT_DESTROY
 
 event.profiler_enabled = false
