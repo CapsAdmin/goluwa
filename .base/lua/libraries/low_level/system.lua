@@ -2,6 +2,51 @@ local system = _G.system or {}
 
 local function not_implemented() debug.trace() logn("this function is not yet implemented!") end
 
+do -- memory
+	if WINDOWS then
+		 
+		ffi.cdef([[
+		typedef struct _PROCESS_MEMORY_COUNTERS {
+		  unsigned long cb;
+		  unsigned long PageFaultCount;
+		  size_t PeakWorkingSetSize;
+		  size_t WorkingSetSize;
+		  size_t QuotaPeakPagedPoolUsage;
+		  size_t QuotaPagedPoolUsage;
+		  size_t QuotaPeakNonPagedPoolUsage;
+		  size_t QuotaNonPagedPoolUsage;
+		  size_t PagefileUsage;
+		  size_t PeakPagefileUsage;
+		} PROCESS_MEMORY_COUNTERS, *PPROCESS_MEMORY_COUNTERS;
+		int GetProcessMemoryInfo(void* Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, unsigned long long cb);
+		]])
+		
+		local lib = ffi.load("kernel32")
+		local pmc = ffi.new("PROCESS_MEMORY_COUNTERS[1]")
+		
+		function system.GetMemoryInfo()
+			lib.GetProcessMemoryInfo(nil, pmc, sizeof(pmc))
+			local pmc = pmc[0]
+			
+			return {
+				page_fault_count = pmc.PageFaultCount,
+				peak_working_set_size = pmc.PeakWorkingSetSize,
+				working_set_size = pmc.WorkingSetSize,
+				qota_peak_paged_pool_usage = pmc.QuotaPeakPagedPoolUsage,
+				quota_paged_pool_usage = pmc.QuotaPagedPoolUsage,
+				quota_peak_non_paged_pool_usage = pmc.QuotaPeakNonPagedPoolUsage,
+				quota_non_paged_pool_usage = pmc.QuotaNonPagedPoolUsage,
+				page_file_usage = pmc.PagefileUsage,
+				peak_page_file_usage = pmc.PeakPagefileUsage,
+			}			
+		end
+	end
+	
+	if LINUX then
+		system.GetMemoryInfo = not_implemented
+	end
+end
+
 do -- editors
 	local editors = {
 		{	
