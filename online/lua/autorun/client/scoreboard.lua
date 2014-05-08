@@ -1,13 +1,13 @@
-function goluwa.scoreboard.OnDraw2D()
+function goluwa.scoreboard.DrawHUD()
 	surface.Color(1,1,1,1)
 	surface.SetFont("default")
 	local i = 0
 	for _, ply in pairs(players.GetAll()) do
-		if not ply:IsBot() then
+		if ply ~= players.GetLocalPlayer() and not ply:IsBot() then
 			surface.SetTextPos(10, i * 20 + 5)
 			surface.DrawText(ply.score_str)
+			i = i + 1
 		end
-		i = i + 1
 	end
 end
 

@@ -26,8 +26,8 @@ local function get_is_set(is, tbl, name, def, cvar)
 		tbl[set .. name] = tbl[set .. name] or function(self, var) self.nv[name] = tostring(var) end
 		tbl[get .. name] = tbl[get .. name] or function(self, var) return tostring(self.nv[name]) end
 	else
-		tbl[set .. name] = tbl[set .. name] or function(self, var) self.nv[name] = var end
-		tbl[get .. name] = tbl[get .. name] or function(self, var) return self.nv[name] or def end
+		tbl[set .. name] = tbl[set .. name] or function(self, var) if var == nil then var = def end self.nv[name] = var end
+		tbl[get .. name] = tbl[get .. name] or function(self, var) if self.nv[name] ~= nil then return self.nv[name] end return def end
 	end
 	
 end
@@ -37,7 +37,11 @@ nvars.IsSet = function(...) return get_is_set(true, ...) end
 
 if CLIENT then
 	message.AddListener("nv", function(env, key, value)
-		nvars.Set(key, value, env)
+		if key == nil and value == nil then
+			nvars.Environments[env] = nil
+		else
+			nvars.Set(key, value, env)
+		end
 	end)
 	
 	message.AddListener("nvars_fullupdate", function()
@@ -77,7 +81,7 @@ function nvars.Set(key, value, env, ply)
 		
 	nvars.Environments[env] = nvars.Environments[env] or {}
 	nvars.Environments[env][key] = value
-
+	
 	if SERVER then
 		message.Send("nv", ply, env, key, value)
 	end
@@ -86,18 +90,30 @@ end
 function nvars.Get(key, def, env)
 	env = env or "g"
 
-	return nvars.Environments[env] and nvars.Environments[env][key] or def
+	if nvars.Environments[env] and nvars.Environments[env][key] ~= nil then
+		return nvars.Environments[env][key]
+	end
+	
+	return def
 end
 
 do
 	local META = {}
 
 	function META:__index(key)
-		return nvars.Get(key, nil, self.Env)
+		local val = nvars.Get(key, nil, self.Env)
+		if val ~= nil then
+			return val
+		end
+		return META[key]
 	end
 
 	function META:__newindex(key, value)
 		nvars.Set(key, value, self.Env)
+	end
+	
+	function META:Remove()
+		nvars.RemoveObject(self.Env)
 	end
 
 	nvars.ObjectMeta = META
@@ -105,4 +121,11 @@ end
 
 function nvars.CreateObject(env)
 	return setmetatable({Env = env}, nvars.ObjectMeta)
+end
+
+function nvars.RemoveObject(env)
+	nvars.Environments[env] = nil
+	if SERVER then
+		message.Send("nv", nil, env)
+	end	
 end

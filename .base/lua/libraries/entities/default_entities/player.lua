@@ -7,13 +7,9 @@ META.socket = NULL
 
 class.GetSet(META, "UniqueID", "???")
 class.GetSet(META, "ID", -1)
-class.IsSet(META, "Bot", false)
 
+nvars.IsSet(META, "Bot", false)
 nvars.GetSet(META, "Nick", e.USERNAME, "cl_nick")
-
-function META:IsBot()
-	return not self.socket:IsValid()
-end
 
 function META:GetNick()
 	for key, ply in pairs(players.GetAll()) do
@@ -34,6 +30,7 @@ function META:GetName()
 end
 
 function META:OnRemove()	
+	self.nv:Remove()
 	players.active_players[self:GetUniqueID()] = nil
 	if SERVER then 
 		if self.socket:IsValid() then
