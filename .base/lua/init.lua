@@ -3,6 +3,23 @@ if system and system.Restart then system.Restart() return end
 DEBUG = true
 USE_STRUNG = true
 _G.ffi = require("ffi")
+_G.lfs = require("lfs")
+
+if not ffi then
+	error("goluwa requires luajit 2+ to run!")
+end
+
+if not lfs then 
+	error("unable to load lfs! are you sure the cd is ROOT/.base/bin/*OS*/*ARCH*/ ?")
+end
+
+if true then -- workaround for when working directory is goluwa/ (like when running from zerobrane)	
+	local dir = lfs.currentdir():gsub("\\", "/")
+	if dir:find(".+goluwa$") then
+		dir = dir .. "/.base/bin/" .. jit.os:lower() .. "/" .. jit.arch:lower()
+	end
+	lfs.chdir(dir)
+end
 
 _G[ffi.os:upper()] = true
 _G[ffi.arch:upper()] = true
@@ -113,8 +130,8 @@ do -- file system
 	
 	-- use strung
 	if USE_STRUNG then
-		_G.strung = require("strung")
-		_G.strung.install()
+		local strung = require("strung")
+		for k,v in pairs(strung) do if k ~= "gsub" then string[k] = v end end		
 	end
 end
 
@@ -691,7 +708,7 @@ end
 if ARGS then
 	
 	for _, arg in pairs(ARGS) do
-		console.RunString(tostring(arg))
+		print(console.RunString(tostring(arg)))
 	end
 	
 	ARGS = nil
