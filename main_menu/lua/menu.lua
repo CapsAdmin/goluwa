@@ -263,8 +263,9 @@ function menu.SetupButtons()
 	
 end
  
+menu.Open()
+
 if not network.IsStarted() then
-	menu.Open()
 	menu.FadeIn()
 end
 
