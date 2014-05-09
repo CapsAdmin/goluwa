@@ -346,7 +346,7 @@ do -- source
 
 		self.effects = {}
 		
-		if type(var) == "cdata" and type(length) == "cdata" then
+		if type(var) == "cdata" and type(length) == "cdata" or type(length) == "number" then
 			
 			local buffer = audio.CreateBuffer()
 			
@@ -359,7 +359,9 @@ do -- source
 			buffer:SetData(var, length)
 			self:SetBuffer(buffer)
 			
-		elseif type(var) == "string" then
+		elseif typex(var) == "buffer" then
+			self:SetBuffer(var)
+		elseif type(var) == "string" then		
 			vfs.ReadAsync(var, function(data)
 				local data, length, info = audio.Decode(data, nil, var)
 				
@@ -438,6 +440,9 @@ do -- source
 	end
 
 	do
+		class.GetSet(META, "BufferCount", 4)
+		class.GetSet(META, "BufferFormat", e.AL_FORMAT_STEREO16)
+		
 		local buffers = ffi.new("ALuint[1]")
 		local pushed = {}
 
@@ -453,60 +458,32 @@ do -- source
 			al.SourceUnqueueBuffers(self.id, 1, buffers)
 			return pushed[buffers[0]] or NULL
 		end
-	end
-	
-	do -- streaming
-		class.GetSet(META, "StreamingFormat", e.AL_FORMAT_STEREO16)
-
-		local source = audio.CreateSource()
 		
-		function META:StartStreaming(callback, ...)
-			check(callback, "function")
-						
-			for i = 1, 3 do
-				local buffer = audio.CreateBuffer()
-				buffer:SetFormat(self.StreamingFormat)
-				buffer:SetData(callback(...))
-				self:PushBuffer(buffer)
-			end  
-			
-			timer.Thinker(function()
-				if not self:IsValid() or not self.streaming_callback then return false end
+		function META:FeedBuffer(buffer, length)
+			if not self.pushed_feed_buffers or self.pushed_feed_buffers < self.BufferCount then
+				local b = audio.CreateBuffer()
+				b:SetFormat(self.BufferFormat)
+				b:SetData(buffer, length)
+				self:PushBuffer(b)
+				self.pushed_feed_buffers = (self.pushed_feed_buffers or 0) + 1
+			else
 				local val = self:GetBuffersProcessed()
 				
-				while val > 0 do
-					local buffer, length = self.streaming_callback[1](select(2, unpack(self.streaming_callback)))
-					
-					if buffer then
-						local bo = self:PopBuffer()
-						if bo:IsValid() then
-							bo:SetFormat(self.StreamingFormat)
-							bo:SetData(buffer, length)
-							self:PushBuffer(bo)
-						end
+				for i = 1, val do
+					local b = self:PopBuffer()
+					if b:IsValid() then
+						b:SetData(buffer, length)
+						self:PushBuffer(b)
 					end
-
-					val = val - 1
-				end
-				
-				if not self:IsPlaying() then
-					self:Play()
-				end
-			end)
+				end	
+			end
 			
-			self.streaming_callback = {callback, ...}
-		end
-		
-		function META:IsStreaming()
-			return self.streaming_callback ~= nil
-		end
-		
-		function META:StopStreaming()
-			self:Stop()		
-			self.streaming_callback = false
+			if not sound:IsPlaying() then
+				sound:Play()
+			end
 		end
 	end
- 
+	 
 	do
 		-- http://wiki.delphigl.com/index.php/alGetSource
 
@@ -564,8 +541,14 @@ do -- source
 end
 
 do -- buffer
-	local META = GEN_TEMPLATE("Buffer", function(self, data, size)
+	local META = GEN_TEMPLATE("Buffer", function(self, data, size, format, sample_rate)
 		if data and size then
+			if format then 
+				self:SetFormat(format)
+			end
+			if sample_rate then
+				self:SetSampleRate(sample_rate)
+			end
 			self:SetData(data, size)
 		end
 	end)
