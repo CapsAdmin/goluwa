@@ -50,10 +50,52 @@ for line in header:gmatch("(.-)\n") do
 	end
 end
 
-function ffmpeg.get_last_error()
+function ffmpeg.lua_initialize()
+	ffi.cdef[[int sprintf(char *str, const char *format, ...);]]
+
+	ffmpeg.av_log_set_callback(function(huh, level, fmt, va_list)
+		if not ffmpeg.debug then return end
+		local buffer = ffi.new("char[256]")
+		ffi.C.sprintf(buffer, fmt, va_list)
+		log("[ffmpeg] ", ffi.string(buffer))
+	end)
+
+	ffmpeg.av_register_all() 
+end
+
+function ffmpeg.lua_table_to_dictionary(tbl)	
+	local dict = ffi.new("AVDictionary *[1]")
+	
+	if not tbl then return dict[0] end
+	
+	for key, val in pairs(tbl) do
+		ffmpeg.av_dict_set(dict, tostring(key), tostring(val), 0)
+	end
+	
+	return dict[0]
+end
+
+function ffmpeg.lua_dictionary_to_table(dict)	
+	local tbl = {}
+	
+	if dict == nil then return tbl end
+	
+	local entry = ffi.new("AVDictionaryEntry *")
+	while true do 
+		entry = ffmpeg.av_dict_get(dict, "", entry, AV_DICT_IGNORE_SUFFIX)
+		if entry == nil then break end
+		tbl[ffi.string(entry.key)] = ffi.string(entry.value)
+	end
+	
+	return tbl
+end
+
+function ffmpeg.lua_get_last_error()
 	local buff = ffi.new("char[512]")
 	ffmpeg.av_strerror(ffi.errno(), buff, 512) 
 	return ffi.string(buff) 
 end
+
+ffmpeg.lua_initialize()
 
 return ffmpeg
