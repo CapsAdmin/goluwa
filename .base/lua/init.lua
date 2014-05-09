@@ -277,15 +277,18 @@ do -- logging
 	function logn(...)
 		local args = {...}
 		table.insert(args, "\n")
-		return log(unpack(args))
+		log(unpack(args))
+		return ...
 	end
 	
 	function print(...)
 		logn(table.concat(tostring_args(...), ",\t"))
+		return ...
 	end
 
 	function logf(str, ...)
 		log(safeformat(str, ...))
+		return ...
 	end
 
 	function errorf(str, level, ...)
@@ -311,6 +314,7 @@ do -- logging
 				return log(format, ...)
 			end
 		end
+		return ...
 	end	
 	
 	do
