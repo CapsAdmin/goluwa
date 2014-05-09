@@ -444,7 +444,7 @@ function render.CreateTextureFromPath(path, format)
 	vfs.ReadAsync(path, function(data)
 		tex.loading = false
 		
-		local buffer, w, h, info = render.DecodeTexture(data, length, path_hint)
+		local buffer, w, h, info = render.DecodeTexture(data, path)
 		
 		if not buffer then
 			local err = render.GetErrorTexture()
