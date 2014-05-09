@@ -100,8 +100,8 @@ end
 
 luasocket.socket = require("socket") or _G.socket
 
-function luasocket.DebugPrint(...)
-	if luasocket.debug then
+function luasocket.DebugPrint(self, ...)
+	if (self and self.debug) or luasocket.debug then
 		local tbl = {}
 
 		for i = 1, select("#", ...) do
@@ -285,9 +285,9 @@ do -- helpers/usage
 		local ok, msg = sck:sendto(str, ip, port)
 
 		if ok then
-			luasocket.DebugPrint("SendUDPData sent data to %s:%i (%s)", ip, port, str)
+			luasocket.DebugPrint(nil, "SendUDPData sent data to %s:%i (%s)", ip, port, str)
 		else
-			luasocket.DebugPrint("SendUDPData failed %q", msg)
+			luasocket.DebugPrint(nil, "SendUDPData failed %q", msg)
 		end
 
 		return ok, msg
@@ -400,7 +400,7 @@ do -- tcp socket meta
 		end
 
 		function CLIENT:DebugPrintf(fmt, ...)
-			luasocket.DebugPrint("%s - " .. fmt, self, ...)
+			luasocket.DebugPrint(self, "%s - " .. fmt, self, ...)
 		end
 
 		function CLIENT:Connect(ip, port, skip_cares)
@@ -702,8 +702,12 @@ do -- tcp socket meta
 		function CLIENT:OnSend(data, bytes, b,c,d) end
 		function CLIENT:OnClose() end
 
-		function luasocket.Client(typ)
-			return new_socket(nil, CLIENT, typ)
+		function luasocket.Client(typ, ip, port)
+			local self = new_socket(nil, CLIENT, typ)
+			if ip or port then
+				self:Connect(ip, port)
+			end
+			return self
 		end
 
 		luasocket.ClientMeta = CLIENT
@@ -723,7 +727,7 @@ do -- tcp socket meta
 		end
 
 		function SERVER:DebugPrintf(fmt, ...)
-			luasocket.DebugPrint("%s - " .. fmt, self, ...)
+			luasocket.DebugPrint(self, "%s - " .. fmt, self, ...)
 		end
 
 		function SERVER:GetClients()
@@ -902,8 +906,12 @@ do -- tcp socket meta
 		function SERVER:OnClientError(client, err) end
 		function SERVER:OnError(msg) self:Remove() end
 
-		function luasocket.Server(typ)
-			return new_socket(nil, SERVER, typ)
+		function luasocket.Server(typ, ip, port)
+			local self = new_socket(nil, SERVER, typ)
+			if ip or port then
+				self:Host(ip, port)
+			end
+			return self
 		end
 
 		luasocket.ServerMeta = SERVER
