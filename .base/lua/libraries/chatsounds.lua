@@ -268,7 +268,11 @@ else
 
 		function self:GetDuration()
 			if self.csp.decode_info then
-				return tonumber(self.csp.decode_info.frames) / self.csp.decode_info.samplerate
+				if self.csp.decode_info.duration then
+					return self.csp.decode_info.duration
+				elseif self.csp.decode_info.frames then
+					return tonumber(self.csp.decode_info.frames) / self.csp.decode_info.samplerate
+				end
 			end
 			return 0
 		end
