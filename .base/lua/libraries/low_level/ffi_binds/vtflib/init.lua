@@ -65,7 +65,9 @@ function vl.LoadImage(data, format)
 	vl.CreateMaterial(uiVMTMaterial)
 	vl.BindMaterial(uiVMTMaterial[0])
 
-	vl.ImageLoadLump(ffi.cast("void *", data), #data, 0)
+	if vl.ImageLoadLump(ffi.cast("void *", data), #data, 0) == 0 then
+		return nil, "not a vtf file"
+	end
 
 	local w, h = vl.ImageGetWidth(), vl.ImageGetHeight()
 	local size = vl.ImageComputeImageSize(w, h, 1, 1, format)
