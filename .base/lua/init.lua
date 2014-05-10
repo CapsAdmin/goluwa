@@ -2,15 +2,20 @@ if system and system.Restart then system.Restart() return end
 
 DEBUG = true
 USE_STRUNG = true
+
 _G.ffi = require("ffi")
-_G.lfs = require("lfs")
 
 if not ffi then
 	error("goluwa requires luajit 2+ to run!")
 end
 
+-- load normal lua modules from this directory
+package.cpath = package.cpath .. ";../../../lua/modules/bin/" .. jit.os:lower() .. "/" .. jit.arch:lower() .. "/?." .. (jit.os == "Windows" and "dll" or "so")
+
+_G.lfs = require("lfs")
+
 if not lfs then 
-	error("unable to load lfs! are you sure the cd is ROOT/.base/bin/*OS*/*ARCH*/ ?")
+	error("unable to load lfs! are you sure the cd is ROOT/.base/bin/*OS*/*ARCH*/ and that ROOT/.base/lua/modules/bin/*OS*/*ARCH*/ ?")
 end
 
 if true then -- workaround for when working directory is goluwa/ (like when running from zerobrane)	
@@ -121,9 +126,6 @@ do -- file system
 	_G.R = vfs.GetAbsolutePath
 	
 	vfs.AddModuleDirectory("lua/modules/")
-	
-	-- straight loading
-	vfs.AddModuleDirectory("")
 	
 	-- replace require with the pure lua version (lua/procure/init.lua)
 	_G.require = require("procure")	
