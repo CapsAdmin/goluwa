@@ -197,7 +197,9 @@ function console.InitializeCurses()
 	console.curses_init = true
 end
 
-console.InitializeCurses()
+if not ZEROBRANE then
+  console.InitializeCurses()
+end
 
 do -- colors
 
