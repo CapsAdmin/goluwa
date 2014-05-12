@@ -1,4 +1,51 @@
 local console = _G.console or {}
+
+local start_symbols = {
+	"%!",
+	"%.",
+	"%/",
+	"",
+}
+
+local arg_types = {
+	vec3 = Vec3,	
+	ang3 = Ang3,
+	ply = function(str)
+		return easylua.FindEntity(str) or NULL
+	end,
+	name = function(ply)
+		if ply and ply:IsValid() then
+			return ply:GetNick()
+		end
+	end,
+}
+
+if expression then
+	arg_types.e = function(str)
+		local ok, res = assert(expression.Compile(str))
+		return res()
+	end
+end
+
+arg_types.v3 = arg_types.vec3
+arg_types.a3 = arg_types.ang3
+arg_types["@"] = arg_types.ply
+arg_types["#"] = arg_types.ply
+
+
+local capture_symbols = {
+	["\""] = "\"",
+	["'"] = "'",
+	["("] = ")",
+	["["] = "]",
+	["`"] = "`",
+	["´"] = "´",
+}
+
+local function allowed(udata, arg)
+	return true
+end
+
 local SERVER = true
 
 local result = ""
@@ -92,32 +139,140 @@ do -- commands
 			return call(data.callback, line, ...)
 		end
 	end
-
-	-- thanks lexi!
-	-- http://www.facepunch.com/showthread.php?t=827179
-
-	function console.ParseCommandArgs(line)
-		local cmd, val = line:match("^(%S-)%s-=%s+(.+)$")
-				
-		if cmd and val then
-			return {cmd:trim(), val:trim()}
-		end
 	
-		local quote = line:sub(1,1) ~= '"'
-		local ret = {}
-		
-		for chunk in string.gmatch(line, '[^"]+') do
-			quote = not quote
-			if quote then
-				table.insert(ret,chunk)
-			else
-				for chunk in string.gmatch(chunk, "%S+") do -- changed %w to %S to allow all characters except space
-					table.insert(ret, chunk)
+	do -- arg parsing
+		local function parse_args(arg_line)
+			if not arg_line or arg_line:trim() == "" then return {} end
+			
+			local chars = arg_line:utotable()
+					
+			local args = {}
+			local capture = {}
+			local escape  = false
+			
+			local in_capture = false
+			
+			for i, char in ipairs(chars) do	
+				if escape then
+					table.insert(capture, char)
+					escape = false
+				else
+					if in_capture then
+						if char == in_capture then
+							in_capture = false
+						end
+						
+						table.insert(capture, char)
+					else
+						if char == "," then
+							table.insert(args, table.concat(capture, ""):trim())
+							table.clear(capture)
+						else												
+							table.insert(capture, char)
+							
+							if capture_symbols[char] then								
+								in_capture = capture_symbols[char]
+							end
+							
+							if char == "\\" then
+								escape = true
+							end
+						end
+					end
+				end
+			end
+			
+			table.insert(args, table.concat(capture, ""):trim())		
+			
+			for i, str in ipairs(args) do		
+				if tonumber(str) then
+					args[i] = tonumber(str)
+				else
+					local cmd, rest = str:match("^(.+)%((.+)%)$")
+					
+					if not cmd then
+						local t = str:sub(1,1):charclass()
+						if t then
+							cmd, rest = str:match("^("..t.."+)(.+)$")
+						end
+					end
+					
+					if cmd then
+						cmd = cmd:trim():lower()
+						if arg_types[cmd] then
+							
+							if capture_symbols[rest:sub(1,1)] then
+								rest = rest:sub(2, -2)
+							end
+							
+							args[i] = {cmd = cmd, args = parse_args(rest), line = str}
+						end
+					end
+				end
+			end
+			
+			return args
+		end
+
+		local function parse_line(line)
+			for k,v in ipairs(start_symbols) do
+				local start, rest = line:match("^(" .. v .. ")(.+)")
+				if start then
+					local cmd, rest_ = rest:match("^(%S+)%s+(.+)$")
+					if not cmd then
+						return v, rest:trim()
+					else
+						return v, cmd, rest_
+					end
 				end
 			end
 		end
 
-		return ret
+		local function execute_args(args, udata)	
+			local errors = {}
+			
+			for i, arg in ipairs(args) do	
+				if type(arg) == "table" then
+					
+					local ok, res = execute_args(arg.args, udata)
+					
+					if not ok then
+						table.insert(errors, res)
+					end
+					
+					if arg_types[arg.cmd] and allowed(udata, arg) then
+						local ok, res = pcall(arg_types[arg.cmd], unpack(arg.args))
+						
+						if ok then
+							args[i] = res
+						else
+							table.insert(errors, ("%q: %s"):format(arg.line, res))
+						end
+					end
+				end
+			end
+			
+			if #errors > 0 then
+				return nil, table.concat(errors, "\n") 
+			end
+			
+			return true
+		end
+		
+		function console.IsValidCommand(line)
+			local symbol, cmd, rest = parse_line(line)
+			return console.AddedCommands[cmd] ~= nil, symbol and symbol:sub(2,2)
+		end
+		
+		function console.ParseCommandArgs(line)
+			local symbol, cmd, rest = parse_line(line)
+			
+			local data = {args = parse_args(rest), line = rest, cmd = cmd, symbol = symbol}
+			
+			local ok, err = execute_args(data.args)
+			if not ok then return nil, err end
+			return data
+		end
 	end
 	
 	function console.RunString(line, skip_lua, skip_split)
@@ -128,20 +283,14 @@ do -- commands
 			return
 		end
 	
-		local args = console.ParseCommandArgs(line)
+		local data, err = console.ParseCommandArgs(line)
 		
-		local cmd = args[1]
-		
-		if cmd then			
-			local ccmd = cmd:lower()
-			
-			if console.AddedCommands[ccmd] then
-				local arg_line = line:sub(#args[1]+1):trim()
-				return console.CallCommand(ccmd, arg_line, select(2, unpack(args)))
+		if data then						
+			if console.AddedCommands[data.cmd] then
+				return console.CallCommand(data.cmd, data.line, unpack(data.args))
 			end
 			
 			if not skip_lua then
-				
 				--[==[
 				local func = _G[cmd]
 				
@@ -188,7 +337,7 @@ do -- commands
 				
 				return xpcall(func, system.OnError)
 			end
-		end
+		end 
 	end
 end
 
