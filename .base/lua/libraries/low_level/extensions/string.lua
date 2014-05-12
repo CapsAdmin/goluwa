@@ -78,6 +78,26 @@ function string.getchartype(char)
 	return "unknown"
 end
 
+local types = {
+	"%a",
+	"%c",
+	"%d",
+	"%l",
+	"%p",
+	"%u",
+	"%w",
+	"%x",
+	"%z",
+}
+
+function string.charclass(char)
+	for i, v in ipairs(types) do
+		if char:find(v) then
+			return v
+		end
+	end
+end
+
 function string.safeformat(str, ...)
 	local count = select(2, str:gsub("(%%)", ""))
 	local copy = {}
