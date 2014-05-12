@@ -13,6 +13,8 @@ local assert, error, getmetatable, ipairs, loadstring, pairs, print
     = assert, error, getmetatable, ipairs, loadstring, pairs, print
     , rawset, require, setmetatable, tonumber, tostring, type, pcall
 
+--[[DBG]] local unpack = unpack
+
 local _u, expose, noglobals
 
 pcall(function() -- used only for development.
@@ -20,14 +22,16 @@ pcall(function() -- used only for development.
   expose, noglobals = _u.expose, _u.noglobals
 end)
 
+;(noglobals or type)("") -------------------------------------------------------------
+
 local m_max = require"math".max
 
 local o_setlocale = require"os".setlocale
 
 local s, t = require"string", require"table"
 
-local s_byte, s_char, s_find, s_gmatch, s_sub, s_match
-    = s.byte, s.char, s.find, s.gmatch, s.sub, s.match
+local s_byte, s_char, s_find, s_gmatch, s_gsub, s_match, s_rep, s_sub
+    = s.byte, s.char, s.find, s.gmatch, s.gsub, s.match, s.rep, s.sub
 
 local t_concat, t_insert, t_remove
     = t.concat, t.insert, t.remove
@@ -53,8 +57,6 @@ local constchar = typeof"const unsigned char *"
 --[[DBG]] end}
 
 --[[DBG]] local u32arys = metatype("struct {uint32_t ary[?];}", ffimt)
-
-;(noglobals or type)("") -------------------------------------------------------------
 
 -- bit sets, code released by Mike Pall in the public domain.
 
@@ -108,6 +110,7 @@ return function(subj, _, i)
   local i0 = i - 1
   local chars = constchar(subj) - 1 -- substract one to keep the 1-based index
   local c, open, close, diff
+  if i > len + 1 then return nil end
   ]=], --[[
   anchored and "do" or "repeat"]]"", [=[ --
     i0 = i0 + 1
@@ -181,7 +184,7 @@ templates.set = {[[(i <= len) and ]], P.INV, [[ bittest(charsets, ]], P.SET, [=[
 
 
 templates.ballanced = {[[ -- %b
-  if subj:byte(i) ~= ]], P.OPEN, [[ then
+  if chars[i] ~= ]], P.OPEN, [[ then
     i = 0; goto done --break
   else
     count = 1
@@ -189,10 +192,10 @@ templates.ballanced = {[[ -- %b
       i = i + 1
       if i > len then i = 0; break end
       c = chars[i]
-      if c == ]], P.OPEN, [[ then
-        count = count + 1
-      elseif c == ]], P.CLOSE, [[ then
+      if c == ]], P.CLOSE, [[ then
         count = count - 1
+      elseif c == ]], P.OPEN, [[ then
+        count = count + 1
       end
     until count == 0 or i == 0
   end
@@ -200,16 +203,9 @@ templates.ballanced = {[[ -- %b
   i = i + 1]]
 }
 templates.frontier = {[[ -- %f
-  if not (
-    i == 1 and i <= len and ]], P.POS, [[ bittest(charsets, ]], P.SET, [[ + chars[i])
-  or
-    i <= len
-    and ]], P.POS, [[ bittest(charsets, ]], P.SET, [[ + chars[i])
-    and ]], P.NEG, [[ bittest(charsets, ]], P.SET, [[ + chars[i-1])
-  ) then
-    i = 0
-    goto done
-  end --break]]
+  if ]], P.NEG, [[ bittest(charsets, ]], P.SET, [[ + chars[i])
+  or ]], P.POS, [[ bittest(charsets, ]], P.SET, [[ + chars[i-1])
+  then i = 0; goto done end]]
 }
 templates.poscap = {[[ -- ()
   caps[]], P.OPEN, [[] = i
@@ -243,15 +239,16 @@ local function hash_find (s, p, i) --
   local lp, ls = #p, #s
   if ls < lp then return nil end
   if p == s then return i, i + lp - 1 end
+  local chars = constchar(s) - 1
   local c = s_byte(p)
-  p, lp = p:sub(2), lp -1
+  lp = lp -1
   local last = ls - lp
   repeat
-    while c ~= s_byte(s, i) do
+    while c ~= chars[i] do
       i = i + 1
       if i > last then return nil end
     end
-    if lp == 0 or s_sub(s, i + 1, i + lp) == p then return i, i + lp end
+    if lp == 0 or s_sub(s, i, i + lp) == p then return i, i + lp end
     i = i + 1
   until i > last
   return nil
@@ -341,7 +338,7 @@ gsubcodecache = setmetatable({}, {
   end
 })
 
-local function indent(i, s) return tostring(s):gsub('\n', '\n'..("  "):rep(i*2)) end
+local function indent(i, s) return s_gsub(tostring(s), '\n', '\n'..s_rep("  ", i*2)) end
 
 --- Push the template parts in two buffers.
 local function push (tpl, data, buf, backbuf, ind)
@@ -402,7 +399,12 @@ local charclass = setmetatable({}, {__index = function(self, c)
   return self[c]
 end})
 
-
+-- %Z
+do
+  local Z = u32ary(8)
+  for i = 1, 255 do bitset(Z, i) end
+  charclass.Z = Z
+end
 local function key (cs)
   return t_concat({cs[0], cs[1], cs[2], cs[3], cs[4], cs[5], cs[6], cs[7]}, ":")
 end
@@ -420,7 +422,8 @@ end
 
 local hat = ('^'):byte()
 local function makecs(pat, i, sets)
-  local inv if s_byte(pat,i) == hat then inv = true; i = i + 1 end
+  local inv = s_byte(pat,i) == hat
+  i = inv and i + 1 or i
   local cl, last = i + 1, #pat
   while ']' ~= s_sub(pat, cl, cl) do cl = cl + 1 if i > last then error"unfinished character class" end end
   local cs = u32ary(8)
@@ -528,13 +531,17 @@ local function body(pat, i, caps, sets, data, buf, backbuf)
       i = i + 1
       c = pat:sub(i, i)
       if not c then error"malformed pattern (ends with '%')" end
-      if ccref[c:lower()] then -- a character class
+      if ccref[c:lower()] or c == "Z" then -- a character class
         templates.set[P.INV], templates.set[P.SET] = makecc(pat, i, sets)
                 data[P.TEST] = t_concat(templates.set)
       i, ind = suffix(i + 1, ind, len, pat, data, buf, backbuf)
+      elseif c == "0" then
+        error("invalid capture index")
       elseif "1" <= c and c <= "9" then
         local n = tonumber(c) * 2
-        if n > #caps then error"attempt to reference a non-existing capture" end
+        if n > #caps or caps[n] == -1 then
+          error"attempt to reference a non-existing capture"
+        end
         data[P.OPEN] = -n
         data[P.CLOSE] = -n + 1
         push(templates.refcap, data, buf,backbuf, ind)
@@ -545,7 +552,7 @@ local function body(pat, i, caps, sets, data, buf, backbuf)
       elseif c == 'f' then
         if pat:sub(i+1, i +1) ~= '[' then error"missing '['' after '%f' in pattern" end
         local inv, set_i
-        inv, data[P.SET], i = makecs(pat, i+1, sets)
+        inv, data[P.SET], i = makecs(pat, i+2, sets)
         data[P.POS] = inv and "not" or ""
         data[P.NEG] = inv and "" or "not"
         push(templates.frontier, data, buf, backbuf, ind)
@@ -555,14 +562,12 @@ local function body(pat, i, caps, sets, data, buf, backbuf)
         data[P.TEST] = t_concat(templates.char)
         i, ind = suffix(i + 1, ind, len, pat, data, buf, backbuf)
       end
+    elseif c == '$' and i == #pat then
+      push(templates.dollar, data, buf,backbuf, ind)
     else
-      if c == '$' and i == #pat then
-        push(templates.dollar, data, buf,backbuf, ind)
-      else
-        templates.char[P.VAL] = c:byte()
-        data[P.TEST] = t_concat(templates.char)
-        i, ind = suffix(i + 1, ind, len, pat, data, buf, backbuf)
-      end
+      templates.char[P.VAL] = c:byte()
+      data[P.TEST] = t_concat(templates.char)
+      i, ind = suffix(i + 1, ind, len, pat, data, buf, backbuf)
     end
     i = i + 1
     c = pat:sub(i, i)
@@ -610,14 +615,14 @@ function compile (pat, mode) -- local, declared above
   local ncaps = #caps / 2
   local charsets, capsptr = pack(
     sets,
-    mode == "gsub" and m_max(1, ncaps) or ncaps
+    (mode == "gsub" and m_max(1, ncaps) or ncaps)
   )
 
   -- append the tail of the matcher to its head.
   for i = #backbuf, 1, -1 do buf[#buf + 1] = backbuf[i] end
 
   --
-  data[P.UNTIL] = anchored and "end" or "until i ~=0 or i0 >= len"
+  data[P.UNTIL] = anchored and "end" or "until i ~=0 or i0 > len"
 
 
   -- prepare the return values
@@ -713,10 +718,13 @@ end
 
 
 local function find(subj, pat, i, plain)
-  i = checki(i, subj)
   if plain then
-    return hash_find(subj, pat, i, true)
+    return s_find(subj, pat, i, true)
   end
+  i = checki(i, subj)
+  -- if plain then
+  --   return hash_find(subj, pat, i, true)
+  -- end
   --[==[
   return _wrp(
     codecache[pat][M.SOURCE],
@@ -760,9 +768,9 @@ local gmatch do
 
   local function gmatch_iter(state)
     local success = state[GM.CODE](state[GM.SUBJ], state[GM.PAT], state[GM.INDEX])
-    local caps = state[GM.CAPS]
     if success then
-      state[GM.INDEX] = caps[1] + 1
+      local caps = state[GM.CAPS]
+      state[GM.INDEX] = m_max(caps[0], caps[1]) + 1
       return state[GM.PROD](caps, state[2])
     else
       return nil
@@ -950,6 +958,9 @@ local gsub do
   end
 
   local function function_handler (subj, caps, ncaps, producer, buf, fun)
+    -- [[DBG]]local _ = {producer(caps, subj)}
+    -- [[DBG]]for _,v in ipairs(_) do print("V:", v, tostring(v):byte())print("#",#tostring(v)) end
+    -- [[DBG]]local res = fun(unpack(_))
     local res = fun(producer(caps, subj))
     if not res then
       local i, e = caps[0], caps [1]
@@ -1004,7 +1015,7 @@ local gsub do
       mergebytes(buf, subjptr + last_e, caps[0] - last_e - 1)
       last_e = caps[1]
       handler(subj, caps, ncaps, helper, buf, repl)
-      success = matcher(subj, pat, caps[1] + 1)
+      success = matcher(subj, pat, m_max(caps[0], caps[1]) + 1)
     end
     mergebytes(buf, subjptr + last_e, #subj - last_e)
     return ffi_string(buf.a, buf.i), count
@@ -1035,7 +1046,7 @@ end
 
 local function showpat(p)
   print(p,"\n---------")
-  print(codecache[p][M.SOURCE])
+  print(gsubcodecache[p][M.SOURCE])
 end
 -------------------------------------------------------------------------------
 
