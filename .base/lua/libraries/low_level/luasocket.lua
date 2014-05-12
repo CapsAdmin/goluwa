@@ -113,6 +113,12 @@ function luasocket.DebugPrint(self, ...)
 end
 
 do -- helpers/usage
+	
+	function luasocket.EscapeURL(str)
+		return str:gsub("([^A-Za-z0-9_])", function(char)
+			return ("%%%02x"):format(string.byte(char))
+		end)
+	end
 
 	function luasocket.HeaderToTable(header)
 		local tbl = {}
@@ -140,7 +146,7 @@ do -- helpers/usage
 		return str
 	end
 
-	local function request(url, callback, method, timeout, post_data, user_agent, binary)		
+	local function request(url, callback, method, timeout, post_data, user_agent, binary, debug)		
 		url = url:gsub("http://", "")
 		callback = callback or table.print
 		method = method or "GET"
@@ -154,6 +160,7 @@ do -- helpers/usage
 		end
 		
 		local socket = luasocket.Client("tcp")
+		socket.debug = debug
 		socket:SetTimeout(timeout or 2)
 		socket:Connect(host, 80)
 
@@ -209,14 +216,20 @@ do -- helpers/usage
 			else
 				table.insert(content, str)
 				length = length + #str
-				if 	
-					(header["Content-Length"] and length >= header["Content-Length"]) or 
-					(header["Transfer-Encoding"] == "chunked" and content[#content - 2] == "" and str == "0") 
-				then
-					self:Remove()
-				end				
 			end
 			
+			if header["Content-Length"] then
+				if length >= header["Content-Length"] then
+					self:Remove()
+				end
+			elseif header["Transfer-Encoding"] == "chunked" then
+				if #content == 1 and content[1]:sub(-5) == "0\r\n\r\n" then 
+					self:Remove()
+				end
+				if content[#content - 2] == "" and str == "0" then
+					self:Remove()
+				end
+			end
 		end
 
 		
@@ -235,15 +248,15 @@ do -- helpers/usage
 		end
 	end
 	
-	function luasocket.Get(url, callback, timeout, user_agent, binary)
+	function luasocket.Get(url, callback, timeout, user_agent, binary, debug)
 		check(url, "string")
 		check(callback, "function", "nil", "false")
 		check(user_agent, "nil", "string")
 		
-		return request(url, callback, "GET", timeout, nil, user_agent, binary)
+		return request(url, callback, "GET", timeout, nil, user_agent, binary, debug)
 	end
 	
-	function luasocket.Post(url, post_data, callback, timeout, user_agent, binary)
+	function luasocket.Post(url, post_data, callback, timeout, user_agent, binary, debug)
 		check(url, "string")
 		check(callback, "function", "nil", "false")
 		check(post_data, "table", "string")
@@ -253,7 +266,7 @@ do -- helpers/usage
 			post_data = luasocket.TableToHeader(post_data)
 		end
 		
-		return request(url, callback, "POST", timeout, post_data, user_agent, binary)
+		return request(url, callback, "POST", timeout, post_data, user_agent, binary, debug)
 	end
 	
 	function luasocket.Download(url, callback)
