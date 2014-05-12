@@ -40,6 +40,9 @@ end
 
 function system.GetClipboard()
 	if window.wnd:IsValid() then
-		return ffi.string(glfw.GetClipboardString(window.wnd.__ptr))
+		local str = glfw.GetClipboardString(window.wnd.__ptr)
+		if str ~= nil then
+			return ffi.string(str)
+		end
 	end
 end
