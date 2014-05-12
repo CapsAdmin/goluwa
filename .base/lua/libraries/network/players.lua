@@ -41,8 +41,11 @@ function players.Create(uniqueid, is_bot)
 	-- event system for class?
 	self.last_ping = os.clock()
 	
-	if SERVER then
+	if is_bot ~= nil then
 		self:SetBot(is_bot)
+	end
+	
+	if SERVER then
 		if is_bot then	
 			if event.Call("OnPlayerConnect", self) ~= false then
 				network.Broadcast(network.CONNECT, uniqueid)
