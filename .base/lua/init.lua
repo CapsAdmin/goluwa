@@ -126,6 +126,7 @@ do -- file system
 	_G.R = vfs.GetAbsolutePath
 	
 	vfs.AddModuleDirectory("lua/modules/")
+	vfs.AddModuleDirectory("lua/")
 	
 	-- replace require with the pure lua version (lua/procure/init.lua)
 	_G.require = require("procure")	
@@ -410,6 +411,7 @@ do -- include
 	local base = lfs.currentdir()
 
 	local include_stack = {}
+	_G.INCLUDE_STACK = include_stack
 	
 	local function not_found(err)
 		return 
