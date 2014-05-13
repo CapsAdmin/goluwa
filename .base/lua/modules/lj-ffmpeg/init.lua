@@ -1,8 +1,5 @@
-local header = include("header.lua")
-local enums = include("enums.lua")
-for k,v in pairs(enums) do
-	e[k] = v
-end
+local header = require("lj-ffmpeg.header")
+local enums = require("lj-ffmpeg.enums")
 
 ffi.cdef(header)  
 
@@ -17,7 +14,8 @@ local ffmpeg = {
 		avutil = ffi.load("avutil-52"),
 		swresample = ffi.load("swresample-0"),
 		swscale = ffi.load("swscale-2"),
-	}
+	},
+	e = enums,
 }
 
 for line in header:gmatch("(.-)\n") do
@@ -82,7 +80,7 @@ function ffmpeg.lua_dictionary_to_table(dict)
 	
 	local entry = ffi.new("AVDictionaryEntry *")
 	while true do 
-		entry = ffmpeg.av_dict_get(dict, "", entry, AV_DICT_IGNORE_SUFFIX)
+		entry = ffmpeg.av_dict_get(dict, "", entry, enums.AV_DICT_IGNORE_SUFFIX)
 		if entry == nil then break end
 		tbl[ffi.string(entry.key)] = ffi.string(entry.value)
 	end

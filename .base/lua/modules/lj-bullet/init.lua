@@ -1,4 +1,4 @@
-local header = include("header.lua")
+local header = require("lj-bullet.header.lua")
 local lib = ffi.load("bullet")
 
 ffi.cdef(header)

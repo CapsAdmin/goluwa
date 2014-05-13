@@ -1,8 +1,6 @@
-local header = include("header.lua")
-local enums = include("enums.lua")
-for k,v in pairs(enums) do
-	e[k] = v
-end
+local header = require("lj-libsoundfile.header")
+local enums = require("lj-libsoundfile.enums")
+
 local lib = ffi.load("libsndfile")
 
 ffi.cdef(header)  
@@ -10,7 +8,7 @@ ffi.cdef(header)
 header = header:gsub("%s+", " ")
 header = header:gsub(";", "%1\n")
 
-local soundfile = {}
+local libsoundfile = {lib = lib, e = enums}
 
 for line in header:gmatch("(.-)\n") do
 	if not line:find("typedef") then
@@ -23,17 +21,17 @@ for line in header:gmatch("(.-)\n") do
 			temp = temp:gsub("_readf", "_read_frames")
 			local friendly = ("_" .. temp):sub(4):gsub("(_%l)", function(char) return char:sub(2,2):upper() end)
 			
-			soundfile[friendly] = lib[func]
+			libsoundfile[friendly] = lib[func]
 		end
 	end
 end 
 
 -- eek
-soundfile.ErrorString = soundfile.ErrorStr
-soundfile.ErrorStr = nil
+libsoundfile.ErrorString = libsoundfile.ErrorStr
+libsoundfile.ErrorStr = nil
 
-soundfile.StringError = soundfile.Stringrror
-soundfile.Stringrror = nil 
+libsoundfile.StringError = libsoundfile.Stringrror
+libsoundfile.Stringrror = nil 
 
 -- ???????????????????????????????????????????????????????????????????????????????????????????????
 -- FOR SOME REASON REMOVING THIS OTHER LIB CODE EVEN WITHOUT USING IT WILL MAKE SF CRASH WHEN USED
@@ -220,7 +218,7 @@ sndfile_methods.write_double	= libsndfile_lib.sf_writef_double
 
 ffi.metatype ( "SNDFILE" , sndfile_mt )
 
-soundfile.uumm = {
+libsoundfile.uumm = {
 	majformats = majformats ;
 	subformats = subformats ;
 	endianess = endianess ;
@@ -233,4 +231,4 @@ soundfile.uumm = {
 }
 end
 
-return soundfile
+return libsoundfile

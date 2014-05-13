@@ -1,13 +1,15 @@
-local header = include("header.lua")
-local enums = include("enums.lua")
+local header = require("lj-curses.header")
+local enums = require("lj-curses.enums")
 
 ffi.cdef("typedef char chtype;")    
-
 ffi.cdef(header)
 
-local curses = {}
-
 local lib = ffi.load(jit.os == "Windows" and "pdcurses" or "ncursesw")
+
+local curses = {
+	lib = lib, 
+	e = enums,
+}
 
 function curses.freeconsole()
 	if jit.os == "Windows" then

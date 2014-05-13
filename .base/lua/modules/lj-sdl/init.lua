@@ -1,16 +1,15 @@
-local enums = include("enums.lua")
-local header = include("header.lua")
+local enums = require("lj-sdl.enums")
+local header = require("lj-sdl.header")
 
 ffi.cdef(header)
   
 local lib = ffi.load("sdl2")
 
-local sdl = {}
-local e = _G.e or sdl
-
-sdl.enums = enums
-sdl.header = header
-sdl.lib = lib
+local sdl = {
+	e= enums,
+	header = header,
+	lib = lib,
+}
 
 -- put all the functions in the sdl table
 for line in header:gmatch("(.-)\n") do

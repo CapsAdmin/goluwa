@@ -5,10 +5,9 @@
 -- http://connect.creativelabs.com/openal/Downloads/oalinst.zip
 -- and run the executable from inside of it (I've seen couple of games use it).
 
-local header = include("header.lua") 
-
-local enums = include("enums.lua")
-local extensions = include("extensions.lua")
+local header = require("lj-openal.al.header") 
+local enums = require("lj-openal.al.enums")
+local extensions = require("lj-openal.al.extensions")
 
 local reverse_enums = {}
 for k,v in pairs(enums) do 
@@ -19,15 +18,14 @@ for k,v in pairs(enums) do
 	reverse_enums[v] = k 
 end
 
-for k,v in pairs(enums) do
-	e[k] = v
-end
- 
 ffi.cdef(header)
 
-local library = ffi.load(WINDOWS and "openal32" or "openal")
+local lib = ffi.load(WINDOWS and "openal32" or "openal")
 
-local al = _G.al or {}
+local al = {
+	lib = lib,
+	e = enums, 
+}
 
 local function gen_available_params(type, user_unavailable) -- effect params
 	local available = {}
@@ -130,7 +128,7 @@ end
 for line in header:gmatch("(.-)\n") do
 	local func_name = line:match(" (al%u.-)%(")
 	if func_name then
-		add_al_func(func_name:sub(3), library[func_name])
+		add_al_func(func_name:sub(3), lib[func_name])
 	end 
 end
 
