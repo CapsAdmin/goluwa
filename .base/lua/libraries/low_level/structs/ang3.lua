@@ -1,6 +1,6 @@
 local META = {}
 
-META.ClassName = "ang3"
+META.ClassName = "Ang3"
 
 META.NumberType = "float"
 META.Args = {{"p", "x", "pitch"}, {"y", "yaw"}, {"r", "z", "roll"}}

@@ -1,6 +1,6 @@
 local META = {}
 
-META.ClassName = "quat"
+META.ClassName = "Quat"
 
 META.NumberType = "float"
 META.Args = {"x", "y", "z", "r"}

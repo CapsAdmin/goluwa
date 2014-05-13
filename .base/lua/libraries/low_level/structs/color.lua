@@ -2,7 +2,7 @@
 
 local META = {}
 
-META.ClassName = "color"
+META.ClassName = "Color"
 
 function META.Constructor(r,g,b,a)
 
