@@ -1,16 +1,15 @@
-local enums = include("enums.lua")
-local header = include("header.lua")
+local enums = require("lj-glfw.enums")
+local header = require("lj-glfw.header")
 
 ffi.cdef(header)
 
 local lib = ffi.load(jit.os == "Linux" and "glfw" or "glfw3")
 
-local glfw = {}
-local e = _G.e or glfw
-
-glfw.enums = enums
-glfw.header = header
-glfw.lib = lib
+local glfw = {
+	e = enums,
+	header = header,
+	lib = lib,
+}
 
 -- put all the functions in the glfw table
 for line in header:gmatch("(.-)\n") do

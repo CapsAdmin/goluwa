@@ -602,36 +602,47 @@ do -- tier 0
 
 	-- ffi libraries
 	if not gl then
+		
+		local require = function(lib) 
+			lib = _G.require(lib) 
+			if lib.e then 
+				for k,v in pairs(lib.e) do 
+					e[k] = v 
+				end 
+			end 
+			return lib 
+		end
+		
 		-- console input
-		curses = include(libraries .. "ffi_binds/curses/init.lua")
+		curses = require("lj-curses")
 		
 		-- model decoder
-		assimp = include(libraries .. "ffi_binds/assimp/init.lua")
+		assimp = require("lj-assimp")
 		
 		-- image decoder
-		freeimage = include(libraries .. "ffi_binds/freeimage.lua")
+		freeimage = require("lj-freeimage")
 		
 		-- font decoder
-		freetype = include(libraries .. "ffi_binds/freetype.lua")
+		freetype = require("lj-freetype")
 		
 		-- sound decoder
-		soundfile = include(libraries .. "ffi_binds/soundfile/init.lua")
+		soundfile = require("lj-libsoundfile")
 
 		-- OpenGL
-		gl = include(libraries .. "ffi_binds/gl/init.lua")
+		gl = require("lj-opengl")
 		
 		-- HLLib
-		vl = include(libraries .. "ffi_binds/vtflib/init.lua")
+		vl = require("lj-vtflib")
 		
 		-- window manager
-		glfw = include(libraries .. "ffi_binds/glfw/init.lua")
+		glfw = require("lj-glfw")
 		
 		-- window manager
-		--sdl = include(libraries .. "ffi_binds/sdl/init.lua")
+		--sdl = require("sdl")
 		
 		-- OpenAL
-		al = include(libraries .. "ffi_binds/al/init.lua")
-		alc = include(libraries .. "ffi_binds/alc.lua")
+		al = require("lj-openal.al")
+		alc = require("lj-openal.alc")
 	end
 
 end

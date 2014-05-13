@@ -1,20 +1,21 @@
-local header = include("header.lua") 
-local enums = include("enums.lua")
+local ffi = require("ffi")
+local header = require("lj-assimp.header") 
+local enums = require("lj-assimp.enums")
  
 for k,v in pairs(enums) do e[k] = v end
 
 ffi.cdef(header)
 
-local module = ffi.load("assimp")
+local lib = ffi.load("assimp")
 
-local assimp = {}
+local assimp = {lib = lib}
 
 for line in header:gmatch("(.-)\n") do
 	if not line:find("enum") and not line:find("struct") and not line:find("typedef") then
 		local func = line:match("(ai%u[%a_]-)%(.-%)") 
 		
 		if func then 
-			assimp[func:sub(3)] = module[func]
+			assimp[func:sub(3)] = lib[func]
 		end
 		
 	end
@@ -115,7 +116,5 @@ function assimp.ImportFileEx(path, flags, flip_normals, uv_mult)
 	
 	return out
 end
-
-assimp.lib = module
 
 return assimp

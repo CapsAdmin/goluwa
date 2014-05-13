@@ -1,17 +1,16 @@
-local enums = include("enums.lua")
-local header = include("header.lua")
+local enums = require("lj-vtflib.enums")
+local header = require("lj-vtflib.header")
 
 ffi.cdef(header) 
 
 local lib = ffi.load("vtflib")
 
-local vl = _G.vl or {}
-local e = _G.e or vl
-
-vl.enums = enums
-vl.header = header
-vl.lib = lib
-vl.debug = true
+local vl = {
+	lib = lib,
+	e = enums,
+	header = header,
+	debug = true,
+}
 
 -- put all the functions in the glfw table
 for line in header:gmatch("(.-)\n") do

@@ -1,4 +1,3 @@
-
 local header = [[
 typedef struct ALCdevice_struct ALCdevice;
 typedef struct ALCcontext_struct ALCcontext;
@@ -60,7 +59,7 @@ typedef void           (ALC_APIENTRY *LPALCCAPTURESAMPLES)( ALCdevice *device, A
 ]]
 
 
-if WINDOWS then
+if jit.os == "Windows" then
 	header = header:gsub("ALC_APIENTRY", "__cdecl")
 	header = header:gsub("ALC_API", "__declspec(dllimport)")
 else
@@ -68,72 +67,4 @@ else
 	header = header:gsub("ALC_API", "extern")
 end
 
-local enums = {
-	ALC_INVALID = 0,
-	ALC_VERSION_0_1 = 1,
-	ALC_FALSE = 0,
-	ALC_TRUE = 1,
-	ALC_FREQUENCY = 0x1007,
-	ALC_REFRESH = 0x1008,
-	ALC_SYNC = 0x1009,
-	ALC_MONO_SOURCES = 0x1010,
-	ALC_STEREO_SOURCES = 0x1011,
-	ALC_NO_ERROR = 0,
-	ALC_INVALID_DEVICE = 0xA001,
-	ALC_INVALID_CONTEXT = 0xA002,
-	ALC_INVALID_ENUM = 0xA003,
-	ALC_INVALID_VALUE = 0xA004,
-	ALC_OUT_OF_MEMORY = 0xA005,
-	ALC_DEFAULT_DEVICE_SPECIFIER = 0x1004,
-	ALC_DEVICE_SPECIFIER = 0x1005,
-	ALC_EXTENSIONS = 0x1006,
-	ALC_MAJOR_VERSION = 0x1000,
-	ALC_MINOR_VERSION = 0x1001,
-	ALC_ATTRIBUTES_SIZE = 0x1002,
-	ALC_ALL_ATTRIBUTES = 0x1003,
-	ALC_CAPTURE_DEVICE_SPECIFIER = 0x310,
-	ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER = 0x311,
-	ALC_CAPTURE_SAMPLES = 0x312,
-}
-
-local reverse_enums = {}
-for k,v in pairs(enums) do 
-	k = k:gsub("AL_", "")
-	k = k:gsub("_", " ")
-	k = k:lower()	
-
-	reverse_enums[v] = k 
-end
-
-
-ffi.cdef(header)
-
-local library = ffi.load(WINDOWS and "openal32" or "openal")
-
-local alc = {}
-
-for line in header:gmatch("(.-)\n") do
-	local func_name = line:match(" (alc%u.-)%(")
-	if func_name then
-		local name = func_name:sub(4)
-		alc[name] = function(...) 
-		
-			if name ~= "GetError" and alc.debug and alc.device then
-			
-				local code = alc.GetError(alc.device)
-			
-				if code ~= 0 then
-					local str = reverse_enums[code] or "unkown error"
-					
-					local info = debug.getinfo(2)
-					
-					logf("[alc] %q in function %s at %s:%i\n", str, info.name, info.short_src, info.currentline)
-				end
-			end
-		
-			return library[func_name](...)
-		end
-	end
-end
-
-return alc
+return header

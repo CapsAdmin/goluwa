@@ -1,5 +1,5 @@
-local header = include("header.lua")
-local enums = include("enums.lua")
+local header = require("lj-opengl.header")
+local enums = require("lj-opengl.enums")
 
 ffi.cdef(header)
 
@@ -14,16 +14,11 @@ local lib = {
 
 local lib = ffi.load(lib[ffi.os])
 
-local gl = _G.gl or {}
-local e = _G.e or gl
-
-gl.lib = lib
-gl.header = header
-gl.enums = enums
-
-for k, v in pairs(enums) do
-	e[k] = v
-end
+local gl = {
+	lib = lib,
+	header = header,
+	e = enums,
+}
 
 local suppress = false
 local reverse_enums = {}
@@ -132,7 +127,7 @@ function gl.InitMiniGlew()
 	end
 	
 	local time = timer.clock()
-	for path in vfs.Iterate("lua/libraries/low_level/ffi_binds/gl/extensions/", nil, true) do
+	for path in vfs.Iterate("lua/modules/lj-opengl/extensions/", nil, true) do
 		local str, err = vfs.Read(path)
 		for line in str:gmatch("\t(.-)\n") do
 			local key, val = line:match("([1-9a-Z_]+) (.+)")
