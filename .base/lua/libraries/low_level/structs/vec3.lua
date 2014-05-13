@@ -1,6 +1,6 @@
 local META = {}
 
-META.ClassName = "vec3"
+META.ClassName = "Vec3"
 
 META.NumberType = "float"
 META.Args = {"x", "y", "z"}
@@ -121,7 +121,7 @@ function META:GetAng3()
 	local p = math.atan2(math.sqrt((n.x ^ 2) + (n.y ^ 2)), n.z)
 	local y = math.atan2(self.y, self.x)
 	
-	return structs.Ang3(p,y,0)
+	return structs.CreateAng3(p,y,0)
 end
 
 function META:GetRotated(axis, ang)

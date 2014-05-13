@@ -1,6 +1,6 @@
 local META = {}
 
-META.ClassName = "rect"
+META.ClassName = "Rect"
 
 META.NumberType = "float"
 META.Args = {"x", "y", "w", "h"}
@@ -90,15 +90,15 @@ function META:SetSize(var)
 end
 
 function META:GetPos()
-	return structs.Vec2(self.x, self.y)
+	return structs.CreateVec2(self.x, self.y)
 end
 
 function META:GetSize()	
-	return structs.Vec2(self.w, self.h)
+	return structs.CreateVec2(self.w, self.h)
 end
 
 function META:GetPosSize()
-	return structs.Vec2(self:GetXW(), self:GetYH())
+	return structs.CreateVec2(self:GetXW(), self:GetYH())
 end
 
 function META:GetXW()
