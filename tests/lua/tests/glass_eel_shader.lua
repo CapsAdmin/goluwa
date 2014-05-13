@@ -1,6 +1,3 @@
-if SERVER then return end
-window.Open() 
-
 local data = {
 	-- these are declared as uniform on all shaders
 	shared = {

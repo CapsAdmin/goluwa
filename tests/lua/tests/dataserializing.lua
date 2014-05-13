@@ -30,7 +30,7 @@ local function test(func, name)
 end
 
 test(von.serialize, "von")
---test(luadata.Encode, "luadata")
-test(msgpack.Encode, "msgpack") -- Fucking slays the rest LOL
+test(luadata.Encode, "luadata")
+test(msgpack.Encode, "msgpack")
 
 

