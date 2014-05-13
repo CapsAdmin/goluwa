@@ -479,14 +479,6 @@ function render.RemoveTextureDecoder(id)
 	end
 end
 
-render.AddTextureDecoder("freeimage", function(data, path_hint)
-	return freeimage.LoadImage(data)
-end)
-
-render.AddTextureDecoder("vtflib", function(data, path_hint)
-	return vl.LoadImage(data)
-end)
-
 function render.DecodeTexture(data, path_hint)
 	for i, decoder in ipairs(render.texture_decoders) do
 		local ok, buffer, w, h, info = pcall(decoder.callback, data, path_hint)
@@ -502,7 +494,7 @@ function render.DecodeTexture(data, path_hint)
 	end
 end
 
-for path in vfs.Iterate("lua/texture_decoders/", nil, true) do
+for path in vfs.Iterate("lua/decoders/image/", nil, true) do
 	include(path)
 end
 
