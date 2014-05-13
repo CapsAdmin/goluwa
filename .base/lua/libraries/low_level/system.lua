@@ -639,7 +639,7 @@ local suppress = false
 local last_openfunc = 0
 function system.OnError(msg, ...)
 	msg = msg or "no error"
-	if suppress then logn("supressed error: ", msg, ...) return end
+	if suppress then logn("supressed error: ", msg, ...) for i = 3, 100 do local t = debug.getinfo(i) if t then table.print(t) else break end end return end
 	suppress = true
 	if LINUX and msg == "interrupted!\n" then return end
 	
