@@ -134,6 +134,7 @@ do -- file system
 	if USE_STRUNG then
 		local strung = require("strung")
 		for k,v in pairs(strung) do if k ~= "gsub" then string[k] = v end end		
+		USE_STRUNG = nil
 	end
 end
 

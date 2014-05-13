@@ -214,13 +214,14 @@ void main()
 		return ffi.new(self.vtx_atrb_type.."[?]", size)
 	end
 			
-	function META:CreateVertexBuffer(data, vbo_override)
+	function META:CreateVertexBuffer(data, vbo_override)		
 		if not data and not vbo_override then
 			return {Type = "VertexBuffer", id = gl.GenBuffer(), length = -1, IsValid = function() return true end, Draw = function() end}
 		end
 		
 		local buffer
-		
+		local length
+
 		if type(data) == "number" then
 			length = data
 			buffer = self:CreateVertexAttributes(length)

@@ -209,7 +209,4 @@ function ColorToHSV(c)
 	return h, s, v
 end
 
-structs.Register(META) 
-
-color_white = Color(1,1,1,1)
-color_black = Color(0,0,0,1)
+structs.Register(META)
