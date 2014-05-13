@@ -90,15 +90,15 @@ function META:SetSize(var)
 end
 
 function META:GetPos()
-	return structs.CreateVec2(self.x, self.y)
+	return structs.Vec2(self.x, self.y)
 end
 
 function META:GetSize()	
-	return structs.CreateVec2(self.w, self.h)
+	return structs.Vec2(self.w, self.h)
 end
 
 function META:GetPosSize()
-	return structs.CreateVec2(self:GetXW(), self:GetYH())
+	return structs.Vec2(self:GetXW(), self:GetYH())
 end
 
 function META:GetXW()
