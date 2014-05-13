@@ -1,3 +1,6 @@
+al.debug = true
+alc.debug = true
+
 audio = _G.audio or {}
 
 audio.objects = audio.objects or setmetatable({}, { __mode = 'v' })
@@ -365,8 +368,6 @@ do -- source
 			vfs.ReadAsync(var, function(data)
 				local data, length, info = audio.Decode(data, nil, var)
 				
-				print(data, length, info)
-				
 				if data then
 					local buffer = audio.CreateBuffer()
 					buffer:SetFormat(info.channels == 1 and e.AL_FORMAT_MONO16 or e.AL_FORMAT_STEREO16)
@@ -389,6 +390,9 @@ do -- source
 			if v.slot:IsValid() then
 				v.slot:Remove()
 			end
+		end
+		if self.filter:IsValid() then
+			self.filter:Remove()
 		end
 	end
 	)
@@ -478,8 +482,8 @@ do -- source
 				end	
 			end
 			
-			if not sound:IsPlaying() then
-				sound:Play()
+			if not self:IsPlaying() then
+				self:Play()
 			end
 		end
 	end
