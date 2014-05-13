@@ -1,6 +1,6 @@
 local META = {}
 
-META.ClassName = "Vec2"
+META.ClassName = "vec2"
 
 META.NumberType = "float"
 META.Args = {{"x", "w", "p"}, {"y", "h", "y"}}
