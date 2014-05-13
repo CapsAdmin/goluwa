@@ -2,7 +2,9 @@
 -- C:\mingw-builds\x64-4.8.1-posix-seh-rev5\mingw64\bin>gcc -E -o lol -I C:\goluwa\.base\bin\src\ffmpeg\include C:\goluwa\.base\bin\src\ffmpeg\include\main.c
 -- and some manual work in notepad++ afterwards
 
-return [[unsigned avutil_version(void);
+return [[
+typedef void * FILE;
+unsigned avutil_version(void);
 const char *avutil_configuration(void);
 const char *avutil_license(void);
 enum AVMediaType {
