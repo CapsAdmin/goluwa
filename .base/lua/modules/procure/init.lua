@@ -145,7 +145,16 @@ local function require(name)
   if package.loaded[name] == nil then
     local func, err, path = load(name)
 	if path then path = path:match("(.+)[\\/]") end
+	
+	if INCLUDE_STACK and path then	
+		INCLUDE_STACK[#INCLUDE_STACK + 1] = path .. "/"
+	end
+
 	local result = func(path)
+	
+	if INCLUDE_STACK and path then	
+		INCLUDE_STACK[#INCLUDE_STACK] = nil
+	end
 	
     if result ~= nil then
       package.loaded[name] = result
