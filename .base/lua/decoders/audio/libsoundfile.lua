@@ -1,4 +1,4 @@
-audio.AddDecoder("libsoundfile", function(data, length, path_hint)
+audio.AddDecoder("libsoundfile", function(data, path_hint)
 	if type(length) == "number" and type(data) == "cdata" then
 		data = ffi.string(data, length)
 	end

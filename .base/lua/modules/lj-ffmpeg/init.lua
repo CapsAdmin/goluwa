@@ -115,7 +115,7 @@ do
 
 	local function get_converter(codec_context, type, config)
 		if type == "audio" then
-			local format = config.audio_format or e.AV_SAMPLE_FMT_S16
+			local format = config.audio_format or ffi.C.AV_SAMPLE_FMT_S16
 			local sample_rate = config.sample_rate or 44100
 			local channels = config.channels or 2
 			
@@ -148,7 +148,7 @@ do
 					
 			return converter
 		elseif type == "video" then
-			local format = config.video_format or e.AV_PIX_FMT_BGRA
+			local format = config.video_format or ffi.C.AV_PIX_FMT_BGRA
 			local width = config.width or codec_context.width
 			local height = config.height or codec_context.height
 			
@@ -224,7 +224,7 @@ do
 			1
 		)
 		
-		if length < 0 then return nil, "failed to get sample buffer size" end
+		if length <= 0 then return nil, "failed to get sample buffer size" end
 		
 		local buffer = ffi.new("uint8_t *[1]", ffi.new("uint8_t[?]", length))
 		
@@ -273,7 +273,7 @@ do
 		local done = false
 		
 		::continue::
-				
+						
 		while (not buffer_size or audio_length < buffer_size) and ffmpeg.av_read_frame(self.format_context[0], self.packet) == 0 and self.packet[0].size > 0 do
 			local stream = self.streams[self.packet[0].stream_index]
 			
@@ -281,7 +281,7 @@ do
 				if self.config.audio_only and (stream.type ~= "audio" or self.packet[0].size == 1) then goto continue end
 				if self.config.video_only and (stream.type ~= "video" or self.packet[0].size == 1) then goto continue end
 				
-				if stream.converter and stream.opened then			
+				if stream.converter and stream.opened then
 					if stream.type == "video" then
 						while self.packet[0].size > 0 do 
 							
@@ -310,7 +310,7 @@ do
 					elseif stream.type == "audio" then	
 						while self.packet[0].size > 0 do 
 							local length = ffmpeg.avcodec_decode_audio4(stream.codec_context, self.frame, self.got_frame, self.packet)
-						
+							
 							if self.got_frame[0] ~= 1 then goto continue end
 							
 							if length >= 0 then
@@ -416,7 +416,6 @@ do
 				
 				for i, stream in pairs(self.streams) do
 					if stream.type == "audio" then
-						table.print(stream.queue)
 						local buffer, length = concatenate_queue(stream.queue)
 						table.insert(audio_data, {buffer = buffer, length = length})
 					end
@@ -504,7 +503,7 @@ do
 		else
 			-- make a dummy file
 			-- ffmpeg doesn't like os.tmpname() names...
-			file_name = lfs.currentdir() .. "\\" .. tostring(("%p"):format(data):gsub("%p", "")) .. "." .. config.file_ext
+			file_name = os.tmpname()--lfs.currentdir() .. "\\" .. tostring(("%p"):format(data):gsub("%p", "")) .. "." .. config.file_ext
 			local file = io.open(file_name, "wb")
 			file:write(data)
 			file:close()
@@ -520,7 +519,10 @@ do
 		local format_context = ffi.new("AVFormatContext *[1]", ffmpeg.avformat_alloc_context())
 		local options = ffi.new("AVDictionary *[1]", ffmpeg.lua_table_to_dictionary(config.input_options))
 		
-		if ffmpeg.avformat_open_input(format_context, file_name, ffmpeg.av_find_input_format(config.file_format), options) ~= 0 then
+		--local format_name = ffmpeg.av_guess_format(nil, "lol." .. config.file_ext, nil).name
+		--local format = ffmpeg.av_find_input_format(format_name)
+				
+		if ffmpeg.avformat_open_input(format_context, file_name, nil, options) ~= 0 then
 			ffmpeg.av_free(frame)
 			os.remove(file_name)
 			return nil, "unable to open file " .. file_name
@@ -555,6 +557,9 @@ do
 					reason = string.format("couldn't open the %s codec at stream position %i\n", type, i),
 				}
 			else
+				local converter, err = get_converter(codec_context, type, config)
+				if not converter then return nil, err end
+				
 				streams[i] = {
 					opened = true,
 					codec_context = codec_context,
@@ -562,7 +567,7 @@ do
 					format_context = format_context,
 					stream = stream,
 					type = type,
-					converter = get_converter(codec_context, type, config),
+					converter = converter,
 					metadata = ffmpeg.lua_dictionary_to_table(stream.metadata),
 					queue = {},
 				}
@@ -604,12 +609,9 @@ do
 		self.format_context = format_context
 		self.config = config
 		self.info = info
-		
-		os.remove(file_name)
-		
+				
 		return self
 	end
 end
-
 
 return ffmpeg
