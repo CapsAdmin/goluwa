@@ -14,7 +14,7 @@ LuaJit's FFI api is used to bind to the following shared libraries:
 * FreeType - font decoding
 * Libsndfile - sound decoding
 * FreeImage - image decoding
-* FFMpeg - sound decoding (mp3)
+* FFMpeg - sound and image decoding
 * VTFLib - image decoding (valves texture format)
 * PDCurses - console
 * Assimp - model decoding
