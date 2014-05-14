@@ -370,7 +370,7 @@ do -- source
 			self:SetBuffer(var)
 		elseif type(var) == "string" then		
 			vfs.ReadAsync(var, function(data)
-				local data, length, info = audio.Decode(data, nil, var)
+				local data, length, info = audio.Decode(data, var)
 				
 				if data then
 					local buffer = audio.CreateBuffer()
@@ -776,9 +776,9 @@ function audio.RemoveDecoder(id)
 	end
 end
 
-function audio.Decode(data, length, path_hint)
+function audio.Decode(data, path_hint)
 	for i, decoder in ipairs(audio.decoders) do
-		local ok, buffer, length, info = xpcall(decoder.callback, system.OnError, data, length, path_hint)
+		local ok, buffer, length, info = xpcall(decoder.callback, system.OnError, data, path_hint)
 		if ok then 
 			if buffer and length then
 				return buffer, length, info or {}
