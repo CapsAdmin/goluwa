@@ -105,4 +105,4 @@ function autocomplete.ScrollFound(found, offset)
 	table.scroll(found, offset)
 end
 
-_G.autocomplete = autocomplete
+return autocomplete

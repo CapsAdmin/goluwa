@@ -1,4 +1,4 @@
-network = _G.network or {}
+local network = _G.network or {}
 network.client_socket = network.client_socket or NULL
 network.server_socket = network.server_socket or NULL
 
@@ -344,11 +344,14 @@ if SERVER then
 	end
 end
 
-include("message.lua")
-include("easylua.lua")
-
-include("nvars.lua")
-include("players.lua")
+-- this is for when server or client is initialized (needs to handle SERVER and CLIENT globals)
+function network.ReInclude()
+	include("libraries/network/network.lua")
+	include("libraries/network/message.lua")
+	include("libraries/network/easylua.lua")
+	include("libraries/network/nvars.lua")
+	include("libraries/network/players.lua")
+end
 
 -- some usage
 
@@ -427,13 +430,15 @@ end
 console.AddCommand("start_server", function()
 	_G.SERVER = true
 	addons.Reload()
-	include("lua/libraries/network/network.lua")
+	network.ReInclude()	
 	entities.LoadAllEntities()
 end)
 
 console.AddCommand("start_client", function()
 	_G.CLIENT = true
 	addons.Reload()
-	include("lua/libraries/network/network.lua")
+	network.ReInclude()
 	entities.LoadAllEntities()
 end)
+
+return network

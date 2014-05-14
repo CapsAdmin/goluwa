@@ -6,7 +6,7 @@ function lovemu.boot(folder)
 	love._version_major = 9
 
 	_G.love = love
-	include("lovemu/love/*")
+	include("love/*")
 	_G.love = nil
 	
 	window.Open()	

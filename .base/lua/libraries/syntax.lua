@@ -1,4 +1,4 @@
-syntax = _G.syntax or {}
+local syntax = _G.syntax or {}
 
 syntax.DEFAULT    = 1
 syntax.KEYWORD    = 2

@@ -1,4 +1,4 @@
-easylua = _G.easylua or {}
+local easylua = _G.easylua or {}
 local s = easylua
 
 local function compare(a, b)
@@ -184,3 +184,5 @@ function easylua.RunLua(ply, code, env_name, print_error)
 
 	return data
 end
+
+return easylua

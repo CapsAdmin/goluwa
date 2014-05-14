@@ -76,4 +76,4 @@ end
 
 include("base_panel.lua")
 
-include("aahh/panels/*")
+include("panels/*")
