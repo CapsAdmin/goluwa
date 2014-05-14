@@ -1,4 +1,4 @@
-entities = _G.entities or {}
+local entities = _G.entities or {}
 
 entities.active_entities = entities.active_entities or {}
 entities.is_keys = entities.is_keys or {}
@@ -55,19 +55,16 @@ function entities.Register(META, name)
 		end
 	end	
 end
-	
 
-_G.Entity = entities.Create
-
-include("base_entity.lua")
+include("base_entity.lua", entities)
  
 function entities.LoadAllEntities()
 	for relative_path, full_path in vfs.Iterate("lua/libraries/entities/default_entities/") do
-		vfs.dofile(full_path)
+		vfs.dofile(full_path, entities)
 	end
 	
 	for relative_path, full_path in vfs.Iterate("lua/entities/") do
-		vfs.dofile(full_path)
+		vfs.dofile(full_path, entities)
 	end
 	
 	entities.world_entity = entities.world_entity or Entity("model")
@@ -79,3 +76,7 @@ function entities.LoadAllEntities()
 		end
 	end)
 end
+
+_G.Entity = entities.Create
+
+return entities

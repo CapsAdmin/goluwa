@@ -1,4 +1,4 @@
-message = _G.message or {}
+local message = _G.message or {}
 
 message.Listeners = message.Listeners or {}
 
@@ -150,3 +150,5 @@ do -- event extension
 		end
 	end
 end
+
+return  message

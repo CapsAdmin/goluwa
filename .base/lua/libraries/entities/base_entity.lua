@@ -1,3 +1,5 @@
+local entities = (...) or _G.entities
+
 local META = {}
 
 class.SetupParentingSystem(META)

@@ -1,7 +1,8 @@
 local header = require("lj-ffmpeg.header")
-local enums = require("lj-ffmpeg.enums")
 
 ffi.cdef(header)  
+
+local enums = require("lj-ffmpeg.enums")
 
 header = header:gsub("%s+", " ")
 header = header:gsub(";", "%1\n")
@@ -29,6 +30,7 @@ for line in header:gmatch("(.-)\n") do
 			end
 			
 			local func = ffmpeg[name]
+			
 			ffmpeg[name] = function(...)
 				if ffmpeg.logcalls then
 					setlogfile("ffmpeg_calls")
@@ -97,13 +99,6 @@ end
 ffmpeg.lua_initialize()
 
 do
-	local AVSEEK_FLAG_ANY = 4
-	local AV_TIME_BASE = 1000000
-	local AV_DICT_IGNORE_SUFFIX = 2
-	local AV_NOPTS_VALUE = ffi.cast("uint64_t", math.huge)
-	local AV_TIME_BASE_Q = ffi.new("AVRational", {num = 1, den = AV_TIME_BASE})
-	local CODEC_CAP_DELAY = 0x0020
-
 	local e = ffi.C
 
 	local stream_enum_translate = {
@@ -209,7 +204,7 @@ do
 		ffi.copy(buffer, stream.image_buffer.data[0], length)
 			
 		-- get the the timestamp for this frame
-		local clock = ffmpeg.av_rescale_q(self.packet[0].pts, stream.stream.time_base, AV_TIME_BASE_Q)
+		local clock = ffmpeg.av_rescale_q(self.packet[0].pts, stream.stream.time_base, enums.AV_TIME_BASE_Q)
 		
 		table.insert(stream.queue, {
 			buffer = buffer,
@@ -231,7 +226,7 @@ do
 		
 		if length < 0 then return nil, "failed to get sample buffer size" end
 		
-		buffer = ffi.new("uint8_t *[1]", ffi.new("uint8_t[?]", length))
+		local buffer = ffi.new("uint8_t *[1]", ffi.new("uint8_t[?]", length))
 		
 		if ffmpeg.swr_convert(
 			stream.converter[0], 
@@ -244,12 +239,11 @@ do
 		) < 0 then
 			return nil, "failed to resample audio frame"
 		end
-		local buffer = buffer[0]
 		
 		-- get the the timestamp for this frame
 		local clock							
-		if self.packet[0].pts ~= AV_NOPTS_VALUE then
-			clock = ffmpeg.av_rescale_q(self.packet[0].pts, stream.stream.time_base, AV_TIME_BASE_Q)
+		if self.packet[0].pts ~= enums.AV_NOPTS_VALUE then
+			clock = ffmpeg.av_rescale_q(self.packet[0].pts, stream.stream.time_base, enums.AV_TIME_BASE_Q)
 		else
 			local sample_time = length
 			sample_time = sample_time * 1000000ll
@@ -260,7 +254,7 @@ do
 		end
 		
 		table.insert(stream.queue, {
-			buffer = buffer,
+			buffer = buffer[0],
 			length = length,
 			time_stamp = clock,
 		})
@@ -358,7 +352,7 @@ do
 		for i, stream in pairs(self.streams) do
 			ffmpeg.av_init_packet(self.packet)
 			
-			if bit.band(stream.codec.capabilities, CODEC_CAP_DELAY) ~= 0 then
+			if bit.band(stream.codec.capabilities, enums.CODEC_CAP_DELAY) ~= 0 then
 				if stream.type == "video" then
 					while ffmpeg.avcodec_decode_video2(stream.codec_context, self.frame, self.got_frame, self.packet) and self.got_frame[0] == 1 do
 						local ok, err = insert_video_data(self, stream)
@@ -422,6 +416,7 @@ do
 				
 				for i, stream in pairs(self.streams) do
 					if stream.type == "audio" then
+						table.print(stream.queue)
 						local buffer, length = concatenate_queue(stream.queue)
 						table.insert(audio_data, {buffer = buffer, length = length})
 					end
@@ -483,9 +478,9 @@ do
 
 	function META:Seek(pos)
 		for i, stream in pairs(self.streams) do
-			local pos = ffmpeg.av_rescale_q(pos, AV_TIME_BASE_Q, stream.stream.time_base)
+			local pos = ffmpeg.av_rescale_q(pos, enums.AV_TIME_BASE_Q, stream.stream.time_base)
 			self.start_time = nil
-			if ffmpeg.av_seek_frame(self.format_context[0], i, pos, AVSEEK_FLAG_ANY) < 0 then
+			if ffmpeg.av_seek_frame(self.format_context[0], i, pos, enums.AVSEEK_FLAG_ANY) < 0 then
 				logf("could not seek the %s[i] stream", stream.type, i, 2)
 			end
 		end

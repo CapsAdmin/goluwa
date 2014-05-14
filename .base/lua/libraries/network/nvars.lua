@@ -1,4 +1,4 @@
-nvars = _G.nvars or {}
+local nvars = _G.nvars or {}
  
 nvars.Environments = nvars.Environments or {} 
 nvars.added_cvars = nvars.added_cvars or {}
@@ -129,3 +129,5 @@ function nvars.RemoveObject(env)
 		message.Send("nv", nil, env)
 	end	
 end
+
+return nvars

@@ -1,453 +1,475 @@
-console = _G.console or {}
+local console = _G.console or {}
 
-console.history = console.history or {}
-console.curses = console.curses or {}
-local c = console.curses
-
-local markup = Markup()
-markup:SetMultiline(false)
-
-c.scroll = c.scroll or 0
-c.current_table = c.current_table or G
-c.table_scroll = c.table_scroll or 0
-
-local history = luadata.ReadFile("%DATA%/cmd_history.txt")
-
-local translate = 
-{
-	[10] = "KEY_ENTER",
-	[459] = "KEY_ENTER",
-	[8] = "KEY_BACKSPACE",
-	[127] = "CTL_BACKSPACE",
-	PADENTER = "KEY_ENTER",
+local start_symbols = {
+	"%!",
+	"%.",
+	"%/",
+	"",
 }
 
--- some helpers
+local arg_types = {
+	vec3 = Vec3,	
+	ang3 = Ang3,
+	ply = function(str)
+		return easylua.FindEntity(str) or NULL
+	end,
+	name = function(ply)
+		if ply and ply:IsValid() then
+			return ply:GetNick()
+		end
+	end,
+}
 
-local function gety()
-	return curses.getcury(c.input_window)
+if expression then
+	arg_types.e = function(str)
+		local ok, res = assert(expression.Compile(str))
+		return res()
+	end
 end
 
-local function getx()	
-	return curses.getcurx(c.input_window)
+arg_types.v3 = arg_types.vec3
+arg_types.a3 = arg_types.ang3
+arg_types["@"] = arg_types.ply
+arg_types["#"] = arg_types.ply
+
+
+local capture_symbols = {
+	["\""] = "\"",
+	["'"] = "'",
+	["("] = ")",
+	["["] = "]",
+	["`"] = "`",
+	["´"] = "´",
+}
+
+local function allowed(udata, arg)
+	return true
 end
 
-local function move_cursor(x)
-	curses.wmove(c.input_window, gety(), math.min(getx() + x, #c.line))
-	curses.wrefresh(c.input_window)
-end
+local SERVER = true
 
-local function set_cursor_pos(x)
-	curses.wmove(c.input_window, 0, math.max(x, 0))
-	curses.wrefresh(c.input_window)
-end
+local result = ""
 
-function console.InsertChar(char)
-	markup:OnCharInput(char)
-end
+function console.StartCapture()
+	result = ""
 
-function console.GetCurrentLine()
-	return markup:GetText()
-end
- 
-function console.InitializeCurses()
-	if console.curses_init then return end
-	
-	curses.freeconsole()
-
-	c.parent_window = curses.initscr()
-
-	if WINDOWS then
-		curses.resize_term(50,150)
+	log = function(str)
+		result = result .. str
 	end
 
-	c.log_window = curses.derwin(c.parent_window, curses.LINES-1, curses.COLS, 0, 0)
-	c.input_window = curses.derwin(c.parent_window, 1, curses.COLS, curses.LINES - 1, 0)
-	
-	curses.cbreak()
-	curses.noecho()
+	logn = function(str)
+		result = result .. str .. "\n"
+	end
 
-	curses.nodelay(c.input_window, 1)
-	curses.keypad(c.input_window, 1)
+end
 
-	curses.attron((2 ^ (8 + 13)) + 8 * 256)
-	curses.scrollok(c.log_window, 1)
+function console.EndCapture()
+	log = _OLD_G.log
+	logn = _OLD_G.logn
+	return result
+end
 
+function console.Capture(func, ...)
+	console.StartCapture()
+		func(...)
+	return console.EndCapture()
+end
+
+function console.Exec(cfg)
+	check(cfg, "string")
+
+	local content = vfs.Read("cfg/"  .. cfg .. ".cfg")
+
+	if content then
+		console.RunString(content)
+		return true
+	end
+
+	return false
+end
+
+do -- commands	
+	console.AddedCommands = console.AddedCommands or {}
+
+	function console.AddCommand(cmd, callback, help)
+		cmd = cmd:lower()
 		
-	local COLOR_BLACK = 0
-	local COLOR_RED = 1
-	local COLOR_GREEN = 2
-	local COLOR_YELLOW = 3
-	local COLOR_BLUE = 4
-	local COLOR_MAGENTA = 5
-	local COLOR_CYAN = 6
-	local COLOR_WHITE = 7
-	
-	curses.start_color()
-
-	for i = 0, 7 do
-		curses.init_pair(i, COLOR_BLACK, i)
+		console.AddedCommands[cmd] = {callback = callback, help = help}
 	end
-	
-	-- replace some functions
-	
-	if WINDOWS then
-		ffi.cdef("void PDC_set_title(const char *);")
+
+	function console.RemoveCommand(cmd, callback)
+		cmd = cmd:lower()	
 		
-		system.SetWindowTitleRaw = curses.PDC_set_title
-		system.SetWindowTitleRaw(system.GetWindowTitle())
+		console.AddedCommands[cmd] = nil
 	end
 
-	do
-		local function split_by_length(str, len)
-			if #str > len then
-				local tbl = {}
-				
-				local max = math.floor(#str/len)
-				local leftover = #str - (max * len)
-				
-				for i = 0, max do
+	function console.GetCommands()
+		return console.AddedCommands
+	end
+	
+	function console.RunCommand(cmd, ...)
+		local ok, reason = console.CallCommand(cmd, table.concat({...}, " "), ...)
+		
+		if not ok then
+			logn("failed to execute command ", cmd, "!")
+			logn(reason) 
+			
+			if console.AddedCommands[cmd].help then
+				logn(console.AddedCommands[cmd].help)
+			end
+		end
+	end
+
+	local function call(data, line, ...)
+		local a, b, c = xpcall(data, system.OnError, line, ...)
+
+		if a and b ~= nil and c then
+			return b, c
+		end
+		
+		return a, b
+	end
+
+	function console.CallCommand(cmd, line, ...)
+		cmd = cmd:lower()
+
+		local data = console.AddedCommands[cmd]
+
+		if data then
+			return call(data.callback, line, ...)
+		end
+	end
+	
+	do -- arg parsing
+		local function parse_args(arg_line)
+			if not arg_line or arg_line:trim() == "" then return {} end
+			
+			local chars = arg_line:utotable()
 					
-					local left = i * len
-					local right = (i * len) + len
+			local args = {}
+			local capture = {}
+			local escape  = false
+			
+			local in_capture = false
+			
+			for i, char in ipairs(chars) do	
+				if escape then
+					table.insert(capture, char)
+					escape = false
+				else
+					if in_capture then
+						if char == in_capture then
+							in_capture = false
+						end
+						
+						table.insert(capture, char)
+					else
+						if char == "," then
+							table.insert(args, table.concat(capture, ""):trim())
+							table.clear(capture)
+						else												
+							table.insert(capture, char)
 							
-					table.insert(tbl, str:usub(left, right))
+							if capture_symbols[char] then								
+								in_capture = capture_symbols[char]
+							end
+							
+							if char == "\\" then
+								escape = true
+							end
+						end
+					end
 				end
-				
-				return tbl
 			end
 			
-			return {str}
+			table.insert(args, table.concat(capture, ""):trim())		
+			
+			for i, str in ipairs(args) do		
+				if tonumber(str) then
+					args[i] = tonumber(str)
+				else
+					local cmd, rest = str:match("^(.+)%((.+)%)$")
+					
+					if not cmd then
+						local t = str:sub(1,1):charclass()
+						if t then
+							cmd, rest = str:match("^("..t.."+)(.+)$")
+						end
+					end
+					
+					if cmd then
+						cmd = cmd:trim():lower()
+						if arg_types[cmd] then
+							
+							if capture_symbols[rest:sub(1,1)] then
+								rest = rest:sub(2, -2)
+							end
+							
+							args[i] = {cmd = cmd, args = parse_args(rest), line = str}
+						end
+					end
+				end
+			end
+			
+			return args
 		end
 
-		local max_length = 256
-		local suppress_print = false
-
-		local function can_print(str)
-			if suppress_print then return end
-			
-			if event then 
-				suppress_print = true
-				
-				if event.Call("ConsolePrint", str) == false then
-					suppress_print = false
-					return false
+		local function parse_line(line)
+			for k,v in ipairs(start_symbols) do
+				local start, rest = line:match("^(" .. v .. ")(.+)")
+				if start then
+					local cmd, rest_ = rest:match("^(%S+)%s+(.+)$")
+					if not cmd then
+						return v, rest:trim()
+					else
+						return v, cmd, rest_
+					end
 				end
-				
-				suppress_print = false
+			end
+		end
+
+		local function execute_args(args, udata)	
+			local errors = {}
+			
+			for i, arg in ipairs(args) do	
+				if type(arg) == "table" then
+					
+					local ok, res = execute_args(arg.args, udata)
+					
+					if not ok then
+						table.insert(errors, res)
+					end
+					
+					if arg_types[arg.cmd] and allowed(udata, arg) then
+						local ok, res = pcall(arg_types[arg.cmd], unpack(arg.args))
+						
+						if ok then
+							args[i] = res
+						else
+							table.insert(errors, ("%q: %s"):format(arg.line, res))
+						end
+					end
+				end
+			end
+			
+			if #errors > 0 then
+				return nil, table.concat(errors, "\n") 
 			end
 			
 			return true
 		end
 		
-		local bad = "["
-		
-		for i = 1, 32 do
-			if 
-				i ~= ("\n"):byte() and
-				i ~= ("\t"):byte() and
-				i ~= (" "):byte()
-			then
-				bad = bad .. string.char(i)
-			end
+		function console.IsValidCommand(line)
+			local symbol, cmd, rest = parse_line(line)
+			return console.AddedCommands[cmd] ~= nil, symbol and symbol:sub(2,2)
 		end
 		
-		bad = bad .. "]"
-		
-		function io.write(...)
-			local str = table.concat({...}, "")
-			str = str:gsub("\r", "\\r")
-
-			if not can_print(str) then return end
-						
-			if str:count("\n") > 1 then
-				for line in str:gmatch("(.-\n)") do
-					io.write(line)
-				end
-				return
+		function console.ParseCommandArgs(line)
+			local symbol, cmd, rest = parse_line(line)
+			
+			local data = {args = parse_args(rest), line = rest, cmd = cmd, symbol = symbol}
+			
+			local ok, err = execute_args(data.args)
+			if not ok then return nil, err end
+			return data
+		end
+	end
+	
+	function console.RunString(line, skip_lua, skip_split)
+		if not skip_split and line:find("\n") then
+			for line in (line .. "\n"):gmatch("(.-)\n") do
+				console.RunString(line)
 			end
+			return
+		end
+	
+		local data, err = console.ParseCommandArgs(line)
 		
-			if WINDOWS and #str > max_length then
-				for k,v in pairs(split_by_length(str, max_length)) do
-					for line in v:gmatch("(.-)\n") do
-						io.write(line)
+		if data then						
+			if console.AddedCommands[data.cmd] then
+				return console.CallCommand(data.cmd, data.line, unpack(data.args))
+			end
+			
+			if not skip_lua then
+				--[==[
+				local func = _G[cmd]
+				
+				if not func and cmd:find("%.") then
+					local keys = cmd:explode(".")
+					if _G[keys[1]] then
+						
+						local val = _G[keys[1]]
+						
+						for i = 2, #keys do
+							if hasindex(val[keys[i]]) and val[keys[i]] then
+								last = val[keys[i]]
+							end
+						end
+						
+						func = last
 					end
 				end
-				return
-			end
-			
-			if not debug.debugging then 
-				table.insert(console.history, str)
-			end
-			
-			str = str:gsub("%%", "%%%%")
-			
-			curses.wprintw(c.log_window, str)
-			curses.wrefresh(c.log_window)
-			if console.Scroll then console.Scroll(0) end
-		end
-	end
-
-	for _, args in pairs(_G.LOG_BUFFER) do
-		io.write(unpack(args))
-	end
-
-	_G.LOG_BUFFER = nil
-		
-	console.curses_init = true
-end
-
-if not ZEROBRANE then
-  console.InitializeCurses()
-end
-
-do -- colors
-
-	local COLOR_PAIR
-	
-	if LINUX then
-		COLOR_PAIR = function(x)
-			return bit.lshift(x, 8)
-		end
-	end
-	
-	if WINDOWS then
-		COLOR_PAIR = function(x)
-			return bit.lshift(x, 8)
-		end
-	end
-
-	local syntax = include("libraries/syntax.lua")
-
-	function console.ColorPrint(str)
-		local tokens = syntax.process(str)
-
-		for i = 1, #tokens / 2 do
-			local color, lexeme = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
-			local attr = COLOR_PAIR(color + 1)
-
-			curses.wattron(c.input_window, attr)
-			curses.waddstr(c.input_window, lexeme)
-			curses.wattroff(c.input_window, attr)
-		end
-	end
-	
-	function console.Color(i, str)		
-		curses.wattron(c.log_window, COLOR_PAIR(i))
-		io.write(str)
-		curses.wattroff(c.log_window, COLOR_PAIR(i))
-	end
-end
-
-console.scroll_index = 0 
-
-function console.Scroll(offset)
-	if offset == 0 then 
-		console.scroll_index = #console.history
-	return end
-	
-	console.ClearWindow()
-	
-	local lines = curses.LINES-1
-	local count = #console.history
-	
-	console.scroll_index = math.clamp(console.scroll_index - offset, -2, count - lines)
-	
-	for i = 1, lines  do
-		local str = console.history[i + console.scroll_index] or ""
-		
-		curses.wprintw(c.log_window, str)
-	end
-	
-	curses.wrefresh(c.log_window)
-end
-
-function console.ClearInput(str)
-	local y, x = gety(), getx()
-	
-	curses.wclear(c.input_window)
-	
-	if str then
-		if MORTEN then
-			console.ColorPrint(str)
-		else
-			curses.waddstr(c.input_window, str)
-		end
-		
-		curses.wmove(c.input_window, y, x)
-	else
-		curses.wmove(c.input_window, y, 0)
-	end
-	
-	curses.wrefresh(c.input_window)
-end
-
-function console.ClearWindow()
-	curses.wclear(c.log_window)
-	curses.wrefresh(c.log_window)
-end
-
-
-function console.GetActiveKey()
-	local byte = curses.wgetch(c.input_window)
-	
-	if byte < 0 then return end
-		
-	local key = translate[byte] or ffi.string(curses.keyname(byte))
-	if not key:find("KEY_") then key = nil end
-	
-	return key
-end
-
-local markup_translate = {
-	["KEY_BACKSPACE"] = "backspace",
-	["KEY_TAB"] = "tab",
-	["KEY_DC"] = "delete",
-	["KEY_HOME"] = "home",
-	["KEY_END"] = "end",
-	["KEY_TAB"] = "tab",
-	["KEY_ENTER"] = "enter",
-	["KEY_C"] = "c",
-	["KEY_X"] = "x",
-	["KEY_V"] = "v",
-	["KEY_A"] = "a",
-	["KEY_T"] = "t",
-	["KEY_UP"] = "up",
-	["KEY_DOWN"] = "down",
-	
-	["KEY_SLEFT"] = "left",
-	["KEY_SRIGHT"] = "right",
-		
-	["CTL_LEFT"] = "left",
-	["CTL_RIGHT"] = "right",
-	
-	["KEY_LEFT"] = "left",
-	["KEY_RIGHT"] = "right",
-	
-	["CTL_DEL"] = "delete",
-	["CTL_BACKSPACE"] = "backspace",
-	
-	["KEY_PAGEUP"] = "page_up",
-	["KEY_PAGEDOWN"] = "page_down",
-	["KEY_LSHIFT"] = "left_shift",
-	["KEY_RSHIFT"] = "right_shift",
-	["KEY_RCONTROL"] = "right_control",
-	["KEY_LCONTROL"] = "left_control",
-}
-
-function console.HandleKey(key)
-	if key == "KEY_NPAGE" then
-		console.Scroll(-1)
-	elseif key == "KEY_PPAGE" then
-		console.Scroll(1)
-	end
 				
-	if key == "KEY_UP" then
-		c.scroll = c.scroll - 1
-		markup:SetText(history[c.scroll%#history+1])
-		set_cursor_pos(#markup:GetText())
-	elseif key == "KEY_DOWN" then
-		c.scroll = c.scroll + 1
-		markup:SetText(history[c.scroll%#history+1])
-		set_cursor_pos(#markup:GetText())
-	end
-
-	-- enter
-	if key == "KEY_ENTER" then
-		console.ClearInput()
-		local line = markup:GetText()
-		
-		if line ~= "" then			
-			for key, str in pairs(history) do
-				if str == line then
-					table.remove(history, key)
-				end
-			end
-			
-			table.insert(history, line)
-			luadata.WriteFile("%DATA%/cmd_history.txt", history)
-
-			c.scroll = 0
-			console.ClearInput()
-			
-			if event.Call("ConsoleLineEntered", line) ~= false then
-				logn("> ", line)
-				
-				local res, err = console.RunString(line)
-
-				if not res then
-					logn(err)
-				end
-			end
-			
-			c.current_table = _G
-			c.in_function = false
-			markup:SetText("")
-		end
-	end
-				
-	if markup_translate[key] then
-		markup:OnKeyInput(markup_translate[key])
-	end
-end
-
-function console.HandleChar(char)
-	console.InsertChar(char)
-end
-
-
-timer.Create("curses", 0, 0, function()
-	local byte = curses.wgetch(c.input_window)
-
-	if byte < 0 then return end
-		
-	local key = translate[byte] or ffi.string(curses.keyname(byte))
-	
-	key = translate[key] or key
-	
-	markup:SetControlDown(key == "CTL_LEFT" or key == "CTL_RIGHT" or key == "CTL_DEL" or key == "CTL_BACKSPACE")
-	markup:SetShiftDown(key == "KEY_SLEFT" or key == "KEY_SRIGHT")
+				if type(func) == "function" then
 					
-	if key:find("KEY_") or key:find("CTL_") then					
-		key = ffi.string(key)
-			
-		if event.Call("OnConsoleKeyPressed", key) == false then return end
-		
-		console.HandleKey(key)		
-	elseif byte >= 32 then
-		local char = utf8.char(byte)
-		
-		if event.Call("OnConsoleCharPressed", char) == false then return end
-		
-		if char == "\t" then char = "    " end
+					for key, val in pairs(args) do
+						local num = tonumber(args[key])
+						
+						if num then
+							val = num
+						elseif not _G[val] then
+							local ok, var = pcall(loadstring(("return %s"):format(val)))
+							
+							if ok then
+								val = var
+							end
+						end
+						
+						args[key] = val
+					end
 				
-		console.HandleChar(char)
+					return xpcall(func, system.OnError, select(2, unpack(args)))
+				end]==]
+				
+				local func, err = loadstring(line)
+				
+				if not func then return func, err end
+				
+				return xpcall(func, system.OnError)
+			end
+		end 
+	end
+end
+
+do -- console vars
+	console.cvar_file_name = "%DATA%/cvars.txt"
+	console.vars = nil
+	
+	-- what's the use?
+	do -- cvar meta
+		local META = utilities.CreateBaseMeta("cvar")
+		
+		function META:Get()
+			if not console.vars then console.ReloadVariables() end
+			
+			return console.vars[self.cvar]
+		end
+		
+		function META:Set(var)
+			console.SetVariable(self.cvar, var)
+		end
+			
+		console.cvar_meta = META
 	end
 	
-	set_cursor_pos(markup:GetCaretSubPos()-1)	
-	console.ClearInput(markup:GetText())
-end)
- 
-do -- input extensions
-	local trigger = input.SetupInputEvent("ConsoleKey")
+	function console.ReloadVariables()
+		console.vars = luadata.ReadFile(console.cvar_file_name)
+	end
+	
+	function console.CreateVariable(name, def, callback)
+		if not console.vars then console.ReloadVariables() end
 
-	event.AddListener("OnConsoleKeyPressed", "input", function(key)
-		local ret = trigger(key, true)
-		
-		-- :(
-		timer.Delay(0, function() trigger(key, false) end)
-		
-		return ret
-	end)
+		console.vars[name] = console.vars[name] or def
 
-	local trigger = input.SetupInputEvent("ConsoleChar")
+		local T = type(def)
+		
+		local func = function(line, value)
+			if not value then	
+				value = console.vars[name] or def
+				
+				if T == "string" then
+					value = ("%q"):format(value)
+				end
+				
+				logf("%s = %s\n", name, luadata.ToString(luadata.FromString(value)))
+			else
+					
+				if T ~= "string" then
+					value = luadata.FromString(value)
+				end
+			
+				if type(value) ~= T then
+					value = def
+				end
+			
+				console.SetVariable(name, value)
+				
+				if callback then
+					callback(value)
+				end
+				
+				logf("%s = %s\n", name, value)
+			end
+			
+		end
 
-	event.AddListener("OnConsoleCharPressed", "input", function(char)
-		local ret = trigger(char, true)
+		console.AddCommand(name, func)
 		
-		-- :(
-		timer.Delay(0, function() trigger(char, false) end)
+		return console.cvar_meta:New({cvar = name})
+	end
+
+	function console.GetVariable(var, def)
+		if not console.vars then console.ReloadVariables() end
 		
-		return ret
-	end)
+		return console.vars[var] or def
+	end
+
+	function console.SetVariable(name, value)
+		if not console.vars then console.ReloadVariables() end
+		
+		console.vars[name] = value
+		luadata.SetKeyValueInFile(console.cvar_file_name, name, value)
+	end
 end
+
+do -- for fun
+	console.cmd = setmetatable(
+		{}, 
+		{
+			__index = function(self, key)				
+				key = key:lower()
+				
+				-- lua commands
+				if console.AddedCommands[key] then
+					return function(...)
+						console.RunCommand(key, ...)
+					end
+				end
+				
+				-- lua cvars
+				local tbl = console.vars
+				
+				if not console.vars then
+					console.ReloadVariables()
+				end
+				
+				if tbl[key] then
+					return tbl[key]
+				end
+			end,
+			
+			__newindex = function(self, key, val)
+				key = key:lower()
+			
+				console.RunString(key .. " " .. val, true)
+			end
+		}
+	)
+end
+
+console.AddCommand("help", function(line)
+	local info = console.GetCommands()[line]
+	if info then
+		if not info.help then
+			logn("\tno help was found for ", line)
+			logf("\ttype %q to go to this function\n", "source " .. line)
+			logn("\tdebug info:")
+			logn("\t\targuments\t=\t", table.concat(debug.getparams(info.callback), ", "))
+			logn("\t\tfunction\t=\t", tostring(info.callback))
+		else
+			logn(info.help)
+		end
+	end
+end)
+
+return console

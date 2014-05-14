@@ -84,4 +84,4 @@ do -- skins
 	end
 end
 
-include("aahh/skins/*")
+include("skins/*")

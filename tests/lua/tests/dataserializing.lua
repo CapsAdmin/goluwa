@@ -1,3 +1,5 @@
+local von = require("von")
+
 local lol = {
     1, -1337, -99.99, 2, 3, 100, 101, 121, 143, 144, "ma\"ra", "are", "mere",
     {

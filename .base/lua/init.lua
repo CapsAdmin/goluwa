@@ -110,7 +110,7 @@ do -- file system
 
 	-- this is ugly but it's because we haven't included the global extensions yet..
 	_G.check = function() end
-	vfs = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/low_level/vfs.lua")
+	vfs = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/vfs.lua")
 
 	-- mount the base folders
 	
@@ -211,15 +211,7 @@ do -- logging
 		
 		if not log_files[name] then
 			local file = io.open(base_log_dir .. name .. "_" .. jit.os:lower() .. ".txt", "w")
-			
-			if buffer then
-				for k,v in pairs(buffer) do
-					file:write(unpack(v))
-				end
-				
-				buffer = nil
-			end
-			
+		
 			log_files[name] = file			
 		end
 		
@@ -423,14 +415,30 @@ do -- include
 	end
 	
 	function include(source, ...)
+			
+		local dir, file = source:match("(.+/)(.+)")
 		
-		if vfs and source:sub(-1) == "*" then
-			for script in vfs.Iterate("lua/" .. source:sub(0,-2) .. ".lua", nil, true) do
+		if not dir then
+			dir = ""
+			file = source
+		end
+		
+		if vfs and file == "*" then
+			local previous_dir = include_stack[#include_stack]		
+						
+			if previous_dir then
+				dir = previous_dir .. dir
+			end
+			
+			if not vfs.IsDir(dir) then
+				dir = "lua/" .. dir
+			end
+							
+			for script in vfs.Iterate(dir, nil, true) do
 				local func, err = loadfile(script)
-				
 				if func then
-					local ok, err = xpcall(func, system and system.OnError or (function() end), ...)
-					
+					local ok, err = xpcall(func, system and system.OnError or logn, ...)
+
 					if not ok then
 						logn(err)
 					end
@@ -440,16 +448,10 @@ do -- include
 					logn(err)
 				end
 			end
+			
 			return
 		end
-	
-		local dir, file = source:match("(.+/)(.+)")
 		
-		if not dir then
-			dir = ""
-			file = source
-		end
-				
 		vfs.Silence(true)		
 				
 		-- try direct first
@@ -494,7 +496,7 @@ do -- include
 			dir = path:match("(.+/)(.+)")
 			include_stack[#include_stack + 1] = dir
 					
-			local res = {xpcall(func, system and system.OnError or (function() end), ...)}
+			local res = {xpcall(func, system and system.OnError or logn, ...)}
 			
 			if not res[1] then
 				logn(res[2])
@@ -543,159 +545,122 @@ do -- include
 	end
 end
 
-do -- tier 0 
-
-	local libraries = "libraries/low_level/"
-	local extensions = libraries .. "extensions/"
-
-	-- library extensions
-	include(extensions .. "globals.lua")
-	include(extensions .. "debug.lua")
-	include(extensions .. "math.lua")
-	include(extensions .. "string.lua")
-	include(extensions .. "table.lua")
-	include(extensions .. "os.lua")
+do -- libraries
+	-- standard library extensions
+	include("libraries/extensions/globals.lua")
+	include("libraries/extensions/debug.lua")
+	include("libraries/extensions/math.lua")
+	include("libraries/extensions/string.lua")
+	include("libraries/extensions/table.lua")
+	include("libraries/extensions/os.lua")
 
 	-- libraries
-	structs = include(libraries .. "structs.lua")
-
-	include(libraries .. "structs/*")
-
-	utf8 = include(libraries .. "utf8.lua")
+	structs = include("libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
+	utf8 = include("libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
+	event = include("libraries/event.lua") goluwa = event.events -- event handler
+	utilities = include("libraries/utilities.lua") -- more like i-dont-know-where-these-functions-go
+	addons = include("libraries/addons.lua") -- addons are folders in root of goluwa
+	class = include("libraries/class.lua") -- used by gui panels and entities
 	
-	event = include(libraries .. "event.lua")
-	goluwa = event.events
-	
-	utilities = include(libraries .. "utilities.lua")
-	addons = include(libraries .. "addons.lua")
-	class = include(libraries .. "class.lua")
-	luadata = include(libraries .. "luadata.lua")
-	von = include(libraries .. "von.lua")
-	timer = include(libraries .. "timer.lua")
-	sigh = include(libraries .. "sigh.lua")
-	base64 = include(libraries .. "base64.lua")
-	input = include(libraries .. "input.lua")
-	msgpack = include(libraries .. "msgpack.lua")
-	json = include(libraries .. "json.lua")
-	console = include(libraries .. "console.lua")
-	system = include(libraries .. "system.lua")
-	lcpp = include(libraries .. "lcpp.lua")
-	profiler = include(libraries .. "profiler.lua")
-	steam = include(libraries .. "steam.lua")
-	steamapi = include(libraries .. "steamapi.lua")
-	cookies = include(libraries .. "cookies.lua")
-	lpeg = include(libraries .. "lulpeg.lua")
-	expression = include(libraries .. "expression.lua")
-	crypto = include(libraries .. "crypto.lua")
+	-- serializing
+	luadata = include("libraries/serializing/luadata.lua") -- like json but deals with the lua format instead
+	crypto = include("libraries/serializing/crypto.lua")
+	msgpack = require("msgpack")
+	json = require("json")
 
+	timer = include("libraries/timer.lua")
+	console = include("libraries/console.lua")
+	input = include("libraries/input.lua")
+	system = include("libraries/system.lua")
+	profiler = include("libraries/profiler.lua")
+	steam = include("libraries/steam.lua")
+	cookies = include("libraries/cookies.lua")
+	expression = include("libraries/expression.lua")
+	autocomplete = include("libraries/autocomplete.lua")
+	
 	-- meta
-	include(extensions .. "function.lua")
-	include(libraries .. "null.lua")
-
-	-- luasocket
-	do 
-		luasocket = include(libraries .. "luasocket.lua") 
-		intermsg = include(libraries .. "intermsg.lua") 
-		event.AddListener("OnUpdate", "luasocket", luasocket.Update)
-		event.AddListener("LuaClose", "luasocket", luasocket.Panic)
-	end
-
-	-- ffi libraries
-	if not gl then
-		
+	include("libraries/extensions/function.lua")
+	include("libraries/null.lua")
+	
+	do -- ffi libraries
+	
+		-- this just puts the enums in the lj-* libraries in our e table
 		local require = function(lib) 
 			lib = _G.require(lib) 
+			
 			if lib.e then 
 				for k,v in pairs(lib.e) do 
 					e[k] = v 
 				end 
 			end 
+			
 			return lib 
 		end
 		
-		-- console input
-		curses = require("lj-curses")
-		
-		-- model decoder
-		assimp = require("lj-assimp")
-		
-		-- image decoder
-		freeimage = require("lj-freeimage")
-		
-		-- font decoder
-		freetype = require("lj-freetype")
-		
-		-- sound decoder
-		soundfile = require("lj-libsoundfile")
-
-		-- OpenGL
-		gl = require("lj-opengl")
-		
-		-- HLLib
-		vl = require("lj-vtflib")
-		
-		-- window manager
-		glfw = require("lj-glfw")
-		
-		-- window manager
-		--sdl = require("sdl")
-		
-		-- OpenAL
-		al = require("lj-openal.al")
-		alc = require("lj-openal.alc")
+		curses = require("lj-curses") -- console input
+		assimp = require("lj-assimp") -- model decoder
+		freeimage = require("lj-freeimage") -- image decoder
+		freetype = require("lj-freetype") -- font decoder
+		soundfile = require("lj-libsoundfile") -- sound decoder
+		gl = require("lj-opengl") -- OpenGL
+		vl = require("lj-vtflib") -- HLLib
+		glfw = require("lj-glfw")-- window manager
+		al = require("lj-openal.al") -- OpenAL
+		alc = require("lj-openal.alc") -- OpenAL
+		ffmpeg = require("lj-ffmpeg")
 	end
 
+	-- graphics
+	render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
+	surface = include("libraries/graphics/surface.lua") -- high level 2d rendering of the render library
+	window = include("libraries/graphics/window.lua") -- high level window implementation
+	video = include("libraries/graphics/video.lua") -- gif support (for now)
+	include("libraries/graphics/particles.lua")
+	include("libraries/graphics/markup.lua")	
+	
+	-- network
+	luasocket = include("libraries/network/luasocket.lua") 
+	intermsg = include("libraries/network/intermsg.lua") 			
+	steamapi = include("libraries/network/steamapi.lua")
+	message = include("libraries/network/message.lua") -- high level communication between server and client
+	network = include("libraries/network/network.lua") -- high level implementation of luasocket
+	easylua = include("libraries/network/easylua.lua")
+	nvars = include("libraries/network/nvars.lua")
+	players = include("libraries/network/players.lua")
+			
+	-- audio
+	audio = include("libraries/audio/audio.lua") -- high level implementation of OpenAl
+	chatsounds = include("libraries/audio/chatsounds.lua")
+	
+	entities = include("libraries/entities/entities.lua")
+	
+	include("libraries/extensions/vfs_vpk.lua") -- vpk support for _G.vfs
+	include("libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
 end
+
 console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
 
+event.AddListener("OnUpdate", "luasocket", luasocket.Update)
+event.AddListener("LuaClose", "luasocket", luasocket.Panic)
+
 addons.LoadAll()
-steamapi.Initialize()
 
-do -- tier 1
-	-- OpenGL abstraction
-	include("libraries/render/render.lua")
+audio.Open()
 
-	-- high level 2d rendering of the render library
-	include("libraries/surface.lua")
-
-	-- high level implementation of OpenAl
-	include("libraries/audio.lua")
-
-	-- particles
-	include("libraries/particles.lua")
-
-	-- high level implementation of luasocket
-	include("libraries/network/network.lua")
-
-	-- entities
-	include("libraries/entities/entities.lua")
-
-	-- high level window implementation
-	include("libraries/window.lua")
-	
-	-- valve package format
-	include("libraries/vpk.lua")
-
-	include("libraries/extensions/input.lua")
-	
-	include("libraries/gif.lua")
-	include("libraries/markup.lua")
-	
-	include("libraries/autocomplete.lua")
-	include("libraries/chatsounds.lua")
-	
-	-- high level implementation of curses
-	include("libraries/console.lua")
+if not ZEROBRANE then
+  console.InitializeCurses()
 end
 
+steamapi.Initialize()
 entities.LoadAllEntities()
+
 addons.AutorunAll()
 timer.clock = glfw.GetTime
 
 console.Exec("autoexec")
 
 -- include single lua scripts in addons/
---include(addons.Root .. "*")
+-- include(addons.Root .. "*")
 
 addons.AutorunAll(e.USERNAME)
 
