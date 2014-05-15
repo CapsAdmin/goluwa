@@ -51,7 +51,7 @@ do -- editors
 	local editors = {
 		{	
 			-- if you have sublime installed you most likely don't have any other editor installed
-			name = "sublime",
+			name = "sublime_text",
 			args = "%PATH%:%LINE%",
 		},
 		{
@@ -74,8 +74,9 @@ do -- editors
 				local path = system.GetRegistryValue("ClassesRoot/Applications/"..v.name..".exe/shell/open/command/default")
 				
 				if path then
-					if os_execute then
-						path = path:match([[(".-")]])
+					if os_execute then 
+						path = path:match([[(".-")]]) or path:match("(.-) %%")
+						if not path then return end
 						path = "start \"\" " .. path
 					else
 						path = path:match([["(.-)"]])
