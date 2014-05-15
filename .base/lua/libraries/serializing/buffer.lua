@@ -415,6 +415,6 @@ do -- extended
 	end
 	
 	function META:GetDebugString()
-		return (self:GetString():gsub("(.)", function(str) return ("%x "):format(str:byte()) end))
+		return (self:GetString():gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
 	end
 end
