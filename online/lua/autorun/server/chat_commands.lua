@@ -23,6 +23,11 @@ console.AddCommand("lm", function(line)
 	ply:SendLua(line)
 end)
 
+console.AddCommand("cmd", function(line)
+	local ply = console.GetPlayer()
+	ply:SendLua(("console.RunString(%q)"):format(line))
+end)
+
 console.AddCommand("t", function(line, from, to, str)
 	local ply = console.GetPlayer()
 
