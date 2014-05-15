@@ -35,10 +35,6 @@ for line in header:gmatch("(.-)\n") do
 	end
 end
 
-for key, val in pairs(enums) do
-	e[key] = val
-end
-
 do
 	local reverse_enums = {}
 
@@ -53,7 +49,7 @@ do
 end
 
 function vl.LoadImage(data, format)
-	format = format or e.IMAGE_FORMAT_BGRA8888
+	format = format or enums.IMAGE_FORMAT_BGRA8888
 	
 	local uiVTFImage = ffi.new("unsigned int[1]")
 	vl.CreateImage(uiVTFImage)
