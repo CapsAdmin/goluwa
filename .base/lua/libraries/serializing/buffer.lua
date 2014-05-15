@@ -33,11 +33,11 @@ do -- generic
 	end
 	
 	function META:SetPos(pos)
-		self.position = math.clamp(pos + 1, 1, self:GetSize())
+		self.position = math.clamp(pos + 1, 1, self:GetSize() + 1)
 	end
 	
 	function META:GetPos()
-		return self.position
+		return self.position - 1
 	end
 
 	function META:Advance(i)
@@ -66,7 +66,7 @@ do -- basic data types
 	function META:ReadShort()
 		local b1, b2 = self:ReadByte(), self:ReadByte()
 		if not b1 or not b2 then return end
-		return bit.lshift(b1, 8) + bit.lshift(b2, 0)
+		return bit.tobit(bit.lshift(b1, 8) + bit.lshift(b2, 0))
 	end
 
 	-- long
@@ -81,10 +81,12 @@ do -- basic data types
 		local b1, b2, b3, b4 = self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte()
 		if not b1 or not b2 or not b3 or not b4 then return end
 		return 
-			bit.lshift(b1, 24) + 
-			bit.lshift(b2, 16) + 
-			bit.lshift(b3, 8) + 
-			bit.lshift(b4, 0)
+			bit.tobit(
+				bit.lshift(b1, 24) + 
+				bit.lshift(b2, 16) + 
+				bit.lshift(b3, 8) + 
+				bit.lshift(b4, 0)
+			)
 	end
 	
 	-- half
@@ -136,72 +138,63 @@ do -- basic data types
 	end
 
 	-- float
-	function META:WriteFloat(float)
-		if float == 0 then
-			self:WriteByte(0x00)
-			self:WriteByte(0x00)
-			self:WriteByte(0x00)
-			self:WriteByte(0x00)
-		elseif number ~= number then
-			self:WriteByte(0xFF)
-			self:WriteByte(0xFF)
-			self:WriteByte(0xFF)
-			self:WriteByte(0xFF)
-		else
-			local sign = 0x00
-			if float < 0 then
-				sign = 0x80
-				float = -float
-			end
-			local mantissa, exponent = math.frexp(float)
-			exponent = exponent + 0x7F
-			if exponent <= 0 then
-				mantissa = math.ldexp(mantissa, exponent - 1)
-				exponent = 0
-			elseif exponent > 0 then
-				if exponent >= 0xFF then
-					self:WriteByte(sign + 0x7F)
-					self:WriteByte(0x80)
-					self:WriteByte(0x00)
-					self:WriteByte(0x00)
-					return
-				elseif exponent == 1 then
-					exponent = 0
-				else
-					mantissa = mantissa * 2 - 1
-					exponent = exponent - 1
-				end
-			end
-			mantissa = math.floor(math.ldexp(mantissa, 23) + 0.5)
-
-			self:WriteByte(sign + math.floor(exponent / 2))
-			self:WriteByte((exponent % 2) * 0x80 + math.floor(mantissa / 0x10000))
-			self:WriteByte(math.floor(mantissa / 0x100) % 0x100)
-			self:WriteByte(mantissa % 0x100)
+	function META:WriteFloat(value)
+	-- ieee 754 binary32
+	-- 33222222 22221111 111111
+	-- 10987654 32109876 54321098 76543210
+	-- seeeeeee emmmmmmm mmmmmmmm mmmmmmmm
+		if value==0.0 then
+			self:WriteByte(0)
+			self:WriteByte(0)
+			self:WriteByte(0)
+			self:WriteByte(0)
+			return
 		end
+
+		local signBit=0
+		if value<0 then
+			signBit=128 -- shifted left to appropriate position 
+			value=-value
+		end
+		
+		local m,e=math.frexp(value) 
+		m=m*2-1
+		e=e-1+127
+		e=min(max(0,e),255)
+		
+		-- sign and 7 bits of exponent
+		self:WriteByte(bit.bor(signBit,bit.band(bit.rshift(e,1),127)))
+		
+		-- first 7 bits of mantissa
+		m=m*128
+		-- write last bit of exponent and first 7 of mantissa
+		self:WriteByte(bit.bor(bit.band(bit.lshift(e,7),255),bit.band(m,127)))
+		-- get rid of written bits and shift for next 8
+		m=(m-math.floor(m))*256
+		self:WriteByte(bit.band(m,255))
+		
+		m=(m-math.floor(m))*256
+		self:WriteByte(bit.band(m,255))	
 	end
 
 	function META:ReadFloat()
-		local b1, b2, b3, b4 = self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte()
-		if not b1 or not b2 or not b3 or not b4 then return end
-		local exponent = (b1 % 0x80) * 0x02 + math.floor(b2 / 0x80)
-		local mantissa = math.ldexp(((b2 % 0x80) * 0x100 + b3) * 0x100 + b4, -23)
-		if exponent == 0xFF then
-			if mantissa > 0 then
-				return 0 / 0
-			else
-				mantissa = math.huge
-				exponent = 0x7F
-			end
-		elseif exponent > 0 then
-			mantissa = mantissa + 1
-		else
-			exponent = exponent + 1
+		local b=self:ReadByte()
+		local sign=1
+		if b>=128 then 
+			sign=-1
+			b=b-128
 		end
-		if b1 >= 0x80 then
-			mantissa = -mantissa
-		end
-		return math.ldexp(mantissa, exponent - 0x7F)
+		local exponent=b*2
+		b=self:ReadByte()
+		exponent=exponent+bit.band(bit.rshift(b,7),1)-127
+		local mantissa=bit.band(b,127)/128
+		
+		b=self:ReadByte()
+		mantissa=mantissa+b/128/256
+		b=self:ReadByte()
+		mantissa=mantissa+b/128/65536
+		if mantissa==0.0 and exponent==-127 then return 0.0
+		else return (mantissa+1.0)*math.pow(2,exponent)*sign end
 	end
 	
 	-- double
@@ -302,7 +295,8 @@ do -- basic data types
 	function META:ReadLongLong()
 		local b1, b2, b3, b4, b5, b6, b7, b8 = self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte()
 		if not b1 or not b2 or not b3 or not b4 or not b5 or not b6 or not b7 or not b8 then return end
-		return 
+		return
+			bit.tobit(
 			bit.lshift(b1, 56) + 
 			bit.lshift(b1, 48) + 
 			bit.lshift(b1, 40) + 
@@ -311,6 +305,7 @@ do -- basic data types
 			bit.lshift(b2, 16) + 
 			bit.lshift(b3, 8) + 
 			bit.lshift(b4, 0)
+			)
 	end
 	
 	-- string
