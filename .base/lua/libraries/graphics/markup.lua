@@ -731,12 +731,13 @@ do -- tags
 			end,
 
 			get_size = function(markup, self, path, size)
-				return size, size
+				if not self.mat then self.mat = EXT.FindMaterial(path) end 
+				return self.mat.w or size, self.mat.h or size
 			end,
 
 			pre_draw = function(markup, self, x,y, path, size)
 				EXT.SetMaterial(self.mat)
-				EXT.DrawRect(x, y, size, size)
+				EXT.DrawRect(x, y, self.mat.w or size, self.mat.h or size)
 			end,
 		}
 
