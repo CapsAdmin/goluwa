@@ -565,6 +565,7 @@ do -- libraries
 	-- serializing
 	luadata = include("libraries/serializing/luadata.lua") -- like json but deals with the lua format instead
 	crypto = include("libraries/serializing/crypto.lua")
+	include("libraries/serializing/buffer.lua")
 	msgpack = require("msgpack")
 	json = require("json")
 
