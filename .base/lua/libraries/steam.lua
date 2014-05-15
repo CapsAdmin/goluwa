@@ -245,6 +245,8 @@ do -- steam directories
 end
 
 do -- server query
+	-- https://developer.valvesoftware.com/wiki/Server_queries
+	
 	local queries = {
 		info = {
 			request = {
@@ -296,7 +298,7 @@ do -- server query
 					{key = "Index", type = "byte"}, -- Index of player chunk starting from 0.
 					{key = "Name", type = "string"}, -- Name of the player.
 					{key = "Score", type = "long"}, -- Player's score (usually "frags" or "kills".)
-					{key = "Duration", type = "long"}, -- Time (in seconds) player has been connected to the server.
+					{key = "Duration", type = "float"}, -- Time (in seconds) player has been connected to the server.
 				}}, -- Number of players whose information was gathered.
 			}
 		},
@@ -352,22 +354,17 @@ do -- server query
 				end
 			end
 			
-			local val
-			
-			if data.type == "byte" then
-				val = buffer:ReadByte()
-				if data.translate then
-					val = data.translate[string.char(val)] or "nil"
-				end
-			else
-				val = buffer:ReadType(data.type) 
-			end  
+			local val = buffer:ReadType(data.type) 
 			
 			if data.assert then
 				if val ~= data.assert then
 					error("error in header, expected " .. data.type .. " " .. ("%X"):format(data.assert) .. " got " .. (type(val) == "number" and ("%X"):format(val) or type(val)))
 				end
 			end
+	
+			if data.translate then
+				val = data.translate[string.char(val)] or val
+			end			
 						
 			out[data.key] = val or "nil"
 				
@@ -390,22 +387,32 @@ do -- server query
 			
 		local socket = luasocket.Client("udp", ip, port)
 		
+		socket.debug = steam.debug
+		
+		-- more like on socket created
 		function socket:OnConnect()
 			local buffer = Buffer()
 			buffer:WriteLong(0xFFFFFFFF)
 			write_request(buffer, query.request)
-			--logn("sending: ", buffer:GetDebugString())
+			
+			if steam.debug then
+				logf("sending %s to %s %i", buffer:GetDebugString(), ip, port)
+			end
+			
 			socket:Send(buffer:GetString())
 		end
 		
 		function socket:OnReceive(str)
 			local buffer = Buffer(str)
-			--logn("received: ", buffer:GetDebugString())
+			
+			if steam.debug then
+				logf("received %s to %s %i", buffer:GetDebugString(), ip, port)
+			end
 			
 			local header = buffer:ReadLong()
 
 			-- packet is split up
-			if header == 0xFFFFFFFE then
+			if header == -2 then
 				local info = read_response(buffer, split_query.response)
 				
 				if not self.buffer_chunks then
@@ -420,24 +427,31 @@ do -- server query
 				if table.count(self.buffer_chunks) - 1 == info.Total then
 					callback(read_response(Buffer(table.concat(self.buffer_chunks)), query.response))
 				end
-			elseif query.challenge and not self.challenge then
-				local type = buffer:ReadByte()
+			elseif header == -1 then
+				if query.challenge and not self.challenge then
+					local type = buffer:ReadByte()
+							
+					if type == 0x41 then
+						local challenge = buffer:ReadLong()
+									
+						local buffer = Buffer()
+						buffer:WriteLong(0xFFFFFFFF)
+						buffer:WriteByte(query.request[1].val)
+						buffer:WriteLong(challenge)
 						
-				if type == 0x41 then
-					local challenge = buffer:ReadLong()
-								
-					local buffer = Buffer()
-					buffer:WriteLong(0xFFFFFFFF)
-					buffer:WriteByte(query.request[1].val)
-					buffer:WriteLong(challenge)
-					
-					--logn("sending: ", buffer:GetDebugString())
-					self:Send(buffer:GetString())
-					
-					self.challenge = challenge
+						if steam.debug then
+							logf("sending challenge %s to %s %i", buffer:GetDebugString(), ip, port)
+						end
+						
+						self:Send(buffer:GetString())
+						
+						self.challenge = challenge
+					end
+				else
+					callback(read_response(buffer, query.response))
 				end
 			else
-				callback(read_response(buffer, query.response))
+				error("received unknown header " .. header)
 			end
 		end
 	end
