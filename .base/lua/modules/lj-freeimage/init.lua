@@ -26,13 +26,13 @@ function freeimage.LoadMultiPageImage(data, flags)
 		local bitmap = lib.FreeImage_ConvertTo32Bits(temp)
 		
 		local tag = ffi.new("FI_TAG *[1]")
-		lib.FreeImage_GetMetadata(FIMD_ANIMATION, bitmap, "FrameLeft", tag)
+		lib.FreeImage_GetMetadata(enums.FIMD_ANIMATION, bitmap, "FrameLeft", tag)
 		local x = tonumber(ffi.cast("int", lib.FreeImage_GetTagValue(tag[0])))
 		
-		lib.FreeImage_GetMetadata(FIMD_ANIMATION, bitmap, "FrameTop", tag)
+		lib.FreeImage_GetMetadata(enums.FIMD_ANIMATION, bitmap, "FrameTop", tag)
 		local y = tonumber(ffi.cast("int", lib.FreeImage_GetTagValue(tag[0])))
 		
-		lib.FreeImage_GetMetadata(FIMD_ANIMATION, bitmap, "FrameTime", tag)
+		lib.FreeImage_GetMetadata(enums.FIMD_ANIMATION, bitmap, "FrameTime", tag)
 		local ms = tonumber(ffi.cast("int", lib.FreeImage_GetTagValue(tag[0]))) / 1000
 				
 		lib.FreeImage_DeleteTag(tag[0])
@@ -57,6 +57,11 @@ function freeimage.LoadImage(data, flags)
 	local stream = lib.FreeImage_OpenMemory(buffer, #data)
 	local type = lib.FreeImage_GetFileTypeFromMemory(stream, #data)
 		
+	if tonumber(type) == 0 then
+		lib.FreeImage_CloseMemory(stream)
+		return nil, "unknown format"
+	end
+		
 	local temp = lib.FreeImage_LoadFromMemory(type, stream, flags or 0)
 	local bitmap = lib.FreeImage_ConvertTo32Bits(temp)
 	lib.FreeImage_Unload(temp)
@@ -66,6 +71,8 @@ function freeimage.LoadImage(data, flags)
 	local height = lib.FreeImage_GetHeight(bitmap)
 		
 	ffi.gc(bitmap, lib.FreeImage_Unload)
+	
+	lib.FreeImage_CloseMemory(stream)
 	
 	return data, width, height
 end

@@ -778,11 +778,11 @@ end
 
 function audio.Decode(data, path_hint)
 	for i, decoder in ipairs(audio.decoders) do
-		local ok, buffer, length, info = xpcall(decoder.callback, system.OnError, data, path_hint)
+		local ok, buffer, length, info = pcall(decoder.callback, data, path_hint)
 		if ok then 
 			if buffer and length then
 				return buffer, length, info or {}
-			else
+			elseif not w:find("unknown format") then
 				logf("[audio] %s failed to decode %s: %s\n", decoder.id, path_hint or "", length)
 			end
 		else
