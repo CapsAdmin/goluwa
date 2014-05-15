@@ -390,11 +390,13 @@ do -- server query
 			
 		local socket = luasocket.Client("udp", ip, port)
 		
-		local buffer = Buffer()
-		buffer:WriteLong(0xFFFFFFFF)
-		write_request(buffer, query.request)
-		--logn("sending: ", buffer:GetDebugString())
-		socket:Send(buffer:GetString())
+		function socket:OnConnect()
+			local buffer = Buffer()
+			buffer:WriteLong(0xFFFFFFFF)
+			write_request(buffer, query.request)
+			--logn("sending: ", buffer:GetDebugString())
+			socket:Send(buffer:GetString())
+		end
 		
 		function socket:OnReceive(str)
 			local buffer = Buffer(str)
