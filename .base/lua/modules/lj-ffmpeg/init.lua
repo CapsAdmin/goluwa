@@ -90,10 +90,45 @@ function ffmpeg.lua_dictionary_to_table(dict)
 	return tbl
 end
 
-function ffmpeg.lua_get_last_error()
-	local buff = ffi.new("char[512]")
-	ffmpeg.av_strerror(ffi.errno(), buff, 512) 
-	return ffi.string(buff) 
+local errors = {
+	"bitstream filter not found",
+	"internal bug, should not have happened",
+	"internal bug, should not have happened",
+	"buffer too small",
+	"decoder not found",
+	"demuxer not found",
+	"encoder not found",
+	"end of file",
+	"immediate exit requested",
+	"generic error in an external library",
+	"filter not found",
+	"invalid data found when processing input",
+	"muxer not found",
+	"option not found",
+	"not yet implemented in ffmpeg, patches welcome",
+	"protocol not found",
+	"stream not found",
+	"unknown error occurred",
+	"experimental feature",
+}
+
+local last_err
+local last_code
+
+local function check_error(err)
+	if err and errors[-err] then
+		last_err = errors[-err]
+		last_code = err
+	end
+	return err
+end
+
+local function get_last_error()
+	if last_err then
+		return last_err .. " (error code: " ..  last_code .. ")"
+	end
+	
+	return "unknown error"
 end
 
 ffmpeg.lua_initialize()
@@ -129,7 +164,8 @@ do
 			ffmpeg.av_opt_set_sample_fmt(converter[0], "in_sample_fmt", codec_context.sample_fmt, 0)
 			
 			-- output config
-			ffmpeg.av_opt_set_int(converter[0], "out_channel_layout", codec_context.channel_layout, 0)
+			local out_channel_layout = ffmpeg.av_get_channel_layout(channels == 1 and "mono" or "stereo")
+			ffmpeg.av_opt_set_int(converter[0], "out_channel_layout", out_channel_layout, 0)
 			ffmpeg.av_opt_set_int(converter[0], "out_channels", channels, 0)
 			ffmpeg.av_opt_set_int(converter[0], "out_sample_rate", sample_rate, 0)
 			ffmpeg.av_opt_set_sample_fmt(converter[0], "out_sample_fmt", format, 0)
@@ -138,8 +174,23 @@ do
 				ffmpeg.av_opt_set_int(converter[0], "swr_flags", flags, 0);
 			end
 						
-			if ffmpeg.swr_init(converter[0]) < 0 then
-				return nil, "failed to initialize the audio converter (swr)"
+			if check_error(ffmpeg.swr_init(converter[0])) < 0 then
+				
+				if ffmpeg.debug then
+					logn("in_channel_layout = ", in_channel_layout)
+					logn("in_channels = ", codec_context.channels)
+					logn("in_sample_rate = ", codec_context.sample_rate)
+					logn("in_sample_fmt = ", codec_context.sample_fmt)
+
+					logn("out_channel_layout = ", codec_context.channel_layout)
+					logn("out_channels = ", channels)
+					logn("out_sample_rate = ", sample_rate)
+					logn("out_sample_fmt = ", format)
+					
+					logn("swr_flags = ", flags)
+				end
+				
+				return nil, "failed to initialize the audio converter (swr): " .. get_last_error()
 			end
 			
 			config.audio_format = format
@@ -168,8 +219,21 @@ do
 				converter.flags = flags
 			end
 			
-			if ffmpeg.sws_init_context(converter, nil, nil) < 0 then
-				return nil, "failed to initialize the video converter (sws)"
+			if check_error(ffmpeg.sws_init_context(converter, nil, nil)) < 0 then
+				
+				if ffmpeg.debug then
+					logn("srcw = ", codec_context.width)
+					logn("srch = ", codec_context.height)
+					logn("src_format = ", codec_context.pix_fmt)
+					
+					logn("dstw = ", width)
+					logn("dsth = ", height)
+					logn("dst_format = ", format)
+					
+					logn("flags = ", flags)
+				end
+			
+				return nil, "failed to initialize the video converter (sws): " .. get_last_error()
 			end
 			
 			config.video_format = format
@@ -185,7 +249,7 @@ do
 	local function insert_video_data(self, stream)
 		-- rescale the video
 		-- todo: do this later?
-		if ffmpeg.sws_scale(
+		if check_error(ffmpeg.sws_scale(
 			stream.converter, 					
 			ffi.cast("const uint8_t **", self.frame.data), 
 			self.frame.linesize,
@@ -193,8 +257,8 @@ do
 			stream.codec_context.height,					
 			stream.image_buffer.data, 
 			stream.image_buffer.linesize
-		) < 0 then
-			return nil, "failed to rescale video frame"
+		)) < 0 then
+			return nil, "failed to rescale video frame: " .. get_last_error()
 		end
 		
 		-- get the buffer
@@ -224,11 +288,11 @@ do
 			1
 		)
 		
-		if length <= 0 then return nil, "failed to get sample buffer size" end
+		if check_error(length) <= 0 then return nil, "failed to get sample buffer size: " .. get_last_error() end
 		
 		local buffer = ffi.new("uint8_t *[1]", ffi.new("uint8_t[?]", length))
 		
-		if ffmpeg.swr_convert(
+		if check_error(ffmpeg.swr_convert(
 			stream.converter[0], 
 			
 			buffer, 
@@ -236,8 +300,8 @@ do
 			
 			ffi.cast("const uint8_t **", self.frame.data), 
 			self.frame.nb_samples
-		) < 0 then
-			return nil, "failed to resample audio frame"
+		)) < 0 then
+			return nil, "failed to resample audio frame: " .. get_last_error()
 		end
 		
 		-- get the the timestamp for this frame
@@ -251,6 +315,10 @@ do
 			sample_time = sample_time / self.config.sample_rate
 			sample_time = sample_time / ffmpeg.av_get_bytes_per_sample(self.config.audio_format);
 			stream.clock = (stream.clock or 0) + sample_time
+		end
+		
+		if tostring(ffi.typeof(buffer)) ~= "ctype<unsigned char *[1]>" then
+			error("NO WAY MAN: " .. tostring(ffi.typeof(buffer)) .. " SHOULD BE ctype<unsigned char *[1]>")
 		end
 		
 		table.insert(stream.queue, {
@@ -531,18 +599,18 @@ do
 			return nil, "unknown format " .. config.file_ext
 		end
 		
-		if ffmpeg.avformat_open_input(format_context, file_name, format, options) ~= 0 then
+		if check_error(ffmpeg.avformat_open_input(format_context, file_name, format, options)) ~= 0 then
 			ffmpeg.av_free(frame)
 			os.remove(file_name)
-			return nil, "unable to open file " .. file_name
+			return nil, "unable to open file " .. file_name .. ": " .. get_last_error()
 		end
 			
 		-- find all the streams (audio streams, video streams, etc)
-		if ffmpeg.avformat_find_stream_info(format_context[0], nil) < 0 then
+		if check_error(ffmpeg.avformat_find_stream_info(format_context[0], nil)) < 0 then
 			ffmpeg.av_free(frame)
 			ffmpeg.avformat_close_input(format_context)
 			os.remove(file_name)
-			return nil, "unable to find stream info"
+			return nil, "unable to find stream info: " .. get_last_error()
 		end
 		
 		local info = {}
@@ -560,10 +628,10 @@ do
 			if config.audio_only and type ~= "audio" then goto continue end
 			if config.video_only and type ~= "video" then goto continue end
 			
-			if codec == nil or ffmpeg.avcodec_open2(codec_context, codec, nil) < 0 then
+			if codec == nil or check_error(ffmpeg.avcodec_open2(codec_context, codec, nil)) < 0 then
 				streams[i] = {
 					opened = false,
-					reason = string.format("couldn't open the %s codec at stream position %i\n", type, i),
+					reason = string.format("couldn't open the %s codec at stream position %i: %s\n", type, i, get_last_error()),
 				}
 			else
 				local converter, err = get_converter(codec_context, type, config)
