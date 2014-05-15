@@ -429,7 +429,7 @@ do -- texture object
 	end
 end
 
-render.texture_path_cache = render.texture_path_cache or setmetatable({}, { __mode = 'v' })
+render.texture_path_cache = setmetatable({}, { __mode = 'v' })
 
 function render.CreateTextureFromPath(path, format)
 	if render.texture_path_cache[path] then 
@@ -447,25 +447,25 @@ function render.CreateTextureFromPath(path, format)
 		tex.loading = false
 		
 		local buffer, w, h, info = render.DecodeTexture(data, path)
-		
-		if not buffer then
+
+		if buffer == nil or w == 0 or h == 0 then
 			local err = render.GetErrorTexture()
 			buffer = err:Download()
 			w = err.w
 			h = err.h
+		else
+			render.texture_path_cache[path] = tex
 		end
 		
 		tex:Replace(buffer, w, h)
-		tex.decode_info = info
-		
-		render.texture_path_cache[path] = tex		
+		tex.decode_info = info	
 	end)
 	
 	return tex
 end
 
 
-render.texture_decoders = {}
+render.texture_decoders = render.texture_decoders or {}
 
 function render.AddTextureDecoder(id, callback)
 	render.RemoveTextureDecoder(id)
