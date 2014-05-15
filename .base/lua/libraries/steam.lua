@@ -386,14 +386,6 @@ do -- server query
 	end
 
 	local function query_server(ip, port, query, callback)
-		
-		if callback == nil and type(port) == "function" then
-			callback = port
-			ip, port = ip:match("(.+):(.+)")
-			port = tonumber(port)
-		end
-
-		query = queries[query] or queries.info
 		callback = callback or table.print
 			
 		local socket = luasocket.Client("udp", ip, port)
@@ -449,26 +441,31 @@ do -- server query
 	end
 
 	function steam.GetServerInfo(ip, port, callback)
+		check(ip, "string")
+		check(port, "number")
+		
 		query_server(ip, port, queries.info, callback)
 	end
 
 	function steam.GetServerPlayers(ip, port, callback)
+		check(ip, "string")
+		check(port, "number")
+		
 		query_server(ip, port, queries.players, callback)
 	end
 
 	function steam.GetServerRules(ip, port, callback)
+		check(ip, "string")
+		check(port, "number")
+		
 		query_server(ip, port, queries.rules, callback)
 	end
 
-	function steam.GetServerPing(ip, port, callback)		
-		if callback == nil then
-			callback = port
-			ip, port = ip:match("(.+):(.+)")
-			port = tonumber(port)
-		end
-	
+	function steam.GetServerPing(ip, port, callback)	
+		check(ip, "string")
+		check(port, "number")
+		
 		callback = callback or logn
-	
 		local start = timer.clock()
 		query_server(ip, port, queries.ping, function()
 			callback(timer.clock() - start)
