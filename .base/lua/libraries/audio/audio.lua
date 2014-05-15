@@ -760,7 +760,7 @@ do -- microphone
 
 end
 
-audio.decoders = {}
+audio.decoders = audio.decoders or {}
 
 function audio.AddDecoder(id, callback)
 	audio.RemoveDecoder(id)
@@ -782,7 +782,7 @@ function audio.Decode(data, path_hint)
 		if ok then 
 			if buffer and length then
 				return buffer, length, info or {}
-			elseif not w:find("unknown format") then
+			elseif not length:find("unknown format") then
 				logf("[audio] %s failed to decode %s: %s\n", decoder.id, path_hint or "", length)
 			end
 		else
