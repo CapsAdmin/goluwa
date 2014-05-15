@@ -5,6 +5,7 @@ return [[
 	typedef struct {} FI_TAG;
 	 
 	__stdcall FI_MEMORY * FreeImage_OpenMemory(const char *data, unsigned int size);
+	__stdcall void FreeImage_CloseMemory(FI_MEMORY *stream);
 	__stdcall unsigned int FreeImage_GetFileTypeFromMemory(FI_MEMORY *stream, unsigned int size);
 	__stdcall FI_BITMAP *FreeImage_LoadFromMemory(unsigned int format, FI_MEMORY *stream, int flags);
 	__stdcall FI_BITMAP *FreeImage_ConvertTo32Bits(FI_BITMAP *bitmap);

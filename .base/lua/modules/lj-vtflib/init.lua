@@ -65,7 +65,7 @@ function vl.LoadImage(data, format)
 	vl.BindMaterial(uiVMTMaterial[0])
 
 	if vl.ImageLoadLump(ffi.cast("void *", data), #data, 0) == 0 then
-		return nil, "not a vtf file"
+		return nil, "unknown format"
 	end
 
 	local w, h = vl.ImageGetWidth(), vl.ImageGetHeight()

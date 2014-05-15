@@ -519,10 +519,19 @@ do
 		local format_context = ffi.new("AVFormatContext *[1]", ffmpeg.avformat_alloc_context())
 		local options = ffi.new("AVDictionary *[1]", ffmpeg.lua_table_to_dictionary(config.input_options))
 		
-		--local format_name = ffmpeg.av_guess_format(nil, "lol." .. config.file_ext, nil).name
-		--local format = ffmpeg.av_find_input_format(format_name)
-				
-		if ffmpeg.avformat_open_input(format_context, file_name, nil, options) ~= 0 then
+		local format
+		
+		local format_name = ffmpeg.av_guess_format(nil, "temp." .. config.file_ext, nil)
+		
+		if format_name ~= nil then
+			format = ffmpeg.av_find_input_format(format_name.name)
+		end
+		
+		if config.file_ext and not format then
+			return nil, "unknown format " .. config.file_ext
+		end
+		
+		if ffmpeg.avformat_open_input(format_context, file_name, format, options) ~= 0 then
 			ffmpeg.av_free(frame)
 			os.remove(file_name)
 			return nil, "unable to open file " .. file_name

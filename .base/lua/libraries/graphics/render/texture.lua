@@ -483,11 +483,11 @@ end
 
 function render.DecodeTexture(data, path_hint)
 	for i, decoder in ipairs(render.texture_decoders) do
-		local ok, buffer, w, h, info = pcall(decoder.callback, system.OnError, data, path_hint)
+		local ok, buffer, w, h, info = pcall(decoder.callback, data, path_hint)
 		if ok then 
 			if buffer and w then
 				return buffer, w, h, info or {}
-			else
+			elseif not w:find("unknown format") then
 				logf("[render] %s failed to decode %s: %s\n", decoder.id, path_hint or "", w)
 			end
 		else
