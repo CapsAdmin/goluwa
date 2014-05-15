@@ -181,15 +181,27 @@ do -- thanks etandel @ #lua!
 			error("could not find remove function", 2)
 		end
 		
-		local ud = t.__gc or newproxy(true)
-		
-		debug.getmetatable(ud).__gc = function() 
-			if not t.IsValid or t:IsValid() then
-				return func(t) 
+		if ffi then
+			local ud = t.__gc or ffi.new("char[1]")
+						
+			ffi.gc(ud, function()
+				if not t.IsValid or t:IsValid() then
+					return func(t) 
+				end
+			end)
+			
+			t.__gc = ud
+		else
+			local ud = t.__gc or newproxy(true)
+			
+			debug.getmetatable(ud).__gc = function() 
+				if not t.IsValid or t:IsValid() then
+					return func(t) 
+				end
 			end
+			
+			t.__gc = ud  
 		end
-		
-		t.__gc = ud  
 
 		return t
 	end
