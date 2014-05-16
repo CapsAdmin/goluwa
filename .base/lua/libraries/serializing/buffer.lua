@@ -338,7 +338,20 @@ do -- extended
 	end
 	
 	function META:ReadBoolean()
-		return self:WriteByte() == 1
+		return self:ReadByte() == 1
+	end
+	
+	-- number
+	META.WriteNumber = META.WriteDouble
+	META.ReadNumber = META.ReadDouble
+	
+	-- char
+	function META:WriteChar(b)
+		self:WriteByte(b:byte())
+	end
+	
+	function META:ReadChar()
+		return string.char(self:ReadByte())
 	end
 	
 	-- nil
@@ -356,60 +369,95 @@ do -- extended
 			self:WriteByte(str:byte(i))
 		end
 	end
+		
+	function META:GetDebugString()
+		return (self:GetString():gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
+	end
+end
+
+do -- structures
+	function META:WriteStructure(structure)
+		for i, data in ipairs(structure) do
+			self:WriteType(data[2], data[1])
+		end
+	end
+	 
+	function META:ReadStructure(structure)
+		local out = {}
+			
+		for i, data in ipairs(structure) do
+		
+			if data.match then
+				local key, val = next(data.match)
+				if (type(val) == "function" and not val(out[key])) or out[key] ~= val then
+					goto continue
+				end
+			end
+			
+			local val = self:ReadType(data[1]) 
+			
+			if data.assert then
+				if val ~= data.assert then
+					error("error in header, expected " .. data[1] .. " " .. ("%X"):format(data.assert) .. " got " .. (type(val) == "number" and ("%X"):format(val) or type(val)))
+				end
+			end
 	
+			if data.translate then
+				val = data.translate[val] or val
+			end			
+						
+			out[data[2]] = val or "nil"
+				
+			if type(data[3]) == "table" then
+				local tbl = {}
+				out[data[2]] = tbl			
+				for i = 1, val do
+					table.insert(tbl, self:ReadStructure(data[3]))
+				end
+			end
+			
+			::continue::
+		end
+		
+		return out
+	end
+end
+
+
+do -- automatic
+	local read_functions = {}
+	local write_functions = {}
+
+	for k, v in pairs(META) do
+		if type(k) == "string" then
+			local key = k:match("Read(.+)")
+			if key then
+				read_functions[key:lower()] = v
+			end
+			
+			local key = k:match("Write(.+)")
+			if key then
+				write_functions[key:lower()] = v
+			end
+		end
+	end
+
 	function META:WriteType(val, t)
 		t = t or type(val)
 		
-		if t == "number" then
-			self:WriteDouble(val)
-		elseif t == "boolean" then
-			self:WriteBoolean(val)
-		elseif t == "string" then
-			self:WriteString(val)
-		elseif t == "byte" then
-			self:WriteByte(val)
-		elseif t == "short" then
-			self:WriteShort(val)
-		elseif t == "half" then
-			self:WriteHalf(val)
-		elseif t == "long" then
-			self:WriteLong(val)
-		elseif t == "float" then
-			self:WriteFloat(val)
-		elseif t == "double" then
-			self:WriteDouble(val)
-		elseif t == "longlong" then
-			self:WriteLongLong(val)
+		if write_functions[t] then
+			return write_functions[t](self, val)
 		end
+		
+		error("tried to write unknown type " .. t, 2)
 	end
 	
-	function META:ReadType(t)	
-		if t == "number" then
-			return self:ReadDouble()
-		elseif t == "boolean" then
-			return self:ReadBoolean()
-		elseif t == "string" then
-			return self:ReadString()
-		elseif t == "byte" then
-			return self:ReadByte()
-		elseif t == "short" then
-			return self:ReadShort()
-		elseif t == "half" then
-			return self:ReadHalf()
-		elseif t == "long" then
-			return self:ReadLong()
-		elseif t == "float" then
-			return self:ReadFloat()
-		elseif t == "double" then
-			return self:ReadDouble()
-		elseif t == "longlong" then
-			return self:ReadLongLong()
+	function META:ReadType(t)
+	
+		if read_functions[t] then
+			return read_functions[t](self, val)
 		end
 		
 		error("tried to read unknown type " .. t, 2)
-	end
-	
-	function META:GetDebugString()
-		return (self:GetString():gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
 	end
 end
