@@ -76,6 +76,7 @@ function love.graphics.newQuad(...)
 	return obj
 end
 
+love.graphics.origin = render.LoadIdentity
 love.graphics.translate = surface.Translate
 love.graphics.scale = surface.Scale
 love.graphics.rotate = surface.Rotate
@@ -227,7 +228,8 @@ end
 
 
 do -- font
-
+	local i = 0
+	
 	function love.graphics.newFont(a, b)
 		local font = a
 		local size = b
@@ -242,12 +244,16 @@ do -- font
 			size = b or 12
 		end
 		
+		size = size or 12
+				
 		local obj = lovemu.NewObject("Font")
 		
-		obj.Name = surface.CreateFont("lovemu_" .. font, {
+		obj.Name = surface.CreateFont("lovemu_" .. font .. i, {
 			size = size,
 			path = font,
 		})
+		
+		i = i + 1
 		
 		surface.SetFont(obj.Name)
 		local w, h = surface.GetTextSize("W")
@@ -288,6 +294,7 @@ do -- font
 		r=r or 0
 		r=r/0.0174532925
 		
+		surface.Color(cr/255, cg/255, cb/255, ca/255)
 		surface.SetTextScale(sx, sy)
 		surface.SetTextPos(x, y)
 		surface.DrawText(text, r)
@@ -306,6 +313,7 @@ do -- font
 		
 		local lines = string.explode(text, "\n")
 		
+		surface.Color(cr/255, cg/255, cb/255, ca/255)
 		surface.SetTextScale(sx, sy)
 		
 		for i = 1, #lines do
@@ -415,17 +423,16 @@ do -- image
 	
 	function love.graphics.newImage(path)		
 		if lovemu.debug then print("LOADING IMAGE FROM PATH "..path) end
-		local buffer, w, h = freeimage.LoadImage(vfs.Read(path, "rb"))
 		
 		local obj = lovemu.NewObject("Image")
 		
-		textures[obj] = Texture(w, h, buffer, {
+		textures[obj] = Texture(path, {
 			mag_filter = FILTER,
 			min_filter = FILTER,
 		}) 
-		
-		obj.getWidth = function(s) return w end
-		obj.getHeight = function(s) return h end
+				
+		obj.getWidth = function(s) return textures[obj].w end
+		obj.getHeight = function(s) return textures[obj].h end
 		ADD_FILTER(obj)
 		obj.setWrap = function()  end
 		obj.getWrap = function()  end
@@ -434,18 +441,16 @@ do -- image
 	end
 	
 	function love.graphics.newImageData(path)		
-		if lovemu.debug then print("LOADING IMAGEDATA FROM PATH "..path) end
-		local w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"))
-		
+		if lovemu.debug then print("LOADING IMAGEDATA FROM PATH "..path) end		
 		local obj = lovemu.NewObject("Image")
 		
-		textures[obj] = Texture(w, h, buffer, {
+		textures[obj] = Texture(path, {
 			mag_filter = FILTER,
 			min_filter = FILTER,
 		}) 
 		
-		obj.getWidth = function(s) return w end
-		obj.getHeight = function(s) return h end
+		obj.getWidth = function(s) return textures[obj].w end
+		obj.getHeight = function(s) return textures[obj].h end
 		obj.setWrap = function()  end
 		obj.getWrap = function()  end
 		
@@ -492,6 +497,7 @@ function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy)
 	r=r or 0
 	r=r/0.0174532925
 	
+	surface.Color(cr/255, cg/255, cb/255, ca/255)
 	surface.SetTexture(textures[drawable])
 	surface.SetRectUV(quad[1]*quad[5],quad[2]*quad[6],quad[3]*quad[5],quad[4]*quad[6])
 	surface.DrawRect(x,y, quad[3]*sx, quad[4]*sy,r,ox*sx,oy*sy)
@@ -598,12 +604,30 @@ function love.graphics.getModes() --partial
 	}
 end
 
-function love.graphics.setScissor(x,y,w,h)
-	render.ScissorRect(x,y,w,h)  
-end
+do
+	local X, Y, W, H = 0,0,0,0
+	
+	function love.graphics.setScissor(x,y,w,h)
+		--render.ScissorRect(x,y,w,h)  
+		--surface.StartClipping(x, y, w, h)
+		local sw, sh = surface.GetScreenSize()
+		
+		x=x or 0
+		y=y or 0
+		w=w or sw
+		h=h or sh
+		
+		gl.Scissor(x, sh - (y + h), w, h)
+		
+		X = x
+		Y = y
+		W = w
+		H = h
+	end
 
-function love.graphics.getScissor()
-
+	function love.graphics.getScissor()
+		return X,Y,W,H
+	end
 end
 
 function love.graphics.polygon()

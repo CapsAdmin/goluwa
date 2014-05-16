@@ -35,11 +35,17 @@ local cursor_translate = {
 	[e.IDC_HELP] = "help",
 }
 
+function love.mouse.newCursor()
+	local obj = lovemu.NewObject("Cursor")
+	
+end
+
 function love.mouse.getCursor()
 	local obj = lovemu.NewObject("Cursor")
 	obj.getType = function()
 		return cursor_translate[system.GetCursor()]
 	end
+	return obj
 end
 
 function love.mouse.setCursor()
@@ -51,6 +57,7 @@ function love.mouse.getSystemCursor()
 	obj.getType = function()
 		return cursor_translate[system.GetCursor()]
 	end
+	return obj
 end
 
 
