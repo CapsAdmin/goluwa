@@ -293,7 +293,13 @@ do -- generic
 	function vfs.GetFile(path, mode, ...)
 		check(path, "string")
 		path = vfs.ParseVariables(path)
-				
+		
+		mode = mode or "r"
+		
+		if not mode:find("r") and not mode:find("w") then 
+			mode = "r" .. mode 
+		end
+		
 		local file, err = io.open(path, mode, ...)
 
 		if not file then
