@@ -123,15 +123,11 @@ do -- path utilities
 					err = reason
 				end
 			else
-				file, err = io.open(v .. "/" .. path, ...)
+				if path:sub(-1) == "/" then path = path:sub(0, -2) end
 				
-				if file then
-					file:close()
-					
-					if is_folder then
-						path = path:sub(0,-4)
-					end
-					
+				local info = lfs.attributes(v .. "/" .. path)
+				
+				if info then
 					path = v .. "/" .. path
 					break
 				end
