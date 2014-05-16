@@ -41,13 +41,13 @@ do -- model meta
 			local sub_model = {mesh = render.CreateMesh3D(model.mesh_data), name = model.name}
 
 			if model.material and model.material.path then
-				sub_model.diffuse = render.CreateImage(model.material.path, default_texture_format)
+				sub_model.diffuse = render.CreateTexture(model.material.path, default_texture_format)
 
 				do -- try to find normal map
 					local path = render.FindTextureFromSuffix(model.material.path, "_n", "_ddn", "_nrm")
 
 					if path then
-						sub_model.bump = render.CreateImage(path, default_texture_format)
+						sub_model.bump = render.CreateTexture(path, default_texture_format)
 					end
 				end
 
@@ -55,7 +55,7 @@ do -- model meta
 					local path = render.FindTextureFromSuffix(model.material.path, "_s", "_spec")
 
 					if path then
-						sub_model.specular = render.CreateImage(path, default_texture_format)
+						sub_model.specular = render.CreateTexture(path, default_texture_format)
 					end
 				end
 			end
