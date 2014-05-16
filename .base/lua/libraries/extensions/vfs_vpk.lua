@@ -299,7 +299,7 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 							
 								handle.offset = math.clamp(handle.offset + bytes, 0, handle.data.entry_length)
 
-								local content = handle.file:read(handle.offset)
+								local content = handle.file:read(bytes)
 								
 								return content
 							end
