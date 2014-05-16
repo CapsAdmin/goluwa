@@ -1,60 +1,110 @@
+-- some of this was taken from (mainly reading and writing decimal numbers)
+-- http://wowkits.googlecode.com/svn-history/r406/trunk/AddOns/AVR/ByteStream.lua
+
 local META = utilities.CreateBaseMeta("buffer")
 
-function Buffer(str)
+function Buffer(val)
 	local self = META:New()
 	
-	self.buffer = {}
-	self.position = 0
-	
-	if str then self:WriteBytes(str) end
+	if type(val) == "string" then
+		self.buffer = {}
+		self.position = 0
+		
+		if val then 
+			self:WriteBytes(val) 
+		end
+	elseif val.write and val.read and val.seek then
+		val:setvbuf("no")
+		val:seek("set")
+		self.file = val
+	end
 	
 	return self
 end
 
 do -- generic
 	function META:GetBuffer()
-		return self.buffer
+		if self.file then
+			return self.file
+		else	
+			return self.buffer
+		end
 	end
 
 	function META:GetSize()
-		return #self.buffer
+		if self.file then 
+			local old = self:GetPos()
+			local size = self.file:seek("end")
+			self:SetPos(old)
+			return size
+		else 
+			return #self.buffer
+		end
 	end
 	
-	META.__len = META.Length
-	
 	function META:GetString()
-		local temp = {}
-		
-		for k,v in ipairs(self.buffer) do
-			temp[#temp + 1] = string.char(v)
+		if self.file then
+			local old = self:GetPos()
+			self.file:seek("set", 0)
+			local str = self.file:read("*all")
+			self:SetPos(old)
+			return str
+		else
+			local temp = {}
+			
+			for k,v in ipairs(self.buffer) do
+				temp[#temp + 1] = string.char(v)
+			end
+			
+			return table.concat(temp)
 		end
-		
-		return table.concat(temp)
 	end
 	
 	function META:SetPos(pos)
-		self.position = math.clamp(pos + 1, 1, self:GetSize() + 1)
+		if self.file then
+			self.file:seek("set", pos)
+		else
+			self.position = math.clamp(pos + 1, 1, self:GetSize() + 1)
+		end
 	end
 	
 	function META:GetPos()
-		return self.position - 1
+		if self.file then
+			return self.file:seek("cur")
+		else
+			return self.position - 1
+		end
 	end
 
 	function META:Advance(i)
 		i = i or 1
 		self:SetPos(self:GetPos() + i) 
 	end
+	
+	META.__len = META.Length
+	
+	function META:GetDebugString()
+		return (self:GetString():gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
+	end
 end
 
 do -- basic data types
 	-- byte
 	function META:WriteByte(byte)
-		self.buffer[#self.buffer + 1] = byte
+		if self.file then
+			self.file:write(string.char(byte))
+		else
+			self.buffer[#self.buffer + 1] = byte
+		end
 	end
 
 	function META:ReadByte()
-		self.position = self.position + 1
-		return self.buffer[self.position]
+		if self.file then
+			return self.file:read(1):byte()
+		else
+			self.position = self.position + 1
+			return self.buffer[self.position]
+		end
 	end
 
 	-- short
@@ -66,7 +116,7 @@ do -- basic data types
 	function META:ReadShort()
 		local b1, b2 = self:ReadByte(), self:ReadByte()
 		if not b1 or not b2 then return end
-		return bit.tobit(bit.lshift(b1, 8) + bit.lshift(b2, 0))
+		return bit.tobit(bit.lshift(b2, 8) + bit.lshift(b1, 0))
 	end
 
 	-- long
@@ -81,12 +131,7 @@ do -- basic data types
 		local b1, b2, b3, b4 = self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte()
 		if not b1 or not b2 or not b3 or not b4 then return end
 		return 
-			bit.tobit(
-				bit.lshift(b1, 24) + 
-				bit.lshift(b2, 16) + 
-				bit.lshift(b3, 8) + 
-				bit.lshift(b4, 0)
-			)
+			bit.lshift(b4, 24) + bit.lshift(b3, 16) + bit.lshift(b2, 8) + bit.lshift(b1, 0)
 	end
 	
 	-- half
@@ -199,7 +244,6 @@ do -- basic data types
 	
 	-- double
 	function META:WriteDouble(value)
-	-- http://wowkits.googlecode.com/svn-history/r406/trunk/AddOns/AVR/ByteStream.lua
 	-- ieee 754 binary64
 	-- 66665555 55555544 44444444 33333333 33222222 22221111 111111
 	-- 32109876 54321098 76543210 98765432 10987654 32109876 54321098 76543210
@@ -296,16 +340,14 @@ do -- basic data types
 		local b1, b2, b3, b4, b5, b6, b7, b8 = self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte()
 		if not b1 or not b2 or not b3 or not b4 or not b5 or not b6 or not b7 or not b8 then return end
 		return
-			bit.tobit(
-			bit.lshift(b1, 56) + 
-			bit.lshift(b1, 48) + 
-			bit.lshift(b1, 40) + 
-			bit.lshift(b1, 32) + 
-			bit.lshift(b1, 24) + 
-			bit.lshift(b2, 16) + 
-			bit.lshift(b3, 8) + 
-			bit.lshift(b4, 0)
-			)
+			bit.lshift(b8, 56) + 
+			bit.lshift(b7, 48) + 
+			bit.lshift(b6, 40) + 
+			bit.lshift(b5, 32) + 
+			bit.lshift(b4, 24) + 
+			bit.lshift(b3, 16) + 
+			bit.lshift(b2, 8) + 
+			bit.lshift(b1, 0)
 	end
 	
 	-- string
@@ -344,7 +386,7 @@ do -- extended
 	-- number
 	META.WriteNumber = META.WriteDouble
 	META.ReadNumber = META.ReadDouble
-	
+		
 	-- char
 	function META:WriteChar(b)
 		self:WriteByte(b:byte())
@@ -364,25 +406,88 @@ do -- extended
 		return nil
 	end
 	
+	-- integer/long
+	META.WriteInt = META.WriteLong
+	META.ReadInt = META.ReadLong
+	
 	function META:WriteBytes(str)
 		for i = 1, #str do
 			self:WriteByte(str:byte(i))
 		end
 	end
-		
-	function META:GetDebugString()
-		return (self:GetString():gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
-	end
 end
 
 do -- structures
+	local function header_to_table(str)
+		local out = {}
+
+		str = str:gsub("//.-\n", "") -- remove line comments
+		str = str:gsub("/%*.-%s*/", "") -- remove multiline comments
+		str = str:gsub("%s+", " ") -- remove excessive whitespace
+		str = str:match("^.-(%b{})") -- grab only the first bracket
+		str = str:match("{(.+)}")
+		
+		for field in str:gmatch("(.-);") do
+			local type, key = field:match("(.+) (.+)$")
+			
+			type = type:trim()
+			key = key:trim()
+			
+			local length
+			
+			key = key:gsub("%[(.-)%]$", function(num)
+				length = tonumber(num)
+				return ""
+			end)	
+			
+			local qualifier, _type = type:match("(.+) (.+)")
+			
+			if qualifier then
+				type = _type
+			end
+			
+			if not type then 	
+				print(field)
+				error("somethings wrong with this line!", 2) 
+			end
+			
+			if qualifier == nil then
+				qualifier = "signed"
+			end
+			
+			if type == "char" and not length then 
+				type = "byte"
+			end
+			
+			table.insert(out, {type, key, signed = qualifier == "signed", length = length})
+		end
+		
+		return out
+	end
+
 	function META:WriteStructure(structure)
 		for i, data in ipairs(structure) do
 			self:WriteType(data[2], data[1])
 		end
 	end
+	
+	local function fix_number(data, num)
+		if type(num) == "number" then 
+			if not data.signed then
+				num = bit.bnot(bit.bnot(num))
+			end
+			
+			num = math.round(num, 8)
+		end
+		return num
+	end
 	 
 	function META:ReadStructure(structure)
+		
+		if type(structure) == "string" then
+			return self:ReadStructure(header_to_table(structure))
+		end
+	
 		local out = {}
 			
 		for i, data in ipairs(structure) do
@@ -394,11 +499,27 @@ do -- structures
 				end
 			end
 			
-			local val = self:ReadType(data[1]) 
+			local val
+			
+			if data.length then
+				if data[1] == "char" then
+					val = self:ReadString(data.length)
+				else
+					local values = {}
+					for i = 1, data.length do
+						table.insert(values, fix_number(data, self:ReadType(data[1])))
+					end
+					val = values
+				end
+			else
+				val = self:ReadType(data[1]) 
+			end
+			
+			fix_number(data, val)
 			
 			if data.assert then
 				if val ~= data.assert then
-					error("error in header, expected " .. data[1] .. " " .. ("%X"):format(data.assert) .. " got " .. (type(val) == "number" and ("%X"):format(val) or type(val)))
+					error("error in header, expected " .. data[1] .. " " .. ("%X"):format(data.assert) .. " got " .. (type(val) == "number" and ("%X"):format(val) or type(val)), 2)
 				end
 			end
 	
