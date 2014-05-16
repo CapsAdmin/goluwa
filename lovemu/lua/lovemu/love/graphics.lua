@@ -232,9 +232,14 @@ do -- font
 		local font = a
 		local size = b
 		
-		if not b then
+		if type(a) == "number" then
 			font = R("fonts/vera.ttf")
 			size = a
+		end
+		
+		if not a then
+			font = R("fonts/vera.ttf")
+			size = b or 12
 		end
 		
 		local obj = lovemu.NewObject("Font")
@@ -410,7 +415,7 @@ do -- image
 	
 	function love.graphics.newImage(path)		
 		if lovemu.debug then print("LOADING IMAGE FROM PATH "..path) end
-		local w, h, buffer = freeimage.LoadImage(vfs.Read(path, "rb"))
+		local buffer, w, h = freeimage.LoadImage(vfs.Read(path, "rb"))
 		
 		local obj = lovemu.NewObject("Image")
 		
