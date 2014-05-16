@@ -1,3 +1,54 @@
+
+do -- warning
+	local function get_verbosity_level()
+		return console and console.GetVariable("log_verbosity", 0) or 0
+	end
+	
+	local function get_debug_filter()
+		return console and console.GetVariable("log_debug_filter", "") or ""
+	end	
+
+	function warning(verbosity, format, ...)
+		local level = get_verbosity_level()
+				
+		-- if verbosity is a string only show warnings log_debug_filter is set to
+		if type(verbosity) == "string" then
+			if verbosity == get_debug_filter() then
+				return logf(format, ...)
+			end
+		else
+			-- if the level is below 0 always log
+			if level < 0 then
+				return log(format, ...)
+			end
+		
+			-- otherwise check the verbosity level against the input	
+			if level <= verbosity then
+				return log(format, ...)
+			end
+		end
+		return ...
+	end	
+end
+	
+do -- nospam
+	local last = {}
+
+	function logf_nospam(str, ...)
+		local str = string.format(str, tostring_args(...))
+		local t = os.clock()
+		
+		if not last[str] or last[str] < t then
+			logn(str)
+			last[str] = t + 3
+		end
+	end
+	
+	function logn_nospam(...)
+		nospam_printf(("%s "):rep(select("#", ...)), ...)
+	end
+end
+
 do -- wait
 	local temp = {}
 	
