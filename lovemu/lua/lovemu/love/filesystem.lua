@@ -110,3 +110,5 @@ function love.filesystem.write(path,data)
 	end
 	vfs.Write("lovemu/" .. path,data)
 end
+
+love.filesystem.createDirectory = love.filesystem.mkdir
