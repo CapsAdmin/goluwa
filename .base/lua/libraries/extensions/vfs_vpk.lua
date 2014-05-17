@@ -233,6 +233,9 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 				id = path, 
 				root = path,
 				callback = function(type, a, b, c, d, ...)  	
+					
+					if vfs.debug then print("[vfs] vpk callback: ", type, a, b, c, d, ...) end
+					
 					if type == "attributes" then
 						local path = a:match(".+%.vpk/(.+)") or a
 						
@@ -280,32 +283,42 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 							local file = io.open(data.archive_path, "rb")
 							file:seek("set", data.entry_offset)
 							 
-							return {data = data, file = file, offset = 0}
+							return {data = data, file = file, position = 0}
 						elseif type == "seek" then
-							--[[local handle = b
-							local whence = c
-							local offset = d 
+							local handle = b
+							local whence = c or "cur"
+							local offset = d or 0
 							
-							handle.offset = math.clamp(handle.offset + bytes, 0, handle.data.entry_length)]]
+							if whence == "set" then
+								handle.position = math.clamp(offset, 0, handle.data.entry_length)
+							elseif whence == "cur" then
+								handle.position = math.clamp(handle.position + offset, 0, handle.data.entry_length)
+							elseif whence == "end" then
+								handle.position = handle.data.entry_length
+							end
+							
+							return handle.position
 						elseif type == "read" then
 							local handle = b
 							local type = c
 							local bytes = d
 
 							if type == "bytes" then							
-								if handle.offset == handle.data.entry_length then
+								if handle.position > handle.data.entry_length then
 									return
 								end
 							
-								handle.offset = math.clamp(handle.offset + bytes, 0, handle.data.entry_length)
-
+								handle.file:seek("set", handle.data.entry_offset + handle.position)
 								local content = handle.file:read(bytes)
+								
+								handle.position = math.clamp(handle.position + bytes, 0, handle.data.entry_length)
 								
 								return content
 							end
 							
 							-- WIP
 							-- otherwise just read everything.. 
+							handle.position = handle.data.entry_offset
 							return handle.file:read(handle.data.entry_length)
 						elseif type == "close" then
 							local handle = b
