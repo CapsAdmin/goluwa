@@ -70,7 +70,7 @@ do -- generic
 	
 	function META:GetPos()
 		if self.file then
-			return self.file:seek("cur")
+			return self.file:seek()
 		else
 			return self.position - 1
 		end
@@ -84,7 +84,7 @@ do -- generic
 	META.__len = META.Length
 	
 	function META:GetDebugString()
-		return (self:GetString():gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
+		return self:GetString():readablehex()
 	end
 end
 
@@ -359,16 +359,20 @@ do -- basic data types
 	end
 
 	function META:ReadString(length)
-		local str = {}
-		
-		for i = 1, length or self:GetSize() do
-			local byte = self:ReadByte()
-			if not byte then return end
-			if not length and byte == 0 then break end
-			table.insert(str, string.char(byte))
+		if self.file and length then
+			return self.file:read(length)
+		else
+			local str = {}
+			
+			for i = 1, length or self:GetSize() do
+				local byte = self:ReadByte()
+				if not byte then return end
+				if not length and byte == 0 then break end
+				table.insert(str, string.char(byte))
+			end
+			
+			return table.concat(str)
 		end
-		
-		return table.concat(str)
 	end
 end
 
@@ -406,6 +410,28 @@ do -- extended
 		return nil
 	end
 	
+	-- vec3
+	function META:WriteVec3(v)
+		self:WriteFloat(v.x)
+		self:WriteFloat(v.y)
+		self:WriteFloat(v.z)
+	end
+	
+	function META:ReadVec3()
+		return Vec3(self:ReadFloat(), self:ReadFloat(), self:ReadFloat())
+	end
+	
+	-- ang3
+	function META:WriteAng3(v)
+		self:WriteFloat(v.x)
+		self:WriteFloat(v.y)
+		self:WriteFloat(v.z)
+	end
+	
+	function META:ReadAng3()
+		return Vec3(self:ReadFloat(), self:ReadFloat(), self:ReadFloat())
+	end
+	
 	-- integer/long
 	META.WriteInt = META.WriteLong
 	META.ReadInt = META.ReadLong
@@ -424,8 +450,6 @@ do -- structures
 		str = str:gsub("//.-\n", "") -- remove line comments
 		str = str:gsub("/%*.-%s*/", "") -- remove multiline comments
 		str = str:gsub("%s+", " ") -- remove excessive whitespace
-		str = str:match("^.-(%b{})") -- grab only the first bracket
-		str = str:match("{(.+)}")
 		
 		for field in str:gmatch("(.-);") do
 			local type, key = field:match("(.+) (.+)$")
@@ -459,7 +483,7 @@ do -- structures
 				type = "byte"
 			end
 			
-			table.insert(out, {type, key, signed = qualifier == "signed", length = length})
+			table.insert(out, {type, key, signed = qualifier == "signed", length = length, padding = qualifier == "padding"})
 		end
 		
 		return out
@@ -526,8 +550,10 @@ do -- structures
 			if data.translate then
 				val = data.translate[val] or val
 			end			
-						
-			out[data[2]] = val or "nil"
+			
+			if not data.padding then
+				out[data[2]] = val or "nil"
+			end
 				
 			if type(data[3]) == "table" then
 				local tbl = {}
