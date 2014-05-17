@@ -1,5 +1,9 @@
 include("string_anime.lua")
 
+function string.readablehex(str)
+	return (str:gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
+end
+
 function string.endswith(a, b)
 	if type(b) == "table" then
 		for k, b in pairs(b) do
