@@ -23,6 +23,20 @@ local gl = {
 local suppress = false
 local reverse_enums = {}
 
+function gl.GetReverseEnums()
+	 return reverse_enums
+end
+
+function gl.FindInEnum(num, find)
+	if gl.GetReverseEnums()[num] then
+		for k, v in pairs(gl.GetReverseEnums()[num]) do
+			if k:compare(find) then
+				return true
+			end
+		end
+	end
+end
+
 gl.call_count = 0
 
 local errors = {
@@ -68,7 +82,7 @@ local function add_gl_func(name, func)
 					for i =  1, select("#", ...) do
 						local val = select(i, ...)
 						if type(val) == "number" and reverse_enums[val] and val > 10 then
-							args[#args+1] = reverse_enums[val]:gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
+							args[#args+1] = select(2, next(reverse_enums[val])):gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
 						else
 							args[#args+1] = luadata.ToString(val)
 						end
@@ -79,7 +93,7 @@ local function add_gl_func(name, func)
 					else
 						local val = val
 						if reverse_enums[val] then
-							val = reverse_enums[val]:gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
+							val = select(2, next(reverse_enums[val])):gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
 						end
 						
 						logf("%s = gl%s(%s)\n", val, name, table.concat(args, ", "))
@@ -184,7 +198,8 @@ function gl.InitMiniGlew()
 	
 	for k, v in pairs(enums) do
 		if k ~= "GL_INVALID_ENUM" then
-			reverse_enums[v] = k
+			reverse_enums[v] = reverse_enums[v] or {}
+			reverse_enums[v][k] = k
 		end
 		e[k] = v
 	end
