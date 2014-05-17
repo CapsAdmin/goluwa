@@ -81,7 +81,7 @@ do -- texture object
 		local buffer = self:CreateBuffer()
 
 		gl.BindTexture(f.type, self.id)
-			gl.GetTexImage(f.type, level or 0, f.format, format or f.internal_format, buffer)
+			gl.GetTexImage(f.type, level or 0, f.upload_format, format or f.internal_format, buffer)
 		gl.BindTexture(f.type, 0)
 
 		return buffer
@@ -112,7 +112,7 @@ do -- texture object
 			0,
 			self.size.w,
 			self.size.h, 
-			f.format, 
+			f.upload_format, 
 			f.format_type, 
 			buffer
 		)
@@ -135,14 +135,20 @@ do -- texture object
 	
 	tex_params.internal_format = nil
 	
+	local blacklist = {
+		compressed = true,
+	}
+	
 	function META:UpdateFormat()
 		local f = self.format		
 
 		for k,v in pairs(f) do
-			if tex_params[k] then
-				gl.TexParameterf(f.type, tex_params[k], v)
-			elseif type(k) == "number" then
-				gl.TexParameterf(f.type, k, v)
+			if not blacklist[k] then
+				if tex_params[k] then
+					gl.TexParameterf(f.type, tex_params[k], v)
+				elseif type(k) == "number" then
+					gl.TexParameterf(f.type, k, v)
+				end
 			end
 		end
 	end 
@@ -171,17 +177,11 @@ do -- texture object
 				end
 			end
 			
-			gl.TexSubImage2D(
-				f.type, 
-				level, 
-				x,
-				y,
-				w,
-				h, 
-				f.format, 
-				f.format_type, 
-				buffer
-			)
+			if f.compressed then
+				gl.CompressedTexSubImage2D(f.type, level, x, y, w, h, f.upload_format, f.size, buffer)
+			else
+				gl.TexSubImage2D(f.type, level, x, y, w, h, f.upload_format, f.format_type, buffer)
+			end
 
 			gl.GenerateMipmap(f.type)
 
@@ -338,6 +338,13 @@ do -- texture object
 			return render.CreateTextureFromPath(width, height)
 		end
 		
+		if type(width) == "table" and not height and not buffer and not format then
+			format = width.parameters
+			buffer = width.buffer
+			height = width.height
+			width = width.width
+		end
+		
 		check(width, "number")
 		check(height, "number")
 		check(buffer, "nil", "cdata")
@@ -350,7 +357,7 @@ do -- texture object
 		format = format or {}
 		
 		format.type = format.type or e.GL_TEXTURE_2D
-		format.format = format.format or e.GL_BGRA
+		format.upload_format = format.upload_format or e.GL_BGRA
 		format.internal_format = format.internal_format or e.GL_RGBA8
 		format.format_type = format.format_type or e.GL_UNSIGNED_BYTE
 		format.filter = format.filter ~= nil
@@ -368,6 +375,10 @@ do -- texture object
 		
 		if format.type == e.GL_TEXTURE_3D then
 			format.wrap_r = format.wrap_r or e.GL_REPEAT
+		end
+		
+		if gl.FindInEnum(format.upload_format, "compress") or gl.FindInEnum(format.internal_format, "compress") then	
+			self.compressed = true
 		end
 
 		-- create a new texture
@@ -388,7 +399,18 @@ do -- texture object
 		
 		gl.BindTexture(format.type, self.id)
 
-		if gl.TexStorage2D then
+		if self.compressed then
+			gl.CompressedTexImage2D(
+				format.type, 
+				format.mip_map_levels, 
+				format.format, 
+				self.size.w, 
+				self.size.h, 
+				0, 
+				0, 
+				nil
+			)
+		elseif gl.TexStorage2D then
 			gl.TexStorage2D(
 				format.type, 
 				format.mip_map_levels, 

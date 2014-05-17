@@ -87,7 +87,7 @@ function render.CreateFrameBuffer(width, height, format)
 		local id
 		
 		if tex_info then
-			tex_info.format = e.GL_BGRA
+			tex_info.upload_format = e.GL_BGRA
 			tex_info.channel = i-1
 						
 			tex = render.CreateTexture(width, height, nil, tex_info)

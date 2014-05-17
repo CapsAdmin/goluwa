@@ -320,7 +320,7 @@ do -- fonts
 		end
 		
 		local tex = Texture(math.floor(data.w + info.border), math.floor(data.h + info.border), buffer, {
-			format = e.GL_ALPHA, 
+			upload_format = e.GL_ALPHA, 
 			internal_format = e.GL_ALPHA8,
 			stride = 1,
 		})         
