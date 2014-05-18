@@ -135,25 +135,19 @@ do -- texture object
 	
 	tex_params.internal_format = nil
 	
-	local blacklist = {
-		compressed = true,
-	}
-	
 	function META:UpdateFormat()
 		local f = self.format		
 
 		for k,v in pairs(f) do
-			if not blacklist[k] then
-				if tex_params[k] then
-					gl.TexParameterf(f.type, tex_params[k], v)
-				elseif type(k) == "number" then
-					gl.TexParameterf(f.type, k, v)
-				end
+			if tex_params[k] then
+				gl.TexParameterf(f.type, tex_params[k], v)
+			elseif type(k) == "number" then
+				gl.TexParameterf(f.type, k, v)
 			end
 		end
 	end 
 	
-	function META:Upload(buffer, x, y, w, h, level)
+	function META:Upload(buffer, x, y, w, h, level, size)
 		x = x or 0
 		y = y or 0
 		w = w or self.size.w
@@ -177,8 +171,8 @@ do -- texture object
 				end
 			end
 			
-			if f.compressed then
-				gl.CompressedTexSubImage2D(f.type, level, x, y, w, h, f.upload_format, f.size, buffer)
+			if self.compressed then
+				gl.CompressedTexSubImage2D(f.type, level, x, y, w, h, f.upload_format, size, buffer)
 			else
 				gl.TexSubImage2D(f.type, level, x, y, w, h, f.upload_format, f.format_type, buffer)
 			end
@@ -338,10 +332,13 @@ do -- texture object
 			return render.CreateTextureFromPath(width, height)
 		end
 		
+		local buffer_size
+		
 		if type(width) == "table" and not height and not buffer and not format then
 			format = width.parameters
 			buffer = width.buffer
 			height = width.height
+			buffer_size = width.size
 			width = width.width
 		end
 		
@@ -377,10 +374,6 @@ do -- texture object
 			format.wrap_r = format.wrap_r or e.GL_REPEAT
 		end
 		
-		if gl.FindInEnum(format.upload_format, "compress") or gl.FindInEnum(format.internal_format, "compress") then	
-			self.compressed = true
-		end
-
 		-- create a new texture
 		local id = gl.GenTexture()
 
@@ -395,19 +388,25 @@ do -- texture object
 			SUPPRESS_GC
 		)
 		
+		if gl.FindInEnum(format.upload_format, "compress") or gl.FindInEnum(format.internal_format, "compress") then	
+			self.compressed = true
+		end		
+		
 		self.texture_channel = e.GL_TEXTURE0 + format.channel
 		
 		gl.BindTexture(format.type, self.id)
 
+		self:UpdateFormat()
+		
 		if self.compressed then
 			gl.CompressedTexImage2D(
 				format.type, 
 				format.mip_map_levels, 
-				format.format, 
+				format.upload_format, 
 				self.size.w, 
 				self.size.h, 
 				0, 
-				0, 
+				buffer_size, 
 				nil
 			)
 		elseif gl.TexStorage2D then
@@ -433,10 +432,8 @@ do -- texture object
 				
 		end
 		
-		self:UpdateFormat()
-				
 		if buffer then	
-			self:Upload(buffer)
+			self:Upload(buffer, nil,nil,nil,nil,nil, buffer_size)
 		end
 		
 		gl.BindTexture(format.type, 0)
