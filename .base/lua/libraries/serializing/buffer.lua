@@ -6,11 +6,13 @@ local META = utilities.CreateBaseMeta("buffer")
 function Buffer(val)
 	local self = META:New()
 	
-	if type(val) == "string" then
+	if type(val) == "string" or type(val) == "table" or not val then
 		self.buffer = {}
 		self.position = 0
 		
-		if val then 
+		if type(val) == "table" then
+			self:WriteStructure(val)
+		elseif val then
 			self:WriteBytes(val) 
 		end
 	elseif val.write and val.read and val.seek then
@@ -384,7 +386,7 @@ do -- extended
 	end
 	
 	function META:ReadBoolean()
-		return self:ReadByte() == 1
+		return self:ReadByte() >= 1
 	end
 	
 	-- number
@@ -489,9 +491,16 @@ do -- structures
 		return out
 	end
 
-	function META:WriteStructure(structure)
+	function META:WriteStructure(structure, values)
 		for i, data in ipairs(structure) do
-			self:WriteType(data[2], data[1])
+			if data.get then
+				if not values or values[data.get] == nil then
+					errorf("expected %s %s got nil", 2, data[1], data.get)
+				end
+				self:WriteType(values[data.get], data[1])
+			else
+				self:WriteType(data[2], data[1])
+			end
 		end
 	end
 	
@@ -543,7 +552,7 @@ do -- structures
 			
 			if data.assert then
 				if val ~= data.assert then
-					error("error in header, expected " .. data[1] .. " " .. ("%X"):format(data.assert) .. " got " .. (type(val) == "number" and ("%X"):format(val) or type(val)), 2)
+					errorf("error in header: %s %s expected %X got %s", 2, data[1], data[2], data.assert, (type(val) == "number" and ("%X"):format(val) or type(val)))
 				end
 			end
 	
@@ -552,7 +561,8 @@ do -- structures
 			end			
 			
 			if not data.padding then
-				out[data[2]] = val or "nil"
+				if val == nil then val = "nil" end
+				out[data[2]] = val
 			end
 				
 			if type(data[3]) == "table" then
@@ -560,6 +570,12 @@ do -- structures
 				out[data[2]] = tbl			
 				for i = 1, val do
 					table.insert(tbl, self:ReadStructure(data[3]))
+				end
+			end
+			
+			if data.switch then
+				for k, v in pairs(self:ReadStructure(data.switch[val])) do
+					out[k] = v
 				end
 			end
 			
