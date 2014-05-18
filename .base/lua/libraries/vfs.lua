@@ -245,7 +245,7 @@ do -- WIP
 	function META:read(...)
 		local args = {...}
 
-		for k, v in pairs(args) do
+		for k, v in ipairs(args) do
 			args[k] = read(self, v) or nil
 		end
 
@@ -264,11 +264,11 @@ do -- WIP
 		whence = whence or "cur"
 		offset = offset or 0
 
-		self.env.callback("file", "seek", self.udata, whence, offset)
+		return self.env.callback("file", "seek", self.udata, whence, offset)
 	end
 
 	function META:lines()
-		self.env.callback("file", "read", self.udata, "lines")
+		return self.env.callback("file", "read", self.udata, "lines")
 	end
 
 	function META:setvbuf()
