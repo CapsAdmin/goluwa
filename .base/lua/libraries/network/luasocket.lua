@@ -12,7 +12,7 @@ luasocket.debug = true
 
 -- client
 
-	CLIENT = luasocket.Client("udp" or "tcp") -- this defaults to tcp
+	CLIENT = luasocket.CreateClient("udp" or "tcp") -- this defaults to tcp
 
 	CLIENT:GetTimeoutDuration()
 
@@ -41,7 +41,7 @@ luasocket.debug = true
 --
 
 -- server
-	SERVER = luasocket.Server("udp" or "tcp") -- this defaults to tcp
+	SERVER = luasocket.CreateServer("udp" or "tcp") -- this defaults to tcp
 
 	SERVER:Host(ip, port)
 
@@ -159,7 +159,7 @@ do -- helpers/usage
 			location = ""
 		end
 		
-		local socket = luasocket.Client("tcp")
+		local socket = luasocket.CreateClient("tcp")
 		socket.debug = debug
 		socket:SetTimeout(timeout or 2)
 		socket:Connect(host, 80)
@@ -298,7 +298,7 @@ do -- helpers/usage
 		local ok, msg = sck:sendto(str, ip, port)
 
 		if ok then
-			luasocket.DebugPrint(nil, "SendUDPData sent data to %s:%i (%s)", ip, port, str)
+			luasocket.DebugPrint(nil, "SendUDPData sent data to %s:%i (%s)", ip, port, str:readablehex())
 		else
 			luasocket.DebugPrint(nil, "SendUDPData failed %q", msg)
 		end
@@ -470,7 +470,7 @@ do -- tcp socket meta
 				end
 			else
 				self.socket:send(str)
-				self:DebugPrintf("sent %q", str)
+				self:DebugPrintf("sent %q", str:readablehex())
 			end
 		end
 		
@@ -560,7 +560,7 @@ do -- tcp socket meta
 					if #data > 256 then
 						self:DebugPrintf("received (mode %s) %i bytes of data", mode, #data)
 					else
-						self:DebugPrintf("received (mode %s) %i bytes of data (%q)", mode, #data, data)
+						self:DebugPrintf("received (mode %s) %i bytes of data (%q)", mode, #data, data:readablehex())
 					end
 
 					self:OnReceive(data)
@@ -715,7 +715,7 @@ do -- tcp socket meta
 		function CLIENT:OnSend(data, bytes, b,c,d) end
 		function CLIENT:OnClose() end
 
-		function luasocket.Client(typ, ip, port)
+		function luasocket.CreateClient(typ, ip, port)
 			local self = new_socket(nil, CLIENT, typ)
 			if ip or port then
 				self:Connect(ip, port)
@@ -919,7 +919,7 @@ do -- tcp socket meta
 		function SERVER:OnClientError(client, err) end
 		function SERVER:OnError(msg) self:Remove() end
 
-		function luasocket.Server(typ, ip, port)
+		function luasocket.CreateServer(typ, ip, port)
 			local self = new_socket(nil, SERVER, typ)
 			if ip or port then
 				self:Host(ip, port)

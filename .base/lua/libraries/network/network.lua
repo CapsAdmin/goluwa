@@ -200,7 +200,7 @@ if CLIENT then
 			client:Remove()
 		end
 		
-		client = luasocket.Client()
+		client = luasocket.CreateClient()
 		client:SetReceiveMode(receive_mode)
 		client:SetTimeout()
 		client:Connect(ip, port)
@@ -224,7 +224,7 @@ if CLIENT then
 		
 		network.client_socket = client
 		
-		--[[local udp = luasocket.Server("udp")
+		--[[local udp = luasocket.CreateServer("udp")
 		
 		udp:Host(ip, port)
 		udp.OnReceive = logn
@@ -289,7 +289,7 @@ if SERVER then
 			server:Remove()
 		end
 		
-		server = luasocket.Server()
+		server = luasocket.CreateServer()
 		server:Host(ip, port)
 
 		function server:OnClientConnected(client, ip, port)
@@ -320,7 +320,7 @@ if SERVER then
 		
 		network.server_socket = server
 		
-		local udp = luasocket.Server("udp")
+		local udp = luasocket.CreateServer("udp")
 		
 		udp:Host(ip, port)
 		udp.OnReceive = logn

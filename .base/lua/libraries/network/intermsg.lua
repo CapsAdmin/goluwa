@@ -32,7 +32,7 @@ function intermsg.Send(ip, port, str, typ)
 	local sck = intermsg.client_sockets[typ][ip..port] or NULL
 	
 	if not sck:IsValid() then
-		sck = luasocket.Client(typ)
+		sck = luasocket.CreateClient(typ)
 		
 		sck:SetTimeout()
 		sck:Connect(ip, port, true)
@@ -59,7 +59,7 @@ function intermsg.StartServer(ip, port, callback, typ)
 
 	if sck:IsValid() then sck:Remove() end
 
-	sck = luasocket.Server(typ)
+	sck = luasocket.CreateServer(typ)
 	sck:Host(ip, port)
 
 	function sck:OnClientConnected(client, ip, port)

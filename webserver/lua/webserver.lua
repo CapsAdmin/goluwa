@@ -1,6 +1,6 @@
 luasocket.debug = false
 
-server = utilities.RemoveOldObject(luasocket.Server())
+server = utilities.RemoveOldObject(luasocket.CreateServer())
 
 server.port = 1234
 server.content_folder = "www"

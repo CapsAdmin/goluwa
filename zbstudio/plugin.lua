@@ -17,7 +17,7 @@ local port = 16273
 local socket = luasocket.tcp()
 socket:settimeout(0)
 
-local lua = "ZEROBRANE_LINEINPUT=luasocket.Server([[tcp]],[[localhost]],"..port..")ZEROBRANE_LINEINPUT.debug=true;ZEROBRANE_LINEINPUT.OnClientConnected=function(s,client)return true end;ZEROBRANE_LINEINPUT.OnReceive=function(s,str)console.RunString(str)end"
+local lua = "ZEROBRANE_LINEINPUT=luasocket.CreateServer([[tcp]],[[localhost]],"..port..")ZEROBRANE_LINEINPUT.debug=true;ZEROBRANE_LINEINPUT.OnClientConnected=function(s,client)return true end;ZEROBRANE_LINEINPUT.OnReceive=function(s,str)console.RunString(str)end"
 
 local PLUGIN = {
 	name = "Goluwa",

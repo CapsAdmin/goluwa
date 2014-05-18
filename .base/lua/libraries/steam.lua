@@ -339,7 +339,7 @@ do -- server query
 	local function query_server(ip, port, query, callback)
 		callback = callback or table.print
 			
-		local socket = luasocket.Client("udp", ip, port)
+		local socket = luasocket.CreateClient("udp", ip, port)
 		
 		socket.debug = steam.debug
 		
