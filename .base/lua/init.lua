@@ -620,7 +620,7 @@ if CREATED_ENV then
 	
 	utilities.SafeRemove(ENV_SOCKET)
 	
-	ENV_SOCKET = luasocket.Client()
+	ENV_SOCKET = luasocket.CreateClient()
 
 	ENV_SOCKET:Connect("localhost", PORT)	
 	ENV_SOCKET:SetTimeout()
