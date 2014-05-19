@@ -353,21 +353,33 @@ do -- tcp socket meta
 		return res
 	end
 
-	local function new_socket(override, META, typ)
+	local function new_socket(override, META, typ, id)
 		typ = typ or "tcp"
 		typ = typ:lower()
 
 		if typ == "udp" or typ == "tcp" then
+			
+			if id then
+				for _, socket in ipairs(sockets) do
+					if socket.uid == id then
+						socket:Remove()
+					end
+				end
+			end
+		
 			local self = META:New()
 
 			self.socket = override or assert(luasocket.socket[typ]())
 			self.socket:settimeout(0)
 			self.socket_type = typ
 			self:Initialize()
+			
 			table.insert(sockets, self)
 
 			self:DebugPrintf("created")
 
+			self.uid = id
+			
 			return self
 		end
 	end
@@ -715,8 +727,8 @@ do -- tcp socket meta
 		function CLIENT:OnSend(data, bytes, b,c,d) end
 		function CLIENT:OnClose() end
 
-		function luasocket.CreateClient(typ, ip, port)
-			local self = new_socket(nil, CLIENT, typ)
+		function luasocket.CreateClient(type, ip, port, id)
+			local self = new_socket(nil, CLIENT, type, id)
 			if ip or port then
 				self:Connect(ip, port)
 			end
@@ -766,14 +778,19 @@ do -- tcp socket meta
 			
 			if not ok and msg then
 				self:DebugPrintf("bind failed: %s", msg)
-				self:OnError(msg)
+				if self:OnError(msg) ~= false then
+					error(msg, 2)
+				end
 			else
 				if self.socket_type == "tcp" then
 					ok, msg = self.socket:listen()
 					
 					if not ok and msg then	
 						self:DebugPrintf("bind failed: %s", msg)
-						self:OnError(msg)
+					
+						if self:OnError(msg) ~= false then
+							error(msg, 2)
+						end
 					end
 				end
 				self.ready = true
@@ -814,6 +831,10 @@ do -- tcp socket meta
 		local function create_dummy_client(ip, port)
 			return setmetatable({ip = ip, port = port}, DUMMY)
 		end
+		
+		function SERVER:UseDummyClient(bool)
+			self.use_dummy_client = bool
+		end
 
 		function SERVER:Think()
 			if not self.ready then return end
@@ -828,14 +849,18 @@ do -- tcp socket meta
 				else
 					self:DebugPrintf("received %s from %s:%s", data, ip, port)
 					
-					local client = create_dummy_client(ip, port)
-					local b = self:OnClientConnected(client, ip, port)
-					
-					if b == true or b == nil then
-						self:OnReceive(data, client)
+					if self.use_dummy_client == false then
+						self:OnReceive(data, ip, port)
+					else
+						local client = create_dummy_client(ip, port)
+						local b = self:OnClientConnected(client, ip, port)
+						
+						if b == true or b == nil then
+							self:OnReceive(data, client)
+						end
+						
+						client.IsValid = function() return false end
 					end
-					
-					client.IsValid = function() return false end
 				end
 			elseif self.socket_type == "tcp" then
 				local sock = self.socket
@@ -919,8 +944,8 @@ do -- tcp socket meta
 		function SERVER:OnClientError(client, err) end
 		function SERVER:OnError(msg) self:Remove() end
 
-		function luasocket.CreateServer(typ, ip, port)
-			local self = new_socket(nil, SERVER, typ)
+		function luasocket.CreateServer(type, ip, port, id)
+			local self = new_socket(nil, SERVER, type, id)
 			if ip or port then
 				self:Host(ip, port)
 			end
