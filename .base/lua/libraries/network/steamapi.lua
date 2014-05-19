@@ -13,14 +13,14 @@ steamapi.httpmethods = {
 		
 		url = url .. arguments
 	
-		luasocket.Get(url, function(data)
+		sockets.Get(url, function(data)
 			if data.content then
 				callback(json.decode(data.content))
 			end
 		end, nil, "Steam 1291812 / iPhone")
 	end,
 	POST = function(interface, func_info, data, url, callback)
-		luasocket.Post(url, data, function(data)
+		sockets.Post(url, data, function(data)
 			callback(json.decode(data.content))
 		end, nil, "Steam 1291812 / iPhone")
 	end,
@@ -127,7 +127,7 @@ end
 function steamapi.UpdateSupported(callback)
 	logn("[steamapi] fetching supported api..")
 	
-	luasocket.Get("http://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steamapi.key, function(data)
+	sockets.Get("http://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steamapi.key, function(data)
 		if data.content then
 			local tbl = json.decode(data.content)
 			

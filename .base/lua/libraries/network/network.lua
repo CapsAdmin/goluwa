@@ -211,7 +211,7 @@ if CLIENT then
 		end
 		
 		do -- tcp
-			local client = luasocket.CreateClient("tcp", ip, port, "network_client_tcp")
+			local client = sockets.CreateClient("tcp", ip, port, "network_client_tcp")
 			client:SetTimeout(false)
 			client:SetReceiveMode(receive_mode)
 					
@@ -236,7 +236,7 @@ if CLIENT then
 		end
 		
 		do -- udp
-			local client = luasocket.CreateClient("udp", ip, port, "network_client_udp")		
+			local client = sockets.CreateClient("udp", ip, port, "network_client_udp")		
 			client:SetTimeout(false)
 			
 			function client:OnReceive(str)
@@ -288,7 +288,7 @@ if SERVER then
 		port = tonumber(port) or check(port, "number")
 		
 		do -- tcp
-			local server = luasocket.CreateServer("tcp", ip, port, "network_server_tcp")
+			local server = sockets.CreateServer("tcp", ip, port, "network_server_tcp")
 			
 			function server:OnClientConnected(client, ip, port)
 				client:SetReceiveMode(receive_mode)			
@@ -318,7 +318,7 @@ if SERVER then
 		end
 		
 		do -- udp
-			local server = luasocket.CreateServer("udp", ip, port, "network_server_udp")
+			local server = sockets.CreateServer("udp", ip, port, "network_server_udp")
 			
 			-- receive "str, ip, port" instead of "str, client"
 			server:UseDummyClient(false)

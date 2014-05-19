@@ -802,7 +802,7 @@ function system.CreateLuaEnvironment(title, globals, id)
 		socket:Remove()
 	end
 	
-	local socket = luasocket.CreateServer()
+	local socket = sockets.CreateServer()
 	socket:Host("*", 0)
 					
 	system.lua_environment_sockets[id] = socket

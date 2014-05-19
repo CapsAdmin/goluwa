@@ -1,6 +1,6 @@
-luasocket.debug = false
+sockets.debug = false
 
-server = utilities.RemoveOldObject(luasocket.CreateServer())
+server = utilities.RemoveOldObject(sockets.CreateServer())
 
 server.port = 1234
 server.content_folder = "www"
@@ -49,13 +49,13 @@ function server:OnReceive(str, client)
 	path = server.content_folder .. path
 
 	if type == "GET" then
-		local data = luasocket.HeaderToTable(rest)
+		local data = sockets.HeaderToTable(rest)
 
 		if vfs.Exists(path) then
 			local info = server.file_types[extension] or server.file_types.default
 			local data = vfs.Read(path, info.read_mode)
 			
-			local header = luasocket.TableToHeader({
+			local header = sockets.TableToHeader({
 			--	["Content-Type"] = info.mime,
 				["Accept-Ranges"] = "bytes",
 				["Content-Length"] = #data,

@@ -215,7 +215,7 @@ end
 -- would be a pain...
 
 function gl.DownloadExtensionList(callback)
-	if not luasocket then return end
+	if not sockets then return end
 	
 	local ext_folder = e.BASE_FOLDER .. "lua/libraries/low_level/ffi_binds/gl/extensions/"
 	
@@ -224,7 +224,7 @@ function gl.DownloadExtensionList(callback)
 	
 	local pattern = "\"(specs/.-%.txt)"
 	
-	luasocket.Get(domain .. base, function(data) 
+	sockets.Get(domain .. base, function(data) 
 		local list = {}
 
 		for url in data.content:gmatch(pattern) do 
@@ -254,7 +254,7 @@ function gl.DownloadExtensionList(callback)
 end
 
 function gl.DownloadExtensions()
-	if not luasocket then return end
+	if not sockets then return end
 		
 	gl.DownloadExtensionList(function(list)	
 		print(table.count(list))
@@ -264,7 +264,7 @@ function gl.DownloadExtensions()
 			
 			if extension then
 				logf("downloading %q (%i left)\n", extension.name, table.count(list))
-				luasocket.Get(extension.url, function(data)
+				sockets.Get(extension.url, function(data)
 					vfs.Write(extension.path, data.content, nil, false)
 					logf("saved %q (%i bytes)\n", extension.name, #data.content)
 					

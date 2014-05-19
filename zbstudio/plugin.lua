@@ -11,13 +11,13 @@ local lfs = require("lfs")
 local root = lfs.currentdir():match("(.+\\)%.zbstudio"):gsub("\\", "/")
 local bin = ".base/bin/" .. jit.os:lower() ..  "/" .. jit.arch:lower() .. "/"
 
-local luasocket = require("socket")
+local sockets = require("socket")
 
 local port = 16273
-local socket = luasocket.tcp()
+local socket = sockets.tcp()
 socket:settimeout(0)
 
-local lua = "ZEROBRANE_LINEINPUT=luasocket.CreateServer([[tcp]],[[localhost]],"..port..")ZEROBRANE_LINEINPUT.debug=true;ZEROBRANE_LINEINPUT.OnClientConnected=function(s,client)return true end;ZEROBRANE_LINEINPUT.OnReceive=function(s,str)console.RunString(str)end"
+local lua = "ZEROBRANE_LINEINPUT=sockets.CreateServer([[tcp]],[[localhost]],"..port..")ZEROBRANE_LINEINPUT.debug=true;ZEROBRANE_LINEINPUT.OnClientConnected=function(s,client)return true end;ZEROBRANE_LINEINPUT.OnReceive=function(s,str)console.RunString(str)end"
 
 local PLUGIN = {
 	name = "Goluwa",
