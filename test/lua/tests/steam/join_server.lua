@@ -1,3 +1,8 @@
+ -- WIP
+-- CapsAdmin: On the server it says I've joined with the correct steamid 
+-- but if developer mode is on it says: 	S3: Client connected with invalid ticket: UserID: 2
+-- I then get rejected here in this script with: 	#GameUI_ServerRejectSteam
+
 local ip, port = "87.245.209.42", 27015  
  
 local function wireshark_hex_dump(str)
