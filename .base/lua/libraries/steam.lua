@@ -20,6 +20,14 @@ do
 		const char *steamGetClientSteamID();
 		unsigned steamGetFriendCount();
 		const char *steamGetFriendByIndex(unsigned i);
+		
+		typedef struct
+		{
+			int size;
+			unsigned char *buffer;		
+		} steam_auth_token;
+		
+		steam_auth_token *steamGetAuthTokenFromServer(uint64_t game_id, const char *ip, short port, bool secure);
 	]] 
 	
 	if not ok then
@@ -42,23 +50,31 @@ do
 		end)
 	end
 	
+	function steam.IsSteamClientAvailible()
+		return lib ~= nil
+	end
+	
 	function steam.SendChatMessage(steam_id, text)
 		if not lib then logn("steamfriends module not availible") return 1 end
+		
 		return lib.steamSendChatMessage(steam_id, text)
 	end
 	
 	function steam.GetNickFromSteamID(steam_id)
 		if not lib then logn("steamfriends module not availible") return "" end
+		
 		return ffi.string(lib.steamGetNickFromSteamID(steam_id))
 	end
 	
 	function steam.GetClientSteamID()
 		if not lib then logn("steamfriends module not availible") return "" end
+		
 		return ffi.string(lib.steamGetClientSteamID())
 	end
 	
 	function steam.GetFriends()
 		if not lib then logn("steamfriends module not availible") return {} end
+		
 		local out = {}
 		
 		for i = 1, lib.steamGetFriendCount() do
@@ -67,6 +83,40 @@ do
 		
 		return out
 	end
+	
+	function steam.GetAuthTokenFromServer(server_id, ip, port, secure)
+		if not lib then logn("steamfriends module not availible") return {} end
+		
+		if secure == nil then secure = true end
+		
+		local data = lib.steamGetAuthTokenFromServer(server_id, ip, port, secure)
+		
+		return ffi.string(data.buffer, data.size)
+	end
+end
+
+function steam.SteamIDToCommunityID(id)
+	if id == "BOT" or id == "NULL" or id == "STEAM_ID_PENDING" or id == "UNKNOWN" then
+		return 0
+	end
+
+	local parts = id:Split(":")
+	local a, b = parts[2], parts[3]
+
+	return tostring("7656119" .. 7960265728 + a + (b*2))
+end
+
+function steam.CommunityIDToSteamID(id)
+	local s = "76561197960"
+	if id:sub(1, #s) ~= s then
+		return "UNKNOWN"
+	end
+
+	local c = tonumber( id )
+	local a = id % 2 == 0 and 0 or 1
+	local b = (c - 76561197960265728 - a) / 2
+
+	return "STEAM_0:" .. a .. ":" .. (b+2)
 end
 
 function steam.VDFToTable(str)
