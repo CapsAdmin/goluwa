@@ -4,6 +4,24 @@ function string.readablehex(str)
 	return (str:gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
 end
 
+function string.dumphex(str)
+	local str = str:readablehex():lower():explode(" ")
+	local out = {}
+	
+	for i, char in pairs(str) do
+		table.insert(out, char)
+		table.insert(out, " ")
+		if i%16 == 0 then
+			table.insert(out, "\n")
+		end
+		if i%16 == 8 then 
+			table.insert(out, " ")
+		end
+	end
+	table.insert(out, "\n")
+	return table.concat(out)
+end
+
 function string.endswith(a, b)
 	if type(b) == "table" then
 		for k, b in pairs(b) do
