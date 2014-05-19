@@ -1,8 +1,10 @@
 local network = _G.network or {}
-network.client_socket = network.client_socket or NULL
-network.server_socket = network.server_socket or NULL
 
-network.udp_receiver = network.udp_receiver or NULL
+network.client_tcp = network.client_tcp or NULL
+network.server_tcp = network.server_tcp or NULL
+
+network.client_udp = network.client_udp or NULL
+network.server_udp = network.server_udp or NULL
 
 network.CONNECT = 1
 network.DISCONNECT = 2
@@ -74,7 +76,7 @@ local function ipport_to_uid(ipport)
 	return tostring(123456789 + ipport:gsub("%D", "")%255255255255)
 end
 
-function network.HandleEvent(socket, type, a, b, ...)		
+function network.HandleTCPMessage(socket, type, a, b, ...)		
 	local uniqueid
 	
 	if CLIENT then
@@ -142,7 +144,7 @@ function network.HandleEvent(socket, type, a, b, ...)
 			logf("successfully connected to server\n")
 			
 			players.local_player = Player(uniqueid)
-			players.local_player.socket = network.client_socket
+			players.local_player.socket = network.client_tcp
 						
 			event.Call("OnlineStarted")
 		end
@@ -182,8 +184,12 @@ function network.HandleEvent(socket, type, a, b, ...)
 	end	
 end
 
+function network.HandleUDPMessage(str, ip, port)
+	print(ip, port, str)
+end
+
 function network.IsStarted()
-	return network.server_socket:IsValid() or network.client_socket:IsValid()
+	return network.server_tcp:IsValid() or network.client_tcp:IsValid()
 end
 
 if CLIENT then
@@ -192,44 +198,8 @@ if CLIENT then
 		
 		ip = tostring(ip)
 		port = tonumber(port) or check(port, "number")
+		
 		retries = retries or 3
-				
-		local client = network.client_socket or NULL
-		
-		if client:IsValid() then
-			client:Remove()
-		end
-		
-		client = luasocket.CreateClient()
-		client:SetReceiveMode(receive_mode)
-		client:SetTimeout()
-		client:Connect(ip, port)
-				
-		local temp = ""
-		
-		function client:OnReceive(str)
-			temp = temp .. str
-			
-			local found = 0
-			
-			for message in temp:gmatch("(.-)" .. delimiter) do
-				network.HandleEvent(nil, decode(message))
-				found = found + 1
-			end
-			
-			if found > 0 then
-				temp = temp:match("^.+"..delimiter.."(.*)$") or ""
-			end
-		end
-		
-		network.client_socket = client
-		
-		--[[local udp = luasocket.CreateServer("udp")
-		
-		udp:Host(ip, port)
-		udp.OnReceive = logn
-		
-		network.udp_receiver = udp]]
 		
 		if retries > 0 then
 			timer.Delay(3, function()
@@ -238,6 +208,42 @@ if CLIENT then
 					network.Connect(ip, port, retries - 1)
 				end	
 			end)
+		end
+		
+		do -- tcp
+			local client = luasocket.CreateClient("tcp", ip, port, "network_client_tcp")
+			client:SetTimeout(false)
+			client:SetReceiveMode(receive_mode)
+					
+			local temp = ""
+			
+			function client:OnReceive(str)
+				temp = temp .. str
+				
+				local found = 0
+				
+				for message in temp:gmatch("(.-)" .. delimiter) do
+					network.HandleTCPMessage(nil, decode(message))
+					found = found + 1
+				end
+				
+				if found > 0 then
+					temp = temp:match("^.+"..delimiter.."(.*)$") or ""
+				end
+			end
+		
+			network.client_tcp = client
+		end
+		
+		do -- udp
+			local client = luasocket.CreateClient("udp", ip, port, "network_client_udp")		
+			client:SetTimeout(false)
+			
+			function client:OnReceive(str)
+				network.HandleUDPMessage(str)
+			end
+			
+			network.client_udp = client	
 		end
 		
 		network.just_disconnected = nil
@@ -250,7 +256,7 @@ if CLIENT then
 		
 		if network.IsConnected() then
 			network.SendToServer(network.DISCONNECT, reason)
-			network.client_socket:Remove()
+			network.client_tcp:Remove()
 			
 			players.GetLocalPlayer():Remove()
 			
@@ -266,12 +272,12 @@ if CLIENT then
 		if network.just_disconnected then	
 			return false
 		end
-		return network.client_socket:IsValid() and network.client_socket:IsConnected() and network.accepted or false
+		return network.client_tcp:IsValid() and network.client_tcp:IsConnected() and network.accepted or false
 	end
 	
 	function network.SendToServer(event, ...)	
-		if network.client_socket:IsValid() then
-			network.client_socket:Send(encode(event, ...), buffered)
+		if network.client_tcp:IsValid() then
+			network.client_tcp:Send(encode(event, ...), buffered)
 		end
 	end
 end
@@ -281,55 +287,54 @@ if SERVER then
 		ip = tostring(ip)
 		port = tonumber(port) or check(port, "number")
 		
-		local id = ip .. port
-		
-		local server = network.server_socket or NULL
-		
-		if server:IsValid() then
-			server:Remove()
-		end
-		
-		server = luasocket.CreateServer()
-		server:Host(ip, port)
-
-		function server:OnClientConnected(client, ip, port)
-			client:SetReceiveMode(receive_mode)			
-			network.HandleEvent(client, network.CONNECT)
-			return true
-		end
-		
-		function server:OnReceive(str, client)
-			client.temp = client.temp or ""
-			client.temp = client.temp .. str
+		do -- tcp
+			local server = luasocket.CreateServer("tcp", ip, port, "network_server_tcp")
 			
-			local found = 0
+			function server:OnClientConnected(client, ip, port)
+				client:SetReceiveMode(receive_mode)			
+				network.HandleTCPMessage(client, network.CONNECT)
+				return true
+			end
 			
-			for message in client.temp:gmatch("(.-)" .. delimiter) do
-				if network.HandleEvent(client, decode(message)) == false then
-					client:Remove()
+			function server:OnReceive(str, client)
+				client.temp = client.temp or ""
+				client.temp = client.temp .. str
+				
+				local found = 0
+				
+				for message in client.temp:gmatch("(.-)" .. delimiter) do
+					if network.HandleTCPMessage(client, decode(message)) == false then
+						client:Remove()
+					end
+					found = found + 1
 				end
-				found = found + 1
+				
+				if found > 0 then
+					client.temp = client.temp:match("^.+"..delimiter.."(.*)$") or ""
+				end
+			end
+
+			network.server_tcp = server
+		end
+		
+		do -- udp
+			local server = luasocket.CreateServer("udp", ip, port, "network_server_udp")
+			
+			-- receive "str, ip, port" instead of "str, client"
+			server:UseDummyClient(false)
+			
+			function server:OnReceive(str, ip, port)
+				network.HandleUDPMessage(str, ip, port)
 			end
 			
-			if found > 0 then
-				client.temp = client.temp:match("^.+"..delimiter.."(.*)$") or ""
-			end
+			network.server_udp = server
 		end
 		
 		event.Call("OnlineStarted")
-		
-		network.server_socket = server
-		
-		local udp = luasocket.CreateServer("udp")
-		
-		udp:Host(ip, port)
-		udp.OnReceive = logn
-		
-		network.udp_receiver = udp
 	end
 	
 	function network.GetClients()
-		return network.server_socket:GetClients()
+		return network.server_tcp:GetClients()
 	end
 		
 	function network.SendToClient(client, event, ...)

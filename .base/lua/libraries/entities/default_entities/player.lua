@@ -49,7 +49,7 @@ end
 if SERVER then
 	function META:Kick(reason)
 		if self.socket:IsValid() then
-			network.HandleEvent(self.socket, network.DISCONNECT, self:GetUniqueID(), reason or "kicked")
+			network.HandleTCPMessage(self.socket, network.DISCONNECT, self:GetUniqueID(), reason or "kicked")
 		end
 		
 		if self:IsBot() then
