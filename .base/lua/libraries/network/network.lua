@@ -353,7 +353,7 @@ end
 function network.ReInclude()
 	include("libraries/network/network.lua")
 	include("libraries/network/message.lua")
-	include("libraries/network/easylua.lua")
+	include("libraries/entities/easylua.lua")
 	include("libraries/network/nvars.lua")
 	include("libraries/network/players.lua")
 end
