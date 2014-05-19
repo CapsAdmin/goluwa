@@ -338,18 +338,23 @@ do -- basic data types
 		self:WriteByte(bit.band(int,0xFF))
 	end
 	
+	ffi.cdef [[
+	  typedef union {
+		char b[8];
+		int64_t i;
+	  } buffer_int64;
+	]]
+
+	local btl = ffi.typeof("buffer_int64")
+	
+	local function chars_to_long(str)
+		return btl(str).i
+	end
+	
 	function META:ReadLongLong()
 		local b1, b2, b3, b4, b5, b6, b7, b8 = self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte()
 		if not b1 or not b2 or not b3 or not b4 or not b5 or not b6 or not b7 or not b8 then return end
-		return
-			bit.lshift(b8, 56) + 
-			bit.lshift(b7, 48) + 
-			bit.lshift(b6, 40) + 
-			bit.lshift(b5, 32) + 
-			bit.lshift(b4, 24) + 
-			bit.lshift(b3, 16) + 
-			bit.lshift(b2, 8) + 
-			bit.lshift(b1, 0)
+		return chars_to_long(string.char(b1,b2,b3,b4,b5,b6,b7,b8))
 	end
 	
 	-- string
@@ -368,7 +373,7 @@ do -- basic data types
 			
 			for i = 1, length or self:GetSize() do
 				local byte = self:ReadByte()
-				if not byte then return end
+				if not byte then break end
 				if not length and byte == 0 then break end
 				table.insert(str, string.char(byte))
 			end
@@ -493,13 +498,17 @@ do -- structures
 
 	function META:WriteStructure(structure, values)
 		for i, data in ipairs(structure) do
-			if data.get then
-				if not values or values[data.get] == nil then
-					errorf("expected %s %s got nil", 2, data[1], data.get)
-				end
-				self:WriteType(values[data.get], data[1])
+			if type(data) == "number" then
+				self:WriteByte(data)
 			else
-				self:WriteType(data[2], data[1])
+				if data.get then
+					if not values or values[data.get] == nil then
+						errorf("expected %s %s got nil", 2, data[1], data.get)
+					end
+					self:WriteType(values[data.get], data[1])
+				else
+					self:WriteType(data[2], data[1])
+				end
 			end
 		end
 	end
@@ -532,10 +541,11 @@ do -- structures
 				end
 			end
 			
+			
 			local val
 			
 			if data.length then
-				if data[1] == "char" then
+				if data[1] == "char" or data[1] == "string" then
 					val = self:ReadString(data.length)
 				else
 					local values = {}
@@ -562,7 +572,9 @@ do -- structures
 			
 			if not data.padding then
 				if val == nil then val = "nil" end
-				out[data[2]] = val
+				local key = data[2]
+				if out[key] then key = key .. i end
+				out[key] = val
 			end
 				
 			if type(data[3]) == "table" then
