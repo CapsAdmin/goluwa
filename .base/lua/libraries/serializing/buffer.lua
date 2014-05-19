@@ -501,11 +501,15 @@ do -- structures
 			if type(data) == "number" then
 				self:WriteByte(data)
 			else
-				if data.get then
-					if not values or values[data.get] == nil then
-						errorf("expected %s %s got nil", 2, data[1], data.get)
+				if data.get then					
+					if type(data.get) == "function" then
+						self:WriteType(data.get(values), data[1])
+					else
+						if not values or values[data.get] == nil then
+							errorf("expected %s %s got nil", 2, data[1], data.get)
+						end
+						self:WriteType(values[data.get], data[1])
 					end
-					self:WriteType(values[data.get], data[1])
 				else
 					self:WriteType(data[2], data[1])
 				end
