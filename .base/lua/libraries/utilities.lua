@@ -1,5 +1,20 @@
 local utilities = _G.utilities or {}
 
+do -- long long
+	ffi.cdef [[
+	  typedef union {
+		char b[8];
+		int64_t i;
+	  } buffer_int64;
+	]]
+
+	local btl = ffi.typeof("buffer_int64")
+	
+	function utilities.StringToLongLong(str)
+		return btl(str).i
+	end
+end
+
 do -- profiling
 	local stack = {}
 
