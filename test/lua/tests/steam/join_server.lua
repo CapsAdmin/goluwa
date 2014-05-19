@@ -18,7 +18,6 @@ local PROTOCOL_STEAM = 0x03 -- Protocol type (Steam authentication)
 local DISCONNECT_REASON_LENGTH = 1260
 
 -- this was tested on 2 different accounts (connecting to different servers however)
--- commented bytes are example of the other accounts data
 
 local connect = {
 	request = {
@@ -40,10 +39,17 @@ local connect = {
 			0x00, 0x00, 0x00,
 			{"bytes", get = "challenge"},
 			
-			-- strings separated by 0
 			{"string", "CapsAdmin"}, -- nick
-			{"string", "train"}, -- password
-			{"string", "14.04.19"}, -- date
+			{"string", "train"}, -- password, can be NULL if not provided
+			{"string", "14.04.19"}, -- date? matches the date joined at if months are counted from 0
+			
+			
+			
+			-- commented bytes are example of the other accounts data
+			
+			-- SAME: always the same even on both accounts
+			-- DIFFERENT: differs on both accounts but consistently
+			-- DIFFERENT EVERYTIME: different for each response
 			
 			-- SAME
 			0xf2, 0x00, 
