@@ -1,4 +1,4 @@
-local ip, port = "177.220.172.0", 27015  
+local ip, port = "87.245.209.42", 27015  
  
 local function wireshark_hex_dump(str)
 	logn((str:readablehex():gsub("(.. .. .. .. .. .. .. .. )(.. .. .. .. .. .. .. .. )", "%1\t%2\n")))
@@ -18,6 +18,7 @@ local PROTOCOL_STEAM = 0x03 -- Protocol type (Steam authentication)
 local DISCONNECT_REASON_LENGTH = 1260
 
 -- this was tested on 2 different accounts (connecting to different servers however)
+-- commented bytes are example of the other accounts data
 
 local connect = {
 	request = {
@@ -49,19 +50,24 @@ local connect = {
 			
 			-- these change depending on the account
 			0xef, 0x82, 0x1d, 
---other		0xf5, 0x6b, 0xc7,
+--			0xf5, 0x6b, 0xc7,
 			
 			-- these were the same on both accounts
 			0x01, 0x01, 0x00, 0x10, 0x01, 
-					
-			{"bytes", get = function(data) return steam.GetAuthTokenFromServer(utilities.StringToLongLong(data.gsid), ip, port, data.vac) end},
+			
+			-- auth token. 
+			-- examples:
+			-- 14 00 00 00 cb 1d f1 1d 4d cf 41 38 ef 82 1d 01 01 00 10 01 f5 62 79 53 00 00 00 00
+			-- 14 00 00 00 89 8f aa 0e ff 12 83 45 ef 82 1d 01 01 00 10 01 83 30 77 53 18 00 00 00
+			-- 14 00 00 00 76 8c e1 68 ba 8c f2 fd f5 6b c7 01 01 00 10 01 1f 21 79 53 18 00 00 00
+			{"bytes", get = function(data) local key = steam.GetAuthTokenFromServer(utilities.StringToLongLong(data.gsid), ip, port, data.vac) wireshark_hex_dump(key) return key end},
 			
 			-- these were the same on both accounts
 			0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 
 			
 			-- these change depending on the account
 			0x17, 0xd9, 0xc7, 0x6d,
---other		0x8b, 0xf1, 0xa4, 0x47, 
+--			0x8b, 0xf1, 0xa4, 0x47, 
 			
 			-- these were the same on both accounts
 			0x00, 0x00, 0x00, 0x00, 
@@ -78,21 +84,21 @@ local connect = {
 			
 			-- these change depending on the account
 			0xef, 0x82, 0x1d,
---other  	0xf5, 0x6b, 0xc7,
+--			0xf5, 0x6b, 0xc7,
 			
 			-- these were the same on both accounts
 			0x01, 0x01, 0x00, 0x10, 0x01, 0xa0, 0x0f, 0x00, 0x00, 
 			
 			-- these change depending on the account
 			0x17, 0xd9, 0xc7, 0x6d, 0x0a, 0x00, 
---other: 	0x8b, 0xf1, 0xa4, 0x47, 0x0b, 0x01,
+--			0x8b, 0xf1, 0xa4, 0x47, 0x0b, 0x01,
 			
 			-- these were the same on both accounts
 			0xa8, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x62, 0xa2, 0x71, 0x53, 
 			
 			-- these change depending on the account
 			0xe2, 0x51, 
---other:	0xc8, 0x2b,
+--			0xc8, 0x2b,
 
 			-- these were the same on both accountss
 			0x8d, 0x53,	0x01, 0x00, 
@@ -118,7 +124,7 @@ local connect = {
 			0x54, 0x75, 0xca, 0xad, 0xb6, 0x93, 0xc6, 0x96
 			
 			
---[[other:	0x5b, 0x51, 0x04, 0xcd, 0xad, 0x3f, 0xf2, 0x2a, 
+		--[[0x5b, 0x51, 0x04, 0xcd, 0xad, 0x3f, 0xf2, 0x2a, 
 			0x95, 0x23, 0x78, 0x22, 0x27, 0x90, 0x0c, 0x38, 
 			0x17, 0x9e, 0x10, 0xff, 0x14, 0xa5, 0x66, 0x52, 
 			0x0e, 0x19, 0x00, 0xd3, 0xa4, 0x7f, 0x19, 0x66, 
@@ -187,5 +193,5 @@ do -- socket
 		elseif data.type == CONNECTION_SUCCESS then -- connection
 			logn("connection success")
 		end
-	end  
+	end
 end
