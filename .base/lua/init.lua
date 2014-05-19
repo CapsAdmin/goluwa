@@ -570,12 +570,11 @@ do -- libraries
 	include("libraries/graphics/markup.lua")	
 	
 	-- network
-	luasocket = include("libraries/network/luasocket.lua") 
+	sockets = include("libraries/network/sockets/sockets.lua") 
 	intermsg = include("libraries/network/intermsg.lua") 			
 	steamapi = include("libraries/network/steamapi.lua")
 	message = include("libraries/network/message.lua") -- high level communication between server and client
-	network = include("libraries/network/network.lua") -- high level implementation of luasocket
-	easylua = include("libraries/network/easylua.lua")
+	network = include("libraries/network/network.lua") -- high level implementation of sockets
 	nvars = include("libraries/network/nvars.lua")
 	players = include("libraries/network/players.lua")
 			
@@ -584,6 +583,7 @@ do -- libraries
 	chatsounds = include("libraries/audio/chatsounds.lua")
 	
 	entities = include("libraries/entities/entities.lua")
+	easylua = include("libraries/entities/easylua.lua")
 	
 	include("libraries/extensions/vfs_vpk.lua") -- vpk support for _G.vfs
 	include("libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
@@ -591,8 +591,8 @@ end
 
 console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
 
-event.AddListener("OnUpdate", "luasocket", luasocket.Update)
-event.AddListener("LuaClose", "luasocket", luasocket.Panic)
+event.AddListener("OnUpdate", "sockets", sockets.Update)
+event.AddListener("LuaClose", "sockets", sockets.Panic)
 
 addons.LoadAll()
 
@@ -620,7 +620,7 @@ if CREATED_ENV then
 	
 	utilities.SafeRemove(ENV_SOCKET)
 	
-	ENV_SOCKET = luasocket.CreateClient()
+	ENV_SOCKET = sockets.CreateClient()
 
 	ENV_SOCKET:Connect("localhost", PORT)	
 	ENV_SOCKET:SetTimeout()

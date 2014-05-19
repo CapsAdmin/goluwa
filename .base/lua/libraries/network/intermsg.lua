@@ -1,7 +1,5 @@
 local intermsg = _G.intermsg or {}
 
-local event_call = hook and hook.Run or event.Call
-
 intermsg.client_sockets = intermsg.client_sockets or {udp = {}, tcp = {}}
 intermsg.server_sockets = intermsg.server_sockets or {udp = {}, tcp = {}}
 
@@ -32,7 +30,7 @@ function intermsg.Send(ip, port, str, typ)
 	local sck = intermsg.client_sockets[typ][ip..port] or NULL
 	
 	if not sck:IsValid() then
-		sck = luasocket.CreateClient(typ)
+		sck = sockets.CreateClient(typ)
 		
 		sck:SetTimeout()
 		sck:Connect(ip, port, true)
@@ -59,7 +57,7 @@ function intermsg.StartServer(ip, port, callback, typ)
 
 	if sck:IsValid() then sck:Remove() end
 
-	sck = luasocket.CreateServer(typ)
+	sck = sockets.CreateServer(typ)
 	sck:Host(ip, port)
 
 	function sck:OnClientConnected(client, ip, port)
@@ -95,12 +93,6 @@ function intermsg.StopServer(ip, port, typ)
 	if sck:IsValid() then
 		sck:Remove()
 	end
-end
-
-intermsg.Panic()
-
-if gmod then
-	_G.intermsg = intermsg
 end
 
 return intermsg

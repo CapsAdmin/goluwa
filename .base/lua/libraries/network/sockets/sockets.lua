@@ -1,107 +1,14 @@
---[[
+local sockets = _G.sockets or {}
 
-Most of these functions can be called at any time. Send queues what you send until a connection is made.
+sockets.cares = select(2, pcall(require,"cares"))
+sockets.sockets = require("socket") or _G.socket
+sockets.active_sockets = sockets.active_sockets or setmetatable({}, { __mode = 'v' })
 
-Only "tcp" and "udp" is supported. Default is tcp. There isn't much of a difference between udp and tcp in this wrapper so you can easily change between the two modes.
+include("helpers.lua", sockets)
+include("http.lua", sockets)
 
-By default the socket has a 3 second timeout. The timeout count is started/restarted whenever the mesage is "timeout" and stopped otherwise
-
-luasocket.debug = true
-	will logn debug messages about sending and receiving data
-	very useful for (duh) debugging!
-
--- client
-
-	CLIENT = luasocket.CreateClient("udp" or "tcp") -- this defaults to tcp
-
-	CLIENT:GetTimeoutDuration()
-
-	CLIENT:IsTimingOut()
-	CLIENT:IsSending()
-	CLIENT:IsConnected()
-
-	CLIENT:SetTimeout(seconds or nil)
-	CLIENT:GetTimeout()
-
-	CLIENT:SetReceiveMode("line" or "all" or bytes)
-	CLIENT:GetReceiveMode()
-	
-	CLIENT:OnReceive(str)
-
-	-- return false to prevent the socket from being removed
-	-- if the timeout duration has exceeded the max timeout duration
-
-	CLIENT:OnTimeout(count)
-
-	CLIENT:OnSend(str, bytes)
-	CLIENT:OnError(msg)
-	CLIENT:OnClose()
-
-	CLIENT:Connect(ip, port)
---
-
--- server
-	SERVER = luasocket.CreateServer("udp" or "tcp") -- this defaults to tcp
-
-	SERVER:Host(ip, port)
-
-	-- returning false here will close and remove the client
-	-- returning true will call SetKeepAlive true on the client
-	SERVER:OnClientConnected(client, ip, port)
-
-
-	SERVER:OnReceive(str, client)
-	SERVER:OnClientClosed(client)
-	SERVER:OnClientError(client, msg)
-
-	SERVER:GetClients()
-	SERVER:HasClients() -- returns true if someone is connected, false otherwise
---
-
--- shared
-	SHARED:Send(str, instant)
-	SHARED:GetIP()
-	SHARED:GetPort()
-
-	SHARED:IsValid()
-	SHARED:Remove()
-
-	-- These have Get ones as well but they only return something if Set was called. This uses setoption.
-	SHARED:SetReuseAddress(val)
-	SHARED:SetNoDelay(val)
-	SHARED:SetLinger(val)
-	SHARED:SetKeepAlive(val)
---
-]]
-
-local luasocket = _G.luasocket or {}
-
-if _G.luasocket and _G.luasocket.Panic then
-	_G.luasocket.Panic()
-end
-
--- external functions
-local on_error = system and system.OnError or error
-local logn = logn or MsgN or print
-local table_print = PrintTable or table.print or logn
-local warning = ErrorNoHalt or logn
-local check = check or function() end
-local cares = select(2, pcall(require,"cares")) or _G.cares
-
-function luasocket.Initialized()
-	if gmod then
-		_G.luasocket = luasocket
-
-		hook.Add("Think", "socket_think", function()
-			luasocket.Update()
-		end)
-	end
-end
-
-luasocket.socket = require("socket") or _G.socket
-
-function luasocket.DebugPrint(self, ...)
-	if (self and self.debug) or luasocket.debug then
+function sockets.DebugPrint(self, ...)
+	if (self and self.debug) or sockets.debug then
 		local tbl = {}
 
 		for i = 1, select("#", ...) do
@@ -112,282 +19,72 @@ function luasocket.DebugPrint(self, ...)
 	end
 end
 
-do -- helpers/usage
-	
-	function luasocket.EscapeURL(str)
-		return str:gsub("([^A-Za-z0-9_])", function(char)
-			return ("%%%02x"):format(string.byte(char))
-		end)
-	end
-
-	function luasocket.HeaderToTable(header)
-		local tbl = {}
-		
-		if not header then return tbl end
-
-		for line in header:gmatch("(.-)\n") do
-			local key, value = line:match("(.+):%s+(.+)\r")
-
-			if key and value then
-				tbl[key] = tonumber(value) or value
-			end
-		end
-
-		return tbl
-	end
-
-	function luasocket.TableToHeader(tbl)
-		local str = ""
-
-		for key, value in pairs(tbl) do
-			str = str .. tostring(key) .. ": " .. tostring(value) .. "\r\n"
-		end
-
-		return str
-	end
-
-	local function request(url, callback, method, timeout, post_data, user_agent, binary, debug)		
-		url = url:gsub("http://", "")
-		callback = callback or table.print
-		method = method or "GET"
-		user_agent = user_agent or "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
-
-		local host, location = url:match("(.-)/(.+)")
-
-		if not location then
-			host = url:gsub("/", "")
-			location = ""
-		end
-		
-		local socket = luasocket.CreateClient("tcp")
-		socket.debug = debug
-		socket:SetTimeout(timeout or 2)
-		socket:Connect(host, 80)
-
-		socket:Send(("%s /%s HTTP/1.1\r\n"):format(method, location))
-		socket:Send(("Host: %s\r\n"):format(host))
-		socket:Send(("User-Agent: %s\r\n"):format(user_agent))
-		socket:Send("Connection: Keep-Alive\r\n")
-		socket:SetReceiveMode(61440)
-					
-		if binary then
-			socket:SetReceiveMode("all")
-		end		
-		
-		if method == "POST" then
-			socket:Send(("Content-Length: %i"):format(#post_data))
-			socket:Send(post_data)
-		end
-
-		socket:Send("\r\n")
-
-		local header = {}
-		local content = {}
-		local temp = {}
-		local length = 0
-		local in_header = true
-		
-		function socket:OnReceive(str)
-			if in_header then
-				table.insert(temp, str)
-				
-				local str = table.concat(temp, "")
-				local header_data, content_data = str:match("(.-\r\n\r\n)(.+)")
-				if header_data then
-					header = luasocket.HeaderToTable(header_data)
-					
-					if header.location then
-						if header.location:sub(0, 5) == "https" then header.location = "http" .. header.location:sub(6) end
-						
-						if header.location ~= "" then
-							request(header.location, callback, method, timeout, post_data, user_agent, binary)
-							self:Remove()
-							return
-						end
-					end
-					
-					if content_data then
-						table.insert(content, content_data)
-						length = length + #content_data
-					end
-										
-					in_header = false
-				end
-			else
-				table.insert(content, str)
-				length = length + #str
+function sockets.Update()
+	for key, sock in pairs(sockets.active_sockets) do
+		if sock:IsValid() then
+			local ok, err = xpcall(sock.Think, system.OnError, sock)
+			if not ok then
+				logn(err)
+				sock:Remove()
 			end
 			
-			if header["Content-Length"] then
-				if length >= header["Content-Length"] then
-					self:Remove()
-				end
-			elseif header["Transfer-Encoding"] == "chunked" then
-				if #content == 1 and content[1]:sub(-5) == "0\r\n\r\n" then 
-					self:Remove()
-				end
-				if content[#content - 2] == "" and str == "0" then
-					self:Remove()
-				end
+			if sock.remove_me then
+				sock.socket:close()
+				utilities.MakeNULL(sock)
 			end
-		end
-
-		
-		function socket:OnClose()			
-			local content = table.concat(content, "")
-
-			if content ~= "" then
-				local ok, err = xpcall(callback, on_error, {content = content, header = header})
-				
-				if err then
-					warning(err)
-				end
-			else
-				warning("no content was found")
-			end
-		end
-	end
-	
-	function luasocket.Get(url, callback, timeout, user_agent, binary, debug)
-		check(url, "string")
-		check(callback, "function", "nil", "false")
-		check(user_agent, "nil", "string")
-		
-		return request(url, callback, "GET", timeout, nil, user_agent, binary, debug)
-	end
-	
-	function luasocket.Post(url, post_data, callback, timeout, user_agent, binary, debug)
-		check(url, "string")
-		check(callback, "function", "nil", "false")
-		check(post_data, "table", "string")
-		check(user_agent, "nil", "string")
-		
-		if type(post_data) == "table" then
-			post_data = luasocket.TableToHeader(post_data)
-		end
-		
-		return request(url, callback, "POST", timeout, post_data, user_agent, binary, debug)
-	end
-	
-	function luasocket.Download(url, callback)
-		if url:sub(0, 4) == "http" then
-			
-			if url:sub(0, 5) == "https" then
-				url = "http" .. url:sub(6)
-			end
-						
-			if callback then
-				luasocket.Get(url, function(data) callback(data.content) end, nil, nil, true)
-				return true
-			else
-				return {Download = function(_, callback) luasocket.Get(url, function(data) callback(data.content, data.header) end, nil, nil, true) end}
-			end
-		end
-		
-		return false
-	end
-
-	local sck = luasocket.socket.udp()
-	function luasocket.SendUDPData(ip, port, str)
-
-		if not str and type(port) == "string" then
-			str = port
-			port = tonumber(ip:match(".-:(.+)"))
-		end
-
-		local ok, msg = sck:sendto(str, ip, port)
-
-		if ok then
-			luasocket.DebugPrint(nil, "SendUDPData sent data to %s:%i (%s)", ip, port, str:readablehex())
 		else
-			luasocket.DebugPrint(nil, "SendUDPData failed %q", msg)
+			sockets.active_sockets[key] = nil
 		end
-
-		return ok, msg
 	end
 end
 
-local receive_types = {all = "*a", line = "*l"}
+function sockets.GetSockets()
+	return sockets.active_sockets
+end
+
+function sockets.Panic()
+	for key, sock in pairs(sockets.active_sockets) do
+		if sock:IsValid() then
+			sock:DebugPrintf("removed from sockets.Panic()")
+			sock:Remove()
+		else
+			table.remove(sockets.active_sockets, key)
+		end
+	end
+end
+
+local function new_socket(override, META, typ, id)
+	typ = typ or "tcp"
+	typ = typ:lower()
+
+	if typ == "udp" or typ == "tcp" then
+		
+		if id then
+			for _, socket in ipairs(sockets.active_sockets) do
+				if socket.uid == id then
+					socket:Remove()
+				end
+			end
+		end
+	
+		local self = META:New()
+
+		self.socket = override or assert(sockets.sockets[typ]())
+		self.socket:settimeout(0)
+		self.socket_type = typ
+		self:Initialize()
+		
+		table.insert(sockets.active_sockets, self)
+
+		self:DebugPrintf("created")
+
+		self.uid = id
+		
+		return self
+	end
+end
 
 do -- tcp socket meta
-	local sockets = {}
-
-	function luasocket.GetSockets()
-		return sockets
-	end
-
-	function luasocket.Panic()
-		for key, sock in pairs(sockets) do
-			if sock:IsValid() then
-				sock:DebugPrintf("removed from luasocket.Panic()")
-				sock:Remove()
-			else
-				table.remove(sockets, key)
-			end
-		end
-	end
-
-	function luasocket.Update()
-		for key, sock in pairs(sockets) do
-			if sock:IsValid() then
-				local ok, err = xpcall(sock.Think, on_error, sock)
-				if not ok then
-					warning(err)
-					sock:Remove()
-				end
-				
-				if sock.remove_me then
-					sock.socket:close()
-					utilities.MakeNULL(sock)
-				end
-			else
-				sockets[key] = nil
-			end
-		end
-	end
-
-	local function assert(res, err)
-		if not res then
-			error(res, 3)
-		end
-		return res
-	end
-
-	local function new_socket(override, META, typ, id)
-		typ = typ or "tcp"
-		typ = typ:lower()
-
-		if typ == "udp" or typ == "tcp" then
-			
-			if id then
-				for _, socket in ipairs(sockets) do
-					if socket.uid == id then
-						socket:Remove()
-					end
-				end
-			end
-		
-			local self = META:New()
-
-			self.socket = override or assert(luasocket.socket[typ]())
-			self.socket:settimeout(0)
-			self.socket_type = typ
-			self:Initialize()
-			
-			table.insert(sockets, self)
-
-			self:DebugPrintf("created")
-
-			self.uid = id
-			
-			return self
-		end
-	end
-
-	local function remove_socket(self)
-		self.remove_me = true
-	end
-
 	local options =
 	{
 		KeepAlive = "keepalive",
@@ -425,17 +122,17 @@ do -- tcp socket meta
 		end
 
 		function CLIENT:DebugPrintf(fmt, ...)
-			luasocket.DebugPrint(self, "%s - " .. fmt, self, ...)
+			sockets.DebugPrint(self, "%s - " .. fmt, self, ...)
 		end
 
 		function CLIENT:Connect(ip, port, skip_cares)
 			check(ip, "string")
 			check(port, "number")
 
-			if not skip_cares and cares and cares.Resolve then
+			if sockets.cares and not skip_cares and sockets.cares.Resolve then
 				self:DebugPrintf("using cares to resolve domain %s", ip)
 				
-				cares.Resolve(ip, function(_, errored, newip)
+				sockets.cares.Resolve(ip, function(_, errored, newip)
 					if not errored then
 						self:DebugPrintf("cares resolved domain from %q to %q", ip, newip)
 						self:Connect(newip, port, true)
@@ -500,6 +197,8 @@ do -- tcp socket meta
 			return self.ReceiveMode
 		end
 
+		local receive_types = {all = "*a", line = "*l"}
+		
 		function CLIENT:Think()
 			local sock = self.socket
 			sock:settimeout(0)
@@ -653,7 +352,7 @@ do -- tcp socket meta
 			self:DebugPrintf("removed")
 			self:OnClose()
 			
-			remove_socket(self)
+			self.remove_me = true
 			
 			if self.__server then
 				for k, v in pairs(self.__server.Clients) do
@@ -727,7 +426,7 @@ do -- tcp socket meta
 		function CLIENT:OnSend(data, bytes, b,c,d) end
 		function CLIENT:OnClose() end
 
-		function luasocket.CreateClient(type, ip, port, id)
+		function sockets.CreateClient(type, ip, port, id)
 			local self = new_socket(nil, CLIENT, type, id)
 			if ip or port then
 				self:Connect(ip, port)
@@ -735,7 +434,7 @@ do -- tcp socket meta
 			return self
 		end
 
-		luasocket.ClientMeta = CLIENT
+		sockets.ClientMeta = CLIENT
 	end
 
 	do -- server
@@ -752,7 +451,7 @@ do -- tcp socket meta
 		end
 
 		function SERVER:DebugPrintf(fmt, ...)
-			luasocket.DebugPrint(self, "%s - " .. fmt, self, ...)
+			sockets.DebugPrint(self, "%s - " .. fmt, self, ...)
 		end
 
 		function SERVER:GetClients()
@@ -870,7 +569,7 @@ do -- tcp socket meta
 
 				if client then
 
-					client = new_socket(client, luasocket.ClientMeta, "tcp")
+					client = new_socket(client, sockets.ClientMeta, "tcp")
 					client.connected = true
 					
 					self:DebugPrintf("%s connected", client)
@@ -912,7 +611,7 @@ do -- tcp socket meta
 		function SERVER:Remove()
 			self:DebugPrintf("removed")
 			self:KickAllClients()			
-			remove_socket(self)
+			self.remove_me = true
 		end
 
 		function SERVER:IsValid()
@@ -944,7 +643,7 @@ do -- tcp socket meta
 		function SERVER:OnClientError(client, err) end
 		function SERVER:OnError(msg) self:Remove() end
 
-		function luasocket.CreateServer(type, ip, port, id)
+		function sockets.CreateServer(type, ip, port, id)
 			local self = new_socket(nil, SERVER, type, id)
 			if ip or port then
 				self:Host(ip, port)
@@ -952,11 +651,8 @@ do -- tcp socket meta
 			return self
 		end
 
-		luasocket.ServerMeta = SERVER
+		sockets.ServerMeta = SERVER
 	end
 end
 
-luasocket.Initialized()
-luasocket.Initialized = nil
-
-return luasocket
+return sockets

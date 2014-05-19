@@ -190,7 +190,7 @@ local function read_struct(str, struct)
 end
 
 do -- socket	 
-	local client = luasocket.CreateClient("udp", ip, port)
+	local client = sockets.CreateClient("udp", ip, port)
 	client.debug = false  
 
 	send_struct(client, connect.request[CHALLENGE_REQUEST])

@@ -7,9 +7,9 @@ function translation.GoogleTranslate(from, to, str, callback)
 	to = to or "en"
 	str = str or ""
 
-	local url = base_url:format(from, to, luasocket.EscapeURL(str))
+	local url = base_url:format(from, to, sockets.EscapeURL(str))
 
-	luasocket.Get(url, function(data)
+	sockets.Get(url, function(data)
 		local out = {translated = "", transliteration = "", from = ""}
 		local content = data.content:match(".-%[(%b[])"):sub(2, -2)
 		

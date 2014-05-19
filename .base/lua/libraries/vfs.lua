@@ -735,7 +735,7 @@ do -- async reading
 				return true				
 			end
 		end,
-		luasocket = function(path, mbps, context)
+		sockets = function(path, mbps, context)
 		
 		
 			-- for font names only
@@ -745,11 +745,11 @@ do -- async reading
 				if vfs.Exists(cache_path) then
 					return vfs.ReadAsync(cache_path, queue[path].callback, mbps, context, "file")
 				else
-					if luasocket.Download("http://fonts.googleapis.com/css?family=" .. path:gsub("%s", "+"), 
+					if sockets.Download("http://fonts.googleapis.com/css?family=" .. path:gsub("%s", "+"), 
 						function(data)
 							local url = data:match("url%((.-)%)")
 							local format = data:match("format%('(.-)'%)")
-							luasocket.Download(url, function(data) 
+							sockets.Download(url, function(data) 
 								vfs.Write("fonts/" .. path .. "." .. format, data, "b")				
 								queue[path].callback(data)
 							end)
@@ -765,7 +765,7 @@ do -- async reading
 			if vfs.Exists(cache_path) then
 				return vfs.ReadAsync(cache_path, queue[path].callback, mbps, context, "file")
 			else
-				if luasocket.Download(path, function(data) 
+				if sockets.Download(path, function(data) 
 						vfs.Write(cache_path, data, "b")			
 						queue[path].callback(data)
 					end) 

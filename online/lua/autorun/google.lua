@@ -31,7 +31,7 @@ if SERVER then
 			local _q = question
 			question = question:gsub("(%A)", function(char) return "%"..("%x"):format(char:byte()) end)
 
-			luasocket.Get(
+			sockets.Get(
 				"http://suggestqueries.google.com/complete/search?client=firefox&q=" .. question .. "%20",
 				function(data)
 					local str = data.content
