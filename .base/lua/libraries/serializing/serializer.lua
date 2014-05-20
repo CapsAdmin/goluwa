@@ -55,13 +55,13 @@ do -- vfs extension
 
 end
 
-local msgpack = require("msgpack")
-serializer.AddLibrary("msgpack", function(...) return msgpack.Encode(...) end, function(...) return msgpack.Decode(...) end, msgpack)
+local msgpack = require("luajit-msgpack-pure")
+serializer.AddLibrary("msgpack", function(...) return msgpack.pack({...}) end, function(var) return unpack(select(2, msgpack.unpack(var))) end, msgpack)
 
-local json = require("json")
+local json = require("dkjson")
 serializer.AddLibrary("json", function(...) return json.encode(...) end, function(...) return json.decode(...) end, json)
 
-local von = require("von")
+local von = require("vON")
 serializer.AddLibrary("von", function(...) return von.serialize(...) end, function(...) return von.deserialize(...) end, von)
 
 local luadata = include("luadata.lua")
