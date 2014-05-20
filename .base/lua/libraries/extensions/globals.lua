@@ -53,9 +53,9 @@ do -- wait
 	local temp = {}
 	
 	function wait(seconds, frames)
-		local time = timer.clock()
+		local time = timer.GetSystemTime()
 		if not temp[seconds] or (temp[seconds] + seconds) < time then
-			temp[seconds] = timer.clock()
+			temp[seconds] = timer.GetSystemTime()
 			return true
 		end
 		return false

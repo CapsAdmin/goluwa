@@ -863,7 +863,7 @@ do -- file monitoring
 					end
 				else
 					logf("[vfs monitor] %s was removed\n", file_path)
-					timer.Remove(file_path)
+					event.RemoveTimer(file_path)
 				end
 			end)
 		else
@@ -884,7 +884,7 @@ do -- file monitoring
 
 	function vfs.MonitorEverything(b)
 		if not b then
-			timer.Remove("vfs_monitor_everything")
+			event.RemoveTimer("vfs_monitor_everything")
 			return
 		end
 

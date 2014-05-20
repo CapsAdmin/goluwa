@@ -49,6 +49,8 @@ do -- I'm not sure if this belongs here..
 			end
 		end
 	end
+	
+	timer.SetSystemTimeClock(glfw.GetTime)
 end
 
 return window

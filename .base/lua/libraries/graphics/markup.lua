@@ -343,7 +343,7 @@ else
 		LogF = logf,
 		TypeOf = typex,
 		GetFrameTime = timer.GetFrameTime,
-		GetTime = timer.GetTime,
+		GetTime = timer.GetSystemTime,
 		CreateConVar = console.CreateVariable,
 		GetConVarFloat = function(c) return c:Get() end,
 

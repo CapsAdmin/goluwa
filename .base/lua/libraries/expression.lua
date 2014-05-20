@@ -73,9 +73,9 @@ function expression.Compile(str, extra_lib)
 		for k,v in pairs(extra_lib) do functions[k] = v end
 	end
 
-	local t0 = timer.GetTime()
-	functions.t    = function () return timer.GetTime() - t0 end
-	functions.time = function () return timer.GetTime() - t0 end
+	local t0 = timer.GetSystemTime()
+	functions.t    = function () return timer.GetSystemTime() - t0 end
+	functions.time = function () return timer.GetSystemTime() - t0 end
 	functions.select = select
 
 	str = "local input = select(1, ...) return " .. str

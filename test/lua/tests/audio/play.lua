@@ -21,11 +21,11 @@ voice:SetFilter(filter)
 
 event.CreateTimer("shame", 1, 0, function()
 	voice:Play()
-	voice:SetPosition(math.sin(timer.clock()), math.cos(timer.clock()),0)
+	voice:SetPosition(math.sin(timer.GetSystemTime()), math.cos(timer.GetSystemTime()),0)
 end) 
 
 event.AddListener("OnUpdate", "hmm", function()
-	music:SetPitch(1 + math.sin(timer.clock()*10)/30)	
+	music:SetPitch(1 + math.sin(timer.GetSystemTime()*10)/30)	
 	reverb:SetParam("gain", math.abs(math.sin(os.clock()/10)))
 end) 
 

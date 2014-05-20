@@ -80,13 +80,13 @@ if jit.version_num >= 20100 then
 end
 
 if glfw then 
-	clock = timer.clock
+	clock = timer.GetSystemTime
 	read_file = vfs.Read
 elseif gmod then
 	clock = SysTime
 end
 
--- call this with timer.clock or something after glfw is loaded
+-- call this with timer.GetSystemTime or something after glfw is loaded
 function profiler.SetClockFunction(func)
 	clock = func
 	profiler.Restart()

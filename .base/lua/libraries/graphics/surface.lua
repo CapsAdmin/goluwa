@@ -727,7 +727,7 @@ function surface.GetMouseVel()
 	local vx = x - last_x
 	local vy = y - last_y
 	
-	local time = timer.clock()
+	local time = timer.GetSystemTime()
 	
 	if last_diff < time then
 		last_x = x

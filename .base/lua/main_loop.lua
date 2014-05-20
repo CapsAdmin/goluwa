@@ -45,18 +45,16 @@ local function main()
 		
 		event.Call("OnUpdate", dt)
 	end
-	
-	timer.realtime = 0
-	
+		
 	while true do
 		local rate = rate_cvar:Get()
-		local time = timer.clock()
+		local time = timer.GetSystemTime()
 		
 		if rate <= 0 or next_update < time then
 			local dt = time - (last_time or 0)
 			
-			timer.frame_time = dt
-			timer.total_time = timer.total_time + dt
+			timer.SetFrameTime(dt)
+			timer.SetElapsedTime(timer.GetElapsedTime() + dt)
 						
 			local ok, err = xpcall(update, system.OnError, dt)
 			

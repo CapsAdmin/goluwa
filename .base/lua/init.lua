@@ -584,7 +584,7 @@ steamapi.Initialize()
 entities.LoadAllEntities()
 
 addons.AutorunAll()
-timer.clock = require("lj-glfw").GetTime
+timer.GetSystemTime = require("lj-glfw").GetTime
 
 console.Exec("autoexec")
 

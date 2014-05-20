@@ -174,7 +174,7 @@ mesh.pwm_matrix = render.GetPVWMatrix2D
 event.AddListener("DrawHUD", "hm", function()
 	local w, h = surface.GetScreenSize()
 	surface.PushMatrix(0, 0, w, h) 
-		mesh.time = timer.GetTime()
+		mesh.time = timer.GetSystemTime()
 		mesh.texture = tex	
 		mesh.resolution = Vec2(surface.GetScreenSize())
 		mesh.mouse = aahh.GetMousePos()

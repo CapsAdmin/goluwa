@@ -176,7 +176,7 @@ end
 if gmod then
 	chatsounds.GetTime = RealTime
 else
-	chatsounds.GetTime = timer.GetTotalTime
+	chatsounds.GetTime = timer.GetElapsedTime
 end
 
 local choose_realm
