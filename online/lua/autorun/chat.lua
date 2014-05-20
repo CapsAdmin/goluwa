@@ -66,7 +66,7 @@ end
 
 if CLIENT then	
 	message.AddListener("say", function(ply, str, seed)
-		if event.Call("OnPlayerChat", ply, str, seed) ~= false then
+		if event.Call("PlayerChat", ply, str, seed) ~= false then
 			chat.Append(ply, str)
 		end
 	end)
@@ -188,7 +188,7 @@ if CLIENT then
 								return false 
 							end
 							
-							local str = event.Call("OnChatTab", str)
+							local str = event.Call("ChatTab", str)
 								
 							if str then 
 								panel:SetText(str)
@@ -214,12 +214,12 @@ if CLIENT then
 							
 							panel:Remove()
 							
-							event.Call("OnChatTextChanged", "")
+							event.Call("ChatTextChanged", "")
 							
 							return
 						end	
 						
-						event.Call("OnChatTextChanged", str)
+						event.Call("ChatTextChanged", str)
 						last_str = str
 					end
 					
@@ -232,7 +232,7 @@ if CLIENT then
 							self:SetText("") -- stupid
 							suppress = true -- stupid
 						end
-						event.Call("OnChatTextChanged", str)
+						event.Call("ChatTextChanged", str)
 						
 						self:SetPos(Vec2(50, Vec2(render.GetScreenSize()).h - 100))
 						self:SizeToContents()
@@ -258,7 +258,7 @@ end
 local seed = 0
 
 function chat.PlayerSay(ply, str, skip_log)
-	if event.Call("OnPlayerChat", ply, str, seed) ~= false then
+	if event.Call("PlayerChat", ply, str, seed) ~= false then
 		if skip_log then chat.Append(ply, str) end
 		if SERVER then message.Broadcast("say", ply, str, seed) seed = seed + 1 end
 	end

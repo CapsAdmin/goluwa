@@ -91,7 +91,7 @@ local function draw_branch(node, level, i, max, px, py, ppos, pw, ph)
 	end
 end
 
-event.AddListener("OnDraw2D", "lol", function()
+event.AddListener("Draw2D", "lol", function()
 	if wait(5) then		
 		for k, v in pairs(profiler.GetBenchmark()) do	
 			if not next(v.parents) then

@@ -625,7 +625,7 @@ do -- list parsing
 			chatsounds.sound_info = out
 		end) 
 		
-		event.AddListener("OnUpdate", "chatsounds_soundinfo", function()
+		event.AddListener("Update", "chatsounds_soundinfo", function()
 			local ok, msg = coroutine.resume(co)		
 			
 			if ok then 
@@ -683,7 +683,7 @@ do -- list parsing
 			   
 		local co = coroutine.create(function() return xpcall(callback, system.OnError) end)
 
-		event.AddListener("OnUpdate", "chatsounds_search", function()
+		event.AddListener("Update", "chatsounds_search", function()
 			local ok, err = coroutine.resume(co)
 			
 			if wait(1) then
@@ -1430,7 +1430,7 @@ function chatsounds.Initialize()
 		autocomplete.AddList("chatsounds", list)
 	end
 	
-	event.AddListener("OnUpdate", "chatsounds", chatsounds.Update)
+	event.AddListener("Update", "chatsounds", chatsounds.Update)
 end
 
 return chatsounds

@@ -4,7 +4,7 @@ local tex = Texture(64,64):Fill(function()
 	return math.random(255), math.random(255), math.random(255), math.random(255) 
 end)  
 
-event.AddListener("OnDraw2D", "lol", function()
+event.AddListener("Draw2D", "lol", function()
 	surface.Color(1,1,1,1)
 	surface.SetTexture(tex)
 

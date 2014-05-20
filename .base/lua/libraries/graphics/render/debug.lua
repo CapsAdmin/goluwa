@@ -107,7 +107,7 @@ function render.EnableDebug(b)
 end
 
 function render.OnError(source, type, id, severity, message)
-	event.Call("OnGLError", source, type, id, severity, message)
+	event.Call("GLError", source, type, id, severity, message)
 		
 	--debug.trace()
 	local info = debug.getinfo(5)				

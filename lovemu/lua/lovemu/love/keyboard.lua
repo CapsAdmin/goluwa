@@ -67,7 +67,7 @@ end
 
 local CURRENT_CHAR
 
-event.AddListener("OnKeyInput","lovemu_keyboard",function(key,press) --partial
+event.AddListener("KeyInput","lovemu_keyboard",function(key,press) --partial
 	key = keyboard_map[key] or key
 	
 	if press then
@@ -81,7 +81,7 @@ event.AddListener("OnKeyInput","lovemu_keyboard",function(key,press) --partial
 	end
 end) 
 
-event.AddListener("OnChar","lovemu_keyboard",function(char) --partial
+event.AddListener("CharInput","lovemu_keyboard",function(char) --partial
 	CURRENT_CHAR = char
 	if love.textinput then
 		love.textinput(char)

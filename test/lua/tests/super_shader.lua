@@ -65,7 +65,7 @@ local mesh = shader:CreateVertexBuffer({
 
 mesh.pwm_matrix = render.GetPVWMatrix2D
  
-event.AddListener("OnDraw2D", "hm", function()
+event.AddListener("Draw2D", "hm", function()
 	surface.PushMatrix(0, 0, surface.GetScreenSize())
 		mesh.global_color = HSVToColor(timer.GetSystemTime())
 		mesh.time = timer.GetSystemTime()

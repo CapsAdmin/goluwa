@@ -17,7 +17,7 @@ if CLIENT then
 		end
 	end
 
-	event.AddListener("OnUserMessage", "message", message.OnUserMessage, print)
+	event.AddListener("UserMessage", "message", message.OnUserMessage, print)
 end
 
 if SERVER then
@@ -45,7 +45,7 @@ if SERVER then
 		end
 	end
 	
-	event.AddListener("OnUserMessage", "message", message.OnUserMessage, print)
+	event.AddListener("UserMessage", "message", message.OnUserMessage, print)
 end
 
 do -- console extension

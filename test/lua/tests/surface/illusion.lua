@@ -16,7 +16,7 @@ local function draw_shape(s, r)
 	
 end
 
-event.AddListener("OnDraw2D", "illusion", function()	
+event.AddListener("Draw2D", "illusion", function()	
 	surface.Color(0.75,0.75,0,1)
 	surface.DrawRect(0,0,5000,5000)
 	

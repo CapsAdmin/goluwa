@@ -24,7 +24,7 @@ event.CreateTimer("shame", 1, 0, function()
 	voice:SetPosition(math.sin(timer.GetSystemTime()), math.cos(timer.GetSystemTime()),0)
 end) 
 
-event.AddListener("OnUpdate", "hmm", function()
+event.AddListener("Update", "hmm", function()
 	music:SetPitch(1 + math.sin(timer.GetSystemTime()*10)/30)	
 	reverb:SetParam("gain", math.abs(math.sin(os.clock()/10)))
 end) 

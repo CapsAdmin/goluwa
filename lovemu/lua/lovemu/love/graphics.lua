@@ -93,11 +93,11 @@ end
 
 
 function love.graphics.getWidth()
-	return render.w
+	return render.GetWidth()
 end
 
 function love.graphics.getHeight()
-	return render.h
+	return render.GetHeight()
 end
 
 function love.graphics.setMode()
@@ -331,8 +331,8 @@ end
 
 do -- canvas	
 	function love.graphics.newCanvas(w, h)
-		w = w or render.w
-		h = h or render.h
+		w = w or render.GetWidth()
+		h = h or render.GetHeight()
 				
 		local obj = lovemu.NewObject("Canvas")
 		

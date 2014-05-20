@@ -12,7 +12,7 @@ function aahh.Initialize()
 	
 	aahh.initialized = true
 	
-	event.AddListener("OnFramebufferSize", "aahh_world", function(window, w,h)
+	event.AddListener("WindowFramebufferSize", "aahh_world", function(window, w,h)
 		aahh.World:RequestLayout()
 	end)
 	
@@ -35,7 +35,7 @@ function aahh.GetWorld()
 		end
 		
 		function WORLD:OnRequestLayout()
-			event.Call("OnWorldPanelLayout")
+			event.Call("WorldPanelLayout")
 		end
 		
 		WORLD:SetCursor("arrow")

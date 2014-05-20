@@ -50,7 +50,7 @@ local function show_image(url)
 	
 	local start = timer.GetElapsedTime()
 	
-	event.AddListener("OnDraw2D", "chathud_image_url", function()
+	event.AddListener("Draw2D", "chathud_image_url", function()
 		if tex:IsLoading() then
 			start = timer.GetElapsedTime()
 			return
@@ -59,7 +59,7 @@ local function show_image(url)
 		local t = timer.GetElapsedTime() - start
 		
 		if t > totalDuration then
-			event.RemoveListener("OnDraw2D", "chathud_image_url")
+			event.RemoveListener("Draw2D", "chathud_image_url")
 			table.remove(queue, 1)
 			busy = false
 			return
@@ -81,7 +81,7 @@ end)
 
 local cvar = console.CreateVariable("chathud_image_url", 1)
 
-event.AddListener("OnPlayerChat", "chathud_image_url", function(ply, str)
+event.AddListener("PlayerChat", "chathud_image_url", function(ply, str)
 	
 	if str == "" then return end
 	
@@ -90,7 +90,7 @@ event.AddListener("OnPlayerChat", "chathud_image_url", function(ply, str)
 	if num == 0 then return end
 		
 	if str == "sh" then
-		event.RemoveListener("OnDraw2D", "chathud_image_url")
+		event.RemoveListener("Draw2D", "chathud_image_url")
 		queue = {}
 		
 		return

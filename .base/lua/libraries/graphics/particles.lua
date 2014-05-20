@@ -219,13 +219,13 @@ function EMITTER:Emit(...)
 	end
 end
  
-event.AddListener("OnDraw2D", "particles", function(dt)	
+event.AddListener("Draw2D", "particles", function(dt)	
 	for _, emitter in pairs(emitters) do
 		emitter:Draw()
 	end
 end) 
  
-event.AddListener("OnUpdate", "particles", function(dt)	
+event.AddListener("Update", "particles", function(dt)	
 	for _, emitter in pairs(emitters) do
 		emitter:Think(dt) 
 	end

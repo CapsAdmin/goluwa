@@ -147,7 +147,7 @@ do -- networked input
 		input.SetupAccessorFunctions(META, name)
 		
 		if CLIENT then
-			event.AddListener("On" .. name .. "Input", "player_" .. name .. "_event", function(key, press)
+			event.AddListener(name .. "Input", "player_" .. name .. "_event", function(key, press)
 				local ply = players.GetLocalPlayer()
 				
 				if ply:IsValid() then						

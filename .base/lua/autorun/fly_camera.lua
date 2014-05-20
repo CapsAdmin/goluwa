@@ -2,7 +2,7 @@ local cam_pos = Vec3(0, 0, 200)
 local cam_ang = Ang3(0, 0, 0)  
 local cam_fov = 90
  
-event.AddListener("OnUpdate", "fly_camera_3d", function(dt)
+event.AddListener("Update", "fly_camera_3d", function(dt)
 	if not window.IsOpen() then return end
 	
 	if menu and menu.visible then return end
@@ -64,7 +64,7 @@ local zoom = 1
 local max_zoom = 100
 local min_zoom = 0.01
 
-event.AddListener("OnUpdate", "fly_camera_2d", function(dt)
+event.AddListener("Update", "fly_camera_2d", function(dt)
 	if not window.IsOpen() then return end
 	
 	local speed = dt * 1000

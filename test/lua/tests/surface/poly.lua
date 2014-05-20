@@ -4,7 +4,7 @@ local tex = Texture("textures/aahh/pac.png")
 local count = 1
 local poly = surface.CreatePoly(count)
  
-event.AddListener("OnDraw2D", "lol", function()
+event.AddListener("Draw2D", "lol", function()
 	local time = timer.GetSystemTime()
 	for i = 1, count do
 	--	poly:SetColor(math.random(), math.random(), math.random(), math.random())

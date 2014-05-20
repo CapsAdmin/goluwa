@@ -161,7 +161,8 @@ function render.InitializeDeffered()
 			}
 		}
 	} 
-	render.gbuffer = render.CreateFrameBuffer(render.w, render.h, render.gbuffer_config)  
+	
+	render.gbuffer = render.CreateFrameBuffer(render.GetWidth(), render.GetHeight(), render.gbuffer_config)  
 	
 	if not render.gbuffer:IsValid() then
 		logn("[render] failed to initialize deffered rendering")
@@ -194,8 +195,7 @@ function render.InitializeDeffered()
 	render.deferred_shader = shader
 	render.deferred_screen_quad = screen_quad
 	
-	
-	render.pp_buffer = render.CreateFrameBuffer(render.w, render.h, {
+	render.pp_buffer = render.CreateFrameBuffer(render.GetWidth(), render.GetHeight(), {
 		{
 			name = "diffuse",
 			attach = gl.e.GL_COLOR_ATTACHMENT0,
@@ -294,4 +294,5 @@ if render.deferred_shader then
 	render.InitializeDeffered()
 end
 
-event.AddListener("OnResized", "gbuffer_resize", render.InitializeDeffered)
+event.AddListener("RenderContextInitialized", render.InitializeDeffered)
+event.AddListener("WindowFramebufferResized", "gbuffer_resize", render.InitializeDeffered)

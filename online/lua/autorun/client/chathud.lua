@@ -153,7 +153,7 @@ event.AddListener("PreDrawMenu", "chathud", function()
 	chathud.Draw()
 end)
 
-event.AddListener("OnMouseInput", "chathud", function(button, press)
+event.AddListener("MouseInput", "chathud", function(button, press)
 	chathud.MouseInput(button, press, window.GetMousePos():Unpack())
 end)
 

@@ -44,7 +44,7 @@ local trail_tex = Texture(1, 255):Fill(function(x, y) return 255, 255, 255, y en
     
 local grid_size = 1000 
 
-event.AddListener("OnDraw2D", "wowozela", function(dt)
+event.AddListener("Draw2D", "wowozela", function(dt)
 	local size = window.GetSize()
 	local pos = window.GetMousePos()
 	 

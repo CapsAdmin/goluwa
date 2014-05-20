@@ -47,7 +47,7 @@ function players.Create(uniqueid, is_bot)
 	
 	if SERVER then
 		if is_bot then	
-			if event.Call("OnPlayerConnect", self) ~= false then
+			if event.Call("PlayerConnect", self) ~= false then
 				network.Broadcast(network.CONNECT, uniqueid)
 				event.Call("PlayerSpawned", self)
 				event.BroadcastCall("PlayerSpawned", self)

@@ -94,7 +94,7 @@ function network.HandleTCPMessage(socket, type, a, b, ...)
 			-- store the socket in the player
 			player.socket = socket
 						
-			if event.Call("OnPlayerConnect", player) ~= false then			
+			if event.Call("PlayerConnect", player) ~= false then			
 				-- tell all the clients that he just joined
 				network.Broadcast(type, uniqueid, ...)
 						
@@ -122,7 +122,7 @@ function network.HandleTCPMessage(socket, type, a, b, ...)
 		end
 		
 		if CLIENT then
-			event.Call("OnPlayerConnect", player) 
+			event.Call("PlayerConnect", player) 
 		end
 	end
 	
@@ -174,12 +174,12 @@ function network.HandleTCPMessage(socket, type, a, b, ...)
 	elseif type == network.MESSAGE then
 		if CLIENT then
 			-- the arguments start after type. uniqueid is just used by this library
-			event.Call("OnUserMessage", a, b, ...)
+			event.Call("UserMessage", a, b, ...)
 		end
 		
 		if SERVER then
 			local player = Player(uniqueid)
-			event.Call("OnUserMessage", player, a, b, ...)
+			event.Call("UserMessage", player, a, b, ...)
 		end
 	end	
 end

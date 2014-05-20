@@ -66,13 +66,13 @@ function console.InitializeCurses()
 		if key:find("KEY_") or key:find("CTL_") then					
 			key = ffi.string(key)
 				
-			if event.Call("OnConsoleKeyPressed", key) == false then return end
+			if event.Call("ConsoleKeyInput", key) == false then return end
 			
 			console.HandleKey(key)		
 		elseif byte >= 32 then
 			local char = utf8.char(byte)
 			
-			if event.Call("OnConsoleCharPressed", char) == false then return end
+			if event.Call("ConsoleCharInput", char) == false then return end
 			
 			if char == "\t" then char = "    " end
 					
@@ -86,7 +86,7 @@ function console.InitializeCurses()
 	do -- input extensions
 		local trigger = input.SetupInputEvent("ConsoleKey")
 
-		event.AddListener("OnConsoleKeyPressed", "input", function(key)
+		event.AddListener("ConsoleKeyInput", "input", function(key)
 			local ret = trigger(key, true)
 			
 			-- :(
@@ -97,7 +97,7 @@ function console.InitializeCurses()
 
 		local trigger = input.SetupInputEvent("ConsoleChar")
 
-		event.AddListener("OnConsoleCharPressed", "input", function(char)
+		event.AddListener("ConsoleCharInput", "input", function(char)
 			local ret = trigger(char, true)
 			
 			-- :(
@@ -128,7 +128,6 @@ function console.InitializeCurses()
 
 	curses.attron((2 ^ (8 + 13)) + 8 * 256)
 	curses.scrollok(c.log_window, 1)
-
 		
 	local COLOR_BLACK = 0
 	local COLOR_RED = 1
