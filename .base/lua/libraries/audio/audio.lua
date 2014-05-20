@@ -259,7 +259,7 @@ end
 local function GEN_TEMPLATE(type, ctor, on_remove)
 	local type2 = type:lower()
 
-	local META = utilities.CreateBaseMeta(type2)
+	local META = utilities.CreateBaseMeta("audio_" .. type2)
 
 	local fmt = type2 .. "[%i]"
 	function META:__tostring()
