@@ -1,9 +1,12 @@
+local assimp = require("lj-assimp") -- model decoder
+
+
 local render = (...) or _G.render
 
 local default_texture_format = {
 	mip_map_levels = 4,
-	mag_filter = e.GL_LINEAR,
-	min_filter = e.GL_LINEAR_MIPMAP_LINEAR,
+	mag_filter = "linear",
+	min_filter = "linear_mipmap_linear",
 }
 
 render.model_cache = render.model_cache or {}

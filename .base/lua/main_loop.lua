@@ -6,6 +6,8 @@ local fps_add = 0
 local avg_fps = 1
 local count = 0
 
+local gl = require("lj-opengl") -- OpenGL
+
 local function calc_fps(dt)	
 	local fps = 1/dt
 	

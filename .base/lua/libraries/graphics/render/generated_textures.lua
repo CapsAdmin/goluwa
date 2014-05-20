@@ -35,6 +35,8 @@ function render.GetErrorTexture()
 	return render.error_tex
 end
 
+local freeimage = require("lj-freeimage") -- image decoder
+
 function render.GetLoadingTexture()
 	
 	if not render.loading_texture then

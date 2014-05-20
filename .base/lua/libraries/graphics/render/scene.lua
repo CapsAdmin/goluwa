@@ -1,3 +1,4 @@
+local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
 render.gbuffer_enabled = true
@@ -10,7 +11,7 @@ console.CreateVariable("render_accum", false)
 
 function render.DrawScene(window, dt)
 	render.delta = dt
-	render.Clear(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT)
+	render.Clear(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
 	render.Start(window)	
 		event.Call("PreDisplay", dt)
 		
@@ -48,9 +49,9 @@ function render.DrawScene(window, dt)
 		if console.GetVariable("render_accum") then
 			local blur_amt = 0.5		
 			
-			gl.Accum(e.GL_ACCUM, 1)
-			gl.Accum(e.GL_RETURN, 1-blur_amt)
-			gl.Accum(e.GL_MULT, blur_amt)
+			gl.Accum(gl.e.GL_ACCUM, 1)
+			gl.Accum(gl.e.GL_RETURN, 1-blur_amt)
+			gl.Accum(gl.e.GL_MULT, blur_amt)
 		end
 			
 	render.End()

@@ -1,3 +1,4 @@
+local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
 for k,v in pairs(render) do	

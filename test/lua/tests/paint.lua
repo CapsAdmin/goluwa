@@ -1,9 +1,9 @@
 window.Open()
 
 local fb = render.CreateFrameBuffer(512, 512, {
-	attach = e.GL_COLOR_ATTACHMENT1,
+	attach = "color1",
 	texture_format = {
-		internal_format = e.GL_RGB32F,
+		internal_format = "RGB32F",
 	}
 })
 

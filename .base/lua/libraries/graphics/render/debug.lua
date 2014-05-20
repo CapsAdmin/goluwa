@@ -1,3 +1,4 @@
+local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
 do
@@ -85,8 +86,8 @@ function render.EnableDebug(b)
 	do return end-- this just crashes for some weird reason
 	if gl.DebugMessageCallback then
 		if b then		
-			gl.Enable(e.GL_DEBUG_OUTPUT_ARB)
-			gl.DebugMessageControl(e.GL_DONT_CARE, e.GL_DONT_CARE, e.GL_DONT_CARE, ffi.new("GLuint"), nil, true)
+			gl.Enable(gl.e.GL_DEBUG_OUTPUT_ARB)
+			gl.DebugMessageControl(gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, ffi.new("GLuint"), nil, true)
 			
 			gl.DebugMessageCallback(function(source, type, id, severity, length, message, userdata)
 				source = sources[source]
@@ -97,7 +98,7 @@ function render.EnableDebug(b)
 				render.OnError(source, type, id, severity, message)
 			end, nil)
 		else
-			gl.Disable(e.GL_DEBUG_OUTPUT_ARB)
+			gl.Disable(gl.e.GL_DEBUG_OUTPUT_ARB)
 		end
 	else
 		logn("render.EnableDebug: gl.DebugMessageCallback is not availible")

@@ -1,8 +1,10 @@
+local gl = require("lj-opengl") -- OpenGL
+
 window.Open()
 
 gl.PopMatrix()
 local m = Matrix44()
-gl.MatrixMode(e.GL_MODELVIEW)
+gl.MatrixMode(gl.e.GL_MODELVIEW)
 gl.PushMatrix()
 gl.LoadIdentity()
 
@@ -23,7 +25,7 @@ local function test(lua_func, gl_func, ...)
 	end
 
 	gl_func(unpack(args))
-	gl.GetFloatv(e.GL_MODELVIEW_MATRIX, m.m)
+	gl.GetFloatv(gl.e.GL_MODELVIEW_MATRIX, m.m)
 	
 	local equal = true
 	

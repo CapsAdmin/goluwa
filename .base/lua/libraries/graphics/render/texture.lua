@@ -1,3 +1,5 @@
+local gl = require("lj-opengl") -- OpenGL
+
 local render = (...) or _G.render
 
 render.textures = setmetatable({}, { __mode = 'v' })
@@ -124,25 +126,12 @@ do -- texture object
 		return self
 	end
 	
-	local tex_params = {}
-	for k,v in pairs(e) do
-		if k:find("GL_TEXTURE_") then
-			local friendly = k:match("GL_TEXTURE_(.+)")
-			friendly = friendly:lower()
-			tex_params[friendly] = v
-		end
-	end
-	
-	tex_params.internal_format = nil
-	
 	function META:UpdateFormat()
-		local f = self.format		
+		local f = self.format	
 
-		for k,v in pairs(f) do
-			if tex_params[k] then
-				gl.TexParameterf(f.type, tex_params[k], v)
-			elseif type(k) == "number" then
-				gl.TexParameterf(f.type, k, v)
+		for k,v in pairs(render.GetAvaibleEnums("texture", "parameters")) do
+			if f[k:lower()] then
+				gl.TexParameterf(f.type, v, f[k:lower()])
 			end
 		end
 	end 
@@ -158,8 +147,8 @@ do -- texture object
 		
 		gl.BindTexture(f.type, self.id)			
 	
-			gl.PixelStorei(e.GL_PACK_ALIGNMENT, f.stride)
-			gl.PixelStorei(e.GL_UNPACK_ALIGNMENT, f.stride)
+			gl.PixelStorei(gl.e.GL_PACK_ALIGNMENT, f.stride)
+			gl.PixelStorei(gl.e.GL_UNPACK_ALIGNMENT, f.stride)
 				
 			self:UpdateFormat()
 		
@@ -283,7 +272,7 @@ do -- texture object
 		mesh.pwm_matrix = render.GetPVWMatrix2D
 		
 		local fb = render.CreateFrameBuffer(self.w, self.h, {
-			attach = e.GL_COLOR_ATTACHMENT1,
+			attach = gl.e.GL_COLOR_ATTACHMENT1,
 			texture_format = self.format,
 		})
 			
@@ -326,6 +315,8 @@ do -- texture object
 	function META:IsLoading()
 		return self.loading
 	end
+	
+	local CHECK_FIELD = function(t, str) return render.TranslateStringToEnum("texture", t, str, 5) end
 
 	function render.CreateTexture(width, height, buffer, format)
 		if type(width) == "string" and not buffer and not format and (not height or type(height) == "table") then
@@ -353,10 +344,14 @@ do -- texture object
 				
 		format = format or {}
 		
-		format.type = format.type or e.GL_TEXTURE_2D
-		format.upload_format = format.upload_format or e.GL_BGRA
-		format.internal_format = format.internal_format or e.GL_RGBA8
-		format.format_type = format.format_type or e.GL_UNSIGNED_BYTE
+		for k, v in pairs(format) do
+			format[k] = CHECK_FIELD(k, v) or v
+		end
+		
+		format.type = format.type or gl.e.GL_TEXTURE_2D
+		format.upload_format = format.upload_format or gl.e.GL_BGRA
+		format.internal_format = format.internal_format or gl.e.GL_RGBA8
+		format.format_type = format.format_type or gl.e.GL_UNSIGNED_BYTE
 		format.filter = format.filter ~= nil
 		format.stride = format.stride or 4
 		format.buffer_type = format.buffer_type or "unsigned char"
@@ -364,14 +359,15 @@ do -- texture object
 		format.channel = format.channel or 0
 
 		format.mip_map_levels = math.max(format.mip_map_levels or 3, 3) --ATI doesn't like level under 3
-		format.min_filter = format.min_filter or e.GL_LINEAR
-		format.mag_filter = format.mag_filter or e.GL_LINEAR
-				
-		format.wrap_s = format.wrap_s or e.GL_REPEAT
-		format.wrap_t = format.wrap_t or e.GL_REPEAT
+
+		format.min_filter = CHECK_FIELD("min_filter", format.min_filter) or gl.e.GL_LINEAR
+		format.mag_filter = CHECK_FIELD("mag_filter", format.mag_filter) or gl.e.GL_LINEAR				
 		
-		if format.type == e.GL_TEXTURE_3D then
-			format.wrap_r = format.wrap_r or e.GL_REPEAT
+		format.wrap_s = CHECK_FIELD("wrap", format.wrap_s) or gl.e.GL_REPEAT
+		format.wrap_t = CHECK_FIELD("wrap", format.wrap_t) or gl.e.GL_REPEAT
+		
+		if format.type == gl.e.GL_TEXTURE_3D then
+			format.wrap_r = CHECK_FIELD("wrap", format.wrap_r) or gl.e.GL_REPEAT
 		end
 		
 		-- create a new texture
@@ -392,7 +388,7 @@ do -- texture object
 			self.compressed = true
 		end		
 		
-		self.texture_channel = e.GL_TEXTURE0 + format.channel
+		self.texture_channel = gl.e.GL_TEXTURE0 + format.channel
 		
 		gl.BindTexture(format.type, self.id)
 
@@ -458,7 +454,7 @@ function render.CreateTextureFromPath(path, format)
 	format = format or {}
 	
 	local loading = render.GetLoadingTexture()
-	local tex = Texture(loading.w, loading.h, loading.buffer, format)
+	local tex = render.CreateTexture(loading.w, loading.h, loading.buffer, format)
 	
 	tex.loading = true
 

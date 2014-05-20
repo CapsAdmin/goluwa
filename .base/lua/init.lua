@@ -532,31 +532,6 @@ do -- libraries
 	-- meta
 	include("libraries/extensions/function.lua")
 	include("libraries/null.lua")
-	
-	do -- ffi libraries
-	
-		-- this just puts the enums in the lj-* libraries in our e table
-		local require = function(lib) 
-			lib = _G.require(lib) 
-			
-			if lib.e then 
-				for k,v in pairs(lib.e) do 
-					e[k] = v 
-				end 
-			end 
-			
-			return lib 
-		end
-		
-		assimp = require("lj-assimp") -- model decoder
-		freeimage = require("lj-freeimage") -- image decoder
-		freetype = require("lj-freetype") -- font decoder
-		soundfile = require("lj-libsoundfile") -- sound decoder
-		gl = require("lj-opengl") -- OpenGL
-		vl = require("lj-vtflib") -- HLLib
-		glfw = require("lj-glfw")-- window manager
-		ffmpeg = require("lj-ffmpeg")
-	end
 
 	-- graphics
 	render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
@@ -603,7 +578,7 @@ steamapi.Initialize()
 entities.LoadAllEntities()
 
 addons.AutorunAll()
-timer.clock = glfw.GetTime
+timer.clock = require("lj-glfw").GetTime
 
 console.Exec("autoexec")
 

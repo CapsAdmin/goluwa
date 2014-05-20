@@ -1,3 +1,7 @@
+do return end -- grr
+
+local ffmpeg = require("lj-ffmpeg")
+
 audio.AddDecoder("ffmpeg", function(data, path_hint)
 	local ext = path_hint:match(".+%.(.+)")
 	local decoder, err = ffmpeg.Open(data, {audio_only = true, file_ext = ext})

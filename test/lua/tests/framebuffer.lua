@@ -1,8 +1,8 @@
-gl.logcalls = true
+require("lj-opengl").logcalls = true
 local fb = render.CreateFrameBuffer(512, 512, {
-	attach = e.GL_COLOR_ATTACHMENT0,
+	attach = "color0",
 	texture_format = {
-		internal_format = e.GL_RGB32F,
+		internal_format = gl.e.GL_RGB32F,
 	}
 })
 
@@ -24,4 +24,4 @@ event.AddListener("OnDraw2D", "fb", function()
 	surface.Color(1,1,1,1)
 	surface.DrawRect(128, 128, 128, 128, timer.clock()*100, 64, 64)
 end)                    
-gl.logcalls = false     
+require("lj-opengl").logcalls = false

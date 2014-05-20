@@ -1,3 +1,5 @@
+local ffmpeg = require("lj-ffmpeg")
+
 local path = R"videos/casiopea.webm"
 local decoder = assert(ffmpeg.Open(path))
 

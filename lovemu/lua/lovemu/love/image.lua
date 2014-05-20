@@ -2,7 +2,7 @@ local love=love
 local lovemu=lovemu
 
 local textures = lovemu.textures
-local FILTER = e.GL_NEAREST
+local FILTER = "nearest"
 
 
 love.image={}

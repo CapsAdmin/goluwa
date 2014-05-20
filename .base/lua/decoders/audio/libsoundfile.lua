@@ -1,3 +1,5 @@
+local soundfile = require("lj-libsoundfile") -- sound decoder
+
 audio.AddDecoder("libsoundfile", function(data, path_hint)
 	if type(length) == "number" and type(data) == "cdata" then
 		data = ffi.string(data, length)
@@ -10,7 +12,7 @@ audio.AddDecoder("libsoundfile", function(data, path_hint)
 	file:close()
 
 	local info = ffi.new("SF_INFO[1]")
-	local file = soundfile.Open(name, e.SFM_READ, info)
+	local file = soundfile.Open(name, soundfile.e.SFM_READ, info)
 	info = info[0]
 
 	local err = ffi.string(soundfile.StringError(file))
@@ -26,13 +28,13 @@ audio.AddDecoder("libsoundfile", function(data, path_hint)
 	do
 		local data = ffi.new("SF_FORMAT_INFO[1]")
 		data[0].format = info.format
-		soundfile.Command(nil, e.SFC_GET_FORMAT_INFO, data, ffi.sizeof("SF_FORMAT_INFO"))
+		soundfile.Command(nil, soundfile.e.SFC_GET_FORMAT_INFO, data, ffi.sizeof("SF_FORMAT_INFO"))
 
 		typename = ffi.string(data[0].name)
 		extension = ffi.string(data[0].extension)
 
-		data[0].format = bit.band(info.format , e.SF_FORMAT_SUBMASK)
-		soundfile.Command(nil, e.SFC_GET_FORMAT_INFO, data, ffi.sizeof("SF_FORMAT_INFO"))
+		data[0].format = bit.band(info.format , soundfile.e.SF_FORMAT_SUBMASK)
+		soundfile.Command(nil, soundfile.e.SFC_GET_FORMAT_INFO, data, ffi.sizeof("SF_FORMAT_INFO"))
 		subname = ffi.string(data[0].name)
 	end
 

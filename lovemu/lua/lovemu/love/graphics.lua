@@ -1,3 +1,5 @@
+local gl = require("lj-opengl") -- OpenGL
+
 local love=love
 love.graphics={}
 
@@ -16,8 +18,8 @@ local textures = lovemu.textures
 local function ADD_FILTER(obj)
 	obj.setFilter = function(s, min, mag, anistropy) 
 		
-		textures[s].format.min_filter = min == "linear" and e.GL_LINEAR or e.GL_NEAREST
-		textures[s].format.mag_filter = mag == "linear" and e.GL_LINEAR or e.GL_NEAREST
+		textures[s].format.min_filter = min == "linear" and gl.e.GL_LINEAR or gl.e.GL_NEAREST
+		textures[s].format.mag_filter = mag == "linear" and gl.e.GL_LINEAR or gl.e.GL_NEAREST
 				
 		textures[s]:UpdateFormat()
 		
@@ -166,16 +168,16 @@ do
 	local MODE = "alpha"
 
 	function love.graphics.setBlendMode(mode)
-		gl.AlphaFunc(e.GL_GEQUAL, 0)
+		gl.AlphaFunc(gl.e.GL_GEQUAL, 0)
 		
 		if mode == "alpha" then
-			gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
+			gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
 		elseif mode == "multiplicative" then
-			gl.BlendFunc(e.GL_DST_COLOR, e.GL_ONE_MINUS_SRC_ALPHA)
+			gl.BlendFunc(gl.e.GL_DST_COLOR, gl.e.GL_ONE_MINUS_SRC_ALPHA)
 		elseif mode == "premultiplied" then
-			gl.BlendFunc(e.GL_ONE, e.GL_ONE_MINUS_SRC_ALPHA)
+			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE_MINUS_SRC_ALPHA)
 		else
-			gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE)
+			gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE)
 		end
 		
 		MODE = mode
@@ -192,9 +194,9 @@ do -- points
 
 	function love.graphics.setPointStyle(style)
 		if style == "smooth" then
-			gl.Enable(e.GL_POINT_SMOOTH)
+			gl.Enable(gl.e.GL_POINT_SMOOTH)
 		else
-			gl.Disable(e.GL_POINT_SMOOTH)
+			gl.Disable(gl.e.GL_POINT_SMOOTH)
 		end
 		
 		STYLE = style
@@ -219,8 +221,8 @@ do -- points
 	end
 
 	function love.graphics.point(x,y)
-		gl.Disable(e.GL_TEXTURE_2D)
-		gl.Begin(e.GL_POINTS)
+		gl.Disable(gl.e.GL_TEXTURE_2D)
+		gl.Begin(gl.e.GL_POINTS)
 			gl.Vertex2f(x, y)
 		gl.End()
 	end
@@ -362,9 +364,9 @@ do -- canvas
 		local obj = lovemu.NewObject("Canvas")
 		
 		obj.fb = render.CreateFrameBuffer(w, h, {
-			attach = e.GL_COLOR_ATTACHMENT1,
+			attach = gl.e.GL_COLOR_ATTACHMENT1,
 			texture_format = {
-				internal_format = e.GL_RGB32F,
+				internal_format = gl.e.GL_RGB32F,
 				mag_filter = FILTER,
 				min_filter = FILTER,
 			}
@@ -409,13 +411,13 @@ end
 
 do -- image
 
-	local FILTER = e.GL_LINEAR
+	local FILTER = gl.e.GL_LINEAR
 
 	function love.graphics.setDefaultFilter(filter)
 		if filter == "nearest" then
-			FILTER = e.GL_NEAREST
+			FILTER = gl.e.GL_NEAREST
 		elseif filter=="linear" then
-			FILTER = e.GL_LINEAR
+			FILTER = gl.e.GL_LINEAR
 		end
 	end
 
