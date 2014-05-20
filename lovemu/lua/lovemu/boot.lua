@@ -149,12 +149,12 @@ function lovemu.boot(folder)
 	
 	local id = "lovemu_" .. folder
 	
-	event.AddListener("OnClose", id, function()
-		event.RemoveListener("OnDraw2D", id)
+	event.AddListener("Close", id, function()
+		event.RemoveListener("Draw2D", id)
 		return e.EVENT_DESTROY
 	end)
 	
-	event.AddListener("OnDraw2D", id, function(dt)		
+	event.AddListener("Draw2D", id, function(dt)		
 		love.graphics.clear()
 		lovemu.delta = dt
 		surface.SetWhiteTexture()

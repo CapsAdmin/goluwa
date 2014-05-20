@@ -43,7 +43,7 @@ local function main()
 	local function update(dt)
 		event.UpdateTimers(dt)
 		
-		event.Call("OnUpdate", dt)
+		event.Call("Update", dt)
 	end
 		
 	while true do

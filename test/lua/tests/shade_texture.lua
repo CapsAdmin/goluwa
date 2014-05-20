@@ -48,7 +48,7 @@ end
 blur(Vec2(0,20))   
 -- blur(Vec2(20,0)) -- todo: this just makes it black for some reason
     
-event.AddListener("OnDraw2D", "lol", function()
+event.AddListener("Draw2D", "lol", function()
 	if not tex:IsValid() then return end
 
 	surface.Color(1,1,1,1)

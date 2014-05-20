@@ -12,9 +12,9 @@ local tonumber = tonumber
 
 surface.ft = surface.ft or {}
 local ft = surface.ft
+local create_font_queue = {}
 
-function surface.Initialize()
-		
+function surface.Initialize()		
 	surface.rectmesh = render.CreateMesh2D({
 		{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 		{pos = {0, 1}, uv = {0, 0}, color = {1,1,1,1}},
@@ -83,6 +83,12 @@ function surface.Initialize()
 	surface.SetFont(surface.CreateFont("default", {read_speed = 50}))	
 	
 	surface.ready = true
+	
+	for k,v in pairs(create_font_queue) do
+		local ok, err = pcall(surface.CreateFont, unpack(v))
+		if not ok then logn("queued surface.CreateFont error: ", err) end
+	end
+	create_font_queue = nil
 end
 
 if surface.ready then
@@ -130,9 +136,11 @@ do -- fonts
 		woff = true,
 		truetype = true,
 	}  
-	
+		
 	function surface.CreateFont(name, info)
-		if not ft.ptr then return name end
+		if not ft.ptr then 
+			table.insert(create_font_queue, {name, info})
+		return name end
 		
 		info = info or {}
 
@@ -867,5 +875,6 @@ do -- points
 	end
 end
 
+event.AddListener("RenderContextInitialized", surface.Initialize)
 
 return surface

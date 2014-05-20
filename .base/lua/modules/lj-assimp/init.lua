@@ -6,7 +6,10 @@ ffi.cdef(header)
 
 local lib = ffi.load("assimp")
 
-local assimp = {lib = lib}
+local assimp = {
+	lib = lib,
+	e = enums,
+}
 
 for line in header:gmatch("(.-)\n") do
 	if not line:find("enum") and not line:find("struct") and not line:find("typedef") then

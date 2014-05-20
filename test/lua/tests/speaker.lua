@@ -53,7 +53,7 @@ local function calc_job(id, job, play_next_now)
 	end
 end
 
-event.AddListener("OnUpdate", "queue", function()
+event.AddListener("Update", "queue", function()
 	for id, job in pairs(queue) do
 		calc_job(id, job)
 	end

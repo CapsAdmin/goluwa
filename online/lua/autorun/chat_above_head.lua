@@ -12,10 +12,10 @@ if CLIENT then
 			message.Send("coh", str)
 		end
 		
-		event.Call("OnChatAboveHead", self, str)
+		event.Call("ChatAboveHead", self, str)
 	end
 
-	event.AddListener("OnChatTextChanged", "coh", function(str)
+	event.AddListener("ChatTextChanged", "coh", function(str)
 		message.Send("coh", str)
 		players.GetLocalPlayer():SetChatAboveHead(str)
 	end)

@@ -5,7 +5,7 @@ local font = surface.CreateFont("lol", {
 	size = 50,
 })  
    
-event.AddListener("OnDraw2D", "lol", function()
+event.AddListener("Draw2D", "lol", function()
 	surface.Color(1,1,1,1)
 
 	surface.SetFont(font)

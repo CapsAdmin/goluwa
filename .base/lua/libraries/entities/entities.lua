@@ -4,7 +4,7 @@ entities.active_entities = entities.active_entities or {}
 entities.is_keys = entities.is_keys or {}
 
 function entities.Initialize()
-	event.AddListener("OnDraw3D", "world_draw", function(dt)
+	event.AddListener("Draw3D", "world_draw", function(dt)
 		entities.world_entity:Draw()			
 	end)
 end

@@ -40,7 +40,7 @@ function input.SetupAccessorFunctions(tbl, name, up_id, down_id)
 	end
 end
 
-function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_event)
+function input.CallOnTable(tbl, name, key, press, up_id, down_id)
 	if not tbl then return end
 	if not key then return end
 	
@@ -49,9 +49,7 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_event)
 	
 	tbl[up_id] = tbl[up_id] or {}
 	tbl[down_id] = tbl[down_id] or {}
-		
-	local b
-		
+				
 	if type(key) == "string" then
 		local byte = string.byte(key)		
 		
@@ -66,10 +64,6 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_event)
 			if input.debug then
 				print(name, "key", key, "pressed")
 			end
-		
-			if not skip_event then
-				b = event.Call("On" .. name .. "Input", key, press)
-			end
 			
 			tbl[up_id][key] = nil
 			tbl[down_id][key] = os.clock()
@@ -79,16 +73,10 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id, skip_event)
 				print(name, "key", key, "released")
 			end
 		
-			if not skip_event then
-				b = event.Call("On" .. name .. "Input", key, press)
-			end
-
 			tbl[up_id][key] = os.clock()
 			tbl[down_id][key] = nil
 		end
 	end
-		
-	return b
 end
 
 function input.SetupInputEvent(name)
@@ -101,7 +89,7 @@ function input.SetupInputEvent(name)
 	input.SetupAccessorFunctions(input, name)
 	
 	return function(key, press)
-		return input.CallOnTable(input, name, key, press, up_id, down_id, false) 
+		return input.CallOnTable(input, name, key, press, up_id, down_id) 
 	end
 end
 
@@ -133,7 +121,7 @@ do
 		end
 	end
 
-	event.AddListener("OnKeyInput", "keybind", input.Call, print, math.huge)
+	event.AddListener("KeyInput", "keybind", input.Call, print, math.huge)
 
 	function input.Command(line, key, ...)
 		if key then

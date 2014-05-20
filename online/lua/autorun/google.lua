@@ -21,7 +21,7 @@ if CLIENT then
 end
 
 if SERVER then
-    event.AddListener("OnPlayerChat", "google", function(ply, question)
+    event.AddListener("PlayerChat", "google", function(ply, question)
 		question = question:lower()
 		if question:find("google.+?") then
 			question = question:match("google.-(%a.+)?")

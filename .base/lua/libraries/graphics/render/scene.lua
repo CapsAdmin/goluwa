@@ -1,6 +1,55 @@
 local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
+do -- current window
+	render.current_window = NULL
+
+	local last_w
+	local last_h
+
+	function render.Start(window)
+		window:MakeContextCurrent()
+			
+		render.current_window = window
+		local w, h = window:GetSize():Unpack()
+		render.w = w
+		render.h = h
+		render.SetViewport(0, 0, w, h)
+	end
+
+	function render.End()
+		if render.current_window:IsValid() then
+			render.current_window:SwapBuffers()
+		end
+
+		render.frame = render.frame + 1	
+	end
+
+	function render.GetFrameNumber()
+		return render.frame
+	end
+	
+	function render.GetWidth()
+		if render.current_window:IsValid() then
+			return render.current_window:GetSize().w
+		end
+		
+		return 0
+	end
+
+	function render.GetHeight()
+		if render.current_window:IsValid() then
+			return render.current_window:GetSize().h
+		end
+		
+		return 0
+	end
+	
+	function render.GetScreenSize()
+		return render.GetWidth(), render.GetHeight()
+	end
+end
+
 render.gbuffer_enabled = true
 
 function render.EnableGBuffer(b)
@@ -22,7 +71,7 @@ function render.DrawScene(window, dt)
 			end
 
 			render.Start3D()
-				event.Call("OnDraw3D", dt)
+				event.Call("Draw3D", dt)
 			render.End3D()	
 	
 			if render.gbuffer then
@@ -32,7 +81,7 @@ function render.DrawScene(window, dt)
 		end		
 			
 		render.Start2D()
-			event.Call("OnDraw2D", dt)
+			event.Call("Draw2D", dt)
 			
 			if render.debug then
 				local i = 0

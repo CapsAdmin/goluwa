@@ -1,19 +1,5 @@
 local gl = require("lj-opengl") -- OpenGL
-local glfw = require("lj-glfw") -- Window Manager
 local render = _G.render or {}
-
-local render=render
-
-local event=event
-local gl=gl
-local assert=assert
-local loadstring=loadstring
-local ffi=ffi
-local math = math
-local string = string
-local table = table
-local tostring = tostring
-local tonumber = tonumber
 
 render.top_left = true
 
@@ -23,7 +9,6 @@ local function SETUP_CACHED_UNIFORM(name, func, arg_count)
 	local last_program, __LAST_LOCALS__
 
 	function render.__NAME__(__ARGUMENTS__)
-
 		if 
 			render.current_program == last_program and 
 			__COMPARE__ 
@@ -63,41 +48,53 @@ local function SETUP_CACHED_UNIFORM(name, func, arg_count)
 	assert(loadstring(lua))(func)
 end
 
-function render.Initialize(w, h, window)		
-	check(w, "number")
-	check(h, "number")
-		
-	for path in vfs.Iterate("lua/decoders/image/", nil, true) do
-		include(path)
-	end
-
-	glfw.Init()
-
-	window = window or render.CreateWindow(w, h)
+function render.Initialize()		
 	
+	if not render.context_created then error("a window must exist before the renderer can be initialized", 2) end
+
+	logf("opengl version: %s\n", render.GetVersion())
+	logf("opengl glsl version: %s\n", render.GetShadingLanguageVersion())
+	logf("vendor: %s\n", render.GetVendor())
+	
+	local vendor = render.GetVendor()
+	
+	vfs.Write("info/gpu_vendor", vendor)
+	vfs.Write("info/gl_version", render.GetVersion())
+	
+	if vendor:lower():find("nvidia") then
+		NVIDIA = true
+	elseif vendor:lower():find("ati") or vendor:lower():find("amd") then
+		ATI = true
+		-- AMD = true grr cpus
+	end		
+
+	if WINDOWS and X64 and NVIDIA then
+		system.MessageBox("fatal error!!!!!", "Nvidia on x64 is not supported because for some weird reason it freezes.\nThe next time you launch it will launch the x86 version instead.\nPress OK to relaunch.")
+		system.Restart()
+		return
+	end
+		
 	if render.debug then
 		render.EnableDebug(true)
 	end
-
+	
+	for path in vfs.Iterate("lua/decoders/image/", nil, true) do
+		include(path)
+	end
+	
 	SETUP_CACHED_UNIFORM("Uniform4f", gl.Uniform4f, 5)
 	SETUP_CACHED_UNIFORM("Uniform3f", gl.Uniform3f, 4)
 	SETUP_CACHED_UNIFORM("Uniform2f", gl.Uniform2f, 3)
 	SETUP_CACHED_UNIFORM("Uniform1f", gl.Uniform1f, 2)
 	SETUP_CACHED_UNIFORM("Uniform1i", gl.Uniform1i, 2)
 	SETUP_CACHED_UNIFORM("UniformMatrix4fv", gl.UniformMatrix4fv, 4)
-
-	render.current_window = NULL 
+	
 	render.frame = 0
-	
-	render.w = w
-	render.h = h
-	render.camera.w = w
-	render.camera.h = h
-	
+		
 	gl.Enable(gl.e.GL_BLEND)
 	gl.Enable(gl.e.GL_TEXTURE_2D)
 	gl.Enable(gl.e.GL_SCISSOR_TEST)
-
+	
 	gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
 	gl.Disable(gl.e.GL_DEPTH_TEST)
 	
@@ -110,62 +107,15 @@ function render.Initialize(w, h, window)
 	end
 	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
-	
-	render.InitializeDeffered()
-	
-	if surface then
-		surface.Initialize()
-	end
-	
-	event.Call("RenderContextInitialized")
-		
 	system.SetWindowTitle("OpenGL " .. render.GetVersion(), "glversion")
 	
-	return window
+	event.Delay(function()
+		event.Call("RenderContextInitialized")	
+	end)
 end
 
 function render.Shutdown()	
-	glfw.Terminate()
-end
 
-local last_w
-local last_h
-
-function render.Start(window)
-	glfw.MakeContextCurrent(window.__ptr) 
-		
-	render.current_window = window
-	local w, h = window:GetSize():Unpack()
-	render.w = w
-	render.h = h
-	render.SetViewport(0, 0, w, h)
-	
-	if w ~= last_w or h ~= last_h then
-		event.Call("OnResized", window, w, h)
-		last_w = w
-		last_h = h
-	end
-end
-
-function render.End()
-
-	if render.current_window:IsValid() then
-		glfw.SwapBuffers(render.current_window.__ptr)
-	end
-
-	render.frame = render.frame + 1	
-end
-
-function render.GetFrameNumber()
-	return render.frame
-end
-
-function render.GetScreenSize()
-	if render.current_window:IsValid() then
-		return render.current_window:GetSize():Unpack()
-	end
-	
-	return 0, 0
 end
 
 function render.GetVersion()		
@@ -275,7 +225,7 @@ include("model.lua", render)
 include("super_shader.lua", render)
 include("mesh_util.lua", render)
 
-include("window.lua", render)
+include("glfw_window.lua", render)
 
 include("cvars.lua", render)
 include("globals.lua", render)

@@ -577,7 +577,7 @@ end
 
 console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
 
-event.AddListener("OnUpdate", "sockets", sockets.Update)
+event.AddListener("Update", "sockets", sockets.Update)
 event.AddListener("LuaClose", "sockets", sockets.Panic)
 
 addons.LoadAll()
@@ -623,7 +623,7 @@ if CREATED_ENV then
 			logn("compile error:", client, msg)
 		end
 		
-		event.Delay(0, function() event.Call("OnConsoleEnvReceive", line) end)
+		event.Delay(0, function() event.Call("ConsoleEnvReceive", line) end)
 	end 
 end
 

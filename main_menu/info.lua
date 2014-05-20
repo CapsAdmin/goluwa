@@ -1,4 +1,4 @@
 return {
 	startup = "menu.lua",
-	event = "WindowOpened",
+	event = "RenderContextInitialized",
 }

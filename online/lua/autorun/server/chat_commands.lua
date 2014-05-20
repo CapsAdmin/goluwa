@@ -36,7 +36,7 @@ console.AddCommand("t", function(line, from, to, str)
 	end)
 end)
 
-event.AddListener("OnPlayerChat", "chat_commands", function(ply, txt) 
+event.AddListener("PlayerChat", "chat_commands", function(ply, txt) 
 	local cmd, symbol = console.IsValidCommand(txt)
 	if cmd and symbol ~= "" then
 		console.SetPlayer(ply)

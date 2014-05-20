@@ -62,7 +62,7 @@ function love.mouse.isDown(key)
 	return input.IsMouseDown(mouse_keymap[key])
 end
 
-event.AddListener("OnMouseInput","lovemu_mouse",function(key,press)
+event.AddListener("MouseInput","lovemu_mouse",function(key,press)
 	local x, y = window.GetMousePos():Unpack()
 
 	key = mouse_keymap[key]

@@ -1,3 +1,4 @@
+do return end
 local ffmpeg = require("lj-ffmpeg")
 
 render.AddTextureDecoder("ffmpeg", function(data, path_hint)

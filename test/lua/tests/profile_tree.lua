@@ -35,7 +35,7 @@ local function draw_branch(node)
 	end
 end
 
-event.AddListener("OnDraw2D", "lol", function()
+event.AddListener("Draw2D", "lol", function()
 	if wait(1) then		
 		local top = profiler.GetBenchmark()
 		for k, v in pairs(top) do	

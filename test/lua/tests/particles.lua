@@ -78,7 +78,7 @@ end
 
 render.SetClearColor(0,0,0,0)
 
-event.AddListener("OnDraw2D", "sand", function(dt)
+event.AddListener("Draw2D", "sand", function(dt)
 	dt = dt  * 25
 	
 	render.SetBlendMode("additive")

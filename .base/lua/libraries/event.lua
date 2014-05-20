@@ -10,18 +10,29 @@ event.destroy_tag = e.EVENT_DESTROY
 event.profiler_enabled = false
 
 function event.AddListener(a, b, c, d, e)
-	local type_, unique, func, on_error, priority, self_arg
+	local type_, unique, func, on_error, priority, self_arg, remove_after_one_call, self_arg_with_callback
 
 	if type(b) == "table" and type(a) == "string" then
 		type_ = a
-		func = b[a]
+		if type(c) == "function" then
+			self_arg_with_callback = true
+			func = c
+		else
+			func = b[a]
+		end
 		self_arg = b
 	elseif type(a) == "string" then
 		type_ = a
 		func = c
-	end
+	end	
 	
-	unique = b
+	if type_ and not func and type(b) == "function" then
+		func = b
+		unique = tostring(func)
+		remove_after_one_call = true
+	else
+		unique = b
+	end
 	
 	if not unique then
 		local info = debug.getinfo(3)
@@ -61,9 +72,11 @@ function event.AddListener(a, b, c, d, e)
 			priority = priority or 0,
 			unique = unique,
 			self_arg = self_arg,
+			remove_after_one_call = remove_after_one_call,
+			self_arg_with_callback = self_arg_with_callback,
 		}
 	)
-	
+		
 	event.SortByPriority()
 end
 
@@ -143,7 +156,11 @@ function event.Call(type, ...)
 			
 			if data.self_arg then
 				if data.self_arg:IsValid() then
-					status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or system.OnError, data.self_arg, ...)
+					if data.self_arg_with_callback then
+						status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or system.OnError, ...)
+					else
+						status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or system.OnError, data.self_arg, ...)
+					end
 				else
 					event.RemoveListener(type, data.unique)
 					event.active[type][key] = nil
@@ -155,7 +172,7 @@ function event.Call(type, ...)
 				status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or system.OnError, ...)
 			end
 			
-			if a == event.destroy_tag then
+			if a == event.destroy_tag or data.remove_after_one_call then
 				event.RemoveListener(type, data.unique)
 			else
 				if status == false then		

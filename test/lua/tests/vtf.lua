@@ -559,7 +559,7 @@ for k,v in pairs(vtf.textures) do
 	}
 end  
  
-function goluwa.OnDraw2D()
+function goluwa.Draw2D()
 	local i = math.clamp(math.ceil(os.clock()*10%#vtf.textures),1, #vtf.textures)
 	local tex = vtf.textures[i].tex
 	

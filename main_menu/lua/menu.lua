@@ -1,3 +1,5 @@
+surface.CreateFont("impact", {path = "Rosario", size = 20})
+
 menu = menu or {}
 menu.buttons = menu.buttons or {}
 
@@ -210,11 +212,9 @@ function menu.MakeButtons()
 	menu.AddButton("Exit", function() os.exit() end)
 	
 	-- the world has to be setup..hmm
-	event.AddListener("OnWorldPanelLayout", "menu_resize", menu.SetupButtons)
+	event.AddListener("WorldPanelLayout", "menu_resize", menu.SetupButtons)
 end
  
-surface.CreateFont("impact", {path = "Rosario", size = 20})   
-
 function menu.AddButton(name, func)
 
 	local pnl = aahh.Create("label")

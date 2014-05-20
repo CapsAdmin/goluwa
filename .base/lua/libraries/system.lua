@@ -640,7 +640,7 @@ function system.OnError(msg, ...)
 	suppress = true
 	if LINUX and msg == "interrupted!\n" then return end
 	
-	if event.Call("OnLuaError", msg) == false then return end
+	if event.Call("LuaError", msg) == false then return end
 	
 	if msg:find("stack overflow") then
 		logn(msg)
@@ -893,7 +893,7 @@ function system.CreateConsole(title)
 		
 		ENV_SOCKET.OnClose = function() exit() end
 
-		event.AddListener("OnConsoleEnvReceive", TITLE, function()
+		event.AddListener("ConsoleEnvReceive", TITLE, function()
 			::again::
 			
 			local str = io.read()
@@ -916,7 +916,7 @@ function system.CreateConsole(title)
 		end)
 	]])	
 		
-	event.AddListener("OnPrint", title .. "_console_output", function(...)
+	event.AddListener("Print", title .. "_console_output", function(...)
 		local line = tostring_args(...)
 		env:Send(string.format("logn(%q)", line))
 	end)
@@ -925,7 +925,7 @@ function system.CreateConsole(title)
 	function env:Remove()
 		self:Send("os.exit()")
 		utilities.SafeRemove(self.socket)
-		event.RemoveListener("OnPrint", title .. "_console_output")
+		event.RemoveListener("Print", title .. "_console_output")
 	end
 	
 	
