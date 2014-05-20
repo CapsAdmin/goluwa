@@ -1,8 +1,6 @@
 local al = require("lj-openal.al")
 local alc = require("lj-openal.alc")
 
-print(al.e, alc.e, "!!!!!!!!!")
-
 local audio = _G.audio or {}
 
 al.debug = true
