@@ -171,6 +171,10 @@ function render.GetVersion()
 	return ffi.string(gl.GetString(gl.e.GL_VERSION))
 end
 
+function render.GetShadingLanguageVersion()		
+	return ffi.string(gl.GetString(gl.e.GL_SHADING_LANGUAGE_VERSION))
+end
+
 function render.GetVendor()		
 	return ffi.string(gl.GetString(gl.e.GL_VENDOR))
 end
