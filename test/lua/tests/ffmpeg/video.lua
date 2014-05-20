@@ -9,7 +9,7 @@ local sound = audio.CreateSource()
 sound:SetBufferFormat(e.AL_FORMAT_STEREO16)
 sound:SetBufferCount(4)
  
-timer.Create("decoder_test", 0, 1/30, function()
+event.CreateTimer("decoder_test", 0, 1/30, function()
 	local audio_data, texture_buffer = decoder:Read(4096*4)
 	
 	for key, data in ipairs(audio_data) do

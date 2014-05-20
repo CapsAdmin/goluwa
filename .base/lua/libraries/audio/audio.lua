@@ -387,7 +387,7 @@ do -- source
 					self.ready = true
 
 					-- in case it's instantly loaded and OnLoad is defined the same frame
-					timer.Delay(0, function() if self:IsValid() and self.OnLoad then self:OnLoad(info) end end)
+					event.Delay(0, function() if self:IsValid() and self.OnLoad then self:OnLoad(info) end end)
 				end
 			end, 20)
 		end
@@ -691,7 +691,7 @@ do -- microphone
 		-- fill it with some silence first so we can pop safely (???)
 		source:PushBuffer(audio.CreateBuffer(ffi.new("ALshort[4]"), 4))
 		
-		timer.Thinker(function()
+		event.CreateThinker(function()
 			if not self:IsValid() or self.stopped then return true end
 
 			if self:IsFull() then

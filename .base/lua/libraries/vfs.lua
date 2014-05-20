@@ -720,7 +720,7 @@ do -- async reading
 			if file then
 				local content = {}
 				mbps = mbps / 2
-				timer.Thinker(function()
+				event.CreateThinker(function()
 					-- in case mbps is higher than the file size
 					for i = 1, 2 do
 						local str = file:read(1048576 * mbps)
@@ -852,7 +852,7 @@ do -- file monitoring
 		
 		if last then
 			last = last.modification
-			timer.Create(file_path, 0, 0, function()
+			event.CreateTimer(file_path, 0, 0, function()
 				local time = vfs.GetAttributes(file_path)
 				if time then
 					time = time.modification
@@ -876,7 +876,7 @@ do -- file monitoring
 		target = target or source
 		
 		vfs.MonitorFile(source, function()
-			timer.Delay(0, function()
+			event.Delay(0, function()
 				dofile(target)
 			end)
 		end)
@@ -888,7 +888,7 @@ do -- file monitoring
 			return
 		end
 
-		timer.Create("vfs_monitor_everything", 0.1, 0, function()
+		event.CreateTimer("vfs_monitor_everything", 0.1, 0, function()
 			for path, data in pairs(vfs.GetLoadedLuaFiles()) do
 				local info = lfs.attributes(path)
 				

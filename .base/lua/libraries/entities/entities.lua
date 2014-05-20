@@ -69,7 +69,7 @@ function entities.LoadAllEntities()
 	
 	entities.world_entity = entities.world_entity or Entity("model")
 	
-	timer.Create("entity_gc", 0.1, 0, function()
+	event.CreateTimer("entity_gc", 0.1, 0, function()
 		for k, v in pairs(entities.remove_these) do
 			v:Remove(true)
 			entities.remove_these[k] = nil

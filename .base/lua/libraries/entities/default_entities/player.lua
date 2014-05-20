@@ -92,7 +92,7 @@ do -- ping pong
 		end)
 	end		
 	
-	timer.Create("ping_pong_players", 1, 0, function()
+	event.CreateTimer("ping_pong_players", 1, 0, function()
 		if not network.IsStarted() then return end
 		
 		

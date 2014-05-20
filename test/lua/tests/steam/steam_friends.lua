@@ -10,7 +10,7 @@ event.AddListener("SteamFriendsMessage", "steam_friends", function(sender_steam_
 	end
 	
 	subject = sender_steam_id
-	timer.Delay(0.1, function() subject = nil end)
+	event.Delay(0.1, function() subject = nil end)
 	
 	if ply:IsValid() then
 		if SERVER then
