@@ -126,6 +126,8 @@ do -- window meta
 		
 		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MAJOR, 4)
 		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MINOR, 3)
+		--glfw.WindowHint(glfw.e.GLFW_CLIENT_API, glfw.e.GLFW_OPENGL_ES_API)
+		
 		glfw.WindowHint(glfw.e.GLFW_SAMPLES, 4)
 
 		local ptr = glfw.CreateWindow(width, height, title, nil, nil)
@@ -135,6 +137,7 @@ do -- window meta
 
 		logn("glfw version: ", ffi.string(glfw.GetVersionString()))
 		logf("opengl version: %s\n", render.GetVersion())
+		logf("opengl glsl version: %s\n", render.GetShadingLanguageVersion())
 		logf("vendor: %s\n", render.GetVendor())
 		
 		local vendor = render.GetVendor()
