@@ -556,8 +556,6 @@ do -- libraries
 		gl = require("lj-opengl") -- OpenGL
 		vl = require("lj-vtflib") -- HLLib
 		glfw = require("lj-glfw")-- window manager
-		al = require("lj-openal.al") -- OpenAL
-		alc = require("lj-openal.alc") -- OpenAL
 		ffmpeg = require("lj-ffmpeg")
 	end
 
