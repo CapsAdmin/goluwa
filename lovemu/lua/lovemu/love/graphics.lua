@@ -164,67 +164,40 @@ do -- background
 	end
 end
 
-do
-	local MODE = "alpha"
-
+do	
 	function love.graphics.setBlendMode(mode)
-		gl.AlphaFunc(gl.e.GL_GEQUAL, 0)
-		
-		if mode == "alpha" then
-			gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
-		elseif mode == "multiplicative" then
-			gl.BlendFunc(gl.e.GL_DST_COLOR, gl.e.GL_ONE_MINUS_SRC_ALPHA)
-		elseif mode == "premultiplied" then
-			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE_MINUS_SRC_ALPHA)
-		else
-			gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE)
-		end
-		
-		MODE = mode
+		render.SetBlendMode(mode)
 	end
 	
 	function love.graphics.getBlendMode()
-		return MODE
+		return render.GetBlendMode()
 	end
 end
 
 do -- points
-	local SIZE = 1
-	local STYLE = "smooth"
-
 	function love.graphics.setPointStyle(style)
-		if style == "smooth" then
-			gl.Enable(gl.e.GL_POINT_SMOOTH)
-		else
-			gl.Disable(gl.e.GL_POINT_SMOOTH)
-		end
-		
-		STYLE = style
+		surface.SetPointStyle(style)
 	end
 	
 	function love.graphics.getPointStyle()
-		return STYLE
+		return surface.GetPointStyle()
 	end
 	
 	function love.graphics.setPointSize(size)
-		gl.PointSize(size)
-		SIZE = size
+		surface.SetPointSize(size)
 	end
 	
 	function love.graphics.getPointSize()
-		return SIZE
+		return surface.GetPointSize()
 	end
 	
 	function love.graphics.setPoint(size, style)
-		love.graphics.setPointSize(size)
-		love.graphics.setPointStyle(style)
+		surface.SetPointSize(size)
+		surface.SetPointStyle(style)
 	end
 
-	function love.graphics.point(x,y)
-		gl.Disable(gl.e.GL_TEXTURE_2D)
-		gl.Begin(gl.e.GL_POINTS)
-			gl.Vertex2f(x, y)
-		gl.End()
+	function love.graphics.point(x, y)
+		surface.DrawPoint(x, y)
 	end
 end
 
@@ -410,15 +383,10 @@ do -- canvas
 end
 
 do -- image
-
-	local FILTER = gl.e.GL_LINEAR
+	local FILTER = "linear"
 
 	function love.graphics.setDefaultFilter(filter)
-		if filter == "nearest" then
-			FILTER = gl.e.GL_NEAREST
-		elseif filter=="linear" then
-			FILTER = gl.e.GL_LINEAR
-		end
+		FILTER = filter
 	end
 
 	love.graphics.setDefaultImageFilter = setDefaultFilter
@@ -429,7 +397,7 @@ do -- image
 		local obj = lovemu.NewObject("Image")
 		
 		textures[obj] = Texture(path, {
-			mag_filter = FILTER,
+			mag_filter = filter,
 			min_filter = FILTER,
 		}) 
 				
@@ -607,28 +575,12 @@ function love.graphics.getModes() --partial
 end
 
 do
-	local X, Y, W, H = 0,0,0,0
-	
 	function love.graphics.setScissor(x,y,w,h)
-		--render.ScissorRect(x,y,w,h)  
-		--surface.StartClipping(x, y, w, h)
-		local sw, sh = surface.GetScreenSize()
-		
-		x=x or 0
-		y=y or 0
-		w=w or sw
-		h=h or sh
-		
-		gl.Scissor(x, sh - (y + h), w, h)
-		
-		X = x
-		Y = y
-		W = w
-		H = h
+		render.SetScissor(x, y, w, h)
 	end
 
 	function love.graphics.getScissor()
-		return X,Y,W,H
+		return render.GetScissor()
 	end
 end
 

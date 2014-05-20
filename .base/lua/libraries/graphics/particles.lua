@@ -133,7 +133,7 @@ function EMITTER:Think(dt)
 end  
   
 function EMITTER:Draw()
-	render.SetAdditive(self.Additive)
+	render.SetBlendMode(self.Additive and "additive" or alpha)
 	
 	if self.Mode2D then
 		for i = 1, #self.particles do
@@ -190,7 +190,7 @@ function EMITTER:Draw()
 		-- 3d here	
 	end
 	
-	render.SetAdditive(false)
+	render.SetBlendMode("alpha")
 end  
 
 function EMITTER:GetParticles()
