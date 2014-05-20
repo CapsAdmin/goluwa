@@ -69,7 +69,7 @@ function ffmpeg.lua_table_to_dictionary(tbl)
 	if not tbl then return dict[0] end
 	
 	for key, val in pairs(tbl) do
-		ffmpeg.av_dict_set(dict, tostring(key), tostring(val), 0)
+		ffmpeg.av_dict_set(dict, tostring(key), tostring(tonumber(val)), 0)
 	end
 	
 	return dict[0]
@@ -84,7 +84,8 @@ function ffmpeg.lua_dictionary_to_table(dict)
 	while true do 
 		entry = ffmpeg.av_dict_get(dict, "", entry, enums.AV_DICT_IGNORE_SUFFIX)
 		if entry == nil then break end
-		tbl[ffi.string(entry.key)] = ffi.string(entry.value)
+		local str = ffi.string(entry.value)
+		tbl[ffi.string(entry.key)] = tonumber(str) or str
 	end
 	
 	return tbl
@@ -156,24 +157,27 @@ do
 			
 			local converter = ffi.new("SwrContext*[1]", ffmpeg.swr_alloc())
 			
-			-- input config
-			local in_channel_layout = codec_context.channel_layout == 0 and ffmpeg.av_get_channel_layout(channels == 1 and "mono" or "stereo" ) or codec_context.channel_layout
-			ffmpeg.av_opt_set_int(converter[0], "in_channel_layout", in_channel_layout, 0 );
-			ffmpeg.av_opt_set_int(converter[0], "in_channels", codec_context.channels, 0)
+			print(ffmpeg.av_opt_set(converter[0], "swr_flags", "res", 0))
+
+			-- input config			
+			local in_channel_layout = ffmpeg.av_get_channel_layout("mono")
+			ffmpeg.av_opt_set_int(converter[0], "in_channel_layout", codec_context.channel_layout, 0 );
+			ffmpeg.av_opt_set_sample_fmt(converter[0], "in_sample_fmt", ffi.C.AV_SAMPLE_FMT_NONE, 0)
 			ffmpeg.av_opt_set_int(converter[0], "in_sample_rate", codec_context.sample_rate, 0)
-			ffmpeg.av_opt_set_sample_fmt(converter[0], "in_sample_fmt", codec_context.sample_fmt, 0)
 			
 			-- output config
 			local out_channel_layout = ffmpeg.av_get_channel_layout(channels == 1 and "mono" or "stereo")
 			ffmpeg.av_opt_set_int(converter[0], "out_channel_layout", out_channel_layout, 0)
-			ffmpeg.av_opt_set_int(converter[0], "out_channels", channels, 0)
-			ffmpeg.av_opt_set_int(converter[0], "out_sample_rate", sample_rate, 0)
 			ffmpeg.av_opt_set_sample_fmt(converter[0], "out_sample_fmt", format, 0)
+			ffmpeg.av_opt_set_int(converter[0], "out_sample_rate", sample_rate, 0)
+			
+			-- dunno what this is, i just took it from the source for swr_alloc_set_opts
+			--ffmpeg.av_opt_set_int(converter[0], "uch", 0, 0)
 					
-			if flags then
-				ffmpeg.av_opt_set_int(converter[0], "swr_flags", flags, 0);
+			if config.flags then
+				ffmpeg.av_opt_set_int(converter[0], "swr_flags", config.flags, 0);
 			end
-						
+									
 			if check_error(ffmpeg.swr_init(converter[0])) < 0 then
 				
 				if ffmpeg.debug then
@@ -193,6 +197,8 @@ do
 				return nil, "failed to initialize the audio converter (swr): " .. get_last_error()
 			end
 			
+			print("wow!!!")			
+						
 			config.audio_format = format
 			config.sample_rate = sample_rate
 			config.channels = channels
@@ -280,9 +286,10 @@ do
 
 	local function insert_audio_data(self, stream)
 		-- convert the audio
+
 		local length = ffmpeg.av_samples_get_buffer_size(
-			self.frame.linesize, 
-			stream.codec_context.channels, 
+			nil, 
+			self.frame.channels, 
 			self.frame.nb_samples, 
 			self.config.audio_format, 
 			1
@@ -290,20 +297,19 @@ do
 		
 		if check_error(length) <= 0 then return nil, "failed to get sample buffer size: " .. get_last_error() end
 		
-		local buffer = ffi.new("uint8_t *[1]", ffi.new("uint8_t[?]", length))
+		local buffer = ffi.new("uint8_t[?]", length)
+		local box = ffi.new("uint8_t *[1]", buffer)
 		
 		if check_error(ffmpeg.swr_convert(
-			stream.converter[0], 
-			
-			buffer, 
-			length,
-			
+			stream.converter[0], 			
+			box, 
+			self.frame.nb_samples,			
 			ffi.cast("const uint8_t **", self.frame.data), 
 			self.frame.nb_samples
 		)) < 0 then
 			return nil, "failed to resample audio frame: " .. get_last_error()
 		end
-		
+
 		-- get the the timestamp for this frame
 		local clock							
 		if self.packet[0].pts ~= enums.AV_NOPTS_VALUE then
@@ -316,13 +322,9 @@ do
 			sample_time = sample_time / ffmpeg.av_get_bytes_per_sample(self.config.audio_format);
 			stream.clock = (stream.clock or 0) + sample_time
 		end
-		
-		if tostring(ffi.typeof(buffer)) ~= "ctype<unsigned char *[1]>" then
-			error("NO WAY MAN: " .. tostring(ffi.typeof(buffer)) .. " SHOULD BE ctype<unsigned char *[1]>")
-		end
-		
+				
 		table.insert(stream.queue, {
-			buffer = buffer[0],
+			buffer = buffer,
 			length = length,
 			time_stamp = clock,
 		})
@@ -612,6 +614,8 @@ do
 			os.remove(file_name)
 			return nil, "unable to find stream info: " .. get_last_error()
 		end
+		
+		--ffmpeg.logcalls = true
 		
 		local info = {}
 		
