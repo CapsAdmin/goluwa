@@ -10,7 +10,7 @@ function PANEL:Initialize()
 	self.lbl:SetIgnoreMouse(true)
 	self.lbl:SetAlignNormal(e.ALIGN_CENTERLEFT)
 		
-	self:SetCursor(e.IDC_HAND)
+	self:SetCursor("hand")
 end
 
 function PANEL:GetLabel()

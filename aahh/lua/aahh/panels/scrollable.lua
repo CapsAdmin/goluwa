@@ -74,7 +74,7 @@ function PANEL:SetYScroll(b)
 		
 		local pnl = aahh.Create("button", self)
 		
-		pnl:SetCursor(e.IDC_ARROW)
+		pnl:SetCursor("arrow")
 		pnl:SetTrapInsideParent(false)
 		pnl:SetObeyMargin(false)
 					
@@ -108,7 +108,7 @@ function PANEL:SetXScroll(b)
 		
 		local pnl = aahh.Create("button", self)
 		
-		pnl:SetCursor(e.IDC_ARROW)
+		pnl:SetCursor("arrow")
 		pnl:SetTrapInsideParent(false)
 		pnl:SetObeyMargin(false)
 					

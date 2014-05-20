@@ -72,16 +72,16 @@ do -- window meta
 	
 	function META:ShowCursor(b)
 		if b then
-			glfw.SetInputMode(self.__ptr, e.GLFW_CURSOR, e.GLFW_CURSOR_NORMAL)
+			glfw.SetInputMode(self.__ptr, glfw.e.GLFW_CURSOR, glfw.e.GLFW_CURSOR_NORMAL)
 		else
-			glfw.SetInputMode(self.__ptr, e.GLFW_CURSOR, e.GLFW_CURSOR_HIDDEN)
+			glfw.SetInputMode(self.__ptr, glfw.e.GLFW_CURSOR, glfw.e.GLFW_CURSOR_HIDDEN)
 		end
 	end	
 
 	function META:SetMouseTrapped(b)
 		self.mouse_trapped = b
 		
-		glfw.SetInputMode(self.__ptr, e.GLFW_CURSOR, b and e.GLFW_CURSOR_DISABLED or e.GLFW_CURSOR_NORMAL)
+		glfw.SetInputMode(self.__ptr, glfw.e.GLFW_CURSOR, b and glfw.e.GLFW_CURSOR_DISABLED or glfw.e.GLFW_CURSOR_NORMAL)
 	end
 
 	function META:GetMouseScrollDelta()
@@ -124,9 +124,9 @@ do -- window meta
 		height = height or 600
 		title = title or ""
 		
-		--glfw.WindowHint(e.GLFW_CONTEXT_VERSION_MAJOR, 4)
-		--glfw.WindowHint(e.GLFW_CONTEXT_VERSION_MINOR, 3)
-		glfw.WindowHint(e.GLFW_SAMPLES, 4)
+		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MAJOR, 4)
+		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MINOR, 3)
+		glfw.WindowHint(glfw.e.GLFW_SAMPLES, 4)
 
 		local ptr = glfw.CreateWindow(width, height, title, nil, nil)
 		glfw.MakeContextCurrent(ptr)
@@ -204,10 +204,10 @@ do -- window meta
 					end)					
 				elseif nice == "OnKey" then
 					func(ptr, function(ptr, key, scancode, action, mods)
-						event.Call("OnKeyInputRepeat", glfw.KeyToString(key), action == e.GLFW_PRESS or action == e.GLFW_REPEAT)
+						event.Call("OnKeyInputRepeat", glfw.KeyToString(key), action == glfw.e.GLFW_PRESS or action == glfw.e.GLFW_REPEAT)
 						
-						if action ~= e.GLFW_REPEAT then 
-							local key, press = glfw.KeyToString(key), action == e.GLFW_PRESS
+						if action ~= glfw.e.GLFW_REPEAT then 
+							local key, press = glfw.KeyToString(key), action == glfw.e.GLFW_PRESS
 							if not self[nice] or self[nice](key, press) ~= false then
 								key_trigger(key, press)
 							end
@@ -215,7 +215,7 @@ do -- window meta
 					end)
 				elseif nice == "OnMouseButton" then
 					func(ptr, function(ptr, button, action, mods)
-						local button, press = glfw.MouseToString(button), action == e.GLFW_PRESS
+						local button, press = glfw.MouseToString(button), action == glfw.e.GLFW_PRESS
 						if not self[nice] or self[nice](key, press) ~= false then
 							mouse_trigger(button, press)
 						end

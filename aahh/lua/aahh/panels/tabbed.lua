@@ -15,7 +15,7 @@ do -- button
 		self.img:SetTexture(Texture("textures/gui/heart.png"))
 		self.img:SetIgnoreMouse(true)
 
-		self:SetCursor(e.IDC_HAND)
+		self:SetCursor("hand")
 	end
 
 	function PANEL:GetLabel()

@@ -20,10 +20,6 @@ for line in header:gmatch("(.-)\n") do
 	end
 end
 
-for key, val in pairs(enums) do
-	e[key] = val
-end
-
 do
 	local reverse_enums = {}
 
@@ -54,7 +50,7 @@ end
 do
 	local mousebuttons = {}
 
-	for k,v in pairs(e) do
+	for k,v in pairs(enums) do
 		if k:sub(0, 10) == "GLFW_MOUSE" then
 			mousebuttons[v] = k:lower():sub(12)
 		end

@@ -38,7 +38,7 @@ function aahh.GetWorld()
 			event.Call("OnWorldPanelLayout")
 		end
 		
-		WORLD:SetCursor(e.IDC_ARROW)
+		WORLD:SetCursor("arrow")
 		
 		aahh.World = WORLD
 	end
