@@ -1,8 +1,8 @@
 local syntax_process
 
 do       
-	local lex_setup = require("langtoolkit.lexer")
-	local reader = require("langtoolkit.reader")
+	local lex_setup = require("luajit-lang-toolkit.lexer")
+	local reader = require("luajit-lang-toolkit.reader")
 	 
 	local colors = {
 		default = Color(255, 255, 255),

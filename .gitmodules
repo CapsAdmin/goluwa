@@ -13,3 +13,6 @@
 [submodule ".base/lua/modules/strung"]
 	path = .base/lua/modules/strung
 	url = https://github.com/pygy/strung.lua
+[submodule ".base/lua/modules/luajit-lang-toolkit"]
+	path = .base/lua/modules/luajit-lang-toolkit
+	url = https://github.com/franko/luajit-lang-toolkit
