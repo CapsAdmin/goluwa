@@ -1,15 +1,41 @@
 local timer = _G.timer or {} 
 
-timer.clock = timer.clock or os.clock
-timer.GetTime = timer.clock
-timer.total_time = 0
+do -- frame time
+	local frame_time = 0.1
 
-function timer.GetFrameTime()
-	return timer.frame_time or 0.1
+	function timer.GetFrameTime()
+		return frame_time
+	end
+
+	-- used internally in main_loop.lua
+	function timer.SetFrameTime(dt)
+		frame_time = dt
+	end
 end
 
-function timer.GetTotalTime()
-	return timer.total_time
+do -- elapsed time (avanved from frame time)
+	local elapsed_time = 0
+
+	function timer.GetElapsedTime()
+		return elapsed_time
+	end
+
+	-- used internally in main_loop.lua
+	function timer.SetElapsedTime(num)
+		elapsed_time = num
+	end
+end
+
+do -- system time (independent from elapsed_time)
+	local high_precision_clock = os.clock
+	
+	function timer.SetSystemTimeClock(func)
+		high_precision_clock = func
+	end
+		
+	function timer.GetSystemTime()
+		return high_precision_clock()
+	end
 end
 
 return timer

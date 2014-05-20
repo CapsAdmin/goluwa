@@ -173,7 +173,7 @@ function render.InitializeDeffered()
 	shader.pvm_matrix = render.GetPVWMatrix2D
 	shader.cam_pos = function() return render.GetCamPos() end
 	shader.cam_vec = function() return render.GetCamAng():GetRad():GetForward() end
-	shader.time = function() return tonumber(timer.clock()) end
+	shader.time = function() return tonumber(timer.GetSystemTime()) end
 	
 	shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
 	shader.tex_position = render.gbuffer:GetTexture("position") 

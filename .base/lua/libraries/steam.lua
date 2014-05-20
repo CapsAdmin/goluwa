@@ -486,9 +486,9 @@ do -- server query
 		check(port, "number")
 		
 		callback = callback or logn
-		local start = timer.clock()
+		local start = timer.GetSystemTime()
 		query_server(ip, port, queries.ping, function()
-			callback(timer.clock() - start)
+			callback(timer.GetSystemTime() - start)
 		end)
 	end
 end

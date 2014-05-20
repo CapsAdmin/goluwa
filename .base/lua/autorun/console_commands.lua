@@ -76,7 +76,7 @@ console.AddCommand("debug", function(line, lib)
 end)
 
 console.AddCommand("profile", function(line, time, ptype)
-	profiler.SetClockFunction(timer.clock)
+	profiler.SetClockFunction(timer.GetSystemTime)
 	profiler.SetReadFileFunction(vfs.Read)
 
 	time = tonumber(time) or 1

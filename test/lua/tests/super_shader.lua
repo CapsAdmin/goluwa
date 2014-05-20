@@ -67,8 +67,8 @@ mesh.pwm_matrix = render.GetPVWMatrix2D
  
 event.AddListener("OnDraw2D", "hm", function()
 	surface.PushMatrix(0, 0, surface.GetScreenSize())
-		mesh.global_color = HSVToColor(timer.GetTime())
-		mesh.time = timer.GetTime()
+		mesh.global_color = HSVToColor(timer.GetSystemTime())
+		mesh.time = timer.GetSystemTime()
 		mesh.texture = tex	
 		mesh:Draw()
 	surface.PopMatrix()

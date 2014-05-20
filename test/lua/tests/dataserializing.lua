@@ -26,9 +26,9 @@ for i = 1, 100000 do
 end  
 
 local function test(name)
-	local start = timer.clock()
+	local start = timer.GetSystemTime()
 	serializer.Encode(name, data)
-	logf("%s spent %s seconds to serialize\n", name, timer.clock() - start)
+	logf("%s spent %s seconds to serialize\n", name, timer.GetSystemTime() - start)
 end
 
 test("von")

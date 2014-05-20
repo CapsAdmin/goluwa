@@ -1,5 +1,5 @@
 if not profiler.Running() then
-	profiler.SetClockFunction(timer.clock)
+	profiler.SetClockFunction(timer.GetSystemTime)
 	profiler.SetReadFileFunction(vfs.Read)
 
 	profiler.Start(nil, "statistical")

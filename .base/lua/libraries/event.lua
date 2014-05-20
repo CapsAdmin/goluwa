@@ -255,7 +255,7 @@ do -- timers
 			return xpcall(self.callback, system.OnError, ...)
 		end
 		function META:SetNextThink(num)
-			self.realtime = timer.clock() + num
+			self.realtime = timer.GetSystemTime() + num
 		end
 		function META:Remove()
 			self.__remove_me = true
@@ -271,7 +271,7 @@ do -- timers
 		
 		event.timers[callback] = {
 			type = "thinker", 
-			realtime = timer.clock(), 
+			realtime = timer.GetSystemTime(), 
 			callback = callback, 
 			speed = speed, 
 			in_seconds = in_seconds
@@ -299,7 +299,7 @@ do -- timers
 		event.timers[callback] = {
 			type = "delay", 
 			callback = callback, 
-			realtime = timer.clock() + time
+			realtime = timer.GetSystemTime() + time
 		}
 	end
 
@@ -315,7 +315,7 @@ do -- timers
 		local data = event.timers[id] or {}
 		
 		data.type = "timer"
-		data.realtime = timer.clock() + time
+		data.realtime = timer.GetSystemTime() + time
 		data.id = id
 		data.time = time
 		data.repeats = repeats
@@ -340,7 +340,7 @@ do -- timers
 	end
 
 	function event.UpdateTimers(...)
-		local cur = timer.clock()
+		local cur = timer.GetSystemTime()
 				
 		for key, data in pairs(event.timers) do
 			if data.type == "thinker" then

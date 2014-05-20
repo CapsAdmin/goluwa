@@ -19,11 +19,11 @@ do -- profiling
 	local stack = {}
 
 	function utilities.PushTimeMeasure(str)
-		table.insert(stack, {str = str, time = timer.GetTime()})
+		table.insert(stack, {str = str, time = timer.GetSystemTime()})
 	end
 	
 	function utilities.PopTimeMeasure(no_print)
-		local time = timer.GetTime()
+		local time = timer.GetSystemTime()
 		local data = table.remove(stack)
 		local delta = time - data.time
 		
