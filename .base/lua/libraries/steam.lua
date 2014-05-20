@@ -28,6 +28,8 @@ do
 		} steam_auth_token;
 		
 		steam_auth_token *steamGetAuthTokenFromServer(uint64_t game_id, const char *ip, short port, bool secure);
+		
+		uint32_t steamGetAuthSessionTicket(void *ticket_buffer, int ticket_size, uint32_t *ticket_buffer_size);
 	]] 
 	
 	if not ok then
@@ -92,6 +94,16 @@ do
 		local data = lib.steamGetAuthTokenFromServer(server_id, ip, port, secure)
 		
 		return ffi.string(data.buffer, data.size)
+	end
+
+	function steam.GetAuthSessionTicket()
+		local ticket = ffi.new("char[1024]")
+		local size = ffi.new("int[1]")
+		local handle = lib.steamGetAuthSessionTicket(ticket, ffi.sizeof(ticket), size)
+		
+		if size[0] == 0 then size[0] = 1024 else print(size[0], "!!!!!!!!!!!!!!!!!!") end -- grrr
+		
+		return handle, ffi.string(ticket, size[0])
 	end
 end
 
