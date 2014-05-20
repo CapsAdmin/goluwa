@@ -146,14 +146,14 @@ local function require(name)
     local func, err, path = load(name)
 	if path then path = path:match("(.+)[\\/]") end
 	
-	if INCLUDE_STACK and path then	
-		INCLUDE_STACK[#INCLUDE_STACK + 1] = path .. "/"
+	if vfs and vfs.PushToIncludeStack and path then	
+		vfs.PushToIncludeStack(path .. "/")
 	end
 
 	local result = func(path)
 	
-	if INCLUDE_STACK and path then	
-		INCLUDE_STACK[#INCLUDE_STACK] = nil
+	if vfs and vfs.PopFromIncludeStack and path then	
+		vfs.PopFromIncludeStack()
 	end
 	
     if result ~= nil then

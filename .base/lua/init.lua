@@ -353,7 +353,14 @@ do -- include
 	local base = lfs.currentdir()
 
 	local include_stack = {}
-	_G.INCLUDE_STACK = include_stack
+	
+	function vfs.PushToIncludeStack(path)
+		include_stack[#include_stack + 1] = path
+	end
+	
+	function vfs.PopFromIncludeStack()
+		include_stack[#include_stack] = nil
+	end
 	
 	local function not_found(err)
 		return 
