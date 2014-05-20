@@ -1,7 +1,7 @@
 if system and system.Restart then system.Restart() return end 
 
 DEBUG = true
-USE_STRUNG = true
+USE_STRUNG = false
 
 _G.ffi = require("ffi")
 
@@ -520,11 +520,10 @@ do -- libraries
 	class = include("libraries/class.lua") -- used by gui panels and entities
 	
 	-- serializing
-	luadata = include("libraries/serializing/luadata.lua") -- like json but deals with the lua format instead
+	serializer = include("libraries/serializing/serializer.lua")
+	
 	crypto = include("libraries/serializing/crypto.lua")
 	include("libraries/serializing/buffer.lua")
-	msgpack = require("msgpack")
-	json = require("json")
 
 	timer = include("libraries/timer.lua")
 	console = include("libraries/console.lua")

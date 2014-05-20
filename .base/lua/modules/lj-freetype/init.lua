@@ -35,7 +35,7 @@ for line in header:gmatch("(.-)\n") do
 										
 					if freetype.logcalls then
 						setlogfile("freetype_calls")
-							logf("%s = FT_%s(%s)\n", luadata.ToString(val), name, table.concat(tostring_args(...), ",\t"))
+							logf("%s = FT_%s(%s)\n", serializer.GetLibrary("luadata").ToString(val), name, table.concat(tostring_args(...), ",\t"))
 						setlogfile()
 					end					
 					

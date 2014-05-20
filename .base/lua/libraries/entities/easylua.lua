@@ -35,7 +35,7 @@ function easylua.Print(...)
 		logf("[EasyLua %s] \n", me and me:GetNick() or "Sv")
 
 		for key, value in pairs(args) do
-			str = str .. type(value) == "string" and value or luadata.ToString(value) or tostring(value)
+			str = str .. type(value) == "string" and value or serializer.GetLibrary("luadata").ToString(value) or tostring(value)
 
 			if key ~= #args then
 				str = str .. ","

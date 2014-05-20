@@ -84,7 +84,7 @@ local function add_gl_func(name, func)
 						if type(val) == "number" and reverse_enums[val] and val > 10 then
 							args[#args+1] = select(2, next(reverse_enums[val])):gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
 						else
-							args[#args+1] = luadata.ToString(val)
+							args[#args+1] = serializer.GetLibrary("luadata").ToString(val)
 						end
 					end
 					

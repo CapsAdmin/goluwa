@@ -35,7 +35,7 @@ for line in header:gmatch("(.-)\n") do
 								if type(val) == "number" and sdl.reverse_enums[val] and val > 10 then
 									args[#args+1] = sdl.reverse_enums[val]
 								else
-									args[#args+1] = luadata.ToString(val)
+									args[#args+1] = serializer.GetLibrary("luadata").ToString(val)
 								end
 							end
 							

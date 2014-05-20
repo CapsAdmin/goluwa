@@ -25,14 +25,14 @@ for i = 1, 100000 do
 	table.insert(data, lol)
 end  
 
-local function test(func, name)
+local function test(name)
 	local start = timer.clock()
-	func(data)
+	serializer.Encode(name, data)
 	logf("%s spent %s seconds to serialize\n", name, timer.clock() - start)
 end
 
-test(von.serialize, "von")
-test(luadata.Encode, "luadata")
-test(msgpack.Encode, "msgpack")
+test("von")
+test("luadata")
+test("msgpack")
 
 

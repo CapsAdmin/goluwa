@@ -40,7 +40,7 @@ for line in header:gmatch("(.-)\n") do
 				local val = func(...)
 				
 				if ffmpeg.logcalls then
-					logf(">> %s\n", luadata.ToString(val))
+					logf(">> %s\n", serializer.GetLibrary("luadata").ToString(val))
 					setlogfile()
 				end
 				

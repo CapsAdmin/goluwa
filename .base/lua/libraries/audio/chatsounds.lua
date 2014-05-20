@@ -613,14 +613,14 @@ do -- list parsing
 			logn("saving game list")
 			local game_list = chatsounds.TableToList(list)				
 			vfs.Write("data/chatsounds/game.list", game_list)				
-			vfs.Write("data/chatsounds/game.tree", msgpack.Encode(chatsounds.TableToTree(list)), "b")
+			vfs.Write("data/chatsounds/game.tree", serializer.Encode("msgpack", chatsounds.TableToTree(list)), "b")
 
 			
 			logn("finished building the sound info table")
 			logf("found sound info for %i paths\n", table.count(out))
 			
-			vfs.Write("data/chatsounds/sound_info.table", msgpack.Encode(out))
-			vfs.Write("data/chatsounds/sound_info.lua", luadata.Encode(out))
+			vfs.Write("data/chatsounds/sound_info.table", serializer.Encode("msgpack", out))
+			vfs.Write("data/chatsounds/sound_info.lua", serializer.Encode("luadata", out))
 			
 			chatsounds.sound_info = out
 		end) 
@@ -716,8 +716,8 @@ do -- list parsing
 				vfs.Write("data/chatsounds/game.list", game_list)
 				vfs.Write("data/chatsounds/custom.list", custom_list)
 				
-				vfs.Write("data/chatsounds/game.tree", msgpack.Encode(chatsounds.TableToTree(chatsounds.ListToTable(game_list))), "b")
-				vfs.Write("data/chatsounds/custom.tree", msgpack.Encode(chatsounds.TableToTree(chatsounds.ListToTable(custom_list))), "b")
+				vfs.Write("data/chatsounds/game.tree", serializer.Encode("msgpack", chatsounds.TableToTree(chatsounds.ListToTable(game_list))), "b")
+				vfs.Write("data/chatsounds/custom.tree", serializer.Encode("msgpack", chatsounds.TableToTree(chatsounds.ListToTable(custom_list))), "b")
 			end
 			
 			if not ok then
@@ -821,7 +821,7 @@ do -- list parsing
 			tree = chatsounds.TableToTree(list)
 		else
 			list = chatsounds.ListToTable(list_data)
-			tree = msgpack.Decode(tree_data)
+			tree = serializer.Decode("msgpack", tree_data)
 		end
 		
 		chatsounds.list = chatsounds.list or {}

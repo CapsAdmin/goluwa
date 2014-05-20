@@ -7,7 +7,7 @@ function cookies.Set(key, value)
 		cookies.Reload() 
 	end
 	
-	luadata.SetKeyValueInFile("cookies.txt", key, value)
+	serializer.SetKeyValueInFile("luadata", "cookies.txt", key, value)
 
 	cookies.current[key] = value
 end
@@ -21,7 +21,7 @@ function cookies.Get(key, def)
 end
 
 function cookies.Reload()
-	cookies.current = luadata.ReadFile("cookies.txt")
+	cookies.current = serializer.ReadFile("luadata", "cookies.txt")
 end
 
 return cookies

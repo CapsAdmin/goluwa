@@ -2,6 +2,15 @@ local system = _G.system or {}
 
 local function not_implemented() debug.trace() logn("this function is not yet implemented!") end
 
+do -- arg is made from luajit.exe
+	local arg = _G.arg
+	_G.arg = nil
+
+	function system.GetStartupArguments()
+		return arg
+	end
+end
+
 do -- memory
 	if WINDOWS then
 		 
@@ -656,7 +665,7 @@ function system.OnError(msg, ...)
 					if type(val) == "table" then
 						val = tostring(val)
 					else
-						val = luadata.ToString(val)
+						val = serializer.GetLibrary("luadata").ToString(val)
 						if val and #val > 200 then
 							val = val:sub(0, 200) .. "...."
 						end
@@ -759,7 +768,7 @@ function system.StartLuaInstance(...)
 	local arg_line = ""
 	
 	for k,v in pairs(args) do
-		arg_line = arg_line .. luadata.ToString(v)
+		arg_line = arg_line .. serializer.GetLibrary("luadata").ToString(v)
 		if #args ~= k then
 			arg_line = arg_line .. ", "
 		end
@@ -804,7 +813,7 @@ function system.CreateLuaEnvironment(title, globals, id)
 	globals.TITLE = tostring(title)
 
 	for key, val in pairs(globals) do
-		arg = arg .. key .. "=" .. luadata.ToString(val) .. ";"
+		arg = arg .. key .. "=" .. serializer.GetLibrary("luadata").ToString(val) .. ";"
 	end	
 	
 	arg = arg:gsub([["]], [[']])	

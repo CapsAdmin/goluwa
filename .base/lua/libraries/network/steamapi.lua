@@ -15,13 +15,13 @@ steamapi.httpmethods = {
 	
 		sockets.Get(url, function(data)
 			if data.content then
-				callback(json.decode(data.content))
+				callback(serializer.Decode("json", data.content))
 			end
 		end, nil, "Steam 1291812 / iPhone")
 	end,
 	POST = function(interface, func_info, data, url, callback)
 		sockets.Post(url, data, function(data)
-			callback(json.decode(data.content))
+			callback(serializer.Decode("json", data.content))
 		end, nil, "Steam 1291812 / iPhone")
 	end,
 }
@@ -40,7 +40,7 @@ end
 
 function steamapi.Initialize()
 	steamapi.key = steamapi.GetKey()
-	steamapi.supported = steamapi.supported or luadata.ReadFile("steamapi_supported.lua")
+	steamapi.supported = steamapi.supported or serializer.ReadFile("luadata", "steamapi_supported.lua")
 	
 	if key == "" then
 		logn("steamapi key is not set (run steamapi_key *key*)")
@@ -129,9 +129,9 @@ function steamapi.UpdateSupported(callback)
 	
 	sockets.Get("http://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steamapi.key, function(data)
 		if data.content then
-			local tbl = json.decode(data.content)
+			local tbl = serializer.Decode("json", data.content)
 			
-			luadata.WriteFile("steamapi_supported.lua", tbl)
+			serializer.WriteFile("luadata", "steamapi_supported.lua", tbl)
 			steamapi.supported = tbl
 			
 			logn("[steamapi] supported api updated")		
