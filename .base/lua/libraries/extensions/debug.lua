@@ -269,7 +269,7 @@ function debug.logcalls(b, type)
 end
 
 function debug.stepin()
-	if not curses then return end
+	if not console.curses then return end
 	
 	debug.debugging = true
 	

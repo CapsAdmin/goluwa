@@ -1,3 +1,5 @@
+local curses = require("lj-curses")
+
 timer.Delay(0.1 , function()
 
 	local COLOR_BLACK = 0
