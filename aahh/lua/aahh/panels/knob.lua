@@ -127,7 +127,7 @@ end
 if false and CAPSADMIN then
 	
 	
-	timer.Delay(0.1, function()
+	event.Delay(0.1, function()
 		
 		local frame = utilities.RemoveOldObject(aahh.Create("frame"), "asdf")
 		frame:SetSize(Vec2() + 500)

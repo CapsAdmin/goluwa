@@ -103,7 +103,7 @@ function luadata.Encode(tbl, callback, speed)
 		local co = coroutine.create(function() 
 			return luadata.ToString(tbl, {yield = true})
 		end)
-		timer.Thinker(function()
+		event.CreateThinker(function()
 			local ok, data = coroutine.resume(co)
 			if ok then
 				if data then

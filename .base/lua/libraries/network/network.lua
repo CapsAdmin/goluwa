@@ -202,7 +202,7 @@ if CLIENT then
 		retries = retries or 3
 		
 		if retries > 0 then
-			timer.Delay(3, function()
+			event.Delay(3, function()
 				if not network.IsConnected() then
 					logf("retrying %s:%s (%i retries left)..\n", ip, port, retries)
 					network.Connect(ip, port, retries - 1)

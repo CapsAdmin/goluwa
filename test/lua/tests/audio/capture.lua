@@ -15,7 +15,7 @@ end
 
 mic_out:Play()
 
-timer.Delay(0.1, function()
+event.Delay(0.1, function()
 
 debug.LogLibrary("al")
 debug.LogLibrary("alc")

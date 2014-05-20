@@ -51,7 +51,7 @@ function console.GetCurrentLine()
 end
  
 function console.InitializeCurses()
-	timer.Create("curses", 0, 0, function()
+	event.CreateTimer("curses", 0, 0, function()
 		local byte = curses.wgetch(c.input_window)
 
 		if byte < 0 then return end
@@ -90,7 +90,7 @@ function console.InitializeCurses()
 			local ret = trigger(key, true)
 			
 			-- :(
-			timer.Delay(0, function() trigger(key, false) end)
+			event.Delay(0, function() trigger(key, false) end)
 			
 			return ret
 		end)
@@ -101,7 +101,7 @@ function console.InitializeCurses()
 			local ret = trigger(char, true)
 			
 			-- :(
-			timer.Delay(0, function() trigger(char, false) end)
+			event.Delay(0, function() trigger(char, false) end)
 			
 			return ret
 		end)

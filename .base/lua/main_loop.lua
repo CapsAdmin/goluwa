@@ -41,7 +41,7 @@ local function main()
 	local last_time = 0
 	
 	local function update(dt)
-		timer.Update(dt)
+		event.UpdateTimers(dt)
 		
 		event.Call("OnUpdate", dt)
 	end

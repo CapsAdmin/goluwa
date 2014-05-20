@@ -170,7 +170,7 @@ do -- window meta
 
 		event.AddListener("OnUpdate", self, nil, system.OnError)
 				
-		timer.Delay(0, function()
+		event.Delay(0, function()
 			event.Call("OnFramebufferSize", self, width, height)
 		end)
 		
@@ -233,7 +233,7 @@ do -- window meta
 								end
 							end
 							
-							timer.Delay(0, function()
+							event.Delay(0, function()
 								if y > 0 then
 									mouse_trigger("mwheel_up", false)
 								else
@@ -250,7 +250,7 @@ do -- window meta
 									mouse_trigger("mwheel_right", true)
 								end
 							end
-							timer.Delay(0, function()
+							event.Delay(0, function()
 								if x > 0 then
 									mouse_trigger("mwheel_left", false)
 								else
@@ -274,4 +274,4 @@ do -- window meta
 end
 
 -- this is needed regardless of wether a window exists or not or else the console will freeze..???
-timer.Create("glfw_pollevents", 1/60, 0, function() glfw.PollEvents() end)
+event.CreateTimer("glfw_pollevents", 1/60, 0, function() glfw.PollEvents() end)

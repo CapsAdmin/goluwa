@@ -125,7 +125,7 @@ function utilities.ParseObj(data, callback, generate_normals)
 	
 	local last_why
 	
-	timer.Thinker(function() 
+	event.CreateThinker(function() 
 		local dead, done, why, msg = coroutine.resume(co)
 		if done then
 			if dead == false and done then

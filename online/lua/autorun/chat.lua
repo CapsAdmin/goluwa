@@ -224,7 +224,7 @@ if CLIENT then
 					end
 					
 					local suppress = true -- stupid
-					timer.Delay(0.1, function() suppress = false end) -- stupid
+					event.Delay(0.1, function() suppress = false end) -- stupid
 					
 					panel.OnTextChanged = function(self, str)
 						if suppress then -- stupid

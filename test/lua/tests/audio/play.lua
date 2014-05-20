@@ -19,7 +19,7 @@ local filter = audio.CreateFilter("lowpass")
 filter:SetParam("gainhf", 0.1)  
 voice:SetFilter(filter)  
 
-timer.Create("shame", 1, 0, function()
+event.CreateTimer("shame", 1, 0, function()
 	voice:Play()
 	voice:SetPosition(math.sin(timer.clock()), math.cos(timer.clock()),0)
 end) 

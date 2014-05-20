@@ -26,7 +26,7 @@ end)
 
 local size = 16 
    
-timer.Create("fb_update", 0, 0, function()
+event.CreateTimer("fb_update", 0, 0, function()
 	fb:Begin()
 		surface.Start(0, 0, 512, 512)			
 			if input.IsMouseDown("button_1") then

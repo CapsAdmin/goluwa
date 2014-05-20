@@ -37,7 +37,7 @@ do
 		logn(ffi.string(lib.steamGetLastError()))
 		lib = nil
 	else
-		timer.Thinker(function()
+		event.CreateThinker(function()
 			local msg = lib.steamGetLastChatMessage()
 
 			if msg ~= nil then

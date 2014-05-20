@@ -6,7 +6,7 @@ local fb = render.CreateFrameBuffer(512, 512, {
 	}
 })
 
-timer.Create("lol", 0.2, 0, function()
+event.CreateTimer("lol", 0.2, 0, function()
 		
 	fb:Begin()   
 		fb:Clear(1, 1, 1)

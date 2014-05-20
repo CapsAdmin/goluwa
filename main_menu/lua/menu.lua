@@ -102,7 +102,7 @@ function menu.MakeButtons()
 	menu.buttons = {}
 	
 	if CLIENT and network.IsConnected() then
-		menu.AddButton("Resume", function() timer.Delay(0.1, function() menu.Close() end) end)
+		menu.AddButton("Resume", function() event.Delay(0.1, function() menu.Close() end) end)
 		menu.AddButtonSpace()
 	end
 
@@ -127,7 +127,7 @@ function menu.MakeButtons()
 				system.StartLuaInstance("start_server", "host")
 				menu.Remake()
 				
-				timer.Delay(0.25, function()
+				event.Delay(0.25, function()
 					console.RunString("start_client")
 					console.RunString("connect localhost 1234")
 				end)

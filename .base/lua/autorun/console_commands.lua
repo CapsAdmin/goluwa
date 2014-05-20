@@ -51,7 +51,7 @@ console.AddCommand("trace_calls", function(_, line, ...)
 			return old_func(...)
 		end)
 		
-		timer.Delay(1, function()
+		event.Delay(1, function()
 			idx_func(old_func)
 		end)
 	end
@@ -95,7 +95,7 @@ console.AddCommand("profile", function(line, time, ptype)
 	
 	logn("starting profiler for ", time, " seconds")
 	
-	timer.Create("profile_status", 1, time, function(i)
+	event.CreateTimer("profile_status", 1, time, function(i)
 		logn("profiling...")
 		if time ~= i+1 then return end
 		
