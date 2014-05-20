@@ -48,19 +48,19 @@ function PANEL:CalcCursor(pos)
 	if not self:CanResize("button_1", true, pos) then return end
 	
 	if loc == "Center" then
-		self:SetCursor(e.IDC_ARROW)
+		self:SetCursor("arrow")
 	elseif loc == "Top" or loc == "Bottom" then
-		self:SetCursor(e.IDC_SIZENS)
+		self:SetCursor("sizens")
 	elseif loc == "Left" or loc == "Right" then
-		self:SetCursor(e.IDC_SIZEWE)
+		self:SetCursor("sizewe")
 	elseif loc == "TopLeft" then
-		self:SetCursor(e.IDC_SIZENWSE)
+		self:SetCursor("sizenwse")
 	elseif loc == "BottomRight" then
-		self:SetCursor(e.IDC_SIZENWSE)
+		self:SetCursor("sizenwse")
 	elseif loc == "TopRight" then
-		self:SetCursor(e.IDC_SIZENESW)
+		self:SetCursor("sizenesw")
 	elseif loc == "BottomLeft" then
-		self:SetCursor(e.IDC_SIZENESW)
+		self:SetCursor("sizenesw")
 	end
 end
 

@@ -15,7 +15,7 @@ aahh.GetSet(PANEL, "Margin", Rect())
 aahh.GetSet(PANEL, "MinSize", Vec2(8,8))
 aahh.GetSet(PANEL, "TrapInsideParent", false)
 aahh.GetSet(PANEL, "TrapChildren", true)
-aahh.GetSet(PANEL, "Cursor", e.IDC_ARROW)
+aahh.GetSet(PANEL, "Cursor", "arrow")
 aahh.GetSet(PANEL, "Spacing", 0)
 aahh.GetSet(PANEL, "DockPadding", 1) -- Default padding around all child panels in docking
 aahh.IsSet(PANEL, "Visible", true)

@@ -5,7 +5,7 @@ PANEL.ClassName = "checkbox"
 aahh.IsSet(PANEL, "Checked", false)
 
 function PANEL:Initialize()
-	self:SetCursor(e.IDC_HAND)
+	self:SetCursor("hand")
 end
 
 function PANEL:OnMouseInput(key, press)	

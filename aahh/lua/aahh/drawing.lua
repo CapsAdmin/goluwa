@@ -164,7 +164,7 @@ function aahh.Update(delta)
 		if aahh.HoveringPanel:IsValid() then
 			aahh.SetCursor(aahh.HoveringPanel:GetCursor())
 		else
-			aahh.SetCursor(e.IDC_ARROW)
+			aahh.SetCursor("arrow")
 		end
 	event.Call("PostDrawMenu", delta)
 end

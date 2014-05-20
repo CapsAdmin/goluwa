@@ -2,8 +2,6 @@ local ffi = require("ffi")
 local header = require("lj-assimp.header") 
 local enums = require("lj-assimp.enums")
  
-for k,v in pairs(enums) do e[k] = v end
-
 ffi.cdef(header)
 
 local lib = ffi.load("assimp")

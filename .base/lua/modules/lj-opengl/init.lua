@@ -201,7 +201,7 @@ function gl.InitMiniGlew()
 			reverse_enums[v] = reverse_enums[v] or {}
 			reverse_enums[v][k] = k
 		end
-		e[k] = v
+		enums[k] = v
 	end
 		
 	setlogfile()

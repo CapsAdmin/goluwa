@@ -25,7 +25,7 @@ do -- model meta
 			return render.model_cache[path]
 		end
 
-		flags = flags or bit.bor(e.aiProcess_CalcTangentSpace, e.aiProcess_GenSmoothNormals)
+		flags = flags or bit.bor(assimp.e.aiProcess_CalcTangentSpace, assimp.e.aiProcess_GenSmoothNormals)
 
 		local new_path = R(path)
 

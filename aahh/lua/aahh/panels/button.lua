@@ -3,7 +3,7 @@ local PANEL = {}
 PANEL.ClassName = "button"
 
 function PANEL:Initialize()
-	self:SetCursor(e.IDC_HAND)
+	self:SetCursor("hand")
 	self.button_down = {}
 end
 

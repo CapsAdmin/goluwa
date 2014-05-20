@@ -222,7 +222,7 @@ function menu.AddButton(name, func)
 		pnl:SetSkinColor("shadow", Color(0,0,0,0.1)) 
 		pnl:SetFont("impact")
 		pnl:SetText(name)
-		pnl:SetCursor(e.IDC_HAND)
+		pnl:SetCursor("hand")
 		
 		--pnl:SetShadowDir(Vec2())
 		--pnl:SetShadowSize(18)

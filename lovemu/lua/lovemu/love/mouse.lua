@@ -16,25 +16,6 @@ function love.mouse.getY()
 	return window.GetMousePos().y
 end
 
-local cursor_translate = {
-	[e.IDC_ARROW] = "arrow",
-	[e.IDC_IBEAM] = "ibeam",
-	[e.IDC_WAIT] = "wait",
-	[e.IDC_CROSS] = "cross",
-	[e.IDC_UPARROW] = "uparrow",
-	[e.IDC_SIZE] = "size",
-	[e.IDC_ICON] = "icon",
-	[e.IDC_SIZENWSE] = "sizenwse",
-	[e.IDC_SIZENESW] = "sizenesw",
-	[e.IDC_SIZEWE] = "sizewe",
-	[e.IDC_SIZENS] = "sizens",
-	[e.IDC_SIZEALL] = "sizeall",
-	[e.IDC_NO] = "no",
-	[e.IDC_HAND] = "hand",
-	[e.IDC_APPSTARTING] = "appstarting",
-	[e.IDC_HELP] = "help",
-}
-
 function love.mouse.newCursor()
 	local obj = lovemu.NewObject("Cursor")
 	
@@ -43,7 +24,7 @@ end
 function love.mouse.getCursor()
 	local obj = lovemu.NewObject("Cursor")
 	obj.getType = function()
-		return cursor_translate[system.GetCursor()]
+		return system.GetCursor()
 	end
 	return obj
 end
@@ -55,7 +36,7 @@ end
 function love.mouse.getSystemCursor()
 	local obj = lovemu.NewObject("Cursor")
 	obj.getType = function()
-		return cursor_translate[system.GetCursor()]
+		return system.GetCursor()
 	end
 	return obj
 end
