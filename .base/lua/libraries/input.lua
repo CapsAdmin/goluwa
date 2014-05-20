@@ -112,12 +112,12 @@ do
 		check(key, "string")
 		check(cmd, "string", "nil")
 
-		luadata.SetKeyValueInFile("%DATA%/input.txt", key, cmd)
+		serializer.SetKeyValueInFile("luadata", "%DATA%/input.txt", key, cmd)
 		input.Binds[key] = cmd
 	end
 
 	function input.Initialize()
-		input.Binds = luadata.ReadFile("%DATA%/input.txt")
+		input.Binds = serializer.ReadFile("luadata", "%DATA%/input.txt")
 	end
 
 	function input.Call(key, press)

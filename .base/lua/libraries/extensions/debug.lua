@@ -39,12 +39,12 @@ do
 								local temp = {}
 								
 								for i = 1, select("#", ...) do 
-									table.insert(temp, luadata.ToString(select(i, ...))) 
+									table.insert(temp, serializer.GetLibrary("luadata").ToString(select(i, ...))) 
 								end
 								
 								local ret = {}
 								for k, v in pairs(args) do
-									table.insert(ret, luadata.ToString(v)) 
+									table.insert(ret, serializer.GetLibrary("luadata").ToString(v)) 
 								end
 								
 								if #ret == 0 then ret[1] = "nil" end
@@ -230,7 +230,7 @@ function debug.dumpcall(level, line, info_match)
 					val = val .. " .. " .. utilities.FormatFileSize(#data.val)
 				end
 			else
-				val = luadata.ToString(data.val)
+				val = serializer.GetLibrary("luadata").ToString(data.val)
 			end
 			
 			logf("%s = %s\n", data.key, val)

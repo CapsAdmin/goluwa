@@ -11,7 +11,7 @@ c.scroll = c.scroll or 0
 c.current_table = c.current_table or G
 c.table_scroll = c.table_scroll or 0
 
-local history = luadata.ReadFile("%DATA%/cmd_history.txt")
+local history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt")
 
 local translate = 
 {
@@ -413,7 +413,7 @@ function console.HandleKey(key)
 			end
 			
 			table.insert(history, line)
-			luadata.WriteFile("%DATA%/cmd_history.txt", history)
+			serializer.WriteFile("luadata", "%DATA%/cmd_history.txt", history)
 
 			c.scroll = 0
 			console.ClearInput()

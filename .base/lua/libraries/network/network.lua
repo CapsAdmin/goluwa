@@ -29,12 +29,12 @@ local function encode(...)
 		end	
 	end
 	
-	return msgpack.Encode(unpack(args)) .. delimiter
+	return serializer.Encode("msgpack", unpack(args)) .. delimiter
 end
 
 local function decode(...)
 	
-	local ok, args = pcall(function(...) return {msgpack.Decode(...)} end, ...)
+	local ok, args = pcall(function(...) return {serializer.Decode("msgpack", ...)} end, ...)
 	
 	if not ok then
 		local str = select(1, ...)

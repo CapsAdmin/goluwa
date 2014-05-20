@@ -363,8 +363,10 @@ do -- console vars
 	end
 	
 	function console.ReloadVariables()
-		console.vars = luadata.ReadFile(console.cvar_file_name)
+		console.vars = serializer.ReadFile("luadata", console.cvar_file_name)
 	end
+	
+	local luadata = serializer.GetLibrary("luadata")
 	
 	function console.CreateVariable(name, def, callback)
 		if not console.vars then console.ReloadVariables() end
@@ -418,7 +420,7 @@ do -- console vars
 		if not console.vars then console.ReloadVariables() end
 		
 		console.vars[name] = value
-		luadata.SetKeyValueInFile(console.cvar_file_name, name, value)
+		serializer.SetKeyValueInFile("luadata", console.cvar_file_name, name, value)
 	end
 end
 

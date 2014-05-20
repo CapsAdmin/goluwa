@@ -97,7 +97,7 @@ local function add_al_func(name, func)
 		
 		if al.logcalls then
 			setlogfile("al_calls")
-				logf("%s = al%s(%s)\n", luadata.ToString(val), name, table.concat(tostring_args(...), ",\t"))
+				logf("%s = al%s(%s)\n", serializer.GetLibrary("luadata").ToString(val), name, table.concat(tostring_args(...), ",\t"))
 			setlogfile()
 		end
 		

@@ -166,7 +166,7 @@ local function read_vpk_dir(path)
 	
 	if vfs.Exists(cache_path) then
 		local str = vfs.Read(cache_path, "b")
-		return luadata.Decode(str), "Success"
+		return serializer.Decode("luadata", str), "Success"
 	end
 	
 	local file, error_message = io.open(path, "rb")
@@ -182,7 +182,7 @@ local function read_vpk_dir(path)
 		return nil, "Failed parsing: " .. error_message
 	end
 	
-	luadata.Encode(self, function(data, err)
+	serializer.Encode("luadata", self, function(data, err)
 		if data then
 			logn("saved cache of vpk tree ", path)
 			vfs.Write(cache_path, data)
