@@ -1,3 +1,5 @@
+local gl = require("lj-opengl") -- OpenGL
+local glfw = require("lj-glfw") -- Window Manager
 local render = _G.render or {}
 
 local render=render
@@ -92,11 +94,11 @@ function render.Initialize(w, h, window)
 	render.camera.w = w
 	render.camera.h = h
 	
-	gl.Enable(e.GL_BLEND)
-	gl.Enable(e.GL_TEXTURE_2D)
+	gl.Enable(gl.e.GL_BLEND)
+	gl.Enable(gl.e.GL_TEXTURE_2D)
 
-	gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
-	gl.Disable(e.GL_DEPTH_TEST)
+	gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
+	gl.Disable(gl.e.GL_DEPTH_TEST)
 	
 	if gl.DepthRangef then
 		gl.DepthRangef(1, 0)
@@ -166,11 +168,11 @@ function render.GetScreenSize()
 end
 
 function render.GetVersion()		
-	return ffi.string(gl.GetString(e.GL_VERSION))
+	return ffi.string(gl.GetString(gl.e.GL_VERSION))
 end
 
 function render.GetVendor()		
-	return ffi.string(gl.GetString(e.GL_VENDOR))
+	return ffi.string(gl.GetString(gl.e.GL_VENDOR))
 end
 
 function render.CheckSupport(func)
@@ -187,24 +189,24 @@ function render.SetClearColor(r,g,b,a)
 end
 
 function render.Clear(flag, ...)
-	flag = flag or e.GL_COLOR_BUFFER_BIT
+	flag = flag or gl.e.GL_COLOR_BUFFER_BIT
 	gl.Clear(bit.bor(flag, ...))
 end
 
 function render.ScissorRect(x, y, w, h)
 	if not x then
-		gl.Disable(e.GL_SCISSOR_TEST)
+		gl.Disable(gl.e.GL_SCISSOR_TEST)
 	else
 		gl.Scissor(x, y, w, h)
-		gl.Enable(e.GL_SCISSOR_TEST)
+		gl.Enable(gl.e.GL_SCISSOR_TEST)
 	end
 end
 
 function render.SetAdditive(b)
 	if b then
-		gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE)
+		gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE)
 	else
-		gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
+		gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
 		
 	end
 end
@@ -220,12 +222,13 @@ do
 		w = w or 1
 		h = h or 1
 		
-		gl.ReadPixels(x, y, w, h, e.GL_RGBA, e.GL_FLOAT, data)
+		gl.ReadPixels(x, y, w, h, gl.e.GL_RGBA, gl.e.GL_FLOAT, data)
 			
 		return data[0], data[1], data[2], data[3]
 	end
 end
 
+include("enum_translate.lua", render)
 include("generated_textures.lua", render)
 include("matrices.lua", render)
 include("scene.lua", render)

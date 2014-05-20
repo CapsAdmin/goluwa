@@ -1,3 +1,5 @@
+local freeimage = require("lj-freeimage") -- image decoder
+
 local META = utilities.CreateBaseMeta("gif")
 
 function META:GetFrameCount()

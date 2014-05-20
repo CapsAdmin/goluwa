@@ -1,3 +1,4 @@
+local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
 render.matrices = {
@@ -98,7 +99,7 @@ do
 			last_h = cam.h
 		end
 				
-		gl.Disable(e.GL_DEPTH_TEST)				
+		gl.Disable(gl.e.GL_DEPTH_TEST)				
 	end
 	
 	function render.End2D()	
@@ -136,8 +137,8 @@ do
 			render.SetupView3D(pos, ang, fov)
 		end
 				
-		gl.Enable(e.GL_DEPTH_TEST) 
-		gl.Disable(e.GL_CULL_FACE)
+		gl.Enable(gl.e.GL_DEPTH_TEST) 
+		gl.Disable(gl.e.GL_CULL_FACE)
 		
 		render.PushWorldMatrix()
 	end

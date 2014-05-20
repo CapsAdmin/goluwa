@@ -1,3 +1,4 @@
+local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
 -- REWRITE ME
@@ -55,7 +56,7 @@ do
 	unrolled_lines.float = unrolled_lines.number
 	
 	local gl_enum_types = {
-		float = e.GL_FLOAT,
+		float = gl.e.GL_FLOAT,
 	}
 
 	local arg_names = {"x", "y", "z", "w"}
@@ -235,14 +236,14 @@ void main()
 		local id = vbo_override and vbo_override.id or gl.GenBuffer()
 		local size = ffi.sizeof(buffer[0]) * length
 
-		gl.BindBuffer(e.GL_ARRAY_BUFFER, id) 
-		gl.BufferData(e.GL_ARRAY_BUFFER, size, buffer, e.GL_DYNAMIC_DRAW)
+		gl.BindBuffer(gl.e.GL_ARRAY_BUFFER, id) 
+		gl.BufferData(gl.e.GL_ARRAY_BUFFER, size, buffer, gl.e.GL_DYNAMIC_DRAW)
 
 		if false and gl.GetBufferParameterui64vNV then
 			self.nvidia_buffer_address = ffi.new("GLuint64EXT[1]")
-			gl.EnableClientState(e.GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV)
-			gl.GetBufferParameterui64vNV(e.GL_ARRAY_BUFFER, e.GL_BUFFER_GPU_ADDRESS_NV, self.nvidia_buffer_address)
-			gl.MakeBufferResidentNV(e.GL_ARRAY_BUFFER, e.GL_READ_ONLY)
+			gl.EnableClientState(gl.e.GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV)
+			gl.GetBufferParameterui64vNV(gl.e.GL_ARRAY_BUFFER, gl.e.GL_BUFFER_GPU_ADDRESS_NV, self.nvidia_buffer_address)
+			gl.MakeBufferResidentNV(gl.e.GL_ARRAY_BUFFER, gl.e.GL_READ_ONLY)
 		end
 		
 		local vao_id = gl.GenVertexArray()
@@ -265,7 +266,7 @@ void main()
 			render.UseProgram(self.program_id)
 					
 			if false and self.nvidia_buffer_address then 
-				gl.BufferAddressRangeNV(e.GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, 0, self.nvidia_buffer_address[1], size);
+				gl.BufferAddressRangeNV(gl.e.GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, 0, self.nvidia_buffer_address[1], size);
 			else
 				render.BindArrayBuffer(vbo.id)
 				render.BindVertexArray(vao_id)
@@ -273,7 +274,7 @@ void main()
 			
 			self.unrolled_bind_func()
 			
-			gl.DrawArrays(e.GL_TRIANGLES, 0, vbo.length)
+			gl.DrawArrays(gl.e.GL_TRIANGLES, 0, vbo.length)
 		end
 		
 		function vbo:IsValid() return true end
@@ -287,17 +288,17 @@ void main()
 			local buffer = render.CreateVertexBufferForSuperShader(self, data)
 			local size = ffi.sizeof(buffer[0]) * #data
 			
-			gl.BindBuffer(e.GL_ARRAY_BUFFER, id) 
-			gl.BufferData(e.GL_ARRAY_BUFFER, size, buffer, e.GL_DYNAMIC_DRAW)
-			gl.BindBuffer(e.GL_ARRAY_BUFFER, 0) 
+			gl.BindBuffer(gl.e.GL_ARRAY_BUFFER, id) 
+			gl.BufferData(gl.e.GL_ARRAY_BUFFER, size, buffer, gl.e.GL_DYNAMIC_DRAW)
+			gl.BindBuffer(gl.e.GL_ARRAY_BUFFER, 0) 
 		end
 		
 		local length = ffi.sizeof(buffer[0]) * length
 		
 		function vbo.UpdateBuffer()
-			gl.BindBuffer(e.GL_ARRAY_BUFFER, id) 
-			gl.BufferData(e.GL_ARRAY_BUFFER, length, buffer, e.GL_DYNAMIC_DRAW)
-			gl.BindBuffer(e.GL_ARRAY_BUFFER, 0) 
+			gl.BindBuffer(gl.e.GL_ARRAY_BUFFER, id) 
+			gl.BufferData(gl.e.GL_ARRAY_BUFFER, length, buffer, gl.e.GL_DYNAMIC_DRAW)
+			gl.BindBuffer(gl.e.GL_ARRAY_BUFFER, 0) 
 		end
 		
 		utilities.SetGCCallback(vbo)
@@ -340,11 +341,11 @@ void main()
 			}
 
 			shader_translate = {
-				vertex = e.GL_VERTEX_SHADER,
-				fragment = e.GL_FRAGMENT_SHADER,
-				geometry = e.GL_GEOMETRY_SHADER,
-				tess_eval = e.GL_TESS_EVALUATION_SHADER,
-				tess_control = e.GL_TESS_CONTROL_SHADER,
+				vertex = gl.e.GL_VERTEX_SHADER,
+				fragment = gl.e.GL_FRAGMENT_SHADER,
+				geometry = gl.e.GL_GEOMETRY_SHADER,
+				tess_eval = gl.e.GL_TESS_EVALUATION_SHADER,
+				tess_control = gl.e.GL_TESS_CONTROL_SHADER,
 			}
 
 			-- grab all valid shaders from enums

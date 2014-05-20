@@ -1,3 +1,4 @@
+local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
 local function cvar(name, def, callback)
@@ -5,13 +6,13 @@ local function cvar(name, def, callback)
 end
 
 local modes = {
-	fill = e.GL_FILL,
-	line = e.GL_LINE,
-	point = e.GL_POINT,
+	fill = gl.e.GL_FILL,
+	line = gl.e.GL_LINE,
+	point = gl.e.GL_POINT,
 }
 
 cvar("mode", "fill", function(type) 
-	gl.PolygonMode(e.GL_FRONT_AND_BACK, modes[type])
+	gl.PolygonMode(gl.e.GL_FRONT_AND_BACK, modes[type])
 end)
 
 cvar("line_width", 1, gl.LineWidth)

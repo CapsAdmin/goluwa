@@ -1,3 +1,5 @@
+local freetype = require("lj-freetype")
+
 local surface = _G.surface or {}
 
 local surface = surface
@@ -319,9 +321,9 @@ do -- fonts
 			data.w = w
 		end
 		
-		local tex = Texture(math.floor(data.w + info.border), math.floor(data.h + info.border), buffer, {
-			upload_format = e.GL_ALPHA, 
-			internal_format = e.GL_ALPHA8,
+		local tex = render.CreateTexture(math.floor(data.w + info.border), math.floor(data.h + info.border), buffer, {
+			upload_format = "alpha", 
+			internal_format = "a8",
 			stride = 1,
 		})         
 		

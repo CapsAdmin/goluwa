@@ -554,7 +554,7 @@ for k,v in pairs(vtf.textures) do
 		buffer = v.buffer, 
 		size = v.size,  
 		parameters = {
-			upload_format = e.GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+			upload_format = "COMPRESSED_RGB_S3TC_DXT1",
 		}
 	}
 end  

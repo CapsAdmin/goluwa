@@ -1,3 +1,4 @@
+local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
 local SHADER = {
@@ -123,39 +124,39 @@ function render.InitializeDeffered()
 	render.gbuffer_config = {
 		{
 			name = "diffuse",
-			attach = e.GL_COLOR_ATTACHMENT0,
+			attach = gl.e.GL_COLOR_ATTACHMENT0,
 			texture_format = {
-				internal_format = e.GL_RGBA32F,
+				internal_format = gl.e.GL_RGBA32F,
 			}
 		},
 		{
 			name = "normal",
-			attach = e.GL_COLOR_ATTACHMENT1,
+			attach = gl.e.GL_COLOR_ATTACHMENT1,
 			texture_format = {
-				internal_format = e.GL_RGB32F,
+				internal_format = gl.e.GL_RGB32F,
 			}
 		},
 		{
 			name = "position",
-			attach = e.GL_COLOR_ATTACHMENT2,
+			attach = gl.e.GL_COLOR_ATTACHMENT2,
 			texture_format = {
-				internal_format = e.GL_RGB32F,
+				internal_format = gl.e.GL_RGB32F,
 			}
 		},
 		{
 			name = "specular",
-			attach = e.GL_COLOR_ATTACHMENT3,
+			attach = gl.e.GL_COLOR_ATTACHMENT3,
 			texture_format = {
-				internal_format = e.GL_RGB32F,
+				internal_format = gl.e.GL_RGB32F,
 			}
 		},
 		{
 			name = "depth",
-			attach = e.GL_DEPTH_ATTACHMENT,
+			attach = gl.e.GL_DEPTH_ATTACHMENT,
 			draw_manual = true,
 			texture_format = {
-				internal_format = e.GL_DEPTH_COMPONENT32F,	 
-				[e.GL_DEPTH_TEXTURE_MODE] = e.GL_ALPHA,
+				internal_format = gl.e.GL_DEPTH_COMPONENT32F,	 
+				[gl.e.GL_DEPTH_TEXTURE_MODE] = gl.e.GL_ALPHA,
 				
 			}
 		}
@@ -197,10 +198,10 @@ function render.InitializeDeffered()
 	render.pp_buffer = render.CreateFrameBuffer(render.w, render.h, {
 		{
 			name = "diffuse",
-			attach = e.GL_COLOR_ATTACHMENT0,
+			attach = gl.e.GL_COLOR_ATTACHMENT0,
 			texture_format = {
-				internal_format = e.GL_RGBA32F,
-				format = {mip_map_levels = 4, mag_filter = e.GL_LINEAR, min_filter = e.GL_LINEAR_MIPMAP_LINEAR,},
+				internal_format = gl.e.GL_RGBA32F,
+				format = {mip_map_levels = 4, mag_filter = gl.e.GL_LINEAR, min_filter = gl.e.GL_LINEAR_MIPMAP_LINEAR,},
 			}
 		},
 	}) 
@@ -231,11 +232,11 @@ local size = 4
 function render.DrawDeffered(w, h)
 	render.Start3D()
 	
-	gl.BindFramebuffer(e.GL_FRAMEBUFFER, render.gbuffer.id)
+	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, render.gbuffer.id)
 	
-	--gl.ActiveTextureARB(e.GL_TEXTURE4)
-	gl.Disable(e.GL_DEPTH_TEST)
-	gl.Disable(e.GL_CULL_FACE)
+	--gl.ActiveTextureARB(gl.e.GL_TEXTURE4)
+	gl.Disable(gl.e.GL_DEPTH_TEST)
+	gl.Disable(gl.e.GL_CULL_FACE)
 	
 	
 	if sphere:IsValid() then 
@@ -243,18 +244,18 @@ function render.DrawDeffered(w, h)
 		sphere:Draw()   
 	end
 	
-	gl.Enable(e.GL_DEPTH_TEST)
-	gl.Enable(e.GL_CULL_FACE)
+	gl.Enable(gl.e.GL_DEPTH_TEST)
+	gl.Enable(gl.e.GL_CULL_FACE)
 		
 	render.Start2D()
 
 		-- draw to the pp buffer
-		gl.BindFramebuffer(e.GL_FRAMEBUFFER, render.pp_buffer.id)		
+		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, render.pp_buffer.id)		
 			render.PushWorldMatrix()
 				surface.Scale(w, h)
 				render.deferred_screen_quad:Draw()
 			render.PopWorldMatrix()		
-		gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
+		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
 
 		-- draw the pp texture as quad
 		render.PushWorldMatrix()

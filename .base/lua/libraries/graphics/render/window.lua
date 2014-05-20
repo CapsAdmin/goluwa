@@ -1,3 +1,6 @@
+local gl = require("lj-opengl") -- OpenGL
+local glfw = require("lj-glfw") -- window manager
+
 local render = (...) or _G.render
 
 local calllbacks = {}
@@ -128,7 +131,7 @@ do -- window meta
 		local ptr = glfw.CreateWindow(width, height, title, nil, nil)
 		glfw.MakeContextCurrent(ptr)
 		
-		gl.Enable(e.GL_MULTISAMPLE)
+		gl.Enable(gl.e.GL_MULTISAMPLE)
 
 		logn("glfw version: ", ffi.string(glfw.GetVersionString()))
 		logf("opengl version: %s\n", render.GetVersion())

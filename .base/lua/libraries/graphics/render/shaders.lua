@@ -1,3 +1,4 @@
+local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
 local status = ffi.new("GLint[1]")
@@ -15,7 +16,7 @@ function render.CreateShader(type, source)
 	shader_strings[0] = ffi.cast("const char *", source)
 	gl.ShaderSource(shader, 1, shader_strings, nil)
 	gl.CompileShader(shader)
-	gl.GetShaderiv(shader, e.GL_COMPILE_STATUS, status)		
+	gl.GetShaderiv(shader, gl.e.GL_COMPILE_STATUS, status)		
 
 	if status[0] == 0 then			
 	
@@ -41,7 +42,7 @@ function render.CreateProgram(...)
 
 	gl.LinkProgram(program)
 
-	gl.GetProgramiv(program, e.GL_LINK_STATUS, status)
+	gl.GetProgramiv(program, gl.e.GL_LINK_STATUS, status)
 
 	if status[0] == 0 then
 	
@@ -73,7 +74,7 @@ local last
 
 function render.BindArrayBuffer(id)
 	if last ~= id then
-		gl.BindBuffer(e.GL_ARRAY_BUFFER, id)
+		gl.BindBuffer(gl.e.GL_ARRAY_BUFFER, id)
 		last = id
 	end
 end

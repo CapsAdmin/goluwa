@@ -1,3 +1,5 @@
+local ffmpeg = require("lj-ffmpeg")
+
 local path = R"textures/aahh/pac.png"
 local decoder = assert(ffmpeg.Open(path, {video_only = true}))
 local texture = Texture(decoder:GetConfig().width, decoder:GetConfig().height, decoder:Read())

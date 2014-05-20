@@ -1,3 +1,4 @@
+local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
 render.framebuffers = setmetatable({}, { __mode = 'v' })
@@ -13,7 +14,7 @@ function META:__tostring()
 end
 
 function META:Begin()	
-	gl.BindFramebuffer(e.GL_FRAMEBUFFER, self.id)
+	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, self.id)
 	gl.Viewport(0, 0, self.width, self.height)
 end
 
@@ -22,12 +23,12 @@ function META:Bind()
 end
 
 function META:End()
-	gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
+	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
 end
 
 function META:Clear(r,g,b,a)
 	gl.ClearColor(r or 0, g or 0, b or 0, a or 1)
-	gl.Clear(bit.bor(e.GL_COLOR_BUFFER_BIT, e.GL_DEPTH_BUFFER_BIT))
+	gl.Clear(bit.bor(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT))
 end
 
 function META:GetTexture(type)
@@ -63,11 +64,28 @@ function render.CreateFrameBuffer(width, height, format)
 	
 	if not format then
 		format = {
-			attach = e.GL_COLOR_ATTACHMENT0,
+			attach = gl.e.GL_COLOR_ATTACHMENT0,
 			texture_format = {
-				internal_format = e.GL_RGBA32F,
+				internal_format = gl.e.GL_RGBA32F,
 			}
 		}
+	end
+	
+	if type(format.attach) == "string" then 
+		local attach, num = format.attach:match("(.-)(%d)") or format.attach
+		num = tonumber(num)
+		
+		if attach == "color" then
+			attach = gl.e.GL_COLOR_ATTACHMENT0
+		elseif attach == "depth" then
+			attach = gl.e.GL_DEPTH_ATTACHMENT
+		elseif attach == "stencil" then
+			attach = gl.e.GL_STENCIL_ATTACHMENT
+		end
+		
+		if num then attach = attach + num end
+		
+		format.attach = attach
 	end
 	
 	if not format[1] then 
@@ -78,7 +96,7 @@ function render.CreateFrameBuffer(width, height, format)
 		
 	local id = gl.GenFramebuffer()
 	self.id = id
-	gl.BindFramebuffer(e.GL_FRAMEBUFFER, id)
+	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
 	 
 	for i, info in pairs(format) do
 		local tex_info = info.texture_format
@@ -87,7 +105,7 @@ function render.CreateFrameBuffer(width, height, format)
 		local id
 		
 		if tex_info then
-			tex_info.upload_format = e.GL_BGRA
+			tex_info.upload_format = "rgba"
 			tex_info.channel = i-1
 						
 			tex = render.CreateTexture(width, height, nil, tex_info)
@@ -100,9 +118,9 @@ function render.CreateFrameBuffer(width, height, format)
 			end
 		else
 			id = gl.GenRenderbuffer()
-			gl.BindRenderbuffer(e.GL_RENDERBUFFER, id)		
+			gl.BindRenderbuffer(gl.e.GL_RENDERBUFFER, id)		
 		
-			gl.RenderbufferStorage(e.GL_RENDERBUFFER, info.internal_format, width, height)
+			gl.RenderbufferStorage(gl.e.GL_RENDERBUFFER, info.internal_format, width, height)
 		end
 		
 		self.buffers[info.name] = {id = id, tex = tex, info = info, draw_enum = ffi.new("GLenum[1]", info.attach)}
@@ -110,9 +128,9 @@ function render.CreateFrameBuffer(width, height, format)
 
 	for i, data in pairs(self.buffers) do
 		if data.tex:IsValid() then
-			gl.FramebufferTexture2D(e.GL_FRAMEBUFFER, data.info.attach, e.GL_TEXTURE_2D, data.id, 0)
+			gl.FramebufferTexture2D(gl.e.GL_FRAMEBUFFER, data.info.attach, gl.e.GL_TEXTURE_2D, data.id, 0)
 		else
-			gl.FramebufferRenderbuffer(e.GL_FRAMEBUFFER, data.info.attach, e.GL_RENDERBUFFER, data.id)
+			gl.FramebufferRenderbuffer(gl.e.GL_FRAMEBUFFER, data.info.attach, gl.e.GL_RENDERBUFFER, data.id)
 		end
 		data.info = nil
 	end
@@ -122,24 +140,24 @@ function render.CreateFrameBuffer(width, height, format)
 	
 	gl.DrawBuffers(self.draw_buffers_size, self.draw_buffers)
 		
-	local err = gl.CheckFramebufferStatus(e.GL_FRAMEBUFFER)
+	local err = gl.CheckFramebufferStatus(gl.e.GL_FRAMEBUFFER)
 	
-	if err ~= e.GL_FRAMEBUFFER_COMPLETE then
+	if err ~= gl.e.GL_FRAMEBUFFER_COMPLETE then
 		local str = "Unknown error: " .. err
 		
-		if err == e.GL_FRAMEBUFFER_UNSUPPORTED then
+		if err == gl.e.GL_FRAMEBUFFER_UNSUPPORTED then
 			str = "format not supported"
-		elseif err == e.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT then
+		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT then
 			str = "incomplete attachment"
-		elseif err == e.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT then
+		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT then
 			str = "incomplete missing attachment"
-		elseif err == e.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS then
+		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS then
 			str = "attached images must have same dimensions"
-		elseif err == e.GL_FRAMEBUFFER_INCOMPLETE_FORMATS then
+		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_FORMATS then
 			str = "attached images must have same format"
-		elseif err == e.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER then
+		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER then
 			str = "missing draw buffer"
-		elseif err == e.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER then
+		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER then
 			str = "missing read buffer"
 		end
 		
@@ -147,7 +165,7 @@ function render.CreateFrameBuffer(width, height, format)
 		error(str, 2)
 	end
 	
-	gl.BindFramebuffer(e.GL_FRAMEBUFFER, 0)
+	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
 		
 	render.framebuffers[id] = self
 	

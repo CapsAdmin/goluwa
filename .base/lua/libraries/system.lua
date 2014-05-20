@@ -483,6 +483,8 @@ do -- clipboard
 end
 
 do -- transparent window
+	local gl = require("lj-opengl") -- OpenGL
+	
 	local set = not_implemented
 
 	if WINDOWS then
@@ -610,8 +612,8 @@ do -- transparent window
 			print(ffi.C.GetLastError(), window, hdc)
 			local pxfmt = ffi.load("Gdi32.dll").ChoosePixelFormat(hdc, pfd)
 			ffi.load("Gdi32.dll").SetPixelFormat(hdc, pxfmt, pfd)
-			gl.Enable(e.GL_BLEND)
-			gl.BlendFunc(e.GL_SRC_ALPHA, e.GL_ONE_MINUS_SRC_ALPHA)
+			gl.Enable(gl.e.GL_BLEND)
+			gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
 			
 			render.SetClearColor(0,0,0,0)
 		end

@@ -26,9 +26,9 @@ for i = 1, 100000 do
 end  
 
 local function test(func, name)
-	local start = glfw.GetTime()
+	local start = timer.clock()
 	func(data)
-	logf("%s spent %s seconds to serialize\n", name, glfw.GetTime() - start)
+	logf("%s spent %s seconds to serialize\n", name, timer.clock() - start)
 end
 
 test(von.serialize, "von")
