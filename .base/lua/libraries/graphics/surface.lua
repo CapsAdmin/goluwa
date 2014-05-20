@@ -657,12 +657,11 @@ function surface.DrawLine(x1,y1, x2,y2, w, skip_tex, ...)
 end
 
 function surface.StartClipping(x, y, w, h)
-	local sw,sh = surface.GetScreenSize()
-	render.ScissorRect(x, (-y+sh-h), w, h)
+	render.SetScissor(x, y, w, h)
 end
 
 function surface.EndClipping()
-	render.ScissorRect()
+	render.SetScissor()
 end
 
 function surface.WrapString(str, max_width)
@@ -830,5 +829,43 @@ do -- poly
 		return self
 	end
 end
+
+do -- points
+	local gl = require("lj-opengl")
+	
+	local SIZE = 1
+	local STYLE = "smooth"
+
+	function surface.SetPointStyle(style)
+		if style == "smooth" then
+			gl.Enable(gl.e.GL_POINT_SMOOTH)
+		else
+			gl.Disable(gl.e.GL_POINT_SMOOTH)
+		end
+		
+		STYLE = style
+	end
+	
+	function surface.GetPointStyle()
+		return STYLE
+	end
+	
+	function surface.SetPointSize(size)
+		gl.PointSize(size)
+		SIZE = size
+	end
+	
+	function surface.GetPointSize()
+		return SIZE
+	end
+	
+	function surface.DrawPoint(x, y)
+		gl.Disable(gl.e.GL_TEXTURE_2D)
+		gl.Begin(gl.e.GL_POINTS)
+			gl.Vertex2f(x, y)
+		gl.End()
+	end
+end
+
 
 return surface

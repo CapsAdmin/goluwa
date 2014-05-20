@@ -96,6 +96,7 @@ function render.Initialize(w, h, window)
 	
 	gl.Enable(gl.e.GL_BLEND)
 	gl.Enable(gl.e.GL_TEXTURE_2D)
+	gl.Enable(gl.e.GL_SCISSOR_TEST)
 
 	gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
 	gl.Disable(gl.e.GL_DEPTH_TEST)
@@ -197,26 +198,55 @@ function render.Clear(flag, ...)
 	gl.Clear(bit.bor(flag, ...))
 end
 
-function render.ScissorRect(x, y, w, h)
-	if not x then
-		gl.Disable(gl.e.GL_SCISSOR_TEST)
-	else
-		gl.Scissor(x, y, w, h)
-		gl.Enable(gl.e.GL_SCISSOR_TEST)
-	end
-end
+do
+	local X, Y, W, H = 0,0,0,0
+	
+	function render.SetScissor(x,y,w,h)
+		--render.ScissorRect(x,y,w,h)  
+		--surface.StartClipping(x, y, w, h)
 
-function render.SetAdditive(b)
-	if b then
-		gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE)
-	else
-		gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
+		local sw, sh = render.GetScreenSize()
 		
+		x=x or 0
+		y=y or 0
+		w=w or sw
+		h=h or sh
+		
+		gl.Scissor(x, sh - (y + h), w, h)
+		
+		X = x
+		Y = y
+		W = w
+		H = h
+	end
+
+	function render.GetScissor()
+		return X,Y,W,H
 	end
 end
 
-function render.GetAdditive(b)
-	return render.additive
+do
+	local MODE = "alpha"
+
+	function render.SetBlendMode(mode)
+		gl.AlphaFunc(gl.e.GL_GEQUAL, 0)
+		
+		if mode == "alpha" then
+			gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
+		elseif mode == "multiplicative" then
+			gl.BlendFunc(gl.e.GL_DST_COLOR, gl.e.GL_ONE_MINUS_SRC_ALPHA)
+		elseif mode == "premultiplied" then
+			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE_MINUS_SRC_ALPHA)
+		else
+			gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE)
+		end
+		
+		MODE = mode
+	end
+	
+	function render.GetBlendMode()
+		return MODE
+	end
 end
  
 do

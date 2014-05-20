@@ -81,7 +81,7 @@ render.SetClearColor(0,0,0,0)
 event.AddListener("OnDraw2D", "sand", function(dt)
 	dt = dt  * 25
 	
-	render.SetAdditive(true)
+	render.SetBlendMode("additive")
 	
 	W,H = surface.GetScreenSize()
 			
@@ -127,6 +127,6 @@ event.AddListener("OnDraw2D", "sand", function(dt)
 		)		
 	end
 	
-	render.SetAdditive(false)
+	render.SetBlendMode("alpha")
 	
 end)                
