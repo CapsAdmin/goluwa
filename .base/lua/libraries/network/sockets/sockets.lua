@@ -1,7 +1,7 @@
 local sockets = _G.sockets or {}
 
 sockets.cares = select(2, pcall(require,"cares"))
-sockets.sockets = require("socket") or _G.socket
+sockets.luasocket = require("socket") _G.socket = nil
 sockets.active_sockets = sockets.active_sockets or setmetatable({}, { __mode = 'v' })
 
 include("helpers.lua", sockets)
@@ -69,7 +69,7 @@ local function new_socket(override, META, typ, id)
 	
 		local self = META:New()
 
-		self.socket = override or assert(sockets.sockets[typ]())
+		self.socket = override or assert(sockets.luasocket[typ]())
 		self.socket:settimeout(0)
 		self.socket_type = typ
 		self:Initialize()

@@ -1,6 +1,6 @@
 local sockets = (...) or _G.sockets
 
-local sck = sockets.sockets.udp()
+local sck = sockets.luasocket.udp()
 
 function sockets.SendUDPData(ip, port, str)
 
