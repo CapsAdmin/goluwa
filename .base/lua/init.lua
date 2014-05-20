@@ -548,7 +548,6 @@ do -- libraries
 			return lib 
 		end
 		
-		curses = require("lj-curses") -- console input
 		assimp = require("lj-assimp") -- model decoder
 		freeimage = require("lj-freeimage") -- image decoder
 		freetype = require("lj-freetype") -- font decoder

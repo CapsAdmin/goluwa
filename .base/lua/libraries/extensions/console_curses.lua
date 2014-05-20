@@ -1,3 +1,5 @@
+local curses = require("lj-curses")
+
 console.history = console.history or {}
 console.curses = console.curses or {}
 local c = console.curses
