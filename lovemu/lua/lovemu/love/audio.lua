@@ -2,261 +2,11 @@ local love = (...) or _G.lovemu.love
 
 love.audio = {}
 
-local sources = {}
-
-local function getChannels(self)
-	return 2 --stereo
-end
-
-local function getDirection(self)
-	if self.ready then
-		return self:GetDirection()
-	else
-		return 0,0,0
-	end
-end
-
-local function getDistance(self)
-	if self.ready then
-		return self:GetReferenceDistance(), self:GetMaxDistance()
-	else
-		return 0,0
-	end
-end
-
-local function getPitch(self)
-	if self.ready then
-		return self:GetPitch()
-	else
-		return 1
-	end
-end
-
-local function getPosition(self)
-	if self.ready then
-		return self:GetPosition()
-	else
-		return 0,0,0
-	end
-end
-
-local function getRolloff(self)
-	if self.ready then
-		return self:GetRolloffFactor()
-	else
-		return 1
-	end
-end
-
-local function getVelocity(self)
-	if self.ready then
-		return self:GetVelocity()
-	else
-		return 0,0,0
-	end
-end
-
-local function getVolume(self)
-	if self.ready then
-		return self:GetGain()
-	else
-		return 1
-	end
-end
-
-local function getVolumeLimits(self)
-	return 0,1
-end
-
-local function isLooping(self)
-	if self.ready then
-		return self:GetLooping()
-	else
-		return false
-	end
-end
-
-local function isPaused(self)
-	if self.ready then
-		return not self.isplaying
-	else
-		return false
-	end
-end
-
-local function isStatic(self)
-	return false
-end
-
-local function isStopped(self)
-	if self.ready then
-		return not self.isplaying
-	else
-		return false
-	end
-end
-
-local function pause(self)
-	if self.ready then
-		self:Pause()
-	end
-end
-
-local function play(self)
-	if self.ready then
-		self:Play()
-		self.playing = true
-	end
-end
-
-local function resume(self)
-	if self.ready then
-		self:Resume()
-	end
-end
-
-local function rewind(self)
-	if self.ready then
-		self:Rewind()
-	end
-end
-
-local function seek(self,offset,type)
-	if self.ready then
-		self:Seek(offset, type)
-	end
-end
-
-local function stop(self)
-	if self.ready then
-		self:Stop()
-		self.playing=false
-	end
-end
-
-local function setDirection(self,x,y,z)
-	if self.ready then
-		self:SetDirection(x,y,z)
-	end
-end
-
-local function setDistance(self,ref,max)
-	if self.ready then
-		self:SetReferenceDistance(ref)
-		self:SetMaxDistance(max)
-	end
-end
-
-local function setAttenuationDistances(self,ref,max)
-	if self.ready then
-		self:SetReferenceDistance(ref)
-		self:SetMaxDistance(max)
-	end
-end
-
-local function setLooping(self,bool)
-	if self.ready then
-		self:SetLooping(bool)
-	end
-end
-
-local function setPitch(self,pitch)
-	if self.ready then
-		self:SetPitch(pitch)
-	end
-end
-
-local function setPosition(self,x,y,z)
-	if self.ready then
-		self:SetPosition(x,y,z)
-	end
-end
-
-local function setRolloff(self,x)
-	if self.ready then
-		self:SetRolloffFactor(x)
-	end
-end
-
-local function setVelocity(self,x,y,z)
-	if self.ready then
-		self:SetVelocity(x,y,z)
-	end
-end
-
-local function setVolume(self,vol)
-	if self.ready then
-		self:SetGain(vol)
-	end
-end
-
-local function setVolumeLimits(self)
-end
-
-local function tell(self,type)
-	if self.ready then
-		self:Tell(self, type)
-	else
-		return 1
-	end
-end
-
-local id=0
-function love.audio.newSource(path) --partial
-	local ready = false
-	local source = lovemu.NewObject("source")
-	
-	if vfs.Exists(path) then
-		local ext = path:match(".+%.(.+)")
-		if ext == "flac" or ext == "wav" or ext == "ogg" then
-			source = utilities.RemoveOldObject(Sound(path),id)
-			id = id + 1
-			ready = true
-			source:SetChannel(1)
-		end
-	end
-	
-	source.playing = false
-	
-	source.getChannels = getChannels
-	source.getDirection = getDirection
-	source.getDistance = getDistance
-	source.getPitch = getPitch
-	source.getPosition = getPosition
-	source.getRolloff = getRolloff
-	source.getVelocity = getVelocity
-	source.getVolume = getVolume
-	source.getVolumeLimits = getVolumeLimits
-	source.isLooping = isLooping
-	source.isPaused = isPaused
-	source.isStopped = isStopped
-	source.pause = pause
-	source.play = play
-	source.resume = resume
-	source.rewind = rewind
-	source.seek = seek
-	source.stop = stop
-	source.setDirection = setDirection
-	source.setDistance = setDistance
-	source.setAttenuationDistances = setAttenuationDistances
-	source.setLooping = setLooping
-	source.setPitch = setPitch
-	source.setPosition = setPosition
-	source.setRolloff = setRolloff
-	source.setVelocity = setVelocity
-	source.setVolume = setVolume
-	source.setVolumeLimits = setVolumeLimits
-	source.tell = tell
-	source.ready = ready
-	
-	sources[id] = source
-	
-	return source
-end
-
 function love.audio.getNumSources()
-	return table.count(sources)
+	return #lovemu.GetCreatedObjects("Source")
 end
+
+love.audio.getSourceCount = love.audio.getNumSources
 
 function love.audio.getOrientation()
 	return audio.GetListenerOrientation()
@@ -275,19 +25,27 @@ function love.audio.getVolume()
 end
 
 function love.audio.pause()
-	for k,v in pairs(sources) do v:Pause() end
+	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
+		v:Pause() 
+	end
 end
 
 function love.audio.play()
-	for k,v in pairs(sources) do v:Play() end
+	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
+		v:Play() 
+	end
 end
 
 function love.audio.resume()
-	for k,v in pairs(sources) do v:Resume() end
+	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
+		v:Resume() 
+	end
 end
 
 function love.audio.rewind()
-	for k,v in pairs(sources) do v:Rewind() end
+	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
+		v:Rewind() 
+	end
 end
 
 function love.audio.setDistanceModel(name)
@@ -315,5 +73,240 @@ function love.audio.setVolume(vol)
 end
 
 function love.audio.stop()
-	for k,v in pairs(sources) do v:Stop() end
+	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do v:Stop() end
+end
+
+do -- Source
+
+	local Source = {}
+	
+	Source.Type = "Source"
+	
+	function Source:getChannels() -- partial
+		return 2 --stereo
+	end
+
+	function Source:getDirection()
+		if self.source then
+			return self.source:GetDirection()
+		end
+		
+		return 0,0,0
+	end
+
+	function Source:getDistance()
+		if self.source then
+			return self.source:GetReferenceDistance(), self.source:GetMaxDistance()
+		end
+		
+		return 0,0
+	end
+
+	function Source:getPitch()
+		if self.source then
+			return self.source:GetPitch()
+		end
+		
+		return 1
+	end
+
+	function Source:getPosition()
+		if self.source then
+			return self.source:GetPosition()
+		end
+		
+		return 0,0,0
+	end
+
+	function Source:getRolloff()
+		if self.source then
+			return self.source:GetRolloffFactor()
+		end
+		
+		return 1
+	end
+
+	function Source:getVelocity()
+		if self.source then
+			return self.source:GetVelocity()
+		end
+		
+		return 0,0,0
+	end
+
+	function Source:getVolume()
+		if self.source then
+			return self.source:GetGain()
+		end
+		
+		return 1
+	end
+
+	function Source:getVolumeLimits() -- partial
+		return 0,1
+	end
+
+	function Source:isLooping()
+		if self.source then
+			return self.source:GetLooping()
+		end
+		
+		return false	
+	end
+
+	function Source:isPaused() -- partial
+		if self.source then
+			return not self.playing
+		end
+		
+		return false
+	end
+
+	function Source:isStatic() -- partial
+		return false
+	end
+
+	function Source:isStopped() -- partial
+		if self.source then
+			return not self.playing
+		end
+		
+		return false
+	end
+
+	function Source:pause()
+		if self.source then
+			self.source:Pause()
+		end
+	end
+
+	function Source:play()
+		if self.source then
+			self.source:Play()
+			self.playing = true
+		end
+	end
+
+	function Source:resume()
+		if self.source then
+			self.source:Resume()
+		end
+	end
+
+	function Source:rewind()
+		if self.source then
+			self.source:Rewind()
+		end
+	end
+
+	function Source:seek(offset, type)
+		if self.source then
+			self.source:Seek(offset, type)
+		end
+	end
+
+	function Source:stop()
+		if self.source then
+			self.source:Stop()
+			self.playing=false
+		end
+	end
+
+	function Source:setDirection(x, y, z)
+		if self.source then
+			self.source:SetDirection(x, y, z)
+		end
+	end
+
+	function Source:setDistance(ref, max)
+		if self.source then
+			self.source:SetReferenceDistance(ref)
+			self.source:SetMaxDistance(max)
+		end
+	end
+
+	function Source:setAttenuationDistances(ref, max)
+		if self.source then
+			self.source:SetReferenceDistance(ref)
+			self.source:SetMaxDistance(max)
+		end
+	end
+
+	function Source:setLooping(bool)
+		if self.source then
+			self.source:SetLooping(bool)
+		end
+	end
+
+	function Source:setPitch(pitch)
+		if self.source then
+			self.source:SetPitch(pitch)
+		end
+	end
+
+	function Source:setPosition(x, y, z)
+		if self.source then
+			self.source:SetPosition(x,y,z)
+		end
+	end
+
+	function Source:setRolloff(x)
+		if self.source then
+			self.source:SetRolloffFactor(x)
+		end
+	end
+
+	function Source:setVelocity(x,y,z)
+		if self.source then
+			self.source:SetVelocity(x,y,z)
+		end
+	end
+
+	function Source:setVolume(vol)
+		if self.source then
+			self.source:SetGain(vol)
+		end
+	end
+
+	function Source:setVolumeLimits() --partial
+		
+	end
+
+	function Source:tell(type)
+		if self.source then
+			return self.source:Tell(self, type)
+		end
+		
+		return 1
+	end
+	
+	function Source:clone()
+		return love.audio.newSource(self.path)
+	end
+
+	function love.audio.newSource(var, type) --partial
+		if lovemu.Type(var) == "string" then
+			local self = lovemu.CreateObject(Source)
+			
+			self.path = var
+			
+			if vfs.Exists(var) then
+				local ext = var:match(".+%.(.+)")
+				
+				if ext == "flac" or ext == "wav" or ext == "ogg" then
+					self.source = audio.CreateSource(var)
+					self.source:SetChannel(1)
+				end
+				
+			end
+			
+			return self
+		elseif lovemu.Type(var) == "File" then
+			lovemu.ThrowNotSupportedError("Decoder is not supported yet")
+		elseif lovemu.Type(var) == "Decoder" then
+			lovemu.ThrowNotSupportedError("Decoder is not supported yet")
+		elseif lovemu.Type(var) == "SoundData" then
+			lovemu.ThrowNotSupportedError("SoundData is not supported yet")
+		end
+	end
 end
