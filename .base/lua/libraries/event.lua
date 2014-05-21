@@ -7,8 +7,6 @@ event.errors = event.errors or {}
 event.profil = event.profil or {}
 event.destroy_tag = e.EVENT_DESTROY
 
-event.profiler_enabled = false
-
 function event.AddListener(a, b, c, d, e)
 	local type_, unique, func, on_error, priority, self_arg, remove_after_one_call, self_arg_with_callback
 
@@ -272,7 +270,7 @@ do -- timers
 			return xpcall(self.callback, system.OnError, ...)
 		end
 		function META:SetNextThink(num)
-			self.realtime = timer.GetSystemTime() + num
+			self.realtime = timer.GetElapsedTime() + num
 		end
 		function META:Remove()
 			self.__remove_me = true
@@ -288,7 +286,7 @@ do -- timers
 		
 		event.timers[callback] = {
 			type = "thinker", 
-			realtime = timer.GetSystemTime(), 
+			realtime = timer.GetElapsedTime(), 
 			callback = callback, 
 			speed = speed, 
 			in_seconds = in_seconds
@@ -316,7 +314,7 @@ do -- timers
 		event.timers[callback] = {
 			type = "delay", 
 			callback = callback, 
-			realtime = timer.GetSystemTime() + time
+			realtime = timer.GetElapsedTime() + time
 		}
 	end
 
@@ -332,7 +330,7 @@ do -- timers
 		local data = event.timers[id] or {}
 		
 		data.type = "timer"
-		data.realtime = timer.GetSystemTime() + time
+		data.realtime = timer.GetElapsedTime() + time
 		data.id = id
 		data.time = time
 		data.repeats = repeats
@@ -357,7 +355,7 @@ do -- timers
 	end
 
 	function event.UpdateTimers(...)
-		local cur = timer.GetSystemTime()
+		local cur = timer.GetElapsedTime()
 				
 		for key, data in pairs(event.timers) do
 			if data.type == "thinker" then
