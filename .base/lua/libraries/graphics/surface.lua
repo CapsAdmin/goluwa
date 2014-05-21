@@ -329,7 +329,7 @@ do -- fonts
 			data.w = w
 		end
 		
-		local tex = render.CreateTexture(math.floor(data.w + info.border), math.floor(data.h + info.border), buffer, {
+		local tex = render.CreateTexture(math.floor(tonumber(data.w + info.border)), math.floor(tonumber(data.h + info.border)), buffer, {
 			upload_format = "alpha", 
 			internal_format = "a8",
 			stride = 1,
@@ -421,7 +421,7 @@ end
 
 do -- orientation
 	function surface.Translate(x, y)	
-		render.Translate(math.ceil(x), math.ceil(y), 0)
+		render.Translate(math.ceil(tonumber(x)), math.ceil(tonumber(y)), 0)
 	end
 	
 	function surface.Rotate(a)		
