@@ -68,6 +68,8 @@ do -- texture binding
 end
 
 do -- texture object
+	local CHECK_FIELD = function(t, str) return render.TranslateStringToEnum("texture", t, str, 5) end
+
 	local META = utilities.CreateBaseMeta("texture")
 	
 	function META:__tostring()
@@ -128,6 +130,16 @@ do -- texture object
 	
 	function META:UpdateFormat()
 		local f = self.format	
+		
+		f.min_filter = CHECK_FIELD("min_filter", f.min_filter) or gl.e.GL_LINEAR
+		f.mag_filter = CHECK_FIELD("mag_filter", f.mag_filter) or gl.e.GL_LINEAR				
+		
+		f.wrap_s = CHECK_FIELD("wrap", f.wrap_s) or gl.e.GL_REPEAT
+		f.wrap_t = CHECK_FIELD("wrap", f.wrap_t) or gl.e.GL_REPEAT
+		
+		if f.type == gl.e.GL_TEXTURE_3D then
+			f.wrap_r = CHECK_FIELD("wrap", f.wrap_r) or gl.e.GL_REPEAT
+		end
 
 		for k,v in pairs(render.GetAvaibleEnums("texture", "parameters")) do
 			if f[k:lower()] then
@@ -316,8 +328,6 @@ do -- texture object
 		return self.loading
 	end
 	
-	local CHECK_FIELD = function(t, str) return render.TranslateStringToEnum("texture", t, str, 5) end
-
 	function render.CreateTexture(width, height, buffer, format)
 		if type(width) == "string" and not buffer and not format and (not height or type(height) == "table") then
 			return render.CreateTextureFromPath(width, height)
@@ -359,16 +369,6 @@ do -- texture object
 		format.channel = format.channel or 0
 
 		format.mip_map_levels = math.max(format.mip_map_levels or 3, 3) --ATI doesn't like level under 3
-
-		format.min_filter = CHECK_FIELD("min_filter", format.min_filter) or gl.e.GL_LINEAR
-		format.mag_filter = CHECK_FIELD("mag_filter", format.mag_filter) or gl.e.GL_LINEAR				
-		
-		format.wrap_s = CHECK_FIELD("wrap", format.wrap_s) or gl.e.GL_REPEAT
-		format.wrap_t = CHECK_FIELD("wrap", format.wrap_t) or gl.e.GL_REPEAT
-		
-		if format.type == gl.e.GL_TEXTURE_3D then
-			format.wrap_r = CHECK_FIELD("wrap", format.wrap_r) or gl.e.GL_REPEAT
-		end
 		
 		-- create a new texture
 		local id = gl.GenTexture()
