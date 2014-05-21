@@ -117,13 +117,32 @@ function audio.SetEffect(channel, effect)
 	aux:SetEffect(effect)
 end
 
-function audio.SetDistanceModel(enum)
-	al.DistanceModel(enum)
-	audio.distance_model = enum
-end
+do
+	local translate = {
+		none = 0,
+		inverse = e.AL_INVERSE_DISTANCE,
+		inverse_clamped  = e.AL_INVERSE_DISTANCE_CLAMPED,
+		linear = e.AL_LINEAR_DISTANCE,
+		linear_clamped = e.AL_LINEAR_DISTANCE_CLAMPED,
+		exponent = e.AL_EXPONENT_DISTANCE,
+		exponent_clamped = e.AL_EXPONENT_DISTANCE_CLAMPED,
+	}
+	
+	function audio.SetDistanceModel(name)
+		local enum = translate[name]
+		
+		if not enum then
+			error("unknown distance model " .. name, 2)
+		end
+		
+		al.DistanceModel(enum)
+		
+		audio.distance_model = name
+	end
 
-function audio.GetDistanceModel()
-	return audio.distance_model
+	function audio.GetDistanceModel()
+		return audio.distance_model
+	end
 end
 
 local function ADD_LISTENER_FUNCTION(name, func, enum, val, vec, sigh)
