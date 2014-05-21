@@ -1,3 +1,5 @@
+local ffi_new = ffi.new or ffi.new_dbg_gc
+
 local header = require("lj-ffmpeg.header")
 
 ffi.cdef(header)  
@@ -55,7 +57,7 @@ function ffmpeg.lua_initialize()
 
 	ffmpeg.av_log_set_callback(function(huh, level, fmt, va_list)
 		if not ffmpeg.debug then return end
-		local buffer = ffi.new("char[256]")
+		local buffer = ffi_new("char[256]")
 		ffi.C.sprintf(buffer, fmt, va_list)
 		log("[ffmpeg] ", ffi.string(buffer))
 	end)
@@ -64,7 +66,7 @@ function ffmpeg.lua_initialize()
 end
 
 function ffmpeg.lua_table_to_dictionary(tbl)	
-	local dict = ffi.new("AVDictionary *[1]")
+	local dict = ffi_new("AVDictionary *[1]")
 	
 	if not tbl then return dict[0] end
 	
@@ -80,7 +82,7 @@ function ffmpeg.lua_dictionary_to_table(dict)
 	
 	if dict == nil then return tbl end
 	
-	local entry = ffi.new("AVDictionaryEntry *")
+	local entry = ffi_new("AVDictionaryEntry *")
 	while true do 
 		entry = ffmpeg.av_dict_get(dict, "", entry, enums.AV_DICT_IGNORE_SUFFIX)
 		if entry == nil then break end
@@ -155,14 +157,14 @@ do
 			local sample_rate = config.sample_rate or 44100
 			local channels = config.channels or 2
 			
-			local converter = ffi.new("SwrContext*[1]", ffmpeg.swr_alloc())
+			local converter = ffi_new("SwrContext*[1]", ffmpeg.swr_alloc())
 			
 			--ffmpeg.av_opt_set(converter[0], "swr_flags", "res", 0)
 
 			-- input config			
 			local in_channel_layout = ffmpeg.av_get_channel_layout("mono")
 			ffmpeg.av_opt_set_int(converter[0], "in_channel_layout", codec_context.channel_layout, 0 );
-			ffmpeg.av_opt_set_sample_fmt(converter[0], "in_sample_fmt", ffi.C.AV_SAMPLE_FMT_S16, 0)
+			ffmpeg.av_opt_set_sample_fmt(converter[0], "in_sample_fmt", codec_context.sample_fmt, 0)
 			ffmpeg.av_opt_set_int(converter[0], "in_sample_rate", codec_context.sample_rate, 0)
 			
 			-- output config
@@ -268,7 +270,7 @@ do
 		-- get the buffer
 		--buffer = stream.image_buffer.data[0]
 		local length = ffmpeg.av_image_get_buffer_size(self.config.video_format, self.config.width, self.config.height, 4)
-		local buffer = ffi.new("uint8_t[?]", length)
+		local buffer = ffi_new("uint8_t[?]", length)
 		ffi.copy(buffer, stream.image_buffer.data[0], length)
 			
 		-- get the the timestamp for this frame
@@ -295,8 +297,8 @@ do
 		
 		if check_error(length) <= 0 then return nil, "failed to get sample buffer size: " .. get_last_error() end
 		
-		local buffer = ffi.new("uint8_t[?]", length)
-		local box = ffi.new("uint8_t *[1]", buffer)
+		local buffer = ffi_new("uint8_t[?]", length)
+		local box = ffi_new("uint8_t *[1]", buffer)
 		
 		if check_error(ffmpeg.swr_convert(
 			stream.converter[0], 			
@@ -400,7 +402,7 @@ do
 							end						
 						end
 					elseif stream.type == "subtitle" then
-						local temp = ffi.new("AVSubtitle *")
+						local temp = ffi_new("AVSubtitle *")
 						if ffmpeg.avcodec_decode_subtitle2(stream.codec_context, temp, self.got_frame, self.packet) and self.got_frame[0] == 1 then						
 							table.insert(stream.queue, {
 								subtitles = temp,
@@ -585,12 +587,12 @@ do
 		end
 			 
 		-- open the dummy file
-		local format_context = ffi.new("AVFormatContext *[1]", ffmpeg.avformat_alloc_context())
-		local options = ffi.new("AVDictionary *[1]", ffmpeg.lua_table_to_dictionary(config.input_options))
+		local format_context = ffi_new("AVFormatContext *[1]", ffmpeg.avformat_alloc_context())
+		local options = ffi_new("AVDictionary *[1]", ffmpeg.lua_table_to_dictionary(config.input_options))
 		
 		local format
 		
-		local format_name = ffmpeg.av_guess_format(nil, "temp." .. "mp3", nil)
+		local format_name = ffmpeg.av_guess_format(nil, "temp." .. config.file_ext, nil)
 		
 		if format_name ~= nil then
 			format = ffmpeg.av_find_input_format(format_name.name)
@@ -667,7 +669,7 @@ do
 					
 					local image_buffer = ffmpeg.avcodec_alloc_frame()
 					local length = ffmpeg.avpicture_get_size(config.video_format, config.width, config.height)
-					local buffer = ffi.new("uint8_t[?]", length)
+					local buffer = ffi_new("uint8_t[?]", length)
 					ffmpeg.avpicture_fill(ffi.cast("AVPicture *", image_buffer), buffer, config.video_format, config.width, config.height)
 
 					streams[i].image_buffer = image_buffer
@@ -683,8 +685,8 @@ do
 		self.frame_skips = 0 
 		self.master_clock = 0
 		self.frame = frame
-		self.got_frame = ffi.new("int[1]")
-		self.packet = ffi.new("AVPacket[1]") 
+		self.got_frame = ffi_new("int[1]")
+		self.packet = ffi_new("AVPacket[1]") 
 		self.streams = streams
 		self.format_context = format_context
 		self.config = config
