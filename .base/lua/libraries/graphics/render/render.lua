@@ -115,8 +115,10 @@ do
 
 	function render.SetVSync(b)
 		if gl.SwapIntervalEXT then
-			gl.SwapIntervalEXT(b and 1 or 0)
+			gl.SwapIntervalEXT(b == true and 1 or b == "adaptive" and -1 or 0)
 			vsync = b
+		elseif gl.XSwapIntervalEXT then
+			gl.glXSwapIntervalEXT(b == true and 1 or b == "adaptive" and -1 or 0)
 		end
 	end
 
