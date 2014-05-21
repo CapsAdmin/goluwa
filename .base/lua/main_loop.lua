@@ -1,4 +1,4 @@
-local rate_cvar = console.CreateVariable("max_fps", 120)
+local rate_cvar = console.CreateVariable("max_fps", 0, "-1\t=\trun as fast as possible\n0\t=\tvsync\n+1\t=\t/try/ to run at this framerate (using sleep)")
 
 local fps_cvar = console.CreateVariable("show_fps", true)
 
@@ -50,28 +50,38 @@ local function main()
 		local rate = rate_cvar:Get()
 		local time = timer.GetSystemTime()
 		
-		if rate <= 0 or next_update < time then
-			local dt = time - (last_time or 0)
-			
-			timer.SetFrameTime(dt)
-			timer.SetElapsedTime(timer.GetElapsedTime() + dt)
-						
-			local ok, err = xpcall(update, system.OnError, dt)
-			
-			if not ok and err then				
-				log("shutting down (", err, ")\n")
-				
-				event.Call("ShutDown")
-				return 
-			end
+		local dt = time - (last_time or 0)
 		
-			last_time = time
-			
-			if fps_cvar:Get() then
-				calc_fps(dt)
+		timer.SetFrameTime(dt)
+		timer.SetElapsedTime(timer.GetElapsedTime() + dt)
+					
+		local ok, err = xpcall(update, system.OnError, dt)
+		
+		if not ok and err then				
+			logn("shutting down (", err, ")")				
+			event.Call("ShutDown")
+			return 
+		end
+	
+		last_time = time
+		
+		if fps_cvar:Get() then
+			calc_fps(dt)
+		end
+		
+		if rate > 0 then
+			system.Sleep(math.floor(1/rate * 1000))
+			if render.GetVSync() then
+				render.SetVSync(false)
 			end
-			
-			next_update = time + (1/rate)
+		elseif rate == 0 then
+			if not render.GetVSync() then
+				render.SetVSync(true)
+			end
+		else
+			if render.GetVSync() then
+				render.SetVSync(false)
+			end
 		end
 	end
 end
