@@ -368,7 +368,7 @@ do -- console vars
 	
 	local luadata = serializer.GetLibrary("luadata")
 	
-	function console.CreateVariable(name, def, callback)
+	function console.CreateVariable(name, def, callback, help)
 		if not console.vars then console.ReloadVariables() end
 
 		console.vars[name] = console.vars[name] or def
@@ -384,6 +384,10 @@ do -- console vars
 				end
 				
 				logf("%s = %s\n", name, luadata.ToString(luadata.FromString(value)))
+				logn("default = ", luadata.ToString(def))
+				if console.GetCommands()[name].help then
+					logn(console.GetCommands()[name].help)
+				end
 			else
 					
 				if T ~= "string" then
@@ -396,7 +400,7 @@ do -- console vars
 			
 				console.SetVariable(name, value)
 				
-				if callback then
+				if type(callback) == "function" then
 					callback(value)
 				end
 				
@@ -405,7 +409,11 @@ do -- console vars
 			
 		end
 
-		console.AddCommand(name, func)
+		if type(callback) == "string" then 
+			help = callback 
+		end
+		
+		console.AddCommand(name, func, help)
 		
 		return console.cvar_meta:New({cvar = name})
 	end
