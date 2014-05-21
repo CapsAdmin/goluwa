@@ -123,7 +123,7 @@ local function request(url, callback, method, timeout, post_data, user_agent, bi
 		local content = table.concat(content, "")
 
 		if content ~= "" then
-			local ok, err = xpcall(callback, on_error, {content = content, header = header})
+			local ok, err = xpcall(callback, system.OnError, {content = content, header = header})
 			
 			if err then
 				warning(err)
