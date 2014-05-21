@@ -78,6 +78,27 @@ function event.AddListener(a, b, c, d, e)
 	event.SortByPriority()
 end
 
+function event.AddListenerX(config)
+	event.RemoveListener(config.event, config.unique)
+		
+	event.active[config.event] = event.active[config.event] or {}
+	
+	table.insert(
+		event.active[config.event],
+		{
+			func = config.callback,
+			on_error = config.on_error,
+			priority = config.priority or 0,
+			unique = config.unique,
+			self_arg = config.self_arg,
+			remove_after_one_call = config.remove_after_one_call,
+			self_arg_with_callback = config.self_arg_with_callback,
+		}
+	)
+		
+	event.SortByPriority()
+end
+
 function event.RemoveListener(a, b)
 	local type_, unique
 
