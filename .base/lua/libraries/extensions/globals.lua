@@ -1,3 +1,20 @@
+do -- verbose print
+	function vprint(...)		
+		logf("%s:\n", debug.getinfo(2, "n").name or "unknown")
+		
+		for i = 1, select("#", ...) do
+			local name = debug.getlocal(2, i)
+			local arg = select(i, ...)
+			logf("\t%s:\n\t\ttype: %s\n\t\tprty: %s\n", name or "arg" .. i, type(arg), tostring(arg), serializer.Encode("luadata", arg))
+			if type(arg) == "string" then
+				logn("\t\tsize: ", #arg)
+			end
+			if typex(arg) ~= type(arg) then
+				logn("\t\ttypx: ", typex(arg))
+			end
+		end
+	end
+end
 
 do -- warning
 	local function get_verbosity_level()
