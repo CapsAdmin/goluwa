@@ -108,7 +108,7 @@ do -- window meta
 		glfw.SwapBuffers(self.__ptr)
 	end
 
-	function META:Update(delta)
+	function META:OnUpdate(delta)
 		
 	end
 	
@@ -205,7 +205,7 @@ do -- window meta
 		
 		event.AddListener("Update", self, function(dt)
 			self:UpdateMouseDelta()
-			self:Update(dt)
+			self:OnUpdate(dt)
 		end)
 		
 		do -- calllbacks
@@ -300,6 +300,10 @@ do -- window meta
 					end)
 				end
 			end
+		end
+		
+		if not render.current_window:IsValid() then
+			render.current_window = self
 		end
 				
 		render.context_created = true
