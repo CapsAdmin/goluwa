@@ -549,7 +549,7 @@ do -- libraries
 
 	-- graphics
 	render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
-	surface = include("libraries/graphics/surface.lua") -- high level 2d rendering of the render library
+	surface = include("libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
 	window = include("libraries/graphics/window.lua") -- high level window implementation
 	video = include("libraries/graphics/video.lua") -- gif support (for now)
 	include("libraries/graphics/particles.lua")
