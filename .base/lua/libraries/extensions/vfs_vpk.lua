@@ -304,14 +304,14 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 							local bytes = d
 
 							if type == "bytes" then							
-								if handle.position > handle.data.entry_length then
-									return
-								end
-							
+								bytes = math.min(bytes, handle.data.entry_length - handle.position)
+												
 								handle.file:seek("set", handle.data.entry_offset + handle.position)
 								local content = handle.file:read(bytes)
 								
 								handle.position = math.clamp(handle.position + bytes, 0, handle.data.entry_length)
+								
+								if content ==  "" then content = nil end
 								
 								return content
 							end
