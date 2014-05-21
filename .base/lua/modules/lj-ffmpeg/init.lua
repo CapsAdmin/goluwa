@@ -157,12 +157,12 @@ do
 			
 			local converter = ffi.new("SwrContext*[1]", ffmpeg.swr_alloc())
 			
-			print(ffmpeg.av_opt_set(converter[0], "swr_flags", "res", 0))
+			--ffmpeg.av_opt_set(converter[0], "swr_flags", "res", 0)
 
 			-- input config			
 			local in_channel_layout = ffmpeg.av_get_channel_layout("mono")
 			ffmpeg.av_opt_set_int(converter[0], "in_channel_layout", codec_context.channel_layout, 0 );
-			ffmpeg.av_opt_set_sample_fmt(converter[0], "in_sample_fmt", ffi.C.AV_SAMPLE_FMT_NONE, 0)
+			ffmpeg.av_opt_set_sample_fmt(converter[0], "in_sample_fmt", ffi.C.AV_SAMPLE_FMT_S16, 0)
 			ffmpeg.av_opt_set_int(converter[0], "in_sample_rate", codec_context.sample_rate, 0)
 			
 			-- output config
@@ -196,9 +196,7 @@ do
 				
 				return nil, "failed to initialize the audio converter (swr): " .. get_last_error()
 			end
-			
-			print("wow!!!")			
-						
+				
 			config.audio_format = format
 			config.sample_rate = sample_rate
 			config.channels = channels
@@ -563,13 +561,14 @@ do
 		return self.info
 	end
 
-	function ffmpeg.Open(data, config)
+	function ffmpeg.Open(data, config) 
 		config = config or {}
-			
+
 		local file_name
 		
 		if #data < 512 and vfs.Exists(data) or data:find("://") then
 			file_name = data
+			config.file_ext = config.file_ext or data:match(".+%.(.+)")
 		else
 			-- make a dummy file
 			-- ffmpeg doesn't like os.tmpname() names...
@@ -591,7 +590,7 @@ do
 		
 		local format
 		
-		local format_name = ffmpeg.av_guess_format(nil, "temp." .. config.file_ext, nil)
+		local format_name = ffmpeg.av_guess_format(nil, "temp." .. "mp3", nil)
 		
 		if format_name ~= nil then
 			format = ffmpeg.av_find_input_format(format_name.name)
