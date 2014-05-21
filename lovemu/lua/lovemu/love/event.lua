@@ -1,6 +1,9 @@
-love.event={}
+local love = (...) or _G.lovemu.love
+
+love.event = {}
 
 function love.event.push() --partial
+
 end
 
 function love.event.poll() --partial
@@ -8,9 +11,11 @@ function love.event.poll() --partial
 end
 
 function love.event.pump() --partial
+
 end
 
 function love.event.quit() --partial
+
 end
 
 function love.event.wait() --partial

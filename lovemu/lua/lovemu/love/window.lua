@@ -1,8 +1,6 @@
-local love=love
-local lovemu=lovemu
-love.window={}
+local love = (...) or _G.lovemu.love
 
-local window=window
+love.window = {}
 
 function love.window.setTitle(title)
 	window.SetTitle(title)
@@ -20,9 +18,8 @@ function love.window.getHeight()
 	return window.GetSize().h
 end
 
-
-
 local vec = Vec2()
+
 function love.window.setMode(x,y)
 	vec.x = x
 	vec.y = y

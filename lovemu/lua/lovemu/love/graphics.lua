@@ -1,27 +1,16 @@
+local love = (...) or _G.lovemu.love
+
 local gl = require("lj-opengl") -- OpenGL
 
-local love=love
-love.graphics={}
-
-local string=string
-local math=math
-local surface=surface
-local render=render
-local freeimage=freeimage
-local gl=gl
-local window=window
-local type=type
-local lovemu=lovemu
-
-local textures = lovemu.textures
+love.graphics = {}
 
 local function ADD_FILTER(obj)
 	obj.setFilter = function(s, min, mag, anistropy) 
 		
-		textures[s].format.min_filter = min == "linear" and gl.e.GL_LINEAR or gl.e.GL_NEAREST
-		textures[s].format.mag_filter = mag == "linear" and gl.e.GL_LINEAR or gl.e.GL_NEAREST
+		lovemu.textures[s].format.min_filter = min 
+		lovemu.textures[s].format.mag_filter = mag
 				
-		textures[s]:UpdateFormat()
+		lovemu.textures[s]:UpdateFormat()
 		
 		s.filter_min = min
 		s.filter_mag = mag
@@ -31,11 +20,9 @@ local function ADD_FILTER(obj)
 	obj.getFilter = function() return s.filter_min, s.filter_mag, s.filter_anistropy end
 end
 
-function love.graphics.newQuad(...)
+function love.graphics.newQuad(...) -- partial
 	local obj = lovemu.NewObject("Quad", ...)
-	
-	-- FFI THIS!!!!!!!!!!!!!!!!!!!!!
-	
+		
 	local vertices = {}
 	
 	for i = 0, 3 do
@@ -100,15 +87,15 @@ function love.graphics.getHeight()
 	return render.GetHeight()
 end
 
-function love.graphics.setMode()
+function love.graphics.setMode() -- partial
 
 end
 
-function love.graphics.reset()
+function love.graphics.reset() -- partial
 	
 end
 
-function love.graphics.isSupported(what)
+function love.graphics.isSupported(what) -- partial
 	if what == "multicanvas" then
 		return false
 	end
@@ -330,7 +317,7 @@ do -- line
 end
 
 do -- canvas	
-	function love.graphics.newCanvas(w, h)
+	function love.graphics.newCanvas(w, h) -- partial
 		w = w or render.GetWidth()
 		h = h or render.GetHeight()
 				
@@ -360,14 +347,14 @@ do -- canvas
 		obj.setWrap = function() end
 		obj.getWrap = function() end
 		
-		textures[obj] = obj.fb:GetTexture("diffuse")
+		lovemu.textures[obj] = obj.fb:GetTexture("diffuse")
 		
 		return obj
 	end
 	
 	local CANVAS
 
-	function love.graphics.setCanvas(canvas)
+	function love.graphics.setCanvas(canvas) -- partial
 		if canvas then
 			canvas.fb:Begin()
 		elseif CANVAS then
@@ -377,7 +364,7 @@ do -- canvas
 		CANVAS = canvas
 	end
 	
-	function love.graphics.getCanvas()
+	function love.graphics.getCanvas() -- partial
 		return CANVAS
 	end
 end
@@ -391,18 +378,18 @@ do -- image
 
 	love.graphics.setDefaultImageFilter = setDefaultFilter
 	
-	function love.graphics.newImage(path)		
+	function love.graphics.newImage(path) -- partial
 		if lovemu.debug then print("LOADING IMAGE FROM PATH "..path) end
 		
 		local obj = lovemu.NewObject("Image")
 		
-		textures[obj] = Texture(path, {
+		lovemu.textures[obj] = Texture(path, {
 			mag_filter = filter,
 			min_filter = FILTER,
 		}) 
 				
-		obj.getWidth = function(s) return textures[obj].w end
-		obj.getHeight = function(s) return textures[obj].h end
+		obj.getWidth = function(s) return lovemu.textures[obj].w end
+		obj.getHeight = function(s) return lovemu.textures[obj].h end
 		ADD_FILTER(obj)
 		obj.setWrap = function()  end
 		obj.getWrap = function()  end
@@ -410,17 +397,17 @@ do -- image
 		return obj
 	end
 	
-	function love.graphics.newImageData(path)		
+	function love.graphics.newImageData(path) -- partial
 		if lovemu.debug then print("LOADING IMAGEDATA FROM PATH "..path) end		
 		local obj = lovemu.NewObject("Image")
 		
-		textures[obj] = Texture(path, {
+		lovemu.textures[obj] = Texture(path, {
 			mag_filter = FILTER,
 			min_filter = FILTER,
 		}) 
 		
-		obj.getWidth = function(s) return textures[obj].w end
-		obj.getHeight = function(s) return textures[obj].h end
+		obj.getWidth = function(s) return lovemu.textures[obj].w end
+		obj.getHeight = function(s) return lovemu.textures[obj].h end
 		obj.setWrap = function()  end
 		obj.getWrap = function()  end
 		
@@ -457,7 +444,7 @@ function love.graphics.circle(mode,x,y,w,h) --partial
 	surface.DrawRect(x or 0, y or 0, w or 0, h or 0)
 end
 
-function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy)
+function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy) -- partial
 	x=x or 0
 	y=y or 0
 	sx=sx or 1
@@ -468,7 +455,7 @@ function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy)
 	r=r/0.0174532925
 	
 	surface.Color(cr/255, cg/255, cb/255, ca/255)
-	surface.SetTexture(textures[drawable])
+	surface.SetTexture(lovemu.textures[drawable])
 	surface.SetRectUV(quad[1]*quad[5],quad[2]*quad[6],quad[3]*quad[5],quad[4]*quad[6])
 	surface.DrawRect(x,y, quad[3]*sx, quad[4]*sy,r,ox*sx,oy*sy)
 	surface.SetRectUV(0,0,1,1)
@@ -479,10 +466,10 @@ local drawq = love.graphics.drawq
 function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 	if type(drawable) == "table" and drawable.typeOf and drawable:typeOf("SpriteBatch") then
 		surface.Color(1,1,1,1)
-		surface.SetTexture(textures[drawable.img])
+		surface.SetTexture(lovemu.textures[drawable.img])
 		drawable.poly:Draw()
 	else
-		if textures[drawable] then
+		if lovemu.textures[drawable] then
 			if type(x) == "table" and x:typeOf("Quad") then
 				drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 			else
@@ -499,7 +486,7 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 					r = 0
 				end
 				
-				local tex = textures[drawable]
+				local tex = lovemu.textures[drawable]
 				
 				--if drawable.fb then  sx = 5 sy = 6 end
 				
@@ -575,20 +562,20 @@ function love.graphics.getModes() --partial
 end
 
 do
-	function love.graphics.setScissor(x,y,w,h)
+	function love.graphics.setScissor(x,y,w,h) -- partial
 		render.SetScissor(x, y, w, h)
 	end
 
-	function love.graphics.getScissor()
+	function love.graphics.getScissor() -- partial
 		return render.GetScissor()
 	end
 end
 
-function love.graphics.polygon()
+function love.graphics.polygon() -- partial
 
 end
 
-function love.graphics.newSpriteBatch(image, size, usagehint)
+function love.graphics.newSpriteBatch(image, size, usagehint) -- partial
 	local obj = lovemu.NewObject("SpriteBatch")
 	local poly = surface.CreatePoly(size+1)
 	local i = 0

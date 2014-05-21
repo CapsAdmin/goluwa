@@ -1,10 +1,6 @@
-local love=love
-local lovemu=lovemu
-love.system={}
+local love = (...) or _G.lovemu.love
 
-local ffi=ffi
-local glfw=glfw
-local window=window
+love.system = {}
 
 function love.system.getClipboardText()
 	return system.GetClipboard()

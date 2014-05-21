@@ -1,48 +1,50 @@
+local love = (...) or _G.lovemu.love
+
 love.joystick = {}
 
-function love.joystick.getJoysticks()
+function love.joystick.getJoysticks() --partial
 	return {}
 end
 
-function love.joystick.close()
+function love.joystick.close() --partial
 
 end
-function love.joystick.getAxes()
+function love.joystick.getAxes() --partial
 
 end
-function love.joystick.getAxis()
+function love.joystick.getAxis() --partial
 
 end
-function love.joystick.getBall()
+function love.joystick.getBall() --partial
 
 end
-function love.joystick.getHat()
+function love.joystick.getHat() --partial
 
 end
-function love.joystick.getName()
+function love.joystick.getName() --partial
 	return "hello_world"
 end
-function love.joystick.getNumAxes()
+function love.joystick.getNumAxes() --partial
 	return 2
 end
-function love.joystick.getNumBalls()
+function love.joystick.getNumBalls() --partial
 	return 2
 end
-function love.joystick.getNumButtons()
+function love.joystick.getNumButtons() --partial
 	return 2
 end
-function love.joystick.getNumHats()
+function love.joystick.getNumHats() --partial
 	return 2
 end
-function love.joystick.getNumJoysticks()
+function love.joystick.getNumJoysticks() --partial
 	return 0
 end
-function love.joystick.isDown()
+function love.joystick.isDown() --partial
 	return false
 end
-function love.joystick.isOpen()
+function love.joystick.isOpen() --partial
 	return true
 end
-function love.joystick.open()
+function love.joystick.open() --partial
 
 end

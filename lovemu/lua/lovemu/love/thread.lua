@@ -1,9 +1,12 @@
+local love = (...) or _G.lovemu.love
+
 local threads = {}
 
 love.thread = {}
 
 function love.thread.newThread(name)
 	local obj = lovemu.NewObject("thread")
+	
 	threads[name] = obj
 		
 	function obj:start() end

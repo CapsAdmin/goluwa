@@ -1,13 +1,11 @@
-local love=love
-local lovemu=lovemu
+local love = (...) or _G.lovemu.love
 
 local textures = lovemu.textures
 local FILTER = "nearest"
 
+love.image = {}
 
-love.image={}
-
-function love.image.newImageData(a, b)
+function love.image.newImageData(a, b) --partial
 	check(a, "string", "number")
 	check(b, "number", "nil")
 
