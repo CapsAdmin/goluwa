@@ -20,19 +20,22 @@ local function ADD_FILTER(obj)
 	obj.getFilter = function() return s.filter_min, s.filter_mag, s.filter_anistropy end
 end
 
-function love.graphics.newQuad(...) -- partial
-	local obj = lovemu.NewObject("Quad", ...)
-		
-	local vertices = {}
-	
-	for i = 0, 3 do
-		vertices[i] = {x = 0, y = 0, s = 0, t = 0}
+local DEFAULT_FILTER = "linear"
+
+do -- filter
+
+	function love.graphics.setDefaultFilter(filter)
+		DEFAULT_FILTER = filter
 	end
-	
-	obj.vertices = vertices
-	
-	local function refresh(x,y,w,h, sw, sh)
+
+	love.graphics.setDefaultImageFilter = setDefaultFilter
+end
+
+do -- quad
+	local Quad = {}
+	Quad.Type = "Quad"
 		
+	local function refresh(vertices, x,y,w,h, sw, sh)
 		vertices[0].x = 0;
 		vertices[0].y = 0;
 		vertices[1].x = 0;
@@ -52,17 +55,37 @@ function love.graphics.newQuad(...) -- partial
 		vertices[3].t = y/sh;
 	end
 	
-	obj.flip = function() end
-	obj.getViewport = function(s) return s[1], s[2], s[3], s[4] end
-	obj.setViewport = function(s, x,y,w,h) 
-		s[1] = x
-		s[2] = y
-		s[3] = w
-		s[4] = h
-		refresh(x,y,w,h, s[3], s[4]) 
+	function Quad:flip() -- partial
+	
 	end
 	
-	return obj
+	function Quad:getViewport() 
+		return self.data[1], self.data[2], self.data[3], self.data[4] 
+	end
+	
+	function Quad:setViewport(s, x,y,w,h) 
+		self.data[1] = x
+		self.data[2] = y
+		self.data[3] = w
+		self.data[4] = h
+		
+		refresh(self.vertices, x,y,w,h, self.data[3], self.data[4]) 
+	end
+	
+	
+	function love.graphics.newQuad() -- partial
+		local self = lovemu.CreateObject(Quad)
+		
+		local vertices = {}
+
+		for i = 0, 3 do
+			vertices[i] = {x = 0, y = 0, s = 0, t = 0}
+		end
+		
+		self.vertices = vertices
+			
+		return self
+	end
 end
 
 love.graphics.origin = render.LoadIdentity
@@ -190,6 +213,21 @@ end
 
 
 do -- font
+	
+	local Font = {}
+	
+	Font.Type = "Font"
+		
+	function Font:getWidth(str) 
+		surface.SetFont(self.Name)
+		return surface.GetTextSize(str)
+	end
+	
+	function Font:getHeight(str) 
+		surface.SetFont(self.Name)
+		return select(2, surface.GetTextSize(str))
+	end
+
 	local i = 0
 	
 	function love.graphics.newFont(a, b)
@@ -208,29 +246,21 @@ do -- font
 		
 		size = size or 12
 				
-		local obj = lovemu.NewObject("Font")
+		local self = lovemu.CreateObject(Font)
 		
-		obj.Name = surface.CreateFont("lovemu_" .. font .. i, {
+		self.Name = surface.CreateFont("lovemu_" .. font .. i, {
 			size = size,
 			path = font,
 		})
 		
 		i = i + 1
 		
-		surface.SetFont(obj.Name)
+		surface.SetFont(self.Name)
 		local w, h = surface.GetTextSize("W")
 
-		obj.Size = size
-		
-		obj.getWidth = function(_, str) 
-			return surface.GetTextSize(str)
-		end
-		
-		obj.getHeight = function(_, str) 
-			return select(2, surface.GetTextSize(str))
-		end
-				
-		return obj
+		self.Size = size
+
+		return self
 	end
 	
 	local currentFont = love.graphics.newFont(12)
@@ -317,39 +347,59 @@ do -- line
 end
 
 do -- canvas	
+	local Canvas = {}
+	Canvas.Type = "Canvas"
+	
+	ADD_FILTER(Canvas)
+	
+	function Canvas:renderTo(cb)
+		self.fb:Begin()
+		cb()
+		self.fb:End()
+	end
+	
+	function Canvas:getWidth() 
+		return self.w 
+	end
+	
+	function Canvas:getHeight() 
+		return self.h 
+	end
+	
+	function Canvas:getImageData() 
+		
+	end
+	
+	function Canvas:clear(self, ...) 
+		self.fb:Begin() love.graphics.clear(...) self.fb:End() 
+	end
+	
+	function Canvas:setWrap() 
+		
+	end
+	
+	function Canvas:getWrap() 
+		
+	end
+
 	function love.graphics.newCanvas(w, h) -- partial
 		w = w or render.GetWidth()
 		h = h or render.GetHeight()
 				
-		local obj = lovemu.NewObject("Canvas")
+		local self = lovemu.CreateObject(Canvas)
 		
-		obj.fb = render.CreateFrameBuffer(w, h, {
+		self.fb = render.CreateFrameBuffer(w, h, {
 			attach = gl.e.GL_COLOR_ATTACHMENT1,
 			texture_format = {
 				internal_format = gl.e.GL_RGB32F,
-				mag_filter = FILTER,
-				min_filter = FILTER,
+				mag_filter = DEFAULT_FILTER,
+				min_filter = DEFAULT_FILTER,
 			}
 		})
+				
+		lovemu.textures[self] = self.fb:GetTexture("diffuse")
 		
-		obj.renderTo = function(cb)
-			obj.fb:Begin()
-			cb()
-			obj.fb:End()
-		end
-		
-		obj.getWidth = function() return w end
-		obj.getHeight = function() return h end
-		obj.getImageData = function() end
-		ADD_FILTER(obj)
-		obj.clear = function(_, ...) obj.fb:Begin() love.graphics.clear(...) obj.fb:End() end
-		
-		obj.setWrap = function() end
-		obj.getWrap = function() end
-		
-		lovemu.textures[obj] = obj.fb:GetTexture("diffuse")
-		
-		return obj
+		return self
 	end
 	
 	local CANVAS
@@ -369,49 +419,47 @@ do -- canvas
 	end
 end
 
-do -- image
-	local FILTER = "linear"
-
-	function love.graphics.setDefaultFilter(filter)
-		FILTER = filter
-	end
-
-	love.graphics.setDefaultImageFilter = setDefaultFilter
+do -- image	
+	local Image = {}
 	
-	function love.graphics.newImage(path) -- partial
-		if lovemu.debug then print("LOADING IMAGE FROM PATH "..path) end
+	Image.Type = "Image"
+	
+	function Image:getWidth(s) 
+		return lovemu.textures[self].w 
+	end
+	
+	function Image:getHeight(s) 
+		return lovemu.textures[self].h 
+	end
+	
+	ADD_FILTER(Image)
+	
+	function Image:setWrap()  --partial
 		
-		local obj = lovemu.NewObject("Image")
+	end
+	
+	function Image:getWrap() --partial
 		
-		lovemu.textures[obj] = Texture(path, {
-			mag_filter = filter,
-			min_filter = FILTER,
+	end
+	
+	function love.graphics.newImage(path) -- partial		
+		local self = lovemu.CreateObject(Image)
+		
+		lovemu.textures[self] = Texture(path, {
+			mag_filter = DEFAULT_FILTER,
+			min_filter = DEFAULT_FILTER,
 		}) 
-				
-		obj.getWidth = function(s) return lovemu.textures[obj].w end
-		obj.getHeight = function(s) return lovemu.textures[obj].h end
-		ADD_FILTER(obj)
-		obj.setWrap = function()  end
-		obj.getWrap = function()  end
 		
-		return obj
+		return self
 	end
 	
 	function love.graphics.newImageData(path) -- partial
-		if lovemu.debug then print("LOADING IMAGEDATA FROM PATH "..path) end		
-		local obj = lovemu.NewObject("Image")
+		local obj = lovemu.CreateObject(Image)
 		
 		lovemu.textures[obj] = Texture(path, {
-			mag_filter = FILTER,
-			min_filter = FILTER,
+			mag_filter = DEFAULT_FILTER,
+			min_filter = DEFAULT_FILTER,
 		}) 
-		
-		obj.getWidth = function(s) return lovemu.textures[obj].w end
-		obj.getHeight = function(s) return lovemu.textures[obj].h end
-		obj.setWrap = function()  end
-		obj.getWrap = function()  end
-		
-		ADD_FILTER(obj)
 		
 		return obj
 	end
@@ -506,13 +554,23 @@ end
 function love.graphics.setIcon() --partial
 end
 
-function love.graphics.newShader() --partial
-	local obj = lovemu.NewObject("Shader")
+do 
+	local Shader = {}
+	Shader.Type = "Shader"
 	
-	obj.getWarnings = function() return "" end
-	obj.send = function() end
+	function Shader:getWarnings() -- partial
+		return "" 
+	end
 	
-	return obj
+	function Shader:send() -- partial
+		
+	end
+	
+	function love.graphics.newShader() --partial
+		local obj = lovemu.CreateObject(Shader)
+				
+		return obj
+	end
 end
 
 love.graphics.newPixelEffect = love.graphics.newShader 
@@ -526,7 +584,7 @@ end
 function love.graphics.setScissor() --partial
 end
 
-function love.graphics.isCreated()
+function love.graphics.isCreated() -- partial
 	return true
 end
 
@@ -575,60 +633,77 @@ function love.graphics.polygon() -- partial
 
 end
 
-function love.graphics.newSpriteBatch(image, size, usagehint) -- partial
-	local obj = lovemu.NewObject("SpriteBatch")
-	local poly = surface.CreatePoly(size+1)
-	local i = 0
+do -- sprite batch
+
+	local SpriteBatch = {}
+	SpriteBatch.Type = "SpriteBatch"
 	
-	obj.poly = poly
-	obj.img = image
-	
-	local W = image:getWidth()
-	local H = image:getHeight()
-	
-	local function set_rect(i, x,y, r, sx,sy, ox,oy, kx,ky)	
-		sx = sx or W
-		sy = sy or H
+	local function set_rect(poly, i, x,y, r, sx,sy, ox,oy, kx,ky)	
+		sx = sx or self.w
+		sy = sy or self.h
 		
-		sx = sx * W
-		sy = sy * H
+		sx = sx * self.w
+		sy = sy * self.h
 		poly:SetRect(i, x,y, sx,sy, r, ox,oy)		
 	end
 		
-	obj.set = function(_, id, q, ...)
+	function SpriteBatch:set(id, q, ...)
 		if type(q) == "table" then
-			poly:SetUV(q[1]*q[5], q[2]*q[6], q[3]*q[5], q[4]*q[6])
-			set_rect(id, ...)
+			self.poly:SetUV(q[1]*q[5], q[2]*q[6], q[3]*q[5], q[4]*q[6])
+			set_rect(self.poly, id, ...)
 		else
-			set_rect(id, q, ...)
+			set_rect(self.poly, id, q, ...)
 		end
 	end
 	
-	obj.setq = obj.set
+	SpriteBatch.setq = SpriteBatch.set
 	
-	obj.add = function(_, q, ...)
-		obj:set(i, q, ...)
+	function SpriteBatch:add(q, ...)
+		self:set(i, q, ...)
 		
 		i = i + 1
 		
 		return i
 	end
 	
-	obj.addq = obj.add
+	SpriteBatch.addq = SpriteBatch.add
 	
-	obj.setColor = function(_, r,g,b,a) 
+	function SpriteBatch:setColor(r,g,b,a) 
 		
 		r = r or 255 
 		g = g or 255 
 		b = b or 255 
 		a = a or 255 
 		
-		poly:SetColor(r/255,g/255,b/255,a/255) 
+		self.poly:SetColor(r/255,g/255,b/255,a/255) 
 	end
-	obj.clear = function() end
-	obj.getImage = function() return image end
-	obj.bind = function() end
-	obj.unbind = function() end
 	
-	return obj
+	function SpriteBatch:clear()  -- partial
+		
+	end
+	
+	function SpriteBatch:getImage()  -- partial
+		return self.image 
+	end
+	
+	function SpriteBatch:bind() 
+		
+	end
+	
+	function SpriteBatch:unbind() 
+		
+	end
+
+	function love.graphics.newSpriteBatch(image, size, usagehint) -- partial
+		local self = lovemu.CreateObject(SpriteBatch)
+		local poly = surface.CreatePoly(size+1)
+		local i = 0
+		
+		self.poly = poly
+		self.img = image
+		self.w = image:getWidth()
+		self.h = image:getHeight()
+		
+		return self
+	end
 end

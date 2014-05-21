@@ -4,18 +4,46 @@ lovemu.version = "0.9.0"
 
 include("boot.lua")
 
-function lovemu.NewObject(name, ...)
-	local obj = {__lovemu_type = name, ...}
+do
+	local BASE = {}
+
+	function BASE:__index(key)
+		return BASE[key] or self.meta[key]
+	end
+
+	function BASE:typeOf(str)
+		return str == self.name
+	end
+
+	function BASE:type()
+		return self.name
+	end
+	
+	local created = {}
+
+	function lovemu.CreateObject(META)
+		local self = setmetatable({__lovemu_type = META.Type, meta = META}, BASE)
 		
-	obj.typeOf = function(_, str)
-		return str == name
+		created[META.Type] = created[META.Type] or {}
+		table.insert(created[META.Type], self)
+		
+		return self
 	end
 	
-	obj.type = function()
-		return name
+	function lovemu.Type(v)
+		if type(v) == "table" and v.__lovemu_type then
+			return v.__lovemu_type
+		end
+		return type(v)
 	end
 	
-	return obj
+	function lovemu.GetCreatedObjects(name)
+		return created[name] or {}
+	end
+end
+
+function lovemu.ErrorNotSupported(str, level)
+	error("[lovemu] " .. str, level or 4)
 end
 
 function lovemu.CheckSupported(demo)
@@ -70,7 +98,7 @@ console.AddCommand("lovemu", function(line, command, ...)
 	if command == "run" then
 		local name = tostring((...))
 		if vfs.IsDir("lovers/" .. name) then
-			lovemu.boot(name)
+			lovemu.RunGame(name)
 		else
 			return false, "love game " .. name .. " does not exist"
 		end

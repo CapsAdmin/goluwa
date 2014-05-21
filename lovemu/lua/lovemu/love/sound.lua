@@ -3,7 +3,7 @@ local love = (...) or _G.lovemu.love
 love.sound = {}
 
 function love.sound.newSoundData(file_name)
-	local self = lovemu.NewObject("SoundData")
+	local self = lovemu.CreateObject("SoundData")
 	local ptr = newproxy()
 	
 	function self:getPointer()

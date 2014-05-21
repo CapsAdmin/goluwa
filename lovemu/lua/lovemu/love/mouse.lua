@@ -14,13 +14,16 @@ function love.mouse.getY()
 	return window.GetMousePos().y
 end
 
+local Cursor = {}
+Cursor.Type = "Cursor"
+
 function love.mouse.newCursor() -- partial
-	local obj = lovemu.NewObject("Cursor")
+	local obj = lovemu.CreateObject(Cursor)
 	return obj
 end
 
 function love.mouse.getCursor() -- partial
-	local obj = lovemu.NewObject("Cursor")
+	local obj = lovemu.CreateObject(Cursor)
 	
 	obj.getType = function()
 		return system.GetCursor()
@@ -34,7 +37,7 @@ function love.mouse.setCursor() -- partial
 end
 
 function love.mouse.getSystemCursor() -- partial
-	local obj = lovemu.NewObject("Cursor")
+	local obj = lovemu.CreateObject(Cursor)
 	obj.getType = function()
 		return system.GetCursor()
 	end

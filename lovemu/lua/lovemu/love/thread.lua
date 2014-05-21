@@ -5,7 +5,7 @@ local threads = {}
 love.thread = {}
 
 function love.thread.newThread(name)
-	local obj = lovemu.NewObject("thread")
+	local obj = lovemu.CreateObject("thread")
 	
 	threads[name] = obj
 		
