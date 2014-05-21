@@ -296,6 +296,12 @@ logn("executed by " .. e.USERNAME, "\n")
 do -- ffi
 	_OLD_G.ffi_load = _OLD_G.ffi_load or ffi.load
 	
+	function ffi.new_dbg_gc(...)
+		local obj = ffi.new(...)
+		ffi.gc(obj, function(...) logn("ffi debug gc: ", ...) end)
+		return obj
+	end
+	
 	-- make ffi.load search using our file system
 	ffi.load = function(path, ...)
 		local ok, msg = pcall(_OLD_G.ffi_load, path, ...)
