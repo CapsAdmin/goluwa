@@ -19,11 +19,20 @@ function window.Open(...)
 	if window.wnd:IsValid() then return end
 	
 	local wnd = render.CreateWindow(...)
-		
-	function wnd:Update(dt)
-		render.DrawScene(self, dt)
-	end
 	
+	-- don't draw anything until the everything has be
+	event.AddListenerX({
+		event = "RenderContextInitialized", 
+		unique = "window_start_rendering", 
+		callback = function()
+			function wnd:OnUpdate(dt)
+				render.DrawScene(self, dt)
+			end
+			return e.EVENT_DESTROY
+		end, 
+		priority = -100000,
+	})
+
 	function wnd:OnCursorPos()
 		if system then system.SetCursor(system.GetCursor()) end
 	end
@@ -101,6 +110,8 @@ function window.Close()
 		window.wnd:Remove()
 	end
 end
+
+local glfw = require("lj-glfw")
 
 function system.SetClipboard(str)
 	if window.wnd:IsValid() then

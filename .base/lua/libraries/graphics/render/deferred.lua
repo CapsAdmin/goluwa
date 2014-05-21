@@ -120,6 +120,8 @@ local PPSHADER = {
 local sphere = NULL
 
 function render.InitializeDeffered()
+	
+	event.AddListener("WindowFramebufferResized", "gbuffer_resize", render.InitializeDeffered)
 
 	render.gbuffer_config = {
 		{
@@ -295,4 +297,3 @@ if render.deferred_shader then
 end
 
 event.AddListener("RenderContextInitialized", render.InitializeDeffered)
-event.AddListener("WindowFramebufferResized", "gbuffer_resize", render.InitializeDeffered)
