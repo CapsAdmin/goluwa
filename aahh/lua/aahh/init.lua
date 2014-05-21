@@ -12,7 +12,7 @@ function aahh.Initialize()
 	
 	aahh.initialized = true
 	
-	event.AddListener("WindowFramebufferSize", "aahh_world", function(window, w,h)
+	event.AddListener("WindowFramebufferResized", "aahh_world", function(window, w,h)
 		aahh.World:RequestLayout()
 	end)
 	
