@@ -107,37 +107,44 @@ do -- commands
 		return console.AddedCommands
 	end
 	
-	function console.RunCommand(cmd, ...)
-		local ok, reason = console.CallCommand(cmd, table.concat({...}, " "), ...)
-		
-		if not ok then
-			logn("failed to execute command ", cmd, "!")
-			logn(reason) 
-			
-			if console.AddedCommands[cmd].help then
-				logn(console.AddedCommands[cmd].help)
-			end
-		end
-	end
-
 	local function call(data, line, ...)
 		local a, b, c = xpcall(data, system.OnError, line, ...)
 
-		if a and b ~= nil and c then
+		if a and b ~= nil then
 			return b, c
 		end
 		
 		return a, b
 	end
 
-	function console.CallCommand(cmd, line, ...)
+	local function call_command(cmd, line, ...)
 		cmd = cmd:lower()
 
 		local data = console.AddedCommands[cmd]
 
 		if data then
-			return call(data.callback, line, ...)
+			local ok, reason = call(data.callback, line, ...)
+			 if not ok then
+				logn("failed to execute command ", cmd, "!")
+				logn(reason) 
+				
+				local help = console.AddedCommands[cmd].help
+				
+				if help then
+					if type(help) == "function" then
+						help()
+					else
+						logn(help)
+					end
+				end
+			end
+			
+			return ok, reason
 		end
+	end
+	
+	function console.RunCommand(cmd, ...)
+		return call_command(cmd, table.concat({...}, ","), ...)
 	end
 	
 	do -- arg parsing
@@ -287,7 +294,7 @@ do -- commands
 		
 		if data then						
 			if console.AddedCommands[data.cmd] then
-				return console.CallCommand(data.cmd, data.line, unpack(data.args))
+				return call_command(data.cmd, data.line, unpack(data.args))
 			end
 			
 			if not skip_lua then
@@ -385,8 +392,13 @@ do -- console vars
 				
 				logf("%s = %s\n", name, luadata.ToString(luadata.FromString(value)))
 				logn("default = ", luadata.ToString(def))
-				if console.GetCommands()[name].help then
-					logn(console.GetCommands()[name].help)
+				local help = console.GetCommands()[name].help
+				if help then
+					if type(help) == "function" then
+						help()
+					else
+						logn(help)
+					end
 				end
 			else
 					
@@ -477,7 +489,11 @@ console.AddCommand("help", function(line)
 			logn("\t\targuments\t=\t", table.concat(debug.getparams(info.callback), ", "))
 			logn("\t\tfunction\t=\t", tostring(info.callback))
 		else
-			logn(info.help)
+			if type(info.help) == "function" then
+				info.help()
+			else
+				logn(info.help)
+			end
 		end
 	end
 end)
