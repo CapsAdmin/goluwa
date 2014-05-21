@@ -61,7 +61,7 @@ serializer.AddLibrary("msgpack", function(...) return msgpack.pack({...}) end, f
 local json = require("dkjson")
 serializer.AddLibrary("json", function(...) return json.encode(...) end, function(...) return json.decode(...) end, json)
 
-local von = require("vON")
+local von = require("von")
 serializer.AddLibrary("von", function(...) return von.serialize(...) end, function(...) return von.deserialize(...) end, von)
 
 local luadata = include("luadata.lua")
