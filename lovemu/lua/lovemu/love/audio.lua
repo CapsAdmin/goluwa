@@ -1,32 +1,31 @@
-local love=love
-local lovemu=lovemu
-love.audio={}
+local love = (...) or _G.lovemu.love
+
+love.audio = {}
 
 local sources = {}
-
 
 local function getChannels(self)
 	return 2 --stereo
 end
 
 local function getDirection(self)
-	if self.legit==true then
-		return	self:GetDirection()
+	if self.ready then
+		return self:GetDirection()
 	else
 		return 0,0,0
 	end
 end
 
 local function getDistance(self)
-	if self.legit==true then
-		return self:GetReferenceDistance(),self:GetMaxDistance()
+	if self.ready then
+		return self:GetReferenceDistance(), self:GetMaxDistance()
 	else
 		return 0,0
 	end
 end
 
 local function getPitch(self)
-	if self.legit==true then
+	if self.ready then
 		return self:GetPitch()
 	else
 		return 1
@@ -34,7 +33,7 @@ local function getPitch(self)
 end
 
 local function getPosition(self)
-	if self.legit==true then
+	if self.ready then
 		return self:GetPosition()
 	else
 		return 0,0,0
@@ -42,7 +41,7 @@ local function getPosition(self)
 end
 
 local function getRolloff(self)
-	if self.legit==true then
+	if self.ready then
 		return self:GetRolloffFactor()
 	else
 		return 1
@@ -50,7 +49,7 @@ local function getRolloff(self)
 end
 
 local function getVelocity(self)
-	if self.legit==true then
+	if self.ready then
 		return self:GetVelocity()
 	else
 		return 0,0,0
@@ -58,7 +57,7 @@ local function getVelocity(self)
 end
 
 local function getVolume(self)
-	if self.legit==true then
+	if self.ready then
 		return self:GetGain()
 	else
 		return 1
@@ -70,7 +69,7 @@ local function getVolumeLimits(self)
 end
 
 local function isLooping(self)
-	if self.legit==true then
+	if self.ready then
 		return self:GetLooping()
 	else
 		return false
@@ -78,7 +77,7 @@ local function isLooping(self)
 end
 
 local function isPaused(self)
-	if self.legit==true then
+	if self.ready then
 		return not self.isplaying
 	else
 		return false
@@ -90,7 +89,7 @@ local function isStatic(self)
 end
 
 local function isStopped(self)
-	if self.legit==true then
+	if self.ready then
 		return not self.isplaying
 	else
 		return false
@@ -98,95 +97,95 @@ local function isStopped(self)
 end
 
 local function pause(self)
-	if self.legit==true then
+	if self.ready then
 		self:Pause()
 	end
 end
 
 local function play(self)
-	if self.legit==true then
+	if self.ready then
 		self:Play()
-		self.playing=true
+		self.playing = true
 	end
 end
 
 local function resume(self)
-	if self.legit==true then
+	if self.ready then
 		self:Resume()
 	end
 end
 
 local function rewind(self)
-	if self.legit==true then
+	if self.ready then
 		self:Rewind()
 	end
 end
 
 local function seek(self,offset,type)
-	if self.legit==true then
+	if self.ready then
 		self:Seek(offset, type)
 	end
 end
 
 local function stop(self)
-	if self.legit==true then
+	if self.ready then
 		self:Stop()
 		self.playing=false
 	end
 end
 
 local function setDirection(self,x,y,z)
-	if self.legit==true then
+	if self.ready then
 		self:SetDirection(x,y,z)
 	end
 end
 
 local function setDistance(self,ref,max)
-	if self.legit==true then
+	if self.ready then
 		self:SetReferenceDistance(ref)
 		self:SetMaxDistance(max)
 	end
 end
 
 local function setAttenuationDistances(self,ref,max)
-	if self.legit==true then
+	if self.ready then
 		self:SetReferenceDistance(ref)
 		self:SetMaxDistance(max)
 	end
 end
 
 local function setLooping(self,bool)
-	if self.legit==true then
+	if self.ready then
 		self:SetLooping(bool)
 	end
 end
 
 local function setPitch(self,pitch)
-	if self.legit==true then
+	if self.ready then
 		self:SetPitch(pitch)
 	end
 end
 
 local function setPosition(self,x,y,z)
-	if self.legit==true then
+	if self.ready then
 		self:SetPosition(x,y,z)
 	end
 end
 
 local function setRolloff(self,x)
-	if self.legit==true then
+	if self.ready then
 		self:SetRolloffFactor(x)
 	end
 end
 
 local function setVelocity(self,x,y,z)
-	if self.legit==true then
+	if self.ready then
 		self:SetVelocity(x,y,z)
 	end
 end
 
 local function setVolume(self,vol)
-	if self.legit==true then
+	if self.ready then
 		self:SetGain(vol)
 	end
 end
@@ -195,7 +194,7 @@ local function setVolumeLimits(self)
 end
 
 local function tell(self,type)
-	if self.legit==true then
+	if self.ready then
 		self:Tell(self, type)
 	else
 		return 1
@@ -204,64 +203,55 @@ end
 
 local id=0
 function love.audio.newSource(path) --partial
-	local legit=false
-	local source=lovemu.NewObject("source")
+	local ready = false
+	local source = lovemu.NewObject("source")
 	
 	if vfs.Exists(path) then
 		local ext = path:match(".+%.(.+)")
 		if ext == "flac" or ext == "wav" or ext == "ogg" then
 			source = utilities.RemoveOldObject(Sound(path),id)
-			id=id+1
-			legit=true
+			id = id + 1
+			ready = true
 			source:SetChannel(1)
-			if lovemu.debug then print("loaded: "..path) end
-		else
-			if lovemu.debug then print("CANT LOAD AUDIO FILE: "..path) end
 		end
-	else
-		if lovemu.debug then print("CANT LOAD AUDIO FILE: "..path) end
 	end
-	source.playing=false
 	
-	source.getChannels=getChannels
-	source.getDirection=getDirection
-	source.getDistance=getDistance
-	source.getPitch=getPitch
-	source.getPosition=getPosition
-	source.getRolloff=getRolloff
-	source.getVelocity=getVelocity
-	source.getVolume=getVolume
-	source.getVolumeLimits=getVolumeLimits
-	source.isLooping=isLooping
-	source.isPaused=isPaused
-	source.isStopped=isStopped
-	source.pause=pause
-	source.play=play
-	source.resume=resume
-	source.rewind=rewind
-	source.seek=seek
-	source.stop=stop
-	source.setDirection=setDirection
-	source.setDistance=setDistance
-	source.setAttenuationDistances=setAttenuationDistances
-	source.setLooping=setLooping
-	source.setPitch=setPitch
-	source.setPosition=setPosition
-	source.setRolloff=setRolloff
-	source.setVelocity=setVelocity
-	source.setVolume=setVolume
-	source.setVolumeLimits=setVolumeLimits
-	source.tell=tell
-	source.legit=legit
+	source.playing = false
+	
+	source.getChannels = getChannels
+	source.getDirection = getDirection
+	source.getDistance = getDistance
+	source.getPitch = getPitch
+	source.getPosition = getPosition
+	source.getRolloff = getRolloff
+	source.getVelocity = getVelocity
+	source.getVolume = getVolume
+	source.getVolumeLimits = getVolumeLimits
+	source.isLooping = isLooping
+	source.isPaused = isPaused
+	source.isStopped = isStopped
+	source.pause = pause
+	source.play = play
+	source.resume = resume
+	source.rewind = rewind
+	source.seek = seek
+	source.stop = stop
+	source.setDirection = setDirection
+	source.setDistance = setDistance
+	source.setAttenuationDistances = setAttenuationDistances
+	source.setLooping = setLooping
+	source.setPitch = setPitch
+	source.setPosition = setPosition
+	source.setRolloff = setRolloff
+	source.setVelocity = setVelocity
+	source.setVolume = setVolume
+	source.setVolumeLimits = setVolumeLimits
+	source.tell = tell
+	source.ready = ready
 	
 	sources[id] = source
 	
 	return source
-end
-
-local DistanceModel="none"
-function love.audio.getDistanceModel()
-	return DistanceModel
 end
 
 function love.audio.getNumSources()
@@ -301,24 +291,11 @@ function love.audio.rewind()
 end
 
 function love.audio.setDistanceModel(name)
-	name = name or "none"
-	if name=="none" then
-		audio.SetDistanceModel(e.AL_NONE)
-	elseif name=="inverse" then
-		audio.SetDistanceModel(e.AL_INVERSE_DISTANCE)
-	elseif name=="inverse clamped" then
-		audio.SetDistanceModel(e.AL_INVERSE_DISTANCE_CLAMPED)
-	elseif name=="linear" then
-		audio.SetDistanceModel(e.AL_LINEAR_DISTANCE)
-	elseif name=="linear clamped" then
-		audio.SetDistanceModel(e.AL_LINEAR_DISTANCE_CLAMPED)
-	elseif name=="exponent" then
-		audio.SetDistanceModel(e.AL_EXPONENT_DISTANCE)
-	else
-		audio.SetDistanceModel(e.AL_EXPONENT_DISTANCE_CLAMPED)
-	end
-	
-	DistanceModel=name
+	audio.SetDistanceModel(name)
+end
+
+function love.audio.getDistanceModel()
+	return audio.GetDistanceModel()
 end
 
 function love.audio.setOrientation(x,y,z,x2,y2,z2)

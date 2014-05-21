@@ -2,19 +2,25 @@ function lovemu.boot(folder)
 	render.EnableGBuffer(false)
 
 	local love = {}
+	
 	love._version = lovemu.version
-	love._version_major = 9
+	
+	local version = lovemu.version:explode(".")
+	
+	love._version_major = tonumber(version[1])
+	love._version_minor = tonumber(version[2])
+	love._version_revision = tonumber(version[3])
 
-	_G.love = love
-	include("lovemu/love/*")
-	_G.love = nil
-	
-	window.Open()	
-	
 	lovemu.errored = false
 	lovemu.error_msg = ""
 	lovemu.delta = 0
 	lovemu.demoname = folder
+	lovemu.love = love
+	lovemu.textures = {}
+	
+	include("lovemu/love/*", love)
+
+	window.Open()	
 	
 	function love.load()
 	end
