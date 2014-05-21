@@ -101,10 +101,6 @@ function render.Initialize()
 	if gl.DepthRangef then
 		gl.DepthRangef(1, 0)
 	end
-
-	if gl.SwapIntervalEXT then
-		gl.SwapIntervalEXT(0)
-	end
 	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
 	system.SetWindowTitle("OpenGL " .. render.GetVersion(), "glversion")
@@ -112,6 +108,21 @@ function render.Initialize()
 	event.Delay(function()
 		event.Call("RenderContextInitialized")	
 	end)
+end
+
+do
+	local vsync = 0
+
+	function render.SetVSync(b)
+		if gl.SwapIntervalEXT then
+			gl.SwapIntervalEXT(b and 1 or 0)
+			vsync = b
+		end
+	end
+
+	function render.GetVSync(b)
+		return vsync
+	end
 end
 
 function render.Shutdown()	
