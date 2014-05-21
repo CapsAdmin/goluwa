@@ -1,5 +1,3 @@
-do return end -- grr
-
 local ffmpeg = require("lj-ffmpeg")
 
 audio.AddDecoder("ffmpeg", function(data, path_hint)
