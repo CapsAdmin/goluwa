@@ -68,7 +68,13 @@ function easylua.FindEntity(str)
 	end
 
 	for key, ply in pairs(players.GetAll()) do
-		if compare(ply:GetNick(), str) then
+		if not ply:IsBot() and compare(ply:GetNick(), str) then
+			return ply
+		end
+	end
+	
+	for key, ply in pairs(players.GetAll()) do
+		if ply:IsBot() and compare(ply:GetNick(), str) then
 			return ply
 		end
 	end
