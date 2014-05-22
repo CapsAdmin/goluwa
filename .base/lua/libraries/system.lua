@@ -127,8 +127,9 @@ do -- title
 	end
 
 	if LINUX then
+		local iowrite = _OLD_G.io.write
 		set_title = function(str)
-			return io.old_write and io.old_write('\27]0;', str, '\7') or nil
+			return iowrite and iowrite('\27]0;', str, '\7') or nil
 		end
 	end
 	
