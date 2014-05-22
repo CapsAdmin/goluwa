@@ -44,7 +44,7 @@ class.GetSet(EMITTER, "PosAttractionForce", 0)
 local emitters = {}
  
 function ParticleEmitter()
-	local self = EMITTER()
+	local self = EMITTER:New()
 	
 	self.particles = {}
 	self.last_emit = 0
@@ -198,7 +198,7 @@ function EMITTER:GetParticles()
 end
   
 function EMITTER:AddParticle(...)
-	local p = PARTICLE()
+	local p = PARTICLE:New()
 	p:SetPos(self:GetPos():Copy())
 	p.life_mult = 1	
 	
