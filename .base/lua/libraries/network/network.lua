@@ -7,14 +7,18 @@ network.client_udp = network.client_udp or NULL
 network.server_udp = network.server_udp or NULL
 
 network.CONNECT = 1
-network.DISCONNECT = 2
-network.ACCEPT = 3
-network.MESSAGE = 4
+network.ACCEPT = 2
+network.UDP_PORT = 3
+
+network.DISCONNECT = 4
+network.MESSAGE = 5
+
+network.udp_accept = {}
 
 -- packet handling
 local delimiter = "\1\3\2"
 local receive_mode = 61440
-local buffered = true
+local buffered = false
 local custom_types = {}
 
 local function encode(...)
@@ -76,7 +80,7 @@ local function ipport_to_uid(ipport)
 	return tostring(123456789 + ipport:gsub("%D", "")%255255255255)
 end
 
-function network.HandleTCPMessage(socket, type, a, b, ...)		
+function network.HandleMessage(socket, type, a, b, ...)		
 	local uniqueid
 	
 	if CLIENT then
@@ -86,7 +90,7 @@ function network.HandleTCPMessage(socket, type, a, b, ...)
 	if SERVER then
 		uniqueid = ipport_to_uid(socket:GetIPPort())
 	end
-	
+		
 	if type == network.CONNECT then		
 		local player = Player(uniqueid)
 				
@@ -96,16 +100,14 @@ function network.HandleTCPMessage(socket, type, a, b, ...)
 						
 			if event.Call("PlayerConnect", player) ~= false then			
 				-- tell all the clients that he just joined
-				network.Broadcast(type, uniqueid, ...)
+				network.BroadcastMessage(type, uniqueid, ...)
 						
 				-- now tell him about all the other clients
 				for key, other in pairs(players.GetAll()) do
-					if other ~= player then
-						network.SendToClient(socket, type, other:GetUniqueID(), ...)
-					end
+					network.SendMessageToClient(socket, type, other:GetUniqueID(), ...)
 				end
 				
-				network.SendToClient(socket, network.ACCEPT, uniqueid)
+				network.SendMessageToClient(socket, network.ACCEPT, uniqueid)
 			else
 				if network.debug then
 					debug.trace()
@@ -124,30 +126,28 @@ function network.HandleTCPMessage(socket, type, a, b, ...)
 		if CLIENT then
 			event.Call("PlayerConnect", player) 
 		end
-	end
-	
-	
-	if SERVER then 
-		local player = Player(uniqueid)
+	elseif CLIENT and type == network.ACCEPT then		
+		network.accepted = true
+		logf("successfully connected to server\n")
 		
-		-- if the player does not have a socket it forgot to connect
-		if not player.socket then
-			-- reject the client
-			player:Remove()
-			return false 
-		end
-	end
+		players.local_player = Player(uniqueid)
+		players.local_player.socket = network.client_tcp
+					
+		event.Call("OnlineStarted")
+		
+		network.SendMessageToServer(network.UDP_PORT, network.client_udp:GetPort())
+	elseif SERVER and type == network.UDP_PORT then
+		local player = Player(uniqueid)
+		socket.udp_port = a
+		network.udp_accept[socket:GetIP() .. a] = player
+	elseif SERVER and not socket.udp_port then
+		-- forgot to send the udp port to server		
+		local player = Player(uniqueid)
 	
-	if type == network.ACCEPT then		
-		if CLIENT then
-			network.accepted = true
-			logf("successfully connected to server\n")
-			
-			players.local_player = Player(uniqueid)
-			players.local_player.socket = network.client_tcp
-						
-			event.Call("OnlineStarted")
-		end
+		player:Remove()
+		logf("rejecting %s because it forgot to send the UDP_PORT packet after ACCEPT\n", socket:GetIPPort())
+		
+		return false -- reject the client
 	elseif type == network.DISCONNECT then
 
 		if SERVER then
@@ -160,7 +160,8 @@ function network.HandleTCPMessage(socket, type, a, b, ...)
 			logf("%s disconnected (%s)\n", socket:GetIPPort(), reason or "unknown reason")
 						
 			if SERVER then	
-				network.Broadcast(type, uniqueid, reason)
+				network.BroadcastMessage(type, uniqueid, reason)				
+				network.udp_accept[socket:GetIP() .. socket.udp_port] = nil
 			end
 			
 			player:Remove()
@@ -184,8 +185,8 @@ function network.HandleTCPMessage(socket, type, a, b, ...)
 	end	
 end
 
-function network.HandleUDPMessage(str, ip, port)
-	print(ip, port, str)
+function network.HandlePacket(str, player)
+	print(player, str)
 end
 
 function network.IsStarted()
@@ -223,7 +224,7 @@ if CLIENT then
 				local found = 0
 				
 				for message in temp:gmatch("(.-)" .. delimiter) do
-					network.HandleTCPMessage(nil, decode(message))
+					network.HandleMessage(nil, decode(message))
 					found = found + 1
 				end
 				
@@ -231,7 +232,7 @@ if CLIENT then
 					temp = temp:match("^.+"..delimiter.."(.*)$") or ""
 				end
 			end
-		
+			
 			network.client_tcp = client
 		end
 		
@@ -240,7 +241,7 @@ if CLIENT then
 			client:SetTimeout(false)
 			
 			function client:OnReceive(str)
-				network.HandleUDPMessage(str)
+				network.HandlePacket(str, NULL)
 			end
 			
 			network.client_udp = client	
@@ -255,7 +256,7 @@ if CLIENT then
 		reason = reason or "left"
 		
 		if network.IsConnected() then
-			network.SendToServer(network.DISCONNECT, reason)
+			network.SendMessageToServer(network.DISCONNECT, reason)
 			network.client_tcp:Remove()
 			
 			players.GetLocalPlayer():Remove()
@@ -275,9 +276,15 @@ if CLIENT then
 		return network.client_tcp:IsValid() and network.client_tcp:IsConnected() and network.accepted or false
 	end
 	
-	function network.SendToServer(event, ...)	
+	function network.SendMessageToServer(event, ...)	
 		if network.client_tcp:IsValid() then
 			network.client_tcp:Send(encode(event, ...), buffered)
+		end
+	end
+	
+	function network.SendPacketToServer(str)
+		if network.client_udp:IsValid() then
+			network.client_udp:Send(str)
 		end
 	end
 end
@@ -291,8 +298,8 @@ if SERVER then
 			local server = sockets.CreateServer("tcp", ip, port, "network_server_tcp")
 			
 			function server:OnClientConnected(client, ip, port)
-				client:SetReceiveMode(receive_mode)			
-				network.HandleTCPMessage(client, network.CONNECT)
+				client:SetReceiveMode(receive_mode)
+				network.HandleMessage(client, network.CONNECT)
 				return true
 			end
 			
@@ -303,7 +310,7 @@ if SERVER then
 				local found = 0
 				
 				for message in client.temp:gmatch("(.-)" .. delimiter) do
-					if network.HandleTCPMessage(client, decode(message)) == false then
+					if network.HandleMessage(client, decode(message)) == false then
 						client:Remove()
 					end
 					found = found + 1
@@ -324,7 +331,10 @@ if SERVER then
 			server:UseDummyClient(false)
 			
 			function server:OnReceive(str, ip, port)
-				network.HandleUDPMessage(str, ip, port)
+				local player = network.udp_accept[ip .. port]
+				if player then
+					network.HandlePacket(str, player)
+				end
 			end
 			
 			network.server_udp = server
@@ -337,14 +347,25 @@ if SERVER then
 		return network.server_tcp:GetClients()
 	end
 		
-	function network.SendToClient(client, event, ...)
+	function network.SendMessageToClient(client, event, ...)
 		if not client:IsValid() then return end
 		client:Send(encode(event, ...), buffered)
 	end
 	
-	function network.Broadcast(event, ...)		
+	function network.SendPacketToClient(client, str)
+		if not client:IsValid() then return end
+		network.server_udp:Send(str, client:GetIP(), client.udp_port)
+	end
+	
+	function network.BroadcastMessage(event, ...)		
 		for _, client in pairs(network.GetClients()) do
-			network.SendToClient(client, event, ...)
+			network.SendMessageToClient(client, event, ...)
+		end
+	end
+	
+	function network.BroadcastPacket(str)		
+		for _, client in pairs(network.GetClients()) do
+			network.SendPacketToClient(client, str)
 		end
 	end
 end
