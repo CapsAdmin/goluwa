@@ -113,12 +113,14 @@ end
 do
 	local vsync = 0
 
+	local glfw = require("lj-glfw")
+	
 	function render.SetVSync(b)
 		if gl.SwapIntervalEXT then
 			gl.SwapIntervalEXT(b == true and 1 or b == "adaptive" and -1 or 0)
 			vsync = b
-		elseif gl.XSwapIntervalEXT then
-			gl.glXSwapIntervalEXT(b == true and 1 or b == "adaptive" and -1 or 0)
+		elseif glfw then
+			glfw.SwapInterval(b and 1 or 0) -- works on linux
 		end
 	end
 
@@ -126,7 +128,7 @@ do
 		return vsync
 	end
 end
-
+ 
 function render.Shutdown()	
 
 end
