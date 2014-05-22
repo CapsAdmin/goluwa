@@ -71,15 +71,15 @@ local function main()
 		
 		if rate > 0 then
 			system.Sleep(math.floor(1/rate * 1000))
-			if render.GetVSync() then
+			if render.context_created and render.GetVSync() then
 				render.SetVSync(false)
 			end
 		elseif rate == 0 then
-			if not render.GetVSync() then
+			if render.context_created and not render.GetVSync() then
 				render.SetVSync(true)
 			end
 		else
-			if render.GetVSync() then
+			if render.context_created and render.GetVSync() then
 				render.SetVSync(false)
 			end
 		end
