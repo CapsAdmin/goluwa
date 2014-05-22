@@ -83,6 +83,8 @@ event.AddListener("Draw2D", "wowozela", function(dt)
 	surface.SetTexture(sphere)
 	surface.DrawRect(pos.x - 64, pos.y - 64, 128, 128)
 		
+	sound:Play() 
+				
 	sound:SetPitch(pitch)
 	sound:SetPosition(0,0,(-volume+1)^10*100)  
 	
