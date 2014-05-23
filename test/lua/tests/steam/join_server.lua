@@ -4,6 +4,7 @@
 -- I then get rejected here in this script with: 	#GameUI_ServerRejectSteam
 
 local ip, port = "116.38.208.61", 27019 
+local app_id = 4000
  
 local function wireshark_hex_dump(str)
 	logn((str:readablehex():gsub("(.. .. .. .. .. .. .. .. )(.. .. .. .. .. .. .. .. )", "%1\t%2\n")))
@@ -48,24 +49,19 @@ local connect = {
 			{"string", ""}, -- password, can be NULL if not provided
 			{"string", "14.04.19"}, -- date? matches the date joined at if months are counted from 0
 			
-			
-			
-			-- commented bytes are example of the other accounts data
-			
-			-- SAME: always the same even on both accounts
-			-- DIFFERENT: differs on both accounts but consistently
-			-- DIFFERENT EVERYTIME: different for each response
-			
-			-- SAME
+			-- these are always the same
 			0xf2, 0x00, 
 			
-		-- DIFFERENT
-		0xef, 0x82, 0x1d, 
---		0xf5, 0x6b, 0xc7,
+			-- these differ from account to account
+			0xef, 0x82, 0x1d, 
+--			0xf5, 0x6b, 0xc7,
 			
-			-- SAME
+			-- these are always the same
 			0x01, 0x01, 0x00, 0x10, 0x01, 
-			{"bytes", get = function(data) local handle, key = steam.GetAuthSessionTicket() print(#key) return key end},			
+			{"bytes", get = function(data) 
+				local handle, key = steam.GetAuthSessionTicket(app_id) 
+				return key 
+			end},			
 		};
 	},
 	response = {
@@ -83,7 +79,7 @@ local connect = {
 				{"byte", "unknown"}, -- wireshark: 00 00
 				{"long", "unknown"}, -- wireshark: 00 00 00 01
 				
-				{"string", "gsid", length = 7}, 
+				{"string", "server_steamid", length = 7}, 
 				{"boolean", "vac"},
 				
 				{"string", "padding"}, -- wireshark: 30 30 30 30 30 30 00
@@ -125,7 +121,7 @@ do -- socket
 			send_struct(self, connect.request[CHALLENGE_CLIENT_RESPONSE], data) 
 		elseif data.type == CONNECTION_SUCCESS then -- connection
 			logn("connection success")
-			send_struct(self, disconnect)
+			self:Remove()
 		end
 	end
 end
