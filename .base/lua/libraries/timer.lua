@@ -38,4 +38,16 @@ do -- system time (independent from elapsed_time)
 	end
 end
 
+do -- server time (synchronized across client and server)
+	local server_time = 0
+	
+	function timer.SetServerTime(time)
+		server_time = time
+	end
+		
+	function timer.GetSystemTime()
+		return server_time
+	end
+end
+
 return timer
