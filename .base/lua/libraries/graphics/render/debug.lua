@@ -81,22 +81,23 @@ local types = {
 	[0x8251] = "other",
 }
 
+local cb = function(source, type, id, severity, length, message, userdata)
+	source = sources[source]
+	type = types[type]
+	severity = severities[severity]
+	message = ffi.string(message, length)
+					
+	render.OnError(source, type, id, severity, message)
+end
 
 function render.EnableDebug(b)
-	do return end-- this just crashes for some weird reason
+	jit.off(true, true)
 	if gl.DebugMessageCallback then
 		if b then		
 			gl.Enable(gl.e.GL_DEBUG_OUTPUT_ARB)
 			gl.DebugMessageControl(gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, ffi.new("GLuint"), nil, true)
 			
-			gl.DebugMessageCallback(function(source, type, id, severity, length, message, userdata)
-				source = sources[source]
-				type = types[type]
-				severity = severities[severity]
-				message = ffi.string(message, length)
-								
-				render.OnError(source, type, id, severity, message)
-			end, nil)
+			gl.DebugMessageCallback(cb, nil)
 		else
 			gl.Disable(gl.e.GL_DEBUG_OUTPUT_ARB)
 		end
