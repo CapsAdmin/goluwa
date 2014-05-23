@@ -23,7 +23,7 @@ local data = {
 	fragment = { 
 		uniform = {
 			global_color = Color(1,1,1,1),
-			texture = "texture",
+			tex = "texture",
 		},		
 		-- when attributes is used outside of vertex they are simply sent from vertex shader
 		-- as "__out_foo" and then grabbed from the other shader with a macro to turn its name 
@@ -33,7 +33,7 @@ local data = {
 		},			
 		source = [[
 			out vec4 frag_color;
-			vec4 color = texture2D(texture, uv);
+			vec4 color = texture(tex, uv);
 			
 			// 0 to 1
 			float x = uv.x;
@@ -69,7 +69,7 @@ event.AddListener("Draw2D", "hm", function()
 	surface.PushMatrix(0, 0, surface.GetScreenSize())
 		mesh.global_color = HSVToColor(timer.GetSystemTime())
 		mesh.time = timer.GetSystemTime()
-		mesh.texture = tex	
+		mesh.tex = tex	
 		mesh:Draw()
 	surface.PopMatrix()
 end) 
