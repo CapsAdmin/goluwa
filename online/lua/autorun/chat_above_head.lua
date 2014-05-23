@@ -32,7 +32,7 @@ if SERVER then
 	end
 	
 	message.AddListener("coh", function(ply, str)
-		local filter = message.PlayerFilter()
+		local filter = players.CreateFilter()
 		filter:AddAllExcept(ply)
 		message.Send("coh", filter, ply, str)
 	end)
