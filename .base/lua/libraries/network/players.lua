@@ -58,6 +58,45 @@ function players.Create(uniqueid, is_bot)
 	return self
 end
 
+do -- filter
+	local META = utilities.CreateBaseMeta("player_filter")
+
+	function META:AddAll()
+		for key, ply in pairs(players.GetAll()) do
+			self.players[ply:GetUniqueID()] = ply
+		end
+
+		return self
+	end
+
+	function META:AddAllExcept(ply)
+		self:AddAll()
+		self.players[ply:GetUniqueID()] = nil
+
+		return self
+	end
+
+	function META:Add(ply)
+		self.players[ply:GetUniqueID()] = ply
+
+		return self
+	end
+
+	function META:Remove(ply)
+		self.players[ply:GetUniqueID()] = nil
+
+		return self
+	end
+
+	function META:GetAll()
+		return self.players
+	end
+
+	function players.CreateFilter()
+		return META:New({players = {}}, true)
+	end
+end
+
 network.AddEncodeDecodeType("player", function(var, encode)
 	if encode then
 		local var = var:GetUniqueID()

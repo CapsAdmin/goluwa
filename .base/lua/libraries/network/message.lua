@@ -2,8 +2,12 @@ local message = _G.message or {}
 
 message.Listeners = message.Listeners or {}
 
-function message.AddListener(tag, callback)
-	message.Listeners[tag] = callback
+function message.AddListener(id, callback)
+	message.Listeners[id] = callback
+end
+
+function message.RemoveListener(id)
+	message.Listeners[id] = callback
 end
 
 if CLIENT then
@@ -24,7 +28,7 @@ if SERVER then
 	function message.Send(id, filter, ...)		
 		if typex(filter) == "player" then
 			network.SendMessageToClient(filter.socket, network.MESSAGE, id, ...)
-		elseif typex(filter) == "netmsg_user_filter" then
+		elseif typex(filter) == "player_filter" then
 			for _, player in pairs(filter:GetAll()) do
 				network.SendMessageToClient(player.socket, network.MESSAGE, id, ...)
 			end
@@ -94,45 +98,6 @@ do -- console extension
 
 end
 
-do -- filter
-	local META = utilities.CreateBaseMeta("netmsg_user_filter")
-
-	function META:AddAll()
-		for key, ply in pairs(players.GetAll()) do
-			self.players[ply:GetUniqueID()] = ply
-		end
-
-		return self
-	end
-
-	function META:AddAllExcept(ply)
-		self:AddAll()
-		self.players[ply:GetUniqueID()] = nil
-
-		return self
-	end
-
-	function META:Add(ply)
-		self.players[ply:GetUniqueID()] = ply
-
-		return self
-	end
-
-	function META:Remove(ply)
-		self.players[ply:GetUniqueID()] = nil
-
-		return self
-	end
-
-	function META:GetAll()
-		return self.players
-	end
-
-	function message.PlayerFilter()
-		return META:New({players = {}}, true)
-	end
-end
-
 do -- event extension
 	if CLIENT then
 		message.AddListener("evtmsg", function(...)
@@ -151,4 +116,4 @@ do -- event extension
 	end
 end
 
-return  message
+return message
