@@ -1,10 +1,7 @@
 local network = _G.network or {}
 
-network.client_tcp = network.client_tcp or NULL
-network.server_tcp = network.server_tcp or NULL
-
-network.client_udp = network.client_udp or NULL
-network.server_udp = network.server_udp or NULL
+network.tcp = network.tcp or NULL
+network.udp = network.udp or NULL
 
 network.CONNECT = 1
 network.ACCEPT = 2
@@ -18,7 +15,7 @@ network.udp_accept = {}
 -- packet handling
 local delimiter = "\1\3\2"
 local receive_mode = 61440
-local buffered = false
+local buffered = true
 local custom_types = {}
 
 local function encode(...)
@@ -131,11 +128,11 @@ function network.HandleMessage(socket, type, a, b, ...)
 		logf("successfully connected to server\n")
 		
 		players.local_player = Player(uniqueid)
-		players.local_player.socket = network.client_tcp
+		players.local_player.socket = network.tcp
 					
 		event.Call("OnlineStarted")
 		
-		network.SendMessageToServer(network.UDP_PORT, network.client_udp:GetPort())
+		network.SendMessageToServer(network.UDP_PORT, network.udp:GetPort())
 	elseif SERVER and type == network.UDP_PORT then
 		local player = Player(uniqueid)
 		socket.udp_port = a
@@ -198,6 +195,12 @@ do -- string table
 		local i = 0
 		
 		function network.AddString(str)
+			
+			if not network.IsStarted() then
+				event.Delay(0, function() network.AddString(str) end)
+				return
+			end
+		
 			local id = nvars.Get(str, nil, "string_table1")
 			
 			if id then return id end
@@ -220,7 +223,15 @@ do -- string table
 end
 
 function network.IsStarted()
-	return network.server_tcp:IsValid() or network.client_tcp:IsValid()
+	return network.tcp:IsValid()
+end
+
+function network.UpdateStatistics()
+	system.SetWindowTitle(("TCP in: %s"):format(network.tcp:GetStatistics().received), "network tcp in")
+	system.SetWindowTitle(("TCP out: %s"):format(network.tcp:GetStatistics().sent), "network tcp out")
+	
+	system.SetWindowTitle(("UDP in: %s"):format(network.udp:GetStatistics().received), "network udp in")
+	system.SetWindowTitle(("UDP out: %s"):format(network.udp:GetStatistics().sent), "network udp out")
 end
 
 if CLIENT then
@@ -263,7 +274,7 @@ if CLIENT then
 				end
 			end
 			
-			network.client_tcp = client
+			network.tcp = client
 		end
 		
 		do -- udp
@@ -274,7 +285,7 @@ if CLIENT then
 				network.HandlePacket(str, NULL)
 			end
 			
-			network.client_udp = client	
+			network.udp = client	
 		end
 		
 		network.just_disconnected = nil
@@ -287,7 +298,7 @@ if CLIENT then
 		
 		if network.IsConnected() then
 			network.SendMessageToServer(network.DISCONNECT, reason)
-			network.client_tcp:Remove()
+			network.tcp:Remove()
 			
 			players.GetLocalPlayer():Remove()
 			
@@ -303,18 +314,20 @@ if CLIENT then
 		if network.just_disconnected then	
 			return false
 		end
-		return network.client_tcp:IsValid() and network.client_tcp:IsConnected() and network.accepted or false
+		return network.tcp:IsValid() and network.tcp:IsConnected() and network.accepted or false
 	end
 	
-	function network.SendMessageToServer(event, ...)	
-		if network.client_tcp:IsValid() then
-			network.client_tcp:Send(encode(event, ...), buffered)
+	function network.SendMessageToServer(event, ...)		
+		if network.tcp:IsValid() then
+			network.tcp:Send(encode(event, ...), event ~= network.MESSAGE)
+			network.UpdateStatistics()
 		end
 	end
 	
 	function network.SendPacketToServer(str)
-		if network.client_udp:IsValid() then
-			network.client_udp:Send(str)
+		if network.udp:IsValid() then
+			network.udp:Send(str)
+			network.UpdateStatistics()
 		end
 	end
 end
@@ -349,9 +362,11 @@ if SERVER then
 				if found > 0 then
 					client.temp = client.temp:match("^.+"..delimiter.."(.*)$") or ""
 				end
+				
+				network.UpdateStatistics()
 			end
 
-			network.server_tcp = server
+			network.tcp = server
 		end
 		
 		do -- udp
@@ -365,26 +380,29 @@ if SERVER then
 				if player then
 					network.HandlePacket(str, player)
 				end
+				network.UpdateStatistics()
 			end
 			
-			network.server_udp = server
+			network.udp = server
 		end
 		
 		event.Call("OnlineStarted")
 	end
 	
 	function network.GetClients()
-		return network.server_tcp:GetClients()
+		return network.tcp:GetClients()
 	end
 		
 	function network.SendMessageToClient(client, event, ...)
 		if not client:IsValid() then return end
-		client:Send(encode(event, ...), buffered)
+		client:Send(encode(event, ...), event ~= network.MESSAGE)
+		network.UpdateStatistics()
 	end
 	
 	function network.SendPacketToClient(client, str)
-		if not client:IsValid() then return end
-		network.server_udp:Send(str, client:GetIP(), client.udp_port)
+		if not client:IsValid() or not client.udp_port then return end
+		network.udp:Send(str, client:GetIP(), client.udp_port)
+		network.UpdateStatistics()
 	end
 	
 	function network.BroadcastMessage(event, ...)		
@@ -405,9 +423,9 @@ function network.ReInclude()
 	include("libraries/network/network.lua")
 	include("libraries/network/packet.lua")
 	include("libraries/network/message.lua")
-	include("libraries/entities/easylua.lua")
 	include("libraries/network/nvars.lua")
-	include("libraries/network/players.lua")
+	include("libraries/entities/easylua.lua")
+	include("libraries/entities/players.lua")
 end
 
 -- some usage
