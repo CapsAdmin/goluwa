@@ -168,6 +168,9 @@ do -- window meta
 		sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MAJOR_VERSION, 4)
 		sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MINOR_VERSION, 4)
 		
+		sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_FLAGS, sdl.e.SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG)
+		sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_PROFILE_MASK, sdl.e.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY)
+		
 		local ptr = sdl.CreateWindow(
 			title, 
 			sdl.e.SDL_WINDOWPOS_CENTERED, 
@@ -207,13 +210,19 @@ do -- window meta
 			if not event_name_translate[name] then
 				event_name_translate[name] = name:gsub("^On", "Window")
 			end
-				
-			if self[name] ~= false then
-				event.Call(event_name_translate[name], ...)
+			
+			if self[name] then
+				if self[name](...) ~= false then
+					event.Call(event_name_translate[name], self, ...)
+				end
+			else
+				print(name, ...)
 			end
 		end
 		
 		local event = ffi.new("SDL_Event")
+		local mbutton_translate = {}
+		for i = 1, 8 do mbutton_translate[i] = "button_" .. i end
 
 		_G.event.AddListener("Update", self, function(dt)
 			if not sdl.video_init then return end
@@ -226,6 +235,7 @@ do -- window meta
 				if event.window and event.window.windowID then
 					window = render.sdl_windows[event.window.windowID]
 				end
+								
 				if event.type == sdl.e.SDL_WINDOWEVENT then
 					local case = event.window.event
 					
@@ -234,7 +244,9 @@ do -- window meta
 					elseif case == sdl.e.SDL_WINDOWEVENT_HIDDEN then
 						call(window, "OnHide")
 					elseif case == sdl.e.SDL_WINDOWEVENT_EXPOSED then
-						call(window, "OnExpose")
+						call(window, "OnFramebufferResized", self:GetSize():Unpack())
+					elseif case == sdl.e.SDL_WINDOWEVENT_SIZE_CHANGED then
+						call(window, "OnFramebufferResized", event.window.data1, event.window.data2)
 					elseif case == sdl.e.SDL_WINDOWEVENT_MOVED then
 						call(window, "OnMove", event.window.data1, event.window.data2)
 					elseif case == sdl.e.SDL_WINDOWEVENT_RESIZED then
@@ -243,7 +255,8 @@ do -- window meta
 					elseif case == sdl.e.SDL_WINDOWEVENT_MINIMIZED then
 						call(window, "OnMinimize")
 					elseif case == sdl.e.SDL_WINDOWEVENT_MAXIMIZED then
-						call(window, "OnMaximize");
+						call(window, "OnResize", self:GetSize():Unpack())
+						call(window, "OnFramebufferResized", self:GetSize():Unpack())
 					elseif case == sdl.e.SDL_WINDOWEVENT_RESTORED then
 						call(window, "OnRefresh")
 					elseif case == sdl.e.SDL_WINDOWEVENT_ENTER then
@@ -260,8 +273,9 @@ do -- window meta
 				elseif event.type == sdl.e.SDL_KEYDOWN or event.type == sdl.e.SDL_KEYUP then
 					local window = render.sdl_windows[event.key.windowID]
 				
-					call(window, 
-						event.key["repeat"] == 0 and "OnKeyInput" or "OnKeyInputRepeat", 
+					call(
+						window, 
+						event.key["repeat"] == 1 and "OnKeyInput" or "OnKeyInputRepeat", 
 						ffi.string(sdl.GetKeyName(event.key.keysym.sym)):lower(), 
 						event.type == sdl.e.SDL_KEYDOWN, 
 						
@@ -283,7 +297,10 @@ do -- window meta
 					call(window, "OnCursorPos", event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, event.motion.state, event.motion.which)
 				elseif event.type == sdl.e.SDL_MOUSEBUTTONDOWN or event.type == sdl.e.SDL_MOUSEBUTTONUP then
 					local window = render.sdl_windows[event.button.windowID]
-					call(window, "OnMouseInput", event.button.button, event.type == sdl.e.SDL_MOUSEBUTTONDOWN, event.button.x, event.button.y)
+					call(window, "OnMouseInput", mbutton_translate[event.button.button], event.type == sdl.e.SDL_MOUSEBUTTONDOWN, event.button.x, event.button.y)
+				elseif event.type == sdl.e.SDL_MOUSEWHEEL then
+					local window = render.sdl_windows[event.button.windowID]
+					call(window, "OnMouseScroll", event.wheel.x, event.wheel.y, event.wheel.which)
 				end
 			end
 		end)
