@@ -16,8 +16,6 @@ function packet.RemoveListener(id)
 end
 
 local function prepend_header(id, buffer)
-	local header = packet.CreateBuffer()
-	
 	if CLIENT then
 		id = network.StringToID(id)
 	end
@@ -26,22 +24,33 @@ local function prepend_header(id, buffer)
 		id = network.AddString(id)
 	end
 	
-	header:WriteShort(id)	
-	return header:GetString() .. buffer:GetString()
+	if not id then return end
+		
+	return buffer:AddHeader(packet.CreateBuffer():WriteShort(id)):GetString()
 end
 
 local function read_header(buffer)
-	return network.IDToString(buffer:ReadShort())
+	local id = network.IDToString(buffer:ReadShort())
+	
+	table.remove(buffer.buffer, 1)
+	table.remove(buffer.buffer, 1)
+	buffer:SetPos(0)
+	
+	return id
 end
 
 if CLIENT then
 	function packet.Send(id, buffer)
-		network.SendPacketToServer(prepend_header(id, buffer))
+		local data = prepend_header(id, buffer)
+		
+		if data then
+			network.SendPacketToServer(data)
+		end
 	end
 	
 	function packet.OnPacketReceived(str)
 		local buffer = packet.CreateBuffer(str)
-		local id = read_header(buffer)	
+		local id = read_header(buffer)
 		
 		if packet.Listeners[id] then
 			packet.Listeners[id](buffer)
@@ -52,18 +61,20 @@ if CLIENT then
 end
 
 if SERVER then
-	function packet.Send(id, filter, buffer)			
+	function packet.Send(id, filter, buffer)
 		local data = prepend_header(id, buffer)
 		
-		if typex(filter) == "player" then
-			network.SendPacketToClient(filter.socket, data)
-		elseif typex(filter) == "player_filter" then
-			for _, player in pairs(filter:GetAll()) do
-				network.SendPacketToClient(player.socket, data)
-			end
-		else
-			for key, ply in pairs(players.GetAll()) do
-				network.SendPacketToClient(ply.socket, data)
+		if data then
+			if typex(filter) == "player" then
+				network.SendPacketToClient(filter.socket, data)
+			elseif typex(filter) == "player_filter" then
+				for _, player in pairs(filter:GetAll()) do
+					network.SendPacketToClient(player.socket, data)
+				end
+			else
+				for key, ply in pairs(players.GetAll()) do
+					network.SendPacketToClient(ply.socket, data)
+				end
 			end
 		end
 	end
@@ -76,14 +87,12 @@ if SERVER then
 		local buffer = packet.CreateBuffer(str)
 		local id = read_header(buffer)
 		
-		print(id)
-		
 		if packet.Listeners[id] then
-			packet.Listeners[id](ply, str)
+			packet.Listeners[id](ply, buffer)
 		end
 	end
 	
-	event.AddListener("UserPacket", "packet", packet.OnPacketReceived, print)
+	event.AddListener("PacketReceived", "packet", packet.OnPacketReceived, print)
 end
 
 do -- buffer object
@@ -129,7 +138,20 @@ do -- buffer object
 				self:SetPos(old)
 				return size
 			else 
-				return #self.buffer
+				return #self.buffer - 1
+			end
+		end
+		
+		function META:TheEnd()
+			return self:GetPos() >= self:GetSize()
+		end
+		
+		function META:Clear()
+			if self.file then	
+				error("not supported in file mode", 2)
+			else
+				table.clear(self.buffer)
+				self.position = 0
 			end
 		end
 		
@@ -155,7 +177,7 @@ do -- buffer object
 			if self.file then
 				self.file:seek("set", pos)
 			else
-				self.position = math.clamp(pos + 1, 1, self:GetSize() + 1)
+				self.position = math.clamp(pos, 0, self:GetSize())
 			end
 		end
 		
@@ -177,6 +199,17 @@ do -- buffer object
 		function META:GetDebugString()
 			return self:GetString():readablehex()
 		end
+		
+		function META:AddHeader(buffer)
+			if self.file then
+				error("not supported in file mode", 2)
+			else
+				for i, b in ipairs(buffer.buffer) do
+					table.insert(self.buffer, i, b)
+				end 
+			end
+			return self
+		end
 	end
 
 	do -- basic data types
@@ -187,13 +220,14 @@ do -- buffer object
 			else
 				self.buffer[#self.buffer + 1] = byte
 			end
+			return self
 		end
 
 		function META:ReadByte()
 			if self.file then
 				return self.file:read(1):byte()
 			else
-				self.position = self.position + 1
+				self.position = math.min(self.position + 1, #self.buffer)
 				return self.buffer[self.position]
 			end
 		end
@@ -202,6 +236,7 @@ do -- buffer object
 		function META:WriteShort(short)
 			self:WriteByte(bit.band(short, 0xFF))
 			self:WriteByte(bit.band(bit.rshift(short, 8), 0xFF))
+			return self
 		end
 
 		function META:ReadShort()
@@ -214,6 +249,7 @@ do -- buffer object
 		function META:WriteLong(int)	
 			self:WriteShort(bit.band(int, 0xFFFF))
 			self:WriteShort(bit.band(bit.rshift(int, 16), 0xFFFF))
+			return self
 		end
 
 		function META:ReadLong()
@@ -252,6 +288,7 @@ do -- buffer object
 			-- get rid of written bits and shift for next 8
 			m=(m-math.floor(m))*256
 			self:WriteByte(bit.band(m,255))	
+			return self
 		end
 
 		function META:ReadHalf()
@@ -308,6 +345,7 @@ do -- buffer object
 			
 			m=(m-math.floor(m))*256
 			self:WriteByte(bit.band(m,255))	
+			return self
 		end
 
 		function META:ReadFloat()
@@ -382,34 +420,50 @@ do -- buffer object
 			
 			m=(m-math.floor(m))*256
 			self:WriteByte(bit.band(m,255))
+			
+			return self
 		end
 
 		function META:ReadDouble()
-			local b=self:ReadByte()
-			local sign=1
-			if b>=128 then 
-				sign=-1
-				b=b-128
+			local b = self:ReadByte()
+			if not b then return end
+			local sign = 1
+			
+			if b >= 128 then 
+				sign =- 1
+				b = b - 128
 			end
-			local exponent=b*16
-			b=self:ReadByte()
-			exponent=exponent+bit.band(bit.rshift(b,4),15)-1023
+			
+			local exponent = b*16
+			b = self:ReadByte()
+			if not b then return end
+			exponent = exponent+bit.band(bit.rshift(b,4),15)-1023
 			local mantissa=bit.band(b,15)/16
 			
-			b=self:ReadByte()
-			mantissa=mantissa+b/16/256
-			b=self:ReadByte()
-			mantissa=mantissa+b/16/65536
-			b=self:ReadByte()
-			mantissa=mantissa+b/16/65536/256
-			b=self:ReadByte()
-			mantissa=mantissa+b/16/65536/65536
-			b=self:ReadByte()
-			mantissa=mantissa+b/16/65536/65536/256
-			b=self:ReadByte()
-			mantissa=mantissa+b/16/65536/65536/65536
-			if mantissa==0.0 and exponent==-1023 then return 0.0
-			else return (mantissa+1.0)*math.pow(2,exponent)*sign end
+			b = self:ReadByte()
+			if not b then return end
+			mantissa = mantissa+b/16/256
+			b = self:ReadByte()
+			if not b then return end
+			mantissa = mantissa+b/16/65536
+			b = self:ReadByte()
+			if not b then return end
+			mantissa = mantissa+b/16/65536/256
+			b = self:ReadByte()
+			if not b then return end
+			mantissa = mantissa+b/16/65536/65536
+			b = self:ReadByte()
+			if not b then return end
+			mantissa = mantissa+b/16/65536/65536/256
+			b = self:ReadByte()
+			if not b then return end
+			mantissa = mantissa+b/16/65536/65536/65536
+			
+			if mantissa==0.0 and exponent==-1023 then 
+				return 0.0
+			else 
+				return (mantissa+1.0)*math.pow(2,exponent)*sign 
+			end
 		end
 		
 		ffi.cdef [[
@@ -427,6 +481,7 @@ do -- buffer object
 			data.longlong = longlong
 			self:WriteLong(data.longs[0])
 			self:WriteLong(data.longs[1])
+			return self
 		end
 		
 		function META:ReadLongLong()
@@ -444,6 +499,7 @@ do -- buffer object
 				self:WriteByte(str:byte(i))
 			end
 			self:WriteByte(0)
+			return self
 		end
 
 		function META:ReadString(length)
@@ -469,6 +525,7 @@ do -- buffer object
 		-- boolean
 		function META:WriteBoolean(b)
 			self:WriteByte(b and 1 or 0)
+			return self
 		end
 		
 		function META:ReadBoolean()
@@ -482,6 +539,7 @@ do -- buffer object
 		-- char
 		function META:WriteChar(b)
 			self:WriteByte(b:byte())
+			return self
 		end
 		
 		function META:ReadChar()
@@ -491,6 +549,7 @@ do -- buffer object
 		-- nil
 		function META:WriteNil(n)
 			self:WriteByte(0)
+			return self
 		end
 		
 		function META:ReadNil()
@@ -503,6 +562,7 @@ do -- buffer object
 			self:WriteFloat(v.x)
 			self:WriteFloat(v.y)
 			self:WriteFloat(v.z)
+			return self
 		end
 		
 		function META:ReadVec3()
@@ -514,6 +574,7 @@ do -- buffer object
 			self:WriteFloat(v.x)
 			self:WriteFloat(v.y)
 			self:WriteFloat(v.z)
+			return self
 		end
 		
 		function META:ReadAng3()
@@ -528,6 +589,7 @@ do -- buffer object
 			for i = 1, #str do
 				self:WriteByte(str:byte(i))
 			end
+			return self
 		end
 	end
 
