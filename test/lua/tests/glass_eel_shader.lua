@@ -22,7 +22,7 @@ local data = {
 	fragment = { 
 		uniform = {
 			resolution = "vec2",
-			texture = "texture",
+			tex = "texture",
 		},		
 		-- when attributes is used outside of vertex they are simply sent from vertex shader
 		-- as "__out_foo" and then grabbed from the other shader with a macro to turn its name 
@@ -139,7 +139,7 @@ local data = {
 				li+=lightcol1*pow(max(0.,max(0.,dot(normalize(tcoor),light1))),40.)*glassfade; 
 				li+=lightcol2*pow(max(0.,max(0.,dot(normalize(tcoor),light2))),40.)*glassfade; 
 				//background
-				col+=li*.3+li*5.*pow(texture2D(texture,tcoor.xy*vec2(.5+(1.+cos(time))*.5,1.)+time).x,1.7)*glassfade*vec3(.3,1.,.3)*max(0.,1.-length(coord));
+				col+=li*.3+li*5.*pow(texture(tex,tcoor.xy*vec2(.5+(1.+cos(time))*.5,1.)+time).x,1.7)*glassfade*vec3(.3,1.,.3)*max(0.,1.-length(coord));
 				
 				col*=1.-pow(max(0.,max(abs(uv.x),abs(uv.y))-.8)/.2,10.); //borders
 
@@ -175,7 +175,7 @@ event.AddListener("DrawHUD", "hm", function()
 	local w, h = surface.GetScreenSize()
 	surface.PushMatrix(0, 0, w, h) 
 		mesh.time = timer.GetSystemTime()
-		mesh.texture = tex	
+		mesh.tex = tex	
 		mesh.resolution = Vec2(surface.GetScreenSize())
 		mesh.mouse = aahh.GetMousePos()
 		mesh:Draw()
