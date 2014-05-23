@@ -97,6 +97,10 @@ function nvars.Get(key, def, env)
 	return def
 end
 
+function nvars.GetAll(env)
+	return nvars.Environments[env]
+end
+
 do
 	local META = {}
 
