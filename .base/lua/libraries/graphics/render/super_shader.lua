@@ -80,6 +80,16 @@ do
 		color = "vec4",
 	}
 	
+	local floating_point_types = {
+		float = true,
+		vec2 = true,
+		vec3 = true,
+		vec4 = true,
+		mat4 = true,
+		mat3 = true,
+		mat2 = true,
+	}
+	
 	local template =
 [[
 
@@ -152,7 +162,9 @@ void main()
 
 		for k, v in pairs(attributes) do
 			local type, default = get_attribute_type(v)
-			out[k] = {type = type, default = default}
+			local precision, type_ = type:match("(.-) (.+)")
+					
+			out[k] = {type = type_ or type, default = default, precision = precision or "highp"}
 		end
 
 		return out
@@ -179,7 +191,7 @@ void main()
 				end
 			end
 			
-			temp[i] = ("%s %s %s;"):format(type, data.type, name)
+			temp[i] = ("%s %s %s %s;"):format(type, data.precision, data.type, name)
 
 			if macro then
 				temp[#temp+1] = ("#define %s %s"):format(key, name)
@@ -411,7 +423,7 @@ void main()
 				data.vertex.attributes = {}
 				for k,v in pairs(data.vertex.vertex_attributes) do
 					local k,v = next(v)
-					data.vertex.attributes[k] = v					
+					data.vertex.attributes[k] = v
 				end
 			end
 		
@@ -543,6 +555,8 @@ void main()
 
 			-- strip data that wasnt found from the template
 			data.source = data.source:gsub("(@@.-@@)", "")
+			
+			--vfs.Write("gl_shaders/" .. shader, data.source)
 
 			if enum then
 				local ok, shader = pcall(render.CreateShader, enum, data.source)
@@ -640,7 +654,9 @@ void main()
 			--	lua = lua .. "\trender.super_shader_last_program = render.current_program\n"
 			--	lua = lua .. "end\n"
 				
-				vfs.Write("unrolled_lines.lua", lua)
+				--vfs.Write("unrolled_lines.lua", lua)
+				
+				
 				
 				local func, err = loadstring(lua)
 				if not func then error(err, 2) end

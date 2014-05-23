@@ -359,13 +359,12 @@ do -- texture object
 		end
 		
 		format.type = format.type or gl.e.GL_TEXTURE_2D
-		format.upload_format = format.upload_format or gl.e.GL_BGRA
+		format.upload_format = format.upload_format or gl.e.GL_RGBA
 		format.internal_format = format.internal_format or gl.e.GL_RGBA8
 		format.format_type = format.format_type or gl.e.GL_UNSIGNED_BYTE
 		format.filter = format.filter ~= nil
 		format.stride = format.stride or 4
 		format.buffer_type = format.buffer_type or "unsigned char"
-		format.border_size = format.border_size or 4
 		format.channel = format.channel or 0
 
 		format.mip_map_levels = math.max(format.mip_map_levels or 3, 3) --ATI doesn't like level under 3

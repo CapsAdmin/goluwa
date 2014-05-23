@@ -21,15 +21,15 @@ function surface.InitializeFonts()
 				alpha_multiplier = 1,
 			},
 			source = [[
-				out vec4 frag_color;
+				out highp vec4 frag_color;
 
 				void main()
 				{								
-					float mask = texture(tex, uv).a;
+					highp float mask = texture(tex, uv).a;
 
 					frag_color.rgb = global_color.rgb;
 					
-					if (smoothness > 0)
+					if (smoothness > 0.00)
 					{
 						mask = pow(mask, 0.75);
 						mask *= smoothstep(0.25, 0.75 * smoothness, mask);
