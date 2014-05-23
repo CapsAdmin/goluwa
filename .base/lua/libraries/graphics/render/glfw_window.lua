@@ -107,6 +107,10 @@ do -- window meta
 	function META:SwapBuffers()
 		glfw.SwapBuffers(self.__ptr)
 	end
+	
+	function META:SwapInterval(b)
+		glfw.SwapInterval(b and 1 or 0)
+	end
 
 	function META:OnUpdate(delta)
 		
@@ -156,11 +160,11 @@ do -- window meta
 		
 	end
 	
-	function META:OnFramebufferResized()
+	function META:OnFramebufferResized(width, height)
 	
 	end
 	
-	function META:OnPos()
+	function META:OnMove(x, y)
 	
 	end
 	
@@ -168,7 +172,11 @@ do -- window meta
 	
 	end
 	
-	function META:OnResize()
+	function META:OnResize(width, height)
+		
+	end
+	
+	function META:OnTextEditing(str)
 		
 	end
 		
@@ -289,6 +297,12 @@ do -- window meta
 					func(ptr, function(ptr, w, h)	
 						if self:OnResize(w, h) ~= false then
 							event.Call("WindowResized", self, w, h)
+						end
+					end)
+				elseif nice == "OnPos" then
+					func(ptr, function(ptr, x, y)	
+						if self:OnMove(x, y) ~= false then
+							event.Call("WindowMoved", self, w, h)
 						end
 					end)
 				else

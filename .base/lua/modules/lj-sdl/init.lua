@@ -6,7 +6,7 @@ ffi.cdef(header)
 local lib = ffi.load("sdl2")
 
 local sdl = {
-	e= enums,
+	e = enums,
 	header = header,
 	lib = lib,
 }
@@ -61,10 +61,6 @@ for line in header:gmatch("(.-)\n") do
 			--print(err)
 		end
 	end
-end
-
-for key, val in pairs(enums) do
-	e[key] = val
 end
 
 do
