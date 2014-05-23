@@ -24,9 +24,9 @@ local SHADER = {
 		--	color = "vec4",
 		},			
 		source = [[
-			out vec4 frag_color;
+			out highp vec4 frag_color;
 
-			vec4 texel = texture(tex, uv);
+			highp vec4 texel = texture(tex, uv);
 
 			void main()
 			{	
