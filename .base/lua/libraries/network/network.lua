@@ -134,6 +134,12 @@ function network.HandleMessage(socket, type, a, b, ...)
 		
 		network.SendMessageToServer(network.UDP_PORT, network.udp:GetPort())
 	elseif SERVER and type == network.UDP_PORT then
+		
+		if type(a) ~= "number" then
+			logn("client ", uniqueid ," gave invalid port: ", tostring(a))
+			return false
+		end
+	
 		local player = Player(uniqueid)
 		socket.udp_port = a
 		network.udp_accept[socket:GetIP() .. a] = player
