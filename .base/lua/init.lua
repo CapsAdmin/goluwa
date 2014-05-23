@@ -532,12 +532,10 @@ do -- libraries
 	utilities = include("libraries/utilities.lua") -- more like i-dont-know-where-these-functions-go
 	addons = include("libraries/addons.lua") -- addons are folders in root of goluwa
 	class = include("libraries/class.lua") -- used by gui panels and entities
+	crypto = include("libraries/crypto.lua")
 	
 	-- serializing
 	serializer = include("libraries/serializing/serializer.lua")
-	
-	crypto = include("libraries/serializing/crypto.lua")
-	include("libraries/serializing/buffer.lua")
 
 	timer = include("libraries/timer.lua")
 	console = include("libraries/console.lua")
@@ -566,6 +564,7 @@ do -- libraries
 	intermsg = include("libraries/network/intermsg.lua") 			
 	steamapi = include("libraries/network/steamapi.lua")
 	message = include("libraries/network/message.lua") -- high level communication between server and client
+	packet = include("libraries/network/packet.lua") -- high level communication between server and client
 	network = include("libraries/network/network.lua") -- high level implementation of sockets
 	nvars = include("libraries/network/nvars.lua")
 	players = include("libraries/network/players.lua")
