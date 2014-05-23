@@ -72,6 +72,8 @@ local function new_socket(override, META, typ, id)
 		self.socket = override or assert(sockets.luasocket[typ]())
 		self.socket:settimeout(0)
 		self.socket_type = typ
+		self.data_sent = 0
+		self.data_received = 0
 		self:Initialize()
 		
 		table.insert(sockets.active_sockets, self)
@@ -115,6 +117,13 @@ do -- tcp socket meta
 		function CLIENT:Initialize()
 			self.Buffer = {}
 			self:SetTimeout(3)
+		end
+		
+		function CLIENT:GetStatistics()
+			return {
+				received = utilities.FormatFileSize(self.data_received),
+				sent = utilities.FormatFileSize(self.data_sent),
+			}
 		end
 
 		function CLIENT:__tostring()
@@ -166,11 +175,11 @@ do -- tcp socket meta
 			if self.socket_type == "tcp" then				
 				if instant then
 					local bytes, b, c, d = self.socket:send(str)
-
+					
 					if bytes then
 						self:DebugPrintf("sucessfully sent %s",  utilities.FormatFileSize(#str))
-
 						self:OnSend(packet, bytes, b,c,d)
+						self.data_sent = self.data_sent + bytes
 					end
 				else					
 					for i, packet in pairs(str:lengthsplit(65536)) do
@@ -180,6 +189,7 @@ do -- tcp socket meta
 			else
 				self.socket:send(str)
 				self:DebugPrintf("sent %q", str:readablehex())
+				self.data_sent = self.data_sent + #str
 			end
 		end
 		
@@ -236,9 +246,14 @@ do -- tcp socket meta
 
 							if bytes then
 								self:DebugPrintf("sucessfully sent %s",  utilities.FormatFileSize(bytes))
-
 								self:OnSend(data, bytes, b,c,d)
 								table.remove(self.Buffer, 1)
+								
+								self.data_sent = self.data_sent + bytes
+								
+								if self.__server then
+									self.__server.data_sent = self.__server.data_sent + bytes
+								end
 							elseif b ~= "Socket is not connected" then
 								self:DebugPrintf("could not send %s of data : %s", utilities.FormatFileSize(#data), b)
 --								break
@@ -256,7 +271,7 @@ do -- tcp socket meta
 				local mode
 
 				if self.socket_type == "udp" then
-					mode = 1024
+					--mode = 1024
 				else
 					mode = receive_types[self.ReceiveMode] or self.ReceiveMode
 				end
@@ -279,7 +294,10 @@ do -- tcp socket meta
 
 					if self.__server then
 						self.__server:OnReceive(data, self)
+						self.__server.data_received = self.__server.data_received + #data
 					end
+					
+					self.data_received = self.data_received + #data
 
 				elseif err == "timeout" or "Socket is not connected" then
 					self:Timeout(true)
@@ -445,6 +463,13 @@ do -- tcp socket meta
 		function SERVER:Initialize()
 			self.Clients = {}
 		end
+		
+		function SERVER:GetStatistics()
+			return {
+				received = utilities.FormatFileSize(self.data_received),
+				sent = utilities.FormatFileSize(self.data_sent),
+			}
+		end
 
 		function SERVER:__tostring()
 			return string.format("server_%s[%s][%s]", self.socket_type, self:GetIP() or "nil", self:GetPort() or "nil")
@@ -511,6 +536,7 @@ do -- tcp socket meta
 			elseif self.socket_type == "udp" then
 				check(port, "number")
 				self.socket:sendto(data, ip, port)
+				self.data_sent = self.data_sent + #data
 			end
 		end
 
@@ -543,7 +569,7 @@ do -- tcp socket meta
 
 				if ip == "timeout" then return end
 
-				if not data then
+				if not ip or not port then
 					self:DebugPrintf("errored: %s", ip)
 				else
 					self:DebugPrintf("received %s from %s:%s", data, ip, port)
@@ -560,6 +586,8 @@ do -- tcp socket meta
 						
 						client.IsValid = function() return false end
 					end
+					
+					self.data_received = self.data_received + #data
 				end
 			elseif self.socket_type == "tcp" then
 				local sock = self.socket
