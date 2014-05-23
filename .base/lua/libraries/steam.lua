@@ -26,9 +26,7 @@ do
 			int size;
 			unsigned char *buffer;		
 		} steam_auth_token;
-		
-		steam_auth_token *steamGetAuthTokenFromServer(uint64_t game_id, const char *ip, short port, bool secure);
-		
+				
 		uint32_t steamGetAuthSessionTicket(void *ticket_buffer, int ticket_size, uint32_t *ticket_buffer_size);
 	]] 
 	
@@ -86,20 +84,15 @@ do
 		return out
 	end
 	
-	function steam.GetAuthTokenFromServer(server_id, ip, port, secure)
-		if not lib then logn("steamfriends module not availible") return {} end
+	function steam.GetAuthSessionTicket(app_id)
+		check(app_id, "number")
 		
-		if secure == nil then secure = true end
-		
-		local data = lib.steamGetAuthTokenFromServer(server_id, ip, port, secure)
-		
-		return ffi.string(data.buffer, data.size)
-	end
-
-	function steam.GetAuthSessionTicket()
 		local ticket = ffi.new("char[1024]")
 		local size = ffi.new("int[1]")
+		
+		os.setenv("SteamAppId", tostring(app_id))
 		local handle = lib.steamGetAuthSessionTicket(ticket, ffi.sizeof(ticket), size)
+		os.setenv("SteamAppId", "")
 		
 		if size[0] == 0 then size[0] = 1024 else print(size[0], "!!!!!!!!!!!!!!!!!!") end -- grrr
 		
