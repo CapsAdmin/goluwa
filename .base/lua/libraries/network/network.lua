@@ -186,7 +186,37 @@ function network.HandleMessage(socket, type, a, b, ...)
 end
 
 function network.HandlePacket(str, player)
-	print(player, str)
+	if CLIENT then
+		event.Call("PacketReceived", str)
+	elseif SERVER then
+		event.Call("PacketReceived", player, str)
+	end
+end
+
+do -- string table
+	if SERVER then
+		local i = 0
+		
+		function network.AddString(str)
+			local id = nvars.Get(str, nil, "string_table1")
+			
+			if id then return id end
+			
+			i = i + 1
+			nvars.Set(str, i, "string_table1")
+			nvars.Set(i, str, "string_table2")
+			
+			return i
+		end
+	end
+
+	function network.StringToID(str)
+		return nvars.Get(str, nil, "string_table1")
+	end
+	
+	function network.IDToString(id)
+		return nvars.Get(id, nil, "string_table2")
+	end
 end
 
 function network.IsStarted()
@@ -373,6 +403,7 @@ end
 -- this is for when server or client is initialized (needs to handle SERVER and CLIENT globals)
 function network.ReInclude()
 	include("libraries/network/network.lua")
+	include("libraries/network/packet.lua")
 	include("libraries/network/message.lua")
 	include("libraries/entities/easylua.lua")
 	include("libraries/network/nvars.lua")
