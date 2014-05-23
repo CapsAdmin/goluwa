@@ -98,7 +98,6 @@ function render.Initialize()
 	render.frame = 0
 		
 	gl.Enable(gl.e.GL_BLEND)
-	gl.Enable(gl.e.GL_TEXTURE_2D)
 	gl.Enable(gl.e.GL_SCISSOR_TEST)
 	
 	gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
@@ -120,15 +119,13 @@ end
 
 do
 	local vsync = 0
-
-	local glfw = require("lj-glfw")
 	
 	function render.SetVSync(b)
 		if gl.SwapIntervalEXT then
 			gl.SwapIntervalEXT(b == true and 1 or b == "adaptive" and -1 or 0)
 			vsync = b
-		elseif glfw then
-			glfw.SwapInterval(b and 1 or 0) -- works on linux
+		elseif window and window.IsOpen() then
+			window.SwapInterval(b and 1 or 0) -- works on linux
 		end
 	end
 
@@ -247,7 +244,11 @@ include("model.lua", render)
 
 include("mesh_util.lua", render)
 
-include("glfw_window.lua", render)
+if USE_SDL then
+	include("sdl_window.lua", render)
+else
+	include("glfw_window.lua", render)
+end
 
 include("cvars.lua", render)
 include("globals.lua", render)
