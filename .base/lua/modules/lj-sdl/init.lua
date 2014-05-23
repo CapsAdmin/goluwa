@@ -3,7 +3,7 @@ local header = require("lj-sdl.header")
 
 ffi.cdef(header)
   
-local lib = ffi.load("sdl2")
+local lib = ffi.load("SDL2")
 
 local sdl = {
 	e = enums,
