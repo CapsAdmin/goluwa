@@ -131,7 +131,7 @@ do -- texture object
 	function META:UpdateFormat()
 		local f = self.format	
 		
-		f.min_filter = CHECK_FIELD("min_filter", f.min_filter) or gl.e.GL_LINEAR
+		f.min_filter = CHECK_FIELD("min_filter", f.min_filter) or gl.e.GL_LINEAR_MIPMAP_LINEAR
 		f.mag_filter = CHECK_FIELD("mag_filter", f.mag_filter) or gl.e.GL_LINEAR				
 		
 		f.wrap_s = CHECK_FIELD("wrap", f.wrap_s) or gl.e.GL_REPEAT
