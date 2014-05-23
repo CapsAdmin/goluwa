@@ -268,7 +268,7 @@ function surface.DrawRect(x,y, w,h, a, ox,oy)
 				
 		surface.Scale(w, h)
 		
-		surface.rectmesh.texture = surface.bound_texture
+		surface.rectmesh.tex = surface.bound_texture
 		surface.rectmesh:Draw()
 	render.PopWorldMatrix()
 end

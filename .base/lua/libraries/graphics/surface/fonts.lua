@@ -25,7 +25,7 @@ function surface.InitializeFonts()
 
 				void main()
 				{								
-					float mask = texture2D(texture, uv).a;
+					float mask = texture(tex, uv).a;
 
 					frag_color.rgb = global_color.rgb;
 					
@@ -341,7 +341,7 @@ do -- fonts
 		end
 		
 		surface.PushMatrix(X - info.border_2, Y - info.border_2, data.tex.w * W, data.tex.h * H) 
-			surface.fontmesh.texture = data.tex
+			surface.fontmesh.tex = data.tex
 			surface.fontmesh.global_color = surface.rectmesh.global_color
 			surface.fontmesh.smoothness = ft.current_font.info.smoothness 
 			surface.fontmesh:Draw()

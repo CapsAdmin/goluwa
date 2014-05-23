@@ -81,7 +81,7 @@ do
 	}
 	
 	local template =
-[[#version 330
+[[
 
 @@SHARED UNIFORM@@
 @@UNIFORM@@
@@ -100,6 +100,12 @@ void main()
 	mainx();
 }
 ]]
+
+	if OPENGL_ES then
+		template = "#version 300 es" .. template
+	else
+		template = "#version 330" .. template
+	end
 
 	-- add some extra information
 	for k,v in pairs(type_info) do

@@ -16,7 +16,7 @@ local SHADER = {
 	fragment = { 
 		uniform = {
 			global_color = Color(1, 1, 1, 1), 
-			texture = "sampler2D",
+			tex = "sampler2D",
 			alpha_multiplier = 1,
 		},
 		attributes = {
@@ -26,7 +26,7 @@ local SHADER = {
 		source = [[
 			out vec4 frag_color;
 
-			vec4 texel = texture2D(texture, uv);
+			vec4 texel = texture(tex, uv);
 
 			void main()
 			{	

@@ -52,10 +52,10 @@ local SHADER = {
 						
 			void main() 
 			{
-				out_data[0] = texture2D(diffuse, uv);
-				out_data[1] = vec4((normal + texture2D(bump, uv).xyz) / 2, 1);
+				out_data[0] = texture(diffuse, uv);
+				out_data[1] = vec4((normal + texture(bump, uv).xyz) / 2, 1);
 				out_data[2] = vec4(pos.xyz, 1);	
-				out_data[3] = texture2D(specular, uv);
+				out_data[3] = texture(specular, uv);
 			}
 		]]
 	}  

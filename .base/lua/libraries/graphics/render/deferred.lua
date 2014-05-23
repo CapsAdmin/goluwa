@@ -77,12 +77,12 @@ local SHADER = {
 			
 			void main ()
 			{				
-				vec3 diffuse = texture2D(tex_diffuse, uv).rgb;
-				vec3 normal = texture2D(tex_normal, uv).rgb;
-				vec3 position = texture2D(tex_position, uv).xyz;
+				vec3 diffuse = texture(tex_diffuse, uv).rgb;
+				vec3 normal = texture(tex_normal, uv).rgb;
+				vec3 position = texture(tex_position, uv).xyz;
 				
-				vec3 specular = texture2D(tex_specular, uv).xyz;
-				float depth = texture2D(tex_depth, uv).a;
+				vec3 specular = texture(tex_specular, uv).xyz;
+				float depth = texture(tex_depth, uv).a;
 
 				//out_color.rgb = diffuse;
 				out_color.rgb += calc_light(normal, position, diffuse, specular);				
@@ -110,7 +110,7 @@ local PPSHADER = {
 			
 			void main ()
 			{				
-				out_color = texture2D(tex_diffuse, uv);				
+				out_color = texture(tex_diffuse, uv);				
 			}
 		]]  
 	}
@@ -128,28 +128,28 @@ function render.InitializeDeffered()
 			name = "diffuse",
 			attach = gl.e.GL_COLOR_ATTACHMENT0,
 			texture_format = {
-				internal_format = gl.e.GL_RGBA32F,
+				internal_format = "RGBA32F",
 			}
 		},
 		{
 			name = "normal",
 			attach = gl.e.GL_COLOR_ATTACHMENT1,
 			texture_format = {
-				internal_format = gl.e.GL_RGB32F,
+				internal_format = "RGB32F",
 			}
 		},
 		{
 			name = "position",
 			attach = gl.e.GL_COLOR_ATTACHMENT2,
 			texture_format = {
-				internal_format = gl.e.GL_RGB32F,
+				internal_format = "RGB32F",
 			}
 		},
 		{
 			name = "specular",
 			attach = gl.e.GL_COLOR_ATTACHMENT3,
 			texture_format = {
-				internal_format = gl.e.GL_RGB32F,
+				internal_format = "RGB32F",
 			}
 		},
 		{
@@ -157,8 +157,8 @@ function render.InitializeDeffered()
 			attach = gl.e.GL_DEPTH_ATTACHMENT,
 			draw_manual = true,
 			texture_format = {
-				internal_format = gl.e.GL_DEPTH_COMPONENT32F,	 
-				[gl.e.GL_DEPTH_TEXTURE_MODE] = gl.e.GL_ALPHA,
+				internal_format = "DEPTH_COMPONENT32F",	 
+				depth_texture_mode = gl.e.GL_ALPHA,
 				
 			}
 		}
@@ -202,7 +202,7 @@ function render.InitializeDeffered()
 			name = "diffuse",
 			attach = gl.e.GL_COLOR_ATTACHMENT0,
 			texture_format = {
-				internal_format = gl.e.GL_RGBA32F,
+				internal_format = "RGBA32F",
 				format = {mip_map_levels = 4, mag_filter = gl.e.GL_LINEAR, min_filter = gl.e.GL_LINEAR_MIPMAP_LINEAR,},
 			}
 		},
@@ -296,4 +296,10 @@ if render.deferred_shader then
 	render.InitializeDeffered()
 end
 
-event.AddListener("RenderContextInitialized", render.InitializeDeffered)
+event.AddListener("RenderContextInitialized", function() 
+	local ok, err = pcall(render.InitializeDeffered)
+	if not ok then
+		logn("[render] failed to initialize deffered rendering: ", err)
+	end
+	event.RemoveListener("WindowFramebufferResized", "gbuffer_resize")
+end)
