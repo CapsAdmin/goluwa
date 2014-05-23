@@ -14,9 +14,13 @@ function string.dumphex(str)
 		if i%16 == 0 then
 			table.insert(out, "\n")
 		end
-		if i%16 == 8 then 
+		if i%16 == 4 or i%16 == 12 then 
 			table.insert(out, " ")
 		end
+		if i%16 == 8 then 
+			table.insert(out, "  ")
+		end
+		
 	end
 	table.insert(out, "\n")
 	return table.concat(out)
