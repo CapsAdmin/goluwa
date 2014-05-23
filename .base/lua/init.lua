@@ -567,13 +567,13 @@ do -- libraries
 	packet = include("libraries/network/packet.lua") -- high level communication between server and client
 	network = include("libraries/network/network.lua") -- high level implementation of sockets
 	nvars = include("libraries/network/nvars.lua")
-	players = include("libraries/network/players.lua")
-			
+
 	-- audio
 	audio = include("libraries/audio/audio.lua") -- high level implementation of OpenAl
 	chatsounds = include("libraries/audio/chatsounds.lua")
 	
 	entities = include("libraries/entities/entities.lua")
+	players = include("libraries/entities/players.lua")
 	easylua = include("libraries/entities/easylua.lua")
 	
 	include("libraries/extensions/vfs_vpk.lua") -- vpk support for _G.vfs
