@@ -56,6 +56,10 @@ function render.Initialize()
 	logf("opengl glsl version: %s\n", render.GetShadingLanguageVersion())
 	logf("vendor: %s\n", render.GetVendor())
 	
+	if render.GetVersion():find("OpenGL ES") then
+		OPENGL_ES = true
+	end
+	
 	local vendor = render.GetVendor()
 	
 	vfs.Write("info/gpu_vendor", vendor)
@@ -104,6 +108,8 @@ function render.Initialize()
 	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
 	system.SetWindowTitle("OpenGL " .. render.GetVersion(), "glversion")
+	
+	include("libraries/graphics/render/super_shader.lua", render)
 	
 	event.Delay(function()
 		event.Call("RenderContextInitialized")	
@@ -237,7 +243,6 @@ include("shaders.lua", render)
 include("deferred.lua", render)
 include("model.lua", render)
 
-include("super_shader.lua", render)
 include("mesh_util.lua", render)
 
 include("glfw_window.lua", render)

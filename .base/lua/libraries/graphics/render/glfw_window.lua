@@ -179,8 +179,8 @@ do -- window meta
 		
 		glfw.Init()
 		
-		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MAJOR, 4)
-		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MINOR, 3)
+		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MAJOR, 2)
+		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MINOR, 0)
 		--glfw.WindowHint(glfw.e.GLFW_CLIENT_API, glfw.e.GLFW_OPENGL_ES_API)
 		
 		glfw.WindowHint(glfw.e.GLFW_SAMPLES, 4)
