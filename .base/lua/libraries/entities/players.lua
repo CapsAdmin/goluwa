@@ -111,4 +111,6 @@ end)
 
 _G.Player = players.Create
 
+include("player/player.lua")
+
 return players
