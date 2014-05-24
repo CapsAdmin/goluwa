@@ -1,6 +1,6 @@
-do
+do 
 	local started = {}	
-
+	
 	function debug.LogLibrary(library, filter, post_calls_only, lib_name) 
 		lib_name = lib_name or ""
 		
@@ -8,6 +8,8 @@ do
 			lib_name = library
 			library = _G[library]
 		end
+		
+		local log_name = lib_name .. "_calls"
 		
 		if started[library] then
 			for name, func in pairs(started[library]) do
@@ -22,40 +24,46 @@ do
 			
 			for k,v in pairs(filter) do filter[v] = true end		
 		
-			started[library] = {}
+			started[library] = {}			
+			
+			local function log_return(...)		
+				if not filter[name] then
+					if post_calls_only or post_calls_only == nil then
+						
+						local ret = {}
+						for i = 1, select("#", ...) do 
+							table.insert(ret, serializer.GetLibrary("luadata").ToString((select(i, ...))))
+						end
+						
+						if #ret == 0 then
+							logn()
+						else
+							logn(table.concat(ret, ", "))
+						end
+					end
+				end
+				
+				setlogfile()
+				
+				return ...
+			end
 			
 			for name, func in pairs(library) do
 				if type(func) == "function" then
 					library[name] = function(...)
+						setlogfile(log_name)
+						
 						if not post_calls_only and not filter[name] then
-							logn(name, ...)
-						end
 						
-						local args = {func(...)}
-						
-						if not filter[name] then
-							if post_calls_only then
-								
-								local temp = {}
-								
-								for i = 1, select("#", ...) do 
-									table.insert(temp, serializer.GetLibrary("luadata").ToString(select(i, ...))) 
-								end
-								
-								local ret = {}
-								for k, v in pairs(args) do
-									table.insert(ret, serializer.GetLibrary("luadata").ToString(v)) 
-								end
-								
-								if #ret == 0 then ret[1] = "nil" end
-								
-								logf("%s\t=\t%s.%s(%s)\n", table.concat(ret, ", "), lib_name, name, table.concat(temp, ", ")) 
-							else
-								logn(unpack(args))
+							local args = {}
+							for i = 1, select("#", ...) do 
+								table.insert(args, serializer.GetLibrary("luadata").ToString((select(i, ...)))) 
 							end
+							
+							logf("%s.%s(%s) >> ", lib_name, name, table.concat(args, ", "))
 						end
-						
-						return unpack(args)
+
+						return log_return(func(...))
 					end
 					
 					started[library][name] = func
