@@ -180,6 +180,8 @@ do -- tcp socket meta
 						self:DebugPrintf("sucessfully sent %s",  utilities.FormatFileSize(#str))
 						self:OnSend(packet, bytes, b,c,d)
 						self.data_sent = self.data_sent + bytes
+					elseif b ~= "Socket is not connected" then
+						self:DebugPrintf("could not send %s of data : %s", utilities.FormatFileSize(#data), b)
 					end
 				else					
 					for i, packet in pairs(str:lengthsplit(65536)) do
@@ -216,8 +218,8 @@ do -- tcp socket meta
 			-- check connection
 			if self.connecting then
 				local res, msg = sock:getpeername()
-				
 				if res then
+					
 					self:DebugPrintf("connected to %s:%s", res, msg)
 
 					-- ip, port = res, msg
