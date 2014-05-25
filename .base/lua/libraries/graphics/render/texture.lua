@@ -2,7 +2,7 @@ local gl = require("lj-opengl") -- OpenGL
 
 local render = (...) or _G.render
 
-render.textures = setmetatable({}, { __mode = 'v' })
+render.textures = render.textures or setmetatable({}, { __mode = 'v' })
 
 function render.GetTextures()
 	return render.textures
@@ -284,7 +284,7 @@ do -- texture object
 		mesh.pwm_matrix = render.GetPVWMatrix2D
 		
 		local fb = render.CreateFrameBuffer(self.w, self.h, {
-			attach = gl.e.GL_COLOR_ATTACHMENT1,
+			attach = "color",
 			texture_format = self.format,
 		})
 			

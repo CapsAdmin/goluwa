@@ -71,34 +71,38 @@ function render.CreateFrameBuffer(width, height, format)
 		}
 	end
 	
-	if type(format.attach) == "string" then 
-		local attach, num = format.attach:match("(.-)(%d)") or format.attach
-		num = tonumber(num)
-		
-		if attach == "color" then
-			attach = gl.e.GL_COLOR_ATTACHMENT0
-		elseif attach == "depth" then
-			attach = gl.e.GL_DEPTH_ATTACHMENT
-		elseif attach == "stencil" then
-			attach = gl.e.GL_STENCIL_ATTACHMENT
-		end
-		
-		if num then attach = attach + num end
-		
-		format.attach = attach
-	end
-	
 	if not format[1] then 
 		format.name = format.name or "default"
 		format = {format} 
 	end
-	
 		
 	local id = gl.GenFramebuffer()
 	self.id = id
 	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
 	 
 	for i, info in pairs(format) do
+		
+		if type(info.attach) == "string" then 
+			local attach, num = info.attach:match("(.-)(%d)") or info.attach
+			num = tonumber(num)
+			
+			if attach == "color" then
+				attach = gl.e.GL_COLOR_ATTACHMENT0
+			elseif attach == "depth" then
+				attach = gl.e.GL_DEPTH_ATTACHMENT
+			elseif attach == "stencil" then
+				attach = gl.e.GL_STENCIL_ATTACHMENT
+			end
+			
+			if num then 
+				attach = attach + num 
+			else
+				attach = attach + i - 1
+			end
+
+			info.attach = attach
+		end
+	
 		local tex_info = info.texture_format
 		
 		local tex = NULL
@@ -106,7 +110,7 @@ function render.CreateFrameBuffer(width, height, format)
 		
 		if tex_info then
 			tex_info.upload_format = "rgba"
-			tex_info.channel = i-1
+			tex_info.channel = i - 1
 						
 			tex = render.CreateTexture(width, height, nil, tex_info)
 			id = tex.id
@@ -122,7 +126,7 @@ function render.CreateFrameBuffer(width, height, format)
 		
 			gl.RenderbufferStorage(gl.e.GL_RENDERBUFFER, info.internal_format, width, height)
 		end
-		
+			
 		self.buffers[info.name] = {id = id, tex = tex, info = info, draw_enum = ffi.new("GLenum[1]", info.attach)}
 	end
 

@@ -58,12 +58,15 @@ function surface.InitializeFonts()
 	surface.fontmesh = mesh
 	surface.fontshader = shader
 			
-	for k,v in pairs(create_font_queue) do
-		local ok, err = pcall(surface.CreateFont, unpack(v))
-		if not ok then logn("queued surface.CreateFont error: ", err) end
+			
+	if create_font_queue then
+		for k,v in pairs(create_font_queue) do
+			local ok, err = pcall(surface.CreateFont, unpack(v))
+			if not ok then logn("queued surface.CreateFont error: ", err) end
+		end
+		
+		create_font_queue = nil
 	end
-	
-	create_font_queue = nil
 	
 	surface.SetFont(surface.CreateFont("default", {read_speed = 50}))	
 end

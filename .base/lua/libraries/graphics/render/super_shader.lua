@@ -559,6 +559,7 @@ void main()
 			--vfs.Write("gl_shaders/" .. shader, data.source)
 
 			if enum then
+				vfs.Write("super_shader_debug/" .. shader_id .. "/" .. shader .. ".c", data.source)
 				local ok, shader = pcall(render.CreateShader, enum, data.source)
 
 				if ok then
@@ -597,16 +598,19 @@ void main()
 						for key, val in pairs(data.uniform) do
 							if uniform_translate[val.type] or val.type == "function" then
 								local id = gl.GetUniformLocation(prog, key)
-								if true or id > 0 then
-									self.uniforms[key] = {
-										id = id,
-										func = uniform_translate[val.type],
-										info = val,
-									}
-																	
-									table.insert(temp, {id = id, key = key, val = val})
-									
-									self[key] = val.default
+							
+								self.uniforms[key] = {
+									id = id,
+									func = uniform_translate[val.type],
+									info = val,
+								}
+																
+								table.insert(temp, {id = id, key = key, val = val})
+								
+								self[key] = val.default
+							
+								if id < 0 then
+									logf("%s %s: %s uniform location is below 0\n", shader, key, val.type)
 								end
 							else
 								errorf("%s: %s is an unknown uniform type", 2, key, val.type)
@@ -654,9 +658,7 @@ void main()
 			--	lua = lua .. "\trender.super_shader_last_program = render.current_program\n"
 			--	lua = lua .. "end\n"
 				
-				--vfs.Write("unrolled_lines.lua", lua)
-				
-				
+				vfs.Write("super_shader_debug/" .. shader_id .. "/unrolled_lines.lua", lua)				
 				
 				local func, err = loadstring(lua)
 				if not func then error(err, 2) end
