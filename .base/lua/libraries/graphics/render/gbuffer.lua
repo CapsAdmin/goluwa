@@ -1,6 +1,8 @@
 local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
+render.gbuffer = NULL
+
 local SHADER = {
 	vertex = {
 		uniform = {
@@ -76,7 +78,7 @@ local SHADER = {
 			}
 			
 			void main ()
-			{				
+			{	
 				vec3 diffuse = texture(tex_diffuse, uv).rgb;
 				vec3 normal = texture(tex_normal, uv).rgb;
 				vec3 position = texture(tex_position, uv).xyz;
@@ -84,13 +86,16 @@ local SHADER = {
 				vec3 specular = texture(tex_specular, uv).xyz;
 				float depth = texture(tex_depth, uv).a;
 
-				//out_color.rgb = diffuse;
+				/*
+				out_color.rgb = diffuse;
 				out_color.rgb += calc_light(normal, position, diffuse, specular);				
 				out_color.rgb = mix_fog(out_color.rgb, depth);
 				
 				//out_color.rgb = mod(position, vec3(100,100,100))/100;
+				*/
 				
 				out_color.a = 1;
+				out_color.rgb = diffuse;
 			}
 		]]  
 	}
@@ -119,7 +124,7 @@ local PPSHADER = {
  
 local sphere = NULL
 
-function render.InitializeGbuffer(width, height)
+function render.InitializeGBuffer(width, height)
 	width = width or render.GetWidth()
 	height = height or render.GetHeight()
 	
@@ -130,28 +135,28 @@ function render.InitializeGbuffer(width, height)
 			name = "diffuse",
 			attach = gl.e.GL_COLOR_ATTACHMENT0,
 			texture_format = {
-				internal_format = "RGBA32F",
+				internal_format = "RGBA8",
 			}
 		},
 		{
 			name = "normal",
 			attach = gl.e.GL_COLOR_ATTACHMENT1,
 			texture_format = {
-				internal_format = "RGB32F",
+				internal_format = "RGB8",
 			}
 		},
 		{
 			name = "position",
 			attach = gl.e.GL_COLOR_ATTACHMENT2,
 			texture_format = {
-				internal_format = "RGB32F",
+				internal_format = "RGB8",
 			}
 		},
 		{
 			name = "specular",
 			attach = gl.e.GL_COLOR_ATTACHMENT3,
 			texture_format = {
-				internal_format = "RGB32F",
+				internal_format = "RGB8",
 			}
 		},
 		{
@@ -204,8 +209,7 @@ function render.InitializeGbuffer(width, height)
 			name = "diffuse",
 			attach = gl.e.GL_COLOR_ATTACHMENT0,
 			texture_format = {
-				internal_format = "RGBA32F",
-				format = {mip_map_levels = 4, mag_filter = gl.e.GL_LINEAR, min_filter = gl.e.GL_LINEAR_MIPMAP_LINEAR,},
+				internal_format = "RGBA8",
 			}
 		},
 	}) 
@@ -229,6 +233,40 @@ function render.InitializeGbuffer(width, height)
 	
 	render.pp_screen_quad = screen_quad
 	
+	
+	event.AddListener("PreDisplay", "gbuffer", function()
+		render.gbuffer:Begin()
+		render.gbuffer:Clear()
+	end)	
+	
+	event.AddListener("PostDisplay", "gbuffer", function()
+		render.gbuffer:End()
+		render.DrawGBuffer(render.GetWidth(), render.GetHeight())
+	end)	
+
+	event.AddListener("WindowFramebufferResized", "gbuffer", function(window, w, h)
+		render.InitializeGBuffer(w, h)
+	end)
+end
+
+function render.ShutdownGBuffer()
+	event.RemoveListener("PreDisplay", "gbuffer")
+	event.RemoveListener("PostDisplay", "gbuffer")
+	event.RemoveListener("WindowFramebufferResized", "gbuffer")
+	
+	if render.gbuffer:IsValid() then
+		render.gbuffer:Remove()
+	end
+	
+	if render.gbuffer_shader:IsValid() then
+		render.gbuffer_shader:Remove()
+	end
+	
+	if render.gbuffer_screen_quad:IsValid() then
+		render.gbuffer_screen_quad:Remove()
+	end
+	
+	logn("[render] gbuffer shutdown")
 end
 
 local size = 4
@@ -240,8 +278,7 @@ function render.DrawGBuffer(w, h)
 	
 	--gl.ActiveTextureARB(gl.e.GL_TEXTURE4)
 	gl.Disable(gl.e.GL_DEPTH_TEST)
-	gl.Disable(gl.e.GL_CULL_FACE)
-	
+	gl.Disable(gl.e.GL_CULL_FACE)	
 	
 	if sphere:IsValid() then 
 		gl.DrawBuffers(1, render.gbuffer.buffers.light.draw_enum)
@@ -252,7 +289,6 @@ function render.DrawGBuffer(w, h)
 	gl.Enable(gl.e.GL_CULL_FACE)
 		
 	render.Start2D()
-
 		-- draw to the pp buffer
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, render.pp_buffer.id)		
 			render.PushWorldMatrix()
@@ -260,13 +296,12 @@ function render.DrawGBuffer(w, h)
 				render.gbuffer_screen_quad:Draw()
 			render.PopWorldMatrix()		
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
-
+		
 		-- draw the pp texture as quad
 		render.PushWorldMatrix()
 			surface.Scale(w, h)
 			render.pp_screen_quad:Draw()
 		render.PopWorldMatrix()
-		
 		
 		if render.debug then
 			w = w / size
@@ -292,6 +327,18 @@ function render.DrawGBuffer(w, h)
 				end
 			end
 		end
+	render.End2D()
+end
+
+local gbuffer_enabled = true
+
+function render.EnableGBuffer(b)
+	gbuffer_enabled = b
+	if b then 
+		render.InitializeGBuffer()
+	else
+		render.ShutdownGBuffer()
+	end
 end
 
 if render.gbuffer_shader then
@@ -299,13 +346,9 @@ if render.gbuffer_shader then
 end
 
 event.AddListener("RenderContextInitialized", function() 
-	local ok, err = pcall(render.InitializeGBuffer)
-	if ok then
-		event.AddListener("WindowFramebufferResized", "gbuffer_resize", function(window, w, h)
-			render.InitializeGBuffer(w, h)
-		end)
-	else
+	local ok, err = xpcall(render.InitializeGBuffer, system.OnError)
+	if not ok then
 		logn("[render] failed to initialize gbuffer: ", err)
-		event.RemoveListener("WindowFramebufferResized", "gbuffer_resize")
+		render.ShutdownGBuffer()
 	end
 end)

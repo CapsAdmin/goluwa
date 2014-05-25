@@ -50,47 +50,29 @@ do -- current window
 	end
 end
 
-render.gbuffer_enabled = true
-
-function render.EnableGBuffer(b)
-	render.gbuffer_enabled = b
-end
-
 console.CreateVariable("render_accum", false)
 
 function render.DrawScene(window, dt)
 	render.delta = dt
 	render.Clear(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
 	render.Start(window)	
-		event.Call("PreDisplay", dt)
-	
-		if render.gbuffer and render.gbuffer_enabled then
-			render.gbuffer:Begin()
-			render.gbuffer:Clear()
-		end
-
-		render.Start3D()
-			event.Call("Draw3D", dt)
-		render.End3D()	
-
-		if render.gbuffer and render.gbuffer_enabled then
-			render.gbuffer:End()
-			render.DrawGBuffer(window:GetSize():Unpack())			
-		end
-			
-		render.Start2D()
-			event.Call("Draw2D", dt)
-			
-			if render.debug then
-				local i = 0
-				for name, matrix in pairs(render.matrices) do
-					render.DrawMatrix(i*230 + 10, render.camera.h - 220, matrix, name)
-					i = i + 1
+		event.Call("PreDisplay", dt)		
+			render.Start3D()
+				event.Call("Draw3D", dt)
+			render.End3D()	
+				
+			render.Start2D()
+				event.Call("Draw2D", dt)
+				
+				if render.debug then
+					local i = 0
+					for name, matrix in pairs(render.matrices) do
+						render.DrawMatrix(i*230 + 10, render.camera.h - 220, matrix, name)
+						i = i + 1
+					end
 				end
-			end
-			
-		render.End2D()
-		
+				
+			render.End2D()
 		event.Call("PostDisplay", dt)
 		
 		if console.GetVariable("render_accum") then
@@ -100,6 +82,5 @@ function render.DrawScene(window, dt)
 			gl.Accum(gl.e.GL_RETURN, 1-blur_amt)
 			gl.Accum(gl.e.GL_MULT, blur_amt)
 		end
-			
 	render.End()
 end

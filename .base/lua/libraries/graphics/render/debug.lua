@@ -91,19 +91,21 @@ local cb = function(source, type, id, severity, length, message, userdata)
 end
 
 function render.EnableDebug(b)
-	jit.off(true, true)
 	if gl.DebugMessageCallback then
-		if b then		
-			gl.Enable(gl.e.GL_DEBUG_OUTPUT_ARB)
-			gl.DebugMessageControl(gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, ffi.new("GLuint"), nil, true)
-			
-			gl.DebugMessageCallback(cb, nil)
+		if jit.status() then
+			logn("[render] cannot use enable glDebugMessageCallback because jit is on (launch with -joff)")
 		else
-			gl.Disable(gl.e.GL_DEBUG_OUTPUT_ARB)
+			if b then		
+				gl.Enable(gl.e.GL_DEBUG_OUTPUT_ARB)
+				gl.DebugMessageControl(gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, ffi.new("GLuint"), nil, true)
+				
+				gl.DebugMessageCallback(cb, nil)
+			else
+				gl.Disable(gl.e.GL_DEBUG_OUTPUT_ARB)
+			end
 		end
 	else
-		logn("render.EnableDebug: gl.DebugMessageCallback is not availible")
-		debug.trace()
+		logn("[render] glDebugMessageCallback is not availible")
 	end
 end
 
