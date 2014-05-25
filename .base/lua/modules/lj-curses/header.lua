@@ -426,4 +426,5 @@ void    PDC_set_resize_limits( const int new_min_lines,
                                const int new_min_cols,
                                const int new_max_cols);
 WINDOW *Xinitscr(int, char **);
+int COLOR_PAIR(int);
 ]]
