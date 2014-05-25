@@ -18,24 +18,12 @@ function curses.freeconsole()
 	end
 end
 
+if jit.os == "Windows" then
+	function curses.COLOR_PAIR(x)
+		return bit.lshift(x, 8)
+	end
+end
+
 setmetatable(curses, {__index = lib})
 
-if false then -- todo: parse
-	header = header:gsub("%s+", " ")
-	header = header:gsub(";", "%1\n")
-
-	for line in header:gmatch("(.-)\n") do
-		if not line:find("typedef") then
-			local name = line:match("([%a_%d]-)%(")
-			if name then
-				local ok, func = pcall(function() return lib[name] end)
-				if not ok then print(func) end
-				curses[name] = func
-				
-				if name == "nl" then print(line) end
-			end
-		end
-	end  
-end 
- 
 return curses
