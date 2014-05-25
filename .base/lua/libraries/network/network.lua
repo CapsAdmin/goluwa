@@ -339,9 +339,15 @@ if CLIENT then
 end
 
 if SERVER then
-	function network.Host(ip, port)	
+	function network.Host(ip, port)				
 		ip = tostring(ip)
 		port = tonumber(port) or check(port, "number")
+		
+		if network.IsHosting() then
+			network.CloseServer("already hosting")
+			event.Delay(1, function() network.Host(ip, port) end)
+			return
+		end
 		
 		do -- tcp
 			local server = sockets.CreateServer("tcp", ip, port, "network_server_tcp")
@@ -393,6 +399,19 @@ if SERVER then
 		end
 		
 		event.Call("OnlineStarted")
+	end
+	
+	function network.CloseServer(reason)
+		network.BroadcastMessage(network.SERVER_CLOSE, reason or "unknown reason")
+		
+		logf("server shutdown (%s)\n", reason or "unknown reason")
+		
+		network.tcp:Remove()
+		network.udp:Remove()
+	end
+	
+	function network.IsHosting()
+		return network.tcp:IsValid()
 	end
 	
 	function network.GetClients()
