@@ -119,11 +119,11 @@ local PPSHADER = {
  
 local sphere = NULL
 
-function render.InitializeDeffered(width, height)
+function render.InitializeGbuffer(width, height)
 	width = width or render.GetWidth()
 	height = height or render.GetHeight()
 	
-	logn("[render] initializing deffered rendering: ", width, " ", height)
+	logn("[render] initializing gbuffer: ", width, " ", height)
 	
 	render.gbuffer_config = {
 		{
@@ -169,11 +169,11 @@ function render.InitializeDeffered(width, height)
 	render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_config)  
 	
 	if not render.gbuffer:IsValid() then
-		logn("[render] failed to initialize deffered rendering")
+		logn("[render] failed to initialize gbuffer")
 		return
 	end
 
-	local shader = render.CreateSuperShader("deferred", SHADER)
+	local shader = render.CreateSuperShader("gbuffer", SHADER)
 	
 	shader.pvm_matrix = render.GetPVWMatrix2D
 	shader.cam_pos = function() return render.GetCamPos() end
@@ -196,8 +196,8 @@ function render.InitializeDeffered(width, height)
 		{pos = {0, 0}, uv = {0, 1}},
 	})
 	
-	render.deferred_shader = shader
-	render.deferred_screen_quad = screen_quad
+	render.gbuffer_shader = shader
+	render.gbuffer_screen_quad = screen_quad
 	
 	render.pp_buffer = render.CreateFrameBuffer(width, height, {
 		{
@@ -210,7 +210,7 @@ function render.InitializeDeffered(width, height)
 		},
 	}) 
 	
-	local shader = render.CreateSuperShader("post_process", PPSHADER, "deferred")
+	local shader = render.CreateSuperShader("post_process", PPSHADER, "gbuffer")
 	shader.pvm_matrix = render.GetPVWMatrix2D
 
 	shader.cam_pos = render.GetCamPos
@@ -233,7 +233,7 @@ end
 
 local size = 4
 
-function render.DrawDeffered(w, h)
+function render.DrawGBuffer(w, h)
 	render.Start3D()
 	
 	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, render.gbuffer.id)
@@ -257,7 +257,7 @@ function render.DrawDeffered(w, h)
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, render.pp_buffer.id)		
 			render.PushWorldMatrix()
 				surface.Scale(w, h)
-				render.deferred_screen_quad:Draw()
+				render.gbuffer_screen_quad:Draw()
 			render.PopWorldMatrix()		
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
 
@@ -294,18 +294,18 @@ function render.DrawDeffered(w, h)
 		end
 end
 
-if render.deferred_shader then
-	render.InitializeDeffered()
+if render.gbuffer_shader then
+	render.InitializeGBuffer()
 end
 
 event.AddListener("RenderContextInitialized", function() 
-	local ok, err = pcall(render.InitializeDeffered)
+	local ok, err = pcall(render.InitializeGBuffer)
 	if ok then
 		event.AddListener("WindowFramebufferResized", "gbuffer_resize", function(window, w, h)
-			render.InitializeDeffered(w, h)
+			render.InitializeGBuffer(w, h)
 		end)
 	else
-		logn("[render] failed to initialize deffered rendering: ", err)
+		logn("[render] failed to initialize gbuffer: ", err)
 		event.RemoveListener("WindowFramebufferResized", "gbuffer_resize")
 	end
 end)

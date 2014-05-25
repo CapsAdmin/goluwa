@@ -63,22 +63,20 @@ function render.DrawScene(window, dt)
 	render.Clear(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
 	render.Start(window)	
 		event.Call("PreDisplay", dt)
-		
-		if render.gbuffer_enabled then
-			if render.gbuffer then
-				render.gbuffer:Begin()
-				render.gbuffer:Clear()
-			end
-
-			render.Start3D()
-				event.Call("Draw3D", dt)
-			render.End3D()	
 	
-			if render.gbuffer then
-				render.gbuffer:End()
-				render.DrawDeffered(window:GetSize():Unpack())			
-			end
-		end		
+		if render.gbuffer and render.gbuffer_enabled then
+			render.gbuffer:Begin()
+			render.gbuffer:Clear()
+		end
+
+		render.Start3D()
+			event.Call("Draw3D", dt)
+		render.End3D()	
+
+		if render.gbuffer and render.gbuffer_enabled then
+			render.gbuffer:End()
+			render.DrawGBuffer(window:GetSize():Unpack())			
+		end
 			
 		render.Start2D()
 			event.Call("Draw2D", dt)
