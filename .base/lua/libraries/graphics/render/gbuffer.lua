@@ -1,6 +1,6 @@
 local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
-
+ 
 render.gbuffer = NULL
 
 local SHADER = {
@@ -133,44 +133,44 @@ function render.InitializeGBuffer(width, height)
 	render.gbuffer_config = {
 		{
 			name = "diffuse",
-			attach = gl.e.GL_COLOR_ATTACHMENT0,
+			attach = "color",
 			texture_format = {
 				internal_format = "RGBA8",
 			}
 		},
 		{
 			name = "normal",
-			attach = gl.e.GL_COLOR_ATTACHMENT1,
+			attach = "color",
 			texture_format = {
 				internal_format = "RGB8",
 			}
 		},
 		{
 			name = "position",
-			attach = gl.e.GL_COLOR_ATTACHMENT2,
+			attach = "color",
 			texture_format = {
 				internal_format = "RGB8",
 			}
 		},
 		{
 			name = "specular",
-			attach = gl.e.GL_COLOR_ATTACHMENT3,
+			attach = "color",
 			texture_format = {
 				internal_format = "RGB8",
 			}
 		},
 		{
 			name = "depth",
-			attach = gl.e.GL_DEPTH_ATTACHMENT,
+			attach = "depth",
 			draw_manual = true,
 			texture_format = {
 				internal_format = "DEPTH_COMPONENT32F",	 
 				depth_texture_mode = gl.e.GL_ALPHA,
 				
-			}
-		}
+			} 
+		} 
 	} 
-	
+  
 	render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_config)  
 	
 	if not render.gbuffer:IsValid() then
@@ -184,7 +184,7 @@ function render.InitializeGBuffer(width, height)
 	shader.cam_pos = function() return render.GetCamPos() end
 	shader.cam_vec = function() return render.GetCamAng():GetRad():GetForward() end
 	shader.time = function() return tonumber(timer.GetSystemTime()) end
-	
+	 
 	shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
 	shader.tex_position = render.gbuffer:GetTexture("position") 
 	shader.tex_normal = render.gbuffer:GetTexture("normal")
@@ -207,13 +207,13 @@ function render.InitializeGBuffer(width, height)
 	render.pp_buffer = render.CreateFrameBuffer(width, height, {
 		{
 			name = "diffuse",
-			attach = gl.e.GL_COLOR_ATTACHMENT0,
+			attach = "color",
 			texture_format = {
 				internal_format = "RGBA8",
 			}
 		},
 	}) 
-	
+
 	local shader = render.CreateSuperShader("post_process", PPSHADER, "gbuffer")
 	shader.pvm_matrix = render.GetPVWMatrix2D
 
@@ -232,7 +232,6 @@ function render.InitializeGBuffer(width, height)
 	})
 	
 	render.pp_screen_quad = screen_quad
-	
 	
 	event.AddListener("PreDisplay", "gbuffer", function()
 		render.gbuffer:Begin()
@@ -303,7 +302,7 @@ function render.DrawGBuffer(w, h)
 			render.pp_screen_quad:Draw()
 		render.PopWorldMatrix()
 		
-		if render.debug then
+		if true or render.debug then
 			w = w / size
 			h = h / size
 			
