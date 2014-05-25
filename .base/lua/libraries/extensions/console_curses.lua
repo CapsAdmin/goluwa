@@ -257,22 +257,6 @@ function console.InitializeCurses()
 end
 
 do -- colors
-
-	local COLOR_PAIR
-	
-	if LINUX then
-		COLOR_PAIR = curses.COLOR_PAIR
-		--COLOR_PAIR = function(x)
-		--	return bit.lshift(x, 8)
-		--end
-	end
-	
-	if WINDOWS then
-		COLOR_PAIR = function(x)
-			return bit.lshift(x, 8)
-		end
-	end
-
 	local syntax = include("libraries/syntax.lua")
 
 	function console.ColorPrint(str)
@@ -280,7 +264,7 @@ do -- colors
 
 		for i = 1, #tokens / 2 do
 			local color, lexeme = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
-			local attr = COLOR_PAIR(color)
+			local attr = curses.COLOR_PAIR(color)
 
 			curses.wattron(c.input_window, attr)
 			curses.waddstr(c.input_window, lexeme)
@@ -289,9 +273,9 @@ do -- colors
 	end
 	
 	function console.Color(i, str)		
-		curses.wattron(c.log_window, COLOR_PAIR(i))
+		curses.wattron(c.log_window, curses.COLOR_PAIR(i))
 		io.write(str)
-		curses.wattroff(c.log_window, COLOR_PAIR(i))
+		curses.wattroff(c.log_window, curses.COLOR_PAIR(i))
 	end
 end
 

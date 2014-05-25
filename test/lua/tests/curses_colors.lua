@@ -2,10 +2,6 @@ local curses = require("lj-curses")
 
 curses.start_color()
 
-local COLOR_PAIR = function(x)
-	return bit.lshift(x, 8)
-end
-
 for i = 0, 255 do
 	local r = bit.rshift(i, 5)
 	local g = bit.band(bit.rshift(i, 2), 8)
@@ -15,7 +11,7 @@ for i = 0, 255 do
 end
 
 local function get_color(r, g, b)
-  return COLOR_PAIR(16 + r / 48 * 36 + g / 48 * 6 + b / 48)
+  return curses.COLOR_PAIR(16 + r / 48 * 36 + g / 48 * 6 + b / 48)
 end
 
 local c = console.curses
