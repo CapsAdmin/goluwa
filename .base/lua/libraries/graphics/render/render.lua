@@ -239,7 +239,7 @@ include("scene.lua", render)
 include("texture.lua", render)
 include("framebuffer.lua", render)
 include("shaders.lua", render)
-include("deferred.lua", render)
+include("gbuffer.lua", render)
 include("model.lua", render)
 
 include("mesh_util.lua", render)
