@@ -1,7 +1,7 @@
 local header = require("lj-curses.header")
 local enums = require("lj-curses.enums")
 
-ffi.cdef("typedef uint32_t chtype;")
+ffi.cdef("typedef char chtype;")    
 ffi.cdef(header)
 
 local lib = ffi.load(jit.os == "Windows" and "pdcurses" or "ncursesw")

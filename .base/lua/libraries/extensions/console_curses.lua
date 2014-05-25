@@ -111,17 +111,21 @@ function console.InitializeCurses()
 	
 	curses.freeconsole()
 
-	c.parent_window = curses.initscr()
+	curses.initscr()
+	c.parent_window = curses.stdscr
 
 	if WINDOWS then
+		curses.PDC_set_resize_limits(20, 20, 500, 500)
 		curses.resize_term(50,150)
+		curses.fixterm()
 	end
-
+	
 	c.log_window = curses.derwin(c.parent_window, curses.LINES-1, curses.COLS, 0, 0)
 	c.input_window = curses.derwin(c.parent_window, 1, curses.COLS, curses.LINES - 1, 0)
 	
 	curses.cbreak()
 	curses.noecho()
+	curses.keypad(c.parent_window, true)
 
 	curses.nodelay(c.input_window, 1)
 	curses.keypad(c.input_window, 1)
@@ -141,7 +145,7 @@ function console.InitializeCurses()
 	curses.start_color()
 
 	for i = 0, 7 do
-		curses.init_pair(i, COLOR_BLACK, i)
+		curses.init_pair(i, i, COLOR_BLACK)
 	end
 	
 	-- replace some functions
@@ -257,9 +261,10 @@ do -- colors
 	local COLOR_PAIR
 	
 	if LINUX then
-		COLOR_PAIR = function(x)
-			return bit.lshift(x, 8)
-		end
+		COLOR_PAIR = curses.COLOR_PAIR
+		--COLOR_PAIR = function(x)
+		--	return bit.lshift(x, 8)
+		--end
 	end
 	
 	if WINDOWS then
@@ -275,7 +280,7 @@ do -- colors
 
 		for i = 1, #tokens / 2 do
 			local color, lexeme = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
-			local attr = COLOR_PAIR(color + 1)
+			local attr = COLOR_PAIR(color)
 
 			curses.wattron(c.input_window, attr)
 			curses.waddstr(c.input_window, lexeme)
@@ -319,7 +324,11 @@ function console.ClearInput(str)
 	curses.wclear(c.input_window)
 	
 	if str then
-		curses.waddstr(c.input_window, str)
+		if WINDOWS then
+			curses.waddstr(c.input_window, str)
+		else
+			console.ColorPrint(str)
+		end
 		
 		curses.wmove(c.input_window, y, x)
 	else
