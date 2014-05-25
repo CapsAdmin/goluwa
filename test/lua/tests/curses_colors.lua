@@ -1,32 +1,33 @@
 local curses = require("lj-curses")
 
-event.Delay(0.1 , function()
+curses.start_color()
 
-	local COLOR_BLACK = 0
-	local COLOR_RED = 1
-	local COLOR_GREEN = 2
-	local COLOR_YELLOW = 3
-	local COLOR_BLUE = 4
-	local COLOR_MAGENTA = 5
-	local COLOR_CYAN = 6
-	local COLOR_WHITE = 7
+local COLOR_PAIR = function(x)
+	return bit.lshift(x, 8)
+end
 
-	local COLOR_PAIR = function(x)
-		return bit.lshift(x, 8)
-	end
+for i = 0, 255 do
+	local r = bit.rshift(i, 5)
+	local g = bit.band(bit.rshift(i, 2), 8)
+	local b = bit.band(i, 8)
+	curses.init_color(i, r, g, b);
+	curses.init_pair(i, i, 0); -- 0 --> i if you want pure blocks, otherwise ascii
+end
 
-	curses.start_color()
+local function get_color(r, g, b)
+  return COLOR_PAIR(16 + r / 48 * 36 + g / 48 * 6 + b / 48)
+end
 
-	for i = 0, 7 do
-		curses.init_pair(i, COLOR_BLACK, i)
-	end
+local c = console.curses
 
-	for i = 0, 7 do
-		curses.wattron(console.curses.log_window, COLOR_PAIR(i))
-		curses.wprintw(console.curses.log_window, "#")
-		curses.wattroff(console.curses.log_window, COLOR_PAIR(i))
-	end 
+local function print_color(str, r, g, b)
+	local color = get_color(r, g, b)
+	--curses.wattron(c.log_window, color)
+	curses.mvaddch(math.random(50), math.random(50), bit.band(str:byte(), color)) 
+	--curses.wattroff(c.log_window, color)
+	print(color)
+end
 
-	curses.wrefresh(console.curses.log_window)
+print_color("#", 255, 255, 255)
 
-end)
+curses.refresh()
