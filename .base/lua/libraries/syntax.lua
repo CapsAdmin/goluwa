@@ -31,7 +31,7 @@ local COLOR_WHITE = 7
 
 syntax.colors = {
 	COLOR_WHITE, --Color(255, 255, 255),
-	COLOR_CYAN + 2 ^ 13, --Color(127, 159, 191),
+	COLOR_CYAN, --Color(127, 159, 191),
 	COLOR_WHITE, --Color(223, 223, 223),
 	COLOR_RED, --Color(191, 127, 127),
 	COLOR_GREEN, --Color(127, 191, 127),
