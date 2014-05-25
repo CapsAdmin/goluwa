@@ -52,6 +52,10 @@ local errors = {
 
 local function add_gl_func(name, func)
 	
+	gl[name] = func
+	
+	do return end
+	
 	-- lets remove the ARB field from extensions officially approved 
 	-- by the OpenGL Architecture Review Board
 	--name = name:gsub("ARB", "")
