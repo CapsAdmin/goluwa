@@ -164,11 +164,26 @@ local _event
 local _unique
 local unique
 
+local blacklist = {
+	Update = true,
+	PreDisplay = true,
+	UserMessage = true,
+	PacketReceived = true,
+	PostDisplay = true,
+	Draw2D = true,
+	Draw3D = true,
+	DrawHUD = true,
+	PostDrawMenu = true,
+	PreDrawMenu = true,
+}
+
 function event.Call(type, ...)
 	if event.debug then
-		event.call_count = event.call_count or 0
-		print(event.call_count, type, ...)
-		event.call_count = event.call_count + 1
+		if not blacklist[type] then
+			event.call_count = event.call_count or 0
+				print(event.call_count, type, ...)
+			event.call_count = event.call_count + 1
+		end
 	end
 	if event.active[type] then
 		for key, data in ipairs(event.active[type]) do
