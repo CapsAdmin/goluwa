@@ -119,10 +119,12 @@ local PPSHADER = {
  
 local sphere = NULL
 
-function render.InitializeDeffered()
+function render.InitializeDeffered(width, height)
+	width = width or render.GetWidth()
+	height = height or render.GetHeight()
 	
-	event.AddListener("WindowFramebufferResized", "gbuffer_resize", render.InitializeDeffered)
-
+	logn("[render] initializing deffered rendering: ", width, " ", height)
+	
 	render.gbuffer_config = {
 		{
 			name = "diffuse",
@@ -164,7 +166,7 @@ function render.InitializeDeffered()
 		}
 	} 
 	
-	render.gbuffer = render.CreateFrameBuffer(render.GetWidth(), render.GetHeight(), render.gbuffer_config)  
+	render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_config)  
 	
 	if not render.gbuffer:IsValid() then
 		logn("[render] failed to initialize deffered rendering")
@@ -197,7 +199,7 @@ function render.InitializeDeffered()
 	render.deferred_shader = shader
 	render.deferred_screen_quad = screen_quad
 	
-	render.pp_buffer = render.CreateFrameBuffer(render.GetWidth(), render.GetHeight(), {
+	render.pp_buffer = render.CreateFrameBuffer(width, height, {
 		{
 			name = "diffuse",
 			attach = gl.e.GL_COLOR_ATTACHMENT0,
@@ -298,8 +300,12 @@ end
 
 event.AddListener("RenderContextInitialized", function() 
 	local ok, err = pcall(render.InitializeDeffered)
-	if not ok then
+	if ok then
+		event.AddListener("WindowFramebufferResized", "gbuffer_resize", function(window, w, h)
+			render.InitializeDeffered(w, h)
+		end)
+	else
 		logn("[render] failed to initialize deffered rendering: ", err)
+		event.RemoveListener("WindowFramebufferResized", "gbuffer_resize")
 	end
-	event.RemoveListener("WindowFramebufferResized", "gbuffer_resize")
 end)
