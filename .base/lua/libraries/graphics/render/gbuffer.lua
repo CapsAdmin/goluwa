@@ -4,6 +4,7 @@ local render = (...) or _G.render
 render.gbuffer = NULL
 
 local SHADER = {
+	name = "gbuffer",
 	vertex = {
 		uniform = {
 			pvm_matrix = "mat4",
@@ -21,17 +22,17 @@ local SHADER = {
 			tex_position = "sampler2D", 
 			tex_specular = "sampler2D",
 			tex_depth = "sampler2D",
-			time = "float",
-			cam_pos = "vec3",
-			cam_vec = "vec3",
+			--time = "float",
+			--cam_pos = "vec3",
+			--cam_vec = "vec3",
 		},  
 		attributes = {
-			uv = "vec2",
+			{uv = "vec2"},
 		},
 		source = [[			
 			out vec4 out_color;
 			
-			vec3 mix_fog(vec3 color, float depth)
+			/*vec3 mix_fog(vec3 color, float depth)
 			{
 				const vec3 ambient = vec3(0.30588236451149, 0.59607845544815, 0.88235300779343); 
 				
@@ -75,7 +76,7 @@ local SHADER = {
 		
 				
 				return final_color;
-			}
+			}*/
 			
 			void main ()
 			{	
@@ -86,13 +87,9 @@ local SHADER = {
 				vec3 specular = texture(tex_specular, uv).xyz;
 				float depth = texture(tex_depth, uv).a;
 
-				/*
-				out_color.rgb = diffuse;
+				/*out_color.rgb = diffuse;
 				out_color.rgb += calc_light(normal, position, diffuse, specular);				
-				out_color.rgb = mix_fog(out_color.rgb, depth);
-				
-				//out_color.rgb = mod(position, vec3(100,100,100))/100;
-				*/
+				out_color.rgb = mix_fog(out_color.rgb, depth);*/
 				
 				out_color.a = 1;
 				out_color.rgb = diffuse;
@@ -102,13 +99,15 @@ local SHADER = {
 } 
 
 local PPSHADER = {
+	name = "gbuffer_post_process",
+	base = "gbuffer",
 	fragment = {
 		uniform = {
 			tex_diffuse = "sampler2D",
 			tex_depth = "sampler2D",
 		},
 		attributes = {
-			uv = "vec2",
+			{uv = "vec2"},
 		},
 		source = [[
 			out vec4 out_color;
@@ -178,7 +177,7 @@ function render.InitializeGBuffer(width, height)
 		return
 	end
 
-	local shader = render.CreateSuperShader("gbuffer", SHADER)
+	local shader = render.CreateShader(SHADER)
 	
 	shader.pvm_matrix = render.GetPVWMatrix2D
 	shader.cam_pos = function() return render.GetCamPos() end
@@ -191,7 +190,7 @@ function render.InitializeGBuffer(width, height)
 	shader.tex_specular = render.gbuffer:GetTexture("specular")
 	shader.tex_depth = render.gbuffer:GetTexture("depth")
 
-	local screen_quad = shader:CreateVertexBuffer({
+	local vbo = shader:CreateVertexBuffer({
 		{pos = {0, 0}, uv = {0, 1}},
 		{pos = {0, 1}, uv = {0, 0}},
 		{pos = {1, 1}, uv = {1, 0}},
@@ -202,7 +201,7 @@ function render.InitializeGBuffer(width, height)
 	})
 	
 	render.gbuffer_shader = shader
-	render.gbuffer_screen_quad = screen_quad
+	render.gbuffer_screen_quad = vbo
 	
 	render.pp_buffer = render.CreateFrameBuffer(width, height, {
 		{
@@ -214,14 +213,14 @@ function render.InitializeGBuffer(width, height)
 		},
 	}) 
 
-	local shader = render.CreateSuperShader("post_process", PPSHADER, "gbuffer")
+	local shader = render.CreateShader(PPSHADER)
 	shader.pvm_matrix = render.GetPVWMatrix2D
 
 	shader.cam_pos = render.GetCamPos
 	shader.tex_diffuse = render.pp_buffer:GetTexture("diffuse")
 	shader.tex_depth = render.gbuffer:GetTexture("depth")
 	
-	local screen_quad = shader:CreateVertexBuffer({
+	local vbo = shader:CreateVertexBuffer({
 		{pos = {0, 0}, uv = {0, 1}},
 		{pos = {0, 1}, uv = {0, 0}},
 		{pos = {1, 1}, uv = {1, 0}},
@@ -231,7 +230,8 @@ function render.InitializeGBuffer(width, height)
 		{pos = {0, 0}, uv = {0, 1}},
 	})
 	
-	render.pp_screen_quad = screen_quad
+	render.pp_screen_shader = shader
+	render.pp_screen_quad = vbo
 	
 	event.AddListener("PreDisplay", "gbuffer", function()
 		render.gbuffer:Begin()
@@ -292,6 +292,7 @@ function render.DrawGBuffer(w, h)
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, render.pp_buffer.id)		
 			render.PushWorldMatrix()
 				surface.Scale(w, h)
+				render.gbuffer_shader:Bind()
 				render.gbuffer_screen_quad:Draw()
 			render.PopWorldMatrix()		
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
@@ -299,10 +300,11 @@ function render.DrawGBuffer(w, h)
 		-- draw the pp texture as quad
 		render.PushWorldMatrix()
 			surface.Scale(w, h)
+			render.pp_screen_shader:Bind()
 			render.pp_screen_quad:Draw()
 		render.PopWorldMatrix()
 		
-		if true or render.debug then
+		if render.debug then
 			w = w / size
 			h = h / size
 			
@@ -346,6 +348,7 @@ end
 
 event.AddListener("RenderContextInitialized", function() 
 	local ok, err = xpcall(render.InitializeGBuffer, system.OnError)
+	
 	if not ok then
 		logn("[render] failed to initialize gbuffer: ", err)
 		render.ShutdownGBuffer()

@@ -109,11 +109,104 @@ function render.Initialize()
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
 	system.SetWindowTitle("OpenGL " .. render.GetVersion(), "glversion")
 	
-	include("libraries/graphics/render/super_shader.lua", render)
+	include("libraries/graphics/render/shader_builder.lua", render)
 	
 	event.Delay(function()
 		event.Call("RenderContextInitialized")	
 	end)
+end
+
+do -- shaders
+	local status = ffi.new("GLint[1]")
+	local shader_strings = ffi.new("const char * [1]")
+	local log = ffi.new("char[1024]")
+
+	function render.CreateGLShader(type, source)
+		check(type, "number")
+		check(source, "string")
+		
+		if not render.CheckSupport("CreateShader") then return 0 end
+		
+		local shader = gl.CreateShader(type)
+		
+		shader_strings[0] = ffi.cast("const char *", source)
+		gl.ShaderSource(shader, 1, shader_strings, nil)
+		gl.CompileShader(shader)
+		gl.GetShaderiv(shader, gl.e.GL_COMPILE_STATUS, status)		
+
+		if status[0] == 0 then			
+		
+			gl.GetShaderInfoLog(shader, 1024, nil, log)
+			gl.DeleteShader(shader)
+			
+			error(ffi.string(log), 2)
+		end
+
+		return shader
+	end
+
+	function render.CreateGLProgram(...)	
+
+		if not render.CheckSupport("CreateProgram") then return 0 end
+
+		local shaders = {...}
+		local program = gl.CreateProgram()
+		
+		for _, shader_id in pairs(shaders) do
+			gl.AttachShader(program, shader_id)
+		end
+
+		gl.LinkProgram(program)
+
+		gl.GetProgramiv(program, gl.e.GL_LINK_STATUS, status)
+
+		if status[0] == 0 then
+		
+			gl.GetProgramInfoLog(program, 1024, nil, log)
+			gl.DeleteProgram(program)		
+			
+			error(ffi.string(log), 2)
+		end
+		
+		for _, shader_id in pairs(shaders) do
+			gl.DetachShader(program, shader_id)
+			gl.DeleteShader(shader_id)
+		end
+		
+		return program
+	end
+
+	local last
+
+	function render.UseProgram(id)
+		if last ~= id then
+			gl.UseProgram(id)
+			last = id
+			render.current_program = id
+		end
+	end
+
+	local last
+
+	function render.BindArrayBuffer(id)
+		if last ~= id then
+			gl.BindBuffer(gl.e.GL_ARRAY_BUFFER, id)
+			last = id
+		end
+	end
+
+	local last
+
+	function render.BindVertexArray(id)
+		if last ~= id then
+			gl.BindVertexArray(id)
+			last = id
+			
+			return true
+		end
+		
+		return false
+	end
 end
 
 do
@@ -237,11 +330,9 @@ include("matrices.lua", render)
 include("scene.lua", render)
 include("texture.lua", render)
 include("framebuffer.lua", render)
-include("shaders.lua", render)
 include("gbuffer.lua", render)
 include("model.lua", render)
-
-include("mesh_util.lua", render)
+include("vertex_buffer.lua", render)
 
 if USE_SDL then
 	include("sdl_window.lua", render)
@@ -252,5 +343,7 @@ end
 include("cvars.lua", render)
 include("globals.lua", render)
 include("debug.lua", render)
+
+include("model_3d.lua", render)
 
 return render

@@ -1,6 +1,6 @@
-window.Open() 
-
 local data = {
+	name = "test",
+	
 	-- these are declared as uniform on all shaders
 	shared = {
 		uniform = {
@@ -29,7 +29,7 @@ local data = {
 		-- as "__out_foo" and then grabbed from the other shader with a macro to turn its name 
 		-- back to "foo" with #define
 		attributes = {
-			uv = "vec2",
+			{uv = "vec2"},
 		},			
 		source = [[
 			out vec4 frag_color;
@@ -50,10 +50,12 @@ local data = {
 	} 
 } 
  
-local shader = SuperShader("test", data)
+local shader = render.CreateShader(data)
+
+shader.pwm_matrix = render.GetPVWMatrix2D
 
 -- this creates mesh from the attributes field
-local mesh = shader:CreateVertexBuffer({
+local mesh = shader:CreateVertexBuffer{
 	{pos = {0, 0}, uv = {0, 1}},
 	{pos = {0, 1}, uv = {0, 0}},
 	{pos = {1, 1}, uv = {1, 0}},
@@ -61,15 +63,14 @@ local mesh = shader:CreateVertexBuffer({
 	{pos = {1, 1}, uv = {1, 0}},
 	{pos = {1, 0}, uv = {1, 1}},
 	{pos = {0, 0}, uv = {0, 1}},
-})
-
-mesh.pwm_matrix = render.GetPVWMatrix2D
+}
  
 event.AddListener("Draw2D", "hm", function()
 	surface.PushMatrix(0, 0, surface.GetScreenSize())
-		mesh.global_color = HSVToColor(timer.GetSystemTime())
-		mesh.time = timer.GetSystemTime()
-		mesh.tex = tex	
+		shader.global_color = HSVToColor(timer.GetSystemTime())
+		shader.time = timer.GetSystemTime()
+		shader.tex = render.GetWhiteTexture()
+		shader:Bind()
 		mesh:Draw()
 	surface.PopMatrix()
-end) 
+end)  
