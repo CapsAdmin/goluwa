@@ -1,4 +1,5 @@
-local gl = require("lj-opengl") -- OpenGL
+local utilities = (...) or _G.utilities
+
 local render = (...) or _G.render
 
 --[[
