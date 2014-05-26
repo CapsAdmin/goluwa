@@ -3,15 +3,7 @@ local surface = _G.surface or {}
 include("mesh2d.lua", surface)
 
 function surface.Initialize()		
-	surface.rect_mesh = surface.CreateMesh({
-		{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
-		{pos = {0, 1}, uv = {0, 0}, color = {1,1,1,1}},
-		{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
-
-		{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
-		{pos = {1, 0}, uv = {1, 1}, color = {1,1,1,1}},
-		{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
-	})
+	surface.rect_mesh = surface.CreateMesh() -- mesh defaults to rect, see mesh2d.lua
 		
 	surface.SetWhiteTexture()				 
 	surface.InitializeFonts()
@@ -92,6 +84,18 @@ function surface.Color(r,g,b,a)
 	surface.mesh_2d_shader.global_color = COLOR
 	
 	return oldr, oldg, oldb, olda
+end
+
+function surface.SetColor(r, g, b, a)
+	surface.Color(r, g, b, a)
+end
+
+function surface.GetColor(obj)
+	if obj then
+		return COLOR
+	end
+	
+	return R, G, B, A
 end
 
 function surface.SetAlphaMultiplier(a)
@@ -253,7 +257,6 @@ do
 		
 		update_vbo()
 	end
-	
 end
 
 function surface.DrawRect(x,y, w,h, a, ox,oy)	
@@ -365,5 +368,9 @@ do -- points
 end
 
 event.AddListener("RenderContextInitialized", surface.Initialize)
+
+if RELOAD then
+	surface.Initialize()
+end
 
 return surface

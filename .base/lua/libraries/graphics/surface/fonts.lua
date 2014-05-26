@@ -373,3 +373,7 @@ do -- fonts
 		return data.w * W, data.h * H
 	end
 end
+
+if RELOAD then
+	surface.InitializeFonts()
+end
