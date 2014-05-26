@@ -898,7 +898,9 @@ do -- file monitoring
 					else 
 						if data.modification ~= info.modification then
 							logn("reloading ", utilities.GetFileNameFromPath(path))
+							_G.RELOAD = true
 							include(path) 
+							_G.RELOAD = nil
 							data.modification = info.modification
 						end
 					end			
