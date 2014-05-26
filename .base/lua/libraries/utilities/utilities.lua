@@ -1,5 +1,8 @@
 local utilities = _G.utilities or {}
 
+include("mesh.lua", utilities)
+include("buffer_template.lua", utilities)
+
 do -- long long
 	ffi.cdef [[
 	  typedef union {
