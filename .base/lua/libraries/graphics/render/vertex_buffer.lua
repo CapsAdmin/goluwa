@@ -16,7 +16,7 @@ function render.CreateVertexBuffer(buffer, vertex_attributes)
 	self.vao_id = gl.GenVertexArray()
 	self.vertex_attributes = vertex_attributes
 	
-	self:UpdateVertexBuffer()
+	self:UpdateBuffer()
 
 	return self
 end 
@@ -27,7 +27,7 @@ end
 
 function META:Draw()
 	render.BindVertexArray(self.vao_id)
-	render.BindArrayBuffer(self.id)		
+	render.BindArrayBuffer(self.id)	
 	gl.DrawArrays(gl.e.GL_TRIANGLES, 0, self.size)
 end
 
@@ -42,12 +42,13 @@ end
 
 function META:UpdateBuffer()
 	render.BindArrayBuffer(self.id)
+		gl.BufferData(gl.e.GL_ARRAY_BUFFER, self.size, self.buffer, gl.e.GL_DYNAMIC_DRAW)
 		render.BindVertexArray(self.vao_id)
 			for location, data in pairs(self.vertex_attributes) do
 				gl.EnableVertexAttribArray(location)
 				gl.VertexAttribPointer(location, data.arg_count, data.enum, false, data.stride, data.type_stride)
-			end		
+			end
 		render.BindVertexArray(0)
-		gl.BufferData(gl.e.GL_ARRAY_BUFFER, self.size, self.buffer, gl.e.GL_DYNAMIC_DRAW)
+		
 	render.BindArrayBuffer(0)
 end
