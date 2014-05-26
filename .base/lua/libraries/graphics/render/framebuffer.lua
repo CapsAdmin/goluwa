@@ -52,7 +52,6 @@ function META:Remove()
 end
 
 function render.CreateFrameBuffer(width, height, format)
-
 	if not render.CheckSupport("GenFramebuffer") then return NULL end
 	
 	local self = META:New()
@@ -88,16 +87,17 @@ function render.CreateFrameBuffer(width, height, format)
 			
 			if attach == "color" then
 				attach = gl.e.GL_COLOR_ATTACHMENT0
+				
+				if num then 
+					attach = attach + num 
+				else
+					attach = attach + i - 1
+				end
+				
 			elseif attach == "depth" then
 				attach = gl.e.GL_DEPTH_ATTACHMENT
 			elseif attach == "stencil" then
 				attach = gl.e.GL_STENCIL_ATTACHMENT
-			end
-			
-			if num then 
-				attach = attach + num 
-			else
-				attach = attach + i - 1
 			end
 
 			info.attach = attach
