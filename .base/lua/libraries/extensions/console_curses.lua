@@ -22,6 +22,21 @@ local translate =
 	PADENTER = "KEY_ENTER",
 }
 
+local A_DIM = 2 ^ 12
+local A_BOLD = 2 ^ 13
+local A_STANDOUT = 2 ^ 8
+
+local COLOR_BLACK = 0
+local COLOR_RED = 1
+local COLOR_GREEN = 2
+local COLOR_YELLOW = 3
+local COLOR_BLUE = 4
+local COLOR_MAGENTA = 5
+local COLOR_CYAN = 6
+local COLOR_WHITE = 7
+
+local COLORPAIR_STATUS = 9
+
 -- some helpers
 
 local function gety()
@@ -120,7 +135,8 @@ function console.InitializeCurses()
 		curses.fixterm()
 	end
 	
-	c.log_window = curses.derwin(c.parent_window, curses.LINES-1, curses.COLS, 0, 0)
+	c.status_window = curses.derwin(c.parent_window, 1, curses.COLS, 0, 0)
+	c.log_window = curses.derwin(c.parent_window, curses.LINES - 2, curses.COLS, 1, 0)
 	c.input_window = curses.derwin(c.parent_window, 1, curses.COLS, curses.LINES - 1, 0)
 	
 	curses.cbreak()
@@ -132,22 +148,16 @@ function console.InitializeCurses()
 
 	curses.attron((2 ^ (8 + 13)) + 8 * 256)
 	curses.scrollok(c.log_window, 1)
-		
-	local COLOR_BLACK = 0
-	local COLOR_RED = 1
-	local COLOR_GREEN = 2
-	local COLOR_YELLOW = 3
-	local COLOR_BLUE = 4
-	local COLOR_MAGENTA = 5
-	local COLOR_CYAN = 6
-	local COLOR_WHITE = 7
 	
 	curses.start_color()
+	curses.use_default_colors()
 
-	for i = 0, 7 do
-		curses.init_pair(i, i, COLOR_BLACK)
+	for i = 1, 8 do
+		curses.init_pair(i, i - 1, -1)
 	end
-	
+
+	curses.init_pair(COLORPAIR_STATUS, COLOR_RED, COLOR_WHITE + A_DIM * 2 ^ 8)
+
 	-- replace some functions
 	
 	if WINDOWS then
@@ -240,8 +250,10 @@ function console.InitializeCurses()
 			end
 			
 			str = str:gsub("%%", "%%%%")
-			
-			curses.wprintw(c.log_window, str)
+		
+
+			--curses.wprintw(c.log_window, str)
+			console.ColorPrint(str, c.log_window)
 			curses.wrefresh(c.log_window)
 			if console.Scroll then console.Scroll(0) end
 		end
@@ -259,16 +271,21 @@ end
 do -- colors
 	local syntax = include("libraries/syntax.lua")
 
-	function console.ColorPrint(str)
+	function console.ColorPrint(str, window)
+		window = window or c.input_window
 		local tokens = syntax.process(str)
 
 		for i = 1, #tokens / 2 do
 			local color, lexeme = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
-			local attr = curses.COLOR_PAIR(color)
+			local attr = curses.COLOR_PAIR(color + 1)
 
-			curses.wattron(c.input_window, attr)
-			curses.waddstr(c.input_window, lexeme)
-			curses.wattroff(c.input_window, attr)
+			if WINDOWS then
+				curses.waddstr(window, lexeme)
+			else
+				curses.wattron(window, attr)
+				curses.waddstr(window, lexeme)
+				curses.wattroff(window, attr)
+			end
 		end
 	end
 	
@@ -286,7 +303,7 @@ function console.Scroll(offset)
 		console.scroll_index = #console.history
 	return end
 	
-	console.ClearWindow()
+	curses.werase(c.log_window)
 	
 	local lines = curses.LINES-1
 	local count = #console.history
@@ -305,7 +322,7 @@ end
 function console.ClearInput(str)
 	local y, x = gety(), getx()
 	
-	curses.wclear(c.input_window)
+	curses.werase(c.input_window)
 	
 	if str then
 		if WINDOWS then
@@ -323,10 +340,18 @@ function console.ClearInput(str)
 end
 
 function console.ClearWindow()
-	curses.wclear(c.log_window)
+	curses.werase(c.log_window)
 	curses.wrefresh(c.log_window)
 end
 
+function console.ClearStatus(str)
+	curses.werase(c.status_window)
+	curses.wattron(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS))
+	curses.wbkgdset(c.status_window, COLORPAIR_STATUS)
+	curses.waddstr(c.status_window, str)
+	curses.wattroff(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS))
+	curses.wrefresh(c.status_window)
+end
 
 function console.GetActiveKey()
 	local byte = curses.wgetch(c.input_window)

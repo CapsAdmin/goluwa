@@ -8,32 +8,34 @@ syntax.NUMBER     = 5
 syntax.OPERATOR   = 6
 
 syntax.patterns = {
-	[2]  = "([%a_][%w_]*)",
-	[1]  = "(\".-\")",
-	[5]  = "([%d]+%.?%d*)",
-	[6]  = "([%+%-%*/%%%(%)%.,<>=:;{}%[%]])",
-	[7]  = "(//[^\n]*)",
-	[8]  = "(/%*.-%*/)",
-	[9]  = "(%-%-[^%[][^\n]*)",
-	[10] = "(%-%-%[%[.-%]%])",
-	[11] = "(%[=-%[.-%]=-%])",
-	[12] = "('.-')"
+	[2]  = "[%a_][%w_]*",
+	[1]  = "\".-\"",
+	[4]  = "0x[a-fA-F0-9]+",
+	[5]  = "[%d]+%.?%d*e?%d+",
+	[6]  = "[%+%-%*/%%%(%)%.,<>=:;{}%[%]]",
+	[7]  = "//[^\n]*",
+	[8]  = "/%*.-%*/",
+	[9]  = "%-%-[^%[][^\n]*",
+	[10] = "%-%-%[%[.-%]%]",
+	[11] = "%[=-%[.-%]=-%]",
+	[12] = "'.-'"
 }
 
-local COLOR_BLACK = 0
+local COLOR_DEFAULT = -1
+local COLOR_BLACK = -1
 local COLOR_RED = 1
 local COLOR_GREEN = 2
 local COLOR_YELLOW = 3
 local COLOR_BLUE = 4
 local COLOR_MAGENTA = 5
 local COLOR_CYAN = 6
-local COLOR_WHITE = 7
+local COLOR_WHITE = -1
 
 syntax.colors = {
-	COLOR_WHITE, --Color(255, 255, 255),
+	COLOR_RED,  --Color(255, 255, 255),
 	COLOR_CYAN, --Color(127, 159, 191),
 	COLOR_WHITE, --Color(223, 223, 223),
-	COLOR_RED, --Color(191, 127, 127),
+	COLOR_GREEN, --Color(191, 127, 127),
 	COLOR_GREEN, --Color(127, 191, 127),
 	COLOR_YELLOW, --Color(191, 191, 159),
 	COLOR_WHITE, --Color(159, 159, 159),
