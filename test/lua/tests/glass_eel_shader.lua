@@ -1,4 +1,6 @@
 local data = {
+	name = "glass_eel_shader",
+	
 	-- these are declared as uniform on all shaders
 	shared = {
 		uniform = {
@@ -156,7 +158,8 @@ local data = {
 
 local tex = Texture("textures/debug/brain.jpg")
 
-local shader = SuperShader("test", data)
+local shader = render.CreateShader(data)
+shader.pwm_matrix = render.GetPVWMatrix2D
 
 -- this creates mesh from the attributes field
 local mesh = shader:CreateVertexBuffer({
@@ -169,15 +172,14 @@ local mesh = shader:CreateVertexBuffer({
 	{pos = {0, 0}, uv = {0, 0}},
 })
 
-mesh.pwm_matrix = render.GetPVWMatrix2D
-  
 event.AddListener("DrawHUD", "hm", function()
 	local w, h = surface.GetScreenSize()
 	surface.PushMatrix(0, 0, w, h) 
-		mesh.time = timer.GetSystemTime()
-		mesh.tex = tex	
-		mesh.resolution = Vec2(surface.GetScreenSize())
-		mesh.mouse = aahh.GetMousePos()
+		shader.time = timer.GetSystemTime()
+		shader.tex = tex	
+		shader.resolution = Vec2(surface.GetScreenSize())
+		shader.mouse = aahh.GetMousePos()
+		shader:Bind()
 		mesh:Draw()
 	surface.PopMatrix()
 end) 
