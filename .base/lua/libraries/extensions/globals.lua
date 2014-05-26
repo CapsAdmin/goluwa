@@ -52,7 +52,7 @@ do -- nospam
 	local last = {}
 
 	function logf_nospam(str, ...)
-		local str = string.format(str, tostring_args(...))
+		local str = string.format(str, ...)
 		local t = os.clock()
 		
 		if not last[str] or last[str] < t then
@@ -62,7 +62,7 @@ do -- nospam
 	end
 	
 	function logn_nospam(...)
-		nospam_printf(("%s "):rep(select("#", ...)), ...)
+		logf_nospam(("%s "):rep(select("#", ...)), ...)
 	end
 end
 
