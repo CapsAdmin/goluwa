@@ -12,7 +12,7 @@ entities.EndStorableProperties()
 
 function META:SetModelPath(path, ...)
 	self.ModelPath = path
-	self:SetModel(Model(path, ...))
+	self:SetModel(render.CreateModel(path, ...))
 end
 
 function META:SetPos(vec)

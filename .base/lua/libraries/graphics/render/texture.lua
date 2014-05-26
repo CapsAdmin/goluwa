@@ -243,6 +243,7 @@ do -- texture object
 	
 	function META:Shade(fragment_shader, vars)
 		local data = {
+			name = "temp_" .. tostring(os.clock()):gsub("%p", ""),
 			shared = {
 				uniform = vars,
 			},
@@ -263,13 +264,14 @@ do -- texture object
 					self = "texture",
 				},		
 				attributes = {
-					uv = "vec2",
+					{uv = "vec2"},
 				},			
 				source = fragment_shader,
 			} 
 		} 
 		 
-		local shader = SuperShader("temp_" .. tostring(os.clock()):gsub("%p", ""), data)
+		local shader = render.CreateShader(data)
+		shader.pwm_matrix = render.GetPVWMatrix2D
 
 		local mesh = shader:CreateVertexBuffer({
 			{pos = {0, 0}, uv = {0, 1}},
@@ -280,9 +282,7 @@ do -- texture object
 			{pos = {1, 0}, uv = {1, 1}},
 			{pos = {0, 0}, uv = {0, 1}},
 		})
-
-		mesh.pwm_matrix = render.GetPVWMatrix2D
-		
+				
 		local fb = render.CreateFrameBuffer(self.w, self.h, {
 			attach = "color",
 			texture_format = self.format,
@@ -290,7 +290,7 @@ do -- texture object
 			
 	 	fb:Begin()
 			surface.PushMatrix(0, 0, surface.GetScreenSize())
-				mesh.self = self
+				shader:Bind()
 				mesh:Draw()
 			surface.PopMatrix()
 		fb:End()
@@ -300,6 +300,7 @@ do -- texture object
 		
 		tex:Remove()
 		shader:Remove()
+		mesh:Remove()
 		
 		self:Replace(buffer, self.w, self.h)
 	end
@@ -388,6 +389,7 @@ do -- texture object
 		end		
 		
 		self.texture_channel = gl.e.GL_TEXTURE0 + format.channel
+		self.texture_channel_uniform = format.channel
 		
 		gl.BindTexture(format.type, self.id)
 

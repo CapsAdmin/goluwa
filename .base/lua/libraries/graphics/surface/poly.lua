@@ -69,8 +69,8 @@ end
 
 function META:Draw()
 	self.mesh:UpdateBuffer()
-	self.mesh.tex = surface.bound_texture
-	self.mesh.global_color = COLOR
+	surface.mesh_2d_shader.tex = surface.bound_texture
+	surface.mesh_2d_shader.global_color = COLOR
 	self.mesh:Draw()
 end
 

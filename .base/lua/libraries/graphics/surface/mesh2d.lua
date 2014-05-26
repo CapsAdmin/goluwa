@@ -1,6 +1,7 @@
-local render = (...) or _G.render
+local surface = (...) or _G.surface
 
 local SHADER = {	
+	name = "mesh_2d",
 	vertex = {
 		uniform = {
 			pvm_matrix = "mat4",
@@ -20,8 +21,8 @@ local SHADER = {
 			alpha_multiplier = 1,
 		},
 		attributes = {
-			uv = "vec2",
-		--	color = "vec4",
+			{uv = "vec2"},
+		--	{color = "vec4"},
 		},			
 		source = [[
 			out highp vec4 frag_color;
@@ -37,18 +38,20 @@ local SHADER = {
 	} 
 }
 
-function render.CreateMesh2D(data)
-	render.mesh_2d_shader = render.mesh_2d_shader or render.CreateSuperShader("mesh_2d", SHADER)
+function surface.CreateMesh(data)
+	if not surface.mesh_2d_shader then
+		local shader = render.CreateShader(SHADER)
+		
+		shader.pvm_matrix = render.GetPVWMatrix2D
+		
+		surface.mesh_2d_shader = shader
+	end
 	
-	local mesh = render.mesh_2d_shader:CreateVertexBuffer(data)
-	
-	mesh.pvm_matrix = render.GetPVWMatrix2D
-	
-	return mesh
+	return surface.mesh_2d_shader:CreateVertexBuffer(data)
 end
 
 -- for reloading
-if render.mesh_2d_shader then
-	render.mesh_2d_shader = render.CreateSuperShader("mesh_2d", SHADER)
+if surface.mesh_2d_shader then
+	surface.mesh_2d_shader = surface.CreateShader(SHADER)
 	surface.Initialize()
 end

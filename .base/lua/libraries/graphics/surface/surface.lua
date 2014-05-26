@@ -1,7 +1,9 @@
 local surface = _G.surface or {}
 
+include("mesh2d.lua", surface)
+
 function surface.Initialize()		
-	surface.rectmesh = render.CreateMesh2D({
+	surface.rect_mesh = surface.CreateMesh({
 		{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 		{pos = {0, 1}, uv = {0, 0}, color = {1,1,1,1}},
 		{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
@@ -87,7 +89,7 @@ function surface.Color(r,g,b,a)
 	COLOR.b = B
 	COLOR.a = A
 	
-	surface.rectmesh.global_color = COLOR
+	surface.mesh_2d_shader.global_color = COLOR
 	
 	return oldr, oldg, oldb, olda
 end
@@ -95,7 +97,7 @@ end
 function surface.SetAlphaMultiplier(a)
 	A2 = a
 	surface.fontmesh.alpha_multiplier = A2
-	surface.rectmesh.alpha_multiplier = A2
+	surface.mesh_2d_shader.alpha_multiplier = A2
 end
 
 function surface.SetTexture(tex)
@@ -168,7 +170,7 @@ do
 			last_color_bottom_right ~= mesh_data[5].color
 		then
 		
-			surface.rectmesh:UpdateVertexBuffer(mesh_data)
+			surface.rect_mesh:UpdateVertexBuffer(mesh_data)
 			
 			last_xtl = mesh_data[2].uv[1]
 			last_ytl = mesh_data[2].uv[2]
@@ -268,8 +270,9 @@ function surface.DrawRect(x,y, w,h, a, ox,oy)
 				
 		surface.Scale(w, h)
 		
-		surface.rectmesh.tex = surface.bound_texture
-		surface.rectmesh:Draw()
+		surface.mesh_2d_shader.tex = surface.bound_texture
+		surface.mesh_2d_shader:Bind()
+		surface.rect_mesh:Draw()
 	render.PopWorldMatrix()
 end
 

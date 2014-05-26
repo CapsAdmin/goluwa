@@ -14,7 +14,9 @@ function surface.InitializeFonts()
 		ft.ptr = ptr	
 	end
 
-	local shader = render.CreateSuperShader("glyph", {
+	local shader = render.CreateShader({
+		name = "glyph",
+		base = "mesh_2d",
 		fragment = {
 			uniform = {
 				smoothness = 0,
@@ -41,9 +43,12 @@ function surface.InitializeFonts()
 				}
 			]],
 		},
-	}, "mesh_2d")
+	})
 	
-	local mesh = shader:CreateVertexBuffer({
+	shader.pvm_matrix = render.GetPVWMatrix2D
+	surface.fontshader = shader		
+	
+	surface.fontmesh = shader:CreateVertexBuffer({
 		{pos = {0, 0}, uv = {0, 0}, color = {1,1,1,1}},
 		{pos = {0, 1}, uv = {0, 1}, color = {1,1,1,1}},
 		{pos = {1, 1}, uv = {1, 1}, color = {1,1,1,1}},
@@ -52,13 +57,7 @@ function surface.InitializeFonts()
 		{pos = {1, 0}, uv = {1, 0}, color = {1,1,1,1}},
 		{pos = {0, 0}, uv = {0, 0}, color = {1,1,1,1}},
 	})
-	
-	mesh.pvm_matrix = render.GetPVWMatrix2D
-	
-	surface.fontmesh = mesh
-	surface.fontshader = shader
-			
-			
+
 	if create_font_queue then
 		for k,v in pairs(create_font_queue) do
 			local ok, err = pcall(surface.CreateFont, unpack(v))
@@ -344,9 +343,10 @@ do -- fonts
 		end
 		
 		surface.PushMatrix(X - info.border_2, Y - info.border_2, data.tex.w * W, data.tex.h * H) 
-			surface.fontmesh.tex = data.tex
-			surface.fontmesh.global_color = surface.rectmesh.global_color
-			surface.fontmesh.smoothness = ft.current_font.info.smoothness 
+			surface.fontshader.tex = data.tex
+			surface.fontshader.global_color = surface.mesh_2d_shader.global_color
+			surface.fontshader.smoothness = ft.current_font.info.smoothness 
+			surface.fontshader:Bind()
 			surface.fontmesh:Draw()
 		surface.PopMatrix()
 	end 
