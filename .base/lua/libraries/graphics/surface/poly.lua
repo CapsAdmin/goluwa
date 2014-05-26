@@ -2,6 +2,11 @@ local surface = (...) or _G.surface
 
 local META = utilities.CreateBaseMeta("poly")
 
+local X, Y = 0, 0
+local ROT = 0	
+local R,G,B,A = 1,1,1,1
+local U1, V1, U2, V2 = 0, 0, 1, 1
+
 function META:SetColor(r,g,b,a)
 	R = r or 1
 	G = g or 1
@@ -17,7 +22,7 @@ function META:SetUV(u1,v1,u2,v2)
 end
 
 function META:SetVertex(i, x,y, u,v)
-	if i > size or i < 0 then logf("i = %i size = %i\n", i, size) return end
+	if i > self.size or i < 0 then logf("i = %i size = %i\n", i, size) return end
 	
 	x = x or 0
 	y = y or 0
@@ -35,16 +40,16 @@ function META:SetVertex(i, x,y, u,v)
 		y = new_y + Y				
 	end
 	
-	buffer[i].pos.A = x
-	buffer[i].pos.B = y
+	self.buffer[i].pos.A = x
+	self.buffer[i].pos.B = y
 	
-	buffer[i].uv.A = u
-	buffer[i].uv.B = v
+	self.buffer[i].uv.A = u
+	self.buffer[i].uv.B = v
 	
-	--buffer[i].color.A = R
-	--buffer[i].color.B = G
-	--buffer[i].color.C = B
-	--buffer[i].color.D = A
+	self.buffer[i].color.A = R
+	self.buffer[i].color.B = G
+	self.buffer[i].color.C = B
+	self.buffer[i].color.D = A
 end
 
 function META:SetRect(i, x,y,w,h, r, ox,oy)
@@ -67,26 +72,34 @@ function META:SetRect(i, x,y,w,h, r, ox,oy)
 	self:SetVertex(i + 5, X + OX, Y + OY, U1, V1 + V2)
 end
 
+function META:DrawLine(i, x1, y1, x2, y2, w)
+	w = w or 1
+
+	local dx,dy = x2-x1, y2-y1
+	local ang = math.atan2(dx, dy)
+	local dst = math.sqrt((dx * dx) + (dy * dy))
+				
+	self:SetRect(i, x1, y1, w, dst, -ang)
+end
+
 function META:Draw()
 	self.mesh:UpdateBuffer()
-	surface.mesh_2d_shader.tex = surface.bound_texture
-	surface.mesh_2d_shader.global_color = COLOR
+	surface.mesh_2d_shader.tex = surface.GetTexture()
+	surface.mesh_2d_shader.global_color = surface.GetColor(true)
+	surface.mesh_2d_shader:Bind()
 	self.mesh:Draw()
 end
 
 function surface.CreatePoly(size)		
 	size = size * 6
-	local mesh = render.CreateMesh2D(size)
+	local mesh = surface.CreateMesh(size)
 	local buffer = mesh.buffer
-
-	local X, Y = 0, 0
-	local ROT = 0	
-	local R,G,B,A = 1,1,1,1
-	local U1, V1, U2, V2 = 0, 0, 1, 1
 
 	local self = META:New()
 
 	self.mesh = mesh
+	self.size = size
+	self.buffer = buffer
 					
 	return self
 end
