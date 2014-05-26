@@ -181,7 +181,7 @@ do -- tcp socket meta
 						self:OnSend(packet, bytes, b,c,d)
 						self.data_sent = self.data_sent + bytes
 					elseif b ~= "Socket is not connected" then
-						self:DebugPrintf("could not send %s of data : %s", utilities.FormatFileSize(#data), b)
+						self:DebugPrintf("could not send %s of data : %s", utilities.FormatFileSize(#str), b)
 					end
 				else					
 					for i, packet in pairs(str:lengthsplit(65536)) do
