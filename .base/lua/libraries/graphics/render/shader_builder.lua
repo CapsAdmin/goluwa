@@ -14,7 +14,7 @@ local unrolled_lines = {
 
 	mat4 = "render.UniformMatrix4fv(%i, 1, 0, val)",
 
-	texture = "render.Uniform1i(%i, val.texture_channel_uniform)\n\trender.BindTexture(val)",
+	texture = "render.Uniform1i(%i, 0)\n\trender.BindTexture(val)",
 }
 
 unrolled_lines.vec4 = unrolled_lines.color
