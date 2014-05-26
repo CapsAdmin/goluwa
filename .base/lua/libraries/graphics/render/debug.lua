@@ -91,21 +91,35 @@ local cb = function(source, type, id, severity, length, message, userdata)
 end
 
 function render.EnableDebug(b)
-	if gl.DebugMessageCallback then
-		if jit.status() then
-			logn("[render] cannot use enable glDebugMessageCallback because jit is on (launch with -joff)")
+	if gl.DebugMessageControl then
+		if b then		
+			gl.Enable(gl.e.GL_DEBUG_OUTPUT_ARB)
+			gl.DebugMessageControl(gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, ffi.new("GLuint"), nil, true)
+			gl.Enable(gl.e.GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB)
+			
+			local buffer = ffi.new("char[1024]")
+			local length = ffi.sizeof(buffer)
+			
+			debug.sethook(function() 
+				local info = debug.getinfo(2)
+				if info.source:find("lj-opengl", nil, true) then
+					gl.GetDebugMessageLog(1, length, nil, nil, nil, nil, nil, buffer)
+					local str = ffi.string(buffer)
+					if str ~= "" then
+						if str:sub(0, 11) ~= "Buffer info" then
+							local info = debug.getinfo(3)
+							local source = info.source:match(".+render/(.+)")
+							logf("[render] %s:%i gl.%s: %s\n", source, info.currentline, info.name, str)
+						end
+					end
+				end
+			end, "return")
 		else
-			if b then		
-				gl.Enable(gl.e.GL_DEBUG_OUTPUT_ARB)
-				gl.DebugMessageControl(gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, ffi.new("GLuint"), nil, true)
-				
-				gl.DebugMessageCallback(cb, nil)
-			else
-				gl.Disable(gl.e.GL_DEBUG_OUTPUT_ARB)
-			end
+			gl.Disable(gl.e.GL_DEBUG_OUTPUT_ARB)
+			debug.sethook()
 		end
 	else
-		logn("[render] glDebugMessageCallback is not availible")
+		logn("[render] glDebugMessageControl is not availible")
 	end
 end
 
