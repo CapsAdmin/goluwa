@@ -9,7 +9,7 @@ local SHADER = {
 		attributes = {
 			{pos = "vec2"},
 			{uv = "vec2"},
-		--	{color = "vec4"},
+			{color = "vec4"},
 		},
 		source = "gl_Position = pvm_matrix * vec4(pos, 0, 1);"
 	},
@@ -22,7 +22,7 @@ local SHADER = {
 		},
 		attributes = {
 			{uv = "vec2"},
-		--	{color = "vec4"},
+			{color = "vec4"},
 		},			
 		source = [[
 			out highp vec4 frag_color;
@@ -31,7 +31,7 @@ local SHADER = {
 
 			void main()
 			{	
-				frag_color = texel * global_color;
+				frag_color = texel * color * global_color;
 				frag_color.a = frag_color.a * alpha_multiplier;
 			}
 		]]
