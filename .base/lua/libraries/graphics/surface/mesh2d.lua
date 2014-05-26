@@ -38,8 +38,20 @@ local SHADER = {
 	} 
 }
 
+local RECT = {
+	{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
+	{pos = {0, 1}, uv = {0, 0}, color = {1,1,1,1}},
+	{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
+
+	{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
+	{pos = {1, 0}, uv = {1, 1}, color = {1,1,1,1}},
+	{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
+}
+
 function surface.CreateMesh(data)
-	if not surface.mesh_2d_shader then
+	data = data or RECT
+	
+	if not surface.mesh_2d_shader or not surface.mesh_2d_shader:IsValid() then
 		local shader = render.CreateShader(SHADER)
 		
 		shader.pvm_matrix = render.GetPVWMatrix2D
@@ -51,7 +63,8 @@ function surface.CreateMesh(data)
 end
 
 -- for reloading
-if surface.mesh_2d_shader then
-	surface.mesh_2d_shader = surface.CreateShader(SHADER)
+if RELOAD then
+	surface.mesh_2d_shader:Remove()
+	surface.rect_mesh = surface.CreateMesh()
 	surface.Initialize()
 end
