@@ -9,7 +9,7 @@ end
 console.CreateVariable("sv_timeout", 10)
 
 function META:IsTimingOut() 
-	return self.socket:IsValid() and self:GetTimeout() > console.GetVariable("sv_timeout", 3)
+	return not self.socket:IsValid() or self:GetTimeout() > console.GetVariable("sv_timeout", 3)
 end
 
 if CLIENT then
