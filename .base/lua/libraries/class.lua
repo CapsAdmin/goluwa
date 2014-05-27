@@ -121,7 +121,7 @@ end
 
 class.active_classes = {}
 -- class.GetAll("panel_textbutton"):SetText("asdfasd")
-function class.GetAll(type_name, class_name)
+function class.GetAllObjects(type_name, class_name)
 	
 	if not class_name then
 		type_name, class_name = type_name:match("(.-)_(.+)")
