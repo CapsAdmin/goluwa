@@ -28,6 +28,11 @@ console.AddCommand("cmd", function(line)
 	ply:SendLua(("console.RunString(%q)"):format(line))
 end)
 
+console.AddCommand("rcon", function(line)
+	local ply = console.GetPlayer()
+	console.RunString(line)
+end)
+
 event.AddListener("PlayerChat", "chat_commands", function(ply, txt) 
 	local cmd, symbol = console.IsValidCommand(txt)
 	if cmd and symbol ~= "" then
