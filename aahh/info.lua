@@ -8,5 +8,5 @@ return
 	
 	priority = 10,
 	
-	load = CLIENT,
+	load = CLIENT == true,
 }
