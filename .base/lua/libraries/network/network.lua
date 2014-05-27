@@ -389,7 +389,7 @@ if SERVER then
 			
 			function server:OnReceive(str, ip, port)
 				local player = network.udp_accept[ip .. port]
-				if player then
+				if player and player.socket:GetIP() == ip then
 					network.HandlePacket(str, player)
 				end
 				network.UpdateStatistics()
@@ -443,16 +443,6 @@ if SERVER then
 	end
 end
 
--- this is for when server or client is initialized (needs to handle SERVER and CLIENT globals)
-function network.ReInclude()
-	include("libraries/network/network.lua")
-	include("libraries/network/packet.lua")
-	include("libraries/network/message.lua")
-	include("libraries/network/nvars.lua")
-	include("libraries/entities/easylua.lua")
-	include("libraries/entities/players.lua")
-end
-
 -- some usage
 
 console.AddCommand("say", function(line)
@@ -486,13 +476,8 @@ local default_ip = "*"
 local default_port = 1234
 
 if CLIENT then
-	addons.AutorunAll("client")
-
 	local ip_cvar = console.CreateVariable("cl_ip", default_ip)
 	local port_cvar = console.CreateVariable("cl_port", default_port)
-	
-	--logf("connecting to %s %i\n", ip_cvar:Get(), port_cvar:Get())
-	--network.Connect(ip_cvar:Get(), port_cvar:Get())
 	
 	console.AddCommand("connect", function(line, ip, port)		
 		ip = ip or ip_cvar:Get()
@@ -509,14 +494,9 @@ if CLIENT then
 end
 
 if SERVER then
-	addons.AutorunAll("server")
-
 	local ip_cvar = console.CreateVariable("sv_ip", default_ip)
 	local port_cvar = console.CreateVariable("sv_port", default_port)
-	
-	--logf("hosting server at %s %i\n", ip_cvar:Get(), port_cvar:Get())
-	--network.Host(ip_cvar:Get(), port_cvar:Get())
-		
+			
 	console.AddCommand("host", function(line, ip, port)
 		ip = ip or ip_cvar:Get()
 		port = tonumber(port) or port_cvar:Get()
@@ -526,19 +506,5 @@ if SERVER then
 		network.Host(ip, port)
 	end)
 end
-
-console.AddCommand("start_server", function()
-	_G.SERVER = true
-	addons.Reload()
-	network.ReInclude()	
-	entities.LoadAllEntities()
-end)
-
-console.AddCommand("start_client", function()
-	_G.CLIENT = true
-	addons.Reload()
-	network.ReInclude()
-	entities.LoadAllEntities()
-end)
 
 return network

@@ -6,6 +6,7 @@ local c = console.curses
 
 local markup = Markup()
 markup:SetMultiline(false)
+markup:SetFixedSize(14)
 
 c.scroll = c.scroll or 0
 c.current_table = c.current_table or G

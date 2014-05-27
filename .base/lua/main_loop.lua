@@ -6,7 +6,7 @@ local fps_add = 0
 local avg_fps = 1
 local count = 0
 
-local gl = require("lj-opengl") -- OpenGL
+local gl = not SERVER and require("lj-opengl") -- OpenGL
 
 local function calc_fps(dt)	
 	local fps = 1/dt
@@ -26,7 +26,7 @@ local function calc_fps(dt)
 		system.SetWindowTitle(("GARBAGE: %s"):format(utilities.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
 	end
 
-	if gl.call_count then
+	if gl and gl.call_count then
 		system.SetWindowTitle(("gl calls: %i"):format(gl.call_count), "glcalls")
 		gl.call_count = 0
 	end
@@ -71,15 +71,15 @@ local function main()
 		
 		if rate > 0 then
 			system.Sleep(math.floor(1/rate * 1000))
-			if render.context_created and render.GetVSync() then
+			if render and render.context_created and render.GetVSync() then
 				render.SetVSync(false)
 			end
 		elseif rate == 0 then
-			if render.context_created and not render.GetVSync() then
+			if render and render.context_created and not render.GetVSync() then
 				render.SetVSync(true)
 			end
 		else
-			if render.context_created and render.GetVSync() then
+			if render and render.context_created and render.GetVSync() then
 				render.SetVSync(false)
 			end
 		end
