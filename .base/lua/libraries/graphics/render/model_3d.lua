@@ -1,6 +1,6 @@
 local render = (...) or _G.render
 
-render.model_cache = render.model_cache or {}
+render.model_cache = {}
 
 local assimp = require("lj-assimp") -- model decoder
 
@@ -20,14 +20,14 @@ local SHADER = {
 	 
 	vertex = { 
 		uniform = {
-			projection_matrix = "mat4",
+			--projection_matrix = "mat4",
 			view_matrix = "mat4",
 			world_matrix = "mat4",
 			
-			--pvm_matrix = "mat4",
+			pvm_matrix = "mat4",
 			
 			--cam_forward = "vec3",
-		--	cam_right = "vec3",
+			--cam_right = "vec3",
 			--cam_up = "vec3",
 		},			
 		attributes = {
@@ -40,9 +40,9 @@ local SHADER = {
 		source = [[		
 			void main()
 			{											
-				out_pos = (view_matrix * world_matrix * vec4 (pos, 1.0)).xyz;
-				out_normal = normalize((view_matrix * world_matrix * vec4 (normal, 0.0)).xyz);
-				gl_Position = projection_matrix * vec4 (pos, 1.0);
+				out_pos = (world_matrix * vec4 (pos, 1.0)).xyz;
+				out_normal = normalize((vec4(normal, 0.0) * world_matrix * view_matrix).xyz);
+				gl_Position = pvm_matrix * vec4 (pos, 1.0);
 			}
 		]]
 	},
@@ -73,22 +73,22 @@ local SHADER = {
 }   
 
 function render.Create3DMesh(data)
-	if not render.mesh_3d_shader then
+	if not surface.mesh_3d_shader or not surface.mesh_3d_shader:IsValid() then
 		local shader = render.CreateShader(SHADER)
 						
 		shader.pvm_matrix = function() return render.GetPVWMatrix3D() end
-		shader.projection_matrix = function() return render.GetProjectionMatrix3D() end
 		shader.view_matrix = function() return render.matrices.view_3d.m end
 		shader.world_matrix = function() return render.matrices.world.m end
+		--[[shader.projection_matrix = function() return render.GetProjectionMatrix3D() end
 		
 		shader.cam_forward = function() return render.GetCamAng():GetRad():GetForward() end
 		shader.cam_right = function() return render.GetCamAng():GetRad():GetRight() end
-		shader.cam_up = function() return render.GetCamAng():GetRad():GetUp() end
+		shader.cam_up = function() return render.GetCamAng():GetRad():GetUp() end]]
 		
 		render.mesh_3d_shader = shader
 	end
 		
-	return render.mesh_3d_shader:CreateVertexBuffer(data)
+	return data and render.mesh_3d_shader:CreateVertexBuffer(data) or NULL
 end
 
 do -- model meta
@@ -191,8 +191,9 @@ do -- model meta
 end
 
 -- for reloading
-if render.mesh_3d_shader then
-	render.mesh_3d_shader = render.CreateShader(SHADER)
+if RELOAD then
+	render.mesh_3d_shader:Remove()
+	render.Create3DMesh()
 	
 	if entities then
 		for key, ent in pairs(entities.GetAllByClass("model")) do

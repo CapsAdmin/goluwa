@@ -22,9 +22,9 @@ local SHADER = {
 			tex_position = "sampler2D", 
 			tex_specular = "sampler2D",
 			tex_depth = "sampler2D",
-			--time = "float",
-			--cam_pos = "vec3",
-			--cam_vec = "vec3",
+			time = "float",
+			cam_pos = "vec3",
+			cam_vec = "vec3",
 		},  
 		attributes = {
 			{uv = "vec2"},
@@ -32,7 +32,7 @@ local SHADER = {
 		source = [[			
 			out vec4 out_color;
 			
-			/*vec3 mix_fog(vec3 color, float depth)
+			vec3 mix_fog(vec3 color, float depth)
 			{
 				const vec3 ambient = vec3(0.30588236451149, 0.59607845544815, 0.88235300779343); 
 				
@@ -76,7 +76,7 @@ local SHADER = {
 		
 				
 				return final_color;
-			}*/
+			}
 			
 			void main ()
 			{	
@@ -87,12 +87,12 @@ local SHADER = {
 				vec3 specular = texture(tex_specular, uv).xyz;
 				float depth = texture(tex_depth, uv).a;
 
-				/*out_color.rgb = diffuse;
+				out_color.rgb = diffuse;
 				out_color.rgb += calc_light(normal, position, diffuse, specular);				
-				out_color.rgb = mix_fog(out_color.rgb, depth);*/
+				out_color.rgb = mix_fog(out_color.rgb, depth);
 				
 				out_color.a = 1;
-				out_color.rgb = diffuse;
+				out_color.rgb = normal;
 			}
 		]]  
 	}

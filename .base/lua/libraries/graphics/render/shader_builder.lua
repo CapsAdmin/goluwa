@@ -14,7 +14,7 @@ local unrolled_lines = {
 
 	mat4 = "render.UniformMatrix4fv(%i, 1, 0, val)",
 
-	texture = "render.Uniform1i(%i, 0)\n\trender.BindTexture(val)",
+	texture = "render.Uniform1i(%i, val.texture_channel_uniform)\n\trender.BindTexture(val)",
 }
 
 unrolled_lines.vec4 = unrolled_lines.color
@@ -190,7 +190,7 @@ local function replace_field(str, key, val)
 	end)
 end
 
-render.active_shaders = setmetatable({}, { __mode = 'v' })
+render.active_shaders = render.active_shaders or setmetatable({}, { __mode = 'v' })
 
 function render.GetShaders()
 	return render.active_shaders
@@ -215,6 +215,7 @@ function render.CreateShader(data)
 	end
 
 	-- make a copy of the data since we're going to modify it
+	local original_data = data
 	local data = table.copy(data)
 
 	-- these arent actually shaders
@@ -225,8 +226,14 @@ function render.CreateShader(data)
 	-- inherit from base shader provided
 	if base and render.active_shaders[base] then
 		local temp = table.copy(render.active_shaders[base].original_data)
+		
+		temp.name = nil
+		temp.base = nil
+		
 		table.merge(temp, data)
 		data = temp
+		
+		shared = data.shared shared = nil
 	end
 
 	if not data.vertex then
@@ -498,7 +505,8 @@ function render.CreateShader(data)
 		end
 	end
 
-	self.original_data = data
+	self.original_data = original_data
+	self.data = data
 	self.base_shader = base
 
 	self.vtx_atrb_type = build_output.vertex.vtx_atrb_type
@@ -555,4 +563,16 @@ do -- create data for vertex buffer
 	function META:CreateVertexBuffer(data)
 		return render.CreateVertexBuffer(self:CreateVertexAttributes(data), self:GetVertexAttributes())
 	end
+end
+
+function render.RebuildShaders()
+	for k,v in pairs(render.active_shaders) do
+		local shader = render.CreateShader(v.original_data)
+		print(shader)
+		table.merge(v, shader)
+	end
+end
+
+if RELOAD then
+	--render.RebuildShaders()
 end
