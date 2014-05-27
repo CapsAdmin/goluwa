@@ -1,3 +1,14 @@
+##autorun/##
+Lua files in this folder are run after everything has been initialized. It contains Lua scripts using the standard Goluwa libraries.
+
+##libraries/##
+Goluwa specific libraries.
+
+##modules/##
+Standard Lua modules.
+
+Well almost. Modules prefixed with lj- are ffi bindings/low level libraries made for Goluwa. They may not work outside of Goluwa yet.
+
 ##init.lua##
 This is the init file launched by luajit (luajit ../../../lua/init.lua)
 
@@ -9,11 +20,3 @@ There are descriptive comments in the init file which tries to explain step by s
 
 ##main_loop.lua##
 This contains the main loop which updates Goluwa every frame using libraries/event.lua.
-
-##libraries/##
-Contains all the Goluwa specific libraries.
-
-##modules/##
-Contains all the standard Lua modules. 
-
-Modules prefixed with lj- are ffi bindings/low level libraries made for Goluwa. They may not work outside of Goluwa yet.
