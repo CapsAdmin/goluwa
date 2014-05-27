@@ -331,7 +331,7 @@ include("scene.lua", render)
 include("texture.lua", render)
 include("framebuffer.lua", render)
 include("gbuffer.lua", render)
-include("model.lua", render)
+include("model_3d.lua", render)
 include("vertex_buffer.lua", render)
 
 if USE_SDL then
