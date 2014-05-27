@@ -1,7 +1,10 @@
 ##init.lua##
-This is the init file launched by luajit.exe (luajit.exe ../../../lua/init.lua) First it will create the basic functions needed (logging functions, include functions, etc) and then it includes and initializes all the libraries in /libraries. Then the main_loop file is opened.
+This is the init file launched by luajit (luajit ../../../lua/init.lua) 
+1. All the basic functions needed are created (logging functions, _G.include, etc) 
+2. all the all the libraries in /libraries are opened. 
+3. The main_loop file is opened.
 
-I've tried to make descriptive comments in the init file to explain what happens step by step so if you need more info check out its source.
+There are descriptive comments in the init file which tries to explain step by step what's going on.
 
 ##main_loop.lua##
-This contains the main loop which updates golwa every frame using the event and timer system.
+This contains the main loop which updates golwa every frame using libraries/event.lua.
