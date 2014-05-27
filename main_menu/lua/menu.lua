@@ -130,7 +130,6 @@ function menu.MakeButtons()
 				menu.Remake()
 				
 				event.Delay(0.25, function()
-					console.RunString("start_client")
 					console.RunString("connect localhost 1234")
 				end)
 				menu.Close()

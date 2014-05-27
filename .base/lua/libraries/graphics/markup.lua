@@ -28,9 +28,8 @@ function Markup()
 end
 
 local function set_cull_clockwise()
-
+	-- ???
 end
-
 
 class.GetSet(META, "Table", {})
 class.GetSet(META, "MaxWidth", 500)
@@ -40,6 +39,26 @@ class.GetSet(META, "ShiftDown", false)
 class.GetSet(META, "Editable", true)
 class.GetSet(META, "Multiline", true)
 class.GetSet(META, "FastMode", false)
+
+if SERVER then
+	class.GetSet(META, "FixedSize", 14) -- sigh
+else	
+	class.GetSet(META, "FixedSize", 0)
+end
+
+local function get_text_size(self, font)
+	if self.FixedSize > 0 then
+		return self.FixedSize, self.FixedSize
+	else
+		return surface.GetTextSize(font)
+	end
+end
+
+local function set_font(self, font)
+	if self.FixedSize == 0 then
+		surface.SetFont(font)
+	end
+end
 
 function META:SetMaxWidth(w)
 	if self.lastmw ~= w then
@@ -54,22 +73,6 @@ function META:SetLineWrap(b)
 	self.need_layout = true
 end
 
--- config start
--- config start
-
-META.default_font = {
-	name = "markup_default",
-	data = {
-		font = "fonts/unifont.ttf",
-		size = 14,
-		--weight = 600,
-		--antialias = true,
-		--shadow = true,
-		read_speed = 100,
-	} ,
-}
-
-surface.CreateFont(META.default_font.name, META.default_font.data)
 
 do -- tags
 	META.tags = {}
@@ -298,14 +301,14 @@ do -- tags
 
 		META.tags.font =
 		{
-			arguments = {"markup_default"},
+			arguments = {"default"},
 
 			pre_draw = function(markup, self, x,y, font)
-				surface.SetFont(font)
+				set_font(self, font)
 			end,
 
 			init = function(markup, self, font)
-				surface.SetFont(font)
+				set_font(self, font)
 			end,
 		}
 
@@ -1028,7 +1031,7 @@ do
 			::continue_::
 		end 
 		
-		table.insert(out, 1, {type = "font", val = self.default_font.name, internal = true})
+		table.insert(out, 1, {type = "font", val = "default", internal = true})
 		table.insert(out, 1, {type = "color", val = Color(255, 255, 255), internal = true})
 		for i = 1, 3 do table.insert(out, {type = "string", val = "", internal = true}) end
 
@@ -1100,9 +1103,9 @@ do
 			
 			if chunk.type == "font" then
 				-- set the font so GetTextSize will be correct
-				surface.SetFont(chunk.val)
+				set_font(self, chunk.val)
 			elseif chunk.type == "string" then
-				local w, h = surface.GetTextSize(chunk.val)
+				local w, h = get_text_size(self, chunk.val)
 
 				chunk.w = w
 				chunk.h = h
@@ -1114,7 +1117,7 @@ do
 					chunk.real_w = w
 				end
 			elseif chunk.type == "newline" then
-				local w, h = surface.GetTextSize("|")
+				local w, h = get_text_size(self, "|")
 
 				chunk.w = w
 				chunk.h = h
@@ -1152,7 +1155,7 @@ do
 
 			if chunk.type == "font" then
 				-- set the font so GetTextSize will be correct
-				surface.SetFont(chunk.val)
+				set_font(self, chunk.val)
 			end
 
 			if true or chunk.type ~= "newline" then
@@ -1179,7 +1182,7 @@ do
 						local str = {}
 
 						for i, char in ipairs(utf8.totable(chunk.val)) do
-							local w, h = surface.GetTextSize(char)
+							local w, h = get_text_size(self, char)
 
 							if h > chunk_height then
 								chunk_height = h
@@ -1238,12 +1241,12 @@ do
 		local height = 0
 		local last_y
 
-		local font = self.default_font.name
+		local font = "default"
 		local color = Color(1,1,1,1)
 
 		local function build_chars(chunk)
 			if not chunk.chars then
-				surface.SetFont(chunk.font)
+				set_font(self, chunk.font)
 				chunk.chars = {}
 				local width = 0
 
@@ -1254,7 +1257,7 @@ do
 				end
 
 				for i, char in ipairs(utf8.totable(str)) do
-					local char_width, char_height = surface.GetTextSize(char)
+					local char_width, char_height = get_text_size(self, char)
 					local x = chunk.x + width
 					local y = chunk.y
 
@@ -2604,7 +2607,7 @@ do -- drawing
 		end
 
 		-- reset font and color for every line
-		surface.SetFont(self.default_font.name)
+		set_font(self, "default")
 		surface.Color(1, 1, 1, 1)
 
 		local remove_these = {}
@@ -2637,7 +2640,7 @@ do -- drawing
 					end
 
 					if chunk.type == "font" then
-						surface.SetFont(chunk.val)
+						set_font(self, chunk.val)
 					elseif chunk.type == "string" then
 						surface.SetTextPos(chunk.x, chunk.y)
 						surface.DrawText(chunk.val)
@@ -2864,7 +2867,7 @@ markup todo:
 		self:AddString("some normal string again\n")
 		self:AddString("and another one\n")
 
-		self:AddFont("markup_default")
+		self:AddFont("default")
 		self:AddString("back to normal!\n\n")
 
 		local small_font = "markup_small4"
@@ -2874,7 +2877,7 @@ markup todo:
 		self:AddString("monospace\n")
 		self:AddString("░█░█░█▀█░█▀█░█▀█░█░█░\n░█▀█░█▀█░█▀▀░█▀▀░▀█▀░\n░▀░▀░▀░▀░▀░░░▀░░░░▀░░\n")
 		self:AddString("it's kinda like fullwidth\n")
-		self:AddFont("markup_default")
+		self:AddFont("default")
 
 		local icons = vfs.Find("textures/silkicons/.")
 		local tags = ""
@@ -2885,7 +2888,7 @@ markup todo:
 		
 		self:AddString(tags, true) 
 
-		self:AddString([[<font=markup_default><color=0.5,0.62,0.75,1>if<color=1,1,1,1> CLIENT<color=0.5,0.62,0.75,1> then
+		self:AddString([[<font=default><color=0.5,0.62,0.75,1>if<color=1,1,1,1> CLIENT<color=0.5,0.62,0.75,1> then
 	if<color=1,1,1,1> window<color=0.5,0.62,0.75,1> and<color=0.75,0.75,0.62,1> #<color=1,1,1,1>window<color=0.75,0.75,0.62,1>.<color=1,1,1,1>GetSize<color=0.75,0.75,0.62,1>() ><color=0.5,0.75,0.5,1> 5<color=0.5,0.62,0.75,1> then<color=1,1,1,1>
 		timer<color=0.75,0.75,0.62,1>.<color=1,1,1,1>Delay<color=0.75,0.75,0.62,1>(<color=0.5,0.75,0.5,1>0<color=0.75,0.75,0.62,1>,<color=0.5,0.62,0.75,1> function<color=0.75,0.75,0.62,1>()
 <color=1,1,1,1>			include<color=0.75,0.75,0.62,1>(<color=0.75,0.5,0.5,1>"tests/markup.lua"<color=0.75,0.75,0.62,1>)
@@ -2902,7 +2905,7 @@ end
 		self:AddString("This font is huge and green for some reason!\n")
 		self:AddString("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\n")
 		self:AddColor(Color(255, 255, 255, 255))
-		self:AddFont("markup_default")
+		self:AddFont("default")
 
 		local big_font = "markup_big2"
 		surface.CreateFont(big_font, {path = "Roboto", size = 20, read_speed = 100})
@@ -2911,7 +2914,7 @@ end
 		self:AddColor(Color(255,0,255,255))
 		self:AddString("This one is slightly smaller bug with a different font\n")
 		self:AddColor(Color(255, 255, 255, 255))
-		self:AddFont("markup_default")
+		self:AddFont("default")
 
 		--self:AddString("rotated grin<rotate=90>:D</rotate> \n", true)
 		--self:AddString("that's <wrong>WRONG</wrong>\n", true)
@@ -2941,7 +2944,7 @@ end
 		self:AddFont(big_font)
 		local str = "That's all folks!"
 
-		self:AddFont("markup_default")
+		self:AddFont("default")
 		self:AddString("\n")
 		self:AddString([[
 © 2012, Author
