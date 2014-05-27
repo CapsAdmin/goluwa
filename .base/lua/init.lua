@@ -1,8 +1,5 @@
 if system and system.Restart then system.Restart() return end 
 
-DEBUG = true
-USE_STRUNG = false
-
 _G.ffi = require("ffi")
 
 if not ffi then
@@ -32,11 +29,31 @@ _G[ffi.arch:upper()] = true
 -- enums table
 e = e or {}
 
-e.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
-_G[e.USERNAME:upper()] = true
+do -- constants
+	e.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
+	_G[e.USERNAME:upper()] = true
+	
+	if os.getenv("USE_SDL") == "1" then
+		USE_SDL = true
+	end
+	
+	if os.getenv("SERVER") == "1" then
+		SERVER = true
+	end
+	
+	if os.getenv("CLIENT") == "1" then
+		CLIENT = true
+	end
+	
+	-- assume client if nothing was provided
+	if SERVER == nil and CLIENT == nil then
+		CLIENT = true
+	end
+end
 
 -- this will be replaced later on with logn
 _G.LOG_BUFFER = {}
+
 print = function(...) 
 	local args =  {...}
 	table.insert(args, "\n")
@@ -63,12 +80,10 @@ do -- load useful jit libraries
 		jit.dump = require("jit.dump")
 		jit.profiler = require("jit.p")
 	end)
-	
-	if DEBUG then
-		local base = "../../../../.userdata/" .. e.USERNAME:lower() .. "/logs/"
-		if io.open(base) then
-			jit.verbose.on(base .. "jit_verbose_output.txt")
-		end
+
+	local base = "../../../../.userdata/" .. e.USERNAME:lower() .. "/logs/"
+	if io.open(base) then
+		jit.verbose.on(base .. "jit_verbose_output.txt")
 	end
 		
 	-- remove the loader we just made. it's made more properly later on
@@ -396,7 +411,8 @@ do -- include
 		
 		if vfs and file == "*" then
 			local previous_dir = include_stack[#include_stack]		
-						
+			local original_dir = dir
+			
 			if previous_dir then
 				dir = previous_dir .. dir
 			end
@@ -404,7 +420,11 @@ do -- include
 			if not vfs.IsDir(dir) then
 				dir = "lua/" .. dir
 			end
-							
+			
+			if not vfs.IsDir(dir) then
+				dir = "lua/" .. original_dir
+			end
+			
 			for script in vfs.Iterate(dir, nil, true) do
 				local func, err = loadfile(script)
 				if func then
@@ -529,7 +549,7 @@ do -- libraries
 	structs = include("libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
 	utf8 = include("libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 	event = include("libraries/event.lua") goluwa = event.events -- event handler
-	utilities = include("libraries/utilities.lua") -- more like i-dont-know-where-these-functions-go
+	utilities = include("libraries/utilities/utilities.lua") -- more like i-dont-know-where-these-functions-go
 	addons = include("libraries/addons.lua") -- addons are folders in root of goluwa
 	class = include("libraries/class.lua") -- used by gui panels and entities
 	crypto = include("libraries/crypto.lua")
@@ -551,12 +571,20 @@ do -- libraries
 	include("libraries/extensions/function.lua")
 	include("libraries/null.lua")
 
-	-- graphics
-	render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
-	surface = include("libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
-	window = include("libraries/graphics/window.lua") -- high level window implementation
-	video = include("libraries/graphics/video.lua") -- gif support (for now)
-	include("libraries/graphics/particles.lua")
+	if CLIENT then
+		-- graphics
+		render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
+		surface = include("libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
+		window = include("libraries/graphics/window.lua") -- high level window implementation
+		video = include("libraries/graphics/video.lua") -- gif support (for now)
+		include("libraries/graphics/particles.lua")
+		
+		-- audio
+		audio = include("libraries/audio/audio.lua") -- high level implementation of OpenAl
+		chatsounds = include("libraries/audio/chatsounds.lua")
+	end
+	
+	-- used by the console without rendering
 	include("libraries/graphics/markup.lua")	
 	
 	-- network
@@ -568,10 +596,6 @@ do -- libraries
 	network = include("libraries/network/network.lua") -- high level implementation of sockets
 	nvars = include("libraries/network/nvars.lua")
 
-	-- audio
-	audio = include("libraries/audio/audio.lua") -- high level implementation of OpenAl
-	chatsounds = include("libraries/audio/chatsounds.lua")
-	
 	entities = include("libraries/entities/entities.lua")
 	players = include("libraries/entities/players.lua")
 	easylua = include("libraries/entities/easylua.lua")
@@ -587,10 +611,12 @@ event.AddListener("LuaClose", "sockets", sockets.Panic)
 
 addons.LoadAll()
 
-audio.Open()
+if audio then
+	audio.Open()
+end
 
 if not ZEROBRANE then
-  console.InitializeCurses()
+	console.InitializeCurses()
 end
 
 steamapi.Initialize()
@@ -605,6 +631,14 @@ console.Exec("autoexec")
 -- include(addons.Root .. "*")
 
 addons.AutorunAll(e.USERNAME)
+
+if CLIENT then
+	addons.AutorunAll("client")
+end
+
+if SERVER then
+	addons.AutorunAll("server")
+end
 
 if CREATED_ENV then
 	system.SetWindowTitle(TITLE)
