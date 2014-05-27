@@ -9,8 +9,6 @@ markup:SetMultiline(false)
 markup:SetFixedSize(14)
 
 c.scroll = c.scroll or 0
-c.current_table = c.current_table or G
-c.table_scroll = c.table_scroll or 0
 
 local history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt")
 
@@ -20,6 +18,7 @@ local translate =
 	[459] = "KEY_ENTER",
 	[8] = "KEY_BACKSPACE",
 	[127] = "CTL_BACKSPACE",
+	[9] = "KEY_TAB",
 	PADENTER = "KEY_ENTER",
 }
 
@@ -71,16 +70,16 @@ function console.InitializeCurses()
 		local byte = curses.wgetch(c.input_window)
 
 		if byte < 0 then return end
-			
+					
 		local key = translate[byte] or ffi.string(curses.keyname(byte))
 		
 		key = translate[key] or key
-		
+				
 		markup:SetControlDown(key == "CTL_LEFT" or key == "CTL_RIGHT" or key == "CTL_DEL" or key == "CTL_BACKSPACE")
 		markup:SetShiftDown(key == "KEY_SLEFT" or key == "KEY_SRIGHT")
 						
 		if key:find("KEY_") or key:find("CTL_") then					
-			key = ffi.string(key)
+			--key = ffi.string(key)
 				
 			if event.Call("ConsoleKeyInput", key) == false then return end
 			
@@ -122,6 +121,12 @@ function console.InitializeCurses()
 			return ret
 		end)
 	end
+	
+	autocomplete.AddList("console", function()
+		local cmds = {}
+		for k,v in pairs(console.GetCommands()) do table.insert(cmds, k) end
+		return cmds
+	end)
 
 	if console.curses_init then return end
 	
@@ -371,7 +376,6 @@ local markup_translate = {
 	["KEY_DC"] = "delete",
 	["KEY_HOME"] = "home",
 	["KEY_END"] = "end",
-	["KEY_TAB"] = "tab",
 	["KEY_ENTER"] = "enter",
 	["KEY_C"] = "c",
 	["KEY_X"] = "x",
@@ -401,7 +405,27 @@ local markup_translate = {
 	["KEY_LCONTROL"] = "left_control",
 }
 
+
 function console.HandleKey(key)
+
+	if key == "KEY_TAB" then
+		local line = console.GetCurrentLine()
+		local cmd = line:match("(%S+)")
+		
+		if cmd then
+			local found = autocomplete.Query("console", cmd, 1)
+
+			if found then
+				markup:SetText(found .. " ")
+				markup:SetCaretPos(math.huge, 0)
+			end
+		end
+	
+		return
+	else
+		autocomplete.Query("console", console.GetCurrentLine())
+	end
+
 	if key == "KEY_NPAGE" then
 		console.Scroll(-1)
 	elseif key == "KEY_PPAGE" then
@@ -417,7 +441,7 @@ function console.HandleKey(key)
 		markup:SetText(history[c.scroll%#history+1])
 		set_cursor_pos(#markup:GetText())
 	end
-
+		
 	-- enter
 	if key == "KEY_ENTER" then
 		console.ClearInput()
@@ -446,7 +470,6 @@ function console.HandleKey(key)
 				end
 			end
 			
-			c.current_table = _G
 			c.in_function = false
 			markup:SetText("")
 		end
@@ -459,4 +482,8 @@ end
 
 function console.HandleChar(char)
 	console.InsertChar(char)
+end
+
+if RELOAD then
+	console.InitializeCurses()
 end
