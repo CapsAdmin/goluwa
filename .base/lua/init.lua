@@ -49,6 +49,17 @@ do -- constants
 	if SERVER == nil and CLIENT == nil then
 		CLIENT = true
 	end
+	
+	if os.getenv("ARGS") and not ARGS then
+		local func, err = loadstring("return " .. os.getenv("ARGS"))
+		if func then 
+			local ok, tbl = pcall(func)
+			
+			ARGS = tbl
+		else
+			ARGS = err
+		end
+	end
 end
 
 -- this will be replaced later on with logn
@@ -595,6 +606,7 @@ do -- libraries
 	packet = include("libraries/network/packet.lua") -- high level communication between server and client
 	network = include("libraries/network/network.lua") -- high level implementation of sockets
 	nvars = include("libraries/network/nvars.lua")
+	chat = include("libraries/network/chat.lua")
 
 	entities = include("libraries/entities/entities.lua")
 	players = include("libraries/entities/players.lua")
@@ -666,15 +678,18 @@ if CREATED_ENV then
 	end 
 end
 
-if ARGS then
-	
-	for _, arg in pairs(ARGS) do
-		print(console.RunString(tostring(arg)))
+vfs.MonitorEverything(true)
+
+do -- execute args
+	if type(ARGS) == "table" then	
+		for _, arg in pairs(ARGS) do
+			print(console.RunString(tostring(arg)))
+		end	
+	elseif type(ARGS) == "string" then
+		logn("failed to execute ARGS: ", ARGS)
 	end
-	
+
 	ARGS = nil
 end
-
-vfs.MonitorEverything(true)
 
 include("main_loop.lua")
