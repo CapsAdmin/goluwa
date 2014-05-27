@@ -7,4 +7,4 @@ if %errorlevel%==0 (
 )
 
 cd .base/bin/windows/%arch%/
-start luajit.exe ../../../lua/init.lua
+start luajit ../../../lua/init.lua

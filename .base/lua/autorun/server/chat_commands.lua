@@ -28,14 +28,6 @@ console.AddCommand("cmd", function(line)
 	ply:SendLua(("console.RunString(%q)"):format(line))
 end)
 
-console.AddCommand("t", function(line, from, to, str)
-	local ply = console.GetPlayer()
-
-	translation.GoogleTranslate(from, to, str, function(data)
-		chat.PlayerSay(ply, data.translated)
-	end)
-end)
-
 event.AddListener("PlayerChat", "chat_commands", function(ply, txt) 
 	local cmd, symbol = console.IsValidCommand(txt)
 	if cmd and symbol ~= "" then

@@ -7,7 +7,7 @@ event.AddListener("SteamFriendsMessage", "steam_translate", function(sender_stea
 		sender_steam_id = receiver_steam_id
 	end
 	
-	translation.GoogleTranslate("auto", "en", txt, function(data)
+	google.Translate("auto", "en", txt, function(data)
 		steam.SendChatMessage(sender_steam_id, ">> " ..data.translated)
 	end)	
 end)
