@@ -1,10 +1,122 @@
 local utilities = (...) or _G.utilities
 
+ffi.cdef[[
+	typedef union {
+		uint8_t chars[8];
+		uint16_t shorts[4];
+		uint32_t longs[2];
+		
+		int64_t integer_signed;
+		uint64_t integer_unsigned;
+		double decimal;
+		
+	} number_buffer_longlong;
+	
+	typedef union {
+		uint8_t chars[4];
+		uint16_t shorts[2];
+		
+		int32_t integer_signed;
+		uint32_t integer_unsigned;
+		float decimal;
+		
+	} number_buffer_long;
+	
+	typedef union {
+		uint8_t chars[2];
+	
+		int16_t integer_signed;
+		uint16_t integer_unsigned;
+		
+	} number_buffer_short;
+	
+]]
+
+local integer_assign = [[if signed then 
+		buff.integer_signed = num
+	else
+		buff.integer_unsigned = num
+	end]]
+local integer_return = [[if signed then 
+		return buff.integer_signed
+	else
+		return buff.integer_unsigned
+	end]]
+	
+local decimal_assign = "buff.decimal = num"
+local decimal_return = "return buff.decimal"
+
+local template = [[
+local META, buff = ...
+META["@WRITE@"] = function(@READ_ARGS@)
+	@ASSIGN@
+@WRITE_BYTES@
+return self
+end
+META["@READ@"] = function(@WRITE_ARGS@)
+@READ_BYTES@
+	@RETURN@
+end]]
+
+local function ADD_FFI_OPTIMIZED_TYPE(META, typ)
+	local decimal = false
+	
+	if typ == "Float" or typ == "Double" then
+		decimal = true
+	end
+	
+	local template = template
+		:gsub("@READ@", "Read" ..typ)
+		:gsub("@WRITE@", "Write" ..typ)		
+	if decimal then
+		template = template:gsub("@READ_ARGS@", "self, num")
+		template = template:gsub("@WRITE_ARGS@", "self")
+		template = template:gsub("@ASSIGN@", decimal_assign) 
+		template = template:gsub("@RETURN@", decimal_return)
+	else
+		template = template:gsub("@READ_ARGS@", "self, num, signed")
+		template = template:gsub("@WRITE_ARGS@", "self, signed")
+		template = template:gsub("@ASSIGN@", integer_assign)
+		template = template:gsub("@RETURN@", integer_return)
+	end
+		
+	local size = ffi.sizeof(typ:lower() == "longlong" and "long long" or typ:lower())
+	
+	local read_unroll = ""
+	for i = 1, size do
+		read_unroll = read_unroll .. "\tbuff.chars[" .. i-1 .. "] = self:ReadByte()\n"
+	end		
+	template = template:gsub("@READ_BYTES@", read_unroll)
+	
+	local write_unroll = ""
+	for i = 1, size do
+		write_unroll = write_unroll .. "\tself:WriteByte(buff.chars[" .. i-1 .. "])\n"
+	end		
+	template = template:gsub("@WRITE_BYTES@", write_unroll)
+	
+	local func = loadstring(template)
+	
+	local def = typ:lower()
+	if typ == "Float" then def = "long" end
+	if typ == "Double" then def = "longlong" end
+	
+	func(META, ffi.new("number_buffer_" .. def))
+end
+
 function utilities.BufferTemplate(META)
 	check(META.WriteByte, "function")
 	check(META.ReadByte, "function")
 
 	do -- basic data types
+	
+		ADD_FFI_OPTIMIZED_TYPE(META, "Float")	
+		ADD_FFI_OPTIMIZED_TYPE(META, "Double")	
+		
+		ADD_FFI_OPTIMIZED_TYPE(META, "Short")	
+		ADD_FFI_OPTIMIZED_TYPE(META, "Long")	
+		ADD_FFI_OPTIMIZED_TYPE(META, "LongLong")
+	
+		--[==[
 		-- short
 		function META:WriteShort(short)
 			self:WriteByte(bit.band(short, 0xFF))
@@ -31,55 +143,6 @@ function utilities.BufferTemplate(META)
 			return s1 + bit.lshift(s2, 16)
 		end
 		
-		-- half
-		function META:WriteHalf(value)
-		-- ieee 754 binary16
-		-- 111111
-		-- 54321098 76543210
-		-- seeeeemm mmmmmmmm
-			if value==0.0 then
-				self:WriteByte(0)
-				self:WriteByte(0)
-				return
-			end
-
-			local signBit=0
-			if value<0 then
-				signBit=128 -- shifted left to appropriate position 
-				value=-value
-			end
-			
-			local m,e=math.frexp(value) 
-			m=m*2-1
-			e=e-1+15
-			e=math.min(math.max(0,e),31)
-			
-			m=m*4
-			-- sign, 5 bits of exponent, 2 bits of mantissa
-			self:WriteByte(bit.bor(signBit,bit.band(e,31)*4,bit.band(m,3)))
-			
-			-- get rid of written bits and shift for next 8
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))	
-			return self
-		end
-
-		function META:ReadHalf()
-			local b=self:ReadByte()
-			local sign=1
-			if b>=128 then 
-				sign=-1
-				b=b-128
-			end
-			local exponent=bit.rshift(b,2)-15
-			local mantissa=bit.band(b,3)/4
-			
-			b=self:ReadByte()
-			mantissa=mantissa+b/4/256
-			if mantissa==0.0 and exponent==-15 then return 0.0
-			else return (mantissa+1.0)*math.pow(2,exponent)*sign end
-		end
-
 		-- float
 		function META:WriteFloat(value)
 		-- ieee 754 binary32
@@ -264,6 +327,56 @@ function utilities.BufferTemplate(META)
 			buffer.longs[0] = l1
 			buffer.longs[1] = l2
 			return buffer.longlong
+		end
+		]==]
+		
+		-- half
+		function META:WriteHalf(value)
+		-- ieee 754 binary16
+		-- 111111
+		-- 54321098 76543210
+		-- seeeeemm mmmmmmmm
+			if value==0.0 then
+				self:WriteByte(0)
+				self:WriteByte(0)
+				return
+			end
+
+			local signBit=0
+			if value<0 then
+				signBit=128 -- shifted left to appropriate position 
+				value=-value
+			end
+			
+			local m,e=math.frexp(value) 
+			m=m*2-1
+			e=e-1+15
+			e=math.min(math.max(0,e),31)
+			
+			m=m*4
+			-- sign, 5 bits of exponent, 2 bits of mantissa
+			self:WriteByte(bit.bor(signBit,bit.band(e,31)*4,bit.band(m,3)))
+			
+			-- get rid of written bits and shift for next 8
+			m=(m-math.floor(m))*256
+			self:WriteByte(bit.band(m,255))	
+			return self
+		end
+
+		function META:ReadHalf()
+			local b=self:ReadByte()
+			local sign=1
+			if b>=128 then 
+				sign=-1
+				b=b-128
+			end
+			local exponent=bit.rshift(b,2)-15
+			local mantissa=bit.band(b,3)/4
+			
+			b=self:ReadByte()
+			mantissa=mantissa+b/4/256
+			if mantissa==0.0 and exponent==-15 then return 0.0
+			else return (mantissa+1.0)*math.pow(2,exponent)*sign end
 		end
 		
 		-- string
@@ -551,5 +664,5 @@ function utilities.BufferTemplate(META)
 			
 			error("tried to read unknown type " .. t, 2)
 		end
-	end
+	end	
 end

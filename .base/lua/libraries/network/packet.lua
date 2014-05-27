@@ -134,7 +134,10 @@ do -- buffer object
 
 	function META:ReadByte()
 		if self.file then
-			return self.file:read(1):byte()
+			local char = self.file:read(1)
+			if char then
+				return char:byte()
+			end
 		else
 			self.position = math.min(self.position + 1, #self.buffer)
 			return self.buffer[self.position]
