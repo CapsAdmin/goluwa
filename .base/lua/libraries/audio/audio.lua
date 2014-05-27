@@ -10,10 +10,8 @@ audio.objects = audio.objects or setmetatable({}, { __mode = 'v' })
 audio.effect_channels = audio.effect_channels or setmetatable({}, { __mode = 'v' })
 
 function audio.Open(name)
-	for path in vfs.Iterate("lua/decoders/audio/", nil, true) do
-		include(path)
-	end
-
+	include("libraries/audio/decoders/*")
+	
 	os.setenv("ALSOFT_CONF", lfs.currentdir() .. "\\" .. "al_config.ini")
 	audio.Close()
 
