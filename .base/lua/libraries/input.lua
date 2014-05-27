@@ -50,7 +50,7 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id)
 	tbl[up_id] = tbl[up_id] or {}
 	tbl[down_id] = tbl[down_id] or {}
 				
-	if type(key) == "string" then
+	if type(key) == "string" and #key == 1 then
 		local byte = string.byte(key)		
 		
 		if byte >= 65 and byte <= 90 then -- Uppercase letters
