@@ -11,9 +11,9 @@ There are descriptive comments in the init file which tries to explain step by s
 This contains the main loop which updates Goluwa every frame using libraries/event.lua.
 
 ##libraries/##
-Contains all the Goluwa libraries.
+Contains all the Goluwa specific libraries.
 
 ##modules/##
 Contains all the standard Lua modules. 
 
-Modules prefixed with lj- are ffi bindings made for Goluwa. They may not work outside of Goluwa yet.
+Modules prefixed with lj- are ffi bindings/low level libraries made for Goluwa. They may not work outside of Goluwa yet.
