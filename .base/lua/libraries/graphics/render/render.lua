@@ -83,9 +83,7 @@ function render.Initialize()
 		render.EnableDebug(true)
 	end
 	
-	for path in vfs.Iterate("lua/decoders/image/", nil, true) do
-		include(path)
-	end
+	include("libraries/graphics/decoders/*")
 	
 	SETUP_CACHED_UNIFORM("Uniform4f", gl.Uniform4f, 5)
 	SETUP_CACHED_UNIFORM("Uniform3f", gl.Uniform3f, 4)
