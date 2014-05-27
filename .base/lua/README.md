@@ -1,5 +1,6 @@
 ##init.lua##
-This is the init file launched by luajit (luajit ../../../lua/init.lua) 
+This is the init file launched by luajit (luajit ../../../lua/init.lua)
+
 1. All the basic functions needed are created (logging functions, _G.include, etc) 
 2. all the all the libraries in /libraries are opened. 
 3. The main_loop file is opened.
