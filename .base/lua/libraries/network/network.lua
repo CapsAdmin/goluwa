@@ -426,6 +426,11 @@ if SERVER then
 	
 	function network.SendPacketToClient(client, str)
 		if not client:IsValid() or not client.udp_port then return end
+		-- fixme
+		if not client:GetIP() then
+			client:Remove()
+			return
+		end
 		network.udp:Send(str, client:GetIP(), client.udp_port)
 		network.UpdateStatistics()
 	end
