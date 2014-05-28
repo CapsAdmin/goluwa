@@ -118,7 +118,6 @@ do -- find value
 		done = 
 		{
 			[_G] = true,
-			[_R] = true,
 			[package] = true,
 			[_OLD_G] = true,
 		}

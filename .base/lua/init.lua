@@ -1,35 +1,25 @@
-if system and system.Restart then system.Restart() return end 
-
-_G.ffi = require("ffi")
-
-if not ffi then
-	error("goluwa requires luajit 2+ to run!")
-end
-
 -- load normal lua modules from this directory
+-- ROOT/.base/lua/modules/bin/linux/x64/foobar.so
 package.cpath = package.cpath .. ";../../../lua/modules/bin/" .. jit.os:lower() .. "/" .. jit.arch:lower() .. "/?." .. (jit.os == "Windows" and "dll" or "so")
 
-_G.lfs = require("lfs")
-
-if not lfs then 
-	error("unable to load lfs! are you sure the cd is ROOT/.base/bin/*OS*/*ARCH*/ and that ROOT/.base/lua/modules/bin/*OS*/*ARCH*/ ?")
-end
-
-if true then -- workaround for when working directory is goluwa/ (like when running from zerobrane)	
-	local dir = lfs.currentdir():gsub("\\", "/")
-	if dir:find(".+goluwa$") then
-		dir = dir .. "/.base/bin/" .. jit.os:lower() .. "/" .. jit.arch:lower()
+do -- check if this environment is compatible
+	if not require("ffi") then
+		error("goluwa requires luajit 2+ to run!")
 	end
-	lfs.chdir(dir)
+	
+	if not require("lfs") then 
+		error("unable to load lfs! are you sure the cd is ROOT/.base/bin/*OS*/*ARCH*/ and that ROOT/.base/lua/modules/bin/*OS*/*ARCH*/ ?")
+	end
 end
-
-_G[ffi.os:upper()] = true
-_G[ffi.arch:upper()] = true
-
--- enums table
-e = e or {}
 
 do -- constants
+	-- if WINDOWS and X86 then blah blah end
+	_G[jit.os:upper()] = true
+	_G[jit.arch:upper()] = true
+
+	-- enums table
+	e = e or {}
+
 	e.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
 	_G[e.USERNAME:upper()] = true
 	
@@ -45,11 +35,16 @@ do -- constants
 		CLIENT = true
 	end
 	
+	if os.getenv("DEBUG") == "1" then
+		DEBUG = true
+	end
+	
 	-- assume client if nothing was provided
 	if SERVER == nil and CLIENT == nil then
 		CLIENT = true
 	end
 	
+	-- this will be executed at the bottom of this file as for k,v in pairs(ARGS) do console.RunString(arg) end
 	if os.getenv("ARGS") and not ARGS then
 		local func, err = loadstring("return " .. os.getenv("ARGS"))
 		if func then 
@@ -71,7 +66,9 @@ print = function(...)
 	table.insert(_G.LOG_BUFFER, args) 
 end
 
-do -- load useful jit libraries	
+-- load and enable useful jit libraries to debug startup
+if DEBUG then 
+
 	-- need to do this in order for jit/v.lua and jit/dump.lua to load its required libraries properly
 	table.insert(package.loaders, function(name)
 		name = name:gsub("%.", "/")
@@ -85,26 +82,33 @@ do -- load useful jit libraries
 		name = name:gsub("%.", "/")
 		return loadfile("../../../lua/modules/" .. name .. "/init.lua")
 	end)
-	
-	pcall(function()
-		jit.verbose = require("jit.v")
-		jit.dump = require("jit.dump")
-		jit.profiler = require("jit.p")
-	end)
-
-	local base = "../../../../.userdata/" .. e.USERNAME:lower() .. "/logs/"
-	if io.open(base) then
-		jit.verbose.on(base .. "jit_verbose_output.txt")
-	end
 		
+		local ok, err = pcall(function()
+			jit.verbose = require("jit.v")
+			jit.dump = require("jit.dump")
+			jit.profiler = require("jit.p")
+		end)
+		
+		if not ok then
+			print("could not find extra jit libraries")
+		end
+
+		local base = "../../../../.userdata/" .. e.USERNAME:lower() .. "/logs/"
+		
+		if io.open(base) then
+			jit.verbose.on(base .. "jit_verbose_output.txt")
+		end
+			
 	-- remove the loader we just made. it's made more properly later on
-	table.remove(package.loaders, #package.loaders)
+	table.remove(package.loaders, 1)
+	table.remove(package.loaders, 1)
+	table.remove(package.loaders, 1)
 end
 
--- put all c functions in a table
+-- put all c functions in a table so we can override them if needed 
+-- without doing the local oldfunc = print thing over and over again
 if not _OLD_G then
-	_R = debug.getregistry()
-	
+	-- this will be replaced with utilities.GetOldGLibrary() later on
 	_OLD_G = {}
 	local done = {[_G] = true}
 	
@@ -142,33 +146,25 @@ do -- file system
 
 	-- this is ugly but it's because we haven't included the global extensions yet..
 	_G.check = function() end
+	
 	vfs = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/vfs.lua")
-
-	-- mount the base folders
 	
-	-- current dir
-	--vfs.Mount(lfs.currentdir())
-	
-	-- user dir
+	-- mount the /userdata/*username*/ folder
 	vfs.Mount(e.USERDATA_FOLDER)
 	
+	-- mount the /.base folder
 	vfs.Mount(e.BASE_FOLDER)
 	
 	-- a nice global for loading resources externally from current dir
+	-- 
 	_G.R = vfs.GetAbsolutePath
 	
 	vfs.AddModuleDirectory("lua/modules/")
 	vfs.AddModuleDirectory("lua/")
 	
 	-- replace require with the pure lua version (lua/procure/init.lua)
-	_G.require = require("procure")	
-	
-	-- use strung
-	if USE_STRUNG then
-		local strung = require("strung")
-		for k,v in pairs(strung) do if k ~= "gsub" then string[k] = v end end		
-		USE_STRUNG = nil
-	end
+	-- this is needed for the file system
+	_G.require = require("procure")
 end
 
 do -- logging	
@@ -316,10 +312,11 @@ do -- logging
 	end
 end
 
-logf("launched on %s\n", os.date())
-logn("executed by " .. e.USERNAME, "\n")
+logf("launched on %s by %s as %s\n", os.date(), e.USERNAME, CLIENT and "client" or "server")
 
 do -- ffi
+	_G.ffi = require("ffi")
+	
 	_OLD_G.ffi_load = _OLD_G.ffi_load or ffi.load
 	
 	function ffi.new_dbg_gc(...)
@@ -620,8 +617,6 @@ console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
 
 sockets.Initialize()
 
-addons.LoadAll()
-
 if audio then
 	audio.Initialize()
 end
@@ -633,22 +628,32 @@ end
 steamapi.Initialize()
 entities.LoadAllEntities()
 
-addons.AutorunAll()
-timer.GetSystemTime = require("lj-glfw").GetTime
+do -- addons
+	
+	-- tries to load all addons 
+	-- some might not load depending on its info.lua file.
+	-- for instance: "load = CAPSADMIN ~= nil," will make it load
+	-- only if the CAPSADMIN constant is not nil.
+	addons.LoadAll()
 
-console.Exec("autoexec")
+	-- load everything in lua/autorun/*
+	addons.AutorunAll()
+	
+	-- load everything in lua/autorun/*USERNAME*/*
+	addons.AutorunAll(e.USERNAME)
 
--- include single lua scripts in addons/
--- include(addons.Root .. "*")
+	if CLIENT then
+		-- load everything in lua/autorun/client/*
+		addons.AutorunAll("client")
+	end
 
-addons.AutorunAll(e.USERNAME)
+	if SERVER then
+		-- load everything in lua/autorun/server/*
+		addons.AutorunAll("server")
+	end
 
-if CLIENT then
-	addons.AutorunAll("client")
-end
-
-if SERVER then
-	addons.AutorunAll("server")
+	-- execute /.userdata/*USERNAME*/cfg/autoexec.lua
+	console.Exec("autoexec")
 end
 
 if CREATED_ENV then
