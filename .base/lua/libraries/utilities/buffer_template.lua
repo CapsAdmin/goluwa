@@ -542,7 +542,8 @@ function utilities.BufferTemplate(META)
 			end
 		end
 		
-		local function fix_number(data, num)
+		local function fix_number(data, num)	
+			do return num end
 			if type(num) == "number" then 
 				if not data.signed then
 					num = bit.bnot(bit.bnot(num))
@@ -568,8 +569,7 @@ function utilities.BufferTemplate(META)
 					if (type(val) == "function" and not val(out[key])) or out[key] ~= val then
 						goto continue
 					end
-				end
-				
+				end				
 				
 				local val
 				
@@ -587,7 +587,7 @@ function utilities.BufferTemplate(META)
 					val = self:ReadType(data[1]) 
 				end
 				
-				fix_number(data, val)
+				val = fix_number(data, val)
 				
 				if data.assert then
 					if val ~= data.assert then
