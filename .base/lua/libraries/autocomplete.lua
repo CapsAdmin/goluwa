@@ -35,7 +35,7 @@ end
 local function search(list, str, found, found_list)
 	local pattern = "^.-" .. str
 	
-	if not pcall(string.find, "", pattern) then return found end
+	if not pcall(string.find, pattern, pattern) then return found end
 
 	if type(list) == "table" then
 		if str == "" then
