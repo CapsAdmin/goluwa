@@ -91,10 +91,10 @@ end
 do -- commands	
 	console.AddedCommands = console.AddedCommands or {}
 
-	function console.AddCommand(cmd, callback, help)
+	function console.AddCommand(cmd, callback, help, autocomplete)
 		cmd = cmd:lower()
 		
-		console.AddedCommands[cmd] = {callback = callback, help = help}
+		console.AddedCommands[cmd] = {callback = callback, help = help, autocomplete = autocomplete}
 	end
 
 	function console.RemoveCommand(cmd, callback)

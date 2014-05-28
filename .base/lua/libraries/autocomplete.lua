@@ -109,7 +109,7 @@ end
 
 local env = {}
 
-function autocomplete.Query(id, str, offset)
+function autocomplete.Query(id, str, offset, list)
 	if not env[id] then
 		env[id] = {found_autocomplete = {}}
 	end
@@ -123,7 +123,7 @@ function autocomplete.Query(id, str, offset)
 	end
 
 	if not env[id].pause_autocomplete then 
-		env[id].found_autocomplete = autocomplete.Search(env[id].tab_str or str, env[id].tab_autocomplete or id)
+		env[id].found_autocomplete = autocomplete.Search(env[id].tab_str or str, env[id].tab_autocomplete or list or id)
 		
 		if #env[id].found_autocomplete == 0 then 
 			env[id].pause_autocomplete = str 
