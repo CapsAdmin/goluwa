@@ -618,13 +618,12 @@ end
 
 console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
 
-event.AddListener("Update", "sockets", sockets.Update)
-event.AddListener("LuaClose", "sockets", sockets.Panic)
+sockets.Initialize()
 
 addons.LoadAll()
 
 if audio then
-	audio.Open()
+	audio.Initialize()
 end
 
 if not ZEROBRANE then

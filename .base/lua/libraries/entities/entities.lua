@@ -8,7 +8,11 @@ function entities.Initialize()
 		entities.world_entity:Draw()			
 	end)
 end
-event.AddListener("RenderContextInitialized", "entities", entities.Initialize)
+
+function entities.Shutdown()
+	entities.world_entity:RemoveChildren()
+	event.RemoveListener("Draw3D", "world_draw")
+end
 
 function entities.GetAll()
 	return entities.active_entities

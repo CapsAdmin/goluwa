@@ -1,24 +1,68 @@
 local chatsounds = _G.chatsounds or {}
 
+local paks = {
+	"Team Fortress 2/tf/tf2_misc_dir.vpk",
+	"Team Fortress 2/tf/tf2_sound_misc_dir.vpk",
+	"Team Fortress 2/tf/tf2_sound_vo_english_dir.vpk",
+
+	"Left 4 Dead/left4dead/",
+	"Left 4 Dead/left4dead_dlc3/",
+	"Left 4 Dead/left4dead/pak01_dir.vpk",
+	"Left 4 Dead/left4dead_dlc3/pak01_dir.vpk",
+
+	"Left 4 Dead 2/left4dead2/",
+	"Left 4 Dead 2/left4dead2_dlc1/",
+	"Left 4 Dead 2/left4dead2_dlc2/",
+	"Left 4 Dead 2/left4dead2_dlc3/",
+
+	"Left 4 Dead 2/left4dead2/pak01_dir.vpk",
+	"Left 4 Dead 2/left4dead2_dlc1/pak01_dir.vpk",
+	"Left 4 Dead 2/left4dead2_dlc2/pak01_dir.vpk",
+	"Left 4 Dead 2/left4dead2_dlc3/pak01_dir.vpk",
+
+	"Counter-Strike Global Offensive/csgo/pak01_dir.vpk",
+	"Counter-Strike Global Offensive/csgo/",
+
+	"Portal 2/portal2/",
+	"Portal 2/portal2_dlc1/",
+	"Portal 2/portal2/pak01_dir.vpk",
+
+	"Portal/portal/",
+	"Portal/portal/portal_pak_dir.vpk",
+
+	"Half-Life 2/ep2/ep2_pak_dir.vpk",
+	"Half-Life 2/ep2/",
+
+	"Half-Life 2/episodic/ep1_pak_dir.vpk",
+	"Half-Life 2/episodic/",
+
+	"Counter-Strike Source/cstrike/",
+	"Counter-Strike Source/cstrike/cstrike_pak_dir.vpk",
+
+	"GarrysMod/sourceengine/",
+	"GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk",
+	"GarrysMod/sourceengine/hl2_sound_misc_dir.vpk",
+}
+
 local realm_patterns = {
 	".+chatsounds/autoadd/(.-)/",
 	"sound/player/survivor/voice/(.-)/",
 	"sound/player/vo/(.-)/",
-	
+
 	".+/(al)_[^/]+",
 	".+/(kl)_[^/]+",
 	".+/(br)_[^/]+",
 	".+/(ba)_[^/]+",
 	".+/(eli)_[^/]+",
 	".+/(cit)_[^/]+",
-		
+
 	"sound/vo/([^/]-)_[^/]+",
-	
+
 	"sound/vo/(wheatley)/[^/]+",
 	"sound/vo/(mvm_.-)_[^/]+",
 	"sound/(ui)/[^/]+",
 	"sound/vo/(glados)/[^/]+",
-	
+
 	"sound/npc/(.-)/",
 	"sound/vo/npc/(.-)/",
 	"sound/vo/(.-)/",
@@ -32,12 +76,12 @@ local realm_patterns = {
 	"sound/(weapons)/",
 	"sound/(commentary)/",
 	"sound/ambient/levels/(.-)/",
-	"sound/ambient/(.-)/",	
+	"sound/ambient/(.-)/",
 }
 
 local realm_translate = {
 	breen = "hl2_breen",
-	
+
 	al = "hl2_alyx",
 	kl = "hl2_kleiner",
 	br = "hl2_breen",
@@ -46,18 +90,18 @@ local realm_translate = {
 	cit = "hl2_citizen",
 	male01 = "hl2_male",
 	female01 = "hl2_female",
-	
+
 	biker = "l4d_francis",
 	teengirl = "l4d_zoey",
 	gambler = "l4d_nick",
-	producer = "l4d_rochelle",	
+	producer = "l4d_rochelle",
 	manager = "l4d_louis",
 	mechanic = "l4d_ellis",
 	namvet = "l4d_bill",
 	churchguy = "l4d2_churchguy",
 	virgil = "l4d2_virgil",
 	coach = "l4d2_coach",
-	
+
 	scout = "tf2_scout",
 	soldier = "tf2_soldier",
 	pyro = "tf2_pyro",
@@ -72,7 +116,7 @@ local realm_translate = {
 
 local voice_actors = {
 	breen = "robert_culp",
-	
+
 	al = "merle_dandridge",
 	kl = "hal_robins",
 	br = "robert_culp",
@@ -81,15 +125,15 @@ local voice_actors = {
 	cit = "hl2_citizen",
 	male01 = "adam_baldwin",
 	female01 = "mary_kae_irvin",
-	
+
 	biker = "vince_valenzuela",
 	teengirl = "jen_taylor",
 	gambler = "hugh_dillon",
-	producer = "rochelle_aytes",	
+	producer = "rochelle_aytes",
 	manager = "earl_alexander",
 	mechanic = "jesy_mckinney",
 	namvet = "jim_french",
-	
+
 	scout = "nathan_vetterlein",
 	churchguy = "nathan_vetterlein",
 	virgil = "randall_newsome",
@@ -104,7 +148,7 @@ local voice_actors = {
 }
 
 local function realm_from_path(path)
-	
+
 	for k,v in ipairs(realm_patterns) do
 		local realm = path:match(v)
 		if realm then
@@ -112,9 +156,9 @@ local function realm_from_path(path)
 			return (realm_translate[realm] or realm), v
 		end
 	end
-	
+
 	return "misc", ""
-end	
+end
 
 
 -- utilities
@@ -200,8 +244,8 @@ local function dump_script(out)
 		end
 	end
 end
-   
- 
+
+
 -- sound utils
 if gmod then
 	function chatsounds.CreateSound(path, udata)
@@ -241,7 +285,7 @@ if gmod then
 
 		return self
 	end
-else        
+else
 	function chatsounds.CreateSound(path, udata)
 		local self = {csp = Sound(path), udata = udata, path = path}
 
@@ -354,60 +398,36 @@ do -- list parsing
 	function chatsounds.MountPaks()
 		local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
 
-		for path in vfs.Iterate(addons, nil, true) do 
-			if vfs.IsDir(path) and path:lower():find("chatsound") then 
+		for path in vfs.Iterate(addons, nil, true) do
+			if vfs.IsDir(path) and path:lower():find("chatsound") then
 				vfs.Mount(path)
-			end 
+			end
 		end
-		
-		vfs.Mount(steam.GetGamePath("Team Fortress 2") .. "/tf/tf2_misc_dir.vpk")
-		vfs.Mount(steam.GetGamePath("Team Fortress 2") .. "/tf/tf2_sound_misc_dir.vpk")
-		vfs.Mount(steam.GetGamePath("Team Fortress 2") .. "/tf/tf2_sound_vo_english_dir.vpk")
-	
-		vfs.Mount(steam.GetGamePath("Left 4 Dead") .. "/left4dead/")
-		vfs.Mount(steam.GetGamePath("Left 4 Dead") .. "/left4dead_dlc3/")
-		vfs.Mount(steam.GetGamePath("Left 4 Dead") .. "/left4dead/pak01_dir.vpk")
-		vfs.Mount(steam.GetGamePath("Left 4 Dead") .. "/left4dead_dlc3/pak01_dir.vpk")
-		
-		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2/") 
-		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2_dlc1/") 
-		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2_dlc2/") 
-		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2_dlc3/") 
-		
-		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2/pak01_dir.vpk") 
-		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2_dlc1/pak01_dir.vpk") 
-		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2_dlc2/pak01_dir.vpk") 
-		vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "/left4dead2_dlc3/pak01_dir.vpk") 
 
-		vfs.Mount(steam.GetGamePath("Counter-Strike Global Offensive") .. "/csgo/pak01_dir.vpk")
-		vfs.Mount(steam.GetGamePath("Counter-Strike Global Offensive") .. "/csgo/")
-		
-		vfs.Mount(steam.GetGamePath("Portal 2") .. "/portal2/")
-		vfs.Mount(steam.GetGamePath("Portal 2") .. "/portal2_dlc1/")
-		vfs.Mount(steam.GetGamePath("Portal 2") .. "/portal2/pak01_dir.vpk")
-		
-		vfs.Mount(steam.GetGamePath("Portal") .. "/portal/")
-		vfs.Mount(steam.GetGamePath("Portal") .. "/portal/portal_pak_dir.vpk")
-		
-		vfs.Mount(steam.GetGamePath("Half-Life 2") .. "/ep2/ep2_pak_dir.vpk")
-		vfs.Mount(steam.GetGamePath("Half-Life 2") .. "/ep2/")
-		
-		vfs.Mount(steam.GetGamePath("Half-Life 2") .. "/episodic/ep1_pak_dir.vpk")
-		vfs.Mount(steam.GetGamePath("Half-Life 2") .. "/episodic/")
-		
-		vfs.Mount(steam.GetGamePath("Counter-Strike Source") .. "/cstrike/")  
-		vfs.Mount(steam.GetGamePath("Counter-Strike Source") .. "/cstrike/cstrike_pak_dir.vpk")  
-
-		vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/") 
-		vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_sound_vo_english_dir.vpk") 
-		vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_sound_misc_dir.vpk")     
+		for game, dir in paks:gmatch(".-(/+)") do
+			vfs.Mount(steam.GetGamePath(game) .. dir)
+		end
 	end
-		
+
+	function chatsounds.UnmountPaks()
+		local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
+
+		for path in vfs.Iterate(addons, nil, true) do
+			if vfs.IsDir(path) and path:lower():find("chatsound") then
+				vfs.Mount(path)
+			end
+		end
+
+		for game, dir in paks:gmatch(".-(/+)") do
+			vfs.Unmount(steam.GetGamePath(game) .. dir)
+		end
+	end
+
 	function chatsounds.GetSoundData(snd)
 		local out = {}
 		local content = snd:match(".+VDAT.-(VERSION.+)")
 		out.plaintext = content:match("PLAINTEXT%s-{%s+(.-)%s-}")
-		
+
 		out.words = {}
 		for word, start, stop, phonemes in content:match("WORDS%s-{(.+)"):gmatch("WORD%s-(%S-)%s-(%S-)%s-(%S-)%s-{(.-)}") do
 			local tbl = {}
@@ -419,20 +439,20 @@ do -- list parsing
 			end
 			table.insert(out.words, {word = word, start = tonumber(start), stop = tonumber(stop), phonemes = tbl})
 		end
-		
+
 		return out
-	end 
-	
+	end
+
 	local function clean_sentence(sentence)
 
 		sentence = sentence:lower()
 		sentence = sentence:gsub("_", " ")
 		sentence = sentence:gsub("%p", "")
 		sentence = sentence:gsub("%s+", " ")
-		
+
 		return sentence
 	end
-	
+
 	function chatsounds.BuildSoundInfo()
 		local out = {}
 
@@ -447,11 +467,11 @@ do -- list parsing
 						print(path, err)
 					end
 					coroutine.yield("reading /scripts/*")
-				end 
+				end
 			end
-			
+
 			for sound_name, info in pairs(sound_info) do
-				--if type(info) == "table" then 
+				--if type(info) == "table" then
 					sound_info[sound_name] = nil
 					sound_info[sound_name:lower()] = info
 					info.real_name = sound_name
@@ -459,12 +479,12 @@ do -- list parsing
 				--	sound_info[sound_name] = nil
 				--end
 			end
-			
+
 			local captions = {}
 			for path in vfs.Iterate("resource/", nil, true) do
 				if path:find("english") and path:find("%.txt") then
-				
-				
+
+
 					local str = vfs.Read(path)
 					-- stupid hack because some caption files are encoded weirdly which would break lua patterns
 					local tbl = {}
@@ -473,37 +493,37 @@ do -- list parsing
 							tbl[#tbl + 1] = uchar
 						end
 					end
-					str = table.concat(tbl, "")	
+					str = table.concat(tbl, "")
 					str = str:gsub("//.-\n", "")
 					-- stupid hack
-										
+
 					local tbl = steam.VDFToTable(str)
 					table.merge(captions, tbl)
 					coroutine.yield("reading /resource/*")
-				end 
+				end
 			end
-			
-			if captions.lang then				
+
+			if captions.lang then
 				local found = 0
 				local lost = 0
-				
+
 				for sound_name, text in pairs(captions.lang.Tokens) do
 					sound_name = sound_name:lower()
-					
+
 					if sound_info[sound_name] then
 						if type(text) == "table" then
 							text = text[1]
 						end
-						
+
 						local data = {}
-											
+
 						text = text:gsub("(<.->)", function(tag)
 							data.tags = data.tags or {}
 							table.insert(data.tags, tag)
-							
+
 							return ""
 						end)
-						
+
 						if data.tags then
 							for i, tag in ipairs(data.tags) do
 								local key, args = tag:match("<(.-):(.+)>")
@@ -513,37 +533,37 @@ do -- list parsing
 								else
 									key = tag:match("<(.-)>")
 								end
-								
+
 								data.tags[i] = {type = key, args = args}
 							end
 						end
-						
+
 						local name, rest = text:match("(.-):(.+)")
-						
+
 						if name then
 							data.name = name
 							data.text = rest
 						else
 							data.text = text
 						end
-						
+
 						data.text = data.text:trim()
-						
+
 						sound_info[sound_name].caption = data
 						found = found + 1
 					else
 						lost = lost + 1
 					end
 				end
-				
+
 				logf("%i captions matched sound info but %i captions are unknown\n", found, lost)
 			else
 				logn("no captions found!")
 			end
-			
+
 			for sound_name, info in pairs(sound_info) do
 				local paths
-				
+
 				if info.rndwave then
 					if type(info.rndwave.wave) == "table" then
 						paths = info.rndwave.wave
@@ -555,46 +575,46 @@ do -- list parsing
 				else
 					paths = {info.wave} -- ugh
 				end
-									
+
 				for k, v in pairs(paths) do
 					v = v:lower()
 					v = v:gsub("\\", "/")
-					
+
 					local start_symbol
-					
+
 					if v:sub(1, 1):find("%p") then
 						start_symbol, v = v:match("(%p+)(.+)")
 					end
-					
+
 					v = "sound/" .. v
-					
+
 					out[v] = out[v] or {}
-					
+
 					out[v].name = info.real_name
 					out[v].path_symbol = start_symbol
-					
+
 					table.merge(out[v], info)
-					
-					if type(out[v].pitch) == "string" and out[v].pitch:find(",") then 
+
+					if type(out[v].pitch) == "string" and out[v].pitch:find(",") then
 						out[v].pitch = out[v].pitch:gsub("%s+", ""):explode(",")
 						for k,n in pairs(out[v].pitch) do out[v].pitch[k] = tonumber(n) or n end
 					end
-					
+
 					out[v].operator_stacks = nil
 					out[v].real_name = nil
 					out[v].rndwave = nil
 					out[v].wave = nil
 				end
-				
+
 				coroutine.yield("building table")
 			end
-			
+
 			local list = chatsounds.ListToTable(vfs.Read("data/chatsounds/game.list"))
-				
+
 			logn("translating game.list")
 			local found = 0
 			for realm, list in pairs(list) do
-				for trigger, sounds in pairs(list) do	
+				for trigger, sounds in pairs(list) do
 					for i, data in ipairs(sounds) do
 						local info = out[data.path:lower()]
 						if info and info.caption then
@@ -609,96 +629,96 @@ do -- list parsing
 				end
 			end
 			logf("translated %i paths\n", found)
-			
+
 			logn("saving game list")
-			local game_list = chatsounds.TableToList(list)				
-			vfs.Write("data/chatsounds/game.list", game_list)				
+			local game_list = chatsounds.TableToList(list)
+			vfs.Write("data/chatsounds/game.list", game_list)
 			vfs.Write("data/chatsounds/game.tree", serializer.Encode("msgpack", chatsounds.TableToTree(list)), "b")
 
-			
+
 			logn("finished building the sound info table")
 			logf("found sound info for %i paths\n", table.count(out))
-			
+
 			vfs.Write("data/chatsounds/sound_info.table", serializer.Encode("msgpack", out))
 			vfs.Write("data/chatsounds/sound_info.lua", serializer.Encode("luadata", out))
-			
+
 			chatsounds.sound_info = out
-		end) 
-		
+		end)
+
 		event.AddListener("Update", "chatsounds_soundinfo", function()
-			local ok, msg = coroutine.resume(co)		
-			
-			if ok then 
+			local ok, msg = coroutine.resume(co)
+
+			if ok then
 				if wait(1) then
 					print(msg)
-				end			
+				end
 			elseif msg == "cannot resume dead coroutine" then
 				return e.EVENT_DESTROY
 			else
-				error(msg) 
+				error(msg)
 			end
 		end)
 	end
-	
+
 	function chatsounds.BuildListFromMountedContent()
-		
+
 		window.Close()
 		chatsounds.MountPaks()
-		
+
 		local found = {}
-			
+
 		local function callback()
-			vfs.Search("sound/", {"wav", "ogg", "mp3"}, function(path) 			
+			vfs.Search("sound/", {"wav", "ogg", "mp3"}, function(path)
 				local sentence
-				
+
 				if path:find("%.wav") then
 					local ok, data = pcall(vfs.Read, path, "b")
 					sentence = data:match("PLAINTEXT%s{%s(.-)%s}%s")
 				end
-				
+
 				if not sentence or sentence == "" then
 					sentence = path:match(".+/(.+)%.")
 				end
-				
+
 				sentence = clean_sentence(sentence)
-				
+
 				if sentence == "" then
 					sentence = path:match(".+/(.+)%.")
 					sentence = clean_sentence(sentence)
 				end
-				
+
 				local realm = realm_from_path(path)
-				
+
 				if path:find("chatsounds/autoadd/", nil, true) then
 					realm = "custom_sounds_" .. realm
 				end
-				
+
 				found[realm] = found[realm] or {}
-				
+
 				table.insert(found[realm], path:lower() .. "=" .. sentence)
-				
+
 				coroutine.yield()
 			end)
 		end
-			   
+
 		local co = coroutine.create(function() return xpcall(callback, system.OnError) end)
 
 		event.AddListener("Update", "chatsounds_search", function()
 			local ok, err = coroutine.resume(co)
-			
+
 			if wait(1) then
 				print(table.count(found) .. " realms found")
 				local i = 0
 				for k,v in pairs(found) do for k,v in pairs(v) do i = i + 1 end end
-				
+
 				print(i .. " sentences found")
 			end
-			
+
 			if wait(10) or not ok then
 				print("saving..")
 				local custom = {}
 				local game = {}
-				
+
 				for realm, sentences in pairs(found) do
 					if realm:find("custom_sounds_") then
 						realm = realm:gsub("custom_sounds_", "")
@@ -709,29 +729,29 @@ do -- list parsing
 						table.insert(game, table.concat(sentences, "\n") .. "\n")
 					end
 				end
-				
+
 				local game_list = table.concat(game, "")
 				local custom_list = table.concat(custom, "")
-				
+
 				vfs.Write("data/chatsounds/game.list", game_list)
 				vfs.Write("data/chatsounds/custom.list", custom_list)
-				
+
 				vfs.Write("data/chatsounds/game.tree", serializer.Encode("msgpack", chatsounds.TableToTree(chatsounds.ListToTable(game_list))), "b")
 				vfs.Write("data/chatsounds/custom.tree", serializer.Encode("msgpack", chatsounds.TableToTree(chatsounds.ListToTable(custom_list))), "b")
 			end
-			
+
 			if not ok then
-				if err == "cannot resume dead coroutine" then 
+				if err == "cannot resume dead coroutine" then
 					chatsounds.BuildSoundInfo()
-					print("done!")					
+					print("done!")
 					return e.EVENT_DESTROY
 				else
-					error(err) 
+					error(err)
 				end
 			end
-		end) 
+		end)
 	end
-		
+
 	function chatsounds.ListToTable(data)
 		local list = {}
 		local realm = "misc"
@@ -742,21 +762,21 @@ do -- list parsing
 				if path:find("sound/chatsounds/autoadd/", nil, true) then
 					trigger = path:match("sound/chatsounds/autoadd/[^/]-/(.-)/[^/]-%.") or trigger
 				end
-				
+
 				if not list[realm] then
 					list[realm] = {}
 				end
-				
+
 				if not list[realm][trigger] then
 					list[realm][trigger] = {}
 				end
-				
+
 				table.insert(list[realm][trigger], {path = path})
 			end
 		end
 		return list
 	end
-	
+
 	function chatsounds.TableToList(tbl)
 		local str = {}
 		for realm, list in pairs(tbl) do
@@ -774,24 +794,24 @@ do -- list parsing
 		end
 		return table.concat(str, "\n")
 	end
-		
+
 	function chatsounds.TableToTree(tbl)
 		local tree = {}
-		
+
 		for realm, list in pairs(tbl) do
 			for trigger, sounds in pairs(list) do
 				local words = {}
-				
+
 				for word in (trigger .. " "):gmatch("(.-)%s+") do
 					table.insert(words, word)
 				end
 
 				local prev = tree
 				local max = #words
-				
+
 				for i, word in ipairs(words) do
-					if not prev[word] then 
-						prev[word] = {} 
+					if not prev[word] then
+						prev[word] = {}
 					end
 
 					if i == max then
@@ -812,10 +832,10 @@ do -- list parsing
 
 		return tree
 	end
-		
+
 	function chatsounds.BuildTreeFromCache(list_data, tree_data)
 		local list, tree
-		
+
 		if not tree_data then
 			list = chatsounds.ListToTable(list_data)
 			tree = chatsounds.TableToTree(list)
@@ -823,21 +843,21 @@ do -- list parsing
 			list = chatsounds.ListToTable(list_data)
 			tree = serializer.Decode("msgpack", tree_data)
 		end
-		
+
 		chatsounds.list = chatsounds.list or {}
-		
+
 		for k,v in pairs(list) do
 			chatsounds.list[k] = v
 		end
-		
+
 		chatsounds.tree = chatsounds.tree or {}
 		table.merge(chatsounds.tree, tree)
-	end 	
-	
+	end
+
 	function chatsounds.BuildTree(name)
 		local list = "data/chatsounds/"..name..".list"
 		local tree = "data/chatsounds/"..name..".tree"
-		
+
 		if vfs.Exists(list) and vfs.Exists(tree) then
 			chatsounds.BuildTreeFromCache(vfs.Read(list), vfs.Read(tree, "b"))
 		elseif vfs.Exists(list) then
@@ -877,7 +897,7 @@ do -- list parsing
 			end
 		else
 			chatsounds.MountPaks()
-			
+
 			local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
 			local addon_dir = addons .. "chatsounds"
 
@@ -887,7 +907,7 @@ do -- list parsing
 					break
 				end
 			end
-			
+
 			addon_dir = addon_dir .. "/"
 
 			local nosend = addon_dir .. "lua/chatsounds/lists_nosend/"
@@ -903,8 +923,8 @@ do -- list parsing
 				func()
 
 				list[realm] = L
-			end 
-			  
+			end
+
 			for dir in vfs.Iterate(send, nil, true) do
 				for path in vfs.Iterate(dir .. "/", nil, true) do
 					parse(path)
@@ -1043,7 +1063,7 @@ do
 
 		local out = {}
 		local found = {}
-		
+
 		local function hmm(word)
 			prev = chatsounds.tree
 
@@ -1229,7 +1249,7 @@ function chatsounds.PlayScript(script, udata)
 					sound.duration = (chunk.val.duration or sound.snd:GetDuration())
 					sound.trigger = chunk.val.trigger
 					sound.modifiers = chunk.modifiers
-					
+
 					--print("DURATION", path, sound.duration)
 
 					sound.play = function(self)
@@ -1243,7 +1263,7 @@ function chatsounds.PlayScript(script, udata)
 						end
 
 						self.snd:Play()
-						
+
 						--print("START", path)
 					end
 
@@ -1258,7 +1278,7 @@ function chatsounds.PlayScript(script, udata)
 						end
 
 						self.snd:Stop()
-						
+
 						--print("STOP", path)
 					end
 
@@ -1381,7 +1401,7 @@ function chatsounds.Say(ply, str, seed)
 		str = ply
 		ply = nil
 	end
-	
+
 	str = str:lower()
 
 	if str == "sh" or (str:find("sh%s") and not str:find("%Ssh")) or (str:find("%ssh") and not str:find("sh%S")) then
@@ -1404,12 +1424,12 @@ end
 
 function chatsounds.Initialize()
 	if chatsounds.tree then return end
-	
+
 	chatsounds.MountPaks()
-	
+
 	chatsounds.BuildTree("game")
 	chatsounds.BuildTree("custom")
-	
+
 	if autocomplete then
 		local temp = {}
 
@@ -1424,13 +1444,19 @@ function chatsounds.Initialize()
 		for k,v in pairs(temp) do
 			table.insert(list, k)
 		end
-		
+
 		table.sort(list, function(a, b) return #a < #b end)
 
 		autocomplete.AddList("chatsounds", list)
 	end
-	
+
 	event.AddListener("Update", "chatsounds", chatsounds.Update)
+end
+
+function chatsounds.Shutdown()
+	chatsounds.UnmountPaks()
+	autocomplete.RemoveList("chatsounds")
+	event.RemoveListener("Update", "chatsounds")
 end
 
 return chatsounds

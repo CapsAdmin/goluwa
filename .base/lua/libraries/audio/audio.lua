@@ -9,11 +9,11 @@ alc.debug = true
 audio.objects = audio.objects or setmetatable({}, { __mode = 'v' })
 audio.effect_channels = audio.effect_channels or setmetatable({}, { __mode = 'v' })
 
-function audio.Open(name)
+function audio.Initialize(name)
 	include("libraries/audio/decoders/*")
 	
 	os.setenv("ALSOFT_CONF", lfs.currentdir() .. "\\" .. "al_config.ini")
-	audio.Close()
+	audio.Shutdown()
 
 	if not name then
 		name = audio.GetAllOutputDevices()[1]
@@ -40,7 +40,7 @@ function audio.Open(name)
 	audio.context = context
 end
 
-function audio.Close()
+function audio.Shutdown()
 	for k, v in pairs(audio.objects) do
 		if v:IsValid() then
 			v:Remove()

@@ -114,6 +114,10 @@ function render.Initialize()
 	end)
 end
 
+function render.Shutdown()
+	
+end
+
 do -- shaders
 	local status = ffi.new("GLint[1]")
 	local shader_strings = ffi.new("const char * [1]")

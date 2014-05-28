@@ -7,6 +7,17 @@ sockets.active_sockets = sockets.active_sockets or setmetatable({}, { __mode = '
 include("helpers.lua", sockets)
 include("http.lua", sockets)
 
+function sockets.Initialize()
+	event.AddListener("Update", "sockets", sockets.Update)
+	event.AddListener("LuaClose", "sockets", sockets.Panic)
+end
+
+function sockets.Shutdown()
+	sockets.Panic()
+	event.RemoveListener("Update", "sockets")
+	event.RemoveListener("LuaClose", "sockets")
+end
+
 function sockets.DebugPrint(self, ...)
 	if (self and self.debug) or sockets.debug then
 		local tbl = {}
