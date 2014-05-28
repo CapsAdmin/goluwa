@@ -159,12 +159,21 @@ console.AddCommand("source", function(line, ...)
 	end
 end)
 
+local tries = {
+	"lua/?.lua",
+	"lua/?",
+	"?",
+	"lua/tests/?.lua",
+}
+
 console.AddCommand("open", function(line)
-	if vfs.Exists("lua/" .. line .. ".lua") then 
-		include(line .. ".lua")
-	elseif vfs.Exists("lua/tests/" .. line .. ".lua") then
-		include("tests/" .. line .. ".lua")  
-	else
-		return false, ("lua/%s.lua and lua/tests/%s.lua was not found"):format(line, line)
-	end
-end, "calls include(*input*.lua) or include(tests/*input*.lua) if the former failed")
+	for i, try in pairs(tries) do
+		local path = try:gsub("?", line)
+		if vfs.Exists(path) then
+			include(path)
+			return
+		end
+	end	
+	
+	return false, "file "
+end, "opens a lua file with some helpers (ie trying to append .lua or prepend lua/)")
