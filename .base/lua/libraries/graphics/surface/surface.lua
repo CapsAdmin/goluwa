@@ -288,10 +288,10 @@ function surface.DrawLine(x1,y1, x2,y2, w, skip_tex, ...)
 	end
 	
 	local dx,dy = x2-x1, y2-y1
-	local ang = math.atan2(dy, dx)
+	local ang = math.atan2(dx, dy)
 	local dst = math.sqrt((dx * dx) + (dy * dy))
 		
-	surface.DrawRect(x1, y1, w, dst, math.deg(ang), ...)
+	surface.DrawRect(x1, y1, w, dst, -math.deg(ang), ...)
 end
 
 function surface.StartClipping(x, y, w, h)
