@@ -372,6 +372,53 @@ do -- fonts
 	
 		return data.w * W, data.h * H
 	end
+	
+	function surface.WrapString(str, max_width)
+		if not max_width or max_width == 0 then
+			return str:explode("")
+		end
+		
+		local lines = {}
+		
+		local last_pos = 0
+		local line_width = 0
+		local found = false
+	
+		local space_pos
+	
+		for pos, char in pairs(str:utotable()) do
+			local w, h = surface.GetTextSize(char)
+	
+			if char:find("%s") then
+				space_pos = pos
+			end
+	
+			if line_width + w >= max_width then
+	
+				if space_pos then
+					lines[#lines+1] = str:usub(last_pos+1, space_pos)
+					last_pos = space_pos
+				else
+					lines[#lines+1] = str:usub(last_pos+1, pos)
+					last_pos = pos
+				end
+	
+				line_width = 0
+				found = true
+				space_pos = nil
+			else
+				line_width = line_width + w
+			end
+		end
+	
+		if found then
+			lines[#lines+1] = str:usub(last_pos+1, pos)
+		else
+			lines[#lines+1] = str
+		end
+	
+		return lines
+	end
 end
 
 if RELOAD then
