@@ -3,7 +3,7 @@ event.AddListener("WindowFileDrop", "file_drop", function(wnd, paths)
 		if vfs.IsDir(path) then
 			
 		else
-			include(path)
+			console.RunString("open " .. path)
 		end
 	end
 end)
