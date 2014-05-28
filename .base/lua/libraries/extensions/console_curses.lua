@@ -68,8 +68,8 @@ local translate =
 	
 	[3] = "KEY_COPY",
 	
-	["\27\91\67"] = "KEY_RIGHT",
-	["\27\91\68"] = "KEY_LEFT",
+	["\27[1;5D"] = "CTL_LEFT",
+	["\27[1;5C"] = "CTL_RIGHT",
 	
 	KEY_SELECT = "KEY_HOME",
 	KEY_FIND = "KEY_END",
@@ -134,12 +134,6 @@ function console.InitializeCurses()
 		end)
 	end
 	
-	autocomplete.AddList("console", function()
-		local cmds = {}
-		for k,v in pairs(console.GetCommands()) do table.insert(cmds, k) end
-		return cmds
-	end)
-
 	if console.curses_init then return end
 	
 	curses.freeconsole()
@@ -148,7 +142,7 @@ function console.InitializeCurses()
 	c.parent_window = curses.stdscr
 
 	if WINDOWS then
-		curses.PDC_set_resize_limits(20, 20, 500, 500)
+		--curses.PDC_set_resize_limits(20, 20, 500, 500)
 		curses.resize_term(50,150)
 		curses.fixterm()
 	end
@@ -297,7 +291,7 @@ do -- colors
 			local color, lexeme = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
 			local attr = curses.COLOR_PAIR(color + 1)
 
-			if WINDOWS then
+			if false and WINDOWS then
 				curses.waddstr(window, lexeme)
 			else
 				curses.wattron(window, attr)
@@ -343,7 +337,7 @@ function console.ClearInput(str)
 	curses.werase(c.input_window)
 	
 	if str then
-		if WINDOWS then
+		if false and WINDOWS then
 			curses.waddstr(c.input_window, str)
 		else
 			console.ColorPrint(str)
@@ -418,22 +412,53 @@ local markup_translate = {
 }
 
 
+local function get_commands_for_autocomplete()
+	local cmds = {}
+	for k,v in pairs(console.GetCommands()) do 
+		table.insert(cmds, k) 
+	end
+	return cmds
+end
+
 function console.HandleKey(key)
 
 	if key == "KEY_TAB" then
 		local line = console.GetCurrentLine()
-		local cmd = line:match("(%S+)")
+		local cmd, rest = line:match("(%S+)%s+(.+)")
 		
-		if cmd then
-			local found = autocomplete.Query("console", cmd, 1)
+		if not cmd then cmd = line:match("(%S+)") end
+		
+		if cmd and not rest then
+			
+			local found = autocomplete.Query("console", cmd, 1, get_commands_for_autocomplete())
 
 			if found then
 				markup:SetText(found .. " ")
 				markup:SetCaretPos(math.huge, 0)
 			end
+			return
 		end
-	
-		return
+		
+		if cmd and rest then
+			local info = console.GetCommands()[cmd]
+			if info and info.autocomplete then
+				local data = console.ParseCommandArgs(line)
+				local list = info.autocomplete(data.args[#data.args], data.args)
+				if list then
+					local found = autocomplete.Query("console_command_" .. cmd, data.args[#data.args], 1, list)
+					if found then
+						table.remove(data.args)
+						
+						if #data.args > 0 then
+							found = "," .. found
+						end
+						
+						markup:SetText(cmd .. " " .. table.concat(data.args, ",") .. found)
+						markup:SetCaretPos(math.huge, 0)
+					end
+				end
+			end
+		end	
 	else
 		autocomplete.Query("console", console.GetCurrentLine())
 	end
