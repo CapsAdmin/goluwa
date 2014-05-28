@@ -628,8 +628,23 @@ end
 
 
 function system.Restart()
+		
 	lfs.chdir("../../../../") 
-	os.execute("launch.bat") 
+	
+	if WINDOWS then
+		if CLIENT then
+			os.execute("./launch_client.sh &") 
+		else	
+			os.execute("./launch_server.sh &") 
+		end
+	else
+		if CLIENT then
+			os.execute("launch_client.bat") 
+		else	
+			os.execute("launch_server.bat") 
+		end
+	end
+	
 	os.exit()
 end
 
