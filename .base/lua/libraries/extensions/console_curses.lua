@@ -12,16 +12,6 @@ c.scroll = c.scroll or 0
 
 local history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt")
 
-local translate = 
-{
-	[10] = "KEY_ENTER",
-	[459] = "KEY_ENTER",
-	[8] = "KEY_BACKSPACE",
-	[127] = "CTL_BACKSPACE",
-	[9] = "KEY_TAB",
-	PADENTER = "KEY_ENTER",
-}
-
 local A_DIM = 2 ^ 12
 local A_BOLD = 2 ^ 13
 local A_STANDOUT = 2 ^ 8
@@ -65,33 +55,55 @@ function console.GetCurrentLine()
 	return markup:GetText()
 end
  
-function console.InitializeCurses()
-	event.CreateTimer("curses", 0, 0, function()
-		local byte = curses.wgetch(c.input_window)
+local translate = 
+{
+	[10] = "KEY_ENTER",
+	[459] = "KEY_ENTER",
+	[8] = "KEY_BACKSPACE",
+	[127] = "CTL_BACKSPACE",
+	[9] = "KEY_TAB",
+	
+	[25] = "KEY_UNDO",
+	[26] = "KEY_UNDO",
+	
+	[3] = "KEY_COPY",
+	
+	["\27\91\67"] = "KEY_RIGHT",
+	["\27\91\68"] = "KEY_LEFT",
+	
+	KEY_SELECT = "KEY_HOME",
+	KEY_FIND = "KEY_END",
+	
+	PADENTER = "KEY_ENTER",
+}
 
-		if byte < 0 then return end
-					
-		local key = translate[byte] or ffi.string(curses.keyname(byte))
+function console.InitializeCurses()
+	event.CreateTimer("curses", 1/30, 0, function()
+		local key = {}
 		
-		key = translate[key] or key
-				
-		markup:SetControlDown(key == "CTL_LEFT" or key == "CTL_RIGHT" or key == "CTL_DEL" or key == "CTL_BACKSPACE")
-		markup:SetShiftDown(key == "KEY_SLEFT" or key == "KEY_SRIGHT")
+		for i = 1, math.huge do
+			local byte = curses.wgetch(c.input_window)
+			if byte > 0 and byte < 255 then
+				key[i] = string.char(byte)
+			else
+				if byte > 255 then
+					key = ffi.string(curses.keyname(byte))
+				else
+					key = table.concat(key)
+				end
+				break
+			end
+		end
+		
+		key = translate[key] or translate[key:byte()] or key
+
+		markup:SetControlDown(key:find("CTL_") ~= nil)
+		markup:SetShiftDown(key:find("KEY_S") ~= nil)
 						
-		if key:find("KEY_") or key:find("CTL_") then					
-			--key = ffi.string(key)
-				
-			if event.Call("ConsoleKeyInput", key) == false then return end
-			
+		if (key:find("KEY_") or key:find("CTL_")) and event.Call("ConsoleKeyInput", key) ~= false then									
 			console.HandleKey(key)		
-		elseif byte >= 32 then
-			local char = utf8.char(byte)
-			
-			if event.Call("ConsoleCharInput", char) == false then return end
-			
-			if char == "\t" then char = "    " end
-					
-			console.HandleChar(char)
+		elseif event.Call("ConsoleCharInput", key) ~= false then
+			console.HandleChar(key)
 		end
 		
 		set_cursor_pos(markup:GetCaretSubPos()-1)	
