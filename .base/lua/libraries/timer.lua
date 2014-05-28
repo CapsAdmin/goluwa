@@ -27,14 +27,8 @@ do -- elapsed time (avanved from frame time)
 end
 
 do -- system time (independent from elapsed_time)
-	local high_precision_clock = os.clock
-	
-	function timer.SetSystemTimeClock(func)
-		high_precision_clock = func
-	end
-		
 	function timer.GetSystemTime()
-		return high_precision_clock()
+		return os.clock()
 	end
 end
 

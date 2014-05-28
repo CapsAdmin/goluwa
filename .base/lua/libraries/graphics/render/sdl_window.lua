@@ -3,6 +3,10 @@ local sdl = require("lj-sdl") -- window manager
 
 local render = (...) or _G.render
 
+function timer.GetSystemTime()
+	return tonumber(sdl.GetTicks()) / 1000
+end
+
 do -- window meta
 	local META = utilities.CreateBaseMeta("render_window")
 

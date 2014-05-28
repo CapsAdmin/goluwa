@@ -3,7 +3,9 @@ local glfw = require("lj-glfw") -- window manager
 
 local render = (...) or _G.render
 
-timer.SetSystemTimeClock(glfw.GetTime)
+function timer.GetSystemTime()
+	return glfw.GetTime()
+end
 
 local calllbacks = {}
 
