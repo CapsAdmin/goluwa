@@ -2,13 +2,18 @@
 2]]
 
 event.AddListener("Draw2D", "lol", function()
-	local x = window.GetMousePos().x
+	surface.SetFont("default")
+	
+	surface.Color(1,1,1,1)
+	local x, y = surface.GetMousePos()
+	
 	for i, line in pairs(surface.WrapString(str, x)) do
 		local w, h = surface.GetTextSize(line)
 		surface.SetTextPos(0, i * h)
 		surface.DrawText(line)
 		
 	end
+	
 	surface.Color(1,0,0,1)
 	surface.DrawLine(x, 0, x, 10000)
 end)
