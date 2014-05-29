@@ -353,6 +353,17 @@ do -- timers
 			realtime = timer.GetElapsedTime() + time
 		}
 	end
+	
+	function event.DeferExecution(callback, time, ...)
+		if not event.timers[callback] then
+			event.timers[callback] = {
+				type = "delay",
+				callback = callback,
+				args = {...},
+				realtime = timer.GetElapsedTime() + time,
+			}
+		end
+	end
 
 	function event.CreateTimer(id, time, repeats, callback, run_now)
 		check(time, "number")
@@ -424,7 +435,11 @@ do -- timers
 				end
 			elseif data.type == "delay" then
 				if data.realtime < cur then
-					xpcall(data.callback, system.OnError)
+					if data.args then
+						xpcall(data.callback, system.OnError, unpack(data.args))
+					else
+						xpcall(data.callback, system.OnError)
+					end
 					event.timers[key] = nil
 					break
 				end
