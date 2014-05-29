@@ -1,9 +1,14 @@
 local chatsounds = _G.chatsounds or {}
 
 local paks = {
-	"Team Fortress 2/tf/tf2_misc_dir.vpk",
-	"Team Fortress 2/tf/tf2_sound_misc_dir.vpk",
-	"Team Fortress 2/tf/tf2_sound_vo_english_dir.vpk",
+	"Half-Life 2/hl2/hl2_sound_vo_english_dir.vpk",
+	"Half-Life 2/hl2/hl2_sound_misc_dir.vpk",
+		
+	"Half-Life 2/episodic/ep1_pak_dir.vpk",
+	"Half-Life 2/episodic/",
+
+	"Half-Life 2/ep2/ep2_pak_dir.vpk",
+	"Half-Life 2/ep2/",
 
 	"Left 4 Dead/left4dead/",
 	"Left 4 Dead/left4dead_dlc3/",
@@ -19,29 +24,23 @@ local paks = {
 	"Left 4 Dead 2/left4dead2_dlc1/pak01_dir.vpk",
 	"Left 4 Dead 2/left4dead2_dlc2/pak01_dir.vpk",
 	"Left 4 Dead 2/left4dead2_dlc3/pak01_dir.vpk",
-
-	"Counter-Strike Global Offensive/csgo/pak01_dir.vpk",
-	"Counter-Strike Global Offensive/csgo/",
-
-	"Portal 2/portal2/",
-	"Portal 2/portal2_dlc1/",
-	"Portal 2/portal2/pak01_dir.vpk",
-
-	"Portal/portal/",
-	"Portal/portal/portal_pak_dir.vpk",
-
-	"Half-Life 2/ep2/ep2_pak_dir.vpk",
-	"Half-Life 2/ep2/",
-
-	"Half-Life 2/episodic/ep1_pak_dir.vpk",
-	"Half-Life 2/episodic/",
+	
+	"Team Fortress 2/tf/tf2_misc_dir.vpk",
+	"Team Fortress 2/tf/tf2_sound_misc_dir.vpk",
+	"Team Fortress 2/tf/tf2_sound_vo_english_dir.vpk",
 
 	"Counter-Strike Source/cstrike/",
 	"Counter-Strike Source/cstrike/cstrike_pak_dir.vpk",
+	
+	"Counter-Strike Global Offensive/csgo/pak01_dir.vpk",
+	"Counter-Strike Global Offensive/csgo/",
 
-	"GarrysMod/sourceengine/",
-	"GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk",
-	"GarrysMod/sourceengine/hl2_sound_misc_dir.vpk",
+	"Portal/portal/",
+	"Portal/portal/portal_pak_dir.vpk",
+	
+	"Portal 2/portal2/",
+	"Portal 2/portal2_dlc1/",
+	"Portal 2/portal2/pak01_dir.vpk",
 }
 
 local realm_patterns = {
@@ -404,7 +403,8 @@ do -- list parsing
 			end
 		end
 
-		for game, dir in paks:gmatch(".-(/+)") do
+		for _, path in pairs(paks) do
+			local game, dir = path:match("(.-)(/.+)")
 			vfs.Mount(steam.GetGamePath(game) .. dir)
 		end
 	end
@@ -418,7 +418,8 @@ do -- list parsing
 			end
 		end
 
-		for game, dir in paks:gmatch(".-(/+)") do
+		for _, path in pairs(paks) do
+			local game, dir = path:match("(.-)(/.+)")
 			vfs.Unmount(steam.GetGamePath(game) .. dir)
 		end
 	end
