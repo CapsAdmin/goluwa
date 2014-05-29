@@ -7,15 +7,15 @@ META.Name = "base"
 class.GetSet(META, "Mode", "read")
 
 function META:GetFiles()
-
+	error("not implemented")
 end
 
 function META:GetFolders()
-
+	error("not implemented")
 end
 
 function META:CreateFolder()
-
+	error("not implemented")
 end
 
 function META:Open(path, mode, ...)

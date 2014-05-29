@@ -95,7 +95,7 @@ function vfs.CreateFoldersFromPath(filesystem, path)
 	check(filesystem, "string")
 	check(path, "string")
 	
-	if not vfs.GetFileSystem(name) then
+	if not vfs.GetFileSystem(filesystem) then
 		error("unknown filesystem " .. filesystem, 2)
 	end
 	

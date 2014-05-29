@@ -14,24 +14,15 @@ function CONTEXT:CreateFolder(path_info)
 	lfs.mkdir(path_info.full_path)
 end
 
+local function get_all(path_info, typ)
+	
+end
+
 function CONTEXT:GetFiles(path_info)
 	local out = {}
 		
 	for file_name in lfs.dir(path_info.full_path) do
-		if lfs.attributes(path_info.full_path .. del .. file_name)
 		table.insert(out, file_name)
-	end
-	
-	return out
-end
-
-function CONTEXT:GetFolders(path_info)
-	local out = {}
-	
-	for file_name, var in pairs(get_folder(path_info)) do
-		if type(var) == "table" and var.is_folder then
-			table.insert(out, file_name)
-		end
 	end
 	
 	return out

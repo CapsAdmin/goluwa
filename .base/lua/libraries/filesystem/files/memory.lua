@@ -4,7 +4,7 @@ local CONTEXT = {}
 
 CONTEXT.Name = "memory"
 
-local file_tree = {is_folder = true}
+local file_tree = {[""] = {is_folder = true}}
 
 function CONTEXT:VFSOpened()
 	file_tree = serializer.ReadFile("luadata", "vfs_memory")
@@ -19,49 +19,45 @@ function CONTEXT:VFSClosed()
 	logn("memory tree saved")
 end
 
-local function get_folder(path_info)
-	
+local function get_folder(path_info, remove_last)
 	local next = file_tree
-	local folders = path_info:GetFolders()
-	local max = #folders
 	
-	for i = 1, #folders do
-		local folder = folders[i]
-		
+	local folders = path_info:GetFolders()
+	
+	-- when creating a folder the folder doesn't exist
+	-- so remove it
+	if remove_last then
+		table.remove(folders)
+	end
+	
+	for i, folder in ipairs(folders) do
 		if not next[folder] then
 			error("folder not found", 2)
 		end
 		
 		next = next[folder]
 	end
-	
+		
 	return next
 end
 
 function CONTEXT:CreateFolder(path_info)
-	local folder = get_folder(path_info)
-	folder[path_info.folder_name] = {
+	local folder = get_folder(path_info, true)
+	
+	print(path_info.folder_name)
+	
+	folder[path_info.folder_name] = folder[path_info.folder_name] or {
 		is_folder = true,
 	}
+	
+	event.DeferExecution(CONTEXT.VFSClosed, 0.5)
 end
 
 function CONTEXT:GetFiles(path_info)
 	local out = {}
 	
 	for file_name, var in pairs(get_folder(path_info)) do
-		if type(var) == "table" and var.is_file then
-			table.insert(out, file_name)
-		end
-	end
-	
-	return out
-end
-
-function CONTEXT:GetFolders(path_info)
-	local out = {}
-	
-	for file_name, var in pairs(get_folder(path_info)) do
-		if type(var) == "table" and var.is_folder then
+		if type(var) == "table" then
 			table.insert(out, file_name)
 		end
 	end
@@ -75,8 +71,7 @@ function CONTEXT:Open(path_info, mode, ...)
 	if self:GetMode() == "read" then
 		local folder = get_folder(path_info)
 		file = folder[path_info.file_name]
-		file.last_accessed = os.time()
-		
+		file.last_accessed = os.time()		
 	elseif self:GetMode() == "write" then
 		local folder = get_folder(path_info)
 		

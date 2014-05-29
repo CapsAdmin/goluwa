@@ -68,35 +68,40 @@ for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
 end
 
 do	
-	local function get_folders(self, typ)
+	local function get_folders(self, typ, keep_last)
 		if typ == "full" then
 			local folders = {}
+			
 			for i = 0, 100 do
 				local folder = vfs.GetParentFolder(self.full_path, i)
-				
+
 				if folder == "" then 
 					break
 				end
 				
 				table.insert(folders, 1, folder)
 			end
-			
-			table.remove(folders) -- remove the filename
-			
+
+			--table.remove(folders) -- remove the filename
+
 			return folders
 		else
 			local folders = self.full_path:explode("/")
-			
+
 			table.remove(folders) -- remove the filename
-			
+
 			return folders
 		end
 	end
 
-	function vfs.GetPathInfo(path)
+	function vfs.GetPathInfo(path, is_folder)
 		local out = {}
 
 		path = vfs.FixPath(path)
+		
+		if is_folder and not path:endswith("/") then
+			path = path .. "/"
+		end
 		
 		do
 			out.filesystem = path:match("^(.-):")
@@ -108,25 +113,10 @@ do
 			end
 		end
 			
-		do
-			out.file_name = path:match(".+/(.+)")
-			
-			-- path ends with /
-			if not out.file_name or out.file_name == "" then
-				out.file_name = nil
-				out.folder_name = path:match(".+/(.+)/")
-			end
-			
-			-- it's in root
-			if not out.folder_name then
-				out.file_name = path
-			end
-			
-			-- folder name is always filename
-			out.folder_name = out.file_name
-		end
-		
+		out.file_name = path:match(".+/(.*)") or path
+		out.folder_name = path:match(".+/(.+)/") or path:match(".+/(.+)") or path:match("(.+)/") or path
 		out.full_path = path
+		
 		out.GetFolders = get_folders
 				
 		return out
@@ -179,16 +169,20 @@ function vfs.CreateFolder(filesystem, folder)
 		error("unknown filesystem " .. filesystem, 2)
 	end
 	
-	context:CreateFolder(vfs.GetPathInfo(folder))
+	local path_info = vfs.GetPathInfo(folder, true)
+	
+	for i, folder in ipairs(path_info:GetFolders("full", true)) do
+		context:CreateFolder(vfs.GetPathInfo(folder))
+	end
 end
 
-function vfs.GetFiles(path)
-	local path_info = vfs.GetPathInfo(path)
+local function get_all(path, typ)
+	local path_info = vfs.GetPathInfo(path, true)
 	
 	local out = {}
 	
 	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
-		local ok, files = pcall(context.GetFiles, context, path_info)
+		local ok, files = pcall(context[typ], context, path_info)
 		
 		if vfs.debug and not ok then
 			vfs.DebugPrint("%s: error getting files: %s", filesystem, files)
@@ -196,7 +190,7 @@ function vfs.GetFiles(path)
 		
 		if ok then
 			for i, v in pairs(files) do
-				table.insert(out, v)
+				table.insert(out, {name = v, filesystem = filesystem})
 			end
 		end
 	end
@@ -204,18 +198,35 @@ function vfs.GetFiles(path)
 	return out
 end 
 
+function vfs.GetFiles(path)
+	return get_all(path, "GetFiles")
+end
+
+function vfs.GetFolders(path)
+	return get_all(path, "GetFolders")
+end
+
+if false then
+	local info = vfs.GetPathInfo("hello/yeah2", true)
+	table.print(info)
+	table.print(info:GetFolders())
+	table.print(info:GetFolders("all"))
+end
+
 vfs.debug = true
 
 local file = assert(vfs.Open("memory:lol.wav", "write"))
 print(file:Write("LOL"))
 
 local file = assert(vfs.Open("memory:lol.wav", "read"))
-print(file:ReadString()) 
+print(file:ReadString(3))
 
 vfs.CreateFolder("memory", "hello")
+vfs.CreateFolder("memory", "hello/yeah1")
+vfs.CreateFolder("memory", "hello/yeah2")
 local file = assert(vfs.Open("memory:hello/lol.wav", "write"))
-file:Write("hello")
+file:Write("hello") 
 
-table.print(vfs.GetFiles(""))  
-
-return vfs    
+table.print(vfs.GetFiles("hello")) 
+ 
+return vfs
