@@ -37,6 +37,20 @@ local function get_folder(path_info, remove_last)
 	return next
 end
 
+function CONTEXT:IsFile(path_info)
+	local folder = get_folder(path_info, true)
+	if folder and folder[path_info.file_name] and folder[path_info.file_name].is_file then
+		return true
+	end
+end
+
+function CONTEXT:IsFolder(path_info)
+	local folder = get_folder(path_info, true)
+	if folder and folder[path_info.folder_name] and folder[path_info.folder_name].is_folder then
+		return true
+	end
+end
+
 function CONTEXT:CreateFolder(path_info)
 	local folder = get_folder(path_info, true)
 		

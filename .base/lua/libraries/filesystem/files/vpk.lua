@@ -113,12 +113,12 @@ local function read_tree(file)
 
 				tree[#tree + 1] = entry
 			end
-			tree[#tree + 1] = {path = directory, is_dir = true}
+			tree[#tree + 1] = {path = directory, is_folder = true}
 			
 			for i = 0, 100 do
 				local dir = vfs.GetParentFolder(directory, i)
 				if dir == "" or done_directories[dir] then break end
-				tree[#tree + 1] = {path = dir:sub(0, -2), is_dir = true}
+				tree[#tree + 1] = {path = dir:sub(0, -2), is_folder = true}
 				done_directories[dir] = true
 			end
 		end
@@ -221,8 +221,28 @@ local function mount(path)
 	return vpk
 end
 
-function CONTEXT:CreateFolder(path_info)
+function CONTEXT:IsFile(path_info)
+	local vpk_path, relative = path_info.full_path:match("(.-%.vpk)/(.+)")
+	local vpk = mount(vpk_path)
 
+	if vpk.paths[relative] and vpk.paths[relative].is_file then
+		return true
+	end
+end
+
+function CONTEXT:IsFolder(path_info)
+	
+	-- vpk files are folders
+	if path_info.full_path:find("^.+%.vpk$") then
+		return true
+	end
+
+	local vpk_path, relative = path_info.full_path:match("(.-%.vpk)/(.+)")
+	local vpk = mount(vpk_path)
+
+	if vpk.paths[relative] and vpk.paths[relative].is_folder then
+		return true
+	end
 end
 
 function CONTEXT:GetFiles(path_info)
@@ -321,13 +341,5 @@ end
 function CONTEXT:GetSize()
 	return self.file_info.entry_length
 end
-
---[[function CONTEXT:GetLastModified()
-	return lfs.attributes(self.path).modification
-end
-
-function CONTEXT:GetLastAccessed()
-	return lfs.attributes(self.path).access
-end]]
 
 vfs.Register(CONTEXT)

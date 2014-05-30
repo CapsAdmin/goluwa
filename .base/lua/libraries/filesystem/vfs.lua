@@ -30,9 +30,24 @@ function vfs.DebugPrint(fmt, ...)
 	logn()
 end
 
+vfs.paths = vfs.paths or {}
+
 function vfs.Mount(where, to)
-	check(path, "string")
-	event.Call("VFSMount", path, true)
+	check(where, "string")
+	
+	local path_info_where = vfs.GetPathInfo(where, true)
+	local path_info_to = vfs.GetPathInfo(to, true)
+	
+	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
+		local ok, files = pcall(context.IsFolder, context, path_info_where)
+		
+		if vfs.debug and not ok then
+			vfs.DebugPrint("%s: error getting files: %s", filesystem, files)
+		end
+		if ok then 
+			table.insert(vfs.mounted_paths, {where = where, to = to})
+		end
+	end	
 end
 	
 function vfs.Unmount(path)
@@ -62,9 +77,11 @@ include("base_file.lua", vfs)
 include("files/*", vfs)
 
 for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
+	vfs.mounted_paths = {}
+	
 	if context.VFSOpened then 
 		context:VFSOpened()
-	end
+	end	
 end
 
 do	
@@ -239,5 +256,7 @@ table.print(vfs.GetFiles("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengin
 
 local snd = audio.CreateSource(audio.Decode(file:ReadAll()))  
 table.print(snd.decode_info)
+
+vfs.Mount("G:/SteamLibrary/SteamApps/Common/", "")
 
 return vfs

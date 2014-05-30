@@ -10,7 +10,11 @@ function META:GetFiles()
 	error("not implemented")
 end
 
-function META:GetFolders()
+function META:IsFile()
+	error("not implemented")
+end
+
+function META:IsFolder()
 	error("not implemented")
 end
 
