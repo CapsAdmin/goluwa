@@ -269,7 +269,7 @@ function console.InitializeCurses()
 			end
 			
 			console.SyntaxPrint(str, c.log_window)
-			console.ScrollLogHistory(-1) 
+			console.ScrollLogHistory(0) 
 			
 			curses.wrefresh(c.log_window)
 		end
