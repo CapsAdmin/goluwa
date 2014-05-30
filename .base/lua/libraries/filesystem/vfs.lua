@@ -30,29 +30,40 @@ function vfs.DebugPrint(fmt, ...)
 	logn()
 end
 
-vfs.paths = vfs.paths or {}
-
 function vfs.Mount(where, to)
 	check(where, "string")
+	to = to or ""
+
+	vfs.Unmount(where, to)
 	
-	local path_info_where = vfs.GetPathInfo(where, true)
+	local path_info_where = vfs.GetPathInfo(where, true) 
 	local path_info_to = vfs.GetPathInfo(to, true)
 	
 	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
-		local ok, files = pcall(context.IsFolder, context, path_info_where)
+		context.mounted_paths = context.mounted_paths or {}
 		
-		if vfs.debug and not ok then
-			vfs.DebugPrint("%s: error getting files: %s", filesystem, files)
+		if path_info_where.filesystem == filesystem or path_info_where.filesystem == "unknown" then
+			table.insert(context.mounted_paths, {where = path_info_where, to = path_info_to, full_where = where, full_to = to})
 		end
-		if ok then 
-			table.insert(vfs.mounted_paths, {where = where, to = to})
-		end
-	end	
+	end
 end
 	
-function vfs.Unmount(path)
-	check(path, "table", "string")
-	event.Call("VFSMount", path, false)
+function vfs.Unmount(where, to)
+	check(where, "string")
+	to = to or ""
+
+	local path_info_where = vfs.GetPathInfo(where, true) 
+	local path_info_to = vfs.GetPathInfo(to, true)
+	
+	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
+		context.mounted_paths = context.mounted_paths or {}		
+		for i, v in ipairs(context.mounted_paths) do
+			if v.full_where == where and v.full_to == to and path_info_where == filesystem or path_info_where.filesystem == "unknown" then
+				table.remove(context.mounted_paths)
+				break
+			end
+		end
+	end
 end
 
 function vfs.GetMounts()
@@ -119,15 +130,13 @@ do
 		if is_folder and not path:endswith("/") then
 			path = path .. "/"
 		end
+	
+		out.filesystem = path:match("^(.-):")
 		
-		do
-			out.filesystem = path:match("^(.-):")
-			
-			if vfs.GetRegisteredFileSystems()[out.filesystem] then
-				path = path:gsub("^(.-:)", "")
-			else
-				out.filesystem = "unknown"
-			end
+		if vfs.GetRegisteredFileSystems()[out.filesystem] then
+			path = path:gsub("^(.-:)", "")
+		else
+			out.filesystem = "unknown"
 		end
 			
 		out.file_name = path:match(".+/(.*)") or path
@@ -137,6 +146,19 @@ do
 		out.GetFolders = get_folders
 				
 		return out
+	end
+	
+	function vfs.PrependPathInfo(path_info_a, path_info_b)
+	
+		if path_info_a.full_path == "" then
+			return path_info_b
+		end
+	
+		local path = vfs.FixPath(path_info_a.full_path .. path_info_b.full_path)
+		path_info_b.full_path = path
+		path_info_b.folder_name = path:match(".+/(.+)/") or path:match(".+/(.+)") or path:match("(.+)/") or path
+		
+		return path_info_b
 	end
 end
 
@@ -193,38 +215,50 @@ function vfs.CreateFolder(filesystem, folder)
 	end
 end
 
-local function get_all(path, info, full_path)
-	local path_info = vfs.GetPathInfo(path, true)
-	
+local function get_files(context, path_info) 
 	local out = {}
-	
-	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
-		local ok, files = pcall(context.GetFiles, context, path_info)
+			
+	for i, mount_info in ipairs(context.mounted_paths) do
+		local ok, files = pcall(context.GetFiles, context, vfs.PrependPathInfo(mount_info.where, path_info))
 		
 		if vfs.debug and not ok then
 			vfs.DebugPrint("%s: error getting files: %s", filesystem, files)
 		end
 		
-		if ok then
-			for i, v in pairs(files) do
-				if full_path then
-					v = path .. v
-				end
-				if info then
-					table.insert(out, {name = v, filesystem = filesystem})
-				else
-					table.insert(out, v)
-				end
+		if ok then	
+			for k,v in pairs(files) do 
+				table.insert(out, v)
+			end
+		end
+	end	
+	
+	return out
+end
+
+function vfs.GetFiles(path, info, full_path)
+	local path_info = vfs.GetPathInfo(path, true)
+	
+	local out = {}
+	
+	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
+		local files = get_files(context, path_info)
+	
+		for i, v in pairs(files) do
+			if full_path then
+				v = path .. v
+			end
+			if info then
+				table.insert(out, {name = v, filesystem = filesystem})
+			else
+				table.insert(out, v)
 			end
 		end
 	end
 	
 	return out
-end 
-
-function vfs.GetFiles(path)
-	return get_all(path)
 end
+
+vfs.Mount("", "")
 
 if false then
 	local info = vfs.GetPathInfo("hello/yeah2", true)
@@ -247,8 +281,8 @@ vfs.CreateFolder("memory", "hello/yeah2")
 local file = assert(vfs.Open("memory:hello/lol.wav", "write"))
 file:Write("hello") 
 
-table.print(vfs.GetFiles("hello"))
-table.print(vfs.GetFiles("."))
+table.print(vfs.GetFiles("hello/"))
+---table.print(vfs.GetFiles("."))
 
 local file = vfs.Open("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/npc/male01/abouttime02.wav")
 
@@ -257,6 +291,8 @@ table.print(vfs.GetFiles("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengin
 local snd = audio.CreateSource(audio.Decode(file:ReadAll()))  
 table.print(snd.decode_info)
 
-vfs.Mount("G:/SteamLibrary/SteamApps/Common/", "")
+vfs.Mount("G:/SteamLibrary/SteamApps/Common/", "hello/")
+
+table.print(vfs.GetFiles("hello"))
 
 return vfs
