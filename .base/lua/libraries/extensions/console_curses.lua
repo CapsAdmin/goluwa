@@ -10,20 +10,7 @@ markup:SetFixedSize(14)
 
 local history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt")
 
-local USE_COLORS = LINUX
-
-local A_DIM = 2 ^ 12
-local A_BOLD = 2 ^ 13
-local A_STANDOUT = 2 ^ 8
-
-local COLOR_BLACK = 0
-local COLOR_RED = 1
-local COLOR_GREEN = 2
-local COLOR_YELLOW = 3
-local COLOR_BLUE = 4
-local COLOR_MAGENTA = 5
-local COLOR_CYAN = 6
-local COLOR_WHITE = 7
+local USE_COLORS = true
 
 local COLORPAIR_STATUS = 9
 
@@ -91,8 +78,9 @@ function console.InitializeCurses()
 		
 		for i = 1, math.huge do
 			local byte = curses.wgetch(c.input_window)
+			
 			if byte > 0 and byte < 255 then
-				key[i] = string.char(byte)
+				key[i] = utf8.char(byte)
 			else
 				if byte > 255 then
 					key = ffi.string(curses.keyname(byte))
@@ -102,20 +90,22 @@ function console.InitializeCurses()
 				break
 			end
 		end
-				
-		key = char_translate[key] or char_translate[key:byte()] or key
-
-		markup:SetControlDown(key:find("CTL_") ~= nil)
-		markup:SetShiftDown(key:find("KEY_S") ~= nil)
-	
-		if (key:find("KEY_") or key:find("CTL_") or key:find("PAD")) and event.Call("ConsoleKeyInput", key) ~= false then									
-			console.HandleKey(key)		
-		elseif event.Call("ConsoleCharInput", key) ~= false then
-			console.HandleChar(key)
-		end
 		
-		curses.wmove(c.input_window, 0, math.max(markup:GetCaretSubPos()-1, 0))
-		console.ClearInput(markup:GetText())
+		if #key > 0 then				
+			key = char_translate[key] or char_translate[key:byte()] or key
+
+			markup:SetControlDown(key:find("CTL_") ~= nil)
+			markup:SetShiftDown(key:find("KEY_S") ~= nil)
+		
+			if (key:find("KEY_") or key:find("CTL_") or key:find("PAD")) and event.Call("ConsoleKeyInput", key) ~= false then									
+				console.HandleKey(key)		
+			elseif event.Call("ConsoleCharInput", key) ~= false then
+				console.HandleChar(key)
+			end
+			
+			curses.wmove(c.input_window, 0, math.max(markup:GetCaretSubPos()-1, 0))
+			console.ClearInput(markup:GetText())
+		end
 	end)
 	 
 	do -- input extensions
@@ -142,11 +132,11 @@ function console.InitializeCurses()
 		end)
 	end
 	
-	if not console.curses_init then
-		curses.freeconsole()
-	
-		c.parent_window = curses.initscr()
-	end
+	if console.curses_init then	return end
+
+	curses.freeconsole()
+
+	c.parent_window = curses.initscr()
 	
 	if WINDOWS then
 		curses.resize_term(50,150)  
@@ -168,12 +158,23 @@ function console.InitializeCurses()
 	if USE_COLORS then			
 		curses.start_color()
 		curses.use_default_colors()
+	
+		--[[if CAPS then
+			for i = 1, 256 do
+				local r = bit.rshift(i, 5)
+				local g = bit.band(bit.rshift(i, 2), 8)
+				local b = bit.band(i, 8)
+				
+				curses.init_color(i-1, r, g, b)
+				curses.init_pair(i, i - 1, -1)
+			end
+		else]]
+			for i = 1, 8 do
+				curses.init_pair(i, i - 1, -1)
+			end
+		--end
 
-		for i = 1, 8 do
-			curses.init_pair(i, i - 1, -1)
-		end
-
-		curses.init_pair(COLORPAIR_STATUS, COLOR_RED, COLOR_WHITE + A_DIM * 2 ^ 8)
+		curses.init_pair(COLORPAIR_STATUS, curses.COLOR_RED, curses.COLOR_WHITE + curses.A_DIM * 2 ^ 8)
 	end
 
 	-- replace some functions
@@ -234,6 +235,7 @@ function console.InitializeCurses()
 		local max_length = 256
 		
 		local function fix(str)
+			do return str end
 			if WINDOWS and #str > max_length then
 				for k,v in pairs(split_by_length(str, max_length)) do
 					for line in v:gmatch("(.-)\n") do
@@ -267,7 +269,7 @@ function console.InitializeCurses()
 			if not debug.debugging then 
 				table.insert(console.history, str)
 			end
-			
+				
 			console.SyntaxPrint(str, c.log_window)
 			console.ScrollLogHistory(0) 
 			
@@ -295,25 +297,134 @@ function console.ShutdownCurses()
 	end
 end
 
+
+local function get_color(r, g, b)
+	r = ffi.cast("chtype", r)
+	g = ffi.cast("chtype", g)
+	b = ffi.cast("chtype", b)
+	return curses.COLOR_PAIR(16ULL + r / 48ULL * 36ULL + g / 48ULL * 6ULL + b / 48ULL)
+end
+
+
 function console.ColorPrint(str, i, window)
 	window = window or c.log_window
-	
+
 	local attr = curses.COLOR_PAIR(i)
 	if USE_COLORS then curses.wattron(window, attr) end
 	curses.waddstr(window, str)
 	if USE_COLORS then curses.wattroff(window, attr) end
 end
 
-local syntax = include("libraries/syntax.lua")
+do
+	local syntax = _G.syntax or {}
 
-function console.SyntaxPrint(str, window)
-	window = window or c.log_window
-	
-	local tokens = syntax.process(str)
+	syntax.DEFAULT    = 1
+	syntax.KEYWORD    = 2
+	syntax.IDENTIFIER = 3
+	syntax.STRING     = 4
+	syntax.NUMBER     = 5
+	syntax.OPERATOR   = 6
 
-	for i = 1, #tokens / 2 do
-		local color, str = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
-		console.ColorPrint(str, color + 1, window)
+	syntax.patterns = {
+		[2]  = "[%a_][%w_]*",
+		[1]  = "\".-\"",
+		[4]  = "0x[a-fA-F0-9]+",
+		[5]  = "[%d]+%.?%d*e?%d*",
+		[6]  = "[%+%-%*/%%%(%)%.,<>=:;{}%[%]]",
+		[7]  = "//[^\n]*",
+		[8]  = "/%*.-%*/",
+		[9]  = "%-%-[^%[][^\n]*",
+		[10] = "%-%-%[%[.-%]%]",
+		[11] = "%[=-%[.-%]=-%]",
+		[12] = "'.-'"
+	}
+
+	local COLOR_DEFAULT = -1
+
+	syntax.colors = {
+		curses.COLOR_RED,  --Color(255, 255, 255),
+		curses.COLOR_CYAN, --Color(127, 159, 191),
+		COLOR_DEFAULT, --Color(223, 223, 223),
+		curses.COLOR_GREEN, --Color(191, 127, 127),
+		curses.COLOR_GREEN, --Color(127, 191, 127),
+		curses.COLOR_YELLOW, --Color(191, 191, 159),
+		COLOR_DEFAULT, --Color(159, 159, 159),
+		COLOR_DEFAULT, --Color(159, 159, 159),
+		COLOR_DEFAULT, --Color(159, 159, 159),
+		COLOR_DEFAULT, --Color(159, 159, 159),
+		curses.COLOR_YELLOW, --Color(191, 159, 127),
+		curses.COLOR_RED, --Color(191, 127, 127),
+	}
+
+	syntax.keywords = {
+		["local"]    = true,
+		["function"] = true,
+		["return"]   = true,
+		["break"]    = true,
+		["continue"] = true,
+		["end"]      = true,
+		["if"]       = true,
+		["not"]      = true,
+		["while"]    = true,
+		["for"]      = true,
+		["repeat"]   = true,
+		["until"]    = true,
+		["do"]       = true,
+		["then"]     = true,
+		["true"]     = true,
+		["false"]    = true,
+		["nil"]      = true,
+		["in"]       = true
+	}
+
+	function syntax.process(code)
+		local output, finds, types, a, b, c = {}, {}, {}, 0, 0, 0
+
+		finds[1] = 0
+
+		while b < #code do
+			local temp = {}
+
+			for k, v in pairs(syntax.patterns) do
+				local aa, bb = code:find(v, b + 1)
+				if aa then temp[#temp+1] = {k, aa, bb} end
+			end
+
+			if #temp == 0 then
+				temp[#temp+1] = {1, b + 1, #code}
+			end
+
+			table.sort(temp, function(a, b) return (a[2] == b[2]) and (a[3] > b[3]) or (a[2] < b[2]) end)
+			c, a, b = unpack(temp[1])
+
+			finds[#finds+1] = a
+			finds[#finds+1] = b
+
+			types[#types+1] = c == 2 and (syntax.keywords[code:sub(a, b)] and 2 or 3) or c
+		end
+
+		finds[#finds + 1] = #code + 1
+
+		for i = 1, #finds - 1 do
+			local asdf = i % 2
+			local sub = code:sub(finds[i + 0] + asdf, finds[i + 1] - asdf)
+
+			output[#output+1] = asdf == 0 and syntax.colors[types[1 + (i - 2) / 2]] or -1
+			output[#output+1] = sub
+		end
+
+		return output
+	end
+
+	function console.SyntaxPrint(str, window)
+		window = window or c.log_window
+		
+		local tokens = syntax.process(str)
+
+		for i = 1, #tokens / 2 do
+			local color, str = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
+			console.ColorPrint(str, color + 1, window)
+		end
 	end
 end
 
@@ -334,7 +445,7 @@ function console.ScrollLogHistory(offset)
 	for i = 1, lines  do
 		local str = console.history[i + console.scroll_log_history] or ""
 		
-		curses.wprintw(c.log_window, str)
+		console.SyntaxPrint(str)
 	end
 	
 	curses.wrefresh(c.log_window)
