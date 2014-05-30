@@ -302,7 +302,7 @@ function debug.stepin()
 			if key == "KEY_SPACE" then
 				debug.debugging = false
 				debug.sethook()
-				console.Scroll(1)
+				console.ScrollLogHistory(1)
 				break
 			elseif key == "KEY_ENTER" then
 				curinfo = nil

@@ -105,7 +105,7 @@ function render.Initialize()
 	end
 	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
-	system.SetWindowTitle("OpenGL " .. render.GetVersion(), "glversion")
+	console.SetTitle("OpenGL " .. render.GetVersion(), "glversion")
 	
 	include("libraries/graphics/render/shader_builder.lua", render)
 	

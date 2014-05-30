@@ -20,14 +20,14 @@ local function calc_fps(dt)
 		count = count + 1
 	end
 
-	system.SetWindowTitle(("FPS: %i"):format(avg_fps), "fps")
+	console.SetTitle(("FPS: %i"):format(avg_fps), "fps")
 	
 	if utilities and utilities.FormatFileSize then
-		system.SetWindowTitle(("GARBAGE: %s"):format(utilities.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
+		console.SetTitle(("GARBAGE: %s"):format(utilities.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
 	end
 
 	if gl and gl.call_count then
-		system.SetWindowTitle(("gl calls: %i"):format(gl.call_count), "glcalls")
+		console.SetTitle(("gl calls: %i"):format(gl.call_count), "glcalls")
 		gl.call_count = 0
 	end
 end

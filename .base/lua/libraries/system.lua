@@ -116,62 +116,6 @@ do -- message box
 	system.MessageBox = set
 end
 
-do -- title
-	local set_title
-	if WINDOWS then
-		ffi.cdef("int SetConsoleTitleA(const char* blah);")
-
-		set_title = function(str)
-			return ffi.C.SetConsoleTitleA(str)
-		end
-	end
-
-	if LINUX then
-		local iowrite = _OLD_G.io.write
-		set_title = function(str)
-			console.ClearStatus(str)
-			return iowrite and iowrite('\27]0;', str, '\7') or nil
-		end
-	end
-	
-	system.SetWindowTitleRaw = set_title
-	
-	local titles = {}
-	local str = ""
-	local last = 0
-	local last_title
-	
-	local lasttbl = {}
-	
-	function system.SetWindowTitle(title, id)
-		local time = os.clock()
-		
-		if not lasttbl[id] or lasttbl[id] < time then
-			if id then
-				titles[id] = title
-				str = "| "
-				for k,v in pairs(titles) do
-					str = str ..  v .. " | "
-				end
-				if str ~= last_title then
-					system.SetWindowTitleRaw(str)
-				end
-			else
-				str = title
-				if str ~= last_title then
-					system.SetWindowTitleRaw(title)
-				end
-			end
-			last_title = str
-			lasttbl[id] = os.clock() + 0.05
-		end
-	end
-	
-	function system.GetWindowTitle()
-		return str
-	end
-end
-
 do -- cursor
 	local set = not_implemented
 	local get = not_implemented
