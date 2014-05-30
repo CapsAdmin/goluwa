@@ -21,6 +21,16 @@ function CONTEXT:GetFiles(path_info)
 	return out
 end
 
+function CONTEXT:IsFile(path_info)
+	local info = lfs.attributes(path_info.full_path)
+	return info and info.mode ~= "directory"
+end
+
+function CONTEXT:IsFolder(path_info)
+	local info = lfs.attributes(path_info.full_path)
+	return info and info.mode == "directory"
+end
+
 -- if CONTEXT:Open errors the virtual file system will assume 
 -- the file doesn't exist and will go to the next mounted context
 
