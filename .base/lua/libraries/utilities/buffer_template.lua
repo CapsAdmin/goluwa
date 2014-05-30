@@ -82,16 +82,14 @@ local function ADD_FFI_OPTIMIZED_TYPE(META, typ)
 		
 	local size = ffi.sizeof(typ:lower() == "longlong" and "long long" or typ:lower())
 	
-	local read_unroll = ""
+	local read_unroll = "local chars = ffi.cast('char *', self:ReadBytes(" .. size .. "))"
 	for i = 1, size do
-		read_unroll = read_unroll .. "\tbuff.chars[" .. i-1 .. "] = self:ReadByte()\n"
-	end		
+		read_unroll = read_unroll .. "\tbuff.chars[" .. i-1 .. "] = chars[" .. i-1 .. "]\n"
+	end
 	template = template:gsub("@READ_BYTES@", read_unroll)
 	
 	local write_unroll = ""
-	for i = 1, size do
-		write_unroll = write_unroll .. "\tself:WriteByte(buff.chars[" .. i-1 .. "])\n"
-	end		
+	write_unroll = write_unroll .. "\tself:WriteBytes(ffi.string(buff.chars, "..size.."))\n"
 	template = template:gsub("@WRITE_BYTES@", write_unroll)
 	
 	local func = loadstring(template)
@@ -115,222 +113,50 @@ function utilities.BufferTemplate(META)
 		ADD_FFI_OPTIMIZED_TYPE(META, "Short")	
 		ADD_FFI_OPTIMIZED_TYPE(META, "Long")	
 		ADD_FFI_OPTIMIZED_TYPE(META, "LongLong")
+		
+		function META:WriteBytes(str)
+			for i = 1, #str do
+				self:WriteByte(str:byte(i))
+			end
+			return self
+		end
+		
+		function META:ReadBytes(bytes)
+			local out = {}
+			for i = 1, bytes do
+				table.insert(out, self:ReadByte())
+			end
+			return table.concat(out)
+		end
+		
+		-- string
+		function META:WriteString(str)	
+			self:WriteBytes(str)
+			self:WriteByte(0)
+			return self
+		end
+
+		function META:ReadString(length)
+		
+			if length then
+				return self:ReadBytes(length)
+			end
+			
+			local str = {}
+			
+			for i = 1, length or self:GetSize() do
+				local byte = self:ReadByte()
+				if not byte or byte == 0 then break end
+				table.insert(str, string.char(byte))
+			end
+			
+			return table.concat(str)
+		end
+	end
+
+	do -- extended	
 	
-		--[==[
-		-- short
-		function META:WriteShort(short)
-			self:WriteByte(bit.band(short, 0xFF))
-			self:WriteByte(bit.band(bit.rshift(short, 8), 0xFF))
-			return self
-		end
-
-		function META:ReadShort()
-			local b1, b2 = self:ReadByte(), self:ReadByte()
-			if not b1 or not b2 then return end
-			return b1 + bit.lshift(b2, 8)  
-		end
-		
-		-- long
-		function META:WriteLong(int)	
-			self:WriteShort(bit.band(int, 0xFFFF))
-			self:WriteShort(bit.band(bit.rshift(int, 16), 0xFFFF))
-			return self
-		end
-
-		function META:ReadLong()
-			local s1, s2 = self:ReadShort(), self:ReadShort()
-			if not s1 or not s2 then return end
-			return s1 + bit.lshift(s2, 16)
-		end
-		
-		-- float
-		function META:WriteFloat(value)
-		-- ieee 754 binary32
-		-- 33222222 22221111 111111
-		-- 10987654 32109876 54321098 76543210
-		-- seeeeeee emmmmmmm mmmmmmmm mmmmmmmm
-			if value==0.0 then
-				self:WriteByte(0)
-				self:WriteByte(0)
-				self:WriteByte(0)
-				self:WriteByte(0)
-				return
-			end
-
-			local signBit=0
-			if value<0 then
-				signBit=128 -- shifted left to appropriate position 
-				value=-value
-			end
-			
-			local m,e=math.frexp(value) 
-			m=m*2-1
-			e=e-1+127
-			e=math.min(math.max(0,e),255)
-			
-			-- sign and 7 bits of exponent
-			self:WriteByte(bit.bor(signBit,bit.band(bit.rshift(e,1),127)))
-			
-			-- first 7 bits of mantissa
-			m=m*128
-			-- write last bit of exponent and first 7 of mantissa
-			self:WriteByte(bit.bor(bit.band(bit.lshift(e,7),255),bit.band(m,127)))
-			-- get rid of written bits and shift for next 8
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-			
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))	
-			return self
-		end
-
-		function META:ReadFloat()
-			local b=self:ReadByte()
-			local sign=1
-			if b>=128 then 
-				sign=-1
-				b=b-128
-			end
-			local exponent=b*2
-			b=self:ReadByte()
-			exponent=exponent+bit.band(bit.rshift(b,7),1)-127
-			local mantissa=bit.band(b,127)/128
-			
-			b=self:ReadByte()
-			mantissa=mantissa+b/128/256
-			b=self:ReadByte()
-			mantissa=mantissa+b/128/65536
-			if mantissa==0.0 and exponent==-127 then return 0.0
-			else return (mantissa+1.0)*math.pow(2,exponent)*sign end
-		end
-		
-		-- double
-		function META:WriteDouble(value)
-		-- ieee 754 binary64
-		-- 66665555 55555544 44444444 33333333 33222222 22221111 111111
-		-- 32109876 54321098 76543210 98765432 10987654 32109876 54321098 76543210
-		-- seeeeeee eeeemmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm
-			if value==0.0 then
-				for i = 1, 8 do
-					self:WriteByte(0)
-				end
-				return
-			end
-
-			local signBit=0
-			
-			if value<0 then
-				signBit=128 -- shifted left to appropriate position 
-				value=-value
-			end
-			
-			local m,e=math.frexp(value) 
-			m=m*2-1 -- m in [0.5,1.0), multiply by 2 will get it to [1.0,2.0) giving the implicit first bit in mantissa, -1 to get rid of that
-			e=e-1+1023 -- adjust for the *2 on previous line and 1023 is the exponent zero offset
-			
-			-- sign and 7 bits of exponent
-			self:WriteByte(bit.bor(signBit,bit.band(bit.rshift(e,4),127)))
-			
-			-- first 4 bits of mantissa
-			m=m*16
-			
-			-- write last 4 bits of exponent and first 4 of mantissa
-			self:WriteByte(bit.bor(bit.band(bit.lshift(e,4),255),bit.band(m,15)))
-			
-			-- get rid of written bits and shift for next 8
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-			
-			-- repeat for rest of mantissa
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-			
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-			
-			return self
-		end
-
-		function META:ReadDouble()
-			local b = self:ReadByte()
-			if not b then return end
-			local sign = 1
-			
-			if b >= 128 then 
-				sign =- 1
-				b = b - 128
-			end
-			
-			local exponent = b*16
-			b = self:ReadByte()
-			if not b then return end
-			exponent = exponent+bit.band(bit.rshift(b,4),15)-1023
-			local mantissa=bit.band(b,15)/16
-			
-			b = self:ReadByte()
-			if not b then return end
-			mantissa = mantissa+b/16/256
-			b = self:ReadByte()
-			if not b then return end
-			mantissa = mantissa+b/16/65536
-			b = self:ReadByte()
-			if not b then return end
-			mantissa = mantissa+b/16/65536/256
-			b = self:ReadByte()
-			if not b then return end
-			mantissa = mantissa+b/16/65536/65536
-			b = self:ReadByte()
-			if not b then return end
-			mantissa = mantissa+b/16/65536/65536/256
-			b = self:ReadByte()
-			if not b then return end
-			mantissa = mantissa+b/16/65536/65536/65536
-			
-			if mantissa==0.0 and exponent==-1023 then 
-				return 0.0
-			else 
-				return (mantissa+1.0)*math.pow(2,exponent)*sign 
-			end
-		end
-		
-		ffi.cdef [[
-		  typedef union {
-			uint32_t longs[2];
-			uint64_t longlong;
-		  } ll_buffer_int64;
-		]]
-
-		local btl = ffi.typeof("ll_buffer_int64")
-		local data = btl()
-		
-		--long long
-		function META:WriteLongLong(longlong)
-			data.longlong = longlong
-			self:WriteLong(data.longs[0])
-			self:WriteLong(data.longs[1])
-			return self
-		end
-		
-		function META:ReadLongLong()
-			local l1, l2 = self:ReadLong(), self:ReadLong()
-			if not l1 or not l2 then return end
-			local buffer = btl()
-			buffer.longs[0] = l1
-			buffer.longs[1] = l2
-			return buffer.longlong
-		end
-		]==]
-		
-		-- half
+		-- half precision (2 bytes)
 		function META:WriteHalf(value)
 		-- ieee 754 binary16
 		-- 111111
@@ -379,31 +205,10 @@ function utilities.BufferTemplate(META)
 			else return (mantissa+1.0)*math.pow(2,exponent)*sign end
 		end
 		
-		-- string
-		function META:WriteString(str)	
-			for i = 1, #str do
-				self:WriteByte(str:byte(i))
-			end
-			self:WriteByte(0)
-			return self
+		function META:ReadAll()
+			return self:ReadBytes(self:GetSize())
 		end
-
-		function META:ReadString(length)
-			local str = {}
-			
-			for i = 1, length or self:GetSize() do
-				local byte = self:ReadByte()
-				if not byte then break end
-				if not length and byte == 0 then break end
-				table.insert(str, string.char(byte))
-			end
-			
-			return table.concat(str)
-		end
-	end
-
-	do -- extended
-
+	
 		-- boolean
 		function META:WriteBoolean(b)
 			self:WriteByte(b and 1 or 0)
@@ -466,13 +271,6 @@ function utilities.BufferTemplate(META)
 		-- integer/long
 		META.WriteInt = META.WriteLong
 		META.ReadInt = META.ReadLong
-		
-		function META:WriteBytes(str)
-			for i = 1, #str do
-				self:WriteByte(str:byte(i))
-			end
-			return self
-		end
 	end
 
 	do -- structures
