@@ -44,4 +44,24 @@ do -- server time (synchronized across client and server)
 	end
 end
 
+do -- profile
+	local stack = {}
+
+	function timer.Start(str)
+		table.insert(stack, {str = str, time = timer.GetSystemTime()})
+	end
+	
+	function timer.Stop(no_print)
+		local time = timer.GetSystemTime()
+		local data = table.remove(stack)
+		local delta = time - data.time
+		
+		if not no_print then
+			logf("%s: %s\n", data.str, math.round(delta, 3))
+		end
+		
+		return delta
+	end
+end
+
 return timer
