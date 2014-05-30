@@ -192,148 +192,142 @@ local function read_vpk_dir(path)
 	return self, "Success"
 end
  
---[[local data = read_vpk_dir("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk")
-local _, data = next(data.tree)
+local vfs = (...) or _G.vfs
 
-table.print(data)
+local CONTEXT = {}
 
-local file = io.open(("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_%03d.vpk"):format(data.archive_index), "rb")
-file:seek("set", data.entry_offset)
-local buffer = file:read(data.entry_length)
+CONTEXT.Name = "vpk"
 
-local snd = audio.CreateSource(audio.Decode(buffer))
-snd:Play()
+local mounted = {}
 
-table.print(snd.decode_info)
-
-io.close(file)]]
-
-event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
-	
-	if ext == "vpk" then
-		
-		if mount then
-			local vpk, err = read_vpk_dir(path)
-			
-			if not vpk then logn(err) return end
-			
-			local base_info = lfs.attributes(path)
-			local exists = {}
-			
-			local files = {}
-			
-			for k,v in pairs(vpk.tree) do
-				if v.is_file then
-					v.archive_path = path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(v.archive_index) end)
-				end
-				exists[v.path] = v
-			end
-			  
-			vfs.Mount({
-				id = path, 
-				root = path,
-				callback = function(type, a, b, c, d, ...)  	
-					
-					if vfs.debug then print("[vfs] vpk callback: ", type, a, b, c, d, ...) end
-					
-					if type == "attributes" then
-						local path = a:match(".+%.vpk/(.+)") or a
-						
-						if exists[path] then
-							local info = exists[path]
-							local out = {}
-							table.merge(out, base_info)
-							
-							out.mode = info.is_file and "file" or info.is_dir and "directory"
-							out.size = info.entry_length or 0
-							
-							return out
-						end
-					elseif type == "find" then
-						local path = a:match(".+%.vpk/(.+)") or a
-						
-						path = path .. "/"
-						
-						local out = {}
-	
-						if path:sub(-1) == "/" then
-							path = path .. "."
-						end
-						
-						local dir = path:match("(.+)/")
-
-						for k, v in pairs(vpk.tree) do
-							if v.path:find(path) and v.path:match("(.+)/") == dir then
-								table.insert(out, v.path:match(".+/(.+)") or v.path)
-							end 
-						end
-						
-						return out
-					elseif type == "file" then
-						local type = a
-						
-						if type == "open" then
-							local path = b:match(".+%.vpk/(.+)") or b							
-							local data = exists[path]
-							
-							if not data then
-								return false, "File does not exist"
-							end
-							
-							local file = io.open(data.archive_path, "rb")
-							file:seek("set", data.entry_offset)
-							 
-							return {data = data, file = file, position = 0}
-						elseif type == "seek" then
-							local handle = b
-							local whence = c or "cur"
-							local offset = d or 0
-							
-							if whence == "set" then
-								handle.position = math.clamp(offset, 0, handle.data.entry_length)
-							elseif whence == "cur" then
-								handle.position = math.clamp(handle.position + offset, 0, handle.data.entry_length)
-							elseif whence == "end" then
-								handle.position = handle.data.entry_length
-							end
-							
-							return handle.position
-						elseif type == "read" then
-							local handle = b
-							local type = c
-							local bytes = d
-
-							if type == "bytes" then							
-								bytes = math.min(bytes, handle.data.entry_length - handle.position)
-												
-								handle.file:seek("set", handle.data.entry_offset + handle.position)
-								local content = handle.file:read(bytes)
-								
-								handle.position = math.clamp(handle.position + bytes, 0, handle.data.entry_length)
-								
-								if content ==  "" then content = nil end
-								
-								return content
-							end
-							
-							-- WIP
-							-- otherwise just read everything.. 
-							handle.position = handle.data.entry_offset
-							return handle.file:read(handle.data.entry_length)
-						elseif type == "close" then
-							local handle = b
-							
-							handle.file:close()
-						end
-					end
-				end 
-			})
-		else
-			vfs.Unmount({id = path})
-			for k,v in pairs(files) do
-				io.close(v)
-			end
-		end
-		return true
+local function mount(path)
+	if mounted[path] then
+		return mounted[path]
 	end
-end)
+	
+	local vpk = assert(read_vpk_dir(path))
+
+	vpk.paths = {}
+
+	for k,v in pairs(vpk.tree) do
+		if v.is_file then
+			v.archive_path = path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(v.archive_index) end)
+		end
+		vpk.paths[v.path] = v
+	end
+	
+	mounted[path] = vpk
+	
+	return vpk
+end
+
+function CONTEXT:CreateFolder(path_info)
+
+end
+
+function CONTEXT:GetFiles(path_info)
+	
+	local out = {}
+	
+	local vpk_path, relative = path_info.full_path:match("(.-%.vpk)/(.+)")
+	
+	if vpk_path then
+		local vpk = mount(vpk_path)
+		
+		relative = relative .. "."
+		
+		local dir = relative:match("(.+)/")
+		
+		for k, v in pairs(vpk.tree) do
+			if v.path:find(relative) and v.path:match("(.+)/") == dir then
+				table.insert(out, v.path:match(".+/(.+)") or v.path)
+			end 
+		end
+	end
+	
+	return out
+end
+
+function CONTEXT:Open(path_info, mode, ...)	
+	local vpk_path, relative = path_info.full_path:match("(.-%.vpk)/(.+)")
+	local vpk = mount(vpk_path)
+	
+	local file
+		
+	if self:GetMode() == "read" then
+		local file_info = vpk.paths[relative]
+		local file = assert(io.open(file_info.archive_path, "rb"))
+		file:seek("set", file_info.entry_offset)		
+		
+		self.file = file
+		self.position = 0
+		self.file_info = file_info
+	elseif self:GetMode() == "write" then
+		error("not implemented")
+	end
+end
+
+function CONTEXT:Write(str)
+	return self.file:write(str)
+end
+
+function CONTEXT:Read(bytes)
+	return self.file:read(bytes)
+end
+
+function CONTEXT:WriteByte(byte)
+	self:Write(string.char(byte))
+end
+
+function CONTEXT:ReadByte()					
+	self.file:seek("set", self.file_info.entry_offset + self.position)
+	local char = self.file:read(1)	
+	self.position = math.clamp(self.position + 1, 0, self.file_info.entry_length)
+	
+	return char and char:byte() or nil
+end
+
+function CONTEXT:WriteBytes(str)
+	return self.file:write(str)
+end
+
+function CONTEXT:ReadBytes(bytes)
+	bytes = math.min(bytes, self.file_info.entry_length - self.position)
+					
+	self.file:seek("set", self.file_info.entry_offset + self.position)
+	local str = self.file:read(bytes)
+	
+	self.position = math.clamp(self.position + bytes, 0, self.file_info.entry_length)
+	
+	if str ==  "" then 
+		content = nil 
+	end
+	
+	return str
+end
+
+function CONTEXT:SetPos(pos)
+	self.position = math.clamp(pos, 0, self.file_info.entry_length)
+end
+
+function CONTEXT:GetPos()
+	return self.position
+end
+
+function CONTEXT:Close()
+	self.file:close()
+end
+
+function CONTEXT:GetSize()
+	return self.file_info.entry_length
+end
+
+--[[function CONTEXT:GetLastModified()
+	return lfs.attributes(self.path).modification
+end
+
+function CONTEXT:GetLastAccessed()
+	return lfs.attributes(self.path).access
+end]]
+
+vfs.Register(CONTEXT)

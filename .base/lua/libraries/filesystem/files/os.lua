@@ -5,24 +5,17 @@ local CONTEXT = {}
 
 CONTEXT.Name = "os"
 
-local translate_mode = {
-	read = "r",
-	write = "w",
-}
-
 function CONTEXT:CreateFolder(path_info)
 	lfs.mkdir(path_info.full_path)
-end
-
-local function get_all(path_info, typ)
-	
 end
 
 function CONTEXT:GetFiles(path_info)
 	local out = {}
 		
 	for file_name in lfs.dir(path_info.full_path) do
-		table.insert(out, file_name)
+		if file_name ~= "." and file_name ~= ".." then
+			table.insert(out, file_name)
+		end
 	end
 	
 	return out
@@ -31,9 +24,14 @@ end
 -- if CONTEXT:Open errors the virtual file system will assume 
 -- the file doesn't exist and will go to the next mounted context
 
+local translate_mode = {
+	read = "r",
+	write = "w",
+}
+
 function CONTEXT:Open(path_info, ...)
 	
-	local mode = self:GetMode(translate_mode[mode])
+	local mode = translate_mode[self:GetMode(mode)]
 	
 	if not mode then 
 		error("mode not supported" .. mode)
@@ -41,8 +39,7 @@ function CONTEXT:Open(path_info, ...)
 	
 	mode = mode .. "b" -- always open in binary
 
-	self.file = assert(io.open(path_info.full_path, mode .. "b")) 
-	self.mode = mode
+	self.file = assert(io.open(path_info.full_path, mode)) 
 	self.attributes = lfs.attributes(path)
 end
 
@@ -60,6 +57,14 @@ end
 
 function CONTEXT:ReadByte()
 	return self:Read(1):byte()
+end
+
+function CONTEXT:WriteBytes(str)
+	return self.file:write(str)
+end
+
+function CONTEXT:ReadBytes(bytes)
+	return self.file:read(bytes)
 end
 
 function CONTEXT:SetPos(pos)
