@@ -162,18 +162,18 @@ function string.getbyte(self, pos)
 	return self:getchar(pos):byte() or 0
 end
 
-local cache = {}
+--local cache = {}
 
 function string.explode(self, sep, pattern)
 	sep = sep or ""
 	pattern = pattern or false
 	
-	cache[self] = cache[self] or {}
-	cache[self][sep] = cache[self][sep] or {}
+	--cache[self] = cache[self] or {}
+	--cache[self][sep] = cache[self][sep] or {}
 	
-	if cache[self][sep][pattern] then
-		return cache[self][sep][pattern]
-	end
+	--if cache[self][sep][pattern] then
+	---	return table.copy(cache[self][sep][pattern])
+	--end
 	
 	if sep == "" then
 		local tbl = {}
@@ -182,6 +182,7 @@ function string.explode(self, sep, pattern)
 			tbl[i] = char
 			i=i+1
 		end
+		--cache[self][sep][pattern] = tbl
 		return tbl
 	end
 
@@ -201,7 +202,7 @@ function string.explode(self, sep, pattern)
 
 	tbl[i] = self:sub(last_pos)
 
-	cache[self][sep][pattern] = tbl
+	--cache[self][sep][pattern] = tbl
 	
 	return tbl
 end
