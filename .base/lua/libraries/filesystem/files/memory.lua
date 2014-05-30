@@ -4,19 +4,15 @@ local CONTEXT = {}
 
 CONTEXT.Name = "memory"
 
-local file_tree = {[""] = {is_folder = true}}
+local file_tree = {is_folder = true}
 
 function CONTEXT:VFSOpened()
 	file_tree = serializer.ReadFile("luadata", "vfs_memory")
-	
-	logn("memory tree loaded")
 end
 
 function CONTEXT:VFSClosed()
 	-- yeah right as if this is ever going to happen cleanly
 	serializer.WriteFile("luadata", "vfs_memory", file_tree)
-	
-	logn("memory tree saved")
 end
 
 local function get_folder(path_info, remove_last)
@@ -43,9 +39,7 @@ end
 
 function CONTEXT:CreateFolder(path_info)
 	local folder = get_folder(path_info, true)
-	
-	print(path_info.folder_name)
-	
+		
 	folder[path_info.folder_name] = folder[path_info.folder_name] or {
 		is_folder = true,
 	}

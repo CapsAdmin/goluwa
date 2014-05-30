@@ -30,7 +30,7 @@ function vfs.DebugPrint(fmt, ...)
 	logn()
 end
 
-function vfs.Mount(path)
+function vfs.Mount(where, to)
 	check(path, "string")
 	event.Call("VFSMount", path, true)
 end
@@ -176,13 +176,13 @@ function vfs.CreateFolder(filesystem, folder)
 	end
 end
 
-local function get_all(path, typ)
+local function get_all(path, info, full_path)
 	local path_info = vfs.GetPathInfo(path, true)
 	
 	local out = {}
 	
 	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
-		local ok, files = pcall(context[typ], context, path_info)
+		local ok, files = pcall(context.GetFiles, context, path_info)
 		
 		if vfs.debug and not ok then
 			vfs.DebugPrint("%s: error getting files: %s", filesystem, files)
@@ -190,7 +190,14 @@ local function get_all(path, typ)
 		
 		if ok then
 			for i, v in pairs(files) do
-				table.insert(out, {name = v, filesystem = filesystem})
+				if full_path then
+					v = path .. v
+				end
+				if info then
+					table.insert(out, {name = v, filesystem = filesystem})
+				else
+					table.insert(out, v)
+				end
 			end
 		end
 	end
@@ -199,11 +206,7 @@ local function get_all(path, typ)
 end 
 
 function vfs.GetFiles(path)
-	return get_all(path, "GetFiles")
-end
-
-function vfs.GetFolders(path)
-	return get_all(path, "GetFolders")
+	return get_all(path)
 end
 
 if false then
@@ -227,6 +230,14 @@ vfs.CreateFolder("memory", "hello/yeah2")
 local file = assert(vfs.Open("memory:hello/lol.wav", "write"))
 file:Write("hello") 
 
-table.print(vfs.GetFiles("hello")) 
- 
+table.print(vfs.GetFiles("hello"))
+table.print(vfs.GetFiles("."))
+
+local file = vfs.Open("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/npc/male01/abouttime02.wav")
+
+table.print(vfs.GetFiles("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/"))
+
+local snd = audio.CreateSource(audio.Decode(file:ReadAll()))  
+table.print(snd.decode_info)
+
 return vfs
