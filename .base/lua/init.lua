@@ -657,7 +657,7 @@ do -- addons
 end
 
 if CREATED_ENV then
-	system.SetWindowTitle(TITLE)
+	console.SetTitle(TITLE)
 	
 	utilities.SafeRemove(ENV_SOCKET)
 	

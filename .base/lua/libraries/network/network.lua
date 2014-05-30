@@ -233,11 +233,11 @@ function network.IsStarted()
 end
 
 function network.UpdateStatistics()
-	system.SetWindowTitle(("TCP in: %s"):format(network.tcp:GetStatistics().received), "network tcp in")
-	system.SetWindowTitle(("TCP out: %s"):format(network.tcp:GetStatistics().sent), "network tcp out")
+	console.SetTitle(("TCP in: %s"):format(network.tcp:GetStatistics().received), "network tcp in")
+	console.SetTitle(("TCP out: %s"):format(network.tcp:GetStatistics().sent), "network tcp out")
 	
-	system.SetWindowTitle(("UDP in: %s"):format(network.udp:GetStatistics().received), "network udp in")
-	system.SetWindowTitle(("UDP out: %s"):format(network.udp:GetStatistics().sent), "network udp out")
+	console.SetTitle(("UDP in: %s"):format(network.udp:GetStatistics().received), "network udp in")
+	console.SetTitle(("UDP out: %s"):format(network.udp:GetStatistics().sent), "network udp out")
 end
 
 if CLIENT then

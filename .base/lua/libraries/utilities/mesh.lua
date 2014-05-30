@@ -133,14 +133,14 @@ function utilities.ParseObj(data, callback, generate_normals)
 				logn(done)
 			end
 
-			system.SetWindowTitle(nil, 2)
+			console.SetTitle(nil, 2)
 			return true
 		else
 			if wait(0.1) or last_why ~= why then
 				if why == "inserting lines" then
-					system.SetWindowTitle(why .. " " .. msg, 2)
+					console.SetTitle(why .. " " .. msg, 2)
 				else
-					system.SetWindowTitle(why .. " " .. math.round(msg*100) .. " %", 2)
+					console.SetTitle(why .. " " .. math.round(msg*100) .. " %", 2)
 				end
 				
 				coroutine.resume(co)
