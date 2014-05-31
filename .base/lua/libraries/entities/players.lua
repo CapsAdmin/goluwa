@@ -49,7 +49,7 @@ function players.Create(uniqueid, is_bot)
 		if is_bot then	
 			if event.Call("PlayerConnect", self) ~= false then
 				event.Call("PlayerSpawned", self)
-				event.BroadcastCall("PlayerSpawned", self)
+				network.BroadcastMessage(network.READY, uniqueid)
 			end
 		end
 	end

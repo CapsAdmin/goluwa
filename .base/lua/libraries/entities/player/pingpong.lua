@@ -5,11 +5,19 @@ local META = (...) or utilities.FindMetaTable("player")
 nvars.GetSet(META, "Ping", 0)
 	
 function META:GetTimeout()
-	return (self.socket:IsValid() and self.last_ping) and (os.clock() - self.last_ping) or 0
+	if not self.socket:IsValid() then
+		return 0
+	end
+	
+	return self.last_ping and (os.clock() - self.last_ping)
 end
 
 function META:IsTimingOut() 
-	return not self.socket:IsValid() or self:GetTimeout() > console.GetVariable("sv_timeout")
+	if not self.socket:IsValid() then
+		return false
+	end
+
+	return self:GetTimeout() > console.GetVariable("sv_timeout")
 end
 
 if CLIENT then
@@ -31,7 +39,6 @@ end
 
 event.CreateTimer("ping_pong_players", 1, 0, function()
 	if not network.IsStarted() then return end
-	
 	
 	if SERVER then
 		for key, ply in pairs(players.GetAll()) do			
