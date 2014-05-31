@@ -187,6 +187,11 @@ function network.HandleMessage(socket, stage, a, ...)
 		-- send a message to everyone that we connected successfully
 		network.BroadcastMessage(network.READY, uniqueid)
 		
+		-- tell the client about all the other players and bots
+		for _, ply in pairs(players.GetAll()) do
+			network.SendMessageToClient(socket, network.READY, ply:GetUniqueID())
+		end
+		
 	elseif CLIENT and stage == network.READY then
 		local player = players.Create(uniqueid) -- get or create
 		
