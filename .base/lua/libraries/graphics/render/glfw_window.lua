@@ -181,6 +181,30 @@ do -- window meta
 	function META:OnTextEditing(str)
 		
 	end
+	
+	local count = ffi.new("int[1]")
+	
+	function META:GetJoystickState(i)
+		if glfw.JoystickPresent(i) == 0 then return end
+			
+		local out = {axes = {}, buttons = {}}
+		if glfw.JoystickPresent(i) ~= 0 then
+		
+		out.name = ffi.string(glfw.GetJoystickName(i))
+	
+		local axes = glfw.GetJoystickAxes(i, count)
+		for i = 0, count[0] do
+			out.axes[i+1] = axes[i]
+		end
+		
+		local buttons = glfw.GetJoystickButtons(i, count)
+		for i = 0, count[0] do
+			out.buttons[i+1] = buttons[i]
+		end
+		
+		return out
+	end
+	end
 		
 	function render.CreateWindow(width, height, title)	
 		width = width or 800
@@ -212,7 +236,7 @@ do -- window meta
 		self.last_mpos = Vec2()
 		self.mouse_delta = Vec2()
 		self.__ptr = ptr
-		
+				
 		event.AddListener("Update", self, function(dt)
 			self:UpdateMouseDelta()
 			self:OnUpdate(dt)
