@@ -44,23 +44,20 @@ if CLIENT then
 		end
 	end)
 	
-	message.AddListener("nvars_fullupdate", function()
+	function nvars.Synchronize()
 		for cvar in pairs(nvars.added_cvars) do
 			console.RunCommand(cvar, console.GetVariable(cvar))
 		end
-		message.Send("nvars_update_done")
-	end)
+	end
 end
 
 if SERVER then
-	function nvars.FullUpdate(ply)
+	function nvars.Synchronize(ply)
 		for env, vars in pairs(nvars.Environments) do
 			for key, value in pairs(vars) do
 				nvars.Set(key, value, env, ply)
 			end
 		end
-		
-		message.Send("nvars_fullupdate", ply)
 	end
 	
 	message.AddListener("ncv", function(ply, cvar, var)
@@ -68,10 +65,6 @@ if SERVER then
 		if key then
 			ply.nv[key] = var
 		end
-	end)
-	
-	message.AddListener("nvars_update_done", function(ply)
-		network.HandleMessage(ply.socket, network.SYNCHRONIZED)
 	end)
 end
 

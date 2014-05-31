@@ -7,12 +7,12 @@ network.udp = network.udp or NULL
 
 network.CONNECT = 1
 network.UDP_PORT = 2
-network.ACCEPT = 3
-network.SYNCHRONIZED = 3
-network.PLAYER_SPAWNED = 4
+network.CONNECTED = 3
+network.SYNCHRONIZED = 4
+network.READY = 5
 
-network.DISCONNECT = 4
-network.MESSAGE = 5
+network.DISCONNECT = 6
+network.MESSAGE = 7
 
 network.udp_accept = {}
 
@@ -81,10 +81,11 @@ local function ipport_to_uid(ipport)
 	return tostring(123456789 + ipport:gsub("%D", "")%255255255255)
 end
 
-function network.HandleMessage(socket, type, a, ...)		
+function network.HandleMessage(socket, stage, a, ...)
 	local uniqueid = SERVER and ipport_to_uid(socket:GetIPPort()) or CLIENT and a
-			
-	if SERVER and type == network.CONNECT then
+	
+	if SERVER and stage == network.CONNECT then
+	
 		local player = players.Create(uniqueid)
 		
 		if network.debug then
@@ -94,44 +95,51 @@ function network.HandleMessage(socket, type, a, ...)
 		-- store the socket in the player
 		player.socket = socket
 					
-		if event.Call("PlayerConnect", player) ~= false then
-			if network.debug then
-				logn("requesting udp port from %s", player)
-			end
+		if event.Call("PlayerConnect", player) == false then
 			
-			-- request the udp port
-			network.SendMessageToClient(socket, network.UDP_PORT, uniqueid)
-		else			
 			if network.debug then
 				logf("player %s removed because the PlayerConnect event returned false\n", player)
 			end
 			
 			player:Remove()			
-			return false
+			socket:Remove()
+			return
 		end
-			
-		logf("%s connected\n", socket:GetIPPort())
-	elseif CLIENT and type == network.UDP_PORT then
+		
+		if network.debug then
+			logn("requesting udp port from ", player)
+		end
+		
+		-- request the udp port
+		network.SendMessageToClient(socket, network.UDP_PORT, uniqueid)
+		
+	elseif CLIENT and stage == network.UDP_PORT then
+	
 		if network.debug then
 			logf("sending udp port %i to server\n", network.udp:GetPort())
 		end
 		
 		network.SendMessageToServer(network.UDP_PORT, network.udp:GetPort())
-	elseif SERVER and type == network.UDP_PORT then
+		
+	elseif SERVER and stage == network.UDP_PORT then
+	
 		local player = players.GetByUniqueID(uniqueid)
 		local udp_port = tonumber(a)
 		
 		if not player:IsValid() then
 			if network.debug then
-				logf("invalid message: socket %s tried to send UDP_PORT packet with port number %s but the player is NULL", socket, udp_port)
+				logf("invalid message: socket %s tried to send UDP_PORT packet with port number %s but the player is NULL\n", socket, udp_port)
 			end
-			return false
+			socket:Remove()
+			return
 		end
 		
 		-- remove the client if the udp port is not a number
 		if not udp_port then
 			logn("client ", uniqueid ," gave invalid port: ", tostring(a))
-			return false
+			socket:Remove()
+			player:Remove()
+			return
 		end
 		
 		if network.debug then
@@ -142,48 +150,50 @@ function network.HandleMessage(socket, type, a, ...)
 		network.udp_accept[socket:GetIP() .. udp_port] = player
 		socket.udp_port = udp_port		
 		
-		-- send a message to client that it's connected
-		network.SendMessageToClient(socket, network.ACCEPT, uniqueid)
+		-- send all the nvars to this player
+		nvars.Synchronize(player)
 		
-		-- update networked variabels, such as nick
-		-- when all the nvars are done synchronizing 
-		-- we're ready to spawn as a valid player
-		nvars.FullUpdate(player)
-	elseif CLIENT and type == network.ACCEPT then
+		network.SendMessageToClient(socket, network.CONNECTED, uniqueid)
+		
+	elseif CLIENT and stage == network.CONNECTED then
 		local player = players.Create(uniqueid) -- get or create
-
-		network.accepted = true
-		
-		if network.debug then
-			logf("server accepted connection\n")
-		end
 		
 		players.local_player = player
 		players.local_player.socket = network.tcp
-					
-		event.Call("OnlineStarted")		
-	elseif SERVER and type == network.SYNCHRONIZED then
-		local player = players.GetByUniqueID(uniqueid)
-		
-		if not player:IsValid() then
-			if network.debug then
-				logf("invalid message: socket %s tried to send SYNCHRONIZED but the player is NULL", socket)
-			end
-			return false
-		end		
 		
 		if network.debug then
-			logn("done syncing nvars with ", ply)
+			logn("successfully connected to server")
 		end
 		
-		event.Call("PlayerSpawned", player)
-
-		network.BroadcastMessage(network.PLAYER_SPAWNED, uniqueid)
-	elseif CLIENT and type == network.PLAYER_SPAWNED then
+		-- send all our nvars to the server
+		nvars.Synchronize()
+		
+		network.SendMessageToServer(network.SYNCHRONIZED)
+		
+	elseif SERVER and stage == network.SYNCHRONIZED then
+	
+		local player = players.GetByUniqueID(uniqueid)
+					
+		if not player:IsValid() then
+			if network.debug then
+				logf("invalid message: socket %s tried to send SYNCHRONIZED but the player is NULL\n", socket)
+			end
+			socket:Remove()
+			return
+		end
+		
+		event.Call("PlayerSpawned", player)		
+		
+		-- send a message to everyone that we connected successfully
+		network.BroadcastMessage(network.READY, uniqueid)
+		
+	elseif CLIENT and stage == network.READY then
 		local player = players.Create(uniqueid) -- get or create
 		
 		event.Call("PlayerSpawned", player)
-	elseif type == network.MESSAGE then
+	end
+	
+	if stage == network.MESSAGE then
 		if CLIENT then
 			-- the arguments start after type.
 			-- uniqueid is just consistently used by network.HandleMessage
@@ -195,23 +205,27 @@ function network.HandleMessage(socket, type, a, ...)
 			
 			if not player:IsValid() then
 				if network.debug then
-					logf("invalid message: socket %s tried to send MESSAGE packet but the player is NULL", socket, reason)
+					logf("invalid message: socket %s tried to send MESSAGE packet but the player is not a valid player\n", socket, reason)
+					logn(a, ...)
 				end
-				return false
+				socket:Remove()
+				return
 			end
-			
+						
 			event.Call("NetworkMessageReceived", player, a, ...)
 		end
-	elseif type == network.DISCONNECT then
+	elseif stage == network.DISCONNECT then
 		local player = players.GetByUniqueID(uniqueid)
 		local reason = tostring(a)
 		
 		if SERVER then
 			if not player:IsValid() then
 				if network.debug then
-					logf("invalid message: socket %s tried to send DISCONNECT packet with reason %q but the player is NULL", socket, reason)
+					logf("invalid message: socket %s tried to send DISCONNECT packet with reason %q but the player is not a valid player\n", socket, reason)
 				end
-				return false
+				if player:IsValid() then player:Remove() end
+				socket:Remove()
+				return
 			end
 		
 			event.Call("PlayerLeft", player:GetName(), uniqueid, reason, player)
@@ -219,7 +233,7 @@ function network.HandleMessage(socket, type, a, ...)
 			
 			if SERVER then
 				-- send the message back to other clients
-				network.BroadcastMessage(type, uniqueid, reason)
+				network.BroadcastMessage(stage, uniqueid, reason)
 				
 				network.udp_accept[socket:GetIP() .. socket.udp_port] = nil
 			end
@@ -318,9 +332,7 @@ if CLIENT then
 				local found = 0
 				
 				for message in temp:gmatch("(.-)" .. delimiter) do
-					if network.HandleMessage(nil, decode(message)) == false then
-						client:Remove()
-					end
+					network.HandleMessage(nil, decode(message))
 					found = found + 1
 				end
 				
@@ -358,7 +370,7 @@ if CLIENT then
 			
 			logf("disconnected from server (%s)\n", reason or "unknown reason")
 			network.just_disconnected = true
-			network.accepted = false
+			network.started = false
 			
 			event.Call("Disconnected", reason)
 		end
@@ -368,7 +380,7 @@ if CLIENT then
 		if network.just_disconnected then	
 			return false
 		end
-		return network.tcp:IsValid() and network.tcp:IsConnected() and network.accepted or false
+		return network.tcp:IsValid() and network.tcp:IsConnected()
 	end
 	
 	function network.SendMessageToServer(event, ...)		
@@ -445,8 +457,6 @@ if SERVER then
 			
 			network.udp = server
 		end
-		
-		event.Call("OnlineStarted")
 	end
 	
 	function network.CloseServer(reason)

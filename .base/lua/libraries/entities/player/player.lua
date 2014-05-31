@@ -11,6 +11,10 @@ class.GetSet(META, "ID", -1)
 nvars.IsSet(META, "Bot", false)
 nvars.GetSet(META, "Nick", e.USERNAME, "cl_nick")
 
+function META:IsConnected()
+	return self.connected
+end
+
 function META:GetNick()
 	for key, ply in pairs(players.GetAll()) do
 		if ply ~= self and ply.nv.Nick == self.nv.Nick then
@@ -34,6 +38,7 @@ function META:OnRemove()
 	players.active_players[self:GetUniqueID()] = nil
 	if SERVER then 
 		if self.socket:IsValid() then
+			network.HandleMessage(self.socket, network.DISCONNECT, "removed")
 			self.socket:Remove()
 		end
 	end
