@@ -40,7 +40,7 @@ function chat.Append(var, str)
 		ply = var
 		var = getnick(var)
 	elseif typex(var) == "null" then
-		var = "disconnected"
+		var = "NULL"
 	elseif not network.IsConnected() then
 		var = "server"
 	else
@@ -259,8 +259,12 @@ local seed = 0
 
 function chat.PlayerSay(ply, str, skip_log)
 	if event.Call("PlayerChat", ply, str, seed) ~= false then
-		if skip_log then chat.Append(ply, str) end
-		if SERVER then message.Broadcast("say", ply, str, seed) seed = seed + 1 end
+		if not skip_log then 
+			chat.Append(ply, str) 
+		end
+		if SERVER then 
+			message.Broadcast("say", ply, str, seed) seed = seed + 1 
+		end
 	end
 end
 

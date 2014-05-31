@@ -48,7 +48,6 @@ function players.Create(uniqueid, is_bot)
 	if SERVER then
 		if is_bot then	
 			if event.Call("PlayerConnect", self) ~= false then
-				network.BroadcastMessage(network.CONNECT, uniqueid)
 				event.Call("PlayerSpawned", self)
 				event.BroadcastCall("PlayerSpawned", self)
 			end
@@ -99,13 +98,9 @@ end
 
 network.AddEncodeDecodeType("player", function(var, encode)
 	if encode then
-		local var = var:GetUniqueID()
-		return var
+		return var:GetUniqueID()
 	else
-		local var = players.GetByUniqueID(var)
-		if var:IsValid() then
-			return var
-		end
+		return players.GetByUniqueID(var)
 	end
 end) 
 

@@ -167,8 +167,8 @@ local unique
 local blacklist = {
 	Update = true,
 	PreDisplay = true,
-	UserMessage = true,
-	PacketReceived = true,
+	NetworkMessageReceived = true,
+	NetworkPacketReceived = true,
 	PostDisplay = true,
 	Draw2D = true,
 	Draw3D = true,

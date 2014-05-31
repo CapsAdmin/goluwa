@@ -71,8 +71,7 @@ if SERVER then
 	end)
 	
 	message.AddListener("nvars_update_done", function(ply)
-		event.Call("PlayerSpawned", ply)
-		event.BroadcastCall("PlayerSpawned", ply)
+		network.HandleMessage(ply.socket, network.SYNCHRONIZED)
 	end)
 end
 

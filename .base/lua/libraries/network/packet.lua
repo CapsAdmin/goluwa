@@ -30,7 +30,10 @@ local function prepend_header(id, buffer)
 end
 
 local function read_header(buffer)
-	local id = network.IDToString(buffer:ReadShort())
+	local id = buffer:ReadShort()
+	--print(id)
+	id = network.IDToString(id)
+--	print(id)
 	
 	table.remove(buffer.buffer, 1)
 	table.remove(buffer.buffer, 1)
@@ -57,7 +60,7 @@ if CLIENT then
 		end
 	end
 
-	event.AddListener("PacketReceived", "packet", packet.OnPacketReceived, print)
+	event.AddListener("NetworkPacketReceived", "packet", packet.OnPacketReceived, print)
 end
 
 if SERVER then
@@ -86,13 +89,13 @@ if SERVER then
 	function packet.OnPacketReceived(ply, str)
 		local buffer = packet.CreateBuffer(str)
 		local id = read_header(buffer)
-		
+				
 		if packet.Listeners[id] then
 			packet.Listeners[id](ply, buffer)
 		end
 	end
 	
-	event.AddListener("PacketReceived", "packet", packet.OnPacketReceived, print)
+	event.AddListener("NetworkPacketReceived", "packet", packet.OnPacketReceived, print)
 end
 
 do -- buffer object

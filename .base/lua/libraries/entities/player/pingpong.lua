@@ -1,3 +1,5 @@
+console.CreateVariable("sv_timeout", 10)	
+
 local META = (...) or utilities.FindMetaTable("player")
 
 nvars.GetSet(META, "Ping", 0)
@@ -6,10 +8,8 @@ function META:GetTimeout()
 	return (self.socket:IsValid() and self.last_ping) and (os.clock() - self.last_ping) or 0
 end
 
-console.CreateVariable("sv_timeout", 10)
-
 function META:IsTimingOut() 
-	return not self.socket:IsValid() or self:GetTimeout() > console.GetVariable("sv_timeout", 3)
+	return not self.socket:IsValid() or self:GetTimeout() > console.GetVariable("sv_timeout")
 end
 
 if CLIENT then
