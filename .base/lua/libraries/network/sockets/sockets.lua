@@ -4,6 +4,13 @@ sockets.cares = select(2, pcall(require,"cares"))
 sockets.luasocket = require("socket.core") _G.socket = nil
 sockets.active_sockets = sockets.active_sockets or setmetatable({}, { __mode = 'v' })
 
+if SERVER then
+	-- there reaaaally needs to be a system.GetTime() function
+	function timer.GetSystemTime()
+		return sockets.luasocket.gettime()
+	end
+end
+
 include("helpers.lua", sockets)
 include("http.lua", sockets)
 

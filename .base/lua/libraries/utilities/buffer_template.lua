@@ -32,6 +32,10 @@ ffi.cdef[[
 	
 ]]
 
+local buff = ffi.new("number_buffer_longlong")
+buff.integer_unsigned = 1LL
+e.BIG_ENDIAN = buff.chars[0] == 0
+
 local integer_assign = [[if signed then 
 		buff.integer_signed = num
 	else
@@ -51,7 +55,7 @@ local META, buff = ...
 META["@WRITE@"] = function(@READ_ARGS@)
 	@ASSIGN@
 @WRITE_BYTES@
-return self
+	return self
 end
 META["@READ@"] = function(@WRITE_ARGS@)
 @READ_BYTES@
@@ -82,14 +86,14 @@ local function ADD_FFI_OPTIMIZED_TYPE(META, typ)
 		
 	local size = ffi.sizeof(typ:lower() == "longlong" and "long long" or typ:lower())
 	
-	local read_unroll = "local chars = ffi.cast('char *', self:ReadBytes(" .. size .. "))"
+	local read_unroll = "\tlocal chars = ffi.cast('char *', self:ReadBytes(" .. size .. "))\n"	
 	for i = 1, size do
 		read_unroll = read_unroll .. "\tbuff.chars[" .. i-1 .. "] = chars[" .. i-1 .. "]\n"
 	end
 	template = template:gsub("@READ_BYTES@", read_unroll)
 	
 	local write_unroll = ""
-	write_unroll = write_unroll .. "\tself:WriteBytes(ffi.string(buff.chars, "..size.."))\n"
+	write_unroll = write_unroll .. "\tself:WriteBytes(ffi.string(buff.chars, " .. size .. "))\n"
 	template = template:gsub("@WRITE_BYTES@", write_unroll)
 	
 	local func = loadstring(template)
@@ -124,7 +128,7 @@ function utilities.BufferTemplate(META)
 		function META:ReadBytes(bytes)
 			local out = {}
 			for i = 1, bytes do
-				table.insert(out, self:ReadByte())
+				table.insert(out, string.char(self:ReadByte()))
 			end
 			return table.concat(out)
 		end

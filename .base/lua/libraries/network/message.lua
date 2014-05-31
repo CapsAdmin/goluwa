@@ -15,13 +15,13 @@ if CLIENT then
 		network.SendMessageToServer(network.MESSAGE, id, ...)
 	end
 	
-	function message.OnUserMessage(id, ...)		
+	function message.OnMessageReceived(id, ...)		
 		if message.Listeners[id] then
 			message.Listeners[id](...)
 		end
 	end
 
-	event.AddListener("UserMessage", "message", message.OnUserMessage, print)
+	event.AddListener("NetworkMessageReceived", "message", message.OnMessageReceived, print)
 end
 
 if SERVER then
@@ -43,13 +43,13 @@ if SERVER then
 		return message.Send(id, nil, ...)
 	end
 	
-	function message.OnUserMessage(ply, id, ...)
+	function message.OnMessageReceived(ply, id, ...)
 		if message.Listeners[id] then
 			message.Listeners[id](ply, ...)
 		end
 	end
 	
-	event.AddListener("UserMessage", "message", message.OnUserMessage, print)
+	event.AddListener("NetworkMessageReceived", "message", message.OnMessageReceived, print)
 end
 
 do -- console extension
