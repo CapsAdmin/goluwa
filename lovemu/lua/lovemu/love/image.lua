@@ -75,6 +75,8 @@ do -- image data
 		end, false, true)
 	end
 
+	local freeimage = require("lj-freeimage")
+	
 	function love.image.newImageData(a, b) --partial
 		check(a, "string", "number")
 		check(b, "number", "nil")
@@ -87,21 +89,21 @@ do -- image data
 			w = a
 			h = a
 		elseif not b and type(a) == "string" then
-			w, h, buffer = freeimage.LoadImage(a)
-			if w == 0 and h == 0 then
+			buffer, w, h = freeimage.LoadImage(a)
+			if not buffer then
 				a = vfs.Read(a, "rb")
-				w, h, buffer = freeimage.LoadImage(a)
+				buffer, w, h = freeimage.LoadImage(a)
 			end
 		end
 
-		local self = lovemu.CreateObject("ImageData")
+		local self = lovemu.CreateObject(ImageData)
 		
 		local tex = Texture(w, h, buffer, {
 			mag_filter = FILTER,
 			min_filter = FILTER,
 		}) 
 		
-		textures[self] = tex
+		lovemu.textures[self] = tex
 		
 		self.tex = tex
 		

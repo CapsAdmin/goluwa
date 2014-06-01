@@ -26,25 +26,25 @@ end
 
 function love.audio.pause()
 	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
-		v:Pause() 
+		v:pause() 
 	end
 end
 
 function love.audio.play()
 	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
-		v:Play() 
+		v:play() 
 	end
 end
 
 function love.audio.resume()
 	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
-		v:Resume() 
+		v:resume() 
 	end
 end
 
 function love.audio.rewind()
 	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
-		v:Rewind() 
+		v:rewind() 
 	end
 end
 
@@ -73,7 +73,9 @@ function love.audio.setVolume(vol)
 end
 
 function love.audio.stop()
-	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do v:Stop() end
+	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
+		v:stop() 
+	end
 end
 
 do -- Source

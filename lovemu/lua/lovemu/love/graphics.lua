@@ -73,7 +73,7 @@ do -- quad
 	end
 	
 	
-	function love.graphics.newQuad() -- partial
+	function love.graphics.newQuad(...) -- partial
 		local self = lovemu.CreateObject(Quad)
 		
 		local vertices = {}
@@ -82,6 +82,7 @@ do -- quad
 			vertices[i] = {x = 0, y = 0, s = 0, t = 0}
 		end
 		
+		self.args = {...}
 		self.vertices = vertices
 			
 		return self
@@ -504,8 +505,8 @@ function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy) -- partial
 	
 	surface.Color(cr/255, cg/255, cb/255, ca/255)
 	surface.SetTexture(lovemu.textures[drawable])
-	surface.SetRectUV(quad[1]*quad[5],quad[2]*quad[6],quad[3]*quad[5],quad[4]*quad[6])
-	surface.DrawRect(x,y, quad[3]*sx, quad[4]*sy,r,ox*sx,oy*sy)
+	surface.SetRectUV(quad.args[1]*quad.args[5],quad.args[2]*quad.args[6],quad.args[3]*quad.args[5],quad.args[4]*quad.args[6])
+	surface.DrawRect(x,y, quad.args[3]*sx, quad.args[4]*sy,r,ox*sx,oy*sy)
 	surface.SetRectUV(0,0,1,1)
 end
 
