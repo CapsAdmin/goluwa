@@ -1397,6 +1397,8 @@ function chatsounds.Update()
 end
 
 function chatsounds.Say(ply, str, seed)
+	if not chatsounds.tree then return end
+
 	if type(ply) == "string" then
 		seed = str
 		str = ply
