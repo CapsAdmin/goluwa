@@ -296,6 +296,7 @@ do -- font
 
 	function love.graphics.printf(text, x, y, limit, align, r, sx, sy)
 		
+		text = tostring(text)
 		y = y or 0
 		limit = limit or 0
 		align = align or "left"
@@ -635,25 +636,25 @@ function love.graphics.polygon() -- partial
 end
 
 do -- sprite batch
-
 	local SpriteBatch = {}
 	SpriteBatch.Type = "SpriteBatch"
 	
-	local function set_rect(poly, i, x,y, r, sx,sy, ox,oy, kx,ky)	
+	local function set_rect(self, i, x,y, r, sx,sy, ox,oy, kx,ky)	
 		sx = sx or self.w
 		sy = sy or self.h
 		
 		sx = sx * self.w
 		sy = sy * self.h
-		poly:SetRect(i, x,y, sx,sy, r, ox,oy)		
+		self.poly:SetRect(i, x,y, sx,sy, r, ox,oy)		
 	end
 		
 	function SpriteBatch:set(id, q, ...)
-		if type(q) == "table" then
-			self.poly:SetUV(q[1]*q[5], q[2]*q[6], q[3]*q[5], q[4]*q[6])
-			set_rect(self.poly, id, ...)
+		id = id or 1
+		if lovemu.Type(q) == "Quad" then
+			self.poly:SetUV(q.args[1]*q.args[5], q.args[2]*q.args[6], q.args[3]*q.args[5], q.args[4]*q.args[6])
+			set_rect(self, id, ...)
 		else
-			set_rect(self.poly, id, q, ...)
+			set_rect(self, id, q, ...)
 		end
 	end
 	
@@ -662,9 +663,9 @@ do -- sprite batch
 	function SpriteBatch:add(q, ...)
 		self:set(i, q, ...)
 		
-		i = i + 1
+		self.i = self.i + 1
 		
-		return i
+		return self.i
 	end
 	
 	SpriteBatch.addq = SpriteBatch.add
@@ -698,12 +699,12 @@ do -- sprite batch
 	function love.graphics.newSpriteBatch(image, size, usagehint) -- partial
 		local self = lovemu.CreateObject(SpriteBatch)
 		local poly = surface.CreatePoly(size+1)
-		local i = 0
 		
 		self.poly = poly
 		self.img = image
 		self.w = image:getWidth()
 		self.h = image:getHeight()
+		self.i = 0
 		
 		return self
 	end

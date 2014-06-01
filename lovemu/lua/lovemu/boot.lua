@@ -31,7 +31,8 @@ function lovemu.RunGame(folder)
 	vfs.AddModuleDirectory("lovers/" .. lovemu.demoname .. "/")
 	vfs.Mount(R("lovers/" .. lovemu.demoname .. "/"))
 			
-	local env = setmetatable({
+	local env
+	env = setmetatable({
 		love = love, 
 		require = function(name, ...)
 		
@@ -39,16 +40,16 @@ function lovemu.RunGame(folder)
 				return package.loaded[name] 
 			end
 			
-			local func, err, path = require.load(name, ...) 
-			
-			print(func, err, path, name, ...)
-			
+			local func, err, path = require.load(name, folder) 
+						
 			if type(func) == "function" then
 				if debug.getinfo(func).what ~= "C" then
-					setfenv(func, getfenv(2))
+					setfenv(func, env)
 				end				
 				return require.require_function(name, func, path) 
 			end
+			
+			if not func and err then print(name, err) end
 			
 			return func
 		end,
