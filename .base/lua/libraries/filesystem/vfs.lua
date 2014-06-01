@@ -41,7 +41,6 @@ function vfs.Mount(where, to)
 	
 	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
 		context.mounted_paths = context.mounted_paths or {}
-		
 		if path_info_where.filesystem == filesystem or path_info_where.filesystem == "unknown" then
 			table.insert(context.mounted_paths, {where = path_info_where, to = path_info_to, full_where = where, full_to = to})
 		end
@@ -58,7 +57,7 @@ function vfs.Unmount(where, to)
 	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
 		context.mounted_paths = context.mounted_paths or {}		
 		for i, v in ipairs(context.mounted_paths) do
-			if v.full_where == where and v.full_to == to and path_info_where == filesystem or path_info_where.filesystem == "unknown" then
+			if v.full_where == where and v.full_to == to and (path_info_where == filesystem or path_info_where.filesystem == "unknown") then
 				table.remove(context.mounted_paths)
 				break
 			end
@@ -116,6 +115,11 @@ do
 		else
 			local folders = self.full_path:explode("/")
 
+			-- if the folder is something like "/foo/bar/" remove the first /
+			if self.full_path:sub(1,1) == "/" then
+				table.remove(folders, 1)
+			end
+			
 			table.remove(folders) -- remove the filename
 
 			return folders
@@ -153,6 +157,8 @@ do
 		if path_info_a.full_path == "" then
 			return path_info_b
 		end
+		
+		local path_info_b = table.copy(path_info_b)
 	
 		local path = vfs.FixPath(path_info_a.full_path .. path_info_b.full_path)
 		path_info_b.full_path = path
@@ -215,42 +221,33 @@ function vfs.CreateFolder(filesystem, folder)
 	end
 end
 
-local function get_files(context, path_info) 
-	local out = {}
-			
-	for i, mount_info in ipairs(context.mounted_paths) do
-		local ok, files = pcall(context.GetFiles, context, vfs.PrependPathInfo(mount_info.where, path_info))
-		
-		if vfs.debug and not ok then
-			vfs.DebugPrint("%s: error getting files: %s", filesystem, files)
-		end
-		
-		if ok then	
-			for k,v in pairs(files) do 
-				table.insert(out, v)
-			end
-		end
-	end	
-	
-	return out
-end
-
 function vfs.GetFiles(path, info, full_path)
 	local path_info = vfs.GetPathInfo(path, true)
 	
 	local out = {}
 	
-	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
-		local files = get_files(context, path_info)
-	
-		for i, v in pairs(files) do
-			if full_path then
-				v = path .. v
-			end
-			if info then
-				table.insert(out, {name = v, filesystem = filesystem})
-			else
-				table.insert(out, v)
+	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do				
+		for i, mount_info in ipairs(context.mounted_paths) do
+			if mount_info.to.full_path == path_info.full_path then
+				local ok, found = pcall(context.GetFiles, context, mount_info.where)
+				
+				if vfs.debug and not ok then
+					vfs.DebugPrint("%s: error getting files: %s", filesystem, found)
+				end
+				
+				if ok then	
+					for i, v in pairs(found) do
+						if full_path then
+							v = filesystem .. ":" .. mount_info.where.full_path .. v
+						end
+						
+						if info then
+							table.insert(out, {name = v, filesystem = filesystem})
+						else
+							table.insert(out, v)
+						end
+					end
+				end
 			end
 		end
 	end
@@ -292,7 +289,8 @@ local snd = audio.CreateSource(audio.Decode(file:ReadAll()))
 table.print(snd.decode_info)
 
 vfs.Mount("G:/SteamLibrary/SteamApps/Common/", "hello/")
+vfs.Mount("G:/SteamLibrary/", "hello/")
 
-table.print(vfs.GetFiles("hello"))
+table.print(vfs.GetFiles("hello/", nil, true))
 
 return vfs
