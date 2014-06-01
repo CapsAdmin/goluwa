@@ -241,7 +241,7 @@ function network.HandleMessage(socket, stage, a, ...)
 			network.BroadcastMessage(stage, uniqueid, reason)
 			
 			-- maybe the player disconnected before UDP_PORT
-			if socket.udp_port then
+			if socket.udp_port and socket:GetIP() then
 				network.udp_accept[socket:GetIP() .. socket.udp_port] = nil
 			end
 			
