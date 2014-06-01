@@ -6,8 +6,9 @@ sockets.active_sockets = sockets.active_sockets or setmetatable({}, { __mode = '
 
 if SERVER then
 	-- there reaaaally needs to be a system.GetTime() function
+	local start = sockets.luasocket.gettime()
 	function timer.GetSystemTime()
-		return sockets.luasocket.gettime()
+		return sockets.luasocket.gettime() - start
 	end
 end
 
@@ -15,7 +16,7 @@ include("helpers.lua", sockets)
 include("http.lua", sockets)
 
 function sockets.Initialize()
-	event.AddListener("Update", "sockets", sockets.Update)
+	event.CreateTimer("sockets", 1/30, 0, sockets.Update)
 	event.AddListener("LuaClose", "sockets", sockets.Panic)
 end
 
@@ -211,6 +212,8 @@ do -- tcp socket meta
 				self:DebugPrintf("sent %q", str:readablehex())
 				self.data_sent = self.data_sent + #str
 			end
+			
+			if sockets.trace then debug.trace() end
 		end
 		
 		function CLIENT:CloseWhenDoneSending(b)
@@ -259,7 +262,7 @@ do -- tcp socket meta
 				-- try send
 								
 				if self.socket_type == "tcp" then
-				--	for i = 1, 128 do
+					for i = 1, 128 do
 						local data = self.Buffer[1]
 						if data then
 							local bytes, b, c, d = sock:send(data)
@@ -284,7 +287,7 @@ do -- tcp socket meta
 							end
 --							break
 						end
-				--	end
+					end
 				end
 				
 				-- try receive
@@ -295,46 +298,50 @@ do -- tcp socket meta
 				else
 					mode = receive_types[self.ReceiveMode] or self.ReceiveMode
 				end
-
-				local data, err, partial = sock:receive(mode)
-
-				if not data and partial and partial ~= "" then
-					data = partial
-				end
 				
-				if data then
-					if #data > 256 then
-						self:DebugPrintf("received (mode %s) %i bytes of data", mode, #data)
-					else
-						self:DebugPrintf("received (mode %s) %i bytes of data (%q)", mode, #data, data:readablehex())
-					end
+				while true do
+					local data, err, partial = sock:receive(mode)
 
-					self:OnReceive(data)
-					self:Timeout(false)
-
-					if self.__server then
-						self.__server:OnReceive(data, self)
-						self.__server.data_received = self.__server.data_received + #data
+					if not data and partial and partial ~= "" then
+						data = partial
 					end
 					
-					self.data_received = self.data_received + #data
+					if data then
+						if #data > 256 then
+							self:DebugPrintf("received (mode %s) %i bytes of data", mode, #data)
+						else
+							self:DebugPrintf("received (mode %s) %i bytes of data (%q)", mode, #data, data:readablehex())
+						end
 
-				elseif err == "timeout" or "Socket is not connected" then
-					self:Timeout(true)
-				elseif err == "closed" then
-					self:DebugPrintf("closed")
+						self:OnReceive(data)
+						self:Timeout(false)
 
-					if not self.__server or self.__server:OnClientClosed(self) ~= false then
-						self:Remove()
+						if self.__server then
+							self.__server:OnReceive(data, self)
+							self.__server.data_received = self.__server.data_received + #data
+						end
+						
+						self.data_received = self.data_received + #data
+					else					
+						if err == "timeout" or "Socket is not connected" then
+							self:Timeout(true)
+						elseif err == "closed" then
+							self:DebugPrintf("closed")
+
+							if not self.__server or self.__server:OnClientClosed(self) ~= false then
+								self:Remove()
+							end
+						else
+							self:DebugPrintf("errored: %s", err)
+							
+							if self.__server then
+								self.__server:OnClientError(self3, err)
+							end
+
+							self:OnError(err)
+						end
+						break
 					end
-				else
-					self:DebugPrintf("errored: %s", err)
-					
-					if self.__server then
-						self.__server:OnClientError(self3, err)
-					end
-
-					self:OnError(err)
 				end
 			end
 		end

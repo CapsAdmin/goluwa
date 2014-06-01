@@ -10,7 +10,7 @@ markup:SetFixedSize(14)
 
 local history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt")
 
-local USE_COLORS = true
+local USE_COLORS = (os.getenv("USE_COLORS") or "1") == "1"
 
 local COLORPAIR_STATUS = 9
 
@@ -139,7 +139,8 @@ function console.InitializeCurses()
 	c.parent_window = curses.initscr()
 	
 	if WINDOWS then
-		curses.resize_term(50,150)  
+		curses.PDC_set_resize_limits(1, 1000, 1, 1000)
+		curses.resize_term(50,150) 
 	end
 
 	curses.cbreak()
@@ -308,7 +309,15 @@ end
 
 function console.ColorPrint(str, i, window)
 	window = window or c.log_window
+	
+--	if CAPS then
+--		i = get_color(math.random(255), math.random(255), math.random(255))
+--	end
 
+	setlogfile("asdf")
+	log(str)
+	setlogfile()
+	
 	local attr = curses.COLOR_PAIR(i)
 	if USE_COLORS then curses.wattron(window, attr) end
 	curses.waddstr(window, str)
@@ -416,6 +425,8 @@ do
 		return output
 	end
 
+	_G.syntax = _G.syntax or syntax
+
 	function console.SyntaxPrint(str, window)
 		window = window or c.log_window
 		
@@ -423,7 +434,11 @@ do
 
 		for i = 1, #tokens / 2 do
 			local color, str = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
-			console.ColorPrint(str, color + 1, window)
+			if USE_COLORS then
+				console.ColorPrint(str, color + 1, window)
+			else
+				curses.waddstr(window, str)
+			end
 		end
 	end
 end
