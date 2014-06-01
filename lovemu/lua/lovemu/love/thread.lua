@@ -1,27 +1,30 @@
 local love = (...) or _G.lovemu.love
 
-local threads = {}
-
 love.thread = {}
 
+local threads = {}
+
+local Thread = {}
+Thread.Type = "Thread"
+
+function Thread:start() end
+function Thread:wait() end
+function Thread:set() end
+function Thread:send() end
+function Thread:receive() end
+function Thread:peek() end
+function Thread:kill() end
+function Thread:getName() return self.name end
+function Thread:getKeys() return {} end
+function Thread:get() return end
+function Thread:demand() return end
+
 function love.thread.newThread(name)
-	local obj = lovemu.CreateObject("thread")
+	local self = lovemu.CreateObject(Thread)
 	
-	threads[name] = obj
-		
-	function obj:start() end
-	function obj:wait() end
-	function obj:set() end
-	function obj:send() end
-	function obj:receive() end
-	function obj:peek() end
-	function obj:kill() end
-	function obj:getName() return name end
-	function obj:getKeys() return {} end
-	function obj:get() return end
-	function obj:demand() return end
-		
-	return obj
+	self.name = name
+	
+	return self
 end
 
 function love.thread.getThread(name)
