@@ -14,13 +14,13 @@ network.READY = 5
 network.DISCONNECT = 6
 network.MESSAGE = 7
 
-network.udp_accept = {}
+network.udp_accept = network.udp_accept or {}
 
 -- packet handling
 local delimiter = "\1\3\2"
 local receive_mode = 61440
 local buffered = true
-local custom_types = {}
+network.serializer_types = network.serializer_types or {}
 
 local function encode(...)
 	
@@ -28,7 +28,7 @@ local function encode(...)
 	
 	for k, v in pairs(args) do
 		local t = typex(v)
-		local func = custom_types[t]
+		local func = network.serializer_types[t]
 		if func then			
 			args[k] = {"msgpo", t, func(v, true)}
 		end	
@@ -56,9 +56,9 @@ local function decode(...)
 	
 	for k, v in pairs(args) do
 		if type(v) == "table" then
-			if v[1] == "msgpo" and custom_types[v[2]] then
+			if v[1] == "msgpo" and network.serializer_types[v[2]] then
 				if v[3] then
-					args[k] = custom_types[v[2]](v[3], false)
+					args[k] = network.serializer_types[v[2]](v[3], false)
 				else
 					args[k] = NULL
 				end
@@ -74,7 +74,7 @@ local function split_packet(str)
 end
 
 function network.AddEncodeDecodeType(type, callback)
-	custom_types[type] = callback
+	network.serializer_types[type] = callback
 end
 
 local function ipport_to_uid(ipport)
@@ -116,7 +116,7 @@ function network.HandleMessage(socket, stage, a, ...)
 	elseif CLIENT and stage == network.UDP_PORT then
 	
 		if network.debug then
-			logf("sending udp port %i to server\n", network.udp:GetPort())
+			logf("sending udp port %s to server\n", network.udp:GetPort())
 		end
 		
 		network.SendMessageToServer(network.UDP_PORT, network.udp:GetPort())
@@ -219,7 +219,7 @@ function network.HandleMessage(socket, stage, a, ...)
 						
 			event.Call("NetworkMessageReceived", player, a, ...)
 		end
-	elseif stage == network.DISCONNECT then
+	elseif stage == network.DISCONNECT then	
 		local player = players.GetByUniqueID(uniqueid)
 		local reason = tostring(a)
 		
@@ -228,27 +228,37 @@ function network.HandleMessage(socket, stage, a, ...)
 				if network.debug then
 					logf("invalid message: socket %s tried to send DISCONNECT packet with reason %q but the player is not a valid player\n", socket, reason)
 				end
-				if player:IsValid() then player:Remove() end
+				
 				socket:Remove()
+				
 				return
 			end
 		
 			event.Call("PlayerLeft", player:GetName(), uniqueid, reason, player)
 			event.BroadcastCall("PlayerLeft", player:GetName(), uniqueid, reason)
 			
-			if SERVER then
-				-- send the message back to other clients
-				network.BroadcastMessage(stage, uniqueid, reason)
-				
+			-- send the message back to other clients
+			network.BroadcastMessage(stage, uniqueid, reason)
+			
+			-- maybe the player disconnected before UDP_PORT
+			if socket.udp_port then
 				network.udp_accept[socket:GetIP() .. socket.udp_port] = nil
 			end
+			
+			socket:Remove()
 		end
 		
 		if network.debug then
 			logf("%s disconnected (%s)\n", player, reason or "unknown reason")
 		end
 		
-		player:Remove()
+			
+		-- we allow disconnect at any time 
+		-- so we need to make sure everything is valid
+		
+		if player:IsValid() then
+			player:Remove()
+		end
 	end
 end
 
@@ -378,6 +388,11 @@ if CLIENT then
 			network.started = false
 			
 			event.Call("Disconnected", reason)
+			
+			for _, ply in pairs(players.GetAll()) do
+				print(ply)
+				ply:Remove()
+			end
 		end
 	end
 
@@ -547,11 +562,23 @@ if CLIENT then
 	local ip_cvar = console.CreateVariable("cl_ip", default_ip)
 	local port_cvar = console.CreateVariable("cl_port", default_port)
 	
+	local last_ip
+	local last_port
+	
+	console.AddCommand("retry", function()
+		if last_ip then
+			network.Connect(last_ip, last_port)
+		end
+	end)
+	
 	console.AddCommand("connect", function(line, ip, port)		
 		ip = ip or ip_cvar:Get()
 		port = tonumber(port) or port_cvar:Get()
 		
 		logf("connecting to %s:%i\n", ip, port)
+		
+		last_ip = ip
+		last_port = port
 		
 		network.Connect(ip, port)
 	end)

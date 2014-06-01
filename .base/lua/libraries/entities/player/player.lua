@@ -39,7 +39,6 @@ function META:OnRemove()
 	if SERVER then 
 		if self.socket:IsValid() then
 			network.HandleMessage(self.socket, network.DISCONNECT, "removed")
-			self.socket:Remove()
 		end
 	end
 end	
