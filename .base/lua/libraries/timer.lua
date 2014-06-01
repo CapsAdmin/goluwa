@@ -39,7 +39,7 @@ do -- server time (synchronized across client and server)
 		server_time = time
 	end
 		
-	function timer.GetSystemTime()
+	function timer.GetServerTime()
 		return server_time
 	end
 end
@@ -64,4 +64,78 @@ do -- profile
 	end
 end
 
+local function not_implemented() debug.trace() logn("this function is not yet implemented!") end
+
+do 
+	local get = not_implemented
+	
+	if WINDOWS then
+		ffi.cdef("int GetTickCount();")
+		
+		get = function() return ffi.C.GetTickCount() end
+	end
+	
+	if LINUX then
+		ffi.cdef[[	
+			typedef long time_t;
+			typedef long suseconds_t;
+
+			struct timezone {
+				int tz_minuteswest;     /* minutes west of Greenwich */
+				int tz_dsttime;         /* type of DST correction */
+			};
+			
+			struct timeval {
+				time_t      tv_sec;     /* seconds */
+				suseconds_t tv_usec;    /* microseconds */
+			};
+			
+			int gettimeofday(struct timeval *tv, struct timezone *tz);
+		]]
+		
+		local temp = ffi.new("struct timeval[1]")
+		get = function() ffi.C.gettimeofday(temp, nil) return temp[0].tv_usec*100 end
+	end
+	
+	timer.GetTickCount = get
+end
+
+
+do -- time in ms
+	local get = not_implemented
+	
+	if WINDOWS then
+		ffi.cdef("int timeGetTime();")
+		
+		get = function() return ffi.C.timeGetTime() end
+	end
+	
+	if LINUX then
+		ffi.cdef[[	
+			int gettimeofday(struct timeval *tv, struct timezone *tz);
+		]]
+		
+		local temp = ffi.new("struct timeval[1]")
+		get = function() ffi.C.gettimeofday(temp, nil) return temp[0].tv_usec*100 end
+	end
+	
+	timer.GetTimeMS = get
+end
+
+do -- sleep
+	local sleep = not_implemented
+	
+	if WINDOWS then
+		ffi.cdef("void Sleep(int ms)")
+		sleep = function(ms) ffi.C.Sleep(ms) end
+	end
+
+	if LINUX then
+		ffi.cdef("void usleep(unsigned int ns)")
+		sleep = function(ms) ffi.C.usleep(ms*1000) end
+	end
+	
+	timer.Sleep = sleep
+end
+ 
 return timer
