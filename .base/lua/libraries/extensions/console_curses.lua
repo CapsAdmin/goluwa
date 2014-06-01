@@ -80,11 +80,8 @@ function console.InitializeCurses()
 	local last_w = curses.COLS
 	local last_h = curses.LINES
 
-	event.CreateTimer("curses", 1/30, 0, function()
+	event.CreateTimer("curses", 1/60, 0, function()
 		local key = {}
-		if last_w ~= curses.COLS or last_h ~= curses.LINES then
-			console.Resize(curses.COLS, curses.LINES)
-		end
 		
 		for i = 1, math.huge do
 			local byte = curses.wgetch(c.input_window)
@@ -127,6 +124,12 @@ function console.InitializeCurses()
 			
 			curses.wmove(c.input_window, 0, math.max(markup:GetCaretSubPos()-1, 0))
 			console.ClearInput(markup:GetText())
+		end
+		
+		if last_w ~= curses.COLS or last_h ~= curses.LINES then
+			console.Resize(curses.COLS, curses.LINES)
+			last_w = curses.COLS
+			last_h = curses.LINES
 		end
 		
 	end)
@@ -198,12 +201,12 @@ function console.InitializeCurses()
 			end
 		--end
 
-		curses.init_pair(COLORPAIR_STATUS, curses.COLOR_RED, curses.COLOR_BLUE)
+		curses.init_pair(COLORPAIR_STATUS, curses.COLOR_RED, curses.COLOR_WHITE + curses.A_DIM * 2 ^ 8)
 	end
 
 	-- replace some functions
 	
-	if false and WINDOWS then
+	if WINDOWS then
 		ffi.cdef("void PDC_set_title(const char *);")
 		
 		console.SetTitleRaw = curses.PDC_set_title
@@ -298,12 +301,12 @@ function console.InitializeCurses()
 				
 			console.SyntaxPrint(str, c.log_window)
 			console.ScrollLogHistory(0) 
-			curses.wrefresh(c.log_window)
 			
-			if true or system.SetTitleRaw == console.ClearStatus then
-				console.ClearStatus(console.last_status or "LOL")
+			curses.wrefresh(c.log_window)			
+			
+			if console.status_window then
+				console.ClearStatus(console.last_status)
 			end
-			
 		end
 	end
 
@@ -543,6 +546,8 @@ function console.ClearWindow()
 	curses.werase(c.log_window)
 	curses.wrefresh(c.log_window)
 end
+
+console.last_status = ""
 
 function console.ClearStatus(str)
 	curses.werase(c.status_window)
