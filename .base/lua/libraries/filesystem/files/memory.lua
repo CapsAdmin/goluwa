@@ -19,7 +19,7 @@ local function get_folder(path_info, remove_last)
 	local next = file_tree
 	
 	local folders = path_info:GetFolders()
-	
+		
 	-- when creating a folder the folder doesn't exist
 	-- so remove it
 	if remove_last then
