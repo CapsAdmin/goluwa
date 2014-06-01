@@ -119,15 +119,6 @@ function surface.GetTexture()
 end
 
 do
-	local mesh_data = {
-		{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
-		{pos = {0, 1}, uv = {0, 0}, color = {1,1,1,1}},
-		{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
-
-		{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
-		{pos = {1, 0}, uv = {1, 1}, color = {1,1,1,1}},
-		{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
-	}
 	--[[{
 		{pos = {0, 0}, uv = {xbl, ybl}, color = color_bottom_left},
 		{pos = {0, 1}, uv = {xtl, ytl}, color = color_top_left},
@@ -156,87 +147,84 @@ do
 	local last_color_bottom_right = Color(1,1,1,1)
 	
 	local function update_vbo()
-	
+		
 		if 
-			last_xtl ~= mesh_data[2].uv[1] or
-			last_ytl ~= mesh_data[2].uv[2] or
-			last_xtr ~= mesh_data[4].uv[1] or
-			last_ytr ~= mesh_data[4].uv[2] or
+			last_xtl ~= surface.rect_mesh.buffer[1].uv.A or
+			last_ytl ~= surface.rect_mesh.buffer[1].uv.B or
+			last_xtr ~= surface.rect_mesh.buffer[3].uv.A or
+			last_ytr ~= surface.rect_mesh.buffer[3].uv.B or
 			
-			last_xbl ~= mesh_data[1].uv[1] or
-			last_ybl ~= mesh_data[2].uv[2] or
-			last_xbr ~= mesh_data[5].uv[1] or
-			last_ybr ~= mesh_data[5].uv[2] or
+			last_xbl ~= surface.rect_mesh.buffer[0].uv.A or
+			last_ybl ~= surface.rect_mesh.buffer[1].uv.B or
+			last_xbr ~= surface.rect_mesh.buffer[4].uv.A or
+			last_ybr ~= surface.rect_mesh.buffer[4].uv.B or
 			
-			last_color_bottom_left ~= mesh_data[1].color or
-			last_color_top_left ~= mesh_data[2].color or
-			last_color_top_right ~= mesh_data[3].color or
-			last_color_bottom_right ~= mesh_data[5].color
+			last_color_bottom_left ~= surface.rect_mesh.buffer[0].color or
+			last_color_top_left ~= surface.rect_mesh.buffer[1].color or
+			last_color_top_right ~= surface.rect_mesh.buffer[2].color or
+			last_color_bottom_right ~= surface.rect_mesh.buffer[4].color
 		then
 		
-			surface.rect_mesh:UpdateVertexBuffer(mesh_data)
+			surface.rect_mesh:UpdateBuffer()
 			
-			last_xtl = mesh_data[2].uv[1]
-			last_ytl = mesh_data[2].uv[2]
-			last_xtr = mesh_data[4].uv[1]
-			last_ytr = mesh_data[4].uv[2]
+			last_xtl = surface.rect_mesh.buffer[1].uv.A
+			last_ytl = surface.rect_mesh.buffer[1].uv.B
+			last_xtr = surface.rect_mesh.buffer[3].uv.A
+			last_ytr = surface.rect_mesh.buffer[3].uv.B
 			           
-			last_xbl = mesh_data[1].uv[1]
-			last_ybl = mesh_data[2].uv[2]
-			last_xbr = mesh_data[5].uv[1]
-			last_ybr = mesh_data[5].uv[2]
+			last_xbl = surface.rect_mesh.buffer[0].uv.A
+			last_ybl = surface.rect_mesh.buffer[1].uv.B
+			last_xbr = surface.rect_mesh.buffer[4].uv.A
+			last_ybr = surface.rect_mesh.buffer[4].uv.B
 			
-			last_color_bottom_left = mesh_data[1].color
-			last_color_top_left = mesh_data[2].color
-			last_color_top_right = mesh_data[3].color
-			last_color_bottom_right = mesh_data[5].color	
+			last_color_bottom_left = surface.rect_mesh.buffer[0].color
+			last_color_top_left = surface.rect_mesh.buffer[1].color
+			last_color_top_right = surface.rect_mesh.buffer[2].color
+			last_color_bottom_right = surface.rect_mesh.buffer[4].color	
 		end		
 	end
 
 	function surface.SetRectUV(x,y, w,h, sx,sy)
 		if not x then
-			mesh_data[1].uv[1] = 0
-			mesh_data[1].uv[2] = 1
+			surface.rect_mesh.buffer[0].uv.A = 0
+			surface.rect_mesh.buffer[0].uv.B = 1
 			
-			mesh_data[2].uv[1] = 0
-			mesh_data[2].uv[2] = 0
+			surface.rect_mesh.buffer[1].uv.A = 0
+			surface.rect_mesh.buffer[1].uv.B = 0
 			
-			mesh_data[3].uv[1] = 1
-			mesh_data[3].uv[2] = 0
+			surface.rect_mesh.buffer[2].uv.A = 1
+			surface.rect_mesh.buffer[2].uv.B = 0
 			
 			--
 			
-			mesh_data[4].uv = mesh_data[3].uv
+			surface.rect_mesh.buffer[3].uv = surface.rect_mesh.buffer[2].uv
 			
-			mesh_data[5].uv[1] = 1
-			mesh_data[5].uv[2] = 1
+			surface.rect_mesh.buffer[4].uv.A = 1
+			surface.rect_mesh.buffer[4].uv.B = 1
 			
-			mesh_data[6].uv = mesh_data[1].uv	
+			surface.rect_mesh.buffer[5].uv = surface.rect_mesh.buffer[0].uv	
 		else			
 			sx = sx or 1
 			sy = sy or 1
 			
-			mesh_data[1].uv[1] = x / sx
-			mesh_data[1].uv[2] = (y + h) / sy
+			surface.rect_mesh.buffer[0].uv.A = x / sx
+			surface.rect_mesh.buffer[0].uv.B = (y + h) / sy
 			
-			mesh_data[2].uv[1] = x / sx
-			mesh_data[2].uv[2] = y / sy
+			surface.rect_mesh.buffer[1].uv.A = x / sx
+			surface.rect_mesh.buffer[1].uv.B = y / sy
 			
-			mesh_data[3].uv[1] = (x + w) / sx
-			mesh_data[3].uv[2] = y / sy
+			surface.rect_mesh.buffer[2].uv.A = (x + w) / sx
+			surface.rect_mesh.buffer[2].uv.B = y / sy
 			
 			--
 			
-			mesh_data[4].uv = mesh_data[3].uv
+			surface.rect_mesh.buffer[3].uv = surface.rect_mesh.buffer[2].uv
 			
-			mesh_data[5].uv[1] = (x + w) / sx
-			mesh_data[5].uv[2] = (y + h)
+			surface.rect_mesh.buffer[4].uv.A = (x + w) / sx
+			surface.rect_mesh.buffer[4].uv.B = (y + h)
 			
-			mesh_data[6].uv = mesh_data[1].uv	
+			surface.rect_mesh.buffer[5].uv = surface.rect_mesh.buffer[0].uv	
 		end
-		
-				
-		update_vbo()
 	end
 
 	local white_t = {1,1,1,1}
@@ -244,15 +232,15 @@ do
 	function surface.SetRectColors(cbl, ctl, ctr, cbr)			
 		if not cbl then
 			for i = 1, 6 do
-				mesh_data[i].color = white_t
+				surface.rect_mesh.buffer[i].color = white_t
 			end
 		else
-			mesh_data[1].color = {cbl:Unpack()}
-			mesh_data[2].color = {ctl:Unpack()}
-			mesh_data[3].color = {ctr:Unpack()}
-			mesh_data[4].color = mesh_data[3].color
-			mesh_data[5].color = {cbr:Unpack()}
-			mesh_data[6].color = mesh_data[1]
+			surface.rect_mesh.buffer[0].color = {cbl:Unpack()}
+			surface.rect_mesh.buffer[1].color = {ctl:Unpack()}
+			surface.rect_mesh.buffer[2].color = {ctr:Unpack()}
+			surface.rect_mesh.buffer[3].color = surface.rect_mesh.buffer[2].color
+			surface.rect_mesh.buffer[4].color = {cbr:Unpack()}
+			surface.rect_mesh.buffer[5].color = surface.rect_mesh.buffer[1]
 		end
 		
 		update_vbo()
