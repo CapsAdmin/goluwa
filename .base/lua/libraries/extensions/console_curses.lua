@@ -30,7 +30,11 @@ local char_translate =
 	
 	["\27[1;5D"] = "CTL_LEFT",
 	["\27[1;5C"] = "CTL_RIGHT",
-	
+
+	["\27\79\72"] = "KEY_HOME",
+	["\27\79\70"] = "KEY_END",
+	["\27\91\51\59\53\126"] = "CTL_DEL",
+
 	KEY_SELECT = "KEY_HOME",
 	KEY_FIND = "KEY_END",
 	
@@ -73,8 +77,14 @@ local markup_translate = {
 }
 
 function console.InitializeCurses()
+	local last_w = curses.COLS
+	local last_h = curses.LINES
+
 	event.CreateTimer("curses", 1/30, 0, function()
 		local key = {}
+		if last_w ~= curses.COLS or last_h ~= curses.LINES then
+			console.Resize(curses.COLS, curses.LINES)
+		end
 		
 		for i = 1, math.huge do
 			local byte = curses.wgetch(c.input_window)
@@ -91,7 +101,17 @@ function console.InitializeCurses()
 			end
 		end
 		
-		if #key > 0 then				
+		if #key > 0 then
+		
+			-- super hacks
+			for chars, key2 in pairs(char_translate) do
+				if type(chars) == "string" then
+					if key:sub(1, #chars) == chars then
+						key = chars
+					end
+				end
+			end
+
 			key = char_translate[key] or char_translate[key:byte()] or key
 
 			markup:SetControlDown(key:find("CTL_") ~= nil)
@@ -100,12 +120,15 @@ function console.InitializeCurses()
 			if (key:find("KEY_") or key:find("CTL_") or key:find("PAD")) and event.Call("ConsoleKeyInput", key) ~= false then									
 				console.HandleKey(key)		
 			elseif event.Call("ConsoleCharInput", key) ~= false then
-				console.HandleChar(key)
+				if key:byte(1) >= 32 then
+					console.HandleChar(key)
+				end
 			end
 			
 			curses.wmove(c.input_window, 0, math.max(markup:GetCaretSubPos()-1, 0))
 			console.ClearInput(markup:GetText())
 		end
+		
 	end)
 	 
 	do -- input extensions
@@ -175,7 +198,7 @@ function console.InitializeCurses()
 			end
 		--end
 
-		curses.init_pair(COLORPAIR_STATUS, curses.COLOR_RED, curses.COLOR_WHITE + curses.A_DIM * 2 ^ 8)
+		curses.init_pair(COLORPAIR_STATUS, curses.COLOR_RED, curses.COLOR_BLUE)
 	end
 
 	-- replace some functions
@@ -186,11 +209,13 @@ function console.InitializeCurses()
 		console.SetTitleRaw = curses.PDC_set_title
 		console.SetTitleRaw(console.GetTitle())
 	else
-		c.status_window = curses.derwin(c.parent_window, 1, curses.COLS, 0, 0)
+		c.status_window = curses.newwin(8, 24, 0, curses.COLS - 24)
 		curses.nodelay(c.status_window, 1)
 
 		console.SetTitleRaw = console.ClearStatus
 	end
+	
+	console.Resize(curses.COLS, curses.LINES)
 	
 	do
 		local suppress_print = false
@@ -273,8 +298,12 @@ function console.InitializeCurses()
 				
 			console.SyntaxPrint(str, c.log_window)
 			console.ScrollLogHistory(0) 
-			
 			curses.wrefresh(c.log_window)
+			
+			if true or system.SetTitleRaw == console.ClearStatus then
+				console.ClearStatus(console.last_status or "LOL")
+			end
+			
 		end
 	end
 
@@ -285,6 +314,19 @@ function console.InitializeCurses()
 	_G.LOG_BUFFER = nil
 		
 	console.curses_init = true
+end
+
+function console.Resize(w, h)
+	curses.wresize(c.log_window, h - 1, w)
+	curses.mvderwin(c.log_window, 0, 0)
+	
+	curses.wresize(c.input_window, 1, w)
+	curses.mvderwin(c.input_window, h - 1, 0)
+	
+	curses.wresize(c.status_window, h / 3, w / 3 * 2)
+	curses.mvderwin(c.status_window, 0, w - w / 3)
+
+	console.ScrollLogHistory(0)
 end
 
 function console.ShutdownCurses()
@@ -506,9 +548,10 @@ function console.ClearStatus(str)
 	curses.werase(c.status_window)
 	if USE_COLORS then curses.wattron(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS)) end
 	if USE_COLORS then curses.wbkgdset(c.status_window, COLORPAIR_STATUS) end
-	curses.waddstr(c.status_window, str)
+	curses.waddstr(c.status_window, (str:gsub("|", "\n")))
 	if USE_COLORS then curses.wattroff(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS)) end
 	curses.wrefresh(c.status_window)
+	console.last_status = str
 end
 
 local function get_commands_for_autocomplete()
