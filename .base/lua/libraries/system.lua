@@ -256,20 +256,20 @@ do -- fonts
 
 		local display = X11.XOpenDisplay(nil)
 
-		if display == nil then
-			print("cricket")
-			return
+		if display ~= nil then
+			local count = ffi.new("int[1]")
+			local names = X11.XListFonts(display, "*", 65535, count)
+			count = count[0]
+
+			for i = 1, count do
+				local name = ffi.string(names[i - 1])
+			end
+
+			X11.XCloseDisplay(display)
+		else
+			print("NO X DISPLAY FOUND BUT WHATEVER")
+			--return
 		end
-
-		local count = ffi.new("int[1]")
-		local names = X11.XListFonts(display, "*", 65535, count)
-		count = count[0]
-
-		for i = 1, count do
-			local name = ffi.string(names[i - 1])
-		end
-
-		X11.XCloseDisplay(display)
 	end
 
 	system.GetInstalledFonts = get
