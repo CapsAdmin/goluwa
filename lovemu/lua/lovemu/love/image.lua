@@ -15,11 +15,11 @@ do -- image data
 	end
 	
 	function ImageData:getWidth() 
-		return w 
+		return self.tex.w
 	end
 	
 	function ImageData:getHeight() 
-		return h 
+		return self.tex.h
 	end
 	
 	function ImageData:setFilter() 
