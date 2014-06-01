@@ -100,28 +100,32 @@ local function all_in_one_loader(name)
   end)
 end
 
-local function findchunk(name)
+local function findchunk(name, find)
   local errors = { string.format("module '%s' not found\n", name) }
   local found
   
   for _, loader in ipairs(_M.loaders) do
     local chunk, err, path = loader(name)
 	
-    if type(chunk) == 'function' then
-      return chunk, nil, path
-    elseif type(chunk) == 'string' then
-      errors[#errors + 1] = chunk
-    end
+	if not find or (path and path:find(find)) then
+		if type(chunk) == 'function' then
+		  return chunk, nil, path
+		elseif type(chunk) == 'string' then
+		  errors[#errors + 1] = chunk
+		end
+	end
   end
 
   for _, loader in ipairs(package.loaders) do
     local chunk, err, path = loader(name)
 
-    if type(chunk) == 'function' then
-      return chunk, nil, path
-    elseif type(chunk) == 'string' then
-      errors[#errors + 1] = chunk
-    end
+	if not find or (path and path:find(find)) then
+		if type(chunk) == 'function' then
+		  return chunk, nil, path
+		elseif type(chunk) == 'string' then
+		  errors[#errors + 1] = chunk
+		end
+	end
   end
   
   if _G[name] then
@@ -131,8 +135,8 @@ local function findchunk(name)
   return nil, table.concat(errors, '')
 end
 
-local function load(name)
-    local chunk, errors, path = findchunk(name)
+local function load(name, find)
+    local chunk, errors, path = findchunk(name, find)
 
     if not chunk then
       error(errors, 3)
