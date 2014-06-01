@@ -19,7 +19,7 @@ do -- elapsed time (avanved from frame time)
 	function timer.GetElapsedTime()
 		return elapsed_time
 	end
-
+	
 	-- used internally in main_loop.lua
 	function timer.SetElapsedTime(num)
 		elapsed_time = num
@@ -105,18 +105,55 @@ do -- time in ms
 	local get = not_implemented
 	
 	if WINDOWS then
-		ffi.cdef("int timeGetTime();")
+		ffi.cdef("bool QueryPerformanceCounter(uint64_t *out);")
+		ffi.cdef("bool QueryPerformanceFrequency(uint64_t *out);")
 		
-		get = function() return ffi.C.timeGetTime() end
+		local t1 = ffi.new("uint64_t[1]")
+		local t2 = ffi.new("uint64_t[1]")
+		local freq = ffi.new("uint64_t[1]")
+		local time = 0
+		
+		local init
+		
+		get = function() 
+			
+			if not init then
+				ffi.C.QueryPerformanceFrequency(freq)
+				ffi.C.QueryPerformanceCounter(t1)
+				init = true
+			end
+		
+			ffi.C.QueryPerformanceCounter(t2) 
+			
+			time = (tonumber(t2[0] - t1[0]) * 1000 / tonumber(freq[0])) / 1000
+		
+			return time
+		end
 	end
 	
 	if LINUX then
-		ffi.cdef[[	
-			int gettimeofday(struct timeval *tv, struct timezone *tz);
-		]]
+		ffi.cdef"struct timeval {uint32_t sec, uint32_t usec}; int gettimeofday(struct timeval *tv, void *);"
 		
-		local temp = ffi.new("struct timeval[1]")
-		get = function() ffi.C.gettimeofday(temp, nil) return temp[0].tv_usec*100 end
+		local t1 = ffi.new("timeval[1]")
+		local t2 = ffi.new("timeval[1]")
+		local time = 0
+		
+		local init
+		
+		get = function() 
+			
+			if not init then
+				ffi.C.gettimeofday(t1)
+				init = true
+			end
+		
+			ffi.C.gettimeofday(t2) 
+			
+			time = tonumber(t2[0].sec - t1[0].sec) * 1000
+			time = time + tonumber(t2[0].usec - t1[0].usec) / 1000
+		
+			return time
+		end
 	end
 	
 	timer.GetTimeMS = get
