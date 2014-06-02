@@ -7,113 +7,62 @@ event.errors = event.errors or {}
 event.profil = event.profil or {}
 event.destroy_tag = e.EVENT_DESTROY
 
-function event.AddListener(a, b, c, d, e)
-	local type_, unique, func, on_error, priority, self_arg, remove_after_one_call, self_arg_with_callback
-
-	if type(b) == "table" and type(a) == "string" then
-		type_ = a
-		if type(c) == "function" then
-			self_arg_with_callback = true
-			func = c
-		else
-			func = b[a]
-		end
-		self_arg = b
-	elseif type(a) == "string" then
-		type_ = a
-		func = c
-	end	
-	
-	if type_ and not func and type(b) == "function" then
-		func = b
-		unique = tostring(func)
-		remove_after_one_call = true
-	else
-		unique = b
-	end
-	
-	if not unique then
-		local info = debug.getinfo(3)
-		if info.source:sub(1, 1) == "@" then
-			unique = info.source
-		else
-			unique = "temp"
-		end
-	end
-	
-	
-	if type(d) == "number" then
-		priority = d
-	elseif type(d) == "function" then
-		on_error = d
-	end
-	
-	if type(e) == "number" then
-		priority = e
-	else
-		priority = 0
+function event.AddListener(event_type, id, callback, config)	
+	if type(event_type) == "table" then
+		config = event_type
 	end
 		
-	check(type_, "string")
-	--check(func, "function")
-		
-	event.RemoveListener(type_, unique)
+	config = config or {}
 	
-	if not func then return end
+	config.event_type = config.event_type or event_type
+	config.id = config.id or id
+	config.callback = config.callback or callback
+	config.priority = config.priority or 0
 	
-	event.active[type_] = event.active[type_] or {}
-	table.insert(
-		event.active[type_],
-		{
-			func = func,
-			on_error = on_error,
-			priority = priority or 0,
-			unique = unique,
-			self_arg = self_arg,
-			remove_after_one_call = remove_after_one_call,
-			self_arg_with_callback = self_arg_with_callback,
-		}
-	)
+	-- useful for initialize events
+	if config.id == nil then
+		config.id = tostring(callback)
+		config.remove_after_one_call = true
+	end
+	
+	event.RemoveListener(config.event_type, config.id)
+	
+	event.active[config.event_type] = event.active[config.event_type] or {}
+	
+	table.insert(event.active[config.event_type], config)
 		
 	event.SortByPriority()
 end
 
-function event.AddListenerX(config)
-	event.RemoveListener(config.event, config.unique)
-		
-	event.active[config.event] = event.active[config.event] or {}
-	
-	table.insert(
-		event.active[config.event],
-		{
-			func = config.callback,
-			on_error = config.on_error,
-			priority = config.priority or 0,
-			unique = config.unique,
-			self_arg = config.self_arg,
-			remove_after_one_call = config.remove_after_one_call,
-			self_arg_with_callback = config.self_arg_with_callback,
-		}
-	)
-		
-	event.SortByPriority()
-end
+function event.RemoveListener(event_type, id)
 
-function event.RemoveListener(a, b)
-	local type_, unique
-
-	if type(b) == "table" and type(a) == "string" then
-		type_ = a
-		unique = tostring(b)
-	elseif type(a) == "string" then
-		type_ = a
-		unique = b
+	if type(event_type) == "table" then
+		id = id or event_type.id
+		event_type = event_type or event_type.event_type
 	end
 
-	if unique ~= nil and event.active[type_] then
-		for key, val in pairs(event.active[type_]) do
-			if unique == val.unique then
-				event.active[type_][key] = nil
+	if id ~= nil and event.active[event_type] then
+		for index, val in pairs(event.active[event_type]) do
+			if id == val.id then
+				-- we can't use table.remove here because this might be called during
+				-- an event which will mess up the ipairs loop and skip all the other events
+				-- of the same type
+				event.active[event_type][index] = nil
+				
+				do -- repair the table
+					local temp = {}
+					
+					for k,v in pairs(event.active[event_type]) do
+						table.insert(temp, v)
+						event.active[event_type][k] = nil
+					end
+					
+					for k,v in pairs(temp) do
+						table.insert(event.active[event_type], v)
+					end
+				end
+				
+				break
 			end
 		end
 	else
@@ -136,34 +85,6 @@ function event.GetTable()
 	return event.active
 end
 
-local status, a,b,c,d,e,f,g,h
-local time = 0
-
-function event.UserDataCall(udata, type_, ...)	
-	if udata:IsValid() then
-		local func = udata[type_]
-		
-		
-		if type(func) == "function" then
-			local args = {xpcall(func, system.OnError, udata, ...)}
-			if args[1] then
-				table.remove(args, 1)
-				return unpack(args)
-			else
-				if hasindex(udata) and udata.Type and udata.ClassName then
-					logf("scripted class %s %q errored: %s\n", udata.Type, udata.ClassName, args[2])
-				else
-					logf(args[2])
-				end
-			end
-		end
-	end
-end
-
-local _event
-local _unique
-local unique
-
 local blacklist = {
 	Update = true,
 	PreDisplay = true,
@@ -177,48 +98,52 @@ local blacklist = {
 	PreDrawMenu = true,
 }
 
-function event.Call(type, ...)
+local status, a,b,c,d,e,f,g,h
+local time = 0
+
+function event.Call(event_type, ...)
 	if event.debug then
-		if not blacklist[type] then
+		if not blacklist[event_type] then
 			event.call_count = event.call_count or 0
-				print(event.call_count, type, ...)
+				print(event.call_count, event_type, ...)
 			event.call_count = event.call_count + 1
 		end
 	end
-	if event.active[type] then
-		for key, data in ipairs(event.active[type]) do
+	if event.active[event_type] then
+		for index, data in ipairs(event.active[event_type]) do
 			
 			if data.self_arg then
 				if data.self_arg:IsValid() then
 					if data.self_arg_with_callback then
-						status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or system.OnError, ...)
+						status, a,b,c,d,e,f,g,h = xpcall(data.callback, data.on_error or system.OnError, ...)
 					else
-						status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or system.OnError, data.self_arg, ...)
+						status, a,b,c,d,e,f,g,h = xpcall(data.callback, data.on_error or system.OnError, data.self_arg, ...)
 					end
 				else
-					event.RemoveListener(type, data.unique)
-					event.active[type][key] = nil
+					event.RemoveListener(event_type, data.id)
+
+					event.active[event_type][index] = nil
 					event.SortByPriority()
-					logf("event [%q][%q] removed because self is invalid\n", type, data.unique)
+					logf("event [%q][%q] removed because self is invalid\n", event_type, data.unique)
 					return
 				end
 			else
-				status, a,b,c,d,e,f,g,h = xpcall(data.func, data.on_error or system.OnError, ...)
+				status, a,b,c,d,e,f,g,h = xpcall(data.callback, data.on_error or system.OnError, ...)
 			end
 			
 			if a == event.destroy_tag or data.remove_after_one_call then
-				event.RemoveListener(type, data.unique)
+				event.RemoveListener(event_type, data.id)
 			else
 				if status == false then		
-					if _G.type(data.on_error) == "function" then
-						data.on_error(a, type, data.unique)
+					if type(data.on_error) == "function" then
+						data.on_error(a, event_type, data.id)
 					else
-						event.RemoveListener(type, data.unique)
-						logf("event [%q][%q] removed\n", type, data.unique)
+						event.RemoveListener(event_type, data.id)
+						logf("event [%q][%q] removed\n", event_type, data.id)
 					end
 
-					event.errors[type] = event.errors[type] or {}
-					table.insert(event.errors[type], {unique = data.unique, error = a, time = os.date("*t")})
+					event.errors[event_type] = event.errors[event_type] or {}
+					table.insert(event.errors[event_type], {id = data.id, error = a, time = os.date("*t")})
 				end
 
 				if a ~= nil then
@@ -259,8 +184,8 @@ function event.Dump()
 		logn("> "..k.." ("..table.Count(v).." events):")
 		for name,data in pairs(v) do
 			h=h+1
-			logn("   \""..name.."\" \t "..tostring(debug.getinfo(data.func).source)..":")
-			logn(" Line:"..tostring(debug.getinfo(data.func).linedefined))
+			logn("   \""..name.."\" \t "..tostring(debug.getinfo(data.callback).source)..":")
+			logn(" Line:"..tostring(debug.getinfo(data.callback).linedefined))
 		end
 		logn("")
 	end
@@ -296,8 +221,8 @@ do -- timers
 		function META:GetInterval()
 			return self.time
 		end
-		function META:SetCallback(func)
-			self.callback = func
+		function META:SetCallback(callback)
+			self.callback = callback
 		end
 		function META:GetCallback()
 			return self.callback
@@ -476,15 +401,15 @@ do -- timers
 end
 
 event.events = setmetatable({}, {
-	__index = function(_, unique)
+	__index = function(_, id)
 		return setmetatable({}, {
-			__newindex = function(_, event_name, func)
-				event.AddListener(event_name, unique, func)
+			__newindex = function(_, event_name, callback)
+				event.AddListener(event_name, id, callback)
 			end,
 		})
 	end,
-	__newindex = function(_, event_name, func)
-		event.AddListener(event_name, nil, func)
+	__newindex = function(_, event_name, callback)
+		event.AddListener(event_name, nil, callback)
 	end,
 })
 

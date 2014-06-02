@@ -346,7 +346,7 @@ if render.gbuffer_shader then
 	render.InitializeGBuffer()
 end
 
-event.AddListener("RenderContextInitialized", function() 
+event.AddListener("RenderContextInitialized", nil, function() 
 	local ok, err = xpcall(render.InitializeGBuffer, system.OnError)
 	
 	if not ok then

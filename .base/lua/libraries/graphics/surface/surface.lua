@@ -355,7 +355,7 @@ do -- points
 	end
 end
 
-event.AddListener("RenderContextInitialized", surface.Initialize)
+event.AddListener("RenderContextInitialized", nil, surface.Initialize)
 
 if RELOAD then
 	surface.Initialize()

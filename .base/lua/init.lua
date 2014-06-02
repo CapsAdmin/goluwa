@@ -565,15 +565,15 @@ do -- libraries
 	-- serializing
 	serializer = include("libraries/serializing/serializer.lua")
 
+	system = include("libraries/system.lua")
 	timer = include("libraries/timer.lua")
 	console = include("libraries/console.lua")
-	input = include("libraries/input.lua")
-	system = include("libraries/system.lua")
 	profiler = include("libraries/profiler.lua")
 	steam = include("libraries/steam.lua")
 	cookies = include("libraries/cookies.lua")
 	expression = include("libraries/expression.lua")
 	autocomplete = include("libraries/autocomplete.lua")
+	input = include("libraries/input.lua")
 	
 	-- meta
 	include("libraries/extensions/function.lua")
