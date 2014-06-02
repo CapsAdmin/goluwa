@@ -45,6 +45,7 @@ end
 function PANEL:OnDraw(size)
 	local w,h = size:Unpack()
 	
+	surface.SetWhiteTexture()
 	surface.Color(0.1, 0.1, 0.1, 1)
 	surface.DrawRect(0,0, w, h)
 	
