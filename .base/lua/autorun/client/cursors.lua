@@ -1,4 +1,4 @@
-event.AddListener("Draw2D", "cursors", function()
+event.AddListener("DrawHUD", "cursors", function()
 	surface.Color(1,1,1,1)
 	surface.SetFont("default")
 	

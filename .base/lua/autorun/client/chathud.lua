@@ -149,7 +149,7 @@ function chathud.MouseInput(button, press, x, y)
 	chathud.markup:OnMouseInput(button, press, x, y)
 end
 
-event.AddListener("PreDrawMenu", "chathud", function()
+event.AddListener("DrawHUD", "chathud", function()
 	chathud.Draw()
 end)
 

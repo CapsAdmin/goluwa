@@ -50,7 +50,7 @@ local function show_image(url)
 	
 	local start = timer.GetElapsedTime()
 	
-	event.AddListener("Draw2D", "chathud_image_url", function()
+	event.AddListener("DrawHUD", "chathud_image_url", function()
 		if tex:IsLoading() then
 			start = timer.GetElapsedTime()
 			return
@@ -59,7 +59,7 @@ local function show_image(url)
 		local t = timer.GetElapsedTime() - start
 		
 		if t > totalDuration then
-			event.RemoveListener("Draw2D", "chathud_image_url")
+			event.RemoveListener("DrawHUD", "chathud_image_url")
 			table.remove(queue, 1)
 			busy = false
 			return
