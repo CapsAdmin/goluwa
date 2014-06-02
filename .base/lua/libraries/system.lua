@@ -609,12 +609,47 @@ function system.OnError(msg, ...)
 	resize_field(data, "name")
 	
 	for _, info in npairs(data) do
-		logf("  %s   %s   %s(%s)\n", info.currentline, info.source, info.name, info.arg_line)
+		logf("  %s   %s   %s  (%s)\n", info.currentline, info.source, info.name, info.arg_line)
 	end
+	
+	table.clear(data)
 
 	logn("}")
-	local source, _msg = msg:match("(.+): (.+)")
+	logn("LOCALS: ")
+	logn("{")
+	for _, param in pairs(debug.getparamsx(4)) do
+		--if not param.key:find("(",nil,true) then
+			local val
+			
+			if type(param.val) == "table" then
+				val = tostring(param.val)
+			elseif type(param.val) == "string" then
+				val = param.val:sub(0, 10)
+				
+				if val ~= param.val then
+					val = val .. " .. " .. utilities.FormatFileSize(#param.val)
+				end
+			else
+				val = serializer.GetLibrary("luadata").ToString(param.val)
+			end
+			
+			table.insert(data, {key = param.key, value = param.val})
+		--end
+	end
 	
+	table.insert(data, {key = "KEY:", value = "VALUE:"})
+	
+	resize_field(data, "key")
+	resize_field(data, "value")
+	
+	for _, info in npairs(data) do
+		logf("  %s   %s\n", info.key, info.value)
+	end
+	logn("}")
+	
+	logn("ERROR:")
+	logn("{")
+	local source, _msg = msg:match("(.+): (.+)")	
 	
 	if source then
 		source = source:trim()
@@ -636,12 +671,13 @@ function system.OnError(msg, ...)
 			--logf("debug.openfunction(%q)\n", source)
 		end
 		
-		logn(source)
-		logn(_msg:trim())
+		logn("  ", source)
+		logn("  ", _msg:trim())
 	else
 		logn(msg)
 	end
 	
+	logn("}")
 	logn("")
 	
 	suppress = false
