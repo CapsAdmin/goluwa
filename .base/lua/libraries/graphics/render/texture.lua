@@ -360,7 +360,7 @@ do -- texture object
 		end
 		
 		format.type = format.type or gl.e.GL_TEXTURE_2D
-		format.upload_format = format.upload_format or gl.e.GL_RGBA
+		format.upload_format = format.upload_format or gl.e.GL_BGRA
 		format.internal_format = format.internal_format or gl.e.GL_RGBA8
 		format.format_type = format.format_type or gl.e.GL_UNSIGNED_BYTE
 		format.filter = format.filter ~= nil
