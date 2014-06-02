@@ -21,7 +21,7 @@ if CLIENT then
 		end
 	end
 
-	event.AddListener("NetworkMessageReceived", "message", message.OnMessageReceived, print)
+	event.AddListener("NetworkMessageReceived", "message", message.OnMessageReceived, {on_error = system.OnError})
 end
 
 if SERVER then
@@ -49,7 +49,7 @@ if SERVER then
 		end
 	end
 	
-	event.AddListener("NetworkMessageReceived", "message", message.OnMessageReceived, print)
+	event.AddListener("NetworkMessageReceived", "message", message.OnMessageReceived, {on_error = system.OnError})
 end
 
 do -- console extension

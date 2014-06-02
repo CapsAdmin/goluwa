@@ -122,5 +122,5 @@ function lovemu.RunGame(folder)
 		else
 			love.errhand(lovemu.error_msg)
 		end
-	end)
+	end, {priority = math.huge}) -- draw this first
 end

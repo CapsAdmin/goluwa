@@ -121,7 +121,7 @@ do
 		end
 	end
 
-	event.AddListener("KeyInput", "keybind", input.Call, print, math.huge)
+	event.AddListener("KeyInput", "keybind", input.Call, {on_error = system.OnError, priority = math.huge})
 
 	function input.Command(line, key, ...)
 		if key then

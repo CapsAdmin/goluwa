@@ -17,7 +17,7 @@ local function add_event(name, check)
 				
 				return event.Call("Player" .. name .. "Event", ply, key, press)
 			end
-		end, print)
+		end, {on_error = system.OnError})
 	end
 	
 	if SERVER then
@@ -29,7 +29,7 @@ local function add_event(name, check)
 			
 				event.Call("Player" .. name .. "Event", ply, key, press)
 			end
-		end, print)
+		end, {on_error = system.OnError})
 	end
 end
 		

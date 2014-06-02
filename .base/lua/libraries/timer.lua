@@ -132,7 +132,7 @@ do -- time in ms
 	end
 	
 	if LINUX then
-		ffi.cdef"struct timeval {uint32_t sec, uint32_t usec}; int gettimeofday(struct timeval *tv, void *);"
+		--ffi.cdef"struct timeval {uint32_t sec, uint32_t usec}; int gettimeofday(struct timeval *tv, void *);"
 		
 		local t1 = ffi.new("struct timeval[1]")
 		local t2 = ffi.new("struct timeval[1]")

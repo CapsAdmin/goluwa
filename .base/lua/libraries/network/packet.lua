@@ -60,7 +60,7 @@ if CLIENT then
 		end
 	end
 
-	event.AddListener("NetworkPacketReceived", "packet", packet.OnPacketReceived, print)
+	event.AddListener("NetworkPacketReceived", "packet", packet.OnPacketReceived, {on_error = system.OnError})
 end
 
 if SERVER then
@@ -95,7 +95,7 @@ if SERVER then
 		end
 	end
 	
-	event.AddListener("NetworkPacketReceived", "packet", packet.OnPacketReceived, print)
+	event.AddListener("NetworkPacketReceived", "packet", packet.OnPacketReceived, {on_error = system.OnError})
 end
 
 do -- buffer object

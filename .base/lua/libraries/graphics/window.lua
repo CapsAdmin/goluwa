@@ -21,17 +21,12 @@ function window.Open(...)
 	local wnd = render.CreateWindow(...)
 	
 	-- don't draw anything until the everything has be
-	event.AddListenerX({
-		event = "RenderContextInitialized", 
-		unique = "window_start_rendering", 
-		callback = function()
-			function wnd:OnUpdate(dt)
-				render.DrawScene(self, dt)
-			end
-			return e.EVENT_DESTROY
-		end, 
-		priority = -100000,
-	})
+	event.AddListener("RenderContextInitialized", "window_start_rendering", function()
+		function wnd:OnUpdate(dt)
+			render.DrawScene(self, dt)
+		end
+		return e.EVENT_DESTROY
+	end, {priority = -100000})
 
 	function wnd:OnCursorPos()
 		if system then system.SetCursor(system.GetCursor()) end
