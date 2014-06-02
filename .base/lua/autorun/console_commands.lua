@@ -113,12 +113,23 @@ console.AddCommand("find", function(line, ...)
 	end
 end)
 
+
+local tries = {
+	"lua/?",
+	"?",
+	"lua/tests/?",
+	"lua/libraries/?",
+}
+
 console.AddCommand("source", function(line, ...)
 
-	if vfs.Exists(line) then
-		debug.openscript(line)
-		return
-	end
+	for i, try in pairs(tries) do
+		local path = try:gsub("?", line)
+		if vfs.Exists(path) then
+			debug.openscript(path, tonumber((...)) or 0)
+			return
+		end
+	end	
 
 	local data = utilities.FindValue(...)
 		
