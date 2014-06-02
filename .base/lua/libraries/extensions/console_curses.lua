@@ -613,9 +613,9 @@ function console.HandleKey(key)
 	end
 
 	if key == "KEY_NPAGE" then
-		console.ScrollLogHistory(-1)
+		console.ScrollLogHistory(-curses.LINES/2)
 	elseif key == "KEY_PPAGE" then
-		console.ScrollLogHistory(1)
+		console.ScrollLogHistory(curses.LINES/2)
 	end
 				
 	if key == "KEY_UP" then
