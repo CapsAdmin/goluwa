@@ -106,7 +106,7 @@ function render.EnableDebug(b)
 					gl.GetDebugMessageLog(1, length, nil, nil, nil, nil, nil, buffer)
 					local str = ffi.string(buffer)
 					if str ~= "" then
-						if str:sub(0, 11) ~= "Buffer info" then
+						if str:sub(0, 11) ~= "Buffer info" and not str:find("Texture 0") then
 							local info = debug.getinfo(3)
 							local source = info.source:match(".+render/(.+)")
 							logf("[render] %s:%i gl.%s: %s\n", source, info.currentline, info.name, str)
