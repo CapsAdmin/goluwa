@@ -85,7 +85,9 @@ do -- texture object
 		local buffer = self:CreateBuffer()
 
 		gl.BindTexture(f.type, self.id)
-			gl.GetTexImage(f.type, level or 0, f.upload_format, format or f.internal_format, buffer)
+			gl.PixelStorei(gl.e.GL_PACK_ALIGNMENT, f.stride)
+			gl.PixelStorei(gl.e.GL_UNPACK_ALIGNMENT, f.stride)
+			gl.GetTexImage(f.type, level or 0, f.upload_format, format or f.format_type, buffer)
 		gl.BindTexture(f.type, 0)
 
 		return buffer
@@ -94,7 +96,8 @@ do -- texture object
 	function META:CreateBuffer()
 		-- +1 to height cause there seems to always be some noise on the last line :s
 		local length = self.size.w * (self.size.h+1) * self.format.stride
-		local buffer = ffi.malloc(self.format.buffer_type.. "*", length)--ffi.new(self.format.buffer_type.."[?]", length)
+		local buffer = ffi.malloc(self.format.buffer_type.. "*", length)
+		--local buffer = ffi.new(self.format.buffer_type.."[?]", length)
 		
 		return buffer, length
 	end
@@ -148,39 +151,60 @@ do -- texture object
 		end
 	end 
 	
-	function META:Upload(buffer, x, y, w, h, level, size)
-		x = x or 0
-		y = y or 0
-		w = w or self.size.w
-		h = h or self.size.h
-		level = level or 0
+	function META:Upload(buffer, format_override)
+		local f = format_override or self.format		
+		local f2 = self.format
 		
-		local f = self.format		
+		if format_override then
+			for k, v in pairs(format_override) do
+				format_override[k] = CHECK_FIELD(k, v) or v
+			end
+		end
 		
-		gl.BindTexture(f.type, self.id)			
+		gl.BindTexture(f2.type, self.id)			
 	
-			gl.PixelStorei(gl.e.GL_PACK_ALIGNMENT, f.stride)
-			gl.PixelStorei(gl.e.GL_UNPACK_ALIGNMENT, f.stride)
+			gl.PixelStorei(gl.e.GL_PACK_ALIGNMENT, f.stride or f2.stride)
+			gl.PixelStorei(gl.e.GL_UNPACK_ALIGNMENT, f.stride or f2.stride)
 				
 			self:UpdateFormat()
 		
-			if f.clear then
-				if f.clear == true then
+			if f2.clear then
+				if f2.clear == true then
 					self:Clear(nil)
 				else
-					self:Clear(f.clear)
+					self:Clear(f2.clear)
 				end
 			end
 			
 			if self.compressed then
-				gl.CompressedTexSubImage2D(f.type, level, x, y, w, h, f.upload_format, size, buffer)
+				gl.CompressedTexSubImage2D(
+					f2.type, 
+					f.level or 0, 
+					f.x or 0, 
+					f.y or 0,
+					f.w or self.size.w, 
+					f.h or self.size.h, 
+					f.upload_format or f2.upload_format, 
+					size, 
+					buffer
+				)
 			else
-				gl.TexSubImage2D(f.type, level, x, y, w, h, f.upload_format, f.format_type, buffer)
+				gl.TexSubImage2D(
+					f2.type, 
+					f.level or 0, 
+					f.x or 0, 
+					f.y or 0,
+					f.w or self.size.w, 
+					f.h or self.size.h, 
+					f.upload_format or f2.upload_format, 
+					f.format_type or f2.format_type,
+					buffer
+				)
 			end
-
-			gl.GenerateMipmap(f.type)
-
-		gl.BindTexture(f.type, 0)
+			
+			gl.GenerateMipmap(f2.type)
+			
+		gl.BindTexture(f2.type, 0)
 		
 		return self
 	end
@@ -241,66 +265,82 @@ do -- texture object
 		return self
 	end
 	
+	local cache = {}
+	
 	function META:Shade(fragment_shader, vars)
-		local data = {
-			name = "temp_" .. tostring(os.clock()):gsub("%p", ""),
-			shared = {
-				uniform = vars,
-			},
-			
-			vertex = {
-				uniform = {
-					pwm_matrix = "mat4",
-				},			
-				attributes = {
-					{pos = "vec2"},
-					{uv = "vec2"},
-				},	
-				source = "gl_Position = pwm_matrix * vec4(pos, 0, 1);"
-			},
-			
-			fragment = { 
-				uniform = {
-					self = "texture",
-				},		
-				attributes = {
-					{uv = "vec2"},
-				},			
-				source = fragment_shader,
-			} 
-		} 
-		 
-		local shader = render.CreateShader(data)
-		shader.pwm_matrix = render.GetPVWMatrix2D
-
-		local mesh = shader:CreateVertexBuffer({
-			{pos = {0, 0}, uv = {0, 1}},
-			{pos = {0, 1}, uv = {0, 0}},
-			{pos = {1, 1}, uv = {1, 0}},
-
-			{pos = {1, 1}, uv = {1, 0}},
-			{pos = {1, 0}, uv = {1, 1}},
-			{pos = {0, 0}, uv = {0, 1}},
-		})
+		
+		if not cache[fragment_shader] then
+		
+			local data = {
+				name = "shade_texture_" .. self.id .. "_" .. tostring(timer.GetSystemTime()),
+				shared = {
+					uniform = vars,
+				},
 				
-		local fb = render.CreateFrameBuffer(self.w, self.h, {
-			attach = "color",
-			texture_format = self.format,
-		})
+				vertex = {
+					uniform = {
+						pwm_matrix = "mat4",
+					},			
+					attributes = {
+						{pos = "vec2"},
+						{uv = "vec2"},
+					},	
+					source = "gl_Position = pwm_matrix * vec4(pos, 0, 1);"
+				},
+				
+				fragment = { 
+					uniform = {
+						self = self,
+					},		
+					attributes = {
+						{uv = "vec2"},
+					},			
+					source = fragment_shader,
+				} 
+			} 
+				
+			local shader = render.CreateShader(data)
+			shader.pwm_matrix = render.GetPVWMatrix2D
+
+			local mesh = shader:CreateVertexBuffer({
+				{pos = {0, 0}, uv = {0, 1}},
+				{pos = {0, 1}, uv = {0, 0}},
+				{pos = {1, 1}, uv = {1, 0}},
+
+				{pos = {1, 1}, uv = {1, 0}},
+				{pos = {1, 0}, uv = {1, 1}},
+				{pos = {0, 0}, uv = {0, 1}},
+			})
 			
-	 	fb:Begin()
-			surface.PushMatrix(0, 0, surface.GetScreenSize())
-				shader:Bind()
-				mesh:Draw()
-			surface.PopMatrix()
-		fb:End()
+			local fb = render.CreateFrameBuffer(self.w, self.h, {
+				texture_format = self.format,
+			})
+			
+			cache[fragment_shader] = function(self, vars)	
+				shader.self = self
+						
+				for k,v in pairs(vars) do
+					shader[k] = v
+				end				
+				
+				fb:Begin()
+					fb:Clear(0,0,0,0) 
+					surface.PushMatrix(0, 0, surface.GetScreenSize())
+						shader:Bind()
+						mesh:Draw()
+					surface.PopMatrix()
+				fb:End()
+				
+				return fb:GetTexture():Download()
+			end
+		end
 		
-		local tex = fb:GetTexture()
-		local buffer = tex:Download()
+		local buffer = cache[fragment_shader](self, vars)
 		
-		tex:Remove()
-		shader:Remove()
-		mesh:Remove()
+		--tex:Remove()
+		--shader:Remove()
+		--mesh:Remove()
+		--fb:Remove()
 		
 		self:Replace(buffer, self.w, self.h)
 	end
@@ -311,7 +351,7 @@ do -- texture object
 		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
 		
 		SUPPRESS_GC = true
-		local new = render.CreateTexture(w, h,  data, self.format)
+		local new = render.CreateTexture(w, h, data, self.format)
 		SUPPRESS_GC = false
 		
 		for k, v in pairs(new) do
@@ -430,7 +470,7 @@ do -- texture object
 		end
 		
 		if buffer then	
-			self:Upload(buffer, nil,nil,nil,nil,nil, buffer_size)
+			self:Upload(buffer, {size = buffer_size})
 		end
 		
 		gl.BindTexture(format.type, 0)

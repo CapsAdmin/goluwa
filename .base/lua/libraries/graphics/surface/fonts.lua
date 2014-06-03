@@ -27,9 +27,8 @@ function surface.InitializeFonts()
 
 				void main()
 				{								
-					highp float mask = texture(tex, uv).a;
-
-					frag_color.rgb = global_color.rgb;
+					vec4 font_color = texture(tex, uv);
+					highp float mask = font_color.a;
 					
 					if (smoothness > 0.00)
 					{
@@ -39,6 +38,7 @@ function surface.InitializeFonts()
 						mask *= smoothness * smoothness * smoothness;
 					}
 					
+					frag_color.rgb = font_color.rgb * global_color.rgb;
 					frag_color.a = mask * alpha_multiplier;
 				}
 			]],
@@ -90,11 +90,62 @@ do -- fonts
 		woff = true,
 		truetype = true,
 	}  
+	
+	local dirs = {
+		Vec2(1,0),
+		Vec2(0,1),
+		
+		Vec2(-1,0),
+		Vec2(0,-1),
+	}
+	
+	local function blur_texture(tex, info)
+		info.blur.color = info.blur.color or Color(0,0,0,0)
+		info.blur.size = info.blur.size or 1
+		info.blur.step_size = info.blur.step_size or 1
+		info.blur.alpha = info.blur.alpha or 1
+		for x = -1, 1, info.blur.step_size do
+		for y = -1, 1, info.blur.step_size do
+			tex:Shade([[	
+				out highp vec4 out_color;
+				const float pi = 3.14159265;
+      
+				void main()
+				{
+					float avg = 0;
+					
+					avg += texture(self, vec2(uv.x - 4.0*dir.x, uv.y - 4.0*dir.y)).a * 0.0162162162;
+					avg += texture(self, vec2(uv.x - 3.0*dir.x, uv.y - 3.0*dir.y)).a * 0.0540540541;
+					avg += texture(self, vec2(uv.x - 2.0*dir.x, uv.y - 2.0*dir.y)).a * 0.1216216216;
+					avg += texture(self, vec2(uv.x - 1.0*dir.x, uv.y - 1.0*dir.y)).a * 0.1945945946;
+
+					avg += texture(self, vec2(uv.x, uv.y)).a * 0.2270270270;
+
+					avg += texture(self, vec2(uv.x + 1.0*dir.x, uv.y + 1.0*dir.y)).a * 0.1945945946;
+					avg += texture(self, vec2(uv.x + 2.0*dir.x, uv.y + 2.0*dir.y)).a * 0.1216216216;
+					avg += texture(self, vec2(uv.x + 3.0*dir.x, uv.y + 3.0*dir.y)).a * 0.0540540541;
+					avg += texture(self, vec2(uv.x + 4.0*dir.x, uv.y + 4.0*dir.y)).a * 0.0162162162;
+										
+					out_color.a = min(avg, 0.3 * alpha);
+					out_color.rgb = blur_color.rgb / 16.0;
+					out_color = out_color + texture(self, uv);
+				}
+			]], 
+			{		 
+				dir = Vec2(x, y) * info.blur.size / tex:GetSize(),
+				alpha = info.blur.alpha,
+				blur_color = info.blur.color,
+			})
+		end
+		end
+	end
+
 		
 	function surface.CreateFont(name, info)
 		if not ft.ptr then 
 			table.insert(create_font_queue, {name, info})
-		return name end
+			return name 
+		end
 		
 		info = info or {}
 
@@ -236,8 +287,10 @@ do -- fonts
 					
 					-- copy the data cause we call freetype.RenderGlyph the next frame
 					local length = bitmap.width * bitmap.rows
-					local buffer = ffi.new("unsigned char[?]", length)
-					ffi.copy(buffer, bitmap.buffer, length)
+					local buffer = ffi.new("unsigned char[?]", length * 4, 255) -- rgba
+					for i = 1, length do 
+						buffer[(i*4) - 1] = bitmap.buffer[i-1] 
+					end
 					
 					glyph = {
 						buffer = buffer, 
@@ -283,28 +336,26 @@ do -- fonts
 			data.w = w
 		end
 		
-		local tex = render.CreateTexture(math.floor(tonumber(data.w + info.border)), math.floor(tonumber(data.h + info.border)), buffer, {
-			upload_format = "alpha", 
-			internal_format = "a8",
-			stride = 1,
-		})         
+		local tex = render.CreateTexture(math.floor(tonumber(data.w + info.border)), math.floor(tonumber(data.h + info.border)))
 		
 		tex:Clear()	  		
 		
 		for _, char in pairs(data.chars) do
-			tex:Upload(
-				char.glyph.buffer, 
-				
-				char.x + info.border_2,  
-				char.y + info.border_2, 
-				
-				char.glyph.w, 
-				char.glyph.h
-			)       
+			tex:Upload(char.glyph.buffer, {
+				x = char.x + info.border_2,  
+				y = char.y + info.border_2, 
+			
+				w = char.glyph.w, 
+				h = char.glyph.h,
+			})
+		end
+		
+		if font.info.blur then
+			blur_texture(tex, font.info)
 		end
 		
 		data.tex = tex
-					
+
 		font.strings[str] = data
 		
 		return data
