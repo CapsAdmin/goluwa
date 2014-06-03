@@ -172,15 +172,23 @@ function console.InitializeCurses()
 	curses.cbreak()
 	curses.noecho()
 	curses.raw()
+	curses.noqiflush()
 	
-	c.log_window = curses.derwin(c.parent_window, curses.LINES - 2, curses.COLS, 1, 0)
-	c.input_window = curses.derwin(c.parent_window, 1, curses.COLS, curses.LINES - 1, 0)
+	c.log_window = curses.newwin(curses.LINES - 2, curses.COLS, 1, 0)
+	c.input_window = curses.newwin(1, curses.COLS, curses.LINES - 1, 0)
 	
 	curses.keypad(c.input_window, 1)
 	curses.scrollok(c.log_window, 1)
+	
+	curses.halfdelay(0)
 		
+	curses.nodelay(c.status_window, 1)
 	curses.nodelay(c.log_window, 1)
 	curses.nodelay(c.input_window, 1)
+	
+	curses.notimeout(c.status_window, 1)
+	curses.notimeout(c.log_window, 1)
+	curses.notimeout(c.input_window, 1)
 	
 	if USE_COLORS then			
 		curses.start_color()
@@ -219,95 +227,11 @@ function console.InitializeCurses()
 	end
 	
 	console.Resize(curses.COLS, curses.LINES)
-	
-	do
-		local suppress_print = false
 
-		local function can_print(str)
-			if suppress_print then return end
-			
-			if event then 
-				suppress_print = true
-				
-				if event.Call("ConsolePrint", str) == false then
-					suppress_print = false
-					return false
-				end
-				
-				suppress_print = false
-			end
-			
-			return true
-		end
-		
-		local function split_by_length(str, len)
-			if #str > len then
-				local tbl = {}
-				
-				local max = math.floor(#str/len)
-				local leftover = #str - (max * len)
-				
-				for i = 0, max do
-					
-					local left = i * len
-					local right = (i * len) + len
-							
-					table.insert(tbl, str:usub(left, right))
-				end
-				
-				return tbl
-			end
-			
-			return {str}
-		end
+	function io.write(...)
+		local str = table.concat({...}, "")
 
-		local max_length = 256
-		
-		local function fix(str)
-			do return str end
-			if WINDOWS and #str > max_length then
-				for k,v in pairs(split_by_length(str, max_length)) do
-					for line in v:gmatch("(.-)\n") do
-						io.write(line)
-					end
-				end
-				return
-			end
-			
-			str = str:gsub("\r", "\\r")
-			str = str:gsub("\t", "    ")
-			str = str:gsub("%%", "%%%%")
-			
-			return str
-		end
-		
-		function io.write(...)
-			local str = table.concat({...}, "")
-
-			if not can_print(str) then return end
-						
-			if str:count("\n") > 1 then
-				for line in str:gmatch("(.-\n)") do
-					io.write(line)
-				end
-				return
-			end
-
-			str = fix(str)
-			
-			if not debug.debugging then 
-				table.insert(console.history, str)
-			end
-				
-			console.SyntaxPrint(str, c.log_window)
-			console.ScrollLogHistory(0) 
-			
-			curses.wrefresh(c.log_window)			
-			
-			if console.status_window then
-				console.ClearStatus(console.last_status)
-			end
-		end
+		console.WriteString(str)
 	end
 
 	for _, args in pairs(_G.LOG_BUFFER) do
@@ -317,6 +241,53 @@ function console.InitializeCurses()
 	_G.LOG_BUFFER = nil
 		
 	console.curses_init = true
+end
+
+do
+	local suppress_print = false
+
+	function console.CanPrint(str)
+		if suppress_print then return end
+		
+		if event then 
+			suppress_print = true
+			
+			if event.Call("ConsolePrint", str) == false then
+				suppress_print = false
+				return false
+			end
+			
+			suppress_print = false
+		end
+		
+		return true
+	end
+end
+
+function console.WriteString(str)
+	if not console.CanPrint(str) then return end
+
+	if not debug.debugging then 
+		table.insert(console.history, str)
+	end
+		
+	console.SyntaxPrint(str, c.log_window)
+	console.ScrollLogHistory(0) 
+	
+	console.RefreshLog()	
+	
+	if console.status_window then
+		console.ClearStatus(console.last_status)
+	end
+end
+
+do
+	local last_frame_number
+	local next_refresh = 0
+
+	function console.RefreshLog(now)	
+		curses.wrefresh(c.log_window)
+	end
 end
 
 function console.Resize(w, h)
@@ -354,19 +325,15 @@ end
 
 function console.ColorPrint(str, i, window)
 	window = window or c.log_window
-	
---	if CAPS then
---		i = get_color(math.random(255), math.random(255), math.random(255))
---	end
 
-	setlogfile("asdf")
-	log(str)
-	setlogfile()
-	
 	local attr = curses.COLOR_PAIR(i)
 	if USE_COLORS then curses.wattron(window, attr) end
 	curses.waddstr(window, str)
 	if USE_COLORS then curses.wattroff(window, attr) end
+	
+	if window == c.log_window then
+		--console.RefreshLog()
+	end
 end
 
 do
@@ -485,30 +452,36 @@ do
 				curses.waddstr(window, str)
 			end
 		end
+		
+		if window == c.log_window then
+			--console.RefreshLog()
+		end
 	end
 end
 
 console.scroll_log_history = 0 
 
-function console.ScrollLogHistory(offset)
-	if offset == 0 then 
+function console.ScrollLogHistory(offset, skip_refresh)
+
+	if offset == 0 then
 		console.scroll_log_history = #console.history
-	return end
+		return console.ScrollLogHistory(1, true)
+	end
 	
 	curses.werase(c.log_window)
 	
 	local lines = curses.LINES-1
 	local count = #console.history
 	
-	console.scroll_log_history = math.clamp(console.scroll_log_history - offset, -2, count - lines)
+	console.scroll_log_history = math.clamp(console.scroll_log_history - offset, 0, count - lines)
 	
 	for i = 1, lines  do
 		local str = console.history[i + console.scroll_log_history] or ""
 		
 		console.SyntaxPrint(str)
 	end
-	
-	curses.wrefresh(c.log_window)
+
+	console.RefreshLog()
 end
 
 function console.GetCurrentLine()
@@ -537,14 +510,13 @@ function console.ClearInput(str)
 		x = 0
 	end
 	
-	curses.wmove(c.input_window, y, x)
-	
+	curses.wmove(c.input_window, y, x)	
 	curses.wrefresh(c.input_window)
 end
 
 function console.ClearWindow()
 	curses.werase(c.log_window)
-	curses.wrefresh(c.log_window)
+	console.RefreshLog()
 end
 
 console.last_status = ""

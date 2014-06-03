@@ -45,6 +45,8 @@ local function main()
 		
 		event.Call("Update", dt)
 	end
+	
+	local i = 0ULL
 		
 	while true do
 		local rate = rate_cvar:Get()
@@ -53,7 +55,9 @@ local function main()
 		local dt = time - (last_time or 0)
 		
 		timer.SetFrameTime(dt)
+		timer.SetFrameNumber(i)
 		timer.SetElapsedTime(timer.GetElapsedTime() + dt)
+		i = i + 1
 					
 		local ok, err = xpcall(update, system.OnError, dt)
 		

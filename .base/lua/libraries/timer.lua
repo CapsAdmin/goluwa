@@ -13,6 +13,19 @@ do -- frame time
 	end
 end
 
+do -- frame time
+	local frame_number = 0
+
+	function timer.GetFrameNumber()
+		return frame_number
+	end
+
+	-- used internally in main_loop.lua
+	function timer.SetFrameNumber(num)
+		frame_number = num
+	end
+end
+
 do -- elapsed time (avanved from frame time)
 	local elapsed_time = 0
 
