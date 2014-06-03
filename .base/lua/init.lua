@@ -177,19 +177,22 @@ do -- logging
 		
 		-- guessing the location of a library
 		local sources = {}
+		
 		for k,v in pairs(t) do	
 			if type(v) == "function" then
-				local src = debug.getinfo(v).short_src
+				local src = debug.getinfo(v).source
 				sources[src] = (sources[src] or 0) + 1
 			end
 		end
 		
 		local tmp = {}
+		
 		for k,v in pairs(sources) do
 			table.insert(tmp, {k=k,v=v})
 		end
 		
 		table.sort(tmp, function(a,b) return a.v > b.v end)
+		
 		if #tmp > 0 then 
 			str = str .. "[" .. tmp[1].k:gsub("!/%.%./", "") .. "]"
 		end		
@@ -199,6 +202,7 @@ do -- logging
 	
 	local function tostringx(val)
 		local t = (typex or type)(val)
+		
 		return pretty_prints[t] and pretty_prints[t](val) or tostring(val)
 	end
 
@@ -212,12 +216,22 @@ do -- logging
 		return copy
 	end
 
-	local function safeformat(str, ...)
-		local count = select(2, str:gsub("(%%)", ""))
+	local function formatx(str, ...)		
 		local copy = {}
-		for i = 1, count do
-			table.insert(copy, tostringx(select(i, ...)))
+		local i = 1
+		
+		for arg in str:gmatch("%%(.)") do
+			arg = arg:lower()
+			
+			if arg == "s" then
+				table.insert(copy, tostringx(select(i, ...)))
+			else
+				table.insert(copy, (select(i, ...)))
+			end
+				
+			i = i + 1
 		end
+		
 		return string.format(str, unpack(copy))
 	end
 	
@@ -244,22 +258,23 @@ do -- logging
 		return log_files[name]
 	end
 	
-	local buffer = {}
 	local last_line
 	local count = 0
 	local last_count_length = 0
 		
 	lfs.mkdir(base_log_dir)
 		
-	function log(...)
-		local args = tostring_args(...)
-		
+	local function raw_log(args, sep, append)	
+		local line = table.concat(args, sep)
+	
+		if append then
+			line = line .. append
+		end
+	
 		if vfs then						
 			if not log_file then
 				setlogfile()
 			end
-		
-			local line = table.concat(args, "")
 							
 			if line == last_line then
 				if count > 0 then
@@ -278,37 +293,43 @@ do -- logging
 			log_file:flush()
 			
 			last_line = line
-		else
-			table.insert(buffer, args)
 		end
 		
 		if log_files.console == log_file then
-			io.write(unpack(args))
+			
+			if console and console.WriteString then
+				console.WriteString(line)
+			else
+				io.write(line)
+			end
+			
 			if _G.LOG_BUFFER then
 				table.insert(_G.LOG_BUFFER, args)
 			end
 		end
 	end
+		
+	function log(...)
+		raw_log(tostring_args(...), "")
+	end
 	
 	function logn(...)
-		local args = {...}
-		table.insert(args, "\n")
-		log(unpack(args))
+		raw_log(tostring_args(...), "", "\n")
 		return ...
 	end
 	
 	function print(...)
-		logn(table.concat(tostring_args(...), ",\t"))
+		raw_log(tostring_args(...), ",\t", "\n")
 		return ...
 	end
 
 	function logf(str, ...)
-		log(safeformat(str, ...))
+		log(formatx(str, ...))
 		return ...
 	end
 
 	function errorf(str, level, ...)
-		error(safeformat(str, ...), level)
+		error(formatx(str, ...), level)
 	end
 end
 
