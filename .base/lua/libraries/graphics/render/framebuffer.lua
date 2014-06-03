@@ -15,6 +15,7 @@ end
 
 function META:Begin()	
 	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, self.id)
+	gl.PushAttrib(gl.e.GL_VIEWPORT_BIT)
 	gl.Viewport(0, 0, self.width, self.height)
 end
 
@@ -24,6 +25,7 @@ end
 
 function META:End()
 	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
+	gl.PopAttrib()
 end
 
 function META:Clear(r,g,b,a)
@@ -80,6 +82,9 @@ function render.CreateFrameBuffer(width, height, format)
 	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
 	 
 	for i, info in pairs(format) do
+		info.attach = info.attach or gl.e.GL_COLOR_ATTACHMENT0
+		info.texture_format = info.texture_format or {}
+		info.texture_format.internal_format = info.texture_format.internal_format or gl.e.GL_RGBA32F
 		
 		if type(info.attach) == "string" then 
 			local attach, num = info.attach:match("(.-)(%d)") or info.attach
@@ -109,7 +114,7 @@ function render.CreateFrameBuffer(width, height, format)
 		local id
 		
 		if tex_info then
-			tex_info.upload_format = "rgba"
+			tex_info.upload_format = tex_info.upload_format or "rgba"
 			tex_info.channel = i - 1
 						
 			tex = render.CreateTexture(width, height, nil, tex_info)
@@ -124,7 +129,7 @@ function render.CreateFrameBuffer(width, height, format)
 			id = gl.GenRenderbuffer()
 			gl.BindRenderbuffer(gl.e.GL_RENDERBUFFER, id)		
 		
-			gl.RenderbufferStorage(gl.e.GL_RENDERBUFFER, info.internal_format, width, height)
+			gl.RenderbufferStorage(gl.e.GL_RENDERBUFFER, info.texture_format.internal_format, width, height)
 		end
 			
 		self.buffers[info.name] = {id = id, tex = tex, info = info, draw_enum = ffi.new("GLenum[1]", info.attach)}

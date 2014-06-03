@@ -287,6 +287,7 @@ function render.CreateShader(data)
 
 		do -- build_output and define the struct information with ffi
 			local type = "glw_vtx_atrb_" .. shader_id
+			type = type:gsub("%p", "_")
 
 			local declaration = {"struct "..type.." { "}
 
