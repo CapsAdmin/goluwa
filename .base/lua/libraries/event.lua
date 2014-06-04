@@ -285,7 +285,7 @@ do -- timers
 				type = "delay",
 				callback = callback,
 				args = {...},
-				realtime = timer.GetElapsedTime() + time,
+				realtime = timer.GetElapsedTime() + (time or 0),
 			}
 		end
 	end
