@@ -72,7 +72,7 @@ local SHADER = {
 	}  
 }   
 
-function render.Create3DMesh(data)
+function render.CreateMesh(data)
 	if not surface.mesh_3d_shader or not surface.mesh_3d_shader:IsValid() then
 		local shader = render.CreateShader(SHADER)
 						
@@ -121,7 +121,7 @@ do -- model meta
 		self.sub_models = {}
 
 		for i, model in pairs(models) do
-			local sub_model = {mesh = render.Create3DMesh(model.mesh_data), name = model.name}
+			local sub_model = {mesh = render.CreateMesh(model.mesh_data), name = model.name}
 
 			if model.material and model.material.path then
 				sub_model.diffuse = render.CreateTexture(model.material.path, default_texture_format)

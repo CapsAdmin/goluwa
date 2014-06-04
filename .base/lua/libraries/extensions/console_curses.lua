@@ -6,7 +6,7 @@ local c = console.curses
 
 if SERVER then
 	_G.surface = {}
-	include("libraries/graphics/surface/markup.lua")	
+	include("libraries/graphics/surface/markup/markup.lua")	
 end
 
 local markup = surface.CreateMarkup()
