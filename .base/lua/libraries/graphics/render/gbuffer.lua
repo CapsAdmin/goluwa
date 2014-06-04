@@ -127,6 +127,8 @@ function render.InitializeGBuffer(width, height)
 	width = width or render.GetWidth()
 	height = height or render.GetHeight()
 	
+	if width == 0 or height == 0 then return end
+	
 	logn("[render] initializing gbuffer: ", width, " ", height)
 	
 	render.gbuffer_config = {
