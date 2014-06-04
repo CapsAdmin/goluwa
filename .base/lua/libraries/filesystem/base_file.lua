@@ -58,6 +58,6 @@ function META:ReadByte()
 	error("not implemented")
 end
 
-utilities.BufferTemplate(META)
+metatable.AddBufferTemplate(META)
 
 vfs.Register(META)

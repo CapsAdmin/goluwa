@@ -354,7 +354,7 @@ do -- console vars
 	
 	-- what's the use?
 	do -- cvar meta
-		local META = utilities.CreateBaseMeta("cvar")
+		local META = metatable.CreateTemplate("cvar")
 		
 		function META:Get()
 			if not console.vars then console.ReloadVariables() end

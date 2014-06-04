@@ -1,7 +1,7 @@
 local gl = require("lj-opengl")
 local render = (...) or _G.render
 
-local META = utilities.CreateBaseMeta("vertex_buffer")
+local META = metatable.CreateTemplate("vertex_buffer")
 
 function render.CreateVertexBuffer(buffer, vertex_attributes)
 	check(buffer, "cdata")

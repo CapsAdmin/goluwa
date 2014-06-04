@@ -2,7 +2,7 @@ local entities = (...) or _G.entities
 
 local META = {}
 
-class.SetupParentingSystem(META)
+metatable.AddParentingSystem(META)
 
 META.ClassName = "base"	
 	

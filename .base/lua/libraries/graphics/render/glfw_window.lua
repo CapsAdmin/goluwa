@@ -27,7 +27,7 @@ calllbacks.OnMonitor(function() event.Call("OnMonitorConnected") end)
 calllbacks.OnMonitor = nil
 
 do -- window meta
-	local META = utilities.CreateBaseMeta("render_window")
+	local META = metatable.CreateTemplate("render_window")
 
 	function META:Remove()
 		if self.OnRemove then self:OnRemove() end

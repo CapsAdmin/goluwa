@@ -1,6 +1,6 @@
 local surface = (...) or _G.surface
 
-local META = utilities.CreateBaseMeta("poly")
+local META = metatable.CreateTemplate("poly")
 
 local X, Y = 0, 0
 local ROT = 0	

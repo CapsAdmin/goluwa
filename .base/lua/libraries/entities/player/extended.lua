@@ -1,4 +1,4 @@
-local META = (...) or utilities.FindMetaTable("player")
+local META = (...) or metatable.Get("player")
 
 -- send lua
 if CLIENT then

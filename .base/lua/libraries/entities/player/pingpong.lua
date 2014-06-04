@@ -1,6 +1,6 @@
 console.CreateVariable("sv_timeout", 10)	
 
-local META = (...) or utilities.FindMetaTable("player")
+local META = (...) or metatable.Get("player")
 
 nvars.GetSet(META, "Ping", 0)
 	

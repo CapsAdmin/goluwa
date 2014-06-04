@@ -9,7 +9,7 @@ todo:
 	the ability to edit (remove and copy) custom tags that have a size (like textures)
 ]]
 
-local META = utilities.CreateBaseMeta("markup")
+local META = metatable.CreateTemplate("markup")
 
 META.tags = {}
 

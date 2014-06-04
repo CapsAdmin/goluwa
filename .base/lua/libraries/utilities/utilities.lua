@@ -1,7 +1,6 @@
 local utilities = _G.utilities or {}
 
 include("mesh.lua", utilities)
-include("buffer_template.lua", utilities)
 
 do -- long long
 	ffi.cdef [[
@@ -128,54 +127,6 @@ do -- find value
 	end
 end
 
-local objects = setmetatable({}, { __mode = 'v' })
-
-function utilities.GetAllObjects()
-	return objects
-end
-
-function utilities.CreateBaseMeta(class_name)
-	local META = {}
-	META.__index = META
-	
-	META.Type = class_name -- if type differs from classname it might be a better idea to use _G.class
-	META.ClassName = class_name
-	
-	function META:__tostring()
-		return ("%s[%p]"):format(class_name, self)
-	end
-	
-	function META:New(tbl, skip_gc_callback)
-		tbl = tbl or {}
-		local self = setmetatable(tbl, META) 
-		if not skip_gc_callback then
-			utilities.SetGCCallback(self)
-		end
-		self.trace = debug.trace(true)
-		table.insert(objects, self)
-		return self
-	end
-	
-	function META:Remove()
-		if self.OnRemove then 
-			self:OnRemove() 
-		end
-		utilities.MakeNULL(self)
-	end
-	
-	function META:IsValid()
-		return true
-	end
-	
-	function META:GetTrace()
-		return self.trace or ""
-	end
-	
-	utilities.DeclareMetaTable(META)
-	
-	return META
-end
-
 do -- thanks etandel @ #lua!
 	function utilities.SetGCCallback(t, func)
 		func = func or t.Remove
@@ -268,104 +219,6 @@ function utilities.RemoveOldObject(obj, id)
 	end
 	
 	return obj
-end
-
-function utilities.OverrideUserDataMeta(udata, meta)
-    local REAL = getmetatable(udata)
-    local META = table.copy(REAL)
-
-    META = table.merge(META, meta)
-
-    function META:__index(key)
-		if META[key] then
-			return META[key]
-		end
-
-		return REAL.__index(self, key)
-    end
-
-    debug.setmetatable(udata, META)
-
-    return udata
-end
-
--- this was originally made for Texture, but it can be used for other things as well.
-function utilities.UserDataToTable(udata)
-	local META = getmetatable(udata)
-	local udata = {udata = udata}
-
-	for key, value in pairs(META) do
-		if type(value) == "function" then
-			udata[key] = function(self, ...)
-				return META[key](self.udata, ...)
-			end
-		else
-			udata[key] = value
-		end
-	end
-
-	rawset(udata, "__newindex", nil)
-
-	return udata
-end
-
-function utilities.FindMetaTable(var)
-	if istype(var, "userdata", "table") then
-		return getmetatable(T)
-	elseif type(var) == "string" then
-		return debug.getregistry()[var:lower()]
-	end
-end
-
-function utilities.DeclareMetaTable(name, tbl)
-	check(name, "string", "table")
-	check(tbl, "table", "nil")
-	
-	if not tbl then
-		debug.getregistry()[name.Type:lower()] = name
-	else
-		debug.getregistry()[name:lower()] = tbl
-	end
-end
-
-function utilities.DeriveMetaFromBase(meta_name, base_name, func_name)
-	check(meta_name, "string", "userdata", "table")
-	check(base_name, "string", "userdata", "table")
-	check(func_name, "string")
-
-	local meta = utilities.FindMetaTable(meta_name)
-	local base = utilities.FindMetaTable(base_name)
-
-	local func = meta[func_name]
-
-	if not func then error("could not find the function name " .. func_name, 2) end
-	
-	local new
-	for name in pairs(base) do
-		if not meta[name] then
-			meta[name] = base[name] or function(s, ...)
-				new = func(s, ...)
-				
-				if new == s then
-					error(("%s tried to use %s on self but returned itself"):format(meta_name, func_name))
-				end
-				
-				return new[name](new, ...)
-			end
-		end
-	end
-end
-
-function utilities.GetMetaTables()
-	local temp = {}
-	
-	for key, val in pairs(debug.getregistry()) do
-		if type(key) == "string" and type(val) == "table" and val.Type then
-			temp[key] = val
-		end
-	end
-	
-	return temp
 end
 
 function utilities.MakeNULL(tbl)
