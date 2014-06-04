@@ -114,25 +114,29 @@ do -- fonts
 				{
 					float avg = 0;
 					
-					avg += texture(self, vec2(uv.x - 4.0*dir.x, uv.y - 4.0*dir.y)).a * 0.0162162162;
-					avg += texture(self, vec2(uv.x - 3.0*dir.x, uv.y - 3.0*dir.y)).a * 0.0540540541;
-					avg += texture(self, vec2(uv.x - 2.0*dir.x, uv.y - 2.0*dir.y)).a * 0.1216216216;
-					avg += texture(self, vec2(uv.x - 1.0*dir.x, uv.y - 1.0*dir.y)).a * 0.1945945946;
+					float w = dir.x / size.x;
+					float h = dir.y / size.y;
+					
+					avg += texture(self, vec2(uv.x - 4.0*w, uv.y - 4.0*h)).a * 0.0162162162;
+					avg += texture(self, vec2(uv.x - 3.0*w, uv.y - 3.0*h)).a * 0.0540540541;
+					avg += texture(self, vec2(uv.x - 2.0*w, uv.y - 2.0*h)).a * 0.1216216216;
+					avg += texture(self, vec2(uv.x - 1.0*w, uv.y - 1.0*h)).a * 0.1945945946;
 
-					avg += texture(self, vec2(uv.x, uv.y)).a * 0.2270270270;
+					avg += texture(self, uv).a * 0.2270270270;
 
-					avg += texture(self, vec2(uv.x + 1.0*dir.x, uv.y + 1.0*dir.y)).a * 0.1945945946;
-					avg += texture(self, vec2(uv.x + 2.0*dir.x, uv.y + 2.0*dir.y)).a * 0.1216216216;
-					avg += texture(self, vec2(uv.x + 3.0*dir.x, uv.y + 3.0*dir.y)).a * 0.0540540541;
-					avg += texture(self, vec2(uv.x + 4.0*dir.x, uv.y + 4.0*dir.y)).a * 0.0162162162;
+					avg += texture(self, vec2(uv.x + 1.0*w, uv.y + 1.0*h)).a * 0.1945945946;
+					avg += texture(self, vec2(uv.x + 2.0*w, uv.y + 2.0*h)).a * 0.1216216216;
+					avg += texture(self, vec2(uv.x + 3.0*w, uv.y + 3.0*h)).a * 0.0540540541;
+					avg += texture(self, vec2(uv.x + 4.0*w, uv.y + 4.0*h)).a * 0.0162162162;
 										
 					out_color.a = min(avg, 0.3 * alpha);
 					out_color.rgb = blur_color.rgb / 16.0;
 					out_color = out_color + texture(self, uv);
+					out_color = vec4(1,0,1,1);
 				}
 			]], 
 			{		 
-				dir = Vec2(x, y) * info.blur.size / tex:GetSize(),
+				dir = Vec2(x, y) * info.blur.size,
 				alpha = info.blur.alpha,
 				blur_color = info.blur.color,
 			})

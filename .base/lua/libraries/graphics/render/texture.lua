@@ -70,7 +70,7 @@ end
 do -- texture object
 	local CHECK_FIELD = function(t, str) return render.TranslateStringToEnum("texture", t, str, 5) end
 
-	local META = utilities.CreateBaseMeta("texture")
+	local META = metatable.CreateTemplate("texture")
 	
 	function META:__tostring()
 		return ("texture[%s]"):format(self.id)
@@ -149,11 +149,23 @@ do -- texture object
 				gl.TexParameterf(f.type, v, f[k:lower()])
 			end
 		end
+		
+		-- only really used for caching..
+		self.format_string = {}
+		for k,v in pairs(f) do
+			table.insert(self.format_string, tostring(k) .. " == " .. tostring(v))
+		end
+		self.format_string = table.concat(self.format_string, "\n")		
 	end 
 	
 	function META:Upload(buffer, format_override)
 		local f = format_override or self.format		
 		local f2 = self.format
+		
+		if typex(buffer) == "texture" then
+			f = buffer.format
+			buffer = buffer:Download()
+		end
 		
 		if format_override then
 			for k, v in pairs(format_override) do
@@ -266,6 +278,7 @@ do -- texture object
 	end
 	
 	local cache = {}
+	local fbos = {}
 	
 	function META:Shade(fragment_shader, vars)
 		
@@ -291,6 +304,7 @@ do -- texture object
 				fragment = { 
 					uniform = {
 						self = self,
+						size = "vec2",
 					},		
 					attributes = {
 						{uv = "vec2"},
@@ -312,37 +326,35 @@ do -- texture object
 				{pos = {0, 0}, uv = {0, 1}},
 			})
 			
-			local fb = render.CreateFrameBuffer(self.w, self.h, {
-				texture_format = self.format,
-			})
+			local fb = render.CreateFrameBuffer(4, 4)
 			
-			cache[fragment_shader] = function(self, vars)	
-				shader.self = self
-						
-				for k,v in pairs(vars) do
-					shader[k] = v
-				end				
+			cache[fragment_shader] = function(self, vars)				
+				do -- bind uniforms
+					shader.self = self
+					shader.size = Vec2(surface.GetScreenSize())
+					
+					for k,v in pairs(vars) do
+						shader[k] = v
+					end				
+				end
 				
-				fb:Begin()
-					fb:Clear(0,0,0,0) 
-					surface.PushMatrix(0, 0, surface.GetScreenSize())
-						shader:Bind()
-						mesh:Draw()
-					surface.PopMatrix()
-				fb:End()
-				
-				return fb:GetTexture():Download()
+
+					fb:Begin()
+						gl.FramebufferTexture2D(gl.e.GL_FRAMEBUFFER, gl.e.GL_COLOR_ATTACHMENT0_EXT, gl.e.GL_TEXTURE_2D, self.id, 0)
+						gl.ReadBuffer(gl.e.GL_COLOR_ATTACHMENT0_EXT)
+							
+							render.Start2D(0, 0, self.w, self.h)
+								fb:Clear(1,0,0,1)
+								shader:Bind()
+								mesh:Draw()
+							render.End2D()
+							
+						--gl.FramebufferTexture2D(gl.e.GL_FRAMEBUFFER, gl.e.GL_COLOR_ATTACHMENT0_EXT, gl.e.GL_TEXTURE_2D, 0, 0)								
+					fb:End()			
 			end
 		end
 		
-		local buffer = cache[fragment_shader](self, vars)
-		
-		--tex:Remove()
-		--shader:Remove()
-		--mesh:Remove()
-		--fb:Remove()
-		
-		self:Replace(buffer, self.w, self.h)
+		cache[fragment_shader](self, vars)
 	end
 	
 	local SUPPRESS_GC = false
@@ -373,7 +385,7 @@ do -- texture object
 		if type(width) == "string" and not buffer and not format and (not height or type(height) == "table") then
 			return render.CreateTextureFromPath(width, height)
 		end
-		
+			
 		local buffer_size
 		
 		if type(width) == "table" and not height and not buffer and not format then
