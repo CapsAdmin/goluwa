@@ -15,8 +15,6 @@ end
 
 function META:Begin()	
 	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, self.id)
-	gl.PushAttrib(gl.e.GL_VIEWPORT_BIT)
-	gl.Viewport(0, 0, self.width, self.height)
 end
 
 function META:Bind()
@@ -25,7 +23,6 @@ end
 
 function META:End()
 	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
-	gl.PopAttrib()
 end
 
 function META:Clear(r,g,b,a)
@@ -59,8 +56,8 @@ function render.CreateFrameBuffer(width, height, format)
 	local self = META:New()
 
 	self.buffers = {}
-	self.width = width
-	self.height = height
+	self.w = width
+	self.h = height
 	self.draw_buffers = {}
 	
 	if not format then
@@ -83,8 +80,10 @@ function render.CreateFrameBuffer(width, height, format)
 	 
 	for i, info in pairs(format) do
 		info.attach = info.attach or gl.e.GL_COLOR_ATTACHMENT0
-		info.texture_format = info.texture_format or {}
-		info.texture_format.internal_format = info.texture_format.internal_format or gl.e.GL_RGBA32F
+		
+		if info.texture_format then
+			info.texture_format.internal_format = info.texture_format.internal_format or gl.e.GL_RGBA32F
+		end
 		
 		if type(info.attach) == "string" then 
 			local attach, num = info.attach:match("(.-)(%d)") or info.attach
