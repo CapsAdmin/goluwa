@@ -23,7 +23,7 @@ end
 calllbacks.OnError(function(code, str) logn("[glfw] ", ffi.string(str)) end)
 calllbacks.OnError = nil
 
-calllbacks.OnMonitor(function() events.Call("OnMonitorConnected") end)
+calllbacks.OnMonitor(function() event.Call("OnMonitorConnected") end)
 calllbacks.OnMonitor = nil
 
 do -- window meta
