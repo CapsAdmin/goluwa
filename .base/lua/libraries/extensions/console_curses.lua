@@ -236,7 +236,7 @@ function console.InitializeCurses()
 	function io.write(...)
 		local str = table.concat({...}, "")
 
-		console.WriteString(str)
+		console.Print(str)
 	end
 
 	for _, args in pairs(_G.LOG_BUFFER) do
@@ -269,7 +269,7 @@ do
 	end
 end
 
-function console.WriteString(str)
+function console.Print(str)
 	if not console.CanPrint(str) then return end
 
 	if not debug.debugging then 
@@ -442,20 +442,22 @@ do
 		return output
 	end
 
-	_G.syntax = _G.syntax or syntax
+	if MORTEN then
+		_G.syntax = _G.syntax or syntax
+	end
 
 	function console.SyntaxPrint(str, window)
 		window = window or c.log_window
 		
-		local tokens = syntax.process(str)
+		if USE_COLORS then
+			local tokens = syntax.process(str)
 
-		for i = 1, #tokens / 2 do
-			local color, str = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
-			if USE_COLORS then
+			for i = 1, #tokens / 2 do
+				local color, str = tokens[1 + (i - 1) * 2 + 0], tokens[1 + (i - 1) * 2 + 1]
 				console.ColorPrint(str, color + 1, window)
-			else
-				curses.waddstr(window, str)
 			end
+		else
+			curses.waddstr(window, str)
 		end
 		
 		if window == c.log_window then
