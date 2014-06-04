@@ -1,4 +1,4 @@
-chatsounds.Initialize()
+--chatsounds.Initialize()
 
 event.AddListener("PlayerChat", "chatsounds", function(ply, txt, seed)
 	if not txt:find(".-%p") then
