@@ -108,7 +108,7 @@ do -- find value
 		}
 			
 		find(_G, "_G", ".", 1, ...)
-		find(utilities.GetMetaTables(), "_M", ":", 1, ...)
+		find(metatable.GetAll(), "_M", ":", 1, ...)
 		for cmd, v in pairs(console.GetCommands()) do
 			if strfind(cmd, ...) then
 				local arg_line = table.concat(debug.getparams(v.callback), ", ")
