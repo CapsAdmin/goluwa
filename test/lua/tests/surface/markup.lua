@@ -1,4 +1,4 @@
-local markup = Markup()
+local markup = surface.CreateMarkup()
 
 markup:Test()
 

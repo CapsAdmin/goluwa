@@ -35,7 +35,7 @@ function tester.End()
 		grd:SetItemSize(Vec2()+25)
 
 		for k,v in pairs(tester.hooks) do			
-			local lbl = aahh.Create("textbutton", grd)
+			local lbl = aahh.Create("text_button", grd)
 			lbl:SetText(k .. " " .. v)
 		end
 		

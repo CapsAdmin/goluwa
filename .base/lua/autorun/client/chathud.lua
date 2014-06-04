@@ -70,7 +70,7 @@ local chathud_show = console.CreateVariable("cl_chathud_show", 1)
 local height_mult = console.CreateVariable("cl_chathud_height_mult", 0.76)
 local width_mult = console.CreateVariable("cl_chathud_width_mult", 0.3)
 
-chathud.markup =  Markup()
+chathud.markup =  surface.CreateMarkup()
 chathud.markup:SetEditable(false)
 chathud.life_time = 20
 

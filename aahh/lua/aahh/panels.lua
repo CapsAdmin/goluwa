@@ -38,6 +38,10 @@ function aahh.RegisterPanel(META, name)
 			end
 		end
 	end	
+	
+	aahh["Create" .. ("_" .. name):gsub("_(.)", string.upper)] = function(...)
+		return aahh.Create(name, ...)
+	end
 end
 
 function aahh.GetRegisteredPanels()

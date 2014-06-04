@@ -92,7 +92,7 @@ do
 		surface.PushMatrix(x, y)
 				
 		if aahh.debug then
-			if pnl.ClassName == "textbutton" then 
+			if pnl.ClassName == "text_button" then 
 				surface.Color(1,1,0,1)
 			else
 				surface.Color(1,0,0,1)

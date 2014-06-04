@@ -7,7 +7,7 @@
 
 local PANEL = {}
 
-PANEL.ClassName = "lineviewer"
+PANEL.ClassName = "line_viewer"
 PANEL.Base = "panel"
 
 -- If true, text will not extend past the rightmost edge. Instead it will be cut and the end

@@ -1,6 +1,8 @@
 local surface = _G.surface or {}
 
+
 include("mesh2d.lua", surface)
+include("markup/markup.lua", surface)
 
 function surface.Initialize()		
 	surface.rect_mesh = surface.CreateMesh() -- mesh defaults to rect, see mesh2d.lua

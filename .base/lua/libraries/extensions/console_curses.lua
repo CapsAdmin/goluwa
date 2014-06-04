@@ -4,7 +4,12 @@ console.history = console.history or {}
 console.curses = console.curses or {}
 local c = console.curses
 
-local markup = Markup()
+if SERVER then
+	_G.surface = {}
+	include("libraries/graphics/surface/markup.lua")	
+end
+
+local markup = surface.CreateMarkup()
 markup:SetMultiline(false)
 markup:SetFixedSize(14)
 

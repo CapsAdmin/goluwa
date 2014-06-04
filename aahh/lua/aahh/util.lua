@@ -28,15 +28,15 @@ function aahh.StringInput(msg, default, callback, check)
 	textinput:SetSize(Vec2(400, 20))
 	textinput:AppendToBottom(4)
 	
-	local textbutton = aahh.Create("textbutton", frame)
-	textbutton:SetTrapInsideParent(false)
-	textbutton:SetText("Ok")
-	textbutton:SetPos(Vec2(x, y))
-	textbutton:SetSize(Vec2(400, 20))
-	textbutton:AppendToBottom(4)
+	local text_button = aahh.Create("text_button", frame)
+	text_button:SetTrapInsideParent(false)
+	text_button:SetText("Ok")
+	text_button:SetPos(Vec2(x, y))
+	text_button:SetSize(Vec2(400, 20))
+	text_button:AppendToBottom(4)
 	
 	
-	textbutton.OnPress = function(self)
+	text_button.OnPress = function(self)
 		callback(textinput:GetText())
 		frame:Remove()
 	end

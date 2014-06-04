@@ -158,7 +158,7 @@ function menu.MakeButtons()
 			frame:SetTitle(dir)
 			
 			if utilities.GetParentFolder(dir):find("/", nil, true) then
-				local btn = aahh.Create("textbutton")
+				local btn = aahh.Create("text_button")
 					btn:SetText("<<")
 					
 					function btn:OnPress()
@@ -171,7 +171,7 @@ function menu.MakeButtons()
 			
 			for name in vfs.Iterate(dir) do 
 				if name ~= "." and name ~= ".." then
-					local btn = aahh.Create("textbutton")
+					local btn = aahh.Create("text_button")
 					btn:SetText(name)
 
 					if name:find(".lua", nil, true) then

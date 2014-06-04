@@ -1,6 +1,6 @@
 local PANEL = {}
 
-PANEL.ClassName = "textbutton"
+PANEL.ClassName = "text_button"
 PANEL.Base = "button"
 
 function PANEL:Initialize()

@@ -57,7 +57,11 @@ function entities.Register(META, name)
 				ent[k] = v
 			end
 		end
-	end	
+	end
+	
+	entities["Create" .. ("_" .. name):gsub("_(.)", string.upper)] = function()
+		return entities.Create(name)
+	end
 end
 
 include("base_entity.lua", entities)

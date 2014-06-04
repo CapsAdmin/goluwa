@@ -614,10 +614,7 @@ do -- libraries
 		audio = include("libraries/audio/audio.lua") -- high level implementation of OpenAl
 		chatsounds = include("libraries/audio/chatsounds.lua")
 	end
-	
-	-- used by the console without rendering
-	include("libraries/graphics/markup.lua")	
-	
+		
 	-- network
 	sockets = include("libraries/network/sockets/sockets.lua") 
 	intermsg = include("libraries/network/intermsg.lua") 			

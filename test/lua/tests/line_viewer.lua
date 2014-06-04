@@ -32,7 +32,7 @@ textinput:SetTrapInsideParent(false)
 textinput:Dock("fill")
 textinput:SetSize(Vec2(20, 20))
 
-local buttonmode = aahh.Create("textbutton", bottompnl)
+local buttonmode = aahh.Create("text_button", bottompnl)
 buttonmode:SetTrapInsideParent(false)
 buttonmode:Dock("left")
 buttonmode:SetText("Lua")
