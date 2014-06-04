@@ -4,7 +4,7 @@ local client_tick_rate = 33 -- in ms
 local server_command_length = client_command_length
 local server_tick_rate = 10
 
-local META = (...) or utilities.FindMetaTable("player")
+local META = (...) or metatable.Get("player")
 
 function META:GetCurrentCommand()
 	if not self.current_command then

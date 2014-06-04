@@ -1,4 +1,4 @@
-local utilities = (...) or _G.utilities
+local metatable = (...) or _G.metatable
 
 ffi.cdef[[
 	typedef union {
@@ -105,7 +105,7 @@ local function ADD_FFI_OPTIMIZED_TYPE(META, typ)
 	func(META, ffi.new("number_buffer_" .. def))
 end
 
-function utilities.BufferTemplate(META)
+function metatable.AddBufferTemplate(META)
 	check(META.WriteByte, "function")
 	check(META.ReadByte, "function")
 

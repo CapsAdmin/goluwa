@@ -1,4 +1,4 @@
-local META = utilities.FindMetaTable("player")
+local META = metatable.Get("player")
 
 function META:GetChatAboveHead()
 	return self.coh_str or ""

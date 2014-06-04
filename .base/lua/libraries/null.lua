@@ -25,6 +25,6 @@ function NULL:__index(key)
 	error(("tried to index %q on a NULL value"):format(key), 2)
 end
 
-utilities.DeclareMetaTable("null_meta", NULL)
+metatable.Register(NULL)
 
 _G.NULL = setmetatable({Type  = "null", TypeX = "null", ClassName = "ClassName"}, NULL)

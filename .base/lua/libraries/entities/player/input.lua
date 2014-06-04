@@ -1,6 +1,6 @@
 -- networked input
 
-local META = (...) or utilities.FindMetaTable("player")
+local META = (...) or metatable.Get("player")
 
 local function add_event(name, check)	
 	input.SetupAccessorFunctions(META, name)

@@ -1,4 +1,4 @@
-local META = (...) or utilities.FindMetaTable("markup")
+local META = (...) or metatable.Get("markup")
 
 function META:SelectStart(x, y)
 	self.select_start = self:CaretFromPos(x, y)

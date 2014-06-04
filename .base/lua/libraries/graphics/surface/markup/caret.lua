@@ -1,4 +1,4 @@
-local META = (...) or utilities.FindMetaTable("markup")
+local META = (...) or metatable.Get("markup")
 
 function META:SetCaretPos(x, y, later)
 	if later then

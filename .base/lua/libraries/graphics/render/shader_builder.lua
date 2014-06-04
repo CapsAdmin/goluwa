@@ -198,7 +198,7 @@ end
 
 local cdef_defined = {}
 
-local META = utilities.CreateBaseMeta("shader")
+local META = metatable.CreateTemplate("shader")
 
 function render.CreateShader(data)
 	check(data, "table")

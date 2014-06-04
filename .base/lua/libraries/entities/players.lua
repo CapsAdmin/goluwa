@@ -58,7 +58,7 @@ function players.Create(uniqueid, is_bot)
 end
 
 do -- filter
-	local META = utilities.CreateBaseMeta("player_filter")
+	local META = metatable.CreateTemplate("player_filter")
 
 	function META:AddAll()
 		for key, ply in pairs(players.GetAll()) do

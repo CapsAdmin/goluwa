@@ -92,8 +92,8 @@ function class.Register(META, type_name, name)
     class.Registered[type_name] = class.Registered[type_name] or {}
     class.Registered[type_name][name] = META
 	
-	if utilities and utilities.DeclareMetaTable then
-		utilities.DeclareMetaTable(type_name .. " " .. name, META)
+	if metatable and metatable.Register then
+		metatable.Register(META, name)
 	end
 	
 	return type_name, name
@@ -384,7 +384,7 @@ do -- helpers
 		end
 	end
 
-	function class.SetupParentingSystem(META)
+	function metatable.AddParentingSystem(META)
 		META.OnParent = META.OnChildAdd or function() end
 		META.OnChildAdd = META.OnChildAdd or function() end
 		META.OnUnParent = META.OnUnParent or function() end

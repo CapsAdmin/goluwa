@@ -134,7 +134,7 @@ do -- tcp socket meta
 	end
 
 	do -- client
-		local CLIENT = utilities.CreateBaseMeta("socket_client")
+		local CLIENT = metatable.CreateTemplate("socket_client")
 		
 		add_options(CLIENT)
 
@@ -488,7 +488,7 @@ do -- tcp socket meta
 	end
 
 	do -- server
-		local SERVER = utilities.CreateBaseMeta("socket_server")
+		local SERVER = metatable.CreateTemplate("socket_server")
 		
 		add_options(SERVER)
 

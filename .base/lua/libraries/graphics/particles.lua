@@ -1,6 +1,6 @@
 local lerp,deg,randomf,clamp = math.lerp,math.deg,math.randomf,math.clamp
 
-local PARTICLE = utilities.CreateBaseMeta("particle")
+local PARTICLE = metatable.CreateTemplate("particle")
 
 class.GetSet(PARTICLE, "Pos", Vec3(0,0,0))
 class.GetSet(PARTICLE, "Velocity", Vec3(0,0,0))
@@ -29,7 +29,7 @@ function PARTICLE:SetLifeTime(n)
 	self.life_end = os.clock() + n
 end
 
-local EMITTER = utilities.CreateBaseMeta("particle_emitter")
+local EMITTER = metatable.CreateTemplate("particle_emitter")
 
 class.GetSet(EMITTER, "Speed", 1)
 class.GetSet(EMITTER, "Rate", 0.1)

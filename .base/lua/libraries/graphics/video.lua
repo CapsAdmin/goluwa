@@ -1,6 +1,6 @@
 local freeimage = require("lj-freeimage") -- image decoder
 
-local META = utilities.CreateBaseMeta("gif")
+local META = metatable.CreateTemplate("gif")
 
 function META:GetFrameCount()
 	return self.frame_count

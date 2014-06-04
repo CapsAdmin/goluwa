@@ -71,5 +71,4 @@ include("input.lua", META)
 include("extended.lua", META)
 include("user_command.lua", META)
 
-utilities.DeclareMetaTable(META.ClassName, META)
 entities.Register(META)

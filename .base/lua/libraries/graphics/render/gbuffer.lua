@@ -92,7 +92,7 @@ local SHADER = {
 				out_color.rgb = mix_fog(out_color.rgb, depth);
 				
 				out_color.a = 1;
-				out_color.rgb = normal;
+				out_color.rgb = diffuse;
 			}
 		]]  
 	}

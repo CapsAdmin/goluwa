@@ -201,6 +201,7 @@ CONTEXT.Name = "vpk"
 local mounted = {}
 
 local function mount(path)
+	print(path)
 	if mounted[path] then
 		return mounted[path]
 	end

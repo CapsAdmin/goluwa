@@ -250,7 +250,7 @@ do
 		end
 	end
 
-	local META = utilities.CreateBaseMeta("decoder")
+	local META = metatable.CreateTemplate("decoder")
 
 	local function insert_video_data(self, stream)
 		-- rescale the video

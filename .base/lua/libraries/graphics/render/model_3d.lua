@@ -92,7 +92,7 @@ function render.CreateMesh(data)
 end
 
 do -- model meta
-	local META = utilities.CreateBaseMeta("mesh3d")
+	local META = metatable.CreateTemplate("mesh3d")
 
 	META.__index = META
 

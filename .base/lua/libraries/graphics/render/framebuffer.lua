@@ -7,7 +7,7 @@ function render.GetFramebuffers()
 	return render.framebuffers
 end
 
-local META = utilities.CreateBaseMeta("framebuffer")
+local META = metatable.CreateTemplate("framebuffer")
 
 function META:__tostring()
 	return ("frame_buffer[%i]"):format(self.id)

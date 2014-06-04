@@ -279,7 +279,7 @@ end
 local function GEN_TEMPLATE(type, ctor, on_remove)
 	local type2 = type:lower()
 
-	local META = utilities.CreateBaseMeta("audio_" .. type2)
+	local META = metatable.CreateTemplate("audio_" .. type2)
 
 	local fmt = type2 .. "[%i]"
 	function META:__tostring()
@@ -690,7 +690,7 @@ end
 _G.Sound = audio.CreateSource
 
 do -- microphone
-	local META = utilities.CreateBaseMeta("audio_capture")
+	local META = metatable.CreateTemplate("audio_capture")
 
 	function META:Start(func)
 		alc.CaptureStart(self.id)
