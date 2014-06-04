@@ -455,17 +455,19 @@ do -- include
 			end
 			
 			for script in vfs.Iterate(dir, nil, true) do
-				local func, err = loadfile(script)
-				if func then
-					local ok, err = xpcall(func, system and system.OnError or logn, ...)
+				if script:find("%.lua") then
+					local func, err = loadfile(script)
+					if func then
+						local ok, err = xpcall(func, system and system.OnError or logn, ...)
 
-					if not ok then
+						if not ok then
+							logn(err)
+						end
+					end
+					
+					if not func then
 						logn(err)
 					end
-				end
-				
-				if not func then
-					logn(err)
 				end
 			end
 			
