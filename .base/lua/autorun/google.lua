@@ -85,8 +85,14 @@ if SERVER then
 	
 	console.AddCommand("t", function(line, from, to, str)
 		local ply = console.GetPlayer()
+				
+		if from and not to and not str then
+			str = from
+			to = "en"
+			from = "auto"
+		end
 		
-		translation.GoogleTranslate(from, to, str, function(data)
+		google.Translate(from, to, str, function(data)
 			chat.PlayerSay(ply, data.translated)
 		end)
 	end)
