@@ -94,8 +94,6 @@ do
 		local handle = lib.steamGetAuthSessionTicket(ticket, ffi.sizeof(ticket), size)
 		os.setenv("SteamAppId", "")
 		
-		if size[0] == 0 then size[0] = 1024 else print(size[0], "!!!!!!!!!!!!!!!!!!") end -- grrr
-		
 		return handle, ffi.string(ticket, size[0])
 	end
 end
