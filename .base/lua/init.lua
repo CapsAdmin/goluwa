@@ -297,8 +297,8 @@ do -- logging
 		
 		if log_files.console == log_file then
 			
-			if console and console.WriteString then
-				console.WriteString(line)
+			if console and console.Print then
+				console.Print(line)
 			else
 				io.write(line)
 			end
