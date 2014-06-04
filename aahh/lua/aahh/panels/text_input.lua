@@ -29,7 +29,7 @@ function PANEL:SetWrap(b)
 end
 
 function PANEL:Initialize()
-	self.markup = Markup()
+	self.markup = surface.CreateMarkup()
 end
 
 function PANEL:OnRequestLayout()

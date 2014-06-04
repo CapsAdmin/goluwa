@@ -60,7 +60,7 @@ do -- find value
 		return args_call(str, string.compare, ...) or args_call(str, string.find, ...)
 	end
 
-	local function find(tbl, name, level, ...)
+	local function find(tbl, name, dot, level, ...)
 		if level >= 3 then return end
 			
 		for key, val in pairs(tbl) do	
@@ -69,14 +69,20 @@ do -- find value
 				
 			if not skip[key] and T == "table" and not done[val] then
 				done[val] = true
-				find(val, name .. "." .. key, level + 1, ...)
+				find(val, name .. "." .. key, dot, level + 1, ...)
 			else
 				if (T == "function" or T == "number") and strfind(name .. "." .. key, ...) then					
 					
 					local nice_name
 					
 					if type(val) == "function" then
-						nice_name = ("%s.%s(%s)"):format(name, key, table.concat(debug.getparams(val), ", "))
+						local params = debug.getparams(val)
+						
+						if dot == ":" and params[1] == "self" then
+							table.remove(params, 1)
+						end
+					
+						nice_name = ("%s%s%s(%s)"):format(name, dot, key, table.concat(params, ", "))
 					else
 						nice_name = ("%s = %s"):format(key, val)
 					end
@@ -86,7 +92,7 @@ do -- find value
 					else
 						name = name:gsub("_G%.", "")
 						name = name:gsub("_M%.", "")
-						table.insert(found, {key = ("%s.%s"):format(name, key), val = val, name = name, nice_name = nice_name})
+						table.insert(found, {key = ("%s%s%s"):format(name, dot, key), val = val, name = name, nice_name = nice_name})
 					end
 				end
 			end
@@ -102,8 +108,8 @@ do -- find value
 			[_OLD_G] = true,
 		}
 			
-		find(_G, "_G", 1, ...)
-		find(utilities.GetMetaTables(), "_M", 1, ...)
+		find(_G, "_G", ".", 1, ...)
+		find(utilities.GetMetaTables(), "_M", ":", 1, ...)
 		for cmd, v in pairs(console.GetCommands()) do
 			if strfind(cmd, ...) then
 				local arg_line = table.concat(debug.getparams(v.callback), ", ")

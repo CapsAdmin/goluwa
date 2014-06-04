@@ -92,6 +92,10 @@ function class.Register(META, type_name, name)
     class.Registered[type_name] = class.Registered[type_name] or {}
     class.Registered[type_name][name] = META
 	
+	if utilities and utilities.DeclareMetaTable then
+		utilities.DeclareMetaTable(type_name .. " " .. name, META)
+	end
+	
 	return type_name, name
 end
 

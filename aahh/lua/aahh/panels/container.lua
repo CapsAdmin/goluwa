@@ -6,7 +6,7 @@ PANEL.ClassName = "container"
 aahh.GetSet(PANEL, "Collapse", false)
 
 function PANEL:Initialize()
-	self.btn = aahh.Create("textbutton", self)
+	self.btn = aahh.Create("text_button", self)
 	self.btn.OnPress = function()
 		self:SetCollapse(not self.Collapse)
 	end

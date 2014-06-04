@@ -92,13 +92,13 @@ function render.Create3DMesh(data)
 end
 
 do -- model meta
-	local META = utilities.CreateBaseMeta("model")
+	local META = utilities.CreateBaseMeta("mesh3d")
 
 	META.__index = META
 
 	class.GetSet(META, "TextureOverride", NULL)
 
-	function render.CreateModel(path, flags, ...)
+	function render.Create3DMesh(path, flags, ...)
 		check(path, "string")
 
 		if render.model_cache[path] then
