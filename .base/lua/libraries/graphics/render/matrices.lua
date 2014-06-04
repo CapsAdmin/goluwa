@@ -46,8 +46,15 @@ end
 
 -- projection  
 do
+	local restore = {}
+
 	-- this isn't really matrix related..
-	function render.SetViewport(x, y, w, h)
+	function render.SetViewport(x, y, w, h)		
+		restore[1] = cam.x
+		restore[2] = cam.y
+		restore[3] = cam.w
+		restore[4] = cam.h
+	
 		cam.x = x or cam.x
 		cam.y = y or cam.y
 		cam.w = w or cam.w
@@ -56,6 +63,10 @@ do
 		cam.ratio = cam.w / cam.h 
 		
 		gl.Viewport(x, y, w, h)
+	end
+	
+	function render.RestoreViewport()
+		return render.SetViewport(restore[1], restore[2], restore[3], restore[4])
 	end
 	
 	local last_x
@@ -103,7 +114,7 @@ do
 	end
 	
 	function render.End2D()	
-		--render.PopViewport()
+		render.RestoreViewport()
 		render.PopWorldMatrix()
 	end
 	
