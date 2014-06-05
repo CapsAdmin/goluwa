@@ -16,6 +16,12 @@ local function new_tcc()
 	if not lib then
 		-- import libtcc
 		ffi.cdef [[
+//libtcc define following macro on runtime to adjust target platform
+//it should be matched with luaJIT's. so make reverse definition.
+#define __SIZE_TYPE__ size_t
+#define __PTRDIFF_TYPE__ ptrdiff_t
+#define __WINT_TYPE__ wchar_t
+#define __WCHAR_TYPE__ wchar_t
 			#include <libtcc.h>
 		]]
 		lib = ffi.load("tcc")

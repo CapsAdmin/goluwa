@@ -165,8 +165,8 @@ end
 -----------------------
 local parser_lib
 local ffi_state = {}
-function ffi_state.new(symbols, try_init_path)
-	local r = setmetatable({sym = symbols}, {__index = ffi_state})
+function ffi_state.new(try_init_path)
+	local r = setmetatable({}, {__index = ffi_state})
 	r:init(try_init_path)
 	return r
 end
@@ -216,6 +216,7 @@ function ffi_state:init(try_init_path)
 				local builder = rv.new()
 				builder:init(self)
 				self.builder = builder
+				self:copt({ cc = "gcc" })
 			else
 				print('gcc available but fail to initialize gcc builder:'..rv)
 			end
@@ -278,7 +279,7 @@ end
 function ffi_state:clear_paths(system)
 	local tmp = {}
 	local removed = system and self.systemSearchPath or self.localSearchPath
-	for _,s in ipairs(searchPath) do
+	for _,s in ipairs(self.searchPath) do
 		local found
 		for _,t in ipairs(removed) do
 			if s == t then
@@ -450,7 +451,7 @@ end
 -- ffiex module
 -----------------------
 -- wrappers of ffi_state object.
-local main_ffi_state = ffi_state.new(nil, true)
+local main_ffi_state = ffi_state.new(true)
 ffi.main_ffi_state = main_ffi_state
 function ffi.path(path, system)
 	return main_ffi_state:path(path, system)
