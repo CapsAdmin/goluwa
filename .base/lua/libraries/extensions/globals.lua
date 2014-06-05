@@ -172,7 +172,7 @@ function typex(var)
 	if hasindex(var) then
 		-- why does ffi throw error when trying to index instead of nil?
 		local ok, res = pcall(idx, var)
-		if ok and res then
+		if ok and res and getmetatable(var) then
 			return res
 		end
 	end
