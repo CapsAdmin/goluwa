@@ -257,6 +257,10 @@ do
 		end
 	end
 	
+	function render.SetWorldMatrixOverride(matrix)
+		render.matrices.world_override = matrix
+	end
+	
 	-- world matrix helper functions
 	function render.Translate(x, y, z)
 		render.matrices.world:Translate(x, y, z)
@@ -298,9 +302,9 @@ function render.GetWorldMatrix()
 end
 
 function render.GetPVWMatrix2D()
-	return (render.matrices.world * render.matrices.view_2d * render.matrices.projection_2d).m
+	return ((render.matrices.world_override or render.matrices.world) * render.matrices.view_2d * render.matrices.projection_2d).m
 end
 
 function render.GetPVWMatrix3D()
-	return (render.matrices.world * render.matrices.view_3d * render.matrices.projection_3d).m
+	return ((render.matrices.world_override or render.matrices.world) * render.matrices.view_3d * render.matrices.projection_3d).m
 end
