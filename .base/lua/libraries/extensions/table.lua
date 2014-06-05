@@ -166,8 +166,8 @@ do -- table copy
 	
 	local function copy(obj, skip_meta)
 	
-		if hasindex(obj) and obj.Copy then
-			return obj:Copy() or obj
+		if hasindex(obj) and obj.Copy and typex(obj) ~= "table" then
+			return obj:Copy()
 		elseif lookup_table[obj] then
 			return lookup_table[obj]
 		elseif type(obj) == "table" then
@@ -179,7 +179,17 @@ do -- table copy
 				new_table[copy(key, skip_meta)] = copy(val, skip_meta)
 			end
 			
-			return skip_meta and new_table or setmetatable(new_table, getmetatable(obj))
+			if skip_meta then
+				return new_table
+			end
+			
+			local meta = getmetatable(obj)
+			
+			if meta then
+				setmetatable(new_table, meta)
+			end
+			
+			return new_table
 		end
 		
 		return obj	
