@@ -68,8 +68,8 @@ function cc:build(code)
 	local opts = apply_option(self)
 	local obj = os.tmpname()
 	-- compile .so
-	print(([[gcc -shared -xc - -o %s %s <<SRC
-SRC]]):format(obj, opts, code))
+	--[=[print(([[gcc -shared -xc - -o %s %s <<SRC
+SRC]]):format(obj, opts, code))]=]
 
 	local ok, r = pcall(os.execute, ([[gcc -shared -xc - -o %s %s <<SRC
 %s
