@@ -83,7 +83,7 @@ function autocomplete.DrawFound(x, y, found, max, offset)
 	max = max or 100
 	
 	surface.SetFont("default")
-	surface.Color(1,1,1,1)
+	surface.SetColor(1,1,1,1)
 	
 	surface.PushMatrix(x, y)
 		for i = offset, max do

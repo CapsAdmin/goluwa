@@ -175,7 +175,7 @@ function EMITTER:Draw()
 
 			local ox, oy = w*0.5, h*0.5
 
-			surface.Color(p.Color.r, p.Color.g, p.Color.b, p.Color.a * alpha)
+			surface.SetColor(p.Color.r, p.Color.g, p.Color.b, p.Color.a * alpha)
 		
 			surface.DrawRect(
 				p.Pos.x, 

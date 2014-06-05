@@ -46,10 +46,10 @@ function PANEL:OnDraw(size)
 	local w,h = size:Unpack()
 	
 	surface.SetWhiteTexture()
-	surface.Color(0.1, 0.1, 0.1, 1)
+	surface.SetColor(0.1, 0.1, 0.1, 1)
 	surface.DrawRect(0,0, w, h)
 	
-	--surface.Color(1, 1, 1, 0.1)
+	--surface.SetColor(1, 1, 1, 0.1)
 	--surface.DrawRect(0,0, self.markup.width or w, self.markup.height or h)
 	
 	-- this is needed for proper mouse coordinates

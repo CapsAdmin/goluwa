@@ -16,7 +16,7 @@ local function draw_branch(node)
 	
 	if node.times_called then
 		local r,g,b = HSVToColor(0, (node.times_called / root.times_called), 1):Unpack()
-		surface.Color(r,g,b,1)
+		surface.SetColor(r,g,b,1)
 	end
 	
 	local w, h = surface.GetTextSize(node.name)
@@ -54,7 +54,7 @@ event.AddListener("Draw2D", "lol", function()
 	
 	surface.SetFont("default")
 	surface.SetWhiteTexture()
-	surface.Color(1,1,1,1)
+	surface.SetColor(1,1,1,1)
 	surface.DrawText(count)
 	count = 0
 	

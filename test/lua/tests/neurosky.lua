@@ -20,7 +20,7 @@ local function update_rt(eeg)
 	fb:Begin()
 		surface.Start(0, 0, W, H)
 			surface.SetWhiteTexture()
-			surface.Color(1, 1, 1, 1)
+			surface.SetColor(1, 1, 1, 1)
 			
 			local x, y = timer.GetSystemTime() * 100 % W, H / 2 + eeg / 10
 			

@@ -1,7 +1,7 @@
 event.AddListener("DrawHUD", "scoreboard", function()
 	if not input.IsKeyDown("tab") then return end
 	
-	surface.Color(1,1,1,1)
+	surface.SetColor(1,1,1,1)
 	surface.SetFont("default")
 	
 	local i = 0

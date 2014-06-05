@@ -11,11 +11,11 @@
    
 event.AddListener("DrawHUD", "lol", function()
 	local w, h = surface.GetScreenSize()
-	surface.Color(0.6,1,1,1)
+	surface.SetColor(0.6,1,1,1)
 	surface.SetWhiteTexture()
 	surface.DrawRect(0,0,w*0.6,h*0.1)
 	
-	surface.Color(1,1,1,1)  
+	surface.SetColor(1,1,1,1)  
 
 	surface.SetFont("lol")
 	surface.SetTextPos(10, 10)

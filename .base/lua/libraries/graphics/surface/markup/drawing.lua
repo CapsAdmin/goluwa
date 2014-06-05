@@ -27,7 +27,7 @@ function META:Draw(x, y, w, h, no_translation)
 
 	-- reset font and color for every line
 	set_font(self, "default")
-	surface.Color(1, 1, 1, 1)
+	surface.SetColor(1, 1, 1, 1)
 
 	local remove_these = {}
 	local start_remove = false
@@ -66,7 +66,7 @@ function META:Draw(x, y, w, h, no_translation)
 				elseif chunk.type == "color" then
 					local c = chunk.val
 
-					surface.Color(c.r, c.g, c.b, c.a)
+					surface.SetColor(c.r, c.g, c.b, c.a)
 				elseif chunk.type == "tag_stopper" then
 					for _, chunks in pairs(started_tags) do
 						local fix = false
@@ -209,7 +209,7 @@ function META:DrawSelection()
 
 	if START and END then
 		surface.SetWhiteTexture()
-		surface.Color(1, 1, 1, 0.5)
+		surface.SetColor(1, 1, 1, 0.5)
 
 		for i = START.i, END.i - 1 do
 			local char = self.chars[i]
@@ -231,7 +231,7 @@ end
 function META:DrawLineHighlight(y)
 	do return end
 	local start_chunk = self:CaretFromPos(0, y).char.chunk
-	surface.Color(1, 1, 1, 0.1)
+	surface.SetColor(1, 1, 1, 0.1)
 	surface.DrawRect(start_chunk.x, start_chunk.y, self.width, start_chunk.line_height)
 end
 
@@ -256,7 +256,7 @@ function META:DrawCaret()
 
 		surface.SetWhiteTexture()
 		self.blink_offset = self.blink_offset or 0
-		surface.Color(1, 1, 1, (timer.GetSystemTime() - self.blink_offset)%0.5 > 0.25 and 1 or 0)
+		surface.SetColor(1, 1, 1, (timer.GetSystemTime() - self.blink_offset)%0.5 > 0.25 and 1 or 0)
 		surface.DrawRect(x, y, 1, h)
 	end
 end

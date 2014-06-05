@@ -43,7 +43,7 @@ function PANEL:OnDraw(size)
 	end
 
 	if self.canvas:IsValid() then
-		surface.Color(1, 1, 1, 1)
+		surface.SetColor(1, 1, 1, 1)
 		surface.SetTexture(self.canvas:GetTexture())
 		local pos = self:GetWorldPos()
 		surface.DrawRect(pos.x, pos.y, size.w, size.h)

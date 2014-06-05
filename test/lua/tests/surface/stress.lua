@@ -13,7 +13,7 @@ event.AddListener("Draw2D", "lol", function()
 		local c = cache[h] or HSVToColor(h/100,1,1)
 		cache[h] = c
 		
-		surface.Color(c.r,c.g,c.b, 0.5)
+		surface.SetColor(c.r,c.g,c.b, 0.5)
 		surface.DrawRect(x, y, 1, 1)
 	end
 	end	

@@ -5,7 +5,7 @@ local tex = Texture(64,64):Fill(function()
 end)  
 
 event.AddListener("Draw2D", "lol", function()
-	surface.Color(1,1,1,1)
+	surface.SetColor(1,1,1,1)
 	surface.SetTexture(tex)
 
 	surface.DrawRect(90, 50, 100, 100)

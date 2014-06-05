@@ -387,14 +387,14 @@ do -- fonts
 				 
 		if surface.debug then
 			surface.SetWhiteTexture()
-			surface.Color(1, 0, 0, 0.5)
+			surface.SetColor(1, 0, 0, 0.5)
 			surface.DrawRect(X, Y, data.w * W, data.h * H)
-			surface.Color(1,1,1,1,1)	
+			surface.SetColor(1,1,1,1,1)	
 			
 			surface.SetWhiteTexture()
-			surface.Color(0, 1, 0, 0.1)  
+			surface.SetColor(0, 1, 0, 0.1)  
 			surface.DrawRect(X - info.border_2, Y - info.border_2, (data.w + info.border) * W, (data.h + info.border) * H)
-			surface.Color(1,1,1,1,1)
+			surface.SetColor(1,1,1,1,1)
 		end
 		
 		surface.PushMatrix(X - info.border_2, Y - info.border_2, data.tex.w * W, data.tex.h * H) 

@@ -51,7 +51,7 @@ blur_texture(Vec2(5,0)) -- todo: this just makes it black for some reason
     
 event.AddListener("Draw2D", "lol", function()
 
-	surface.Color(1,1,1,1)
+	surface.SetColor(1,1,1,1)
 	surface.SetTexture(tex)
 
 	surface.DrawRect(90, 50, 100, 100)

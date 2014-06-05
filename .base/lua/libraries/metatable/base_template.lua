@@ -19,12 +19,18 @@ function metatable.CreateTemplate(class_name)
 	
 	function META:New(tbl, skip_gc_callback)
 		tbl = tbl or {}
-		local self = setmetatable(tbl, META) 
+		
+		local copy = table.copy(META)
+		local self = setmetatable(tbl, copy) 
+		
 		if not skip_gc_callback then
 			utilities.SetGCCallback(self)
 		end
+		
 		self.trace = debug.trace(true)
+		
 		table.insert(objects, self)
+		
 		return self
 	end
 	

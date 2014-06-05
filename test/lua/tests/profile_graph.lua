@@ -25,7 +25,7 @@ local function draw_branch(node, level, i, max, px, py, ppos, pw, ph)
 	frac = math.clamp(frac, 0, 1)
 	
 	local r,g,b = HSVToColor(frac, 1, 1):Unpack()
-	surface.Color(r,g,b,0.5)
+	surface.SetColor(r,g,b,0.5)
 
 	local pos = (i / max)
 	local x, y = math.sin(pos * math.pi * 2) * math.random(600, 1000)* level, math.cos(pos * math.pi * 2) * math.random(600, 1000) * level
@@ -75,7 +75,7 @@ local function draw_branch(node, level, i, max, px, py, ppos, pw, ph)
 				
 		local offset = h/4
 		local x, y = x + 4 - w*0.5, y - h*0.5
-		surface.Color(1,1,1,1)
+		surface.SetColor(1,1,1,1)
 		
 		surface.SetTextPos(x, y)
 		surface.DrawText(node.name)

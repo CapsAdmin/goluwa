@@ -65,7 +65,7 @@ local function show_image(url)
 			return
 		end
 		 
-		surface.Color(1,1,1,1)
+		surface.SetColor(1,1,1,1)
 		surface.SetTexture(tex)
 		surface.DrawRect(10 + surface.GetScreenSize() * (getPositionFraction(t) - 1), 10, tex.w / 2, tex.h / 2)
 	end)	
