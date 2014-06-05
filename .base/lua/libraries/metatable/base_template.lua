@@ -28,9 +28,9 @@ function metatable.CreateTemplate(class_name)
 		return self
 	end
 	
-	function META:Remove()
+	function META:Remove(...)
 		if self.OnRemove then 
-			self:OnRemove() 
+			self:OnRemove(...) 
 		end
 		utilities.MakeNULL(self)
 	end
