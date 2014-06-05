@@ -20,6 +20,12 @@ function metatable.GetAll()
 	return metatable.registered
 end
 
+function metatable.Delegate(tbl, key, func_name)
+	tbl[func_name] = function(self, ...)
+		return self[key][func_name](self[key], ...)
+	end
+end
+
 include("base_template.lua", metatable)
 include("get_is_set.lua", metatable)
 include("templates/*", metatable)
