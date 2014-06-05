@@ -7,7 +7,7 @@ local gif4 = Gif("https://dl.dropboxusercontent.com/u/244444/greenkid.gif")
 local gif5 = Gif("https://dl.dropboxusercontent.com/u/244444/zzzzz.gif")
 
 event.AddListener("Draw2D", "gif", function()
-	surface.Color(1, 1, 1, 1)
+	surface.SetColor(1, 1, 1, 1)
 	gif1:Draw(0, 0)	
 	gif2:Draw(291, 0)
 	gif3:Draw(291, 215)

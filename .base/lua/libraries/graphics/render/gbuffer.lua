@@ -313,7 +313,7 @@ function render.DrawGBuffer(w, h)
 			local x = 0
 			local y = 0
 			
-			surface.Color(1,1,1,1)
+			surface.SetColor(1,1,1,1)
 			
 			for i, data in pairs(render.gbuffer_config) do
 				surface.SetTexture(render.gbuffer:GetTexture(data.name))

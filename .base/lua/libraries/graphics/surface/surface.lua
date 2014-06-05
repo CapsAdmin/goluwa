@@ -68,12 +68,20 @@ end
 local COLOR = Color()
 local oldr, oldg, oldb, olda
 
-function surface.Color(r,g,b,a)
+function surface.SetColor(r, g, b, a)
 	oldr, oldg, oldb, olda = R,G,B,A
+	
+	if not g then
+		a = r.a
+		b = r.b
+		g = r.g
+		r = r.r
+	end
 	
 	R = r
 	G = g
 	B = b
+	
 	if a then
 		A = a
 	end
@@ -88,16 +96,28 @@ function surface.Color(r,g,b,a)
 	return oldr, oldg, oldb, olda
 end
 
-function surface.SetColor(r, g, b, a)
-	surface.Color(r, g, b, a)
-end
-
 function surface.GetColor(obj)
 	if obj then
 		return COLOR
 	end
 	
 	return R, G, B, A
+end
+
+
+function surface.SetAlpha(a)
+	olda = A
+	
+	A = a
+	COLOR.a = a
+	
+	surface.mesh_2d_shader.global_color = COLOR
+	
+	return olda
+end
+
+function surface.GetAlpha()
+	return A
 end
 
 function surface.SetAlphaMultiplier(a)

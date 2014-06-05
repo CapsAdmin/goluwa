@@ -79,7 +79,7 @@ event.AddListener("Draw2D", "wowozela", function(dt)
 		volume = -100
 	end
 		
-	surface.Color(1,1,1,1)
+	surface.SetColor(1,1,1,1)
 	surface.SetTexture(sphere)
 	surface.DrawRect(pos.x - 64, pos.y - 64, 128, 128)
 		

@@ -22,7 +22,7 @@ event.CreateTimer("decoder_test", 0, 1/30, function()
 end)
 
 function goluwa.decoder_test.Draw2D()
-	surface.Color(1,1,1,1)
+	surface.SetColor(1,1,1,1)
 	
 	surface.SetTexture(texture)
 	surface.DrawRect(0,0, texture.w,texture.h)

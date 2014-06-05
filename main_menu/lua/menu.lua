@@ -52,7 +52,7 @@ do -- open close
 		local i = 1 
 		event.AddListener("PostDrawMenu", "StartupMenu", function(dt)
 			i = i - (i*1.5) * dt * 5
-			surface.Color(0,0,0,i)
+			surface.SetColor(0,0,0,i)
 			surface.DrawRect(0,0,surface.GetScreenSize())
 			if i < 0 then
 				return HOOK_DESTROY
@@ -89,7 +89,7 @@ function menu.RenderBackground()
 	for i=0, steps-1 do
 		local fract = i/steps
 		local f = math.sin(fract*100/wavelength+t)*amplitude+median
-		surface.Color(r*f, g*f, b*f, alpha)
+		surface.SetColor(r*f, g*f, b*f, alpha)
 		surface.DrawRect(scrw*fract, 0, scrw/steps, scrh)
 	end
 end

@@ -139,7 +139,7 @@ function love.graphics.setColor(r, g, b, a)
 		ca = r[4] or 255
 	end
 	
-	surface.Color(cr/255, cg/255, cb/255, ca/255)
+	surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 end
 
 function love.graphics.getColor()
@@ -169,9 +169,9 @@ do -- background
 
 	function love.graphics.clear()
 		surface.SetWhiteTexture()
-		surface.Color(br/255,bg/255,bb/255,ba/255)
+		surface.SetColor(br/255,bg/255,bb/255,ba/255)
 		surface.DrawRect(0, 0, render.w, render.h)
-		surface.Color(cr/255,cg/255,cb/255,ca/255)
+		surface.SetColor(cr/255,cg/255,cb/255,ca/255)
 	end
 end
 
@@ -287,7 +287,7 @@ do -- font
 		r=r or 0
 		r=r/0.0174532925
 		
-		surface.Color(cr/255, cg/255, cb/255, ca/255)
+		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 		surface.SetTextScale(sx, sy)
 		surface.SetTextPos(x, y)
 		surface.DrawText(text, r)
@@ -307,7 +307,7 @@ do -- font
 		
 		local lines = string.explode(text, "\n")
 		
-		surface.Color(cr/255, cg/255, cb/255, ca/255)
+		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 		surface.SetTextScale(sx, sy)
 		
 		for i = 1, #lines do
@@ -504,7 +504,7 @@ function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy) -- partial
 	r=r or 0
 	r=r/0.0174532925
 	
-	surface.Color(cr/255, cg/255, cb/255, ca/255)
+	surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 	surface.SetTexture(lovemu.textures[drawable])
 	surface.SetRectUV(quad.args[1]*quad.args[5],quad.args[2]*quad.args[6],quad.args[3]*quad.args[5],quad.args[4]*quad.args[6])
 	surface.DrawRect(x,y, quad.args[3]*sx, quad.args[4]*sy,r,ox*sx,oy*sy)
@@ -515,7 +515,7 @@ local drawq = love.graphics.drawq
 
 function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 	if type(drawable) == "table" and drawable.typeOf and drawable:typeOf("SpriteBatch") then
-		surface.Color(1,1,1,1)
+		surface.SetColor(1,1,1,1)
 		surface.SetTexture(lovemu.textures[drawable.img])
 		drawable.poly:Draw()
 	else

@@ -1,5 +1,5 @@
 event.AddListener("DrawHUD", "cursors", function()
-	surface.Color(1,1,1,1)
+	surface.SetColor(1,1,1,1)
 	surface.SetFont("default")
 	
 	for _, ply in pairs(players.GetAll()) do

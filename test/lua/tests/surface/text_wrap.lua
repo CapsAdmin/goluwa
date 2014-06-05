@@ -4,7 +4,7 @@
 event.AddListener("Draw2D", "lol", function()
 	surface.SetFont("default")
 	
-	surface.Color(1,1,1,1)
+	surface.SetColor(1,1,1,1)
 	local x, y = surface.GetMousePos()
 	
 	for i, line in pairs(surface.WrapString(str, x)) do
@@ -14,6 +14,6 @@ event.AddListener("Draw2D", "lol", function()
 		
 	end
 	
-	surface.Color(1,0,0,1)
+	surface.SetColor(1,0,0,1)
 	surface.DrawLine(x, 0, x, 10000)
 end)

@@ -120,7 +120,7 @@ event.AddListener("Draw2D", "particles", function(dt)
 		poly_head:SetRect(i, p.px - (size*0.5), p.py - (size*0.5), size, size)
 	end
 	
-	surface.Color(1,1,1,1)
+	surface.SetColor(1,1,1,1)
 	
 	surface.SetTexture(trail_tex)
 	poly_tail:Draw()

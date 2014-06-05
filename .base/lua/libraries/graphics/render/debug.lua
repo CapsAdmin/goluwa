@@ -18,23 +18,23 @@ do
 		surface.SetFont("default")
 		surface.SetWhiteTexture()
 		
-		surface.Color(1, 0, 0, 0.5)
+		surface.SetColor(1, 0, 0, 0.5)
 		surface.DrawRect(0, y_offset, spacing * 3, spacing * 3)
 		
-		surface.Color(0, 1, 0, 0.5)
+		surface.SetColor(0, 1, 0, 0.5)
 		surface.DrawRect(spacing * 3, y_offset, spacing, spacing * 3)
 		draw_axis("x", 4, 0)
 		draw_axis("y", 4, 1)
 		draw_axis("z", 4, 2)
 		
 		
-		surface.Color(0, 0, 1, 0.5)
+		surface.SetColor(0, 0, 1, 0.5)
 		surface.DrawRect(0, y_offset + spacing * 3, spacing * 3, spacing - y_offset/2)
 		
-		--surface.Color(1, 0, 1, 0.5)
+		--surface.SetColor(1, 0, 1, 0.5)
 		--surface.DrawRect(spacing * 3, y_offset + spacing * 3, spacing, spacing - y_offset/2)
 		
-		surface.Color(1,1,1,1)
+		surface.SetColor(1,1,1,1)
 		
 		surface.SetTextPos(0, 0)
 		surface.DrawText(name)

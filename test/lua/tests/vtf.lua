@@ -564,7 +564,7 @@ function goluwa.Draw2D()
 	local tex = vtf.textures[i].tex
 	
 	surface.SetTexture(tex)
-	surface.Color(1,1,1,1)
+	surface.SetColor(1,1,1,1)
 	surface.DrawRect(0,0,512,512)
 	surface.SetTextPos(0, 0)
 end

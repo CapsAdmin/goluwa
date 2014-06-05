@@ -20,20 +20,20 @@ do
 			
 			if shadow_distance then
 				shadow_color = shadow_color or Color(0,0,0,0.5)
-				surface.Color(shadow_color:Unpack())
+				surface.SetColor(shadow_color:Unpack())
 				surface.DrawRect(rect.x + shadow_distance.x, rect.y + shadow_distance.y, rect.w, rect.h)
 			end
 			
 			if border_size and border_size > 0 then
 				border_color = border_color or Color(1,1,1,1)
 
-				surface.Color(border_color:Unpack())
+				surface.SetColor(border_color:Unpack())
 				surface.DrawRect(rect:Unpack())
 			
 				rect:Shrink(border_size)
 			end			
 			
-			surface.Color(color:Unpack())
+			surface.SetColor(color:Unpack())
 			surface.DrawRect(rect:Unpack())
 		end,
 		
@@ -51,11 +51,11 @@ do
 				surface.SetTextPos(x, y)
 			end
 			
-			surface.Color(color:Unpack())
+			surface.SetColor(color:Unpack())
 			surface.DrawText(text)
 			
 			if aahh.debug then			
-				surface.Color(1,0,0,0.25)
+				surface.SetColor(1,0,0,0.25)
 				surface.SetWhiteTexture()
 				local w, h = surface.GetTextSize(text)
 				surface.DrawRect(x, y, w, h)
@@ -66,12 +66,12 @@ do
 			color = color or Color(1,1,1,1)
 
 			surface.SetTexture(tex)
-			surface.Color(color:Unpack())
+			surface.SetColor(color:Unpack())
 			surface.DrawRect(rect:Unpack())
 		end,
 		
 		line = function(a, b, color)
-			surface.Color(color:Unpack())
+			surface.SetColor(color:Unpack())
 			surface.DrawLine(a.x, a.y, b.x, b.y)
 		end,
 	}
@@ -93,9 +93,9 @@ do
 				
 		if aahh.debug then
 			if pnl.ClassName == "text_button" then 
-				surface.Color(1,1,0,1)
+				surface.SetColor(1,1,0,1)
 			else
-				surface.Color(1,0,0,1)
+				surface.SetColor(1,0,0,1)
 			end
 			surface.DrawRect(0,0,3,3)
 		end

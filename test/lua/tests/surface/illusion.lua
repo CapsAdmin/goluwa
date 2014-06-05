@@ -5,19 +5,19 @@ local function draw_shape(s, r)
 	r = r or 45
 	
 
-	surface.Color(1, 1, 1, 1)
+	surface.SetColor(1, 1, 1, 1)
 	surface.DrawRect(0,5, s,s, r, s/2, s/2)
 
-	surface.Color(0, 0, 0, 1)
+	surface.SetColor(0, 0, 0, 1)
 	surface.DrawRect(0,-5, s,s, r, s/2, s/2)
 		
-	surface.Color(0.75, 0, 0.75, 1)
+	surface.SetColor(0.75, 0, 0.75, 1)
 	surface.DrawRect(0,0, s,s, r, s/2, s/2)	
 	
 end
 
 event.AddListener("Draw2D", "illusion", function()	
-	surface.Color(0.75,0.75,0,1)
+	surface.SetColor(0.75,0.75,0,1)
 	surface.DrawRect(0,0,5000,5000)
 	
 	local w, h = surface.GetScreenSize()

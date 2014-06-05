@@ -45,13 +45,13 @@ META.tags.wrong =
 {
 	arguments = {},
 	post_draw_chunks = function(markup, self, chunk)
-		local r,g,b,a = surface.Color(1, 0, 0, 1)
+		local r,g,b,a = surface.SetColor(1, 0, 0, 1)
 		-- todo: LOL
 		for x = chunk.x, chunk.right do
 			surface.DrawLine(x, chunk.top + math.sin(x), x+1, chunk.top +math.sin(x))
 		end
 
-		surface.Color(r,g,b,a)
+		surface.SetColor(r,g,b,a)
 	end,
 }
 
@@ -59,13 +59,13 @@ META.tags.background =
 {
 	arguments = {1,1,1,1},
 	pre_draw = function(markup, self, x,y, r,g,b,a)					
-		local r,g,b,a = surface.Color(r,g,b,a)
+		local r,g,b,a = surface.SetColor(r,g,b,a)
 		
 		local w, h = self.tag_width, self.tag_height
 		
 		surface.SetWhiteTexture()
 		surface.DrawRect(x, y - h, w, h)
-		surface.Color(r,g,b,a)
+		surface.SetColor(r,g,b,a)
 	end,
 	
 	post_draw = function() 
@@ -77,10 +77,10 @@ META.tags.mark =
 {
 	arguments = {},
 	post_draw_chunks = function(markup, self, chunk)
-		local r, g, b, a = surface.Color(1, 1, 0, 0.25)
+		local r, g, b, a = surface.SetColor(1, 1, 0, 0.25)
 		surface.SetWhiteTexture()
 		surface.DrawRect(chunk.x, chunk.y, chunk.w, chunk.h)
-		surface.Color(r, g, b, a)
+		surface.SetColor(r, g, b, a)
 	end,
 }
 
@@ -90,7 +90,7 @@ META.tags.hsv =
 
 	pre_draw = function(markup, self, x,y, h, s, v)
 		local r,g,b = HSVToColor(h,s,v):Unpack()
-		surface.Color(r, g, b, 1)
+		surface.SetColor(r, g, b, 1)
 	end,
 }
 
@@ -99,7 +99,7 @@ META.tags.color =
 	arguments = {1, 1, 1, 1},
 
 	pre_draw = function(markup, self, x,y, r,g,b,a)
-		surface.Color(r, g, b, a)
+		surface.SetColor(r, g, b, a)
 	end,
 }
 

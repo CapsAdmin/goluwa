@@ -12,7 +12,7 @@ event.AddListener("Draw2D", "lol", function()
 		poly:SetRect(i, (math.sin(time+i)*128)+256, (math.cos(time+i)*128)+256, 64, 64,math.sin(time+i))
 	end
 
-	surface.Color(1,1,1,1)
+	surface.SetColor(1,1,1,1)
 	surface.SetTexture(tex)
   	
 	poly:Draw()	

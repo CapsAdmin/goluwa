@@ -997,7 +997,7 @@ function PANEL:DrawText(element)
 		local color = element.struct.fgcolor
 		
 		surface.SetFont(font)
-		surface.Color(color:Unpack())
+		surface.SetColor(color:Unpack())
 		
 		local rect = element.rect
 		local textr = element.textr
