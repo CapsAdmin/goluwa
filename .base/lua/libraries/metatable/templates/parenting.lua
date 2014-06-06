@@ -1,14 +1,22 @@
 local metatable = (...) or _G.metatable
 
-function metatable.ParentingTemplate(META)
+function metatable.AddParentingTemplate(META)
 	META.OnParent = META.OnChildAdd or function() end
 	META.OnChildAdd = META.OnChildAdd or function() end
 	META.OnUnParent = META.OnUnParent or function() end
 	
-	class.GetSet(META, "Parent", NULL)
+	META.RootPart = NULL
+	
+	metatable.GetSet(META, "Parent", NULL)
 	META.Children = {}
 	
-	function META:GetChildren()
+	function META:GetChildren(all)
+		if all then
+			if not self.children_list then
+				self:BuildChildrenList()
+			end
+			return self.children_list
+		end
 		return self.Children
 	end
 
@@ -37,7 +45,9 @@ function metatable.ParentingTemplate(META)
 		var:OnParent(self)
 		self:OnChildAdd(var)
 
-		self:GetRoot():SortChildren() 
+		self:GetRoot():SortChildren()
+		
+		self.children_list = nil
 		
 		return true
 	end
@@ -119,10 +129,25 @@ function metatable.ParentingTemplate(META)
 		self:OnUnParent(parent)
 	end
 	
+	local function add_children_to_list(parent, list)
+		for i, child in ipairs(parent:GetChildren()) do
+			table.insert(list, child)
+			add_children_to_list(child, list)
+		end
+	end
+	
+	function META:BuildChildrenList()
+		self.children_list = {}
+		
+		for i, child in ipairs(self:GetChildren()) do
+			add_children_to_list(child, self.children_list)
+		end
+	end
+	
 	function META:BuildParentList()
 
 		self.parent_list = {}
-
+		
 		if not self:HasParent() then return end
 					
 		local temp = self:GetParent()
@@ -138,7 +163,6 @@ function metatable.ParentingTemplate(META)
 				break
 			end
 		end
-		
 		
 		self.RootPart = temp
 		
