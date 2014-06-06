@@ -95,9 +95,7 @@ if DEBUG then
 
 		local base = "../../../../.userdata/" .. e.USERNAME:lower() .. "/logs/"
 		
-		if io.open(base) then
-			jit.verbose.on(base .. "jit_verbose_output.txt")
-		end
+		jit.verbose.on(base .. "jit_verbose_output.txt")
 			
 	-- remove the loader we just made. it's made more properly later on
 	table.remove(package.loaders, 1)
