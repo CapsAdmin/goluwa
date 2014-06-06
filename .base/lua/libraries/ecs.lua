@@ -9,6 +9,8 @@ for k,v in pairs(ecs.entities) do
 	end
 end
 
+ecs.entities = {}
+
 function ecs.GetAll()
 	return ecs.entities
 end
@@ -40,7 +42,7 @@ do -- entity
 	metatable.GetSet(ENTITY, "Components", {})
 	metatable.GetSet(ENTITY, "Entity", NULL)
 
-	function ENTITY:AddComponent(name, id)
+	function ENTITY:AddComponent(name, id, ...)
 		id = id or "no_id"
 		
 		self:RemoveComponent(name, id)
@@ -59,19 +61,21 @@ do -- entity
 		
 		obj.Id = id
 		obj.Entity = self
-		
-		for i, event_type in pairs(obj.Events) do
-			event.AddListener({
-				event_type = event_type,
-				id = obj,
-				self_arg = obj,
-				callback = obj["On" .. event_type],
-			})
+				
+		if obj.Events then		
+			for i, event_type in pairs(obj.Events) do
+				event.AddListener({
+					event_type = event_type,
+					id = obj,
+					self_arg = obj,
+					callback = obj["On" .. event_type],
+				})
+			end
 		end
 		
 		self.Components[name][id] = obj
 		
-		obj:OnAdd(self)
+		obj:OnAdd(self, ...)
 	end
 
 	function ENTITY:RemoveComponent(name, id)
@@ -83,8 +87,10 @@ do -- entity
 		
 		if obj:IsValid() then
 		
-			for i, event_type in pairs(obj.Events) do
-				event.RemoveListener(event_type, obj)
+			if obj.Events then		
+				for i, event_type in pairs(obj.Events) do
+					event.RemoveListener(event_type, obj)
+				end
 			end
 		
 			obj:OnRemove(self)
@@ -100,6 +106,12 @@ do -- entity
 		return self.Components[name][id] or NULL
 	end
 	
+	function ENTITY:HasComponent(name, id)
+		id = id or "no_id"
+		
+		return self.Components[name][id] ~= nil
+	end
+	
 	function ENTITY:OnRemove()
 		for name, components in pairs(self:GetComponents()) do
 			for id, obj in pairs(components) do
@@ -108,14 +120,14 @@ do -- entity
 		end
 	end
 	
-	function ecs.CreateEntity(config)
+	function ecs.CreateEntity(config, ...)
 		local ent = ENTITY:New()
 		
 		table.insert(ecs.entities, ent)
 		
 		if ecs.configurations[config] then
 			for _, name in ipairs(ecs.configurations[config].components) do
-				ent:AddComponent(name)
+				ent:AddComponent(name, nil, ...)
 			end
 			
 			for name, func in pairs(ecs.configurations[config].functions) do
@@ -154,6 +166,7 @@ do -- components
 
 	function ecs.GetComponent(name)
 		name = name:lower()
+		-- get a copy so vectors and such wont be shared between multiple components
 		return ecs.components[name]
 	end
 
@@ -167,67 +180,90 @@ do -- test
 		local COMPONENT = {}
 		
 		COMPONENT.Name = "transform"
-		COMPONENT.Events = {"Update"}
 		
 		metatable.AddParentingSystem(COMPONENT)
 		
-		metatable.GetSet(COMPONENT, "Matrix", Matrix44())
+		metatable.GetSet(COMPONENT, "TRMatrix", Matrix44())
+		metatable.GetSet(COMPONENT, "ScaleMatrix", Matrix44())
 		
 		metatable.StartStorable()		
-			metatable.GetSet(COMPONENT, "Position", Vec3(0, 0, 0))
-			metatable.GetSet(COMPONENT, "Angles", Ang3(0, 0, 0))
-			metatable.GetSet(COMPONENT, "Scale", Vec3(1, 1, 1))
-			metatable.GetSet(COMPONENT, "Size", 1)
+			metatable.GetSet(COMPONENT, "Position", Vec3(0, 0, 0), "InvalidateTRMatrix")
+			metatable.GetSet(COMPONENT, "Angles", Ang3(0, 0, 0), "InvalidateTRMatrix")
+			
+			metatable.GetSet(COMPONENT, "Scale", Vec3(1, 1, 1), "InvalidateScaleMatrix")
+			metatable.GetSet(COMPONENT, "Shear", Vec3(0, 0, 0), "InvalidateScaleMatrix")
+			metatable.GetSet(COMPONENT, "Size", 1, "InvalidateScaleMatrix")
 		metatable.EndStorable()
-		
-		function COMPONENT:OnAdd(ent)
-			self.temp_scale = Vec3(1, 1, 1)
+	
+		function COMPONENT:OnAdd(ent, parent)
+			if parent and parent:HasComponent("transform") then
+				self:SetParent(parent:GetComponent("transform"))
+			end
 		end
 		
 		function COMPONENT:OnRemove(ent)
 
 		end
 		
-		function COMPONENT:SetPos(vec3)
-			self.Position = vec3
-			self:InvalidateMatrix()
-		end
-		
-		function COMPONENT:SetAngles(ang3)
-			self.Angles = ang3
-			self:InvalidateMatrix()
-		end
-	
-		function COMPONENT:SetScale(vec3) 
-			self.Scale = vec3
-			self.temp_scale = vec3 * self.Size
-			self:InvalidateMatrix()
-		end
-		
-		function COMPONENT:SetSize(num) 
-			self.Size = num
-			self.temp_scale = num * self.Scale
-			self:InvalidateMatrix()
-		end
-
-		function COMPONENT:InvalidateMatrix()
-			self.rebuild_matrix = true
-		end
-				
-		function COMPONENT:OnUpdate()
-			if self.rebuild_matrix then
-				self.Matrix:Identity()
-
-				self.Matrix:Translate(-self.Position.x, -self.Position.y, -self.Position.z)
-
-				self.Matrix:Rotate(self.Angles.p, 0, 1, 0)
-				self.Matrix:Rotate(-self.Angles.y, 0, 0, 1)
-				self.Matrix:Rotate(-self.Angles.r, 1, 0, 0)				
-
-				self.Matrix:Scale(self.temp_scale.x, self.temp_scale.y, self.temp_scale.z) 
-
-				self.rebuild_matrix = false
+		do
+			COMPONENT.temp_scale = Vec3(1, 1, 1)
+			
+			function COMPONENT:SetScale(vec3) 
+				self.Scale = vec3
+				self.temp_scale = vec3 * self.Size
+				self:InvalidateScaleMatrix()
 			end
+					
+			function COMPONENT:SetSize(num) 
+				self.Size = num
+				self.temp_scale = num * self.Scale
+				self:InvalidateScaleMatrix()
+			end
+		end
+
+		function COMPONENT:InvalidateScaleMatrix()
+			self.rebuild_scale_matrix = true
+		end
+		
+		function COMPONENT:InvalidateTRMatrix()
+			self.rebuild_tr_matrix = true
+		end
+		
+		function COMPONENT:RebuildMatrix()			
+			if self.rebuild_tr_matrix then				
+				self.TRMatrix:Identity()
+
+				self.TRMatrix:Translate(self.Position.x, self.Position.y, self.Position.z)
+				
+				self.TRMatrix:Rotate(self.Angles.p, 1, 0, 0)
+				self.TRMatrix:Rotate(self.Angles.y, 0, 1, 0)
+				self.TRMatrix:Rotate(self.Angles.r, 0, 0, 1)				
+				
+				if self:HasParent() then
+					self.TRMatrix = self.TRMatrix * self.Parent.TRMatrix
+				end
+				
+				self.rebuild_tr_matrix = false
+			end
+		
+			if self.rebuild_scale_matrix then
+				self.ScaleMatrix:Identity()
+				
+				self.ScaleMatrix:Scale(self.temp_scale.x, self.temp_scale.y, self.temp_scale.z)
+				--self.ScaleMatrix:Shear(self.Shear)
+				
+				self.rebuild_scale_matrix = false
+			end
+			
+			for _, child in ipairs(self:GetChildren()) do
+				child:RebuildMatrix()
+			end
+		end
+		
+		function COMPONENT:GetMatrix()
+			self:RebuildMatrix()
+			
+			return self.ScaleMatrix * self.TRMatrix 
 		end
 
 		ecs.RegisterComponent(COMPONENT)
@@ -238,11 +274,11 @@ do -- test
 		
 		COMPONENT.Name = "visual"
 		COMPONENT.Require = {"transform"}
-		COMPONENT.Events = {"Draw2D"}
+		COMPONENT.Events = {"Draw3D"}
 		
 		metatable.StartStorable()		
-			metatable.GetSet(COMPONENT, "Texture", NULL)
-			metatable.GetSet(COMPONENT, "Color", Color(1, 1, 1, 1))
+			metatable.GetSet(COMPONENT, "Texture", render.GetWhiteTexture())
+			metatable.GetSet(COMPONENT, "Color", Color(1, 1, 1))
 			metatable.GetSet(COMPONENT, "Alpha", 1)
 		metatable.EndStorable()
 
@@ -252,41 +288,86 @@ do -- test
 
 		function COMPONENT:OnRemove(ent)
 
-		end
+		end	
+
+		local SHADER = {
+			name = "mesh_ecs",
+			vertex = { 
+				uniform = {
+					pvm_matrix = "mat4",
+				},			
+				attributes = {
+					{pos = "vec3"},
+					{normal = "vec3"},
+					{uv = "vec2"},
+				},	
+				source = "gl_Position = pvm_matrix * vec4(pos, 1.0);"
+			},
+			fragment = { 
+				uniform = {
+					diffuse = "sampler2D",
+					bump = "sampler2D",
+					specular = "sampler2D",
+				},		
+				attributes = {
+					{pos = "vec3"},
+					{normal = "vec3"},
+					{uv = "vec2"},
+				},			
+				source = [[
+					out vec4 out_color;
+								
+					void main() 
+					{
+						out_color = texture(diffuse, uv);
+					}
+				]]
+			}  
+		}
 		
-		function COMPONENT:OnDraw2D(dt)
-			local matrix = self:GetComponent("transform"):GetMatrix()
+		local shader = render.CreateShader(SHADER)
+		
+		-- this is for the previous system but it has the same vertex attribute layout
+		local model = render.Create3DMesh("models/face.obj").sub_models[0]
+		
+		function COMPONENT:OnDraw3D(dt)							
+			shader.diffuse = model.diffuse
+			shader.pvm_matrix = (self:GetComponent("transform"):GetMatrix() * render.matrices.view_3d * render.matrices.projection_3d).m
+			shader:Bind()
 			
-			render.PushWorldMatrixEx(matrix)
-			
-				if self.Texture:IsValid() then
-					surface.SetTexture(self.Texture)
-				else
-					surface.SetWhiteTexture(self.Texture)
-				end
-				
-				surface.SetColor(self.Color.r, self.Color.g, self.Color.b, self.Alpha)
-				surface.DrawRect(0,0,1,1)
-				
-			render.PopWorldMatrix()
+			model.mesh:Draw()
 		end
 
 		ecs.RegisterComponent(COMPONENT)
 	end
-	
+		
 	do -- test
 		ecs.SetupComponents("shape", {"transform", "visual"})
 	
-		local ent = ecs.CreateEntity("shape")
+		local parent = ecs.CreateEntity("shape")
 		
-		ent:SetTexture(Texture("textures/debug/brain.jpg"))
-		ent:SetColor(Color(1,0,1))
-		ent:SetAlpha(0.5)
-		ent:SetPosition(Vec3(-200,-134,0))
-		ent:SetAngles(Ang3(0,0,0)) 
-		ent:SetScale(Vec3(50,50,1))
+		parent:SetTexture(Texture("textures/debug/brain.jpg"))
+		parent:SetColor(Color(1,1,1))
+		parent:SetAlpha(1)
+		parent:SetPosition(Vec3(40, 0, 0))
+		parent:SetAngles(Ang3(0,0,0)) 
+		parent:SetScale(Vec3(2,1,1))
+		--parent:SetShear(Vec3(0,0,0))
 		
-		event.AddListener("Update", "test", function()
+			local child = ecs.CreateEntity("shape", parent)
+			child:SetPosition(Vec3(20,0,0))
+			child:SetAngles(Ang3(0,0,0)) 
+			child:SetScale(Vec3(1,1,1)) 
+			
+			child:SetColor(Color(1,0.5,1))
+			
+			-- shortcut this somehow but the argument needs to be transform not entity
+			--child:GetComponent("transform"):SetParent(parent:GetComponent("transform"))
+		
+		event.AddListener("Update", "lol", function()
+			local t = timer.GetElapsedTime()*100
+			--parent:SetAngles(Ang3(0,t,0))
+			--child:SetAngles(Ang3(0,t*-0.5,0))
 		end)
 	end
 	
