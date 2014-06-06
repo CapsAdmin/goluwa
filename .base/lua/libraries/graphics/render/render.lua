@@ -312,7 +312,27 @@ do
 		return MODE
 	end
 end
- 
+
+do	
+	local cull_mode = "front"
+
+	function render.SetCullMode(mode)
+		if mode == "front" then
+			gl.CullFace(gl.e.GL_FRONT)
+		elseif mode == "back" then
+			gl.CullFace(gl.e.GL_BACK)
+		elseif mode == "front_and_back" then
+			gl.CullFace(gl.e.GL_FRONT_AND_BACK)
+		end
+		
+		cull_mode = mode
+	end
+
+	function render.GetCullMode()
+		return cull_mode
+	end
+end
+
 do
 	local data = ffi.new("float[3]")
 
