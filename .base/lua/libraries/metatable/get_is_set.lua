@@ -10,16 +10,28 @@ function metatable.EndStorable()
 	__store = false
 end
 
-function metatable.GetSet(tbl, name, def)
+function metatable.GetSet(tbl, name, def, callback)
 
-    if type(def) == "number" then
-		tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = tonumber(var) or def end
+	if type(def) == "number" then	
+		if callback then
+			tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = tonumber(var) or def self[callback](self) end
+		else
+			tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = tonumber(var) or def end
+		end
 		tbl["Get" .. name] = tbl["Get" .. name] or function(self, var) return tonumber(self[name]) or def end
 	elseif type(def) == "string" then
-		tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = tostring(var) end
+		if callback then
+			tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = tostring(var) self[callback](self) end
+		else
+			tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = tostring(var) end
+		end
 		tbl["Get" .. name] = tbl["Get" .. name] or function(self, var) return tostring(self[name]) end
 	else
-		tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) if var == nil then var = def end self[name] = var end
+		if callback then
+			tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) if var == nil then var = def end self[name] = var self[callback](self) end
+		else
+			tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) if var == nil then var = def end self[name] = var end
+		end
 		tbl["Get" .. name] = tbl["Get" .. name] or function(self, var) if self[name] ~= nil then return self[name] end return def end
 	end
 
@@ -31,15 +43,23 @@ function metatable.GetSet(tbl, name, def)
 	end
 end
 
-function metatable.IsSet(tbl, name, def)
+function metatable.IsSet(tbl, name, def, callback)
 	
 	if type(def) == "number" then
-		tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = tonumber(var) end
+		if callback then
+			tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = tonumber(var) self[callback](self) end
+		else
+			tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = tonumber(var) end
+		end
 	else
-		tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = var end
+		if callback then
+			tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = var self[callback](self) end
+		else
+			tbl["Set" .. name] = tbl["Set" .. name] or function(self, var) self[name] = var end
+		end
 	end
 	
-    tbl["Is" .. name] = tbl["Is" .. name] or function(self, var) if self[name] ~= nil then return self[name] end return def end
+	tbl["Is" .. name] = tbl["Is" .. name] or function(self, var) if self[name] ~= nil then return self[name] end return def end
 
     tbl[name] = def
 
