@@ -2,6 +2,7 @@ local ecs = _G.ecs or {}
 
 ecs.entities = ecs.entities or {}
 ecs.configurations = ecs.configurations or {}
+ecs.active_components = ecs.active_components or {}
 
 for k,v in pairs(ecs.entities) do
 	if v:IsValid() then
@@ -36,6 +37,52 @@ function ecs.SetupComponents(name, components)
 	}
 end
 
+local events = {}
+local ref_count = {}
+
+local function add_event(event_type, component)
+	ref_count[event_type] = (ref_count[event_type] or 0) + 1
+	
+	local func_name = "On" .. event_type
+	
+	events[event_type] = events[event_type] or {}
+	events[event_type][component.Name] = events[event_type][component.Name] or {}
+	
+	table.insert(events[event_type][component.Name], component)
+	
+	event.AddListener(event_type, "ecs", function(...) 
+		for name, components in pairs(events[event_type]) do
+			for i, component in ipairs(components) do
+				component[func_name](component, ...)
+			end
+		end
+	end)
+end
+
+local function remove_event(event_type, component)
+	ref_count[event_type] = (ref_count[event_type] or 0) - 1
+	
+	events[event_type] = events[event_type] or {}
+	events[event_type][component.Name] = events[event_type][component.Name] or {}
+	
+	for i, other in pairs(events[event_type][component.Name]) do
+		if other == component then
+			events[event_type][component.Name][i] = nil
+			break
+		end
+	end
+	
+	table.fixindices(events[event_type][component.Name])
+
+	for i, component in ipairs(events[event_type]) do
+		component[func_name](component)
+	end
+	
+	if ref_count[event_type] <= 0 then
+		event.RemoveListener(event_type, "ecs")
+	end
+end
+
 do -- entity
 	local ENTITY = metatable.CreateTemplate("ecs_base")
 
@@ -50,27 +97,18 @@ do -- entity
 		self.Components[name] = self.Components[name] or {}
 		
 		local obj = ecs.CreateComponent(name)
-		
-		if obj.Require then
-			for i, other in ipairs(obj.Require) do
-				if not self.Components[other] then
-					error("component " .. name .. " requires component " .. other, 2)
-				end
+				
+		for i, other in ipairs(obj.Require) do
+			if not self.Components[other] then
+				error("component " .. name .. " requires component " .. other, 2)
 			end
 		end
 		
 		obj.Id = id
 		obj.Entity = self
 				
-		if obj.Events then		
-			for i, event_type in pairs(obj.Events) do
-				event.AddListener({
-					event_type = event_type,
-					id = obj,
-					self_arg = obj,
-					callback = obj["On" .. event_type],
-				})
-			end
+		for i, event_type in ipairs(obj.Events) do
+			add_event(event_type, obj)
 		end
 		
 		self.Components[name][id] = obj
@@ -87,10 +125,8 @@ do -- entity
 		
 		if obj:IsValid() then
 		
-			if obj.Events then		
-				for i, event_type in pairs(obj.Events) do
-					event.RemoveListener(event_type, obj)
-				end
+			for i, event_type in ipairs(obj.Events) do
+				remove_event(event_type, obj)
 			end
 		
 			obj:OnRemove(self)
@@ -142,6 +178,9 @@ end
 do -- components 
 	local BASE = {}
 	
+	BASE.Require = {}
+	BASE.Events = {}
+	
 	metatable.GetSet(BASE, "Id")
 	metatable.Delegate(BASE, "Entity", "GetComponent")
 	metatable.Delegate(BASE, "Entity", "AddComponent")
@@ -171,7 +210,11 @@ do -- components
 	end
 
 	function ecs.CreateComponent(name)
-		return ecs.GetComponent(name):New()
+		local obj = ecs.GetComponent(name):New()
+		
+		table.insert(ecs.active_components, obj)
+		
+		return obj
 	end
 end
 
@@ -181,7 +224,7 @@ do -- test
 		
 		COMPONENT.Name = "transform"
 		
-		metatable.AddParentingSystem(COMPONENT)
+		metatable.AddParentingTemplate(COMPONENT)
 		
 		metatable.GetSet(COMPONENT, "TRMatrix", Matrix44())
 		metatable.GetSet(COMPONENT, "ScaleMatrix", Matrix44())
@@ -227,6 +270,10 @@ do -- test
 		
 		function COMPONENT:InvalidateTRMatrix()
 			self.rebuild_tr_matrix = true
+			
+			for _, child in ipairs(self:GetChildren(true)) do
+				self.rebuild_tr_matrix = true
+			end
 		end
 		
 		function COMPONENT:RebuildMatrix()			
@@ -246,7 +293,7 @@ do -- test
 				self.rebuild_tr_matrix = false
 			end
 		
-			if self.rebuild_scale_matrix then
+			if self.rebuild_scale_matrix and not (self.temp_scale.x == 1 and self.temp_scale.y == 1 and self.temp_scale.z == 1) then
 				self.ScaleMatrix:Identity()
 				
 				self.ScaleMatrix:Scale(self.temp_scale.x, self.temp_scale.y, self.temp_scale.z)
@@ -254,14 +301,14 @@ do -- test
 				
 				self.rebuild_scale_matrix = false
 			end
-			
-			for _, child in ipairs(self:GetChildren()) do
-				child:RebuildMatrix()
-			end
 		end
 		
 		function COMPONENT:GetMatrix()
 			self:RebuildMatrix()
+			
+			if self.temp_scale.x == 1 and self.temp_scale.y == 1 and self.temp_scale.z == 1 then
+				return self.TRMatrix 
+			end
 			
 			return self.ScaleMatrix * self.TRMatrix 
 		end
@@ -305,6 +352,7 @@ do -- test
 			},
 			fragment = { 
 				uniform = {
+					color = Color(1,1,1,1),
 					diffuse = "sampler2D",
 					bump = "sampler2D",
 					specular = "sampler2D",
@@ -316,10 +364,10 @@ do -- test
 				},			
 				source = [[
 					out vec4 out_color;
-								
+
 					void main() 
 					{
-						out_color = texture(diffuse, uv);
+						out_color = texture(diffuse, uv) * color;
 					}
 				]]
 			}  
@@ -328,11 +376,13 @@ do -- test
 		local shader = render.CreateShader(SHADER)
 		
 		-- this is for the previous system but it has the same vertex attribute layout
-		local model = render.Create3DMesh("models/face.obj").sub_models[0]
+		local model = render.Create3DMesh("models/spider.obj").sub_models[0]
 		
-		function COMPONENT:OnDraw3D(dt)							
+		function COMPONENT:OnDraw3D(dt)
+		
 			shader.diffuse = model.diffuse
 			shader.pvm_matrix = (self:GetComponent("transform"):GetMatrix() * render.matrices.view_3d * render.matrices.projection_3d).m
+			shader.color = self.Color
 			shader:Bind()
 			
 			model.mesh:Draw()
@@ -351,24 +401,36 @@ do -- test
 		parent:SetAlpha(1)
 		parent:SetPosition(Vec3(40, 0, 0))
 		parent:SetAngles(Ang3(0,0,0)) 
-		parent:SetScale(Vec3(2,1,1))
+		parent:SetScale(Vec3(2,2,2))
 		--parent:SetShear(Vec3(0,0,0))
 		
-			local child = ecs.CreateEntity("shape", parent)
-			child:SetPosition(Vec3(20,0,0))
+		local node = parent
+		
+		for i = 1, 1000 do
+		
+			local child = ecs.CreateEntity("shape", node)
+			child:SetPosition(Vec3(40,0,0))
 			child:SetAngles(Ang3(0,0,0)) 
 			child:SetScale(Vec3(1,1,1)) 
 			
-			child:SetColor(Color(1,0.5,1))
+			child:SetColor(Color(500,100,500))
 			
 			-- shortcut this somehow but the argument needs to be transform not entity
 			--child:GetComponent("transform"):SetParent(parent:GetComponent("transform"))
+			
+			node = child
+		end
 		
-		event.AddListener("Update", "lol", function()
-			local t = timer.GetElapsedTime()*100
-			--parent:SetAngles(Ang3(0,t,0))
-			--child:SetAngles(Ang3(0,t*-0.5,0))
-		end)
+		local start = timer.GetElapsedTime()
+		
+		event.AddListener("Update", "lol", function()			
+			local t = timer.GetElapsedTime() - start 
+			for i, child in ipairs(parent:GetChildren(true)) do
+				child:SetAngles(Ang3(-t,t,t))
+				t = t * 1.001
+			end
+			
+		end, {priority = -19})
 	end
 	
 end
