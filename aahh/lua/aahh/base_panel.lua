@@ -221,7 +221,7 @@ do -- orientation
 end
 
 do -- parenting
-	metatable.AddParentingSystem(PANEL)
+	metatable.AddParentingTemplate(PANEL)
 
 	function PANEL:AddChild(var, pos)
 		var = var or NULL
