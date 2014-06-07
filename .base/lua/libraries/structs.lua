@@ -56,21 +56,7 @@ function structs.Register(META)
 	if META.Constructor then
 		structs[META.ClassName] = function(...) return obj(META.Constructor(...)) end
 	else
-		-- speed? runtime checks are bad
-		
-		local count = #META.Args
-		
-		if count == 2 then
-			structs[META.ClassName] = function(a, b) return obj(a or 0, b or 0) end
-		elseif count == 3 then
-			structs[META.ClassName] = function(a, b, c) return obj(a or 0, b or 0, c or 0) end
-		elseif count == 4 then
-			structs[META.ClassName] = function(a, b, c, d) return obj(a or 0, b or 0, c or 0, d or 0) end
-		elseif count == 5 then
-			structs[META.ClassName] = function(a, b, c, d, e) return obj(a or 0, b or 0, c or 0, d or 0, e or 0) end
-		else
-			structs[META.ClassName] = function(...) return obj(...) end
-		end
+		structs[META.ClassName] = obj
  	end
 	
 	_G[META.ClassName] = structs[META.ClassName]
@@ -175,9 +161,11 @@ function structs.AddOperator(META, operator, ...)
 		local META, structs = ...
 		META["__eq"] = function(a, b)
 				return 
-				a and
-				getmetatable(a) == "ffi" and
+				--a and
+				--getmetatable(a) == "ffi" and
+				type(a) == "cdata" and
 				ffi.istype(a, b) and 
+				
 				a.KEY == b.KEY
 			end
 		]==]
