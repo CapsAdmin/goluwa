@@ -237,7 +237,7 @@ do -- test
 			metatable.GetSet(COMPONENT, "Shear", Vec3(0, 0, 0), "InvalidateScaleMatrix")
 			metatable.GetSet(COMPONENT, "Size", 1, "InvalidateScaleMatrix")
 		metatable.EndStorable()
-	
+		
 		function COMPONENT:OnAdd(ent, parent)
 			if parent and parent:HasComponent("transform") then
 				self:SetParent(parent:GetComponent("transform"))
@@ -374,19 +374,24 @@ do -- test
 		}
 		
 		local shader = render.CreateShader(SHADER)
-		
+		 
 		-- this is for the previous system but it has the same vertex attribute layout
 		local model = render.Create3DMesh("models/spider.obj").sub_models[0]
 		
 		function COMPONENT:OnDraw3D(dt)
 		
-			shader.diffuse = model.diffuse
-			shader.pvm_matrix = (self:GetComponent("transform"):GetMatrix() * render.matrices.view_3d * render.matrices.projection_3d).m
-			shader.color = self.Color
-			shader:Bind()
+			local matrix = self:GetComponent("transform"):GetMatrix() * render.matrices.vp_matrix
+
+			local x, y = matrix:GetClipCoordinates()
 			
-			model.mesh:Draw()
-		end
+			if x > -1 and x < 1 and y > -1 and y < 1 then
+				shader.pvm_matrix = matrix.m
+				shader.diffuse = model.diffuse
+				shader.color = self.Color
+				shader:Bind()
+				model.mesh:Draw()
+			end
+		end  
 
 		ecs.RegisterComponent(COMPONENT)
 	end
@@ -399,21 +404,21 @@ do -- test
 		parent:SetTexture(Texture("textures/debug/brain.jpg"))
 		parent:SetColor(Color(1,1,1))
 		parent:SetAlpha(1)
-		parent:SetPosition(Vec3(40, 0, 0))
+		parent:SetPosition(Vec3(0, 0, 0))
 		parent:SetAngles(Ang3(0,0,0)) 
 		parent:SetScale(Vec3(2,2,2))
 		--parent:SetShear(Vec3(0,0,0))
 		
 		local node = parent
 		
-		for i = 1, 1000 do
+		for i = 1, 2000 do
 		
 			local child = ecs.CreateEntity("shape", node)
-			child:SetPosition(Vec3(40,0,0))
+			child:SetPosition(Vec3(60,0,0))
 			child:SetAngles(Ang3(0,0,0)) 
-			child:SetScale(Vec3(1,1,1)) 
+			child:SetScale(Vec3(1, 1, 1)) 
 			
-			child:SetColor(Color(500,100,500))
+			--child:SetColor(Color(500,100,500))
 			
 			-- shortcut this somehow but the argument needs to be transform not entity
 			--child:GetComponent("transform"):SetParent(parent:GetComponent("transform"))
@@ -424,9 +429,9 @@ do -- test
 		local start = timer.GetElapsedTime()
 		
 		event.AddListener("Update", "lol", function()			
-			local t = timer.GetElapsedTime() - start 
+			local t = -timer.GetElapsedTime() - start 
 			for i, child in ipairs(parent:GetChildren(true)) do
-				child:SetAngles(Ang3(-t,t,t))
+				child:SetAngles(Ang3(t,t,t))
 				t = t * 1.001
 			end
 			
