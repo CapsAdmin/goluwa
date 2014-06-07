@@ -37,17 +37,28 @@ function assimp.ImportFileEx(path, flags, flip_normals, uv_mult)
 
 	local out = {}
 	
-	for i = 0, scene.mNumMeshes-1 do
-		local mesh = scene.mMeshes[i]
+	for i = 1, scene.mNumMeshes do
+		local mesh = scene.mMeshes[i-1]
 		
 		local sub_model = {mesh_data = {}}
 		
-		for i = 0, scene.mMeshes[i].mNumVertices-1 do
+		local minx, miny, minz = 0,0,0
+		local maxx, maxy, maxz = 0,0,0	
+		
+		for i = 0, scene.mMeshes[i-1].mNumVertices-1 do
 			local data = {}
 			
 			if mesh.mVertices ~= nil then
 				local val = mesh.mVertices[i]
-				data.pos = {val.x, val.z, -val.y}
+				data.pos = {val.x, val.y, val.z}
+				
+				if val.x < minx then minx = val.x end
+				if val.y < miny then miny = val.y end
+				if val.z < minz then minz = val.z end
+				
+				if val.x > maxx then maxx = val.x end
+				if val.y > maxy then maxy = val.y end
+				if val.z > maxz then maxz = val.z end
 			end
 
 			if mesh.mNormals ~= nil then
@@ -80,6 +91,8 @@ function assimp.ImportFileEx(path, flags, flip_normals, uv_mult)
 			
 			sub_model.mesh_data[#sub_model.mesh_data+1] = data
 		end
+		
+		sub_model.bbox = {min = {minx, miny, minz}, max = {maxx, maxy, maxz}}
 				
 		sub_model.name = ffi.string(mesh.mName.data, mesh.mName.length):trim()
 		
