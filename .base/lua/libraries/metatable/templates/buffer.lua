@@ -62,6 +62,13 @@ META["@READ@"] = function(@WRITE_ARGS@)
 	@RETURN@
 end]]
 
+local type_translate = {
+	longlong = "uint64_t",
+	long = "uint32_t",
+	short = "uint16_t",
+	char = "uint8_t",
+}
+
 local function ADD_FFI_OPTIMIZED_TYPE(META, typ)
 	local decimal = false
 	
@@ -84,7 +91,7 @@ local function ADD_FFI_OPTIMIZED_TYPE(META, typ)
 		template = template:gsub("@RETURN@", integer_return)
 	end
 		
-	local size = ffi.sizeof(typ:lower() == "longlong" and "long long" or typ:lower())
+	local size = ffi.sizeof(type_translate[typ:lower()] or typ:lower())
 	
 	local read_unroll = "\tlocal chars = ffi.cast('char *', self:ReadBytes(" .. size .. "))\n"	
 	for i = 1, size do
