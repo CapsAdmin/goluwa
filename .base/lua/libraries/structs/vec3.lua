@@ -158,26 +158,24 @@ Returns x, y, iVisibility.
 ]]
 
 
-function META:ToScreen(ang, w, h, fov)
-	ang = ang or render.GetCamAng()
+function META:ToScreen(pos, ang, w, h, fov)
+	pos = pos or render.GetCamPos()
+	ang = ang or render.GetCamAng():Rad()
+	w = w or render.GetWidth()
+	h = h or render.GetHeight()
+	fov = fov or math.rad(render.GetCamFOV())
 
-	local _w, _h = surface.GetScreenSize()
-	w = w or _w
-	h = h or _h
-
-	fov = fov or math.rad(render.cam_fov)
-
-	local dir = self:Copy() - render.GetCamPos()
-	dir:Normalize()	
+	local dir = pos - self
+	dir:Normalize()
 			
     --Same as we did above, we found distance the camera to a rectangular slice of the camera's frustrum, whose width equals the "4:3" width corresponding to the given screen height.
     local d = 4 * h / (6 * math.tan(0.5 * fov))
-    local fdp = ang:GetUp():GetDot(dir)
+    local fdp = ang:GetForward():GetDot(dir)
 
     --fdp must be nonzero ( in other words, vDir must not be perpendicular to angCamRot:Forward() )
     --or we will get a divide by zero error when calculating vProj below.
     if fdp == 0 then
-        return 0, 0, -1
+        return Vec2(0, 0), -1
     end
 
     --Using linear projection, project this vector onto the plane of the slice
@@ -187,7 +185,7 @@ function META:ToScreen(ang, w, h, fov)
     --We add half-widths / half-heights to these coordinates to give us screen positions relative to the upper-left corner of the screen.
     --We have to subtract from the "up" instead of adding, since screen coordinates decrease as they go upwards.
     local x = 0.5 * w + ang:GetRight():GetDot(proj)
-    local y = 0.5 * h - ang:GetForward():GetDot(proj)
+    local y = 0.5 * h - ang:GetUp():GetDot(proj)
 
     --Lastly we have to ensure these screen positions are actually on the screen.
     local vis
