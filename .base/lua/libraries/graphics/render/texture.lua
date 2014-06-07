@@ -55,11 +55,7 @@ do -- texture binding
 		local last
 		
 		function render.BindTexture(tex)
-			if tex ~= last then
-				if typex(tex) == "gif" then
-					tex = tex:GetTexture()
-				end
-				
+			if tex ~= last then				
 				render.ActiveTexture(tex.texture_channel)
 				gl.BindTexture(tex.format.type, tex.id) 
 			end
