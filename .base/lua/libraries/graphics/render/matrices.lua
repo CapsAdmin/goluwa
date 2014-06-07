@@ -149,7 +149,6 @@ do
 		end
 				
 		gl.Enable(gl.e.GL_DEPTH_TEST) 
-		gl.Disable(gl.e.GL_CULL_FACE)
 		
 		render.PushWorldMatrix()
 	end
@@ -177,6 +176,8 @@ function render.SetupView3D(pos, ang, fov)
 	if pos then
 		view:Translate(pos.y, pos.x, pos.z)
 	end
+	
+	render.matrices.vp_matrix = render.matrices.view_3d * render.matrices.projection_3d
 end
 
 function render.SetupView2D(pos, ang, zoom)
