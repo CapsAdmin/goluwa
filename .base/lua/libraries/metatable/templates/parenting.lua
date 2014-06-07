@@ -76,8 +76,8 @@ function metatable.AddParentingTemplate(META)
 	end
 
 	function META:HasChild(obj)
-		for key, child in pairs(self.Children) do
-			if child == obj or child:HasChild(obj) then
+		for key, child in ipairs(self:GetChildren(true)) do
+			if child == obj then
 				return true
 			end
 		end
