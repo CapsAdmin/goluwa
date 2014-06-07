@@ -287,7 +287,11 @@ do -- test
 				self.TRMatrix:Rotate(self.Angles.r, 0, 0, 1)				
 				
 				if self:HasParent() then
-					self.TRMatrix = self.TRMatrix * self.Parent.TRMatrix
+					self.templol = self.templol or Matrix44()
+					
+					--self.TRMatrix = self.TRMatrix * self.Parent.TRMatrix
+					self.TRMatrix:Multiply(self.Parent.TRMatrix, self.templol)
+					self.TRMatrix, self.templol = self.templol, self.TRMatrix
 				end
 				
 				self.rebuild_tr_matrix = false
@@ -376,20 +380,59 @@ do -- test
 		local shader = render.CreateShader(SHADER)
 		 
 		-- this is for the previous system but it has the same vertex attribute layout
-		local model = render.Create3DMesh("models/spider.obj").sub_models[0]
+		--local model = render.Create3DMesh("models/cube.obj")
+		local model = {sub_models = {{mesh = render.CreateMesh(BSP_LOL)}}}
+				
+		local function Clippify(x, y, z, world)
+			return 
+		end
+		
+		local function helper(i, j, model)
+			return bit.band(bit.rshift(i, j), 1) == 0 and model.bbox.min or model.bbox.max
+		end
 		
 		function COMPONENT:OnDraw3D(dt)
 		
-			local matrix = self:GetComponent("transform"):GetMatrix() * render.matrices.vp_matrix
-
-			local x, y = matrix:GetClipCoordinates()
+			if not render.matrices.vp_matrix then return end
+		
+			local matrix = self:GetComponent("transform"):GetMatrix() 
+			local temp = Matrix44()
 			
-			if x > -1 and x < 1 and y > -1 and y < 1 then
-				shader.pvm_matrix = matrix.m
-				shader.diffuse = model.diffuse
+			local visible = false
+			
+			if false then
+			model.LOL = model.LOL or {}
+			for _, pos in ipairs(model.corners) do
+				model.LOL[_] = model.LOL[_] or Matrix44()
+				model.LOL[_]:Identity()
+				model.LOL[_]:Translate(pos.x, pos.y, pos.z)
+				
+				model.LOL[_]:Multiply(matrix, temp)
+				temp:Multiply(render.matrices.vp_matrix, model.LOL[_])
+				
+				local x, y, z = model.LOL[_]:GetClipCoordinates()
+				
+				if x > -1 and x < 1 and y > -1 and y < 1 and z > -1 then
+					visible = true
+					break
+				end
+			end
+			else
+				visible = true
+			end
+			
+			if visible then
+				local screen = matrix * render.matrices.vp_matrix
+				shader.pvm_matrix = screen.m
 				shader.color = self.Color
-				shader:Bind()
-				model.mesh:Draw()
+				
+				for i, model in ipairs(model.sub_models) do
+					shader.diffuse = render.GetErrorTexture() --model.diffuse
+					shader:Bind()
+					model.mesh:Draw()
+				end
+			else
+			--	print(os.clock())
 			end
 		end  
 
@@ -404,11 +447,12 @@ do -- test
 		parent:SetTexture(Texture("textures/debug/brain.jpg"))
 		parent:SetColor(Color(1,1,1))
 		parent:SetAlpha(1)
-		parent:SetPosition(Vec3(0, 0, 0))
-		parent:SetAngles(Ang3(0,0,0)) 
-		parent:SetScale(Vec3(2,2,2))
+		parent:SetPosition(Vec3(5000, 0, 0))
+		parent:SetAngles(Ang3(0,90,0)) 
+		parent:SetScale(Vec3(1,1,1))
 		--parent:SetShear(Vec3(0,0,0))
 		
+		if false then
 		local node = parent
 		
 		for i = 1, 2000 do
@@ -428,14 +472,17 @@ do -- test
 		
 		local start = timer.GetElapsedTime()
 		
+		parent:BuildChildrenList()
+		
 		event.AddListener("Update", "lol", function()			
-			local t = -timer.GetElapsedTime() - start 
-			for i, child in ipairs(parent:GetChildren(true)) do
+			local t = timer.GetElapsedTime() - start 
+			for i, child in ipairs(parent:GetAllChildren()) do
 				child:SetAngles(Ang3(t,t,t))
 				t = t * 1.001
 			end
 			
 		end, {priority = -19})
+		end
 	end
 	
 end
