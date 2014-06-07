@@ -98,6 +98,10 @@ do -- model meta
 
 	class.GetSet(META, "TextureOverride", NULL)
 
+	local function corner_helper(self, i, j)
+		return bit.band(bit.rshift(i, j), 1) == 0 and self.bbox.min or self.bbox.max
+	end
+	
 	function render.Create3DMesh(path, flags, ...)
 		check(path, "string")
 
@@ -119,10 +123,28 @@ do -- model meta
 
 		local self = setmetatable({}, META)
 		self.sub_models = {}
+		
+		local min, max = Vec3(), Vec3()
 
-		for i, model in pairs(models) do
-			local sub_model = {mesh = render.CreateMesh(model.mesh_data), name = model.name}
+		for i, model in ipairs(models) do
+			local sub_model = {mesh = render.CreateMesh(model.mesh_data), name = model.name, bbox = {min = Vec3(unpack(model.bbox.min)), max = Vec3(unpack(model.bbox.max))}}
 
+			if 
+				sub_model.bbox.min.x < min.x and 
+				sub_model.bbox.min.y < min.y and 
+				sub_model.bbox.min.z < min.z 
+			then
+				min = sub_model.bbox.min
+			end
+			
+			if 
+				sub_model.bbox.max.x > max.x and 
+				sub_model.bbox.max.y > max.y and 
+				sub_model.bbox.max.z > max.z 
+			then
+				max = sub_model.bbox.max
+			end
+			
 			if model.material and model.material.path then
 				sub_model.diffuse = render.CreateTexture(model.material.path, default_texture_format)
 
@@ -152,6 +174,17 @@ do -- model meta
 			--sub_model.specular:SetChannel(3)
 
 			self.sub_models[i] = sub_model
+		end
+		
+		self.bbox = {min = min, max = max}
+		self.corners = {}
+		
+		for i = 0, 7 do
+			local x = corner_helper(self, i, 2).x
+			local y = corner_helper(self, i, 1).y
+			local z = corner_helper(self, i, 0).z
+			
+			self.corners[i+1] = Vec3(x, y, z)
 		end
 
 		render.model_cache[path] = self
