@@ -380,9 +380,9 @@ do -- test
 		local shader = render.CreateShader(SHADER)
 		 
 		-- this is for the previous system but it has the same vertex attribute layout
-		--local model = render.Create3DMesh("models/cube.obj")
-		local model = {sub_models = {{mesh = render.CreateMesh(BSP_LOL)}}}
-				
+		--local model = 
+		local model = BSP_MODEL or render.Create3DMesh("models/sponza.obj")
+
 		local function Clippify(x, y, z, world)
 			return 
 		end
@@ -400,23 +400,23 @@ do -- test
 			
 			local visible = false
 			
-			if false then
-			model.LOL = model.LOL or {}
-			for _, pos in ipairs(model.corners) do
-				model.LOL[_] = model.LOL[_] or Matrix44()
-				model.LOL[_]:Identity()
-				model.LOL[_]:Translate(pos.x, pos.y, pos.z)
-				
-				model.LOL[_]:Multiply(matrix, temp)
-				temp:Multiply(render.matrices.vp_matrix, model.LOL[_])
-				
-				local x, y, z = model.LOL[_]:GetClipCoordinates()
-				
-				if x > -1 and x < 1 and y > -1 and y < 1 and z > -1 then
-					visible = true
-					break
+			if model.corners then
+				model.LOL = model.LOL or {}
+				for _, pos in ipairs(model.corners) do
+					model.LOL[_] = model.LOL[_] or Matrix44()
+					model.LOL[_]:Identity()
+					model.LOL[_]:Translate(pos.x, pos.y, pos.z)
+					
+					model.LOL[_]:Multiply(matrix, temp)
+					temp:Multiply(render.matrices.vp_matrix, model.LOL[_])
+					
+					local x, y, z = model.LOL[_]:GetClipCoordinates()
+					
+					if x > -1 and x < 1 and y > -1 and y < 1 and z > -1 then
+						visible = true
+						break
+					end
 				end
-			end
 			else
 				visible = true
 			end
@@ -427,7 +427,7 @@ do -- test
 				shader.color = self.Color
 				
 				for i, model in ipairs(model.sub_models) do
-					shader.diffuse = render.GetErrorTexture() --model.diffuse
+					shader.diffuse = model.diffuse or render.GetErrorTexture()
 					shader:Bind()
 					model.mesh:Draw()
 				end
