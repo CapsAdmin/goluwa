@@ -1,5 +1,4 @@
 local gl = require("lj-opengl") -- OpenGL
-gl.logcalls = true
 
 local render = _G.render or {}
 
