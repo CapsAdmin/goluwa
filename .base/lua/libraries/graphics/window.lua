@@ -4,7 +4,6 @@ window.wnd = window.wnd or NULL
 
 setmetatable(window, {
 	__index = function(s, key)
-		if not s.wnd:IsValid() then print(key , "!!!!!!!!!!!!!") end
 		if s.wnd[key] then
 			return function(...)
 				return s.wnd[key](s.wnd, ...)
