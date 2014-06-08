@@ -3,27 +3,23 @@ long ident; // BSP file identifier
 long version; // BSP file version
 ]]
 
+
 vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/")
+vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
 vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk")
+local buffer = Buffer(io.open(R"maps/d1_trainstation_03.bsp", "rb"))
 
-local buffer = Buffer(io.open(R"maps/d1_trainstation_01.bsp", "rb"))
+--[[vfs.Mount(steam.GetGamePath("Half-Life 2") .. "ep2/")
+vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
+vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk")
+vfs.Mount(steam.GetGamePath("Half-Life 2") .. "ep2/ep2_pak_dir.vpk")
+local buffer = Buffer(io.open(R"maps/ep2_outland_12.bsp", "rb"))]]
 
---print(buffer:ReadBytes(4):dumphex())
---print(buffer:ReadBytes(4):dumphex())
---print(buffer:ReadLong())
---print(buffer:ReadBytes(4):dumphex())
---do return end
+--[[vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "left4dead2/")
+vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "left4dead2/pak01_dir.vpk")
+local buffer = Buffer(io.open(R"maps/c3m1_plankcountry.bsp", "rb"))]]
+
 local header = buffer:ReadStructure(vtf_header_structure)
-
-table.print(header)
---do return end
-
-local lump_struct = [[
-	int	fileofs;	// offset into file (bytes)
-	int	filelen;	// length of lump (bytes)
-	int	version;	// lump format version
-	char fourCC[4];	// lump ident code
-]]
 
 local face_struct = [[
 	unsigned short	planenum;		// the plane number
@@ -45,47 +41,32 @@ local face_struct = [[
 	unsigned int	smoothingGroups;	// lightmap smoothing group
 ]]
 
-local texinfo_struct = [[
-	float textureVecs[8];
-	float lightmapVecs[8];
-	int flags;
-	int texdata;
+
+local lump_struct = [[
+	int	fileofs;	// offset into file (bytes)
+	int	filelen;	// length of lump (bytes)
+	int	version;	// lump format version
+	char fourCC[4];	// lump ident code
 ]]
 
-local texdata_struct = [[
-	vec3 reflectivity;
-	int nameStringTableID;
-	int width;
-	int height;
-	int view_width;
-	int view_height;
-]]
-
-local model_struct = [[
-	vec3 mins;
-	vec3 maxs;
-	vec3 origin;
-	int headnode;
-	int firstface;
-	int numfaces;
+local lump21_struct = [[
+	int	version;	// lump format version
+	int	fileofs;	// offset into file (bytes)
+	int	filelen;	// length of lump (bytes)
+	char fourCC[4];	// lump ident code
 ]]
 
 header.lumps = {}
 
 for i = 1, 64 do
-	table.insert(header.lumps, buffer:ReadStructure(lump_struct))
+	table.insert(header.lumps, buffer:ReadStructure(header.version < 21 and lump_struct or lump21_struct))
 end
 
 header.map_revision = buffer:ReadLong()
-print("BSP " .. header.ident .. " VERSION " .. header.version .. " REVISION " .. header.map_revision)
 
---[[{
-	{
-		pos = {x, y, z},
-		normal = {x, y, z},
-		uv = {x, y},
-	},
-}]]
+logn("BSP ", header.ident)
+logn("VERSION ", header.version)
+logn("REVISION ", header.map_revision)
 
 local vertices = {}
 
@@ -100,22 +81,8 @@ do -- vertices
 		local y = buffer:ReadFloat()
 		local z = buffer:ReadFloat()
 		vertices[i] = {x, y, z}
-		--mesh[i] = {}
-		--mesh[i].pos  = {buffer:ReadFloat(), buffer:ReadFloat(), buffer:ReadFloat()}
 	end
 end
-
---[[do -- vertices
-	local lump = header.lumps[4]
-	local length = lump.filelen / 12
-	
-	buffer:SetPos(lump.fileofs)
-
-	for i = 1, length do
-		mesh[i] = {}
-		mesh[i].pos  = {buffer:ReadFloat(), buffer:ReadFloat(), buffer:ReadFloat()}
-	end
-end]]
 
 local surfedges = {}
 
@@ -124,8 +91,6 @@ do -- surfedges
 	local length = lump.filelen / 4
 
 	buffer:SetPos(lump.fileofs)
-
-	print("awdawdwa", length, lump.filelen, lump.fileofs)
 
 	for i = 1, length do
 		surfedges[i] = buffer:ReadLong(true)
@@ -168,6 +133,13 @@ end
 local texinfos = {}
 
 do -- texinfo
+	local texinfo_struct = [[
+		float textureVecs[8];
+		float lightmapVecs[8];
+		int flags;
+		int texdata;
+	]]
+
 	local lump = header.lumps[7]
 	local length = lump.filelen / 72
 
@@ -181,6 +153,15 @@ end
 local texdatas = {}
 
 do -- texdata
+	local texdata_struct = [[
+		vec3 reflectivity;
+		int nameStringTableID;
+		int width;
+		int height;
+		int view_width;
+		int view_height;
+	]]
+
 	local lump = header.lumps[3]
 	local length = lump.filelen / 32
 
@@ -217,13 +198,20 @@ do
 	end
 end
 
-print(header.lumps[41].filelen)
-
 local models = {}
 
 do -- model
+	local model_struct = [[
+		vec3 mins;
+		vec3 maxs;
+		vec3 origin;
+		int headnode;
+		int firstface;
+		int numfaces;
+	]]
+
 	local lump = header.lumps[15]
-	local length = lump.filelen / 36
+	local length = lump.filelen / 48
 
 	buffer:SetPos(lump.fileofs)
 
@@ -232,19 +220,15 @@ do -- model
 	end
 end
 
-print("WADWAD MODELS " , #models)
-
-local function calc_texture_coords(texinfo, texdata, x, y, z)
-	local a = texinfo.textureVecs
-	local u = a[1] * x + a[2] * y + a[3] * z + a[4]
-	local v = a[5] * x + a[6] * y + a[7] * z + a[8]
-	return u / texdata.width, v / texdata.height
-end
-
 local function add_vertex(model, texinfo, texdata, x, y, z)
+	local a = texinfo.textureVecs
+
 	table.insert(model.mesh, {
 		pos = {x, y, z},
-		uv = {calc_texture_coords(texinfo, texdata, x, y, z)},
+		uv = {
+			(a[1] * x + a[2] * y + a[3] * z + a[4]) / texdata.width,
+			(a[5] * x + a[6] * y + a[7] * z + a[8]) / texdata.height,
+		},
 	})
 end
 
@@ -253,75 +237,103 @@ local bsp_mesh = {sub_models = {}}
 local meshes = {}
 
 for model_index = 1, #models do
-	local sub_model--  =  {mesh = {}}
+	local sub_model =  {mesh = {}}
 	
 	for i = 1, models[model_index].numfaces do
 		local face = faces[models[model_index].firstface + i]
 		local texinfo = texinfos[1 + face.texinfo]
 		local texdata = texinfo and texdatas[1 + texinfo.texdata] or nil
+		
+		-- split the world up into sub models by texture
+		if model_index == 1 then
+			local texname = texdatastringdata[1 + texdata.nameStringTableID]:lower()
 
-		local texname = texdatastringdata[1 + texdata.nameStringTableID]:lower()
-
-		if not meshes[texname] then
-			meshes[texname] = {
-				diffuse = vfs.Exists("materials/" .. texname:lower() .. ".vtf") and Texture("materials/" .. texname:lower() .. ".vtf") or render.GetErrorTexture(), 
-				mesh = {}
-			}
-			table.insert(bsp_mesh.sub_models, meshes[texname])
-		end
-
-		sub_model = meshes[texname]
-
-		if true or bit.band(texinfo.flags, 0x2 + 0x4) == 0 then
-
-			local edge_first = face.firstedge
-			local edge_count = face.numedges
-
-			local first, previous, current
-
-			for j = 1, edge_count do
-				local surfedge = surfedges[edge_first + j]
-				local edge = edges[1 + math.abs(surfedge)]
+			if not meshes[texname] then
 				
-				local current = edge[surfedge < 0 and 2 or 1] + 1
+				if texname:sub(0, 5) == "maps/" then
+					texname = texname:gsub("maps/.-/(.+)_.-_.-_.+", "%1")
+				end
+				
+				local path = "materials/" .. texname:lower() .. ".vtf"
+				local exists = vfs.Exists(path) 
 
-				if j >= 3 then
-					local p1 = vertices[first]
-					local p2 = vertices[current]
-					local p3 = vertices[previous]
-
-					if p1 and p2 and p3 then
-						add_vertex(sub_model, texinfo, texdata, unpack(p1))
-						add_vertex(sub_model, texinfo, texdata, unpack(p2))
-						add_vertex(sub_model, texinfo, texdata, unpack(p3))
+				if not exists then
+					path = "materials/" .. texname:lower() .. ".vmt"
+					
+					if vfs.Exists(path) then
+						local str = vfs.Read(path)
+						local tbl = steam.VDFToTable(str)
+						print(path, str, #str)
+						table.print(tbl)
+						if tbl.WorldVertexTransition and tbl.WorldVertexTransition["$basetexture"] then
+							path = "materials/" .. tbl.WorldVertexTransition["$basetexture"] .. ".vtf"
+								
+							if vfs.Exists(path) then
+								exists = true
+							end
+						end
 					end
-				elseif j == 1 then
-					first = current
+				end
+				
+				if not exists then
+					print(string.format("Texture %q not found", path))
 				end
 
-				previous = current
+				meshes[texname] = {
+					diffuse = exists and Texture(path) or render.GetErrorTexture(), 
+					mesh = {}
+				}
+
+				table.insert(bsp_mesh.sub_models, meshes[texname])
 			end
+
+			sub_model = meshes[texname]
+		end
+
+		local edge_first = face.firstedge
+		local edge_count = face.numedges
+
+		local first, previous, current
+
+		for j = 1, edge_count do
+			local surfedge = surfedges[edge_first + j]
+			local edge = edges[1 + math.abs(surfedge)]
+			
+			local current = edge[surfedge < 0 and 2 or 1] + 1
+
+			if j >= 3 then
+				local p1 = vertices[first]
+				local p2 = vertices[current]
+				local p3 = vertices[previous]
+
+				if p1 and p2 and p3 then
+					add_vertex(sub_model, texinfo, texdata, unpack(p1))
+					add_vertex(sub_model, texinfo, texdata, unpack(p2))
+					add_vertex(sub_model, texinfo, texdata, unpack(p3))
+				end
+			elseif j == 1 then
+				first = current
+			end
+
+			previous = current
 		end
 	end
 	
-	--sub_model.diffuse = Texture("materials/brick/brickfloor001a.vtf")
----	sub_model.mesh = render.CreateMesh(sub_model.mesh)	
-	---table.insert(bsp_mesh.sub_models, sub_model)
+	if model_index ~= 1 then
+		sub_model.diffuse = render.GetErrorTexture() -- Texture("materials/brick/brickfloor001a.vtf")
+		sub_model.mesh = render.CreateMesh(sub_model.mesh)	
+		table.insert(bsp_mesh.sub_models, sub_model)
+	end
 	
 	-- only world needed
 	break 
 end
 
-table.print(bsp_mesh.sub_models[1], 1)
-
 for i, data in ipairs(bsp_mesh.sub_models) do
-	if not next(data.mesh) then
-		bsp_mesh.sub_models[i] = nil
-		print(i)
-	else
-		bsp_mesh.sub_models[i].mesh = render.CreateMesh(data.mesh)
-	end
-end 
+	bsp_mesh.sub_models[i].mesh = render.CreateMesh(data.mesh)
+end
+
+logn("SUB_MODELS ", #bsp_mesh.sub_models)
 
 BSP_MODEL = bsp_mesh
  
