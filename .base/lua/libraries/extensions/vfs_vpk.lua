@@ -280,7 +280,14 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 								return false, "File does not exist"
 							end
 							
-							local file = io.open(data.archive_path, "rb")
+							local file
+							
+							if not files[data.archive_path] or io.type(files[data.archive_path]) == "closed file" then
+								files[data.archive_path] = assert(io.open(data.archive_path, "rb"))
+							end
+							
+							file = files[data.archive_path]
+							
 							file:seek("set", data.entry_offset)
 							 
 							return {data = data, file = file, position = 0}
