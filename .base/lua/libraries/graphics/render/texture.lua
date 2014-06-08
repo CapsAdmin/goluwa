@@ -193,7 +193,7 @@ do -- texture object
 					f.w or self.size.w, 
 					f.h or self.size.h, 
 					f.upload_format or f2.upload_format, 
-					size, 
+					f.size, 
 					buffer
 				)
 			else
