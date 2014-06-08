@@ -633,7 +633,7 @@ function system.OnError(msg, ...)
 				val = serializer.GetLibrary("luadata").ToString(param.val)
 			end
 			
-			table.insert(data, {key = param.key, value = param.val})
+			table.insert(data, {key = param.key, value = val})
 		--end
 	end
 	
