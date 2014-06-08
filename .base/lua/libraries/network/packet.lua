@@ -207,6 +207,8 @@ do -- buffer object
 			else
 				self.position = math.clamp(pos, 0, self:GetSize())
 			end
+			
+			return self:GetPos()
 		end
 		
 		function META:GetPos()
