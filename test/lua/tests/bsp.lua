@@ -6,8 +6,8 @@ long version; // BSP file version
 
 vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/")
 vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
-vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk")
-local buffer = Buffer(io.open(R"maps/d1_trainstation_03.bsp", "rb"))
+vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk") 
+local buffer = Buffer(io.open(R"maps/d2_prison_03.bsp", "rb"))
 
 --[[vfs.Mount(steam.GetGamePath("Half-Life 2") .. "ep2/")
 vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
@@ -263,11 +263,23 @@ for model_index = 1, #models do
 					if vfs.Exists(path) then
 						local str = vfs.Read(path)
 						local tbl = steam.VDFToTable(str)
-						print(path, str, #str)
-						table.print(tbl)
+						
 						if tbl.WorldVertexTransition and tbl.WorldVertexTransition["$basetexture"] then
-							path = "materials/" .. tbl.WorldVertexTransition["$basetexture"] .. ".vtf"
-								
+							path = "materials/" .. tbl.WorldVertexTransition["$basetexture"]:lower() .. ".vtf"								
+							if vfs.Exists(path) then
+								exists = true
+							end
+						end
+						
+						if tbl.LightmappedGeneric and tbl.LightmappedGeneric["$basetexture"] then
+							path = "materials/" .. tbl.LightmappedGeneric["$basetexture"]:lower() .. ".vtf"								
+							if vfs.Exists(path) then
+								exists = true
+							end
+						end
+						
+						if tbl.Water and tbl.Water["$normalmap"] then
+							path = "materials/" .. tbl.Water["$normalmap"]:lower() .. ".vtf"								
 							if vfs.Exists(path) then
 								exists = true
 							end
