@@ -147,7 +147,7 @@ do -- shaders
 		return shader
 	end
 
-	function render.CreateGLProgram(...)	
+	function render.CreateGLProgram(cb, ...)	
 
 		if not render.CheckSupport("CreateProgram") then return 0 end
 
@@ -157,6 +157,8 @@ do -- shaders
 		for _, shader_id in pairs(shaders) do
 			gl.AttachShader(program, shader_id)
 		end
+		
+		cb(program)
 
 		gl.LinkProgram(program)
 
