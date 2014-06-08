@@ -403,12 +403,16 @@ unsigned char	lowResImageWidth;	// Low resolution image width.
 unsigned char	lowResImageHeight;	// Low resolution image height.
 ]]
 
-vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_textures_dir.vpk")
-vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_misc_dir.vpk")
+vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk")
+vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
 
 local vmt = steam.VDFToTable(vfs.Read("materials/nature/blenddirtgrass001a.vmt"))
 
-local buffer = Buffer(vfs.GetFile("materials/" .. vmt.WorldVertexTransition["$basetexture"] .. ".vtf", "b"))
+local buffer = Buffer()
+local str = vfs.Read("materials/" .. vmt.WorldVertexTransition["$basetexture"] .. ".vtf", "rb")
+buffer:WriteBytes(str)
+buffer:SetPos(0)
+
 local vtf = buffer:ReadStructure(vtf_header_structure)
 
 local version = vtf.version[1] * 10 + vtf.version[2]
@@ -417,6 +421,8 @@ local version = vtf.version[1] * 10 + vtf.version[2]
 -- Must be a power of 2. Can be 0 or 1 for a 2D texture (v7.2 only).
 if version >= 72 then
 	vtf.depth = buffer:ReadShort()
+else	
+	vtf.depth = 1
 end
 
 -- nicer version key
@@ -467,7 +473,7 @@ local function insert_textures(vtf, offset)
 					
 					if size > 0 then
 						local image = ffi.cast("uint8_t *", buffer:ReadString(size))
-												
+
 						table.insert(vtf.textures, {
 							mip_map_level = mm,
 							slice = slice,
@@ -532,6 +538,7 @@ else
 		buffer:SetPos(vtf.headerSize)
 	end
 
+	vtf.textures = {}
 	insert_textures(vtf, buffer:GetPos())
 end
 
@@ -542,29 +549,32 @@ vtf.height = nil
 vtf.lowResImageWidth = nil
 vtf.lowResImageHeight = nil
 vtf.highResImageFormat = nil
+vtf.signature = nil
 vtf.lowResImageFormat = nil
+
+table.print(vtf)
 
 buffer:SetPos(vtf.headerSize)
   
 for k,v in pairs(vtf.textures) do
-	print(v.width, v.height, v.size) 
 	v.tex = Texture{
 		width = v.width,
 		height = v.height, 
 		buffer = v.buffer, 
 		size = v.size,  
 		parameters = {
-			upload_format = "COMPRESSED_RGB_S3TC_DXT1",
+			upload_format = "compressed_rgb_s3tc_dxt1",
 		}
 	}
 end  
  
-function goluwa.Draw2D()
+event.AddListener("Draw2D", "vtf", function()
 	local i = math.clamp(math.ceil(os.clock()*10%#vtf.textures),1, #vtf.textures)
 	local tex = vtf.textures[i].tex
 	
 	surface.SetTexture(tex)
 	surface.SetColor(1,1,1,1)
 	surface.DrawRect(0,0,512,512)
-	surface.SetTextPos(0, 0)
-end
+	surface.SetTextPos(60, 60)
+	surface.DrawText(i)
+end)
