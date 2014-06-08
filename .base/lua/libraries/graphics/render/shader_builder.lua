@@ -200,7 +200,7 @@ local cdef_defined = {}
 
 local META = metatable.CreateTemplate("shader")
 
-function render.CreateShader(data)
+function render.CreateShader(data)	
 	check(data, "table")
 
 	if not render.CheckSupport("CreateShader") then
@@ -405,14 +405,38 @@ function render.CreateShader(data)
 			errorf("shader %q is unknown", 2, shader)
 		end
 	end
+	
+	local self = META:New()
 
-	local ok, prog = pcall(render.CreateGLProgram, unpack(shaders))
+	local ok, prog = pcall(render.CreateGLProgram, function(prog) 
+		local vertex_attributes = {}
+		local pos = 0
+
+		for i, data in pairs(build_output.vertex.vtx_info) do
+			i = i - 1
+
+			gl.BindAttribLocation(prog, i, data.name)
+
+			vertex_attributes[i] = {
+				arg_count = data.info.arg_count,
+				enum = data.info.enum_type,
+				stride = build_output.vertex.vtx_atrb_size,
+				type_stride = ffi.cast("void*", data.info.size * pos),
+			}
+
+			pos = pos + data.info.arg_count
+		end
+
+		self.vertex_attributes = vertex_attributes
+
+		if BUILD_OUTPUT then
+			serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/vertex_attributes.lua", vertex_attributes)
+		end
+	end, unpack(shaders))
 
 	if not ok then
 		error(prog, 2)
 	end
-
-	local self = META:New()
 
 	do -- build lua code from uniform data
 		local uniforms = {}
@@ -479,33 +503,7 @@ function render.CreateShader(data)
 
 		self.unrolled_bind_func = func
 	end
-
-	do
-		local vertex_attributes = {}
-		local pos = 0
-
-		for i, data in pairs(build_output.vertex.vtx_info) do
-			i = i - 1
-
-			gl.BindAttribLocation(prog, i, data.name)
-
-			vertex_attributes[i] = {
-				arg_count = data.info.arg_count,
-				enum = data.info.enum_type,
-				stride = build_output.vertex.vtx_atrb_size,
-				type_stride = ffi.cast("void*", data.info.size * pos),
-			}
-
-			pos = pos + data.info.arg_count
-		end
-
-		self.vertex_attributes = vertex_attributes
-
-		if BUILD_OUTPUT then
-			serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/vertex_attributes.lua", vertex_attributes)
-		end
-	end
-
+	
 	self.original_data = original_data
 	self.data = data
 	self.base_shader = base
@@ -548,7 +546,7 @@ do -- create data for vertex buffer
 
 	function META:CreateVertexAttributes(var)
 		check(var, "number", "table")
-
+	
 		if type(var) == "table" then
 			unpack_structs(var)
 			return ffi.new(self.vtx_atrb_type.."["..#var.."]", var), #var
