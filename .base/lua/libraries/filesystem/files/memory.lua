@@ -19,7 +19,7 @@ local function get_folder(path_info, remove_last)
 	local next = file_tree
 	
 	local folders = path_info:GetFolders()
-		
+			
 	-- when creating a folder the folder doesn't exist
 	-- so remove it
 	if remove_last then
@@ -30,10 +30,9 @@ local function get_folder(path_info, remove_last)
 		if not next[folder] then
 			error("folder not found", 2)
 		end
-		
 		next = next[folder]
 	end
-		
+	
 	return next
 end
 
@@ -88,7 +87,7 @@ function CONTEXT:Open(path_info, mode, ...)
 			data = "",
 		}
 		
-		file.buffer = Buffer(file.data)
+		file.buffer = Buffer()
 		file.last_accessed = os.time()
 		
 		folder[path_info.file_name] = file

@@ -25,9 +25,7 @@ function vfs.Silence(b)
 end
 
 function vfs.DebugPrint(fmt, ...)
-	log("[VFS] ")
-	logf(fmt, ...)
-	logn()
+	logf("[VFS] %s\n", fmt:format(...))
 end
 
 function vfs.Mount(where, to)
@@ -38,6 +36,10 @@ function vfs.Mount(where, to)
 	
 	local path_info_where = vfs.GetPathInfo(where, true) 
 	local path_info_to = vfs.GetPathInfo(to, true)
+	
+	if to ~= "" and not path_info_to.filesystem then
+		error("a filesystem has to be provided when mounting /to/ somewhere")
+	end
 	
 	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
 		context.mounted_paths = context.mounted_paths or {}
@@ -221,40 +223,68 @@ function vfs.CreateFolder(filesystem, folder)
 	end
 end
 
-function vfs.GetFiles(path, info, full_path)
-	local path_info = vfs.GetPathInfo(path, true)
-	
-	local out = {}
-	
-	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do				
-		for i, mount_info in ipairs(context.mounted_paths) do
-			if mount_info.to.full_path == path_info.full_path then
-				local ok, found = pcall(context.GetFiles, context, mount_info.where)
-				
-				if vfs.debug and not ok then
-					vfs.DebugPrint("%s: error getting files: %s", filesystem, found)
+do
+	local function get_files(context, filesystem, path_info, out, info, full_path)
+		local ok, found = pcall(context.GetFiles, context, path_info)
+		
+		if vfs.debug and not ok then
+			vfs.DebugPrint("%s: error getting files: %s", filesystem, found)
+		end
+		
+		if ok then	
+			for i, v in pairs(found) do
+				if full_path then
+					v = filesystem .. ":" .. path_info.full_path .. v
 				end
 				
-				if ok then	
-					for i, v in pairs(found) do
-						if full_path then
-							v = filesystem .. ":" .. mount_info.where.full_path .. v
-						end
-						
-						if info then
-							table.insert(out, {name = v, filesystem = filesystem})
-						else
-							table.insert(out, v)
-						end
-					end
+				if info then
+					table.insert(out, {
+						name = v, 
+						filesystem = filesystem,
+						full_path = filesystem .. ":" .. path_info.full_path .. v,
+					})
+				else
+					table.insert(out, v)
 				end
 			end
 		end
 	end
-	
-	return out
-end
 
+	function vfs.GetFiles(path, info, full_path)
+		local path_info = vfs.GetPathInfo(path, true)
+		
+		local out = {}
+		
+		for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do	
+			-- get files normally first
+			get_files(context, filesystem, path_info, out, info, full_path)
+			
+			-- then check if there's any mounted "to" paths
+			for i, mount_info in ipairs(context.mounted_paths) do
+				local where = mount_info.where
+				
+				if mount_info.to.full_path ~= "" then
+					if -- does the path match the start of the to path?
+						(
+							mount_info.where.filesystem == "unknown" or 
+							mount_info.where.filesystem == filesystem
+						) and
+						path_info.full_path:sub(0, #mount_info.to.full_path) == mount_info.to.full_path 
+					then	
+						-- if so we need to prepend it to make a new "where" path
+						where = vfs.GetPathInfo(filesystem .. ":" .. mount_info.where.full_path .. path_info.full_path:sub(#mount_info.to.full_path+1), true)
+						get_files(context, filesystem, where, out, info, full_path)
+					end
+				else
+					get_files(context, filesystem, where, out, info, full_path)
+				end
+			end
+		end
+		
+		return out
+	end
+end
+ 
 vfs.Mount("", "")
 
 if false then
@@ -267,7 +297,7 @@ end
 vfs.debug = true
 
 local file = assert(vfs.Open("memory:lol.wav", "write"))
-print(file:Write("LOL"))
+print(file:Write("LOL\n"))
 
 local file = assert(vfs.Open("memory:lol.wav", "read"))
 print(file:ReadString(3))
@@ -281,16 +311,16 @@ file:Write("hello")
 table.print(vfs.GetFiles("hello/"))
 ---table.print(vfs.GetFiles("."))
 
-local file = vfs.Open("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/npc/male01/abouttime02.wav")
+local file = assert(vfs.Open("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/npc/male01/abouttime02.wav"))
 
 table.print(vfs.GetFiles("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/"))
 
 local snd = audio.CreateSource(audio.Decode(file:ReadAll()))  
 table.print(snd.decode_info)
 
-vfs.Mount("G:/SteamLibrary/SteamApps/Common/", "hello/")
+vfs.Mount("G:/SteamLibrary/SteamApps/Common/", "memory:hello/")
 vfs.Mount("G:/SteamLibrary/", "hello/")
 
-table.print(vfs.GetFiles("hello/", nil, true))
+table.print(vfs.GetFiles("hello/nexuiz/bin32/", true))
 
 return vfs
