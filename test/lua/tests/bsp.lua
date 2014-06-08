@@ -224,7 +224,7 @@ local function add_vertex(model, texinfo, texdata, x, y, z)
 	local a = texinfo.textureVecs
 
 	table.insert(model.mesh, {
-		pos = {x, y, z},
+		pos = {z, y, -x},
 		uv = {
 			(a[1] * x + a[2] * y + a[3] * z + a[4]) / texdata.width,
 			(a[5] * x + a[6] * y + a[7] * z + a[8]) / texdata.height,
