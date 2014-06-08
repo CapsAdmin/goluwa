@@ -9,14 +9,13 @@ function metatable.AddParentingTemplate(META)
 	
 	metatable.GetSet(META, "Parent", NULL)
 	META.Children = {}
+	META.children_list = {}
+	
+	function META:GetAllChildren()
+		return self.children_list
+	end
 	
 	function META:GetChildren(all)
-		if all then
-			if not self.children_list then
-				self:BuildChildrenList()
-			end
-			return self.children_list
-		end
 		return self.Children
 	end
 
