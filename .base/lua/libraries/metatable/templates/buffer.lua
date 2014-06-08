@@ -112,6 +112,79 @@ local function ADD_FFI_OPTIMIZED_TYPE(META, typ)
 	func(META, ffi.new("number_buffer_" .. def))
 end
 
+local function header_to_table(str)
+	local out = {}
+
+	str = str:gsub("//.-\n", "") -- remove line comments
+	str = str:gsub("/%*.-%s*/", "") -- remove multiline comments
+	str = str:gsub("%s+", " ") -- remove excessive whitespace
+	
+	for field in str:gmatch("(.-);") do
+		local type, key
+		local assert
+		
+		if field:find("=") then
+			type, key, assert = field:match("^(.+) (.+) = (.+)$")
+			assert = tonumber(assert) or assert
+		else
+			type, key = field:match("(.+) (.+)$")
+		end
+		
+		type = type:trim()
+		key = key:trim()
+		
+		local length
+		
+		key = key:gsub("%[(.-)%]$", function(num)
+			length = tonumber(num)
+			return ""
+		end)	
+		
+		local qualifier, _type = type:match("(.+) (.+)")
+		
+		if qualifier then
+			type = _type
+		end
+		
+		if not type then 	
+			print(field)
+			error("somethings wrong with this line!", 2) 
+		end
+		
+		if qualifier == nil then
+			qualifier = "signed"
+		end
+		
+		if type == "char" and not length then 
+			type = "byte"
+		end
+		
+		table.insert(out, {
+			type, 
+			key, 
+			signed = qualifier == "signed", 
+			length = length, 
+			padding = qualifier == "padding",
+			assert = assert,
+		})
+	end
+	
+	return out
+end
+
+local str = [[
+	long signature = 0x55aa1234;
+	long version;
+	long tree_length;
+		
+	padding long unknown;
+	long footer_length;
+	padding long unknown;
+	padding long unknown; 
+]]
+
+table.print(header_to_table(str)[1])
+
 function metatable.AddBufferTemplate(META)
 	check(META.WriteByte, "function")
 	check(META.ReadByte, "function")
@@ -166,6 +239,13 @@ function metatable.AddBufferTemplate(META)
 	end
 
 	do -- extended	
+		
+		function META:IterateStrings()
+			return function()
+				local value = self:ReadString()
+				return value ~= "" and value or nil
+			end
+		end	
 	
 		-- half precision (2 bytes)
 		function META:WriteHalf(value)
@@ -285,51 +365,6 @@ function metatable.AddBufferTemplate(META)
 	end
 
 	do -- structures
-		local function header_to_table(str)
-			local out = {}
-
-			str = str:gsub("//.-\n", "") -- remove line comments
-			str = str:gsub("/%*.-%s*/", "") -- remove multiline comments
-			str = str:gsub("%s+", " ") -- remove excessive whitespace
-			
-			for field in str:gmatch("(.-);") do
-				local type, key = field:match("(.+) (.+)$")
-				
-				type = type:trim()
-				key = key:trim()
-				
-				local length
-				
-				key = key:gsub("%[(.-)%]$", function(num)
-					length = tonumber(num)
-					return ""
-				end)	
-				
-				local qualifier, _type = type:match("(.+) (.+)")
-				
-				if qualifier then
-					type = _type
-				end
-				
-				if not type then 	
-					print(field)
-					error("somethings wrong with this line!", 2) 
-				end
-				
-				if qualifier == nil then
-					qualifier = "signed"
-				end
-				
-				if type == "char" and not length then 
-					type = "byte"
-				end
-				
-				table.insert(out, {type, key, signed = qualifier == "signed", length = length, padding = qualifier == "padding"})
-			end
-			
-			return out
-		end
-
 		function META:WriteStructure(structure, values)
 			for i, data in ipairs(structure) do
 				if type(data) == "number" then
@@ -393,7 +428,11 @@ function metatable.AddBufferTemplate(META)
 						val = values
 					end
 				else
-					val = self:ReadType(data[1]) 
+					if data[1] == "bufferpos" then
+						val = self:GetPos()
+					else
+						val = self:ReadType(data[1]) 
+					end
 				end
 				
 				val = fix_number(data, val)
