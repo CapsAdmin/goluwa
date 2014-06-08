@@ -1,216 +1,87 @@
--- vpk reader by https://github.com/animorten
+local vfs = (...) or _G.vfs
 
-local function read_integer(file, byte_count)
-	local str = file:read(byte_count)
-	local num = 0
-	
-	for i = 1, byte_count do 
-		num = (num*256) + str:byte(-i) 
-	end
-	
-	return num
-end
+local header = [[
+	long signature = 0x55aa1234;
+	long version;
+	long tree_length;
+		
+	padding long unknown_1;
+	long footer_length;
+	padding long unknown_3;
+	padding long unknown_4; 
+]]
 
-local function read_string(file)
-	local buffer = {}
+local entry = [[
+	long crc;
+	short preload_bytes;
+	short archive_index;
+	long entry_offset;
+	long entry_length;
+	short terminator;
+	bufferpos preload_offset;
+]]
 
-	for i = 1, math.huge do
-		local char = file:read(1)
+local function read_vpk(file)
+	local buffer = Buffer(file)
 
-		if char == "\0" then
-			break
-		elseif not char then
-			return
-		end
+	local vpk = buffer:ReadStructure(header)
 
-		buffer[i] = char
-	end
-
-	return table.concat(buffer)
-end
-
-local function iterate_strings(file)
-	return function()
-		local value = read_string(file)
-		return value ~= "" and value or nil
-	end
-end
-
-local function read_header(file)
-	local header = {}
-
-	header.signature = read_integer(file, 4)
-	header.version = read_integer(file, 4)
-	header.tree_length = read_integer(file, 4)
-
-	if not header.tree_length then
-		return nil, "Unexpected end-of-file"
-	end
-
-	if header.signature ~= 0x55aa1234 then
-		return nil, string.format("Invalid signature 0x%.8x", header.signature)
-	end
-
-	if header.version == 2 then
-		header.unknown_1 = read_integer(file, 4)
-		header.footer_length = read_integer(file, 4)
-		header.unknown_3 = read_integer(file, 4)
-		header.unknown_4 = read_integer(file, 4)
-
-		if not header.unknown_4 then
-			return nil, "Unexpected end-of-file"
-		end
-	elseif header.version ~= 1 then
-		return nil, string.format("Invalid version %d", header.version)
-	end
-
-	return header, "Success"
-end
-
-local function read_entry(file, extension, directory, name)
-	local entry = {}
-
-	entry.path = (directory ~= " " and directory .. "/" or "") .. (name ~= " " and name or "") .. (extension ~= " " and "." .. extension or "")
-
-	entry.crc = read_integer(file, 4)
-	entry.preload_bytes = read_integer(file, 2)
-	entry.archive_index = read_integer(file, 2)
-	entry.entry_offset = read_integer(file, 4)
-	entry.entry_length = read_integer(file, 4)
-	entry.is_file = true
-	
-	local terminator = read_integer(file, 2)
-
-	if not terminator then
-		return nil, "Unexpected end-of-file"
-	end
-
-	if terminator ~= 0xffff then
-		return nil, string.format("Invalid entry terminator 0x%.4x", terminator)
-	end
-
-	entry.preload_offset = file:seek()
-
-	if file:seek("cur", entry.preload_bytes) ~= entry.preload_offset + entry.preload_bytes then
-		return nil, "Skipping preload data failed"
-	end
-
-	return entry, "Success"
-end
-
-local function read_tree(file)
-	local tree = {}
+	vpk.entries = {}
 	local done_directories = {}
 
-	for extension in iterate_strings(file) do
-		for directory in iterate_strings(file) do
-			for name in iterate_strings(file) do
-				local entry, error_message = read_entry(file, extension, directory, name)
-
-				if not entry then
-					return nil, "Parsing entry failed: " .. error_message
+	for extension in buffer:IterateStrings() do		
+		for directory in buffer:IterateStrings() do
+			for name in buffer:IterateStrings() do
+			
+				local entry = buffer:ReadStructure(entry)
+				
+				entry.directory = directory
+				entry.name = name
+				entry.extension = extension
+				entry.path = directory .. "/" .. name .. "." .. extension
+				entry.is_file = true
+								
+				if buffer:SetPos(buffer:GetPos() + entry.preload_bytes) ~= entry.preload_offset + entry.preload_bytes then
+					print("grr")
 				end
-
-				tree[#tree + 1] = entry
+				
+				table.insert(vpk.entries, entry)
 			end
-			tree[#tree + 1] = {path = directory, is_folder = true}
+			
+			table.insert(vpk.entries, {path = directory, is_dir = true})
 			
 			for i = 0, 100 do
-				local dir = vfs.GetParentFolder(directory, i)
+				local dir = utilities.GetParentFolder(directory, i)
 				if dir == "" or done_directories[dir] then break end
-				tree[#tree + 1] = {path = dir:sub(0, -2), is_folder = true}
+				table.insert(vpk.entries, {path = dir:sub(0, -2), is_dir = true})
 				done_directories[dir] = true
 			end
 		end
 	end
 
-	return tree, "Success"
+	return vpk
 end
-
-local function read_footer(file)
-	local footer = {}
-	return footer, "Success"
-end
-
-local function read_file(file)
-	local self = {}
-	local error_message
-
-	self.header, error_message = read_header(file)
-
-	if not self.header then
-		return nil, "Failed parsing header: " .. error_message
-	end
-
-	self.tree, error_message = read_tree(file)
-
-	if not self.tree then
-		return nil, "Failed parsing tree: " .. error_message
-	end
-
-	if self.header.version == 2 then
-		self.footer, error_message = read_footer()
-
-		if not self.footer then
-			return nil, "Failed parsing footer: " .. error_message
-		end
-	end
-
-	return self, "Success"
-end
-
-local function read_vpk_dir(path)
-	check(path, "string")
-	
-	local cache_path = "%DATA%/vpk_cache/" .. crypto.CRC32(path)
-	
-	if vfs.Exists(cache_path) then
-		local str = vfs.Read(cache_path, "b")
-		return serializer.Decode("luadata", str), "Success"
-	end
-	
-	local file, error_message = io.open(path, "rb")
-
-	if not file then
-		return nil, "Failed opening VPK: " .. error_message
-	end
-
-	local self, error_message = read_file(file)
-	file:close()
-
-	if not self then
-		return nil, "Failed parsing: " .. error_message
-	end
-	
-	serializer.Encode("luadata", self, function(data, err)
-		if data then
-			logn("saved cache of vpk tree ", path)
-			vfs.Write(cache_path, data)
-		end
-	end, 1000)
-
-	return self, "Success"
-end
- 
-local vfs = (...) or _G.vfs
 
 local CONTEXT = {}
 
 CONTEXT.Name = "vpk"
 
 local mounted = {}
+local files = {}
 
 local function mount(path)
-	print(path)
+
 	if mounted[path] then
 		return mounted[path]
 	end
 	
-	local vpk = assert(read_vpk_dir(path))
+	local file = assert(io.open(path, "rb"))
+	
+	local vpk = read_vpk(file)
 
 	vpk.paths = {}
 
-	for k,v in pairs(vpk.tree) do
+	for k,v in pairs(vpk.entries) do
 		if v.is_file then
 			v.archive_path = path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(v.archive_index) end)
 		end
@@ -222,8 +93,21 @@ local function mount(path)
 	return vpk
 end
 
-function CONTEXT:IsFile(path_info)
+local function split_path(path_info)
 	local vpk_path, relative = path_info.full_path:match("(.-%.vpk)/(.+)")
+	
+	if not vpk_path and not relative then
+		error("not a valid vpk path", 2)
+	end
+	
+	return vpk_path, relative
+end
+
+function CONTEXT:IsFile(path_info)
+	local vpk_path, relative = split_path(path_info)
+	
+	
+	
 	local vpk = mount(vpk_path)
 
 	if vpk.paths[relative] and vpk.paths[relative].is_file then
@@ -238,7 +122,7 @@ function CONTEXT:IsFolder(path_info)
 		return true
 	end
 
-	local vpk_path, relative = path_info.full_path:match("(.-%.vpk)/(.+)")
+	local vpk_path, relative = split_path(path_info)
 	local vpk = mount(vpk_path)
 
 	if vpk.paths[relative] and vpk.paths[relative].is_folder then
@@ -247,30 +131,27 @@ function CONTEXT:IsFolder(path_info)
 end
 
 function CONTEXT:GetFiles(path_info)
+	local vpk_path, relative = split_path(path_info)
 	
 	local out = {}
 	
-	local vpk_path, relative = path_info.full_path:match("(.-%.vpk)/(.+)")
+	local vpk = mount(vpk_path)
 	
-	if vpk_path then
-		local vpk = mount(vpk_path)
-		
-		relative = relative .. "."
-		
-		local dir = relative:match("(.+)/")
-		
-		for k, v in pairs(vpk.tree) do
-			if v.path:find(relative) and v.path:match("(.+)/") == dir then
-				table.insert(out, v.path:match(".+/(.+)") or v.path)
-			end 
-		end
+	relative = relative .. "."
+	
+	local dir = relative:match("(.+)/")
+	
+	for k, v in pairs(vpk.entries) do
+		if v.path:find(relative) and v.path:match("(.+)/") == dir then
+			table.insert(out, v.path:match(".+/(.+)") or v.path)
+		end 
 	end
 	
 	return out
 end
 
 function CONTEXT:Open(path_info, mode, ...)	
-	local vpk_path, relative = path_info.full_path:match("(.-%.vpk)/(.+)")
+	local vpk_path, relative = split_path(path_info)
 	local vpk = mount(vpk_path)
 	
 	local file
@@ -314,7 +195,7 @@ end
 
 function CONTEXT:ReadBytes(bytes)
 	bytes = math.min(bytes, self.file_info.entry_length - self.position)
-					
+
 	self.file:seek("set", self.file_info.entry_offset + self.position)
 	local str = self.file:read(bytes)
 	
