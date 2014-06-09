@@ -48,12 +48,12 @@ local function read_vpk(file)
 				table.insert(vpk.entries, entry)
 			end
 			
-			table.insert(vpk.entries, {path = directory, is_dir = true})
+			table.insert(vpk.entries, {path = directory .. "/", is_dir = true})
 			
 			for i = 0, 100 do
 				local dir = utilities.GetParentFolder(directory, i)
 				if dir == "" or done_directories[dir] then break end
-				table.insert(vpk.entries, {path = dir:sub(0, -2), is_dir = true})
+				table.insert(vpk.entries, {path = dir, is_dir = true})
 				done_directories[dir] = true
 			end
 		end
@@ -106,8 +106,6 @@ end
 function CONTEXT:IsFile(path_info)
 	local vpk_path, relative = split_path(path_info)
 	
-	
-	
 	local vpk = mount(vpk_path)
 
 	if vpk.paths[relative] and vpk.paths[relative].is_file then
@@ -124,8 +122,8 @@ function CONTEXT:IsFolder(path_info)
 
 	local vpk_path, relative = split_path(path_info)
 	local vpk = mount(vpk_path)
-
-	if vpk.paths[relative] and vpk.paths[relative].is_folder then
+	
+	if vpk.paths[relative] and vpk.paths[relative].is_dir then
 		return true
 	end
 end

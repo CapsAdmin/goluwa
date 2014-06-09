@@ -298,7 +298,7 @@ end
 
 function vfs2.IsFolder(path)
 	for i, data in ipairs(vfs2.TranslatePath(path, true)) do	
-		if data.context:PCall("IsFolder", vfs2.GetPathInfo(path)) then
+		if data.context:PCall("IsFolder", vfs2.GetPathInfo(path, true)) then
 			return true
 		end
 	end
@@ -381,8 +381,6 @@ if _G.vfs then
 	_G.vfs2 = vfs2
 	
 	vfs2.debug = true
-	
-	table.print(vfs.Find("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/npc/male01/"))
 end
 
 return vfs2
