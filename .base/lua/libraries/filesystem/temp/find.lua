@@ -1,7 +1,7 @@
 
-function vfs.Find(path, invert, full_path, start, plain, dont_sort)
+function vfs2.Find(path, invert, full_path, start, plain, dont_sort)
 	check(path, "string")
-	path = vfs.ParseVariables(path)
+	path = vfs2.ParseVariables(path)
 	
 	-- if the path ends just with an "/"
 	-- make it behave like /*
@@ -28,7 +28,7 @@ function vfs.Find(path, invert, full_path, start, plain, dont_sort)
 	
 	local unique = {}
 	
-	if vfs.IsPathAbsolute(path) then
+	if vfs2.IsPathAbsolute(path) then
 		pcall(function()
 			for file_name in lfs.dir(dir) do
 				if file_name ~= "." and file_name ~= ".." then
@@ -40,7 +40,7 @@ function vfs.Find(path, invert, full_path, start, plain, dont_sort)
 			end
 		end)
 	else
-		for _, full_dir in ipairs(vfs.paths) do		
+		for _, full_dir in ipairs(vfs2.paths) do		
 			local files = {}
 	
 			local res = full_dir.callback("find", full_dir.root .. "/" .. dir)
@@ -74,7 +74,7 @@ function vfs.Find(path, invert, full_path, start, plain, dont_sort)
 		end
 		
 		if found then
-			list[#list + 1] = vfs.FixPath(path)
+			list[#list + 1] = vfs2.FixPath(path)
 		end
 	end
 
@@ -85,11 +85,11 @@ function vfs.Find(path, invert, full_path, start, plain, dont_sort)
 	return list
 end
 
-function vfs.Iterate(path, ...)
+function vfs2.Iterate(path, ...)
 	check(path, "string")
 	
 	local dir = path:match("(.+/)") or ""
-	local tbl = vfs.Find(path, ...)
+	local tbl = vfs2.Find(path, ...)
 	local i = 1
 	
 	return function()
@@ -103,18 +103,18 @@ function vfs.Iterate(path, ...)
 	end
 end
 
-function vfs.Traverse(path, callback, level)
+function vfs2.Traverse(path, callback, level)
 	level = level or 1
 
-	local attributes = vfs.GetAttributes(path)
+	local attributes = vfs2.GetAttributes(path)
 
 	if attributes then
 		callback(path, attributes, level)
 
 		if attributes.mode == "directory" then
-			for child in vfs.Iterate(path) do
+			for child in vfs2.Iterate(path) do
 				if child ~= "." and child ~= ".." then
-					vfs.Traverse(path .. "/" .. child, callback, level + 1)
+					vfs2.Traverse(path .. "/" .. child, callback, level + 1)
 				end
 			end
 		end
@@ -124,7 +124,7 @@ end
 do 
 	local out
 	local function search(path, ext, callback)		
-		for _,v in pairs(vfs.Find(path)) do
+		for _,v in pairs(vfs2.Find(path)) do
 			if not ext or v:endswith(ext) then
 				if callback and callback(path .. v) ~= nil then
 					return
@@ -133,13 +133,13 @@ do
 				table.insert(out, path .. v)
 			end
 			
-			if vfs.GetAttributes(path .. v).mode == "directory" then
+			if vfs2.GetAttributes(path .. v).mode == "directory" then
 				search(path .. v .. "/", ext, callback)
 			end
 		end
 	end
 
-	function vfs.Search(path, ext, callback)
+	function vfs2.Search(path, ext, callback)
 		out = {}
 		search(path, ext, callback)
 		return out

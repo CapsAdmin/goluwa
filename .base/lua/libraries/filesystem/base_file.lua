@@ -1,4 +1,4 @@
-local vfs = (...) or _G.vfs
+local vfs2 = (...) or _G.vfs2
 
 local META = {}
 
@@ -60,4 +60,4 @@ end
 
 metatable.AddBufferTemplate(META)
 
-vfs.Register(META)
+vfs2.Register(META)

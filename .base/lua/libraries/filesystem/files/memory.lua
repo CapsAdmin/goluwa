@@ -1,4 +1,4 @@
-local vfs = (...) or _G.vfs
+local vfs2 = (...) or _G.vfs2
 
 local CONTEXT = {}
 
@@ -149,4 +149,4 @@ function CONTEXT:GetLastAccessed()
 	return self.file.last_accessed
 end
 
-vfs.Register(CONTEXT)
+vfs2.Register(CONTEXT)

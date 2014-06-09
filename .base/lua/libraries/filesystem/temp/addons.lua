@@ -1,10 +1,10 @@
-local vfs = (...) or _G.vfs
+local vfs2 = (...) or _G.vfs2
 
-vfs.loaded_addons = {}
-vfs.disabled_addons = {}
+vfs2.loaded_addons = {}
+vfs2.disabled_addons = {}
 
-function vfs.SortAddonsAfterPriority()
-	table.sort(vfs.loaded_addons, function(a,b) return a.priority > b.priority end)
+function vfs2.SortAddonsAfterPriority()
+	table.sort(vfs2.loaded_addons, function(a,b) return a.priority > b.priority end)
 end
 
 local function autorun_addon(folder, info)
@@ -25,7 +25,7 @@ local function autorun_addon(folder, info)
 				end
 				
 				-- autorun folders			
-				for path in vfs.Iterate(e.ROOT_FOLDER .. info.path .. "lua/autorun/" .. folder, nil, true) do
+				for path in vfs2.Iterate(e.ROOT_FOLDER .. info.path .. "lua/autorun/" .. folder, nil, true) do
 					if path:find("%.lua") then
 						local ok, err = xpcall(include, system.OnError, path)
 						if not ok then
@@ -50,7 +50,7 @@ local function autorun_addon(folder, info)
 	end
 end
 
-function vfs.AutorunAllAddons(folder)	
+function vfs2.AutorunAllAddons(folder)	
 				
 	if folder then 
 		folder = folder .. "/" 
@@ -58,13 +58,13 @@ function vfs.AutorunAllAddons(folder)
 		folder = ""
 	end
 	
-	for _, info in ipairs(vfs.loaded_addons) do
+	for _, info in ipairs(vfs2.loaded_addons) do
 		autorun_addon(folder,  info)
 	end
 end
 
-function vfs.GetAddonInfo(addon)
-	for _, info in pairs(vfs.loaded_addons) do
+function vfs2.GetAddonInfo(addon)
+	for _, info in pairs(vfs2.loaded_addons) do
 		if info.name == addon then
 			return info
 		end
@@ -73,16 +73,16 @@ function vfs.GetAddonInfo(addon)
 	return {}
 end
 
-function vfs.GetAllAddons()
-	return vfs.loaded_addons
+function vfs2.GetAllAddons()
+	return vfs2.loaded_addons
 end
 
-function vfs.LoadAllAddons()
-	for folder in vfs.Iterate(e.ROOT_FOLDER .. ".") do
+function vfs2.LoadAllAddons()
+	for folder in vfs2.Iterate(e.ROOT_FOLDER .. ".") do
 		if folder:sub(1, 1) ~= "." or folder == ".base" then
 			local path = folder .. "/"
 					
-			if vfs.IsDir(e.ROOT_FOLDER .. path) then					
+			if vfs2.IsDir(e.ROOT_FOLDER .. path) then					
 				local func, msg = loadfile(e.ROOT_FOLDER .. path .. "info.lua")
 				
 				local info = {}
@@ -96,27 +96,27 @@ function vfs.LoadAllAddons()
 					info.name = info.name or folder
 					info.folder = folder
 					info.priority = info.priority or -1
-				table.insert(vfs.loaded_addons, info)
+				table.insert(vfs2.loaded_addons, info)
 
 				e["ADDON_" .. info.name:upper()] = info
 			end
 		end
 	end
 
-	vfs.SortAddonsAfterPriority()
+	vfs2.SortAddonsAfterPriority()
 
-	for _, info in ipairs(vfs.loaded_addons) do
+	for _, info in ipairs(vfs2.loaded_addons) do
 		if info.load ~= false then
-			vfs.Mount(e.ROOT_FOLDER .. info.path)
+			vfs2.Mount(e.ROOT_FOLDER .. info.path)
 		else
-			table.insert(vfs.disabled_addons, info)
+			table.insert(vfs2.disabled_addons, info)
 		end
 	end
 
 end
 
-function vfs.ReloadAddons()
-	for key, info in pairs(vfs.disabled_addons) do
+function vfs2.ReloadAddons()
+	for key, info in pairs(vfs2.disabled_addons) do
 		
 		-- try to load the config again
 		local func, msg = loadfile(e.ROOT_FOLDER .. info.path .. "info.lua")
@@ -126,11 +126,11 @@ function vfs.ReloadAddons()
 		end
 		
 		if info.load ~= false then
-			vfs.Mount(e.ROOT_FOLDER .. info.path)
-			vfs.disabled_addons[key] = nil
+			vfs2.Mount(e.ROOT_FOLDER .. info.path)
+			vfs2.disabled_addons[key] = nil
 			autorun_addon("", info)
 		end
 	end
 end
 
-return vfs
+return vfs2

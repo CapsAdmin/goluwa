@@ -1,6 +1,6 @@
-function vfs.Delete(path, ...)
+function vfs2.Delete(path, ...)
 	check(path, "string")
-	local abs_path = vfs.GetAbsolutePath(path, ...)
+	local abs_path = vfs2.GetAbsolutePath(path, ...)
 	
 	if abs_path then
 		local ok, err = os.remove(abs_path)
@@ -17,7 +17,7 @@ function vfs.Delete(path, ...)
 	return false, "No such file or directory"
 end
 
-function vfs.Read(path, mode, ...)
+function vfs2.Read(path, mode, ...)
 	check(path, "string")
 	
 	mode = mode or "r"
@@ -26,7 +26,7 @@ function vfs.Read(path, mode, ...)
 		mode = "rb"
 	end
 	
-	local file, err = vfs.Open(path, mode, ...)
+	local file, err = vfs2.Open(path, mode, ...)
 	
 	if file then			
 		local data = file:read("*all")
@@ -38,11 +38,11 @@ function vfs.Read(path, mode, ...)
 	return file, err
 end
 
-function vfs.Write(path, data, mode)
+function vfs2.Write(path, data, mode)
 	check(path, "string")
 	
 	-- if it's a relative path default to the data folder
-	if not vfs.IsPathAbsolute(path) and not path:find("%%.-%%") and not path:find("%$%(.-%)") then
+	if not vfs2.IsPathAbsolute(path) and not path:find("%%.-%%") and not path:find("%$%(.-%)") then
 		path = data_prefix .. path
 	end
 			
@@ -52,13 +52,13 @@ function vfs.Write(path, data, mode)
 		mode = "w"
 	end
 	
-	path = vfs.ParseVariables(path)
+	path = vfs2.ParseVariables(path)
 	
-	local file, err = vfs.Open(path, mode)
+	local file, err = vfs2.Open(path, mode)
 		
 	if err and err:find("No such file or directory") then
-		vfs.CreateFoldersFromPath(path)		
-		return vfs.Write(path, data, mode)
+		vfs2.CreateFoldersFromPath(path)		
+		return vfs2.Write(path, data, mode)
 	end
 		
 	if file then		
@@ -71,37 +71,37 @@ function vfs.Write(path, data, mode)
 	return false, err
 end
 
-function vfs.Exists(path, ...)
+function vfs2.Exists(path, ...)
 	check(path, "string")
-	local file = vfs.Open(path, ...)
+	local file = vfs2.Open(path, ...)
 
 	return file ~= false
 end
 
-function vfs.IsDir(path, ...)
-	local attributes = vfs.GetAttributes(path, ...)
+function vfs2.IsDir(path, ...)
+	local attributes = vfs2.GetAttributes(path, ...)
 	return attributes and attributes.mode == "directory"
 end
 
-function vfs.GetAttributes(path, ...)
+function vfs2.GetAttributes(path, ...)
 	check(path, "string")
-	path = vfs.ParseVariables(path)
+	path = vfs2.ParseVariables(path)
 	
 	if path:sub(-1) == "/" then
 		-- lfs doesn't like / at the end of folders
 		path = path:sub(0, -2)
 	end
 	
-	if vfs.debug then
+	if vfs2.debug then
 		logf("[VFS] requesting attributes on %q\n", path)
 	end
 		
-	for k, v in ipairs(vfs.paths) do
+	for k, v in ipairs(vfs2.paths) do
 		local info = v.callback("attributes", _path, ...)
 		local _path = v.root .. "/" .. path
 			
 		if info then
-			if vfs.debug then
+			if vfs2.debug then
 				logf("[VFS] attributes found on [%s]%q\n", v.id, _path)
 			end
 		
@@ -112,7 +112,7 @@ function vfs.GetAttributes(path, ...)
 	local info = lfs.attributes(path, ...)
 	if info then
 		
-		if vfs.debug then
+		if vfs2.debug then
 			logf("[VFS] attributes found on %q\n", path)
 		end
 	

@@ -62,7 +62,7 @@ function META:setvbuf()
 	self.env.callback("file", "read", self.udata, "setvbuf")
 end
 
-function vfs.CreateDummyFile(udata, env)
+function vfs2.CreateDummyFile(udata, env)
 	mode = mode or "r"
 
 	local self = setmetatable({}, META)
