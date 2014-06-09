@@ -1,7 +1,7 @@
-local vfs = {}-- _G.vfs or {}
+local vfs2 = _G.vfs2 or {}
 
-vfs.use_appdata = false
-vfs.paths = vfs.paths or {}
+vfs2.use_appdata = false
+vfs2.paths = vfs2.paths or {}
 
 local data_prefix = "%DATA%"
 local data_prefix_pattern = data_prefix:gsub("(%p)", "%%%1")
@@ -15,33 +15,33 @@ end
 
 local function warning(...)
 	if silence then return end
-	logf("[vfs error] %s\n", ...)
+	logf("[vfs2 error] %s\n", ...)
 end
 
-function vfs.Silence(b)
+function vfs2.Silence(b)
 	local old = silence
 	silence = b
 	return old == nil and b or old
 end
 
-function vfs.DebugPrint(fmt, ...)
+function vfs2.DebugPrint(fmt, ...)
 	logf("[VFS] %s\n", fmt:format(...))
 end
 
-function vfs.Mount(where, to)
+function vfs2.Mount(where, to)
 	check(where, "string")
 	to = to or ""
 
-	vfs.Unmount(where, to)
+	vfs2.Unmount(where, to)
 	
-	local path_info_where = vfs.GetPathInfo(where, true) 
-	local path_info_to = vfs.GetPathInfo(to, true)
+	local path_info_where = vfs2.GetPathInfo(where, true) 
+	local path_info_to = vfs2.GetPathInfo(to, true)
 	
 	if to ~= "" and not path_info_to.filesystem then
 		error("a filesystem has to be provided when mounting /to/ somewhere")
 	end
 	
-	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
+	for filesystem, context in pairs(vfs2.GetRegisteredFileSystems()) do
 		context.mounted_paths = context.mounted_paths or {}
 		if path_info_where.filesystem == filesystem or path_info_where.filesystem == "unknown" then
 			table.insert(context.mounted_paths, {where = path_info_where, to = path_info_to, full_where = where, full_to = to})
@@ -49,14 +49,14 @@ function vfs.Mount(where, to)
 	end
 end
 	
-function vfs.Unmount(where, to)
+function vfs2.Unmount(where, to)
 	check(where, "string")
 	to = to or ""
 
-	local path_info_where = vfs.GetPathInfo(where, true) 
-	local path_info_to = vfs.GetPathInfo(to, true)
+	local path_info_where = vfs2.GetPathInfo(where, true) 
+	local path_info_to = vfs2.GetPathInfo(to, true)
 	
-	for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
+	for filesystem, context in pairs(vfs2.GetRegisteredFileSystems()) do
 		context.mounted_paths = context.mounted_paths or {}		
 		for i, v in ipairs(context.mounted_paths) do
 			if v.full_where == where and v.full_to == to and (path_info_where == filesystem or path_info_where.filesystem == "unknown") then
@@ -67,29 +67,29 @@ function vfs.Unmount(where, to)
 	end
 end
 
-function vfs.GetMounts()
-	return vfs.paths
+function vfs2.GetMounts()
+	return vfs2.paths
 end
 
-function vfs.Register(META)
+function vfs2.Register(META)
 	META.TypeBase = "base"
 	class.Register(META, "file", META.Name)
 end
 
-function vfs.GetRegisteredFileSystems()
+function vfs2.GetRegisteredFileSystems()
 	return class.GetAll("file")
 end
 
-function vfs.GetFileSystem(name)
-	return vfs.GetRegisteredFileSystems()[name]
+function vfs2.GetFileSystem(name)
+	return vfs2.GetRegisteredFileSystems()[name]
 end
 
-include("path_utilities.lua", vfs)
-include("base_file.lua", vfs)
-include("files/*", vfs)
+include("path_utilities.lua", vfs2)
+include("base_file.lua", vfs2)
+include("files/*", vfs2)
 
-for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do
-	vfs.mounted_paths = {}
+for filesystem, context in pairs(vfs2.GetRegisteredFileSystems()) do
+	vfs2.mounted_paths = {}
 	
 	if context.VFSOpened then 
 		context:VFSOpened()
@@ -102,7 +102,7 @@ do
 			local folders = {}
 			
 			for i = 0, 100 do
-				local folder = vfs.GetParentFolder(self.full_path, i)
+				local folder = vfs2.GetParentFolder(self.full_path, i)
 
 				if folder == "" then 
 					break
@@ -128,10 +128,10 @@ do
 		end
 	end
 
-	function vfs.GetPathInfo(path, is_folder)
+	function vfs2.GetPathInfo(path, is_folder)
 		local out = {}
 
-		path = vfs.FixPath(path)
+		path = vfs2.FixPath(path)
 		
 		if is_folder and not path:endswith("/") then
 			path = path .. "/"
@@ -139,7 +139,7 @@ do
 	
 		out.filesystem = path:match("^(.-):")
 		
-		if vfs.GetRegisteredFileSystems()[out.filesystem] then
+		if vfs2.GetRegisteredFileSystems()[out.filesystem] then
 			path = path:gsub("^(.-:)", "")
 		else
 			out.filesystem = "unknown"
@@ -154,7 +154,7 @@ do
 		return out
 	end
 	
-	function vfs.PrependPathInfo(path_info_a, path_info_b)
+	function vfs2.PrependPathInfo(path_info_a, path_info_b)
 	
 		if path_info_a.full_path == "" then
 			return path_info_b
@@ -162,7 +162,7 @@ do
 		
 		local path_info_b = table.copy(path_info_b)
 	
-		local path = vfs.FixPath(path_info_a.full_path .. path_info_b.full_path)
+		local path = vfs2.FixPath(path_info_a.full_path .. path_info_b.full_path)
 		path_info_b.full_path = path
 		path_info_b.folder_name = path:match(".+/(.+)/") or path:match(".+/(.+)") or path:match("(.+)/") or path
 		
@@ -170,12 +170,12 @@ do
 	end
 end
 
-function vfs.Open(path, mode, sub_mode)
+function vfs2.Open(path, mode, sub_mode)
 	check(path, "string")
 	mode = mode or "read"	
 	check(sub_mode, "string", "nil")
 	
-	local path_info = vfs.GetPathInfo(path)
+	local path_info = vfs2.GetPathInfo(path)
 	local filesystems
 	
 	if mode == "write" then
@@ -185,7 +185,7 @@ function vfs.Open(path, mode, sub_mode)
 		
 		filesystems = {[path_info.filesystem] = true}
 	else
-		filesystems = vfs.GetRegisteredFileSystems()
+		filesystems = vfs2.GetRegisteredFileSystems()
 	end
 	
 	for filesystem in pairs(filesystems) do	
@@ -194,8 +194,8 @@ function vfs.Open(path, mode, sub_mode)
 		
 		local ok, err = pcall(file.Open, file, path_info)
 		
-		if vfs.debug and not ok then
-			vfs.DebugPrint("%s: error opening file: %s", filesystem, err)
+		if vfs2.debug and not ok then
+			vfs2.DebugPrint("%s: error opening file: %s", filesystem, err)
 		end
 		
 		if ok then
@@ -206,20 +206,20 @@ function vfs.Open(path, mode, sub_mode)
 	return false, err or "no such file exists"
 end
 
-function vfs.CreateFolder(filesystem, folder)
+function vfs2.CreateFolder(filesystem, folder)
 	check(filesystem, "string")
 	check(folder, "string")
 	
-	local context = vfs.GetFileSystem(filesystem)
+	local context = vfs2.GetFileSystem(filesystem)
 	
 	if not context then
 		error("unknown filesystem " .. filesystem, 2)
 	end
 	
-	local path_info = vfs.GetPathInfo(folder, true)
+	local path_info = vfs2.GetPathInfo(folder, true)
 	
 	for i, folder in ipairs(path_info:GetFolders("full", true)) do
-		context:CreateFolder(vfs.GetPathInfo(folder))
+		context:CreateFolder(vfs2.GetPathInfo(folder))
 	end
 end
 
@@ -227,8 +227,8 @@ do
 	local function get_files(context, filesystem, path_info, out, info, full_path)
 		local ok, found = pcall(context.GetFiles, context, path_info)
 		
-		if vfs.debug and not ok then
-			vfs.DebugPrint("%s: error getting files: %s", filesystem, found)
+		if vfs2.debug and not ok then
+			vfs2.DebugPrint("%s: error getting files: %s", filesystem, found)
 		end
 		
 		if ok then	
@@ -250,12 +250,12 @@ do
 		end
 	end
 
-	function vfs.GetFiles(path, info, full_path)
-		local path_info = vfs.GetPathInfo(path, true)
+	function vfs2.GetFiles(path, info, full_path)
+		local path_info = vfs2.GetPathInfo(path, true)
 		
 		local out = {}
 		
-		for filesystem, context in pairs(vfs.GetRegisteredFileSystems()) do	
+		for filesystem, context in pairs(vfs2.GetRegisteredFileSystems()) do	
 			-- get files normally first
 			get_files(context, filesystem, path_info, out, info, full_path)
 			
@@ -272,7 +272,7 @@ do
 						path_info.full_path:sub(0, #mount_info.to.full_path) == mount_info.to.full_path 
 					then	
 						-- if so we need to prepend it to make a new "where" path
-						where = vfs.GetPathInfo(filesystem .. ":" .. mount_info.where.full_path .. path_info.full_path:sub(#mount_info.to.full_path+1), true)
+						where = vfs2.GetPathInfo(filesystem .. ":" .. mount_info.where.full_path .. path_info.full_path:sub(#mount_info.to.full_path+1), true)
 						get_files(context, filesystem, where, out, info, full_path)
 					end
 				else
@@ -285,42 +285,44 @@ do
 	end
 end
  
-vfs.Mount("", "")
+vfs2.Mount("", "")
 
 if false then
-	local info = vfs.GetPathInfo("hello/yeah2", true)
+	local info = vfs2.GetPathInfo("hello/yeah2", true)
 	table.print(info)
 	table.print(info:GetFolders())
 	table.print(info:GetFolders("all"))
 end
 
-vfs.debug = true
+vfs2.debug = true
 
-local file = assert(vfs.Open("memory:lol.wav", "write"))
+local file = assert(vfs2.Open("memory:lol.wav", "write"))
 print(file:Write("LOL\n"))
 
-local file = assert(vfs.Open("memory:lol.wav", "read"))
+local file = assert(vfs2.Open("memory:lol.wav", "read"))
 print(file:ReadString(3))
 
-vfs.CreateFolder("memory", "hello")
-vfs.CreateFolder("memory", "hello/yeah1")
-vfs.CreateFolder("memory", "hello/yeah2")
-local file = assert(vfs.Open("memory:hello/lol.wav", "write"))
+vfs2.CreateFolder("memory", "hello")
+vfs2.CreateFolder("memory", "hello/yeah1")
+vfs2.CreateFolder("memory", "hello/yeah2")
+local file = assert(vfs2.Open("memory:hello/lol.wav", "write"))
 file:Write("hello") 
 
-table.print(vfs.GetFiles("hello/"))
----table.print(vfs.GetFiles("."))
+table.print(vfs2.GetFiles("hello/"))
+---table.print(vfs2.GetFiles("."))
 
-local file = assert(vfs.Open("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/npc/male01/abouttime02.wav"))
+local file = assert(vfs2.Open("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/npc/male01/abouttime02.wav"))
 
-table.print(vfs.GetFiles("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/"))
+table.print(vfs2.GetFiles("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/"))
 
 local snd = audio.CreateSource(audio.Decode(file:ReadAll()))  
 table.print(snd.decode_info)
 
-vfs.Mount("G:/SteamLibrary/SteamApps/Common/", "memory:hello/")
-vfs.Mount("G:/SteamLibrary/", "hello/")
+vfs2.Mount("G:/SteamLibrary/SteamApps/Common/", "memory:hello/")
+vfs2.Mount("G:/SteamLibrary/", "hello/")
 
-table.print(vfs.GetFiles("hello/nexuiz/bin32/", true))
+table.print(vfs2.GetFiles("hello/nexuiz/bin32/", true))
 
-return vfs
+_G.vfs2 = vfs2
+
+return vfs2

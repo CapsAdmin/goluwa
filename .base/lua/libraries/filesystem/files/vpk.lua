@@ -1,4 +1,4 @@
-local vfs = (...) or _G.vfs
+local vfs2 = (...) or _G.vfs2
 
 local header = [[
 	long signature = 0x55aa1234;
@@ -224,4 +224,4 @@ function CONTEXT:GetSize()
 	return self.file_info.entry_length
 end
 
-vfs.Register(CONTEXT)
+vfs2.Register(CONTEXT)

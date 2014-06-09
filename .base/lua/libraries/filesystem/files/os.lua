@@ -1,4 +1,4 @@
-local vfs = (...) or _G.vfs
+local vfs2 = (...) or _G.vfs2
 local lfs = require("lfs")
 
 local CONTEXT = {}
@@ -101,4 +101,4 @@ function CONTEXT:GetLastAccessed()
 	return lfs.attributes(self.path).access
 end
 
-vfs.Register(CONTEXT)
+vfs2.Register(CONTEXT)

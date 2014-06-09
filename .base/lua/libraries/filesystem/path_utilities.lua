@@ -1,33 +1,33 @@
-local vfs = (...) --or _G.vfs
+local vfs2 = (...) --or _G.vfs2
 
-function vfs.GeFolderFromPath(str)
+function vfs2.GeFolderFromPath(str)
 	return str:match("(.+/).+") or ""
 end
 
-function vfs.GetParentFolder(str, level)
+function vfs2.GetParentFolder(str, level)
 	return str:match("(.*/)" .. (level == 0 and "" or (".*/"):rep(level or 1))) or ""
 end
 
-function vfs.GetFolderNameFromPath(str)
+function vfs2.GetFolderNameFromPath(str)
 	if str:sub(#str, #str) == "/" then
 		str = str:sub(0, #str - 1)
 	end
 	return str:match(".+/(.+)") or ""
 end
 
-function vfs.GetFileNameFromPath(str)
+function vfs2.GetFileNameFromPath(str)
 	return str:match(".+/(.+)") or ""
 end
 
-function vfs.GetExtensionFromPath(str)
+function vfs2.GetExtensionFromPath(str)
 	return str:match(".+%.(%a+)")
 end
 
-function vfs.GetFolderFromPath(self)
+function vfs2.GetFolderFromPath(self)
 	return self:match("(.*)/") .. "/"
 end
 
-function vfs.GetFileFromPath(self)
+function vfs2.GetFileFromPath(self)
 	return self:match(".*/(.*)")
 end
 
@@ -40,7 +40,7 @@ do
 		BIN = lfs.currentdir,
 	}
 
-	if vfs.use_appdata then
+	if vfs2.use_appdata then
 		if WINDOWS then
 			vars.DATA = "%%APPDATA%%/.goluwa"
 		end
@@ -50,7 +50,7 @@ do
 		end 
 	end
 	
-	function vfs.GetEnv(key)
+	function vfs2.GetEnv(key)
 		local val = env_override[key]
 		
 		if type(val) == "function" then
@@ -60,12 +60,12 @@ do
 		return val or os.getenv(key)
 	end
 	
-	function vfs.SetEnv(key, val)
+	function vfs2.SetEnv(key, val)
 		env_override[key] = val
 	end
 end
 
-function vfs.IsPathAbsolute(path)
+function vfs2.IsPathAbsolute(path)
 	if LINUX then
 		return path:sub(1,1) == "/"
 	end
@@ -75,31 +75,31 @@ function vfs.IsPathAbsolute(path)
 	end
 	
 end
-function vfs.ParseVariables(path)
+function vfs2.ParseVariables(path)
 	-- windows
-	path = path:gsub("%%(.-)%%", vfs.GetEnv)
+	path = path:gsub("%%(.-)%%", vfs2.GetEnv)
 	path = path:gsub("%%", "")		
-	path = path:gsub("%$%((.-)%)", vfs.GetEnv)
+	path = path:gsub("%$%((.-)%)", vfs2.GetEnv)
 	
 	-- linux
 	path = path:gsub("%$%((.-)%)", "%1")
 		
-	return vfs.FixPath(path)
+	return vfs2.FixPath(path)
 end
 
-function vfs.FixPath(path)
+function vfs2.FixPath(path)
 	return (path:gsub("\\", "/"):gsub("(/+)", "/"))
 end
 	
-function vfs.CreateFoldersFromPath(filesystem, path)
+function vfs2.CreateFoldersFromPath(filesystem, path)
 	check(filesystem, "string")
 	check(path, "string")
 	
-	if not vfs.GetFileSystem(filesystem) then
+	if not vfs2.GetFileSystem(filesystem) then
 		error("unknown filesystem " .. filesystem, 2)
 	end
 	
-	local path_info = vfs.GetPathInfo(path)
+	local path_info = vfs2.GetPathInfo(path)
 	local folders = path_info:GetFolders("full")
 	
 	local max = #folders
@@ -107,18 +107,18 @@ function vfs.CreateFoldersFromPath(filesystem, path)
 	for i = 1, #folders - 1 do
 		local folder = folders[i]
 		
-		vfs.CreateFolder(filesystem, folder)
+		vfs2.CreateFolder(filesystem, folder)
 	end
 end
 
-function vfs.GetAbsolutePath(path, ...)
+function vfs2.GetAbsolutePath(path, ...)
 	check(path, "string")
 
-	path = vfs.ParseVariables(path)
+	path = vfs2.ParseVariables(path)
 
-	for k, v in ipairs(vfs.paths) do
+	for k, v in ipairs(vfs2.paths) do
 		if v.callback("file", "exists", v.root .. "/" .. path, ...) then
-			return vfs.FixPath(v.root .. "/" .. path)
+			return vfs2.FixPath(v.root .. "/" .. path)
 		end
 	end
 end
