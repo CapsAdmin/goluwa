@@ -72,9 +72,9 @@ function CONTEXT:GetFiles(path_info)
 	return out
 end
 
-function CONTEXT:Open(path_info, mode, ...)
+function CONTEXT:Open(path_info, mode, ...)	
 	local file
-	
+		
 	if self:GetMode() == "read" then
 		local folder = get_folder(path_info)
 		file = folder[path_info.file_name]
@@ -149,4 +149,4 @@ function CONTEXT:GetLastAccessed()
 	return self.file.last_accessed
 end
 
-vfs2.Register(CONTEXT)
+vfs2.RegisterFileSystem(CONTEXT)

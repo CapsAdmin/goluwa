@@ -6,6 +6,27 @@ META.Name = "base"
 
 class.GetSet(META, "Mode", "read")
 
+function META:PCall(name, ...)
+	local ok, var = pcall(self[name], self, ...)
+	
+	if vfs2.debug and not ok then
+		vfs2.DebugPrint("%s: error calling %s: %s", self.Name or "", name, var)
+		return false
+	end
+	
+	if ok then
+		return var
+	end
+end
+
+function META:Write(str)
+	return self:WriteBytes(str)
+end
+
+function META:Read(bytes)
+	return self:ReadBytes(bytes)
+end
+
 function META:GetFiles()
 	error("not implemented")
 end
@@ -60,4 +81,4 @@ end
 
 metatable.AddBufferTemplate(META)
 
-vfs2.Register(META)
+vfs2.RegisterFileSystem(META)

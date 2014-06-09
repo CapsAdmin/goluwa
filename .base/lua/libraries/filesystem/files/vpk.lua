@@ -224,4 +224,4 @@ function CONTEXT:GetSize()
 	return self.file_info.entry_length
 end
 
-vfs2.Register(CONTEXT)
+vfs2.RegisterFileSystem(CONTEXT)
