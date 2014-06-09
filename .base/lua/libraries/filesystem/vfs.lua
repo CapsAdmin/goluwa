@@ -1,5 +1,7 @@
 local vfs2 = _G.vfs2 or {}
 
+vfs2 = {}
+
 vfs2.use_appdata = false
 vfs2.paths = vfs2.paths or {}
 
@@ -132,22 +134,29 @@ do
 		local out = {}
 
 		path = vfs2.FixPath(path)
-		
-		if is_folder and not path:endswith("/") then
-			path = path .. "/"
-		end
-	
+
 		out.filesystem = path:match("^(.-):")
-		
+				
 		if vfs2.GetRegisteredFileSystems()[out.filesystem] then
 			path = path:gsub("^(.-:)", "")
 		else
 			out.filesystem = "unknown"
 		end
+		
+		local relative = path:sub(1, 1) ~= "/"
+		
+		if WINDOWS then
+			relative = path:sub(2, 2) ~= ":"
+		end
+
+		if is_folder and not path:endswith("/") then
+			path = path .. "/"
+		end
 			
 		out.file_name = path:match(".+/(.*)") or path
 		out.folder_name = path:match(".+/(.+)/") or path:match(".+/(.+)") or path:match("(.+)/") or path
 		out.full_path = path
+		out.relative = relative
 		
 		out.GetFolders = get_folders
 				
@@ -224,6 +233,8 @@ function vfs2.CreateFolder(filesystem, folder)
 end
 
 do
+	local done
+	
 	local function get_files(context, filesystem, path_info, out, info, full_path)
 		local ok, found = pcall(context.GetFiles, context, path_info)
 		
@@ -233,19 +244,22 @@ do
 		
 		if ok then	
 			for i, v in pairs(found) do
-				if full_path then
-					v = filesystem .. ":" .. path_info.full_path .. v
-				end
-				
-				if info then
-					table.insert(out, {
-						name = v, 
-						filesystem = filesystem,
-						full_path = filesystem .. ":" .. path_info.full_path .. v,
-					})
-				else
-					table.insert(out, v)
-				end
+				if not done[v] then
+					if full_path then
+						v = filesystem .. ":" .. path_info.full_path .. v
+					end
+					
+					if info then
+						table.insert(out, {
+							name = v, 
+							filesystem = filesystem,
+							full_path = filesystem .. ":" .. path_info.full_path .. v,
+						})
+					else
+						table.insert(out, v)
+					end
+					done[v] = true
+				end				
 			end
 		end
 	end
@@ -254,16 +268,17 @@ do
 		local path_info = vfs2.GetPathInfo(path, true)
 		
 		local out = {}
+		done = {}
 		
 		for filesystem, context in pairs(vfs2.GetRegisteredFileSystems()) do	
 			-- get files normally first
-			get_files(context, filesystem, path_info, out, info, full_path)
+			--get_files(context, filesystem, path_info, out, info, full_path)
 			
-			-- then check if there's any mounted "to" paths
-			for i, mount_info in ipairs(context.mounted_paths) do
-				local where = mount_info.where
+			if path_info.relative then				
+				-- then check if there's any mounted "to" paths
+				for i, mount_info in ipairs(context.mounted_paths) do
+					local where = mount_info.where
 				
-				if mount_info.to.full_path ~= "" then
 					if -- does the path match the start of the to path?
 						(
 							mount_info.where.filesystem == "unknown" or 
@@ -274,10 +289,13 @@ do
 						-- if so we need to prepend it to make a new "where" path
 						where = vfs2.GetPathInfo(filesystem .. ":" .. mount_info.where.full_path .. path_info.full_path:sub(#mount_info.to.full_path+1), true)
 						get_files(context, filesystem, where, out, info, full_path)
+					else
+						where = vfs2.GetPathInfo(filesystem .. ":" .. where.full_path .. path_info.full_path, true)
+						get_files(context, filesystem, where, out, info, full_path)
 					end
-				else
-					get_files(context, filesystem, where, out, info, full_path)
 				end
+			else
+				get_files(context, filesystem, path_info, out, info, full_path)
 			end
 		end
 		
@@ -287,42 +305,67 @@ end
  
 vfs2.Mount("", "")
 
-if false then
-	local info = vfs2.GetPathInfo("hello/yeah2", true)
-	table.print(info)
-	table.print(info:GetFolders())
-	table.print(info:GetFolders("all"))
+function vfs2.Test()
+
+	if false then
+		local info = vfs2.GetPathInfo("hello/yeah2", true)
+		table.print(info)
+		table.print(info:GetFolders())
+		table.print(info:GetFolders("all"))
+	end
+
+	vfs2.debug = true
+
+	local file = assert(vfs2.Open("memory:lol.wav", "write"))
+	print(file:Write("LOL\n"))
+
+	local file = assert(vfs2.Open("memory:lol.wav", "read"))
+	print(file:ReadString(3))
+
+	vfs2.CreateFolder("memory", "hello")
+	vfs2.CreateFolder("memory", "hello/yeah1")
+	vfs2.CreateFolder("memory", "hello/yeah2")
+	local file = assert(vfs2.Open("memory:hello/lol.wav", "write"))
+	file:Write("hello") 
+
+	table.print(vfs2.GetFiles("hello/"))
+	---table.print(vfs2.GetFiles("."))
+
+	local file = assert(vfs2.Open("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/npc/male01/abouttime02.wav"))
+
+	table.print(vfs2.GetFiles("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/"))
+
+	local snd = audio.CreateSource(audio.Decode(file:ReadAll()))  
+	table.print(snd.decode_info)
+
+	vfs2.Mount("G:/SteamLibrary/SteamApps/Common/", "memory:hello/")
+	vfs2.Mount("G:/SteamLibrary/", "hello/")
+	
+	for k, v in pairs(vfs.paths) do
+		vfs2.Mount(v)
+	end
+	
+	local function compare_find(path)
+		local asdf = vfs.Find(path)
+		for k, v in pairs(vfs2.GetFiles(path)) do
+			if not table.hasvalue(asdf, v) then
+				print(v)
+			end
+		end
+	end
+	
+	compare_find("")
+	compare_find("lua/")
+
+	table.print(vfs2.GetFiles("hello/nexuiz/bin32/", true))
 end
 
-vfs2.debug = true
-
-local file = assert(vfs2.Open("memory:lol.wav", "write"))
-print(file:Write("LOL\n"))
-
-local file = assert(vfs2.Open("memory:lol.wav", "read"))
-print(file:ReadString(3))
-
-vfs2.CreateFolder("memory", "hello")
-vfs2.CreateFolder("memory", "hello/yeah1")
-vfs2.CreateFolder("memory", "hello/yeah2")
-local file = assert(vfs2.Open("memory:hello/lol.wav", "write"))
-file:Write("hello") 
-
-table.print(vfs2.GetFiles("hello/"))
----table.print(vfs2.GetFiles("."))
-
-local file = assert(vfs2.Open("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/npc/male01/abouttime02.wav"))
-
-table.print(vfs2.GetFiles("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/"))
-
-local snd = audio.CreateSource(audio.Decode(file:ReadAll()))  
-table.print(snd.decode_info)
-
-vfs2.Mount("G:/SteamLibrary/SteamApps/Common/", "memory:hello/")
-vfs2.Mount("G:/SteamLibrary/", "hello/")
-
-table.print(vfs2.GetFiles("hello/nexuiz/bin32/", true))
-
-_G.vfs2 = vfs2
+if _G.vfs then
+	for k, v in pairs(vfs.paths) do
+		vfs2.Mount(v)
+	end
+	
+	_G.vfs2 = vfs2
+end
 
 return vfs2
