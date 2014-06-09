@@ -77,14 +77,6 @@ function CONTEXT:ReadBytes(bytes)
 	return self.file:read(bytes)
 end
 
-function CONTEXT:WriteByte(byte)
-	self:Write(string.char(byte))
-end
-
-function CONTEXT:ReadByte()
-	return self:Read(1):byte()
-end
-
 function CONTEXT:SetPos(pos)
 	self.file:seek("set", pos)
 end

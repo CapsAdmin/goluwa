@@ -81,7 +81,7 @@ local function mount(path)
 
 	vpk.paths = {}
 
-	for k,v in pairs(vpk.entries) do
+	for i,v in ipairs(vpk.entries) do
 		if v.is_file then
 			v.archive_path = path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(v.archive_index) end)
 		end
@@ -94,7 +94,7 @@ local function mount(path)
 end
 
 local function split_path(path_info)
-	local vpk_path, relative = path_info.full_path:match("(.-%.vpk)/(.+)")
+	local vpk_path, relative = path_info.full_path:match("(.-%.vpk)/(.*)")
 	
 	if not vpk_path and not relative then
 		error("not a valid vpk path", 2)
@@ -137,11 +137,22 @@ function CONTEXT:GetFiles(path_info)
 	
 	relative = relative .. "."
 	
-	local dir = relative:match("(.+)/")
+	local dir = relative:match("(.*/)")
+	local done = {}
 	
-	for k, v in pairs(vpk.entries) do
-		if v.path:find(relative) and v.path:match("(.+)/") == dir then
-			table.insert(out, v.path:match(".+/(.+)") or v.path)
+	for i, v in ipairs(vpk.entries) do
+		local path = v.path
+		if path:find(relative) and (not dir or path:match("(.*/)") == dir) then
+			-- path is just . so it needs to be handled a bit different
+			if not dir then
+				if not done[path] then
+					path = path:match("(.-)/") or path
+					table.insert(out, path)
+					done[path] = true
+				end
+			else
+				table.insert(out, path:match(".+/(.+)") or path)
+			end
 		end 
 	end
 	

@@ -275,7 +275,7 @@ function vfs2.Open(path, mode, sub_mode)
 	check_write_path(path)
 	
 	for i, data in ipairs(vfs2.TranslatePath(path)) do	
-		local file = class.Create("file", data.context.Name)
+		local file = class.Create("file_system", data.context.Name)
 		
 		file:SetMode(mode)
 		
@@ -381,6 +381,9 @@ if _G.vfs then
 	_G.vfs2 = vfs2
 	
 	vfs2.debug = true
+		
+	local file = vfs2.Open("G:/SteamLibrary/SteamApps/common/Crysis Wars/Game/GameData.pak/Scripts/callbacks.txt", "read")
+	table.print(file:ReadAll():explode("\n"))
 end
 
 return vfs2
