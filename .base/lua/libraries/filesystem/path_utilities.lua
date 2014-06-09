@@ -1,4 +1,4 @@
-local vfs2 = (...) --or _G.vfs2
+local vfs2 = (...) or _G.vfs2
 
 function vfs2.GeFolderFromPath(str)
 	return str:match("(.+/).+") or ""
@@ -29,40 +29,6 @@ end
 
 function vfs2.GetFileFromPath(self)
 	return self:match(".*/(.*)")
-end
-
-do
-	local env_override = 
-	{
-		DATA = e.USERDATA_FOLDER,
-		ROOT = e.ROOT_FOLDER,
-		BASE = e.BASE_FOLDER,
-		BIN = lfs.currentdir,
-	}
-
-	if vfs2.use_appdata then
-		if WINDOWS then
-			vars.DATA = "%%APPDATA%%/.goluwa"
-		end
-
-		if LINUX then
-			vars.DATA =  "%%HOME%%/.goluwa"
-		end 
-	end
-	
-	function vfs2.GetEnv(key)
-		local val = env_override[key]
-		
-		if type(val) == "function" then
-			val = val()
-		end
-		
-		return val or os.getenv(key)
-	end
-	
-	function vfs2.SetEnv(key, val)
-		env_override[key] = val
-	end
 end
 
 function vfs2.IsPathAbsolute(path)

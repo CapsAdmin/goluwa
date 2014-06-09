@@ -1,6 +1,22 @@
 local vfs2 = (...) or _G.vfs2
 local lfs = require("lfs")
 
+if vfs2.use_appdata then
+	if WINDOWS then
+		vfs2.SetEnv("DATA", "os:%%APPDATA%%/.goluwa")
+	end
+
+	if LINUX then
+		vfs2.SetEnv("DATA", "os:%%HOME%%/.goluwa")
+	end 
+else
+	vfs2.SetEnv("DATA", "os:" .. e.USERDATA_FOLDER)
+end
+
+vfs2.SetEnv("ROOT", "os:" .. e.ROOT_FOLDER)
+vfs2.SetEnv("BASE", "os:" .. e.BASE_FOLDER)
+vfs2.SetEnv("BIN", function() return "os:" .. lfs.currentdir() end)
+
 local CONTEXT = {}
 
 CONTEXT.Name = "os"
@@ -50,14 +66,14 @@ function CONTEXT:Open(path_info, ...)
 	mode = mode .. "b" -- always open in binary
 
 	self.file = assert(io.open(path_info.full_path, mode)) 
-	self.attributes = lfs.attributes(path)
+	self.attributes = lfs.attributes(path_info.full_path)
 end
 
-function CONTEXT:Write(str)
+function CONTEXT:WriteBytes(str)
 	return self.file:write(str)
 end
 
-function CONTEXT:Read(bytes)
+function CONTEXT:ReadBytes(bytes)
 	return self.file:read(bytes)
 end
 
@@ -67,14 +83,6 @@ end
 
 function CONTEXT:ReadByte()
 	return self:Read(1):byte()
-end
-
-function CONTEXT:WriteBytes(str)
-	return self.file:write(str)
-end
-
-function CONTEXT:ReadBytes(bytes)
-	return self.file:read(bytes)
 end
 
 function CONTEXT:SetPos(pos)
@@ -101,4 +109,4 @@ function CONTEXT:GetLastAccessed()
 	return lfs.attributes(self.path).access
 end
 
-vfs2.Register(CONTEXT)
+vfs2.RegisterFileSystem(CONTEXT)
