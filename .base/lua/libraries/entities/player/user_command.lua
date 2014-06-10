@@ -1,17 +1,31 @@
-local client_command_length = 100 -- sample length in ms
-local client_tick_rate = 33 -- in ms
+local client_command_length = 33 -- sample length in ms
+local client_tick_rate = 66 -- in ms
 
 local server_command_length = client_command_length
 local server_tick_rate = 10
 
 local META = (...) or metatable.Get("player")
 
+local default = {
+	time = 0,
+	
+	cursor = Vec2(0, 0),
+	smooth_cursor = Vec2(0, 0),
+	
+	camera = {
+		pos = Vec3(0, 0, 0),
+		smooth_pos = Vec3(0, 0, 0),
+		
+		ang = Ang3(0, 0, 0),
+		smooth_ang = Ang3(0, 0, 0),
+	},
+	
+	queue = {},
+}
+
 function META:GetCurrentCommand()
 	if not self.current_command then
-		self.current_command = {
-			cursor = Vec2(0, 0),
-			queue = {},
-		}
+		self.current_command = default
 	end
 	return self.current_command
 end
@@ -22,17 +36,22 @@ local function read_buffer(ply, buffer)
 	
 	for i = 1, 32 do
 		local time = buffer:ReadDouble()
-		local x = buffer:ReadShort()
-		local y = buffer:ReadShort()
+		
+		local cursor = buffer:ReadVec2Short()
+		local cam_pos = buffer:ReadVec3()
+		local cam_ang = buffer:ReadAng3()
 		
 		if not time_stamp then
 			time_stamp = time 
 		end
 		
-		cmd.queue[i] = cmd.queue[i] or {}
+		cmd.queue[i] = cmd.queue[i] or default
+		
 		cmd.queue[i].time = timer.GetSystemTime() + (time - time_stamp)
-		cmd.queue[i].x = x
-		cmd.queue[i].y = y
+		
+		cmd.queue[i].cursor = cursor
+		cmd.queue[i].camera.pos = cam_pos
+		cmd.queue[i].camera.ang = cam_ang
 
 		if buffer:TheEnd() then 
 			break 
@@ -50,17 +69,15 @@ local function interpolate(ply, cmd)
 	local data = cmd.queue[1]
 			
 	if data and data.time < timer.GetSystemTime() then
-		local x, y = data.x, data.y
+
+		cmd.smooth_cursor:Lerp(0.3, data.cursor)
+		cmd.cursor = data.cursor
+	
+		cmd.camera.pos = data.camera.pos
+		cmd.camera.smooth_pos:Lerp(0.3, data.camera.pos)
 		
-		if cmd.cursor then
-			x = math.lerp(0.3, x, cmd.cursor.x)
-			y = math.lerp(0.3, y, cmd.cursor.y)
-		end
-		
-		cmd.cursor = cmd.cursor or Vec2()
-		
-		cmd.cursor.x = x
-		cmd.cursor.y = y
+		cmd.camera.ang = data.camera.ang
+		cmd.camera.smooth_ang:Lerp(0.3, data.camera.ang)
 		
 		table.remove(cmd.queue, 1)
 	end
@@ -83,9 +100,9 @@ if CLIENT then
 		event.CreateTimer("user_command_tick", client_tick_rate, function()
 			
 			buffer:WriteDouble(timer.GetSystemTime())
-			local x, y = window.GetMousePos():Unpack()
-			buffer:WriteShort(x)
-			buffer:WriteShort(y)
+			buffer:WriteVec2Short(window.GetMousePos())
+			buffer:WriteVec3(render.GetCamPos())
+			buffer:WriteAng3(render.GetCamAng())
 			
 			if last_send < timer.GetSystemTime() then
 				packet.Send("user_command", buffer)

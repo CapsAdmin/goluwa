@@ -1,5 +1,3 @@
-render.EnableGBuffer(false)
-
 local ecs = _G.ecs or {}
 
 ecs.entities = ecs.entities or {}
@@ -333,8 +331,11 @@ do -- test
 			metatable.GetSet(COMPONENT, "Texture", render.GetWhiteTexture())
 			metatable.GetSet(COMPONENT, "Color", Color(1, 1, 1))
 			metatable.GetSet(COMPONENT, "Alpha", 1)
+			metatable.GetSet(COMPONENT, "ModelPath", "models/face.obj")
 		metatable.EndStorable()
-
+		
+		metatable.GetSet(COMPONENT, "Model", nil)
+		
 		function COMPONENT:OnAdd(ent)
 
 		end
@@ -380,23 +381,19 @@ do -- test
 		}
 		
 		local shader = render.CreateShader(SHADER)
-		 
-		-- this is for the previous system but it has the same vertex attribute layout
-		--local model = 
-		local model = BSP_MODEL or render.Create3DMesh("models/sponza.obj")
-
-		local function Clippify(x, y, z, world)
-			return 
-		end
 		
-		local function helper(i, j, model)
-			return bit.band(bit.rshift(i, j), 1) == 0 and model.bbox.min or model.bbox.max
+		function COMPONENT:SetModelPath(path)
+			self.Model = path
+			self.Model = render.Create3DMesh(path)
 		end
 		
 		function COMPONENT:OnDraw3D(dt)
 		
-			if not render.matrices.vp_matrix then return end
-		
+			local model = self.Model
+
+			if not render.matrices.vp_matrix then return end -- FIX ME			
+			if not model then return end
+
 			local matrix = self:GetComponent("transform"):GetMatrix() 
 			local temp = Matrix44()
 			
@@ -441,8 +438,8 @@ do -- test
 		ecs.RegisterComponent(COMPONENT)
 	end
 		
-	do -- test
-		ecs.SetupComponents("shape", {"transform", "visual"})
+	ecs.SetupComponents("shape", {"transform", "visual"})
+	function ecs.Test()
 	
 		local parent = ecs.CreateEntity("shape")
 		

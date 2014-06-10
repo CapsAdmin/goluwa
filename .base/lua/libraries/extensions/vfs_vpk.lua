@@ -88,6 +88,10 @@ local function read_entry(file, extension, directory, name)
 	if terminator ~= 0xffff then
 		return nil, string.format("Invalid entry terminator 0x%.4x", terminator)
 	end
+	
+	if entry.preload_bytes > 0 then
+		entry.entry_offset = file:seek()
+	end
 
 	entry.preload_offset = file:seek()
 
@@ -211,7 +215,7 @@ io.close(file)]]
 event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 	
 	if ext == "vpk" then
-		
+		root = path
 		if mount then
 			local vpk, err = read_vpk_dir(path)
 			
@@ -282,12 +286,16 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 							
 							local file
 							
-							if not files[data.archive_path] or io.type(files[data.archive_path]) == "closed file" then
-								files[data.archive_path] = assert(io.open(data.archive_path, "rb"))
+							if data.preload_bytes > 0 then
+								files[data.archive_path] = io.open(root, "rb")
+							else
+								if not files[data.archive_path] or io.type(files[data.archive_path]) == "closed file" then
+									files[data.archive_path] = assert(io.open(data.archive_path, "rb"))
+								end
 							end
 							
 							file = files[data.archive_path]
-							
+
 							file:seek("set", data.entry_offset)
 							 
 							return {data = data, file = file, position = 0}
@@ -312,7 +320,7 @@ event.AddListener("VFSMountFile", "vpk_mount", function(path, mount, ext)
 
 							if type == "bytes" then							
 								bytes = math.min(bytes, handle.data.entry_length - handle.position)
-												
+								
 								handle.file:seek("set", handle.data.entry_offset + handle.position)
 								local content = handle.file:read(bytes)
 								
