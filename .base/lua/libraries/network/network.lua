@@ -334,6 +334,17 @@ if CLIENT then
 			end)
 		end
 		
+		do -- udp
+			local client = sockets.CreateClient("udp", ip, port, "network_client_udp")		
+			client:SetTimeout(false)
+			
+			function client:OnReceive(str)
+				network.HandlePacket(str, NULL)
+			end
+			
+			network.udp = client	
+		end
+		
 		do -- tcp
 			local client = sockets.CreateClient("tcp", ip, port, "network_client_tcp")
 			client:SetTimeout(false)
@@ -358,18 +369,7 @@ if CLIENT then
 			
 			network.tcp = client
 		end
-		
-		do -- udp
-			local client = sockets.CreateClient("udp", ip, port, "network_client_udp")		
-			client:SetTimeout(false)
-			
-			function client:OnReceive(str)
-				network.HandlePacket(str, NULL)
-			end
-			
-			network.udp = client	
-		end
-		
+				
 		network.just_disconnected = nil
 		
 		return client

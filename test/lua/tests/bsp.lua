@@ -10,18 +10,20 @@ local buffer = Buffer(io.open(R"maps/cs_agency.bsp", "rb"))]]
 
 local buffer
 
-if true then
+local map = "ep2"
+
+if map == "hl2" then
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk") 
-	buffer = Buffer(vfs.GetFile("freespace06_v2-1.bsp", "rb")) or Buffer(io.open(R"maps/d2_prison_03.bsp", "rb"))
-elseif false then
+	buffer = Buffer(io.open(R"maps/d2_coast_09.bsp", "rb"))
+elseif map == "ep2" then
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "ep2/")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "ep2/ep2_pak_dir.vpk")
-	buffer = Buffer(vfs.GetFile("maps/ep2_outland_12.bsp", "rb"))
-else
+	buffer = Buffer(vfs.GetFile("maps/ep2_outland_06a.bsp", "rb"))
+elseif map == "l4d2" then
 	vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "left4dead2/")
 	vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "left4dead2/pak01_dir.vpk")
 	buffer = Buffer(vfs.GetFile("maps/c3m1_plankcountry.bsp", "rb"))
@@ -566,7 +568,9 @@ for i, data in ipairs(bsp_mesh.sub_models) do
 end
 
 logn("SUB_MODELS ", #bsp_mesh.sub_models)
-
-BSP_MODEL = bsp_mesh
  
 include("libraries/ecs.lua")
+
+local world = ecs.CreateEntity("shape")
+world:SetModel(bsp_mesh)
+world:SetAngles(Ang3(0,90,0)) -- FIX ME

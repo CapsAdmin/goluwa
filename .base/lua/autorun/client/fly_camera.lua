@@ -1,4 +1,4 @@
-local cam_pos = Vec3(0, 0, 200) 
+local cam_pos = Vec3(0, 0, 200)   
 local cam_ang = Ang3(0, 0, 0)  
 local cam_fov = 90
  
