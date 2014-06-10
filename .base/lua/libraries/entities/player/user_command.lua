@@ -18,6 +18,9 @@ local default = {
 		
 		ang = Ang3(0, 0, 0),
 		smooth_ang = Ang3(0, 0, 0),
+		
+		fov = 0,
+		smooth_fov = 0,
 	},
 	
 	queue = {},
@@ -40,6 +43,7 @@ local function read_buffer(ply, buffer)
 		local cursor = buffer:ReadVec2Short()
 		local cam_pos = buffer:ReadVec3()
 		local cam_ang = buffer:ReadAng3()
+		local cam_fov = buffer:ReadFloat()
 		
 		if not time_stamp then
 			time_stamp = time 
@@ -52,6 +56,7 @@ local function read_buffer(ply, buffer)
 		cmd.queue[i].cursor = cursor
 		cmd.queue[i].camera.pos = cam_pos
 		cmd.queue[i].camera.ang = cam_ang
+		cmd.queue[i].camera.fov = cam_fov
 
 		if buffer:TheEnd() then 
 			break 
@@ -79,6 +84,9 @@ local function interpolate(ply, cmd)
 		cmd.camera.ang = data.camera.ang
 		cmd.camera.smooth_ang:Lerp(0.3, data.camera.ang)
 		
+		cmd.camera.ang = data.camera.ang
+		cmd.camera.smooth_fov = math.lerp(0.3, cmd.camera.smooth_fov, data.camera.fov)
+		
 		table.remove(cmd.queue, 1)
 	end
 end
@@ -103,6 +111,7 @@ if CLIENT then
 			buffer:WriteVec2Short(window.GetMousePos())
 			buffer:WriteVec3(render.GetCamPos())
 			buffer:WriteAng3(render.GetCamAng())
+			buffer:WriteFloat(render.GetCamFOV())
 			
 			if last_send < timer.GetSystemTime() then
 				packet.Send("user_command", buffer)
