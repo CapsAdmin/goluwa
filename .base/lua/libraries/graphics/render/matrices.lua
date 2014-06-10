@@ -24,7 +24,7 @@ render.camera = {
 	
 	fov = 75,
 	farz = 32000,
-	nearz = 0.1,
+	nearz = 10,
 	
 	ratio = 1,
 }
@@ -168,8 +168,8 @@ function render.SetupView3D(pos, ang, fov)
 	
 	if ang then
 		-- source engine style camera angles
+		view:Rotate(ang.r, 0, 0, 1)
 		view:Rotate(ang.p + 90, 1, 0, 0)
-		view:Rotate(ang.r, 0, 1, 0)
 		view:Rotate(ang.y, 0, 0, 1)
 	end
 	
