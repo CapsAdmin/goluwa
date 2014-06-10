@@ -417,8 +417,8 @@ for model_index = 1, #models do
 						local str = vfs.Read(path)
 						local tbl = steam.VDFToTable(str)
 						
-						if tbl.WorldVertexTransition and tbl.WorldVertexTransition["$basetexture"] then
-							path = "materials/" .. tbl.WorldVertexTransition["$basetexture"]:lower() .. ".vtf"								
+						if tbl.WorldVertexTransition and tbl.WorldVertexTransition["$basetexture2"] then
+							path = "materials/" .. tbl.WorldVertexTransition["$basetexture2"]:lower() .. ".vtf"
 							if vfs.Exists(path) then
 								exists = true
 							end
@@ -445,7 +445,7 @@ for model_index = 1, #models do
 				end
 
 				meshes[texname] = {
-					diffuse = exists and Texture(path) or render.GetErrorTexture(), 
+					diffuse = exists and Texture(path, {mip_map_levels = 8}) or render.GetErrorTexture(), 
 					mesh = {}
 				}
 

@@ -1,3 +1,5 @@
+render.EnableGBuffer(false)
+
 local ecs = _G.ecs or {}
 
 ecs.entities = ecs.entities or {}
