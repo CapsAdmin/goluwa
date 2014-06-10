@@ -347,6 +347,7 @@ do -- test
 					{pos = "vec3"},
 					{normal = "vec3"},
 					{uv = "vec2"},
+					{texture_blend = "float"},
 				},	
 				source = "gl_Position = pvm_matrix * vec4(pos, 1.0);"
 			},
@@ -354,20 +355,24 @@ do -- test
 				uniform = {
 					color = Color(1,1,1,1),
 					diffuse = "sampler2D",
-					bump = "sampler2D",
-					specular = "sampler2D",
+					diffuse2 = "sampler2D",
+					detail = "sampler2D",
+					detailscale = 1,
+					
+					--bump = "sampler2D",
+					--specular = "sampler2D",
 				},		
 				attributes = {
-					{pos = "vec3"},
-					{normal = "vec3"},
 					{uv = "vec2"},
+					{texture_blend = "float"},
 				},			
 				source = [[
 					out vec4 out_color;
 
 					void main() 
 					{
-						out_color = texture(diffuse, uv) * color;
+						out_color = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;
+						out_color.rgb *= texture(detail, uv * detailscale).rgb;
 					}
 				]]
 			}  
@@ -429,6 +434,8 @@ do -- test
 				
 				for i, model in ipairs(model.sub_models) do
 					shader.diffuse = model.diffuse or render.GetErrorTexture()
+					shader.diffuse2 = model.diffuse2 or render.GetErrorTexture()
+					shader.detail = model.detail or render.GetWhiteTexture()
 					shader:Bind()
 					model.mesh:Draw()
 				end
