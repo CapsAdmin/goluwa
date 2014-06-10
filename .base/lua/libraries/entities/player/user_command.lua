@@ -1,5 +1,5 @@
-local client_command_length = 33 -- sample length in ms
-local client_tick_rate = 66 -- in ms
+local client_command_length = 100 -- sample length in ms
+local client_tick_rate = 33 -- in ms
 
 local server_command_length = client_command_length
 local server_tick_rate = 10
@@ -25,7 +25,7 @@ local default = {
 
 function META:GetCurrentCommand()
 	if not self.current_command then
-		self.current_command = default
+		self.current_command = table.copy(default)
 	end
 	return self.current_command
 end
@@ -45,7 +45,7 @@ local function read_buffer(ply, buffer)
 			time_stamp = time 
 		end
 		
-		cmd.queue[i] = cmd.queue[i] or default
+		cmd.queue[i] = cmd.queue[i] or table.copy(default)
 		
 		cmd.queue[i].time = timer.GetSystemTime() + (time - time_stamp)
 		
