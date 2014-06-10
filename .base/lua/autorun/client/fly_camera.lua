@@ -1,9 +1,10 @@
 local cam_pos = Vec3(0, 0, 200)   
 local cam_ang = Ang3(0, 0, 0)  
 local cam_fov = 90
- 
+  
 event.AddListener("Update", "fly_camera_3d", function(dt)
 	if not window.IsOpen() then return end
+	if chat and chat.IsVisible() then return end
 	
 	if menu and menu.visible then return end
 	cam_ang:Normalize()
