@@ -1,4 +1,4 @@
-console.CreateVariable("sv_timeout", 10)	
+console.CreateVariable("sv_timeout", 30)	
 
 local META = (...) or metatable.Get("player")
 
