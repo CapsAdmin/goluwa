@@ -358,14 +358,14 @@ function metatable.AddBufferTemplate(META)
 		
 		-- ang3
 		function META:WriteAng3(v)
-			self:WriteFloat(v.x)
+			self:WriteFloat(v.p)
 			self:WriteFloat(v.y)
-			self:WriteFloat(v.z)
+			self:WriteFloat(v.r)
 			return self
 		end
 		
 		function META:ReadAng3()
-			return Vec3(self:ReadFloat(), self:ReadFloat(), self:ReadFloat())
+			return Ang3(self:ReadFloat(), self:ReadFloat(), self:ReadFloat())
 		end
 		
 		-- integer/long
