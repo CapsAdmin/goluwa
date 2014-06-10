@@ -52,12 +52,12 @@ local decimal_return = "return buff.decimal"
 
 local template = [[
 local META, buff = ...
-META["@WRITE@"] = function(@READ_ARGS@)
+META["@WRITE@"] = function(@WRITE_ARGS@)
 	@ASSIGN@
 @WRITE_BYTES@
 	return self
 end
-META["@READ@"] = function(@WRITE_ARGS@)
+META["@READ@"] = function(@READ_ARGS@)
 @READ_BYTES@
 	@RETURN@
 end]]
@@ -80,13 +80,13 @@ local function ADD_FFI_OPTIMIZED_TYPE(META, typ)
 		:gsub("@READ@", "Read" ..typ)
 		:gsub("@WRITE@", "Write" ..typ)		
 	if decimal then
-		template = template:gsub("@READ_ARGS@", "self, num")
-		template = template:gsub("@WRITE_ARGS@", "self")
+		template = template:gsub("@READ_ARGS@", "self")
+		template = template:gsub("@WRITE_ARGS@", "self, num")
 		template = template:gsub("@ASSIGN@", decimal_assign) 
 		template = template:gsub("@RETURN@", decimal_return)
 	else
-		template = template:gsub("@READ_ARGS@", "self, num, signed")
-		template = template:gsub("@WRITE_ARGS@", "self, signed")
+		template = template:gsub("@READ_ARGS@", "self, signed")
+		template = template:gsub("@WRITE_ARGS@", "self, num, signed")
 		template = template:gsub("@ASSIGN@", integer_assign)
 		template = template:gsub("@RETURN@", integer_return)
 	end
@@ -171,19 +171,6 @@ local function header_to_table(str)
 	
 	return out
 end
-
-local str = [[
-	long signature = 0x55aa1234;
-	long version;
-	long tree_length;
-		
-	padding long unknown;
-	long footer_length;
-	padding long unknown;
-	padding long unknown; 
-]]
-
-table.print(header_to_table(str)[1])
 
 function metatable.AddBufferTemplate(META)
 	check(META.WriteByte, "function")
@@ -431,7 +418,7 @@ function metatable.AddBufferTemplate(META)
 					if data[1] == "bufferpos" then
 						val = self:GetPos()
 					else
-						val = self:ReadType(data[1]) 
+						val = self:ReadType(data[1], data.signed) 
 					end
 				end
 				
@@ -473,6 +460,28 @@ function metatable.AddBufferTemplate(META)
 			
 			return out
 		end
+		
+		function META:GetStructureSize(structure)
+			if type(structure) == "string" then
+				return self:GetStructureSize(header_to_table(structure))
+			end
+			
+			local size = 0
+			
+			for k, v in ipairs(structure) do
+				local t = v[1]
+				
+				if t == "byte" then t = "uint8_t" end
+				
+				if t == "vec3" or t == "ang3" then
+					size = size + ffi.sizeof("float") * 3
+				else
+					size = size + ffi.sizeof(t)
+				end
+			end
+			
+			return size
+		end
 	end
 
 
@@ -504,10 +513,10 @@ function metatable.AddBufferTemplate(META)
 			error("tried to write unknown type " .. t, 2)
 		end
 		
-		function META:ReadType(t)
+		function META:ReadType(t, signed)
 		
 			if read_functions[t] then
-				return read_functions[t](self, val)
+				return read_functions[t](self, signed)
 			end
 			
 			error("tried to read unknown type " .. t, 2)
