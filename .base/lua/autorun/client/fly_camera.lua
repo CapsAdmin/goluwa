@@ -16,9 +16,11 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 		cam_fov = 90
 	end
 	
+	delta = delta * (cam_fov / 175)
+	
 	if input.IsMouseDown("button_2") then
-		cam_ang.r = cam_ang.r - delta.x / 2
-		cam_fov = math.clamp(cam_fov + delta.y * 100, 0.1, 120)
+		cam_ang.r = cam_ang.r + delta.x / 2
+		cam_fov = math.clamp(cam_fov + delta.y * 100, 0.1, 175)
 	else
 		cam_ang.p = math.clamp(cam_ang.p + delta.y, -math.pi/2, math.pi/2)
 		cam_ang.y = cam_ang.y - delta.x
