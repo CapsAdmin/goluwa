@@ -53,7 +53,12 @@ do -- window meta
 	
 	function META:ShowCursor(b)
 		sdl.ShowCursor(b and 1 or 0)
+		self.cursor_visible = b
 	end	
+	
+	function META:IsCursorVisible()
+		return self.cursor_visible
+	end
 
 	function META:SetMouseTrapped(b)
 		self.mouse_trapped = b

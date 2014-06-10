@@ -76,7 +76,12 @@ do -- window meta
 		else
 			glfw.SetInputMode(self.__ptr, glfw.e.GLFW_CURSOR, glfw.e.GLFW_CURSOR_HIDDEN)
 		end
+		self.cursor_visible = b
 	end	
+	
+	function META:IsCursorVisible()
+		return self.cursor_visible
+	end
 
 	function META:SetMouseTrapped(b)
 		self.mouse_trapped = b
