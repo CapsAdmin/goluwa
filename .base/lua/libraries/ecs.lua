@@ -280,11 +280,11 @@ do -- test
 			if self.rebuild_tr_matrix then				
 				self.TRMatrix:Identity()
 
-				self.TRMatrix:Translate(self.Position.x, self.Position.y, self.Position.z)
+				self.TRMatrix:Translate(-self.Position.y, -self.Position.x, -self.Position.z)
 				
-				self.TRMatrix:Rotate(self.Angles.p, 1, 0, 0)
-				self.TRMatrix:Rotate(self.Angles.y, 0, 1, 0)
-				self.TRMatrix:Rotate(self.Angles.r, 0, 0, 1)				
+				self.TRMatrix:Rotate(-self.Angles.y, 0, 0, 1)
+				self.TRMatrix:Rotate(-self.Angles.p + 90, 1, 0, 0)
+				self.TRMatrix:Rotate(self.Angles.r + 180, 0, 0, 1)	
 				
 				if self:HasParent() then
 					self.templol = self.templol or Matrix44()

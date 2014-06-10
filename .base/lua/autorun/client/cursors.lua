@@ -35,8 +35,7 @@ event.AddListener("Update", "spooky", function()
 			ply.ghost:SetSize(10)
 		end
 		local cmd = ply:GetCurrentCommand()
-		local pos = cmd.camera.smooth_pos
-		ply.ghost:SetPosition(Vec3(-pos.y, -pos.x, -pos.z))
-		ply.ghost:SetAngles(cmd.camera.smooth_ang:Deg())
+		ply.ghost:SetPosition(cmd.camera.smooth_pos)
+		ply.ghost:SetAngles(cmd.camera.ang)
 	end
 end)
