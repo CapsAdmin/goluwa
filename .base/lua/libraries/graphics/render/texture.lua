@@ -41,11 +41,11 @@ end
 
 do -- texture binding
 	do
+		local base = gl.e.GL_TEXTURE0 
 		local last
-		
 		function render.ActiveTexture(id)
 			if id ~= last then
-				gl.ActiveTexture(id)
+				gl.ActiveTexture(base + id)
 				last = id
 			end
 		end
@@ -54,10 +54,10 @@ do -- texture binding
 	do
 		local last
 		
-		function render.BindTexture(tex)
+		function render.BindTexture(tex)			
 			if tex ~= last then				
-				render.ActiveTexture(tex.texture_channel)
-				gl.BindTexture(tex.format.type, tex.id) 
+				gl.BindTexture(tex.format.type, tex.id) 				
+				last = tex
 			end
 		end
 	end
@@ -135,6 +135,12 @@ do -- texture object
 		
 		f.wrap_s = CHECK_FIELD("wrap", f.wrap_s) or gl.e.GL_REPEAT
 		f.wrap_t = CHECK_FIELD("wrap", f.wrap_t) or gl.e.GL_REPEAT
+		
+		do
+			local largest = ffi.new("float[1]")
+			gl.GetFloatv(gl.e.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, largest)
+			f.anisotropy = CHECK_FIELD("anisotropy", f.anisotropy) or largest[0]
+		end
 		
 		if f.type == gl.e.GL_TEXTURE_3D then
 			f.wrap_r = CHECK_FIELD("wrap", f.wrap_r) or gl.e.GL_REPEAT

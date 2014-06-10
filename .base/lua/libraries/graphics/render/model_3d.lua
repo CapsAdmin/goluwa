@@ -34,6 +34,8 @@ local SHADER = {
 			{pos = "vec3"},
 			{normal = "vec3"},
 			{uv = "vec2"},
+			{texture_blend = "float"},
+
 			--{tangent = "vec3"},
 			--{bitangent = "vec3"},
 		},	
@@ -57,6 +59,8 @@ local SHADER = {
 			{pos = "vec3"},
 			{normal = "vec3"},
 			{uv = "vec2"},
+			{texture_blend = "float"},
+
 		},			
 		source = [[
 			out vec4 out_data[4];

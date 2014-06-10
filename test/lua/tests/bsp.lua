@@ -36,28 +36,24 @@ elseif map == "l4d2" then
 end
 
 local header = buffer:ReadStructure(vtf_header_structure)
-
+ 
 do -- lumps
-	local lump_struct = [[
+	local struct = [[
 		int	fileofs;	// offset into file (bytes)
 		int	filelen;	// length of lump (bytes)
 		int	version;	// lump format version
 		char fourCC[4];	// lump ident code
 	]]
 
-	local lump21_struct = [[
+	local struct_21 = [[
 		int	version;	// lump format version
 		int	fileofs;	// offset into file (bytes)
 		int	filelen;	// length of lump (bytes)
 		char fourCC[4];	// lump ident code
 	]]
 
-	local struct
-	
-	if header.version < 21 then 
-		struct = lump_struct 
-	else
-		struct = lump21_struct
+	if header.version > 21 then 
+		struct = struct_21
 	end
 	
 	header.lumps = {}
@@ -73,6 +69,15 @@ header.map_revision = buffer:ReadLong()
 logn("BSP ", header.ident)
 logn("VERSION ", header.version)
 logn("REVISION ", header.map_revision)
+
+local function read_lump_data(index, size)
+	local out = {}
+	
+	local lump = header.lumps[index]
+	local length = lump.filelen / size
+	
+	buffer:SetPos(lump.fileofs)	
+end
 
 do -- vertices
 	local lump = header.lumps[4]
@@ -119,7 +124,7 @@ do -- header.edges
 end
 
 do -- header.faces
-	local face_struct = [[
+	local struct = [[
 		unsigned short	planenum;		// the plane number
 		byte		side;			// header.faces opposite to the node's plane direction
 		byte		onNode;			// 1 of on node, 0 if in leaf
@@ -147,12 +152,12 @@ do -- header.faces
 	header.faces = {}
 
 	for i = 1, length do
-		header.faces[i] = buffer:ReadStructure(face_struct)
+		header.faces[i] = buffer:ReadStructure(struct)
 	end
 end
 
 do -- texinfo
-	local texinfo_struct = [[
+	local struct = [[
 		float textureVecs[8];
 		float lightmapVecs[8];
 		int flags;
@@ -167,12 +172,12 @@ do -- texinfo
 	header.texinfos = {}
 
 	for i = 1, length do
-		header.texinfos[i] = buffer:ReadStructure(texinfo_struct)
+		header.texinfos[i] = buffer:ReadStructure(struct)
 	end
 end
 
 do -- texdata
-	local texdata_struct = [[
+	local struct = [[
 		vec3 reflectivity;
 		int nameStringTableID;
 		int width;
@@ -189,7 +194,7 @@ do -- texdata
 	header.texdatas = {}
 
 	for i = 1, length do
-		header.texdatas[i] = buffer:ReadStructure(texdata_struct)
+		header.texdatas[i] = buffer:ReadStructure(struct)
 	end
 end
 
@@ -332,11 +337,18 @@ local bsp_mesh = {sub_models = {}}
 
 do -- build mesh
 
-	local function add_vertex(model, texinfo, texdata, x, y, z)
+	local function add_vertex(model, texinfo, texdata, x, y, z, blend)
 		local a = texinfo.textureVecs
-
+		
+		if blend then 
+			blend = blend / 255 
+		else
+			blend = 0
+		end
+		
 		table.insert(model.mesh, {
 			pos = {x, -y, -z},
+			texture_blend = blend,
 			uv = {
 				(a[1] * x + a[2] * y + a[3] * z + a[4]) / texdata.width,
 				(a[5] * x + a[6] * y + a[7] * z + a[8]) / texdata.height,
@@ -391,6 +403,9 @@ do -- build mesh
 					end
 					
 					local path = "materials/" .. texname:lower() .. ".vtf"
+					local path2
+					local detail
+					local detailscale
 					local exists = vfs.Exists(path) 
 
 					if not exists then
@@ -400,8 +415,14 @@ do -- build mesh
 							local str = vfs.Read(path)
 							local tbl = steam.VDFToTable(str)
 							
-							if tbl.WorldVertexTransition and tbl.WorldVertexTransition["$basetexture2"] then
-								path = "materials/" .. tbl.WorldVertexTransition["$basetexture2"]:lower() .. ".vtf"
+							if tbl.WorldVertexTransition then
+								path = "materials/" .. tbl.WorldVertexTransition["$basetexture"]:lower() .. ".vtf"
+								path2 = "materials/" .. tbl.WorldVertexTransition["$basetexture2"]:lower() .. ".vtf"
+								if tbl.WorldVertexTransition["$detail"] then
+									detail = "materials/" .. tbl.WorldVertexTransition["$detail"]:lower() .. ".vtf"
+									detailscale = tbl.WorldVertexTransition["$detailscale"]
+									print(detailscale)
+								end
 								if vfs.Exists(path) then
 									exists = true
 								end
@@ -426,9 +447,12 @@ do -- build mesh
 					if not exists then
 						print(string.format("Texture %q not found", path))
 					end
-
+					
 					meshes[texname] = {
 						diffuse = exists and Texture(path, {mip_map_levels = 8}) or render.GetErrorTexture(), 
+						diffuse2 = path2 and Texture(path2, {mip_map_levels = 8}) or render.GetErrorTexture(),
+						detail = detail and Texture(detail, {mip_map_levels = 8}),
+						detailscale = detailscale,
 						mesh = {}
 					}
 
@@ -508,21 +532,19 @@ do -- build mesh
 				local function qwerty(x, y)
 					local index = (y - 1) * dims + x
 					local data = dispinfo.vertex_info[index]
-					return addVectors(asdf(x, y), fdsa(data.vertex, data.dist))
+					local x, y, z = unpack(addVectors(asdf(x, y), fdsa(data.vertex, data.dist)))
+					return x, y, z, data.alpha
 				end
 			
 				for x = 1, dims - 1 do
 					for y = 1, dims - 1 do
-						local index = (y - 1) * dims + x
-						local data = dispinfo.vertex_info[index]
-
-						add_vertex(sub_model, texinfo, texdata, unpack(qwerty(x, y)))
-						add_vertex(sub_model, texinfo, texdata, unpack(qwerty(x + 1, y + 1)))
-						add_vertex(sub_model, texinfo, texdata, unpack(qwerty(x, y + 1)))
+						add_vertex(sub_model, texinfo, texdata, qwerty(x, y))
+						add_vertex(sub_model, texinfo, texdata, qwerty(x + 1, y + 1))
+						add_vertex(sub_model, texinfo, texdata, qwerty(x, y + 1))
 						
-						add_vertex(sub_model, texinfo, texdata, unpack(qwerty(x, y)))
-						add_vertex(sub_model, texinfo, texdata, unpack(qwerty(x + 1, y)))
-						add_vertex(sub_model, texinfo, texdata, unpack(qwerty(x + 1, y + 1)))
+						add_vertex(sub_model, texinfo, texdata, qwerty(x, y))
+						add_vertex(sub_model, texinfo, texdata, qwerty(x + 1, y))
+						add_vertex(sub_model, texinfo, texdata, qwerty(x + 1, y + 1))
 					end
 				end
 			end

@@ -14,7 +14,7 @@ local unrolled_lines = {
 
 	mat4 = "render.UniformMatrix4fv(%i, 1, 0, val)",
 
-	texture = "render.Uniform1i(%i, val.texture_channel_uniform)\n\trender.BindTexture(val)",
+	texture = "local channel = %i\n\trender.ActiveTexture(channel)\n\trender.BindTexture(val)\n\trender.Uniform1i(%i, channel)",
 }
 
 unrolled_lines.vec4 = unrolled_lines.color
@@ -27,6 +27,8 @@ local type_info_types = {
 }
 
 local type_info =  {
+	float = {type = "float", arg_count = 1},
+	number = {type = "float", arg_count = 1},
 	vec2 = {type = "float", arg_count = 2},
 	vec3 = {type = "float", arg_count = 3},
 	vec4 = {type = "float", arg_count = 4},
@@ -296,7 +298,11 @@ function render.CreateShader(data)
 				local info = type_info[t]
 
 				if info then
-					table.insert(declaration, ("struct %s %s; "):format(info.real_type, name))
+					if info.arg_count == 1 then
+						table.insert(declaration, ("%s %s;"):format(info.type, name))
+					else
+						table.insert(declaration, ("struct %s %s; "):format(info.real_type, name))
+					end
 					table.insert(build_output.vertex.vtx_info, {name = name, type = t, info = info})
 				else
 					errorf("undefined type %q in attributes", 2, t)
@@ -305,7 +311,7 @@ function render.CreateShader(data)
 
 			table.insert(declaration, " };")
 			declaration = table.concat(declaration, "")
-
+			
 			if not cdef_defined[declaration] then
 				ffi.cdef(declaration)
 				cdef_defined[declaration] = true
@@ -474,12 +480,18 @@ function render.CreateShader(data)
 
 		table.sort(temp, function(a, b) return a.id < b.id end) -- sort the data by uniform id
 
+		local texture_channel = 0
 		local lua = ""
-
-		for i, data in pairs(temp) do
+		
+		for i, data in ipairs(temp) do
 			local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
-			line = line:format(data.id)
+			if data.val.type == "texture" or data.val.type == "sampler2D" then
+				line = line:format(texture_channel, data.id)
+				texture_channel = texture_channel + 1
+			else
+				line = line:format(data.id)
+			end
 
 			lua = lua .. "local val = self."..data.key.." or self.defaults."..data.key.."\n"
 			lua = lua .. "if val then\n"
