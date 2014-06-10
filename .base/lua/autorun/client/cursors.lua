@@ -23,6 +23,8 @@ event.AddListener("DrawHUD", "cursors", function()
 	surface.SetAlphaMultiplier(1)
 end)
 
+include("libraries/ecs.lua")
+
 event.AddListener("Update", "spooky", function()
 	if not ecs then return end
 	
@@ -37,5 +39,6 @@ event.AddListener("Update", "spooky", function()
 		local cmd = ply:GetCurrentCommand()
 		ply.ghost:SetPosition(cmd.camera.smooth_pos)
 		ply.ghost:SetAngles(cmd.camera.ang)
+		ply.ghost:SetScale(Vec3(1,-(cmd.camera.smooth_fov / 90) + 2,1))
 	end
 end)
