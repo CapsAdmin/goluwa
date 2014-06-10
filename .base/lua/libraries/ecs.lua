@@ -300,7 +300,7 @@ do -- test
 			if self.rebuild_scale_matrix and not (self.temp_scale.x == 1 and self.temp_scale.y == 1 and self.temp_scale.z == 1) then
 				self.ScaleMatrix:Identity()
 				
-				self.ScaleMatrix:Scale(self.temp_scale.x, self.temp_scale.y, self.temp_scale.z)
+				self.ScaleMatrix:Scale(self.temp_scale.x, self.temp_scale.z, self.temp_scale.y)
 				--self.ScaleMatrix:Shear(self.Shear)
 				
 				self.rebuild_scale_matrix = false
@@ -328,22 +328,15 @@ do -- test
 		COMPONENT.Events = {"Draw3D"}
 		
 		metatable.StartStorable()		
-			metatable.GetSet(COMPONENT, "Texture", render.GetWhiteTexture())
+			metatable.GetSet(COMPONENT, "Texture", NULL)
 			metatable.GetSet(COMPONENT, "Color", Color(1, 1, 1))
 			metatable.GetSet(COMPONENT, "Alpha", 1)
 			metatable.GetSet(COMPONENT, "ModelPath", "models/face.obj")
 		metatable.EndStorable()
 		
+		metatable.GetSet(COMPONENT, "Shader", NULL)
 		metatable.GetSet(COMPONENT, "Model", nil)
 		
-		function COMPONENT:OnAdd(ent)
-
-		end
-
-		function COMPONENT:OnRemove(ent)
-
-		end	
-
 		local SHADER = {
 			name = "mesh_ecs",
 			vertex = { 
@@ -379,8 +372,15 @@ do -- test
 				]]
 			}  
 		}
-		
-		local shader = render.CreateShader(SHADER)
+				
+		function COMPONENT:OnAdd(ent)
+			self.Texture = render.GetWhiteTexture()
+			self.Shader = render.CreateShader(SHADER)
+		end
+
+		function COMPONENT:OnRemove(ent)
+
+		end	
 		
 		function COMPONENT:SetModelPath(path)
 			self.Model = path
@@ -390,9 +390,11 @@ do -- test
 		function COMPONENT:OnDraw3D(dt)
 		
 			local model = self.Model
+			local shader = self.Shader
 
 			if not render.matrices.vp_matrix then return end -- FIX ME			
 			if not model then return end
+			if not shader then return end
 
 			local matrix = self:GetComponent("transform"):GetMatrix() 
 			local temp = Matrix44()
