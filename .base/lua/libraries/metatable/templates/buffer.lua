@@ -178,7 +178,7 @@ function metatable.AddBufferTemplate(META)
 		function META:ReadBytes(bytes)
 			local out = {}
 			for i = 1, bytes do
-				table.insert(out, string.char(self:ReadByte()))
+				out[i] = string.char(self:ReadByte())
 			end
 			return table.concat(out)
 		end
