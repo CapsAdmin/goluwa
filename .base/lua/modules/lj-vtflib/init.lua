@@ -44,13 +44,11 @@ do
 	end
 
 	function vl.EnumToString(num)
-		return reverse_enums[num]
+		return reverse_enums[num] or num
 	end
 end
 
 function vl.LoadImage(data, format)
-	format = format or enums.IMAGE_FORMAT_BGRA8888
-	
 	local uiVTFImage = ffi.new("unsigned int[1]")
 	vl.CreateImage(uiVTFImage)
 	vl.BindImage(uiVTFImage[0])
@@ -64,13 +62,22 @@ function vl.LoadImage(data, format)
 		return nil, "unknown format"
 	end
 
+	
+	if not format then
+		if vl.ImageGetFormat() == enums.IMAGE_FORMAT_DXT1 then
+			format = enums.IMAGE_FORMAT_RGB888
+		else
+			format = enums.IMAGE_FORMAT_RGBA8888
+		end
+	end
+	
 	local w, h = vl.ImageGetWidth(), vl.ImageGetHeight()
 	local size = vl.ImageComputeImageSize(w, h, 1, 1, format)
 	local buffer = ffi.new("vlByte[?]", size)
-
+		
 	vl.ImageConvert(vl.ImageGetData(0, 0, 0, 0), buffer, w, h, vl.ImageGetFormat(), format)
 
-	return buffer, w, h
+	return buffer, w, h, format
 end
 
 vl.Initialize() 

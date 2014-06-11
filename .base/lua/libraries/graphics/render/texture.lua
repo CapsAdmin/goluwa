@@ -517,14 +517,19 @@ function render.CreateTextureFromPath(path, format)
 		tex.loading = false
 		
 		local buffer, w, h, info = render.DecodeTexture(data, path)
-
+		
 		if buffer == nil or w == 0 or h == 0 then
 			local err = render.GetErrorTexture()
 			buffer = err:Download()
 			w = err.w
 			h = err.h
 		else
-			render.texture_path_cache[path] = tex
+			if info.format then
+				table.merge(tex.format, info.format)
+				tex:UpdateFormat()
+			end
+			
+			render.texture_path_cache[path] = tex			
 		end
 		
 		tex:Replace(buffer, w, h)
