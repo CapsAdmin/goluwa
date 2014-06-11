@@ -61,17 +61,6 @@ META["Read@TYPE@"] = function(self)
 @READ_BYTES@
 	return buff.@FIELD@
 end
-if @FIELD@ ~= "decimal" then
-	META["WriteUnsigned@TYPE@"] = function(self, num)
-		buff.@FIELD@ = num
-	@WRITE_BYTES@
-		return self
-	end		
-	META["ReadUnsigned@TYPE@"] = function(self)
-	@READ_BYTES@
-		return buff.@FIELD@
-	end
-end
 ]]
 
 local function ADD_FFI_OPTIMIZED_TYPES(META)

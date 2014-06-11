@@ -10,13 +10,13 @@ local buffer = Buffer(io.open(R"maps/cs_agency.bsp", "rb"))]]
 
 local buffer
 
-local map = "hl2"
+local map = "gmod"
 
 if map == "hl2" then
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk") 
-	buffer = Buffer(io.open(R"maps/d3_citadel_02.bsp", "rb"))
+	buffer = Buffer(io.open(R"maps/d3_citadel_05.bsp", "rb"))
 elseif map == "gmod" then
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "garrysmod/")
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_misc_dir.vpk")
@@ -100,7 +100,7 @@ timer.Start("reading surfedges")
 timer.Stop()
 
 timer.Start("reading edges")
-	header.edges = read_lump_data(13, 4, function() return {buffer:ReadShort(), buffer:ReadShort()} end)
+	header.edges = read_lump_data(13, 4, function() return {buffer:ReadUnsignedShort(), buffer:ReadUnsignedShort()} end)
 timer.Stop()
 
 timer.Start("reading faces")
@@ -314,10 +314,16 @@ do timer.Start("building mesh")
 	
 	local function load_texture(material, field)	
 		local shader, data = next(material)
+		
+		if not shader and not data or not data[field] then
+			logn("invalid field ", field)
+			table.print(material)
+		end
+		
 		local path = "materials/" .. data[field] .. ".vtf"
 		path = path:lower()
 		if not vfs.Exists(path) then
-			logf("unable to find %s in %s.%\n", path, shader, field)
+			logf("unable to find %s in %s.%s\n", path, shader, field)
 			return render.GetErrorTexture()
 		end
 		return Texture(path, {mip_map_levels = 8}) or render.GetErrorTexture()
@@ -350,7 +356,12 @@ do timer.Start("building mesh")
 					local path = "materials/" .. texname:lower() .. ".vmt"
 					
 					if vfs.Exists(path) then
-						material = steam.VDFToTable(vfs.Read(path))
+						local str = vfs.Read(path)
+						if str then
+							material = steam.VDFToTable(str, true)
+						else
+							material = {LightmappedGeneric = {["$basetexture"] = texname}}
+						end
 					else
 						material = {LightmappedGeneric = {["$basetexture"] = texname}}
 					end
@@ -404,20 +415,21 @@ do timer.Start("building mesh")
 				local start_corner = 0
 				local corners = {}
 				
-				for i = 1, 4 do
+				for j = 1, 4 do
 					local face = header.faces[1 + dispinfo.MapFace]
-					local surfedge = header.surfedges[1 + face.firstedge + (i - 2)]
+					local surfedge = header.surfedges[1 + face.firstedge + (j - 1)]
 					local edge = header.edges[1 + math.abs(surfedge)]
 					local vertex = edge[1 + (surfedge < 0 and 1 or 0)]
 				
-					corners[i] = header.vertices[1 + vertex]
-					
-					local cough = corners[i]:Distance(dispinfo.startPosition)
-					
+					local corner = header.vertices[1 + vertex]
+					local cough = corner:Distance(dispinfo.startPosition)
+						
 					if cough < start_corner_dist then
 						start_corner_dist = cough
-						start_corner = i - 1
+						start_corner = j - 1
 					end
+					
+					corners[j] = corner
 				end
 
 				local dims = 2 ^ dispinfo.power + 1
