@@ -76,7 +76,7 @@ local SHADER = {
 	}  
 }   
 
-function render.CreateMesh(data)
+function render.CreateMesh(data, is_valid_table)
 	if not surface.mesh_3d_shader or not surface.mesh_3d_shader:IsValid() then
 		local shader = render.CreateShader(SHADER)
 						
@@ -92,7 +92,7 @@ function render.CreateMesh(data)
 		render.mesh_3d_shader = shader
 	end
 		
-	return data and render.mesh_3d_shader:CreateVertexBuffer(data) or NULL
+	return data and render.mesh_3d_shader:CreateVertexBuffer(data, is_valid_table) or NULL
 end
 
 do -- model meta

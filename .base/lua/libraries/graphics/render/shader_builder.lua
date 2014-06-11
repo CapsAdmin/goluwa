@@ -556,11 +556,13 @@ do -- create data for vertex buffer
 		end
 	end
 
-	function META:CreateVertexAttributes(var)
+	function META:CreateVertexAttributes(var, is_valid_table)
 		check(var, "number", "table")
 	
 		if type(var) == "table" then
-			unpack_structs(var)
+			if not is_valid_table then
+				unpack_structs(var)	
+			end			
 			return ffi.new(self.vtx_atrb_type.."["..#var.."]", var), #var
 		end
 
@@ -571,8 +573,8 @@ do -- create data for vertex buffer
 		return self.vertex_attributes
 	end
 
-	function META:CreateVertexBuffer(data)
-		return render.CreateVertexBuffer(self:CreateVertexAttributes(data), self:GetVertexAttributes())
+	function META:CreateVertexBuffer(data, is_valid_table)
+		return render.CreateVertexBuffer(self:CreateVertexAttributes(data, is_valid_table), self:GetVertexAttributes())
 	end
 end
 
