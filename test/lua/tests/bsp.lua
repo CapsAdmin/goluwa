@@ -37,7 +37,6 @@ end
 
 local header = buffer:ReadStructure(vtf_header_structure)
  
-
 do timer.Start("reading lumps") -- lumps
 	local struct = [[
 		int	fileofs;	// offset into file (bytes)
@@ -71,58 +70,41 @@ logn("BSP ", header.ident)
 logn("VERSION ", header.version)
 logn("REVISION ", header.map_revision)
 
-local function read_lump_data(index, size)
+local function read_lump_data(index, size, struct)
 	local out = {}
 	
 	local lump = header.lumps[index]
 	local length = lump.filelen / size
 	
-	buffer:SetPos(lump.fileofs)	
+	buffer:SetPos(lump.fileofs)
+	
+	if type(struct) == "function" then
+		for i = 1, length do
+			out[i] = struct()
+		end
+	else
+		for i = 1, length do
+			out[i] = buffer:ReadStructure(struct)
+		end
+	end
+		
+	return out
 end
 
-do timer.Start("reading verticies")
-	local lump = header.lumps[4]
-	local length = lump.filelen / 12
-	
-	buffer:SetPos(lump.fileofs)
-	
-	header.vertices = {}
+timer.Start("reading verticies")
+	header.vertices = read_lump_data(4, 12, "vec3")
+timer.Stop() 
 
-	for i = 1, length do
-		header.vertices[i] = buffer:ReadVec3()
-	end
-timer.Stop() end
+timer.Start("reading surfedges")
+	header.surfedges = read_lump_data(14, 4, "long")
+timer.Stop()
 
-do timer.Start("reading surfedges")
-	local lump = header.lumps[14]
-	local length = lump.filelen / 4
+timer.Start("reading edges")
+	header.edges = read_lump_data(13, 4, function() return {buffer:ReadShort(), buffer:ReadShort()} end)
+timer.Stop()
 
-	buffer:SetPos(lump.fileofs)
-	
-	header.surfedges = {}
-
-	for i = 1, length do
-		header.surfedges[i] = buffer:ReadLong(true)
-	end
-timer.Stop() end
-
-do timer.Start("reading edges")
-	local lump = header.lumps[13]
-	local length = lump.filelen / 4
-
-	buffer:SetPos(lump.fileofs)
-	
-	header.edges = {}
-
-	for i = 1, length do
-		local a = buffer:ReadShort()
-		local b = buffer:ReadShort()
-		header.edges[i] = {a, b}
-	end
-timer.Stop() end
-
-do timer.Start("reading faces")
-	local struct = [[
+timer.Start("reading faces")
+	header.faces = read_lump_data(8, 56, [[
 		unsigned short	planenum;		// the plane number
 		byte		side;			// header.faces opposite to the node's plane direction
 		byte		onNode;			// 1 of on node, 0 if in leaf
@@ -140,74 +122,32 @@ do timer.Start("reading faces")
 		unsigned short	numPrims;		// primitives
 		unsigned short	firstPrimID;
 		unsigned int	smoothingGroups;	// lightmap smoothing group
-	]]
+	]])
+timer.Stop()
 
-	local lump = header.lumps[8]
-	local length = lump.filelen / 56
-
-	buffer:SetPos(lump.fileofs)
-	
-	header.faces = {}
-
-	for i = 1, length do
-		header.faces[i] = buffer:ReadStructure(struct)
-	end
-timer.Stop() end
-
-do timer.Start("reading texinfo")
-	local struct = [[
+timer.Start("reading texinfo")	
+	header.texinfos = read_lump_data(7, 72, [[
 		float textureVecs[8];
 		float lightmapVecs[8];
 		int flags;
 		int texdata;
-	]]
+	]])
+timer.Stop()
 
-	local lump = header.lumps[7]
-	local length = lump.filelen / 72
-
-	buffer:SetPos(lump.fileofs)
-	
-	header.texinfos = {}
-
-	for i = 1, length do
-		header.texinfos[i] = buffer:ReadStructure(struct)
-	end
-timer.Stop() end
-
-do timer.Start("reading texdata")
-	local struct = [[
+timer.Start("reading texdata")
+	header.texdatas = read_lump_data(3, 32, [[
 		vec3 reflectivity;
 		int nameStringTableID;
 		int width;
 		int height;
 		int view_width;
 		int view_height;
-	]]
+	]])
+timer.Stop()
 
-	local lump = header.lumps[3]
-	local length = lump.filelen / 32
+timer.Start("reading texdatastringtable")
+	local texdatastringtable = read_lump_data(45, 4, "int")
 
-	buffer:SetPos(lump.fileofs)
-	
-	header.texdatas = {}
-
-	for i = 1, length do
-		header.texdatas[i] = buffer:ReadStructure(struct)
-	end
-timer.Stop() end
-
-do timer.Start("reading texdatastringtable")
-	local lump = header.lumps[45]
-	local length = lump.filelen / 4
-
-	buffer:SetPos(lump.fileofs)
-	
-	local texdatastringtable = {}
-
-	for i = 1, length do
-		texdatastringtable[i] = buffer:ReadInt()
-	end
-	
 	local lump = header.lumps[44]
 
 	header.texdatastringdata = {}
@@ -216,7 +156,7 @@ do timer.Start("reading texdatastringtable")
 		buffer:SetPos(lump.fileofs + texdatastringtable[i])
 		header.texdatastringdata[i] = buffer:ReadString()
 	end
-timer.Stop() end
+timer.Stop()
 
 do timer.Start("reading displacements")
 	local structure = [[
@@ -307,27 +247,16 @@ do timer.Start("reading displacements")
 	end
 timer.Stop() end
 
-do timer.Start("reading models")
-	local model_struct = [[
+timer.Start("reading models")
+	header.models = read_lump_data(15, 48, [[
 		vec3 mins;
 		vec3 maxs;
 		vec3 origin;
 		int headnode;
 		int firstface;
 		int numfaces;
-	]]
-
-	local lump = header.lumps[15]
-	local length = lump.filelen / 48
-
-	buffer:SetPos(lump.fileofs)
-
-	header.models = {}
-	
-	for i = 1, length do
-		header.models[i] = buffer:ReadStructure(model_struct)
-	end
-timer.Stop() end
+	]])
+timer.Stop()
 
 local bsp_mesh = {sub_models = {}}
 
@@ -550,3 +479,4 @@ include("libraries/ecs.lua")
 
 local world = ecs.CreateEntity("shape")
 world:SetModel(bsp_mesh)
+ 
