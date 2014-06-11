@@ -1,5 +1,19 @@
 local metatable = (...) or _G.metatable
 
+local type_info = {
+	LongLong = {type = "int64_t", field = "integer_signed", union = "longlong"},
+	UnsignedLongLong = {type = "uint64_t", field = "integer_unsigned", union = "longlong"},
+	
+	Long = {type = "int32_t", field = "integer_signed", union = "long"},
+	UnsignedLong = {type = "uint32_t", field = "integer_unsigned", union = "long"},
+	
+	Short = {type = "int16_t", field = "integer_signed", union = "short"},
+	UnsignedShort = {type = "uint16_t", field = "integer_unsigned", union = "short"},
+	
+	Double = {type = "double", field = "decimal", union = "longlong"},
+	Float = {type = "float", field = "decimal", union = "long"},
+}
+
 ffi.cdef[[
 	typedef union {
 		uint8_t chars[8];
@@ -35,81 +49,54 @@ ffi.cdef[[
 local buff = ffi.new("number_buffer_longlong")
 buff.integer_unsigned = 1LL
 e.BIG_ENDIAN = buff.chars[0] == 0
-
-local integer_assign = [[if signed then 
-		buff.integer_signed = num
-	else
-		buff.integer_unsigned = num
-	end]]
-local integer_return = [[if signed then 
-		return buff.integer_signed
-	else
-		return buff.integer_unsigned
-	end]]
 	
-local decimal_assign = "buff.decimal = num"
-local decimal_return = "return buff.decimal"
-
 local template = [[
 local META, buff = ...
-META["@WRITE@"] = function(@WRITE_ARGS@)
-	@ASSIGN@
+META["Write@TYPE@"] = function(self, num)
+	buff.@FIELD@ = num
 @WRITE_BYTES@
 	return self
 end
-META["@READ@"] = function(@READ_ARGS@)
+META["Read@TYPE@"] = function(self)
 @READ_BYTES@
-	@RETURN@
-end]]
-
-local type_translate = {
-	longlong = "uint64_t",
-	long = "uint32_t",
-	short = "uint16_t",
-	char = "uint8_t",
-}
-
-local function ADD_FFI_OPTIMIZED_TYPE(META, typ)
-	local decimal = false
-	
-	if typ == "Float" or typ == "Double" then
-		decimal = true
+	return buff.@FIELD@
+end
+if @FIELD@ ~= "decimal" then
+	META["WriteUnsigned@TYPE@"] = function(self, num)
+		buff.@FIELD@ = num
+	@WRITE_BYTES@
+		return self
+	end		
+	META["ReadUnsigned@TYPE@"] = function(self)
+	@READ_BYTES@
+		return buff.@FIELD@
 	end
-	
-	local template = template
-		:gsub("@READ@", "Read" ..typ)
-		:gsub("@WRITE@", "Write" ..typ)		
-	if decimal then
-		template = template:gsub("@READ_ARGS@", "self")
-		template = template:gsub("@WRITE_ARGS@", "self, num")
-		template = template:gsub("@ASSIGN@", decimal_assign) 
-		template = template:gsub("@RETURN@", decimal_return)
-	else
-		template = template:gsub("@READ_ARGS@", "self, signed")
-		template = template:gsub("@WRITE_ARGS@", "self, num, signed")
-		template = template:gsub("@ASSIGN@", integer_assign)
-		template = template:gsub("@RETURN@", integer_return)
-	end
+end
+]]
+
+local function ADD_FFI_OPTIMIZED_TYPES(META)
+	for typ, info in pairs(type_info) do
+		local template = template
 		
-	local size = ffi.sizeof(type_translate[typ:lower()] or typ:lower())
-	
-	local read_unroll = "\tlocal chars = ffi.cast('char *', self:ReadBytes(" .. size .. "))\n"	
-	for i = 1, size do
-		read_unroll = read_unroll .. "\tbuff.chars[" .. i-1 .. "] = chars[" .. i-1 .. "]\n"
+		template = template:gsub("@TYPE@", typ)
+		template = template:gsub("@FIELD@", info.field)
+			
+		local size = ffi.sizeof(info.type)
+		
+		local read_unroll = "\tlocal chars = ffi.cast('char *', self:ReadBytes(" .. size .. "))\n"	
+		for i = 1, size do
+			read_unroll = read_unroll .. "\tbuff.chars[" .. i-1 .. "] = chars[" .. i-1 .. "]\n"
+		end
+		template = template:gsub("@READ_BYTES@", read_unroll)
+		
+		local write_unroll = ""
+		write_unroll = write_unroll .. "\tself:WriteBytes(ffi.string(buff.chars, " .. size .. "))\n"
+		template = template:gsub("@WRITE_BYTES@", write_unroll)
+		
+		local func = loadstring(template)
+		
+		func(META, ffi.new("number_buffer_" .. info.union))
 	end
-	template = template:gsub("@READ_BYTES@", read_unroll)
-	
-	local write_unroll = ""
-	write_unroll = write_unroll .. "\tself:WriteBytes(ffi.string(buff.chars, " .. size .. "))\n"
-	template = template:gsub("@WRITE_BYTES@", write_unroll)
-	
-	local func = loadstring(template)
-	
-	local def = typ:lower()
-	if typ == "Float" then def = "long" end
-	if typ == "Double" then def = "longlong" end
-	
-	func(META, ffi.new("number_buffer_" .. def))
 end
 
 local function header_to_table(str)
@@ -178,12 +165,8 @@ function metatable.AddBufferTemplate(META)
 
 	do -- basic data types
 	
-		ADD_FFI_OPTIMIZED_TYPE(META, "Float")	
-		ADD_FFI_OPTIMIZED_TYPE(META, "Double")	
-		
-		ADD_FFI_OPTIMIZED_TYPE(META, "Short")	
-		ADD_FFI_OPTIMIZED_TYPE(META, "Long")	
-		ADD_FFI_OPTIMIZED_TYPE(META, "LongLong")
+		-- see the top of the script
+		ADD_FFI_OPTIMIZED_TYPES(META) 
 		
 		function META:WriteBytes(str)
 			for i = 1, #str do
@@ -370,7 +353,13 @@ function metatable.AddBufferTemplate(META)
 		
 		-- integer/long
 		META.WriteInt = META.WriteLong
+		META.WriteUnsignedInt = META.WriteUnsignedLong
 		META.ReadInt = META.ReadLong
+		META.ReadUnsignedInt = META.ReadUnsignedLong
+		
+		-- consistency
+		META.ReadUnsignedByte = META.ReadByte
+		META.WriteUnsignedByte = META.WriteByte
 	end
 
 	do -- structures
@@ -395,22 +384,24 @@ function metatable.AddBufferTemplate(META)
 			end
 		end
 		
-		local function fix_number(data, num)	
-			do return num end
-			if type(num) == "number" then 
-				if not data.signed then
-					num = bit.bnot(bit.bnot(num))
-				end
-				
-				num = math.round(num, 8)
-			end
-			return num
-		end
+		local cache = {}
 		 
 		function META:ReadStructure(structure)
+			if cache[structure] then
+				return self:ReadStructure(cache[structure])
+			end
 			
-			if type(structure) == "string" then
-				return self:ReadStructure(header_to_table(structure))
+			if type(structure) == "string" then				
+				-- if the string is something like "vec3" just call ReadType
+				if META.read_functions[structure] then
+					return self:ReadType(structure)
+				end
+				
+				local data = header_to_table(structure)
+			
+				cache[structure] = data
+			
+				return self:ReadStructure(data)
 			end
 		
 			local out = {}
@@ -424,6 +415,8 @@ function metatable.AddBufferTemplate(META)
 					end
 				end				
 				
+				local read_type = data.signed and data[1] or "unsigned " .. data[1]
+				
 				local val
 				
 				if data.length then
@@ -432,7 +425,7 @@ function metatable.AddBufferTemplate(META)
 					else
 						local values = {}
 						for i = 1, data.length do
-							table.insert(values, fix_number(data, self:ReadType(data[1])))
+							table.insert(values, self:ReadType(read_type))
 						end
 						val = values
 					end
@@ -440,11 +433,9 @@ function metatable.AddBufferTemplate(META)
 					if data[1] == "bufferpos" then
 						val = self:GetPos()
 					else
-						val = self:ReadType(data[1], data.signed) 
+						val = self:ReadType(read_type) 
 					end
 				end
-				
-				val = fix_number(data, val)
 				
 				if data.assert then
 					if val ~= data.assert then
@@ -516,15 +507,25 @@ function metatable.AddBufferTemplate(META)
 				local key = k:match("Read(.+)")
 				if key then
 					read_functions[key:lower()] = v
+					
+					if key:find("Unsigned") then
+						key = key:gsub("(Unsigned)(.+)", "%1 %2")
+						read_functions[key:lower()] = v
+					end
 				end
 				
 				local key = k:match("Write(.+)")
 				if key then
 					write_functions[key:lower()] = v
+					
+					if key:find("Unsigned") then
+						key = key:gsub("(Unsigned)(.+)", "%1 %2")
+						write_functions[key:lower()] = v
+					end
 				end
 			end
 		end
-
+		
 		function META:WriteType(val, t)
 			t = t or type(val)
 						
@@ -543,5 +544,8 @@ function metatable.AddBufferTemplate(META)
 			
 			error("tried to read unknown type " .. t, 2)
 		end
+		
+		META.read_functions = read_functions
+		META.write_functions = write_functions
 	end	
 end
