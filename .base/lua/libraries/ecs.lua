@@ -372,7 +372,7 @@ do -- test
 					void main() 
 					{
 						out_color = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;
-						out_color.rgb *= texture(detail, uv * detailscale).rgb;
+						//out_color.rgb *= texture(detail, uv * detailscale).rgb;
 					}
 				]]
 			}  
@@ -435,7 +435,7 @@ do -- test
 				for i, model in ipairs(model.sub_models) do
 					shader.diffuse = model.diffuse or render.GetErrorTexture()
 					shader.diffuse2 = model.diffuse2 or render.GetErrorTexture()
-					shader.detail = model.detail or render.GetWhiteTexture()
+					--shader.detail = model.detail or render.GetWhiteTexture()
 					shader:Bind()
 					model.mesh:Draw()
 				end
