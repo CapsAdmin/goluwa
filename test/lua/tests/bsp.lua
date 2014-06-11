@@ -16,7 +16,7 @@ if map == "hl2" then
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk") 
-	buffer = Buffer(io.open(R"maps/d2_coast_01.bsp", "rb"))
+	buffer = Buffer(io.open(R"maps/d2_coast_04.bsp", "rb"))
 elseif map == "gmod" then
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "garrysmod/")
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_misc_dir.vpk")
@@ -37,7 +37,8 @@ end
 
 local header = buffer:ReadStructure(vtf_header_structure)
  
-do -- lumps
+
+do timer.Start("reading lumps") -- lumps
 	local struct = [[
 		int	fileofs;	// offset into file (bytes)
 		int	filelen;	// length of lump (bytes)
@@ -62,7 +63,7 @@ do -- lumps
 		table.insert(header.lumps, buffer:ReadStructure(struct))
 	end
 
-end
+timer.Stop() end
 
 header.map_revision = buffer:ReadLong()
 
@@ -79,7 +80,7 @@ local function read_lump_data(index, size)
 	buffer:SetPos(lump.fileofs)	
 end
 
-do -- vertices
+do timer.Start("reading verticies")
 	local lump = header.lumps[4]
 	local length = lump.filelen / 12
 	
@@ -88,14 +89,11 @@ do -- vertices
 	header.vertices = {}
 
 	for i = 1, length do
-		local x = buffer:ReadFloat()
-		local y = buffer:ReadFloat()
-		local z = buffer:ReadFloat()
-		header.vertices[i] = {x, y, z}
+		header.vertices[i] = buffer:ReadVec3()
 	end
-end
+timer.Stop() end
 
-do -- header.surfedges
+do timer.Start("reading surfedges")
 	local lump = header.lumps[14]
 	local length = lump.filelen / 4
 
@@ -106,9 +104,9 @@ do -- header.surfedges
 	for i = 1, length do
 		header.surfedges[i] = buffer:ReadLong(true)
 	end
-end
+timer.Stop() end
 
-do -- header.edges
+do timer.Start("reading edges")
 	local lump = header.lumps[13]
 	local length = lump.filelen / 4
 
@@ -121,9 +119,9 @@ do -- header.edges
 		local b = buffer:ReadShort()
 		header.edges[i] = {a, b}
 	end
-end
+timer.Stop() end
 
-do -- header.faces
+do timer.Start("reading faces")
 	local struct = [[
 		unsigned short	planenum;		// the plane number
 		byte		side;			// header.faces opposite to the node's plane direction
@@ -154,9 +152,9 @@ do -- header.faces
 	for i = 1, length do
 		header.faces[i] = buffer:ReadStructure(struct)
 	end
-end
+timer.Stop() end
 
-do -- texinfo
+do timer.Start("reading texinfo")
 	local struct = [[
 		float textureVecs[8];
 		float lightmapVecs[8];
@@ -174,9 +172,9 @@ do -- texinfo
 	for i = 1, length do
 		header.texinfos[i] = buffer:ReadStructure(struct)
 	end
-end
+timer.Stop() end
 
-do -- texdata
+do timer.Start("reading texdata")
 	local struct = [[
 		vec3 reflectivity;
 		int nameStringTableID;
@@ -196,9 +194,9 @@ do -- texdata
 	for i = 1, length do
 		header.texdatas[i] = buffer:ReadStructure(struct)
 	end
-end
+timer.Stop() end
 
-do -- texdatastringtable
+do timer.Start("reading texdatastringtable")
 	local lump = header.lumps[45]
 	local length = lump.filelen / 4
 
@@ -218,9 +216,9 @@ do -- texdatastringtable
 		buffer:SetPos(lump.fileofs + texdatastringtable[i])
 		header.texdatastringdata[i] = buffer:ReadString()
 	end
-end
+timer.Stop() end
 
-do -- displacements
+do timer.Start("reading displacements")
 	local structure = [[
 		vec3			startPosition;		// start position used for orientation
 		int			DispVertStart;		// Index into LUMP_DISP_VERTS.
@@ -296,22 +294,20 @@ do -- displacements
 
 		for i = 1, DispVertLength do
 
-			local x = buffer:ReadFloat()
-			local y = buffer:ReadFloat()
-			local z = buffer:ReadFloat()
+			local vertex = buffer:ReadVec3()
 			local dist = buffer:ReadFloat()
 			local alpha = buffer:ReadFloat()
 
-			data.vertex_info[i] = {vertex = {x, y, z}, dist = dist, alpha = alpha}
+			data.vertex_info[i] = {vertex = vertex, dist = dist, alpha = alpha}
 		end
 
 		buffer:SetPos(old_pos)
 		
 		header.displacements[i] = data
 	end
-end
+timer.Stop() end
 
-do -- models
+do timer.Start("reading models")
 	local model_struct = [[
 		vec3 mins;
 		vec3 maxs;
@@ -331,13 +327,13 @@ do -- models
 	for i = 1, length do
 		header.models[i] = buffer:ReadStructure(model_struct)
 	end
-end
+timer.Stop() end
 
 local bsp_mesh = {sub_models = {}}
 
-do -- build mesh
+do timer.Start("building mesh")
 
-	local function add_vertex(model, texinfo, texdata, x, y, z, blend)
+	local function add_vertex(model, texinfo, texdata, pos, blend)
 		local a = texinfo.textureVecs
 		
 		if blend then 
@@ -347,21 +343,17 @@ do -- build mesh
 		end
 		
 		table.insert(model.mesh, {
-			pos = {x, -y, -z},
+			pos = Vec3(pos.x, -pos.y, -pos.z), -- copy
 			texture_blend = blend,
-			uv = {
-				(a[1] * x + a[2] * y + a[3] * z + a[4]) / texdata.width,
-				(a[5] * x + a[6] * y + a[7] * z + a[8]) / texdata.height,
-			},
+			uv = Vec2(
+				(a[1] * pos.x + a[2] * pos.y + a[3] * pos.z + a[4]) / texdata.width,
+				(a[5] * pos.x + a[6] * pos.y + a[7] * pos.z + a[8]) / texdata.height
+			)
 		})
 	end
 
 	local function get_face_vertex(face_index, i)
 		local face = header.faces[1 + face_index]
-
-		if i < 0 or i >= face.numedges then
-			return
-		end
 
 		local surfedge = header.surfedges[1 + face.firstedge + (i - 1)]
 		local edge = header.edges[1 + math.abs(surfedge)]
@@ -370,16 +362,25 @@ do -- build mesh
 		return vertex
 	end
 
-	local function lerp(x, y, a)
-		return x * (1 - a) + y * a
-	end
-
-	local function lerpvec(a, b, alpha)
-		return {lerp(a[1], b[1], alpha), lerp(a[2], b[2], alpha), lerp(a[3], b[3], alpha)}
-	end
-
 	local function bilerpvec(a, b, c, d, alpha1, alpha2)
-		return lerpvec(lerpvec(a, b, alpha1), lerpvec(c, d, alpha1), alpha2)
+		return a:Copy():Lerp(alpha1, b):Lerp(alpha2, c:Copy():Lerp(alpha1, d))
+	end
+	
+	local function asdf(corners, start_corner, dims, x, y)
+		return bilerpvec(
+			corners[1 + (start_corner + 0) % 4], 
+			corners[1 + (start_corner + 1) % 4], 
+			corners[1 + (start_corner + 3) % 4], 
+			corners[1 + (start_corner + 2) % 4], 
+			(y - 1) / (dims - 1), 
+			(x - 1) / (dims - 1)
+		)
+	end
+	
+	local function qwerty(dims, corners, start_corner, dispinfo, x, y)
+		local index = (y - 1) * dims + x
+		local data = dispinfo.vertex_info[index]
+		return asdf(corners, start_corner, dims, x, y) + (data.vertex * data.dist), data.alpha
 	end
 
 	local meshes = {}
@@ -421,7 +422,6 @@ do -- build mesh
 								if tbl.WorldVertexTransition["$detail"] then
 									detail = "materials/" .. tbl.WorldVertexTransition["$detail"]:lower() .. ".vtf"
 									detailscale = tbl.WorldVertexTransition["$detailscale"]
-									print(detailscale)
 								end
 								if vfs.Exists(path) then
 									exists = true
@@ -448,11 +448,11 @@ do -- build mesh
 						print(string.format("Texture %q not found", path))
 					end
 					
-					meshes[texname] = {
+					meshes[texname] = { 
 						diffuse = exists and Texture(path, {mip_map_levels = 8}) or render.GetErrorTexture(), 
-						diffuse2 = path2 and Texture(path2, {mip_map_levels = 8}) or render.GetErrorTexture(),
-						detail = detail and Texture(detail, {mip_map_levels = 8}),
-						detailscale = detailscale,
+						diffuse2 = path2 and Texture(path2, {mip_map_levels = 8}) or diffuse,
+						--detail = detail and Texture(detail, {mip_map_levels = 8}),
+						--detailscale = detailscale,
 						mesh = {}
 					}
 
@@ -475,15 +475,9 @@ do -- build mesh
 					local current = edge[surfedge < 0 and 2 or 1] + 1
 
 					if j >= 3 then
-						local p1 = header.vertices[first]
-						local p2 = header.vertices[current]
-						local p3 = header.vertices[previous]
-
-						if p1 and p2 and p3 then
-							add_vertex(sub_model, texinfo, texdata, unpack(p1))
-							add_vertex(sub_model, texinfo, texdata, unpack(p2))
-							add_vertex(sub_model, texinfo, texdata, unpack(p3))
-						end
+						add_vertex(sub_model, texinfo, texdata, header.vertices[first])
+						add_vertex(sub_model, texinfo, texdata, header.vertices[current])
+						add_vertex(sub_model, texinfo, texdata, header.vertices[previous])
 					elseif j == 1 then
 						first = current
 					end
@@ -498,17 +492,17 @@ do -- build mesh
 				local start_corner_dist = math.huge
 				local start_corner = 0
 				local corners = {}
-
-				local function dist(a, b)
-					local x = a[1] - b.x
-					local y = a[2] - b.y
-					local z = a[3] - b.z
-					return math.sqrt(x * x + y * y + z * z)
-				end
 				
 				for i = 1, 4 do
-					corners[i] = header.vertices[1 + get_face_vertex(dispinfo.MapFace, i - 1)]
-					local cough = dist(corners[i], dispinfo.startPosition)
+					local face = header.faces[1 + dispinfo.MapFace]
+					local surfedge = header.surfedges[1 + face.firstedge + (i - 2)]
+					local edge = header.edges[1 + math.abs(surfedge)]
+					local vertex = edge[1 + (surfedge < 0 and 1 or 0)]
+				
+					corners[i] = header.vertices[1 + vertex]
+					
+					local cough = corners[i]:Distance(dispinfo.startPosition)
+					
 					if cough < start_corner_dist then
 						start_corner_dist = cough
 						start_corner = i - 1
@@ -516,35 +510,16 @@ do -- build mesh
 				end
 
 				local dims = 2 ^ dispinfo.power + 1
-
-				local function asdf(x, y)
-					return bilerpvec(corners[1 + (start_corner + 0) % 4], corners[1 + (start_corner + 1) % 4], corners[1 + (start_corner + 3) % 4], corners[1 + (start_corner + 2) % 4], (y - 1) / (dims - 1), (x - 1) / (dims - 1))
-				end
-
-				local function addVectors(a, b)
-					return {a[1] + b[1], a[2] + b[2], a[3] + b[3]}
-				end
 				
-				local function fdsa(a, b)
-					return {a[1] * b, a[2] * b, a[3] * b}
-				end
-				
-				local function qwerty(x, y)
-					local index = (y - 1) * dims + x
-					local data = dispinfo.vertex_info[index]
-					local x, y, z = unpack(addVectors(asdf(x, y), fdsa(data.vertex, data.dist)))
-					return x, y, z, data.alpha
-				end
-			
 				for x = 1, dims - 1 do
 					for y = 1, dims - 1 do
-						add_vertex(sub_model, texinfo, texdata, qwerty(x, y))
-						add_vertex(sub_model, texinfo, texdata, qwerty(x + 1, y + 1))
-						add_vertex(sub_model, texinfo, texdata, qwerty(x, y + 1))
+						add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
+						add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
+						add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y + 1))
 						
-						add_vertex(sub_model, texinfo, texdata, qwerty(x, y))
-						add_vertex(sub_model, texinfo, texdata, qwerty(x + 1, y))
-						add_vertex(sub_model, texinfo, texdata, qwerty(x + 1, y + 1))
+						add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
+						add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y))
+						add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
 					end
 				end
 			end
@@ -559,11 +534,15 @@ do -- build mesh
 		-- only world needed
 		break 
 	end
-end
+timer.Stop() end
+
+timer.Start("render.CreateMesh")
 
 for i, data in ipairs(bsp_mesh.sub_models) do
 	bsp_mesh.sub_models[i].mesh = render.CreateMesh(data.mesh)
 end
+
+timer.Stop()
 
 logn("SUB_MODELS ", #bsp_mesh.sub_models)
  
