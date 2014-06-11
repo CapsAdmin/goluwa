@@ -311,6 +311,17 @@ do timer.Start("building mesh")
 		local data = dispinfo.vertex_info[index]
 		return asdf(corners, start_corner, dims, x, y) + (data.vertex * data.dist), data.alpha
 	end
+	
+	local function load_texture(material, field)	
+		local shader, data = next(material)
+		local path = "materials/" .. data[field] .. ".vtf"
+		path = path:lower()
+		if not vfs.Exists(path) then
+			logf("unable to find %s in %s.%\n", path, shader, field)
+			return render.GetErrorTexture()
+		end
+		return Texture(path, {mip_map_levels = 8}) or render.GetErrorTexture()
+	end
 
 	local meshes = {}
 
@@ -326,65 +337,34 @@ do timer.Start("building mesh")
 			if model_index == 1 then
 				local texname = header.texdatastringdata[1 + texdata.nameStringTableID]:lower()
 				
+				if texname:sub(0, 5) == "maps/" then
+					texname = texname:gsub("maps/.-/(.+)_.-_.-_.+", "%1")
+				end
+				
 				if not meshes[texname] then
 					
-					if texname:sub(0, 5) == "maps/" then
-						texname = texname:gsub("maps/.-/(.+)_.-_.-_.+", "%1")
-					end
+					local model = {mesh = {}}
+					meshes[texname] = model
 					
-					local path = "materials/" .. texname:lower() .. ".vtf"
-					local path2
-					local detail
-					local detailscale
-					local exists = vfs.Exists(path) 
-
-					if not exists then
-						path = "materials/" .. texname:lower() .. ".vmt"
+					local material
+					local path = "materials/" .. texname:lower() .. ".vmt"
+					
+					if vfs.Exists(path) then
+						material = steam.VDFToTable(vfs.Read(path))
+					else
+						material = {LightmappedGeneric = {["$basetexture"] = texname}}
+					end
+				
+					if material.Water then
+						model.diffuse = load_texture(material, "$normalmap")
+					else
+						model.diffuse = load_texture(material, "$basetexture")
 						
-						if vfs.Exists(path) then
-							local str = vfs.Read(path)
-							local tbl = steam.VDFToTable(str)
-							
-							if tbl.WorldVertexTransition and tbl.WorldVertexTransition["$basetexture"] then
-								path = "materials/" .. tbl.WorldVertexTransition["$basetexture"]:lower() .. ".vtf"
-								path2 = "materials/" .. tbl.WorldVertexTransition["$basetexture2"]:lower() .. ".vtf"
-								if tbl.WorldVertexTransition["$detail"] then
-									detail = "materials/" .. tbl.WorldVertexTransition["$detail"]:lower() .. ".vtf"
-									detailscale = tbl.WorldVertexTransition["$detailscale"]
-								end
-								if vfs.Exists(path) then
-									exists = true
-								end
-							end
-							
-							if tbl.LightmappedGeneric and tbl.LightmappedGeneric["$basetexture"] then
-								path = "materials/" .. tbl.LightmappedGeneric["$basetexture"]:lower() .. ".vtf"								
-								if vfs.Exists(path) then
-									exists = true
-								end
-							end
-							
-							if tbl.Water and tbl.Water["$normalmap"] then
-								path = "materials/" .. tbl.Water["$normalmap"]:lower() .. ".vtf"								
-								if vfs.Exists(path) then
-									exists = true
-								end
-							end
+						if material.WorldVertexTransition then
+							model.diffuse2 = load_texture(material, "$basetexture")
 						end
 					end
 					
-					if not exists then
-						print(string.format("Texture %q not found", path))
-					end
-					
-					meshes[texname] = { 
-						diffuse = exists and Texture(path, {mip_map_levels = 8}) or render.GetErrorTexture(), 
-						diffuse2 = path2 and Texture(path2, {mip_map_levels = 8}) or diffuse,
-						--detail = detail and Texture(detail, {mip_map_levels = 8}),
-						--detailscale = detailscale,
-						mesh = {}
-					}
-
 					table.insert(bsp_mesh.sub_models, meshes[texname])
 				end
 
