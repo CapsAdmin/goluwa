@@ -16,13 +16,13 @@ if map == "hl2" then
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk") 
-	buffer = Buffer(io.open(R"maps/d2_coast_04.bsp", "rb"))
+	buffer = Buffer(io.open(R"maps/d3_citadel_02.bsp", "rb"))
 elseif map == "gmod" then
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "garrysmod/")
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_misc_dir.vpk")
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_textures_dir.vpk") 
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "garrysmod/garrysmod_dir.vpk") 
-	buffer = Buffer(io.open(R"maps/gm_construct.bsp", "rb"))
+	buffer = Buffer(io.open(R"maps/gm_genesis_b24.bsp", "rb"))
 elseif map == "ep2" then
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "ep2/")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
@@ -272,12 +272,12 @@ do timer.Start("building mesh")
 		end
 		
 		table.insert(model.mesh, {
-			pos = Vec3(pos.x, -pos.y, -pos.z), -- copy
+			pos = {pos.x, -pos.y, -pos.z}, -- copy
 			texture_blend = blend,
-			uv = Vec2(
+			uv = {
 				(a[1] * pos.x + a[2] * pos.y + a[3] * pos.z + a[4]) / texdata.width,
-				(a[5] * pos.x + a[6] * pos.y + a[7] * pos.z + a[8]) / texdata.height
-			)
+				(a[5] * pos.x + a[6] * pos.y + a[7] * pos.z + a[8]) / texdata.height,
+			}
 		})
 	end
 
@@ -345,7 +345,7 @@ do timer.Start("building mesh")
 							local str = vfs.Read(path)
 							local tbl = steam.VDFToTable(str)
 							
-							if tbl.WorldVertexTransition then
+							if tbl.WorldVertexTransition and tbl.WorldVertexTransition["$basetexture"] then
 								path = "materials/" .. tbl.WorldVertexTransition["$basetexture"]:lower() .. ".vtf"
 								path2 = "materials/" .. tbl.WorldVertexTransition["$basetexture2"]:lower() .. ".vtf"
 								if tbl.WorldVertexTransition["$detail"] then
@@ -404,9 +404,11 @@ do timer.Start("building mesh")
 					local current = edge[surfedge < 0 and 2 or 1] + 1
 
 					if j >= 3 then
-						add_vertex(sub_model, texinfo, texdata, header.vertices[first])
-						add_vertex(sub_model, texinfo, texdata, header.vertices[current])
-						add_vertex(sub_model, texinfo, texdata, header.vertices[previous])
+						if header.vertices[first] and header.vertices[current] and header.vertices[previous] then
+							add_vertex(sub_model, texinfo, texdata, header.vertices[first])
+							add_vertex(sub_model, texinfo, texdata, header.vertices[current])
+							add_vertex(sub_model, texinfo, texdata, header.vertices[previous])
+						end
 					elseif j == 1 then
 						first = current
 					end
@@ -465,10 +467,12 @@ do timer.Start("building mesh")
 	end
 timer.Stop() end
 
+profiler.Stop()
+
 timer.Start("render.CreateMesh")
 
 for i, data in ipairs(bsp_mesh.sub_models) do
-	bsp_mesh.sub_models[i].mesh = render.CreateMesh(data.mesh)
+	bsp_mesh.sub_models[i].mesh = render.CreateMesh(data.mesh, true)
 end
 
 timer.Stop()
