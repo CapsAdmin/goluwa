@@ -1,5 +1,7 @@
 local ecs = _G.ecs or {}
 
+ecs = {}
+
 ecs.entities = ecs.entities or {}
 ecs.configurations = ecs.configurations or {}
 ecs.active_components = ecs.active_components or {}
@@ -185,6 +187,14 @@ do -- components
 	metatable.Delegate(BASE, "Entity", "GetComponent")
 	metatable.Delegate(BASE, "Entity", "AddComponent")
 	metatable.Delegate(BASE, "Entity", "RemoveComponent")
+	
+	function BASE:OnAdd()
+	
+	end
+		
+	function BASE:OnRemove()
+	
+	end
 	
 	ecs.components = {}
 
@@ -388,7 +398,7 @@ do -- test
 		end	
 		
 		function COMPONENT:SetModelPath(path)
-			self.Model = path
+			self.ModelPath = path
 			self.Model = render.Create3DMesh(path)
 		end
 		
@@ -446,8 +456,48 @@ do -- test
 
 		ecs.RegisterComponent(COMPONENT)
 	end
+	
+	do -- physics
+		local bullet = require("lj-bullet3")
+		bullet.Initialize()
+		for k,v in pairs(bullet.GetBodies()) do v:Remove() end
+		bullet.SetGravity(0,0,-600)
+		
+		event.AddListener("Update", "bullet", function(dt)
+			bullet.Update(dt)
+		end)
+		
+		local COMPONENT = {}
+		
+		COMPONENT.Name = "physics"
+		COMPONENT.Require = {"transform"}
+		COMPONENT.Events = {"Update"}
+	
+		COMPONENT.matrix = Matrix44()
+		
+		function COMPONENT:InitPhysics(type, mass, ...)
+			local transform = self:GetComponent("transform")
+			transform:InvalidateScaleMatrix()
+			self.body = bullet.CreateRigidBody(type, mass, transform:GetMatrix().m, ...)
+		end
+		
+		function COMPONENT:OnUpdate()
+			if not self.body then return end
+			
+			local transform = self:GetComponent("transform")
+			
+			local matrix = self.matrix
+			matrix.m = self.body:GetMatrix()
+			
+			transform:SetPosition(Vec3(matrix:GetTranslation()))
+		end
+		
+		ecs.RegisterComponent(COMPONENT)
+	end
 		
 	ecs.SetupComponents("shape", {"transform", "visual"})
+	ecs.SetupComponents("shape2", {"transform", "visual", "physics"})
+
 	function ecs.Test()
 	
 		local parent = ecs.CreateEntity("shape")
@@ -492,6 +542,28 @@ do -- test
 		end, {priority = -19})
 		end
 	end
+	
+	event.Delay(function()  
+		
+		local world = ecs.CreateEntity("shape2")
+		world:SetModelPath("models/face.obj")
+		world:SetSize(3000)
+		world:SetScale(Vec3(1,1,0))
+		world:SetAngles(Ang3(0,0,0)) 
+		world:SetPosition(Vec3(0,-50,0))
+		world:InitPhysics("box", 0, 50000, 50000, 50000)
+		
+		for i = 1, 10 do
+			local body = ecs.CreateEntity("shape2")
+			body:SetModelPath("models/face.obj")
+			body:SetSize(50)
+			body:SetPosition(Vec3(0,0,-10000))
+			body:InitPhysics("sphere", 10, 0.1)
+		end
+		
+		LOL = world
+		
+	end)
 	
 end
 
