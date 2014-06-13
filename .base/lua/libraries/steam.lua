@@ -122,7 +122,7 @@ function steam.CommunityIDToSteamID(id)
 	return "STEAM_0:" .. a .. ":" .. (b+2)
 end
 
-function steam.VDFToTable(str)
+function steam.VDFToTable(str, lower_keys)
 	str = str:gsub("//.-\n", "")
 	
 	str = str:gsub("(%b\"\"%s-)%[$(%S-)%](%s-%b{})", function(start, def, stop) 
@@ -163,6 +163,9 @@ function steam.VDFToTable(str)
 			if in_string then
 				
 				if key then
+					if lower_keys then
+						key = key:lower()
+					end
 					local val = table.concat(capture, "")
 					
 				
