@@ -460,9 +460,129 @@ do -- test
 	do -- physics
 		local bullet = require("lj-bullet3")
 		bullet.Initialize()
-		for k,v in pairs(bullet.GetBodies()) do v:Remove() end
-		bullet.SetGravity(0,0,-600)
+		bullet.SetGravity(0,0,600) 
+		  
+		event.Delay(function()  
+			
+			local world = ecs.CreateEntity("shape2")
+			world:SetModelPath("models/spider.obj")  
+			world:SetPosition(Vec3(0,0,50))
+			world:InitPhysics("box", 0, 500, 1, 500)  
+			world:SetScale(Vec3(50,50,0))
+			
+			if true then
+				local body = ecs.CreateEntity("shape2")
+				body:SetModelPath("models/cube.obj")
+				body:SetPosition(Vec3(0,0,200)) 
+				
+				local buffer = body:GetModel().sub_models[1].mesh.buffer
+				local length = ffi.sizeof(buffer) / ffi.sizeof(buffer[0]) 
+						   
+				--[[local mesh = {	
+					indices = {
+						count = 36, 
+						pointer = ffi.gc(ffi.new("int[36]", {
+							2, 6, 5,
+							6, 2, 1,
+							0, 4, 7,
+							4, 0, 3,
+							0, 6, 1,
+							6, 0, 7,
+							4, 2, 5,
+							2, 4, 3,
+							6, 4, 5,
+							4, 6, 7,
+							0, 2, 3,
+							2, 0, 1,
+						}), print), 
+						stride = ffi.sizeof("int") * 3, 
+					},					
+					vertices = {
+						count = 24,  
+						pointer = ffi.gc(ffi.new("float[24]", 
+							-1, -1, -1,
+							1, -1, -1,
+							1, -1, 1,
+							-1, -1, 1,
+							-1, 1, 1,
+							1, 1, 1,
+							1, 1,-1,
+							-1, 1, -1	
+						), print), 
+						stride = ffi.sizeof("float") * 3, 
+					},
+				}]]
+				
+				local mesh = {	
+					indices = {
+						count = length, 
+						pointer = ffi.gc(ffi.new("int[?]", length * 3), print), 
+						stride = ffi.sizeof("int") * 3, 
+					},					
+					vertices = {
+						count = length,  
+						pointer = ffi.gc(ffi.new("float[?]", length * 3), print), 
+						stride = ffi.sizeof("float") * 3,
+					},
+				}
+				
+				for i = 0, length - 1, 3 do
+					mesh.vertices[i+0] = buffer[i / 3].pos.A
+					mesh.vertices[i+1] = buffer[i / 3].pos.B 
+					mesh.vertices[i+2] = buffer[i / 3].pos.C
+					
+					mesh.indices[i+0] = i+0 
+					mesh.indices[i+1] = i+1
+					mesh.indices[i+2] = i+2
+				end
+				
+				body:InitPhysics("box", 100, 50, 50, 50)  
+				--body:InitPhysics("convex", 100, mesh, true)  
+				--body:GetComponent("physics").body:SetAngularVelocity(0,0,0)
+				body:SetSize(100)
+			end
+			LOL = world
+			
+		end)
 		
+		 
+		if fasytgfjg then  
+			local gl = require("lj-opengl")
+			bullet.EnableDebug(
+				function(from_x, from_y, from_z, to_x, to_y, to_z, r, g, b) 	
+					local pos_a = Vec3(from_x, from_y, from_z):ToScreen()
+					local pos_b = Vec3(to_x, to_y, to_z):ToScreen()
+					
+					surface.SetColor(r,g,b)
+					surface.DrawLine(pos_a.x, pos_a.y, pos_b.x, pos_b.y)
+				end,
+				function(x, y, z, nx, ny, nz, distance, lifetime, r,g,b)
+				
+					gl.Color3f(r,g,b)
+					
+					local pos_a = Vec3(x, y, z):ToScreen()
+					local pos_b = Vec3(nx, ny, nz):ToScreen()
+					
+					surface.SetColor(r,g,b)
+					surface.DrawLine(pos_a.x, pos_a.y, pos_b.x, pos_b.y)
+				end,
+				function(x, y, z, str)
+					local pos = Vec3(x,y,z):ToScreen()
+					surface.SetTextPos(pos.x, pos.y)
+					surface.DrawText(ffi.string(str)) 
+				end,
+				function(str)
+					logn("[bullet] ", ffi.string(str))
+				end
+			)
+			event.AddListener("DrawHUD", "bullet_debug", function()
+				bullet.DrawDebugWorld()
+			end)	
+		else
+			bullet.DisableDebug()
+			event.RemoveListener("Draw3D", "bullet_debug")
+		end
+				
 		event.AddListener("Update", "bullet", function(dt)
 			bullet.Update(dt)
 		end)
@@ -474,6 +594,7 @@ do -- test
 		COMPONENT.Events = {"Update"}
 	
 		COMPONENT.matrix = Matrix44()
+		COMPONENT.body = NULL
 		
 		function COMPONENT:InitPhysics(type, mass, ...)
 			local transform = self:GetComponent("transform")
@@ -482,14 +603,17 @@ do -- test
 		end
 		
 		function COMPONENT:OnUpdate()
-			if not self.body then return end
+			if not self.body:IsValid() then return end
 			
 			local transform = self:GetComponent("transform")
 			
 			local matrix = self.matrix
 			matrix.m = self.body:GetMatrix()
+			local mat = matrix:Copy()
 			
-			transform:SetPosition(Vec3(matrix:GetTranslation()))
+			transform:SetTRMatrix(mat)
+			--transform:SetAngles(Ang3(matrix:GetAngles()):Deg())    
+			--transform:SetPosition(Vec3(matrix:GetTranslation()))
 		end
 		
 		ecs.RegisterComponent(COMPONENT)
@@ -542,29 +666,7 @@ do -- test
 		end, {priority = -19})
 		end
 	end
-	
-	event.Delay(function()  
-		
-		local world = ecs.CreateEntity("shape2")
-		world:SetModelPath("models/face.obj")
-		world:SetSize(3000)
-		world:SetScale(Vec3(1,1,0))
-		world:SetAngles(Ang3(0,0,0)) 
-		world:SetPosition(Vec3(0,-50,0))
-		world:InitPhysics("box", 0, 50000, 50000, 50000)
-		
-		for i = 1, 10 do
-			local body = ecs.CreateEntity("shape2")
-			body:SetModelPath("models/face.obj")
-			body:SetSize(50)
-			body:SetPosition(Vec3(0,0,-10000))
-			body:InitPhysics("sphere", 10, 0.1)
-		end
-		
-		LOL = world
-		
-	end)
-	
+
 end
 
 _G.ecs = ecs
