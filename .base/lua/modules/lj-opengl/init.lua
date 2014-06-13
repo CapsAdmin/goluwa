@@ -81,7 +81,7 @@ local function add_gl_func(name, func)
 					local args = {}
 					for i =  1, select("#", ...) do
 						local val = select(i, ...)
-						if type(val) == "number" and reverse_enums[val] and val > 10 then
+						if false and type(val) == "number" and reverse_enums[val] and val > 10 then
 							args[#args+1] = select(2, next(reverse_enums[val])):gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
 						else
 							args[#args+1] = serializer.GetLibrary("luadata").ToString(val)
@@ -92,7 +92,7 @@ local function add_gl_func(name, func)
 						logf("gl%s(%s)\n", name, table.concat(args, ", "))
 					else
 						local val = val
-						if reverse_enums[val] then
+						if false and reverse_enums[val] then
 							val = select(2, next(reverse_enums[val])):gsub("_EXT", ""):gsub("_ARB", ""):gsub("_ATI", "")
 						end
 						
