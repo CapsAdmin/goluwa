@@ -71,6 +71,8 @@ local lib = ffi.load("bullet3")
 local bullet = {}
 local bodies = {}
 
+bullet.bodies = bodies
+
 function bullet.Initialize()
 	for k,v in pairs(bodies) do 
 		if v:IsValid() then

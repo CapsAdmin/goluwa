@@ -1,8 +1,9 @@
-local cam_pos = Vec3(0, 0, 200)   
+local cam_pos = Vec3(0, 0, 0)   
 local cam_ang = Ang3(0, 0, 0)  
 local cam_fov = 90
   
 event.AddListener("Update", "fly_camera_3d", function(dt)
+	do return end
 	if not window.IsOpen() then return end
 	if chat and chat.IsVisible() then return end
 	
@@ -32,30 +33,36 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	elseif input.IsKeyDown("left_control") then
 		speed = speed / 4
 	end
+	
+	local forward = Vec3(0,0,0)
+	local side = Vec3(0,0,0)
+	local up = Vec3(0,0,0)
 
 	if input.IsKeyDown("space") then
-		cam_pos = cam_pos + cam_ang:GetUp() * speed
+		up = up + cam_ang:GetUp() * speed
 	end
 
 	local offset = cam_ang:GetForward() * speed
 
 	if input.IsKeyDown("w") then
-		cam_pos = cam_pos + offset
+		side = side + offset
 	elseif input.IsKeyDown("s") then
-		cam_pos = cam_pos - offset
+		side = side - offset
 	end
 
 	offset = cam_ang:GetRight() * speed
 
 	if input.IsKeyDown("a") then
-		cam_pos = cam_pos + offset
+		forward = forward + offset
 	elseif input.IsKeyDown("d") then
-		cam_pos = cam_pos - offset
+		forward = forward - offset
 	end
 
 	if input.IsKeyDown("left_alt") then
 		cam_ang.r = math.round(cam_ang.r / math.rad(45)) * math.rad(45)
 	end
+	
+	cam_pos = cam_pos + forward + side + up
 	
 	render.SetupView3D(cam_pos, cam_ang:GetDeg(), cam_fov)
 end)

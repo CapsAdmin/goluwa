@@ -309,7 +309,6 @@ do -- test
 		
 			if self.rebuild_scale_matrix and not (self.temp_scale.x == 1 and self.temp_scale.y == 1 and self.temp_scale.z == 1) then
 				self.ScaleMatrix:Identity()
-				print(self.temp_scale)
 				self.ScaleMatrix:Scale(self.temp_scale.x, self.temp_scale.z, self.temp_scale.y)
 				--self.ScaleMatrix:Shear(self.Shear)
 				
@@ -347,112 +346,114 @@ do -- test
 		metatable.GetSet(COMPONENT, "Shader", NULL)
 		metatable.GetSet(COMPONENT, "Model", nil)
 		
-		local SHADER = {
-			name = "mesh_ecs",
-			vertex = { 
-				uniform = {
-					pvm_matrix = "mat4",
-				},			
-				attributes = {
-					{pos = "vec3"},
-					{normal = "vec3"},
-					{uv = "vec2"},
-					{texture_blend = "float"},
-				},	
-				source = "gl_Position = pvm_matrix * vec4(pos, 1.0);"
-			},
-			fragment = { 
-				uniform = {
-					color = Color(1,1,1,1),
-					diffuse = "sampler2D",
-					diffuse2 = "sampler2D",
-					detail = "sampler2D",
-					detailscale = 1,
-					
-					--bump = "sampler2D",
-					--specular = "sampler2D",
-				},		
-				attributes = {
-					{uv = "vec2"},
-					{texture_blend = "float"},
-				},			
-				source = [[
-					out vec4 out_color;
+		if CLIENT then			
+			local SHADER = {
+				name = "mesh_ecs",
+				vertex = { 
+					uniform = {
+						pvm_matrix = "mat4",
+					},			
+					attributes = {
+						{pos = "vec3"},
+						{normal = "vec3"},
+						{uv = "vec2"},
+						{texture_blend = "float"},
+					},	
+					source = "gl_Position = pvm_matrix * vec4(pos, 1.0);"
+				},
+				fragment = { 
+					uniform = {
+						color = Color(1,1,1,1),
+						diffuse = "sampler2D",
+						diffuse2 = "sampler2D",
+						--detail = "sampler2D",
+						--detailscale = 1,
+						
+						--bump = "sampler2D",
+						--specular = "sampler2D",
+					},		
+					attributes = {
+						{uv = "vec2"},
+						{texture_blend = "float"},
+					},			
+					source = [[
+						out vec4 out_color;
 
-					void main() 
-					{
-						out_color = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;
-						//out_color.rgb *= texture(detail, uv * detailscale).rgb;
-					}
-				]]
-			}  
-		}
+						void main() 
+						{
+							out_color = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;
+							//out_color.rgb *= texture(detail, uv * detailscale).rgb;
+						}
+					]]
+				}  
+			}
+					
+			function COMPONENT:OnAdd(ent)
+				self.Texture = render.GetWhiteTexture()
+				self.Shader = render.CreateShader(SHADER)
+			end
+
+			function COMPONENT:OnRemove(ent)
+
+			end	
+			
+			function COMPONENT:SetModelPath(path)
+				self.ModelPath = path
+				self.Model = render.Create3DMesh(path)
+			end
+			
+			function COMPONENT:OnDraw3D(dt)
+			
+				local model = self.Model
+				local shader = self.Shader
+
+				if not render.matrices.vp_matrix then return end -- FIX ME			
+				if not model then return end
+				if not shader then return end
+
+				local matrix = self:GetComponent("transform"):GetMatrix() 
+				local temp = Matrix44()
 				
-		function COMPONENT:OnAdd(ent)
-			self.Texture = render.GetWhiteTexture()
-			self.Shader = render.CreateShader(SHADER)
-		end
-
-		function COMPONENT:OnRemove(ent)
-
-		end	
-		
-		function COMPONENT:SetModelPath(path)
-			self.ModelPath = path
-			self.Model = render.Create3DMesh(path)
-		end
-		
-		function COMPONENT:OnDraw3D(dt)
-		
-			local model = self.Model
-			local shader = self.Shader
-
-			if not render.matrices.vp_matrix then return end -- FIX ME			
-			if not model then return end
-			if not shader then return end
-
-			local matrix = self:GetComponent("transform"):GetMatrix() 
-			local temp = Matrix44()
-			
-			local visible = false
-			
-			if model.corners then
-				model.LOL = model.LOL or {}
-				for _, pos in ipairs(model.corners) do
-					model.LOL[_] = model.LOL[_] or Matrix44()
-					model.LOL[_]:Identity()
-					model.LOL[_]:Translate(pos.x, pos.y, pos.z)
-					
-					model.LOL[_]:Multiply(matrix, temp)
-					temp:Multiply(render.matrices.vp_matrix, model.LOL[_])
-					
-					local x, y, z = model.LOL[_]:GetClipCoordinates()
-					
-					if x > -1 and x < 1 and y > -1 and y < 1 and z > -1 then
-						visible = true
-						break
+				local visible = false
+				
+				if model.corners then
+					model.LOL = model.LOL or {}
+					for _, pos in ipairs(model.corners) do
+						model.LOL[_] = model.LOL[_] or Matrix44()
+						model.LOL[_]:Identity()
+						model.LOL[_]:Translate(pos.x, pos.y, pos.z)
+						
+						model.LOL[_]:Multiply(matrix, temp)
+						temp:Multiply(render.matrices.vp_matrix, model.LOL[_])
+						
+						local x, y, z = model.LOL[_]:GetClipCoordinates()
+						
+						if x > -1 and x < 1 and y > -1 and y < 1 and z > -1 then
+							visible = true
+							break
+						end
 					end
+				else
+					visible = true
 				end
-			else
-				visible = true
-			end
-			
-			if visible then
-				local screen = matrix * render.matrices.vp_matrix
-				shader.pvm_matrix = screen.m
-				shader.color = self.Color
 				
-				for i, model in ipairs(model.sub_models) do
-					shader.diffuse = model.diffuse or render.GetErrorTexture()
-					shader.diffuse2 = model.diffuse2 or render.GetErrorTexture()
-					--shader.detail = model.detail or render.GetWhiteTexture()
-					shader:Bind()
-					model.mesh:Draw()
+				if visible then
+					local screen = matrix * render.matrices.vp_matrix
+					shader.pvm_matrix = screen.m
+					shader.color = self.Color
+					
+					for i, model in ipairs(model.sub_models) do
+						shader.diffuse = model.diffuse or render.GetErrorTexture()
+						shader.diffuse2 = model.diffuse2 or render.GetErrorTexture()
+						--shader.detail = model.detail or render.GetWhiteTexture()
+						shader:Bind()
+						model.mesh:Draw()
+					end
+				else
+				--	print(os.clock())
 				end
-			else
-			--	print(os.clock())
-			end
-		end  
+			end 
+		end
 
 		ecs.RegisterComponent(COMPONENT)
 	end
@@ -460,103 +461,10 @@ do -- test
 	do -- physics
 		local bullet = require("lj-bullet3")
 		bullet.Initialize()
-		bullet.SetGravity(0,0,9.8) 
-		  
-		event.Delay(function()   
-			
-			local world = ecs.CreateEntity("shape2")
-			world:SetModelPath("models/cube.obj")  
-			world:SetPosition(Vec3(0,0,0))
-			world:InitPhysics("box", 0, 500, 1, 500)  
-			world:SetScale(Vec3(500, 500, 0))
-			
-			if true then			 
-				local assimp = require("lj-assimp")
-				local scene = assimp.ImportFile(R"models/cube.obj", assimp.e.aiProcessPreset_TargetRealtime_Quality)
-								
-				local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices  * 3)
-				local triangles = ffi.gc(ffi.new("unsigned int[?]", scene.mMeshes[0].mNumFaces * 3), print)
-				
-				ffi.copy(vertices, scene.mMeshes[0].mVertices, ffi.sizeof(vertices))
-				
-				local lol = 0
-				for i = 0, scene.mMeshes[0].mNumFaces - 1 do
-					for j = 0, scene.mMeshes[0].mFaces[i].mNumIndices - 1 do
-						triangles[lol] = scene.mMeshes[0].mFaces[i].mIndices[j]
-						lol = lol + 1 
-					end
-				end
-								
-				LOL1 = vertices
-				LOL2 = triangles
-			
-				local mesh = {	
-					triangles = {
-						count = scene.mMeshes[0].mNumFaces, 
-						pointer = triangles, 
-						stride = ffi.sizeof("unsigned int") * 3, 
-					},					
-					vertices = {
-						count = scene.mMeshes[0].mNumVertices,  
-						pointer = ffi.cast("float *", vertices), 
-						stride = ffi.sizeof("float") * 3,
-					},
-				}
-
-				for i = 1, 40 do
-					local body = ecs.CreateEntity("shape2")
-					body:SetModelPath("models/cube.obj")
-					body:SetPosition(Vec3(0,0,1+i*6)) 
-					body:InitPhysics("convex", 1000, mesh, true)  
-					body:SetSize(1)
-				end
-			end
-			LOL = world
-			  
-		end)
-		 
-		 
-		if false then  
-			local gl = require("lj-opengl")
-			bullet.EnableDebug(
-				function(from_x, from_y, from_z, to_x, to_y, to_z, r, g, b) 	
-					local pos_a = Vec3(from_x, from_y, from_z):ToScreen()
-					local pos_b = Vec3(to_x, to_y, to_z):ToScreen()
-					
-					surface.SetColor(r,g,b)
-					surface.DrawLine(pos_a.x, pos_a.y, pos_b.x, pos_b.y)
-				end,
-				function(x, y, z, nx, ny, nz, distance, lifetime, r,g,b)
-				
-					gl.Color3f(r,g,b)
-					
-					local pos_a = Vec3(x, y, z):ToScreen()
-					local pos_b = Vec3(nx, ny, nz):ToScreen()
-					
-					surface.SetColor(r,g,b)
-					surface.DrawLine(pos_a.x, pos_a.y, pos_b.x, pos_b.y)
-				end,
-				function(x, y, z, str)
-					local pos = Vec3(x,y,z):ToScreen()
-					surface.SetTextPos(pos.x, pos.y)
-					surface.DrawText(ffi.string(str)) 
-				end,
-				function(str)
-					logn("[bullet] ", ffi.string(str))
-				end
-			)
-			event.AddListener("DrawHUD", "bullet_debug", function()
-				bullet.DrawDebugWorld()
-			end)	
-		else
-			bullet.DisableDebug()
-			event.RemoveListener("Draw3D", "bullet_debug")
-		end
-				
+		bullet.SetGravity(0,0,9.8) 		 
+		
 		event.AddListener("Update", "bullet", function(dt)
-			--for i = 1, 10 do
-				bullet.Update(dt)
-			--end
+			bullet.Update(dt)
 		end)
 		
 		local COMPONENT = {}
@@ -566,26 +474,167 @@ do -- test
 		COMPONENT.Events = {"Update"}
 	
 		COMPONENT.matrix = Matrix44()
-		COMPONENT.body = NULL
+		COMPONENT.rigid_body = NULL
 		
-		function COMPONENT:InitPhysics(type, mass, ...)
+		local function DELEGATE(META, field, typ)
+			
+			if typ == "vec3" then
+				local name = "Set" .. field
+				META[name] = function(s, vec)
+					if s.rigid_body:IsValid() then
+						s.rigid_body[name](s.rigid_body, -vec.y, -vec.x, vec.z)
+					end
+				end
+				
+				local ctor = typ == "vec3" and Vec3 or Ang3
+				
+				local name = "Get" .. field
+				META[name] = function(s, ...)
+					if s.rigid_body:IsValid() then
+						local x, y, z = s.rigid_body[name](s.rigid_body, ...)
+						return Vec3(-y, -x, z)
+					end
+				end
+			elseif typ == "ang3" then
+				local name = "Set" .. field
+				META[name] = function(s, ang)
+					if s.rigid_body:IsValid() then
+						s.rigid_body[name](s.rigid_body, ang.p, ang.y, ang.r)
+					end
+				end
+				
+				local ctor = typ == "vec3" and Vec3 or Ang3
+				
+				local name = "Get" .. field
+				META[name] = function(s, ...)
+					if s.rigid_body:IsValid() then
+						local x, y, z = s.rigid_body[name](s.rigid_body, ...)
+						return Ang3(x, y, z)
+					end
+				end
+			else
+				local name = "Set" .. field
+				META[name] = function(s, ...)
+					if s.rigid_body:IsValid() then
+						s.rigid_body[name](s.rigid_body, ...)
+					end
+				end
+				
+				local name = "Get" .. field
+				META[name] = function(s, ...)
+					if s.rigid_body:IsValid() then
+						return s.rigid_body[name](s.rigid_body, ...)
+					end
+				end
+			end
+		end
+		 
+		DELEGATE(COMPONENT, "Gravity", "vec3")
+		DELEGATE(COMPONENT, "Velocity", "vec3")
+		DELEGATE(COMPONENT, "AngularVelocity", "vec3")
+		
+		DELEGATE(COMPONENT, "Mass")
+		DELEGATE(COMPONENT, "Damping")
+	
+		function COMPONENT:SetPosition(vec)
 			local transform = self:GetComponent("transform")
-			transform:InvalidateScaleMatrix()
-			self.body = bullet.CreateRigidBody(type, mass, transform:GetMatrix().m, ...)
+			transform:SetPosition(vec)
+				
+			local body = self.rigid_body
+			if body:IsValid() then
+				body:SetMatrix(transform:GetMatrix().m)
+			end
 		end
 		
+		function COMPONENT:GetPosition()
+			local x, y, z = self:GetComponent("transform").TRMatrix:GetTranslation()
+			return Vec3(-y, -x, -z)
+		end
+		
+		function COMPONENT:SetAngles(ang)
+			local transform = self:GetComponent("transform")
+			transform:SetAngles(ang)
+			
+			local body = self.rigid_body
+			if body:IsValid() then
+				body:SetMatrix(transform:GetMatrix().m)
+			end
+		end
+		
+		function COMPONENT:GetAngles()
+			return self:GetComponent("transform").TRMatrix:GetAngles()
+		end
+		
+		do
+			local assimp = require("lj-assimp")
+		
+			function COMPONENT:InitPhysics(type, mass, ...)
+				local transform = self:GetComponent("transform")
+				transform:InvalidateScaleMatrix()
+				
+				if (type == "convex" or type == "concave") and _G.type((...)) == "string" and vfs.Exists((...)) then
+					local rest = {select(2, ...)}
+					
+					local scene = assimp.ImportFile(R((...)), assimp.e.aiProcessPreset_TargetRealtime_Quality)
+					
+					local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices  * 3)
+					local triangles = ffi.new("unsigned int[?]", scene.mMeshes[0].mNumFaces * 3)
+					
+					-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WTF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WTF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WTF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					PLEASE_DONT_GC_ME = PLEASE_DONT_GC_ME or {}
+					
+					table.insert(PLEASE_DONT_GC_ME, vertices)
+					table.insert(PLEASE_DONT_GC_ME, triangles)
+					-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WTF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WTF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WTF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					
+					ffi.copy(vertices, scene.mMeshes[0].mVertices, ffi.sizeof(vertices))
+										
+					local i = 0
+					for j = 0, scene.mMeshes[0].mNumFaces - 1 do
+						for k = 0, scene.mMeshes[0].mFaces[j].mNumIndices - 1 do
+							triangles[i] = scene.mMeshes[0].mFaces[j].mIndices[k]
+							i = i + 1 
+						end
+					end
+				
+					assimp.ReleaseImport(scene)
+				
+					local mesh = {	
+						triangles = {
+							count = scene.mMeshes[0].mNumFaces, 
+							pointer = triangles, 
+							stride = ffi.sizeof("unsigned int") * 3, 
+						},					
+						vertices = {
+							count = scene.mMeshes[0].mNumVertices,  
+							pointer = ffi.cast("float *", vertices), 
+							stride = ffi.sizeof("float") * 3,
+						},
+					}
+					
+					self.rigid_body = bullet.CreateRigidBody(type, mass, transform:GetMatrix().m, mesh, unpack(rest))
+				else
+					self.rigid_body = bullet.CreateRigidBody(type, mass, transform:GetMatrix().m, ...)
+				end
+				
+				return self.rigid_body
+			end
+		end		
+		
 		function COMPONENT:OnUpdate()
-			if not self.body:IsValid() then return end
+			if not self.rigid_body:IsValid() then return end
 			
 			local transform = self:GetComponent("transform")
 			
 			local matrix = self.matrix
-			matrix.m = self.body:GetMatrix()
+			matrix.m = self.rigid_body:GetMatrix()
 			local mat = matrix:Copy()
 			
 			transform:SetTRMatrix(mat)
-			--transform:SetAngles(Ang3(matrix:GetAngles()):Deg())    
-			--transform:SetPosition(Vec3(matrix:GetTranslation()))
 		end
 		
 		ecs.RegisterComponent(COMPONENT)
@@ -637,8 +686,63 @@ do -- test
 			
 		end, {priority = -19})
 		end
+		
+		
+		--[[if true then  
+			local gl = require("lj-opengl")
+			bullet.EnableDebug(
+				function(from_x, from_y, from_z, to_x, to_y, to_z, r, g, b) 	
+					local pos_a = Vec3(from_x, from_y, from_z):ToScreen()
+					local pos_b = Vec3(to_x, to_y, to_z):ToScreen()
+					
+					surface.SetColor(r,g,b)
+					surface.DrawLine(pos_a.x, pos_a.y, pos_b.x, pos_b.y)
+				end,
+				function(x, y, z, nx, ny, nz, distance, lifetime, r,g,b)
+				
+					gl.Color3f(r,g,b)
+					
+					local pos_a = Vec3(x, y, z):ToScreen()
+					local pos_b = Vec3(nx, ny, nz):ToScreen()
+					
+					surface.SetColor(r,g,b)
+					surface.DrawLine(pos_a.x, pos_a.y, pos_b.x, pos_b.y)
+				end,
+				function(x, y, z, str)
+					local pos = Vec3(x,y,z):ToScreen()
+					surface.SetTextPos(pos.x, pos.y)
+					surface.DrawText(ffi.string(str)) 
+				end,
+				function(str)
+					logn("[bullet] ", ffi.string(str))
+				end
+			)
+			event.AddListener("DrawHUD", "bullet_debug", function()
+				bullet.DrawDebugWorld()
+			end)	
+		else
+			bullet.DisableDebug()
+			event.RemoveListener("Draw3D", "bullet_debug")
+		end]]
+		event.Delay(function()    
+			
+			local world = ecs.CreateEntity("shape2")
+			world:SetModelPath("models/cube.obj")  
+			world:InitPhysics("box", 0, 500, 1, 500)  
+			world:SetPosition(Vec3(0,0,0)) 
+			world:SetAngles(Ang3(0,0,0))
+			world:SetScale(Vec3(500, 500, 0))			
+			
+			for i = 1, 10 do
+				local body = ecs.CreateEntity("shape2")
+				body:SetModelPath("models/cube.obj")
+				body:SetPosition(Vec3(0,0,1+i*10)) 
+				body:InitPhysics("convex", 10, "models/cube.obj", true)  
+				body:SetSize(1)
+				ASDF = body
+			end
+		end)
 	end
-
 end
 
 _G.ecs = ecs
