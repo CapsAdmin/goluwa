@@ -309,7 +309,7 @@ do -- test
 		
 			if self.rebuild_scale_matrix and not (self.temp_scale.x == 1 and self.temp_scale.y == 1 and self.temp_scale.z == 1) then
 				self.ScaleMatrix:Identity()
-				
+				print(self.temp_scale)
 				self.ScaleMatrix:Scale(self.temp_scale.x, self.temp_scale.z, self.temp_scale.y)
 				--self.ScaleMatrix:Shear(self.Shear)
 				
@@ -460,93 +460,63 @@ do -- test
 	do -- physics
 		local bullet = require("lj-bullet3")
 		bullet.Initialize()
-		bullet.SetGravity(0,0,600) 
+		bullet.SetGravity(0,0,9.8) 
 		  
-		event.Delay(function()  
+		event.Delay(function()   
 			
 			local world = ecs.CreateEntity("shape2")
-			world:SetModelPath("models/spider.obj")  
-			world:SetPosition(Vec3(0,0,50))
+			world:SetModelPath("models/cube.obj")  
+			world:SetPosition(Vec3(0,0,0))
 			world:InitPhysics("box", 0, 500, 1, 500)  
-			world:SetScale(Vec3(50,50,0))
+			world:SetScale(Vec3(500, 500, 0))
 			
-			if true then
-				local body = ecs.CreateEntity("shape2")
-				body:SetModelPath("models/cube.obj")
-				body:SetPosition(Vec3(0,0,200)) 
+			if true then			 
+				local assimp = require("lj-assimp")
+				local scene = assimp.ImportFile(R"models/cube.obj", assimp.e.aiProcessPreset_TargetRealtime_Quality)
+								
+				local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices  * 3)
+				local triangles = ffi.gc(ffi.new("unsigned int[?]", scene.mMeshes[0].mNumFaces * 3), print)
 				
-				local buffer = body:GetModel().sub_models[1].mesh.buffer
-				local length = ffi.sizeof(buffer) / ffi.sizeof(buffer[0]) 
-						   
-				--[[local mesh = {	
-					indices = {
-						count = 36, 
-						pointer = ffi.gc(ffi.new("int[36]", {
-							2, 6, 5,
-							6, 2, 1,
-							0, 4, 7,
-							4, 0, 3,
-							0, 6, 1,
-							6, 0, 7,
-							4, 2, 5,
-							2, 4, 3,
-							6, 4, 5,
-							4, 6, 7,
-							0, 2, 3,
-							2, 0, 1,
-						}), print), 
-						stride = ffi.sizeof("int") * 3, 
-					},					
-					vertices = {
-						count = 24,  
-						pointer = ffi.gc(ffi.new("float[24]", 
-							-1, -1, -1,
-							1, -1, -1,
-							1, -1, 1,
-							-1, -1, 1,
-							-1, 1, 1,
-							1, 1, 1,
-							1, 1,-1,
-							-1, 1, -1	
-						), print), 
-						stride = ffi.sizeof("float") * 3, 
-					},
-				}]]
+				ffi.copy(vertices, scene.mMeshes[0].mVertices, ffi.sizeof(vertices))
 				
+				local lol = 0
+				for i = 0, scene.mMeshes[0].mNumFaces - 1 do
+					for j = 0, scene.mMeshes[0].mFaces[i].mNumIndices - 1 do
+						triangles[lol] = scene.mMeshes[0].mFaces[i].mIndices[j]
+						lol = lol + 1 
+					end
+				end
+								
+				LOL1 = vertices
+				LOL2 = triangles
+			
 				local mesh = {	
-					indices = {
-						count = length, 
-						pointer = ffi.gc(ffi.new("int[?]", length * 3), print), 
-						stride = ffi.sizeof("int") * 3, 
+					triangles = {
+						count = scene.mMeshes[0].mNumFaces, 
+						pointer = triangles, 
+						stride = ffi.sizeof("unsigned int") * 3, 
 					},					
 					vertices = {
-						count = length,  
-						pointer = ffi.gc(ffi.new("float[?]", length * 3), print), 
+						count = scene.mMeshes[0].mNumVertices,  
+						pointer = ffi.cast("float *", vertices), 
 						stride = ffi.sizeof("float") * 3,
 					},
 				}
-				
-				for i = 0, length - 1, 3 do
-					mesh.vertices[i+0] = buffer[i / 3].pos.A
-					mesh.vertices[i+1] = buffer[i / 3].pos.B 
-					mesh.vertices[i+2] = buffer[i / 3].pos.C
-					
-					mesh.indices[i+0] = i+0 
-					mesh.indices[i+1] = i+1
-					mesh.indices[i+2] = i+2
+
+				for i = 1, 40 do
+					local body = ecs.CreateEntity("shape2")
+					body:SetModelPath("models/cube.obj")
+					body:SetPosition(Vec3(0,0,1+i*6)) 
+					body:InitPhysics("convex", 1000, mesh, true)  
+					body:SetSize(1)
 				end
-				
-				body:InitPhysics("box", 100, 50, 50, 50)  
-				--body:InitPhysics("convex", 100, mesh, true)  
-				--body:GetComponent("physics").body:SetAngularVelocity(0,0,0)
-				body:SetSize(100)
 			end
 			LOL = world
-			
+			  
 		end)
-		
 		 
-		if fasytgfjg then  
+		 
+		if false then  
 			local gl = require("lj-opengl")
 			bullet.EnableDebug(
 				function(from_x, from_y, from_z, to_x, to_y, to_z, r, g, b) 	
@@ -584,7 +554,9 @@ do -- test
 		end
 				
 		event.AddListener("Update", "bullet", function(dt)
-			bullet.Update(dt)
+			--for i = 1, 10 do
+				bullet.Update(dt)
+			--end
 		end)
 		
 		local COMPONENT = {}

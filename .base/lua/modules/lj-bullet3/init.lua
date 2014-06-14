@@ -26,7 +26,7 @@ bool bulletRayCast(float from_x, float from_y, float from_z, float to_x, float t
 void bulletSetWorldGravity(float x, float y, float z);
 void bulletGetWorldGravity(float* out);
 
-btTriangleIndexVertexArray *bulletCreateMesh(int num_indices, int* indices, int indices_stride, int num_vertices, float* vertices, int vertex_stride);
+btTriangleIndexVertexArray *bulletCreateMesh(int num_triangles, int* triangles, int triangles_stride, int num_vertices, float* vertices, int vertex_stride);
 
 btRigidBody *bulletCreateRigidBodyBox(float mass, float *matrix, float x, float y, float z);
 btRigidBody *bulletCreateRigidBodySphere(float mass, float *matrix, float radius);
@@ -206,9 +206,9 @@ function bullet.CreateRigidBody(typ, mass, matrix, ...)
 		local t = ...
 		
 		mesh = lib.bulletCreateMesh(
-			t.indices.count, 
-			t.indices.pointer, 
-			t.indices.stride, 
+			t.triangles.count, 
+			t.triangles.pointer, 
+			t.triangles.stride, 
 			
 			t.vertices.count, 
 			t.vertices.pointer, 
