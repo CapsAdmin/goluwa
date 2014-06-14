@@ -21,11 +21,6 @@ unrolled_lines.vec4 = unrolled_lines.color
 unrolled_lines.sampler2D = unrolled_lines.texture
 unrolled_lines.float = unrolled_lines.number
 
--- pretty much the only type supported
-local type_info_types = {
-	float = gl.e.GL_FLOAT,
-}
-
 local type_info =  {
 	float = {type = "float", arg_count = 1},
 	number = {type = "float", arg_count = 1},
@@ -33,6 +28,34 @@ local type_info =  {
 	vec3 = {type = "float", arg_count = 3},
 	vec4 = {type = "float", arg_count = 4},
 }
+
+do -- extend typeinfo
+	local type_to_enum = {
+		float = gl.e.GL_FLOAT,
+	}
+
+	-- add some extra information
+	for k,v in pairs(type_info) do
+		v.size = ffi.sizeof(v.type)
+		v.enum_type = type_to_enum[v.type]
+		v.real_type = "glw_glsl_" ..k
+	end
+
+	-- declare the types
+	for type, info in pairs(type_info) do
+		local line = info.type .. " "
+		for i = 1, info.arg_count do
+			line = line .. string.char(64+i)
+
+			if i ~= info.arg_count then
+				line = line .. ", "
+			end
+		end
+
+		local dec = ("struct %s { %s; };"):format(info.real_type, line)
+		ffi.cdef(dec)
+	end
+end
 
 local type_translate = {
 	color = "vec4",
@@ -100,35 +123,6 @@ local function rebuild_info()
 			shader_translate[v] = v
 		end
 
-	end
-
-	-- add some extra information
-	for k,v in pairs(type_info) do
-		-- names like vec3 is very generic so prepend glw_glsl_
-		-- to avoid collisions
-		v.real_type = "glw_glsl_" ..k
-		v.size = ffi.sizeof("float")
-
-		if not type_info_types[v.type] then
-			log("gl enum type for %q is unknown", v.type)
-		else
-			v.enum_type = type_info_types[v.type]
-		end
-	end
-
-	-- declare the types
-	for type, info in pairs(type_info) do
-		local line = info.type .. " "
-		for i = 1, info.arg_count do
-			line = line .. string.char(64+i)
-
-			if i ~= info.arg_count then
-				line = line .. ", "
-			end
-		end
-
-		local dec = ("struct %s { %s; };"):format(info.real_type, line)
-		ffi.cdef(dec)
 	end
 end
 
@@ -539,6 +533,7 @@ do -- create data for vertex buffer
 	local function unpack_structs(output)
 		local found = {}
 
+		-- only bother doing this if the first line has structs
 		for key, val in pairs(output[1]) do
 			if hasindex(val) and val.Unpack then
 				found[key] = true
@@ -556,25 +551,27 @@ do -- create data for vertex buffer
 		end
 	end
 
-	function META:CreateVertexAttributes(var, is_valid_table)
-		check(var, "number", "table")
-	
-		if type(var) == "table" then
-			if not is_valid_table then
-				unpack_structs(var)	
-			end			
-			return ffi.new(self.vtx_atrb_type.."["..#var.."]", var), #var
+	function META:CreateBuffersFromTable(vertices, indices, is_valid_table)
+		if not is_valid_table then
+			unpack_structs(vertices)	
+			
+			if not indices then
+				indices = {}
+				for i in ipairs(vertices) do
+					indices[i] = i-1
+				end
+			end
 		end
-
-		return ffi.new(self.vtx_atrb_type.."[?]", var), var
+		
+		return ffi.new(self.vtx_atrb_type.."["..#vertices.."]", vertices), ffi.new("unsigned int[" .. #indices .. "]", indices)
 	end
 
 	function META:GetVertexAttributes()
 		return self.vertex_attributes
 	end
 
-	function META:CreateVertexBuffer(data, is_valid_table)
-		return render.CreateVertexBuffer(self:CreateVertexAttributes(data, is_valid_table), self:GetVertexAttributes())
+	function META:CreateVertexBuffer(vertices, indices, is_valid_table)
+		return render.CreateVertexBuffer(self:GetVertexAttributes(), self:CreateBuffersFromTable(vertices, indices, is_valid_table))
 	end
 end
 
