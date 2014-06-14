@@ -8,7 +8,7 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	
 	if menu and menu.visible then return end
 	cam_ang:Normalize()
-	local speed = dt * 1000
+	local speed = dt * 10
 
 	local delta = window.GetMouseDelta() / 100
 	

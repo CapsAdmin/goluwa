@@ -26,7 +26,7 @@ local function fix_path(path)
 	return (path:gsub("\\", "/"):gsub("(/+)", "/"))
 end
 
-function assimp.ImportFileEx(path, flags, flip_normals, uv_mult)
+function assimp.ImportFileEx(path, flags, flip_normals)		
 	local scene = assimp.ImportFile(path, flags)
 		
 	if not scene then
@@ -40,34 +40,28 @@ function assimp.ImportFileEx(path, flags, flip_normals, uv_mult)
 	for i = 1, scene.mNumMeshes do
 		local mesh = scene.mMeshes[i-1]
 		
-		local sub_model = {mesh_data = {}}
+		local sub_model = {mesh_data = {}, indices = {}}
 		
 		local minx, miny, minz = 0,0,0
-		local maxx, maxy, maxz = 0,0,0	
-		
-		for i = 0, scene.mMeshes[i-1].mNumVertices-1 do
+		local maxx, maxy, maxz = 0,0,0			
+				
+		for i = 0, mesh.mNumVertices - 1 do
 			local data = {}
+		
+			local val = mesh.mVertices[i]
+			data.pos = {val.x, val.y, val.z}
 			
-			if mesh.mVertices ~= nil then
-				local val = mesh.mVertices[i]
-				data.pos = {val.x, val.y, val.z}
-				
-				if val.x < minx then minx = val.x end
-				if val.y < miny then miny = val.y end
-				if val.z < minz then minz = val.z end
-				
-				if val.x > maxx then maxx = val.x end
-				if val.y > maxy then maxy = val.y end
-				if val.z > maxz then maxz = val.z end
-			end
+			if val.x < minx then minx = val.x end
+			if val.y < miny then miny = val.y end
+			if val.z < minz then minz = val.z end
+			
+			if val.x > maxx then maxx = val.x end
+			if val.y > maxy then maxy = val.y end
+			if val.z > maxz then maxz = val.z end
 
 			if mesh.mNormals ~= nil then
 				local val = mesh.mNormals[i]
-				if flip_normals then
-					data.normal = {-val.x, -val.y, -val.z}
-				else
-					data.normal = {val.x, val.y, val.z}
-				end
+				data.normal = {val.x, val.y, val.z}
 			end
 
 			if mesh.mTangents ~= nil then
@@ -83,17 +77,22 @@ function assimp.ImportFileEx(path, flags, flip_normals, uv_mult)
 			if mesh.mTextureCoords ~= nil then
 				local val = mesh.mTextureCoords[0] and mesh.mTextureCoords[0][i]
 				data.uv = {val.x, val.y}
-				if uv_mult then
-					data.uv[1] = data.uv[1] * uv_mult
-					data.uv[2] = data.uv[2] * uv_mult
-				end
 			end
 			
-			sub_model.mesh_data[#sub_model.mesh_data+1] = data
+			table.insert(sub_model.mesh_data, data)
+		end
+		
+		for i = 0, mesh.mNumFaces - 1 do
+			local face = mesh.mFaces[i]
+			
+			for i = 0, face.mNumIndices - 1 do
+				local i = face.mIndices[i]
+				
+				table.insert(sub_model.indices, i)
+			end
 		end
 		
 		sub_model.bbox = {min = {minx, miny, minz}, max = {maxx, maxy, maxz}}
-				
 		sub_model.name = ffi.string(mesh.mName.data, mesh.mName.length):trim()
 		
 		if mesh.mMaterialIndex > 0 then

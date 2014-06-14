@@ -24,7 +24,7 @@ render.camera = {
 	
 	fov = 75,
 	farz = 32000,
-	nearz = 10,
+	nearz = 0.1,
 	
 	ratio = 1,
 }

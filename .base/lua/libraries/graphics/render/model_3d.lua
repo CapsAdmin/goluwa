@@ -20,24 +20,15 @@ local SHADER = {
 	 
 	vertex = { 
 		uniform = {
-			--projection_matrix = "mat4",
 			view_matrix = "mat4",
-			world_matrix = "mat4",
-			
+			world_matrix = "mat4",			
 			pvm_matrix = "mat4",
-			
-			--cam_forward = "vec3",
-			--cam_right = "vec3",
-			--cam_up = "vec3",
 		},			
 		attributes = {
 			{pos = "vec3"},
 			{normal = "vec3"},
 			{uv = "vec2"},
 			{texture_blend = "float"},
-
-			--{tangent = "vec3"},
-			--{bitangent = "vec3"},
 		},	
 		source = [[		
 			void main()
@@ -76,7 +67,7 @@ local SHADER = {
 	}  
 }   
 
-function render.CreateMesh(data, is_valid_table)
+function render.CreateMesh(vertices, indices, is_valid_table)
 	if not surface.mesh_3d_shader or not surface.mesh_3d_shader:IsValid() then
 		local shader = render.CreateShader(SHADER)
 						
@@ -92,7 +83,7 @@ function render.CreateMesh(data, is_valid_table)
 		render.mesh_3d_shader = shader
 	end
 		
-	return data and render.mesh_3d_shader:CreateVertexBuffer(data, is_valid_table) or NULL
+	return vertices and render.mesh_3d_shader:CreateVertexBuffer(vertices, indices, is_valid_table) or NULL
 end
 
 do -- model meta
@@ -113,7 +104,14 @@ do -- model meta
 			return render.model_cache[path]
 		end
 
-		flags = flags or bit.bor(assimp.e.aiProcess_CalcTangentSpace, assimp.e.aiProcess_GenSmoothNormals)
+		flags = flags or bit.bor(
+			assimp.e.aiProcess_CalcTangentSpace, 
+			assimp.e.aiProcess_GenSmoothNormals, 
+			assimp.e.aiProcess_Triangulate,
+			assimp.e.aiProcess_JoinIdenticalVertices			
+		)
+		
+		flags = assimp.e.aiProcessPreset_TargetRealtime_Quality
 
 		local new_path = R(path)
 
@@ -131,7 +129,7 @@ do -- model meta
 		local min, max = Vec3(), Vec3()
 
 		for i, model in ipairs(models) do
-			local sub_model = {mesh = render.CreateMesh(model.mesh_data), name = model.name, bbox = {min = Vec3(unpack(model.bbox.min)), max = Vec3(unpack(model.bbox.max))}}
+			local sub_model = {mesh = render.CreateMesh(model.mesh_data, model.indices), name = model.name, bbox = {min = Vec3(unpack(model.bbox.min)), max = Vec3(unpack(model.bbox.max))}}
 
 			if 
 				sub_model.bbox.min.x < min.x and 
