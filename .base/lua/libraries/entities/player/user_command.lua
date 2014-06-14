@@ -6,25 +6,22 @@ local server_tick_rate = 10
 
 local META = (...) or metatable.Get("player")
 
+local layout = {
+	{name = "mouse_pos", default = Vec2(0, 0), type = "vec2short"},
+	{name = "velocity", default = Vec3(0, 0, 0)},
+	{name = "angles", default = Ang3(0, 0, 0)},
+	{name = "fov", default = 75},
+}
+
 local default = {
 	time = 0,
-	
-	cursor = Vec2(0, 0),
-	smooth_cursor = Vec2(0, 0),
-	
-	camera = {
-		pos = Vec3(0, 0, 0),
-		smooth_pos = Vec3(0, 0, 0),
-		
-		ang = Ang3(0, 0, 0),
-		smooth_ang = Ang3(0, 0, 0),
-		
-		fov = 0,
-		smooth_fov = 0,
-	},
-	
 	queue = {},
 }
+
+for i, v in ipairs(layout) do
+	v.type = v.type or typex(v.default)
+	default[v.name] = v.default
+end
 
 function META:GetCurrentCommand()
 	if not self.current_command then
@@ -40,24 +37,17 @@ local function read_buffer(ply, buffer)
 	for i = 1, 32 do
 		local time = buffer:ReadDouble()
 		
-		local cursor = buffer:ReadVec2Short()
-		local cam_pos = buffer:ReadVec3()
-		local cam_ang = buffer:ReadAng3()
-		local cam_fov = buffer:ReadFloat()
-		
 		if not time_stamp then
 			time_stamp = time 
 		end
 		
-		cmd.queue[i] = cmd.queue[i] or table.copy(default)
-		
+		cmd.queue[i] = cmd.queue[i] or table.copy(default)		
 		cmd.queue[i].time = timer.GetSystemTime() + (time - time_stamp)
 		
-		cmd.queue[i].cursor = cursor
-		cmd.queue[i].camera.pos = cam_pos
-		cmd.queue[i].camera.ang = cam_ang
-		cmd.queue[i].camera.fov = cam_fov
-
+		for _, v in ipairs(layout) do
+			cmd.queue[i][v.name] = buffer:ReadType(v.type)
+		end
+		
 		if buffer:TheEnd() then 
 			break 
 		end
@@ -70,32 +60,25 @@ local function read_buffer(ply, buffer)
 	--table.sort(ply.current_command.queue, function(a, b) return a.time > b.time end)
 end
 
-local function interpolate(ply, cmd)	
-	local data = cmd.queue[1]
-			
-	if data and data.time < timer.GetSystemTime() then
-
-		cmd.smooth_cursor:Lerp(0.3, data.cursor)
-		cmd.cursor = data.cursor
-	
-		cmd.camera.pos = data.camera.pos
-		cmd.camera.smooth_pos:Lerp(0.3, data.camera.pos)
-		
-		cmd.camera.ang = data.camera.ang
-		cmd.camera.smooth_ang:Lerp(0.3, data.camera.ang)
-		
-		cmd.camera.ang = data.camera.ang
-		cmd.camera.smooth_fov = math.lerp(0.3, cmd.camera.smooth_fov, data.camera.fov)
-		
-		table.remove(cmd.queue, 1)
-	end
-end
-
 event.AddListener("Update", "interpolate_user_command", function()
 	for _, ply in pairs(players.GetAll()) do
-		interpolate(ply, ply:GetCurrentCommand())
+		local cmd = ply:GetCurrentCommand()
+		
+		local data = cmd.queue[1]
+				
+		if data and data.time < timer.GetSystemTime() then
+
+			for k,v in pairs(data) do
+				cmd[k] = v
+			end
+			
+			event.Call("Move", ply, cmd)
+			
+			table.remove(cmd.queue, 1)
+		end
 	end
 end)
+
 
 if CLIENT then		
 	client_command_length = client_command_length / 1000
@@ -106,13 +89,16 @@ if CLIENT then
 		local last_send = 0
 		
 		event.CreateTimer("user_command_tick", client_tick_rate, function()
-			
+			if not players.GetLocalPlayer():IsValid() then return end
+		
 			buffer:WriteDouble(timer.GetSystemTime())
-			buffer:WriteVec2Short(window.GetMousePos())
-			buffer:WriteVec3(render.GetCamPos())
-			buffer:WriteAng3(render.GetCamAng())
-			buffer:WriteFloat(render.GetCamFOV())
 			
+			local move = event.Call("CreateMove", players.GetLocalPlayer(), players.GetLocalPlayer():GetCurrentCommand())
+			 
+			for _, v in ipairs(layout) do
+				buffer:WriteType(move and move[v.name] or v.default, v.type)
+			end
+				
 			if last_send < timer.GetSystemTime() then
 				packet.Send("user_command", buffer)
 				buffer:Clear()
