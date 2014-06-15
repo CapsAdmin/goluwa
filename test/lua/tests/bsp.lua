@@ -10,13 +10,13 @@ local buffer = Buffer(io.open(R"maps/cs_agency.bsp", "rb"))]]
 
 local buffer
 
-local map = "gmod"
+local map = "hl2"
 
 if map == "hl2" then
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk") 
-	buffer = Buffer(io.open(R"maps/d3_citadel_05.bsp", "rb"))
+	buffer = Buffer(io.open(R"maps/d3_citadel_03.bsp", "rb"))
 elseif map == "gmod" then
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "garrysmod/")
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_misc_dir.vpk")
@@ -262,6 +262,8 @@ local bsp_mesh = {sub_models = {}}
 
 do timer.Start("building mesh")
 
+	local scale = 0.0254
+
 	local function add_vertex(model, texinfo, texdata, pos, blend)
 		local a = texinfo.textureVecs
 		
@@ -271,8 +273,8 @@ do timer.Start("building mesh")
 			blend = 0
 		end
 		
-		table.insert(model.mesh, {
-			pos = {pos.x, -pos.y, -pos.z}, -- copy
+		table.insert(model.mesh_data, {
+			pos = {pos.x * scale, -pos.y * scale, -pos.z * scale}, -- copy
 			texture_blend = blend,
 			uv = {
 				(a[1] * pos.x + a[2] * pos.y + a[3] * pos.z + a[4]) / texdata.width,
@@ -332,7 +334,7 @@ do timer.Start("building mesh")
 	local meshes = {}
 
 	for model_index = 1, #header.models do
-		local sub_model =  {mesh = {}}
+		local sub_model =  {mesh_data = {}}
 		
 		for i = 1, header.models[model_index].numfaces do
 			local face = header.faces[header.models[model_index].firstface + i]
@@ -349,7 +351,7 @@ do timer.Start("building mesh")
 				
 				if not meshes[texname] then
 					
-					local model = {mesh = {}}
+					local model = {mesh_data = {}}
 					meshes[texname] = model
 					
 					local material
@@ -464,15 +466,71 @@ profiler.Stop()
 timer.Start("render.CreateMesh")
 
 for i, data in ipairs(bsp_mesh.sub_models) do
-	bsp_mesh.sub_models[i].mesh = render.CreateMesh(data.mesh, true)
+	data.mesh = render.CreateMesh(data.mesh_data)
 end
 
 timer.Stop()
 
 logn("SUB_MODELS ", #bsp_mesh.sub_models)
- 
-include("libraries/ecs.lua")
 
-local world = ecs.CreateEntity("shape")
+if bsp_world then bsp_world:Remove() end
+
+local world = entities.CreateEntity("clientside")
 world:SetModel(bsp_mesh)
- 
+
+bsp_world = world
+
+do return end
+
+if bsp_world then
+	for i,v in ipairs(bsp_world) do
+		if v:IsValid() then
+			v:Remove()
+		end
+	end
+	bsp_world = {}
+end
+
+bsp_world = bsp_world or {}
+
+for i, model in ipairs(bsp_mesh.sub_models) do
+	local chunk = entities.CreateEntity("physical")
+	chunk:SetModel(bsp_mesh)
+	
+	local triangles = ffi.new("unsigned int[?]", #model.mesh_data)
+	for i = 0, #model.mesh_data do triangles[i] = i	end
+	
+	local vertices = ffi.new("float[?]", #model.mesh_data * 3)
+	
+	local i = 0
+	
+	for j, data in ipairs(model.mesh_data) do 
+		vertices[i] = data.pos[1] i = i + 1		
+		vertices[i] = data.pos[2] i = i + 1		
+		vertices[i] = data.pos[3] i = i + 1		
+	end	
+	
+	local mesh = {	
+		triangles = {
+			count = #model.mesh_data / 3, 
+			pointer = triangles, 
+			stride = ffi.sizeof("unsigned int") * 3, 
+		},					
+		vertices = {
+			count = #model.mesh_data,  
+			pointer = vertices, 
+			stride = ffi.sizeof("float") * 3,
+		},
+	}
+	
+	chunk:InitPhysics("concave", 0, mesh, true)
+	table.insert(bsp_world, chunk)
+end
+
+event.AddListener("MouseInput", "bsp_lol", function(button, press)
+	
+	local ent = entities.CreateEntity("physical")
+	ent:InitPhysics("box", 100, 1, 1, 1)
+	ent:SetPos(render.GetCamPos())
+	ent:SetVelocity(render.GetCamAng():GetForward() * 10)	
+end)
