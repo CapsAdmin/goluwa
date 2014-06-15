@@ -1,4 +1,4 @@
-event.AddListener("ClientSpawned", "join_announcer", function(client)
+event.AddListener("ClientEntered", "join_announcer", function(client)
 	if chathud then
 		chathud.AddText(Color(0,1,0), client:GetName(), Color(1,1,1), " spawned!")
 	end

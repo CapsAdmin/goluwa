@@ -1,3 +1,4 @@
+do return end
 local client_command_length = 100 -- sample length in ms
 local client_tick_rate = 33 -- in ms
 
@@ -146,7 +147,7 @@ if SERVER then
 		end)
 	end
 
-	packet.AddListener("user_command", function(client, buffer)
+	packet.AddListener("user_command", function(buffer, client)
 		read_buffer(client, buffer)
 		
 		local cmd = client:GetCurrentCommand()
@@ -162,6 +163,6 @@ if SERVER then
 		
 		buffer:WriteVec3(cmd.net_position or Vec3(0, 0, 0))
 		
-		packet.Send("user_command", nil, buffer)
+		packet.Send("user_command", buffer)
 	end)
 end 

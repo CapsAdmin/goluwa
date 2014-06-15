@@ -182,7 +182,7 @@ function network.HandleMessage(socket, stage, a, ...)
 			return
 		end
 		
-		event.Call("ClientSpawned", client)		
+		event.Call("ClientEntered", client)		
 		
 		-- send a message to everyone that we connected successfully
 		network.BroadcastMessage(network.READY, uniqueid)
@@ -195,7 +195,7 @@ function network.HandleMessage(socket, stage, a, ...)
 	elseif CLIENT and stage == network.READY then
 		local client = clients.Create(uniqueid) -- get or create
 		
-		event.Call("ClientSpawned", client)
+		event.Call("ClientEntered", client)
 	end
 	
 	if stage == network.MESSAGE then

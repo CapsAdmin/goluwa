@@ -52,7 +52,7 @@ function clients.Create(uniqueid, is_bot)
 	if SERVER then
 		if is_bot then	
 			if event.Call("ClientConnect", self) ~= false then
-				event.Call("ClientSpawned", self)
+				event.Call("ClientEntered", self)
 				network.BroadcastMessage(network.READY, uniqueid)
 			end
 		end
