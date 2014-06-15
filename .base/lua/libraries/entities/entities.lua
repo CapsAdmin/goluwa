@@ -1,7 +1,5 @@
 local entities = _G.entities or {}
 
-entities = {}
-
 entities.active_entities = entities.active_entities or {}
 entities.configurations = entities.configurations or {}
 entities.active_components = entities.active_components or {}
@@ -133,6 +131,14 @@ do -- base entity
 		
 			obj:OnRemove(self)
 			obj:Remove()
+			
+			for i, component in ipairs(entities.active_components) do
+				if component == obj then
+					entities.active_components[i] = nil
+					break
+				end
+			end
+			table.fixindices(entities.active_components)
 		end
 	end
 

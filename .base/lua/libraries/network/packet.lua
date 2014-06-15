@@ -64,7 +64,7 @@ if CLIENT then
 end
 
 if SERVER then
-	function packet.Send(id, filter, buffer)
+	function packet.Send(id, buffer, filter)
 		local data = prepend_header(id, buffer)
 		
 		if data then
@@ -83,7 +83,7 @@ if SERVER then
 	end
 	
 	function packet.Broadcast(id, buffer)
-		return packet.Send(id, nil, buffer)
+		return packet.Send(id, buffer)
 	end
 	
 	function packet.OnPacketReceived(client, str)
@@ -91,7 +91,7 @@ if SERVER then
 		local id = read_header(buffer)
 				
 		if packet.Listeners[id] then
-			packet.Listeners[id](client, buffer)
+			packet.Listeners[id](buffer, client)
 		end
 	end
 	
