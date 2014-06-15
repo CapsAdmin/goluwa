@@ -1,101 +1,29 @@
 local steam = _G.steam or {}
 
-do 
-	local ok, lib = pcall(ffi.load, "steamfriends")
+local ok, err = pcall(function()
+	local steamfriends = require("lj-steamfriends")
 	
-	ffi.cdef[[
-		const char *steamGetLastError();
-		int steamInitialize();
-		
-		typedef struct
-		{
-			const char *text;
-			const char *sender_steam_id;
-			const char *receiver_steam_id;
-		}message;
-		
-		message *steamGetLastChatMessage();
-		int steamSendChatMessage(const char *steam_id, const char *text);
-		const char *steamGetNickFromSteamID(const char *steam_id);
-		const char *steamGetClientSteamID();
-		unsigned steamGetFriendCount();
-		const char *steamGetFriendByIndex(unsigned i);
-		
-		typedef struct
-		{
-			int size;
-			unsigned char *buffer;		
-		} steam_auth_token;
-				
-		uint32_t steamGetAuthSessionTicket(void *ticket_buffer, int ticket_size, uint32_t *ticket_buffer_size);
-	]] 
-	
-	if not ok then
-		logn("steamfriends module not availible")
-		lib = nil
-	elseif lib.steamInitialize() == 1 then
-		logn(ffi.string(lib.steamGetLastError()))
-		lib = nil
-	else
-		event.CreateThinker(function()
-			local msg = lib.steamGetLastChatMessage()
-
-			if msg ~= nil then
-				local sender_steam_id = ffi.string(msg.sender_steam_id)
-				local receiver_steam_id = ffi.string(msg.receiver_steam_id)
-				local text = ffi.string(msg.text)
-				
-				event.Call("SteamFriendsMessage", sender_steam_id, text, receiver_steam_id)
-			end
-		end)
-	end
-	
-	function steam.IsSteamClientAvailible()
-		return lib ~= nil
-	end
-	
-	function steam.SendChatMessage(steam_id, text)
-		if not lib then logn("steamfriends module not availible") return 1 end
-		
-		return lib.steamSendChatMessage(steam_id, text)
-	end
-	
-	function steam.GetNickFromSteamID(steam_id)
-		if not lib then logn("steamfriends module not availible") return "" end
-		
-		return ffi.string(lib.steamGetNickFromSteamID(steam_id))
-	end
-	
-	function steam.GetClientSteamID()
-		if not lib then logn("steamfriends module not availible") return "" end
-		
-		return ffi.string(lib.steamGetClientSteamID())
-	end
-	
-	function steam.GetFriends()
-		if not lib then logn("steamfriends module not availible") return {} end
-		
-		local out = {}
-		
-		for i = 1, lib.steamGetFriendCount() do
-			table.insert(out, ffi.string(lib.steamGetFriendByIndex(i - 1)))
+	for k,v in pairs(steamfriends) do
+		if k ~= "Update" and k ~= "OnChatMessage" then
+			steam[k] = v
 		end
-		
-		return out
 	end
 	
-	function steam.GetAuthSessionTicket(app_id)
-		check(app_id, "number")
-		
-		local ticket = ffi.new("char[1024]")
-		local size = ffi.new("int[1]")
-		
-		os.setenv("SteamAppId", tostring(app_id))
-		local handle = lib.steamGetAuthSessionTicket(ticket, ffi.sizeof(ticket), size)
-		os.setenv("SteamAppId", "")
-		
-		return handle, ffi.string(ticket, size[0])
+	event.CreateThinker(function()
+		steamfriends.Update()
+	end)
+	
+	function steamfriends.OnChatMessage(sender_steam_id, text, receiver_steam_id)
+		event.Call("SteamFriendsMessage", sender_steam_id, text, receiver_steam_id)
 	end
+end)
+
+if not ok then
+	logn("could not load steamfriends: ", err)
+end
+
+function steam.IsSteamClientAvailible()
+	return ok
 end
 
 function steam.SteamIDToCommunityID(id)
