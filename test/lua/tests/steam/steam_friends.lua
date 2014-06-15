@@ -1,3 +1,7 @@
+if not steam.IsSteamClientAvailible() then
+	logn("steam friends extension not available")
+ return end
+
 local subject
 
 event.AddListener("SteamFriendsMessage", "steam_friends", function(sender_steam_id, txt, receiver_steam_id)
