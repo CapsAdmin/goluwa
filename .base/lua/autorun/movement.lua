@@ -1,5 +1,3 @@
-include("libraries/ecs.lua")
-
 if CLIENT then
 	local angles = Ang3(0, 0, 0)
 
@@ -112,12 +110,12 @@ end
 
 event.AddListener("Move", "spooky", function(client, cmd)
 	do return end
-	if not ecs then return end
+	if not entities then return end
 	
 	client.ghost = client.ghost or NULL
 	
 	if not client.ghost:IsValid() then
-		client.ghost = ecs.CreateEntity("shape2")
+		client.ghost = entities.CreateEntity("physical")
 		client.ghost:SetModelPath("models/cube.obj")
 		client.ghost:InitPhysics("box", 85, 1, 1, 1)
 		--client.ghost:SetScale(Vec3(1,1,1))
