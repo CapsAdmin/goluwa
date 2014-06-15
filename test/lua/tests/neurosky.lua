@@ -37,7 +37,7 @@ local function update_rt(eeg)
 	fb:End()
 end
 
-event.AddListener("Draw2D", "mindwave", function()
+event.AddListener("DrawHUD", "mindwave", function()
 	surface.SetTexture(fb:GetTexture())
 	surface.DrawRect(0,0, W,H)
 	
