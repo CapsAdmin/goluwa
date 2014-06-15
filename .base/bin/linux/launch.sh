@@ -49,7 +49,7 @@ export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
 #export TERM="xterm-color"
 
 while true; do
-	tmux new-session './luajit ../../../lua/init.lua'
+	./luajit ../../../lua/init.lua
 
 	if [ $? -eq 0 ] || [ $? -ge 128 ]; then
 		log i "I'm outta here!"
