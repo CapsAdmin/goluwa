@@ -26,15 +26,15 @@ end
 
 if SERVER then
 	function message.Send(id, filter, ...)		
-		if typex(filter) == "player" then
+		if typex(filter) == "client" then
 			network.SendMessageToClient(filter.socket, network.MESSAGE, id, ...)
-		elseif typex(filter) == "player_filter" then
-			for _, player in pairs(filter:GetAll()) do
-				network.SendMessageToClient(player.socket, network.MESSAGE, id, ...)
+		elseif typex(filter) == "client_filter" then
+			for _, client in pairs(filter:GetAll()) do
+				network.SendMessageToClient(client.socket, network.MESSAGE, id, ...)
 			end
 		else
-			for key, ply in pairs(players.GetAll()) do
-				network.SendMessageToClient(ply.socket, network.MESSAGE, id, ...)
+			for key, client in pairs(clients.GetAll()) do
+				network.SendMessageToClient(client.socket, network.MESSAGE, id, ...)
 			end
 		end
 	end
@@ -43,9 +43,9 @@ if SERVER then
 		return message.Send(id, nil, ...)
 	end
 	
-	function message.OnMessageReceived(ply, id, ...)
+	function message.OnMessageReceived(client, id, ...)
 		if message.Listeners[id] then
-			message.Listeners[id](ply, ...)
+			message.Listeners[id](client, ...)
 		end
 	end
 	
@@ -55,22 +55,22 @@ end
 do -- console extension
 	message.server_commands = message.server_commands or {}
 	
-	local player = NULL
+	local client = NULL
 	
-	function console.SetPlayer(ply)
-		player = ply or NULL
+	function console.SetClient(client)
+		client = client or NULL
 	end
 	
-	function console.GetPlayer()
-		return player
+	function console.GetClient()
+		return client
 	end
 	
 	if SERVER then
-		message.AddListener("scmd", function(ply, cmd, line, ...)
+		message.AddListener("scmd", function(client, cmd, line, ...)
 			local callback = message.server_commands[cmd]
 			
 			if callback then
-				callback(ply, line, ...)
+				callback(client, line, ...)
 			end
 		end)
 	end
@@ -86,7 +86,7 @@ do -- console extension
 		
 		if SERVER then
 			console.AddCommand(command, function(line, ...)
-				callback(player, line, ...)
+				callback(client, line, ...)
 			end)
 		end
 	end

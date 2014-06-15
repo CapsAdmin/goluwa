@@ -6,10 +6,10 @@ event.AddListener("DrawHUD", "scoreboard", function()
 	
 	local i = 0
 	local w, h = surface.GetScreenSize()
-	for _, ply in pairs(players.GetAll()) do
-		if not ply:IsBot() then
+	for _, client in pairs(clients.GetAll()) do
+		if not client:IsBot() then
 			surface.SetTextPos(w/2, h/2 + i * 20 + 5)
-			surface.DrawText(ply:GetNick())
+			surface.DrawText(client:GetNick())
 			i = i + 1
 		end
 	end

@@ -4,7 +4,7 @@ local client_tick_rate = 33 -- in ms
 local server_command_length = client_command_length
 local server_tick_rate = 10
 
-local META = (...) or metatable.Get("player")
+local META = (...) or metatable.Get("client")
 
 local layout = {
 	{name = "mouse_pos", default = Vec2(0, 0), type = "vec2short"},
@@ -30,8 +30,8 @@ function META:GetCurrentCommand()
 	return self.current_command
 end
 
-local function read_buffer(ply, buffer)
-	local cmd = ply:GetCurrentCommand() -- get or create the cmd table
+local function read_buffer(client, buffer)
+	local cmd = client:GetCurrentCommand() -- get or create the cmd table
 	local time_stamp -- first time is the base time
 	
 	for i = 1, 32 do
@@ -48,21 +48,25 @@ local function read_buffer(ply, buffer)
 			cmd.queue[i][v.name] = buffer:ReadType(v.type)
 		end
 		
+		if CLIENT then
+			cmd.queue[i].net_position = buffer:ReadVec3()
+		end
+		
 		if buffer:TheEnd() then 
 			break 
 		end
 		
 		if i == 32 then
-			logn("command too big: ", ply)
+			logn("command too big: ", client)
 		end
 	end
 		
-	--table.sort(ply.current_command.queue, function(a, b) return a.time > b.time end)
+	--table.sort(client.current_command.queue, function(a, b) return a.time > b.time end)
 end
 
 event.AddListener("Update", "interpolate_user_command", function()
-	for _, ply in pairs(players.GetAll()) do
-		local cmd = ply:GetCurrentCommand()
+	for _, client in pairs(clients.GetAll()) do
+		local cmd = client:GetCurrentCommand()
 		
 		local data = cmd.queue[1]
 				
@@ -72,7 +76,9 @@ event.AddListener("Update", "interpolate_user_command", function()
 				cmd[k] = v
 			end
 			
-			event.Call("Move", ply, cmd)
+			local pos, ang =  event.Call("Move", client, cmd)
+			
+			cmd.net_position = pos
 			
 			table.remove(cmd.queue, 1)
 		end
@@ -89,11 +95,11 @@ if CLIENT then
 		local last_send = 0
 		
 		event.CreateTimer("user_command_tick", client_tick_rate, function()
-			if not players.GetLocalPlayer():IsValid() then return end
+			if not clients.GetLocalClient():IsValid() then return end
 		
 			buffer:WriteDouble(timer.GetSystemTime())
 			
-			local move = event.Call("CreateMove", players.GetLocalPlayer(), players.GetLocalPlayer():GetCurrentCommand())
+			local move = event.Call("CreateMove", clients.GetLocalClient(), clients.GetLocalClient():GetCurrentCommand())
 			 
 			for _, v in ipairs(layout) do
 				buffer:WriteType(move and move[v.name] or v.default, v.type)
@@ -108,9 +114,9 @@ if CLIENT then
 	end
 		
 	packet.AddListener("user_command", function(buffer)
-		local ply = players.GetByUniqueID(buffer:ReadString())
-		if ply:IsValid() then
-			read_buffer(ply, buffer)
+		local client = clients.GetByUniqueID(buffer:ReadString())
+		if client:IsValid() then
+			read_buffer(client, buffer)
 		end
 	end)
 	
@@ -140,9 +146,22 @@ if SERVER then
 		end)
 	end
 
-	packet.AddListener("user_command", function(ply, buffer)
-		read_buffer(ply, buffer)
-		buffer:SetPos(0)
-		packet.Send("user_command", nil, buffer:AddHeader(Buffer():WriteString(ply:GetUniqueID())))
+	packet.AddListener("user_command", function(client, buffer)
+		read_buffer(client, buffer)
+		
+		local cmd = client:GetCurrentCommand()
+
+		local buffer = Buffer()
+		buffer:WriteString(client:GetUniqueID())
+		
+		buffer:WriteDouble(timer.GetSystemTime())
+		
+		for _, v in ipairs(layout) do
+			buffer:WriteType(cmd.queue[1][v.name], v.type)
+		end
+		
+		buffer:WriteVec3(cmd.net_position or Vec3(0, 0, 0))
+		
+		packet.Send("user_command", nil, buffer)
 	end)
 end 

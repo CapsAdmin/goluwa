@@ -206,6 +206,11 @@ function bullet.CreateRigidBody(typ, mass, matrix, ...)
 	
 	if typ == "concave" or typ == "convex" then
 		local t = ...
+	
+	
+		-- if you don't do this "t" will get garbage collected and bullet will crash
+		-- bullet says it does not make any copies of indices or vertices
+		self.mesh = t
 		
 		mesh = lib.bulletCreateMesh(
 			t.triangles.count, 
@@ -225,10 +230,8 @@ function bullet.CreateRigidBody(typ, mass, matrix, ...)
 		self.body = lib.bulletCreateRigidBodySphere(mass, matrix, ...)
 	elseif typ == "concave" then
 		self.body = lib.bulletCreateRigidBodyConcaveMesh(mass, matrix, mesh, select(2, ...))
-		self.mesh = mesh
 	elseif typ == "convex" then
 		self.body = lib.bulletCreateRigidBodyConvexMesh(mass, matrix, mesh)
-		self.mesh = mesh
 	else
 		error("unknown shape type", 2)
 	end

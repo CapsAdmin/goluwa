@@ -248,7 +248,7 @@ end
 -- sound utils
 if gmod then
 	function chatsounds.CreateSound(path, udata)
-		local self = {csp = CreateSound(udata or LocalPlayer(), path), udata = udata, path = path}
+		local self = {csp = CreateSound(udata or LocalClient(), path), udata = udata, path = path}
 
 		function self:Play()
 			self.csp:Play()
@@ -267,7 +267,7 @@ if gmod then
 		function self:SetVolume(volume, time)
 			volume = math.clamp(tonumber(volume) or 100, 0, 100)
 
-			if self.udata == LocalPlayer() then
+			if self.udata == LocalClient() then
 				volume = volume / 2
 			end
 
@@ -275,7 +275,7 @@ if gmod then
 		end
 
 		function self:SetDSP(i)
-			LocalPlayer():SetDSP(math_clamp(tonumber(i) or 0, 0, 128))
+			LocalClient():SetDSP(math_clamp(tonumber(i) or 0, 0, 128))
 		end
 
 		function self:GetDuration()
@@ -1396,13 +1396,13 @@ function chatsounds.Update()
 	end
 end
 
-function chatsounds.Say(ply, str, seed)
+function chatsounds.Say(client, str, seed)
 	if not chatsounds.tree then return end
 
-	if type(ply) == "string" then
+	if type(client) == "string" then
 		seed = str
-		str = ply
-		ply = nil
+		str = client
+		client = nil
 	end
 
 	str = str:lower()
@@ -1414,7 +1414,7 @@ function chatsounds.Say(ply, str, seed)
 	if str:find(";") then
 		str = str .. ";"
 		for line in str:gmatch("(.-);") do
-			chatsounds.Say(ply, line, seed)
+			chatsounds.Say(client, line, seed)
 		end
 		return
 	end
@@ -1422,7 +1422,7 @@ function chatsounds.Say(ply, str, seed)
 	if seed then math.randomseed(seed) end
 
 	local script = chatsounds.GetScript(str)
-	chatsounds.PlayScript(script, ply)
+	chatsounds.PlayScript(script, client)
 end
 
 function chatsounds.Initialize()

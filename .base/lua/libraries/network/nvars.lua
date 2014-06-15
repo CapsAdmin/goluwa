@@ -52,30 +52,30 @@ if CLIENT then
 end
 
 if SERVER then
-	function nvars.Synchronize(ply)
+	function nvars.Synchronize(client)
 		for env, vars in pairs(nvars.Environments) do
 			for key, value in pairs(vars) do
-				nvars.Set(key, value, env, ply)
+				nvars.Set(key, value, env, client)
 			end
 		end
 	end
 	
-	message.AddListener("ncv", function(ply, cvar, var)
+	message.AddListener("ncv", function(client, cvar, var)
 		local key = nvars.added_cvars[cvar]
 		if key then
-			ply.nv[key] = var
+			client.nv[key] = var
 		end
 	end)
 end
 
-function nvars.Set(key, value, env, ply)
+function nvars.Set(key, value, env, client)
 	env = env or "g"
 		
 	nvars.Environments[env] = nvars.Environments[env] or {}
 	nvars.Environments[env][key] = value
 	
 	if SERVER then
-		message.Send("nv", ply, env, key, value)
+		message.Send("nv", client, env, key, value)
 	end
 end
 

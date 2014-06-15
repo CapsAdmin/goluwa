@@ -50,7 +50,7 @@
 			-	Vehicle
 			-	Weapon
 			-	NPC
-			-	Player
+			-	Client
 			-	NextBot
 
 	These are the types one would normally serialize.
@@ -737,7 +737,7 @@ if gmod then	--	Luckily, a specific table named after the game is present in Gar
 		_deserialize[k] = v
 	end
 
-	local extraEntityTypes = { "Vehicle", "Weapon", "NPC", "Player", "NextBot" }
+	local extraEntityTypes = { "Vehicle", "Weapon", "NPC", "Client", "NextBot" }
 
 	for i = 1, #extraEntityTypes do
 		_serialize[extraEntityTypes[i]] = _serialize.Entity

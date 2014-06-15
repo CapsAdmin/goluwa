@@ -10,12 +10,12 @@ local start_symbols = {
 local arg_types = {
 	vec3 = Vec3,	
 	ang3 = Ang3,
-	ply = function(str)
+	client = function(str)
 		return easylua.FindEntity(str) or NULL
 	end,
-	name = function(ply)
-		if ply and ply:IsValid() then
-			return ply:GetNick()
+	name = function(client)
+		if client and client:IsValid() then
+			return client:GetNick()
 		end
 	end,
 }
@@ -29,8 +29,8 @@ end
 
 arg_types.v3 = arg_types.vec3
 arg_types.a3 = arg_types.ang3
-arg_types["@"] = arg_types.ply
-arg_types["#"] = arg_types.ply
+arg_types["@"] = arg_types.client
+arg_types["#"] = arg_types.client
 
 
 local capture_symbols = {

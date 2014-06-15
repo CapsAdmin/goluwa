@@ -1,6 +1,6 @@
 console.CreateVariable("sv_timeout", 30)	
 
-local META = (...) or metatable.Get("player")
+local META = (...) or metatable.Get("client")
 
 nvars.GetSet(META, "Ping", 0)
 	
@@ -24,39 +24,39 @@ if CLIENT then
 	message.AddListener("ping", function(...)
 		message.Send("pong", ...)
 		
-		players.GetLocalPlayer().last_ping = os.clock()
+		clients.GetLocalClient().last_ping = os.clock()
 	end)
 end
 
 if SERVER then			
-	message.AddListener("pong", function(ply, time)
+	message.AddListener("pong", function(client, time)
 		local ms = (os.clock() - tonumber(time)) * 100
 		
-		ply:SetPing(ms)
-		ply.last_ping = os.clock()
+		client:SetPing(ms)
+		client.last_ping = os.clock()
 	end)
 end		
 
-event.CreateTimer("ping_pong_players", 1, 0, function()
+event.CreateTimer("ping_pong_clients", 1, 0, function()
 	if not network.IsStarted() then return end
 	
 	if SERVER then
-		for key, ply in pairs(players.GetAll()) do			
-			message.Send("ping", ply, tostring(os.clock()))
+		for key, client in pairs(clients.GetAll()) do			
+			message.Send("ping", client, tostring(os.clock()))
 			
-			if ply:IsTimingOut() then			
-				ply:Kick("timeout")
+			if client:IsTimingOut() then			
+				client:Kick("timeout")
 			end
 		end
 	end
 	
 	if CLIENT then
-		local ply = players.GetLocalPlayer()
+		local client = clients.GetLocalClient()
 		
-		if ply:IsTimingOut() then
+		if client:IsTimingOut() then
 			logn("timing out from server..")
 			
-			if ply:IsTimingOut() then
+			if client:IsTimingOut() then
 				network.Disconnect("timed out")
 			end
 		end

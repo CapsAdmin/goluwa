@@ -622,12 +622,11 @@ do -- libraries
 	packet = include("libraries/network/packet.lua") -- high level communication between server and client
 	network = include("libraries/network/network.lua") -- high level implementation of sockets
 	nvars = include("libraries/network/nvars.lua")
+	clients = include("libraries/network/clients.lua") -- high level client/player/user 
 	chat = include("libraries/network/chat.lua")
 
-	entities = include("libraries/entities/entities.lua")
-	players = include("libraries/entities/players.lua")
-	easylua = include("libraries/entities/easylua.lua")
-	
+	entities = include("libraries/entities/entities.lua") -- entity component system
+
 	include("libraries/extensions/vfs_vpk.lua") -- vpk support for _G.vfs
 	include("libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
 end
@@ -645,7 +644,6 @@ if not ZEROBRANE then
 end
 
 steamapi.Initialize()
-entities.LoadAllEntities()
 
 do -- addons
 	

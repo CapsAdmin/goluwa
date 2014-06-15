@@ -68,15 +68,15 @@ if SERVER then
 		local data = prepend_header(id, buffer)
 		
 		if data then
-			if typex(filter) == "player" then
+			if typex(filter) == "client" then
 				network.SendPacketToClient(filter.socket, data)
-			elseif typex(filter) == "player_filter" then
-				for _, player in pairs(filter:GetAll()) do
-					network.SendPacketToClient(player.socket, data)
+			elseif typex(filter) == "client_filter" then
+				for _, client in pairs(filter:GetAll()) do
+					network.SendPacketToClient(client.socket, data)
 				end
 			else
-				for key, ply in pairs(players.GetAll()) do
-					network.SendPacketToClient(ply.socket, data)
+				for key, client in pairs(clients.GetAll()) do
+					network.SendPacketToClient(client.socket, data)
 				end
 			end
 		end
@@ -86,12 +86,12 @@ if SERVER then
 		return packet.Send(id, nil, buffer)
 	end
 	
-	function packet.OnPacketReceived(ply, str)
+	function packet.OnPacketReceived(client, str)
 		local buffer = packet.CreateBuffer(str)
 		local id = read_header(buffer)
 				
 		if packet.Listeners[id] then
-			packet.Listeners[id](ply, buffer)
+			packet.Listeners[id](client, buffer)
 		end
 	end
 	

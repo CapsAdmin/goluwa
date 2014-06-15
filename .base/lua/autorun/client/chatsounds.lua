@@ -1,7 +1,7 @@
 --chatsounds.Initialize()
 
-event.AddListener("PlayerChat", "chatsounds", function(ply, txt, seed)
+event.AddListener("ClientChat", "chatsounds", function(client, txt, seed)
 	if not txt:find(".-%p") then
-		chatsounds.Say(ply, txt, seed)
+		chatsounds.Say(client, txt, seed)
 	end
 end)

@@ -337,7 +337,7 @@ do -- helpers
 							if 
 								part ~= self and 
 								self[part_key] ~= part and 
-								part:GetPlayerOwner() == self:GetPlayerOwner() and 
+								part:GetClientOwner() == self:GetClientOwner() and 
 								part.Name == self[name_key] 
 							then
 								self[name_set_key](self, part)

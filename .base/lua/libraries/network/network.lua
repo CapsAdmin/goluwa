@@ -86,28 +86,28 @@ function network.HandleMessage(socket, stage, a, ...)
 	
 	if SERVER and stage == network.CONNECT then
 	
-		local player = players.Create(uniqueid)
+		local client = clients.Create(uniqueid)
 		
 		if network.debug then
-			logf("player %s connected\n", player)
+			logf("client %s connected\n", client)
 		end
 			
-		-- store the socket in the player
-		player.socket = socket
+		-- store the socket in the client
+		client.socket = socket
 					
-		if event.Call("PlayerConnect", player) == false then
+		if event.Call("ClientConnect", client) == false then
 			
 			if network.debug then
-				logf("player %s removed because the PlayerConnect event returned false\n", player)
+				logf("client %s removed because the ClientConnect event returned false\n", client)
 			end
 			
-			player:Remove()			
+			client:Remove()			
 			socket:Remove()
 			return
 		end
 		
 		if network.debug then
-			logn("requesting udp port from ", player)
+			logn("requesting udp port from ", client)
 		end
 		
 		-- request the udp port
@@ -123,12 +123,12 @@ function network.HandleMessage(socket, stage, a, ...)
 		
 	elseif SERVER and stage == network.UDP_PORT then
 	
-		local player = players.GetByUniqueID(uniqueid)
+		local client = clients.GetByUniqueID(uniqueid)
 		local udp_port = tonumber(a)
 		
-		if not player:IsValid() then
+		if not client:IsValid() then
 			if network.debug then
-				logf("invalid message: socket %s tried to send UDP_PORT packet with port number %s but the player is NULL\n", socket, udp_port)
+				logf("invalid message: socket %s tried to send UDP_PORT packet with port number %s but the client is NULL\n", socket, udp_port)
 			end
 			socket:Remove()
 			return
@@ -138,28 +138,28 @@ function network.HandleMessage(socket, stage, a, ...)
 		if not udp_port then
 			logn("client ", uniqueid ," gave invalid port: ", tostring(a))
 			socket:Remove()
-			player:Remove()
+			client:Remove()
 			return
 		end
 		
 		if network.debug then
-			logf("player %s sent udp port %i\n", player, udp_port)
+			logf("client %s sent udp port %i\n", client, udp_port)
 		end
 		
 		-- store the udp port
-		network.udp_accept[socket:GetIP() .. udp_port] = player
+		network.udp_accept[socket:GetIP() .. udp_port] = client
 		socket.udp_port = udp_port		
 		
-		-- send all the nvars to this player
-		nvars.Synchronize(player)
+		-- send all the nvars to this client
+		nvars.Synchronize(client)
 		
 		network.SendMessageToClient(socket, network.CONNECTED, uniqueid)
 		
 	elseif CLIENT and stage == network.CONNECTED then
-		local player = players.Create(uniqueid) -- get or create
+		local client = clients.Create(uniqueid) -- get or create
 		
-		players.local_player = player
-		players.local_player.socket = network.tcp
+		clients.local_client = client
+		clients.local_client.socket = network.tcp
 		
 		if network.debug then
 			logn("successfully connected to server")
@@ -172,30 +172,30 @@ function network.HandleMessage(socket, stage, a, ...)
 		
 	elseif SERVER and stage == network.SYNCHRONIZED then
 	
-		local player = players.GetByUniqueID(uniqueid)
+		local client = clients.GetByUniqueID(uniqueid)
 					
-		if not player:IsValid() then
+		if not client:IsValid() then
 			if network.debug then
-				logf("invalid message: socket %s tried to send SYNCHRONIZED but the player is NULL\n", socket)
+				logf("invalid message: socket %s tried to send SYNCHRONIZED but the client is NULL\n", socket)
 			end
 			socket:Remove()
 			return
 		end
 		
-		event.Call("PlayerSpawned", player)		
+		event.Call("ClientSpawned", client)		
 		
 		-- send a message to everyone that we connected successfully
 		network.BroadcastMessage(network.READY, uniqueid)
 		
-		-- tell the client about all the other players and bots
-		for _, ply in pairs(players.GetAll()) do
-			network.SendMessageToClient(socket, network.READY, ply:GetUniqueID())
+		-- tell the client about all the other clients and bots
+		for _, client in pairs(clients.GetAll()) do
+			network.SendMessageToClient(socket, network.READY, client:GetUniqueID())
 		end
 		
 	elseif CLIENT and stage == network.READY then
-		local player = players.Create(uniqueid) -- get or create
+		local client = clients.Create(uniqueid) -- get or create
 		
-		event.Call("PlayerSpawned", player)
+		event.Call("ClientSpawned", client)
 	end
 	
 	if stage == network.MESSAGE then
@@ -206,27 +206,27 @@ function network.HandleMessage(socket, stage, a, ...)
 		end
 		
 		if SERVER then
-			local player = players.GetByUniqueID(uniqueid)
+			local client = clients.GetByUniqueID(uniqueid)
 			
-			if not player:IsValid() then
+			if not client:IsValid() then
 				if network.debug then
-					logf("invalid message: socket %s tried to send MESSAGE packet but the player is not a valid player\n", socket, reason)
+					logf("invalid message: socket %s tried to send MESSAGE packet but the client is not a valid client\n", socket, reason)
 					logn(a, ...)
 				end
 				socket:Remove()
 				return
 			end
 						
-			event.Call("NetworkMessageReceived", player, a, ...)
+			event.Call("NetworkMessageReceived", client, a, ...)
 		end
 	elseif stage == network.DISCONNECT then	
-		local player = players.GetByUniqueID(uniqueid)
+		local client = clients.GetByUniqueID(uniqueid)
 		local reason = tostring(a)
 		
 		if SERVER then
-			if not player:IsValid() then
+			if not client:IsValid() then
 				if network.debug then
-					logf("invalid message: socket %s tried to send DISCONNECT packet with reason %q but the player is not a valid player\n", socket, reason)
+					logf("invalid message: socket %s tried to send DISCONNECT packet with reason %q but the client is not a valid client\n", socket, reason)
 				end
 				
 				socket:Remove()
@@ -234,13 +234,13 @@ function network.HandleMessage(socket, stage, a, ...)
 				return
 			end
 		
-			event.Call("PlayerLeft", player:GetName(), uniqueid, reason, player)
-			event.BroadcastCall("PlayerLeft", player:GetName(), uniqueid, reason)
+			event.Call("ClientLeft", client:GetName(), uniqueid, reason, client)
+			event.BroadcastCall("ClientLeft", client:GetName(), uniqueid, reason)
 			
 			-- send the message back to other clients
 			network.BroadcastMessage(stage, uniqueid, reason)
 			
-			-- maybe the player disconnected before UDP_PORT
+			-- maybe the client disconnected before UDP_PORT
 			if socket.udp_port and socket:GetIP() then
 				network.udp_accept[socket:GetIP() .. socket.udp_port] = nil
 			end
@@ -249,24 +249,24 @@ function network.HandleMessage(socket, stage, a, ...)
 		end
 		
 		if network.debug then
-			logf("%s disconnected (%s)\n", player, reason or "unknown reason")
+			logf("%s disconnected (%s)\n", client, reason or "unknown reason")
 		end
 		
 			
 		-- we allow disconnect at any time 
 		-- so we need to make sure everything is valid
 		
-		if player:IsValid() then
-			player:Remove()
+		if client:IsValid() then
+			client:Remove()
 		end
 	end
 end
 
-function network.HandlePacket(str, player)
+function network.HandlePacket(str, client)
 	if CLIENT then
 		event.Call("NetworkPacketReceived", str)
 	elseif SERVER then
-		event.Call("NetworkPacketReceived", player, str)
+		event.Call("NetworkPacketReceived", client, str)
 	end
 end
 
@@ -389,9 +389,9 @@ if CLIENT then
 			
 			event.Call("Disconnected", reason)
 			
-			for _, ply in pairs(players.GetAll()) do
-				print(ply)
-				ply:Remove()
+			for _, client in pairs(clients.GetAll()) do
+				print(client)
+				client:Remove()
 			end
 		end
 	end
@@ -468,9 +468,9 @@ if SERVER then
 			server:UseDummyClient(false)
 			
 			function server:OnReceive(str, ip, port)
-				local player = network.udp_accept[ip .. port]
-				if player and player.socket:GetIP() == ip then
-					network.HandlePacket(str, player)
+				local client = network.udp_accept[ip .. port]
+				if client and client.socket:GetIP() == ip then
+					network.HandlePacket(str, client)
 				end
 				network.UpdateStatistics()
 			end
@@ -533,23 +533,23 @@ console.AddCommand("say", function(line)
 end)
 
 console.AddCommand("lua_run", function(line)
-	easylua.RunLua(players.GetLocalPlayer(), line, nil, true)
+	easylua.RunLua(clients.GetLocalClient(), line, nil, true)
 end)
 
 console.AddCommand("lua_open", function(line)
-	easylua.Start(players.GetLocalPlayer())
+	easylua.Start(clients.GetLocalClient())
 		include(line)
 	easylua.End()
 end)
 
-console.AddServerCommand("lua_run_sv", function(ply, line)
-	logn(ply:GetNick(), " ran ", line)
-	easylua.RunLua(ply, line, nil, true)
+console.AddServerCommand("lua_run_sv", function(client, line)
+	logn(client:GetNick(), " ran ", line)
+	easylua.RunLua(client, line, nil, true)
 end)
 
-console.AddServerCommand("lua_open_sv", function(ply, line)
-	logn(ply:GetNick(), " opened ", line)
-	easylua.Start(ply)
+console.AddServerCommand("lua_open_sv", function(client, line)
+	logn(client:GetNick(), " opened ", line)
+	easylua.Start(client)
 		include(line)
 	easylua.End()
 end)
