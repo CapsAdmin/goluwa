@@ -73,7 +73,7 @@ if CLIENT then
 end
 
 if SERVER then
-    event.AddListener("PlayerChat", "google", function(ply, question)
+    event.AddListener("ClientChat", "google", function(client, question)
 		question = question:lower()
 		if question:find("google.+?") then
 			question = question:match("google.-(%a.+)?")
@@ -84,7 +84,7 @@ if SERVER then
 	end)
 	
 	console.AddCommand("t", function(line, from, to, str)
-		local ply = console.GetPlayer()
+		local client = console.GetClient()
 				
 		if from and not to and not str then
 			str = from
@@ -93,7 +93,7 @@ if SERVER then
 		end
 		
 		google.Translate(from, to, str, function(data)
-			chat.PlayerSay(ply, data.translated)
+			chat.ClientSay(client, data.translated)
 		end)
 	end)
 end

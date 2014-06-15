@@ -3,7 +3,8 @@ include("libraries/ecs.lua")
 if CLIENT then
 	local angles = Ang3(0, 0, 0)
 
-	event.AddListener("CreateMove", "spooky", function(ply, prev_cmd)
+	event.AddListener("CreateMove", "spooky", function(client, prev_cmd)
+		do return end
 	
 		if not window.IsOpen() then return end
 		if chat and chat.IsVisible() then return end
@@ -69,6 +70,7 @@ if CLIENT then
 		cmd.velocity = forward + side + up
 		cmd.angles = angles
 		cmd.fov = fov
+		cmd.mouse_pos = window.GetMousePos()
 		
 		return cmd
 	end)
@@ -81,12 +83,13 @@ if CLIENT then
 		surface.SetColor(1,1,1,1)
 		surface.SetFont("default")
 		
-		for _, ply in pairs(players.GetAll()) do
-			if not ply:IsBot() then
-				local cmd = ply:GetCurrentCommand()
+		for _, client in pairs(clients.GetAll()) do
+			if not client:IsBot() then
+				local cmd = client:GetCurrentCommand()
 				surface.SetTextPos(cmd.mouse_pos.x, cmd.mouse_pos.y)
-				local str = ply:GetNick()
-				local coh = ply:GetChatAboveHead()
+
+				local str = client:GetNick()
+				local coh = client:GetChatAboveHead()
 				
 				if #coh > 0 then
 					str = str .. ": " .. coh
@@ -101,55 +104,46 @@ if CLIENT then
 end 
 
 
-for k,v in pairs(players.GetAll()) do
+for k,v in pairs(clients.GetAll()) do
 	if v.ghost and v.ghost:IsValid() then
 		v.ghost:Remove()
 	end
-end 
+end  
 
-event.AddListener("Move", "spooky", function(ply, cmd)
+event.AddListener("Move", "spooky", function(client, cmd)
+	do return end
 	if not ecs then return end
 	
-	ply.ghost = ply.ghost or NULL
+	client.ghost = client.ghost or NULL
 	
-	if not ply.ghost:IsValid() then
-		ply.ghost = ecs.CreateEntity("shape2")
-		ply.ghost:SetModelPath("models/box.obj")
-		ply.ghost:InitPhysics("box", 85, 1, 1, 1)
-		--ply.ghost:SetScale(Vec3(1,1,1))
-		ply.ghost:SetPosition(Vec3(0,0,10))
+	if not client.ghost:IsValid() then
+		client.ghost = ecs.CreateEntity("shape2")
+		client.ghost:SetModelPath("models/cube.obj")
+		client.ghost:InitPhysics("box", 85, 1, 1, 1)
+		--client.ghost:SetScale(Vec3(1,1,1))
+		client.ghost:SetPosition(Vec3(0,0,10))
 	end
 	
-	local pos = ply.ghost:GetPosition()
+	local pos = client.ghost:GetPosition() 
 	
-	if ply == players.GetLocalPlayer() then
-		render.SetupView3D(pos, cmd.angles:GetDeg(), cmd.fov)
+	if CLIENT then
+		if client == clients.GetLocalClient() then
+			render.SetupView3D(pos, cmd.angles:GetDeg(), cmd.fov)
+			
+			if cmd.net_position and cmd.net_position:Distance(pos) > 0.25 then
+				client.ghost:SetPosition(cmd.net_position)
+				client.ghost:SetVelocity(Vec3(0,0,0))
+				--print(cmd.net_position - pos)
+			end
+		end		
 	end
 			
 	local vel = cmd.angles:GetForward() * cmd.velocity
-				
-	vel:SetMaxLength(100000)
-					
-	ply.ghost:SetVelocity(ply.ghost:GetVelocity() + vel)
-	--ply.ghost:SetAngles(cmd.angles) 
-	--ply.ghost:SetScale(Vec3(1,(-(cmd.fov / 90) + 2) ^ 4,1))
-end) 
-
-event.Delay(function()
-	local world = ecs.CreateEntity("shape2")
-	world:SetModelPath("models/cube.obj")  
-	world:InitPhysics("box", 0, 500, 1, 500)  
-	world:SetPosition(Vec3(0,0,0)) 
-	world:SetAngles(Ang3(0,0,0))
-	world:SetScale(Vec3(500, 500, 0))			
 	
-	for i = 1, 10 do
-		local body = ecs.CreateEntity("shape2")
-		body:SetModelPath("models/cube.obj")
-		body:SetPosition(Vec3(0,0,1+i*10)) 
-		body:InitPhysics("convex", 10, "models/cube.obj", true)  
-		body:SetSize(1)
-		ASDF = body
-	end
+	client.ghost:SetVelocity(client.ghost:GetVelocity() + vel)
+		
+	--client.ghost:SetAngles(cmd.angles) 
+	--client.ghost:SetScale(Vec3(1,(-(cmd.fov / 90) + 2) ^ 4,1))
+	 if SERVER then print(pos) end 
+	return pos
 end) 
- 

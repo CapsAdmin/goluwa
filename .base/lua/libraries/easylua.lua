@@ -19,8 +19,8 @@ if CLIENT then
 end
 
 if SERVER then
-	message.AddListener("prints", function(ply, ...)
-		print(ply:GetNick(), ...)
+	message.AddListener("prints", function(client, ...)
+		print(client:GetNick(), ...)
 	end)
 end
 
@@ -55,7 +55,7 @@ function easylua.FindEntity(str)
 		return this
 	end
 
-	if str == "#me" and typex(me) == "player" then
+	if str == "#me" and typex(me) == "client" then
 		return me
 	end
 
@@ -67,15 +67,15 @@ function easylua.FindEntity(str)
 		str = str:sub(2)
 	end
 
-	for key, ply in pairs(players.GetAll()) do
-		if not ply:IsBot() and compare(ply:GetNick(), str) then
-			return ply
+	for key, client in pairs(clients.GetAll()) do
+		if not client:IsBot() and compare(client:GetNick(), str) then
+			return client
 		end
 	end
 	
-	for key, ply in pairs(players.GetAll()) do
-		if ply:IsBot() and compare(ply:GetNick(), str) then
-			return ply
+	for key, client in pairs(clients.GetAll()) do
+		if client:IsBot() and compare(client:GetNick(), str) then
+			return client
 		end
 	end
 end
@@ -84,26 +84,26 @@ function easylua.CopyToClipboard(var)
 	me:SendLua([[system.SetClipboard("]]..tostring(var)..[[")]])
 end
 
-function easylua.Start(ply)
-	ply = ply or CLIENT and players.GetLocalPlayer() or NULL
+function easylua.Start(client)
+	client = client or CLIENT and clients.GetLocalClient() or NULL
 
-	if not ply:IsValid() then return end
+	if not client:IsValid() then return end
 
 	local vars = {}
-		--vars.all = utilities.CreateAllFunction(function(v) return typex(v) == "player" end)
-		vars.me = ply
+		--vars.all = utilities.CreateAllFunction(function(v) return typex(v) == "client" end)
+		vars.me = client
 
 		vars.copy = s.CopyToClipboard
 		vars.prints = s.PrintOnServer
 
 		vars.E = s.FindEntity
-		vars.last = ply.easylua_lastvars
+		vars.last = client.easylua_lastvars
 
 		s.vars = vars
 	for k,v in pairs(vars) do _G[k] = v end
 
-	ply.easylua_lastvars = vars
-	ply.easylua_iterator = (ply.easylua_iterator or 0) + 1
+	client.easylua_lastvars = vars
+	client.easylua_iterator = (client.easylua_iterator or 0) + 1
 end
 
 function easylua.End()
@@ -111,7 +111,7 @@ function easylua.End()
 		for key, value in pairs(s.vars) do
 			_G[key] = nil
 		end
-		me = players.GetLocalPlayer()
+		me = clients.GetLocalClient()
 	end
 end
 
@@ -146,14 +146,14 @@ do -- env meta
 	easylua.EnvMeta = setmetatable({}, META)
 end
 
-function easylua.RunLua(ply, code, env_name, print_error)
+function easylua.RunLua(client, code, env_name, print_error)
 	local data =
 	{
 		error = false,
 		args = {},
 	}
 
-	easylua.Start(ply)
+	easylua.Start(client)
 		if s.vars then
 			local header = ""
 
@@ -164,7 +164,7 @@ function easylua.RunLua(ply, code, env_name, print_error)
 			code = header .. "; " .. code
 		end
 
-		data.env_name = env_name or ply:IsValid() and ply:GetNick() or "huh"
+		data.env_name = env_name or client:IsValid() and client:GetNick() or "huh"
 
 		local func, err = loadstring(code, env_name)
 

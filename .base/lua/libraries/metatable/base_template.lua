@@ -6,7 +6,7 @@ function metatable.GetCreated()
 	return objects
 end
 
-function metatable.CreateTemplate(class_name)
+function metatable.CreateTemplate(class_name, skip_onremove)
 	local META = {}
 	META.__index = META
 	
@@ -35,7 +35,7 @@ function metatable.CreateTemplate(class_name)
 	end
 	
 	function META:Remove(...)
-		if self.OnRemove then 
+		if self.OnRemove and not skip_onremove then 
 			self:OnRemove(...) 
 		end
 		utilities.MakeNULL(self)

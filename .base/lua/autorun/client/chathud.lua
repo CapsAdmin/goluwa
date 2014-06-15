@@ -79,7 +79,7 @@ function chathud.AddText(...)
 		
 	for k,v in pairs({...}) do
 		local t = typex(v)
-		if t == "player" then
+		if t == "client" then
 			table.insert(args, v:GetUniqueColor())
 			table.insert(args, v:GetNick())
 			table.insert(args, Color(255, 255, 255, 255))

@@ -1,7 +1,7 @@
 local chat = _G.chat or {}
 
-local function getnick(ply)
-	return ply:IsValid() and ply:GetNick() or "server"
+local function getnick(client)
+	return client:IsValid() and client:GetNick() or "server"
 end
 
 local enabled = console.CreateVariable("chat_timestamps", true)
@@ -34,10 +34,10 @@ function chat.Append(var, str)
 		var = NULL
 	end
 
-	local ply = NULL
+	local client = NULL
 	
-	if typex(var) == "player" then
-		ply = var
+	if typex(var) == "client" then
+		client = var
 		var = getnick(var)
 	elseif typex(var) == "null" then
 		var = "disconnected"
@@ -50,8 +50,8 @@ function chat.Append(var, str)
 	if CLIENT then
 		local tbl = chat.AddTimeStamp()
 		
-		if ply:IsValid() then
-			table.insert(tbl, ply:GetUniqueColor())
+		if client:IsValid() then
+			table.insert(tbl, client:GetUniqueColor())
 		end
 		
 		table.insert(tbl, var)
@@ -65,9 +65,9 @@ function chat.Append(var, str)
 end
 
 if CLIENT then	
-	message.AddListener("say", function(ply, str, seed)
-		if event.Call("PlayerChat", ply, str, seed) ~= false then
-			chat.Append(ply, str)
+	message.AddListener("say", function(client, str, seed)
+		if event.Call("ClientChat", client, str, seed) ~= false then
+			chat.Append(client, str)
 		end
 	end)
 	
@@ -257,17 +257,17 @@ end
 
 local seed = 0
 
-function chat.PlayerSay(ply, str, skip_log)
-	if event.Call("PlayerChat", ply, str, seed) ~= false then
-		if skip_log then chat.Append(ply, str) end
-		if SERVER then message.Broadcast("say", ply, str, seed) seed = seed + 1 end
+function chat.ClientSay(client, str, skip_log)
+	if event.Call("ClientChat", client, str, seed) ~= false then
+		if skip_log then chat.Append(client, str) end
+		if SERVER then message.Broadcast("say", client, str, seed) seed = seed + 1 end
 	end
 end
 
 if SERVER then
 
-	message.AddListener("say", function(ply, str)
-		chat.PlayerSay(ply, str)
+	message.AddListener("say", function(client, str)
+		chat.ClientSay(client, str)
 	end)
 
 	function chat.Say(str)

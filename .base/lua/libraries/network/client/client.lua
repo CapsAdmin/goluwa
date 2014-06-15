@@ -1,7 +1,6 @@
-local META = {}
+local META = (...) or metatable.Get("client")
 
-META.ClassName = "player"
-META.TypeX = "player"
+META.Name = "client"
 
 META.socket = NULL
 
@@ -16,8 +15,8 @@ function META:IsConnected()
 end
 
 function META:GetNick()
-	for key, ply in pairs(players.GetAll()) do
-		if ply ~= self and ply.nv.Nick == self.nv.Nick then
+	for key, client in pairs(clients.GetAll()) do
+		if client ~= self and client.nv.Nick == self.nv.Nick then
 			return ("%s(%i)"):format(self.nv.Nick, self.ID)
 		end
 	end
@@ -26,7 +25,7 @@ function META:GetNick()
 end
 
 function META:__tostring()
-	return string.format("player[%s][%i]", self:GetName(), self:GetID())
+	return string.format("client[%s][%i]", self:GetName(), self:GetID())
 end
 
 function META:GetName()	
@@ -35,7 +34,7 @@ end
 
 function META:OnRemove()	
 	self.nv:Remove()
-	players.active_players[self:GetUniqueID()] = nil
+	clients.active_clients[self:GetUniqueID()] = nil
 	if SERVER then 
 		if self.socket:IsValid() then
 			network.HandleMessage(self.socket, network.DISCONNECT, "removed")
@@ -57,8 +56,8 @@ if SERVER then
 		end
 		
 		if self:IsBot() then
-			event.Call("PlayerLeft", self:GetName(), self:GetUniqueID(), reason, self)
-			event.BroadcastCall("PlayerLeft", self:GetName(), self:GetUniqueID(), reason)
+			event.Call("ClientLeft", self:GetName(), self:GetUniqueID(), reason, self)
+			event.BroadcastCall("ClientLeft", self:GetName(), self:GetUniqueID(), reason)
 			network.BroadcastMessage(network.DISCONNECT, self:GetUniqueID(), reason)
 		
 			self:Remove()
@@ -70,5 +69,3 @@ include("pingpong.lua", META)
 include("input.lua", META)
 include("extended.lua", META)
 include("user_command.lua", META)
-
-entities.Register(META)

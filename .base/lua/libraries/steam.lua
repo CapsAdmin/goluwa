@@ -317,8 +317,8 @@ do -- server query
 				{"string", "Folder"}, -- Name of the folder containing the game files.
 				{"string", "Game"}, -- Full name of the game.
 				{"short", "ID"}, -- Steam Application ID of game.
-				{"byte", "Players"}, -- Number of players on the server.
-				{"byte", "MaxPlayers"}, -- Maximum number of players the server reports it can hold.
+				{"byte", "Clients"}, -- Number of clients on the server.
+				{"byte", "MaxClients"}, -- Maximum number of clients the server reports it can hold.
 				{"byte", "Bots"}, -- Number of bots on the server.
 				{"char", "ServerType", translate = {d = "dedicated server", l = "non-dedicated server", p = "SourceTV relay (proxy)"}}, -- Indicates the type of server
 				{"char", "Environment", translate = {l = "Linux", w = "Windows", m = "Mac", o = "Mac"}}, -- Indicates the operating system of the server
@@ -342,7 +342,7 @@ do -- server query
 				{"long", "Name", match = {ExtraDataFlag = function(num) return bit.band(num, 0x01) end}}, -- The server's 64-bit GameID. If this is present, a more accurate AppID is present in the low 24 bits. The earlier AppID could have been truncated as it was forced into 16-bit storage.
 			}
 		},
-		players = {
+		clients = {
 			challenge = true,
 			request = {
 				{"byte", 0x55},
@@ -350,12 +350,12 @@ do -- server query
 			},
 			response = {
 				{"byte", "Header", assert = 0x44}, -- Always equal to 'D' (0x44.)
-				{"byte", "Players", {
+				{"byte", "Clients", {
 					{"byte", "Index"}, -- Index of player chunk starting from 0.
 					{"string", "Name"}, -- Name of the player.
-					{"long", "Score"}, -- Player's score (usually "frags" or "kills".)
+					{"long", "Score"}, -- Client's score (usually "frags" or "kills".)
 					{"float", "Duration"}, -- Time (in seconds) player has been connected to the server.
-				}}, -- Number of players whose information was gathered.
+				}}, -- Number of clients whose information was gathered.
 			}
 		},
 		rules = {
@@ -473,11 +473,11 @@ do -- server query
 		query_server(ip, port, queries.info, callback)
 	end
 
-	function steam.GetServerPlayers(ip, port, callback)
+	function steam.GetServerClients(ip, port, callback)
 		check(ip, "string")
 		check(port, "number")
 		
-		query_server(ip, port, queries.players, callback)
+		query_server(ip, port, queries.clients, callback)
 	end
 
 	function steam.GetServerRules(ip, port, callback)

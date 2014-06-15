@@ -81,7 +81,7 @@ end)
 
 local cvar = console.CreateVariable("chathud_image_url", 1)
 
-event.AddListener("PlayerChat", "chathud_image_url", function(ply, str)
+event.AddListener("ClientChat", "chathud_image_url", function(client, str)
 	
 	if str == "" then return end
 	

@@ -1,4 +1,4 @@
-local META = metatable.Get("player")
+local META = metatable.Get("client")
 
 function META:GetChatAboveHead()
 	return self.coh_str or ""
@@ -8,7 +8,7 @@ if CLIENT then
 	function META:SetChatAboveHead(str, send)
 		self.coh_str = str
 		
-		if send and players.GetLocalPlayer() == self then
+		if send and clients.GetLocalClient() == self then
 			message.Send("coh", str)
 		end
 		
@@ -17,11 +17,11 @@ if CLIENT then
 
 	event.AddListener("ChatTextChanged", "coh", function(str)
 		message.Send("coh", str)
-		players.GetLocalPlayer():SetChatAboveHead(str)
+		clients.GetLocalClient():SetChatAboveHead(str)
 	end)
 	
-	message.AddListener("coh", function(ply, str) 
-		ply:SetChatAboveHead(str)
+	message.AddListener("coh", function(client, str) 
+		client:SetChatAboveHead(str)
 	end)
 end
 
@@ -31,9 +31,9 @@ if SERVER then
 		message.Send("coh", nil, self, str)
 	end
 	
-	message.AddListener("coh", function(ply, str)
-		local filter = players.CreateFilter()
-		filter:AddAllExcept(ply)
-		message.Send("coh", filter, ply, str)
+	message.AddListener("coh", function(client, str)
+		local filter = clients.CreateFilter()
+		filter:AddAllExcept(client)
+		message.Send("coh", filter, client, str)
 	end)
 end 
