@@ -1,3 +1,4 @@
+do return end
 local client_command_length = 100 -- sample length in ms
 local client_tick_rate = 33 -- in ms
 

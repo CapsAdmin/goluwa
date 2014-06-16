@@ -2,6 +2,39 @@ local utilities = _G.utilities or {}
 
 include("mesh.lua", utilities)
 
+function utilities.TableToFlags(flags, valid_flags)
+	if type(flags) == "string" then
+		flags = {flags}
+	end
+	
+	local out = 0
+	
+	for k, v in pairs(flags) do
+		local flag = valid_flags[v] or valid_flags[k]
+		if not flag then 
+			error("invalid flag", 2) 
+		end
+		out = bit.band(out, flag)
+	end
+	
+	return out
+end
+
+function utilities.FlagsToTable(flags, valid_flags)
+
+	if not flags then return valid_flags.default_valid_flag end
+	
+	local out = {}
+	
+	for k, v in pairs(valid_flags) do
+		if bit.band(flags, v) > 0 then
+			out[k] = true
+		end
+	end
+	
+	return out
+end
+
 do -- long long
 	ffi.cdef [[
 	  typedef union {

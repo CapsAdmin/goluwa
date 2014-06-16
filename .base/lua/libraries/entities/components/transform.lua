@@ -56,6 +56,21 @@ function COMPONENT:InvalidateTRMatrix()
 	end
 end
 
+function COMPONENT:GetTRAngles()
+
+end
+
+function COMPONENT:GetTRPosition()
+	local x, y, z = self.TRMatrix:GetTranslation()
+	return Vec3(-y, -x, -z)
+end
+
+function COMPONENT:GetTRAngles()
+	local p, y, r = self.TRMatrix:GetAngles()
+	
+	return Ang3(p, y, r):Deg()
+end
+
 function COMPONENT:RebuildMatrix()			
 	if self.rebuild_tr_matrix then				
 		self.TRMatrix:Identity()

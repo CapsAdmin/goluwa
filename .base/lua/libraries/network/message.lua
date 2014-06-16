@@ -62,7 +62,7 @@ if CLIENT then
 		buffer:WriteString(id)
 		buffer:WriteString2(encode(...))
 				
-		packet.Send(packet_id, buffer)
+		packet.Send(packet_id, buffer, "reliable")
 	end
 	
 	function message.OnMessageReceived(buffer)
@@ -83,7 +83,7 @@ if SERVER then
 		buffer:WriteString(id)
 		buffer:WriteString2(encode(...))
 		
-		packet.Send(packet_id, buffer, filter)
+		packet.Send(packet_id, buffer, filter, "reliable")
 	end
 	
 	function message.Broadcast(id, ...)

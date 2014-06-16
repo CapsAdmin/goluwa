@@ -1,6 +1,8 @@
 local entities = (...) or _G.entities
 local COMPONENT = {}
 
+local _debug = false
+
 COMPONENT.Name = "networked"
 COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Update"}
@@ -38,8 +40,10 @@ local function ACCEPT_VAR(component, type)
 	ACCEPT_ID_BASE = ACCEPT_ID_BASE + 1
 end
 
-SERVER_SYNC("transform", "Position", "vec3", 1/30)
-SERVER_SYNC("transform", "Angles", "ang3", 1/30)
+-- unknown will make it get it from the entity
+-- this might be the transform or physics component
+SERVER_SYNC("unknown", "Position", "vec3", 1/30)
+SERVER_SYNC("unknown", "Angles", "ang3", 1/30)
 
 SERVER_SYNC("transform", "Scale", "vec3", 1/15)
 SERVER_SYNC("transform", "Size", "float", 1/15)
@@ -57,9 +61,7 @@ if SERVER then
 	table.insert(COMPONENT.Events, "ClientEntered")
 	
 	function COMPONENT:OnClientEntered(client)
-		for _, ent in pairs(spawned) do
-			self:SpawnEntity(ent.NetworkId, client)
-		end
+		self:SpawnEntity(self.NetworkId, self:GetEntity().config, client)
 		self:UpdateVars(client, true)
 	end
 end
@@ -70,14 +72,22 @@ local SPAWN = 1
 local REMOVE = 2
 
 COMPONENT.last = {}
+COMPONENT.last_update = {}
 
 local vars = SERVER and server_synced_vars or CLIENT and client_synced_vars
 
 function COMPONENT:UpdateVars(client, force_update)
 	for i, info in ipairs(vars) do
-		if not info.rate or wait(info.rate) then
-			local component = self:GetComponent(info.component)
-			local var = component[info.get_name](component)
+		if force_update or not self.last_update[info.key] or self.last_update[info.key] < timer.GetSystemTime() then
+			
+			local var
+			
+			if info.component == "unknown" then
+				var = self:GetEntity()[info.get_name](self:GetEntity())
+			else
+				local component = self:GetComponent(info.component)
+				var = component[info.get_name](component)
+			end
 			
 			if force_update or var ~= self.last[info.key] then
 				local buffer = Buffer()
@@ -85,10 +95,14 @@ function COMPONENT:UpdateVars(client, force_update)
 				buffer:WriteShort(self.NetworkId)
 				buffer:WriteType(var, info.type)
 				
-				packet.Send("ecs_network", buffer, client)
+				if _debug then logf("%s: sending %s to %s\n", self, utilities.FormatFileSize(buffer:GetSize()), client) end
+				
+				packet.Send("ecs_network", buffer, client, force_update and "reliable" or nil)
 				
 				self.last[info.key] = var
-			end	
+			end
+
+			self.last_update[info.key] = timer.GetSystemTime() + info.rate
 		end
 	end
 end
@@ -105,8 +119,14 @@ packet.AddListener("ecs_network", function(buffer, client)
 			
 			if info then
 				local var = buffer:ReadType(info.type)
-				local component = ent:GetComponent(info.component)
-				component[info.set_name](component, var)
+
+				if info.component == "unknown" then
+					ent[info.set_name](ent, var)
+				else
+					local component = ent:GetComponent(info.component)
+					component[info.set_name](component, var)
+				end
+				if _debug then logf("%s: received %s\n", self, var) end
 			else
 				logn("received unknown sync packet ", typ)
 				if SERVER then
@@ -116,7 +136,7 @@ packet.AddListener("ecs_network", function(buffer, client)
 		else
 			logf("received sync packet %i but entity[%i] is NULL\n", typ, id)
 			if SERVER then
-				client:Kick("malformed packets")
+				--client:Kick("malformed packets")
 			end
 		end
 	else
@@ -127,6 +147,7 @@ packet.AddListener("ecs_network", function(buffer, client)
 			local ent = entities.CreateEntity(config)
 			ent:SetNetworkId(id)
 			spawned[id] = ent
+			--logf("entity %s with id %s spawned from server\n", config, id)
 		elseif typ == REMOVE then
 			spawned[id]:Remove() 
 		end
@@ -134,7 +155,6 @@ packet.AddListener("ecs_network", function(buffer, client)
 end)
 
 if SERVER then
-
 	function COMPONENT:SpawnEntity(id, config, client)
 		local buffer = Buffer()
 		
@@ -142,7 +162,9 @@ if SERVER then
 		buffer:WriteUnsignedShort(id)
 		buffer:WriteString(config)
 		
-		packet.Send("ecs_network", buffer, client)
+		--logf("spawning entity %s with id %s for %s\n", config, id, client)
+		
+		packet.Send("ecs_network", buffer, client, "reliable")
 	end
 	
 	function COMPONENT:RemoveEntity(id, client)
@@ -151,11 +173,13 @@ if SERVER then
 		buffer:WriteByte(REMOVE) 
 		buffer:WriteUnsignedShort(id)
 		
-		packet.Broadcast("ecs_network", buffer, client)
+		packet.Broadcast("ecs_network", buffer, client, "reliable")
 	end
 
 	function COMPONENT:OnAdd(ent)
 		self.NetworkId = id
+		
+		spawned[id] = ent
 		
 		id = id + 1
 		
@@ -163,6 +187,9 @@ if SERVER then
 	end
 
 	function COMPONENT:OnRemove(ent)
+		
+		spawned[self.NetworkId] = nil
+	
 		self:RemoveEntity(self.NetworkId)
 	end
 end

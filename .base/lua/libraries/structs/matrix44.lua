@@ -164,6 +164,29 @@ function META:GetTranslation()
 	return m[12], m[13], m[14]
 end
 
+function META:GetAngles()
+	local m = self.m
+
+	if m[2] < 1 then
+        if m[2] > -1 then
+            return
+				math.atan2(-m[6], m[10]), 
+				math.asin(m[2]), 
+				math.atan2(-m[1], m[0])
+        else
+            return
+				-math.atan2(m[4], m[5]), 
+				-math.pi*2, 
+				0
+        end
+    end
+	
+	return
+		math.atan2(m[4], m[5]), 
+		math.pi*2, 
+		0
+end
+
 function META:GetClipCoordinates()
 	local m = self.m
 	
