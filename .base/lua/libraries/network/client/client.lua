@@ -65,7 +65,6 @@ if SERVER then
 	end
 end
 
-include("pingpong.lua", META)
 include("input.lua", META)
 include("extended.lua", META)
 include("user_command.lua", META)

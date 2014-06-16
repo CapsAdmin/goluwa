@@ -1,55 +1,104 @@
 local message = _G.message or {}
 
-message.Listeners = message.Listeners or {}
+message.serializer_types = message.serializer_types or {}
+
+local packet_id = -1
+
+local function encode(...)
+	local out = {}
+	
+	for i = 1, select("#", ...) do
+		local v = select(i, ...)
+		
+		local t = typex(v)
+		local func = message.serializer_types[t]
+		
+		if func then			
+			out[i] = {"msgpo", t, func(v, true)}
+		else
+			out[i] = v
+		end
+	end
+	
+	return serializer.Encode("msgpack", out)
+end
+
+local function decode(args)
+	args = serializer.Decode("msgpack", args)
+	
+	for k, v in pairs(args) do
+		if type(v) == "table" then
+			if v[1] == "msgpo" and message.serializer_types[v[2]] then
+				if v[3] then
+					args[k] = message.serializer_types[v[2]](v[3], false)
+				else
+					args[k] = nil
+				end
+			end
+		end
+	end
+	
+	return unpack(args)
+end
+
+function message.AddEncodeDecodeType(type, callback)
+	message.serializer_types[type] = callback
+end
+
+message.listeners = message.listeners or {}
 
 function message.AddListener(id, callback)
-	message.Listeners[id] = callback
+	message.listeners[id] = callback
 end
 
 function message.RemoveListener(id)
-	message.Listeners[id] = callback
+	message.listeners[id] = callback
 end
 
 if CLIENT then
 	function message.Send(id, ...)
-		network.SendMessageToServer(network.MESSAGE, id, ...)
+		local buffer = Buffer()
+		
+		buffer:WriteString(id)
+		buffer:WriteString2(encode(...))
+				
+		packet.Send(packet_id, buffer)
 	end
 	
-	function message.OnMessageReceived(id, ...)		
-		if message.Listeners[id] then
-			message.Listeners[id](...)
+	function message.OnMessageReceived(buffer)
+		local id = buffer:ReadString()
+				
+		if message.listeners[id] then
+			message.listeners[id](decode(buffer:ReadString2()))
 		end
 	end
 
-	event.AddListener("NetworkMessageReceived", "message", message.OnMessageReceived, {on_error = system.OnError})
+	packet.AddListener(packet_id, message.OnMessageReceived)
 end
 
 if SERVER then
 	function message.Send(id, filter, ...)		
-		if typex(filter) == "client" then
-			network.SendMessageToClient(filter.socket, network.MESSAGE, id, ...)
-		elseif typex(filter) == "client_filter" then
-			for _, client in pairs(filter:GetAll()) do
-				network.SendMessageToClient(client.socket, network.MESSAGE, id, ...)
-			end
-		else
-			for key, client in pairs(clients.GetAll()) do
-				network.SendMessageToClient(client.socket, network.MESSAGE, id, ...)
-			end
-		end
+		local buffer = Buffer()
+		
+		buffer:WriteString(id)
+		buffer:WriteString2(encode(...))
+		
+		packet.Send(packet_id, buffer, filter)
 	end
 	
 	function message.Broadcast(id, ...)
 		return message.Send(id, nil, ...)
 	end
 	
-	function message.OnMessageReceived(client, id, ...)
-		if message.Listeners[id] then
-			message.Listeners[id](client, ...)
+	function message.OnMessageReceived(buffer, client)
+		local id = buffer:ReadString()
+				
+		if message.listeners[id] then
+			message.listeners[id](client, decode(buffer:ReadString2()))
 		end
 	end
 	
-	event.AddListener("NetworkMessageReceived", "message", message.OnMessageReceived, {on_error = system.OnError})
+	packet.AddListener(packet_id, message.OnMessageReceived)
 end
 
 do -- console extension
@@ -95,7 +144,6 @@ do -- console extension
 		console.RemoveCommand(command)
 		message.server_commands[command] = nil
 	end
-
 end
 
 do -- event extension
@@ -113,7 +161,20 @@ do -- event extension
 		function event.BroadcastCall(event, ...)
 			_G.event.CallOnClient(event, nil, ...)
 		end
+		
+		function event.CallShared(event, ...)
+			_G.event.Call(event, ...)
+			_G.event.BroadcastCall(event, ...)
+		end
 	end
 end
+
+message.AddEncodeDecodeType("null", function(var, encode) 
+	if encode then
+		return 0
+	else
+		return NULL
+	end
+end)
 
 return message

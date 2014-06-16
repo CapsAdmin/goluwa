@@ -48,20 +48,45 @@ if CLIENT then
 		for cvar in pairs(nvars.added_cvars) do
 			console.RunCommand(cvar, console.GetVariable(cvar))
 		end
+				
+		if network.debug or nvars.debug then
+			logn("done synchronizing nvars")
+		end
+				
+		message.Send("nvsync")
 	end
+	
+	message.AddListener("nvsync", nvars.Synchronize)
 end
 
 if SERVER then
-	function nvars.Synchronize(client)
+	local waiting_for = {}
+	
+	function nvars.Synchronize(client, callback)
 		for env, vars in pairs(nvars.Environments) do
 			for key, value in pairs(vars) do
 				nvars.Set(key, value, env, client)
 			end
 		end
+		waiting_for[client] = callback
+		
+		message.Send("nvsync")
 	end
+	
+	message.AddListener("nvsync", function(client)
+		if network.debug or nvars.debug then
+			logf("client %s said it was done synchronizing nvars\n", client)
+		end
+	
+		if waiting_for[client] then
+			waiting_for[client](client)
+			waiting_for[client] = nil
+		end
+	end)
 	
 	message.AddListener("ncv", function(client, cvar, var)
 		local key = nvars.added_cvars[cvar]
+		
 		if key then
 			client.nv[key] = var
 		end

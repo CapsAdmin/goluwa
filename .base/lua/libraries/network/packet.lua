@@ -1,6 +1,6 @@
 local packet = _G.packet or {}
 
-packet.Listeners = packet.Listeners or {}
+packet.listeners = packet.listeners or {}
 
 function packet.AddListener(id, callback)
 	
@@ -8,11 +8,11 @@ function packet.AddListener(id, callback)
 		network.AddString(id)
 	end
 
-	packet.Listeners[id] = callback
+	packet.listeners[id] = callback
 end
 
 function packet.RemoveListener(id)
-	packet.Listeners[id] = nil
+	packet.listeners[id] = nil
 end
 
 local function prepend_header(id, buffer)
@@ -31,9 +31,7 @@ end
 
 local function read_header(buffer)
 	local id = buffer:ReadShort()
-	--print(id)
 	id = network.IDToString(id)
---	print(id)
 	
 	table.remove(buffer.buffer, 1)
 	table.remove(buffer.buffer, 1)
@@ -54,9 +52,9 @@ if CLIENT then
 	function packet.OnPacketReceived(str)
 		local buffer = packet.CreateBuffer(str)
 		local id = read_header(buffer)
-		
-		if packet.Listeners[id] then
-			packet.Listeners[id](buffer)
+				
+		if packet.listeners[id] then
+			packet.listeners[id](buffer)
 		end
 	end
 
@@ -69,14 +67,14 @@ if SERVER then
 		
 		if data then
 			if typex(filter) == "client" then
-				network.SendPacketToClient(filter.socket, data)
+				network.SendPacketToPeer(filter.socket, data)
 			elseif typex(filter) == "client_filter" then
 				for _, client in pairs(filter:GetAll()) do
-					network.SendPacketToClient(client.socket, data)
+					network.SendPacketToPeer(client.socket, data)
 				end
 			else
 				for key, client in pairs(clients.GetAll()) do
-					network.SendPacketToClient(client.socket, data)
+					network.SendPacketToPeer(client.socket, data)
 				end
 			end
 		end
@@ -86,12 +84,12 @@ if SERVER then
 		return packet.Send(id, buffer)
 	end
 	
-	function packet.OnPacketReceived(client, str)
+	function packet.OnPacketReceived(str, client)
 		local buffer = packet.CreateBuffer(str)
 		local id = read_header(buffer)
-				
-		if packet.Listeners[id] then
-			packet.Listeners[id](buffer, client)
+
+		if packet.listeners[id] then
+			packet.listeners[id](buffer, client)
 		end
 	end
 	
