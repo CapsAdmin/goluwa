@@ -22,54 +22,57 @@ local function DELEGATE(META, field, typ)
 	if typ == "vec3" then
 		local name = "Set" .. field
 		META[name] = function(s, vec)
+			s[field] = vec
 			if s.rigid_body:IsValid() then
-				s.rigid_body[name](s.rigid_body, -vec.y, -vec.x, vec.z)
+				s.rigid_body[name](s.rigid_body, -vec.y, -vec.x, -vec.z)
 			end
 		end
-		
-		local ctor = typ == "vec3" and Vec3 or Ang3
-		
+				
 		local name = "Get" .. field
 		META[name] = function(s, ...)
 			if s.rigid_body:IsValid() then
 				local x, y, z = s.rigid_body[name](s.rigid_body, ...)
-				return Vec3(-y, -x, z)
+				return Vec3(-y, -x, -z)
 			end
+			return s[field]
 		end
 	elseif typ == "ang3" then
 		local name = "Set" .. field
 		META[name] = function(s, ang)
+			s[field] = ang
 			if s.rigid_body:IsValid() then
 				s.rigid_body[name](s.rigid_body, ang.p, ang.y, ang.r)
 			end
 		end
-		
-		local ctor = typ == "vec3" and Vec3 or Ang3
-		
+				
 		local name = "Get" .. field
 		META[name] = function(s, ...)
 			if s.rigid_body:IsValid() then
 				local x, y, z = s.rigid_body[name](s.rigid_body, ...)
 				return Ang3(x, y, z) 
 			end
+			return s[field]
 		end
 	else
 		local name = "Set" .. field
-		META[name] = function(s, ...)
+		META[name] = function(s, val)
+			s[field] = val
 			if s.rigid_body:IsValid() then
-				s.rigid_body[name](s.rigid_body, ...)
+				s.rigid_body[name](s.rigid_body, val)
 			end
 		end
 		
 		local name = "Get" .. field
-		META[name] = function(s, ...)
+		META[name] = function(s, val)
 			if s.rigid_body:IsValid() then
-				return s.rigid_body[name](s.rigid_body, ...)
+				return s.rigid_body[name](s.rigid_body)
 			end
+			return s[field]
 		end
 	end
 end
  
+DELEGATE(COMPONENT, "MassOrigin", "vec3")
 DELEGATE(COMPONENT, "Gravity", "vec3")
 DELEGATE(COMPONENT, "Velocity", "vec3")
 DELEGATE(COMPONENT, "AngularVelocity", "vec3")
@@ -175,7 +178,9 @@ do
 		else
 			self.rigid_body = bullet.CreateRigidBody(type, mass, transform:GetMatrix().m, ...)
 		end
-						
+		
+		event.Call("RigidBodyInitialized", type, mass, ...)
+
 		return self.rigid_body
 	end
 end		

@@ -1,16 +1,13 @@
-do return end
 if CLIENT then
 	local angles = Ang3(0, 0, 0)
+	local fov = 75
 
-	event.AddListener("CreateMove", "spooky", function(client, prev_cmd)
-		do return end
-	
+	event.AddListener("CreateMove", "spooky", function(client, prev_cmd)	
 		if not window.IsOpen() then return end
 		if chat and chat.IsVisible() then return end
 		if menu and menu.visible then return end
 		
 		local cmd = {}
-		local fov = 75
 		local velocity = Vec3(0, 0, 0)
 		local speed = 10
 		local delta = window.GetMouseDelta() / 100
@@ -67,7 +64,7 @@ if CLIENT then
 		end
 		
 		cmd.velocity = forward + side + up
-		cmd.angles = angles
+		cmd.angles = angles:GetDeg()
 		cmd.fov = fov
 		cmd.mouse_pos = window.GetMousePos()
 		
@@ -101,48 +98,43 @@ if CLIENT then
 		surface.SetAlphaMultiplier(1)
 	end)
 end 
-
-
+ 
+ 
 for k,v in pairs(clients.GetAll()) do
 	if v.ghost and v.ghost:IsValid() then
 		v.ghost:Remove()
 	end
-end  
-
+end    
+    
 event.AddListener("Move", "spooky", function(client, cmd)
-	do return end
 	if not entities then return end
 	
 	client.ghost = client.ghost or NULL
-	
+	 
 	if not client.ghost:IsValid() then
 		client.ghost = entities.CreateEntity("physical")
-		client.ghost:SetModelPath("models/cube.obj")
+		client.ghost:SetModelPath("models/face.obj")
 		client.ghost:InitPhysics("box", 85, 1, 1, 1)
 		--client.ghost:SetScale(Vec3(1,1,1))
-		client.ghost:SetPosition(Vec3(0,0,10))
+		client.ghost:SetPosition(Vec3(0,0,100))  
 	end
 	
 	local pos = client.ghost:GetPosition() 
 	
 	if CLIENT then
 		if client == clients.GetLocalClient() then
-			render.SetupView3D(pos, cmd.angles:GetDeg(), cmd.fov)
+			render.SetupView3D(pos, cmd.angles, cmd.fov)
 			
-			if cmd.net_position and cmd.net_position:Distance(pos) > 0.25 then
+			if cmd.net_position and cmd.net_position:Distance(pos) > 1 then
 				client.ghost:SetPosition(cmd.net_position)
 				client.ghost:SetVelocity(Vec3(0,0,0))
-				--print(cmd.net_position - pos)
 			end
 		end		
-	end
-			
-	local vel = cmd.angles:GetForward() * cmd.velocity
-	
-	client.ghost:SetVelocity(client.ghost:GetVelocity() + vel)
 		
-	--client.ghost:SetAngles(cmd.angles) 
-	--client.ghost:SetScale(Vec3(1,(-(cmd.fov / 90) + 2) ^ 4,1))
-	 if SERVER then print(pos) end 
+		client.ghost:GetComponent("transform"):SetAngles(cmd.angles)
+	end
+	
+	client.ghost:SetVelocity(client.ghost:GetVelocity() + cmd.velocity * 0.05)
+	
 	return pos
 end) 

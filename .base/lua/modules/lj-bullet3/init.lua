@@ -176,7 +176,6 @@ local BODY = {
 	IsValid = function() return true end,
 	SetMatrix = ADD_FUNCTION(lib.bulletRigidBodySetMatrix),
 	GetMatrix = ADD_FUNCTION(lib.bulletRigidBodyGetMatrix, 16),
-	SetMass = ADD_FUNCTION(lib.bulletRigidBodySetMass),
 	GetMass = ADD_FUNCTION(lib.bulletRigidBodyGetMass, 1),
 	SetGravity = ADD_FUNCTION(lib.bulletRigidBodySetGravity),
 	GetGravity = ADD_FUNCTION(lib.bulletRigidBodyGetGravity, 3),
@@ -198,6 +197,28 @@ local BODY = {
 }
 
 BODY.__index = BODY
+
+BODY.origin_x = 0
+BODY.origin_y = 0
+BODY.origin_z = 0
+
+
+function BODY:SetMassOrigin(x, y, z)
+	self.origin_x = x
+	self.origin_y = y
+	self.origin_z = z
+	
+	-- update mass when mass origin is modified
+	self:SetMass(self:GetMass())
+end
+
+function BODY:GetMassOrigin()
+	return self.origin_x, self.origin_y, self.origin_z
+end
+
+function BODY:SetMass(val)
+	lib.bulletRigidBodySetMass(val, self.origin_x, self.origin_y, self.origin_z)
+end
 
 function bullet.CreateRigidBody(typ, mass, matrix, ...)
 	local self = setmetatable({}, BODY)

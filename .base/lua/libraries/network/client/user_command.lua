@@ -1,6 +1,5 @@
-do return end
-local client_command_length = 100 -- sample length in ms
-local client_tick_rate = 33 -- in ms
+local client_command_length = 20 -- sample length in ms
+local client_tick_rate = 66 -- in ms
 
 local server_command_length = client_command_length
 local server_tick_rate = 10
