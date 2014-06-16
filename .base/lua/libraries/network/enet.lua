@@ -1,13 +1,15 @@
 local lib = require("lj-enet")
 
-local enet = {}
+local enet = _G.enet or {}
 
-enet.sockets = {}
+enet.sockets = enet.sockets or {}
 
-local translate_packet_flag = {
+local valid_flags = {
+	default_valid_flag = 0,
 	reliable = lib.e.ENET_PACKET_FLAG_RELIABLE,
 	unsequenced = lib.e.ENET_PACKET_FLAG_UNSEQUENCED,
-	unreliable = 0,
+	unreliable_fragment = lib.e.ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT,
+	sent = lib.e.ENET_PACKET_FLAG_SENT,
 }
 
 local function ipport2address(ip, port)
@@ -46,23 +48,25 @@ do -- peer
 		why = why or 0
 		lib.peer_disconnect(self.peer, why)
 		
-		local evt = ffi.new("ENetEvent[1]")
-		while lib.host_service(self.host, evt, 3000) > 0 do
-			if evt[0].type == lib.e.ENET_EVENT_TYPE_DISCONNECT then
-				return true
-			elseif evt[0].type == lib.e.ENET_EVENT_TYPE_RECEIVE then
-				lib.packet_destroy(evt[0].packet)
+		if self.host then
+			local evt = ffi.new("ENetEvent[1]")
+			while lib.host_service(self.host, evt, 3000) > 0 do
+				if evt[0].type == lib.e.ENET_EVENT_TYPE_DISCONNECT then
+					return true
+				elseif evt[0].type == lib.e.ENET_EVENT_TYPE_RECEIVE then
+					lib.packet_destroy(evt[0].packet)
+				end
 			end
 		end
-		
+			
 		lib.peer_reset(self.peer)
 	end
 	
-	function CLIENT:Send(str, type, channel)
-		type = translate_packet_flag[type] or 0
+	function CLIENT:Send(str, flags, channel)
+		flags = utilities.TableToFlags(flags, valid_flags)
 		channel = channel or 0
 		
-		local packet = lib.packet_create(str, #str, type)
+		local packet = lib.packet_create(str, #str, flags)
 		lib.peer_send(self.peer, channel, packet)
 	end
 	
@@ -133,15 +137,15 @@ do -- server
 		return self.peers
 	end
 	
-	function SERVER:Broadcast(str, typ, channel)
-		type = translate_packet_flag[type] or 0
+	function SERVER:Broadcast(str, flags, channel)
+		flags = utilities.TableToFlags(flags, valid_flags)
 		channel = channel or 0
 		
-		local packet = lib.packet_create(str, #str, type)
+		local packet = lib.packet_create(str, #str, flags)
 		lib.host_broadcast(self.host, channel, packet)
 	end
 	
-	function SERVER:OnReceive(peer, str, type)
+	function SERVER:OnReceive(peer, str, flags, channel)
 	
 	end
 	
@@ -184,7 +188,7 @@ end
 
 event.AddListener("Update", "enet", function()
 	for i, socket in ipairs(enet.sockets) do
-		if lib.host_service(socket.host, evt, 0) > 0 then
+		while lib.host_service(socket.host, evt, 0) > 0 do
 			if evt[0].type == lib.e.ENET_EVENT_TYPE_CONNECT then
 				if socket.Type == "enet_peer" then
 					socket:OnConnect()
@@ -217,7 +221,7 @@ event.AddListener("Update", "enet", function()
 			elseif evt[0].type == lib.e.ENET_EVENT_TYPE_RECEIVE then
 				
 				local str, flags, channel = ffi.string(evt[0].packet.data, evt[0].packet.dataLength), evt[0].packet.flags, evt[0].channelID
-				flags = translate_packet_flag[flags] or flags
+				flags = utilities.FlagsToTable(flags, valid_flags)
 			
 				if socket.Type == "enet_peer" then
 					if enet.debug then logf("[enet] %s: received %s of data: %s\n", socket, utilities.FormatFileSize(#str), str:dumphex()) end

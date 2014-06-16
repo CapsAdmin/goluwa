@@ -136,9 +136,9 @@ if CLIENT then
 		return network.socket:IsValid() and network.socket:IsConnected()
 	end
 	
-	function network.SendPacketToServer(str)
+	function network.SendPacketToHost(str, flags, channel)
 		if network.socket:IsValid() then
-			network.socket:Send(str)
+			network.socket:Send(str, flags, channel)
 		end
 	end
 end
@@ -222,13 +222,13 @@ if SERVER then
 		return network.socket:GetPeers()
 	end
 			
-	function network.SendPacketToPeer(peer, str)
+	function network.SendPacketToPeer(peer, str, flags, channel)
 		if peer:IsValid() then 
-			peer:Send(str)
+			peer:Send(str, flags, channel)
 		end
 	end
 	
-	function network.BroadcastPacket(str)		
+	function network.BroadcastPacket(str, flags, channel)	
 		for _, peer in pairs(network.GetPeers()) do
 			network.SendPacketToPeer(peer, str)
 		end

@@ -83,13 +83,25 @@ function COMPONENT:SetPosition(vec)
 		
 	local body = self.rigid_body
 	if body:IsValid() then
-		body:SetMatrix(transform:GetMatrix().m)
+		local mat = transform:GetMatrix()
+		body:SetMatrix(mat.m)
 	end
 end
 
+local temp = Matrix44()
+
 function COMPONENT:GetPosition()
-	local x, y, z = self:GetComponent("transform").TRMatrix:GetTranslation()
-	return Vec3(-y, -x, -z)
+	if self.rigid_body:IsValid() then
+		temp.m = self.rigid_body:GetMatrix()
+		local x, y, z = temp:GetTranslation()
+		vec = Vec3(-y, -x, -z)
+		--if x == 0 or y == 0 or z == 0 then	
+		--	print(vec)
+		--end
+		return vec
+	end
+	
+	return Vec3()
 end
 
 function COMPONENT:SetAngles(ang)
@@ -103,7 +115,16 @@ function COMPONENT:SetAngles(ang)
 end
 
 function COMPONENT:GetAngles()
-	return self:GetComponent("transform").TRMatrix:GetAngles()
+	if self.rigid_body:IsValid() then
+		temp.m = self.rigid_body:GetMatrix()
+		
+		local p,y,r = temp:GetAngles()
+		local ang = Ang3((-y),p - math.pi / 2,r + -(math.pi)):Deg()
+		--if math.round(p, 2) == 0 or math.round(y, 2) == 0 or math.round(r, 2) == 0 then print(ang) end
+		return ang
+	end
+	
+	return Ang3()
 end
 
 do
@@ -126,7 +147,7 @@ do
 			local triangles = ffi.new("unsigned int[?]", scene.mMeshes[0].mNumFaces * 3)
 			
 			ffi.copy(vertices, scene.mMeshes[0].mVertices, ffi.sizeof(vertices))
-								
+
 			local i = 0
 			for j = 0, scene.mMeshes[0].mNumFaces - 1 do
 				for k = 0, scene.mMeshes[0].mFaces[j].mNumIndices - 1 do
@@ -147,7 +168,6 @@ do
 					stride = ffi.sizeof("float") * 3,
 				},
 			}
-			
 			
 			assimp.ReleaseImport(scene)
 
@@ -170,6 +190,12 @@ function COMPONENT:OnUpdate()
 	local mat = matrix:Copy()
 	
 	transform:SetTRMatrix(mat)
+end
+
+function COMPONENT:OnRemove(ent)
+	if self.rigid_body:IsValid() then
+		self.rigid_body:Remove()
+	end
 end
 
 entities.RegisterComponent(COMPONENT)

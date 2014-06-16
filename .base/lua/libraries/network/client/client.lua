@@ -37,7 +37,7 @@ function META:OnRemove()
 	clients.active_clients[self:GetUniqueID()] = nil
 	if SERVER then 
 		if self.socket:IsValid() then
-			network.HandleMessage(self.socket, network.DISCONNECT, "removed")
+			self.socket:Disconnect(--[[removed]])
 		end
 	end
 end	

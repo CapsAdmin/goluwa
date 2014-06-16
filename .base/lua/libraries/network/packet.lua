@@ -41,11 +41,12 @@ local function read_header(buffer)
 end
 
 if CLIENT then
-	function packet.Send(id, buffer)
+	function packet.Send(id, buffer, flags, channel)
+		flags = flags or "unsequenced"
 		local data = prepend_header(id, buffer)
 		
 		if data then
-			network.SendPacketToServer(data)
+			network.SendPacketToHost(data, flags, channel)
 		end
 	end
 	
@@ -62,26 +63,27 @@ if CLIENT then
 end
 
 if SERVER then
-	function packet.Send(id, buffer, filter)
+	function packet.Send(id, buffer, filter, flags, channel)
+		flags = flags or "unsequenced"
 		local data = prepend_header(id, buffer)
 		
 		if data then
 			if typex(filter) == "client" then
-				network.SendPacketToPeer(filter.socket, data)
+				network.SendPacketToPeer(filter.socket, data, flags, channel)
 			elseif typex(filter) == "client_filter" then
 				for _, client in pairs(filter:GetAll()) do
-					network.SendPacketToPeer(client.socket, data)
+					network.SendPacketToPeer(client.socket, data, flags, channel)
 				end
 			else
 				for key, client in pairs(clients.GetAll()) do
-					network.SendPacketToPeer(client.socket, data)
+					network.SendPacketToPeer(client.socket, data, flags, channel)
 				end
 			end
 		end
 	end
 	
-	function packet.Broadcast(id, buffer)
-		return packet.Send(id, buffer)
+	function packet.Broadcast(id, buffer, flags, channel)
+		return packet.Send(id, buffer, flags, channel)
 	end
 	
 	function packet.OnPacketReceived(str, client)

@@ -87,7 +87,6 @@ do -- base entity
 	local ENTITY = metatable.CreateTemplate("ecs_base")
 
 	metatable.GetSet(ENTITY, "Components", {})
-	metatable.GetSet(ENTITY, "Entity", NULL)
 
 	function ENTITY:AddComponent(name, id, ...)
 		id = id or "no_id"
@@ -202,6 +201,7 @@ do -- base component
 	metatable.Delegate(BASE, "Entity", "GetComponent")
 	metatable.Delegate(BASE, "Entity", "AddComponent")
 	metatable.Delegate(BASE, "Entity", "RemoveComponent")
+	metatable.GetSet(BASE, "Entity", NULL)
 	
 	function BASE:OnAdd()
 	
