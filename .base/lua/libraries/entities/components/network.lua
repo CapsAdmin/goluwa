@@ -5,7 +5,7 @@ local _debug = false
 
 COMPONENT.Name = "networked"
 COMPONENT.Require = {"transform"}
-COMPONENT.Events = {"Update"}
+COMPONENT.Events = {"Update", "RigidBodyInitialized"}
 
 metatable.GetSet(COMPONENT, "NetworkId", -1)
 
@@ -153,6 +153,10 @@ packet.AddListener("ecs_network", function(buffer, client)
 		end
 	end
 end)
+
+function COMPONENT:OnRigidBodyInitialized(typ, mass, ...)
+
+end
 
 if SERVER then
 	function COMPONENT:SpawnEntity(id, config, client)

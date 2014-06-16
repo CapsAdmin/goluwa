@@ -28,6 +28,8 @@ do
 		self.x = self.x / scale
 		self.y = self.y / scale
 		self.z = self.z / scale
+		
+		return self
 	end
 
 	function META:GetLength()
@@ -62,6 +64,8 @@ do
 			self.y = self.y / scale
 			self.z = self.z / scale
 		end
+		
+		return self
 	end
 	
 	function META.Distance(a, b)
