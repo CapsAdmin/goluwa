@@ -1,3 +1,81 @@
+do
+	-- some usage
+
+	console.AddCommand("say", function(line)
+		chat.Say(line)
+	end)
+
+	console.AddCommand("lua_run", function(line)
+		easylua.RunLua(clients.GetLocalClient(), line, nil, true)
+	end)
+
+	console.AddCommand("lua_open", function(line)
+		easylua.Start(clients.GetLocalClient())
+			include(line)
+		easylua.End()
+	end)
+
+	console.AddServerCommand("lua_run_sv", function(client, line)
+		logn(client:GetNick(), " ran ", line)
+		easylua.RunLua(client, line, nil, true)
+	end)
+
+	console.AddServerCommand("lua_open_sv", function(client, line)
+		logn(client:GetNick(), " opened ", line)
+		easylua.Start(client)
+			include(line)
+		easylua.End()
+	end)
+
+
+	local default_ip = "*"
+	local default_port = 1234
+
+	if CLIENT then
+		local ip_cvar = console.CreateVariable("cl_ip", default_ip)
+		local port_cvar = console.CreateVariable("cl_port", default_port)
+		
+		local last_ip
+		local last_port
+		
+		console.AddCommand("retry", function()
+			if last_ip then
+				network.Connect(last_ip, last_port)
+			end
+		end)
+		
+		console.AddCommand("connect", function(line, ip, port)		
+			ip = ip or ip_cvar:Get()
+			port = tonumber(port) or port_cvar:Get()
+			
+			logf("connecting to %s:%i\n", ip, port)
+			
+			last_ip = ip
+			last_port = port
+			
+			network.Connect(ip, port)
+		end)
+
+		console.AddCommand("disconnect", function(line)	
+			network.Disconnect(line)
+		end)
+	end
+
+	if SERVER then
+		local ip_cvar = console.CreateVariable("sv_ip", default_ip)
+		local port_cvar = console.CreateVariable("sv_port", default_port)
+				
+		console.AddCommand("host", function(line, ip, port)
+			ip = ip or ip_cvar:Get()
+			port = tonumber(port) or port_cvar:Get()
+			
+			logf("hosting at %s:%i\n", ip, port)
+			
+			network.Host(ip, port)
+		end)
+	end
+end
+
 console.AddCommand("l", function(line)
 	console.RunString(line)
 end)

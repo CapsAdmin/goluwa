@@ -172,7 +172,7 @@ function metatable.AddBufferTemplate(META)
 			return table.concat(out)
 		end
 		
-		-- string
+		-- null terminated string
 		function META:WriteString(str)	
 			self:WriteBytes(str)
 			self:WriteByte(0)
@@ -190,6 +190,29 @@ function metatable.AddBufferTemplate(META)
 			for i = 1, length or self:GetSize() do
 				local byte = self:ReadByte()
 				if not byte or byte == 0 then break end
+				table.insert(str, string.char(byte))
+			end
+			
+			return table.concat(str)
+		end
+		
+		-- not null terminated string (write size of string first)
+		function META:WriteString2(str)	
+			if #str > 0xFFFFFFFF then error("string is too long!", 2) end
+			self:WriteUnsignedLong(#str)
+			self:WriteBytes(str)
+			return self
+		end
+
+		function META:ReadString2()
+		
+			local length = self:ReadUnsignedLong()
+			
+			local str = {}
+			
+			for i = 1, length do
+				local byte = self:ReadByte()
+				if not byte then break end
 				table.insert(str, string.char(byte))
 			end
 			
@@ -349,6 +372,39 @@ function metatable.AddBufferTemplate(META)
 		-- consistency
 		META.ReadUnsignedByte = META.ReadByte
 		META.WriteUnsignedByte = META.WriteByte
+		
+		function META:WriteTable(tbl, type_func)
+			type_func = type_func or _G.type
+			
+			for k, v in pairs(tbl) do
+				local t = type_func(k)
+				self:WriteByte(self:GetTypeID(t))
+				self:WriteType(k, t, type_func)
+				
+				local t = type_func(v)
+				self:WriteByte(self:GetTypeID(t))
+				self:WriteType(v, t, type_func)
+			end
+		end
+
+		function META:ReadTable()
+			local tbl = {}
+
+			while true do
+				local b = self:ReadByte()
+				local t = self:GetTypeFromID(b)
+				local k = self:ReadType(t)
+				
+				local b = self:ReadByte()
+				local t = self:GetTypeFromID(b)
+				local v = self:ReadType(t)
+				
+				tbl[k] = v
+				
+				if self:TheEnd() then return tbl end
+			end
+
+		end
 	end
 
 	do -- structures
@@ -515,11 +571,15 @@ function metatable.AddBufferTemplate(META)
 			end
 		end
 		
-		function META:WriteType(val, t)
+		function META:WriteType(val, t, type_func)
 			t = t or type(val)
 						
 			if write_functions[t] then
-				return write_functions[t](self, val)
+				if t == "table" then
+					return write_functions[t](self, val, type_func)
+				else
+					return write_functions[t](self, val)
+				end
 			end
 			
 			error("tried to write unknown type " .. t, 2)
@@ -532,6 +592,26 @@ function metatable.AddBufferTemplate(META)
 			end
 			
 			error("tried to read unknown type " .. t, 2)
+		end
+		
+		local ids = {}
+		
+		for k,v in pairs(read_functions) do
+			table.insert(ids, k)
+		end
+		
+		table.sort(ids, function(a, b) return a > b end)
+		
+		function META:GetTypeID(val)
+			for k,v in ipairs(ids) do
+				if v == val then
+					return k
+				end
+			end
+		end
+		
+		function META:GetTypeFromID(id)
+			return ids[id]
 		end
 		
 		META.read_functions = read_functions

@@ -24,11 +24,18 @@ function clients.BroadcastLua(str)
 		client:SendLua(str)
 	end
 end
-	
-function clients.Create(uniqueid, is_bot)
+		
+function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
 	local self = clients.active_clients[uniqueid] or NULL
 
 	if self:IsValid() then
+	
+		if SERVER then
+			if clientside == nil or clientside then
+				message.Send("create_client", filter, uniqueid, is_bot, local_client)
+			end
+		end
+	
 		return self
 	end
 	
@@ -41,10 +48,6 @@ function clients.Create(uniqueid, is_bot)
 	-- add a networked table to the client
 	self.nv = nvars.CreateObject(uniqueid)
 	
-	-- i dont like that this is here..
-	-- event system for class?
-	self.last_ping = os.clock()
-	
 	if is_bot ~= nil then
 		self:SetBot(is_bot)
 	end
@@ -53,12 +56,23 @@ function clients.Create(uniqueid, is_bot)
 		if is_bot then	
 			if event.Call("ClientConnect", self) ~= false then
 				event.Call("ClientEntered", self)
-				network.BroadcastMessage(network.READY, uniqueid)
 			end
 		end
 	end
 		
 	return self
+end
+
+if CLIENT then
+	message.AddListener("create_client", function(uniqueid, is_bot, local_client)
+		local client = clients.Create(uniqueid, is_bot)
+		
+		if local_client then
+			clients.local_client = client
+		end
+		
+		event.Call("ClientEntered", client)
+	end)
 end
 
 do -- filter
@@ -100,7 +114,7 @@ do -- filter
 	end
 end
 
-network.AddEncodeDecodeType("client", function(var, encode)
+message.AddEncodeDecodeType("client", function(var, encode)
 	if encode then
 		return var:GetUniqueID()
 	else
