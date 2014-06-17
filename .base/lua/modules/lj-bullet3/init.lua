@@ -151,22 +151,27 @@ local function ADD_FUNCTION(func, size)
 		
 		if size == 3 then
 			return function(self, ...)
+				if not self.body then return 0,0,0 end
 				func(self.body, val, ...)
 				return val[0], val[1], val[2]
 			end
 		elseif size == 1 then
 			return function(self, ...)
+				if not self.body then return 0 end
 				func(self.body, val, ...)
 				return val[0]
 			end
 		else
 			return function(self, ...)
+				if not self.body then return end
 				func(self.body, val, ...)
 				return val
 			end
 		end
 	else
 		return function(self, ...)
+			if not self.body then return end
+
 			return func(self.body, ...)
 		end
 	end
@@ -176,7 +181,6 @@ local BODY = {
 	IsValid = function() return true end,
 	SetMatrix = ADD_FUNCTION(lib.bulletRigidBodySetMatrix),
 	GetMatrix = ADD_FUNCTION(lib.bulletRigidBodyGetMatrix, 16),
-	GetMass = ADD_FUNCTION(lib.bulletRigidBodyGetMass, 1),
 	SetGravity = ADD_FUNCTION(lib.bulletRigidBodySetGravity),
 	GetGravity = ADD_FUNCTION(lib.bulletRigidBodyGetGravity, 3),
 	SetVelocity = ADD_FUNCTION(lib.bulletRigidBodySetVelocity),
@@ -198,42 +202,142 @@ local BODY = {
 
 BODY.__index = BODY
 
-BODY.origin_x = 0
-BODY.origin_y = 0
-BODY.origin_z = 0
-
-
-function BODY:SetMassOrigin(x, y, z)
-	self.origin_x = x
-	self.origin_y = y
-	self.origin_z = z
-	
-	-- update mass when mass origin is modified
-	self:SetMass(self:GetMass())
+function BODY:IsPhysicsValid()
+	return self.body ~= nil
 end
 
-function BODY:GetMassOrigin()
-	return self.origin_x, self.origin_y, self.origin_z
+do -- damping
+	BODY.linear_damping = 0
+	BODY.angular_damping = 0
+
+	function BODY:SetLinearDamping(damping)
+		self.linear_damping = damping
+		if not self.body then return end
+		lib.bulletRigidBodySetDamping(self.body, self.linear_damping, self.angular_damping)
+	end
+	
+	function BODY:GetLinearDamping()
+		return self.linear_damping
+	end
+
+	function BODY:SetAngularDamping(damping)
+		self.angular_damping = damping
+		if not self.body then return end
+		lib.bulletRigidBodySetDamping(self.body, self.linear_damping, self.angular_damping)
+	end
+	
+	function BODY:GetAngularDamping()
+		return self.angular_damping
+	end
 end
 
-function BODY:SetMass(val)
-	lib.bulletRigidBodySetMass(val, self.origin_x, self.origin_y, self.origin_z)
-end
+do -- mass
+	BODY.origin_x = 0
+	BODY.origin_y = 0
+	BODY.origin_z = 0
 
-function bullet.CreateRigidBody(typ, mass, matrix, ...)
-	local self = setmetatable({}, BODY)
-	
-	local mesh
-	
-	if typ == "concave" or typ == "convex" then
-		local t = ...
-	
-	
-		-- if you don't do this "t" will get garbage collected and bullet will crash
-		-- bullet says it does not make any copies of indices or vertices
-		self.mesh = t
+	function BODY:SetMassOrigin(x, y, z)
+		self.origin_x = x
+		self.origin_y = y
+		self.origin_z = z
 		
-		mesh = lib.bulletCreateMesh(
+		-- update mass when mass origin is modified
+		self:SetMass(self:GetMass())
+	end
+
+	function BODY:GetMassOrigin()
+		return self.origin_x, self.origin_y, self.origin_z
+	end
+
+	function BODY:SetMass(val)
+		self.mass = val
+		
+		if self.body then
+			lib.bulletRigidBodySetMass(self.body, val, self.origin_x, self.origin_y, self.origin_z)
+		end		
+	end
+	local temp = ffi.new("float[1]")
+	function BODY:GetMass()
+		if self.body then 
+			lib.bulletRigidBodyGetMass(self.body, temp)
+			return temp[0]
+		end
+		
+		return self.mass
+	end
+end
+
+local temp = ffi.new("float[16]", 0)
+
+do -- init sphere options
+	BODY.sphere_radius = 1
+
+	function BODY:SetPhysicsSphereRadius(val)
+		self.sphere_radius = val
+	end
+
+	function BODY:GetPhysicsSphereRadius()
+		return self.sphere_radius
+	end
+	
+	function BODY:InitPhysicsSphere(rad)
+		if rad then self:SetPhysicsSphereRadius(rad) end
+		self.body = lib.bulletCreateRigidBodySphere(self:GetMass(), nil, self:GetPhysicsSphereRadius())
+	end
+end
+
+do -- init box options
+	BODY.box_scale_x = 1
+	BODY.box_scale_y = 1
+	BODY.box_scale_z = 1
+
+	function BODY:SetPhysicsBoxScale(x, y, z)
+		self.box_scale_x = x
+		self.box_scale_y = y
+		self.box_scale_z = z
+	end
+
+	function BODY:GetPhysicsBoxScale()
+		return self.box_scale_x, self.box_scale_y, self.box_scale_z
+	end
+
+	function BODY:InitPhysicsBox(x, y, z)
+		if x and y and z then
+			self:SetPhysicsBoxScale(x, y, z)
+		end
+		
+		self.body = lib.bulletCreateRigidBodyBox(self:GetMass(), nil, self:GetPhysicsBoxScale())
+	end
+end
+
+do -- mesh init options
+	
+	function BODY:InitPhysicsConcave(tbl, quantized_aabb_compression)	
+	
+		-- if you don't do this "tbl" will get garbage collected and bullet will crash
+		-- because bullet says it does not make any copies of indices or vertices
+		
+		local mesh = lib.bulletCreateMesh(
+			tbl.triangles.count, 
+			tbl.triangles.pointer, 
+			tbl.triangles.stride, 
+			
+			tbl.vertices.count, 
+			tbl.vertices.pointer, 
+			tbl.vertices.stride
+		)
+		
+		self.mesh = tbl
+
+		self.body = lib.bulletCreateRigidBodyConcaveMesh(self:GetMass(), nil, mesh, not not quantized_aabb_compression)
+	end
+	
+	function BODY:InitPhysicsConvex(tbl, quantized_aabb_compression)	
+	
+		-- if you don't do this "tbl" will get garbage collected and bullet will crash
+		-- because bullet says it does not make any copies of indices or vertices
+		
+		local mesh = lib.bulletCreateMesh(
 			t.triangles.count, 
 			t.triangles.pointer, 
 			t.triangles.stride, 
@@ -242,21 +346,16 @@ function bullet.CreateRigidBody(typ, mass, matrix, ...)
 			t.vertices.pointer, 
 			t.vertices.stride
 		)
-	end	
-	
-	
-	if typ == "box" then
-		self.body = lib.bulletCreateRigidBodyBox(mass, matrix, ...)
-	elseif typ == "sphere" then
-		self.body = lib.bulletCreateRigidBodySphere(mass, matrix, ...)
-	elseif typ == "concave" then
-		self.body = lib.bulletCreateRigidBodyConcaveMesh(mass, matrix, mesh, select(2, ...))
-	elseif typ == "convex" then
-		self.body = lib.bulletCreateRigidBodyConvexMesh(mass, matrix, mesh)
-	else
-		error("unknown shape type", 2)
+		
+		self.mesh = tbl
+		
+		self.body = lib.bulletCreateRigidBodyConvexMesh(self:GetMass(), nil, mesh)
 	end
-	
+end
+
+function bullet.CreateRigidBody()
+	local self = setmetatable({}, BODY)
+		
 	utilities.SetGCCallback(self)
 	
 	table.insert(bodies, self)

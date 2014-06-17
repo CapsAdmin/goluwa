@@ -17,6 +17,14 @@ metatable.EndStorable()
 metatable.GetSet(COMPONENT, "Shader", NULL)
 metatable.GetSet(COMPONENT, "Model", nil)
 
+COMPONENT.Network = {
+	ModelPath = {"string", 1/5},
+	Cull = {"boolean", 1/5},
+	Alpha = {"float", 1/30},
+	--Color = {"boolean", 1/5},	
+}
+
+
 if CLIENT then			
 	local SHADER = {
 		name = "mesh_ecs",

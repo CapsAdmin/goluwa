@@ -211,6 +211,28 @@ do -- base component
 	
 	end
 	
+	function BASE:OnEvent(component, name, ...)
+	
+	end
+	
+	function BASE:GetEntityComponents()
+		local out = {}
+		
+		for name, components in pairs(self:GetEntity():GetComponents()) do
+			for id, component in pairs(components) do
+				table.insert(out, component)
+			end
+		end
+		
+		return out
+	end
+	
+	function BASE:FireEvent(...)
+		for i, component in ipairs(self:GetEntityComponents()) do
+			component:OnEvent(self, component.Name, ...)
+		end
+	end
+	
 	entities.components = {}
 
 	function entities.RegisterComponent(COMPONENT)

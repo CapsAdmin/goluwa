@@ -9,6 +9,11 @@ function META:__index(key)
 	return META[key] or self.m[key]
 end
 
+function META:__newindex(key, val)
+	if type(val) ~= "cdata" then error("asdadwwd") end
+	rawset(self, key, val)
+end
+
 function META:__tostring()
 	return string.format("matrix44[%p]:\n" .. ("%f %f %f %f\n"):rep(4), self.m,
 		self[0], self[4], self[8], self[12],
