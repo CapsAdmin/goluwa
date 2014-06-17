@@ -232,6 +232,8 @@ do -- damping
 end
 
 do -- mass
+	BODY.mass = 0
+	
 	BODY.origin_x = 0
 	BODY.origin_y = 0
 	BODY.origin_z = 0
@@ -256,7 +258,9 @@ do -- mass
 			lib.bulletRigidBodySetMass(self.body, val, self.origin_x, self.origin_y, self.origin_z)
 		end		
 	end
+	
 	local temp = ffi.new("float[1]")
+	
 	function BODY:GetMass()
 		if self.body then 
 			lib.bulletRigidBodyGetMass(self.body, temp)
@@ -267,7 +271,22 @@ do -- mass
 	end
 end
 
-local temp = ffi.new("float[16]", 0)
+do
+	local temp = ffi.new("float[16]", 0)
+
+	function BODY:SetMatrix(mat)
+		if self.body then
+			lib.bulletRigidBodySetMatrix(self.body, mat)
+		else
+			self.matrix = mat
+		end
+	end
+
+	function BODY:GetMatrix()
+		if self.body then lib.bulletRigidBodyGetMatrix(self.body, temp) return temp end
+		return self.matrix
+	end
+end
 
 do -- init sphere options
 	BODY.sphere_radius = 1
@@ -282,7 +301,7 @@ do -- init sphere options
 	
 	function BODY:InitPhysicsSphere(rad)
 		if rad then self:SetPhysicsSphereRadius(rad) end
-		self.body = lib.bulletCreateRigidBodySphere(self:GetMass(), nil, self:GetPhysicsSphereRadius())
+		self.body = lib.bulletCreateRigidBodySphere(self:GetMass(), self.matrix, self:GetPhysicsSphereRadius())
 	end
 end
 
@@ -306,7 +325,7 @@ do -- init box options
 			self:SetPhysicsBoxScale(x, y, z)
 		end
 		
-		self.body = lib.bulletCreateRigidBodyBox(self:GetMass(), nil, self:GetPhysicsBoxScale())
+		self.body = lib.bulletCreateRigidBodyBox(self:GetMass(), self.matrix, self:GetPhysicsBoxScale())
 	end
 end
 
@@ -329,7 +348,7 @@ do -- mesh init options
 		
 		self.mesh = tbl
 
-		self.body = lib.bulletCreateRigidBodyConcaveMesh(self:GetMass(), nil, mesh, not not quantized_aabb_compression)
+		self.body = lib.bulletCreateRigidBodyConcaveMesh(self:GetMass(), self.matrix, mesh, not not quantized_aabb_compression)
 	end
 	
 	function BODY:InitPhysicsConvex(tbl, quantized_aabb_compression)	
@@ -349,7 +368,7 @@ do -- mesh init options
 		
 		self.mesh = tbl
 		
-		self.body = lib.bulletCreateRigidBodyConvexMesh(self:GetMass(), nil, mesh)
+		self.body = lib.bulletCreateRigidBodyConvexMesh(self:GetMass(), self.matrix, mesh)
 	end
 end
 

@@ -45,12 +45,6 @@ do
 	end
 end
 
-function COMPONENT:OnEvent(component, name, event, func_name)
-	if name == "physics" and event == "physics_initialized" then
-		
-	end
-end
-
 function COMPONENT:OnUpdate()
 	self:UpdateVars()
 end
@@ -62,7 +56,10 @@ if SERVER then
 	
 	function COMPONENT:OnClientEntered(client)
 		self:SpawnEntity(self.NetworkId, self:GetEntity().config, client)
-		self:UpdateVars(client, true)
+		self:UpdateVars(client, true)		
+		for i, args in ipairs(self.call_on_client_persist) do	
+			self:CallOnClient(client, unpack(args))
+		end		
 	end
 end
 
@@ -111,8 +108,6 @@ local function handle_packet(buffer)
 		logf("received sync packet %s but entity[%s] is NULL\n", typ, id)
 	end
 end
-
-
 
 function COMPONENT:UpdateVars(client, force_update)
 	if SERVER then
@@ -215,6 +210,61 @@ if SERVER then
 		spawned[self.NetworkId] = nil
 	
 		self:RemoveEntity(self.NetworkId)
+	end
+end
+
+do -- call function on client 
+	if CLIENT then
+		message.AddListener("ecs_network_call_on_client", function(id, component, name, ...)
+			local ent = spawned[id] or NULL
+			
+			if ent:IsValid() then
+				if component == "unknown" then
+					local func = ent[name]
+					if func then
+						func(ent, ...)
+					else
+						logf("call on client: function %s does not exist in entity\n", name)
+						print(name, ...)
+					end
+				else
+					local obj = ent:GetComponent(component)
+					if obj:IsValid() then
+						local func = obj[name]
+						
+						if func then
+							func(obj, ...)
+						else
+							logf("call on client: function %s does not exist in component %s\n", name, component)
+							print(name, ...)
+						end
+					else
+						logf("call on client: component %s does not exist in entity (%s)\n", component, id)
+						print(name, ...)
+					end
+				end
+			else
+				logf("call on client: entity (%s) is NULL\n", id)
+				print(name, ...)
+			end
+		end)
+	end
+
+	if SERVER then
+		COMPONENT.call_on_client_persist = {}
+		
+		function COMPONENT:CallOnClient(filter, component, name, ...)
+			message.Send("ecs_network_call_on_client", filter, self.NetworkId, component, name, ...)
+		end
+		
+		function COMPONENT:CallOnClients(component, name, ...)
+			message.Broadcast("ecs_network_call_on_client", self.NetworkId, component, name, ...)
+		end
+		
+		function COMPONENT:CallOnClientsPersist(component, name, ...)
+			table.insert(self.call_on_client_persist, {component, name, ...})
+			return self:CallOnClients(component, name, ...)
+		end
 	end
 end
 

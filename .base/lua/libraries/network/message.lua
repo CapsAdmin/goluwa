@@ -4,7 +4,7 @@ message.serializer_types = message.serializer_types or {}
 
 local packet_id = -1
 
-local function encode(...)
+local function encode(buffer, ...)
 	local out = {}
 	
 	for i = 1, select("#", ...) do
@@ -20,11 +20,16 @@ local function encode(...)
 		end
 	end
 	
-	return serializer.Encode("msgpack", out)
+	--buffer:WriteString2(serializer.Encode("msgpack", out))
+	buffer:WriteTable(out, _G.typex)
 end
 
-local function decode(args)
-	args = serializer.Decode("msgpack", args)
+local function decode(buffer)
+	--local args = serializer.Decode("msgpack", buffer:ReadString2())
+	
+	if buffer:TheEnd() then return end
+	
+	local args = buffer:ReadTable()
 	
 	for k, v in pairs(args) do
 		if type(v) == "table" then
@@ -60,7 +65,7 @@ if CLIENT then
 		local buffer = Buffer()
 		
 		buffer:WriteString(id)
-		buffer:WriteString2(encode(...))
+		encode(buffer, ...)
 				
 		packet.Send(packet_id, buffer, "reliable")
 	end
@@ -69,7 +74,7 @@ if CLIENT then
 		local id = buffer:ReadString()
 				
 		if message.listeners[id] then
-			message.listeners[id](decode(buffer:ReadString2()))
+			message.listeners[id](decode(buffer))
 		end
 	end
 
@@ -81,7 +86,7 @@ if SERVER then
 		local buffer = Buffer()
 		
 		buffer:WriteString(id)
-		buffer:WriteString2(encode(...))
+		encode(buffer, ...)
 		
 		packet.Send(packet_id, buffer, filter, "reliable")
 	end
@@ -94,7 +99,7 @@ if SERVER then
 		local id = buffer:ReadString()
 				
 		if message.listeners[id] then
-			message.listeners[id](client, decode(buffer:ReadString2()))
+			message.listeners[id](client, decode(buffer))
 		end
 	end
 	

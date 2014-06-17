@@ -378,11 +378,15 @@ function metatable.AddBufferTemplate(META)
 			
 			for k, v in pairs(tbl) do
 				local t = type_func(k)
-				self:WriteByte(self:GetTypeID(t))
+				local id = self:GetTypeID(t)
+				if not id then error("tried to write unknown type " .. t, 2) end
+				self:WriteByte(id)
 				self:WriteType(k, t, type_func)
-				
+												
 				local t = type_func(v)
-				self:WriteByte(self:GetTypeID(t))
+				local id = self:GetTypeID(t)
+				if not id then error("tried to write unknown type " .. t, 2) end
+				self:WriteByte(id)
 				self:WriteType(v, t, type_func)
 			end
 		end
@@ -390,17 +394,19 @@ function metatable.AddBufferTemplate(META)
 		function META:ReadTable()
 			local tbl = {}
 
-			while true do
+			while true do				
 				local b = self:ReadByte()
 				local t = self:GetTypeFromID(b)
+				if not t then error("typeid " .. b .. " is unknown!", 2) end
 				local k = self:ReadType(t)
 				
 				local b = self:ReadByte()
 				local t = self:GetTypeFromID(b)
+				if not t then error("typeid " .. b .. " is unknown!", 2) end
 				local v = self:ReadType(t)
 				
 				tbl[k] = v
-				
+								
 				if self:TheEnd() then return tbl end
 			end
 
@@ -601,6 +607,8 @@ function metatable.AddBufferTemplate(META)
 		end
 		
 		table.sort(ids, function(a, b) return a > b end)
+		
+		META.type_ids = ids
 		
 		function META:GetTypeID(val)
 			for k,v in ipairs(ids) do

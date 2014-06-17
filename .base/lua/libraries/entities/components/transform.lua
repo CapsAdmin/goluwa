@@ -18,6 +18,9 @@ metatable.StartStorable()
 	metatable.GetSet(COMPONENT, "Size", 1, "InvalidateScaleMatrix")
 metatable.EndStorable()
 
+metatable.GetSet(COMPONENT, "OverridePosition", nil, "InvalidateTRMatrix")
+metatable.GetSet(COMPONENT, "OverrideAngles", nil, "InvalidateTRMatrix")
+	
 COMPONENT.Network = {
 	Position = {"vec3", 1/30},
 	Angles = {"ang3", 1/30},
@@ -82,18 +85,29 @@ function COMPONENT:RebuildMatrix()
 	if self.rebuild_tr_matrix then				
 		self.TRMatrix:Identity()
 
-		self.TRMatrix:Translate(-self.Position.y, -self.Position.x, -self.Position.z)
+		local pos = self.Position
+		local ang = self.Angles
 		
-		self.TRMatrix:Rotate(-self.Angles.y, 0, 0, 1)
-		self.TRMatrix:Rotate(-self.Angles.p + 90, 1, 0, 0)
-		self.TRMatrix:Rotate(self.Angles.r + 180, 0, 0, 1)	
+		if self.OverrideAngles then
+			ang = self.OverrideAngles
+		end
+		
+		if self.OverridePosition then
+			pos = self.OverridePosition
+		end
+		
+		self.TRMatrix:Translate(-pos.y, -pos.x, -pos.z)
+		
+		self.TRMatrix:Rotate(-ang.y, 0, 0, 1)
+		self.TRMatrix:Rotate(-ang.p + 90, 1, 0, 0)
+		self.TRMatrix:Rotate(ang.r + 180, 0, 0, 1)	
 		
 		if self:HasParent() then
-			self.templol = self.templol or Matrix44()
+			self.temp_matrix = self.temp_matrix or Matrix44()
 			
 			--self.TRMatrix = self.TRMatrix * self.Parent.TRMatrix
-			self.TRMatrix:Multiply(self.Parent.TRMatrix, self.templol)
-			self.TRMatrix, self.templol = self.templol, self.TRMatrix
+			self.TRMatrix:Multiply(self.Parent.TRMatrix, self.temp_matrix)
+			self.TRMatrix, self.temp_matrix = self.temp_matrix, self.TRMatrix
 		end
 		
 		self.rebuild_tr_matrix = false
