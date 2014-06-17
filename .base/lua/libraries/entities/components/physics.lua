@@ -14,6 +14,19 @@ COMPONENT.Name = "physics"
 COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Update"}
 
+COMPONENT.Network = {
+	Position = {"vec3", 1/30},
+	Angles = {"ang3", 1/30},
+	
+	Gravity = {"vec3", 1/5, "reliable"},
+	Mass = {"unsigned long", 1/5, "reliable"},
+	LinearDamping = {"float", 1/5, "reliable"},
+	AngularDamping = {"float", 1/5, "reliable"},
+	MassOrigin = {"vec3", 1/5, "reliable"},
+	PhysicsBoxScale = {"vec3", 1/5, "reliable"},
+	PhysicsSphereRadius = {"float", 1/5, "reliable"},
+}
+
 COMPONENT.matrix = Matrix44()
 COMPONENT.rigid_body = NULL
 
@@ -76,28 +89,30 @@ DELEGATE(COMPONENT, "MassOrigin", "vec3")
 DELEGATE(COMPONENT, "Gravity", "vec3")
 DELEGATE(COMPONENT, "Velocity", "vec3")
 DELEGATE(COMPONENT, "AngularVelocity", "vec3")
+DELEGATE(COMPONENT, "PhysicsBoxScale", "vec3")
+DELEGATE(COMPONENT, "PhysicsSphereRadius")
 
 DELEGATE(COMPONENT, "Mass")
-DELEGATE(COMPONENT, "Damping")
+DELEGATE(COMPONENT, "AngularDamping")
+DELEGATE(COMPONENT, "LinearDamping")
 
 function COMPONENT:SetPosition(vec)
 	local transform = self:GetComponent("transform")
 	transform:SetPosition(vec)
 		
-	local body = self.rigid_body
-	if body:IsValid() then
+	if self.rigid_body:IsValid() and self.rigid_body:IsPhysicsValid() then
 		local mat = transform:GetMatrix()
-		body:SetMatrix(mat.m)
+		self.rigid_body:SetMatrix(mat.m)
 	end
 end
 
 local temp = Matrix44()
 
 function COMPONENT:GetPosition()
-	if self.rigid_body:IsValid() then
+	if self.rigid_body:IsValid() and self.rigid_body:IsPhysicsValid() then
 		temp.m = self.rigid_body:GetMatrix()
 		local x, y, z = temp:GetTranslation()
-		vec = Vec3(-y, -x, -z)
+		local vec = Vec3(-y, -x, -z)
 		--if x == 0 or y == 0 or z == 0 then	
 		--	print(vec)
 		--end
@@ -111,14 +126,13 @@ function COMPONENT:SetAngles(ang)
 	local transform = self:GetComponent("transform")
 	transform:SetAngles(ang)
 	
-	local body = self.rigid_body
-	if body:IsValid() then
-		body:SetMatrix(transform:GetMatrix().m)
+	if self.rigid_body:IsValid() and self.rigid_body:IsPhysicsValid() then
+		self.rigid_body:SetMatrix(transform:GetMatrix().m)
 	end
 end
 
 function COMPONENT:GetAngles()
-	if self.rigid_body:IsValid() then
+	if self.rigid_body:IsValid() and self.rigid_body:IsPhysicsValid() then
 		temp.m = self.rigid_body:GetMatrix()
 		
 		local p,y,r = temp:GetAngles()
@@ -133,17 +147,30 @@ end
 do
 	local assimp = require("lj-assimp")
 
-	function COMPONENT:InitPhysics(type, mass, ...)
-		local transform = self:GetComponent("transform")
-		transform:InvalidateScaleMatrix()
+	function COMPONENT:InitPhysicsSphere(rad)
+		self.rigid_body:InitPhysicsSphere(rad)
+		self:FireEvent("physics_initialized", "InitPhysicsSphere")
+	end
+	
+	function COMPONENT:InitPhysicsBox(scale)
+		if scale then
+			self.rigid_body:InitPhysicsBox(scale.x, scale.y, scale.z)
+		else
+			self.rigid_body:InitPhysicsBox()
+		end
+		self:FireEvent("physics_initialized", "InitPhysicsBox")
+	end
+	
+	metatable.GetSet(COMPONENT, "PhysicsModelPath", "")
+	metatable.GetSet(COMPONENT, "PhysicsModel", nil)
+	
+	function COMPONENT:SetPhysicsModelPath(path)
+		self.PhysicsModel = path
 		
-		if (type == "convex" or type == "concave") and _G.type((...)) == "string" and vfs.Exists((...)) then
-			local rest = {select(2, ...)}
-			
-			local scene = assimp.ImportFile(R((...)), assimp.e.aiProcessPreset_TargetRealtime_Quality)
-			
+		if vfs.Exists(path) then
+			local scene = assimp.ImportFile(R(path), assimp.e.aiProcessPreset_TargetRealtime_Quality)
 			if scene.mMeshes[0].mNumVertices == 0 then
-				error("no vertices found in " .. (...), 2)
+				error("no vertices found in " .. path, 2)
 			end
 								
 			local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices  * 3)
@@ -173,20 +200,24 @@ do
 			}
 			
 			assimp.ReleaseImport(scene)
-
-			self.rigid_body = bullet.CreateRigidBody(type, mass, transform:GetMatrix().m, mesh, unpack(rest))
-		else
-			self.rigid_body = bullet.CreateRigidBody(type, mass, transform:GetMatrix().m, ...)
+			
+			self:SetPhysicsModel(mesh)
 		end
-		
-		event.Call("RigidBodyInitialized", type, mass, ...)
-
-		return self.rigid_body
+	end
+	
+	function COMPONENT:InitPhysicsConcave()
+		self.rigid_body:InitPhysicsConcave(self:GetPhysicsModel())
+		self:FireEvent("physics_initialized", "InitPhysicsConcave")
+	end
+	
+	function COMPONENT:InitPhysicsConvex(quantized_aabb_compression)
+		self.rigid_body:InitPhysicsConvex(self:GetPhysicsModel(), quantized_aabb_compression)
+		self:FireEvent("physics_initialized", "InitPhysicsConvex")
 	end
 end		
 
 function COMPONENT:OnUpdate()
-	if not self.rigid_body:IsValid() then return end
+	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return end
 	
 	local transform = self:GetComponent("transform")
 	
@@ -195,6 +226,10 @@ function COMPONENT:OnUpdate()
 	local mat = matrix:Copy()
 	
 	transform:SetTRMatrix(mat)
+end
+
+function COMPONENT:OnAdd(ent)
+	self.rigid_body = bullet.CreateRigidBody()
 end
 
 function COMPONENT:OnRemove(ent)

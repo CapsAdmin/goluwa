@@ -114,8 +114,8 @@ event.AddListener("Move", "spooky", function(client, cmd)
 	if not client.ghost:IsValid() then
 		client.ghost = entities.CreateEntity("physical")
 		client.ghost:SetModelPath("models/face.obj")
-		client.ghost:InitPhysics("box", 85, 1, 1, 1)
-		--client.ghost:SetScale(Vec3(1,1,1))
+		client.ghost:SetMass(85)
+		client.ghost:InitPhysicsBox(Vec3(1, 1, 1))
 		client.ghost:SetPosition(Vec3(0,0,100))  
 	end
 	

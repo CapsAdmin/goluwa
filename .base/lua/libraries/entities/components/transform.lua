@@ -18,6 +18,13 @@ metatable.StartStorable()
 	metatable.GetSet(COMPONENT, "Size", 1, "InvalidateScaleMatrix")
 metatable.EndStorable()
 
+COMPONENT.Network = {
+	Position = {"vec3", 1/30},
+	Angles = {"ang3", 1/30},
+	Scale = {"vec3", 1/15},
+	Size = {"float", 1/15},
+}
+
 function COMPONENT:OnAdd(ent, parent)
 	if parent and parent:HasComponent("transform") then
 		self:SetParent(parent:GetComponent("transform"))
