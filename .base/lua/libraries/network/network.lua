@@ -5,7 +5,7 @@ network.debug = true
 network.socket = network.socket or NULL
 
 local function ipport_to_uid(peer)
-	return ("%X"):format(crypto.CRC32(tostring(tonumber(ffi.cast("unsigned long", peer.data)))))
+	return tostring(tonumber(ffi.cast("unsigned long *", peer.peer.data)[0]))
 end
 
 function network.HandlePacket(str, peer, type)

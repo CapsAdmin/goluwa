@@ -180,10 +180,11 @@ end
 
 local evt = ffi.new("ENetEvent[1]")
 
+enet.uid_ref = enet.uid_ref or {}
 local unique_id = 0
 
 local function getuid(peer)
-	return tonumber(ffi.cast("unsigned long", peer.data))
+	return tonumber(ffi.cast("unsigned long *", peer.data)[0])
 end
 
 event.AddListener("Update", "enet", function()
@@ -197,9 +198,15 @@ event.AddListener("Update", "enet", function()
 				else
 					local peer = enet.CreateDummyPeer()
 					peer.peer = evt[0].peer
-					peer.peer.data = ffi.cast("void *", unique_id)
+					
+					
+					local uid = ffi.new("unsigned long[1]", unique_id)
+					table.insert(enet.uid_ref, uid)
+					peer.peer.data = uid
 					unique_id = unique_id + 1
+					print(getuid(peer.peer))
 					socket.peers[getuid(peer.peer)] = peer
+					
 					socket:OnPeerConnect(peer)
 					peer:OnConnect()
 					peer.connected = true
