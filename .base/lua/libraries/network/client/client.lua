@@ -5,7 +5,6 @@ META.Name = "client"
 META.socket = NULL
 
 class.GetSet(META, "UniqueID", "???")
-class.GetSet(META, "ID", -1)
 
 nvars.IsSet(META, "Bot", false)
 nvars.GetSet(META, "Nick", e.USERNAME, "cl_nick")
@@ -17,7 +16,7 @@ end
 function META:GetNick()
 	for key, client in pairs(clients.GetAll()) do
 		if client ~= self and client.nv.Nick == self.nv.Nick then
-			return ("%s(%i)"):format(self.nv.Nick, self.ID)
+			return ("%s(%s)"):format(self.nv.Nick, self:GetUniqueID())
 		end
 	end
 	
@@ -25,7 +24,7 @@ function META:GetNick()
 end
 
 function META:__tostring()
-	return string.format("client[%s][%i]", self:GetName(), self:GetID())
+	return string.format("client[%s][%s]", self:GetName(), self:GetUniqueID())
 end
 
 function META:GetName()	
