@@ -108,6 +108,7 @@ end
     
 event.AddListener("Move", "spooky", function(client, cmd)
 	if not entities then return end
+	print(client, cmd)
 	
 	client.ghost = client.ghost or NULL
 	 
@@ -117,6 +118,7 @@ event.AddListener("Move", "spooky", function(client, cmd)
 		client.ghost:SetMass(85)
 		client.ghost:InitPhysicsBox(Vec3(1, 1, 1))
 		client.ghost:SetPosition(Vec3(0,0,100))  
+		client.ghost:SetSize(0.5)  
 	end
 	
 	local pos = client.ghost:GetPosition() 
@@ -131,7 +133,7 @@ event.AddListener("Move", "spooky", function(client, cmd)
 			end
 		end		
 		
-		client.ghost:GetComponent("transform"):SetAngles(cmd.angles)
+		client.ghost:GetComponent("transform"):SetOverrideAngles(cmd.angles)
 	end
 	
 	client.ghost:SetVelocity(client.ghost:GetVelocity() + cmd.velocity * 0.05)

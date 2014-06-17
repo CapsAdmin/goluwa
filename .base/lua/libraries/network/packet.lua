@@ -109,7 +109,7 @@ do -- buffer object
 		
 		if type(val) == "string" or type(val) == "table" or not val then
 			self.buffer = {}
-			self.position = 0
+			self.position = 1
 			
 			if type(val) == "table" then
 				self:WriteStructure(val)
@@ -130,7 +130,7 @@ do -- buffer object
 		if self.file then
 			self.file:write(string.char(byte))
 		else
-			self.buffer[#self.buffer + 1] = byte
+			table.insert(self.buffer, byte)
 		end
 		return self
 	end
@@ -142,8 +142,9 @@ do -- buffer object
 				return char:byte()
 			end
 		else
+			local val = self.buffer[self.position]
 			self.position = math.min(self.position + 1, #self.buffer)
-			return self.buffer[self.position]
+			return val
 		end
 	end
 	
@@ -166,7 +167,7 @@ do -- buffer object
 				self:SetPos(old)
 				return size
 			else 
-				return #self.buffer - 1
+				return #self.buffer
 			end
 		end
 		
@@ -205,7 +206,7 @@ do -- buffer object
 			if self.file then
 				self.file:seek("set", pos)
 			else
-				self.position = math.clamp(pos, 0, self:GetSize())
+				self.position = math.clamp(pos, 1, self:GetSize())
 			end
 			
 			return self:GetPos()
@@ -215,7 +216,7 @@ do -- buffer object
 			if self.file then
 				return self.file:seek()
 			else
-				return self.position - 1
+				return self.position
 			end
 		end
 

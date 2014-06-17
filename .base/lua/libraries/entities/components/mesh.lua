@@ -7,11 +7,11 @@ COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Draw3D"}
 
 metatable.StartStorable()		
-metatable.GetSet(COMPONENT, "Texture", NULL)
-metatable.GetSet(COMPONENT, "Color", Color(1, 1, 1))
-metatable.GetSet(COMPONENT, "Alpha", 1)
-metatable.GetSet(COMPONENT, "Cull", true)
-metatable.GetSet(COMPONENT, "ModelPath", "models/face.obj")
+	metatable.GetSet(COMPONENT, "Texture", NULL)
+	metatable.GetSet(COMPONENT, "Color", Color(1, 1, 1))
+	metatable.GetSet(COMPONENT, "Alpha", 1)
+	metatable.GetSet(COMPONENT, "Cull", true)
+	metatable.GetSet(COMPONENT, "ModelPath", "models/face.obj")
 metatable.EndStorable()
 
 metatable.GetSet(COMPONENT, "Shader", NULL)
@@ -96,16 +96,17 @@ if CLIENT then
 		local visible = false
 		
 		if model.corners and self.Cull then
-			model.LOL = model.LOL or {}
-			for _, pos in ipairs(model.corners) do
-				model.LOL[_] = model.LOL[_] or Matrix44()
-				model.LOL[_]:Identity()
-				model.LOL[_]:Translate(pos.x, pos.y, pos.z)
+			model.matrix_cache = model.matrix_cache or {}
+			
+			for i, pos in ipairs(model.corners) do
+				model.matrix_cache[i] = model.matrix_cache[i] or Matrix44()
+				model.matrix_cache[i]:Identity()
+				model.matrix_cache[i]:Translate(pos.x, pos.y, pos.z)
 				
-				model.LOL[_]:Multiply(matrix, temp)
-				temp:Multiply(render.matrices.vp_matrix, model.LOL[_])
+				model.matrix_cache[i]:Multiply(matrix, temp)
+				temp:Multiply(render.matrices.vp_matrix, model.matrix_cache[i])
 				
-				local x, y, z = model.LOL[_]:GetClipCoordinates()
+				local x, y, z = model.matrix_cache[i]:GetClipCoordinates()
 				
 				if x > -1 and x < 1 and y > -1 and y < 1 and z > -1 then
 					visible = true

@@ -25,6 +25,7 @@ COMPONENT.Network = {
 	MassOrigin = {"vec3", 1/5, "reliable"},
 	PhysicsBoxScale = {"vec3", 1/5, "reliable"},
 	PhysicsSphereRadius = {"float", 1/5, "reliable"},
+	PhysicsModelPath = {"string", 1/10, "reliable"},
 }
 
 COMPONENT.matrix = Matrix44()
@@ -148,24 +149,38 @@ do
 	local assimp = require("lj-assimp")
 
 	function COMPONENT:InitPhysicsSphere(rad)
+		local tr = self:GetComponent("transform")
+		self.rigid_body:SetMatrix(tr:GetMatrix().m)
+		
 		self.rigid_body:InitPhysicsSphere(rad)
-		self:FireEvent("physics_initialized", "InitPhysicsSphere")
+		
+		if SERVER then
+			local obj = self:GetComponent("networked")
+			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsSphere", rad) end
+		end
 	end
 	
 	function COMPONENT:InitPhysicsBox(scale)
+		local tr = self:GetComponent("transform")
+		self.rigid_body:SetMatrix(tr:GetMatrix().m)
+		
 		if scale then
 			self.rigid_body:InitPhysicsBox(scale.x, scale.y, scale.z)
 		else
 			self.rigid_body:InitPhysicsBox()
 		end
-		self:FireEvent("physics_initialized", "InitPhysicsBox")
+		
+		if SERVER then
+			local obj = self:GetComponent("networked")
+			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsBox", scale) end
+		end
 	end
 	
 	metatable.GetSet(COMPONENT, "PhysicsModelPath", "")
 	metatable.GetSet(COMPONENT, "PhysicsModel", nil)
 	
 	function COMPONENT:SetPhysicsModelPath(path)
-		self.PhysicsModel = path
+		self.PhysicsModelPath = path
 		
 		if vfs.Exists(path) then
 			local scene = assimp.ImportFile(R(path), assimp.e.aiProcessPreset_TargetRealtime_Quality)
@@ -206,13 +221,27 @@ do
 	end
 	
 	function COMPONENT:InitPhysicsConcave()
+		local tr = self:GetComponent("transform")
+		self.rigid_body:SetMatrix(tr:GetMatrix().m)
+		
 		self.rigid_body:InitPhysicsConcave(self:GetPhysicsModel())
-		self:FireEvent("physics_initialized", "InitPhysicsConcave")
+		
+		if SERVER then
+			local obj = self:GetComponent("networked")
+			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConcave") end
+		end
 	end
 	
 	function COMPONENT:InitPhysicsConvex(quantized_aabb_compression)
+		local tr = self:GetComponent("transform")
+		self.rigid_body:SetMatrix(tr:GetMatrix().m)
+		
 		self.rigid_body:InitPhysicsConvex(self:GetPhysicsModel(), quantized_aabb_compression)
-		self:FireEvent("physics_initialized", "InitPhysicsConvex")
+		
+		if SERVER then
+			local obj = self:GetComponent("networked")
+			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvex", quantized_aabb_compression) end
+		end
 	end
 end		
 
