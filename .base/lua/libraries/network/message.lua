@@ -1,54 +1,7 @@
 local message = _G.message or {}
 
-message.serializer_types = message.serializer_types or {}
-
+-- "-1" is a reserved id
 local packet_id = -1
-
-local function encode(buffer, ...)
-	local out = {}
-	
-	for i = 1, select("#", ...) do
-		local v = select(i, ...)
-		
-		local t = typex(v)
-		local func = message.serializer_types[t]
-		
-		if func then			
-			out[i] = {"msgpo", t, func(v, true)}
-		else
-			out[i] = v
-		end
-	end
-	
-	--buffer:WriteString2(serializer.Encode("msgpack", out))
-	buffer:WriteTable(out, _G.typex)
-end
-
-local function decode(buffer)
-	--local args = serializer.Decode("msgpack", buffer:ReadString2())
-	
-	if buffer:TheEnd() then return end
-	
-	local args = buffer:ReadTable()
-	
-	for k, v in pairs(args) do
-		if type(v) == "table" then
-			if v[1] == "msgpo" and message.serializer_types[v[2]] then
-				if v[3] then
-					args[k] = message.serializer_types[v[2]](v[3], false)
-				else
-					args[k] = nil
-				end
-			end
-		end
-	end
-	
-	return unpack(args)
-end
-
-function message.AddEncodeDecodeType(type, callback)
-	message.serializer_types[type] = callback
-end
 
 message.listeners = message.listeners or {}
 
@@ -65,16 +18,17 @@ if CLIENT then
 		local buffer = Buffer()
 		
 		buffer:WriteString(id)
-		encode(buffer, ...)
+		buffer:WriteTable({...}, typex)
 				
 		packet.Send(packet_id, buffer, "reliable")
 	end
 	
 	function message.OnMessageReceived(buffer)
 		local id = buffer:ReadString()
-				
+		local args = buffer:TheEnd() and {} or buffer:ReadTable()
+
 		if message.listeners[id] then
-			message.listeners[id](decode(buffer))
+			message.listeners[id](unpack(args))
 		end
 	end
 
@@ -86,7 +40,7 @@ if SERVER then
 		local buffer = Buffer()
 		
 		buffer:WriteString(id)
-		encode(buffer, ...)
+		buffer:WriteTable({...}, typex)
 		
 		packet.Send(packet_id, buffer, filter, "reliable")
 	end
@@ -97,9 +51,10 @@ if SERVER then
 	
 	function message.OnMessageReceived(buffer, client)
 		local id = buffer:ReadString()
-				
+		local args = buffer:TheEnd() and {} or buffer:ReadTable()
+
 		if message.listeners[id] then
-			message.listeners[id](client, decode(buffer))
+			message.listeners[id](client, unpack(args))
 		end
 	end
 	
@@ -174,12 +129,15 @@ do -- event extension
 	end
 end
 
-message.AddEncodeDecodeType("null", function(var, encode) 
-	if encode then
-		return 0
-	else
+packet.ExtendBuffer(
+	"Null", 
+	function(buffer, client) 
+		buffer:WriteByte(0)
+	end,
+	function(buffer) 
+		buffer:ReadByte()
 		return NULL
 	end
-end)
+)
 
 return message

@@ -125,6 +125,14 @@ do -- buffer object
 		return self
 	end
 	
+	-- this must be done shared or else you'll mess up Write/ReadType on the other side
+	function packet.ExtendBuffer(name, write_callback, read_callback)
+		META["Read" .. name] = read_callback
+		META["Write" .. name] = write_callback
+		
+		META:GenerateTypes()
+	end
+	
 	-- byte
 	function META:WriteByte(byte)
 		if self.file then
@@ -225,7 +233,7 @@ do -- buffer object
 			self:SetPos(self:GetPos() + i) 
 		end
 		
-		META.__len = META.Length
+		META.__len = META.GetSize
 		
 		function META:GetDebugString()
 			return self:GetString():readablehex()
