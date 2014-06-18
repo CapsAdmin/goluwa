@@ -550,41 +550,59 @@ function metatable.AddBufferTemplate(META)
 
 
 	do -- automatic
-		local read_functions = {}
-		local write_functions = {}
+	
+		function META:GenerateTypes()
+			local read_functions = {}
+			local write_functions = {}
 
-		for k, v in pairs(META) do
-			if type(k) == "string" then
-				local key = k:match("Read(.+)")
-				if key then
-					read_functions[key:lower()] = v
-					
-					if key:find("Unsigned") then
-						key = key:gsub("(Unsigned)(.+)", "%1 %2")
+			for k, v in pairs(self) do
+				if type(k) == "string" then
+					local key = k:match("Read(.+)")
+					if key then
 						read_functions[key:lower()] = v
+						
+						if key:find("Unsigned") then
+							key = key:gsub("(Unsigned)(.+)", "%1 %2")
+							read_functions[key:lower()] = v
+						end
 					end
-				end
-				
-				local key = k:match("Write(.+)")
-				if key then
-					write_functions[key:lower()] = v
 					
-					if key:find("Unsigned") then
-						key = key:gsub("(Unsigned)(.+)", "%1 %2")
+					local key = k:match("Write(.+)")
+					if key then
 						write_functions[key:lower()] = v
+						
+						if key:find("Unsigned") then
+							key = key:gsub("(Unsigned)(.+)", "%1 %2")
+							write_functions[key:lower()] = v
+						end
 					end
 				end
 			end
+		
+			self.read_functions = read_functions
+			self.write_functions = write_functions
+		
+			local ids = {}
+			
+			for k,v in pairs(read_functions) do
+				table.insert(ids, k)
+			end
+			
+			table.sort(ids, function(a, b) return a > b end)
+			
+			self.type_ids = ids
 		end
+		
+		META:GenerateTypes()
 		
 		function META:WriteType(val, t, type_func)
 			t = t or type(val)
 						
-			if write_functions[t] then
+			if self.write_functions[t] then
 				if t == "table" then
-					return write_functions[t](self, val, type_func)
+					return self.write_functions[t](self, val, type_func)
 				else
-					return write_functions[t](self, val)
+					return self.write_functions[t](self, val)
 				end
 			end
 			
@@ -593,25 +611,15 @@ function metatable.AddBufferTemplate(META)
 		
 		function META:ReadType(t, signed)
 		
-			if read_functions[t] then
-				return read_functions[t](self, signed)
+			if self.read_functions[t] then
+				return self.read_functions[t](self, signed)
 			end
 			
 			error("tried to read unknown type " .. t, 2)
 		end
 		
-		local ids = {}
-		
-		for k,v in pairs(read_functions) do
-			table.insert(ids, k)
-		end
-		
-		table.sort(ids, function(a, b) return a > b end)
-		
-		META.type_ids = ids
-		
 		function META:GetTypeID(val)
-			for k,v in ipairs(ids) do
+			for k,v in ipairs(self.type_ids) do
 				if v == val then
 					return k
 				end
@@ -619,10 +627,7 @@ function metatable.AddBufferTemplate(META)
 		end
 		
 		function META:GetTypeFromID(id)
-			return ids[id]
+			return self.type_ids[id]
 		end
-		
-		META.read_functions = read_functions
-		META.write_functions = write_functions
 	end	
 end

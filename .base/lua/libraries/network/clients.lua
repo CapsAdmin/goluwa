@@ -114,12 +114,14 @@ do -- filter
 	end
 end
 
-message.AddEncodeDecodeType("client", function(var, encode)
-	if encode then
-		return var:GetUniqueID()
-	else
-		return clients.GetByUniqueID(var)
+packet.ExtendBuffer(
+	"Client", 
+	function(buffer, client) 
+		buffer:WriteString(client:GetUniqueID())
+	end,
+	function(buffer) 
+		return clients.GetByUniqueID(buffer:ReadString())
 	end
-end)
+)
 
 return clients

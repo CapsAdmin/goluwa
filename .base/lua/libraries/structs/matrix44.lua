@@ -509,6 +509,13 @@ function META:Shear(v)
 	end
 end
 
+function META:Lerp(alpha, other)
+	local m = self.m
+	for i = 1, 16 do
+		math.lerp(alpha, m[i-1], other.m[i-1])
+	end
+end
+
 local t = ffi.typeof("float[16]")
 local new = ffi.new
 
