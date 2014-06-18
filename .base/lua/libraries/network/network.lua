@@ -206,6 +206,8 @@ if SERVER then
 		end
 
 		network.socket = server
+		
+		event.Call("NetworkStarted")
 	end
 	
 	function network.CloseServer(reason)		

@@ -241,6 +241,14 @@ do -- buffer object
 			end
 			return self
 		end
+		
+		function META:WriteNetString(str)
+			self:WriteShort(network.AddString(str))
+		end
+		
+		function META:ReadNetString()
+			return network.IDToString(self:ReadShort())
+		end
 	end
 end
 

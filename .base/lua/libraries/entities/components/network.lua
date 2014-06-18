@@ -1,17 +1,18 @@
 local entities = (...) or _G.entities
+
 local COMPONENT = {}
 
 local _debug = false
+local spawned_networked = {}
 
 COMPONENT.Name = "networked"
 COMPONENT.Require = {"transform"}
-COMPONENT.Events = {"Update", "RigidBodyInitialized"}
+COMPONENT.Events = {"Update"}
 
 metatable.GetSet(COMPONENT, "NetworkId", -1)
 
-local client_synced_vars = {}
-
 do
+	COMPONENT.client_synced_vars = {}
 	COMPONENT.server_synced_vars = {}
 	COMPONENT.server_synced_vars_stringtable = {}
 
@@ -43,75 +44,34 @@ do
 			end
 		end
 	end
+	
+	function COMPONENT:SetupSyncVariables()
+		local done = {}
+		
+		for i, component in npairs(self:GetEntityComponents()) do
+			if component.Network then
+				for key, info in pairs(component.Network) do
+					if not done[key] then
+						self:ServerSyncVar(component.Name, key, unpack(info))
+						done[key] = true
+					end
+				end
+			end
+		end
+	end
 end
 
 function COMPONENT:OnUpdate()
 	self:UpdateVars()
 end
 
-local spawned = {}
+do -- synchronization server > client
+	COMPONENT.last = {}
+	COMPONENT.last_update = {}
+	COMPONENT.queued_packets = {}
 
-if SERVER then
-	table.insert(COMPONENT.Events, "ClientEntered")
-	
-	function COMPONENT:OnClientEntered(client)
-		self:SpawnEntity(self.NetworkId, self:GetEntity().config, client)
-		self:UpdateVars(client, true)		
-		for i, args in ipairs(self.call_on_client_persist) do	
-			self:CallOnClient(client, unpack(args))
-		end		
-	end
-end
-
-COMPONENT.last = {}
-COMPONENT.last_update = {}
-COMPONENT.unhandled_sync_packets = {}
-
-local function handle_packet(buffer)
-	local typ = network.IDToString(buffer:ReadShort())
-	local id = buffer:ReadShort()
-	local ent = spawned[id] or NULL
-	
-	if ent:IsValid() then	
-		local self = ent:GetComponent("networked")
-		local info = self.server_synced_vars_stringtable[typ]
-				
-		if info then
-			local var = buffer:ReadType(info.type)
-			
-			if info.component == "unknown" then
-				ent[info.set_name](ent, var)
-			else
-				local component = ent:GetComponent(info.component)
-				component[info.set_name](component, var)
-			end
-			if _debug then logf("%s: received %s\n", self, var) end
-		else				
-			table.insert(self.unhandled_sync_packets, buffer)
-			logn("received unknown sync packet ", typ)
-		end
-	elseif typ == "entity_networked_spawn" then
-		local config =  buffer:ReadString()
-
-		local ent = entities.CreateEntity(config)
-		local self = ent:GetComponent("networked")
-
-		self:SetupSyncVariables()
-		
-		ent:SetNetworkId(id)
-		spawned[id] = ent
-		logf("entity %s with id %s spawned from server\n", config, id)
-	elseif typ == "entity_networked_remove" then
-		ent:Remove() 
-	else
-		---table.insert(self.unhandled_sync_packets, buffer)
-		logf("received sync packet %s but entity[%s] is NULL\n", typ, id)
-	end
-end
-
-function COMPONENT:UpdateVars(client, force_update)
-	if SERVER then
-		for i, info in ipairs(self.server_synced_vars) do
+	function COMPONENT:UpdateVars(client, force_update)
+		for i, info in ipairs(SERVER and self.server_synced_vars or CLIENT and self.client_synced_vars) do
 			if force_update or not self.last_update[info.key] or self.last_update[info.key] < timer.GetSystemTime() then
 				
 				local var
@@ -140,40 +100,81 @@ function COMPONENT:UpdateVars(client, force_update)
 				self.last_update[info.key] = timer.GetSystemTime() + info.rate
 			end
 		end
-	end
-	
-	if CLIENT then
-		local buffer = table.remove(self.unhandled_sync_packets)
-		if buffer then
-			handle_packet(buffer)
+
+		
+		if CLIENT then
+			local buffer = table.remove(self.queued_packets)
+			
+			if buffer then
+				handle_packet(buffer)
+			end
 		end
 	end
-end
 
-if CLIENT then
-	packet.AddListener("ecs_network", handle_packet)
-end
+	local function handle_packet(buffer)
+		local what = buffer:ReadNetString()
+		local id = buffer:ReadShort()
+		local self = spawned_networked[id] or NULL
+		
+		if what == "entity_networked_spawn" then
+			local config =  buffer:ReadString()
 
-function COMPONENT:SetupSyncVariables()
-	local done = {}
-	
-	for i, component in npairs(self:GetEntityComponents()) do
-		if component.Network then
-			for key, info in pairs(component.Network) do
-				if not done[key] then
-					self:ServerSyncVar(component.Name, key, unpack(info))
-					done[key] = true
+			local ent = entities.CreateEntity(config)
+			ent:SetNetworkId(id)
+			
+			local self = ent:GetComponent("networked")
+			self:SetupSyncVariables()
+			
+			spawned_networked[id] = self
+			
+			logf("entity %s with id %s spawned from server\n", config, id)
+		elseif what == "entity_networked_remove" then
+			self:GetEntity():Remove() 
+		elseif self:IsValid() then
+			local info = self.server_synced_vars_stringtable[what]
+					
+			if info then
+				local var = buffer:ReadType(info.type)
+				
+				if info.component == "unknown" then
+					local ent = self:GetEntity()
+					ent[info.set_name](ent, var)
+				else
+					local component = self:GetComponent(info.component)
+					component[info.set_name](component, var)
 				end
+				if _debug then logf("%s: received %s\n", self, var) end
+			elseif info.flags == "reliable" then
+				table.insert(self.queued_packets, buffer)
 			end
+		else
+			---table.insert(self.queued_packets, buffer)
+			logf("received sync packet %s but entity[%s] is NULL\n", typ, id)
+		end
+	end
+
+	packet.AddListener("ecs_network", handle_packet)
+
+	if SERVER then
+		table.insert(COMPONENT.Events, "ClientEntered")
+		
+		function COMPONENT:OnClientEntered(client)
+			self:SpawnEntityOnClient(client, self.NetworkId, self:GetEntity().config)
+			
+			-- force send all packets once to this new client as reliable 
+			-- so all the entities' positions will update properly
+			self:UpdateVars(client, true)		
+			
+			self:SendCallOnClientToClient(client)
 		end
 	end
 end
 
 if SERVER then
-	function COMPONENT:SpawnEntity(id, config, client)
+	function COMPONENT:SpawnEntityOnClient(client, id, config)
 		local buffer = Buffer()
 		
-		buffer:WriteShort(network.AddString("entity_networked_spawn"))
+		buffer:WriteNetString("entity_networked_spawn")
 		buffer:WriteShort(id)
 		buffer:WriteString(config)
 		
@@ -182,44 +183,43 @@ if SERVER then
 		packet.Send("ecs_network", buffer, client, "reliable")
 	end
 	
-	function COMPONENT:RemoveEntity(id, client)
+	function COMPONENT:RemoveEntityOnClient(client, id)
 		local buffer = Buffer()
 		
-		buffer:WriteShort(network.AddString("entity_networked_remove"))
+		buffer:WriteNetString("entity_networked_remove")
 		buffer:WriteShort(id)
 		
 		packet.Broadcast("ecs_network", buffer, client, "reliable")
 	end
 	
-	local id = 0
+	local id = 1
 	
 	function COMPONENT:OnAdd(ent)
 		self.NetworkId = id
 		
-		spawned[id] = ent
+		spawned_networked[self.NetworkId] = self
+		
+		self:SpawnEntityOnClient(nil, self.NetworkId, ent.config)
+		self:SetupSyncVariables()
 		
 		id = id + 1
-		
-		self:SpawnEntity(self.NetworkId, ent.config)
-		
-		self:SetupSyncVariables()
 	end
 	
 	function COMPONENT:OnRemove(ent)
-		
-		spawned[self.NetworkId] = nil
+		spawned_networked[self.NetworkId] = nil
 	
-		self:RemoveEntity(self.NetworkId)
+		self:RemoveEntityOnClient(nil, self.NetworkId)
 	end
 end
 
-do -- call function on client 
+do -- call on client
 	if CLIENT then
 		message.AddListener("ecs_network_call_on_client", function(id, component, name, ...)
-			local ent = spawned[id] or NULL
+			local self = spawned_networked[id] or NULL
 			
-			if ent:IsValid() then
+			if self:IsValid() then
 				if component == "unknown" then
+					local ent = self:GetEntity()
 					local func = ent[name]
 					if func then
 						func(ent, ...)
@@ -228,7 +228,7 @@ do -- call function on client
 						print(name, ...)
 					end
 				else
-					local obj = ent:GetComponent(component)
+					local obj = self:GetComponent(component)
 					if obj:IsValid() then
 						local func = obj[name]
 						
@@ -252,6 +252,12 @@ do -- call function on client
 
 	if SERVER then
 		COMPONENT.call_on_client_persist = {}
+
+		function COMPONENT:SendCallOnClientToClient()
+			for i, args in ipairs(self.call_on_client_persist) do	
+				self:CallOnClient(client, unpack(args))
+			end		
+		end
 		
 		function COMPONENT:CallOnClient(filter, component, name, ...)
 			message.Send("ecs_network_call_on_client", filter, self.NetworkId, component, name, ...)

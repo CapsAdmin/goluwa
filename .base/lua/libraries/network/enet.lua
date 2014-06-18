@@ -6,6 +6,7 @@ enet.sockets = enet.sockets or {}
 
 local valid_flags = {
 	default_valid_flag = 0,
+	unreliable = 0,
 	reliable = lib.e.ENET_PACKET_FLAG_RELIABLE,
 	unsequenced = lib.e.ENET_PACKET_FLAG_UNSEQUENCED,
 	unreliable_fragment = lib.e.ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT,

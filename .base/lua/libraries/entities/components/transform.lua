@@ -22,8 +22,8 @@ metatable.GetSet(COMPONENT, "OverridePosition", nil, "InvalidateTRMatrix")
 metatable.GetSet(COMPONENT, "OverrideAngles", nil, "InvalidateTRMatrix")
 	
 COMPONENT.Network = {
-	Position = {"vec3", 1/30},
-	Angles = {"ang3", 1/30},
+	Position = {"vec3", 1/30, "unreliable"},
+	Angles = {"ang3", 1/30, "unreliable"},
 	Scale = {"vec3", 1/15},
 	Size = {"float", 1/15},
 }
