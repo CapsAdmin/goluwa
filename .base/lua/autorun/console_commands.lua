@@ -6,25 +6,23 @@ do
 	end)
 
 	console.AddCommand("lua_run", function(line)
-		easylua.RunLua(clients.GetLocalClient(), line, nil, true)
+		console.SetLuaEnvironmentVariable("me", clients.GetLocalClient()) 
+		console.RunLua(line)
 	end)
 
 	console.AddCommand("lua_open", function(line)
-		easylua.Start(clients.GetLocalClient())
-			include(line)
-		easylua.End()
+		include(line)
 	end)
 
 	console.AddServerCommand("lua_run_sv", function(client, line)
 		logn(client:GetNick(), " ran ", line)
-		easylua.RunLua(client, line, nil, true)
+		console.SetLuaEnvironmentVariable("me", client) 
+		concat.RunLua(line)
 	end)
 
 	console.AddServerCommand("lua_open_sv", function(client, line)
 		logn(client:GetNick(), " opened ", line)
-		easylua.Start(client)
-			include(line)
-		easylua.End()
+		include(line)
 	end)
 
 

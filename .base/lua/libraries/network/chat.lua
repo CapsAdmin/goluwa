@@ -7,7 +7,7 @@ end
 local enabled = console.CreateVariable("chat_timestamps", true)
 
 function chat.AddTimeStamp(tbl)
-	if not enabled:Get() then return end
+	if not enabled:Get() then return {} end
 	
 	tbl = tbl or {}
 	

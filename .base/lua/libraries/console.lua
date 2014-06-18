@@ -298,53 +298,45 @@ do -- commands
 			end
 			
 			if not skip_lua then
-				--[==[
-				local func = _G[cmd]
-				
-				if not func and cmd:find("%.") then
-					local keys = cmd:explode(".")
-					if _G[keys[1]] then
-						
-						local val = _G[keys[1]]
-						
-						for i = 2, #keys do
-							if hasindex(val[keys[i]]) and val[keys[i]] then
-								last = val[keys[i]]
-							end
-						end
-						
-						func = last
-					end
-				end
-				
-				if type(func) == "function" then
-					
-					for key, val in pairs(args) do
-						local num = tonumber(args[key])
-						
-						if num then
-							val = num
-						elseif not _G[val] then
-							local ok, var = pcall(loadstring(("return %s"):format(val)))
-							
-							if ok then
-								val = var
-							end
-						end
-						
-						args[key] = val
-					end
-				
-					return xpcall(func, system.OnError, select(2, unpack(args)))
-				end]==]
-				
-				local func, err = loadstring(line)
-				
-				if not func then return func, err end
-				
-				return xpcall(func, system.OnError)
+				console.RunLua(line)
 			end
 		end 
+	end
+	
+	console.run_lua_environment = {
+		copy = system.SetClipboard,
+	}
+	
+	function console.SetLuaEnvironmentVariable(key, var)
+		console.run_lua_environment[key] = var
+	end
+	
+	function console.RunLua(line, log_error, env_name)
+		local lua = ""
+		
+		for k, v in pairs(console.run_lua_environment) do
+			lua = lua .. ("local %s = console.run_lua_environment.%s;"):format(k, k)
+		end
+		
+		lua = lua .. line
+
+		local func, err = loadstring(lua, env_name or line)
+		
+		if log_error and not func then 
+			logn(err)
+			return 
+		end
+		
+		if not func then return func, err end
+		
+		local ret = {xpcall(func, system.OnError)}
+		
+		if log_error and not ret[1] then
+			logn(ret[2])
+			return
+		end
+		
+		return unpack(ret)
 	end
 end
 

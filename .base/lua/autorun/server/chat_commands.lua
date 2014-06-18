@@ -1,21 +1,25 @@
 console.AddCommand("l", function(line)
-	easylua.RunLua(console.GetClient(), line, nil, true)
+	console.SetLuaEnvironmentVariable("me", console.GetClient())
+	console.RunLua(line)
 end)
 
 console.AddCommand("print", function(line)
-	easylua.RunLua(console.GetClient(), ("log(%s)"):format(line), nil, true)
+	console.SetLuaEnvironmentVariable("me", console.GetClient())
+	console.RunLua(("print(%s)"):format(line), true)
 end)
 
 console.AddCommand("table", function(line)
-	easylua.RunLua(console.GetClient(), ("table.print(%s)"):format(line), nil, true)
+	console.SetLuaEnvironmentVariable("me", console.GetClient())
+	console.RunLua(("table.print(%s)"):format(line))
+	console.SetLuaEnvironmentVariable("me", nil)
 end)
 
 console.AddCommand("printc", function(line)
-	clients.BroadcastLua(("easylua.PrintOnServer(%s)"):format(line))
+	clients.BroadcastLua(("network.PrintOnServer(%s)"):format(line))
 end)
 
 console.AddCommand("lc", function(line)
-	clients.BroadcastLua(line)
+	clients.BroadcastLua(("console.SetLuaEnvironmentVariable('me', clients.GetByUniqueID(%q)) console.RunLua(%q)"):format(console.GetClient():GetUniqueID(), line))
 end)
 
 console.AddCommand("lm", function(line)
@@ -25,7 +29,7 @@ end)
 
 console.AddCommand("cmd", function(line)
 	local client = console.GetClient()
-	client:SendLua(("console.RunString(%q)"):format(line))
+	client:SendLua(("console.SetLuaEnvironmentVariable('me', clients.GetByUniqueID(%q)) console.RunLua(%q)"):format(console.GetClient():GetUniqueID(), line))
 end)
 
 console.AddCommand("rcon", function(line)

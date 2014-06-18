@@ -64,14 +64,12 @@ end
 do -- console extension
 	message.server_commands = message.server_commands or {}
 	
-	local client = NULL
-	
 	function console.SetClient(client)
-		client = client or NULL
+		console.current_client = client or NULL
 	end
 	
 	function console.GetClient()
-		return client
+		return console.current_client
 	end
 	
 	if SERVER then
@@ -139,5 +137,18 @@ packet.ExtendBuffer(
 		return NULL
 	end
 )
+
+if CLIENT then
+
+	function network.PrintOnServer(str)
+		message.Send("network_print_on_server", str)
+	end
+end
+
+if SERVER then
+	message.AddListener("network_print_on_server", function(client, str)
+		logf("%s: %s\n", client, str)
+	end)
+end
 
 return message
