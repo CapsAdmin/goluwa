@@ -108,7 +108,7 @@ end
     
 event.AddListener("Move", "spooky", function(client, cmd)
 	if not entities then return end
-	print(client, cmd)
+	--print(client, cmd)
 	
 	client.ghost = client.ghost or NULL
 	 

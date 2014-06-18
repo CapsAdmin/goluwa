@@ -47,7 +47,7 @@ local function read_buffer(client, buffer)
 		for _, v in ipairs(layout) do
 			cmd.queue[i][v.name] = buffer:ReadType(v.type)
 		end
-		
+	
 		if CLIENT then
 			cmd.queue[i].net_position = buffer:ReadVec3()
 		end
@@ -64,23 +64,33 @@ local function read_buffer(client, buffer)
 	--table.sort(client.current_command.queue, function(a, b) return a.time > b.time end)
 end
 
-event.AddListener("Update", "interpolate_user_command", function()
-	for _, client in pairs(clients.GetAll()) do
-		local cmd = client:GetCurrentCommand()
-		
-		local data = cmd.queue[1]
-				
-		if data and data.time < timer.GetSystemTime() then
+local function process_usercommand(client)
+	local cmd = client:GetCurrentCommand()
+	
+	local data = cmd.queue[1]
+			
+	if data and data.time < timer.GetSystemTime() then
 
-			for k,v in pairs(data) do
-				cmd[k] = v
-			end
-			
-			local pos, ang =  event.Call("Move", client, cmd)
-			
-			cmd.net_position = pos
-			
-			table.remove(cmd.queue, 1)
+		for k,v in pairs(data) do
+			cmd[k] = v
+		end
+		
+		local pos, ang =  event.Call("Move", client, cmd)
+		
+		cmd.net_position = pos
+		
+		table.remove(cmd.queue, 1)
+	end
+end
+
+event.AddListener("Update", "interpolate_user_command", function()
+	if CLIENT and clients.GetLocalClient():IsValid() then
+		process_usercommand(clients.GetLocalClient())
+	end
+	
+	if SERVER then
+		for _, client in pairs(clients.GetAll()) do
+			process_usercommand(client)
 		end
 	end
 end)

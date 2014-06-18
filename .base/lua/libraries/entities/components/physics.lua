@@ -15,17 +15,17 @@ COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Update"}
 
 COMPONENT.Network = {
-	Position = {"vec3", 1/30},
-	Angles = {"ang3", 1/30},
+	Position = {"vec3", 1/30, "unreliable"},
+	Angles = {"ang3", 1/30, "unreliable"},
 	
-	Gravity = {"vec3", 1/5, "reliable"},
-	Mass = {"unsigned long", 1/5, "reliable"},
-	LinearDamping = {"float", 1/5, "reliable"},
-	AngularDamping = {"float", 1/5, "reliable"},
-	MassOrigin = {"vec3", 1/5, "reliable"},
-	PhysicsBoxScale = {"vec3", 1/5, "reliable"},
-	PhysicsSphereRadius = {"float", 1/5, "reliable"},
-	PhysicsModelPath = {"string", 1/10, "reliable"},
+	Gravity = {"vec3", 1/5},
+	Mass = {"unsigned long", 1/5},
+	LinearDamping = {"float", 1/5},
+	AngularDamping = {"float", 1/5},
+	MassOrigin = {"vec3", 1/5},
+	PhysicsBoxScale = {"vec3", 1/5},
+	PhysicsSphereRadius = {"float", 1/5},
+	PhysicsModelPath = {"string", 1/10},
 }
 
 COMPONENT.matrix = Matrix44()

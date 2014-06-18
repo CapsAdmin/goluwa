@@ -20,7 +20,7 @@ metatable.GetSet(COMPONENT, "Model", nil)
 COMPONENT.Network = {
 	ModelPath = {"string", 1/5},
 	Cull = {"boolean", 1/5},
-	Alpha = {"float", 1/30},
+	Alpha = {"float", 1/30, "unreliable"},
 	--Color = {"boolean", 1/5},	
 }
 
