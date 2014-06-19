@@ -149,7 +149,7 @@ do -- synchronization server > client
 			end
 		else
 			---table.insert(self.queued_packets, buffer)
-			logf("received sync packet %s but entity[%s] is NULL\n", typ, id)
+			--logf("received sync packet %s but entity[%s] is NULL\n", typ, id)
 		end
 	end
 

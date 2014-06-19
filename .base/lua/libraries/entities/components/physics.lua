@@ -96,6 +96,8 @@ DELEGATE(COMPONENT, "PhysicsSphereRadius")
 DELEGATE(COMPONENT, "Mass")
 DELEGATE(COMPONENT, "AngularDamping")
 DELEGATE(COMPONENT, "LinearDamping")
+DELEGATE(COMPONENT, "LinearSleepingThreshold")
+DELEGATE(COMPONENT, "AngularSleepingThreshold")
 
 function COMPONENT:SetPosition(vec)
 	local transform = self:GetComponent("transform")
@@ -137,7 +139,7 @@ function COMPONENT:GetAngles()
 		temp.m = self.rigid_body:GetMatrix()
 		
 		local p,y,r = temp:GetAngles()
-		local ang = Ang3((-y),p - math.pi / 2,r + -(math.pi)):Deg()
+		local ang = Ang3(-y, p - math.pi / 2, r + -(math.pi)):Deg()
 		--if math.round(p, 2) == 0 or math.round(y, 2) == 0 or math.round(r, 2) == 0 then print(ang) end
 		return ang
 	end

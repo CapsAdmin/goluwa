@@ -107,17 +107,19 @@ for k,v in pairs(clients.GetAll()) do
 end    
     
 event.AddListener("Move", "spooky", function(client, cmd)
-	if not entities then return end
-	--print(client, cmd)
-	
+	if CLIENT and not network.IsConnected() then return end
 	client.ghost = client.ghost or NULL
 	 
 	if not client.ghost:IsValid() then
 		client.ghost = entities.CreateEntity("physical")
 		client.ghost:SetModelPath("models/face.obj")
 		client.ghost:SetMass(85)
-		client.ghost:InitPhysicsBox(Vec3(1, 1, 1))
+		--client.ghost:SetMassOrigin(Vec3(0.5, 0.5, 0.5))
+		--client.ghost:InitPhysicsBox(Vec3(1,1,1))
+		client.ghost:InitPhysicsSphere(1)
 		client.ghost:SetPosition(Vec3(0,0,100))  
+		client.ghost:SetLinearSleepingThreshold(0)  
+		client.ghost:SetAngularSleepingThreshold(0)  
 		client.ghost:SetSize(0.5)  
 	end
 	
@@ -129,7 +131,8 @@ event.AddListener("Move", "spooky", function(client, cmd)
 			
 			if cmd.net_position and cmd.net_position:Distance(pos) > 1 then
 				client.ghost:SetPosition(cmd.net_position)
-				client.ghost:SetVelocity(Vec3(0,0,0))
+				client.ghost:SetAngles(cmd.angles)
+				client.ghost:SetVelocity(cmd.net_velocity)
 			end
 		end		
 		
@@ -138,5 +141,5 @@ event.AddListener("Move", "spooky", function(client, cmd)
 	
 	client.ghost:SetVelocity(client.ghost:GetVelocity() + cmd.velocity * 0.05)
 	
-	return pos
+	return pos, client.ghost:GetVelocity()
 end) 

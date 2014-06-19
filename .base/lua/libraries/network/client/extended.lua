@@ -3,10 +3,7 @@ local META = (...) or metatable.Get("client")
 -- send lua
 if CLIENT then
 	message.AddListener("sendlua", function(code, env)
-		local data = console.RunLua(code, true, "sendlua")
-		if data.error then
-			print(data.error)
-		end
+		console.RunLua(code, true, "sendlua")
 	end)
 end
 

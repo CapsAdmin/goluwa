@@ -1,4 +1,4 @@
-local client_command_length = 20 -- sample length in ms
+local client_command_length = 50 -- sample length in ms
 local client_tick_rate = 66 -- in ms
 
 local server_command_length = client_command_length
@@ -50,6 +50,7 @@ local function read_buffer(client, buffer)
 	
 		if CLIENT then
 			cmd.queue[i].net_position = buffer:ReadVec3()
+			cmd.queue[i].net_velocity = buffer:ReadVec3()
 		end
 		
 		if buffer:TheEnd() then 
@@ -75,9 +76,10 @@ local function process_usercommand(client)
 			cmd[k] = v
 		end
 		
-		local pos, ang =  event.Call("Move", client, cmd)
+		local pos, vel =  event.Call("Move", client, cmd)
 		
 		cmd.net_position = pos
+		cmd.net_velocity = vel
 		
 		table.remove(cmd.queue, 1)
 	end
@@ -171,6 +173,7 @@ if SERVER then
 		end
 		
 		buffer:WriteVec3(cmd.net_position or Vec3(0, 0, 0))
+		buffer:WriteVec3(cmd.net_velocity or Vec3(0, 0, 0))
 		
 		packet.Send("user_command", buffer)
 	end)
