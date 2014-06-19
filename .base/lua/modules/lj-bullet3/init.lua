@@ -44,6 +44,10 @@ void bulletRigidBodyGetVelocity(btRigidBody *body, float *out);
 void bulletRigidBodySetAngularVelocity(btRigidBody *body, float x, float y, float z);
 void bulletRigidBodyGetAngularVelocity(btRigidBody *body, float *out);
 void bulletRigidBodySetDamping(btRigidBody *body, float linear, float angular);
+void bulletRigidBodyGetLinearSleepingThreshold(btRigidBody *body, float *out);
+void bulletRigidBodySetLinearSleepingThreshold(btRigidBody *body, float threshold);
+void bulletRigidBodyGetAngularSleepingThreshold(btRigidBody *body, float *out);
+void bulletRigidBodySetAngularSleepingThreshold(btRigidBody *body, float threshold);
 
 // constraint
 btGeneric6DofConstraint *bulletCreate6DofConstraint(btRigidBody *a, btRigidBody *b, float *matrix_a, float *matrix_b, bool use_linear_frame_Reference);
@@ -188,6 +192,10 @@ local BODY = {
 	SetAngularVelocity = ADD_FUNCTION(lib.bulletRigidBodySetAngularVelocity),
 	GetAngularVelocity = ADD_FUNCTION(lib.bulletRigidBodyGetAngularVelocity, 3),
 	SetDamping = ADD_FUNCTION(lib.bulletRigidBodySetDamping),
+	SetLinearSleepingThreshold = ADD_FUNCTION(lib.bulletRigidBodySetLinearSleepingThreshold),
+	GetLinearSleepingThreshold = ADD_FUNCTION(lib.bulletRigidBodyGetLinearSleepingThreshold),
+	SetAngularSleepingThreshold = ADD_FUNCTION(lib.bulletRigidBodySetAngularSleepingThreshold),
+	GetAngularSleepingThreshold = ADD_FUNCTION(lib.bulletRigidBodyGetAngularSleepingThreshold),
 	Remove = function(self) 
 		for k,v in ipairs(bodies) do 
 			if v == self then 
