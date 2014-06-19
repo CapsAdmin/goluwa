@@ -514,13 +514,13 @@ end
 local drawq = love.graphics.drawq
 
 function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
-	if type(drawable) == "table" and drawable.typeOf and drawable:typeOf("SpriteBatch") then
+	if lovemu.Type(drawable) == "SpriteBatch" then
 		surface.SetColor(1,1,1,1)
 		surface.SetTexture(lovemu.textures[drawable.img])
 		drawable.poly:Draw()
 	else
 		if lovemu.textures[drawable] then
-			if type(x) == "table" and x:typeOf("Quad") then
+			if lovemu.Type(x) == "Quad" then
 				drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 			else
 				x=x or 0
