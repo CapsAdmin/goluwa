@@ -39,17 +39,17 @@ function META:SetVertex(i, x,y, u,v)
 		x = new_x + X
 		y = new_y + Y				
 	end
+		
+	self.vertices[i].pos.A = x
+	self.vertices[i].pos.B = y
 	
-	self.buffer[i].pos.A = x
-	self.buffer[i].pos.B = y
+	self.vertices[i].uv.A = u
+	self.vertices[i].uv.B = v
 	
-	self.buffer[i].uv.A = u
-	self.buffer[i].uv.B = v
-	
-	self.buffer[i].color.A = R
-	self.buffer[i].color.B = G
-	self.buffer[i].color.C = B
-	self.buffer[i].color.D = A
+	self.vertices[i].color.A = R
+	self.vertices[i].color.B = G
+	self.vertices[i].color.C = B
+	self.vertices[i].color.D = A
 end
 
 function META:SetRect(i, x,y,w,h, r, ox,oy)
@@ -93,13 +93,12 @@ end
 function surface.CreatePoly(size)		
 	size = size * 6
 	local mesh = surface.CreateMesh(size)
-	local buffer = mesh.buffer
 
 	local self = META:New()
 
 	self.mesh = mesh
 	self.size = size
-	self.buffer = buffer
-					
+	self.vertices = mesh.vertices
+
 	return self
 end
