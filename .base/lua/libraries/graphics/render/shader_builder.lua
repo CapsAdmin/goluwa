@@ -552,6 +552,16 @@ do -- create data for vertex buffer
 	end
 
 	function META:CreateBuffersFromTable(vertices, indices, is_valid_table)
+	
+		if type(vertices) == "number" then
+			local size = vertices
+			
+			local indices = ffi.new("unsigned int[?]", size)
+			for i = 0, size - 1 do indices[i] = i end
+			
+			return ffi.new(self.vtx_atrb_type.."[?]", size), indices
+		end
+		
 		if not is_valid_table then
 			unpack_structs(vertices)	
 			

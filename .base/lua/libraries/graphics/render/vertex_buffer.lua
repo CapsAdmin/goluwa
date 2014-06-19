@@ -20,7 +20,8 @@ function render.CreateVertexBuffer(vertex_attributes, vertices, indices)
 end 
 
 function META:OnRemove()
-	gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.id))
+	gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.vertices_id))
+	gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.indices_id))
 end
 
 function META:Draw()
@@ -31,6 +32,9 @@ function META:Draw()
 end
 
 function META:UpdateBuffer(vertices, indices)
+	vertices = vertices or self.vertices
+	indices = indices or self.indices
+	
 	if vertices then
 		self.vertices = vertices
 		self.vertices_size = ffi.sizeof(vertices)
