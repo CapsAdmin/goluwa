@@ -21,3 +21,7 @@ function love.timer.getTime()
 		return timer.GetSystemTime()
 	end
 end
+
+function love.timer.getAverageDelta() -- partial
+	return love.timer.getDelta()
+end
