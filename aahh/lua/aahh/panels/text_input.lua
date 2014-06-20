@@ -68,7 +68,7 @@ function PANEL:OnKeyInput(key, press)
 	
 	if press then
 	
-		if self.OnPreKeyInput and self:OnPreKeyInput(key, press) ~= nil then return end
+		if self.OnPreKeyInput and self:OnPreKeyInput(key, press) ~= nil then return false end
 		
 		if key == "enter" and not self.MultiLine then
 			if self.OnEnter then
