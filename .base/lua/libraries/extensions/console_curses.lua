@@ -628,11 +628,7 @@ function console.HandleKey(key)
 			if event.Call("ConsoleLineEntered", line) ~= false then
 				logn("> ", line)
 				
-				local res, err = console.RunString(line)
-
-				if not res then
-					logn(err)
-				end
+				console.RunString(line, nil, nil, true)
 			end
 			
 			c.in_function = false

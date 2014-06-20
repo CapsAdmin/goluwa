@@ -282,7 +282,7 @@ do -- commands
 		end
 	end
 	
-	function console.RunString(line, skip_lua, skip_split)
+	function console.RunString(line, skip_lua, skip_split, log_error)
 		if not skip_split and line:find("\n") then
 			for line in (line .. "\n"):gmatch("(.-)\n") do
 				console.RunString(line)
@@ -298,7 +298,7 @@ do -- commands
 			end
 			
 			if not skip_lua then
-				console.RunLua(line)
+				return console.RunLua(line, log_error)
 			end
 		end 
 	end
@@ -324,7 +324,7 @@ do -- commands
 		
 		if log_error and not func then 
 			logn(err)
-			return 
+			return func, err
 		end
 		
 		if not func then return func, err end
@@ -333,7 +333,7 @@ do -- commands
 		
 		if log_error and not ret[1] then
 			logn(ret[2])
-			return
+			return unpack(ret)
 		end
 		
 		return unpack(ret)
