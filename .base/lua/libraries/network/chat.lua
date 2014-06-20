@@ -128,7 +128,30 @@ if CLIENT then
 				panel:MakeActivePanel()
 				panel:SetMultiline(true)
 				
-				panel.OnPreKeyInput = function(self, key)									
+				-- autocomplete should be done after keys like space and backspace are pressed
+				-- so we can use the string after modifications
+				panel.OnPostKeyInput = function(self, key, press)
+					if not press then return end
+					
+					local str = self:GetText():trim()
+					
+					local scroll = 0
+					 
+					if key == "tab" then
+						scroll = input.IsKeyDown("left_shift") and -1 or 1
+					end
+					
+					found_autocomplete = autocomplete.Query("chatsounds", str, scroll)
+										
+					if key == "tab" and found_autocomplete then
+						panel:SetText(found_autocomplete[1])
+						return false
+					end
+				end
+				
+				panel.OnPreKeyInput = function(self, key, press)	
+					if not press then return end
+					
 					local str = self:GetText()
 					
 					local ctrl = input.IsKeyDown("left_control") or input.IsKeyDown("right_control")
@@ -151,20 +174,7 @@ if CLIENT then
 							last_history = found
 						end
 					end
-					 
-					local scroll = 0
-					 
-					if key == "tab" then
-						scroll = input.IsKeyDown("left_shift") and -1 or 1
-					end
-					
-					found_autocomplete = autocomplete.Query("chatsounds", str, scroll)
-					
-					if key == "tab" and found_autocomplete then
-						panel:SetText(found_autocomplete[1])
-						return false
-					end
-					
+
 					if key == "enter" and not ctrl or key == "escape" then
 					
 						if key ~= "escape" then

@@ -66,10 +66,9 @@ function PANEL:OnKeyInput(key, press)
 	if key == "left_shift" or key == "right_shift" then  self.markup:SetShiftDown(press) return end
 	if key == "left_control" or key == "right_control" then  self.markup:SetControlDown(press) return end
 	
-	if press then
+	if self.OnPreKeyInput and self:OnPreKeyInput(key, press) ~= nil then return false end
 	
-		if self.OnPreKeyInput and self:OnPreKeyInput(key, press) ~= nil then return false end
-		
+	if press then
 		if key == "enter" and not self.MultiLine then
 			if self.OnEnter then
 				self:OnEnter(self.markup:GetText())
@@ -82,6 +81,8 @@ function PANEL:OnKeyInput(key, press)
 			self:OnUnhandledKey(key, press)
 		end
 	end
+	
+	if self.OnPostKeyInput and self:OnPostKeyInput(key, press) ~= nil then return false end
 end
 
 function PANEL:OnCharInput(char)
