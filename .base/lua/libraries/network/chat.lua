@@ -119,14 +119,7 @@ if CLIENT then
 	console.AddCommand("showchat", function()
 	
 		local panel =  chat.panel
-		
-		local tab_str
-		local tab_autocomplete
-		
-		local last_str
 		local found_autocomplete = {}
-		
-		local pause_autocomplete
 		
 		if not visible then				
 			panel = aahh.Create("text_input")
@@ -159,44 +152,16 @@ if CLIENT then
 						end
 					end
 					 
-					if last_str and #last_str > #str and key ~= "tab" then
-						tab_str = nil
-						tab_autocomplete = nil
-						pause_autocomplete = false
-					end
-
-					if not pause_autocomplete then 
-						found_autocomplete = autocomplete.Search(tab_str or str, tab_autocomplete)
-						
-						if #found_autocomplete == 0 then 
-							pause_autocomplete = str 
-						end
-					else
-						if #pause_autocomplete > #str then
-							pause_autocomplete = false
-						end
+					local scroll = 0
+					 
+					if key == "tab" then
+						scroll = input.IsKeyDown("left_shift") and -1 or 1
 					end
 					
-					if key == "tab" then
-						autocomplete.ScrollFound(tab_autocomplete or found_autocomplete, input.IsKeyDown("left_shift") and -1 or 1)
-						
-						if #found_autocomplete > 0 then 
-							panel:SetText(found_autocomplete[1])
-							if not tab_str then
-								tab_str = str
-								tab_autocomplete = found_autocomplete
-							end
-							last_str = str
-							return false 
-						end
-						
-						local str = event.Call("ChatTab", str)
-							
-						if str then 
-							panel:SetText(str)
-							
-							return false	
-						end
+					found_autocomplete = autocomplete.Query("chatsounds", str, scroll)
+					
+					if key == "tab" and found_autocomplete then
+						panel:SetText(found_autocomplete[1])
 					end
 					
 					if key == "enter" and not ctrl or key == "escape" then
@@ -222,7 +187,6 @@ if CLIENT then
 					end	
 					
 					event.Call("ChatTextChanged", str)
-					last_str = str
 				end
 				
 				local suppress = true -- stupid
@@ -241,7 +205,7 @@ if CLIENT then
 				end
 				
 				panel.OnPostDraw = function()
-					if #found_autocomplete > 0 then
+					if found_autocomplete and #found_autocomplete > 0 then
 						autocomplete.DrawFound(0, panel:GetHeight(), found_autocomplete, nil, 2) 
 					end
 				end

@@ -87,7 +87,7 @@ function autocomplete.DrawFound(x, y, found, max, offset)
 	
 	surface.PushMatrix(x, y)
 		for i = offset, max do
-			local v = found[i]
+			local v = found[i-1]
 			
 			if not v then break end
 			
@@ -109,36 +109,43 @@ end
 
 local env = {}
 
-function autocomplete.Query(id, str, offset, list)
+function autocomplete.Query(id, str, scroll, list)
+	scroll = scroll or 0
+	
 	if not env[id] then
 		env[id] = {found_autocomplete = {}}
 	end
 	
-	if not offset then
+	if scroll == 0 then
 		if env[id].last_str and #env[id].last_str > #str then
 			env[id].tab_str = nil
 			env[id].tab_autocomplete = nil
 			env[id].pause_autocomplete = false
+			env[id].last_str = nil
 		end	
+	else
+		autocomplete.ScrollFound(env[id].tab_autocomplete or env[id].found_autocomplete, scroll)
 	end
 
 	if not env[id].pause_autocomplete then 
-		env[id].found_autocomplete = autocomplete.Search(env[id].tab_str or str, env[id].tab_autocomplete or list or id)
+		local found = autocomplete.Search(env[id].tab_str or str, env[id].tab_autocomplete or list or id)
 		
-		if #env[id].found_autocomplete == 0 then 
+		if #found == 0 then 
 			env[id].pause_autocomplete = str 
+			
+			found = env[id].tab_autocomplete or found
 		end
+		
+		env[id].found_autocomplete = found
 	else
 		if #env[id].pause_autocomplete > #str then
 			env[id].pause_autocomplete = false
 		end
 	end
 
-	if offset then
-		autocomplete.ScrollFound(env[id].tab_autocomplete or env[id].found_autocomplete, offset)
-		
+	if scroll ~= 0 then		
 		if #env[id].found_autocomplete > 0 then 
-			local out = env[id].found_autocomplete[1]
+			local out = env[id].found_autocomplete
 			if not env[id].tab_str then
 				env[id].tab_str = str
 				env[id].tab_autocomplete = env[id].found_autocomplete
@@ -147,6 +154,8 @@ function autocomplete.Query(id, str, offset, list)
 			return out
 		end
 	end
+		
+	return env[id].found_autocomplete
 end
 
 return autocomplete
