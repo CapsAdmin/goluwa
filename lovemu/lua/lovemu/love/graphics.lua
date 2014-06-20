@@ -60,16 +60,16 @@ do -- quad
 	end
 	
 	function Quad:getViewport() 
-		return self.data[1], self.data[2], self.data[3], self.data[4] 
+		return self.args[1], self.args[2], self.args[3], self.args[4] 
 	end
 	
 	function Quad:setViewport(s, x,y,w,h) 
-		self.data[1] = x
-		self.data[2] = y
-		self.data[3] = w
-		self.data[4] = h
+		self.args[1] = x
+		self.args[2] = y
+		self.args[3] = w
+		self.args[4] = h
 		
-		refresh(self.vertices, x,y,w,h, self.data[3], self.data[4]) 
+		refresh(self.vertices, x,y,w,h, self.args[3], self.args[4]) 
 	end
 	
 	
@@ -390,16 +390,9 @@ do -- canvas
 				
 		local self = lovemu.CreateObject(Canvas)
 		
-		self.fb = render.CreateFrameBuffer(w, h, {
-			attach = gl.e.GL_COLOR_ATTACHMENT1,
-			texture_format = {
-				internal_format = gl.e.GL_RGB32F,
-				mag_filter = DEFAULT_FILTER,
-				min_filter = DEFAULT_FILTER,
-			}
-		})
-				
-		lovemu.textures[self] = self.fb:GetTexture("diffuse")
+		self.fb = render.CreateFrameBuffer(w, h)
+
+		lovemu.textures[self] = self.fb:GetTexture()
 		
 		return self
 	end
