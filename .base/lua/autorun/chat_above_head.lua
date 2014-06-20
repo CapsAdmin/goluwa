@@ -8,6 +8,8 @@ if CLIENT then
 	function META:SetChatAboveHead(str, send)
 		self.coh_str = str
 		
+		if not network.IsConnected() then return end
+		
 		if send and clients.GetLocalClient() == self then
 			message.Send("coh", str)
 		end
@@ -16,6 +18,8 @@ if CLIENT then
 	end
 
 	event.AddListener("ChatTextChanged", "coh", function(str)
+		if not network.IsConnected() then return end
+		
 		message.Send("coh", str)
 		clients.GetLocalClient():SetChatAboveHead(str)
 	end)
