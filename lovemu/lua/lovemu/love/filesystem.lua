@@ -28,6 +28,10 @@ function love.filesystem.exists(path)
 end
 
 function love.filesystem.enumerate(path)
+	if path:sub(-1) ~= "/" then
+		path = path .. "/"
+	end
+	
 	return vfs.Find(path)
 end
 
