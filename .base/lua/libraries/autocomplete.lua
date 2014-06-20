@@ -77,7 +77,7 @@ function autocomplete.Search(str, id)
 		
 	return found
 end
-
+ 
 function autocomplete.DrawFound(x, y, found, max, offset)
 	offset = offset or 1
 	max = max or 100
@@ -86,8 +86,8 @@ function autocomplete.DrawFound(x, y, found, max, offset)
 	surface.SetColor(1,1,1,1)
 	
 	surface.PushMatrix(x, y)
-		for i = offset, max do
-			local v = found[i-1]
+		for i = offset-1, max do
+			local v = found[i]
 			
 			if not v then break end
 			
@@ -95,8 +95,8 @@ function autocomplete.DrawFound(x, y, found, max, offset)
 			local alpha = (-(i / max) + 1) ^ 15
 			
 			surface.SetAlphaMultiplier(alpha)
-			surface.SetTextPos(5, (i-offset) * h)
-			surface.DrawText(v)
+			surface.SetTextPos(5, (i-offset+1) * h)
+			surface.DrawText(i .. ". " ..  v)
 		end
 		
 		surface.SetAlphaMultiplier(1)
@@ -128,33 +128,29 @@ function autocomplete.Query(id, str, scroll, list)
 	end
 
 	if not env[id].pause_autocomplete then 
-		local found = autocomplete.Search(env[id].tab_str or str, env[id].tab_autocomplete or list or id)
+		env[id].found_autocomplete = autocomplete.Search(env[id].tab_str or str, env[id].tab_autocomplete or list or id)
 		
-		if #found == 0 then 
+		if #env[id].found_autocomplete == 0 then 
 			env[id].pause_autocomplete = str 
-			
-			found = env[id].tab_autocomplete or found
 		end
-		
-		env[id].found_autocomplete = found
 	else
 		if #env[id].pause_autocomplete > #str then
 			env[id].pause_autocomplete = false
 		end
 	end
-
+	
 	if scroll ~= 0 then		
 		if #env[id].found_autocomplete > 0 then 
-			local out = env[id].found_autocomplete
+		
 			if not env[id].tab_str then
 				env[id].tab_str = str
 				env[id].tab_autocomplete = env[id].found_autocomplete
 			end
+			
 			env[id].last_str = str
-			return out
 		end
 	end
-		
+
 	return env[id].found_autocomplete
 end
 

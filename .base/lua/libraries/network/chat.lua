@@ -162,6 +162,7 @@ if CLIENT then
 					
 					if key == "tab" and found_autocomplete then
 						panel:SetText(found_autocomplete[1])
+						return false
 					end
 					
 					if key == "enter" and not ctrl or key == "escape" then
