@@ -271,7 +271,9 @@ do -- window meta
 						local char = utf8.char(uint)
 						
 						if self:OnCharInput(self, char) ~= false then
-							event.Call("WindowCharInput", self, char)
+							event.DeferExecution(function()
+								event.Call("WindowCharInput", self, char)
+							end)
 						end
 					end)					
 				elseif nice == "OnKey" then
