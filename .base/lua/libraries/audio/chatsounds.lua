@@ -161,67 +161,6 @@ end
 
 
 -- utilities
-
-local print = print
-
-if gmod and epoe then print = epoe.Print end
-
-local function getchartype(char)
-
-	if char:find("%p") and char ~= "_" then
-		return char
-	elseif char:find("%s") then
-		return "space"
-	elseif char:find("%a") or char == "_" or char:find("%d") then
-		return "letters"
-	end
-
-	return "unknown"
-end
-
-local table_clear
-
-if table.clear then
-	table_clear = table.clear
-else
-	table_clear = function(tbl) for k,v in pairs(tbl) do tbl[k] = nil end end
-end
-
-local function table_random(tbl)
-	local key = math.random(1, table.count(tbl))
-	local i = 1
-	for _key, _val in pairs(tbl) do
-		if i == key then
-			return _val, _key
-		end
-		i = i + 1
-	end
-end
-
-local function table_fixindices(tbl)
-	local temp = {}
-	local i = 1
-	for k, v in pairs(tbl) do
-		temp[i] = v
-		tbl[k] = nil
-		i = i + 1
-	end
-
-	for k, v in ipairs(temp) do
-		tbl[k] = v
-	end
-end
-
-local function math_clamp(self, min, max)
-	return math.max(math.min(self, max),min)
-end
-
-if gmod then
-	chatsounds.GetTime = RealTime
-else
-	chatsounds.GetTime = timer.GetElapsedTime
-end
-
 local choose_realm
 
 local function dump_script(out)
@@ -232,96 +171,59 @@ local function dump_script(out)
 			if sounds then
 				local str = ""
 				if data.modifiers then
-					for k,v in pairs(data.modifiers) do str = str .. v.mod .. ", " end
+					for k,v in pairs(data.modifiers) do 
+						str = str .. v.mod .. "(" .. table.concat(v.args, ", ") .. ")"
+						if k ~= #data.modifiers then
+							str = str .. ", "
+						end
+					end
 				end
-				print(i, data.type, data.val.trigger, "\t\t\t", str)
+				logf("[%i] %s: %q modifiers: %s\n", i, data.type, data.val.trigger, str)
 			end
 		elseif data.type == "modifier" then
-			print(i, data.type, data.mod .. "(" .. table.concat(data.args, ", ") .. ")")
+			logf("[%i] %s: %s(%s)\n", i, data.type, data.mod, table.concat(data.args, ", "))
 		else
-			print(i, data.type, data.val)
+			logf("[%i] %s: %s\n", i, data.type, data.val)
 		end
 	end
 end
 
+function chatsounds.CreateSound(path, udata)
+	local self = {csp = Sound(path), udata = udata, path = path}
 
--- sound utils
-if gmod then
-	function chatsounds.CreateSound(path, udata)
-		local self = {csp = CreateSound(udata or LocalClient(), path), udata = udata, path = path}
-
-		function self:Play()
-			self.csp:Play()
-		end
-
-		function self:Stop()
-			self.csp:Stop()
-		end
-
-		function self:SetPitch(pitch, time)
-			pitch = math.clamp(tonumber(pitch) or 100, 0, 255)
-
-			self.csp:ChangePitch(pitch, time)
-		end
-
-		function self:SetVolume(volume, time)
-			volume = math.clamp(tonumber(volume) or 100, 0, 100)
-
-			if self.udata == LocalClient() then
-				volume = volume / 2
-			end
-
-			self.csp:ChangeVolume(volume / 100, time)
-		end
-
-		function self:SetDSP(i)
-			LocalClient():SetDSP(math_clamp(tonumber(i) or 0, 0, 128))
-		end
-
-		function self:GetDuration()
-			return SoundDuration(self.path) or 2
-		end
-
-		return self
+	function self:Play()
+		self.csp:Play()
 	end
-else
-	function chatsounds.CreateSound(path, udata)
-		local self = {csp = Sound(path), udata = udata, path = path}
 
-		function self:Play()
-			self.csp:Play()
-		end
-
-		function self:Stop()
-			self.csp:Stop()
-			self.csp:Remove()
-		end
-
-		function self:SetPitch(pitch, time)
-			self.csp:SetPitch(pitch / 100)
-		end
-
-		function self:SetVolume(volume, time)
-			self.csp:SetGain(volume / 100)
-		end
-
-		function self:SetDSP(i)
-			logn("setdsp ", i)
-		end
-
-		function self:GetDuration()
-			if self.csp.decode_info then
-				if self.csp.decode_info.duration then
-					return self.csp.decode_info.duration
-				elseif self.csp.decode_info.frames then
-					return tonumber(self.csp.decode_info.frames) / self.csp.decode_info.samplerate
-				end
-			end
-			return 0
-		end
-
-		return self
+	function self:Stop()
+		self.csp:Stop()
+		self.csp:Remove()
 	end
+
+	function self:SetPitch(pitch, time)
+		self.csp:SetPitch(pitch / 100)
+	end
+
+	function self:SetVolume(volume, time)
+		self.csp:SetGain(volume / 100)
+	end
+
+	function self:SetDSP(i)
+		logn("setdsp ", i)
+	end
+
+	function self:GetDuration()
+		if self.csp.decode_info then
+			if self.csp.decode_info.duration then
+				return self.csp.decode_info.duration
+			elseif self.csp.decode_info.frames then
+				return tonumber(self.csp.decode_info.frames) / self.csp.decode_info.samplerate
+			end
+		end
+		return 0
+	end
+
+	return self
 end
 
 -- modifiiers
@@ -869,73 +771,45 @@ do -- list parsing
 	end
 
 	function chatsounds.BuildTreeFromAddon()
-		if gmod then
-			local nosend = "chatsounds/lists_nosend/"
-			local send = "chatsounds/lists_send/"
+		chatsounds.MountPaks()
 
-			local function parse(path)
-				local func = CompileFile(path)
-				local realm = path:match(".+/(.-)%.lua")
+		local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
+		local addon_dir = addons .. "chatsounds"
 
-				local L = list[realm] or {}
-
-				setfenv(func, {c = {StartList = function() end, EndList = function() end}, L = L})
-				func()
-
-				list[realm] = L
+		for dir in vfs.Iterate(addons, nil, true) do
+			if dir:lower():find("chatsound") then
+				addon_dir = dir
+				break
 			end
+		end
 
-			local _, folders = file.Find(send .. "*", "LUA")
+		addon_dir = addon_dir .. "/"
 
-			for _, dir in pairs(folders) do
-				for _, path in pairs(file.Find(send .. dir .. "/*", "LUA")) do
-					parse(send .. dir .. "/" .. path)
-				end
-			end
+		local nosend = addon_dir .. "lua/chatsounds/lists_nosend/"
+		local send = addon_dir .. "lua/chatsounds/lists_send/"
 
-			for _, path in pairs(file.Find(nosend .. "*", "LUA")) do
-				parse(nosend .. path)
-			end
-		else
-			chatsounds.MountPaks()
+		local function parse(path)
+			local func = assert(loadfile(path))
+			local realm = path:match(".+/(.-)%.lua")
 
-			local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
-			local addon_dir = addons .. "chatsounds"
+			local L = list[realm] or {}
 
-			for dir in vfs.Iterate(addons, nil, true) do
-				if dir:lower():find("chatsound") then
-					addon_dir = dir
-					break
-				end
-			end
+			setfenv(func, {c = {StartList = function() end, EndList = function() end}, L = L})
+			func()
 
-			addon_dir = addon_dir .. "/"
+			list[realm] = L
+		end
 
-			local nosend = addon_dir .. "lua/chatsounds/lists_nosend/"
-			local send = addon_dir .. "lua/chatsounds/lists_send/"
-
-			local function parse(path)
-				local func = assert(loadfile(path))
-				local realm = path:match(".+/(.-)%.lua")
-
-				local L = list[realm] or {}
-
-				setfenv(func, {c = {StartList = function() end, EndList = function() end}, L = L})
-				func()
-
-				list[realm] = L
-			end
-
-			for dir in vfs.Iterate(send, nil, true) do
-				for path in vfs.Iterate(dir .. "/", nil, true) do
-					parse(path)
-				end
-			end
-
-			for path in vfs.Iterate(nosend, nil, true) do
+		for dir in vfs.Iterate(send, nil, true) do
+			for path in vfs.Iterate(dir .. "/", nil, true) do
 				parse(path)
 			end
 		end
+
+		for path in vfs.Iterate(nosend, nil, true) do
+			parse(path)
+		end
+		
 
 		local tree = {}
 
@@ -976,6 +850,7 @@ end
 do
 	local function preprocess(str)
 		-- old style pitch to new
+		-- hello%50 > hello:pitch(50)
 
 		for old, new in pairs(chatsounds.LegacyModifiers) do
 			str = str:gsub("%"..old.."([%d%.]+)", function(str) str = str:gsub("%.", ",") return ":"..new.."("..str..")" end)
@@ -984,25 +859,29 @@ do
 		str = str:lower()
 		str = str:gsub("'", "")
 
+		if chatsounds.debug then
+			logn(">>> ", str)
+		end
+		
 		return str
 	end
 
 	local function build_word_list(str)
 		local words = {}
 		local temp = {}
-		local last = getchartype(str:sub(1,1))
+		local last = str:sub(1,1):getchartype()
 
 		for i = 1, #str + 1 do
 			local char = str:sub(i,i)
-			local type = getchartype(char)
+			local type = char:getchartype()
 
 			if type ~= "space" then
 
-				if type ~= last then
+				if type ~= last or char == ":" or char == ")" or char == "(" then
 					local word = table.concat(temp, "")
 					if #word > 0 then
 						table.insert(words, table.concat(temp, ""))
-						table_clear(temp)
+						table.clear(temp)
 					end
 				end
 
@@ -1016,7 +895,7 @@ do
 	end
 
 	local function find_modifiers(words)
-
+	
 		local count = #words
 
 		for i = 1, 1000 do
@@ -1044,7 +923,7 @@ do
 					end
 				end
 
-				table_fixindices(words)
+				table.fixindices(words)
 				table.insert(words, i, {type = "modifier", mod = mod, args = args})
 
 				i = 1
@@ -1052,7 +931,7 @@ do
 
 			if i > count+1 then break end
 		end
-
+			
 		return words
 	end
 
@@ -1064,7 +943,7 @@ do
 
 		local out = {}
 		local found = {}
-
+		
 		local function hmm(word)
 			prev = chatsounds.tree
 
@@ -1087,10 +966,10 @@ do
 			if prev[word] and prev[word].SOUND_FOUND then
 				i = i - 1
 			elseif type(word) == "string" then
-				table.insert(out, i-1, {type = "unmatched", val = word})
+				table.insert(out, i, {type = "unmatched", val = word})
 			end
 
-			table_clear(found)
+			table.clear(found)
 		end
 
 		for _ = 1, 5000 do
@@ -1104,8 +983,8 @@ do
 					hmm(word)
 				end
 			elseif type(word) == "table" then
-				table.insert(out, i-1, word)
-				hmm(word)
+				table.insert(out, i, word)
+				hmm(word) 
 
 				--table.insert(found, 1, {data = prev, word = word})
 			end
@@ -1114,18 +993,20 @@ do
 
 			if i > count+1 then break end
 		end
-
+		
+		table.fixindices(out)
+ 
 		return out
 	end
 
 	local function apply_modifiers(script)
 		local i = 1
-
+		
 		for _ = 1, 1000 do
 			local chunk = script[i]
-
+			
 			if not chunk or i > #script+1 then break end
-
+							
 			if chunk.type == "modifier" then
 				if script[i - 1] then
 					if script[i - 1].val == ")" then
@@ -1157,15 +1038,15 @@ do
 						i = i - 1
 					end
 
-					table_fixindices(script)
+					table.fixindices(script)
 				end
 			end
 
 			i = i + 1
 		end
 
-		table_fixindices(script)
-
+		table.fixindices(script)
+		
 		return script
 	end
 
@@ -1189,7 +1070,6 @@ do
 
 		script = apply_modifiers(script)
 
-
 		--chatsounds.script_cache[str] = script
 
 		return script
@@ -1207,7 +1087,7 @@ function choose_realm(data)
 	end
 
 	if not sounds then
-		sounds = table_random(data.realms)
+		sounds = table.random(data.realms)
 		last_realm = sounds.realm
 	end
 
@@ -1231,14 +1111,14 @@ function chatsounds.PlayScript(script, udata)
 								data = chunk.val.realms[v.args[2]]
 							end
 
-							info = data.sounds[math_clamp(tonumber(v.args[1]) or 1, 1, #data.sounds)]
+							info = data.sounds[math.clamp(tonumber(v.args[1]) or 1, 1, #data.sounds)]
 							break
 						end
 					end
 				end
 
 				if not info then
-					info = table_random(data.sounds)
+					info = table.random(data.sounds)
 				end
 
 				local path = info.path
@@ -1316,7 +1196,7 @@ function chatsounds.PlayScript(script, udata)
 
 	local duration = 0
 	local track = {}
-	local time = chatsounds.GetTime()
+	local time = timer.GetElapsedTime()
 
 	for i, sound in ipairs(sounds) do
 
@@ -1354,10 +1234,6 @@ function chatsounds.Panic()
 	end
 
 	chatsounds.active_tracks = {}
-
-	if gmod then
-		RunConsoleCommand("stopsound")
-	end
 end
 
 if chatsounds.active_tracks then
@@ -1367,7 +1243,7 @@ end
 chatsounds.active_tracks = {}
 
 function chatsounds.Update()
-	local time = chatsounds.GetTime()
+	local time = timer.GetElapsedTime()
 
 	for i, track in pairs(chatsounds.active_tracks) do
 		for i, sound in pairs(track) do
@@ -1422,6 +1298,7 @@ function chatsounds.Say(client, str, seed)
 	if seed then math.randomseed(seed) end
 
 	local script = chatsounds.GetScript(str)
+	if chatsounds.debug then dump_script(script) end
 	chatsounds.PlayScript(script, client)
 end
 
@@ -1461,5 +1338,8 @@ function chatsounds.Shutdown()
 	autocomplete.RemoveList("chatsounds")
 	event.RemoveListener("Update", "chatsounds")
 end
+
+--chatsounds.debug = true
+--chatsounds.Say("hello no yes that=0.5 (hello wow yeah hello hi)%30 where is the%50 where is oh no feelings%30 princess yo%50")
 
 return chatsounds
