@@ -890,7 +890,7 @@ do
 
 			last = type
 		end
-
+		
 		return words
 	end
 
@@ -937,23 +937,23 @@ do
 
 	local function find_sounds(words)
 		local count = #words
-
+		
 		local prev = chatsounds.tree
 		local i = 1
 
 		local out = {}
 		local found = {}
-		
+						
 		local function hmm(word)
 			prev = chatsounds.tree
-
+			
 			for offset, node in ipairs(found) do
 				offset = i - offset
 				if node.data.SOUND_FOUND then
 					table.insert(out, offset, {type = "matched", val = node.data.data})
 					break
 				elseif prev[node.word] and prev[node.word].SOUND_FOUND then
-					table.insert(out, offset, {type = "matched", val = prev[node.word].data})
+					table.insert(out, offset-1, {type = "matched", val = prev[node.word].data})
 				else
 					if type(node.word) == "string" then
 						table.insert(out, offset, {type = "unmatched", val = node.word})
@@ -983,10 +983,8 @@ do
 					hmm(word)
 				end
 			elseif type(word) == "table" then
+				hmm(word)
 				table.insert(out, i, word)
-				hmm(word) 
-
-				--table.insert(found, 1, {data = prev, word = word})
 			end
 
 			i = i + 1
@@ -995,6 +993,8 @@ do
 		end
 		
 		table.fixindices(out)
+		
+		--table.print(out, 2)
  
 		return out
 	end
@@ -1339,7 +1339,10 @@ function chatsounds.Shutdown()
 	event.RemoveListener("Update", "chatsounds")
 end
 
---chatsounds.debug = true
+chatsounds.debug = true
 --chatsounds.Say("hello no yes that=0.5 (hello wow yeah hello hi)%30 where is the%50 where is oh no feelings%30 princess yo%50")
+--chatsounds.Say("o%50=0.2 o%50=0.2 o%50=0.2 o%50=0.2 o%50=0.2 o%50=0.2 o%150=0.2 o%160=0.2 o%75=0.2 o%150=0.2 o%160=0.2 o%75=0.2 o%150=0.2 o%160=0.2 o%75=0.2o%150=0.2 o%160=0.2 o%75=0.2")   
+--chatsounds.Say("1 2 3 4 | 5 6 7 8")
+--chatsounds.Say("if you need instructions on how to get through the hotels check out the enclosed instruction book")
 
 return chatsounds
