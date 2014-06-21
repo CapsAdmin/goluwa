@@ -87,8 +87,14 @@ do -- window meta
 		self.mouse_trapped = b
 		
 		glfw.SetInputMode(self.__ptr, glfw.e.GLFW_CURSOR, b and glfw.e.GLFW_CURSOR_DISABLED or glfw.e.GLFW_CURSOR_NORMAL)
+		
+		self:UpdateMouseDelta()
 	end
 
+	function META:GetMouseTrapped()
+		return self.mouse_trapped
+	end
+	
 	function META:GetMouseDelta()
 		return self.mouse_delta or Vec2()
 	end
