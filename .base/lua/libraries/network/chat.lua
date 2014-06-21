@@ -121,7 +121,8 @@ if CLIENT then
 		local panel =  chat.panel
 		local found_autocomplete = {}
 		
-		if not visible then				
+		if not visible then
+			local old_mouse_trap = window.GetMouseTrapped()
 			panel = aahh.Create("text_input")
 				panel:SetPos(Vec2(50, Vec2(render.GetScreenSize()).h - 100))
 				panel:SetSize(Vec2(512, 16))
@@ -187,7 +188,7 @@ if CLIENT then
 							end
 						end
 						
-						window.ShowCursor(false)
+						window.SetMouseTrapped(old_mouse_trap) 
 						visible = false
 						
 						panel:Remove()
@@ -221,7 +222,7 @@ if CLIENT then
 					end
 				end
 				
-			window.ShowCursor(true)
+			window.SetMouseTrapped(false)
 			visible = true
 		end
 		
