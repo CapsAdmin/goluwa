@@ -338,12 +338,22 @@ do -- ffi
 	
 	_OLD_G.ffi_load = _OLD_G.ffi_load or ffi.load
 	
+	local ffi_new = ffi.new
+	
+	function ffi.debug_gc(b)
+		if b then
+			ffi.new = ffi.new_dbg_gc
+		else
+			ffi.new = ffi_new
+		end
+	end
+	
 	function ffi.new_dbg_gc(...)
-		local obj = ffi.new(...)
+		local obj = ffi_new(...)
 		ffi.gc(obj, function(...) logn("ffi debug gc: ", ...) end)
 		return obj
 	end
-	
+		
 	-- make ffi.load search using our file system
 	ffi.load = function(path, ...)
 		local ok, msg = pcall(_OLD_G.ffi_load, path, ...)
