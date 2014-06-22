@@ -1,15 +1,17 @@
+local vfs2 = (...) or _G.vfs2
+
 local queue = {}
 
 vfs2.async_readers = {
 	file = function(path, mbps, context)
-		local file = vfs2.Open(path, "rb")
+		local file = vfs2.Open(path, "read")
 		if file then
 			local content = {}
 			mbps = mbps / 2
 			event.CreateThinker(function()
 				-- in case mbps is higher than the file size
 				for i = 1, 2 do
-					local str = file:read(1048576 * mbps)
+					local str = file:ReadBytes(1048576 * mbps)
 					if str then
 						content[#content + 1] = str
 					else
@@ -22,7 +24,6 @@ vfs2.async_readers = {
 		end
 	end,
 	sockets = function(path, mbps, context)
-	
 	
 		-- for font names only
 		if context:find("font") and not path:find("%p") then			
@@ -48,7 +49,7 @@ vfs2.async_readers = {
 		
 		local ext = path:match(".+(%.%a+)") or ".dat"
 		local cache_path = "download_cache/" .. crypto.CRC32(path) .. ext
-		if vfs2.Exists(cache_path) then
+		if vfs2.IsFile(cache_path) then
 			return vfs2.ReadAsync(cache_path, queue[path].callback, mbps, context, "file")
 		else
 			if sockets.Download(path, function(data) 

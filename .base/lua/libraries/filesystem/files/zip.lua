@@ -1,3 +1,4 @@
+do return end
 local vfs2 = (...) or _G.vfs2
 
 local zip2 = require("zip") -- GRRRR

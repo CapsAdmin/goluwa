@@ -25,7 +25,7 @@ local function autorun_addon(folder, info)
 				end
 				
 				-- autorun folders			
-				for path in vfs2.Iterate(e.ROOT_FOLDER .. info.path .. "lua/autorun/" .. folder, nil, true) do
+				for path in vfs2.Iterate(info.path .. "lua/autorun/" .. folder, nil, true) do
 					if path:find("%.lua") then
 						local ok, err = xpcall(include, system.OnError, path)
 						if not ok then
@@ -77,42 +77,33 @@ function vfs2.GetAllAddons()
 	return vfs2.loaded_addons
 end
 
-function vfs2.LoadAllAddons()
-	for folder in vfs2.Iterate(e.ROOT_FOLDER .. ".") do
-		if folder:sub(1, 1) ~= "." or folder == ".base" then
-			local path = folder .. "/"
-					
-			if vfs2.IsDir(e.ROOT_FOLDER .. path) then					
-				local func, msg = loadfile(e.ROOT_FOLDER .. path .. "info.lua")
-				
-				local info = {}
-				
-				if func then
-					info = func() or {}
-				end
-			
-				info.path = path
-					info.file_info = folder
-					info.name = info.name or folder
-					info.folder = folder
-					info.priority = info.priority or -1
-				table.insert(vfs2.loaded_addons, info)
-
-				e["ADDON_" .. info.name:upper()] = info
-			end
-		end
+function vfs2.MountAddon(path)									
+	local func, msg = loadfile(path .. "info.lua")
+	
+	local info = {}
+	
+	if func then
+		info = func() or {}
 	end
+	
+	local folder = path:match(".+/(.+)/")
 
+	info.path = path
+		info.file_info = folder
+		info.name = info.name or folder
+		info.folder = folder
+		info.priority = info.priority or -1
+	table.insert(vfs2.loaded_addons, info)
+
+	e["ADDON_" .. info.name:upper()] = info
+	
+	if info.load ~= false then
+		vfs2.Mount(path)
+	else
+		table.insert(vfs2.disabled_addons, info)
+	end
+	
 	vfs2.SortAddonsAfterPriority()
-
-	for _, info in ipairs(vfs2.loaded_addons) do
-		if info.load ~= false then
-			vfs2.Mount(e.ROOT_FOLDER .. info.path)
-		else
-			table.insert(vfs2.disabled_addons, info)
-		end
-	end
-
 end
 
 function vfs2.ReloadAddons()
