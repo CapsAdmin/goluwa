@@ -43,14 +43,9 @@ local keyboard_map={
 	kp_decimal = "kp.",
 	num_lock = "numlock",
 	page_down = "page_down",
-	page_up = "page_up"
+	page_up = "page_up",
+	enter = "return",
 }
-
-local keyboard_map = {}
-
-for k,v in pairs(keyboard_map) do
-	keyboard_map[v] = k
-end
 
 function love.keyboard.isDown(key) --partial
 	return input.IsKeyDown(keyboard_map[key] or key)
