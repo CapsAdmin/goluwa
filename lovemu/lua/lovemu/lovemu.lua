@@ -5,24 +5,25 @@ lovemu.version = "0.9.0"
 include("boot.lua")
 
 do
-	local BASE = {}
-
-	function BASE:__index(key)
-		return BASE[key] or self.meta[key]
-	end
-
-	function BASE:typeOf(str)
+	local function base_typeOf(self, str)
 		return str == self.name
 	end
 
-	function BASE:type()
+	local function base_type(self)
 		return self.name
 	end
 	
 	local created = {}
 
 	function lovemu.CreateObject(META)
-		local self = setmetatable({__lovemu_type = META.Type, meta = META}, BASE)
+		
+		META.__index = META
+		META.typeOf = base_typeOf
+		META.type = base_type
+		
+		local self = setmetatable({}, META)
+		
+		self.__lovemu_type = META.Type
 		
 		created[META.Type] = created[META.Type] or {}
 		table.insert(created[META.Type], self)
