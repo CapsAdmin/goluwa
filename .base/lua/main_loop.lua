@@ -2,33 +2,26 @@ local rate_cvar = console.CreateVariable("max_fps", 0, "-1\t=\trun as fast as po
 
 local fps_cvar = console.CreateVariable("show_fps", true)
 
-local fps_add = 0
 local avg_fps = 1
-local count = 0
 
 local gl = not SERVER and require("lj-opengl") -- OpenGL
 
 local function calc_fps(dt)	
 	local fps = 1/dt
 	
-	if count >= avg_fps / 10 then
-		avg_fps = fps_add / count
-		fps_add = 0
-		count = 0
-	else
-		fps_add = fps_add + fps
-		count = count + 1
-	end
-
-	console.SetTitle(("FPS: %i"):format(avg_fps), "fps")
+	avg_fps = avg_fps + ((fps - avg_fps) * dt)
 	
-	if utilities and utilities.FormatFileSize then
-		console.SetTitle(("GARBAGE: %s"):format(utilities.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
-	end
+	if wait(1/30) then
+		console.SetTitle(("FPS: %i"):format(avg_fps), "fps")
+		
+		if utilities and utilities.FormatFileSize then
+			console.SetTitle(("GARBAGE: %s"):format(utilities.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
+		end
 
-	if gl and gl.call_count then
-		console.SetTitle(("gl calls: %i"):format(gl.call_count), "glcalls")
-		gl.call_count = 0
+		if gl and gl.call_count then
+			console.SetTitle(("gl calls: %i"):format(gl.call_count), "glcalls")
+			gl.call_count = 0
+		end
 	end
 end
 
