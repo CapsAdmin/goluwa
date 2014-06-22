@@ -310,5 +310,9 @@ do -- Source
 		elseif lovemu.Type(var) == "SoundData" then
 			lovemu.ThrowNotSupportedError("SoundData is not supported yet")
 		end
+		
+		logn("tried to create unknown source type: ", lovemu.Type(var), ", ", type)
+		
+		return lovemu.CreateObject(Source)
 	end
 end
