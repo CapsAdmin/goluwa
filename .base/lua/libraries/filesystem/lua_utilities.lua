@@ -1,3 +1,26 @@
+local vfs2 = (...) or _G.vfs2
+
+vfs2.included_files = vfs2.included_files or {}
+
+local function store(path)
+	local path = vfs2.FixPath(path:lower())
+	vfs2.included_files[path] = lfs.attributes(path)
+end
+
+function loadfile(path, ...)		
+	store(path)
+	return _OLD_G.loadfile(path, ...)
+end
+
+function dofile(path, ...)
+	store(path)		
+	return _OLD_G.dofile(path, ...)
+end
+	
+function vfs2.GetLoadedLuaFiles()
+	return vfs2.included_files
+end
+
 function vfs2.loadfile(path)
 	check(path, "string")
 	

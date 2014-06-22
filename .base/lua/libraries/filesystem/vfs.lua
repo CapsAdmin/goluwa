@@ -185,6 +185,10 @@ end
 include("path_utilities.lua", vfs2)
 include("base_file.lua", vfs2)
 include("find.lua", vfs2)
+include("helpers.lua", vfs2) 
+include("async.lua", vfs2)
+include("addons.lua", vfs2)
+include("lua_utilities.lua", vfs2)
 
 do -- translate path to useful data
 	local function get_folders(self, typ, keep_last)
@@ -286,35 +290,6 @@ function vfs2.Open(path, mode, sub_mode)
 
 	return false, err or "no such file exists"
 end
-
-function vfs2.CreateFolder(path)
-	check(path, "string")
-	check_write_path(path, true)
-	
-	for i, data in ipairs(vfs2.TranslatePath(path, true)) do	
-		data.context:PCall("CreateFolder", data.path_info)
-	end
-end
-
-function vfs2.IsFolder(path)
-	for i, data in ipairs(vfs2.TranslatePath(path, true)) do	
-		if data.context:PCall("IsFolder", vfs2.GetPathInfo(path, true)) then
-			return true
-		end
-	end
-	
-	return false
-end
-
-function vfs2.IsFile(path)
-	for i, data in ipairs(vfs2.TranslatePath(path)) do	
-		if data.context:PCall("IsFile", vfs2.GetPathInfo(path)) then
-			return true
-		end
-	end
-	
-	return false
-end
  
 function vfs2.Test()
 
@@ -381,9 +356,12 @@ if _G.vfs then
 	_G.vfs2 = vfs2
 	
 	vfs2.debug = true
-		
-	local file = vfs2.Open("G:/SteamLibrary/SteamApps/common/Crysis Wars/Game/GameData.pak/Scripts/callbacks.txt", "read")
-	table.print(file:ReadAll():explode("\n"))
+
+	vfs2.MountAddon("C:/goluwa/shell32/")
+	table.print(vfs2.GetAllAddons())
+	
+	--local file = vfs2.Open("G:/SteamLibrary/SteamApps/common/Crysis Wars/Game/GameData.pak/Scripts/callbacks.txt", "read")
+	--table.print(file:ReadAll():explode("\n"))
 end
 
 return vfs2
