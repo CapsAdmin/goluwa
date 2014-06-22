@@ -60,20 +60,20 @@ do -- quad
 	end
 	
 	function Quad:getViewport() 
-		return self.args[1], self.args[2], self.args[3], self.args[4] 
+		return self.x, self.y, self.w, self.h 
 	end
 	
-	function Quad:setViewport(s, x,y,w,h) 
-		self.args[1] = x
-		self.args[2] = y
-		self.args[3] = w
-		self.args[4] = h
+	function Quad:setViewport(x,y,w,h) 
+		self.x = x
+		self.y = y
+		self.w = w
+		self.h = h
 		
-		refresh(self.vertices, x,y,w,h, self.args[3], self.args[4]) 
+		refresh(self.vertices, self.x,self.y,self.w,self.h, self.sw, self.sh) 
 	end
 	
 	
-	function love.graphics.newQuad(...) -- partial
+	function love.graphics.newQuad(x,y,w,h, sw,sh) -- partial
 		local self = lovemu.CreateObject(Quad)
 		
 		local vertices = {}
@@ -82,8 +82,17 @@ do -- quad
 			vertices[i] = {x = 0, y = 0, s = 0, t = 0}
 		end
 		
-		self.args = {...}
+		self.x = x
+		self.y = y
+		self.w = w
+		self.h = h
+		
+		self.sw = sw or 0
+		self.sh = sh or 0
+		
 		self.vertices = vertices
+		
+		refresh(self.vertices, x,y,w,h, sw,sh) 
 			
 		return self
 	end
@@ -264,6 +273,10 @@ do -- font
 		return self
 	end
 	
+	function love.graphics.newImageFont()
+		return love.graphics.newFont()
+	end
+	
 	local currentFont = love.graphics.newFont(12)
 	
 	function love.graphics.setFont(font)
@@ -343,8 +356,14 @@ do -- line
 		return WIDTH
 	end
 
-	function love.graphics.line(x1, y1, x2, y2)
+	function love.graphics.line(x1, y1, x2, y2, ...)
 		surface.DrawLine(x1, y1, x2, y2, WIDTH, false)
+		if ... then
+			for i = 1, select("#", ...), 4 do
+				local x1, y1, x2, y2 = select(i, ...)
+				surface.DrawLine(x1, y1, x2, y2, WIDTH, false)
+			end
+		end
 	end
 end
 
@@ -372,8 +391,9 @@ do -- canvas
 		
 	end
 	
-	function Canvas:clear(self, ...) 
-		self.fb:Begin() love.graphics.clear(...) self.fb:End() 
+	function Canvas:clear(...) 
+		self.fb:Begin() 
+		love.graphics.clear(...) 
 	end
 	
 	function Canvas:setWrap() 
@@ -391,22 +411,24 @@ do -- canvas
 		local self = lovemu.CreateObject(Canvas)
 		
 		self.fb = render.CreateFrameBuffer(w, h)
-
+		
 		lovemu.textures[self] = self.fb:GetTexture()
 		
 		return self
 	end
 	
+	local gl = require("lj-opengl")
+	
 	local CANVAS
-
+	
 	function love.graphics.setCanvas(canvas) -- partial
-		if canvas then
-			canvas.fb:Begin()
-		elseif CANVAS then
-			CANVAS.fb:End()
-		end
-		
 		CANVAS = canvas
+
+		if canvas then
+			canvas.fb:Bind()
+		else
+			gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
+		end
 	end
 	
 	function love.graphics.getCanvas() -- partial
@@ -499,9 +521,15 @@ function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy) -- partial
 	
 	surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 	surface.SetTexture(lovemu.textures[drawable])
-	surface.SetRectUV(quad.args[1]*quad.args[5],quad.args[2]*quad.args[6],quad.args[3]*quad.args[5],quad.args[4]*quad.args[6])
-	surface.DrawRect(x,y, quad.args[3]*sx, quad.args[4]*sy,r,ox*sx,oy*sy)
-	surface.SetRectUV(0,0,1,1)
+	surface.SetRectUV(quad.x/quad.sw,quad.y/quad.sh,quad.w/quad.sw,quad.h/quad.sh)
+	--[[for i = 0, 3 do
+		surface.rect_mesh.vertices[i].pos.A = quad.vertices[i].x
+		surface.rect_mesh.vertices[i].pos.B = quad.vertices[i].y
+		surface.rect_mesh.vertices[i].uv.A = quad.vertices[i].s
+		surface.rect_mesh.vertices[i].uv.B = quad.vertices[i].t
+	end]]
+	surface.DrawRect(x,y, quad.w*sx, quad.h*sy,r,ox*sx,oy*sy)
+	--surface.SetRectUV(0,0,1,1)
 end
 
 local drawq = love.graphics.drawq
@@ -644,7 +672,7 @@ do -- sprite batch
 	function SpriteBatch:set(id, q, ...)
 		id = id or 1
 		if lovemu.Type(q) == "Quad" then
-			self.poly:SetUV(q.args[1]*q.args[5], q.args[2]*q.args[6], q.args[3]*q.args[5], q.args[4]*q.args[6])
+			self.poly:SetUV(q.x*q.sw, q.y*q.sh, q.w*q.sw, q.h*q.sh)
 			set_rect(self, id, ...)
 		else
 			set_rect(self, id, q, ...)
