@@ -1,8 +1,10 @@
 local sockets = (...) or _G.sockets
 
-local sck = sockets.luasocket.udp()
+local sck
 
 function sockets.SendUDPData(ip, port, str)
+
+	sck = sck or sockets.luasocket.udp()
 
 	if not str and type(port) == "string" then
 		str = port
