@@ -10,16 +10,16 @@ function love.joystick.close() --partial
 
 end
 function love.joystick.getAxes() --partial
-
+	return 0
 end
 function love.joystick.getAxis() --partial
-
+	return 0
 end
 function love.joystick.getBall() --partial
-
+	return 0
 end
 function love.joystick.getHat() --partial
-
+	return 0
 end
 function love.joystick.getName() --partial
 	return "hello_world"
