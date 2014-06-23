@@ -180,36 +180,42 @@ do -- shaders
 		return program
 	end
 
-	local last
+	do
+		local last
 
-	function render.UseProgram(id)
-		if last ~= id then
-			gl.UseProgram(id)
-			last = id
-			render.current_program = id
+		function render.UseProgram(id)
+			if last ~= id then
+				gl.UseProgram(id)
+				last = id
+				render.current_program = id
+			end
 		end
 	end
 
-	local last
+	do
+		local last
 
-	function render.BindArrayBuffer(id)
-		if last ~= id then
-			gl.BindBuffer(gl.e.GL_ARRAY_BUFFER, id)
-			last = id
+		function render.BindArrayBuffer(id)
+			if last ~= id then
+				gl.BindBuffer(gl.e.GL_ARRAY_BUFFER, id)
+				last = id
+			end
 		end
 	end
+	
+	do
+		local last
 
-	local last
-
-	function render.BindVertexArray(id)
-		if last ~= id then
-			gl.BindVertexArray(id)
-			last = id
+		function render.BindVertexArray(id)
+			if last ~= id then
+				gl.BindVertexArray(id)
+				last = id
+				
+				return true
+			end
 			
-			return true
+			return false
 		end
-		
-		return false
 	end
 end
 

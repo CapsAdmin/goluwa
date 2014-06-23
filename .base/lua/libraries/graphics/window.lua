@@ -2,17 +2,26 @@ local window = _G.window or {}
 
 window.wnd = window.wnd or NULL
 
-setmetatable(window, {
-	__index = function(s, key)
-		if s.wnd[key] then
-			return function(...)
-				return s.wnd[key](s.wnd, ...)
+do
+	local func
+	local ptr
+	
+	local function aux(...)
+		return func(ptr, ...)
+	end
+
+	setmetatable(window, {
+		__index = function(s, key)
+			if s.wnd[key] then
+				func = s.wnd[key]
+				ptr = s.wnd
+				return aux
+			else
+				error("the key \"" .. key .. "\" does not exist in _G.window", 2)
 			end
-		else
-			error("the key \"" .. key .. "\" does not exist in _G.window", 2)
-		end
-	end,
-})
+		end,
+	})
+end
 
 function window.Open(...)  
 	if window.wnd:IsValid() then return end
