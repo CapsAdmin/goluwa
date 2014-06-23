@@ -1,7 +1,5 @@
 local sockets = _G.sockets or {}
 
-sockets.cares = select(2, pcall(require,"cares"))
-sockets.luasocket = require("socket.core") _G.socket = nil
 sockets.active_sockets = sockets.active_sockets or setmetatable({}, { __mode = 'v' })
 
 if SERVER then
@@ -10,8 +8,15 @@ if SERVER then
 		timer.GetSystemTime = timer.GetTimeMS
 	else
 		-- there reaaaally needs to be a system.GetTime() function
-		local start = sockets.luasocket.gettime()
+		local start
 		function timer.GetSystemTime()
+			
+			if not sockets.luasocket then
+				return os.gettime()
+			end
+			
+			start = start or sockets.luasocket.gettime()
+			
 			return sockets.luasocket.gettime() - start
 		end
 	end
@@ -78,6 +83,21 @@ function sockets.Panic()
 end
 
 local function new_socket(override, META, typ, id)
+	
+	if not sockets.luasocket then
+		local ok, luasocket = pcall(function() return require("socket") end)
+
+		if not ok then
+			ok, luasocket = pcall(function() return require("socket.core") end)
+		end
+
+		if not ok then
+			error(luasocket)
+		end
+		
+		sockets.luasocket = luasocket
+	end
+	
 	typ = typ or "tcp"
 	typ = typ:lower()
 
@@ -158,24 +178,9 @@ do -- tcp socket meta
 			sockets.DebugPrint(self, "%s - " .. fmt, self, ...)
 		end
 
-		function CLIENT:Connect(ip, port, skip_cares)
+		function CLIENT:Connect(ip, port)
 			check(ip, "string")
 			check(port, "number")
-
-			if sockets.cares and not skip_cares and sockets.cares.Resolve then
-				self:DebugPrintf("using cares to resolve domain %s", ip)
-				
-				sockets.cares.Resolve(ip, function(_, errored, newip)
-					if not errored then
-						self:DebugPrintf("cares resolved domain from %q to %q", ip, newip)
-						self:Connect(newip, port, true)
-					else	
-						self:DebugPrintf("cares errored resolving domain %s with code %s", ip, errored)
-						self:Connect(ip, port, true)
-					end
-				end)
-				return
-			end
 			
 			self:DebugPrintf("connecting to %s:%s", ip, port)
 
