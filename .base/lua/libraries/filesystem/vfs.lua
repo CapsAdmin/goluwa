@@ -357,8 +357,8 @@ if _G.vfs then
 	
 	vfs2.debug = true
 
-	vfs2.MountAddon("C:/goluwa/shell32/")
-	table.print(vfs2.GetAllAddons())
+	vfs2.MountAddon("C:/goluwa/shell32/", true)
+	vfs2.AutorunAddons("test", true)   
 	
 	--local file = vfs2.Open("G:/SteamLibrary/SteamApps/common/Crysis Wars/Game/GameData.pak/Scripts/callbacks.txt", "read")
 	--table.print(file:ReadAll():explode("\n"))
