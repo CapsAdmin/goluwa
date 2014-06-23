@@ -521,7 +521,7 @@ function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy) -- partial
 	
 	surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 	surface.SetTexture(lovemu.textures[drawable])
-	surface.SetRectUV(quad.x/quad.sw,quad.y/quad.sh,quad.w/quad.sw,quad.h/quad.sh)
+	surface.SetRectUV(quad.x,quad.y, quad.w,quad.h, quad.sw, quad.sh)
 	--[[for i = 0, 3 do
 		surface.rect_mesh.vertices[i].pos.A = quad.vertices[i].x
 		surface.rect_mesh.vertices[i].pos.B = quad.vertices[i].y
@@ -715,6 +715,16 @@ do -- sprite batch
 	
 	function SpriteBatch:unbind() 
 		
+	end
+	
+	function SpriteBatch:setImage(image)
+		self.img = image
+		self.w = image:getWidth()
+		self.h = image:getHeight()
+	end
+	
+	function SpriteBatch:getImage(image)
+		return self.img
 	end
 
 	function love.graphics.newSpriteBatch(image, size, usagehint) -- partial
