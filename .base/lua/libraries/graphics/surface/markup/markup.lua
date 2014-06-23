@@ -347,14 +347,14 @@ function META:GetSubPosFromPos(x, y)
 		return 0
 	end
 
-	for sub_pos, char in pairs(self.chars) do
+	for sub_pos, char in ipairs(self.chars) do
 		if char.x == x and char.y == y then
 			return sub_pos
 		end
 	end
 
 	if x == math.huge then
-		for sub_pos, char in pairs(self.chars) do
+		for sub_pos, char in ipairs(self.chars) do
 			if char.y == y and char.str == "\n" then
 				return sub_pos - 1
 			end

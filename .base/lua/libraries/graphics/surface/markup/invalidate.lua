@@ -366,13 +366,14 @@ local function store_tag_info(self, chunks)
 			line =  line + 1
 			last_y = chunk.y
 
-			for i, chunk in pairs(chunk_line) do
+			for i, chunk in ipairs(chunk_line) do
 				--if type(chunk.val) == "string" and chunk.val:find("bigtable") then print("\n\n",chunk,"\n\n")  end
 		--		log(chunk.type == "string" and chunk.val or ( "<"..  chunk.type .. ">"))
 				chunk.line_height = line_height
 				chunk.line_width = line_width
-				chunk_line[i] = nil
 			end
+			
+			table.clear(chunk_line)
 
 	--		log(chunk.y - chunks[i+1].y, "\n")
 
@@ -547,7 +548,6 @@ local function store_tag_info(self, chunks)
 
 		chunk.line_height = line_height
 		chunk.line_width = line_width
-		chunk_line[i] = nil
 	end
 	
 	-- add the last line since there's probably not a newline at the very end
