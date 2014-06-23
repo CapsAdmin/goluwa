@@ -229,6 +229,8 @@ do
 			sx = sx or 1
 			sy = sy or 1
 			
+			y = -y - h
+			
 			surface.rect_mesh.vertices[0].uv.A = x / sx
 			surface.rect_mesh.vertices[0].uv.B = (y + h) / sy
 			
@@ -243,10 +245,12 @@ do
 			surface.rect_mesh.vertices[3].uv = surface.rect_mesh.vertices[2].uv
 			
 			surface.rect_mesh.vertices[4].uv.A = (x + w) / sx
-			surface.rect_mesh.vertices[4].uv.B = (y + h)
+			surface.rect_mesh.vertices[4].uv.B = (y + h) / sy
 			
 			surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[0].uv	
 		end
+		
+		update_vbo()
 	end
 
 	local white_t = {1,1,1,1}
