@@ -239,19 +239,31 @@ do -- timers
 		
 		event.TimerMeta = META
 	end
+	
+	local function remove_timer(key)
+		for k,v in ipairs(event.timers) do
+			if v.key == key then
+				table.remove(k)
+				break
+			end
+		end
+	end
 
 	function event.CreateThinker(callback, speed, in_seconds, run_now)	
 		if run_now and callback() ~= nil then
 			return
 		end
 		
-		event.timers[callback] = {
+		remove_timer(callback)
+		
+		table.insert(event.timers, {
+			key = callback,
 			type = "thinker", 
 			realtime = timer.GetElapsedTime(), 
 			callback = callback, 
 			speed = speed, 
 			in_seconds = in_seconds
-		}
+		})
 	end
 
 	function event.Delay(time, callback, obj)
@@ -272,22 +284,29 @@ do -- timers
 			end
 		end
 
-		event.timers[callback] = {
+		table.insert(event.timers, {
+			key = callback,
 			type = "delay", 
 			callback = callback, 
 			realtime = timer.GetElapsedTime() + time
-		}
+		})
 	end
 	
 	function event.DeferExecution(callback, time, ...)
-		if not event.timers[callback] then
-			event.timers[callback] = {
-				type = "delay",
-				callback = callback,
-				args = {...},
-				realtime = timer.GetElapsedTime() + (time or 0),
-			}
+		local data
+		
+		for k,v in ipairs(event.timers) do 
+			if v.key == id then 
+				return
+			end 
 		end
+		
+		table.insert(event.timers, {
+			type = "delay",
+			callback = callback,
+			args = {...},
+			realtime = timer.GetElapsedTime() + (time or 0),
+		})
 	end
 
 	function event.CreateTimer(id, time, repeats, callback, run_now)
@@ -304,8 +323,18 @@ do -- timers
 		time = math.abs(time)
 		repeats = math.max(repeats, 0)
 
-		local data = event.timers[id] or {}
+		local data
 		
+		for k,v in ipairs(event.timers) do 
+			if v.key == id then 
+				data = v 
+				break 
+			end 
+		end
+		
+		data = data or {}
+		
+		data.key = id
 		data.type = "timer"
 		data.realtime = timer.GetElapsedTime() + time
 		data.id = id
@@ -328,19 +357,22 @@ do -- timers
 	end
 
 	function event.RemoveTimer(id)
-		event.timers[id] = nil
+		remove_timer(id)
 	end
-
+	
+	local remove_these = {}
+	
 	function event.UpdateTimers(...)
 		local cur = timer.GetElapsedTime()
 				
-		for key, data in pairs(event.timers) do
+		for i, data in ipairs(event.timers) do
 			if data.type == "thinker" then
 				if data.in_seconds and data.speed then
 					if data.realtime < cur then
 						local ok, res = xpcall(data.callback, system.OnError)
 						if not ok or res ~= nil then
-							event.timers[key] = nil
+							table.insert(remove_these, i)
+							break
 						end
 						data.realtime = cur + data.speed
 					end
@@ -348,14 +380,15 @@ do -- timers
 					for i=0, data.speed do
 						local ok, res = xpcall(data.callback, system.OnError)
 						if not ok or res ~= nil then
-							event.timers[key] = nil
+							table.insert(remove_these, i)
 							break
 						end	
 					end
 				else
 					local ok, res = xpcall(data.callback, system.OnError)
 					if not ok or res ~= nil then
-						event.timers[key] = nil
+						table.insert(remove_these, i)
+						break
 					end
 				end
 			elseif data.type == "delay" then
@@ -365,7 +398,7 @@ do -- timers
 					else
 						xpcall(data.callback, system.OnError)
 					end
-					event.timers[key] = nil
+					table.insert(remove_these, i)
 					break
 				end
 			elseif data.type == "timer" then
@@ -374,7 +407,7 @@ do -- timers
 					
 					if ran then
 						if msg == "stop" then
-							event.timers[key] = nil
+							table.insert(remove_these, i)
 							break
 						end
 						if msg == "restart" then
@@ -385,17 +418,27 @@ do -- timers
 						end
 					else
 						logn(data.id, msg)
-						event.timers[key] = nil
+						table.insert(remove_these, i)
+						break
 					end
 
 					if data.times_ran == data.repeats then
-						event.timers[key] = nil
+						table.insert(remove_these, i)
+						break
 					else
 						data.times_ran = data.times_ran + 1
 						data.realtime = cur + data.time
 					end
 				end
 			end
+		end
+		
+		if #remove_these > 0 then
+			for k, v in ipairs(remove_these) do
+				event.timers[v] = nil
+			end
+			table.fixindices(event.timers)
+			table.clear(remove_these)
 		end
 	end
 end
