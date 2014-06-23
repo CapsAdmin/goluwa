@@ -42,11 +42,9 @@ local RECT = {
 	{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 	{pos = {0, 1}, uv = {0, 0}, color = {1,1,1,1}},
 	{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
+	{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
 	{pos = {1, 0}, uv = {1, 1}, color = {1,1,1,1}},
-}
-
-local RECT_INDICES = {
-	0,1,2,2,3,0
+	{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 }
 
 function surface.CreateMesh(vertices, indices)
@@ -58,10 +56,6 @@ function surface.CreateMesh(vertices, indices)
 		shader.pvm_matrix = render.GetPVWMatrix2D
 		
 		surface.mesh_2d_shader = shader
-	end
-	
-	if vertices == RECT then 
-		indices = RECT_INDICES
 	end
 	
 	return surface.mesh_2d_shader:CreateVertexBuffer(vertices, indices)
