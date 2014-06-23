@@ -15,6 +15,7 @@ function lovemu.CreateLoveEnv(version)
 end
 
 function lovemu.RunGame(folder)
+	require("socket")
 	require("socket.http")
 	
 	render.EnableGBuffer(false)
