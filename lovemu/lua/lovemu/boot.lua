@@ -15,6 +15,8 @@ function lovemu.CreateLoveEnv(version)
 end
 
 function lovemu.RunGame(folder)
+	require("socket.http")
+	
 	render.EnableGBuffer(false)
 
 	local love = lovemu.CreateLoveEnv(lovemu.version)
@@ -79,7 +81,12 @@ function lovemu.RunGame(folder)
 			
 		love.conf(lovemu.config)
 	end
-			
+	
+	--check if lovemu.config.screen exists
+	if not lovemu.config.screen then
+		lovemu.config.screen={}
+	end
+	
 	local w = lovemu.config.screen.width or 800
 	local h = lovemu.config.screen.height or 600
 	local title = lovemu.config.title or "LovEmu"
