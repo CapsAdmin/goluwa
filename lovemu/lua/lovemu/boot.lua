@@ -39,8 +39,14 @@ function lovemu.RunGame(folder)
 		love = love, 
 		require = function(name, ...)
 		
+			name = name:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
+		
 			if package.loaded[name] then 
 				return package.loaded[name] 
+			end
+			
+			if not vfs.Exists(name) then
+				name = name .. ".lua"
 			end
 			
 			local func, err, path = require.load(name, folder) 
@@ -118,7 +124,9 @@ function lovemu.RunGame(folder)
 		surface.SetWhiteTexture()
 		
 		if not lovemu.errored then
+			surface.PushMatrix()
 			local err, msg = xpcall(run, system.OnError, dt)
+			surface.PopMatrix()
 			if not err then
 				logn(msg)
 				
