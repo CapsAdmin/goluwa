@@ -30,7 +30,10 @@ local function create_host(ip, port, max_connections, max_channels, incomming_ba
 	outgoing_bandwidth = outgoing_bandwidth or 0
 			
 	local host = lib.host_create(ipport2address(ip, port), max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
-	
+	if host == nil then
+		print(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
+		error("host is NULL")
+	end
 	return host
 end
 
