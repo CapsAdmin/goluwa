@@ -91,6 +91,23 @@ local function read_lump_data(index, size, struct)
 	return out
 end
 
+timer.Start("reading brushes")
+	header.brushes = read_lump_data(19, 12, [[
+		int	firstside;	// first brushside
+		int	numsides;	// number of brushsides
+		int	contents;	// contents flags
+	]])
+timer.Stop()
+
+timer.Start("reading brushsides")
+	header.brushsides = read_lump_data(20, 8, [[
+		unsigned short	planenum;	// facing out of the leaf
+		short		texinfo;	// texture info
+		short		dispinfo;	// displacement info
+		short		bevel;		// is the side a bevel plane?
+	]])
+timer.Stop()
+
 timer.Start("reading verticies")
 	header.vertices = read_lump_data(4, 12, "vec3")
 timer.Stop() 
@@ -257,6 +274,57 @@ timer.Start("reading models")
 		int numfaces;
 	]])
 timer.Stop()
+
+timer.Start("reading physdisp")
+	header.physmodels = {}
+
+	local lump = header.lumps[29]
+
+	buffer:SetPos(lump.fileofs)
+
+	local numDisplacements = buffer:ReadShort()
+	local dataSizes = {}
+
+	for i = 1, numDisplacements do
+		dataSizes[i] = buffer:ReadShort()
+	end
+
+	print("physdisps.numDisplacements: " .. numDisplacements)
+
+	--for i = 1, #dataSizes do
+	--	print("\t" .. dataSizes[i])
+	--end
+timer.Stop()
+
+timer.Start("reading physmodels")
+	header.physmodels = {}
+
+	local struct = [[
+		int modelIndex;
+		int dataSize;
+		int keydataSize;
+		int solidCount;
+	]]
+
+	local lump = header.lumps[30]
+
+	buffer:SetPos(lump.fileofs)
+
+	while (buffer:GetPos() - lump.fileofs) < lump.filelen do
+		local physmodel = buffer:ReadStructure(struct)
+
+		if physmodel.dataSize > 0 then
+			buffer:SetPos(buffer:GetPos() + physmodel.dataSize + physmodel.keydataSize)
+		end
+
+		header.physmodels[#header.physmodels + 1] = physmodel
+	end
+timer.Stop()
+
+
+--for i = 1, #header.brushes do
+--	local brush = header.brushes[i]
+--end
 
 local bsp_mesh = {sub_models = {}}
 
