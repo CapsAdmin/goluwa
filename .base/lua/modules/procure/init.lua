@@ -106,8 +106,7 @@ local function findchunk(name, find)
   
   for _, loader in ipairs(_M.loaders) do
     local chunk, err, path = loader(name)
-	
-	if not find or (path and path:find(find, nil, true)) then
+	if not find or (path and path:lower():find(find:lower(), nil, true)) then
 		if type(chunk) == 'function' then
 		  return chunk, nil, path
 		elseif type(chunk) == 'string' then
@@ -118,8 +117,7 @@ local function findchunk(name, find)
 
   for _, loader in ipairs(package.loaders) do
     local chunk, err, path = loader(name)
-
-	if not find or (path and path:find(find, nil, true)) then
+	if not find or (path and path:lower():find(find:lower(), nil, true)) then
 		if type(chunk) == 'function' then
 		  return chunk, nil, path
 		elseif type(chunk) == 'string' then
