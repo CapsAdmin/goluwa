@@ -8,14 +8,13 @@ for i = 0, size-1 do
 end
 
 --local sound = utilities.RemoveOldObject(Sound(buffer, size))
-local sound = utilities.RemoveOldObject(Sound("sounds/wowozela/triangle_880.wav"))
+local sound = utilities.RemoveOldObject((Sound("sounds/wowozela/sine_880.wav")))
 
 sound:Play() 
-sound:SetChannel(1)
 sound:SetLooping(true)
- 
+  
 local volume = 1
-local pitch = 4 
+local pitch = 1 
 
 window.Open(1024, 1024) 
   local sphere = Texture(64, 64):Fill(function(x, y) 
@@ -43,13 +42,14 @@ emitter:SetRate(-1)
 local trail_tex = Texture(1, 255):Fill(function(x, y) return 255, 255, 255, y end)
     
 local grid_size = 1000 
+local smooth_pitch = 0
 
 event.AddListener("Draw2D", "wowozela", function(dt)
 	local size = window.GetSize()
 	local pos = window.GetMousePos()
 	 
 	pitch = ((-pos.y + grid_size) / grid_size)
-	pitch = 4 ^ pitch
+	pitch = 5 ^ pitch
 	
 	volume = math.clamp(pos.x / grid_size, 0, 1)
 
@@ -83,10 +83,12 @@ event.AddListener("Draw2D", "wowozela", function(dt)
 	surface.SetTexture(sphere)
 	surface.DrawRect(pos.x - 64, pos.y - 64, 128, 128)
 		
-	sound:Play() 
-				
-	sound:SetPitch(pitch)
-	sound:SetPosition(0,0,(-volume+1)^10*100)  
+	--sound:Play() 
 	
-	render.SetupView2D(-pos + size*0.5, 0)
+	smooth_pitch = smooth_pitch + ((pitch - smooth_pitch) * dt * 10)
+	
+	sound:SetPitch(smooth_pitch)
+	sound:SetPosition(pos.x / size.w,0,(-volume+1)^10*100)   
+	
+--	render.SetupView2D(-pos + size*0.5, 0)
 end) 
