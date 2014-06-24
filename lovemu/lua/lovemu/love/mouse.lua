@@ -2,6 +2,10 @@ local love = (...) or _G.lovemu.love
 
 love.mouse = {}
 
+function love.mouse.setPosition(x, y)
+	window.SetMousePos(Vec2(x, y))
+end
+
 function love.mouse.getPosition()
 	return window.GetMousePos():Unpack()
 end
