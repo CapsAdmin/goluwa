@@ -7,7 +7,7 @@ if ltestframe ~= nil and ltestframe:IsValid() then
 	ltestframe:Remove()
 end
 
-ltestframe = aahh.Create("frame")
+ltestframe = gui.Create("frame")
 ltestframe.history = history
 
 local frame = ltestframe
@@ -17,22 +17,22 @@ frame:SetTitle("Lineviewer Test")
 frame:SetSize(Vec2(512, 512))
 frame:Center()
 
-lineviewer = aahh.Create("lineviewer", frame)
+lineviewer = gui.Create("lineviewer", frame)
 --linviewer:SetTrapInsideParent(false)
 lineviewer:Dock("fill")
 lineviewer:SetByWord(true)
 
-local bottompnl = aahh.Create("container", frame)
+local bottompnl = gui.Create("container", frame)
 bottompnl:SetTrapInsideParent(false)
 bottompnl:Dock("bottom")
 bottompnl:SetSize(Vec2(20, 20))
 
-local textinput = aahh.Create("text_input", bottompnl)
+local textinput = gui.Create("text_input", bottompnl)
 textinput:SetTrapInsideParent(false)
 textinput:Dock("fill")
 textinput:SetSize(Vec2(20, 20))
 
-local buttonmode = aahh.Create("text_button", bottompnl)
+local buttonmode = gui.Create("text_button", bottompnl)
 buttonmode:SetTrapInsideParent(false)
 buttonmode:Dock("left")
 buttonmode:SetText("Lua")

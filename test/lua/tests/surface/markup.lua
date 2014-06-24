@@ -11,7 +11,7 @@ end
 markup.chunk_fix = true
 M = markup
 
-local frame = aahh.Create("frame")
+local frame = gui.Create("frame")
 local panel = frame:CreatePanel("panel")
 
 panel:Dock("fill")

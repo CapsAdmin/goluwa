@@ -113,7 +113,7 @@ if CLIENT then
 	local visible
 	local last_history
 	
-	-- this depends on "aahh" which is an addon, which may as well be a part of goluwa
+	-- this depends on "gui" which is an addon, which may as well be a part of goluwa
  	-- TODO!!
 			
 	console.AddCommand("showchat", function()
@@ -123,7 +123,7 @@ if CLIENT then
 		
 		if not visible then
 			local old_mouse_trap = window.GetMouseTrapped()
-			panel = aahh.Create("text_input")
+			panel = gui.Create("text_input")
 				panel:SetPos(Vec2(50, Vec2(render.GetScreenSize()).h - 100))
 				panel:SetSize(Vec2(512, 16))
 				panel:MakeActivePanel()

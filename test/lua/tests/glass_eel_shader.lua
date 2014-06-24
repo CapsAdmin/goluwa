@@ -178,7 +178,7 @@ event.AddListener("DrawHUD", "hm", function()
 		shader.time = timer.GetSystemTime()
 		shader.tex = tex	
 		shader.resolution = Vec2(surface.GetScreenSize())
-		shader.mouse = aahh.GetMousePos()
+		shader.mouse = gui.GetMousePos()
 		shader:Bind()
 		mesh:Draw()
 	surface.PopMatrix()

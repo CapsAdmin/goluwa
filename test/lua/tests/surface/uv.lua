@@ -1,6 +1,6 @@
 window.Open(500, 500)
 
-local tex = Texture("textures/aahh/pac.png")
+local tex = Texture("textures/gui/pac.png")
 
 event.AddListener("Draw2D", "lol", function()
 	surface.SetColor(1,1,1,1)

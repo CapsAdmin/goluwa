@@ -1,4 +1,4 @@
-local panel = utilities.RemoveOldObject((aahh.Create("frame")))
+local panel = utilities.RemoveOldObject((gui.Create("frame")))
 panel:SetSize(window.GetSize())    
 panel:Center() 
 panel:SetMargin(Rect(5,5,5,5))

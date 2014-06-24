@@ -77,7 +77,7 @@ function menu.RenderBackground()
 	local x, y = window.GetMousePos():Unpack()
 	local t = ((x / -scrw) * 2) + 1
 
-	local r, g, b = aahh.GetSkinColor("dark"):Unpack()
+	local r, g, b = gui.GetSkinColor("dark"):Unpack()
 	
 	y =  -(y / scrh) + 2
 	r = r * y
@@ -111,7 +111,7 @@ function menu.MakeButtons()
 
 	if not SERVER then
 		menu.AddButton("Connect", function()
-			aahh.StringInput("Enter the server IP", cookies.Get("lastip", "localhost"), function(str)
+			gui.StringInput("Enter the server IP", cookies.Get("lastip", "localhost"), function(str)
 				console.RunString("start_client")
 				cookies.Set("lastip", str)
 				console.RunString("connect "..str .." 1234")
@@ -141,15 +141,15 @@ function menu.MakeButtons()
 
 	menu.AddButton("Tests", function()
 
-		local frame = aahh.Create("frame")
+		local frame = gui.Create("frame")
 		frame:SetTitle("test")
 		frame:SetSize(Vec2(512, 512))
 		frame:Center()
 		
-		local scroll = aahh.Create("scrollable", frame)
+		local scroll = gui.Create("scrollable", frame)
 		scroll:Dock("fill")
 	
-		local grid = aahh.Create("grid")
+		local grid = gui.Create("grid")
 		grid:SetSizeToWidth(true)	
 		grid:SetStackRight(false)
 		grid:SetItemSize(Vec2()+25)
@@ -158,7 +158,7 @@ function menu.MakeButtons()
 			frame:SetTitle(dir)
 			
 			if utilities.GetParentFolder(dir):find("/", nil, true) then
-				local btn = aahh.Create("text_button")
+				local btn = gui.Create("text_button")
 					btn:SetText("<<")
 					
 					function btn:OnPress()
@@ -171,7 +171,7 @@ function menu.MakeButtons()
 			
 			for name in vfs.Iterate(dir) do 
 				if name ~= "." and name ~= ".." then
-					local btn = aahh.Create("text_button")
+					local btn = gui.Create("text_button")
 					btn:SetText(name)
 
 					if name:find(".lua", nil, true) then
@@ -216,7 +216,7 @@ end
  
 function menu.AddButton(name, func)
 
-	local pnl = aahh.Create("label")
+	local pnl = gui.Create("label")
 		pnl:SetSkinColor("text", "light")
 		pnl:SetSkinColor("shadow", Color(0,0,0,0.1)) 
 		pnl:SetFont("impact")
