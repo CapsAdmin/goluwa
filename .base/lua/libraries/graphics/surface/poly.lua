@@ -6,6 +6,7 @@ local X, Y = 0, 0
 local ROT = 0	
 local R,G,B,A = 1,1,1,1
 local U1, V1, U2, V2 = 0, 0, 1, 1
+local UVSW, UVSH = 1, 1
 
 function META:SetColor(r,g,b,a)
 	R = r or 1
@@ -13,12 +14,59 @@ function META:SetColor(r,g,b,a)
 	B = b or 1
 	A = a or 1
 end
-	
-function META:SetUV(u1,v1,u2,v2)
+
+function META:SetUV(u1, v1, u2, v2, sw, sh)
 	U1 = u1
-	V1 = v1
 	U2 = u2
+	V1 = v1
 	V2 = v2
+	UVSW = sw
+	UVSH = sh
+end
+	
+local function set_uv(self, i, x,y, w,h, sx,sy)
+	if not x then
+		self.vertices[i + 0].uv.A = 0
+		self.vertices[i + 0].uv.B = 1
+		
+		self.vertices[i + 1].uv.A = 0
+		self.vertices[i + 1].uv.B = 0
+		
+		self.vertices[i + 2].uv.A = 1
+		self.vertices[i + 2].uv.B = 0
+		
+		--
+		
+		self.vertices[i + 3].uv = self.vertices[i + 2].uv
+		
+		self.vertices[i + 4].uv.A = 1
+		self.vertices[i + 4].uv.B = 1
+		
+		self.vertices[i + 5].uv = self.vertices[i + 0].uv	
+	else			
+		sx = sx or 1
+		sy = sy or 1
+		
+		y = -y - h
+		
+		self.vertices[i + 0].uv.A = x / sx
+		self.vertices[i + 0].uv.B = (y + h) / sy
+		
+		self.vertices[i + 1].uv.A = x / sx
+		self.vertices[i + 1].uv.B = y / sy
+		
+		self.vertices[i + 2].uv.A = (x + w) / sx
+		self.vertices[i + 2].uv.B = y / sy
+		
+		--
+		
+		self.vertices[i + 3].uv = self.vertices[i + 2].uv
+		
+		self.vertices[i + 4].uv.A = (x + w) / sx
+		self.vertices[i + 4].uv.B = (y + h) / sy
+		
+		self.vertices[i + 5].uv = self.vertices[i + 0].uv	
+	end
 end
 
 function META:SetVertex(i, x,y, u,v)
@@ -43,9 +91,6 @@ function META:SetVertex(i, x,y, u,v)
 	self.vertices[i].pos.A = x
 	self.vertices[i].pos.B = y
 	
-	self.vertices[i].uv.A = u
-	self.vertices[i].uv.B = v
-	
 	self.vertices[i].color.A = R
 	self.vertices[i].color.B = G
 	self.vertices[i].color.C = B
@@ -62,14 +107,16 @@ function META:SetRect(i, x,y,w,h, r, ox,oy)
 	
 	i = i - 1
 	i = i * 6
-				
-	self:SetVertex(i + 0, X + OX, Y + OY, U1, V1 + V2)
-	self:SetVertex(i + 1, X + OX, Y + h + OY, U1, V1)
-	self:SetVertex(i + 2, X + w + OX, Y + h + OY, U1 + U2, V1)
+	
+	set_uv(self, i, U1, V1, U2, V2, UVSW, UVSH)
 
-	self:SetVertex(i + 3, X + w + OX, Y + h + OY, U1 + U2, V1)
-	self:SetVertex(i + 4, X + w + OX, Y + OY, U1 + U2, V1 + V2)
-	self:SetVertex(i + 5, X + OX, Y + OY, U1, V1 + V2)
+	self:SetVertex(i + 0, X + OX, Y + OY)
+	self:SetVertex(i + 1, X + OX, Y + h + OY)
+	self:SetVertex(i + 2, X + w + OX, Y + h + OY)
+
+	self:SetVertex(i + 3, X + w + OX, Y + h + OY)
+	self:SetVertex(i + 4, X + w + OX, Y + OY)
+	self:SetVertex(i + 5, X + OX, Y + OY)
 end
 
 function META:DrawLine(i, x1, y1, x2, y2, w)
