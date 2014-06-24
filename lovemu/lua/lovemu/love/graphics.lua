@@ -237,6 +237,14 @@ do -- font
 		surface.SetFont(self.Name)
 		return select(2, surface.GetTextSize(str))
 	end
+	
+	function Font:setLineHeight(num)
+		self.line_height = num
+	end
+	
+	function Font:getLineHeight(num)
+		self.line_height = num
+	end
 
 	local i = 0
 	
