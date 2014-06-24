@@ -517,7 +517,7 @@ function love.graphics.circle(mode,x,y,w,h) --partial
 	surface.DrawRect(x or 0, y or 0, w or 0, h or 0)
 end
 
-function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy) -- partial
+function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy) -- partial
 	x=x or 0
 	y=y or 0
 	sx=sx or 1
@@ -529,18 +529,10 @@ function love.graphics.drawq(drawable,quad,x,y,r,sx,sy,ox,oy) -- partial
 	
 	surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 	surface.SetTexture(lovemu.textures[drawable])
-	surface.SetRectUV(quad.x,quad.y, quad.w,quad.h, quad.sw, quad.sh)
-	--[[for i = 0, 3 do
-		surface.rect_mesh.vertices[i].pos.A = quad.vertices[i].x
-		surface.rect_mesh.vertices[i].pos.B = quad.vertices[i].y
-		surface.rect_mesh.vertices[i].uv.A = quad.vertices[i].s
-		surface.rect_mesh.vertices[i].uv.B = quad.vertices[i].t
-	end]]
+	surface.SetRectUV(quad.x,quad.y, quad.w,quad.h, quad.sw,quad.sh)
 	surface.DrawRect(x,y, quad.w*sx, quad.h*sy,r,ox*sx,oy*sy)
-	--surface.SetRectUV(0,0,1,1)
+	surface.SetRectUV()
 end
-
-local drawq = love.graphics.drawq
 
 function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 	if lovemu.Type(drawable) == "SpriteBatch" then
@@ -550,7 +542,7 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 	else
 		if lovemu.textures[drawable] then
 			if lovemu.Type(x) == "Quad" then
-				drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
+				love.graphics.drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 			else
 				x=x or 0
 				y=y or 0
@@ -672,15 +664,15 @@ do -- sprite batch
 		sx = sx or self.w
 		sy = sy or self.h
 		
-		sx = sx * self.w
-		sy = sy * self.h
-		self.poly:SetRect(i, x,y, sx,sy, r, ox,oy)		
+		--sx = sx * self.w
+		--sy = sy * self.h
+		self.poly:SetRect(i+1, x,y, sx,sy, r, ox,oy)		
 	end
 		
 	function SpriteBatch:set(id, q, ...)
 		id = id or 1
 		if lovemu.Type(q) == "Quad" then
-			self.poly:SetUV(q.x*q.sw, q.y*q.sh, q.w*q.sw, q.h*q.sh)
+			self.poly:SetUV(q.x,q.y, q.w,q.h, q.sw,q.sh)
 			set_rect(self, id, ...)
 		else
 			set_rect(self, id, q, ...)
