@@ -17,7 +17,7 @@ end
 function tester.End()
 	event.AddListener = tester.__OLD_HOOK_ADD
 	if tester.show_frame then 	
-		local frm = aahh.Create("frame")
+		local frm = gui.Create("frame")
 		frm:SetTitle(tester.name)
 		frm:SetSize(Vec2(200, 200))
 		frm:Center()
@@ -29,13 +29,13 @@ function tester.End()
 			end
 		end
 
-		local grd = aahh.Create("grid", frm)
+		local grd = gui.Create("grid", frm)
 		grd:Dock("fill")
 		grd:SetSizeToWidth(true)
 		grd:SetItemSize(Vec2()+25)
 
 		for k,v in pairs(tester.hooks) do			
-			local lbl = aahh.Create("text_button", grd)
+			local lbl = gui.Create("text_button", grd)
 			lbl:SetText(k .. " " .. v)
 		end
 		

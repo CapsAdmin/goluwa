@@ -120,14 +120,14 @@ do
 	end  
 end 
    
-local frame = utilities.RemoveOldObject(aahh.Create("frame"), "markup")
+local frame = utilities.RemoveOldObject(gui.Create("frame"), "markup")
 frame:SetSize(1000, 1000)
 frame:RequestLayout(true) 
 
-local scroll = aahh.Create("scrollable", frame)
+local scroll = gui.Create("scrollable", frame)
 scroll:Dock("fill")
 
-local markup = aahh.Create("text_input")  
+local markup = gui.Create("text_input")  
 markup:SetMultiLine(true)
 markup:SetEditorMode(true)
 markup:SetWrap(false )

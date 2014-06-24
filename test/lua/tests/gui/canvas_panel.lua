@@ -1,9 +1,9 @@
-local canvas = utilities.RemoveOldObject((aahh.Create("canvas")))  
+local canvas = utilities.RemoveOldObject((gui.Create("canvas")))  
 canvas:SetSize(Vec2(512, 512))
 canvas:Center()                  
    
 		  
-	local frame = utilities.RemoveOldObject(aahh.Create("frame", canvas), "aahh_unit_test") 
+	local frame = utilities.RemoveOldObject(gui.Create("frame", canvas), "aahh_unit_test") 
 	frame:SetSize(Vec2() + 500)
 --	frame:Center()
 	frame:SetTitle("unit test")
@@ -43,7 +43,7 @@ canvas:Center()
 
 		local tab, scroll = tabs:AddTab("tree", "scrollable")
 		--if false then
-		local tree = aahh.Create("tree")
+		local tree = gui.Create("tree")
 		scroll:SetPanel(tree)
 
 		--tree:Dock("fill")
@@ -81,14 +81,14 @@ canvas:Center()
 		
 		LOL = grid
 		
-		local text = aahh.Create("text_input", grid)
+		local text = gui.Create("text_input", grid)
 
-		local slider = aahh.Create("labeled_slider", grid)
+		local slider = gui.Create("labeled_slider", grid)
 		slider:SetValue(10)
 		
-		local container = aahh.Create("container", grid)
+		local container = gui.Create("container", grid)
 		
-			local grid = aahh.Create("grid", container)
+			local grid = gui.Create("grid", container)
 			
 			grid:SetDrawBackground(false)
 			grid:Dock("fill")
@@ -98,10 +98,10 @@ canvas:Center()
 			grid:SetItemSize(Vec2()+20)
 			grid:SetObeyMargin(false)
 		
-			local knob = aahh.Create("labeled_knob", grid)
+			local knob = gui.Create("labeled_knob", grid)
 			knob:SetValue(10)
 			
-			local check = aahh.Create("labeled_checkbox", grid)
+			local check = gui.Create("labeled_checkbox", grid)
 			check:SetText("ummmmm")
 			check:SetValue(true)
 			

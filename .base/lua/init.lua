@@ -642,6 +642,10 @@ do -- libraries
 
 	include("libraries/extensions/vfs_vpk.lua") -- vpk support for _G.vfs
 	include("libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
+	
+	if CLIENT then
+		include("gui/init.lua")
+	end
 end
 
 console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
