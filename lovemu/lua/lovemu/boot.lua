@@ -121,6 +121,7 @@ function lovemu.RunGame(folder)
 	event.AddListener("Draw2D", id, function(dt)		
 		love.graphics.clear()
 		lovemu.delta = dt
+		surface.SetColor(1,1,1,1)
 		surface.SetWhiteTexture()
 		
 		if not lovemu.errored then
