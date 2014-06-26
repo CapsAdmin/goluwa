@@ -1,7 +1,13 @@
 local vfs2 = (...) or _G.vfs2
 
 do
-	function vfs2.Find(path, info, full_path)
+	function vfs2.Find(path, invert, full_path, start, plain, info)
+		
+		local path_, pattern = path:match("(.+)/(.*)")
+		if pattern then path = path_ end
+		
+		print(path, pattern)
+		
 		local path_info = vfs2.GetPathInfo(path, true)
 	
 		local out = {}
@@ -17,23 +23,31 @@ do
 			if ok then	
 				for i, v in pairs(found) do
 					if not done[v] then
-						if full_path then
-							v = data.context.Name .. ":" .. data.path_info.full_path .. v
-						end
-						
-						if info then
-							table.insert(out, {
-								name = v, 
-								filesystem = data.context.Name,
-								full_path = data.context.Name .. ":" .. data.path_info.full_path .. v,
-							})
-						else
-							table.insert(out, v)
-						end
 						done[v] = true
+						if (not pattern or pattern == "" or v:find(pattern, start, plain)) then
+							if full_path then
+								v = --[[data.context.Name .. ":" ..]] data.path_info.full_path .. v
+							end
+							
+							if info then
+								table.insert(out, {
+									name = v, 
+									filesystem = data.context.Name,
+									full_path = data.context.Name .. ":" .. data.path_info.full_path .. v,
+								})
+							else
+								table.insert(out, v)
+							end
+						end
 					end				
 				end
 			end
+		end
+		
+		if invert then
+			table.sort(out, function(a, b) if info then return a.full_path > b.full_path end return a > b end)
+		else
+			table.sort(out, function(a, b) if info then return a.full_path < b.full_path end return a < b end)
 		end
 		
 		return out

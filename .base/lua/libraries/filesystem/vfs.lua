@@ -360,9 +360,9 @@ if _G.vfs then
 	vfs2.MountAddon("C:/goluwa/capsadmin/")
 	--vfs2.AutorunAddons("asdf")
 	
-	print(vfs2.GetAbsolutePath("lua/", true))      
+	table.print(vfs2.Find("G:/SteamLibrary/SteamApps/Common/GarrysMod/sourceengine/hl2_sound_vo_english_dir.vpk/sound/vo/coast/"))
 		
-	--local file = vfs2.Open("G:/SteamLibrary/SteamApps/common/Crysis Wars/Game/GameData.pak/Scripts/callbacks.txt", "read")
+	--local file = vfs2.Open("G:/SteamLibrary/SteamApps/common/Crysis Wars/Game/GameData.pak/Scripts/callbacks.txt", "read") 
 	--table.print(file:ReadAll():explode("\n"))
 end
 
