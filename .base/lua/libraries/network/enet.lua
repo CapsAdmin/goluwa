@@ -1,5 +1,7 @@
 local lib = require("lj-enet")
 
+lib.initialize()
+
 local enet = _G.enet or {}
 
 enet.sockets = enet.sockets or {}
