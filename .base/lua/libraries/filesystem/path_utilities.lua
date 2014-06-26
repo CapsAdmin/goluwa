@@ -77,14 +77,12 @@ function vfs2.CreateFoldersFromPath(filesystem, path)
 	end
 end
 
-function vfs2.GetAbsolutePath(path, ...)
+function vfs2.GetAbsolutePath(path, is_folder)
 	check(path, "string")
-
-	path = vfs2.ParseVariables(path)
-
-	for k, v in ipairs(vfs2.paths) do
-		if v.callback("file", "exists", v.root .. "/" .. path, ...) then
-			return vfs2.FixPath(v.root .. "/" .. path)
+	
+	for i, data in ipairs(vfs2.TranslatePath(path, is_folder)) do	
+		if data.context:PCall("IsFile", data.path_info) or data.context:PCall("IsFolder", data.path_info) then
+			return data.path_info.full_path
 		end
 	end
 end
