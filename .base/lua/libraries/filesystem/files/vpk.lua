@@ -48,7 +48,7 @@ local function read_vpk(file)
 				table.insert(vpk.entries, entry)
 			end
 			
-			table.insert(vpk.entries, {path = directory .. "/", is_dir = true})
+			table.insert(vpk.entries, {path = directory, is_dir = true})
 			
 			for i = 0, 100 do
 				local dir = utilities.GetParentFolder(directory, i)
@@ -134,15 +134,13 @@ function CONTEXT:GetFiles(path_info)
 	local out = {}
 	
 	local vpk = mount(vpk_path)
-	
-	relative = relative .. "."
-	
+		
 	local dir = relative:match("(.*/)")
 	local done = {}
 	
 	for i, v in ipairs(vpk.entries) do
 		local path = v.path
-		if path:find(relative) and (not dir or path:match("(.*/)") == dir) then
+		if path:find(relative, nil, true) and (not dir or path:match("(.*/).") == dir) then
 			-- path is just . so it needs to be handled a bit different
 			if not dir then
 				if not done[path] then
@@ -151,6 +149,9 @@ function CONTEXT:GetFiles(path_info)
 					done[path] = true
 				end
 			else
+				if v.is_dir then
+					path = path .. "/"
+				end
 				table.insert(out, path:match(".+/(.+)") or path)
 			end
 		end 
