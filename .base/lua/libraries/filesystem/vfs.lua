@@ -357,9 +357,11 @@ if _G.vfs then
 	
 	vfs2.debug = true
 
-	vfs2.MountAddon("C:/goluwa/shell32/", true)
-	vfs2.AutorunAddons("test", true)   
+	vfs2.MountAddon("C:/goluwa/capsadmin/")
+	--vfs2.AutorunAddons("asdf")
 	
+	print(vfs2.GetAbsolutePath("lua/", true))      
+		
 	--local file = vfs2.Open("G:/SteamLibrary/SteamApps/common/Crysis Wars/Game/GameData.pak/Scripts/callbacks.txt", "read")
 	--table.print(file:ReadAll():explode("\n"))
 end

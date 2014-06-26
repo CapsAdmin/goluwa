@@ -43,7 +43,7 @@ function CONTEXT:IsFile(path_info)
 end
 
 function CONTEXT:IsFolder(path_info)
-	local info = lfs.attributes(path_info.full_path)
+	local info = lfs.attributes(path_info.full_path:sub(0, -2))
 	return info and info.mode == "directory"
 end
 
