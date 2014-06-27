@@ -41,13 +41,7 @@ function audio.Initialize(name)
 end
 
 function audio.Shutdown()
-	for k, v in pairs(audio.objects) do
-		if v:IsValid() then
-			v:Remove()
-		end
-	end
-
-	table.clear(audio.objects)
+	audio.Panic()
 
 	if audio.context then
 		alc.DestroyContext(audio.context)
@@ -56,6 +50,16 @@ function audio.Shutdown()
 	if audio.device then
 		alc.CloseDevice(audio.device)
 	end
+end
+
+function audio.Panic()
+	for k, v in pairs(audio.objects) do
+		if v:IsValid() then
+			v:Remove()
+		end
+	end
+
+	table.clear(audio.objects)
 end
 
 function audio.GetAllOutputDevices()
