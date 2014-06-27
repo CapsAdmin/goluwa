@@ -408,7 +408,15 @@ do -- source
 					self.ready = true
 
 					-- in case it's instantly loaded and OnLoad is defined the same frame
-					event.Delay(0, function() if self:IsValid() and self.OnLoad then self:OnLoad(info) end end)
+					event.Delay(0, function() 
+						if self:IsValid() and self.OnLoad then 
+							self:OnLoad(info)
+							if self.play_when_ready then
+								self:Play()
+								self.play_when_ready = nil
+							end
+						end 
+					end)
 				end
 			end, 20)
 		end
@@ -427,6 +435,9 @@ do -- source
 
 	function META:Play()
 		al.SourcePlay(self.id)
+		if not self.ready then
+			self.play_when_ready = true
+		end
 	end
 
 	function META:Pause()
