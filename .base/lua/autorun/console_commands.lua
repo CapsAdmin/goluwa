@@ -1,6 +1,8 @@
-do
-	-- some usage
+console.AddCommand("stopsounds", function()
+	audio.Panic()
+end)
 
+do
 	console.AddCommand("say", function(line)
 		chat.Say(line)
 	end)
