@@ -60,6 +60,8 @@ function structs.Register(META)
  	end
 	
 	_G[META.ClassName] = structs[META.ClassName]
+	
+	metatable.Register(META)
 end 
  
 -- helpers
