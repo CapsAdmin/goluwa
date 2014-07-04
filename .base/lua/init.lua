@@ -585,11 +585,11 @@ do -- libraries
 	include("libraries/extensions/os.lua")
 
 	-- libraries
+	metatable = include("libraries/metatable/metatable.lua")
 	structs = include("libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
 	utf8 = include("libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 	event = include("libraries/event.lua") goluwa = event.events -- event handler
 	utilities = include("libraries/utilities/utilities.lua") -- more like i-dont-know-where-these-functions-go
-	metatable = include("libraries/metatable/metatable.lua")
 	addons = include("libraries/addons.lua") -- addons are folders in root of goluwa
 	class = include("libraries/class.lua") -- used by gui panels and entities
 	crypto = include("libraries/crypto.lua")
