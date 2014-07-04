@@ -274,7 +274,7 @@ do -- commands
 		function console.ParseCommandArgs(line)
 			local symbol, cmd, rest = parse_line(line)
 			
-			local data = {args = parse_args(rest), line = rest, cmd = cmd, symbol = symbol}
+			local data = {args = parse_args(rest), line = rest or "", cmd = cmd, symbol = symbol}
 			
 			local ok, err = execute_args(data.args)
 			if not ok then return nil, err end
