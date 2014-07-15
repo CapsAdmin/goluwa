@@ -171,7 +171,7 @@ function console.InitializeCurses()
 	
 	if WINDOWS then
 		curses.PDC_set_resize_limits(1, 1000, 1, 1000)
-		curses.resize_term(50,150) 
+		curses.resize_term(50, 150) 
 	end
 
 	curses.cbreak()
@@ -179,7 +179,7 @@ function console.InitializeCurses()
 	curses.raw()
 	curses.noqiflush()
 	
-	c.log_window = curses.newwin(curses.LINES - 2, curses.COLS, 1, 0)
+	c.log_window = curses.newwin(curses.LINES, curses.COLS, 0, 0)
 	c.input_window = curses.newwin(1, curses.COLS, curses.LINES - 1, 0)
 	
 	curses.keypad(c.input_window, 1)
@@ -219,7 +219,7 @@ function console.InitializeCurses()
 
 	-- replace some functions
 	
-	if WINDOWS then
+	if false and WINDOWS then
 		ffi.cdef("void PDC_set_title(const char *);")
 		
 		console.SetTitleRaw = curses.PDC_set_title
@@ -271,15 +271,25 @@ end
 
 function console.Print(str)
 	if not console.CanPrint(str) then return end
+	
+	if str:count("\n") > 1 then
+		for k,v in pairs(str:explode("\n")) do
+			console.Print(v .. "\n")
+		end
+		return
+	end
 
 	if not debug.debugging then 
 		table.insert(console.history, str)
 	end
 		
 	console.SyntaxPrint(str, c.log_window)
-	console.ScrollLogHistory(0) 
 	
-	console.RefreshLog()	
+	
+    event.DeferExecution(function()
+		console.RefreshLog()
+		console.ScrollLogHistory(0) 
+	end)	
 	
 	if console.status_window then
 		console.ClearStatus(console.last_status)
@@ -404,6 +414,7 @@ do
 	}
 
 	function syntax.process(code)
+	--	timer.Start("console syntax parse")
 		local output, finds, types, a, b, c = {}, {}, {}, 0, 0, 0
 
 		finds[1] = 0
@@ -438,14 +449,12 @@ do
 			output[#output+1] = asdf == 0 and syntax.colors[types[1 + (i - 2) / 2]] or -1
 			output[#output+1] = sub
 		end
-
+		--timer.Stop()
+		
 		return output
 	end
 
-	if MORTEN then
-		_G.syntax = _G.syntax or syntax
-	end
-
+	console.syntax = syntax
 	function console.SyntaxPrint(str, window)
 		window = window or c.log_window
 		
@@ -530,10 +539,18 @@ console.last_status = ""
 
 function console.ClearStatus(str)
 	curses.werase(c.status_window)
-	if USE_COLORS then curses.wattron(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS)) end
-	if USE_COLORS then curses.wbkgdset(c.status_window, COLORPAIR_STATUS) end
+	
+	if USE_COLORS then 
+		curses.wattron(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS))
+		curses.wbkgdset(c.status_window, COLORPAIR_STATUS) 
+	end
+	
 	curses.waddstr(c.status_window, (str:gsub("|", "\n")))
-	if USE_COLORS then curses.wattroff(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS)) end
+	
+	if USE_COLORS then 
+		curses.wattroff(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS)) 
+	end
+	
 	curses.wrefresh(c.status_window)
 	console.last_status = str
 end
@@ -592,9 +609,9 @@ function console.HandleKey(key)
 	end
 
 	if key == "KEY_NPAGE" then
-		console.ScrollLogHistory(-curses.LINES/2)
+		console.ScrollLogHistory(-curses.LINES / 2)
 	elseif key == "KEY_PPAGE" then
-		console.ScrollLogHistory(curses.LINES/2)
+		console.ScrollLogHistory(curses.LINES / 2)
 	end
 				
 	if key == "KEY_UP" then
@@ -635,7 +652,7 @@ function console.HandleKey(key)
 			markup:SetText("")
 		end
 	end
-				
+
 	if markup_translate[key] then
 		markup:OnKeyInput(markup_translate[key])
 	end
@@ -647,4 +664,7 @@ end
 
 if RELOAD then
 	console.InitializeCurses()
+	
+	--console.Print(vfs.Read([[C:\goluwa\.base\lua\libraries\extensions\console_curses.lua]]))  
+	--event.CreateTimer("lol", 1, 0, print)
 end
