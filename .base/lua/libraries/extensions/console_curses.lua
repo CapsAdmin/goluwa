@@ -14,6 +14,7 @@ markup:SetMultiline(false)
 markup:SetFixedSize(14)
 
 local history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt")
+local dirty = false
 
 local USE_COLORS = (os.getenv("USE_COLORS") or "1") == "1"
 
@@ -137,6 +138,10 @@ function console.InitializeCurses()
 			last_h = curses.LINES
 		end
 		
+		if dirty then
+			curses.doupdate()
+			dirty = false
+		end
 	end)
 	 
 	do -- input extensions
@@ -219,7 +224,7 @@ function console.InitializeCurses()
 
 	-- replace some functions
 	
-	if false and WINDOWS then
+	if WINDOWS then
 		ffi.cdef("void PDC_set_title(const char *);")
 		
 		console.SetTitleRaw = curses.PDC_set_title
@@ -276,8 +281,20 @@ function console.Print(str)
 		for k,v in pairs(str:explode("\n")) do
 			console.Print(v .. "\n")
 		end
+		
 		return
 	end
+	
+	if curses.COLS > 0 then
+		local lines = str:lengthsplit(curses.COLS)
+		LOL = lines
+		if #lines > 2 then		
+			for i, v in ipairs(lines) do
+				console.Print(v)
+			end
+			return
+		end
+	end 
 
 	if not debug.debugging then 
 		table.insert(console.history, str)
@@ -285,23 +302,10 @@ function console.Print(str)
 		
 	console.SyntaxPrint(str, c.log_window)
 	
-	
-    event.DeferExecution(function()
-		console.RefreshLog()
-		console.ScrollLogHistory(0) 
-	end)	
+	console.ScrollLogHistory(0) 
 	
 	if console.status_window then
 		console.ClearStatus(console.last_status)
-	end
-end
-
-do
-	local last_frame_number
-	local next_refresh = 0
-
-	function console.RefreshLog(now)	
-		curses.wrefresh(c.log_window)
 	end
 end
 
@@ -346,9 +350,8 @@ function console.ColorPrint(str, i, window)
 	curses.waddstr(window, str)
 	if USE_COLORS then curses.wattroff(window, attr) end
 	
-	if window == c.log_window then
-		--console.RefreshLog()
-	end
+	curses.wnoutrefresh(window)
+	dirty = true
 end
 
 do
@@ -469,9 +472,8 @@ do
 			curses.waddstr(window, str)
 		end
 		
-		if window == c.log_window then
-			--console.RefreshLog()
-		end
+		curses.wnoutrefresh(window)
+		dirty = true
 	end
 end
 
@@ -496,8 +498,6 @@ function console.ScrollLogHistory(offset, skip_refresh)
 		
 		console.SyntaxPrint(str)
 	end
-
-	console.RefreshLog()
 end
 
 function console.GetCurrentLine()
@@ -527,12 +527,12 @@ function console.ClearInput(str)
 	end
 	
 	curses.wmove(c.input_window, y, x)	
-	curses.wrefresh(c.input_window)
+	curses.wnoutrefresh(c.input_window)
+	dirty = true
 end
 
 function console.ClearWindow()
 	curses.werase(c.log_window)
-	console.RefreshLog()
 end
 
 console.last_status = ""
@@ -551,7 +551,8 @@ function console.ClearStatus(str)
 		curses.wattroff(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS)) 
 	end
 	
-	curses.wrefresh(c.status_window)
+	curses.wnoutrefresh(c.status_window)
+	dirty = true
 	console.last_status = str
 end
 
