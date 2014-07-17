@@ -243,7 +243,7 @@ do -- timers
 	local function remove_timer(key)
 		for k,v in ipairs(event.timers) do
 			if v.key == key then
-				table.remove(k)
+				table.remove(event.timers, k)
 				break
 			end
 		end
