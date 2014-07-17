@@ -79,8 +79,11 @@ function string.lengthsplit(str, len)
 			
 			local left = i * len + 1
 			local right = (i * len) + len
-					
-			table.insert(tbl, str:sub(left, right))
+			local res = str:sub(left, right)
+			
+			if res ~= "" then
+				table.insert(tbl, res)
+			end
 		end
 		
 		return tbl
