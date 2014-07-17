@@ -32,16 +32,11 @@ function AST.local_function_decl(ast, name, args, body, proto)
 end
 
 function AST.function_decl(ast, path, args, body, proto)
-    local fn = func_expr(body, args, proto.varargs, proto.firstline, proto.lastline)
-    return build("AssignmentExpression", { left = { path }, right = { fn }, line = line })
+   return func_decl(path, body, args, proto.varargs, false, proto.firstline, proto.lastline)
 end
 
 function AST.chunk(ast, body, chunkname, firstline, lastline)
     return build("Chunk", { body = body, chunkname = chunkname, firstline = firstline, lastline = lastline })
-end
-
-function AST.block_stmt(ast, body, firstline, lastline)
-    return build("BlockStatement", { body = body, firstline = firstline, lastline = lastline })
 end
 
 function AST.local_decl(ast, vlist, exps, line)
