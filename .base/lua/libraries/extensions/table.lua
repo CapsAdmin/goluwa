@@ -51,7 +51,7 @@ function table.fixindices(tbl)
 	local temp = {}
 	
 	for k, v in pairs(tbl) do
-		table.insert(temp, {v = v, k = k})
+		table.insert(temp, {v = v, k = tonumber(k) or 0})
 		tbl[k] = nil
 	end
 	
