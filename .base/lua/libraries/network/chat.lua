@@ -27,7 +27,7 @@ function chat.GetTimeStamp()
 	return ("%.2d:%.2d - "):format(time.hour, time.min)
 end
 
-function chat.Append(var, str)
+function chat.Append(var, str, skip_log)
 
 	if not str then
 		str = var
@@ -61,16 +61,16 @@ function chat.Append(var, str)
 		chathud.AddText(unpack(tbl))
 	end
 	
-	logf("%s%s: %s\n", chat.GetTimeStamp(), var, str)
+	if not skip_log then
+		logf("%s%s: %s\n", chat.GetTimeStamp(), var, str)
+	end
 end
 
 if CLIENT then	
 	message.AddListener("say", function(client, str, seed)
-		if event.Call("ClientChat", client, str, seed) ~= false then
-			chat.Append(client, str)
-		end
+		chat.ClientSay(client, str, seed)
 	end)
-	
+
 	function chat.Say(str)
 		str = tostring(str)		
 		message.Send("say", str)
@@ -236,7 +236,7 @@ local seed = 0
 
 function chat.ClientSay(client, str, skip_log)
 	if event.Call("ClientChat", client, str, seed) ~= false then
-		if skip_log then chat.Append(client, str) end
+		chat.Append(client, str, skip_log)
 		if SERVER then message.Broadcast("say", client, str, seed) seed = seed + 1 end
 	end
 end
