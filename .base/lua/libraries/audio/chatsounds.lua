@@ -877,6 +877,11 @@ do
 
 			if type ~= "space" then
 
+				-- 0.1234
+				if last == "digit" and char == "." then
+					type = "digit"
+				end
+			
 				if type ~= last or char == ":" or char == ")" or char == "(" then
 					local word = table.concat(temp, "")
 					if #word > 0 then
@@ -994,8 +999,6 @@ do
 		
 		table.fixindices(out)
 		
-		--table.print(out, 2)
- 
 		return out
 	end
 
@@ -1339,10 +1342,10 @@ function chatsounds.Shutdown()
 	event.RemoveListener("Update", "chatsounds")
 end
 
-chatsounds.debug = true
 --chatsounds.Say("hello no yes that=0.5 (hello wow yeah hello hi)%30 where is the%50 where is oh no feelings%30 princess yo%50")
 --chatsounds.Say("o%50=0.2 o%50=0.2 o%50=0.2 o%50=0.2 o%50=0.2 o%50=0.2 o%150=0.2 o%160=0.2 o%75=0.2 o%150=0.2 o%160=0.2 o%75=0.2 o%150=0.2 o%160=0.2 o%75=0.2o%150=0.2 o%160=0.2 o%75=0.2")   
 --chatsounds.Say("1 2 3 4 | 5 6 7 8")
 --chatsounds.Say("if you need instructions on how to get through the hotels check out the enclosed instruction book")
+--chatsounds.Say("uh oh%50 uh oh%50 uh oh%50") 
 
 return chatsounds
