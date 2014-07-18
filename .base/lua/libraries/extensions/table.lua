@@ -49,16 +49,19 @@ end
 
 function table.fixindices(tbl)
 	local temp = {}
-	local i = 1
+	
 	for k, v in pairs(tbl) do
-		temp[i] = v
+		table.insert(temp, {v = v, k = k})
 		tbl[k] = nil
-		i = i + 1
 	end
 	
+	table.sort(temp, function(a, b) return a.k < b.k end)
+	
 	for k, v in ipairs(temp) do
-		tbl[k] = v
+		tbl[k] = v.v
 	end
+	
+	return temp
 end
 
 function table.hasvalue(tbl, val)
