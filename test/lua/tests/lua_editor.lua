@@ -78,8 +78,7 @@ do
   
   
 	function syntax_process(str, markup)
-		reader.string_init(str)
-		local ls = lex_setup(reader.string, str)
+		local ls = lex_setup(reader.string(str), str)
 
 		local last_pos = 1
 		local last_color
@@ -138,6 +137,6 @@ function markup:OnTextChanged()
 	self:SizeToContents()
 end    
  
-syntax_process(vfs.Read("lua/tests/lua_editor.lua") or "local hello = ''\n asdasdasd = 1234\n --[[it's a comment]] local test \n --it's really powerful\n", markup.markup)  
+syntax_process(vfs.Read("lua/tests/bsp.lua") or "local hello = ''\n asdasdasd = 1234\n --[[it's a comment]] local test \n --it's really powerful\n", markup.markup)  
 
 window.SetSize(Vec2(1680, 1050)) 
