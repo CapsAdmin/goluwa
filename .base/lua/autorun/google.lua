@@ -82,18 +82,26 @@ if SERVER then
 			google.AutoComplete(question)
 		end
 	end)
-	
-	console.AddCommand("t", function(line, from, to, str)
-		local client = console.GetClient()
-				
-		if from and not to and not str then
-			str = from
-			to = "en"
-			from = "auto"
-		end
-		
-		google.Translate(from, to, str, function(data)
-			chat.ClientSay(client, data.translated)
-		end)
-	end)
 end
+
+console.AddCommand("t", function(line, from, to, str)
+	local client = console.GetClient()
+			
+	if from and not to and not str then
+		str = from
+		to = "en"
+		from = "auto"
+	end
+	
+	google.Translate(from, to, str, function(data)
+		chat.ClientSay(client, data.translated)
+		
+		if STEAM_FRIENDS_SUBJECT and STEAM_FRIENDS_SUBJECT:IsValid() then
+			steam.SendChatMessage(STEAM_FRIENDS_SUBJECT:GetUniqueID(), data.translated)
+		end
+	end)
+end)
+
+console.AddCommand("g", function(query) 
+	os.execute(([[explorer "https://www.google.no/search?&q=%s"]]):format(sockets.EscapeURL(query))) 
+end)
