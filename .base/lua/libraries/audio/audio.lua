@@ -817,7 +817,7 @@ function audio.Decode(data, path_hint)
 		if ok then 
 			if buffer and length then
 				return buffer, length, info or {}
-			elseif not length:find("unknown format") then
+			elseif audio.debug or not length:find("unknown format") then
 				logf("[audio] %s failed to decode %s: %s\n", decoder.id, path_hint or "", length)
 			end
 		else
