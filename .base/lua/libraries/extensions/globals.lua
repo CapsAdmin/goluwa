@@ -180,6 +180,24 @@ function typex(var)
 	return type(var)
 end
 
+function istype(var, t)
+	if 
+		t == "nil" or
+		t == "boolean" or
+		t == "number" or
+		t == "string" or
+		t == "userdata" or
+		t == "function" or
+		t == "thread" or
+		t == "table" or
+		t == "cdata"
+	then
+		return type(var) == t
+	end
+	
+	return typex(var) == t
+end
+
 local pretty_prints = {}
 
 pretty_prints.table = function(t)
