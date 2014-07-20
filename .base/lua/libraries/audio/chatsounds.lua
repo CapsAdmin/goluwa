@@ -283,6 +283,11 @@ chatsounds.Modifiers = {
 				self.snd:SetVolume(volume, time)
 			end
 		end,
+	},
+	realm = {
+		pre_init = function(realm)
+			chatsounds.last_realm = realm
+		end,
 	}
 }
 
@@ -845,6 +850,37 @@ do -- list parsing
 		chatsounds.list = list
 		chatsounds.tree = tree
 	end
+	
+	function chatsounds.AddSound(trigger, realm, ...)
+		local tree = chatsounds.tree
+		
+		local data = {}
+	
+		for i, v in ipairs({...}) do
+			data[i] = {path = v}
+		end
+		
+		local words = {}
+		for word in (trigger .. " "):gmatch("(.-)%s+") do
+			table.insert(words, word)
+		end
+		
+		local prev = tree
+		local max = #words
+		for i, word in ipairs(words) do
+			if not prev[word] then prev[word] = {} end
+
+			if i == max then
+				prev[word].SOUND_FOUND = true
+				prev[word].LEVEL = max
+				prev[word].data = prev[word].data or {trigger = trigger, realms = {}}
+
+				prev[word].data.realms[realm] = {sounds = data, realm = realm}
+			end
+
+			prev = prev[word]
+		end
+	end
 end
 
 do
@@ -1080,20 +1116,18 @@ do
 
 end
 
-local last_realm
-
 function choose_realm(data)
 	local sounds
 
-	if last_realm and data.realms[last_realm] then
-		sounds = data[last_realm]
+	if chatsounds.last_realm and data.realms[chatsounds.last_realm] then
+		sounds = data.realms[chatsounds.last_realm]
 	end
 
 	if not sounds then
 		sounds = table.random(data.realms)
-		last_realm = sounds.realm
+		chatsounds.last_realm = sounds.realm
 	end
-
+	
 	return sounds
 end
 
@@ -1103,7 +1137,29 @@ function chatsounds.PlayScript(script, udata)
 
 	for i, chunk in pairs(script) do
 		if chunk.type == "matched" then
+		
+			if chunk.modifiers then
+				for i, data in pairs(chunk.modifiers) do
+					local mod = chatsounds.Modifiers[data.mod]
+					if mod and mod.args then
+						for i, func in pairs(mod.args) do
+							data.args[i] = func(data.args[i])
+						end
+					end
+				end
+			end
+
+			if chunk.modifiers then
+				for mod, data in pairs(chunk.modifiers) do
+					local mod = chatsounds.Modifiers[data.mod]
+					if mod and mod.pre_init then
+						mod.pre_init(unpack(data.args))
+					end
+				end
+			end			
+		
 			local data = choose_realm(chunk.val)
+			
 			if data then
 				local info
 
@@ -1167,16 +1223,6 @@ function chatsounds.PlayScript(script, udata)
 					end
 
 					if sound.modifiers then
-						-- if args is defined use it to default and clamp the arguments
-						for i, data in pairs(sound.modifiers) do
-							local mod = chatsounds.Modifiers[data.mod]
-							if mod and mod.args then
-								for i, func in pairs(mod.args) do
-									data.args[i] = func(data.args[i])
-								end
-							end
-						end
-
 						sound.think = function(self)
 							for i, data in pairs(self.modifiers) do
 								local mod = chatsounds.Modifiers[data.mod]
