@@ -741,8 +741,7 @@ do -- async reading
 			end
 		end,
 		sockets = function(path, mbps, context)
-		
-		
+	
 			-- for font names only
 			if context:find("font") and not path:find("%p") then			
 				local cache_path = "fonts/" .. path .. ".woff"
@@ -766,12 +765,23 @@ do -- async reading
 			end
 			
 			local ext = path:match(".+(%.%a+)") or ".dat"
-			local cache_path = "download_cache/" .. crypto.CRC32(path) .. ext
-			if vfs.Exists(cache_path) then
+			local cache_path
+		
+			-- if it's a path like
+			-- http://sounds.msgpluslive.net/esnd/snd/random?catId=5&lngId=3
+			-- we skip caching
+			-- (FIX ME??)
+			if not path:find("?", nil, true) then
+				cache_path = "download_cache/" .. crypto.CRC32(path) .. ext
+			end
+			
+			if cache_path and vfs.Exists(cache_path) then
 				return vfs.ReadAsync(cache_path, queue[path].callback, mbps, context, "file")
 			else
-				if sockets.Download(path, function(data) 
-						vfs.Write(cache_path, data, "b")			
+				if sockets.Download(path, function(data)
+						if cache_path then
+							vfs.Write(cache_path, data, "b")			
+						end
 						queue[path].callback(data)
 					end) 
 				then
