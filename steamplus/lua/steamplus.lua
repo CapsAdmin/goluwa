@@ -25,6 +25,8 @@ event.AddListener("SteamFriendsMessage", "steam_friends", function(sender_steam_
 		
 		chat.ClientSay(ply, txt, true)
 	end
+	
+	STEAM_FRIENDS_SUBJECT = clients.GetByUniqueID(subject)
 end)
 
 event.AddListener("ConsolePrint", "steam_friends", function(line)
