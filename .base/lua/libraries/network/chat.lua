@@ -234,7 +234,7 @@ end
 
 local seed = 0
 
-function chat.ClientSay(client, str, skip_log)
+function chat.ClientSay(client, str, skip_log, seed)
 	if event.Call("ClientChat", client, str, seed) ~= false then
 		chat.Append(client, str, skip_log)
 		if SERVER then message.Broadcast("say", client, str, seed) seed = seed + 1 end
