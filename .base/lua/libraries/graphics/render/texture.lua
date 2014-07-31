@@ -64,7 +64,13 @@ do -- texture binding
 end
 
 do -- texture object
-	local CHECK_FIELD = function(t, str) return render.TranslateStringToEnum("texture", t, str, 5) end
+	local CHECK_FIELD = function(t, str) 
+		if type(str) == "number" then
+			return str
+		end
+		
+		return render.TranslateStringToEnum("texture", t, str, 5) 
+	end
 
 	local META = metatable.CreateTemplate("texture")
 	
@@ -387,7 +393,7 @@ do -- texture object
 		if type(width) == "string" and not buffer and not format and (not height or type(height) == "table") then
 			return render.CreateTextureFromPath(width, height)
 		end
-			
+										
 		local buffer_size
 		
 		if type(width) == "table" and not height and not buffer and not format then
@@ -408,7 +414,7 @@ do -- texture object
 		end
 				
 		format = format or {}
-		
+
 		for k, v in pairs(format) do
 			format[k] = CHECK_FIELD(k, v) or v
 		end
