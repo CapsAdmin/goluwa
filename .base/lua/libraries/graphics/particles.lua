@@ -21,7 +21,6 @@ class.GetSet(PARTICLE, "StartAlpha", 1)
 class.GetSet(PARTICLE, "EndAlpha", 0)
 
 class.GetSet(PARTICLE, "LifeTime", 1)
-class.GetSet(PARTICLE, "Texture", NULL)
 class.GetSet(PARTICLE, "Color", Color(1,1,1,1))
 
 function PARTICLE:SetLifeTime(n)
@@ -31,6 +30,7 @@ end
 
 local EMITTER = metatable.CreateTemplate("particle_emitter")
 
+class.GetSet(EMITTER, "DrawManual", false)
 class.GetSet(EMITTER, "Speed", 1)
 class.GetSet(EMITTER, "Rate", 0.1)
 class.GetSet(EMITTER, "EmitCount", 1)
@@ -40,15 +40,21 @@ class.GetSet(EMITTER, "Additive", true)
 class.GetSet(EMITTER, "ThinkTime", 0.1)
 class.GetSet(EMITTER, "CenterAttractionForce", 0)
 class.GetSet(EMITTER, "PosAttractionForce", 0)
+class.GetSet(EMITTER, "MoveResolution", 0)
+class.GetSet(EMITTER, "Texture", NULL)
 
 local emitters = {}
  
-function ParticleEmitter()
+function ParticleEmitter(max)
+	max = max or 1000
+	
 	local self = EMITTER:New()
 	
+	self.max = max
 	self.particles = {}
 	self.last_emit = 0
 	self.next_think = 0
+	self.poly = surface.CreatePoly(max)
 
 	emitters[#emitters+1] = self
 	
@@ -83,11 +89,13 @@ function EMITTER:Think(dt)
 	
 	dt = dt * self.Speed
 	
-	for i = 1, #self.particles do
+	for i = 1, self.max do
 		local p = self.particles[i]
 		
+		if not p then break end
+		
 		if p.life_end < time or (not p.Jitter and p.life_mult < 0.001) then
-			remove_these[#remove_these + 1] = i
+			table.insert(remove_these, i)
 		else
 			
 			if self.CenterAttractionForce ~= 0 and self.attraction_center then
@@ -128,22 +136,26 @@ function EMITTER:Think(dt)
 		
 	end
 	self.attraction_center = center / #self.particles
-		
+
 	table.multiremove(self.particles, remove_these)
 end  
   
 function EMITTER:Draw()
-	render.SetBlendMode(self.Additive and "additive" or alpha)
+	render.SetBlendMode(self.Additive and "additive" or "alpha")
+	
+	if self.Texture:IsValid() then
+		surface.SetTexture(self.Texture)
+	else
+		surface.SetWhiteTexture()
+	end
+	
+	surface.SetColor(1,1,1,1)
 	
 	if self.Mode2D then
-		for i = 1, #self.particles do
+		for i = 1, self.max do
 			local p = self.particles[i]
 			
-			if p.Texture:IsValid() then
-				surface.SetTexture(p.Texture)
-			else
-				surface.SetWhiteTexture()
-			end
+			if not p then break end
 		
 			local size = lerp(p.life_mult, p.EndSize, p.StartSize)
 			local alpha = lerp(p.life_mult, p.EndAlpha, p.StartAlpha)
@@ -174,23 +186,32 @@ function EMITTER:Draw()
 			end
 
 			local ox, oy = w*0.5, h*0.5
-
-			surface.SetColor(p.Color.r, p.Color.g, p.Color.b, p.Color.a * alpha)
-		
-			surface.DrawRect(
-				p.Pos.x, 
-				p.Pos.y, 
+			
+			self.poly:SetColor(p.Color.r, p.Color.g, p.Color.b, p.Color.a * alpha)
+			
+			local x, y = p.Pos:Unpack()
+			
+			if self.MoveResolution ~= 0 then
+				x = math.ceil(x * self.MoveResolution) / self.MoveResolution
+				y = math.ceil(y * self.MoveResolution) / self.MoveResolution
+			end
+			
+			self.poly:SetRect(
+				i,
+				x, 
+				y, 
 				w, 
 				h,
 				p.Angle + a,
 				ox, oy
-			)			
+			)
+			
 		end
+		
+		self.poly:Draw()
 	else	
 		-- 3d here	
 	end
-	
-	render.SetBlendMode("alpha")
 end  
 
 function EMITTER:GetParticles()
@@ -204,7 +225,11 @@ function EMITTER:AddParticle(...)
 	
 	p:SetLifeTime(1)
 	
-	self.particles[#self.particles + 1] = p
+	if #self.particles >= self.max then
+		table.remove(self.particles, 1)
+	end
+	
+	table.insert(self.particles, p)
 	
 	return p
 end
@@ -221,7 +246,9 @@ end
  
 event.AddListener("Draw2D", "particles", function(dt)	
 	for _, emitter in pairs(emitters) do
-		emitter:Draw()
+		if not emitter.DrawManual then
+			emitter:Draw()
+		end
 	end
 end) 
  
