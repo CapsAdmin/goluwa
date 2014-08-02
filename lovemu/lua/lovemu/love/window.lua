@@ -25,3 +25,7 @@ function love.window.setMode(x,y)
 	vec.y = y
 	window.SetSize(vec)
 end
+
+function love.window.getDesktopDimensions()
+	return window.GetSize():Unpack()
+end
