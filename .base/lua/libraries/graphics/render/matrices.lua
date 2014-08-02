@@ -49,12 +49,7 @@ do
 	local restore = {}
 
 	-- this isn't really matrix related..
-	function render.SetViewport(x, y, w, h)		
-		restore[1] = cam.x
-		restore[2] = cam.y
-		restore[3] = cam.w
-		restore[4] = cam.h
-	
+	function render.SetViewport(x, y, w, h, sh)	
 		cam.x = x or cam.x
 		cam.y = y or cam.y
 		cam.w = w or cam.w
@@ -62,17 +57,31 @@ do
 				
 		cam.ratio = cam.w / cam.h 
 		
-		gl.Viewport(x, y, w, h)
-	end
+		sh = sh or window.GetSize().h
+				
+		gl.Viewport(cam.x, sh - (cam.y + cam.h), cam.w, cam.h)
+		
+		local proj = render.matrices.projection_2d
 	
-	function render.RestoreViewport()
-		return render.SetViewport(restore[1], restore[2], restore[3], restore[4])
+		--proj:LoadIdentity()
+		proj:Ortho(0, cam.w, cam.h, 0, -1, 1)
 	end
-	
-	local last_x
-	local last_y
-	local last_w
-	local last_h
+
+	do
+		local stack = {}
+		
+		function render.PushViewport(x, y, w, h)
+			table.insert(stack, {cam.x, cam.y, cam.w, cam.h})
+			
+			render.SetViewport(cam.x + x, cam.y + y, w, h)
+		end
+		
+		function render.PopViewport()			
+			local x, y, w, h = unpack(table.remove(stack))
+			
+			render.SetViewport(x, y, w, h)
+		end
+	end
 
 	function render.Start2D(x, y, w, h)		
 	
@@ -84,37 +93,25 @@ do
 		
 		render.PushWorldMatrix()
 		
-		cam.x = x or cam.x
-		cam.y = y or cam.y
-		cam.w = w or cam.w
-		cam.h = h or cam.h
+		x = x or cam.x 
+		y = y or cam.y
+		w = w or cam.w
+		h = h or cam.h
 		
-		render.Translate(x, y, 0) 
+		--render.Translate(x, y, 0) 
 		
-		if 
-			last_x ~= cam.x or
-			last_y ~= cam.y or
-			last_w ~= cam.w or
-			last_h ~= cam.h
-		then
-			render.SetViewport(cam.x, cam.y, cam.w, cam.h)
-			
-			local proj = render.matrices.projection_2d
+		render.PushViewport(x, y, w, h)
 		
-			proj:LoadIdentity()
-			proj:Ortho(0, cam.w, cam.h, 0, -1, 1)
-						
-			last_x = cam.x
-			last_y = cam.y
-			last_w = cam.w
-			last_h = cam.h
-		end
-				
+		cam.x = x 
+		cam.y = y
+		cam.w = w
+		cam.h = h
+		
 		gl.Disable(gl.e.GL_DEPTH_TEST)				
 	end
 	
 	function render.End2D()	
-		render.RestoreViewport()
+		render.PopViewport()
 		render.PopWorldMatrix()
 	end
 	
