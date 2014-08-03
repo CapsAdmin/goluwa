@@ -13,16 +13,27 @@ function META:__tostring()
 	return ("frame_buffer[%i]"):format(self.id)
 end
 
-function META:Begin()	
-	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, self.id)
-end
+do
+	local stack = {}
+	local current = 0
+	
+	function META:Begin()	
+		table.insert(stack, current)
+		
+		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, self.id)
+		current = self.id
+	end
 
-function META:Bind()
-	self:Begin()
-end
-
-function META:End()
-	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
+	function META:End()
+		local id = table.remove(stack)		
+		
+		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
+		current = id
+	end
+	
+	function META:Bind()
+		debug.trace()
+	end
 end
 
 function META:Clear(r,g,b,a)
@@ -76,7 +87,7 @@ function render.CreateFrameBuffer(width, height, format)
 		
 	local id = gl.GenFramebuffer()
 	self.id = id
-	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
+	self:Begin()
 	 
 	for i, info in pairs(format) do
 		info.attach = info.attach or gl.e.GL_COLOR_ATTACHMENT0
@@ -112,7 +123,12 @@ function render.CreateFrameBuffer(width, height, format)
 		local tex = NULL
 		local id
 		
-		if tex_info then
+		if info.texture then
+			
+			tex = info.texture
+			id = tex.id
+			
+		elseif tex_info then
 			tex_info.upload_format = tex_info.upload_format or "rgba"
 			tex_info.channel = i - 1
 						
@@ -120,15 +136,15 @@ function render.CreateFrameBuffer(width, height, format)
 			id = tex.id
 		
 			tex.framebuffer_name = info.name
-						
-			if not info.draw_manual then
-				table.insert(self.draw_buffers, info.attach)
-			end
 		else
 			id = gl.GenRenderbuffer()
 			gl.BindRenderbuffer(gl.e.GL_RENDERBUFFER, id)		
 		
 			gl.RenderbufferStorage(gl.e.GL_RENDERBUFFER, info.texture_format.internal_format, width, height)
+		end
+			
+		if not info.draw_manual then
+			table.insert(self.draw_buffers, info.attach)
 		end
 			
 		self.buffers[info.name] = {id = id, tex = tex, info = info, draw_enum = ffi.new("GLenum[1]", info.attach)}
@@ -173,7 +189,7 @@ function render.CreateFrameBuffer(width, height, format)
 		error(str, 2)
 	end
 	
-	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
+	self:End()
 		
 	render.framebuffers[id] = self
 	
