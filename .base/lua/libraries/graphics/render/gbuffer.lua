@@ -275,7 +275,7 @@ local size = 4
 function render.DrawGBuffer(w, h)
 	render.Start3D()
 	
-	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, render.gbuffer.id)
+	render.gbuffer:Begin()
 	
 	--gl.ActiveTextureARB(gl.e.GL_TEXTURE4)
 	gl.Disable(gl.e.GL_DEPTH_TEST)
@@ -288,16 +288,18 @@ function render.DrawGBuffer(w, h)
 	
 	gl.Enable(gl.e.GL_DEPTH_TEST)
 	gl.Enable(gl.e.GL_CULL_FACE)
+	
+	render.gbuffer:End()
 		
 	render.Start2D()
 		-- draw to the pp buffer
-		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, render.pp_buffer.id)		
+		render.pp_buffer:Begin()
 			render.PushWorldMatrix()
 				surface.Scale(w, h)
 				render.gbuffer_shader:Bind()
 				render.gbuffer_screen_quad:Draw()
 			render.PopWorldMatrix()		
-		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
+		render.pp_buffer:End()
 		
 		-- draw the pp texture as quad
 		render.PushWorldMatrix()
