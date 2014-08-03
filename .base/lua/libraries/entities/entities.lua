@@ -4,13 +4,17 @@ entities.active_entities = entities.active_entities or {}
 entities.configurations = entities.configurations or {}
 entities.active_components = entities.active_components or {}
 
-for k,v in pairs(entities.active_entities) do
-	if v:IsValid() then
-		v:Remove()
+function entities.Panic()
+	for k,v in pairs(entities.active_entities) do
+		if v:IsValid() then
+			v:Remove()
+		end
 	end
+
+	entities.active_entities = {}
 end
 
-entities.active_entities = {}
+entities.Panic()
 
 function entities.GetAll()
 	return entities.active_entities
@@ -37,52 +41,6 @@ function entities.SetupComponents(name, components)
 	}
 end
 
-local events = {}
-local ref_count = {}
-
-local function add_event(event_type, component)
-	ref_count[event_type] = (ref_count[event_type] or 0) + 1
-	
-	local func_name = "On" .. event_type
-	
-	events[event_type] = events[event_type] or {}
-	events[event_type][component.Name] = events[event_type][component.Name] or {}
-	
-	table.insert(events[event_type][component.Name], component)
-	
-	event.AddListener(event_type, "entities", function(...) 
-		for name, components in pairs(events[event_type]) do
-			for i, component in ipairs(components) do
-				component[func_name](component, ...)
-			end
-		end
-	end)
-end
-
-local function remove_event(event_type, component)
-	ref_count[event_type] = (ref_count[event_type] or 0) - 1
-	
-	events[event_type] = events[event_type] or {}
-	events[event_type][component.Name] = events[event_type][component.Name] or {}
-	
-	for i, other in pairs(events[event_type][component.Name]) do
-		if other == component then
-			events[event_type][component.Name][i] = nil
-			break
-		end
-	end
-	
-	table.fixindices(events[event_type][component.Name])
-
-	for i, component in ipairs(events[event_type]) do
-		component[func_name](component)
-	end
-	
-	if ref_count[event_type] <= 0 then
-		event.RemoveListener(event_type, "entities")
-	end
-end
-
 do -- base entity
 	local ENTITY = metatable.CreateTemplate("ecs_base")
 
@@ -107,7 +65,7 @@ do -- base entity
 		obj.Entity = self
 				
 		for i, event_type in ipairs(obj.Events) do
-			add_event(event_type, obj)
+			obj:AddEvent(event_type)
 		end
 		
 		self.Components[name][id] = obj
@@ -121,22 +79,23 @@ do -- base entity
 		if not self.Components[name] then return end
 			
 		local obj = self.Components[name][id] or NULL
-		
+
 		if obj:IsValid() then
 		
 			for i, event_type in ipairs(obj.Events) do
-				remove_event(event_type, obj)
+				obj:RemoveEvent(event_type)
 			end
-		
-			obj:OnRemove(self)
-			obj:Remove()
-			
+					
 			for i, component in ipairs(entities.active_components) do
 				if component == obj then
 					entities.active_components[i] = nil
 					break
 				end
 			end
+			
+			obj:OnRemove(self)
+			obj:Remove()
+			
 			table.fixindices(entities.active_components)
 		end
 	end
@@ -230,6 +189,54 @@ do -- base component
 	function BASE:FireEvent(...)
 		for i, component in ipairs(self:GetEntityComponents()) do
 			component:OnEvent(self, component.Name, ...)
+		end
+	end
+	
+	local events = {}
+	local ref_count = {}
+	
+	function BASE:AddEvent(event_type)
+		ref_count[event_type] = (ref_count[event_type] or 0) + 1
+		
+		local func_name = "On" .. event_type
+		
+		events[event_type] = events[event_type] or {}
+		events[event_type][self.Name] = events[event_type][self.Name] or {}
+		
+		table.insert(events[event_type][self.Name], self)
+		
+		event.AddListener(event_type, "entities", function(...) 
+			for name, components in pairs(events[event_type]) do
+				for i, self in ipairs(components) do
+					if self[func_name] then
+						self[func_name](self, ...)
+					end
+				end
+			end
+		end)
+	end
+	
+	function BASE:RemoveEvent(event_type)
+		ref_count[event_type] = (ref_count[event_type] or 0) - 1
+	
+		events[event_type] = events[event_type] or {}
+		events[event_type][self.Name] = events[event_type][self.Name] or {}
+		
+		for i, other in pairs(events[event_type][self.Name]) do
+			if other == self then
+				events[event_type][self.Name][i] = nil
+				break
+			end
+		end
+		
+		table.fixindices(events[event_type][self.Name])
+
+		for i, self in ipairs(events[event_type]) do
+			self[func_name](self)
+		end
+		
+		if ref_count[event_type] <= 0 then
+			event.RemoveListener(event_type, "entities")
 		end
 	end
 	
