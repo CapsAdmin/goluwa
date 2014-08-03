@@ -17,6 +17,13 @@ local sphere = Texture(64, 64):Fill(function(x, y)
 	return 255, 255, 255, a * 128
 end)
 
+
+local gradient = Texture(64, 64):Fill(function(x, y) 
+	local v = math.sin(y / 64 * math.pi) ^ 0.6 * 255 
+	return v, v, v, 255
+end)
+
+
 local emitter = utilities.RemoveOldObject(ParticleEmitter(800))
 emitter:SetRate(-1)
 emitter:SetPos(Vec3(50,50,0))
@@ -32,6 +39,13 @@ event.AddListener("PreDrawMenu", "zsnow", function()
 	
 	surface.SetColor(1,1,1,1)
 	emitter:Draw()
+	
+	surface.SetColor(0,0,0,0.25)
+	surface.DrawRect(10,10,render.GetWidth() - 50, 30)
+	
+	surface.SetTexture(gradient)
+	surface.SetColor(0.1,0.2,1,1)
+	surface.DrawRect(0,0,render.GetWidth() - 50, 30)
 end) 
 
 event.CreateTimer("zsnow", 0.01, function()
@@ -51,4 +65,4 @@ event.CreateTimer("zsnow", 0.01, function()
 	p:SetStartSize(2 * (1 + math.random() ^ 50))
 	p:SetEndSize(2 * (1 + math.random() ^ 50))
 	p:SetColor(Color(1,1,1, math.randomf(0.5, 0.8)))
-end)
+end) 
