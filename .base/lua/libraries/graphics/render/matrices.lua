@@ -77,16 +77,7 @@ do
 		end
 	end
 
-	function render.Start2D(x, y, w, h)		
-	
-		if not x and not y and not w and not h then
-			x = 0
-			y = 0
-			w, h = render.GetScreenSize()
-		end
-		
-		--render.PushViewport(0, 0, w, h)
-		
+	function render.Start2D(x, y, w, h)				
 		render.PushWorldMatrix()
 		
 		x = x or cam.x 
@@ -94,7 +85,7 @@ do
 		w = w or cam.w
 		h = h or cam.h
 		
-		render.Translate(x, y, 0) 
+		render.Translate(x, y, 0)
 		
 		cam.x = x 
 		cam.y = y
