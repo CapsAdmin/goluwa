@@ -271,7 +271,7 @@ function render.Clear(flag, ...)
 end
 
 do
-	local X, Y, W, H = 0,0,0,0
+	local X, Y, W, H = 0, 0, 0, 0
 	
 	function render.SetScissor(x,y,w,h)
 		--render.ScissorRect(x,y,w,h)  
@@ -279,10 +279,10 @@ do
 
 		local sw, sh = render.GetScreenSize()
 		
-		x=x or 0
-		y=y or 0
-		w=w or sw
-		h=h or sh
+		x = x or 0
+		y = y or 0
+		w = w or sw
+		h = h or sh
 		
 		gl.Scissor(x, sh - (y + h), w, h)
 		
