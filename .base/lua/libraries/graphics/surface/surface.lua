@@ -309,22 +309,20 @@ function surface.DrawLine(x1,y1, x2,y2, w, skip_tex, ...)
 end
 
 function surface.StartClipping(x, y, w, h)
-	render.SetScissor(x, y, w, h)
+	x, y = surface.TransformPoint(-x, -y)
+	render.SetScissor(-x, -y, w, h)
 end
 
 function surface.EndClipping()
 	render.SetScissor()
 end
 
-function surface.GetMousePos(ox, oy)
-	local mpos = window.GetMousePos()
-	
-	if ox then mpos.x = mpos.x - ox end
-	if oy then mpos.y = mpos.y - oy end
+function surface.GetMousePos()
+	return window.GetMousePos():Unpack()
+end
 
-	local x, y = render.matrices.world:TransformVector(Vec3(mpos:Unpack())):Unpack()
-			
-	return x, y
+function surface.TransformPoint(x, y)
+	return render.matrices.world:TransformVector(Vec3(x, y, 0)):Unpack()
 end
 
 local last_x = 0
