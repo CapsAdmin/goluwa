@@ -22,9 +22,12 @@ do
 		
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, self.id)
 		current = self.id
+		
+		render.PushViewport(0, 0, self.w, self.h)
 	end
 
 	function META:End()
+		render.PopViewport()
 		local id = table.remove(stack)		
 		
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)

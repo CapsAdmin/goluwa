@@ -46,40 +46,34 @@ end
 
 -- projection  
 do
-	local restore = {}
-
 	-- this isn't really matrix related..
-	function render.SetViewport(x, y, w, h, sh)	
+	function render.SetViewport(x, y, w, h)	
 		cam.x = x or cam.x
 		cam.y = y or cam.y
 		cam.w = w or cam.w
 		cam.h = h or cam.h
 				
 		cam.ratio = cam.w / cam.h 
-		
-		sh = sh or window.GetSize().h
-				
-		gl.Viewport(cam.x, sh - (cam.y + cam.h), cam.w, cam.h)
+	
+		gl.Viewport(cam.x, cam.y, cam.w, cam.h)
 		
 		local proj = render.matrices.projection_2d
-	
-		--proj:LoadIdentity()
+
+		proj:LoadIdentity()
 		proj:Ortho(0, cam.w, cam.h, 0, -1, 1)
 	end
-
+	
 	do
 		local stack = {}
 		
 		function render.PushViewport(x, y, w, h)
 			table.insert(stack, {cam.x, cam.y, cam.w, cam.h})
-			
-			render.SetViewport(cam.x + x, cam.y + y, w, h)
+					
+			render.SetViewport(x, y, w, h)
 		end
 		
-		function render.PopViewport()			
-			local x, y, w, h = unpack(table.remove(stack))
-			
-			render.SetViewport(x, y, w, h)
+		function render.PopViewport()
+			render.SetViewport(unpack(table.remove(stack)))
 		end
 	end
 
@@ -91,6 +85,8 @@ do
 			w, h = render.GetScreenSize()
 		end
 		
+		--render.PushViewport(0, 0, w, h)
+		
 		render.PushWorldMatrix()
 		
 		x = x or cam.x 
@@ -98,9 +94,7 @@ do
 		w = w or cam.w
 		h = h or cam.h
 		
-		--render.Translate(x, y, 0) 
-		
-		render.PushViewport(x, y, w, h)
+		render.Translate(x, y, 0) 
 		
 		cam.x = x 
 		cam.y = y
@@ -111,8 +105,8 @@ do
 	end
 	
 	function render.End2D()	
-		render.PopViewport()
 		render.PopWorldMatrix()
+	--	render.PopViewport() 
 	end
 	
 	local last_farz
