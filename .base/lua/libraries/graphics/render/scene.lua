@@ -14,7 +14,7 @@ do -- current window
 		local w, h = window:GetSize():Unpack()
 		render.w = w
 		render.h = h
-		render.SetViewport(0, 0, w, h)
+		render.PushViewport(0, 0, w, h)
 	end
 
 	function render.End()
@@ -23,6 +23,8 @@ do -- current window
 		end
 
 		render.frame = render.frame + 1	
+		
+		render.PopViewport()
 	end
 
 	function render.GetFrameNumber()
