@@ -492,11 +492,11 @@ end
 
 function META:TransformVector(v)
 	local m = self.m
-	
+	local x, y, z = v.x - m[12], v.y - m[13], v.z - m[14]
 	return Vec3(
-		m[0] * v.x + m[1] * v.y + m[2] * v.z,
-		m[4] * v.x + m[5] * v.y + m[6] * v.z,
-		m[8] * v.x + m[9] * v.y + m[10] * v.z
+		(m[0] * x + m[1] * y + m[2] * z),
+		(m[4] * x + m[5] * y + m[6] * z),
+		m[8] * x + m[9] * y + m[10] * z
 	)
 end
 
