@@ -316,8 +316,14 @@ function surface.EndClipping()
 	render.SetScissor()
 end
 
-function surface.GetMousePos()
-	local x, y = window.GetMousePos():Unpack()
+function surface.GetMousePos(ox, oy)
+	local mpos = window.GetMousePos()
+	
+	if ox then mpos.x = mpos.x - ox end
+	if oy then mpos.y = mpos.y - oy end
+
+	local x, y = render.matrices.world:TransformVector(Vec3(mpos:Unpack())):Unpack()
+			
 	return x, y
 end
 
