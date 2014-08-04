@@ -7,8 +7,8 @@ local fb = render.CreateFrameBuffer(256, 256, {
 })
 
 local tex = fb:GetTexture()
- 
-event.AddListener("Draw2D", "lol", function()
+
+event.CreateTimer("updatefb", 0.1, function()
 	local t = timer.GetSystemTime()
 	
 	fb:Begin()				
@@ -17,34 +17,47 @@ event.AddListener("Draw2D", "lol", function()
 			surface.Rotate(t*100)
 			
 			surface.SetWhiteTexture() 
-			local x, y = surface.GetMousePos(50, 50)
-						
-			surface.DrawRect(x,y,5,5) 
-			surface.SetWhiteTexture(tex)
+			local x, y = surface.GetMousePos()
+			
+			x = x - 50
+			y = y - 50
+			
+			local x, y = surface.TransformPoint(x, y) 
+			surface.DrawRect(x,y,5,5, 0, 2.5, 2.5)  
+			
 			render.SetBlendMode("additive")
-			surface.SetColor(math.randomf(), math.randomf(), math.randomf(), 0.1)
-			surface.DrawRect(math.random(tex.w), math.random(tex.h), 100, 100, math.random(360))
+			
+			for i = 1, 10 do
+				surface.SetColor(math.randomf(), math.randomf(), math.randomf(), 0.2)
+				surface.DrawRect(math.random(tex.w), math.random(tex.h), 100, 100, math.random(360))
+			end
+			
 			render.SetBlendMode("alpha")
 		surface.End()
 	fb:End() 
-
+end)
+ 
+event.AddListener("Draw2D", "lol", function() 
+	local t = timer.GetSystemTime()
+	
 	surface.SetWhiteTexture()
 	surface.SetColor(0, 0, 1, 1) 
 	surface.DrawRect(0, 0, 100, 100)
 
-	surface.Start(50, 50, tex.w, tex.h) 				
+	surface.PushMatrix(50, 50)
 		surface.SetWhiteTexture()
 		surface.SetColor(1, 0, 1, 1)
 		surface.DrawRect(0, 0, tex.w, tex.h)
 				
-		surface.Start(0, 0, 100, 100)  
-		--	surface.Translate(50, 50)  
-			surface.Rotate(45)
-			surface.SetWhiteTexture() 
-			surface.SetColor(0, 1, 0, 1) 
-			surface.DrawRect(0, 0, 100, 100)
-		surface.End()
-	surface.End()
+		surface.PushMatrix(256, 256)
+			surface.StartClipping(0, 0, 100, 100)
+				surface.Rotate(45)
+				surface.SetWhiteTexture() 
+				surface.SetColor(0, 1, 0, 1) 
+				surface.DrawRect(0, 0, 256, 256)
+			surface.EndClipping()
+		surface.PopMatrix()
+	surface.PopMatrix()
 		
 	surface.SetTexture(tex)
 	surface.SetColor(1, 1, 1, 1)
