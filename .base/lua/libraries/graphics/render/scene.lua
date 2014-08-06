@@ -66,7 +66,7 @@ function render.DrawScene(window, dt)
 			render.Start2D()
 				event.Call("Draw2D", dt)
 				
-				if render.debug then
+				if false and render.debug then
 					local i = 0
 					for name, matrix in pairs(render.matrices) do
 						render.DrawMatrix(i*230 + 10, render.camera.h - 220, matrix, name)

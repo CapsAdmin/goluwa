@@ -91,6 +91,7 @@ local cb = function(source, type, id, severity, length, message, userdata)
 end
 
 function render.EnableDebug(b)
+	do return end
 	if gl.DebugMessageControl then
 		if b then		
 			gl.Enable(gl.e.GL_DEBUG_OUTPUT_ARB)
