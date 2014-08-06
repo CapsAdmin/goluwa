@@ -281,7 +281,7 @@ function render.GetViewMatrix2D()
 end
 
 function render.GetWorldMatrix()
-	return render.matrices.world.m
+	return render.matrices.world_override and render.matrices.world_override.m or render.matrices.world.m
 end
 
 function render.GetPVWMatrix2D()
