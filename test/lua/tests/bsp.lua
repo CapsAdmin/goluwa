@@ -342,13 +342,13 @@ do timer.Start("building mesh")
 		end
 		
 		table.insert(model.mesh_data, {
-			pos = {pos.x * scale, -pos.y * scale, -pos.z * scale}, -- copy
+			pos = Vec3(pos.x * scale, -pos.y * scale, -pos.z * scale), -- copy
 			texture_blend = blend,
-			uv = {
+			uv = Vec2(
 				(a[1] * pos.x + a[2] * pos.y + a[3] * pos.z + a[4]) / texdata.width,
-				(a[5] * pos.x + a[6] * pos.y + a[7] * pos.z + a[8]) / texdata.height,
-			}
-		})
+				(a[5] * pos.x + a[6] * pos.y + a[7] * pos.z + a[8]) / texdata.height
+			)
+		}) 
 	end
 
 	local function get_face_vertex(face_index, i)
@@ -529,11 +529,11 @@ do timer.Start("building mesh")
 	end
 timer.Stop() end
 
-profiler.Stop()
-
 timer.Start("render.CreateMesh")
 
 for i, data in ipairs(bsp_mesh.sub_models) do
+	utilities.GenerateNormals(data.mesh_data)
+	print(data.mesh_data[1].normal)
 	data.mesh = render.CreateMesh(data.mesh_data)
 end
 
