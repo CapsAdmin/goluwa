@@ -74,8 +74,6 @@ function META:SetVertex(i, x,y, u,v)
 	
 	x = x or 0
 	y = y or 0
-	u = u or 0
-	v = v or 1
 	
 	if ROT ~= 0 then				
 		x = x - X
@@ -95,6 +93,11 @@ function META:SetVertex(i, x,y, u,v)
 	self.vertices[i].color.B = G
 	self.vertices[i].color.C = B
 	self.vertices[i].color.D = A
+	
+	if u and v then
+		self.vertices[i].uv.A = u
+		self.vertices[i].uv.B = v
+	end
 end
 
 function META:SetRect(i, x,y,w,h, r, ox,oy)
