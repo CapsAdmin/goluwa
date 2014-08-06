@@ -25,6 +25,7 @@ local SHADER = {
 			time = "float",
 			cam_pos = "vec3",
 			cam_vec = "vec3",
+			vm_matrix = "mat4",
 		},  
 		attributes = {
 			{uv = "vec2"},
@@ -52,9 +53,9 @@ local SHADER = {
 				float light_radius = 600;
 				vec3 light_color = vec3(1,1,1);
 				
-				vec3 light_pos = vec3(-400, 200, -200) + vec3(sin(time), 0, cos(time)) * 300;
-				light_pos = cam_pos;
-			
+				vec3 light_pos = vec3(0, 5, 5) + vec3(sin(time), 0, cos(time));
+				//light_pos.xyz = cam_pos.xyz;
+				
 				vec3 light_vec = light_pos - position;
 				float light_dist = length(light_vec);
 				vec3 light_dir = normalize(light_vec);
@@ -77,22 +78,47 @@ local SHADER = {
 				
 				return final_color;
 			}
+						
+			float linearZ(float z)
+			{
+				#ifdef INVERT_NEAR_FAR
+				  const float f = 2.5;
+				  const float n = 25000.0;
+				#else
+				  const float f = 25000.0;
+				  const float n = 2.5;
+				#endif
+
+				return n / (f - z * (f - n)) * f;
+			}
+
+			vec4 reconstruct_pos(float depth)
+			{
+				depth = linearZ(depth);
+
+				vec4 pos = vec4(uv * depth, -depth, 1.0); 
+				vec4 ret = inverse(vm_matrix) * pos;
+
+				return ret / ret.w;
+			}
 			
 			void main ()
 			{	
 				vec3 diffuse = texture(tex_diffuse, uv).rgb;
 				vec3 normal = texture(tex_normal, uv).rgb;
-				vec3 position = texture(tex_position, uv).xyz;
+				
 				
 				vec3 specular = texture(tex_specular, uv).xyz;
 				float depth = texture(tex_depth, uv).a;
+				
+				vec3 position = texture(tex_position, uv).xyz;
 
-				out_color.rgb = diffuse;
+				out_color.rgb = diffuse * 0.5;
 				out_color.rgb += calc_light(normal, position, diffuse, specular);				
 				out_color.rgb = mix_fog(out_color.rgb, depth);
 				
 				out_color.a = 1;
-				out_color.rgb = diffuse;
+				out_color.rgb = out_color.rgb;
 			}
 		]]  
 	}
@@ -114,7 +140,8 @@ local PPSHADER = {
 			
 			void main ()
 			{				
-				out_color = texture(tex_diffuse, uv);				
+				out_color = texture(tex_diffuse, uv);		
+				//out_color.r = 0;
 			}
 		]]  
 	}
@@ -182,6 +209,7 @@ function render.InitializeGBuffer(width, height)
 	local shader = render.CreateShader(SHADER)
 	
 	shader.pvm_matrix = render.GetPVWMatrix2D
+	shader.vm_matrix = render.GetViewMatrix2D
 	shader.cam_pos = function() return render.GetCamPos() end
 	shader.cam_vec = function() return render.GetCamAng():GetRad():GetForward() end
 	shader.time = function() return tonumber(timer.GetSystemTime()) end
@@ -248,6 +276,36 @@ function render.InitializeGBuffer(width, height)
 	event.AddListener("WindowFramebufferResized", "gbuffer", function(window, w, h)
 		render.InitializeGBuffer(w, h)
 	end)
+	
+	
+	event.AddListener("Draw2D", "gbuffer_debug", function()
+		local size = 4
+		local w, h = surface.GetScreenSize()
+		if render.debug then
+			w = w / size
+			h = h / size
+			
+			local x = 0
+			local y = 0
+			
+			surface.SetColor(1,1,1,1)
+			
+			for i, data in pairs(render.gbuffer_config) do
+				surface.SetTexture(render.gbuffer:GetTexture(data.name))
+				surface.DrawRect(x, y, w, h)
+				
+				surface.SetTextPos(x, y + 5)
+				surface.DrawText(data.name)
+				
+				if i%size == 0 then
+					y = y + h
+					x = 0
+				else
+					x = x + w
+				end
+			end
+		end
+	end)
 end
 
 function render.ShutdownGBuffer()
@@ -308,30 +366,7 @@ function render.DrawGBuffer(w, h)
 			render.pp_screen_quad:Draw()
 		render.PopWorldMatrix()
 		
-		if render.debug then
-			w = w / size
-			h = h / size
-			
-			local x = 0
-			local y = 0
-			
-			surface.SetColor(1,1,1,1)
-			
-			for i, data in pairs(render.gbuffer_config) do
-				surface.SetTexture(render.gbuffer:GetTexture(data.name))
-				surface.DrawRect(x, y, w, h)
-				
-				surface.SetTextPos(x, y + 5)
-				surface.DrawText(data.name)
-				
-				if i%size == 0 then
-					y = y + h
-					x = 0
-				else
-					x = x + w
-				end
-			end
-		end
+		
 	render.End2D()
 end
 
