@@ -31,6 +31,7 @@ if CLIENT then
 		vertex = { 
 			uniform = {
 				pvm_matrix = "mat4",
+				vm_matrix = "mat4",
 			},			
 			attributes = {
 				{pos = "vec3"},
@@ -45,22 +46,28 @@ if CLIENT then
 				color = Color(1,1,1,1),
 				diffuse = "sampler2D",
 				diffuse2 = "sampler2D",
+				vm_matrix = "mat4",
 				--detail = "sampler2D",
 				--detailscale = 1,
 				
-				--bump = "sampler2D",
-				--specular = "sampler2D",
+				bump = "sampler2D",
+				specular = "sampler2D",
 			},		
 			attributes = {
+				{pos = "vec3"},
+				{normal = "vec3"},
 				{uv = "vec2"},
 				{texture_blend = "float"},
 			},			
 			source = [[
-				out vec4 out_color;
+				out vec4 out_color[4];
 
 				void main() 
 				{
-					out_color = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;
+					out_color[0] = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;
+					out_color[1] = vec4((normal + texture2D(bump, uv).xyz) / 2, 1);
+					out_color[2] = vm_matrix * vec4(pos, 1);	
+					out_color[3] = texture2D(specular, uv);
 					//out_color.rgb *= texture(detail, uv * detailscale).rgb;
 				}
 			]]
@@ -119,20 +126,24 @@ if CLIENT then
 		
 		if visible then
 			local screen = matrix * render.matrices.vp_matrix
+			
 			shader.pvm_matrix = screen.m
+			shader.vm_matrix = matrix.m
 			shader.color = self.Color
 			
 			for i, model in ipairs(model.sub_models) do
 				shader.diffuse = model.diffuse or render.GetErrorTexture()
 				shader.diffuse2 = model.diffuse2 or render.GetErrorTexture()
+				shader.specular = model.specular or render.GetBlackTexture()
+				shader.bump = model.bump or render.GetWhiteTexture()
 				--shader.detail = model.detail or render.GetWhiteTexture()
 				shader:Bind()
 				model.mesh:Draw()
 			end
-		else
-		--	print(os.clock())
 		end
 	end 
+	
+	COMPONENT.OnDraw2D = COMPONENT.OnDraw3D
 end
 
 entities.RegisterComponent(COMPONENT)
