@@ -254,6 +254,16 @@ do -- base component
 			template[k] = v
 		end
 		
+		for i, component in ipairs(entities.active_components) do
+			for k, v in pairs(template) do
+				if type(v) == "function" then
+					component[k] = v
+				end
+			end
+			component:OnRemove(component:GetEntity())
+			component:OnAdd(component:GetEntity())
+		end
+		
 		entities.components[COMPONENT.Name:lower()] = template
 	end
 
