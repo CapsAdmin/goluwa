@@ -31,7 +31,6 @@ if CLIENT then
 		vertex = { 
 			uniform = {
 				pvm_matrix = "mat4",
-				vm_matrix = "mat4",
 			},			
 			attributes = {
 				{pos = "vec3"},
@@ -47,6 +46,7 @@ if CLIENT then
 				diffuse = "sampler2D",
 				diffuse2 = "sampler2D",
 				vm_matrix = "mat4",
+				v_matrix = "mat4",
 				--detail = "sampler2D",
 				--detailscale = 1,
 				
@@ -64,9 +64,18 @@ if CLIENT then
 
 				void main() 
 				{
-					out_color[0] = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;
-					out_color[1] = vec4((normal + texture2D(bump, uv).xyz) / 2, 1);
-					out_color[2] = vm_matrix * vec4(pos, 1);	
+					out_color[0] = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;			
+					
+					out_color[1] = vec4(normalize(mat3(vm_matrix) * -normal), 1);
+					
+					vec3 bump_detail = texture(bump, uv).rgb;
+					
+					if (bump_detail != vec3(1,1,1))
+					{
+						out_color[1].rgb = normalize(mix(out_color[1].rgb, bump_detail, 0.5));
+					}
+					
+					out_color[2] = vm_matrix * vec4(pos, 1);
 					out_color[3] = texture2D(specular, uv);
 					//out_color.rgb *= texture(detail, uv * detailscale).rgb;
 				}
@@ -115,7 +124,11 @@ if CLIENT then
 				
 				local x, y, z = model.matrix_cache[i]:GetClipCoordinates()
 				
-				if x > -1 and x < 1 and y > -1 and y < 1 and z > -1 then
+				if 	
+					(x > -1 and x < 1) and 
+					(y > -1 and y < 1) and 
+					(z > -1 and z < 1) 
+				then
 					visible = true
 					break
 				end
@@ -124,11 +137,12 @@ if CLIENT then
 			visible = true
 		end
 		
-		if visible then
+		if true or visible then
 			local screen = matrix * render.matrices.vp_matrix
 			
 			shader.pvm_matrix = screen.m
 			shader.vm_matrix = matrix.m
+			shader.v_matrix = render.GetViewMatrix3D()
 			shader.color = self.Color
 			
 			for i, model in ipairs(model.sub_models) do

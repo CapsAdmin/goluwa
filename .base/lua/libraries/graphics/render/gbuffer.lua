@@ -25,9 +25,10 @@ local SHADER = {
 			time = "float",
 			cam_pos = "vec3",
 			cam_vec = "vec3",
-			vm_matrix = "mat4",
+			pv_matrix = "mat4",
 		},  
 		attributes = {
+			{pos = "vec2"},
 			{uv = "vec2"},
 		},
 		source = [[			
@@ -35,9 +36,11 @@ local SHADER = {
 			
 			vec3 mix_fog(vec3 color, float depth)
 			{
-				const vec3 ambient = vec3(0.30588236451149, 0.59607845544815, 0.88235300779343); 
+				//blue
+				//const vec3 ambient = vec3(0.30588236451149, 0.59607845544815, 0.88235300779343); 
+				const vec3 ambient = vec3(245.0 / 255.0, 210.0 / 255.0, 144.0 / 255.0); 
 				
-				float fog_intensity = pow(depth, 30000);
+				float fog_intensity = pow(depth, 255);
 				fog_intensity = -fog_intensity + 1;
 
 				color = mix(ambient * color, color, fog_intensity);
@@ -45,23 +48,22 @@ local SHADER = {
 				return color;
 			}
 			
-			vec3 calc_light(vec3 normal, vec3 position, vec3 diffuse, vec3 specular_map)
+			vec3 calc_light(vec3 light_pos, vec3 normal, vec3 position, vec3 diffuse, float specular_map, vec3 light_color)
 			{			
 				const float method = 1;
-				float light_specular = 2;
-				float light_shininess = 128;
-				float light_radius = 600;
-				vec3 light_color = vec3(1,1,1);
+				float light_specular = 64;
+				float light_shininess = 64;
+				float light_radius = 200; //light radius isnt working, its also not being used
 				
-				vec3 light_pos = vec3(0, 5, 5) + vec3(sin(time), 0, cos(time));
-				//light_pos.xyz = cam_pos.xyz;
+				vec3 final_color = light_color;
 				
 				vec3 light_vec = light_pos - position;
 				float light_dist = length(light_vec);
+				
+				if (light_dist > light_radius) {return final_color;}
+				
 				vec3 light_dir = normalize(light_vec);
 				
-				vec3 final_color = vec3(0, 0, 0);
-
 				float lambertian = dot(light_dir, normal);
 	
 				if (lambertian > 0.0)
@@ -70,52 +72,36 @@ local SHADER = {
 					
 					vec3 half_dir = normalize(light_dir + cam_vec);
 					float spec_angle = max(dot(half_dir, normal), 0.0);
-					float S = pow(spec_angle, 16.0);
+					float S = pow(spec_angle, 64.0);
 					
 					final_color = vec3(0,0,0) + lambertian * diffuse + S * specular_map;
 				}
-		
-				
-				return final_color;
-			}
 						
-			float linearZ(float z)
-			{
-				#ifdef INVERT_NEAR_FAR
-				  const float f = 2.5;
-				  const float n = 25000.0;
-				#else
-				  const float f = 25000.0;
-				  const float n = 2.5;
-				#endif
-
-				return n / (f - z * (f - n)) * f;
+				return final_color / light_dist * 10;
 			}
-
-			vec4 reconstruct_pos(float depth)
+			
+			vec3 get_pos(float z)
 			{
-				depth = linearZ(depth);
-
-				vec4 pos = vec4(uv * depth, -depth, 1.0); 
-				vec4 ret = inverse(vm_matrix) * pos;
-
-				return ret / ret.w;
+				vec4 spos = vec4(uv, z, 1.0);
+				spos = (pv_matrix) * spos;
+				
+				return spos.xyz / spos.w;
 			}
 			
 			void main ()
 			{	
 				vec3 diffuse = texture(tex_diffuse, uv).rgb;
-				vec3 normal = texture(tex_normal, uv).rgb;
-				
-				
-				vec3 specular = texture(tex_specular, uv).xyz;
-				float depth = texture(tex_depth, uv).a;
-				
-				vec3 position = texture(tex_position, uv).xyz;
+				float depth = texture(tex_depth, uv).a;			
+			
+				vec3 normal = texture(tex_normal, uv).yxz;				
+				vec3 position = -texture(tex_position, uv).yxz;
 
-				out_color.rgb = diffuse * 0.5;
-				out_color.rgb += calc_light(normal, position, diffuse, specular);				
-				out_color.rgb = mix_fog(out_color.rgb, depth);
+				float specular = texture(tex_specular, uv).x;
+		
+				//out_color.rgb = diffuse;
+				
+				out_color.rgb += calc_light(vec3(0, 0, 10) + vec3(sin(time) * 10, cos(time) * 10, 0), normal, position, diffuse, specular, vec3(0,0,0));				
+				//out_color.rgb = mix_fog(out_color.rgb, depth);
 				
 				out_color.a = 1;
 				out_color.rgb = out_color.rgb;
@@ -131,17 +117,147 @@ local PPSHADER = {
 		uniform = {
 			tex_diffuse = "sampler2D",
 			tex_depth = "sampler2D",
+			tex_normal = "sampler2D",
+			tex_position = "sampler2D",
+			rt_w = "float",
+			rt_h = "float",
 		},
 		attributes = {
+			{pos = "vec2"},
 			{uv = "vec2"},
 		},
-		source = [[
+		source = [[			
 			out vec4 out_color;
+					
+			float FXAA_SPAN_MAX = 8.0;
+			float FXAA_REDUCE_MUL = 1.0/8.0;
+			float FXAA_SUBPIX_SHIFT = 1.0/4.0;
+
+			#define FxaaInt2 ivec2
+			#define FxaaFloat2 vec2
+			#define FxaaTexLod0(t, p) textureLod(t, p, 0.0)
+			#define FxaaTexOff(t, p, o, r) textureLodOffset(t, p, 0.0, o)
 			
-			void main ()
-			{				
-				out_color = texture(tex_diffuse, uv);		
-				//out_color.r = 0;
+			vec2 rcpFrame = vec2(1.0/rt_w, 1.0/rt_h);
+			vec4 posPos = vec4(uv, uv - (rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT)));
+
+			vec3 FxaaPixelShader(vec4 posPos, sampler2D tex)
+			{   
+
+				#define FXAA_REDUCE_MIN   (1.0/128.0)
+				//#define FXAA_REDUCE_MUL   (1.0/8.0)
+				//#define FXAA_SPAN_MAX     8.0
+				
+
+				vec3 rgbNW = FxaaTexLod0(tex, posPos.zw).xyz;
+				vec3 rgbNE = FxaaTexOff(tex, posPos.zw, FxaaInt2(1,0), rcpFrame.xy).xyz;
+				vec3 rgbSW = FxaaTexOff(tex, posPos.zw, FxaaInt2(0,1), rcpFrame.xy).xyz;
+				vec3 rgbSE = FxaaTexOff(tex, posPos.zw, FxaaInt2(1,1), rcpFrame.xy).xyz;
+				vec3 rgbM  = FxaaTexLod0(tex, posPos.xy).xyz;
+				
+
+				vec3 luma = vec3(0.299, 0.587, 0.114);
+				float lumaNW = dot(rgbNW, luma);
+				float lumaNE = dot(rgbNE, luma);
+				float lumaSW = dot(rgbSW, luma);
+				float lumaSE = dot(rgbSE, luma);
+				float lumaM  = dot(rgbM,  luma);
+				
+				float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
+				float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
+
+				
+				vec2 dir; 
+				dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));
+				dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));
+
+
+				float dirReduce = max(
+					(lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * FXAA_REDUCE_MUL),
+					FXAA_REDUCE_MIN);
+				float rcpDirMin = 1.0/(min(abs(dir.x), abs(dir.y)) + dirReduce);
+				dir = min(FxaaFloat2( FXAA_SPAN_MAX,  FXAA_SPAN_MAX), 
+					  max(FxaaFloat2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX), 
+					  dir * rcpDirMin)) * rcpFrame.xy;
+
+
+				vec3 rgbA = (1.0/2.0) * (
+					FxaaTexLod0(tex, posPos.xy + dir * (1.0/3.0 - 0.5)).xyz +
+					FxaaTexLod0(tex, posPos.xy + dir * (2.0/3.0 - 0.5)).xyz);
+					
+				vec3 rgbB = rgbA * (1.0/2.0) + (1.0/4.0) * (
+					FxaaTexLod0(tex, posPos.xy + dir * (0.0/3.0 - 0.5)).xyz +
+					FxaaTexLod0(tex, posPos.xy + dir * (3.0/3.0 - 0.5)).xyz);
+					
+				float lumaB = dot(rgbB, luma);
+
+				if ((lumaB < lumaMin) || (lumaB > lumaMax)) return rgbA;
+
+				return rgbB; 
+			}
+			
+			const float filterRadius = 0.0025;
+			const float distanceThreshold = 100;
+			const int sample_count = 16;
+			const vec2 poisson16[] = vec2[](    // These are the Poisson Disk Samples
+											vec2( -0.94201624,  -0.39906216 ),
+											vec2(  0.94558609,  -0.76890725 ),
+											vec2( -0.094184101, -0.92938870 ),
+											vec2(  0.34495938,   0.29387760 ),
+											vec2( -0.91588581,   0.45771432 ),
+											vec2( -0.81544232,  -0.87912464 ),
+											vec2( -0.38277543,   0.27676845 ),
+											vec2(  0.97484398,   0.75648379 ),
+											vec2(  0.44323325,  -0.97511554 ),
+											vec2(  0.53742981,  -0.47373420 ),
+											vec2( -0.26496911,  -0.41893023 ),
+											vec2(  0.79197514,   0.19090188 ),
+											vec2( -0.24188840,   0.99706507 ),
+											vec2( -0.81409955,   0.91437590 ),
+											vec2(  0.19984126,   0.78641367 ),
+											vec2(  0.14383161,  -0.14100790 )
+										   );
+						 
+			float ssao()
+			{			
+
+			
+				// reconstruct position from depth, USE YOUR CODE HERE
+				vec3 position = texture(tex_normal, uv).yxz;		
+				vec3 normal = -texture(tex_position, uv).yxz;
+			 
+				float ambientOcclusion = 0;
+				// perform AO
+				for (int i = 0; i < sample_count; ++i)
+				{
+					// sample at an offset specified by the current Poisson-Disk sample and scale it by a radius (has to be in Texture-Space)
+					vec2 sampleTexCoord = uv + (poisson16[i] * (filterRadius));
+					vec3 samplePos = texture(tex_position, sampleTexCoord).yxz;
+					vec3 sampleDir = normalize(samplePos - position);
+			 
+					// angle between SURFACE-NORMAL and SAMPLE-DIRECTION (vector from SURFACE-POSITION to SAMPLE-POSITION)
+					float NdotS = max(dot(normal, sampleDir), 0);
+					// distance between SURFACE-POSITION and SAMPLE-POSITION
+					float VPdistSP = distance(position, samplePos);
+			 
+					// a = distance function
+					float a = 1.0 - smoothstep(distanceThreshold, distanceThreshold * 2, VPdistSP);
+					// b = dot-Product
+					float b = NdotS;
+			 
+					ambientOcclusion += (a * b);
+				}
+							 
+				return -(ambientOcclusion / sample_count) + 1;
+			}
+				
+			void main() 
+			{ 
+			  out_color = texture(tex_diffuse, uv);
+			  //out_color.rgb = vec3() * texture(tex_normal, uv).yxz;
+			  out_color.rgb = vec3(ssao());
+			  out_color.rgb = FxaaPixelShader(posPos, tex_diffuse);
+			  out_color.a = 1;
 			}
 		]]  
 	}
@@ -163,28 +279,28 @@ function render.InitializeGBuffer(width, height)
 			name = "diffuse",
 			attach = "color",
 			texture_format = {
-				internal_format = "RGBA8",
+				internal_format = "RGB8",
 			}
 		},
 		{
 			name = "normal",
 			attach = "color",
 			texture_format = {
-				internal_format = "RGB8",
+				internal_format = "RGB16F",
 			}
 		},
 		{
 			name = "position",
 			attach = "color",
 			texture_format = {
-				internal_format = "RGB8",
+				internal_format = "RGB16F",
 			}
 		},
 		{
 			name = "specular",
 			attach = "color",
 			texture_format = {
-				internal_format = "RGB8",
+				internal_format = "R8",
 			}
 		},
 		{
@@ -209,8 +325,9 @@ function render.InitializeGBuffer(width, height)
 	local shader = render.CreateShader(SHADER)
 	
 	shader.pvm_matrix = render.GetPVWMatrix2D
-	shader.vm_matrix = render.GetViewMatrix2D
-	shader.cam_pos = function() return render.GetCamPos() end
+	shader.pv_matrix = function() return (render.matrices.projection_3d*render.matrices.view_3d).m end
+	shader.cam_pos = function() 
+	return  render.GetCamPos() end
 	shader.cam_vec = function() return render.GetCamAng():GetRad():GetForward() end
 	shader.time = function() return tonumber(timer.GetSystemTime()) end
 	 
@@ -249,6 +366,10 @@ function render.InitializeGBuffer(width, height)
 	shader.cam_pos = render.GetCamPos
 	shader.tex_diffuse = render.pp_buffer:GetTexture("diffuse")
 	shader.tex_depth = render.gbuffer:GetTexture("depth")
+	shader.tex_position = render.gbuffer:GetTexture("position") 
+	shader.tex_normal = render.gbuffer:GetTexture("normal")
+	shader.rt_w = width
+	shader.rt_h = height
 	
 	local vbo = shader:CreateVertexBuffer({
 		{pos = {0, 0}, uv = {0, 1}},
