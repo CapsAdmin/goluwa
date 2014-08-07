@@ -198,9 +198,9 @@ function utilities.GenerateNormals(data)
 	
 	for i = 1, count do
 	
-		local ai = 1+(i-1)*3+0
+		local ci = 1+(i-1)*3+0
 		local bi = 1+(i-1)*3+1
-		local ci = 1+(i-1)*3+2
+		local ai = 1+(i-1)*3+2
 		
 		local a, b, c = data[ai], data[bi], data[ci] 
 		local normal = (c.pos - a.pos):Cross(b.pos - a.pos):GetNormalized()
