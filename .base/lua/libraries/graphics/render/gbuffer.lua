@@ -22,6 +22,8 @@ local SHADER = {
 			tex_position = "sampler2D", 
 			tex_specular = "sampler2D",
 			tex_depth = "sampler2D",
+			rt_w = "float",
+			rt_h = "float",
 			time = "float",
 			cam_pos = "vec3",
 			cam_vec = "vec3",
@@ -34,6 +36,116 @@ local SHADER = {
 		source = [[			
 			out vec4 out_color;
 			
+			//
+			//SSAO
+			//
+			float aoMultiplier= 50000.0;
+			float depthTolerance = 0.001;
+			
+			float readDepth( in vec2 coord ) {
+				//return (2.0 * rt_w) / (rt_h + rt_w - texture2D( tex_position, coord ).x * (rt_h - rt_w));	
+				return pow(texture(tex_depth, coord).a, 0.5);
+			}
+			 
+			float compareDepths( in float depth1, in float depth2 ) {
+				float aoCap = 1.2;
+				float aoMultiplier=20000.0;
+				float depthTolerance=0.000001;
+				//float aorange = 10.0;// units in space the AO effect extends to (this gets divided by the camera far range
+				float diff = sqrt( clamp(1.0-(depth1-depth2) / 0.01,0.0,0.3) );
+				float ao = min(aoCap,max(0.0,depth1-depth2-depthTolerance) * aoMultiplier) * diff;
+				return ao;
+			}
+			 
+			float ssao(void)
+			{	
+				float depth = readDepth( uv );
+				float d;
+			 
+				float pw = 1.0 / rt_w;
+				float ph = 1.0 / rt_h;
+			 
+				float aoCap = 1.0;
+			 
+				float ao = 0.1;
+			 
+				float aoMultiplier=10000.0;
+			 
+				float depthTolerance = 0.001;
+			 
+				float aoscale=0.75;
+			 
+				d=readDepth( vec2(uv.x+pw,uv.y+ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				d=readDepth( vec2(uv.x-pw,uv.y+ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				d=readDepth( vec2(uv.x+pw,uv.y-ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				d=readDepth( vec2(uv.x-pw,uv.y-ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				pw*=2.0;
+				ph*=2.0;
+				aoMultiplier/=2.0;
+				aoscale*=1.2;
+			 
+				d=readDepth( vec2(uv.x+pw,uv.y+ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				d=readDepth( vec2(uv.x-pw,uv.y+ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				d=readDepth( vec2(uv.x+pw,uv.y-ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				d=readDepth( vec2(uv.x-pw,uv.y-ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				pw*=2.0;
+				ph*=2.0;
+				aoMultiplier/=2.0;
+				aoscale*=1.2;
+			 
+				d=readDepth( vec2(uv.x+pw,uv.y+ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				d=readDepth( vec2(uv.x-pw,uv.y+ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				d=readDepth( vec2(uv.x+pw,uv.y-ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				d=readDepth( vec2(uv.x-pw,uv.y-ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				pw*=2.0;
+				ph*=2.0;
+				aoMultiplier/=2.0;
+				aoscale*=1.2;
+			 
+				d=readDepth( vec2(uv.x+pw,uv.y+ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				d=readDepth( vec2(uv.x-pw,uv.y+ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				d=readDepth( vec2(uv.x+pw,uv.y-ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				d=readDepth( vec2(uv.x-pw,uv.y-ph));
+				ao+=compareDepths(depth,d)/aoscale;
+			 
+				ao/=16.0;
+			 
+				return 1-ao;
+			}
+			
+			//
+			//FOG
+			//
 			vec3 mix_fog(vec3 color, float depth)
 			{
 				//blue
@@ -48,12 +160,16 @@ local SHADER = {
 				return color;
 			}
 			
+			
+			//
+			//LIGHTING
+			//
 			vec3 calc_light(vec3 light_pos, vec3 normal, vec3 position, vec3 diffuse, float specular_map, vec3 light_color)
 			{			
 				const float method = 1;
 				float light_specular = 64;
 				float light_shininess = 64;
-				float light_radius = 200; //light radius isnt working, its also not being used
+				float light_radius = 1000; //light radius isnt working, its also not being used
 				
 				vec3 final_color = light_color;
 				
@@ -80,6 +196,9 @@ local SHADER = {
 				return final_color / light_dist * 10;
 			}
 			
+			//
+			//DEPTH POSITION
+			//
 			vec3 get_pos(float z)
 			{
 				vec4 spos = vec4(uv, z, 1.0);
@@ -98,13 +217,14 @@ local SHADER = {
 
 				float specular = texture(tex_specular, uv).x;
 		
-				//out_color.rgb = diffuse;
+				out_color.rgb = diffuse * 0.1;
 				
-				out_color.rgb += calc_light(vec3(0, 0, 10) + vec3(sin(time) * 10, cos(time) * 10, 0), normal, position, diffuse, specular, vec3(0,0,0));				
-				//out_color.rgb = mix_fog(out_color.rgb, depth);
+				//out_color.rgb += calc_light(vec3(0, 0, 10) + vec3(sin(time) * 10, cos(time) * 10, 0), normal, position, diffuse, specular, vec3(0,0,0));				
+				out_color.rgb += calc_light(cam_pos, normal, position, diffuse, specular, vec3(0,0,0));				
+				out_color.rgb = mix_fog(out_color.rgb, depth);
 				
 				out_color.a = 1;
-				out_color.rgb = out_color.rgb;
+				out_color.rgb *=  vec3(ssao());
 			}
 		]]  
 	}
@@ -195,68 +315,13 @@ local PPSHADER = {
 
 				return rgbB; 
 			}
-			
-			const float filterRadius = 0.0025;
-			const float distanceThreshold = 100;
-			const int sample_count = 16;
-			const vec2 poisson16[] = vec2[](    // These are the Poisson Disk Samples
-											vec2( -0.94201624,  -0.39906216 ),
-											vec2(  0.94558609,  -0.76890725 ),
-											vec2( -0.094184101, -0.92938870 ),
-											vec2(  0.34495938,   0.29387760 ),
-											vec2( -0.91588581,   0.45771432 ),
-											vec2( -0.81544232,  -0.87912464 ),
-											vec2( -0.38277543,   0.27676845 ),
-											vec2(  0.97484398,   0.75648379 ),
-											vec2(  0.44323325,  -0.97511554 ),
-											vec2(  0.53742981,  -0.47373420 ),
-											vec2( -0.26496911,  -0.41893023 ),
-											vec2(  0.79197514,   0.19090188 ),
-											vec2( -0.24188840,   0.99706507 ),
-											vec2( -0.81409955,   0.91437590 ),
-											vec2(  0.19984126,   0.78641367 ),
-											vec2(  0.14383161,  -0.14100790 )
-										   );
-						 
-			float ssao()
-			{			
-
-			
-				// reconstruct position from depth, USE YOUR CODE HERE
-				vec3 position = texture(tex_normal, uv).yxz;		
-				vec3 normal = -texture(tex_position, uv).yxz;
-			 
-				float ambientOcclusion = 0;
-				// perform AO
-				for (int i = 0; i < sample_count; ++i)
-				{
-					// sample at an offset specified by the current Poisson-Disk sample and scale it by a radius (has to be in Texture-Space)
-					vec2 sampleTexCoord = uv + (poisson16[i] * (filterRadius));
-					vec3 samplePos = texture(tex_position, sampleTexCoord).yxz;
-					vec3 sampleDir = normalize(samplePos - position);
-			 
-					// angle between SURFACE-NORMAL and SAMPLE-DIRECTION (vector from SURFACE-POSITION to SAMPLE-POSITION)
-					float NdotS = max(dot(normal, sampleDir), 0);
-					// distance between SURFACE-POSITION and SAMPLE-POSITION
-					float VPdistSP = distance(position, samplePos);
-			 
-					// a = distance function
-					float a = 1.0 - smoothstep(distanceThreshold, distanceThreshold * 2, VPdistSP);
-					// b = dot-Product
-					float b = NdotS;
-			 
-					ambientOcclusion += (a * b);
-				}
-							 
-				return -(ambientOcclusion / sample_count) + 1;
-			}
 				
 			void main() 
 			{ 
 			  out_color = texture(tex_diffuse, uv);
-			  //out_color.rgb = vec3() * texture(tex_normal, uv).yxz;
-			  out_color.rgb = vec3(ssao());
+			  //out_color.rgb = vec3(pow(ssao(), 4));
 			  out_color.rgb = FxaaPixelShader(posPos, tex_diffuse);
+			 // out_color.rgb *= vec3(ssao());
 			  out_color.a = 1;
 			}
 		]]  
@@ -303,6 +368,13 @@ function render.InitializeGBuffer(width, height)
 				internal_format = "R8",
 			}
 		},
+		--[[{{
+			name = "light",
+			attach = "color",
+			texture_format = {
+				internal_format = "RGB16F",
+			}
+		},]]
 		{
 			name = "depth",
 			attach = "depth",
@@ -336,6 +408,8 @@ function render.InitializeGBuffer(width, height)
 	shader.tex_normal = render.gbuffer:GetTexture("normal")
 	shader.tex_specular = render.gbuffer:GetTexture("specular")
 	shader.tex_depth = render.gbuffer:GetTexture("depth")
+	shader.rt_w = width
+	shader.rt_h = height
 
 	local vbo = shader:CreateVertexBuffer({
 		{pos = {0, 0}, uv = {0, 1}},
