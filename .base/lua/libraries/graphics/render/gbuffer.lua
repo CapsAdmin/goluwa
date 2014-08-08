@@ -39,45 +39,44 @@ local SHADER = {
 			//
 			//SSAO
 			//
-			float aoMultiplier= 99999999.0;
-			
-			float readDepth(vec2 coord, vec3 normal) {
-				//return (2.0 * rt_w) / (rt_h + rt_w - texture2D( tex_position, coord ).x * (rt_h - rt_w));	
-				
-				return pow(texture(tex_depth, coord).a, 0.5);
+			vec2 camerarange = vec2(1.0, 10000.0);
+
+			float readDepth( in vec2 coord ) {
+				return (2.0 * camerarange.x) / (camerarange.y + camerarange.x - pow(texture2D( tex_depth, coord ).a,10) * (camerarange.y - camerarange.x));
 			}
-			 
+
 			float compareDepths( in float depth1, in float depth2 ) {
-				float aoCap = 0.4;
-				float depthTolerance=0.001;
-				float diff = sqrt( clamp(1.0-(depth1-depth2) / 0.01,0.0,0.3) );
+				float aoCap = 0.25;
+				float aoMultiplier=1500.0;
+				float depthTolerance=0.0000;
+				float aorange = 100000.0;// units in space the AO effect extends to (this gets divided by the camera far range
+				float diff = sqrt( clamp(1.0-(depth1-depth2) / (aorange/(camerarange.y-camerarange.x)),0.0,1.0) );
 				float ao = min(aoCap,max(0.0,depth1-depth2-depthTolerance) * aoMultiplier) * diff;
 				return ao;
 			}
-			 
+
 			float ssao(void)
-			{	
-				vec3 normal = texture(tex_normal, uv).yxz;
-				float depth = readDepth( uv, normal );
+			{
+
+				float depth = readDepth( uv );
 				float d;
-			 
+
 				float pw = 1.0 / rt_w;
 				float ph = 1.0 / rt_h;
-			 
-				float ao = 7.5;	 
-			 
-				float aoscale = 0.5;
+
+				float ao = 12;
 				
+				float aoscale=0.4;
+
 				for (int i = 1; i < 5; i++)
 				{					
-					ao += compareDepths(depth, readDepth(vec2(uv.x+pw,uv.y+ph), normal)) / aoscale;
-					ao += compareDepths(depth, readDepth(vec2(uv.x-pw,uv.y+ph), normal)) / aoscale;
-					ao += compareDepths(depth, readDepth(vec2(uv.x+pw,uv.y-ph), normal)) / aoscale;
-					ao += compareDepths(depth, readDepth(vec2(uv.x-pw,uv.y-ph), normal)) / aoscale;
+					ao += compareDepths(depth, readDepth(vec2(uv.x+pw,uv.y+ph))) / aoscale;
+					ao += compareDepths(depth, readDepth(vec2(uv.x-pw,uv.y+ph))) / aoscale;
+					ao += compareDepths(depth, readDepth(vec2(uv.x+pw,uv.y-ph))) / aoscale;
+					ao += compareDepths(depth, readDepth(vec2(uv.x-pw,uv.y-ph))) / aoscale;
 				 
 					pw *= 2.0;
 					ph *= 2.0;
-					aoMultiplier /= 2.0;
 					aoscale *= 1.2;
 				}			 
 			 
@@ -104,7 +103,7 @@ local SHADER = {
 			{			
 				const float method = 1;
 				float light_specular = 64;
-				float light_shininess = 64;
+				float light_shininess = 4;
 				float light_intensity = 250.0; //added light intensity
 				float light_radius = 1000 * light_intensity;
 				
@@ -123,10 +122,10 @@ local SHADER = {
 				if (lambertian > 0.0)
 				{						
 					vec3 R = reflect(-light_dir, normal);
-					
-					vec3 half_dir = normalize(light_dir + cam_vec);
-					float spec_angle = max(dot(half_dir, normal), 0.0);
-					float S = pow(spec_angle, 64.0);
+					  
+					vec3 half_dir = normalize(light_dir + -cam_vec);
+					float spec_angle = max(dot(R, half_dir), 0.0);
+					float S = pow(spec_angle, light_shininess);
 					
 					final_color = (lambertian * diffuse + S * specular_map) * light_color;
 				}
@@ -204,8 +203,8 @@ local EFFECTS = {
 			//FXAA
 			//
 			float FXAA_SPAN_MAX = 8.0;
-			float FXAA_REDUCE_MUL = 1.0/16.0;
-			float FXAA_SUBPIX_SHIFT = 1.0/16.0;
+			float FXAA_REDUCE_MUL = 1.0/8.0;
+			float FXAA_SUBPIX_SHIFT = 1.0/128.0;
 
 			#define FxaaInt2 ivec2
 			#define FxaaFloat2 vec2
@@ -300,7 +299,7 @@ local EFFECTS = {
 			//CONTRAST
 			vec4 contrast(vec4 color)
 			{
-				vec3 col = color.rgb * 1.5;
+				vec3 col = color.rgb * 1.6;
 				col *= col;
 				return vec4(col, color.a);
 			}
@@ -308,7 +307,7 @@ local EFFECTS = {
 			void main() 
 			{ 
 				out_color = texture(tex_diffuse, uv); 
-				out_color += blur(tex_diffuse) * 0.14;
+				out_color += contrast(blur(tex_diffuse)) * 0.05;
 				out_color.a = 1;
 			}
 		]],
@@ -396,7 +395,8 @@ function render.InitializeGBuffer(width, height)
 			name = "diffuse",
 			attach = "color",
 			texture_format = {
-				internal_format = "RGB8",
+				internal_format = "RGB16F",
+				min_filter = "nearest",
 			}
 		},
 		{
@@ -404,6 +404,7 @@ function render.InitializeGBuffer(width, height)
 			attach = "color",
 			texture_format = {
 				internal_format = "RGB16F",
+				min_filter = "nearest",
 			}
 		},
 		{
@@ -411,13 +412,15 @@ function render.InitializeGBuffer(width, height)
 			attach = "color",
 			texture_format = {
 				internal_format = "RGB16F",
+				min_filter = "nearest",
 			}
 		},
 		{
 			name = "specular",
 			attach = "color",
 			texture_format = {
-				internal_format = "R8",
+				internal_format = "R16F",
+				min_filter = "nearest",
 			}
 		},
 		--[[{{
@@ -434,7 +437,7 @@ function render.InitializeGBuffer(width, height)
 			texture_format = {
 				internal_format = "DEPTH_COMPONENT32F",	 
 				depth_texture_mode = gl.e.GL_ALPHA,
-				
+				min_filter = "nearest",				
 			} 
 		} 
 	} 
