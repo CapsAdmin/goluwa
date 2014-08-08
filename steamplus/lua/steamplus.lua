@@ -87,7 +87,9 @@ end)
 event.AddListener("ClientChat", "chatsounds", function(client, txt, seed)
 	local url = txt:match("(http%S+)")
 
-	if not url then return end
+	if not url or not txt:sub(1, 1) == "!" then 
+		chatsounds.Say(client, txt, seed)
+	return end
 	
 	if url:find("youtube") then
 		local id = url:match("%?v=(.+)")
