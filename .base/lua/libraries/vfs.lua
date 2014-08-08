@@ -823,6 +823,10 @@ do -- async reading
 			cache[path] = data
 			callback(data)
 			queue[path] = nil
+			
+			if vfs.debug then
+				logf("[VFS] done loading resource %s\n", path)
+			end
 		end}
 					
 		for name, func in pairs(vfs.async_readers) do

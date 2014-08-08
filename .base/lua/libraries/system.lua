@@ -412,9 +412,9 @@ do -- transparent window
 				  const PIXELFORMATDESCRIPTOR *ppfd
 				);
 			
-				long GetWindowLongA(void*, int);
-				long SetWindowLongA(void*, int, long);
-				long DwmEnableBlurBehindWindow(void*, DWM_BLURBEHIND);
+				long long GetWindowLongA(void*, int);
+				long long SetWindowLongA(void*, int, long long );
+				long long DwmEnableBlurBehindWindow(void*, DWM_BLURBEHIND);
 								
 				HRGN CreateRectRgn(int,int,int,int);
 				int SetPixelFormat(
@@ -425,27 +425,29 @@ do -- transparent window
 				DWORD GetLastError();
 			]])
 			
-			local GWL_STYLE = -16
-			local WS_OVERLAPPEDWINDOW = 0x00CF0000
-			local WS_POPUP = 0x80000000
-			local DWM_BB_ENABLE = 0x00000001
-			local DWM_BB_BLURREGION = 0x00000002
+			local GWL_STYLE = -16LL
+			local WS_OVERLAPPEDWINDOW = 0x00CF0000LL
+			local WS_POPUP = 0x80000000LL
+			local DWM_BB_ENABLE = 0x00000001LL
+			local DWM_BB_BLURREGION = 0x00000002LL
 			
 			local lib = ffi.load("dwmapi.dll")
 			
 			local style = ffi.C.GetWindowLongA(window, GWL_STYLE)
 			style = bit.band(style, bit.bnot(WS_OVERLAPPEDWINDOW))
 			style = bit.bor(style, WS_POPUP)
-			
+						
 			ffi.C.SetWindowLongA(window, GWL_STYLE, style)
-			
-			local bb = ffi.new("DWM_BLURBEHIND",0)
+
+			local bb = ffi.new("DWM_BLURBEHIND")
 			bb.dwFlags = bit.bor(DWM_BB_ENABLE, DWM_BB_BLURREGION)
 			bb.fEnable = true
-			bb.hRgnBlur = ffi.load("Gdi32.dll").CreateRectRgn(0,0,1,1)
-			bb.fTransitionOnMaximized = 0
+			bb.hRgnBlur = ffi.load("Gdi32.dll").CreateRectRgn(0,0,-1,-1)
+			bb.fTransitionOnMaximized = 1
+			print(window, bb)
 			lib.DwmEnableBlurBehindWindow(window, bb)		
-			
+			do return end
+
 			local PFD_TYPE_RGBA = 0
 			local PFD_MAIN_PLANE = 0
 			local PFD_DOUBLEBUFFER = 1
@@ -720,7 +722,6 @@ function system.CreateLuaEnvironment(title, globals, id)
 	local socket = system.lua_environment_sockets[id] or NULL
 	
 	if socket:IsValid() then 
-		socket:Send("exit")
 		socket:Remove()
 	end
 	
@@ -785,7 +786,7 @@ function system.CreateLuaEnvironment(title, globals, id)
 			socket:Broadcast(v, true)
 		end
 		
-		queue = {}
+		table.clear(queue)
 		
 		return true 
 	end

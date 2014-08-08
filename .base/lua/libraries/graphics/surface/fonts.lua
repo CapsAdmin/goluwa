@@ -318,6 +318,7 @@ do -- fonts
 						i = i,
 						
 						str = str,
+						byte = byte,
 					}
 						
 					font.glyphs[str] = glyph

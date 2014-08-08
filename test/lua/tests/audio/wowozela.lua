@@ -17,7 +17,7 @@ local volume = 1
 local pitch = 1 
 
 window.Open(1024, 1024) 
-  local sphere = Texture(64, 64):Fill(function(x, y) 
+local sphere = Texture(64, 64):Fill(function(x, y) 
 	x = x / 64
 	y = y / 64
 	
@@ -38,6 +38,7 @@ local emitter = utilities.RemoveOldObject(ParticleEmitter())
 --emitter:SetCenterAttractionForce(0.1) 
 --emitter:SetPosAttractionForce(0.1) 
 emitter:SetRate(-1)
+emitter:SetTexture(sphere)
 
 local trail_tex = Texture(1, 255):Fill(function(x, y) return 255, 255, 255, y end)
     
@@ -63,8 +64,7 @@ event.AddListener("Draw2D", "wowozela", function(dt)
 		--p:SetEndLength(Vec2(0, 30))
 		
 		p:SetAngle(90)
-		 
-		p:SetTexture(sphere)
+		
 		p:SetVelocity(Vec3((Vec2(-200,0)):Unpack()))
 		
 		p:SetLifeTime(5)
