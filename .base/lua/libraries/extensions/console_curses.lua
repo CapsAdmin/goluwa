@@ -578,7 +578,7 @@ function console.HandleKey(key)
 			
 			local found = autocomplete.Query("console", cmd, 1, get_commands_for_autocomplete())
 
-			if found then
+			if found and found[1] then
 				markup:SetText(found[1] .. " ")
 				markup:SetCaretPos(math.huge, 0)
 			end

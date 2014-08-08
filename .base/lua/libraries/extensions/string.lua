@@ -127,7 +127,9 @@ function string.charclass(char)
 	end
 end
 
-function string.safeformat(str, ...)
+function string.safeformat(str, ...)	
+	str = str:gsub("%%(%d+)", "%%s")
+	
 	local count = select(2, str:gsub("(%%)", ""))
 	local copy = {}
 	for i = 1, count do

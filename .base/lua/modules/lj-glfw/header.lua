@@ -118,4 +118,5 @@ void glfwSwapBuffers(GLFWwindow* window);
 void glfwSwapInterval(int interval);
 int glfwExtensionSupported(const char* extension);
 GLFWglproc glfwGetProcAddress(const char* procname);
+void *glfwGetWin32Window(GLFWwindow *window);
 ]]

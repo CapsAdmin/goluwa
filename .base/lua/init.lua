@@ -691,7 +691,7 @@ do -- addons
 end
 
 if CREATED_ENV then
-	console.SetTitle(TITLE)
+	console.SetTitle(TITLE, "env")
 	
 	utilities.SafeRemove(ENV_SOCKET)
 	
