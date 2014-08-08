@@ -84,9 +84,7 @@ do
 		end
 	end
 
-	function gui.StartDraw(pnl, clip)
-		if pnl.NoMatrix then return end
-		
+	function gui.StartDraw(pnl, clip)		
 		local x, y = pnl:GetPos():Unpack()
 						
 		surface.PushMatrix(x, y)
@@ -102,7 +100,6 @@ do
 	end
 
 	function gui.EndDraw(pnl, clip)	
-		if pnl.NoMatrix then return end
 		surface.PopMatrix()
 	end
 	

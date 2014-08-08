@@ -296,7 +296,7 @@ do--menuitem
 		pnl.img:SetSize(Vec2() + pnl:GetHeight())
 		pnl.img:Align(e.ALIGN_CENTERY)
 	
-		pnl.lbl:SetFont(self.Fonts.aahh_default)
+		--pnl.lbl:SetFont(self.Font.aahh_default)
 		pnl.lbl:SizeToText()
 		pnl.lbl:SetSkinColor("text", "dark")
 		pnl.lbl:SetTrapInsideParent( false )
