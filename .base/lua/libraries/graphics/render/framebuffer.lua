@@ -17,11 +17,15 @@ do
 	local stack = {}
 	local current = 0
 	
-	function META:Begin()	
+	function META:Begin(...)
 		table.insert(stack, current)
 		
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, self.id)
 		current = self.id
+		
+		if not self.building then
+			self:SetDrawBuffers(...)
+		end
 		
 		render.PushViewport(0, 0, self.w, self.h)
 	end
@@ -36,6 +40,45 @@ do
 	
 	function META:Bind()
 		debug.trace()
+	end
+end
+
+function META:SetDrawBuffers(...)	
+	local key = ... and table.concat({...}, "") or ""
+	
+	if key ~= self.last_draw_buffers then
+		
+		self.draw_buffers = {}
+			
+		if ... then			
+			local args = {...}
+			
+			for i, buffer in pairs(self.buffers) do
+				if not buffer.draw_manual then
+					if table.hasvalue(args, buffer.name) then
+						self.draw_buffers[buffer.attach_pos] = buffer.attach
+					else
+						self.draw_buffers[buffer.attach_pos] = gl.e.GL_NONE
+					end
+				end
+			end
+			
+			table.print(args)
+			table.print(self.draw_buffers)
+		else
+			for i, buffer in pairs(self.buffers) do
+				if not buffer.draw_manual then
+					self.draw_buffers[buffer.attach_pos] = buffer.attach
+				end
+			end
+		end
+				
+		self.draw_buffers_size = #self.draw_buffers
+		self.draw_buffers = ffi.new("GLenum["..self.draw_buffers_size.."]", self.draw_buffers)
+		
+		gl.DrawBuffers(self.draw_buffers_size, self.draw_buffers)
+				
+		self.last_draw_buffers = key
 	end
 end
 
@@ -72,7 +115,7 @@ function render.CreateFrameBuffer(width, height, format)
 	self.buffers = {}
 	self.w = width
 	self.h = height
-	self.draw_buffers = {}
+	self.building = true
 	
 	if not format then
 		format = {
@@ -145,12 +188,8 @@ function render.CreateFrameBuffer(width, height, format)
 		
 			gl.RenderbufferStorage(gl.e.GL_RENDERBUFFER, info.texture_format.internal_format, width, height)
 		end
-			
-		if not info.draw_manual then
-			table.insert(self.draw_buffers, info.attach)
-		end
-			
-		self.buffers[info.name] = {id = id, tex = tex, info = info, draw_enum = ffi.new("GLenum[1]", info.attach)}
+		
+		self.buffers[info.name] = {name = info.name, id = id, tex = tex, info = info, attach = info.attach, draw_manual = info.draw_manual, attach_pos = i}
 	end
 
 	for i, data in pairs(self.buffers) do
@@ -161,12 +200,9 @@ function render.CreateFrameBuffer(width, height, format)
 		end
 		data.info = nil
 	end
-	
-	self.draw_buffers_size = #self.draw_buffers
-	self.draw_buffers = ffi.new("GLenum["..self.draw_buffers_size.."]", self.draw_buffers)
-	
-	gl.DrawBuffers(self.draw_buffers_size, self.draw_buffers)
 		
+	self:SetDrawBuffers()
+	
 	local err = gl.CheckFramebufferStatus(gl.e.GL_FRAMEBUFFER)
 	
 	if err ~= gl.e.GL_FRAMEBUFFER_COMPLETE then
@@ -193,6 +229,8 @@ function render.CreateFrameBuffer(width, height, format)
 	end
 	
 	self:End()
+	self.building = nil	
+	
 		
 	render.framebuffers[id] = self
 	
