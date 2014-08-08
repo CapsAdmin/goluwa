@@ -11,28 +11,32 @@ end
 function PANEL:OnRequestLayout()
 	-- umm
 	local size = self:GetSize()
+
 	if self.last_size ~= size or not self.canvas:IsValid() then
 		
 		if self.canvas:IsValid() then self.canvas:Remove() end
-		self.canvas = FrameBuffer(self:GetSize():Unpack())
+		self.canvas = FrameBuffer(self:GetWidth(), self:GetHeight(),  {
+			attach = "color1",
+			texture_format = {
+				internal_format = "RGB32F",
+				min_filter = "nearest",
+			}
+		})
 		
 		self.last_size = size
-		print("canvas resize")
 	end
 	
 	self.needs_update = true
 end 
  
 function PANEL:DrawChildren(size)
-
-	--surface.Start(0, 0, size.x, size.y)
 	self.canvas:Begin() 
-		for key, pnl in pairs(self:GetChildren()) do
-			pnl:Draw()
-		end 
+		surface.Start(0, 0, size.x, size.y)
+			for key, pnl in pairs(self:GetChildren()) do
+				pnl:Draw()
+			end  
+		surface.End()
 	self.canvas:End()	
-	
-	--surface.End()
 end 
 
 function PANEL:OnDraw(size)
@@ -45,8 +49,7 @@ function PANEL:OnDraw(size)
 	if self.canvas:IsValid() then
 		surface.SetColor(1, 1, 1, 1)
 		surface.SetTexture(self.canvas:GetTexture())
-		local pos = self:GetWorldPos()
-		surface.DrawRect(pos.x, pos.y, size.w, size.h)
+		surface.DrawRect(0, 0, size.w, size.h)
 	end
 end
 

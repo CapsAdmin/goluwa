@@ -41,7 +41,6 @@ function PANEL:Initialize()
 
 	self:SetStackRight(false)
 	self:SetSizeToWidth(false)
-	self:SetSizeToContent(true)
 end
 
 function PANEL:SetIconSize(siz)
@@ -78,4 +77,17 @@ function PANEL:OnDraw()
 	self:DrawHook("ContextDraw")
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(PANEL) 
+
+if RELOAD then
+	local pnl = utilities.RemoveOldObject(gui.Create("context"))
+	
+	pnl:AddOption(Texture("textures/gui/pac.png"), "hellowww")
+	pnl:AddSpace()
+	pnl:AddOption(Texture("textures/gui/pac.png"), "hello2")
+	pnl:AddOption(Texture("textures/gui/pac.png"), "hello33") 
+	
+	pnl:SizeToContents()
+	
+	pnl:SetSize(Vec2(100, 100))
+end   
