@@ -13,6 +13,18 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 
 	local delta = window.GetMouseDelta() / 100
 	
+	if input.IsKeyDown("left") then
+		delta.x = delta.x - speed
+	elseif input.IsKeyDown("right") then
+		delta.x = delta.x + speed
+	end
+	
+	if input.IsKeyDown("up") then
+		delta.y = delta.y - speed
+	elseif input.IsKeyDown("down") then
+		delta.y = delta.y + speed
+	end
+	
 	if input.IsKeyDown("r") then
 		cam_ang.r = 0
 		cam_fov = 90
