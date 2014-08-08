@@ -16,7 +16,7 @@ if map == "hl2" then
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk") 
-	buffer = Buffer(io.open(R"maps/d3_citadel_03.bsp", "rb"))
+	buffer = Buffer(io.open(R"maps/d2_coast_07.bsp", "rb"))
 elseif map == "gmod" then
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "garrysmod/")
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_misc_dir.vpk")
@@ -331,7 +331,7 @@ local bsp_mesh = {sub_models = {}}
 do timer.Start("building mesh")
 
 	local scale = 0.0254
-
+	
 	local function add_vertex(model, texinfo, texdata, pos, blend)
 		local a = texinfo.textureVecs
 		
@@ -385,18 +385,31 @@ do timer.Start("building mesh")
 	local function load_texture(material, field)	
 		local shader, data = next(material)
 		
-		if not shader and not data or not data[field] then
+		if not shader or not data then
 			logn("invalid field ", field)
 			table.print(material)
 		end
 		
+		if not data[field] then
+			return
+		end
+
 		local path = "materials/" .. data[field] .. ".vtf"
 		path = path:lower()
+		
 		if not vfs.Exists(path) then
 			logf("unable to find %s in %s.%s\n", path, shader, field)
 			return render.GetErrorTexture()
 		end
-		return Texture(path, {mip_map_levels = 8}) or render.GetErrorTexture()
+		
+		local tex = Texture(path, {mip_map_levels = 8})
+		
+		if not tex or tex == render.GetErrorTexture() then
+			logf("unable to find %s in %s.%s\n", path, shader, field)
+			return render.GetErrorTexture()
+		end 
+		
+		return tex
 	end
 
 	local meshes = {}
@@ -416,7 +429,7 @@ do timer.Start("building mesh")
 				if texname:sub(0, 5) == "maps/" then
 					texname = texname:gsub("maps/.-/(.+)_.-_.-_.+", "%1")
 				end
-				
+								
 				if not meshes[texname] then
 					
 					local model = {mesh_data = {}}
@@ -440,9 +453,10 @@ do timer.Start("building mesh")
 						model.diffuse = load_texture(material, "$normalmap")
 					else
 						model.diffuse = load_texture(material, "$basetexture")
+						model.bump = load_texture(material, "$bumpmap")
 						
 						if material.WorldVertexTransition then
-							model.diffuse2 = load_texture(material, "$basetexture")
+							model.diffuse2 = load_texture(material, "$basetexture2")
 						end
 					end
 					
@@ -457,6 +471,8 @@ do timer.Start("building mesh")
 
 			local first, previous, current
 
+			print(face.dispinfo)
+			
 			if face.dispinfo < 0 then
 				for j = 1, edge_count do
 					local surfedge = header.surfedges[edge_first + j]
@@ -530,10 +546,9 @@ do timer.Start("building mesh")
 timer.Stop() end
 
 timer.Start("render.CreateMesh")
-
+ 
 for i, data in ipairs(bsp_mesh.sub_models) do
 	utilities.GenerateNormals(data.mesh_data)
-	print(data.mesh_data[1].normal)
 	data.mesh = render.CreateMesh(data.mesh_data)
 end
 
