@@ -4,7 +4,7 @@ local COMPONENT = {}
 
 COMPONENT.Name = "mesh"
 COMPONENT.Require = {"transform"}
-COMPONENT.Events = {"Draw3D"}
+COMPONENT.Events = {"Draw3DGeometry"}
 
 metatable.StartStorable()		
 	metatable.GetSet(COMPONENT, "Texture")
@@ -14,7 +14,6 @@ metatable.StartStorable()
 	metatable.GetSet(COMPONENT, "ModelPath", "models/face.obj")
 metatable.EndStorable()
 
-metatable.GetSet(COMPONENT, "Shader", NULL)
 metatable.GetSet(COMPONENT, "Model", nil)
 
 COMPONENT.Network = {
@@ -25,66 +24,8 @@ COMPONENT.Network = {
 }
 
 
-if CLIENT then			
-	local SHADER = {
-		name = "mesh_ecs",
-		vertex = { 
-			uniform = {
-				pvm_matrix = "mat4",
-			},			
-			attributes = {
-				{pos = "vec3"},
-				{normal = "vec3"},
-				{uv = "vec2"},
-				{texture_blend = "float"},
-			},	
-			source = "gl_Position = pvm_matrix * vec4(pos, 1.0);"
-		},
-		fragment = { 
-			uniform = {
-				color = Color(1,1,1,1),
-				diffuse = "sampler2D",
-				diffuse2 = "sampler2D",
-				vm_matrix = "mat4",
-				v_matrix = "mat4",
-				--detail = "sampler2D",
-				--detailscale = 1,
-				
-				bump = "sampler2D",
-				specular = "sampler2D",
-			},		
-			attributes = {
-				{pos = "vec3"},
-				{normal = "vec3"},
-				{uv = "vec2"},
-				{texture_blend = "float"},
-			},			
-			source = [[
-				out vec4 out_color[4];
-
-				void main() 
-				{
-					out_color[0] = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;			
-					
-					out_color[1] = vec4(normalize(mat3(vm_matrix) * -normal), 1);
-					
-					vec3 bump_detail = texture(bump, uv).rgb;
-					
-					if (bump_detail != vec3(1,1,1))
-					{
-						out_color[1].rgb = normalize(mix(out_color[1].rgb, bump_detail, 0.5));
-					}
-					
-					out_color[2] = vm_matrix * vec4(pos, 1);
-					out_color[3] = texture2D(specular, uv);
-					//out_color.rgb *= texture(detail, uv * detailscale).rgb;
-				}
-			]]
-		}  
-	}
-			
+if CLIENT then						
 	function COMPONENT:OnAdd(ent)
-		self.Shader = render.CreateShader(SHADER)
 	end
 
 	function COMPONENT:OnRemove(ent)
@@ -96,14 +37,12 @@ if CLIENT then
 		self.Model = render.Create3DMesh(path)
 	end
 
-	function COMPONENT:OnDraw3D(dt)
+	function COMPONENT:OnDraw3DGeometry(shader)
 
 		local model = self.Model
-		local shader = self.Shader
 
 		if not render.matrices.vp_matrix then return end -- FIX ME			
 		if not model then return end
-		if not shader then return end
 
 		local matrix = self:GetComponent("transform"):GetMatrix() 
 		local temp = Matrix44()
@@ -147,8 +86,8 @@ if CLIENT then
 			for i, model in ipairs(model.sub_models) do
 				shader.diffuse = self.Texture or model.diffuse or render.GetErrorTexture()
 				shader.diffuse2 = model.diffuse2 or render.GetErrorTexture()
-				shader.specular = model.specular or render.GetGreyTexture()
-				shader.bump = model.bump or render.GetWhiteTexture()
+				shader.specular = model.specular or render.GetWhiteTexture()
+				shader.bump = model.bump or render.GetBlackTexture()
 				--shader.detail = model.detail or render.GetWhiteTexture()
 				shader:Bind()
 				model.mesh:Draw()
@@ -156,7 +95,7 @@ if CLIENT then
 		end
 	end 
 	
-	COMPONENT.OnDraw2D = COMPONENT.OnDraw3D
+	COMPONENT.OnDraw2D = COMPONENT.OnDraw3DGeometry
 end
 
 entities.RegisterComponent(COMPONENT)
