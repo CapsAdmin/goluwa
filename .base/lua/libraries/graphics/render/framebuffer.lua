@@ -62,9 +62,6 @@ function META:SetDrawBuffers(...)
 					end
 				end
 			end
-			
-			table.print(args)
-			table.print(self.draw_buffers)
 		else
 			for i, buffer in pairs(self.buffers) do
 				if not buffer.draw_manual then

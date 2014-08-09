@@ -284,6 +284,7 @@ end
 
 include("components/*", entities)
 
+entities.SetupComponents("light", {"transform", "light"})
 entities.SetupComponents("clientside", {"transform", "mesh"})
 entities.SetupComponents("physical", {"transform", "mesh", "physics"})
 entities.SetupComponents("networked", {"transform", "mesh", "physics", "networked"})
