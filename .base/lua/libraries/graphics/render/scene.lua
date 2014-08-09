@@ -61,6 +61,7 @@ function render.DrawScene(window, dt)
 		event.Call("PreDisplay", dt)		
 			render.Start3D()
 				event.Call("Draw3D", dt)
+				render.LightPass()
 			render.End3D()	
 		event.Call("PostDisplay", dt)
 		
