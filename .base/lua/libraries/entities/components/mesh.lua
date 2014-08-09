@@ -7,7 +7,7 @@ COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Draw3D"}
 
 metatable.StartStorable()		
-	metatable.GetSet(COMPONENT, "Texture", NULL)
+	metatable.GetSet(COMPONENT, "Texture")
 	metatable.GetSet(COMPONENT, "Color", Color(1, 1, 1))
 	metatable.GetSet(COMPONENT, "Alpha", 1)
 	metatable.GetSet(COMPONENT, "Cull", true)
@@ -84,7 +84,6 @@ if CLIENT then
 	}
 			
 	function COMPONENT:OnAdd(ent)
-		self.Texture = render.GetWhiteTexture()
 		self.Shader = render.CreateShader(SHADER)
 	end
 
@@ -146,9 +145,9 @@ if CLIENT then
 			shader.color = self.Color
 			
 			for i, model in ipairs(model.sub_models) do
-				shader.diffuse = model.diffuse or render.GetErrorTexture()
+				shader.diffuse = self.Texture or model.diffuse or render.GetErrorTexture()
 				shader.diffuse2 = model.diffuse2 or render.GetErrorTexture()
-				shader.specular = model.specular or render.GetBlackTexture()
+				shader.specular = model.specular or render.GetGreyTexture()
 				shader.bump = model.bump or render.GetWhiteTexture()
 				--shader.detail = model.detail or render.GetWhiteTexture()
 				shader:Bind()
