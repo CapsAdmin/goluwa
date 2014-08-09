@@ -4,7 +4,7 @@ local COMPONENT = {}
 
 COMPONENT.Name = "light"
 COMPONENT.Require = {"transform"}
-COMPONENT.Events = {"DrawLights"}
+COMPONENT.Events = {"Draw3DLights"}
 
 metatable.StartStorable()
 	metatable.GetSet(COMPONENT, "Color", Color(1, 1, 1))
@@ -31,7 +31,7 @@ if CLIENT then
 
 	end	
 
-	function COMPONENT:OnDrawLights(shader)
+	function COMPONENT:OnDraw3DLights(shader)
 		local transform = self:GetComponent("transform")
 		local matrix = transform:GetMatrix() 
 		local screen = matrix * render.matrices.vp_matrix

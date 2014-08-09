@@ -3,7 +3,270 @@ local render = (...) or _G.render
  
 render.gbuffer = NULL
 
-local SHADER = {
+local FRAMEBUFFERS = {
+	{
+		name = "diffuse",
+		attach = "color",
+		texture_format = {
+			internal_format = "RGBA16F",
+			min_filter = "nearest",
+		}
+	},
+	{
+		name = "normal",
+		attach = "color",
+		texture_format = {
+			internal_format = "RGBA16F",
+			min_filter = "nearest",
+		}
+	},
+	{
+		name = "position",
+		attach = "color",
+		texture_format = {
+			internal_format = "RGBA16F",
+			min_filter = "nearest",
+		}
+	},
+	{
+		name = "light",
+		attach = "color",
+		texture_format = {
+			internal_format = "RGBA16F",
+			min_filter = "nearest",
+		}
+	},
+	{
+		name = "depth",
+		attach = "depth",
+		draw_manual = true,
+		texture_format = {
+			internal_format = "DEPTH_COMPONENT32F",	 
+			depth_texture_mode = gl.e.GL_RED,
+			min_filter = "nearest",				
+		} 
+	} 
+} 
+
+local MESH = {
+	name = "mesh_ecs",
+	vertex = { 
+		uniform = {
+			pvm_matrix = "mat4",
+		},			
+		attributes = {
+			{pos = "vec3"},
+			{normal = "vec3"},
+			{uv = "vec2"},
+			{texture_blend = "float"},
+		},	
+		source = "gl_Position = pvm_matrix * vec4(pos, 1.0);"
+	},
+	fragment = { 
+		uniform = {
+			color = Color(1,1,1,1),
+			diffuse = "sampler2D",
+			diffuse2 = "sampler2D",
+			vm_matrix = "mat4",
+			v_matrix = "mat4",
+			--detail = "sampler2D",
+			--detailscale = 1,
+			
+			bump = "sampler2D",
+			specular = "sampler2D",
+		},		
+		attributes = {
+			{pos = "vec3"},
+			{normal = "vec3"},
+			{uv = "vec2"},
+			{texture_blend = "float"},
+		},			
+		source = [[
+			out vec4 out_color[4];
+
+			void main() 
+			{
+				// diffuse
+				out_color[0] = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;			
+				
+				// specular
+				out_color[0].a = texture2D(specular, uv).r;
+				
+				// normals
+				{
+					out_color[1] = vec4(normalize(mat3(vm_matrix) * -normal), 1);
+									
+					vec3 bump_detail = texture(bump, uv).rgb;
+					
+					if (bump_detail != vec3(1,1,1))
+					{
+						out_color[1].rgb = normalize(mix(out_color[1].rgb, bump_detail, 0.5));
+					}
+				}
+				
+				// position
+				out_color[2] = vm_matrix * vec4(pos, 1);
+				
+				//out_color.rgb *= texture(detail, uv * detailscale).rgb;
+			}
+		]]
+	}  
+}
+
+local LIGHT = {
+	name = "gbuffer_light",
+	vertex = { 
+		uniform = {
+			pvm_matrix = "mat4",
+		},			
+		attributes = {
+			{pos = "vec3"},
+			{normal = "vec3"},
+			{uv = "vec2"},
+			{texture_blend = "float"},
+		},	
+		source = "gl_Position = pvm_matrix * vec4(pos*2, 1);"
+	}, 
+	fragment = {
+		uniform = {
+			tex_depth = "sampler2D",
+			tex_diffuse = "sampler2D",
+			tex_normal = "sampler2D",
+			tex_position = "sampler2D", 
+			cam_pos = "vec3",
+			cam_dir = "vec3",
+			screen_size = Vec2(1,1),
+			
+			--light_intensity = 30,
+			--light_shininess = 4,
+			
+			light_pos = Vec3(0,0,0),
+			light_color = Color(1,1,1,1),				
+			light_ambient_intensity = 0,
+			light_diffuse_intensity = 0.5,
+			light_specular_power = 64,
+			light_radius = 1000,
+			light_attenuation_constant = 0,
+			light_attenuation_linear = 0,
+			light_attenuation_exponent = 0.01,
+		},  
+		source = [[			
+			out vec4 out_color;
+			
+			vec2 get_uv()
+			{
+				return gl_FragCoord.xy / screen_size;
+			}
+			
+			vec4 CalcLightInternal(vec3 LightDirection, vec3 WorldPos, vec3 Normal, float gMatSpecularIntensity)
+			{
+				vec4 AmbientColor = light_color * light_ambient_intensity;
+				float DiffuseFactor = dot(Normal, -LightDirection);
+
+				vec4 DiffuseColor  = vec4(0, 0, 0, 0);
+				vec4 SpecularColor = vec4(0, 0, 0, 0);
+
+				if (DiffuseFactor > 0) 
+				{
+					DiffuseColor = light_color * light_diffuse_intensity * DiffuseFactor * 0.5;
+
+					vec3 VertexToEye = normalize(cam_pos - WorldPos);
+					vec3 LightReflect = normalize(reflect(LightDirection, Normal));
+					
+					float SpecularFactor = dot(VertexToEye, LightReflect);
+					SpecularFactor = pow(SpecularFactor, light_specular_power);
+					
+					// this is taken from main2
+					/*vec3 R = reflect(-LightDirection, Normal);						  
+					vec3 half_dir = normalize(LightDirection + -cam_dir);
+					float spec_angle = max(dot(R, half_dir), 0.0);
+					float SpecularFactor = pow(spec_angle, light_specular_power);*/
+					
+					if (SpecularFactor > 0) 
+					{
+						SpecularColor = light_color * gMatSpecularIntensity * SpecularFactor;
+					}
+				}
+
+				return (AmbientColor + DiffuseColor + SpecularColor);
+			}
+			
+			vec4 CalcPointLight(vec3 WorldPos, vec3 Normal, float gMatSpecularIntensity)
+			{
+				vec3 LightDirection = WorldPos - light_pos;
+				float Distance = length(LightDirection);
+				
+				if (Distance > light_radius * 10)
+					return vec4(0,0,0,0);
+				
+				LightDirection = normalize(LightDirection);
+
+				vec4 Color = CalcLightInternal(LightDirection, WorldPos, Normal, gMatSpecularIntensity);
+
+				float Attenuation =  light_attenuation_constant +
+									 light_attenuation_linear * Distance +
+									 light_attenuation_exponent * Distance * Distance;
+
+				Attenuation = min(1.0, Attenuation);
+				
+				
+				return Color / Attenuation;
+			}
+
+			void main()
+			{					
+				vec2 uv = get_uv();
+				
+				float Specular = texture(tex_diffuse, uv).a;
+				vec3 WorldPos = -texture(tex_position, uv).yxz;
+				vec3 Normal = texture(tex_normal, uv).yxz;				
+				
+				out_color = CalcPointLight(WorldPos, Normal, Specular);
+			}				
+				
+			/*void main2()
+			{						
+				vec2 uv = get_uv();
+
+				vec3 diffuse = texture(tex_diffuse, uv).rgb;
+				vec3 normal = texture(tex_normal, uv).yxz;				
+				vec3 position = -texture(tex_position, uv).yxz;
+				float specular = texture(tex_specular, uv).x;
+													
+				vec3 final_color = vec3(0);
+				
+				vec3 light_vec = light_pos - position;
+				float light_dist = length(light_vec);
+				
+				if (light_dist > light_radius * 10) 
+				{
+					out_color.rgb = final_color;
+					return;
+				}
+				
+				vec3 light_dir = normalize(light_vec);
+				
+				float lambertian = dot(light_dir, normal);
+	
+				if (lambertian > 0.0)
+				{						
+					vec3 R = reflect(-light_dir, normal);
+					  
+					vec3 half_dir = normalize(light_dir + -cam_dir);
+					float spec_angle = max(dot(R, half_dir), 0.0);
+					float S = pow(spec_angle, light_shininess);
+					
+					final_color = (lambertian * diffuse + S * specular) * light_color.rgb;
+				}
+						
+				out_color.rgb = final_color / light_dist * light_intensity;
+				out_color.a = 0.5;
+			}*/
+		]]  
+	}
+} 
+
+local GBUFFER = {
 	name = "gbuffer",
 	vertex = {
 		uniform = {
@@ -21,7 +284,6 @@ local SHADER = {
 			tex_light = "sampler2D",
 			tex_normal = "sampler2D",
 			tex_position = "sampler2D", 
-			tex_specular = "sampler2D",
 			tex_depth = "sampler2D",
 			rt_w = "float",
 			rt_h = "float",
@@ -43,7 +305,7 @@ local SHADER = {
 			vec2 camerarange = vec2(1.0, 10000.0);
 
 			float readDepth( in vec2 coord ) {
-				return (2.0 * camerarange.x) / (camerarange.y + camerarange.x - pow(texture2D( tex_depth, coord ).a,10) * (camerarange.y - camerarange.x));
+				return (2.0 * camerarange.x) / (camerarange.y + camerarange.x - pow(texture2D(tex_depth, coord ).r,10) * (camerarange.y - camerarange.x));
 			}
 
 			float compareDepths( in float depth1, in float depth2 ) {
@@ -111,48 +373,21 @@ local SHADER = {
 			void main ()
 			{	
 				vec3 diffuse = texture(tex_diffuse, uv).rgb;
-				float depth = texture(tex_depth, uv).a;			
-			
-				vec3 normal = texture(tex_normal, uv).yxz;				
-				vec3 position = -texture(tex_position, uv).yxz;
-
-				float specular = texture(tex_specular, uv).x;
-		
-		
-				//this is for BSP!!!
-				vec3 ambient_light_color = vec3(191.0 / 255.0, 205.0 / 255.0, 214.0 / 255.0) * 0.9;
+				float depth = texture(tex_depth, uv).r;	
+					
+				out_color.rgb = diffuse;
+				//out_color.rgb *= ssao();
+				out_color.rgb *= texture(tex_light, uv).rgb;
+						
+				out_color.a = 1;
+				
+				
+				/*vec3 ambient_light_color = vec3(191.0 / 255.0, 205.0 / 255.0, 214.0 / 255.0) * 0.9;
 				vec3 atmosphere_color = ambient_light_color;
 				vec3 fog_color = atmosphere_color;
 				float fog_distance = 750.0;
-				
-				//vec3 ambient_light_color = vec3(0.05);
-				//vec3 atmosphere_color = ambient_light_color;
-				//vec3 fog_color = atmosphere_color;
-				//float fog_distance = 2000.0;
-				
-				//if(uv.x < 0.5) {
-					//out_color.rgb = diffuse * ambient_light_color * ssao();
-				//} else {
-				//	out_color.rgb = diffuse * ambient_light_color;
-				//}
-				//out_color.rgb = diffuse * (vec3(1.0) - vec3(0.88235300779343, 0.59607845544815, 0.30588236451149) / 8) * 1.3; //0.0 = ambient color
-								
-				out_color.rgb = diffuse;
-				out_color.rgb *= texture(tex_light, uv).rgb;
-				//out_color.rgb *= ssao();
-				
-
-				
-				if(out_color.rgb == vec3(0))
-				{
-					//out_color.rgb = atmosphere_color;
-				}
-				
-				out_color.a = 1;
-				//out_color.rgb = vec3(ssao());
-				//out_color.rgb = mix_fog(out_color.rgb, depth, fog_distance, 1-fog_color); //this fog is fucked up, needs to be redone
-				
-				//out_color.rgb = 1-vec3(pow(depth,100));  
+				out_color.rgb = mix_fog(out_color.rgb, depth, fog_distance, 1-fog_color); //this fog is fucked up, needs to be redone
+				*/
 			}
 		]]  
 	}
@@ -354,117 +589,67 @@ function render.InitializeGBuffer(width, height)
 	
 	logn("[render] initializing gbuffer: ", width, " ", height)
 	
-	render.gbuffer_config = {
-		{
-			name = "diffuse",
-			attach = "color",
-			texture_format = {
-				internal_format = "RGB16F",
-				min_filter = "nearest",
-			}
-		},
-		{
-			name = "normal",
-			attach = "color",
-			texture_format = {
-				internal_format = "RGB16F",
-				min_filter = "nearest",
-			}
-		},
-		{
-			name = "position",
-			attach = "color",
-			texture_format = {
-				internal_format = "RGB16F",
-				min_filter = "nearest",
-			}
-		},
-		{
-			name = "specular",
-			attach = "color",
-			texture_format = {
-				internal_format = "R16F",
-				min_filter = "nearest",
-			}
-		},
-		{
-			name = "light",
-			attach = "color",
-			texture_format = {
-				internal_format = "RGB16F",
-				min_filter = "nearest",
-			}
-		},
-		{
-			name = "depth",
-			attach = "depth",
-			draw_manual = true,
-			texture_format = {
-				internal_format = "DEPTH_COMPONENT32F",	 
-				depth_texture_mode = gl.e.GL_ALPHA,
-				min_filter = "nearest",				
-			} 
-		} 
-	} 
-  
-	render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_config)  
-	
-	if not render.gbuffer:IsValid() then
-		logn("[render] failed to initialize gbuffer")
-		return
+	do -- gbuffer	  
+		render.gbuffer = render.CreateFrameBuffer(width, height, FRAMEBUFFERS)  
+		
+		if not render.gbuffer:IsValid() then
+			logn("[render] failed to initialize gbuffer")
+			return
+		end
+
+		local shader = render.CreateShader(GBUFFER)
+		
+		shader.pvm_matrix = render.GetPVWMatrix2D
+		shader.pv_matrix = function() return (render.matrices.projection_3d*render.matrices.view_3d).m end
+		shader.cam_pos = function()	return  render.GetCamPos() end
+		shader.cam_vec = function() return render.GetCamAng():GetRad():GetForward() end
+		shader.time = function() return tonumber(timer.GetSystemTime()) end
+		 
+		shader.tex_light = render.gbuffer:GetTexture("light")
+		shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
+		shader.tex_position = render.gbuffer:GetTexture("position") 
+		shader.tex_normal = render.gbuffer:GetTexture("normal")
+		shader.tex_depth = render.gbuffer:GetTexture("depth")
+		shader.rt_w = width
+		shader.rt_h = height
+
+		local vbo = shader:CreateVertexBuffer({
+			{pos = {0, 0}, uv = {0, 1}},
+			{pos = {0, 1}, uv = {0, 0}},
+			{pos = {1, 1}, uv = {1, 0}},
+
+			{pos = {1, 1}, uv = {1, 0}},
+			{pos = {1, 0}, uv = {1, 1}},
+			{pos = {0, 0}, uv = {0, 1}},
+		})
+		
+		render.gbuffer_shader = shader
+		render.gbuffer_screen_quad = vbo
 	end
-
-	local shader = render.CreateShader(SHADER)
 	
-	shader.pvm_matrix = render.GetPVWMatrix2D
-	shader.pv_matrix = function() return (render.matrices.projection_3d*render.matrices.view_3d).m end
-	shader.cam_pos = function()	return  render.GetCamPos() end
-	shader.cam_vec = function() return render.GetCamAng():GetRad():GetForward() end
-	shader.time = function() return tonumber(timer.GetSystemTime()) end
-	 
-	shader.tex_light = render.gbuffer:GetTexture("light")
-	shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
-	shader.tex_position = render.gbuffer:GetTexture("position") 
-	shader.tex_normal = render.gbuffer:GetTexture("normal")
-	shader.tex_specular = render.gbuffer:GetTexture("specular")
-	shader.tex_depth = render.gbuffer:GetTexture("depth")
-	shader.rt_w = width
-	shader.rt_h = height
+	do -- light
+		local shader = render.CreateShader(LIGHT)
 
-	local vbo = shader:CreateVertexBuffer({
-		{pos = {0, 0}, uv = {0, 1}},
-		{pos = {0, 1}, uv = {0, 0}},
-		{pos = {1, 1}, uv = {1, 0}},
-
-		{pos = {1, 1}, uv = {1, 0}},
-		{pos = {1, 0}, uv = {1, 1}},
-		{pos = {0, 0}, uv = {0, 1}},
-	})
+		shader.pvm_matrix = render.GetPVWMatrix2D
+		shader.cam_dir = function() return render.GetCamAng():GetRad():GetForward() end
+		shader.cam_pos = render.GetCamPos
+		 
+		shader.tex_depth = render.gbuffer:GetTexture("depth")
+		shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
+		shader.tex_position = render.gbuffer:GetTexture("position")
+		shader.tex_normal = render.gbuffer:GetTexture("normal")
+		shader.screen_size = Vec2(width, height)
+		
+		render.gbuffer_light_shader = shader
+	end
 	
-	render.gbuffer_shader = shader
-	render.gbuffer_screen_quad = vbo
-	
-	event.AddListener("PreDisplay", "gbuffer", function()
-		render.gbuffer:Begin()
-		
-		gl.DepthMask(gl.e.GL_TRUE)
-		render.gbuffer:Clear()
-		
-		gl.Enable(gl.e.GL_DEPTH_TEST)
-		
-		gl.Disable(gl.e.GL_BLEND)		
-	end)	
-	
-	event.AddListener("PostDisplay", "gbuffer", function()
-		render.gbuffer:End()
-		
-		render.DrawGBuffer(render.GetWidth(), render.GetHeight())
-	end)	
-
+	do -- mesh		
+		render.gbuffer_mesh_shader = render.CreateShader(MESH)
+	end
+			
 	event.AddListener("WindowFramebufferResized", "gbuffer", function(window, w, h)
 		render.InitializeGBuffer(w, h)
 	end)
-	
 	
 	event.AddListener("Draw2D", "gbuffer_debug", function()
 		local size = 4
@@ -475,10 +660,16 @@ function render.InitializeGBuffer(width, height)
 			
 			local x = 0
 			local y = 0
+						
+			local grey = 0.5 + math.sin(os.clock() * 10) / 10
+			surface.SetFont("default")
 			
-			surface.SetColor(1,1,1,1)
-			
-			for i, data in pairs(render.gbuffer_config) do
+			for i, data in pairs(FRAMEBUFFERS) do
+				surface.SetWhiteTexture()
+				surface.SetColor(grey, grey, grey, 1)
+				surface.DrawRect(x, y, w, h)
+				
+				surface.SetColor(1,1,1,1)
 				surface.SetTexture(render.gbuffer:GetTexture(data.name))
 				surface.DrawRect(x, y, w, h)
 				
@@ -498,191 +689,6 @@ function render.InitializeGBuffer(width, height)
 	for i, data in pairs(EFFECTS) do
 		render.AddPostProcessShader(data.name, data.source)
 	end	
-	
-	local LIGHT = {
-		name = "gbuffer_light",
-		vertex = { 
-			uniform = {
-				pvm_matrix = "mat4",
-			},			
-			attributes = {
-				{pos = "vec3"},
-				{normal = "vec3"},
-				{uv = "vec2"},
-				{texture_blend = "float"},
-			},	
-			source = "gl_Position = pvm_matrix * vec4(pos*3, 1);"
-		}, 
-		fragment = {
-			uniform = {
-				tex_depth = "sampler2D",
-				tex_diffuse = "sampler2D",
-				tex_normal = "sampler2D",
-				tex_position = "sampler2D", 
-				tex_specular = "sampler2D", 
-				cam_pos = "vec3",
-				cam_dir = "vec3",
-				screen_size = Vec2(1,1),
-				
-				--light_intensity = 30,
-				--light_shininess = 4,
-				
-				light_pos = Vec3(0,0,0),
-				light_color = Color(1,1,1,1),				
-				light_ambient_intensity = 0,
-				light_diffuse_intensity = 0.5,
-				light_specular_power = 64,
-				light_radius = 1000,
-				light_attenuation_constant = 0,
-				light_attenuation_linear = 0,
-				light_attenuation_exponent = 0.01,
-			},  
-			source = [[			
-				out vec4 out_color;
-				
-				vec2 get_uv()
-				{
-					return gl_FragCoord.xy / screen_size;
-				}
-				
-				vec4 CalcLightInternal(vec3 LightDirection, vec3 WorldPos, vec3 Normal, float gMatSpecularIntensity)
-				{
-					vec4 AmbientColor = light_color * light_ambient_intensity;
-					float DiffuseFactor = dot(Normal, -LightDirection);
-
-					vec4 DiffuseColor  = vec4(0, 0, 0, 0);
-					vec4 SpecularColor = vec4(0, 0, 0, 0);
-
-					if (DiffuseFactor > 0) 
-					{
-						DiffuseColor = light_color * light_diffuse_intensity * DiffuseFactor * 0.5;
-
-						vec3 VertexToEye = normalize(cam_pos - WorldPos);
-						vec3 LightReflect = normalize(reflect(LightDirection, Normal));
-						
-						float SpecularFactor = dot(VertexToEye, LightReflect);
-						SpecularFactor = pow(SpecularFactor, light_specular_power);
-						
-						// this is taken from main2
-						/*vec3 R = reflect(-LightDirection, Normal);						  
-						vec3 half_dir = normalize(LightDirection + -cam_dir);
-						float spec_angle = max(dot(R, half_dir), 0.0);
-						float SpecularFactor = pow(spec_angle, light_specular_power);*/
-						
-						if (SpecularFactor > 0) 
-						{
-							SpecularColor = light_color * gMatSpecularIntensity * SpecularFactor;
-						}
-					}
-
-					return (AmbientColor + DiffuseColor + SpecularColor);
-				}
-				
-				vec4 CalcPointLight(vec3 WorldPos, vec3 Normal, float gMatSpecularIntensity)
-				{
-					vec3 LightDirection = WorldPos - light_pos;
-					float Distance = length(LightDirection);
-					
-					if (Distance > light_radius * 10)
-						return vec4(0,0,0,0);
-					
-					LightDirection = normalize(LightDirection);
-
-					vec4 Color = CalcLightInternal(LightDirection, WorldPos, Normal, gMatSpecularIntensity);
-
-					float Attenuation =  light_attenuation_constant +
-										 light_attenuation_linear * Distance +
-										 light_attenuation_exponent * Distance * Distance;
-
-					Attenuation = min(1.0, Attenuation);
-					
-					
-					return Color / Attenuation;
-				}
-
-				void main()
-				{					
-					vec2 uv = get_uv();
-					
-					vec3 Color = texture(tex_diffuse, uv).rgb;
-					vec3 WorldPos = -texture(tex_position, uv).yxz;
-					vec3 Normal = texture(tex_normal, uv).yxz;				
-					float Specular = texture(tex_specular, uv).x;
-					
-					out_color = CalcPointLight(WorldPos, Normal, Specular);
-				}				
-					
-				/*void main2()
-				{						
-					vec2 uv = get_uv();
-
-					vec3 diffuse = texture(tex_diffuse, uv).rgb;
-					vec3 normal = texture(tex_normal, uv).yxz;				
-					vec3 position = -texture(tex_position, uv).yxz;
-					float specular = texture(tex_specular, uv).x;
-														
-					vec3 final_color = vec3(0);
-					
-					vec3 light_vec = light_pos - position;
-					float light_dist = length(light_vec);
-					
-					if (light_dist > light_radius * 10) 
-					{
-						out_color.rgb = final_color;
-						return;
-					}
-					
-					vec3 light_dir = normalize(light_vec);
-					
-					float lambertian = dot(light_dir, normal);
-		
-					if (lambertian > 0.0)
-					{						
-						vec3 R = reflect(-light_dir, normal);
-						  
-						vec3 half_dir = normalize(light_dir + -cam_dir);
-						float spec_angle = max(dot(R, half_dir), 0.0);
-						float S = pow(spec_angle, light_shininess);
-						
-						final_color = (lambertian * diffuse + S * specular) * light_color.rgb;
-					}
-							
-					out_color.rgb = final_color / light_dist * light_intensity;
-					out_color.a = 0.5;
-				}*/
-			]]  
-		}
-	} 
-
-	local shader = render.CreateShader(LIGHT)
-
-	shader.pvm_matrix = render.GetPVWMatrix2D
-	shader.cam_dir = function() return render.GetCamAng():GetRad():GetForward() end
-	shader.cam_pos = render.GetCamPos
-	 
-	shader.tex_depth = render.gbuffer:GetTexture("depth")
-	shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
-	shader.tex_position = render.gbuffer:GetTexture("position")
-	shader.tex_normal = render.gbuffer:GetTexture("normal")
-	shader.tex_specular = render.gbuffer:GetTexture("specular")
-	shader.screen_size = Vec2(width, height)
-	
-	render.gbuffer_light_shader = shader
-end
-
-function render.LightPass()	
-	render.gbuffer:Begin("light")
-
-	gl.DepthMask(gl.e.GL_FALSE)
-	gl.Disable(gl.e.GL_DEPTH_TEST)	
-	gl.Enable(gl.e.GL_BLEND)
-	render.SetBlendMode("additive")
-	
-		render.gbuffer_light_shader:Bind()
-		event.Call("DrawLights", render.gbuffer_light_shader)
-	render.gbuffer:End() 
-	
-	render.SetBlendMode("alpha")
 end
 
 function render.ShutdownGBuffer()
@@ -707,7 +713,30 @@ end
 
 local size = 4
 
-function render.DrawGBuffer(w, h)
+function render.DrawDeferred(w, h)
+
+	-- geometry
+	gl.DepthMask(gl.e.GL_TRUE)
+	gl.Enable(gl.e.GL_DEPTH_TEST)
+	gl.Disable(gl.e.GL_BLEND)	
+	
+	render.gbuffer:Begin()
+		render.gbuffer:Clear()
+		event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
+	render.gbuffer:End()
+	
+	-- light
+	gl.DepthMask(gl.e.GL_FALSE)
+	gl.Disable(gl.e.GL_DEPTH_TEST)	
+	gl.Enable(gl.e.GL_BLEND)
+	render.SetBlendMode("additive")
+	
+	render.gbuffer:Begin("light")
+		event.Call("Draw3DLights", render.gbuffer_light_shader)
+	render.gbuffer:End() 
+	
+	-- gbuffer
+	render.SetBlendMode("alpha")	
 	render.Start2D()
 		-- draw to the pp buffer		
 		local effect = render.pp_shaders[1]
