@@ -18,6 +18,15 @@ function render.GetBlackTexture()
 	return render.black_texture
 end
 
+function render.GetGreyTexture()
+
+	if not render.grey_texture then
+		render.grey_texture = render.CreateTexture(8,8, nil, {no_remove = true}):Fill(function() return 127, 127, 127, 255 end)
+	end
+	
+	return render.grey_texture
+end
+
 function render.GetErrorTexture()
 
 	if not render.error_tex then
