@@ -39,19 +39,19 @@ if CLIENT then
 		self.Model = render.Create3DMesh(path)
 	end
 
-	function COMPONENT:OnDraw3DGeometry(shader)
-
-		local model = self.Model
-
-		if not render.matrices.vp_matrix then return end -- FIX ME			
-		if not model then return end
+	function COMPONENT:OnDraw3DGeometry(shader, vp_matrix)
+		if not self.Model then return end
+		
+		vp_matrix = vp_matrix or render.matrices.vp_matrix
 
 		local matrix = self:GetComponent("transform"):GetMatrix() 
-		local temp = Matrix44()
+		local model = self.Model
 		
 		local visible = false
 		
 		if model.corners and self.Cull then
+			local temp = Matrix44()
+			
 			model.matrix_cache = model.matrix_cache or {}
 			
 			for i, pos in ipairs(model.corners) do
@@ -60,7 +60,7 @@ if CLIENT then
 				model.matrix_cache[i]:Translate(pos.x, pos.y, pos.z)
 				
 				model.matrix_cache[i]:Multiply(matrix, temp)
-				temp:Multiply(render.matrices.vp_matrix, model.matrix_cache[i])
+				temp:Multiply(vp_matrix, model.matrix_cache[i])
 				
 				local x, y, z = model.matrix_cache[i]:GetClipCoordinates()
 				
@@ -78,7 +78,7 @@ if CLIENT then
 		end
 		
 		if true or visible then
-			local screen = matrix * render.matrices.vp_matrix
+			local screen = matrix * vp_matrix
 			
 			shader.pvm_matrix = screen.m
 			shader.vm_matrix = matrix.m

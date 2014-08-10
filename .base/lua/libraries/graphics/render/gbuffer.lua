@@ -2,6 +2,7 @@ local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
  
 render.gbuffer = NULL
+render.shadow_maps = render.shadow_maps or setmetatable({}, { __mode = 'v' })
 
 local FRAMEBUFFERS = {
 	{
@@ -106,7 +107,7 @@ local MESH = {
 				
 				// position
 				out_color[2] = vm_matrix * vec4(pos, 1);
-				
+								
 				//out_color.rgb *= texture(detail, uv * detailscale).rgb;
 			}
 		]]
@@ -132,7 +133,11 @@ local LIGHT = {
 			tex_depth = "sampler2D",
 			tex_diffuse = "sampler2D",
 			tex_normal = "sampler2D",
-			tex_position = "sampler2D", 
+			tex_position = "sampler2D",
+			
+			tex_shadow_map = "sampler2D",
+			light_vp_matrix = "mat4",
+			
 			cam_pos = "vec3",
 			cam_dir = "vec3",
 			screen_size = Vec2(1,1),
@@ -239,7 +244,14 @@ local LIGHT = {
 				
 				return vec4(final_color, 1);
 			}
-
+			
+			float CalcShadowFactor(vec3 light_space_pos, float z)
+			{
+				float depth = texture(tex_shadow_map, 0.5*vec2(light_space_pos.x, light_space_pos.y)+0.5).x;
+				
+				return depth < z ? 0 : 1;
+			}
+			
 			void main()
 			{					
 				vec2 uv = get_uv();
@@ -249,6 +261,14 @@ local LIGHT = {
 				vec3 normal = texture(tex_normal, uv).yxz;
 				
 				out_color = calc_point_light(world_pos, normal, specular);
+				
+				vec4 temp = light_vp_matrix * vec4(-world_pos.yxz, 1);
+				vec3 light_space_pos = vec3(temp.xyz) / temp.w;
+				float z = texture(tex_depth, uv);
+				
+				out_color.rgb += vec3(CalcShadowFactor(light_space_pos, z));
+				//out_color.rgb = light_space_pos.xyz;
+				
 				//out_color = calc_point_light2(texture(tex_diffuse, uv).rgb, specular, normal, world_pos);
 			}
 		]]  
@@ -274,8 +294,9 @@ local GBUFFER = {
 			tex_normal = "sampler2D",
 			tex_position = "sampler2D", 
 			tex_depth = "sampler2D",
-			rt_w = "float",
-			rt_h = "float",
+						
+			width = "float",
+			height = "float",
 			time = "float",
 			cam_pos = "vec3",
 			cam_vec = "vec3",
@@ -313,8 +334,8 @@ local GBUFFER = {
 				float depth = readDepth( uv );
 				float d;
 
-				float pw = 1.0 / rt_w;
-				float ph = 1.0 / rt_h;
+				float pw = 1.0 / width;
+				float ph = 1.0 / height;
 
 				float ao = 2;
 				
@@ -374,13 +395,35 @@ local GBUFFER = {
 				float fog_distance = 750.0;
 				out_color.rgb = mix_fog(out_color.rgb, depth, fog_distance, 1-fog_color); //this fog is fucked up, needs to be redone
 				
-				out_color.rgb *= texture(tex_light, uv).rgb * ssao();
-				
-				out_color.rgb = mix_fog(out_color.rgb, depth, fog_distance, 1-fog_color); //this fog is fucked up, needs to be redone
+				out_color.rgb *= texture(tex_light, uv).rgb * ssao();				
+								
 			}
 		]]  
 	}
-} 
+}  
+
+local SHADOW = {
+	name = "shadow_map",
+	vertex = { 
+		uniform = {
+			pvm_matrix = "mat4",
+		},			
+		attributes = {
+			{pos = "vec3"},
+		},	
+		source = "gl_Position = pvm_matrix * vec4(pos, 1.0);"
+	},
+	fragment = {	
+		source = [[
+			out float out_depth;
+
+			void main() 
+			{					
+				out_depth = 0.5;
+			}
+		]]
+	}  
+}
 
 local EFFECTS = {
 	{
@@ -465,6 +508,8 @@ local EFFECTS = {
 			}
 		]],
 	},
+	
+	--[==[
 	{
 		name = "contrast",
 		source = [[
@@ -588,6 +633,8 @@ local EFFECTS = {
 			}
 		]],
 	},	
+	
+	]==]
 }
 
 render.pp_shaders = {}
@@ -709,8 +756,8 @@ function render.InitializeGBuffer(width, height)
 		shader.tex_normal = render.gbuffer:GetTexture("normal")
 		shader.tex_depth = render.gbuffer:GetTexture("depth")
 		
-		shader.rt_w = width
-		shader.rt_h = height
+		shader.width = width
+		shader.height = height
 
 		local vbo = shader:CreateVertexBuffer({
 			{pos = {0, 0}, uv = {0, 1}},
@@ -744,6 +791,7 @@ function render.InitializeGBuffer(width, height)
 	
 	do -- mesh		
 		render.gbuffer_mesh_shader = render.CreateShader(MESH)
+		render.shadow_map_shader = render.CreateShader(SHADOW)
 	end
 			
 	event.AddListener("WindowFramebufferResized", "gbuffer", function(window, w, h)
@@ -782,6 +830,35 @@ function render.InitializeGBuffer(width, height)
 					x = x + w
 				end
 			end
+			
+			local i = 1
+						
+			for light, map in pairs(render.shadow_maps) do
+				local tex = map:GetTexture("depth")
+		
+			
+				surface.SetWhiteTexture()
+				surface.SetColor(grey, grey, grey, 1)
+				surface.DrawRect(x, y, w, h)
+				
+				surface.SetColor(1,1,1,1)
+				surface.SetTexture(tex)
+				surface.DrawRect(x, y, w, h)
+				
+				surface.SetTextPos(x, y + 5)
+				surface.DrawText(light)
+				
+				if i%size == 0 then
+					y = y + h
+					x = 0
+				else
+					x = x + w
+				end
+				
+				i = i + 1
+			end
+			
+			
 		end
 	end)
 	
@@ -834,6 +911,8 @@ function render.DrawDeferred(w, h)
 		render.gbuffer:Clear()
 		event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
 	render.gbuffer:End()
+	
+	event.Call("DrawShadowMaps", render.shadow_map_shader)	
 	
 	-- light
 	gl.DepthMask(gl.e.GL_FALSE)
