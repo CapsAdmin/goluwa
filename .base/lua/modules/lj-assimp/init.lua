@@ -26,7 +26,7 @@ local function fix_path(path)
 	return (path:gsub("\\", "/"):gsub("(/+)", "/"))
 end
 
-function assimp.ImportFileEx(path, flags, flip_normals)		
+function assimp.ImportFileEx(path, flags, callback)		
 	local scene = assimp.ImportFile(path, flags)
 		
 	if not scene then
@@ -36,9 +36,9 @@ function assimp.ImportFileEx(path, flags, flip_normals)
 	local dir = path:match("(.+)/")
 
 	local out = {}
-	
-	for i = 1, scene.mNumMeshes do
-		local mesh = scene.mMeshes[i-1]
+		
+	for i = 0, scene.mNumMeshes - 1 do
+		local mesh = scene.mMeshes[i]
 		
 		local sub_model = {mesh_data = {}, indices = {}}
 		
@@ -74,12 +74,16 @@ function assimp.ImportFileEx(path, flags, flip_normals)
 				data.bitangent = {val.x, val.y, val.z}
 			end	
 						
-			if mesh.mTextureCoords ~= nil then
-				local val = mesh.mTextureCoords[0] and mesh.mTextureCoords[0][i]
+			if mesh.mTextureCoords ~= nil and mesh.mTextureCoords[0] ~= nil then
+				local val = mesh.mTextureCoords[0][i]
 				data.uv = {val.x, val.y}
 			end
 			
 			table.insert(sub_model.mesh_data, data)
+			
+			if callback then
+				coroutine.yield()
+			end
 		end
 		
 		for i = 0, mesh.mNumFaces - 1 do
@@ -121,8 +125,16 @@ function assimp.ImportFileEx(path, flags, flip_normals)
 				end
 			end
 		end
+		
+		if callback then
+			coroutine.yield()
+		end
 				
 		out[i] = sub_model
+		
+		if callback then
+			callback(sub_model, i, scene.mNumMeshes)
+		end
 	end	
 	
 	assimp.ReleaseImport(scene)
