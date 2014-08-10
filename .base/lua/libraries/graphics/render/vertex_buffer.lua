@@ -32,6 +32,9 @@ function META:Draw()
 end
 
 function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
+
+	logf("[render] updating %s with %s amount of data\n", self, utilities.FormatFileSize(vertices_size + indices_size))
+
 	vertices = vertices or self.vertices
 	indices = indices or self.indices
 	

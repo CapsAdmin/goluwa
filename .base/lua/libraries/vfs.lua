@@ -792,8 +792,9 @@ do -- async reading
 	}
 	
 	local cache = {}
+	local last_reported_size = 0
 		
-	function vfs.ReadAsync(path, callback, mbps, context, reader)
+	function vfs.ReadAsync(path, callback, mbps, context, reader, dont_cache)
 		check(path, "string")
 		check(callback, "function")
 		check(mbps, "nil", "number")
@@ -821,11 +822,19 @@ do -- async reading
 				
 		queue[path] = {callback = function(data)
 			cache[path] = data
+
 			callback(data)
 			queue[path] = nil
 			
 			if vfs.debug then
 				logf("[VFS] done loading resource %s\n", path)
+			end
+			
+			local size = 0
+			for k, v in pairs(cache) do	size = size + #v end
+			if last_reported_size ~= size then
+				logn("[vfs] async read cache size: ", utilities.FormatFileSize(size))
+				last_reported_size = size
 			end
 		end}
 					
@@ -838,6 +847,10 @@ do -- async reading
 		queue[path] = nil
 		
 		return false
+	end
+	
+	function vfs.UncacheAsync(path)
+		cache[path] = nil
 	end
 end
 

@@ -56,7 +56,7 @@ do -- texture binding
 		
 		function render.BindTexture(tex)			
 			if tex ~= last then				
-				gl.BindTexture(tex.format.type, tex.id) 				
+				gl.BindTexture(tex.format.type, tex.override_texture and tex.override_texture.id or tex.id) 				
 				last = tex
 			end
 		end
@@ -516,12 +516,14 @@ function render.CreateTextureFromPath(path, format)
 	format = format or {}
 	
 	local loading = render.GetLoadingTexture()
-	local tex = render.CreateTexture(loading.w, loading.h, loading.buffer, format)
-	
+	local tex = render.CreateTexture(loading.w, loading.h, nil, format)
+
+	tex.override_texture = loading
 	tex.loading = true
 
 	vfs.ReadAsync(path, function(data)
 		tex.loading = false
+		tex.override_texture = nil
 		
 		local buffer, w, h, info = render.DecodeTexture(data, path)
 		
@@ -537,10 +539,11 @@ function render.CreateTextureFromPath(path, format)
 			end
 			
 			render.texture_path_cache[path] = tex			
+			vfs.UncacheAsync(path)
 		end
 		
 		tex:Replace(buffer, w, h)
-		tex.decode_info = info	
+		tex.decode_info = info
 	end)
 	
 	return tex

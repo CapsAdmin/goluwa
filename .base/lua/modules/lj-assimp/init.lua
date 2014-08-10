@@ -133,7 +133,7 @@ function assimp.ImportFileEx(path, flags, callback)
 		out[i] = sub_model
 		
 		if callback then
-			callback(sub_model, i, scene.mNumMeshes)
+			callback(sub_model, i+1, scene.mNumMeshes)
 		end
 	end	
 	
