@@ -98,7 +98,8 @@ do -- texture object
 	function META:CreateBuffer()
 		-- +1 to height cause there seems to always be some noise on the last line :s
 		local length = self.size.w * (self.size.h+1) * self.format.stride
-		local buffer = ffi.malloc(self.format.buffer_type.. "*", length)
+		local buffer = ffi.malloc(self.format.buffer_type, length)
+		ffi.fill(buffer, length)
 		--local buffer = ffi.new(self.format.buffer_type.."[?]", length)
 		
 		return buffer, length
