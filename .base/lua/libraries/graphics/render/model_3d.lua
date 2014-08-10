@@ -20,10 +20,12 @@ do -- model meta
 	
 	function render.Create3DMesh(path, flags, now)
 		check(path, "string")
-
+			
 		if render.model_cache[path] then
 			return render.model_cache[path]
 		end
+		
+		logn("[render] loading mesh: ", path)
 
 		flags = flags or bit.bor(
 			assimp.e.aiProcess_CalcTangentSpace, 
@@ -48,6 +50,7 @@ do -- model meta
 		
 		local co = coroutine.create(function() 
 			assimp.ImportFileEx(new_path, flags, function(sub_model_data, i, total_meshes)
+				logf("[render] %s loading %q %s\n", path, sub_model_data.name, i .. "/" .. total_meshes)
 				self:InsertSubmodel(sub_model_data)
 				self:InvalidateBoundingBox()
 			end) 
