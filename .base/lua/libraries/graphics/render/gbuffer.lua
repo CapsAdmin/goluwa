@@ -136,10 +136,7 @@ local LIGHT = {
 			cam_pos = "vec3",
 			cam_dir = "vec3",
 			screen_size = Vec2(1,1),
-			
-			--light_intensity = 30,
-			--light_shininess = 4,
-			
+						
 			light_pos = Vec3(0,0,0),
 			light_color = Color(1,1,1,1),				
 			light_ambient_intensity = 0,
@@ -158,90 +155,69 @@ local LIGHT = {
 				return gl_FragCoord.xy / screen_size;
 			}
 			
-			vec4 CalcLightInternal(vec3 LightDirection, vec3 WorldPos, vec3 Normal, float gMatSpecularIntensity)
+			vec4 calc_light_internal(vec3 light_direction, vec3 world_pos, vec3 normal, float specular)
 			{
-				vec4 AmbientColor = light_color * light_ambient_intensity;
-				float DiffuseFactor = dot(Normal, -LightDirection);
+				vec4 ambient_color = light_color * light_ambient_intensity;
+				float diffuse_factor = dot(normal, -light_direction);
 
-				vec4 DiffuseColor  = vec4(0, 0, 0, 0);
-				vec4 SpecularColor = vec4(0, 0, 0, 0);
+				vec4 diffuse_color  = vec4(0, 0, 0, 0);
+				vec4 specular_color = vec4(0, 0, 0, 0);
 
-				if (DiffuseFactor > 0) 
+				if (diffuse_factor > 0) 
 				{
-					DiffuseColor = light_color * light_diffuse_intensity * DiffuseFactor * 0.5;
-
-					vec3 VertexToEye = normalize(cam_pos - WorldPos);
-					vec3 LightReflect = normalize(reflect(LightDirection, Normal));
-					
-					float SpecularFactor = dot(VertexToEye, LightReflect);
-					SpecularFactor = pow(SpecularFactor, light_specular_power);
-					
-					// this is taken from main2
-					/*vec3 R = reflect(-LightDirection, Normal);						  
-					vec3 half_dir = normalize(LightDirection + -cam_dir);
-					float spec_angle = max(dot(R, half_dir), 0.0);
-					float SpecularFactor = pow(spec_angle, light_specular_power);*/
-					
-					if (SpecularFactor > 0) 
+					diffuse_color = light_color * light_diffuse_intensity * diffuse_factor * 0.5;
+										
+					if (specular > 0 && light_specular_power > 0)
 					{
-						SpecularColor = light_color * gMatSpecularIntensity * SpecularFactor;
+
+						vec3 vertex_to_eye = normalize(cam_pos - world_pos);
+						vec3 light_reflect = normalize(reflect(light_direction, normal));
+						
+						float specular_factor = dot(vertex_to_eye, light_reflect);
+						specular_factor = pow(specular_factor, light_specular_power);
+								
+						if (specular_factor > 0) 
+						{
+							specular_color = light_color * specular * specular_factor;
+						}
 					}
 				}
 
-				return (AmbientColor + DiffuseColor + SpecularColor);
+				return (ambient_color + diffuse_color + specular_color);
 			}
 			
-			vec4 CalcPointLight(vec3 WorldPos, vec3 Normal, float gMatSpecularIntensity)
+			vec4 calc_point_light(vec3 world_pos, vec3 normal, float specular)
 			{
-				vec3 LightDirection = WorldPos - light_pos;
-				float Distance = length(LightDirection);
+				vec3 light_direction = world_pos - light_pos;
+				float distance = length(light_direction);
 				
-				if (Distance > light_radius * 10)
+				if (distance > light_radius * 10)
 					return vec4(0,0,0,0);
 				
-				LightDirection = normalize(LightDirection);
+				light_direction = normalize(light_direction);
 
-				vec4 Color = CalcLightInternal(LightDirection, WorldPos, Normal, gMatSpecularIntensity);
+				vec4 color = calc_light_internal(light_direction, world_pos, normal, specular);
 
-				float Attenuation =  light_attenuation_constant +
-									 light_attenuation_linear * Distance +
-									 light_attenuation_exponent * Distance * Distance;
+				float attenuation =  light_attenuation_constant +
+									 light_attenuation_linear * distance +
+									 light_attenuation_exponent * distance * distance;
 
-				Attenuation = min(1.0, Attenuation);
+				attenuation = min(1.0, attenuation);
 				
 				
-				return Color / Attenuation;
+				return color / attenuation;
 			}
-
-			void main()
-			{					
-				vec2 uv = get_uv();
-				
-				float Specular = texture(tex_diffuse, uv).a;
-				vec3 WorldPos = -texture(tex_position, uv).yxz;
-				vec3 Normal = texture(tex_normal, uv).yxz;				
-				
-				out_color = CalcPointLight(WorldPos, Normal, Specular);
-			}				
-				
-			/*void main2()
-			{						
-				vec2 uv = get_uv();
-
-				vec3 diffuse = texture(tex_diffuse, uv).rgb;
-				vec3 normal = texture(tex_normal, uv).yxz;				
-				vec3 position = -texture(tex_position, uv).yxz;
-				float specular = texture(tex_specular, uv).x;
-													
+			
+			vec4 calc_point_light2(vec3 diffuse, float specular, vec3 normal, vec3 world_pos)
+			{																			
 				vec3 final_color = vec3(0);
 				
-				vec3 light_vec = light_pos - position;
+				vec3 light_vec = light_pos - world_pos;
 				float light_dist = length(light_vec);
 				
 				if (light_dist > light_radius * 10) 
 				{
-					out_color.rgb = final_color;
-					return;
+					return vec4(final_color, 1);
 				}
 				
 				vec3 light_dir = normalize(light_vec);
@@ -254,14 +230,27 @@ local LIGHT = {
 					  
 					vec3 half_dir = normalize(light_dir + -cam_dir);
 					float spec_angle = max(dot(R, half_dir), 0.0);
-					float S = pow(spec_angle, light_shininess);
+					float S = pow(spec_angle, light_specular_power);
 					
 					final_color = (lambertian * diffuse + S * specular) * light_color.rgb;
 				}
 						
-				out_color.rgb = final_color / light_dist * light_intensity;
-				out_color.a = 0.5;
-			}*/
+				final_color = final_color / light_dist * light_diffuse_intensity*50;
+				
+				return vec4(final_color, 1);
+			}
+
+			void main()
+			{					
+				vec2 uv = get_uv();
+				
+				float specular = texture(tex_diffuse, uv).a;
+				vec3 world_pos = -texture(tex_position, uv).yxz;
+				vec3 normal = texture(tex_normal, uv).yxz;
+				
+				out_color = calc_point_light(world_pos, normal, specular);
+				//out_color = calc_point_light2(texture(tex_diffuse, uv).rgb, specular, normal, world_pos);
+			}
 		]]  
 	}
 } 
@@ -327,7 +316,7 @@ local GBUFFER = {
 				float pw = 1.0 / rt_w;
 				float ph = 1.0 / rt_h;
 
-				float ao = 12;
+				float ao = 2;
 				
 				float aoscale=0.4;
 
@@ -376,18 +365,18 @@ local GBUFFER = {
 				float depth = texture(tex_depth, uv).r;	
 					
 				out_color.rgb = diffuse;
-				//out_color.rgb *= ssao();
-				out_color.rgb *= texture(tex_light, uv).rgb;
-						
 				out_color.a = 1;
 				
 				
-				/*vec3 ambient_light_color = vec3(191.0 / 255.0, 205.0 / 255.0, 214.0 / 255.0) * 0.9;
+				vec3 ambient_light_color = vec3(191.0 / 255.0, 205.0 / 255.0, 214.0 / 255.0) * 0.9;
 				vec3 atmosphere_color = ambient_light_color;
 				vec3 fog_color = atmosphere_color;
 				float fog_distance = 750.0;
 				out_color.rgb = mix_fog(out_color.rgb, depth, fog_distance, 1-fog_color); //this fog is fucked up, needs to be redone
-				*/
+				
+				out_color.rgb *= texture(tex_light, uv).rgb * ssao();
+				
+				out_color.rgb = mix_fog(out_color.rgb, depth, fog_distance, 1-fog_color); //this fog is fucked up, needs to be redone
 			}
 		]]  
 	}
@@ -499,7 +488,7 @@ local EFFECTS = {
 			//CONTRAST
 			vec4 contrast(vec4 color)
 			{
-				vec3 col = color.rgb * 1.6;
+				vec3 col = color.rgb * 1.2;
 				col *= col;
 				return vec4(col, color.a);
 			}
