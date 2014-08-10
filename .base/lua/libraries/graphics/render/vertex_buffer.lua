@@ -3,7 +3,7 @@ local render = (...) or _G.render
 
 local META = metatable.CreateTemplate("vertex_buffer")
 
-function render.CreateVertexBuffer(vertex_attributes, vertices, indices)
+function render.CreateVertexBuffer(vertex_attributes, vertices, indices, vertices_size, indices_size)
 	check(vertex_attributes, "table")
 	check(vertices, "cdata")
 	check(indices, "cdata")
@@ -14,7 +14,7 @@ function render.CreateVertexBuffer(vertex_attributes, vertices, indices)
 	self.vao_id = gl.GenVertexArray()
 	self.vertex_attributes = vertex_attributes
 	
-	self:UpdateBuffer(vertices, indices)
+	self:UpdateBuffer(vertices, indices, vertices_size, indices_size)
 
 	return self
 end 
@@ -31,13 +31,13 @@ function META:Draw()
 	gl.DrawElements(gl.e.GL_TRIANGLES, self.indices_count, gl.e.GL_UNSIGNED_INT, nil)
 end
 
-function META:UpdateBuffer(vertices, indices)
+function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
 	vertices = vertices or self.vertices
 	indices = indices or self.indices
 	
 	if vertices then
 		self.vertices = vertices
-		self.vertices_size = ffi.sizeof(vertices)
+		self.vertices_size = vertices_size or ffi.sizeof(vertices)
 		
 		render.BindArrayBuffer(self.vertices_id)
 		gl.BufferData(gl.e.GL_ARRAY_BUFFER, self.vertices_size, self.vertices, gl.e.GL_DYNAMIC_DRAW)
@@ -45,7 +45,7 @@ function META:UpdateBuffer(vertices, indices)
 	
 	if indices then
 		self.indices = indices
-		self.indices_size = ffi.sizeof(self.indices)
+		self.indices_size = indices_size or ffi.sizeof(self.indices)
 		self.indices_count = self.indices_size / ffi.sizeof("unsigned int")
 		
 		gl.BindBuffer(gl.e.GL_ELEMENT_ARRAY_BUFFER, self.indices_id)

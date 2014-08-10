@@ -517,7 +517,8 @@ function render.CreateShader(data)
 	self.vtx_atrb_type = build_output.vertex.vtx_atrb_type
 	self.program_id = prog
 	self.shader_id = shader_id
-
+	self.build_output = build_output
+	
 	render.active_shaders[shader_id] = self
 
 	return self
@@ -550,16 +551,34 @@ do -- create data for vertex buffer
 			end
 		end
 	end
+	
+	local USE_MALLOC = true
 
 	function META:CreateBuffersFromTable(vertices, indices, is_valid_table)
 	
 		if type(vertices) == "number" then
 			local size = vertices
 			
-			local indices = ffi.new("unsigned int[?]", size)
+			local indices = ffi.malloc("unsigned int", size)
 			for i = 0, size - 1 do indices[i] = i end
+
+			if USE_MALLOC then
+				local a, b = ffi.malloc(self.vtx_atrb_type, size), indices
+				
+				local a_size = #vertices * ffi.sizeof(self.vtx_atrb_type) 
+				local b_size = #indices * ffi.sizeof("unsigned int")
+				
+				ffi.fill(a, a_size)
+				ffi.fill(b, b_size)
+							
+				return a, b, #vertices * a_size, #indices * b_size
+			end
 			
-			return ffi.new(self.vtx_atrb_type.."[?]", size), indices
+			return 
+				ffi.new(self.vtx_atrb_type.."[?]", size), 
+				indices, 
+				size * ffi.sizeof(self.vtx_atrb_type), 
+				size * ffi.sizeof("unsigned int")
 		end
 		
 		if not is_valid_table then
@@ -573,7 +592,35 @@ do -- create data for vertex buffer
 			end
 		end
 		
-		return ffi.new(self.vtx_atrb_type.."["..#vertices.."]", vertices), ffi.new("unsigned int[" .. #indices .. "]", indices)
+		if USE_MALLOC then			
+			local a, b = ffi.malloc(self.vtx_atrb_type, #vertices), ffi.malloc("unsigned int", #indices)
+			
+			local a_size = #vertices * ffi.sizeof(self.vtx_atrb_type) 
+			local b_size = #indices * ffi.sizeof("unsigned int")
+			
+			ffi.fill(a, a_size)
+			ffi.fill(b, b_size)
+			
+			for i = 1, #vertices do
+				for _, val in ipairs(self.build_output.vertex.vtx_info) do	
+					if vertices[i][val.name] then
+						for j = 1, #vertices[i][val.name] do
+							a[i - 1][val.name][string.char(64 + j)] = vertices[i][val.name][j]
+						end
+					end
+				end
+			end
+			
+			for i = 1, #indices do b[i - 1] = indices[i] end
+			
+			return a, b, a_size, b_size
+		end
+		
+		return 
+			ffi.new(self.vtx_atrb_type.."["..#vertices.."]", vertices), 
+			ffi.new("unsigned int[" .. #indices .. "]", indices), 
+			#vertices * ffi.sizeof(self.vtx_atrb_type), 
+			#indices * ffi.sizeof("unsigned int")
 	end
 
 	function META:GetVertexAttributes()
