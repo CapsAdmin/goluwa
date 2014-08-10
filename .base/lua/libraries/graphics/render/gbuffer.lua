@@ -460,64 +460,166 @@ local EFFECTS = {
 			
 			void main() 
 			{ 
-				out_color.rgb = FxaaPixelShader(posPos, tex_diffuse);
+				out_color.rgb = FxaaPixelShader(posPos, tex_gbuffer);
 				out_color.a = 1;
 			}
 		]],
 	},
 	{
-		name = "bloom",
+		name = "contrast",
 		source = [[
 			out vec4 out_color;
-						
-			//BLUR
-			vec4 blur(sampler2D tex)
-			{
-				float offset = vec2(0.01, 0.01) * 0.2;
-				vec3 c = vec3(0.);
-				float weight = 0.;
-				for(float i = 0.; i <= 2.; i += 0.2) 
-				{
-					c += texture(tex, uv + i * offset).rgb;
-					weight += 1.;
-				}
-				c /= weight;
-				return vec4(c, 1.);
-			}
-			
-			//CONTRAST
-			vec4 contrast(vec4 color)
-			{
-				vec3 col = color.rgb * 1.2;
-				col *= col;
-				return vec4(col, color.a);
-			}
-				
+
 			void main() 
 			{ 
-				out_color = texture(tex_diffuse, uv); 
-				out_color += contrast(blur(tex_diffuse)) * 0.05;
+				out_color = pow(texture(tex_last, uv), vec4(4))*500;
 				out_color.a = 1;
 			}
 		]],
 	},
-	
+	{
+		down_sample = 2,
+		name = "blur_1",
+		source = [[
+			out vec4 out_color;
+
+			vec4 blur(sampler2D tex, vec2 uv)
+			{			
+				float dx = 1  / width;
+				float dy = 1 / height;
+				
+				// Apply 3x3 gaussian filter
+				vec4 color = 4.0 * texture(tex, uv);
+				color += texture(tex, uv + vec2(+dx, 0.0)) * 2.0;
+				color += texture(tex, uv + vec2(-dx, 0.0)) * 2.0;
+				color += texture(tex, uv + vec2(0.0, +dy)) * 2.0;
+				color += texture(tex, uv + vec2(0.0, -dy)) * 2.0;
+				color += texture(tex, uv + vec2(+dx, +dy));
+				color += texture(tex, uv + vec2(-dx, +dy));
+				color += texture(tex, uv + vec2(-dx, -dy));
+				color += texture(tex, uv + vec2(+dx, -dy));
+				
+				return color / 16.0;
+			}
+
+			void main() 
+			{ 
+				out_color = blur(tex_last, uv);
+				
+				out_color.a = 1;
+			}
+		]],
+	},	
+	{
+		down_sample = 4,
+		name = "blur_2",
+		source = [[
+			out vec4 out_color;
+
+			vec4 blur(sampler2D tex, vec2 uv)
+			{			
+				float dx = 1  / width;
+				float dy = 1 / height;
+				
+				// Apply 3x3 gaussian filter
+				vec4 color = 4.0 * texture(tex, uv);
+				color += texture(tex, uv + vec2(+dx, 0.0)) * 2.0;
+				color += texture(tex, uv + vec2(-dx, 0.0)) * 2.0;
+				color += texture(tex, uv + vec2(0.0, +dy)) * 2.0;
+				color += texture(tex, uv + vec2(0.0, -dy)) * 2.0;
+				color += texture(tex, uv + vec2(+dx, +dy));
+				color += texture(tex, uv + vec2(-dx, +dy));
+				color += texture(tex, uv + vec2(-dx, -dy));
+				color += texture(tex, uv + vec2(+dx, -dy));
+				
+				return color / 16.0;
+			}
+
+			void main() 
+			{ 
+				out_color = blur(tex_last, uv);
+				
+				out_color.a = 1;
+			}
+		]],
+	},	
+	{
+		down_sample = 8,
+		name = "blur_3",
+		source = [[
+			out vec4 out_color;
+
+			vec4 blur(sampler2D tex, vec2 uv)
+			{			
+				float dx = 1  / width;
+				float dy = 1 / height;
+				
+				// Apply 3x3 gaussian filter
+				vec4 color = 4.0 * texture(tex, uv);
+				color += texture(tex, uv + vec2(+dx, 0.0)) * 2.0;
+				color += texture(tex, uv + vec2(-dx, 0.0)) * 2.0;
+				color += texture(tex, uv + vec2(0.0, +dy)) * 2.0;
+				color += texture(tex, uv + vec2(0.0, -dy)) * 2.0;
+				color += texture(tex, uv + vec2(+dx, +dy));
+				color += texture(tex, uv + vec2(-dx, +dy));
+				color += texture(tex, uv + vec2(-dx, -dy));
+				color += texture(tex, uv + vec2(+dx, -dy));
+				
+				return color / 16.0;
+			}
+
+			void main() 
+			{ 
+				out_color = blur(tex_last, uv);
+				
+				out_color.a = 1;
+			}
+		]],
+	},		
+	{		
+		name = "hdr",
+		source = [[
+			out vec4 out_color;
+
+			void main() 
+			{ 
+				out_color = texture(tex_last, uv) * texture(tex_gbuffer, uv);
+				out_color.a = 1;
+			}
+		]],
+	},	
 }
 
 render.pp_shaders = {}
 
-function render.AddPostProcessShader(name, source, priority)
+function render.AddPostProcessShader(name, source, priority, down_sample)
 	priority = priority or #render.pp_shaders
+	down_sample = down_sample or 1
 	
-	local width = render.GetWidth()
-	local height = render.GetHeight()
+	local width = render.GetWidth() / down_sample
+	local height = render.GetHeight() / down_sample  
 	
 	local shader = render.CreateShader({
 		name = "gbuffer_post_process_" .. name,
-		base = "gbuffer",
+		vertex = {
+			uniform = {
+				pvm_matrix = "mat4",
+			},			
+			attributes = {
+				{pos = "vec2"},
+				{uv = "vec2"},
+			},
+			source = "gl_Position = pvm_matrix * vec4(pos, 0.0, 1.0);"
+		},
 		fragment = {
 			uniform = {
+				tex_gbuffer = "sampler2D",
+				tex_last = "sampler2D",
+				tex_light = "sampler2D",
 				tex_diffuse = "sampler2D",
+				tex_normal = "sampler2D",
+				tex_depth = "sampler2D",
+				
 				width = "float",
 				height = "float",
 			},
@@ -531,17 +633,24 @@ function render.AddPostProcessShader(name, source, priority)
 	
 	local buffer = render.CreateFrameBuffer(width, height, {
 		{
-			name = "diffuse",
+			name = "tex_last",
 			attach = "color",
 			texture_format = {
 				internal_format = "RGBA16F",
+				min_filter = "nearest",
 			}
 		},
 	})
 	
 	shader.pvm_matrix = render.GetPVWMatrix2D
-	shader.tex_diffuse = buffer:GetTexture("diffuse")
-
+	shader.tex_last = buffer:GetTexture("tex_last")
+	shader.tex_gbuffer = render.screen_buffer:GetTexture("screen_buffer")
+	
+	shader.tex_light = render.gbuffer:GetTexture("light")
+	shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
+	shader.tex_position = render.gbuffer:GetTexture("position") 
+	shader.tex_normal = render.gbuffer:GetTexture("normal")
+	shader.tex_depth = render.gbuffer:GetTexture("depth")
 	
 	shader.width = width
 	shader.height = height
@@ -563,9 +672,9 @@ function render.AddPostProcessShader(name, source, priority)
 		end
 	end
 	
-	table.insert(render.pp_shaders, {shader = shader, quad = quad, buffer = buffer, name = name, priority = priority})
+	table.insert(render.pp_shaders, {shader = shader, quad = quad, buffer = buffer, name = name, priority = priority, w = width, h = height, down_sample = down_sample})
 	
-	table.sort(render.pp_shaders, function(a, b) return a.priority > b.priority end)
+	table.sort(render.pp_shaders, function(a, b) return a.priority < b.priority end)
 end
  
 local sphere = NULL
@@ -599,6 +708,7 @@ function render.InitializeGBuffer(width, height)
 		shader.tex_position = render.gbuffer:GetTexture("position") 
 		shader.tex_normal = render.gbuffer:GetTexture("normal")
 		shader.tex_depth = render.gbuffer:GetTexture("depth")
+		
 		shader.rt_w = width
 		shader.rt_h = height
 
@@ -675,8 +785,19 @@ function render.InitializeGBuffer(width, height)
 		end
 	end)
 	
+	render.screen_buffer = render.CreateFrameBuffer(width, height, {
+		{
+			name = "screen_buffer",
+			attach = "color",
+			texture_format = {
+				internal_format = "RGBA16F",
+				min_filter = "nearest",
+			}
+		},
+	})
+
 	for i, data in pairs(EFFECTS) do
-		render.AddPostProcessShader(data.name, data.source)
+		render.AddPostProcessShader(data.name, data.source, i, data.down_sample)
 	end	
 end
 
@@ -732,40 +853,43 @@ function render.DrawDeferred(w, h)
 		
 		if effect then
 			
-			render.PushWorldMatrix()
-			surface.Scale(w, h)
-			
-			-- draw the gbuffer into the first effect 
-			effect.buffer:Begin()
-				render.gbuffer_shader:Bind()
-				render.gbuffer_screen_quad:Draw()
-			effect.buffer:End()
-			
-			for i = 2, #render.pp_shaders do 
-				local next = render.pp_shaders[i]
-									
-				next.buffer:Begin()
-					effect.shader:Bind()
-					effect.quad:Draw()
-				next.buffer:End()					
-				
-				effect = next
-			end
-			
-			render.PopWorldMatrix()
+			surface.PushMatrix(0,0,w,h)
+				render.screen_buffer:Begin()
+					render.gbuffer_shader:Bind()
+					render.gbuffer_screen_quad:Draw()
+				render.screen_buffer:End()
+			surface.PopMatrix()
+		
+			for i = 0, #render.pp_shaders do 
+				surface.PushMatrix()
+					local next = render.pp_shaders[i+1]
+					
+					if not next then break end
+					
+					surface.Scale(next.w, next.h)						
+						
+					next.buffer:Begin()
+						effect.shader:Bind()
+						effect.quad:Draw()
+					next.buffer:End()					
+					
+					effect = next
+				surface.PopMatrix()
+			end			
+		
 			
 			-- draw the pp texture as quad
-			render.PushWorldMatrix()
+			surface.PushMatrix()
 				surface.Scale(w, h)
 				effect.shader:Bind()
 				effect.quad:Draw()
-			render.PopWorldMatrix()
+			surface.PopMatrix()
 		else
-			render.PushWorldMatrix()
+			surface.PushMatrix()
 				surface.Scale(w, h)
 				render.gbuffer_shader:Bind()
 				render.gbuffer_screen_quad:Draw()
-			render.PopWorldMatrix()		
+			surface.PopMatrix()		
 		end		
 	render.End2D()
 end
