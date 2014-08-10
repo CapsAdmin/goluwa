@@ -7,7 +7,9 @@ COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Draw3DGeometry"}
 
 metatable.StartStorable()		
-	metatable.GetSet(COMPONENT, "Texture")
+	metatable.GetSet(COMPONENT, "DiffuseTexture")
+	metatable.GetSet(COMPONENT, "BumpTexture")
+	metatable.GetSet(COMPONENT, "SpecularTexture")
 	metatable.GetSet(COMPONENT, "Color", Color(1, 1, 1))
 	metatable.GetSet(COMPONENT, "Alpha", 1)
 	metatable.GetSet(COMPONENT, "Cull", true)
@@ -84,11 +86,13 @@ if CLIENT then
 			shader.color = self.Color
 			
 			for i, model in ipairs(model.sub_models) do
-				shader.diffuse = self.Texture or model.diffuse or render.GetErrorTexture()
-				shader.diffuse2 = model.diffuse2 or render.GetErrorTexture()
-				shader.specular = model.specular or render.GetWhiteTexture()
-				shader.bump = model.bump or render.GetBlackTexture()
+				shader.diffuse = self.DiffuseTexture or model.diffuse or render.GetErrorTexture()
+				shader.diffuse2 = self.DiffuseTexture or model.diffuse2 or render.GetErrorTexture()
+				shader.specular = self.SpecularTexture or model.specular or render.GetBlackTexture()
+				shader.bump = self.BumpTexture or model.bump or render.GetBlackTexture()
+				
 				--shader.detail = model.detail or render.GetWhiteTexture()
+				
 				shader:Bind()
 				model.mesh:Draw()
 			end
