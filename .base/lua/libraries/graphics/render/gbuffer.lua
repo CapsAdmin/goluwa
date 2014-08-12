@@ -10,7 +10,6 @@ local FRAMEBUFFERS = {
 		attach = "color",
 		texture_format = {
 			internal_format = "RGBA16F",
-			min_filter = "nearest",
 		}
 	},
 	{
@@ -18,7 +17,6 @@ local FRAMEBUFFERS = {
 		attach = "color",
 		texture_format = {
 			internal_format = "RGBA16F",
-			min_filter = "nearest",
 		}
 	},
 	{
@@ -26,7 +24,6 @@ local FRAMEBUFFERS = {
 		attach = "color",
 		texture_format = {
 			internal_format = "RGBA16F",
-			min_filter = "nearest",
 		}
 	},
 	{
@@ -34,7 +31,6 @@ local FRAMEBUFFERS = {
 		attach = "color",
 		texture_format = {
 			internal_format = "RGBA16F",
-			min_filter = "nearest",
 		}
 	},
 	{
@@ -44,7 +40,6 @@ local FRAMEBUFFERS = {
 		texture_format = {
 			internal_format = "DEPTH_COMPONENT32F",	 
 			depth_texture_mode = gl.e.GL_RED,
-			min_filter = "nearest",				
 		} 
 	} 
 } 
@@ -175,7 +170,7 @@ local MESH = {
 				//out_color.rgb *= texture(detail, uv * detailscale).rgb;
 			}
 		]]
-	}  
+	}
 }
 
 local LIGHT = {
@@ -190,7 +185,7 @@ local LIGHT = {
 			{uv = "vec2"},
 			{texture_blend = "float"},
 		},	
-		source = "gl_Position = pvm_matrix * vec4(pos*4, 1);"
+		source = "gl_Position = pvm_matrix * vec4(pos*2, 1);"
 	}, 
 	fragment = {
 		uniform = {
@@ -245,30 +240,30 @@ local LIGHT = {
 				return pos.yxz / pos.w;
 			}
 			
-			vec4 calc_light_internal(vec3 light_direction, vec3 world_pos, vec3 normal, float specular)
+			vec3 calc_point_light(vec3 light_dir, vec3 normal, float specular, vec3 world_pos)
 			{
-				vec4 ambient_color = light_color * light_ambient_intensity;
-				float diffuse_factor = dot(normal, -light_direction);
+				vec3 ambient_color = light_color.rgb * light_ambient_intensity;
+				float diffuse_factor = dot(normal, -light_dir);
 
-				vec4 diffuse_color  = vec4(0, 0, 0, 0);
-				vec4 specular_color = vec4(0, 0, 0, 0);
+				vec3 diffuse_color  = vec3(0, 0, 0);
+				vec3 specular_color = vec3(0, 0, 0);
 
 				if (diffuse_factor > 0) 
 				{
-					diffuse_color = light_color * light_diffuse_intensity * diffuse_factor * 0.5;
+					diffuse_color = light_color.rgb * light_diffuse_intensity * diffuse_factor * 0.5;
 										
 					if (specular > 0 && light_specular_power > 0)
 					{
 
 						vec3 vertex_to_eye = normalize(cam_pos - world_pos);
-						vec3 light_reflect = normalize(reflect(light_direction, normal));
+						vec3 light_reflect = normalize(reflect(light_dir, normal));
 						
 						float specular_factor = dot(vertex_to_eye, light_reflect);
 						specular_factor = pow(specular_factor, light_specular_power);
 								
 						if (specular_factor > 0) 
 						{
-							specular_color = light_color * specular * specular_factor;
+							specular_color = light_color.rgb * specular * specular_factor;
 						}
 					}
 				}
@@ -276,42 +271,17 @@ local LIGHT = {
 				return (ambient_color + diffuse_color + specular_color);
 			}
 			
-			vec4 calc_point_light(vec3 world_pos, vec3 normal, float specular)
+			float get_attenuation(vec3 world_pos)
 			{
-				vec3 light_direction = world_pos - light_pos;
-				float distance = length(light_direction);
+				float distance = length(light_pos - world_pos);
+				distance = distance / light_radius / 5;
+				distance = -distance + 2; 
 				
-				if (distance > light_radius * 10)
-					return vec4(0,0,0,0);
-				
-				light_direction = normalize(light_direction);
-
-				vec4 color = calc_light_internal(light_direction, world_pos, normal, specular);
-
-				float attenuation =  light_attenuation_constant +
-									 light_attenuation_linear * distance +
-									 light_attenuation_exponent * distance * distance;
-
-				attenuation = min(1.0, attenuation);
-				
-				
-				return color / attenuation;
+				return clamp(distance, 0, 1);
 			}
 			
-			vec4 calc_point_light2(vec3 diffuse, float specular, vec3 normal, vec3 world_pos)
-			{																			
-				vec3 final_color = vec3(0);
-				
-				vec3 light_vec = light_pos - world_pos;
-				float light_dist = length(light_vec);
-				
-				if (light_dist > light_radius * 20) 
-				{
-					return vec4(final_color, 1);
-				}
-				
-				vec3 light_dir = normalize(light_vec);
-				
+			vec3 calc_point_light2(vec3 light_dir, vec3 normal, float specular)
+			{																															
 				float lambertian = dot(light_dir, normal);
 	
 				if (lambertian > 0.0)
@@ -322,52 +292,43 @@ local LIGHT = {
 					float spec_angle = max(dot(R, half_dir), 0.0);
 					float S = pow(spec_angle, light_specular_power);
 					
-					final_color = (lambertian * diffuse + S * specular) * light_color.rgb;
+					return vec3(lambertian + (S * specular));
 				}
-						
-				final_color = final_color / light_dist * light_diffuse_intensity*50;
-				
-				return vec4(final_color, 1);
+										
+				return vec3(0);
 			}
 			
-			vec4 CookTorrance(vec3 _normal, vec3 _light, vec3 _view, float _fresnel, float _roughness)
-			{
-			  vec3  half_vec = normalize( _view + _light ); // вектор H
-			  // теперь вычислим разнообразные скалярные произведения
-			  float NdotL = max( dot(_normal, _light), 0.0 );
-			  float NdotV = max( dot(_normal, _view), 0.0 );
-			  float NdotH = max( dot(_normal, half_vec), 1.0e-7 );
-			  float VdotH = max( dot(_view, half_vec), 1.0e-7 );
+			vec3 CookTorrance(vec3 _light, vec3 _normal, vec3 _view, vec3 world_pos, float _fresnel, float _roughness)
+			{			  
+				vec3 cEye = normalize(cam_pos - world_pos);
+				vec3 half_vec = normalize(_light + cEye);
 
-			  // геометрическая составляющая
-			  float geometric = 2.0 * NdotH / VdotH;
-			  geometric = min( 1.0, geometric * min(NdotV, NdotL) );
+				// теперь вычислим разнообразные скалярные произведения
+				float NdotL = max( dot(_normal, _light), 0.0 );
+				float NdotV = max( dot(_normal, _view), 0.0 );
+				float NdotH = max( dot(_normal, half_vec), 1.0e-7 );
+				float VdotH = max( dot(_view, half_vec), 1.0e-7 );
 
-			  // шероховатость
-			  float r_sq = _roughness * _roughness;
-			  float NdotH_sq = NdotH * NdotH;
-			  float NdotH_sq_r = 1.0 / (NdotH_sq * r_sq);
-			  float roughness_exp = (NdotH_sq - 1.0) * ( NdotH_sq_r );
-			  float roughness = 0.25 * exp(roughness_exp) * NdotH_sq_r / NdotH_sq;
+				// геометрическая составляющая
+				float geometric = 2.0 * NdotH / VdotH;
+				geometric = min( 1.0, geometric * min(NdotV, NdotL) );
 
-			  // финальный результат
-			  return vec4(vec3(min(1.0, _fresnel * geometric * roughness / (NdotV + 1.0e-7))), 1);
+				// шероховатость
+				float r_sq = _roughness * _roughness;
+				float NdotH_sq = NdotH * NdotH;
+				float NdotH_sq_r = 1.0 / (NdotH_sq * r_sq);
+				float roughness_exp = (NdotH_sq - 1.0) * ( NdotH_sq_r );
+				float roughness = 0.25 * exp(roughness_exp) * NdotH_sq_r / NdotH_sq;
+
+				// финальный результат
+				return vec3(min(1.0, _fresnel * geometric * roughness / (NdotV + 1.0e-7)));
 			}
 	
 			
-			vec4 CookTorrance2(/*vec3 diffuse, */vec3 normal, vec3 world_pos, float specular)
+			vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular)
 			{
 				float roughness = 0.1;
 
-				// light, eye, normal, half vectors	
-				vec3 dir = (light_pos - world_pos);
-				
-				//if (length(dir) > light_radius*20) 
-				{
-					//return vec4(0,0,0, 1);
-				}
-				
-				vec3 cLight = normalize(dir);
 				vec3 cEye = normalize(cam_pos - world_pos);
 				vec3 cHalf = normalize(cLight + cEye);
 
@@ -398,14 +359,50 @@ local LIGHT = {
 				float pi = 3.1415926535897932384626433832;
 				float CookTorrance = (D*F*G) / (normalDotEye * pi);
 				
-				vec4 diffuse_ = light_color * max(0.0, normalDotLight);
-				vec4 specular_ = light_color * max(0.0, CookTorrance) * specular;
+				vec3 diffuse_ = light_color.rgb * max(0.0, normalDotLight);
+				vec3 specular_ = light_color.rgb * max(0.0, CookTorrance) * specular;
 				
-				vec4 aaa = (diffuse_ + specular_) * max(0.0, normalDotLight) * light_diffuse_intensity;
+				return (diffuse_ + specular_) * max(0.0, normalDotLight) * light_diffuse_intensity;
+			}
+			
+			vec3 CookTorrance3(vec3 LightDir, vec3 Normal, vec3 Specular, vec2 Roughness, vec3 world_pos)
+			{
+				// Correct the input and compute aliases
 				
-				aaa.a = 1;
+				vec3 ViewDir = normalize( cam_pos - world_pos );
+				vec3 vHalf = normalize( LightDir + ViewDir );
+
+				float NormalDotHalf = dot( Normal, vHalf );
+				float ViewDotHalf = dot( vHalf,  ViewDir );
+				float NormalDotView = dot( Normal, ViewDir );
+				float NormalDotLight = dot( Normal, LightDir );
+
+				// Compute the geometric term
+				float G1 = ( 2.0 * NormalDotHalf * NormalDotView ) / ViewDotHalf;
+				float G2 = ( 2.0 * NormalDotHalf * NormalDotLight ) / ViewDotHalf;
+				float G = min( 1.0, max( 0.0, min( G1, G2 ) ) );
+
+				// Compute the fresnel term
+				float F = Roughness.g + ( 1.0 - Roughness.g ) * pow( 1.0 - NormalDotView, 0.5 );
+
+				// Compute the roughness term
+				float R_2 = Roughness.r * Roughness.r;
+				float NDotH_2 = NormalDotHalf * NormalDotHalf;
+				float A = 1.0 / ( 4.0 * R_2 * NDotH_2 * NDotH_2 );
+				float B = exp( -( 1.0 - NDotH_2 ) / ( R_2 * NDotH_2 ) );
+				float R = A * B;
+
+				// Compute the final term
 				
-				return aaa;
+				//float pi = 3.1415926535897932384626433832;
+				//float Rs = (G*F*R) / (NormalDotView * pi);
+				
+				float Rs_denominator = ( NormalDotView * NormalDotLight);
+				float Rs = ( G * F * R ) / Rs_denominator;
+				
+				vec3 Final = max( 0.0, NormalDotLight ) * ( Specular * Rs);
+				
+				return Final;
 			}
 			
 					
@@ -428,11 +425,28 @@ local LIGHT = {
 				float specular = texture(tex_diffuse, uv).a;
 				vec3 world_pos = get_pos();				
 				vec3 normal = texture(tex_normal, uv).yxz;
-				    
-				out_color = CookTorrance2(normal, world_pos, specular);
-				//out_color = CookTorrance(normal, normalize(light_pos - world_pos), -cam_dir, 1, 0.8);
-				//out_color += calc_point_light(world_pos, normal, specular);
-				//out_color = vec4(0.02,0.02,0.02,1);
+				
+				vec3 light_dir = normalize(light_pos - world_pos);
+				
+				float fade = get_attenuation(world_pos);
+				
+				if (fade > 0)
+				{
+					out_color.rgb = vec3(fade);
+					//out_color.rgb = vec3(1);
+					
+					
+					
+					//out_color.rgb *= CookTorrance3(light_dir, normal, vec3(specular), vec2(0.5, 0.5), world_pos);
+					out_color.rgb *= CookTorrance2(light_dir, normal, world_pos, specular);
+					//out_color.rgb *= CookTorrance(light_dir, normal, -cam_dir,world_pos, 1, 0.8);
+					//out_color.rgb *= calc_point_light(world_pos, normal, specular, world_pos);
+					//out_color.rgb *= calc_point_light2(light_dir, normal, specular);
+					//out_color = vec4(0.02,0.02,0.02,1);
+					
+					out_color.a = out_color.a;
+					//out_color.a = get_attenuation(world_pos);
+				}
 				
 				/*
 				vec4 temp1 = light_vp_matrix * vec4(light_pos, 1);
@@ -447,7 +461,6 @@ local LIGHT = {
 
 				out_color.rgb = vec3(is_in_shadow(light_space_pos, z));
 				*/
-				//out_color = calc_point_light2(texture(tex_diffuse, uv).rgb, specular, normal, world_pos);
 			}
 		]]  
 	}
@@ -576,11 +589,13 @@ local GBUFFER = {
 				vec3 atmosphere_color = ambient_light_color;
 				vec3 fog_color = atmosphere_color;
 				float fog_distance = 750.0;
-				
+			
+				out_color.rgb = mix_fog(out_color.rgb, depth, fog_distance, 1-fog_color); //this fog is fucked up, needs to be redone
+			
 				out_color.rgb *= vec3(ssao());
 				out_color.rgb *= texture(tex_light, uv).rgb;
 				
-				
+			
 				/*
 				// debug get_pos
 				vec3 wpos = -get_pos().yxz; 
@@ -589,8 +604,6 @@ local GBUFFER = {
 				{
 					out_color.rgb = vec3(1,1,1);
 				}*/
-				
-				out_color.rgb = mix_fog(out_color.rgb, depth, fog_distance, 1-fog_color); //this fog is fucked up, needs to be redone
 								
 			}
 		]]  
@@ -696,20 +709,28 @@ local EFFECTS = {
 			}
 		]],
 	},
-	
 	--[==[
 	{
-		name = "contrast",
+		name = "extract_bloom",
 		source = [[
 			out vec4 out_color;
-
+			
+			float brightThreshold = 0.01;
+			
 			void main() 
 			{ 
-				out_color = pow(texture(tex_last, uv), vec4(4))*500;
-				out_color.a = 1;
+				// Calculate luminance
+				float lum = dot(vec4(0.30, 0.59, 0.11, 0.0), texture(tex_last, uv)); //MUST EXTRACT FROM LAST BUFFER AND STORE IN A NEW BUFFER
+				
+				// Extract very bright areas of the map
+				if (lum > brightThreshold)
+					out_color = texture(tex_last, uv);
+				else
+					out_color = vec4(0.0, 0.0, 0.0, 1.0);
 			}
 		]],
 	},
+	
 	{
 		down_sample = 2,
 		name = "blur_1",
@@ -718,8 +739,8 @@ local EFFECTS = {
 
 			vec4 blur(sampler2D tex, vec2 uv)
 			{			
-				float dx = 1  / width;
-				float dy = 1 / height;
+				float dx = 2  / width;
+				float dy = 2 / height;
 				
 				// Apply 3x3 gaussian filter
 				vec4 color = 4.0 * texture(tex, uv);
@@ -744,15 +765,15 @@ local EFFECTS = {
 		]],
 	},	
 	{
-		down_sample = 4,
+		down_sample = 2,
 		name = "blur_2",
 		source = [[
 			out vec4 out_color;
 
 			vec4 blur(sampler2D tex, vec2 uv)
 			{			
-				float dx = 1  / width;
-				float dy = 1 / height;
+				float dx = 4  / width;
+				float dy = 4 / height;
 				
 				// Apply 3x3 gaussian filter
 				vec4 color = 4.0 * texture(tex, uv);
@@ -813,16 +834,31 @@ local EFFECTS = {
 		name = "hdr",
 		source = [[
 			out vec4 out_color;
-
+			
+			float exposure = 0.5;
+			float bloomFactor = 0.5;
+			float brightMax = 2;
+			
 			void main() 
 			{ 
-				out_color = texture(tex_last, uv) * texture(tex_gbuffer, uv);
-				out_color.a = 1;
+				vec4 original_image = texture(tex_gbuffer, uv); 
+				vec4 downsampled_extracted_bloom = texture(tex_last, uv);
+				
+				vec4 color = original_image + downsampled_extracted_bloom * bloomFactor;
+				
+				// Perform tone-mapping
+				float Y = dot(vec4(0.30, 0.59, 0.11, 0.0), color);
+				float YD = exposure * (exposure/brightMax + 1.0) / (exposure + 1.0);
+				color *= YD;
+				
+				color.a = 1;
+				
+				out_color = color;
 			}
 		]],
-	},	
-	
+	},
 	]==]
+	
 }
 
 render.pp_shaders = {}
@@ -872,7 +908,6 @@ function render.AddPostProcessShader(name, source, priority, down_sample)
 			attach = "color",
 			texture_format = {
 				internal_format = "RGBA16F",
-				min_filter = "nearest",
 			}
 		},
 	})
@@ -1070,7 +1105,6 @@ function render.InitializeGBuffer(width, height)
 			attach = "color",
 			texture_format = {
 				internal_format = "RGBA16F",
-				min_filter = "nearest",
 			}
 		},
 	})
@@ -1117,10 +1151,11 @@ function render.DrawDeferred(w, h)
 	event.Call("DrawShadowMaps", render.shadow_map_shader)	
 	
 	-- light
-	gl.DepthMask(gl.e.GL_FALSE)
+	
 	gl.Disable(gl.e.GL_DEPTH_TEST)	
+	
 	gl.Enable(gl.e.GL_BLEND)
-	render.SetBlendMode("additive")
+	gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
 	
 	render.gbuffer:Begin("light")
 		event.Call("Draw3DLights", render.gbuffer_light_shader)
