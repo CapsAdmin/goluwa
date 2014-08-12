@@ -125,15 +125,15 @@ function assimp.ImportFileEx(path, flags, callback)
 				end
 			end
 		end
-		
-		if callback then
-			coroutine.yield()
-		end
-				
+						
 		out[i] = sub_model
 		
 		if callback then
 			callback(sub_model, i+1, scene.mNumMeshes)
+		end
+		
+		if callback then
+			coroutine.yield()
 		end
 	end	
 	
