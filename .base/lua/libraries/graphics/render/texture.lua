@@ -127,7 +127,9 @@ do -- texture object
 			buffer
 		)
 		
-		gl.GenerateMipmap(f.type)
+		if f.mip_map_levels > 0 then
+			gl.GenerateMipmap(f.type)
+		end
 		
 		gl.BindTexture(f.type, 0)			
 				
@@ -223,7 +225,9 @@ do -- texture object
 				)
 			end
 			
-			gl.GenerateMipmap(f2.type)
+			if f2.mip_map_levels > 0 then
+				gl.GenerateMipmap(f2.type)
+			end
 			
 		gl.BindTexture(f2.type, 0)
 		
@@ -429,7 +433,7 @@ do -- texture object
 		format.buffer_type = format.buffer_type or "unsigned char"
 		format.channel = format.channel or 0
 
-		format.mip_map_levels = math.max(format.mip_map_levels or 3, 3) --ATI doesn't like level under 3
+		format.mip_map_levels = format.mip_map_levels or 3 --ATI doesn't like level under 3
 		
 		-- create a new texture
 		local id = gl.GenTexture()
