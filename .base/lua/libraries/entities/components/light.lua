@@ -36,12 +36,12 @@ if CLIENT then
 		
 		function COMPONENT:SetShadow(b)
 			if b then
-				self.shadow_map = render.CreateFrameBuffer(512, 512, {
+				self.shadow_map = render.CreateFrameBuffer(render.GetWidth(), render.GetHeight(), {
 					name = "depth",
 					attach = "depth",
 					draw_manual = true,
 					texture_format = {
-						internal_format = "DEPTH_COMPONENT32F",	 
+						internal_format = "DEPTH_COMPONENT32",	 
 						depth_texture_mode = gl.e.GL_RED,
 						min_filter = "nearest",				
 					} 
@@ -58,17 +58,19 @@ if CLIENT then
 
 			
 			--transform:SetPosition(Vec3(1000, 1000, 1000)*0.2)
-			--transform:SetAngles(Ang3(-90, 0, 0)) 
-			
+			--transform:SetAngles(Ang3(-90, 0, 0)) 			
 			transform:SetPosition(Vec3(math.cos(os.clock())*5, 70, 10 + math.sin(os.clock())*5))
-			transform:SetAngles(Ang3(0, -90, 0)) 
+			transform:SetAngles(Ang3(-10, -90, 0)) 
+			
+			--transform:SetPosition(Vec3(0, 90, 0))
+			--transform:SetAngles(Ang3(-10, -90, 0)) 
 			
 			--local pos = Vec3(math.sin(os.clock())*1500, 0, math.cos(os.clock())*500)
 			--transform:SetPosition(pos)
 			--transform:SetAngles((pos - render.GetCamPos()):GetAng3())
 			
-			--transform:SetPosition(render.GetCamPos())
-			--transform:SetAngles(render.GetCamAng())
+		--	transform:SetPosition(render.GetCamPos())
+		--	transform:SetAngles(render.GetCamAng())
 			
 			do
 				local pos = transform:GetPosition()
@@ -77,8 +79,9 @@ if CLIENT then
 				
 				local projection = Matrix44()
 				local cam = render.camera
-				local size = 200
-				projection:Perspective(80, cam.nearz, cam.farz, cam.ratio) 
+				projection:Perspective(60, cam.nearz, cam.farz, cam.ratio) 
+				
+				--local size = 200
 				--projection:Ortho(-size, size, -size, size, 200, 0) 
 
 				local view = Matrix44()
@@ -107,6 +110,7 @@ if CLIENT then
 		
 		shader.pvm_matrix = screen.m
 		shader.light_pos = transform:GetPosition()
+		shader.light_dir = transform:GetAngles():GetForward()
 		shader.light_radius = transform:GetSize()
 		
 		-- automate this!!
