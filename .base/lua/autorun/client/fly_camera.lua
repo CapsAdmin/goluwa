@@ -1,3 +1,4 @@
+local smooth_cam_pos = Vec3(0, 0, 0)   
 local cam_pos = Vec3(0, 0, 0)   
 local cam_ang = Ang3(0, 0, 0)  
 local cam_fov = 90
@@ -12,18 +13,17 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	local speed = dt * 10
 
 	local delta = window.GetMouseDelta() / 100
+		
+	local r = cam_ang.r
+	local cs = math.cos(r)
+	local sn = math.sin(r)
+	local x = delta.x * cs - delta.y * sn
+	local y = delta.x * sn + delta.y * cs
 	
-	if input.IsKeyDown("left") then
-		delta.x = delta.x - speed
-	elseif input.IsKeyDown("right") then
-		delta.x = delta.x + speed
-	end
+	local original_delta = delta:Copy()
 	
-	if input.IsKeyDown("up") then
-		delta.y = delta.y - speed
-	elseif input.IsKeyDown("down") then
-		delta.y = delta.y + speed
-	end
+	delta.x = x
+	delta.y = y
 	
 	if input.IsKeyDown("r") then
 		cam_ang.r = 0
@@ -31,19 +31,33 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	end
 	
 	delta = delta * (cam_fov / 175)
-	
-	if input.IsMouseDown("button_2") then
-		cam_ang.r = cam_ang.r + delta.x / 2
-		cam_fov = math.clamp(cam_fov + delta.y * 100, 0.1, 175)
-	else
-		cam_ang.p = math.clamp(cam_ang.p + delta.y, -math.pi/2, math.pi/2)
-		cam_ang.y = cam_ang.y - delta.x
-	end
-
-	if input.IsKeyDown("left_shift") then
+	 
+	if input.IsKeyDown("left_shift") and input.IsKeyDown("left_control") then
+		speed = speed * 32
+	elseif input.IsKeyDown("left_shift") then
 		speed = speed * 8
 	elseif input.IsKeyDown("left_control") then
 		speed = speed / 4
+	end	
+				
+	if input.IsKeyDown("left") then
+		delta.x = delta.x - speed / 3
+	elseif input.IsKeyDown("right") then
+		delta.x = delta.x + speed / 3
+	end
+	
+	if input.IsKeyDown("up") then
+		delta.y = delta.y - speed / 3
+	elseif input.IsKeyDown("down") then
+		delta.y = delta.y + speed / 3
+	end
+		
+	if input.IsMouseDown("button_2") then
+		cam_ang.r = cam_ang.r + original_delta.x / 2 * math.clamp(cam_fov/5, 0.5, 1)
+		cam_fov = math.clamp(cam_fov + original_delta.y * 100 * (cam_fov/180), 0.1, 175)
+	else	
+		cam_ang.p = math.clamp(cam_ang.p + delta.y, -math.pi/2, math.pi/2)
+		cam_ang.y = cam_ang.y - delta.x
 	end
 	
 	local forward = Vec3(0,0,0)
@@ -75,8 +89,9 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	end
 	
 	cam_pos = cam_pos + forward + side + up
-	
-	render.SetupView3D(cam_pos, cam_ang:GetDeg(), cam_fov)
+	smooth_cam_pos = smooth_cam_pos - ((smooth_cam_pos - cam_pos) * dt * 10)
+
+	render.SetupView3D(smooth_cam_pos, cam_ang:GetDeg(), cam_fov)
 end)
 
 local roll = 0
