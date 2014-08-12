@@ -88,7 +88,7 @@ if CLIENT then
 			for i, model in ipairs(model.sub_models) do
 				shader.diffuse = self.DiffuseTexture or model.diffuse or render.GetErrorTexture()
 				shader.diffuse2 = self.DiffuseTexture or model.diffuse2 or render.GetErrorTexture()
-				shader.specular = self.SpecularTexture or model.specular or render.GetBlackTexture()
+				shader.specular = self.SpecularTexture or model.specular or render.GetWhiteTexture()
 				shader.bump = self.BumpTexture or model.bump or render.GetBlackTexture()
 				
 				--shader.detail = model.detail or render.GetWhiteTexture()
