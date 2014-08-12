@@ -117,9 +117,7 @@ function render.CreateFrameBuffer(width, height, format)
 	if not format then
 		format = {
 			attach = gl.e.GL_COLOR_ATTACHMENT0,
-			texture_format = {
-				internal_format = gl.e.GL_RGBA32F,
-			}
+			texture_format = {}
 		}
 	end
 	
@@ -137,6 +135,7 @@ function render.CreateFrameBuffer(width, height, format)
 		
 		if info.texture_format then
 			info.texture_format.internal_format = info.texture_format.internal_format or gl.e.GL_RGBA32F
+			info.texture_format.mip_map_levels = info.texture_format.mip_map_levels or 1
 		end
 		
 		if type(info.attach) == "string" then 
