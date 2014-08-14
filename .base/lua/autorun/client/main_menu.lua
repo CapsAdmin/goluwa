@@ -262,13 +262,12 @@ function menu.SetupButtons()
 	
 end
  
-menu.Open()
+event.AddListener("RenderContextInitialized", menu.Open)
 
 if not network.IsStarted() then
 	menu.FadeIn()
 end
 
--- remake the menu on reload 
-if menu.Remake then 
+if RELOAD then 
 	menu.Remake() 
 end
