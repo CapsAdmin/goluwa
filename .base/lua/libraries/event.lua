@@ -12,6 +12,11 @@ function event.AddListener(event_type, id, callback, config)
 		config = event_type
 	end
 		
+	if not callback and type(id) == "function" then
+		callback = id
+		id = nil
+	end
+		
 	config = config or {}
 	
 	config.event_type = config.event_type or event_type
