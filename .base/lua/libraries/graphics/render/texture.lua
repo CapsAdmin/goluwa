@@ -15,7 +15,8 @@ local diffuse_suffixes = {
 }
 
 function render.FindTextureFromSuffix(path, ...)
-
+	path = path:lower()
+	
 	local suffixes = {...}
 
 	-- try to find the normal texture
@@ -394,6 +395,16 @@ do -- texture object
 		return self.loading
 	end
 	
+	function META:MakeError()
+		local err = render.GetErrorTexture()
+		buffer = err:Download()
+		w = err.w
+		h = err.h
+		self:Replace(buffer, w, h)
+		self.loading = nil
+		self.override_texture = nil
+	end
+	
 	function render.CreateTexture(width, height, buffer, format)
 		if type(width) == "string" and not buffer and not format and (not height or type(height) == "table") then
 			return render.CreateTextureFromPath(width, height)
@@ -520,37 +531,37 @@ function render.CreateTextureFromPath(path, format)
 	format = format or {}
 	
 	local loading = render.GetLoadingTexture()
-	local tex = render.CreateTexture(loading.w, loading.h, nil, format)
+	local self = render.CreateTexture(loading.w, loading.h, nil, format)
 
-	tex.override_texture = loading
-	tex.loading = true
+	self.override_texture = loading
+	self.loading = true
 
-	vfs.ReadAsync(path, function(data)
-		tex.loading = false
-		tex.override_texture = nil
+	if not vfs.ReadAsync(path, function(data)
+		self.loading = false
+		self.override_texture = nil
 		
 		local buffer, w, h, info = render.DecodeTexture(data, path)
 		
 		if buffer == nil or w == 0 or h == 0 then
-			local err = render.GetErrorTexture()
-			buffer = err:Download()
-			w = err.w
-			h = err.h
+			self:MakeError()
 		else
 			if info.format then
-				table.merge(tex.format, info.format)
-				tex:UpdateFormat()
+				table.merge(self.format, info.format)
+				self:UpdateFormat()
 			end
 			
-			render.texture_path_cache[path] = tex			
+			render.texture_path_cache[path] = self			
 			vfs.UncacheAsync(path)
+			
+			self:Replace(buffer, w, h)
 		end
 		
-		tex:Replace(buffer, w, h)
-		tex.decode_info = info
-	end)
+		self.decode_info = info
+	end) then
+		self:MakeError()
+	end
 	
-	return tex
+	return self
 end
 
 
