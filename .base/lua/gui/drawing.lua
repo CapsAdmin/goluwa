@@ -108,19 +108,9 @@ do
 	function gui.StartClip(pnl)		
 		if gui.noclip then return end
 		if pnl:HasParent() then	
-			local offset = pnl.Parent:GetOffset()
-			local siz = pnl.Parent:GetSize()
-			local pos = pnl.Parent:GetWorldPos()
+			local size = pnl.Parent:GetSize()
 			
-			if not offset:IsZero() then
-				pos = pos - offset
-				siz = siz + offset
-			end
-			
-			local w, h = siz:Unpack()
-			local x, y = pos:Unpack()
-			
-			surface.StartClipping(x, y, w, h)
+			surface.StartClipping(0, 0, size.w, size.h)
 		end
 	end
 	
