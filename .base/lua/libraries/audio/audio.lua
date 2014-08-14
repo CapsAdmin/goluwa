@@ -85,6 +85,24 @@ function audio.GetAllOutputDevices()
 	return devices
 end
 
+function audio.GetAvailableEffects()
+	local effects = al.GetAvailableEffects()
+	
+	local out = {}
+	
+	for k, v in pairs(effects) do
+		local tbl = {}
+		
+		for k, v in pairs(v.params) do
+			tbl[k] = {max = v.max, min = v.min, default = v.default}
+		end
+		
+		out[k] = tbl
+	end
+	
+	return out
+end
+
 function audio.GetAllInputDevices()
 	local list = alc.GetString(nil, alc.e.ALC_CAPTURE_DEVICE_SPECIFIER)
 
@@ -315,14 +333,33 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 		elseif x then
 			set_f(self.id, key, x)
 		end
+		
+		if self.slots then
+			for id, slot in pairs(self.slots) do
+				slot:SetEffect(self)
+			end
+		end
 
 	end
 
-	local get_fv = al[type.."Getfv"]
+	local get_fv = al["Get" .. type.."fv"]
 	local temp = ffi.new("float[3]")
 
 	function META:GetParam(key)
-		get_fv(self.id, key, temp)
+		
+		if self.params and self.params[key] then
+			local val = x or self.params[key].default
+
+			if self.params[key].min and self.params[key].max then
+				val = math.clamp(val, self.params[key].min, self.params[key].max)
+			end
+
+			get_fv(self.id, self.params[key].enum, temp)
+
+			self.params[key].val = val
+		else
+			get_fv(self.id, key, temp)
+		end
 
 		return temp[0], temp[1], temp[2]
 	end
@@ -565,7 +602,9 @@ do -- source
 
 		local slot = audio.CreateAuxiliaryEffectSlot()
 		slot:SetEffect(effect)
-
+		
+		effect.slots[id] = slot
+		
 		table.insert(self.effects, {id = id, slot = slot, effect = effect})
 
 		self:SetAuxiliaryEffectSlot(slot, #self.effects)
@@ -574,6 +613,7 @@ do -- source
 	function META:RemoveEffect(id)
 		for i,v in pairs(self.effects) do
 			if v.id == id then
+				v.effect.slots[id] = nil
 				v.slot:Remove()
 				self:SetAuxiliaryEffectSlot(nil, i)
 				table.remove(self.effects, i)
@@ -630,6 +670,8 @@ do -- effect
 	local available = al.GetAvailableEffects()
 
 	local META = GEN_TEMPLATE("Effect", function(self, var, override_params)
+		self.slots = {}
+	
 		if available[var] then
 			self:SetType(available[var].enum)
 			self.params = table.copy(available[var].params)
