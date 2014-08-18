@@ -128,7 +128,9 @@ end
 -- if gl.GenBuffers then
 function gl.InitMiniGlew()
 
-	logn("parsing gl extensions..")
+	if gl.debug then
+		logn("parsing gl extensions..")
+	end
 	local invalid = 0
 	
 	setlogfile("unexpected_extensions")
@@ -206,8 +208,10 @@ function gl.InitMiniGlew()
 		
 	setlogfile()
 	
-	logf("glew extensions took %f ms to parse\n", (timer.GetSystemTime() - time) * 100)
-	--logf("%i extensions could not be parsed. see the unexpected_extensions log for more info\n", invalid)
+	if gl.debug then
+		logf("glew extensions took %f ms to parse\n", (timer.GetSystemTime() - time) * 100)
+		--logf("%i extensions could not be parsed. see the unexpected_extensions log for more info\n", invalid)
+	end
 end
 
 -- the download functions work but the idea wasn't thought out properly
