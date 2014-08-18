@@ -324,7 +324,7 @@ local LIGHT = {
 				return vec3(min(1.0, _fresnel * geometric * roughness / (NdotV + 1.0e-7)));
 			}
 	
-			
+			 
 			vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular)
 			{
 				float roughness = 0.1;
@@ -444,9 +444,10 @@ local LIGHT = {
 					//out_color.rgb *= calc_point_light2(light_dir, normal, specular);
 					//out_color = vec4(0.02,0.02,0.02,1);
 					
-					out_color.a = out_color.a;
 					//out_color.a = get_attenuation(world_pos);
 				}
+
+				out_color.a = light_color.a;
 				
 				/*
 				vec4 temp1 = light_vp_matrix * vec4(light_pos, 1);
@@ -956,7 +957,9 @@ function render.InitializeGBuffer(width, height)
 	
 	if width == 0 or height == 0 then return end
 	
-	logn("[render] initializing gbuffer: ", width, " ", height)
+	if render.debug then
+		logn("[render] initializing gbuffer: ", width, " ", height)
+	end
 	
 	local noise = Texture(width, height):Fill(function() 
 		return math.random(255), math.random(255), math.random(255), math.random(255)
@@ -1142,6 +1145,7 @@ function render.DrawDeferred(w, h)
 	gl.DepthMask(gl.e.GL_TRUE)
 	gl.Enable(gl.e.GL_DEPTH_TEST)
 	gl.Disable(gl.e.GL_BLEND)	
+	--render.SetCullMode("back")
 	
 	render.gbuffer:Begin()
 		render.gbuffer:Clear()
@@ -1153,22 +1157,25 @@ function render.DrawDeferred(w, h)
 	-- light
 	
 	gl.Disable(gl.e.GL_DEPTH_TEST)	
-	
 	gl.Enable(gl.e.GL_BLEND)
 	gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
+	render.SetCullMode("front")
 	
 	render.gbuffer:Begin("light")
 		event.Call("Draw3DLights", render.gbuffer_light_shader)
 	render.gbuffer:End() 
 	
+	
+	render.SetBlendMode("alpha")
+	
 	-- gbuffer
 	render.SetBlendMode("alpha")	
+	--render.SetCullMode("back")
 	render.Start2D()
 		-- draw to the pp buffer		
 		local effect = render.pp_shaders[1]
 		
-		if effect then
-			
+		if not SOMEPOTATO and effect then			
 			surface.PushMatrix(0,0,w,h)
 				render.screen_buffer:Begin()
 					render.gbuffer_shader:Bind()
@@ -1192,7 +1199,7 @@ function render.DrawDeferred(w, h)
 					effect = next
 				surface.PopMatrix()
 			end			
-		
+			
 			
 			-- draw the pp texture as quad
 			surface.PushMatrix()
