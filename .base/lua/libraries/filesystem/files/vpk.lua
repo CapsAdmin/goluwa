@@ -149,9 +149,6 @@ function CONTEXT:GetFiles(path_info)
 					done[path] = true
 				end
 			else
-				if v.is_dir then
-					path = path .. "/"
-				end
 				table.insert(out, path:match(".+/(.+)") or path)
 			end
 		end 
