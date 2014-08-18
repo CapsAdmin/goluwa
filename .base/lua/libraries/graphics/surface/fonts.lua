@@ -187,6 +187,8 @@ do -- fonts
 				ft.fonts[name].font_data = data
 				
 				event.Call("FontChanged", name, info)
+			else
+				ft.fonts[name] = ft.fonts.default
 			end
 		end, info.read_speed, "font") then
 			error("could not load font " .. info.path .. " : could not find anything with the path field", 2)
