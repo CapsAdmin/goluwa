@@ -232,12 +232,14 @@ if CLIENT then
 	input.Bind("y", "showchat")
 end
 
-local seed = 0
+local SEED = 0
 
 function chat.ClientSay(client, str, skip_log, seed)
+	seed = seed or SEED
+	
 	if event.Call("ClientChat", client, str, seed) ~= false then
 		chat.Append(client, str, skip_log)
-		if SERVER then message.Broadcast("say", client, str, seed) seed = seed + 1 end
+		if SERVER then message.Broadcast("say", client, str, seed) SEED = SEED + 1 end
 	end
 end
 
