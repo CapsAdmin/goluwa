@@ -351,7 +351,7 @@ do -- clipboard
 	system.GetClipboard = get	
 end
 
-do -- transparent window
+if CLIENT then -- transparent window
 	local gl = require("lj-opengl") -- OpenGL
 	
 	local set = not_implemented

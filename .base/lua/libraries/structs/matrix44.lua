@@ -424,7 +424,7 @@ do -- projection
 	end
 end
 
-do -- helpers
+if CLIENT then -- helpers
 	local gl = require("lj-opengl") -- OpenGL
 	
 	function META:OpenGLFunc(func, ...)
