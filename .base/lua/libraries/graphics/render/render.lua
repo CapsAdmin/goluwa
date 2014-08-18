@@ -105,7 +105,6 @@ function render.Initialize()
 	end
 	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
-	console.SetTitle("OpenGL " .. render.GetVersion(), "glversion")
 	
 	include("libraries/graphics/render/shader_builder.lua", render)
 	
@@ -325,6 +324,13 @@ do
 	local cull_mode = "front"
 
 	function render.SetCullMode(mode)
+		
+		if mode == "none" then
+			gl.Disable(gl.e.GL_CULL_FACE)
+		else
+			gl.Enable(gl.e.GL_CULL_FACE)
+		end
+	
 		if mode == "front" then
 			gl.CullFace(gl.e.GL_FRONT)
 		elseif mode == "back" then
