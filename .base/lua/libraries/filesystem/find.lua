@@ -1,58 +1,55 @@
 local vfs2 = (...) or _G.vfs2
 
-do
-	function vfs2.Find(path, invert, full_path, start, plain, info)
-		
-		local path_, pattern = path:match("(.+)/(.*)")
-		if pattern then path = path_ end
-		
-		print(path, pattern)
-		
-		local path_info = vfs2.GetPathInfo(path, true)
+function vfs2.Find(path, invert, full_path, start, plain, info)
 	
-		local out = {}
-		local done = {}
+	local path_, pattern = path:match("(.+)/(.*)")
+	if pattern then path = path_ end
 		
-		for i, data in ipairs(vfs2.TranslatePath(path, true)) do
-			local ok, found = pcall(data.context.GetFiles, data.context, data.path_info)
-			
-			if vfs2.debug and not ok then
-				vfs2.DebugPrint("%s: error getting files: %s", data.context.Name, found)
-			end
-			
-			if ok then	
-				for i, v in pairs(found) do
-					if not done[v] then
-						done[v] = true
-						if (not pattern or pattern == "" or v:find(pattern, start, plain)) then
-							if full_path then
-								v = --[[data.context.Name .. ":" ..]] data.path_info.full_path .. v
-							end
-							
-							if info then
-								table.insert(out, {
-									name = v, 
-									filesystem = data.context.Name,
-									full_path = data.context.Name .. ":" .. data.path_info.full_path .. v,
-								})
-							else
-								table.insert(out, v)
-							end
+	local path_info = vfs2.GetPathInfo(path, true)
+
+	local out = {}
+	local done = {}
+	
+	for i, data in ipairs(vfs2.TranslatePath(path, true)) do
+		local ok, found = pcall(data.context.GetFiles, data.context, data.path_info)
+		
+		if vfs2.debug and not ok then
+			vfs2.DebugPrint("%s: error getting files: %s", data.context.Name, found)
+		end
+		
+		if ok then	
+			for i, v in pairs(found) do
+				if not done[v] then
+					done[v] = true
+					if (not pattern or pattern == "" or v:find(pattern, start, plain)) then
+						if full_path then
+							v = --[[data.context.Name .. ":" ..]] data.path_info.full_path .. v
 						end
-					end				
-				end
+						
+						if info then
+							table.insert(out, {
+								name = v, 
+								filesystem = data.context.Name,
+								full_path = data.context.Name .. ":" .. data.path_info.full_path .. v,
+							})
+						else
+							table.insert(out, v)
+						end
+					end
+				end				
 			end
 		end
-		
-		if invert then
-			table.sort(out, function(a, b) if info then return a.full_path > b.full_path end return a > b end)
-		else
-			table.sort(out, function(a, b) if info then return a.full_path < b.full_path end return a < b end)
-		end
-		
-		return out
 	end
+	
+	if invert then
+		table.sort(out, function(a, b) if info then return a.full_path > b.full_path end return a > b end)
+	else
+		table.sort(out, function(a, b) if info then return a.full_path < b.full_path end return a < b end)
+	end
+	
+	return out
 end
+
 
 function vfs2.Iterate(path, ...)
 	check(path, "string")
