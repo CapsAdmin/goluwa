@@ -24,7 +24,9 @@ end
 function gui.CallEvent(pnl, name, ...)
 	pnl = pnl or gui.World
 	
-	return pnl:CallEvent(name, ...)
+	if pnl:IsValid() then
+		return pnl:CallEvent(name, ...)
+	end
 end
 
 function gui.MouseInput(key, press, pos)
