@@ -494,12 +494,12 @@ do -- texture object
 			gl.TexImage2D(
 				format.type,
 				format.mip_map_levels,
-				format.stride,
+				format.internal_format,
 				self.size.w,
 				self.size.h,
 				0,
-				format.format,
-				format.internal_format,
+				format.upload_format,
+				format.format_type,
 				nil
 			)
 				
