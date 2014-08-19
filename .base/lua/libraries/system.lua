@@ -502,21 +502,21 @@ function system.DebugJIT(b)
 end
 
 
-function system.Restart()
-		
+function system.Restart( run_on_launch )
+	run_on_launch = run_on_launch or ""
 	lfs.chdir("../../../../") 
 	
-	if WINDOWS then
+	if not WINDOWS then
 		if CLIENT then
-			os.execute("./launch_client.sh &") 
+			os.execute("./launch_client.sh " .. run_on_launch .. "&") 
 		else	
-			os.execute("./launch_server.sh &") 
+			os.execute("./launch_server.sh " .. run_on_launch .. "&") 
 		end
 	else
 		if CLIENT then
-			os.execute("launch_client.bat") 
+			os.execute("launch_client.bat " .. run_on_launch) 
 		else	
-			os.execute("launch_server.bat") 
+			os.execute("launch_server.bat " .. run_on_launch) 
 		end
 	end
 	
