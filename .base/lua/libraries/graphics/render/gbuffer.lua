@@ -1055,6 +1055,7 @@ function render.InitializeGBuffer(width, height)
 				surface.SetWhiteTexture()
 				surface.SetColor(grey, grey, grey, 1)
 				surface.DrawRect(x, y, w, h)
+				surface.SetRectUV(0,0,1,1)
 				
 				surface.SetColor(1,1,1,1)
 				surface.SetTexture(render.gbuffer:GetTexture(data.name))
@@ -1138,14 +1139,19 @@ function render.ShutdownGBuffer()
 end
 
 local size = 4
-
+local deferred = console.CreateVariable("r_deferred", true, "whether or not deferred rendering is enabled.")
 function render.DrawDeferred(w, h)
+
+	if not deferred:Get() then
+		render.Clear(1,1,1,1)
+		event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
+	return end
 
 	-- geometry
 	gl.DepthMask(gl.e.GL_TRUE)
 	gl.Enable(gl.e.GL_DEPTH_TEST)
 	gl.Disable(gl.e.GL_BLEND)	
-	--render.SetCullMode("back")
+	render.SetCullMode("back")
 	
 	render.gbuffer:Begin()
 		render.gbuffer:Clear()
@@ -1162,6 +1168,7 @@ function render.DrawDeferred(w, h)
 	render.SetCullMode("front")
 	
 	render.gbuffer:Begin("light")
+		render.gbuffer:Clear(0,0,0,0, "light")
 		event.Call("Draw3DLights", render.gbuffer_light_shader)
 	render.gbuffer:End() 
 	
@@ -1170,7 +1177,7 @@ function render.DrawDeferred(w, h)
 	
 	-- gbuffer
 	render.SetBlendMode("alpha")	
-	--render.SetCullMode("back")
+	render.SetCullMode("back")
 	render.Start2D()
 		-- draw to the pp buffer		
 		local effect = render.pp_shaders[1]
