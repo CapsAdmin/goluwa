@@ -143,7 +143,11 @@ end
 function surface.CreatePoly(size)		
 	size = size * 6
 	local mesh = surface.CreateMesh(size)
-
+	
+	-- they never change anyway
+	mesh:SetUpdateIndices(false)
+	
+	
 	local self = META:New()
 
 	self.mesh = mesh
