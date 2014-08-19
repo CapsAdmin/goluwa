@@ -3,6 +3,8 @@ local render = (...) or _G.render
 
 local META = metatable.CreateTemplate("vertex_buffer")
 
+metatable.GetSet(META, "UpdateIndices", true)
+
 function render.CreateVertexBuffer(vertex_attributes, vertices, indices, vertices_size, indices_size)
 	check(vertex_attributes, "table")
 	check(vertices, "cdata")
@@ -43,7 +45,7 @@ function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
 		gl.BufferData(gl.e.GL_ARRAY_BUFFER, self.vertices_size, self.vertices, gl.e.GL_DYNAMIC_DRAW)
 	end
 	
-	if indices then
+	if indices and self.UpdateIndices then
 		self.indices = indices
 		self.indices_size = indices_size or ffi.sizeof(self.indices)
 		self.indices_count = self.indices_size / ffi.sizeof("unsigned int")
