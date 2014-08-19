@@ -79,9 +79,21 @@ function META:SetDrawBuffers(...)
 	end
 end
 
-function META:Clear(r,g,b,a)
-	gl.ClearColor(r or 0, g or 0, b or 0, a or 1)
-	gl.Clear(bit.bor(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT))
+function META:Clear(r,g,b,a, buffer)
+	r = r or 0
+	g = g or 0
+	b = b or 0
+	a = a or 0
+	
+	if buffer then
+		local buffer = self.buffers[name]
+		if buffer then
+			gl.ClearBufferfv(gl.e.GL_COLOR, buffer.attach_pos - 1, ffi.cast("float *", Color(r,g,b,a)))
+		end
+	else
+		gl.ClearColor(r, g, b, a)
+		gl.Clear(bit.bor(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT))
+	end
 end
 
 function META:GetTexture(type)
