@@ -36,7 +36,14 @@ structs.AddAllOperators(META)
 function META:Unpack()
 	return self.r, self.g, self.b, self.a
 end
-
+function META:Lighter(factor)
+	factor = factor or .5
+	factor = factor+1
+	return Color( self.r*factor, self.g*factor, self.b*factor, self.a )
+end
+function META:Darker(factor)
+	return self:Lighter( ( 1 - ( factor or .5 ) )-1 )
+end
 function META:Get255()
 	return Color(self.r * 255, self.g * 255, self.b * 255, self.a * 255)
 end
