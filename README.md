@@ -1,6 +1,6 @@
 Goluwa is an experimental game engine/framework/personal toolbox written in LuaJIT targeted at games. It includes high level libraries to render graphics, play audio, handle input, networking and much more. 3D is the main interest but 2D is also important.
 
-The coding style is inspired by Source Engine, Garry's Mod and CryEngine. UFO (https://github.com/malkia/ufo) gave me the initial idea and motivation.
+The coding style is inspired by Source Engine, Garry's Mod and CryEngine. [UFO](https://github.com/malkia/ufo) gave me the initial idea and motivation.
 
 I can't guarantee that Goluwa will run out of box if you download it at the moment. There is a BitSync version that I could invite you to if you're interested but that means you'll have to contact me.
 
@@ -8,21 +8,21 @@ My goal with this isn't very clear. I don't have any grand business plans or any
 
 LuaJit's FFI api is used to bind to the following shared libraries:
 
-* OpenGL - graphics
-* GLFW - window and input handler
-* OpenAL Soft - sound library
-* FreeType - font decoding
-* Libsndfile - sound decoding
-* FreeImage - image decoding
-* FFMpeg - sound and image decoding
-* VTFLib - image decoding (valves texture format)
-* PDCurses - console
-* Assimp - model decoding
-* Bullet3 - physics engine
-* ENet - udp library targeted at games
+* [OpenGL](http://www.opengl.org/) - graphics
+* [GLFW](https://github.com/glfw/glfw) - window and input handler
+* [OpenAL Soft](http://kcat.strangesoft.net/openal.html) - sound library
+* [FreeType](http://www.freetype.org/) - font decoding
+* [Libsndfile](http://www.mega-nerd.com/libsndfile/) - sound decoding
+* [FreeImage](http://freeimage.sourceforge.net/) - image decoding
+* [FFMpeg](http://ffmpeg.org/) - sound and image decoding
+* [VTFLib](https://github.com/panzi/VTFLib) - image decoding (valves texture format)
+* [PDCurses](http://www.projectpluto.com/win32a.htm) - console
+* [Assimp](https://github.com/assimp/assimp) - model decoding
+* [Bullet3](https://github.com/bulletphysics/bullet3) - physics engine
+* [ENet](https://github.com/lsalzman/enet) - udp library targeted at games
 * SteamFriends - extension to the steam library to deal with steam friends communication
 
-Everything should work fine (at least in theory) without using any of these libraries. The only actual requirement is LFS (Lua File System) and LuaJIT 2+
+In theoery everything should work without using any of these libraries. The only actual requirement is [LFS](https://github.com/keplerproject/luafilesystem) and LuaJIT 2+
 
 There is also a WIP Love2D wrapper which is used for fun and unit testing 2D graphics.
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-08/2014-08-16_01-53-14.jpg)
