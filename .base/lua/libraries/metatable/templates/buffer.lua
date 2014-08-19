@@ -317,6 +317,42 @@ function metatable.AddBufferTemplate(META)
 			return nil
 		end
 		
+		-- matrix44
+		function META:WriteMatrix44(matrix)
+			for i = 1, 16 do
+				self:WriteFloat(matrix.m[i - 1])
+			end
+			return self
+		end
+		
+		function META:ReadMatrix44()
+			local out = Matrix44()
+			
+			for i = 1, 16 do
+				out.m[i - 1] = self:ReadFloat()
+			end
+			
+			return out
+		end		
+		
+		-- matrix33
+		function META:WriteMatrix33(matrix)
+			for i = 1, 8 do
+				self:WriteFloat(matrix.m[i - 1])
+			end
+			return self
+		end
+		
+		function META:ReadMatrix33()
+			local out = Matrix33()
+			
+			for i = 1, 8 do
+				out.m[i - 1] = self:ReadFloat()
+			end
+			
+			return out
+		end		
+		
 		-- vec3
 		function META:WriteVec3(v)
 			self:WriteFloat(v.x)
@@ -327,6 +363,19 @@ function metatable.AddBufferTemplate(META)
 		
 		function META:ReadVec3()
 			return Vec3(self:ReadFloat(), self:ReadFloat(), self:ReadFloat())
+		end
+		
+		-- quat
+		function META:WriteQuad(quat)
+			self:WriteFloat(quat.x)
+			self:WriteFloat(quat.y)
+			self:WriteFloat(quat.z)
+			self:WriteFloat(quat.w)			
+			return self
+		end
+		
+		function META:ReadQuat()
+			return Quat(self:ReadFloat(), self:ReadFloat(), self:ReadFloat(), self:ReadFloat())
 		end
 		
 		-- vec2
@@ -437,9 +486,9 @@ function metatable.AddBufferTemplate(META)
 		
 		local cache = {}
 		 
-		function META:ReadStructure(structure)
+		function META:ReadStructure(structure, ordered)
 			if cache[structure] then
-				return self:ReadStructure(cache[structure])
+				return self:ReadStructure(cache[structure], ordered)
 			end
 			
 			if type(structure) == "string" then				
@@ -452,7 +501,7 @@ function metatable.AddBufferTemplate(META)
 			
 				cache[structure] = data
 			
-				return self:ReadStructure(data)
+				return self:ReadStructure(data, ordered)
 			end
 		
 			local out = {}
@@ -501,21 +550,39 @@ function metatable.AddBufferTemplate(META)
 				if not data.padding then
 					if val == nil then val = "nil" end
 					local key = data[2]
-					if out[key] then key = key .. i end
-					out[key] = val
+					
+					if ordered then
+						table.insert(out, {key = key, val = val})
+					else
+						if out[key] then 
+							key = key .. i 
+						end
+						
+						out[key] = val
+					end
 				end
 					
 				if type(data[3]) == "table" then
 					local tbl = {}
-					out[data[2]] = tbl			
+					
+					if ordered then
+						table.insert(out, {key = data[2], val = tbl})
+					else
+						out[data[2]] = tbl			
+					end
+					
 					for i = 1, val do
-						table.insert(tbl, self:ReadStructure(data[3]))
+						table.insert(tbl, self:ReadStructure(data[3], ordered))
 					end
 				end
 				
 				if data.switch then
-					for k, v in pairs(self:ReadStructure(data.switch[val])) do
-						out[k] = v
+					for k, v in pairs(self:ReadStructure(data.switch[val], ordered)) do
+						if ordered then
+							table.insert(out, {key = k, val = v})
+						else
+							out[k] = v
+						end
 					end
 				end
 				
