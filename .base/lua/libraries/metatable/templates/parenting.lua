@@ -18,6 +18,15 @@ function metatable.AddParentingTemplate(META)
 	function META:GetChildren(all)
 		return self.Children
 	end
+	
+	function META:GetParentList()
+		
+		if not self.parent_list then
+			self:BuildParentList()
+		end
+		
+		return self.parent_list
+	end
 
 	function META:SetParent(var)
 		if not var or not var:IsValid() then
