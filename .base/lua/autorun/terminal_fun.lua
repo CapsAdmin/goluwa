@@ -37,6 +37,6 @@ console.AddCommand("exit", function()
 	os.exit()
 end)
 
-console.AddCommand("restart", function()
-	system.Restart()
+console.AddCommand("restart", function(startup_cmd)
+	system.Restart(startup_cmd)
 end) 
