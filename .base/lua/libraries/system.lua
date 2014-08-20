@@ -155,7 +155,7 @@ do -- cursor
 		set = function(id)
 			id = id or "arrow"
 			
-			cache[id] = cache[id] or lib.LoadCursorA(nil, enums[id])
+			cache[id] = cache[id] or lib.LoadCursorA(nil, enums[id] or enums.arrow)
 			
 			--if last ~= id then
 				current = id
