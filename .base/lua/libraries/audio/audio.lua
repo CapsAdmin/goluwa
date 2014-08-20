@@ -19,7 +19,9 @@ function audio.Initialize(name)
 		name = audio.GetAllOutputDevices()[1]
 	end
 
-	logf("[audio] opening device %q for sound output\n", name)
+	if audio.debug then
+		logf("[audio] opening device %q for sound output\n", name)
+	end
 
 	local device = alc.OpenDevice(nil)
 
