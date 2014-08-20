@@ -1,6 +1,5 @@
 local surface = _G.surface or {}
 
-
 include("mesh2d.lua", surface)
 include("markup/markup.lua", surface)
 
@@ -52,8 +51,8 @@ do -- orientation
 		render.Scale(w, h or w, 1)
 	end
 		
-	function surface.PushMatrix(x,y, w,h, a)
-		render.PushWorldMatrix()
+	function surface.PushMatrix(x,y, w,h, a, dont_multiply)
+		render.PushWorldMatrix(nil, nil, nil, dont_multiply)
 
 		if x and y then surface.Translate(x, y) end
 		if w and h then surface.Scale(w, h) end
@@ -309,7 +308,7 @@ function surface.DrawLine(x1,y1, x2,y2, w, skip_tex, ...)
 end
 
 function surface.StartClipping(x, y, w, h)
-	x, y = surface.TransformPoint(-x, -y)
+	x, y = surface.WorldToLocal(-x, -y)
 	render.SetScissor(-x, -y, w, h)
 end
 
@@ -321,8 +320,8 @@ function surface.GetMousePos()
 	return window.GetMousePos():Unpack()
 end
 
-function surface.TransformPoint(x, y)
-	return render.matrices.world:TransformVector(Vec3(x, y, 0)):Unpack()
+function surface.WorldToLocal(x, y)
+	return (render.matrices.world * render.matrices.view_2d):TransformVector(Vec3(x, y, 0)):Unpack()
 end
 
 local last_x = 0
