@@ -385,6 +385,7 @@ local function load_mdl(path)
 		header.keyvalue_count = nil
 	buffer:PopPos()
 
+	--[[
 	logn("these remain to be parsed:")
 
 	for k,v in pairs(header) do
@@ -394,7 +395,7 @@ local function load_mdl(path)
 				logf("\t%s (count: %s|offset: %s)\n", name, header[name.."_count"], header[name.."_offset"])
 			end
 		end
-	end
+	end]]
 	
 	return header
 end
@@ -439,188 +440,161 @@ local function load_vtx(path)
 	
 	local base = header.bodypart_offset
 
-	table.print(header)
-	
-	do return end
-	
 	header.bodies = {}
 	
-	local function something(base, parent, children_name, callback)
-		local child = {}
-		child[children_name] = {}
+	header.strip_groups = {}
+	local parts = {}
+	local skip8Bytes
+	local expected2nd
+	local function readVtxes( strip )
+		strip.verts = {}
+		for i = 1, strip.vertexCount do
+			table.insert( strip.verts, buffer:ReadStructure[[
+				byte boneWeightIndex[3];
+				byte numBones;
+				short meshVertID;
+				byte boneID[3];
+			]])
+		end
 		
-		local count = buffer:ReadInt()
-		if count > 0 then
-			local offset = buffer:ReadInt()
-			
-			base = base + offset
-			
-			buffer:PushPos(base)
-			for i = 1, count do
-				callback(base, child[children_name])
-			end			
-			buffer:PopPos()
-			
-			table.insert(parent, child)
+	end
+	local function readIndices( strip )
+		strip.indices = {}
+		for i = 1, strip.indexCount do
+			table.insert( strip.indices, buffer:ReadShort() )
+		end
+		
+	end
+	local function readStrips( strip )
+		strip.strips = {}
+		for i = 1, strip.stripCount do
+			local aStrip = {}
+			aStrip.indexCount =          buffer:ReadInt()
+			aStrip.indexMeshIndex =      buffer:ReadInt()
+			aStrip.vertexCount =         buffer:ReadInt()
+			aStrip.vertexMeshIndex =     buffer:ReadInt()
+			aStrip.boneCount =           buffer:ReadShort()
+			aStrip.flags =               buffer:ReadByte()
+			aStrip.boneStateChangeCount =buffer:ReadInt()
+			aStrip.boneStateChangeOffset=buffer:ReadInt()
+			table.insert(strip.strips, aStrip)
 		end
 	end
 	
-	something(base, header.bodies, "models", function(base, parent)
-		something(base, parent, "lod_models", function(base, parent)
-			parent.switch_point = buffer:ReadFloat()
-			something(base, parent, "meshes", function(base, parent)			
-				parent.flags = buffer:ReadByte()
-			end)
-		end)
-	end)
-	
-	table.print(header.bodies)
-	
-	do return end
-	
-	buffer:PushPos(base)		
-	for i = 1, header.bodypart_count do
-		
-		local body = {}
-		body.models = {}
-		
-		local model_count = buffer:ReadInt()
-		local model_offset = buffer:ReadInt()
-		
-		base = base + model_offset
-		
-		buffer:PushPos(base)
-		for i = 1, model_count do
-		
-			local model = {}
-			model.lod_models = {}
+	local function readVtxGroup(count)
+		for i = 1, count do
+			local start = buffer:GetPos()
+			local stripGroup = {}
+			stripGroup.vertexCount =  buffer:ReadInt()
+			stripGroup.vertexOffset = buffer:ReadInt()
+			stripGroup.indexCount =   buffer:ReadInt()
+			stripGroup.indexOffset =  buffer:ReadInt()
+			stripGroup.stripCount =   buffer:ReadInt()
+			stripGroup.stripOffset =  buffer:ReadInt()
+			stripGroup.flags =        buffer:ReadByte()
 			
-			local lod_count = buffer:ReadInt()
-			local lod_offset = buffer:ReadInt()
-								
-			base = base + lod_offset
-								
-			buffer:PushPos(base)
-			for i = 1, lod_count do
-				
-				local lod_model = {}
-				lod_model.meshes = {}
+			--table.print(stripGroup)
+			if skip8Bytes then buffer:ReadInt()buffer:ReadInt() end
+			if stripGroup.vertexCount > 0 then
+				buffer:PushPos( start + stripGroup.vertexOffset )
+					readVtxes( stripGroup )
+				buffer:PopPos()
+			end
+			if stripGroup.indexCount > 0 then
+				buffer:PushPos( start + stripGroup.indexOffset )
+					readIndices( stripGroup )
+				buffer:PopPos()
+			end
+			if stripGroup.stripCount > 0 then
+				buffer:PushPos( start + stripGroup.stripOffset )
+					readStrips( stripGroup )
+				buffer:PopPos()
+			end
 			
-				local mesh_count = buffer:ReadInt()
-				local mesh_offset = buffer:ReadInt()
-				lod_model.switch_point = buffer:ReadFloat()
-				
-				base = base + mesh_offset
-								
-				buffer:PushPos(base)
-				for i = 1, mesh_count do
-					
-					local mesh = {}
-					mesh.strip_groups = {}
-					
-					local strip_group_count = buffer:ReadInt()
-					local strip_group_offset = buffer:ReadInt()
-					
-					mesh.flags = buffer:ReadByte()
-										
-					base = base + strip_group_offset
-										
-					buffer:PushPos(base)
-					for i = 1, strip_group_count do
-					
-						local strip_group = {}
-
-						do
-							local vertexCount = buffer:ReadInt()
-							local vertexOffset = buffer:ReadInt()
-
-							strip_group.vertices = {}
-							
-							buffer:PushPos(base + vertexOffset)
-							for i = 1, vertexCount do
-								local vertex = {}
-								
-								vertex.bone_weight_index = {buffer:ReadByte(), buffer:ReadByte(), buffer:ReadByte()}
-								vertex.bone_count = buffer:ReadByte()
-								vertex.original_mesh_vertex_index = buffer:ReadShort()
-								vertex.bone_id = {buffer:ReadByte(), buffer:ReadByte(), buffer:ReadByte()}
-								
-								strip_group.vertices[i] = vertex
-							end
-							buffer:PopPos()							
-						end
-									
-						do
-							local indexCount = buffer:ReadInt()
-							local indexOffset = buffer:ReadInt()
-
-							strip_group.indices = {}
-							
-							buffer:PushPos(base + indexOffset)
-							for i = 1, indexCount do
-								strip_group.indices[i] = buffer:ReadShort()
-							end
-							buffer:PopPos()							
-						end
-						
-						
-						do
-							local strip_count = buffer:ReadInt()
-							local strip_offset = buffer:ReadInt()
-
-							strip_group.strips = {}
-							
-							buffer:PushPos(base + strip_offset)
-							for i = 1, strip_count do
-								local strip = {}
-								
-								strip.indexCount = buffer:ReadInt()
-								strip.indexMeshIndex = buffer:ReadInt()
-								
-								strip.vertexCount = buffer:ReadInt()
-								strip.vertexMeshIndex = buffer:ReadInt()
-								
-								strip.boneCount = buffer:ReadShort()
-								
-								strip.flags = buffer:ReadByte()
-								
-								strip.boneStateChangeCount = buffer:ReadInt()
-								strip.boneStateChangeOffset = buffer:ReadInt()
-								
-								strip_group.strips[i] = strip
-							end
-							buffer:PopPos()							
-						end
-						
-						mesh.strip_groups.flags = buffer:ReadByte()
-						
-						table.insert(mesh.strip_groups, strip_group)
-					end
+			
+			table.insert(header.strip_groups, stripGroup)
+		end
+	end
+	local function analyzeStripGroups( count )
+		local stripGroup = {}
+		for i = 1, count do
+			
+			stripGroup.vertexCount =  buffer:ReadInt()
+			stripGroup.vertexOffset = buffer:ReadInt()
+			stripGroup.indexCount =   buffer:ReadInt()
+			stripGroup.indexOffset =  buffer:ReadInt()
+			stripGroup.stripCount =   buffer:ReadInt()
+			stripGroup.stripOffset =  buffer:ReadInt()
+			stripGroup.flags =        buffer:ReadByte()
+		end
+	end
+	local fstMWG, sndMWG
+	
+	local function readVtxMesh( count, point )
+		for i = 1, count do
+			local start = buffer:GetPos()
+			local sgCount, sgOffset, flags = buffer:ReadInt(), buffer:ReadInt(), buffer:ReadByte()
+			
+			if sgCount > 0 then
+				if not fstMWG then
+					fstMWG = true
+					buffer:PushPos( start + sgOffset )
+						--analyzeStripGroups( sgCount )
+						readVtxGroup(sgCount)
+						expected2nd = buffer:GetPos()
 					buffer:PopPos()
 					
-					--base = base - strip_group_offset
+				elseif not sndMWG then
 					
-					table.insert(lod_model.meshes, mesh)	
+					sndMWG = true
+					if expected2nd ~= start+sgOffset then
+						skip8Bytes = true
+					end
+					buffer:PushPos( start + sgOffset )
+						readVtxGroup(sgCount)
+					buffer:PopPos()
+				else
+					buffer:PushPos( start + sgOffset )
+						readVtxGroup(sgCount)
+					buffer:PopPos()
 				end
-				buffer:PopPos()		
-
-				--base = base - mesh_offset
-				
-				table.insert(model.lod_models, lod_model)			
-			end			
-			buffer:PopPos()	
+			end
+		end
+	end
+	local function readLodModel( count )
+		for i = 1, count do
+			local start = buffer:GetPos()
+			local meshCount, meshOffset, switchPoint = buffer:ReadInt(), buffer:ReadInt(), buffer:ReadFloat()
 			
-			--base = base - lod_offset
+			buffer:PushPos( start + meshOffset )
+				readVtxMesh( meshCount, switchPoint )
+			buffer:PopPos()
+		end
+	end
+	local function readVtxModels( count )
+		for i = 1, count do
+			local start = buffer:GetPos()
+			local lodCount, lodOffset = buffer:ReadInt(), buffer:ReadInt()
+			buffer:PushPos( start + lodOffset )
+				readLodModel( lodCount )
+			buffer:PopPos()
+		end
+	end
+	local function readBodyParts(offset, count)
+		buffer:SetPos( offset )
+		for i = 1, count do
+			local start = buffer:GetPos()
 			
-			table.insert(body.models, model)			
-		end			
-		buffer:PopPos()
+			local modelCount, modelOffset = buffer:ReadInt(), buffer:ReadInt()
+			
+			buffer:PushPos( start + modelOffset )
+				readVtxModels( modelCount, modelOffset )
+			buffer:PopPos()
+		end
 		
-		--base = base - model_offset
-		
-		table.insert(header.bodies, body)
-	end		
-	buffer:PopPos()
+	end
+	
+	readBodyParts( base, header.bodypart_count )
 	
 	return header
 end
@@ -637,13 +611,13 @@ local header=[[
 	int tangentDataStart;		// offset from base to tangent block
 ]]
 
-local function load_vvd(path, mdl)
+local function load_vvd(path, mdl, vtx)
 	local buffer = Buffer(vfs.GetFile(path .. ".vvd", "rb"))
 	local header = buffer:ReadStructure(header)
 	
 	do -- fixups
 		header.fixup = {}
-		
+				
 		buffer:PushPos(header.fixupTableStart)
 		for i = 1, header.numFixups do
 			table.insert(header.fixup, buffer:ReadStructure[[
@@ -655,42 +629,53 @@ local function load_vvd(path, mdl)
 		buffer:PopPos()
 	end
 		
-	local material = mdl.material[1].vmt.VertexLitGeneric
-	local model = {sub_models = {{mesh = {}}}}
-		
+	local models = {}
+	local i = 1
 	buffer:PushPos(header.vertexDataStart)
-	--for i = 1, header.numLODs do
-		for n = 1, header.numLODVertexes[1] do
-			local boneWeight = buffer:ReadStructure[[
-				float weight[3];
-				char bone[3]; 
-				byte numbones;
-			]]
-			
-			local vertex = buffer:ReadStructure[[
-				vec3 m_vecPosition;
-				vec3 m_vecNormal;
-				vec2 m_vecTexCoord;
-			]]
-			
-			table.insert(model.sub_models[1].mesh, {
-				pos = -vertex.m_vecPosition, 
-				uv = vertex.m_vecTexCoord, 
-				normal = vertex.m_vecNormal
-			})
-		end
-	--end
-	buffer:PopPos()
+	local model = {
+		sub_models = {
+			{
+				mesh = {},
+				indices = vtx.strip_groups[i].indices,
+			}
+		}
+	}
+
+	table.print(vtx.strip_groups, 2)
 	
-	for i, model in ipairs(model.sub_models) do
-		--utilities.GenerateNormals(data.mesh_data)
-		model.mesh = render.CreateMesh(model.mesh)
-		local path = "materials/" .. material["$basetexture"]:lower() .. ".vtf"
-		model.diffuse = Texture(path)
+	for j = 1, header.numLODVertexes[i] do
+		local boneWeight = buffer:ReadStructure[[
+			float weight[3];
+			char bone[3]; 
+			byte numbones;
+		]]
+		
+		local position = buffer:ReadVec3()
+		local normal = buffer:ReadVec3()
+		local uv = buffer:ReadVec2()
+		
+		table.insert(model.sub_models[1].mesh, {
+			pos = position, 
+			normal = normal,
+			uv = uv, 
+		})
+	end
+	
+	table.insert(models, model)
+	buffer:PopPos()
+		
+	local material = mdl.material[1].vmt.VertexLitGeneric
+
+	for i, model in ipairs(models) do
+		for i, sub_models in ipairs(model.sub_models) do		
+			sub_models.mesh = render.CreateMesh(sub_models.mesh, sub_models.indices)
+			local path = "materials/" .. material["$basetexture"]:lower() .. ".vtf"
+			sub_models.diffuse = Texture(path)
+		end
 	end
 	
 	local world = utilities.RemoveOldObject(entities.CreateEntity("clientside"))
-	world:SetModel(model)
+	world:SetModel(models[1])
 end
 
 local mdl = load_mdl("models/bicycle01a")
@@ -699,6 +684,6 @@ local mdl = load_mdl("models/bicycle01a")
 local vtx = load_vtx("models/bicycle01a")
 
 local vvd = load_vvd("models/bicycle01a", mdl, vtx)
-table.print(vvd)
+--table.print(vvd)
 
 --table.print(vtx)
