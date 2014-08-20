@@ -196,9 +196,10 @@ do
 		local stack = {}
 		local i = 0
 		
-		function render.PushWorldMatrix(pos, ang, scale)
+		function render.PushWorldMatrix(pos, ang, scale, dont_multiply)
 			stack[i] = render.matrices.world or Matrix44()
-			render.matrices.world = Matrix44() * stack[i]
+			
+			render.matrices.world = (dont_multiply and Matrix44()) or (Matrix44() * stack[i])
 			
 			-- source engine style world orientation
 			if pos then
