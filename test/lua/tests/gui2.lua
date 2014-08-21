@@ -62,7 +62,7 @@ do -- base panel
 				surface.PushMatrix(nil,nil, nil,nil, nil, true)
 					self:OnDraw()
 
-					surface.Translate(self.Scroll.x, self.Scroll.y)
+					surface.Translate(-self.Scroll.x, -self.Scroll.y)
 					
 					for k,v in pairs(self:GetChildren()) do
 						v:Draw()
@@ -97,6 +97,12 @@ do -- base panel
 			table.sort(parent:GetChildren(), sorter)
 		end
 	end
+	
+	function PANEL:SetScroll(vec)
+		local size = self:GetSizeOfChildren()
+			
+		self.Scroll = Vec2(math.clamp(vec.x, 0, size.x - self.Size.w), math.clamp(vec.y, 0, size.y - self.Size.h))
+	end
 
 	function PANEL:BringToFront()
 		local parent = self:GetParent()
@@ -114,11 +120,49 @@ do -- base panel
 	function PANEL:IsWorld()
 		return self == gui2.world
 	end
+	
+	function PANEL:GetSizeOfChildren()
+		local total_size = Vec2()
+		
+		for k, v in pairs(self:GetChildren()) do
+			local x, y = v:GetPosition():Unpack()
+		 
+			x = x + v.Size.x
+			y = y + v.Size.y
+			
+			if x > total_size.x then 
+				total_size.x = x
+			end
+			
+			if y > total_size.y then
+				total_size.y = y
+			end
+		end
+		
+		return total_size
+	end
 
+	PANEL.animations = {}
+	
+	function PANEL:Animate(var, to, time, callback)
+		table.insert(self.animations, {
+			from = type(to) == "number" and self[var] or self[var]:Copy(), 
+			to = to, 
+			time = time, 
+			var = var, 
+			func = self["Set" .. var], 
+			start_time = timer.GetSystemTime(),
+			callback = callback,			
+		})
+	end
+	
 	function PANEL:Draw()
 		surface.PushMatrix()
 			surface.Translate(self.Position.x, self.Position.y)
+			
+			surface.Translate(self.Size.w/2, self.Size.h/2)
 			surface.Rotate(self.Angle)
+			surface.Translate(-self.Size.w/2, -self.Size.h/2)
 
 			if self.CachedRendering then
 				self:DrawCache()
@@ -129,10 +173,17 @@ do -- base panel
 
 					self:OnDraw()
 
-					surface.Translate(self.Scroll.x, self.Scroll.y)
+					surface.Translate(-self.Scroll.x, -self.Scroll.y)
 					
 					for k,v in ipairs(self:GetChildren()) do
-						v:Draw()
+						if 	
+							v.Position.x - self.Scroll.x < self.Size.w and 
+							v.Position.y - self.Scroll.y < self.Size.h and
+							v.Position.x - self.Scroll.x > -v.Size.w and 
+							v.Position.y - self.Scroll.y > -v.Size.h
+						then
+							v:Draw()
+						end
 					end
 
 				if self.Clipping then
@@ -143,18 +194,49 @@ do -- base panel
 	end
 
 	function PANEL:Update()
+	
+		for i, v in ipairs(self.animations) do
+			local alpha = (timer.GetSystemTime() - v.start_time) / v.time
+			local val
+			
+			if type(v.to) == "number" then
+				val = math.lerp(alpha, v.from, v.to)
+			else
+				val = v.from:GetLerped(alpha, v.to)
+			end
+			
+			v.func(self, val)
+			if alpha > 1 then
+				if v.callback then
+					v.callback(self)
+				end
+				table.remove(self.animations, i)
+				break
+			end
+		end
+	
 		surface.PushMatrix()
 			surface.Translate(self.Position.x, self.Position.y)
+			
+			surface.Translate(self.Size.w/2, self.Size.h/2)
 			surface.Rotate(self.Angle)
+			surface.Translate(-self.Size.w/2, -self.Size.h/2)
 
 			self:CalcMouse()
 
 			self:OnUpdate()
 			
-			surface.Translate(self.Scroll.x, self.Scroll.y)
+			surface.Translate(-self.Scroll.x, -self.Scroll.y)
 
 			for k,v in ipairs(self:GetChildren()) do
-				v:Update()
+				if 	
+					v.Position.x - self.Scroll.x < self.Size.w and 
+					v.Position.y - self.Scroll.y < self.Size.h and
+					v.Position.x - self.Scroll.x > -v.Size.w and 
+					v.Position.y - self.Scroll.y > -v.Size.h
+				then
+					v:Update()
+				end
 			end
 		surface.PopMatrix()
 	end
@@ -185,7 +267,6 @@ do -- base panel
 					for i = 0, length - 1 do
 						tbl[i] = buffer[i]
 					end
-
 					self.Texture.buffer_cache = tbl
 				end
 				-- WHYYYYYYY
@@ -352,6 +433,8 @@ function gui2.Test()
 	--frame.OnMouseExit = function() end
 	--frame.OnMouseEnter = function() end
 
+	local lol = {}
+	
 	for x = 1, 5 do
 	for y = 1, 5 do
 		math.randomseed(x*y)
@@ -362,15 +445,25 @@ function gui2.Test()
 		pnl:SetColor(c)
 		pnl.original_color = c
 
-		pnl:SetPosition(Vec2(45 * x, 45 * y))
-		pnl:SetSize(Vec2(80,80))
-		pnl:SetAngle(math.random(360))
+		pnl.rand = math.random() > 0.5 and math.randomf(20, 100) or -math.randomf(20, 100)
+		
+		pnl:SetPosition(Vec2(x * math.random(30, 80), y * math.random(30, 80)))
+		pnl:SetSize(Vec2(80,80) * math.randomf(0.25, 2))
+		--pnl:SetAngle(math.random(360))
 		pnl:SetCursor("icon")
 		pnl:SetTexture(Texture("textures/aahh/flower.png"))
 
 		pnl.OnMouseInput = pnl.RequestFocus
+		
+		table.insert(lol, pnl)
 	end
 	end
+	
+	event.AddListener("Update", "lol", function()
+		for i, v in ipairs(lol) do
+			v:SetAngle(os.clock()*v.rand)
+		end
+	end)
 	
 	function frame:OnMouseMove(x, y)
 		if input.IsMouseDown("button_3") and not self.drag_pos then
@@ -385,6 +478,30 @@ function gui2.Test()
 		else
 			self.drag_pos = nil
 		end
+	end
+	
+	
+	for x = 1, 4 do
+	for y = 1, 4 do
+		math.randomseed(x*y)
+
+		local pnl = gui2.CreatePanel()
+
+		local c = HSVToColor(math.sin(x+y), 0.65, 1)
+		pnl:SetColor(c)
+		
+		pnl:SetPosition(Vec2(-5, 260) + Vec2(x, y) * 55)
+		pnl:SetSize(Vec2(50, 50))
+		
+		pnl.OnMouseEnter = function() end
+		pnl.OnMouseExit = function() end
+		
+		if math.random() > 0.5 then
+			pnl.OnMouseInput = function(s) print(s) s:Animate("Color", Color(0,0,0,0), 0.5, function(s) s:SetColor(c) end) end
+		else
+			pnl.OnMouseInput = function(s) print(s) s:Animate("Angle", 360, 0.5, function(s) s:SetAngle(0) end) end
+		end
+	end
 	end
 end
 
