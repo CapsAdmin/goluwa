@@ -9,7 +9,8 @@ do -- base panel
 
 	metatable.AddParentingTemplate(PANEL)
 
-	metatable.GetSet(PANEL, "Position", Vec3(0, 0, 0))
+	metatable.GetSet(PANEL, "Position", Vec2(0, 0))
+	metatable.GetSet(PANEL, "Order", 0)
 	metatable.GetSet(PANEL, "Scroll", Vec2(0, 0))
 	metatable.GetSet(PANEL, "Size", Vec2(50, 50))
 	metatable.GetSet(PANEL, "Angle", 0)
@@ -80,17 +81,12 @@ do -- base panel
 	end
 
 	local sorter = function(a,b)
-		return a.Position.z > b.Position.z
+		return a.Order > b.Order
 	end
 
-	function PANEL:SetPosition(pos)
-		if typex(pos) == "vec2" then
-			self.Position.x = pos.x
-			self.Position.y = pos.y
-		else
-			self.Position = pos
-		end
-
+	function PANEL:SetOrder(pos)
+		self.Order = pos
+		
 		local parent = self:GetParent()
 
 		if parent:IsValid() then
@@ -141,28 +137,151 @@ do -- base panel
 		
 		return total_size
 	end
+	
+	do -- animations
+		PANEL.animations = {}
+		
+		--[[2:11 AM - Morten: ]]
+		local function lerp_values(values, alpha)
+			local tbl = {}
 
-	PANEL.animations = {}
-	
-	function PANEL:Animate(var, to, time, callback)
-		table.insert(self.animations, {
-			from = type(to) == "number" and self[var] or self[var]:Copy(), 
-			to = to, 
-			time = time, 
-			var = var, 
-			func = self["Set" .. var], 
-			start_time = timer.GetSystemTime(),
-			callback = callback,			
-		})
+			for i = 1, #values - 1 do
+				if type(values[i] ) == "number" then
+					tbl[i] = math.lerp(alpha, values[i], values[i + 1])
+				else
+					tbl[i] = values[i] :GetLerped(alpha, values[i + 1])
+				end
+			end
+
+			if #tbl > 1 then 
+				return lerp_values(tbl, alpha) 
+			else 
+				return tbl[1] 
+			end
+		end
+		
+		function PANEL:UpdateAnimations()
+			for key, animation in pairs(self.animations) do
+				
+				local pause = false
+				
+				for i, v in ipairs(animation.pausers) do
+					if animation.alpha >= v.alpha then
+						if v.check()  then
+							pause = true
+						else
+							table.remove(animation.pausers, i)
+							break
+						end
+					end
+				end
+				
+				if not pause then
+				
+					animation.alpha = animation.alpha + timer.GetFrameTime() / animation.time
+					local alpha = animation.alpha
+					
+					local val
+					local from = animation.from
+					local to = animation.to
+					
+					if animation.pow then
+						alpha = alpha ^ animation.pow
+					end
+								
+					val = lerp_values(to, alpha)
+					
+					if val == false then return end
+							
+					animation.func(self, val)
+								
+					if alpha > 1 then
+						if animation.callback then
+							if animation.callback(self) ~= false then
+								animation.func(self, from)
+							end
+						else
+							animation.func(self, from)
+						end
+						
+						self.animations[key] = nil
+					end
+				end
+			end
+		end
+		
+		function PANEL:Animate(var, to, time, operator, pow) 
+		
+			-- todo: multiple animations of the same type
+			if self.animations[var] then 
+				self.animations[var].alpha = 0
+			return end
+		
+			
+			local from = type(self[var]) == "number" and self[var] or self[var]:Copy()
+			
+			if type(to) ~= "table" then
+				to = {to}
+			end
+			
+			local pausers = {}
+			
+			for i, v in pairs(to) do
+				if type(v) == "function" then
+					to[i] = nil
+					table.insert(pausers, {check = v, alpha = (i - 1) / (table.count(to) + #pausers)})
+				end
+			end
+			
+			table.fixindices(to)
+			
+			for i, v in ipairs(to) do 
+				if v == "from" then 
+					to[i] = from 
+				else
+					if operator then
+						if operator == "+" then
+							v = from + v
+						elseif operator == "-" then
+							v = from - v
+						elseif operator == "^" then
+							v = from ^ v
+						elseif operator == "*" then
+							v = from * v
+						elseif operator == "/" then
+							v = from / v
+						end
+					end
+					
+					to[i] = v
+				end
+			end
+			
+			table.insert(to, 1, from)
+				
+			self.animations[var] = {
+				operator = operator,
+				from = from,
+				to = to,			
+				time = time or 0.25, 
+				var = var, 
+				func = self["Set" .. var], 
+				start_time = timer.GetSystemTime(),
+				pow = pow,
+				callback = callback,
+				pausers =  pausers,
+				alpha = 0,
+			}
+		end
 	end
-	
+		
 	function PANEL:Draw()
 		surface.PushMatrix()
-			surface.Translate(self.Position.x, self.Position.y)
+			render.Translate(self.Position.x, self.Position.y, 0)
 			
-			surface.Translate(self.Size.w/2, self.Size.h/2)
-			surface.Rotate(self.Angle)
-			surface.Translate(-self.Size.w/2, -self.Size.h/2)
+			render.Translate(self.Size.w/2, self.Size.h/2, 0)
+			render.Rotate(self.Angle, 0, 0, 1)
+			render.Translate(-self.Size.w/2, -self.Size.h/2, 0)
 
 			if self.CachedRendering then
 				self:DrawCache()
@@ -173,7 +292,7 @@ do -- base panel
 
 					self:OnDraw()
 
-					surface.Translate(-self.Scroll.x, -self.Scroll.y)
+					render.Translate(-self.Scroll.x, -self.Scroll.y, 0)
 					
 					for k,v in ipairs(self:GetChildren()) do
 						if 	
@@ -194,39 +313,21 @@ do -- base panel
 	end
 
 	function PANEL:Update()
-	
-		for i, v in ipairs(self.animations) do
-			local alpha = (timer.GetSystemTime() - v.start_time) / v.time
-			local val
-			
-			if type(v.to) == "number" then
-				val = math.lerp(alpha, v.from, v.to)
-			else
-				val = v.from:GetLerped(alpha, v.to)
-			end
-			
-			v.func(self, val)
-			if alpha > 1 then
-				if v.callback then
-					v.callback(self)
-				end
-				table.remove(self.animations, i)
-				break
-			end
-		end
+		
+		self:UpdateAnimations()
 	
 		surface.PushMatrix()
-			surface.Translate(self.Position.x, self.Position.y)
+			render.Translate(self.Position.x, self.Position.y, 0)
 			
-			surface.Translate(self.Size.w/2, self.Size.h/2)
-			surface.Rotate(self.Angle)
-			surface.Translate(-self.Size.w/2, -self.Size.h/2)
+			render.Translate(self.Size.w/2, self.Size.h/2, 0)
+			render.Rotate(self.Angle, 0, 0, 1)
+			render.Translate(-self.Size.w/2, -self.Size.h/2, 0)
 
 			self:CalcMouse()
 
 			self:OnUpdate()
 			
-			surface.Translate(-self.Scroll.x, -self.Scroll.y)
+			render.Translate(-self.Scroll.x, -self.Scroll.y, 0)
 
 			for k,v in ipairs(self:GetChildren()) do
 				if 	
@@ -336,9 +437,9 @@ end
 
 function gui2.Initialize()
 	local world = gui2.CreatePanel()
-	world:SetPosition(Vec3(0, 0))
+	world:SetPosition(Vec2(0, 0))
 	world:SetSize(Vec2(window.GetSize()))
-	world:SetColor(Color(1,1,1,0))
+	world:SetColor(Color(1,1,1,0.1))
 	world:SetCursor'arrow'
 	gui2.world = world
 
@@ -354,10 +455,12 @@ function gui2.Initialize()
 				return panel
 			end
 		end
-
+ 
 		return panel.mouse_over and panel
 	end
 
+	local skin = Texture("textures/aahh/DefaultSkin.png")
+	
 	gui2.mouse_pos = Vec2()
 
 	event.AddListener("Draw2D", "gui2", function()
@@ -366,12 +469,16 @@ function gui2.Initialize()
 
 		world:Draw()
 		world:Update()
+		
 
 		surface.SetWhiteTexture()
-		surface.SetColor(1,1,1,1)
+		surface.SetColor(1,0,0,1)
 		local x, y = surface.WorldToLocal(gui2.mouse_pos.x, gui2.mouse_pos.y)
 		surface.DrawRect(x, y, 1, 1)
 
+		--surface.SetTexture(skin) 
+		--surface.DrawNinePatch(50, 50, 200, 200, 128, 32, 0, 0)  
+		
 		gui2.hovering_panel = check_mouse(world) or gui2.world
 
 		if gui2.hovering_panel:IsValid() then
@@ -425,9 +532,9 @@ function gui2.Test()
 	frame:SetSize(Vec2(200,200))
 	frame:SetPosition(Vec2(50,50))
 
-	frame:SetColor(Color(1,1,1,1))
+	local c = Color(1,1,1,1) * 0.25
+	frame:SetColor(c)
 	frame.original_color = c
-	frame:SetTexture(Texture("textures/aahh/soil.png"))
 	
 	frame:SetCachedRendering(true)
 	--frame.OnMouseExit = function() end
@@ -451,7 +558,7 @@ function gui2.Test()
 		pnl:SetSize(Vec2(80,80) * math.randomf(0.25, 2))
 		--pnl:SetAngle(math.random(360))
 		pnl:SetCursor("icon")
-		pnl:SetTexture(Texture("textures/aahh/flower.png"))
+		pnl:SetTexture(Texture("textures/aahh/gear.png"))
 
 		pnl.OnMouseInput = pnl.RequestFocus
 		
@@ -469,6 +576,7 @@ function gui2.Test()
 		if input.IsMouseDown("button_3") and not self.drag_pos then
 			self.drag_pos = self:GetScroll() + Vec2(x, y)
 		end
+		self:MarkDirty()
 	end
 	
 	function frame:OnUpdate()
@@ -492,14 +600,63 @@ function gui2.Test()
 		
 		pnl:SetPosition(Vec2(-5, 260) + Vec2(x, y) * 55)
 		pnl:SetSize(Vec2(50, 50))
+		--pnl:SetTexture(Texture("textures/aahh/button.png"))
 		
 		pnl.OnMouseEnter = function() end
 		pnl.OnMouseExit = function() end
 		
 		if math.random() > 0.5 then
-			pnl.OnMouseInput = function(s) print(s) s:Animate("Color", Color(0,0,0,0), 0.5, function(s) s:SetColor(c) end) end
+			if math.random() > 0.5 then
+				if math.random() > 0.5 then
+					pnl.OnMouseInput = function(s, key, press) 
+						if not press then return end
+						s:Animate("Color", {Color(0,0,0,0), "from", Color(1,1,0,1), "from"}, 0.5) 
+					end
+				else
+					pnl.OnMouseInput = function(s, key, press) 
+						if not press then return end
+						s:Animate("Color", {Color(1,0,0,1), Color(0,1,0,1),  Color(0,0,1,1), "from"}, 2) 
+					end
+				end
+			else
+				pnl.OnMouseInput = function(s, key, press) 
+					if not press then return end
+					
+					local duration = 0.2
+					s:Animate("Size", {Vec2(10, 10), function() return input.IsMouseDown(key) end, Vec2(0, 0)}, duration, "-") 
+					s:Animate("Position", {Vec2(10, 10) * 0.5, function() return input.IsMouseDown(key) end, Vec2(0, 0)}, duration, "+")
+										
+					--s:Animate("Position", Vec2(150, 150), 0.5, function(s) s:SetSize(Vec2(50,50)) end) 
+				end
+			end
 		else
-			pnl.OnMouseInput = function(s) print(s) s:Animate("Angle", 360, 0.5, function(s) s:SetAngle(0) end) end
+			if math.random() > 0.5 then
+				pnl.OnMouseInput = function(s, key, press) 
+					if not press then return end
+					
+					local duration = 0.2
+					s:Animate("Color", {Color(0,0,0,0), "from"}, duration) 
+					s:Animate("Angle", math.random() > 0.5 and 90 or -90, duration) 
+				end
+			else
+				if math.random() > 0.5 then
+					pnl.OnMouseInput = function(s, key, press) 
+						if not press then return end
+						
+						local pow = 1
+						local duration = 0.5
+						
+						s:Animate("Size", {Vec2(1, -1), function() return input.IsMouseDown(key) end, "from"}, duration, "*", pow) 
+						s:Animate("Position", {Vec2(0, s.Size.h), function() return input.IsMouseDown(key) end, "from"}, duration, "+", pow) 
+						s:Animate("Color", {Color(0,0,0,0), function() return input.IsMouseDown(key) end, "from"}, duration, "", pow) 
+					end
+				else
+					pnl.OnMouseInput = function(s, key, press) 
+						if not press then return end
+						s:Animate("Angle", {math.randomf(-360, 360), "from"}, math.random()) 
+					end
+				end
+			end
 		end
 	end
 	end
