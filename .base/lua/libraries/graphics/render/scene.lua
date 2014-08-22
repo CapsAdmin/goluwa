@@ -63,16 +63,7 @@ function render.DrawScene(window, dt)
 		render.End3D()
 		
 		render.Start2D()
-			event.Call("Draw2D", dt)
-			
-			if false and render.debug then
-				local i = 0
-				for name, matrix in pairs(render.matrices) do
-					render.DrawMatrix(i*230 + 10, render.camera.h - 220, matrix, name)
-					i = i + 1
-				end
-			end
-			
+			event.Call("Draw2D", dt)			
 		render.End2D()
 		
 		if console.GetVariable("render_accum") then
