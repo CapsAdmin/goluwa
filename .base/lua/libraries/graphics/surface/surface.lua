@@ -307,6 +307,57 @@ function surface.DrawLine(x1,y1, x2,y2, w, skip_tex, ...)
 	surface.DrawRect(x1, y1, w, dst, -math.deg(ang), ...)
 end
 
+--[[
+	1 2 3
+	4 5 6
+	7 8 9
+]]
+
+function surface.DrawNinePatch(x, y, w, h, patch_size, corner_size, u_offset, v_offset)
+	u_offset = u_offset or 0
+	v_offset = v_offset or 0
+	
+	local skin = surface.GetTexture()
+		
+	-- 1
+	surface.SetRectUV(u_offset, v_offset, corner_size, corner_size, skin.w, skin.h)
+	surface.DrawRect(x, y, corner_size, corner_size)
+	
+	-- 2
+	surface.SetRectUV(u_offset + corner_size, v_offset, patch_size - corner_size*2, corner_size, skin.w, skin.h)
+	surface.DrawRect(x + corner_size, y, w - corner_size*2, corner_size)
+	
+	-- 3
+	surface.SetRectUV(u_offset + patch_size - corner_size, v_offset, corner_size, corner_size, skin.w, skin.h)
+	surface.DrawRect(x + w - corner_size, y, corner_size, corner_size)
+	
+	-- 4
+	surface.SetRectUV(u_offset, v_offset + corner_size, corner_size, patch_size - corner_size*2, skin.w, skin.h)
+	surface.DrawRect(x, y + corner_size, corner_size, h - corner_size*2)
+	
+	-- 5
+	surface.SetRectUV(u_offset + corner_size, v_offset + corner_size, patch_size - corner_size*2, patch_size - corner_size*2, skin.w, skin.h)
+	surface.DrawRect(x + corner_size, y + corner_size, w - corner_size*2, h - corner_size*2)
+	
+	-- 6
+	surface.SetRectUV(u_offset + patch_size - corner_size, v_offset + corner_size, corner_size, patch_size - corner_size*2, skin.w, skin.h)
+	surface.DrawRect(x + w - corner_size, y + corner_size, corner_size, h - corner_size*2)
+	
+	-- 7
+	surface.SetRectUV(u_offset, v_offset + patch_size - corner_size, corner_size, corner_size, skin.w, skin.h)
+	surface.DrawRect(x, y + h - corner_size, corner_size, corner_size)
+	
+	-- 8
+	surface.SetRectUV(u_offset + corner_size, v_offset + patch_size - corner_size, patch_size - corner_size*2, corner_size, skin.w, skin.h)
+	surface.DrawRect(x + corner_size, y + h - corner_size, w - corner_size*2, corner_size)
+	
+	-- 9
+	surface.SetRectUV(u_offset + patch_size - corner_size, v_offset + patch_size - corner_size, corner_size, corner_size, skin.w, skin.h)
+	surface.DrawRect(x + w - corner_size, y + h - corner_size, corner_size, corner_size)
+	
+	surface.SetRectUV(0,0,1,1)
+end
+
 function surface.StartClipping(x, y, w, h)
 	x, y = surface.WorldToLocal(-x, -y)
 	render.SetScissor(-x, -y, w, h)
