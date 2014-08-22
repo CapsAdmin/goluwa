@@ -372,7 +372,8 @@ function surface.GetMousePos()
 end
 
 function surface.WorldToLocal(x, y)
-	return (render.matrices.world * render.matrices.view_2d):TransformVector(Vec3(x, y, 0)):Unpack()
+	local x, y = (render.matrices.world * render.matrices.view_2d):TransformVector(Vec3(x, y, 0)):Unpack()
+	return x, y
 end
 
 local last_x = 0
