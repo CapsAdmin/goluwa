@@ -76,6 +76,19 @@ function META:GetSplitComplementary(angle)
    return self:GetNeighbors(180 - (angle or 30))
 end
 
+function META.Lerp(a, mult, b)
+
+	a.r = (b.r - a.r) * mult + a.r
+	a.g = (b.g - a.g) * mult + a.g
+	a.b = (b.b - a.b) * mult + a.b
+	
+	a.a = (b.a - a.a) * mult + a.a
+	
+	return a
+end
+
+structs.AddGetFunc(META, "Lerp", "Lerped")
+
 function META:SetSaturation(s)
 	local h, _s, l = ColorToHSV(self)
 	_s = s
