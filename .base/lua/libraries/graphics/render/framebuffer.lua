@@ -166,7 +166,9 @@ function render.CreateFrameBuffer(width, height, format)
 			elseif attach == "depth" then
 				attach = gl.e.GL_DEPTH_ATTACHMENT
 			elseif attach == "stencil" then
-				attach = gl.e.GL_STENCIL_ATTACHMENT
+				attach = gl.e.GL_DEPTH_STENCIL_ATTACHMENT
+				info.internal_format = info.internal_format or gl.e.GL_DEPTH_STENCIL
+				info.draw_manual = true
 			end
 
 			info.attach = attach
@@ -182,7 +184,7 @@ function render.CreateFrameBuffer(width, height, format)
 			tex = info.texture
 			id = tex.id
 			
-		elseif tex_info then
+		elseif tex_info and info.attach ~= gl.e.GL_DEPTH_STENCIL_ATTACHMENT then
 			tex_info.upload_format = tex_info.upload_format or "rgba"
 			tex_info.channel = i - 1
 						
@@ -193,8 +195,8 @@ function render.CreateFrameBuffer(width, height, format)
 		else
 			id = gl.GenRenderbuffer()
 			gl.BindRenderbuffer(gl.e.GL_RENDERBUFFER, id)		
-		
-			gl.RenderbufferStorage(gl.e.GL_RENDERBUFFER, info.texture_format.internal_format, width, height)
+
+			gl.RenderbufferStorage(gl.e.GL_RENDERBUFFER, info.internal_format, width, height)
 		end
 		
 		self.buffers[info.name] = {name = info.name, id = id, tex = tex, info = info, attach = info.attach, draw_manual = info.draw_manual, attach_pos = i}
