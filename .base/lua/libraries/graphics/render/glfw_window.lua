@@ -251,7 +251,7 @@ do -- window meta
 		event.AddListener("Update", self, function(dt)
 			self:UpdateMouseDelta()
 			self:OnUpdate(dt)
-		end)
+		end, {on_error = system.OnError})
 		
 		do -- calllbacks
 			self.availible_callbacks = {}
