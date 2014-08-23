@@ -52,13 +52,20 @@ do -- base panel
 
 		function PANEL:UpdateFrameBuffer()
 			self.framebuffer = render.CreateFrameBuffer(self.Size.w, self.Size.h, {
-				attach = "color1",
+				{
+					name = "color",
+					attach = "color1",
 
-				texture_format = {
-					internal_format = "RGB32F",
+					texture_format = {
+						internal_format = "RGB32F",
+					},
+				},				
+				{
+					name = "stencil",
+					attach = "stencil",
 				}
 			})
-			self.cache_texture = self.framebuffer:GetTexture()
+			self.cache_texture = self.framebuffer:GetTexture("color")
 		end
 
 		function PANEL:MarkDirty()
@@ -173,6 +180,7 @@ do -- base panel
 		function PANEL:StopDragging()
 			self.drag_pos = nil
 			self.drag_pos2 = nil
+			self.last_dragged_over = nil
 		end
 
 		function PANEL:CalcDragging()
@@ -187,20 +195,42 @@ do -- base panel
 				local world_pos = self.drag_pos2
 
 				self:SetPosition(world_pos + mouse_pos - drag_pos)
+				
+				local panel = gui2.GetHoveringPanel(nil, self)
+				if panel == self then panel = self.Parent end
+								
+				local drop_pos = panel:GetMousePosition() - self:GetMousePosition() + panel.Scroll
+					
+				
+				if self.last_dragged_over ~= panel then
+					
+					if self.last_dragged_over then
+						self.last_dragged_over:OnDraggedChildExit(self, drop_pos)
+					end
+				
+					panel:OnDraggedChildEnter(self, drop_pos)
+					
+					self.last_dragged_over = panel
+				end
 
 				if not input.IsMouseDown(self.drag_stop_button) then
-					local panel = gui2.GetHoveringPanel(nil, self)
-
-					if panel == self then panel = self.Parent end
 
 					self:OnParentLand(panel)
-					panel:OnChildDrop(self, panel:GetMousePosition() - self:GetMousePosition())
+					panel:OnChildDrop(self, drop_pos)
 
 					self:StopDragging()
 				end
 			end
 		end
-
+		
+		function PANEL:OnDraggedChildEnter(child, drop_pos)
+			print("enter", self, drop_pos, child)
+		end
+		
+		function PANEL:OnDraggedChildExit(child, drop_pos)
+			print("left", self, drop_pos, child)
+		end
+		
 		function PANEL:OnParentLand(parent)
 
 		end
@@ -209,6 +239,10 @@ do -- base panel
 			self:AddChild(child)
 			child:SetPosition(pos)
 		end
+	end
+	
+	do -- docking
+		
 	end
 
 	do -- animations
@@ -380,7 +414,7 @@ do -- base panel
 
 				local sigh = false
 				if not no_clip and self.Clipping then
-					surface.StartClipping(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
+					surface.StartClipping2(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
 					no_clip = true
 					sigh = true
 				end
@@ -401,7 +435,7 @@ do -- base panel
 					end
 
 				if sigh or not no_clip and self.Clipping then
-					surface.EndClipping()
+					surface.EndClipping2()
 				end
 			end
 		surface.PopMatrix()
@@ -523,7 +557,7 @@ do -- base panel
 			self:SetClipping(not self:GetClipping())
 		end
 
-		if press and button == "button_1" then
+		if press and button == "button_1" and not self.lol then
 			self:StartDragging(button)
 		end
 
@@ -565,32 +599,25 @@ function gui2.GetHoveringPanel(panel, filter)
 
 	return panel.mouse_over and panel or gui2.world
 end
+ 
+function gui2.MouseInput(button, press)
+	local panel = gui2.hovering_panel
 
-function gui2.Initialize()
-	local world = gui2.CreatePanel()
-	world:SetPosition(Vec2(0, 0))
-	world:SetSize(Vec2(window.GetSize()))
-	world:SetColor(Color(1,1,1,0.1))
-	world:SetCursor("arrow")
-	world:SetTrapChildren(true)
-
-	gui2.world = world
-
-	local skin = Texture("textures/aahh/DefaultSkin.png")
-
-	gui2.mouse_pos = Vec2()
-
-	event.AddListener("Draw2D", "gui2", function()
-
+	if panel:IsValid() and panel:IsMouseOver() then
+		panel:OnMouseInput(button, press)
+	end
+end
+  
+function gui2.Draw2D()
+	
+	
+	--render.SetBlendMode("multiplicative")
+	--surface.Start3D()
+	surface.PushMatrix()
 		gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePos()
-
-		world:Draw()
-		world:Update()
-
-		surface.SetWhiteTexture()
-		surface.SetColor(1,0,0,1)
-		local x, y = surface.WorldToLocal(gui2.mouse_pos.x, gui2.mouse_pos.y)
-		surface.DrawRect(x, y, 1, 1)
+		
+		gui2.world:Draw()
+		gui2.world:Update()
 
 		--surface.SetTexture(skin)
 		--surface.DrawNinePatch(50, 50, 200, 200, 128, 32, 0, 0)
@@ -605,55 +632,58 @@ function gui2.Initialize()
 				gui2.active_cursor = cursor
 			end
 		end
-	end)
+	surface.PopMatrix()
+	
+	--surface.End3D()
+end
 
-	event.AddListener("MouseInput", "gui2", function(button, press)
-		local panel = gui2.hovering_panel
+function gui2.Initialize()
+	local world = gui2.CreatePanel()
+	
+	world:SetPosition(Vec2(0, 0))
+	world:SetSize(Vec2(window.GetSize()))
+	world:SetCursor("arrow")
+	world:SetTrapChildren(true)
+	
+	function world:OnDraw()
+		surface.SetWhiteTexture()
+		surface.SetColor(1,0,0,1)
+		surface.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 5, 5)
+	end
 
-		if panel:IsValid() and panel:IsMouseOver() then
-			panel:OnMouseInput(button, press)
-		end
-	end)
+	gui2.world = world
+
+	gui2.mouse_pos = Vec2()
+
+	event.AddListener("Draw2D", "gui2", gui2.Draw2D)
+	event.RemoveListener("Draw3DGeometry", "gui2", gui2.Draw2D)
+	event.RemoveListener("Draw3DLights", "gui2", gui2.Draw2D)
+
+	event.AddListener("MouseInput", "gui2", gui2.MouseInput)
 end
 
 function gui2.Test()
 	local parent = gui2.CreatePanel()
-	parent:SetPosition(Vec2(500,140))
-	parent:SetSize(Vec2(300,100))
+	parent:SetPosition(Vec2(400,140))
+	parent:SetSize(Vec2(300,300))
 
-	local c = HSVToColor(0, 0.65, 1)
+	local c = HSVToColor(0, 0, 0.25)
 	parent:SetColor(c)
 	parent.original_color = c
 
-	for i = 1, 12 do
-
-		local pnl = gui2.CreatePanel(parent)
-
-		local c = HSVToColor(math.sin(i/10 * math.pi), 0.65, 1)
-		pnl:SetColor(c)
-		pnl.original_color = c
-
-
-		pnl:SetPosition(Vec2(0, 20))
-
-		pnl:SetSize(Vec2(30,80))
-		pnl:SetAngle(15)
-		pnl:SetCursor("no")
-		parent = pnl
-	end
-
 	local frame = gui2.CreatePanel()
 	frame:SetSize(Vec2(200,200))
-	frame:SetPosition(Vec2(50,50))
+	frame:SetPosition(Vec2(57,50))
 
 	local c = Color(1,1,1,1) * 0.25
 	frame:SetColor(c)
 	frame.original_color = c
 
-	frame:SetCachedRendering(true)
+	frame:SetClipping(true)
+	--frame:SetCachedRendering(true)
 	--frame.OnMouseExit = function() end
 	--frame.OnMouseEnter = function() end
-
+ 
 	local lol = {}
 
 	for x = 1, 5 do
@@ -673,6 +703,7 @@ function gui2.Test()
 		--pnl:SetAngle(math.random(360))
 		pnl:SetCursor("icon")
 		pnl:SetTexture(Texture("textures/aahh/gear.png"))
+		pnl.lol = true
 
 		--pnl.OnMouseInput = pnl.RequestFocus
 
@@ -682,7 +713,7 @@ function gui2.Test()
 
 	event.AddListener("Update", "lol", function()
 		for i, v in ipairs(lol) do
-		--	v:SetAngle(os.clock()*v.rand)
+			v:SetAngle(os.clock()*v.rand)
 		end
 	end)
 
@@ -715,9 +746,10 @@ function gui2.Test()
 		pnl:SetPosition(Vec2(-5, 260) + Vec2(x, y) * 55)
 		pnl:SetSize(Vec2(50, 50))
 		--pnl:SetTexture(Texture("textures/aahh/button.png"))
-
+ 
 		pnl.OnMouseEnter = function() end
 		pnl.OnMouseExit = function() end
+		pnl.OnMouseMove = function(s) s:MarkDirty() end 
 
 		if math.random() > 0.5 then
 			if math.random() > 0.5 then
@@ -743,9 +775,9 @@ function gui2.Test()
 		else
 			if math.random() > 0.5 then
 				pnl.OnClick = function(self)
-					local duration = 0.2
+					local duration = 0.6
 					self:Animate("Color", {Color(0,0,0,0), "from"}, duration)
-					self:Animate("DrawAngleOffset", math.random() > 0.5 and 90 or -90, duration)
+					self:Animate("DrawAngleOffset", math.random() > 0.5 and 360 or -360, duration)
 				end
 			else
 				if math.random() > 0.5 then
