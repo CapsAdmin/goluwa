@@ -91,7 +91,7 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	cam_pos = cam_pos + forward + side + up
 	smooth_cam_pos = smooth_cam_pos - ((smooth_cam_pos - cam_pos) * dt * 10)
 
-	render.SetupView3D(smooth_cam_pos, cam_ang:GetDeg(), cam_fov)
+	render.SetupView3D(cam_pos, cam_ang:GetDeg(), cam_fov)
 end)
 
 local roll = 0
@@ -118,8 +118,7 @@ event.AddListener("Update", "fly_camera_2d", function(dt)
 		speed = speed * 8
 	elseif input.IsKeyDown("left_control") then
 		speed = speed / 4
-	end
-	
+	end	
 	
 	if input.IsKeyDown("kp_subtract") then
 		zoom = math.clamp(zoom - speed / 1000, min_zoom, max_zoom)
@@ -133,6 +132,10 @@ event.AddListener("Update", "fly_camera_2d", function(dt)
 		roll = roll + speed / 4 
 	end
 	
+	if input.IsKeyDown("left_alt") then
+		roll = math.round(roll / math.rad(45)) * math.rad(45)
+	end
+	
 	if input.IsKeyDown("kp_8") then
 		pos.y = pos.y + speed
 	elseif input.IsKeyDown("kp_2") then
@@ -144,10 +147,6 @@ event.AddListener("Update", "fly_camera_2d", function(dt)
 	elseif input.IsKeyDown("kp_6") then
 		pos.x = pos.x - speed
 	end
-
-	if input.IsKeyDown("left_alt") then
-		roll = math.round(roll / math.rad(45)) * math.rad(45)
-	end
-	
-	render.SetupView2D(pos, roll, 1/zoom)
+			
+	render.SetupView2D(pos:GetRotated(math.rad(-roll)), roll, 1/zoom)
 end)  
