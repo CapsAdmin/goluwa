@@ -172,6 +172,10 @@ function metatable.AddBufferTemplate(META)
 			return table.concat(out)
 		end
 		
+		function META:PeakByte(bytes)
+			return self:ReadByte(), self:SetPos( self:GetPos() - 1 )
+		end
+		
 		-- null terminated string
 		function META:WriteString(str)	
 			self:WriteBytes(str)
@@ -460,6 +464,18 @@ function metatable.AddBufferTemplate(META)
 			end
 
 		end
+		
+		function META:ReadULEB()
+			local result, shift = 0, 0
+			while not self:TheEnd() do
+				local b = self:ReadByte()
+				result = bit.bor( result, bit.lshift( bit.band( b, 0x7f ), shift ) )
+				if bit.band( b, 0x80 ) == 0 then break end
+				shift = shift + 7
+			end
+			return result
+		end
+		
 	end
 
 	do -- structures
