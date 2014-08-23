@@ -30,6 +30,31 @@ META.tags.click =
 		surface.DrawLine(chunk.x, chunk.top, chunk.right, chunk.top)
 	end,
 }
+META.tags.console =
+{
+	arguments = {},
+
+	mouse = function(markup, self, button, press, x, y) print'hi'
+		if button == "button_1" and press then
+			local str = ""
+			for i = self.i+1, math.huge do
+				local chunk = markup.chunks[i]
+				if chunk.type == self.type or i > #markup.chunks then
+					console.RunString(str)
+					break
+				elseif chunk.type == "string" then
+					str = str .. chunk.val
+				end
+			end
+			return false
+		end
+	end,
+
+	post_draw_chunks = function(markup, self, chunk)
+		
+		surface.DrawLine(chunk.x, chunk.top, chunk.right, chunk.top)
+	end,
+}
 
 if string.anime then
 	META.tags.anime =

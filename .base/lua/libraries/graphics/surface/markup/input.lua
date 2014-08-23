@@ -104,7 +104,11 @@ function META:OnMouseInput(button, press, x, y)
 	if chunk.type == "string" and chunk.chunks_inbetween then
 		chunk = chunk.chunks_inbetween[1]
 	end
-
+	
+	if chunk.type == "custom" and chunk.console and press then
+		console.RunString(str)
+		return
+	end
 	if
 		chunk.type == "custom" and
 		self:CallTagFunction(chunk, "mouse", button, press, x, y) == false
