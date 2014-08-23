@@ -12,8 +12,10 @@ render.matrices = {
 render.camera = {
 	x = 0,
 	y = 0,
-	w = 1000,
-	h = 1000,
+	
+	-- if this is defined here it will be "1000" in Update and other events
+	--w = 1000,
+	--h = 1000,
 	
 	pos = Vec3(0,0,0),
 	ang = Ang3(0,0,0),
@@ -52,7 +54,7 @@ do
 		cam.y = y or cam.y
 		cam.w = w or cam.w
 		cam.h = h or cam.h
-				
+		
 		cam.ratio = cam.w / cam.h 
 	
 		gl.Viewport(cam.x, cam.y, cam.w, cam.h)
@@ -74,8 +76,8 @@ do
 		
 		function render.PopViewport()
 			render.SetViewport(unpack(table.remove(stack)))
+			end
 		end
-	end
 
 	function render.Start2D(x, y, w, h)				
 		render.PushWorldMatrix()
@@ -169,6 +171,17 @@ function render.SetupView2D(pos, ang, zoom)
 	
 	local view = render.matrices.view_2d 
 	view:LoadIdentity()		
+		
+	if ang then
+		local x, y = cam.w/2, cam.h/2
+		view:Translate(x, y, 0)
+		view:Rotate(ang, 0, 0, 1)
+		view:Translate(-x, -y, 0)
+	end
+	
+	if pos then
+		view:Translate(pos.x, pos.y, 0)
+	end
 	
 	if zoom then
 		local x, y = cam.w/2, cam.h/2
@@ -176,18 +189,6 @@ function render.SetupView2D(pos, ang, zoom)
 		view:Scale(zoom, zoom, 1)
 		view:Translate(-x, -y, 0)
 	end
-	
-	if ang then
-		local x, y = cam.w/2, cam.h/2
-		view:Translate(x, y, 0)
-		view:Rotate(ang, 0, 0, 1)
-		view:Translate(-x, -y, 0)
-	end
-	if pos then
-		view:Translate(pos.x, pos.y, 0)
-	end	
-
-
 end
 
 -- world
