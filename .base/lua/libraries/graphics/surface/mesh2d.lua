@@ -7,11 +7,11 @@ local SHADER = {
 			pvm_matrix = "mat4",
 		},			
 		attributes = {
-			{pos = "vec2"},
+			{pos = "vec3"}, 
 			{uv = "vec2"},
 			{color = "vec4"},
 		},
-		source = "gl_Position = pvm_matrix * vec4(pos, 0, 1);"
+		source = "gl_Position = pvm_matrix * vec4(pos, 1);"
 	},
 	
 	fragment = { 
@@ -39,12 +39,12 @@ local SHADER = {
 }
 
 local RECT = {
-	{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
-	{pos = {0, 1}, uv = {0, 0}, color = {1,1,1,1}},
-	{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
-	{pos = {1, 1}, uv = {1, 0}, color = {1,1,1,1}},
-	{pos = {1, 0}, uv = {1, 1}, color = {1,1,1,1}},
-	{pos = {0, 0}, uv = {0, 1}, color = {1,1,1,1}},
+	{pos = {0, 0, 0}, uv = {0, 1}, color = {1,1,1,1}},
+	{pos = {0, 1, 0}, uv = {0, 0}, color = {1,1,1,1}},
+	{pos = {1, 1, 0}, uv = {1, 0}, color = {1,1,1,1}},
+	{pos = {1, 1, 0}, uv = {1, 0}, color = {1,1,1,1}},
+	{pos = {1, 0, 0}, uv = {1, 1}, color = {1,1,1,1}},
+	{pos = {0, 0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 }
 
 function surface.CreateMesh(vertices, indices)
