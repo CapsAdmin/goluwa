@@ -32,6 +32,34 @@ function surface.End(...)
 	render.End2D(...)
 end
 
+local gl = require("lj-opengl")
+
+function surface.Start3D(pos, ang, scale)	
+	local w, h = render.GetHeight(), render.GetHeight()
+	
+	pos = pos or Vec3(0, 0, 0)
+	ang = ang or Ang3(0, 0, 0)
+	scale = scale or Vec3(4, 4 * (w / h), 1)
+		
+	
+	-- this is the amount the gui will translate upwards for each
+	-- call to surface.PushMatrix
+	surface.scale_3d = scale.z / (w + h) -- dunno
+	surface.in_3d = true
+	
+	-- tell the 2d shader to use the 3d matrix instead
+	surface.mesh_2d_shader.pvm_matrix = render.GetPVWMatrix3D
+
+	render.PushWorldMatrix(pos, ang, Vec3(scale.x / w, scale.y / h, 1))
+end
+
+function surface.End3D()
+	render.PopWorldMatrix()
+	
+	surface.mesh_2d_shader.pvm_matrix = render.GetPVWMatrix2D
+	surface.in_3d = false
+end
+
 local X, Y = 0, 0
 local W, H = 0, 0
 local R,G,B,A,A2 = 1,1,1,1,1
@@ -57,9 +85,18 @@ do -- orientation
 		if x and y then surface.Translate(x, y) end
 		if w and h then surface.Scale(w, h) end
 		if a then surface.Rotate(a) end
+		
+		if surface.in_3d then
+			surface.push_count_3d = (surface.push_count_3d or -1) + 1
+			render.Translate(0, 0, surface.push_count_3d * (surface.scale_3d or 1))
+		end
 	end
 	
 	function surface.PopMatrix()
+		if surface.in_3d then
+			surface.push_count_3d = (surface.push_count_3d or -1) - 1
+		end
+	
 		render.PopWorldMatrix() 
 	end
 end
@@ -273,7 +310,7 @@ do
 end
 
 function surface.DrawRect(x,y, w,h, a, ox,oy)	
-	render.PushWorldMatrix()			
+	surface.PushMatrix()			
 		surface.Translate(x, y)
 		
 		if a then
@@ -289,7 +326,7 @@ function surface.DrawRect(x,y, w,h, a, ox,oy)
 		surface.mesh_2d_shader.tex = surface.bound_texture
 		surface.mesh_2d_shader:Bind()
 		surface.rect_mesh:Draw()
-	render.PopWorldMatrix()
+	surface.PopMatrix()
 end
 
 function surface.DrawLine(x1,y1, x2,y2, w, skip_tex, ...)
@@ -367,13 +404,42 @@ function surface.EndClipping()
 	render.SetScissor()
 end
 
+local gl = require("lj-opengl")
+
+function surface.StartClipping2(x, y, w, h)
+	gl.Enable(gl.e.GL_STENCIL_TEST)
+	
+	gl.StencilFunc(gl.e.GL_ALWAYS, 1, 0xFF) -- Set any stencil to 1
+	gl.StencilOp(gl.e.GL_KEEP, gl.e.GL_KEEP, gl.e.GL_REPLACE)
+	gl.StencilMask(0xFF) -- Write to stencil buffer
+	gl.DepthMask(gl.e.GL_FALSE) -- Don't write to depth buffer
+	gl.Clear(gl.e.GL_STENCIL_BUFFER_BIT) -- Clear stencil buffer (0 by default)
+	
+	surface.DrawRect(x, y, w, h)
+	
+	gl.StencilFunc(gl.e.GL_EQUAL, 1, 0xFF) -- Pass test if stencil value is 1
+    gl.StencilMask(0x00) -- Don't write anything to stencil buffer
+    gl.DepthMask(gl.e.GL_TRUE) -- Write to depth buffer	
+end
+
+
+function surface.EndClipping2()
+	gl.Disable(gl.e.GL_STENCIL_TEST)
+end
+
 function surface.GetMousePos()
 	return window.GetMousePos():Unpack()
 end
 
 function surface.WorldToLocal(x, y)
-	local x, y = (render.matrices.world * render.matrices.view_2d):TransformVector(Vec3(x, y, 0)):Unpack()
-	return x, y
+	if surface.in_3d then
+		y = -y
+		local x, y = (render.matrices.world * render.matrices.view_3d):TransformVector(Vec3(x, y, 0)):Unpack()
+		return x, y
+	else	
+		local x, y = (render.matrices.world * render.matrices.view_2d):TransformVector(Vec3(x, y, 0)):Unpack()
+		return x, y
+	end
 end
 
 local last_x = 0
