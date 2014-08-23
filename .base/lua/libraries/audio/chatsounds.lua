@@ -917,6 +917,8 @@ do
 				if last == "digit" and char == "." then
 					type = "digit"
 				end
+				
+				if type == "digit" and last == "letters" then type = "letters" end
 			
 				if type ~= last or char == ":" or char == ")" or char == "(" then
 					local word = table.concat(temp, "")
