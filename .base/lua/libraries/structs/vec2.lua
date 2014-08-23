@@ -60,6 +60,21 @@ do
 	end
 end
 
+function META:Rotate(angle)
+	local cs = math.cos(angle);
+	local sn = math.sin(angle);
+
+	local xx = self.x * cs - self.y * sn;
+	local yy = self.x * sn + self.y * cs;
+	
+	self.x = xx
+	self.y = yy
+	
+	return self
+end
+
+structs.AddGetFunc(META, "Rotate", "Rotated")
+
 function META.Lerp(a, mult, b)
 
 	a.x = (b.x - a.x) * mult + a.x
