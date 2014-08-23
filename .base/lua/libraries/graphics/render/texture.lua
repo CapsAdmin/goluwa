@@ -85,7 +85,7 @@ do -- texture object
 
 	function META:Download(level, format)
 		local f = self.format
-		local buffer = self:CreateBuffer()
+		local buffer, length = self:CreateBuffer()
 
 		gl.BindTexture(f.type, self.id)
 			gl.PixelStorei(gl.e.GL_PACK_ALIGNMENT, f.stride)
@@ -93,7 +93,7 @@ do -- texture object
 			gl.GetTexImage(f.type, level or 0, f.upload_format, format or f.format_type, buffer)
 		gl.BindTexture(f.type, 0)
 
-		return buffer
+		return buffer, length
 	end
 	
 	function META:CreateBuffer()
@@ -234,9 +234,25 @@ do -- texture object
 		
 		return self
 	end
-	
-	local colors = ffi.new("char[4]")
+		
+	function META:GetPixelColor(x, y, buffer)
+		x = math.clamp(math.floor(x), 1, self.w-1)		
+		y = math.clamp(math.floor(y), 1, self.h-1)		
+		
+		buffer = buffer or self:Download()
+		local i = (y * self.w + x) * self.format.stride
+		
+		local temp = {}
+		
+		for j = 1, self.format.stride do
+			temp[j] = tonumber(buffer[i + j - 1] or 0) / 255
+		end
+		
+		return Color(unpack(temp))
+	end
 
+	local colors = ffi.new("char[4]")
+	
 	function META:Fill(callback, write_only, read_only)
 		check(callback, "function")
 		
