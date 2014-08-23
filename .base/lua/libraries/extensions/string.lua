@@ -4,6 +4,23 @@ function string.readablehex(str)
 	return (str:gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
 end
 
+-- gsub doesn't seem to remove \0 
+
+function string.removepadding(str, padding)
+	padding = padding or "\0"
+	
+	local new = {}
+	
+	for i = 1, #str do
+		local char = str:sub(i, i)
+		if char ~= padding then
+			table.insert(new, char)
+		end
+	end
+	
+	return table.concat(new)
+end
+
 function string.dumphex(str)
 	local str = str:readablehex():lower():explode(" ")
 	local out = {}
