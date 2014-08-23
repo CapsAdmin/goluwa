@@ -22,7 +22,7 @@ event.CreateTimer("updatefb", 0.1, function()
 			x = x - 50
 			y = y - 50
 			
-			local x, y = surface.TransformPoint(x, y) 
+			local x, y = surface.WorldToLocal(x, y) 
 			surface.DrawRect(x,y,5,5, 0, 2.5, 2.5)  
 			
 			render.SetBlendMode("additive")
