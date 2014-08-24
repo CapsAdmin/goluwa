@@ -28,6 +28,10 @@ function window.Open(...)
 	
 	local wnd = render.CreateWindow(...)
 	
+	local size = wnd:GetSize()
+	render.camera.w = size.w
+	render.camera.h = size.h
+	
 	-- don't draw anything until the everything has be
 	event.AddListener("RenderContextInitialized", "window_start_rendering", function()
 		function wnd:OnUpdate(dt)
