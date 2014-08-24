@@ -1,3 +1,4 @@
+local SOMETHING = false
 local BUILD_OUTPUT = true
 
 local gl = require("lj-opengl") -- OpenGL
@@ -95,6 +96,7 @@ local source_template =
 @@IN@@
 
 @@OUT@@
+@@OUT3@@
 
 //__SOURCE_START
 @@SOURCE@@
@@ -110,7 +112,7 @@ local function rebuild_info()
 	if OPENGL_ES then
 		source_template = "#version 300 es" .. source_template
 	else
-		source_template = "#version 330" .. source_template
+		source_template = "#version 150" .. source_template
 	end
 
 	-- grab all valid shaders from enums
@@ -158,7 +160,9 @@ local function translate_fields(data)
 	return out
 end
 
-local function variables_to_string(type, data, prepend, macro)
+local function variables_to_string(type, data, prepend, macro, array)
+	array = array or ""
+
 	local out = {}
 
 	for i, data in ipairs(translate_fields(data)) do
@@ -167,8 +171,8 @@ local function variables_to_string(type, data, prepend, macro)
 		if prepend then
 			name = prepend .. name
 		end
-
-		table.insert(out, ("%s %s %s %s;"):format(type, data.precision, data.type, name))
+		
+		table.insert(out, ("%s %s %s %s%s;"):format(type, data.precision, data.type, name, array))
 
 		if macro then
 			table.insert(out, ("#define %s %s"):format(data.name, name))
@@ -255,22 +259,27 @@ function render.CreateShader(data)
 		end
 
 		local source = build_output.vertex.source
+		
+		if SOMETHING then
+			print(variables_to_string("out", build_output.vertex.out))
+			source = replace_field(source, "OUT3", variables_to_string("out", build_output.vertex.out))
+		else
+			-- declare them as
+			-- out highp vec3 glw_out_foo;
+			source = replace_field(source, "OUT", variables_to_string("out", build_output.vertex.out, reserve_prepend))
 
-		-- declare them as
-		-- out highp vec3 glw_out_foo;
-		source = replace_field(source, "OUT", variables_to_string("out", build_output.vertex.out, reserve_prepend))
+			-- and then in main do
+			-- glw_out_normal = normal;
+			-- to avoid name conflicts
+			local vars = {}
 
-		-- and then in main do
-		-- glw_out_normal = normal;
-		-- to avoid name conflicts
-		local vars = {}
+			for i, v in pairs(build_output.vertex.out) do
+				local name = next(v)
+				table.insert(vars, ("\t%s = %s;"):format(reserve_prepend .. name, name))
+			end
 
-		for i, v in pairs(build_output.vertex.out) do
-			local name = next(v)
-			table.insert(vars, ("\t%s = %s;"):format(reserve_prepend .. name, name))
+			source = replace_field(source, "OUT2", table.concat(vars, "\n"))		
 		end
-
-		source = replace_field(source, "OUT2", table.concat(vars, "\n"))
 
 		build_output.vertex.source = source
 	end
@@ -335,7 +344,7 @@ function render.CreateShader(data)
 			else
 				-- in highp vec3 glw_out_foo;
 				-- #define foo glw_out_foo
-				source = replace_field(source, "IN", variables_to_string("in", info.attributes, reserve_prepend, true))
+				source = replace_field(source, "IN", variables_to_string("in", info.attributes, reserve_prepend, true, shader == "tess_control" and "[]"))
 			end
 		end
 
@@ -460,7 +469,7 @@ function render.CreateShader(data)
 						
 						self.defaults[val.name] = val.default
 
-						if id < 0 and val.type ~= "sampler2D" then
+						if render.debug and id < 0 and val.type ~= "sampler2D" then
 							logf("%s: uniform in %s %s %s is not being used (uniform location < 0)\n", shader_id, shader, val.name, val.type)
 						end
 					else
@@ -552,7 +561,7 @@ do -- create data for vertex buffer
 		end
 	end
 	
-	local USE_MALLOC = true
+	local USE_MALLOC = false
 
 	function META:CreateBuffersFromTable(vertices, indices, is_valid_table)
 	
@@ -604,8 +613,12 @@ do -- create data for vertex buffer
 			for i = 1, #vertices do
 				for _, val in ipairs(self.build_output.vertex.vtx_info) do	
 					if vertices[i][val.name] then
-						for j = 1, #vertices[i][val.name] do
-							a[i - 1][val.name][string.char(64 + j)] = vertices[i][val.name][j]
+						if type(vertices[i][val.name]) == "table" then
+							for j = 1, #vertices[i][val.name] do
+								a[i - 1][val.name][string.char(64 + j)] = vertices[i][val.name][j]
+							end
+						else
+							table.print(vertices[i])
 						end
 					end
 				end
