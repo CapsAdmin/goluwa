@@ -6,4 +6,4 @@ SET SERVER=1
 SET ARGS={'host','open steam/friends'}
 
 cd .base/bin/windows/%ARCH%/
-start luajit ../../../lua/init.lua
+start luajit ../../../lua/init.lua %*
