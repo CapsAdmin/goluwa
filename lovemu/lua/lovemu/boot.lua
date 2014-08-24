@@ -46,7 +46,11 @@ function lovemu.RunGame(folder)
 			end
 			
 			if not vfs.Exists(name) then
-				name = name .. ".lua"
+				if vfs.Exists(name.."/init.lua") then
+					name = name .. "/init.lua"
+				else
+					name = name .. ".lua"
+				end
 			end
 			
 			local func, err, path = require.load(name, folder) 
