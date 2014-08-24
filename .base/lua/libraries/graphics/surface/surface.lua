@@ -78,6 +78,10 @@ do -- orientation
 	function surface.Scale(w, h)
 		render.Scale(w, h or w, 1)
 	end
+	
+	function surface.LoadIdentity()
+		render.LoadIdentity()
+	end
 		
 	function surface.PushMatrix(x,y, w,h, a, dont_multiply)
 		render.PushWorldMatrix(nil, nil, nil, dont_multiply)
