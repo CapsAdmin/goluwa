@@ -450,7 +450,9 @@ do timer.Start("building mesh")
 					end
 				
 					if material.Water then
-						model.diffuse = load_texture(material, "$normalmap")
+						
+						model.diffuse = load_texture(material, "$basetexture")
+						model.bump = load_texture(material, "$normalmap")
 					else
 						model.diffuse = load_texture(material, "$basetexture")
 						model.bump = load_texture(material, "$bumpmap")
@@ -470,8 +472,6 @@ do timer.Start("building mesh")
 			local edge_count = face.numedges
 
 			local first, previous, current
-
-			print(face.dispinfo)
 			
 			if face.dispinfo < 0 then
 				for j = 1, edge_count do
