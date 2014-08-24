@@ -1140,41 +1140,41 @@ end
 
 local size = 4
 local deferred = console.CreateVariable("r_deferred", true, "whether or not deferred rendering is enabled.")
-function render.DrawDeferred(w, h)
+function render.DrawDeferred(dt, w, h)
 
 	if not deferred:Get() then
 		render.Clear(1,1,1,1)
 		event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
+		event.Call("Draw2D", dt)
 	return end
-
-	-- geometry
-	gl.DepthMask(gl.e.GL_TRUE)
-	gl.Enable(gl.e.GL_DEPTH_TEST)
-	gl.Disable(gl.e.GL_BLEND)	
-	render.SetCullMode("back")
 	
-	render.gbuffer:Begin()
-		render.gbuffer:Clear()
-		event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
-	render.gbuffer:End()
-	
-	event.Call("DrawShadowMaps", render.shadow_map_shader)	
-	
-	-- light
-	
-	gl.Disable(gl.e.GL_DEPTH_TEST)	
-	gl.Enable(gl.e.GL_BLEND)
-	gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
-	render.SetCullMode("front")
-	
-	render.gbuffer:Begin("light")
-		render.gbuffer:Clear(0,0,0,0, "light")
-		event.Call("Draw3DLights", render.gbuffer_light_shader)
-	render.gbuffer:End() 
-	
-	
-	render.SetBlendMode("alpha")
-	
+	render.Start3D()
+		-- geometry
+		gl.DepthMask(gl.e.GL_TRUE)
+		gl.Enable(gl.e.GL_DEPTH_TEST)
+		gl.Disable(gl.e.GL_BLEND)	
+		render.SetCullMode("back")
+		
+		render.gbuffer:Begin()
+			render.gbuffer:Clear()
+			event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
+		render.gbuffer:End()
+		
+		event.Call("DrawShadowMaps", render.shadow_map_shader)	
+		
+		-- light
+		
+		gl.Disable(gl.e.GL_DEPTH_TEST)	
+		gl.Enable(gl.e.GL_BLEND)
+		gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
+		render.SetCullMode("front")
+		
+		render.gbuffer:Begin("light")
+			render.gbuffer:Clear(0,0,0,0, "light")
+			event.Call("Draw3DLights", render.gbuffer_light_shader)
+		render.gbuffer:End() 
+	render.End3D()
+			
 	-- gbuffer
 	render.SetBlendMode("alpha")	
 	render.SetCullMode("back")
@@ -1182,7 +1182,10 @@ function render.DrawDeferred(w, h)
 		-- draw to the pp buffer		
 		local effect = render.pp_shaders[1]
 		
-		if not SOMEPOTATO and effect then			
+		local shader
+		local quad
+		
+		if effect then			
 			surface.PushMatrix(0,0,w,h)
 				render.screen_buffer:Begin()
 					render.gbuffer_shader:Bind()
@@ -1207,20 +1210,20 @@ function render.DrawDeferred(w, h)
 				surface.PopMatrix()
 			end			
 			
-			
-			-- draw the pp texture as quad
-			surface.PushMatrix()
-				surface.Scale(w, h)
-				effect.shader:Bind()
-				effect.quad:Draw()
-			surface.PopMatrix()
+			shader = effect.shader
+			quad = effect.quad
 		else
-			surface.PushMatrix()
-				surface.Scale(w, h)
-				render.gbuffer_shader:Bind()
-				render.gbuffer_screen_quad:Draw()
-			surface.PopMatrix()		
-		end		
+			shader = render.gbuffer_shader
+			quad = render.gbuffer_screen_quad
+		end	
+		
+		surface.PushMatrix()
+			surface.Scale(w, h)
+			shader:Bind()
+			quad:Draw()
+		surface.PopMatrix()
+						
+		event.Call("Draw2D", dt)
 	render.End2D()
 end
 

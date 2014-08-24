@@ -57,14 +57,9 @@ console.CreateVariable("render_accum", false)
 function render.DrawScene(window, dt)
 	render.delta = dt
 	render.Clear(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
-	render.Start(window)	
-		render.Start3D()
-			render.DrawDeferred(window:GetSize():Unpack())
-		render.End3D()
-		
-		render.Start2D()
-			event.Call("Draw2D", dt)			
-		render.End2D()
+	render.Start(window)
+	
+		render.DrawDeferred(dt, window:GetSize():Unpack())
 		
 		if console.GetVariable("render_accum") then
 			local blur_amt = 0.5		
