@@ -828,13 +828,13 @@ do -- async reading
 			
 			if vfs.debug then
 				logf("[VFS] done loading resource %s\n", path)
-			end
 			
-			local size = 0
-			for k, v in pairs(cache) do	size = size + #v end
-			if last_reported_size ~= size then
-				logn("[vfs] async read cache size: ", utilities.FormatFileSize(size))
-				last_reported_size = size
+				local size = 0
+				for k, v in pairs(cache) do	size = size + #v end
+				if last_reported_size ~= size then
+					logn("[vfs] async read cache size: ", utilities.FormatFileSize(size))
+					last_reported_size = size
+				end
 			end
 		end}
 					
