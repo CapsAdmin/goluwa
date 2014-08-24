@@ -44,7 +44,7 @@ function surface.Start3D(pos, ang, scale)
 	
 	-- this is the amount the gui will translate upwards for each
 	-- call to surface.PushMatrix
-	surface.scale_3d = scale.z / (w + h) -- dunno
+	surface.scale_3d = -scale.z / (w + h) -- dunno
 	surface.in_3d = true
 	
 	-- tell the 2d shader to use the 3d matrix instead
@@ -433,11 +433,20 @@ end
 
 function surface.WorldToLocal(x, y)
 	if surface.in_3d then
-		y = -y
-		local x, y = (render.matrices.world * render.matrices.view_3d):TransformVector(Vec3(x, y, 0)):Unpack()
-		return x, y
-	else	
-		local x, y = (render.matrices.world * render.matrices.view_2d):TransformVector(Vec3(x, y, 0)):Unpack()
+		x = ((x / render.GetWidth()) - 0.5) * 2
+		y = ((y / render.GetHeight()) - 0.5) * 2
+		
+		local cursor = render.matrices.projection_3d:GetInverse():TransformVector(Vec3(x, -y, 1))
+		local m = (render.matrices.view_3d:GetInverse() * render.matrices.world:GetInverse())
+		local cursor = m:TransformVector(cursor)
+		local camera = m:TransformVector(Vec3(0, 0, 0))
+
+		local intersect = camera + ( camera.z / ( camera.z - cursor.z ) ) * ( cursor - camera )
+				
+		return intersect.x, intersect.y
+	else
+		local x, y = (render.matrices.view_2d:GetInverse() * render.matrices.world:GetInverse()):TransformVector(Vec3(x, y, 1)):Unpack()
+		
 		return x, y
 	end
 end
