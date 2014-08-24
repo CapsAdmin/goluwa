@@ -378,6 +378,28 @@ do -- mesh init options
 		
 		self.body = lib.bulletCreateRigidBodyConvexMesh(self:GetMass(), self.matrix, mesh)
 	end
+	
+	function BODY:SetMeshScale(x, y, z)
+		lib.bulletRemoveBody(self.body)
+		
+		local tri = self.mesh.triangles
+		
+		local done = {}
+		
+		for i = 0, tri.count - 1, tri.stride do
+			i = tri.pointer[i]
+			
+			if not done[i] then
+				v.pointer[i + 0] = v.pointer[i + 0] * x
+				v.pointer[i + 1] = v.pointer[i + 1] * y
+				v.pointer[i + 2] = v.pointer[i + 2] * z
+				
+				done[i] = true
+			end
+		end
+		
+		self:InitPhysicsBox(self.mesh)
+	end
 end
 
 function bullet.CreateRigidBody()
