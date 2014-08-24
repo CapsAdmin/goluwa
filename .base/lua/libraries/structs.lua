@@ -241,11 +241,12 @@ function structs.AddOperator(META, operator, ...)
 		local func_name = args[1]
 		local accessor_name = args[2]
 		local accessor_name_get = args[3]
+		local self_arg = args[4]
 		
 		local lua = [==[
 		local META, structs = ...
-		META["ACCESSOR_NAME"] = function(a, ...)
-			a.KEY = math.FUNC_NAME(a.KEY, ...)
+		META["ACCESSOR_NAME"] = function(a, ]==] .. (self_arg and "b, c" or "...") .. [==[)
+			a.KEY = math.FUNC_NAME(a.KEY, ]==] .. (self_arg and "b.KEY, c.KEY" or "...") .. [==[)
 			
 			return a 
 		end
@@ -348,7 +349,7 @@ function structs.AddAllOperators(META)
 	structs.AddOperator(META, "math", "round", "Round", "Rounded")
 	structs.AddOperator(META, "math", "ceil", "Ceil", "Ceiled")
 	structs.AddOperator(META, "math", "floor", "Floor", "Floored")
-	structs.AddOperator(META, "math", "clamp", "Clamp", "Clamped")
+	structs.AddOperator(META, "math", "clamp", "Clamp", "Clamped", true)
 end
 
 include("structs/*", structs)
