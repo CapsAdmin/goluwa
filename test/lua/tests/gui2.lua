@@ -43,55 +43,63 @@ do -- base panel
 		function PANEL:SetCachedRendering(b)
 			self.CachedRendering = b
 
-			if b then
-				self:UpdateFrameBuffer()
-			end
-
 			self:MarkDirty()
 		end
 
-		function PANEL:UpdateFrameBuffer()
-			self.framebuffer = render.CreateFrameBuffer(self.Size.w, self.Size.h, {
-				{
-					name = "color",
-					attach = "color1",
-
-					texture_format = {
-						internal_format = "RGB32F",
-					},
-				},				
-				{
-					name = "stencil",
-					attach = "stencil",
-				}
-			})
-			self.cache_texture = self.framebuffer:GetTexture("color")
-		end
-
 		function PANEL:MarkDirty()
-			for i, v in ipairs(self:GetParentList()) do
-				v:MarkDirty()
+			if self.CachedRendering then
+				for i, v in ipairs(self:GetParentList()) do
+					v:MarkDirty()
+				end
+				
+				self.cache_dirty = true
+				
+				if not self.cache_fb then
+					self.cache_fb = render.CreateFrameBuffer(self.Size.w, self.Size.h, {
+						{
+							name = "color",
+							attach = "color1",
+
+							texture_format = {
+								internal_format = "RGB32F",
+							},
+						},				
+						{
+							name = "stencil",
+							attach = "stencil",
+						}
+					})
+					self.cache_texture = self.cache_fb:GetTexture("color")
+				end
 			end
-			self.dirty = true
 		end
 
+		function PANEL:IsDirty()
+			return self.cache_dirty
+		end
+		
 		function PANEL:DrawCache()
-			if self.dirty then
-				self.framebuffer:Begin()
-				self.framebuffer:Clear()
+			if self:IsDirty() then
+				self.cache_fb:Begin()
+				self.cache_fb:Clear()
 
-				surface.PushMatrix(nil,nil, nil,nil, nil, true)
+				surface.PushMatrix()
+					-- this matrix needs to be reset so it will draw 
+					-- from the origin of the framebuffer
+					-- the framebuffer itself is drawn at the correct position
+					surface.LoadIdentity() 
+					
 					self:OnDraw()
 
 					surface.Translate(-self.Scroll.x, -self.Scroll.y)
 
-					for k,v in pairs(self:GetChildren()) do
+					for k,v in ipairs(self:GetChildren()) do
 						v:Draw()
 					end
 
-					self.dirty = false
+					self.cache_dirty = false
 				surface.PopMatrix()
-				self.framebuffer:End()
+				self.cache_fb:End()
 			end
 
 			surface.SetColor(1, 1, 1, 1)
@@ -99,35 +107,35 @@ do -- base panel
 			surface.DrawRect(0, 0, self.Size.w, self.Size.h)
 		end
 	end
+	
+	do -- orientation
+		function PANEL:SetPosition(pos)
+			if self:HasParent() and self.Parent.TrapChildren then
+				pos:Clamp(Vec2(0, 0), self.Parent.Size - self.Size)
+			end
 
-	function PANEL:SetPosition(pos)
-
-		if self:HasParent() and self.Parent.TrapChildren then
-			pos.x = math.clamp(pos.x, 0, self.Parent.Size.w - self.Size.w)
-			pos.y = math.clamp(pos.y, 0, self.Parent.Size.h - self.Size.h)
+			self.Position = pos
 		end
 
-		self.Position = pos
-	end
-
-	local sorter = function(a,b)
-		return a.Order > b.Order
-	end
-
-	function PANEL:SetOrder(pos)
-		self.Order = pos
-
-		local parent = self:GetParent()
-
-		if parent:IsValid() then
-			table.sort(parent:GetChildren(), sorter)
+		local sorter = function(a,b)
+			return a.Order > b.Order
 		end
-	end
 
-	function PANEL:SetScroll(vec)
-		local size = self:GetSizeOfChildren()
+		function PANEL:SetOrder(pos)
+			self.Order = pos
 
-		self.Scroll = Vec2(math.clamp(vec.x, 0, size.x - self.Size.w), math.clamp(vec.y, 0, size.y - self.Size.h))
+			local parent = self:GetParent()
+
+			if parent:IsValid() then
+				table.sort(parent:GetChildren(), sorter)
+			end
+		end
+
+		function PANEL:SetScroll(vec)
+			local size = self:GetSizeOfChildren()
+
+			self.Scroll = Vec2(math.clamp(vec.x, 0, size.x - self.Size.w), math.clamp(vec.y, 0, size.y - self.Size.h))
+		end
 	end
 
 	function PANEL:BringToFront()
@@ -149,7 +157,7 @@ do -- base panel
 	function PANEL:GetSizeOfChildren()
 		local total_size = Vec2()
 
-		for k, v in pairs(self:GetChildren()) do
+		for k, v in ipairs(self:GetChildren()) do
 			local x, y = v:GetPosition():Unpack()
 
 			x = x + v.Size.x
@@ -171,46 +179,40 @@ do -- base panel
 		metatable.GetSet(PANEL, "DragDrop", false)
 
 		function PANEL:StartDragging(button)
-			--self:StopAnimations()
-
-			self.drag_pos = gui2.mouse_pos:Copy()
+			self.drag_world_pos = gui2.mouse_pos:Copy()
 			self.drag_stop_button = button
 		end
 
 		function PANEL:StopDragging()
-			self.drag_pos = nil
-			self.drag_pos2 = nil
-			self.last_dragged_over = nil
+			self.drag_world_pos = nil
+			self.drag_panel_start_pos = nil
+			self.drag_last_hover = nil
 		end
 
 		function PANEL:CalcDragging()
-			if self.drag_pos then
+			if self.drag_world_pos then
 
-				if not self.drag_pos2 then
-					self.drag_pos2 = self:GetPosition()
+				if not self.drag_panel_start_pos then
+					self.drag_panel_start_pos = self:GetPosition()
 				end
 
-				local drag_pos = Vec2(surface.WorldToLocal(self.drag_pos:Unpack()))
-				local mouse_pos = self:GetMousePosition()
-				local world_pos = self.drag_pos2
+				local drag_pos = Vec2(surface.WorldToLocal(self.drag_world_pos:Unpack()))
 
-				self:SetPosition(world_pos + mouse_pos - drag_pos)
+				self:SetPosition(self.drag_panel_start_pos + self:GetMousePosition() - drag_pos)
 				
 				local panel = gui2.GetHoveringPanel(nil, self)
-				if panel == self then panel = self.Parent end
-								
+
 				local drop_pos = panel:GetMousePosition() - self:GetMousePosition() + panel.Scroll
 					
-				
-				if self.last_dragged_over ~= panel then
+				if self.drag_last_hover ~= panel then
 					
-					if self.last_dragged_over then
-						self.last_dragged_over:OnDraggedChildExit(self, drop_pos)
+					if self.drag_last_hover then
+						self.drag_last_hover:OnDraggedChildExit(self, drop_pos)
 					end
 				
 					panel:OnDraggedChildEnter(self, drop_pos)
 					
-					self.last_dragged_over = panel
+					self.drag_last_hover = panel
 				end
 
 				if not input.IsMouseDown(self.drag_stop_button) then
@@ -424,7 +426,7 @@ do -- base panel
 					render.Translate(-self.Scroll.x, -self.Scroll.y, 0)
 
 					for k,v in ipairs(self:GetChildren()) do
-						if 	v.drag_pos or
+						if 	v.drag_world_pos or
 							(v.Position.x - self.Scroll.x < self.Size.w and
 							v.Position.y - self.Scroll.y < self.Size.h and
 							v.Position.x - self.Scroll.x > -v.Size.w and
@@ -460,7 +462,7 @@ do -- base panel
 			render.Translate(-self.Scroll.x, -self.Scroll.y, 0)
 
 			for k,v in ipairs(self:GetChildren()) do
-				if v.drag_pos or
+				if v.drag_world_pos or
 					(v.Position.x - self.Scroll.x < self.Size.w and
 					v.Position.y - self.Scroll.y < self.Size.h and
 					v.Position.x - self.Scroll.x > -v.Size.w and
@@ -545,6 +547,12 @@ do -- base panel
 		surface.SetTexture(self.Texture)
 
 		surface.DrawRect(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
+
+		if gui2.debug then
+			surface.SetWhiteTexture()
+			surface.SetColor(1,0,0,1)
+			surface.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
+		end
 	end
 
 	function PANEL:OnMouseEnter(x, y) self:SetColor(Color(1,1,1,1)) end
@@ -591,7 +599,7 @@ function gui2.GetHoveringPanel(panel, filter)
 		local panel = children[i]
 		if panel.mouse_over and (not filter or panel ~= filter) then
 			if panel:HasChildren() then
-				return gui2.GetHoveringPanel(panel)
+				return gui2.GetHoveringPanel(panel, filter)
 			end
 			return panel
 		end
@@ -609,32 +617,26 @@ function gui2.MouseInput(button, press)
 end
   
 function gui2.Draw2D()
+	render.SetCullMode("none")
+	--surface.Start3D(Vec3(1, -5, 10), Ang3(-90, 180, 0), Vec3(8, 8, 10))
 	
-	
-	--render.SetBlendMode("multiplicative")
-	--surface.Start3D()
-	surface.PushMatrix()
 		gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePos()
 		
 		gui2.world:Draw()
 		gui2.world:Update()
-
-		--surface.SetTexture(skin)
-		--surface.DrawNinePatch(50, 50, 200, 200, 128, 32, 0, 0)
-
-		gui2.hovering_panel = gui2.GetHoveringPanel()
-
-		if gui2.hovering_panel:IsValid() then
-			local cursor = gui2.hovering_panel:GetCursor()
-
-			if gui2.active_cursor ~= cursor then
-				system.SetCursor(cursor)
-				gui2.active_cursor = cursor
-			end
-		end
-	surface.PopMatrix()
-	
+		
 	--surface.End3D()
+	
+	gui2.hovering_panel = gui2.GetHoveringPanel()
+
+	if gui2.hovering_panel:IsValid() then
+		local cursor = gui2.hovering_panel:GetCursor()
+
+		if gui2.active_cursor ~= cursor then
+			system.SetCursor(cursor)
+			gui2.active_cursor = cursor
+		end
+	end
 end
 
 function gui2.Initialize()
@@ -644,21 +646,13 @@ function gui2.Initialize()
 	world:SetSize(Vec2(window.GetSize()))
 	world:SetCursor("arrow")
 	world:SetTrapChildren(true)
-	
-	function world:OnDraw()
-		surface.SetWhiteTexture()
-		surface.SetColor(1,0,0,1)
-		surface.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 5, 5)
-	end
+	world:SetColor(Color(1,1,1,0))
 
 	gui2.world = world
 
 	gui2.mouse_pos = Vec2()
-
+	
 	event.AddListener("Draw2D", "gui2", gui2.Draw2D)
-	event.RemoveListener("Draw3DGeometry", "gui2", gui2.Draw2D)
-	event.RemoveListener("Draw3DLights", "gui2", gui2.Draw2D)
-
 	event.AddListener("MouseInput", "gui2", gui2.MouseInput)
 end
 
@@ -666,7 +660,9 @@ function gui2.Test()
 	local parent = gui2.CreatePanel()
 	parent:SetPosition(Vec2(400,140))
 	parent:SetSize(Vec2(300,300))
-
+	
+	--do return end
+	
 	local c = HSVToColor(0, 0, 0.25)
 	parent:SetColor(c)
 	parent.original_color = c
@@ -803,4 +799,4 @@ end
 gui2.Initialize()
 gui2.Test()
 
-for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
+--for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
