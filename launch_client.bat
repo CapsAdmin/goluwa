@@ -10,4 +10,4 @@ SET CLIENT=1
 SET SERVER=0
 
 cd .base/bin/windows/%arch%/
-start luajit ../../../lua/init.lua
+start luajit ../../../lua/init.lua %*
