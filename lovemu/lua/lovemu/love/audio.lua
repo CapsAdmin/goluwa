@@ -72,6 +72,14 @@ function love.audio.setVolume(vol)
 	audio.SetListenerGain(vol)
 end
 
+function love.audio.newEffect(...) --lovemu only
+	return audio.CreateEffect(...)
+end
+
+function love.audio.newFilter(...) --lovemu only
+	return audio.CreateFilter(...)
+end
+
 function love.audio.stop()
 	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
 		v:stop() 
@@ -280,6 +288,18 @@ do -- Source
 		end
 		
 		return 1
+	end
+	
+	function Source:addEffect(...) --lovemu only
+		if self.source then
+			return self.source:AddEffect(...)
+		end
+	end
+	
+	function Source:setFilter(...) --lovemu only
+		if self.source then
+			return self.source:SetFilter(...)
+		end
 	end
 	
 	function Source:clone()
