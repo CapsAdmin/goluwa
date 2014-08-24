@@ -16,10 +16,16 @@ end
 
 function META:__tostring()
 	return string.format("matrix44[%p]:\n" .. ("%f %f %f %f\n"):rep(4), self.m,
-		self[0], self[4], self[8], self[12],
-		self[1], self[5], self[9], self[13],
-		self[2], self[6], self[10], self[14],
-		self[3], self[7], self[11], self[15])
+		--self[0], self[4], self[8], self[12],
+		--self[1], self[5], self[9], self[13],
+		--self[2], self[6], self[10], self[14],
+		--self[3], self[7], self[11], self[15]
+		
+		self[0], self[1], self[2], self[3],
+		self[4], self[5], self[6], self[7],
+		self[8], self[9], self[10], self[11],
+		self[12], self[13], self[14], self[15] 
+	)
 end
 
 function META:__mul(b)
@@ -496,8 +502,18 @@ function META:TransformVector(v)
 	return Vec3(
 		(m[0] * x + m[1] * y + m[2] * z),
 		(m[4] * x + m[5] * y + m[6] * z),
-		m[8] * x + m[9] * y + m[10] * z
+		(m[8] * x + m[9] * y + m[10] * z)
 	)
+end
+
+function META:TransformVector(v)
+	local m = self.m
+    local x, y, z = v.x, v.y, v.z
+    return Vec3(
+        x * m[0] + y * m[4] + z * m[8] + m[12],
+        x * m[1] + y * m[5] + z * m[9] + m[13],
+        x * m[2] + y * m[6] + z * m[10] + m[14]
+    ) / (x * m[3] + y * m[7] + z * m[11] + m[15])
 end
 
 function META:Shear(v)
@@ -523,7 +539,11 @@ function Matrix44(m)
 	local self = setmetatable({}, META)
 	
 	if m then
-		self.m = m
+		if type(m) == "table" then
+			self.m = new(t, m)
+		else
+			self.m = m
+		end
 	else
 		self.m = new(t)
 		self:Identity()
@@ -531,3 +551,5 @@ function Matrix44(m)
 	
 	return self
 end
+
+metatable.Register(META)
