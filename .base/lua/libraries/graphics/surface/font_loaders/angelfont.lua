@@ -149,11 +149,9 @@ end
 
 function META:GetTextSize(str)
 	local curX, curY = 0, 0
-	local lastTex
 	
 	for i, char in ipairs(utf8.totable(str)) do
 		if char == '\n' then
-			curX = X
 			curY = curY + self.lineHeight
 		else
 			local ch = self.chars[utf8.byte(char)] or self.chars[63]

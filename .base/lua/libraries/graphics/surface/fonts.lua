@@ -40,7 +40,7 @@ function surface.CreateFont(name, options, callback)
 	end
 	
 	options = options or {}
-	options.path = options.path or name
+	options.path = options.path or "fonts/unifont.ttf"
 	options.size = options.size or 14
 			
 	surface.fonts[name] = "loading"
@@ -126,16 +126,35 @@ function surface.SetTextPos(x, y)
 	Y = y or Y
 end
 
-function surface.GetTextSize(str)
-	local font = surface.fonts[font]
-	
-	if not font then return 0, 0 end
-	
-	if font == "loading" or font.state ~= 'loaded' then
-		return 32, 32
+do
+	local cache = {}
+
+	function surface.GetTextSize(str)
+		local font = surface.fonts[font]
+		
+		if cache[font] and cache[font][str] then 
+			return cache[font][str][1], cache[font][str][2] 
+		end
+		
+		if not font then return 0, 0 end
+		
+		if font == "loading" or font.state ~= 'loaded' then
+			return 32, 32
+		end
+			
+		local x, y = font:GetTextSize(str)
+		
+		cache[font] = cache[font] or {}
+		cache[font][str] = cache[font][str] or {}
+		cache[font][str][1] = x
+		cache[font][str][2] = y
+		
+		return x, y
 	end
 	
-	return font:GetTextSize(str)
+	function surface.InvalidateFontSizeCache()
+		cache = {}
+	end
 end
 
 function surface.SetTextScale() 

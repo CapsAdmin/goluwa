@@ -174,57 +174,6 @@ function META:Init()
 	end
 end
 
---[[
-function META:DrawString(str, x, y)
-	
-	self.string_cache = self.string_cache or {}
-	
-	if not self.string_cache[str] then	
-		
-		local poly
-		local data = {}
-	
-		local X, Y = x, y
-		local last_tex
-		
-		local lol = 1
-		
-		for i = 1, #str do
-			local char = str:sub(i,i)
-			local ch = self.chars[char]
-			
-			if char == "\n" then
-				X = x
-				Y = Y + self.options.size
-			elseif ch then
-							
-				if ch.page.texture ~= last_tex then
-					tex = ch.page.texture
-					poly = surface.CreatePoly(#str)
-					table.insert(data, {poly = poly, texture = ch.page.texture})
-					last_tex = ch.page.texture
-					lol = 1
-				end
-				
-				X = X + ch.xAdvance
-				Y = Y + ch.yAdvance
-				
-				poly:SetUV(ch.x, ch.y, ch.w, ch.h, ch.page.texture.w, ch.page.texture.h)
-				poly:SetRect(i, X, Y - (ch.bitmapTop) + self.options.size, ch.w, ch.h)
-				
-				lol = lol + 1
-			end
-			
-		end
-		
-		self.string_cache[str] = data
-	end
-	
-	for i, v in ipairs(self.string_cache[str]) do
-		surface.SetTexture(v.texture)
-		v.poly:Draw()
-	end	
-end]]
 
 function META:DrawString(str, x, y)
 	if self.state ~= "loaded" or not str or not x or not y then return false end
@@ -236,6 +185,8 @@ function META:DrawString(str, x, y)
 		if char == "\n" then
 			X = x
 			Y = Y + self.options.size
+		elseif char == "\t" then
+			X = X + self.options.size
 		elseif ch and not ch.invalid then
 			if tex ~= ch.page.texture then
 				surface.SetTexture(ch.page.texture)
@@ -253,16 +204,130 @@ function META:DrawString(str, x, y)
 	return X, Y
 end
 
+
+
+function META:DrawString(str, x, y)
+	
+	self.vertex_buffer = self.vertex_buffer or surface.CreatePoly(500)
+	
+	self.string_cache = self.string_cache or {}
+	
+	if not self.string_cache[str] then		
+		local data = {}
+	
+		local X, Y = 0, 0
+		local last_texture
+		local chars
+			
+		for i = 1, utf8.length(str) do
+			local char = utf8.sub(str, i,i)
+			local ch = self.chars[char]
+			
+			if char == "\n" then
+				X = x
+				Y = Y + self.options.size
+			elseif char == "\t" then
+				X = X + self.options.size
+			elseif ch then
+			
+				if last_texture ~= ch.page.texture then
+					chars = {}
+					table.insert(data, {texture = ch.page.texture, chars = chars})
+					last_texture = ch.page.texture
+				end
+			
+				table.insert(chars, {
+					uv = {ch.x, ch.y, ch.w, ch.h, ch.page.texture.w, ch.page.texture.h},
+					rect = {i, X, Y - (ch.bitmapTop) + self.options.size, ch.w, ch.h},					
+					tex = ch.page.texture, -- todo: sort by texture
+				})
+				
+				X = X + ch.xAdvance
+				Y = Y + ch.yAdvance
+			end
+		end
+				
+		self.string_cache[str] = data
+	end
+	
+	surface.PushMatrix(x, y)
+	for i, v in ipairs(self.string_cache[str]) do
+		surface.SetTexture(v.texture)
+		for i, char in ipairs(v.chars) do
+			self.vertex_buffer:SetUV(char.uv[1], char.uv[2], char.uv[3], char.uv[4], char.uv[5], char.uv[6])
+			self.vertex_buffer:SetRect(char.rect[1], char.rect[2], char.rect[3], char.rect[4], char.rect[5])
+		end
+		self.vertex_buffer:Draw(#v.chars)
+	end	
+	surface.PopMatrix()
+end
+
+function META:DrawString(str, x, y)
+	
+	self.string_cache = self.string_cache or {}
+	
+	if not self.string_cache[str] then	
+		
+		local poly
+		local data = {}
+	
+		local X, Y = 0, 0
+		local last_tex
+		
+		local lol = 1
+		
+		for i = 1, utf8.length(str) do
+			local char = utf8.sub(str, i,i)
+			local ch = self.chars[char]
+			
+			if char == "\n" then
+				X = x
+				Y = Y + self.options.size
+			elseif char == "\t" then
+				X = X + self.options.size
+			elseif ch then
+			
+				if ch.page.texture ~= last_tex then
+					tex = ch.page.texture
+					poly = surface.CreatePoly(#str)
+					table.insert(data, {poly = poly, texture = ch.page.texture})
+					last_tex = ch.page.texture
+					lol = 1
+				end
+				
+				poly:SetColor(1,1,1,1)
+				poly:SetUV(ch.x, ch.y, ch.w, ch.h, ch.page.texture.w, ch.page.texture.h)
+				poly:SetRect(i, X, Y - (ch.bitmapTop) + self.options.size, ch.w, ch.h)
+				
+				X = X + ch.xAdvance
+				Y = Y + ch.yAdvance
+				
+				lol = lol + 1
+			end
+			
+		end
+		
+		self.string_cache[str] = data
+	end
+	
+	surface.PushMatrix(x, y)
+	for i, v in ipairs(self.string_cache[str]) do
+		surface.SetTexture(v.texture)
+		v.poly:Draw()
+	end	
+	surface.PopMatrix()
+end
+
 function META:GetTextSize(str)
 	if self.state ~= "loaded" then return 0, 0 end
 	local X, Y = 0, self.options.size
-	local tex
-	for i = 1, #str do
+	for i = 1, utf8.length(str) do
 		local char = utf8.sub(str, i,i)
 		local ch = self.chars[char]
 		if char == "\n" then
-			X = x
 			Y = Y + self.options.size
+		elseif char == "\t" then
+			X = X + self.options.size
 		elseif ch and not ch.invalid then
 			X = X + ch.xAdvance
 			Y = Y + ch.yAdvance
