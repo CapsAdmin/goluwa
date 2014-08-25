@@ -96,7 +96,7 @@ end
 	self:AddString("maybe..\n\n")
 
 	local big_font = "markup_big3"
-	surface.CreateFont(big_font, {font = "looney", size = 50, read_speed = 100})
+	surface.CreateFont(big_font, {path = "Pinyon Script", size = 50, read_speed = 100})
 	self:AddFont(big_font)
 	local str = "That's all folks!"
 
