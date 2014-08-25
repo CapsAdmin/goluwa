@@ -27,7 +27,7 @@ function META.LoadFont(name, options, callback)
 		self.font = data
 		self.state = "loading"
 		self:Init()
-		if self.state == 'loaded' then
+		if self.state == "loaded" then
 			callback(self)
 		end
 	end, options.load_speed or 10, "font"))
@@ -56,7 +56,7 @@ function META:FindFreePage(w, h)
 		x, y = 0, 0
 		
 		found_page = { 
-			texture = render.CreateTexture(256, 256, nil, {mag_filter="nearest"} --[[{
+			texture = render.CreateTexture(256, 256, nil, {mag_filter = "nearest"} --[[{
 				min_filter = "linear",
 				mag_filter = "linear",
 				internal_format = "r8",
@@ -110,6 +110,7 @@ function META:build_textures()
 	table.sort(self.dirty_chars, function(a, b)
 		return (a.w * a.h) > (b.w * b.h)
 	end)
+	
 	for i = 1, #self.dirty_chars do
 		local char = self.dirty_chars[i]
 		local page, x, y = self:FindFreePage(char.w, char.h)
@@ -122,7 +123,9 @@ function META:build_textures()
 		
 		page.dirty = true
 	end
+	
 	self.dirty_chars = {}
+
 	for k, page in pairs(self.pages) do
 		if page.dirty then
 			page.texture:Clear()
@@ -153,7 +156,8 @@ function META:LoadGlyphs(codeStart, codeEnd)
 end
 
 function META:Init()
-	local face = ffi.gc(ffi.new'FT_Face[1]', print)
+	local face = ffi.new("FT_Face[1]")
+	
 	if freetype.NewMemoryFace(surface.freetype_lib[0], self.font, #self.font, 0, face) == 0 then
 		self.face_ref = face
 		face = face[0]
@@ -189,7 +193,7 @@ function META:DrawString(str, x, y)
 			local char = str:sub(i,i)
 			local ch = self.chars[char]
 			
-			if char == '\n' then
+			if char == "\n" then
 				X = x
 				Y = Y + self.options.size
 			elseif ch then
@@ -223,13 +227,13 @@ function META:DrawString(str, x, y)
 end]]
 
 function META:DrawString(str, x, y)
-	if self.state ~= 'loaded' or not str or not x or not y then return false end
+	if self.state ~= "loaded" or not str or not x or not y then return false end
 	local X, Y = x, y
 	local tex
-	for i = 1, #str do
+	for i = 1, utf8.length(str) do
 		local char = utf8.sub(str, i,i)
 		local ch = self.chars[char]
-		if char == '\n' then
+		if char == "\n" then
 			X = x
 			Y = Y + self.options.size
 		elseif ch and not ch.invalid then
@@ -245,17 +249,18 @@ function META:DrawString(str, x, y)
 			self:LoadGlyph(utf8.byte(char))
 		end
 	end
+	
 	return X, Y
 end
 
 function META:GetTextSize(str)
-	if self.state ~= 'loaded' then return 0, 0 end
+	if self.state ~= "loaded" then return 0, 0 end
 	local X, Y = 0, self.options.size
 	local tex
 	for i = 1, #str do
 		local char = utf8.sub(str, i,i)
 		local ch = self.chars[char]
-		if char == '\n' then
+		if char == "\n" then
 			X = x
 			Y = Y + self.options.size
 		elseif ch and not ch.invalid then
