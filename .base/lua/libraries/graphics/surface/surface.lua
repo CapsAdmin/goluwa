@@ -162,7 +162,7 @@ end
 
 function surface.SetAlphaMultiplier(a)
 	A2 = a
-	surface.fontmesh.alpha_multiplier = A2
+	--surface.fontmesh.alpha_multiplier = A2
 	surface.mesh_2d_shader.alpha_multiplier = A2
 end
 
@@ -520,5 +520,7 @@ event.AddListener("RenderContextInitialized", nil, surface.Initialize)
 if RELOAD then
 	surface.Initialize()
 end
+
+if SOMEPOTATO then include("freetype.lua", surface) end
 
 return surface
