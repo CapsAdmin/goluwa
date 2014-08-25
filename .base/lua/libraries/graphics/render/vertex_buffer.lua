@@ -26,11 +26,11 @@ function META:OnRemove()
 	gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.indices_id))
 end
 
-function META:Draw()
+function META:Draw(count)
 	render.BindVertexArray(self.vao_id)
 	--render.BindArrayBuffer(self.vertices_id)	
 	gl.BindBuffer(gl.e.GL_ELEMENT_ARRAY_BUFFER, self.indices_id)
-	gl.DrawElements(gl.e.GL_TRIANGLES, self.indices_count, gl.e.GL_UNSIGNED_INT, nil)
+	gl.DrawElements(gl.e.GL_TRIANGLES, count or self.indices_count, gl.e.GL_UNSIGNED_INT, nil)
 end
 
 function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
@@ -42,7 +42,7 @@ function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
 		self.vertices_size = vertices_size or ffi.sizeof(vertices)
 		
 		render.BindArrayBuffer(self.vertices_id)
-		gl.BufferData(gl.e.GL_ARRAY_BUFFER, self.vertices_size, self.vertices, gl.e.GL_DYNAMIC_DRAW)
+		gl.BufferData(gl.e.GL_ARRAY_BUFFER, self.vertices_size, self.vertices, gl.e.GL_STATIC_DRAW )
 	end
 	
 	if indices and self.UpdateIndices then
@@ -51,7 +51,7 @@ function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
 		self.indices_count = self.indices_size / ffi.sizeof("unsigned int")
 		
 		gl.BindBuffer(gl.e.GL_ELEMENT_ARRAY_BUFFER, self.indices_id)
-		gl.BufferData(gl.e.GL_ELEMENT_ARRAY_BUFFER, self.indices_size, self.indices, gl.e.GL_DYNAMIC_DRAW)
+		gl.BufferData(gl.e.GL_ELEMENT_ARRAY_BUFFER, self.indices_size, self.indices, gl.e.GL_STATIC_DRAW )
 	end
 		
 	render.BindVertexArray(self.vao_id)		
