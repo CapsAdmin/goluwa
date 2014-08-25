@@ -7,7 +7,15 @@ function metatable.GetCreated()
 end
 
 function metatable.CreateTemplate(class_name, skip_onremove)
-	local META = {}
+
+	local META
+
+	if type(skip_onremove) == "table" then
+		META = skip_onremove
+	else
+		META = {}
+	end
+	
 	META.__index = META
 	
 	META.Type = class_name -- if type differs from classname it might be a better idea to use _G.class
