@@ -1,18 +1,23 @@
---[[
-font:GetHeight()
-font:GetWidth(str)
-font:DrawString( str, x, y )
-]]
-include( "libraries/network/packet.lua" )
 local surface = _G.surface or ...
-local meta = {}
-meta.__index = meta
-function meta:ReadHeader()
+
+local META = {}
+
+META.Name = "angelfont"
+
+function META.LoadFont( path, options, cb )
+	local f, rsn = assert(vfs.GetFile(options.path, "rb" ))
+
+	local buffer = Buffer( f )
+	return setmetatable( {buffer = buffer, path = options.path, chars = {}}, META ):ReadBlocks()
+end
+
+function META:ReadHeader()
 	local magic = self.buffer:ReadString(4)
 	if magic ~= 'BMF\3' then return false end
 	return true
 end
-function meta:ReadInfo()
+
+function META:ReadInfo()
 	local info = self.buffer:ReadStructure[[
 	short size;
 	byte flags;
@@ -30,7 +35,8 @@ function meta:ReadInfo()
 	for k,v in pairs( info ) do self[k] = v end
 	self.fontName = self.buffer:ReadString()
 end
-function meta:ReadCommon()
+
+function META:ReadCommon()
 	for k,v in pairs( self.buffer:ReadStructure[[unsigned short lineHeight;
 	unsigned short base;
 	unsigned short scaleW;
@@ -44,7 +50,8 @@ function meta:ReadCommon()
 		self[k] = v
 	end
 end
-function meta:ReadPages()
+
+function META:ReadPages()
 	local count = self.pages
 	
 	self.pages = {}
@@ -55,7 +62,8 @@ function meta:ReadPages()
 		
 	end
 end
-function meta:ReadChars(n)
+
+function META:ReadChars(n)
 	for i = 1, n do
 		local char = self.buffer:ReadStructure[[int id;
 		unsigned short x;
@@ -73,11 +81,13 @@ function meta:ReadChars(n)
 		self.chars[ char.id ] = char
 	end
 end
+
 local TYPE_INFO = 1
 local TYPE_COMMON = 2
 local TYPE_PAGES = 3
 local TYPE_CHARS = 4
-function meta:ReadBlock()
+
+function META:ReadBlock()
 	local type = self.buffer:ReadByte()
 	local size = self.buffer:ReadInt()
 	
@@ -95,12 +105,14 @@ function meta:ReadBlock()
 	end
 	return self.buffer:TheEnd()
 end
-function meta:ReadBlocks()
+
+function META:ReadBlocks()
 	assert(self:ReadHeader())
 	while not self:ReadBlock() do end
 	return self
 end
-function meta:DrawString( str, X, Y )
+
+function META:DrawString( str, X, Y )
 	local curX, curY = X, Y
 	local lastTex
 	
@@ -124,7 +136,8 @@ function meta:DrawString( str, X, Y )
 	end
 	return curX, curY
 end
-function meta:GetTextSize( str )
+
+function META:GetTextSize( str )
 	local curX, curY = 0, 0
 	local lastTex
 	
@@ -143,15 +156,4 @@ function meta:GetTextSize( str )
 	return curX, curY
 end
 
-angelfont = _G.angelfont or {}
-
-function angelfont.AttemptLoad( path, options, cb )
-	local f, rsn = assert(vfs.GetFile(options.path, "rb" ))
-
-	local buffer = Buffer( f )
-	return setmetatable( {buffer = buffer, path = options.path, chars = {}}, meta ):ReadBlocks()
-end
-
-surface.AddFontLoader( angelfont )
-
-return angelfont
+surface.RegisterFontLoader(META)

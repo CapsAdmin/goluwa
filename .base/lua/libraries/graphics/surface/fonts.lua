@@ -8,18 +8,28 @@ x, y :DrawString(str, x, y)
 surface.AddFontLoader{.AttemptLoad(<binaryData>, options, callback(suc, errmsg/metatable))}
 ]]
 
+include("../packed_rectangle.lua")
+
 local surface = (...) or _G.surface
 
-surface.fonts = surface.fonts or {}
-surface.font_dpi = 72
+surface.debug = true
 
-local loaders = {}
-function surface.AddFontLoader(loader)
-	table.insert(loaders, loader)
-end
+surface.fonts = surface.fonts or {}
+surface.font_loaders = surface.font_loaders or {}
+surface.font_dpi = 72
 
 local initted = false
 local queue = {}
+
+function surface.InitializeFonts()
+	surface.CreateFont("default", {path = "fonts/unifont.ttf"})
+	
+	initted = true
+	
+	for k,v in pairs(queue) do
+		surface.CreateFont(unpack(v))
+	end
+end
 
 function surface.CreateFont(name, options, callback)
 	
@@ -32,28 +42,38 @@ function surface.CreateFont(name, options, callback)
 	options = options or {}
 	options.path = options.path or name
 	options.size = options.size or 14
-	
-	callback = callback or function() end
-		
+			
 	surface.fonts[name] = "loading"
 	
-	for k,v in pairs(loaders) do		
-		local ok, meta, err = pcall(v.AttemptLoad, name, options, callback)
+	for _, font_loader in pairs(surface.font_loaders) do		
+		local ok, res = pcall(font_loader.LoadFont, name, options, function(...)
+			event.Call("FontChanged", name, options)
+			if callback then
+				callback(...)
+			end
+		end)
 		if ok then
-			surface.fonts[name] = meta
-			print(name, meta, err, ok)
+			surface.fonts[name] = res
 			return
 		end
-		print(meta, err, options.path)
+		if surface.debug then
+			logf("%s failed to load font %s: %s\n", font_loader.Name, name, res)
+		end
 	end
 	
 	surface.fonts[name] = "default"
 end
 
+function surface.RegisterFontLoader(tbl)		
+	surface.font_loaders[tbl.Name] = metatable.CreateTemplate("surface_font_" .. tbl.Name, tbl)
+end
+
 local font = "default"
 
 function surface.SetFont(name)
-	if not surface.fonts[name] then return end
+	if not surface.fonts[name] then 
+		return 
+	end
 	font = name
 end
 
@@ -89,10 +109,12 @@ function surface.DrawText(str, x, y)
 	
 	X, Y = font:DrawString(str, x, y)
 end
+
 function surface.SetTextPos(x, y)
 	X = x or X
 	Y = y or Y
 end
+
 function surface.GetTextSize(str)
 	local font = surface.fonts[font]
 	
@@ -104,21 +126,12 @@ function surface.GetTextSize(str)
 	
 	return font:GetTextSize(str)
 end
-function surface.SetTextScale() end
 
+function surface.SetTextScale() 
 
-function surface.InitializeFonts()
-	surface.fonts["default"] = surface.CreateFont("default", {path = "fonts/unifont.ttf"})
-	
-	initted = true
-	
-	for k,v in pairs(queue) do
-		surface.CreateFont(unpack(v))
-	end
 end
 
-include("angelfont.lua", surface)
-include("freetype.lua", surface)
+include("font_loaders/*", surface)
 
 if RELOAD then
 	surface.InitializeFonts()
