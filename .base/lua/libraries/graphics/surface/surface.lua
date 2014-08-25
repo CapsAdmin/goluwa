@@ -246,51 +246,66 @@ do
 		end		
 	end
 
-	function surface.SetRectUV(x,y, w,h, sx,sy)
-		if not x then
-			surface.rect_mesh.vertices[0].uv.A = 0
-			surface.rect_mesh.vertices[0].uv.B = 1
+	do
+		local X, Y, W, H, SX, SY
+		
+		function surface.SetRectUV(x,y, w,h, sx,sy)
+			if not x then
+				surface.rect_mesh.vertices[0].uv.A = 0
+				surface.rect_mesh.vertices[0].uv.B = 1
+				
+				surface.rect_mesh.vertices[1].uv.A = 0
+				surface.rect_mesh.vertices[1].uv.B = 0
+				
+				surface.rect_mesh.vertices[2].uv.A = 1
+				surface.rect_mesh.vertices[2].uv.B = 0
+				
+				--
+				
+				surface.rect_mesh.vertices[3].uv = surface.rect_mesh.vertices[2].uv
+				
+				surface.rect_mesh.vertices[4].uv.A = 1
+				surface.rect_mesh.vertices[4].uv.B = 1
+				
+				surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[0].uv	
+			else			
+				sx = sx or 1
+				sy = sy or 1
+				
+				y = -y - h
+				
+				surface.rect_mesh.vertices[0].uv.A = x / sx
+				surface.rect_mesh.vertices[0].uv.B = (y + h) / sy
+				
+				surface.rect_mesh.vertices[1].uv.A = x / sx
+				surface.rect_mesh.vertices[1].uv.B = y / sy
+				
+				surface.rect_mesh.vertices[2].uv.A = (x + w) / sx
+				surface.rect_mesh.vertices[2].uv.B = y / sy
+				
+				--
+				
+				surface.rect_mesh.vertices[3].uv = surface.rect_mesh.vertices[2].uv
+				
+				surface.rect_mesh.vertices[4].uv.A = (x + w) / sx
+				surface.rect_mesh.vertices[4].uv.B = (y + h) / sy
+				
+				surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[0].uv	
+			end
 			
-			surface.rect_mesh.vertices[1].uv.A = 0
-			surface.rect_mesh.vertices[1].uv.B = 0
+			update_vbo()
 			
-			surface.rect_mesh.vertices[2].uv.A = 1
-			surface.rect_mesh.vertices[2].uv.B = 0
-			
-			--
-			
-			surface.rect_mesh.vertices[3].uv = surface.rect_mesh.vertices[2].uv
-			
-			surface.rect_mesh.vertices[4].uv.A = 1
-			surface.rect_mesh.vertices[4].uv.B = 1
-			
-			surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[0].uv	
-		else			
-			sx = sx or 1
-			sy = sy or 1
-			
-			y = -y - h
-			
-			surface.rect_mesh.vertices[0].uv.A = x / sx
-			surface.rect_mesh.vertices[0].uv.B = (y + h) / sy
-			
-			surface.rect_mesh.vertices[1].uv.A = x / sx
-			surface.rect_mesh.vertices[1].uv.B = y / sy
-			
-			surface.rect_mesh.vertices[2].uv.A = (x + w) / sx
-			surface.rect_mesh.vertices[2].uv.B = y / sy
-			
-			--
-			
-			surface.rect_mesh.vertices[3].uv = surface.rect_mesh.vertices[2].uv
-			
-			surface.rect_mesh.vertices[4].uv.A = (x + w) / sx
-			surface.rect_mesh.vertices[4].uv.B = (y + h) / sy
-			
-			surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[0].uv	
+			X = x
+			Y = y
+			W = w
+			H = h
+			SX = sx
+			SY = sy
 		end
 		
-		update_vbo()
+		function surface.GetRectUV()
+			return X, Y, W, H, SX, SY
+		end
 	end
 
 	local white_t = {1,1,1,1}
