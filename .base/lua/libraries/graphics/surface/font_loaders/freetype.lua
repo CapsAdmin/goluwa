@@ -1,20 +1,19 @@
-include("../packing.lua")
-local freetype = require("lj-freetype")
 local surface = _G.surface or ...
-local ft = _G.freetype or {}
-ft.loaded = ft.loaded or {}
 
-local META = metatable.CreateTemplate("font_face")
+local freetype = require("lj-freetype")
 
-function ft.Init()
-	if not ft.lib then
+local META = {}
+
+META.Name = "freetype"
+
+function META.LoadFont(name, options, callback)	
+
+	if not surface.freetype_lib then
 		local lib = ffi.new("FT_Library[1]")
 		freetype.InitFreeType(lib)
-		ft.lib = lib
+		surface.freetype_lib = lib
 	end
-end
 
-function ft.AttemptLoad(name, options, callback)	
 	local self = META:New({
 		path = options.path,
 		options = options,
@@ -35,8 +34,6 @@ function ft.AttemptLoad(name, options, callback)
 	
 	return self
 end
-
-surface.AddFontLoader(ft)
 
 function META:OnRemove()
 	self.state = "disposed"
@@ -108,6 +105,7 @@ function META:LoadGlyph(codepoint, build_texture)
 	
 	if not build_texture then self:build_textures() end
 end
+
 function META:build_textures()
 	table.sort(self.dirty_chars, function(a, b)
 		return (a.w * a.h) > (b.w * b.h)
@@ -153,9 +151,10 @@ function META:LoadGlyphs(codeStart, codeEnd)
 	end
 	self:build_textures()
 end
+
 function META:Init()
 	local face = ffi.gc(ffi.new'FT_Face[1]', print)
-	if freetype.NewMemoryFace(ft.lib[0], self.font, #self.font, 0, face) == 0 then
+	if freetype.NewMemoryFace(surface.freetype_lib[0], self.font, #self.font, 0, face) == 0 then
 		self.face_ref = face
 		face = face[0]
 		self.face = face
@@ -248,6 +247,7 @@ function META:DrawString(str, x, y)
 	end
 	return X, Y
 end
+
 function META:GetTextSize(str)
 	if self.state ~= 'loaded' then return 0, 0 end
 	local X, Y = 0, self.options.size
@@ -265,22 +265,5 @@ function META:GetTextSize(str)
 	end
 	return X, Y
 end
-ft.Init()
 
-_G.freetype = ft
-
---[=[event.Delay(1, function()
-
-local font = freetype.CreateFont("freetype/unifont.ttf", {size=32})
-local test = render.CreateTexture(32,32):Fill(function(x,y)return x%32>=16 and 255 or 0,y%32>=16 and 255 or 0,0,255 end)
-
-event.AddListener("Draw2D", "tests", function()
-	surface.SetColor(1,1,1,1)
-	surface.SetRectUV()
-	surface.SetTexture(font.pages[1].texture)
-	surface.DrawRect(0, 64, 256, 256)
-	
-	font:DrawString([[CapsAdminはとてもカワイイです！]],0,0)
-end, {priority=-math.huge})
-
-end)]=]
+surface.RegisterFontLoader(META)
