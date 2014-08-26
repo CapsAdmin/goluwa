@@ -28,11 +28,11 @@ elseif map == "ep2" then
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "ep2/ep2_pak_dir.vpk")
-	buffer = Buffer(vfs.GetFile("maps/ep2_outland_06a.bsp", "rb"))
+	buffer = vfs.Open("maps/ep2_outland_06a.bsp")
 elseif map == "l4d2" then
 	vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "left4dead2/")
 	vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "left4dead2/pak01_dir.vpk")
-	buffer = Buffer(vfs.GetFile("maps/c3m1_plankcountry.bsp", "rb"))
+	buffer = vfs.Open("maps/c3m1_plankcountry.bsp")
 end
 
 local header = buffer:ReadStructure(vtf_header_structure)

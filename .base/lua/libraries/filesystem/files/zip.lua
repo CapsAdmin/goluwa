@@ -1,5 +1,5 @@
 do return end
-local vfs2 = (...) or _G.vfs2
+local vfs = (...) or _G.vfs
 
 local zip2 = require("zip") -- GRRRR
 local zip = require("minizip")
@@ -216,4 +216,4 @@ else
 	end
 end
 
-vfs2.RegisterFileSystem(CONTEXT) 
+vfs.RegisterFileSystem(CONTEXT) 

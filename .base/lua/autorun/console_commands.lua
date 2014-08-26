@@ -259,11 +259,11 @@ console.AddCommand("open", function(line)
 	
 	for i, try in pairs(tries) do
 		local path = try:gsub("?", line)
-		if vfs.Exists(path) then
+		if vfs.IsFile(path) then
 			include(path)
 			return
 		end
-		if vfs.Exists("lua/" .. path) then
+		if vfs.IsFile("lua/" .. path) then
 			include(path)
 			return
 		end

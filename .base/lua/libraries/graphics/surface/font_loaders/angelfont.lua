@@ -6,7 +6,7 @@ META.Name = "angelfont"
 
 function META.LoadFont(name, options, callback)
 	local self = META:New({
-		buffer = Buffer(assert(vfs.GetFile(options.path .. "/" .. (options.path:match(".+/(.+)") or options.path) .. ".fnt", "rb"))), 
+		buffer = assert(vfs.Open(options.path .. "/" .. (options.path:match(".+/(.+)") or options.path) .. ".fnt")), 
 		dir = options.path .. "/", 
 		chars = {},
 		options = options,

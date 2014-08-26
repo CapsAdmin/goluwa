@@ -1,10 +1,10 @@
-local vfs2 = (...) or _G.vfs2
+local vfs = (...) or _G.vfs
 
 local queue = {}
 
-vfs2.async_readers = {
+vfs.async_readers = {
 	file = function(path, mbps, context)
-		local file = vfs2.Open(path, "read")
+		local file = vfs.Open(path)
 		if file then
 			local content = {}
 			mbps = mbps / 2
@@ -29,17 +29,21 @@ vfs2.async_readers = {
 		if context:find("font") and not path:find("%p") then			
 			local cache_path = "fonts/" .. path .. ".woff"
 			
-			if vfs2.Exists(cache_path) then
-				return vfs2.ReadAsync(cache_path, queue[path].callback, mbps, context, "file")
+			if vfs.Exists(cache_path) then
+				return vfs.ReadAsync(cache_path, queue[path].callback, mbps, context, "file")
 			else
 				if sockets.Download("http://fonts.googleapis.com/css?family=" .. path:gsub("%s", "+"), 
 					function(data)
 						local url = data:match("url%((.-)%)")
-						local format = data:match("format%('(.-)'%)")
-						sockets.Download(url, function(data) 
-							vfs2.Write("fonts/" .. path .. "." .. format, data, "b")				
-							queue[path].callback(data)
-						end)
+						if url then
+							local format = data:match("format%('(.-)'%)")
+							sockets.Download(url, function(data) 
+								vfs.Write("fonts/" .. path .. "." .. format, data, "b")				
+								queue[path].callback(data)
+							end)
+						else
+							logf("[vfs] unable to find url for %s from google web fonts\n", path)
+						end
 					end)
 				then
 					return true
@@ -48,12 +52,23 @@ vfs2.async_readers = {
 		end
 		
 		local ext = path:match(".+(%.%a+)") or ".dat"
-		local cache_path = "download_cache/" .. crypto.CRC32(path) .. ext
-		if vfs2.IsFile(cache_path) then
-			return vfs2.ReadAsync(cache_path, queue[path].callback, mbps, context, "file")
+		local cache_path
+	
+		-- if it's a path like
+		-- http://sounds.msgpluslive.net/esnd/snd/random?catId=5&lngId=3
+		-- we skip caching
+		-- (FIX ME??)
+		if not path:find("?", nil, true) then
+			cache_path = "download_cache/" .. crypto.CRC32(path) .. ext
+		end
+		
+		if cache_path and vfs.Exists(cache_path) then
+			return vfs.ReadAsync(cache_path, queue[path].callback, mbps, context, "file")
 		else
-			if sockets.Download(path, function(data) 
-					vfs2.Write(cache_path, data, "b")			
+			if sockets.Download(path, function(data)
+					if cache_path then
+						vfs.Write(cache_path, data, "b")			
+					end
 					queue[path].callback(data)
 				end) 
 			then
@@ -64,15 +79,16 @@ vfs2.async_readers = {
 }
 
 local cache = {}
+local last_reported_size = 0
 	
-function vfs2.ReadAsync(path, callback, mbps, context, reader)
+function vfs.ReadAsync(path, callback, mbps, context, reader, dont_cache)
 	check(path, "string")
 	check(callback, "function")
 	check(mbps, "nil", "number")
 	mbps = mbps or 1
 	
-	if vfs2.debug then
-		logf("[VFS] vfs2.ReadAsync(%q)\n", path)
+	if vfs.debug then
+		logf("[VFS] vfs.ReadAsync(%q)\n", path)
 	end
 	
 	if cache[path] then
@@ -88,16 +104,27 @@ function vfs2.ReadAsync(path, callback, mbps, context, reader)
 			old(data)
 			queue[path] = nil
 		end
-		return
+		return true
 	end
 			
 	queue[path] = {callback = function(data)
 		cache[path] = data
 		callback(data)
 		queue[path] = nil
+		
+		if vfs.debug then
+			logf("[VFS] done loading resource %s\n", path)
+		
+			local size = 0
+			for k, v in pairs(cache) do	size = size + #v end
+			if last_reported_size ~= size then
+				logn("[vfs] async read cache size: ", utilities.FormatFileSize(size))
+				last_reported_size = size
+			end
+		end
 	end}
 				
-	for name, func in pairs(vfs2.async_readers) do
+	for name, func in pairs(vfs.async_readers) do
 		if (not reader or reader == name) and func(path, mbps, context or "none") then
 			return true
 		end
@@ -106,4 +133,8 @@ function vfs2.ReadAsync(path, callback, mbps, context, reader)
 	queue[path] = nil
 	
 	return false
+end
+
+function vfs.UncacheAsync(path)
+	cache[path] = nil
 end

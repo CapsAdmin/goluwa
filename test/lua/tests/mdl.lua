@@ -195,11 +195,10 @@ vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
 vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk")
 
 local function load_mdl(path)
-	local buffer = Buffer(vfs.GetFile(path .. ".mdl", "rb"))
+	local buffer = vfs.Open(path .. ".mdl")
 
 	local header = buffer:ReadStructure(header)
 	header.name = "models/" .. header.name:removepadding():gsub("\\", "/")
-
 
 	local function parse(name, callback)
 		local out = {}
@@ -239,7 +238,7 @@ local function load_mdl(path)
 				data.path = ""
 			end			
 			
-			if not vfs.Exists(data.path) then
+			if not vfs.IsFile(data.path) then
 				return false
 			end
 		end
@@ -247,8 +246,7 @@ local function load_mdl(path)
 		data.flags = buffer:ReadInt()
 		
 		buffer:Advance(14 * 4)
-			
-		data.vmt = steam.VDFToTable(vfs.Read(data.path), true)
+		data.vmt = steam.VDFToTable(assert(vfs.Read(data.path)), true)
 	end)
 
 	parse("bone", function(data, i)
@@ -435,7 +433,7 @@ local header = [[
 ]]
 
 local function load_vtx(path)
-	local buffer = Buffer(vfs.GetFile(path .. ".sw.vtx", "rb"))
+	local buffer = vfs.Open(path .. ".sw.vtx")
 	local header = buffer:ReadStructure(header)
 	
 	local base = header.bodypart_offset
@@ -612,7 +610,7 @@ local header=[[
 ]]
 
 local function load_vvd(path, mdl, vtx)
-	local buffer = Buffer(vfs.GetFile(path .. ".vvd", "rb"))
+	local buffer = vfs.Open(path .. ".vvd")
 	local header = buffer:ReadStructure(header)
 	
 	do -- fixups

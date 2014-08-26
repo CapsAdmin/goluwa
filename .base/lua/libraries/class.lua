@@ -1,7 +1,7 @@
 local printf = function(fmt, ...) logn(string.format(fmt, ...)) end
 local class = _G.class or {}
 
-class.Registered = {}
+class.Registered = class.Registered or {}
 
 local function checkfield(tbl, key, def)
     tbl[key] = tbl[key] or def

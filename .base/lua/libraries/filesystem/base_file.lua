@@ -1,84 +1,139 @@
-local vfs2 = (...) or _G.vfs2
+local vfs = (...) or _G.vfs
 
-local META = {}
+local CONTEXT = {}
 
-META.Name = "base"
+CONTEXT.Name = "base"
 
-class.GetSet(META, "Mode", "read")
+class.GetSet(CONTEXT, "Mode", "read")
 
-function META:PCall(name, ...)
+function CONTEXT:PCall(name, ...)
 	local ok, var = pcall(self[name], self, ...)
 	
-	if vfs2.debug and not ok then
-		vfs2.DebugPrint("%s: error calling %s: %s", self.Name or "", name, var)
+	if vfs.debug and not ok then
+		vfs.DebugPrint("%s: error calling %s: %s", self.Name or "", name, var)
 		return false
 	end
 	
 	if ok then
 		return var
 	end
+	
+	return false
 end
 
-function META:Write(str)
+function CONTEXT:Write(str)
 	return self:WriteBytes(str)
 end
 
-function META:Read(bytes)
+function CONTEXT:Read(bytes)
 	return self:ReadBytes(bytes)
 end
 
-function META:GetFiles()
-	error("not implemented")
+function CONTEXT:Lines()
+	local temp = {}
+	return function()
+		while not self:TheEnd() do 
+			local char = self:ReadChar()
+			
+			if char == "\n" then
+				local str = table.concat(temp)
+				table.clear(temp)
+				return str
+			else
+				table.insert(temp, char)
+			end
+		end
+	end
 end
 
-function META:IsFile()
-	error("not implemented")
+function CONTEXT:PeakByte(bytes)
+	return self:ReadByte(), self:SetPos( self:GetPos() - 1 )
 end
 
-function META:IsFolder()
-	error("not implemented")
+function CONTEXT:ReadByte()
+	local str = self:ReadBytes(1)
+	if str then
+		return str:byte()
+	end
 end
 
-function META:CreateFolder()
-	error("not implemented")
+function CONTEXT:WriteByte(byte)
+	self:WriteBytes(string.char(byte))
 end
 
-function META:Open(path, mode, ...)
-	error("not implemented")
+do -- push pop position
+	function CONTEXT:PushPos(pos)
+		self.stack = self.stack or {}
+		
+		table.insert(self.stack, self:GetPos())
+		
+		self:SetPos(pos)
+	end
+	
+	function CONTEXT:PopPos()
+		self:SetPos(table.remove(self.stack))
+	end
 end
 
-function META:SetPos(pos)
-	error("not implemented")
+function CONTEXT:TheEnd()
+	return self:GetPos() >= self:GetSize()
 end
 
-function META:GetPos()
-	error("not implemented")
+function CONTEXT:Advance(i)
+	i = i or 1
+	self:SetPos(self:GetPos() + i) 
 end
 
-function META:Close()
-	error("not implemented")
+CONTEXT.__len = CONTEXT.GetSize
+
+function CONTEXT:GetDebugString()
+	return self:GetString():readablehex()
 end
 
-function META:GetSize()
-	error("not implemented")
+function CONTEXT:GetFiles()
+	error(self.Name .. ": not implemented")
 end
 
-function META:GetLastModified()
-	error("not implemented")
+function CONTEXT:IsFile()
+	error(self.Name .. ": not implemented")
 end
 
-function META:GetLastAccessed()
-	error("not implemented")
+function CONTEXT:IsFolder()
+	error(self.Name .. ": not implemented")
 end
 
-function META:WriteByte(byte)
-	error("not implemented")
+function CONTEXT:CreateFolder()
+	error(self.Name .. ": not implemented")
 end
 
-function META:ReadByte()
-	error("not implemented")
+function CONTEXT:Open(path, mode, ...)
+	error(self.Name .. ": not implemented")
 end
 
-metatable.AddBufferTemplate(META)
+function CONTEXT:SetPos(pos)
+	error(self.Name .. ": not implemented")
+end
 
-vfs2.RegisterFileSystem(META)
+function CONTEXT:GetPos()
+	error(self.Name .. ": not implemented")
+end
+
+function CONTEXT:Close()
+	error(self.Name .. ": not implemented")
+end
+
+function CONTEXT:GetSize()
+	error(self.Name .. ": not implemented")
+end
+
+function CONTEXT:GetLastModified()
+	error(self.Name .. ": not implemented")
+end
+
+function CONTEXT:GetLastAccessed()
+	error(self.Name .. ": not implemented")
+end
+
+metatable.AddBufferTemplate(CONTEXT)
+
+class.Register(CONTEXT, "file_system", CONTEXT.Name)
