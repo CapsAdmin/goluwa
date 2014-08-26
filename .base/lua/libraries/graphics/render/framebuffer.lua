@@ -37,10 +37,6 @@ do
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
 		current = id
 	end
-	
-	function META:Bind()
-		debug.trace()
-	end
 end
 
 function META:SetDrawBuffers(...)	
@@ -240,7 +236,6 @@ function render.CreateFrameBuffer(width, height, format)
 	
 	self:End()
 	self.building = nil	
-	
 		
 	render.framebuffers[id] = self
 	

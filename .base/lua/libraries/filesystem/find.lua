@@ -99,7 +99,7 @@ do
 				table.insert(out, path .. v)
 			end
 			
-			if vfs.GetAttributes(path .. v).mode == "directory" then
+			if vfs.IsFolder(path .. v) then
 				search(path .. v .. "/", ext, callback)
 			end
 		end

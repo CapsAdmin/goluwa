@@ -256,7 +256,7 @@ chatsounds.Modifiers = {
 				time = tonumber(time .. "." .. um)
 			end
 
-			self.duration = time
+			self.duration = time or self.duration
 		end,
 	},
 	pitch = {
@@ -1345,6 +1345,17 @@ function chatsounds.Say(client, str, seed)
 		end
 		return
 	end
+	
+	str = str:gsub("<rep=(%d+)>(.-)</rep>", function(count, str) 
+		count = math.min(math.max(tonumber(count), 1), 500)
+		
+		if #str:rep(count):gsub("<(.-)=(.-)>", ""):gsub("</(.-)>", ""):gsub("%^%d","") > 500 then 
+			return "rep limit reached" 
+		end
+		
+		return str:rep(count)
+	end)
+	
 
 	if seed then math.randomseed(seed) end
 

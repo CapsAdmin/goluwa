@@ -12,8 +12,6 @@ include("../packed_rectangle.lua")
 
 local surface = (...) or _G.surface
 
-surface.debug = true
-
 surface.fonts = surface.fonts or {}
 surface.font_loaders = surface.font_loaders or {}
 surface.font_dpi = 72
@@ -42,10 +40,16 @@ function surface.CreateFont(name, options, callback)
 	options = options or {}
 	options.path = options.path or "fonts/unifont.ttf"
 	options.size = options.size or 14
+	
+	if options.monospace and not options.spacing then
+		options.spacing = options.size
+	end
+	
+	options.spacing = options.spacing or 1
 			
 	surface.fonts[name] = "loading"
 	
-	for _, font_loader in pairs(surface.font_loaders) do		
+	for loader_name, font_loader in pairs(surface.font_loaders) do		
 		local ok, res = pcall(font_loader.LoadFont, name, options, function(...)
 			event.Call("FontChanged", name, options)
 			if callback then
@@ -53,6 +57,9 @@ function surface.CreateFont(name, options, callback)
 			end
 		end)
 		if ok then
+			res.font_options = options
+			res.font_loader = loader_name
+			res.font_name = name
 			surface.fonts[name] = res
 			return
 		end
@@ -64,8 +71,13 @@ function surface.CreateFont(name, options, callback)
 	surface.fonts[name] = "default"
 end
 
-function surface.RegisterFontLoader(tbl)		
+function surface.RegisterFontLoader(tbl)
 	surface.font_loaders[tbl.Name] = metatable.CreateTemplate("surface_font_" .. tbl.Name, tbl)
+	for k, v in pairs(surface.fonts) do
+		if v.font_loader == tbl.Name then
+			surface.CreateFont(v.font_name, v.font_options)
+		end
+	end
 end
 
 local font = "default"
@@ -157,8 +169,51 @@ do
 	end
 end
 
-function surface.SetTextScale() 
+function surface.WrapString(str, max_width)
+	if not max_width or max_width == 0 then
+		return str:explode("")
+	end
+	
+	local lines = {}
+	
+	local last_pos = 0
+	local line_width = 0
+	local found = false
 
+	local space_pos
+
+	for pos, char in pairs(str:utotable()) do
+		local w, h = surface.GetTextSize(char)
+
+		if char:find("%s") then
+			space_pos = pos
+		end
+
+		if line_width + w >= max_width then
+
+			if space_pos then
+				lines[#lines+1] = str:usub(last_pos+1, space_pos)
+				last_pos = space_pos
+			else
+				lines[#lines+1] = str:usub(last_pos+1, pos)
+				last_pos = pos
+			end
+
+			line_width = 0
+			found = true
+			space_pos = nil
+		else
+			line_width = line_width + w
+		end
+	end
+
+	if found then
+		lines[#lines+1] = str:usub(last_pos+1, pos)
+	else
+		lines[#lines+1] = str
+	end
+
+	return lines
 end
 
 include("font_loaders/*", surface)
