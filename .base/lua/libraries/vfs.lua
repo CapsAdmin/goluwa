@@ -752,11 +752,15 @@ do -- async reading
 					if sockets.Download("http://fonts.googleapis.com/css?family=" .. path:gsub("%s", "+"), 
 						function(data)
 							local url = data:match("url%((.-)%)")
-							local format = data:match("format%('(.-)'%)")
-							sockets.Download(url, function(data) 
-								vfs.Write("fonts/" .. path .. "." .. format, data, "b")				
-								queue[path].callback(data)
-							end)
+							if url then
+								local format = data:match("format%('(.-)'%)")
+								sockets.Download(url, function(data) 
+									vfs.Write("fonts/" .. path .. "." .. format, data, "b")				
+									queue[path].callback(data)
+								end)
+							else
+								logf("[vfs] unable to find url for %s from google web fonts\n", path)
+							end
 						end)
 					then
 						return true
