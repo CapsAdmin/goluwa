@@ -142,16 +142,41 @@ do -- file system
 	lfs.mkdir(e.ROOT_FOLDER .. ".userdata/")
 	lfs.mkdir(e.USERDATA_FOLDER)
 
-	-- this is ugly but it's because we haven't included the global extensions yet..
-	_G.check = function() end
-	
-	vfs = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/vfs.lua")
+	do -- this is ugly but it's because we haven't included the global extensions yet..
+		_G.check = function() end
+		
+		include = function() end
+		
+		ffi = require("ffi")
+		
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/globals.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/string.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/table.lua")
+		class = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/class.lua")
+		metatable = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/metatable.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/templates/buffer.lua")
+		
+		vfs = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/vfs.lua")
+		
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/path_utilities.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/base_file.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/find.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/helpers.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/async.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/lua_utilities.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/addons.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/monitoring.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/files/os.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/files/vpk.lua")
+
+		vfs.IsDir = vfs.IsFolder
+	end
 	
 	-- mount the /userdata/*username*/ folder
-	vfs.Mount(e.USERDATA_FOLDER)
+	vfs.MountAddon(e.USERDATA_FOLDER)
 	
 	-- mount the /.base folder
-	vfs.Mount(e.BASE_FOLDER)
+	vfs.MountAddon(e.BASE_FOLDER)
 	
 	-- a nice global for loading resources externally from current dir
 	-- 
@@ -163,6 +188,7 @@ do -- file system
 	-- replace require with the pure lua version (lua/procure/init.lua)
 	-- this is needed for the file system
 	_G.require = require("procure")
+	
 end
 
 do -- logging	
@@ -335,7 +361,7 @@ logf("launched on %s by %s as %s\n", os.date(), e.USERNAME, CLIENT and "client" 
 
 do -- ffi
 	_G.ffi = require("ffiex")
-	
+
 	_OLD_G.ffi_load = _OLD_G.ffi_load or ffi.load
 	
 	local ffi_new = ffi.new
@@ -454,11 +480,11 @@ do -- include
 			if previous_dir then
 				dir = previous_dir .. dir
 			end
-			
+						
 			if not vfs.IsDir(dir) then
 				dir = "lua/" .. dir
 			end
-			
+
 			if not vfs.IsDir(dir) then
 				dir = "lua/" .. original_dir
 			end
@@ -591,10 +617,9 @@ do -- libraries
 	utf8 = include("libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 	event = include("libraries/event.lua") goluwa = event.events -- event handler
 	utilities = include("libraries/utilities/utilities.lua") -- more like i-dont-know-where-these-functions-go
-	addons = include("libraries/addons.lua") -- addons are folders in root of goluwa
 	class = include("libraries/class.lua") -- used by gui panels and entities
 	crypto = include("libraries/crypto.lua")
-	
+
 	-- serializing
 	serializer = include("libraries/serializing/serializer.lua")
 
@@ -611,10 +636,11 @@ do -- libraries
 	-- meta
 	include("libraries/extensions/function.lua")
 	include("libraries/null.lua")
-
+	
 	if CLIENT then
 		-- graphics
 		render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
+
 		surface = include("libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
 		window = include("libraries/graphics/window.lua") -- high level window implementation
 		video = include("libraries/graphics/video.lua") -- gif support (for now)
@@ -624,7 +650,7 @@ do -- libraries
 		audio = include("libraries/audio/audio.lua") -- high level implementation of OpenAl
 		chatsounds = include("libraries/audio/chatsounds.lua")
 	end
-		
+
 	-- network
 	sockets = include("libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
 	enet = include("libraries/network/enet.lua") -- low level udp library
@@ -641,9 +667,8 @@ do -- libraries
 	-- other
 	entities = include("libraries/entities/entities.lua") -- entity component system
 
-	include("libraries/extensions/vfs_vpk.lua") -- vpk support for _G.vfs
 	include("libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
-	
+
 	if CLIENT then
 		include("gui/init.lua")
 	end
@@ -664,27 +689,29 @@ end
 steamapi.Initialize()
 
 do -- addons
-	
 	-- tries to load all addons 
 	-- some might not load depending on its info.lua file.
 	-- for instance: "load = CAPSADMIN ~= nil," will make it load
 	-- only if the CAPSADMIN constant is not nil.
-	addons.LoadAll()
 
+	for folder in vfs.Iterate(e.ROOT_FOLDER, nil, true) do
+		vfs.MountAddon(folder .. "/")
+	end
+		
 	-- load everything in lua/autorun/*
-	addons.AutorunAll()
+	vfs.AutorunAddons()
 	
 	-- load everything in lua/autorun/*USERNAME*/*
-	addons.AutorunAll(e.USERNAME)
+	vfs.AutorunAddons(e.USERNAME)
 
 	if CLIENT then
 		-- load everything in lua/autorun/client/*
-		addons.AutorunAll("client")
+		vfs.AutorunAddons("client/")
 	end
 
 	if SERVER then
 		-- load everything in lua/autorun/server/*
-		addons.AutorunAll("server")
+		vfs.AutorunAddons("server/")
 	end
 
 	-- execute /.userdata/*USERNAME*/cfg/autoexec.lua

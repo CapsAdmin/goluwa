@@ -114,7 +114,7 @@ local function findchunk(name, find)
 		end
 	end
   end
-
+  
   for _, loader in ipairs(package.loaders) do
     local chunk, err, path = loader(name)
 	if not find or (path and path:lower():find(find:lower(), nil, true)) then

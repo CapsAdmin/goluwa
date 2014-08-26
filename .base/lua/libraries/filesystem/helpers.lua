@@ -1,8 +1,8 @@
-local vfs2 = (...) or _G.vfs2
+local vfs = (...) or _G.vfs
 
-function vfs2.Delete(path, ...)
+function vfs.Delete(path, ...)
 	check(path, "string")
-	local abs_path = vfs2.GetAbsolutePath(path, ...)
+	local abs_path = vfs.GetAbsolutePath(path, ...)
 	
 	if abs_path then
 		local ok, err = os.remove(abs_path)
@@ -19,10 +19,10 @@ function vfs2.Delete(path, ...)
 	return false, "No such file or directory"
 end
 
-function vfs2.Read(path)
+function vfs.Read(path)
 	check(path, "string")
 	
-	local file, err = vfs2.Open(path, "read")
+	local file, err = vfs.Open(path, "read")
 	
 	if file then			
 		local data = file:ReadAll("*all")
@@ -35,10 +35,10 @@ function vfs2.Read(path)
 	return file, err
 end
 
-function vfs2.Write(path, data)
+function vfs.Write(path, data)
 	check(path, "string")
 	
-	local file, err = vfs2.Open(path, "write")
+	local file, err = vfs.Open(path, "write")
 	
 	if file then			
 		local data = file:WriteBytes(data)
@@ -51,18 +51,18 @@ function vfs2.Write(path, data)
 	return file, err
 end
 
-function vfs2.CreateFolder(path)
+function vfs.CreateFolder(path)
 	check(path, "string")
 	check_write_path(path, true)
 	
-	for i, data in ipairs(vfs2.TranslatePath(path, true)) do	
+	for i, data in ipairs(vfs.TranslatePath(path, true)) do	
 		data.context:PCall("CreateFolder", data.path_info)
 	end
 end
 
-function vfs2.IsFolder(path)
-	for i, data in ipairs(vfs2.TranslatePath(path, true)) do	
-		if data.context:PCall("IsFolder", vfs2.GetPathInfo(path, true)) then
+function vfs.IsFolder(path)
+	for i, data in ipairs(vfs.TranslatePath(path, true)) do
+		if data.context:PCall("IsFolder", data.path_info) then
 			return true
 		end
 	end
@@ -70,9 +70,9 @@ function vfs2.IsFolder(path)
 	return false
 end
 
-function vfs2.IsFile(path)
-	for i, data in ipairs(vfs2.TranslatePath(path)) do	
-		if data.context:PCall("IsFile", vfs2.GetPathInfo(path)) then
+function vfs.IsFile(path)
+	for i, data in ipairs(vfs.TranslatePath(path)) do	
+		if data.context:PCall("IsFile", data.path_info) then
 			return true
 		end
 	end
@@ -80,6 +80,6 @@ function vfs2.IsFile(path)
 	return false
 end
 
-function vfs2.Exists(path)
-	return vfs2.IsFolder(path) or vfs2.IsFile(path)
+function vfs.Exists(path)
+	return vfs.IsFolder(path) or vfs.IsFile(path)
 end

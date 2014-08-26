@@ -1,21 +1,21 @@
-local vfs2 = (...) or _G.vfs2
+local vfs = (...) or _G.vfs
 local lfs = require("lfs")
 
-if vfs2.use_appdata then
+if vfs.use_appdata then
 	if WINDOWS then
-		vfs2.SetEnv("DATA", "os:%%APPDATA%%/.goluwa")
+		vfs.SetEnv("DATA", "os:%%APPDATA%%/.goluwa")
 	end
 
 	if LINUX then
-		vfs2.SetEnv("DATA", "os:%%HOME%%/.goluwa")
+		vfs.SetEnv("DATA", "os:%%HOME%%/.goluwa")
 	end 
 else
-	vfs2.SetEnv("DATA", "os:" .. e.USERDATA_FOLDER)
+	vfs.SetEnv("DATA", "os:" .. e.USERDATA_FOLDER)
 end
 
-vfs2.SetEnv("ROOT", "os:" .. e.ROOT_FOLDER)
-vfs2.SetEnv("BASE", "os:" .. e.BASE_FOLDER)
-vfs2.SetEnv("BIN", function() return "os:" .. lfs.currentdir() end)
+vfs.SetEnv("ROOT", "os:" .. e.ROOT_FOLDER)
+vfs.SetEnv("BASE", "os:" .. e.BASE_FOLDER)
+vfs.SetEnv("BIN", function() return "os:" .. lfs.currentdir() end)
 
 local CONTEXT = {}
 
@@ -101,4 +101,4 @@ function CONTEXT:GetLastAccessed()
 	return lfs.attributes(self.path).access
 end
 
-vfs2.RegisterFileSystem(CONTEXT)
+vfs.RegisterFileSystem(CONTEXT)

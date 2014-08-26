@@ -171,11 +171,7 @@ function metatable.AddBufferTemplate(META)
 			end
 			return table.concat(out)
 		end
-		
-		function META:PeakByte(bytes)
-			return self:ReadByte(), self:SetPos( self:GetPos() - 1 )
-		end
-		
+				
 		-- null terminated string
 		function META:WriteString(str)	
 			self:WriteBytes(str)

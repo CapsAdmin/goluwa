@@ -51,8 +51,8 @@ function lovemu.CheckSupported(demo)
 	local supported = {}
 	
 	for path in vfs.Iterate("lua/lovemu/love/", nil, true) do
-		local file = vfs.GetFile(path)
-		for line in file:lines() do
+		local file = vfs.Open(path)
+		for line in file:Lines() do
 			local name = line:match("(love%..-)%b()")
 			if name then
 				local partial = line:match("--partial(.+)\n", nil, true)
@@ -75,8 +75,8 @@ function lovemu.CheckSupported(demo)
 	local found = {}
 	
 	for _, path in pairs(vfs.Search("lovers/" .. demo .. "/", "lua")) do
-		local file = vfs.GetFile(path)
-		for line in file:lines() do
+		local file = vfs.Open(path)
+		for line in file:Lines() do
 			local name = line:match("(love%.[_%a]-%.[_%a]-)[^_%a]")
 			if name then
 				found[name] = true

@@ -1,4 +1,4 @@
-local vfs2 = (...) or _G.vfs2
+local vfs = (...) or _G.vfs
 
 local header = [[
 	long signature = 0x55aa1234;
@@ -209,7 +209,7 @@ function CONTEXT:ReadBytes(bytes)
 	self.position = math.clamp(self.position + bytes, 0, self.file_info.entry_length)
 	
 	if str ==  "" then 
-		content = nil 
+		str = nil 
 	end
 	
 	return str
@@ -231,4 +231,4 @@ function CONTEXT:GetSize()
 	return self.file_info.entry_length
 end
 
-vfs2.RegisterFileSystem(CONTEXT)
+vfs.RegisterFileSystem(CONTEXT)

@@ -1,10 +1,10 @@
-local vfs2 = (...) or _G.vfs2
+local vfs = (...) or _G.vfs
 
-vfs2.included_files = vfs2.included_files or {}
+vfs.included_files = vfs.included_files or {}
 
 local function store(path)
-	local path = vfs2.FixPath(path:lower())
-	vfs2.included_files[path] = lfs.attributes(path)
+	local path = vfs.FixPath(path:lower())
+	vfs.included_files[path] = lfs.attributes(path)
 end
 
 function loadfile(path, ...)		
@@ -17,15 +17,15 @@ function dofile(path, ...)
 	return _OLD_G.dofile(path, ...)
 end
 	
-function vfs2.GetLoadedLuaFiles()
-	return vfs2.included_files
+function vfs.GetLoadedLuaFiles()
+	return vfs.included_files
 end
 
-function vfs2.loadfile(path)
+function vfs.loadfile(path)
 	check(path, "string")
 	
-	local path = vfs2.GetAbsolutePath(path)
-	
+	local path = vfs.GetAbsolutePath(path)
+		
 	if path then
 		local ok, err = loadfile(path)
 		return ok, err, path
@@ -34,10 +34,10 @@ function vfs2.loadfile(path)
 	return false, "No such file or directory"
 end
 
-function vfs2.dofile(path, ...)
+function vfs.dofile(path, ...)
 	check(path, "string")
 	
-	local func, err = vfs2.loadfile(path)
+	local func, err = vfs.loadfile(path)
 	
 	if func then
 		local ok, err = xpcall(func, system.OnError, ...)
@@ -47,35 +47,40 @@ function vfs2.dofile(path, ...)
 	return func, err
 end
 
--- although vfs2 will add a loader for each mount, the module folder has to be an exception for modules only
+-- although vfs will add a loader for each mount, the module folder has to be an exception for modules only
 -- this loader should support more ways of loading than just adding ".lua"
-function vfs2.AddModuleDirectory(dir)
+function vfs.AddModuleDirectory(dir)
 	table.insert(package.loaders, function(path)
-		return vfs2.loadfile(dir .. path)
+		return vfs.loadfile(dir .. path)
 	end)
 	
 	table.insert(package.loaders, function(path)
-		return vfs2.loadfile(dir .. path .. ".lua")
+		return vfs.loadfile(dir .. path .. ".lua")
 	end)
 		
 	table.insert(package.loaders, function(path)
-		return vfs2.loadfile(dir .. path .. "/init.lua")
+		return vfs.loadfile(dir .. path .. "/init.lua")
 	end)
 	
 	-- again but with . replaced with /	
 	table.insert(package.loaders, function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs2.loadfile(dir .. path .. ".lua")
+		return vfs.loadfile(dir .. path .. ".lua")
 	end)
 		
 	table.insert(package.loaders, function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs2.loadfile(dir .. path .. "/init.lua")
+		return vfs.loadfile(dir .. path .. "/init.lua")
+	end)
+	
+	table.insert(package.loaders, function(path)
+		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
+		return vfs.loadfile(dir .. path .. "/" .. path ..  ".lua")
 	end)
 	
 	table.insert(package.loaders, function(path)
 		local c_name = "luaopen_" .. path:gsub("^.*%-", "", 1):gsub("%.", "_")
-		path = R(dir .. "bin/" .. ffi.os:lower() .. "/" .. ffi.arch:lower() .. "/" .. path .. (jit.os == "Windows" and ".dll" or ".so"))
+		path = R(dir .. "bin/" .. jit.os:lower() .. "/" .. jit.arch:lower() .. "/" .. path .. (jit.os == "Windows" and ".dll" or ".so"))
 		return package.loadlib(path, c_name)
 	end)
 end	

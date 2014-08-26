@@ -113,7 +113,7 @@ function surface.DrawText(str, x, y)
 			return
 		end
 		
-		X, Y = font:DrawString(str, x, y)
+		font:DrawString(str, x, y)
 	end
 	
 	surface.SetRectUV(ux,uy,uw,uh,usx,usy)
