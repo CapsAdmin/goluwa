@@ -56,13 +56,10 @@ function META:FindFreePage(w, h)
 		x, y = 0, 0
 		
 		found_page = { 
-			texture = render.CreateTexture(256, 256, nil, {mag_filter = "nearest"} --[[{
+			texture = render.CreateTexture(256, 256, nil, {
 				min_filter = "linear",
 				mag_filter = "linear",
-				internal_format = "r8",
-				upload_format = "alpha",
-				stride = 1,
-			}]]), 
+			}), 
 			chars = {}, 
 			packer = PackedRectangle(256, 256) 
 		}
@@ -85,7 +82,8 @@ function META:LoadGlyph(codepoint, build_texture)
 		--local page, x, y = self:FindFreePage(bitmap.width, bitmap.rows)
 		local char = {
 			char = utf8.char(codepoint),
-			w = tonumber(bitmap.width), h = tonumber(bitmap.rows),
+			w = tonumber(bitmap.width), 
+			h = tonumber(bitmap.rows),
 			pitch = tonumber(bitmap.pitch),
 			xAdvance = tonumber(glyph.advance.x) / surface.font_dpi,
 			yAdvance = tonumber(glyph.advance.y) / surface.font_dpi,
@@ -98,8 +96,7 @@ function META:LoadGlyph(codepoint, build_texture)
 		char.bitmap = copy
 		
 		table.insert(self.dirty_chars, char)
-	else
-		
+	else		
 		self.chars[utf8.char(codepoint)] = {invalid = true}
 	end
 	
@@ -131,25 +128,21 @@ function META:build_textures()
 			page.texture:Clear()
 			local buffer = ffi.new("unsigned int[256][256]")
 			
-			for k,char in pairs(page.chars) do
-				
+			for k,char in pairs(page.chars) do				
 				local bitmap = char.bitmap
-				--if not bitmap then table.print(char) end
 				for x = 0, char.w - 1 do
 					for y = 0, char.h - 1 do
 						buffer[255 - (y + char.y)][x + char.x] = bit.lshift(bitmap[x + y * char.pitch], 24) + 0xFFFFFF
 					end
 				end
-				--char.bitmap = nil
 			end
 			page.texture:Upload(buffer)
 			page.dirty = false
 		end
-		
 	end
 end
-function META:LoadGlyphs(codeStart, codeEnd)
-	for i = codeStart, codeEnd do
+function META:LoadGlyphs(code_start, code_end)
+	for i = code_start, code_end do
 		self:LoadGlyph(i, true)
 	end
 	self:build_textures()
@@ -163,8 +156,8 @@ function META:Init()
 		face = face[0]
 		self.face = face
 		freetype.SetCharSize(face, 0, self.options.size * surface.font_dpi, surface.font_dpi, surface.font_dpi)
-		self.lineHeight = face.height/surface.font_dpi
-		self.maxHeight = (face.ascender - face.descender)/surface.font_dpi
+		self.lineHeight = face.height / surface.font_dpi
+		self.maxHeight = (face.ascender - face.descender) / surface.font_dpi
 		self:LoadGlyphs(32, 128)
 		
 		self.state = "loaded"
@@ -173,7 +166,6 @@ function META:Init()
 		self.state = "error"
 	end
 end
-
 
 function META:DrawString(str, x, y)
 	if self.state ~= "loaded" or not str or not x or not y then return false end
@@ -204,8 +196,6 @@ function META:DrawString(str, x, y)
 	return X, Y
 end
 
-
-
 function META:DrawString(str, x, y)
 	
 	self.vertex_buffer = self.vertex_buffer or surface.CreatePoly(500)
@@ -228,22 +218,28 @@ function META:DrawString(str, x, y)
 				Y = Y + self.options.size
 			elseif char == "\t" then
 				X = X + self.options.size
-			elseif ch then
-			
-				if last_texture ~= ch.page.texture then
-					chars = {}
-					table.insert(data, {texture = ch.page.texture, chars = chars})
-					last_texture = ch.page.texture
+			else			
+				if not ch or not ch.invalid then
+					self:LoadGlyph(utf8.byte(char))
+					ch = self.chars[char]
 				end
-			
-				table.insert(chars, {
-					uv = {ch.x, ch.y, ch.w, ch.h, ch.page.texture.w, ch.page.texture.h},
-					rect = {i, X, Y - (ch.bitmapTop) + self.options.size, ch.w, ch.h},					
-					tex = ch.page.texture, -- todo: sort by texture
-				})
 				
-				X = X + ch.xAdvance
-				Y = Y + ch.yAdvance
+				if ch then				
+					if last_texture ~= ch.page.texture then
+						chars = {}
+						table.insert(data, {texture = ch.page.texture, chars = chars})
+						last_texture = ch.page.texture
+					end
+				
+					table.insert(chars, {
+						uv = {ch.x, ch.y, ch.w, ch.h, ch.page.texture.w, ch.page.texture.h},
+						rect = {i, X, Y - (ch.bitmapTop) + self.options.size, ch.w, ch.h},					
+						tex = ch.page.texture, -- todo: sort by texture
+					})
+					
+					X = X + ch.xAdvance
+					Y = Y + ch.yAdvance
+				end
 			end
 		end
 				
@@ -285,24 +281,33 @@ function META:DrawString(str, x, y)
 				Y = Y + self.options.size
 			elseif char == "\t" then
 				X = X + self.options.size
-			elseif ch then
-			
-				if ch.page.texture ~= last_tex then
-					tex = ch.page.texture
-					poly = surface.CreatePoly(#str)
-					table.insert(data, {poly = poly, texture = ch.page.texture})
-					last_tex = ch.page.texture
-					lol = 1
+			else			
+				if not ch or not ch.invalid then
+					self:LoadGlyph(utf8.byte(char))
+					ch = self.chars[char]
 				end
 				
-				poly:SetColor(1,1,1,1)
-				poly:SetUV(ch.x, ch.y, ch.w, ch.h, ch.page.texture.w, ch.page.texture.h)
-				poly:SetRect(i, X, Y - (ch.bitmapTop) + self.options.size, ch.w, ch.h)
-				
-				X = X + ch.xAdvance
-				Y = Y + ch.yAdvance
-				
-				lol = lol + 1
+				if ch then				
+					if ch.page.texture ~= last_tex then
+						tex = ch.page.texture
+						poly = surface.CreatePoly(#str)
+						table.insert(data, {poly = poly, texture = ch.page.texture})
+						last_tex = ch.page.texture
+						lol = 1
+					end
+					
+					poly:SetUV(ch.x, ch.y, ch.w, ch.h, ch.page.texture.w, ch.page.texture.h)
+					poly:SetRect(i, math.round(X), math.round(Y - (ch.bitmapTop) + self.options.size), ch.w, ch.h)
+					
+					if self.options.monospace then 
+						X = X + self.options.spacing
+					else
+						X = X + ch.xAdvance + self.options.spacing
+					end
+					Y = Y + ch.yAdvance
+					
+					lol = lol + 1
+				end
 			end
 			
 		end
@@ -329,7 +334,11 @@ function META:GetTextSize(str)
 		elseif char == "\t" then
 			X = X + self.options.size
 		elseif ch and not ch.invalid then
-			X = X + ch.xAdvance
+			if self.options.monospace then 
+				X = X + self.options.spacing
+			else
+				X = X + ch.xAdvance + self.options.spacing
+			end
 			Y = Y + ch.yAdvance
 		end
 	end

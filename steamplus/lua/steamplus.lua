@@ -7,6 +7,7 @@ chatsounds.Initialize()
 local subject
 
 event.AddListener("SteamFriendsMessage", "steam_friends", function(sender_steam_id, txt, receiver_steam_id)
+	if txt == "" then return end
 	if txt:sub(1, 2) == ">>" then return end
 
 	local ply = clients.GetByUniqueID(sender_steam_id)
@@ -86,29 +87,30 @@ end)
 
 event.AddListener("ClientChat", "chatsounds", function(client, txt, seed)
 	local url = txt:match("(http%S+)")
-
-	if not url or not txt:sub(1, 1) == "!" then 
-		chatsounds.Say(client, txt, seed)
-	return end
 	
-	if url:find("youtube") then
-		local id = url:match("%?v=(.+)")
-		
-		if id then 
-			id = id:match("(.-)&") or id
+	if url then	
+		if url:find("youtube") then
+			local id = url:match("%?v=(.+)")
 			
-			youtube_query(sockets.EscapeURL(id))
-			return
+			if id then 
+				id = id:match("(.-)&") or id
+				
+				youtube_query(sockets.EscapeURL(id))
+				return
+			end
+		else
+			sockets.Get(url, function(data)
+				local title = data.content:match("<title>(.-)</title>") or url:match(".+/(.+)")
+				
+				if title and STEAM_FRIENDS_SUBJECT and STEAM_FRIENDS_SUBJECT:IsValid() then
+					steam.SendChatMessage(STEAM_FRIENDS_SUBJECT:GetUniqueID(), title)
+				end
+			end)
 		end
+	elseif txt:sub(1, 1) ~= "!" then 
+		chatsounds.Say(client, txt, seed)
+		return 
 	end
-		
-	sockets.Get(url, function(data)
-		local title = data.content:match("<title>(.-)</title>") or url:match(".+/(.+)")
-		
-		if title and STEAM_FRIENDS_SUBJECT and STEAM_FRIENDS_SUBJECT:IsValid() then
-			steam.SendChatMessage(STEAM_FRIENDS_SUBJECT:GetUniqueID(), title)
-		end
-	end)
 end)  
 
 --[==[ffi.cdef[[

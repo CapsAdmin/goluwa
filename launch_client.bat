@@ -8,6 +8,6 @@ if %errorlevel%==0 (
 
 SET CLIENT=1
 SET SERVER=0
-
+SET arch=x86
 cd .base/bin/windows/%arch%/
 start luajit ../../../lua/init.lua %*
