@@ -310,81 +310,57 @@ do -- texture object
 	local cache = {}
 	local fbos = {}
 	
-	function META:Shade(fragment_shader, vars)
-		
-		if not cache[fragment_shader] then
-		
-			local data = {
-				name = "shade_texture_" .. self.id .. "_" .. tostring(timer.GetSystemTime()),
-				shared = {
-					uniform = vars,
-				},
-				
-				vertex = {
-					uniform = {
-						pwm_matrix = "mat4",
-					},			
-					attributes = {
-						{pos = "vec2"},
-						{uv = "vec2"},
-					},	
-					source = "gl_Position = pwm_matrix * vec4(pos, 0, 1);"
-				},
-				
-				fragment = { 
-					uniform = {
-						self = self,
-						size = "vec2",
-					},		
-					attributes = {
-						{uv = "vec2"},
-					},			
-					source = fragment_shader,
-				} 
+	function META:Shade(fragment_shader, vars)		
+		local data = {
+			name = "shade_texture_" .. self.id .. "_" .. tostring(timer.GetSystemTime()),
+			shared = {
+				uniform = vars,
+			},
+			
+			vertex = {
+				uniform = {
+					pwm_matrix = "mat4",
+				},			
+				attributes = {
+					{pos = "vec3"},
+					{uv = "vec2"},
+				},	
+				source = "gl_Position = pwm_matrix * vec4(pos, 1);"
+			},
+			
+			fragment = { 
+				uniform = {
+					self = self,
+					size = "vec2",
+				},		
+				attributes = {
+					{uv = "vec2"},
+				},			
+				source = fragment_shader,
 			} 
-				
-			local shader = render.CreateShader(data)
-			shader.pwm_matrix = render.GetPVWMatrix2D
-
-			local mesh = shader:CreateVertexBuffer({
-				{pos = {0, 0}, uv = {0, 1}},
-				{pos = {0, 1}, uv = {0, 0}},
-				{pos = {1, 1}, uv = {1, 0}},
-
-				{pos = {1, 1}, uv = {1, 0}},
-				{pos = {1, 0}, uv = {1, 1}},
-				{pos = {0, 0}, uv = {0, 1}},
-			})
+		} 
 			
-			local fb = render.CreateFrameBuffer(4, 4)
-			
-			cache[fragment_shader] = function(self, vars)				
-				do -- bind uniforms
-					shader.self = self
-					shader.size = Vec2(surface.GetScreenSize())
-					
-					for k,v in pairs(vars) do
-						shader[k] = v
-					end				
-				end
-				
-
-					fb:Begin()
-						gl.FramebufferTexture2D(gl.e.GL_FRAMEBUFFER, gl.e.GL_COLOR_ATTACHMENT0_EXT, gl.e.GL_TEXTURE_2D, self.id, 0)
-						gl.ReadBuffer(gl.e.GL_COLOR_ATTACHMENT0_EXT)
-							
-							render.Start2D(0, 0, self.w, self.h)
-								fb:Clear(1,0,0,1)
-								shader:Bind()
-								mesh:Draw()
-							render.End2D()
-							
-						--gl.FramebufferTexture2D(gl.e.GL_FRAMEBUFFER, gl.e.GL_COLOR_ATTACHMENT0_EXT, gl.e.GL_TEXTURE_2D, 0, 0)								
-					fb:End()			
-			end
-		end
+		local shader = render.CreateShader(data)
+		shader.pwm_matrix = render.GetPVWMatrix2D
 		
-		cache[fragment_shader](self, vars)
+		local fb = render.CreateFrameBuffer(self.w, self.h)
+		
+		shader.self = self
+		shader.size = Vec2(surface.GetScreenSize())
+		
+		for k,v in pairs(vars) do
+			shader[k] = v
+		end				
+		
+		fb:Begin()
+		fb:Clear()
+			surface.PushMatrix(0, 0, self.w, self.h)
+			shader:Bind()
+			surface.rect_mesh:Draw()
+			surface.PopMatrix()
+		fb:End()
+		
+		self:Upload(fb:GetTexture())
 	end
 	
 	local SUPPRESS_GC = false

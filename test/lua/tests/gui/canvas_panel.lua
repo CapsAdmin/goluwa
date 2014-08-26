@@ -78,9 +78,7 @@ canvas:Center()
 		grid:SetSizeToWidth(true)
 		grid:SetStackRight(false)
 		grid:SetItemSize(Vec2()+20)
-		
-		LOL = grid
-		
+			
 		local text = gui.Create("text_input", grid)
 
 		local slider = gui.Create("labeled_slider", grid)

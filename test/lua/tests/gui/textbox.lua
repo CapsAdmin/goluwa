@@ -13,6 +13,3 @@ local frame = utilities.RemoveOldObject(gui.Create("frame"), "lol")
 		edit:SetText(vfs.Read("lua/tests/textbox.lua"))
 		edit:MakeActivePanel()
 	frame:RequestLayout(true)
-	
-	LOL = edit
- 
