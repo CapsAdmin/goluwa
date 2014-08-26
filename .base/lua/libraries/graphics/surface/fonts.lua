@@ -93,7 +93,7 @@ function surface.DrawText(str, x, y)
 		
 		if not font then return end
 		
-		if font == "loading" or font.state ~= 'loaded' then
+		if font == "loading" or font.state ~= "loaded" then
 			surface.SetColor(0.8, 0.8, 0.8, 1)
 			surface.SetWhiteTexture()
 			surface.DrawRect(x, y, 32, 32)
@@ -138,7 +138,7 @@ do
 		
 		if not font then return 0, 0 end
 		
-		if font == "loading" or font.state ~= 'loaded' then
+		if font == "loading" or font.state ~= "loaded" then
 			return 32, 32
 		end
 			
