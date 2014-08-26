@@ -195,7 +195,6 @@ function menu.MakeButtons()
 					grid:AddChild(btn)  
 				end
 			end
-			LOL = grid
 		end
 		
 		populate("lua/tests/") 

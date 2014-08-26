@@ -287,7 +287,6 @@ function console.Print(str)
 	
 	if curses.COLS > 0 then
 		local lines = str:lengthsplit(curses.COLS)
-		LOL = lines
 		if #lines > 2 then		
 			for i, v in ipairs(lines) do
 				console.Print(v)
