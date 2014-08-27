@@ -63,20 +63,11 @@ function render.Initialize()
 	
 	local vendor = render.GetVendor()
 	
-	vfs.Write("info/gpu_vendor", vendor)
-	vfs.Write("info/gl_version", render.GetVersion())
-	
 	if vendor:lower():find("nvidia") then
 		NVIDIA = true
 	elseif vendor:lower():find("ati") or vendor:lower():find("amd") then
 		ATI = true
 		-- AMD = true grr cpus
-	end		
-
-	if WINDOWS and X64 and NVIDIA then
-		system.MessageBox("fatal error!!!!!", "Nvidia on x64 is not supported because for some weird reason it freezes.\nThe next time you launch it will launch the x86 version instead.\nPress OK to relaunch.")
-		system.Restart()
-		return
 	end
 		
 	if render.debug then
