@@ -9,9 +9,12 @@ function metatable.AddParentingTemplate(META)
 	
 	metatable.GetSet(META, "Parent", NULL)
 	META.Children = {}
-	META.children_list = {}
 	
 	function META:GetAllChildren()
+		if not self.children_list then
+			self:BuildChildrenList()
+		end
+		
 		return self.children_list
 	end
 	
