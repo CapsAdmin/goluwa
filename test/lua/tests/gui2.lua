@@ -25,13 +25,18 @@ do -- base panel
 	metatable.GetSet(PANEL, "DrawSizeOffset", Vec2(0, 0))
 	metatable.GetSet(PANEL, "DrawPositionOffset", Vec2(0, 0))
 	metatable.GetSet(PANEL, "DrawAngleOffset", 0)
-
+	
+	metatable.GetSet(PANEL, "WorldPosition", Vec2(0, 0))
+	
 	metatable.GetSet(PANEL, "MousePosition", Vec2(0, 0))
 	metatable.GetSet(PANEL, "Clipping", false)
 	metatable.GetSet(PANEL, "Color", Color(1,1,1,1))
 	metatable.GetSet(PANEL, "Cursor", "hand")
 	metatable.GetSet(PANEL, "TrapChildren", false)
 	metatable.GetSet(PANEL, "Texture", render.GetWhiteTexture())
+
+	metatable.GetSet(PANEL, "Padding", Rect(10, 10, 10, 10))
+	metatable.GetSet(PANEL, "Margin", Rect(10, 10, 10, 10))
 
 	function PANEL:__tostring()
 		return ("panel[%p] %s %s %s %s"):format(self, self.Position.x, self.Position.y, self.Size.w, self.Size.h)
@@ -51,9 +56,9 @@ do -- base panel
 				for i, v in ipairs(self:GetParentList()) do
 					v:MarkDirty()
 				end
-				
+
 				self.cache_dirty = true
-				
+
 				if not self.cache_fb then
 					self.cache_fb = render.CreateFrameBuffer(self.Size.w, self.Size.h, {
 						{
@@ -63,7 +68,7 @@ do -- base panel
 							texture_format = {
 								internal_format = "RGB32F",
 							},
-						},				
+						},
 						{
 							name = "stencil",
 							attach = "stencil",
@@ -77,18 +82,18 @@ do -- base panel
 		function PANEL:IsDirty()
 			return self.cache_dirty
 		end
-		
+
 		function PANEL:DrawCache()
 			if self:IsDirty() then
 				self.cache_fb:Begin()
 				self.cache_fb:Clear()
 
 				surface.PushMatrix()
-					-- this matrix needs to be reset so it will draw 
+					-- this matrix needs to be reset so it will draw
 					-- from the origin of the framebuffer
 					-- the framebuffer itself is drawn at the correct position
-					surface.LoadIdentity() 
-					
+					surface.LoadIdentity()
+
 					self:OnDraw()
 
 					surface.Translate(-self.Scroll.x, -self.Scroll.y)
@@ -107,7 +112,7 @@ do -- base panel
 			surface.DrawRect(0, 0, self.Size.w, self.Size.h)
 		end
 	end
-	
+
 	do -- orientation
 		function PANEL:SetPosition(pos)
 			if self:HasParent() and self.Parent.TrapChildren then
@@ -115,6 +120,13 @@ do -- base panel
 			end
 
 			self.Position = pos
+		end
+		
+		function PANEL:GetPosition(panel)
+			if panel then
+				--return panel:GetPosition() - self:GetPosition()
+			end
+			return self.Position
 		end
 
 		local sorter = function(a,b)
@@ -135,6 +147,20 @@ do -- base panel
 			local size = self:GetSizeOfChildren()
 
 			self.Scroll = Vec2(math.clamp(vec.x, 0, size.x - self.Size.w), math.clamp(vec.y, 0, size.y - self.Size.h))
+		end
+
+		function PANEL:SetWidth(w)
+			self.Size.w = w
+		end
+		function PANEL:GetWidth()
+			return self.Size.w
+		end
+
+		function PANEL:SetHeight(h)
+			self.Size.h = h
+		end
+		function PANEL:GetHeight()
+			return self.Size.h
 		end
 	end
 
@@ -191,29 +217,30 @@ do -- base panel
 
 		function PANEL:CalcDragging()
 			if self.drag_world_pos then
-
 				if not self.drag_panel_start_pos then
 					self.drag_panel_start_pos = self:GetPosition()
 				end
-
+				
 				local drag_pos = Vec2(surface.WorldToLocal(self.drag_world_pos:Unpack()))
 
 				self:SetPosition(self.drag_panel_start_pos + self:GetMousePosition() - drag_pos)
-				
+
 				local panel = gui2.GetHoveringPanel(nil, self)
 
 				local drop_pos = panel:GetMousePosition() - self:GetMousePosition() + panel.Scroll
-					
+
 				if self.drag_last_hover ~= panel then
-					
+
 					if self.drag_last_hover then
 						self.drag_last_hover:OnDraggedChildExit(self, drop_pos)
 					end
-				
+
 					panel:OnDraggedChildEnter(self, drop_pos)
-					
+
 					self.drag_last_hover = panel
 				end
+				
+				panel:OnPanelHover(self, drop_pos)
 
 				if not input.IsMouseDown(self.drag_stop_button) then
 
@@ -224,27 +251,119 @@ do -- base panel
 				end
 			end
 		end
-		
+
 		function PANEL:OnDraggedChildEnter(child, drop_pos)
-			print("enter", self, drop_pos, child)
+			--print("enter", self, drop_pos, child)
 		end
-		
+
 		function PANEL:OnDraggedChildExit(child, drop_pos)
-			print("left", self, drop_pos, child)
+			--print("left", self, drop_pos, child)
 		end
-		
+
 		function PANEL:OnParentLand(parent)
 
+		end
+		
+		do -- magnet snap
+			local snapped = false
+			
+			local function check1(pos, size, parent, axis1, axis2)
+				if 
+					pos[axis1] < parent.WorldPosition[axis1] + (parent.Padding[axis1] * 1.5) and 
+					pos[axis1] > parent.WorldPosition[axis1] + (parent.Padding[axis1] / 4)
+				then
+					pos[axis1] = parent.WorldPosition[axis1] + parent.Padding[axis1]
+					snapped = true
+				elseif 
+					pos[axis1] < parent.WorldPosition[axis1] + parent.Padding[axis1] and 
+					pos[axis1] > parent.WorldPosition[axis1] + -parent.Padding[axis1]
+				then
+					pos[axis1] = parent.WorldPosition[axis1]
+					snapped = true
+				elseif pos[axis1] + size[axis2] < parent.WorldPosition[axis1] then
+					if 
+						pos[axis1] + size[axis2] < parent.WorldPosition[axis1] + parent.Margin[axis1] and 
+						pos[axis1] + size[axis2] > parent.WorldPosition[axis1] + -parent.Margin[axis1]
+					then
+						pos[axis1] = parent.WorldPosition[axis1] + -size[axis2]
+						snapped = true
+					elseif 
+						pos[axis1] + size[axis2] > parent.WorldPosition[axis1] + (-parent.Margin[axis1] * 1.5) and 
+						pos[axis1] + size[axis2] < parent.WorldPosition[axis1] + (parent.Margin[axis1] / 4)
+					then
+						pos[axis1] = parent.WorldPosition[axis1] + -size[axis2] - parent.Margin[axis1]
+						snapped = true
+					end
+				end
+			end
+			
+			local function check2(pos, size, parent, axis1, axis2)			
+				if 
+					pos[axis1] + size[axis2] > parent.WorldPosition[axis1] + parent.Size[axis2] - (parent.Padding[axis1] * 1.5) and 
+					pos[axis1] + size[axis2] < parent.WorldPosition[axis1] + parent.Size[axis2] - (parent.Padding[axis1] / 4) 
+				then
+					pos[axis1] = parent.WorldPosition[axis1] + parent.Size[axis2] - parent.Padding[axis1] - size[axis2]
+					snapped = true
+				elseif 
+					pos[axis1] + size[axis2] > parent.WorldPosition[axis1] + parent.Size[axis2] - parent.Padding[axis1] and 
+					pos[axis1] + size[axis2] < parent.WorldPosition[axis1] + parent.Size[axis2] + parent.Padding[axis1]
+				then
+					pos[axis1] = parent.WorldPosition[axis1] + parent.Size[axis2] - size[axis2]
+					snapped = true
+				elseif pos[axis1] > parent.WorldPosition[axis1] + parent.Size[axis2] then
+					if 
+						pos[axis1] < parent.WorldPosition[axis1] + parent.Size[axis2] + parent.Margin[axis1] and 
+						pos[axis1] > parent.WorldPosition[axis1] + parent.Size[axis2] - parent.Margin[axis1]
+					then
+						pos[axis1] = parent.WorldPosition[axis1] + parent.Size[axis2]
+						snapped = true
+					elseif 
+						pos[axis1] < parent.WorldPosition[axis1] + parent.Size[axis2] + (parent.Margin[axis1] * 1.5) and 
+						pos[axis1] > parent.WorldPosition[axis1] + parent.Size[axis2] + (parent.Margin[axis1] / 4)
+					then
+						pos[axis1] = parent.WorldPosition[axis1] + parent.Size[axis2] + parent.Margin[axis1]
+						snapped = true
+					end
+				end
+			end
+			
+			function PANEL:SnapPosition(panel)				
+				panel = panel or self:GetParent()
+				
+				local pos = self:GetWorldPosition():Copy()
+				local size = self:GetSize()
+				
+				snapped = false
+								
+				check1(pos, size, panel, "x", "w")
+				check1(pos, size, panel, "y", "h")
+							
+				check2(pos, size, panel, "x", "w")
+				check2(pos, size, panel, "y", "h")
+					
+				if snapped then
+					-- TODO
+					self:SetPosition(pos - panel:GetWorldPosition())
+				end
+				
+				return snapped
+			end
+		end
+		
+		function PANEL:OnPanelHover(panel, drop_pos)
+		--	panel:SnapPosition()
+			do return end
+			for i,v in ipairs(gui2.world:GetAllChildren()) do
+				if panel:SnapPosition(v) then break end
+			end
+			--hmmm(pos, -parent.Margin, size, parent)
 		end
 
 		function PANEL:OnChildDrop(child, pos)
 			self:AddChild(child)
 			child:SetPosition(pos)
+			--child:Dock(self:GetDockLocation())
 		end
-	end
-	
-	do -- docking
-		
 	end
 
 	do -- animations
@@ -468,6 +587,7 @@ do -- base panel
 					v.Position.x - self.Scroll.x > -v.Size.w and
 					v.Position.y - self.Scroll.y > -v.Size.h)
 				then
+					v.WorldPosition = self.WorldPosition + v.Position
 					v:Update()
 				end
 			end
@@ -535,6 +655,215 @@ do -- base panel
 					self.mouse_just_entered = false
 				end
 			end
+		end
+	end
+
+	do -- docking
+		do -- center
+			function PANEL:CenterX()
+				self:SetPosition(Vec2((self.Parent:GetSize().x * 0.5) - (self:GetSize().x * 0.5), self:GetPosition().y))
+			end
+
+			function PANEL:CenterY()
+				self:SetPosition(Vec2(self:GetPosition().x, (self.Parent:GetSize().y * 0.5) - (self:GetSize().y * 0.5)))
+			end
+
+			function PANEL:Center()
+				self:CenterY()
+				self:CenterX()
+			end
+		end
+		
+		function PANEL:Align(vec, off, parent)
+			off = off or Vec2()
+			parent = parent or self:GetParent()
+						
+			local padding = parent:GetPadding() or Rect()
+			local size = self:GetSize() + padding:GetPosSize()
+			local centerparent = parent:GetSize() * vec
+			local centerself = size * vec
+			local pos = centerparent - centerself
+			
+			if vec.x == -1 and vec.y == -1 then
+				return
+			elseif vec.x == -1 then
+				self.Position.y = pos.y + off.y + padding.y
+			elseif vec.y == -1 then
+				self.Position.x = pos.x + off.x + padding.x
+			else
+				self:SetPosition(pos + off + padding:GetPos())
+			end
+			
+		end
+
+		function PANEL:Undock()
+			self:Dock()
+		end
+
+		function PANEL:Dock(location)
+			if not location then
+				self.dock_location = nil
+			else
+				self.dock_location = location
+			end
+
+			print(location)
+
+			self.Parent:DockLayout()
+		end
+
+		function PANEL:DockLayout()
+			local dpad = self.DockPadding or Rect(1, 1, 1, 1)-- Default padding between all panels
+			local margin = self.Margin
+
+			local x = margin.x
+			local y = margin.y
+			local w = self:GetWidth() - x - margin.w
+			local h = self:GetHeight() - y - margin.h
+
+			local area = Rect(x, y, w, h)
+
+			local left, right, top, bottom, center
+			local pad
+
+			-- grab one of each dock type
+			for _, pnl in ipairs(self:GetChildren()) do
+				if pnl.dock_location then
+					if pnl.dock_location == "fill" then
+						pnl:SetPosition(area:GetPos() + pnl:GetPos())
+						pnl:SetSize(area:GetSize() - pnl:GetPosSize())
+
+						if pnl.SizeToContens then
+							pnl:SizeToContents()
+						end
+					else
+						if pnl.dock_location == "center" then
+							pnl:Center()
+						elseif pnl.dock_location == "top" then
+							pnl:Align(Vec2(0.5, 0))
+						elseif pnl.dock_location == "bottom" then
+							pnl:Align(Vec2(0.5, 1))
+						elseif pnl.dock_location == "left" then
+							pnl:Align(Vec2(0, 0.5))
+						elseif pnl.dock_location == "right" then
+							pnl:Align(Vec2(1, 0.5))
+						elseif pnl.dock_location == "top_left" then
+							pnl:Align(Vec2(0, 0))
+						elseif pnl.dock_location == "top_right" then
+							pnl:Align(Vec2(1, 0))
+						elseif pnl.dock_location == "bottom_left" then
+							pnl:Align(Vec2(0, 1))
+						elseif pnl.dock_location == "bottom_right" then
+							pnl:Align(Vec2(1, 1))						
+						else
+							if not left and pnl.dock_location == "fill_left" then
+								left = pnl
+							end
+							if not right and pnl.dock_location == "fill_right" then
+								right = pnl
+							end
+							if not top and pnl.dock_location == "fill_top" then
+								top = pnl
+							end
+							if not bottom and pnl.dock_location == "fill_bottom" then
+								bottom = pnl
+							end
+						end
+					end
+				end
+				pnl:DockLayout()
+			end
+
+			if top then
+				pad = top:GetPadding() + dpad
+
+				top:SetPosition(area:GetPos() + pad:GetPos())
+				top:SetWidth(area.w - pad:GetXW())
+
+				area.y = area.y + top:GetHeight() + pad:GetYH()
+				area.h = area.h - top:GetHeight() - pad:GetYH()
+			end
+
+			if bottom then
+				pad = bottom:GetPadding() + dpad
+
+				bottom:SetPosition(area:GetPos() + Vec2(pad.x, area.h - bottom:GetHeight() - pad.h))
+				bottom:SetWidth(w - pad:GetXW())
+				area.h = area.h - bottom:GetHeight() - pad:GetYH()
+			end
+
+			if left then
+				pad = left:GetPadding() + dpad
+
+				left:SetPosition(area:GetPos() + pad:GetPos())
+				left:SetHeight(area.h - pad:GetYH())
+				area.x = area.x + left:GetWidth() + pad:GetXW()
+				area.w = area.w - left:GetWidth() - pad:GetXW()
+			end
+
+			if right then
+				pad = right:GetPadding() + dpad
+
+				right:SetPosition(area:GetPos() + Vec2(area.w - right:GetWidth() - pad.w, pad.y))
+				right:SetHeight(area.h - pad:GetYH())
+				area.w = area.w - right:GetWidth() - pad:GetXW()
+			end
+		end
+
+		function PANEL:GetDockLocation(pos, offset) -- rename this function
+			pos = pos or self:GetMousePosition()
+			offset = offset or self:GetSize() / 4
+
+			local siz = self:GetSize()
+
+			if
+				(pos.y > 0 and pos.y < offset.h) and -- top
+				(pos.x > 0 and pos.x < offset.w) -- left
+			then
+				return "top_left"
+			end
+
+			if
+				(pos.y > 0 and pos.y < offset.h) and -- top
+				(pos.x > siz.w - offset.w and pos.x < siz.w) -- right
+			then
+				return "top_right"
+			end
+
+
+			if
+				(pos.y > siz.h - offset.h and pos.y < siz.h) and -- bottom
+				(pos.x > 0 and pos.x < offset.w) -- left
+			then
+				return "bottom_left"
+			end
+
+			if
+				(pos.y > siz.h - offset.h and pos.y < siz.h) and -- bottom
+				(pos.x > siz.w - offset.w and pos.x < siz.w) --right
+			then
+				return "bottom_right"
+			end
+
+			--
+
+			if pos.x > 0 and pos.x < offset.w then
+				return "left"
+			end
+
+			if pos.x > siz.w - offset.w and pos.x < siz.w then
+				return "right"
+			end
+
+			if pos.y > siz.h - offset.h and pos.y < siz.h then
+				return "bottom"
+			end
+
+			if pos.y > 0 and pos.y < offset.h then
+				return "top"
+			end
+
+			return "center"
 		end
 	end
 
@@ -607,7 +936,7 @@ function gui2.GetHoveringPanel(panel, filter)
 
 	return panel.mouse_over and panel or gui2.world
 end
- 
+
 function gui2.MouseInput(button, press)
 	local panel = gui2.hovering_panel
 
@@ -615,18 +944,18 @@ function gui2.MouseInput(button, press)
 		panel:OnMouseInput(button, press)
 	end
 end
-  
+
 function gui2.Draw2D()
 	render.SetCullMode("none")
 	--surface.Start3D(Vec3(1, -5, 10), Ang3(-90, 180, 0), Vec3(8, 8, 10))
-	
+
 		gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePos()
-		
+
 		gui2.world:Draw()
 		gui2.world:Update()
-		
+
 	--surface.End3D()
-	
+
 	gui2.hovering_panel = gui2.GetHoveringPanel()
 
 	if gui2.hovering_panel:IsValid() then
@@ -641,17 +970,18 @@ end
 
 function gui2.Initialize()
 	local world = gui2.CreatePanel()
-	
+
 	world:SetPosition(Vec2(0, 0))
 	world:SetSize(Vec2(window.GetSize()))
 	world:SetCursor("arrow")
 	world:SetTrapChildren(true)
 	world:SetColor(Color(1,1,1,0))
+	world:SetPadding(Rect(10, 10, 10, 10))
 
 	gui2.world = world
 
 	gui2.mouse_pos = Vec2()
-	
+
 	event.AddListener("Draw2D", "gui2", gui2.Draw2D)
 	event.AddListener("MouseInput", "gui2", gui2.MouseInput)
 end
@@ -660,9 +990,9 @@ function gui2.Test()
 	local parent = gui2.CreatePanel()
 	parent:SetPosition(Vec2(400,140))
 	parent:SetSize(Vec2(300,300))
-	
+
 	--do return end
-	
+
 	local c = HSVToColor(0, 0, 0.25)
 	parent:SetColor(c)
 	parent.original_color = c
@@ -679,7 +1009,7 @@ function gui2.Test()
 	--frame:SetCachedRendering(true)
 	--frame.OnMouseExit = function() end
 	--frame.OnMouseEnter = function() end
- 
+
 	local lol = {}
 
 	for x = 1, 5 do
@@ -742,10 +1072,10 @@ function gui2.Test()
 		pnl:SetPosition(Vec2(-5, 260) + Vec2(x, y) * 55)
 		pnl:SetSize(Vec2(50, 50))
 		--pnl:SetTexture(Texture("textures/aahh/button.png"))
- 
+
 		pnl.OnMouseEnter = function() end
 		pnl.OnMouseExit = function() end
-		pnl.OnMouseMove = function(s) s:MarkDirty() end 
+		pnl.OnMouseMove = function(s) s:MarkDirty() end
 
 		if math.random() > 0.5 then
 			if math.random() > 0.5 then
