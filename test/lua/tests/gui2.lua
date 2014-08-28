@@ -25,10 +25,9 @@ do -- base panel
 	metatable.GetSet(PANEL, "DrawSizeOffset", Vec2(0, 0))
 	metatable.GetSet(PANEL, "DrawPositionOffset", Vec2(0, 0))
 	metatable.GetSet(PANEL, "DrawAngleOffset", 0)
-	
-	metatable.GetSet(PANEL, "WorldPosition", Vec2(0, 0))
-	
+		
 	metatable.GetSet(PANEL, "MousePosition", Vec2(0, 0))
+	metatable.IsSet(PANEL, "Visible", true)
 	metatable.GetSet(PANEL, "Clipping", false)
 	metatable.GetSet(PANEL, "Color", Color(1,1,1,1))
 	metatable.GetSet(PANEL, "Cursor", "hand")
@@ -129,6 +128,30 @@ do -- base panel
 			return self.Position
 		end
 
+		function PANEL:GetWorldPosition()
+			return self:LocalToWorld(self:GetPosition())
+		end
+		
+		function PANEL:SetWorldPosition(wpos)
+			self:SetPosition(self:WorldToLocal(lpos))
+		end
+		
+		function PANEL:WorldToLocal(wpos)
+			local lpos = wpos
+			for k, v in ipairs(self:GetParentList()) do
+				lpos = lpos - v:GetPosition()
+			end
+			return lpos
+		end
+		
+		function PANEL:LocalToWorld(lpos)
+			local wpos = lpos
+			for k, v in npairs(self:GetParentList()) do
+				wpos = wpos + v:GetPosition()
+			end
+			return wpos
+		end
+		
 		local sorter = function(a,b)
 			return a.Order > b.Order
 		end
@@ -214,6 +237,10 @@ do -- base panel
 			self.drag_panel_start_pos = nil
 			self.drag_last_hover = nil
 		end
+		
+		function PANEL:IsDragging()
+			return self.drag_world_pos ~= nil
+		end
 
 		function PANEL:CalcDragging()
 			if self.drag_world_pos then
@@ -267,61 +294,61 @@ do -- base panel
 		do -- magnet snap
 			local snapped = false
 			
-			local function check1(pos, size, parent, axis1, axis2)
+			local function check1(pos, size, parent, pos2, axis1, axis2)
 				if 
-					pos[axis1] < parent.WorldPosition[axis1] + (parent.Padding[axis1] * 1.5) and 
-					pos[axis1] > parent.WorldPosition[axis1] + (parent.Padding[axis1] / 4)
+					pos[axis1] < pos2[axis1] + (parent.Padding[axis1] * 1.5) and 
+					pos[axis1] > pos2[axis1] + (parent.Padding[axis1] / 4)
 				then
-					pos[axis1] = parent.WorldPosition[axis1] + parent.Padding[axis1]
+					pos[axis1] = pos2[axis1] + parent.Padding[axis1]
 					snapped = true
 				elseif 
-					pos[axis1] < parent.WorldPosition[axis1] + parent.Padding[axis1] and 
-					pos[axis1] > parent.WorldPosition[axis1] + -parent.Padding[axis1]
+					pos[axis1] < pos2[axis1] + parent.Padding[axis1] and 
+					pos[axis1] > pos2[axis1] + -parent.Padding[axis1]
 				then
-					pos[axis1] = parent.WorldPosition[axis1]
+					pos[axis1] = pos2[axis1]
 					snapped = true
-				elseif pos[axis1] + size[axis2] < parent.WorldPosition[axis1] then
+				elseif pos[axis1] + size[axis2] < pos2[axis1] then
 					if 
-						pos[axis1] + size[axis2] < parent.WorldPosition[axis1] + parent.Margin[axis1] and 
-						pos[axis1] + size[axis2] > parent.WorldPosition[axis1] + -parent.Margin[axis1]
+						pos[axis1] + size[axis2] < pos2[axis1] + parent.Margin[axis1] and 
+						pos[axis1] + size[axis2] > pos2[axis1] + -parent.Margin[axis1]
 					then
-						pos[axis1] = parent.WorldPosition[axis1] + -size[axis2]
+						pos[axis1] = pos2[axis1] + -size[axis2]
 						snapped = true
 					elseif 
-						pos[axis1] + size[axis2] > parent.WorldPosition[axis1] + (-parent.Margin[axis1] * 1.5) and 
-						pos[axis1] + size[axis2] < parent.WorldPosition[axis1] + (parent.Margin[axis1] / 4)
+						pos[axis1] + size[axis2] > pos2[axis1] + (-parent.Margin[axis1] * 1.5) and 
+						pos[axis1] + size[axis2] < pos2[axis1] + (parent.Margin[axis1] / 4)
 					then
-						pos[axis1] = parent.WorldPosition[axis1] + -size[axis2] - parent.Margin[axis1]
+						pos[axis1] = pos2[axis1] + -size[axis2] - parent.Margin[axis1]
 						snapped = true
 					end
 				end
 			end
 			
-			local function check2(pos, size, parent, axis1, axis2)			
+			local function check2(pos, size, parent, pos2, axis1, axis2)			
 				if 
-					pos[axis1] + size[axis2] > parent.WorldPosition[axis1] + parent.Size[axis2] - (parent.Padding[axis1] * 1.5) and 
-					pos[axis1] + size[axis2] < parent.WorldPosition[axis1] + parent.Size[axis2] - (parent.Padding[axis1] / 4) 
+					pos[axis1] + size[axis2] > pos2[axis1] + parent.Size[axis2] - (parent.Padding[axis1] * 1.5) and 
+					pos[axis1] + size[axis2] < pos2[axis1] + parent.Size[axis2] - (parent.Padding[axis1] / 4) 
 				then
-					pos[axis1] = parent.WorldPosition[axis1] + parent.Size[axis2] - parent.Padding[axis1] - size[axis2]
+					pos[axis1] = pos2[axis1] + parent.Size[axis2] - parent.Padding[axis1] - size[axis2]
 					snapped = true
 				elseif 
-					pos[axis1] + size[axis2] > parent.WorldPosition[axis1] + parent.Size[axis2] - parent.Padding[axis1] and 
-					pos[axis1] + size[axis2] < parent.WorldPosition[axis1] + parent.Size[axis2] + parent.Padding[axis1]
+					pos[axis1] + size[axis2] > pos2[axis1] + parent.Size[axis2] - parent.Padding[axis1] and 
+					pos[axis1] + size[axis2] < pos2[axis1] + parent.Size[axis2] + parent.Padding[axis1]
 				then
-					pos[axis1] = parent.WorldPosition[axis1] + parent.Size[axis2] - size[axis2]
+					pos[axis1] = pos2[axis1] + parent.Size[axis2] - size[axis2]
 					snapped = true
-				elseif pos[axis1] > parent.WorldPosition[axis1] + parent.Size[axis2] then
+				elseif pos[axis1] > pos2[axis1] + parent.Size[axis2] then
 					if 
-						pos[axis1] < parent.WorldPosition[axis1] + parent.Size[axis2] + parent.Margin[axis1] and 
-						pos[axis1] > parent.WorldPosition[axis1] + parent.Size[axis2] - parent.Margin[axis1]
+						pos[axis1] < pos2[axis1] + parent.Size[axis2] + parent.Margin[axis1] and 
+						pos[axis1] > pos2[axis1] + parent.Size[axis2] - parent.Margin[axis1]
 					then
-						pos[axis1] = parent.WorldPosition[axis1] + parent.Size[axis2]
+						pos[axis1] = pos2[axis1] + parent.Size[axis2]
 						snapped = true
 					elseif 
-						pos[axis1] < parent.WorldPosition[axis1] + parent.Size[axis2] + (parent.Margin[axis1] * 1.5) and 
-						pos[axis1] > parent.WorldPosition[axis1] + parent.Size[axis2] + (parent.Margin[axis1] / 4)
+						pos[axis1] < pos2[axis1] + parent.Size[axis2] + (parent.Margin[axis1] * 1.5) and 
+						pos[axis1] > pos2[axis1] + parent.Size[axis2] + (parent.Margin[axis1] / 4)
 					then
-						pos[axis1] = parent.WorldPosition[axis1] + parent.Size[axis2] + parent.Margin[axis1]
+						pos[axis1] = pos2[axis1] + parent.Size[axis2] + parent.Margin[axis1]
 						snapped = true
 					end
 				end
@@ -331,19 +358,20 @@ do -- base panel
 				panel = panel or self:GetParent()
 				
 				local pos = self:GetWorldPosition():Copy()
+				local pos2 = panel:GetWorldPosition()
 				local size = self:GetSize()
 				
 				snapped = false
 								
-				check1(pos, size, panel, "x", "w")
-				check1(pos, size, panel, "y", "h")
+				check1(pos, size, panel, pos2, "x", "w")
+				check1(pos, size, panel, pos2, "y", "h")
 							
-				check2(pos, size, panel, "x", "w")
-				check2(pos, size, panel, "y", "h")
-					
+				check2(pos, size, panel, pos2, "x", "w")
+				check2(pos, size, panel, pos2, "y", "h")
+									
 				if snapped then
-					-- TODO
-					self:SetPosition(pos - panel:GetWorldPosition())
+					pos = self:WorldToLocal(pos)
+					self:SetPosition(pos)
 				end
 				
 				return snapped
@@ -351,18 +379,26 @@ do -- base panel
 		end
 		
 		function PANEL:OnPanelHover(panel, drop_pos)
-		--	panel:SnapPosition()
-			do return end
-			for i,v in ipairs(gui2.world:GetAllChildren()) do
-				if panel:SnapPosition(v) then break end
+			local tbl = {}
+			
+			for k,v in pairs(panel:GetParent():GetChildren()) do tbl[k] = v end 
+			
+			local wpos = panel:GetWorldPosition()
+			
+			table.sort(tbl, function(a, b) return a:GetWorldPosition():Distance(wpos) < b:GetWorldPosition():Distance(wpos) end) 
+			
+			for i, v in ipairs(tbl) do
+				if v:IsVisible() and v ~= panel then
+					panel:SnapPosition(v)
+				end
 			end
-			--hmmm(pos, -parent.Margin, size, parent)
+			panel:SnapPosition(panel:GetParent())
 		end
 
 		function PANEL:OnChildDrop(child, pos)
 			self:AddChild(child)
 			child:SetPosition(pos)
-			--child:Dock(self:GetDockLocation())
+			--child:Dock("fill_" .. self:GetDockLocation())
 		end
 	end
 
@@ -517,16 +553,30 @@ do -- base panel
 			}
 		end
 	end
-
+ 
 	function PANEL:Draw(no_clip)
-		surface.PushMatrix()
-			render.Translate(self.Position.x + self.DrawPositionOffset.x, self.Position.y + self.DrawPositionOffset.y, 0)
+		self:UpdateAnimations()
 
-			local w = (self.Size.w + self.DrawSizeOffset.w)/2
-			local h = (self.Size.h + self.DrawSizeOffset.h)/2
+		surface.PushMatrix()
+			render.Translate(self.Position.x, self.Position.y, 0)
+
+			local w = (self.Size.w)/2
+			local h = (self.Size.h)/2
 
 			render.Translate(w, h, 0)
-			render.Rotate(self.Angle + self.DrawAngleOffset, 0, 0, 1)
+			render.Rotate(self.Angle, 0, 0, 1)
+			render.Translate(-w, -h, 0)
+			
+			self:CalcMouse()
+			self:CalcDragging()
+			
+			render.Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
+
+			local w = (self.DrawSizeOffset.w/2) + w
+			local h = (self.DrawSizeOffset.h/2) + h
+
+			render.Translate(w, h, 0)
+			render.Rotate(self.DrawAngleOffset, 0, 0, 1)
 			render.Translate(-w, -h, 0)
 
 			if self.CachedRendering then
@@ -540,55 +590,28 @@ do -- base panel
 					sigh = true
 				end
 
+					self:OnUpdate()
 					self:OnDraw()
 
 					render.Translate(-self.Scroll.x, -self.Scroll.y, 0)
 
 					for k,v in ipairs(self:GetChildren()) do
-						if 	v.drag_world_pos or
+						if 	
+							v:IsDragging() or
 							(v.Position.x - self.Scroll.x < self.Size.w and
 							v.Position.y - self.Scroll.y < self.Size.h and
 							v.Position.x - self.Scroll.x > -v.Size.w and
 							v.Position.y - self.Scroll.y > -v.Size.h)
 						then
 							v:Draw(no_clip)
+							v:SetVisible(true)
+						else
+							v:SetVisible(false)
 						end
 					end
 
 				if sigh or not no_clip and self.Clipping then
 					surface.EndClipping2()
-				end
-			end
-		surface.PopMatrix()
-	end
-
-	function PANEL:Update()
-
-		self:UpdateAnimations()
-
-		surface.PushMatrix()
-			render.Translate(self.Position.x, self.Position.y, 0)
-
-			render.Translate(self.Size.w/2, self.Size.h/2, 0)
-			render.Rotate(self.Angle, 0, 0, 1)
-			render.Translate(-self.Size.w/2, -self.Size.h/2, 0)
-
-			self:CalcMouse()
-			self:CalcDragging()
-
-			self:OnUpdate()
-
-			render.Translate(-self.Scroll.x, -self.Scroll.y, 0)
-
-			for k,v in ipairs(self:GetChildren()) do
-				if v.drag_world_pos or
-					(v.Position.x - self.Scroll.x < self.Size.w and
-					v.Position.y - self.Scroll.y < self.Size.h and
-					v.Position.x - self.Scroll.x > -v.Size.w and
-					v.Position.y - self.Scroll.y > -v.Size.h)
-				then
-					v.WorldPosition = self.WorldPosition + v.Position
-					v:Update()
 				end
 			end
 		surface.PopMatrix()
@@ -707,13 +730,10 @@ do -- base panel
 				self.dock_location = location
 			end
 
-			print(location)
-
 			self.Parent:DockLayout()
 		end
 
 		function PANEL:DockLayout()
-			local dpad = self.DockPadding or Rect(1, 1, 1, 1)-- Default padding between all panels
 			local margin = self.Margin
 
 			local x = margin.x
@@ -775,7 +795,7 @@ do -- base panel
 			end
 
 			if top then
-				pad = top:GetPadding() + dpad
+				pad = top:GetPadding()
 
 				top:SetPosition(area:GetPos() + pad:GetPos())
 				top:SetWidth(area.w - pad:GetXW())
@@ -785,7 +805,7 @@ do -- base panel
 			end
 
 			if bottom then
-				pad = bottom:GetPadding() + dpad
+				pad = bottom:GetPadding()
 
 				bottom:SetPosition(area:GetPos() + Vec2(pad.x, area.h - bottom:GetHeight() - pad.h))
 				bottom:SetWidth(w - pad:GetXW())
@@ -793,7 +813,7 @@ do -- base panel
 			end
 
 			if left then
-				pad = left:GetPadding() + dpad
+				pad = left:GetPadding()
 
 				left:SetPosition(area:GetPos() + pad:GetPos())
 				left:SetHeight(area.h - pad:GetYH())
@@ -802,7 +822,7 @@ do -- base panel
 			end
 
 			if right then
-				pad = right:GetPadding() + dpad
+				pad = right:GetPadding()
 
 				right:SetPosition(area:GetPos() + Vec2(area.w - right:GetWidth() - pad.w, pad.y))
 				right:SetHeight(area.h - pad:GetYH())
@@ -952,9 +972,8 @@ function gui2.Draw2D()
 		gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePos()
 
 		gui2.world:Draw()
-		gui2.world:Update()
 
-	--surface.End3D()
+--	surface.End3D()
 
 	gui2.hovering_panel = gui2.GetHoveringPanel()
 
@@ -990,12 +1009,38 @@ function gui2.Test()
 	local parent = gui2.CreatePanel()
 	parent:SetPosition(Vec2(400,140))
 	parent:SetSize(Vec2(300,300))
-
-	--do return end
-
 	local c = HSVToColor(0, 0, 0.25)
 	parent:SetColor(c)
 	parent.original_color = c
+	
+	local parent = gui2.CreatePanel()
+	parent:SetPosition(Vec2(50,50))
+	parent:SetColor(HSVToColor(math.random(), 1, 1))
+	parent.original_color = parent:GetColor()
+	parent:SetSize(Vec2(50,50))
+	
+	local parent = gui2.CreatePanel()
+	parent:SetPosition(Vec2(50,50))
+	parent:SetColor(HSVToColor(math.random(), 1, 1))
+	parent.original_color = parent:GetColor()
+	parent:SetSize(Vec2(50,50))	
+	
+		
+	local parent = gui2.CreatePanel()
+	parent:SetPosition(Vec2(50,50))
+	parent:SetColor(HSVToColor(math.random(), 1, 1))
+	parent.original_color = parent:GetColor()
+	parent:SetSize(Vec2(50,50))
+	
+	local parent = gui2.CreatePanel()
+	parent:SetPosition(Vec2(50,50))
+	parent:SetColor(HSVToColor(math.random(), 1, 1))
+	parent.original_color = parent:GetColor()
+	parent:SetSize(Vec2(50,50))
+	
+	--do return end 
+
+	
 
 	local frame = gui2.CreatePanel()
 	frame:SetSize(Vec2(200,200))
@@ -1006,7 +1051,7 @@ function gui2.Test()
 	frame.original_color = c
 
 	frame:SetClipping(true)
-	--frame:SetCachedRendering(true)
+	frame:SetCachedRendering(true)
 	--frame.OnMouseExit = function() end
 	--frame.OnMouseEnter = function() end
 
