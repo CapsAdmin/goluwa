@@ -1,8 +1,7 @@
-do return end
 local vfs = (...) or _G.vfs
 
-local zip2 = require("zip") -- GRRRR
-local zip = require("minizip")
+--local zip2 = require("zip") -- GRRRR
+local zip = require("minizip.init")
 
 local CONTEXT = {}
 
@@ -116,16 +115,20 @@ function CONTEXT:GetFiles(path_info)
 	local out = {}
 	
 	local archive = zip.open(archive_path, "r")
-	
-	relative = relative .. "."
-	
+		
 	local dir = relative:match("(.*/)")
 	local done = {}
 	
 	for info in archive:files() do
 		local path = info.filename
-		if path:find(relative) and (not dir or path:match("(.*/)") == dir) then
+		
+		if path:endswith("/") then
+			path = path:sub(0, -2)
+		end
+		
+		if path:find(relative, nil, true) and (not dir or path:match("(.*/)") == dir) then
 			-- path is just . so it needs to be handled a bit different
+			--print(path)
 			if not dir then
 				if not done[path] then
 					path = path:match("(.-)/") or path
@@ -146,19 +149,25 @@ end
 function CONTEXT:Open(path_info, mode, ...)	
 	local archive_path, relative = split_path(path_info)
 	local file
-		
+	
 	if self:GetMode() == "read" then		
 		if zip2 then
 			local archive = zip2.open(archive_path, "r")
 			local file = assert(archive:open(relative))
 			
 			self.file = file
-		else
-			local archive = zip2.open(archive_path, "r")
+		else		
+			local archive = zip.open(archive_path, "r")
+			
 			if not archive:locate_file(relative) then
 				archive:close()
 				error("file not found in archive")
 			end
+			
+			
+			self.info = archive:get_file_info()
+			archive:open_file()
+			
 			self.archive = archive
 		end
 		
@@ -196,7 +205,7 @@ else
 	end
 
 	function CONTEXT:SetPos(pos)
-		self.archive:set_offset(pos)
+		self.archive:set_offset(math.clamp(pos, 0, self:GetSize()))
 	end
 
 	function CONTEXT:GetPos()
@@ -208,11 +217,11 @@ else
 	end
 	
 	function CONTEXT:GetSize()
-		return self.archive:get_file_info().compressed_size
+		return self.info.uncompressed_size
 	end
 
 	function CONTEXT:GetLastModified()
-		return self.archive:get_file_info().dosDate
+		return self.info.dosDate
 	end
 end
 
