@@ -10,19 +10,20 @@ local buffer = Buffer(io.open(R"maps/cs_agency.bsp", "rb"))]]
 
 local buffer
 
-local map = "hl2"
+local map = "gmod"
 
 if map == "hl2" then
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk") 
-	buffer = Buffer(io.open(R"maps/d2_coast_07.bsp", "rb"))
+	buffer = vfs.Open("maps/d2_coast_07.bsp")
 elseif map == "gmod" then
+	vfs.Mount(steam.GetGamePath("GarrysMod") .. "garrysmod/download/")
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "garrysmod/")
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_misc_dir.vpk")
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_textures_dir.vpk") 
 	vfs.Mount(steam.GetGamePath("GarrysMod") .. "garrysmod/garrysmod_dir.vpk") 
-	buffer = Buffer(io.open(R"maps/gm_genesis_b24.bsp", "rb"))
+	buffer = vfs.Open("maps/gm_bluehills_test3.bsp")
 elseif map == "ep2" then
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "ep2/")
 	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
@@ -89,6 +90,20 @@ local function read_lump_data(index, size, struct)
 	end
 		
 	return out
+end
+
+do -- pak
+	local lump = header.lumps[41]
+	local length = lump.filelen
+
+	buffer:SetPos(lump.fileofs)
+	local pak = buffer:ReadBytes(length)
+	
+	local name = "temp_bsp.zip"
+	
+	vfs.Write(name, pak)
+	
+	vfs.Mount(R(name))
 end
 
 timer.Start("reading brushes")
