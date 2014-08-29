@@ -175,7 +175,7 @@ do -- file systems
 	include("files/*", vfs)
 
 	for i, context in ipairs(vfs.GetFileSystems()) do
-		context.mounted_paths = {}
+		context.mounted_paths = context.mounted_paths or {}
 		
 		if context.VFSOpened then 
 			context:VFSOpened()

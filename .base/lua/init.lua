@@ -636,7 +636,7 @@ do -- libraries
 	-- meta
 	include("libraries/extensions/function.lua")
 	include("libraries/null.lua")
-	
+		
 	if CLIENT then
 		-- graphics
 		render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
@@ -672,6 +672,9 @@ do -- libraries
 	if CLIENT then
 		include("gui/init.lua")
 	end
+	
+	-- include the filesystem again so it will include all the details such as zip file reading
+	include("libraries/filesystem/vfs.lua")
 end
 
 console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
