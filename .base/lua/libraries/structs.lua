@@ -349,6 +349,8 @@ function structs.AddAllOperators(META)
 	structs.AddOperator(META, "math", "round", "Round", "Rounded")
 	structs.AddOperator(META, "math", "ceil", "Ceil", "Ceiled")
 	structs.AddOperator(META, "math", "floor", "Floor", "Floored")
+	structs.AddOperator(META, "math", "min", "Min", "Min")
+	structs.AddOperator(META, "math", "max", "Max", "Max")
 	structs.AddOperator(META, "math", "clamp", "Clamp", "Clamped", true)
 end
 
