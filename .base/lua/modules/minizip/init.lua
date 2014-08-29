@@ -18,7 +18,7 @@ function glue.fcall(f,...)
 	return assert(fpcall(f,...))
 end
 
-require'minizip.minizip_h'
+require'minizip.header'
 local C = ffi.load'libminizip'
 local M = {C = C}
 
@@ -29,6 +29,12 @@ local errors = {
 	[C.UNZ_BADZIPFILE] = 'bad zip file',
 	[C.UNZ_INTERNALERROR] = 'internal error',
 	[C.UNZ_CRCERROR] = 'crc error',
+	[-1] = "errno",
+	[-2] = "streamerror",
+	[-3] = "data error",
+	[-4] = "mem error",
+	[-5] = "buf error",
+	[-6] = "version error", 
 }
 
 local function checkh(h)
@@ -39,7 +45,7 @@ end
 local function check_function(check, ret)
 	return function(ret)
 		if check(ret) then return ret end
-		error(string.format('minizip error %d: %s', ret, errors[ret or 'unknown error']))
+		error(string.format('minizip error %d: %s', ret, errors[ret] or 'unknown error'))
 	end
 end
 
@@ -242,7 +248,7 @@ end
 local function unzip_open_file(file, password, raw)
 	local method = ffi.new'int[1]'
 	local level = ffi.new'int[1]'
-	checkz(C.unzOpenCurrentFile3(file, method, level, raw or 0, password))
+	checkz(C.unzOpenCurrentFile3(file, nil, nil, raw or 0, password))
 end
 
 local function unzip_get_local_extra(file)
@@ -258,13 +264,13 @@ local function unzip_close_file(file)
 end
 
 local function unzip_read_cdata(file, buf, sz)
-	print(file, buf, sz)
 	return checkpoz(C.unzReadCurrentFile(file, buf, sz))
 end
 
 local function unzip_read(file, sz)
 	local buf = ffi.new('uint8_t[?]', sz)
-	return ffi.string(buf, unzip_read_cdata(file, buf, sz))
+	local len = unzip_read_cdata(file, buf, sz)
+	return len > 0 and ffi.string(buf, len) or nil
 end
 
 local function unzip_tell(file)
@@ -279,7 +285,7 @@ local function unzip_get_offset(file)
 	return tonumber(C.unzGetOffset64(file))
 end
 
-local function unzip_set_offset(file)
+local function unzip_set_offset(file, pos)
 	C.unzSetOffset64(file, pos)
 end
 
