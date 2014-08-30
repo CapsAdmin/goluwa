@@ -76,6 +76,7 @@ function vl.LoadImage(data, format)
 	local buffer = ffi.new("vlByte[?]", size)
 		
 	vl.ImageConvert(vl.ImageGetData(0, 0, 0, 0), buffer, w, h, vl.ImageGetFormat(), format)
+	vl.ImageFlipImage(buffer, w, h)
 
 	return buffer, w, h, format
 end
