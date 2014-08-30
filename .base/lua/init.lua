@@ -662,7 +662,7 @@ do -- libraries
 	nvars = include("libraries/network/nvars.lua") -- variable synchronization between server and client
 	clients = include("libraries/network/clients.lua") -- high level wrapper for a connected client
 	chat = include("libraries/network/chat.lua") -- chat, duh!
-	steamapi = include("libraries/network/steamapi.lua") -- library to deal with steamapi
+	include("libraries/network/steamapi.lua") -- library to deal with steamapi
 
 	-- other
 	entities = include("libraries/entities/entities.lua") -- entity component system
