@@ -192,18 +192,15 @@ function utilities.ParseHeightmap(tex, size, res, height)
 	return data
 end
 
-function utilities.GenerateNormals(data)
-	local vertex_normals = {}
-	local count = #data/3
-	
-	for i = 1, count do
-	
-		local ci = 1+(i-1)*3+0
-		local bi = 1+(i-1)*3+1
-		local ai = 1+(i-1)*3+2
+function utilities.GenerateNormals(data)	
+	for i = 1, #data, 3 do
+
+		local ai = i + 0
+		local bi = i + 1
+		local ci = i + 2
 		
 		local a, b, c = data[ai], data[bi], data[ci] 
-		local normal = (c.pos - a.pos):Cross(b.pos - a.pos):GetNormalized()
+		local normal = (a.pos - b.pos):Cross(b.pos - c.pos):GetNormalized()
 
 		data[ai].normal = normal
 		data[bi].normal = normal
