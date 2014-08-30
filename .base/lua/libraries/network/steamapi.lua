@@ -1,6 +1,4 @@
-local steamapi = _G.steamapi or {}
-
-steamapi.httpmethods = {
+steam.webapi_httpmethods = {
 	GET = function(interface, func_info, data, url, callback)
 		local arguments = ""
 		
@@ -32,24 +30,24 @@ local type_translate = {
 	bool = "boolean",
 }
 
-console.CreateVariable("steamapi_key", "")
+console.CreateVariable("steam_webapi_key", "")
 
-function steamapi.GetKey()
-	return console.GetVariable("steamapi_key", "")
+function steam.GetWebAPIKey()
+	return console.GetVariable("steam_webapi_key", "")
 end
 
-function steamapi.Initialize()
-	steamapi.key = steamapi.GetKey()
-	steamapi.supported = steamapi.supported or serializer.ReadFile("luadata", "steamapi_supported.lua")
+function steam.InitializeWebAPI()
+	steam.key = steam.GetWebAPIKey()
+	steam.supported = steam.supported or serializer.ReadFile("luadata", "steam_webapi_supported.lua")
 	
 	if key == "" then
-		logn("steamapi key is not set (run steamapi_key *key*)")
+		logn("steam key is not set (run steam_webapi_key *key*)")
 	end
 
-	steamapi.services = {}
+	steam.services = {}
 	
-	if steamapi.supported.apilist then	
-		for key, interface in pairs(steamapi.supported.apilist.interfaces) do
+	if steam.supported.apilist then	
+		for key, interface in pairs(steam.supported.apilist.interfaces) do
 			local functions = {}
 			
 			for key, info in pairs(interface.methods) do
@@ -62,14 +60,14 @@ function steamapi.Initialize()
 				end
 				
 				functions[info.name] = function(data, callback)
-					if not steamapi.httpmethods[info.httpmethod] then
+					if not steam.webapi_httpmethods[info.httpmethod] then
 						errorf("http method %s is not supported", 2, info.httpmethod)
 					end
 				
 					callback = callback or table.print
 
 					if parameters.key and not data.key then
-						data.key = steamapi.key
+						data.key = steam.key
 					end
 								
 					-- check and convert parameters
@@ -109,42 +107,42 @@ function steamapi.Initialize()
 									
 					local url = ("http://api.steampowered.com/%s/%s/v%.4d/?"):format(interface.name, info.name, data.version or 1)
 					
-					if steamapi.debug then	
-						logf("[steamapi] http url: %s\n", url)
+					if steam.debug then	
+						logf("[steam] http url: %s\n", url)
 					end				
 					
-					steamapi.httpmethods[info.httpmethod](interface, info, data, url, callback)
+					steam.webapi_httpmethods[info.httpmethod](interface, info, data, url, callback)
 				end
 			end
 			
-			steamapi.services[interface.name] = functions
+			steam.services[interface.name] = functions
 		end
 	else
-		steamapi.UpdateSupported(steamapi.Initialize)
+		steam.UpdateSupportedWebAPI(steam.InitializeWebAPI)
 	end
 end
 
-function steamapi.UpdateSupported(callback)
-	logn("[steamapi] fetching supported api..")
+function steam.UpdateSupportedWebAPI(callback)
+	logn("[steam] fetching supported api..")
 	
-	sockets.Get("http://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steamapi.key, function(data)
+	sockets.Get("http://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steam.key, function(data)
 		if data.content then
 			local tbl = serializer.Decode("json", data.content)
 			
-			serializer.WriteFile("luadata", "steamapi_supported.lua", tbl)
-			steamapi.supported = tbl
+			serializer.WriteFile("luadata", "steam_webapi_supported.lua", tbl)
+			steam.supported = tbl
 			
-			logn("[steamapi] supported api updated")		
+			logn("[steam] supported api updated")		
 			
 			callback()
 		else
-			logn("[steamapi] could not fetch api, no content!")
+			logn("[steam] could not fetch api, no content!")
 		end
 	end)
 end
 
-function steamapi.GetService(name)
-	return steamapi.services[name]
+function steam.GetWebAPIService(name)
+	return steam.services[name]
 end
 
-return steamapi
+return steam
