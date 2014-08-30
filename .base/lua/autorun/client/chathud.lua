@@ -28,7 +28,7 @@ chathud = {
 			niggly = "<texture=masks/niggly>",
 			colbert = "<texture=masks/colbert>",
 			eli = "<texture=models/eli/eli_tex4z,4>",
-			bubu = "<remember=bubu><color=255,80,50><texture=hud/killicons/default,50>  <translate=0,-15><color=148,61,148><font=ChatFont>Bubu<color=255,255,255>:</translate></remember>",
+			bubu = "<remember=bubu><color=255,80,50><texture=materials/hud/killicons/default.vtf,50>  <translate=0,-15><color=148,61,148><font=ChatFont>Bubu<color=255,255,255>:</translate></remember>",
 			acchan = "<remember=acchan><translate=20,-35><scale=1,0.6><texture=http://www.theonswitch.com/wp-content/uploads/wow-speech-bubble-sidebar.png,64></scale></translate><scale=0.75,1><texture=http://img1.wikia.nocookie.net/__cb20110317001632/southparkfanon/images/a/ad/Kyle.png,64></scale></remember>",
 		}
 		
