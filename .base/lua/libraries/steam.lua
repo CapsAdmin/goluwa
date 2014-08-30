@@ -50,8 +50,14 @@ function steam.CommunityIDToSteamID(id)
 	return "STEAM_0:" .. a .. ":" .. (b+2)
 end
 
-function steam.VDFToTable(str, lower_keys)
+function steam.VDFToTable(str, lower_keys, preprocess)
+	str = str:gsub("http://", "___L_O_L___")
+	str = str:gsub("https://", "___L_O_L_2___")
+	
 	str = str:gsub("//.-\n", "")
+	
+	str = str:gsub("___L_O_L___", "http://")
+	str = str:gsub("___L_O_L_2___", "https://")
 	
 	str = str:gsub("(%b\"\"%s-)%[$(%S-)%](%s-%b{})", function(start, def, stop) 
 		if def ~= "WIN32" then
@@ -60,13 +66,14 @@ function steam.VDFToTable(str, lower_keys)
 		
 		return start .. stop
 	end) 
-	
+
 	str = str:gsub("(%b\"\"%s-)(%b\"\"%s-)%[$(%S-)%]", function(start, stop, def) 
 		if def ~= "WIN32" then
 			return ""
 		end		
 		return start .. stop
 	end) 
+	
 	
 	local tbl = {}
 	
@@ -91,11 +98,15 @@ function steam.VDFToTable(str, lower_keys)
 			if in_string then
 				
 				if key then
-					if lower_keys then
-						key = key:lower()
-					end
-					local val = table.concat(capture, "")
+					if lower_keys then key = key:lower() end
 					
+					local val = table.concat(capture, "")					
+				
+					if preprocess and val:find("|") then
+						for k, v in pairs(preprocess) do
+							val = val:gsub("|" .. k .. "|", v)
+						end
+					end
 				
 					if val:lower() == "false" then 
 						val = false
@@ -103,14 +114,20 @@ function steam.VDFToTable(str, lower_keys)
 						val =  true
 					else
 						val = tonumber(val) or val
-					end	
+					end
 					
 					if type(current[key]) == "table" then
 						table.insert(current[key], val)
 					elseif current[key] then
 						current[key] = {current[key], val}
 					else
-						current[key] = val
+						if key:find("+", nil, true) then
+							for i, key in ipairs(key:explode("+")) do
+								current[key] = val
+							end
+						else
+							current[key] = val
+						end
 					end
 					
 					key = nil
@@ -129,6 +146,8 @@ function steam.VDFToTable(str, lower_keys)
 				table.insert(capture, char)
 			elseif char == [[{]] then
 				if key then
+					if lower_keys then key = key:lower() end
+					
 					table.insert(stack, current)
 					current[key] = {}
 					current = current[key]
@@ -225,6 +244,72 @@ do -- steam directories
 		end
 		
 		return ""
+	end
+	
+	function steam.GetGameFolders(skip_mods)
+		local games = {}
+		
+		for i, library in ipairs(steam.GetLibraryFolders()) do
+			for i, game in ipairs(vfs.Find(library .. "/common/", nil, true)) do
+				table.insert(games, game .. "/")
+			end
+			if not skip_mods then
+				for i, mod in ipairs(vfs.Find(library .. "/sourcemods/", nil, true)) do
+					table.insert(games, mod .. "/")
+				end
+			end
+		end
+		
+		return games
+	end
+	
+	function steam.GetSourceGames()
+		local found = {}
+		
+		for i, game_dir in ipairs(steam.GetGameFolders()) do
+			for i, folder in ipairs(vfs.Find(game_dir, nil, true)) do
+				if vfs.IsDir(folder) then
+					for i, path in ipairs(vfs.Find(folder .. "/", nil, true)) do
+						if path:lower():find("gameinfo") then
+							local str = vfs.Read(path)
+							
+							local tbl = steam.VDFToTable(str, true, {gameinfo_path = path:match("(.+/)"), all_source_engine_paths = path:match("(.+/).+/")})
+							if tbl then
+								tbl = tbl.gameinfo
+								
+								tbl.game_dir = game_dir
+								
+								table.insert(found, tbl)
+							end
+						end
+					end
+				end
+			end
+		end
+		
+		return found
+	end
+		
+	function steam.MountAllSourceGames()
+		for i, game_info in ipairs(steam.GetSourceGames()) do
+			local paths = game_info.filesystem.searchpaths.game
+			if type(paths) == "string" then paths = {paths} end
+			for i, path in pairs(paths) do
+				if not vfs.IsDir(path) then
+					path = game_info.game_dir .. path .. "/"
+				end
+				path = path:gsub("/%.", "/")
+				if vfs.IsDir(path) then
+					vfs.Mount(path)
+					
+					for k, v in pairs(vfs.Find(path)) do
+						if v:find("%.vpk") and v:find("_dir") then
+							vfs.Mount(path .. v .. "/")
+						end
+					end
+				end
+			end
+		end
 	end
 end
 
