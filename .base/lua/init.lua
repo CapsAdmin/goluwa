@@ -689,7 +689,7 @@ if not ZEROBRANE then
 	console.InitializeCurses()
 end
 
-steamapi.Initialize()
+steam.InitializeWebAPI()
 
 do -- addons
 	-- tries to load all addons 
