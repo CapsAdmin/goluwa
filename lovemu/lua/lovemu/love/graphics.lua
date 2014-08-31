@@ -229,11 +229,13 @@ do -- font
 	Font.Type = "Font"
 		
 	function Font:getWidth(str) 
+		str = str or "W"
 		surface.SetFont(self.Name)
 		return surface.GetTextSize(str)
 	end
 	
-	function Font:getHeight(str) 
+	function Font:getHeight(str)	
+		str = str or "W"
 		surface.SetFont(self.Name)
 		return select(2, surface.GetTextSize(str))
 	end
@@ -244,6 +246,10 @@ do -- font
 	
 	function Font:getLineHeight(num)
 		self.line_height = num
+	end
+	
+	function Font:getWrap() -- partial
+		return 1, 1
 	end
 
 	local i = 0
@@ -431,9 +437,9 @@ do -- canvas
 	
 	function love.graphics.setCanvas(canvas) -- partial
 		CANVAS = canvas
-
+		
 		if canvas then
-			canvas.fb:Bind()
+			gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, canvas.fb.id)
 		else
 			gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
 		end
@@ -468,14 +474,18 @@ do -- image
 	end
 	
 	function love.graphics.newImage(path) -- partial		
-		local self = lovemu.CreateObject(Image)
-		
-		lovemu.textures[self] = Texture(path, {
-			mag_filter = DEFAULT_FILTER,
-			min_filter = DEFAULT_FILTER,
-		}) 
-		
-		return self
+		if lovemu.Type(path) == "ImageData" then
+			return path
+		else
+			local self = lovemu.CreateObject(Image)
+			
+			lovemu.textures[self] = Texture(path, {
+				mag_filter = DEFAULT_FILTER,
+				min_filter = DEFAULT_FILTER,
+			}) 
+			
+			return self
+		end
 	end
 	
 	function love.graphics.newImageData(path) -- partial

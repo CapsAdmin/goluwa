@@ -9,7 +9,9 @@ function lovemu.CreateLoveEnv(version)
 	love._version_minor = tonumber(version[2])
 	love._version_revision = tonumber(version[3])
 
-	include("lovemu/love/*", love)	
+	include("lovemu/love/*", love)
+	
+	love.math = math
 	
 	return love
 end
@@ -31,27 +33,22 @@ function lovemu.RunGame(folder)
 		
 	window.Open()	
 		
-	logn("mounting love game folder: ", R("lovers/" .. lovemu.demoname .. "/"))		
+	logn("mounting love game folder: ", R("lovers/" .. lovemu.demoname .. "/"))	
+	vfs.AddModuleDirectory("")	
 	vfs.AddModuleDirectory("lovers/" .. lovemu.demoname .. "/")
 	vfs.Mount(R("lovers/" .. lovemu.demoname .. "/"))
 			
 	local env
 	env = setmetatable({
 		love = love, 
-		require = function(name, ...)
-		
-			name = name:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		
-			if package.loaded[name] then 
-				return package.loaded[name] 
-			end
-			
-			local func, err, path = require.load(name, folder) 
+		require = function(name, ...)			
+			local func, err, path = require.load(name, folder, true) 
 						
 			if type(func) == "function" then
 				if debug.getinfo(func).what ~= "C" then
 					setfenv(func, env)
-				end				
+				end
+				
 				return require.require_function(name, func, path) 
 			end
 			
@@ -101,6 +98,7 @@ function lovemu.RunGame(folder)
 	local main = assert(vfs.loadfile("main.lua"))
 	
 	setfenv(main, env)
+	setfenv(love.load, env)
 	
 	if not xpcall(main, system.OnError) then return end
 	if not xpcall(love.load, system.OnError) then return end
