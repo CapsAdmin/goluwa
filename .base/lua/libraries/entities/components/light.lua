@@ -104,6 +104,7 @@ if CLIENT then
 	end
 
 	function COMPONENT:OnDraw3DLights(shader)
+		if not render.matrices.vp_matrix then return end -- grr
 		local transform = self:GetComponent("transform")
 		local matrix = transform:GetMatrix() 
 		local screen = matrix * render.matrices.vp_matrix
