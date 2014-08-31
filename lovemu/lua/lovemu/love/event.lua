@@ -33,3 +33,5 @@ function love.event.wait() --partial
 		return unpack(val)
 	end
 end
+
+love.handlers = {}

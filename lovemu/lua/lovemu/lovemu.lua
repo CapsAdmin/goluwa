@@ -100,6 +100,8 @@ console.AddCommand("lovemu", function(line, command, ...)
 		local name = tostring((...))
 		if vfs.IsDir("lovers/" .. name) then
 			lovemu.RunGame(name)
+		elseif vfs.IsFile("lovers/" .. name .. ".love") then
+			lovemu.RunGame(name .. ".love")
 		else
 			return false, "love game " .. name .. " does not exist"
 		end
