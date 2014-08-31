@@ -7,8 +7,7 @@ function love.filesystem.getAppdataDirectory()
 end
 
 function love.filesystem.getLastModified(path)
-	local attribs = vfs.GetAttributes(path)
-	return attribs.modification or 0
+	return vfs.GetLastModified(path)
 end
 
 function love.filesystem.getSaveDirectory()
