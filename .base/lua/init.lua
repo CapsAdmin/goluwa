@@ -638,6 +638,7 @@ do -- libraries
 	include("libraries/null.lua")
 		
 	if CLIENT then
+
 		-- graphics
 		render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
 
@@ -645,6 +646,8 @@ do -- libraries
 		window = include("libraries/graphics/window.lua") -- high level window implementation
 		video = include("libraries/graphics/video.lua") -- gif support (for now)
 		include("libraries/graphics/particles.lua")
+		
+		window.Open()
 		
 		-- audio
 		audio = include("libraries/audio/audio.lua") -- high level implementation of OpenAl
