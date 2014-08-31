@@ -114,9 +114,9 @@ function CONTEXT:IsFile(path_info)
 end
 
 function CONTEXT:IsFolder(path_info)
-	
+		
 	-- vpk files are folders
-	if path_info.full_path:find("^.+%.vpk$") then
+	if path_info.folder_name:find("^.+%.vpk$") then
 		return true
 	end
 

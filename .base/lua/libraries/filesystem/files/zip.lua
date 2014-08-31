@@ -8,6 +8,7 @@ local CONTEXT = {}
 CONTEXT.Name = "zip"
 
 local valid_names = {
+	"love", -- love2d
 	"a", -- Hellhog XP (*.A)
 	"abz", -- Alpha Black Zero (*.ABZ)
 	"arf", -- Packmania 2 (*.ARF)
@@ -54,21 +55,24 @@ local valid_names = {
 	"ztd", -- Dinosaur Digs (*.ZTD)|Marine Mania (*.ZTD)
 }
 
-local function split_path(path_info)
-	
+local valid_names2 = {}
+for k,v in pairs(valid_names) do valid_names2[v] = true end
+
+local function split_path(path_info)	
 	local archive_path, relative
-	
-	for i, ext in ipairs(valid_names) do
-		archive_path, relative = path_info.full_path:match("(.-%."..ext..")/(.*)")
-		if archive_path and relative then
-			break
-		end
-	end
 		
-	if not archive_path and not relative then
+	local ext = path_info.full_path:match(".+%.(.-)/")
+	
+	if not valid_names2[ext] then
 		error("not a valid archive path", 2)
 	end
-
+	
+	local archive_path, relative = path_info.full_path:match("(.+%..-)/(.*)")
+		
+	if archive_path:endswith("/") then
+		archive_path = archive_path:sub(0, -2)
+	end
+		
 	local temp = io.open(archive_path, "rb")
 	local signature = temp:read(4)
 	if signature ~= "\x50\x4b\x03\x04" then 
@@ -92,33 +96,38 @@ function CONTEXT:IsFile(path_info)
 	archive:close()
 end
 
-function CONTEXT:IsFolder(path_info)
-	
+function CONTEXT:IsFolder(path_info)	
 	-- [zipak] files are folders
-	if path_info.full_path:find("^.+%.[zipak]$") then
-		return true
-	end
-
-	local archive = zip.open(archive_path, "r")
-
-	if archive:locate_file(relative) and archive:get_file_info().crc == 0 then
-		archive:close()
-		return true
-	end
 	
-	archive:close()
+	local ext = path_info.folder_name:match("^.+%.(.-)$")
+	
+	if ext and valid_names2[ext:lower()] then
+				
+		-- hmm, there is no better way to do this?
+		local archive_path, relative = split_path(path_info)
+		local archive = zip.open(archive_path, "r")
+
+		for info in archive:files() do
+			if info.filename:find(relative) then
+				archive:close()
+				return true
+			end
+		end
+		archive:close()
+		
+	end
+	return false
 end
 
 function CONTEXT:GetFiles(path_info)
 	local archive_path, relative = split_path(path_info)
-	
 	local out = {}
 	
 	local archive = zip.open(archive_path, "r")
 		
 	local dir = relative:match("(.*/)")
 	local done = {}
-	
+		
 	for info in archive:files() do
 		local path = info.filename
 		
