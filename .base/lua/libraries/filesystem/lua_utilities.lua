@@ -21,14 +21,20 @@ function vfs.GetLoadedLuaFiles()
 	return vfs.included_files
 end
 
+
 function vfs.loadfile(path)
 	check(path, "string")
 	
-	local path = vfs.GetAbsolutePath(path)
+	local full_path = vfs.GetAbsolutePath(path)
 		
-	if path then
-		local ok, err = loadfile(path)
-		return ok, err, path
+	if full_path then
+		local res, err = vfs.Read(full_path)
+		if not res then 
+			return res, err, full_path 
+		end
+		
+		local res, err = loadstring(res, path)
+		return res, err, full_path
 	end
 	
 	return false, "No such file or directory"
@@ -80,7 +86,7 @@ function vfs.AddModuleDirectory(dir)
 	
 	table.insert(package.loaders, function(path)
 		local c_name = "luaopen_" .. path:gsub("^.*%-", "", 1):gsub("%.", "_")
-		path = R(dir .. "bin/" .. jit.os:lower() .. "/" .. jit.arch:lower() .. "/" .. path .. (jit.os == "Windows" and ".dll" or ".so"))
+		path = R(dir .. "bin/" .. jit.os:lower() .. "/" .. jit.arch:lower() .. "/" .. path .. (jit.os == "Windows" and ".dll" or ".so")) or path
 		return package.loadlib(path, c_name)
 	end)
 end	
