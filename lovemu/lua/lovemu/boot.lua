@@ -15,10 +15,10 @@ function lovemu.CreateLoveEnv(version)
 end
 
 function lovemu.RunGame(folder)
-	require("socket")
-	require("socket.http")
+	--require("socket")
+	--require("socket.http")
 	
-	render.EnableGBuffer(false)
+	--render.EnableGBuffer(false)
 
 	local love = lovemu.CreateLoveEnv(lovemu.version)
 		
@@ -31,6 +31,7 @@ function lovemu.RunGame(folder)
 		
 	window.Open()	
 		
+	logn("mounting love game folder: ", R("lovers/" .. lovemu.demoname .. "/"))		
 	vfs.AddModuleDirectory("lovers/" .. lovemu.demoname .. "/")
 	vfs.Mount(R("lovers/" .. lovemu.demoname .. "/"))
 			
@@ -43,14 +44,6 @@ function lovemu.RunGame(folder)
 		
 			if package.loaded[name] then 
 				return package.loaded[name] 
-			end
-			
-			if not vfs.Exists(name) then
-				if vfs.Exists(name.."/init.lua") then
-					name = name .. "/init.lua"
-				else
-					name = name .. ".lua"
-				end
 			end
 			
 			local func, err, path = require.load(name, folder) 
@@ -84,7 +77,7 @@ function lovemu.RunGame(folder)
 			author = "who knows",
 		}
 		
-		if vfs.Exists(R("conf.lua"))==true then			
+		if vfs.IsFile("conf.lua") then			
 			local func = assert(vfs.loadfile("conf.lua"))
 			setfenv(func, env)
 			func()

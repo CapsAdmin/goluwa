@@ -309,10 +309,10 @@ do -- font
 		r=r/0.0174532925
 		
 		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
-		surface.SetTextScale(sx, sy)
+		surface.Scale(sx, sy)
 		surface.SetTextPos(x, y)
 		surface.DrawText(text, r)
-		surface.SetTextScale(1, 1)
+		surface.Scale(-sx, -sy)
 	end
 
 	function love.graphics.printf(text, x, y, limit, align, r, sx, sy)
@@ -329,14 +329,14 @@ do -- font
 		local lines = string.explode(text, "\n")
 		
 		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
-		surface.SetTextScale(sx, sy)
+		surface.Scale(sx, sy)
 		
 		for i = 1, #lines do
 			surface.SetTextPos(x, y + (currentFont.Size+(currentFont.Size*125/100) * i))
 			surface.DrawText(lines[i])
 		end
 		
-		surface.SetTextScale(1, 1)
+		surface.Scale(-sx, -sy)
 	end
 end
 
