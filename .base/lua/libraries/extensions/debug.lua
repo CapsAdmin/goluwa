@@ -78,9 +78,9 @@ function debug.openscript(lua_script, line)
 	local path = console.GetVariable("editor_path")
 	
 	if not path then return false end
-	lua_script = R(lua_script)
+	lua_script = R(lua_script) or lua_script
 	
-	if not vfs.Exists(lua_script) then
+	if not vfs.IsFile(lua_script) then
 		logf("debug.openscript: script %q doesn't exist\n", lua_script)
 		return false
 	end
@@ -96,7 +96,10 @@ end
 function debug.openfunction(func, line)
 	local info = debug.getinfo(func)
 	if info.what == "Lua" then
-		return debug.openscript(info.source:sub(2), line or info.linedefined)
+		if info.source:sub(1, 1) == "@" then
+			info.source = info.source:sub(2)
+		end
+		return debug.openscript(info.source, line or info.linedefined)
 	end
 end
 
