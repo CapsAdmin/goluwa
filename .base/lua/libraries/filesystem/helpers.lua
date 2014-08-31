@@ -19,37 +19,28 @@ function vfs.Delete(path, ...)
 	return false, "No such file or directory"
 end
 
-function vfs.Read(path)
-	check(path, "string")
-	
-	local file, err = vfs.Open(path, "read")
-	
-	if file then			
-		local data = file:ReadAll("*all")
+local function add_helper(name, func, mode)
+	vfs[name] = function(path, ...)
+		check(path, "string")
 		
-		file:Close()
+		local file, err = vfs.Open(path, mode)
 		
-		return data
+		if file then			
+			local data = {file[func](file, ...)}
+			
+			file:Close()
+			
+			return unpack(data)
+		end
+			
+		return file, err
 	end
-		
-	return file, err
 end
 
-function vfs.Write(path, data)
-	check(path, "string")
-	
-	local file, err = vfs.Open(path, "write")
-	
-	if file then			
-		local data = file:WriteBytes(data)
-		
-		file:Close()
-		
-		return data
-	end
-		
-	return file, err
-end
+add_helper("Read", "ReadAll", "read")
+add_helper("Write", "WriteBytes", "write")
+add_helper("GetLastModified", "GetLastModified", "read")
+add_helper("GetLastAccessed", "GetLastAccessed", "read")
 
 function vfs.CreateFolder(path)
 	check(path, "string")

@@ -94,11 +94,11 @@ function CONTEXT:GetSize()
 end
 
 function CONTEXT:GetLastModified()
-	return lfs.attributes(self.path).modification
+	return self.attributes.modification
 end
 
 function CONTEXT:GetLastAccessed()
-	return lfs.attributes(self.path).access
+	return self.attributes.access
 end
 
 vfs.RegisterFileSystem(CONTEXT)
