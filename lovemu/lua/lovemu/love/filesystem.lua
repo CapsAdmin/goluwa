@@ -46,11 +46,11 @@ function love.filesystem.isDirectory(path)
 end
 
 function love.filesystem.isFile(path)
-	return vfs.GetAttributes(path).mode == "file"
+	return vfs.IsFile(path)
 end
 
 function love.filesystem.lines(path)
-	return io.lines(vfs.GetFile(path))
+	return vfs.Open(path):Lines()
 end
 
 function love.filesystem.load(path ,mode)
@@ -64,7 +64,11 @@ function love.filesystem.load(path ,mode)
 end
 
 function love.filesystem.mkdir(path) --partial
-	lfs.mkdir(R("%DATA%/lovemu/" .. path))
+	local ok ,err = lfs.mkdir(R("%DATA%/lovemu/") .. path)
+	if err:find("File exist") then
+		return true
+	end
+	return ok
 end
 
 love.filesystem.createDirectory = love.filesystem.mkdir
@@ -108,12 +112,12 @@ do -- File object
 	
 	function File:close()
 		if not self.file then return end
-		self.file:close()
+		self.file:Close()
 	end
 	
 	function File:eof()
 		if not self.file then return 0 end
-		return self.file:seek() ~= nil
+		return self.file:TheEnd() ~= nil
 	end
 	
 	do
@@ -148,17 +152,17 @@ do -- File object
 	
 	function File:lines()
 		if not self.file then return function() end end
-		return self.file:lines()
+		return self.file:Lines()
 	end
 	
 	function File:read(bytes)
-		local str = self.file:read(bytes)
+		local str = self.file:ReadBytes(bytes)
 		return str, #str
 	end
 
 	function File:write(data, size) -- partial
 		if lovemu.Type(data) == "string" then
-			self.file:write(data)
+			self.file:WriteBytes(data)
 			return true
 		elseif lovemu.Type(data) == "Data" then
 			lovemu.ThrowNotSupportedError("Data not supported")
@@ -168,7 +172,7 @@ do -- File object
 	function love.filesystem.newFile(file_name, mode)	
 		local self = lovemu.CreateObject(File)
 		
-		self.file = vfs.GetFile(file_name, mode)
+		self.file = vfs.Open(file_name, mode)
 		self.mode = mode
 		
 		return self

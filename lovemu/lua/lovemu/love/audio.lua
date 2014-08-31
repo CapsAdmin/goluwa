@@ -183,6 +183,10 @@ do -- Source
 		
 		return false
 	end
+	
+	function Source:isPlaying()
+		return not self:isStopped()
+	end
 
 	function Source:pause()
 		if self.source then

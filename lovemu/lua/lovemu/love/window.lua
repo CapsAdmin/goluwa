@@ -29,3 +29,11 @@ end
 function love.window.getDesktopDimensions()
 	return window.GetSize():Unpack()
 end
+
+function love.window.setIcon()
+
+end
+
+function love.window.getIcon()
+
+end
