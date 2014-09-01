@@ -549,7 +549,7 @@ function render.CreateTextureFromPath(path, format)
 		end
 		
 		self.decode_info = info
-	end) then
+	end, format.read_speed) then
 		self:MakeError()
 	end
 	
