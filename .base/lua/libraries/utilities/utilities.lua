@@ -2,6 +2,134 @@ local utilities = _G.utilities or {}
 
 include("mesh.lua", utilities)
 
+do -- tree
+	local META = metatable.CreateTemplate("tree")
+
+	function META:SetEntry(str, value)
+		if self.list then
+			if type(str) == "table" then str = table.concat(str, self.delimiter) end
+			
+			self.tree[str] = value
+			return
+		end
+		
+		local keys = type(str) == "table" and str or str and str:explode(self.delimiter) or {}
+		
+		local next = self.tree
+				
+		for i, key in ipairs(keys) do
+			if key ~= "" then
+				if not next[key] then
+					next[key] = {}
+				end
+				next = next[key]
+			end
+		end
+		
+		next.key = str
+		next.value = value
+	end
+
+	function META:GetEntry(str)
+		if self.list then
+			if type(str) == "table" then str = table.concat(str, self.delimiter) end
+			
+			return self.tree[str]
+		end
+		
+		local keys = type(str) == "table" and str or str and str:explode(self.delimiter) or {}
+				
+		local next = self.tree
+		
+		for i, key in ipairs(keys) do
+			if key ~= "" then
+				if not next[key] then
+					error("not found")
+				end
+				next = next[key]
+			end
+		end
+		
+		return next.value
+	end
+	
+	function META:GetChildren(str)
+		if self.list then
+			if type(str) == "table" then str = table.concat(str, self.delimiter) end
+			
+			if not str or str == self.delimiter then
+				local out = {}	
+				for key, val in pairs(self.tree) do
+					table.insert(out, {key = key, value = val})
+				end
+				return out
+			end
+			
+			if not str:endswith(self.delimiter) then
+				str = str .. self.delimiter
+			end
+			
+			local out = {}	
+			local dir = str:match("(.*)/")
+			local done = {}
+			
+			for key, val in pairs(self.tree) do
+				if key:find(str, nil, true) and (not dir or key:match("(.*)/.") == dir) then
+					if not dir then
+						if not done[key] then
+							key = key:match("(.-)/") or key
+							table.insert(out, {key = key, value = val})
+							done[key] = true
+						end
+					else
+						table.insert(out, {key = key:match(".+/(.+)") or key, value = val})
+					end
+				end 
+			end
+		
+			return out		
+		end
+		
+		local keys = type(str) == "table" and str or str and str:explode(self.delimiter) or {}
+				
+		local next = self.tree
+		
+		for i, key in ipairs(keys) do
+			if key ~= "" then
+				if not next[key] then
+					error("not found")
+				end
+				next = next[key]
+			end
+		end
+		
+		return next
+	end
+
+	function utilities.CreateTree(delimiter, list)
+		local self = META:New()
+		
+		self.tree = {}	
+		self.delimiter = delimiter
+		self.list = list
+		
+		return self
+	end
+
+	if RELOAD then
+		local tree = utilities.CreateTree("/", true)
+
+		tree:SetEntry({"hello"}, "LOL")
+		tree:SetEntry("hello/world/lol.txt", "wwww")
+		tree:SetEntry("hello/world/lsdaWl.txt", "asdf")
+		print(tree:GetEntry("hello/world/lol.txt"))
+		table.print(tree:GetChildren("hello/world"))
+		table.print(tree:GetChildren("hello/world/"))
+		table.print(tree:GetChildren("/"))
+		table.print(tree:GetChildren())
+	end
+end
+
 function utilities.TableToFlags(flags, valid_flags)
 	if type(flags) == "string" then
 		flags = {flags}
