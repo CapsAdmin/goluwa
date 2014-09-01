@@ -7,6 +7,9 @@ render.matrices = {
 	view_2d = Matrix44(),
 	view_3d = Matrix44(),
 	world = Matrix44(),
+	
+	vpm_matrix = Matrix44(),
+	vp_matrix = Matrix44(),
 }
 
 render.camera = {
