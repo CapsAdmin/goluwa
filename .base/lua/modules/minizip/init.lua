@@ -268,6 +268,9 @@ local function unzip_read_cdata(file, buf, sz)
 end
 
 local function unzip_read(file, sz)
+	if sz == math.huge then
+		sz = unzip_get_file_info(file).uncompressed_size
+	end
 	local buf = ffi.new('uint8_t[?]', sz)
 	local len = unzip_read_cdata(file, buf, sz)
 	return len > 0 and ffi.string(buf, len) or nil
