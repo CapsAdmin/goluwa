@@ -6,9 +6,9 @@ if not steam.mounted then
 end
 
 local bsp_file
---= vfs.Open("maps/gm_construct.bsp") -- gmod
-= vfs.Open("maps/d2_coast_07.bsp") -- hl2
---= vfs.Open("maps/ep2_outland_06a.bsp") -- ep2
+--= vfs.Open("maps/gm_bluehills_test3.bsp") -- gmod
+--= vfs.Open("maps/d2_coast_07.bsp") -- hl2
+= vfs.Open("maps/ep2_outland_06a.bsp") -- ep2
 --= vfs.Open("maps/c3m1_plankcountry.bsp") -- l4d
 
 local header = bsp_file:ReadStructure([[
@@ -401,14 +401,22 @@ do timer.Start("building mesh")
 		path = path:lower()
 		
 		if not vfs.IsFile(path) then
-			logf("unable to find %s in %s.%s\n", path, shader, field)
-			return render.GetErrorTexture()
+			path = "materials/" .. data[field] .. "b.vtf"
+		
+			if not vfs.IsFile(path) then
+				logf("unable to find %s in %s.%s\n", path, shader, field)
+				table.print(material)
+
+				return render.GetErrorTexture()
+			end
 		end
 				
 		local tex = Texture(path, {mip_map_levels = 8, read_speed = math.huge})
 		
 		if not tex or tex == render.GetErrorTexture() then
 			logf("unable to find %s in %s.%s\n", path, shader, field)
+			table.print(material)
+
 			return render.GetErrorTexture()
 		end 
 		
