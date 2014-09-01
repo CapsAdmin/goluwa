@@ -105,6 +105,24 @@ function audio.GetAvailableEffects()
 	return out
 end
 
+function audio.GetAvailableFilters()
+	local effects = al.GetAvailableFilters()
+	
+	local out = {}
+	
+	for k, v in pairs(effects) do
+		local tbl = {}
+		
+		for k, v in pairs(v.params) do
+			tbl[k] = {max = v.max, min = v.min, default = v.default}
+		end
+		
+		out[k] = tbl
+	end
+	
+	return out
+end
+
 function audio.GetAllInputDevices()
 	local list = alc.GetString(nil, alc.e.ALC_CAPTURE_DEVICE_SPECIFIER)
 
