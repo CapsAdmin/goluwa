@@ -1,42 +1,20 @@
-local vtf_header_structure = [[
-long ident; // BSP file identifier
-long version; // BSP file version
-]]
-
-
---[[vfs.Mount(steam.GetGamePath("Counter-Strike Global Offensive") .. "csgo/")
-vfs.Mount(steam.GetGamePath("Counter-Strike Global Offensive") .. "csgo/pak01_dir.vpk")
-local buffer = Buffer(io.open(R"maps/cs_agency.bsp", "rb"))]]
-
-local buffer
-
-local map = "gmod"
-
-if map == "hl2" then
-	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/")
-	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
-	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk") 
-	buffer = vfs.Open("maps/d2_coast_07.bsp")
-elseif map == "gmod" then
-	vfs.Mount(steam.GetGamePath("GarrysMod") .. "garrysmod/download/")
-	vfs.Mount(steam.GetGamePath("GarrysMod") .. "garrysmod/")
-	vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_misc_dir.vpk")
-	vfs.Mount(steam.GetGamePath("GarrysMod") .. "sourceengine/hl2_textures_dir.vpk") 
-	vfs.Mount(steam.GetGamePath("GarrysMod") .. "garrysmod/garrysmod_dir.vpk") 
-	buffer = vfs.Open("maps/gm_bluehills_test3.bsp")
-elseif map == "ep2" then
-	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "ep2/")
-	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
-	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk")
-	vfs.Mount(steam.GetGamePath("Half-Life 2") .. "ep2/ep2_pak_dir.vpk")
-	buffer = vfs.Open("maps/ep2_outland_06a.bsp")
-elseif map == "l4d2" then
-	vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "left4dead2/")
-	vfs.Mount(steam.GetGamePath("Left 4 Dead 2") .. "left4dead2/pak01_dir.vpk")
-	buffer = vfs.Open("maps/c3m1_plankcountry.bsp")
+if not steam.mounted then
+	timer.Start("mounting source games")
+	steam.MountAllSourceGames()
+	timer.Stop()
+	steam.mounted = true
 end
 
-local header = buffer:ReadStructure(vtf_header_structure)
+local bsp_file
+--= vfs.Open("maps/gm_construct.bsp") -- gmod
+= vfs.Open("maps/d2_coast_07.bsp") -- hl2
+--= vfs.Open("maps/ep2_outland_06a.bsp") -- ep2
+--= vfs.Open("maps/c3m1_plankcountry.bsp") -- l4d
+
+local header = bsp_file:ReadStructure([[
+long ident; // BSP file identifier
+long version; // BSP file version
+]])
  
 do timer.Start("reading lumps") -- lumps
 	local struct = [[
@@ -60,12 +38,12 @@ do timer.Start("reading lumps") -- lumps
 	header.lumps = {}
 
 	for i = 1, 64 do
-		table.insert(header.lumps, buffer:ReadStructure(struct))
+		table.insert(header.lumps, bsp_file:ReadStructure(struct))
 	end
 
 timer.Stop() end
 
-header.map_revision = buffer:ReadLong()
+header.map_revision = bsp_file:ReadLong()
 
 logn("BSP ", header.ident)
 logn("VERSION ", header.version)
@@ -75,9 +53,12 @@ local function read_lump_data(index, size, struct)
 	local out = {}
 	
 	local lump = header.lumps[index]
+	
+	if lump.filelen == 0 then return end
+	
 	local length = lump.filelen / size
 	
-	buffer:SetPos(lump.fileofs)
+	bsp_file:SetPos(lump.fileofs)
 	
 	if type(struct) == "function" then
 		for i = 1, length do
@@ -85,7 +66,7 @@ local function read_lump_data(index, size, struct)
 		end
 	else
 		for i = 1, length do
-			out[i] = buffer:ReadStructure(struct)
+			out[i] = bsp_file:ReadStructure(struct)
 		end
 	end
 		
@@ -96,8 +77,8 @@ do -- pak
 	local lump = header.lumps[41]
 	local length = lump.filelen
 
-	buffer:SetPos(lump.fileofs)
-	local pak = buffer:ReadBytes(length)
+	bsp_file:SetPos(lump.fileofs)
+	local pak = bsp_file:ReadBytes(length)
 	
 	local name = "temp_bsp.zip"
 	
@@ -132,7 +113,7 @@ timer.Start("reading surfedges")
 timer.Stop()
 
 timer.Start("reading edges")
-	header.edges = read_lump_data(13, 4, function() return {buffer:ReadUnsignedShort(), buffer:ReadUnsignedShort()} end)
+	header.edges = read_lump_data(13, 4, function() return {bsp_file:ReadUnsignedShort(), bsp_file:ReadUnsignedShort()} end)
 timer.Stop()
 
 timer.Start("reading faces")
@@ -185,8 +166,8 @@ timer.Start("reading texdatastringtable")
 	header.texdatastringdata = {}
 
 	for i = 1, #texdatastringtable do
-		buffer:SetPos(lump.fileofs + texdatastringtable[i])
-		header.texdatastringdata[i] = buffer:ReadString()
+		bsp_file:SetPos(lump.fileofs + texdatastringtable[i])
+		header.texdatastringdata[i] = bsp_file:ReadString()
 	end
 timer.Stop()
 
@@ -227,38 +208,38 @@ do timer.Start("reading displacements")
 	local lump = header.lumps[27]
 	local length = lump.filelen / 176 
 	
-	buffer:SetPos(lump.fileofs)
+	bsp_file:SetPos(lump.fileofs)
 	
 	header.displacements = {}
 	
 	for i = 1, length do
-		local data = buffer:ReadStructure(structure)
+		local data = bsp_file:ReadStructure(structure)
 		
 		do -- http://fal.xrea.jp/plugin/SourceSDK/bspfile_8h-source.html				
 			data.EdgeNeighbors = {}
 			
 			for i = 1, 4 do
-				data.EdgeNeighbors[i] = {m_SubNeighbors = {buffer:ReadStructure(edge_neighbor), buffer:ReadStructure(edge_neighbor)}}
+				data.EdgeNeighbors[i] = {m_SubNeighbors = {bsp_file:ReadStructure(edge_neighbor), bsp_file:ReadStructure(edge_neighbor)}}
 			end
 			
 			data.CornerNeighbors = {}
 			
 			for i = 1, 4 do
-				data.CornerNeighbors[i] = buffer:ReadStructure(corner_neighbors)
+				data.CornerNeighbors[i] = bsp_file:ReadStructure(corner_neighbors)
 			end
 			
 			data.AllowedVerts = {}
 			
 			for i = 1, 10 do
-				data.AllowedVerts[i] = buffer:ReadLong()
+				data.AllowedVerts[i] = bsp_file:ReadLong()
 			end
 		end
 		
-		local old_pos = buffer:GetPos()
+		local old_pos = bsp_file:GetPos()
 		
 		local lump = header.lumps[34]
 		local length = lump.filelen / 20
-		buffer:SetPos(lump.fileofs + (data.DispVertStart * 20))
+		bsp_file:SetPos(lump.fileofs + (data.DispVertStart * 20))
 		
 		local DispVertLength = ((2 ^ data.power) + 1) ^ 2
 		
@@ -266,14 +247,14 @@ do timer.Start("reading displacements")
 
 		for i = 1, DispVertLength do
 
-			local vertex = buffer:ReadVec3()
-			local dist = buffer:ReadFloat()
-			local alpha = buffer:ReadFloat()
+			local vertex = bsp_file:ReadVec3()
+			local dist = bsp_file:ReadFloat()
+			local alpha = bsp_file:ReadFloat()
 
 			data.vertex_info[i] = {vertex = vertex, dist = dist, alpha = alpha}
 		end
 
-		buffer:SetPos(old_pos)
+		bsp_file:SetPos(old_pos)
 		
 		header.displacements[i] = data
 	end
@@ -290,18 +271,19 @@ timer.Start("reading models")
 	]])
 timer.Stop()
 
+--[==[
 timer.Start("reading physdisp")
 	header.physmodels = {}
 
 	local lump = header.lumps[29]
 
-	buffer:SetPos(lump.fileofs)
+	bsp_file:SetPos(lump.fileofs)
 
-	local numDisplacements = buffer:ReadShort()
+	local numDisplacements = bsp_file:ReadShort()
 	local dataSizes = {}
 
 	for i = 1, numDisplacements do
-		dataSizes[i] = buffer:ReadShort()
+		dataSizes[i] = bsp_file:ReadShort()
 	end
 
 	print("physdisps.numDisplacements: " .. numDisplacements)
@@ -323,18 +305,18 @@ timer.Start("reading physmodels")
 
 	local lump = header.lumps[30]
 
-	buffer:SetPos(lump.fileofs)
+	bsp_file:SetPos(lump.fileofs)
 
-	while (buffer:GetPos() - lump.fileofs) < lump.filelen do
-		local physmodel = buffer:ReadStructure(struct)
+	while (bsp_file:GetPos() - lump.fileofs) < lump.filelen do
+		local physmodel = bsp_file:ReadStructure(struct)
 
 		if physmodel.dataSize > 0 then
-			buffer:SetPos(buffer:GetPos() + physmodel.dataSize + physmodel.keydataSize)
+			bsp_file:SetPos(bsp_file:GetPos() + physmodel.dataSize + physmodel.keydataSize)
 		end
 
 		header.physmodels[#header.physmodels + 1] = physmodel
 	end
-timer.Stop()
+timer.Stop()]==]
 
 
 --for i = 1, #header.brushes do
@@ -355,6 +337,8 @@ do timer.Start("building mesh")
 		else
 			blend = 0
 		end
+		
+		blend = math.clamp(blend, 0, 1)
 		
 		table.insert(model.mesh_data, {
 			pos = Vec3(pos.x * scale, -pos.y * scale, -pos.z * scale), -- copy
@@ -406,18 +390,22 @@ do timer.Start("building mesh")
 		end
 		
 		if not data[field] then
+			if field ~= "$bumpmap" then
+				logn("invalid field ", field)
+				table.print(material)
+			end
 			return
 		end
 
 		local path = "materials/" .. data[field] .. ".vtf"
 		path = path:lower()
 		
-		if not vfs.Exists(path) then
+		if not vfs.IsFile(path) then
 			logf("unable to find %s in %s.%s\n", path, shader, field)
 			return render.GetErrorTexture()
 		end
-		
-		local tex = Texture(path, {mip_map_levels = 8})
+				
+		local tex = Texture(path, {mip_map_levels = 8, read_speed = math.huge})
 		
 		if not tex or tex == render.GetErrorTexture() then
 			logf("unable to find %s in %s.%s\n", path, shader, field)
@@ -436,52 +424,46 @@ do timer.Start("building mesh")
 			local face = header.faces[header.models[model_index].firstface + i]
 			local texinfo = header.texinfos[1 + face.texinfo]
 			local texdata = texinfo and header.texdatas[1 + texinfo.texdata] or nil
-
+			local texname = header.texdatastringdata[1 + texdata.nameStringTableID]:lower()
+			
+			if texname:sub(0, 5) == "maps/" then
+				texname = texname:gsub("maps/.-/(.+)_.-_.-_.+", "%1")
+			end
+							
 			-- split the world up into sub models by texture
-			if model_index == 1 then
-				local texname = header.texdatastringdata[1 + texdata.nameStringTableID]:lower()
+			if not meshes[texname] then				
+				local model = {mesh_data = {}}
+				meshes[texname] = model
 				
-				if texname:sub(0, 5) == "maps/" then
-					texname = texname:gsub("maps/.-/(.+)_.-_.-_.+", "%1")
-				end
-								
-				if not meshes[texname] then
-					
-					local model = {mesh_data = {}}
-					meshes[texname] = model
-					
-					local material
-					local path = "materials/" .. texname:lower() .. ".vmt"
-					
-					if vfs.Exists(path) then
-						local str = vfs.Read(path)
-						if str then
-							material = steam.VDFToTable(str, true)
-						else
-							material = {LightmappedGeneric = {["$basetexture"] = texname}}
-						end
+				local material
+				local path = "materials/" .. texname:lower() .. ".vmt"
+				
+				if vfs.IsFile(path) then
+					local str = vfs.Read(path)
+					if str then
+						material = steam.VDFToTable(str, true)
 					else
 						material = {LightmappedGeneric = {["$basetexture"] = texname}}
 					end
-				
-					if material.Water then
-						
-						model.diffuse = load_texture(material, "$basetexture")
-						model.bump = load_texture(material, "$normalmap")
-					else
-						model.diffuse = load_texture(material, "$basetexture")
-						model.bump = load_texture(material, "$bumpmap")
-						
-						if material.WorldVertexTransition then
-							model.diffuse2 = load_texture(material, "$basetexture2")
-						end
-					end
-					
-					table.insert(bsp_mesh.sub_models, meshes[texname])
+				else
+					material = {LightmappedGeneric = {["$basetexture"] = texname}}
 				end
-
-				sub_model = meshes[texname]
+			
+				if material.water then						
+					model.diffuse = load_texture(material, "$normalmap")
+				else
+					model.diffuse = load_texture(material, "$basetexture")
+					model.bump = load_texture(material, "$bumpmap")
+					
+					if material.worldvertextransition then
+						model.diffuse2 = load_texture(material, "$basetexture2")
+					end
+				end
+				
+				table.insert(bsp_mesh.sub_models, meshes[texname])
 			end
+
+			sub_model = meshes[texname]
 
 			local edge_first = face.firstedge
 			local edge_count = face.numedges
@@ -492,7 +474,6 @@ do timer.Start("building mesh")
 				for j = 1, edge_count do
 					local surfedge = header.surfedges[edge_first + j]
 					local edge = header.edges[1 + math.abs(surfedge)]
-					
 					local current = edge[surfedge < 0 and 2 or 1] + 1
 
 					if j >= 3 then
