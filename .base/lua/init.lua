@@ -508,9 +508,7 @@ do -- include
 			
 			return
 		end
-		
-		vfs.Silence(true)		
-				
+						
 		-- try direct first
 		local path = dir .. file
 		local func, err = loadfile(path)
@@ -595,9 +593,7 @@ do -- include
 		end
 		
 		logn(source:sub(1) .. " " .. err)
-		
-		vfs.Silence(false)
-		
+				
 		return false, err
 	end
 end

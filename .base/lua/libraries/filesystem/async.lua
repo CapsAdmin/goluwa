@@ -12,10 +12,15 @@ vfs.async_readers = {
 				-- in case mbps is higher than the file size
 				for i = 1, 2 do
 					local str = file:ReadBytes(1048576 * mbps)
+					
 					if str then
 						content[#content + 1] = str
 					else
+						if vfs.debug and #content > 2 then
+							logf("[vfs] done loading asset: %s\n", path)
+						end
 						queue[path].callback(table.concat(content))
+						file:Close()
 						return false
 					end
 				end
