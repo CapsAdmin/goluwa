@@ -302,6 +302,14 @@ do -- steam directories
 				if vfs.IsDir(path) then
 					vfs.Mount(path)
 					
+					if vfs.IsDir(path .. "addons/") then
+						vfs.Mount(path .. "addons/")
+					end
+
+					if game_info.game == "Garry's Mod" then
+						vfs.Mount(path .. "download/")
+					end
+					
 					for k, v in pairs(vfs.Find(path)) do
 						if v:find("%.vpk") and v:find("_dir") then
 							vfs.Mount(path .. v .. "/")
