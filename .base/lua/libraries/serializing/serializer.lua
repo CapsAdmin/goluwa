@@ -30,11 +30,13 @@ end
 
 do -- vfs extension
 	function serializer.WriteFile(lib, path, ...)
-		vfs.Write(path, serializer.Encode(lib, ...), "b")
+		vfs.Write(path, serializer.Encode(lib, ...))
 	end
 
 	function serializer.ReadFile(lib, path, ...)
-		return serializer.Decode(lib, vfs.Read(path, "b"))
+		if vfs.IsFile(path) then
+			return serializer.Decode(lib, vfs.Read(path))
+		end
 	end
 
 	function serializer.SetKeyValueInFile(lib, path, key, value)
