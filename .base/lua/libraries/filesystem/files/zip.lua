@@ -1,6 +1,5 @@
 local vfs = (...) or _G.vfs
 
---local zip2 = require("zip") -- GRRRR
 local zip = require("minizip.init")
 
 local CONTEXT = {}
@@ -73,12 +72,15 @@ local function split_path(path_info)
 		archive_path = archive_path:sub(0, -2)
 	end
 		
-	local temp = io.open(archive_path, "rb")
-	local signature = temp:read(4)
-	if signature ~= "\x50\x4b\x03\x04" then 
-		logn(signature:dumphex())
+	local temp = vfs.Open("os:" .. archive_path)
+	local signature = temp:ReadBytes(4)
+	
+	if signature ~= "\x50\x4b\x03\x04" then
+		temp:Close()
 		error("not a valid zip file: expected signature '\x50\x4b\x03\x04' got " .. signature)
 	end
+	
+	temp:Close()
 	
 	return archive_path, relative
 end
@@ -159,79 +161,47 @@ function CONTEXT:Open(path_info, mode, ...)
 	local archive_path, relative = split_path(path_info)
 	local file
 	
-	if self:GetMode() == "read" then		
-		if zip2 then
-			local archive = zip2.open(archive_path, "r")
-			local file = assert(archive:open(relative))
-			
-			self.file = file
-		else		
-			local archive = zip.open(archive_path, "r")
-			
-			if not archive:locate_file(relative) then
-				archive:close()
-				error("file not found in archive")
-			end
-			
-			
-			self.info = archive:get_file_info()
-			archive:open_file()
-			
-			self.archive = archive
+	if self:GetMode() == "read" then
+		local archive = zip.open(archive_path, "r")
+		
+		if not archive:locate_file(relative) then
+			archive:close()
+			error("file not found in archive")
 		end
 		
+		
+		self.info = archive:get_file_info()
+		archive:open_file()
+		
+		self.archive = archive		
 	elseif self:GetMode() == "write" then
 		error("not implemented")
 	end
 end
 
-if zip2 then
-	function CONTEXT:ReadBytes(bytes)
-		return self.file:read(bytes)
-	end
+function CONTEXT:ReadBytes(bytes)
+	return self.archive:read(bytes)
+end
 
-	function CONTEXT:SetPos(pos)
-		self.file:seek("set", pos)
-	end
+function CONTEXT:SetPos(pos)
+	self.archive:set_offset(math.clamp(pos, 0, self:GetSize()))
+end
 
-	function CONTEXT:GetPos()
-		return self.file:seek()
-	end
+function CONTEXT:GetPos()
+	return self.archive:tell()
+end
 
-	function CONTEXT:Close()
-		self.file:close()
-	end
-	
-	function CONTEXT:GetSize()
-		local old = self:GetPos()
-		local size = self.file:seek("end")
-		self:SetPos(old)
-		return size
-	end
-else
-	function CONTEXT:ReadBytes(bytes)
-		return self.archive:read(bytes)
-	end
+function CONTEXT:Close()
+	self.archive:close()
+	self:Remove()
+end
 
-	function CONTEXT:SetPos(pos)
-		self.archive:set_offset(math.clamp(pos, 0, self:GetSize()))
-	end
+function CONTEXT:GetSize()
+	return self.info.uncompressed_size
+end
 
-	function CONTEXT:GetPos()
-		return self.archive:tell()
-	end
-
-	function CONTEXT:Close()
-		self.archive:close()
-	end
-	
-	function CONTEXT:GetSize()
-		return self.info.uncompressed_size
-	end
-
-	function CONTEXT:GetLastModified()
-		return self.info.dosDate
-	end
+function CONTEXT:GetLastModified()
+	return self.info.dosDate
 end
 
 vfs.RegisterFileSystem(CONTEXT) 

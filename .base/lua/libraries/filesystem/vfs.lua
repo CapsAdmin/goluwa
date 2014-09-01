@@ -1,28 +1,9 @@
 local vfs = _G.vfs or {}
 
 vfs.use_appdata = false
-vfs.paths = vfs.paths or {}
 
 local data_prefix = "%DATA%"
 local data_prefix_pattern = data_prefix:gsub("(%p)", "%%%1")
-
-local silence
-local function logf(fmt, ...)
-	if silence then return end
-	if _G.logf then _G.logf(fmt, ...) return end
-	print(fmt:format(...))
-end
-
-local function warning(...)
-	if silence then return end
-	logf("[vfs error] %s\n", ...)
-end
-
-function vfs.Silence(b)
-	local old = silence
-	silence = b
-	return old == nil and b or old
-end
 
 function vfs.DebugPrint(fmt, ...)
 	logf("[VFS] %s\n", fmt:format(...))
@@ -32,7 +13,7 @@ do -- mounting/links
 	function vfs.Mount(where, to)
 		check(where, "string")
 		to = to or ""
-
+		
 		vfs.Unmount(where, to)
 		
 		local path_info_where = vfs.GetPathInfo(where, true) 
@@ -69,7 +50,13 @@ do -- mounting/links
 	end
 	
 	function vfs.GetMounts()
-		return vfs.paths
+		local out = {}
+		for filesystem, context in pairs(vfs.GetFileSystems()) do
+			for i, v in ipairs(context.mounted_paths) do
+				out[v.full_where] = v.full_to
+			end
+		end
+		return out
 	end
 
 	function vfs.TranslatePath(path, is_folder)
@@ -259,7 +246,9 @@ local function check_write_path(path, is_folder)
 			error("tried to write to an unknown filesystem", 3)
 		end
 	end
-end	
+end
+
+vfs.opened_files = vfs.opened_files or setmetatable({}, {__mode = "k"})
 
 function vfs.Open(path, mode, sub_mode)
 	check(path, "string")
@@ -275,7 +264,12 @@ function vfs.Open(path, mode, sub_mode)
 		local file = class.Create("file_system", data.context.Name)
 		file:SetMode(mode)
 		
+		if utilities and utilities.SetGCCallback then
+			utilities.SetGCCallback(file, function() print("gc!!", data.path_info.full_path) end)
+		end
+		
 		if file:PCall("Open", data.path_info) ~= false then
+			vfs.opened_files[file] = data.path_info.full_path
 			return file
 		end
 	end

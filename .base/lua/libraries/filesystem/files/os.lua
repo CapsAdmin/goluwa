@@ -57,10 +57,10 @@ local translate_mode = {
 
 function CONTEXT:Open(path_info, ...)
 	
-	local mode = translate_mode[self:GetMode(mode)]
-	
+	local mode = translate_mode[self:GetMode()]
+		
 	if not mode then 
-		error("mode not supported" .. mode)
+		error("mode not supported: " .. self:GetMode())
 	end
 	
 	mode = mode .. "b" -- always open in binary
@@ -87,6 +87,7 @@ end
 
 function CONTEXT:Close()
 	self.file:close()
+	self:Remove()
 end
 
 function CONTEXT:GetSize()

@@ -22,27 +22,28 @@ local entry = [[
 ]]
 
 local function read_vpk(file)
-	local buffer = Buffer(file)
-
-	local vpk = buffer:ReadStructure(header)
+	local vpk = file:ReadStructure(header)
 
 	vpk.entries = {}
 	local done_directories = {}
 
-	for extension in buffer:IterateStrings() do		
-		for directory in buffer:IterateStrings() do
-			for name in buffer:IterateStrings() do
+	for extension in file:IterateStrings() do		
+		for directory in file:IterateStrings() do
+			for name in file:IterateStrings() do
 			
-				local entry = buffer:ReadStructure(entry)
+				local entry = file:ReadStructure(entry)
 				
 				entry.directory = directory
 				entry.name = name
 				entry.extension = extension
 				entry.path = directory .. "/" .. name .. "." .. extension
 				entry.is_file = true
+				
+				file:SetPos(file:GetPos() + entry.preload_bytes)
 								
-				if buffer:SetPos(buffer:GetPos() + entry.preload_bytes) ~= entry.preload_offset + entry.preload_bytes then
-					print("grr")
+				if file:GetPos() ~= entry.preload_offset + entry.preload_bytes then	
+					file:Close()
+					error("grr")
 				end
 				
 				table.insert(vpk.entries, entry)
@@ -62,36 +63,40 @@ local function read_vpk(file)
 	return vpk
 end
 
-local CONTEXT = {}
+local cache = {}
 
-CONTEXT.Name = "vpk"
+local function get_file_tree(path)
 
-local mounted = {}
-local files = {}
-
-local function mount(path)
-
-	if mounted[path] then
-		return mounted[path]
+	if cache[path] then
+		return cache[path]
 	end
 	
-	local file = assert(io.open(path, "rb"))
+	local file = assert(vfs.Open("os:" .. path))
 	
 	local vpk = read_vpk(file)
 
 	vpk.paths = {}
-
-	for i,v in ipairs(vpk.entries) do
+	
+	for i, v in ipairs(vpk.entries) do
 		if v.is_file then
-			v.archive_path = path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(v.archive_index) end)
+			v.archive_path = "os:" .. path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(v.archive_index) end)
 		end
+		
+		v.path = v.path:lower()
+		
 		vpk.paths[v.path] = v
 	end
 	
-	mounted[path] = vpk
+	file:Close()
 	
+	cache[path] = vpk
+		
 	return vpk
 end
+
+local CONTEXT = {}
+
+CONTEXT.Name = "vpk"
 
 local function split_path(path_info)
 	local vpk_path, relative = path_info.full_path:match("(.-%.vpk)/(.*)")
@@ -106,7 +111,7 @@ end
 function CONTEXT:IsFile(path_info)
 	local vpk_path, relative = split_path(path_info)
 	
-	local vpk = mount(vpk_path)
+	local vpk = get_file_tree(vpk_path)
 
 	if vpk.paths[relative] and vpk.paths[relative].is_file then
 		return true
@@ -121,7 +126,7 @@ function CONTEXT:IsFolder(path_info)
 	end
 
 	local vpk_path, relative = split_path(path_info)
-	local vpk = mount(vpk_path)
+	local vpk = get_file_tree(vpk_path)
 	
 	if vpk.paths[relative] and vpk.paths[relative].is_dir then
 		return true
@@ -130,11 +135,9 @@ end
 
 function CONTEXT:GetFiles(path_info)
 	local vpk_path, relative = split_path(path_info)
+	local vpk = get_file_tree(vpk_path)
 	
-	local out = {}
-	
-	local vpk = mount(vpk_path)
-		
+	local out = {}	
 	local dir = relative:match("(.*/)")
 	local done = {}
 	
@@ -159,14 +162,14 @@ end
 
 function CONTEXT:Open(path_info, mode, ...)	
 	local vpk_path, relative = split_path(path_info)
-	local vpk = mount(vpk_path)
+	local vpk = get_file_tree(vpk_path)
 	
 	local file
 		
 	if self:GetMode() == "read" then
 		local file_info = vpk.paths[relative]
-		local file = assert(io.open(file_info.archive_path, "rb"))
-		file:seek("set", file_info.entry_offset)		
+		local file = assert(vfs.Open(file_info.archive_path))
+		file:SetPos(file_info.entry_offset)		
 		
 		self.file = file
 		self.position = 0
@@ -177,40 +180,37 @@ function CONTEXT:Open(path_info, mode, ...)
 end
 
 function CONTEXT:Write(str)
-	return self.file:write(str)
+	return self.file:Write(str)
 end
 
 function CONTEXT:Read(bytes)
-	return self.file:read(bytes)
+	return self.file:Read(bytes)
 end
 
 function CONTEXT:WriteByte(byte)
-	self:Write(string.char(byte))
+	self.file:WriteByte(byte)
 end
 
 function CONTEXT:ReadByte()					
-	self.file:seek("set", self.file_info.entry_offset + self.position)
-	local char = self.file:read(1)	
+	self.file:SetPos(self.file_info.entry_offset + self.position)
+	local byte = self.file:ReadByte(1)	
 	self.position = math.clamp(self.position + 1, 0, self.file_info.entry_length)
 	
-	return char and char:byte() or nil
+	return byte
 end
 
 function CONTEXT:WriteBytes(str)
-	return self.file:write(str)
+	return self.file:WriteBytes(str)
 end
 
 function CONTEXT:ReadBytes(bytes)
 	bytes = math.min(bytes, self.file_info.entry_length - self.position)
 
-	self.file:seek("set", self.file_info.entry_offset + self.position)
-	local str = self.file:read(bytes)
-	
+	self.file:SetPos(self.file_info.entry_offset + self.position)
+	local str = self.file:ReadBytes(bytes)	
 	self.position = math.clamp(self.position + bytes, 0, self.file_info.entry_length)
 	
-	if str ==  "" then 
-		str = nil 
-	end
+	if str == "" then str = nil end
 	
 	return str
 end
@@ -224,7 +224,8 @@ function CONTEXT:GetPos()
 end
 
 function CONTEXT:Close()
-	self.file:close()
+	self.file:Close()
+	self:Remove()
 end
 
 function CONTEXT:GetSize()

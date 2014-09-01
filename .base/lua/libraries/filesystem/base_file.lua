@@ -8,7 +8,6 @@ class.GetSet(CONTEXT, "Mode", "read")
 
 function CONTEXT:PCall(name, ...)
 	local ok, var = pcall(self[name], self, ...)
-	
 	if vfs.debug and not ok then
 		vfs.DebugPrint("%s: error calling %s: %s", self.Name or "", name, var)
 		return false
@@ -132,6 +131,14 @@ end
 
 function CONTEXT:GetLastAccessed()
 	error(self.Name .. ": not implemented")
+end
+
+function CONTEXT:OnRemove()
+	vfs.opened_files[self] = nil
+end
+
+function CONTEXT:Remove()
+	self:OnRemove()
 end
 
 metatable.AddBufferTemplate(CONTEXT)
