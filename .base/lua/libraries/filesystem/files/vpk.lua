@@ -12,7 +12,7 @@ local header = [[
 ]]
 
 local entry = [[
-	long crc;
+	unsigned long crc;
 	short preload_bytes;
 	short archive_index;
 	long entry_offset;
@@ -21,10 +21,10 @@ local entry = [[
 	bufferpos preload_offset;
 ]]
 
-local function read_vpk(file)
+local function read_vpk(file, full_path)
 	local vpk = file:ReadStructure(header)
 
-	vpk.entries = {}
+	local tree = utilities.CreateTree("/")
 	local done_directories = {}
 
 	for extension in file:IterateStrings() do		
@@ -33,11 +33,8 @@ local function read_vpk(file)
 			
 				local entry = file:ReadStructure(entry)
 				
-				entry.directory = directory
-				entry.name = name
-				entry.extension = extension
-				entry.path = directory .. "/" .. name .. "." .. extension
 				entry.is_file = true
+				entry.archive_path = "os:" .. full_path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(entry.archive_index) end)
 				
 				file:SetPos(file:GetPos() + entry.preload_bytes)
 								
@@ -46,23 +43,26 @@ local function read_vpk(file)
 					error("grr")
 				end
 				
-				table.insert(vpk.entries, entry)
+				tree:SetEntry((directory .. "/" .. name .. "." .. extension):lower(), entry)
 			end
 			
-			table.insert(vpk.entries, {path = directory, is_dir = true})
+			directory = directory:lower()
+			
+			tree:SetEntry(directory, {path = directory, is_dir = true})
 			
 			for i = 0, 100 do
 				local dir = utilities.GetParentFolder(directory, i)
 				if dir == "" or done_directories[dir] then break end
-				table.insert(vpk.entries, {path = dir, is_dir = true})
+				dir = dir:lower()
+				tree:SetEntry(dir, {path = dir, is_dir = true})
 				done_directories[dir] = true
 			end
 		end
 	end
 
-	return vpk
+	return tree
 end
-
+ 
 local cache = {}
 
 local function get_file_tree(path)
@@ -71,28 +71,27 @@ local function get_file_tree(path)
 		return cache[path]
 	end
 	
-	local file = assert(vfs.Open("os:" .. path))
+	--local tree = serializer.ReadFile("msgpack", "vpk_cache/" .. crypto.CRC32(path))
 	
-	local vpk = read_vpk(file)
-
-	vpk.paths = {}
-	
-	for i, v in ipairs(vpk.entries) do
-		if v.is_file then
-			v.archive_path = "os:" .. path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(v.archive_index) end)
-		end
+	--if tree then
+--		cache[path] = tree
 		
-		v.path = v.path:lower()
-		
-		vpk.paths[v.path] = v
-	end
+	--	return tree
+	--end
 	
+	local file = assert(vfs.Open("os:" .. path))	
+	local tree = read_vpk(file, path)
+		
 	file:Close()
 	
-	cache[path] = vpk
-		
-	return vpk
+	cache[path] = tree
+	
+	--serializer.WriteFile("msgpack", "vpk_cache/" .. crypto.CRC32(path), tree.tree)
+			
+	return tree
 end
+
+LOL_CACHE = cache
 
 local CONTEXT = {}
 
@@ -110,10 +109,10 @@ end
 
 function CONTEXT:IsFile(path_info)
 	local vpk_path, relative = split_path(path_info)
+	local tree = get_file_tree(vpk_path)
+	local entry = tree:GetEntry(relative)
 	
-	local vpk = get_file_tree(vpk_path)
-
-	if vpk.paths[relative] and vpk.paths[relative].is_file then
+	if entry and entry.is_file then
 		return true
 	end
 end
@@ -122,39 +121,25 @@ function CONTEXT:IsFolder(path_info)
 		
 	-- vpk files are folders
 	if path_info.folder_name:find("^.+%.vpk$") then
-		return true
+	--	return true
 	end
 
 	local vpk_path, relative = split_path(path_info)
-	local vpk = get_file_tree(vpk_path)
-	
-	if vpk.paths[relative] and vpk.paths[relative].is_dir then
+	local tree = get_file_tree(vpk_path)
+	local entry = tree:GetEntry(relative)
+	if entry and entry.is_dir then
 		return true
 	end
 end
 
 function CONTEXT:GetFiles(path_info)
 	local vpk_path, relative = split_path(path_info)
-	local vpk = get_file_tree(vpk_path)
+	local tree = get_file_tree(vpk_path)
 	
-	local out = {}	
-	local dir = relative:match("(.*/)")
-	local done = {}
+	local out = {}
 	
-	for i, v in ipairs(vpk.entries) do
-		local path = v.path
-		if path:find(relative, nil, true) and (not dir or path:match("(.*/).") == dir) then
-			-- path is just . so it needs to be handled a bit different
-			if not dir then
-				if not done[path] then
-					path = path:match("(.-)/") or path
-					table.insert(out, path)
-					done[path] = true
-				end
-			else
-				table.insert(out, path:match(".+/(.+)") or path)
-			end
-		end 
+	for k, v in pairs(tree:GetChildren(relative:match("(.*)/"))) do
+		table.insert(out, v.key)
 	end
 	
 	return out
@@ -162,12 +147,12 @@ end
 
 function CONTEXT:Open(path_info, mode, ...)	
 	local vpk_path, relative = split_path(path_info)
-	local vpk = get_file_tree(vpk_path)
+	local tree = get_file_tree(vpk_path)
 	
 	local file
 		
 	if self:GetMode() == "read" then
-		local file_info = vpk.paths[relative]
+		local file_info = tree:GetEntry(relative)
 		local file = assert(vfs.Open(file_info.archive_path))
 		file:SetPos(file_info.entry_offset)		
 		
