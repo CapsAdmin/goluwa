@@ -1,157 +1,288 @@
-local N = 64
-local dt = 0.001
-local diff = 0.5
-local visc = 0.2
-local force = 5.0
-local source = 100.0
+--require"jit.dump".on("+a", R"%DATA%/logs/" .. "jit_dump.txt")
 
-local size = (N+2)*(N+2)
-
-local function IX(i, j) return ((i)+(N+2)*(j)) end
-local function SWAP(x0, x) local temp = {} for i = 0, size - 1 do temp[i] = x0[i] x0[i] = x[i] x[i] = temp[i] end end
-
---#define for i = 1, N do for j = 1, N do for i = 1, N do { for ( j=1 ; j<=N ; j++ ) {
---#define end end }}
-
-local function add_source( N, x, s, dt )
-	local size = (N+2)*(N+2);
-	for i=0, size - 1 do x[i] = x[i] + dt*s[i]; end
+local function new_array(val, size)
+	local arr = ffi.new("float[?]", size)
+	ffi.fill(arr, val)
+	return arr
 end
 
-local function set_bnd ( N, b, x )
-	for i = 1, N do 
-		x[IX(0  ,i)] = b==1 and -x[IX(1,i)] or x[IX(1,i)];
-		x[IX(N+1,i)] = b==1 and -x[IX(N,i)] or x[IX(N,i)];
-		x[IX(i,0  )] = b==2 and -x[IX(i,1)] or x[IX(i,1)];
-		x[IX(i,N+1)] = b==2 and -x[IX(i,N)] or x[IX(i,N)];
+local META = {}
+META.__index = META
+
+function META:tick()
+	self:update();
+	self:draw();
+end
+
+function META:update()
+	self.u_prev = new_array(0, self.bufferSize);
+	self.v_prev = new_array(0, self.bufferSize);
+	self.dens_prev = new_array(0, self.bufferSize);
+
+	self:handleInput();
+	self:velocityStep();
+	self:densityStep();
+end
+
+function META:handleInput()
+	local x, y = surface.WorldToLocal(surface.GetMousePos())
+	
+	-- Lower boundary
+	x = math.max(0, x);
+	y = math.max(0, y);
+
+	-- Upper boundary
+	x = math.min(self.canvas.w, x);
+	y = math.min(self.canvas.h, y);
+
+	if not self.mouse then
+		self.mouse = {}
+		self.mouse.x = x
+		self.mouse.y = y;
 	end
-	x[IX(0  ,0  )] = 0.5*(x[IX(1,0  )]+x[IX(0  ,1)]);
-	x[IX(0  ,N+1)] = 0.5*(x[IX(1,N+1)]+x[IX(0  ,N)]);
-	x[IX(N+1,0  )] = 0.5*(x[IX(N,0  )]+x[IX(N+1,1)]);
-	x[IX(N+1,N+1)] = 0.5*(x[IX(N,N+1)]+x[IX(N+1,N)]);
-end
 
-local function lin_solve ( N, b, x, x0, a, c )
-	for k = 0, 19 do 
-		for i = 1, N do for j = 1, N do
-			x[IX(i,j)] = (x0[IX(i,j)] + a*(x[IX(i-1,j)]+x[IX(i+1,j)]+x[IX(i,j-1)]+x[IX(i,j+1)]))/c;
-		end end
-		set_bnd ( N, b, x );
-	end
-end
+	local gridX = math.floor((self.mouse.x / self.cwidth) * self.gridResPlus1);
+	local gridY = math.floor((self.mouse.y / self.cheight) * self.gridResPlus1); -- TODO Fixme on non-square surfices
 
-local function diffuse ( N, b, x, x0, diff, dt )
-	local a=dt*diff*N*N;
-	lin_solve ( N, b, x, x0, a, 1+4*a );
-end
+	if (not (gridX < 1 or gridX > self.gridResolution or gridY < 1 or gridY > self.gridResolution)) then
+		if input.IsMouseDown("button_1") then
+			self.u[self:IX(gridX, gridY)] = self.force * (x - self.mouse.x);
+			self.v[self:IX(gridX, gridY)] = self.force * (self.mouse.y - y);
+		end
 
-local function advect ( N, b, d, d0, u, v, dt )
-	local dt0 = dt*N;
-	local j0 = 0
-	local j1 = 0
-	local i0 = 0
-	local i1 = 0
-	for i = 1, N do for j = 1, N do
-		local x = i-dt0*u[IX(i,j)]; local y = j-dt0*v[IX(i,j)];
-		if (x<0.5) then x=0.5; end if (x>N+0.5) then x=N+0.5; i0=x; i1=i0+1; end
-		if (y<0.5) then y=0.5; end if (y>N+0.5) then y=N+0.5; j0=y; j1=j0+1; end
-		local s1 = x-i0; s0 = 1-s1; t1 = y-j0; t0 = 1-t1;
-		d[IX(i,j)] = s0*(t0*d0[IX(i0,j0)]+t1*d0[IX(i0,j1)])+
-					 s1*(t0*d0[IX(i1,j0)]+t1*d0[IX(i1,j1)]);
-	end end
-	set_bnd ( N, b, d );
-end
-
-local function project ( N, u, v, p, div )
-	for i = 1, N do for j = 1, N do
-		div[IX(i,j)] = -0.5*(u[IX(i+1,j)]-u[IX(i-1,j)]+v[IX(i,j+1)]-v[IX(i,j-1)])/N;
-		p[IX(i,j)] = 0;
-	end end	
-	set_bnd ( N, 0, div ); set_bnd ( N, 0, p );
-
-	lin_solve ( N, 0, p, div, 1, 4 );
-
-	for i = 1, N do for j = 1, N do
-		u[IX(i,j)] = u[IX(i,j)] - 0.5*N*(p[IX(i+1,j)]-p[IX(i-1,j)]);
-		v[IX(i,j)] = v[IX(i,j)] - 0.5*N*(p[IX(i,j+1)]-p[IX(i,j-1)]);
-	end end
-	set_bnd ( N, 1, u ); set_bnd ( N, 2, v );
-end
-
-local function dens_step ( N, x, x0, u, v, diff, dt )
-	add_source ( N, x, x0, dt );
-	SWAP ( x0, x ); diffuse ( N, 0, x, x0, diff, dt );
-	SWAP ( x0, x ); advect ( N, 0, x, x0, u, v, dt );
-end
-
-local function vel_step ( N, u, v, u0, v0, visc, dt )
-	add_source ( N, u, u0, dt ); add_source ( N, v, v0, dt );
-	SWAP ( u0, u ); diffuse ( N, 1, u, u0, visc, dt );
-	SWAP ( v0, v ); diffuse ( N, 2, v, v0, visc, dt );
-	project ( N, u, v, u0, v0 );
-	SWAP ( u0, u ); SWAP ( v0, v );
-	advect ( N, 1, u, u0, u0, v0, dt ); advect ( N, 2, v, v0, u0, v0, dt );
-	project ( N, u, v, u0, v0 );
-end
-
-local u = {}
-local v = {}
-local u_prev = {} 
-local v_prev = {}
-local dens = {}
-local dens_prev = {}
-
-for i = 0, size - 1 do
-	u[i] = math.random()
-	v[i] = math.random()
-	dens[i] = math.random()
-	
-	u_prev[i] = 0
-	v_prev[i] = 0
-	dens_prev[i] = 0
-end
- 
-event.AddListener("Draw2D", "fluid", function()
-	
-	local size = (N+2)*(N+2)
-	for i = 0, size - 1 do
-		u_prev[i] = 0
-		v_prev[i] = 0
-		dens_prev[i] = 0
-	end
-	
-	local w, h = surface.GetScreenSize()
-	
-	local i, j = surface.GetMousePos()
-	i = (i / w) * N + 1
-	j = (j / h) * N + 1
-	
-	local vmx, vmy = surface.GetMouseVel()
-		
-	if input.IsMouseDown("button_1") then
-		u_prev[IX(i, j)] = force * vmx
-		v_prev[IX(i, j)] = force * vmy
-	end
-	
-	if input.IsMouseDown("button_2") then
-		dens_prev[IX(i, j)] = source
-	end
-	
-	vel_step ( N, u, v, u_prev, v_prev, visc, dt );
-	dens_step ( N, dens, dens_prev, u, v, diff, dt );
-	
-	surface.SetWhiteTexture()
-	
-	for i = 0, N do
-		for j = 0, N do
-			
-			d00 = dens[IX(i, j)]
-			d01 = dens[IX(i, j + 1)]
-			d10 = dens[IX(i + 1, j)]
-			d11 = dens[IX(i + 1, j + 1)]		
-									
-			surface.SetColor(d00, d01, d10, 1)
-			surface.DrawRect(i*4, j*4, 4, 4)
+		if input.IsMouseDown("button_2") then
+			for x = 6, 0, -1 do
+				for y = 6, 0, -1 do
+					self.dens_prev[self:IX(gridX - x, gridY - y + 4)] = self.source;
+				end
+			end
 		end
 	end
-end, {priority = -math.huge})
+
+	self.mouse.x = x;
+	self.mouse.y = y;
+end
+
+function META:draw()
+	--do return end
+	local bufferData = self.canvas:CreateBuffer()
+	local h = self.cwidth / self.gridResolution;
+
+	for y = 0, self.cheight -1 do
+		for x = 0, self.cwidth - 1 do
+			local d00 = self.dens[self:IX(x, -y + self.cheight)];
+			d00 = math.min(0xff, d00);
+			
+			local index = (y * self.cwidth + x) * 4
+			bufferData[index + 0] = d00; -- RED
+			bufferData[index + 1] = d00; -- GREEN
+			bufferData[index + 2] = d00; -- BLUE
+			bufferData[index + 3] = 255; -- ALPHA
+		end
+	end
+	
+	self.canvas:Upload(bufferData)
+	
+	surface.SetTexture(self.canvas)
+	surface.SetColor(1,1,1,1)
+	surface.DrawRect(0, 0, self.cwidth, self.cheight)
+end
+
+function META:setBnd(b, x)
+	for i = 1, self.gridResolution do
+		local z = x[self:IX(1, i)];
+		local y = x[self:IX(self.gridResolution, i)];
+		x[self:IX(0, i)] = b == 1 and -z or z;
+		x[self:IX(self.gridResPlus1, i)] = b == 1 and -y or y;
+
+		z = x[self:IX(i, 1)];
+		y = x[self:IX(i, self.gridResolution)];
+		x[self:IX(i, 0)] = b == 2 and -z or z;
+		x[self:IX(i, self.gridResPlus1)] = b == 2 and -y or y;
+	end
+
+	x[self:IX(0, 0)] = 0.5 * (x[self:IX(1, 0)] + x[self:IX(0, 1)]);
+	x[self:IX(0, self.gridResPlus1)] = 0.5 * (x[self:IX(1, self.gridResPlus1)] + x[self:IX(0, self.gridResolution)]);
+	x[self:IX(self.gridResPlus1, 0)] = 0.5 * (x[self:IX(self.gridResolution, 0)] + x[self:IX(self.gridResPlus1, 1)]);
+	x[self:IX(self.gridResPlus1, self.gridResPlus1)] = 0.5 * (x[self:IX(self.gridResolution, self.gridResPlus1)] + x[self:IX(self.gridResPlus1, self.gridResolution)]);
+
+	return x;
+end
+
+function META:IX(x, y)
+	return self.gridResPlus2 * y + x;
+end
+
+function META:linearSolve(b, current, previous, a, div)
+	local inverseC = 1/div;
+	local locA = a;
+	local locB = b;
+	local pCur = current;
+
+	local iterations = locA == 0 and 1 or 20;
+	for k = 0, iterations - 1 do
+		for x = self.gridResolution, 1, -1 do
+			for y = self.gridResolution, 1, -1 do
+				local i = self:IX(x, y);
+				local v = previous[i];
+
+				if (locA ~= 0) then
+					local s = pCur[i - 1] +
+						pCur[i + 1] +
+						pCur[i - self.gridResPlus2] +
+						pCur[i + self.gridResPlus2];
+
+					v = v + locA * s;
+				end
+
+				pCur[i] = v * inverseC;
+			end
+		end
+	end
+
+	self:setBnd(locB, current);
+end
+
+function META:advect(b, current, prev, u, v)
+	local dt0 = self.dt * self.gridResolution;
+
+	for i = 1, self.gridResolution do
+		for j = 1, self.gridResolution do
+			local ix1 = self:IX(i,j);
+
+			local x = i - dt0 * u[ix1];
+			local y = j - dt0 * v[ix1];
+
+			x = math.max(x, 0.5)
+			x = math.min(x, self.gridResolution + 0.5)
+
+			local i0 = math.floor(x);
+			local i1 = i0 + 1;
+
+			y = math.max(y, 0.5)
+			y = math.min(y, self.gridResolution + 0.5)
+
+			local j0 = math.floor(y);
+			local j1 = j0 + 1;
+			local s1 = x - i0;
+			local s0 = 1 - s1;
+			local t1 = y - j0;
+			local t0 = 1 - t1;
+
+			current[ix1] = s0 * (t0 * prev[self:IX(i0, j0)] + t1 * prev[self:IX(i0, j1)]) +
+				s1 * (t0 * prev[self:IX(i1, j0)] + t1 * prev[self:IX(i1, j1)]);
+		end
+	end
+	self:setBnd(b, current);
+end
+
+function META:diffuse(b, current, prev, rate)
+	local a = self.dt * rate * self.gridResolution * self.gridResolution;
+	self:linearSolve(b, current, prev, a, 1 + 4 * a);
+end
+
+function META:project()
+	local i, j;
+
+	for i = 1, self.gridResolution do
+		for j = 1, self.gridResolution do
+			self.v_prev[self:IX(i, j)] = -0.5 * (self.u[self:IX(i + 1, j)] - self.u[self:IX(i - 1, j)] + self.v[self:IX(i, j + 1)] - self.v[self:IX(i, j - 1)]) / self.gridResolution;
+			self.u_prev[self:IX(i, j)] = 0;
+		end
+	end
+	
+	self:setBnd(0, self.v_prev);
+	self:setBnd(0, self.u_prev);
+
+	self:linearSolve(0, self.u_prev, self.v_prev, 1, 4);
+
+	for i = 1, self.gridResolution do
+		for j = 1, self.gridResolution do
+			self.u[self:IX(i, j)] = self.u[self:IX(i, j)] - 0.5 * self.gridResolution * (self.u_prev[self:IX(i + 1, j)] - self.u_prev[self:IX(i - 1, j)]);
+			self.v[self:IX(i, j)] = self.v[self:IX(i, j)] - 0.5 * self.gridResolution * (self.u_prev[self:IX(i, j + 1)] - self.u_prev[self:IX(i, j - 1)]);
+		end
+	end
+
+	self:setBnd(1, self.u);
+	self:setBnd(2, self.v);
+end
+
+function META:densityStep()
+	self:addSource(self.dens, self.dens_prev);
+
+	--swapBuffers(ref dens_prev, ref dens);
+	local z = self.dens_prev; self.dens_prev = self.dens; self.dens = z;
+	self:diffuse(0, self.dens, self.dens_prev, self.diffusionRate);
+
+	z = self.dens_prev; self.dens_prev = self.dens; self.dens = z;
+	self:advect(0, self.dens, self.dens_prev, self.u, self.v);
+end
+
+function META:velocityStep()
+	-- N, u, v, u_prev, v_prev, visc, dt
+	self:addSource(self.u, self.u_prev);
+	self:addSource(self.v, self.v_prev);
+
+	local z = self.u_prev; self.u_prev = self.u; self.u = z;
+	self:diffuse(1, self.u, self.u_prev, self.viscocity);
+
+	z = self.v_prev; self.v_prev = self.v; self.v = z;
+	self:diffuse(2, self.v, self.v_prev, self.viscocity);
+
+	self:project();
+
+	z = self.u_prev; self.u_prev = self.u; self.u = z;
+	z = self.v_prev; self.v_prev = self.v; self.v = z;
+
+	self:advect(1, self.u, self.u_prev, self.u_prev, self.v_prev);
+	self:advect(2, self.v, self.v_prev, self.u_prev, self.v_prev);
+
+	self:project();
+end
+
+function META:addSource(current, prev)
+	for i = 0, self.bufferSize - 1 do
+		current[i] = current[i] + self.dt * prev[i];
+	end
+end
+
+function FField(resolution, debug) 
+	local self = setmetatable({}, META)
+	
+    self.debug = debug or false;
+
+    self.gridResolution = resolution or 128;
+    self.diffusionRate = 0.0;
+    self.viscocity = 0.0;
+    self.force = 5.0; -- scales the mouse movement that generate a force
+    self.source = 300.0; -- amount of density that will be deposited
+
+    self.gridResPlus1 =  self.gridResolution + 1;
+    self.gridResPlus2 = self.gridResolution + 2;
+    self.bufferSize = self.gridResPlus2 * self.gridResPlus2;
+
+    self.u = new_array(0, self.bufferSize);
+    self.v = new_array(0, self.bufferSize);
+    self.dens = new_array(0, self.bufferSize);
+
+    self.u_prev = new_array(0, self.bufferSize);
+    self.v_prev = new_array(0, self.bufferSize);
+    self.dens_prev = new_array(0, self.bufferSize);
+
+    self.dt = 0.1;
+	
+	self.canvas = Texture(self.gridResolution, self.gridResolution)
+	self.cwidth = self.canvas.w
+	self.cheight = self.canvas.h
+	
+	return self
+end
+
+local fluid = FField(256)
+
+event.AddListener("Draw2D", "lol", function(dt)
+	--fluid.dt = dt
+	surface.PushMatrix(0,0, 2, 2)
+	fluid:tick()
+	surface.PopMatrix()
+end)
