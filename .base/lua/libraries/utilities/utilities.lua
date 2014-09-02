@@ -55,35 +55,32 @@ do -- tree
 	
 	function META:GetChildren(str)
 		if self.list then
-			if type(str) == "table" then str = table.concat(str, self.delimiter) end
+			if type(str) == "table" then 
+				str = table.concat(str, self.delimiter) 
+			end
 			
+			-- it's root
 			if not str or str == self.delimiter then
 				local out = {}	
 				for key, val in pairs(self.tree) do
-					table.insert(out, {key = key, value = val})
+					if key:count(self.delimiter) == 0 then
+						table.insert(out, {key = key, value = val})
+					end
 				end
 				return out
 			end
 			
+			-- always end with the delimiter
 			if not str:endswith(self.delimiter) then
 				str = str .. self.delimiter
 			end
 			
 			local out = {}	
 			local dir = str:match("(.*)/")
-			local done = {}
-			
+
 			for key, val in pairs(self.tree) do
-				if key:find(str, nil, true) and (not dir or key:match("(.*)/.") == dir) then
-					if not dir then
-						if not done[key] then
-							key = key:match("(.-)/") or key
-							table.insert(out, {key = key, value = val})
-							done[key] = true
-						end
-					else
-						table.insert(out, {key = key:match(".+/(.+)") or key, value = val})
-					end
+				if key:find(str, nil, true) and (dir or key:match("(.*)/.") == dir) then
+					table.insert(out, {key = key:match(".+/(.+)") or key, value = val})
 				end 
 			end
 		
@@ -124,9 +121,11 @@ do -- tree
 		tree:SetEntry("hello/world/lsdaWl.txt", "asdf")
 		print(tree:GetEntry("hello/world/lol.txt"))
 		table.print(tree:GetChildren("hello/world"))
-		table.print(tree:GetChildren("hello/world/"))
 		table.print(tree:GetChildren("/"))
 		table.print(tree:GetChildren())
+		table.print(tree:GetChildren("hello/"))
+		
+		table.print(tree.tree)
 	end
 end
 
@@ -370,7 +369,7 @@ function utilities.RemoveOldObject(obj, id)
 	if hasindex(obj) and type(obj.Remove) == "function" then
 		UTIL_REMAKES = UTIL_REMAKES or {}
 			
-		id = id or (debug.getinfo(2).currentline .. debug.getinfo(2).short_src)
+		id = id or (debug.getinfo(2).currentline .. debug.getinfo(2).source)
 		
 		if typex(UTIL_REMAKES[id]) == typex(obj) then
 			UTIL_REMAKES[id]:Remove()
