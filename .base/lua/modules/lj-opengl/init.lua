@@ -71,7 +71,7 @@ local function add_gl_func(name, func)
 					val = errors[val] or val
 					local info = debug.getinfo(2)
 				
-					logf("[gl] %q in function %s at %s:%i\n", val, info.name, info.short_src, info.currentline)
+					logf("[gl] %q in function %s at %s:%i\n", val, info.name, info.source, info.currentline)
 				end
 			end
 			

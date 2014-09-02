@@ -528,7 +528,7 @@ local suppress = false
 local last_openfunc = 0
 function system.OnError(msg, ...)
 	msg = msg or "no error"
-	if suppress then logn("supressed error: ", msg, ...) for i = 3, 100 do local t = debug.getinfo(i) if t then table.print(t) else break end end return end
+	if suppress then logn("error in system.OnError: ", msg, ...) for i = 3, 100 do local t = debug.getinfo(i) if t then table.print(t) else break end end return end
 	suppress = true
 	if LINUX and msg == "interrupted!\n" then return end
 	
@@ -566,9 +566,7 @@ function system.OnError(msg, ...)
 				end
 				
 				info.arg_line = table.concat(args, ", ")
-				
-				local source = info.short_src or ""
-				source = source:gsub(base_folder, ""):trim()
+	
 				info.source = source
 				info.name = info.name or "unknown"
 				
@@ -651,7 +649,7 @@ function system.OnError(msg, ...)
 	
 	logn("ERROR:")
 	logn("{")
-	local source, _msg = msg:match("(.+): (.+)")	
+	local source, _msg = msg:match("(.+): (.+)")
 	
 	if source then
 		source = source:trim()

@@ -34,7 +34,7 @@ for line in header:gmatch("(.-)\n") do
 					
 					local info = debug.getinfo(2)
 					
-					logf("[alc] %q in function %s at %s:%i\n", str, info.name, info.short_src, info.currentline)
+					logf("[alc] %q in function %s at %s:%i\n", str, info.name, info.source, info.currentline)
 				end
 			end
 		

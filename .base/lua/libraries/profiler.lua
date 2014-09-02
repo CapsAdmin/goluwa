@@ -1,99 +1,41 @@
---[[
-
-basic instrumental and statistical profiler which only provides the raw data
-the statistical profiler is wip and is for luajit 2.1 alpha only
-garbage details may not be accurate (i think garbage can be collected in between??)
-
-times are probably in microsecond so * 100 and get rid of around 5 decimals
-
-BASIC USE
-	profiler.Start()
-	-- enjoy the lag
-
-	local tbl = profiler.GetBenchmark()
-	-- parse the table how you want it
-	
-	profiler.Stop()
-	
-for every function called, tbl[i] looks like this:
-{
-	["total_time"] = 33.787754476143,
-	["debug_info"] = {
-		["linedefined"] = 131,
-		["isvararg"] = false,
-		["namewhat"] = "",
-		["lastlinedefined"] = 156,
-		["nups"] = 4,
-		["what"] = "Lua",
-		["nparams"] = 0,
-	},
-	["path"] = "X:/dropbox/goluwa/.base/lua/glw/init.lua",
-	["times_called"] = 292,
-	["average_time"] = 0.115711487932,
-	["sample_duration"] = 34.010924339816,
-	["line"] = 131,
-	["name"] = "window.Update()",
-}
-
-]]
-
 local profiler = _G.profiler or {}
+
+profiler.data = profiler.data or {}
 
 profiler.type = "statistical"
 profiler.enabled = true
 
-local vmdef = require("jit.vmdef")
-
-local clock = os.clock -- see SetClockFunction
+local jit_profiler = require("jit.profile")
+local jit_vmdef = require("jit.vmdef")
+local jit_util = require("jit.util")
 
 local function fix_path(path) 
 	return path:gsub("\\", "/"):gsub("(/+)", "/"):gsub("^%s*(.-)%s*$", "%1" )
 end
 
-local function getparams(func) 
-    local params = {}
-	
-	for i = 1, math.huge do
-		local key = debug.getlocal(func, i)
-		if key then
-			table.insert(params, key)
-		else
-			break
-		end
-	end
-
-    return params
-end
-
-profiler.data = profiler.data or {}
-
 local active = false
 local data = profiler.data
-local read_file
 
-
-if jit.version_num >= 20100 then
-	profiler.jitpf = require("jit.profile")
-	profiler.default_mode = "l"
-	profiler.dump_depth = 10
-	profiler.dump_format = "pl\n"
-end
-
-if glfw then 
-	clock = timer.GetSystemTime
-	read_file = vfs.Read
-elseif gmod then
-	clock = SysTime
-end
-
--- call this with timer.GetSystemTime or something after glfw is loaded
-function profiler.SetClockFunction(func)
-	clock = func
-	profiler.Restart()
-end
-
-function profiler.SetReadFileFunction(func)
-	read_file = func
+do -- trace abort dump
+	local function trace_dump_callback(what, trace_id, func, pc, trace_error_id, trace_error_arg)
+		if what == "abort" then
+			local info = jit_util.funcinfo(func, pc)
+			local reason = jit_vmdef.traceerr[trace_error_id]:format(trace_error_arg)
+			
+			data[info.source] = files[info.source] or {}
+			data[info.source][info.linedefined] = files[info.source][info.linedefined] or {}
+			data[info.source][info.linedefined].trace_abort_reasons = data[info.source][info.linedefined].trace_abort_reasons or {}
+			data[info.source][info.linedefined].trace_abort_reasons[reason] = (files[info.source][info.linedefined][reason] or 0) + 1
+		end
+	end
+	
+	function profiler.StartTraceAbortDump()		
+		jit.attach(trace_dump_callback, "trace")
+	end
+	
+	function profiler.StopTraceAbortDump()
+		jit.attach(trace_dump_callback)
+	end
 end
 
 do
@@ -102,7 +44,8 @@ do
 			profiler.Stop()
 		return end
 						
-		local str = profiler.jitpf.dumpstack(thread, profiler.dump_format, profiler.dump_depth)
+		local str = jit_profiler.dumpstack(thread, "pl\n", 10)
+
 		local children = {}
 		
 		for line in str:gmatch("(.-)\n") do
@@ -110,7 +53,7 @@ do
 			
 			if not path and not line_number then
 				line = line:gsub("%[builtin#(%d+)%]", function(x)
-				  return vmdef.ffnames[tonumber(x)]
+				  return jit_vmdef.ffnames[tonumber(x)]
 				end)
 								
 				table.insert(children, {name = line, external_function = true})
@@ -126,22 +69,22 @@ do
 		local line = tonumber(info.line) or -1
 		
 		data[path] = data[path] or {}
-		data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, statistical = true, ready = false}
+		data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, statistical = true, ready = false, func_name = path}
 		
 		data[path][line].samples = data[path][line].samples + samples
-		data[path][line].start_time = data[path][line].start_time or clock()	
+		data[path][line].start_time = data[path][line].start_time or timer.GetSystemTime()	
 		
 		local parent = data[path][line]
 				
-		for _, info in pairs(children) do
+		for _, info in ipairs(children) do
 			local path = info.path or info.name
 			local line = tonumber(info.line) or -1
 				
 			data[path] = data[path] or {}
-			data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, statistical = true, ready = false}
+			data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, statistical = true, ready = false, func_name = path}
 			
 			data[path][line].samples = data[path][line].samples + samples
-			data[path][line].start_time = data[path][line].start_time or clock()	
+			data[path][line].start_time = data[path][line].start_time or timer.GetSystemTime()	
 			
 			data[path][line].parents[tostring(parent)] = parent
 			parent.children[tostring(data[path][line])] = data[path][line]
@@ -168,13 +111,13 @@ do
 		data[path][line] = data[path][line] or {total_time = 0, samples = 0, total_garbage = 0, func = info.func, func_name = info.name, instrumental = true}
 		
 		data[path][line].samples = data[path][line].samples + 1
-		data[path][line].start_time = data[path][line].start_time or clock()
+		data[path][line].start_time = data[path][line].start_time or timer.GetSystemTime()
 		
 		if type == "call" then
-			data[path][line].call_time = clock()
+			data[path][line].call_time = timer.GetSystemTime()
 			data[path][line].call_garbage = collectgarbage("count")
 		elseif type == "return" and data[path][line].call_time then
-			data[path][line].total_time = data[path][line].total_time + (clock() - data[path][line].call_time)
+			data[path][line].total_time = data[path][line].total_time + (timer.GetSystemTime() - data[path][line].call_time)
 			data[path][line].total_garbage = data[path][line].total_garbage + (collectgarbage("count") - data[path][line].call_garbage)
 		end
 	end
@@ -185,7 +128,7 @@ do
 		if not profiler.enabled then return end
 						
 		if type == "statistical" then
-			profiler.jitpf.start(profiler.default_mode, function(...) 
+			jit_profiler.start("l", function(...) 
 				local ok, err = xpcall(statistical_callback, system.OnError, ...)
 				if not ok then
 					logn(err)
@@ -206,7 +149,7 @@ function profiler.Stop(type)
 	if not profiler.enabled then return end
 	
 	if type == "statistical" then
-		profiler.jitpf.stop()
+		jit_profiler.stop()
 	else
 		debug.sethook()
 	end
@@ -223,7 +166,7 @@ function profiler.Running()
 	return active
 end
 
-function profiler.GetBenchmark(type)
+function profiler.GetBenchmark(type, dump_line)
 	type = type or profiler.type
 	
 	local out = {}
@@ -246,9 +189,9 @@ function profiler.GetBenchmark(type)
 				debug_info.currentline = nil
 				debug_info.func = nil
 			end
-		
-			if read_file then
-				local content = read_file(path)
+			
+			if dump_line then
+				local content = vfs.Read(path)
 				
 				if content then
 					name = content:explode("\n")[line]
@@ -257,12 +200,16 @@ function profiler.GetBenchmark(type)
 						name = name:trim()			
 					end
 				end
-				
 			elseif data.func then		
-				name = ("%s(%s)"):format(data.func_name, table.concat(getparams(data.func), ", "))
+				name = ("%s(%s)"):format(data.func_name, table.concat(debug.getparams(data.func), ", "))
+			elseif data.path and data.line then
+				local full_path = R(data.path) or data.path
+				full_path = full_path:replace("../../../", e.BASE_FOLDER)
+				full_path = full_path:lower():replace(e.ROOT_FOLDER:lower(), "")
+				name = full_path .. ":" .. data.line
+			else
+				name = data.name or "unknown(file not found)"
 			end
-			
-			name = name or "unknown(file not found)"
 				
 			name = name:trim()
 				
@@ -283,7 +230,7 @@ function profiler.GetBenchmark(type)
 				data.total_garbage = data.total_garbage
 			end
 											
-			data.sample_duration = clock() - data.start_time
+			data.sample_duration = timer.GetSystemTime() - data.start_time
 			data.times_called = data.samples
 			
 			table.insert(out, data)
@@ -371,7 +318,7 @@ function profiler.PrintBenchmark(benchmark, type)
 		end
 		
 		logn(("_"):rep(max+max2+11+10))
-		logn("| NAME:", (" "):rep(max-4), "| CALLS:")
+		logn("| NAME:", (" "):rep(max-4), "| CALL %:")
 		logn("|", ("_"):rep(max+2), "|", ("_"):rep(4+10))
 		for k,v in npairs(top) do
 			logf("| %s%s | %s\n", v.name, (" "):rep(max-#v.name), v.percent)

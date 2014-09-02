@@ -491,7 +491,8 @@ do -- include
 			
 			for script in vfs.Iterate(dir, nil, true) do
 				if script:find("%.lua") then
-					local func, err = loadfile(script)
+					local func, err = vfs.loadfile(script)
+					
 					if func then
 						local ok, err = xpcall(func, system and system.OnError or logn, ...)
 
@@ -510,41 +511,39 @@ do -- include
 		end
 						
 		-- try direct first
-		local path = dir .. file
-		local func, err = loadfile(path)
-		
-		if not func then		 
-			local previous_dir = include_stack[#include_stack]		
-						
-			if previous_dir then
-				dir = previous_dir .. dir
-			end
+		local loaded_path = path
+			
+		local previous_dir = include_stack[#include_stack]		
 					
-			-- try first with the last directory
-			-- once with lua prepended
-			path = "lua/" .. dir .. file
-			func, err = vfs.loadfile(path)
-						
-			if not_found(err) then
-				path = dir .. file
-				func, err = vfs.loadfile(path)
+		if previous_dir then
+			dir = previous_dir .. dir
+		end
 				
-				-- and without the last directory
-				-- once with lua prepended
-				if not_found(err) then
-					path = "lua/" .. source
-					func, err = vfs.loadfile(path)	
+		-- try first with the last directory
+		-- once with lua prepended
+		local path = "lua/" .. dir .. file
+		func, err = vfs.loadfile(path)
 					
-					if not_found(err) then
-						path = source
-						func, err = loadfile(path)
-					else
-						path = source
-					end
+		if not_found(err) then
+			path = dir .. file
+			func, err = vfs.loadfile(path)
+			
+			-- and without the last directory
+			-- once with lua prepended
+			if not_found(err) then
+				path = "lua/" .. source
+				func, err = vfs.loadfile(path)	
+				
+				-- try the absolute path given
+				if not_found(err) then
+					path = source
+					func, err = vfs.loadfile(loaded_path)
+				else
+					path = source
 				end
-			else
-				path = dir .. file
 			end
+		else
+			path = dir .. file
 		end
 		
 		if func then
@@ -577,23 +576,10 @@ do -- include
 			return select(2, unpack(res))
 		end		
 		
-		local path = console and console.GetVariable("editor_path")
-
-		if path and path ~= "" then
-			local source, line = err:match("(.+%.lua):(%d+)")
-			if source and line then
-				line = tonumber(line)
-				
-				if vfs.Exists(source) then
-					path = path:gsub("%%LINE%%", line)
-					path = path:gsub("%%PATH%%", source)
-					os.execute(path)
-				end
-			end
-		end
-		
 		logn(source:sub(1) .. " " .. err)
-				
+		
+		debug.openscript("lua/" .. path, err:match(":(%d+)"))
+						
 		return false, err
 	end
 end
