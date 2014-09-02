@@ -276,6 +276,8 @@ end
 
 function console.Print(str)
 	if not console.CanPrint(str) then return end
+
+	str = str:gsub("\r", "\n")
 	
 	if str:count("\n") > 1 then
 		for k,v in pairs(str:explode("\n")) do
