@@ -265,7 +265,9 @@ function vfs.Open(path, mode, sub_mode)
 		file:SetMode(mode)
 		
 		if utilities and utilities.SetGCCallback then
-			utilities.SetGCCallback(file, function() print("gc!!", data.path_info.full_path) end)
+			utilities.SetGCCallback(file, function() 
+				file:Close()
+			end)
 		end
 		
 		if file:PCall("Open", data.path_info) ~= false then
