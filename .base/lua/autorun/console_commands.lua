@@ -154,9 +154,6 @@ console.AddCommand("debug", function(line, lib)
 end)
 
 console.AddCommand("profile", function(line, time, ptype)
-	profiler.SetClockFunction(timer.GetSystemTime)
-	profiler.SetReadFileFunction(vfs.Read)
-
 	time = tonumber(time) or 1
 	
 	if type(ptype) == "string" then
