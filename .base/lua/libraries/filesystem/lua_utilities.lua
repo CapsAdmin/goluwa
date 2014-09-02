@@ -35,7 +35,7 @@ function vfs.loadfile(path)
 			return res, err, full_path 
 		end
 		
-		local res, err = loadstring(res, path)
+		local res, err = loadstring(res, "@" .. path) -- put @ in front of the path so it will be treated as such intenrally
 		return res, err, full_path
 	end
 	

@@ -46,7 +46,7 @@ local function SETUP_CACHED_UNIFORM(name, func, arg_count)
 	lua = lua:gsub("__NAME__", name)
 	lua = lua:gsub("__ASSIGN__", assign)
 	
-	assert(loadstring(lua))(func)
+	assert(loadstring(lua, "render." .. name))(func)
 end
 
 function render.Initialize()		

@@ -82,7 +82,7 @@ local function ADD_FFI_OPTIMIZED_TYPES(META)
 		write_unroll = write_unroll .. "\tself:WriteBytes(ffi.string(buff.chars, " .. size .. "))\n"
 		template = template:gsub("@WRITE_BYTES@", write_unroll)
 		
-		local func = loadstring(template)
+		local func = loadstring(template, "buffer ffi optimized types")
 		
 		func(META, ffi.new("number_buffer_" .. info.union))
 	end

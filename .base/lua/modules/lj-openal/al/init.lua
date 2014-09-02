@@ -117,7 +117,7 @@ local function add_al_func(name, func)
 					end
 				end
 				
-				logf("[openal] %q in function %s at %s:%i\n", str, info.name, info.short_src, info.currentline)
+				logf("[openal] %q in function %s at %s:%i\n", str, info.name, info.source, info.currentline)
 			end
 		end
 		
