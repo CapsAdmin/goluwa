@@ -511,7 +511,7 @@ do -- include
 		end
 						
 		-- try direct first
-		local loaded_path = path
+		local loaded_path = source
 			
 		local previous_dir = include_stack[#include_stack]		
 					
