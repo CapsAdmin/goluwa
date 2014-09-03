@@ -508,7 +508,7 @@ function render.CreateShader(data)
 			serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/uniforms.lua", uniforms)
 		end
 
-		local func, err = loadstring(lua)
+		local func, err = loadstring(lua, shader_id)
 
 		if not func then
 			error(err, 2)
