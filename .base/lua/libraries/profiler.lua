@@ -1,26 +1,36 @@
 local profiler = _G.profiler or {}
 
 profiler.data = profiler.data or {sections = {}, statistical = {}, trace_aborts = {}}
+profiler.raw_data = profiler.raw_data or {sections = {}, statistical = {}, trace_aborts = {}}
 
 local jit_profiler = require("jit.profile")
 local jit_vmdef = require("jit.vmdef")
 local jit_util = require("jit.util")
 
-local active = false
+local blacklist = {
+	["leaving loop in root trace"] = true,		
+}
 
-do -- trace abort dump
+local function trace_dump_callback(what, trace_id, func, pc, trace_error_id, trace_error_arg)
+	if what == "abort" then
+		local info = jit_util.funcinfo(func, pc)
+		table.insert(profiler.raw_data.trace_aborts, {info, trace_error_id, trace_error_arg})		
+	end
+end
+
+local function parse_raw_trace_abort_data()
 	local data = profiler.data.trace_aborts
-	
-	local blacklist = {
-		["leaving loop in root trace"] = true,		
-	}
-	
-	local function trace_dump_callback(what, trace_id, func, pc, trace_error_id, trace_error_arg)
-		if what == "abort" then
-			local reason = jit_vmdef.traceerr[trace_error_id]
-			if blacklist[reason] then return end
-			local info = jit_util.funcinfo(func, pc)
-			
+
+	for i = 1, #profiler.raw_data.trace_aborts do
+		local args = table.remove(profiler.raw_data.trace_aborts)
+		
+		local info = args[1]
+		local trace_error_id = args[2]
+		local trace_error_arg = args[3]
+		
+		local reason = jit_vmdef.traceerr[trace_error_id]
+		
+		if not blacklist[reason] then		
 			if type(trace_error_arg) == "number" and reason:find("bytecode") then
 				trace_error_arg = string.sub(jit_vmdef.bcnames, trace_error_arg*6+1, trace_error_arg*6+6)
 				reason = reason:gsub("(%%d)", "%%s")
@@ -33,32 +43,30 @@ do -- trace abort dump
 								
 			data[path] = data[path] or {}
 			data[path][line] = data[path][line] or {}
-			data[path][line][reason] = (data[path][line][reason] or 0) + 1			
+			data[path][line][reason] = (data[path][line][reason] or 0) + 1	
 		end
-	end
-	
-	function profiler.StartLoggingTraceAborts()
-		jit.attach(trace_dump_callback, "trace")
-	end
-	
-	function profiler.StopLoggingTraceAborts()
-		jit.attach(trace_dump_callback)
 	end
 end
 
-do
-	local enabled = false
+function profiler.StartLoggingTraceAborts()
+	jit.attach(trace_dump_callback, "trace")
+end
+
+function profiler.StopLoggingTraceAborts()
+	jit.attach(trace_dump_callback)
+end
+
+local function statistical_callback(thread, samples, vmstate)
+	local str = jit_profiler.dumpstack(thread, "pl\n", 10)
+	table.insert(profiler.raw_data.statistical, {str, samples})
+end
+
+local function parse_raw_statistical_data()
 	local data = profiler.data.statistical
 
-	local function statistical_callback(thread, samples, vmstate, ...)
-		if not enabled then
-			profiler.StopStatisticalProfiling()
-		return end
-		
-		samples = samples or 0
-						
-		local str = jit_profiler.dumpstack(thread, "pl\n", 10)
-
+	for i = 1, #profiler.raw_data.statistical do
+		local args = table.remove(profiler.raw_data.statistical)
+		local str, samples = args[1], args[2]
 		local children = {}
 		
 		for line in str:gmatch("(.-)\n") do
@@ -106,33 +114,26 @@ do
 			--table.insert(parent.children, data[path][line])
 		end
 	end
+end
 
-	function profiler.StartStatisticalProfiling()		
-		if enabled then return end
-						
-		jit_profiler.start("l", function(...) 
-			local ok, err = xpcall(statistical_callback, system.OnError, ...)
-			if not ok then
-				logn(err)
-				profiler.StopStatisticalProfiling()
-			end
-		end)
-		
-		enabled = true
-	end
+function profiler.StartStatisticalProfiling()		
+					
+	jit_profiler.start("l", function(...) 
+		local ok, err = xpcall(statistical_callback, system.OnError, ...)
+		if not ok then
+			logn(err)
+			profiler.StopStatisticalProfiling()
+		end
+	end)
+end
 
-	function profiler.StopStatisticalProfiling()
-		if not enabled then return end
-		
-		jit_profiler.stop()
-		
-		enabled = false
-	end
-
+function profiler.StopStatisticalProfiling()	
+	jit_profiler.stop()
 end
 
 function profiler.Restart()
 	profiler.data = {sections = {}, statistical = {}, trace_aborts = {}}
+	profiler.raw_data = {sections = {}, statistical = {}, trace_aborts = {}}
 end
 
 do
@@ -187,6 +188,11 @@ do
 end
 
 function profiler.GetBenchmark(type, file, dump_line)	
+	
+	if type == "statistical" then
+	 	parse_raw_statistical_data()
+	end
+
 	local out = {}
 
 	for path, lines in pairs(profiler.data[type]) do
@@ -264,6 +270,9 @@ end
 
 function profiler.PrintTraceAborts(min_samples)
 	min_samples = min_samples or 500
+	
+	parse_raw_statistical_data()
+	parse_raw_trace_abort_data()
 	
 	logn("trace abort reasons for functions that were sampled by the profiler more than ", min_samples, " times:")
 	
