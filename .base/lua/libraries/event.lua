@@ -116,6 +116,7 @@ function event.Call(event_type, ...)
 		end
 	end
 	if event.active[event_type] then
+		profiler.PushSection(event_type)
 		for index, data in ipairs(event.active[event_type]) do
 			
 			if data.self_arg then
@@ -157,6 +158,7 @@ function event.Call(event_type, ...)
 				end
 			end
 		end
+		profiler.PopSection()
 	end
 end
 
