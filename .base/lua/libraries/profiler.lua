@@ -281,7 +281,7 @@ function profiler.PrintTraceAborts(min_samples)
 		
 		local s = profiler.data.statistical
 		
-		if s[path] then			
+		if s[path] or not next(s) then			
 			local full_path = R(path) or path
 			full_path = full_path:replace("../../../", e.BASE_FOLDER)
 			full_path = full_path:lower():replace(e.ROOT_FOLDER:lower(), "")
@@ -289,7 +289,7 @@ function profiler.PrintTraceAborts(min_samples)
 			local temp = {}
 		
 			for line, reasons in pairs(lines) do
-				if s[path][line] and s[path][line].samples > min_samples then
+				if not next(s) or s[path][line] and s[path][line].samples > min_samples then
 					local str = "unknown line"
 					
 					local content, err = vfs.Read(path)
@@ -398,7 +398,7 @@ function profiler.PrintStatistical()
 	logn("")
 end
 
-profiler.StartLoggingTraceAborts()
-profiler.StartStatisticalProfiling()
+--profiler.StartLoggingTraceAborts()
+--profiler.StartStatisticalProfiling()
 
 return profiler

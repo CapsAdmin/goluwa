@@ -57,6 +57,10 @@ local function add_gl_func(name, func)
 	--name = name:gsub("ARB", "")
 	-- or not
 	
+	gl[name] = func
+	
+	--[==[
+	
 	gl[name] = function(...) 
 		if gl.mute then return end
 		
@@ -104,6 +108,8 @@ local function add_gl_func(name, func)
 		
 		return val
 	end
+	
+	]==]
 end
 
 for line in header:gmatch("(.-)\n") do

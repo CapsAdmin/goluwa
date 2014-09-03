@@ -422,15 +422,14 @@ function render.CreateShader(data)
 		local pos = 0
 
 		for i, data in pairs(build_output.vertex.vtx_info) do
-			i = i - 1
-
-			gl.BindAttribLocation(prog, i, data.name)
+			gl.BindAttribLocation(prog, i - 1, data.name)
 
 			vertex_attributes[i] = {
 				arg_count = data.info.arg_count,
 				enum = data.info.enum_type,
 				stride = build_output.vertex.vtx_atrb_size,
 				type_stride = ffi.cast("void*", data.info.size * pos),
+				location = i - 1,
 			}
 
 			pos = pos + data.info.arg_count

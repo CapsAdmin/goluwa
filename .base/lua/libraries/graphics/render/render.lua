@@ -74,6 +74,8 @@ function render.Initialize()
 		render.EnableDebug(true)
 	end
 	
+	render.GenerateTextures()
+	
 	include("libraries/graphics/decoders/*")
 	
 	SETUP_CACHED_UNIFORM("Uniform4f", gl.Uniform4f, 5)
