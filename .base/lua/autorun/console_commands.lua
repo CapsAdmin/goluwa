@@ -153,31 +153,18 @@ console.AddCommand("debug", function(line, lib)
 	end
 end)
 
-console.AddCommand("profile", function(line, time, ptype)
-	time = tonumber(time) or 1
-	
-	if type(ptype) == "string" then
-		if ptype:sub(1,1) == "i" then 
-			ptype = "instrumental"
-		elseif ptype:sub(1,1) == "s" then 
-			ptype = "statistical"
-		end
-	else
-		ptype = profiler.type
+console.AddCommand("profile_dump", function(line)
+	if line == "" or line == "st" or line == "s" then
+		profiler.PrintStatistical()
 	end
 	
-	profiler.Start(nil, ptype)
+	if line == "" or line == "se" then
+		profiler.PrintSections()
+	end
 	
-	logn("starting profiler for ", time, " seconds")
-	
-	event.CreateTimer("profile_status", 1, time, function(i)
-		logn("profiling...")
-		if time ~= i+1 then return end
-		
-		profiler.Stop(ptype)
-
-		profiler.PrintBenchmark(profiler.GetBenchmark(), ptype)
-	end)
+	if line == "" or line == "ab" or line == "a" then
+		profiler.PrintTraceAborts()
+	end
 end)
 
 console.AddCommand("find", function(line, ...)
