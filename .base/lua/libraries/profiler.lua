@@ -11,10 +11,22 @@ local active = false
 do -- trace abort dump
 	local data = profiler.data.trace_aborts
 	
+	local blacklist = {
+		["leaving loop in root trace"] = true,		
+	}
+	
 	local function trace_dump_callback(what, trace_id, func, pc, trace_error_id, trace_error_arg)
 		if what == "abort" then
+			local reason = jit_vmdef.traceerr[trace_error_id]
+			if blacklist[reason] then return end
 			local info = jit_util.funcinfo(func, pc)
-			local reason = jit_vmdef.traceerr[trace_error_id]:format(trace_error_arg)
+			
+			if type(trace_error_arg) == "number" and reason:find("bytecode") then
+				trace_error_arg = string.sub(jit_vmdef.bcnames, trace_error_arg*6+1, trace_error_arg*6+6)
+				reason = reason:gsub("(%%d)", "%%s")
+			end
+			
+			reason = reason:format(trace_error_arg)
 				
 			local path = info.source
 			local line = info.currentline or info.linedefined
@@ -253,7 +265,7 @@ end
 function profiler.PrintTraceAborts(min_samples)
 	min_samples = min_samples or 500
 	
-	logn("trace abort reasons for functions that were called more than ", min_samples, " times:")
+	logn("trace abort reasons for functions that were sampled by the profiler more than ", min_samples, " times:")
 	
 	for path, lines in pairs(profiler.data.trace_aborts) do		
 		path = path:sub(2)
@@ -282,7 +294,7 @@ function profiler.PrintTraceAborts(min_samples)
 					end
 								
 					for reason, count in pairs(reasons) do
-						table.insert(temp, "\t\t" .. reason .. " (x" .. count .. ")")
+						table.insert(temp, "\t\t" .. reason:trim() .. " (x" .. count .. ")")
 						table.insert(temp, "\t\t\t" .. line .. ": " .. str)
 					end
 				end
