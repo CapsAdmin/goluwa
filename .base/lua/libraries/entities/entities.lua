@@ -27,9 +27,9 @@ function entities.SetupComponents(name, components)
 	for _, name in ipairs(components) do
 		for k, v in pairs(entities.GetComponent(name)) do
 			if type(v) == "function" then			
-				functions[k] = function(ent, ...)
+				functions[k] = function(ent, a,b,c,d)
 					local obj = ent:GetComponent(name)
-					return obj[k](obj, ...)
+					return obj[k](obj, a,b,c,d)
 				end
 			end
 		end
@@ -200,17 +200,13 @@ do -- base component
 		
 		local func_name = "On" .. event_type
 		
-		events[event_type] = events[event_type] or {}
-		events[event_type][self.Name] = events[event_type][self.Name] or {}
+		events[event_type] = events[event_type] or {}		
+		table.insert(events[event_type], self)
 		
-		table.insert(events[event_type][self.Name], self)
-		
-		event.AddListener(event_type, "entities", function(...) 
-			for name, components in pairs(events[event_type]) do
-				for i, self in ipairs(components) do
-					if self[func_name] then
-						self[func_name](self, ...)
-					end
+		event.AddListener(event_type, "entities", function(a_, b_, c_) 
+			for name, self in ipairs(events[event_type]) do
+				if self[func_name] then
+					self[func_name](self, a_, b_, c_)
 				end
 			end
 		end)
@@ -220,16 +216,15 @@ do -- base component
 		ref_count[event_type] = (ref_count[event_type] or 0) - 1
 	
 		events[event_type] = events[event_type] or {}
-		events[event_type][self.Name] = events[event_type][self.Name] or {}
 		
-		for i, other in pairs(events[event_type][self.Name]) do
+		for i, other in pairs(events[event_type]) do
 			if other == self then
-				events[event_type][self.Name][i] = nil
+				events[event_type][i] = nil
 				break
 			end
 		end
 		
-		table.fixindices(events[event_type][self.Name])
+		table.fixindices(events[event_type])
 
 		for i, self in ipairs(events[event_type]) do
 			self[func_name](self)

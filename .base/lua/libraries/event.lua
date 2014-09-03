@@ -104,14 +104,14 @@ local blacklist = {
 	PreDrawMenu = true,
 }
 
-local status, a,b,c,d,e,f,g,h
+local status, a,b,c,d,e
 local time = 0
 
-function event.Call(event_type, ...)
+function event.Call(event_type, a_, b_, c_, d_, e_)
 	if event.debug then
 		if not blacklist[event_type] then
 			event.call_count = event.call_count or 0
-				print(event.call_count, event_type, ...)
+				print(event.call_count, event_type, a,b,c,d,e)
 			event.call_count = event.call_count + 1
 		end
 	end
@@ -122,9 +122,9 @@ function event.Call(event_type, ...)
 			if data.self_arg then
 				if data.self_arg:IsValid() then
 					if data.self_arg_with_callback then
-						status, a,b,c,d,e,f,g,h = xpcall(data.callback, data.on_error or system.OnError, ...)
+						status, a,b,c,d,e = xpcall(data.callback, data.on_error or system.OnError, a_, b_, c_, d_, e_)
 					else
-						status, a,b,c,d,e,f,g,h = xpcall(data.callback, data.on_error or system.OnError, data.self_arg, ...)
+						status, a,b,c,d,e = xpcall(data.callback, data.on_error or system.OnError, data.self_arg, a_, b_, c_, d_, e_)
 					end
 				else
 					event.RemoveListener(event_type, data.id)
@@ -135,7 +135,7 @@ function event.Call(event_type, ...)
 					return
 				end
 			else
-				status, a,b,c,d,e,f,g,h = xpcall(data.callback, data.on_error or system.OnError, ...)
+				status, a,b,c,d,e = xpcall(data.callback, data.on_error or system.OnError, a_, b_, c_, d_, e_)
 			end
 			
 			if a == event.destroy_tag or data.remove_after_one_call then
@@ -154,7 +154,7 @@ function event.Call(event_type, ...)
 				end
 
 				if a ~= nil then
-					return a,b,c,d,e,f,g,h
+					return a,b,c,d,e
 				end
 			end
 		end
@@ -370,7 +370,7 @@ do -- timers
 	
 	local remove_these = {}
 	
-	function event.UpdateTimers(...)
+	function event.UpdateTimers(a_, b_, c_, d_, e_)
 		local cur = timer.GetElapsedTime()
 				
 		for i, data in ipairs(event.timers) do
@@ -411,7 +411,7 @@ do -- timers
 				end
 			elseif data.type == "timer" then
 				if not data.paused and data.realtime < cur then
-					local ran, msg = data:Call(data.times_ran - 1, ...)
+					local ran, msg = data:Call(data.times_ran - 1, a_, b_, c_, d_, e_)
 					
 					if ran then
 						if msg == "stop" then

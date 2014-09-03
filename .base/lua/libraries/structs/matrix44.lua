@@ -10,7 +10,6 @@ function META:__index(key)
 end
 
 function META:__newindex(key, val)
-	if type(val) ~= "cdata" then error("asdadwwd") end
 	rawset(self, key, val)
 end
 
@@ -32,18 +31,17 @@ function META:__mul(b)
 	return self:GetMultiplied(b)
 end
 
-function META:Copy(m)
-	if m then
-		for i = 0, 16-1 do
-			self.m[i] = m.m[i]
-		end
+local size = ffi.sizeof("float") * 16
+
+function META:Copy(matrix)
+	if matrix then
+		fi.copy(result.m, matrix.m)
+		
 		return self
 	else
 		local result = Matrix44()
 		
-		for i = 0, 16-1 do
-			result.m[i] = self.m[i]
-		end
+		ffi.copy(result.m, self.m, size)
 		
 		return result
 	end
@@ -102,9 +100,24 @@ function META:GetInverse(out)
 
 	local det = m[0]*r[0] + m[1]*r[4] + m[2]*r[8] + m[3]*r[12]
 	
-	for i = 0, 15 do 
-		r[i] = r[i] / det 
-	end
+	
+	r[0] = r[0] / det 
+	r[1] = r[1] / det 
+	r[2] = r[2] / det 
+	r[3] = r[3] / det 
+	r[4] = r[4] / det 
+	r[5] = r[5] / det 
+	r[6] = r[6] / det 
+	r[7] = r[7] / det 
+	r[8] = r[8] / det 
+	r[9] = r[9] / det 
+	r[10] = r[10] / det 
+	r[11] = r[11] / det 
+	r[12] = r[12] / det 
+	r[13] = r[13] / det 
+	r[14] = r[14] / det 
+	r[15] = r[15] / det 
+	
 	
 	return out
 end

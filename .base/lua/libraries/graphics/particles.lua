@@ -56,7 +56,7 @@ function ParticleEmitter(max)
 	self.next_think = 0
 	self.poly = surface.CreatePoly(max)
 
-	emitters[#emitters+1] = self
+	table.insert(emitters, self)
 	
 	return self
 end
@@ -69,6 +69,7 @@ function EMITTER:OnRemove()
 			break 
 		end 
 	end
+	table.fixindices(emitters)
 end
  
 function EMITTER:Think(dt)
@@ -245,7 +246,7 @@ function EMITTER:Emit(...)
 end
  
 event.AddListener("Draw2D", "particles", function(dt)	
-	for _, emitter in pairs(emitters) do
+	for _, emitter in ipairs(emitters) do
 		if not emitter.DrawManual then
 			emitter:Draw()
 		end
@@ -253,7 +254,7 @@ event.AddListener("Draw2D", "particles", function(dt)
 end) 
  
 event.AddListener("Update", "particles", function(dt)	
-	for _, emitter in pairs(emitters) do
+	for _, emitter in ipairs(emitters) do
 		emitter:Think(dt) 
 	end
 end)

@@ -55,9 +55,9 @@ function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
 	end
 		
 	render.BindVertexArray(self.vao_id)		
-		for location, data in pairs(self.vertex_attributes) do
-			gl.EnableVertexAttribArray(location)
-			gl.VertexAttribPointer(location, data.arg_count, data.enum, false, data.stride, data.type_stride)
+		for _, data in ipairs(self.vertex_attributes) do
+			gl.EnableVertexAttribArray(data.location)
+			gl.VertexAttribPointer(data.location, data.arg_count, data.enum, false, data.stride, data.type_stride)
 		end
 	render.BindVertexArray(0)
 	
