@@ -344,9 +344,26 @@ do -- window meta
 							event.Call("WindowMoved", self, w, h)
 						end
 					end)
+				elseif nice == "OnCursorPos" then
+					func(ptr, function(ptr, x, y)
+						if self[nice](self, x, y) ~= false then
+							event.Call(event_name, self, x, y)
+						end
+					end)
+				elseif nice == "OnCursorEnter" then
+					func(ptr, function(ptr, a)
+						if self[nice](self, a == 1) ~= false then
+							event.Call(event_name, self, a == 1)
+						end
+					end)
+				elseif nice == "OnCursorLeave" then
+					func(ptr, function(ptr, a)
+						if self[nice](self, a == 1) ~= false then
+							event.Call(event_name, self, a == 1)
+						end
+					end)
 				else
 					func(ptr, function(ptr, ...)
-						if not self[nice] then print(nice) return end 
 						if self[nice](self, ...) ~= false then
 							event.Call(event_name, self, ...)
 						end
@@ -367,4 +384,6 @@ do -- window meta
 end
 
 -- this is needed regardless of whether a window exists or not or else the console will freeze..???
-event.CreateTimer("glfw_pollevents", 1/60, 0, function() glfw.PollEvents() end)
+local cb = function() glfw.PollEvents() end
+jit.off(cb)
+event.CreateTimer("glfw_pollevents", 1/60, 0, cb)
