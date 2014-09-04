@@ -1144,7 +1144,16 @@ function render.DrawDeferred(dt, w, h)
 
 	if not deferred:Get() then
 		render.Clear(1,1,1,1)
+		gl.DepthMask(gl.e.GL_TRUE)
+		gl.Enable(gl.e.GL_DEPTH_TEST)
+		gl.Disable(gl.e.GL_BLEND)
 		event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
+		
+		gl.Disable(gl.e.GL_DEPTH_TEST)	
+		gl.Enable(gl.e.GL_BLEND)
+		render.SetBlendMode("alpha")	
+		render.SetCullMode("back")
+		gl.Disable(gl.e.GL_DEPTH_TEST)
 		event.Call("Draw2D", dt)
 	return end
 	
