@@ -30,6 +30,8 @@ function event.AddListener(event_type, id, callback, config)
 		config.remove_after_one_call = true
 	end
 	
+	config.print_str = config.event_type .. "->" .. tostring(config.id)
+	
 	event.RemoveListener(config.event_type, config.id)
 	
 	event.active[config.event_type] = event.active[config.event_type] or {}
@@ -53,6 +55,8 @@ function event.RemoveListener(event_type, id)
 				-- an event which will mess up the ipairs loop and skip all the other events
 				-- of the same type
 				event.active[event_type][index] = nil
+				
+				profiler.RemoveSection(val.print_str)
 				
 				do -- repair the table
 					local temp = {}
@@ -116,8 +120,8 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 		end
 	end
 	if event.active[event_type] then
-		profiler.PushSection(event_type)
 		for index, data in ipairs(event.active[event_type]) do
+			profiler.PushSection(data.print_str)
 			
 			if data.self_arg then
 				if data.self_arg:IsValid() then
@@ -157,8 +161,9 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 					return a,b,c,d,e
 				end
 			end
+			
+			profiler.PopSection()
 		end
-		profiler.PopSection()
 	end
 end
 
@@ -189,10 +194,10 @@ end
 function event.Dump()
 	local h=0
 	for k,v in pairs(event.GetTable()) do
-		logn("> "..k.." ("..table.Count(v).." events):")
+		logn("> "..k.." ("..table.count(v).." events):")
 		for name,data in pairs(v) do
 			h=h+1
-			logn("   \""..name.."\" \t "..tostring(debug.getinfo(data.callback).source)..":")
+			logn("   \""..tostring(data.id).."\" \t "..tostring(debug.getinfo(data.callback).source)..":")
 			logn(" Line:"..tostring(debug.getinfo(data.callback).linedefined))
 		end
 		logn("")
@@ -411,6 +416,7 @@ do -- timers
 				end
 			elseif data.type == "timer" then
 				if not data.paused and data.realtime < cur then
+					profiler.PushSection(data.id)
 					local ran, msg = data:Call(data.times_ran - 1, a_, b_, c_, d_, e_)
 					
 					if ran then
@@ -427,16 +433,19 @@ do -- timers
 					else
 						logn(data.id, msg)
 						table.insert(remove_these, i)
+						profiler.RemoveSection(data.id)
 						break
 					end
 
 					if data.times_ran == data.repeats then
 						table.insert(remove_these, i)
+						profiler.RemoveSection(data.id)
 						break
 					else
 						data.times_ran = data.times_ran + 1
 						data.realtime = cur + data.time
 					end
+					profiler.PopSection()
 				end
 			end
 		end
