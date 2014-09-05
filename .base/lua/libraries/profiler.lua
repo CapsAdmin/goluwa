@@ -141,6 +141,7 @@ do
 	
 	local base_garbage = 0
 	local stack = {}
+	local i = 0
 	
 	function profiler.PushSection(section_name)
 		local start_gc = collectgarbage("count")
@@ -179,8 +180,17 @@ do
 		data[path][line].total_time = data[path][line].total_time + time
 		data[path][line].total_garbage = data[path][line].total_garbage + gc
 		data[path][line].samples = data[path][line].samples + 1
+		data[path][line].level = res.level
+		data[path][line].start_time = res.start_time
+		data[path][line].i = i
+		
+		i = i + 1
 				
 		return time, gc
+	end
+	
+	function profiler.RemoveSection(name)
+		data[name] = nil
 	end
 	
 	profiler.PushSection()
@@ -327,18 +337,20 @@ function profiler.PrintSections()
 	end
 	
 	table.sort(top, function(a, b)
-		return a.average_time > b.average_time
+		return a.i > b.i
 	end)
+	
 	
 	local max = 0
 	local max2 = 0
 	local max3 = 0
 	for k, v in pairs(top) do
+		v.name = ("    "):rep(v.level) .. v.name
 		if #v.name > max then
 			max = #v.name
 		end
 		
-		v.average_time = tostring(v.average_time * 100)
+		v.average_time = tostring(math.round(v.average_time * 100 * 100, 3))
 		
 		if #v.average_time > max2 then
 			max2 = #v.average_time
@@ -398,7 +410,7 @@ function profiler.PrintStatistical()
 	logn("")
 end
 
---profiler.StartLoggingTraceAborts()
---profiler.StartStatisticalProfiling()
+profiler.StartLoggingTraceAborts()
+profiler.StartStatisticalProfiling()
 
 return profiler
