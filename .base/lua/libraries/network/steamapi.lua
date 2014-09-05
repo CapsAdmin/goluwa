@@ -38,7 +38,7 @@ end
 
 function steam.InitializeWebAPI()
 	steam.key = steam.GetWebAPIKey()
-	steam.supported = steam.supported or serializer.ReadFile("luadata", "steam_webapi_supported.lua")
+	steam.supported = steam.supported or serializer.ReadFile("luadata", "steam_webapi_supported.lua") or {}
 	
 	if key == "" then
 		logn("steam key is not set (run steam_webapi_key *key*)")

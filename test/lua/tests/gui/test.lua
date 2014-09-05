@@ -47,7 +47,7 @@ do -- tree test
 
 	--tree:Dock("fill")
 	  
-	local data = serializer.ReadFile("luadata", R"data/tree.txt")
+	local data = serializer.ReadFile("luadata", R"data/tree.txt") or {}
 	local done = {}
 	 
 	local function fill(tbl, node)		

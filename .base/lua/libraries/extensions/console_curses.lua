@@ -13,7 +13,7 @@ local markup = surface.CreateMarkup()
 markup:SetMultiline(false)
 markup:SetFixedSize(14)
 
-local history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt")
+local history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt") or {}
 local dirty = false
 
 local USE_COLORS = (os.getenv("USE_COLORS") or "1") == "1"

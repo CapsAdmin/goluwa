@@ -105,7 +105,7 @@ do
 	end
 
 	function input.Initialize()
-		input.Binds = serializer.ReadFile("luadata", "%DATA%/input.txt")
+		input.Binds = serializer.ReadFile("luadata", "%DATA%/input.txt") or {}
 	end
 
 	function input.Call(key, press)

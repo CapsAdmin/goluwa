@@ -40,17 +40,23 @@ do -- vfs extension
 	end
 
 	function serializer.SetKeyValueInFile(lib, path, key, value)
-		local tbl = serializer.ReadFile(lib, path)
+		local tbl = serializer.ReadFile(lib, path) or {}
 		tbl[key] = value
 		serializer.WriteFile(lib, path, tbl)
 	end
 
 	function serializer.GetKeyFromFile(lib, path, key, def)
-		return serializer.ReadFile(lib, path)[key] or def
+		local tbl = serializer.ReadFile(lib, path)
+		
+		if tbl then
+			return serializer.ReadFile(lib, path)[key] or def
+		end
+		
+		return def
 	end
 
 	function serializer.AppendToFile(lib, path, value)
-		local tbl = serializer.ReadFile(lib, path)
+		local tbl = serializer.ReadFile(lib, path) or {}
 		table.insert(tbl, value)
 		serializer.WriteFile(lib, path, tbl)
 	end
