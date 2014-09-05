@@ -86,7 +86,7 @@ function console.InitializeCurses()
 	local last_w = curses.COLS
 	local last_h = curses.LINES
 
-	event.CreateTimer("curses", 1/60, 0, function()
+	event.CreateTimer("curses", 1/30, 0, function()
 		local key = {}
 		
 		for i = 1, math.huge do
