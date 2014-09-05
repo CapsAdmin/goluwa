@@ -8,7 +8,7 @@ CONTEXT.Name = "memory"
 local file_tree = {is_folder = true}
 
 function CONTEXT:VFSOpened()
-	file_tree = serializer.ReadFile("luadata", "vfs_memory")
+	file_tree = serializer.ReadFile("luadata", "vfs_memory") or {}
 end
 
 function CONTEXT:VFSClosed()

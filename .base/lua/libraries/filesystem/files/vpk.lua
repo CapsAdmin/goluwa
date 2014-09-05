@@ -71,7 +71,7 @@ local function get_file_tree(path)
 		return cache[path]
 	end
 	
-	--local tree = serializer.ReadFile("msgpack", "vpk_cache/" .. crypto.CRC32(path))
+	--local tree = serializer.ReadFile("msgpack", "vpk_cache/" .. crypto.CRC32(path)) or {}
 	
 	--if tree then
 --		cache[path] = tree

@@ -362,7 +362,7 @@ do -- console vars
 	end
 	
 	function console.ReloadVariables()
-		console.vars = serializer.ReadFile("luadata", console.cvar_file_name)
+		console.vars = serializer.ReadFile("luadata", console.cvar_file_name) or {}
 	end
 	
 	local luadata = serializer.GetLibrary("luadata")

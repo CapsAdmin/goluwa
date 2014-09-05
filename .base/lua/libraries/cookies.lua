@@ -21,7 +21,7 @@ function cookies.Get(key, def)
 end
 
 function cookies.Reload()
-	cookies.current = serializer.ReadFile("luadata", "cookies.txt")
+	cookies.current = serializer.ReadFile("luadata", "cookies.txt") or {}
 end
 
 return cookies

@@ -48,7 +48,7 @@ canvas:Center()
 
 		--tree:Dock("fill")
 		  
-		local data = serializer.ReadFile("luadata", R("well.txt"))
+		local data = serializer.ReadFile("luadata", R("well.txt")) or {}
 		local done = {}
 		 
 		local function fill(tbl, node)		
