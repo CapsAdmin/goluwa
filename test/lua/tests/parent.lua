@@ -33,7 +33,7 @@ parent:BuildChildrenList()
 
 event.AddListener("Update", "lol", function()			
 	local t = timer.GetSystemTime() - start 
-	for i, child in ipairs(parent:GetAllChildren()) do
+	for i, child in ipairs(parent:GetChildrenList()) do
 		child:SetAngles(Ang3(t,t,t))
 		t = t * 1.001
 	end
