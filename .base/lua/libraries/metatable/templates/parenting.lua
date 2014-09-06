@@ -10,7 +10,7 @@ function metatable.AddParentingTemplate(META)
 	metatable.GetSet(META, "Parent", NULL)
 	META.Children = {}
 	
-	function META:GetAllChildren()
+	function META:GetChildrenList()
 		if not self.children_list then
 			self:BuildChildrenList()
 		end
@@ -150,9 +150,7 @@ function metatable.AddParentingTemplate(META)
 	function META:BuildChildrenList()
 		self.children_list = {}
 		
-		for i, child in ipairs(self:GetChildren()) do
-			add_children_to_list(child, self.children_list)
-		end
+		add_children_to_list(self, self.children_list)
 	end
 	
 	function META:BuildParentList()
