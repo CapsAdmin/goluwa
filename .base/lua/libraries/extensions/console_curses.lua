@@ -169,12 +169,16 @@ function console.InitializeCurses()
 	end
 	
 	if console.curses_init then	return end
-
-	curses.freeconsole()
+	
+	local pdcurses_for_real_windows = pcall(function() return curses.PDC_set_resize_limits end)
+	
+	if pdcurses_for_real_windows then
+		curses.freeconsole()
+	end
 
 	c.parent_window = curses.initscr()
 	
-	if WINDOWS then
+	if WINDOWS and pdcurses_for_real_windows then
 		curses.PDC_set_resize_limits(1, 1000, 1, 1000)
 		curses.resize_term(50, 150) 
 	end
