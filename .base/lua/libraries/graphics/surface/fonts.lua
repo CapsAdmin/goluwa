@@ -8,8 +8,6 @@ x, y :DrawString(str, x, y)
 surface.AddFontLoader{.AttemptLoad(<binaryData>, options, callback(suc, errmsg/metatable))}
 ]]
 
-include("../packed_rectangle.lua")
-
 local surface = (...) or _G.surface
 
 surface.fonts = surface.fonts or {}

@@ -1,6 +1,7 @@
 local utilities = _G.utilities or {}
 
 include("mesh.lua", utilities)
+include("packed_rectangle.lua", utilities)
 
 do -- tree
 	local META = metatable.CreateTemplate("tree")
