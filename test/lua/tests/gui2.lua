@@ -4,6 +4,8 @@
 
 local gui2 = {}
 
+_G.gui2 = gui2
+
 gui2.hovering_panel = NULL
 gui2.panels = {}
 
@@ -65,7 +67,10 @@ do -- base panel
 		return total_size
 	end
 
-	function PANEL:Draw(no_clip, no_draw)
+	function PANEL:PreDraw()
+		local no_clip = self:HasParent() and self.Parent.draw_no_clip
+		local no_draw = self:HasParent() and self.Parent.draw_no_draw
+	
 		surface.PushMatrix()
 			render.Translate(self.Position.x, self.Position.y, 0)
 
@@ -114,13 +119,27 @@ do -- base panel
 
 				render.Translate(-self.Scroll.x, -self.Scroll.y, 0)
 
-				for k,v in ipairs(self:GetChildren()) do
-					v:Draw(no_clip, no_draw)
-				end
-
+				--for k,v in ipairs(self:GetChildren()) do
+				--	v:Draw(no_clip, no_draw)
+				--end
+				
+				self.draw_no_clip = no_clip
+				self.draw_no_draw = no_draw
+				self.draw_sigh = sigh
+	end
+	
+	function PANEL:Draw()
+		self:PreDraw()
+			for k,v in ipairs(self:GetChildren()) do
+				v:Draw()
+			end
+		self:PostDraw()
+	end
+				
+	function PANEL:PostDraw()
 				self:CalcResizing()
 
-			if sigh or not no_draw and not no_clip and self.Clipping then
+			if self.draw_sigh or not self.draw_no_draw and not self.draw_no_clip and self.Clipping then
 				surface.EndClipping2()
 			end
 		surface.PopMatrix()
@@ -309,8 +328,6 @@ do -- base panel
 			else
 				self:StopScrolling()
 			end
-			
-			
 		end
 	end
 	
@@ -537,7 +554,7 @@ do -- base panel
 			render.Translate(w, h, 0)
 			render.Rotate(self.DrawAngleOffset, 0, 0, 1)
 			render.Translate(-w, -h, 0)
-		
+				
 			for key, animation in pairs(self.animations) do
 
 				local pause = false
@@ -985,8 +1002,18 @@ do -- base panel
 
 				local x = (x / self.Size.w)
 				local y = -(y / self.Size.h)  +  1
+				
+				x = x * self.Texture.w
+				y = y * self.Texture.h
+				
+				x = math.clamp(math.floor(x), 1, self.Texture.w-1)		
+				y = math.clamp(math.floor(y), 1, self.Texture.h-1)		
+				
+				local i = (y * self.Texture.w + x) * self.Texture.format.stride
+				
+				alpha = self.Texture.buffer_cache[i + 3] / 255
 
-				alpha = self.Texture:GetPixelColor(x * self.Texture.w, y * self.Texture.h, self.Texture.buffer_cache).a
+				--alpha = self.Texture:GetPixelColor(, self.Texture.buffer_cache).a
 			end
 
 			if x > 0 and x < self.Size.w and y > 0 and y < self.Size.h and alpha > 0 then
@@ -1050,6 +1077,14 @@ do -- base panel
 			
 			self:OnMouseInput(button, press)
 		end
+		
+		function PANEL:KeyInput(button, press)
+			self:OnKeyInput(button, press)
+		end	
+		
+		function PANEL:CharInput(char)
+			self:OnCharInput(char)
+		end
 	end
 	
 	do -- events
@@ -1057,7 +1092,7 @@ do -- base panel
 
 		end
 
-		function PANEL:OnDraw()
+		function PANEL:OnDraw()	
 			surface.SetColor(self.Color:Unpack())
 			surface.SetTexture(self.Texture)
 
@@ -1074,6 +1109,9 @@ do -- base panel
 		function PANEL:OnMouseExit(x, y) self:SetColor(self.original_color) end
 		function PANEL:OnMouseMove(x, y) self:MarkDirty() end
 		function PANEL:OnMouseInput(button, press) end
+		
+		function PANEL:OnKeyInput(button, press) end
+		function PANEL:OnCharInput(char) end
 
 		function PANEL:OnCharTyped(char) end
 		function PANEL:OnKeyPressed(key, pressed) end
@@ -1086,6 +1124,7 @@ do -- base panel
 		self:SetParent(parent or gui2.world)
 
 		table.insert(gui2.panels, self)
+		self.i = #gui2.panels
 
 		return self
 	end
@@ -1116,6 +1155,22 @@ function gui2.MouseInput(button, press)
 	end
 end
 
+function gui2.KeyInput(button, press)
+	local panel = gui2.focus_panel
+
+	if panel:IsValid() then
+		panel:KeyInput(button, press)
+	end
+end
+
+function gui2.CharInput(char)
+	local panel = gui2.focus_panel
+
+	if panel:IsValid() then
+		panel:CharInput(char)
+	end
+end
+
 function gui2.Draw2D()
 	render.SetCullMode("none")
 	--surface.Start3D(Vec3(1, -5, 10), Ang3(-90, 180, 0), Vec3(8, 8, 10))
@@ -1134,6 +1189,32 @@ function gui2.Draw2D()
 		gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePos()
 
 		gui2.world:Draw()
+		
+		do return end
+		
+		if not gui2.unrolled_draw then
+			local str = {"local panels = gui2.panels"}
+			
+			local function add_children_to_list(parent, str, level)
+				table.insert(str, ("%spanels[%i]:PreDraw()"):format((" "):rep(level), parent.i))
+				for i, child in ipairs(parent:GetChildren()) do
+					level = level + 1
+					add_children_to_list(child, str, level) 
+					level = level - 1
+				end
+				table.insert(str, ("%spanels[%i]:PostDraw()"):format((" "):rep(level), parent.i))
+			end
+		
+			add_children_to_list(gui2.world, str, 0)
+			str = table.concat(str, "\n")
+			print(str)			
+			gui2.unrolled_draw = loadstring(str, "gui2_unrolled_draw")
+		end
+		
+		for i = 1, 40 do
+			gui2.world:Draw()
+		end
+				
 
 --	surface.End3D()
 end
@@ -1154,6 +1235,8 @@ function gui2.Initialize()
 
 	event.AddListener("Draw2D", "gui2", gui2.Draw2D)
 	event.AddListener("MouseInput", "gui2", gui2.MouseInput)
+	event.AddListener("KeyInputRepeat", "gui2", gui2.KeyInput)
+	event.AddListener("CharInput", "gui2", gui2.CharInput)
 end
 
 function gui2.Test()
@@ -1174,9 +1257,42 @@ function gui2.Test()
 		panel:SetSnapWhileDragging(true)
 	end
 
-	--do return end
-
-
+	local panel = gui2.CreatePanel()
+	panel:SetPosition(Vec2(400,300))
+	panel:SetSize(Vec2(300,300))
+	panel:SetColor(Color(0.1,0.1,0.1,1))
+	panel.original_color = panel.Color:Copy()
+	panel.lol = true
+	local markup = surface.CreateMarkup()
+	markup:Test()
+	
+	function panel:OnDraw()
+		markup:SetMousePosition(self:GetMousePosition():Copy())
+	
+		getmetatable(self).OnDraw(self)
+		markup:Draw(0, 0, self.Size.w, self.Size.h)
+	end
+	
+	function panel:OnMouseInput(button, press)
+		markup:OnMouseInput(button, press)
+	end
+	
+	function panel:OnKeyInput(key, press)
+		if key == "left_shift" or key == "right_shift" then  markup:SetShiftDown(press) return end
+		if key == "left_control" or key == "right_control" then  markup:SetControlDown(press) return end
+	
+		if press then
+			markup:OnKeyInput(key, press)
+		end
+	end
+	
+	function panel:OnCharInput(char)
+		markup:OnCharInput(char)
+	end
+	
+	panel.OnMouseEnter = function() end
+	panel.OnMouseExit = function() end
+	
 
 	local frame = gui2.CreatePanel()
 	frame:SetSize(Vec2(200,200))
