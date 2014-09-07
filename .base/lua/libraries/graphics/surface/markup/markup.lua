@@ -20,6 +20,7 @@ class.GetSet(META, "LineWrap", true)
 class.GetSet(META, "ShiftDown", false)
 class.GetSet(META, "Editable", true)
 class.GetSet(META, "Multiline", true)
+class.GetSet(META, "MousePosition", Vec2())
 class.GetSet(META, "FastMode", false)
 
 if SERVER then

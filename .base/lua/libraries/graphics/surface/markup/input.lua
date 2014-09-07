@@ -96,8 +96,10 @@ function META:OnKeyInput(key, press)
 	end
 end
 
-function META:OnMouseInput(button, press, x, y)
+function META:OnMouseInput(button, press)
 	if #self.chunks == 0 then return end
+	
+	local x, y = self:GetMousePosition():Unpack()
 
 	local chunk = self:CaretFromPixels(x, y).char.chunk
 
