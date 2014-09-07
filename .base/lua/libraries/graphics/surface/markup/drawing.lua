@@ -6,7 +6,7 @@ local function set_font(self, font)
 	end
 end
 
-function META:Draw(x, y, w, h, no_translation)
+function META:Draw(x, y, w, h)
 	if self.need_layout then
 		self:Invalidate()
 		self.need_layout = false
@@ -162,7 +162,7 @@ function META:Draw(x, y, w, h, no_translation)
 
 		self:Invalidate()
 	end
-
+	
 	self.current_x = x
 	self.current_y = y
 	self.current_width = w
@@ -174,7 +174,7 @@ end
 function META:DrawSelection()
 
 	if self.mouse_selecting then
-		local x, y = surface.GetMousePos()
+		local x, y = self:GetMousePosition():Unpack()
 		local caret = self:CaretFromPixels(x, y, true)
 
 		if caret then
