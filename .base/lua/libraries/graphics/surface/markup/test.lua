@@ -1,7 +1,7 @@
-local META = (...) or metatable.Get("markup")
+﻿local META = (...) or metatable.Get("markup")
 
 function META:Test()
-	self:AddString("Hello markup test!\n\n?????\n????????????\n??? ??? ??? ?????")
+	self:AddString("Hello markup test!\n\n有一些中國\nそして、いくつかの日本の\nكيف حول بعض عربية")
 
 	self:AddString[[
 
@@ -19,8 +19,7 @@ alignment tags
 	surface.CreateFont(small_font, {size = 8, read_speed = 100})
 
 	self:AddFont(small_font)
-	self:AddString("\nhere's some text in chinese:\n??????????,???????????????Unicode??????????!\n")
-	self:AddString("some normal string again\n")
+	self:AddString("\nhere's some text in chinese:\n我寫了這個在谷歌翻譯，所以我可以測試我的標記語言使用Unicode正確。它似乎做工精細！\n")	self:AddString("some normal string again\n")
 	self:AddString("and another one\n")
 
 	self:AddFont("default")
@@ -31,8 +30,7 @@ alignment tags
 
 	self:AddFont(small_font)
 	self:AddString("monospace\n")
-	self:AddString("���������������������\n���������������������\n���������������������\n")
-	self:AddString("it's kinda like fullwidth\n")
+	self:AddString("░█░█░█▀█░█▀█░█▀█░█░█░\n░█▀█░█▀█░█▀▀░█▀▀░▀█▀░\n░▀░▀░▀░▀░▀░░░▀░░░░▀░░\n")	self:AddString("it's kinda like fullwidth\n")
 	self:AddFont("default")
 
 	local icons = vfs.Find("textures/silkicons/.")
@@ -103,7 +101,7 @@ end
 	self:AddFont("default")
 	self:AddString("\n")
 	self:AddString([[
-� 2012, Author
+© 2012, Author
 Self publishing
 (Possibly email address or contact data)]])
 end
