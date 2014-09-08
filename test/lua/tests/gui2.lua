@@ -1,3 +1,4 @@
+window.SetSize(Vec2(1680, 1050))
 -- multiple animations of the same type
 -- support rotation in TrapChildren and drag drop
 -- clipping isn't "recursive"
@@ -5,8 +6,9 @@
 local gui2 = {}
 
 _G.gui2 = gui2
-
+ 
 gui2.hovering_panel = NULL
+gui2.focus_panel = NULL
 gui2.panels = {}
 
 do -- base panel
@@ -102,13 +104,15 @@ do -- base panel
 				self:OnUpdate()
 
 				if not no_draw then
-					if
+					if	
 						self:IsDragging() or
 						self:IsWorld() or
-						(self.Position.x - self.Parent.Scroll.x < self.Parent.Size.w and
-						self.Position.y - self.Parent.Scroll.y < self.Parent.Size.h and
-						self.Position.x - self.Parent.Scroll.x > -self.Parent.Size.w and
-						self.Position.y - self.Parent.Scroll.y > -self.Parent.Size.h)
+						(
+							self.Position.x - self.Parent.Scroll.x < self.Parent.Size.w and
+							self.Position.y - self.Parent.Scroll.y < self.Parent.Size.h and
+							self.Position.x + self.Size.w - self.Parent.Scroll.x > -self.Parent.Size.w and
+							self.Position.y + self.Size.h - self.Parent.Scroll.y > -self.Parent.Size.h
+						)
 					then
 						self:OnDraw()
 						self:SetVisible(true)
@@ -969,6 +973,8 @@ do -- base panel
 	end
 	
 	do -- mouse
+		metatable.GetSet(PANEL, "SendMouseInputToParent", false)
+	
 		function PANEL:IsMouseOver()
 			return self:IsDragging() or self:IsResizing() or self.mouse_over and gui2.hovering_panel == self
 		end
@@ -1042,6 +1048,11 @@ do -- base panel
 		end
 		
 		function PANEL:MouseInput(button, press)
+			
+			if self.SendMouseInputToParent then
+				self.Parent:MouseInput(button, press)
+			end
+		
 			self:BringToFront()
 
 			if press then
@@ -1256,42 +1267,70 @@ function gui2.Test()
 		panel:SetSize(Vec2(50,50))
 		panel:SetSnapWhileDragging(true)
 	end
+	
+	do -- markup
+		local panel = gui2.CreatePanel()
+		panel:SetPosition(Vec2(800,300))
+		panel:SetSize(Vec2(300,300))
+		panel:SetClipping(true)
+		panel:SetColor(Color(0.1,0.1,0.1,1))
+		panel.original_color = panel.Color:Copy()
+		panel.lol = true
+		
+		function panel:OnMouseInput(button, press)
+			if button == "button_2" then
+				if not self:StartResizing(nil, button) then
+					self:StartDragging(button)
+				end
+			end
+		end
+			
+		do
+			local panel = gui2.CreatePanel(panel) 
+			panel:SetColor(Color(0.1,0.1,0.1,0))
+			panel.original_color = panel.Color:Copy()
+			panel:SetSendMouseInputToParent(true)
+			
+			panel.lol = true
+			local markup = surface.CreateMarkup()
+			markup:Test()
+			
+			function panel:OnDraw()
+				markup:SetMousePosition(self:GetMousePosition():Copy())
 
-	local panel = gui2.CreatePanel()
-	panel:SetPosition(Vec2(400,300))
-	panel:SetSize(Vec2(300,300))
-	panel:SetColor(Color(0.1,0.1,0.1,1))
-	panel.original_color = panel.Color:Copy()
-	panel.lol = true
-	local markup = surface.CreateMarkup()
-	markup:Test()
-	
-	function panel:OnDraw()
-		markup:SetMousePosition(self:GetMousePosition():Copy())
-	
-		getmetatable(self).OnDraw(self)
-		markup:Draw(0, 0, self.Size.w, self.Size.h)
-	end
-	
-	function panel:OnMouseInput(button, press)
-		markup:OnMouseInput(button, press)
-	end
-	
-	function panel:OnKeyInput(key, press)
-		if key == "left_shift" or key == "right_shift" then  markup:SetShiftDown(press) return end
-		if key == "left_control" or key == "right_control" then  markup:SetControlDown(press) return end
-	
-		if press then
-			markup:OnKeyInput(key, press)
+				markup.cull_x = self.Parent.Scroll.x
+				markup.cull_y = self.Parent.Scroll.y
+				markup.cull_w = self.Parent.Size.w
+				markup.cull_h = self.Parent.Size.h
+				
+				--getmetatable(self).OnDraw(self)
+				markup:Draw()
+				
+				self.Size.w = markup.width
+				self.Size.h = markup.height
+			end
+			
+			function panel:OnMouseInput(button, press)
+				markup:OnMouseInput(button, press)
+			end
+			
+			function panel:OnKeyInput(key, press)
+				if key == "left_shift" or key == "right_shift" then  markup:SetShiftDown(press) return end
+				if key == "left_control" or key == "right_control" then  markup:SetControlDown(press) return end
+			
+				if press then
+					markup:OnKeyInput(key, press)
+				end
+			end
+			
+			function panel:OnCharInput(char)
+				markup:OnCharInput(char)
+			end
+			
+			panel.OnMouseEnter = function() end
+			panel.OnMouseExit = function() end	
 		end
 	end
-	
-	function panel:OnCharInput(char)
-		markup:OnCharInput(char)
-	end
-	
-	panel.OnMouseEnter = function() end
-	panel.OnMouseExit = function() end
 	
 
 	local frame = gui2.CreatePanel()
@@ -1414,4 +1453,4 @@ end
 gui2.Initialize()
 gui2.Test()
 
---for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
+for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
