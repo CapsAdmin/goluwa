@@ -1,6 +1,6 @@
 local smooth_cam_pos = Vec3(0, 0, 0)   
-local cam_pos = Vec3(0, 0, 0)   
-local cam_ang = Ang3(0, 0, 0)  
+local cam_pos = Vec3(-10, -16.8, 10.02)    
+local cam_ang = Ang3(90, 0, 0)
 local cam_fov = 90
   
 event.AddListener("Update", "fly_camera_3d", function(dt)
