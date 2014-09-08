@@ -519,21 +519,22 @@ function META:TransformVector(v)
 	)
 end
 
-function META:TransformVector(v)
+function META:TransformVector(x, y, z)
 	local m = self.m
-    local x, y, z = v.x, v.y, v.z
-    return Vec3(
-        x * m[0] + y * m[4] + z * m[8] + m[12],
-        x * m[1] + y * m[5] + z * m[9] + m[13],
-        x * m[2] + y * m[6] + z * m[10] + m[14]
-    ) / (x * m[3] + y * m[7] + z * m[11] + m[15])
+	
+	local div = x * m[3] + y * m[7] + z * m[11] + m[15]
+		
+    return
+        (x * m[0] + y * m[4] + z * m[8] + m[12]) / div,
+        (x * m[1] + y * m[5] + z * m[9] + m[13]) / div,
+        (x * m[2] + y * m[6] + z * m[10] + m[14]) / div
 end
 
 function META:Shear(v)
 	local m = self.m
 	
 	 for i = 0, 3 do
-		m[i + 2] = m[i + 2] + v.y * m[i] + v.z * m[i + 1]
+		m[i + 2] = m[i + 2] + y * m[i] + v.z * m[i + 1]
 		m[i + 1] = m[i + 1] + v.x * m[i]
 	end
 end

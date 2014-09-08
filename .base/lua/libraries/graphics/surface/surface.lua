@@ -447,6 +447,9 @@ function surface.EndClipping2()
 end
 
 function surface.GetMousePos()
+	if window.GetMouseTrapped() then
+		return render.GetWidth() / 2, render.GetHeight() / 2
+	end
 	return window.GetMousePos():Unpack()
 end
 
@@ -455,17 +458,21 @@ function surface.WorldToLocal(x, y)
 		x = ((x / render.GetWidth()) - 0.5) * 2
 		y = ((y / render.GetHeight()) - 0.5) * 2
 		
-		local cursor = render.matrices.projection_3d:GetInverse():TransformVector(Vec3(x, -y, 1))
-		local m = (render.matrices.view_3d:GetInverse() * render.matrices.world:GetInverse())
-		local cursor = m:TransformVector(cursor)
-		local camera = m:TransformVector(Vec3(0, 0, 0))
-
-		local intersect = camera + ( camera.z / ( camera.z - cursor.z ) ) * ( cursor - camera )
-				
-		return intersect.x, intersect.y
-	else
-		local x, y = (render.matrices.view_2d:GetInverse() * render.matrices.world:GetInverse()):TransformVector(Vec3(x, y, 1)):Unpack()
+		local m = render.matrices.view_3d_inverse * render.matrices.world:GetInverse()
 		
+		cursor_x, cursor_y, cursor_z = m:TransformVector(render.matrices.projection_3d_inverse:TransformVector(x, -y, 1))
+		local camera_x, camera_y, camera_z = m:TransformVector(0, 0, 0)
+
+		--local intersect = camera + ( camera.z / ( camera.z - cursor.z ) ) * ( cursor - camera )
+		
+		local z = camera_z / ( camera_z - cursor_z )
+		local intersect_x = camera_x + z * ( cursor_x - camera_x )
+		local intersect_y = camera_y + z * ( cursor_y - camera_y )
+				
+		return intersect_x, intersect_y
+	else
+		local x, y = (render.matrices.view_2d_inverse * render.matrices.world:GetInverse()):TransformVector(x, y, 1)
+	
 		return x, y
 	end
 end
@@ -475,7 +482,7 @@ local last_y = 0
 local last_diff = 0
 
 function surface.GetMouseVel()
-	local x, y = surface.GetMousePos()
+	local x, y = window.GetMousePos():Unpack()
 	
 	local vx = x - last_x
 	local vy = y - last_y
