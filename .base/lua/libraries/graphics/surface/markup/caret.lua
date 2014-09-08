@@ -14,19 +14,16 @@ function META:GetCaretSubPos()
 end
 
 function META:CaretFromPixels(x, y)
-
-	if self.current_x then
-		x = x - self.current_x
-		y = y - self.current_y
-	end
-
 	local CHAR
 	local POS
-
+	
 	for i, char in ipairs(self.chars) do
 		if
-			x > char.data.x and y > char.data.y and
-			x < char.data.right and y < char.data.top
+			x >= char.data.x and 
+			y >= char.data.y and
+			
+			x <= char.data.right and 
+			y <= char.data.top
 		then
 			POS = i
 			CHAR = char
@@ -75,7 +72,6 @@ function META:CaretFromPixels(x, y)
 		CHAR = self.chars[#self.chars]
 		POS = #self.chars
 	end
-
 
 	local data = CHAR.data
 
@@ -167,16 +163,25 @@ function META:AdvanceCaret(X, Y)
 	local x, y = self.caret_pos.x or 0, self.caret_pos.y or 0
 
 	if Y ~= 0 then
-		x = self.real_x
-		y = y + Y
-	end
-
-	if X ~= math.huge and X ~= -math.huge then
-		x = x + X
-
-		if Y == 0 then
-			self.real_x = x
+		local pixel_y = self.caret_pos.char.data.y
+		
+		if Y > 0 then
+			pixel_y = pixel_y + self.caret_pos.char.data.h + Y
+		else
+			pixel_y = pixel_y + Y
 		end
+		
+		local pcaret = self:CaretFromPixels(
+			(self.real_x or self.caret_pos.char.data.x) + self.caret_pos.char.data.w / 2,
+			pixel_y			
+		)
+		
+		x = pcaret.x
+		y = pcaret.y		
+	elseif X ~= math.huge and X ~= -math.huge then
+		x = x + X
+		
+		self.real_x = self:CaretFromPos(x, y).char.data.x
 
 		-- move to next or previous line
 		if X > 0 and x > utf8.length(line) and #self.lines > 1 then

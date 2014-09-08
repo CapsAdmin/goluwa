@@ -34,10 +34,11 @@ function surface.CreateMarkup()
 		w = 0,
 		h = 0,
 		chunks = {},
-		current_x = 0,
-		current_y = 0,
-		current_width = 0,
-		current_height = 0
+		
+		cull_x = 0,
+		cull_y = 0,
+		cull_w = math.huge,
+		cull_h = math.huge
 	})
 
 	self:Invalidate()

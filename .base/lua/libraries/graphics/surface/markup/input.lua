@@ -152,7 +152,7 @@ function META:OnMouseInput(button, press)
 			self.caret_pos = self:CaretFromPixels(x, y)
 
 			if self.caret_pos and self.caret_pos.char then
-				self.real_x = self.caret_pos.x
+				self.real_x = self.caret_pos.char.data.x
 			end
 		else
 			if not self.Editable then
