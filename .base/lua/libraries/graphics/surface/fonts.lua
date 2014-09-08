@@ -67,6 +67,8 @@ function surface.CreateFont(name, options, callback)
 	end
 	
 	surface.fonts[name] = "default"
+	
+	surface.InvalidateFontSizeCache(name)
 end
 
 function surface.RegisterFontLoader(tbl)
@@ -76,6 +78,7 @@ function surface.RegisterFontLoader(tbl)
 			surface.CreateFont(v.font_name, v.font_options)
 		end
 	end
+	surface.InvalidateFontSizeCache(font)
 end
 
 local font = "default"
@@ -162,8 +165,13 @@ do
 		return x, y
 	end
 	
-	function surface.InvalidateFontSizeCache()
-		cache = {}
+	function surface.InvalidateFontSizeCache(font)
+		if font then
+			print(cache[font])
+			cache[font] = nil
+		else
+			cache = {}
+		end
 	end
 end
 
