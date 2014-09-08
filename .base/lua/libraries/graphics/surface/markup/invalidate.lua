@@ -527,18 +527,14 @@ local function store_tag_info(self, chunks)
 
 				table.insert(self.lines, table.concat(char_line_str, ""))
 				
-				if table.clear then
-					table.clear(char_line_str)
-				else
-					for i = 1, #char_line_str do char_line_str[i] = nil end
-				end
+				table.clear(char_line_str)
 			elseif chunk.w > 0 and chunk.h > 0 then
 				table.insert(self.chars, {
 					chunk = chunk,
 					i = i,
-					str = "",
+					str = " ",
 					data = {
-						char = "",
+						char = " ",
 						w = chunk.w,
 						h = chunk.h,
 						
