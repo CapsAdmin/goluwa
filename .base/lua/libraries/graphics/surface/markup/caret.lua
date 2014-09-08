@@ -166,7 +166,7 @@ function META:AdvanceCaret(X, Y)
 		local pixel_y = self.caret_pos.char.data.y
 		
 		if Y > 0 then
-			pixel_y = pixel_y + self.caret_pos.char.data.h + Y
+			pixel_y = pixel_y + self.caret_pos.char.data.h + Y * 2
 		else
 			pixel_y = pixel_y + Y
 		end

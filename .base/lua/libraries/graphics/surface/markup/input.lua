@@ -60,7 +60,7 @@ function META:OnKeyInput(key, press)
 			system.SetClipboard(self:Copy())
 		elseif key == "x" then
 			system.SetClipboard(self:Cut())
-		elseif key == "v" then
+		elseif key == "v" and system.GetClipboard() then
 			self:Paste(system.GetClipboard())
 		elseif key == "a" then
 			self:SelectAll()

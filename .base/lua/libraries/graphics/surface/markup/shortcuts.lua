@@ -3,8 +3,6 @@ local META = (...) or metatable.Get("markup")
 function META:Backspace()
 	local sub_pos = self:GetCaretSubPos()
 
-	local prev_line = self.lines[self.caret_pos.y - 1]
-
 	if not self:DeleteSelection() and sub_pos ~= 1 then
 		if self.ControlDown then
 
@@ -40,9 +38,6 @@ function META:Backspace()
 end
 
 function META:Delete()
-	local line = self.lines[self.caret_pos.y + 1]
-	local sub_pos = self:GetCaretSubPos()
-
 	if not self:DeleteSelection() then
 		local ok = false
 
@@ -95,8 +90,8 @@ function META:Indent(back)
 		local text = utf8.sub(self.text, select_start.sub_pos, select_stop.sub_pos)
 
 		if back then
-			if text:sub(1, 1) == "\t" then
-				text = text:sub(2)
+			if text:usub(1, 1) == "\t" then
+				text = text:usub(2)
 			end
 			text = text:gsub("\n\t", "\n")
 		else
@@ -104,8 +99,8 @@ function META:Indent(back)
 			text = text:gsub("\n", "\n\t")
 
 			-- ehhh, don't add \t at the next line..
-			if text:sub(-1) == "\t" then
-				text = text:sub(0, -2)
+			if text:usub(-1) == "\t" then
+				text = text:usub(0, -2)
 			end
 		end
 
@@ -115,7 +110,6 @@ function META:Indent(back)
 			for i = select_start.char.chunk.i-1, select_stop.char.chunk.i-1 do
 				local chunk = self.chunks[i]
 				if chunk.type == "newline" then
-
 					if not back and self.chunks[i+1].type ~= "string" then
 						table.insert(self.chunks, i+1, {type = "string", val = "\t"})
 					else
@@ -127,8 +121,8 @@ function META:Indent(back)
 						end
 
 						if back then
-							if chunk.val:sub(1,1) == "\t" then
-								chunk.val = chunk.val:sub(2)
+							if chunk.val:usub(1,1) == "\t" then
+								chunk.val = chunk.val:usub(2)
 							end
 						else
 							chunk.val = "\t" .. chunk.val
@@ -142,7 +136,8 @@ function META:Indent(back)
 		end
 	else
 		-- TODO
-		if back and self.text:sub(sub_pos-1, sub_pos-1) == "\t" then
+		print(self.text:usub(sub_pos-1, sub_pos-1), back)
+		if back and self.text:usub(sub_pos-1, sub_pos-1) == "\t" then
 			self:Backspace()
 		else
 			self:InsertString("\t")
