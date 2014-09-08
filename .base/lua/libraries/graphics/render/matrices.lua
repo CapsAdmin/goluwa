@@ -10,6 +10,9 @@ render.matrices = {
 	
 	vpm_matrix = Matrix44(),
 	vp_matrix = Matrix44(),
+	projection_3d_inverse = Matrix44(),
+	view_2d_inverse = Matrix44(),
+	view_3d_inverse = Matrix44(),
 }
 
 render.camera = {
@@ -129,6 +132,8 @@ do
 			last_fov = cam.fov
 			last_nearz = cam.nearz
 			last_farz = cam.farz
+			
+			render.matrices.projection_3d_inverse = proj:GetInverse()
 		end
 		
 		if pos and ang then
@@ -165,6 +170,7 @@ function render.SetupView3D(pos, ang, fov)
 	end
 	
 	render.matrices.vp_matrix = render.matrices.view_3d * render.matrices.projection_3d
+	render.matrices.view_3d_inverse = render.matrices.view_3d:GetInverse()
 end
 
 function render.SetupView2D(pos, ang, zoom)
@@ -192,6 +198,8 @@ function render.SetupView2D(pos, ang, zoom)
 		view:Scale(zoom, zoom, 1)
 		view:Translate(-x, -y, 0)
 	end
+	
+	render.matrices.view_2d_inverse = view:GetInverse()
 end
 
 -- world
