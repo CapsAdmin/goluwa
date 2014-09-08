@@ -145,11 +145,13 @@ function META:OnMouseInput(button, press)
 		end
 
 		if press then
-			self.select_start = self:CaretFromPixels(x, y)
+			local caret = self:CaretFromPixels(x, y)
+			
+			self.select_start = self:CaretFromPixels(x + caret.w / 2, y)
 			self.select_stop = nil
 			self.mouse_selecting = true
 
-			self.caret_pos = self:CaretFromPixels(x, y)
+			self.caret_pos = self:CaretFromPixels(x + caret.w / 2, y)
 
 			if self.caret_pos and self.caret_pos.char then
 				self.real_x = self.caret_pos.char.data.x
