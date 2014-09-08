@@ -6,7 +6,7 @@ local function set_font(self, font)
 	end
 end
 
-function META:Draw(x, y, w, h)
+function META:Draw()
 	if self.need_layout then
 		self:Invalidate()
 		self.need_layout = false
@@ -39,8 +39,13 @@ function META:Draw(x, y, w, h)
 			if not chunk.x then return end -- UMM
 
 			if 
-				(chunk.x < w and chunk.y < h and
-				chunk.x+x >= 0 and chunk.y+y >= 0) or 
+				(
+					chunk.x + chunk.w >= self.cull_x and
+					chunk.y + chunk.h >= self.cull_y and
+					
+					chunk.x - self.cull_x <= self.cull_w and
+					chunk.y - self.cull_y <= self.cull_h					
+				) or 
 				-- these are important since they will remove anything in between
 				(chunk.type == "start_fade" or chunk.type == "end_fade") or
 				start_remove
@@ -58,15 +63,14 @@ function META:Draw(x, y, w, h)
 					remove_these[i] = true
 				end
 
-				if chunk.type == "font" then
-					set_font(self, chunk.val)
-				elseif chunk.type == "string" then
-					surface.SetTextPos(chunk.x, chunk.y)
-					surface.DrawText(chunk.val)
-				elseif chunk.type == "color" then
-					local c = chunk.val
+				if chunk.type == "string" then
+					set_font(self, chunk.font)
 
+					local c = chunk.color
 					surface.SetColor(c.r, c.g, c.b, c.a)
+					surface.SetTextPos(chunk.x, chunk.y)
+					
+					surface.DrawText(chunk.val)
 				elseif chunk.type == "tag_stopper" then
 					for _, chunks in pairs(started_tags) do
 						local fix = false
@@ -141,6 +145,10 @@ function META:Draw(x, y, w, h)
 					surface.SetAlphaMultiplier(1)
 					start_remove = false
 				end
+								
+				chunk.culled = false
+			else
+				chunk.culled = true
 			end
 		end
 	end
@@ -162,11 +170,6 @@ function META:Draw(x, y, w, h)
 
 		self:Invalidate()
 	end
-	
-	self.current_x = x
-	self.current_y = y
-	self.current_width = w
-	self.current_height = h
 
 	self:DrawSelection()
 end
@@ -175,8 +178,12 @@ function META:DrawSelection()
 
 	if self.mouse_selecting then
 		local x, y = self:GetMousePosition():Unpack()
-		local caret = self:CaretFromPixels(x, y, true)
+		local caret = self:CaretFromPixels(x, y)
 
+		if caret.i ~= self.select_start.i then
+			caret = self:CaretFromPixels(x + caret.w / 2, y)
+		end
+		
 		if caret then
 			self.select_stop = caret
 		end

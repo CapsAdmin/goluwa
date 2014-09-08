@@ -192,15 +192,15 @@ META.tags.physics =
 		W = W - self.x
 		H = H - self.y + part.siz.h
 
-		local xvel = (self.last_world_x or markup.current_x) - markup.current_x
-		local yvel = (self.last_world_y or markup.current_y) - markup.current_y
+		--local xvel = (self.last_world_x or markup.current_x) - markup.current_x
+		--local yvel = (self.last_world_y or markup.current_y) - markup.current_y
 		
-		self.last_world_x = markup.current_x or 0
-		self.last_world_y = markup.current_y or 0
+		--self.last_world_x = markup.current_x or 0
+		--self.last_world_y = markup.current_y or 0
 		
 		-- random velocity for some variation
-		part.vel.y = part.vel.y + gravity_y + (math.randomf(-1,1) * rand_mult) + yvel
-		part.vel.x = part.vel.x + gravity_x + (math.randomf(-1,1) * rand_mult) + xvel
+		part.vel.y = part.vel.y + gravity_y + (math.randomf(-1,1) * rand_mult) --+ yvel
+		part.vel.x = part.vel.x + gravity_x + (math.randomf(-1,1) * rand_mult) --+ xvel
 
 		-- velocity
 		part.pos.x = part.pos.x + (part.vel.x * delta)

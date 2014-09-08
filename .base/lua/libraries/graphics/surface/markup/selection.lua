@@ -171,7 +171,7 @@ function META:DeleteSelection(skip_move)
 				if stop_chunk.type == "string" then
 					local sub_pos = stop.char.data.i
 					stop_chunk.val = utf8.sub(stop_chunk.val, sub_pos)
-				elseif stop_chunk.type ~= "newline" and not stop_chunk.internal then
+				elseif stop_chunk.type ~= "newline" and not stop_chunk.internal and stop_chunk.type ~= "custom" then
 					self.chunks[stop_chunk.i] = nil
 					need_fix = true
 				end

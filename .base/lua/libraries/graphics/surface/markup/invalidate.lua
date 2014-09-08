@@ -532,6 +532,31 @@ local function store_tag_info(self, chunks)
 				else
 					for i = 1, #char_line_str do char_line_str[i] = nil end
 				end
+			elseif chunk.w > 0 and chunk.h > 0 then
+				table.insert(self.chars, {
+					chunk = chunk,
+					i = i,
+					str = "",
+					data = {
+						char = "",
+						w = chunk.w,
+						h = chunk.h,
+						
+						x = chunk.x,
+						y = chunk.y,
+						
+						top = chunk.y + chunk.h,
+						right = chunk.x + chunk.w,
+					},
+					y = char_line, 
+					x = char_line_pos,
+					unicode = 0,
+					length = 0,
+				})
+
+				char_line_pos = char_line_pos + 1
+
+				table.insert(char_line_str, " ")
 			end
 
 			chunk.tag_center_x = chunk.tag_center_x or 0
