@@ -85,8 +85,8 @@ function META:LoadGlyph(codepoint, build_texture)
 			w = tonumber(bitmap.width), 
 			h = tonumber(bitmap.rows),
 			pitch = tonumber(bitmap.pitch),
-			xAdvance = tonumber(glyph.advance.x) / surface.font_dpi,
-			yAdvance = tonumber(glyph.advance.y) / surface.font_dpi,
+			xAdvance = math.round(tonumber(glyph.advance.x) / surface.font_dpi),
+			yAdvance = math.round(tonumber(glyph.advance.y) / surface.font_dpi),
 			bitmapLeft = tonumber(glyph.bitmap_left),
 			bitmapTop = tonumber(glyph.bitmap_top)
 		}
@@ -269,9 +269,7 @@ function META:DrawString(str, x, y)
 	
 		local X, Y = 0, 0
 		local last_tex
-		
-		local lol = 1
-		
+				
 		for i = 1, utf8.length(str) do
 			local char = utf8.sub(str, i,i)
 			local ch = self.chars[char]
@@ -293,11 +291,10 @@ function META:DrawString(str, x, y)
 						poly = surface.CreatePoly(#str)
 						table.insert(data, {poly = poly, texture = ch.page.texture})
 						last_tex = ch.page.texture
-						lol = 1
 					end
 					
 					poly:SetUV(ch.x, ch.y, ch.w, ch.h, ch.page.texture.w, ch.page.texture.h)
-					poly:SetRect(i, math.round(X), math.round(Y - (ch.bitmapTop) + self.options.size), ch.w, ch.h)
+					poly:SetRect(i, X, Y - (ch.bitmapTop) + self.options.size, ch.w, ch.h)
 					
 					if self.options.monospace then 
 						X = X + self.options.spacing
@@ -305,8 +302,6 @@ function META:DrawString(str, x, y)
 						X = X + ch.xAdvance + self.options.spacing
 					end
 					Y = Y + ch.yAdvance
-					
-					lol = lol + 1
 				end
 			end
 			
@@ -333,13 +328,20 @@ function META:GetTextSize(str)
 			Y = Y + self.options.size
 		elseif char == "\t" then
 			X = X + self.options.size
-		elseif ch and not ch.invalid then
-			if self.options.monospace then 
-				X = X + self.options.spacing
-			else
-				X = X + ch.xAdvance + self.options.spacing
+		else
+			if not ch or not ch.invalid then
+				self:LoadGlyph(utf8.byte(char))
+				ch = self.chars[char]
 			end
-			Y = Y + ch.yAdvance
+		
+			if ch then
+				if self.options.monospace then 
+					X = X + self.options.spacing
+				else
+					X = X + ch.xAdvance + self.options.spacing
+				end
+				Y = Y + ch.yAdvance
+			end
 		end
 	end
 	return X, Y
