@@ -180,7 +180,7 @@ function META:DrawSelection()
 		local x, y = self:GetMousePosition():Unpack()
 		local caret = self:CaretFromPixels(x, y)
 
-		if caret.i ~= self.select_start.i then
+		if x > caret.char.data.x + caret.char.data.w / 2 then
 			caret = self:CaretFromPixels(x + caret.w / 2, y)
 		end
 		
