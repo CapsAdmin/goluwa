@@ -62,6 +62,7 @@ local type_translate = {
 	color = "vec4",
 	number = "float",
 	texture = "sampler2D",
+	matrix44 = "mat4",
 }
 
 local uniform_translate =
@@ -135,6 +136,8 @@ local function type_of_attribute(var)
 	if t == "string" then
 		t = var
 		def = nil
+	elseif t == "table" then
+		t = "uniform_buffer"
 	end
 
 	t = type_translate[t] or t
@@ -160,25 +163,34 @@ local function translate_fields(data)
 	return out
 end
 
-local function variables_to_string(type, data, prepend, macro, array)
+local function variables_to_string(type, variables, prepend, macro, array)
 	array = array or ""
 
 	local out = {}
 
-	for i, data in ipairs(translate_fields(data)) do
-		local name = data.name
+	for i, data in ipairs(translate_fields(variables)) do
+		if data.type == "uniform_buffer" then
+			table.insert(out, "layout (std140) uniform " .. data.name)
+			table.insert(out, "{")
+			for i, data in ipairs(translate_fields(data.default)) do
+				table.insert(out, ("\t%s %s;"):format(data.type, data.name))
+			end
+			table.insert(out, "};")
+		else
+			local name = data.name
 
-		if prepend then
-			name = prepend .. name
-		end
-		
-		table.insert(out, ("%s %s %s %s%s;"):format(type, data.precision, data.type, name, array))
+			if prepend then
+				name = prepend .. name
+			end
+			
+			table.insert(out, ("%s %s %s %s%s;"):format(type, data.precision, data.type, name, array))
 
-		if macro then
-			table.insert(out, ("#define %s %s"):format(data.name, name))
+			if macro then
+				table.insert(out, ("#define %s %s"):format(data.name, name))
+			end
 		end
 	end
-
+	
 	return table.concat(out, "\n")
 end
 
@@ -299,7 +311,7 @@ function render.CreateShader(data)
 			for key, val in pairs(data.vertex.attributes) do
 				local name, t = next(val)
 				local info = type_info[t]
-
+				
 				if info then
 					if info.arg_count == 1 then
 						table.insert(declaration, ("%s %s;"):format(info.type, name))
@@ -455,7 +467,105 @@ function render.CreateShader(data)
 		for shader, data in pairs(build_output) do
 			if data.uniform then
 				for key, val in pairs(data.uniform) do
-					if uniform_translate[val.type] or val.type == "function" then
+					if val.type == "uniform_buffer" then
+						local id = gl.GetUniformBlockIndex(prog, val.name)
+
+						local init_table = {}
+						
+						do
+							val.struct_name = "shader_builder_ufb_" .. val.name
+							local declaration = {"typedef struct "..val.struct_name.."\n{"}
+							
+							for name, obj in pairs(val.default) do
+								local t = typex(obj)
+								
+								init_table[name] = {}
+								
+								if t == "matrix44" or obj == "mat4" then	
+									table.insert(declaration, "\tfloat " .. name .. "[16];")
+									
+									if t == "matrix44" then
+										for i = 1, 16 do
+											init_table[name][i] = obj.m[i - 1]
+										end
+									else
+										for i = 1, 16 do
+											init_table[name][i] = 0
+										end
+									end
+								elseif t == "color" or obj == "vec4" then
+									table.insert(declaration, "\tfloat " .. name .. "[4];")
+																	
+									if t == "color" then
+										init_table[name][1] = obj.r
+										init_table[name][2] = obj.g
+										init_table[name][3] = obj.b
+										init_table[name][4] = obj.a
+									else
+										for i = 1, 4 do
+											init_table[name][i] = 0
+										end
+									end
+								elseif t == "vec3" or obj == "vec3" then
+									table.insert(declaration, "\tfloat " .. name .. "[3];")
+									if t == "vec3" then
+										init_table[name][1] = obj.x
+										init_table[name][2] = obj.y
+										init_table[name][3] = obj.z
+									else
+										for i = 1, 3 do
+											init_table[name][i] = 0
+										end
+									end
+								elseif t == "vec2" or obj == "vec2" then
+									table.insert(declaration, "\tfloat " .. name .. "[2];")
+									if t == "vec3" then
+										init_table[name][1] = obj.x
+										init_table[name][2] = obj.y
+									else
+										for i = 1, 2 do
+											init_table[name][i] = 0
+										end
+									end
+								elseif t == "number" or obj == "float" then
+									table.insert(declaration, "\tfloat " .. name .. ";")
+									if t == "number" then
+										init_table[name] = obj
+									else
+										init_table[name] = 0
+									end
+								end
+							
+								self[name] = obj
+							end
+
+							table.insert(declaration, "}"..val.struct_name..";")
+							declaration = table.concat(declaration, "\n")
+							
+							ffi.cdef(declaration)
+							val.struct_type = ffi.typeof(val.struct_name)
+							
+							self[val.name .. "_ufb_type"] = ffi.typeof(val.struct_name .. " *")
+						end
+												
+						local struct = ffi.new(val.struct_type, init_table)
+						
+						local buffer_id = gl.GenBuffer()
+						gl.BindBuffer(gl.e.GL_UNIFORM_BUFFER, buffer_id)
+							gl.BufferData(gl.e.GL_UNIFORM_BUFFER, ffi.sizeof(struct), struct, gl.e.GL_DYNAMIC_DRAW)
+						gl.BindBuffer(gl.e.GL_UNIFORM_BUFFER, 0)
+						
+						self[val.name .. "_ufb_struct"] = struct
+						
+						uniforms[val.name] = {
+							id = id,
+							info = val,
+							uniform_buffer = true,
+						}
+						
+						table.insert(temp, {id = id, key = val.name, val = val, uniform_buffer = true, buffer_id = buffer_id})
+						
+					elseif uniform_translate[val.type] or val.type == "function" then
 						local id = gl.GetUniformLocation(prog, val.name)
 
 						uniforms[val.name] = {
@@ -486,20 +596,53 @@ function render.CreateShader(data)
 		local lua = ""
 		
 		for i, data in ipairs(temp) do
-			local line = tostring(unrolled_lines[data.val.type] or data.val.type)
-
-			if data.val.type == "texture" or data.val.type == "sampler2D" then
-				line = line:format(texture_channel, data.id)
-				texture_channel = texture_channel + 1
+			if data.uniform_buffer then
+				lua = lua .. "if \n"
+				for k, v in pairs(data.val.default) do
+					lua = lua .. "\tself."..k.." ~= self.last_" .. k .. " or \n"
+				end
+				
+				lua = lua:sub(0, -5) .. "\n"
+				
+				lua = lua .. "then \n"
+				lua = lua .. "\tlocal ptr = ffi.cast(self."..data.key.."_ufb_type, gl.MapBuffer(gl.e.GL_UNIFORM_BUFFER, gl.e.GL_WRITE_ONLY));\n\n"
+				lua = lua .. "\tif ptr ~= nil then \n"
+				for k, v in pairs(data.val.default) do
+					if type(v) == "number" then
+						lua = lua .. "\t\tptr." .. k .. " = self."..k.."\n"
+						lua = lua .. "\t\tself.last_" .. k .. " = self."..k.." \n"
+					else
+						if typex(v) == "matrix44" then
+							lua = lua .. "\t\tffi.copy(ptr." .. k .. ", self."..k..".m, "..ffi.sizeof(self[data.val.name .. "_ufb_struct"][k])..") \n"
+						else
+							lua = lua .. "\t\tffi.copy(ptr." .. k .. ", self."..k..", "..ffi.sizeof(self[data.val.name .. "_ufb_struct"][k])..") \n"
+						end
+						lua = lua .. "\t\tself.last_" .. k .. " = self."..k..":Copy() \n"
+					end
+				end
+				
+				lua = lua .. "\tend\n\n"
+				
+				lua = lua .. "\tgl.UnmapBuffer(gl.e.GL_UNIFORM_BUFFER)\n"
+				lua = lua .. "end\n"
+				
+				lua = lua .. "gl.BindBufferBase(gl.e.GL_UNIFORM_BUFFER, "..data.id..", "..data.buffer_id..")\n\n"
 			else
-				line = line:format(data.id)
-			end
+				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
-			lua = lua .. "local val = self."..data.key.." or self.defaults."..data.key.."\n"
-			lua = lua .. "if val then\n"
-			lua = lua .. "\tif type(val) == 'function' then val = val() end\n"
-			lua = lua .. "\t" .. line .. "\n"
-			lua = lua .. "end\n\n"
+				if data.val.type == "texture" or data.val.type == "sampler2D" then
+					line = line:format(texture_channel, data.id)
+					texture_channel = texture_channel + 1
+				else
+					line = line:format(data.id)
+				end
+
+				lua = lua .. "local val = self."..data.key.." or self.defaults."..data.key.."\n"
+				lua = lua .. "if val then\n"
+				lua = lua .. "\tif type(val) == 'function' then val = val() end\n"
+				lua = lua .. "\t" .. line .. "\n"
+				lua = lua .. "end\n\n"
+			end
 		end
 
 		if BUILD_OUTPUT then
@@ -513,7 +656,7 @@ function render.CreateShader(data)
 			error(err, 2)
 		end
 
-		setfenv(func, {gl = gl, self = self, loc = prog, type = type, render = render, logn = logn})
+		setfenv(func, {gl = gl, self = self, loc = prog, type = type, render = render, logn = logn, ffi = ffi})
 
 		self.unrolled_bind_func = func
 	end
@@ -647,11 +790,14 @@ end
 function render.RebuildShaders()
 	for k,v in pairs(render.active_shaders) do
 		local shader = render.CreateShader(v.original_data)
-		print(shader)
-		table.merge(v, shader)
+		for k,_ in pairs(v) do
+			if type(shader[k]) == "function" then
+				v[k] = shader[k]
+			end
+		end
 	end
 end
 
 if RELOAD then
-	--render.RebuildShaders()
-end
+	render.RebuildShaders()
+end  
