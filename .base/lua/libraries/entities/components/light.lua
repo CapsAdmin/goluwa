@@ -24,7 +24,7 @@ metatable.EndStorable()
 
 if CLIENT then			
 	function COMPONENT:OnAdd(ent)
-		self.light_mesh = render.Create3DMesh("models/sphere.obj")
+		self.light_mesh = render.Create3DMesh("models/cube.obj")
 	end
 
 	function COMPONENT:OnRemove(ent)
@@ -126,12 +126,10 @@ if CLIENT then
 		if self.vp_matrix and self.shadow_map then
 			shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
 			shader.light_vp_matrix = self.vp_matrix.m
-		end
-		
-		for i, model in ipairs(self.light_mesh.sub_models) do
-			shader:Bind()
-			model.mesh:Draw()
-		end
+		end		
+
+		shader:Bind()
+		self.light_mesh.sub_models[1].mesh:Draw()
 	end	
 end
 
