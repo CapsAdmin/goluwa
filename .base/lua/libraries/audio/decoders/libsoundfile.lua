@@ -1,12 +1,23 @@
 local soundfile = require("lj-libsoundfile") -- sound decoder
 
+-- googled: https://github.com/mkottman/lua-git/issues/13
+local function tmpname()
+	if WINDOWS then
+		local prefix = os.getenv("TEMP")
+		local name = os.tmpname()
+		return prefix .. name
+	else
+		return os.tmpname()
+	end
+end
+
 audio.AddDecoder("libsoundfile", function(data, path_hint)
 	if type(length) == "number" and type(data) == "cdata" then
 		data = ffi.string(data, length)
 	end
 
 	-- use a dummy file so we can read from memory...
-	local  name = os.tmpname()
+	local  name = tmpname()
 	local file = assert(io.open(name, "wb"))
 	file:write(data)
 	file:close()
