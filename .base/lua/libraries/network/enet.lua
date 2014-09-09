@@ -210,7 +210,7 @@ event.AddListener("Update", "enet", function()
 					table.insert(enet.uid_ref, uid)
 					peer.peer.data = uid
 					unique_id = unique_id + 1
-					print(getuid(peer.peer))
+					
 					socket.peers[getuid(peer.peer)] = peer
 					
 					socket:OnPeerConnect(peer)
