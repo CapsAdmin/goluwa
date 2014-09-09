@@ -9,6 +9,7 @@ local jit_util = require("jit.util")
 
 local blacklist = {
 	["leaving loop in root trace"] = true,		
+	["error thrown or hook called during recording"] = true,		
 }
 
 local function trace_dump_callback(what, trace_id, func, pc, trace_error_id, trace_error_arg)
