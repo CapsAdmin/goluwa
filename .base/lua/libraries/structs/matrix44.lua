@@ -31,6 +31,20 @@ function META:__mul(b)
 	return self:GetMultiplied(b)
 end
 
+function META.__eq(a, b)
+	if getmetatable(b) == META then
+		for i = 0, 15 do
+			if a[i] ~= b[i] then
+				return false
+			end
+		end
+		
+		return true
+	end
+	
+	return false
+end
+
 local size = ffi.sizeof("float") * 16
 
 function META:Copy(matrix)
