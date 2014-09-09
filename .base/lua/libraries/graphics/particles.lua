@@ -44,7 +44,38 @@ class.GetSet(EMITTER, "MoveResolution", 0)
 class.GetSet(EMITTER, "Texture", NULL)
 
 local emitters = {}
- 
+
+local ref_count = 0
+
+local function start()
+	if ref_count > 0 then return end
+	
+	event.AddListener("Draw2D", "particles", function(dt)	
+		for _, emitter in ipairs(emitters) do
+			if not emitter.DrawManual then
+				emitter:Draw()
+			end
+		end
+	end) 
+	 
+	event.AddListener("Update", "particles", function(dt)	
+		for _, emitter in ipairs(emitters) do
+			emitter:Think(dt) 
+		end
+	end)
+	
+	ref_count = ref_count + 1
+end
+
+local function stop()
+	ref_count = ref_count - 1
+	
+	if ref_count <= 0 then
+		event.RemoveListener("Draw2D", "particles")
+		event.RemoveListener("Update", "particles")
+	end
+end
+
 function ParticleEmitter(max)
 	max = max or 1000
 	
@@ -58,6 +89,8 @@ function ParticleEmitter(max)
 
 	table.insert(emitters, self)
 	
+	start()
+	
 	return self
 end
 
@@ -69,7 +102,10 @@ function EMITTER:OnRemove()
 			break 
 		end 
 	end
+	
 	table.fixindices(emitters)
+	
+	stop()
 end
  
 function EMITTER:Think(dt)
@@ -244,17 +280,3 @@ function EMITTER:Emit(...)
 		end
 	end
 end
- 
-event.AddListener("Draw2D", "particles", function(dt)	
-	for _, emitter in ipairs(emitters) do
-		if not emitter.DrawManual then
-			emitter:Draw()
-		end
-	end
-end) 
- 
-event.AddListener("Update", "particles", function(dt)	
-	for _, emitter in ipairs(emitters) do
-		emitter:Think(dt) 
-	end
-end)
