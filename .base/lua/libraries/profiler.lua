@@ -148,6 +148,7 @@ do
 	function profiler.PushSection(section_name)
 		if not enabled then return end
 		
+		collectgarbage("stop")
 		local start_gc = collectgarbage("count")
 		local start_time = timer.GetSystemTime()
 		local info = debug.getinfo(2)
@@ -168,8 +169,12 @@ do
 		
 		local res = table.remove(stack)
 		
+		if not res then return end
+		
 		local gc = ((collectgarbage("count") - res.start_gc) * 1024) - base_garbage
 		local time = timer.GetSystemTime() - res.start_time
+		
+		collectgarbage("restart")
 		
 		local path, line = res.info.source, res.info.currentline
 		
@@ -338,86 +343,31 @@ function profiler.PrintTraceAborts(min_samples)
 end
 
 function profiler.PrintSections()
-	local top = {}
-	
-	for k, v in pairs(profiler.GetBenchmark("sections")) do
-		if v.times_called > 50 then
-			table.insert(top, v)
-		end
-	end
-	
-	table.sort(top, function(a, b)
-		return a.i > b.i
-	end)
-	
-	
-	local max = 0
-	local max2 = 0
-	local max3 = 0
-	for k, v in pairs(top) do
-		v.name = ("    "):rep(v.level) .. v.name
-		if #v.name > max then
-			max = #v.name
-		end
-		
-		v.average_time = tostring(math.round(v.average_time * 100 * 100, 3))
-		
-		if #v.average_time > max2 then
-			max2 = #v.average_time
-		end
-		
-		v.times_called = tostring(v.times_called)
-		
-		if #v.times_called > max3 then
-			max3 = #v.times_called
-		end
-	end
-		
-	logn(("_"):rep(max+max2+11+10+5))
-	logn("| NAME:", (" "):rep(max-4), "| MS:", (" "):rep(max2-2), "| CALLS: | GARBAGE: ")
-	logn("|", ("_"):rep(max+2), "|", ("_"):rep(max2+2), "|", ("_"):rep(2+max3), "|", ("_"):rep(10))
-	for k,v in pairs(top) do
-		logf("| %s%s | %s%s | %s | %s\n", v.name, (" "):rep(max-#v.name), v.average_time, (" "):rep(max2 - #v.average_time), v.times_called, utilities.FormatFileSize(v.average_garbage))
-	end
-	logn("")
+	log(utilities.TableToColumns(
+		"sections",
+		profiler.GetBenchmark("sections"), 
+		{
+			{key = "times_called", friendly = "calls"},
+			{key = "name", tostring = function(val, column) return ("    "):rep(column.level - 1) .. tostring(val) end}, 
+			{key = "average_time", friendly = "time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
+			{key = "average_garbage", friendly = "garbage", tostring = function(val) return utilities.FormatFileSize(val) end},
+		}, 
+		function(a) return a.times_called > 50 end,
+		"i"
+	))
 end
 
 function profiler.PrintStatistical()
-	local top = {}
-
-	for k,v in pairs(profiler.GetBenchmark("statistical")) do
-		if v.name then
-			table.insert(top, v)
-		end
-	end
-	
-	table.sort(top, function(a, b)
-		return a.times_called > b.times_called
-	end)
-			
-	local max = 0
-	local max2 = 0
-	for k, v in pairs(top) do
-		if #v.name > max then
-			max = #v.name
-		end
-		
-		v.percent = tostring(math.round((v.times_called / top[1].times_called) * 100, 2))
-					
-		if #v.percent > max2 then
-			max2 = #v.percent
-		end
-	end
-	
-	logn(("_"):rep(max+max2+11+8))
-	logn("| NAME:", (" "):rep(max-4), "| CALL %:")
-	logn("|", ("_"):rep(max+2), "|", ("_"):rep(4+10))
-	for k, v in npairs(top) do
-		if tonumber(v.percent) > 0.1 then
-			logf("| %s%s | %s\n", v.name, (" "):rep(max-#v.name), v.percent)
-		end
-	end
-	logn("")
+	log(utilities.TableToColumns(
+		"statistical",
+		profiler.GetBenchmark("statistical"), 
+		{
+			{key = "name"}, 
+			{key = "times_called", friendly = "percent", tostring = function(val, column, columns)  return math.round((val / columns[#columns].val.times_called) * 100, 2) end},
+		}, 
+		function(a) return a.name and a.times_called > 100 end,
+		function(a, b) return a.times_called < b.times_called end
+	))
 end
 
 profiler.StartLoggingTraceAborts()
