@@ -52,11 +52,11 @@ local function main()
 		timer.SetElapsedTime(timer.GetElapsedTime() + dt)
 		i = i + 1
 					
-		local ok, err = xpcall(update, system.OnError, dt)
+		local ok, err = pcall(update, dt)
 		
-		if not ok and err then				
-			logn("shutting down (", err, ")")				
+		if not ok then				
 			event.Call("ShutDown")
+			system.MessageBox("fatal error", tostring(err))
 			return 
 		end
 	
