@@ -141,9 +141,12 @@ do
 	
 	local base_garbage = 0
 	local stack = {}
+	local enabled = true
 	local i = 0
 	
 	function profiler.PushSection(section_name)
+		if not enabled then return end
+		
 		local start_gc = collectgarbage("count")
 		local start_time = timer.GetSystemTime()
 		local info = debug.getinfo(2)
@@ -160,6 +163,8 @@ do
 	end
 
 	function profiler.PopSection()
+		if not enabled then return end
+		
 		local res = table.remove(stack)
 		
 		local gc = ((collectgarbage("count") - res.start_gc) * 1024) - base_garbage
@@ -191,6 +196,10 @@ do
 	
 	function profiler.RemoveSection(name)
 		data[name] = nil
+	end
+	
+	function profiler.EnableSections(b)
+		enabled = b
 	end
 	
 	profiler.PushSection()
