@@ -257,6 +257,7 @@ do -- timers
 		for k,v in ipairs(event.timers) do
 			if v.key == key then
 				table.remove(event.timers, k)
+				profiler.RemoveSection(v.id)
 				break
 			end
 		end
