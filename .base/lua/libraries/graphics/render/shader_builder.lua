@@ -519,7 +519,7 @@ function render.CreateShader(data)
 									end
 								elseif t == "vec2" or obj == "vec2" then
 									table.insert(declaration, "\tfloat " .. name .. "[2];")
-									if t == "vec3" then
+									if t == "vec2" then
 										init_table[name][1] = obj.x
 										init_table[name][2] = obj.y
 									else
