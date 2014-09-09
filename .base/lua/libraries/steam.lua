@@ -9,7 +9,7 @@ local ok, err = pcall(function()
 		end
 	end
 	
-	event.CreateThinker(function()
+	event.CreateTimer("steam_friends", 0, 0.2, function()
 		steamfriends.Update()
 	end)
 	

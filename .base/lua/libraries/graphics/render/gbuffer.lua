@@ -9,21 +9,21 @@ local FRAMEBUFFERS = {
 		name = "diffuse",
 		attach = "color",
 		texture_format = {
-			internal_format = "RGBA16F",
+			internal_format = "RGBA8",
 		}
 	},
 	{
 		name = "normal",
 		attach = "color",
 		texture_format = {
-			internal_format = "RGBA16F",
+			internal_format = "RGB16F",
 		}
 	},
 	{
 		name = "position",
 		attach = "color",
 		texture_format = {
-			internal_format = "RGBA16F",
+			internal_format = "RGB16F",
 		}
 	},
 	{
@@ -128,7 +128,6 @@ local MESH = {
 			diffuse = "sampler2D",
 			diffuse2 = "sampler2D",
 			vm_matrix = "mat4",
-			v_matrix = "mat4",
 			--detail = "sampler2D",
 			--detailscale = 1,
 			
@@ -150,7 +149,7 @@ local MESH = {
 				out_color[0] = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;			
 				
 				// specular
-				out_color[0].a = texture2D(specular, uv).r;
+				out_color[0].a = texture(specular, uv).r;
 				
 				// normals
 				{
@@ -185,8 +184,8 @@ local LIGHT = {
 			{uv = "vec2"},
 			{texture_blend = "float"},
 		},	
-		source = "gl_Position = pvm_matrix * vec4(pos*2, 1);"
-	}, 
+		source = "gl_Position = pvm_matrix * vec4(pos*7.5, 1);"
+	},  
 	fragment = {
 		uniform = {
 			tex_depth = "sampler2D",
@@ -194,27 +193,13 @@ local LIGHT = {
 			tex_normal = "sampler2D",
 			tex_position = "sampler2D",
 			
-			p_matrix_inverse = "mat4",
-			
-			tex_shadow_map = "sampler2D",
-			light_vp_matrix = "mat4",
-			
 			cam_pos = "vec3",
-			cam_dir = "vec3",
-			cam_nearz = "float",
-			cam_farz = "float",
-			screen_size = Vec2(1,1),
-						
 			light_pos = Vec3(0,0,0),
-			light_dir = Vec3(0,0,0),
+			
+			screen_size = Vec2(1,1),						
 			light_color = Color(1,1,1,1),				
-			light_ambient_intensity = 0,
 			light_diffuse_intensity = 0.5,
-			light_specular_power = 64,
 			light_radius = 1000,
-			light_attenuation_constant = 0,
-			light_attenuation_linear = 0,
-			light_attenuation_exponent = 0.01,
 		},  
 		source = [[			
 			out vec4 out_color;
@@ -224,53 +209,13 @@ local LIGHT = {
 				return gl_FragCoord.xy / screen_size;
 			}
 			
-			float get_depth(vec2 coord) 
-			{
-				return (2.0 * cam_nearz) / (cam_farz + cam_nearz - texture2D(tex_depth, coord).r * (cam_farz - cam_nearz));
-			}
-			
 			vec3 get_pos()
-			{ 
-				
+			{ 				
 				vec2 uv = get_uv();
-				{return -texture(tex_position, uv).yxz;}
-				
-				vec4 pos = vec4(uv.x, uv.y, 2 * texture(tex_depth, uv.xy).x - 1, 1.0);
-				pos = p_matrix_inverse * pos; 
-				return pos.yxz / pos.w;
+				return -texture(tex_position, uv).yxz;
 			}
 			
-			vec3 calc_point_light(vec3 light_dir, vec3 normal, float specular, vec3 world_pos)
-			{
-				vec3 ambient_color = light_color.rgb * light_ambient_intensity;
-				float diffuse_factor = dot(normal, -light_dir);
-
-				vec3 diffuse_color  = vec3(0, 0, 0);
-				vec3 specular_color = vec3(0, 0, 0);
-
-				if (diffuse_factor > 0) 
-				{
-					diffuse_color = light_color.rgb * light_diffuse_intensity * diffuse_factor * 0.5;
-										
-					if (specular > 0 && light_specular_power > 0)
-					{
-
-						vec3 vertex_to_eye = normalize(cam_pos - world_pos);
-						vec3 light_reflect = normalize(reflect(light_dir, normal));
 						
-						float specular_factor = dot(vertex_to_eye, light_reflect);
-						specular_factor = pow(specular_factor, light_specular_power);
-								
-						if (specular_factor > 0) 
-						{
-							specular_color = light_color.rgb * specular * specular_factor;
-						}
-					}
-				}
-
-				return (ambient_color + diffuse_color + specular_color);
-			}
-			
 			float get_attenuation(vec3 world_pos)
 			{
 				float distance = length(light_pos - world_pos);
@@ -279,52 +224,7 @@ local LIGHT = {
 				
 				return clamp(distance, 0, 1);
 			}
-			
-			vec3 calc_point_light2(vec3 light_dir, vec3 normal, float specular)
-			{																															
-				float lambertian = dot(light_dir, normal);
-	
-				if (lambertian > 0.0)
-				{						
-					vec3 R = reflect(-light_dir, normal);
-					  
-					vec3 half_dir = normalize(light_dir + -cam_dir);
-					float spec_angle = max(dot(R, half_dir), 0.0);
-					float S = pow(spec_angle, light_specular_power);
-					
-					return vec3(lambertian + (S * specular));
-				}
-										
-				return vec3(0);
-			}
-			
-			vec3 CookTorrance(vec3 _light, vec3 _normal, vec3 _view, vec3 world_pos, float _fresnel, float _roughness)
-			{			  
-				vec3 cEye = normalize(cam_pos - world_pos);
-				vec3 half_vec = normalize(_light + cEye);
-
-				// теперь вычислим разнообразные скалярные произведения
-				float NdotL = max( dot(_normal, _light), 0.0 );
-				float NdotV = max( dot(_normal, _view), 0.0 );
-				float NdotH = max( dot(_normal, half_vec), 1.0e-7 );
-				float VdotH = max( dot(_view, half_vec), 1.0e-7 );
-
-				// геометрическая составляющая
-				float geometric = 2.0 * NdotH / VdotH;
-				geometric = min( 1.0, geometric * min(NdotV, NdotL) );
-
-				// шероховатость
-				float r_sq = _roughness * _roughness;
-				float NdotH_sq = NdotH * NdotH;
-				float NdotH_sq_r = 1.0 / (NdotH_sq * r_sq);
-				float roughness_exp = (NdotH_sq - 1.0) * ( NdotH_sq_r );
-				float roughness = 0.25 * exp(roughness_exp) * NdotH_sq_r / NdotH_sq;
-
-				// финальный результат
-				return vec3(min(1.0, _fresnel * geometric * roughness / (NdotV + 1.0e-7)));
-			}
-	
-			 
+						 
 			vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular)
 			{
 				float roughness = 0.1;
@@ -364,104 +264,30 @@ local LIGHT = {
 				
 				return (diffuse_ + specular_) * max(0.0, normalDotLight) * light_diffuse_intensity;
 			}
-			
-			vec3 CookTorrance3(vec3 LightDir, vec3 Normal, vec3 Specular, vec2 Roughness, vec3 world_pos)
-			{
-				// Correct the input and compute aliases
-				
-				vec3 ViewDir = normalize( cam_pos - world_pos );
-				vec3 vHalf = normalize( LightDir + ViewDir );
-
-				float NormalDotHalf = dot( Normal, vHalf );
-				float ViewDotHalf = dot( vHalf,  ViewDir );
-				float NormalDotView = dot( Normal, ViewDir );
-				float NormalDotLight = dot( Normal, LightDir );
-
-				// Compute the geometric term
-				float G1 = ( 2.0 * NormalDotHalf * NormalDotView ) / ViewDotHalf;
-				float G2 = ( 2.0 * NormalDotHalf * NormalDotLight ) / ViewDotHalf;
-				float G = min( 1.0, max( 0.0, min( G1, G2 ) ) );
-
-				// Compute the fresnel term
-				float F = Roughness.g + ( 1.0 - Roughness.g ) * pow( 1.0 - NormalDotView, 0.5 );
-
-				// Compute the roughness term
-				float R_2 = Roughness.r * Roughness.r;
-				float NDotH_2 = NormalDotHalf * NormalDotHalf;
-				float A = 1.0 / ( 4.0 * R_2 * NDotH_2 * NDotH_2 );
-				float B = exp( -( 1.0 - NDotH_2 ) / ( R_2 * NDotH_2 ) );
-				float R = A * B;
-
-				// Compute the final term
-				
-				//float pi = 3.1415926535897932384626433832;
-				//float Rs = (G*F*R) / (NormalDotView * pi);
-				
-				float Rs_denominator = ( NormalDotView * NormalDotLight);
-				float Rs = ( G * F * R ) / Rs_denominator;
-				
-				vec3 Final = max( 0.0, NormalDotLight ) * ( Specular * Rs);
-				
-				return Final;
-			}
-			
-					
-			float is_in_shadow(vec3 light_space_pos, float z)
-			{
-				//if (light_space_pos.x > 1 || light_space_pos.x < -1) return 0;
-				//if (light_space_pos.y > 1 || light_space_pos.y < -1) return 0;
-				//if (light_space_pos.z > 1 || light_space_pos.z < -1) return 0;
-			
-				float depth = texture(tex_shadow_map, 0.5 * light_space_pos.xy + 0.5).x;
-			
-				return depth;//z > depth ? 0 : 1;
-			}
-			
-			
+						
 			void main()
 			{					
 				vec2 uv = get_uv();
 				
 				float specular = texture(tex_diffuse, uv).a;
-				vec3 world_pos = get_pos();				
-				vec3 normal = texture(tex_normal, uv).yxz;
-				
-				vec3 light_dir = normalize(light_pos - world_pos);
-				
-				float fade = get_attenuation(world_pos);
-				
-				if (fade > 0)
-				{
-					out_color.rgb = vec3(fade);
-					//out_color.rgb = vec3(1);
+				vec3 world_pos = get_pos();	
+
+				{					
+					vec3 normal = texture(tex_normal, uv).yxz;
 					
+					vec3 light_dir = normalize(light_pos - world_pos);
 					
+					float fade = get_attenuation(world_pos);
 					
-					//out_color.rgb *= CookTorrance3(light_dir, normal, vec3(specular), vec2(0.5, 0.5), world_pos);
-					out_color.rgb *= CookTorrance2(light_dir, normal, world_pos, specular);
-					//out_color.rgb *= CookTorrance(light_dir, normal, -cam_dir,world_pos, 1, 0.8);
-					//out_color.rgb *= calc_point_light(world_pos, normal, specular, world_pos);
-					//out_color.rgb *= calc_point_light2(light_dir, normal, specular);
-					//out_color = vec4(0.02,0.02,0.02,1);
-					
-					//out_color.a = get_attenuation(world_pos);
+					if (fade > 0)
+					{
+						out_color.rgb = vec3(fade);
+						
+						out_color.rgb *= CookTorrance2(light_dir, normal, world_pos, specular);
+					}
+
+					out_color.a = light_color.a;
 				}
-
-				out_color.a = light_color.a;
-				
-				/*
-				vec4 temp1 = light_vp_matrix * vec4(light_pos, 1);
-				vec3 light_pos2 = vec3(temp1.xyz) / temp1.w;
-				
-				vec4 temp = vec4(world_pos.xyz, 1) * light_vp_matrix;
-				vec3 light_space_pos = vec3(temp.xyz) / temp.w;
-				
-				//float z = texture(tex_depth, uv).x;
-				float z = get_depth(uv);
-				//float z2 = length((light_pos - light_space_pos))/95;
-
-				out_color.rgb = vec3(is_in_shadow(light_space_pos, z));
-				*/
 			}
 		]]  
 	}
@@ -490,17 +316,9 @@ local GBUFFER = {
 						
 			width = "float",
 			height = "float",
-			time = "float",
 			
-			cam_pos = "vec3",
-			cam_vec = "vec3",
-			cam_fov = "float",
 			cam_nearz = "float",
 			cam_farz = "float",
-			
-			pv_matrix = "mat4",
-			v_matrix = "mat4",
-			p_matrix_inverse = "mat4",
 		},  
 		attributes = {
 			{pos = "vec2"},
@@ -511,13 +329,7 @@ local GBUFFER = {
 			
 			vec3 get_pos()
 			{ 
-				{return -texture(tex_position, uv).yxz;}
-				
-				vec4 pos = vec4(uv.x, uv.y, 2 * texture(tex_depth, uv).x - 1, 1.0);
-
-				pos = p_matrix_inverse * pos; 
-
-				return pos.xyz / pos.w;
+				return -texture(tex_position, uv).yxz;
 			}
 			
 			float get_depth(vec2 coord) 
@@ -594,18 +406,7 @@ local GBUFFER = {
 				out_color.rgb = mix_fog(out_color.rgb, depth, fog_distance, 1-fog_color); //this fog is fucked up, needs to be redone
 			
 				out_color.rgb *= vec3(ssao());
-				out_color.rgb *= texture(tex_light, uv).rgb;
-				
-			
-				/*
-				// debug get_pos
-				vec3 wpos = -get_pos().yxz; 
-				
-				if (length(wpos - vec3(0,0,0)) < 10)
-				{
-					out_color.rgb = vec3(1,1,1);
-				}*/
-								
+				out_color.rgb *= texture(tex_light, uv).rgb;								
 			}
 		]]  
 	}
@@ -908,7 +709,7 @@ function render.AddPostProcessShader(name, source, priority, down_sample)
 			name = "tex_last",
 			attach = "color",
 			texture_format = {
-				internal_format = "RGBA16F",
+				internal_format = "RGBA8",
 			}
 		},
 	})
@@ -1024,7 +825,6 @@ function render.InitializeGBuffer(width, height)
 		shader.tex_position = render.gbuffer:GetTexture("position")
 		shader.tex_normal = render.gbuffer:GetTexture("normal")
 		shader.screen_size = Vec2(width, height)
-		shader.p_matrix_inverse = function() return ((render.matrices.view_3d * render.matrices.projection_3d):GetInverse()).m end
 		
 		render.gbuffer_light_shader = shader
 	end
@@ -1108,7 +908,7 @@ function render.InitializeGBuffer(width, height)
 			name = "screen_buffer",
 			attach = "color",
 			texture_format = {
-				internal_format = "RGBA16F",
+				internal_format = "RGBA8",
 			}
 		},
 	})
@@ -1169,7 +969,7 @@ function render.DrawDeferred(dt, w, h)
 			event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
 		render.gbuffer:End()
 		
-		event.Call("DrawShadowMaps", render.shadow_map_shader)	
+		--event.Call("DrawShadowMaps", render.shadow_map_shader)	
 		
 		-- light
 		
