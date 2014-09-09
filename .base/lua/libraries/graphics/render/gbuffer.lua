@@ -1006,7 +1006,9 @@ function render.DrawDeferred(dt, w, h)
 				surface.PushMatrix()
 					local next = render.pp_shaders[i+1]
 					
-					if not next then break end
+					if not next then
+						surface.PopMatrix()
+					break end
 					
 					surface.Scale(next.w, next.h)						
 						
