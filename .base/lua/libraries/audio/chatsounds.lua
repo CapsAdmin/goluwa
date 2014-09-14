@@ -1,48 +1,5 @@
 local chatsounds = _G.chatsounds or {}
 
-local paks = {
-	"Half-Life 2/hl2/hl2_sound_vo_english_dir.vpk",
-	"Half-Life 2/hl2/hl2_sound_misc_dir.vpk",
-		
-	"Half-Life 2/episodic/ep1_pak_dir.vpk",
-	"Half-Life 2/episodic/",
-
-	"Half-Life 2/ep2/ep2_pak_dir.vpk",
-	"Half-Life 2/ep2/",
-
-	"Left 4 Dead/left4dead/",
-	"Left 4 Dead/left4dead_dlc3/",
-	"Left 4 Dead/left4dead/pak01_dir.vpk",
-	"Left 4 Dead/left4dead_dlc3/pak01_dir.vpk",
-
-	"Left 4 Dead 2/left4dead2/",
-	"Left 4 Dead 2/left4dead2_dlc1/",
-	"Left 4 Dead 2/left4dead2_dlc2/",
-	"Left 4 Dead 2/left4dead2_dlc3/",
-
-	"Left 4 Dead 2/left4dead2/pak01_dir.vpk",
-	"Left 4 Dead 2/left4dead2_dlc1/pak01_dir.vpk",
-	"Left 4 Dead 2/left4dead2_dlc2/pak01_dir.vpk",
-	"Left 4 Dead 2/left4dead2_dlc3/pak01_dir.vpk",
-	
-	"Team Fortress 2/tf/tf2_misc_dir.vpk",
-	"Team Fortress 2/tf/tf2_sound_misc_dir.vpk",
-	"Team Fortress 2/tf/tf2_sound_vo_english_dir.vpk",
-
-	"Counter-Strike Source/cstrike/",
-	"Counter-Strike Source/cstrike/cstrike_pak_dir.vpk",
-	
-	"Counter-Strike Global Offensive/csgo/pak01_dir.vpk",
-	"Counter-Strike Global Offensive/csgo/",
-
-	"Portal/portal/",
-	"Portal/portal/portal_pak_dir.vpk",
-	
-	"Portal 2/portal2/",
-	"Portal 2/portal2_dlc1/",
-	"Portal 2/portal2/pak01_dir.vpk",
-}
-
 local realm_patterns = {
 	".+chatsounds/autoadd/(.-)/",
 	"sound/player/survivor/voice/(.-)/",
@@ -301,36 +258,6 @@ chatsounds.LegacyModifiers = {
 }
 
 do -- list parsing
-	function chatsounds.MountPaks()
-		local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
-
-		for path in vfs.Iterate(addons, nil, true) do
-			if vfs.IsDir(path) and path:lower():find("chatsound") then
-				vfs.Mount(path)
-			end
-		end
-
-		for _, path in pairs(paks) do
-			local game, dir = path:match("(.-)(/.+)")
-			vfs.Mount(steam.GetGamePath(game) .. dir)
-		end
-	end
-
-	function chatsounds.UnmountPaks()
-		local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
-
-		for path in vfs.Iterate(addons, nil, true) do
-			if vfs.IsDir(path) and path:lower():find("chatsound") then
-				vfs.Mount(path)
-			end
-		end
-
-		for _, path in pairs(paks) do
-			local game, dir = path:match("(.-)(/.+)")
-			vfs.Unmount(steam.GetGamePath(game) .. dir)
-		end
-	end
-
 	function chatsounds.GetSoundData(snd)
 		local out = {}
 		local content = snd:match(".+VDAT.-(VERSION.+)")
@@ -368,11 +295,19 @@ do -- list parsing
 			local sound_info = {}
 			for path in vfs.Iterate("scripts/", nil, true) do
 				if path:find("_sounds") and not path:find("manifest") and path:find("%.txt") then
-					local t, err = steam.VDFToTable(vfs.Read(path))
-					if t then
-						table.merge(sound_info, t)
+					local str, err = vfs.Read(path)
+					
+					if str then						
+						local t, err = steam.VDFToTable(str)
+						if t then
+							table.merge(sound_info, t)
+						else
+							print(path, err)
+						end
+					elseif err then
+						error("error reading path " .. path .. ": " .. err)
 					else
-						print(path, err)
+						logn("couldn't read ", path, " file is empty")
 					end
 					coroutine.yield("reading /scripts/*")
 				end
@@ -571,7 +506,7 @@ do -- list parsing
 	function chatsounds.BuildListFromMountedContent()
 
 		window.Close()
-		chatsounds.MountPaks()
+		steam.MountAllSourceGames()
 
 		local found = {}
 
@@ -580,10 +515,12 @@ do -- list parsing
 				local sentence
 
 				if path:find("%.wav") then
-					local ok, data = pcall(vfs.Read, path, "b")
-					sentence = data:match("PLAINTEXT%s{%s(.-)%s}%s")
+					local file = assert(vfs.Open(path))
+					--local data = file:ReadAll()
+					--sentence = data:match("PLAINTEXT%s{%s(.-)%s}%s")
+					file:Close()
 				end
-
+				
 				if not sentence or sentence == "" then
 					sentence = path:match(".+/(.+)%.")
 				end
@@ -602,9 +539,9 @@ do -- list parsing
 				end
 
 				found[realm] = found[realm] or {}
-
+				
 				table.insert(found[realm], path:lower() .. "=" .. sentence)
-
+			
 				coroutine.yield()
 			end)
 		end
@@ -612,14 +549,16 @@ do -- list parsing
 		local co = coroutine.create(function() return xpcall(callback, system.OnError) end)
 
 		event.AddListener("Update", "chatsounds_search", function()
+			if PAUSE then return end
 			local ok, err = coroutine.resume(co)
 
 			if wait(1) then
 				print(table.count(found) .. " realms found")
 				local i = 0
-				for k,v in pairs(found) do for k,v in pairs(v) do i = i + 1 end end
+				local size = 0
+				for k,v in pairs(found) do size = size + #k for k,v in pairs(v) do i = i + 1 size = size + #v end end
 
-				print(i .. " sentences found")
+				logf("%i sentences found (%s)\n", i, utilities.FormatFileSize(size))
 			end
 
 			if wait(10) or not ok then
@@ -776,7 +715,7 @@ do -- list parsing
 	end
 
 	function chatsounds.BuildTreeFromAddon()
-		chatsounds.MountPaks()
+		steam.MountAllSourceGames()
 
 		local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
 		local addon_dir = addons .. "chatsounds"
@@ -1367,7 +1306,7 @@ end
 function chatsounds.Initialize()
 	if chatsounds.tree then return end
 
-	chatsounds.MountPaks()
+	steam.MountAllSourceGames()
 
 	chatsounds.BuildTree("game")
 	chatsounds.BuildTree("custom")
