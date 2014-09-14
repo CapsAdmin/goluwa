@@ -93,14 +93,7 @@ end
 do -- tree
 	local META = metatable.CreateTemplate("tree")
 
-	function META:SetEntry(str, value)
-		if self.list then
-			if type(str) == "table" then str = table.concat(str, self.delimiter) end
-			
-			self.tree[str] = value
-			return
-		end
-		
+	function META:SetEntry(str, value)		
 		local keys = type(str) == "table" and str or str and str:explode(self.delimiter) or {}
 		
 		local next = self.tree
@@ -118,13 +111,7 @@ do -- tree
 		next.value = value
 	end
 
-	function META:GetEntry(str)
-		if self.list then
-			if type(str) == "table" then str = table.concat(str, self.delimiter) end
-			
-			return self.tree[str]
-		end
-		
+	function META:GetEntry(str)		
 		local keys = type(str) == "table" and str or str and str:explode(self.delimiter) or {}
 				
 		local next = self.tree
@@ -132,7 +119,7 @@ do -- tree
 		for i, key in ipairs(keys) do
 			if key ~= "" then
 				if not next[key] then
-					error("not found")
+					error("key ".. key .." not found")
 				end
 				next = next[key]
 			end
@@ -141,42 +128,8 @@ do -- tree
 		return next.value
 	end
 	
-	function META:GetChildren(str)
-		if self.list then
-			if type(str) == "table" then 
-				str = table.concat(str, self.delimiter) 
-			end
-			
-			-- it's root
-			if not str or str == self.delimiter then
-				local out = {}	
-				for key, val in pairs(self.tree) do
-					if key:count(self.delimiter) == 0 then
-						table.insert(out, {key = key, value = val})
-					end
-				end
-				return out
-			end
-			
-			-- always end with the delimiter
-			if not str:endswith(self.delimiter) then
-				str = str .. self.delimiter
-			end
-			
-			local out = {}	
-			local dir = str:match("(.*)/")
-
-			for key, val in pairs(self.tree) do
-				if key:find(str, nil, true) and (dir or key:match("(.*)/.") == dir) then
-					table.insert(out, {key = key:match(".+/(.+)") or key, value = val})
-				end 
-			end
-		
-			return out		
-		end
-		
+	function META:GetChildren(str)		
 		local keys = type(str) == "table" and str or str and str:explode(self.delimiter) or {}
-				
 		local next = self.tree
 		
 		for i, key in ipairs(keys) do
@@ -187,16 +140,15 @@ do -- tree
 				next = next[key]
 			end
 		end
-		
+				
 		return next
 	end
 
-	function utilities.CreateTree(delimiter, list)
+	function utilities.CreateTree(delimiter)
 		local self = META:New()
 		
 		self.tree = {}	
 		self.delimiter = delimiter
-		self.list = list
 		
 		return self
 	end
