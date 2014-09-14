@@ -7,6 +7,14 @@ function timer.GetSystemTime()
 	return tonumber(sdl.GetTicks()) / 1000
 end
 
+do -- lol
+	local glfw = require("lj-glfw") -- window manager
+
+	function timer.GetSystemTime()
+		return glfw.GetTime()
+	end
+end
+
 do -- window meta
 	local META = metatable.CreateTemplate("render_window")
 
@@ -63,9 +71,9 @@ do -- window meta
 	function META:SetMouseTrapped(b)
 		self.mouse_trapped = b
 		
-		--sdl.SetWindowGrab(self.__ptr, b and 1 or 0)
+		sdl.SetWindowGrab(self.__ptr, b and 1 or 0)
 		sdl.ShowCursor(sdl.e.SDL_DISABLE)
-		sdl.SetRelativeMouseMode(b)
+		sdl.SetRelativeMouseMode(b and 1 or 0)
 	end
 		
 	function META:GetMouseDelta()
@@ -78,12 +86,8 @@ do -- window meta
 		if self.last_mpos then
 			self.mouse_delta = (pos - self.last_mpos)
 		end
-		
+				
 		self.last_mpos = pos
-		
-		if self.mouse_trapped then
-			--self:SetMousePos(self:GetSize() / 2)
-		end
 	end
 	
 	function META:MakeContextCurrent()
@@ -213,9 +217,13 @@ do -- window meta
 		render.sdl_windows[id] = self
 		
 		local event_name_translate = {}
+		local key_translate = {
+			left_ctrl = "left_control",
+		}
+		
 		local function call(self, name, ...)
 			if not self then return end
-
+						
 			if not event_name_translate[name] then
 				event_name_translate[name] = name:gsub("^On", "Window")
 			end
@@ -232,11 +240,14 @@ do -- window meta
 		local event = ffi.new("SDL_Event")
 		local mbutton_translate = {}
 		for i = 1, 8 do mbutton_translate[i] = "button_" .. i end
+		mbutton_translate[3] = "button_2"
+		mbutton_translate[2] = "button_3"
 
 		_G.event.AddListener("Update", self, function(dt)
 			if not sdl.video_init then return end
 			
-			self:UpdateMouseDelta()
+			self.mouse_delta:Zero()
+			--self:UpdateMouseDelta()
 			self:OnUpdate(dt)
 			
 			while sdl.PollEvent(event) ~= 0 do
@@ -247,7 +258,7 @@ do -- window meta
 								
 				if event.type == sdl.e.SDL_WINDOWEVENT then
 					local case = event.window.event
-					
+										
 					if case == sdl.e.SDL_WINDOWEVENT_SHOWN then
 						call(window, "OnShow")
 					elseif case == sdl.e.SDL_WINDOWEVENT_HIDDEN then
@@ -281,11 +292,14 @@ do -- window meta
 					end
 				elseif event.type == sdl.e.SDL_KEYDOWN or event.type == sdl.e.SDL_KEYUP then
 					local window = render.sdl_windows[event.key.windowID]
+					local key = ffi.string(sdl.GetKeyName(event.key.keysym.sym)):lower():gsub(" ", "_")
+				
+					key = key_translate[key] or key
 				
 					call(
 						window, 
-						event.key["repeat"] == 1 and "OnKeyInput" or "OnKeyInputRepeat", 
-						ffi.string(sdl.GetKeyName(event.key.keysym.sym)):lower(), 
+						event.key["repeat"] == 0 and "OnKeyInput" or "OnKeyInputRepeat", 
+						key, 
 						event.type == sdl.e.SDL_KEYDOWN, 
 						
 						event.key.state, 
@@ -303,6 +317,8 @@ do -- window meta
 					call(window, "OnTextEditing", ffi.string(event.text.text))
 				elseif event.type == sdl.e.SDL_MOUSEMOTION then
 					local window = render.sdl_windows[event.motion.windowID]
+					self.mouse_delta.x = event.motion.xrel
+					self.mouse_delta.y = event.motion.yrel
 					call(window, "OnCursorPos", event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, event.motion.state, event.motion.which)
 				elseif event.type == sdl.e.SDL_MOUSEBUTTONDOWN or event.type == sdl.e.SDL_MOUSEBUTTONUP then
 					local window = render.sdl_windows[event.button.windowID]
