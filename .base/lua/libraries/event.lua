@@ -306,7 +306,8 @@ do -- timers
 		})
 	end
 	
-	function event.DeferExecution(callback, time, ...)
+	function event.DeferExecution(callback, time, id, ...)
+		id = id or callback
 		local data
 		
 		for k,v in ipairs(event.timers) do 
