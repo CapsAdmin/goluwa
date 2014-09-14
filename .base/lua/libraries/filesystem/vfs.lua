@@ -273,6 +273,8 @@ function vfs.Open(path, mode, sub_mode)
 		if file:PCall("Open", data.path_info) ~= false then
 			vfs.opened_files[file] = data.path_info.full_path
 			return file
+		else
+			file:Remove()
 		end
 	end
 
