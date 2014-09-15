@@ -35,15 +35,18 @@ local function read_vpk(file, full_path)
 				
 				entry.is_file = true
 				entry.archive_path = "os:" .. full_path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(entry.archive_index) end)
+				entry.file_name = name .. "." .. extension
+				entry.directory = directory
+				entry.full_path = directory .. "/" .. entry.file_name
 				
 				file:SetPos(file:GetPos() + entry.preload_bytes)
-								
+				
 				if file:GetPos() ~= entry.preload_offset + entry.preload_bytes then	
 					file:Close()
 					error("grr")
 				end
-				
-				tree:SetEntry((directory .. "/" .. name .. "." .. extension):lower(), entry)
+								
+				tree:SetEntry(entry.full_path, entry)
 			end
 			
 			directory = directory:lower()
@@ -137,9 +140,11 @@ function CONTEXT:GetFiles(path_info)
 	local tree = get_file_tree(vpk_path)
 	
 	local out = {}
-	
-	for k, v in pairs(tree:GetChildren(relative:match("(.*)/"))) do
-		table.insert(out, v.key)
+					
+	for k, v in pairs(tree:GetChildren(relative:match("(.*)/"))) do	
+		if v.value then -- fix me!!
+			table.insert(out, v.value.file_name)
+		end
 	end
 	
 	return out
