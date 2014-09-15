@@ -289,34 +289,46 @@ do -- steam directories
 		
 		return found
 	end
-		
-	function steam.MountAllSourceGames()
-		for i, game_info in ipairs(steam.GetSourceGames()) do
-			local paths = game_info.filesystem.searchpaths.game
-			if type(paths) == "string" then paths = {paths} end
-			for i, path in pairs(paths) do
-				if not vfs.IsDir(path) then
-					path = game_info.game_dir .. path .. "/"
+	
+	function steam.MountSourceGame(game_info)
+		if type(game_info) == "string" then game_info = steam.FindSourceGame(game_info) end
+		local paths = game_info.filesystem.searchpaths.game
+		if type(paths) == "string" then paths = {paths} end
+		for i, path in pairs(paths) do
+			if not vfs.IsDir(path) then
+				path = game_info.game_dir .. path .. "/"
+			end
+			path = path:gsub("/%.", "/")
+			if vfs.IsDir(path) then
+				vfs.Mount(path)
+				
+				if vfs.IsDir(path .. "addons/") then
+					vfs.Mount(path .. "addons/")
 				end
-				path = path:gsub("/%.", "/")
-				if vfs.IsDir(path) then
-					vfs.Mount(path)
-					
-					if vfs.IsDir(path .. "addons/") then
-						vfs.Mount(path .. "addons/")
-					end
 
-					if game_info.game == "Garry's Mod" then
-						vfs.Mount(path .. "download/")
-					end
-					
-					for k, v in pairs(vfs.Find(path)) do
-						if v:find("%.vpk") and v:find("_dir") then
-							vfs.Mount(path .. v .. "/")
-						end
+				if game_info.game == "Garry's Mod" then
+					vfs.Mount(path .. "download/")
+				end
+				
+				for k, v in pairs(vfs.Find(path)) do
+					if v:find("%.vpk") and v:find("_dir") then
+						vfs.Mount(path .. v .. "/")
 					end
 				end
 			end
+		end
+	end
+	
+	function steam.FindSourceGame(name)
+		for i, game_info in ipairs(steam.GetSourceGames()) do
+			if game_info.game and game_info.game:compare(name) or game_info.title and game_info.title:compare(name) then
+				return game_info
+			end
+		end
+	end
+	function steam.MountAllSourceGames()
+		for i, game_info in ipairs(steam.GetSourceGames()) do
+			steam.MountSourceGame(game_info)
 		end
 	end
 end
