@@ -1,4 +1,6 @@
 window.SetSize(Vec2(1680, 1050))
+
+-- drag drop doesn't work properly with camera changes
 -- multiple animations of the same type
 -- support rotation in TrapChildren and drag drop
 -- clipping isn't "recursive"
@@ -1184,7 +1186,10 @@ end
 
 function gui2.Draw2D()
 	render.SetCullMode("none")
-	--surface.Start3D(Vec3(1, -5, 10), Ang3(-90, 180, 0), Vec3(8, 8, 10))
+	if gui2.threedee then 
+		--surface.Start3D(Vec3(1, -5, 10), Ang3(-90, 180, 0), Vec3(8, 8, 10))
+		surface.Start3D(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))
+	end
 
 	gui2.hovering_panel = gui2.GetHoveringPanel()
 
@@ -1200,7 +1205,9 @@ function gui2.Draw2D()
 		gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePos()
 
 		gui2.world:Draw()
-		
+	if gui2.threedee then 
+		surface.End3D()
+	end
 		do return end
 		
 		if not gui2.unrolled_draw then
@@ -1227,7 +1234,7 @@ function gui2.Draw2D()
 		end
 				
 
---	surface.End3D()
+
 end
 
 function gui2.Initialize()
@@ -1453,4 +1460,4 @@ end
 gui2.Initialize()
 gui2.Test()
 
-for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
+--for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
