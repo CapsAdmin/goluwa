@@ -3,7 +3,6 @@ local utility = _G.utility or {}
 include("mesh.lua", utility)
 include("packed_rectangle.lua", utility)
 
-
 function utility.TableToColumns(title, tbl, columns, check, sort_key)
 	local top = {}
 	
@@ -88,6 +87,131 @@ function utility.TableToColumns(title, tbl, columns, check, sort_key)
 
 
 	return out
+end
+
+-- thread
+do
+	local META = metatable.CreateTemplate("thread")
+	
+	metatable.GetSet(META, "Frequency", 0)
+	metatable.GetSet(META, "IterationsPerTick", 0)
+	 
+	META.wait = 0
+	 
+	function META:Start()
+		local co = coroutine.create(self.OnStart)
+
+		event.CreateThinker(function()
+			if not self:IsValid() then return false end -- removed
+			
+			local time = timer.GetSystemTime()
+			
+			if time > self.wait then
+				local ok, res, err = coroutine.resume(co, self)
+				
+				if coroutine.status(co) == "dead" then
+					self:OnUpdate()
+					self:OnFinish(res)
+					return false
+				end
+				
+				if ok == false and res then				
+					if self.OnError then
+						self:OnError(res)
+					else
+						logf("%s internal error: %s\n", self, res)
+					end
+				elseif ok and res == false and err then
+					if self.OnError then
+						self:OnError(err)
+					else
+						logf("%s user error: %s\n", self, err)
+					end
+				else
+					self:OnUpdate()
+				end
+				
+				return res
+			end
+			
+			if next(self.progress) then
+				for k, v in pairs(self.progress) do	
+					if v.i < v.max then 
+						if not v.last_print or v.last_print < time then
+							logf("%s %s progress: %s\n", self, k, self:GetProgress(k))
+							v.last_print = time + 1
+						end
+					end
+				end
+			end
+		end, (self.Frequency > 0 and 1/self.Frequency) or (self.IterationsPerTick > 0 and self.IterationsPerTick), self.Frequency > 0, true)
+	end
+	 
+	function META:Sleep(sec)
+		if sec then self.wait = timer.GetSystemTime() + sec end
+		coroutine.yield()
+	end
+	
+	function META:OnStart()
+		return false, "run function not defined"
+	end
+	
+	function META:OnFinish()
+		
+	end
+	
+	function META:OnUpdate()
+	
+	end
+	
+	function META:Report(what)
+		if not self.last_report or self.last_report < timer.GetSystemTime() then
+			logf("%s report: %s\n", self, what)
+			self.last_report = timer.GetSystemTime() + 1
+		end
+	end
+	
+	META.progress = {}
+	
+	function META:ReportProgress(what, max)
+		self.progress[what] = self.progress[what] or {}
+		self.progress[what].i = (self.progress[what].i or 0) + 1
+		self.progress[what].max = max or 100
+	end
+	
+	function META:GetProgress(what)
+		if self.progress[what] then
+			return ("%.2f%%"):format(math.round((self.progress[what].i / self.progress[what].max) * 100, 3))
+		end
+		
+		return "0%"
+	end
+	
+	function utility.CreateThread()
+		local self = META:New()
+		
+		return self
+	end
+	
+	if RELOAD then 
+		local thread = utility.CreateThread()
+		
+		function thread:OnStart()
+			for i = 1, 1000 do
+				self:ReportProgress("first iteration", 1000)
+				self:Sleep(0.01)
+			end
+			
+			return "woho"
+		end
+		
+		function thread:OnFinish(...)
+			print(...)
+		end
+		
+		thread:SetIterationsPerTick(10)
+		thread:Start()
+	end
 end
 
 do -- tree
