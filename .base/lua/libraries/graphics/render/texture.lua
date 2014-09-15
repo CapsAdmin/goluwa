@@ -380,7 +380,7 @@ do -- texture object
 	function META:Remove()
 		if self.format.no_remove then return end
 		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
-		utilities.MakeNULL(self)
+		utility.MakeNULL(self)
 	end
 	
 	function META:IsLoading()
@@ -504,7 +504,7 @@ do -- texture object
 		gl.BindTexture(format.type, 0)
 						
 		if render.debug then
-			logf("creating texture w = %s h = %s buffer size = %s\n", self.w, self.h, utilities.FormatFileSize(buffer and ffi.sizeof(buffer) or 0)) --The texture size was never broken... someone used two non-existant variables w,h
+			logf("creating texture w = %s h = %s buffer size = %s\n", self.w, self.h, utility.FormatFileSize(buffer and ffi.sizeof(buffer) or 0)) --The texture size was never broken... someone used two non-existant variables w,h
 		end
 		
 		render.textures[id] = self

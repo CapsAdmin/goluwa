@@ -14,8 +14,8 @@ local function calc_fps(dt)
 	if wait(1/30) then
 		console.SetTitle(("FPS: %i"):format(avg_fps), "fps")
 		
-		if utilities and utilities.FormatFileSize then
-			console.SetTitle(("GARBAGE: %s"):format(utilities.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
+		if utility and utility.FormatFileSize then
+			console.SetTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
 		end
 
 		if gl and gl.call_count then

@@ -123,7 +123,7 @@ function vfs.ReadAsync(path, callback, mbps, context, reader, dont_cache)
 			local size = 0
 			for k, v in pairs(cache) do	size = size + #v end
 			if last_reported_size ~= size then
-				logn("[vfs] async read cache size: ", utilities.FormatFileSize(size))
+				logn("[vfs] async read cache size: ", utility.FormatFileSize(size))
 				last_reported_size = size
 			end
 		end

@@ -168,7 +168,7 @@ console.AddCommand("profile_dump", function(line)
 end)
 
 console.AddCommand("find", function(line, ...)
-	local data = utilities.FindValue(...)
+	local data = utility.FindValue(...)
 	
 	for k,v in pairs(data) do
 		logn("\t", v.nice_name) 
@@ -193,7 +193,7 @@ console.AddCommand("source", function(line, ...)
 		end
 	end	
 
-	local data = utilities.FindValue(...)
+	local data = utility.FindValue(...)
 		
 	local func
 	local name

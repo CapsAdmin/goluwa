@@ -80,7 +80,7 @@ end
 gui.RegisterPanel(PANEL) 
 
 if RELOAD then
-	local pnl = utilities.RemoveOldObject(gui.Create("context"))
+	local pnl = utility.RemoveOldObject(gui.Create("context"))
 	
 	pnl:AddOption(Texture("textures/gui/pac.png"), "hellowww")
 	pnl:AddSpace()

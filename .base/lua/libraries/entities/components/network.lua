@@ -90,7 +90,7 @@ do -- synchronization server > client
 					buffer:WriteShort(self.NetworkId)
 					buffer:WriteType(var, info.type)
 					
-					if _debug then logf("%s: sending %s to %s\n", self, utilities.FormatFileSize(buffer:GetSize()), client) end
+					if _debug then logf("%s: sending %s to %s\n", self, utility.FormatFileSize(buffer:GetSize()), client) end
 					
 					packet.Send("ecs_network", buffer, client, force_update and "reliable" or info.flags)
 					

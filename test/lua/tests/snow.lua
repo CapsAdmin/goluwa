@@ -24,7 +24,7 @@ local gradient = Texture(64, 64):Fill(function(x, y)
 end)
 
 
-local emitter = utilities.RemoveOldObject(ParticleEmitter(800))
+local emitter = utility.RemoveOldObject(ParticleEmitter(800))
 emitter:SetRate(-1)
 emitter:SetPos(Vec3(50,50,0))
 emitter:SetDrawManual(true) 

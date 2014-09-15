@@ -1,9 +1,9 @@
-local canvas = utilities.RemoveOldObject((gui.Create("canvas")))  
+local canvas = utility.RemoveOldObject((gui.Create("canvas")))  
 canvas:SetSize(Vec2(512, 512))
 canvas:Center()                  
    
 		  
-	local frame = utilities.RemoveOldObject(gui.Create("frame", canvas), "aahh_unit_test") 
+	local frame = utility.RemoveOldObject(gui.Create("frame", canvas), "aahh_unit_test") 
 	frame:SetSize(Vec2() + 500)
 --	frame:Center()
 	frame:SetTitle("unit test")

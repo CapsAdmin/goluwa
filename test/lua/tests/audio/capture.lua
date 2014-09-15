@@ -1,7 +1,7 @@
 debug.LogLibrary("al", {"GenBuffers", "GenSources", "GetError"}, true)
 debug.LogLibrary("alc", {"GenBuffers", "GenSources", "GetError"}, true)
 
-local mic_out = utilities.RemoveOldObject(audio.CreateSource())
+local mic_out = utility.RemoveOldObject(audio.CreateSource())
 
 local mic_in = audio.CreateAudioCapture()
 mic_in:Start()  

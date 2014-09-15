@@ -264,8 +264,8 @@ function vfs.Open(path, mode, sub_mode)
 		local file = class.Create("file_system", data.context.Name)
 		file:SetMode(mode)
 		
-		if utilities and utilities.SetGCCallback then
-			utilities.SetGCCallback(file, function() 
+		if utilities and utility.SetGCCallback then
+			utility.SetGCCallback(file, function() 
 				file:Close()
 			end)
 		end

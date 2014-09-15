@@ -69,7 +69,7 @@ do -- peer
 	end
 	
 	function CLIENT:Send(str, flags, channel)
-		flags = utilities.TableToFlags(flags, valid_flags)
+		flags = utility.TableToFlags(flags, valid_flags)
 		channel = channel or 0
 		
 		local packet = lib.packet_create(str, #str, flags)
@@ -144,7 +144,7 @@ do -- server
 	end
 	
 	function SERVER:Broadcast(str, flags, channel)
-		flags = utilities.TableToFlags(flags, valid_flags)
+		flags = utility.TableToFlags(flags, valid_flags)
 		channel = channel or 0
 		
 		local packet = lib.packet_create(str, #str, flags)
@@ -234,14 +234,14 @@ event.AddListener("Update", "enet", function()
 			elseif evt[0].type == lib.e.ENET_EVENT_TYPE_RECEIVE then
 				
 				local str, flags, channel = ffi.string(evt[0].packet.data, evt[0].packet.dataLength), evt[0].packet.flags, evt[0].channelID
-				flags = utilities.FlagsToTable(flags, valid_flags)
+				flags = utility.FlagsToTable(flags, valid_flags)
 			
 				if socket.Type == "enet_peer" then
-					if enet.debug then logf("[enet] %s: received %s of data: %s\n", socket, utilities.FormatFileSize(#str), str:dumphex()) end
+					if enet.debug then logf("[enet] %s: received %s of data: %s\n", socket, utility.FormatFileSize(#str), str:dumphex()) end
 					socket:OnReceive(str, flags, channel)
 				else
 					local peer = socket.peers[getuid(evt[0].peer)]
-					if enet.debug then logf("[enet] %s: received %s of data from %s: %s\n", socket, utilities.FormatFileSize(#str), peer, str:dumphex()) end
+					if enet.debug then logf("[enet] %s: received %s of data from %s: %s\n", socket, utility.FormatFileSize(#str), peer, str:dumphex()) end
 					socket:OnReceive(peer, str, flags, channel)
 				end
 			end

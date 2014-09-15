@@ -204,7 +204,7 @@ local BODY = {
 			end 
 		end 
 		lib.bulletRemoveBody(self.body) 
-		utilities.MakeNULL(self) 
+		utility.MakeNULL(self) 
 	end,
 }
 
@@ -405,7 +405,7 @@ end
 function bullet.CreateRigidBody()
 	local self = setmetatable({}, BODY)
 		
-	utilities.SetGCCallback(self)
+	utility.SetGCCallback(self)
 	
 	table.insert(bodies, self)
 	

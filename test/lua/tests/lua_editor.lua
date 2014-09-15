@@ -119,7 +119,7 @@ do
 	end  
 end 
    
-local frame = utilities.RemoveOldObject(gui.Create("frame"), "markup")
+local frame = utility.RemoveOldObject(gui.Create("frame"), "markup")
 frame:SetSize(1000, 1000)
 frame:RequestLayout(true) 
 

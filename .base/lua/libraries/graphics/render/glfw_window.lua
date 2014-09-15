@@ -36,7 +36,7 @@ do -- window meta
 		
 		glfw.DestroyWindow(self.__ptr)
 		
-		utilities.MakeNULL(self)
+		utility.MakeNULL(self)
 	end
 
 	local x = ffi.new("int[1]")

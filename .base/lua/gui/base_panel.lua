@@ -967,7 +967,7 @@ do -- events
 				end
 			end
 			
-			utilities.MakeNULL(self)		
+			utility.MakeNULL(self)		
 		end
 	end
 	

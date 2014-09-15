@@ -120,7 +120,7 @@ local function read_tree(file)
 			tree[#tree + 1] = {path = directory, is_dir = true}
 			
 			for i = 0, 100 do
-				local dir = utilities.GetParentFolder(directory, i)
+				local dir = utility.GetParentFolder(directory, i)
 				if dir == "" or done_directories[dir] then break end
 				tree[#tree + 1] = {path = dir:sub(0, -2), is_dir = true}
 				done_directories[dir] = true

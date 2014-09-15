@@ -24,7 +24,7 @@ local entry = [[
 local function read_vpk(file, full_path)
 	local vpk = file:ReadStructure(header)
 
-	local tree = utilities.CreateTree("/")
+	local tree = utility.CreateTree("/")
 	local done_directories = {}
 
 	for extension in file:IterateStrings() do		
@@ -54,7 +54,7 @@ local function read_vpk(file, full_path)
 			tree:SetEntry(directory, {path = directory, is_dir = true})
 			
 			for i = 0, 100 do
-				local dir = utilities.GetParentFolder(directory, i)
+				local dir = utility.GetParentFolder(directory, i)
 				if dir == "" or done_directories[dir] then break end
 				dir = dir:lower()
 				tree:SetEntry(dir, {path = dir, is_dir = true})

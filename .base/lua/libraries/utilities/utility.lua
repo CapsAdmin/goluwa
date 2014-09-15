@@ -1,10 +1,10 @@
-local utilities = _G.utilities or {}
+local utility = _G.utility or {}
 
-include("mesh.lua", utilities)
-include("packed_rectangle.lua", utilities)
+include("mesh.lua", utility)
+include("packed_rectangle.lua", utility)
 
 
-function utilities.TableToColumns(title, tbl, columns, check, sort_key)
+function utility.TableToColumns(title, tbl, columns, check, sort_key)
 	local top = {}
 	
 	for k, v in pairs(tbl) do
@@ -144,7 +144,7 @@ do -- tree
 		return next
 	end
 
-	function utilities.CreateTree(delimiter)
+	function utility.CreateTree(delimiter)
 		local self = META:New()
 		
 		self.tree = {}	
@@ -154,7 +154,7 @@ do -- tree
 	end
 end
 
-function utilities.TableToFlags(flags, valid_flags)
+function utility.TableToFlags(flags, valid_flags)
 	if type(flags) == "string" then
 		flags = {flags}
 	end
@@ -172,7 +172,7 @@ function utilities.TableToFlags(flags, valid_flags)
 	return out
 end
 
-function utilities.FlagsToTable(flags, valid_flags)
+function utility.FlagsToTable(flags, valid_flags)
 
 	if not flags then return valid_flags.default_valid_flag end
 	
@@ -197,7 +197,7 @@ do -- long long
 
 	local btl = ffi.typeof("buffer_int64")
 	
-	function utilities.StringToLongLong(str)
+	function utility.StringToLongLong(str)
 		return btl(str).i
 	end
 end
@@ -283,7 +283,7 @@ do -- find value
 		end
 	end
 
-	function utilities.FindValue(...)		
+	function utility.FindValue(...)		
 		found = {}
 		done = 
 		{
@@ -313,7 +313,7 @@ do -- find value
 end
 
 do -- thanks etandel @ #lua!
-	function utilities.SetGCCallback(t, func)
+	function utility.SetGCCallback(t, func)
 		func = func or t.Remove
 		
 		if not func then 
@@ -360,7 +360,7 @@ do
 		"ZiB", 
 		"YiB" 
 	}
-	function utilities.FormatFileSize(size)
+	function utility.FormatFileSize(size)
 		local unit_index = 1
 		
 		while size >= 1024 and size_units[unit_index + 1] do
@@ -372,7 +372,7 @@ do
 	end
 end
 
-function utilities.SafeRemove(obj, gc)
+function utility.SafeRemove(obj, gc)
 	if hasindex(obj) then
 		
 		if obj.IsValid and not obj:IsValid() then return end
@@ -389,7 +389,7 @@ function utilities.SafeRemove(obj, gc)
 	end
 end
 
-function utilities.RemoveOldObject(obj, id)
+function utility.RemoveOldObject(obj, id)
 	
 	if hasindex(obj) and type(obj.Remove) == "function" then
 		UTIL_REMAKES = UTIL_REMAKES or {}
@@ -406,7 +406,7 @@ function utilities.RemoveOldObject(obj, id)
 	return obj
 end
 
-function utilities.MakeNULL(tbl)
+function utility.MakeNULL(tbl)
 
 	for k,v in pairs(tbl) do tbl[k] = nil end
 	tbl.Type = "null"
@@ -415,50 +415,50 @@ function utilities.MakeNULL(tbl)
 	return var
 end
 
-function utilities.GetCurrentPath(level)
+function utility.GetCurrentPath(level)
 	return (debug.getinfo(level or 1).source:gsub("\\", "/"):sub(2):gsub("//", "/"))
 end
 
-function utilities.GeFolderFromPath(str)
-	str = str or utilities.GetCurrentPath()
+function utility.GeFolderFromPath(str)
+	str = str or utility.GetCurrentPath()
 	return str:match("(.+/).+") or ""
 end
 
-function utilities.GetParentFolder(str, level)
-	str = str or utilities.GetCurrentPath()
+function utility.GetParentFolder(str, level)
+	str = str or utility.GetCurrentPath()
 	return str:match("(.*/)" .. (level == 0 and "" or (".*/"):rep(level or 1))) or ""
 end
 
-function utilities.GetFolderNameFromPath(str)
-	str = str or utilities.GetCurrentPath()
+function utility.GetFolderNameFromPath(str)
+	str = str or utility.GetCurrentPath()
 	if str:sub(#str, #str) == "/" then
 		str = str:sub(0, #str - 1)
 	end
 	return str:match(".+/(.+)") or ""
 end
 
-function utilities.GetFileNameFromPath(str)
-	str = str or utilities.GetCurrentPath()
+function utility.GetFileNameFromPath(str)
+	str = str or utility.GetCurrentPath()
 	return str:match(".+/(.+)") or ""
 end
 
-function utilities.GetExtensionFromPath(str)
-	str = str or utilities.GetCurrentPath()
+function utility.GetExtensionFromPath(str)
+	str = str or utility.GetCurrentPath()
 	return str:match(".+%.(%a+)")
 end
 
-function utilities.GetFolderFromPath(self)
+function utility.GetFolderFromPath(self)
 	return self:match("(.*)/") .. "/"
 end
 
-function utilities.GetFileFromPath(self)
+function utility.GetFileFromPath(self)
 	return self:match(".*/(.*)")
 end
 
 do 
 	local hooks = {}
 
-	function utilities.SetFunctionHook(tag, tbl, func_name, type, callback)
+	function utility.SetFunctionHook(tag, tbl, func_name, type, callback)
 		local old = hooks[tag] or tbl[func_name]
 		
 		if type == "pre" then
@@ -481,7 +481,7 @@ do
 		return old
 	end
 	
-	function utilities.RemoveFunctionHook(tag, tbl, func_name)
+	function utility.RemoveFunctionHook(tag, tbl, func_name)
 		local old = hooks[tag]
 		
 		if old then
@@ -632,7 +632,7 @@ do -- header parse
 		return str, enums
 	end
 
-	function utilities.ParseHeader(path, directories_)
+	function utility.ParseHeader(path, directories_)
 		directories = directories_
 
 		local header, definitions, typedefs, enums
@@ -657,4 +657,4 @@ do -- header parse
 	end
 end
 
-return utilities
+return utility

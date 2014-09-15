@@ -64,5 +64,5 @@ function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
 	render.BindArrayBuffer(0)
 	gl.BindBuffer(gl.e.GL_ELEMENT_ARRAY_BUFFER, 0)
 	
-	--logf("[render] updated %s with %s amount of data\n", self, utilities.FormatFileSize(self.vertices_size + self.indices_size))
+	--logf("[render] updated %s with %s amount of data\n", self, utility.FormatFileSize(self.vertices_size + self.indices_size))
 end

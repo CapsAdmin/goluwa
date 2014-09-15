@@ -627,7 +627,7 @@ function system.OnError(msg, ...)
 				val = param.val:sub(0, 10)
 				
 				if val ~= param.val then
-					val = val .. " .. " .. utilities.FormatFileSize(#param.val)
+					val = val .. " .. " .. utility.FormatFileSize(#param.val)
 				end
 			else
 				val = serializer.GetLibrary("luadata").ToString(param.val)
@@ -685,7 +685,7 @@ end
 
 if system.lua_environment_sockets then
 	for key, val in pairs(system.lua_environment_sockets) do
-		utilities.SafeRemove(val)
+		utility.SafeRemove(val)
 	end
 end
 
@@ -849,7 +849,7 @@ function system.CreateConsole(title)
 		
 	function env:Remove()
 		self:Send("os.exit()")
-		utilities.SafeRemove(self.socket)
+		utility.SafeRemove(self.socket)
 		event.RemoveListener("Print", title .. "_console_output")
 	end
 	
