@@ -27,9 +27,7 @@ luadata.Types =
 			for i = 1, #tbl do
 				str[#str+1] = ("%s%s,\n"):format(("\t"):rep(context.tab), luadata.ToString(tbl[i], context))
 				
-				if context.yield then 
-					coroutine.yield() 
-				end
+				if context.thread then thread:Sleep() end
 			end
 		else
 			for key, value in pairs(tbl) do
@@ -47,9 +45,7 @@ luadata.Types =
 					end
 				end
 
-				if context.yield then 
-					coroutine.yield() 
-				end
+				if context.thread then thread:Sleep() end
 			end
 		end
 		
@@ -100,21 +96,22 @@ end
 
 function luadata.Encode(tbl, callback, speed)
 	if callback then
-		local co = coroutine.create(function() 
-			return luadata.ToString(tbl, {yield = true})
-		end)
-		event.CreateThinker(function()
-			local ok, data = coroutine.resume(co)
-			if ok then
-				if data then
-					xpcall(callback, system.OnError, data)
-					return true
-				end
-			else
-				xpcall(callback, system.OnError, false, data)
-				return true
-			end
-		end, speed)
+		local thread = utility.CreateThread()
+		
+		function thread:OnStart()
+			return luadata.ToString(tbl, {thread = self})
+		end
+		
+		function thread:OnFinish(...)
+			callback(...)
+		end
+		
+		function thread:OnError(msg)
+			callback(false, msg)
+		end
+		
+		thread:SetIterationsPerTick(speed)
+		thread:Start()
 	else
 		return luadata.ToString(tbl)
 	end
