@@ -392,12 +392,17 @@ do -- timers
 						data.realtime = cur + data.speed
 					end
 				elseif data.speed then
+					local errored = false
 					for i=0, data.speed do
 						local ok, res = xpcall(data.callback, system.OnError)
 						if not ok or res ~= nil then
-							table.insert(remove_these, i)
+							errored = true
 							break
 						end	
+					end
+					if errored then
+						table.insert(remove_these, i)
+						break
 					end
 				else
 					local ok, res = xpcall(data.callback, system.OnError)
