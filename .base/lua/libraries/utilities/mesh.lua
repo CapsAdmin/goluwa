@@ -11,8 +11,8 @@ local render = (...) or _G.render
 local table_insert = table.insert
 
 function utility.ParseObj(data, callback, generate_normals)
-	local co = coroutine.create(function()
-		
+	local thread = utility.CreateThread()
+	function thread:OnStart()		
 		local positions = {}
 		local texcoords = {}
 		local normals = {}
@@ -26,7 +26,8 @@ function utility.ParseObj(data, callback, generate_normals)
 			local parts = line:gsub("%s+", " "):trim():explode(" ")
 
 			table_insert(lines, parts)
-			coroutine.yield(false, "inserting lines", i)
+			self:ReportProgress("inserting lines", math.huge)
+			self:Sleep()
 			i = i + 1
 		end
 	
@@ -41,7 +42,8 @@ function utility.ParseObj(data, callback, generate_normals)
 				table_insert(normals, Vec3(tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])):GetNormalized())
 			end
 			
-			coroutine.yield(false, "parsing lines", (i/vert_count))
+			self:ReportProgress("parsing lines", vert_count)
+			self:Sleep()
 		end
 				
 		for i, parts in pairs(lines) do
@@ -87,7 +89,8 @@ function utility.ParseObj(data, callback, generate_normals)
 				end
 			end
 			
-			coroutine.yield(false, "solving indices", i/vert_count)
+			self:ReportProgress("solving indices", vert_count)
+			self:Sleep()
 		end
 		
 		if generate_normals then
@@ -105,7 +108,8 @@ function utility.ParseObj(data, callback, generate_normals)
 
 				vertex_normals[c.pos_index] = vertex_normals[c.pos_index] or Vec3()
 				vertex_normals[c.pos_index] = (vertex_normals[c.pos_index] + normal)
-				coroutine.yield(false, "generating normals", i/count)
+				self:ReportProgress("generating normals", count)
+				self:Sleep()
 			end
 			
 			local default_normal = Vec3(0, 0, -1)
@@ -116,38 +120,21 @@ function utility.ParseObj(data, callback, generate_normals)
 				n:Normalize()
 				normals[i] = n
 				output[i].normal = n
-				coroutine.yield(false, "smoothing normals", i/count)
+				self:ReportProgress("smoothing normals", count)
+				self:Sleep()
 			end
 		end
 		
+		return output
+	end
+	
+	function thread:OnFinish(output)
 		callback(output)
-		coroutine.yield(true)
-	end)
+	end
 	
-	local last_why
+	thread:SetIterationsPerTick(1024 * 16)
 	
-	event.CreateThinker(function() 
-		local dead, done, why, msg = coroutine.resume(co)
-		if done then
-			if dead == false and done then
-				logn(done)
-			end
-
-			console.SetTitle(nil, 2)
-			return true
-		else
-			if wait(0.1) or last_why ~= why then
-				if why == "inserting lines" then
-					console.SetTitle(why .. " " .. msg, 2)
-				else
-					console.SetTitle(why .. " " .. math.round(msg*100) .. " %", 2)
-				end
-				
-				coroutine.resume(co)
-				last_why = why
-			end
-		end
-	end, 1024 * 16)
+	thread:Start()
 end
 
 function utility.ParseHeightmap(tex, size, res, height)	

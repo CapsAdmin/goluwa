@@ -291,7 +291,9 @@ do -- list parsing
 	function chatsounds.BuildSoundInfo()
 		local out = {}
 
-		local co = coroutine.create(function()
+		local thread = utility.CreateThread()
+		
+		function thread:OnStart()
 			local sound_info = {}
 			for path in vfs.Iterate("scripts/", nil, true) do
 				if path:find("_sounds") and not path:find("manifest") and path:find("%.txt") then
@@ -309,7 +311,8 @@ do -- list parsing
 					else
 						logn("couldn't read ", path, " file is empty")
 					end
-					coroutine.yield("reading /scripts/*")
+					self:Report("reading /scripts/*")
+					self:Sleep()
 				end
 			end
 
@@ -342,7 +345,8 @@ do -- list parsing
 
 					local tbl = steam.VDFToTable(str)
 					table.merge(captions, tbl)
-					coroutine.yield("reading /resource/*")
+					self:Report("reading /resource/*")
+					self:Sleep()
 				end
 			end
 
@@ -449,7 +453,8 @@ do -- list parsing
 					out[v].wave = nil
 				end
 
-				coroutine.yield("building table")
+				self:Report("building table")
+				self:Sleep()
 			end
 
 			local list = chatsounds.ListToTable(vfs.Read("data/chatsounds/game.list"))
@@ -486,21 +491,9 @@ do -- list parsing
 			vfs.Write("data/chatsounds/sound_info.lua", serializer.Encode("luadata", out))
 
 			chatsounds.sound_info = out
-		end)
+		end
 
-		event.AddListener("Update", "chatsounds_soundinfo", function()
-			local ok, msg = coroutine.resume(co)
-
-			if ok then
-				if wait(1) then
-					print(msg)
-				end
-			elseif msg == "cannot resume dead coroutine" then
-				return e.EVENT_DESTROY
-			else
-				error(msg)
-			end
-		end)
+		thread:Start()
 	end
 
 	function chatsounds.BuildListFromMountedContent()
@@ -509,8 +502,10 @@ do -- list parsing
 		steam.MountAllSourceGames()
 
 		local found = {}
+		
+		local thread = utility.CreateThread()
 
-		local function callback()
+		function thread:OnStart()
 			vfs.Search("sound/", {"wav", "ogg", "mp3"}, function(path)
 				local sentence
 
@@ -542,16 +537,37 @@ do -- list parsing
 				
 				table.insert(found[realm], path:lower() .. "=" .. sentence)
 			
-				coroutine.yield()
+				self:Sleep()
 			end)
+		end		
+		
+		function thread:Save()
+			print("saving..")
+			local custom = {}
+			local game = {}
+
+			for realm, sentences in pairs(found) do
+				if realm:find("custom_sounds_") then
+					realm = realm:gsub("custom_sounds_", "")
+					table.insert(custom, "realm="..realm .."\n")
+					table.insert(custom, table.concat(sentences, "\n") .. "\n")
+				else
+					table.insert(game, "realm="..realm .. "\n")
+					table.insert(game, table.concat(sentences, "\n") .. "\n")
+				end
+			end
+
+			local game_list = table.concat(game, "")
+			local custom_list = table.concat(custom, "")
+
+			vfs.Write("data/chatsounds/game.list", game_list)
+			vfs.Write("data/chatsounds/custom.list", custom_list)
+
+			vfs.Write("data/chatsounds/game.tree", serializer.Encode("msgpack", chatsounds.TableToTree(chatsounds.ListToTable(game_list))), "b")
+			vfs.Write("data/chatsounds/custom.tree", serializer.Encode("msgpack", chatsounds.TableToTree(chatsounds.ListToTable(custom_list))), "b")
 		end
-
-		local co = coroutine.create(function() return xpcall(callback, system.OnError) end)
-
-		event.AddListener("Update", "chatsounds_search", function()
-			if PAUSE then return end
-			local ok, err = coroutine.resume(co)
-
+		
+		function thread:OnUpdate()
 			if wait(1) then
 				print(table.count(found) .. " realms found")
 				local i = 0
@@ -561,42 +577,19 @@ do -- list parsing
 				logf("%i sentences found (%s)\n", i, utility.FormatFileSize(size))
 			end
 
-			if wait(10) or not ok then
-				print("saving..")
-				local custom = {}
-				local game = {}
-
-				for realm, sentences in pairs(found) do
-					if realm:find("custom_sounds_") then
-						realm = realm:gsub("custom_sounds_", "")
-						table.insert(custom, "realm="..realm .."\n")
-						table.insert(custom, table.concat(sentences, "\n") .. "\n")
-					else
-						table.insert(game, "realm="..realm .. "\n")
-						table.insert(game, table.concat(sentences, "\n") .. "\n")
-					end
-				end
-
-				local game_list = table.concat(game, "")
-				local custom_list = table.concat(custom, "")
-
-				vfs.Write("data/chatsounds/game.list", game_list)
-				vfs.Write("data/chatsounds/custom.list", custom_list)
-
-				vfs.Write("data/chatsounds/game.tree", serializer.Encode("msgpack", chatsounds.TableToTree(chatsounds.ListToTable(game_list))), "b")
-				vfs.Write("data/chatsounds/custom.tree", serializer.Encode("msgpack", chatsounds.TableToTree(chatsounds.ListToTable(custom_list))), "b")
+			if wait(10) then
+				self:Save()
 			end
-
-			if not ok then
-				if err == "cannot resume dead coroutine" then
-					chatsounds.BuildSoundInfo()
-					print("done!")
-					return e.EVENT_DESTROY
-				else
-					error(err)
-				end
-			end
-		end)
+		end
+				
+		function thread:OnFinish()
+			self:Save()
+			chatsounds.BuildSoundInfo()
+		end
+		
+		thread:Start()
+		
+		chatsounds.build_info_thread = thread
 	end
 
 	function chatsounds.ListToTable(data)

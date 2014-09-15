@@ -48,28 +48,23 @@ do -- model meta
 		
 		self:InvalidateBoundingBox()
 		
-		local co = coroutine.create(function()
+		local thread = utility.CreateThread()
+		
+		function thread.OnRun()
 			assimp.ImportFileEx(new_path, flags, function(sub_model_data, i, total_meshes)
 				logf("[render] %s loading %q %s\n", path, sub_model_data.name, i .. "/" .. total_meshes)
 				self:InsertSubmodel(sub_model_data)
 				self:InvalidateBoundingBox()
 			end)
-		end)
-		
-		--event.CreateThinker(function()
-		while true do
-			local ok, err = coroutine.resume(co)
-			
-			if not ok then
-				if err ~= "cannot resume dead coroutine" then
-					logf("error loading mesh %s: %s\n", path, err)
-				end
-				self.done = true
-				--return false 
-				break
-			end
 		end
-		--end, 100)
+		
+		function thread.OnFinish()
+			self.done = true
+		end
+		
+		thread:SetIterationsPerTick(math.huge)
+		
+		thread:Start()
 		
 		render.model_cache[path] = self
 
