@@ -59,7 +59,7 @@ function sockets.Update()
 			
 			if sock.remove_me then
 				sock.socket:close()
-				utilities.MakeNULL(sock)
+				utility.MakeNULL(sock)
 			end
 		else
 			sockets.active_sockets[key] = nil
@@ -165,8 +165,8 @@ do -- tcp socket meta
 		
 		function CLIENT:GetStatistics()
 			return {
-				received = utilities.FormatFileSize(self.data_received),
-				sent = utilities.FormatFileSize(self.data_sent),
+				received = utility.FormatFileSize(self.data_received),
+				sent = utility.FormatFileSize(self.data_sent),
 			}
 		end
 
@@ -206,11 +206,11 @@ do -- tcp socket meta
 					local bytes, b, c, d = self.socket:send(str)
 					
 					if bytes then
-						self:DebugPrintf("sucessfully sent %s",  utilities.FormatFileSize(#str))
+						self:DebugPrintf("sucessfully sent %s",  utility.FormatFileSize(#str))
 						self:OnSend(packet, bytes, b,c,d)
 						self.data_sent = self.data_sent + bytes
 					elseif b ~= "Socket is not connected" then
-						self:DebugPrintf("could not send %s of data : %s", utilities.FormatFileSize(#str), b)
+						self:DebugPrintf("could not send %s of data : %s", utility.FormatFileSize(#str), b)
 					end
 				else					
 					for i, packet in pairs(str:lengthsplit(65536)) do
@@ -278,7 +278,7 @@ do -- tcp socket meta
 							local bytes, b, c, d = sock:send(data)
 
 							if bytes then
-								self:DebugPrintf("sucessfully sent %s",  utilities.FormatFileSize(bytes))
+								self:DebugPrintf("sucessfully sent %s",  utility.FormatFileSize(bytes))
 								self:OnSend(data, bytes, b,c,d)
 								table.remove(self.Buffer, 1)
 								
@@ -288,7 +288,7 @@ do -- tcp socket meta
 									self.__server.data_sent = self.__server.data_sent + bytes
 								end
 							elseif b ~= "Socket is not connected" then
-								self:DebugPrintf("could not send %s of data : %s", utilities.FormatFileSize(#data), b)
+								self:DebugPrintf("could not send %s of data : %s", utility.FormatFileSize(#data), b)
 --								break
 							end
 						else
@@ -503,8 +503,8 @@ do -- tcp socket meta
 		
 		function SERVER:GetStatistics()
 			return {
-				received = utilities.FormatFileSize(self.data_received),
-				sent = utilities.FormatFileSize(self.data_sent),
+				received = utility.FormatFileSize(self.data_received),
+				sent = utility.FormatFileSize(self.data_sent),
 			}
 		end
 

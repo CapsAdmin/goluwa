@@ -1,4 +1,4 @@
-local utilities = (...) or _G.utilities
+local utility = (...) or _G.utility
 
 local render = (...) or _G.render
 
@@ -10,7 +10,7 @@ local render = (...) or _G.render
 
 local table_insert = table.insert
 
-function utilities.ParseObj(data, callback, generate_normals)
+function utility.ParseObj(data, callback, generate_normals)
 	local co = coroutine.create(function()
 		
 		local positions = {}
@@ -150,7 +150,7 @@ function utilities.ParseObj(data, callback, generate_normals)
 	end, 1024 * 16)
 end
 
-function utilities.ParseHeightmap(tex, size, res, height)	
+function utility.ParseHeightmap(tex, size, res, height)	
 	
 	size = size or 1024
 	res = res or 64
@@ -192,7 +192,7 @@ function utilities.ParseHeightmap(tex, size, res, height)
 	return data
 end
 
-function utilities.GenerateNormals(data)	
+function utility.GenerateNormals(data)	
 	for i = 1, #data, 3 do
 
 		local ai = i + 0
@@ -210,7 +210,7 @@ function utilities.GenerateNormals(data)
 	return data
 end
 
-function utilities.CreateCube(size, texture_scale)
+function utility.CreateCube(size, texture_scale)
 	size = size or 1
 	texture_scale = texture_scale or 1
 	
@@ -266,7 +266,7 @@ function utilities.CreateCube(size, texture_scale)
 	}
 end
 
-function utilities.CreateSphere(res)
+function utility.CreateSphere(res)
 	res = 32
 	local sphereMesh = {}
 	

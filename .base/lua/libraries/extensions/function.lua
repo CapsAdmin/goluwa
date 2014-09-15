@@ -21,7 +21,7 @@ local locinfo=function(func)
                 str=str.."External"
             elseif info.linedefined and info.lastlinedefined then
                 if info.source:sub(1,1)=="@" then
-                    local file=utilities.GetFileNameFromPath(info.source)
+                    local file=utility.GetFileNameFromPath(info.source)
                     if file and file:len()>0 then
                         if not eek[file] then
                             str=str..file:gsub("^lua/","")

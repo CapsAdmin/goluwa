@@ -7,8 +7,8 @@ for i = 0, size-1 do
 	buffer[i] = math.random(256)
 end
 
---local sound = utilities.RemoveOldObject(Sound(buffer, size))
-local sound = utilities.RemoveOldObject((Sound("sounds/wowozela/sine_880.wav")))
+--local sound = utility.RemoveOldObject(Sound(buffer, size))
+local sound = utility.RemoveOldObject((Sound("sounds/wowozela/sine_880.wav")))
 
 sound:Play() 
 sound:SetLooping(true)
@@ -34,7 +34,7 @@ local sphere = Texture(64, 64):Fill(function(x, y)
 	return 255, 255, 255, a * 128
 end)
  
-local emitter = utilities.RemoveOldObject(ParticleEmitter())
+local emitter = utility.RemoveOldObject(ParticleEmitter())
 --emitter:SetCenterAttractionForce(0.1) 
 --emitter:SetPosAttractionForce(0.1) 
 emitter:SetRate(-1)

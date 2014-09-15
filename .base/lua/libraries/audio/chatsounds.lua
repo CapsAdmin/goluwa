@@ -558,7 +558,7 @@ do -- list parsing
 				local size = 0
 				for k,v in pairs(found) do size = size + #k for k,v in pairs(v) do i = i + 1 size = size + #v end end
 
-				logf("%i sentences found (%s)\n", i, utilities.FormatFileSize(size))
+				logf("%i sentences found (%s)\n", i, utility.FormatFileSize(size))
 			end
 
 			if wait(10) or not ok then

@@ -61,7 +61,7 @@ function META:FindFreePage(w, h)
 				mag_filter = "linear",
 			}), 
 			chars = {}, 
-			packer = utilities.CreatePackedRectangle(256, 256) 
+			packer = utility.CreatePackedRectangle(256, 256) 
 		}
 		
 		--found_page.texture:Clear()

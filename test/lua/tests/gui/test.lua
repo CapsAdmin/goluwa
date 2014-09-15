@@ -2,7 +2,7 @@ window.Open(1280, 720)
 	
 if not gui.initialized then return end
 
-local frame = utilities.RemoveOldObject(gui.Create("frame"), "aahh_unit_test") 
+local frame = utility.RemoveOldObject(gui.Create("frame"), "aahh_unit_test") 
 frame:SetSize(Vec2() + 500)
 frame:Center()
 frame:SetTitle("unit test")

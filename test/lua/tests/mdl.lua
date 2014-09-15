@@ -672,7 +672,7 @@ local function load_vvd(path, mdl, vtx)
 		end
 	end
 	
-	local world = utilities.RemoveOldObject(entities.CreateEntity("clientside"))
+	local world = utility.RemoveOldObject(entities.CreateEntity("clientside"))
 	world:SetModel(models[1])
 end
 

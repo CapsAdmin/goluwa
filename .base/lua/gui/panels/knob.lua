@@ -129,7 +129,7 @@ if false and CAPSADMIN then
 	
 	event.Delay(0.1, function()
 		
-		local frame = utilities.RemoveOldObject(gui.Create("frame"), "asdf")
+		local frame = utility.RemoveOldObject(gui.Create("frame"), "asdf")
 		frame:SetSize(Vec2() + 500)
 		
 		local grid = gui.Create("grid", frame)

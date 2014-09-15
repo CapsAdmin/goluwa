@@ -1,4 +1,4 @@
-local utilities = ... or _G.utilities
+local utility = ... or _G.utility
 
 local META = metatable.CreateTemplate("packed_rectangle")
 
@@ -25,6 +25,6 @@ function META:Fit(w, h)
 	end
 end
 
-function utilities.CreatePackedRectangle(w, h) 
+function utility.CreatePackedRectangle(w, h) 
 	return META:New({root = {x = 0, y = 0, w = w, h = h}}) 
 end

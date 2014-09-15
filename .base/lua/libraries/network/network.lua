@@ -17,7 +17,7 @@ function network.HandlePacket(str, peer, type)
 	end
 	
 	if network.debug == 2 then
-		logf("received %s packet (%s) from %s\n", type, utilities.FormatFileSize(#str), peer)
+		logf("received %s packet (%s) from %s\n", type, utility.FormatFileSize(#str), peer)
 	end
 	
 	if SERVER and not client:IsValid() then 

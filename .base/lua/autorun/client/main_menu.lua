@@ -157,13 +157,13 @@ function menu.MakeButtons()
 		local function populate(dir)
 			frame:SetTitle(dir)
 			
-			if utilities.GetParentFolder(dir):find("/", nil, true) then
+			if utility.GetParentFolder(dir):find("/", nil, true) then
 				local btn = gui.Create("text_button")
 					btn:SetText("<<")
 					
 					function btn:OnPress()
 						grid:RemoveChildren()
-						populate(utilities.GetParentFolder(dir))
+						populate(utility.GetParentFolder(dir))
 					end
 					
 				grid:AddChild(btn)

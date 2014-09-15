@@ -106,7 +106,7 @@ end
 -- put all c functions in a table so we can override them if needed 
 -- without doing the local oldfunc = print thing over and over again
 if not _OLD_G then
-	-- this will be replaced with utilities.GetOldGLibrary() later on
+	-- this will be replaced with utility.GetOldGLibrary() later on
 	_OLD_G = {}
 	local done = {[_G] = true}
 	
@@ -598,7 +598,7 @@ do -- libraries
 	structs = include("libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
 	utf8 = include("libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 	event = include("libraries/event.lua") goluwa = event.events -- event handler
-	utilities = include("libraries/utilities/utilities.lua") -- more like i-dont-know-where-these-functions-go
+	utility = include("libraries/utilities/utility.lua") -- more like i-dont-know-where-these-functions-go
 	class = include("libraries/class.lua") -- used by gui panels and entities
 	crypto = include("libraries/crypto.lua")
 
@@ -709,7 +709,7 @@ end
 if CREATED_ENV then
 	console.SetTitle(TITLE, "env")
 	
-	utilities.SafeRemove(ENV_SOCKET)
+	utility.SafeRemove(ENV_SOCKET)
 	
 	ENV_SOCKET = sockets.CreateClient()
 

@@ -343,14 +343,14 @@ function profiler.PrintTraceAborts(min_samples)
 end
 
 function profiler.PrintSections()
-	log(utilities.TableToColumns(
+	log(utility.TableToColumns(
 		"sections",
 		profiler.GetBenchmark("sections"), 
 		{
 			{key = "times_called", friendly = "calls"},
 			{key = "name", tostring = function(val, column) return ("    "):rep(column.level - 1) .. tostring(val) end}, 
 			{key = "average_time", friendly = "time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
-			{key = "average_garbage", friendly = "garbage", tostring = function(val) return utilities.FormatFileSize(val) end},
+			{key = "average_garbage", friendly = "garbage", tostring = function(val) return utility.FormatFileSize(val) end},
 		}, 
 		function(a) return a.times_called > 50 end,
 		"i"
@@ -358,7 +358,7 @@ function profiler.PrintSections()
 end
 
 function profiler.PrintStatistical()
-	log(utilities.TableToColumns(
+	log(utility.TableToColumns(
 		"statistical",
 		profiler.GetBenchmark("statistical"), 
 		{

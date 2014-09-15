@@ -552,7 +552,7 @@ timer.Stop() end
 timer.Start("render.CreateMesh")
  
 for i, data in ipairs(bsp_mesh.sub_models) do
-	utilities.GenerateNormals(data.mesh_data)
+	utility.GenerateNormals(data.mesh_data)
 	data.mesh = render.CreateMesh(data.mesh_data)
 end
 

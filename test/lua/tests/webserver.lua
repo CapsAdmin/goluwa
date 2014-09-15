@@ -1,6 +1,6 @@
 sockets.debug = false
 
-server = utilities.RemoveOldObject(sockets.CreateServer())
+server = utility.RemoveOldObject(sockets.CreateServer())
 
 server.port = 1234
 server.content_folder = "www"

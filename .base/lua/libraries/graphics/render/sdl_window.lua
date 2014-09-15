@@ -25,7 +25,7 @@ do -- window meta
 		sdl.DestroyWindow(self.__ptr)
 		render.sdl_windows[self.sdl_windowID] = nil
 		
-		utilities.MakeNULL(self)
+		utility.MakeNULL(self)
 	end
 
 	local x = ffi.new("int[1]")
