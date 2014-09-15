@@ -23,7 +23,7 @@ do -- window meta
 		event.RemoveListener("OnUpdate", self)
 		
 		sdl.DestroyWindow(self.__ptr)
-		render.sdl_windows[self.sdl_windowID] = nil
+		render.sdl_windows[self.sdl_window_id] = nil
 		
 		utility.MakeNULL(self)
 	end
@@ -244,7 +244,10 @@ do -- window meta
 		mbutton_translate[2] = "button_3"
 
 		_G.event.AddListener("Update", self, function(dt)
-			if not sdl.video_init then return end
+			if not self:IsValid() or not sdl.video_init then
+				sdl.PollEvent(event) -- this needs to be done or windows thinks the application froze..
+				return
+			end
 			
 			self.mouse_delta:Zero()
 			--self:UpdateMouseDelta()
