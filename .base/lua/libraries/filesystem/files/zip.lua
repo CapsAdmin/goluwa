@@ -72,7 +72,7 @@ local function split_path(path_info)
 		archive_path = archive_path:sub(0, -2)
 	end
 		
-	local temp = vfs.Open("os:" .. archive_path)
+	local temp = assert(vfs.Open("os:" .. archive_path))
 	local signature = temp:ReadBytes(4)
 	
 	if signature ~= "\x50\x4b\x03\x04" then
@@ -132,7 +132,7 @@ function CONTEXT:GetFiles(path_info)
 		
 	for info in archive:files() do
 		local path = info.filename
-		
+				
 		if path:endswith("/") then
 			path = path:sub(0, -2)
 		end
