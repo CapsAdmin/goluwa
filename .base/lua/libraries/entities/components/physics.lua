@@ -184,42 +184,45 @@ do
 	function COMPONENT:SetPhysicsModelPath(path)
 		self.PhysicsModelPath = path
 		
-		if vfs.Exists(path) then
-			local scene = assimp.ImportFile(R(path), assimp.e.aiProcessPreset_TargetRealtime_Quality)
-			if scene.mMeshes[0].mNumVertices == 0 then
-				error("no vertices found in " .. path, 2)
-			end
-								
-			local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices  * 3)
-			local triangles = ffi.new("unsigned int[?]", scene.mMeshes[0].mNumFaces * 3)
-			
-			ffi.copy(vertices, scene.mMeshes[0].mVertices, ffi.sizeof(vertices))
-
-			local i = 0
-			for j = 0, scene.mMeshes[0].mNumFaces - 1 do
-				for k = 0, scene.mMeshes[0].mFaces[j].mNumIndices - 1 do
-					triangles[i] = scene.mMeshes[0].mFaces[j].mIndices[k]
-					i = i + 1 
-				end
-			end
-						
-			local mesh = {	
-				triangles = {
-					count = tonumber(scene.mMeshes[0].mNumFaces), 
-					pointer = triangles, 
-					stride = ffi.sizeof("unsigned int") * 3, 
-				},					
-				vertices = {
-					count = tonumber(scene.mMeshes[0].mNumVertices),  
-					pointer = vertices, 
-					stride = ffi.sizeof("float") * 3,
-				},
-			}
-			
-			assimp.ReleaseImport(scene)
-			
-			self:SetPhysicsModel(mesh)
+		if not vfs.Exists(path) then
+			error(path .. " not found", 2)
 		end
+		
+		local scene = assimp.ImportFile(R(path), assimp.e.aiProcessPreset_TargetRealtime_Quality)
+		
+		if scene.mMeshes[0].mNumVertices == 0 then
+			error("no vertices found in " .. path, 2)
+		end
+							
+		local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices  * 3)
+		local triangles = ffi.new("unsigned int[?]", scene.mMeshes[0].mNumFaces * 3)
+		
+		ffi.copy(vertices, scene.mMeshes[0].mVertices, ffi.sizeof(vertices))
+
+		local i = 0
+		for j = 0, scene.mMeshes[0].mNumFaces - 1 do
+			for k = 0, scene.mMeshes[0].mFaces[j].mNumIndices - 1 do
+				triangles[i] = scene.mMeshes[0].mFaces[j].mIndices[k]
+				i = i + 1 
+			end
+		end
+					
+		local mesh = {	
+			triangles = {
+				count = tonumber(scene.mMeshes[0].mNumFaces), 
+				pointer = triangles, 
+				stride = ffi.sizeof("unsigned int") * 3, 
+			},					
+			vertices = {
+				count = tonumber(scene.mMeshes[0].mNumVertices),  
+				pointer = vertices, 
+				stride = ffi.sizeof("float") * 3,
+			},
+		}
+		
+		assimp.ReleaseImport(scene)
+		
+		self:SetPhysicsModel(mesh)
 	end
 	
 	function COMPONENT:InitPhysicsConcave()
