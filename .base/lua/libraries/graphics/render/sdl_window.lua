@@ -171,8 +171,8 @@ do -- window meta
 	end
 	
 	function render.CreateWindow(width, height, title)	
-		width = width or 680
-		height = height or 440
+		width = width or 800
+		height = height or 600
 		title = title or ""
 	
 		sdl.Init(sdl.e.SDL_INIT_VIDEO)
