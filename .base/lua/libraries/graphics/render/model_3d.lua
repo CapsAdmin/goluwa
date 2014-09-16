@@ -36,9 +36,7 @@ do -- model meta
 		
 		flags = assimp.e.aiProcessPreset_TargetRealtime_Quality
 
-		local new_path = R(path)
-
-		if not vfs.Exists(new_path) then
+		if not vfs.Exists(path) then
 			return nil, path .. " not found"
 		end
 					
@@ -46,28 +44,29 @@ do -- model meta
 		self.sub_models = {}
 		self.done = false
 		
+		render.model_cache[path] = self
+		
 		self:InvalidateBoundingBox()
 		
 		local thread = utility.CreateThread()
 		
-		function thread.OnRun()
-			assimp.ImportFileEx(new_path, flags, function(sub_model_data, i, total_meshes)
-				logf("[render] %s loading %q %s\n", path, sub_model_data.name, i .. "/" .. total_meshes)
+		function thread.OnStart()
+			assimp.ImportFileEx(path, flags, function(sub_model_data, i, total_meshes)
+				if render.debug then logf("[render] %s loading %q %s\n", path, sub_model_data.name, i .. "/" .. total_meshes) end
 				self:InsertSubmodel(sub_model_data)
 				self:InvalidateBoundingBox()
-			end)
+			end, true)
 		end
 		
 		function thread.OnFinish()
 			self.done = true
 		end
 		
+		--thread:SetIterationsPerTick(10)
 		thread:SetIterationsPerTick(math.huge)
 		
 		thread:Start()
 		
-		render.model_cache[path] = self
-
 		return self
 	end
 	
@@ -80,7 +79,7 @@ do -- model meta
 				max = Vec3(unpack(model_data.bbox.max))
 			}
 		}
-		
+				
 		if model_data.material and model_data.material.path then
 			sub_model.diffuse = render.CreateTexture(model_data.material.path, default_texture_format)
 
@@ -106,6 +105,10 @@ do -- model meta
 		end
 			
 		table.insert(self.sub_models, sub_model)
+	end
+	
+	function META:Export(path)
+		
 	end
 	
 	do
@@ -147,22 +150,9 @@ do -- model meta
 		end
 	end
 
-	function META:Remove()
-		for _, model in pairs(self.sub_models) do
-			model.mesh.diffuse:Remove()
-			model.mesh.bump:Remove()
-			model.mesh.specular:Remove()
-			model.mesh:Remove()
-		end
-	end
-
 	function META:Draw()
 		for _, model in pairs(self.sub_models) do
 			model.mesh:Draw()
 		end
-	end
-
-	function META:IsValid()
-		return true
 	end
 end
