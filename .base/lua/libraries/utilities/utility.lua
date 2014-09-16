@@ -99,7 +99,7 @@ do
 	META.wait = 0
 	 
 	function META:Start()
-		local co = coroutine.create(self.OnStart)
+		local co = coroutine.create(function(...) return select(2, xpcall(self.OnStart, system.OnError, ...)) end)
 
 		event.CreateThinker(function()
 			if not self:IsValid() then return false end -- removed
