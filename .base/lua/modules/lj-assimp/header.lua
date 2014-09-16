@@ -47,10 +47,6 @@ typedef struct
 } aiTexture;
 
 
-typedef struct
-{
-} aiFile;
-
 typedef struct {
 	float a1, a2, a3, a4;
 	float b1, b2, b3, b4;
@@ -105,27 +101,27 @@ typedef enum
 
 typedef struct{float r, g, b, a;} aiColor4D;
 
-typedef struct {} aiFileIO;
-typedef struct {} aiFile;  
+typedef struct {} aiFileIO_;
+typedef struct {} aiFile_;  
  
-typedef size_t   (*aiFileWriteProc) (aiFile*,   const char*, size_t, size_t);
-typedef size_t   (*aiFileReadProc)  (aiFile*,   char*, size_t,size_t);
-typedef size_t   (*aiFileTellProc)  (aiFile*);
-typedef void     (*aiFileFlushProc) (aiFile*);
-typedef aiReturn (*aiFileSeek)(aiFile*, size_t, aiOrigin);
-typedef aiFile* (*aiFileOpenProc)  (aiFileIO*, const char*, const char*);
-typedef void    (*aiFileCloseProc) (aiFileIO*, aiFile*);
+typedef size_t   (*aiFileWriteProc) (aiFile_*,   const char*, size_t, size_t);
+typedef size_t   (*aiFileReadProc)  (aiFile_*,   char*, size_t,size_t);
+typedef size_t   (*aiFileTellProc)  (aiFile_*);
+typedef void     (*aiFileFlushProc) (aiFile_*);
+typedef aiReturn (*aiFileSeek)(aiFile_*, size_t, aiOrigin);
+typedef aiFile_* (*aiFileOpenProc)  (aiFileIO_*, const char*, const char*);
+typedef void    (*aiFileCloseProc) (aiFileIO_*, aiFile_*);
 
 typedef char* aiUserData; 
 
-typedef struct
+typedef struct aiFileIO
 {
 	aiFileOpenProc OpenProc;
 	aiFileCloseProc CloseProc;
 	aiUserData UserData;
 }aiFileIO; 
  
-typedef struct
+typedef struct aiFile
 {
 	aiFileReadProc ReadProc;
 	aiFileWriteProc WriteProc;
