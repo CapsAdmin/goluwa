@@ -73,15 +73,7 @@ local function get_file_tree(path)
 	if cache[path] then
 		return cache[path]
 	end
-	
-	--local tree = serializer.ReadFile("msgpack", "vpk_cache/" .. crypto.CRC32(path)) or {}
-	
-	--if tree then
---		cache[path] = tree
-		
-	--	return tree
-	--end
-	
+
 	local file = assert(vfs.Open("os:" .. path))	
 	local tree = read_vpk(file, path)
 		
@@ -89,12 +81,8 @@ local function get_file_tree(path)
 	
 	cache[path] = tree
 	
-	--serializer.WriteFile("msgpack", "vpk_cache/" .. crypto.CRC32(path), tree.tree)
-			
 	return tree
 end
-
-LOL_CACHE = cache
 
 local CONTEXT = {}
 
