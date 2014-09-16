@@ -49,12 +49,12 @@ local function parse_raw_trace_abort_data()
 	end
 end
 
-function profiler.StartLoggingTraceAborts()
-	jit.attach(trace_dump_callback, "trace")
-end
-
-function profiler.StopLoggingTraceAborts()
-	jit.attach(trace_dump_callback)
+function profiler.EnableTraceAbortLogging(b)
+	if b then
+		jit.attach(trace_dump_callback, "trace")
+	else
+		jit.attach(trace_dump_callback)
+	end
 end
 
 local function statistical_callback(thread, samples, vmstate)
@@ -117,19 +117,18 @@ local function parse_raw_statistical_data()
 	end
 end
 
-function profiler.StartStatisticalProfiling()		
-					
-	jit_profiler.start("l", function(...) 
-		local ok, err = xpcall(statistical_callback, system.OnError, ...)
-		if not ok then
-			logn(err)
-			profiler.StopStatisticalProfiling()
-		end
-	end)
-end
-
-function profiler.StopStatisticalProfiling()	
-	jit_profiler.stop()
+function profiler.EnableStatisticalProfiling(b)		
+	if b then	
+		jit_profiler.start("l", function(...) 
+			local ok, err = xpcall(statistical_callback, system.OnError, ...)
+			if not ok then
+				logn(err)
+				profiler.StopStatisticalProfiling()
+			end
+		end)	
+	else
+		jit_profiler.stop()
+	end
 end
 
 function profiler.Restart()
@@ -142,7 +141,7 @@ do
 	
 	local base_garbage = 0
 	local stack = {}
-	local enabled = true
+	local enabled = false
 	local i = 0
 	
 	function profiler.PushSection(section_name)
@@ -204,7 +203,7 @@ do
 		data[name] = nil
 	end
 	
-	function profiler.EnableSections(b)
+	function profiler.EnableSectionProfiling(b)
 		enabled = b
 	end
 	
@@ -370,7 +369,8 @@ function profiler.PrintStatistical()
 	))
 end
 
-profiler.StartLoggingTraceAborts()
-profiler.StartStatisticalProfiling()
+--profiler.EnableSectionProfiling(true)
+--profiler.EnableTraceAbortLogging(true)
+--profiler.EnableStatisticalProfiling(true)
 
 return profiler
