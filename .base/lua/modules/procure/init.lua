@@ -47,18 +47,23 @@ local function path_loader(name, paths, loader_func)
 		loader, errmsg = loader_func(path)
 
 		if loader then
-		found_path = path
+			found_path = path
 			break
 		else
 			-- XXX error for when file isn"t readable?
 			-- XXX error for when file isn"t valid Lua (or loadable?)
-			table.insert(errors, string.format("no file %q", path))
+			if errmsg then
+				table.insert(errors, (errmsg:gsub("\\", "/")))
+			else
+				table.insert(errors, string.format("no file %q", path:gsub("\\", "/")))
+			end
 		end
 	end
 
 	if loader then
 		return loader, nil, found_path
 	else
+		table.sort(errors, function(a, b) return #a > #b end)
 		return table.concat(errors, "\n") .. "\n"
 	end
 end
