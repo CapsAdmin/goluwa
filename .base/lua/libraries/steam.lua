@@ -274,7 +274,7 @@ do -- steam directories
 							local str = vfs.Read(path)
 							
 							local tbl = steam.VDFToTable(str, true, {gameinfo_path = path:match("(.+/)"), all_source_engine_paths = path:match("(.+/).+/")})
-							if tbl then
+							if tbl and tbl.gameinfo and tbl.gameinfo.game then
 								tbl = tbl.gameinfo
 								
 								tbl.game_dir = game_dir
@@ -313,16 +313,21 @@ do -- steam directories
 				path = path:gsub("/%.", "/")
 				
 				if not done[path] and vfs.Exists(path) then
-					vfs.Mount(path, nil, game_info)
+					if not vfs.GetMounts()[path] then
+						vfs.Mount(path, nil, game_info)
+					end
 										
-					if vfs.IsDir(path .. "addons/") then
+					if vfs.IsDir(path .. "addons/") and not vfs.GetMounts()[path .. "addons/"] then
 						vfs.Mount(path .. "addons/", nil, game_info)
 					end
 					
 					if vfs.IsDir(path) then
+						if not path:endswith("/") then
+							path = path .. "/"
+						end
 						for k, v in pairs(vfs.Find(path)) do
 							if not done[v] then
-								if v:find("%.vpk") and v:find("_dir") then
+								if v:find("%.vpk") and v:find("_dir") and not vfs.GetMounts()[path .. v .. "/"] then
 									vfs.Mount(path .. v .. "/", nil, game_info)
 								end
 								done[v] = true
@@ -336,21 +341,51 @@ do -- steam directories
 		end
 	end
 	
-	function steam.UnmountSourceGame(game_info)
+	function steam.UnmountSourceGame(game_info, title)
 		if type(game_info) == "string" then 
-			game_info = steam.FindSourceGame(game_info) 
+			game_info = steam.FindSourceGame(game_info, title) 
 		end
 		
 		for k, v in pairs(vfs.GetMounts()) do
-			if v.userdata and v.userdata.game == game_info.game then
+			if v.userdata and v.userdata.filesystem.steamappid == game_info.filesystem.steamappid then
 				vfs.Unmount(v.full_where, v.full_to)
 			end
 		end
 	end
 	
-	function steam.FindSourceGame(name)
+	
+	local translate = {
+		["half-life 2"] = 220,
+		["counter-strike: source"] = 240,
+		["half-life: source"] = 280,
+		["day of defeat: source"] = 300,
+		["half-life 2: deathmatch"] = 320,
+		["half-life 2: lost coast"] = 340,
+		["half-life deathmatch: source"] = 360,
+		["half-life 2: episode one"] = 380,
+		["portal"] = 400,
+		["half-life 2: episode two"] = 420,
+		["team fortress 2"] = 440,
+		["left 4 dead"] = 500,
+		["left 4 dead 2"] = 550,
+		["dota 2"] = 570,
+		["portal 2"] = 620,
+		["alien swarm"] = 630,
+		["counter-strike: global offensive"] = 730,
+		["counter-strike: global offensive"] = 1800,
+	}
+	
+	function steam.FindSourceGame(name, title)
+		if name then 
+			name = translate[name:lower()] or name
+		end
+		title = title or ""
+		
 		for i, game_info in ipairs(steam.GetSourceGames()) do
-			if game_info.game and game_info.game:compare(name) or game_info.title and game_info.title:compare(name) then
+			if 
+				(type(name) == "number" and game_info.filesystem.steamappid == name) or 
+				(type(name) == "string" and ((game_info.filesystem.searchpaths.mod and game_info.filesystem.searchpaths.mod:compare(name)) or game_info.game:compare(name)) and (game_info.title2 or game_info.title):compare(title))
+			then 
 				return game_info
 			end
 		end
