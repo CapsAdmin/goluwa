@@ -1,6 +1,6 @@
 local metatable = (...) or _G.metatable
 
-local objects = setmetatable({}, { __mode = 'v' })
+local objects = utility.CreateWeakTable()
 
 function metatable.GetCreated()
 	return objects

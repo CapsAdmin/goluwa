@@ -6,8 +6,8 @@ local audio = _G.audio or {}
 al.debug = true
 alc.debug = true
 
-audio.objects = audio.objects or setmetatable({}, { __mode = 'v' })
-audio.effect_channels = audio.effect_channels or setmetatable({}, { __mode = 'v' })
+audio.objects = audio.objects or utility.CreateWeakTable()
+audio.effect_channels = audio.effect_channels or utility.CreateWeakTable()
 
 function audio.Initialize(name)
 	include("libraries/audio/decoders/*")

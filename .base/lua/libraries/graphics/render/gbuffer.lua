@@ -2,7 +2,7 @@ local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
        
 render.gbuffer = NULL
-render.shadow_maps = render.shadow_maps or setmetatable({}, { __mode = 'v' })
+render.shadow_maps = render.shadow_maps or utility.CreateWeakTable()
    
 local FRAMEBUFFERS = {
 	{

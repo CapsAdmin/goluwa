@@ -148,6 +148,11 @@ do -- file system
 		include = function() end
 		
 		ffi = require("ffi")
+
+		utility = {}
+		function utility.CreateWeakTable()
+			return setmetatable({}, {__mode = "kv"})
+		end
 		
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/globals.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/string.lua")
@@ -576,6 +581,8 @@ do -- include
 			return select(2, unpack(res))
 		end		
 		
+		err = err or "no error"
+		
 		logn(source:sub(1) .. " " .. err)
 		
 		debug.openscript("lua/" .. path, err:match(":(%d+)"))
@@ -622,6 +629,7 @@ do -- libraries
 	if CLIENT then
 
 		-- graphics
+		print(utility.CreateWeakTable())
 		render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
 
 		surface = include("libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library

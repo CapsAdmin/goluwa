@@ -51,13 +51,19 @@ local function read_vpk(file, full_path)
 			
 			directory = directory:lower()
 			
-			tree:SetEntry(directory, {path = directory, is_dir = true})
+			tree:SetEntry(directory, {path = directory, is_dir = true, file_name = directory:match(".+/(.+)")})
 			
 			for i = 0, 100 do
 				local dir = utility.GetParentFolder(directory, i)
 				if dir == "" or done_directories[dir] then break end
 				dir = dir:lower()
-				tree:SetEntry(dir, {path = dir, is_dir = true})
+				local file_name = dir:match(".+/(.+)") or dir
+				
+				if file_name:sub(-1) == "/" then
+					file_name = file_name:sub(0, -2)
+				end
+			
+				tree:SetEntry(dir, {path = dir, is_dir = true, file_name = file_name})
 				done_directories[dir] = true
 			end
 		end
@@ -126,10 +132,10 @@ end
 function CONTEXT:GetFiles(path_info)
 	local vpk_path, relative = split_path(path_info)
 	local tree = get_file_tree(vpk_path)
-	
+					
 	local out = {}
 					
-	for k, v in pairs(tree:GetChildren(relative:match("(.*)/"))) do	
+	for k, v in pairs(tree:GetChildren(relative:match("(.*)/"))) do
 		if v.value then -- fix me!!
 			table.insert(out, v.value.file_name)
 		end

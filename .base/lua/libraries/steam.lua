@@ -291,30 +291,59 @@ do -- steam directories
 	end
 	
 	function steam.MountSourceGame(game_info)
-		if type(game_info) == "string" then game_info = steam.FindSourceGame(game_info) end
-		local paths = game_info.filesystem.searchpaths.game
-		if type(paths) == "string" then paths = {paths} end
-		for i, path in pairs(paths) do
-			if not vfs.IsDir(path) then
-				path = game_info.game_dir .. path .. "/"
+		if type(game_info) == "string" then 
+			game_info = steam.FindSourceGame(game_info) 
+		end
+		
+		steam.UnmountSourceGame(game_info)
+		
+		local done = {}
+		
+		for i, paths in pairs(game_info.filesystem.searchpaths) do
+			if type(paths) == "string" then 
+				paths = {paths} 
 			end
-			path = path:gsub("/%.", "/")
-			if vfs.IsDir(path) then
-				vfs.Mount(path)
+			
+			for i, path in pairs(paths) do				
 				
-				if vfs.IsDir(path .. "addons/") then
-					vfs.Mount(path .. "addons/")
-				end
-
-				if game_info.game == "Garry's Mod" then
-					vfs.Mount(path .. "download/")
+				if not vfs.IsDir(path) then
+					path = game_info.game_dir .. path .. "/"
 				end
 				
-				for k, v in pairs(vfs.Find(path)) do
-					if v:find("%.vpk") and v:find("_dir") then
-						vfs.Mount(path .. v .. "/")
+				path = path:gsub("/%.", "/")
+				
+				if not done[path] and vfs.Exists(path) then
+					vfs.Mount(path, nil, game_info)
+										
+					if vfs.IsDir(path .. "addons/") then
+						vfs.Mount(path .. "addons/", nil, game_info)
 					end
+					
+					if vfs.IsDir(path) then
+						for k, v in pairs(vfs.Find(path)) do
+							if not done[v] then
+								if v:find("%.vpk") and v:find("_dir") then
+									vfs.Mount(path .. v .. "/", nil, game_info)
+								end
+								done[v] = true
+							end
+						end
+					end
+					
+					done[path] = true
 				end
+			end
+		end
+	end
+	
+	function steam.UnmountSourceGame(game_info)
+		if type(game_info) == "string" then 
+			game_info = steam.FindSourceGame(game_info) 
+		end
+		
+		for k, v in pairs(vfs.GetMounts()) do
+			if v.userdata and v.userdata.game == game_info.game then
+				vfs.Unmount(v.full_where, v.full_to)
 			end
 		end
 	end

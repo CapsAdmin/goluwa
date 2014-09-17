@@ -31,6 +31,7 @@ function vfs.Find(path, invert, full_path, start, plain, info)
 								name = v, 
 								filesystem = data.context.Name,
 								full_path = data.context.Name .. ":" .. data.path_info.full_path .. v,
+								userdata = data.userdata,
 							})
 						else
 							table.insert(out, v)
@@ -90,17 +91,19 @@ end
 do 
 	local out
 	local function search(path, ext, callback)		
-		for _,v in pairs(vfs.Find(path)) do
-			if not ext or v:endswith(ext) then
-				if callback and callback(path .. v) ~= nil then
-					return
+		for _, v in ipairs(vfs.Find(path, nil,nil,nil,nil, true)) do
+			if not ext or v.name:endswith(ext) then
+				if callback then 
+					if callback(v.full_path, v.userdata) ~= nil then
+						return
+					end
+				else
+					table.insert(out, v.full_path)
 				end
-				
-				table.insert(out, path .. v)
 			end
 			
-			if vfs.IsFolder(path .. v) then
-				search(path .. v .. "/", ext, callback)
+			if vfs.IsFolder(path .. v.name) then
+				search(path .. v.name .. "/", ext, callback)
 			end
 		end
 	end

@@ -25,7 +25,7 @@ do -- model meta
 			return render.model_cache[path]
 		end
 		
-		logn("[render] loading mesh: ", path)
+		if render.debug then logn("[render] loading mesh: ", path) end
 
 		flags = flags or bit.bor(
 			assimp.e.aiProcess_CalcTangentSpace, 
@@ -43,6 +43,8 @@ do -- model meta
 		local self = setmetatable({}, META)
 		self.sub_models = {}
 		self.done = false
+		self.path = path
+		self.dir = path:match("(.+/)")
 		
 		render.model_cache[path] = self
 		
@@ -81,21 +83,28 @@ do -- model meta
 		}
 				
 		if model_data.material and model_data.material.path then
-			sub_model.diffuse = render.CreateTexture(model_data.material.path, default_texture_format)
+			local paths = {model_data.material.path, self.dir .. model_data.material.path}
+			
+			for _, path in ipairs(paths) do
+				if vfs.Exists(path) then
+					sub_model.diffuse = render.CreateTexture(path, default_texture_format)
 
-			do -- try to find normal map
-				local path = render.FindTextureFromSuffix(model_data.material.path, "_n", "_ddn", "_nrm")
+					do -- try to find normal map
+						local path = render.FindTextureFromSuffix(path, "_n", "_ddn", "_nrm")
 
-				if path then
-					sub_model.bump = render.CreateTexture(path, default_texture_format)
-				end
-			end
+						if path then
+							sub_model.bump = render.CreateTexture(path, default_texture_format)
+						end
+					end
 
-			do -- try to find specular map
-				local path = render.FindTextureFromSuffix(model_data.material.path, "_s", "_spec")
+					do -- try to find specular map
+						local path = render.FindTextureFromSuffix(path, "_s", "_spec")
 
-				if path then
-					sub_model.specular = render.CreateTexture(path, default_texture_format)
+						if path then
+							sub_model.specular = render.CreateTexture(path, default_texture_format)
+						end
+					end
+					break
 				end
 			end
 		end

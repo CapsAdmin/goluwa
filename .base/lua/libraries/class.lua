@@ -195,7 +195,7 @@ function class.Create(type_name, class_name)
 	end
 	
 	class.active_classes[type_name] = class.active_classes[type_name] or {}
-	class.active_classes[type_name][class_name] = class.active_classes[type_name][class_name] or {}
+	class.active_classes[type_name][class_name] = class.active_classes[type_name][class_name] or utility.CreateWeakTable()
 	table.insert(class.active_classes[type_name][class_name], obj)
 			
 	return obj
