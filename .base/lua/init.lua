@@ -23,20 +23,24 @@ do -- constants
 	e.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
 	_G[e.USERNAME:upper()] = true
 	
-	if os.getenv("USE_SDL") == "1" then
+	if os.getenv("USE_SDL") == "1" and USE_SDL ~= nil then
 		USE_SDL = true
 	end
 	
-	if os.getenv("SERVER") == "1" then
+	if os.getenv("SERVER") == "1" and SERVER ~= nil then
 		SERVER = true
 	end
 	
-	if os.getenv("CLIENT") == "1" then
+	if os.getenv("CLIENT") == "1" and CLIENT ~= nil then
 		CLIENT = true
 	end
 	
-	if os.getenv("DEBUG") == "1" then
+	if os.getenv("DEBUG") == "1" and DEBUG ~= nil then
 		DEBUG = true
+	end
+
+	if os.getenv("DISABLE_CURSES") == "1" and DISABLE_CURSES ~= nil then
+		DISABLE_CURSES = true
 	end
 	
 	-- assume client if nothing was provided
@@ -57,13 +61,15 @@ do -- constants
 	end
 end
 
--- this will be replaced later on with logn
-_G.LOG_BUFFER = {}
+if not DISABLE_CURSES then
+	-- this will be replaced later on with logn
+	_G.LOG_BUFFER = {}
 
-print = function(...) 
-	local args =  {...}
-	table.insert(args, "\n")
-	table.insert(_G.LOG_BUFFER, args) 
+	print = function(...) 
+		local args =  {...}
+		table.insert(args, "\n")
+		table.insert(_G.LOG_BUFFER, args) 
+	end
 end
 
 -- load and enable useful jit libraries to debug startup
@@ -660,7 +666,9 @@ do -- libraries
 	-- other
 	entities = include("libraries/entities/entities.lua") -- entity component system
 
-	include("libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
+	if not DISABLE_CURSES then
+		include("libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
+	end
 
 	if CLIENT then
 		include("gui/init.lua")
@@ -678,7 +686,7 @@ if audio then
 	audio.Initialize()
 end
 
-if not ZEROBRANE then
+if not ZEROBRANE and not DISABLE_CURSES then
 	console.InitializeCurses()
 end
 
