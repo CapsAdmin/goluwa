@@ -23,23 +23,23 @@ do -- constants
 	e.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
 	_G[e.USERNAME:upper()] = true
 	
-	if os.getenv("USE_SDL") == "1" and USE_SDL ~= nil then
+	if os.getenv("USE_SDL") == "1" and USE_SDL == nil then
 		USE_SDL = true
 	end
 	
-	if os.getenv("SERVER") == "1" and SERVER ~= nil then
+	if os.getenv("SERVER") == "1" and SERVER == nil then
 		SERVER = true
 	end
 	
-	if os.getenv("CLIENT") == "1" and CLIENT ~= nil then
+	if os.getenv("CLIENT") == "1" and CLIENT == nil then
 		CLIENT = true
 	end
 	
-	if os.getenv("DEBUG") == "1" and DEBUG ~= nil then
+	if os.getenv("DEBUG") == "1" and DEBUG == nil then
 		DEBUG = true
 	end
 
-	if os.getenv("DISABLE_CURSES") == "1" and DISABLE_CURSES ~= nil then
+	if os.getenv("DISABLE_CURSES") == "1" and DISABLE_CURSES == nil then
 		DISABLE_CURSES = true
 	end
 	
