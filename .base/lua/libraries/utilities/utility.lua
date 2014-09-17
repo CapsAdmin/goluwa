@@ -3,6 +3,10 @@ local utility = _G.utility or {}
 include("mesh.lua", utility)
 include("packed_rectangle.lua", utility)
 
+function utility.CreateWeakTable()
+	return setmetatable({}, {__mode = "kv"})
+end
+
 function utility.TableToColumns(title, tbl, columns, check, sort_key)
 	local top = {}
 	

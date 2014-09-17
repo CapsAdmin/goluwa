@@ -39,7 +39,7 @@ function assimp.ImportFileEx(path, flags, callback, custom_io)
 				local file, err = vfs.Open(path, "read")
 				--print("file open", file, err, path)
 				
-				if not file then print(err, path) return nil end
+				if not file then return nil end
 				
 				local proxy_data = ffi.new("aiFile", {
 					ReadProc = function(proxy, buffer_out, size, count)
@@ -47,7 +47,7 @@ function assimp.ImportFileEx(path, flags, callback, custom_io)
 						local length = size * count
 						--print("read", file, buffer_out, size)
 												
-						local str = file:ReadBytes(length)
+						local str = file:ReadBytes(tonumber(length))
 						
 						local temp = ffi.cast("char *", str)
 						ffi.copy(buffer_out, temp, #str)

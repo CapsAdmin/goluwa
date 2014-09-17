@@ -27,6 +27,7 @@ function META.LoadFont(name, options, callback)
 		self.font = data
 		self.state = "loading"
 		self:Init()
+		vfs.UncacheAsync(options.path)
 		if self.state == "loaded" then
 			callback(self)
 		end

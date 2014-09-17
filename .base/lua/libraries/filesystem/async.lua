@@ -6,20 +6,23 @@ vfs.async_readers = {
 	file = function(path, mbps, context)
 		local file = vfs.Open(path)
 		if file then
-			local content = {}
+			local buffer = {}
+			
 			mbps = mbps / 2
 			event.CreateThinker(function()
-				-- in case mbps is higher than the file size
+				--in case mbps is higher than the file size
 				for i = 1, 2 do
-					local str = file:ReadBytes(1048576 * mbps)
+					local str = file:ReadBytes(1048576 * mbps)					
 					
 					if str then
-						content[#content + 1] = str
-					else
-						if vfs.debug and #content > 2 then
-							logf("[vfs] done loading asset: %s\n", path)
+						if vfs.debug then 
+							local size = 0
+							for k, v in ipairs(buffer) do size = size + #v end
+							logf("[vfs] async %q: read %s\n", path, utility.FormatFileSize(size))
 						end
-						queue[path].callback(table.concat(content))
+						buffer[#buffer + 1] = str
+					else
+						queue[path].callback(table.concat(buffer))
 						file:Close()
 						return false
 					end
@@ -93,7 +96,10 @@ function vfs.ReadAsync(path, callback, mbps, context, reader, dont_cache)
 	mbps = mbps or 1
 	
 	if vfs.debug then
-		logf("[VFS] vfs.ReadAsync(%q)\n", path)
+		logf("[vfs] async %q: start loading\n", path)
+		local size = 0
+		for k, v in pairs(cache) do	size = size + #v end
+		logn("[vfs] async: cache size = ", utility.FormatFileSize(size))
 	end
 	
 	if cache[path] then
@@ -118,14 +124,11 @@ function vfs.ReadAsync(path, callback, mbps, context, reader, dont_cache)
 		queue[path] = nil
 		
 		if vfs.debug then
-			logf("[VFS] done loading resource %s\n", path)
+			logf("[vfs] async %q: finish loading\n", path)
 		
 			local size = 0
 			for k, v in pairs(cache) do	size = size + #v end
-			if last_reported_size ~= size then
-				logn("[vfs] async read cache size: ", utility.FormatFileSize(size))
-				last_reported_size = size
-			end
+			logn("[vfs] async: cache size = ", utility.FormatFileSize(size))
 		end
 	end}
 				
@@ -137,9 +140,21 @@ function vfs.ReadAsync(path, callback, mbps, context, reader, dont_cache)
 	
 	queue[path] = nil
 	
+	logf("[vfs] async %q: not a valid path\n", path)
+	
 	return false
 end
 
 function vfs.UncacheAsync(path)
 	cache[path] = nil
+	if vfs.debug then
+		logf("[VFS] vfs.UncacheAsync(%q)\n", path)
+		
+		local size = 0
+		for k, v in pairs(cache) do	size = size + #v end
+		if last_reported_size ~= size then
+			logn("[vfs] async read cache size: ", utility.FormatFileSize(size))
+			last_reported_size = size
+		end
+	end
 end

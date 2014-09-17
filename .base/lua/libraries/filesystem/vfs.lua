@@ -10,7 +10,7 @@ function vfs.DebugPrint(fmt, ...)
 end
 
 do -- mounting/links
-	function vfs.Mount(where, to)
+	function vfs.Mount(where, to, userdata)
 		check(where, "string")
 		to = to or ""
 		
@@ -25,8 +25,14 @@ do -- mounting/links
 				
 		for i, context in ipairs(vfs.GetFileSystems()) do
 			context.mounted_paths = context.mounted_paths or {}
-			if (path_info_to.filesystem == context.Name or path_info_to.filesystem == "unknown") then
-				table.insert(context.mounted_paths, {where = path_info_where, to = path_info_to, full_where = where, full_to = to})
+			if path_info_to.filesystem == context.Name or path_info_to.filesystem == "unknown" then
+				table.insert(context.mounted_paths, {
+					where = path_info_where, 
+					to = path_info_to, 
+					full_where = where, 
+					full_to = to, 
+					userdata = userdata
+				})
 			end
 		end
 	end
@@ -38,11 +44,15 @@ do -- mounting/links
 		local path_info_where = vfs.GetPathInfo(where, true) 
 		local path_info_to = vfs.GetPathInfo(to, true)
 		
-		for filesystem, context in pairs(vfs.GetFileSystems()) do
+		for filesystem, context in ipairs(vfs.GetFileSystems()) do
 			context.mounted_paths = context.mounted_paths or {}		
 			for i, v in ipairs(context.mounted_paths) do
-				if v.full_where == where and v.full_to == to and (path_info_where == filesystem or path_info_where.filesystem == "unknown") then
-					table.remove(context.mounted_paths)
+				if 
+					v.full_where:lower() == where:lower() and 
+					v.full_to:lower() == to:lower() and 
+					(path_info_where == filesystem or path_info_where.filesystem == "unknown") 
+				then
+					table.remove(context.mounted_paths, i)
 					break
 				end
 			end
@@ -53,7 +63,7 @@ do -- mounting/links
 		local out = {}
 		for filesystem, context in pairs(vfs.GetFileSystems()) do
 			for i, v in ipairs(context.mounted_paths) do
-				out[v.full_where] = v.full_to
+				out[v.full_where] = v
 			end
 		end
 		return out
@@ -86,7 +96,7 @@ do -- mounting/links
 						where = vfs.GetPathInfo(context.Name .. ":" .. where.full_path .. path_info.full_path, is_folder)
 					end
 					
-					table.insert(out, {path_info = where, context = context})
+					table.insert(out, {path_info = where, context = context, userdata = mount_info.userdata})
 				end
 			else
 				table.insert(out, {path_info = path_info, context = context})
@@ -248,7 +258,7 @@ local function check_write_path(path, is_folder)
 	end
 end
 
-vfs.opened_files = vfs.opened_files or setmetatable({}, {__mode = "k"})
+vfs.opened_files = vfs.opened_files or utility.CreateWeakTable()
 
 function vfs.Open(path, mode, sub_mode)
 	check(path, "string")

@@ -57,6 +57,7 @@ local function main()
 		if not ok then				
 			event.Call("ShutDown")
 			system.MessageBox("fatal error", tostring(err))
+			os.exit()
 			return 
 		end
 	

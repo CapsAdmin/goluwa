@@ -202,7 +202,7 @@ local function replace_field(str, key, val)
 	end)
 end
 
-render.active_shaders = render.active_shaders or setmetatable({}, { __mode = 'v' })
+render.active_shaders = render.active_shaders or utility.CreateWeakTable()
 
 function render.GetShaders()
 	return render.active_shaders

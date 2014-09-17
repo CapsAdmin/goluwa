@@ -1,7 +1,7 @@
 local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
-render.framebuffers = setmetatable({}, {__mode = "v"})
+render.framebuffers = utility.CreateWeakTable()
 
 function render.GetFramebuffers()
 	return render.framebuffers

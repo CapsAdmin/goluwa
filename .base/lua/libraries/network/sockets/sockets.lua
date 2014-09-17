@@ -1,6 +1,6 @@
 local sockets = _G.sockets or {}
 
-sockets.active_sockets = sockets.active_sockets or setmetatable({}, { __mode = 'v' })
+sockets.active_sockets = sockets.active_sockets or utility.CreateWeakTable()
 
 if SERVER then
 

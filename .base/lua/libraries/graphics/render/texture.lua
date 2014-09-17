@@ -2,7 +2,7 @@ local gl = require("lj-opengl") -- OpenGL
 
 local render = (...) or _G.render
 
-render.textures = render.textures or setmetatable({}, { __mode = 'v' })
+render.textures = render.textures or utility.CreateWeakTable()
 
 function render.GetTextures()
 	return render.textures
@@ -404,12 +404,20 @@ do -- texture object
 										
 		local buffer_size
 		
-		if type(width) == "table" and not height and not buffer and not format then
-			format = width.parameters
-			buffer = width.buffer
-			height = width.height
-			buffer_size = width.size
-			width = width.width
+		if type(width) == "table" then
+			if type(width[1]) == "string" and table.isarray(width) then
+				for k, v in ipairs(width) do
+					if vfs.Exists(v) then
+						return render.CreateTextureFromPath(v, height)
+					end
+				end
+			elseif not height and not buffer and not format then
+				format = width.parameters
+				buffer = width.buffer
+				height = width.height
+				buffer_size = width.size
+				width = width.width
+			end
 		end
 		
 		check(width, "number")
@@ -513,7 +521,7 @@ do -- texture object
 	end
 end
 
-render.texture_path_cache = setmetatable({}, { __mode = 'v' })
+render.texture_path_cache = utility.CreateWeakTable()
 
 function render.CreateTextureFromPath(path, format)
 	if render.texture_path_cache[path] then 
