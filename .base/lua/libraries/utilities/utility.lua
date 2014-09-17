@@ -109,7 +109,18 @@ do
 			if not self:IsValid() then return false end -- removed
 			
 			local time = timer.GetSystemTime()
-			
+
+			if next(self.progress) then
+				for k, v in pairs(self.progress) do	
+					if v.i < v.max then 
+						if not v.last_print or v.last_print < time then
+							logf("%s %s progress: %s\n", self, k, self:GetProgress(k))
+							v.last_print = time + 1
+						end
+					end
+				end
+			end
+						
 			if time > self.wait then
 				local ok, res, err = coroutine.resume(co, self)
 				
@@ -136,17 +147,6 @@ do
 				end
 				
 				return res
-			end
-			
-			if next(self.progress) then
-				for k, v in pairs(self.progress) do	
-					if v.i < v.max then 
-						if not v.last_print or v.last_print < time then
-							logf("%s %s progress: %s\n", self, k, self:GetProgress(k))
-							v.last_print = time + 1
-						end
-					end
-				end
 			end
 		end, (self.Frequency > 0 and 1/self.Frequency) or (self.IterationsPerTick > 0 and self.IterationsPerTick), self.Frequency > 0, true)
 	end
@@ -212,7 +212,7 @@ do
 		function thread:OnFinish(...)
 			print(...)
 		end
-		
+		 
 		thread:SetIterationsPerTick(10)
 		thread:Start()
 	end
