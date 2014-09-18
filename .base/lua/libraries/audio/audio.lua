@@ -387,7 +387,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	local key = "Gen" .. type
  
 	local create = function(...)
-		local self = META:New()
+		local self = metatable.CreateObject(META)
 
 		self.id = al[key]()
 
@@ -844,7 +844,7 @@ do -- microphone
 
 		logf("[audio] opening device %q for input\n", name)
 
-		local self = META:New()
+		local self = metatable.CreateObject(META)
 
 		self.buffer_size = buffer_size
 

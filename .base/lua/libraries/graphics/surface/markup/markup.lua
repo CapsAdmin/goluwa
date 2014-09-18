@@ -30,7 +30,7 @@ else
 end
 
 function surface.CreateMarkup()
-	local self = META:New({
+	local self = metatable.CreateObject(META, {
 		w = 0,
 		h = 0,
 		chunks = {},

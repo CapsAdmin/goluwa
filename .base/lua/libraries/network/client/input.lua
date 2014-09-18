@@ -1,7 +1,7 @@
 do return end
 -- networked input
 
-local META = (...) or metatable.Get("client")
+local META = (...) or metatable.GetRegistered("client")
 
 local function add_event(name, check)	
 	input.SetupAccessorFunctions(META, name)

@@ -417,7 +417,7 @@ do -- texture object
 		-- create a new texture
 		local id = gl.GenTexture()
 
-		local self = META:New(
+		local self = metatable.CreateObject(META, 
 			{
 				id = id, 
 				size = Vec2(width, height), 

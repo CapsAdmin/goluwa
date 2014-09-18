@@ -130,7 +130,7 @@ do -- base entity
 	end
 	
 	function entities.CreateEntity(config, ...)
-		local ent = ENTITY:New()
+		local ent = metatable.CreateObject(ENTITY)
 		
 		table.insert(entities.active_entities, ent)
 		
@@ -243,7 +243,13 @@ do -- base component
 			COMPONENT[k] = COMPONENT[k] or v
 		end
 		
-		local template = metatable.CreateTemplate(COMPONENT.Name, true)
+		local template = metatable.CreateTemplate(COMPONENT.Name, nil, true)
+		
+		function template:Remove()
+			metatable.MakeNULL(self)
+		end
+		
+		metatable.Register(template)
 		
 		for k,v in pairs(COMPONENT) do
 			template[k] = v
@@ -269,7 +275,7 @@ do -- base component
 	end
 
 	function entities.CreateComponent(name)
-		local obj = entities.GetComponent(name):New()
+		local obj = metatable.CreateObject(entities.GetComponent(name))
 		
 		table.insert(entities.active_components, obj)
 		

@@ -1,141 +1,64 @@
 local metatable = ... or _G.metatable
 
-metatable.registered_classes = metatable.registered_classes or {}
-
-local function checkfield(tbl, key, def)
-    tbl[key] = tbl[key] or def
-	
-    if not tbl[key] then
-        error(string.format("The type field %q was not found!", key), 3)
-    end
-
-    return tbl[key]
-end
-
-local function handle_base_field(META, var)
-	if not var then return end
-	
-	local t = type(var)
+local function handle_base_field(meta, base)	
+	local t = type(base)
 	
 	if t == "string" then
-		handle_base_field(META, metatable.GetRegisteredClass(META.Type, var))
+		handle_base_field(meta, metatable.GetRegistered(meta.Type, base))
 	elseif t == "table" then
 		-- if it's a table and does not have the Type field we assume it's a table of bases
-		if not var.Type then
-			for key, base in pairs(var) do
-				handle_base_field(META, base)
+		if not base.Type then
+			for key, base in pairs(base) do
+				handle_base_field(meta, base)
 			end
 		else
 			-- make a copy of it so we don't alter the meta template
-			var = table.copy(var)
+			base = table.copy(base)
 			
-			META.BaseList = META.BaseList or {}
+			meta.BaseList = meta.BaseList or {}
 			
-			table.insert(META.BaseList, var)
+			table.insert(meta.BaseList, base)
 		end
 	end
 end
 
-function metatable.RegisterClass(META, type_name, name)
-    local type_name = checkfield(META, "Type", type_name)
-    local name = checkfield(META, "ClassName", name)
-
-    metatable.registered_classes[type_name] = metatable.registered_classes[type_name] or {}
-    metatable.registered_classes[type_name][name] = META
+function metatable.CreateDerivedObject(super_type, sub_type, override, skip_gc_callback)
+    local meta = metatable.GetRegistered(super_type, sub_type)
 	
-	if metatable and metatable.Register then
-		metatable.Register(META, name)
-	end
-	
-	return type_name, name
-end
-
-function metatable.GetRegisteredClass(type_name, class_name)
-    check(type_name, "string")
-    check(class_name, "string")
-	
-    return metatable.registered_classes[type_name] and metatable.registered_classes[type_name][class_name] or nil
-end
-
-function metatable.GetRegisteredClasses(type_name)
-	check(type_name, "string")
-	return metatable.registered_classes[type_name]
-end
-
---[[metatable.active_classes = {}
--- metatable.GetRegisteredClasses("panel_textbutton"):SetText("asdfasd")
-function metatable.GetAllObjects(type_name, class_name)
-	
-	if not class_name then
-		type_name, class_name = type_name:match("(.-)_(.+)")
-	end
-	
-	local META = metatable.GetRegisteredClass(type_name, class_name)
-	local types = metatable.active_classes[type_name]
-	if types then
-		local objects = types[class_name] 
-		if objects then
-			return setmetatable(
-				{},
-				{
-					__index = function(_, key)
-						return function(_, ...)
-							for k,v in pairs(objects) do
-								META[key](v, ...)
-							end
-						end
-					end,
-				}
-			)
-		end
-	end
-end]]
-
-function metatable.CreateClass(type_name, class_name)
-    local META = metatable.GetRegisteredClass(type_name, class_name)
-	
-    if not META then
+    if not meta then
         logf("tried to create unknown %s %q!\n", type or "no type", class_name or "no class")
         return
     end
 	
-	local obj = table.copy(META)
-	handle_base_field(obj, obj.Base)
-	handle_base_field(obj, obj.TypeBase)
+	meta = table.copy(meta)
+		
+	if meta.Base then 
+		handle_base_field(meta, meta.Base) 
+	end
+	
+	if meta.TypeBase then 
+		handle_base_field(meta, meta.TypeBase) 
+	end
 
-	if obj.BaseList then	
-		if #obj.BaseList == 1 then
-			for key, val in pairs(obj.BaseList[1]) do
-				obj[key] = obj[key] or val
+	if meta.BaseList then	
+		local current = meta
+		for i, base in pairs(meta.BaseList) do
+			for key, val in pairs(base) do
+				meta[key] = meta[key] or val
 			end
-			obj.BaseClass = obj.BaseList[1]
-		else		
-			local current = obj
-			for i, base in pairs(obj.BaseList) do
-				for key, val in pairs(base) do
-					obj[key] = obj[key] or val
-				end
-				current.BaseClass = base
-				current = base
-			end
+			current.BaseClass = base
+			current = base
 		end
 	end
 		
-	META.__index = META
-	obj.MetaTable = META
-
-	setmetatable(obj, META)
-	
 	-- copy all structs and such
-	for key, val in pairs(obj) do
+	for key, val in pairs(meta) do
 		if hasindex(val) and val.Copy then
-			obj[key] = val:Copy()
+			meta[key] = val:Copy()
 		end
 	end
-	
-	--metatable.active_classes[type_name] = metatable.active_classes[type_name] or {}
-	--metatable.active_classes[type_name][class_name] = metatable.active_classes[type_name][class_name] or utility.CreateWeakTable()
-	--table.insert(metatable.active_classes[type_name][class_name], obj)
-			
-	return obj
+
+	meta = metatable.CreateTemplate(meta, nil, true)
+		
+	return metatable.CreateObject(meta, override, skip_gc_callback)
 end

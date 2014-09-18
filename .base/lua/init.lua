@@ -155,18 +155,17 @@ do -- file system
 		
 		ffi = require("ffi")
 
-		utility = {}
-		function utility.CreateWeakTable()
-			return setmetatable({}, {__mode = "kv"})
-		end
-		
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/globals.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/debug.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/string.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/table.lua")
 		metatable = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/metatable.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/base_template.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/null.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/class.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/get_is_set.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/templates/buffer.lua")
+		utility = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/utilities/utility.lua")
 		
 		vfs = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/vfs.lua")
 		

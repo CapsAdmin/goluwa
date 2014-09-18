@@ -224,7 +224,7 @@ do
 	end
 	
 	function utility.CreateThread()
-		local self = META:New()
+		local self = metatable.CreateObject(META)
 		
 		return self
 	end
@@ -305,7 +305,7 @@ do -- tree
 	end
 
 	function utility.CreateTree(delimiter)
-		local self = META:New()
+		local self = metatable.CreateObject(META)
 		
 		self.tree = {}	
 		self.delimiter = delimiter
@@ -453,7 +453,7 @@ do -- find value
 		}
 			
 		find(_G, "_G", ".", 1, ...)
-		find(metatable.GetAll(), "_M", ":", 1, ...)
+		find(metatable.GetAllRegistered(), "_M", ":", 1, ...)
 		for cmd, v in pairs(console.GetCommands()) do
 			if strfind(cmd, ...) then
 				local arg_line = table.concat(debug.getparams(v.callback), ", ")

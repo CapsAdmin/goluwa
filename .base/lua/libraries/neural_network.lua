@@ -10,7 +10,7 @@ local function sigmoid_transfer(x)
 end 
 
 function NeuralNetwork(inputs, outputs, hidden_layers, neurons_per_layer)
-	local self = META:New()
+	local self = metatable.CreateObject(META)
 	
 	self.inputs = inputs or 1
 	self.outputs = outputs or 1

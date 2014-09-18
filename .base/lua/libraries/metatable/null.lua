@@ -33,9 +33,9 @@ function metatable.MakeNULL(tbl)
 
 	for k,v in pairs(tbl) do tbl[k] = nil end
 	tbl.Type = "null"
-	setmetatable(tbl, metatable.Get("null"))
+	setmetatable(tbl, metatable.GetRegistered("null"))
 	
 	return var
 end
 
-_G.NULL = setmetatable({Type  = "null", TypeX = "null", ClassName = "ClassName"}, metatable.Get("null"))
+_G.NULL = setmetatable({Type  = "null", TypeX = "null", ClassName = "ClassName"}, metatable.GetRegistered("null"))

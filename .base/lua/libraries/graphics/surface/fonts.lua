@@ -72,7 +72,9 @@ function surface.CreateFont(name, options, callback)
 end
 
 function surface.RegisterFontLoader(tbl)
-	surface.font_loaders[tbl.Name] = metatable.CreateTemplate("surface_font_" .. tbl.Name, tbl)
+	tbl.Type = "surface_font_" .. tbl.Name
+	surface.font_loaders[tbl.Name] = metatable.CreateTemplate(tbl)
+	
 	for k, v in pairs(surface.fonts) do
 		if v.font_loader == tbl.Name then
 			surface.CreateFont(v.font_name, v.font_options)

@@ -10,7 +10,7 @@ function render.CreateVertexBuffer(vertex_attributes, vertices, indices, vertice
 	check(vertices, "cdata")
 	check(indices, "cdata")
 	
-	local self = META:New()
+	local self = metatable.CreateObject(META)
 	self.vertices_id = gl.GenBuffer()
 	self.indices_id = gl.GenBuffer()
 	self.vao_id = gl.GenVertexArray()

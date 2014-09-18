@@ -3,7 +3,7 @@ function gui.Create(name, parent, pos)
 		parent = gui.GetWorld()
 	end
 	
-	local pnl = metatable.CreateClass("panel", name, "base")
+	local pnl = metatable.CreateDerivedObject("panel", name)
 	
 	if not pnl then return NULL end
 		
@@ -25,7 +25,7 @@ end
 
 function gui.RegisterPanel(META, name)
 	META.TypeBase = "base"
-	local _, name = metatable.RegisterClass(META, "panel", name)
+	local _, name = metatable.Register(META, "panel", name)
 	
 	-- update entity functions only
 	-- updating variables might mess things up
@@ -45,11 +45,11 @@ function gui.RegisterPanel(META, name)
 end
 
 function gui.GetRegisteredPanels()
-	return metatable.GetRegisteredClasses("panel")
+	return metatable.GetRegisteredSubTypes("panel")
 end
 
 function gui.GetPanel(name)
-	return metatable.GetRegisteredClass("panel", name)
+	return metatable.GetRegistered("panel", name)
 end
 
 function gui.GetPanels()

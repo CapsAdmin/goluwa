@@ -4,7 +4,7 @@ local client_tick_rate = 66 -- in ms
 local server_command_length = client_command_length
 local server_tick_rate = 10
 
-local META = (...) or metatable.Get("client")
+local META = (...) or metatable.GetRegistered("client")
 
 local layout = {
 	{name = "mouse_pos", default = Vec2(0, 0), type = "vec2short"},

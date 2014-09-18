@@ -14,7 +14,7 @@ function META.LoadFont(name, options, callback)
 		surface.freetype_lib = lib
 	end
 
-	local self = META:New({
+	local self = metatable.CreateObject(META, {
 		path = options.path,
 		options = options,
 		pages = {},

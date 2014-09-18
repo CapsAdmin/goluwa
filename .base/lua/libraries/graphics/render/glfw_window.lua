@@ -242,7 +242,7 @@ do -- window meta
 			gl.InitMiniGlew()
 		end
 
-		local self = META:New()
+		local self = metatable.CreateObject(META)
 		
 		self.last_mpos = Vec2()
 		self.mouse_delta = Vec2()
