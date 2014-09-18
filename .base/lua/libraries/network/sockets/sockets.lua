@@ -59,7 +59,7 @@ function sockets.Update()
 			
 			if sock.remove_me then
 				sock.socket:close()
-				utility.MakeNULL(sock)
+				metatable.MakeNULL(sock)
 			end
 		else
 			sockets.active_sockets[key] = nil

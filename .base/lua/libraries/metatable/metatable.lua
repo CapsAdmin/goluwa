@@ -29,5 +29,7 @@ end
 include("base_template.lua", metatable)
 include("get_is_set.lua", metatable)
 include("templates/*", metatable)
+include("null.lua")
+include("class.lua")
 
 return metatable

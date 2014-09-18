@@ -4,7 +4,7 @@ META.Name = "client"
 
 META.socket = NULL
 
-class.GetSet(META, "UniqueID", "???")
+metatable.GetSet(META, "UniqueID", "???")
 
 nvars.IsSet(META, "Bot", false)
 nvars.GetSet(META, "Nick", e.USERNAME, "cl_nick")

@@ -420,7 +420,7 @@ end
 local function ADD_SET_GET_OBJECT(META, ADD_FUNCTION, name, ...)
 	ADD_FUNCTION(name.."ID", ...)
 
-	class.GetSet(META, name, NULL)
+	metatable.GetSet(META, name, NULL)
 
 	local set = META["Set"..name.."ID"]
 	META["Set"..name] = function(self, var, ...)
@@ -540,8 +540,8 @@ do -- source
 	end
 
 	do
-		class.GetSet(META, "BufferCount", 4)
-		class.GetSet(META, "BufferFormat", al.e.AL_FORMAT_STEREO16)
+		metatable.GetSet(META, "BufferCount", 4)
+		metatable.GetSet(META, "BufferFormat", al.e.AL_FORMAT_STEREO16)
 		
 		local buffers = ffi.new("ALuint[1]")
 		local pushed = {}
@@ -656,8 +656,8 @@ do -- buffer
 		end
 	end)
 
-	class.GetSet(META, "Format", al.e.AL_FORMAT_MONO16)
-	class.GetSet(META, "SampleRate", 44100)
+	metatable.GetSet(META, "Format", al.e.AL_FORMAT_MONO16)
+	metatable.GetSet(META, "SampleRate", 44100)
 
 	do
 		-- http://wiki.delphigl.com/index.php/alGetBuffer

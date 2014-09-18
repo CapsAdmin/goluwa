@@ -967,7 +967,7 @@ do -- events
 				end
 			end
 			
-			utility.MakeNULL(self)		
+			metatable.MakeNULL(self)		
 		end
 	end
 	

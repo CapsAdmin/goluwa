@@ -50,7 +50,7 @@ end
 
 do -- skins
 	function gui.UseSkin(name)
-		local skin = class.Create("skin", name)
+		local skin = metatable.CreateClass("skin", name)
 		
 		skin.IsValid = function() return true end
 		skin.OnThink = skin.OnThink or function(delta) end
@@ -75,12 +75,12 @@ do -- skins
 	end
 
 	function gui.RegisterSkin(META, name)
-		local _, name = class.Register(META, "skin", name)
+		local _, name = metatable.RegisterClass(META, "skin", name)
 		gui.UseSkin(name)
 	end
 
 	function gui.GetSkin(name)
-		return class.Get("skin", name)
+		return metatable.GetRegisteredClass("skin", name)
 	end
 end
 

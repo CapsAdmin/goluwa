@@ -35,7 +35,7 @@ function metatable.CreateTemplate(class_name, skip_onremove)
 			utility.SetGCCallback(self)
 		end
 		
-		self.trace = debug.trace(true)
+		self.debug_trace = debug.trace(true)
 		
 		table.insert(objects, self)
 		
@@ -46,7 +46,7 @@ function metatable.CreateTemplate(class_name, skip_onremove)
 		if self.OnRemove and not skip_onremove then 
 			self:OnRemove(...) 
 		end
-		utility.MakeNULL(self)
+		metatable.MakeNULL(self)
 	end
 	
 	function META:IsValid()
@@ -54,7 +54,7 @@ function metatable.CreateTemplate(class_name, skip_onremove)
 	end
 	
 	function META:GetTrace()
-		return self.trace or ""
+		return self.debug_trace or ""
 	end
 	
 	metatable.Register(META)

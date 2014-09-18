@@ -4,7 +4,7 @@ local CONTEXT = {}
 
 CONTEXT.Name = "base"
 
-class.GetSet(CONTEXT, "Mode", "read")
+metatable.GetSet(CONTEXT, "Mode", "read")
 
 function CONTEXT:PCall(name, ...)
 	local ok, var = pcall(self[name], self, ...)
@@ -143,4 +143,4 @@ end
 
 metatable.AddBufferTemplate(CONTEXT)
 
-class.Register(CONTEXT, "file_system", CONTEXT.Name)
+metatable.RegisterClass(CONTEXT, "file_system", CONTEXT.Name)

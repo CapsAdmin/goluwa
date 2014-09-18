@@ -348,7 +348,7 @@ do -- texture object
 	function META:Remove()
 		if self.format.no_remove then return end
 		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
-		utility.MakeNULL(self)
+		metatable.MakeNULL(self)
 	end
 	
 	function META:IsLoading()

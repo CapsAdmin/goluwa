@@ -163,8 +163,9 @@ do -- file system
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/globals.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/string.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/table.lua")
-		class = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/class.lua")
 		metatable = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/metatable.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/class.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/get_is_set.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/templates/buffer.lua")
 		
 		vfs = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/vfs.lua")
@@ -612,7 +613,6 @@ do -- libraries
 	utf8 = include("libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 	event = include("libraries/event.lua") goluwa = event.events -- event handler
 	utility = include("libraries/utilities/utility.lua") -- more like i-dont-know-where-these-functions-go
-	class = include("libraries/class.lua") -- used by gui panels and entities
 	crypto = include("libraries/crypto.lua")
 
 	-- serializing
@@ -630,7 +630,6 @@ do -- libraries
 	
 	-- meta
 	include("libraries/extensions/function.lua")
-	include("libraries/null.lua")
 		
 	if CLIENT then
 
