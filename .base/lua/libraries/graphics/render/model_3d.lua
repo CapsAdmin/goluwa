@@ -105,7 +105,7 @@ do -- model meta
 						sub_model.diffuse = render.CreateTexture(path, default_texture_format)
 
 						do -- try to find normal map
-							local path = render.FindTextureFromSuffix(path, "_n", "_ddn", "_nrm")
+							local path = utility.FindTextureFromSuffix(path, "_n", "_ddn", "_nrm")
 
 							if path then
 								sub_model.bump = render.CreateTexture(path, default_texture_format)
@@ -113,7 +113,7 @@ do -- model meta
 						end
 
 						do -- try to find specular map
-							local path = render.FindTextureFromSuffix(path, "_s", "_spec")
+							local path = utility.FindTextureFromSuffix(path, "_s", "_spec")
 
 							if path then
 								sub_model.specular = render.CreateTexture(path, default_texture_format)
