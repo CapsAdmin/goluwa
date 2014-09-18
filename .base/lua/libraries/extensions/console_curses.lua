@@ -179,7 +179,6 @@ function console.InitializeCurses()
 	c.parent_window = curses.initscr()
 	
 	if WINDOWS and pdcurses_for_real_windows then
-		curses.PDC_set_resize_limits(1, 1000, 1, 1000)
 		curses.resize_term(50, 150) 
 	end
 
