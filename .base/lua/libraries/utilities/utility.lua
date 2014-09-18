@@ -566,15 +566,6 @@ function utility.RemoveOldObject(obj, id)
 	return obj
 end
 
-function utility.MakeNULL(tbl)
-
-	for k,v in pairs(tbl) do tbl[k] = nil end
-	tbl.Type = "null"
-	setmetatable(tbl, getmetatable(NULL))
-	
-	return var
-end
-
 function utility.GetCurrentPath(level)
 	return (debug.getinfo(level or 1).source:gsub("\\", "/"):sub(2):gsub("//", "/"))
 end

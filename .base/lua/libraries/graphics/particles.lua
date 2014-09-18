@@ -2,26 +2,26 @@ local lerp,deg,randomf,clamp = math.lerp,math.deg,math.randomf,math.clamp
 
 local PARTICLE = metatable.CreateTemplate("particle")
 
-class.GetSet(PARTICLE, "Pos", Vec3(0,0,0))
-class.GetSet(PARTICLE, "Velocity", Vec3(0,0,0))
-class.GetSet(PARTICLE, "Drag", 0.98)
-class.GetSet(PARTICLE, "Size", Vec2(1,1))
-class.GetSet(PARTICLE, "Angle", 0)
+metatable.GetSet(PARTICLE, "Pos", Vec3(0,0,0))
+metatable.GetSet(PARTICLE, "Velocity", Vec3(0,0,0))
+metatable.GetSet(PARTICLE, "Drag", 0.98)
+metatable.GetSet(PARTICLE, "Size", Vec2(1,1))
+metatable.GetSet(PARTICLE, "Angle", 0)
 
-class.GetSet(PARTICLE, "StartJitter", 0)
-class.GetSet(PARTICLE, "EndJitter", 0)
+metatable.GetSet(PARTICLE, "StartJitter", 0)
+metatable.GetSet(PARTICLE, "EndJitter", 0)
 
-class.GetSet(PARTICLE, "StartSize", 10)
-class.GetSet(PARTICLE, "EndSize", 0)
+metatable.GetSet(PARTICLE, "StartSize", 10)
+metatable.GetSet(PARTICLE, "EndSize", 0)
 
-class.GetSet(PARTICLE, "StartLength", Vec2(0, 0))
-class.GetSet(PARTICLE, "EndLength", Vec2(0, 0))
+metatable.GetSet(PARTICLE, "StartLength", Vec2(0, 0))
+metatable.GetSet(PARTICLE, "EndLength", Vec2(0, 0))
 
-class.GetSet(PARTICLE, "StartAlpha", 1)
-class.GetSet(PARTICLE, "EndAlpha", 0)
+metatable.GetSet(PARTICLE, "StartAlpha", 1)
+metatable.GetSet(PARTICLE, "EndAlpha", 0)
 
-class.GetSet(PARTICLE, "LifeTime", 1)
-class.GetSet(PARTICLE, "Color", Color(1,1,1,1))
+metatable.GetSet(PARTICLE, "LifeTime", 1)
+metatable.GetSet(PARTICLE, "Color", Color(1,1,1,1))
 
 function PARTICLE:SetLifeTime(n)
 	self.LifeTime = n
@@ -30,18 +30,18 @@ end
 
 local EMITTER = metatable.CreateTemplate("particle_emitter")
 
-class.GetSet(EMITTER, "DrawManual", false)
-class.GetSet(EMITTER, "Speed", 1)
-class.GetSet(EMITTER, "Rate", 0.1)
-class.GetSet(EMITTER, "EmitCount", 1)
-class.GetSet(EMITTER, "Mode2D", true)
-class.GetSet(EMITTER, "Pos", Vec3(0, 0, 0))
-class.GetSet(EMITTER, "Additive", true)
-class.GetSet(EMITTER, "ThinkTime", 0.1)
-class.GetSet(EMITTER, "CenterAttractionForce", 0)
-class.GetSet(EMITTER, "PosAttractionForce", 0)
-class.GetSet(EMITTER, "MoveResolution", 0)
-class.GetSet(EMITTER, "Texture", NULL)
+metatable.GetSet(EMITTER, "DrawManual", false)
+metatable.GetSet(EMITTER, "Speed", 1)
+metatable.GetSet(EMITTER, "Rate", 0.1)
+metatable.GetSet(EMITTER, "EmitCount", 1)
+metatable.GetSet(EMITTER, "Mode2D", true)
+metatable.GetSet(EMITTER, "Pos", Vec3(0, 0, 0))
+metatable.GetSet(EMITTER, "Additive", true)
+metatable.GetSet(EMITTER, "ThinkTime", 0.1)
+metatable.GetSet(EMITTER, "CenterAttractionForce", 0)
+metatable.GetSet(EMITTER, "PosAttractionForce", 0)
+metatable.GetSet(EMITTER, "MoveResolution", 0)
+metatable.GetSet(EMITTER, "Texture", NULL)
 
 local emitters = {}
 

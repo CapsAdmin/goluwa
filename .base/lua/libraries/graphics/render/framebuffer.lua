@@ -109,7 +109,7 @@ function META:Remove()
 		gl.DeleteRenderbuffers(1, ffi.new("GLuint[1]", v.id))
 	end
 		
-	utility.MakeNULL(self)
+	metatable.MakeNULL(self)
 end
 
 function render.CreateFrameBuffer(width, height, format)

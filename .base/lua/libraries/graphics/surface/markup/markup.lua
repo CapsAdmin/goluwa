@@ -13,20 +13,20 @@ local META = metatable.CreateTemplate("markup")
 
 META.tags = {}
 
-class.GetSet(META, "Table", {})
-class.GetSet(META, "MaxWidth", 500)
-class.GetSet(META, "ControlDown", false)
-class.GetSet(META, "LineWrap", true)
-class.GetSet(META, "ShiftDown", false)
-class.GetSet(META, "Editable", true)
-class.GetSet(META, "Multiline", true)
-class.GetSet(META, "MousePosition", Vec2())
-class.GetSet(META, "FastMode", false)
+metatable.GetSet(META, "Table", {})
+metatable.GetSet(META, "MaxWidth", 500)
+metatable.GetSet(META, "ControlDown", false)
+metatable.GetSet(META, "LineWrap", true)
+metatable.GetSet(META, "ShiftDown", false)
+metatable.GetSet(META, "Editable", true)
+metatable.GetSet(META, "Multiline", true)
+metatable.GetSet(META, "MousePosition", Vec2())
+metatable.GetSet(META, "FastMode", false)
 
 if SERVER then
-	class.GetSet(META, "FixedSize", 14) -- sigh
+	metatable.GetSet(META, "FixedSize", 14) -- sigh
 else	
-	class.GetSet(META, "FixedSize", 0)
+	metatable.GetSet(META, "FixedSize", 0)
 end
 
 function surface.CreateMarkup()

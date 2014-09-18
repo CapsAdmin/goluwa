@@ -2,13 +2,13 @@
 
 PANEL.ClassName = "text_input"
 
-class.GetSet(PANEL, "Text", "")
-class.GetSet(PANEL, "Wrap", false)
-class.GetSet(PANEL, "FixedHeight", true)
-class.GetSet(PANEL, "LineSpacing", 3)
-class.GetSet(PANEL, "MultiLine", false)
-class.GetSet(PANEL, "LineNumbers", true)
-class.GetSet(PANEL, "EditorMode", false)
+metatable.GetSet(PANEL, "Text", "")
+metatable.GetSet(PANEL, "Wrap", false)
+metatable.GetSet(PANEL, "FixedHeight", true)
+metatable.GetSet(PANEL, "LineSpacing", 3)
+metatable.GetSet(PANEL, "MultiLine", false)
+metatable.GetSet(PANEL, "LineNumbers", true)
+metatable.GetSet(PANEL, "EditorMode", false)
 
 function PANEL:SetCaretPos(pos)
 	self.markup:SetCaretPos(pos.x, pos.y)

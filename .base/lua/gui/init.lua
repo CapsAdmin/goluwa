@@ -47,10 +47,10 @@ function gui.GetWorld()
 end
 
  
-gui.IsSet = class.IsSet
+gui.IsSet = metatable.IsSet
 
 function gui.GetSet(PANEL, name, var, ...) 
-	class.GetSet(PANEL, name, var, ...)
+	metatable.GetSet(PANEL, name, var, ...)
 	if name:find("Color") then
 		PANEL["Set" .. name] = function(self, color) 
 			self[name] = self:HandleColor(color) or var
