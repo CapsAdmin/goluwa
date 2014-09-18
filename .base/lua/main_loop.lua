@@ -42,6 +42,14 @@ local function main()
 	local i = 0ULL
 		
 	while true do
+	
+		if (collectgarbage("count")*1024) > 1024*1024*1024 then 
+			if wait(1) then
+				logn("emergency collect! memory > 1 gb") 
+			end
+			collectgarbage()
+		end
+	
 		local rate = rate_cvar:Get()
 		local time = timer.GetSystemTime()
 		
