@@ -64,8 +64,8 @@ do -- model meta
 			self.done = true
 		end
 		
-		--thread:SetIterationsPerTick(10)
-		thread:SetIterationsPerTick(math.huge)
+		thread:SetIterationsPerTick(15)
+		--thread:SetIterationsPerTick(math.huge)
 		
 		thread:Start()
 		
@@ -89,33 +89,38 @@ do -- model meta
 			local path = model_data.material.path
 			
 			-- this is kind of ue4 specific
-			if model_data.material.name:sub(1, 1) == "/" then
-				path = model_data.material.name:match(".+/") .. path
-				path = path:sub(2)
-			end
-			
-			local paths = {path, self.dir .. path}
-			
-			for _, path in ipairs(paths) do
-				if vfs.Exists(path) then
-					sub_model.diffuse = render.CreateTexture(path, default_texture_format)
+			if model_data.material.name and model_data.material.name:sub(1, 1) == "/" then
+				local ext = path:match("^.+(%..+)$")
+				local path = model_data.material.name
+				path = self.dir .. path:sub(2)
+				
+				sub_model.diffuse = render.CreateTexture(path .. "_D" .. ext)
+				sub_model.bump = render.CreateTexture(path .. "_N" .. ext)
+				sub_model.specular = render.CreateTexture(path .. "_S" .. ext)
+			else	
+				local paths = {path, self.dir .. path}
+				
+				for _, path in ipairs(paths) do
+					if vfs.Exists(path) then
+						sub_model.diffuse = render.CreateTexture(path, default_texture_format)
 
-					do -- try to find normal map
-						local path = render.FindTextureFromSuffix(path, "_n", "_ddn", "_nrm")
+						do -- try to find normal map
+							local path = render.FindTextureFromSuffix(path, "_n", "_ddn", "_nrm")
 
-						if path then
-							sub_model.bump = render.CreateTexture(path, default_texture_format)
+							if path then
+								sub_model.bump = render.CreateTexture(path, default_texture_format)
+							end
 						end
-					end
 
-					do -- try to find specular map
-						local path = render.FindTextureFromSuffix(path, "_s", "_spec")
+						do -- try to find specular map
+							local path = render.FindTextureFromSuffix(path, "_s", "_spec")
 
-						if path then
-							sub_model.specular = render.CreateTexture(path, default_texture_format)
+							if path then
+								sub_model.specular = render.CreateTexture(path, default_texture_format)
+							end
 						end
+						break
 					end
-					break
 				end
 			end
 		end
