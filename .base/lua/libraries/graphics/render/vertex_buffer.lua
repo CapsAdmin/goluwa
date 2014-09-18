@@ -42,16 +42,18 @@ function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
 		self.vertices_size = vertices_size or ffi.sizeof(vertices)
 		
 		render.BindArrayBuffer(self.vertices_id)
-		gl.BufferData(gl.e.GL_ARRAY_BUFFER, self.vertices_size, self.vertices, gl.e.GL_STATIC_DRAW )
+		gl.BufferData(gl.e.GL_ARRAY_BUFFER, self.vertices_size, vertices, gl.e.GL_STATIC_DRAW)
 	end
 	
 	if indices and self.UpdateIndices then
+		indices_size = indices_size or ffi.sizeof(self.indices)
+		
 		self.indices = indices
-		self.indices_size = indices_size or ffi.sizeof(self.indices)
-		self.indices_count = self.indices_size / ffi.sizeof("unsigned int")
+		self.indices_size = indices_size
+		self.indices_count = indices_size / ffi.sizeof("unsigned int")
 		
 		gl.BindBuffer(gl.e.GL_ELEMENT_ARRAY_BUFFER, self.indices_id)
-		gl.BufferData(gl.e.GL_ELEMENT_ARRAY_BUFFER, self.indices_size, self.indices, gl.e.GL_STATIC_DRAW )
+		gl.BufferData(gl.e.GL_ELEMENT_ARRAY_BUFFER, indices_size, indices, gl.e.GL_STATIC_DRAW)
 	end
 		
 	render.BindVertexArray(self.vao_id)		
@@ -65,4 +67,10 @@ function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
 	gl.BindBuffer(gl.e.GL_ELEMENT_ARRAY_BUFFER, 0)
 	
 	--logf("[render] updated %s with %s amount of data\n", self, utility.FormatFileSize(self.vertices_size + self.indices_size))
+end
+
+function META:UnreferenceMesh()
+	self.vertices = nil
+	self.indices = nil
+	collectgarbage("step")
 end
