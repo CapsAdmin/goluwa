@@ -81,9 +81,20 @@ do -- model meta
 				max = Vec3(unpack(model_data.bbox.max))
 			}
 		}
+		
+		-- don't store the geometry on the lua side
+		sub_model.mesh:UnreferenceMesh()
 				
 		if model_data.material and model_data.material.path then
-			local paths = {model_data.material.path, self.dir .. model_data.material.path}
+			local path = model_data.material.path
+			
+			-- this is kind of ue4 specific
+			if model_data.material.name:sub(1, 1) == "/" then
+				path = model_data.material.name:match(".+/") .. path
+				path = path:sub(2)
+			end
+			
+			local paths = {path, self.dir .. path}
 			
 			for _, path in ipairs(paths) do
 				if vfs.Exists(path) then
