@@ -3,6 +3,38 @@ local utility = _G.utility or {}
 include("mesh.lua", utility)
 include("packed_rectangle.lua", utility)
 
+
+local diffuse_suffixes = {
+	"_diff",
+	"_d",
+}
+
+function utility.FindTextureFromSuffix(path, ...)
+	path = path:lower()
+	
+	local suffixes = {...}
+
+	-- try to find the normal texture
+	for _, suffix in pairs(suffixes) do
+		local new = path:gsub("(.+)(%.)", "%1" .. suffix .. "%2")
+		
+		if new ~= path and vfs.Exists(new) then
+			return new
+		end
+	end
+	
+	-- try again without the __diff suffix
+	for _, diffuse_suffix in pairs(diffuse_suffixes) do
+		for _, suffix in pairs(suffixes) do
+			local new = path:gsub(diffuse_suffix .. "%.", suffix ..".")
+			
+			if new ~= path and vfs.Exists(new) then
+				return new
+			end
+		end
+	end
+end
+
 function utility.CreateWeakTable()
 	return setmetatable({}, {__mode = "kv"})
 end
