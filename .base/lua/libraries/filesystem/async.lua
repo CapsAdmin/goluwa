@@ -2,20 +2,36 @@ local vfs = (...) or _G.vfs
 
 local queue = {}
 
+local file_queue = {}
+vfs.file_queue = file_queue
+
+local function update()
+	local cb = file_queue[1]
+	if cb and select(2, xpcall(cb, system.OnError)) ~= nil then
+		table.remove(file_queue, 1)
+	end
+end
+
+local function queue_reader(cb)
+	table.insert(file_queue, cb)
+	event.AddListener("Update", "vfs_asyc_file_read", update)
+	--update()
+end
+
 vfs.async_readers = {
 	file = function(path, mbps, context)
 		local file = vfs.Open(path)
-		if file then
+		if file then	
 			local buffer = {}
 			
 			mbps = mbps / 2
-			event.CreateThinker(function()
+			queue_reader(function()
 				--in case mbps is higher than the file size
-				for i = 1, 2 do
+				--for i = 1, 2 do
 					local str = file:ReadBytes(1048576 * mbps)					
 					
 					if str then
-						if vfs.debug then 
+						if vfs.debug or vfs.debug_async then 
 							local size = 0
 							for k, v in ipairs(buffer) do size = size + #v end
 							logf("[vfs] async %q: read %s\n", path, utility.FormatFileSize(size))
@@ -26,7 +42,7 @@ vfs.async_readers = {
 						file:Close()
 						return false
 					end
-				end
+				--end
 			end, 1, true, true)
 			return true				
 		end
@@ -95,7 +111,7 @@ function vfs.ReadAsync(path, callback, mbps, context, reader, dont_cache)
 	check(mbps, "nil", "number")
 	mbps = mbps or 1
 	
-	if vfs.debug then
+	if vfs.debug or vfs.debug_async then
 		logf("[vfs] async %q: start loading\n", path)
 		local size = 0
 		for k, v in pairs(cache) do	size = size + #v end
@@ -123,7 +139,7 @@ function vfs.ReadAsync(path, callback, mbps, context, reader, dont_cache)
 		callback(data)
 		queue[path] = nil
 		
-		if vfs.debug then
+		if vfs.debug or vfs.debug_async then
 			logf("[vfs] async %q: finish loading\n", path)
 		
 			local size = 0
@@ -147,7 +163,7 @@ end
 
 function vfs.UncacheAsync(path)
 	cache[path] = nil
-	if vfs.debug then
+	if vfs.debug or vfs.debug_async then
 		logf("[VFS] vfs.UncacheAsync(%q)\n", path)
 		
 		local size = 0
