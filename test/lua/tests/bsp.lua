@@ -1,15 +1,10 @@
-if not steam.mounted then
-	timer.Start("mounting source games")
-	steam.MountAllSourceGames()
-	timer.Stop()
-	steam.mounted = true
-end
+steam.MountSourceGame("half-life 2")
 
 local bsp_file
---= vfs.Open("maps/gm_bluehills_test3.bsp") -- gmod
---= vfs.Open("maps/d2_coast_07.bsp") -- hl2
-= vfs.Open("maps/ep2_outland_06a.bsp") -- ep2
---= vfs.Open("maps/c3m1_plankcountry.bsp") -- l4d
+--= assert(vfs.Open("maps/gm_bluehills_test3.bsp")) -- gmod
+= assert(vfs.Open("maps/d2_coast_07.bsp")) -- hl2
+--= assert(vfs.Open("maps/ep2_outland_06a.bsp")) -- ep2
+--= assert(vfs.Open("maps/c3m1_plankcountry.bsp")) -- l4d
 
 local header = bsp_file:ReadStructure([[
 long ident; // BSP file identifier
@@ -404,10 +399,23 @@ do timer.Start("building mesh")
 			path = "materials/" .. data[field] .. "b.vtf"
 		
 			if not vfs.IsFile(path) then
-				logf("unable to find %s in %s.%s\n", path, shader, field)
-				table.print(material)
+			
+				logn("material not found: using vfs.Find to find first material in materials/" .. data[field])
+				
+				path = vfs.Find("materials/" .. data[field], nil, true)[1]
+				
+				if path and path:find("%.vmt") then
+					local shader, data = next(steam.VDFToTable(vfs.Read(path)))
+					path = "materials/" .. data[field] .. ".vtf"
+					path = path:lower()
+				end
+				
+				if not path or not vfs.IsFile(path) then
+					logf("unable to find %s in %s.%s\n", path, shader, field)
+					table.print(material)
 
-				return render.GetErrorTexture()
+					return render.GetErrorTexture()
+				end
 			end
 		end
 				
@@ -536,12 +544,6 @@ do timer.Start("building mesh")
 					end
 				end
 			end
-		end
-		
-		if model_index ~= 1 then
-			sub_model.diffuse = render.GetErrorTexture()
-			sub_model.mesh = render.CreateMesh(sub_model.mesh)	
-			table.insert(bsp_mesh.sub_models, sub_model)
 		end
 		
 		-- only world needed
