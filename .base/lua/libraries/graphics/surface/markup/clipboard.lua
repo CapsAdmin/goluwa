@@ -1,4 +1,4 @@
-local META = (...) or metatable.Get("markup")
+local META = (...) or metatable.GetRegistered("markup")
 
 function META:Copy(tags)
 	return self:GetSelection(tags)

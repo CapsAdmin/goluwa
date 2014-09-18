@@ -26,5 +26,5 @@ function META:Fit(w, h)
 end
 
 function utility.CreatePackedRectangle(w, h) 
-	return META:New({root = {x = 0, y = 0, w = w, h = h}}) 
+	return metatable.CreateObject(META, {root = {x = 0, y = 0, w = w, h = h}}) 
 end

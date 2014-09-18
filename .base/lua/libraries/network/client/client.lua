@@ -1,4 +1,4 @@
-local META = (...) or metatable.Get("client")
+local META = (...) or metatable.GetRegistered("client")
 
 META.Name = "client"
 

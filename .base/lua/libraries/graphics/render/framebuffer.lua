@@ -115,7 +115,7 @@ end
 function render.CreateFrameBuffer(width, height, format)
 	if not render.CheckSupport("GenFramebuffer") then return NULL end
 	
-	local self = META:New()
+	local self = metatable.CreateObject(META)
 
 	self.buffers = {}
 	self.w = width

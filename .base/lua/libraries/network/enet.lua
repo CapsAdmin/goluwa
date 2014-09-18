@@ -110,7 +110,7 @@ do -- peer
 	end
 
 	function enet.CreatePeer(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)		
-		local self = CLIENT:New()
+		local self = metatable.CreateObject(CLIENT)
 		
 		max_connections = max_connections or 2
 		max_channels = max_channels or 2
@@ -130,7 +130,7 @@ do -- peer
 	end
 	
 	function enet.CreateDummyPeer()
-		return CLIENT:New()
+		return metatable.CreateObject(CLIENT)
 	end
 end
 
@@ -173,7 +173,7 @@ do -- server
 	end
 	
 	function enet.CreateServer(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)		
-		local self = SERVER:New()
+		local self = metatable.CreateObject(SERVER)
 		
 		self.host = create_host(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
 		self.peer = peer

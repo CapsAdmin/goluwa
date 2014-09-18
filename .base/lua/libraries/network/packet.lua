@@ -105,7 +105,7 @@ do -- buffer object
 	local META = metatable.CreateTemplate("buffer")
 
 	function packet.CreateBuffer(val)
-		local self = META:New()
+		local self = metatable.CreateObject(META)
 		
 		if type(val) == "string" or type(val) == "table" or not val then
 			self.buffer = {}

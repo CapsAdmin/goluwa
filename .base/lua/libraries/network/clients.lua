@@ -39,7 +39,7 @@ function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
 		return self
 	end
 	
-	local self = META:New()
+	local self = metatable.CreateObject(META)
 		
 	self:SetUniqueID(uniqueid)
 	
@@ -110,7 +110,7 @@ do -- filter
 	end
 
 	function clients.CreateFilter()
-		return META:New({clients = {}}, true)
+		return metatable.CreateObject(META, {clients = {}}, true)
 	end
 end
 

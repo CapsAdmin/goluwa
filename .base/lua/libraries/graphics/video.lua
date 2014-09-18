@@ -31,7 +31,7 @@ end
 local video = {}
 	
 function video.CreateGif(path)
-	local self = META:New()
+	local self = metatable.CreateObject(META)
 		
 	self.frames = {}
 	self.frame_count = 1

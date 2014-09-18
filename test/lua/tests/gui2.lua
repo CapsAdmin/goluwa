@@ -1132,7 +1132,7 @@ do -- base panel
 	end
 
 	function gui2.CreatePanel(parent)
-		local self = PANEL:New()
+		local self = metatable.CreateObject(PANEL)
 
 		self:SetParent(parent or gui2.world)
 

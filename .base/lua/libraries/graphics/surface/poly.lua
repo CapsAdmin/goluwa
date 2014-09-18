@@ -148,7 +148,7 @@ function surface.CreatePoly(size)
 	-- they never change anyway
 	mesh:SetUpdateIndices(false)	
 	
-	local self = META:New()
+	local self = metatable.CreateObject(META)
 
 	self.mesh = mesh
 	self.size = size

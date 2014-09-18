@@ -427,7 +427,7 @@ function render.CreateShader(data)
 		end
 	end
 	
-	local self = META:New()
+	local self = metatable.CreateObject(META)
 
 	local ok, prog = pcall(render.CreateGLProgram, function(prog) 
 		local vertex_attributes = {}

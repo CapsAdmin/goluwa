@@ -111,7 +111,7 @@ local function new_socket(override, META, typ, id)
 			end
 		end
 	
-		local self = META:New()
+		local self = metatable.CreateObject(META)
 
 		self.socket = override or assert(sockets.luasocket[typ]())
 		self.socket:settimeout(0)

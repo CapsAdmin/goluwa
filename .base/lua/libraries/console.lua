@@ -419,7 +419,7 @@ do -- console vars
 		
 		console.AddCommand(name, func, help)
 		
-		return console.cvar_meta:New({cvar = name})
+		return metatable.CreateObject(console.cvar_meta, {cvar = name})
 	end
 
 	function console.GetVariable(var, def)

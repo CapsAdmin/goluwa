@@ -5,7 +5,7 @@ local META = {}
 META.Name = "angelfont"
 
 function META.LoadFont(name, options, callback)
-	local self = META:New({
+	local self = metatable.CreateObject(META, {
 		buffer = assert(vfs.Open(options.path .. "/" .. (options.path:match(".+/(.+)") or options.path) .. ".fnt")), 
 		dir = options.path .. "/", 
 		chars = {},

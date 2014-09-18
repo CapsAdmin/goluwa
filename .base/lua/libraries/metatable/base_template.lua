@@ -1,63 +1,78 @@
 local metatable = (...) or _G.metatable
 
-local objects = utility.CreateWeakTable()
+do
+	local META = {}
 
-function metatable.GetCreated()
-	return objects
-end
-
-function metatable.CreateTemplate(class_name, skip_onremove)
-
-	local META
-
-	if type(skip_onremove) == "table" then
-		META = skip_onremove
-	else
-		META = {}
-	end
-	
-	META.__index = META
-	
-	META.Type = class_name -- if type differs from classname it might be a better idea to use _G.class
-	META.ClassName = class_name
-	
 	function META:__tostring()
-		return ("%s[%p]"):format(class_name, self)
-	end
-	
-	function META:New(tbl, skip_gc_callback)
-		tbl = tbl or {}
-		
-		local copy = table.copy(META)
-		local self = setmetatable(tbl, copy) 
-		
-		if not skip_gc_callback then
-			utility.SetGCCallback(self)
+		if self.ClassName ~= self.Type then
+			return ("%s:%s[%p]"):format(self.Type, self.ClassName, self)
+		else
+			return ("%s[%p]"):format(self.Type, self)
 		end
-		
-		self.debug_trace = debug.trace(true)
-		
-		table.insert(objects, self)
-		
-		return self
 	end
-	
+
+	function META.New(meta, tbl, skip_gc_callback)
+		return metatable.CreateObject(nil, meta, tbl, skip_gc_callback)
+	end
+
 	function META:Remove(...)
-		if self.OnRemove and not skip_onremove then 
+		if self.OnRemove then 
 			self:OnRemove(...) 
 		end
 		metatable.MakeNULL(self)
 	end
-	
+
 	function META:IsValid()
 		return true
 	end
-	
+
 	function META:GetTrace()
 		return self.debug_trace or ""
 	end
+
+	function metatable.CreateTemplate(super_type, sub_type, skip_register)
+		local template = type(super_type) == "table" and super_type or {}
+		
+		for k, v in pairs(META) do
+			template[k] = template[k] or v
+		end
+		
+		if type(super_type) == "string" then
+			template.Type = super_type
+			template.ClassName = sub_type or super_type
+		end
+		
+		if not skip_register then
+			metatable.Register(template)
+		end
+		
+		template.__index = template
+		
+		return template
+	end
+end
+
+function metatable.CreateObject(meta, override, skip_gc_callback)
+	override = override or {}
 	
-	metatable.Register(META)
+	if type(meta) == "string" then
+		meta = metatable.GetRegistered(meta)
+	end
+		
+	local self = setmetatable(override, meta) 
 	
-	return META
+	if not skip_gc_callback then
+		utility.SetGCCallback(self)
+	end
+	
+	self.debug_trace = debug.trace(true)
+	
+	metatable.created_objects = metatable.created_objects or utility.CreateWeakTable()
+	table.insert(metatable.created_objects, self)
+	
+	return self
+end
+
+function metatable.GetCreated()
+	return metatable.created_objects
 end

@@ -79,7 +79,7 @@ end
 function ParticleEmitter(max)
 	max = max or 1000
 	
-	local self = EMITTER:New()
+	local self = metatable.CreateObject(EMITTER)
 	
 	self.max = max
 	self.particles = {}
@@ -256,7 +256,7 @@ function EMITTER:GetParticles()
 end
   
 function EMITTER:AddParticle(...)
-	local p = PARTICLE:New()
+	local p = metatable.CreateObject(PARTICLE)
 	p:SetPos(self:GetPos():Copy())
 	p.life_mult = 1	
 	

@@ -142,9 +142,9 @@ do -- file systems
 	
 	function vfs.RegisterFileSystem(META)
 		META.TypeBase = "base"
-		metatable.RegisterClass(META, "file_system", META.Name)
+		metatable.Register(META, "file_system", META.Name)
 		
-		local context = metatable.CreateClass("file_system", META.Name)
+		local context = metatable.CreateDerivedObject("file_system", META.Name)
 		
 		for k,v in pairs(vfs.filesystems) do
 			if v.Name == META.Name then
@@ -271,7 +271,7 @@ function vfs.Open(path, mode, sub_mode)
 	check_write_path(path)
 	
 	for i, data in ipairs(vfs.TranslatePath(path)) do	
-		local file = metatable.CreateClass("file_system", data.context.Name)
+		local file = metatable.CreateDerivedObject("file_system", data.context.Name)
 		file:SetMode(mode)
 		
 		if utilities and utility.SetGCCallback then

@@ -143,4 +143,4 @@ end
 
 metatable.AddBufferTemplate(CONTEXT)
 
-metatable.RegisterClass(CONTEXT, "file_system", CONTEXT.Name)
+metatable.Register(CONTEXT, "file_system", CONTEXT.Name)
