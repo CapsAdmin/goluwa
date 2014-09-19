@@ -75,6 +75,10 @@ do -- window meta
 		sdl.ShowCursor(sdl.e.SDL_DISABLE)
 		sdl.SetRelativeMouseMode(b and 1 or 0)
 	end
+	
+	function META:GetMouseTrapped()
+		return self.mouse_trapped
+	end
 		
 	function META:GetMouseDelta()
 		return self.mouse_delta or Vec2()
