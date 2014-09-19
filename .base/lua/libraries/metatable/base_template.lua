@@ -59,7 +59,7 @@ function metatable.CreateObject(meta, override, skip_gc_callback)
 		meta = metatable.GetRegistered(meta)
 	end
 		
-	local self = setmetatable(override, meta) 
+	local self = setmetatable(override, table.copy(meta)) 
 	
 	if not skip_gc_callback then
 		utility.SetGCCallback(self)
