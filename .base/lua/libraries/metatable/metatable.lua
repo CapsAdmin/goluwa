@@ -22,7 +22,9 @@ do
 		sub_type = sub_type:lower()
 		
 		metatable.registered[super_type] = metatable.registered[super_type] or {}
-		metatable.registered[super_type][sub_type] = metatable.registered[super_type][sub_type] or meta
+		metatable.registered[super_type][sub_type] = meta
+		
+		metatable.UpdateObjects(meta)
 		
 		return super_type, sub_type
 	end
@@ -65,7 +67,9 @@ end
 include("base_template.lua", metatable)
 include("get_is_set.lua", metatable)
 include("templates/*", metatable)
-include("null.lua")
-include("class.lua")
+include("null.lua", metatable)
+include("class.lua", metatable)
+include("ecs_entity.lua", metatable)
+include("base_ecs_component.lua", metatable)
 
 return metatable

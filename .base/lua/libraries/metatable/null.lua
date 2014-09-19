@@ -1,3 +1,5 @@
+local metatable = ... or _G.metatable
+
 do
 	local NULL = {}
 
