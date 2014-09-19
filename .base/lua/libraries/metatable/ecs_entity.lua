@@ -96,7 +96,7 @@ function metatable.SetupComponents(name, components)
 end
 
 function metatable.CreateEntity(config, ...)
-	local self = metatable.CreateObject(table.copy(META))	
+	local self = metatable.CreateObject(META)
 	
 	if metatable.component_configurations[config] then
 		self.config = config
