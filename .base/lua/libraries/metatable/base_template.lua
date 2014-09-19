@@ -74,5 +74,30 @@ function metatable.CreateObject(meta, override, skip_gc_callback)
 end
 
 function metatable.GetCreated()
-	return metatable.created_objects
+	return metatable.created_objects or {}
+end
+
+function metatable.UpdateObjects(meta)
+	for key, obj in ipairs(metatable.GetCreated()) do
+		if obj.Type == meta.Type and obj.ClassName == meta.ClassName then
+			for k, v in pairs(meta) do
+				-- update entity functions only
+				-- updating variables might mess things up
+				if type(v) == "function" then
+					obj[k] = v
+				end
+			end
+		end
+	end	
+end
+
+function metatable.RemoveObjects(super_type, sub_type)
+	sub_type = sub_type or super_type
+	for _, obj in ipairs(metatable.GetCreated()) do
+		if obj.Type == super_type and obj.ClassName == sub_type then
+			if obj:IsValid() then
+				obj:Remove()
+			end
+		end
+	end
 end
