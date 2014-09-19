@@ -177,7 +177,7 @@ do
 		
 		local path, line = res.info.source, res.info.currentline
 		
-		if res.section_name then line = res.section_name end
+		if type(res.section_name) == "string" then line = res.section_name end
 				
 		if base_garbage == 0 then
 			base_garbage = gc
@@ -203,8 +203,9 @@ do
 		data[name] = nil
 	end
 	
-	function profiler.EnableSectionProfiling(b)
+	function profiler.EnableSectionProfiling(b, reset)
 		enabled = b
+		if reset then table.clear(data) end
 	end
 	
 	profiler.PushSection()
@@ -367,6 +368,41 @@ function profiler.PrintStatistical()
 		function(a) return a.name and a.times_called > 100 end,
 		function(a, b) return a.times_called < b.times_called end
 	))
+end
+
+function profiler.MeasureInstrumental(time)
+	profiler.EnableSectionProfiling(true, true)
+
+	debug.sethook(function(what) 
+		local info = debug.getinfo(2)
+			
+		if info.linedefined <= 0 then return end
+		
+		if what == "call" then
+			profiler.PushSection(info.source .. ":" .. info.linedefined)
+		elseif what == "return" then
+			profiler.PopSection()
+		end
+	end, "cr")
+
+	event.Delay(time, function() 
+		debug.sethook()
+		
+		log(utility.TableToColumns(
+			"instrumental",
+			profiler.GetBenchmark("sections"), 
+			{
+				{key = "times_called", friendly = "calls"},
+				{key = "name", tostring = function(val, column) return tostring(val) end}, 
+				{key = "average_time", friendly = "time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
+				{key = "average_garbage", friendly = "garbage", tostring = function(val) return utility.FormatFileSize(val) end},
+			}, 
+			function(a) return a.times_called > 50 end,
+			function(a, b) return a.average_time < b.average_time end
+		))
+		
+		profiler.EnableSectionProfiling(false, true)
+	end)
 end
 
 --profiler.EnableSectionProfiling(true)
