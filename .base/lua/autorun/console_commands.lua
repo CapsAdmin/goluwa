@@ -167,6 +167,10 @@ console.AddCommand("profile_dump", function(line)
 	end
 end)
 
+console.AddCommand("profile", function(line, time)
+	profiler.MeasureInstrumental(tonumber(time) or 5)
+end)
+
 console.AddCommand("find", function(line, ...)
 	local data = utility.FindValue(...)
 	
