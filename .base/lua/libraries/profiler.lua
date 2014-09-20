@@ -185,7 +185,7 @@ do
 		end
 		
 		data[path] = data[path] or {}
-		data[path][line] = data[path][line] or {total_time = 0, samples = 0, total_garbage = 0, name = res.section_name, instrumental = true, section = true}
+		data[path][line] = data[path][line] or {total_time = 0, samples = 0, total_garbage = 0, name = res.section_name, section_name = res.section_name, instrumental = true, section = true}
 	
 		data[path][line].total_time = data[path][line].total_time + time
 		data[path][line].total_garbage = data[path][line].total_garbage + gc
@@ -227,7 +227,6 @@ function profiler.GetBenchmark(type, file, dump_line)
 				line = tonumber(line) or line
 				
 				local name = "unknown(file not found)"
-				local debug_info
 				
 				if data.func then					
 					debug_info = debug.getinfo(data.func)
@@ -257,6 +256,11 @@ function profiler.GetBenchmark(type, file, dump_line)
 					full_path = full_path:lower():replace(e.ROOT_FOLDER:lower(), "")
 					name = full_path .. ":" .. line
 				end
+				
+				if data.section_name then
+					data.section_name = data.section_name:match(".+lua/(.+)") or data.section_name
+				end
+				
 				name = name:trim()
 					
 				data.path = path
@@ -393,11 +397,11 @@ function profiler.MeasureInstrumental(time)
 			profiler.GetBenchmark("sections"), 
 			{
 				{key = "times_called", friendly = "calls"},
-				{key = "name", tostring = function(val, column) return tostring(val) end}, 
+				{key = "section_name"}, 
 				{key = "average_time", friendly = "time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
 				{key = "average_garbage", friendly = "garbage", tostring = function(val) return utility.FormatFileSize(val) end},
 			}, 
-			function(a) return a.times_called > 50 end,
+			function(a) return a.average_time > 0.0001 and a.times_called > 100 end,
 			function(a, b) return a.average_time < b.average_time end
 		))
 		
