@@ -187,17 +187,23 @@ local tries = {
 	"lua/libraries/?",
 }
 
-console.AddCommand("source", function(line, ...)
+console.AddCommand("source", function(line, path, line_number, ...)
+
+	if path:find(":") then
+		local a,b = path:match("(.+):(%d+)")
+		path = a or path
+		line_number = b or line_number
+	end
 
 	for i, try in pairs(tries) do
-		local path = try:gsub("?", line)
+		local path = try:gsub("?", path)
 		if vfs.Exists(path) then
-			debug.openscript(path, tonumber((...)) or 0)
+			debug.openscript(path, tonumber(line_number) or 0)
 			return
 		end
 	end	
 
-	local data = utility.FindValue(...)
+	local data = utility.FindValue(path, line_number, ...)
 		
 	local func
 	local name
