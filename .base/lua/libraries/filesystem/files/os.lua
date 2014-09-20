@@ -37,14 +37,15 @@ function CONTEXT:GetFiles(path_info)
 	return out
 end
 
-function CONTEXT:IsFile(path_info)
-	local info = lfs.attributes(path_info.full_path)
-	return info and info.mode ~= "directory"
+function CONTEXT:IsFile(path)
+	local ext = path:match(".+%.(%a+)")
+	local len = #ext
+	return ext and not path:sub((#path-len)):find("/") and not path:sub((#path-len)):find("\\") --returns the file extension, could make it return bool if we wanted.
 end
 
-function CONTEXT:IsFolder(path_info)
-	local info = lfs.attributes(path_info.full_path:sub(0, -2))
-	return info and info.mode == "directory"
+function CONTEXT:IsFolder(path)
+	local ext = path:match(".+%.(%a+)")
+	return not ext or not (path:sub((#path-#ext))):match(ext)
 end
 
 -- if CONTEXT:Open errors the virtual file system will assume 
