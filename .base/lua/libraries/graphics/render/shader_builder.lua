@@ -132,17 +132,24 @@ end
 local function type_of_attribute(var)
 	local t = typex(var)
 	local def = var
+	local get
 
 	if t == "string" then
 		t = var
 		def = nil
 	elseif t == "table" then
-		t = "uniform_buffer"
+		local k,v = next(var)
+		if type(k) == "string" and type(v) == "function" then
+			t = k
+			get = v
+		else
+			t = "uniform_buffer"
+		end
 	end
 
 	t = type_translate[t] or t
 
-	return t, def
+	return t, def, get
 end
 
 local function translate_fields(data)
@@ -154,10 +161,10 @@ local function translate_fields(data)
 			k, v = next(v)
 		end
 
-		local t, default = type_of_attribute(v)
+		local t, default, get = type_of_attribute(v)
 		local precision, type_ = t:match("(.-) (.+)")
 
-		table.insert(out, {name = k, type = type_ or t, default = default, precision = precision or "highp"})
+		table.insert(out, {name = k, type = type_ or t, default = default, precision = precision or "highp", get = get})
 	end
 
 	return out
@@ -577,6 +584,10 @@ function render.CreateShader(data)
 						table.insert(temp, {id = id, key = val.name, val = val})
 						
 						self.defaults[val.name] = val.default
+						
+						if val.get then
+							self[val.name] = val.get
+						end
 
 						if render.debug and id < 0 and val.type ~= "sampler2D" then
 							logf("%s: uniform in %s %s %s is not being used (uniform location < 0)\n", shader_id, shader, val.name, val.type)

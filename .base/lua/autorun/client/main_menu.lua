@@ -64,7 +64,7 @@ do -- open close
 end
 
 function menu.RenderBackground()	
-	local scrw, scrh = render.GetScreenSize()
+	local scrw, scrh = render.GetScreenSize():Unpack()
 	
 	local alpha = 0.75
 
@@ -241,7 +241,7 @@ function menu.AddButtonSpace()
 end
 
 function menu.SetupButtons()
-	local sw, sh = render.GetScreenSize()
+	local sw, sh = render.GetScreenSize():Unpack()
 			
 	local margin = 50
 	local x = sw/2

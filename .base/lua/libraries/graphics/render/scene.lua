@@ -48,7 +48,7 @@ do -- current window
 	end
 	
 	function render.GetScreenSize()
-		return render.GetWidth(), render.GetHeight()
+		return Vec2(render.GetWidth(), render.GetHeight())
 	end
 end
 

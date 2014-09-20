@@ -222,7 +222,7 @@ do
 		--render.ScissorRect(x,y,w,h)  
 		--surface.StartClipping(x, y, w, h)
 
-		local sw, sh = render.GetScreenSize()
+		local sw, sh = render.GetScreenSize():Unpack()
 		
 		x = x or 0
 		y = y or 0

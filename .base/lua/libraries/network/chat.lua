@@ -124,7 +124,7 @@ if CLIENT then
 		if not visible then
 			local old_mouse_trap = window.GetMouseTrapped()
 			panel = gui.Create("text_input")
-				panel:SetPos(Vec2(50, Vec2(render.GetScreenSize()).h - 100))
+				panel:SetPos(Vec2(50, render.GetScreenSize().h - 100))
 				panel:SetSize(Vec2(512, 16))
 				panel:MakeActivePanel()
 				panel:SetMultiline(true)
@@ -212,7 +212,7 @@ if CLIENT then
 					end
 					event.Call("ChatTextChanged", str)
 					
-					self:SetPos(Vec2(50, Vec2(render.GetScreenSize()).h - 100))
+					self:SetPos(Vec2(50, render.GetScreenSize().h - 100))
 					self:SizeToContents()
 				end
 				
