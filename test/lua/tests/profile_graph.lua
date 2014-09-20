@@ -1,9 +1,4 @@
-if not profiler.Running() then
-	profiler.SetClockFunction(timer.GetSystemTime)
-	profiler.SetReadFileFunction(vfs.Read)
-
-	profiler.Start(nil, "statistical")
-end 
+profiler.EnableStatisticalProfiling(true)
 
 local root
 local drawn = {}
@@ -93,7 +88,7 @@ end
 
 event.AddListener("Draw2D", "lol", function()
 	if wait(5) then		
-		for k, v in pairs(profiler.GetBenchmark()) do	
+		for k, v in pairs(profiler.GetBenchmark("statistical")) do	
 			if not next(v.parents) then
 				root = v
 			end
