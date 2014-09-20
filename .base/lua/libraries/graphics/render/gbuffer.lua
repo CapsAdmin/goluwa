@@ -6,13 +6,6 @@ render.shadow_maps = render.shadow_maps or utility.CreateWeakTable()
    
 local FRAMEBUFFERS = {
 	{
-		name = "light",
-		attach = "color",
-		texture_format = {
-			internal_format = "RGBA16F",
-		}
-	},
-	{
 		name = "depth",
 		attach = "depth",
 		draw_manual = true,
@@ -25,11 +18,24 @@ local FRAMEBUFFERS = {
 
 render.gbuffer_passes = {}
 
-function render.AddGBufferPass(name, buffers, shader)
-	render.gbuffer_passes[name] = {buffers = buffers, shader = shader}
+function render.AddGBufferPass(name, buffers, shader, draw, stage)
+	for k, v in pairs(render.gbuffer_passes) do 
+		if v.name == name then 
+			table.remove(render.gbuffer_passes, k) 
+			break 
+		end
+	end
+	
+	table.insert(render.gbuffer_passes, {
+		name = name, 
+		buffers = buffers, 
+		shader = shader, 
+		stage = stage or math.huge, 
+		draw = draw
+	})
 	
 	for i, info in ipairs(buffers) do
-		table.insert(FRAMEBUFFERS, #FRAMEBUFFERS - 1, {
+		table.insert(FRAMEBUFFERS, #FRAMEBUFFERS, {
 			name = info.name,
 			attach = info.attach or "color",
 			texture_format = {
@@ -37,6 +43,8 @@ function render.AddGBufferPass(name, buffers, shader)
 			},
 		})
 	end
+	
+	table.sort(render.gbuffer_passes, function(a, b) return a.stage < b.stage end)
 end
 
 render.AddGBufferPass(
@@ -172,129 +180,159 @@ render.AddGBufferPass(
 				}
 			]]
 		}
-	}
+	},
+	function()
+		gl.DepthMask(gl.e.GL_TRUE)
+		gl.Enable(gl.e.GL_DEPTH_TEST)
+		gl.Disable(gl.e.GL_BLEND)	
+		render.SetCullMode("back")
+		
+		render.gbuffer:Begin()
+			render.gbuffer:Clear()
+			event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
+		render.gbuffer:End()
+	end,
+	1
 )
 
-local LIGHT = {
-	name = "gbuffer_light",
-	vertex = { 
-		uniform = {
-			pvm_matrix = {mat4 = render.GetPVWMatrix2D},
-		},			
-		attributes = {
-			{pos = "vec3"},
-			{normal = "vec3"},
-			{uv = "vec2"},
-			{texture_blend = "float"},
-		},	
-		source = "gl_Position = pvm_matrix * vec4(pos*7.5, 1);"
-	},  
-	fragment = {
-		uniform = {
-			tex_depth = "sampler2D",
-			tex_diffuse = "sampler2D",
-			tex_normal = "sampler2D",
-			tex_position = "sampler2D",
-			
-			cam_pos = {vec3 = render.GetCamPos},
-			light_pos = Vec3(0,0,0),
-			
-			screen_size = {vec2 = render.GetScreenSize},
-			light_color = Color(1,1,1,1),				
-			light_diffuse_intensity = 0.5,
-			light_radius = 1000,
+render.AddGBufferPass(
+	"light", 
+	{
+		{name = "light", format = "RGBA16F"}, 
+	},
+	{
+		name = "gbuffer_light",
+		vertex = { 
+			uniform = {
+				pvm_matrix = {mat4 = render.GetPVWMatrix2D},
+			},			
+			attributes = {
+				{pos = "vec3"},
+				{normal = "vec3"},
+				{uv = "vec2"},
+				{texture_blend = "float"},
+			},	
+			source = "gl_Position = pvm_matrix * vec4(pos*7.5, 1);"
 		},  
-		source = [[			
-			out vec4 out_color;
-			
-			vec2 get_uv()
-			{
-				return gl_FragCoord.xy / screen_size;
-			}
-			
-			vec3 get_pos()
-			{ 				
-				vec2 uv = get_uv();
-				return -texture(tex_position, uv).yxz;
-			}
-			
-						
-			float get_attenuation(vec3 world_pos)
-			{
-				float distance = length(light_pos - world_pos);
-				distance = distance / light_radius / 5;
-				distance = -distance + 2; 
+		fragment = {
+			uniform = {
+				tex_depth = "sampler2D",
+				tex_diffuse = "sampler2D",
+				tex_normal = "sampler2D",
+				tex_position = "sampler2D",
 				
-				return clamp(distance, 0, 1);
-			}
-						 
-			vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular)
-			{
-				float roughness = 0.1;
-
-				vec3 cEye = normalize(cam_pos - world_pos);
-				vec3 cHalf = normalize(cLight + cEye);
-
-				// calculate light lumosity (optimized with custom dist calc)
-				float sqDist = pow(light_pos.x - world_pos.x, 2.0) + pow(light_pos.y - world_pos.y, 2.0) + pow(light_pos.z - world_pos.z, 2.0);
-				//float cAttenuation = lAtt.y + lAtt.z * sqrt(sqDist) + lAtt.w * sqDist;
-				float cLuminosity = 1.0 / light_radius;
+				cam_pos = {vec3 = render.GetCamPos},
+				light_pos = Vec3(0,0,0),
 				
-				// Beckman's distribution function D
-				float normalDotHalf = dot(normal, cHalf);
-				float normalDotHalf2 = normalDotHalf * normalDotHalf;
+				screen_size = {vec2 = render.GetScreenSize},
+				light_color = Color(1,1,1,1),				
+				light_diffuse_intensity = 0.5,
+				light_radius = 1000,
+			},  
+			source = [[			
+				out vec4 out_color;
 				
-				float roughness2 = roughness * roughness;
-				float exponent = -(1.0 - normalDotHalf2) / (normalDotHalf2 * roughness2);
-				float e = 2.71828182845904523536028747135;
-				float D = pow(e, exponent) / (roughness2 * normalDotHalf2 * normalDotHalf2);
-				
-				// Compute Fresnel term F
-				float normalDotEye = dot(normal, cEye);
-				float F = mix(pow(1.0 - normalDotEye, 5.0), 1.0, 0.5);
-				
-				// Compute self shadowing term G
-				float normalDotLight = dot(normal, cLight);
-				float X = 2.0 * normalDotHalf / dot(cEye, cHalf);
-				float G = min(1.0, min(X * normalDotLight, X * normalDotEye));
-				
-				// Compute final Cook-Torrance specular term, load textures, mix them
-				float pi = 3.1415926535897932384626433832;
-				float CookTorrance = (D*F*G) / (normalDotEye * pi);
-				
-				vec3 diffuse_ = light_color.rgb * max(0.0, normalDotLight);
-				vec3 specular_ = light_color.rgb * max(0.0, CookTorrance) * specular;
-				
-				return (diffuse_ + specular_) * max(0.0, normalDotLight) * light_diffuse_intensity;
-			}
-						
-			void main()
-			{					
-				vec2 uv = get_uv();
-				
-				float specular = texture(tex_diffuse, uv).a;
-				vec3 world_pos = get_pos();	
-
-				{					
-					vec3 normal = texture(tex_normal, uv).yxz;
-					
-					vec3 light_dir = normalize(light_pos - world_pos);
-					
-					float fade = get_attenuation(world_pos);
-					
-					if (fade > 0)
-					{
-						out_color.rgb = vec3(fade);
-						
-						out_color.rgb *= CookTorrance2(light_dir, normal, world_pos, specular);
-					}
-
-					out_color.a = light_color.a;
+				vec2 get_uv()
+				{
+					return gl_FragCoord.xy / screen_size;
 				}
-			}
-		]]  
-	}
-} 
+				
+				vec3 get_pos()
+				{ 				
+					vec2 uv = get_uv();
+					return -texture(tex_position, uv).yxz;
+				}
+				
+							
+				float get_attenuation(vec3 world_pos)
+				{
+					float distance = length(light_pos - world_pos);
+					distance = distance / light_radius / 5;
+					distance = -distance + 2; 
+					
+					return clamp(distance, 0, 1);
+				}
+							 
+				vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular)
+				{
+					float roughness = 0.1;
+
+					vec3 cEye = normalize(cam_pos - world_pos);
+					vec3 cHalf = normalize(cLight + cEye);
+
+					// calculate light lumosity (optimized with custom dist calc)
+					float sqDist = pow(light_pos.x - world_pos.x, 2.0) + pow(light_pos.y - world_pos.y, 2.0) + pow(light_pos.z - world_pos.z, 2.0);
+					//float cAttenuation = lAtt.y + lAtt.z * sqrt(sqDist) + lAtt.w * sqDist;
+					float cLuminosity = 1.0 / light_radius;
+					
+					// Beckman's distribution function D
+					float normalDotHalf = dot(normal, cHalf);
+					float normalDotHalf2 = normalDotHalf * normalDotHalf;
+					
+					float roughness2 = roughness * roughness;
+					float exponent = -(1.0 - normalDotHalf2) / (normalDotHalf2 * roughness2);
+					float e = 2.71828182845904523536028747135;
+					float D = pow(e, exponent) / (roughness2 * normalDotHalf2 * normalDotHalf2);
+					
+					// Compute Fresnel term F
+					float normalDotEye = dot(normal, cEye);
+					float F = mix(pow(1.0 - normalDotEye, 5.0), 1.0, 0.5);
+					
+					// Compute self shadowing term G
+					float normalDotLight = dot(normal, cLight);
+					float X = 2.0 * normalDotHalf / dot(cEye, cHalf);
+					float G = min(1.0, min(X * normalDotLight, X * normalDotEye));
+					
+					// Compute final Cook-Torrance specular term, load textures, mix them
+					float pi = 3.1415926535897932384626433832;
+					float CookTorrance = (D*F*G) / (normalDotEye * pi);
+					
+					vec3 diffuse_ = light_color.rgb * max(0.0, normalDotLight);
+					vec3 specular_ = light_color.rgb * max(0.0, CookTorrance) * specular;
+					
+					return (diffuse_ + specular_) * max(0.0, normalDotLight) * light_diffuse_intensity;
+				}
+							
+				void main()
+				{					
+					vec2 uv = get_uv();
+					
+					float specular = texture(tex_diffuse, uv).a;
+					vec3 world_pos = get_pos();	
+
+					{					
+						vec3 normal = texture(tex_normal, uv).yxz;
+						
+						vec3 light_dir = normalize(light_pos - world_pos);
+						
+						float fade = get_attenuation(world_pos);
+						
+						if (fade > 0)
+						{
+							out_color.rgb = vec3(fade);
+							
+							out_color.rgb *= CookTorrance2(light_dir, normal, world_pos, specular);
+						}
+
+						out_color.a = light_color.a;
+					}
+				}
+			]]  
+		}
+	},
+	function()
+		gl.Disable(gl.e.GL_DEPTH_TEST)	
+		gl.Enable(gl.e.GL_BLEND)
+		gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
+		render.SetCullMode("front")
+		
+		render.gbuffer:Begin("light")
+			render.gbuffer:Clear(0,0,0,0, "light")
+			event.Call("Draw3DLights", render.gbuffer_light_shader)
+		render.gbuffer:End() 	
+	end,
+	2
+)
 
 local GBUFFER = {
 	name = "gbuffer",
@@ -391,36 +429,13 @@ local GBUFFER = {
 				
 				out_color.rgb = diffuse;
 				out_color.a = 1;
-
-				vec3 ambient_light_color = vec3(191.0 / 255.0, 205.0 / 255.0, 214.0 / 255.0) * 0.9;
-				vec3 atmosphere_color = ambient_light_color;
-				vec3 fog_color = atmosphere_color;
-				float fog_distance = 750.0;
-			
-				//out_color.rgb = mix_fog(out_color.rgb, depth, fog_distance, 1-fog_color); //this fog is fucked up, needs to be redone
-			
+						
 				out_color.rgb *= vec3(ssao());
 				out_color.rgb *= texture(tex_light, uv).rgb;								
 			}
 		]]  
 	}
 }  
-
-local SHADOW = {
-	name = "shadow_map",
-	vertex = { 
-		uniform = {
-			pvm_matrix = "mat4",
-		},			
-		attributes = {
-			{pos = "vec3"},
-		},	
-		source = "gl_Position = pvm_matrix * vec4(pos, 1);"
-	},
-	fragment = {	
-		source = ""
-	}  
-}
 
 local EFFECTS = {
 	{
@@ -781,24 +796,15 @@ function render.InitializeGBuffer(width, height)
 		render.gbuffer_shader = shader
 		render.gbuffer_screen_quad = vbo
 	end
-	
-	do -- light
-		local shader = render.CreateShader(LIGHT)
 		
+	for _, info in pairs(render.gbuffer_passes) do
+		local shader = render.CreateShader(info.shader)
 		for i, info in ipairs(FRAMEBUFFERS) do
 			shader["tex_" .. info.name] = render.gbuffer:GetTexture(info.name)
 		end
+		render["gbuffer_" .. info.name .. "_shader"] = shader
+	end
 		
-		render.gbuffer_light_shader = shader
-	end
-	
-	do -- mesh		
-		for name, info in pairs(render.gbuffer_passes) do
-			render["gbuffer_" .. name .. "_shader"] = render.CreateShader(info.shader)
-		end
-		--render.shadow_map_shader = render.CreateShader(SHADOW)
-	end
-			
 	event.AddListener("WindowFramebufferResized", "gbuffer", function(window, w, h)
 		render.InitializeGBuffer(w, h)
 	end)
@@ -923,30 +929,11 @@ function render.DrawDeferred(dt, w, h)
 	return end
 	
 	render.Start3D()
-		-- geometry
-		gl.DepthMask(gl.e.GL_TRUE)
-		gl.Enable(gl.e.GL_DEPTH_TEST)
-		gl.Disable(gl.e.GL_BLEND)	
-		render.SetCullMode("back")
-		
-		render.gbuffer:Begin()
-			render.gbuffer:Clear()
-			event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
-		render.gbuffer:End()
-		
-		--event.Call("DrawShadowMaps", render.shadow_map_shader)	
-		
-		-- light
-		
-		gl.Disable(gl.e.GL_DEPTH_TEST)	
-		gl.Enable(gl.e.GL_BLEND)
-		gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
-		render.SetCullMode("front")
-		
-		render.gbuffer:Begin("light")
-			render.gbuffer:Clear(0,0,0,0, "light")
-			event.Call("Draw3DLights", render.gbuffer_light_shader)
-		render.gbuffer:End() 
+		for i, v in ipairs(render.gbuffer_passes) do
+			if v.draw then 
+				v.draw() 
+			end
+		end
 	render.End3D()
 			
 	-- gbuffer
