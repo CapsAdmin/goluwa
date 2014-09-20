@@ -6,27 +6,6 @@ render.shadow_maps = render.shadow_maps or utility.CreateWeakTable()
    
 local FRAMEBUFFERS = {
 	{
-		name = "diffuse",
-		attach = "color",
-		texture_format = {
-			internal_format = "RGBA8",
-		}
-	},
-	{
-		name = "normal",
-		attach = "color",
-		texture_format = {
-			internal_format = "RGB16F",
-		}
-	},
-	{
-		name = "position",
-		attach = "color",
-		texture_format = {
-			internal_format = "RGB16F",
-		}
-	},
-	{
 		name = "light",
 		attach = "color",
 		texture_format = {
@@ -44,139 +23,163 @@ local FRAMEBUFFERS = {
 	} 
 } 
 
-local MESH = {
-	name = "mesh_ecs",
-	vertex = { 
-		uniform = {
-			pvm_matrix = "mat4",
-		},			
-		attributes = {
-			{pos = "vec3"},
-			{normal = "vec3"},
-			{uv = "vec2"},
-			{texture_blend = "float"},
-		},	
-		source = "gl_Position = pvm_matrix * vec4(pos, 1.0);"
-	}, 
-	--[==[tess_control = {
-		uniform = {
-			cam_pos = "vec3",
-			tess_scale = 4;
-		},
-		attributes = {
-			{pos = "vec3"},
-		},
-		source = [[			
-			layout(vertices = 3) out;
-			
-			out vec4 SIGH[];
-			
-			void main()
-			{			
-				SIGH[gl_InvocationID] = LOL[gl_InvocationID];
+render.gbuffer_passes = {}
 
-				if(gl_InvocationID == 0) {
-				   vec3 terrainpos = cam_pos;
-				   terrainpos.z -= clamp(terrainpos.z,-0.1, 0.1); 
-				   
-				   vec4 center = (LOL[1]+LOL[2])/2.0;
-				   gl_TessLevelOuter[0] = min(6.0, 1+tess_scale*0.5/distance(center.xyz, terrainpos));
-				   
-				   center = (LOL[2]+LOL[0])/2.0;				   
-				   gl_TessLevelOuter[1] = min(6.0, 1+tess_scale*0.5/distance(center.xyz, terrainpos));
-				   
-				   center = (LOL[0]+LOL[1])/2.0;				   
-				   gl_TessLevelOuter[2] = min(6.0, 1+tess_scale*0.5/distance(center.xyz, terrainpos));
-				   
-				   center = (LOL[0]+LOL[1]+LOL[2])/3.0;				   
-				   gl_TessLevelInner[0] = min(7.0, 1+tess_scale*0.7/distance(center.xyz, terrainpos));
-				}
-			};
-		]]
+function render.AddGBufferPass(name, buffers, shader)
+	render.gbuffer_passes[name] = {buffers = buffers, shader = shader}
+	
+	for i, info in ipairs(buffers) do
+		table.insert(FRAMEBUFFERS, #FRAMEBUFFERS - 1, {
+			name = info.name,
+			attach = info.attach or "color",
+			texture_format = {
+				internal_format = info.format or "RGB16F",
+			},
+		})
+	end
+end
+
+render.AddGBufferPass(
+	"mesh", 
+	{
+		{name = "diffuse", format = "RGBA8"}, 
+		{name = "normal", format = "RGB16F"}, 
+		{name = "position", format = "RGB16F"}
 	},
-	tess_eval = {
-		uniform = {
-			v_matrix = "mat4",
-		},
-		attributes = {
-			{pos = "vec3"},
+	{
+		name = "mesh_ecs",
+		vertex = { 
+			uniform = {
+				pvm_matrix = "mat4",
+			},			
+			attributes = {
+				{pos = "vec3"},
+				{normal = "vec3"},
+				{uv = "vec2"},
+				{texture_blend = "float"},
+			},	
+			source = "gl_Position = pvm_matrix * vec4(pos, 1.0);"
 		}, 
-		source = [[
-			uniform sampler2D displacement;
-			
-			layout(triangles, equal_spacing, cw) in;
-			
-			in vec4 SIGH[];
-			out vec2 tecoord;
-			out vec4 teposition;
-			
-			void main()
-			{
-			   teposition = gl_TessCoord.x * SIGH[0];
-			   teposition += gl_TessCoord.y * SIGH[1];
-			   teposition += gl_TessCoord.z * SIGH[2];
-			   tecoord = teposition.xy;
-			   vec3 offset = texture(displacement, tecoord).xyz;
-			   teposition.xyz = offset;
-			   gl_Position = v_matrix * teposition;
-			};
-		]]
-	},]==]
-	fragment = { 
-		uniform = {
-			color = Color(1,1,1,1),
-			diffuse = "sampler2D",
-			diffuse2 = "sampler2D",
-			vm_matrix = "mat4",
-			--detail = "sampler2D",
-			--detailscale = 1,
-			
-			bump = "sampler2D",
-			specular = "sampler2D",
-		},		
-		attributes = {
-			{pos = "vec3"},
-			{normal = "vec3"},
-			{uv = "vec2"},
-			{texture_blend = "float"},
-		},			
-		source = [[
-			out vec4 out_color[4];
+		--[==[tess_control = {
+			uniform = {
+				cam_pos = "vec3",
+				tess_scale = 4;
+			},
+			attributes = {
+				{pos = "vec3"},
+			},
+			source = [[			
+				layout(vertices = 3) out;
+				
+				out vec4 SIGH[];
+				
+				void main()
+				{			
+					SIGH[gl_InvocationID] = LOL[gl_InvocationID];
 
-			void main() 
-			{
-				// diffuse
-				out_color[0] = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;			
-				
-				// specular
-				out_color[0].a = texture(specular, uv).r;
-				
-				// normals
-				{
-					out_color[1] = vec4(normalize(mat3(vm_matrix) * -normal), 1);
-									
-					vec3 bump_detail = texture(bump, uv).rgb;
-					
-					if (bump_detail != vec3(1,1,1))
-					{
-						out_color[1].rgb = normalize(mix(out_color[1].rgb, bump_detail, 0.5));
+					if(gl_InvocationID == 0) {
+					   vec3 terrainpos = cam_pos;
+					   terrainpos.z -= clamp(terrainpos.z,-0.1, 0.1); 
+					   
+					   vec4 center = (LOL[1]+LOL[2])/2.0;
+					   gl_TessLevelOuter[0] = min(6.0, 1+tess_scale*0.5/distance(center.xyz, terrainpos));
+					   
+					   center = (LOL[2]+LOL[0])/2.0;				   
+					   gl_TessLevelOuter[1] = min(6.0, 1+tess_scale*0.5/distance(center.xyz, terrainpos));
+					   
+					   center = (LOL[0]+LOL[1])/2.0;				   
+					   gl_TessLevelOuter[2] = min(6.0, 1+tess_scale*0.5/distance(center.xyz, terrainpos));
+					   
+					   center = (LOL[0]+LOL[1]+LOL[2])/3.0;				   
+					   gl_TessLevelInner[0] = min(7.0, 1+tess_scale*0.7/distance(center.xyz, terrainpos));
 					}
-				}
+				};
+			]]
+		},
+		tess_eval = {
+			uniform = {
+				v_matrix = "mat4",
+			},
+			attributes = {
+				{pos = "vec3"},
+			}, 
+			source = [[
+				uniform sampler2D displacement;
 				
-				// position
-				out_color[2] = vm_matrix * vec4(pos, 1);
-								
-				//out_color.rgb *= texture(detail, uv * detailscale).rgb;
-			}
-		]]
+				layout(triangles, equal_spacing, cw) in;
+				
+				in vec4 SIGH[];
+				out vec2 tecoord;
+				out vec4 teposition;
+				
+				void main()
+				{
+				   teposition = gl_TessCoord.x * SIGH[0];
+				   teposition += gl_TessCoord.y * SIGH[1];
+				   teposition += gl_TessCoord.z * SIGH[2];
+				   tecoord = teposition.xy;
+				   vec3 offset = texture(displacement, tecoord).xyz;
+				   teposition.xyz = offset;
+				   gl_Position = v_matrix * teposition;
+				};
+			]]
+		},]==]
+		fragment = { 
+			uniform = {
+				color = Color(1,1,1,1),
+				diffuse = "sampler2D",
+				diffuse2 = "sampler2D",
+				vm_matrix = "mat4",
+				--detail = "sampler2D",
+				--detailscale = 1,
+				
+				bump = "sampler2D",
+				specular = "sampler2D",
+			},		
+			attributes = {
+				{pos = "vec3"},
+				{normal = "vec3"},
+				{uv = "vec2"},
+				{texture_blend = "float"},
+			},			
+			source = [[
+				out vec4 out_color[4];
+
+				void main() 
+				{
+					// diffuse
+					out_color[0] = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;			
+					
+					// specular
+					out_color[0].a = texture(specular, uv).r;
+					
+					// normals
+					{
+						out_color[1] = vec4(normalize(mat3(vm_matrix) * -normal), 1);
+										
+						vec3 bump_detail = texture(bump, uv).rgb;
+						
+						if (bump_detail != vec3(1,1,1))
+						{
+							out_color[1].rgb = normalize(mix(out_color[1].rgb, bump_detail, 0.5));
+						}
+					}
+					
+					// position
+					out_color[2] = vm_matrix * vec4(pos, 1);
+									
+					//out_color.rgb *= texture(detail, uv * detailscale).rgb;
+				}
+			]]
+		}
 	}
-}
+)
 
 local LIGHT = {
 	name = "gbuffer_light",
 	vertex = { 
 		uniform = {
-			pvm_matrix = "mat4",
+			pvm_matrix = {mat4 = render.GetPVWMatrix2D},
 		},			
 		attributes = {
 			{pos = "vec3"},
@@ -193,10 +196,10 @@ local LIGHT = {
 			tex_normal = "sampler2D",
 			tex_position = "sampler2D",
 			
-			cam_pos = "vec3",
+			cam_pos = {vec3 = render.GetCamPos},
 			light_pos = Vec3(0,0,0),
 			
-			screen_size = Vec2(1,1),						
+			screen_size = {vec2 = render.GetScreenSize},
 			light_color = Color(1,1,1,1),				
 			light_diffuse_intensity = 0.5,
 			light_radius = 1000,
@@ -297,7 +300,7 @@ local GBUFFER = {
 	name = "gbuffer",
 	vertex = {
 		uniform = {
-			pvm_matrix = "mat4",
+			pvm_matrix = {mat4 = render.GetPVWMatrix2D},
 		},			
 		attributes = {
 			{pos = "vec2"},
@@ -306,19 +309,10 @@ local GBUFFER = {
 		source = "gl_Position = pvm_matrix * vec4(pos, 0.0, 1.0);"
 	},
 	fragment = {
-		uniform = {
-			tex_diffuse = "sampler2D",
-			tex_light = "sampler2D",
-			tex_normal = "sampler2D",
-			tex_position = "sampler2D", 
-			tex_depth = "sampler2D",
-			tex_noise = "sampler2D",
-						
-			width = "float",
-			height = "float",
-			
-			cam_nearz = "float",
-			cam_farz = "float",
+		uniform = {			
+			screen_size = {vec2 = render.GetScreenSize},			
+			cam_nearz = {float = function() return render.camera.nearz end},
+			cam_farz = {float = function() return render.camera.farz end},
 		},  
 		attributes = {
 			{pos = "vec2"},
@@ -356,8 +350,8 @@ local GBUFFER = {
 				float depth = get_depth(uv);
 				float d;
 
-				float pw = 1.0 / width;
-				float ph = 1.0 / height;
+				float pw = 1.0 / screen_size.x;
+				float ph = 1.0 / screen_size.y;
 
 				float ao = 2;
 				
@@ -403,7 +397,7 @@ local GBUFFER = {
 				vec3 fog_color = atmosphere_color;
 				float fog_distance = 750.0;
 			
-				out_color.rgb = mix_fog(out_color.rgb, depth, fog_distance, 1-fog_color); //this fog is fucked up, needs to be redone
+				//out_color.rgb = mix_fog(out_color.rgb, depth, fog_distance, 1-fog_color); //this fog is fucked up, needs to be redone
 			
 				out_color.rgb *= vec3(ssao());
 				out_color.rgb *= texture(tex_light, uv).rgb;								
@@ -446,7 +440,7 @@ local EFFECTS = {
 			#define FxaaTexLod0(t, p) textureLod(t, p, 0.0)
 			#define FxaaTexOff(t, p, o, r) textureLodOffset(t, p, 0.0, o)
 			
-			vec2 rcpFrame = vec2(1.0/width, 1.0/height);
+			vec2 rcpFrame = 1.0/screen_size;
 			vec4 posPos = vec4(uv, uv - (rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT)));
 
 			vec3 FxaaPixelShader(vec4 posPos, sampler2D tex)
@@ -541,8 +535,8 @@ local EFFECTS = {
 
 			vec4 blur(sampler2D tex, vec2 uv)
 			{			
-				float dx = 2  / width;
-				float dy = 2 / height;
+				float dx = 2  / screen_size.x;
+				float dy = 2 / screen_size.y;
 				
 				// Apply 3x3 gaussian filter
 				vec4 color = 4.0 * texture(tex, uv);
@@ -574,8 +568,8 @@ local EFFECTS = {
 
 			vec4 blur(sampler2D tex, vec2 uv)
 			{			
-				float dx = 4  / width;
-				float dy = 4 / height;
+				float dx = 4  / screen_size.x;
+				float dy = 4 / screen_size.y;
 				
 				// Apply 3x3 gaussian filter
 				vec4 color = 4.0 * texture(tex, uv);
@@ -607,8 +601,8 @@ local EFFECTS = {
 
 			vec4 blur(sampler2D tex, vec2 uv)
 			{			
-				float dx = 1  / width;
-				float dy = 1 / height;
+				float dx = 1  / screen_size.x;
+				float dy = 1 / screen_size.y;
 				
 				// Apply 3x3 gaussian filter
 				vec4 color = 4.0 * texture(tex, uv);
@@ -672,7 +666,7 @@ function render.AddPostProcessShader(name, source, priority, down_sample)
 	local width = render.GetWidth() / down_sample
 	local height = render.GetHeight() / down_sample  
 	
-	local shader = render.CreateShader({
+	local shader = {
 		name = "gbuffer_post_process_" .. name,
 		vertex = {
 			uniform = {
@@ -685,16 +679,9 @@ function render.AddPostProcessShader(name, source, priority, down_sample)
 			source = "gl_Position = pvm_matrix * vec4(pos, 0.0, 1.0);"
 		},
 		fragment = {
-			uniform = {
+			uniform = {				
+				screen_size = "vec2",
 				tex_gbuffer = "sampler2D",
-				tex_last = "sampler2D",
-				tex_light = "sampler2D",
-				tex_diffuse = "sampler2D",
-				tex_normal = "sampler2D",
-				tex_depth = "sampler2D",
-				
-				width = "float",
-				height = "float",
 			},
 			attributes = {
 				{pos = "vec2"},
@@ -702,7 +689,11 @@ function render.AddPostProcessShader(name, source, priority, down_sample)
 			},
 			source = source
 		}
-	})
+	}
+	for i, info in ipairs(FRAMEBUFFERS) do
+		shader.fragment.uniform["tex_" .. info.name] = "sampler2D"
+	end
+	shader = render.CreateShader(shader)
 	
 	local buffer = render.CreateFrameBuffer(width, height, {
 		{
@@ -717,16 +708,13 @@ function render.AddPostProcessShader(name, source, priority, down_sample)
 	shader.pvm_matrix = render.GetPVWMatrix2D
 	shader.tex_last = buffer:GetTexture("tex_last")
 	shader.tex_gbuffer = render.screen_buffer:GetTexture("screen_buffer")
+	shader.screen_size = Vec2(width, height)
 	
-	shader.tex_light = render.gbuffer:GetTexture("light")
-	shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
-	shader.tex_position = render.gbuffer:GetTexture("position") 
-	shader.tex_normal = render.gbuffer:GetTexture("normal")
-	shader.tex_depth = render.gbuffer:GetTexture("depth")
+	for i, info in ipairs(FRAMEBUFFERS) do
+		shader["tex_" .. info.name] = render.gbuffer:GetTexture(info.name)
+	end
+	
 	shader.p_matrix_inverse = function() return ((render.matrices.view_3d * render.matrices.projection_3d):GetInverse()).m end
-	
-	shader.width = width
-	shader.height = height
 		
 	local quad = shader:CreateVertexBuffer({
 		{pos = {0, 0}, uv = {0, 1}},
@@ -762,10 +750,6 @@ function render.InitializeGBuffer(width, height)
 		logn("[render] initializing gbuffer: ", width, " ", height)
 	end
 	
-	local noise = Texture(width, height):Fill(function() 
-		return math.random(255), math.random(255), math.random(255), math.random(255)
-	end)
-	
 	do -- gbuffer	  
 		render.gbuffer = render.CreateFrameBuffer(width, height, FRAMEBUFFERS)  
 		
@@ -773,29 +757,16 @@ function render.InitializeGBuffer(width, height)
 			logn("[render] failed to initialize gbuffer")
 			return
 		end
+		
+		for i, info in ipairs(FRAMEBUFFERS) do
+			GBUFFER.fragment.uniform["tex_" .. info.name] = "sampler2D"
+		end
 
 		local shader = render.CreateShader(GBUFFER)
-		
-		shader.pvm_matrix = render.GetPVWMatrix2D
-		shader.v_matrix = function() return (render.matrices.view_3d).m end
-		shader.pv_matrix = function() return (render.matrices.projection_3d*render.matrices.view_3d).m end
-		shader.p_matrix_inverse = function() return ((render.matrices.view_3d * render.matrices.projection_3d):GetInverse()).m end
-		shader.cam_pos = render.GetCamPos
-		shader.cam_vec = function() return render.GetCamAng():GetRad():GetForward() end
-		shader.cam_fov = function() return math.rad(render.GetCamFOV()) end
-		shader.cam_nearz = function() return render.camera.nearz end
-		shader.cam_farz = function() return render.camera.farz end
-		shader.time = function() return tonumber(timer.GetSystemTime()) end
-		 
-		shader.tex_light = render.gbuffer:GetTexture("light")
-		shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
-		shader.tex_position = render.gbuffer:GetTexture("position") 
-		shader.tex_normal = render.gbuffer:GetTexture("normal")
-		shader.tex_depth = render.gbuffer:GetTexture("depth")
-		shader.tex_noise = noise
-		
-		shader.width = width
-		shader.height = height
+				 
+		for i, info in ipairs(FRAMEBUFFERS) do
+			shader["tex_" .. info.name] = render.gbuffer:GetTexture(info.name)
+		end
 
 		local vbo = shader:CreateVertexBuffer({
 			{pos = {0, 0}, uv = {0, 1}},
@@ -813,24 +784,18 @@ function render.InitializeGBuffer(width, height)
 	
 	do -- light
 		local shader = render.CreateShader(LIGHT)
-
-		shader.pvm_matrix = render.GetPVWMatrix2D
-		shader.cam_dir = function() return render.GetCamAng():GetRad():GetForward() end
-		shader.cam_pos = render.GetCamPos
-		shader.cam_nearz = function() return render.camera.nearz end
-		shader.cam_farz = function() return render.camera.farz end
-		 
-		shader.tex_depth = render.gbuffer:GetTexture("depth")
-		shader.tex_diffuse = render.gbuffer:GetTexture("diffuse")
-		shader.tex_position = render.gbuffer:GetTexture("position")
-		shader.tex_normal = render.gbuffer:GetTexture("normal")
-		shader.screen_size = Vec2(width, height)
+		
+		for i, info in ipairs(FRAMEBUFFERS) do
+			shader["tex_" .. info.name] = render.gbuffer:GetTexture(info.name)
+		end
 		
 		render.gbuffer_light_shader = shader
 	end
 	
 	do -- mesh		
-		render.gbuffer_mesh_shader = render.CreateShader(MESH)
+		for name, info in pairs(render.gbuffer_passes) do
+			render["gbuffer_" .. name .. "_shader"] = render.CreateShader(info.shader)
+		end
 		--render.shadow_map_shader = render.CreateShader(SHADOW)
 	end
 			

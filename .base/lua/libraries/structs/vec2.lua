@@ -148,7 +148,7 @@ fFoV is the Field of View (FOV) of your camera in ___radians___
  ]]
 function META:ToWorld(w, h, ang, fov)
 	local cam = engine3d.GetCurrentCamera()
-	local _w, _h = render.GetScreenSize()
+	local _w, _h = render.GetScreenSize():Unpack()
 	
 	w = w or _w
 	h = h or _h
