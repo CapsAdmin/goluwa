@@ -831,7 +831,7 @@ function render.InitializeGBuffer(width, height)
 	
 	do -- mesh		
 		render.gbuffer_mesh_shader = render.CreateShader(MESH)
-		render.shadow_map_shader = render.CreateShader(SHADOW)
+		--render.shadow_map_shader = render.CreateShader(SHADOW)
 	end
 			
 	event.AddListener("WindowFramebufferResized", "gbuffer", function(window, w, h)
