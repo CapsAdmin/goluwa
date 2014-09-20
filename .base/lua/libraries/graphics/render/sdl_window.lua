@@ -223,7 +223,12 @@ do -- window meta
 		local event_name_translate = {}
 		local key_translate = {
 			left_ctrl = "left_control",
+			["keypad_-"] = "kp_subtract",
+			["keypad_+"] = "kp_add",
 		}
+		for i = 1, 9 do
+			key_translate["keypad_" .. i] = "kp_" .. i
+		end
 		
 		local function call(self, name, ...)
 			if not self then return end
