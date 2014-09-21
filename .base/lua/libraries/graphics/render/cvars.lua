@@ -12,7 +12,7 @@ local modes = {
 }
 
 cvar("mode", "fill", function(type) 
-	gl.PolygonMode(gl.e.GL_FRONT_AND_BACK, modes[type])
+	gl.PolygonMode(gl.e.GL_FRONT_AND_BACK, modes[type] or modes.fill)
 end)
 
 cvar("line_width", 1, gl.LineWidth)
