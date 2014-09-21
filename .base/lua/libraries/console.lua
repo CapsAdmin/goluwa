@@ -375,7 +375,7 @@ do -- console vars
 		local T = type(def)
 		
 		local func = function(line, value)
-			if not value then	
+			if value == nil then	
 				value = console.vars[name] or def
 				
 				if T == "string" then
@@ -393,12 +393,11 @@ do -- console vars
 					end
 				end
 			else
-					
 				if T ~= "string" then
 					value = luadata.FromString(value)
 				end
-			
-				if type(value) ~= T then
+							
+				if value == nil then
 					value = def
 				end
 			
@@ -408,7 +407,7 @@ do -- console vars
 					callback(value)
 				end
 				
-				logf("%s = %s\n", name, value)
+				logf("%s = %s (%s)\n", name, value, typex(value))
 			end
 			
 		end
