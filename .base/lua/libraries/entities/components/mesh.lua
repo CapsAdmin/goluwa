@@ -1,5 +1,3 @@
-local entities = (...) or _G.entities
-
 local COMPONENT = {}
 
 COMPONENT.Name = "mesh"
@@ -25,8 +23,162 @@ COMPONENT.Network = {
 	--Color = {"boolean", 1/5},	
 }
 
+if CLIENT then				
+	
+	do -- shader
+		local gl = require("lj-opengl") -- OpenGL
+		
+		local PASS = render.CreateGBufferPass("mesh", 1)
 
-if CLIENT then						
+		PASS:AddBuffer("diffuse", "RGBA8") 
+		PASS:AddBuffer("normal", "RGB16F") 
+		PASS:AddBuffer("position", "RGB16F")
+
+		local gl = require("lj-opengl") -- OpenGL
+
+		function PASS:Draw3D()
+			gl.DepthMask(gl.e.GL_TRUE)
+			gl.Enable(gl.e.GL_DEPTH_TEST)
+			gl.Disable(gl.e.GL_BLEND)	
+			render.SetCullMode("back")
+			
+			render.gbuffer:Begin()
+				render.gbuffer:Clear()
+				event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
+			render.gbuffer:End()
+		end
+
+		PASS:ShaderStage("vertex", { 
+			uniform = {
+				pvm_matrix = "mat4",
+			},			
+			attributes = {
+				{pos = "vec3"},
+				{normal = "vec3"},
+				{uv = "vec2"},
+				{texture_blend = "float"},
+			},	
+			source = "gl_Position = pvm_matrix * vec4(pos, 1.0);"
+		})
+
+		PASS:ShaderStage("fragment", { 
+			uniform = {
+				color = Color(1,1,1,1),
+				diffuse = "sampler2D",
+				diffuse2 = "sampler2D",
+				vm_matrix = "mat4",
+				--detail = "sampler2D",
+				--detailscale = 1,
+				
+				bump = "sampler2D",
+				specular = "sampler2D",
+			},		
+			attributes = {
+				{pos = "vec3"},
+				{normal = "vec3"},
+				{uv = "vec2"},
+				{texture_blend = "float"},
+			},			
+			source = [[
+				out vec4 out_color[4];
+
+				void main() 
+				{
+					// diffuse
+					out_color[0] = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;			
+					
+					// specular
+					out_color[0].a = texture(specular, uv).r;
+					
+					// normals
+					{
+						out_color[1] = vec4(normalize(mat3(vm_matrix) * -normal), 1);
+										
+						vec3 bump_detail = texture(bump, uv).rgb;
+						
+						if (bump_detail != vec3(1,1,1))
+						{
+							out_color[1].rgb = normalize(mix(out_color[1].rgb, bump_detail, 0.5));
+						}
+					}
+					
+					// position
+					out_color[2] = vm_matrix * vec4(pos, 1);
+									
+					//out_color.rgb *= texture(detail, uv * detailscale).rgb;
+				}
+			]]
+		})
+
+
+		--[==[
+		PASS:ShaderStage("tess_control", { 
+			uniform = {
+				cam_pos = "vec3",
+				tess_scale = 4;
+			},
+			attributes = {
+				{pos = "vec3"},
+			},
+			source = [[			
+				layout(vertices = 3) out;
+				
+				out vec4 SIGH[];
+				
+				void main()
+				{			
+					SIGH[gl_InvocationID] = LOL[gl_InvocationID];
+
+					if(gl_InvocationID == 0) {
+					   vec3 terrainpos = cam_pos;
+					   terrainpos.z -= clamp(terrainpos.z,-0.1, 0.1); 
+					   
+					   vec4 center = (LOL[1]+LOL[2])/2.0;
+					   gl_TessLevelOuter[0] = min(6.0, 1+tess_scale*0.5/distance(center.xyz, terrainpos));
+					   
+					   center = (LOL[2]+LOL[0])/2.0;				   
+					   gl_TessLevelOuter[1] = min(6.0, 1+tess_scale*0.5/distance(center.xyz, terrainpos));
+					   
+					   center = (LOL[0]+LOL[1])/2.0;				   
+					   gl_TessLevelOuter[2] = min(6.0, 1+tess_scale*0.5/distance(center.xyz, terrainpos));
+					   
+					   center = (LOL[0]+LOL[1]+LOL[2])/3.0;				   
+					   gl_TessLevelInner[0] = min(7.0, 1+tess_scale*0.7/distance(center.xyz, terrainpos));
+					}
+				};
+			]]
+		})
+
+		PASS:ShaderStage("tess_eval", { 
+			uniform = {
+				v_matrix = "mat4",
+			},
+			attributes = {
+				{pos = "vec3"},
+			}, 
+			source = [[
+				uniform sampler2D displacement;
+				
+				layout(triangles, equal_spacing, cw) in;
+				
+				in vec4 SIGH[];
+				out vec2 tecoord;
+				out vec4 teposition;
+				
+				void main()
+				{
+				   teposition = gl_TessCoord.x * SIGH[0];
+				   teposition += gl_TessCoord.y * SIGH[1];
+				   teposition += gl_TessCoord.z * SIGH[2];
+				   tecoord = teposition.xy;
+				   vec3 offset = texture(displacement, tecoord).xyz;
+				   teposition.xyz = offset;
+				   gl_Position = v_matrix * teposition;
+				};
+			]]
+		})]==]
+	end
+			
 	function COMPONENT:OnAdd(ent)
 	end
 
@@ -102,4 +254,4 @@ if CLIENT then
 	COMPONENT.OnDraw2D = COMPONENT.OnDraw3DGeometry
 end
 
-entities.RegisterComponent(COMPONENT)
+metatable.RegisterComponent(COMPONENT)
