@@ -370,20 +370,28 @@ do -- console vars
 	function console.CreateVariable(name, def, callback, help)
 		if not console.vars then console.ReloadVariables() end
 
-		console.vars[name] = console.vars[name] or def
+		if console.vars[name] == nil then 
+			console.vars[name] = def
+		end
 
 		local T = type(def)
 		
 		local func = function(line, value)
 			if value == nil then	
-				value = console.vars[name] or def
+				if console.vars[name] ~= nil then	
+					value = console.vars[name]
+				end
+				
+				if value == nil then
+					value = def
+				end
 				
 				if T == "string" then
 					value = ("%q"):format(value)
 				end
 				
-				logf("%s = %s\n", name, luadata.ToString(luadata.FromString(value)))
-				logn("default = ", luadata.ToString(def))
+				logf("%s == %s\n", name, luadata.ToString(value))
+				logn("default == ", luadata.ToString(def))
 				local help = console.GetCommands()[name].help
 				if help then
 					if type(help) == "function" then
@@ -424,7 +432,11 @@ do -- console vars
 	function console.GetVariable(var, def)
 		if not console.vars then console.ReloadVariables() end
 		
-		return console.vars[var] or def
+		if console.vars[var] == nil then
+			return def
+		end
+		
+		return console.vars[var]
 	end
 
 	function console.SetVariable(name, value)
