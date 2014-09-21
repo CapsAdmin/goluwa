@@ -49,7 +49,13 @@ do -- vfs extension
 		local tbl = serializer.ReadFile(lib, path)
 		
 		if tbl then
-			return serializer.ReadFile(lib, path)[key] or def
+			local val = serializer.ReadFile(lib, path)[key]
+			
+			if val == nil then
+				return def
+			end
+			
+			return val
 		end
 		
 		return def
