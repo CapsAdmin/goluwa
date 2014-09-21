@@ -251,6 +251,8 @@ do
 			
 			render.matrices.world = stack[i]
 		end
+		
+		render.matrix_stack = stack
 	end
 	
 	function render.SetWorldMatrixOverride(matrix)
