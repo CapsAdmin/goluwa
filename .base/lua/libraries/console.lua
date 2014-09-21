@@ -426,6 +426,12 @@ do -- console vars
 		
 		console.AddCommand(name, func, help)
 		
+		if console.GetVariable(var) ~= def and type(callback) == "function" then
+			event.Delay(function() 
+				callback(console.GetVariable(var))
+			end)
+		end
+		
 		return metatable.CreateObject(console.cvar_meta, {cvar = name})
 	end
 
