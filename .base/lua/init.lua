@@ -633,7 +633,6 @@ do -- libraries
 	if CLIENT then
 
 		-- graphics
-		print(utility.CreateWeakTable())
 		render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
 
 		surface = include("libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
