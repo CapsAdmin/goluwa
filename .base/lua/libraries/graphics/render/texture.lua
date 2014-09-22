@@ -496,27 +496,31 @@ function render.CreateTextureFromPath(path, format)
 	self.override_texture = loading
 	self.loading = true
 
-	if not vfs.ReadAsync(path, function(data)
+	if not vfs.ReadAsync(path, function(data, reason)
 		self.loading = false
 		self.override_texture = nil
 		
-		local buffer, w, h, info = render.DecodeTexture(data, path)
-		
-		if buffer == nil or w == 0 or h == 0 then
-			self:MakeError()
-		else
-			if info.format then
-				table.merge(self.format, info.format)
-				self:UpdateFormat()
+		if data then
+			local buffer, w, h, info = render.DecodeTexture(data, path)
+			
+			if buffer == nil or w == 0 or h == 0 then
+				self:MakeError()
+			else
+				if info.format then
+					table.merge(self.format, info.format)
+					self:UpdateFormat()
+				end
+				
+				render.texture_path_cache[path] = self			
+				vfs.UncacheAsync(path)
+				
+				self:Replace(buffer, w, h)
 			end
-			
-			render.texture_path_cache[path] = self			
-			vfs.UncacheAsync(path)
-			
-			self:Replace(buffer, w, h)
-		end
-		
-		self.decode_info = info
+			self.decode_info = info
+		else
+			logf("error loading texture %s: %s\n", path, reason)
+			self:MakeError()
+		end		
 	end, format.read_speed) then
 		self:MakeError()
 	end
