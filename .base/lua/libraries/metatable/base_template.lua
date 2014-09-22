@@ -26,8 +26,26 @@ do
 		return true
 	end
 
-	function META:GetTrace()
+	function META:GetDebugTrace()
 		return self.debug_trace or ""
+	end
+	
+	function META:GetCreationTime()
+		return self.creation_time
+	end
+	
+	function META:FindReferences()
+		do return utility.FindReferences(self) end
+		local found = {utility.FindReferences(self)}
+		for k,v in pairs(self) do
+			if string.format("%p", k) ~= "NULL" and type(k) ~= "string" then
+				table.insert(found, utility.FindReferences(k))
+			end
+			if string.format("%p", v) ~= "NULL" and type(v) ~= "string" then
+				table.insert(found, utility.FindReferences(v))
+			end
+		end
+		return table.concat(found, "\n")
 	end
 
 	function metatable.CreateTemplate(super_type, sub_type, skip_register)
@@ -62,23 +80,37 @@ function metatable.CreateObject(meta, override, skip_gc_callback)
 	local self = setmetatable(override, table.copy(meta)) 
 	
 	if not skip_gc_callback then
-		utility.SetGCCallback(self)
+		utility.SetGCCallback(self, function(self)
+			if self:IsValid() then 
+				self:Remove() 
+			end
+			metatable.created_objects[self] = nil
+		end)
 	end
 	
 	self.debug_trace = debug.trace(true)
 	
 	metatable.created_objects = metatable.created_objects or utility.CreateWeakTable()
-	table.insert(metatable.created_objects, self)
+	metatable.created_objects[self] = self
+	self.creation_time = os.clock()
 	
 	return self
 end
 
-function metatable.GetCreated()
+function metatable.GetCreated(sorted)
+	if sorted then
+		local out = {}
+		for k,v in pairs(metatable.created_objects) do
+			table.insert(out, v)
+		end
+		table.sort(out, function(a, b) return a.creation_time < b.creation_time end)
+		return out
+	end
 	return metatable.created_objects or {}
 end
 
 function metatable.UpdateObjects(meta)
-	for key, obj in ipairs(metatable.GetCreated()) do
+	for key, obj in pairs(metatable.GetCreated()) do
 		if obj.Type == meta.Type and obj.ClassName == meta.ClassName then
 			for k, v in pairs(meta) do
 				-- update entity functions only
@@ -93,7 +125,7 @@ end
 
 function metatable.RemoveObjects(super_type, sub_type)
 	sub_type = sub_type or super_type
-	for _, obj in ipairs(metatable.GetCreated()) do
+	for _, obj in pairs(metatable.GetCreated()) do
 		if obj.Type == super_type and obj.ClassName == sub_type then
 			if obj:IsValid() then
 				obj:Remove()
