@@ -188,6 +188,7 @@ function CONTEXT:WriteBytes(str)
 end
 
 function CONTEXT:ReadBytes(bytes)
+	if bytes == math.huge then bytes = self:GetSize() end
 	bytes = math.min(bytes, self.file_info.entry_length - self.position)
 
 	self.file:SetPos(self.file_info.entry_offset + self.position)
