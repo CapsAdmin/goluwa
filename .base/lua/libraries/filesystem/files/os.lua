@@ -74,6 +74,8 @@ function CONTEXT:WriteBytes(str)
 end
 
 function CONTEXT:ReadBytes(bytes)
+	if bytes == math.huge then bytes = self:GetSize() end
+	
 	return self.file:read(bytes)
 end
 
