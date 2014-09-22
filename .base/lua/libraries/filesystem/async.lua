@@ -77,7 +77,7 @@ vfs.async_readers = {
 								queue[path].callback(data)
 							end)
 						else
-							logf("[vfs] unable to find url for %s from google web fonts\n", path)
+							queue[path].callback(nil, ("unable to find url for %s from google web fonts"):format(path))
 						end
 					end)
 				then
@@ -125,36 +125,36 @@ function vfs.ReadAsync(path, callback, mbps, context, reader, dont_cache)
 	if vfs.debug or vfs.debug_async then
 		logf("[vfs] async %q: start loading\n", path)
 		local size = 0
-		for k, v in pairs(cache) do	size = size + #v end
+		for k, v in pairs(cache) do if v[1] then size = size + #v[1] end end
 		logn("[vfs] async: cache size = ", utility.FormatFileSize(size))
 	end
 	
 	if cache[path] then
-		callback(cache[path])
+		callback(unpack(cache[path]))
 		return true
 	end
 		
 	-- if it's already being downloaded, append the callback to the current download
 	if queue[path] then
 		local old = queue[path].callback
-		queue[path].callback = function(data)
-			callback(data)
-			old(data)
+		queue[path].callback = function(...)
+			callback(...)
+			old(...)
 			queue[path] = nil
 		end
 		return true
 	end
 			
-	queue[path] = {callback = function(data)
-		cache[path] = data
-		callback(data)
+	queue[path] = {callback = function(...)
+		cache[path] = {...}
+		callback(...)
 		queue[path] = nil
 		
 		if vfs.debug or vfs.debug_async then
 			logf("[vfs] async %q: finish loading\n", path)
 		
 			local size = 0
-			for k, v in pairs(cache) do	size = size + #v end
+			for k, v in pairs(cache) do if v[1] then size = size + #v[1] end end
 			logn("[vfs] async: cache size = ", utility.FormatFileSize(size))
 		end
 	end}
