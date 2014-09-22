@@ -80,7 +80,7 @@ if CLIENT then
 					vec2 uv = get_uv();
 					return -texture(tex_position, uv).yxz;
 				}
-				
+															
 							
 				float get_attenuation(vec3 world_pos)
 				{
@@ -128,7 +128,7 @@ if CLIENT then
 					vec3 diffuse_ = light_color.rgb * max(0.0, normalDotLight);
 					vec3 specular_ = light_color.rgb * max(0.0, CookTorrance) * specular;
 					
-					return (diffuse_ + specular_) * max(0.0, normalDotLight) * light_diffuse_intensity;
+					return (diffuse_ + specular_) * light_diffuse_intensity;
 				}
 							
 				void main()
@@ -271,3 +271,7 @@ if CLIENT then
 end
 
 metatable.RegisterComponent(COMPONENT)
+
+if RELOAD then
+	render.InitializeGBuffer()
+end
