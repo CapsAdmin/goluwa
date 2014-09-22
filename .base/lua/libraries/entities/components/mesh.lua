@@ -96,9 +96,10 @@ if CLIENT then
 										
 						vec3 bump_detail = texture(bump, uv).rgb;
 						
-						if (bump_detail != vec3(1,1,1))
+						if (bump_detail != vec3(0,0,0))
 						{
-							out_color[1].rgb = normalize(mix(out_color[1].rgb, bump_detail, 0.5));
+							out_color[1].rgb *= bump_detail;
+							out_color[1].rgb = normalize(out_color[1].rgb);
 						}
 					}
 					
@@ -255,3 +256,7 @@ if CLIENT then
 end
 
 metatable.RegisterComponent(COMPONENT)
+
+if RELOAD then
+	render.InitializeGBuffer()
+end
