@@ -1,7 +1,7 @@
-local META = metatable.CreateTemplate("neural_network")
+local META = prototype.CreateTemplate("neural_network")
 
-metatable.GetSet(META, "Neurons", {})
-metatable.GetSet(META, "LearningRate", 0.5)
+prototype.GetSet(META, "Neurons", {})
+prototype.GetSet(META, "LearningRate", 0.5)
 
 local ACTIVATION_RESPONSE = 1
 
@@ -10,7 +10,7 @@ local function sigmoid_transfer(x)
 end 
 
 function NeuralNetwork(inputs, outputs, hidden_layers, neurons_per_layer)
-	local self = metatable.CreateObject(META)
+	local self = prototype.CreateObject(META)
 	
 	self.inputs = inputs or 1
 	self.outputs = outputs or 1

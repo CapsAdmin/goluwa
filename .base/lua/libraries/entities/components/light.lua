@@ -4,21 +4,21 @@ COMPONENT.Name = "light"
 COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Draw3DLights", "DrawShadowMaps"}
 
-metatable.StartStorable()
-	metatable.GetSet(COMPONENT, "Color", Color(1, 1, 1))
+prototype.StartStorable()
+	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1))
 	
-	--metatable.GetSet(COMPONENT, "Color", Color(1,1,1,1))	
-	--metatable.GetSet(COMPONENT, "Radius", 1000),
-	--metatable.GetSet(COMPONENT, "Pos", Vec3(0,0,0))
+	--prototype.GetSet(COMPONENT, "Color", Color(1,1,1,1))	
+	--prototype.GetSet(COMPONENT, "Radius", 1000),
+	--prototype.GetSet(COMPONENT, "Pos", Vec3(0,0,0))
 	
 	-- automate this!!
-	metatable.GetSet(COMPONENT, "AmbientIntensity", 0)
-	metatable.GetSet(COMPONENT, "DiffuseIntensity", 0.5)
-	metatable.GetSet(COMPONENT, "SpecularPower", 32)
-	metatable.GetSet(COMPONENT, "AttenuationConstant", 0)
-	metatable.GetSet(COMPONENT, "AttenuationLinear", 0)
-	metatable.GetSet(COMPONENT, "AttenuationExponent", 0.01)	
-metatable.EndStorable()
+	prototype.GetSet(COMPONENT, "AmbientIntensity", 0)
+	prototype.GetSet(COMPONENT, "DiffuseIntensity", 0.5)
+	prototype.GetSet(COMPONENT, "SpecularPower", 32)
+	prototype.GetSet(COMPONENT, "AttenuationConstant", 0)
+	prototype.GetSet(COMPONENT, "AttenuationLinear", 0)
+	prototype.GetSet(COMPONENT, "AttenuationExponent", 0.01)	
+prototype.EndStorable()
 
 if CLIENT then			
 	do -- shader
@@ -93,7 +93,7 @@ if CLIENT then
 							 
 				vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular)
 				{
-					float roughness = 0.1;
+					float roughness = 0.8;
 
 					vec3 cEye = normalize(cam_pos - world_pos);
 					vec3 cHalf = normalize(cLight + cEye);
@@ -270,7 +270,7 @@ if CLIENT then
 	end	
 end
 
-metatable.RegisterComponent(COMPONENT)
+prototype.RegisterComponent(COMPONENT)
 
 if RELOAD then
 	render.InitializeGBuffer()

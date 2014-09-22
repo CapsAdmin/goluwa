@@ -221,7 +221,7 @@ do -- orientation
 end
 
 do -- parenting
-	metatable.AddParentingTemplate(PANEL)
+	prototype.AddParentingTemplate(PANEL)
 
 	function PANEL:AddChild(var, pos)
 		var = var or NULL
@@ -967,7 +967,7 @@ do -- events
 				end
 			end
 			
-			metatable.MakeNULL(self)		
+			prototype.MakeNULL(self)		
 		end
 	end
 	

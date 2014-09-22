@@ -1,4 +1,4 @@
-local metatable = (...) or _G.metatable
+local prototype = (...) or _G.prototype
 
 local type_info = {
 	LongLong = {type = "int64_t", field = "integer_signed", union = "longlong"},
@@ -148,7 +148,7 @@ local function header_to_table(str)
 	return out
 end
 
-function metatable.AddBufferTemplate(META)
+function prototype.AddBufferTemplate(META)
 	check(META.WriteByte, "function")
 	check(META.ReadByte, "function")
 

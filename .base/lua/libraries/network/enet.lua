@@ -40,7 +40,7 @@ local function create_host(ip, port, max_connections, max_channels, incomming_ba
 end
 
 do -- peer
-	local CLIENT = metatable.CreateTemplate("enet_peer")
+	local CLIENT = prototype.CreateTemplate("enet_peer")
 	
 	function CLIENT:Connect(ip, port, channels)
 		channels = channels or 1
@@ -110,7 +110,7 @@ do -- peer
 	end
 
 	function enet.CreatePeer(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)		
-		local self = metatable.CreateObject(CLIENT)
+		local self = prototype.CreateObject(CLIENT)
 		
 		max_connections = max_connections or 2
 		max_channels = max_channels or 2
@@ -130,12 +130,12 @@ do -- peer
 	end
 	
 	function enet.CreateDummyPeer()
-		return metatable.CreateObject(CLIENT)
+		return prototype.CreateObject(CLIENT)
 	end
 end
 
 do -- server
-	local SERVER = metatable.CreateTemplate("enet_server")
+	local SERVER = prototype.CreateTemplate("enet_server")
 	
 	SERVER.peers = {}
 	
@@ -173,7 +173,7 @@ do -- server
 	end
 	
 	function enet.CreateServer(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)		
-		local self = metatable.CreateObject(SERVER)
+		local self = prototype.CreateObject(SERVER)
 		
 		self.host = create_host(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
 		self.peer = peer

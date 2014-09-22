@@ -15,7 +15,7 @@ function render.CreateMesh(vertices, indices, is_valid_table)
 end
 
 do -- model meta
-	local META = metatable.CreateTemplate("mesh3d")
+	local META = prototype.CreateTemplate("mesh3d")
 	META.__index = META
 	
 	function render.Create3DMesh(path, flags, now)

@@ -27,7 +27,7 @@ calllbacks.OnMonitor(function() event.Call("OnMonitorConnected") end)
 calllbacks.OnMonitor = nil
 
 do -- window meta
-	local META = metatable.CreateTemplate("render_window")
+	local META = prototype.CreateTemplate("render_window")
 
 	function META:Remove()
 		if self.OnRemove then self:OnRemove() end
@@ -36,7 +36,7 @@ do -- window meta
 		
 		glfw.DestroyWindow(self.__ptr)
 		
-		metatable.MakeNULL(self)
+		prototype.MakeNULL(self)
 	end
 
 	local x = ffi.new("int[1]")
@@ -242,7 +242,7 @@ do -- window meta
 			gl.InitMiniGlew()
 		end
 
-		local self = metatable.CreateObject(META)
+		local self = prototype.CreateObject(META)
 		
 		self.last_mpos = Vec2()
 		self.mouse_delta = Vec2()

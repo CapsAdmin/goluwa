@@ -16,7 +16,7 @@ do -- lol
 end
 
 do -- window meta
-	local META = metatable.CreateTemplate("render_window")
+	local META = prototype.CreateTemplate("render_window")
 
 	function META:Remove()
 		if self.OnRemove then self:OnRemove() end
@@ -25,7 +25,7 @@ do -- window meta
 		sdl.DestroyWindow(self.__ptr)
 		render.sdl_windows[self.sdl_window_id] = nil
 		
-		metatable.MakeNULL(self)
+		prototype.MakeNULL(self)
 	end
 
 	local x = ffi.new("int[1]")
@@ -208,7 +208,7 @@ do -- window meta
 			gl.InitMiniGlew()
 		end
 			
-		local self = metatable.CreateObject(META)
+		local self = prototype.CreateObject(META)
 		
 		self.last_mpos = Vec2()
 		self.mouse_delta = Vec2()

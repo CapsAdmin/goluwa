@@ -580,4 +580,4 @@ function Matrix44(m)
 	return self
 end
 
-metatable.Register(META)
+prototype.Register(META)

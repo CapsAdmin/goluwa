@@ -178,8 +178,8 @@ do
 		end
 	end
 	
-	metatable.GetSet(COMPONENT, "PhysicsModelPath", "")
-	metatable.GetSet(COMPONENT, "PhysicsModel", nil)
+	prototype.GetSet(COMPONENT, "PhysicsModelPath", "")
+	prototype.GetSet(COMPONENT, "PhysicsModel", nil)
 	
 	function COMPONENT:SetPhysicsModelPath(path)
 		self.PhysicsModelPath = path

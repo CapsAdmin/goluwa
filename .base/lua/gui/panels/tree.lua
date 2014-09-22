@@ -11,8 +11,8 @@ do -- tree node
 	PANEL.ClassName = "tree_node"
 	PANEL.Base = "button"
 	
-	metatable.GetSet(PANEL, "Expand", true)
-	metatable.GetSet(PANEL, "IndentWidth", 16)
+	prototype.GetSet(PANEL, "Expand", true)
+	prototype.GetSet(PANEL, "IndentWidth", 16)
 
 	function PANEL:Initialize()
 		self.BaseClass.Initialize(self)

@@ -1,7 +1,7 @@
 local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
-local META = metatable.CreateTemplate("framebuffer")
+local META = prototype.CreateTemplate("framebuffer")
 
 function META:__tostring()
 	return ("frame_buffer[%i]"):format(self.id)
@@ -103,13 +103,13 @@ function META:Remove()
 		gl.DeleteRenderbuffers(1, ffi.new("GLuint[1]", v.id))
 	end
 		
-	metatable.MakeNULL(self)
+	prototype.MakeNULL(self)
 end
 
 function render.CreateFrameBuffer(width, height, format)
 	if not render.CheckSupport("GenFramebuffer") then return NULL end
 	
-	local self = metatable.CreateObject(META)
+	local self = prototype.CreateObject(META)
 
 	self.buffers = {}
 	self.w = width

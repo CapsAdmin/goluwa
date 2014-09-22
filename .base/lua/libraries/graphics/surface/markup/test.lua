@@ -1,4 +1,4 @@
-﻿local META = (...) or metatable.GetRegistered("markup")
+﻿local META = (...) or prototype.GetRegistered("markup")
 
 function META:Test()
 	self:AddString("Hello markup test!\n\n有一些中國\nそして、いくつかの日本の\nكيف حول بعض عربية")

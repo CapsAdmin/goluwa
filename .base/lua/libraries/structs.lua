@@ -61,7 +61,7 @@ function structs.Register(META)
 	
 	_G[META.ClassName] = structs[META.ClassName]
 	
-	metatable.Register(META)
+	prototype.Register(META)
 end 
  
 -- helpers

@@ -1,47 +1,47 @@
 local lerp,deg,randomf,clamp = math.lerp,math.deg,math.randomf,math.clamp
 
-local PARTICLE = metatable.CreateTemplate("particle")
+local PARTICLE = prototype.CreateTemplate("particle")
 
-metatable.GetSet(PARTICLE, "Pos", Vec3(0,0,0))
-metatable.GetSet(PARTICLE, "Velocity", Vec3(0,0,0))
-metatable.GetSet(PARTICLE, "Drag", 0.98)
-metatable.GetSet(PARTICLE, "Size", Vec2(1,1))
-metatable.GetSet(PARTICLE, "Angle", 0)
+prototype.GetSet(PARTICLE, "Pos", Vec3(0,0,0))
+prototype.GetSet(PARTICLE, "Velocity", Vec3(0,0,0))
+prototype.GetSet(PARTICLE, "Drag", 0.98)
+prototype.GetSet(PARTICLE, "Size", Vec2(1,1))
+prototype.GetSet(PARTICLE, "Angle", 0)
 
-metatable.GetSet(PARTICLE, "StartJitter", 0)
-metatable.GetSet(PARTICLE, "EndJitter", 0)
+prototype.GetSet(PARTICLE, "StartJitter", 0)
+prototype.GetSet(PARTICLE, "EndJitter", 0)
 
-metatable.GetSet(PARTICLE, "StartSize", 10)
-metatable.GetSet(PARTICLE, "EndSize", 0)
+prototype.GetSet(PARTICLE, "StartSize", 10)
+prototype.GetSet(PARTICLE, "EndSize", 0)
 
-metatable.GetSet(PARTICLE, "StartLength", Vec2(0, 0))
-metatable.GetSet(PARTICLE, "EndLength", Vec2(0, 0))
+prototype.GetSet(PARTICLE, "StartLength", Vec2(0, 0))
+prototype.GetSet(PARTICLE, "EndLength", Vec2(0, 0))
 
-metatable.GetSet(PARTICLE, "StartAlpha", 1)
-metatable.GetSet(PARTICLE, "EndAlpha", 0)
+prototype.GetSet(PARTICLE, "StartAlpha", 1)
+prototype.GetSet(PARTICLE, "EndAlpha", 0)
 
-metatable.GetSet(PARTICLE, "LifeTime", 1)
-metatable.GetSet(PARTICLE, "Color", Color(1,1,1,1))
+prototype.GetSet(PARTICLE, "LifeTime", 1)
+prototype.GetSet(PARTICLE, "Color", Color(1,1,1,1))
 
 function PARTICLE:SetLifeTime(n)
 	self.LifeTime = n
 	self.life_end = os.clock() + n
 end
 
-local EMITTER = metatable.CreateTemplate("particle_emitter")
+local EMITTER = prototype.CreateTemplate("particle_emitter")
 
-metatable.GetSet(EMITTER, "DrawManual", false)
-metatable.GetSet(EMITTER, "Speed", 1)
-metatable.GetSet(EMITTER, "Rate", 0.1)
-metatable.GetSet(EMITTER, "EmitCount", 1)
-metatable.GetSet(EMITTER, "Mode2D", true)
-metatable.GetSet(EMITTER, "Pos", Vec3(0, 0, 0))
-metatable.GetSet(EMITTER, "Additive", true)
-metatable.GetSet(EMITTER, "ThinkTime", 0.1)
-metatable.GetSet(EMITTER, "CenterAttractionForce", 0)
-metatable.GetSet(EMITTER, "PosAttractionForce", 0)
-metatable.GetSet(EMITTER, "MoveResolution", 0)
-metatable.GetSet(EMITTER, "Texture", NULL)
+prototype.GetSet(EMITTER, "DrawManual", false)
+prototype.GetSet(EMITTER, "Speed", 1)
+prototype.GetSet(EMITTER, "Rate", 0.1)
+prototype.GetSet(EMITTER, "EmitCount", 1)
+prototype.GetSet(EMITTER, "Mode2D", true)
+prototype.GetSet(EMITTER, "Pos", Vec3(0, 0, 0))
+prototype.GetSet(EMITTER, "Additive", true)
+prototype.GetSet(EMITTER, "ThinkTime", 0.1)
+prototype.GetSet(EMITTER, "CenterAttractionForce", 0)
+prototype.GetSet(EMITTER, "PosAttractionForce", 0)
+prototype.GetSet(EMITTER, "MoveResolution", 0)
+prototype.GetSet(EMITTER, "Texture", NULL)
 
 local emitters = {}
 
@@ -79,7 +79,7 @@ end
 function ParticleEmitter(max)
 	max = max or 1000
 	
-	local self = metatable.CreateObject(EMITTER)
+	local self = prototype.CreateObject(EMITTER)
 	
 	self.max = max
 	self.particles = {}
@@ -256,7 +256,7 @@ function EMITTER:GetParticles()
 end
   
 function EMITTER:AddParticle(...)
-	local p = metatable.CreateObject(PARTICLE)
+	local p = prototype.CreateObject(PARTICLE)
 	p:SetPos(self:GetPos():Copy())
 	p.life_mult = 1	
 	

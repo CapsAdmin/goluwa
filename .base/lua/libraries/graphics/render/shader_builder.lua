@@ -217,7 +217,7 @@ end
 
 local cdef_defined = {}
 
-local META = metatable.CreateTemplate("shader")
+local META = prototype.CreateTemplate("shader")
 
 function render.CreateShader(data)	
 	check(data, "table")
@@ -434,7 +434,7 @@ function render.CreateShader(data)
 		end
 	end
 	
-	local self = metatable.CreateObject(META)
+	local self = prototype.CreateObject(META)
 
 	local ok, prog = pcall(render.CreateGLProgram, function(prog) 
 		local vertex_attributes = {}

@@ -4,17 +4,17 @@ COMPONENT.Name = "mesh"
 COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Draw3DGeometry"}
 
-metatable.StartStorable()		
-	metatable.GetSet(COMPONENT, "DiffuseTexture")
-	metatable.GetSet(COMPONENT, "BumpTexture")
-	metatable.GetSet(COMPONENT, "SpecularTexture")
-	metatable.GetSet(COMPONENT, "Color", Color(1, 1, 1))
-	metatable.GetSet(COMPONENT, "Alpha", 1)
-	metatable.GetSet(COMPONENT, "Cull", true)
-	metatable.GetSet(COMPONENT, "ModelPath", "models/face.obj")
-metatable.EndStorable()
+prototype.StartStorable()		
+	prototype.GetSet(COMPONENT, "DiffuseTexture")
+	prototype.GetSet(COMPONENT, "BumpTexture")
+	prototype.GetSet(COMPONENT, "SpecularTexture")
+	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1))
+	prototype.GetSet(COMPONENT, "Alpha", 1)
+	prototype.GetSet(COMPONENT, "Cull", true)
+	prototype.GetSet(COMPONENT, "ModelPath", "models/face.obj")
+prototype.EndStorable()
 
-metatable.GetSet(COMPONENT, "Model", nil)
+prototype.GetSet(COMPONENT, "Model", nil)
 
 COMPONENT.Network = {
 	ModelPath = {"string", 1/5},
@@ -255,7 +255,7 @@ if CLIENT then
 	COMPONENT.OnDraw2D = COMPONENT.OnDraw3DGeometry
 end
 
-metatable.RegisterComponent(COMPONENT)
+prototype.RegisterComponent(COMPONENT)
 
 if RELOAD then
 	render.InitializeGBuffer()

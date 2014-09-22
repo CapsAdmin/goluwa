@@ -172,10 +172,10 @@ end
 
 -- thread
 do
-	local META = metatable.CreateTemplate("thread")
+	local META = prototype.CreateTemplate("thread")
 	
-	metatable.GetSet(META, "Frequency", 0)
-	metatable.GetSet(META, "IterationsPerTick", 0)
+	prototype.GetSet(META, "Frequency", 0)
+	prototype.GetSet(META, "IterationsPerTick", 0)
 	 
 	META.wait = 0
 	 
@@ -269,14 +269,14 @@ do
 	end
 	
 	function utility.CreateThread()
-		local self = metatable.CreateObject(META)
+		local self = prototype.CreateObject(META)
 		
 		return self
 	end
 end
 
 do -- tree
-	local META = metatable.CreateTemplate("tree")
+	local META = prototype.CreateTemplate("tree")
 
 	function META:SetEntry(str, value)		
 		local keys = type(str) == "table" and str or str and str:explode(self.delimiter) or {}
@@ -330,7 +330,7 @@ do -- tree
 	end
 
 	function utility.CreateTree(delimiter)
-		local self = metatable.CreateObject(META)
+		local self = prototype.CreateObject(META)
 		
 		self.tree = {}	
 		self.delimiter = delimiter
@@ -478,7 +478,7 @@ do -- find value
 		}
 			
 		find(_G, "_G", ".", 1, ...)
-		find(metatable.GetAllRegistered(), "_M", ":", 1, ...)
+		find(prototype.GetAllRegistered(), "_M", ":", 1, ...)
 		for cmd, v in pairs(console.GetCommands()) do
 			if strfind(cmd, ...) then
 				local arg_line = table.concat(debug.getparams(v.callback), ", ")

@@ -1,6 +1,6 @@
 local freeimage = require("lj-freeimage") -- image decoder
 
-local META = metatable.CreateTemplate("gif")
+local META = prototype.CreateTemplate("gif")
 
 function META:GetFrameCount()
 	return self.frame_count
@@ -31,7 +31,7 @@ end
 local video = {}
 	
 function video.CreateGif(path)
-	local self = metatable.CreateObject(META)
+	local self = prototype.CreateObject(META)
 		
 	self.frames = {}
 	self.frame_count = 1

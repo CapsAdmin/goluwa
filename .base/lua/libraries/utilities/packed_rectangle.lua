@@ -1,6 +1,6 @@
 local utility = ... or _G.utility
 
-local META = metatable.CreateTemplate("packed_rectangle")
+local META = prototype.CreateTemplate("packed_rectangle")
 
 function META:FindNode(root, w, h)
 	if root.used then
@@ -26,5 +26,5 @@ function META:Fit(w, h)
 end
 
 function utility.CreatePackedRectangle(w, h) 
-	return metatable.CreateObject(META, {root = {x = 0, y = 0, w = w, h = h}}) 
+	return prototype.CreateObject(META, {root = {x = 0, y = 0, w = w, h = h}}) 
 end

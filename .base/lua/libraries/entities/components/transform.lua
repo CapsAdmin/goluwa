@@ -4,22 +4,22 @@ local COMPONENT = {}
 
 COMPONENT.Name = "transform"
 
-metatable.AddParentingTemplate(COMPONENT)
+prototype.AddParentingTemplate(COMPONENT)
 
-metatable.GetSet(COMPONENT, "TRMatrix", Matrix44())
-metatable.GetSet(COMPONENT, "ScaleMatrix", Matrix44())
+prototype.GetSet(COMPONENT, "TRMatrix", Matrix44())
+prototype.GetSet(COMPONENT, "ScaleMatrix", Matrix44())
 
-metatable.StartStorable()		
-	metatable.GetSet(COMPONENT, "Position", Vec3(0, 0, 0), "InvalidateTRMatrix")
-	metatable.GetSet(COMPONENT, "Angles", Ang3(0, 0, 0), "InvalidateTRMatrix")
+prototype.StartStorable()		
+	prototype.GetSet(COMPONENT, "Position", Vec3(0, 0, 0), "InvalidateTRMatrix")
+	prototype.GetSet(COMPONENT, "Angles", Ang3(0, 0, 0), "InvalidateTRMatrix")
 	
-	metatable.GetSet(COMPONENT, "Scale", Vec3(1, 1, 1), "InvalidateScaleMatrix")
-	metatable.GetSet(COMPONENT, "Shear", Vec3(0, 0, 0), "InvalidateScaleMatrix")
-	metatable.GetSet(COMPONENT, "Size", 1, "InvalidateScaleMatrix")
-metatable.EndStorable()
+	prototype.GetSet(COMPONENT, "Scale", Vec3(1, 1, 1), "InvalidateScaleMatrix")
+	prototype.GetSet(COMPONENT, "Shear", Vec3(0, 0, 0), "InvalidateScaleMatrix")
+	prototype.GetSet(COMPONENT, "Size", 1, "InvalidateScaleMatrix")
+prototype.EndStorable()
 
-metatable.GetSet(COMPONENT, "OverridePosition", nil, "InvalidateTRMatrix")
-metatable.GetSet(COMPONENT, "OverrideAngles", nil, "InvalidateTRMatrix")
+prototype.GetSet(COMPONENT, "OverridePosition", nil, "InvalidateTRMatrix")
+prototype.GetSet(COMPONENT, "OverrideAngles", nil, "InvalidateTRMatrix")
 	
 COMPONENT.Network = {
 	Position = {"vec3", 1/30, "unreliable"},

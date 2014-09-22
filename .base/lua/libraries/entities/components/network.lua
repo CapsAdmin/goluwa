@@ -9,7 +9,7 @@ COMPONENT.Name = "networked"
 COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Update"}
 
-metatable.GetSet(COMPONENT, "NetworkId", -1)
+prototype.GetSet(COMPONENT, "NetworkId", -1)
 
 do
 	COMPONENT.client_synced_vars = {}

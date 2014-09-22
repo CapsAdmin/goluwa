@@ -50,7 +50,7 @@ end
 
 do -- skins
 	function gui.UseSkin(name)
-		local skin = metatable.CreateDerivedObject("skin", name)
+		local skin = prototype.CreateDerivedObject("skin", name)
 		
 		skin.IsValid = function() return true end
 		skin.OnThink = skin.OnThink or function(delta) end
@@ -75,12 +75,12 @@ do -- skins
 	end
 
 	function gui.RegisterSkin(META, name)
-		local _, name = metatable.Register(META, "skin", name)
+		local _, name = prototype.Register(META, "skin", name)
 		gui.UseSkin(name)
 	end
 
 	function gui.GetSkin(name)
-		return metatable.GetRegistered("skin", name)
+		return prototype.GetRegistered("skin", name)
 	end
 end
 

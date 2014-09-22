@@ -1,10 +1,10 @@
-local metatable = ... or _G.metatable
+local prototype = ... or _G.prototype
 
 local function handle_base_field(meta, base)	
 	local t = type(base)
 	
 	if t == "string" then
-		handle_base_field(meta, metatable.GetRegistered(meta.Type, base))
+		handle_base_field(meta, prototype.GetRegistered(meta.Type, base))
 	elseif t == "table" then
 		-- if it's a table and does not have the Type field we assume it's a table of bases
 		if not base.Type then
@@ -22,8 +22,8 @@ local function handle_base_field(meta, base)
 	end
 end
 
-function metatable.CreateDerivedObject(super_type, sub_type, override, skip_gc_callback)
-    local meta = metatable.GetRegistered(super_type, sub_type)
+function prototype.CreateDerivedObject(super_type, sub_type, override, skip_gc_callback)
+    local meta = prototype.GetRegistered(super_type, sub_type)
 	
     if not meta then
         logf("tried to create unknown %s %q!\n", type or "no type", class_name or "no class")
@@ -58,7 +58,7 @@ function metatable.CreateDerivedObject(super_type, sub_type, override, skip_gc_c
 		end
 	end
 
-	meta = metatable.CreateTemplate(meta, nil, true)
+	meta = prototype.CreateTemplate(meta, nil, true)
 		
-	return metatable.CreateObject(meta, override, skip_gc_callback)
+	return prototype.CreateObject(meta, override, skip_gc_callback)
 end

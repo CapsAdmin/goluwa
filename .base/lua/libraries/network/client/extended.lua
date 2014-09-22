@@ -1,4 +1,4 @@
-local META = (...) or metatable.GetRegistered("client")
+local META = (...) or prototype.GetRegistered("client")
 
 -- send lua
 if CLIENT then

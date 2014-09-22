@@ -102,10 +102,10 @@ do -- buffer object
 	-- some of this was taken from (mainly reading and writing decimal numbers)
 	-- http://wowkits.googlecode.com/svn-history/r406/trunk/AddOns/AVR/ByteStream.lua
 
-	local META = metatable.CreateTemplate("buffer")
+	local META = prototype.CreateTemplate("buffer")
 
 	function packet.CreateBuffer(val)
-		local self = metatable.CreateObject(META)
+		local self = prototype.CreateObject(META)
 		
 		if type(val) == "string" or type(val) == "table" or not val then
 			self.buffer = {}
@@ -157,7 +157,7 @@ do -- buffer object
 	end
 	
 	-- this adds ReadLong, WriteShort, WriteFloat, WriteStructure, etc
-	metatable.AddBufferTemplate(META) 
+	prototype.AddBufferTemplate(META) 
 
 	do -- generic
 		function META:GetBuffer()

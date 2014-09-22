@@ -1,6 +1,6 @@
 local clients = _G.clients or {}
 
-local META = metatable.CreateTemplate("client")
+local META = prototype.CreateTemplate("client")
 
 include("client/client.lua", META)
 
@@ -39,7 +39,7 @@ function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
 		return self
 	end
 	
-	local self = metatable.CreateObject(META)
+	local self = prototype.CreateObject(META)
 		
 	self:SetUniqueID(uniqueid)
 	
@@ -76,7 +76,7 @@ if CLIENT then
 end
 
 do -- filter
-	local META = metatable.CreateTemplate("client_filter")
+	local META = prototype.CreateTemplate("client_filter")
 
 	function META:AddAll()
 		for key, client in pairs(clients.GetAll()) do
@@ -110,7 +110,7 @@ do -- filter
 	end
 
 	function clients.CreateFilter()
-		return metatable.CreateObject(META, {clients = {}}, true)
+		return prototype.CreateObject(META, {clients = {}}, true)
 	end
 end
 

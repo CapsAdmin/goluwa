@@ -1,10 +1,10 @@
-local META = (...) or metatable.GetRegistered("client")
+local META = (...) or prototype.GetRegistered("client")
 
 META.Name = "client"
 
 META.socket = NULL
 
-metatable.GetSet(META, "UniqueID", "???")
+prototype.GetSet(META, "UniqueID", "???")
 
 nvars.IsSet(META, "Bot", false)
 nvars.GetSet(META, "Nick", e.USERNAME, "cl_nick")

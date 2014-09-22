@@ -9,28 +9,28 @@ todo:
 	the ability to edit (remove and copy) custom tags that have a size (like textures)
 ]]
 
-local META = metatable.CreateTemplate("markup")
+local META = prototype.CreateTemplate("markup")
 
 META.tags = {}
 
-metatable.GetSet(META, "Table", {})
-metatable.GetSet(META, "MaxWidth", 500)
-metatable.GetSet(META, "ControlDown", false)
-metatable.GetSet(META, "LineWrap", true)
-metatable.GetSet(META, "ShiftDown", false)
-metatable.GetSet(META, "Editable", true)
-metatable.GetSet(META, "Multiline", true)
-metatable.GetSet(META, "MousePosition", Vec2())
-metatable.GetSet(META, "FastMode", false)
+prototype.GetSet(META, "Table", {})
+prototype.GetSet(META, "MaxWidth", 500)
+prototype.GetSet(META, "ControlDown", false)
+prototype.GetSet(META, "LineWrap", true)
+prototype.GetSet(META, "ShiftDown", false)
+prototype.GetSet(META, "Editable", true)
+prototype.GetSet(META, "Multiline", true)
+prototype.GetSet(META, "MousePosition", Vec2())
+prototype.GetSet(META, "FastMode", false)
 
 if SERVER then
-	metatable.GetSet(META, "FixedSize", 14) -- sigh
+	prototype.GetSet(META, "FixedSize", 14) -- sigh
 else	
-	metatable.GetSet(META, "FixedSize", 0)
+	prototype.GetSet(META, "FixedSize", 0)
 end
 
 function surface.CreateMarkup()
-	local self = metatable.CreateObject(META, {
+	local self = prototype.CreateObject(META, {
 		w = 0,
 		h = 0,
 		chunks = {},
