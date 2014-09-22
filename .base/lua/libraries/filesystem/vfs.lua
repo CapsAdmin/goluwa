@@ -258,8 +258,6 @@ local function check_write_path(path, is_folder)
 	end
 end
 
-vfs.opened_files = vfs.opened_files or utility.CreateWeakTable()
-
 function vfs.Open(path, mode, sub_mode)
 	check(path, "string")
 	mode = mode or "read"	
@@ -273,15 +271,8 @@ function vfs.Open(path, mode, sub_mode)
 	for i, data in ipairs(vfs.TranslatePath(path)) do	
 		local file = metatable.CreateDerivedObject("file_system", data.context.Name)
 		file:SetMode(mode)
-		
-		if utilities and utility.SetGCCallback then
-			utility.SetGCCallback(file, function() 
-				file:Close()
-			end)
-		end
-		
+			
 		if file:PCall("Open", data.path_info) ~= false then
-			vfs.opened_files[file] = data.path_info.full_path
 			return file
 		else
 			file:Remove()

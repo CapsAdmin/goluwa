@@ -133,14 +133,6 @@ function CONTEXT:GetLastAccessed()
 	error(self.Name .. ": not implemented")
 end
 
-function CONTEXT:OnRemove()
-	vfs.opened_files[self] = nil
-end
-
-function CONTEXT:Remove()
-	self:OnRemove()
-end
-
 metatable.AddBufferTemplate(CONTEXT)
 
 metatable.Register(CONTEXT, "file_system", CONTEXT.Name)

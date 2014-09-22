@@ -1,12 +1,6 @@
 local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
-render.framebuffers = utility.CreateWeakTable()
-
-function render.GetFramebuffers()
-	return render.framebuffers
-end
-
 local META = metatable.CreateTemplate("framebuffer")
 
 function META:__tostring()
@@ -236,8 +230,6 @@ function render.CreateFrameBuffer(width, height, format)
 	
 	self:End()
 	self.building = nil	
-		
-	render.framebuffers[id] = self
 	
 	return self
 end
