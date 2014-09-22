@@ -161,6 +161,8 @@ do -- table logn
 		end
 		
 		dump(tbl)
+		
+		done = nil
 	end
 end
 
