@@ -2,12 +2,6 @@ local gl = require("lj-opengl") -- OpenGL
 
 local render = (...) or _G.render
 
-render.textures = render.textures or utility.CreateWeakTable()
-
-function render.GetTextures()
-	return render.textures
-end
-
 do -- texture binding
 	do
 		local base = gl.e.GL_TEXTURE0 
@@ -482,9 +476,7 @@ do -- texture object
 		if render.debug then
 			logf("creating texture w = %s h = %s buffer size = %s\n", self.w, self.h, utility.FormatFileSize(buffer and ffi.sizeof(buffer) or 0)) --The texture size was never broken... someone used two non-existant variables w,h
 		end
-		
-		render.textures[id] = self
-		
+				
 		return self
 	end
 end

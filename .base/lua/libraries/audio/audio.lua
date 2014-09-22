@@ -6,7 +6,6 @@ local audio = _G.audio or {}
 al.debug = true
 alc.debug = true
 
-audio.objects = audio.objects or utility.CreateWeakTable()
 audio.effect_channels = audio.effect_channels or utility.CreateWeakTable()
 
 function audio.Initialize(name)
@@ -55,13 +54,11 @@ function audio.Shutdown()
 end
 
 function audio.Panic()
-	for k, v in pairs(audio.objects) do
-		if v:IsValid() then
+	for k, v in pairs(metatable.GetCreated()) do
+		if v:IsValid() and v.is_audio_object then
 			v:Remove()
 		end
 	end
-
-	table.clear(audio.objects)
 end
 
 function audio.GetAllOutputDevices()
@@ -331,6 +328,9 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	local set_fv = al[type.."fv"]
 	local set_f = al[type.."f"]
 	local temp = ffi.new("float[3]")
+	
+	-- todo: move this to metatable?
+	META.is_audio_object = true
 
 	function META:SetParam(key, x, y, z)
 
@@ -394,9 +394,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 		if ctor then
 			ctor(self, ...)
 		end
-
-		audio.objects[self] = self
-
+		
 		return self
 	end
 
@@ -407,8 +405,6 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	local temp = ffi.new("int[1]", 0)
 	function META:OnRemove()
 		if on_remove then on_remove(self) end
-
-		audio.objects[self] = nil
 
 		temp[0] = self.id
 		delete(1, temp)
@@ -850,8 +846,6 @@ do -- microphone
 
 		self.id = alc.CaptureOpenDevice(name, sample_rate, format, buffer_size)
 		
-		audio.objects[self] = self
-
 		return self
 	end
 
