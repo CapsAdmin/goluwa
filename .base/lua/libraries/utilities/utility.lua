@@ -3,7 +3,52 @@ local utility = _G.utility or {}
 include("mesh.lua", utility)
 include("packed_rectangle.lua", utility)
 
+function utility.FindReferences(reference)
+	local done = {}
+	local found = {}
+	local found2 = {}
+	
+	local revg = {}
+	for k,v in pairs(_G) do revg[v] = k end
 
+	local function search(var, str)
+		if done[var] then return end
+		
+		if revg[var] then str = revg[var] end
+				
+		if var == reference then
+			local res = str .. " = " .. tostring(reference)
+			if not found2[res] then
+				table.insert(found, res)
+				found2[res] = true
+			end
+		end
+		
+		local t = type(var)
+		
+		if t == "table" then
+			done[var] = true	
+			
+			for k, v in pairs(var) do
+				search(k, str .. "." .. tostring(k))
+				search(v, str .. "." .. tostring(k))
+			end
+		elseif t == "function" then			
+			done[var] = true
+			
+			for k, v in pairs(debug.getupvalues(var)) do
+				if v.val then
+					search(v.val, str .. "^" .. v.key)
+				end
+			end
+		end
+	end
+
+	search(_G, "_G")
+	
+	return table.concat(found, "\n")
+end
+ 
 local diffuse_suffixes = {
 	"_diff",
 	"_d",
@@ -227,26 +272,6 @@ do
 		local self = metatable.CreateObject(META)
 		
 		return self
-	end
-	
-	if RELOAD then 
-		local thread = utility.CreateThread()
-		
-		function thread:OnStart()
-			for i = 1, 1000 do
-				self:ReportProgress("first iteration", 1000)
-				self:Sleep(0.01)
-			end
-			
-			return "woho"
-		end
-		
-		function thread:OnFinish(...)
-			print(...)
-		end
-		 
-		thread:SetIterationsPerTick(10)
-		thread:Start()
 	end
 end
 
