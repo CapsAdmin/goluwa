@@ -416,10 +416,11 @@ end
 
 local size = 4
 local deferred = console.CreateVariable("render_deferred", true, "whether or not deferred rendering is enabled.")
+local gbuffer_enabled = true
 
 function render.DrawDeferred(dt, w, h)
 
-	if not deferred:Get() then
+	if not gbuffer_enabled or not deferred:Get() then
 		render.Clear(1,1,1,1)
 		gl.DepthMask(gl.e.GL_TRUE)
 		gl.Enable(gl.e.GL_DEPTH_TEST)
@@ -500,8 +501,6 @@ function render.DrawDeferred(dt, w, h)
 		event.Call("Draw2D", dt)
 	render.End2D()
 end
-
-local gbuffer_enabled = true
 
 function render.EnableGBuffer(b)
 	gbuffer_enabled = b
