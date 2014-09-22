@@ -6,14 +6,25 @@ local file_queue = {}
 vfs.file_queue = file_queue
 
 local function update()
-	local cb = file_queue[1]
-	if cb and select(2, xpcall(cb, system.OnError)) ~= nil then
-		table.remove(file_queue, 1)
-	end
+	local data = file_queue[1]
+	if data then
+		local ok, res = pcall(data.update_reader)
+		
+		if ok then
+			if res ~= nil then
+				table.remove(file_queue, 1)
+			end
+		else
+			if vfs.debug or vfs.debug_async then logf("[vfs] failed to read %s: %s\n", data.path, res) end
+			table.remove(file_queue, 1)
+			data.callback(nil, res)
+		end
+	end	
 end
 
-local function queue_reader(cb)
-	table.insert(file_queue, cb)
+
+local function queue_reader(update_reader, path, callback)
+	table.insert(file_queue, {update_reader = update_reader, path = path, callback = callback})
 	event.AddListener("Update", "vfs_asyc_file_read", update)
 	--update()
 end
@@ -23,8 +34,8 @@ vfs.async_readers = {
 		local file = vfs.Open(path)
 		if file then	
 			local buffer = {}
-			
-			mbps = mbps / 2
+						
+			--mbps = mbps / 2
 			queue_reader(function()
 				--in case mbps is higher than the file size
 				--for i = 1, 2 do
@@ -43,7 +54,7 @@ vfs.async_readers = {
 						return false
 					end
 				--end
-			end, 1, true, true)
+			end, path, queue[path].callback)
 			return true				
 		end
 	end,
