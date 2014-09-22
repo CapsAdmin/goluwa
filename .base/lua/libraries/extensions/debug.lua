@@ -177,6 +177,21 @@ function debug.getparamsx(func)
     return params
 end
 
+function debug.getupvalues(func)
+	local params = {}
+	
+	for i = 1, math.huge do
+		local key, val = debug.getupvalue(func, i)
+		if key then
+			table.insert(params, {key = key, val = val})
+		else
+			break
+		end
+	end
+
+    return params
+end
+
 function debug.dumpcall(level, line, info_match)
 	level = level + 1
 	local info = debug.getinfo(level)
