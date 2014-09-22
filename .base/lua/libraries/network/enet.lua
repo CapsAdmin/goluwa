@@ -4,7 +4,7 @@ lib.initialize()
 
 local enet = _G.enet or {}
 
-enet.sockets = enet.sockets or {}
+enet.sockets = enet.sockets or utility.CreateWeakTable()
 
 local valid_flags = {
 	default_valid_flag = 0,
