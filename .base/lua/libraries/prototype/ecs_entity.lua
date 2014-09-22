@@ -1,9 +1,9 @@
-local metatable = ... or _G.metatable
+local prototype = ... or _G.prototype
 
-local META = metatable.CreateTemplate("ecs_entity")
+local META = prototype.CreateTemplate("ecs_entity")
 
-metatable.GetSet(META, "Components", {})
-metatable.GetSet(META, "Id", {})
+prototype.GetSet(META, "Components", {})
+prototype.GetSet(META, "Id", {})
 
 function META:AddComponent(name, id, ...)
 	id = id or "no_id"
@@ -12,7 +12,7 @@ function META:AddComponent(name, id, ...)
 	
 	self.Components[name] = self.Components[name] or {}
 	
-	local component = metatable.CreateComponent(name)
+	local component = prototype.CreateComponent(name)
 					
 	for i, other in ipairs(component.Require) do
 		if not self.Components[other] then
@@ -73,13 +73,13 @@ function META:OnRemove()
 	event.Call("EntityRemove", self)
 end
 
-metatable.component_configurations = metatable.component_configurations or {}
+prototype.component_configurations = prototype.component_configurations or {}
 
-function metatable.SetupComponents(name, components)	
+function prototype.SetupComponents(name, components)	
 	local functions = {}
 	
 	for _, name in ipairs(components) do
-		for k, v in pairs(metatable.GetRegistered("ecs_component", name)) do
+		for k, v in pairs(prototype.GetRegistered("ecs_component", name)) do
 			if type(v) == "function" then			
 				functions[k] = function(ent, a,b,c,d)
 					local obj = ent:GetComponent(name)
@@ -89,23 +89,23 @@ function metatable.SetupComponents(name, components)
 		end
 	end
 
-	metatable.component_configurations[name] = {
+	prototype.component_configurations[name] = {
 		components = components,
 		functions = functions,
 	}
 end
 
-function metatable.CreateEntity(config, ...)
-	local self = metatable.CreateObject(META)
+function prototype.CreateEntity(config, ...)
+	local self = prototype.CreateObject(META)
 	
-	if metatable.component_configurations[config] then
+	if prototype.component_configurations[config] then
 		self.config = config
 
-		for _, name in ipairs(metatable.component_configurations[config].components) do
+		for _, name in ipairs(prototype.component_configurations[config].components) do
 			self:AddComponent(name, nil, ...)
 		end
 		
-		for name, func in pairs(metatable.component_configurations[config].functions) do
+		for name, func in pairs(prototype.component_configurations[config].functions) do
 			self[name] = self[name] or func
 		end
 	end

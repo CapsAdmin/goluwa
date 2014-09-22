@@ -1,6 +1,6 @@
 local surface = (...) or _G.surface
 
-local META = metatable.CreateTemplate("poly")
+local META = prototype.CreateTemplate("poly")
 
 META.X, META.Y = 0, 0
 META.ROT = 0	
@@ -148,7 +148,7 @@ function surface.CreatePoly(size)
 	-- they never change anyway
 	mesh:SetUpdateIndices(false)	
 	
-	local self = metatable.CreateObject(META)
+	local self = prototype.CreateObject(META)
 
 	self.mesh = mesh
 	self.size = size

@@ -59,7 +59,7 @@ function sockets.Update()
 			
 			if sock.remove_me then
 				sock.socket:close()
-				metatable.MakeNULL(sock)
+				prototype.MakeNULL(sock)
 			end
 		else
 			sockets.active_sockets[key] = nil
@@ -111,7 +111,7 @@ local function new_socket(override, META, typ, id)
 			end
 		end
 	
-		local self = metatable.CreateObject(META)
+		local self = prototype.CreateObject(META)
 
 		self.socket = override or assert(sockets.luasocket[typ]())
 		self.socket:settimeout(0)
@@ -154,7 +154,7 @@ do -- tcp socket meta
 	end
 
 	do -- client
-		local CLIENT = metatable.CreateTemplate("socket_client")
+		local CLIENT = prototype.CreateTemplate("socket_client")
 		
 		add_options(CLIENT)
 
@@ -493,7 +493,7 @@ do -- tcp socket meta
 	end
 
 	do -- server
-		local SERVER = metatable.CreateTemplate("socket_server")
+		local SERVER = prototype.CreateTemplate("socket_server")
 		
 		add_options(SERVER)
 

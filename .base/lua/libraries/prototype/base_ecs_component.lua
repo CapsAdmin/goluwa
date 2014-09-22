@@ -1,4 +1,4 @@
-local metatable = ... or _G.metatable
+local prototype = ... or _G.prototype
 
 local META = {}
 META.ClassName = "base"
@@ -6,11 +6,11 @@ META.ClassName = "base"
 META.Require = {}
 META.Events = {}
 
-metatable.GetSet(META, "Id")
-metatable.Delegate(META, "Entity", "GetComponent")
-metatable.Delegate(META, "Entity", "AddComponent")
-metatable.Delegate(META, "Entity", "RemoveComponent")
-metatable.GetSet(META, "Entity", NULL)
+prototype.GetSet(META, "Id")
+prototype.Delegate(META, "Entity", "GetComponent")
+prototype.Delegate(META, "Entity", "AddComponent")
+prototype.Delegate(META, "Entity", "RemoveComponent")
+prototype.GetSet(META, "Entity", NULL)
 
 function META:OnAdd()
 
@@ -85,14 +85,14 @@ function META:RemoveEvent(event_type)
 	end
 end
 
-function metatable.RegisterComponent(meta)
+function prototype.RegisterComponent(meta)
 	meta.TypeBase = "base"
 	meta.ClassName = meta.Name
-	metatable.Register(meta, "ecs_component")
+	prototype.Register(meta, "ecs_component")
 end
 
-function metatable.CreateComponent(name)		
-	return metatable.CreateDerivedObject("ecs_component", name)
+function prototype.CreateComponent(name)		
+	return prototype.CreateDerivedObject("ecs_component", name)
 end
 
-metatable.Register(META, "ecs_component")
+prototype.Register(META, "ecs_component")

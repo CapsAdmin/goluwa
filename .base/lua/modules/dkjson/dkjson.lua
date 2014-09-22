@@ -28,7 +28,7 @@ Exported functions and values:
 
 Create a string representing the object. `Object` can be a table,
 a string, a number, a boolean, `nil`, `json.null` or any object with
-a function `__tojson` in its metatable. A table can only use strings
+a function `__tojson` in its prototype. A table can only use strings
 and numbers as keys and its values have to be valid objects as
 well. It raises an error for any invalid data types or reference
 cycles.
@@ -100,7 +100,7 @@ checked for empty tables. (The default for empty tables is `"array"`).
 `<metatable>.__tojson (self, state)`
 ------------------------------------
 
-You can provide your own `__tojson` function in a metatable. In this
+You can provide your own `__tojson` function in a prototype. In this
 function you can either add directly to the buffer and return true,
 or you can return a string. On errors nil and a message should be
 returned.

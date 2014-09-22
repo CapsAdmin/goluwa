@@ -204,7 +204,7 @@ local BODY = {
 			end 
 		end 
 		lib.bulletRemoveBody(self.body) 
-		metatable.MakeNULL(self) 
+		prototype.MakeNULL(self) 
 	end,
 }
 

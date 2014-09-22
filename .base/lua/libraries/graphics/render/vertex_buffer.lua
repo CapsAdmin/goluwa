@@ -1,16 +1,16 @@
 local gl = require("lj-opengl")
 local render = (...) or _G.render
 
-local META = metatable.CreateTemplate("vertex_buffer")
+local META = prototype.CreateTemplate("vertex_buffer")
 
-metatable.GetSet(META, "UpdateIndices", true)
+prototype.GetSet(META, "UpdateIndices", true)
 
 function render.CreateVertexBuffer(vertex_attributes, vertices, indices, vertices_size, indices_size)
 	check(vertex_attributes, "table")
 	check(vertices, "cdata")
 	check(indices, "cdata")
 	
-	local self = metatable.CreateObject(META)
+	local self = prototype.CreateObject(META)
 	self.vertices_id = gl.GenBuffer()
 	self.indices_id = gl.GenBuffer()
 	self.vao_id = gl.GenVertexArray()

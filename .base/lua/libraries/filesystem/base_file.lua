@@ -4,7 +4,7 @@ local CONTEXT = {}
 
 CONTEXT.Name = "base"
 
-metatable.GetSet(CONTEXT, "Mode", "read")
+prototype.GetSet(CONTEXT, "Mode", "read")
 
 function CONTEXT:PCall(name, ...)
 	local ok, var = pcall(self[name], self, ...)
@@ -133,6 +133,6 @@ function CONTEXT:GetLastAccessed()
 	error(self.Name .. ": not implemented")
 end
 
-metatable.AddBufferTemplate(CONTEXT)
+prototype.AddBufferTemplate(CONTEXT)
 
-metatable.Register(CONTEXT, "file_system", CONTEXT.Name)
+prototype.Register(CONTEXT, "file_system", CONTEXT.Name)

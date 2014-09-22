@@ -1,16 +1,16 @@
-local metatable = (...) or _G.metatable
+local prototype = (...) or _G.prototype
 
 local __store = false
 
-function metatable.StartStorable()
+function prototype.StartStorable()
 	__store = true
 end
 
-function metatable.EndStorable()
+function prototype.EndStorable()
 	__store = false
 end
 
-function metatable.GetSet(tbl, name, def, callback)
+function prototype.GetSet(tbl, name, def, callback)
 
 	if type(def) == "number" then	
 		if callback then
@@ -43,7 +43,7 @@ function metatable.GetSet(tbl, name, def, callback)
 	end
 end
 
-function metatable.IsSet(tbl, name, def, callback)
+function prototype.IsSet(tbl, name, def, callback)
 	
 	if type(def) == "number" then
 		if callback then
@@ -69,7 +69,7 @@ function metatable.IsSet(tbl, name, def, callback)
 	end
 end
 
-function metatable.RemoveField(tbl, name)
+function prototype.RemoveField(tbl, name)
 	tbl["Set" .. name] = nil
     tbl["Get" .. name] = nil
     tbl["Is" .. name] = nil

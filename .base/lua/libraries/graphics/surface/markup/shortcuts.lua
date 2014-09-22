@@ -1,4 +1,4 @@
-local META = (...) or metatable.GetRegistered("markup")
+local META = (...) or prototype.GetRegistered("markup")
 
 function META:Backspace()
 	local sub_pos = self:GetCaretSubPos()

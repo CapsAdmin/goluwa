@@ -346,7 +346,7 @@ do -- console vars
 	
 	-- what's the use?
 	do -- cvar meta
-		local META = metatable.CreateTemplate("cvar")
+		local META = prototype.CreateTemplate("cvar")
 		
 		function META:Get()
 			if not console.vars then console.ReloadVariables() end
@@ -432,7 +432,7 @@ do -- console vars
 			end)
 		end
 		
-		return metatable.CreateObject(console.cvar_meta, {cvar = name})
+		return prototype.CreateObject(console.cvar_meta, {cvar = name})
 	end
 
 	function console.GetVariable(var, def)

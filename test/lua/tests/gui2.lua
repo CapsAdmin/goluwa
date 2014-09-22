@@ -14,20 +14,20 @@ gui2.focus_panel = NULL
 gui2.panels = {}
 
 do -- base panel
-	local PANEL = metatable.CreateTemplate("panel2")
+	local PANEL = prototype.CreateTemplate("panel2")
 
-	metatable.AddParentingTemplate(PANEL)
+	prototype.AddParentingTemplate(PANEL)
 
-	metatable.GetSet(PANEL, "MousePosition", Vec2(0, 0))
-	metatable.IsSet(PANEL, "Visible", true)
-	metatable.GetSet(PANEL, "Clipping", false)
-	metatable.GetSet(PANEL, "Color", Color(1,1,1,1))
-	metatable.GetSet(PANEL, "Cursor", "hand")
-	metatable.GetSet(PANEL, "TrapChildren", false)
-	metatable.GetSet(PANEL, "Texture", render.GetWhiteTexture())
+	prototype.GetSet(PANEL, "MousePosition", Vec2(0, 0))
+	prototype.IsSet(PANEL, "Visible", true)
+	prototype.GetSet(PANEL, "Clipping", false)
+	prototype.GetSet(PANEL, "Color", Color(1,1,1,1))
+	prototype.GetSet(PANEL, "Cursor", "hand")
+	prototype.GetSet(PANEL, "TrapChildren", false)
+	prototype.GetSet(PANEL, "Texture", render.GetWhiteTexture())
 
-	metatable.GetSet(PANEL, "Padding", Rect(10, 10, 10, 10))
-	metatable.GetSet(PANEL, "Margin", Rect(10, 10, 10, 10))
+	prototype.GetSet(PANEL, "Padding", Rect(10, 10, 10, 10))
+	prototype.GetSet(PANEL, "Margin", Rect(10, 10, 10, 10))
 
 	function PANEL:__tostring()
 		return ("panel[%p] %s %s %s %s"):format(self, self.Position.x, self.Position.y, self.Size.w, self.Size.h)
@@ -152,11 +152,11 @@ do -- base panel
 	end
 
 	do -- orientation
-		metatable.GetSet(PANEL, "Position", Vec2(0, 0))
-		metatable.GetSet(PANEL, "Size", Vec2(50, 50))
-		metatable.GetSet(PANEL, "MinimumSize", Vec2(4, 4))
-		metatable.GetSet(PANEL, "Angle", 0)
-		metatable.GetSet(PANEL, "Order", 0)
+		prototype.GetSet(PANEL, "Position", Vec2(0, 0))
+		prototype.GetSet(PANEL, "Size", Vec2(50, 50))
+		prototype.GetSet(PANEL, "MinimumSize", Vec2(4, 4))
+		prototype.GetSet(PANEL, "Angle", 0)
+		prototype.GetSet(PANEL, "Order", 0)
 		
 		function PANEL:SetPosition(pos)
 			if self:HasParent() and self.Parent.TrapChildren then
@@ -227,7 +227,7 @@ do -- base panel
 	end
 
 	do -- cached rendering
-		metatable.GetSet(PANEL, "CachedRendering", false)
+		prototype.GetSet(PANEL, "CachedRendering", false)
 
 		function PANEL:SetCachedRendering(b)
 			self.CachedRendering = b
@@ -300,8 +300,8 @@ do -- base panel
 	end
 		
 	do -- scrolling		
-		metatable.GetSet(PANEL, "Scroll", Vec2(0, 0))
-		metatable.GetSet(PANEL, "ScrollFraction", Vec2(0, 0))
+		prototype.GetSet(PANEL, "Scroll", Vec2(0, 0))
+		prototype.GetSet(PANEL, "ScrollFraction", Vec2(0, 0))
 	
 		function PANEL:SetScroll(vec)
 			local size = self:GetSizeOfChildren()
@@ -338,7 +338,7 @@ do -- base panel
 	end
 	
 	do -- drag drop
-		metatable.GetSet(PANEL, "DragDrop", false)
+		prototype.GetSet(PANEL, "DragDrop", false)
 
 		function PANEL:StartDragging(button)
 			self.drag_world_pos = gui2.mouse_pos:Copy()
@@ -420,7 +420,7 @@ do -- base panel
 	end
 	
 	do -- magnet snap
-		metatable.GetSet(PANEL, "SnapWhileDragging", false)
+		prototype.GetSet(PANEL, "SnapWhileDragging", false)
 
 		local snapped = false
 
@@ -527,9 +527,9 @@ do -- base panel
 
 	do -- animations
 		-- these are useful for animations
-		metatable.GetSet(PANEL, "DrawSizeOffset", Vec2(0, 0))
-		metatable.GetSet(PANEL, "DrawPositionOffset", Vec2(0, 0))
-		metatable.GetSet(PANEL, "DrawAngleOffset", 0)
+		prototype.GetSet(PANEL, "DrawSizeOffset", Vec2(0, 0))
+		prototype.GetSet(PANEL, "DrawPositionOffset", Vec2(0, 0))
+		prototype.GetSet(PANEL, "DrawAngleOffset", 0)
 		
 		PANEL.animations = {}
 
@@ -975,7 +975,7 @@ do -- base panel
 	end
 	
 	do -- mouse
-		metatable.GetSet(PANEL, "SendMouseInputToParent", false)
+		prototype.GetSet(PANEL, "SendMouseInputToParent", false)
 	
 		function PANEL:IsMouseOver()
 			return self:IsDragging() or self:IsResizing() or self.mouse_over and gui2.hovering_panel == self
@@ -1132,7 +1132,7 @@ do -- base panel
 	end
 
 	function gui2.CreatePanel(parent)
-		local self = metatable.CreateObject(PANEL)
+		local self = prototype.CreateObject(PANEL)
 
 		self:SetParent(parent or gui2.world)
 

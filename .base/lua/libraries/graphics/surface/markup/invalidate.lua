@@ -1,4 +1,4 @@
-local META = (...) or metatable.GetRegistered("markup")
+local META = (...) or prototype.GetRegistered("markup")
 
 local function set_font(self, font)
 	if self.FixedSize == 0 then

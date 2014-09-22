@@ -159,12 +159,12 @@ do -- file system
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/debug.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/string.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/table.lua")
-		metatable = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/metatable.lua")
-		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/base_template.lua")
-		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/null.lua")
-		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/class.lua")
-		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/get_is_set.lua")
-		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/metatable/templates/buffer.lua")
+		prototype = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/prototype.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/base_template.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/null.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/class.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/get_is_set.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/templates/buffer.lua")
 		utility = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/utilities/utility.lua")
 		
 		vfs = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/vfs.lua")
@@ -607,7 +607,7 @@ do -- libraries
 	include("libraries/extensions/os.lua")
 
 	-- libraries
-	metatable = include("libraries/metatable/metatable.lua")
+	prototype = include("libraries/prototype/prototype.lua")
 	structs = include("libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
 	utf8 = include("libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 	event = include("libraries/event.lua") goluwa = event.events -- event handler

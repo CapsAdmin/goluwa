@@ -1,4 +1,4 @@
-local META = (...) or metatable.GetRegistered("markup")
+local META = (...) or prototype.GetRegistered("markup")
 
 local function set_cull_clockwise()
 	-- ???

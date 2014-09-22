@@ -1,4 +1,4 @@
-local metatable = ... or _G.metatable
+local prototype = ... or _G.prototype
 
 do
 	local NULL = {}
@@ -28,20 +28,20 @@ do
 		error(("tried to index %q on a NULL value"):format(key), 2)
 	end
 
-	metatable.Register(NULL)
+	prototype.Register(NULL)
 end
 
-function metatable.MakeNULL(tbl)
+function prototype.MakeNULL(tbl)
 
 	for k,v in pairs(tbl) do tbl[k] = nil end
 	tbl.Type = "null"
-	setmetatable(tbl, metatable.GetRegistered("null"))
+	setmetatable(tbl, prototype.GetRegistered("null"))
 	
-	if metatable.created_objects then
-		metatable.created_objects[tbl] = nil
+	if prototype.created_objects then
+		prototype.created_objects[tbl] = nil
 	end
 	
 	return var
 end
 
-_G.NULL = setmetatable({Type  = "null", TypeX = "null", ClassName = "ClassName"}, metatable.GetRegistered("null"))
+_G.NULL = setmetatable({Type  = "null", TypeX = "null", ClassName = "ClassName"}, prototype.GetRegistered("null"))

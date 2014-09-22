@@ -54,7 +54,7 @@ function audio.Shutdown()
 end
 
 function audio.Panic()
-	for k, v in pairs(metatable.GetCreated()) do
+	for k, v in pairs(prototype.GetCreated()) do
 		if v:IsValid() and v.is_audio_object then
 			v:Remove()
 		end
@@ -318,7 +318,7 @@ end
 local function GEN_TEMPLATE(type, ctor, on_remove)
 	local type2 = type:lower()
 
-	local META = metatable.CreateTemplate("audio_" .. type2)
+	local META = prototype.CreateTemplate("audio_" .. type2)
 
 	local fmt = type2 .. "[%i]"
 	function META:__tostring()
@@ -387,7 +387,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	local key = "Gen" .. type
  
 	local create = function(...)
-		local self = metatable.CreateObject(META)
+		local self = prototype.CreateObject(META)
 
 		self.id = al[key]()
 
@@ -416,7 +416,7 @@ end
 local function ADD_SET_GET_OBJECT(META, ADD_FUNCTION, name, ...)
 	ADD_FUNCTION(name.."ID", ...)
 
-	metatable.GetSet(META, name, NULL)
+	prototype.GetSet(META, name, NULL)
 
 	local set = META["Set"..name.."ID"]
 	META["Set"..name] = function(self, var, ...)
@@ -536,8 +536,8 @@ do -- source
 	end
 
 	do
-		metatable.GetSet(META, "BufferCount", 4)
-		metatable.GetSet(META, "BufferFormat", al.e.AL_FORMAT_STEREO16)
+		prototype.GetSet(META, "BufferCount", 4)
+		prototype.GetSet(META, "BufferFormat", al.e.AL_FORMAT_STEREO16)
 		
 		local buffers = ffi.new("ALuint[1]")
 		local pushed = {}
@@ -652,8 +652,8 @@ do -- buffer
 		end
 	end)
 
-	metatable.GetSet(META, "Format", al.e.AL_FORMAT_MONO16)
-	metatable.GetSet(META, "SampleRate", 44100)
+	prototype.GetSet(META, "Format", al.e.AL_FORMAT_MONO16)
+	prototype.GetSet(META, "SampleRate", 44100)
 
 	do
 		-- http://wiki.delphigl.com/index.php/alGetBuffer
@@ -763,7 +763,7 @@ end
 _G.Sound = audio.CreateSource
 
 do -- microphone
-	local META = metatable.CreateTemplate("audio_capture")
+	local META = prototype.CreateTemplate("audio_capture")
 
 	function META:Start(func)
 		alc.CaptureStart(self.id)
@@ -840,7 +840,7 @@ do -- microphone
 
 		logf("[audio] opening device %q for input\n", name)
 
-		local self = metatable.CreateObject(META)
+		local self = prototype.CreateObject(META)
 
 		self.buffer_size = buffer_size
 

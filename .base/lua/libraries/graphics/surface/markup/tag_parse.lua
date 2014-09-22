@@ -1,4 +1,4 @@
-local META = (...) or metatable.GetRegistered("markup")
+local META = (...) or prototype.GetRegistered("markup")
 
 local function parse_tag_arguments(self, arg_line)
 	local out = {}

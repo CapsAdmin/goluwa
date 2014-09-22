@@ -1,4 +1,4 @@
-local metatable = (...) or _G.metatable
+local prototype = (...) or _G.prototype
 
 do
 	local META = {}
@@ -12,14 +12,14 @@ do
 	end
 
 	function META.New(meta, tbl, skip_gc_callback)
-		return metatable.CreateObject(nil, meta, tbl, skip_gc_callback)
+		return prototype.CreateObject(nil, meta, tbl, skip_gc_callback)
 	end
 
 	function META:Remove(...)
 		if self.OnRemove then 
 			self:OnRemove(...) 
 		end
-		metatable.MakeNULL(self)
+		prototype.MakeNULL(self)
 	end
 
 	function META:IsValid()
@@ -48,7 +48,7 @@ do
 		return table.concat(found, "\n")
 	end
 
-	function metatable.CreateTemplate(super_type, sub_type, skip_register)
+	function prototype.CreateTemplate(super_type, sub_type, skip_register)
 		local template = type(super_type) == "table" and super_type or {}
 		
 		for k, v in pairs(META) do
@@ -61,7 +61,7 @@ do
 		end
 		
 		if not skip_register then
-			metatable.Register(template)
+			prototype.Register(template)
 		end
 		
 		template.__index = template
@@ -70,11 +70,11 @@ do
 	end
 end
 
-function metatable.CreateObject(meta, override, skip_gc_callback)
+function prototype.CreateObject(meta, override, skip_gc_callback)
 	override = override or {}
 	
 	if type(meta) == "string" then
-		meta = metatable.GetRegistered(meta)
+		meta = prototype.GetRegistered(meta)
 	end
 		
 	local self = setmetatable(override, table.copy(meta)) 
@@ -84,33 +84,33 @@ function metatable.CreateObject(meta, override, skip_gc_callback)
 			if self:IsValid() then 
 				self:Remove() 
 			end
-			metatable.created_objects[self] = nil
+			prototype.created_objects[self] = nil
 		end)
 	end
 	
 	self.debug_trace = debug.trace(true)
 	
-	metatable.created_objects = metatable.created_objects or utility.CreateWeakTable()
-	metatable.created_objects[self] = self
+	prototype.created_objects = prototype.created_objects or utility.CreateWeakTable()
+	prototype.created_objects[self] = self
 	self.creation_time = os.clock()
 	
 	return self
 end
 
-function metatable.GetCreated(sorted)
+function prototype.GetCreated(sorted)
 	if sorted then
 		local out = {}
-		for k,v in pairs(metatable.created_objects) do
+		for k,v in pairs(prototype.created_objects) do
 			table.insert(out, v)
 		end
 		table.sort(out, function(a, b) return a.creation_time < b.creation_time end)
 		return out
 	end
-	return metatable.created_objects or {}
+	return prototype.created_objects or {}
 end
 
-function metatable.UpdateObjects(meta)
-	for key, obj in pairs(metatable.GetCreated()) do
+function prototype.UpdateObjects(meta)
+	for key, obj in pairs(prototype.GetCreated()) do
 		if obj.Type == meta.Type and obj.ClassName == meta.ClassName then
 			for k, v in pairs(meta) do
 				-- update entity functions only
@@ -123,9 +123,9 @@ function metatable.UpdateObjects(meta)
 	end	
 end
 
-function metatable.RemoveObjects(super_type, sub_type)
+function prototype.RemoveObjects(super_type, sub_type)
 	sub_type = sub_type or super_type
-	for _, obj in pairs(metatable.GetCreated()) do
+	for _, obj in pairs(prototype.GetCreated()) do
 		if obj.Type == super_type and obj.ClassName == sub_type then
 			if obj:IsValid() then
 				obj:Remove()

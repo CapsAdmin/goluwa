@@ -35,7 +35,7 @@ do -- texture object
 		return render.TranslateStringToEnum("texture", t, str, 5) 
 	end
 
-	local META = metatable.CreateTemplate("texture")
+	local META = prototype.CreateTemplate("texture")
 	
 	function META:__tostring()
 		return ("texture[%s]"):format(self.id)
@@ -342,7 +342,7 @@ do -- texture object
 	function META:Remove()
 		if self.format.no_remove then return end
 		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
-		metatable.MakeNULL(self)
+		prototype.MakeNULL(self)
 	end
 	
 	function META:IsLoading()
@@ -411,7 +411,7 @@ do -- texture object
 		-- create a new texture
 		local id = gl.GenTexture()
 
-		local self = metatable.CreateObject(META, 
+		local self = prototype.CreateObject(META, 
 			{
 				id = id, 
 				size = Vec2(width, height), 

@@ -1,4 +1,4 @@
-local META = metatable.GetRegistered("client")
+local META = prototype.GetRegistered("client")
 
 function META:GetChatAboveHead()
 	return self.coh_str or ""

@@ -1,13 +1,13 @@
-local metatable = (...) or _G.metatable
+local prototype = (...) or _G.prototype
 
-function metatable.AddParentingTemplate(META)
+function prototype.AddParentingTemplate(META)
 	META.OnParent = META.OnChildAdd or function() end
 	META.OnChildAdd = META.OnChildAdd or function() end
 	META.OnUnParent = META.OnUnParent or function() end
 	
 	META.RootPart = NULL
 	
-	metatable.GetSet(META, "Parent", NULL)
+	prototype.GetSet(META, "Parent", NULL)
 	META.Children = {}
 	
 	function META:GetChildrenList()
