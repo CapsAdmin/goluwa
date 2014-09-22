@@ -37,6 +37,10 @@ function metatable.MakeNULL(tbl)
 	tbl.Type = "null"
 	setmetatable(tbl, metatable.GetRegistered("null"))
 	
+	if metatable.created_objects then
+		metatable.created_objects[tbl] = nil
+	end
+	
 	return var
 end
 
