@@ -4,6 +4,7 @@ function render.GenerateTextures()
 	render.white_texture = render.CreateTexture(8,8, nil, {no_remove = true}):Fill(function() return 255, 255, 255, 255 end)
 	render.black_texture = render.CreateTexture(8,8, nil, {no_remove = true}):Fill(function() return 0, 0, 0, 255 end)
 	render.grey_texture = render.CreateTexture(8,8, nil, {no_remove = true}):Fill(function() return 127, 127, 127, 255 end)
+	render.noise_texture = render.CreateTexture(512,512, nil, {no_remove = true}):Fill(function() return math.random(255),math.random(255),math.random(255),math.random(255) end)
 
 	render.error_tex = render.CreateTexture(256, 256, nil, {no_remove = true})
 	local size = 16
@@ -39,4 +40,12 @@ end
 
 function render.GetLoadingTexture()	
 	return render.loading_texture
+end
+
+function render.GetNoiseTexture()	
+	return render.noise_texture
+end
+
+if RELOAD then
+	render.GenerateTextures()
 end

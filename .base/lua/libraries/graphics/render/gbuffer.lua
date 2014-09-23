@@ -18,6 +18,10 @@ local GBUFFER = {
 			screen_size = {vec2 = render.GetScreenSize},			
 			cam_nearz = {float = function() return render.camera.nearz end},
 			cam_farz = {float = function() return render.camera.farz end},
+			cam_fov = {float = function() return math.rad(render.camera.fov) end},
+			inv_proj_mat = {mat4 = function() return (render.matrices.view_3d * render.matrices.projection_3d).m end},
+			inv_view_mat = {mat4 = function() return render.matrices.view_3d_inverse.m end},
+			tex_noise = {sampler2D = render.GetNoiseTexture},
 		},  
 		attributes = {
 			{pos = "vec2"},
@@ -47,6 +51,15 @@ local GBUFFER = {
 				float diff = sqrt( clamp(1.0-(depth1-depth2) / (aorange/(cam_farz-cam_nearz)),0.0,1.0) );
 				float ao = min(aoCap,max(0.0,depth1-depth2-depthTolerance) * aoMultiplier) * diff;
 				return ao;
+			}
+			
+			vec3 reconstruct_pos(vec2 uv)
+			{
+				float z = texture(tex_depth, uv).r;
+				vec4 sPos = vec4(uv * 2.0 - 1.0, z, 1.0);
+				sPos = inv_proj_mat * sPos;
+
+				return (sPos.xyz / sPos.w);
 			}
 
 			float ssao()
@@ -79,6 +92,82 @@ local GBUFFER = {
 				return 1-ao;
 			}
 			
+			float hbao() 
+			{
+				const float PI = 3.141592653589793238462643383279502884197169399375105820974944592;
+				const float TWO_PI = 2.0 * PI;
+				const int NUM_SAMPLE_DIRECTIONS = 3;
+				const int NUM_SAMPLE_STEPS = 2;
+				const float uIntensity = 1;
+				const float uAngleBias = 0.5;
+				const float radiusSS = 1;
+				
+				vec3 originVS = reconstruct_pos(uv);
+				vec3 normalVS = texture(tex_normal, uv).yxz;
+								
+				float radiusWS = (-get_depth(uv)+1)*4; 
+								
+				// early exit if the radius of influence is smaller than one fragment
+				// since all samples would hit the current fragment.
+								
+				const float theta = TWO_PI / float(NUM_SAMPLE_DIRECTIONS);
+				float cosTheta = cos(theta);
+				float sinTheta = sin(theta);
+				
+				// matrix to create the sample directions
+				mat2 deltaRotationMatrix = mat2(cosTheta, -sinTheta, sinTheta, cosTheta);
+				
+				// step vector in view space
+				vec2 deltaUV = vec2(1.0, 0.0) * (radiusSS / (float(NUM_SAMPLE_DIRECTIONS * NUM_SAMPLE_STEPS) + 1.0));
+				
+				// we don't want to sample to the perimeter of R since those samples would be 
+				// omitted by the distance attenuation (W(R) = 0 by definition)
+				// Therefore we add a extra step and don't use the last sample.
+				vec4 sampleNoise = texture2D(tex_noise, uv * 4);
+				sampleNoise = sampleNoise * 2.0 - vec4(1.0);
+				//mat2 rotationMatrix = mat2(sampleNoise.x, -sampleNoise.y, sampleNoise.y, sampleNoise.x);
+				
+				// apply a random rotation to the base step vector
+				deltaUV = sampleNoise.xy * deltaUV;
+				
+				float jitter = sampleNoise.a;
+				float occlusion = 0;
+				
+				for (int i = 0; i < NUM_SAMPLE_DIRECTIONS; ++i) {
+					// incrementally rotate sample direction
+					deltaUV = deltaRotationMatrix * deltaUV;
+					
+					vec2 sampleDirUV = deltaUV;
+					float oldAngle = uAngleBias;
+					
+					for (int j = 0; j < NUM_SAMPLE_STEPS; ++j) {
+						vec2 sampleUV = uv + (jitter + float(j)) * sampleDirUV;
+						vec3 sampleVS = reconstruct_pos(sampleUV);
+						vec3 sampleDirVS = (sampleVS - originVS);
+						
+						// angle between fragment tangent and the sample
+						float gamma = (PI / 2.0) - acos(dot(normalVS, normalize(sampleDirVS)));
+						
+						if (gamma > oldAngle) 
+						{
+							float value = sin(gamma) - sin(oldAngle);
+							
+							// distance between original and sample points
+							float attenuation = clamp(1.0 - pow(length(sampleDirVS) / radiusWS, 2.0), 0.0, 1.0);
+							occlusion += attenuation * value;
+							
+							//occlusion += value;
+
+							oldAngle = gamma;
+						}
+					}
+				}
+				
+				occlusion = 1.0 - occlusion / float(NUM_SAMPLE_DIRECTIONS);
+				occlusion = clamp(pow(occlusion, 1.0 + uIntensity), 0.0, 1.0);
+				return occlusion;
+			}
+			
 			//
 			//FOG
 			//
@@ -92,11 +181,10 @@ local GBUFFER = {
 			void main ()
 			{			
 				vec3 diffuse = texture(tex_diffuse, uv).rgb;
-				float depth = get_depth(uv);
 				
 				out_color.rgb = diffuse;
 				out_color.a = 1;
-						
+								
 				out_color.rgb *= vec3(ssao());
 				out_color.rgb *= texture(tex_light, uv).rgb;								
 			}
@@ -144,6 +232,12 @@ do -- post process
 					screen_size = "vec2",
 					tex_gbuffer = "sampler2D",
 					tex_last = "sampler2D",
+
+					cam_nearz = {float = function() return render.camera.nearz end},
+					cam_farz = {float = function() return render.camera.farz end},
+					cam_fov = {float = function() return math.rad(render.camera.fov) end},
+					inv_proj_mat = {mat4 = function() return (render.matrices.view_3d * render.matrices.projection_3d).m end},
+					inv_view_mat = {mat4 = function() return render.matrices.view_3d_inverse.m end},
 				},
 				attributes = {
 					{pos = "vec2"},
@@ -208,6 +302,7 @@ do -- post process
 			down_sample = down_sample,
 			global_id = global_id,
 			cvar = console.CreateVariable("render_pp_" .. global_id, true, function(val)
+				print(name, val,"!!!!!!!!!!")
 				if val then
 					for k, v in pairs(render.pp_disabled_shaders) do
 						if v.global_id == global_id then
