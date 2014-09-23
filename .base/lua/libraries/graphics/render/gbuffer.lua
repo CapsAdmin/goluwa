@@ -302,7 +302,6 @@ do -- post process
 			down_sample = down_sample,
 			global_id = global_id,
 			cvar = console.CreateVariable("render_pp_" .. global_id, true, function(val)
-				print(name, val,"!!!!!!!!!!")
 				if val then
 					for k, v in pairs(render.pp_disabled_shaders) do
 						if v.global_id == global_id then
