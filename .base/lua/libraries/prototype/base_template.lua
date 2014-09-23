@@ -62,6 +62,11 @@ do
 		
 		if not skip_register then
 			prototype.Register(template)
+			if RELOAD then 
+				event.Delay(0, function() 
+					prototype.UpdateObjects(super_type)
+				end) 
+			end
 		end
 		
 		template.__index = template
@@ -110,6 +115,10 @@ function prototype.GetCreated(sorted)
 end
 
 function prototype.UpdateObjects(meta)
+	if type(meta) == "string" then
+		meta = prototype.GetRegistered(meta)
+	end
+	
 	for key, obj in pairs(prototype.GetCreated()) do
 		if obj.Type == meta.Type and obj.ClassName == meta.ClassName then
 			for k, v in pairs(meta) do
