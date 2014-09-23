@@ -342,23 +342,22 @@ end
 
 do -- console vars
 	console.cvar_file_name = "%DATA%/cvars.txt"
-	console.vars = nil
-	
+ 	
 	-- what's the use?
 	do -- cvar meta
 		local META = prototype.CreateTemplate("cvar")
 		
 		function META:Get()
-			if not console.vars then console.ReloadVariables() end
+			if not console.vars then 
+				console.ReloadVariables() 
+			end
 			
-			return console.vars[self.cvar]
+			return console.vars[self.name]
 		end
 		
 		function META:Set(var)
-			console.SetVariable(self.cvar, var)
+			console.SetVariable(self.name, var)
 		end
-			
-		console.cvar_meta = META
 	end
 	
 	function console.ReloadVariables()
@@ -426,13 +425,13 @@ do -- console vars
 		
 		console.AddCommand(name, func, help)
 		
-		if console.GetVariable(var) ~= def and type(callback) == "function" then
+		if type(callback) == "function" then
 			event.Delay(function() 
-				callback(console.GetVariable(var))
+				callback(console.GetVariable(name))
 			end)
 		end
 		
-		return prototype.CreateObject(console.cvar_meta, {cvar = name})
+		return prototype.CreateObject("cvar", {name = name})
 	end
 
 	function console.GetVariable(var, def)
@@ -455,23 +454,25 @@ end
 
 
 do -- title
-	local set_title
-	if WINDOWS then
-		ffi.cdef("int SetConsoleTitleA(const char* blah);")
+	if not console.SetTitleRaw then
+		local set_title
+		if WINDOWS then
+			ffi.cdef("int SetConsoleTitleA(const char* blah);")
 
-		set_title = function(str)
-			return ffi.C.SetConsoleTitleA(str)
+			set_title = function(str)
+				return ffi.C.SetConsoleTitleA(str)
+			end
 		end
-	end
 
-	if LINUX then
-		local iowrite = _OLD_G.io.write
-		set_title = function(str)
-			return iowrite and iowrite('\27]0;', str, '\7') or nil
+		if LINUX then
+			local iowrite = _OLD_G.io.write
+			set_title = function(str)
+				return iowrite and iowrite('\27]0;', str, '\7') or nil
+			end
 		end
+		
+		console.SetTitleRaw = set_title
 	end
-	
-	console.SetTitleRaw = set_title
 	
 	local titles = {}
 	local str = ""
