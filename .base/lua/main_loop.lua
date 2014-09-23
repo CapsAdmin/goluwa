@@ -4,8 +4,6 @@ local fps_cvar = console.CreateVariable("show_fps", true)
 
 local avg_fps = 1
 
-local gl = not SERVER and require("lj-opengl") -- OpenGL
-
 local function calc_fps(dt)	
 	local fps = 1/dt
 	
@@ -16,11 +14,6 @@ local function calc_fps(dt)
 		
 		if utility and utility.FormatFileSize then
 			console.SetTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
-		end
-
-		if gl and gl.call_count then
-			console.SetTitle(("gl calls: %i"):format(gl.call_count), "glcalls")
-			gl.call_count = 0
 		end
 	end
 end
