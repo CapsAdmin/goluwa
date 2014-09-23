@@ -10,6 +10,7 @@ render.matrices = {
 	
 	vpm_matrix = Matrix44(),
 	vp_matrix = Matrix44(),
+	vp_3d_inverse = Matrix44(),
 	projection_3d_inverse = Matrix44(),
 	view_2d_inverse = Matrix44(),
 	view_3d_inverse = Matrix44(),
@@ -170,6 +171,7 @@ function render.SetupView3D(pos, ang, fov)
 	end
 	
 	render.matrices.vp_matrix = render.matrices.view_3d * render.matrices.projection_3d
+	render.matrices.vp_3d_inverse = render.matrices.vp_matrix:GetInverse()
 	render.matrices.view_3d_inverse = render.matrices.view_3d:GetInverse()
 end
 
