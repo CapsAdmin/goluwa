@@ -49,16 +49,20 @@ function structs.Register(META)
 	if META.StructOverride then
 		obj = META.StructOverride()
 	else
-		ffi.cdef("typedef struct " .. META.ClassName .. " { " .. META.NumberType .. " " .. arg_line .. "; }" .. META.ClassName .. ";")
-		obj = ffi.metatype(META.ClassName, META)
+		local type_name = META.ClassName
+		while pcall(ffi.typeof, type_name) do
+			type_name = type_name .. "_" 
+		end
+		ffi.cdef("typedef struct " .. type_name .. " { " .. META.NumberType .. " " .. arg_line .. "; }" .. type_name .. ";")
+		obj = assert(ffi.metatype(type_name, META))
 	end
-	
+		
 	if META.Constructor then
 		structs[META.ClassName] = function(...) return obj(META.Constructor(...)) end
 	else
 		structs[META.ClassName] = obj
  	end
-	
+		
 	_G[META.ClassName] = structs[META.ClassName]
 	
 	prototype.Register(META)
@@ -90,7 +94,7 @@ local function parse_args(META, lua, sep, protect)
 	local count = #META.Args
 	
 	for _, line in pairs(lua:explode("\n")) do
-		if line:find("KEY") then
+		if line:find("KEY") or line:find("ARG") then
 			local str = ""
 			for i, trans in pairs(META.Args) do
 				local arg = trans
@@ -101,16 +105,27 @@ local function parse_args(META, lua, sep, protect)
 								
 				if protect and META.ProtectedFields and META.ProtectedFields[arg] then
 					str = str .. "PROTECT " .. arg
+				elseif line:find("ARG") then
+					str = str .. arg
+					if i ~= count then
+						str = str .. ", "
+					end	
 				else
 					str = str .. line:gsub("KEY", arg)	
 				end
 				
-				if i ~= count then
+				if i ~= count and not line:find("ARG") then
 					str = str .. sep
 				end	
 				
-				str = str .. "\n"
+				if line:find("KEY") then
+					str = str .. "\n"
+				end
 			end		
+			
+			if line:find("ARG") then
+				str = line:gsub("ARG", str)
+			end
 			line = str
 		end
 		str = str .. line .. "\n"
@@ -210,15 +225,15 @@ function structs.AddOperator(META, operator, ...)
 	elseif operator == "set" then
 		local lua = [==[
 		local META, structs = ...
-		META["Set"] = function(a, b)
-				a.KEY = b.KEY
+		META["Set"] = function(a, ARG)
+				a.KEY = KEY
+				return a
 			end
 		]==]
 		
 		lua = parse_args(META, lua, "")
 		
 		lua = lua:gsub("CTOR", "structs."..META.ClassName)
-		
 		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
 	elseif operator == "copy" then
 		local lua = [==[
