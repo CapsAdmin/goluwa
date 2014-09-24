@@ -58,11 +58,11 @@ local GBUFFER = {
 				return ao;
 			}
 			
-			vec3 reconstruct_pos(vec2 uv)
+			vec3 get_pos2(vec2 uv)
 			{
-				float z = texture(tex_depth, uv).r;
+				float z = -texture2D(tex_depth, uv).r;
 				vec4 sPos = vec4(uv * 2.0 - 1.0, z, 1.0);
-				sPos = inv_proj_mat * sPos;
+				sPos = inv_proj_mat * sPos; 
 
 				return (sPos.xyz / sPos.w);
 			}
@@ -101,14 +101,14 @@ local GBUFFER = {
 			{
 				const float PI = 3.141592653589793238462643383279502884197169399375105820974944592;
 				const float TWO_PI = 2.0 * PI;
-				const int NUM_SAMPLE_DIRECTIONS = 3;
+				const int NUM_SAMPLE_DIRECTIONS = 6;
 				const int NUM_SAMPLE_STEPS = 2;
 				const float uIntensity = 1;
-				const float uAngleBias = 0.5;
-				const float radiusSS = 1;
+				const float uAngleBias = 0.75;
+				const float radiusSS = 2;
 				
-				vec3 originVS = reconstruct_pos(uv);
-				vec3 normalVS = texture(tex_normal, uv).yxz;
+				vec3 originVS = get_pos2(uv);
+				vec3 normalVS = texture(tex_normal, uv).xyz;
 								
 				float radiusWS = (-get_depth(uv)+1)*4; 
 								
@@ -128,7 +128,7 @@ local GBUFFER = {
 				// we don't want to sample to the perimeter of R since those samples would be 
 				// omitted by the distance attenuation (W(R) = 0 by definition)
 				// Therefore we add a extra step and don't use the last sample.
-				vec4 sampleNoise = texture2D(tex_noise, uv * 4);
+				vec4 sampleNoise = texture2D(tex_noise, uv);
 				sampleNoise = sampleNoise * 2.0 - vec4(1.0);
 				//mat2 rotationMatrix = mat2(sampleNoise.x, -sampleNoise.y, sampleNoise.y, sampleNoise.x);
 				
@@ -147,7 +147,7 @@ local GBUFFER = {
 					
 					for (int j = 0; j < NUM_SAMPLE_STEPS; ++j) {
 						vec2 sampleUV = uv + (jitter + float(j)) * sampleDirUV;
-						vec3 sampleVS = reconstruct_pos(sampleUV);
+						vec3 sampleVS = get_pos2(sampleUV);
 						vec3 sampleDirVS = (sampleVS - originVS);
 						
 						// angle between fragment tangent and the sample
