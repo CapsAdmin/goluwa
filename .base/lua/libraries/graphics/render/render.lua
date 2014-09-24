@@ -168,7 +168,7 @@ do
 	local vsync = 0
 	
 	function render.SetVSync(b)
-		if gl.SwapIntervalEXT then
+		if gl.SwapIntervalEXT and not (NVIDIA and X64 and WINDOWS) then
 			gl.SwapIntervalEXT(b == true and 1 or b == "adaptive" and -1 or 0)
 			vsync = b
 		elseif window and window.IsOpen() then
