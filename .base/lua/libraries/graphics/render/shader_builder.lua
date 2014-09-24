@@ -596,6 +596,7 @@ function render.CreateShader(data)
 						table.insert(temp, {id = id, key = val.name, val = val})
 						
 						self.defaults[val.name] = val.default
+						self[val.name] = val.default
 						
 						if val.get then
 							self[val.name] = val.get
