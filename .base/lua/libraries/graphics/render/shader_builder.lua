@@ -110,12 +110,6 @@ void main()
 ]]
 
 local function rebuild_info()
-	if OPENGL_ES then
-		source_template = "#version 300 es" .. source_template
-	else
-		source_template = "#version 150" .. source_template
-	end
-
 	-- grab all valid shaders from enums
 	for k,v in pairs(gl.e) do
 		local name = k:match("GL_(.+)_SHADER")
@@ -262,7 +256,19 @@ function render.CreateShader(data)
 	local build_output = {}
 
 	for shader in pairs(data) do
-		build_output[shader] = {source = source_template, out = {}}
+		local source = source_template
+		
+		if OPENGL_ES then
+			source = "#version 300 es" .. source
+		else
+			if shader:find("tess") then
+				source = "#version 400" .. source
+			else
+				source = "#version 150" .. source
+			end
+		end
+		
+		build_output[shader] = {source = source, out = {}}
 	end
 
 	do -- figure out vertex attributes other shaders need
@@ -399,6 +405,8 @@ function render.CreateShader(data)
 			table.insert(build_output.vertex.uniform, v)
 		end
 	end
+	
+	vfs.CreateFolder("shader_builder_output/" .. shader_id) 
 
 	if BUILD_OUTPUT then
 		serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/build_output.lua", build_output)
@@ -425,6 +433,7 @@ function render.CreateShader(data)
 					line = tonumber(line)
 					return data.source:explode("\n")[line]:trim() .. (line - data.line_start + 1)
 				end)
+				err = err .. data.source
 				error(err)
 			end
 
@@ -462,6 +471,9 @@ function render.CreateShader(data)
 	end, unpack(shaders))
 
 	if not ok then
+		for shader, data in pairs(build_output) do
+			print(data.source)
+		end
 		error(prog, 2)
 	end
 
