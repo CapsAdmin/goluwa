@@ -96,7 +96,7 @@ if CLIENT then
 
 						if (bump_detail != vec3(0,0,0))
 						{
-							out_color[1].rgb += bump_detail / 2;
+							out_color[1].rgb -= (mat3(vm_matrix)) * (bump_detail - vec3(0.5));
 							out_color[1].rgb = normalize(out_color[1].rgb);
 						}
 					}
@@ -310,38 +310,8 @@ if CLIENT then
 
 		local matrix = self:GetComponent("transform"):GetMatrix()
 		local model = self.Model
-
-		local visible = false
-
-		if model.corners and self.Cull then
-			local temp = Matrix44()
-
-			model.matrix_cache = model.matrix_cache or {}
-
-			for i, pos in ipairs(model.corners) do
-				model.matrix_cache[i] = model.matrix_cache[i] or Matrix44()
-				model.matrix_cache[i]:Identity()
-				model.matrix_cache[i]:Translate(pos.x, pos.y, pos.z)
-
-				model.matrix_cache[i]:Multiply(matrix, temp)
-				temp:Multiply(vp_matrix, model.matrix_cache[i])
-
-				local x, y, z = model.matrix_cache[i]:GetClipCoordinates()
-
-				if
-					(x > -1 and x < 1) and
-					(y > -1 and y < 1) and
-					(z > -1 and z < 1)
-				then
-					visible = true
-					break
-				end
-			end
-		else
-			visible = true
-		end
-
-		if true or visible then
+		
+		if not self.Cull or not model.corners or self:GetComponent("transform"):IsPointsVisible(model.corners, vp_matrix) then
 
 			if TESS then
 				shader.m_matrix = matrix.m
