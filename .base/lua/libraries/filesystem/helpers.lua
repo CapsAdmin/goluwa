@@ -44,7 +44,6 @@ add_helper("GetLastAccessed", "GetLastAccessed", "read")
 
 function vfs.CreateFolder(path)
 	check(path, "string")
-	check_write_path(path, true)
 	
 	for i, data in ipairs(vfs.TranslatePath(path, true)) do	
 		data.context:PCall("CreateFolder", data.path_info)
