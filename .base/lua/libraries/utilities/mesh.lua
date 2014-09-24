@@ -197,6 +197,44 @@ function utility.GenerateNormals(data)
 	return data
 end
 
+function utility.SmoothNormals(data)
+	local temp = {}
+		
+	local i = 1
+	
+	for _, vertex in ipairs(data) do
+		local x, y, z = vertex.pos.x, vertex.pos.y, vertex.pos.z
+			
+		temp[x] = temp[x] or {}
+		temp[x][y] = temp[x][y] or {}		
+		temp[x][y][z] = temp[x][y][z] or {}
+		
+		temp[x][y][z][i] = vertex
+		i = i + 1
+	end
+	
+	local found = 0
+	
+	for _, x in pairs(temp) do		
+		for _, y in pairs(x) do		
+			for _, z in pairs(y) do
+				
+				local normal = Vec3(0)
+
+				for _, vertex in pairs(z) do	
+					normal = normal + vertex.normal
+				end
+				
+				normal:Normalize()		
+			
+				for _, vertex in pairs(z) do				
+					vertex.normal = normal
+				end
+			end
+		end
+	end
+end
+
 function utility.CreateCube(size, texture_scale)
 	size = size or 1
 	texture_scale = texture_scale or 1
