@@ -17,7 +17,9 @@ function META:OnAdd()
 end
 	
 function META:OnRemove()
-
+	if self.Entity:IsValid() and self.Entity.Components and self.Entity.Components[self.Type] then
+		self.Entity.Components[self.Type][self.Id] = nil
+	end
 end
 
 function META:OnEvent(component, name, ...)
@@ -75,10 +77,6 @@ function META:RemoveEvent(event_type)
 	end
 	
 	table.fixindices(events[event_type])
-
-	for i, self in ipairs(events[event_type]) do
-		self[func_name](self)
-	end
 	
 	if ref_count[event_type] <= 0 then
 		event.RemoveListener(event_type, "metatable_ecs")
