@@ -1,10 +1,9 @@
-steam.MountSourceGame("half-life 2")
-
-local bsp_file
---= assert(vfs.Open("maps/gm_bluehills_test3.bsp")) -- gmod
-= assert(vfs.Open("maps/d2_coast_07.bsp")) -- hl2
---= assert(vfs.Open("maps/ep2_outland_06a.bsp")) -- ep2
---= assert(vfs.Open("maps/c3m1_plankcountry.bsp")) -- l4d
+--steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/esther.bsp")) -- gmod
+steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_bluehills_test3.bsp")) -- gmod
+--steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp")) -- gmod
+--steam.MountSourceGame("half-life 2") local bsp_file = assert(vfs.Open("maps/d2_coast_07.bsp")) -- hl2
+--steam.MountSourceGame("half-life 2: episode two") local bsp_file = assert(vfs.Open("maps/ep2_outland_06a.bsp")) -- ep2
+--steam.MountSourceGame("left 4 dead 2") local bsp_file = assert(vfs.Open("maps/c3m1_plankcountry.bsp")) -- l4d
 
 local header = bsp_file:ReadStructure([[
 long ident; // BSP file identifier
@@ -168,17 +167,17 @@ timer.Stop()
 
 do timer.Start("reading displacements")
 	local structure = [[
-		vec3			startPosition;		// start position used for orientation
-		int			DispVertStart;		// Index into LUMP_DISP_VERTS.
-		int			DispTriStart;		// Index into LUMP_DISP_TRIS.
-		int			power;			// power - indicates size of surface (2^power	1)
-		int			minTess;		// minimum tesselation allowed
-		float			smoothingAngle;		// lighting smoothing angle
-		int			contents;		// surface contents
-		unsigned short		MapFace;		// Which map face this displacement comes from.
+		vec3 startPosition; // start position used for orientation
+		int DispVertStart; // Index into LUMP_DISP_VERTS.
+		int DispTriStart; // Index into LUMP_DISP_TRIS.
+		int power; // power - indicates size of surface (2^power	1)
+		int minTess; // minimum tesselation allowed
+		float smoothingAngle; // lighting smoothing angle
+		int contents; // surface contents
+		unsigned short MapFace; // Which map face this displacement comes from.
 		char asdf[2];
-		int			LightmapAlphaStart;	// Index into ddisplightmapalpha.
-		int			LightmapSamplePositionStart;	// Index into LUMP_DISP_LIGHTMAP_SAMPLE_POSITIONS.
+		int LightmapAlphaStart;	// Index into ddisplightmapalpha.
+		int LightmapSamplePositionStart; // Index into LUMP_DISP_LIGHTMAP_SAMPLE_POSITIONS.
 		
 		
 		//CDispNeighbor		EdgeNeighbors[4];	// Indexed by NEIGHBOREDGE_ defines.
@@ -324,7 +323,7 @@ do timer.Start("building mesh")
 
 	local scale = 0.0254
 	
-	local function add_vertex(model, texinfo, texdata, pos, blend)
+	local function add_vertex(model, texinfo, texdata, pos, blend, normal)
 		local a = texinfo.textureVecs
 		
 		if blend then 
@@ -341,18 +340,9 @@ do timer.Start("building mesh")
 			uv = Vec2(
 				(a[1] * pos.x + a[2] * pos.y + a[3] * pos.z + a[4]) / texdata.width,
 				(a[5] * pos.x + a[6] * pos.y + a[7] * pos.z + a[8]) / texdata.height
-			)
+			),
+			normal = normal,
 		}) 
-	end
-
-	local function get_face_vertex(face_index, i)
-		local face = header.faces[1 + face_index]
-
-		local surfedge = header.surfedges[1 + face.firstedge + (i - 1)]
-		local edge = header.edges[1 + math.abs(surfedge)]
-		local vertex = edge[1 + (surfedge < 0 and 1 or 0)]
-
-		return vertex
 	end
 
 	local function bilerpvec(a, b, c, d, alpha1, alpha2)
@@ -531,7 +521,7 @@ do timer.Start("building mesh")
 				end
 
 				local dims = 2 ^ dispinfo.power + 1
-				
+								
 				for x = 1, dims - 1 do
 					for y = 1, dims - 1 do
 						add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
@@ -543,6 +533,8 @@ do timer.Start("building mesh")
 						add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
 					end
 				end
+				
+				sub_model.displacement = true
 			end
 		end
 		
@@ -551,13 +543,24 @@ do timer.Start("building mesh")
 	end
 timer.Stop() end
 
-timer.Start("render.CreateMesh")
- 
+timer.Start("generating normals")
 for i, data in ipairs(bsp_mesh.sub_models) do
-	utility.GenerateNormals(data.mesh_data)
+	utility.GenerateNormals(data.mesh_data)	
+end 
+timer.Stop()
+
+timer.Start("smoothing displacements")
+for i, data in ipairs(bsp_mesh.sub_models) do
+	if data.displacement then
+		utility.SmoothNormals(data.mesh_data) 
+	end
+end 
+timer.Stop()
+
+timer.Start("render.CreateMesh")
+for i, data in ipairs(bsp_mesh.sub_models) do
 	data.mesh = render.CreateMesh(data.mesh_data)
 end
-
 timer.Stop()
 
 logn("SUB_MODELS ", #bsp_mesh.sub_models)
