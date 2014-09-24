@@ -114,34 +114,48 @@ do
 end
 
 
-do -- time in ms
+do-- time in ms
 	local get = not_implemented
 	
-	if WINDOWS then
-		ffi.cdef("bool QueryPerformanceCounter(uint64_t *out);")
-		ffi.cdef("bool QueryPerformanceFrequency(uint64_t *out);")
+	if WINDOWS then		
+		-- Script by montoyo
+		-- Little complex number library
+
+		ffi.cdef[[
+		typedef union _LARGE_INTEGER {
+			struct {
+				unsigned long LowPart;
+				long HighPart;
+			}  ;
+			struct {
+				unsigned long LowPart;
+				long HighPart;
+			} u;
+
+			long long QuadPart;
+		} LARGE_INTEGER;
+
+		__declspec(dllimport) int __stdcall QueryPerformanceCounter(LARGE_INTEGER *lpPerformanceCount);
+		__declspec(dllimport) int __stdcall QueryPerformanceFrequency(LARGE_INTEGER *lpPerformanceCount);
+		]]
+
+		local freq
+		local llstart = ffi.new("LARGE_INTEGER")
+
+		local li = ffi.new("LARGE_INTEGER")
 		
-		local t1 = ffi.new("uint64_t[1]")
-		local t2 = ffi.new("uint64_t[1]")
-		local freq = ffi.new("uint64_t[1]")
-		local time = 0
-		
-		local init
-		
-		get = function() 
+		get = function()
+			ffi.C.QueryPerformanceCounter(li)
 			
-			if not init then
-				ffi.C.QueryPerformanceFrequency(freq)
-				ffi.C.QueryPerformanceCounter(t1)
-				init = true
-			end
-		
-			ffi.C.QueryPerformanceCounter(t2) 
-			
-			time = (tonumber(t2[0] - t1[0]) * 1000 / tonumber(freq[0])) / 1000
-		
-			return time
+			li.QuadPart = li.QuadPart - llstart.QuadPart
+			return tonumber(li.QuadPart) / freq
 		end
+
+		local li = ffi.new("LARGE_INTEGER")
+		ffi.C.QueryPerformanceFrequency(li)
+		freq = tonumber(li.QuadPart) / 1000
+		
+		ffi.C.QueryPerformanceCounter(llstart)
 	end
 	
 	if LINUX then
