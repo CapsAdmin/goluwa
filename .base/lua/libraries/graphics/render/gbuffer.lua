@@ -19,6 +19,7 @@ local GBUFFER = {
 			cam_nearz = {float = function() return render.camera.nearz end},
 			cam_farz = {float = function() return render.camera.farz end},
 			cam_fov = {float = function() return math.rad(render.camera.fov) end},
+			inv_proj = {mat4 = function() return (render.matrices.projection_3d_inverse).m end},
 			inv_proj_mat = {mat4 = function() return (render.matrices.view_3d * render.matrices.projection_3d).m end},
 			inv_view_mat = {mat4 = function() return render.matrices.view_3d_inverse.m end},
 			tex_noise = {sampler2D = render.GetNoiseTexture},
@@ -30,10 +31,14 @@ local GBUFFER = {
 		source = [[
 			out vec4 out_color;
 			
-			vec3 get_pos()
-			{ 
-				return -texture(tex_position, uv).yxz;
-			}
+			vec3 get_pos(vec2 uv)
+			{
+				float z = -texture2D(tex_depth, uv).r;
+				vec4 sPos = vec4(uv * 2.0 - 1.0, z, 1.0);
+				sPos = inv_proj * sPos;
+
+				return sPos.xyz / sPos.w;
+			}		
 			
 			float get_depth(vec2 coord) 
 			{
@@ -483,7 +488,15 @@ function render.InitializeGBuffer(width, height)
 				else
 					x = x + w
 				end
-			end			
+			end
+			
+			local i = 1
+			
+			for _, pass in ipairs(render.gbuffer_passes) do
+				if pass.DrawDebug then 
+					i,x,y,w,h = pass:DrawDebug(i,x,y,w,h,size) 
+				end
+			end
 		end
 	end)
 end

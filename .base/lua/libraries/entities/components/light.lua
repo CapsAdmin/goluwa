@@ -24,7 +24,7 @@ if CLIENT then
 	do -- shader
 		local gl = require("lj-opengl") -- OpenGL
 		
-		local PASS = render.CreateGBufferPass("light", 2)
+		local PASS = render.CreateGBufferPass("light", 3)
 		PASS:AddBuffer("light", "RGBA16F")
 
 		function PASS:Draw3D()
@@ -52,12 +52,14 @@ if CLIENT then
 			source = "gl_Position = pvm_matrix * vec4(pos*7.5, 1);"
 		})
 
-		PASS:ShaderStage("fragment" ,{ 
+		PASS:ShaderStage("fragment", { 
 			uniform = {
 				tex_depth = "sampler2D",
 				tex_diffuse = "sampler2D",
 				tex_normal = "sampler2D",
 				tex_position = "sampler2D",
+				
+				tex_shadow_map = "sampler2D",
 				
 				cam_pos = {vec3 = render.GetCamPos},
 				light_pos = Vec3(0,0,0),
@@ -66,6 +68,13 @@ if CLIENT then
 				light_color = Color(1,1,1,1),				
 				light_diffuse_intensity = 0.5,
 				light_radius = 1000,
+				light_vp_matrix = "mat4",
+				vpa_matrix = "mat4",
+				
+				inverse_projection = "mat4",
+				cam_nearz = {float = function() return render.camera.nearz end},
+				cam_farz = {float = function() return render.camera.farz end},
+				view_matrix = {mat4 = function() return render.matrices.view_3d.m end},
 			},  
 			source = [[			
 				out vec4 out_color;
@@ -74,28 +83,44 @@ if CLIENT then
 				{
 					return gl_FragCoord.xy / screen_size;
 				}
-				
-				vec3 get_pos()
-				{ 				
-					vec2 uv = get_uv();
-					return -texture(tex_position, uv).yxz;
+									
+				float get_depth(vec2 uv) 
+				{
+					return (2.0 * cam_nearz) / (cam_farz + cam_nearz - texture2D(tex_depth, uv).r * (cam_farz - cam_nearz));
 				}
-															
+				
+				vec3 get_pos2(vec2 uv)
+				{
+					float z = -texture2D(tex_depth, uv).r;
+					vec4 sPos = vec4(uv * 2.0 - 1.0, z, 1.0);
+					sPos = inverse_projection * sPos;
+
+					return (sPos.xyz / sPos.w);
+				}
+				
+				vec3 get_pos3(vec2 uv, float z)
+				{
+					vec4 sPos = vec4(uv * 2.0 - 1.0, z, 1.0);
+					sPos = inverse_projection * sPos;
+
+					return (sPos.xyz / sPos.w);
+				}
 							
 				float get_attenuation(vec3 world_pos)
-				{
+				{												
 					float distance = length(light_pos - world_pos);
 					distance = distance / light_radius / 5;
 					distance = -distance + 2; 
 					
 					return clamp(distance, 0, 1);
 				}
-							 
+				
 				vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular)
 				{
-					float roughness = 0.8;
+					float roughness = 0.1;
 
-					vec3 cEye = normalize(cam_pos - world_pos);
+					vec3 cEye = normalize( world_pos);
+					
 					vec3 cHalf = normalize(cLight + cEye);
 
 					// calculate light lumosity (optimized with custom dist calc)
@@ -130,24 +155,42 @@ if CLIENT then
 					
 					return (diffuse_ + specular_) * light_diffuse_intensity;
 				}
+				
+				float CalcShadowFactor(vec3 light_space_pos, float z)
+				{
+					float depth = texture(tex_shadow_map, 0.5*vec2(light_space_pos.x, light_space_pos.y)+0.5).x;
+					
+					return depth < z ? 0 : 1;
+				}
 							
 				void main()
 				{					
-					vec2 uv = get_uv();
+					vec2 uv = get_uv();					
+					vec3 world_pos = get_pos2(uv);	
 					
-					float specular = texture(tex_diffuse, uv).a;
-					vec3 world_pos = get_pos();	
-
+					//out_color.rgb = world_pos; out_color.a = 1; {return;}
+										
 					{					
-						vec3 normal = texture(tex_normal, uv).yxz;
-						
-						vec3 light_dir = normalize(light_pos - world_pos);
-						
-						float fade = get_attenuation(world_pos);
+						float fade = get_attenuation(world_pos);																		
+						/*{
+							vec4 temp = light_vp_matrix * vec4(world_pos, 1);
+							vec3 light_space_pos = vec3(temp.xyz) / temp.w;
+							float z = texture(tex_depth, uv);
+							
+							fade = CalcShadowFactor(light_space_pos, z);
+							
+							out_color.rgb = vec3(fade);
+							out_color.a = 1;
+							return;
+						}*/
 						
 						if (fade > 0)
 						{
 							out_color.rgb = vec3(fade);
+							
+							float specular = texture(tex_diffuse, uv).a;
+							vec3 normal = texture(tex_normal, uv).xyz;
+							vec3 light_dir = normalize(light_pos - world_pos);
 							
 							out_color.rgb *= CookTorrance2(light_dir, normal, world_pos, specular);
 						}
@@ -156,6 +199,58 @@ if CLIENT then
 					}
 				}
 			]]  
+		})
+	end
+	
+	do -- shadow map
+		local gl = require("lj-opengl") -- OpenGL
+		
+		local PASS = render.CreateGBufferPass("shadow", 2)
+
+		function PASS:Draw3D()
+			event.Call("DrawShadowMaps", render.gbuffer_shadow_shader)
+		end
+		
+		function PASS:DrawDebug(i,x,y,w,h,size)
+			for name, map in pairs(render.shadow_maps) do
+				local tex = map:GetTexture("depth")
+		
+			
+				surface.SetWhiteTexture()
+				surface.SetColor(1, 1, 1, 1)
+				surface.DrawRect(x, y, w, h)
+				
+				surface.SetColor(1,1,1,1)
+				surface.SetTexture(tex)
+				surface.DrawRect(x, y, w, h)
+				
+				surface.SetTextPos(x, y + 5)
+				surface.DrawText(tostring(name))
+				
+				if i%size == 0 then
+					y = y + h
+					x = 0
+				else
+					x = x + w
+				end
+				
+				i = i + 1
+			end
+			
+			return i,x,y,w,h
+		end
+
+		PASS:ShaderStage("vertex", { 
+			uniform = {
+				pvm_matrix = {mat4 = render.GetPVWMatrix2D},
+			},			
+			attributes = {
+				{pos = "vec3"},
+				{normal = "vec3"},
+				{uv = "vec2"},
+				{texture_blend = "float"},
+			},	
+			source = "gl_Position = pvm_matrix * vec4(pos, 1);"
 		})
 	end
 	
@@ -169,6 +264,8 @@ if CLIENT then
 	
 	do -- shadow map		
 		local gl = require("lj-opengl")
+		
+		render.shadow_maps = render.shadow_maps or utility.CreateWeakTable()
 		
 		function COMPONENT:SetShadow(b)
 			if b then
@@ -195,8 +292,9 @@ if CLIENT then
 			
 			--transform:SetPosition(Vec3(1000, 1000, 1000)*0.2)
 			--transform:SetAngles(Ang3(-90, 0, 0)) 			
-			transform:SetPosition(Vec3(math.cos(os.clock())*5, 70, 10 + math.sin(os.clock())*5))
-			transform:SetAngles(Ang3(-10, -90, 0)) 
+			
+			--transform:SetPosition(Vec3(math.cos(os.clock())*5, 70, 10 + math.sin(os.clock())*5))
+			--transform:SetAngles(Ang3(-10, -90, 0)) 
 			
 			--transform:SetPosition(Vec3(0, 90, 0))
 			--transform:SetAngles(Ang3(-10, -90, 0)) 
@@ -205,8 +303,8 @@ if CLIENT then
 			--transform:SetPosition(pos)
 			--transform:SetAngles((pos - render.GetCamPos()):GetAng3())
 			
-		--	transform:SetPosition(render.GetCamPos())
-		--	transform:SetAngles(render.GetCamAng())
+			--transform:SetPosition(render.GetCamPos())
+			--transform:SetAngles(render.GetCamAng())
 			
 			do
 				local pos = transform:GetPosition()
@@ -217,7 +315,7 @@ if CLIENT then
 				local cam = render.camera
 				projection:Perspective(60, cam.nearz, cam.farz, cam.ratio) 
 				
-				--local size = 200
+				local size = 30
 				--projection:Ortho(-size, size, -size, size, 200, 0) 
 
 				local view = Matrix44()
@@ -229,7 +327,7 @@ if CLIENT then
 			
 				view:Translate(pos.y, pos.x, pos.z)
 						
-				self.vp_matrix = view * projection
+				self.vp_matrix = (view * projection)
 				
 				self.shadow_map:Begin()
 					self.shadow_map:Clear()
@@ -247,8 +345,12 @@ if CLIENT then
 		local screen = matrix * render.matrices.vp_matrix
 		
 		shader.pvm_matrix = screen.m
-		shader.light_pos = transform:GetPosition()
-		shader.light_dir = transform:GetAngles():GetForward()
+		shader.vpa_matrix = render.matrices.vp_matrix.m
+
+		
+		local mat = matrix * render.matrices.view_3d
+		shader.light_pos = Vec3(mat:GetTranslation())*2 -- why do i need to multiply by 2?
+		--shader.light_dir = transform:GetAngles():GetForward()
 		shader.light_radius = transform:GetSize()
 		
 		-- automate this!!
@@ -263,6 +365,7 @@ if CLIENT then
 		if self.vp_matrix and self.shadow_map then
 			shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
 			shader.light_vp_matrix = self.vp_matrix.m
+			shader.inverse_projection = render.matrices.projection_3d_inverse.m
 		end		
 
 		shader:Bind()
