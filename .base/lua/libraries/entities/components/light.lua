@@ -117,9 +117,9 @@ if CLIENT then
 				
 				vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular)
 				{
-					float roughness = 0.1;
+					float roughness = 0.7;
 
-					vec3 cEye = normalize( world_pos);
+					vec3 cEye = normalize(-world_pos);
 					
 					vec3 cHalf = normalize(cLight + cEye);
 
@@ -189,10 +189,10 @@ if CLIENT then
 							out_color.rgb = vec3(fade);
 							
 							float specular = texture(tex_diffuse, uv).a;
-							vec3 normal = texture(tex_normal, uv).xyz;
+							vec3 normal = texture(tex_normal, uv).xyz;							
 							vec3 light_dir = normalize(light_pos - world_pos);
 							
-							out_color.rgb *= CookTorrance2(light_dir, normal, world_pos, specular);
+							out_color.rgb *= CookTorrance2(light_dir, normal,  world_pos, specular);
 						}
 
 						out_color.a = light_color.a;

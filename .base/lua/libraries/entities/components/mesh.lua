@@ -30,7 +30,7 @@ if CLIENT then
 		local PASS = render.CreateGBufferPass("mesh", 1)
 
 		PASS:AddBuffer("diffuse", "RGBA8")
-		PASS:AddBuffer("normal", "RGB8")
+		PASS:AddBuffer("normal", "RGB16f")
 
 		local gl = require("lj-opengl") -- OpenGL
 
@@ -97,7 +97,7 @@ if CLIENT then
 						if (bump_detail != vec3(0,0,0))
 						{
 							out_color[1].rgb += bump_detail / 2;
-							out_color[1].rgb = normalize(out_color[1].rgb);	
+							out_color[1].rgb = normalize(out_color[1].rgb);
 						}
 					}
 
