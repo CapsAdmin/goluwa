@@ -69,7 +69,6 @@ if CLIENT then
 				light_diffuse_intensity = 0.5,
 				light_radius = 1000,
 				light_vp_matrix = "mat4",
-				vpa_matrix = "mat4",
 				
 				inverse_projection = "mat4",
 				cam_nearz = {float = function() return render.camera.nearz end},
@@ -117,7 +116,7 @@ if CLIENT then
 				
 				vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular)
 				{
-					float roughness = 0.7;
+					float roughness = 0.8;
 
 					vec3 cEye = normalize(-world_pos);
 					
@@ -345,13 +344,13 @@ if CLIENT then
 		local screen = matrix * render.matrices.vp_matrix
 		
 		shader.pvm_matrix = screen.m
-		shader.vpa_matrix = render.matrices.vp_matrix.m
 
 		
 		local mat = matrix * render.matrices.view_3d
-		shader.light_pos = Vec3(mat:GetTranslation())*2 -- why do i need to multiply by 2?
-		--shader.light_dir = transform:GetAngles():GetForward()
+		local x,y,z = mat:GetTranslation()
+		shader.light_pos:Set(x*2,y*2,z*2) -- why do i need to multiply by 2?
 		shader.light_radius = transform:GetSize()
+		shader.inverse_projection = render.matrices.projection_3d_inverse.m
 		
 		-- automate this!!
 		shader.light_color = self.Color
@@ -365,7 +364,6 @@ if CLIENT then
 		if self.vp_matrix and self.shadow_map then
 			shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
 			shader.light_vp_matrix = self.vp_matrix.m
-			shader.inverse_projection = render.matrices.projection_3d_inverse.m
 		end		
 
 		shader:Bind()
