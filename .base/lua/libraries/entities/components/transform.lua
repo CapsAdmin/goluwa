@@ -1,4 +1,4 @@
-local entities = (...) or _G.entities
+local prototype = (...) or _G.prototype
 
 local COMPONENT = {}
 
@@ -122,6 +122,41 @@ function COMPONENT:RebuildMatrix()
 	end
 end
 
+do
+	local temp = Matrix44()
+
+	function COMPONENT:IsPointsVisible(points, view)
+		view = view or render.matrices.vp_matrix
+		self.visible_matrix_cache = self.visible_matrix_cache or {}
+		
+		temp:Identity()
+		
+		local matrix = self:GetMatrix()
+
+		for i, pos in ipairs(points) do
+			self.visible_matrix_cache[i] = self.visible_matrix_cache[i] or Matrix44()
+			
+			self.visible_matrix_cache[i]:Identity()
+			self.visible_matrix_cache[i]:Translate(pos.x, pos.y, pos.z)
+
+			self.visible_matrix_cache[i]:Multiply(matrix, temp)
+			temp:Multiply(vp_matrix, self.visible_matrix_cache[i])
+
+			local x, y, z = self.visible_matrix_cache[i]:GetClipCoordinates()
+			
+			if
+				(x > -1 and x < 1) and
+				(y > -1 and y < 1) and
+				(z > -1 and z < 1)
+			then
+				return true
+			end
+		end
+		
+		return false
+	end
+end
+
 function COMPONENT:GetMatrix()
 	self:RebuildMatrix()
 	
@@ -132,4 +167,4 @@ function COMPONENT:GetMatrix()
 	return self.ScaleMatrix * self.TRMatrix 
 end
 
-entities.RegisterComponent(COMPONENT)
+prototype.RegisterComponent(COMPONENT)
