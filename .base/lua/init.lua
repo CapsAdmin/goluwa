@@ -390,6 +390,11 @@ do -- ffi
 		ffi.gc(obj, function(...) logn("ffi debug gc: ", ...) end)
 		return obj
 	end
+
+	local where = {
+		"bin/" .. ffi.os .. "/" .. ffi.arch .. "/",
+		"lua/modules/bin/" .. ffi.os .. "/" .. ffi.arch .. "/",
+	}
 		
 	-- make ffi.load search using our file system
 	ffi.load = function(path, ...)
@@ -397,22 +402,24 @@ do -- ffi
 		
 		if not ok then
 			if vfs then
-				for full_path in vfs.Iterate("bin/" .. ffi.os .. "/" .. ffi.arch .. "/" .. path, nil, true, nil, true) do
-					-- look first in the vfs' bin directories
-					local old = system.GetSharedLibraryPath()
-					system.SetSharedLibraryPath(full_path:match("(.+/)"))
-					local ok, msg = pcall(_OLD_G.ffi_load, full_path, ...)
-					system.SetSharedLibraryPath(old)
-					
-					if ok then
-						return msg
-					end
-					
-					-- if not try the default OS specific dll directories
-					local ok, msg = pcall(_OLD_G.ffi_load, full_path, ...)
-					if ok then
-						return msg
-					end
+				for _, where in ipairs(where) do
+					for full_path in vfs.Iterate(where .. path, nil, true, nil, true) do
+						-- look first in the vfs' bin directories
+						local old = system.GetSharedLibraryPath()
+						system.SetSharedLibraryPath(full_path:match("(.+/)"))
+						local ok, msg = pcall(_OLD_G.ffi_load, full_path, ...)
+						system.SetSharedLibraryPath(old)
+						
+						if ok then
+							return msg
+						end
+						
+						-- if not try the default OS specific dll directories
+						local ok, msg = pcall(_OLD_G.ffi_load, full_path, ...)
+						if ok then
+							return msg
+						end
+					end			
 				end
 			end
 			
