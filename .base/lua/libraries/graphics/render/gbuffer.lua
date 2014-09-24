@@ -197,14 +197,22 @@ local GBUFFER = {
 	}
 }  
 
-
 render.gbuffer = render.gbuffer or NULL
 render.gbuffer_passes = render.gbuffer_passes or {}
 
 do -- post process
 	render.pp_shaders = render.pp_shaders or {}
 	render.pp_disabled_shaders = render.pp_disabled_shaders or {}
-
+	
+	local function solve_tex_last()
+		for i, effect in ipairs(render.pp_shaders) do
+			if i == 1 then 
+				effect.shader.tex_last = render.screen_buffer:GetTexture("screen_buffer")
+			else
+				effect.shader.tex_last = render.pp_shaders[i - 1].buffer:GetTexture("tex_last")
+			end
+		end
+	end
 	function render.AddPostProcessShader(name, source, priority, down_sample, global_id)
 		if type(source) == "table" then
 			for i, v in ipairs(source) do
@@ -267,7 +275,6 @@ do -- post process
 		})
 		
 		shader.pvm_matrix = render.GetPVWMatrix2D
-		shader.tex_last = buffer:GetTexture("tex_last")
 		shader.tex_gbuffer = render.screen_buffer:GetTexture("screen_buffer")
 		shader.screen_size = Vec2(width, height)
 		
@@ -326,10 +333,14 @@ do -- post process
 				end
 				
 				table.sort(render.pp_shaders, function(a, b) return a.priority < b.priority end)
+				
+				solve_tex_last()
 			end),
 		})
 		
-		table.sort(render.pp_shaders, function(a, b) return a.priority < b.priority end)
+		table.sort(render.pp_shaders, function(a, b) return a.priority < b.priority end)		
+		
+		solve_tex_last()
 	end
 end
 
@@ -372,7 +383,7 @@ function render.InitializeGBuffer(width, height)
 	
 	if render.debug then
 		logn("[render] initializing gbuffer: ", width, " ", height)
-	end
+	end 
 	
 	do -- gbuffer	  
 		render.gbuffer_buffers = {
@@ -554,13 +565,9 @@ function render.DrawDeferred(dt, w, h)
 	render.SetBlendMode("alpha")	
 	render.SetCullMode("back")
 	render.Start2D()
-		-- draw to the pp buffer		
-		local effect = render.pp_shaders[1]
 		
-		local shader
-		local quad
+		if render.pp_shaders[1] and false then		
 		
-		if effect then		
 			-- copy the gbuffer to the screen buffer
 			surface.PushMatrix(0,0,w,h)
 				render.screen_buffer:Begin()
@@ -568,42 +575,37 @@ function render.DrawDeferred(dt, w, h)
 					render.gbuffer_screen_quad:Draw()
 				render.screen_buffer:End()
 			surface.PopMatrix()
-		
-			local max = #render.pp_shaders
 			
-			if max == 1 then
-				effect.shader.tex_last = render.screen_buffer:GetTexture("screen_buffer")
-			else
-				for i = 0, max do 
-					local next = render.pp_shaders[i+1]
-					if not next then break end
+			for i, effect in ipairs(render.pp_shaders) do
+				local next = render.pp_shaders[i + 1]
+				
+				if next then
+					-- render this effect onto the next effects tex_last buffer
 					
 					surface.PushMatrix()
-					surface.Scale(next.w, next.h)						
-				
+					surface.Scale(effect.w, effect.h)	
 						next.buffer:Begin()
 							effect.shader:Bind()
 							effect.quad:Draw()
 						next.buffer:End()
-					
 					surface.PopMatrix()
-					effect = next
-					effect.shader.tex_last = effect.buffer:GetTexture("tex_last")
-				end		
+				else
+					-- if this is the last effectr then draw it onto the main window's buffer
+					
+					surface.PushMatrix()
+					surface.Scale(w, h)
+						effect.shader:Bind()
+						effect.quad:Draw()
+					surface.PopMatrix()
+				end
 			end
-
-			shader = effect.shader
-			quad = effect.quad
-		else
-			shader = render.gbuffer_shader
-			quad = render.gbuffer_screen_quad
+		else		
+			surface.PushMatrix()
+				surface.Scale(w, h)
+				render.gbuffer_shader:Bind()
+				render.gbuffer_screen_quad:Draw()
+			surface.PopMatrix()
 		end	
-		
-		surface.PushMatrix()
-			surface.Scale(w, h)
-			shader:Bind()
-			quad:Draw()
-		surface.PopMatrix()
 						
 		event.Call("Draw2D", dt)
 	render.End2D()

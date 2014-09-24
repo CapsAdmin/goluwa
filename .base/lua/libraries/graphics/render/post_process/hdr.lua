@@ -1,9 +1,9 @@
-render.AddPostProcessShader("hdr", {
+render.AddPostProcessShader("hdr", { 
 	{
 		source = [[
 			out vec4 out_color;
 			
-			float brightThreshold = 0.01;
+			float brightThreshold = 0.1;
 			
 			void main() 
 			{ 
@@ -12,52 +12,23 @@ render.AddPostProcessShader("hdr", {
 				
 				// Extract very bright areas of the map
 				if (lum > brightThreshold)
+				{
 					out_color = texture(tex_last, uv);
+				}
 				else
+				{
 					out_color = vec4(0.0, 0.0, 0.0, 1.0);
+				}
 			}
 		]],
 	},
 	{
-		down_sample = 2,
 		source = [[
 			out vec4 out_color;
 
 			vec4 blur(sampler2D tex, vec2 uv)
 			{			
-				float dx = 2  / screen_size.x;
-				float dy = 2 / screen_size.y;
-				
-				// Apply 3x3 gaussian filter
-				vec4 color = 4.0 * texture(tex, uv);
-				color += texture(tex, uv + vec2(+dx, 0.0)) * 2.0;
-				color += texture(tex, uv + vec2(-dx, 0.0)) * 2.0;
-				color += texture(tex, uv + vec2(0.0, +dy)) * 2.0;
-				color += texture(tex, uv + vec2(0.0, -dy)) * 2.0;
-				color += texture(tex, uv + vec2(+dx, +dy));
-				color += texture(tex, uv + vec2(-dx, +dy));
-				color += texture(tex, uv + vec2(-dx, -dy));
-				color += texture(tex, uv + vec2(+dx, -dy));
-				
-				return color / 16.0;
-			}
-
-			void main() 
-			{ 
-				out_color = blur(tex_last, uv);
-				
-				out_color.a = 1;
-			}
-		]],
-	},
-	{
-		down_sample = 2,
-		source = [[
-			out vec4 out_color;
-
-			vec4 blur(sampler2D tex, vec2 uv)
-			{			
-				float dx = 4  / screen_size.x;
+				float dx = 4 / screen_size.x;
 				float dy = 4 / screen_size.y;
 				
 				// Apply 3x3 gaussian filter
@@ -77,49 +48,16 @@ render.AddPostProcessShader("hdr", {
 			void main() 
 			{ 
 				out_color = blur(tex_last, uv);
-				
-				out_color.a = 1;
 			}
 		]],
-	},	
-	{
-		down_sample = 8,
-		source = [[
-			out vec4 out_color;
-
-			vec4 blur(sampler2D tex, vec2 uv)
-			{			
-				float dx = 1  / screen_size.x;
-				float dy = 1 / screen_size.y;
-				
-				// Apply 3x3 gaussian filter
-				vec4 color = 4.0 * texture(tex, uv);
-				color += texture(tex, uv + vec2(+dx, 0.0)) * 2.0;
-				color += texture(tex, uv + vec2(-dx, 0.0)) * 2.0;
-				color += texture(tex, uv + vec2(0.0, +dy)) * 2.0;
-				color += texture(tex, uv + vec2(0.0, -dy)) * 2.0;
-				color += texture(tex, uv + vec2(+dx, +dy));
-				color += texture(tex, uv + vec2(-dx, +dy));
-				color += texture(tex, uv + vec2(-dx, -dy));
-				color += texture(tex, uv + vec2(+dx, -dy));
-				
-				return color / 16.0;
-			}
-
-			void main() 
-			{ 
-				out_color = blur(tex_last, uv);
-				
-				out_color.a = 1;
-			}
-		]],
-	},		
+	},
+	
 	{		
 		source = [[
 			out vec4 out_color;
 			
-			float exposure = 0.5;
-			float bloomFactor = 0.5;
+			float exposure = 1;
+			float bloomFactor = 1;
 			float brightMax = 2;
 			
 			void main() 
@@ -139,5 +77,5 @@ render.AddPostProcessShader("hdr", {
 				out_color = color;
 			}
 		]],
-	},
-})
+	}, 
+}) 
