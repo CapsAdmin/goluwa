@@ -61,7 +61,7 @@ end
 function COMPONENT:InvalidateTRMatrix()
 	self.rebuild_tr_matrix = true
 	
-	for _, child in ipairs(self:GetChildren(true)) do
+	for _, child in ipairs(self:GetChildrenList()) do
 		self.rebuild_tr_matrix = true
 	end
 end
@@ -99,8 +99,8 @@ function COMPONENT:RebuildMatrix()
 		self.TRMatrix:Translate(-pos.y, -pos.x, -pos.z)
 		
 		self.TRMatrix:Rotate(-ang.y, 0, 0, 1)
-		self.TRMatrix:Rotate(-ang.p + 90, 1, 0, 0)
-		self.TRMatrix:Rotate(ang.r + 180, 0, 0, 1)	
+		self.TRMatrix:Rotate(-ang.p, 1, 0, 0)
+		self.TRMatrix:Rotate(ang.r, 0, 0, 1)	
 		
 		if self:HasParent() then
 			self.temp_matrix = self.temp_matrix or Matrix44()
@@ -140,7 +140,7 @@ do
 			self.visible_matrix_cache[i]:Translate(pos.x, pos.y, pos.z)
 
 			self.visible_matrix_cache[i]:Multiply(matrix, temp)
-			temp:Multiply(vp_matrix, self.visible_matrix_cache[i])
+			temp:Multiply(view, self.visible_matrix_cache[i])
 
 			local x, y, z = self.visible_matrix_cache[i]:GetClipCoordinates()
 			

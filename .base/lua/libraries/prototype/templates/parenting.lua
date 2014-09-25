@@ -18,7 +18,7 @@ function prototype.AddParentingTemplate(META)
 		return self.children_list
 	end
 	
-	function META:GetChildren(all)
+	function META:GetChildren()
 		return self.Children
 	end
 	
