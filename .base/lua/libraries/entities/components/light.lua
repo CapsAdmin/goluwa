@@ -14,10 +14,15 @@ prototype.StartStorable()
 	-- automate this!!
 	prototype.GetSet(COMPONENT, "AmbientIntensity", 0)
 	prototype.GetSet(COMPONENT, "DiffuseIntensity", 0.5)
-	prototype.GetSet(COMPONENT, "SpecularPower", 32)
+	prototype.GetSet(COMPONENT, "SpecularIntensity", 1)
 	prototype.GetSet(COMPONENT, "AttenuationConstant", 0)
 	prototype.GetSet(COMPONENT, "AttenuationLinear", 0)
-	prototype.GetSet(COMPONENT, "AttenuationExponent", 0.01)	
+	prototype.GetSet(COMPONENT, "AttenuationExponent", 0.01)
+
+	prototype.GetSet(COMPONENT, "FOV", 90)
+	prototype.GetSet(COMPONENT, "NearZ", 1)
+	prototype.GetSet(COMPONENT, "FarZ", 32000)
+	prototype.GetSet(COMPONENT, "OrthoSize", 0)
 prototype.EndStorable()
 
 if CLIENT then			
@@ -53,7 +58,7 @@ if CLIENT then
 		})
 
 		PASS:ShaderStage("fragment", { 
-			uniform = {
+			uniform = {				
 				tex_depth = "sampler2D",
 				tex_diffuse = "sampler2D",
 				tex_normal = "sampler2D",
@@ -69,6 +74,8 @@ if CLIENT then
 				light_diffuse_intensity = 0.5,
 				light_radius = 1000,
 				light_vp_matrix = "mat4",
+				light_specular_intensity = 1,
+				light_shadow = 0,
 				
 				inverse_projection = "mat4",
 				inverse_view_projection = "mat4",
@@ -143,7 +150,7 @@ if CLIENT then
 					float CookTorrance = (D*F*G) / (normalDotEye * pi);
 					
 					vec3 diffuse_ = light_color.rgb * max(0.0, normalDotLight);
-					vec3 specular_ = light_color.rgb * max(0.0, CookTorrance) * specular;
+					vec3 specular_ = light_color.rgb * max(0.0, CookTorrance) * specular * light_specular_intensity;
 					
 					return (diffuse_ + specular_) * light_diffuse_intensity;
 				}
@@ -161,13 +168,9 @@ if CLIENT then
 					// convert world_pos to light pos
 					temp = light_vp_matrix * vec4(world_pos, 1);
 					vec2 light_space_pos = (temp.xyz / temp.w).xy;
-					
-					
-											
+																
 					float shadow_z = texture(tex_shadow_map, 0.5*light_space_pos.xy+vec2(0.5));
 					float view_z = texture(tex_depth, uv).r;
-
-					{return shadow_z;}
 
 					float shadow = shadow_z < view_z ? 0.5 : 1.0;
 					
@@ -184,11 +187,8 @@ if CLIENT then
 					{					
 						float fade = get_attenuation(world_pos);																		
 						
-						/*float shadow = get_shadow(uv);
-								
-						out_color.rgb = vec3(pow(shadow, 100));
-						out_color.a = 1;
-						{return;}*/
+						if (light_shadow == 1)
+							fade = fade*get_shadow(uv);
 						
 						if (fade > 0)
 						{
@@ -288,6 +288,8 @@ if CLIENT then
 				
 				render.shadow_maps[self] = self.shadow_map
 			end
+			
+			self.Shadow = b
 		end
 						
 		function COMPONENT:OnDrawShadowMaps(shader)
@@ -318,11 +320,13 @@ if CLIENT then
 				local forward = ang:GetForward()
 				
 				local projection = Matrix44()
-				local cam = render.camera
-				projection:Perspective(75, cam.nearz, cam.farz, cam.ratio) 
 				
-				local size = 30
-				--projection:Ortho(-size, size, -size, size, 200, 0) 
+				if self.OrthoSize == 0 then
+					projection:Perspective(self.FOV, self.NearZ, self.FarZ, render.camera.ratio) 
+				else
+					local size = self.OrthoSize
+					projection:Ortho(-size, size, -size, size, 200, 0) 
+				end
 
 				local view = Matrix44()
 				view:LoadIdentity()		
@@ -365,10 +369,11 @@ if CLIENT then
 		shader.light_color = self.Color
 		shader.light_ambient_intensity = self.AmbientIntensity
 		shader.light_diffuse_intensity = self.DiffuseIntensity
-		shader.light_specular_power = self.SpecularPower
+		shader.light_specular_intensity = self.SpecularIntensity
 		shader.light_attenuation_constant = self.AttenuationConstant
 		shader.light_attenuation_linear = self.AttenuationLinear
 		shader.light_attenuation_exponent = self.AttenuationExponent
+		shader.light_shadow = self.Shadow and 1 or 0
 		
 		if self.vp_matrix and self.shadow_map then
 			shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
