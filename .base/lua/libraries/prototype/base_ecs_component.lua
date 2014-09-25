@@ -7,10 +7,10 @@ META.Require = {}
 META.Events = {}
 
 prototype.GetSet(META, "Id")
+prototype.GetSet(META, "Entity", NULL)
 prototype.Delegate(META, "Entity", "GetComponent")
 prototype.Delegate(META, "Entity", "AddComponent")
 prototype.Delegate(META, "Entity", "RemoveComponent")
-prototype.GetSet(META, "Entity", NULL)
 
 function META:OnAdd()
 
