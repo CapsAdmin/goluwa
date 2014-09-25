@@ -9,16 +9,22 @@ local entities = _G.entities or {}
 
 entities.active_entities = entities.active_entities or {}
 
-function entities.CreateEntity(name)
-	local self = prototype.CreateEntity(name)
+local id = 1
+
+function entities.CreateEntity(name, ...)
+	local self = prototype.CreateEntity(name, ...)
+		
+	self.Id = id
+		
+	entities.active_entities[id] = self
 	
-	entities.active_entities[self:GetId()] = self
+	id = id + 1
 	
 	return self
 end
 
 event.AddListener("EntityRemove", "entities", function(ent)
-	entities.active_entities[ent:GetId()] = nil
+	entities.active_entities[ent.Id] = nil
 end)
 
 function entities.GetAll()

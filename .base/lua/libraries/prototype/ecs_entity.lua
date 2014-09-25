@@ -3,7 +3,6 @@ local prototype = ... or _G.prototype
 local META = prototype.CreateTemplate("ecs_entity")
 
 prototype.GetSet(META, "Components", {})
-prototype.GetSet(META, "Id", {})
 
 function META:AddComponent(name, id, ...)
 	id = id or "no_id"
