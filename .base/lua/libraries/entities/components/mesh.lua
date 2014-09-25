@@ -96,7 +96,7 @@ if CLIENT then
 
 						if (bump_detail != vec3(0,0,0))
 						{
-							bump_detail = normalize(bump_detail);
+							//bump_detail = normalize(bump_detail);
 							out_color[1].rgb += (mat3(vm_matrix)) * (bump_detail - vec3(0.5));
 							out_color[1].rgb = normalize(out_color[1].rgb);
 						}
@@ -326,7 +326,7 @@ if CLIENT then
 				local screen = matrix * vp_matrix
 
 				shader.pvm_matrix = screen.m
-				shader.vm_matrix = (render.matrices.view_3d * matrix).m
+				shader.vm_matrix = (matrix * render.matrices.view_3d).m
 				shader.v_matrix = render.GetViewMatrix3D()
 			end
 			shader.color = self.Color
