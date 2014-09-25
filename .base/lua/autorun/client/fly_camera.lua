@@ -12,6 +12,10 @@ end
 function render.SetCamAng(ang)
 	cam_ang = ang
 end
+
+function render.SetCamFOV(fov)
+	cam_fov = fov
+end
   
 event.AddListener("Update", "fly_camera_3d", function(dt)
 	if network.IsConnected() then return end
