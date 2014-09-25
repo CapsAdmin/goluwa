@@ -71,6 +71,7 @@ if CLIENT then
 				light_vp_matrix = "mat4",
 				
 				inverse_projection = "mat4",
+				inverse_view_projection = "mat4",
 				cam_nearz = {float = function() return render.camera.nearz end},
 				cam_farz = {float = function() return render.camera.farz end},
 				view_matrix = {mat4 = function() return render.matrices.view_3d.m end},
@@ -88,17 +89,9 @@ if CLIENT then
 					return (2.0 * cam_nearz) / (cam_farz + cam_nearz - texture2D(tex_depth, uv).r * (cam_farz - cam_nearz));
 				}
 				
-				vec3 get_pos2(vec2 uv)
+				vec3 get_pos(vec2 uv)
 				{
 					float z = -texture2D(tex_depth, uv).r;
-					vec4 sPos = vec4(uv * 2.0 - 1.0, z, 1.0);
-					sPos = inverse_projection * sPos;
-
-					return (sPos.xyz / sPos.w);
-				}
-				
-				vec3 get_pos3(vec2 uv, float z)
-				{
 					vec4 sPos = vec4(uv * 2.0 - 1.0, z, 1.0);
 					sPos = inverse_projection * sPos;
 
@@ -116,7 +109,7 @@ if CLIENT then
 				
 				vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular)
 				{
-					float roughness = 0.8;
+					float roughness = 0.5;
 
 					vec3 cEye = normalize(-world_pos);
 					
@@ -155,33 +148,47 @@ if CLIENT then
 					return (diffuse_ + specular_) * light_diffuse_intensity;
 				}
 				
-				float CalcShadowFactor(vec3 light_space_pos, float z)
+				float get_shadow(vec2 uv)
 				{
-					float depth = texture(tex_shadow_map, 0.5*vec2(light_space_pos.x, light_space_pos.y)+0.5).x;
+					vec4 temp;
 					
-					return depth < z ? 0 : 1;
+					// get world position from depth
+					float depth = texture(tex_depth, uv).r;
+					temp = vec4(uv * 2.0 - 1.0, -depth, 1.0);
+					temp = inverse_view_projection * temp;
+					vec3 world_pos = (temp.xyz / temp.w);							
+				
+					// convert world_pos to light pos
+					temp = light_vp_matrix * vec4(world_pos, 1);
+					vec2 light_space_pos = (temp.xyz / temp.w).xy;
+					
+					
+											
+					float shadow_z = texture(tex_shadow_map, 0.5*light_space_pos.xy+vec2(0.5));
+					float view_z = texture(tex_depth, uv).r;
+
+					{return shadow_z;}
+
+					float shadow = shadow_z < view_z ? 0.5 : 1.0;
+					
+					return shadow;
 				}
-							
+				
 				void main()
 				{					
 					vec2 uv = get_uv();					
-					vec3 world_pos = get_pos2(uv);	
+					vec3 world_pos = get_pos(uv);	
 					
 					//out_color.rgb = world_pos; out_color.a = 1; {return;}
 										
 					{					
 						float fade = get_attenuation(world_pos);																		
-						/*{
-							vec4 temp = light_vp_matrix * vec4(world_pos, 1);
-							vec3 light_space_pos = vec3(temp.xyz) / temp.w;
-							float z = texture(tex_depth, uv);
-							
-							fade = CalcShadowFactor(light_space_pos, z);
-							
-							out_color.rgb = vec3(fade);
-							out_color.a = 1;
-							return;
-						}*/
+						
+						/*float shadow = get_shadow(uv);
+								
+						out_color.rgb = vec3(pow(shadow, 100));
+						out_color.a = 1;
+						{return;}*/
 						
 						if (fade > 0)
 						{
@@ -258,7 +265,7 @@ if CLIENT then
 	end
 
 	function COMPONENT:OnRemove(ent)
-
+		render.shadow_maps[self] = nil
 	end	
 	
 	do -- shadow map		
@@ -312,7 +319,7 @@ if CLIENT then
 				
 				local projection = Matrix44()
 				local cam = render.camera
-				projection:Perspective(60, cam.nearz, cam.farz, cam.ratio) 
+				projection:Perspective(75, cam.nearz, cam.farz, cam.ratio) 
 				
 				local size = 30
 				--projection:Ortho(-size, size, -size, size, 200, 0) 
@@ -339,6 +346,7 @@ if CLIENT then
 	function COMPONENT:OnDraw3DLights(shader)
 		if not render.matrices.vp_matrix then return end -- grr
 		if not self.light_mesh.sub_models[1] then return end
+		
 		local transform = self:GetComponent("transform")
 		local matrix = transform:GetMatrix() 
 		local screen = matrix * render.matrices.vp_matrix
@@ -351,6 +359,7 @@ if CLIENT then
 		shader.light_pos:Set(x*2,y*2,z*2) -- why do i need to multiply by 2?
 		shader.light_radius = transform:GetSize()
 		shader.inverse_projection = render.matrices.projection_3d_inverse.m
+		shader.inverse_view_projection = (render.matrices.vp_3d_inverse).m
 		
 		-- automate this!!
 		shader.light_color = self.Color
