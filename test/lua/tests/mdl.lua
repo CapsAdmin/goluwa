@@ -190,10 +190,6 @@ local header = [[
 	int linear_bone_offset;
 ]]
 
-vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/")
-vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
-vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk")
-
 local function load_mdl(path)
 	local buffer = vfs.Open(path .. ".mdl")
 
@@ -662,7 +658,9 @@ local function load_vvd(path, mdl, vtx)
 	table.insert(models, model)
 	buffer:PopPos()
 		
-	local material = mdl.material[1].vmt.VertexLitGeneric
+	local material = mdl.material[1].vmt.vertexlitgeneric
+	
+	table.print(mdl.material)
 
 	for i, model in ipairs(models) do
 		for i, sub_models in ipairs(model.sub_models) do		
@@ -674,6 +672,7 @@ local function load_vvd(path, mdl, vtx)
 	
 	local world = utility.RemoveOldObject(entities.CreateEntity("clientside"))
 	world:SetModel(models[1])
+	world:SetPos(render.GetCamPos())
 end
 
 local mdl = load_mdl("models/bicycle01a")
