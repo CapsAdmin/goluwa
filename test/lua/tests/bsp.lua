@@ -435,6 +435,8 @@ do timer.Start("building mesh")
 			if texname:sub(0, 5) == "maps/" then
 				texname = texname:gsub("maps/.-/(.+)_.-_.-_.+", "%1")
 			end
+			
+			if texname:find("skyb") then goto continue end
 							
 			-- split the world up into sub models by texture
 			if not meshes[texname] then				
@@ -536,6 +538,8 @@ do timer.Start("building mesh")
 				
 				sub_model.displacement = true
 			end
+			
+			::continue::
 		end
 		
 		-- only world needed
@@ -560,6 +564,7 @@ timer.Stop()
 timer.Start("render.CreateMesh")
 for i, data in ipairs(bsp_mesh.sub_models) do
 	data.mesh = render.CreateMesh(data.mesh_data)
+	data.mesh_data = nil
 end
 timer.Stop()
 
