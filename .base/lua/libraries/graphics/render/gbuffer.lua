@@ -49,8 +49,8 @@ local GBUFFER = {
 			//SSAO
 			//
 			float compareDepths( in float depth1, in float depth2 ) {
-				float aoCap = 0.25;
-				float aoMultiplier=1500.0;
+				float aoCap = 0.3;
+				float aoMultiplier=32768.0;
 				float depthTolerance=0.0000;
 				float aorange = 100000.0;// units in space the AO effect extends to (this gets divided by the camera far range
 				float diff = sqrt( clamp(1.0-(depth1-depth2) / (aorange/(cam_farz-cam_nearz)),0.0,1.0) );
@@ -76,9 +76,9 @@ local GBUFFER = {
 				float pw = 1.0 / screen_size.x;
 				float ph = 1.0 / screen_size.y;
 
-				float ao = 2;
+				float ao = 1;
 				
-				float aoscale=0.4;
+				float aoscale=0.6;
 
 				for (int i = 1; i < 5; i++)
 				{					
@@ -190,8 +190,8 @@ local GBUFFER = {
 				out_color.rgb = diffuse;
 				out_color.a = 1;
 								
-				out_color.rgb *= vec3(ssao());
-				out_color.rgb *= texture(tex_light, uv).rgb;								
+				out_color.rgb *= ssao();
+				out_color.rgb *= max(texture(tex_light, uv).rgb, vec3(0.3));							
 			}
 		]]  
 	}
