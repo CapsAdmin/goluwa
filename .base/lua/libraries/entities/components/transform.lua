@@ -4,8 +4,6 @@ local COMPONENT = {}
 
 COMPONENT.Name = "transform"
 
-prototype.AddParentingTemplate(COMPONENT)
-
 prototype.GetSet(COMPONENT, "TRMatrix", Matrix44())
 prototype.GetSet(COMPONENT, "ScaleMatrix", Matrix44())
 
@@ -27,12 +25,6 @@ COMPONENT.Network = {
 	Scale = {"vec3", 1/15},
 	Size = {"float", 1/15},
 }
-
-function COMPONENT:OnAdd(ent, parent)
-	if parent and parent:HasComponent("transform") then
-		self:SetParent(parent:GetComponent("transform"))
-	end
-end
 
 function COMPONENT:OnRemove(ent)
 
@@ -60,10 +52,6 @@ end
 
 function COMPONENT:InvalidateTRMatrix()
 	self.rebuild_tr_matrix = true
-	
-	for _, child in ipairs(self:GetChildrenList()) do
-		self.rebuild_tr_matrix = true
-	end
 end
 
 function COMPONENT:GetTRAngles()
@@ -102,11 +90,11 @@ function COMPONENT:RebuildMatrix()
 		self.TRMatrix:Rotate(-ang.p, 1, 0, 0)
 		self.TRMatrix:Rotate(ang.r, 0, 0, 1)	
 		
-		if self:HasParent() then
+		if self.Entity:HasParent() then
 			self.temp_matrix = self.temp_matrix or Matrix44()
 			
 			--self.TRMatrix = self.TRMatrix * self.Parent.TRMatrix
-			self.TRMatrix:Multiply(self.Parent.TRMatrix, self.temp_matrix)
+			self.TRMatrix:Multiply(self.Entity.Parent:GetComponent("transform").TRMatrix, self.temp_matrix)
 			self.TRMatrix, self.temp_matrix = self.temp_matrix, self.TRMatrix
 		end
 		
