@@ -3,7 +3,7 @@ local world = _G.world or {}
 world.vars = {}
 
 function world.Initialize()
-	if world.sun then world.sun:Remove() print("huh") end
+	entities.SafeRemove(world.sun)
 	world.sun = entities.CreateEntity("light")
 	
 	for k, v in pairs(world.vars) do
@@ -80,12 +80,13 @@ do -- sun
 		local vec = var:GetForward()
 		local size = world.Get("sun_size")
 		
-		world.sun:SetPosition(vec * size)
+		--world.sun:SetPosition(vec * size)
+		world.sun:SetPosition(Vec3(-102, 251, 164))
 		world.sun:SetSize(size)
 	end)
 
 	ADD("sun_size", 2000, "sun_angles")
-	ADD("sun_color", Color(1,1,0.9), function(var) world.sun:SetColor(var) end)
+	ADD("sun_color", Color(1,1,1), function(var) world.sun:SetColor(var) end)
 	ADD("sun_intensity", 1.75, function(var) world.sun:SetDiffuseIntensity(var) end)
 	ADD("sun_specular_intensity", 0.1, function(var) world.sun:SetSpecularIntensity(var) end)
 	ADD("sun_roughness", 0.1, function(var) world.sun:SetRoughness(var) end)
@@ -98,23 +99,31 @@ do -- fog
 end
 
 do -- ao
-	ADD("ao_ammount", 1)
-	ADD("ao_cap", 0.3)
-	ADD("ao_multiplier", 32768)
-	ADD("ao_depthtolerance", 0)
+	ADD("ao_amount", 1)
+	ADD("ao_cap", 0.6)
+	ADD("ao_multiplier", 1024 * 2.5)
+	ADD("ao_depthtolerance", 0.0001)
 	ADD("ao_range", 100000)
-	ADD("ao_scale", 0.6)
+	ADD("ao_scale", 1)
+end
+
+do -- gamma
+	ADD("gamma", 1.2)
 end
 
 if RELOAD then
 	world.Initialize()
 	
-	world.Set("sun_color", Color(0.8,0.75,1)*0.3)
-	world.Set("sun_specular_intensity", 0.25)
-	world.Set("sun_roughness", 0.25)
-	world.Set("ambient_lighting", Color(0.8,0.8,1)*0.1)
-	world.Set("fog_color", Color(0.8,0.8,1)*0.2) 
-	world.Set("fog_intensity", 70)  
+	world.Set("sun_color", Color(1, 0.95, 0.8))
+	world.Set("sun_specular_intensity", 0.2)
+	world.Set("sun_roughness", 0.75)
+	
+	world.Set("ambient_lighting", Color(1, 0.95, 0.8) * 0.5)
+	
+	world.Set("fog_color", Color(0.9, 0.95, 1) * 0.7) 
+	world.Set("fog_intensity", 0) 
+	 
+	world.Set("gamma", 1)     
 end
 
 

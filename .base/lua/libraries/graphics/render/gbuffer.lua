@@ -26,13 +26,15 @@ local GBUFFER = {
 			
 			fog_color = Color(0.9,0.9,0.9),
 			fog_intensity = 256,
-			
+			 
 			ao_amount = 1.0,
 			ao_cap = 0.3,
 			ao_multiplier = 32768.0,
 			ao_depthtolerance = 0.0000,
 			ao_range = 100000.0,
 			ao_scale = 0.6,
+			
+			gamma = 1.2;
 			
 			ambient_lighting = Color(0.3, 0.3, 0.3),
 		},  
@@ -88,7 +90,7 @@ local GBUFFER = {
 				
 				float aoscale = ao_scale;
 
-				for (int i = 1; i < 5; i++)
+				for (int i = 1; i < 16; i++)
 				{					
 					ao += compareDepths(depth, get_depth(vec2(uv.x+pw,uv.y+ph))) / aoscale;
 					ao += compareDepths(depth, get_depth(vec2(uv.x-pw,uv.y+ph))) / aoscale;
@@ -197,14 +199,17 @@ local GBUFFER = {
 				
 				out_color.rgb = diffuse;
 				out_color.a = 1;
-								
-				out_color.rgb *= ssao();
+				
 				out_color.rgb *= max(texture(tex_light, uv).rgb, ambient_lighting.rgb);	
-
+				
+				out_color.rgb *=  ssao();
+				
 				out_color.rgb = mix_fog(out_color.rgb, fog_intensity, fog_color.rgb);
+				
+				out_color.rgb = pow(out_color.rgb, vec3(gamma));
 			}
 		]]  
-	}
+	} 
 }  
 
 render.gbuffer = render.gbuffer or NULL
