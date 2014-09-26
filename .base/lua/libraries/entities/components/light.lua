@@ -18,6 +18,7 @@ prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "AttenuationConstant", 0)
 	prototype.GetSet(COMPONENT, "AttenuationLinear", 0)
 	prototype.GetSet(COMPONENT, "AttenuationExponent", 0.01)
+	prototype.GetSet(COMPONENT, "Roughness", 0.5)
 
 	prototype.GetSet(COMPONENT, "FOV", 90)
 	prototype.GetSet(COMPONENT, "NearZ", 1)
@@ -75,6 +76,7 @@ if CLIENT then
 				light_radius = 1000,
 				light_vp_matrix = "mat4",
 				light_specular_intensity = 1,
+				light_roughness = 0.5,
 				light_shadow = 0,
 				
 				inverse_projection = "mat4",
@@ -116,7 +118,7 @@ if CLIENT then
 				
 				vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular)
 				{
-					float roughness = 0.5;
+					float roughness = light_roughness;
 
 					vec3 cEye = normalize(-world_pos);
 					
@@ -348,7 +350,7 @@ if CLIENT then
 	end
 
 	function COMPONENT:OnDraw3DLights(shader)
-		if not render.matrices.vp_matrix then return end -- grr
+		if not render.matrices.vp_matrix or not self.light_mesh then return end -- grr
 		if not self.light_mesh.sub_models[1] then return end
 		
 		local transform = self:GetComponent("transform")
@@ -373,6 +375,7 @@ if CLIENT then
 		shader.light_attenuation_constant = self.AttenuationConstant
 		shader.light_attenuation_linear = self.AttenuationLinear
 		shader.light_attenuation_exponent = self.AttenuationExponent
+		shader.light_roughness = self.Roughness
 		shader.light_shadow = self.Shadow and 1 or 0
 		
 		if self.vp_matrix and self.shadow_map then
