@@ -669,6 +669,7 @@ do -- libraries
 
 	-- other
 	entities = include("libraries/entities/entities.lua") -- entity component system
+	world = include("libraries/entities/world.lua") -- entity component system
 
 	if not DISABLE_CURSES then
 		include("libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
