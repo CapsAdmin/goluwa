@@ -225,6 +225,7 @@ do -- window meta
 			left_ctrl = "left_control",
 			["keypad_-"] = "kp_subtract",
 			["keypad_+"] = "kp_add",
+			["return"] = "enter",
 		}
 		for i = 1, 9 do
 			key_translate["keypad_" .. i] = "kp_" .. i
@@ -236,7 +237,7 @@ do -- window meta
 			if not event_name_translate[name] then
 				event_name_translate[name] = name:gsub("^On", "Window")
 			end
-			
+						
 			if self[name] then
 				if self[name](...) ~= false then
 					event.Call(event_name_translate[name], self, ...)
@@ -308,9 +309,23 @@ do -- window meta
 				
 					key = key_translate[key] or key
 				
+					if event.key["repeat"] == 0 then
+						call(
+							window, 
+							"OnKeyInput", 
+							key, 
+							event.type == sdl.e.SDL_KEYDOWN, 
+							
+							event.key.state, 
+							event.key.keysym.mod, 
+							ffi.string(sdl.GetScancodeName(event.key.keysym.scancode)):lower(), 
+							event.key.keysym
+						)
+					end
+				
 					call(
 						window, 
-						event.key["repeat"] == 0 and "OnKeyInput" or "OnKeyInputRepeat", 
+						"OnKeyInputRepeat", 
 						key, 
 						event.type == sdl.e.SDL_KEYDOWN, 
 						
