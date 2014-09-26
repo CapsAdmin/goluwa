@@ -151,12 +151,12 @@ do
 	end		
 end
 
-function render.SetupView3D(pos, ang, fov)
+function render.SetupView3D(pos, ang, fov, out)
 	cam.pos = pos or cam.pos
 	cam.ang = ang or cam.ang
 	cam.fov = fov or cam.fov
 	
-	local view = render.matrices.view_3d 
+	local view = out or render.matrices.view_3d 
 	view:LoadIdentity()		
 	
 	if ang then
@@ -169,6 +169,8 @@ function render.SetupView3D(pos, ang, fov)
 	if pos then
 		view:Translate(pos.y, pos.x, pos.z)
 	end
+	
+	if out then return out end
 	
 	render.matrices.vp_matrix = render.matrices.view_3d * render.matrices.projection_3d
 	render.matrices.vp_3d_inverse = render.matrices.vp_matrix:GetInverse()
