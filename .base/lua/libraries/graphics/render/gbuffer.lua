@@ -23,6 +23,18 @@ local GBUFFER = {
 			inv_proj_mat = {mat4 = function() return (render.matrices.view_3d * render.matrices.projection_3d).m end},
 			inv_view_mat = {mat4 = function() return render.matrices.view_3d_inverse.m end},
 			tex_noise = {sampler2D = render.GetNoiseTexture},
+			
+			fog_color = Color(0.9,0.9,0.9),
+			fog_intensity = 256,
+			
+			ao_amount = 1.0,
+			ao_cap = 0.3,
+			ao_multiplier = 32768.0,
+			ao_depthtolerance = 0.0000,
+			ao_range = 100000.0,
+			ao_scale = 0.6,
+			
+			ambient_lighting = Color(0.3, 0.3, 0.3),
 		},  
 		attributes = {
 			{pos = "vec2"},
@@ -49,12 +61,8 @@ local GBUFFER = {
 			//SSAO
 			//
 			float compareDepths( in float depth1, in float depth2 ) {
-				float aoCap = 0.3;
-				float aoMultiplier=32768.0;
-				float depthTolerance=0.0000;
-				float aorange = 100000.0;// units in space the AO effect extends to (this gets divided by the camera far range
-				float diff = sqrt( clamp(1.0-(depth1-depth2) / (aorange/(cam_farz-cam_nearz)),0.0,1.0) );
-				float ao = min(aoCap,max(0.0,depth1-depth2-depthTolerance) * aoMultiplier) * diff;
+				float diff = sqrt( clamp(1.0-(depth1-depth2) / (ao_range/(cam_farz-cam_nearz)),0.0,1.0) );
+				float ao = min(ao_cap, max(0.0,depth1-depth2-ao_depthtolerance) * ao_multiplier) * diff;
 				return ao;
 			}
 			
@@ -76,9 +84,9 @@ local GBUFFER = {
 				float pw = 1.0 / screen_size.x;
 				float ph = 1.0 / screen_size.y;
 
-				float ao = 1;
+				float ao = ao_amount;
 				
-				float aoscale=0.6;
+				float aoscale = ao_scale;
 
 				for (int i = 1; i < 5; i++)
 				{					
@@ -176,9 +184,9 @@ local GBUFFER = {
 			//
 			//FOG
 			//
-			vec3 mix_fog(vec3 color, float depth, float fog_intensity, vec3 fog_color)
+			vec3 mix_fog(vec3 color, float fog_intensity, vec3 fog_color)
 			{
-				color = mix( 1 - fog_color, color, clamp(1.0 - (pow(depth, fog_intensity)), 0.0, 1.0));
+				color = mix(fog_color, color, clamp(pow(-get_depth(uv) + 1.0, fog_intensity), 0.0, 1.0));
 				
 				return color;
 			}
@@ -191,7 +199,9 @@ local GBUFFER = {
 				out_color.a = 1;
 								
 				out_color.rgb *= ssao();
-				out_color.rgb *= max(texture(tex_light, uv).rgb, vec3(0.3));							
+				out_color.rgb *= max(texture(tex_light, uv).rgb, ambient_lighting.rgb);	
+
+				out_color.rgb = mix_fog(out_color.rgb, fog_intensity, fog_color.rgb);
 			}
 		]]  
 	}
