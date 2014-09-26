@@ -42,7 +42,17 @@ if CLIENT then
 
 			render.gbuffer:Begin()
 				render.gbuffer:Clear()
+				
+				--gl.Clear(gl.e.GL_DEPTH_BUFFER_BIT)
 				event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
+				
+				--skybox?				
+				
+				--local scale = 16
+				--local view = Matrix44()
+				--view = render.SetupView3D(Vec3(234.1, -234.1, 361.967)*scale + render.GetCamPos(), render.GetCamAng(), render.GetCamFOV(), view)
+				--view:Scale(scale,scale,scale)
+				--event.Call("Draw3DGeometry", render.gbuffer_mesh_shader, view * render.matrices.projection_3d, true)			
 			render.gbuffer:End()
 		end
 
@@ -345,12 +355,10 @@ if CLIENT then
 			end
 		end
 	end
-
-	COMPONENT.OnDraw2D = COMPONENT.OnDraw3DGeometry
 end
 
 prototype.RegisterComponent(COMPONENT)
 
 if RELOAD then
-	render.InitializeGBuffer()
+--	render.InitializeGBuffer()
 end
