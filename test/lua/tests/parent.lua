@@ -1,9 +1,4 @@
-if LOL_PARENT and LOL_PARENT:IsValid() then
-	for i, child in ipairs(LOL_PARENT:GetChildrenList()) do
-		child:Remove()
-	end
-	LOL_PARENT:Remove() 
-end 
+entities.SafeRemove(LOL_PARENT)
 
 local parent = entities.CreateEntity("clientside")
  

@@ -2,6 +2,7 @@ local prototype = ... or _G.prototype
 
 local META = prototype.CreateTemplate("ecs_entity")
 
+prototype.AddParentingTemplate(META)
 prototype.GetSet(META, "Components", {})
 
 function META:AddComponent(name, id, ...)
@@ -69,6 +70,7 @@ function META:OnRemove()
 			self:RemoveComponent(name, id)
 		end
 	end
+	self:RemoveChildren()
 	event.Call("EntityRemove", self)
 end
 
@@ -94,14 +96,18 @@ function prototype.SetupComponents(name, components)
 	}
 end
 
-function prototype.CreateEntity(config, ...)
+function prototype.CreateEntity(config, parent)
 	local self = prototype.CreateObject(META)
+	
+	if parent then
+		self:SetParent(parent)
+	end
 	
 	if prototype.component_configurations[config] then
 		self.config = config
 
 		for _, name in ipairs(prototype.component_configurations[config].components) do
-			self:AddComponent(name, nil, ...)
+			self:AddComponent(name, nil)
 		end
 		
 		for name, func in pairs(prototype.component_configurations[config].functions) do
