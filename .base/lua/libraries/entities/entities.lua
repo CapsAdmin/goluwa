@@ -37,5 +37,10 @@ function entities.Panic()
 	end
 end
 
+function entities.SafeRemove(ent)
+	if hasindex(ent) and ent.IsValid and ent.Remove and ent:IsValid() then
+		ent:Remove()
+	end
+end
 
 return entities
