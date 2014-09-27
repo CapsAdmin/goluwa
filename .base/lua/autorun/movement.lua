@@ -1,3 +1,4 @@
+do return end
 if CLIENT then
 	local angles = Ang3(0, 0, 0)
 	local fov = 75
