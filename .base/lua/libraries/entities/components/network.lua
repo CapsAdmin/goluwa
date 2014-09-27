@@ -16,7 +16,7 @@ do
 	COMPONENT.server_synced_vars = {}
 	COMPONENT.server_synced_vars_stringtable = {}
 
-	function COMPONENT:ServerSyncVar(component, key, type, rate, flags)
+	function COMPONENT:ServerSyncVar(component, key, type, rate, flags, skip_default)
 		self:ServerDesyncVar(component, key)
 		
 		local info = {
@@ -28,6 +28,7 @@ do
 			rate = rate,
 			id = SERVER and network.AddString(component .. key) or (component .. key),
 			flags = flags,
+			skip_default = skip_default,
 		}
 		
 		table.insert(self.server_synced_vars, info)
@@ -81,8 +82,10 @@ do -- synchronization server > client
 				else
 					local component = self:GetComponent(info.component)
 					var = component[info.get_name](component)
+					
+					if info.skip_default and var == getmetatable(component)[info.key] then goto continue end
 				end
-				
+								
 				if force_update or var ~= self.last[info.key] then
 					local buffer = Buffer()
 					
@@ -91,7 +94,7 @@ do -- synchronization server > client
 					buffer:WriteType(var, info.type)
 					
 					if _debug then logf("%s: sending %s to %s\n", self, utility.FormatFileSize(buffer:GetSize()), client) end
-					
+						
 					packet.Send("ecs_network", buffer, client, force_update and "reliable" or info.flags)
 					
 					self.last[info.key] = var
@@ -99,6 +102,8 @@ do -- synchronization server > client
 
 				self.last_update[info.key] = timer.GetSystemTime() + info.rate
 			end
+			
+			::continue::
 		end
 
 		
