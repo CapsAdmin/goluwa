@@ -154,21 +154,21 @@ local function ADD_FUNCTION(func, size)
 		local val = ffi.new("float[?]", size)
 		
 		if size == 3 then
-			return function(self, ...)
+			return function(self)
 				if not self.body then return 0,0,0 end
-				func(self.body, val, ...)
+				func(self.body, val)
 				return val[0], val[1], val[2]
 			end
 		elseif size == 1 then
-			return function(self, ...)
+			return function(self)
 				if not self.body then return 0 end
-				func(self.body, val, ...)
+				func(self.body, val)
 				return val[0]
 			end
 		else
-			return function(self, ...)
+			return function(self)
 				if not self.body then return end
-				func(self.body, val, ...)
+				func(self.body, val)
 				return val
 			end
 		end
@@ -402,6 +402,10 @@ do -- mesh init options
 	end
 end
 
+function BODY:__tostring()
+	return ("bullet3 body[%p]:%p"):format(self, self.body)
+end
+	
 function bullet.CreateRigidBody()
 	local self = setmetatable({}, BODY)
 		
