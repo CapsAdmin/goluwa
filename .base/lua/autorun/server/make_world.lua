@@ -1,6 +1,6 @@
-event.AddListener("NetworkStarted", "spawn_world", function()
-	for k,v in pairs(entities.GetAll()) do v:Remove() end
-
+local function go()
+	entities.SafeRemove(WORLD)
+	
 	local world = entities.CreateEntity("networked")
 	world:SetModelPath("models/skpfile.obj")  
 	world:SetMass(0)
@@ -20,4 +20,10 @@ event.AddListener("NetworkStarted", "spawn_world", function()
 		body:SetPosition(Vec3(0,0,100+i*2)) 
 		body:SetSize(1) 
 	end 
+end
+
+event.AddListener("NetworkStarted", "spawn_world", function()
+	go()
 end)
+
+if RELOAD then go() end
