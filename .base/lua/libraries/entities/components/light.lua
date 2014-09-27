@@ -7,10 +7,6 @@ COMPONENT.Events = {"Draw3DLights", "DrawShadowMaps"}
 prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1))
 	
-	--prototype.GetSet(COMPONENT, "Color", Color(1,1,1,1))	
-	--prototype.GetSet(COMPONENT, "Radius", 1000),
-	--prototype.GetSet(COMPONENT, "Pos", Vec3(0,0,0))
-	
 	-- automate this!!
 	prototype.GetSet(COMPONENT, "AmbientIntensity", 0)
 	prototype.GetSet(COMPONENT, "DiffuseIntensity", 0.5)
