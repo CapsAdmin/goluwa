@@ -25,7 +25,7 @@ COMPONENT.Network = {
 	MassOrigin = {"vec3", 1/5},
 	PhysicsBoxScale = {"vec3", 1/5},
 	PhysicsSphereRadius = {"float", 1/5},
-	PhysicsModelPath = {"string", 1/10},
+	PhysicsModelPath = {"string", 1/10, "reliable", true}, -- last true means don't send default path (blank path)
 }
 
 COMPONENT.matrix = Matrix44()
@@ -184,7 +184,7 @@ do
 	function COMPONENT:SetPhysicsModelPath(path)
 		self.PhysicsModelPath = path
 		
-		if not vfs.Exists(path) then
+		if not vfs.IsFile(path) then
 			error(path .. " not found", 2)
 		end
 		
