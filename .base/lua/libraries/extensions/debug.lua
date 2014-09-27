@@ -262,6 +262,7 @@ function debug.dumpcall(level, line, info_match)
 			logf("%s = %s\n", data.key, val)
 		--end
 	end
+	logn(debug.traceback())
 	
 	if info_match then
 		print(info_match.func)
@@ -285,7 +286,7 @@ function debug.logcalls(b, type)
 		debug.sethook()
 		
 		setlogfile("lua_calls")
-			debug.dumpcall(2)
+			logn(debug.traceback())
 		setlogfile()
 		
 		debug.sethook(hook, type)
