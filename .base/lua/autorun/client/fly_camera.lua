@@ -18,7 +18,7 @@ function render.SetCamFOV(fov)
 end
   
 event.AddListener("Update", "fly_camera_3d", function(dt)
-	if network.IsConnected() then return end
+	--if network.IsConnected() then return end
 	if not window.IsOpen() then return end
 	if chat and chat.IsVisible() then return end
 	

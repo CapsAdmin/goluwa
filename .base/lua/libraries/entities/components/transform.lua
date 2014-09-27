@@ -1,5 +1,3 @@
-local prototype = (...) or _G.prototype
-
 local COMPONENT = {}
 
 COMPONENT.Name = "transform"
@@ -14,6 +12,7 @@ prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "Scale", Vec3(1, 1, 1), "InvalidateScaleMatrix")
 	prototype.GetSet(COMPONENT, "Shear", Vec3(0, 0, 0), "InvalidateScaleMatrix")
 	prototype.GetSet(COMPONENT, "Size", 1, "InvalidateScaleMatrix")
+	prototype.GetSet(COMPONENT, "SkipRebuild", false)
 prototype.EndStorable()
 
 prototype.GetSet(COMPONENT, "OverridePosition", nil, "InvalidateTRMatrix")
@@ -69,8 +68,8 @@ function COMPONENT:GetTRAngles()
 	return Ang3(p, y, r):Deg()
 end
 
-function COMPONENT:RebuildMatrix()			
-	if self.rebuild_tr_matrix then				
+function COMPONENT:RebuildMatrix()		
+	if not self.SkipRebuild and self.rebuild_tr_matrix then				
 		self.TRMatrix:Identity()
 
 		local pos = self.Position
@@ -147,7 +146,7 @@ end
 
 function COMPONENT:GetMatrix()
 	self:RebuildMatrix()
-	
+		
 	if self.temp_scale.x == 1 and self.temp_scale.y == 1 and self.temp_scale.z == 1 then
 		return self.TRMatrix 
 	end

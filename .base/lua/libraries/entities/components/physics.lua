@@ -1,8 +1,8 @@
-local entities = (...) or _G.entities
-
 local bullet = require("lj-bullet3")
-bullet.Initialize()
-bullet.SetGravity(0,0,9.8) 		 
+if not bullet.init then
+	bullet.Initialize()
+	bullet.init = true
+end
 
 event.AddListener("Update", "bullet", function(dt)
 	bullet.Update(dt)
@@ -99,52 +99,70 @@ DELEGATE(COMPONENT, "LinearDamping")
 DELEGATE(COMPONENT, "LinearSleepingThreshold")
 DELEGATE(COMPONENT, "AngularSleepingThreshold")
 
-function COMPONENT:SetPosition(vec)
-	local transform = self:GetComponent("transform")
-	transform:SetPosition(vec)
+--bullet.SetGravity(0, 0, 9.8)
+bullet.SetGravity(0, 0, 50)
+
+prototype.GetSet(COMPONENT, "Position", Vec3(0, 0, 0))
+prototype.GetSet(COMPONENT, "Angles", Ang3(0, 0, 0))
+
+local function to_bullet(self)
+	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return end
+	
+	local out = Matrix44()
+	
+	local pos = self.Position
+	local ang = self.Angles
+	
+	out:Translate(pos.x, pos.y, pos.z)  
 		
-	if self.rigid_body:IsValid() and self.rigid_body:IsPhysicsValid() then
-		local mat = transform:GetMatrix()
-		self.rigid_body:SetMatrix(mat.m)
-	end
+	out:Rotate(-ang.p, 1, 0, 0) 
+	out:Rotate(-ang.y, 0, 1, 0)
+	out:Rotate(-ang.r, 0, 0, 1) 
+	
+	
+	self.rigid_body:SetMatrix(out.m)
+end
+
+local function from_bullet(self)
+	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return Matrix44() end
+
+	local out = Matrix44()
+	out.m = self.rigid_body:GetMatrix()
+ 	
+--	local x,y,z = out:GetTranslation()
+	--local p,y,r = out:GetAngles()
+	
+--	local out = Matrix44()
+			
+	--out:Translate(x, y, z)
+	
+
+	--out:Rotate(math.deg(y), 0, 1, 0)
+	--out:Rotate(math.deg(r), 1, 0, 0)
+	
+	--out:Scale(1,-1,-1)
+		
+	return out:Copy() 
 end
 
 local temp = Matrix44()
 
+function COMPONENT:SetPosition(vec)
+	self.Position = vec
+	to_bullet(self)
+end
+
 function COMPONENT:GetPosition()
-	if self.rigid_body:IsValid() and self.rigid_body:IsPhysicsValid() then
-		temp.m = self.rigid_body:GetMatrix()
-		local x, y, z = temp:GetTranslation()
-		local vec = Vec3(-y, -x, -z)
-		--if x == 0 or y == 0 or z == 0 then	
-		--	print(vec)
-		--end
-		return vec
-	end
-	
-	return Vec3()
+	return Vec3(from_bullet(self):GetTranslation())
 end
 
 function COMPONENT:SetAngles(ang)
-	local transform = self:GetComponent("transform")
-	transform:SetAngles(ang)
-	
-	if self.rigid_body:IsValid() and self.rigid_body:IsPhysicsValid() then
-		self.rigid_body:SetMatrix(transform:GetMatrix().m)
-	end
+	self.Angles = ang
+	to_bullet(self)
 end
 
 function COMPONENT:GetAngles()
-	if self.rigid_body:IsValid() and self.rigid_body:IsPhysicsValid() then
-		temp.m = self.rigid_body:GetMatrix()
-		
-		local p,y,r = temp:GetAngles()
-		local ang = Ang3(-y, p - math.pi / 2, r + -(math.pi)):Deg()
-		--if math.round(p, 2) == 0 or math.round(y, 2) == 0 or math.round(r, 2) == 0 then print(ang) end
-		return ang
-	end
-	
-	return Ang3()
+	return Ang3(from_bullet(self):GetAngles()):Deg()
 end
 
 do
@@ -160,6 +178,9 @@ do
 			local obj = self:GetComponent("networked")
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsSphere", rad) end
 		end
+		
+		self:SetPosition(self.Position)
+		self:SetAngles(self.Angles)
 	end
 	
 	function COMPONENT:InitPhysicsBox(scale)
@@ -176,6 +197,9 @@ do
 			local obj = self:GetComponent("networked")
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsBox", scale) end
 		end
+		
+		self:SetPosition(self.Position)
+		self:SetAngles(self.Angles)
 	end
 	
 	prototype.GetSet(COMPONENT, "PhysicsModelPath", "")
@@ -223,6 +247,9 @@ do
 		assimp.ReleaseImport(scene)
 		
 		self:SetPhysicsModel(mesh)
+		
+		self:SetPosition(self.Position)
+		self:SetAngles(self.Angles)
 	end
 	
 	function COMPONENT:InitPhysicsConcave()
@@ -235,6 +262,9 @@ do
 			local obj = self:GetComponent("networked")
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConcave") end
 		end
+		
+		self:SetPosition(self.Position)
+		self:SetAngles(self.Angles)
 	end
 	
 	function COMPONENT:InitPhysicsConvex(quantized_aabb_compression)
@@ -247,6 +277,9 @@ do
 			local obj = self:GetComponent("networked")
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvex", quantized_aabb_compression) end
 		end
+		
+		self:SetPosition(self.Position)
+		self:SetAngles(self.Angles)
 	end
 end		
 
@@ -255,14 +288,11 @@ function COMPONENT:OnUpdate()
 	
 	local transform = self:GetComponent("transform")
 	
-	local matrix = self.matrix
-	matrix.m = self.rigid_body:GetMatrix()
-	local mat = matrix:Copy()
-	
-	transform:SetTRMatrix(mat)
+	transform:SetTRMatrix(from_bullet(self))
 end
 
-function COMPONENT:OnAdd(ent)
+function COMPONENT:OnAdd(ent)	
+	self:GetComponent("transform"):SetSkipRebuild(true)
 	self.rigid_body = bullet.CreateRigidBody()
 end
 
@@ -272,4 +302,4 @@ function COMPONENT:OnRemove(ent)
 	end
 end
 
-entities.RegisterComponent(COMPONENT)
+prototype.RegisterComponent(COMPONENT)

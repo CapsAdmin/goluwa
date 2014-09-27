@@ -1,5 +1,3 @@
-local entities = (...) or _G.entities
-
 local COMPONENT = {}
 
 local _debug = false
@@ -279,4 +277,4 @@ do -- call on client
 	end
 end
 
-entities.RegisterComponent(COMPONENT) 
+prototype.RegisterComponent(COMPONENT) 
