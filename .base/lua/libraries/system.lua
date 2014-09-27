@@ -567,7 +567,6 @@ function system.OnError(msg, ...)
 				
 				info.arg_line = table.concat(args, ", ")
 	
-				info.source = source
 				info.name = info.name or "unknown"
 				
 				table.insert(data, info)
