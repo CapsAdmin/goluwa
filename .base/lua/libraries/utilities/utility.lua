@@ -9,14 +9,14 @@ function utility.FindReferences(reference)
 	local found2 = {}
 	
 	local revg = {}
-	for k,v in pairs(_G) do revg[v] = k end
+	for k,v in pairs(_G) do revg[v] = tostring(k) end
 
 	local function search(var, str)
 		if done[var] then return end
 		
 		if revg[var] then str = revg[var] end
 				
-		if var == reference then
+		if rawequal(var, reference) then
 			local res = str .. " = " .. tostring(reference)
 			if not found2[res] then
 				table.insert(found, res)
@@ -504,28 +504,16 @@ do -- thanks etandel @ #lua!
 		if not func then 
 			error("could not find remove function", 2)
 		end
+
+		local ud = t.__gc or newproxy(true)
 		
-		if ffi then
-			local ud = t.__gc or ffi.new("char[1]")
-						
-			ffi.gc(ud, function()
-				if not t.IsValid or t:IsValid() then
-					return func(t) 
-				end
-			end)
-			
-			t.__gc = ud
-		else
-			local ud = t.__gc or newproxy(true)
-			
-			debug.getmetatable(ud).__gc = function() 
-				if not t.IsValid or t:IsValid() then
-					return func(t) 
-				end
+		debug.getmetatable(ud).__gc = function() 
+			if not t.IsValid or t:IsValid() then
+				return func(t) 
 			end
-			
-			t.__gc = ud  
 		end
+		
+		t.__gc = ud  
 
 		return t
 	end
