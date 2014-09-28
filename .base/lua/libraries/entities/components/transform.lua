@@ -7,20 +7,22 @@ prototype.GetSet(COMPONENT, "ScaleMatrix", Matrix44())
 
 prototype.StartStorable()		
 	prototype.GetSet(COMPONENT, "Position", Vec3(0, 0, 0), "InvalidateTRMatrix")
-	prototype.GetSet(COMPONENT, "Angles", Ang3(0, 0, 0), "InvalidateTRMatrix")
+	prototype.GetSet(COMPONENT, "Rotation", Quat(0, 0, 0, 1), "InvalidateTRMatrix")
 	
 	prototype.GetSet(COMPONENT, "Scale", Vec3(1, 1, 1), "InvalidateScaleMatrix")
 	prototype.GetSet(COMPONENT, "Shear", Vec3(0, 0, 0), "InvalidateScaleMatrix")
 	prototype.GetSet(COMPONENT, "Size", 1, "InvalidateScaleMatrix")
 	prototype.GetSet(COMPONENT, "SkipRebuild", false)
+	
+	prototype.GetSet(COMPONENT, "UseRotation", false)
 prototype.EndStorable()
 
 prototype.GetSet(COMPONENT, "OverridePosition", nil, "InvalidateTRMatrix")
-prototype.GetSet(COMPONENT, "OverrideAngles", nil, "InvalidateTRMatrix")
+prototype.GetSet(COMPONENT, "OverrideRotation", nil, "InvalidateTRMatrix")
 	
 COMPONENT.Network = {
 	Position = {"vec3", 1/30, "unreliable"},
-	Angles = {"ang3", 1/30, "unreliable"},
+	Rotation = {"quat", 1/30, "unreliable"},
 	Scale = {"vec3", 1/15},
 	Size = {"float", 1/15},
 }
@@ -80,26 +82,31 @@ function COMPONENT:SetTRRotation(quat)
 	self.TRMatrix:SetRotation(quat)
 end
 
+function COMPONENT:SetAngles(ang)
+	self.Rotation:SetAngles(ang)
+	self:InvalidateTRMatrix()
+end
+
+function COMPONENT:GetAngles()
+	return self.Rotation:GetAngles()
+end
+
 function COMPONENT:RebuildMatrix()		
 	if not self.SkipRebuild and self.rebuild_tr_matrix then				
-		self.TRMatrix:Identity()
-
 		local pos = self.Position
-		local ang = self.Angles
+		local rot = self.Rotation
 		
-		if self.OverrideAngles then
-			ang = self.OverrideAngles
+		if self.OverrideRotation then
+			ang = self.OverrideRotation
 		end
 		
 		if self.OverridePosition then
 			pos = self.OverridePosition
 		end
 		
-		self.TRMatrix:Translate(-pos.y, -pos.x, -pos.z)
-		
-		self.TRMatrix:Rotate(-ang.y, 0, 0, 1)
-		self.TRMatrix:Rotate(-ang.p, 1, 0, 0)
-		self.TRMatrix:Rotate(ang.r, 0, 0, 1)	
+		self.TRMatrix:Identity()
+		self.TRMatrix:SetTranslation(-pos.y, -pos.x, -pos.z)
+		self.TRMatrix:SetRotation(rot)
 		
 		if self.Entity:HasParent() then
 			self.temp_matrix = self.temp_matrix or Matrix44()

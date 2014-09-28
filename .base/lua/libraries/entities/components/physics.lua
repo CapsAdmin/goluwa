@@ -16,7 +16,7 @@ COMPONENT.Events = {"Update"}
 
 COMPONENT.Network = {
 	Position = {"vec3", 1/30, "unreliable"},
-	Angles = {"ang3", 1/30, "unreliable"},
+	Rotation = {"quat", 1/30, "unreliable"},
 	
 	Gravity = {"vec3", 1/5},
 	Mass = {"unsigned long", 1/5},
@@ -103,22 +103,18 @@ DELEGATE(COMPONENT, "AngularSleepingThreshold")
 bullet.SetGravity(0, 0, 50)
 
 prototype.GetSet(COMPONENT, "Position", Vec3(0, 0, 0))
-prototype.GetSet(COMPONENT, "Angles", Ang3(0, 0, 0))
+prototype.GetSet(COMPONENT, "Rotation", Quat(0, 0, 0, 1))
 
 local function to_bullet(self)
 	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return end
 	
-	local out = Matrix44()
 	
 	local pos = self.Position
-	local ang = self.Angles
+	local rot = self.Rotation
 	
-	out:Translate(pos.x, pos.y, pos.z)  
-		
-	out:Rotate(-ang.p, 1, 0, 0) 
-	out:Rotate(-ang.y, 0, 1, 0)
-	out:Rotate(-ang.r, 0, 0, 1) 
-	
+	local out = Matrix44()
+	out:SetTranslation(pos.x, pos.y, pos.z)  
+	out:SetRotation(rot)
 	
 	self.rigid_body:SetMatrix(out.m)
 end
@@ -156,13 +152,21 @@ function COMPONENT:GetPosition()
 	return Vec3(from_bullet(self):GetTranslation())
 end
 
-function COMPONENT:SetAngles(ang)
-	self.Angles = ang
+function COMPONENT:SetRotation(rot)
+	self.Rotation = rot
 	to_bullet(self)
 end
 
+function COMPONENT:GetRotation()
+	return from_bullet(self):GetRotation()
+end
+
+function COMPONENT:SetAngles(ang)
+	self:SetRotation(Quat(0,0,0,1):SetAngles(ang))
+end
+
 function COMPONENT:GetAngles()
-	return Ang3(from_bullet(self):GetAngles()):Deg()
+	return self:GetRotation():GetAngles()
 end
 
 do
@@ -180,7 +184,7 @@ do
 		end
 		
 		self:SetPosition(self.Position)
-		self:SetAngles(self.Angles)
+		self:SetRotation(self.Rotation)
 	end
 	
 	function COMPONENT:InitPhysicsBox(scale)
@@ -199,7 +203,7 @@ do
 		end
 		
 		self:SetPosition(self.Position)
-		self:SetAngles(self.Angles)
+		self:SetRotation(self.Rotation)
 	end
 	
 	prototype.GetSet(COMPONENT, "PhysicsModelPath", "")
@@ -249,7 +253,7 @@ do
 		self:SetPhysicsModel(mesh)
 		
 		self:SetPosition(self.Position)
-		self:SetAngles(self.Angles)
+		self:SetRotation(self.Rotation)
 	end
 	
 	function COMPONENT:InitPhysicsConcave()
@@ -264,7 +268,7 @@ do
 		end
 		
 		self:SetPosition(self.Position)
-		self:SetAngles(self.Angles)
+		self:SetRotation(self.Rotation)
 	end
 	
 	function COMPONENT:InitPhysicsConvex(quantized_aabb_compression)
@@ -279,7 +283,7 @@ do
 		end
 		
 		self:SetPosition(self.Position)
-		self:SetAngles(self.Angles)
+		self:SetRotation(self.Rotation)
 	end
 end		
 
