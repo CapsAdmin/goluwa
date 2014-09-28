@@ -244,6 +244,16 @@ function META:Translate(x, y, z)
 	return self
 end
 
+function META:SetTranslation(x, y, z)
+	local m = self.m
+	
+	m[12] = x
+	m[13] = y
+	m[14] = z
+	
+	return self
+end
+
 function META:Rotate(a, x, y, z, out)
 	if a == 0 then return self end
 	
@@ -591,8 +601,10 @@ function META:SetRotation(q)
 	m[5] = (-sqx + sqy - sqz + sqw)*invs
 	m[10] = (-sqx - sqy + sqz + sqw)*invs
 
-	local tmp1 = q.x*q.y;
-	local tmp2 = q.z*q.w;
+	local tmp1, tmp2
+	
+	tmp1 = q.x*q.y;
+	tmp2 = q.z*q.w;
 	m[4] = 2.0 * (tmp1 + tmp2)*invs
 	m[1] = 2.0 * (tmp1 - tmp2)*invs
 
@@ -600,6 +612,7 @@ function META:SetRotation(q)
 	tmp2 = q.y*q.w
 	m[8] = 2.0 * (tmp1 - tmp2)*invs
 	m[2] = 2.0 * (tmp1 + tmp2)*invs
+	
 	tmp1 = q.y*q.z
 	tmp2 = q.x*q.w
 	m[9] = 2.0 * (tmp1 + tmp2)*invs
