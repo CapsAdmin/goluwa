@@ -53,19 +53,31 @@ function COMPONENT:InvalidateTRMatrix()
 	self.rebuild_tr_matrix = true
 end
 
-function COMPONENT:GetTRAngles()
-
-end
-
 function COMPONENT:GetTRPosition()
 	local x, y, z = self.TRMatrix:GetTranslation()
 	return Vec3(-y, -x, -z)
+end
+
+function COMPONENT:SetTRPosition(vec)
+	self.TRMatrix:SetTranslation(vec.x, vec.y, vec.z)
 end
 
 function COMPONENT:GetTRAngles()
 	local p, y, r = self.TRMatrix:GetAngles()
 	
 	return Ang3(p, y, r):Deg()
+end
+
+function COMPONENT:SetTRAngles(ang)
+	
+end
+
+function COMPONENT:GetTRRotation()
+	return self.TRMatrix:GetRotation()
+end
+
+function COMPONENT:SetTRRotation(quat)
+	self.TRMatrix:SetRotation(quat)
 end
 
 function COMPONENT:RebuildMatrix()		
