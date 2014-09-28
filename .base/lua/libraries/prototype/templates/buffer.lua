@@ -366,7 +366,7 @@ function prototype.AddBufferTemplate(META)
 		end
 		
 		-- quat
-		function META:WriteQuad(quat)
+		function META:WriteQuat(quat)
 			self:WriteFloat(quat.x)
 			self:WriteFloat(quat.y)
 			self:WriteFloat(quat.z)
