@@ -13,7 +13,7 @@ local function go()
 	end
 	
 	WORLD:SetPosition(Vec3(-170,170,0))  
-	WORLD:SetAngles(Ang3(90,0,0))        
+	WORLD:SetAngles(Ang3(90,0,0):Rad())
 	 
 	for i = 1, 1 do
 		local body = entities.CreateEntity("networked")
