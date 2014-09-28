@@ -15,7 +15,7 @@ local function go()
 	WORLD:SetPosition(Vec3(-170,170,0))  
 	WORLD:SetAngles(Ang3(90,0,0):Rad())
 	 
-	for i = 1, 1 do
+	for i = 1, 10 do
 		local body = entities.CreateEntity("networked")
 		body:SetModelPath("models/cube.obj")
 		body:SetMass(10)
@@ -30,4 +30,4 @@ event.AddListener("NetworkStarted", "spawn_world", function()
 	go()
 end)
            
-if RELOAD then go() end
+if RELOAD then go() end  
