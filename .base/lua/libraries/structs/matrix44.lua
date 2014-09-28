@@ -560,6 +560,54 @@ function META:Lerp(alpha, other)
 	end
 end
 
+function META:GetRotation(out)
+	local m = self.m
+	
+	local w = math.sqrt(1 + m[0] + m[5] + m[10]) / 2
+	local w2 = w * 4
+	
+	x = (m[9] - m[6]) / w2
+	y = (m[2] - m[8]) / w2
+	z = (m[4] - m[1]) / w2
+	
+	out = out or structs.Quat()
+	out:Set(x,y,z,w)
+	
+	return out
+end
+
+function META:SetRotation(q)
+	local m = self.m
+
+	local sqw = q.w*q.w
+	local sqx = q.x*q.x
+	local sqy = q.y*q.y
+	local sqz = q.z*q.z
+
+	-- invs (inverse square length) is only required if quaternion is not already normalised
+	local invs = 1 / (sqx + sqy + sqz + sqw)
+	
+	m[0] = ( sqx - sqy - sqz + sqw)*invs -- since sqw + sqx + sqy + sqz =1/invs*invs
+	m[5] = (-sqx + sqy - sqz + sqw)*invs
+	m[10] = (-sqx - sqy + sqz + sqw)*invs
+
+	local tmp1 = q.x*q.y;
+	local tmp2 = q.z*q.w;
+	m[4] = 2.0 * (tmp1 + tmp2)*invs
+	m[1] = 2.0 * (tmp1 - tmp2)*invs
+
+	tmp1 = q.x*q.z
+	tmp2 = q.y*q.w
+	m[8] = 2.0 * (tmp1 - tmp2)*invs
+	m[2] = 2.0 * (tmp1 + tmp2)*invs
+	tmp1 = q.y*q.z
+	tmp2 = q.x*q.w
+	m[9] = 2.0 * (tmp1 + tmp2)*invs
+	m[6] = 2.0 * (tmp1 - tmp2)*invs
+	
+	return self
+end
+
 local t = ffi.typeof("float[16]")
 local new = ffi.new
 
