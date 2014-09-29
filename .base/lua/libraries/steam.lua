@@ -388,7 +388,6 @@ do -- steam directories
 		["portal 2"] = 620,
 		["alien swarm"] = 630,
 		["counter-strike: global offensive"] = 730,
-		["counter-strike: global offensive"] = 1800,
 	}
 	
 	function steam.FindSourceGame(name, title)
