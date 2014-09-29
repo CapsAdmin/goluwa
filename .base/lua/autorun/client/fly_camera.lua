@@ -3,25 +3,11 @@ local cam_pos = Vec3(-10, -16.8, 10.02)
 local cam_ang = Ang3(90, 0, 0)
 local cam_fov = 90
 
--- this shouldn't be here!!
-
-function render.SetCamPos(pos)
-	cam_pos = pos
-end
-
-function render.SetCamAng(ang)
-	cam_ang = ang
-end
-
-function render.SetCamFOV(fov)
-	cam_fov = fov
-end
-  
 event.AddListener("Update", "fly_camera_3d", function(dt)
 	if network.IsConnected() then return end
 	if not window.IsOpen() then return end
 	if chat and chat.IsVisible() then return end
-	
+		
 	if menu and menu.visible then return end
 	cam_ang:Normalize()
 	local speed = dt * 10
