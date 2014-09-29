@@ -13,7 +13,7 @@ local header = [[
 
 local entry = [[
 	unsigned long crc;
-	short preload_bytes;
+	short preload_length;
 	short archive_index;
 	long entry_offset;
 	long entry_length;
@@ -34,16 +34,23 @@ local function read_vpk(file, full_path)
 				local entry = file:ReadStructure(entry)
 				
 				entry.is_file = true
-				entry.archive_path = "os:" .. full_path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(entry.archive_index) end)
+				
+				if entry.archive_index == 0x7FFF then
+					entry.archive_path = "os:" .. full_path
+					entry.entry_length = entry.preload_length
+					entry.entry_offset = entry.preload_offset
+				else
+					entry.archive_path = "os:" .. full_path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(entry.archive_index) end)
+				end
+				
 				entry.file_name = name .. "." .. extension
 				entry.directory = directory
 				entry.full_path = directory .. "/" .. entry.file_name
 				
-				file:SetPos(file:GetPos() + entry.preload_bytes)
+				file:SetPos(file:GetPos() + entry.preload_length)
 				
-				if file:GetPos() ~= entry.preload_offset + entry.preload_bytes then	
+				if file:GetPos() ~= entry.preload_offset + entry.preload_length then	
 					file:Close()
-					error("grr")
 				end
 								
 				tree:SetEntry(entry.full_path, entry)
@@ -154,7 +161,6 @@ function CONTEXT:Open(path_info, mode, ...)
 		local file_info = tree:GetEntry(relative)
 		local file = assert(vfs.Open(file_info.archive_path))
 		file:SetPos(file_info.entry_offset)		
-		
 		self.file = file
 		self.position = 0
 		self.file_info = file_info
