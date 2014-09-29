@@ -242,7 +242,12 @@ local function load_mdl(path)
 		data.flags = buffer:ReadInt()
 		
 		buffer:Advance(14 * 4)
-		data.vmt = steam.VDFToTable(assert(vfs.Read(data.path)), true)
+		local str = assert(vfs.Read(data.path))
+		if str then
+			data.vmt = steam.VDFToTable(str, true)
+		else
+			data.vmt = {}
+		end
 	end)
 
 	parse("bone", function(data, i)
@@ -374,7 +379,10 @@ local function load_mdl(path)
 	end)
 
 	buffer:PushPos(header.keyvalue_offset)
-		header.keyvalues = steam.VDFToTable(buffer:ReadString(header.keyvalue_size))
+		local str = buffer:ReadString(header.keyvalue_size)
+		if str then
+			header.keyvalues = steam.VDFToTable(str)
+		end
 		header.keyvalue_offset = nil
 		header.keyvalue_count = nil
 	buffer:PopPos()
@@ -455,7 +463,7 @@ local function load_vtx(path)
 	local function readIndices( strip )
 		strip.indices = {}
 		for i = 1, strip.indexCount do
-			table.insert( strip.indices, buffer:ReadShort() )
+			table.insert(strip.indices, buffer:ReadShort())
 		end
 		
 	end
@@ -634,8 +642,6 @@ local function load_vvd(path, mdl, vtx)
 			}
 		}
 	}
-
-	table.print(vtx.strip_groups, 2)
 	
 	for j = 1, header.numLODVertexes[i] do
 		local boneWeight = buffer:ReadStructure[[
@@ -657,30 +663,31 @@ local function load_vvd(path, mdl, vtx)
 	
 	table.insert(models, model)
 	buffer:PopPos()
-		
+				
 	local material = mdl.material[1].vmt.vertexlitgeneric
-	
-	table.print(mdl.material)
 
 	for i, model in ipairs(models) do
 		for i, sub_models in ipairs(model.sub_models) do		
 			sub_models.mesh = render.CreateMesh(sub_models.mesh, sub_models.indices)
-			local path = "materials/" .. material["$basetexture"]:lower() .. ".vtf"
-			sub_models.diffuse = Texture(path)
+			if material["$basetexture"] then
+				local path = "materials/" .. material["$basetexture"]:lower() .. ".vtf"
+				sub_models.diffuse = Texture(path)
+			end
 		end
 	end
 	
-	local world = utility.RemoveOldObject(entities.CreateEntity("clientside"))
-	world:SetModel(models[1])
-	world:SetPos(render.GetCamPos())
+	entities.SafeRemove(MDL_ENT)
+	local ent = entities.CreateEntity("clientside")
+	ent:SetModel(models[1])
+	ent:SetPosition(render.GetCamPos())
+	MDL_ENT = ent
 end
 
-local mdl = load_mdl("models/bicycle01a")
---table.print(mdl)
+steam.MountSourceGame("hl2")
 
-local vtx = load_vtx("models/bicycle01a")
+local path = "models/items/flare" 
 
-local vvd = load_vvd("models/bicycle01a", mdl, vtx)
---table.print(vvd)
+local mdl = load_mdl(path)
+local vtx = load_vtx(path)
+local vvd = load_vvd(path, mdl, vtx)
 
---table.print(vtx)
