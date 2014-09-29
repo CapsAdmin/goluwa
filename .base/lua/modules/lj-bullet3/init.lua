@@ -18,6 +18,7 @@ void bulletDrawDebugWorld();
 typedef struct {
 	float hit_pos[3];
 	float hit_normal[3];
+	btRigidBody *body;
 
 } bullet_raycast_result;
 
@@ -76,6 +77,7 @@ ffi.cdef(header)
 local lib = ffi.load("bullet3")
 local bullet = {}
 local bodies = {}
+local body_lookup = {}
 
 bullet.bodies = bodies
 
@@ -110,11 +112,11 @@ end
 do
 	local out = ffi.new("bullet_raycast_result[1]")
 	function bullet.RayCast(from_x, from_y, from_z, to_x, to_y, to_z)
-		if lib.RayCast(from_x, from_y, from_z, to_x, to_y, to_z, out) then
+		if lib.bulletRayCast(from_x, from_y, from_z, to_x, to_y, to_z, out) then
 			return {
 				hit_pos = out[0].hit_pos,
 				hit_normal = out[0].hit_normal,
-				fraction = out[0].fraction,
+				body = body_lookup[out[0].body],
 			}
 		end
 	end
@@ -127,7 +129,7 @@ do
 		lib.bulletStepSimulation(dt or 0)
 		
 		while lib.bulletReadCollision(out) do
-			bullet.OnCollision(out[0].a, out[0].b)
+			bullet.OnCollision(body_lookup[out[0].a], body_lookup[out[0].b])
 		end
 	end
 end
@@ -323,6 +325,7 @@ do -- init sphere options
 		if rad then self:SetPhysicsSphereRadius(rad) end
 		
 		self.body = lib.bulletCreateRigidBodySphere(self:GetMass(), self.matrix, self:GetPhysicsSphereRadius())
+		body_lookup[self.body] = self
 		
 		update_params(self)
 	end
@@ -347,6 +350,7 @@ do -- init box options
 		if x and y and z then self:SetPhysicsBoxScale(x, y, z) end
 		
 		self.body = lib.bulletCreateRigidBodyBox(self:GetMass(), self.matrix, self:GetPhysicsBoxScale())
+		body_lookup[self.body] = self
 		
 		update_params(self)
 	end
@@ -372,6 +376,7 @@ do -- mesh init options
 		self.mesh = tbl
 
 		self.body = lib.bulletCreateRigidBodyConcaveMesh(self:GetMass(), self.matrix, mesh, not not quantized_aabb_compression)
+		body_lookup[self.body] = self
 		
 		update_params(self)
 	end
@@ -394,6 +399,7 @@ do -- mesh init options
 		self.mesh = tbl
 		
 		self.body = lib.bulletCreateRigidBodyConvexMesh(self:GetMass(), self.matrix, mesh)
+		body_lookup[self.body] = self
 		
 		update_params(self)
 	end
