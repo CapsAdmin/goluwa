@@ -89,7 +89,7 @@ do -- synchronization server > client
 
 	function COMPONENT:UpdateVars(client, force_update)
 		for i, info in ipairs(SERVER and self.server_synced_vars or CLIENT and self.client_synced_vars) do
-			if force_update or not self.last_update[info.key] or self.last_update[info.key] < timer.GetSystemTime() then
+			if force_update or not self.last_update[info.key] or self.last_update[info.key] < system.GetTime() then
 				
 				local var
 				
@@ -116,7 +116,7 @@ do -- synchronization server > client
 					self.last[info.key] = var
 				end
 
-				self.last_update[info.key] = timer.GetSystemTime() + info.rate
+				self.last_update[info.key] = system.GetTime() + info.rate
 			end
 			
 			::continue::

@@ -22,7 +22,7 @@ event.AddListener("Draw2D", "illusion", function()
 	surface.DrawRect(0,0,5000,5000)
 	
 	local w, h = surface.GetScreenSize()
-	local t = timer.GetSystemTime()  * 4
+	local t = system.GetTime()  * 4
 		
 	for x = 0, 100 do
 		x = x * 45

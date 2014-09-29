@@ -48,15 +48,15 @@ local function show_image(url)
 	
 	local tex = Texture(url)
 	
-	local start = timer.GetElapsedTime()
+	local start = system.GetElapsedTime()
 	
 	event.AddListener("DrawHUD", "chathud_image_url", function()
 		if tex:IsLoading() then
-			start = timer.GetElapsedTime()
+			start = system.GetElapsedTime()
 			return
 		end
 		
-		local t = timer.GetElapsedTime() - start
+		local t = system.GetElapsedTime() - start
 		
 		if t > totalDuration then
 			event.RemoveListener("DrawHUD", "chathud_image_url")

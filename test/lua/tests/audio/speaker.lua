@@ -15,7 +15,7 @@ local function calc_job(id, job, play_next_now)
 	if job.sound_queue and #job.sound_queue > 0 then
 		job.next_sound = job.next_sound or 0
 
-		if play_next_now or job.next_sound < timer.GetSystemTime() then
+		if play_next_now or job.next_sound < system.GetTime() then
 			
 			-- stop any previous sounds
 			if job.current_sound then
@@ -39,7 +39,7 @@ local function calc_job(id, job, play_next_now)
 			end
 			
 			-- store when to play the next sound
-			job.next_sound = timer.GetSystemTime() + data.duration
+			job.next_sound = system.GetTime() + data.duration
 		end
 	else
 		job.sound_queue = nil

@@ -625,7 +625,6 @@ do -- libraries
 	serializer = include("libraries/serializing/serializer.lua")
 
 	system = include("libraries/system.lua")
-	timer = include("libraries/timer.lua")
 	console = include("libraries/console.lua")
 	profiler = include("libraries/profiler.lua")
 	steam = include("libraries/steam.lua")

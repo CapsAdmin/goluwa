@@ -44,13 +44,13 @@ local function main()
 		end
 	
 		local rate = rate_cvar:Get()
-		local time = timer.GetSystemTime()
+		local time = system.GetTime()
 		
 		local dt = time - (last_time or 0)
 		
-		timer.SetFrameTime(dt)
-		timer.SetFrameNumber(i)
-		timer.SetElapsedTime(timer.GetElapsedTime() + dt)
+		system.SetFrameTime(dt)
+		system.SetFrameNumber(i)
+		system.SetElapsedTime(system.GetElapsedTime() + dt)
 		i = i + 1
 					
 		local ok, err = pcall(update, dt)
@@ -69,7 +69,7 @@ local function main()
 		end
 		
 		if rate > 0 then
-			timer.Sleep(math.floor(1/rate * 1000))
+			system.Sleep(math.floor(1/rate * 1000))
 			if render and render.context_created and render.GetVSync() then
 				render.SetVSync(false)
 			end

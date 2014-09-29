@@ -7,8 +7,8 @@ local dirX, dirY = 100, 100
 local W, H = luwa.w - 10, luwa.h - 10
 event.AddListener( "Draw2D", "goluwa", function()
 	
-	x = x + dirX * timer.GetFrameTime()
-	y = y + dirY * timer.GetFrameTime()
+	x = x + dirX * system.GetFrameTime()
+	y = y + dirY * system.GetFrameTime()
 	if x + W / 2 >= render.GetWidth() or x <= W / 2 then
 		dirX = -dirX
 		W = W / 2
@@ -17,8 +17,8 @@ event.AddListener( "Draw2D", "goluwa", function()
 		dirY = -dirY
 		H = H / 2
 	end
-	W = W + ((luwa.w-10)/W) * timer.GetFrameTime() * 300
-	H = H + ((luwa.h-10)/H) * timer.GetFrameTime() * 300
+	W = W + ((luwa.w-10)/W) * system.GetFrameTime() * 300
+	H = H + ((luwa.h-10)/H) * system.GetFrameTime() * 300
 	
 	
 	x = math.clamp( x, W / 2, render.GetWidth() - W / 2 )

@@ -1232,7 +1232,7 @@ function chatsounds.PlayScript(script, udata)
 
 	local duration = 0
 	local track = {}
-	local time = timer.GetElapsedTime()
+	local time = system.GetElapsedTime()
 
 	for i, sound in ipairs(sounds) do
 
@@ -1279,7 +1279,7 @@ end
 chatsounds.active_tracks = {}
 
 function chatsounds.Update()
-	local time = timer.GetElapsedTime()
+	local time = system.GetElapsedTime()
 
 	for i, track in pairs(chatsounds.active_tracks) do
 		for i, sound in pairs(track) do

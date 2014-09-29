@@ -222,5 +222,5 @@ function META:AdvanceCaret(X, Y)
 		self.suppress_end_char = false
 	end
 
-	self.blink_offset = timer.GetSystemTime() + 0.25
+	self.blink_offset = system.GetTime() + 0.25
 end

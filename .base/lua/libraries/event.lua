@@ -244,7 +244,7 @@ do -- timers
 			return xpcall(self.callback, system.OnError, ...)
 		end
 		function META:SetNextThink(num)
-			self.realtime = timer.GetElapsedTime() + num
+			self.realtime = system.GetElapsedTime() + num
 		end
 		function META:Remove()
 			self.__remove_me = true
@@ -273,7 +273,7 @@ do -- timers
 		table.insert(event.timers, {
 			key = callback,
 			type = "thinker", 
-			realtime = timer.GetElapsedTime(), 
+			realtime = system.GetElapsedTime(), 
 			callback = callback, 
 			speed = speed, 
 			in_seconds = in_seconds
@@ -302,7 +302,7 @@ do -- timers
 			key = callback,
 			type = "delay", 
 			callback = callback, 
-			realtime = timer.GetElapsedTime() + time
+			realtime = system.GetElapsedTime() + time
 		})
 	end
 	
@@ -320,7 +320,7 @@ do -- timers
 			type = "delay",
 			callback = callback,
 			args = {...},
-			realtime = timer.GetElapsedTime() + (time or 0),
+			realtime = system.GetElapsedTime() + (time or 0),
 		})
 	end
 
@@ -351,7 +351,7 @@ do -- timers
 		
 		data.key = id
 		data.type = "timer"
-		data.realtime = timer.GetElapsedTime() + time
+		data.realtime = system.GetElapsedTime() + time
 		data.id = id
 		data.time = time
 		data.repeats = repeats
@@ -378,7 +378,7 @@ do -- timers
 	local remove_these = {}
 	
 	function event.UpdateTimers(a_, b_, c_, d_, e_)
-		local cur = timer.GetElapsedTime()
+		local cur = system.GetElapsedTime()
 				
 		for i, data in ipairs(event.timers) do
 			if data.type == "thinker" then

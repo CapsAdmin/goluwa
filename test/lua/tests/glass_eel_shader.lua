@@ -175,7 +175,7 @@ local mesh = shader:CreateVertexBuffer({
 event.AddListener("DrawHUD", "hm", function()
 	local w, h = surface.GetScreenSize()
 	surface.PushMatrix(0, 0, w, h) 
-		shader.time = timer.GetSystemTime()
+		shader.time = system.GetTime()
 		shader.tex = tex	
 		shader.resolution = Vec2(surface.GetScreenSize())
 		shader.mouse = gui.GetMousePos()

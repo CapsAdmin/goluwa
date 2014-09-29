@@ -27,7 +27,7 @@ do -- current window
 		render.PopViewport()
 	end
 
-	function render.GetFrameNumber()
+	function system.GetFrameNumber()
 		return render.frame
 	end
 	
