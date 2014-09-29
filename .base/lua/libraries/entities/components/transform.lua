@@ -97,7 +97,7 @@ function COMPONENT:RebuildMatrix()
 		local rot = self.Rotation
 		
 		if self.OverrideRotation then
-			ang = self.OverrideRotation
+			rot = self.OverrideRotation
 		end
 		
 		if self.OverridePosition then
