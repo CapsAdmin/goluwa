@@ -3,18 +3,18 @@ local physics = physics or {}
 local bullet = require("lj-bullet3")
 
 if not physics.bullet then
-	bullet.Initialize()
-	bullet.SetGravity(0,0,9.8) 		 
-
-	event.AddListener("Update", "bullet", function(dt)
-		bullet.Update(dt)
-	end)
-	
-	function bullet.OnCollision(body_a, body_b)
-		event.Call("PhysicsCollide", body_a.ent, body_b.ent)
-	end
-
+	bullet.Initialize()	
 	physics.bullet = bullet
+end
+
+bullet.SetGravity(0,0,9.8)
+
+event.AddListener("Update", "bullet", function(dt)
+	bullet.Update(dt)
+end)
+
+function bullet.OnCollision(body_a, body_b)
+	event.Call("PhysicsCollide", body_a.ent, body_b.ent)
 end
 
 function physics.RayCast(a, b)
