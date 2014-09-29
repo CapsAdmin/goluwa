@@ -123,10 +123,7 @@ event.AddListener("Move", "spooky", function(client, cmd)
 	if SERVER then
 		if not client.nv.ghost or not client.nv.ghost:IsValid() then
 			ghost = entities.CreateEntity("networked")
-			
-			--ghost:ServerDesyncVar("Position")
-			--ghost:ServerDesyncVar("Rotation")
-			
+				
 			local filter = clients.CreateFilter():AddAllExcept(client)
 			
 			ghost:ServerFilterSync(filter, "Position")
