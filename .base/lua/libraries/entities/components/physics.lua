@@ -1,12 +1,4 @@
 local bullet = require("lj-bullet3")
-if not bullet.init then
-	bullet.Initialize()
-	bullet.init = true
-end
-
-event.AddListener("Update", "bullet", function(dt)
-	bullet.Update(dt)
-end)
 
 local COMPONENT = {}
 
@@ -27,8 +19,11 @@ COMPONENT.Network = {
 	PhysicsSphereRadius = {"float", 1/5},
 	AngularSleepingThreshold = {"float", 1/5},
 	LinearSleepingThreshold = {"float", 1/5},
+	SimulateOnClient = {"boolean", 1/5},
 	PhysicsModelPath = {"string", 1/10, "reliable", true}, -- last true means don't send default path (blank path in this case)
 }
+
+prototype.GetSet(COMPONENT, "SimulateOnClient", false)
 
 COMPONENT.matrix = Matrix44()
 COMPONENT.rigid_body = NULL
@@ -100,9 +95,6 @@ DELEGATE(COMPONENT, "AngularDamping")
 DELEGATE(COMPONENT, "LinearDamping")
 DELEGATE(COMPONENT, "LinearSleepingThreshold")
 DELEGATE(COMPONENT, "AngularSleepingThreshold")
-
---bullet.SetGravity(0, 0, 9.8)
-bullet.SetGravity(0, 0, 50)
 
 prototype.GetSet(COMPONENT, "Position", Vec3(0, 0, 0))
 prototype.GetSet(COMPONENT, "Rotation", Quat(0, 0, 0, 1))
@@ -295,11 +287,20 @@ function COMPONENT:OnUpdate()
 	local transform = self:GetComponent("transform")
 	
 	transform:SetTRMatrix(from_bullet(self))
+	
+	if CLIENT then
+		if not self.SimulateOnClient then
+			if self.rigid_body:GetMass() ~= 0 then
+				self.rigid_body:SetMass(0)
+			end
+		end
+	end
 end
 
 function COMPONENT:OnAdd(ent)	
 	self:GetComponent("transform"):SetSkipRebuild(true)
 	self.rigid_body = bullet.CreateRigidBody()
+	self.rigid_body.ent = self
 end
 
 function COMPONENT:OnRemove(ent)
