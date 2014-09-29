@@ -21,6 +21,7 @@ local default = {
 for i, v in ipairs(layout) do
 	v.type = v.type or typex(v.default)
 	default[v.name] = v.default
+	v.client_name = "client_" .. v.name
 end
 
 function META:GetCurrentCommand()
@@ -111,10 +112,12 @@ if CLIENT then
 		
 			buffer:WriteDouble(timer.GetSystemTime())
 			
-			local move = event.Call("CreateMove", clients.GetLocalClient(), clients.GetLocalClient():GetCurrentCommand())
+			local cmd = clients.GetLocalClient():GetCurrentCommand()
+			local move = event.Call("CreateMove", clients.GetLocalClient(), cmd)
 			 
-			for _, v in ipairs(layout) do
+			for _, v in ipairs(layout) do			
 				buffer:WriteType(move and move[v.name] or v.default, v.type)
+				cmd[v.client_name] = move and move[v.name] or v.default
 			end
 				
 			if last_send < timer.GetSystemTime() then
