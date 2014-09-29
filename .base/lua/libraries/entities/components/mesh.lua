@@ -18,9 +18,12 @@ prototype.GetSet(COMPONENT, "Model", nil)
 
 COMPONENT.Network = {
 	ModelPath = {"string", 1/5},
+	DiffuseTexture = {"string", 1/5},
+	SpecularTexture = {"string", 1/5},
+	BumpTexture = {"string", 1/5},
 	Cull = {"boolean", 1/5},
 	Alpha = {"float", 1/30, "unreliable"},
-	--Color = {"boolean", 1/5},
+	Color = {"color", 1/5},
 }
 
 if CLIENT then 
@@ -358,7 +361,3 @@ if CLIENT then
 end
 
 prototype.RegisterComponent(COMPONENT)
-
-if RELOAD then
---	render.InitializeGBuffer()
-end
