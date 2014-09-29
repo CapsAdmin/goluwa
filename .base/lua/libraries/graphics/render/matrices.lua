@@ -177,6 +177,33 @@ function render.SetupView3D(pos, ang, fov, out)
 	render.matrices.view_3d_inverse = render.matrices.view_3d:GetInverse()
 end
 
+function render.SetCamPos(pos)
+	cam.pos = pos
+	render.SetupView3D(cam.pos, cam.ang)
+end
+
+function render.GetCamPos()
+	return cam.pos
+end
+
+function render.SetCamAng(ang)
+	cam.ang = ang
+	render.SetupView3D(cam.pos, cam.ang)
+end
+
+function render.GetCamAng()
+	return cam.ang
+end
+
+function render.SetCamFOV(fov)
+	cam.fov = fov
+end
+
+function render.GetCamFOV()
+	return cam.fov
+end
+  
+
 function render.SetupView2D(pos, ang, zoom)
 	cam.pos2d = pos or cam.pos2d
 	cam.ang2d = ang or cam.ang2d
