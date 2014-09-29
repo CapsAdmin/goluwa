@@ -182,8 +182,8 @@ do -- window meta
 		sdl.Init(sdl.e.SDL_INIT_VIDEO)
 		sdl.video_init = true
 
-		sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MAJOR_VERSION, 4)
-		sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MINOR_VERSION, 4)
+	--	sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MAJOR_VERSION, 4)
+	--	sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MINOR_VERSION, 4)
 		
 		sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_FLAGS, sdl.e.SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG)
 		sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_PROFILE_MASK, sdl.e.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY)
