@@ -2,26 +2,6 @@ local sockets = _G.sockets or {}
 
 sockets.active_sockets = sockets.active_sockets or utility.CreateWeakTable()
 
-if SERVER then
-
-	if WINDOWS then
-		timer.GetSystemTime = timer.GetTimeMS
-	else
-		-- there reaaaally needs to be a system.GetTime() function
-		local start
-		function timer.GetSystemTime()
-			
-			if not sockets.luasocket then
-				return os.gettime()
-			end
-			
-			start = start or sockets.luasocket.gettime()
-			
-			return sockets.luasocket.gettime() - start
-		end
-	end
-end
-
 include("helpers.lua", sockets)
 include("http.lua", sockets)
 

@@ -50,7 +50,7 @@ local pi = math.pi
 local function DiscreteFourierTransform(x)
 	local n = 512
 	local f = ffi.new("struct ret[?]", 512)
-	local start = timer.GetTimeMS()
+	local start = timer.GetSystemTime()
 	
 	for j = 0, n - 1 do
 		for k = 0, n - 1 do
@@ -60,7 +60,7 @@ local function DiscreteFourierTransform(x)
 		end
 	end
 	
-	local t = timer.GetTimeMS()
+	local t = timer.GetSystemTime()
 	
 	print("Time spent: " .. tostring((t - start)) .. "ms")
 	return f
