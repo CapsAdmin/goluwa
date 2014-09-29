@@ -27,7 +27,7 @@ end
 
 local function create_host(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
 	max_connections = max_connections or 32
-	max_channels = max_channels or 32
+	max_channels = max_channels or 8
 	incomming_bandwidth = incomming_bandwidth or 0
 	outgoing_bandwidth = outgoing_bandwidth or 0
 			
@@ -112,8 +112,8 @@ do -- peer
 	function enet.CreatePeer(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)		
 		local self = prototype.CreateObject(CLIENT)
 		
-		max_connections = max_connections or 2
-		max_channels = max_channels or 2
+		max_connections = max_connections or 8
+		max_channels = max_channels or 8
 		incomming_bandwidth = incomming_bandwidth or 57600
 		outgoing_bandwidth = outgoing_bandwidth or 14400
 		
