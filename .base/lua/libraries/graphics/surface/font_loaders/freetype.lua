@@ -288,7 +288,6 @@ function META:DrawString(str, x, y)
 				
 				if ch then				
 					if ch.page.texture ~= last_tex then
-						tex = ch.page.texture
 						poly = surface.CreatePoly(#str)
 						table.insert(data, {poly = poly, texture = ch.page.texture})
 						last_tex = ch.page.texture
