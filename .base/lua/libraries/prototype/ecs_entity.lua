@@ -1,6 +1,6 @@
 local prototype = ... or _G.prototype
 
-local META = prototype.CreateTemplate("ecs_entity")
+local META = prototype.CreateTemplate("entity")
 
 prototype.AddParentingTemplate(META)
 prototype.GetSet(META, "Components", {})
@@ -30,6 +30,12 @@ function META:AddComponent(name, id, ...)
 	self.Components[name][id] = component
 	
 	component:OnAdd(self, ...)
+	
+	for name, components in pairs(self:GetComponents()) do
+		for id, component_ in pairs(components) do
+			component_:OnEntityAddComponent(component)
+		end
+	end
 end
 
 function META:RemoveComponent(name, id)
@@ -80,7 +86,7 @@ function prototype.SetupComponents(name, components)
 	local functions = {}
 	
 	for _, name in ipairs(components) do
-		for k, v in pairs(prototype.GetRegistered("ecs_component", name)) do
+		for k, v in pairs(prototype.GetRegistered("component", name)) do
 			if type(v) == "function" then			
 				functions[k] = function(ent, a,b,c,d)
 					local obj = ent:GetComponent(name)
