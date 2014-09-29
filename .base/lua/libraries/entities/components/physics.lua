@@ -25,7 +25,9 @@ COMPONENT.Network = {
 	MassOrigin = {"vec3", 1/5},
 	PhysicsBoxScale = {"vec3", 1/5},
 	PhysicsSphereRadius = {"float", 1/5},
-	PhysicsModelPath = {"string", 1/10, "reliable", true}, -- last true means don't send default path (blank path)
+	AngularSleepingThreshold = {"float", 1/5},
+	LinearSleepingThreshold = {"float", 1/5},
+	PhysicsModelPath = {"string", 1/10, "reliable", true}, -- last true means don't send default path (blank path in this case)
 }
 
 COMPONENT.matrix = Matrix44()
@@ -174,7 +176,7 @@ do
 
 	function COMPONENT:InitPhysicsSphere(rad)
 		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix().m)
+		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
 		
 		self.rigid_body:InitPhysicsSphere(rad)
 		
@@ -189,7 +191,7 @@ do
 	
 	function COMPONENT:InitPhysicsBox(scale)
 		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix().m)
+		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
 		
 		if scale then
 			self.rigid_body:InitPhysicsBox(scale.x, scale.y, scale.z)
@@ -258,7 +260,7 @@ do
 	
 	function COMPONENT:InitPhysicsConcave()
 		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix().m)
+		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
 		
 		self.rigid_body:InitPhysicsConcave(self:GetPhysicsModel())
 		
@@ -273,7 +275,7 @@ do
 	
 	function COMPONENT:InitPhysicsConvex(quantized_aabb_compression)
 		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix().m)
+		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
 		
 		self.rigid_body:InitPhysicsConvex(self:GetPhysicsModel(), quantized_aabb_compression)
 		
