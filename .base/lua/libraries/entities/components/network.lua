@@ -35,7 +35,10 @@ do
 	end
 
 	function COMPONENT:ServerDesyncVar(component, key)
-		if not key then key = component component = nil  end
+		if not key then 
+			key = component 
+			component = nil  
+		end
 		
 		for k, v in ipairs(self.server_synced_vars) do
 			if (v.component == component or component == nil) and v.key == key then
@@ -44,6 +47,19 @@ do
 				break
 			end
 		end
+	end
+	
+	function COMPONENT:ServerFilterSync(filter, component, key)
+		if not key then 
+			key = component 
+			component = nil  
+		end
+		
+		for k, v in ipairs(self.server_synced_vars) do
+			if (v.component == component or component == nil) and v.key == key then
+				v.filter = filter
+			end
+		end	
 	end
 	
 	function COMPONENT:SetupSyncVariables()
@@ -95,7 +111,7 @@ do -- synchronization server > client
 					
 					if self.debug then logf("%s - %s: sending %s = %s to %s\n", self, info.component, info.key, utility.FormatFileSize(buffer:GetSize()), client) end
 						
-					packet.Send("ecs_network", buffer, client, force_update and "reliable" or info.flags, self.NetworkChannel)
+					packet.Send("ecs_network", buffer, client or info.filter, force_update and "reliable" or info.flags, self.NetworkChannel)
 					
 					self.last[info.key] = var
 				end
