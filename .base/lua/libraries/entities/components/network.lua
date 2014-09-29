@@ -1,6 +1,5 @@
 local COMPONENT = {}
 
-local _debug = false
 local spawned_networked = {}
 
 COMPONENT.Name = "networked"
@@ -8,6 +7,7 @@ COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Update"}
 
 prototype.GetSet(COMPONENT, "NetworkId", -1)
+prototype.GetSet(COMPONENT, "NetworkChannel", 0)
 
 do
 	COMPONENT.client_synced_vars = {}
@@ -35,10 +35,12 @@ do
 	end
 
 	function COMPONENT:ServerDesyncVar(component, key)
+		if not key then key = component component = nil  end
+		
 		for k, v in ipairs(self.server_synced_vars) do
-			if v.component == component and v.key == key then
+			if (v.component == component or component == nil) and v.key == key then
 				table.remove(self.server_synced_vars, k)
-				self.server_synced_vars_stringtable[component..key] = nil
+				self.server_synced_vars_stringtable[v.component..key] = nil
 				break
 			end
 		end
@@ -91,9 +93,9 @@ do -- synchronization server > client
 					buffer:WriteShort(self.NetworkId)
 					buffer:WriteType(var, info.type)
 					
-					if _debug then logf("%s: sending %s to %s\n", self, utility.FormatFileSize(buffer:GetSize()), client) end
+					if self.debug then logf("%s - %s: sending %s = %s to %s\n", self, info.component, info.key, utility.FormatFileSize(buffer:GetSize()), client) end
 						
-					packet.Send("ecs_network", buffer, client, force_update and "reliable" or info.flags)
+					packet.Send("ecs_network", buffer, client, force_update and "reliable" or info.flags, self.NetworkChannel)
 					
 					self.last[info.key] = var
 				end
@@ -131,28 +133,30 @@ do -- synchronization server > client
 			spawned_networked[id] = self
 			
 			logf("entity %s with id %s spawned from server\n", config, id)
-		elseif what == "entity_networked_remove" then
-			self:GetEntity():Remove() 
-		elseif self:IsValid() then
-			local info = self.server_synced_vars_stringtable[what]
+		elseif self:IsValid() then 
+			if what == "entity_networked_remove" then
+				self:GetEntity():Remove() 
+			elseif self:IsValid() then
+				local info = self.server_synced_vars_stringtable[what]
+						
+				if info then
+					local var = buffer:ReadType(info.type)
 					
-			if info then
-				local var = buffer:ReadType(info.type)
-				
-				if info.component == "unknown" then
-					local ent = self:GetEntity()
-					ent[info.set_name](ent, var)
-				else
-					local component = self:GetComponent(info.component)
-					component[info.set_name](component, var)
+					if info.component == "unknown" then
+						local ent = self:GetEntity()
+						ent[info.set_name](ent, var)
+					else
+						local component = self:GetComponent(info.component)
+						component[info.set_name](component, var)
+					end
+					if self.debug then logf("%s - %s: received %s\n", self, info.component, var) end
+				elseif info.flags == "reliable" then
+					table.insert(self.queued_packets, buffer)
 				end
-				if _debug then logf("%s: received %s\n", self, var) end
-			elseif info.flags == "reliable" then
-				table.insert(self.queued_packets, buffer)
 			end
 		else
 			---table.insert(self.queued_packets, buffer)
-			--logf("received sync packet %s but entity[%s] is NULL\n", typ, id)
+			logf("received sync packet %s but entity[%s] is NULL\n", typ, id)
 		end
 	end
 
@@ -203,7 +207,6 @@ if SERVER then
 		spawned_networked[self.NetworkId] = self
 		
 		self:SpawnEntityOnClient(nil, self.NetworkId, ent.config)
-		self:SetupSyncVariables()
 		
 		id = id + 1
 	end
@@ -213,7 +216,25 @@ if SERVER then
 	
 		self:RemoveEntityOnClient(nil, self.NetworkId)
 	end
+	
+	function COMPONENT:OnEntityAddComponent(component)
+		self:SetupSyncVariables()
+	end
 end
+
+packet.ExtendBuffer(
+	"Entity", 
+	function(buffer, ent) 
+		buffer:WriteLong(ent:GetNetworkId())
+	end,
+	function(buffer) 
+		local component = spawned_networked[buffer:ReadLong()] or NULL
+		if component:IsValid() then
+			return component:GetEntity()
+		end
+		return NULL
+	end
+)
 
 do -- call on client
 	if CLIENT then
