@@ -274,7 +274,7 @@ do -- texture object
 	
 	function META:Shade(fragment_shader, vars)		
 		local data = {
-			name = "shade_texture_" .. self.id .. "_" .. tostring(timer.GetSystemTime()),
+			name = "shade_texture_" .. self.id .. "_" .. tostring(system.GetTime()),
 			shared = {
 				uniform = vars,
 			},

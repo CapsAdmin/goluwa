@@ -578,7 +578,7 @@ do -- base panel
 
 				if not pause then
 
-					animation.alpha = animation.alpha + timer.GetFrameTime() / animation.time
+					animation.alpha = animation.alpha + system.GetFrameTime() / animation.time
 					local alpha = animation.alpha
 
 					local val
@@ -681,7 +681,7 @@ do -- base panel
 				time = time or 0.25,
 				var = var,
 				func = self["Set" .. var],
-				start_time = timer.GetSystemTime(),
+				start_time = system.GetTime(),
 				pow = pow,
 				callback = callback,
 				pausers =  pausers,

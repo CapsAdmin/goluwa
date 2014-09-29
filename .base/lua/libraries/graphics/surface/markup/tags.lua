@@ -184,7 +184,7 @@ META.tags.physics =
 	end,
 
 	pre_draw = function(markup, self, x,y, gravity_y, gravity_x, vx, vy, drag, rand_mult)
-		local delta = timer.GetFrameTime() * 5
+		local delta = system.GetFrameTime() * 5
 
 		local part = self.part
 

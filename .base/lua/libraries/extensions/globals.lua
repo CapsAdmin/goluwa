@@ -70,9 +70,9 @@ do -- wait
 	local temp = {}
 	
 	function wait(seconds, frames)
-		local time = timer.GetSystemTime()
+		local time = system.GetTime()
 		if not temp[seconds] or (temp[seconds] + seconds) < time then
-			temp[seconds] = timer.GetSystemTime()
+			temp[seconds] = system.GetTime()
 			return true
 		end
 		return false

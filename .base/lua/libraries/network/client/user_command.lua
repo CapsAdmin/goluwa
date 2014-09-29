@@ -43,7 +43,7 @@ local function read_buffer(client, buffer)
 		end
 		
 		cmd.queue[i] = cmd.queue[i] or table.copy(default)		
-		cmd.queue[i].time = timer.GetSystemTime() + (time - time_stamp)
+		cmd.queue[i].time = system.GetTime() + (time - time_stamp)
 		
 		for _, v in ipairs(layout) do
 			cmd.queue[i][v.name] = buffer:ReadType(v.type)
@@ -71,7 +71,7 @@ local function process_usercommand(client)
 	
 	local data = cmd.queue[1]
 			
-	if data and data.time < timer.GetSystemTime() then
+	if data and data.time < system.GetTime() then
 
 		for k,v in pairs(data) do
 			cmd[k] = v
@@ -110,7 +110,7 @@ if CLIENT then
 		event.CreateTimer("user_command_tick", client_tick_rate, function()
 			if not clients.GetLocalClient():IsValid() then return end
 		
-			buffer:WriteDouble(timer.GetSystemTime())
+			buffer:WriteDouble(system.GetTime())
 			
 			local cmd = clients.GetLocalClient():GetCurrentCommand()
 			local move = event.Call("CreateMove", clients.GetLocalClient(), cmd)
@@ -120,10 +120,10 @@ if CLIENT then
 				cmd[v.client_name] = move and move[v.name] or v.default
 			end
 				
-			if last_send < timer.GetSystemTime() then
+			if last_send < system.GetTime() then
 				packet.Send("user_command", buffer)
 				buffer:Clear()
-				last_send = timer.GetSystemTime() + client_command_length
+				last_send = system.GetTime() + client_command_length
 			end
 		end)
 	end
@@ -138,7 +138,7 @@ if CLIENT then
 	packet.AddListener("server_command", function(buffer)
 		local time = buffer:ReadDouble()
 		
-		timer.SetServerTime(time)
+		system.SetServerTime(time)
 	end)
 end 
 
@@ -151,12 +151,12 @@ if SERVER then
 		local last_send = 0
 		
 		event.CreateTimer("server_command_tick", server_tick_rate, function()			
-			buffer:WriteDouble(timer.GetSystemTime())
+			buffer:WriteDouble(system.GetTime())
 			
-			if last_send < timer.GetSystemTime() then
+			if last_send < system.GetTime() then
 				packet.Broadcast("server_command", buffer)
 				buffer:Clear()
-				last_send = timer.GetSystemTime() + server_command_length
+				last_send = system.GetTime() + server_command_length
 			end
 		end)
 	end
@@ -169,7 +169,7 @@ if SERVER then
 		local buffer = Buffer()
 		buffer:WriteString(client:GetUniqueID())
 		
-		buffer:WriteDouble(timer.GetSystemTime())
+		buffer:WriteDouble(system.GetTime())
 		
 		for _, v in ipairs(layout) do
 			buffer:WriteType(cmd.queue[1][v.name], v.type)

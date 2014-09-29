@@ -26,12 +26,12 @@ do
 	end
 end
 
-local start = timer.GetSystemTime()
+local start = system.GetTime()
 
 parent:BuildChildrenList()
 
 event.AddListener("Update", "lol", function()	
-	local t = (timer.GetSystemTime() - start) / 10
+	local t = (system.GetTime() - start) / 10
 
 	for i, child in ipairs(parent:GetChildrenList()) do
 		child:SetAngles(Ang3(t,t,-t))

@@ -15,7 +15,7 @@ long ident; // BSP file identifier
 long version; // BSP file version
 ]])
  
-do timer.Start("reading lumps") -- lumps
+do profiler.StartTimer("reading lumps") -- lumps
 	local struct = [[
 		int	fileofs;	// offset into file (bytes)
 		int	filelen;	// length of lump (bytes)
@@ -40,7 +40,7 @@ do timer.Start("reading lumps") -- lumps
 		table.insert(header.lumps, bsp_file:ReadStructure(struct))
 	end
 
-timer.Stop() end
+profiler.StopTimer() end
 
 header.map_revision = bsp_file:ReadLong()
 
@@ -86,36 +86,36 @@ do -- pak
 	vfs.Mount(R(name))
 end
 
-timer.Start("reading brushes")
+profiler.StartTimer("reading brushes")
 	header.brushes = read_lump_data(19, 12, [[
 		int	firstside;	// first brushside
 		int	numsides;	// number of brushsides
 		int	contents;	// contents flags
 	]])
-timer.Stop()
+profiler.StopTimer()
 
-timer.Start("reading brushsides")
+profiler.StartTimer("reading brushsides")
 	header.brushsides = read_lump_data(20, 8, [[
 		unsigned short	planenum;	// facing out of the leaf
 		short		texinfo;	// texture info
 		short		dispinfo;	// displacement info
 		short		bevel;		// is the side a bevel plane?
 	]])
-timer.Stop()
+profiler.StopTimer()
 
-timer.Start("reading verticies")
+profiler.StartTimer("reading verticies")
 	header.vertices = read_lump_data(4, 12, "vec3")
-timer.Stop() 
+profiler.StopTimer() 
 
-timer.Start("reading surfedges")
+profiler.StartTimer("reading surfedges")
 	header.surfedges = read_lump_data(14, 4, "long")
-timer.Stop()
+profiler.StopTimer()
 
-timer.Start("reading edges")
+profiler.StartTimer("reading edges")
 	header.edges = read_lump_data(13, 4, function() return {bsp_file:ReadUnsignedShort(), bsp_file:ReadUnsignedShort()} end)
-timer.Stop()
+profiler.StopTimer()
 
-timer.Start("reading faces")
+profiler.StartTimer("reading faces")
 	header.faces = read_lump_data(8, 56, [[
 		unsigned short	planenum;		// the plane number
 		byte		side;			// header.faces opposite to the node's plane direction
@@ -135,18 +135,18 @@ timer.Start("reading faces")
 		unsigned short	firstPrimID;
 		unsigned int	smoothingGroups;	// lightmap smoothing group
 	]])
-timer.Stop()
+profiler.StopTimer()
 
-timer.Start("reading texinfo")	
+profiler.StartTimer("reading texinfo")	
 	header.texinfos = read_lump_data(7, 72, [[
 		float textureVecs[8];
 		float lightmapVecs[8];
 		int flags;
 		int texdata;
 	]])
-timer.Stop()
+profiler.StopTimer()
 
-timer.Start("reading texdata")
+profiler.StartTimer("reading texdata")
 	header.texdatas = read_lump_data(3, 32, [[
 		vec3 reflectivity;
 		int nameStringTableID;
@@ -155,9 +155,9 @@ timer.Start("reading texdata")
 		int view_width;
 		int view_height;
 	]])
-timer.Stop()
+profiler.StopTimer()
 
-timer.Start("reading texdatastringtable")
+profiler.StartTimer("reading texdatastringtable")
 	local texdatastringtable = read_lump_data(45, 4, "int")
 
 	local lump = header.lumps[44]
@@ -168,9 +168,9 @@ timer.Start("reading texdatastringtable")
 		bsp_file:SetPos(lump.fileofs + texdatastringtable[i])
 		header.texdatastringdata[i] = bsp_file:ReadString()
 	end
-timer.Stop()
+profiler.StopTimer()
 
-do timer.Start("reading displacements")
+do profiler.StartTimer("reading displacements")
 	local structure = [[
 		vec3 startPosition; // start position used for orientation
 		int DispVertStart; // Index into LUMP_DISP_VERTS.
@@ -257,9 +257,9 @@ do timer.Start("reading displacements")
 		
 		header.displacements[i] = data
 	end
-timer.Stop() end
+profiler.StopTimer() end
 
-timer.Start("reading models")
+profiler.StartTimer("reading models")
 	header.models = read_lump_data(15, 48, [[
 		vec3 mins;
 		vec3 maxs;
@@ -268,10 +268,10 @@ timer.Start("reading models")
 		int firstface;
 		int numfaces;
 	]])
-timer.Stop()
+profiler.StopTimer()
 
 --[==[
-timer.Start("reading physdisp")
+profiler.StartTimer("reading physdisp")
 	header.physmodels = {}
 
 	local lump = header.lumps[29]
@@ -290,9 +290,9 @@ timer.Start("reading physdisp")
 	--for i = 1, #dataSizes do
 	--	print("\t" .. dataSizes[i])
 	--end
-timer.Stop()
+profiler.StopTimer()
 
-timer.Start("reading physmodels")
+profiler.StartTimer("reading physmodels")
 	header.physmodels = {}
 
 	local struct = [[
@@ -315,7 +315,7 @@ timer.Start("reading physmodels")
 
 		header.physmodels[#header.physmodels + 1] = physmodel
 	end
-timer.Stop()]==]
+profiler.StopTimer()]==]
 
 
 --for i = 1, #header.brushes do
@@ -324,7 +324,7 @@ timer.Stop()]==]
 
 local bsp_mesh = {sub_models = {}}
 
-do timer.Start("building mesh")
+do profiler.StartTimer("building mesh")
 
 	local scale = 0.0254
 	
@@ -556,28 +556,28 @@ do timer.Start("building mesh")
 		-- only world needed
 		break 
 	end
-timer.Stop() end
+profiler.StopTimer() end
 
-timer.Start("generating normals")
+profiler.StartTimer("generating normals")
 for i, data in ipairs(bsp_mesh.sub_models) do
 	utility.GenerateNormals(data.mesh_data)	
 end 
-timer.Stop()
+profiler.StopTimer()
 
-timer.Start("smoothing displacements")
+profiler.StartTimer("smoothing displacements")
 for i, data in ipairs(bsp_mesh.sub_models) do
 	if data.displacement then
 		utility.SmoothNormals(data.mesh_data) 
 	end
 end 
-timer.Stop()
+profiler.StopTimer()
 
-timer.Start("render.CreateMesh")
+profiler.StartTimer("render.CreateMesh")
 for i, data in ipairs(bsp_mesh.sub_models) do
 	data.mesh = render.CreateMesh(data.mesh_data)
 	data.mesh_data = nil
 end
-timer.Stop()
+profiler.StopTimer()
 
 logn("SUB_MODELS ", #bsp_mesh.sub_models)
 

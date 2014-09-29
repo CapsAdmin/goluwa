@@ -94,7 +94,7 @@ local function parse_raw_statistical_data()
 		data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path}
 		
 		data[path][line].samples = data[path][line].samples + samples
-		data[path][line].start_time = data[path][line].start_time or timer.GetSystemTime()	
+		data[path][line].start_time = data[path][line].start_time or system.GetTime()	
 		
 		local parent = data[path][line]
 				
@@ -106,7 +106,7 @@ local function parse_raw_statistical_data()
 			data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path}
 			
 			data[path][line].samples = data[path][line].samples + samples
-			data[path][line].start_time = data[path][line].start_time or timer.GetSystemTime()	
+			data[path][line].start_time = data[path][line].start_time or system.GetTime()	
 			
 			data[path][line].parents[tostring(parent)] = parent
 			parent.children[tostring(data[path][line])] = data[path][line]
@@ -149,7 +149,7 @@ do
 		
 		collectgarbage("stop")
 		local start_gc = collectgarbage("count")
-		local start_time = timer.GetSystemTime()
+		local start_time = system.GetTime()
 		local info = debug.getinfo(2)
 		
 		info.source = info.source:sub(2)
@@ -171,7 +171,7 @@ do
 		if not res then return end
 		
 		local gc = ((collectgarbage("count") - res.start_gc) * 1024) - base_garbage
-		local time = timer.GetSystemTime() - res.start_time
+		local time = system.GetTime() - res.start_time
 		
 		collectgarbage("restart")
 		
@@ -210,6 +210,26 @@ do
 	
 	profiler.PushSection()
 	profiler.PopSection()
+end
+
+do -- timer
+	local stack = {}
+
+	function profiler.StartTimer(str)
+		table.insert(stack, {str = str, time = system.GetTime()})
+	end
+	
+	function profiler.StopTimer(no_print)
+		local time = system.GetTime()
+		local data = table.remove(stack)
+		local delta = time - data.time
+		
+		if not no_print then
+			logf("%s: %s\n", data.str, math.round(delta, 3))
+		end
+		
+		return delta
+	end
 end
 
 function profiler.GetBenchmark(type, file, dump_line)	
@@ -285,7 +305,7 @@ function profiler.GetBenchmark(type, file, dump_line)
 				data.start_time = data.start_time or 0
 				data.samples = data.samples or 0
 				
-				data.sample_duration = timer.GetSystemTime() - data.start_time
+				data.sample_duration = system.GetTime() - data.start_time
 				data.times_called = data.samples
 							
 				table.insert(out, data)

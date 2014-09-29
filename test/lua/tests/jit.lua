@@ -3,7 +3,7 @@ local ffi = require("ffi")
 --jit.opt.start("loopunroll=9999999", "maxrecord=5000000", "maxmcode=1024000")
 --require"jit.dump".on("+a", R"%DATA%/logs/jit_dump.txt")
 
-timer.Start("aaa")
+profiler.StartTimer("aaa")
 
 ffi.cdef [[
 	typedef struct
@@ -43,4 +43,4 @@ for k = 0, testCases - 1 do
 	sums[k] = sum
 end
 
-timer.Stop()
+profiler.StopTimer()

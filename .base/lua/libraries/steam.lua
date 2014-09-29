@@ -605,9 +605,9 @@ do -- server query
 		check(port, "number")
 		
 		callback = callback or logn
-		local start = timer.GetSystemTime()
+		local start = system.GetTime()
 		query_server(ip, port, queries.ping, function()
-			callback(timer.GetSystemTime() - start)
+			callback(system.GetTime() - start)
 		end)
 	end
 end

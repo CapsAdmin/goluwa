@@ -421,7 +421,7 @@ do
 	}
 
 	function syntax.process(code)
-	--	timer.Start("console syntax parse")
+	--	profiler.StartTimer("console syntax parse")
 		local output, finds, types, a, b, c = {}, {}, {}, 0, 0, 0
 
 		finds[1] = 0
@@ -456,7 +456,7 @@ do
 			output[#output+1] = asdf == 0 and syntax.colors[types[1 + (i - 2) / 2]] or -1
 			output[#output+1] = sub
 		end
-		--timer.Stop()
+		--profiler.StopTimer()
 		
 		return output
 	end
