@@ -14,12 +14,12 @@ function world.Initialize()
 	world.Set("sun_specular_intensity", 0.2)
 	world.Set("sun_roughness", 0.75)
 	
-	world.Set("ambient_lighting", Color(1, 0.95, 0.8) * 0.5)
+	world.Set("ambient_lighting", Color(1, 0.95, 0.8) * 0.6)
 	
-	world.Set("fog_color", Color(0.9, 0.95, 1) * 0.7) 
+	world.Set("fog_color", Color(1, 0.95, 0.8)) 
 	world.Set("fog_intensity", 0) 
 	 
-	world.Set("gamma", 1)    
+	world.Set("gamma", 1.2)    
 end
 
 function world.Set(key, val)
@@ -102,6 +102,21 @@ do -- sun
 	ADD("sun_specular_intensity", 0.1, function(var) world.sun:SetSpecularIntensity(var) end)
 	ADD("sun_roughness", 0.1, function(var) world.sun:SetRoughness(var) end)
 	ADD("ambient_lighting", Color(0.3, 0.3, 0.3))
+	--[[
+	--sun_model = sun_model or Entity("model")
+	--sun_model:SetModelPath("models/spider.obj") 
+	--sun_model:SetSize(1500)
+	local SunSpeed = 2
+	local SunDistance = 2000
+	event.AddListener("Update", "TimeOfDay", function()
+		--sun_model:SetPos(Vec3(math.sin(os.clock()) * 255, 0, 160))
+		
+		world.sun:SetPosition(Vec3(math.sin(os.clock() / SunSpeed) * SunDistance, 0, math.abs(math.cos(os.clock() / SunSpeed)) * SunDistance))
+		world.sun:SetDiffuseIntensity(math.abs(math.cos(os.clock() / SunSpeed)))
+		world.Set("ambient_lighting", Color(1, 0.95, 0.8) * math.abs(math.cos(os.clock() / SunSpeed)) * 0.6)
+		world.Set("fog_color", Color(1, 0.95, 0.8) * math.abs(math.cos(os.clock() / SunSpeed)) * 0.6) 
+	end)
+	]]
 end
 
 do -- fog 
@@ -110,12 +125,12 @@ do -- fog
 end
 
 do -- ao
-	ADD("ao_amount", 1)
-	ADD("ao_cap", 0.6)
-	ADD("ao_multiplier", 1024 * 2.5)
-	ADD("ao_depthtolerance", 0.0001)
+	ADD("ao_amount", 0)
+	ADD("ao_cap", 1)
+	ADD("ao_multiplier", 32768)
+	ADD("ao_depthtolerance", 0.0)
 	ADD("ao_range", 100000)
-	ADD("ao_scale", 1)
+	ADD("ao_scale", 2.75)
 end
 
 do -- gamma
