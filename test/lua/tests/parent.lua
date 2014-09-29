@@ -18,7 +18,7 @@ do
 
 		local child = entities.CreateEntity("clientside", parent)
 		child:SetPosition(Vec3(0, 2, 0)) 
-		child:SetAngles(Ang3(90,90,0)) 
+		child:SetAngles(Ang3(0,0,0)) 
 		child:SetScale(Vec3(1, 1, 1)) 
 		child:SetModelPath("models/cube.obj")
 
@@ -31,9 +31,10 @@ local start = timer.GetSystemTime()
 parent:BuildChildrenList()
 
 event.AddListener("Update", "lol", function()	
-	local t = timer.GetSystemTime() - start 
+	local t = (timer.GetSystemTime() - start) / 10
+
 	for i, child in ipairs(parent:GetChildrenList()) do
-		child:SetAngles(Ang3(t,t,t))
+		child:SetAngles(Ang3(t,t,-t))
 		t = t * 1.001
 	end
 	

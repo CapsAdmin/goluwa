@@ -1,4 +1,7 @@
---steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/esther.bsp")) -- gmod
+--steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/esther.bsp")) -- dear_esther
+--steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/jakobson.bsp")) -- dear_esther
+--steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/donnelley.bsp")) -- dear_esther
+--steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/paul.bsp")) -- dear_esther
 steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_bluehills_test3.bsp")) -- gmod
 --steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp")) -- gmod
 --steam.MountSourceGame("half-life 2") local bsp_file = assert(vfs.Open("maps/d2_coast_07.bsp")) -- hl2
