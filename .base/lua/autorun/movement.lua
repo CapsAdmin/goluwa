@@ -68,6 +68,9 @@ if CLIENT then
 		cmd.fov = fov
 		cmd.mouse_pos = window.GetMousePos()
 		
+		render.SetCamAng(cmd.angles)
+		render.SetCamFOV(cmd.fov)
+		
 		return cmd
 	end)
 	
@@ -101,46 +104,63 @@ end
  
  
 for k,v in pairs(clients.GetAll()) do
-	if v.ghost and v.ghost:IsValid() then
-		v.ghost:Remove()
+	if v.nv.ghost and v.nv.ghost:IsValid() then
+		v.nv.ghost:Remove()
 	end
 end    
     
 event.AddListener("Move", "spooky", function(client, cmd)
 	if CLIENT and not network.IsConnected() then return end
-	client.ghost = client.ghost or NULL
-	 
-	if not client.ghost:IsValid() then
-		client.ghost = entities.CreateEntity("physical")
-		client.ghost:SetModelPath("models/face.obj")
-		client.ghost:SetMass(85)
-		--client.ghost:SetMassOrigin(Vec3(0.5, 0.5, 0.5))
-		--client.ghost:InitPhysicsBox(Vec3(1,1,1))
-		client.ghost:InitPhysicsSphere(1)
-		client.ghost:SetPosition(Vec3(0,0,-100))  
-		client.ghost:SetLinearSleepingThreshold(0)  
-		client.ghost:SetAngularSleepingThreshold(0)  
-		client.ghost:SetSize(0.5)  
-	end
 	
-	local pos = client.ghost:GetPosition() 
+	local ghost = NULL
 	
-	if CLIENT then
-		if client == clients.GetLocalClient() then
-			render.SetupView3D(Vec3(-pos.y, -pos.x, -pos.z), cmd.angles, cmd.fov)
+	if SERVER then
+		if not client.nv.ghost or not client.nv.ghost:IsValid() then
+			ghost = entities.CreateEntity("networked")
 			
-			if cmd.net_position and cmd.net_position:Distance(pos) > 1 then
-				client.ghost:SetPosition(cmd.net_position)
-				client.ghost:SetAngles(cmd.angles)
-				--client.ghost:SetVelocity(cmd.net_velocity)
-			end
-		end		
-		
-		client.ghost:SetOverrideRotation(Quat(0,0,0,1):SetAngles(cmd.angles))
+			ghost:ServerDesyncVar("Position")   
+			ghost:ServerDesyncVar("Rotation") 
+			
+			--ghost:SetNetworkChannel(1)
+			ghost:SetModelPath("models/sphere.obj")
+			ghost:SetMass(85)
+			ghost:InitPhysicsSphere(1)
+			ghost:SetPosition(Vec3(0,0,-100))  
+			ghost:SetLinearSleepingThreshold(0)  
+			ghost:SetAngularSleepingThreshold(0)  
+			ghost:SetSize(0.5)  
+			
+			client.nv.ghost = ghost
+		end
 	end
 	
-	client.ghost:SetVelocity(client.ghost:GetVelocity() + cmd.velocity * 0.05)
-	client.ghost:SetVelocity(client.ghost:GetVelocity() * 0.8)
+	if client.nv.ghost and client.nv.ghost:IsValid() then
+		ghost = client.nv.ghost
+	end
 	
-	return pos, client.ghost:GetVelocity()
+	if not ghost:IsValid() then return end
+	
+	local physics = ghost:GetComponent("physics")
+	local pos = physics:GetPosition() 
+	
+	ghost:GetComponent("networked").debug = true
+		
+	if CLIENT then
+		render.SetCamPos(Vec3(-pos.y, -pos.x, -pos.z))
+		
+		if cmd.net_position and cmd.net_position:Distance(pos) > 1 then
+			physics:SetPosition(cmd.net_position)  
+			physics:SetAngles(cmd.angles)
+		end
+		
+		--physics:SetVelocity(Vec3():Random()*100) 
+		
+		ghost:SetOverrideRotation(Quat(0,0,0,1):SetAngles(cmd.angles)) 
+	end
+	
+
+	physics:SetVelocity(physics:GetVelocity() + cmd.velocity * 0.05)
+	physics:SetVelocity(physics:GetVelocity() * 0.8)  
+	
+	return pos, physics:GetVelocity()
 end) 
