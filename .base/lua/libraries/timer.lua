@@ -153,8 +153,8 @@ do-- time in ms
 
 		local li = ffi.new("LARGE_INTEGER")
 		ffi.C.QueryPerformanceFrequency(li)
-		freq = tonumber(li.QuadPart) / 1000
-		
+		freq = tonumber(li.QuadPart)
+	
 		ffi.C.QueryPerformanceCounter(llstart)
 	end
 	
@@ -183,7 +183,7 @@ do-- time in ms
 		end
 	end
 	
-	timer.GetTimeMS = get
+	timer.GetSystemTime = get
 end
 
 do -- sleep

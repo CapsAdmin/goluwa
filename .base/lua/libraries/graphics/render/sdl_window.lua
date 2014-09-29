@@ -3,18 +3,6 @@ local sdl = require("lj-sdl") -- window manager
 
 local render = (...) or _G.render
 
-function timer.GetSystemTime()
-	return tonumber(sdl.GetTicks()) / 1000
-end
-
-do -- lol
-	local glfw = require("lj-glfw") -- window manager
-
-	function timer.GetSystemTime()
-		return glfw.GetTime()
-	end
-end
-
 do -- window meta
 	local META = prototype.CreateTemplate("render_window")
 
