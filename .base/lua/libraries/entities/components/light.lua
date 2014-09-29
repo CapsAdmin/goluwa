@@ -167,7 +167,7 @@ if CLIENT then
 					temp = light_vp_matrix * vec4(world_pos, 1);
 					vec2 light_space_pos = (temp.xyz / temp.w).xy;
 																
-					float shadow_z = texture(tex_shadow_map, 0.5*light_space_pos.xy+vec2(0.5));
+					float shadow_z = texture(tex_shadow_map, 0.5*light_space_pos.xy+vec2(0.5)).r;
 					float view_z = texture(tex_depth, uv).r;
 
 					float shadow = shadow_z < view_z ? 0.5 : 1.0;
