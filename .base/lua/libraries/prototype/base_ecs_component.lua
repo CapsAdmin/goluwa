@@ -12,7 +12,11 @@ prototype.Delegate(META, "Entity", "GetComponent")
 prototype.Delegate(META, "Entity", "AddComponent")
 prototype.Delegate(META, "Entity", "RemoveComponent")
 
-function META:OnAdd()
+function META:OnAdd(ent)
+
+end
+
+function META:OnEntityAddComponent(component)
 
 end
 	
@@ -86,11 +90,11 @@ end
 function prototype.RegisterComponent(meta)
 	meta.TypeBase = "base"
 	meta.ClassName = meta.Name
-	prototype.Register(meta, "ecs_component")
+	prototype.Register(meta, "component")
 end
 
 function prototype.CreateComponent(name)		
-	return prototype.CreateDerivedObject("ecs_component", name)
+	return prototype.CreateDerivedObject("component", name)
 end
 
-prototype.Register(META, "ecs_component")
+prototype.Register(META, "component")
