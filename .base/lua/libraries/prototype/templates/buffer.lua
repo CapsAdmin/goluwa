@@ -364,20 +364,7 @@ function prototype.AddBufferTemplate(META)
 		function META:ReadVec3()
 			return Vec3(self:ReadFloat(), self:ReadFloat(), self:ReadFloat())
 		end
-		
-		-- quat
-		function META:WriteQuat(quat)
-			self:WriteFloat(quat.x)
-			self:WriteFloat(quat.y)
-			self:WriteFloat(quat.z)
-			self:WriteFloat(quat.w)			
-			return self
-		end
-		
-		function META:ReadQuat()
-			return Quat(self:ReadFloat(), self:ReadFloat(), self:ReadFloat(), self:ReadFloat())
-		end
-		
+				
 		-- vec2
 		function META:WriteVec2(v)
 			self:WriteFloat(v.x)
@@ -410,6 +397,32 @@ function prototype.AddBufferTemplate(META)
 		
 		function META:ReadAng3()
 			return Ang3(self:ReadFloat(), self:ReadFloat(), self:ReadFloat())
+		end
+		
+		-- quat
+		function META:WriteQuat(quat)
+			self:WriteFloat(quat.x)
+			self:WriteFloat(quat.y)
+			self:WriteFloat(quat.z)
+			self:WriteFloat(quat.w)			
+			return self
+		end
+		
+		function META:ReadQuat()
+			return Quat(self:ReadFloat(), self:ReadFloat(), self:ReadFloat(), self:ReadFloat())
+		end
+		
+		-- color
+		function META:WriteColor(color)
+			self:WriteFloat(color.r)
+			self:WriteFloat(color.g)
+			self:WriteFloat(color.b)
+			self:WriteFloat(color.a)			
+			return self
+		end
+		
+		function META:ReadColor()
+			return Color(self:ReadFloat(), self:ReadFloat(), self:ReadFloat(), self:ReadFloat())
 		end
 		
 		-- integer/long
