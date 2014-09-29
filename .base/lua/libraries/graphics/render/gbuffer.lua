@@ -525,6 +525,8 @@ function render.InitializeGBuffer(width, height)
 			end
 		end
 	end)
+	
+	event.Call("GBufferInitialized")
 end
 
 function render.ShutdownGBuffer()

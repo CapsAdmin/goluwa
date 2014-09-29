@@ -8,7 +8,18 @@ function world.Initialize()
 	
 	for k, v in pairs(world.vars) do
 		v.set(v.get())
-	end
+	end	
+	
+	world.Set("sun_color", Color(1, 0.95, 0.8))
+	world.Set("sun_specular_intensity", 0.2)
+	world.Set("sun_roughness", 0.75)
+	
+	world.Set("ambient_lighting", Color(1, 0.95, 0.8) * 0.5)
+	
+	world.Set("fog_color", Color(0.9, 0.95, 1) * 0.7) 
+	world.Set("fog_intensity", 0) 
+	 
+	world.Set("gamma", 1)    
 end
 
 function world.Set(key, val)
@@ -111,20 +122,15 @@ do -- gamma
 	ADD("gamma", 1.2)
 end
 
-if RELOAD then
-	world.Initialize()
-	
-	world.Set("sun_color", Color(1, 0.95, 0.8))
-	world.Set("sun_specular_intensity", 0.2)
-	world.Set("sun_roughness", 0.75)
-	
-	world.Set("ambient_lighting", Color(1, 0.95, 0.8) * 0.5)
-	
-	world.Set("fog_color", Color(0.9, 0.95, 1) * 0.7) 
-	world.Set("fog_intensity", 0) 
-	 
-	world.Set("gamma", 1)     
-end
+if CLIENT then
+	if RELOAD then
+		world.Initialize() 
+	end
 
+	event.AddListener("GBufferInitialized", "world_parameters", function()
+		world.Initialize()
+	end)
+end
+ 
 
 return world
