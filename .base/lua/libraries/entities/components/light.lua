@@ -291,7 +291,7 @@ if CLIENT then
 		end
 						
 		function COMPONENT:OnDrawShadowMaps(shader)
-			if ohno or not self.shadow_map then return end
+			if not self.shadow_map then return end
 			
 			local transform = self:GetComponent("transform")
 
