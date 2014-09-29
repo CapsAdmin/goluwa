@@ -44,8 +44,10 @@ void bulletRigidBodyGetVelocity(btRigidBody *body, float *out);
 void bulletRigidBodySetAngularVelocity(btRigidBody *body, float x, float y, float z);
 void bulletRigidBodyGetAngularVelocity(btRigidBody *body, float *out);
 void bulletRigidBodySetDamping(btRigidBody *body, float linear, float angular);
+
 void bulletRigidBodyGetLinearSleepingThreshold(btRigidBody *body, float *out);
 void bulletRigidBodySetLinearSleepingThreshold(btRigidBody *body, float threshold);
+
 void bulletRigidBodyGetAngularSleepingThreshold(btRigidBody *body, float *out);
 void bulletRigidBodySetAngularSleepingThreshold(btRigidBody *body, float threshold);
 
@@ -191,11 +193,14 @@ local BODY = {
 	GetVelocity = ADD_FUNCTION(lib.bulletRigidBodyGetVelocity, 3),
 	SetAngularVelocity = ADD_FUNCTION(lib.bulletRigidBodySetAngularVelocity),
 	GetAngularVelocity = ADD_FUNCTION(lib.bulletRigidBodyGetAngularVelocity, 3),
+	
 	SetDamping = ADD_FUNCTION(lib.bulletRigidBodySetDamping),
+	
 	SetLinearSleepingThreshold = ADD_FUNCTION(lib.bulletRigidBodySetLinearSleepingThreshold),
-	GetLinearSleepingThreshold = ADD_FUNCTION(lib.bulletRigidBodyGetLinearSleepingThreshold),
+	GetLinearSleepingThreshold = ADD_FUNCTION(lib.bulletRigidBodyGetLinearSleepingThreshold, 1),
 	SetAngularSleepingThreshold = ADD_FUNCTION(lib.bulletRigidBodySetAngularSleepingThreshold),
-	GetAngularSleepingThreshold = ADD_FUNCTION(lib.bulletRigidBodyGetAngularSleepingThreshold),
+	GetAngularSleepingThreshold = ADD_FUNCTION(lib.bulletRigidBodyGetAngularSleepingThreshold, 1),
+	
 	Remove = function(self) 
 		for k,v in ipairs(bodies) do 
 			if v == self then 
@@ -240,7 +245,7 @@ do -- damping
 end
 
 do -- mass
-	BODY.mass = 0
+	BODY.mass = 1
 	
 	BODY.origin_x = 0
 	BODY.origin_y = 0
@@ -264,16 +269,16 @@ do -- mass
 		
 		if self.body then
 			lib.bulletRigidBodySetMass(self.body, val, self.origin_x, self.origin_y, self.origin_z)
-		end		
+		end
 	end
 	
 	local temp = ffi.new("float[1]")
 	
 	function BODY:GetMass()
-		if self.body then 
-			lib.bulletRigidBodyGetMass(self.body, temp)
-			return temp[0]
-		end
+		--if self.body then 
+		--	lib.bulletRigidBodyGetMass(self.body, temp)
+		--	return temp[0]
+		--end
 		
 		return self.mass
 	end
@@ -296,6 +301,13 @@ do
 	end
 end
 
+local function update_params(self)
+	self:SetLinearDamping(self:GetLinearDamping())
+	self:SetAngularDamping(self:GetAngularDamping())
+	self:SetLinearSleepingThreshold(self:GetLinearSleepingThreshold())
+	self:SetAngularSleepingThreshold(self:GetAngularSleepingThreshold())
+end
+
 do -- init sphere options
 	BODY.sphere_radius = 1
 
@@ -309,7 +321,10 @@ do -- init sphere options
 	
 	function BODY:InitPhysicsSphere(rad)
 		if rad then self:SetPhysicsSphereRadius(rad) end
+		
 		self.body = lib.bulletCreateRigidBodySphere(self:GetMass(), self.matrix, self:GetPhysicsSphereRadius())
+		
+		update_params(self)
 	end
 end
 
@@ -329,11 +344,11 @@ do -- init box options
 	end
 
 	function BODY:InitPhysicsBox(x, y, z)
-		if x and y and z then
-			self:SetPhysicsBoxScale(x, y, z)
-		end
+		if x and y and z then self:SetPhysicsBoxScale(x, y, z) end
 		
 		self.body = lib.bulletCreateRigidBodyBox(self:GetMass(), self.matrix, self:GetPhysicsBoxScale())
+		
+		update_params(self)
 	end
 end
 
@@ -357,6 +372,8 @@ do -- mesh init options
 		self.mesh = tbl
 
 		self.body = lib.bulletCreateRigidBodyConcaveMesh(self:GetMass(), self.matrix, mesh, not not quantized_aabb_compression)
+		
+		update_params(self)
 	end
 	
 	function BODY:InitPhysicsConvex(tbl, quantized_aabb_compression)	
@@ -377,6 +394,8 @@ do -- mesh init options
 		self.mesh = tbl
 		
 		self.body = lib.bulletCreateRigidBodyConvexMesh(self:GetMass(), self.matrix, mesh)
+		
+		update_params(self)
 	end
 	
 	function BODY:SetMeshScale(x, y, z)
