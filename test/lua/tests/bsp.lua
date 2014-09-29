@@ -2,8 +2,10 @@
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/jakobson.bsp")) -- dear_esther
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/donnelley.bsp")) -- dear_esther
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/paul.bsp")) -- dear_esther
-steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_bluehills_test3.bsp")) -- gmod
---steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp")) -- gmod
+--steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_bluehills_test3.bsp")) -- gmod
+--steam.MountSourceGame("counter-strike: global offensive") local bsp_file = assert(vfs.Open("maps/de_overpass.bsp")) -- csgo
+--steam.MountSourceGame("portal 2") local bsp_file = assert(vfs.Open("maps/sp_a4_finale1.bsp")) -- dota 2 
+steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp")) -- gmod
 --steam.MountSourceGame("half-life 2") local bsp_file = assert(vfs.Open("maps/d2_coast_07.bsp")) -- hl2
 --steam.MountSourceGame("half-life 2: episode two") local bsp_file = assert(vfs.Open("maps/ep2_outland_06a.bsp")) -- ep2
 --steam.MountSourceGame("left 4 dead 2") local bsp_file = assert(vfs.Open("maps/c3m1_plankcountry.bsp")) -- l4d
@@ -369,12 +371,14 @@ do timer.Start("building mesh")
 		return asdf(corners, start_corner, dims, x, y) + (data.vertex * data.dist), data.alpha
 	end
 	
-	local function load_texture(material, field)	
+	local function load_texture(material, field, default, path)	
 		local shader, data = next(material)
 		
-		if not shader or not data then
+		if type(data) ~= "table" then
 			logn("invalid field ", field)
 			table.print(material)
+			print(path)
+			return default
 		end
 		
 		if not data[field] then
@@ -398,16 +402,20 @@ do timer.Start("building mesh")
 				path = vfs.Find("materials/" .. data[field], nil, true)[1]
 				
 				if path and path:find("%.vmt") then
-					local shader, data = next(steam.VDFToTable(vfs.Read(path)))
-					path = "materials/" .. data[field] .. ".vtf"
-					path = path:lower()
+					local str, err = vfs.Read(path)
+					if err then print(err) path = nil end
+					if str then
+						local shader, data = next(steam.VDFToTable(str))
+						path = "materials/" .. data[field] .. ".vtf"
+						path = path:lower()
+					end
 				end
 				
 				if not path or not vfs.IsFile(path) then
 					logf("unable to find %s in %s.%s\n", path, shader, field)
 					table.print(material)
 
-					return render.GetErrorTexture()
+					return default
 				end
 			end
 		end
@@ -418,7 +426,7 @@ do timer.Start("building mesh")
 			logf("unable to find %s in %s.%s\n", path, shader, field)
 			table.print(material)
 
-			return render.GetErrorTexture()
+			return default
 		end 
 		
 		return tex
@@ -461,13 +469,13 @@ do timer.Start("building mesh")
 				end
 			
 				if material.water then						
-					model.diffuse = load_texture(material, "$normalmap")
+					model.diffuse = load_texture(material, "$normalmap", render.GetErrorTexture(), path)
 				else
-					model.diffuse = load_texture(material, "$basetexture")
-					model.bump = load_texture(material, "$bumpmap")
+					model.diffuse = load_texture(material, "$basetexture", render.GetErrorTexture(), path)
+					model.bump = load_texture(material, "$bumpmap", nil, path)
 					
 					if material.worldvertextransition then
-						model.diffuse2 = load_texture(material, "$basetexture2")
+						model.diffuse2 = load_texture(material, "$basetexture2", nil, path)
 					end
 				end
 				
