@@ -56,7 +56,6 @@ function render.Initialize()
 	
 	event.Delay(function()
 		event.Call("RenderContextInitialized")	
-		world.Initialize()
 	end)
 end
 
