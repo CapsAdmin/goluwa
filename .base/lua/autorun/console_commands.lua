@@ -203,6 +203,13 @@ console.AddCommand("source", function(line, path, line_number, ...)
 		end
 	end	
 
+	for k,v in pairs(vfs.GetLoadedLuaFiles()) do
+		if k:compare(path) then
+			debug.openscript(k, line_number)
+			return
+		end
+	end
+
 	local data = utility.FindValue(path, line_number, ...)
 		
 	local func
@@ -229,7 +236,6 @@ console.AddCommand("source", function(line, path, line_number, ...)
 	end
 	
 	if #data > 0 then
-		
 		if #data < 10 then
 			logf("also found:\n")
 			
