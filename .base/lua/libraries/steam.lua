@@ -1,5 +1,7 @@
 local steam = _G.steam or {}
 
+include("source_engine_mdl.lua", steam)
+
 local ok, err = pcall(function()
 	local steamfriends = require("lj-steamfriends")
 	

@@ -1,3 +1,7 @@
+local steam = ... or _G.steam
+
+local _debug = false
+
 local header = [[
 	string id[4]; // Model format ID, such as "IDST" (0x49 0x44 0x53 0x54)
 	int version; // Format version number, such as 48 (0x30,0x00,0x00,0x00)
@@ -202,9 +206,9 @@ local function load_mdl(path)
 		local count = header[name .. "_count"]
 		local offset = header[name .. "_offset"]
 
-		logf("reading %i %ss (at %i)\n", count, name, offset)
+		if _debug then logf("reading %i %ss (at %i)\n", count, name, offset) end
 
-		profiler.StartTimer(name)
+		if _debug then profiler.StartTimer(name) end
 
 		if count > 0 then
 			buffer:PushPos(offset)
@@ -225,7 +229,7 @@ local function load_mdl(path)
 
 		header[name] = out
 
-		profiler.StopTimer()
+		if _debug then profiler.StopTimer() end
 	end
 
 	parse("material", function(data, i)
@@ -236,7 +240,7 @@ local function load_mdl(path)
 				local tries = {}
 				buffer:PushPos(header.material_offset + offset)
 					local str = buffer:ReadString()
-					if #str > 50 then buffer:PopPos() logf("tried to read location %i but string size is %i bytes!!!!!!!!!\n", header.material_offset + offset, #str) return false end
+					if #str > 50 then buffer:PopPos() logf("%s: tried to read location %i but string size is %i bytes!!!!!!!!!\n", path, header.material_offset + offset, #str) return false end
 					table.insert(tries, vfs.FixPath("materials/" .. str .. ".vmt"))
 					table.insert(tries, vfs.FixPath("materials/" .. header.name:match("(.+)%.") .. "/" .. str .. ".vmt"))
 					table.insert(tries, vfs.FixPath("materials/" .. header.name:match("(.+/)") .. "/" .. str .. ".vmt"))
@@ -250,8 +254,10 @@ local function load_mdl(path)
 				end
 
 				if not data.path then
-					logn("could not find material")
-					table.print(tries)
+					if _debug then 
+						logn(path, " could not find material")
+						table.print(tries)
+					end
 					return false
 				end
 			end
@@ -264,7 +270,7 @@ local function load_mdl(path)
 		if data.path then
 			local str = vfs.Read(data.path)
 			if str then
-				logn("found material ", data.path)
+				if _debug then logn("found material ", data.path) end
 				data.vmt = steam.VDFToTable(str, true)
 			end
 		end
@@ -446,7 +452,7 @@ local function load_vtx(path)
 		buffer:PushPos(vtx.body_part_offset)
 		vtx.body_parts = {}
 
-		profiler.StartTimer("read %i body parts", vtx.body_part_count)
+		if _debug then profiler.StartTimer("read %i body parts", vtx.body_part_count) end
 		for i = 1, vtx.body_part_count do
 			local stream_pos = buffer:GetPos()
 
@@ -459,7 +465,7 @@ local function load_vtx(path)
 				buffer:PushPos(stream_pos + body_part.model_offset)
 				body_part.models = {}
 
-				profiler.StartTimer("read %i models", body_part.model_count)
+				if _debug then profiler.StartTimer("read %i models", body_part.model_count) end
 				for i = 1, body_part.model_count do
 					local stream_pos = buffer:GetPos()
 
@@ -472,7 +478,7 @@ local function load_vtx(path)
 						buffer:PushPos(stream_pos + model.lod_offset)
 						model.model_lods = {}
 
-						profiler.StartTimer("read %i lod models", model.lod_count)
+						if _debug then profiler.StartTimer("read %i lod models", model.lod_count) end
 						for i = 1, model.lod_count do
 							local stream_pos = buffer:GetPos()
 
@@ -486,7 +492,7 @@ local function load_vtx(path)
 								buffer:PushPos(stream_pos + lod_model.mesh_offset)
 								lod_model.meshes = {}
 
-								profiler.StartTimer("read %i meshes", lod_model.mesh_count)
+								if _debug then profiler.StartTimer("read %i meshes", lod_model.mesh_count) end
 								for i = 1, lod_model.mesh_count do
 									local stream_pos = buffer:GetPos()
 
@@ -500,7 +506,7 @@ local function load_vtx(path)
 										buffer:PushPos(stream_pos + mesh.strip_group_offset)
 										mesh.strip_groups = {}
 
-										profiler.StartTimer("read %i strip groups", mesh.strip_group_count)
+										if _debug then profiler.StartTimer("read %i strip groups", mesh.strip_group_count) end
 										for i = 1, mesh.strip_group_count do
 											local stream_pos = buffer:GetPos()
 
@@ -519,7 +525,7 @@ local function load_vtx(path)
 												if strip_group.vertices_count > 0 and strip_group.vertices_offset ~= 0 then
 													buffer:PushPos(stream_pos + strip_group.vertices_offset)
 
-													profiler.StartTimer("read %i vertices", strip_group.vertices_count)
+													if _debug then profiler.StartTimer("read %i vertices", strip_group.vertices_count) end
 													for i = 1, strip_group.vertices_count do
 														local vertex = {bone_weight_indices = {}, boneId = {}}
 														for i = 1, MAX_NUM_BONES_PER_VERT do
@@ -532,7 +538,7 @@ local function load_vtx(path)
 														end
 														vertices[i] = vertex
 													end
-													profiler.StopTimer()
+													if _debug then profiler.StopTimer() end
 
 													buffer:PopPos()
 												end
@@ -541,11 +547,11 @@ local function load_vtx(path)
 												if strip_group.indices_count > 0 and strip_group.indices_offset ~= 0 then
 													buffer:PushPos(stream_pos + strip_group.indices_offset)
 
-													profiler.StartTimer("read %i indices", strip_group.indices_count)
+													if _debug then profiler.StartTimer("read %i indices", strip_group.indices_count) end
 													for i = 1, strip_group.indices_count do
 														indices[i] = buffer:ReadShort()
 													end
-													profiler.StopTimer()
+													if _debug then profiler.StopTimer() end
 
 													buffer:PopPos()
 												end
@@ -553,7 +559,7 @@ local function load_vtx(path)
 												buffer:PushPos(stream_pos + strip_group.strip_offset)
 												strip_group.strips = {}
 												
-												profiler.StartTimer("read %i strips", strip_group.strip_count)
+												if _debug then profiler.StartTimer("read %i strips", strip_group.strip_count) end
 												for i = 1, strip_group.strip_count do
 													local aStrip = {}
 
@@ -572,27 +578,27 @@ local function load_vtx(path)
 													strip_group.strips[i] = aStrip
 												end
 												buffer:PopPos()
-												profiler.StopTimer()
+												if _debug then profiler.StopTimer() end
 											end
 										end
 										buffer:PopPos()
-										profiler.StopTimer()
+										if _debug then profiler.StopTimer() end
 									end
 								end
 								buffer:PopPos()
-								profiler.StopTimer()
+								if _debug then profiler.StopTimer() end
 							end
 						end
 						buffer:PopPos()
-						profiler.StopTimer()
+						if _debug then profiler.StopTimer() end
 					end
 				end
 				buffer:PopPos()
-				profiler.StopTimer()
+				if _debug then profiler.StopTimer() end
 			end
 		end
 		buffer:PopPos()
-		profiler.StopTimer()
+		if _debug then profiler.StopTimer() end
 	end
 
 	return vtx
@@ -648,7 +654,7 @@ local function load_vvd(path)
 
 	vvd.fixed_vertices_by_lod = {}
 	
-	profiler.StartTimer("processed %i fixups", vvd.fixup_count)
+	if _debug then profiler.StartTimer("processed %i fixups", vvd.fixup_count) end
 	if vvd.fixup_count > 0 and vvd.fixup_offset ~= 0 then
 		buffer:SetPos(vvd.fixup_offset)
 
@@ -680,12 +686,71 @@ local function load_vvd(path)
 			end
 		end
 	end
-	profiler.StopTimer()
+	if _debug then profiler.StopTimer() end
 
 	return vvd
 end
 
-steam.MountSourceGame("half-life 2")
+function steam.LoadSourceModel(path, callback)
+
+	if path:endswith(".mdl") then
+		path = path:sub(1,-#".mdl"-1)
+	end
+
+	local mdl = load_mdl(path)
+	local vvd = load_vvd(path)
+	local vtx = load_vtx(path)
+
+	local model = {sub_models = {}}
+
+	for i, body_part in ipairs(vtx.body_parts) do
+		for _, model_ in ipairs(body_part.models) do
+			for lod_index, lod_model in ipairs(model_.model_lods) do
+				if lod_model.meshes then
+					for _, mesh in ipairs(lod_model.meshes) do
+						for _, strip_group in ipairs(mesh.strip_groups) do
+							for _, strip in ipairs(strip_group.strips) do
+								local vertices = vvd.fixed_vertices_by_lod[lod_index] or vvd.vertices
+								local indices = {}
+
+								for i, v in ipairs(strip.indices) do
+									indices[i] = strip.vertices[v+1].mesh_vertex_index 
+								end
+
+								local sub_model = {mesh = render.CreateMesh(vertices, indices)}
+								
+								sub_model.bbox = {min = mdl.view_bbmin, max = mdl.view_bbmax}
+
+								if mdl.material[i] and mdl.material[i].vmt then
+									local shader, info = next(mdl.material[i].vmt)
+
+									if info["$basetexture"] then sub_model.diffuse = Texture("materials/" .. info["$basetexture"]:lower() .. ".vtf") end
+									if info["$bumpmap"] then sub_model.bump = Texture("materials/" .. info["$bumpmap"]:lower() .. ".vtf") end
+								end
+								
+								if callback then
+									callback(sub_model)
+								else
+									table.insert(model.sub_models, sub_model)
+								end
+							end
+						end
+					end
+				end
+
+				break -- only first lod_model for now
+			end
+		end
+		break -- only first body part
+	end
+	
+	return model
+end
+
+--for i = 1, #model.sub_models do model.sub_models[i] = nil end
+--local huh = model.sub_models[4]
+--table.clear(model.sub_models)
+--model.sub_models[1] = huh
 
 local path = "models/airboat"
 local path = "models/alyx"
@@ -695,61 +760,15 @@ local path = "models/props_borealis/door_wheel001a"
 local path = "models/props_citizen_tech/steamengine001a"
 local path = "models/props_combine/cell_array_01_extended" -- broken ish
 local path = "models/antlion" -- broken
-local path = "models/zombie/poison" -- broken
-local path = "models/buggy" -- broken
 local path = "models/airboat"
+local path = "models/buggy" -- broken
+local path = "models/zombie/poison" -- broken
 
-local mdl = load_mdl(path)
-local vvd = load_vvd(path)
-local vtx = load_vtx(path)
-
-local model = {sub_models = {}}
-
-for i, body_part in ipairs(vtx.body_parts) do
-	for _, model_ in ipairs(body_part.models) do
-		for lod_index, lod_model in ipairs(model_.model_lods) do
-			if lod_model.meshes then
-				for _, mesh in ipairs(lod_model.meshes) do
-					for _, strip_group in ipairs(mesh.strip_groups) do
-						for _, strip in ipairs(strip_group.strips) do
-							local vertices = vvd.fixed_vertices_by_lod[lod_index] or vvd.vertices
-							local indices = {}
-
-							for i, v in ipairs(strip.indices) do
-								indices[i] = strip.vertices[v+1].mesh_vertex_index 
-							end
-
-							local sub_model = {mesh = render.CreateMesh(vertices, indices)}
-
-							if mdl.material[i] and mdl.material[i].vmt then
-								local shader, info = next(mdl.material[i].vmt)
-
-								if info["$basetexture"] then sub_model.diffuse = Texture("materials/" .. info["$basetexture"]:lower() .. ".vtf") end
-								if info["$bumpmap"] then sub_model.bump = Texture("materials/" .. info["$bumpmap"]:lower() .. ".vtf") end
-							end
-
-							table.insert(model.sub_models, sub_model)
-						end
-					end
-				end
-			end
-
-			break -- only first lod_model for now
-		end
-	end
-	break -- only first body part
+if RELOAD then
+	steam.MountSourceGame("half-life 2")
+	
+	entities.SafeRemove(MDL_ENT)
+	local ent = entities.CreateEntity("clientside")
+	ent:SetModelPath(path) 
+	MDL_ENT = ent
 end
-
---for i = 1, #model.sub_models do model.sub_models[i] = nil end
---local huh = model.sub_models[4]
---table.clear(model.sub_models)
---model.sub_models[1] = huh
-
-logf("loaded %i sub models\n", #model.sub_models)
-
-entities.SafeRemove(MDL_ENT)
-local ent = entities.CreateEntity("clientside")
-ent:SetModel(model)
---ent:SetPosition(render.GetCamPos())
-MDL_ENT = ent
-

@@ -339,7 +339,7 @@ do profiler.StartTimer("building mesh")
 		
 		blend = math.clamp(blend, 0, 1)
 		
-		table.insert(model.mesh_data, {
+		table.insert(model.vertices, {
 			pos = Vec3(pos.x * scale, -pos.y * scale, -pos.z * scale), -- copy
 			texture_blend = blend,
 			uv = Vec2(
@@ -435,7 +435,7 @@ do profiler.StartTimer("building mesh")
 	local meshes = {}
 
 	for model_index = 1, #header.models do
-		local sub_model =  {mesh_data = {}}
+		local sub_model =  {vertices = {}}
 		
 		for i = 1, header.models[model_index].numfaces do
 			local face = header.faces[header.models[model_index].firstface + i]
@@ -451,7 +451,7 @@ do profiler.StartTimer("building mesh")
 							
 			-- split the world up into sub models by texture
 			if not meshes[texname] then				
-				local model = {mesh_data = {}}
+				local model = {vertices = {}}
 				meshes[texname] = model
 				
 				local material
@@ -560,22 +560,22 @@ profiler.StopTimer() end
 
 profiler.StartTimer("generating normals")
 for i, data in ipairs(bsp_mesh.sub_models) do
-	utility.GenerateNormals(data.mesh_data)	
+	utility.GenerateNormals(data.vertices)	
 end 
 profiler.StopTimer()
 
 profiler.StartTimer("smoothing displacements")
 for i, data in ipairs(bsp_mesh.sub_models) do
 	if data.displacement then
-		utility.SmoothNormals(data.mesh_data) 
+		utility.SmoothNormals(data.vertices) 
 	end
 end 
 profiler.StopTimer()
 
 profiler.StartTimer("render.CreateMesh")
 for i, data in ipairs(bsp_mesh.sub_models) do
-	data.mesh = render.CreateMesh(data.mesh_data)
-	data.mesh_data = nil
+	data.mesh = render.CreateMesh(data.vertices)
+	data.vertices = nil
 end
 profiler.StopTimer()
 
@@ -605,14 +605,14 @@ for i, model in ipairs(bsp_mesh.sub_models) do
 	local chunk = entities.CreateEntity("physical")
 	chunk:SetModel(bsp_mesh)
 	
-	local triangles = ffi.new("unsigned int[?]", #model.mesh_data)
-	for i = 0, #model.mesh_data do triangles[i] = i	end
+	local triangles = ffi.new("unsigned int[?]", #model.vertices)
+	for i = 0, #model.vertices do triangles[i] = i	end
 	
-	local vertices = ffi.new("float[?]", #model.mesh_data * 3)
+	local vertices = ffi.new("float[?]", #model.vertices * 3)
 	
 	local i = 0
 	
-	for j, data in ipairs(model.mesh_data) do 
+	for j, data in ipairs(model.vertices) do 
 		vertices[i] = data.pos[1] i = i + 1		
 		vertices[i] = data.pos[2] i = i + 1		
 		vertices[i] = data.pos[3] i = i + 1		
@@ -620,12 +620,12 @@ for i, model in ipairs(bsp_mesh.sub_models) do
 	
 	local mesh = {	
 		triangles = {
-			count = #model.mesh_data / 3, 
+			count = #model.vertices / 3, 
 			pointer = triangles, 
 			stride = ffi.sizeof("unsigned int") * 3, 
 		},					
 		vertices = {
-			count = #model.mesh_data,  
+			count = #model.vertices,  
 			pointer = vertices, 
 			stride = ffi.sizeof("float") * 3,
 		},
