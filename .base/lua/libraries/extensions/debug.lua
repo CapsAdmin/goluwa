@@ -85,7 +85,7 @@ function debug.openscript(lua_script, line)
 		return false
 	end
 	
-	path = path:gsub("%%LINE%%", line)
+	path = path:gsub("%%LINE%%", line or 0)
 	path = path:gsub("%%PATH%%", lua_script)
 	
 	os.execute(path)
