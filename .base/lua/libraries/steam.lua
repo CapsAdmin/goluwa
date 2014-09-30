@@ -342,11 +342,11 @@ do -- steam directories
 							path = path .. "/"
 						end
 						for k, v in pairs(vfs.Find(path)) do
-							if not done[v] then
+							if not done[path .. v] then
 								if v:find("%.vpk") and v:find("_dir") and not vfs.GetMounts()[path .. v .. "/"] then
 									vfs.Mount(path .. v .. "/", nil, game_info)
 								end
-								done[v] = true
+								done[path .. v] = true
 							end
 						end
 					end
