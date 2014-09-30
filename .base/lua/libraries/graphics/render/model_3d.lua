@@ -35,6 +35,10 @@ do -- model meta
 		)
 		
 		flags = assimp.e.aiProcessPreset_TargetRealtime_Quality
+		
+		if not vfs.Exists(path) and vfs.Exists(path .. ".mdl") then
+			path = path .. ".mdl"
+		end
 
 		if not vfs.Exists(path) then
 			return nil, path .. " not found"
@@ -52,12 +56,21 @@ do -- model meta
 		
 		local thread = utility.CreateThread()
 		
-		function thread.OnStart()
-			assimp.ImportFileEx(path, flags, function(sub_model_data, i, total_meshes)
-				if render.debug then logf("[render] %s loading %q %s\n", path, sub_model_data.name, i .. "/" .. total_meshes) end
-				self:InsertSubmodel(sub_model_data)
-				self:InvalidateBoundingBox()
-			end, true)
+		if path:endswith(".mdl") and steam.LoadSourceModel then
+			function thread.OnStart()
+				steam.LoadSourceModel(path, function(sub_model_data)
+					self:InsertSubmodel(sub_model_data)
+					self:InvalidateBoundingBox()
+				end, true)
+			end
+		else
+			function thread.OnStart()
+				assimp.ImportFileEx(path, flags, function(sub_model_data, i, total_meshes)
+					if render.debug then logf("[render] %s loading %q %s\n", path, sub_model_data.name, i .. "/" .. total_meshes) end
+					self:InsertSubmodel(sub_model_data)
+					self:InvalidateBoundingBox()
+				end, true)
+			end
 		end
 		
 		function thread.OnFinish()
@@ -74,11 +87,11 @@ do -- model meta
 	
 	function META:InsertSubmodel(model_data)
 		local sub_model = {
-			mesh = render.CreateMesh(model_data.mesh_data, model_data.indices), 
+			mesh = model_data.mesh or render.CreateMesh(model_data.vertices, model_data.indices), 
 			name = model_data.name, 
 			bbox = {
-				min = Vec3(unpack(model_data.bbox.min)), 
-				max = Vec3(unpack(model_data.bbox.max))
+				min = model_data.bbox.min, 
+				max = model_data.bbox.max
 			}
 		}
 		

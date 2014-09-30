@@ -126,7 +126,7 @@ function assimp.ImportFileEx(path, flags, callback, custom_io)
 	for i = 0, scene.mNumMeshes - 1 do
 		local mesh = scene.mMeshes[i]
 		
-		local sub_model = {mesh_data = {}, indices = {}}
+		local sub_model = {vertices = {}, indices = {}}
 		
 		local minx, miny, minz = 0,0,0
 		local maxx, maxy, maxz = 0,0,0			
@@ -165,7 +165,7 @@ function assimp.ImportFileEx(path, flags, callback, custom_io)
 				data.uv = {val.x, val.y}
 			end
 			
-			table.insert(sub_model.mesh_data, data)
+			table.insert(sub_model.vertices, data)
 			
 			if callback then
 				coroutine.yield()
@@ -182,7 +182,7 @@ function assimp.ImportFileEx(path, flags, callback, custom_io)
 			end
 		end
 		
-		sub_model.bbox = {min = {minx, miny, minz}, max = {maxx, maxy, maxz}}
+		sub_model.bbox = {min = Vec3(minx, miny, minz), max = Vec3(maxx, maxy, maxz)}
 		sub_model.name = ffi.string(mesh.mName.data, mesh.mName.length):trim()
 		
 		if mesh.mMaterialIndex > 0 then
