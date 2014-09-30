@@ -202,6 +202,10 @@ local function load_mdl(path)
 		local count = header[name .. "_count"]
 		local offset = header[name .. "_offset"]
 		
+		logf("reading %i %ss (at %i)\n", count, name, offset)
+		
+		profiler.StartTimer(name) 
+				
 		if count > 0 then
 			buffer:PushPos(offset)
 		
@@ -220,28 +224,42 @@ local function load_mdl(path)
 		header[name .. "_offset"] = nil
 		
 		header[name] = out
+		
+		profiler.StopTimer()
 	end
 	 
 	parse("material", function(data, i)
 		do -- texture name
 			local offset = buffer:ReadInt()
-
+			
 			if offset ~= 0 then
 				buffer:PushPos(header.material_offset + offset)
-					data.path = "materials/" .. header.name:match("(.+/)") .. buffer:ReadString() .. ".vmt"
+					local str = buffer:ReadString()
+					if #str > 50 then buffer:PopPos() logf("tried to read location %i but string size is %i bytes!!!!!!!!!\n", header.material_offset + offset, #str) return false end
+					data.path1 = "materials/" .. header.name:match("(.+)%.") .. "/" .. str .. ".vmt"
+					data.path2 = "materials/" .. header.name:match("(.+/)") .. "/" .. str .. ".vmt"
 				buffer:PopPos()
 			else
 				data.path = ""
 			end			
-			
-			if not vfs.IsFile(data.path) then
-				return false
+						
+			if not vfs.IsFile(data.path1) then
+				if not vfs.IsFile(data.path2) then
+					logn("could not find ", data.path1)
+					logn("could not find ", data.path2)
+					return false
+				else
+					data.path = data.path2
+				end
+			else
+				data.path = data.path1
 			end
 		end
 		
 		data.flags = buffer:ReadInt()
 		
 		buffer:Advance(14 * 4)
+		
 		local str = assert(vfs.Read(data.path))
 		if str then
 			data.vmt = steam.VDFToTable(str, true)
@@ -329,6 +347,7 @@ local function load_mdl(path)
 	end
 
 	parse("localseq", function(data, i)
+		do return end
 		data.base_header_offset = buffer:ReadInt()
 		data.name = string_from_offset(header.localanim_offset, buffer:ReadInt())
 		data.activity_name = string_from_offset(header.localanim_offset, buffer:ReadInt())
@@ -490,7 +509,7 @@ local function load_vtx(path)
 											aStripGroup.stripCount = buffer:ReadLong()
 											aStripGroup.stripOffset = buffer:ReadLong()
 											aStripGroup.flags = buffer:ReadByte()
-										--	buffer:ReadLong()
+											--buffer:ReadLong()
 											--buffer:ReadLong()
 											table.insert(aMesh.theVtxStripGroups, aStripGroup)
 											
@@ -605,18 +624,21 @@ local function load_vvd(path)
 
 			--aStudioVertex.boneWeight = boneWeight
 
-			aStudioVertex.pos = -buffer:ReadVec3()
-			aStudioVertex.normal = buffer:ReadVec3()
+			aStudioVertex.pos = -buffer:ReadVec3() * 0.0254
+			aStudioVertex.normal = -buffer:ReadVec3()
 			aStudioVertex.uv = buffer:ReadVec2()
 			
 			table.insert(vvd.theVertexes, aStudioVertex)
 		end
 	end
 	
+	vvd.theFixedVertexesByLod = {}
+	
 	if vvd.fixupCount > 0 then
 		buffer:SetPos(vvd.fixupTableOffset)
 
 		vvd.theFixups = {}
+		
 		for fixupIndex = 0, vvd.fixupCount - 1 do
 			local aFixup = {}
 
@@ -626,18 +648,17 @@ local function load_vvd(path)
 			
 			table.insert(vvd.theFixups, aFixup)
 		end
+		
 		if vvd.lodCount > 0 then
 			buffer:SetPos(vvd.vertexDataOffset)
-
+			
 			for lodIndex = 0, vvd.lodCount - 1 do
-				vvd.theFixedVertexesByLod[lodIndex] = {}
+				vvd.theFixedVertexesByLod[lodIndex + 1] = {}
 				
-				for fixupIndex = 0, vvd.theFixups.Count - 1 do
-					local aFixup = vvd.theFixups[fixupIndex]
-
+				for i, aFixup in ipairs(vvd.theFixups) do
 					if aFixup.lodIndex >= lodIndex then
 						for j = 0, aFixup.vertexCount - 1 do
-							table.insert(vvd.theFixedVertexesByLod[lodIndex], vvd.theVertexes[aFixup.vertexIndex + j])
+							table.insert(vvd.theFixedVertexesByLod[lodIndex + 1], vvd.theVertexes[aFixup.vertexIndex + j + 1])
 						end
 					end
 				end
@@ -648,49 +669,57 @@ local function load_vvd(path)
 	return vvd
 end
 
-steam.MountSourceGame("hl2")
+steam.MountSourceGame("hl2") 
 
-local path = "models/props_c17/furnituretoilet001a" 
+local path = "models/props_c17/fountain_01"  
 
 local mdl = load_mdl(path)
 local vvd = load_vvd(path)
 local vtx = load_vtx(path)
 
-local material = mdl.material[1] and mdl.material[1].vmt.vertexlitgeneric
+local model = {sub_models = {}}
 
-local indices = {}
-for k,v in pairs(vtx.theVtxBodyParts[1].theVtxModels[1].theVtxModelLods[1].theVtxMeshes[1].theVtxStripGroups[1].theVtxIndexes) do
-	table.insert(indices, vtx.theVtxBodyParts[1].theVtxModels[1].theVtxModelLods[1].theVtxMeshes[1].theVtxStripGroups[1].theVtxVertexes[v+1].originalMeshVertexIndex)
-end
-
-local model = {
-	sub_models = {
-		{
-			mesh = vvd.theVertexes,
-			indices = indices,
-		}
-	}
-}
-
-local models = {} 
-
-table.insert(models, model)
-
-for i, model in ipairs(models) do
-	for i, sub_models in ipairs(model.sub_models) do		
-		sub_models.mesh = render.CreateMesh(sub_models.mesh, sub_models.indices)
-		print(sub_models.mesh.indices_count)
-		--sub_models.mesh:SetMode("triangle_fan")
-		if material and material["$basetexture"] then
-			local path = "materials/" .. material["$basetexture"]:lower() .. ".vtf"
-			sub_models.diffuse = Texture(path)
+for i, body_part in ipairs(vtx.theVtxBodyParts) do
+	for _, vertex_model in ipairs(body_part.theVtxModels) do
+		for lod_index, lod_model in ipairs(vertex_model.theVtxModelLods) do
+			if lod_model.theVtxMeshes then
+				for _, mesh in ipairs(lod_model.theVtxMeshes) do
+					local vertices = vvd.theFixedVertexesByLod[lod_index] or vvd.theVertexes
+					local indices = {}
+					
+					for _, strip_group in ipairs(mesh.theVtxStripGroups) do	
+						for i, v in ipairs(strip_group.theVtxIndexes) do
+							local i = strip_group.theVtxVertexes[v+1].originalMeshVertexIndex
+							table.insert(indices, i)
+						end
+						break -- ?
+					end
+					
+					local sub_model = {mesh = render.CreateMesh(vertices, indices)}
+						
+					if mdl.material[i] and mdl.material[i].vmt then 
+						local shader, info = next(mdl.material[i].vmt)
+						
+						if info["$basetexture"] then sub_model.diffuse = Texture("materials/" .. info["$basetexture"]:lower() .. ".vtf") end
+						if info["$bumpmap"] then sub_model.bump = Texture("materials/" .. info["$bumpmap"]:lower() .. ".vtf") end
+					end	
+					
+					table.insert(model.sub_models, sub_model)
+					break
+				end
+			end
+				
+			break -- only first lod_model for now
 		end
 	end
+	break
 end
+
+logf("loaded %i sub models\n", #model.sub_models)
 
 entities.SafeRemove(MDL_ENT)
 local ent = entities.CreateEntity("clientside")
-ent:SetModel(models[1])
---ent:SetPosition(render.GetCamPos())
+ent:SetModel(model)
+--ent:SetPosition(render.GetCamPos())   
 MDL_ENT = ent
 
