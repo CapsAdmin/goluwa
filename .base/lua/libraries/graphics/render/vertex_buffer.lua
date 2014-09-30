@@ -4,6 +4,7 @@ local render = (...) or _G.render
 local META = prototype.CreateTemplate("vertex_buffer")
 
 prototype.GetSet(META, "UpdateIndices", true)
+prototype.GetSet(META, "Mode", "triangles")
 
 function render.CreateVertexBuffer(vertex_attributes, vertices, indices, vertices_size, indices_size)
 	check(vertex_attributes, "table")
@@ -26,11 +27,24 @@ function META:OnRemove()
 	gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.indices_id))
 end
 
+local translate = {
+	points = gl.e.GL_POINTS, --Draws points on screen. Every vertex specified is a point.
+	lines = gl.e.GL_LINES, --Draws lines on screen. Every two vertices specified compose a line.
+	line_strip = gl.e.GL_LINE_STRIP, --Draws connected lines on screen. Every vertex specified after first two are connected.
+	line_loop = gl.e.GL_LINE_LOOP, --Draws connected lines on screen. The last vertex specified is connected to first vertex.
+	triangles = gl.e.GL_TRIANGLES, --Draws triangles on screen. Every three vertices specified compose a triangle.
+	triangle_strip = gl.e.GL_TRIANGLE_STRIP, --Draws connected triangles on screen. Every vertex specified after first three vertices creates a triangle.
+	triangle_fan = gl.e.GL_TRIANGLE_FAN, --Draws connected triangles like GL_TRIANGLE_STRIP, except draws triangles in fan shape.
+	quads = gl.e.GL_QUADS, --Draws quadrilaterals (4 – sided shapes) on screen. Every four vertices specified compose a quadrilateral.
+	quad_strip = gl.e.GL_QUAD_STRIP, --Draws connected quadrilaterals on screen. Every two vertices specified after first four compose a connected quadrilateral.
+	polygon = gl.e.GL_POLYGON, --Draws a polygon on screen. Polygon can be composed of as many sides as you want.
+}
+
 function META:Draw(count)
 	render.BindVertexArray(self.vao_id)
 	--render.BindArrayBuffer(self.vertices_id)	
 	gl.BindBuffer(gl.e.GL_ELEMENT_ARRAY_BUFFER, self.indices_id)
-	gl.DrawElements(gl.e.GL_TRIANGLES, count or self.indices_count, gl.e.GL_UNSIGNED_INT, nil)
+	gl.DrawElements(translate[self.Mode], count or self.indices_count, gl.e.GL_UNSIGNED_INT, nil)
 end
 
 function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
