@@ -215,8 +215,8 @@ end
 do -- timer
 	local stack = {}
 
-	function profiler.StartTimer(str)
-		table.insert(stack, {str = str, time = system.GetTime()})
+	function profiler.StartTimer(str, ...)
+		table.insert(stack, {str = str:format(...), time = system.GetTime(), level = #stack})
 	end
 	
 	function profiler.StopTimer(no_print)
@@ -225,7 +225,7 @@ do -- timer
 		local delta = time - data.time
 		
 		if not no_print then
-			logf("%s: %s\n", data.str, math.round(delta, 3))
+			logf("%s%s: %s\n", (" "):rep(data.level-1), data.str, math.round(delta, 3))
 		end
 		
 		return delta
