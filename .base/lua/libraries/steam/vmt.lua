@@ -75,6 +75,15 @@ function steam.LoadMaterial(name, directory_hint)
 		end
 		
 		local k,v = next(vmt)
+		
+		if type(k) ~= "string" or type(v) ~= "table" then
+			return {
+				fullpath = path,
+				error = "bad material " .. path,
+				basetexture = "error",
+			}
+		end
+		
 		vmt = v
 		vmt.shader = k
 	
