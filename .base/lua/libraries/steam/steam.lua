@@ -1,6 +1,7 @@
 local steam = _G.steam or {}
 
 include("mdl.lua", steam)
+include("vmt.lua", steam)
 include("web_api.lua", steam)
 include("server_query.lua", steam)
 include("mount.lua", steam)
@@ -55,7 +56,9 @@ function steam.CommunityIDToSteamID(id)
 	return "STEAM_0:" .. a .. ":" .. (b+2)
 end
 
-function steam.VDFToTable(str, lower_keys, preprocess)
+function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
+	if lower_or_modify_keys == true then lower_or_modify_keys = string.lower end
+	
 	str = str:gsub("http://", "___L_O_L___")
 	str = str:gsub("https://", "___L_O_L_2___")
 	
@@ -103,7 +106,9 @@ function steam.VDFToTable(str, lower_keys, preprocess)
 			if in_string then
 				
 				if key then
-					if lower_keys then key = key:lower() end
+					if lower_or_modify_keys then 
+						key = lower_or_modify_keys(key)
+					end
 					
 					local val = table.concat(capture, "")					
 				
@@ -151,7 +156,9 @@ function steam.VDFToTable(str, lower_keys, preprocess)
 				table.insert(capture, char)
 			elseif char == [[{]] then
 				if key then
-					if lower_keys then key = key:lower() end
+					if lower_or_modify_keys then 
+						key = lower_or_modify_keys(key)
+					end
 					
 					table.insert(stack, current)
 					current[key] = {}
