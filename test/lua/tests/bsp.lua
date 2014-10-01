@@ -1,14 +1,15 @@
---steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/esther.bsp")) -- dear_esther
---steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/jakobson.bsp")) -- dear_esther
---steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/donnelley.bsp")) -- dear_esther  
---steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/paul.bsp")) -- dear_esther
---steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_bluehills_test3.bsp")) -- gmod
-steam.MountSourceGame("counter-strike: global offensive") local bsp_file = assert(vfs.Open("maps/de_overpass.bsp")) -- csgo
---steam.MountSourceGame("portal 2") local bsp_file = assert(vfs.Open("maps/sp_a4_finale1.bsp")) -- dota 2 
---steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp")) -- gmod
---steam.MountSourceGame("half-life 2") local bsp_file = assert(vfs.Open("maps/d2_coast_07.bsp")) -- hl2
---steam.MountSourceGame("half-life 2: episode two") local bsp_file = assert(vfs.Open("maps/ep2_outland_06a.bsp")) -- ep2
---steam.MountSourceGame("left 4 dead 2") local bsp_file = assert(vfs.Open("maps/c3m1_plankcountry.bsp")) -- l4d
+--steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/esther.bsp"))
+--steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/jakobson.bsp"))
+--steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/donnelley.bsp"))
+--steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/paul.bsp"))
+steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_bluehills_test3.bsp"))
+--steam.MountSourceGame("counter-strike: global offensive") local bsp_file = assert(vfs.Open("maps/de_overpass.bsp"))
+--steam.MountSourceGame("portal 2") local bsp_file = assert(vfs.Open("maps/sp_a4_finale1.bsp"))
+--steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp"))
+--steam.MountSourceGame("half-life 2") local bsp_file = assert(vfs.Open("maps/d2_coast_07.bsp"))
+--steam.MountSourceGame("half-life 2: episode two") local bsp_file = assert(vfs.Open("maps/ep2_outland_06a.bsp"))
+--steam.MountSourceGame("left 4 dead 2") local bsp_file = assert(vfs.Open("maps/c3m1_plankcountry.bsp"))
+--steam.MountSourceGame("half-life 2") steam.MountSourceGame("team fortress 2") local bsp_file = assert(vfs.Open("maps/achievement_apg_r11b.bsp"))
 
 local header = bsp_file:ReadStructure([[
 long ident; // BSP file identifier
@@ -87,7 +88,7 @@ do -- pak
 end
 
 
-if true then 
+if false then 
 profiler.StartTimer("reading game lump")
 	local lump = header.lumps[36]
 	bsp_file:SetPos(lump.fileofs)
@@ -643,7 +644,6 @@ if bsp_world then bsp_world:Remove() end
 local world = entities.CreateEntity("clientside")
 world:SetModel(bsp_mesh)
 bsp_world = world
-do return end
 
 profiler.StartTimer("creating entities")
 for _, info in pairs(header.entities) do
