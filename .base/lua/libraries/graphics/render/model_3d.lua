@@ -86,14 +86,20 @@ do -- model meta
 	end
 	
 	function META:InsertSubmodel(model_data)
-		local sub_model = {
-			mesh = model_data.mesh or render.CreateMesh(model_data.vertices, model_data.indices), 
-			name = model_data.name, 
-			bbox = {
-				min = model_data.bbox.min, 
-				max = model_data.bbox.max
+		local sub_model 
+		
+		if model_data.mesh then
+			sub_model = model_data
+		else
+			sub_model = {
+				mesh = model_data.mesh or render.CreateMesh(model_data.vertices, model_data.indices), 
+				name = model_data.name, 
+				bbox = {
+					min = model_data.bbox.min, 
+					max = model_data.bbox.max
+				}
 			}
-		}
+		end
 		
 		-- don't store the geometry on the lua side
 		sub_model.mesh:UnreferenceMesh()
