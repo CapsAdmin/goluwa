@@ -3,11 +3,11 @@
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/donnelley.bsp")) -- dear_esther  
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/paul.bsp")) -- dear_esther
 --steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_bluehills_test3.bsp")) -- gmod
---steam.MountSourceGame("counter-strike: global offensive") local bsp_file = assert(vfs.Open("maps/de_overpass.bsp")) -- csgo
+steam.MountSourceGame("counter-strike: global offensive") local bsp_file = assert(vfs.Open("maps/de_overpass.bsp")) -- csgo
 --steam.MountSourceGame("portal 2") local bsp_file = assert(vfs.Open("maps/sp_a4_finale1.bsp")) -- dota 2 
 --steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp")) -- gmod
 --steam.MountSourceGame("half-life 2") local bsp_file = assert(vfs.Open("maps/d2_coast_07.bsp")) -- hl2
-steam.MountSourceGame("half-life 2: episode two") local bsp_file = assert(vfs.Open("maps/ep2_outland_06a.bsp")) -- ep2
+--steam.MountSourceGame("half-life 2: episode two") local bsp_file = assert(vfs.Open("maps/ep2_outland_06a.bsp")) -- ep2
 --steam.MountSourceGame("left 4 dead 2") local bsp_file = assert(vfs.Open("maps/c3m1_plankcountry.bsp")) -- l4d
 
 local header = bsp_file:ReadStructure([[
@@ -492,67 +492,6 @@ do profiler.StartTimer("building mesh")
 		return asdf(corners, start_corner, dims, x, y) + (data.vertex * data.dist), data.alpha
 	end
 	
-	local function load_texture(material, field, default, path)	
-		local shader, data = next(material)
-		
-		if type(data) ~= "table" then
-			logn("invalid field ", field)
-			table.print(material)
-			print(path)
-			return default
-		end
-		
-		if not data[field] then
-			if field ~= "$bumpmap" then
-				logn("invalid field ", field)
-				table.print(material)
-			end
-			return
-		end
-
-		local path = "materials/" .. data[field] .. ".vtf"
-		path = path:lower()
-		
-		if not vfs.IsFile(path) then
-			path = "materials/" .. data[field] .. "b.vtf"
-		
-			if not vfs.IsFile(path) then
-			
-				logn("material not found: using vfs.Find to find first material in materials/" .. data[field])
-				
-				path = vfs.Find("materials/" .. data[field], nil, true)[1]
-				
-				if path and path:find("%.vmt") then
-					local str, err = vfs.Read(path)
-					if err then print(err) path = nil end
-					if str then
-						local shader, data = next(steam.VDFToTable(str))
-						path = "materials/" .. data[field] .. ".vtf"
-						path = path:lower()
-					end
-				end
-				
-				if not path or not vfs.IsFile(path) then
-					logf("unable to find %s in %s.%s\n", path, shader, field)
-					table.print(material)
-
-					return default
-				end
-			end
-		end
-				
-		local tex = Texture(path, {mip_map_levels = 8, read_speed = math.huge})
-		
-		if not tex or tex == render.GetErrorTexture() then
-			logf("unable to find %s in %s.%s\n", path, shader, field)
-			table.print(material)
-
-			return default
-		end 
-		
-		return tex
-	end
-
 	local meshes = {}
 
 	for model_index = 1, #header.models do
@@ -575,28 +514,25 @@ do profiler.StartTimer("building mesh")
 				local model = {vertices = {}}
 				meshes[texname] = model
 				
-				local material
-				local path = "materials/" .. texname:lower() .. ".vmt"
+				local vmt = steam.LoadMaterial(texname)
 				
-				if vfs.IsFile(path) then
-					local str = vfs.Read(path)
-					if str then
-						material = steam.VDFToTable(str, true)
-					else
-						material = {LightmappedGeneric = {["$basetexture"] = texname}}
+				if vmt.error then
+					logn(vmt.error)
+				else
+					if vmt.basetexture then
+						model.diffuse = Texture(vmt.basetexture, {mip_map_levels = 8, read_speed = math.huge})
 					end
-				else
-					material = {LightmappedGeneric = {["$basetexture"] = texname}}
-				end
-			
-				if material.water then						
-					model.diffuse = load_texture(material, "$normalmap", render.GetWhiteTexture(), path)
-				else
-					model.diffuse = load_texture(material, "$basetexture", render.GetErrorTexture(), path)
-					model.bump = load_texture(material, "$bumpmap", nil, path)
 					
-					if material.worldvertextransition then
-						model.diffuse2 = load_texture(material, "$basetexture2", nil, path)
+					if vmt.basetexture2 then
+						model.diffuse2 = Texture(vmt.basetexture2, {mip_map_levels = 8, read_speed = math.huge})
+					end
+					
+					if vmt.bumpmap then
+						model.bump = Texture(vmt.bumpmap, {mip_map_levels = 8, read_speed = math.huge})
+					end
+					
+					if vmt.specular then
+						model.specular = Texture(vmt.envmap, {mip_map_levels = 8, read_speed = math.huge})
 					end
 				end
 				
@@ -707,7 +643,9 @@ if bsp_world then bsp_world:Remove() end
 local world = entities.CreateEntity("clientside")
 world:SetModel(bsp_mesh)
 bsp_world = world
+do return end
 
+profiler.StartTimer("creating entities")
 for _, info in pairs(header.entities) do
 	if info.origin and info.angles and info.model then
 		if vfs.IsFile(info.model) then
@@ -720,6 +658,7 @@ for _, info in pairs(header.entities) do
 		end
 	end
 end
+profiler.StopTimer()
 
 
 do return end
