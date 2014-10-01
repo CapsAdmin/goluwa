@@ -621,7 +621,7 @@ local function load_vvd(path)
 
 			vertex.pos = -buffer:ReadVec3() * 0.0254
 			vertex.normal = -buffer:ReadVec3()
-			vertex.uv = buffer:ReadVec2()
+			vertex.uv = buffer:ReadVec2() % Vec2(1,1)
 
 			vvd.vertices[i] = vertex
 		end
