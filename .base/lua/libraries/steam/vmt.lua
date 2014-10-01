@@ -49,7 +49,7 @@ local path_fields = {
 }
 
 function steam.LoadMaterial(name, directory_hint)
-	local path, err = solve_path(name, {".vmt", ".vtf"}, directory_hint)
+	local path, err = solve_path(name, {".vmt", ".vtf", "_01.vmt", "_02.vmt"}, directory_hint)
 	
 	if err then	
 		return {
@@ -69,7 +69,7 @@ function steam.LoadMaterial(name, directory_hint)
 		if err then	
 			return {
 				fullpath = path,
-				error = err,
+				error = path .. ": " .. err,
 				basetexture = "error",
 			}
 		end
