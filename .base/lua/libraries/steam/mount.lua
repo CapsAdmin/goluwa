@@ -150,13 +150,9 @@ function steam.MountSourceGame(game_info)
 				if vfs.IsDir(path .. "addons/") and not vfs.GetMounts()[path .. "addons/"] then
 					vfs.Mount(path .. "addons/", nil, game_info)
 				end
-				
+							
 				-- garry's mod exceptions..
 				if game_info.filesystem.steamappid == 4000 then
-					if vfs.IsDir(path .. "download/") and not vfs.GetMounts()[path .. "download/"] then
-						vfs.Mount(path .. "download/", nil, game_info)
-					end
-					
 					for k, v in pairs(vfs.Find(game_info.game_dir .. "sourceengine/")) do
 						if not done[v] then
 							if v:find("%.vpk") and v:find("_dir") and not vfs.GetMounts()[game_info.game_dir .. v .. "/"] then
@@ -171,6 +167,11 @@ function steam.MountSourceGame(game_info)
 					if not path:endswith("/") then
 						path = path .. "/"
 					end
+
+					if vfs.IsDir(path .. "download/") and not vfs.GetMounts()[path .. "download/"] then
+						vfs.Mount(path .. "download/", nil, game_info)
+					end				
+					
 					for k, v in pairs(vfs.Find(path)) do
 						if not done[path .. v] then
 							if v:find("%.vpk") and v:find("_dir") and not vfs.GetMounts()[path .. v .. "/"] then
