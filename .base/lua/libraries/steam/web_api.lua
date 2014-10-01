@@ -1,3 +1,5 @@
+local steam = ... or _G.steam
+
 steam.webapi_httpmethods = {
 	GET = function(interface, func_info, data, url, callback)
 		local arguments = ""
@@ -144,5 +146,3 @@ end
 function steam.GetWebAPIService(name)
 	return steam.services[name]
 end
-
-return steam

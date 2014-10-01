@@ -696,7 +696,7 @@ end
 
 local scale = 0.0254
 
-function steam.LoadSourceModel(path, callback)
+function steam.LoadModel(path, callback)
 
 	if path:endswith(".mdl") then
 		path = path:sub(1,-#".mdl"-1)

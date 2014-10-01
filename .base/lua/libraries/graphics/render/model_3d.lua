@@ -56,9 +56,9 @@ do -- model meta
 		
 		local thread = utility.CreateThread()
 		
-		if path:endswith(".mdl") and steam.LoadSourceModel then
+		if path:endswith(".mdl") and steam.LoadModel then
 			function thread.OnStart()
-				steam.LoadSourceModel(path, function(sub_model_data)
+				steam.LoadModel(path, function(sub_model_data)
 					self:InsertSubmodel(sub_model_data)
 					self:InvalidateBoundingBox()
 				end, true)
