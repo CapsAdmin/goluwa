@@ -240,10 +240,15 @@ local function load_mdl(path)
 				local tries = {}
 				buffer:PushPos(header.material_offset + offset)
 					local str = buffer:ReadString()
-					if #str > 50 then buffer:PopPos() logf("%s: tried to read location %i but string size is %i bytes!!!!!!!!!\n", path, header.material_offset + offset, #str) return false end
+					if #str > 150 then buffer:PopPos() logf("%s: tried to read location %i but string size is %i bytes!!!!!!!!!\n", path, header.material_offset + offset, #str) return false end
 					table.insert(tries, vfs.FixPath("materials/" .. str .. ".vmt"))
 					table.insert(tries, vfs.FixPath("materials/" .. header.name:match("(.+)%.") .. "/" .. str .. ".vmt"))
-					table.insert(tries, vfs.FixPath("materials/" .. header.name:match("(.+/)") .. "/" .. str .. ".vmt"))
+					if header.name:match("(.+/)") then
+						table.insert(tries, vfs.FixPath("materials/" .. header.name:match("(.+/)") .. "/" .. str .. ".vmt"))
+					end
+					if header.name:match("models/(.+/)") then
+						table.insert(tries, vfs.FixPath("materials/" .. header.name:match("models/(.+/)") .. "/" .. str .. ".vmt"))
+					end
 				buffer:PopPos()
 
 				for k,v in ipairs(tries) do
@@ -254,10 +259,8 @@ local function load_mdl(path)
 				end
 
 				if not data.path then
-					if _debug then 
-						logn(path, " could not find material")
-						table.print(tries)
-					end
+					logn(path, " could not find material")
+					table.print(tries)
 					return false
 				end
 			end
@@ -691,6 +694,8 @@ local function load_vvd(path)
 	return vvd
 end
 
+local scale = 0.0254
+
 function steam.LoadSourceModel(path, callback)
 
 	if path:endswith(".mdl") then
@@ -719,13 +724,23 @@ function steam.LoadSourceModel(path, callback)
 
 								local sub_model = {mesh = render.CreateMesh(vertices, indices)}
 								
-								sub_model.bbox = {min = mdl.view_bbmin, max = mdl.view_bbmax}
+								sub_model.bbox = {min = mdl.hull_min*scale, max = mdl.hull_max*scale}
 
 								if mdl.material[i] and mdl.material[i].vmt then
 									local shader, info = next(mdl.material[i].vmt)
-
-									if info["$basetexture"] then sub_model.diffuse = Texture("materials/" .. info["$basetexture"]:lower() .. ".vtf") end
-									if info["$bumpmap"] then sub_model.bump = Texture("materials/" .. info["$bumpmap"]:lower() .. ".vtf") end
+									
+									if info["$basetexture"] then
+										local path = "materials/" .. info["$basetexture"]:lower()
+										if not path:endswith(".vtf") then path = path .. ".vtf" end
+										
+										sub_model.diffuse = Texture(path) 
+									end
+									if info["$bumpmap"] then 
+										local path = "materials/" .. info["$bumpmap"]:lower()
+										if not path:endswith(".vtf") then path = path .. ".vtf" end
+										
+										sub_model.bump = Texture(path) 
+									end
 								end
 								
 								if callback then
