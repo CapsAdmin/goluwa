@@ -20,20 +20,19 @@ function world.Initialize()
 	world.Set("fog_intensity", 0) 
 	 
 	world.Set("gamma", 1.1)    
+	world.Set("sun_angles", Ang3(-45,45,0))    
+	
+	do return end
 	
 	--sun_model = sun_model or Entity("model")
 	--sun_model:SetModelPath("models/spider.obj") 
 	--sun_model:SetSize(1500)
-	do return end
-	local SunSpeed = 4
-	local SunDistance = 2000
+	local speed = 1
 	event.AddListener("Update", "TimeOfDay", function()
-		--sun_model:SetPos(Vec3(math.sin(os.clock()) * 255, 0, 160))
-		
-		world.sun:SetPosition(Vec3(math.sin(os.clock() / SunSpeed) * SunDistance, 0, math.abs(math.cos(os.clock() / SunSpeed)) * SunDistance))
-		world.sun:SetDiffuseIntensity(math.abs(math.cos(os.clock() / SunSpeed)) * 1.2)
-		world.Set("ambient_lighting", Color(1, 0.95, 0.8) * math.abs(math.cos(os.clock() / SunSpeed)) * 0.6)
-		world.Set("fog_color", Color(1, 0.95, 0.8) * math.abs(math.cos(os.clock() / SunSpeed)) * 0.8) 
+		local t = os.clock() * speed
+	--	world.Set("sun_angles", Ang3(t,t,0))    
+	--	world.Set("ambient_lighting", Color(1, 0.95, 0.8) * math.abs(math.cos(t)) * 0.6)
+	--	world.Set("fog_color", Color(1, 0.95, 0.8) * math.abs(math.cos(os.clock() / SunSpeed)) * 0.8) 
 	end)
 end
 
@@ -106,12 +105,11 @@ do -- sun
 		local vec = var:GetForward()
 		local size = world.Get("sun_size")
 		
-		--world.sun:SetPosition(vec * size)
-		world.sun:SetPosition(Vec3(-102, 251, 164))
+		world.sun:SetPosition(vec * size)
 		world.sun:SetSize(size)
 	end)
 
-	ADD("sun_size", 2000, "sun_angles")
+	ADD("sun_size", 1000, "sun_angles")
 	ADD("sun_color", Color(1,1,1), function(var) world.sun:SetColor(var) end)
 	ADD("sun_intensity", 1.75, function(var) world.sun:SetDiffuseIntensity(var) end)
 	ADD("sun_specular_intensity", 0.1, function(var) world.sun:SetSpecularIntensity(var) end)
