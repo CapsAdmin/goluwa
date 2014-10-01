@@ -1,13 +1,13 @@
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/esther.bsp")) -- dear_esther
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/jakobson.bsp")) -- dear_esther
---steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/donnelley.bsp")) -- dear_esther
+--steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/donnelley.bsp")) -- dear_esther  
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/paul.bsp")) -- dear_esther
 --steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_bluehills_test3.bsp")) -- gmod
 --steam.MountSourceGame("counter-strike: global offensive") local bsp_file = assert(vfs.Open("maps/de_overpass.bsp")) -- csgo
 --steam.MountSourceGame("portal 2") local bsp_file = assert(vfs.Open("maps/sp_a4_finale1.bsp")) -- dota 2 
-steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp")) -- gmod
+--steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp")) -- gmod
 --steam.MountSourceGame("half-life 2") local bsp_file = assert(vfs.Open("maps/d2_coast_07.bsp")) -- hl2
---steam.MountSourceGame("half-life 2: episode two") local bsp_file = assert(vfs.Open("maps/ep2_outland_06a.bsp")) -- ep2
+steam.MountSourceGame("half-life 2: episode two") local bsp_file = assert(vfs.Open("maps/ep2_outland_06a.bsp")) -- ep2
 --steam.MountSourceGame("left 4 dead 2") local bsp_file = assert(vfs.Open("maps/c3m1_plankcountry.bsp")) -- l4d
 
 local header = bsp_file:ReadStructure([[
@@ -84,6 +84,127 @@ do -- pak
 	vfs.Write(name, pak)
 	
 	vfs.Mount(R(name))
+end
+
+
+if true then 
+profiler.StartTimer("reading game lump")
+	local lump = header.lumps[36]
+	bsp_file:SetPos(lump.fileofs)
+	local game_lumps = bsp_file:ReadLong()
+			
+	for i = 1, game_lumps do
+		local id = bsp_file:ReadBytes(4)
+		local flags = bsp_file:ReadShort()
+		local version = bsp_file:ReadShort()
+		local fileofs = bsp_file:ReadLong()
+		local filelen = bsp_file:ReadLong()
+		
+		print(id)
+		
+		if id == "prps" then
+			bsp_file:PushPos(fileofs)
+			
+			local path_count = bsp_file:ReadLong()
+			local paths = {}
+			for i = 1, path_count do 
+				local str = bsp_file:ReadString()
+				if str ~= "" then
+					paths[i] = str
+				end
+			end 
+			
+			local leaf_count = bsp_file:ReadLong()
+			local leafs = {}
+			for i = 1, leaf_count do
+				leafs[i] = bsp_file:ReadShort()
+			end
+			
+			local lumps = {}
+			local lump_count = bsp_file:ReadLong()
+						
+			for i = 1, lump_count do
+				lumps[i] = bsp_file:ReadStructure([[
+					// v4
+					vec3		Origin;		 // origin
+					ang3		Angles;		 // orientation (pitch roll yaw)
+					unsigned short	PropType;	 // index into model name dictionary
+					unsigned short	FirstLeaf;	 // index into leaf array
+					unsigned short	LeafCount;
+					unsigned char	Solid;		 // solidity type
+					unsigned char	Flags;
+					int		Skin;		 // model skin numbers
+					float		FadeMinDist;
+					float		FadeMaxDist;
+					vec3		LightingOrigin;  // for lighting
+					// since v5
+					float		ForcedFadeScale; // fade distance scale
+					// v6 and v7 only
+					unsigned short  MinDXLevel;      // minimum DirectX version to be visible
+					unsigned short  MaxDXLevel;      // maximum DirectX version to be visible
+					// since v8
+					unsigned char   MinCPULevel;
+					unsigned char   MaxCPULevel;
+					unsigned char   MinGPULevel;
+					unsigned char   MaxGPULevel;
+					// since v7
+					color         DiffuseModulation; // per instance color and alpha modulation
+					// since v10
+					float           unknown; 
+					// since v9
+					boolean            DisableX360;     // if true, don't show on XBox 360
+				]])
+			end
+			
+			print(path_count, paths) 
+			print(leaf_count, leafs)
+			print(lump_count, lumps)
+			bsp_file:PopPos()
+		end
+		if id == "prpd" then
+			bsp_file:PushPos(fileofs)
+			
+			local path_count = bsp_file:ReadLong()
+			local paths = {}
+			for i = 1, path_count do 
+				local str = bsp_file:ReadString()
+				if str ~= "" then
+					paths[i] = str
+				end
+			end 			
+		
+			bsp_file:PopPos()
+		end
+	end
+profiler.StopTimer()
+end
+
+do
+	profiler.StartTimer("reading entities")
+		local function unpack_numbers(str)
+			local t = str:explode(" ")
+			for k,v in ipairs(t) do t[k] = tonumber(v) end
+			return unpack(t)
+		end
+		local entities = {}
+		bsp_file:PushPos(header.lumps[1].fileofs)
+			for vdf in bsp_file:ReadString():gmatch("{(.-)}") do
+				local ent = {}
+				for k, v in vdf:gmatch([["(.-)" "(.-)"]]) do
+					if k == "angles" then
+						v = Ang3(unpack_numbers(v))
+					elseif k == "_light" or k == "_ambient" or k:find("color") then
+						v = Color(unpack_numbers(v))
+					elseif k == "origin" or k:find("dir") or k:find("mins") or k:find("maxs") then
+						v = Vec3(unpack_numbers(v))
+					end
+					ent[k] = tonumber(v) or v
+				end
+				table.insert(entities, ent)		
+			end
+		bsp_file:PopPos()
+		header.entities = entities
+	profiler.StopTimer()
 end
 
 profiler.StartTimer("reading brushes")
@@ -340,7 +461,7 @@ do profiler.StartTimer("building mesh")
 		blend = math.clamp(blend, 0, 1)
 		
 		table.insert(model.vertices, {
-			pos = Vec3(pos.x * scale, -pos.y * scale, -pos.z * scale), -- copy
+			pos = Vec3(-pos.x * scale, pos.y * scale, -pos.z * scale), -- copy
 			texture_blend = blend,
 			uv = Vec2(
 				(a[1] * pos.x + a[2] * pos.y + a[3] * pos.z + a[4]) / texdata.width,
@@ -469,7 +590,7 @@ do profiler.StartTimer("building mesh")
 				end
 			
 				if material.water then						
-					model.diffuse = load_texture(material, "$normalmap", render.GetErrorTexture(), path)
+					model.diffuse = load_texture(material, "$normalmap", render.GetWhiteTexture(), path)
 				else
 					model.diffuse = load_texture(material, "$basetexture", render.GetErrorTexture(), path)
 					model.bump = load_texture(material, "$bumpmap", nil, path)
@@ -585,8 +706,21 @@ if bsp_world then bsp_world:Remove() end
 
 local world = entities.CreateEntity("clientside")
 world:SetModel(bsp_mesh)
-
 bsp_world = world
+
+for _, info in pairs(header.entities) do
+	if info.origin and info.angles and info.model then
+		if vfs.IsFile(info.model) then
+			local ent = entities.CreateEntity("clientside", bsp_world)
+			ent:SetModelPath(info.model)
+			local pos = info.origin * 0.0254
+			ent:SetPosition(Vec3(-pos.y, pos.x, pos.z))
+			local ang = info.angles:Rad()
+			ent:SetAngles(Ang3(ang.p, ang.y, ang.r))
+		end
+	end
+end
+
 
 do return end
 
