@@ -86,59 +86,63 @@ do -- model meta
 	end
 	
 	function META:InsertSubmodel(model_data)
-		local sub_model 
-		
-		if model_data.mesh then
-			sub_model = model_data
-		else
-			sub_model = {
-				mesh = model_data.mesh or render.CreateMesh(model_data.vertices, model_data.indices), 
-				name = model_data.name, 
-				bbox = {
-					min = model_data.bbox.min, 
-					max = model_data.bbox.max
-				}
+		local sub_model = {
+			mesh = render.CreateMesh(model_data.vertices, model_data.indices), 
+			name = model_data.name, 
+			bbox = {
+				min = model_data.bbox.min, 
+				max = model_data.bbox.max
 			}
-		end
+		}
 		
 		-- don't store the geometry on the lua side
 		sub_model.mesh:UnreferenceMesh()
 				
-		if model_data.material and model_data.material.path then
-			local path = model_data.material.path
-			
-			-- this is kind of ue4 specific
-			if model_data.material.name and model_data.material.name:sub(1, 1) == "/" then
-				local ext = path:match("^.+(%..+)$")
-				local path = model_data.material.name
-				path = self.dir .. path:sub(2)
+		if model_data.material then 
+			if model_data.material.paths_solved then
+				if model_data.material.diffuse then
+					sub_model.diffuse = render.CreateTexture(model_data.material.diffuse, default_texture_format)
+				elseif model_data.material.bump then
+					sub_model.bump = render.CreateTexture(model_data.material.bump, default_texture_format)
+				elseif model_data.material.specular then
+					sub_model.specular = render.CreateTexture(model_data.material.specular, default_texture_format)
+				end
+			elseif model_data.material.path then
+				local path = model_data.material.path
 				
-				sub_model.diffuse = render.CreateTexture(path .. "_D" .. ext)
-				sub_model.bump = render.CreateTexture(path .. "_N" .. ext)
-				sub_model.specular = render.CreateTexture(path .. "_S" .. ext)
-			else	
-				local paths = {path, self.dir .. path}
-				
-				for _, path in ipairs(paths) do
-					if vfs.Exists(path) then
-						sub_model.diffuse = render.CreateTexture(path, default_texture_format)
+				-- this is kind of ue4 specific
+				if model_data.material.name and model_data.material.name:sub(1, 1) == "/" then
+					local ext = path:match("^.+(%..+)$")
+					local path = model_data.material.name
+					path = self.dir .. path:sub(2)
+					
+					sub_model.diffuse = render.CreateTexture(path .. "_D" .. ext)
+					sub_model.bump = render.CreateTexture(path .. "_N" .. ext)
+					sub_model.specular = render.CreateTexture(path .. "_S" .. ext)
+				else	
+					local paths = {path, self.dir .. path}
+					
+					for _, path in ipairs(paths) do
+						if vfs.Exists(path) then
+							sub_model.diffuse = render.CreateTexture(path, default_texture_format)
 
-						do -- try to find normal map
-							local path = utility.FindTextureFromSuffix(path, "_n", "_ddn", "_nrm")
+							do -- try to find normal map
+								local path = utility.FindTextureFromSuffix(path, "_n", "_ddn", "_nrm")
 
-							if path then
-								sub_model.bump = render.CreateTexture(path, default_texture_format)
+								if path then
+									sub_model.bump = render.CreateTexture(path, default_texture_format)
+								end
 							end
-						end
 
-						do -- try to find specular map
-							local path = utility.FindTextureFromSuffix(path, "_s", "_spec")
+							do -- try to find specular map
+								local path = utility.FindTextureFromSuffix(path, "_s", "_spec")
 
-							if path then
-								sub_model.specular = render.CreateTexture(path, default_texture_format)
+								if path then
+									sub_model.specular = render.CreateTexture(path, default_texture_format)
+								end
 							end
+							break
 						end
-						break
 					end
 				end
 			end
