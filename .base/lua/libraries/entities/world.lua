@@ -21,6 +21,7 @@ function world.Initialize()
 	 
 	world.Set("gamma", 1.1)    
 	world.Set("sun_angles", Ang3(-45,45,0))    
+	world.Set("ao_multiplier", 1)    
 	
 	do return end
 	
@@ -125,7 +126,7 @@ end
 do -- ao
 	ADD("ao_amount", 0)
 	ADD("ao_cap", 1)
-	ADD("ao_multiplier", 32768)
+	ADD("ao_multiplier", 1)
 	ADD("ao_depthtolerance", 0.0)
 	ADD("ao_range", 100000)
 	ADD("ao_scale", 2.75)

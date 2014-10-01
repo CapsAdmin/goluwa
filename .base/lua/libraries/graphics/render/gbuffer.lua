@@ -29,8 +29,8 @@ local GBUFFER = {
 			 
 			ao_amount = 1.0,
 			ao_cap = 0.3,
-			ao_multiplier = 32768.0,
-			ao_depthtolerance = 0.0000,
+			ao_multiplier = 1,
+			ao_depthtolerance = -0.00001,
 			ao_range = 100000.0,
 			ao_scale = 0.6,
 			
@@ -63,9 +63,10 @@ local GBUFFER = {
 			//SSAO
 			//
 			float compareDepths( in float depth1, in float depth2 ) {
-				float diff = sqrt( clamp(1.0-(depth1-depth2) / (ao_range/(cam_farz-cam_nearz)),0.0,1.0) );
-				float ao = min(ao_cap, max(0.0,depth1-depth2-ao_depthtolerance) * ao_multiplier) * diff;
-				return ao;
+				float diff = (depth2)-(depth1-0.000005);
+				diff = clamp(diff *= 30000, 0, 0.25);
+								
+				return diff;
 			}
 			
 			vec3 get_pos2(vec2 uv)
@@ -81,75 +82,65 @@ local GBUFFER = {
 			{
 
 				float depth = get_depth(uv);
-				float d;
-
+				
+				if (depth > 0.05) return 1;
+				
 				float pw = 1.0 / screen_size.x;
 				float ph = 1.0 / screen_size.y;
 
-				float ao = ao_amount;
+				float ao = 0;
 				
-				float aoscale = ao_scale;
-
-				for (int i = 1; i < 16; i++)
+				float aoscale = 2.2;
+				
+				pw /= aoscale;
+				ph /= aoscale;
+				
+				for (int i = 1; i < 5; i++)
 				{					
-					ao += compareDepths(depth, get_depth(vec2(uv.x+pw,uv.y+ph))) / aoscale;
-					ao += compareDepths(depth, get_depth(vec2(uv.x-pw,uv.y+ph))) / aoscale;
-					ao += compareDepths(depth, get_depth(vec2(uv.x+pw,uv.y-ph))) / aoscale;
-					ao += compareDepths(depth, get_depth(vec2(uv.x-pw,uv.y-ph))) / aoscale;
+					ao += compareDepths(depth, get_depth(vec2(uv.x+pw,uv.y+ph)));
+					ao += compareDepths(depth, get_depth(vec2(uv.x-pw,uv.y+ph)));
+					ao += compareDepths(depth, get_depth(vec2(uv.x+pw,uv.y-ph)));
+					ao += compareDepths(depth, get_depth(vec2(uv.x-pw,uv.y-ph)));
 				 
-					pw *= 2.0;
-					ph *= 2.0;
-					aoscale *= 1.2;
+					pw *= aoscale;
+					ph *= aoscale;
 				}			 
 			 
-				ao/=16.0;
+				ao/=4.0;
 			 
-				return 1-ao;
+				return 0.5+clamp(ao*1.9, 0, 1)*0.5;
 			}
 			
-			float hbao() 
+			vec3 hbao() 
 			{
 				const float PI = 3.141592653589793238462643383279502884197169399375105820974944592;
 				const float TWO_PI = 2.0 * PI;
-				const int NUM_SAMPLE_DIRECTIONS = 6;
+				const int NUM_SAMPLE_DIRECTIONS = 4;
 				const int NUM_SAMPLE_STEPS = 2;
 				const float uIntensity = 1;
-				const float uAngleBias = 0.75;
-				const float radiusSS = 2;
+				const float uAngleBias = 0.5;
+				const float radiusSS = 20;
 				
-				vec3 originVS = get_pos2(uv);
+				vec3 originVS = get_pos(uv);
 				vec3 normalVS = texture(tex_normal, uv).xyz;
 								
-				float radiusWS = (-get_depth(uv)+1)*4; 
-								
-				// early exit if the radius of influence is smaller than one fragment
-				// since all samples would hit the current fragment.
-								
+				float radiusWS = 1;
+																
 				const float theta = TWO_PI / float(NUM_SAMPLE_DIRECTIONS);
 				float cosTheta = cos(theta);
 				float sinTheta = sin(theta);
 				
-				// matrix to create the sample directions
 				mat2 deltaRotationMatrix = mat2(cosTheta, -sinTheta, sinTheta, cosTheta);
 				
-				// step vector in view space
 				vec2 deltaUV = vec2(1.0, 0.0) * (radiusSS / (float(NUM_SAMPLE_DIRECTIONS * NUM_SAMPLE_STEPS) + 1.0));
-				
-				// we don't want to sample to the perimeter of R since those samples would be 
-				// omitted by the distance attenuation (W(R) = 0 by definition)
-				// Therefore we add a extra step and don't use the last sample.
-				vec4 sampleNoise = texture2D(tex_noise, uv);
-				sampleNoise = sampleNoise * 2.0 - vec4(1.0);
-				//mat2 rotationMatrix = mat2(sampleNoise.x, -sampleNoise.y, sampleNoise.y, sampleNoise.x);
-				
-				// apply a random rotation to the base step vector
+				vec4 sampleNoise = texture(tex_noise, uv*10);
+				sampleNoise = sampleNoise * 2 - vec4(1);
 				deltaUV = sampleNoise.xy * deltaUV;
 				
 				float jitter = sampleNoise.a;
-				float occlusion = 0;
+				vec3 occlusion = vec3(0,0,0);
 				
 				for (int i = 0; i < NUM_SAMPLE_DIRECTIONS; ++i) {
-					// incrementally rotate sample direction
 					deltaUV = deltaRotationMatrix * deltaUV;
 					
 					vec2 sampleDirUV = deltaUV;
@@ -157,30 +148,36 @@ local GBUFFER = {
 					
 					for (int j = 0; j < NUM_SAMPLE_STEPS; ++j) {
 						vec2 sampleUV = uv + (jitter + float(j)) * sampleDirUV;
-						vec3 sampleVS = get_pos2(sampleUV);
-						vec3 sampleDirVS = (sampleVS - originVS);
+						vec3 sampleVS = get_pos(sampleUV);
+						vec3 sampleDirVS = -(originVS - sampleVS)/1000000;
 						
-						// angle between fragment tangent and the sample
 						float gamma = (PI / 2.0) - acos(dot(normalVS, normalize(sampleDirVS)));
 						
 						if (gamma > oldAngle) 
 						{
 							float value = sin(gamma) - sin(oldAngle);
 							
-							// distance between original and sample points
-							float attenuation = clamp(1.0 - pow(length(sampleDirVS) / radiusWS, 2.0), 0.0, 1.0);
-							occlusion += attenuation * value;
-							
-							//occlusion += value;
+							occlusion += value / (texture(tex_diffuse, sampleUV).rgb);
 
 							oldAngle = gamma;
 						}
 					}
 				}
 				
-				occlusion = 1.0 - occlusion / float(NUM_SAMPLE_DIRECTIONS);
-				occlusion = clamp(pow(occlusion, 1.0 + uIntensity), 0.0, 1.0);
+				occlusion = vec3(1.0) - occlusion / float(NUM_SAMPLE_DIRECTIONS);
+				occlusion = clamp(pow(occlusion, vec3(1.0 + uIntensity)), vec3(0.0), vec3(1.0));
 				return occlusion;
+			}
+			
+			vec3 huh()
+			{
+				vec3 color = vec3(0,0,0);
+				
+				for (int i = 0; i < 8; i++)
+				{
+					vec3 a = get_pos(uv);
+				}
+				return color;
 			}
 			
 			//
@@ -194,15 +191,14 @@ local GBUFFER = {
 			}
 									
 			void main ()
-			{			
-				vec3 diffuse = texture(tex_diffuse, uv).rgb;
-				
-				out_color.rgb = diffuse;
+			{							
+				out_color.rgb = texture(tex_diffuse, uv).rgb;
 				out_color.a = 1;
 				
-				out_color.rgb *= max(texture(tex_light, uv).rgb, ambient_lighting.rgb);	
 				
-				out_color.rgb *=  ssao();
+				out_color.rgb *= vec3(ssao()); 
+				//out_color.rgb *= hbao();
+				out_color.rgb *= max(texture(tex_light, uv).rgb, ambient_lighting.rgb);	
 				
 				out_color.rgb = mix_fog(out_color.rgb, fog_intensity, fog_color.rgb);
 				
