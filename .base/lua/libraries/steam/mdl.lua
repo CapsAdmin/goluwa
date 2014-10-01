@@ -240,43 +240,15 @@ local function load_mdl(path)
 				local tries = {}
 				buffer:PushPos(header.material_offset + offset)
 					local str = buffer:ReadString()
-					if #str > 150 then buffer:PopPos() logf("%s: tried to read location %i but string size is %i bytes!!!!!!!!!\n", path, header.material_offset + offset, #str) return false end
-					table.insert(tries, vfs.FixPath("materials/" .. str .. ".vmt"))
-					table.insert(tries, vfs.FixPath("materials/" .. header.name:match("(.+)%.") .. "/" .. str .. ".vmt"))
-					if header.name:match("(.+/)") then
-						table.insert(tries, vfs.FixPath("materials/" .. header.name:match("(.+/)") .. "/" .. str .. ".vmt"))
-					end
-					if header.name:match("models/(.+/)") then
-						table.insert(tries, vfs.FixPath("materials/" .. header.name:match("models/(.+/)") .. "/" .. str .. ".vmt"))
-					end
+					if #str > 500 then buffer:PopPos() logf("%s: tried to read location %i but string size is %i bytes!!!!!!!!!\n", path, header.material_offset + offset, #str) return false end
+					data.path = str
 				buffer:PopPos()
-
-				for k,v in ipairs(tries) do
-					if vfs.IsFile(v) then
-						data.path = v
-						break
-					end
-				end
-
-				if not data.path then
-					logn(path, " could not find material")
-					table.print(tries)
-					return false
-				end
 			end
 		end
 
 		data.flags = buffer:ReadInt()
 
 		buffer:Advance(14 * 4)
-
-		if data.path then
-			local str = vfs.Read(data.path)
-			if str then
-				if _debug then logn("found material ", data.path) end
-				data.vmt = steam.VDFToTable(str, true)
-			end
-		end
 	end)
 
 	parse("bone", function(data, i)
@@ -706,7 +678,7 @@ function steam.LoadModel(path, callback)
 	local vvd = load_vvd(path)
 	local vtx = load_vtx(path)
 
-	local model = {sub_models = {}}
+	local models = {}
 
 	for i, body_part in ipairs(vtx.body_parts) do
 		for _, model_ in ipairs(body_part.models) do
@@ -722,31 +694,29 @@ function steam.LoadModel(path, callback)
 									indices[i] = strip.vertices[v+1].mesh_vertex_index 
 								end
 
-								local sub_model = {mesh = render.CreateMesh(vertices, indices)}
-								
+								local sub_model = {}
+								sub_model.vertices = vertices
+								sub_model.indices = indices								
 								sub_model.bbox = {min = mdl.hull_min*scale, max = mdl.hull_max*scale}
 
-								if mdl.material[i] and mdl.material[i].vmt then
-									local shader, info = next(mdl.material[i].vmt)
-									
-									if info["$basetexture"] then
-										local path = "materials/" .. info["$basetexture"]:lower()
-										if not path:endswith(".vtf") then path = path .. ".vtf" end
-										
-										sub_model.diffuse = Texture(path) 
-									end
-									if info["$bumpmap"] then 
-										local path = "materials/" .. info["$bumpmap"]:lower()
-										if not path:endswith(".vtf") then path = path .. ".vtf" end
-										
-										sub_model.bump = Texture(path) 
+								if mdl.material[i] and mdl.material[i].path then
+									local vmt = steam.LoadMaterial(mdl.material[i].path, path)
+									if vmt.error then
+										logn(vmt.error) 
+									else
+										sub_model.material = {
+											paths_solved = true,
+											diffuse = vmt.basetexture,
+											bump = vmt.bumpmap,
+											specular = vmt.envmapmask,
+										}
 									end
 								end
 								
 								if callback then
 									callback(sub_model)
 								else
-									table.insert(model.sub_models, sub_model)
+									table.insert(models, sub_model)
 								end
 							end
 						end
@@ -786,4 +756,4 @@ if RELOAD then
 	local ent = entities.CreateEntity("clientside")
 	ent:SetModelPath(path) 
 	MDL_ENT = ent
-end
+end 
