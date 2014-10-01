@@ -115,11 +115,11 @@ local GBUFFER = {
 			{
 				const float PI = 3.141592653589793238462643383279502884197169399375105820974944592;
 				const float TWO_PI = 2.0 * PI;
-				const int NUM_SAMPLE_DIRECTIONS = 4;
-				const int NUM_SAMPLE_STEPS = 2;
+				const int NUM_SAMPLE_DIRECTIONS = 5;
+				const int NUM_SAMPLE_STEPS = 3;
 				const float uIntensity = 1;
 				const float uAngleBias = 0.5;
-				const float radiusSS = 20;
+				const float radiusSS = 2;
 				
 				vec3 originVS = get_pos(uv);
 				vec3 normalVS = texture(tex_normal, uv).xyz;
@@ -138,7 +138,7 @@ local GBUFFER = {
 				deltaUV = sampleNoise.xy * deltaUV;
 				
 				float jitter = sampleNoise.a;
-				vec3 occlusion = vec3(0,0,0);
+				vec3 occlusion = vec3(1);
 				
 				for (int i = 0; i < NUM_SAMPLE_DIRECTIONS; ++i) {
 					deltaUV = deltaRotationMatrix * deltaUV;
@@ -149,24 +149,28 @@ local GBUFFER = {
 					for (int j = 0; j < NUM_SAMPLE_STEPS; ++j) {
 						vec2 sampleUV = uv + (jitter + float(j)) * sampleDirUV;
 						vec3 sampleVS = get_pos(sampleUV);
-						vec3 sampleDirVS = -(originVS - sampleVS)/1000000;
+						vec3 sampleDirVS = -(originVS - sampleVS);
 						
-						float gamma = (PI / 2.0) - acos(dot(normalVS, normalize(sampleDirVS)));
-						
-						if (gamma > oldAngle) 
+						if (sampleDirVS.z < radiusSS/4)
 						{
-							float value = sin(gamma) - sin(oldAngle);
+											
+							float gamma = (PI / 2.0) - acos(dot(normalVS, normalize(sampleDirVS)));
 							
-							occlusion += value / (texture(tex_diffuse, sampleUV).rgb);
+							if (gamma > oldAngle) 
+							{
+								float value = sin(gamma) - sin(oldAngle);
+								
+								occlusion -= value;
 
-							oldAngle = gamma;
+								oldAngle = gamma;
+							}
 						}
 					}
 				}
 				
-				occlusion = vec3(1.0) - occlusion / float(NUM_SAMPLE_DIRECTIONS);
-				occlusion = clamp(pow(occlusion, vec3(1.0 + uIntensity)), vec3(0.0), vec3(1.0));
-				return occlusion;
+				//occlusion = occlusion / float(NUM_SAMPLE_DIRECTIONS);
+				//occlusion = clamp(pow(occlusion, vec3(1.0 + uIntensity)), vec3(0.0), vec3(1.0));
+				return 0.75+occlusion*0.25;
 			}
 			
 			vec3 huh()
@@ -194,11 +198,13 @@ local GBUFFER = {
 			{							
 				out_color.rgb = texture(tex_diffuse, uv).rgb;
 				out_color.a = 1;
+								
+				vec3 light = texture(tex_light, uv).rgb;
+				if (out_color.rgb != vec3(0,0,0)) light *= ssao();
+				//light *= ssao()
+				light = max(light, ambient_lighting.rgb);
 				
-				
-				out_color.rgb *= vec3(ssao()); 
-				//out_color.rgb *= hbao();
-				out_color.rgb *= max(texture(tex_light, uv).rgb, ambient_lighting.rgb);	
+				out_color.rgb *= light;
 				
 				out_color.rgb = mix_fog(out_color.rgb, fog_intensity, fog_color.rgb);
 				
