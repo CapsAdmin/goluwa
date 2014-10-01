@@ -1,7 +1,7 @@
 local steam = ... or _G.steam
 
 function solve_path(name, extensions, directory_hint)
-	extensions = extensions or {"vmt"}
+	extensions = extensions or {".vmt"}
 	
 	local tries = {}
 	
@@ -23,7 +23,7 @@ function solve_path(name, extensions, directory_hint)
 			
 		for _, ext in ipairs(extensions) do
 			for i, path in ipairs(temp) do
-				table.insert(tries, path .. "." .. ext)
+				table.insert(tries, path .. ext)
 			end
 		end
 	end
@@ -49,7 +49,7 @@ local path_fields = {
 }
 
 function steam.LoadMaterial(name, directory_hint)
-	local path, err = solve_path(name, {"vmt", "vtf"}, directory_hint)
+	local path, err = solve_path(name, {".vmt", ".vtf"}, directory_hint)
 	
 	if err then	
 		return {
@@ -89,7 +89,7 @@ function steam.LoadMaterial(name, directory_hint)
 	
 		for i, field in ipairs(path_fields) do
 			if vmt[field] then 
-				vmt[field] = solve_path(vmt[field], {"vtf"}) or vmt[field]
+				vmt[field] = solve_path(vmt[field], {".vtf", ""}) or vmt[field]
 			end
 		end
 		
