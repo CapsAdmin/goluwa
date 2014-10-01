@@ -57,6 +57,7 @@ function steam.CommunityIDToSteamID(id)
 end
 
 function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
+	if not str or str == "" then return nil, "data is empty" end
 	if lower_or_modify_keys == true then lower_or_modify_keys = string.lower end
 	
 	str = str:gsub("http://", "___L_O_L___")
