@@ -7,8 +7,8 @@ COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Update"}
 
 COMPONENT.Network = {
-	Position = {"vec3", 1/30, "unreliable"},
-	Rotation = {"quat", 1/30, "unreliable"},
+	Position = {"vec3", 1/30, "unreliable", false, 70},
+	Rotation = {"quat", 1/30, "unreliable", false, 70},
 	
 	Gravity = {"vec3", 1/5},
 	Mass = {"unsigned long", 1/5},
