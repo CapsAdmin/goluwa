@@ -626,10 +626,3 @@ for i, model in ipairs(bsp_mesh.sub_models) do
 	chunk:InitPhysicsTriangles(true)
 	chunk:SetMass(0)
 end
-
-event.AddListener("MouseInput", "bsp_lol", function(button, press)	
-	local ent = entities.CreateEntity("physical")
-	ent:InitPhysicsBox(Vec3(1, 1, 1))
-	ent:SetPosition(render.GetCamPos())
-	ent:SetVelocity(render.GetCamAng():GetForward() * 10)	
-end)
