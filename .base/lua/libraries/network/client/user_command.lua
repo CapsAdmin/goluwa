@@ -106,24 +106,31 @@ if CLIENT then
 	do
 		local buffer = Buffer()
 		local last_send = 0
+		local last_tick = 0
 		
-		event.CreateTimer("user_command_tick", client_tick_rate, function()
+		event.AddListener("Update", "user_command_tick", function()
 			if not clients.GetLocalClient():IsValid() then return end
-		
-			buffer:WriteDouble(system.GetTime())
-			
+					
 			local cmd = clients.GetLocalClient():GetCurrentCommand()
 			local move = event.Call("CreateMove", clients.GetLocalClient(), cmd)
-			 
-			for _, v in ipairs(layout) do			
-				buffer:WriteType(move and move[v.name] or v.default, v.type)
-				cmd[v.client_name] = move and move[v.name] or v.default
-			end
+			
+			local time = system.GetTime()
+			
+			if time > last_tick then
+				buffer:WriteDouble(time)
+				 
+				for _, v in ipairs(layout) do			
+					buffer:WriteType(move and move[v.name] or v.default, v.type)
+					cmd[v.client_name] = move and move[v.name] or v.default
+				end
+					
+				if last_send < time then
+					packet.Send("user_command", buffer)
+					buffer:Clear()
+					last_send = time + client_command_length
+				end
 				
-			if last_send < system.GetTime() then
-				packet.Send("user_command", buffer)
-				buffer:Clear()
-				last_send = system.GetTime() + client_command_length
+				last_tick = time + client_tick_rate
 			end
 		end)
 	end
