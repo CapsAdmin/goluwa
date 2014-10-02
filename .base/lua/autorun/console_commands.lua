@@ -19,7 +19,7 @@ do
 	console.AddServerCommand("lua_run_sv", function(client, line)
 		logn(client:GetNick(), " ran ", line)
 		console.SetLuaEnvironmentVariable("me", client) 
-		concat.RunLua(line)
+		console.RunLua(line)
 	end)
 
 	console.AddServerCommand("lua_open_sv", function(client, line)
