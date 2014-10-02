@@ -106,7 +106,15 @@ do -- filter
 	end
 
 	function META:GetAll()
-		return self.clients
+		local out = {}
+		
+		for _, client in pairs(self.clients) do 
+			if client:IsValid() then 	
+				table.insert(out, client) 
+			end
+		end
+		
+		return out
 	end
 
 	function clients.CreateFilter()
