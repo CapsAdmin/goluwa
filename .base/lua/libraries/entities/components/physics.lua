@@ -250,30 +250,45 @@ do
 		self:SetRotation(self.Rotation)
 	end
 	
-	function COMPONENT:InitPhysicsConcave(quantized_aabb_compression)
+	function COMPONENT:InitPhysicsConvexHull()
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
 		
-		self.rigid_body:InitPhysicsConcave(self:GetPhysicsModel(), quantized_aabb_compression)
+		self.rigid_body:InitPhysicsConvexHull(self:GetPhysicsModel().vertices.pointer, self:GetPhysicsModel().vertices.count)
 		
 		if SERVER then
 			local obj = self:GetComponent("networked")
-			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConcave") end
+			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexHull") end
 		end
 		
 		self:SetPosition(self.Position)
 		self:SetRotation(self.Rotation)
 	end
 	
-	function COMPONENT:InitPhysicsConvex(quantized_aabb_compression)
+	function COMPONENT:InitPhysicsConvexTriangles()
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
 		
-		self.rigid_body:InitPhysicsConvex(self:GetPhysicsModel())
+		self.rigid_body:InitPhysicsConvexTriangles(self:GetPhysicsModel())
 		
 		if SERVER then
 			local obj = self:GetComponent("networked")
-			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvex", quantized_aabb_compression) end
+			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexTriangles") end
+		end
+		
+		self:SetPosition(self.Position)
+		self:SetRotation(self.Rotation)
+	end
+		
+	function COMPONENT:InitPhysicsTriangles(quantized_aabb_compression)
+		local tr = self:GetComponent("transform")
+		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
+		
+		self.rigid_body:InitPhysicsTriangles(self:GetPhysicsModel(), quantized_aabb_compression)
+		
+		if SERVER then
+			local obj = self:GetComponent("networked")
+			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsTriangles") end
 		end
 		
 		self:SetPosition(self.Position)

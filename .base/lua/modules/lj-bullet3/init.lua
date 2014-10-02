@@ -31,8 +31,11 @@ btTriangleIndexVertexArray *bulletCreateMesh(int num_triangles, int* triangles, 
 
 btRigidBody *bulletCreateRigidBodyBox(float mass, float *matrix, float x, float y, float z);
 btRigidBody *bulletCreateRigidBodySphere(float mass, float *matrix, float radius);
-btRigidBody *bulletCreateRigidBodyConvexMesh(float mass, float *matrix, btTriangleIndexVertexArray *mesh);
-btRigidBody *bulletCreateRigidBodyConcaveMesh(float mass, float *matrix, btTriangleIndexVertexArray *mesh, bool quantized_aabb_compression);
+
+btRigidBody *bulletCreateRigidBodyConvexHull(float mass, float *matrix, float *mesh);
+btRigidBody *bulletCreateRigidBodyConvexTriangleMesh(float mass, float *matrix, btTriangleIndexVertexArray *mesh);
+btRigidBody *bulletCreateRigidBodyTriangleMesh(float mass, float *matrix, btTriangleIndexVertexArray *mesh, bool quantized_aabb_compression);
+
 void bulletRemoveBody(btRigidBody *body);
 void bulletRigidBodySetMatrix(btRigidBody *body, float *matrix);
 void bulletRigidBodyGetMatrix(btRigidBody *body, float *out);
@@ -359,8 +362,46 @@ do -- init box options
 end
 
 do -- mesh init options
+		
+	function BODY:InitPhysicsConvexHull(tbl)	
 	
-	function BODY:InitPhysicsConcave(tbl, quantized_aabb_compression)	
+		-- if you don't do this "tbl" will get garbage collected and bullet will crash
+		-- because bullet says it does not make any copies of indices or vertices
+		
+		local mesh = ffi.new("float["..#tbl.."]", tbl)
+		
+		self.mesh = tbl
+		
+		self.body = lib.bulletCreateRigidBodyConvexHull(self:GetMass(), self.matrix, mesh)
+		body_lookup[self.body] = self
+		
+		update_params(self)
+	end
+		
+	function BODY:InitPhysicsConvexTriangles(tbl)	
+	
+		-- if you don't do this "tbl" will get garbage collected and bullet will crash
+		-- because bullet says it does not make any copies of indices or vertices
+		
+		local mesh = lib.bulletCreateMesh(
+			tbl.triangles.count, 
+			tbl.triangles.pointer, 
+			tbl.triangles.stride, 
+			
+			tbl.vertices.count, 
+			tbl.vertices.pointer, 
+			tbl.vertices.stride
+		)
+		
+		self.mesh = tbl
+		
+		self.body = lib.bulletCreateRigidBodyConvexTriangleMesh(self:GetMass(), self.matrix, mesh)
+		body_lookup[self.body] = self
+		
+		update_params(self)
+	end
+	
+	function BODY:InitPhysicsTriangles(tbl, quantized_aabb_compression)	
 	
 		-- if you don't do this "tbl" will get garbage collected and bullet will crash
 		-- because bullet says it does not make any copies of indices or vertices
@@ -377,35 +418,12 @@ do -- mesh init options
 		
 		self.mesh = tbl
 
-		self.body = lib.bulletCreateRigidBodyConcaveMesh(self:GetMass(), self.matrix, mesh, not not quantized_aabb_compression)
+		self.body = lib.bulletCreateRigidBodyTriangleMesh(self:GetMass(), self.matrix, mesh, not not quantized_aabb_compression)
 		body_lookup[self.body] = self
 		
 		update_params(self)
 	end
-	
-	function BODY:InitPhysicsConvex(tbl)	
-	
-		-- if you don't do this "tbl" will get garbage collected and bullet will crash
-		-- because bullet says it does not make any copies of indices or vertices
-		
-		local mesh = lib.bulletCreateMesh(
-			tbl.triangles.count, 
-			tbl.triangles.pointer, 
-			tbl.triangles.stride, 
-			
-			tbl.vertices.count, 
-			tbl.vertices.pointer, 
-			tbl.vertices.stride
-		)
-		
-		self.mesh = tbl
-		
-		self.body = lib.bulletCreateRigidBodyConvexMesh(self:GetMass(), self.matrix, mesh)
-		body_lookup[self.body] = self
-		
-		update_params(self)
-	end
-	
+
 	function BODY:SetMeshScale(x, y, z)
 		lib.bulletRemoveBody(self.body)
 		

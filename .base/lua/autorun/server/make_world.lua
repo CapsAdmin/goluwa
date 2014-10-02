@@ -6,7 +6,7 @@ local function go()
 		world:SetModelPath("models/skpfile.obj")  
 		world:SetMass(0)
 		world:SetPhysicsModelPath("models/skpfile.obj")
-		world:InitPhysicsConcave()
+		world:InitPhysicsTriangles()
 		world:SetCull(false)
 
 		WORLD = world	
