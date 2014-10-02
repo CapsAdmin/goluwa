@@ -126,7 +126,7 @@ if USE_SDL then
 	end
 	
 	function system.GetClipboard()
-		return sdl.GetClipboardText()
+		return ffi.string(sdl.GetClipboardText())
 	end
 else
 	local glfw = require("lj-glfw")
