@@ -100,7 +100,7 @@ local function query_server(ip, port, query, callback)
 	
 	-- more like on socket created
 	function socket:OnConnect()
-		local buffer = Buffer()
+		local buffer = packet.CreateBuffer()
 		buffer:WriteLong(0xFFFFFFFF)
 		buffer:WriteStructure(query.request)
 		
@@ -112,7 +112,7 @@ local function query_server(ip, port, query, callback)
 	end
 	
 	function socket:OnReceive(str)
-		local buffer = Buffer(str)
+		local buffer = packet.CreateBuffer(str)
 		
 		if steam.debug then
 			logf("received %s to %s %i", buffer:GetDebugString(), ip, port)
@@ -134,7 +134,7 @@ local function query_server(ip, port, query, callback)
 			self.buffer_chunks[info.Number + 1] = buffer:ReadRest()
 			
 			if table.count(self.buffer_chunks) - 1 == info.Total then
-				callback(Buffer(table.concat(self.buffer_chunks)):ReadStructure(query.response))
+				callback(packet.CreateBuffer(table.concat(self.buffer_chunks)):ReadStructure(query.response))
 			end
 		elseif header == -1 then
 			if query.challenge and not self.challenge then
@@ -143,7 +143,7 @@ local function query_server(ip, port, query, callback)
 				if type == 0x41 then
 					local challenge = buffer:ReadLong()
 				
-					local buffer = Buffer()
+					local buffer = packet.CreateBuffer()
 					buffer:WriteLong(0xFFFFFFFF)
 					buffer:WriteByte(query.request[1][2])
 					buffer:WriteLong(challenge)
