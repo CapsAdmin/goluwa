@@ -3,7 +3,8 @@ profiler.StartTimer("mounting content")
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/jakobson.bsp"))
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/donnelley.bsp"))
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/paul.bsp"))
-steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_bluehills_test3.bsp"))
+steam.MountSourceGame("team fortress 2") steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/aramaki_4d.bsp"))
+--steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_bluehills_test3.bsp"))
 --steam.MountSourceGame("counter-strike: global offensive") local bsp_file = assert(vfs.Open("maps/de_overpass.bsp"))
 --steam.MountSourceGame("portal 2") local bsp_file = assert(vfs.Open("maps/sp_a4_finale1.bsp"))
 --steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp"))
@@ -436,28 +437,29 @@ do profiler.StartTimer("building mesh")
 								
 				meshes[texname] = model
 				
-				local vmt = steam.LoadMaterial(texname)
-				
-				if vmt.error then
-					logn(vmt.error)
-				else
-					if vmt.basetexture then
-						model.diffuse = Texture(vmt.basetexture, {mip_map_levels = 8, read_speed = math.huge})
-					end
+				if CLIENT then
+					local vmt = steam.LoadMaterial(texname)
 					
-					if vmt.basetexture2 then
-						model.diffuse2 = Texture(vmt.basetexture2, {mip_map_levels = 8, read_speed = math.huge})
-					end
-					
-					if vmt.bumpmap then
-						model.bump = Texture(vmt.bumpmap, {mip_map_levels = 8, read_speed = math.huge})
-					end
-					
-					if vmt.specular then
-						model.specular = Texture(vmt.envmap, {mip_map_levels = 8, read_speed = math.huge})
+					if vmt.error then
+						logn(vmt.error)
+					else
+						if vmt.basetexture then
+							model.diffuse = Texture(vmt.basetexture, {mip_map_levels = 8, read_speed = math.huge})
+						end
+						
+						if vmt.basetexture2 then
+							model.diffuse2 = Texture(vmt.basetexture2, {mip_map_levels = 8, read_speed = math.huge})
+						end
+						
+						if vmt.bumpmap then
+							model.bump = Texture(vmt.bumpmap, {mip_map_levels = 8, read_speed = math.huge})
+						end
+						
+						if vmt.specular then
+							model.specular = Texture(vmt.envmap, {mip_map_levels = 8, read_speed = math.huge})
+						end
 					end
 				end
-				
 				table.insert(bsp_mesh.sub_models, meshes[texname])
 			end
 
@@ -548,19 +550,23 @@ for i, data in ipairs(bsp_mesh.sub_models) do
 end 
 profiler.StopTimer()
 
-profiler.StartTimer("render.CreateMesh")
-for i, data in ipairs(bsp_mesh.sub_models) do
-	data.mesh = render.CreateMesh(data.vertices)
-	--data.vertices = nil
+if CLIENT then
+	profiler.StartTimer("render.CreateMesh")
+	for i, data in ipairs(bsp_mesh.sub_models) do
+		data.mesh = render.CreateMesh(data.vertices)
+		--data.vertices = nil
+	end
+	profiler.StopTimer()
 end
-profiler.StopTimer()
 
 logn("SUB_MODELS ", #bsp_mesh.sub_models)
 
 if bsp_world then bsp_world:Remove() end
 
 local world = entities.CreateEntity("clientside")
-world:SetModel(bsp_mesh)
+if CLIENT then 
+	world:SetModel(bsp_mesh) 
+end
 bsp_world = world
 
 profiler.StartTimer("creating entities")
@@ -578,9 +584,6 @@ for _, info in pairs(header.entities) do
 end
 profiler.StopTimer()
 
-
-do return end
-
 for i, model in ipairs(bsp_mesh.sub_models) do	
 	local triangles = ffi.new("unsigned int[?]", #model.vertices)
 	for i = 0, #model.vertices - 1 do triangles[i] = i end
@@ -589,11 +592,21 @@ for i, model in ipairs(bsp_mesh.sub_models) do
 	
 	local i = 0
 	
-	for j, data in ipairs(model.vertices) do 
-		vertices[i] = data.pos[1] i = i + 1		
-		vertices[i] = data.pos[2] i = i + 1		
-		vertices[i] = data.pos[3] i = i + 1		
-	end	
+	if SERVER then
+		for j, data in ipairs(model.vertices) do 
+			vertices[i] = data.pos.x i = i + 1		
+			vertices[i] = data.pos.y i = i + 1		
+			vertices[i] = data.pos.z i = i + 1		
+		end	
+	end
+	
+	if CLIENT then
+		for j, data in ipairs(model.vertices) do 
+			vertices[i] = data.pos[1] i = i + 1		
+			vertices[i] = data.pos[2] i = i + 1		
+			vertices[i] = data.pos[3] i = i + 1		
+		end	
+	end
 	
 	local mesh = {	
 		triangles = {
