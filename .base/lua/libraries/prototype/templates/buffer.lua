@@ -722,4 +722,42 @@ function prototype.AddBufferTemplate(META)
 			return self.type_ids[id]
 		end
 	end	
+
+	do -- push pop position
+		function META:PushPos(pos)
+			self.push_pop_pos_stack = self.push_pop_pos_stack or {}
+			
+			table.insert(self.push_pop_pos_stack, self:GetPos())
+			
+			self:SetPos(pos)
+		end
+		
+		function META:PopPos()
+			self:SetPos(table.remove(self.push_pop_pos_stack))
+		end
+	end
+
+	function META:TheEnd()
+		return self:GetPos() >= self:GetSize()
+	end
+		
+	function META:PeakByte(bytes)
+		return self:ReadByte(), self:Advance(-1)
+	end
+
+	function META:Advance(i)
+		i = i or 1
+		local pos = self:GetPos() + i
+		self:SetPos(pos) 
+		return pos
+	end
+
+	META.__len = META.GetSize
+
+	function META:GetDebugString()
+		self:PushPos(1)
+			local str = self:GetString():readablehex()
+		self:PopPos()
+		return str
+	end
 end

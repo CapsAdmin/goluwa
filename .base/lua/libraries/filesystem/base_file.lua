@@ -45,10 +45,6 @@ function CONTEXT:Lines()
 	end
 end
 
-function CONTEXT:PeakByte(bytes)
-	return self:ReadByte(), self:SetPos( self:GetPos() - 1 )
-end
-
 function CONTEXT:ReadByte()
 	local str = self:ReadBytes(1)
 	if str then
@@ -58,35 +54,6 @@ end
 
 function CONTEXT:WriteByte(byte)
 	self:WriteBytes(string.char(byte))
-end
-
-do -- push pop position
-	function CONTEXT:PushPos(pos)
-		self.stack = self.stack or {}
-		
-		table.insert(self.stack, self:GetPos())
-		
-		self:SetPos(pos)
-	end
-	
-	function CONTEXT:PopPos()
-		self:SetPos(table.remove(self.stack))
-	end
-end
-
-function CONTEXT:TheEnd()
-	return self:GetPos() >= self:GetSize()
-end
-
-function CONTEXT:Advance(i)
-	i = i or 1
-	self:SetPos(self:GetPos() + i) 
-end
-
-CONTEXT.__len = CONTEXT.GetSize
-
-function CONTEXT:GetDebugString()
-	return self:GetString():readablehex()
 end
 
 function CONTEXT:GetFiles()
