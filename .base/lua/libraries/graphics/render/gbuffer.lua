@@ -648,6 +648,6 @@ event.AddListener("RenderContextInitialized", nil, function()
 	
 	if not ok then
 		logn("[render] failed to initialize gbuffer: ", err)
-		render.ShutdownGBuffer()
+		render.EnableGBuffer(false)
 	end
 end)
