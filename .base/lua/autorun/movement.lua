@@ -136,7 +136,7 @@ event.AddListener("Move", "spooky", function(client, cmd)
 			ghost:SetPosition(Vec3(0,0,-40))  
 			ghost:SetLinearSleepingThreshold(0)  
 			ghost:SetAngularSleepingThreshold(0)  
-			ghost:SetSize(0.5)  
+			ghost:SetSize(1/12)  
  			ghost:SetSimulateOnClient(true) 
 			
 			client.nv.ghost = ghost
@@ -161,6 +161,7 @@ event.AddListener("Move", "spooky", function(client, cmd)
 	
 	physics:SetVelocity(physics:GetVelocity() + cmd.velocity * 0.2)
 	physics:SetVelocity(physics:GetVelocity() * 0.75)   
+	physics:SetAngularVelocity(physics:GetAngularVelocity() * 0.75)   
 	
 	return pos, physics:GetVelocity()
 end) 
@@ -171,9 +172,10 @@ if SERVER then
 			local cmd = client:GetCurrentCommand()
 			
 			local ent = entities.CreateEntity("networked")
-			ent:InitPhysicsBox(Vec3(1, 1, 1))
+			ent:InitPhysicsBox(Vec3(1, 1, 1)/12)
+			ent:SetSize(1/12)
 			ent:SetModelPath("models/cube.obj")
-			ent:SetMass(10)
+			ent:SetMass(100)
 			ent:SetPosition(cmd.net_position) 
 			ent:SetVelocity(cmd.angles:GetRad():GetForward() * 100)
 			
