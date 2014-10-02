@@ -415,14 +415,14 @@ do profiler.StartTimer("building mesh")
 
 	for _, model in ipairs(header.models) do
 		local sub_model =  {vertices = {}}
-		
+				
 		for i = 1, model.numfaces do
 			local face = header.faces[model.firstface + i]
-			
+						
 			local texinfo = header.texinfos[1 + face.texinfo]
 			local texdata = texinfo and header.texdatas[1 + texinfo.texdata]
 			local texname = header.texdatastringdata[1 + texdata.nameStringTableID]:lower()
-			
+						
 			if texname:sub(0, 5) == "maps/" then
 				texname = texname:gsub("maps/.-/(.+)_.-_.-_.+", "%1")
 			end
@@ -433,7 +433,7 @@ do profiler.StartTimer("building mesh")
 			-- split the world up into sub models by texture
 			if not meshes[texname] then				
 				local model = {vertices = {}}
-				
+								
 				meshes[texname] = model
 				
 				local vmt = steam.LoadMaterial(texname)
@@ -551,7 +551,7 @@ profiler.StopTimer()
 profiler.StartTimer("render.CreateMesh")
 for i, data in ipairs(bsp_mesh.sub_models) do
 	data.mesh = render.CreateMesh(data.vertices)
-	data.vertices = nil
+	--data.vertices = nil
 end
 profiler.StopTimer()
 
@@ -581,23 +581,9 @@ profiler.StopTimer()
 
 do return end
 
-if bsp_world then
-	for i,v in ipairs(bsp_world) do
-		if v:IsValid() then
-			v:Remove()
-		end
-	end
-	bsp_world = {}
-end
-
-bsp_world = bsp_world or {}
-
-for i, model in ipairs(bsp_mesh.sub_models) do
-	local chunk = entities.CreateEntity("physical")
-	chunk:SetModel(bsp_mesh)
-	
+for i, model in ipairs(bsp_mesh.sub_models) do	
 	local triangles = ffi.new("unsigned int[?]", #model.vertices)
-	for i = 0, #model.vertices do triangles[i] = i	end
+	for i = 0, #model.vertices - 1 do triangles[i] = i end
 	
 	local vertices = ffi.new("float[?]", #model.vertices * 3)
 	
@@ -622,14 +608,16 @@ for i, model in ipairs(bsp_mesh.sub_models) do
 		},
 	}
 	
-	chunk:InitPhysics("concave", 0, mesh, true)
-	table.insert(bsp_world, chunk)
+	local chunk = entities.CreateEntity("physical", bsp_world)
+	chunk:SetPhysicsModel(mesh)
+	chunk:InitPhysicsConcave(true)
+	--chunk:InitPhysicsConvex()
+	chunk:SetMass(0)
 end
 
-event.AddListener("MouseInput", "bsp_lol", function(button, press)
-	
+event.AddListener("MouseInput", "bsp_lol", function(button, press)	
 	local ent = entities.CreateEntity("physical")
-	ent:InitPhysics("box", 100, 1, 1, 1)
-	ent:SetPos(render.GetCamPos())
+	ent:InitPhysicsBox(Vec3(1, 1, 1))
+	ent:SetPosition(render.GetCamPos())
 	ent:SetVelocity(render.GetCamAng():GetForward() * 10)	
 end)
