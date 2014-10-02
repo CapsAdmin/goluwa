@@ -59,6 +59,18 @@ end
 
 structs.AddGetFunc(META, "Conjugate", "Conjugated")
 
+function META.Lerp(a, mult, b)
+
+	a.x = (b.x - a.x) * mult + a.x
+	a.y = (b.y - a.y) * mult + a.y
+	a.z = (b.z - a.z) * mult + a.z
+	a.w = (b.w - a.w) * mult + a.w
+	
+	return a
+end
+
+structs.AddGetFunc(META, "Lerp", "Lerped")
+
 function META:Dot(vec)
 	return self.w*vec.w + self.x*vec.x + self.y*vec.y + self.z*vec.z
 end
