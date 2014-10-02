@@ -14,7 +14,7 @@ do
 	COMPONENT.server_synced_vars = {}
 	COMPONENT.server_synced_vars_stringtable = {}
 
-	function COMPONENT:ServerSyncVar(component, key, type, rate, flags, skip_default)
+	function COMPONENT:ServerSyncVar(component, key, type, rate, flags, skip_default, smooth)
 		self:ServerDesyncVar(component, key)
 		
 		local info = {
@@ -27,6 +27,7 @@ do
 			id = SERVER and network.AddString(component .. key) or (component .. key),
 			flags = flags,
 			skip_default = skip_default,
+			smooth = smooth,
 		}
 		
 		table.insert(self.server_synced_vars, info)
@@ -78,8 +79,26 @@ do
 	end
 end
 
-function COMPONENT:OnUpdate()
+function COMPONENT:OnUpdate(dt)
 	self:UpdateVars()
+	
+	if self.smooth_vars then
+		for info, var in pairs(self.smooth_vars) do
+			if type(var) == "number" then
+				info.smooth_var = math.lerp(dt * info.smooth, info.smooth_var, var)
+			else
+				info.smooth_var:Lerp(dt * info.smooth, var)
+			end
+
+			if info.component == "unknown" then
+				local ent = self:GetEntity()
+				ent[info.set_name](ent, info.smooth_var)
+			else
+				local component = self:GetComponent(info.component)
+				component[info.set_name](component, info.smooth_var)
+			end
+		end
+	end
 end
 
 do -- synchronization server > client
@@ -131,6 +150,8 @@ do -- synchronization server > client
 			end
 		end
 	end
+	
+	local smooth_queue = {}
 
 	local function handle_packet(buffer)
 		local what = buffer:ReadNetString()
@@ -158,12 +179,23 @@ do -- synchronization server > client
 				if info then
 					local var = buffer:ReadType(info.type)
 					
-					if info.component == "unknown" then
-						local ent = self:GetEntity()
-						ent[info.set_name](ent, var)
+					if info.smooth then
+						if type(var) == "number" then
+							info.smooth_var = info.smooth_var or var
+						elseif var.GetLerped then
+							info.smooth_var = info.smooth_var or var:Copy()
+						end
+						
+						self.smooth_vars = self.smooth_vars or {}
+						self.smooth_vars[info] = var
 					else
-						local component = self:GetComponent(info.component)
-						component[info.set_name](component, var)
+						if info.component == "unknown" then
+							local ent = self:GetEntity()
+							ent[info.set_name](ent, var)
+						else
+							local component = self:GetComponent(info.component)
+							component[info.set_name](component, var)
+						end
 					end
 					if self.debug then logf("%s - %s: received %s\n", self, info.component, var) end
 				elseif info.flags == "reliable" then
@@ -177,7 +209,7 @@ do -- synchronization server > client
 	end
 
 	packet.AddListener("ecs_network", handle_packet)
-
+	
 	if SERVER then
 		table.insert(COMPONENT.Events, "ClientEntered")
 		
