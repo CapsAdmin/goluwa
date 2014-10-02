@@ -358,54 +358,6 @@ profiler.StartTimer("reading models")
 	]])
 profiler.StopTimer()
 
---[==[
-profiler.StartTimer("reading physdisp")
-	header.physmodels = {}
-
-	local lump = header.lumps[29]
-
-	bsp_file:SetPos(lump.fileofs)
-
-	local numDisplacements = bsp_file:ReadShort()
-	local dataSizes = {}
-
-	for i = 1, numDisplacements do
-		dataSizes[i] = bsp_file:ReadShort()
-	end
-
-	print("physdisps.numDisplacements: " .. numDisplacements)
-
-	--for i = 1, #dataSizes do
-	--	print("\t" .. dataSizes[i])
-	--end
-profiler.StopTimer()
-
-profiler.StartTimer("reading physmodels")
-	header.physmodels = {}
-
-	local struct = [[
-		int modelIndex;
-		int dataSize;
-		int keydataSize;
-		int solidCount;
-	]]
-
-	local lump = header.lumps[30]
-
-	bsp_file:SetPos(lump.fileofs)
-
-	while (bsp_file:GetPos() - lump.fileofs) < lump.filelen do
-		local physmodel = bsp_file:ReadStructure(struct)
-
-		if physmodel.dataSize > 0 then
-			bsp_file:SetPos(bsp_file:GetPos() + physmodel.dataSize + physmodel.keydataSize)
-		end
-
-		header.physmodels[#header.physmodels + 1] = physmodel
-	end
-profiler.StopTimer()]==]
-
-
 --for i = 1, #header.brushes do
 --	local brush = header.brushes[i]
 --end
@@ -461,13 +413,14 @@ do profiler.StartTimer("building mesh")
 	
 	local meshes = {}
 
-	for model_index = 1, #header.models do
+	for _, model in ipairs(header.models) do
 		local sub_model =  {vertices = {}}
 		
-		for i = 1, header.models[model_index].numfaces do
-			local face = header.faces[header.models[model_index].firstface + i]
+		for i = 1, model.numfaces do
+			local face = header.faces[model.firstface + i]
+			
 			local texinfo = header.texinfos[1 + face.texinfo]
-			local texdata = texinfo and header.texdatas[1 + texinfo.texdata] or nil
+			local texdata = texinfo and header.texdatas[1 + texinfo.texdata]
 			local texname = header.texdatastringdata[1 + texdata.nameStringTableID]:lower()
 			
 			if texname:sub(0, 5) == "maps/" then
@@ -480,6 +433,7 @@ do profiler.StartTimer("building mesh")
 			-- split the world up into sub models by texture
 			if not meshes[texname] then				
 				local model = {vertices = {}}
+				
 				meshes[texname] = model
 				
 				local vmt = steam.LoadMaterial(texname)
@@ -508,15 +462,12 @@ do profiler.StartTimer("building mesh")
 			end
 
 			sub_model = meshes[texname]
-
-			local edge_first = face.firstedge
-			local edge_count = face.numedges
-
-			local first, previous, current
 			
 			if face.dispinfo < 0 then
-				for j = 1, edge_count do
-					local surfedge = header.surfedges[edge_first + j]
+				local first, previous, current
+			
+				for j = 1, face.numedges do
+					local surfedge = header.surfedges[face.firstedge + j]
 					local edge = header.edges[1 + math.abs(surfedge)]
 					local current = edge[surfedge < 0 and 2 or 1] + 1
 
@@ -535,10 +486,10 @@ do profiler.StartTimer("building mesh")
 			else
 				local dispinfo = header.displacements[face.dispinfo + 1]
 				local size = 2 ^ dispinfo.power + 1
-				local count = size ^ 2
 				
 				local start_corner_dist = math.huge
 				local start_corner = 0
+				
 				local corners = {}
 				
 				for j = 1, 4 do
