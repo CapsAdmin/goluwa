@@ -1,3 +1,4 @@
+profiler.StartTimer("mounting content")
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/esther.bsp"))
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/jakobson.bsp"))
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/donnelley.bsp"))
@@ -10,6 +11,7 @@ steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_b
 --steam.MountSourceGame("half-life 2: episode two") local bsp_file = assert(vfs.Open("maps/ep2_outland_06a.bsp"))
 --steam.MountSourceGame("left 4 dead 2") local bsp_file = assert(vfs.Open("maps/c3m1_plankcountry.bsp"))
 --steam.MountSourceGame("half-life 2") steam.MountSourceGame("team fortress 2") local bsp_file = assert(vfs.Open("maps/achievement_apg_r11b.bsp"))
+profiler.StopTimer()
 
 local header = bsp_file:ReadStructure([[
 long ident; // BSP file identifier
@@ -38,10 +40,10 @@ do profiler.StartTimer("reading lumps") -- lumps
 	header.lumps = {}
 
 	for i = 1, 64 do
-		table.insert(header.lumps, bsp_file:ReadStructure(struct))
+		header.lumps[i] = bsp_file:ReadStructure(struct) 
 	end
 
-profiler.StopTimer() end
+profiler.StopTimer() end 
 
 header.map_revision = bsp_file:ReadLong()
 
@@ -73,7 +75,7 @@ local function read_lump_data(index, size, struct)
 	return out
 end
 
-do -- pak
+do profiler.StartTimer("mounting pak")-- pak
 	local lump = header.lumps[41]
 	local length = lump.filelen
 
@@ -85,10 +87,10 @@ do -- pak
 	vfs.Write(name, pak)
 	
 	vfs.Mount(R(name))
+	profiler.StopTimer()
 end
-
-
-if false then 
+ 
+if false then  
 profiler.StartTimer("reading game lump")
 	local lump = header.lumps[36]
 	bsp_file:SetPos(lump.fileofs)
@@ -188,20 +190,22 @@ do
 			return unpack(t)
 		end
 		local entities = {}
+		local i = 1 
 		bsp_file:PushPos(header.lumps[1].fileofs)
 			for vdf in bsp_file:ReadString():gmatch("{(.-)}") do
 				local ent = {}
 				for k, v in vdf:gmatch([["(.-)" "(.-)"]]) do
 					if k == "angles" then
 						v = Ang3(unpack_numbers(v))
-					elseif k == "_light" or k == "_ambient" or k:find("color") then
+					elseif k == "_light" or k == "_ambient" or k:find("color", nil, true) then
 						v = Color(unpack_numbers(v))
-					elseif k == "origin" or k:find("dir") or k:find("mins") or k:find("maxs") then
+					elseif k == "origin" or k:find("dir", nil, true) or k:find("mins", nil, true) or k:find("maxs", nil, true) then
 						v = Vec3(unpack_numbers(v))
 					end
 					ent[k] = tonumber(v) or v
 				end
-				table.insert(entities, ent)		
+				entities[i] = ent
+				i = i + 1  
 			end
 		bsp_file:PopPos()
 		header.entities = entities
@@ -306,26 +310,9 @@ do profiler.StartTimer("reading displacements")
 		int LightmapAlphaStart;	// Index into ddisplightmapalpha.
 		int LightmapSamplePositionStart; // Index into LUMP_DISP_LIGHTMAP_SAMPLE_POSITIONS.
 		
+		padding byte padding[128];
+	]]
 		
-		//CDispNeighbor		EdgeNeighbors[4];	// Indexed by NEIGHBOREDGE_ defines.
-		//CDispCornerNeighbors	CornerNeighbors[4];	// Indexed by CORNER_ defines.
-		//unsigned int		AllowedVerts[10];	// active verticies
-	]]
-	
-	local edge_neighbor = [[
-		unsigned short 	m_iNeighbor;
-		unsigned char 	m_NeighborOrientation;
-		unsigned char 	m_Span;
-		unsigned char 	m_NeighborSpan;
-		char llol;
-	]]
-	
-	local corner_neighbors = [[
-		unsigned short m_Neighbors[4]; // indices of neighbors.
-		unsigned char m_nNeighbors;
-		char llol;
-	]]
-	
 	local lump = header.lumps[27]
 	local length = lump.filelen / 176 
 	
@@ -335,47 +322,26 @@ do profiler.StartTimer("reading displacements")
 	
 	for i = 1, length do
 		local data = bsp_file:ReadStructure(structure)
-		
-		do -- http://fal.xrea.jp/plugin/SourceSDK/bspfile_8h-source.html				
-			data.EdgeNeighbors = {}
-			
-			for i = 1, 4 do
-				data.EdgeNeighbors[i] = {m_SubNeighbors = {bsp_file:ReadStructure(edge_neighbor), bsp_file:ReadStructure(edge_neighbor)}}
-			end
-			
-			data.CornerNeighbors = {}
-			
-			for i = 1, 4 do
-				data.CornerNeighbors[i] = bsp_file:ReadStructure(corner_neighbors)
-			end
-			
-			data.AllowedVerts = {}
-			
-			for i = 1, 10 do
-				data.AllowedVerts[i] = bsp_file:ReadLong()
-			end
-		end
-		
-		local old_pos = bsp_file:GetPos()
-		
+								
 		local lump = header.lumps[34]
-		local length = lump.filelen / 20
-		bsp_file:SetPos(lump.fileofs + (data.DispVertStart * 20))
-		
-		local DispVertLength = ((2 ^ data.power) + 1) ^ 2
+		local length = ((2 ^ data.power) + 1) ^ 2
 		
 		data.vertex_info = {}
+		
+		bsp_file:PushPos(lump.fileofs + (data.DispVertStart * 20))
+			for i = 1, length do
+				local vertex = bsp_file:ReadVec3()
+				local dist = bsp_file:ReadFloat()
+				local alpha = bsp_file:ReadFloat()
+				
+				data.vertex_info[i] = {
+					vertex = vertex, 
+					dist = dist, 
+					alpha = alpha
+				}
+			end
 
-		for i = 1, DispVertLength do
-
-			local vertex = bsp_file:ReadVec3()
-			local dist = bsp_file:ReadFloat()
-			local alpha = bsp_file:ReadFloat()
-
-			data.vertex_info[i] = {vertex = vertex, dist = dist, alpha = alpha}
-		end
-
-		bsp_file:SetPos(old_pos)
+		bsp_file:PopPos(old_pos)
 		
 		header.displacements[i] = data
 	end
@@ -509,6 +475,7 @@ do profiler.StartTimer("building mesh")
 			end
 			
 			if texname:find("skyb") then goto continue end
+			if texname:find("water") then goto continue end
 							
 			-- split the world up into sub models by texture
 			if not meshes[texname] then				
