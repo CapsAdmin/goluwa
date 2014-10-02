@@ -129,7 +129,9 @@ do
 		lib.bulletStepSimulation(dt or 0)
 		
 		while lib.bulletReadCollision(out) do
-			bullet.OnCollision(body_lookup[out[0].a], body_lookup[out[0].b])
+			if body_lookup[out[0].a] and body_lookup[out[0].b] then
+				bullet.OnCollision(body_lookup[out[0].a], body_lookup[out[0].b])
+			end
 		end
 	end
 end
@@ -381,19 +383,19 @@ do -- mesh init options
 		update_params(self)
 	end
 	
-	function BODY:InitPhysicsConvex(tbl, quantized_aabb_compression)	
+	function BODY:InitPhysicsConvex(tbl)	
 	
 		-- if you don't do this "tbl" will get garbage collected and bullet will crash
 		-- because bullet says it does not make any copies of indices or vertices
 		
 		local mesh = lib.bulletCreateMesh(
-			t.triangles.count, 
-			t.triangles.pointer, 
-			t.triangles.stride, 
+			tbl.triangles.count, 
+			tbl.triangles.pointer, 
+			tbl.triangles.stride, 
 			
-			t.vertices.count, 
-			t.vertices.pointer, 
-			t.vertices.stride
+			tbl.vertices.count, 
+			tbl.vertices.pointer, 
+			tbl.vertices.stride
 		)
 		
 		self.mesh = tbl

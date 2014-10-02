@@ -250,11 +250,11 @@ do
 		self:SetRotation(self.Rotation)
 	end
 	
-	function COMPONENT:InitPhysicsConcave()
+	function COMPONENT:InitPhysicsConcave(quantized_aabb_compression)
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
 		
-		self.rigid_body:InitPhysicsConcave(self:GetPhysicsModel())
+		self.rigid_body:InitPhysicsConcave(self:GetPhysicsModel(), quantized_aabb_compression)
 		
 		if SERVER then
 			local obj = self:GetComponent("networked")
@@ -269,7 +269,7 @@ do
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
 		
-		self.rigid_body:InitPhysicsConvex(self:GetPhysicsModel(), quantized_aabb_compression)
+		self.rigid_body:InitPhysicsConvex(self:GetPhysicsModel())
 		
 		if SERVER then
 			local obj = self:GetComponent("networked")
