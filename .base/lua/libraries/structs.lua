@@ -339,6 +339,18 @@ function structs.AddOperator(META, operator, ...)
 		lua = parse_args(META, lua, " and ")
 
 		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
+	elseif operator == "isvalid" then
+		local lua = [==[
+		local META, structs = ...
+		META["IsValid"] = function(a)
+				return 
+				math.isvalid(a.KEY)
+			end
+		]==]
+		
+		lua = parse_args(META, lua, " and ")
+
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
 	else
 		logn("unhandled operator " .. operator)
 	end
@@ -355,6 +367,7 @@ function structs.AddAllOperators(META)
 	structs.AddOperator(META, "==")
 	structs.AddOperator(META, "copy")
 	structs.AddOperator(META, "iszero")
+	structs.AddOperator(META, "isvalid")
 	structs.AddOperator(META, "unpack")
 	structs.AddOperator(META, "tostring")
 	structs.AddOperator(META, "zero")
