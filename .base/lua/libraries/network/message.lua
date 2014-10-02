@@ -15,7 +15,7 @@ end
 
 if CLIENT then
 	function message.Send(id, ...)
-		local buffer = Buffer()
+		local buffer = packet.CreateBuffer()
 		
 		buffer:WriteString(id)
 		buffer:WriteTable({...}, typex)
@@ -37,7 +37,7 @@ end
 
 if SERVER then
 	function message.Send(id, filter, ...)		
-		local buffer = Buffer()
+		local buffer = packet.CreateBuffer()
 		
 		buffer:WriteString(id)
 		buffer:WriteTable({...}, typex)

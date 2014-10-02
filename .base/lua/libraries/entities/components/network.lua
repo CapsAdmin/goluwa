@@ -122,7 +122,7 @@ do -- synchronization server > client
 				end
 								
 				if force_update or var ~= self.last[info.key] then
-					local buffer = Buffer()
+					local buffer = packet.CreateBuffer()
 					
 					buffer:WriteShort(info.id)
 					buffer:WriteShort(self.NetworkId)
@@ -227,7 +227,7 @@ end
 
 if SERVER then
 	function COMPONENT:SpawnEntityOnClient(client, id, config)
-		local buffer = Buffer()
+		local buffer = packet.CreateBuffer()
 		
 		buffer:WriteNetString("entity_networked_spawn")
 		buffer:WriteShort(id)
@@ -239,7 +239,7 @@ if SERVER then
 	end
 	
 	function COMPONENT:RemoveEntityOnClient(client, id)
-		local buffer = Buffer()
+		local buffer = packet.CreateBuffer()
 		
 		buffer:WriteNetString("entity_networked_remove")
 		buffer:WriteShort(id)

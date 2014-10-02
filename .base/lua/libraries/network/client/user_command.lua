@@ -104,7 +104,7 @@ if CLIENT then
 	client_tick_rate = 1/client_tick_rate
 	
 	do
-		local buffer = Buffer()
+		local buffer = packet.CreateBuffer()
 		local last_send = 0
 		local last_tick = 0
 		
@@ -154,7 +154,7 @@ if SERVER then
 	server_tick_rate = 1/server_tick_rate
 	
 	do
-		local buffer = Buffer()
+		local buffer = packet.CreateBuffer()
 		local last_send = 0
 		
 		event.CreateTimer("server_command_tick", server_tick_rate, function()			
@@ -173,7 +173,7 @@ if SERVER then
 		
 		local cmd = client:GetCurrentCommand()
 
-		local buffer = Buffer()
+		local buffer = packet.CreateBuffer()
 		buffer:WriteString(client:GetUniqueID())
 		
 		buffer:WriteDouble(system.GetTime())

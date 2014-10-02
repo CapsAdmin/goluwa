@@ -88,7 +88,7 @@ function CONTEXT:Open(path_info, mode, ...)
 			data = "",
 		}
 		
-		file.buffer = Buffer()
+		file.buffer = packet.CreateBuffer()
 		file.last_accessed = os.time()
 		
 		folder[path_info.file_name] = file
