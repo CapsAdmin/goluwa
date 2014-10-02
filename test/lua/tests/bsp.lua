@@ -623,8 +623,7 @@ for i, model in ipairs(bsp_mesh.sub_models) do
 	
 	local chunk = entities.CreateEntity("physical", bsp_world)
 	chunk:SetPhysicsModel(mesh)
-	chunk:InitPhysicsConcave(true)
-	--chunk:InitPhysicsConvex()
+	chunk:InitPhysicsTriangles(true)
 	chunk:SetMass(0)
 end
 
