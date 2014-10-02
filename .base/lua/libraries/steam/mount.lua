@@ -120,8 +120,18 @@ function steam.GetSourceGames()
 	return found
 end
 
+local cache_mounted = {}
+
 function steam.MountSourceGame(game_info)
+
+	if cache_mounted[game_info] then
+		return
+	end
+	
+	local str_game_info
+
 	if type(game_info) == "string" then 
+		str_game_info = game_info
 		game_info = steam.FindSourceGame(game_info) 
 	end
 	
@@ -186,10 +196,16 @@ function steam.MountSourceGame(game_info)
 			end
 		end
 	end
+	
+	if str_game_info then
+		cache_mounted[str_game_info] = true
+	end
 end
 
 function steam.UnmountSourceGame(game_info, title)
+
 	if type(game_info) == "string" then 
+		cache_mounted[game_info] = nil
 		game_info = steam.FindSourceGame(game_info, title) 
 	end
 	
