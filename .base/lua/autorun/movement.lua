@@ -130,7 +130,7 @@ event.AddListener("Move", "spooky", function(client, cmd)
 			ghost:ServerFilterSync(filter, "Rotation")
 			
 			--ghost:SetNetworkChannel(1) 
-			ghost:SetModelPath("models/face.obj")
+			ghost:SetModelPath("models/sphere.obj")
 			ghost:SetMass(85)
 			ghost:InitPhysicsSphere(0.5)
 			ghost:SetPosition(Vec3(0,0,-40))  
@@ -159,8 +159,29 @@ event.AddListener("Move", "spooky", function(client, cmd)
 		end
 	end
 	
-	physics:SetVelocity(physics:GetVelocity() + cmd.velocity * 0.1)
+	physics:SetVelocity(physics:GetVelocity() + cmd.velocity * 0.2)
 	physics:SetVelocity(physics:GetVelocity() * 0.75)   
 	
 	return pos, physics:GetVelocity()
 end) 
+ 
+if SERVER then
+	event.AddListener("ClientMouseInput", "bsp_lol", function(client, button, press)	
+		if button == "button_1" and press then
+			local cmd = client:GetCurrentCommand()
+			
+			local ent = entities.CreateEntity("networked")
+			ent:InitPhysicsBox(Vec3(1, 1, 1))
+			ent:SetModelPath("models/cube.obj")
+			ent:SetMass(10)
+			ent:SetPosition(cmd.net_position) 
+			ent:SetVelocity(cmd.angles:GetRad():GetForward() * 100)
+			
+			event.Delay(3, function()
+				entities.SafeRemove(ent)
+			end)
+			
+			print(client, button, press, ent, cmd.net_position)
+		end
+	end)
+end
