@@ -5,9 +5,9 @@ profiler.StartTimer("mounting content")
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/paul.bsp"))
 --steam.MountSourceGame("team fortress 2") steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/aramaki_4d.bsp"))
 --steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_bluehills_test3.bsp"))
---steam.MountSourceGame("counter-strike: global offensive") local bsp_file = assert(vfs.Open("maps/de_overpass.bsp"))
+steam.MountSourceGame("counter-strike: global offensive") local bsp_file = assert(vfs.Open("maps/de_overpass.bsp"))
 --steam.MountSourceGame("portal 2") local bsp_file = assert(vfs.Open("maps/sp_a4_finale1.bsp"))
-steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp"))
+--steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp"))
 --steam.MountSourceGame("half-life 2") local bsp_file = assert(vfs.Open("maps/d2_coast_07.bsp"))
 --steam.MountSourceGame("half-life 2: episode two") local bsp_file = assert(vfs.Open("maps/ep2_outland_06a.bsp"))
 --steam.MountSourceGame("left 4 dead 2") local bsp_file = assert(vfs.Open("maps/c3m1_plankcountry.bsp"))
@@ -409,6 +409,7 @@ do profiler.StartTimer("building mesh")
 	end
 	
 	local meshes = {}
+	local texture_format = {mip_map_levels = 8, read_speed = math.huge}
 
 	for _, model in ipairs(header.models) do
 		local sub_model =  {vertices = {}}
@@ -440,19 +441,19 @@ do profiler.StartTimer("building mesh")
 						logn(vmt.error)
 					else
 						if vmt.basetexture then
-							model.diffuse = Texture(vmt.basetexture, {mip_map_levels = 8, read_speed = math.huge})
+							model.diffuse = Texture(vmt.basetexture, texture_format)
 						end
 						
 						if vmt.basetexture2 then
-							model.diffuse2 = Texture(vmt.basetexture2, {mip_map_levels = 8, read_speed = math.huge})
+							model.diffuse2 = Texture(vmt.basetexture2, texture_format)
 						end
 						
 						if vmt.bumpmap then
-							model.bump = Texture(vmt.bumpmap, {mip_map_levels = 8, read_speed = math.huge})
+							model.bump = Texture(vmt.bumpmap, texture_format)
 						end
 						
 						if vmt.specular then
-							model.specular = Texture(vmt.envmap, {mip_map_levels = 8, read_speed = math.huge})
+							model.specular = Texture(vmt.envmap, texture_format)
 						end
 					end
 				end
@@ -568,28 +569,28 @@ profiler.StartTimer("creating entities")
 for _, info in pairs(header.entities) do
 	if CLIENT and info.classname then
 		if info.classname and info.classname:find("light_environment") then
-			local ang = Ang3(-info.pitch, info.angles.y + 90)
+			local ang = Ang3(info.pitch, info.angles.y)
+			print(info.angles, info.pitch)
 			world.Set("sun_angles", ang)
 			
 			world.Set("sun_specular_intensity", 0.15)
-			world.Set("sun_intensity", info._light.a)
+			world.Set("sun_intensity", 1.11)
 			info._light.a = 1
-			world.Set("sun_color", info._light)
-			world.Set("ambient_lighting", info._ambient)
-			table.print(info)
-		elseif info.classname:lower():find("light") then		
+			world.Set("sun_color", Color(info._light.r, info._light.g, info._light.b))
+			world.Set("ambient_lighting", Color(info._ambient.r, info._ambient.g, info._ambient.b))
+		elseif info.classname:lower():find("light") and info._light then		
 			local ent = entities.CreateEntity("light", world_ent)
 			local pos = info.origin * 0.0254
 			ent:SetPosition(Vec3(-pos.y, pos.x, pos.z))
-			ent:SetColor(info._light)
-			ent:SetSize(3)
-			ent:SetDiffuseIntensity(0.1)
-			ent:SetRoughness(0.8)
+			
+			ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
+			ent:SetSize(2)
+			ent:SetDiffuseIntensity(info._light.a/25) 
+			ent:SetRoughness(0.5)
 		elseif CLIENT and info.classname == "env_fog_controller" then
-			world.Set("fog_color", info.fogcolor)
+			world.Set("fog_color", info.fogcolor*0.5)
 			world.Set("fog_start", info.fogstart* 0.0254)
-			world.Set("fog_end", info.fogend * 0.0254)
-			world.Set("fog_intensity", 1)
+			world.Set("fog_end", info.fogend * 0.0254 * 2)
 		end
 	end
 	
@@ -602,7 +603,7 @@ for _, info in pairs(header.entities) do
 			local ang = info.angles:Rad()
 			ent:SetAngles(Ang3(ang.p, ang.y, ang.r))
 		end
-	end
+	end 
 end
 profiler.StopTimer()
 
