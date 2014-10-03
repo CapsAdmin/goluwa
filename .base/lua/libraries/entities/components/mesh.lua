@@ -107,7 +107,7 @@ if CLIENT then
 						if (bump_detail != vec3(0,0,0))
 						{
 							//bump_detail = normalize(bump_detail);
-							out_color[1].rgb += (mat3(vm_matrix)) * (bump_detail - vec3(0.5));
+							out_color[1].rgb += (mat3(vm_matrix)) * -(bump_detail - vec3(0.5));
 							out_color[1].rgb = normalize(out_color[1].rgb);
 						}
 					}
