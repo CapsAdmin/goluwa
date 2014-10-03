@@ -107,49 +107,47 @@ if CLIENT then
 				float get_attenuation(vec3 world_pos)
 				{												
 					float distance = length(light_pos - world_pos);
-					distance = distance / light_radius / 5;
+					distance = distance / light_radius / 9;
 					distance = -distance + 2; 
 					
-					return clamp(distance, 0, 1);
+					return pow(clamp(distance, 0, 1), 0.5);
 				}
+				
+				const float e = 2.71828182845904523536028747135;
+				const float pi = 3.1415926535897932384626433832;
+
 				
 				vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular)
 				{
-					float roughness = light_roughness;
+					float normalDotLight = dot(normal, cLight);
+				
+					if (normalDotLight < 0) return vec3(0,0,0);
+							
+					vec3 cEye = normalize(-world_pos);	
 
-					vec3 cEye = normalize(-world_pos);
-					
-					vec3 cHalf = normalize(cLight + cEye);
-
-					// calculate light lumosity (optimized with custom dist calc)
-					float sqDist = pow(light_pos.x - world_pos.x, 2.0) + pow(light_pos.y - world_pos.y, 2.0) + pow(light_pos.z - world_pos.z, 2.0);
-					//float cAttenuation = lAtt.y + lAtt.z * sqrt(sqDist) + lAtt.w * sqDist;
-					float cLuminosity = 1.0 / light_radius;
-					
-					// Beckman's distribution function D
+					vec3 cHalf = normalize(cLight + cEye);					
 					float normalDotHalf = dot(normal, cHalf);
+					
+					if (normalDotHalf < 0) return vec3(0,0,0);
+					
+					float normalDotEye = dot(normal, cEye);
+					float roughness = light_roughness;					
+					
 					float normalDotHalf2 = normalDotHalf * normalDotHalf;
 					
 					float roughness2 = roughness * roughness;
 					float exponent = -(1.0 - normalDotHalf2) / (normalDotHalf2 * roughness2);
-					float e = 2.71828182845904523536028747135;
+					
 					float D = pow(e, exponent) / (roughness2 * normalDotHalf2 * normalDotHalf2);
-					
-					// Compute Fresnel term F
-					float normalDotEye = dot(normal, cEye);
-					float F = mix(pow(1.0 - normalDotEye, 5.0), 1.0, 0.5);
-					
-					// Compute self shadowing term G
-					float normalDotLight = dot(normal, cLight);
+					float F = mix(pow(1.0 - normalDotEye, 5.0), 1.0, 0.5);															
 					float X = 2.0 * normalDotHalf / dot(cEye, cHalf);
 					float G = min(1.0, min(X * normalDotLight, X * normalDotEye));
 					
 					// Compute final Cook-Torrance specular term, load textures, mix them
-					float pi = 3.1415926535897932384626433832;
 					float CookTorrance = (D*F*G) / (normalDotEye * pi);
 					
 					vec3 diffuse_ = light_color.rgb * max(0.0, normalDotLight);
-					vec3 specular_ = light_color.rgb * max(0.0, CookTorrance) * specular * light_specular_intensity;
+					vec3 specular_ = light_color.rgb * max(max(0.0, CookTorrance) * specular * light_specular_intensity, normalDotLight);
 					
 					return (diffuse_ + specular_) * light_diffuse_intensity;
 				}
@@ -176,7 +174,7 @@ if CLIENT then
 					//out_color.rgb = world_pos; out_color.a = 1; {return;}
 										
 					{					
-						float fade = get_attenuation(world_pos);																		
+						float fade = pow(get_attenuation(world_pos), 4);	
 						
 						if (light_shadow == 1)
 							fade = fade*get_shadow(uv);
@@ -363,6 +361,7 @@ prototype.RegisterComponent(COMPONENT)
 if RELOAD then
 	render.InitializeGBuffer()
 	
+	do return end
 	event.Delay(0.1, function()
 	world.sun:SetShadow(true)
 	world.sun:SetPosition(render.GetCamPos()) 

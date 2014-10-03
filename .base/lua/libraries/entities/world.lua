@@ -84,7 +84,7 @@ do -- sun
 		world.sun:SetSize(size)
 	end)
 
-	ADD("sun_size", 1000, "sun_angles") 
+	ADD("sun_size", 2000, "sun_angles") 
 	ADD("sun_color", Color(1, 0.95, 0.8), function(var) world.sun:SetColor(var) end)
 	ADD("sun_intensity", 1.75, function(var) world.sun:SetDiffuseIntensity(var) end)
 	ADD("sun_specular_intensity", 0.2, function(var) world.sun:SetSpecularIntensity(var) end)
@@ -109,7 +109,7 @@ do -- ao
 end
 
 do -- gamma
-	ADD("gamma", 1.1)
+	ADD("gamma", 1)
 end
 
 if CLIENT then
