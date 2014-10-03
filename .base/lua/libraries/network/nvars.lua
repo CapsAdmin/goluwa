@@ -99,6 +99,12 @@ function nvars.Set(key, value, env, client)
 	nvars.Environments[env] = nvars.Environments[env] or {}
 	nvars.Environments[env][key] = value
 	
+	if network.debug or nvars.debug then
+		if not env:find("string_table") then
+			logf("nvars.%s.%s = %s\n", env, key, value)
+		end
+	end
+	
 	if SERVER then
 		message.Send("nv", client, env, key, value)
 	end
