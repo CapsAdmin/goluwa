@@ -1,9 +1,9 @@
 profiler.StartTimer("mounting content")
---steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/esther.bsp"))
+steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/esther.bsp"))
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/jakobson.bsp"))
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/donnelley.bsp"))
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/paul.bsp"))
-steam.MountSourceGame("team fortress 2") steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/aramaki_4d.bsp"))
+--steam.MountSourceGame("team fortress 2") steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/aramaki_4d.bsp"))
 --steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_bluehills_test3.bsp"))
 --steam.MountSourceGame("counter-strike: global offensive") local bsp_file = assert(vfs.Open("maps/de_overpass.bsp"))
 --steam.MountSourceGame("portal 2") local bsp_file = assert(vfs.Open("maps/sp_a4_finale1.bsp"))
@@ -103,21 +103,19 @@ profiler.StartTimer("reading game lump")
 		local version = bsp_file:ReadShort()
 		local fileofs = bsp_file:ReadLong()
 		local filelen = bsp_file:ReadLong()
-		
-		print(id)
-		
+										
 		if id == "prps" then
 			bsp_file:PushPos(fileofs)
 			
-			local path_count = bsp_file:ReadLong()
+			local count = bsp_file:ReadLong()
 			local paths = {}
-			for i = 1, path_count do 
+			for i = 1,count do 
 				local str = bsp_file:ReadString()
 				if str ~= "" then
 					paths[i] = str
 				end
 			end 
-			
+						
 			local leaf_count = bsp_file:ReadLong()
 			local leafs = {}
 			for i = 1, leaf_count do
@@ -126,45 +124,29 @@ profiler.StartTimer("reading game lump")
 			
 			local lumps = {}
 			local lump_count = bsp_file:ReadLong()
-						
+									
 			for i = 1, lump_count do
 				lumps[i] = bsp_file:ReadStructure([[
-					// v4
-					vec3		Origin;		 // origin
-					ang3		Angles;		 // orientation (pitch roll yaw)
-					unsigned short	PropType;	 // index into model name dictionary
-					unsigned short	FirstLeaf;	 // index into leaf array
-					unsigned short	LeafCount;
-					unsigned char	Solid;		 // solidity type
-					unsigned char	Flags;
-					int		Skin;		 // model skin numbers
-					float		FadeMinDist;
-					float		FadeMaxDist;
-					vec3		LightingOrigin;  // for lighting
-					// since v5
-					float		ForcedFadeScale; // fade distance scale
-					// v6 and v7 only
-					unsigned short  MinDXLevel;      // minimum DirectX version to be visible
-					unsigned short  MaxDXLevel;      // maximum DirectX version to be visible
-					// since v8
-					unsigned char   MinCPULevel;
-					unsigned char   MaxCPULevel;
-					unsigned char   MinGPULevel;
-					unsigned char   MaxGPULevel;
-					// since v7
-					color         DiffuseModulation; // per instance color and alpha modulation
-					// since v10
-					float           unknown; 
-					// since v9
-					boolean            DisableX360;     // if true, don't show on XBox 360
+					vec3 m_Origin;
+					ang3 m_Angles;
+					short m_PropType;
+					short m_FirstLeaf;
+					short m_LeafCount;
+					byte m_Solid;
+					byte m_Flags;
+					long m_Skin;
+					float m_FadeMinDist;
+					float m_FadeMaxDist;
+					vec3 m_LightingOrigin;
+					float m_flForcedFadeScale;
+					short m_nMinDXLevel;
+					short m_nMaxDXLevel;
 				]])
 			end
 			
-			print(path_count, paths) 
-			print(leaf_count, leafs)
-			print(lump_count, lumps)
 			bsp_file:PopPos()
 		end
+		
 		if id == "prpd" then
 			bsp_file:PushPos(fileofs)
 			
@@ -176,12 +158,28 @@ profiler.StartTimer("reading game lump")
 					paths[i] = str
 				end
 			end 			
-		
+												
+			bsp_file:PopPos()
+		end
+				
+		if id == "tlpd" then
+			bsp_file:PushPos(fileofs)
+
+			local count = bsp_file:ReadLong()
+			print(count)
+			--for i = 1, count do
+			--	local a = bsp_file:ReadBytes(4)
+			--	local b = bsp_file:ReadByte()
+			--	
+			--end
+			
 			bsp_file:PopPos()
 		end
 	end
 profiler.StopTimer()
 end
+
+do return end
 
 do
 	profiler.StartTimer("reading entities")
@@ -561,6 +559,9 @@ end
 
 logn("SUB_MODELS ", #bsp_mesh.sub_models)
 
+world.Set("sun_intensity", 0) 
+world.Set("ambient_lighting", Color(0,0,0,0))
+
 if bsp_world then bsp_world:Remove() end
 
 local world = entities.CreateEntity("clientside")
@@ -571,7 +572,15 @@ bsp_world = world
 
 profiler.StartTimer("creating entities")
 for _, info in pairs(header.entities) do
-	if info.origin and info.angles and info.model then
+	if info.classname:lower():find("light") then		
+		local ent = entities.CreateEntity("light", bsp_world)
+		local pos = info.origin * 0.0254
+		ent:SetPosition(Vec3(-pos.y, pos.x, pos.z))
+		ent:SetColor(info._light)
+		ent:SetSize(3)
+		ent:SetDiffuseIntensity(0.1)
+		ent:SetRoughness(0.8)
+	elseif info.origin and info.angles and info.model then
 		if vfs.IsFile(info.model) then
 			local ent = entities.CreateEntity("clientside", bsp_world)
 			ent:SetModelPath(info.model)
@@ -580,6 +589,9 @@ for _, info in pairs(header.entities) do
 			local ang = info.angles:Rad()
 			ent:SetAngles(Ang3(ang.p, ang.y, ang.r))
 		end
+	elseif info.classname == "env_fog_controller" then
+		_G.world.Set("fog_color", info.fogcolor)
+		_G.world.Set("fog_intensity", info.fogend * 0.0254)
 	end
 end
 profiler.StopTimer()
