@@ -1,6 +1,8 @@
 local COMPONENT = {}
 
 local spawned_networked = {}
+local queued_packets = {}
+
 
 COMPONENT.Name = "networked"
 COMPONENT.Require = {"transform"}
@@ -14,17 +16,17 @@ do
 	COMPONENT.server_synced_vars = {}
 	COMPONENT.server_synced_vars_stringtable = {}
 
-	function COMPONENT:ServerSyncVar(component, key, type, rate, flags, skip_default, smooth)
-		self:ServerDesyncVar(component, key)
+	function COMPONENT:ServerSyncVar(component_name, key, type, rate, flags, skip_default, smooth)
+		self:ServerDesyncVar(component_name, key)
 		
 		local info = {
-			component = component, 
+			component = component_name, 
 			key = key,
 			get_name = "Get" .. key,
 			set_name = "Set" .. key,
 			type = type,
 			rate = rate,
-			id = SERVER and network.AddString(component .. key) or (component .. key),
+			id = SERVER and network.AddString(component_name .. key) or (component_name .. key),
 			flags = flags,
 			skip_default = skip_default,
 			smooth = smooth,
@@ -32,19 +34,54 @@ do
 		
 		table.insert(self.server_synced_vars, info)
 		
-		self.server_synced_vars_stringtable[component..key] = info
+		self.server_synced_vars_stringtable[component_name..key] = info
+		
+		if SERVER then
+			if info.flags ~= "unreliable" then
+				if info.component == "unknown" then
+					info.old_set_func = info.old_set_func or self:GetEntity()[info.set_name]
+					
+					self:GetEntity()[info.set_name] = function(...) 
+						local ret = info.old_set_func(...)
+						self:UpdateVariableFromSyncInfo(info, nil, true)
+						return ret
+					end
+				else			
+					local component = self:GetEntity():GetComponent(component_name)
+					
+					info.old_set_func = info.old_set_func or component[info.set_name]
+					component[info.set_name] = function(...) 
+						local ret = info.old_set_func(...)
+						print(info.set_name, ...)
+						self:UpdateVariableFromSyncInfo(info, nil, true)
+						return ret
+					end
+				end
+			end
+		end
 	end
 
-	function COMPONENT:ServerDesyncVar(component, key)
+	function COMPONENT:ServerDesyncVar(component_name, key)
 		if not key then 
 			key = component 
 			component = nil  
 		end
 		
-		for k, v in ipairs(self.server_synced_vars) do
-			if (v.component == component or component == nil) and v.key == key then
-				table.remove(self.server_synced_vars, k)
-				self.server_synced_vars_stringtable[v.component..key] = nil
+		for key, info in ipairs(self.server_synced_vars) do
+			if (info.component == component or component == nil) and info.key == key then
+				table.remove(self.server_synced_vars, key)
+				self.server_synced_vars_stringtable[info.component..key] = nil
+				
+				if info.old_set_func then
+					if info.component == "unknown" then
+						info.old_set_func = info.old_set_func or self:GetEntity()[info.set_name]					
+						self:GetEntity()[info.set_name] = info.old_set_func
+					else
+						local component = self:GetEntity():GetComponent(component_name)					
+						info.old_set_func = info.old_set_func or component[info.set_name]					
+						component[info.set_name] = info.old_set_func
+					end
+				end
 				break
 			end
 		end
@@ -105,54 +142,7 @@ do -- synchronization server > client
 	COMPONENT.last = {}
 	COMPONENT.last_update = {}
 	COMPONENT.queued_packets = {}
-
-	function COMPONENT:UpdateVars(client, force_update)
-		for i, info in ipairs(SERVER and self.server_synced_vars or CLIENT and self.client_synced_vars) do
-			if force_update or not self.last_update[info.key] or self.last_update[info.key] < system.GetTime() then
-				
-				local var
-				
-				if info.component == "unknown" then
-					var = self:GetEntity()[info.get_name](self:GetEntity())
-				else
-					local component = self:GetComponent(info.component)
-					var = component[info.get_name](component)
-					
-					if info.skip_default and var == getmetatable(component)[info.key] then goto continue end
-				end
-								
-				if force_update or var ~= self.last[info.key] then
-					local buffer = packet.CreateBuffer()
-					
-					buffer:WriteShort(info.id)
-					buffer:WriteShort(self.NetworkId)
-					buffer:WriteType(var, info.type)
-					
-					if self.debug then logf("%s - %s: sending %s = %s to %s\n", self, info.component, info.key, utility.FormatFileSize(buffer:GetSize()), client) end
-						
-					packet.Send("ecs_network", buffer, client or info.filter, force_update and "reliable" or info.flags, self.NetworkChannel)
-					
-					self.last[info.key] = var
-				end
-
-				self.last_update[info.key] = system.GetTime() + info.rate
-			end
-			
-			::continue::
-		end
-
-		
-		if CLIENT then
-			local buffer = table.remove(self.queued_packets)
-			
-			if buffer then
-				handle_packet(buffer)
-			end
-		end
-	end
 	
-	local smooth_queue = {}
-
 	local function handle_packet(buffer)
 		local what = buffer:ReadNetString()
 		local id = buffer:ReadShort()
@@ -179,6 +169,10 @@ do -- synchronization server > client
 				if info then
 					local var = buffer:ReadType(info.type)
 					
+					if info.flags ~= "unreliable" then
+						print(info.set_name, self, var)
+					end
+					
 					if info.smooth then
 						if type(var) == "number" then
 							info.smooth_var = info.smooth_var or var
@@ -199,16 +193,70 @@ do -- synchronization server > client
 					end
 					if self.debug then logf("%s - %s: received %s\n", self, info.component, var) end
 				elseif info.flags == "reliable" then
+					buffer:SetPos(1)
 					table.insert(self.queued_packets, buffer)
 				end
 			end
 		else
-			---table.insert(self.queued_packets, buffer)
-			logf("received sync packet %s but entity[%s] is NULL\n", typ, id)
+			buffer:SetPos(1)
+			table.insert(queued_packets, buffer)
+			--logf("received sync packet %s but entity[%s] is NULL\n", typ, id)
 		end
 	end
 
 	packet.AddListener("ecs_network", handle_packet)
+
+	function COMPONENT:UpdateVariableFromSyncInfo(info, client, force_update)
+		local var
+		
+		if info.component == "unknown" then
+			var = self:GetEntity()[info.get_name](self:GetEntity())
+		else
+			local component = self:GetComponent(info.component)
+			var = component[info.get_name](component)
+			
+			if info.skip_default and var == getmetatable(component)[info.key] then return end
+		end
+						
+		if force_update or var ~= self.last[info.key] then
+			local buffer = packet.CreateBuffer()
+			
+			buffer:WriteShort(info.id)
+			buffer:WriteShort(self.NetworkId)
+			buffer:WriteType(var, info.type)
+
+			if self.debug then logf("%s - %s: sending %s = %s to %s\n", self, info.component, info.key, utility.FormatFileSize(buffer:GetSize()), client) end
+				
+			packet.Send("ecs_network", buffer, client or info.filter, force_update and "reliable" or info.flags, self.NetworkChannel)
+			
+			self.last[info.key] = var
+		end
+
+		self.last_update[info.key] = system.GetTime() + info.rate
+	end
+	
+	function COMPONENT:UpdateVars(client, force_update)
+		for i, info in ipairs(SERVER and self.server_synced_vars or CLIENT and self.client_synced_vars) do
+			if force_update or not self.last_update[info.key] or self.last_update[info.key] < system.GetTime() then
+				self:UpdateVariableFromSyncInfo(info, client, force_update)
+			end
+		end
+
+		
+		if CLIENT then
+			local buffer = table.remove(self.queued_packets)
+			
+			if buffer then
+				handle_packet(buffer)
+			end
+			
+			local buffer = table.remove(queued_packets)			
+			
+			if buffer then
+				handle_packet(buffer)
+			end
+		end
+	end
 	
 	if SERVER then
 		table.insert(COMPONENT.Events, "ClientEntered")
@@ -244,7 +292,7 @@ if SERVER then
 		buffer:WriteNetString("entity_networked_remove")
 		buffer:WriteShort(id)
 		
-		packet.Broadcast("ecs_network", buffer, client, "reliable")
+		packet.Send("ecs_network", buffer, client, "reliable")
 	end
 	
 	local id = 1
