@@ -26,6 +26,8 @@ local GBUFFER = {
 			
 			fog_color = Color(0.9,0.9,0.9),
 			fog_intensity = 256,
+			fog_start = 0,
+			fog_end = 32,
 			 
 			ao_amount = 1.0,
 			ao_cap = 0.3,
@@ -57,6 +59,11 @@ local GBUFFER = {
 			float get_depth(vec2 coord) 
 			{
 				return (2.0 * cam_nearz) / (cam_farz + cam_nearz - texture2D(tex_depth, coord).r * (cam_farz - cam_nearz));
+			}
+			
+			float get_depth2(vec2 coord, float start, float end) 
+			{
+				return (2.0 * start) / (end + start - texture2D(tex_depth, coord).r * (end - start));
 			}
 			
 			//
@@ -187,9 +194,17 @@ local GBUFFER = {
 			//
 			//FOG
 			//
-			vec3 mix_fog(vec3 color, float fog_intensity, vec3 fog_color)
+			vec3 mix_fog(vec3 color)
 			{
-				color = mix(fog_color, color, clamp(pow(-get_depth(uv) + 1.0, fog_intensity), 0.0, 1.0));
+				if (fog_color.a == 0) return color;
+			
+				// THIS ISNT RIGHT
+				if (fog_start > fog_end)
+					color = mix(fog_color.rgb, color, clamp(get_depth2(uv, cam_nearz, fog_start) * fog_color.a, 0.0, 1.0));
+				
+				if (fog_start < fog_end)
+					color = mix(fog_color.rgb, color, clamp((-get_depth2(uv, cam_nearz, fog_end)+1) * fog_color.a, 0.0, 1.0));
+				
 				
 				return color;
 			}
@@ -206,7 +221,7 @@ local GBUFFER = {
 				
 				out_color.rgb *= light;
 				
-				out_color.rgb = mix_fog(out_color.rgb, fog_intensity, fog_color.rgb);
+				out_color.rgb = mix_fog(out_color.rgb);
 				
 				out_color.rgb = pow(out_color.rgb, vec3(gamma));
 			}
