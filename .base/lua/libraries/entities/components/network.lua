@@ -52,7 +52,6 @@ do
 					info.old_set_func = info.old_set_func or component[info.set_name]
 					component[info.set_name] = function(...) 
 						local ret = info.old_set_func(...)
-						print(info.set_name, ...)
 						self:UpdateVariableFromSyncInfo(info, nil, true)
 						return ret
 					end
@@ -168,10 +167,6 @@ do -- synchronization server > client
 						
 				if info then
 					local var = buffer:ReadType(info.type)
-					
-					if info.flags ~= "unreliable" then
-						print(info.set_name, self, var)
-					end
 					
 					if info.smooth then
 						if type(var) == "number" then
