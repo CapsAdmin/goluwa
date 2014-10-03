@@ -1,5 +1,5 @@
 profiler.StartTimer("mounting content")
-steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/esther.bsp"))
+--steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/esther.bsp"))
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/jakobson.bsp"))
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/donnelley.bsp"))
 --steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/paul.bsp"))
@@ -7,7 +7,7 @@ steam.MountSourceGame("dear esther") local bsp_file = assert(vfs.Open("maps/esth
 --steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_bluehills_test3.bsp"))
 --steam.MountSourceGame("counter-strike: global offensive") local bsp_file = assert(vfs.Open("maps/de_overpass.bsp"))
 --steam.MountSourceGame("portal 2") local bsp_file = assert(vfs.Open("maps/sp_a4_finale1.bsp"))
---steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp"))
+steam.MountSourceGame("garry's mod") local bsp_file = assert(vfs.Open("maps/gm_construct.bsp"))
 --steam.MountSourceGame("half-life 2") local bsp_file = assert(vfs.Open("maps/d2_coast_07.bsp"))
 --steam.MountSourceGame("half-life 2: episode two") local bsp_file = assert(vfs.Open("maps/ep2_outland_06a.bsp"))
 --steam.MountSourceGame("left 4 dead 2") local bsp_file = assert(vfs.Open("maps/c3m1_plankcountry.bsp"))
@@ -178,8 +178,6 @@ profiler.StartTimer("reading game lump")
 	end
 profiler.StopTimer()
 end
-
-do return end
 
 do
 	profiler.StartTimer("reading entities")
@@ -559,39 +557,51 @@ end
 
 logn("SUB_MODELS ", #bsp_mesh.sub_models)
 
-world.Set("sun_intensity", 0) 
-world.Set("ambient_lighting", Color(0,0,0,0))
-
 if bsp_world then bsp_world:Remove() end
-
-local world = entities.CreateEntity("clientside")
+local world_ent = entities.CreateEntity("clientside")
 if CLIENT then 
-	world:SetModel(bsp_mesh) 
+	world_ent:SetModel(bsp_mesh) 
 end
-bsp_world = world
+bsp_world = world_ent
 
 profiler.StartTimer("creating entities")
 for _, info in pairs(header.entities) do
-	if info.classname:lower():find("light") then		
-		local ent = entities.CreateEntity("light", bsp_world)
-		local pos = info.origin * 0.0254
-		ent:SetPosition(Vec3(-pos.y, pos.x, pos.z))
-		ent:SetColor(info._light)
-		ent:SetSize(3)
-		ent:SetDiffuseIntensity(0.1)
-		ent:SetRoughness(0.8)
-	elseif info.origin and info.angles and info.model then
+	if CLIENT and info.classname then
+		if info.classname and info.classname:find("light_environment") then
+			local ang = Ang3(-info.pitch, info.angles.y + 90)
+			world.Set("sun_angles", ang)
+			
+			world.Set("sun_specular_intensity", 0.15)
+			world.Set("sun_intensity", info._light.a)
+			info._light.a = 1
+			world.Set("sun_color", info._light)
+			world.Set("ambient_lighting", info._ambient)
+			table.print(info)
+		elseif info.classname:lower():find("light") then		
+			local ent = entities.CreateEntity("light", world_ent)
+			local pos = info.origin * 0.0254
+			ent:SetPosition(Vec3(-pos.y, pos.x, pos.z))
+			ent:SetColor(info._light)
+			ent:SetSize(3)
+			ent:SetDiffuseIntensity(0.1)
+			ent:SetRoughness(0.8)
+		elseif CLIENT and info.classname == "env_fog_controller" then
+			world.Set("fog_color", info.fogcolor)
+			world.Set("fog_start", info.fogstart* 0.0254)
+			world.Set("fog_end", info.fogend * 0.0254)
+			world.Set("fog_intensity", 1)
+		end
+	end
+	
+	if info.origin and info.angles and info.model then
 		if vfs.IsFile(info.model) then
-			local ent = entities.CreateEntity("clientside", bsp_world)
+			local ent = entities.CreateEntity("clientside", world_ent)
 			ent:SetModelPath(info.model)
 			local pos = info.origin * 0.0254
 			ent:SetPosition(Vec3(-pos.y, pos.x, pos.z))
 			local ang = info.angles:Rad()
 			ent:SetAngles(Ang3(ang.p, ang.y, ang.r))
 		end
-	elseif info.classname == "env_fog_controller" then
-		_G.world.Set("fog_color", info.fogcolor)
-		_G.world.Set("fog_intensity", info.fogend * 0.0254)
 	end
 end
 profiler.StopTimer()
@@ -638,3 +648,5 @@ for i, model in ipairs(bsp_mesh.sub_models) do
 	chunk:InitPhysicsTriangles(true)
 	chunk:SetMass(0)
 end
+
+if SERVER and WORLD then WORLD:Remove() end
