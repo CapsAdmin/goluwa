@@ -8,33 +8,7 @@ function world.Initialize()
 	
 	for k, v in pairs(world.vars) do
 		v.set(v.get())
-	end	
-	
-	world.Set("sun_color", Color(1, 0.95, 0.8))
-	world.Set("sun_specular_intensity", 0.2)
-	world.Set("sun_roughness", 0.75)
-	
-	world.Set("ambient_lighting", Color(1, 0.95, 0.8) * 0.6)
-	
-	world.Set("fog_color", Color(1, 0.95, 0.8)) 
-	world.Set("fog_intensity", 0) 
-	 
-	world.Set("gamma", 1.1)    
-	world.Set("sun_angles", Ang3(-45,45,0))    
-	world.Set("ao_multiplier", 1)    
-	
-	do return end
-	
-	--sun_model = sun_model or Entity("model")
-	--sun_model:SetModelPath("models/spider.obj") 
-	--sun_model:SetSize(1500)
-	local speed = 1
-	event.AddListener("Update", "TimeOfDay", function()
-		local t = os.clock() * speed
-	--	world.Set("sun_angles", Ang3(t,t,0))    
-	--	world.Set("ambient_lighting", Color(1, 0.95, 0.8) * math.abs(math.cos(t)) * 0.6)
-	--	world.Set("fog_color", Color(1, 0.95, 0.8) * math.abs(math.cos(os.clock() / SunSpeed)) * 0.8) 
-	end)
+	end
 end
 
 function world.Set(key, val)
@@ -110,17 +84,17 @@ do -- sun
 		world.sun:SetSize(size)
 	end)
 
-	ADD("sun_size", 1000, "sun_angles")
-	ADD("sun_color", Color(1,1,1), function(var) world.sun:SetColor(var) end)
+	ADD("sun_size", 1000, "sun_angles") 
+	ADD("sun_color", Color(1, 0.95, 0.8), function(var) world.sun:SetColor(var) end)
 	ADD("sun_intensity", 1.75, function(var) world.sun:SetDiffuseIntensity(var) end)
-	ADD("sun_specular_intensity", 0.1, function(var) world.sun:SetSpecularIntensity(var) end)
-	ADD("sun_roughness", 0.1, function(var) world.sun:SetRoughness(var) end)
-	ADD("ambient_lighting", Color(0.3, 0.3, 0.3))
+	ADD("sun_specular_intensity", 0.2, function(var) world.sun:SetSpecularIntensity(var) end)
+	ADD("sun_roughness", 0.75, function(var) world.sun:SetRoughness(var) end)
+	ADD("ambient_lighting", Color(1, 0.95, 0.8) * 0.6)
 end
 
 do -- fog 
-	ADD("fog_color", Color(1,1,1,1))
-	ADD("fog_intensity", 1)
+	ADD("fog_color", Color(1, 0.95, 0.8))
+	ADD("fog_intensity", 0)
 end
 
 do -- ao
@@ -133,7 +107,7 @@ do -- ao
 end
 
 do -- gamma
-	ADD("gamma", 1.2)
+	ADD("gamma", 1.1)
 end
 
 if CLIENT then
