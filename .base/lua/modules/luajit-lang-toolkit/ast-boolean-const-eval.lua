@@ -1,4 +1,4 @@
-local ConstRule = { }
+local BoolConstRule = { }
 
 -- A function that return a numeric constant if an AST node evaluate to an
 -- arithmetic constant or "nil" otherwise.
@@ -6,41 +6,37 @@ local ConstRule = { }
 local const_eval
 
 local function dirop_compute(o, a, b)
-   if     o == '+' then return a + b
-   elseif o == '-' then return a - b
-   elseif o == '*' then return a * b
-   elseif o == '/' then return a / b
-   elseif o == '%' then return a % b
-   elseif o == '^' then return a ^ b
+   if o == 'and' then return a and b
+   elseif o == 'or' then return a or b
    end
 end
 
-function ConstRule.Literal(node)
+function BoolConstRule.Literal(node)
     local v = node.value
-    if type(v) == 'number' then return v end
+    if type(v) == 'boolean' then return v end
 end
 
-function ConstRule.BinaryExpression(node)
+function BoolConstRule.BinaryExpression(node)
     local o = node.operator
     local a = const_eval(node.left)
-    if a then
+    if a ~= nil then
         local b = const_eval(node.right)
-        if b then
+        if b ~= nil then
             return dirop_compute(o, a, b)
         end
     end
 end
 
-function ConstRule.UnaryExpression(node)
+function BoolConstRule.UnaryExpression(node)
     local o = node.operator
-    if o == '-' then
+    if o == 'not' then
         local v = const_eval(node.argument)
-        if v then return -v end
+        if v ~= nil then return not v end
     end
 end
 
 function const_eval(node)
-    local rule = ConstRule[node.kind]
+    local rule = BoolConstRule[node.kind]
     if rule then
         return rule(node)
     end
