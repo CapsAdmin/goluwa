@@ -26,16 +26,14 @@ local function main()
 	local next_update = 0
 	local last_time = 0
 	
-	local function update(dt)
-		event.UpdateTimers(dt)
-		
+	local function update_(dt)
+		event.UpdateTimers(dt)		
 		event.Call("Update", dt)
 	end
 	
 	local i = 0ULL
-		
-	while true do
 	
+	local function update()	
 		if (collectgarbage("count")*1024) > 1024*1024*1024 then 
 			if wait(1) then
 				logn("emergency collect! memory > 1 gb") 
@@ -53,13 +51,13 @@ local function main()
 		system.SetElapsedTime(system.GetElapsedTime() + dt)
 		i = i + 1
 					
-		local ok, err = pcall(update, dt)
+		local ok, err = pcall(update_, dt)
 		
 		if not ok then				
 			event.Call("ShutDown")
 			system.MessageBox("fatal error", tostring(err))
 			os.exit()
-			return 
+			return false
 		end
 	
 		last_time = time
@@ -80,6 +78,21 @@ local function main()
 		else
 			if render and render.context_created and render.GetVSync() then
 				render.SetVSync(false)
+			end
+		end
+	end
+	
+	if OnUpdate then
+		function OnUpdate()
+			local ok, err = pcall(update)
+			if not ok then 
+				print(err) 
+			end
+		end
+	else
+		while true do
+			if update() == false then
+				return
 			end
 		end
 	end
