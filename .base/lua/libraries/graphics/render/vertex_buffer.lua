@@ -44,7 +44,7 @@ function META:Draw(count)
 	render.BindVertexArray(self.vao_id)
 	--render.BindArrayBuffer(self.vertices_id)	
 	gl.BindBuffer(gl.e.GL_ELEMENT_ARRAY_BUFFER, self.indices_id)
-	gl.DrawElements(translate[self.Mode], count or self.indices_count, gl.e.GL_UNSIGNED_INT, nil)
+	gl.DrawElements(translate[self.Mode] or translate.triangles, count or self.indices_count, gl.e.GL_UNSIGNED_INT, nil)
 end
 
 function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
