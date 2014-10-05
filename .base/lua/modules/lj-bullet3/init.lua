@@ -11,7 +11,7 @@ typedef struct
 
 void bulletInitialize();
 
-void bulletStepSimulation(float time_step);
+void bulletStepSimulation(float time_step, int sub_steps, float fixed_time_step);
 bool bulletReadCollision(bullet_collision_value *out);
 void bulletDrawDebugWorld();
 
@@ -128,8 +128,11 @@ end
 do
 	local out = ffi.new("bullet_collision_value[1]")
 
-	function bullet.Update(dt)
-		lib.bulletStepSimulation(dt or 0)
+	function bullet.Update(dt, sub_steps, fixed_time_step)
+		sub_steps = sub_steps or 1
+		fixed_time_step = fixed_time_step or 1/60
+		
+		lib.bulletStepSimulation(dt or 0, sub_steps, fixed_time_step)
 		
 		while lib.bulletReadCollision(out) do
 			if body_lookup[out[0].a] and body_lookup[out[0].b] then
