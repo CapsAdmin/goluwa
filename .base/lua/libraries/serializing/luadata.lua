@@ -59,8 +59,20 @@ luadata.Types =
 		
 		return table.concat(str, "")
 	end,
-	cdata = function(var)
+	cdata = function(var)		
 		return tostring(var)
+	end,	
+	vec3 = function(var)
+		return ("Vec3(%f, %f, %f)"):format(var:Unpack()) 
+	end,
+	ang3 = function(var)
+		return ("Ang3(%f, %f, %f)"):format(var:Unpack()) 
+	end,
+	quat = function(var)
+		return ("Quat(%f, %f, %f, %f)"):format(var:Unpack()) 
+	end,
+	color = function(var)
+		return ("Color(%f, %f, %f, %f)"):format(var:Unpack()) 
 	end,
 }
 
