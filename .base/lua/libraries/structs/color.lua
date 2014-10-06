@@ -137,6 +137,10 @@ function META:GetShades()
    return tbl
 end
 
+function META:GetHex()
+	return bit.bor(bit.lshift(self.r*255, 16), bit.lshift(self.g*255, 8), self.b*255)
+end
+
 function META:SetTint(num)
 	local h,s,v = ColorToHSV(self)
 	self:SetLightness(v + (1 - v) * num)
