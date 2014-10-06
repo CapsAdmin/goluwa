@@ -6,18 +6,18 @@ end
 
 local console_input = ""
 
-event.AddListener("SciTEStrip", "scite_cmd", function()
-	console_input = scite.StripValue(1)
-end)
-
 event.AddListener("SciTEKey", "scite_cmd", function(key)
+	console_input = scite.StripValue(1)
 	if key == 13 and console_input ~= "" then
 		console.RunString(console_input, nil, nil, true)
-		table.insert(history, 1, console_input)
+		if not table.hasvalue(history, console_input) then
+			table.insert(history, 1, console_input)
+		end
 		
 		console_input = ""
 		scite.StripShow("'console:'{}")
 		scite.StripSetList(1, table.concat(history, "\n"))
+		serializer.WriteFile("luadata", "%DATA%/cmd_history.txt", history)
 	end
 end)
 
