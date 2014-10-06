@@ -20,6 +20,8 @@ do
 	}
 
 	function scite.SetStyle(tbl)
+		tbl.font = "courier new"
+		
 		for key, val in pairs(tbl) do
 			if type(val) == "table" then
 				for k,v in pairs(val) do
@@ -44,6 +46,17 @@ do
 		if tbl.plain_text then
 			scite.SendEditor(SCI_SETCARETFORE, tbl.plain_text.fore:GetHex())
 		end
+		
+		if tbl.back then
+			scite.SendEditor(SCI_SETFOLDMARGINCOLOUR, true, (tbl.back * 1.25):GetHex())
+			scite.SendEditor(SCI_SETFOLDMARGINHICOLOUR, true, (tbl.back * 1.25):GetHex())
+		end
+		
+		scite.SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDER, SC_MARK_BOXPLUS)
+		scite.SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPEN, SC_MARK_BOXMINUS)
+		
+		--scite.SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDERSUB, SC_MARK_BACKGROUND)
+		--scite.SendEditor(SCI_MARKERDEFINE, SC_MARKNUM_FOLDERSUB, SC_MARK_BACKGROUND)
 			
 		serializer.WriteFile("luadata", "%DATA%/editor_style.txt", tbl)
 	end
@@ -100,6 +113,15 @@ do
 			if key == "selected_text" then
 				tbl.tab_help = tbl.tab_help or {} 
 				tbl.tab_help.fore = Color(255,255,255)/4
+			end
+			
+			if key == "user_types" then
+				tbl.globals = tbl.globals or {}
+				tbl.globals.fore = Color(fg)
+				tbl.meta = tbl.meta or {}
+				tbl.meta.fore = Color(fg)
+				tbl.libraries = tbl.libraries or {}
+				tbl.libraries.fore = Color(fg)
 			end
 			
 			if translate[key] then
