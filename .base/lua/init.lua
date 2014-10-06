@@ -645,7 +645,9 @@ do -- libraries
 		video = include("libraries/graphics/video.lua") -- gif support (for now)
 		include("libraries/graphics/particles.lua")
 		
-		window.Open()
+		if not SCITE then
+			window.Open()
+		end
 		
 		-- audio
 		audio = include("libraries/audio/audio.lua") -- high level implementation of OpenAl
