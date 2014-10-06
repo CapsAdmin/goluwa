@@ -1,6 +1,7 @@
 jit.off(true, true)
 
-SERVER = true
+CLIENT = true
+SERVER = false
 DISABLE_CURSES = true
 OnUpdate = function() end
 SCITE = true
@@ -11,7 +12,7 @@ loadfile("../../../lua/init.lua")()
 
 console.Print = old_print
 
-vfs.AutorunAddons("scite/")
+event.Delay(0.1, function() vfs.AutorunAddons("scite/") end)
 
 local function call_event(name)
 	local name = "SciTE" .. name
@@ -21,19 +22,26 @@ local function call_event(name)
 	end
 end
 
-OnOpen = call_event("Open")
-OnClose = call_event("Close")
-OnSwitchFile = call_event("SwitchFile")
-OnSave = call_event("Save")
-OnBeforeSave = call_event("BeforeSave")
-OnChar = call_event("Char")
-OnKey = call_event("Key")
+OnClear = call_event("Clear")
+OnOpen = call_event("Open", filename)
+OnSwitchFile = call_event("SwitchFile", filename)
+OnBeforeSave = call_event("BeforeSave", filename)
+OnSave = call_event("Save", filename)
+OnChar = call_event("Char", chs)
 OnSavePointReached = call_event("SavePointReached")
 OnSavePointLeft = call_event("SavePointLeft")
-OnDwellStart= call_event("DwellStart")
-OnDoubleClick= call_event("DoubleClick")
-OnMarginClick= call_event("MarginClick")
-OnUpdateUI= call_event("UpdateUI")
-OnUserListSelection = call_event("UserListSelection")
+OnStyle = call_event("Style")
+OnDoubleClick = call_event("DoubleClick")
+OnUpdateUI = call_event("UpdateUI")
+OnMarginClick = call_event("MarginClick")
+OnUserListSelection = call_event("UserListSelection", listType, selection)
+OnKey = call_event("Key")
+OnDwellStart = call_event("DwellStart", pos, word)
+OnClose = call_event("Close", filename)
+OnStrip = call_event("Strip", control, change)
 
-print("!")
+system.SetCursor = function() end
+
+event.Delay(0, function() include("libraries/extensions/scite.lua") end)
+
+print("goluwa loaded")
