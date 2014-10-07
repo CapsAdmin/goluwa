@@ -1,5 +1,6 @@
 (...).setfenv(1, ...)
 
+local print = DisplayOutputLn
 local root = "C:/goluwa/"
 
 do -- apply a dark style
@@ -18,18 +19,49 @@ do -- config
 	--config.path.gslshell = root .. [[.base\bin\windows\x86\luajit.exe]]
 end
 
-local bin = ".base/bin/" .. jit.os:lower() ..	"/" .. jit.arch:lower() .. "/"
+function get_text()
+	local editor = GetEditor()
+	local pos = editor:GetCurrentPos()
+	-- don't do auto-complete in comments or strings.
+	-- the current position and the previous one have default style (0),
+	-- so we need to check two positions back.
+	local style = pos >= 2 and bit.band(editor:GetStyleAt(pos-2),31) or 0
+	if editor.spec.iscomment[style] or editor.spec.isstring[style] then return end
+
+	-- retrieve the current line and get a string to the current cursor position in the line
+	local line = editor:GetCurrentLine()
+	local linetx = editor:GetLine(line)
+	local linestart = editor:PositionFromLine(line)
+	local localpos = pos-linestart
+
+	local lt = linetx:sub(1,localpos)
+	lt = lt:gsub("%s*(["..editor.spec.sep.."])%s*", "%1")
+	-- strip closed brace scopes
+	lt = lt:gsub("%b()","")
+	lt = lt:gsub("%b{}","")
+	lt = lt:gsub("%b[]",".0")
+	-- match from starting brace
+	lt = lt:match("[^%[%(%{%s,]*$")
+
+	return lt
+end
+
+local bin = ".base/bin/" .. jit.os:lower() ..	"/" .. "x86" .. "/"
 
 local sockets = require("socket")
 
 local port = 16273
 local socket = sockets.tcp()
 socket:settimeout(0)
+local connected = false
+local ready = false
 
 local lua = ""..
 "ZEROBRANE_LINEINPUT=sockets.CreateServer([[tcp]],[[localhost]],"..port..")"..
 "ZEROBRANE_LINEINPUT.OnClientConnected=function(s,client)return\32true\32end;"..
-"ZEROBRANE_LINEINPUT.OnReceive=function(s,str)console.RunString(str)end"
+"ZEROBRANE_LINEINPUT.OnReceive=function(s,str)console.RunString(str)end;"..
+"zb=function(s)ZEROBRANE_LINEINPUT:Broadcast(s)print(s)end;"..
+"ZEROBRANE_LINEINPUT.debug=true"
 
 local PLUGIN = {
 	name = "Goluwa",
@@ -39,8 +71,25 @@ local PLUGIN = {
 }
 
 function PLUGIN:onLineInput(str)
-	socket:connect("localhost", port)
 	socket:send(str)
+end
+
+function PLUGIN:onEditorCharAdded(editor, event)
+	local char = string.char(event:GetKey())
+	
+end
+
+function PLUGIN:onIdle()
+	if ready then 	
+		if not connected and socket:connect("localhost", port) then
+			connected = true
+		end
+	end
+	
+	if not connected then return end
+	
+	local res = socket:receive("*a")
+	if res then print(res) end
 end
 
 ide.packages["goluwa"] = setmetatable(PLUGIN, ide.proto.Plugin)
@@ -93,28 +142,20 @@ function INTERPRETER:frun(wfile, run_debug)
 	
 	
 	--callback = function(...) CONSOLE_OUT(...) end
-	local fmt = "%q -e \"io.stdout:setvbuf('no')CLIENT=true;SERVER=false;DISABLE_CURSES=true;ARGS={'include[[%s]]%s'};dofile'%s'\""
-	--[[local pid = CommandLineRun(
-		fmt:format(root .. bin .. "luajit", file_path, lua, root .. ".base/lua/init.lua"),
-		root .. bin,
-		true,
-		false,
-		function(s) CONSOLE_OUT(s) end,
-		nil,
-		function() if run_debug then wx.wxRemoveFile(temp_file) end 
-		end
-	)]]
+	local fmt = "%q -e \"io.stdout:setvbuf('no')SERVER=true;DISABLE_CURSES=true;ARGS={'include[[%s]]%s'};dofile'%s'\""
 	local pid = ide:ExecuteCommand(
 		fmt:format(root .. bin .. "luajit", file_path, lua, root .. ".base/lua/init.lua"),
 		root .. bin,
 		function(s) CONSOLE_OUT(s) end,
-		function() if run_debug then wx.wxRemoveFile(temp_file) end end
+		function() if run_debug then wx.wxRemoveFile(temp_file) end connected = false ready = false end
 	)
 	--callback = nil
 
 	if cpath then
 		wx.wxSetEnv("LUA_CPATH", cpath)
 	end
+	
+	ready = true
 
 	return pid
 end
