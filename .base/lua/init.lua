@@ -371,7 +371,7 @@ end
 logf("launched on %s by %s as %s\n", os.date(), e.USERNAME, CLIENT and "client" or "server")
 
 do -- ffi
-	_G.ffi = require("ffiex")
+	_G.ffi = require("ffi")
 
 	_OLD_G.ffi_load = _OLD_G.ffi_load or ffi.load
 	
