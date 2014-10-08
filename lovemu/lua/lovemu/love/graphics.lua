@@ -482,6 +482,7 @@ do -- image
 			lovemu.textures[self] = Texture(path, {
 				mag_filter = DEFAULT_FILTER,
 				min_filter = DEFAULT_FILTER,
+				read_speed = math.huge,
 			}) 
 			
 			return self
@@ -494,6 +495,7 @@ do -- image
 		lovemu.textures[obj] = Texture(path, {
 			mag_filter = DEFAULT_FILTER,
 			min_filter = DEFAULT_FILTER,
+			read_speed = math.huge,
 		}) 
 		
 		return obj
