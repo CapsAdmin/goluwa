@@ -36,10 +36,11 @@ vfs.async_readers = {
 			local buffer = {}
 						
 			--mbps = mbps / 2
+			local read_size = 1048576 * mbps
 			queue_reader(function()
 				--in case mbps is higher than the file size
 				--for i = 1, 2 do
-					local str = file:ReadBytes(1048576 * mbps)					
+					local str = file:ReadBytes(read_size)					
 					
 					if str then
 						if vfs.debug or vfs.debug_async then 
@@ -55,6 +56,12 @@ vfs.async_readers = {
 					end
 				--end
 			end, path, queue[path].callback)
+			
+			if read_size >= file:GetSize()  then
+				update()
+				update()
+			end
+			
 			return true				
 		end
 	end,
