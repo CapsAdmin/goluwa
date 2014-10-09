@@ -344,6 +344,7 @@ ffnames = {
 "ffi.new",
 "ffi.cast",
 "ffi.typeof",
+"ffi.typeinfo",
 "ffi.istype",
 "ffi.sizeof",
 "ffi.alignof",
