@@ -1,3 +1,10 @@
+local source = NULL
+console.AddCommand("play", function(path)
+	if source:IsValid() then source:Remove() end
+	source = audio.CreateSource(path)
+	source:Play()
+end)
+
 console.AddCommand("stopsounds", function()
 	audio.Panic()
 end)
