@@ -136,8 +136,13 @@ do -- texture object
 		local f = format_override or self.format		
 		local f2 = self.format
 		
+		local x, y = f.x or 0, f.y or 0
+		local w, h = self.w, self.h
+		
 		if typex(buffer) == "texture" then
 			f = buffer.format
+			w = buffer.w
+			h = buffer.h
 			buffer = buffer:Download()
 		end
 		
@@ -166,10 +171,10 @@ do -- texture object
 				gl.CompressedTexSubImage2D(
 					f2.type, 
 					f.level or 0, 
-					f.x or 0, 
-					f.y or 0,
-					f.w or self.size.w, 
-					f.h or self.size.h, 
+					x,
+					y,
+					w, 
+					h, 
 					f.upload_format or f2.upload_format, 
 					f.size, 
 					buffer
@@ -178,10 +183,10 @@ do -- texture object
 				gl.TexSubImage2D(
 					f2.type, 
 					f.level or 0, 
-					f.x or 0, 
-					f.y or 0,
-					f.w or self.size.w, 
-					f.h or self.size.h, 
+					x, 
+					y,
+					w,
+					h, 
 					f.upload_format or f2.upload_format, 
 					f.format_type or f2.format_type,
 					buffer
