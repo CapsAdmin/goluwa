@@ -167,6 +167,8 @@ do -- texture object
 				end
 			end
 			
+			y = -y + self.h - h
+			
 			if self.compressed then
 				gl.CompressedTexSubImage2D(
 					f2.type, 
