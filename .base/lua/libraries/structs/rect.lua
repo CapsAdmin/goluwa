@@ -5,7 +5,7 @@ local META = {}
 META.ClassName = "Rect"
 
 META.NumberType = "float"
-META.Args = {"x", "y", "w", "h"}
+META.Args = {{"x", "left"}, {"y", "top"}, {"w", "right"}, {"h", "bottom"}}
 
 function META.Constructor(a,b,c,d)
 	if a and not b and not c and not d then
@@ -109,6 +109,14 @@ end
 
 function META:GetYH()
 	return self.y + self.h
+end
+
+function META:GetWidth()
+	return self.w - self.x
+end
+
+function META:GetHeight()
+	return self.h - self.y
 end
 
 function META:GetUV4(siz)
