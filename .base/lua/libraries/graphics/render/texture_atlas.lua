@@ -1,85 +1,107 @@
-local META = {}
-META.__index = META
-
-function META:FindNode(root, w, h)
-	if root.used then
-		return self:FindNode(root.right, w, h) or self:FindNode(root.down, w, h)
-	elseif w <= root.w and h <= root.h then
-		return root
-	end
-end
-
-function META:SplitNode(node, w, h)
-	node.used = true
-	node.down = {x = node.x, y = node.y + h, w = node.w, h = node.h - h}
-	node.right = {x = node.x + w, y = node.y, w = node.w - w, h = h}
-	return node
-end
-
-function META:Fit(w, h)
-	local node = self:FindNode(self.root, w, h)
-	
-	if node then		
-		return self:SplitNode(node, w, h)
-	end
-end
-
-local function create_packed_rectangle(w, h) 
-	return setmetatable({root = {x = 0, y = 0, w = w, h = h}}, META)
-end
-
 local render = ... or _G.render
+
+local function insert_rect(node, w, h)
+	if node.left and node.right then
+		return insert_rect(node.left, w, h) or insert_rect(node.right, w, h)
+	elseif not node.used and (node.w >= w and node.h >= h) then		
+		if w == node.w and h == node.h then
+			node.used = true
+			return node
+		end
+			
+		if node.w - w > node.h - h then
+			node.left = {
+				x = node.x, 
+				y = node.y, 
+				w = w, 
+				h = node.h
+			}
+			node.right = {
+				x = node.x + w, 
+				y = node.y, 
+				w = node.w - w, 
+				h = node.h,
+			}
+		else
+			node.left = {
+				x = node.x, 
+				y = node.y, 
+				w = node.w, 
+				h = h
+			}
+			node.right = {
+				x = node.x, 
+				y = node.y + h, 
+				w = node.w, 
+				h = node.h - h
+			}
+		end
+		
+		return insert_rect(node.left, w, h)
+	end
+end
 
 local META = prototype.CreateTemplate("texture_atlas")
 
-function META:FindFreePage(w, h)	
+function META:FindFreePage(w, h)
 	for _, page in ipairs(self.pages) do
-		local found = page.packer:Fit(w, h)
+		local found = insert_rect(page.tree, w, h)
 		if found then
-			return page, found.x, found.y, found.w, found.h
+			return page, found
 		end
 	end
 	
-	local page = { 
-		texture = render.CreateTexture(self.width, self.height, nil, {
-			min_filter = "linear",
-			mag_filter = "linear",
-		}), 
-		textures = {}, 
-		packer = create_packed_rectangle(self.width, self.height) 
-	}
-					
-	table.insert(self.pages, page)
+	local tree = {x = 0, y = 0, w = self.width, h = self.height}
+	local node = insert_rect(tree, w, h)
 	
-	return page, 0, 0, w, h
+	if node then
+		local page = { 
+			texture = render.CreateTexture(self.width, self.height, nil, {
+				min_filter = "linear",
+				mag_filter = "linear",
+			}), 
+			textures = {}, 
+			tree = tree,
+		}
+
+		table.insert(self.pages, page)
+		
+		return page, node
+	end
 end
 
-
 function META:BuildTextures()
-	table.sort(self.dirty_textures, function(a, b)
-		return (a.w + a.h) > (b.w + b.h)
-	end)
+	table.sort(self.dirty_textures, function(a, b) return (a.w + a.h) > (b.w + b.h) end)
 	
 	for _, tex in ipairs(self.dirty_textures) do
-		local page, x, y, w, h = self:FindFreePage(tex.w, tex.h)
+		local page, node = self:FindFreePage(tex.w, tex.h)
+		
+		if not page then
+			error("texture " .. tostring(tex) .. " is too big", 2)
+		end
+		
+		local x, y, w, h = node.x, node.y, node.w, node.h
 		
 		tex.page_x = x
-		tex.page_y = y
+		tex.page_y = y 
+		tex.page_w = w
+		tex.page_h = h
+		tex.page = page 
 		
-		tex.page_uv = {x, -y+h, w, h*2, page.texture.w, page.texture.h}
+		tex.page_uv = {x, y, w, h, page.texture.w, page.texture.h}
 		
 		page.textures[tex] = tex
 		
 		page.dirty = true
 	end
-	
+	  
 	self.dirty_textures = {}
 
 	for _, page in ipairs(self.pages) do
 		if page.dirty then		
 			page.texture:Clear()
 			
-			for _, tex in pairs(page.textures) do				
+			for _, tex in pairs(page.textures) do
 				page.texture:Upload(tex, {x = tex.page_x, y = tex.page_y})
 			end
 			
@@ -115,32 +137,21 @@ function META:Draw(id, x, y, w, h)
 	if id then
 		w = w or tex.w
 		h = h or tex.h
-		surface.SetTexture(tex)
+		surface.SetTexture(tex.page.texture)
+
 		surface.SetRectUV(unpack(tex.page_uv))
 		surface.DrawRect(x,y, w,h)
-		surface.SetRectUV(0,0,1,1)
+		surface.SetRectUV()
 	end
 end
 
 function render.CreateTextureAtlas(page_width, page_height)
 	page_height = page_height or page_width
-	return prototype.CreateObject(META, {dirty_textures = {}, pages = {}, textures = {}, width = page_width, height = page_height})
-end
-
-if RELOAD then
-	local atlas = render.CreateTextureAtlas(256)
-
-	local icons = vfs.Find("textures/sa/")
-	for i, icon in ipairs(icons) do
-		atlas:Insert(Texture("textures/sa/" .. icon), icon)
-	end
-	atlas:BuildTextures()
-	local icon = "itwaspoo.001.gif"--table.random(icons)
-	event.AddListener("Draw2D", "lol", function()
-		atlas:DebugDraw()
-		--if wait(1) then icon = table.random(icons) end
-		atlas:Draw(icon, 550, 550)
-		surface.SetTextPos(550, 520)
-		surface.DrawText(icon)
-	end)
+	return prototype.CreateObject(META, {
+		dirty_textures = {}, 
+		pages = {}, 
+		textures = {}, 
+		width = page_width, 
+		height = page_height
+	})
 end
