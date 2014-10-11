@@ -137,7 +137,7 @@ do -- texture object
 		local f2 = self.format
 		
 		local x, y = f.x or 0, f.y or 0
-		local w, h = self.w, self.h
+		local w, h = f.w or self.w, f.h or self.h
 		
 		if typex(buffer) == "texture" then
 			f = buffer.format
