@@ -611,14 +611,15 @@ function steam.LoadMap(path, callback)
 	for _, info in pairs(header.entities) do
 		if CLIENT and info.classname then
 			if info.classname and info.classname:find("light_environment") then
-				local ang = Ang3(info.pitch, info.angles.y)
+				local ang = Ang3(info.angles.y, info.pitch)
 				world.Set("sun_angles", ang)
 				
 				world.Set("sun_specular_intensity", 0.15)
-				world.Set("sun_intensity", 1.11)
+				world.Set("sun_intensity", 1)
 				info._light.a = 1
 				world.Set("sun_color", Color(info._light.r, info._light.g, info._light.b))
 				world.Set("ambient_lighting", Color(info._ambient.r, info._ambient.g, info._ambient.b))
+				table.print(info)
 			elseif info.classname:lower():find("light") and info._light then		
 				local ent = entities.CreateEntity("light", steam.bsp_world)
 				local pos = info.origin * 0.0254
