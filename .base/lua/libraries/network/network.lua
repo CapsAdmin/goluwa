@@ -104,8 +104,10 @@ if CLIENT then
 		end
 		
 		network.socket = peer	
-				
+
 		network.just_disconnected = nil
+		
+		event.Call("NetworkStarted")
 		
 		return peer
 	end
