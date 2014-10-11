@@ -6,7 +6,7 @@ function solve_path(name, extensions, directory_hint)
 	local tries = {}
 	
 	do
-		local temp = {"materials/" .. name}
+		local temp = {"materials/" .. name, "textures/" .. name}
 		
 		if directory_hint then
 			local dir = directory_hint:match("(.+/)")
@@ -14,10 +14,12 @@ function solve_path(name, extensions, directory_hint)
 			
 			if dir then
 				table.insert(temp, "materials/" .. dir .. "/" .. name)
+				table.insert(temp, "textures/" .. dir .. "/" .. name)
 			end
 			
 			if dir2 then
 				table.insert(temp, "materials/" .. dir2 .. "/" .. name)
+				table.insert(temp, "textures/" .. dir2 .. "/" .. name)
 			end
 		end
 			
