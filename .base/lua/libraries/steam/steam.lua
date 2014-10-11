@@ -2,6 +2,7 @@ local steam = _G.steam or {}
 
 include("mdl.lua", steam)
 include("vmt.lua", steam)
+include("bsp.lua", steam)
 include("web_api.lua", steam)
 include("server_query.lua", steam)
 include("mount.lua", steam)
