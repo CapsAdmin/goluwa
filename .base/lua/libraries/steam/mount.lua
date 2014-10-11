@@ -1,5 +1,13 @@
 local steam = ... or _G.steam
 
+console.AddCommand("mount", function(game)
+	steam.MountSourceGame(game)
+end)
+
+console.AddCommand("unmount", function(game)
+	steam.UnmountSourceGame(game)
+end)
+
 function steam.FindGamePaths(force_cache_update)
 	steam.paths = {}
 
