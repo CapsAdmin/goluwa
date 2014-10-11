@@ -14,10 +14,18 @@ local function go()
 	end
 end
 
-event.AddListener("NetworkStarted", "spawn_world", function()
-	go()
-end)
-
-if RELOAD then
+if RELOAD  then
 	go() 
+end
+
+if CLIENT then
+	event.Delay(function()
+		go() 
+	end)
+end
+
+if SERVER then
+	event.AddListener("NetworkStarted", "spawn_world", function()
+		go()
+	end)
 end
