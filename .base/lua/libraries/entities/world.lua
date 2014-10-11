@@ -93,10 +93,10 @@ do -- sun
 end
 
 do -- fog 
-	ADD("fog_color", Color(1, 0.95, 0.8, 1))
+	ADD("fog_color", Color(0.8, 0.95, 1, 1))
 	ADD("fog_intensity", 1)
 	ADD("fog_start", 1)
-	ADD("fog_end", 100)
+	ADD("fog_end", 4000)
 end
 
 do -- ao
