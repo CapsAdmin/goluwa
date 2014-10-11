@@ -1,5 +1,21 @@
 local steam = ... or _G.steam
 
+local mount_info = {
+	["esther"] = {"dear esther"},
+	["jakobson"] = {"dear esther"},
+	["donnelley"] = {"dear esther"},
+	["paul"] = {"dear esther"},
+	["aramaki_4d"] = {"team fortress 2", "garry's mod"},
+	["gm_bluehills_test3"] = {"garry's mod"},
+	["de_overpass"] = {"counter-strike: global offensive"},
+	["sp_a4_finale1"] = {"portal 2"},
+	["gm_construct"] = {"garry's mod"},
+	["d2_coast_07"] = {"half-life 2"},
+	["ep2_outland_06a"] = {"half-life 2: episode two"},
+	["c3m1_plankcountry"] = {"left 4 dead 2"},
+	["achievement_apg_r11b"] = {"half-life 2", "team fortress 2"},
+}
+
 local function profiler_StartTimer(...)
 	if steam.debug or _debug then
 		profiler.StartTimer(...)
@@ -11,6 +27,20 @@ local function profiler_StopTimer(...)
 		profiler.StopTimer(...)
 	end
 end
+
+console.AddCommand("map", function(path)
+	local mounts = mount_info[path]
+	
+	if mounts then
+		profiler_StartTimer("mounting content")
+		for _, mount in ipairs(mounts) do
+			steam.MountSourceGame(mount)
+		end
+		profiler_StopTimer()
+	end
+	
+	steam.LoadMap("maps/" .. path .. ".bsp")	
+end)
 
 function steam.LoadMap(path, callback)
 	local bsp_file = assert(vfs.Open(path))
