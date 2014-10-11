@@ -11,12 +11,12 @@ header = header:gsub(";", "%1\n")
 
 local ffmpeg = {
 	libs = {
-		avcodec = ffi.load("avcodec-55"),
-		avformat = ffi.load("avformat-55"),
-		avdevice = ffi.load("avdevice-55"),
-		avutil = ffi.load("avutil-52"),
-		swresample = ffi.load("swresample-0"),
-		swscale = ffi.load("swscale-2"),
+		avcodec = ffi.load("avcodec-56"),
+		avformat = ffi.load("avformat-56"),
+		avdevice = ffi.load("avdevice-56"),
+		avutil = ffi.load("avutil-54"),
+		swresample = ffi.load("swresample-1"),
+		swscale = ffi.load("swscale-3"),
 	},
 	e = enums,
 }
@@ -386,7 +386,7 @@ do
 							if length >= 0 then
 								self.packet[0].size = self.packet[0].size - length
 								self.packet[0].data = self.packet[0].data + length
-									
+																	
 								local clock, decoded_length = insert_audio_data(self, stream)
 								if not clock then return nil, decoded_length end
 								
