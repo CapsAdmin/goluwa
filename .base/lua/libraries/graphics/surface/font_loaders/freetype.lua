@@ -19,11 +19,11 @@ function META.LoadFont(name, options, callback)
 		options = options,
 		pages = {},
 		chars = {},
-		dirty_chars = {},
 		state = "reading"
 	})
 	
-	assert(vfs.ReadAsync(options.path, function(data)
+	assert(vfs.ReadAsync(options.path, function(data, err)
+		assert(data, err)
 		self.font = data
 		self.state = "loading"
 		self:Init()
@@ -41,112 +41,51 @@ function META:OnRemove()
 	freetype.DoneFace(self.face)
 end
 
-function META:FindFreePage(w, h)
-	local found_page, x, y
+function META:LoadGlyph(code)
+	if self.chars[code] then return end
 	
-	for k,v in pairs(self.pages) do
-		local found = v.packer:Fit(w, h)
-		if found then
-			found_page = v
-			x, y = found.x, found.y
-			break	
-		end
-	end
-
-	if not found_page then
-		x, y = 0, 0
-		
-		found_page = { 
-			texture = render.CreateTexture(256, 256, nil, {
-				min_filter = "linear",
-				mag_filter = "linear",
-			}), 
-			chars = {}, 
-			packer = utility.CreatePackedRectangle(256, 256) 
-		}
-		
-		--found_page.texture:Clear()
-		
-		table.insert(self.pages, found_page)
-	end
-	
-	return found_page, x, y
-end
-
-function META:LoadGlyph(codepoint, build_texture)
-	if self.chars[utf8.char(codepoint)] then return end
-	
-	local suc = freetype.LoadChar(self.face, codepoint, 4)
-	if suc == 0 then
+	if freetype.LoadChar(self.face, utf8.byte(code), 4) == 0 then
 		local glyph = self.face.glyph
-		local bitmap= glyph.bitmap
-		--local page, x, y = self:FindFreePage(bitmap.width, bitmap.rows)
+		local bitmap = glyph.bitmap
+
 		local char = {
-			char = utf8.char(codepoint),
+			char = code,
 			w = tonumber(bitmap.width), 
 			h = tonumber(bitmap.rows),
 			pitch = tonumber(bitmap.pitch),
-			xAdvance = math.round(tonumber(glyph.advance.x) / surface.font_dpi),
-			yAdvance = math.round(tonumber(glyph.advance.y) / surface.font_dpi),
-			bitmapLeft = tonumber(glyph.bitmap_left),
-			bitmapTop = tonumber(glyph.bitmap_top)
+			x_advance = math.round(tonumber(glyph.advance.x) / surface.font_dpi),
+			y_advance = math.round(tonumber(glyph.advance.y) / surface.font_dpi),
+			bitmap_left = tonumber(glyph.bitmap_left),
+			bitmap_top = tonumber(glyph.bitmap_top)
 		}
-		local copy = ffi.new("unsigned char[?]", bitmap.pitch * bitmap.rows)
-		ffi.copy(copy, bitmap.buffer, bitmap.pitch * bitmap.rows)
 		
-		char.bitmap = copy
+		--local size = bitmap.pitch * bitmap.rows * 4
+		--local copy = ffi.new("unsigned char[?]", size)
+		--ffi.copy(copy, bitmap.buffer, size)
 		
-		table.insert(self.dirty_chars, char)
-	else		
-		self.chars[utf8.char(codepoint)] = {invalid = true}
-	end
-	
-	if not build_texture then self:build_textures() end
-end
-
-function META:build_textures()
-	table.sort(self.dirty_chars, function(a, b)
-		return (a.w * a.h) > (b.w * b.h)
-	end)
-	
-	for i = 1, #self.dirty_chars do
-		local char = self.dirty_chars[i]
-		local page, x, y = self:FindFreePage(char.w, char.h)
-		char.page = page
-		char.x = x
-		char.y = y
+		local copy = ffi.new("unsigned char["..char.w.."]["..char.h.."][4]")
 		
-		page.chars[char.char] = char
-		self.chars[char.char] = char
-		
-		page.dirty = true
-	end
-	
-	self.dirty_chars = {}
-
-	for k, page in pairs(self.pages) do
-		if page.dirty then
-			page.texture:Clear()
-			local buffer = ffi.new("unsigned int[256][256]")
-			
-			for k,char in pairs(page.chars) do				
-				local bitmap = char.bitmap
-				for x = 0, char.w - 1 do
-					for y = 0, char.h - 1 do
-						buffer[255 - (y + char.y)][x + char.x] = bit.lshift(bitmap[x + y * char.pitch], 24) + 0xFFFFFF
-					end
-				end
+		local i = 0
+		for x = 0, char.w - 1 do
+			for y = 0, char.h - 1 do
+				copy[x][y][0] = 255
+				copy[x][y][1] = 255
+				copy[x][y][2] = 255
+				copy[x][y][3] = bitmap.buffer[i] 
+				i = i + 1
 			end
-			page.texture:Upload(buffer)
-			page.dirty = false
 		end
+		
+		self.texture_atlas:Insert(code, {		
+			w = char.w, 
+			h = char.h, 
+			buffer = copy,
+		})
+		
+		self.chars[code] = char
+	else		
+		self.chars[code] = {invalid = true}
 	end
-end
-function META:LoadGlyphs(code_start, code_end)
-	for i = code_start, code_end do
-		self:LoadGlyph(i, true)
-	end
-	self:build_textures()
 end
 
 function META:Init()
@@ -156,13 +95,24 @@ function META:Init()
 		self.face_ref = face
 		face = face[0]
 		self.face = face
+		
 		freetype.SetCharSize(face, 0, self.options.size * surface.font_dpi, surface.font_dpi, surface.font_dpi)
-		self.lineHeight = face.height / surface.font_dpi
-		self.maxHeight = (face.ascender - face.descender) / surface.font_dpi
-		self:LoadGlyphs(32, 128)
 		
-		self.state = "loaded"
+		self.line_height = face.height / surface.font_dpi
+		self.max_height = (face.ascender - face.descender) / surface.font_dpi
 		
+		self.texture_atlas = render.CreateTextureAtlas(512, 512, {
+			min_filter = "linear",
+			mag_filter = "linear",
+		})
+		
+		for i = 32, 128 do
+			self:LoadGlyph(utf8.char(i))
+		end
+		
+		self.texture_atlas:Build()
+		
+		self.state = "loaded"		
 	else
 		self.state = "error"
 	end
@@ -186,11 +136,11 @@ function META:DrawString(str, x, y)
 				tex = ch.page.texture
 			end
 			surface.SetRectUV(ch.x, ch.y, ch.w, ch.h, 256, 256)
-			surface.DrawRect(X, Y - (ch.bitmapTop) + self.options.size, ch.w, ch.h)
-			X = X + ch.xAdvance
-			Y = Y + ch.yAdvance
+			surface.DrawRect(X, Y - (ch.bitmap_top) + self.options.size, ch.w, ch.h)
+			X = X + ch.x_advance
+			Y = Y + ch.y_advance
 		elseif not ch or not ch.invalid then
-			self:LoadGlyph(utf8.byte(char))
+			self:LoadGlyph(char)
 		end
 	end
 	
@@ -198,7 +148,6 @@ function META:DrawString(str, x, y)
 end
 
 function META:DrawString(str, x, y)
-	
 	self.vertex_buffer = self.vertex_buffer or surface.CreatePoly(500)
 	
 	self.string_cache = self.string_cache or {}
@@ -221,7 +170,7 @@ function META:DrawString(str, x, y)
 				X = X + self.options.size
 			else			
 				if not ch or not ch.invalid then
-					self:LoadGlyph(utf8.byte(char))
+					self:LoadGlyph(char)
 					ch = self.chars[char]
 				end
 				
@@ -234,12 +183,12 @@ function META:DrawString(str, x, y)
 				
 					table.insert(chars, {
 						uv = {ch.x, ch.y, ch.w, ch.h, ch.page.texture.w, ch.page.texture.h},
-						rect = {i, X, Y - (ch.bitmapTop) + self.options.size, ch.w, ch.h},					
+						rect = {i, X, Y - (ch.bitmap_top) + self.options.size, ch.w, ch.h},					
 						tex = ch.page.texture, -- todo: sort by texture
 					})
 					
-					X = X + ch.xAdvance
-					Y = Y + ch.yAdvance
+					X = X + ch.x_advance
+					Y = Y + ch.y_advance
 				end
 			end
 		end
@@ -259,8 +208,7 @@ function META:DrawString(str, x, y)
 	surface.PopMatrix()
 end
 
-function META:DrawString(str, x, y)
-	
+function META:DrawString(str, x, y)	
 	self.string_cache = self.string_cache or {}
 	
 	if not self.string_cache[str] then	
@@ -282,26 +230,30 @@ function META:DrawString(str, x, y)
 				X = X + self.options.size
 			else			
 				if not ch or not ch.invalid then
-					self:LoadGlyph(utf8.byte(char))
+					self:LoadGlyph(char)
+					self.texture_atlas:Build()
 					ch = self.chars[char]
 				end
 				
-				if ch then				
-					if ch.page.texture ~= last_tex then
+				if ch then		
+					local texture = self.texture_atlas:GetPageTexture(char)
+					
+					if texture ~= last_tex then
 						poly = surface.CreatePoly(#str)
-						table.insert(data, {poly = poly, texture = ch.page.texture})
-						last_tex = ch.page.texture
+						table.insert(data, {poly = poly, texture = texture})
+						last_tex = texture
 					end
 					
-					poly:SetUV(ch.x, ch.y, ch.w, ch.h, ch.page.texture.w, ch.page.texture.h)
-					poly:SetRect(i, X, Y - (ch.bitmapTop) + self.options.size, ch.w, ch.h)
+					local x,y, w,h, sx,sy = self.texture_atlas:GetUV(char)
+					poly:SetUV(x,y, w,h, sx,sy) 
+					poly:SetRect(i, X, Y + self.options.size, ch.w, -ch.h)
 					
 					if self.options.monospace then 
 						X = X + self.options.spacing
 					else
-						X = X + ch.xAdvance + self.options.spacing
+						X = X + ch.x_advance + self.options.spacing
 					end
-					Y = Y + ch.yAdvance
+					Y = Y + ch.y_advance
 				end
 			end
 			
@@ -313,7 +265,9 @@ function META:DrawString(str, x, y)
 	surface.PushMatrix(x, y)
 	for i, v in ipairs(self.string_cache[str]) do
 		surface.SetTexture(v.texture)
+		render.SetCullMode("front")
 		v.poly:Draw()
+		render.SetCullMode("back")
 	end	
 	surface.PopMatrix()
 end
@@ -330,7 +284,8 @@ function META:GetTextSize(str)
 			X = X + self.options.size
 		else
 			if not ch or not ch.invalid then
-				self:LoadGlyph(utf8.byte(char))
+				self:LoadGlyph(char)
+				self.texture_atlas:Build()
 				ch = self.chars[char]
 			end
 		
@@ -338,9 +293,9 @@ function META:GetTextSize(str)
 				if self.options.monospace then 
 					X = X + self.options.spacing
 				else
-					X = X + ch.xAdvance + self.options.spacing
+					X = X + ch.x_advance + self.options.spacing
 				end
-				Y = Y + ch.yAdvance
+				Y = Y + ch.y_advance
 			end
 		end
 	end
