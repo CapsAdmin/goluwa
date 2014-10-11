@@ -56,10 +56,7 @@ function META:FindFreePage(w, h)
 	
 	if node then
 		local page = { 
-			texture = render.CreateTexture(self.width, self.height, nil, {
-				min_filter = "linear",
-				mag_filter = "linear",
-			}), 
+			texture = render.CreateTexture(self.width, self.height, nil, self.format), 
 			textures = {}, 
 			tree = tree,
 		}
@@ -70,27 +67,28 @@ function META:FindFreePage(w, h)
 	end
 end
 
-function META:BuildTextures()
+function META:Build()
 	table.sort(self.dirty_textures, function(a, b) return (a.w + a.h) > (b.w + b.h) end)
 	
-	for _, tex in ipairs(self.dirty_textures) do
-		local page, node = self:FindFreePage(tex.w, tex.h)
+	for _, data in ipairs(self.dirty_textures) do
+
+		local page, node = self:FindFreePage(data.w, data.h)
 		
 		if not page then
-			error("texture " .. tostring(tex) .. " is too big", 2)
+			error("texture " .. tostring(data) .. " is too big", 2)
 		end
 		
 		local x, y, w, h = node.x, node.y, node.w, node.h
 		
-		tex.page_x = x
-		tex.page_y = y 
-		tex.page_w = w
-		tex.page_h = h
-		tex.page = page 
+		data.page_x = x
+		data.page_y = y 
+		data.page_w = w
+		data.page_h = h
+		data.page = page 
 		
-		tex.page_uv = {x, y, w, h, page.texture.w, page.texture.h}
+		data.page_uv = {x, y, w, h, page.texture.w, page.texture.h}
 		
-		page.textures[tex] = tex
+		page.textures[data] = data
 		
 		page.dirty = true
 	end
@@ -101,8 +99,18 @@ function META:BuildTextures()
 		if page.dirty then		
 			page.texture:Clear()
 			
-			for _, tex in pairs(page.textures) do
-				page.texture:Upload(tex, {x = tex.page_x, y = tex.page_y})
+			for _, data in pairs(page.textures) do
+				if data.buffer then
+					data.format = data.format or {}
+					data.format.x = data.page_x
+					data.format.y = data.page_y
+					data.format.w = data.w
+					data.format.h = data.h
+
+					page.texture:Upload(data.buffer, data.format)
+				else
+					page.texture:Upload(data, {x = data.page_x, y = data.page_y})
+				end
 			end
 			
 			page.dirty = false
@@ -125,33 +133,49 @@ function META:DebugDraw()
 	end
 end
 
-function META:Insert(texture, id)
+function META:Insert(id, data)
 	if id then
-		self.textures[id] = texture
+		self.textures[id] = data
 	end
-	table.insert(self.dirty_textures, texture)
+	table.insert(self.dirty_textures, data)
 end
 
 function META:Draw(id, x, y, w, h)
-	local tex = self.textures[id]
-	if id then
-		w = w or tex.w
-		h = h or tex.h
-		surface.SetTexture(tex.page.texture)
+	local data = self.textures[id]
+	if data then
+		w = w or data.page_w
+		h = h or data.page_h
+		
+		surface.SetTexture(data.page.texture)
 
-		surface.SetRectUV(unpack(tex.page_uv))
+		surface.SetRectUV(unpack(data.page_uv))
 		surface.DrawRect(x,y, w,h)
 		surface.SetRectUV()
 	end
 end
 
-function render.CreateTextureAtlas(page_width, page_height)
+function META:GetUV(id)
+	local data = self.textures[id]
+	if data then
+		return unpack(data.page_uv)
+	end
+end
+
+function META:GetPageTexture(id)
+	local data = self.textures[id]
+	if data then
+		return data.page.texture
+	end
+end
+
+function render.CreateTextureAtlas(page_width, page_height, format)
 	page_height = page_height or page_width
 	return prototype.CreateObject(META, {
 		dirty_textures = {}, 
 		pages = {}, 
 		textures = {}, 
 		width = page_width, 
-		height = page_height
+		height = page_height,
+		format = format,
 	})
 end
