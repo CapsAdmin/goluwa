@@ -1,33 +1,31 @@
 include("gui2.lua")
-    
-surface.CreateFont("snow_font", {path = "fonts/zfont.txt", size = 8})
 
-do -- gui  
-	local button = gui2.CreatePanel()
-	button:SetColor(Color(88, 92, 88))
-	button:SetPosition(Vec2(8, 4))
-	button:SetSize(Vec2(18, 22))
-	button:SetText("<font=snow_font>hello", true)  
-end 
-
+local scale = 2
 local bg = Color(64, 44, 128)
 
-local sphere = Texture(64, 64):Fill(function(x, y) 
-	x = x / 64
-	y = y / 64
-	
-	x = x - 1
-	y = y - 1.5
-	
-	x = x * math.pi
-	y = y * math.pi
-		
-	local a = math.sin(x) * math.cos(y)
-	
-	a = a ^ 32
-		
-	return 255, 255, 255, a * 128
-end)	
+surface.CreateFont("snow_font", {path = "fonts/zfont.txt", size = 8*scale})   
+
+local function create_button(pos, text)
+	local button = gui2.CreatePanel()
+	button:SetColor(Color(88, 92, 88))
+	button:SetPosition(pos)
+	button:SetClipping(true)
+	button:SetParseTags(true) 
+	button:SetText("<font=snow_font><color=220,220,220>" .. text)
+	button:SetSize(button:GetTextSize() + Vec2(5,5) * scale)
+	button:CenterText()
+	return button:GetSize().x
+end
+
+local padding = 4 * scale
+local x = padding
+local y = 4 * scale
+x = x + create_button(Vec2(x, y), "↓") + padding
+x = x + create_button(Vec2(x, y), "game") + padding
+x = x + create_button(Vec2(x, y), "config") + padding
+x = x + create_button(Vec2(x, y), "cheat") + padding
+x = x + create_button(Vec2(x, y), "netplay") + padding
+x = x + create_button(Vec2(x, y), "misc") + padding
 
 
 local gradient = Texture(64, 64):Fill(function(x, y) 
@@ -35,13 +33,10 @@ local gradient = Texture(64, 64):Fill(function(x, y)
 	return v, v, v, 255
 end)
 
-
 local emitter = ParticleEmitter(800)
-emitter:SetRate(-1)
 emitter:SetPos(Vec3(50,50,0))
---emitter:SetTexture(sphere)  
 --emitter:SetMoveResolution(0.25)  
-emitter:SetAdditive(false)  
+emitter:SetAdditive(false)     
 
 event.AddListener("PreDrawMenu", "zsnow", function(dt)	
 	emitter:Update(dt)
@@ -55,11 +50,11 @@ event.AddListener("PreDrawMenu", "zsnow", function(dt)
 	emitter:Draw()
 	
 	surface.SetColor(0,0,0,0.25)
-	surface.DrawRect(10,10,render.GetWidth() - 50, 30)
+	surface.DrawRect(4*scale,4*scale, x, 17 * scale)
 	
 	surface.SetTexture(gradient)
 	surface.SetColor(0.1,0.2,1,1)
-	surface.DrawRect(0,0,render.GetWidth() - 50, 30)
+	surface.DrawRect(0,0, x, 17 * scale)
 end) 
 
 event.CreateTimer("zsnow", 0.01, function()
