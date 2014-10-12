@@ -34,7 +34,7 @@ local sphere = Texture(64, 64):Fill(function(x, y)
 	return 255, 255, 255, a * 128
 end)
  
-local emitter = utility.RemoveOldObject(ParticleEmitter())
+local emitter = ParticleEmitter()
 --emitter:SetCenterAttractionForce(0.1) 
 --emitter:SetPosAttractionForce(0.1) 
 emitter:SetRate(-1)
@@ -78,6 +78,9 @@ event.AddListener("Draw2D", "wowozela", function(dt)
 	else
 		volume = -100
 	end
+	
+	emitter:Update(dt)
+	emitter:Draw()
 		
 	surface.SetColor(1,1,1,1)
 	surface.SetTexture(sphere)
