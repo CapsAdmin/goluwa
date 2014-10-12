@@ -96,7 +96,13 @@ function META:DrawString(str, X, Y)
 				X = X + width
 			elseif char == "\t" then
 				X = X + width*4
-			elseif self.chars[char] then
+			else	
+				if not self.chars[char] then 
+					char = char:upper()
+					if not self.chars[char] then 	
+						char = "?"
+					end
+				end
 				local texture = self.texture_atlas:GetPageTexture(char)
 				
 				if texture ~= last_tex then
@@ -107,7 +113,7 @@ function META:DrawString(str, X, Y)
 				
 				local x,y, w,h, sx,sy = self.texture_atlas:GetUV(char)
 				poly:SetUV(x,y, w,h, sx,sy) 
-				poly:SetRect(i, X, Y, width, -height)
+				poly:SetRect(i, X, Y+height, width, -height)
 				
 				if self.options.monospace then 
 					X = X + self.options.spacing
@@ -148,7 +154,7 @@ function META:GetTextSize(str)
 		end
 	end
 		
-	return curX, curY
+	return curX*self.size, curY*self.size
 end
 
 surface.RegisterFontLoader(META)
