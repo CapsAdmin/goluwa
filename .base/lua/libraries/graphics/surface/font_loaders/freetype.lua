@@ -8,6 +8,10 @@ META.Name = "freetype"
 
 function META.LoadFont(name, options, callback)	
 
+	if options.path:endswith(".txt") then
+		error("not a valid font")
+	end
+
 	if not surface.freetype_lib then
 		local lib = ffi.new("FT_Library[1]")
 		freetype.InitFreeType(lib)
@@ -115,6 +119,7 @@ function META:Init()
 		self.state = "loaded"		
 	else
 		self.state = "error"
+		error("unable to initialize font")
 	end
 end
 
