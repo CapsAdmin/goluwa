@@ -4,8 +4,9 @@ local META = {}
 
 META.Name = "zfont"
 
-local width = 8
+local width = 8 -- the actual width is 8 but the 3 last pixels
 local height = 5
+local pixel_padding = 3
 
 local translate = {
 	["arrow down"] = "↓",
@@ -185,7 +186,7 @@ function META:DrawString(str, X, Y)
 				if self.options.monospace then 
 					X = X + self.options.spacing
 				else
-					X = X + width + self.options.spacing
+					X = X + width + self.options.spacing - pixel_padding
 				end
 			end			
 		end
@@ -213,15 +214,11 @@ function META:GetTextSize(str)
 		elseif char == "\t" then
 			curY = curY + width*4 + self.options.spacing
 		else
-			if self.options.monospace then 
-				curX = curX + self.options.spacing
-			else
-				curX = curX + width + self.options.spacing
-			end
+			curX = curX + width - pixel_padding
 		end
 	end
 		
-	return curX, curY
+	return curX*self.size, curY*self.size
 end
 
 surface.RegisterFontLoader(META)
