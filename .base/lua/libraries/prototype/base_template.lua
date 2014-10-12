@@ -124,7 +124,7 @@ function prototype.UpdateObjects(meta)
 			for k, v in pairs(meta) do
 				-- update entity functions only
 				-- updating variables might mess things up
-				if type(v) == "function" then
+				if type(v) == "function" and k:sub(1, 2) ~= "On" then
 					obj[k] = v
 				end
 			end
