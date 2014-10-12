@@ -131,7 +131,7 @@ function META:DrawString(str, X, Y)
 end
 
 function META:GetTextSize(str)
-	local curX, curY = 0, 0
+	local curX, curY = 0, height
 	
 	for i = 1, utf8.length(str) do
 		local char = utf8.sub(str, i,i)
@@ -139,7 +139,7 @@ function META:GetTextSize(str)
 			curY = curY + height + self.options.spacing
 		elseif char == "\t" then
 			curY = curY + width*4 + self.options.spacing
-		else		
+		else
 			if self.options.monospace then 
 				curX = curX + self.options.spacing
 			else
@@ -147,8 +147,8 @@ function META:GetTextSize(str)
 			end
 		end
 	end
-	
-	return curX * self.size, curY * self.size
+		
+	return curX, curY
 end
 
 surface.RegisterFontLoader(META)
