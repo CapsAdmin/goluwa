@@ -29,6 +29,7 @@ do -- base panel
 	
 	prototype.GetSet(PANEL, "Resizable", false)
 	prototype.GetSet(PANEL, "Draggable", false)
+	prototype.GetSet(PANEL, "Scrollable", false)
 	prototype.GetSet(PANEL, "Text")
 
 	function PANEL:__tostring()
@@ -628,12 +629,10 @@ do -- base panel
 		end
 
 		function PANEL:Animate(var, to, time, operator, pow)
-
 			if self.animations[var] then
 				self.animations[var].alpha = 0
 				return
 			end
-
 
 			local from = type(self[var]) == "number" and self[var] or self[var]:Copy()
 
@@ -1058,10 +1057,9 @@ do -- base panel
 			end
 			
 			if press then
-				
-				self:BringToFront()
 				self:RequestFocus()
-			
+				self:BringToFront()
+				
 				if gui2.debug then
 					if button == "button_2" then
 						self:SetClipping(not self:GetClipping())
@@ -1119,7 +1117,7 @@ do -- base panel
 				carrier:SetSendMouseInputToParent(true)
 				
 				local markup = surface.CreateMarkup()
-				markup:SetEditable(false)
+				--markup:SetEditable(false)
 				markup:AddString(str, tags)
 				
 				function carrier:OnDraw()
@@ -1269,30 +1267,30 @@ function gui2.Draw2D()
 	if gui2.threedee then 
 		surface.End3D()
 	end
-		do return end
+	do return end
+	
+	if not gui2.unrolled_draw then
+		local str = {"local panels = gui2.panels"}
 		
-		if not gui2.unrolled_draw then
-			local str = {"local panels = gui2.panels"}
-			
-			local function add_children_to_list(parent, str, level)
-				table.insert(str, ("%spanels[%i]:PreDraw()"):format((" "):rep(level), parent.i))
-				for i, child in ipairs(parent:GetChildren()) do
-					level = level + 1
-					add_children_to_list(child, str, level) 
-					level = level - 1
-				end
-				table.insert(str, ("%spanels[%i]:PostDraw()"):format((" "):rep(level), parent.i))
+		local function add_children_to_list(parent, str, level)
+			table.insert(str, ("%spanels[%i]:PreDraw()"):format((" "):rep(level), parent.i))
+			for i, child in ipairs(parent:GetChildren()) do
+				level = level + 1
+				add_children_to_list(child, str, level) 
+				level = level - 1
 			end
-		
-			add_children_to_list(gui2.world, str, 0)
-			str = table.concat(str, "\n")
-			print(str)			
-			gui2.unrolled_draw = loadstring(str, "gui2_unrolled_draw")
+			table.insert(str, ("%spanels[%i]:PostDraw()"):format((" "):rep(level), parent.i))
 		end
-		
-		for i = 1, 40 do
-			gui2.world:Draw()
-		end
+	
+		add_children_to_list(gui2.world, str, 0)
+		str = table.concat(str, "\n")
+		print(str)			
+		gui2.unrolled_draw = loadstring(str, "gui2_unrolled_draw")
+	end
+	
+	for i = 1, 40 do
+		gui2.world:Draw()
+	end
 				
 
 
@@ -1328,6 +1326,8 @@ function gui2.Test()
 	parent:SetColor(c)
 	parent.original_color = c
 	parent:SetSnapWhileDragging(true)
+	parent:SetDraggable(true)
+	parent:SetResizable(true)
 
 	for i = 1, 5 do
 		local panel = gui2.CreatePanel(parent)
@@ -1338,80 +1338,18 @@ function gui2.Test()
 		panel:SetSnapWhileDragging(true)
 	end
 	
-	do -- markup
-		local panel = gui2.CreatePanel()
-		panel:SetPosition(Vec2(800,300))
-		panel:SetSize(Vec2(300,300))
-		panel:SetClipping(true)
-		panel:SetColor(Color(0.1,0.1,0.1,1))
-		panel.original_color = panel.Color:Copy()
-		panel.lol = true
-		
-		function panel:OnMouseInput(button, press)
-			if button == "button_2" then
-				if not self:StartResizing(nil, button) then
-					self:StartDragging(button)
-				end
-			end
-		end
-			
-		do
-			local panel = gui2.CreatePanel(panel) 
-			panel:SetColor(Color(0.1,0.1,0.1,0))
-			panel.original_color = panel.Color:Copy()
-			panel:SetSendMouseInputToParent(true)
-			
-			panel.lol = true
-			local markup = surface.CreateMarkup()
-			markup:Test()
-			
-			function panel:OnDraw()
-				markup:SetMousePosition(self:GetMousePosition():Copy())
-
-				markup.cull_x = self.Parent.Scroll.x
-				markup.cull_y = self.Parent.Scroll.y
-				markup.cull_w = self.Parent.Size.w
-				markup.cull_h = self.Parent.Size.h
-				
-				--getmetatable(self).OnDraw(self)
-				markup:Draw()
-				
-				self.Size.w = markup.width
-				self.Size.h = markup.height
-			end
-			
-			function panel:OnMouseInput(button, press)
-				markup:OnMouseInput(button, press)
-			end
-			
-			function panel:OnKeyInput(key, press)
-				if key == "left_shift" or key == "right_shift" then  markup:SetShiftDown(press) return end
-				if key == "left_control" or key == "right_control" then  markup:SetControlDown(press) return end
-			
-				if press then
-					markup:OnKeyInput(key, press)
-				end
-			end
-			
-			function panel:OnCharInput(char)
-				markup:OnCharInput(char)
-			end
-			
-			panel.OnMouseEnter = function() end
-			panel.OnMouseExit = function() end	
-		end
-	end
-	
-
 	local frame = gui2.CreatePanel()
 	frame:SetSize(Vec2(200,200))
 	frame:SetPosition(Vec2(57,50))
-
+	frame:SetDraggable(true)
+	frame:SetResizable(true)
+	
 	local c = Color(1,1,1,1) * 0.25
 	frame:SetColor(c)
 	frame.original_color = c
 
 	frame:SetClipping(true)
+	frame:SetScrollable(true)
 	--frame:SetCachedRendering(true)
 	--frame.OnMouseExit = function() end
 	--frame.OnMouseEnter = function() end
@@ -1467,10 +1405,6 @@ function gui2.Test()
 		pnl:SetSize(Vec2(50, 50))
 		--pnl:SetTexture(Texture("textures/aahh/button.png"))
 
-		pnl.OnMouseEnter = function() end
-		pnl.OnMouseExit = function() end
-		pnl.OnMouseMove = function(s) s:MarkDirty() end
-
 		if math.random() > 0.5 then
 			if math.random() > 0.5 then
 				if math.random() > 0.5 then
@@ -1521,6 +1455,6 @@ function gui2.Test()
 end
 
 gui2.Initialize()
---gui2.Test()
+gui2.Test()
 
 --for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
