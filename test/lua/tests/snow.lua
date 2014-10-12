@@ -1,3 +1,15 @@
+include("gui2.lua")
+    
+surface.CreateFont("snow_font", {path = "fonts/zfont.txt", size = 8})
+
+do -- gui  
+	local button = gui2.CreatePanel()
+	button:SetColor(Color(88, 92, 88))
+	button:SetPosition(Vec2(8, 4))
+	button:SetSize(Vec2(18, 22))
+	button:SetText("<font=snow_font>hello", true)  
+end 
+
 local bg = Color(64, 44, 128)
 
 local sphere = Texture(64, 64):Fill(function(x, y) 
@@ -15,24 +27,26 @@ local sphere = Texture(64, 64):Fill(function(x, y)
 	a = a ^ 32
 		
 	return 255, 255, 255, a * 128
-end)
+end)	
 
 
 local gradient = Texture(64, 64):Fill(function(x, y) 
-	local v = math.sin(y / 64 * math.pi) ^ 0.6 * 255 
+	local v = (math.sin(y / 64 * math.pi) * 255) / 2 + 128
 	return v, v, v, 255
 end)
 
 
-local emitter = utility.RemoveOldObject(ParticleEmitter(800))
+local emitter = ParticleEmitter(800)
 emitter:SetRate(-1)
 emitter:SetPos(Vec3(50,50,0))
-emitter:SetDrawManual(true) 
 --emitter:SetTexture(sphere)  
---emitter:SetMoveResolution(0.5)  
+--emitter:SetMoveResolution(0.25)  
 emitter:SetAdditive(false)  
 
-event.AddListener("PreDrawMenu", "zsnow", function()	
+event.AddListener("PreDrawMenu", "zsnow", function(dt)	
+	emitter:Update(dt)
+	emitter:Draw()
+	
 	surface.SetWhiteTexture()
 	surface.SetColor(bg)
 	surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
