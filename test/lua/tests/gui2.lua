@@ -1174,17 +1174,24 @@ do -- base panel
 				carrier.OnMouseEnter = function() end
 				carrier.OnMouseExit = function() end
 				
+				carrier:OnDraw() -- hack! this will update markup sizes
+				
 				self.markup_carrier = carrier
 			end
 		end
 		
-		function PANEL:GetTextSize()
-			if self.markup_carrier then
-				return self.markup_carrier:GetSize()
+		local function DELEGATE(a, b, def)
+			PANEL[a] = function(self, ...)
+				if self.markup_carrier then
+					return self.markup_carrier[b](self.markup_carrier, ...)
+				end
+				
+				return def
 			end
-			
-			return Vec2()
 		end
+		
+		DELEGATE("GetTextSize", "GetSize", Vec2())
+		DELEGATE("CenterText", "Center")
 	end
 	
 	do -- events
@@ -1483,6 +1490,6 @@ function gui2.Test()
 end
 
 gui2.Initialize()
-gui2.Test()
+--gui2.Test()
 
 --for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
