@@ -30,7 +30,6 @@ end
 
 local EMITTER = prototype.CreateTemplate("particle_emitter")
 
-prototype.GetSet(EMITTER, "DrawManual", false)
 prototype.GetSet(EMITTER, "Speed", 1)
 prototype.GetSet(EMITTER, "Rate", 0.1)
 prototype.GetSet(EMITTER, "EmitCount", 1)
@@ -43,39 +42,6 @@ prototype.GetSet(EMITTER, "PosAttractionForce", 0)
 prototype.GetSet(EMITTER, "MoveResolution", 0)
 prototype.GetSet(EMITTER, "Texture", NULL)
 
-local emitters = {}
-
-local ref_count = 0
-
-local function start()
-	if ref_count > 0 then return end
-	
-	event.AddListener("Draw2D", "particles", function(dt)	
-		for _, emitter in ipairs(emitters) do
-			if not emitter.DrawManual then
-				emitter:Draw()
-			end
-		end
-	end) 
-	 
-	event.AddListener("Update", "particles", function(dt)	
-		for _, emitter in ipairs(emitters) do
-			emitter:Think(dt) 
-		end
-	end)
-	
-	ref_count = ref_count + 1
-end
-
-local function stop()
-	ref_count = ref_count - 1
-	
-	if ref_count <= 0 then
-		event.RemoveListener("Draw2D", "particles")
-		event.RemoveListener("Update", "particles")
-	end
-end
-
 function ParticleEmitter(max)
 	max = max or 1000
 	
@@ -86,29 +52,11 @@ function ParticleEmitter(max)
 	self.last_emit = 0
 	self.next_think = 0
 	self.poly = surface.CreatePoly(max)
-
-	table.insert(emitters, self)
-	
-	start()
-	
+		
 	return self
 end
-
-function EMITTER:OnRemove()
-	for k,v in pairs(emitters) do 
-		if v == self then 
-			--table.remove(emitters, k) 
-			emitters[k] = nil
-			break 
-		end 
-	end
-	
-	table.fixindices(emitters)
-	
-	stop()
-end
  
-function EMITTER:Think(dt)
+function EMITTER:Update(dt)
 	local time = os.clock()
 	
 	if self.Rate == 0 then
@@ -131,7 +79,7 @@ function EMITTER:Think(dt)
 		
 		if not p then break end
 		
-		if p.life_end < time or (not p.Jitter and p.life_mult < 0.001) then
+		if not p:IsValid() or p.life_end < time or (not p.Jitter and p.life_mult < 0.001) then
 			table.insert(remove_these, i)
 		else
 			
@@ -256,7 +204,7 @@ function EMITTER:GetParticles()
 end
   
 function EMITTER:AddParticle(...)
-	local p = prototype.CreateObject(PARTICLE)
+	local p = setmetatable({}, PARTICLE) -- prototype.CreateObject(PARTICLE)
 	p:SetPos(self:GetPos():Copy())
 	p.life_mult = 1	
 	
