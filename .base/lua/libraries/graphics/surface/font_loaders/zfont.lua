@@ -1,4 +1,4 @@
-local surface = _G.surface or ...
+﻿local surface = _G.surface or ...
 
 local META = {}
 
@@ -6,6 +6,71 @@ META.Name = "zfont"
 
 local width = 8
 local height = 5
+
+local translate = {
+	["arrow down"] = "↓",
+	["left"] = "◀",
+	["right"] = "▶",
+	["down"] = "▼",
+	["up"] = "▲",
+
+	["shw a"] = "ア",	
+	["shw i"] = "イ",	
+	["shw u"] = "ウ",	
+	["shw e"] = "エ",	
+	["shw o"] = "オ",	
+	["shw ha"] = "ハ",	
+	["shw hi"] = "ヒ",	
+	["shw fu"] = "フ",	
+	["shw he"] = "ヘ",	
+	["shw ho"] = "ホ",	
+
+	["shw ka"] = "カ",	
+	["shw ki"] = "キ",	
+	["shw ku"] = "ク",	
+	["shw ke"] = "ケ",	
+	["shw ko"] = "コ",	
+	["shw ma"] = "マ",	
+	["shw mi"] = "ミ",	
+	["shw mu"] = "ム",	
+	["shw me"] = "メ",	
+	["shw mo"] = "モ",	
+	["shw sa"] = "サ",	
+	["shw shi"] = "シ",	
+	["shw su"] = "ス",	
+	["shw se"] = "セ",	
+	["shw so"] = "ソ",	
+	
+	["shw ya"] = "ヤ",	
+	["shw ri"] = "リ",	
+	["shw yu"] = "ユ",	
+	["shw re"] = "レ",	
+	["shw yo"] = "ヨ",	
+	
+	["shw ta"] = "タ",	
+	["shw chi"] = "チ",	
+	["shw tsu"] = "ツ",	
+	["shw te"] = "テ",	
+	["shw to"] = "ト",
+	
+	["shw ra"] = "ラ",	
+	["shw wi"] = "ヰ",
+	["shw ru"] = "ル",	
+	["shw we"] = "ヱ",
+	["shw ro"] = "ロ",		
+	["shw na"] = "ナ",
+	["shw ni"] = "ニ",
+	["shw nu"] = "ヌ",
+	["shw ne"] = "ネ",
+	["shw no"] = "ノ",
+	["shw wa"] = "ワ",
+	["shw n"] = "ン",
+	["shw wo"] = "ヲ",	
+	
+	["shw comma"] = "，",
+	["shw fullstop"] = "．",
+	
+}
 
 function META.LoadFont(name, options, callback)
 	local file = vfs.Open(options.path)
@@ -59,6 +124,8 @@ function META:BuildAtlas()
 					i = i + 1
 				end
 			end
+			
+			name = translate[name] or name
 							
 			self.chars[name] = true
 			
@@ -154,7 +221,7 @@ function META:GetTextSize(str)
 		end
 	end
 		
-	return curX*self.size, curY*self.size
+	return curX, curY
 end
 
 surface.RegisterFontLoader(META)
