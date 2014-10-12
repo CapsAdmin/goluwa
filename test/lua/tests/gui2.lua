@@ -23,15 +23,11 @@ do -- base panel
 	prototype.GetSet(PANEL, "Cursor", "hand")
 	prototype.GetSet(PANEL, "TrapChildren", false)
 	prototype.GetSet(PANEL, "Texture", render.GetWhiteTexture())
+	prototype.GetSet(PANEL, "RedirectFocus", NULL)
 
 	prototype.GetSet(PANEL, "Padding", Rect(10, 10, 10, 10))
 	prototype.GetSet(PANEL, "Margin", Rect(10, 10, 10, 10))
 	
-	prototype.GetSet(PANEL, "Resizable", false)
-	prototype.GetSet(PANEL, "Draggable", false)
-	prototype.GetSet(PANEL, "Scrollable", false)
-	prototype.GetSet(PANEL, "Text")
-
 	function PANEL:__tostring()
 		return ("panel[%p] %s %s %s %s"):format(self, self.Position.x, self.Position.y, self.Size.w, self.Size.h)
 	end
@@ -41,6 +37,10 @@ do -- base panel
 	end
 	
 	function PANEL:BringToFront()
+		if self.RedirectFocus:IsValid() then
+			self = self.RedirectFocus
+		end
+	
 		local parent = self:GetParent()
 
 		if parent:IsValid() then
@@ -50,6 +50,10 @@ do -- base panel
 	end
 
 	function PANEL:RequestFocus()
+		if self.RedirectFocus:IsValid() then
+			self = self.RedirectFocus
+		end
+		
 		gui2.focus_panel = self
 	end
 
@@ -303,6 +307,7 @@ do -- base panel
 	end
 		
 	do -- scrolling		
+		prototype.GetSet(PANEL, "Scrollable", false)
 		prototype.GetSet(PANEL, "Scroll", Vec2(0, 0))
 		prototype.GetSet(PANEL, "ScrollFraction", Vec2(0, 0))
 	
@@ -341,6 +346,7 @@ do -- base panel
 	end
 	
 	do -- drag drop
+		prototype.GetSet(PANEL, "Draggable", false)
 		prototype.GetSet(PANEL, "DragDrop", false)
 
 		function PANEL:StartDragging(button)
@@ -694,11 +700,11 @@ do -- base panel
 	do -- docking
 		do -- center
 			function PANEL:CenterX()
-				self:SetPosition(Vec2((self.Parent:GetSize().x * 0.5) - (self:GetSize().x * 0.5), self:GetPosition().y))
+				self:SetPosition(Vec2(math.ceil((self.Parent:GetSize().x * 0.5) - (self:GetSize().x * 0.5)), self:GetPosition().y))
 			end
 
 			function PANEL:CenterY()
-				self:SetPosition(Vec2(self:GetPosition().x, (self.Parent:GetSize().y * 0.5) - (self:GetSize().y * 0.5)))
+				self:SetPosition(Vec2(self:GetPosition().x, math.ceil((self.Parent:GetSize().y * 0.5) - (self:GetSize().y * 0.5))))
 			end
 
 			function PANEL:Center()
@@ -898,6 +904,8 @@ do -- base panel
 	end
 	
 	do -- resizing
+		prototype.GetSet(PANEL, "Resizable", false)
+
 		function PANEL:GetResizeLocation(pos)
 			pos = pos or self:GetMousePosition()
 			local loc = self:GetDockLocation(pos, Vec2(8, 8))
@@ -1105,20 +1113,28 @@ do -- base panel
 	end
 	
 	do -- text
+		prototype.GetSet(PANEL, "Text")
+		prototype.GetSet(PANEL, "ParseTags", false)
+		prototype.GetSet(PANEL, "TextEditable", false)
+		
 		function PANEL:SetText(str, tags)
 			self.Text = str
-			
+			self:UpdateTextCarrier()
+		end
+		
+		function PANEL:UpdateTextCarrier()
 			if self.markup_carrier and self.markup_carrier:IsValid() then
 				self.markup_carrier:Remove()
 			end
 
-			if str then				
+			if self.Text then				
 				local carrier = gui2.CreatePanel(self) 
 				carrier:SetSendMouseInputToParent(true)
+				self:SetRedirectFocus(carrier)
 				
 				local markup = surface.CreateMarkup()
-				--markup:SetEditable(false)
-				markup:AddString(str, tags)
+				markup:SetEditable(self.TextEditable)
+				markup:AddString(self.Text, self.ParseTags)
 				
 				function carrier:OnDraw()
 					markup:SetMousePosition(self:GetMousePosition():Copy())
@@ -1136,6 +1152,10 @@ do -- base panel
 				
 				function carrier:OnMouseInput(button, press)
 					markup:OnMouseInput(button, press)
+					if button == "button_1" then
+						self:RequestFocus()
+						self:BringToFront()
+					end
 				end
 				
 				function carrier:OnKeyInput(key, press)
@@ -1156,6 +1176,14 @@ do -- base panel
 				
 				self.markup_carrier = carrier
 			end
+		end
+		
+		function PANEL:GetTextSize()
+			if self.markup_carrier then
+				return self.markup_carrier:GetSize()
+			end
+			
+			return Vec2()
 		end
 	end
 	
