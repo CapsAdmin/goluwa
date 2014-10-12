@@ -214,8 +214,12 @@ function META:GetTextSize(str)
 		elseif char == "\t" then
 			curY = curY + width*4 + self.options.spacing
 		else
-			curX = curX + width - pixel_padding
+			curX = curX + width - pixel_padding + self.options.spacing
 		end
+	end
+	
+	if #str > 1 then
+		curX = curX - self.options.spacing
 	end
 		
 	return curX*self.size, curY*self.size
