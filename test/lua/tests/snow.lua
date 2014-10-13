@@ -44,6 +44,27 @@ local button_active = Texture(16, 16, nil, {min_filter = "nearest", mag_filter =
 	return 72, 68, 64, 255
 end)
 
+local rounded_button = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y)
+	y = -y + 16
+	
+	if 
+		(x >= 16-2 and y >= 16-2) or 
+		(x <= 2 and y <= 2) or
+		(x >= 16-2 and y <= 2) or
+		(x <= 2 and y >= 16-2)
+	then 					
+		return 0,0,0,0 
+	end
+	
+	if x >= 16-2 or y >= 16-2 then
+		return 160, 120, 120, 255
+	elseif x <= 2 or y <= 2 then
+		return 192, 144, 144, 255
+	end
+	
+	return 176, 132, 128, 255
+end)
+
 local menu_select = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
 	y = -y + 16
  	
@@ -56,6 +77,12 @@ end)
 
 local gradient = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
 	local v = (math.sin(y / 16 * math.pi)^0.8 * 255) / 2.25 + 130
+	return v, v, v, 255
+end)  
+
+local gradient2 = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+	local v = (math.sin(x / 16 * math.pi) * 255) / 5 + 180
+	v = -v + 255
 	return v, v, v, 255
 end)  
 
@@ -100,27 +127,6 @@ local function create_frame()
 			text:SetPosition(Vec2(2*scale,0))
 			text:SetColor(Color(0,0,0,0))
 			
-			local close_button = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y)
-				y = -y + 16
-				
-				if 
-					(x >= 16-2 and y >= 16-2) or 
-					(x <= 2 and y <= 2) or
-					(x >= 16-2 and y <= 2) or
-					(x <= 2 and y >= 16-2)
-				then 					
-					return 0,0,0,0 
-				end
-				
-				if x >= 16-2 or y >= 16-2 then
-					return 160, 120, 120, 255
-				elseif x <= 2 or y <= 2 then
-					return 192, 144, 144, 255
-				end
-				
-				return 176, 132, 128, 255
-			end)
-
 			local close = gui2.CreatePanel(bar)
 			close:SetPadding(Rect(1,1,1,1)*scale)
 			
@@ -132,7 +138,7 @@ local function create_frame()
 			close:Dock("top_right")
 			
 			close:SetNinePatch(true)
-			close:SetTexture(close_button)   
+			close:SetTexture(rounded_button)   
 			close:SetNinePatchSize(16)
 			close:SetNinePatchCornerSize(4)
 			
@@ -148,26 +154,56 @@ local function create_frame()
 end 
 
 do
-	local frame = create_frame()
-	
 	local scroll_width = scale*8
+	
+	local frame = create_frame()  
 	
 	local panel = gui2.CreatePanel(frame)
 	panel:SetPosition(Vec2(25, 25 + scroll_width))
 	panel:SetSize(Vec2(200, 300))
-	panel:SetColor(Color(0,0,0,0))	
-	
-	local scroll_bar = gui2.CreatePanel(panel)
-	scroll_bar:SetColor(Color(0,1,0,1))
-	scroll_bar:SetSize(Vec2(scroll_width,scroll_width))
-	scroll_bar:SetDraggable(true)
-	
-	local list = gui2.CreatePanel(panel)
-	list:SetColor(Color(0,0,0,1))
-	list:SetClipping(true)
-	list:SetScrollable(true)
-	list:SetSize(panel:GetSize()*1) 
-	list:SetWidth(list:GetWidth() - scroll_width)
+	panel:SetColor(Color(0,0,0,0))
+		
+		local list = gui2.CreatePanel(panel)
+		list:SetColor(Color(0,0,0,1))
+		list:SetClipping(true)
+		list:SetScrollable(true)		
+			
+			local y_scroll = gui2.CreatePanel(panel)
+			y_scroll:SetTexture(gradient2)
+				
+				local up = gui2.CreatePanel(y_scroll)				
+				up:SetNinePatch(true)
+				up:SetTexture(rounded_button)
+				up:SetNinePatchSize(16)
+				up:SetNinePatchCornerSize(4)
+				
+				local scroll_bar = gui2.CreatePanel(y_scroll)
+				scroll_bar:SetDraggable(true)	
+				scroll_bar:SetNinePatch(true)
+				scroll_bar:SetTexture(button_inactive)
+				scroll_bar:SetNinePatchSize(16)
+				scroll_bar:SetNinePatchCornerSize(4)
+				
+				local down = gui2.CreatePanel(y_scroll)
+				down:SetNinePatch(true)
+				down:SetTexture(rounded_button)
+				down:SetNinePatchSize(16)
+				down:SetNinePatchCornerSize(4)
+		
+	function panel:OnLayout()	
+		list:SetSize(panel:GetSize()*1) 
+		list:SetWidth(panel:GetWidth() - scroll_width)
+		
+		y_scroll:SetSize(Vec2(scroll_width, panel:GetHeight()))
+		y_scroll:SetPosition(Vec2(panel:GetWidth() - scroll_width, 0))
+		
+		down:SetSize(Vec2(scroll_width, scroll_width))
+		down:SetPosition(Vec2(0, panel:GetHeight() - down:GetHeight()))
+		
+		scroll_bar:SetSize(Vec2(scroll_width, scroll_width))
+		
+		up:SetSize(Vec2(scroll_width, scroll_width))		
+	end
 	
 	local lol
 	
@@ -187,7 +223,29 @@ do
 		lol = false
 	end
 	
-	scroll_bar:SetPosition(Vec2(200-scroll_width,0))
+	up.OnMouseInput = function(self, button, press)
+		if button ~= "button_1" or not press then return end
+		if #list:GetChildren() == 0 then return end
+		
+		local h = list:GetChildren()[1]:GetHeight()
+		
+		local pos = list:GetScroll()
+		pos.y = pos.y - h
+		list:SetScroll(pos)
+	end
+	
+	down.OnMouseInput = function(self, button, press)
+		if button ~= "button_1" or not press then return end
+		if #list:GetChildren() == 0 then return end
+		
+		local h = list:GetChildren()[1]:GetHeight()
+		
+		local pos = list:GetScroll()
+		pos.y = pos.y + h
+		list:SetScroll(pos)
+	end
+	
+	scroll_bar:SetPosition(Vec2(0, 0))
 	
 	local w = 0
 	local y = 0
@@ -224,8 +282,6 @@ do
 		end
 		
 		y = y + button:GetSize().h - 2*scale
-		
-		if _ == 10 then break end
 	end
 	
 	for k,v in ipairs(list:GetChildren()) do
@@ -239,8 +295,10 @@ do
 	if list:GetHeight() > list:GetSizeOfChildren().h then
 		scroll_bar:SetWidth(0)
 	end
+	
+	panel:InvalidateLayout()
 end
-local function create_menu(pos, options)
+local function create_menu(pos, options, parent_menu)
 	local frame = gui2.CreatePanel()
 	frame:SetNinePatch(true)
 	frame:SetTexture(button_inactive)
@@ -248,7 +306,11 @@ local function create_menu(pos, options)
 	frame:SetNinePatchCornerSize(4)
 	frame:SetPosition(pos)
 	
-	gui2.SetActiveMenu(frame)
+	if parent_menu then
+		parent_menu:CallOnRemove(function() if frame:IsValid() then frame:Remove() end end)
+	else
+		gui2.SetActiveMenu(frame)
+	end
 	 
 	local y = 2*scale
 	local w = 0
@@ -273,13 +335,36 @@ local function create_menu(pos, options)
 			button:SetTexture(menu_select)
 			button:SetNinePatchSize(16)
 			button:SetNinePatchCornerSize(4)
+			button:SetMargin(Rect(0,0,0,0))
+			button:SetSendMouseInputToParent(true)
+			
+			if type(callback) == "table" then
+				local icon = gui2.CreatePanel(button)
+				icon:SetSendMouseInputToParent(true)
+				icon:SetPadding(Rect(0,0,0,0))
+				icon:SetSize(Vec2() + button:GetHeight())
+				icon:Dock("right")
+				icon:SetColor(Color(0,0,0,0))
+				icon:SetParseTags(true) 
+				icon:SetText("<font=snow_font><color=200,200,200>▶")
+			end
 			
 			w = math.max(w, button:GetTextSize().w)
 			
 			button.OnMouseEnter = function()
 				button:SetColor(Color(1,1,1,1))
+				if type(callback) == "table" then
+					if not frame.sub_menu or not frame.sub_menu:IsValid() then
+						frame.sub_menu = create_menu(button:GetWorldPosition() + Vec2(button:GetWidth() + scale*3, -scale*3), callback, frame)
+					end
+				end
 			end
 			button.OnMouseExit = function()
+				event.Delay(0, function()
+					if frame.sub_menu and frame.sub_menu:IsValid() then 
+						frame.sub_menu:Remove() 
+					end
+				end)
 				button:SetColor(Color(1,1,1,0))
 			end
 			
@@ -364,9 +449,19 @@ create_button("↓", {
 	{"clear all data"},
 }) 
 create_button("game", {
-	{"load"},
+	{"load", {
+		{"save state"},
+		{"open state"},
+		{"pick state"},
+	}},
 	{"run  [ESC]"},
-	{"reset"},
+	{"reset", {
+		{"video"},
+		{"sound"},
+		{"paths"},
+		{"saves"},
+		{"speed"},
+	}},
 	{},
 	{"save state"},
 	{"open state"},
@@ -409,26 +504,69 @@ bar:SetSize(Vec2(x, 16 * scale))
 local emitter = ParticleEmitter(800)
 emitter:SetPos(Vec3(50,50,0))
 --emitter:SetMoveResolution(0.25)  
-emitter:SetAdditive(false)     
+emitter:SetAdditive(false)
 
-event.AddListener("PreDrawMenu", "zsnow", function(dt)	
-	--emitter:Update(dt)
-	--emitter:Draw()
-	
+local fb
+local DX = false
+
+if DX then
+	fb = render.CreateFrameBuffer(128, 128)
+end
+
+event.AddListener("PreDrawMenu", "zsnow", function(dt)
+do return end
+	if DX then
+		fb:Begin()
+			surface.SetColor(0,0,0,0.01)
+			surface.DrawRect(0,0,128,128)
+			
+			surface.PushMatrix()
+							
+				for i = -4, 4 do
+					i = (i / 4) * math.pi
+					
+					surface.PushMatrix(math.sin(i)/2, math.cos(i)/2)
+						render.Translate(-0.4, -0.4, 0)
+						surface.SetColor(1,1,1,1)
+						surface.SetTexture(fb:GetTexture())
+						surface.DrawRect(0,0,128,128)
+					surface.PopMatrix()
+				end
+			surface.PopMatrix()
+			
+			render.SetBlendMode("additive")
+			emitter:Update(dt)
+			emitter:Draw()
+			render.SetBlendMode("alpha")
+		fb:End()
+	else
+		emitter:Update(dt)
+	end
+		
 	surface.SetWhiteTexture()
-	surface.SetColor(bg)
+	surface.SetColor(DX and Color(0,0,0,1) or bg)
 	surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
 	
-	surface.SetColor(1,1,1,1)
-	emitter:Draw()
+	--surface.SetColor(1,1,1,1)
+	--emitter:Draw()
 	
 	surface.SetColor(0,0,0,0.25)
 	surface.DrawRect(5*scale,5*scale, x, 16 * scale)
+	
+	if DX then
+		render.SetBlendMode("additive")
+		surface.SetColor(1,1,1,1)
+		surface.SetTexture(fb:GetTexture())
+		surface.DrawRect(0,0,render.GetWidth(), render.GetHeight())
+		render.SetBlendMode("alpha")
+	else
+		emitter:Draw()
+	end
 end) 
 
 event.CreateTimer("zsnow", 0.01, function()
-	do return end
-	emitter:SetPos(Vec3(math.random(render.GetWidth() + 100) - 150, -50, 0))
+do return end
+	emitter:SetPos(Vec3(math.random((DX and 256 or render.GetWidth()) + 100) - 150, -50, 0))
 		
 	local p = emitter:AddParticle()
 	p:SetDrag(1)
@@ -437,11 +575,16 @@ event.CreateTimer("zsnow", 0.01, function()
 	--p:SetEndLength(Vec2(30, 0))
 	p:SetAngle(math.random(360)) 
 	 
-	p:SetVelocity(Vec3(math.random(100),math.random(40, 80)*2,0))
+	p:SetVelocity(Vec3(math.random(100),math.random(40, 80)*2,0) * (DX and 0.25 or 1))
 
 	p:SetLifeTime(20)
 
 	p:SetStartSize(2 * (1 + math.random() ^ 50))
 	p:SetEndSize(2 * (1 + math.random() ^ 50))
-	p:SetColor(Color(1,1,1, math.randomf(0.5, 0.8)))
+	
+	if DX then
+		p:SetColor(HSVToColor(os.clock()/30,0.75, 1))
+	else
+		p:SetColor(Color(1,1,1, math.randomf(0.5, 0.8)))
+	end
 end) 
