@@ -1240,7 +1240,9 @@ do -- base panel
 
 		end
 
-		function PANEL:OnDraw()	
+		function PANEL:OnDraw()
+			if self.Color.a == 0 then return end
+			
 			surface.SetColor(self.Color:Unpack())
 			
 			surface.SetTexture(self.Texture)
