@@ -1160,6 +1160,15 @@ do -- base panel
 		end
 	end
 	
+	do -- layout
+		function PANEL:InvalidateLayout()
+			for i, v in ipairs(self:GetChildren()) do
+				v:InvalidateLayout()
+			end
+			self:OnLayout(self:GetPosition(), self:GetSize())
+		end
+	end
+	
 	do -- text
 		prototype.GetSet(PANEL, "Text")
 		prototype.GetSet(PANEL, "ParseTags", false)
@@ -1306,6 +1315,7 @@ do -- base panel
 		
 		function PANEL:OnPositionChanged(pos) end
 		function PANEL:OnScroll(fraction) end
+		function PANEL:OnLayout() end
 	end
 
 	function gui2.CreatePanel(parent)
