@@ -1,6 +1,8 @@
 local META = (...) or prototype.GetRegistered("markup")
 
 function META:OnCharInput(char)
+	if not self.Editable then return end
+
 	self:InsertString(char)
 end
 
