@@ -1,14 +1,20 @@
 include("gui2.lua")
  
 local scale = 2
-local bg = Color(64, 44, 128)
-world.Set("fog_color", bg)
+local bg = Color(64, 44, 128, 200)
 
 surface.CreateFont("snow_font", {
 	path = "fonts/zfont.txt", 
 	size = 8*scale,
 	shadow = scale,
 	shadow_color = Color(0,0,0,0.5),
+}) 
+
+surface.CreateFont("snow_font_green", {
+	path = "fonts/zfont.txt", 
+	size = 8*scale,
+	shadow = scale,
+	shadow_color = Color(0,1,0,0.4),
 }) 
 
 surface.CreateFont("snow_font_noshadow", {
@@ -51,7 +57,7 @@ end)
 local gradient = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
 	local v = (math.sin(y / 16 * math.pi)^0.8 * 255) / 2.25 + 130
 	return v, v, v, 255
-end)
+end)  
 
 local function create_frame()
 	local frame_texture = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
@@ -135,9 +141,105 @@ local function create_frame()
 					frame:Remove()
 				end
 			end 
+	
+	frame:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
+	
 	return frame
 end 
 
+do
+	local frame = create_frame()
+	
+	local scroll_width = scale*8
+	
+	local panel = gui2.CreatePanel(frame)
+	panel:SetPosition(Vec2(25, 25 + scroll_width))
+	panel:SetSize(Vec2(200, 300))
+	panel:SetColor(Color(0,0,0,0))	
+	
+	local scroll_bar = gui2.CreatePanel(panel)
+	scroll_bar:SetColor(Color(0,1,0,1))
+	scroll_bar:SetSize(Vec2(scroll_width,scroll_width))
+	scroll_bar:SetDraggable(true)
+	
+	local list = gui2.CreatePanel(panel)
+	list:SetColor(Color(0,0,0,1))
+	list:SetClipping(true)
+	list:SetScrollable(true)
+	list:SetSize(panel:GetSize()*1) 
+	list:SetWidth(list:GetWidth() - scroll_width)
+	
+	local lol
+	
+	scroll_bar.OnPositionChanged = function(self, pos)
+		if not lol then
+			local frac = math.clamp(pos.y / self.Parent:GetHeight(), 0, 1)
+			list:SetScrollFraction(Vec2(list:GetScrollFraction().x, frac))
+		end
+ 
+		pos.x = self.Parent:GetWidth() - self:GetWidth()
+		pos.y = math.clamp(pos.y, self:GetHeight(), self.Parent:GetHeight() - (self:GetHeight() * 2))
+	end
+	
+	list.OnScroll = function(self, frac)
+		lol = true
+		scroll_bar:SetPosition(Vec2(0,frac.y * self.Parent:GetHeight()))
+		lol = false
+	end
+	
+	scroll_bar:SetPosition(Vec2(200-scroll_width,0))
+	
+	local w = 0
+	local y = 0
+	
+	for _, file in ipairs(vfs.Find("/")) do
+		local button = gui2.CreatePanel(list)
+		button:SetSendMouseInputToParent(true)
+		button:SetParseTags(true)
+		button:SetText("<font=snow_font_green><color=0,255,0>" .. file)
+		button:SetWrapText(false)
+		button:SetSize(button:GetTextSize() + Vec2(4,4) * scale)
+		button:CenterTextY()
+		button:SetPosition(Vec2(0, y))
+		
+		w = math.max(w, button:GetTextSize().w)
+		
+		button:SetColor(Color(0,0,0,0))
+		button:SetNinePatch(true)
+		button:SetTexture(menu_select)
+		button:SetNinePatchSize(16)
+		button:SetNinePatchCornerSize(4)	
+
+		button.OnMouseInput = function(self, button, press)
+			if button == "button_1" then
+				if press then
+					self:SetColor(Color(1,1,1,1))
+					for k,v in ipairs(list:GetChildren()) do
+						if v ~= self then
+							v:SetColor(Color(0,0,0,0))
+						end
+					end
+				end
+			end
+		end
+		
+		y = y + button:GetSize().h - 2*scale
+		
+		if _ == 10 then break end
+	end
+	
+	for k,v in ipairs(list:GetChildren()) do
+		if v ~= self then
+			v:SetWidth(w)
+		end
+	end
+	
+	scroll_bar:SetHeight(math.max((list:GetHeight() / list:GetSizeOfChildren().h) * list:GetHeight(), scroll_width))
+	
+	if list:GetHeight() > list:GetSizeOfChildren().h then
+		scroll_bar:SetWidth(0)
+	end
+end
 local function create_menu(pos, options)
 	local frame = gui2.CreatePanel()
 	frame:SetNinePatch(true)
@@ -217,6 +319,7 @@ local y = 3 * scale
 local bar = gui2.CreatePanel() 
 bar:SetTexture(gradient)
 bar:SetColor(Color(0,72,248))
+bar:SetDraggable(true)
 
 local function create_button(text, options)
 	local button = gui2.CreatePanel(bar)
@@ -309,12 +412,12 @@ emitter:SetPos(Vec3(50,50,0))
 emitter:SetAdditive(false)     
 
 event.AddListener("PreDrawMenu", "zsnow", function(dt)	
-	emitter:Update(dt)
-	emitter:Draw()
+	--emitter:Update(dt)
+	--emitter:Draw()
 	
-	--surface.SetWhiteTexture()
-	--surface.SetColor(bg)
-	--surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
+	surface.SetWhiteTexture()
+	surface.SetColor(bg)
+	surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
 	
 	surface.SetColor(1,1,1,1)
 	emitter:Draw()
@@ -324,6 +427,7 @@ event.AddListener("PreDrawMenu", "zsnow", function(dt)
 end) 
 
 event.CreateTimer("zsnow", 0.01, function()
+	do return end
 	emitter:SetPos(Vec3(math.random(render.GetWidth() + 100) - 150, -50, 0))
 		
 	local p = emitter:AddParticle()
