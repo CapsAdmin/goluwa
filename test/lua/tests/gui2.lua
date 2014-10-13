@@ -56,6 +56,27 @@ do -- base panel
 		
 		gui2.focus_panel = self
 	end
+	
+	do -- call on remove
+		PANEL.call_on_remove = {}
+		
+		function PANEL:OnRemove()
+			for k, v in pairs(self.call_on_remove) do
+				if v() == false then
+					return
+				end
+			end
+			
+			-- this is important!!
+			self:UnParent()
+		end
+		
+		function PANEL:CallOnRemove(callback, id)
+			id = id or callback
+			
+			self.call_on_remove[id] = callback
+		end
+	end
 
 	function PANEL:GetSizeOfChildren()
 		local total_size = Vec2()
@@ -178,6 +199,8 @@ do -- base panel
 			size.y = math.max(size.y, self.MinimumSize.h)
 
 			self.Size = size
+			
+			self:DockLayout()
 		end
 
 		function PANEL:GetWorldPosition()
@@ -717,8 +740,10 @@ do -- base panel
 			off = off or Vec2()
 			parent = parent or self:GetParent()
 
-			local padding = parent:GetPadding() or Rect()
-			local size = self:GetSize() + padding:GetPosSize()
+			local margin = parent:GetMargin() or Rect()
+			local padding = self:GetPadding()
+			
+			local size = self:GetSize() + margin:GetPosSize() + padding:GetPosSize()
 			local centerparent = parent:GetSize() * vec
 			local centerself = size * vec
 			local pos = centerparent - centerself
@@ -726,11 +751,11 @@ do -- base panel
 			if vec.x == -1 and vec.y == -1 then
 				return
 			elseif vec.x == -1 then
-				self.Position.y = pos.y + off.y + padding.y
+				self.Position.y = pos.y + off.y + margin.y + padding.y
 			elseif vec.y == -1 then
-				self.Position.x = pos.x + off.x + padding.x
+				self.Position.x = pos.x + off.x + margin.x + padding.x
 			else
-				self:SetPosition(pos + off + padding:GetPos())
+				self:SetPosition(pos + off + margin:GetPos() + padding:GetPos())
 			end
 
 		end
@@ -811,7 +836,7 @@ do -- base panel
 			end
 
 			if top then
-				pad = top:GetPadding()
+				pad = top:GetMargin()
 
 				top:SetPosition(area:GetPos() + pad:GetPos())
 				top:SetWidth(area.w - pad:GetXW())
@@ -821,7 +846,7 @@ do -- base panel
 			end
 
 			if bottom then
-				pad = bottom:GetPadding()
+				pad = bottom:GetMargin()
 
 				bottom:SetPosition(area:GetPos() + Vec2(pad.x, area.h - bottom:GetHeight() - pad.h))
 				bottom:SetWidth(w - pad:GetXW())
@@ -829,7 +854,7 @@ do -- base panel
 			end
 
 			if left then
-				pad = left:GetPadding()
+				pad = left:GetMargin()
 
 				left:SetPosition(area:GetPos() + pad:GetPos())
 				left:SetHeight(area.h - pad:GetYH())
@@ -838,7 +863,7 @@ do -- base panel
 			end
 
 			if right then
-				pad = right:GetPadding()
+				pad = right:GetMargin()
 
 				right:SetPosition(area:GetPos() + Vec2(area.w - right:GetWidth() - pad.w, pad.y))
 				right:SetHeight(area.h - pad:GetYH())
@@ -1045,6 +1070,9 @@ do -- base panel
 
 			if self:IsMouseOver() then
 				if not self.mouse_just_entered then
+					if self.SendMouseInputToParent then
+						self.Parent:OnMouseEnter(x, y)
+					end
 					self:OnMouseEnter(x, y)
 					self.mouse_just_entered = true
 				end
@@ -1052,6 +1080,9 @@ do -- base panel
 				self:OnMouseMove(x, y)
 			else
 				if self.mouse_just_entered then
+					if self.SendMouseInputToParent then
+						self.Parent:OnMouseExit(x, y)
+					end
 					self:OnMouseExit(x, y)
 					self.mouse_just_entered = false
 				end
@@ -1130,6 +1161,7 @@ do -- base panel
 			if self.Text then				
 				local carrier = gui2.CreatePanel(self) 
 				carrier:SetSendMouseInputToParent(true)
+				carrier:SetColor(0,0,0,0)
 				self:SetRedirectFocus(carrier)
 				
 				local markup = surface.CreateMarkup()
@@ -1172,7 +1204,9 @@ do -- base panel
 				end
 				
 				carrier.OnMouseEnter = function() end
-				carrier.OnMouseExit = function() end
+				carrier.OnMouseExit = function() 
+					markup:OnMouseInput("button_1", false)
+				end
 				
 				carrier:OnDraw() -- hack! this will update markup sizes
 				
@@ -1192,18 +1226,36 @@ do -- base panel
 		
 		DELEGATE("GetTextSize", "GetSize", Vec2())
 		DELEGATE("CenterText", "Center")
+		DELEGATE("CenterTextX", "CenterX")
+		DELEGATE("CenterTextY", "CenterY")
 	end
 	
 	do -- events
+		prototype.GetSet(PANEL, "NinePatch", false)
+		prototype.GetSet(PANEL, "NinePatchSize", 4)
+		prototype.GetSet(PANEL, "NinePatchCornerSize", 4)
+		prototype.GetSet(PANEL, "NinePatchUVOffset", Vec2(0, 0))
+		
 		function PANEL:OnUpdate()
 
 		end
 
 		function PANEL:OnDraw()	
 			surface.SetColor(self.Color:Unpack())
+			
 			surface.SetTexture(self.Texture)
 
-			surface.DrawRect(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
+			if self.NinePatch then
+				surface.DrawNinePatch(
+					0, 0, 
+					self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h,
+					self.NinePatchSize, 
+					self.NinePatchCornerSize, 
+					self.NinePatchUVOffset.x, self.NinePatchUVOffset.y
+				)
+			else
+				surface.DrawRect(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
+			end
 
 			if gui2.debug then
 				surface.SetWhiteTexture()
@@ -1254,11 +1306,33 @@ function gui2.GetHoveringPanel(panel, filter)
 	return panel.mouse_over and panel or gui2.world
 end
 
+local second_try
+gui2.current_menu = gui2.current_menu or NULL
+
+function gui2.SetActiveMenu(panel)
+	if gui2.current_menu:IsValid() then
+		gui2.current_menu:Remove()
+	end
+	
+	gui2.current_menu = panel
+	second_try = false
+end
+
 function gui2.MouseInput(button, press)
 	local panel = gui2.hovering_panel
 
 	if panel:IsValid() and panel:IsMouseOver() then
 		panel:MouseInput(button, press)
+	end
+	
+	local panel = gui2.current_menu
+	
+	if button == "button_1" and press and panel:IsValid() and not panel:IsMouseOver() then
+		-- only start checking if we're pressing outside the second press
+		if second_try then
+			panel:Remove()
+		end
+		second_try = true
 	end
 end
 
