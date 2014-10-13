@@ -1,37 +1,307 @@
 include("gui2.lua")
-
+ 
 local scale = 2
 local bg = Color(64, 44, 128)
+world.Set("fog_color", bg)
 
-surface.CreateFont("snow_font", {path = "fonts/zfont.txt", size = 8*scale})   
+surface.CreateFont("snow_font", {
+	path = "fonts/zfont.txt", 
+	size = 8*scale,
+	shadow = scale,
+	shadow_color = Color(0,0,0,0.5),
+}) 
 
-local function create_button(pos, text)
-	local button = gui2.CreatePanel()
-	button:SetColor(Color(88, 92, 88))
-	button:SetPosition(pos)
-	button:SetClipping(true)
-	button:SetParseTags(true) 
-	button:SetText("<font=snow_font><color=220,220,220>" .. text)
-	button:SetSize(button:GetTextSize() + Vec2(5,5) * scale)
-	button:CenterText()
-	return button:GetSize().x
-end
+surface.CreateFont("snow_font_noshadow", {
+	path = "fonts/zfont.txt", 
+	size = 8*scale,
+}) 
 
-local padding = 4 * scale
-local x = padding
-local y = 4 * scale
-x = x + create_button(Vec2(x, y), "↓") + padding
-x = x + create_button(Vec2(x, y), "game") + padding
-x = x + create_button(Vec2(x, y), "config") + padding
-x = x + create_button(Vec2(x, y), "cheat") + padding
-x = x + create_button(Vec2(x, y), "netplay") + padding
-x = x + create_button(Vec2(x, y), "misc") + padding
+local button_inactive = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+	y = -y + 16
+ 	
+	if x >= 16-2 or y >= 16-2 then
+		return 72, 68, 64, 255
+	elseif x <= 2 or y <= 2 then
+		return 104, 100, 96, 255
+	end
+	
+	return 88, 92, 88, 255
+end)
 
+local button_active = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+	y = -y + 16
+ 	
+	if x >= 16-2 or y >= 16-2 then
+		return 104, 100, 96, 255
+	end
+	
+	return 72, 68, 64, 255
+end)
 
-local gradient = Texture(64, 64):Fill(function(x, y) 
-	local v = (math.sin(y / 64 * math.pi) * 255) / 2 + 128
+local menu_select = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+	y = -y + 16
+ 	
+	if x >= 16-2 or y >= 16-2 or x <= 2 or y <= 2 then
+		return 80, 0, 136, 255
+	end
+	
+	return 80, 0, 160, 255
+end)
+
+local gradient = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+	local v = (math.sin(y / 16 * math.pi)^0.8 * 255) / 2.25 + 130
 	return v, v, v, 255
 end)
+
+local function create_frame()
+	local frame_texture = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+		y = -y + 16
+		
+		if x >= 16-2 or y >= 16-2 then
+			return 152, 16, 16, 255
+		elseif x <= 2 or y <= 2 then
+			return 184, 48, 48, 255
+		end
+
+		return 168, 32, 32, 255
+	end)
+ 
+	local frame = gui2.CreatePanel()
+	frame:SetSize(Vec2(400,400))
+	frame:SetPosition(Vec2(150, 150))
+	frame:SetDraggable(true)
+	frame:SetResizable(true)
+	frame:SetNinePatch(true)
+	frame:SetTexture(frame_texture)
+	frame:SetNinePatchSize(16)
+	frame:SetNinePatchCornerSize(4)
+	frame:SetMargin(Rect())
+		
+		local bar = gui2.CreatePanel(frame)
+		bar:SetMargin(Rect())
+		bar:SetSendMouseInputToParent(true)
+		bar:SetHeight(10*scale)
+		bar:Dock("fill_top")
+		bar:SetTexture(gradient)
+		bar:SetColor(Color(120, 120, 160))
+		bar:SetClipping(true)
+				
+			local text = gui2.CreatePanel(bar)
+			text:SetHeight(bar:GetHeight())
+			text:SetParseTags(true)  
+			text:SetText("<font=snow_font><color=200,200,200>about")
+			text:CenterTextY()
+			text:SetPosition(Vec2(2*scale,0))
+			text:SetColor(Color(0,0,0,0))
+			
+			local close_button = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y)
+				y = -y + 16
+				
+				if 
+					(x >= 16-2 and y >= 16-2) or 
+					(x <= 2 and y <= 2) or
+					(x >= 16-2 and y <= 2) or
+					(x <= 2 and y >= 16-2)
+				then 					
+					return 0,0,0,0 
+				end
+				
+				if x >= 16-2 or y >= 16-2 then
+					return 160, 120, 120, 255
+				elseif x <= 2 or y <= 2 then
+					return 192, 144, 144, 255
+				end
+				
+				return 176, 132, 128, 255
+			end)
+
+			local close = gui2.CreatePanel(bar)
+			close:SetPadding(Rect(1,1,1,1)*scale)
+			
+			close:SetParseTags(true)  
+			close:SetText("<font=snow_font_noshadow><color=50,50,50>X")
+			close:SetSize(close:GetTextSize()+Vec2(3,3)*scale)
+			close:CenterText()
+			
+			close:Dock("top_right")
+			
+			close:SetNinePatch(true)
+			close:SetTexture(close_button)   
+			close:SetNinePatchSize(16)
+			close:SetNinePatchCornerSize(4)
+			
+			close.OnMouseInput = function(self, button, press) 
+				if button == "button_1" and not press then
+					frame:Remove()
+				end
+			end 
+	return frame
+end 
+
+local function create_menu(pos, options)
+	local frame = gui2.CreatePanel()
+	frame:SetNinePatch(true)
+	frame:SetTexture(button_inactive)
+	frame:SetNinePatchSize(16)    
+	frame:SetNinePatchCornerSize(4)
+	frame:SetPosition(pos)
+	
+	gui2.SetActiveMenu(frame)
+	 
+	local y = 2*scale
+	local w = 0
+	
+	for i, option in ipairs(options) do
+		
+		local text, callback = option[1], option[2] or print
+		
+		if text then
+			local button = gui2.CreatePanel(frame)
+			--button:SetColor(Color(88, 92, 88))
+			--button:SetClipping(true)
+			button:SetParseTags(true)  
+			button:SetText("<font=snow_font><color=200,200,200>" .. text)
+			button:SetSize(button:GetTextSize() + Vec2(4,4) * scale)
+			button:CenterTextY()
+			button:SetWidth(frame:GetWidth() - 4*scale)
+			button:SetPosition(Vec2(2*scale, y))
+			
+			button:SetColor(Color(0,0,0,0))
+			button:SetNinePatch(true)
+			button:SetTexture(menu_select)
+			button:SetNinePatchSize(16)
+			button:SetNinePatchCornerSize(4)
+			
+			w = math.max(w, button:GetTextSize().w)
+			
+			button.OnMouseEnter = function()
+				button:SetColor(Color(1,1,1,1))
+			end
+			button.OnMouseExit = function()
+				button:SetColor(Color(1,1,1,0))
+			end
+			
+			button.OnMouseInput = function(self, button, press)
+				if button == "button_1" and press then
+					create_frame()
+				end
+			end
+			
+			--button:CenterText() 
+			y = y + button:GetSize().h + scale
+		else
+			local button = gui2.CreatePanel(frame)
+			button:SetPosition(Vec2(4, y + scale*4))
+			button:SetSize(Vec2(frame:GetWidth() - 8, 6))	
+			button:SetNinePatch(true)
+			button:SetTexture(button_active)
+			button:SetNinePatchSize(16)
+			button:SetNinePatchCornerSize(2)
+			y = y + 8*scale
+		end
+	end
+	
+	for i, panel in ipairs(frame:GetChildren()) do
+		panel:SetWidth(w)
+	end 
+	 
+	frame:SetSize(Vec2(w + 5*scale, y + 2*scale))
+	
+	return frame
+end
+
+local padding = 5 * scale
+local x = padding
+local y = 3 * scale
+
+local bar = gui2.CreatePanel() 
+bar:SetTexture(gradient)
+bar:SetColor(Color(0,72,248))
+
+local function create_button(text, options)
+	local button = gui2.CreatePanel(bar)
+	--button:SetColor(Color(88, 92, 88))
+	button:SetPosition(Vec2(x, y))
+	button:SetClipping(true)
+	button:SetParseTags(true)  
+	button:SetText("<font=snow_font><color=200,200,200>" .. text)
+	button:SetSize(button:GetTextSize() + Vec2(5,5) * scale)
+	button:CenterText()
+	
+	button:SetNinePatch(true)
+	button:SetTexture(button_inactive)
+	button:SetNinePatchSize(16)
+	button:SetNinePatchCornerSize(4)
+	 
+	button.OnMouseInput = function(self, button, press)
+		if press then
+			self:SetTexture(button_active)
+			
+			local menu = create_menu(self:GetWorldPosition() + Vec2(0, self:GetHeight() + 2*scale), options)
+			menu:CallOnRemove(function() self:SetTexture(button_inactive) end)
+		end
+	end
+	
+	x = x + button:GetSize().x + padding
+end
+
+create_button("↓", {
+	{"1."},
+	{"2."},
+	{"3."},
+	{"4."},
+	{"5."},
+	{"6."},
+	{"7."},
+	{"8."},
+	{"9."},
+	{"0."},
+	{},
+	{"freeze data: off"},
+	{"clear all data"},
+}) 
+create_button("game", {
+	{"load"},
+	{"run  [ESC]"},
+	{"reset"},
+	{},
+	{"save state"},
+	{"open state"},
+	{"pick state"},
+	{},
+	{"quit"}
+})
+create_button("config", {
+	{"input"},
+	{},
+	{"devices"},
+	{"chip cfg"},
+	{},
+	{"options"},
+	{"video"},
+	{"sound"},
+	{"paths"},
+	{"saves"},
+	{"speed"},
+})
+create_button("cheat", {
+	{"add code"},
+	{"browse"},
+	{"search"},
+})
+create_button("netplay", {
+	{"internet"},
+})
+create_button("misc", {
+	{"misc keys"},
+	{"gui opts"},
+	{"key comb."},
+	{"save cfg"},
+	{},
+	{"about"},
+})
+
+bar:SetSize(Vec2(x, 16 * scale))
 
 local emitter = ParticleEmitter(800)
 emitter:SetPos(Vec3(50,50,0))
@@ -42,19 +312,15 @@ event.AddListener("PreDrawMenu", "zsnow", function(dt)
 	emitter:Update(dt)
 	emitter:Draw()
 	
-	surface.SetWhiteTexture()
-	surface.SetColor(bg)
-	surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
+	--surface.SetWhiteTexture()
+	--surface.SetColor(bg)
+	--surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
 	
 	surface.SetColor(1,1,1,1)
 	emitter:Draw()
 	
 	surface.SetColor(0,0,0,0.25)
-	surface.DrawRect(4*scale,4*scale, x, 17 * scale)
-	
-	surface.SetTexture(gradient)
-	surface.SetColor(0.1,0.2,1,1)
-	surface.DrawRect(0,0, x, 17 * scale)
+	surface.DrawRect(5*scale,5*scale, x, 16 * scale)
 end) 
 
 event.CreateTimer("zsnow", 0.01, function()
