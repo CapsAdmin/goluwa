@@ -39,6 +39,10 @@ function surface.CreateFont(name, options, callback)
 	options.path = options.path or "fonts/unifont.ttf"
 	options.size = options.size or 14
 	
+	if options.shadow then
+		options.shadow_color = options.shadow_color or Color(0,0,0,0.5)
+	end
+	
 	if options.monospace and not options.spacing then
 		options.spacing = options.size
 	end
@@ -126,6 +130,12 @@ function surface.DrawText(str, x, y)
 				surface.DrawLine(X*2+16, Y*2+16, X*16 + 16, Y*16 + 16, 2)
 			end
 			return
+		end
+		
+		if font.options.shadow then
+			local r,g,b,a = surface.SetColor(font.options.shadow_color:Unpack())
+			font:DrawString(str, x + font.options.shadow, y + font.options.shadow)
+			surface.SetColor(r,g,b,a)
 		end
 		
 		font:DrawString(str, x, y)
