@@ -69,6 +69,7 @@ do -- base panel
 			
 			-- this is important!!
 			self:UnParent()
+			gui2.unrolled_draw = nil
 		end
 		
 		function PANEL:CallOnRemove(callback, id)
@@ -112,8 +113,9 @@ do -- base panel
 			render.Translate(w, h, 0)
 			render.Rotate(self.Angle, 0, 0, 1)
 			render.Translate(-w, -h, 0)
-
+		
 			self:CalcMouse()
+			
 			self:CalcDragging()
 			self:CalcScrolling()
 
@@ -140,14 +142,16 @@ do -- base panel
 						(
 							self.Position.x - self.Parent.Scroll.x < self.Parent.Size.w and
 							self.Position.y - self.Parent.Scroll.y < self.Parent.Size.h and
-							self.Position.x + self.Size.w - self.Parent.Scroll.x > -self.Parent.Size.w and
-							self.Position.y + self.Size.h - self.Parent.Scroll.y > -self.Parent.Size.h
+							self.Position.x + self.Size.w - self.Parent.Scroll.x > 0 and
+							self.Position.y + self.Size.h - self.Parent.Scroll.y > 0
 						)
 					then
 						self:OnDraw()
 						self:SetVisible(true)
+						no_draw = false
 					else
 						self:SetVisible(false)
+						no_draw = true
 					end
 				end
 
@@ -190,6 +194,8 @@ do -- base panel
 			if self:HasParent() and self.Parent.TrapChildren then
 				pos:Clamp(Vec2(0, 0), self.Parent.Size - self.Size)
 			end
+			
+			self:OnPositionChanged(pos)
 
 			self.Position = pos
 		end
@@ -336,10 +342,17 @@ do -- base panel
 	
 		function PANEL:SetScroll(vec)
 			local size = self:GetSizeOfChildren()
-
-			self.Scroll = Vec2(math.clamp(vec.x, 0, size.x - self.Size.w), math.clamp(vec.y, 0, size.y - self.Size.h))
 			
+			self.Scroll = vec:GetClamped(Vec2(0), size - self.Size)
 			self.ScrollFraction = self.Scroll / (size + self.Scroll - self.Size) * 2
+		end
+		
+		function PANEL:SetScrollFraction(frac)
+			local size = self:GetSizeOfChildren()
+
+			self.Scroll = frac * size
+			self.Scroll:Clamp(Vec2(0, 0), size - self.Size)
+			self.ScrollFraction = frac
 		end
 		
 		function PANEL:StartScrolling(button)
@@ -362,6 +375,7 @@ do -- base panel
 			if input.IsMouseDown(self.scroll_button) then
 				self:SetScroll(self.scroll_drag_pos - self:GetMousePosition())
 				self:MarkDirty()
+				self:OnScroll(self.ScrollFraction)
 			else
 				self:StopScrolling()
 			end
@@ -445,9 +459,12 @@ do -- base panel
 		end
 
 		function PANEL:OnChildDrop(child, pos)
-			self:AddChild(child)
-			child:SetPosition(pos)
-			--child:Dock("fill_" .. self:GetDockLocation())
+			if gui2.debug then
+				self:AddChild(child)
+				child:SetPosition(pos)
+				
+				--child:Dock("fill_" .. self:GetDockLocation())
+			end
 		end
 	end
 	
@@ -1147,6 +1164,7 @@ do -- base panel
 		prototype.GetSet(PANEL, "Text")
 		prototype.GetSet(PANEL, "ParseTags", false)
 		prototype.GetSet(PANEL, "TextEditable", false)
+		prototype.GetSet(PANEL, "WrapText", false)
 		
 		function PANEL:SetText(str, tags)
 			self.Text = str
@@ -1166,6 +1184,7 @@ do -- base panel
 				
 				local markup = surface.CreateMarkup()
 				markup:SetEditable(self.TextEditable)
+				markup:SetLineWrap(self.WrapText)
 				markup:AddString(self.Text, self.ParseTags)
 				
 				function carrier:OnDraw()
@@ -1180,6 +1199,13 @@ do -- base panel
 					
 					self.Size.w = markup.width
 					self.Size.h = markup.height
+					
+					if not input.IsMouseDown("button_1") then
+						if not markup.mouse_released then
+							markup:OnMouseInput("button_1", false)
+							markup.mouse_released = true
+						end
+					end
 				end
 				
 				function carrier:OnMouseInput(button, press)
@@ -1187,6 +1213,7 @@ do -- base panel
 					if button == "button_1" then
 						self:RequestFocus()
 						self:BringToFront()
+						markup.mouse_released = false
 					end
 				end
 				
@@ -1204,12 +1231,11 @@ do -- base panel
 				end
 				
 				carrier.OnMouseEnter = function() end
-				carrier.OnMouseExit = function() 
-					markup:OnMouseInput("button_1", false)
-				end
+				carrier.OnMouseExit = function() end
 				
 				carrier:OnDraw() -- hack! this will update markup sizes
 				
+				carrier.markup = markup
 				self.markup_carrier = carrier
 			end
 		end
@@ -1277,9 +1303,14 @@ do -- base panel
 		function PANEL:OnCharTyped(char) end
 		function PANEL:OnKeyPressed(key, pressed) end
 		function PANEL:OnClick(key, pressed) end
+		
+		function PANEL:OnPositionChanged(pos) end
+		function PANEL:OnScroll(fraction) end
 	end
 
 	function gui2.CreatePanel(parent)
+		gui2.unrolled_draw = nil
+		
 		local self = prototype.CreateObject(PANEL)
 
 		self:SetParent(parent or gui2.world)
@@ -1374,11 +1405,11 @@ function gui2.Draw2D()
 	
 		gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePos()
 
-		gui2.world:Draw()
+		--gui2.world:Draw()
 	if gui2.threedee then 
 		surface.End3D()
 	end
-	do return end
+	--do return end
 	
 	if not gui2.unrolled_draw then
 		local str = {"local panels = gui2.panels"}
@@ -1395,12 +1426,14 @@ function gui2.Draw2D()
 	
 		add_children_to_list(gui2.world, str, 0)
 		str = table.concat(str, "\n")
-		print(str)			
+		--print(str)			
 		gui2.unrolled_draw = loadstring(str, "gui2_unrolled_draw")
 	end
 	
+	gui2.unrolled_draw()
+	
 	for i = 1, 40 do
-		gui2.world:Draw()
+	--	gui2.world:Draw()
 	end
 				
 
