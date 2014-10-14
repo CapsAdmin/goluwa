@@ -475,9 +475,9 @@ do
 			end
 			
 			if self.menu:IsValid() then				
-				self.menu:SetPosition(self:GetWorldPosition() + Vec2(self:GetWidth() + scale*2, 0))
 				self.menu:SetVisible(true)							
-				self.menu:Layout()
+				self.menu:Layout(true)
+				self.menu:SetPosition(self:GetWorldPosition() + Vec2(self:GetWidth() + scale*2, 0))
 			end
 		end
 		
@@ -521,8 +521,6 @@ do
 end
 
 local padding = 5 * scale
-local x = padding
-local y = 3 * scale
 
 local bar = gui2.CreatePanel("base") 
 bar:SetTexture(skin.gradient)
@@ -533,8 +531,7 @@ bar:SetResizable(true)
 local function create_button(text, options)
 	local button = gui2.CreatePanel("base", bar)
 	--button:SetColor(Color(88, 92, 88))
-	button:SetPosition(Vec2(x, y))
-	button:SetClipping(true)
+	button:SetClipping(true) 
 	button:SetParseTags(true)  
 	button:SetText("<font=snow_font><color=200,200,200>" .. text)
 	button:SetSize(button:GetTextSize() + Vec2(5,5) * scale)
@@ -548,7 +545,6 @@ local function create_button(text, options)
 			
 			local menu = gui2.CreatePanel("menu")
 			gui2.SetActiveMenu(menu)
-			menu:SetPosition(self:GetWorldPosition() + Vec2(0, self:GetHeight() + 2*scale), options)
 			
 			local function add_entry(menu, val)
 				for k, v in ipairs(val) do
@@ -564,11 +560,13 @@ local function create_button(text, options)
 			
 			add_entry(menu, options)			
 			
+			menu:Layout(true)
+			
+			menu:SetPosition(self:GetWorldPosition() + Vec2(0, self:GetHeight() + 2*scale), options)
+
 			menu:CallOnRemove(function() self:SetTexture(skin.button_inactive) end)
 		end
 	end
-	
-	x = x + button:GetSize().x + padding
 end
 
 create_button("↓", {
@@ -653,11 +651,14 @@ create_button("misc", {
 	{"about"},
 })
 
-bar:SetSize(Vec2(x, 16 * scale))
+bar:SetStack(true)
+bar:SetSize(Vec2(500,500))
+bar:SetPadding(Rect(1,1,5*scale,3*scale))
+bar:SetSize(bar:StackChildren())
 
 local emitter = ParticleEmitter(800)
-emitter:SetPos(Vec3(50,50,0))
---emitter:SetMoveResolution(0.25)  
+emitter:SetPos(Vec3(50,50,0)) 
+--emitter:SetMoveResolution(0.25) 
 emitter:SetAdditive(false)
 
 local fb
@@ -703,8 +704,8 @@ event.AddListener("Draw2D", "zsnow", function(dt)
 	--surface.SetColor(1,1,1,1)
 	--emitter:Draw()
 	
-	surface.SetColor(0,0,0,0.25)
-	surface.DrawRect(5*scale,5*scale, x, 16 * scale)
+	--surface.SetColor(0,0,0,0.25)
+	--surface.DrawRect(5*scale,5*scale, x, 16 * scale)
 	
 	if DX then
 		render.SetBlendMode("additive")
