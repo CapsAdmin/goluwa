@@ -90,6 +90,12 @@ local skin = {
 		return v, v, v, 255
 	end),
 	
+	gradient3 = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+		local v = (math.sin(y / ninepatch_size * math.pi) * 255) / 5 + 180
+		v = -v + 255
+		return v, v, v, 255
+	end),
+	
 	frame = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
 		y = -y + ninepatch_size
 		
@@ -122,15 +128,7 @@ do
 			bar:SetTexture(skin.gradient)
 			bar:SetColor(Color(120, 120, 160))
 			bar:SetClipping(true)
-					
-				local text = gui2.CreatePanel("base", bar)
-				text:SetHeight(bar:GetHeight())
-				text:SetParseTags(true)  
-				text:SetText("<font=snow_font><color=200,200,200>about")
-				text:CenterTextY()
-				text:SetPosition(Vec2(2*scale,0))
-				text:SetColor(Color(0,0,0,0))
-				
+								
 				local close = gui2.CreatePanel("base", bar) 			
 				close:SetParseTags(true)  
 				close:SetText("<font=snow_font_noshadow><color=50,50,50>X")
@@ -145,9 +143,26 @@ do
 					if button == "button_1" and not press then
 						frame:Remove()
 					end
-				end 
+				end
 		
 		frame:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
+		
+		self.frame = frame
+		self.bar = bar
+		
+		self:SetTitle("no title")
+	end
+	
+	function META:SetTitle(str)
+		gui2.RemovePanel(self.title)
+		local title = gui2.CreatePanel("base", self.bar)
+		title:SetHeight(self.bar:GetHeight())
+		title:SetParseTags(true)  
+		title:SetText("<font=snow_font><color=200,200,200>"..str)
+		title:CenterTextY()
+		title:SetPosition(Vec2(2*scale,0))
+		title:SetColor(Color(0,0,0,0))
+		self.title = title
 	end
 	
 	gui2.RegisterPanel(META)   
@@ -166,70 +181,125 @@ do
 		list:SetColor(Color(0,0,0,1))
 		list:SetClipping(true)
 		list:SetScrollable(true)
+		
+		do
+			local y_scroll = gui2.CreatePanel("base", self)
+			y_scroll:SetTexture(skin.gradient2)
+
+			local up = gui2.CreatePanel("base", y_scroll)				
+			up:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
+
+			local y_scroll_bar = gui2.CreatePanel("base", y_scroll)
+			y_scroll_bar:SetDraggable(true)	
+			y_scroll_bar:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+
+			local down = gui2.CreatePanel("base", y_scroll)
+			down:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
+					
+			y_scroll_bar.OnPositionChanged = function(self, pos)
+				local frac = math.clamp(pos.y / self.Parent:GetHeight(), 0, 1)
+				list:SetScrollFraction(Vec2(list:GetScrollFraction().x, frac))
+		 
+				pos.x = self.Parent:GetWidth() - self:GetWidth()
+				pos.y = math.clamp(pos.y, self:GetHeight(), self.Parent:GetHeight() - (self:GetHeight() * 2))
+			end
 			
-		local y_scroll = gui2.CreatePanel("base", self)
-		y_scroll:SetTexture(skin.gradient2)
-
-		local up = gui2.CreatePanel("base", y_scroll)				
-		up:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
-
-		local scroll_bar = gui2.CreatePanel("base", y_scroll)
-		scroll_bar:SetDraggable(true)	
-		scroll_bar:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
-
-		local down = gui2.CreatePanel("base", y_scroll)
-		down:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
+			list.OnScroll = function(self, frac)
+				y_scroll_bar:SetPosition(Vec2(0,frac.y * self.Parent:GetHeight()))
+			end
+			
+			up.OnMouseInput = function(self, button, press)
+				if button ~= "button_1" or not press then return end
+				if #list:GetChildren() == 0 then return end
 				
-		
-		scroll_bar.OnPositionChanged = function(self, pos)
-			local frac = math.clamp(pos.y / self.Parent:GetHeight(), 0, 1)
-			list:SetScrollFraction(Vec2(list:GetScrollFraction().x, frac))
-	 
-			pos.x = self.Parent:GetWidth() - self:GetWidth()
-			pos.y = math.clamp(pos.y, self:GetHeight(), self.Parent:GetHeight() - (self:GetHeight() * 2))
+				local h = list:GetChildren()[1]:GetHeight()
+				
+				local pos = list:GetScroll()
+				pos.y = pos.y - h
+				list:SetScroll(pos)
+			end
+			
+			down.OnMouseInput = function(self, button, press)
+				if button ~= "button_1" or not press then return end
+				if #list:GetChildren() == 0 then return end
+				
+				local h = list:GetChildren()[1]:GetHeight()
+				
+				local pos = list:GetScroll()
+				pos.y = pos.y + h
+				list:SetScroll(pos)
+			end
+			
+			self.list = list
+			self.down = down
+			self.up = up
+			self.y_scroll_bar = y_scroll_bar
+			self.y_scroll = y_scroll
 		end
 		
-		list.OnScroll = function(self, frac)
-			scroll_bar:SetPosition(Vec2(0,frac.y * self.Parent:GetHeight()))
+		do
+			local x_scroll = gui2.CreatePanel("base", self)
+			x_scroll:SetTexture(skin.gradient3)
+
+			local left = gui2.CreatePanel("base", x_scroll)				
+			left:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
+
+			local x_scroll_bar = gui2.CreatePanel("base", x_scroll)
+			x_scroll_bar:SetDraggable(true)	
+			x_scroll_bar:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+
+			local right = gui2.CreatePanel("base", x_scroll)
+			right:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
+					
+			x_scroll_bar.OnPositionChanged = function(self, pos)
+				local frac = math.clamp(pos.x / self.Parent:GetWidth(), 0, 1)
+				list:SetScrollFraction(Vec2(frac, list:GetScrollFraction().y))
+		 
+				pos.x = math.clamp(pos.x, self:GetWidth(), self.Parent:GetWidth() - (self:GetWidth() * 2))
+				pos.y = self.Parent:GetHeight() - self:GetHeight()
+			end
+			
+			list.OnScroll = function(self, frac)
+				x_scroll_bar:SetPosition(Vec2(frac.x * self.Parent:GetWidth(), 0))
+			end
+			
+			left.OnMouseInput = function(self, button, press)
+				if button ~= "button_1" or not press then return end
+				if #list:GetChildren() == 0 then return end
+				
+				local w = list:GetChildren()[1]:GetWidth()
+				
+				local pos = list:GetScroll()
+				pos.x = pos.x - w
+				list:SetScroll(pos)
+			end
+			
+			right.OnMouseInput = function(self, button, press)
+				if button ~= "button_1" or not press then return end
+				if #list:GetChildren() == 0 then return end
+				
+				local w = list:GetChildren()[1]:GetWidth()
+				
+				local pos = list:GetScroll()
+				pos.x = pos.x + w
+				list:SetScroll(pos)
+			end
+			
+			self.list = list
+			self.right = right
+			self.left = left
+			self.x_scroll_bar = x_scroll_bar
+			self.x_scroll = x_scroll
 		end
-		
-		up.OnMouseInput = function(self, button, press)
-			if button ~= "button_1" or not press then return end
-			if #list:GetChildren() == 0 then return end
-			
-			local h = list:GetChildren()[1]:GetHeight()
-			
-			local pos = list:GetScroll()
-			pos.y = pos.y - h
-			list:SetScroll(pos)
-		end
-		
-		down.OnMouseInput = function(self, button, press)
-			if button ~= "button_1" or not press then return end
-			if #list:GetChildren() == 0 then return end
-			
-			local h = list:GetChildren()[1]:GetHeight()
-			
-			local pos = list:GetScroll()
-			pos.y = pos.y + h
-			list:SetScroll(pos)
-		end
-		
-		self.list = list
-		self.down = down
-		self.up = up
-		self.scroll_bar = scroll_bar
-		self.y_scroll = y_scroll
 	end
 	
 	function META:OnLayout()
-		local w = 0
-		
+		local w = 0		
 		local y = 0
 		
 		for k, v in pairs(self.entries) do
 			v:SetPosition(Vec2(0, y))
-			y = y + v:GetHeight() + 2*scale
+			y = y + v:GetHeight() - scale
 			w = math.max(w, v:GetTextSize().w)
 		end
 		
@@ -237,23 +307,58 @@ do
 			v:SetWidth(w)
 		end
 	
-		self.list:SetSize(self:GetSize()*1) 
-		self.list:SetWidth(self:GetWidth() - scroll_width)
+		self.list:SetSize(self:GetSize()*1)
 		
-		self.y_scroll:SetSize(Vec2(scroll_width, self:GetHeight()))
-		self.y_scroll:SetPosition(Vec2(self:GetWidth() - scroll_width, 0))
+		if self.y_scroll:IsVisible() then
+			self.list:SetWidth(self:GetWidth())
+		else
+			self.list:SetWidth(self:GetWidth() - scroll_width)
+		end
 		
-		self.down:SetSize(Vec2(scroll_width, scroll_width))
-		self.down:SetPosition(Vec2(0, self:GetHeight() - self.down:GetHeight()))
+		if self.x_scroll:IsVisible() then
+			self.list:SetHeight(self:GetHeight())
+		else
+			self.list:SetHeight(self:GetHeight() - scroll_width)
+		end
 		
-		self.scroll_bar:SetSize(Vec2(scroll_width, scroll_width))
+		do
+			self.y_scroll:SetSize(Vec2(scroll_width, self:GetHeight()))
+			self.y_scroll:SetPosition(Vec2(self:GetWidth() - scroll_width, 0))
+			
+			self.down:SetSize(Vec2(scroll_width, scroll_width))
+			self.down:SetPosition(Vec2(0, self:GetHeight() - self.down:GetHeight()))
+			
+			self.y_scroll_bar:SetSize(Vec2(scroll_width, scroll_width))
+			
+			self.up:SetSize(Vec2(scroll_width, scroll_width))
 		
-		self.up:SetSize(Vec2(scroll_width, scroll_width))
-	
-		self.scroll_bar:SetHeight(math.max((self.list:GetHeight() / self.list:GetSizeOfChildren().h) * self.list:GetHeight(), scroll_width))
+			--self.y_scroll_bar:SetHeight(math.max((self.list:GetHeight() / self.list:GetSizeOfChildren().h) * self.list:GetHeight(), scroll_width))
 		
-		if self.list:GetHeight() > self.list:GetSizeOfChildren().h then
-			self.scroll_bar:SetWidth(0)
+			if self.list:GetHeight() > self.list:GetSizeOfChildren().h then
+				self.y_scroll:SetVisible(false)
+			else
+				self.y_scroll:SetVisible(true)
+			end
+		end
+		
+		do
+			self.x_scroll:SetSize(Vec2(self:GetWidth(), scroll_width))
+			self.x_scroll:SetPosition(Vec2(0, self:GetHeight() - scroll_width))
+			
+			self.right:SetSize(Vec2(scroll_width, scroll_width))
+			self.right:SetPosition(Vec2(self:GetWidth() - self.right:GetWidth(), 0))
+			
+			self.x_scroll_bar:SetSize(Vec2(scroll_width, scroll_width))
+			
+			self.left:SetSize(Vec2(scroll_width, scroll_width))
+		
+		--	self.x_scroll_bar:SetWidth(math.max((self.list:GetWidth() / self.list:GetSizeOfChildren().w) * self.list:GetWidth(), scroll_width))
+		
+			if self.list:GetWidth() > self.list:GetSizeOfChildren().w then
+				self.x_scroll:SetVisible(false)
+			else
+				self.x_scroll:SetVisible(true)
+			end
 		end
 	end
 	
@@ -261,8 +366,8 @@ do
 		local button = gui2.CreatePanel("base", self.list)
 		button:SetSendMouseInputToParent(true)
 		button:SetParseTags(true)
-		button:SetText("<font=snow_font_green><color=0,255,0>" .. name)
 		button:SetWrapText(false)
+		button:SetText("<font=snow_font_green><color=0,255,0>" .. name)
 		button:SetSize(button:GetTextSize() + Vec2(4,4) * scale)
 		button:CenterTextY()
 		
@@ -272,12 +377,12 @@ do
 		button:SetColor(Color(0,0,0,0))
 		button:SetupNinepatch(skin.menu_select, ninepatch_size, ninepatch_corner_size)
 
-		button.OnMouseInput = function(self, button, press)
-			if button == "button_1" then
+		button.OnMouseInput = function(_, key, press)
+			if key == "button_1" then
 				if press then
-					self:SetColor(Color(1,1,1,1))
-					for k,v in ipairs(list:GetChildren()) do
-						if v ~= self then
+					button:SetColor(Color(1,1,1,1))
+					for k,v in ipairs(self.list:GetChildren()) do
+						if v ~= button then
 							v:SetColor(Color(0,0,0,0))
 						end
 					end
@@ -289,7 +394,7 @@ do
 		table.insert(self.entries, button)
 	end	
 	
-	gui2.RegisterPanel(META) 
+	gui2.RegisterPanel(META)  
 end
  
 do
@@ -402,7 +507,7 @@ do
 			
 			return self.menu
 		end
-				
+				 
 		function META:OnMouseInput(button, press)
 			if button == "button_1" and press then
 				self:OnClick()
@@ -412,19 +517,6 @@ do
 		function META:OnClick() gui2.SetActiveMenu() end 
 		
 		gui2.RegisterPanel(META)
-	end
-end
-
-do	
-	local frame = gui2.CreatePanel("frame") 
-	
-	frame:SetPosition(Vec2(100, 100) )
-	frame:SetSize(Vec2(300, 300))
-	
-	local panel = gui2.CreatePanel("list", frame)
-	panel:Dock("fill") 
-	for k,v in pairs(vfs.Find("/")) do
-		panel:AddEntry(v)
 	end
 end
 
@@ -495,12 +587,20 @@ create_button("↓", {
 	{"clear all data"},
 }) 
 create_button("game", {
-	{"load", {
-		{"save state"},
-		{"open state"},
-		{"pick state"},
-	}},
-	{"run  [ESC]"},
+	{"load", function() 
+		local frame = gui2.CreatePanel("frame") 
+
+		frame:SetPosition(Vec2(100, 100))
+		frame:SetSize(Vec2(300, 300))
+		frame:SetTitle("file browser")
+		
+		local panel = gui2.CreatePanel("list", frame)
+		panel:Dock("fill") 
+		for k,v in pairs(vfs.Find("/")) do
+			panel:AddEntry(v)
+		end
+	end},
+	{"run  [ESC]", function() debug.trace() end},
 	{"reset", {
 		{"video"},
 		{"sound"},
@@ -521,7 +621,7 @@ create_button("game", {
 	{"open state"},
 	{"pick state"},
 	{},
-	{"quit"}
+	{"quit", function() os.exit() end} 
 })
 create_button("config", {
 	{"input"},
