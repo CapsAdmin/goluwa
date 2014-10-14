@@ -88,6 +88,7 @@ do -- base panel
 		PANEL.call_on_hide = {}
 		
 		function PANEL:IsVisible()
+			if self.visible == nil then return true end -- ?????
 			return self.visible
 		end
 		
@@ -1270,6 +1271,7 @@ do -- base panel
 			end
 			
 			self:DockLayout()
+			self:StackChildren()
 			self:OnLayout(self:GetPosition(), self:GetSize())
 			self.in_layout = false
 		end
@@ -1370,6 +1372,92 @@ do -- base panel
 		DELEGATE("CenterText", "Center")
 		DELEGATE("CenterTextX", "CenterX")
 		DELEGATE("CenterTextY", "CenterY")
+	end
+	
+	do -- stacking
+		prototype.GetSet(PANEL, "ForcedStackSize", Vec2(0, 0))
+		
+		prototype.GetSet(PANEL, "StackRight", true)
+		prototype.GetSet(PANEL, "StackDown", true)
+
+		prototype.GetSet(PANEL, "SizeStackToWidth", false)
+		prototype.GetSet(PANEL, "SizeStackToHeight", false)
+		prototype.IsSet(PANEL, "Stackable", true)
+		prototype.IsSet(PANEL, "Stack", false)
+		 
+		function PANEL:StackChildren()
+			if not self.Stack then return end
+			
+			self:Layout(true)
+			
+			local w = 0
+			local h
+			local pad = self:GetPadding()
+				
+			for _, pnl in ipairs(self:GetChildren()) do
+				if not pnl:IsStackable() then goto NEXT end
+				local siz = pnl:GetSize()
+				
+				if self.ForcedStackSize.w ~= 0 then
+					siz.w = self.ForcedStackSize.w
+				end
+				
+				if self.ForcedStackSize.h ~= 0 then
+					siz.h = self.ForcedStackSize.h
+				end
+				
+				siz = siz + self.Padding:GetSize()
+
+				if self.StackRight then
+					h = h or siz.h
+					w = w + siz.w
+
+					if self.StackDown and w > self:GetWidth() then
+						h = h + siz.h
+						w = siz.w
+					end
+					
+					pnl:SetPosition(Vec2(w + pad.w, h + pad.h) - siz)
+				else
+					h = h or 0
+					h = h + siz.h
+					w = siz.w > w and siz.w or w
+					
+					pnl:SetPosition(Vec2(pad.x, h + pad.y - siz.h))
+				end
+				
+				if not self.ForcedStackSize:IsZero() then
+					local siz = self.ForcedStackSize
+					
+					if self.SizeStackToWidth then
+						siz.w = self:GetWidth()
+					end
+					
+					if self.SizeStackToHeight then
+						siz.w = self:GetHeight()
+					end
+
+					pnl:SetSize(Vec2(siz.w - pad.h * 2, siz.h))
+				else
+					if self.SizeStackToWidth then
+						pnl:SetWidth(self:GetWidth() - pad.w * 2)
+					end
+					
+					if self.SizeStackToHeight then
+						pnl:SetHeight(self:GetHeight() - pad.h * 2)
+					end
+				end
+				
+				::NEXT::
+			end
+			
+			if self.SizeStackToWidth then
+				w = self:GetWidth() - pad.w * 2
+			end
+
+
+			return Vec2(w, h) + pad:GetSize()
+		end
 	end
 	
 	do -- events
