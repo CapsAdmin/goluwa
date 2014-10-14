@@ -1,7 +1,10 @@
 include("gui2.lua")
  
 local scale = 2
+local ninepatch_size = 32
+local ninepatch_corner_size = 4
 local bg = Color(64, 44, 128, 200)
+
 
 surface.CreateFont("snow_font", {
 	path = "fonts/zfont.txt", 
@@ -22,100 +25,97 @@ surface.CreateFont("snow_font_noshadow", {
 	size = 8*scale,
 }) 
 
-local button_inactive = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
-	y = -y + 16
- 	
-	if x >= 16-2 or y >= 16-2 then
-		return 72, 68, 64, 255
-	elseif x <= 2 or y <= 2 then
-		return 104, 100, 96, 255
-	end
-	
-	return 88, 92, 88, 255
-end)
-
-local button_active = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
-	y = -y + 16
- 	
-	if x >= 16-2 or y >= 16-2 then
-		return 104, 100, 96, 255
-	end
-	
-	return 72, 68, 64, 255
-end)
-
-local rounded_button = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y)
-	y = -y + 16
-	
-	if 
-		(x >= 16-2 and y >= 16-2) or 
-		(x <= 2 and y <= 2) or
-		(x >= 16-2 and y <= 2) or
-		(x <= 2 and y >= 16-2)
-	then 					
-		return 0,0,0,0 
-	end
-	
-	if x >= 16-2 or y >= 16-2 then
-		return 160, 120, 120, 255
-	elseif x <= 2 or y <= 2 then
-		return 192, 144, 144, 255
-	end
-	
-	return 176, 132, 128, 255
-end)
-
-local menu_select = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
-	y = -y + 16
- 	
-	if x >= 16-2 or y >= 16-2 or x <= 2 or y <= 2 then
-		return 80, 0, 136, 255
-	end
-	
-	return 80, 0, 160, 255
-end)
-
-local gradient = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
-	local v = (math.sin(y / 16 * math.pi)^0.8 * 255) / 2.25 + 130
-	return v, v, v, 255
-end)  
-
-local gradient2 = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
-	local v = (math.sin(x / 16 * math.pi) * 255) / 5 + 180
-	v = -v + 255
-	return v, v, v, 255
-end)  
-
-local function create_frame()
-	local frame_texture = Texture(16, 16, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
-		y = -y + 16
+local skin = {
+	button_inactive = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+		y = -y + ninepatch_size
 		
-		if x >= 16-2 or y >= 16-2 then
+		if x >= ninepatch_size-2 or y >= ninepatch_size-2 then
+			return 72, 68, 64, 255
+		elseif x <= 2 or y <= 2 then
+			return 104, 100, 96, 255
+		end
+		
+		return 88, 92, 88, 255
+	end),
+
+	button_active = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+		y = -y + ninepatch_size
+		
+		if x >= ninepatch_size-2 or y >= ninepatch_size-2 then
+			return 104, 100, 96, 255
+		end
+		
+		return 72, 68, 64, 255
+	end),
+
+	button_rounded = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y)
+		y = -y + ninepatch_size
+		
+		if 
+			(x >= ninepatch_size-2 and y >= ninepatch_size-2) or 
+			(x <= 2 and y <= 2) or
+			(x >= ninepatch_size-2 and y <= 2) or
+			(x <= 2 and y >= ninepatch_size-2)
+		then 					
+			return 0,0,0,0 
+		end
+		
+		if x >= ninepatch_size-2 or y >= ninepatch_size-2 then
+			return 160, 120, 120, 255
+		elseif x <= 2 or y <= 2 then
+			return 192, 144, 144, 255
+		end
+		
+		return 176, 132, 128, 255
+	end),
+
+	menu_select = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+		y = -y + ninepatch_size
+		
+		if x >= ninepatch_size-2 or y >= ninepatch_size-2 or x <= 2 or y <= 2 then
+			return 80, 0, 136, 255
+		end
+		
+		return 80, 0, 160, 255
+	end),
+	
+	gradient = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+		local v = (math.sin(y / ninepatch_size * math.pi)^0.8 * 255) / 2.25 + 130
+		return v, v, v, 255
+	end),
+
+	gradient2 = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+		local v = (math.sin(x / ninepatch_size * math.pi) * 255) / 5 + 180
+		v = -v + 255
+		return v, v, v, 255
+	end),
+	
+	frame = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+		y = -y + ninepatch_size
+		
+		if x >= ninepatch_size-2 or y >= ninepatch_size-2 then
 			return 152, 16, 16, 255
 		elseif x <= 2 or y <= 2 then
 			return 184, 48, 48, 255
 		end
 
 		return 168, 32, 32, 255
-	end)
- 
+	end),
+} 
+
+local function create_frame()
 	local frame = gui2.CreatePanel()
-	frame:SetSize(Vec2(400,400))
-	frame:SetPosition(Vec2(150, 150))
 	frame:SetDraggable(true)
-	frame:SetResizable(true)
-	frame:SetNinePatch(true)
-	frame:SetTexture(frame_texture)
-	frame:SetNinePatchSize(16)
-	frame:SetNinePatchCornerSize(4)
-	frame:SetMargin(Rect())
+	frame:SetResizable(true) 
+	frame:SetMargin(Rect(4,10*scale+4,4,4))  
+	frame:SetupNinepatch(skin.frame, ninepatch_size, ninepatch_corner_size)
 		
 		local bar = gui2.CreatePanel(frame)
-		bar:SetMargin(Rect())
+		bar:SetObeyMargin(false)
+		bar:Dock("fill_top") 
 		bar:SetSendMouseInputToParent(true)
 		bar:SetHeight(10*scale)
-		bar:Dock("fill_top")
-		bar:SetTexture(gradient)
+		bar:SetTexture(skin.gradient)
 		bar:SetColor(Color(120, 120, 160))
 		bar:SetClipping(true)
 				
@@ -127,9 +127,7 @@ local function create_frame()
 			text:SetPosition(Vec2(2*scale,0))
 			text:SetColor(Color(0,0,0,0))
 			
-			local close = gui2.CreatePanel(bar)
-			close:SetPadding(Rect(1,1,1,1)*scale)
-			
+			local close = gui2.CreatePanel(bar) 			
 			close:SetParseTags(true)  
 			close:SetText("<font=snow_font_noshadow><color=50,50,50>X")
 			close:SetSize(close:GetTextSize()+Vec2(3,3)*scale)
@@ -137,10 +135,7 @@ local function create_frame()
 			
 			close:Dock("top_right")
 			
-			close:SetNinePatch(true)
-			close:SetTexture(rounded_button)   
-			close:SetNinePatchSize(16)
-			close:SetNinePatchCornerSize(4)
+			close:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
 			
 			close.OnMouseInput = function(self, button, press) 
 				if button == "button_1" and not press then
@@ -158,37 +153,30 @@ do
 	
 	local frame = create_frame()  
 	
+	frame:SetPosition(Vec2(100, 100) )
+	frame:SetSize(Vec2(300, 300))
+	
 	local panel = gui2.CreatePanel(frame)
-	panel:SetPosition(Vec2(25, 25 + scroll_width))
-	panel:SetSize(Vec2(200, 300))
+	panel:Dock("fill") 
 	panel:SetColor(Color(0,0,0,0))
 		
 		local list = gui2.CreatePanel(panel)
 		list:SetColor(Color(0,0,0,1))
 		list:SetClipping(true)
-		list:SetScrollable(true)		
+		list:SetScrollable(true)
 			
 			local y_scroll = gui2.CreatePanel(panel)
-			y_scroll:SetTexture(gradient2)
+			y_scroll:SetTexture(skin.gradient2)
 				
 				local up = gui2.CreatePanel(y_scroll)				
-				up:SetNinePatch(true)
-				up:SetTexture(rounded_button)
-				up:SetNinePatchSize(16)
-				up:SetNinePatchCornerSize(4)
+				up:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
 				
 				local scroll_bar = gui2.CreatePanel(y_scroll)
 				scroll_bar:SetDraggable(true)	
-				scroll_bar:SetNinePatch(true)
-				scroll_bar:SetTexture(button_inactive)
-				scroll_bar:SetNinePatchSize(16)
-				scroll_bar:SetNinePatchCornerSize(4)
+				scroll_bar:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
 				
 				local down = gui2.CreatePanel(y_scroll)
-				down:SetNinePatch(true)
-				down:SetTexture(rounded_button)
-				down:SetNinePatchSize(16)
-				down:SetNinePatchCornerSize(4)
+				down:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
 		
 	function panel:OnLayout()	
 		list:SetSize(panel:GetSize()*1) 
@@ -263,10 +251,7 @@ do
 		w = math.max(w, button:GetTextSize().w)
 		
 		button:SetColor(Color(0,0,0,0))
-		button:SetNinePatch(true)
-		button:SetTexture(menu_select)
-		button:SetNinePatchSize(16)
-		button:SetNinePatchCornerSize(4)	
+		button:SetupNinepatch(skin.menu_select, ninepatch_size, ninepatch_corner_size)
 
 		button.OnMouseInput = function(self, button, press)
 			if button == "button_1" then
@@ -300,10 +285,7 @@ do
 end
 local function create_menu(pos, options, parent_menu)
 	local frame = gui2.CreatePanel()
-	frame:SetNinePatch(true)
-	frame:SetTexture(button_inactive)
-	frame:SetNinePatchSize(16)    
-	frame:SetNinePatchCornerSize(4)
+	frame:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
 	frame:SetPosition(pos)
 	
 	if parent_menu then
@@ -319,52 +301,53 @@ local function create_menu(pos, options, parent_menu)
 		
 		local text, callback = option[1], option[2] or print
 		
-		if text then
+		if text then 
 			local button = gui2.CreatePanel(frame)
 			--button:SetColor(Color(88, 92, 88))
 			--button:SetClipping(true)
 			button:SetParseTags(true)  
 			button:SetText("<font=snow_font><color=200,200,200>" .. text)
-			button:SetSize(button:GetTextSize() + Vec2(4,4) * scale)
+			button:SetHeight(button:GetTextSize().h + 4*scale)
 			button:CenterTextY()
-			button:SetWidth(frame:GetWidth() - 4*scale)
-			button:SetPosition(Vec2(2*scale, y))
-			
-			button:SetColor(Color(0,0,0,0))
-			button:SetNinePatch(true)
-			button:SetTexture(menu_select)
-			button:SetNinePatchSize(16)
-			button:SetNinePatchCornerSize(4)
+			button:SetPosition(Vec2(2*scale, y))			
+			button:SetColor(Color(0,0,0,0))			
+			button:SetupNinepatch(skin.menu_select, ninepatch_size, ninepatch_corner_size)			
 			button:SetMargin(Rect(0,0,0,0))
-			button:SetSendMouseInputToParent(true)
 			
 			if type(callback) == "table" then
 				local icon = gui2.CreatePanel(button)
-				icon:SetSendMouseInputToParent(true)
-				icon:SetPadding(Rect(0,0,0,0))
-				icon:SetSize(Vec2() + button:GetHeight())
+				icon:SetIgnoreMouse(true)
+				icon:SetPadding(Rect(0,0,scale*2,0))
 				icon:Dock("right")
 				icon:SetColor(Color(0,0,0,0))
 				icon:SetParseTags(true) 
 				icon:SetText("<font=snow_font><color=200,200,200>▶")
+				icon:SetSize(icon:GetTextSize())
+
 			end
 			
 			w = math.max(w, button:GetTextSize().w)
-			
+			 
 			button.OnMouseEnter = function()
 				button:SetColor(Color(1,1,1,1))
+				
+				if frame.sub_menu and frame.sub_menu:IsValid() and frame.sub_menu.button ~= button then
+					frame.sub_menu:Remove() 
+				end
+				
 				if type(callback) == "table" then
 					if not frame.sub_menu or not frame.sub_menu:IsValid() then
-						frame.sub_menu = create_menu(button:GetWorldPosition() + Vec2(button:GetWidth() + scale*3, -scale*3), callback, frame)
+						frame.sub_menu = create_menu(button:GetWorldPosition() + Vec2(button:GetWidth() + scale*2, 0), callback, frame)
+						frame.sub_menu.button = button
 					end
 				end
 			end
 			button.OnMouseExit = function()
-				event.Delay(0, function()
-					if frame.sub_menu and frame.sub_menu:IsValid() then 
+				if frame.sub_menu and frame.sub_menu:IsValid() then
+					if frame.sub_menu.button ~= button then
 						frame.sub_menu:Remove() 
 					end
-				end)
+				end
 				button:SetColor(Color(1,1,1,0))
 			end
 			
@@ -380,19 +363,17 @@ local function create_menu(pos, options, parent_menu)
 			local button = gui2.CreatePanel(frame)
 			button:SetPosition(Vec2(4, y + scale*4))
 			button:SetSize(Vec2(frame:GetWidth() - 8, 6))	
-			button:SetNinePatch(true)
-			button:SetTexture(button_active)
-			button:SetNinePatchSize(16)
-			button:SetNinePatchCornerSize(2)
+			
+			button:SetupNinepatch(skin.button_active, ninepatch_size, ninepatch_corner_size)
 			y = y + 8*scale
 		end
 	end
 	
 	for i, panel in ipairs(frame:GetChildren()) do
-		panel:SetWidth(w)
+		panel:SetWidth(w + 4*scale)
 	end 
 	 
-	frame:SetSize(Vec2(w + 5*scale, y + 2*scale))
+	frame:SetSize(Vec2(w + 8*scale, y + 2*scale))
 	
 	return frame
 end
@@ -402,9 +383,10 @@ local x = padding
 local y = 3 * scale
 
 local bar = gui2.CreatePanel() 
-bar:SetTexture(gradient)
+bar:SetTexture(skin.gradient)
 bar:SetColor(Color(0,72,248))
 bar:SetDraggable(true)
+bar:SetResizable(true)
 
 local function create_button(text, options)
 	local button = gui2.CreatePanel(bar)
@@ -416,17 +398,14 @@ local function create_button(text, options)
 	button:SetSize(button:GetTextSize() + Vec2(5,5) * scale)
 	button:CenterText()
 	
-	button:SetNinePatch(true)
-	button:SetTexture(button_inactive)
-	button:SetNinePatchSize(16)
-	button:SetNinePatchCornerSize(4)
+	button:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
 	 
 	button.OnMouseInput = function(self, button, press)
 		if press then
-			self:SetTexture(button_active)
+			self:SetTexture(skin.button_active)
 			
 			local menu = create_menu(self:GetWorldPosition() + Vec2(0, self:GetHeight() + 2*scale), options)
-			menu:CallOnRemove(function() self:SetTexture(button_inactive) end)
+			menu:CallOnRemove(function() self:SetTexture(skin.button_inactive) end)
 		end
 	end
 	
@@ -459,6 +438,14 @@ create_button("game", {
 		{"video"},
 		{"sound"},
 		{"paths"},
+		{"huh", {
+			{"misc keys"},
+			{"gui opts"},
+			{"key comb."},
+			{"save cfg"},
+			{},
+			{"about"},
+		}},
 		{"saves"},
 		{"speed"},
 	}},
@@ -501,6 +488,8 @@ create_button("misc", {
 
 bar:SetSize(Vec2(x, 16 * scale))
 
+do return end
+
 local emitter = ParticleEmitter(800)
 emitter:SetPos(Vec3(50,50,0))
 --emitter:SetMoveResolution(0.25)  
@@ -514,7 +503,6 @@ if DX then
 end
 
 event.AddListener("PreDrawMenu", "zsnow", function(dt)
-do return end
 	if DX then
 		fb:Begin()
 			surface.SetColor(0,0,0,0.01)
@@ -565,7 +553,6 @@ do return end
 end) 
 
 event.CreateTimer("zsnow", 0.01, function()
-do return end
 	emitter:SetPos(Vec3(math.random((DX and 256 or render.GetWidth()) + 100) - 150, -50, 0))
 		
 	local p = emitter:AddParticle()
