@@ -24,9 +24,11 @@ do -- base panel
 	prototype.GetSet(PANEL, "TrapChildren", false)
 	prototype.GetSet(PANEL, "Texture", render.GetWhiteTexture())
 	prototype.GetSet(PANEL, "RedirectFocus", NULL)
+	prototype.GetSet(PANEL, "IgnoreMouse", false)
 
-	prototype.GetSet(PANEL, "Padding", Rect(10, 10, 10, 10))
-	prototype.GetSet(PANEL, "Margin", Rect(10, 10, 10, 10))
+	prototype.GetSet(PANEL, "Padding", Rect(0, 0, 0, 0))
+	prototype.GetSet(PANEL, "Margin", Rect(1, 1, 1, 1))
+	prototype.GetSet(PANEL, "ObeyMargin", true)
 	
 	function PANEL:__tostring()
 		return ("panel[%p] %s %s %s %s"):format(self, self.Position.x, self.Position.y, self.Size.w, self.Size.h)
@@ -206,7 +208,7 @@ do -- base panel
 
 			self.Size = size
 			
-			self:DockLayout()
+			self:InvalidateLayout()
 		end
 
 		function PANEL:GetWorldPosition()
@@ -757,8 +759,12 @@ do -- base panel
 			off = off or Vec2()
 			parent = parent or self:GetParent()
 
-			local margin = parent:GetMargin() or Rect()
+			local margin = parent:GetMargin()
 			local padding = self:GetPadding()
+			
+			if not self.ObeyMargin then
+				margin = Rect()
+			end
 			
 			local size = self:GetSize() + margin:GetPosSize() + padding:GetPosSize()
 			local centerparent = parent:GetSize() * vec
@@ -792,24 +798,25 @@ do -- base panel
 		end
 
 		function PANEL:DockLayout()
-			local margin = self.Margin
-
-			local x = margin.x
-			local y = margin.y
-			local w = self:GetWidth() - x - margin.w
-			local h = self:GetHeight() - y - margin.h
-
-			local area = Rect(x, y, w, h)
-
 			local left, right, top, bottom, center
-			local pad
 
 			-- grab one of each dock type
 			for _, pnl in ipairs(self:GetChildren()) do
 				if pnl.dock_location then
 					if pnl.dock_location == "fill" then
-						pnl:SetPosition(area:GetPos() + pnl:GetPos())
-						pnl:SetSize(area:GetSize() - pnl:GetPosSize())
+						local margin = self:GetMargin()
+					
+						if not pnl.ObeyMargin then margin = Rect() end
+						
+						local x = margin.x
+						local y = margin.y
+						local w = self:GetWidth() - x - margin.w
+						local h = self:GetHeight() - y - margin.h
+
+						local area = Rect(x, y, w, h)	
+						
+						pnl:SetPosition(area:GetPos())
+						pnl:SetSize(area:GetSize())
 
 						if pnl.SizeToContens then
 							pnl:SizeToContents()
@@ -851,19 +858,38 @@ do -- base panel
 				end
 				pnl:DockLayout()
 			end
+			
+			if top then				
+				local margin = self:GetMargin()
+				
+				if not top.ObeyMargin then margin = Rect() end
+				
+				local x = margin.x
+				local y = margin.y
+				local w = self:GetWidth() - x - margin.w
+				local h = self:GetHeight() - y - margin.h
 
-			if top then
-				pad = top:GetMargin()
+				local area = Rect(x, y, w, h)	
+				local pad = top:GetPadding()
 
 				top:SetPosition(area:GetPos() + pad:GetPos())
 				top:SetWidth(area.w - pad:GetXW())
-
 				area.y = area.y + top:GetHeight() + pad:GetYH()
 				area.h = area.h - top:GetHeight() - pad:GetYH()
 			end
 
 			if bottom then
-				pad = bottom:GetMargin()
+				local margin = self:GetMargin()
+				
+				if not bottom.ObeyMargin then margin = Rect() end
+				
+				local x = margin.x
+				local y = margin.y
+				local w = self:GetWidth() - x - margin.w
+				local h = self:GetHeight() - y - margin.h
+
+				local area = Rect(x, y, w, h)	
+				local pad = bottom:GetMargin()
 
 				bottom:SetPosition(area:GetPos() + Vec2(pad.x, area.h - bottom:GetHeight() - pad.h))
 				bottom:SetWidth(w - pad:GetXW())
@@ -871,7 +897,17 @@ do -- base panel
 			end
 
 			if left then
-				pad = left:GetMargin()
+				local margin = self:GetMargin()
+				
+				if not left.ObeyMargin then margin = Rect() end
+				
+				local x = margin.x
+				local y = margin.y
+				local w = self:GetWidth() - x - margin.w
+				local h = self:GetHeight() - y - margin.h
+
+				local area = Rect(x, y, w, h)	
+				local pad = left:GetMargin()
 
 				left:SetPosition(area:GetPos() + pad:GetPos())
 				left:SetHeight(area.h - pad:GetYH())
@@ -880,12 +916,22 @@ do -- base panel
 			end
 
 			if right then
-				pad = right:GetMargin()
+				local margin = self:GetMargin()
+				
+				if not right.ObeyMargin then margin = Rect() end
+				
+				local x = margin.x
+				local y = margin.y
+				local w = self:GetWidth() - x - margin.w
+				local h = self:GetHeight() - y - margin.h
+
+				local area = Rect(x, y, w, h)	
+				local pad = right:GetMargin()
 
 				right:SetPosition(area:GetPos() + Vec2(area.w - right:GetWidth() - pad.w, pad.y))
 				right:SetHeight(area.h - pad:GetYH())
 				area.w = area.w - right:GetWidth() - pad:GetXW()
-			end
+			end			
 		end
 
 		function PANEL:GetDockLocation(pos, offset) -- rename this function
@@ -1165,6 +1211,7 @@ do -- base panel
 			for i, v in ipairs(self:GetChildren()) do
 				v:InvalidateLayout()
 			end
+			self:DockLayout()
 			self:OnLayout(self:GetPosition(), self:GetSize())
 		end
 	end
@@ -1189,6 +1236,7 @@ do -- base panel
 				local carrier = gui2.CreatePanel(self) 
 				carrier:SetSendMouseInputToParent(true)
 				carrier:SetColor(0,0,0,0)
+				carrier:SetIgnoreMouse(not self.TextEditable)
 				self:SetRedirectFocus(carrier)
 				
 				local markup = surface.CreateMarkup()
@@ -1271,6 +1319,18 @@ do -- base panel
 		prototype.GetSet(PANEL, "NinePatchCornerSize", 4)
 		prototype.GetSet(PANEL, "NinePatchUVOffset", Vec2(0, 0))
 		
+		function PANEL:SetupNinepatch(texture, patch_size, corner_size, uv_offset)
+			patch_size = patch_size or self.NinePatchSize
+			corner_size = corner_size or self.NinePatchCornerSize
+			uv_offset = uv_offset or self.NinePatchUVOffset
+			
+			self:SetTexture(texture)
+			self:SetNinePatch(true)
+			self:SetNinePatchSize(patch_size)
+			self:SetNinePatchCornerSize(corner_size)
+			self:SetNinePatchUVOffset(uv_offset)
+		end
+		
 		function PANEL:OnUpdate()
 
 		end
@@ -1338,7 +1398,7 @@ function gui2.GetHoveringPanel(panel, filter)
 
 	for i = #children, 1, -1 do
 		local panel = children[i]
-		if panel.mouse_over and (not filter or panel ~= filter) then
+		if panel.mouse_over and not panel.IgnoreMouse and (not filter or panel ~= filter) then
 			if panel:HasChildren() then
 				return gui2.GetHoveringPanel(panel, filter)
 			end
@@ -1413,13 +1473,14 @@ function gui2.Draw2D()
 		end
 	end
 	
-		gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePos()
+	gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePos()
 
-		--gui2.world:Draw()
+	gui2.world:Draw()
 	if gui2.threedee then 
 		surface.End3D()
 	end
-	--do return end
+	
+	do return end
 	
 	if not gui2.unrolled_draw then
 		local str = {"local panels = gui2.panels"}
@@ -1611,4 +1672,5 @@ end
 gui2.Initialize()
 --gui2.Test()
 
+gui.SetCursor = function() end
 --for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
