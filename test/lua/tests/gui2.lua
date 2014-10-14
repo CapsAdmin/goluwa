@@ -156,14 +156,16 @@ do -- base panel
 	end
 
 	function PANEL:PreDraw()
-		if self.layout_me then self:Layout() self.layout_me = false end
+		if self.layout_me then self:Layout(true) self.layout_me = false end
 		
 		local no_clip = self:HasParent() and self.Parent.draw_no_clip
 		local no_draw = self:HasParent() and self.Parent.draw_no_draw
 	
+	
 		surface.PushMatrix()
 			render.Translate(self.Position.x, self.Position.y, 0)
 
+		if not no_draw then
 			local w = (self.Size.w)/2
 			local h = (self.Size.h)/2
 
@@ -177,7 +179,7 @@ do -- base panel
 			self:CalcScrolling()
 
 			self:CalcAnimations()
-
+		end
 			if self.CachedRendering then
 				self:DrawCache()
 				no_draw = true
@@ -1243,11 +1245,6 @@ do -- base panel
 					end
 				end
 			end
-
-			-- temp
-			if button == "button_1" and press then
-				self:OnClick()
-			end
 						
 			self:OnMouseInput(button, press)
 		end
@@ -1262,7 +1259,9 @@ do -- base panel
 	end
 	
 	do -- layout
-		function PANEL:Layout()
+		function PANEL:Layout(now)
+			self.layout_me = true
+			if not now then return end
 			if self.in_layout then return end
 			self.in_layout = true
 			
@@ -1431,7 +1430,6 @@ do -- base panel
 
 		function PANEL:OnCharTyped(char) end
 		function PANEL:OnKeyPressed(key, pressed) end
-		function PANEL:OnClick(key, pressed) end
 		
 		function PANEL:OnPositionChanged(pos) end
 		function PANEL:OnScroll(fraction) end
