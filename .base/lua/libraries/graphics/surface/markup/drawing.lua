@@ -267,3 +267,5 @@ function META:DrawCaret()
 		surface.DrawRect(x, y, 1, h)
 	end
 end
+
+prototype.UpdateObjects(META)
