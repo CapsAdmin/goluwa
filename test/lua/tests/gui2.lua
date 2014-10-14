@@ -11,8 +11,33 @@ gui2.hovering_panel = NULL
 gui2.focus_panel = NULL
 gui2.panels = {}
 
+function gui2.CreatePanel(name, parent)		
+	local self = prototype.CreateDerivedObject("panel2", name)
+	
+	if not self then return NULL end
+					
+	self:SetParent(parent or gui2.world)
+	self:Initialize()
+	
+	table.insert(gui2.panels, self)
+	self.i = #gui2.panels
+	
+	self.layout_me = true
+	
+	return self
+end
+
+function gui2.RegisterPanel(META)
+	META.TypeBase = "base"
+	prototype.Register(META, "panel2")
+end
+
+function gui2.RemovePanel(pnl)
+	if pnl and pnl:IsValid() then pnl:Remove() end
+end
+
 do -- base panel
-	local PANEL = prototype.CreateTemplate("panel2")
+	local PANEL = prototype.CreateTemplate("panel2", "base")
 
 	prototype.AddParentingTemplate(PANEL)
 
@@ -31,7 +56,7 @@ do -- base panel
 	prototype.GetSet(PANEL, "ObeyMargin", true)
 	
 	function PANEL:__tostring()
-		return ("panel[%p] %s %s %s %s"):format(self, self.Position.x, self.Position.y, self.Size.w, self.Size.h)
+		return ("panel:%s[%p] %s %s %s %s"):format(self.ClassName, self, self.Position.x, self.Position.y, self.Size.w, self.Size.h)
 	end
 	
 	function PANEL:IsWorld()
@@ -59,6 +84,34 @@ do -- base panel
 		gui2.focus_panel = self
 	end
 	
+	do
+		PANEL.call_on_hide = {}
+		
+		function PANEL:IsVisible()
+			return self.visible
+		end
+		
+		function PANEL:SetVisible(bool)
+			self.Visible = bool
+			if bool then
+				self:OnShow()
+			else
+				self:OnHide()
+				for k, v in pairs(self.call_on_hide) do
+					if v() == false then
+						return
+					end
+				end
+			end
+		end
+		
+		function PANEL:CallOnHide(callback, id)
+			id = id or callback
+			
+			self.call_on_hide[id] = callback		
+		end
+	end
+		
 	do -- call on remove
 		PANEL.call_on_remove = {}
 		
@@ -103,6 +156,8 @@ do -- base panel
 	end
 
 	function PANEL:PreDraw()
+		if self.layout_me then self:Layout() self.layout_me = false end
+		
 		local no_clip = self:HasParent() and self.Parent.draw_no_clip
 		local no_draw = self:HasParent() and self.Parent.draw_no_draw
 	
@@ -149,10 +204,10 @@ do -- base panel
 						)
 					then
 						self:OnDraw()
-						self:SetVisible(true)
+						self.visible = true
 						no_draw = false
 					else
-						self:SetVisible(false)
+						self.visible = false
 						no_draw = true
 					end
 				end
@@ -169,6 +224,7 @@ do -- base panel
 	end
 	
 	function PANEL:Draw()
+		if not self.Visible then return end
 		self:PreDraw()
 			for k,v in ipairs(self:GetChildren()) do
 				v:Draw()
@@ -208,7 +264,7 @@ do -- base panel
 
 			self.Size = size
 			
-			self:InvalidateLayout()
+			self:Layout()
 		end
 
 		function PANEL:GetWorldPosition()
@@ -856,7 +912,6 @@ do -- base panel
 						end
 					end
 				end
-				pnl:DockLayout()
 			end
 			
 			if top then				
@@ -1207,12 +1262,17 @@ do -- base panel
 	end
 	
 	do -- layout
-		function PANEL:InvalidateLayout()
+		function PANEL:Layout()
+			if self.in_layout then return end
+			self.in_layout = true
+			
 			for i, v in ipairs(self:GetChildren()) do
-				v:InvalidateLayout()
+				v:Layout()
 			end
+			
 			self:DockLayout()
 			self:OnLayout(self:GetPosition(), self:GetSize())
+			self.in_layout = false
 		end
 	end
 	
@@ -1233,7 +1293,7 @@ do -- base panel
 			end
 
 			if self.Text then				
-				local carrier = gui2.CreatePanel(self) 
+				local carrier = gui2.CreatePanel("base", self) 
 				carrier:SetSendMouseInputToParent(true)
 				carrier:SetColor(0,0,0,0)
 				carrier:SetIgnoreMouse(not self.TextEditable)
@@ -1376,19 +1436,12 @@ do -- base panel
 		function PANEL:OnPositionChanged(pos) end
 		function PANEL:OnScroll(fraction) end
 		function PANEL:OnLayout() end
-	end
-
-	function gui2.CreatePanel(parent)
-		gui2.unrolled_draw = nil
+		function PANEL:OnShow() end
+		function PANEL:OnHide() end
+		function PANEL:Initialize() end
 		
-		local self = prototype.CreateObject(PANEL)
-
-		self:SetParent(parent or gui2.world)
-
-		table.insert(gui2.panels, self)
-		self.i = #gui2.panels
-
-		return self
+		
+		gui2.RegisterPanel(PANEL)
 	end
 end
 
@@ -1417,7 +1470,7 @@ function gui2.SetActiveMenu(panel)
 		gui2.current_menu:Remove()
 	end
 	
-	gui2.current_menu = panel
+	gui2.current_menu = panel or NULL
 	second_try = false
 end
 
@@ -1512,7 +1565,7 @@ function gui2.Draw2D()
 end
 
 function gui2.Initialize()
-	local world = gui2.CreatePanel()
+	local world = gui2.CreatePanel("base")
 
 	world:SetPosition(Vec2(0, 0))
 	world:SetSize(Vec2(window.GetSize()))
@@ -1534,7 +1587,7 @@ end
 function gui2.Test()
 	window.SetSize(Vec2(1680, 1050))
 	
-	local parent = gui2.CreatePanel()
+	local parent = gui2.CreatePanel("base")
 	parent:SetPosition(Vec2(400,140))
 	parent:SetSize(Vec2(300,300))
 	local c = HSVToColor(0, 0, 0.25)
@@ -1545,7 +1598,7 @@ function gui2.Test()
 	parent:SetResizable(true)
 
 	for i = 1, 5 do
-		local panel = gui2.CreatePanel(parent)
+		local panel = gui2.CreatePanel("base", parent)
 		panel:SetPosition(Vec2(50,50))
 		panel:SetColor(HSVToColor(math.random(), 1, 1))
 		panel.original_color = panel:GetColor()
@@ -1553,7 +1606,7 @@ function gui2.Test()
 		panel:SetSnapWhileDragging(true)
 	end
 	
-	local frame = gui2.CreatePanel()
+	local frame = gui2.CreatePanel("base")
 	frame:SetSize(Vec2(200,200))
 	frame:SetPosition(Vec2(57,50))
 	frame:SetDraggable(true)
@@ -1575,7 +1628,7 @@ function gui2.Test()
 	for y = 1, 5 do
 		math.randomseed(x*y)
 
-		local pnl = gui2.CreatePanel(frame)
+		local pnl = gui2.CreatePanel("base", frame)
 
 		local c = HSVToColor(math.sin(x+y), 0.65, 1)
 		pnl:SetColor(c)
@@ -1611,7 +1664,7 @@ function gui2.Test()
 	for y = 1, 4 do
 		math.randomseed(x*y)
 
-		local pnl = gui2.CreatePanel()
+		local pnl = gui2.CreatePanel("base")
 
 		local c = HSVToColor(math.sin(x+y), 0.65, 1)
 		pnl:SetColor(c)
@@ -1673,4 +1726,4 @@ gui2.Initialize()
 --gui2.Test()
 
 gui.SetCursor = function() end
---for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
+for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
