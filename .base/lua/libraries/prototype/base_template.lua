@@ -119,6 +119,8 @@ function prototype.UpdateObjects(meta)
 		meta = prototype.GetRegistered(meta)
 	end
 	
+	if not meta then return end
+	
 	for key, obj in pairs(prototype.GetCreated()) do
 		if obj.Type == meta.Type and obj.ClassName == meta.ClassName then
 			for k, v in pairs(meta) do
