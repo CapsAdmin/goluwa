@@ -1,9 +1,9 @@
-include("gui2.lua")
+gui2 = include("gui2/gui2.lua") 
  
 local scale = 2
 local ninepatch_size = 32
 local ninepatch_corner_size = 4
-local bg = Color(64, 44, 128, 200)
+local bg = Color(64, 44, 128, 200) 
 
 
 surface.CreateFont("snow_font", {
@@ -526,11 +526,9 @@ local bar = gui2.CreatePanel("base")
 bar:SetTexture(skin.gradient)
 bar:SetColor(Color(0,72,248))
 bar:SetDraggable(true)
-bar:SetResizable(true)
 
 local function create_button(text, options)
 	local button = gui2.CreatePanel("base", bar)
-	--button:SetColor(Color(88, 92, 88))
 	button:SetClipping(true) 
 	button:SetParseTags(true)  
 	button:SetText("<font=snow_font><color=200,200,200>" .. text)
@@ -652,9 +650,11 @@ create_button("misc", {
 })
 
 bar:SetStack(true)
-bar:SetSize(Vec2(500,500))
+bar:SetSize(Vec2(1000,1000))
 bar:SetPadding(Rect(1,1,5*scale,3*scale))
 bar:SetSize(bar:StackChildren())
+
+--do return end
 
 local emitter = ParticleEmitter(800)
 emitter:SetPos(Vec3(50,50,0)) 
