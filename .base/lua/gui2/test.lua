@@ -31,7 +31,7 @@ frame.original_color = c
 
 frame:SetClipping(true)
 frame:SetScrollable(true)
---frame:SetCachedRendering(true)
+frame:SetCachedRendering(true)
 --frame.OnMouseExit = function() end
 --frame.OnMouseEnter = function() end
 
@@ -54,7 +54,7 @@ for y = 1, 5 do
 	--pnl:SetAngle(math.random(360))
 	pnl:SetCursor("icon")
 	pnl:SetTexture(Texture("textures/aahh/gear.png"))
-	pnl.OnMouseMove = function(self) self:MarkDirty() end
+	pnl.OnMouseMove = function(self) self:MarkCacheDirty() end
 	pnl.lol = true
 
 	--pnl.OnMouseInput = pnl.RequestFocus
@@ -70,7 +70,7 @@ event.AddListener("Update", "lol", function()
 end)
 
 function frame:OnMouseMove(x, y)
-	self:MarkDirty()
+	self:MarkCacheDirty()
 end
 
 for x = 1, 4 do
