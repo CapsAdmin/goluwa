@@ -102,11 +102,13 @@ function prototype.CreateObject(meta, override, skip_gc_callback)
 	return self
 end
 
-function prototype.GetCreated(sorted)
+function prototype.GetCreated(sorted, super_type, sub_type)
 	if sorted then
 		local out = {}
 		for k,v in pairs(prototype.created_objects) do
-			table.insert(out, v)
+			if (not super_type or v.Type == super_type) and (not sub_type or v.ClassName == sub_type) then
+				table.insert(out, v)
+			end
 		end
 		table.sort(out, function(a, b) return a.creation_time < b.creation_time end)
 		return out
