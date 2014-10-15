@@ -560,7 +560,9 @@ end
 
 do	
 	local META = {}
+	
 	META.ClassName = "tab"
+	META.tabs = {}
 	
 	function META:Initialize()
 		self:SetSendMouseInputToParent(true)
@@ -573,16 +575,16 @@ do
 		tab_bar:SetStackDown(false)
 		tab_bar:SetClipping(true)
 		tab_bar:SetScrollable(true)
-		
-		local content = gui2.CreatePanel("base", self)
-		content:SetupNinepatch(skin.frame, ninepatch_size, ninepatch_corner_size)
-		content:SetSendMouseInputToParent(true)
-		
+				
 		self.tab_bar = tab_bar
-		self.content = content
 	end
 	
 	function META:AddTab(name)
+		if self.tabs[name] then
+			gui2.RemovePanel(self.tabs[name].button)
+			gui2.RemovePanel(self.tabs[name].content)
+		end
+	
 		local button = gui2.CreatePanel("base", self.tab_bar)
 		button:SetSendMouseInputToParent(true)
 		button:SetParseTags(true)  
@@ -600,26 +602,44 @@ do
 				button:SetupNinepatch(skin.tab_active, ninepatch_size, ninepatch_corner_size)
 				button:CenterText()
 				
+				self.content = self.tabs[name].content
+				self.content:SetVisible(true)
+				
 				for i, panel in ipairs(self.tab_bar:GetChildren()) do
 					if button ~= panel then
 						panel:SetText("<font=snow_font><color=168,168,224>"..panel.text)
 						panel:SetupNinepatch(skin.tab_inactive, ninepatch_size, ninepatch_corner_size)
 						panel:CenterText()
+						self.tabs[panel.text].content:SetVisible(false)
 					end
 				end
 				
 				self:Layout()
 			end
 		end
+		
+		local content = gui2.CreatePanel("base", self)
+		content:SetupNinepatch(skin.frame, ninepatch_size, ninepatch_corner_size)
+		content:SetSendMouseInputToParent(true)
+		content:SetVisible(false)
+		self.content = content
+		
+		self:Layout(true)
+		
+		self.tabs[name] = {button = button, content = content}
+		
+		return content
 	end
 	
 	function META:OnLayout()
 		self.tab_bar:SetWidth(self:GetWidth())
 		self.tab_bar:SetHeight(12*scale)
 
-		self.content:SetPosition(Vec2(0, self.tab_bar:GetHeight()))
-		self.content:SetHeight(self:GetHeight() - self.tab_bar:GetHeight())
-		self.content:SetWidth(self:GetWidth())
+		if self.content then
+			self.content:SetPosition(Vec2(0, self.tab_bar:GetHeight()))
+			self.content:SetHeight(self:GetHeight() - self.tab_bar:GetHeight())
+			self.content:SetWidth(self:GetWidth())
+		end
 	end
 	
 	gui2.RegisterPanel(META)
@@ -633,7 +653,11 @@ local tab = gui2.CreatePanel("tab", frame)
 tab:Dock("fill")
 
 for i = 1, 10 do
-	tab:AddTab("#" .. i)
+	local content = tab:AddTab("#" .. i)
+	
+	local panel = gui2.CreatePanel("base", content)
+	panel:SetColor(HSVToColor(math.random()))
+	panel:SetPosition(Vec2():Random(20, 100))
 end
 
 	   
@@ -771,7 +795,7 @@ bar:SetSize(Vec2(1000,1000))
 bar:SetPadding(Rect(1,1,5*scale,3*scale))
 bar:SetSize(bar:StackChildren())
 
---do return end
+do return end
 
 local emitter = ParticleEmitter(800)
 emitter:SetPos(Vec3(50,50,0)) 
