@@ -68,6 +68,44 @@ local skin = {
 		
 		return 176, 132, 128, 255
 	end),
+	
+	tab_active = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+		y = -y + ninepatch_size
+		
+		if 
+			(x <= 2 and y <= 2) or
+			(x >= ninepatch_size-2 and y <= 2)
+		then 					
+			return 0,0,0,0 
+		end
+		
+		if x >= ninepatch_size-2 then
+			return 184, 48, 48, 255
+		elseif x <= 2 or y <= 2 then
+			return 184, 48, 48, 255
+		end
+		
+		return 168, 32, 32, 255
+	end),
+	
+	tab_inactive = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+		y = -y + ninepatch_size
+		
+		if 
+			(x <= 2 and y <= 2) or
+			(x >= ninepatch_size-2 and y <= 2)
+		then 					
+			return 0,0,0,0 
+		end
+		
+		if x >= ninepatch_size-2 then
+			return 136, 0, 0, 255
+		elseif x >= ninepatch_size-2 or y >= ninepatch_size-2 then
+			return 168, 32, 32, 255
+		end
+		
+		return 152, 16, 16, 255
+	end),
 
 	menu_select = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
 		y = -y + ninepatch_size
@@ -114,13 +152,12 @@ do
 	META.ClassName = "frame"
 	
 	function META:Initialize()	
-		local frame = self
-		frame:SetDraggable(true)
-		frame:SetResizable(true) 
-		frame:SetMargin(Rect(4,10*scale+4,4,4))  
-		frame:SetupNinepatch(skin.frame, ninepatch_size, ninepatch_corner_size)
-			
-			local bar = gui2.CreatePanel("base", frame)
+		self:SetDraggable(true)
+		self:SetResizable(true) 
+		self:SetMargin(Rect(0,10*scale,0,0))  
+		self:SetupNinepatch(skin.frame, ninepatch_size, ninepatch_corner_size)
+				
+			local bar = gui2.CreatePanel("base", self)
 			bar:SetObeyMargin(false)
 			bar:Dock("fill_top") 
 			bar:SetSendMouseInputToParent(true)
@@ -139,15 +176,15 @@ do
 				
 				close:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
 				
-				close.OnMouseInput = function(self, button, press) 
+				close.OnMouseInput = function(_, button, press) 
 					if button == "button_1" and not press then
-						frame:Remove()
+						self:Remove()
 					end
 				end
 		
-		frame:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
+		self:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
 		
-		self.frame = frame
+		self.frame = self
 		self.bar = bar
 		
 		self:SetTitle("no title")
@@ -410,7 +447,7 @@ do
 		function META:AddEntry(text, on_click)
 			local entry = gui2.CreatePanel("menu_entry", self)
 			
-			entry:SetText(text)			
+			entry:SetText(text)
 			entry.OnClick = on_click
 			
 			return entry
@@ -434,7 +471,7 @@ do
 		
 		function META:OnLayout()
 			local w = 0
-			local y = 0
+			local y = scale
 			
 			for k, v in ipairs(self:GetChildren()) do
 				v:SetPosition(Vec2(2*scale, y))
@@ -446,7 +483,7 @@ do
 				v:SetWidth(w + 4*scale)
 			end
 			
-			self:SetSize(Vec2(w + 8*scale, y))
+			self:SetSize(Vec2(w + 8*scale, y + scale))
 		end
 		
 		gui2.RegisterPanel(META)
@@ -461,7 +498,8 @@ do
 		function META:Initialize()
 			self:SetParseTags(true) 			
 			self:SetColor(Color(0,0,0,0))			
-			self:SetupNinepatch(skin.menu_select, ninepatch_size, ninepatch_corner_size)			
+			self:SetupNinepatch(skin.menu_select, ninepatch_size, ninepatch_corner_size)
+			self:SetPadding(Rect(scale, scale, scale, scale))
 		end
 		
 		function META:OnMouseEnter()
@@ -520,6 +558,85 @@ do
 	end
 end
 
+do	
+	local META = {}
+	META.ClassName = "tab"
+	
+	function META:Initialize()
+		self:SetSendMouseInputToParent(true)
+		self:SetColor(Color(0,0,0,0))
+	
+		local tab_bar =  gui2.CreatePanel("base", self)
+		tab_bar:SetColor(Color(16,16,152,1))
+		
+		tab_bar:SetStack(true)
+		tab_bar:SetStackDown(false)
+		tab_bar:SetClipping(true)
+		tab_bar:SetScrollable(true)
+		
+		local content = gui2.CreatePanel("base", self)
+		content:SetupNinepatch(skin.frame, ninepatch_size, ninepatch_corner_size)
+		content:SetSendMouseInputToParent(true)
+		
+		self.tab_bar = tab_bar
+		self.content = content
+	end
+	
+	function META:AddTab(name)
+		local button = gui2.CreatePanel("base", self.tab_bar)
+		button:SetSendMouseInputToParent(true)
+		button:SetParseTags(true)  
+		button:SetSize(Vec2(22,14)*scale)
+		
+		button:SetText("<font=snow_font><color=168,168,224>"..name)
+		button:SetupNinepatch(skin.tab_inactive, ninepatch_size, ninepatch_corner_size)
+		button:SetHeight(button:GetHeight() - scale)
+		button:CenterText()
+		button.text = name
+		
+		button.OnMouseInput = function(button, key, press)
+			if press and key == "button_1" then
+				button:SetText("<font=snow_font><color=160,160,0>"..button.text)
+				button:SetupNinepatch(skin.tab_active, ninepatch_size, ninepatch_corner_size)
+				button:CenterText()
+				
+				for i, panel in ipairs(self.tab_bar:GetChildren()) do
+					if button ~= panel then
+						panel:SetText("<font=snow_font><color=168,168,224>"..panel.text)
+						panel:SetupNinepatch(skin.tab_inactive, ninepatch_size, ninepatch_corner_size)
+						panel:CenterText()
+					end
+				end
+				
+				self:Layout()
+			end
+		end
+	end
+	
+	function META:OnLayout()
+		self.tab_bar:SetWidth(self:GetWidth())
+		self.tab_bar:SetHeight(12*scale)
+
+		self.content:SetPosition(Vec2(0, self.tab_bar:GetHeight()))
+		self.content:SetHeight(self:GetHeight() - self.tab_bar:GetHeight())
+		self.content:SetWidth(self:GetWidth())
+	end
+	
+	gui2.RegisterPanel(META)
+end
+
+local frame = gui2.CreatePanel("frame")
+frame:SetPosition(Vec2()+200)
+frame:SetSize(Vec2()+200)
+
+local tab = gui2.CreatePanel("tab", frame)
+tab:Dock("fill")
+
+for i = 1, 10 do
+	tab:AddTab("#" .. i)
+end
+
+	   
 local padding = 5 * scale
 
 local bar = gui2.CreatePanel("base") 
