@@ -20,7 +20,8 @@ function gui2.CreatePanel(name, parent)
 	--table.insert(gui2.panels, self)
 	--self.i = #gui2.panels
 	
-	self.layout_me = true
+	-- this will make calls to layout always layout until next frame
+	self.layout_me = "init"
 	
 	return self
 end
@@ -153,6 +154,8 @@ do -- events
 end
 
 function gui2.Initialize()
+	gui2.RemovePanel(gui2.world)
+	
 	local world = gui2.CreatePanel("base")
 
 	world:SetPosition(Vec2(0, 0))

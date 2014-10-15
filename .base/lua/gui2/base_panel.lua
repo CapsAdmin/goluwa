@@ -19,7 +19,7 @@ prototype.GetSet(PANEL, "Margin", Rect(1, 1, 1, 1))
 prototype.GetSet(PANEL, "ObeyMargin", true)
 
 function PANEL:__tostring()
-	return ("panel:%s[%p] %s %s %s %s"):format(self.ClassName, self, self.Position.x, self.Position.y, self.Size.w, self.Size.h)
+	return ("panel:%s[%p][%s %s %s %s][%s]"):format(self.ClassName, self, self.Position.x, self.Position.y, self.Size.w, self.Size.h, self.layout_count)
 end
 
 function PANEL:IsWorld()
@@ -120,7 +120,9 @@ function PANEL:GetSizeOfChildren()
 end
 
 function PANEL:PreDraw()
-	if self.layout_me then self:Layout(true) end
+	if self.layout_me then 
+		self:Layout(true) 
+	end
 	
 	local no_clip = self:HasParent() and self.Parent.draw_no_clip
 	local no_draw = self:HasParent() and self.Parent.draw_no_draw
@@ -205,6 +207,10 @@ function PANEL:PostDraw()
 			surface.EndClipping2()
 		end
 	surface.PopMatrix()
+	
+	if self.layout_me == "init" then 
+		self.layout_me = false 
+	end
 end
 
 do -- orientation
@@ -273,6 +279,7 @@ do -- orientation
 
 	function PANEL:SetWidth(w)
 		self.Size.w = w
+		self:Layout()
 	end
 	function PANEL:GetWidth()
 		return self.Size.w
@@ -280,6 +287,7 @@ do -- orientation
 
 	function PANEL:SetHeight(h)
 		self.Size.h = h
+		self:Layout()
 	end
 	function PANEL:GetHeight()
 		return self.Size.h
@@ -1223,25 +1231,32 @@ do -- mouse
 end
 
 do -- layout
-	function PANEL:Layout(now)
-		self.layout_me = true
-		
-		if not now then return end
-		
-		if self.in_layout then return end
-		self.in_layout = true
-		
-		for i, v in ipairs(self:GetChildren()) do
-			v:Layout(true)
+	PANEL.layout_count = 0
+	
+	function PANEL:Layout(now)		
+		if now or self.layout_me == "init" then			
+			if self.in_layout then return end
+			self.in_layout = true
+				
+				for i, v in ipairs(self:GetChildren()) do
+					v:Layout(true)
+				end
+				
+				self.layout_count = (self.layout_count or 0) + 1
+				
+				self:DockLayout()
+				self:StackChildren()
+				
+				self:OnLayout(self:GetPosition(), self:GetSize())
+				
+				if self.layout_me ~= "init" then
+					self.layout_me = false
+				end
+				
+			self.in_layout = false
+		else
+			self.layout_me = true
 		end
-		
-		self:DockLayout()
-		self:StackChildren()
-		
-		self:OnLayout(self:GetPosition(), self:GetSize())
-		
-		self.layout_me = false
-		self.in_layout = false
 	end
 end
 
@@ -1422,7 +1437,8 @@ do -- stacking
 		if self.SizeStackToWidth then
 			w = self:GetWidth() - pad.w * 2
 		end
-
+		
+		h = h or 0
 
 		return Vec2(w, h) + pad:GetSize()
 	end
