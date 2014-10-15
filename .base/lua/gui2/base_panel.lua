@@ -119,7 +119,7 @@ function PANEL:GetSizeOfChildren()
 	return total_size
 end
 
-function PANEL:PreDraw()
+function PANEL:PreDraw(from_cache)
 	if self.layout_me then 
 		self:Layout(true) 
 	end
@@ -131,7 +131,7 @@ function PANEL:PreDraw()
 	surface.PushMatrix()
 		render.Translate(self.Position.x, self.Position.y, 0)
 
-	if not no_draw then
+	if not no_draw or from_cache then
 		local w = (self.Size.w)/2
 		local h = (self.Size.h)/2
 
@@ -146,66 +146,66 @@ function PANEL:PreDraw()
 
 		self:CalcAnimations()
 	end
-		if self.CachedRendering then
-			self:DrawCache()
+	if self.CachedRendering then
+		self:DrawCache()
+		no_draw = true
+	end
+
+	local sigh = false
+	if not no_draw and not no_clip and self.Clipping then
+		surface.StartClipping2(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
+		no_clip = true
+		sigh = true
+	end
+
+	self:OnUpdate()
+
+	if not no_draw or from_cache then
+		if	
+			self:IsDragging() or
+			self:IsWorld() or
+			(
+				self.Position.x - self.Parent.Scroll.x < self.Parent.Size.w and
+				self.Position.y - self.Parent.Scroll.y < self.Parent.Size.h and
+				self.Position.x + self.Size.w - self.Parent.Scroll.x > 0 and
+				self.Position.y + self.Size.h - self.Parent.Scroll.y > 0
+			)
+		then
+			self:OnDraw()
+			self.visible = true
+			no_draw = false
+		else
+			self.visible = false
 			no_draw = true
 		end
+	end
 
-		local sigh = false
-		if not no_draw and not no_clip and self.Clipping then
-			surface.StartClipping2(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
-			no_clip = true
-			sigh = true
-		end
+	render.Translate(-self.Scroll.x, -self.Scroll.y, 0)
 
-			self:OnUpdate()
-
-			if not no_draw then
-				if	
-					self:IsDragging() or
-					self:IsWorld() or
-					(
-						self.Position.x - self.Parent.Scroll.x < self.Parent.Size.w and
-						self.Position.y - self.Parent.Scroll.y < self.Parent.Size.h and
-						self.Position.x + self.Size.w - self.Parent.Scroll.x > 0 and
-						self.Position.y + self.Size.h - self.Parent.Scroll.y > 0
-					)
-				then
-					self:OnDraw()
-					self.visible = true
-					no_draw = false
-				else
-					self.visible = false
-					no_draw = true
-				end
-			end
-
-			render.Translate(-self.Scroll.x, -self.Scroll.y, 0)
-
-			--for k,v in ipairs(self:GetChildren()) do
-			--	v:Draw(no_clip, no_draw)
-			--end
-			
-			self.draw_no_clip = no_clip
-			self.draw_no_draw = no_draw
-			self.draw_sigh = sigh
+	--for k,v in ipairs(self:GetChildren()) do
+	--	v:Draw(no_clip, no_draw)
+	--end
+	
+	self.draw_no_clip = no_clip
+	self.draw_no_draw = no_draw
+	self.draw_sigh = sigh
 end
 
-function PANEL:Draw()
+function PANEL:Draw(from_cache)
 	if not self.Visible then return end
-	self:PreDraw()
+	self:PreDraw(from_cache)
 		for k,v in ipairs(self:GetChildren()) do
-			v:Draw()
+			v:Draw(from_cache)
 		end
-	self:PostDraw()
+	self:PostDraw(from_cache)
 end
 			
 function PANEL:PostDraw()
-			self:CalcResizing()
+	self:CalcResizing()
 
-		if self.draw_sigh or not self.draw_no_draw and not self.draw_no_clip and self.Clipping then
-			surface.EndClipping2()
-		end
+	if self.draw_sigh or not self.draw_no_draw and not self.draw_no_clip and self.Clipping then
+		surface.EndClipping2()
+	end
 	surface.PopMatrix()
 	
 	if self.layout_me == "init" then 
@@ -300,21 +300,21 @@ do -- cached rendering
 	function PANEL:SetCachedRendering(b)
 		self.CachedRendering = b
 
-		self:MarkDirty()
+		self:MarkCacheDirty()
 	end
 
-	function PANEL:MarkDirty()
+	function PANEL:MarkCacheDirty()
 		if self.CachedRendering then
 			self.cache_dirty = true
 
-			if not self.cache_fb then
+			if not self.cache_fb or self.cache_texture:GetSize() ~= self.Size then
 				self.cache_fb = render.CreateFrameBuffer(self.Size.w, self.Size.h, {
 					{
 						name = "color",
 						attach = "color1",
 
 						texture_format = {
-							internal_format = "RGB32F",
+							internal_format = "RGBA8",
 						},
 					},
 					{
@@ -327,18 +327,18 @@ do -- cached rendering
 		else
 			for k,v in ipairs(self:GetParentList()) do
 				if v.CachedRendering then
-					v:MarkDirty()
+					v:MarkCacheDirty()
 				end
 			end
 		end
 	end
 
-	function PANEL:IsDirty()
+	function PANEL:IsCacheDirty()
 		return self.cache_dirty
 	end
 
 	function PANEL:DrawCache()
-		if self:IsDirty() then
+		if self:IsCacheDirty() then
 			self.cache_fb:Begin()
 			self.cache_fb:Clear()
 
@@ -353,7 +353,7 @@ do -- cached rendering
 				surface.Translate(-self.Scroll.x, -self.Scroll.y)
 
 				for k,v in ipairs(self:GetChildren()) do
-					v:Draw()
+					v:Draw(true)
 				end
 
 				self.cache_dirty = false
@@ -406,7 +406,7 @@ do -- scrolling
 		
 		if input.IsMouseDown(self.scroll_button) then
 			self:SetScroll(self.scroll_drag_pos - self:GetMousePosition())
-			self:MarkDirty()
+			self:MarkCacheDirty()
 			self:OnScroll(self.ScrollFraction)
 		else
 			self:StopScrolling()
@@ -1233,7 +1233,10 @@ end
 do -- layout
 	PANEL.layout_count = 0
 	
-	function PANEL:Layout(now)		
+	function PANEL:Layout(now)
+		
+		self:MarkCacheDirty()
+	
 		if now or self.layout_me == "init" then			
 			if self.in_layout then return end
 			self.in_layout = true
@@ -1492,7 +1495,7 @@ do -- events
 
 	function PANEL:OnMouseEnter(x, y) if gui2.debug then self:SetColor(Color(1,1,1,1)) end end
 	function PANEL:OnMouseExit(x, y) if gui2.debug then self:SetColor(self.original_color) end end
-	function PANEL:OnMouseMove(x, y) if gui2.debug then self:MarkDirty() end end
+	function PANEL:OnMouseMove(x, y) if gui2.debug then self:MarkCacheDirty() end end
 	function PANEL:OnMouseInput(button, press) end
 	
 	function PANEL:OnKeyInput(button, press) end

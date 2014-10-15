@@ -213,11 +213,13 @@ do
 	
 	META.entries = {}
 	
-	function META:Initialize()		
+	function META:Initialize()				
 		local list = gui2.CreatePanel("base", self)
 		list:SetColor(Color(0,0,0,1))
 		list:SetClipping(true)
 		list:SetScrollable(true)
+		
+		self:SetSendMouseInputToParent(true)
 		
 		do
 			local y_scroll = gui2.CreatePanel("base", self)
@@ -794,8 +796,6 @@ bar:SetStack(true)
 bar:SetSize(Vec2(1000,1000))
 bar:SetPadding(Rect(1,1,5*scale,3*scale))
 bar:SetSize(bar:StackChildren())
-
-do return end
 
 local emitter = ParticleEmitter(800)
 emitter:SetPos(Vec3(50,50,0)) 
