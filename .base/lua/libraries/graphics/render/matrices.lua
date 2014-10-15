@@ -237,13 +237,21 @@ end
 do
 	do -- push pop helper
 		local stack = {}
-		local i = 0
+		local i = 1
 		
 		function render.PushWorldMatrix(pos, ang, scale, dont_multiply)
-			stack[i] = render.matrices.world or Matrix44()
+			if not stack[i] then
+				stack[i] = Matrix44()
+			else
+				stack[i] = render.matrices.world
+			end
 			
-			render.matrices.world = (dont_multiply and Matrix44()) or (Matrix44() * stack[i])
-			
+			if dont_multiply then	
+				render.matrices.world = Matrix44()
+			else				
+				render.matrices.world = stack[i]:Copy()
+			end
+						
 			-- source engine style world orientation
 			if pos then
 				render.Translate(-pos.y, -pos.x, -pos.z) -- Vec3(left/right, back/forth, down/up)	
@@ -265,7 +273,12 @@ do
 		end
 		
 		function render.PushWorldMatrixEx(mat)
-			stack[i] = render.matrices.world or Matrix44()
+			if not stack[i] then
+				stack[i] = Matrix44()
+			else
+				stack[i] = render.matrices.world
+			end
+			
 			render.matrices.world = stack[i] * mat
 			
 			i = i + 1
@@ -276,10 +289,10 @@ do
 		function render.PopWorldMatrix()
 			i = i - 1
 			
-			if i < 0 then
+			if i < 1 then
 				error("stack underflow", 2)
 			end
-			
+						
 			render.matrices.world = stack[i]
 		end
 		
