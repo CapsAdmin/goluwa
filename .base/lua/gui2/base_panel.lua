@@ -120,7 +120,7 @@ function PANEL:GetSizeOfChildren()
 end
 
 function PANEL:PreDraw()
-	if self.layout_me then self:Layout(true) self.layout_me = false end
+	if self.layout_me then self:Layout(true) end
 	
 	local no_clip = self:HasParent() and self.Parent.draw_no_clip
 	local no_draw = self:HasParent() and self.Parent.draw_no_draw
@@ -816,7 +816,7 @@ do -- docking
 			self.dock_location = location
 		end
 
-		self.Parent:DockLayout()
+		self.Parent:Layout()
 	end
 
 	function PANEL:DockLayout()
@@ -879,7 +879,7 @@ do -- docking
 				end
 			end
 		end
-		
+				
 		if top then				
 			local margin = self:GetMargin()
 			
@@ -1225,17 +1225,22 @@ end
 do -- layout
 	function PANEL:Layout(now)
 		self.layout_me = true
+		
 		if not now then return end
+		
 		if self.in_layout then return end
 		self.in_layout = true
 		
 		for i, v in ipairs(self:GetChildren()) do
-			v:Layout()
+			v:Layout(true)
 		end
 		
 		self:DockLayout()
 		self:StackChildren()
+		
 		self:OnLayout(self:GetPosition(), self:GetSize())
+		
+		self.layout_me = false
 		self.in_layout = false
 	end
 end
