@@ -101,7 +101,7 @@ function prototype.AddParentingTemplate(META)
 			
 				obj.Parent = NULL
 				self.Children[key] = nil	
-				self:GetRoot():SortChildren() 
+				if self:HasParent() then self.Parent:SortChildren()  end
 				
 				obj:OnUnParent(self)
 				
