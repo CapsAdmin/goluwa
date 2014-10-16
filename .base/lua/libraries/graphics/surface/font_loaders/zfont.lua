@@ -161,9 +161,9 @@ function META:DrawString(str, X, Y)
 				X = x
 				Y = Y + height
 			elseif char == " " then
-				X = X + width
+				X = X + width - pixel_padding + self.options.spacing 
 			elseif char == "\t" then
-				X = X + width*4
+				X = X + (width*4) - pixel_padding + self.options.spacing 
 			else	
 				if not self.chars[char] then 
 					char = char:upper()
@@ -186,7 +186,7 @@ function META:DrawString(str, X, Y)
 				if self.options.monospace then 
 					X = X + self.options.spacing
 				else
-					X = X + width + self.options.spacing - pixel_padding
+					X = X + width - pixel_padding + self.options.spacing 
 				end
 			end			
 		end
@@ -212,17 +212,15 @@ function META:GetTextSize(str)
 		if char == "\n" then
 			curY = curY + height + self.options.spacing
 		elseif char == "\t" then
-			curY = curY + width*4 + self.options.spacing
+			curX = curX + (width*4) - pixel_padding + self.options.spacing 
 		else
 			curX = curX + width - pixel_padding + self.options.spacing
 		end
 	end
 	
-	if #str > 1 then
-		curX = curX - self.options.spacing
-	end
+	curX = curX - self.options.spacing
 		
-	return curX*self.size, curY*self.size
+	return curX*self.size+pixel_padding, curY*self.size+pixel_padding
 end
 
 surface.RegisterFontLoader(META)
