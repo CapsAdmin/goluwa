@@ -17,6 +17,7 @@ prototype.GetSet(PANEL, "IgnoreMouse", false)
 prototype.GetSet(PANEL, "Padding", Rect(0, 0, 0, 0))
 prototype.GetSet(PANEL, "Margin", Rect(1, 1, 1, 1))
 prototype.GetSet(PANEL, "ObeyMargin", true)
+prototype.GetSet(PANEL, "BringToFrontOnClick", false)
 
 function PANEL:__tostring()
 	return ("panel:%s[%p][%s %s %s %s][%s]"):format(self.ClassName, self, self.Position.x, self.Position.y, self.Size.w, self.Size.h, self.layout_count)
@@ -27,8 +28,10 @@ function PANEL:IsWorld()
 end
 
 function PANEL:BringToFront()
+	if not self.BringToFrontOnClick then return end
+	
 	if self.RedirectFocus:IsValid() then
-		self = self.RedirectFocus
+		return self.RedirectFocus:BringToFront()
 	end
 
 	local parent = self:GetParent()
@@ -1375,9 +1378,17 @@ do -- skin
 	function PANEL:SetStyle(name)
 		self.Style = name
 		
+		name = self.style_translation[name] or name
+		
 		if gui2.skin[name] then
 			self:SetupNinepatch(unpack(gui2.skin[name]))
 		end
+	end
+	
+	PANEL.style_translation = {}
+	
+	function PANEL:SetStyleTranslation(from, to)
+		self.style_translation[from] = to
 	end
 end
 
