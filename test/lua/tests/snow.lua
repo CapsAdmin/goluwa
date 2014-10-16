@@ -155,26 +155,26 @@ do
 	
 	prototype.GetSet(PANEL, "Text")
 	prototype.GetSet(PANEL, "ParseTags", false)
-	prototype.GetSet(PANEL, "TextEditable", false)
-	prototype.GetSet(PANEL, "WrapText", false)
+	prototype.GetSet(PANEL, "Editable", false)
+	prototype.GetSet(PANEL, "Wrap", false)
 	
 	function PANEL:Initialize()
 		self.markup = surface.CreateMarkup()
 		
 		self:SetSendMouseInputToParent(true)
-		self:SetColor(0,0,0,0)
+		self:SetColor(Color(0,0,0,0))
 		self:SetRedirectFocus(carrier)
 	end
 	
 	function PANEL:SetText(str)
 		self.Text = str
 		
-		self:SetIgnoreMouse(not self.TextEditable)
+		self:SetIgnoreMouse(not self.Editable)
 
 		local markup = self.markup
 		
-		markup:SetEditable(self.TextEditable)
-		markup:SetLineWrap(self.WrapText)
+		markup:SetEditable(self.Editable)
+		markup:SetLineWrap(self.Wrap)
 		markup:Clear()
 		markup:AddString(self.Text, self.ParseTags)
 		
@@ -238,48 +238,130 @@ do
 	local PANEL = {}
 
 	PANEL.ClassName = "button"
+	
+	prototype.GetSet(PANEL, "Mode", "normal")
 
 	function PANEL:Initialize()
 		self:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
 		self:SetCursor("hand")
 		self.button_down = {}
 	end
-
-	function PANEL:OnMouseInput(button, press)
-		if press then
-			self.button_down[button] = press
+	
+	function PANEL:Toggle(button)
+		self:SetState(not self:GetState(button), button)
+	end
+	
+	function PANEL:SetState(pressed, button)
+		button = button or "button_1"
+		
+		if pressed then
+			self:OnStateChanged(pressed, button)
+			
+			self.button_down[button] = pressed
+			
 			if button == "button_1" then
 				self:SetupNinepatch(skin.button_active, ninepatch_size, ninepatch_corner_size)
+				self:OnRelease()
 			end
+			
+			
 		elseif self.button_down[button] then
+			self:OnStateChanged(pressed, button)
+			
 			self.button_down[button] = nil
 			
 			if button == "button_1" then
 				self:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
-				return self:OnPress()
+				self:OnPress()
 			end
 			
-			return self:OnOtherButtonPress(button)
+			self:OnOtherButtonPress(button)
+		end
+	end
+	
+	function PANEL:GetState(button)
+		button = button or "button_1"
+		return self.button_down[button]
+	end
+
+	function PANEL:OnMouseInput(button, press)
+		if self.Mode == "normal" then
+			self:SetState(press, button)
+		elseif self.Mode == "toggle" and press then
+			self:Toggle(button)
+		elseif self.Mode == "double" and press then
+			--self:SetState(press, button)
 		end
 	end
 	
 	function PANEL:OnMouseEnter()
-		
+		self:Animate("Color", {Color(1,1,1,1)*1.25, function() return self:IsMouseOver() end, "from"}, duration, "", pow)
 	end
 	
 	function PANEL:OnMouseExit()
-		
-	end
-
-	function PANEL:IsDown()
-		return self.button_down["button_1"]
+		if self.Mode ~= "toggle" then
+			self.button_down = {}
+			self:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+		end
 	end
 	
 	function PANEL:OnPress() end
-	function PANEL:OnOtherButtonPress() end
+	function PANEL:OnRelease() end
+	function PANEL:OnOtherButtonPress(button) end
+	function PANEL:OnStateChanged(press, button) end
+	
+	function PANEL:Test()		
+		local btn = gui2.CreatePanel("button")
+		
+		btn:SetMode("toggle")
+		btn:SetPosition(Vec2()+100)
+		
+		return btn
+	end
 	
 	gui2.RegisterPanel(PANEL)
 end
+
+do -- text button
+	local PANEL = {}
+	
+	PANEL.ClassName = "text_button"
+	PANEL.Base = "button"
+	
+	prototype.GetSetDelegate(PANEL, "Text", "", "label")
+	prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
+	
+	prototype.Delegate(PANEL, "label", "CenterText", "Center")
+	
+	function PANEL:Initialize()
+		self.BaseClass.Initialize(self)
+		
+		local label = gui2.CreatePanel("text", self)
+		label:SetEditable(false)
+		label:SetIgnoreMouse(true)
+		self.label = label
+	end
+	
+	function PANEL:SizeToText()
+		local marg = self:GetMargin()
+			
+		self.label:SetPosition(marg:GetPos())
+		self:SetSize(self.label:GetSize() + marg:GetSize()*2)
+	end
+	
+	function PANEL:Test()		
+		local btn = gui2.CreatePanel("text_button")
+		
+		btn:SetParseTags(true)
+		btn:SetText("<font=snow_font><color=200,200,200>oh")
+		btn:SetMargin(Rect()+scale*3)
+		btn:SizeToText()
+		btn:SetMode("toggle")
+		btn:SetPosition(Vec2()+100)
+	end
+	
+	gui2.RegisterPanel(PANEL)
+end 
 
 do
 	local PANEL = {}
@@ -300,21 +382,18 @@ do
 			bar:SetColor(ColorBytes(120, 120, 160))
 			bar:SetClipping(true)
 								
-				local close = gui2.CreatePanel("base", bar)
-				local label = gui2.CreatePanel("text", close)				
-				label:SetParseTags(true)  
-				label:SetText("<font=snow_font_noshadow><color=50,50,50>X")
-				close:SetSize(label:GetSize()+Vec2(3,3)*scale)
-				label:Center()
+				local close = gui2.CreatePanel("text_button", bar)
+				close:SetParseTags(true)  
+				close:SetText("<font=snow_font_noshadow><color=50,50,50>X")
+				close:SetMargin(Rect()+2*scale)
+				close:SizeToText()
 				
-				close:Dock("top_right")
+				close:Dock("top_right") 
 				
-				close:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
+				 --close:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
 				
-				close.OnMouseInput = function(_, button, press) 
-					if button == "button_1" and not press then
-						self:Remove()
-					end
+				close.OnPress = function() 
+					self:Remove()
 				end
 		
 		self:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
@@ -545,7 +624,7 @@ do
 		label:SetSendMouseInputToParent(true)
 		
 		label:SetParseTags(true)
-		label:SetWrapText(false)
+		label:SetWrap(false)
 		label:SetText("<font=snow_font_green><color=0,255,0>" .. name)
 		button:SetSize(label:GetSize() + Vec2(4,4) * scale)
 		label:CenterY()
@@ -1037,43 +1116,37 @@ bar:SetColor(ColorBytes(0,72,248))
 bar:SetDraggable(true)
 
 local function create_button(text, options)
-	local button = gui2.CreatePanel("base", bar)
-	local label = gui2.CreatePanel("text", button)
+	local button = gui2.CreatePanel("text_button", bar)
 	button:SetClipping(true) 
-	label:SetParseTags(true)  
-	label:SetText("<font=snow_font><color=200,200,200>" .. text)
-	button:SetSize(label:GetSize() + Vec2(5,5) * scale)
-	label:Center()
-	
-	button:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+	button:SetParseTags(true)  
+	button:SetText("<font=snow_font><color=200,200,200>" .. text)
+	button:SetMargin(Rect()+2.5*scale)
+	button:SizeToText()
+	button:SetMode("toggle")
 	 
-	button.OnMouseInput = function(self, button, press)
-		if press then
-			self:SetTexture(skin.button_active)
-			
-			local menu = gui2.CreatePanel("menu")
-			gui2.SetActiveMenu(menu)
-			
-			local function add_entry(menu, val)
-				for k, v in ipairs(val) do
-					if type(v[2]) == "table" then
-						add_entry(menu:AddSubMenu(v[1]), v[2])
-					elseif v[1] then
-						menu:AddEntry(v[1], v[2])
-					else
-						menu:AddSeparator()
-					end
+	button.OnRelease = function()		
+		local menu = gui2.CreatePanel("menu")
+		gui2.SetActiveMenu(menu)
+		
+		local function add_entry(menu, val)
+			for k, v in ipairs(val) do
+				if type(v[2]) == "table" then
+					add_entry(menu:AddSubMenu(v[1]), v[2])
+				elseif v[1] then
+					menu:AddEntry(v[1], v[2])
+				else
+					menu:AddSeparator()
 				end
 			end
-			
-			add_entry(menu, options)			
-			
-			menu:Layout(true)
-			
-			menu:SetPosition(self:GetWorldPosition() + Vec2(0, self:GetHeight() + 2*scale), options)
-
-			menu:CallOnRemove(function() self:SetTexture(skin.button_inactive) end)
 		end
+		
+		add_entry(menu, options)			
+		
+		menu:Layout(true)
+		
+		menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*scale), options)
+
+		menu:CallOnRemove(function() button:SetState(false) end)
 	end
 end
 
