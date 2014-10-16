@@ -6,25 +6,29 @@ local META = {}
 META.ClassName = "Color"
 
 function META.Constructor(r,g,b,a)
-
-	if type(r) == "string" then
-		r,g,b = r:match("#?(..)(..)(..)")
-		r = tonumber("0x" .. r)
-		g = tonumber("0x" .. g)
-		b = tonumber("0x" .. b)
-	end
-
 	r = r or 0
 	g = g or 0
 	b = b or 0
 	a = a or 1
-	
-	if r > 1 then r = r / 255 end
-	if g > 1 then g = g / 255 end
-	if b > 1 then b = b / 255 end
-	if a > 1 then a = a / 255 end
 
 	return r,g,b,a
+end
+
+function ColorBytes(r, g, b, a)
+	r = r or 0
+	g = g or 0
+	b = b or 0
+	a = a or 255
+	
+	return Color(r/255, g/255, b/255, a/255)
+end
+
+function ColorHex(hex, a)
+	local r,g,b = hex:match("#?(..)(..)(..)")
+	r = tonumber("0x" .. r)
+	g = tonumber("0x" .. g)
+	b = tonumber("0x" .. b)
+	return ColorBytes(r, g, b, a)
 end
 
 META.NumberType = "float"

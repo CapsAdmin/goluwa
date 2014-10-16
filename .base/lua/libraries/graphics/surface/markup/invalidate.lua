@@ -54,7 +54,7 @@ local function prepare_chunks(self)
 	end 
 	
 	table.insert(out, 1, {type = "font", val = "default", internal = true})
-	table.insert(out, 1, {type = "color", val = Color(255, 255, 255), internal = true})
+	table.insert(out, 1, {type = "color", val = ColorBytes(255, 255, 255), internal = true})
 	for i = 1, 3 do table.insert(out, {type = "string", val = "", internal = true}) end
 
 	return out
@@ -340,7 +340,7 @@ local function store_tag_info(self, chunks)
 		if chunk.type == "font" then
 			font = chunk.val
 		elseif chunk.type == "color" then
-			color = chunk.val
+			color = chunk.val/255
 		elseif chunk.type == "string" then
 			chunk.font = font
 			chunk.color = color

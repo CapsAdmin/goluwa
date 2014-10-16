@@ -4,7 +4,7 @@ local scale = 2
 local ninepatch_size = 32
 local ninepatch_corner_size = 4
 local ninepatch_pixel_border = scale
-local bg = Color(64, 44, 128, 200) 
+local bg = ColorBytes(64, 44, 128, 200) 
 
 
 surface.CreateFont("snow_font", {
@@ -297,7 +297,7 @@ do
 			bar:SetSendMouseInputToParent(true)
 			bar:SetHeight(10*scale)
 			bar:SetTexture(skin.gradient)
-			bar:SetColor(Color(120, 120, 160))
+			bar:SetColor(ColorBytes(120, 120, 160))
 			bar:SetClipping(true)
 								
 				local close = gui2.CreatePanel("base", bar)
@@ -718,7 +718,7 @@ do
 		self:SetColor(Color(0,0,0,0))
 	
 		local tab_bar =  gui2.CreatePanel("base", self)
-		tab_bar:SetColor(Color(16,16,152,1))
+		tab_bar:SetColor(ColorBytes(16,16,152,255))
 		
 		tab_bar:SetStack(true)
 		tab_bar:SetStackDown(false)
@@ -1033,7 +1033,7 @@ local padding = 5 * scale
 
 local bar = gui2.CreatePanel("base") 
 bar:SetTexture(skin.gradient)
-bar:SetColor(Color(0,72,248))
+bar:SetColor(ColorBytes(0,72,248))
 bar:SetDraggable(true)
 
 local function create_button(text, options)

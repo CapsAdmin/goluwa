@@ -14,9 +14,9 @@ function chat.AddTimeStamp(tbl)
 	local time = os.date("*t")
 	
 	table.insert(tbl, 1, " - ")
-	table.insert(tbl, 1, Color(255, 255, 255))
+	table.insert(tbl, 1, Color(1, 1, 1))
 	table.insert(tbl, 1, ("%.2d:%.2d"):format(time.hour, time.min))
-	table.insert(tbl, 1, Color(118, 170, 217))
+	table.insert(tbl, 1, ColorBytes(118, 170, 217))
 
 	return tbl
 end
@@ -55,7 +55,7 @@ function chat.Append(var, str, skip_log)
 		end
 		
 		table.insert(tbl, var)
-		table.insert(tbl, Color(255, 255, 255, 255))
+		table.insert(tbl, Color(1,1,1,1))
 		table.insert(tbl, ": ")
 		table.insert(tbl, str)
 		chathud.AddText(unpack(tbl))

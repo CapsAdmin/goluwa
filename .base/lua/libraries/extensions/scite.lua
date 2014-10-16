@@ -38,8 +38,8 @@ do
 			end
 		end
 		
-		scite.SendEditor(SCI_SETSELFORE, false, Color(255,255,255):GetHex())
-		scite.SendEditor(SCI_SETSELBACK, false, Color(255,255,255):GetHex())
+		scite.SendEditor(SCI_SETSELFORE, false, ColorBytes(255,255,255):GetHex())
+		scite.SendEditor(SCI_SETSELBACK, false, ColorBytes(255,255,255):GetHex())
 		scite.SendEditor(SCI_SETCARETLINEBACKALPHA, 10)
 		scite.SendEditor(SCI_SETCARETLINEVISIBLE, true)
 		
@@ -112,16 +112,16 @@ do
 
 			if key == "selected_text" then
 				tbl.tab_help = tbl.tab_help or {} 
-				tbl.tab_help.fore = Color(255,255,255)/4
+				tbl.tab_help.fore = ColorBytes(255,255,255)/4
 			end
 			
 			if key == "user_types" then
 				tbl.globals = tbl.globals or {}
-				tbl.globals.fore = Color(fg)
+				tbl.globals.fore = ColorHex(fg)
 				tbl.meta = tbl.meta or {}
-				tbl.meta.fore = Color(fg)
+				tbl.meta.fore = ColorHex(fg)
 				tbl.libraries = tbl.libraries or {}
-				tbl.libraries.fore = Color(fg)
+				tbl.libraries.fore = ColorHex(fg)
 			end
 			
 			if translate[key] then
@@ -131,18 +131,18 @@ do
 				
 				if key == "comment" then
 					tbl.comment_multiline = tbl.comment_multiline or {}
-					tbl.comment_multiline.fore = Color(fg)
+					tbl.comment_multiline.fore = ColorHex(fg)
 				end
 				
 				tbl[key] = tbl[key] or {}
-				tbl[key].fore = Color(fg)
+				tbl[key].fore = ColorHex(fg)
 				
 				if key == "plain_text" then
-					tbl.back = Color(bg)
+					tbl.back = ColorHex(bg)
 				end
 				
 				if key == "brace_match" then
-					tbl[key].back = Color(bg)
+					tbl[key].back = ColorHex(bg)
 				end
 			end
 		end 

@@ -86,7 +86,7 @@ do -- sun
 
 	ADD("sun_size", 2000, "sun_angles") 
 	ADD("sun_color", Color(1, 0.95, 0.8), function(var) world.sun:SetColor(var) end)
-	ADD("sun_intensity", 1.75, function(var) world.sun:SetDiffuseIntensity(var) end)
+	ADD("sun_intensity", 1, function(var) world.sun:SetDiffuseIntensity(var) end)
 	ADD("sun_specular_intensity", 0.2, function(var) world.sun:SetSpecularIntensity(var) end)
 	ADD("sun_roughness", 0.75, function(var) world.sun:SetRoughness(var) end)
 	ADD("ambient_lighting", Color(1, 0.95, 0.8) * 0.6)

@@ -84,7 +84,7 @@ function chathud.AddText(...)
 		if t == "client" then
 			table.insert(args, v:GetUniqueColor())
 			table.insert(args, v:GetNick())
-			table.insert(args, Color(255, 255, 255, 255))
+			table.insert(args, ColorBytes(255, 255, 255, 255))
 		elseif t == "string" then
 		
 			if v == ": sh" or v == "sh" or v:find("%ssh%s") then
