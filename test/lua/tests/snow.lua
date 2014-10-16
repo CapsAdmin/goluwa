@@ -49,7 +49,28 @@ local skin = {
 		return 72, 68, 64, 255
 	end),
 
-	button_rounded = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y)
+	button_rounded_active = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y)
+		y = -y + ninepatch_size
+		
+		if 
+			(x >= ninepatch_size-ninepatch_pixel_border and y >= ninepatch_size-ninepatch_pixel_border) or 
+			(x <= ninepatch_pixel_border and y <= ninepatch_pixel_border) or
+			(x >= ninepatch_size-ninepatch_pixel_border and y <= ninepatch_pixel_border) or
+			(x <= ninepatch_pixel_border and y >= ninepatch_size-ninepatch_pixel_border)
+		then 					
+			return 0,0,0,0 
+		end
+		
+		if x >= ninepatch_size-ninepatch_pixel_border or y >= ninepatch_size-ninepatch_pixel_border then
+			return 192, 144, 144, 255
+		elseif x <= ninepatch_pixel_border or y <= ninepatch_pixel_border then
+			return 160, 120, 120, 255
+		end
+		
+		return 176, 132, 128, 255
+	end),
+	
+	button_rounded_inactive = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y)
 		y = -y + ninepatch_size
 		
 		if 
@@ -154,6 +175,56 @@ for k,v in pairs(skin) do
 end
 
 gui2.SetSkin(temp)
+
+collectgarbage()
+local base = tonumber(("%p"):format(coroutine.running()))
+ffi.cdef([[
+	typedef union {
+		uint8_t chars[8];
+		uint16_t shorts[4];
+		uint32_t longs[2];
+		
+		int64_t integer_signed;
+		uint64_t integer_unsigned;
+		double decimal;
+		
+	} number_buffer_longlong;
+	
+	typedef union {
+		uint8_t chars[4];
+		uint16_t shorts[2];
+		
+		int32_t integer_signed;
+		uint32_t integer_unsigned;
+		float decimal;
+		
+	} number_buffer_long;
+	
+	typedef union {
+		uint8_t chars[2];
+	
+		int16_t integer_signed;
+		uint16_t integer_unsigned;
+		
+	} number_buffer_short;
+]])
+
+--[[
+local number = ffi.new("number_buffer_long")
+for i = 0, collectgarbage("count") * 1024 - 1, 4 do
+	
+	number.chars[0] = ffi.cast("char *", i)[0]
+	number.chars[1] = ffi.cast("char *", i)[1]
+	number.chars[2] = ffi.cast("char *", i)[2]
+	number.chars[3] = ffi.cast("char *", i)[3]
+	
+	print(number.integer_signed)
+	
+	if i < 50 then
+		print(i, ffi.cast("long *", i)[0])	
+		break
+	end
+end]]
 
 do
 	local PANEL = {}
@@ -404,10 +475,13 @@ do
 				close:SetFont("snow_font_noshadow")  
 				close:SetTextColor(ColorBytes(50,50,50))
 				close:SetText("X")
-				close:SetMargin(Rect()+2*scale)
+				close:SetMargin(Rect()+scale)
 				close:SizeToText()
+				close:SetStyle("button_rounded_inactive")
+				close:SetStyleTranslation("button_active", "button_rounded_active")
+				close:SetStyleTranslation("button_inactive", "button_rounded_inactive")
 				
-				close:Dock("top_right") 
+				close:Dock("right") 
 				
 				 --close:SetStyle("button_rounded")
 				
@@ -458,14 +532,14 @@ do
 			y_scroll:SetTexture(skin.gradient2)
 
 			local up = gui2.CreatePanel("base", y_scroll)				
-			up:SetStyle("button_rounded")
+			up:SetStyle("button_rounded_inactive")
 
 			local y_scroll_bar = gui2.CreatePanel("base", y_scroll)
 			y_scroll_bar:SetDraggable(true)	
 			y_scroll_bar:SetStyle("button_inactive")
 
 			local down = gui2.CreatePanel("base", y_scroll)
-			down:SetStyle("button_rounded")
+			down:SetStyle("button_rounded_inactive")
 					
 			y_scroll_bar.OnPositionChanged = function(self, pos)
 				local frac = math.clamp(pos.y / self.Parent:GetHeight(), 0, 1)
@@ -513,14 +587,14 @@ do
 			x_scroll:SetTexture(skin.gradient3)
 
 			local left = gui2.CreatePanel("base", x_scroll)				
-			left:SetStyle("button_rounded")
+			left:SetStyle("button_rounded_inactive")
 
 			local x_scroll_bar = gui2.CreatePanel("base", x_scroll)
 			x_scroll_bar:SetDraggable(true)	
 			x_scroll_bar:SetStyle("button_inactive")
 
 			local right = gui2.CreatePanel("base", x_scroll)
-			right:SetStyle("button_rounded")
+			right:SetStyle("button_rounded_inactive")
 					
 			x_scroll_bar.OnPositionChanged = function(self, pos)
 				local frac = math.clamp(pos.x / self.Parent:GetWidth(), 0, 1)
@@ -761,9 +835,11 @@ do
 			end
 			
 			if self.menu:IsValid() then				
-				self.menu:SetVisible(true)							
+				self.menu:SetVisible(true)
 				self.menu:Layout(true)
 				self.menu:SetPosition(self:GetWorldPosition() + Vec2(self:GetWidth() + scale*2, 0))
+				self.menu:Animate("DrawPositionOffset", {Vec2(-self.menu.Size.w/2), Vec2(self.menu.Size.w/2)}, 0.1, "+", nil, true)
+				--self.menu:Animate("DrawAngleOffset", {Ang3(0,0,0)}, 0.5, "*", nil, Ang3(0, 10, 0))
 			end
 		end
 		
@@ -1079,65 +1155,62 @@ frame:SetSize(Vec2()+200)
 local tab = gui2.CreatePanel("tab", frame)
 tab:Dock("fill")
 
-for i = 1, 10 do
-	local content = tab:AddTab("#" .. i)
+do
+	local content = tab:AddTab("tree")
 	
-	if i == 1 then		
-		local icons =
-		{
-			text = "silkicons/text_align_center.png",
-			bone = "silkicons/wrench.png",
-			clip = "silkicons/cut.png",
-			light = "silkicons/lightbulb.png",
-			sprite = "silkicons/layers.png",
-			bone = "silkicons/connect.png",
-			effect = "silkicons/wand.png",
-			model = "silkicons/shape_square.png",
-			animation = "silkicons/eye.png",
-			entity = "silkicons/brick.png",
-			group = "silkicons/world.png",
-			trail = "silkicons/arrow_undo.png",
-			event = "silkicons/clock.png",
-			sunbeams = "silkicons/weather_sun.png",
-			jiggle = "silkicons/chart_line.png",
-			sound = "silkicons/sound.png",
-			command = "silkicons/application_xp_terminal.png",
-			material = "silkicons/paintcan.png",
-			proxy = "silkicons/calculator.png",
-			particles = "silkicons/water.png",
-			woohoo = "silkicons/webcam_delete.png",
-			halo = "silkicons/shading.png",
-			poseparameter = "silkicons/vector.png",
-		}
+	local icons =
+	{
+		text = "silkicons/text_align_center.png",
+		bone = "silkicons/wrench.png",
+		clip = "silkicons/cut.png",
+		light = "silkicons/lightbulb.png",
+		sprite = "silkicons/layers.png",
+		bone = "silkicons/connect.png",
+		effect = "silkicons/wand.png",
+		model = "silkicons/shape_square.png",
+		animation = "silkicons/eye.png",
+		entity = "silkicons/brick.png",
+		group = "silkicons/world.png",
+		trail = "silkicons/arrow_undo.png",
+		event = "silkicons/clock.png",
+		sunbeams = "silkicons/weather_sun.png",
+		jiggle = "silkicons/chart_line.png",
+		sound = "silkicons/sound.png",
+		command = "silkicons/application_xp_terminal.png",
+		material = "silkicons/paintcan.png",
+		proxy = "silkicons/calculator.png",
+		particles = "silkicons/water.png",
+		woohoo = "silkicons/webcam_delete.png",
+		halo = "silkicons/shading.png",
+		poseparameter = "silkicons/vector.png",
+	}
 
-		local tree = gui2.CreatePanel("tree", content)	
-		tree:Dock("fill")
-		  
-		local data = serializer.ReadFile("luadata", R"data/tree.txt") or {}
-		local done = {}
-		 
-		local function fill(tbl, node)		
-			for key, val in pairs(tbl.children) do
-				local node = node:AddNode(val.self.Name)
-				node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
-				fill(val, node)
-			end  
-			
-		end 
-			 
-		for key, val in pairs(data) do
-			local node = tree:AddNode(val.self.Name)
+	local tree = gui2.CreatePanel("tree", content)	
+	tree:Dock("fill")
+	  
+	local data = serializer.ReadFile("luadata", R"data/tree.txt") or {}
+	local done = {}
+	 
+	local function fill(tbl, node)		
+		for key, val in pairs(tbl.children) do
+			local node = node:AddNode(val.self.Name)
 			node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
 			fill(val, node)
-		end
-	else
+		end  
 		
-		local panel = gui2.CreatePanel("base", content)
-		panel:SetColor(HSVToColor(math.random()))
-		panel:SetPosition(Vec2():Random(20, 100))
-	end		
+	end 
+		 
+	for key, val in pairs(data) do
+		local node = tree:AddNode(val.self.Name)
+		node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
+		fill(val, node)
+	end
 end
 
+do
+	local content = tab:AddTab("huh")
+end
+	 
 	   
 local padding = 5 * scale
 
@@ -1177,6 +1250,7 @@ local function create_button(text, options)
 		menu:Layout(true)
 		
 		menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*scale), options)
+		menu:Animate("DrawPositionOffset", {Vec2(0,-menu.Size.h/2), Vec2(0, menu.Size.h/2)}, 0.1, "+", nil, true)
 
 		menu:CallOnRemove(function() button:SetState(false) end)
 	end
