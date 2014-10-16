@@ -236,6 +236,53 @@ end
 
 do
 	local PANEL = {}
+
+	PANEL.ClassName = "button"
+
+	function PANEL:Initialize()
+		self:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+		self:SetCursor("hand")
+		self.button_down = {}
+	end
+
+	function PANEL:OnMouseInput(button, press)
+		if press then
+			self.button_down[button] = press
+			if button == "button_1" then
+				self:SetupNinepatch(skin.button_active, ninepatch_size, ninepatch_corner_size)
+			end
+		elseif self.button_down[button] then
+			self.button_down[button] = nil
+			
+			if button == "button_1" then
+				self:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+				return self:OnPress()
+			end
+			
+			return self:OnOtherButtonPress(button)
+		end
+	end
+	
+	function PANEL:OnMouseEnter()
+		
+	end
+	
+	function PANEL:OnMouseExit()
+		
+	end
+
+	function PANEL:IsDown()
+		return self.button_down["button_1"]
+	end
+	
+	function PANEL:OnPress() end
+	function PANEL:OnOtherButtonPress() end
+	
+	gui2.RegisterPanel(PANEL)
+end
+
+do
+	local PANEL = {}
 	PANEL.ClassName = "frame"
 	
 	function PANEL:Initialize()	
