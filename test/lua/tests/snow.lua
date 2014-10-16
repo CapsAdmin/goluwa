@@ -146,7 +146,14 @@ local skin = {
 
 		return 168, 32, 32, 255
 	end),
-} 
+}
+
+local temp = {}
+for k,v in pairs(skin) do
+	temp[k] = {v, ninepatch_size, ninepatch_corner_size}
+end
+
+gui2.SetSkin(temp)
 
 do
 	local PANEL = {}
@@ -157,6 +164,9 @@ do
 	prototype.GetSet(PANEL, "ParseTags", false)
 	prototype.GetSet(PANEL, "Editable", false)
 	prototype.GetSet(PANEL, "Wrap", false)
+	
+	prototype.GetSet(PANEL, "Font", "default")
+	prototype.GetSet(PANEL, "TextColor", Color(1,1,1,1))
 	
 	function PANEL:Initialize()
 		self.markup = surface.CreateMarkup()
@@ -176,6 +186,8 @@ do
 		markup:SetEditable(self.Editable)
 		markup:SetLineWrap(self.Wrap)
 		markup:Clear()
+		markup:AddFont(self.Font)
+		markup:AddColor(self.TextColor)
 		markup:AddString(self.Text, self.ParseTags)
 		
 		self:OnDraw() -- hack! this will update markup sizes
@@ -238,11 +250,11 @@ do
 	local PANEL = {}
 
 	PANEL.ClassName = "button"
-	
+		
 	prototype.GetSet(PANEL, "Mode", "normal")
 
 	function PANEL:Initialize()
-		self:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+		self:SetStyle("button_inactive")
 		self:SetCursor("hand")
 		self.button_down = {}
 	end
@@ -260,8 +272,8 @@ do
 			self.button_down[button] = pressed
 			
 			if button == "button_1" then
-				self:SetupNinepatch(skin.button_active, ninepatch_size, ninepatch_corner_size)
-				self:OnRelease()
+				self:SetStyle("button_active")
+				self:OnRelease() 
 			end
 			
 			
@@ -271,7 +283,7 @@ do
 			self.button_down[button] = nil
 			
 			if button == "button_1" then
-				self:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+				self:SetStyle("button_inactive")
 				self:OnPress()
 			end
 			
@@ -301,7 +313,7 @@ do
 	function PANEL:OnMouseExit()
 		if self.Mode ~= "toggle" then
 			self.button_down = {}
-			self:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+			self:SetStyle("button_inactive")
 		end
 	end
 	
@@ -330,6 +342,8 @@ do -- text button
 	
 	prototype.GetSetDelegate(PANEL, "Text", "", "label")
 	prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
+	prototype.GetSetDelegate(PANEL, "Font", "default", "label")
+	prototype.GetSetDelegate(PANEL, "TextColor", Color(1,1,1), "label")
 	
 	prototype.Delegate(PANEL, "label", "CenterText", "Center")
 	
@@ -352,8 +366,9 @@ do -- text button
 	function PANEL:Test()		
 		local btn = gui2.CreatePanel("text_button")
 		
-		btn:SetParseTags(true)
-		btn:SetText("<font=snow_font><color=200,200,200>oh")
+		btn:SetFont("snow_font")
+		btn:SetTextColor(ColorBytes(200, 200, 200))
+		btn:SetText("oh")
 		btn:SetMargin(Rect()+scale*3)
 		btn:SizeToText()
 		btn:SetMode("toggle")
@@ -371,7 +386,7 @@ do
 		self:SetDraggable(true)
 		self:SetResizable(true) 
 		self:SetMargin(Rect(0,10*scale,0,0))  
-		self:SetupNinepatch(skin.frame, ninepatch_size, ninepatch_corner_size)
+		self:SetStyle("frame")
 				
 			local bar = gui2.CreatePanel("base", self)
 			bar:SetObeyMargin(false)
@@ -383,8 +398,9 @@ do
 			bar:SetClipping(true)
 								
 				local close = gui2.CreatePanel("text_button", bar)
-				close:SetParseTags(true)  
-				close:SetText("<font=snow_font_noshadow><color=50,50,50>X")
+				close:SetFont("snow_font_noshadow")  
+				close:SetTextColor(ColorBytes(50,50,50))
+				close:SetText("X")
 				close:SetMargin(Rect()+2*scale)
 				close:SizeToText()
 				
@@ -408,8 +424,9 @@ do
 		gui2.RemovePanel(self.title)
 		local title = gui2.CreatePanel("text", self.bar)
 		title:SetHeight(self.bar:GetHeight())
-		title:SetParseTags(true)  
-		title:SetText("<font=snow_font><color=200,200,200>"..str)
+		title:SetFont("snow_font")  
+		title:SetTextColor(ColorBytes(200, 200, 200))
+		title:SetText(str)
 		title:SetPosition(Vec2(2*scale,0))
 		title:CenterY()
 		title:SetColor(Color(0,0,0,0))
@@ -438,14 +455,14 @@ do
 			y_scroll:SetTexture(skin.gradient2)
 
 			local up = gui2.CreatePanel("base", y_scroll)				
-			up:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
+			up:SetStyle("button_rounded")
 
 			local y_scroll_bar = gui2.CreatePanel("base", y_scroll)
 			y_scroll_bar:SetDraggable(true)	
-			y_scroll_bar:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+			y_scroll_bar:SetStyle("button_inactive")
 
 			local down = gui2.CreatePanel("base", y_scroll)
-			down:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
+			down:SetStyle("button_rounded")
 					
 			y_scroll_bar.OnPositionChanged = function(self, pos)
 				local frac = math.clamp(pos.y / self.Parent:GetHeight(), 0, 1)
@@ -493,14 +510,14 @@ do
 			x_scroll:SetTexture(skin.gradient3)
 
 			local left = gui2.CreatePanel("base", x_scroll)				
-			left:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
+			left:SetStyle("button_rounded")
 
 			local x_scroll_bar = gui2.CreatePanel("base", x_scroll)
 			x_scroll_bar:SetDraggable(true)	
 			x_scroll_bar:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
 
 			local right = gui2.CreatePanel("base", x_scroll)
-			right:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
+			right:SetStyle("button_rounded")
 					
 			x_scroll_bar.OnPositionChanged = function(self, pos)
 				local frac = math.clamp(pos.x / self.Parent:GetWidth(), 0, 1)
@@ -623,9 +640,10 @@ do
 		local label = gui2.CreatePanel("text", button)				
 		label:SetSendMouseInputToParent(true)
 		
-		label:SetParseTags(true)
+		label:SetFont("snow_font_green")
+		label:SetTextColor(Color(0,1,0))
 		label:SetWrap(false)
-		label:SetText("<font=snow_font_green><color=0,255,0>" .. name)
+		label:SetText(name)
 		button:SetSize(label:GetSize() + Vec2(4,4) * scale)
 		label:CenterY()
 		button.label = label
@@ -634,7 +652,7 @@ do
 		button:SetPosition(Vec2(0, last_child:GetPosition().y + last_child:GetHeight() - 2*scale))
 			
 		button:SetColor(Color(0,0,0,0))
-		button:SetupNinepatch(skin.menu_select, ninepatch_size, ninepatch_corner_size)
+		button:SetStyle("menu_select")
 
 		button.OnMouseInput = function(_, key, press)
 			if key == "button_1" then
@@ -663,7 +681,7 @@ do
 		PANEL.sub_menu = NULL
 		
 		function PANEL:Initialize()
-			self:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+			self:SetStyle("button_inactive")
 		end
 		
 		function PANEL:AddEntry(text, on_click)
@@ -686,7 +704,7 @@ do
 		
 		function PANEL:AddSeparator()
 			local panel = gui2.CreatePanel("base", self)
-			panel:SetupNinepatch(skin.button_active, ninepatch_size, ninepatch_corner_size)
+			panel:SetStyle("button_active")
 			panel:SetHeight(2*scale)
 			panel:SetIgnoreMouse(true)
 		end
@@ -725,7 +743,8 @@ do
 			self:SetPadding(Rect(scale, scale, scale, scale))
 			
 			self.label = gui2.CreatePanel("text", self)
-			self.label:SetParseTags(true) 
+			self.label:SetFont("snow_font") 
+			self.label:SetTextColor(ColorBytes(200, 200, 200)) 
 		end
 		
 		function PANEL:OnMouseEnter()
@@ -750,7 +769,7 @@ do
 		end
 		
 		function PANEL:SetText(str)
-			self.label:SetText("<font=snow_font><color=200,200,200>" .. str)
+			self.label:SetText(str)
 			self:SetHeight(self.label:GetSize().h + 4*scale)
 			self.label:CenterY()
 		end
@@ -764,8 +783,9 @@ do
 			icon:SetColor(Color(0,0,0,0))
 			
 			local label = gui2.CreatePanel("text", icon)
-			label:SetParseTags(true) 
-			label:SetText("<font=snow_font><color=200,200,200>▶")
+			label:SetFont("snow_font") 
+			label:SetTextColor(ColorBytes(200,200,200)) 
+			label:SetText("▶")
 			icon:SetSize(label:GetSize())
 
 			self.menu = gui2.CreatePanel("menu")
@@ -818,10 +838,10 @@ do
 		
 		button:SetSendMouseInputToParent(true)
 		label:SetSendMouseInputToParent(true)
-		label:SetParseTags(true)  
+		label:SetFont("snow_font")  
 		button:SetSize(Vec2(22,14)*scale)
-		
-		label:SetText("<font=snow_font><color=168,168,224>"..name)
+		label:SetTextColor(ColorBytes(168,168,224))
+		label:SetText(name)
 		button:SetupNinepatch(skin.tab_inactive, ninepatch_size, ninepatch_corner_size)
 		button:SetHeight(button:GetHeight() - scale)
 		label:Center()
@@ -829,7 +849,8 @@ do
 		
 		button.OnMouseInput = function(button, key, press)
 			if press and key == "button_1" then
-				label:SetText("<font=snow_font><color=160,160,0>"..button.text)
+				label:SetTextColor(ColorBytes(160,160,0))
+				label:SetText(button.text)
 				button:SetupNinepatch(skin.tab_active, ninepatch_size, ninepatch_corner_size)
 				label:Center()
 				
@@ -838,7 +859,7 @@ do
 				
 				for i, panel in ipairs(self.tab_bar:GetChildren()) do
 					if button ~= panel then
-						label:SetText("<font=snow_font><color=168,168,224>"..panel.text)
+						label:SetTextColor(ColorBytes(168,168,224))
 						panel:SetupNinepatch(skin.tab_inactive, ninepatch_size, ninepatch_corner_size)
 						label:Center()
 						self.tabs[panel.text].content:SetVisible(false)
@@ -889,12 +910,14 @@ do
 			self:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
 
 			local label = gui2.CreatePanel("text", self)
-			label:SetParseTags(true)
+			label:SetTextColor(ColorBytes(200, 200, 200))
+			label:SetFont("snow_font")
 			self.label = label
 			
 			local exp = gui2.CreatePanel("base", self)
 			exp.label = gui2.CreatePanel("text", exp)
-			exp.label:SetParseTags(true)
+			exp.label:SetFont("snow_font")
+			exp.label:SetTextColor(ColorBytes(200, 200, 200))
 			exp:SetColor(Color(0,0,0,0))
 			exp:SetVisible(false)
 			self.expand = exp
@@ -974,7 +997,7 @@ do
 			
 			self.Expand = b
 			
-			self.expand.label:SetText("<font=snow_font><color=200,200,200>" .. (b and "-" or "+"))
+			self.expand.label:SetText(b and "-" or "+")
 		end
 					
 		gui2.RegisterPanel(PANEL)
@@ -1005,7 +1028,7 @@ do
 			if id and self.nodes[id] and self.nodes[id]:IsValid() then self.nodes[id]:Remove() end
 			
 			local pnl = gui2.CreatePanel("tree_node", self)
-			pnl:SetText("<font=snow_font><color=200,200,200>" .. str) 
+			pnl:SetText(str) 
 			pnl.offset = self.IndentWidth
 			pnl.tree = self
 						
@@ -1118,8 +1141,9 @@ bar:SetDraggable(true)
 local function create_button(text, options)
 	local button = gui2.CreatePanel("text_button", bar)
 	button:SetClipping(true) 
-	button:SetParseTags(true)  
-	button:SetText("<font=snow_font><color=200,200,200>" .. text)
+	button:SetFont("snow_font")  
+	button:SetTextColor(ColorBytes(200, 200, 200))
+	button:SetText(text)
 	button:SetMargin(Rect()+2.5*scale)
 	button:SizeToText()
 	button:SetMode("toggle")
