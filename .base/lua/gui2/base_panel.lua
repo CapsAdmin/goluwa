@@ -8,7 +8,7 @@ prototype.GetSet(PANEL, "MousePosition", Vec2(0, 0))
 prototype.IsSet(PANEL, "Visible", true)
 prototype.GetSet(PANEL, "Clipping", false)
 prototype.GetSet(PANEL, "Color", Color(1,1,1,1))
-prototype.GetSet(PANEL, "Cursor", "hand")
+prototype.GetSet(PANEL, "Cursor", "arrow")
 prototype.GetSet(PANEL, "TrapChildren", false)
 prototype.GetSet(PANEL, "Texture", render.GetWhiteTexture())
 prototype.GetSet(PANEL, "RedirectFocus", NULL)
@@ -613,7 +613,7 @@ do -- animations
 	-- these are useful for animations
 	prototype.GetSet(PANEL, "DrawSizeOffset", Vec2(0, 0))
 	prototype.GetSet(PANEL, "DrawPositionOffset", Vec2(0, 0))
-	prototype.GetSet(PANEL, "DrawAngleOffset", 0)
+	prototype.GetSet(PANEL, "DrawAngleOffset", Ang3(0,0,0))
 	
 	PANEL.animations = {}
 
@@ -642,7 +642,9 @@ do -- animations
 		local h = (self.Size.h + self.DrawSizeOffset.h)/2
 
 		render.Translate(w, h, 0)
-		render.Rotate(self.DrawAngleOffset, 0, 0, 1)
+		render.Rotate(self.DrawAngleOffset.p, 0, 0, 1)
+		render.Rotate(self.DrawAngleOffset.y, 0, 1, 0)
+		render.Rotate(self.DrawAngleOffset.r, 1, 0, 0)
 		render.Translate(-w, -h, 0)
 			
 		for key, animation in pairs(self.animations) do
@@ -709,7 +711,7 @@ do -- animations
 		self:UpdateAnimations()
 	end
 
-	function PANEL:Animate(var, to, time, operator, pow)
+	function PANEL:Animate(var, to, time, operator, pow, set)
 		if self.animations[var] then
 			self.animations[var].alpha = 0
 			return
@@ -753,8 +755,10 @@ do -- animations
 				to[i] = v
 			end
 		end
-
-		table.insert(to, 1, from)
+		
+		if not set then
+			table.insert(to, 1, from)
+		end
 
 		self.animations[var] = {
 			operator = operator,
@@ -1055,8 +1059,28 @@ do -- resizing
 	function PANEL:IsResizing()
 		return self.resize_start_pos ~= nil
 	end
+	
+	local location2cursor = {
+		right = "sizewe",
+		left = "sizewe",
+		top = "sizens",
+		bottom = "sizens",
+		top_right = "sizenesw",
+		bottom_left = "sizenesw",
+		top_left = "sizenwse",
+		bottom_right = "sizenwse",
+	}
 
 	function PANEL:CalcResizing()
+		if self.Resizable then
+			local loc = self:GetResizeLocation(self:GetMousePosition())
+			if location2cursor[loc] then
+				system.SetCursor(location2cursor[loc])
+			else
+				gui2.active_cursor = nil
+			end
+		end
+	
 		if self.resize_start_pos then
 
 			if self.resize_button ~= nil and not input.IsMouseDown(self.resize_button) then
