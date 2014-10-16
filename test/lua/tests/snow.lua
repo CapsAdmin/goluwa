@@ -185,6 +185,7 @@ do
 		
 		markup:SetEditable(self.Editable)
 		markup:SetLineWrap(self.Wrap)
+		
 		markup:Clear()
 		markup:AddFont(self.Font)
 		markup:AddColor(self.TextColor)
@@ -385,6 +386,8 @@ do
 	function PANEL:Initialize()	
 		self:SetDraggable(true)
 		self:SetResizable(true) 
+		self:SetBringToFrontOnClick(true)
+		
 		self:SetMargin(Rect(0,10*scale,0,0))  
 		self:SetStyle("frame")
 				
@@ -406,7 +409,7 @@ do
 				
 				close:Dock("top_right") 
 				
-				 --close:SetupNinepatch(skin.button_rounded, ninepatch_size, ninepatch_corner_size)
+				 --close:SetStyle("button_rounded")
 				
 				close.OnPress = function() 
 					self:Remove()
@@ -514,7 +517,7 @@ do
 
 			local x_scroll_bar = gui2.CreatePanel("base", x_scroll)
 			x_scroll_bar:SetDraggable(true)	
-			x_scroll_bar:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+			x_scroll_bar:SetStyle("button_inactive")
 
 			local right = gui2.CreatePanel("base", x_scroll)
 			right:SetStyle("button_rounded")
@@ -739,7 +742,7 @@ do
 		
 		function PANEL:Initialize()
 			self:SetColor(Color(0,0,0,0))
-			self:SetupNinepatch(skin.menu_select, ninepatch_size, ninepatch_corner_size)
+			self:SetStyle("menu_select")
 			self:SetPadding(Rect(scale, scale, scale, scale))
 			
 			self.label = gui2.CreatePanel("text", self)
@@ -833,35 +836,40 @@ do
 			gui2.RemovePanel(self.tabs[name].content)
 		end
 	
-		local button = gui2.CreatePanel("base", self.tab_bar)
-		local label = gui2.CreatePanel("text", button)
-		
+		local button = gui2.CreatePanel("text_button", self.tab_bar)
+		button:SetMode("toggle")
 		button:SetSendMouseInputToParent(true)
-		label:SetSendMouseInputToParent(true)
-		label:SetFont("snow_font")  
+
+		button:SetStyleTranslation("button_active", "tab_active")
+		button:SetStyleTranslation("button_inactive", "tab_inactive")
+		button:SetStyle("tab_inactive")
+		
 		button:SetSize(Vec2(22,14)*scale)
-		label:SetTextColor(ColorBytes(168,168,224))
-		label:SetText(name)
-		button:SetupNinepatch(skin.tab_inactive, ninepatch_size, ninepatch_corner_size)
 		button:SetHeight(button:GetHeight() - scale)
-		label:Center()
+		
+		button:SetFont("snow_font")
+		button:SetTextColor(ColorBytes(168,168,224))
+		button:SetText(name)
+		button:CenterText()
+
 		button.text = name
 		
 		button.OnMouseInput = function(button, key, press)
 			if press and key == "button_1" then
-				label:SetTextColor(ColorBytes(160,160,0))
-				label:SetText(button.text)
-				button:SetupNinepatch(skin.tab_active, ninepatch_size, ninepatch_corner_size)
-				label:Center()
+				button:SetTextColor(ColorBytes(160,160,0))
+				button:SetText(button.text)
+				button:CenterText()
+				button:SetState(true)
 				
 				self.content = self.tabs[name].content
 				self.content:SetVisible(true)
 				
 				for i, panel in ipairs(self.tab_bar:GetChildren()) do
 					if button ~= panel then
-						label:SetTextColor(ColorBytes(168,168,224))
-						panel:SetupNinepatch(skin.tab_inactive, ninepatch_size, ninepatch_corner_size)
-						label:Center()
+						panel:SetTextColor(ColorBytes(168,168,224))
+						panel:SetText(panel.text)
+						panel:CenterText()
+						panel:SetState(false)
 						self.tabs[panel.text].content:SetVisible(false)
 					end
 				end
@@ -871,7 +879,7 @@ do
 		end
 		
 		local content = gui2.CreatePanel("base", self)
-		content:SetupNinepatch(skin.frame, ninepatch_size, ninepatch_corner_size)
+		content:SetStyle("frame")
 		content:SetSendMouseInputToParent(true)
 		content:SetVisible(false)
 		self.content = content
@@ -907,7 +915,7 @@ do
 
 		function PANEL:Initialize()	
 			self:SetSendMouseInputToParent(true)
-			self:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+			self:SetStyle("button_inactive")
 
 			local label = gui2.CreatePanel("text", self)
 			label:SetTextColor(ColorBytes(200, 200, 200))
