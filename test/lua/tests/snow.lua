@@ -122,7 +122,7 @@ local skin = {
 		
 		if x >= ninepatch_size-ninepatch_pixel_border then
 			return 136, 0, 0, 255
-		elseif x >= ninepatch_size-ninepatch_pixel_border or y >= ninepatch_size-ninepatch_pixel_border then
+		elseif x >= ninepatch_size-ninepatch_pixel_border or y >= ninepatch_size-ninepatch_pixel_border or y <= ninepatch_pixel_border then
 			return 168, 32, 32, 255
 		end
 		
@@ -176,6 +176,10 @@ end
 
 gui2.SetSkin(temp)
 
+--[==[
+
+-- VirtualQuery ??
+
 collectgarbage()
 local base = tonumber(("%p"):format(coroutine.running()))
 ffi.cdef([[
@@ -209,7 +213,7 @@ ffi.cdef([[
 	} number_buffer_short;
 ]])
 
---[[
+
 local number = ffi.new("number_buffer_long")
 for i = 0, collectgarbage("count") * 1024 - 1, 4 do
 	
@@ -224,7 +228,7 @@ for i = 0, collectgarbage("count") * 1024 - 1, 4 do
 		print(i, ffi.cast("long *", i)[0])	
 		break
 	end
-end]]
+end]==]
 
 do
 	local PANEL = {}
@@ -324,6 +328,7 @@ do
 	PANEL.ClassName = "button"
 		
 	prototype.GetSet(PANEL, "Mode", "normal")
+	prototype.GetSet(PANEL, "ResetOnMouseExit", true)
 
 	function PANEL:Initialize()
 		self:SetStyle("button_inactive")
@@ -383,7 +388,7 @@ do
 	end
 	
 	function PANEL:OnMouseExit()
-		if self.Mode ~= "toggle" then
+		if self.Mode ~= "toggle" and self.ResetOnMouseExit then
 			self.button_down = {}
 			self:SetStyle("button_inactive")
 		end
@@ -461,34 +466,33 @@ do
 		
 		self:SetMargin(Rect(0,10*scale,0,0))  
 		self:SetStyle("frame")
-				
-			local bar = gui2.CreatePanel("base", self)
-			bar:SetObeyMargin(false)
-			bar:Dock("fill_top") 
-			bar:SetSendMouseInputToParent(true)
-			bar:SetHeight(10*scale)
-			bar:SetTexture(skin.gradient)
-			bar:SetColor(ColorBytes(120, 120, 160))
-			bar:SetClipping(true)
-								
-				local close = gui2.CreatePanel("text_button", bar)
-				close:SetFont("snow_font_noshadow")  
-				close:SetTextColor(ColorBytes(50,50,50))
-				close:SetText("X")
-				close:SetMargin(Rect()+scale)
-				close:SizeToText()
-				close:SetStyle("button_rounded_inactive")
-				close:SetStyleTranslation("button_active", "button_rounded_active")
-				close:SetStyleTranslation("button_inactive", "button_rounded_inactive")
-				
-				close:Dock("right") 
-				
-				 --close:SetStyle("button_rounded")
-				
-				close.OnPress = function() 
-					self:Remove()
-				end
+			
+		local bar = gui2.CreatePanel("base", self)
+		bar:SetObeyMargin(false)
+		bar:Dock("fill_top") 
+		bar:SetSendMouseInputToParent(true)
+		bar:SetHeight(10*scale)
+		bar:SetTexture(skin.gradient)
+		bar:SetColor(ColorBytes(120, 120, 160))
+		bar:SetClipping(true)
+						
+		local close = gui2.CreatePanel("text_button", bar)
+		close:SetFont("snow_font_noshadow")  
+		close:SetTextColor(ColorBytes(50,50,50))
+		close:SetText("X")
+		close:SizeToText()
+		close:SetStyle("button_rounded_inactive")
+		close:SetStyleTranslation("button_active", "button_rounded_active")
+		close:SetStyleTranslation("button_inactive", "button_rounded_inactive")
 		
+		close:Dock("right") 
+		
+		 --close:SetStyle("button_rounded")
+		
+		close.OnPress = function() 
+			self:Remove()
+		end
+	
 		self:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
 		
 		self.frame = self
@@ -838,7 +842,7 @@ do
 				self.menu:SetVisible(true)
 				self.menu:Layout(true)
 				self.menu:SetPosition(self:GetWorldPosition() + Vec2(self:GetWidth() + scale*2, 0))
-				self.menu:Animate("DrawPositionOffset", {Vec2(-self.menu.Size.w/2), Vec2(self.menu.Size.w/2)}, 0.1, "+", nil, true)
+				self.menu:Animate("DrawPositionOffset", {Vec2(-self.menu.Size.w/2), Vec2(0)}, 0.1, "+", nil, true)
 				--self.menu:Animate("DrawAngleOffset", {Ang3(0,0,0)}, 0.5, "*", nil, Ang3(0, 10, 0))
 			end
 		end
@@ -926,6 +930,8 @@ do
 		button:SetFont("snow_font")
 		button:SetTextColor(ColorBytes(168,168,224))
 		button:SetText(name)
+		button:SetMargin(Rect()+4*scale)
+		button:SizeToText()
 		button:CenterText()
 
 		button.text = name
@@ -991,31 +997,57 @@ do
 
 		function PANEL:Initialize()	
 			self:SetSendMouseInputToParent(true)
-			self:SetStyle("button_inactive")
+			self:SetColor(Color(1,1,1,0))
 
-			local label = gui2.CreatePanel("text", self)
+			local label = gui2.CreatePanel("text_button", self)
 			label:SetTextColor(ColorBytes(200, 200, 200))
 			label:SetFont("snow_font")
+			label:SetMargin(Rect()+2*scale)
+			label:SetColor(Color(0,0,0,0))
+			label:SetStyleTranslation("button_active", "button_rounded_active")
+			label:SetStyleTranslation("button_inactive", "button_rounded_inactive")
+			label:SetStyle("button_rounded_inactive")
+			label.OnMouseEnter = function()
+				label:Animate("Color", {Color(1,1,1,1), function() return self:IsMouseOver() end, "from"}, duration, "", pow)
+			end
+			label.OnStateChanged = function()
+				self.label:SetColor(Color(1,1,1,1))
+				for k, v in ipairs(self.tree:GetChildren()) do
+					if v ~= self then
+						v.label:SetColor(Color(1,1,1,0))
+					end
+				end
+			end
 			self.label = label
-			
-			local exp = gui2.CreatePanel("base", self)
-			exp.label = gui2.CreatePanel("text", exp)
-			exp.label:SetFont("snow_font")
-			exp.label:SetTextColor(ColorBytes(200, 200, 200))
-			exp:SetColor(Color(0,0,0,0))
+
+			local exp = gui2.CreatePanel("text_button", self)
+			exp:SetFont("snow_font")
+			exp:SetTextColor(ColorBytes(200, 200, 200))
+			exp:SetMargin(Rect()+scale)
 			exp:SetVisible(false)
+			exp.OnMouseInput = function(_, button, press) 
+				if button == "button_1" and press then
+					self:OnExpand(b) 
+				end
+			end
 			self.expand = exp
 			
 			local img = gui2.CreatePanel("base", self)
 			img:SetIgnoreMouse(true)
 			img:SetTexture(Texture("textures/silkicons/heart.png"))
 			self.image = img
-			
-			exp.OnMouseInput = function(_, button, press) 
-				if button == "button_1" and press then
-					self:OnExpand(b) 
-				end
-			end
+		end
+		
+		function PANEL:OnMouseEnter(...)
+			self.label:OnMouseEnter(...)
+		end
+		
+		function PANEL:OnMouseExit(...)
+			self.label:OnMouseExit(...)
+		end
+		
+		function PANEL:OnMouseInput(...)
+			self.label:OnMouseInput(...)
 		end
 		
 		function PANEL:OnExpand()
@@ -1031,14 +1063,17 @@ do
 		end
 
 		function PANEL:OnLayout()
-			self.expand:SetSize(self.expand.label:GetSize())
-			self.expand:SetWidth(6*scale)
-			self.expand:SetPosition(Vec2(self.offset or 0,0))
-			
+			local x = self.offset
+						
 			self.image:SetSize(Vec2() + 16)
-			self.image:SetPosition(self.expand:GetPosition() + Vec2(self.expand:GetWidth() + scale*2, 0))
+			self.image:SetPosition(Vec2(x + scale*2, 0))
+			
+			self.expand:SetSize(Vec2()+scale*6)
+			self.expand:SetPosition(Vec2(x - self.image:GetWidth(), 0))
+			self.expand:CenterText()
 			
 			self.label:SetPosition(self.image:GetPosition() + Vec2(self.image:GetWidth() + scale*2, 0))
+			self.label:SizeToText()
 						
 			self.expand:CenterY()
 			self.image:CenterY()
@@ -1046,8 +1081,9 @@ do
 		end
 
 		function PANEL:AddNode(str, id)
-			local pnl = self.Parent.AddNode(self.tree, str, id)
-			pnl.offset = self.offset + self.Parent.IndentWidth
+			local pnl = self.tree.AddNode(self.tree, str, id)
+			
+			pnl.offset = self.offset + self.tree.IndentWidth
 			pnl.node_parent = self
 			
 			self.expand:SetVisible(true)
@@ -1081,7 +1117,7 @@ do
 			
 			self.Expand = b
 			
-			self.expand.label:SetText(b and "-" or "+")
+			self.expand:SetText(b and "-" or "+")
 		end
 					
 		gui2.RegisterPanel(PANEL)
@@ -1091,13 +1127,13 @@ do
 		local PANEL = {}
 
 		PANEL.ClassName = "tree"
-		prototype.GetSet(PANEL, "IndentWidth", scale*4)
+		prototype.GetSet(PANEL, "IndentWidth", 16)
 
 		function PANEL:Initialize()
 			self:SetClipping(true)
 			self:SetSendMouseInputToParent(true)
 			self:SetStack(true)
-			self:SetForcedStackSize(Vec2(0, 10*scale + scale*2))
+			self:SetForcedStackSize(Vec2(0, 10*scale))
 			
 			self:SetStackRight(false)
 			self:SetSizeStackToWidth(true)
@@ -1105,7 +1141,7 @@ do
 						
 			self.CustomList = {}
 			
-			self:SetColor(Color(0,0,0,1))
+			self:SetColor(Color(1,1,1,0))
 		end
 
 		function PANEL:AddNode(str, id)
@@ -1192,19 +1228,14 @@ do
 	local done = {}
 	 
 	local function fill(tbl, node)		
-		for key, val in pairs(tbl.children) do
+		for key, val in pairs(tbl) do
 			local node = node:AddNode(val.self.Name)
 			node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
-			fill(val, node)
+			fill(val.children, node)
 		end  
-		
 	end 
-		 
-	for key, val in pairs(data) do
-		local node = tree:AddNode(val.self.Name)
-		node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
-		fill(val, node)
-	end
+	
+	fill(data, tree)
 end
 
 do
@@ -1250,7 +1281,7 @@ local function create_button(text, options)
 		menu:Layout(true)
 		
 		menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*scale), options)
-		menu:Animate("DrawPositionOffset", {Vec2(0,-menu.Size.h/2), Vec2(0, menu.Size.h/2)}, 0.1, "+", nil, true)
+		menu:Animate("DrawPositionOffset", {Vec2(0,-menu.Size.h/2), Vec2(0, 0)}, 0.1, "+", nil, true)
 
 		menu:CallOnRemove(function() button:SetState(false) end)
 	end
@@ -1393,6 +1424,13 @@ event.AddListener("Draw2D", "zsnow", function(dt)
 	
 	--surface.SetColor(0,0,0,0.25)
 	--surface.DrawRect(5*scale,5*scale, x, 16 * scale)
+	
+	
+	surface.SetFont("snow_font")
+	surface.SetTextPos(50, 50)
+	surface.DrawText("ANIMATION 2")
+	local w,h = surface.GetTextSize("ANIMATION 2")
+	surface.DrawRect(50,50,w,h)
 	
 	if DX then
 		render.SetBlendMode("additive")
