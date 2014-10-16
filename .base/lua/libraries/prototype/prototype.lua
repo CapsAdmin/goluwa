@@ -58,10 +58,20 @@ function prototype.GetAllRegistered()
 	return out
 end
 
-function prototype.Delegate(meta, key, func_name)
+function prototype.Delegate(meta, key, func_name, func_name2)
+	if not func_name2 then func_name2 = func_name end
+	
 	meta[func_name] = function(self, ...)
-		return self[key][func_name](self[key], ...)
+		return self[key][func_name2](self[key], ...)
 	end
+end
+
+function prototype.GetSetDelegate(meta, func_name, def, key)
+	local get = "Get" .. func_name
+	local set = "Set" .. func_name
+	prototype.GetSet(meta, func_name, def)
+	prototype.Delegate(meta, key, get)
+	prototype.Delegate(meta, key, set)
 end
 
 include("base_template.lua", prototype)
