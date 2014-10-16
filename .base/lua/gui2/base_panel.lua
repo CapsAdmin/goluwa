@@ -1369,6 +1369,18 @@ do --- ninepatch
 	end
 end
 
+do -- skin		
+	prototype.GetSet(PANEL, "Style")
+		
+	function PANEL:SetStyle(name)
+		self.Style = name
+		
+		if gui2.skin[name] then
+			self:SetupNinepatch(unpack(gui2.skin[name]))
+		end
+	end
+end
+
 do -- events
 	function PANEL:OnDraw()
 		if self.Color.a == 0 then return end
