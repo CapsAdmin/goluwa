@@ -153,6 +153,14 @@ do -- events
 	end
 end
 
+function gui2.SetSkin(tbl)
+	gui2.skin = tbl
+end
+
+function gui2.GetSkin()
+	return gui2.skin
+end
+
 function gui2.Initialize()
 	gui2.RemovePanel(gui2.world)
 	
