@@ -112,7 +112,7 @@ for y = 1, 4 do
 			pnl.OnClick = function(self)
 				local duration = 0.6
 				self:Animate("Color", {Color(0,0,0,0), "from"}, duration)
-				self:Animate("DrawAngleOffset", math.random() > 0.5 and 360 or -360, duration)
+				self:Animate("DrawAngleOffset", Ang3(math.random() > 0.5 and math.pi or -math.pi), duration)
 			end
 		else
 			if math.random() > 0.5 then
@@ -126,7 +126,7 @@ for y = 1, 4 do
 				end
 			else
 				pnl.OnClick = function(self)
-					self:Animate("DrawAngleOffset", {math.randomf(-360, 360), "from"}, math.random())
+					self:Animate("DrawAngleOffset", {Ang3(math.randomf(-math.pi, math.pi)), "from"}, math.random())
 				end
 			end
 		end
