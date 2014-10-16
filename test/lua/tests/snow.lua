@@ -3,6 +3,7 @@ gui2 = include("gui2/gui2.lua")
 local scale = 2
 local ninepatch_size = 32
 local ninepatch_corner_size = 4
+local ninepatch_pixel_border = scale
 local bg = Color(64, 44, 128, 200) 
 
 
@@ -23,15 +24,15 @@ surface.CreateFont("snow_font_green", {
 surface.CreateFont("snow_font_noshadow", {
 	path = "fonts/zfont.txt", 
 	size = 8*scale,
-}) 
+})
 
 local skin = {
 	button_inactive = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
 		y = -y + ninepatch_size
 		
-		if x >= ninepatch_size-2 or y >= ninepatch_size-2 then
+		if x >= ninepatch_size-ninepatch_pixel_border or y >= ninepatch_size-ninepatch_pixel_border then
 			return 72, 68, 64, 255
-		elseif x <= 2 or y <= 2 then
+		elseif x <= ninepatch_pixel_border or y <= ninepatch_pixel_border then
 			return 104, 100, 96, 255
 		end
 		
@@ -41,7 +42,7 @@ local skin = {
 	button_active = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
 		y = -y + ninepatch_size
 		
-		if x >= ninepatch_size-2 or y >= ninepatch_size-2 then
+		if x >= ninepatch_size-ninepatch_pixel_border or y >= ninepatch_size-ninepatch_pixel_border then
 			return 104, 100, 96, 255
 		end
 		
@@ -52,17 +53,17 @@ local skin = {
 		y = -y + ninepatch_size
 		
 		if 
-			(x >= ninepatch_size-2 and y >= ninepatch_size-2) or 
-			(x <= 2 and y <= 2) or
-			(x >= ninepatch_size-2 and y <= 2) or
-			(x <= 2 and y >= ninepatch_size-2)
+			(x >= ninepatch_size-ninepatch_pixel_border and y >= ninepatch_size-ninepatch_pixel_border) or 
+			(x <= ninepatch_pixel_border and y <= ninepatch_pixel_border) or
+			(x >= ninepatch_size-ninepatch_pixel_border and y <= ninepatch_pixel_border) or
+			(x <= ninepatch_pixel_border and y >= ninepatch_size-ninepatch_pixel_border)
 		then 					
 			return 0,0,0,0 
 		end
 		
-		if x >= ninepatch_size-2 or y >= ninepatch_size-2 then
+		if x >= ninepatch_size-ninepatch_pixel_border or y >= ninepatch_size-ninepatch_pixel_border then
 			return 160, 120, 120, 255
-		elseif x <= 2 or y <= 2 then
+		elseif x <= ninepatch_pixel_border or y <= ninepatch_pixel_border then
 			return 192, 144, 144, 255
 		end
 		
@@ -73,15 +74,15 @@ local skin = {
 		y = -y + ninepatch_size
 		
 		if 
-			(x <= 2 and y <= 2) or
-			(x >= ninepatch_size-2 and y <= 2)
+			(x <= ninepatch_pixel_border and y <= ninepatch_pixel_border) or
+			(x >= ninepatch_size-ninepatch_pixel_border and y <= ninepatch_pixel_border)
 		then 					
 			return 0,0,0,0 
 		end
 		
-		if x >= ninepatch_size-2 then
+		if x >= ninepatch_size-ninepatch_pixel_border then
 			return 184, 48, 48, 255
-		elseif x <= 2 or y <= 2 then
+		elseif x <= ninepatch_pixel_border or y <= ninepatch_pixel_border then
 			return 184, 48, 48, 255
 		end
 		
@@ -92,15 +93,15 @@ local skin = {
 		y = -y + ninepatch_size
 		
 		if 
-			(x <= 2 and y <= 2) or
-			(x >= ninepatch_size-2 and y <= 2)
+			(x <= ninepatch_pixel_border and y <= ninepatch_pixel_border) or
+			(x >= ninepatch_size-ninepatch_pixel_border and y <= ninepatch_pixel_border)
 		then 					
 			return 0,0,0,0 
 		end
 		
-		if x >= ninepatch_size-2 then
+		if x >= ninepatch_size-ninepatch_pixel_border then
 			return 136, 0, 0, 255
-		elseif x >= ninepatch_size-2 or y >= ninepatch_size-2 then
+		elseif x >= ninepatch_size-ninepatch_pixel_border or y >= ninepatch_size-ninepatch_pixel_border then
 			return 168, 32, 32, 255
 		end
 		
@@ -110,7 +111,7 @@ local skin = {
 	menu_select = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
 		y = -y + ninepatch_size
 		
-		if x >= ninepatch_size-2 or y >= ninepatch_size-2 or x <= 2 or y <= 2 then
+		if x >= ninepatch_size-ninepatch_pixel_border or y >= ninepatch_size-ninepatch_pixel_border or x <= ninepatch_pixel_border or y <= ninepatch_pixel_border then
 			return 80, 0, 136, 255
 		end
 		
@@ -137,9 +138,9 @@ local skin = {
 	frame = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
 		y = -y + ninepatch_size
 		
-		if x >= ninepatch_size-2 or y >= ninepatch_size-2 then
+		if x >= ninepatch_size-ninepatch_pixel_border or y >= ninepatch_size-ninepatch_pixel_border then
 			return 152, 16, 16, 255
-		elseif x <= 2 or y <= 2 then
+		elseif x <= ninepatch_pixel_border or y <= ninepatch_pixel_border then
 			return 184, 48, 48, 255
 		end
 
@@ -148,10 +149,96 @@ local skin = {
 } 
 
 do
-	local META = {}
-	META.ClassName = "frame"
+	local PANEL = {}
 	
-	function META:Initialize()	
+	PANEL.ClassName = "text"
+	
+	prototype.GetSet(PANEL, "Text")
+	prototype.GetSet(PANEL, "ParseTags", false)
+	prototype.GetSet(PANEL, "TextEditable", false)
+	prototype.GetSet(PANEL, "WrapText", false)
+	
+	function PANEL:Initialize()
+		self.markup = surface.CreateMarkup()
+		
+		self:SetSendMouseInputToParent(true)
+		self:SetColor(0,0,0,0)
+		self:SetRedirectFocus(carrier)
+	end
+	
+	function PANEL:SetText(str)
+		self.Text = str
+		
+		self:SetIgnoreMouse(not self.TextEditable)
+
+		local markup = self.markup
+		
+		markup:SetEditable(self.TextEditable)
+		markup:SetLineWrap(self.WrapText)
+		markup:Clear()
+		markup:AddString(self.Text, self.ParseTags)
+		
+		self:OnDraw() -- hack! this will update markup sizes
+	end
+	
+	function PANEL:OnDraw()
+		local markup = self.markup
+
+		markup:SetMousePosition(self:GetMousePosition():Copy())
+
+		markup.cull_x = self.Parent.Scroll.x
+		markup.cull_y = self.Parent.Scroll.y
+		markup.cull_w = self.Parent.Size.w
+		markup.cull_h = self.Parent.Size.h
+		
+		markup:Draw()
+		
+		self.Size.w = markup.width
+		self.Size.h = markup.height
+		
+		if not input.IsMouseDown("button_1") then
+			if not markup.mouse_released then
+				markup:OnMouseInput("button_1", false)
+				markup.mouse_released = true
+			end
+		end
+	end
+	
+	function PANEL:OnMouseInput(button, press)
+		local markup = self.markup
+
+		markup:OnMouseInput(button, press)
+		
+		if button == "button_1" then
+			self:RequestFocus()
+			self:BringToFront()
+			markup.mouse_released = false
+		end
+	end
+	
+	function PANEL:OnKeyInput(key, press)
+		local markup = self.markup
+
+		if key == "left_shift" or key == "right_shift" then  markup:SetShiftDown(press) return end
+		if key == "left_control" or key == "right_control" then  markup:SetControlDown(press) return end
+	
+		if press then
+			markup:OnKeyInput(key, press)
+		end
+	end
+	
+	function PANEL:OnCharInput(char)
+		self.markup:OnCharInput(char)
+	end	
+	
+	gui2.RegisterPanel(PANEL)
+end
+
+do
+	local PANEL = {}
+	PANEL.ClassName = "frame"
+	
+	function PANEL:Initialize()	
 		self:SetDraggable(true)
 		self:SetResizable(true) 
 		self:SetMargin(Rect(0,10*scale,0,0))  
@@ -166,11 +253,12 @@ do
 			bar:SetColor(Color(120, 120, 160))
 			bar:SetClipping(true)
 								
-				local close = gui2.CreatePanel("base", bar) 			
-				close:SetParseTags(true)  
-				close:SetText("<font=snow_font_noshadow><color=50,50,50>X")
-				close:SetSize(close:GetTextSize()+Vec2(3,3)*scale)
-				close:CenterText()
+				local close = gui2.CreatePanel("base", bar)
+				local label = gui2.CreatePanel("text", close)				
+				label:SetParseTags(true)  
+				label:SetText("<font=snow_font_noshadow><color=50,50,50>X")
+				close:SetSize(label:GetSize()+Vec2(3,3)*scale)
+				label:Center()
 				
 				close:Dock("top_right")
 				
@@ -190,37 +278,35 @@ do
 		self:SetTitle("no title")
 	end
 	
-	function META:SetTitle(str)
+	function PANEL:SetTitle(str)
 		gui2.RemovePanel(self.title)
-		local title = gui2.CreatePanel("base", self.bar)
+		local title = gui2.CreatePanel("text", self.bar)
 		title:SetHeight(self.bar:GetHeight())
 		title:SetParseTags(true)  
 		title:SetText("<font=snow_font><color=200,200,200>"..str)
-		title:CenterTextY()
 		title:SetPosition(Vec2(2*scale,0))
+		title:CenterY()
 		title:SetColor(Color(0,0,0,0))
 		self.title = title
 	end
 	
-	gui2.RegisterPanel(META)   
-end 
+	gui2.RegisterPanel(PANEL)   
+end
 	
 do	
 	local scroll_width = scale*8 
 
-	local META = {}
-	META.ClassName = "list"
+	local PANEL = {}
+	PANEL.ClassName = "list"
 	
-	META.entries = {}
+	PANEL.entries = {}
 	
-	function META:Initialize()				
+	function PANEL:Initialize()				
 		local list = gui2.CreatePanel("base", self)
 		list:SetColor(Color(0,0,0,1))
 		list:SetClipping(true)
 		list:SetScrollable(true)
-		
-		self:SetSendMouseInputToParent(true)
-		
+				
 		do
 			local y_scroll = gui2.CreatePanel("base", self)
 			y_scroll:SetTexture(skin.gradient2)
@@ -332,14 +418,17 @@ do
 		end
 	end
 	
-	function META:OnLayout()
+	function PANEL:OnLayout()
 		local w = 0		
 		local y = 0
 		
 		for k, v in pairs(self.entries) do
 			v:SetPosition(Vec2(0, y))
 			y = y + v:GetHeight() - scale
-			w = math.max(w, v:GetTextSize().w)
+			
+			if v.label then
+				w = math.max(w, v.label:GetSize().w)
+			end
 		end
 		
 		for k,v in ipairs(self.list:GetChildren()) do
@@ -401,14 +490,19 @@ do
 		end
 	end
 	
-	function META:AddEntry(name, on_click)		
+	function PANEL:AddEntry(name, on_click)		
 		local button = gui2.CreatePanel("base", self.list)
 		button:SetSendMouseInputToParent(true)
-		button:SetParseTags(true)
-		button:SetWrapText(false)
-		button:SetText("<font=snow_font_green><color=0,255,0>" .. name)
-		button:SetSize(button:GetTextSize() + Vec2(4,4) * scale)
-		button:CenterTextY()
+		
+		local label = gui2.CreatePanel("text", button)				
+		label:SetSendMouseInputToParent(true)
+		
+		label:SetParseTags(true)
+		label:SetWrapText(false)
+		label:SetText("<font=snow_font_green><color=0,255,0>" .. name)
+		button:SetSize(label:GetSize() + Vec2(4,4) * scale)
+		label:CenterY()
+		button.label = label
 		
 		local last_child = self:GetChildren()[#self:GetChildren()]
 		button:SetPosition(Vec2(0, last_child:GetPosition().y + last_child:GetHeight() - 2*scale))
@@ -433,20 +527,20 @@ do
 		table.insert(self.entries, button)
 	end	
 	
-	gui2.RegisterPanel(META)  
+	gui2.RegisterPanel(PANEL)  
 end
  
 do
 	do
-		local META = {}
-		META.ClassName = "menu"
-		META.sub_menu = NULL
+		local PANEL = {}
+		PANEL.ClassName = "menu"
+		PANEL.sub_menu = NULL
 		
-		function META:Initialize()
+		function PANEL:Initialize()
 			self:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
 		end
 		
-		function META:AddEntry(text, on_click)
+		function PANEL:AddEntry(text, on_click)
 			local entry = gui2.CreatePanel("menu_entry", self)
 			
 			entry:SetText(text)
@@ -455,7 +549,7 @@ do
 			return entry
 		end
 		
-		function META:AddSubMenu(text, on_click)
+		function PANEL:AddSubMenu(text, on_click)
 			local menu = self:AddEntry(text, on_click):CreateSubMenu()
 			
 			self:CallOnRemove(function() gui2.RemovePanel(menu) end)
@@ -464,20 +558,22 @@ do
 			return menu  
 		end
 		
-		function META:AddSeparator()
+		function PANEL:AddSeparator()
 			local panel = gui2.CreatePanel("base", self)
 			panel:SetupNinepatch(skin.button_active, ninepatch_size, ninepatch_corner_size)
 			panel:SetHeight(2*scale)
 			panel:SetIgnoreMouse(true)
 		end
 		
-		function META:OnLayout()
+		function PANEL:OnLayout()
 			local w = 0
 			local y = scale
 			
 			for k, v in ipairs(self:GetChildren()) do
 				v:SetPosition(Vec2(2*scale, y))
-				w = math.max(w, v:GetTextSize().w)
+				if v.label then
+					w = math.max(w, v.label:GetSize().w)
+				end
 				y = y + v:GetSize().h + scale
 			end
 			
@@ -488,23 +584,25 @@ do
 			self:SetSize(Vec2(w + 8*scale, y + scale))
 		end
 		
-		gui2.RegisterPanel(META)
+		gui2.RegisterPanel(PANEL)
 	end
 
 	do
-		local META = {}
+		local PANEL = {}
 		
-		META.ClassName = "menu_entry"
-		META.menu = NULL
+		PANEL.ClassName = "menu_entry"
+		PANEL.menu = NULL
 		
-		function META:Initialize()
-			self:SetParseTags(true) 			
-			self:SetColor(Color(0,0,0,0))			
+		function PANEL:Initialize()
+			self:SetColor(Color(0,0,0,0))
 			self:SetupNinepatch(skin.menu_select, ninepatch_size, ninepatch_corner_size)
 			self:SetPadding(Rect(scale, scale, scale, scale))
+			
+			self.label = gui2.CreatePanel("text", self)
+			self.label:SetParseTags(true) 
 		end
 		
-		function META:OnMouseEnter()
+		function PANEL:OnMouseEnter()
 			self:SetColor(Color(1,1,1,1))
 			
 			-- close all parent menus
@@ -521,26 +619,28 @@ do
 			end
 		end
 		
-		function META:OnMouseExit()
+		function PANEL:OnMouseExit()
 			self:SetColor(Color(1,1,1,0))
 		end
 		
-		function META:SetText(str)
-			self.BaseClass.SetText(self, "<font=snow_font><color=200,200,200>" .. str)
-			self:SetHeight(self:GetTextSize().h + 4*scale)
-			self:CenterTextY()
+		function PANEL:SetText(str)
+			self.label:SetText("<font=snow_font><color=200,200,200>" .. str)
+			self:SetHeight(self.label:GetSize().h + 4*scale)
+			self.label:CenterY()
 		end
 		
-		function META:CreateSubMenu()			
+		function PANEL:CreateSubMenu()			
 		
 			local icon = gui2.CreatePanel("base", self)
 			icon:Dock("right")
 			icon:SetIgnoreMouse(true)
 			icon:SetPadding(Rect(0,0,scale*2,0))
 			icon:SetColor(Color(0,0,0,0))
-			icon:SetParseTags(true) 
-			icon:SetText("<font=snow_font><color=200,200,200>▶")
-			icon:SetSize(icon:GetTextSize())
+			
+			local label = gui2.CreatePanel("text", icon)
+			label:SetParseTags(true) 
+			label:SetText("<font=snow_font><color=200,200,200>▶")
+			icon:SetSize(label:GetSize())
 
 			self.menu = gui2.CreatePanel("menu")
 			self.menu:SetVisible(false)
@@ -548,25 +648,25 @@ do
 			return self.menu
 		end
 				 
-		function META:OnMouseInput(button, press)
+		function PANEL:OnMouseInput(button, press)
 			if button == "button_1" and press then
 				self:OnClick()
 			end
 		end
 		
-		function META:OnClick() gui2.SetActiveMenu() end 
+		function PANEL:OnClick() gui2.SetActiveMenu() end 
 		
-		gui2.RegisterPanel(META)
+		gui2.RegisterPanel(PANEL)
 	end
 end
 
 do	
-	local META = {}
+	local PANEL = {}
 	
-	META.ClassName = "tab"
-	META.tabs = {}
+	PANEL.ClassName = "tab"
+	PANEL.tabs = {}
 	
-	function META:Initialize()
+	function PANEL:Initialize()
 		self:SetSendMouseInputToParent(true)
 		self:SetColor(Color(0,0,0,0))
 	
@@ -581,37 +681,40 @@ do
 		self.tab_bar = tab_bar
 	end
 	
-	function META:AddTab(name)
+	function PANEL:AddTab(name)
 		if self.tabs[name] then
 			gui2.RemovePanel(self.tabs[name].button)
 			gui2.RemovePanel(self.tabs[name].content)
 		end
 	
 		local button = gui2.CreatePanel("base", self.tab_bar)
+		local label = gui2.CreatePanel("text", button)
+		
 		button:SetSendMouseInputToParent(true)
-		button:SetParseTags(true)  
+		label:SetSendMouseInputToParent(true)
+		label:SetParseTags(true)  
 		button:SetSize(Vec2(22,14)*scale)
 		
-		button:SetText("<font=snow_font><color=168,168,224>"..name)
+		label:SetText("<font=snow_font><color=168,168,224>"..name)
 		button:SetupNinepatch(skin.tab_inactive, ninepatch_size, ninepatch_corner_size)
 		button:SetHeight(button:GetHeight() - scale)
-		button:CenterText()
+		label:Center()
 		button.text = name
 		
 		button.OnMouseInput = function(button, key, press)
 			if press and key == "button_1" then
-				button:SetText("<font=snow_font><color=160,160,0>"..button.text)
+				label:SetText("<font=snow_font><color=160,160,0>"..button.text)
 				button:SetupNinepatch(skin.tab_active, ninepatch_size, ninepatch_corner_size)
-				button:CenterText()
+				label:Center()
 				
 				self.content = self.tabs[name].content
 				self.content:SetVisible(true)
 				
 				for i, panel in ipairs(self.tab_bar:GetChildren()) do
 					if button ~= panel then
-						panel:SetText("<font=snow_font><color=168,168,224>"..panel.text)
+						label:SetText("<font=snow_font><color=168,168,224>"..panel.text)
 						panel:SetupNinepatch(skin.tab_inactive, ninepatch_size, ninepatch_corner_size)
-						panel:CenterText()
+						label:Center()
 						self.tabs[panel.text].content:SetVisible(false)
 					end
 				end
@@ -633,7 +736,7 @@ do
 		return content
 	end
 	
-	function META:OnLayout()
+	function PANEL:OnLayout()
 		self.tab_bar:SetWidth(self:GetWidth())
 		self.tab_bar:SetHeight(12*scale)
 
@@ -644,7 +747,172 @@ do
 		end
 	end
 	
-	gui2.RegisterPanel(META)
+	gui2.RegisterPanel(PANEL)
+end
+
+do
+	do -- tree node
+		local PANEL = {}
+
+		PANEL.ClassName = "tree_node"
+		
+		prototype.GetSet(PANEL, "Expand", true)
+
+		function PANEL:Initialize()	
+			self:SetSendMouseInputToParent(true)
+			self:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
+
+			local label = gui2.CreatePanel("text", self)
+			label:SetParseTags(true)
+			self.label = label
+			
+			local exp = gui2.CreatePanel("base", self)
+			exp.label = gui2.CreatePanel("text", exp)
+			exp.label:SetParseTags(true)
+			exp:SetColor(Color(0,0,0,0))
+			exp:SetVisible(false)
+			self.expand = exp
+			
+			local img = gui2.CreatePanel("base", self)
+			img:SetIgnoreMouse(true)
+			img:SetTexture(Texture("textures/silkicons/heart.png"))
+			self.image = img
+			
+			exp.OnMouseInput = function(_, button, press) 
+				if button == "button_1" and press then
+					self:OnExpand(b) 
+				end
+			end
+		end
+		
+		function PANEL:OnExpand()
+			self:SetExpand(not self.Expand)
+		end
+		
+		function PANEL:SetIcon(...)
+			self.image:SetTexture(...)
+		end
+	
+		function PANEL:SetText(...)
+			self.label:SetText(...)
+		end
+
+		function PANEL:OnLayout()
+			self.expand:SetSize(self.expand.label:GetSize())
+			self.expand:SetWidth(6*scale)
+			self.expand:SetPosition(Vec2(self.offset or 0,0))
+			
+			self.image:SetSize(Vec2() + 16)
+			self.image:SetPosition(self.expand:GetPosition() + Vec2(self.expand:GetWidth() + scale*2, 0))
+			
+			self.label:SetPosition(self.image:GetPosition() + Vec2(self.image:GetWidth() + scale*2, 0))
+						
+			self.expand:CenterY()
+			self.image:CenterY()
+			self.label:CenterY()
+		end
+
+		function PANEL:AddNode(str, id)
+			local pnl = self.Parent.AddNode(self.tree, str, id)
+			pnl.offset = self.offset + self.Parent.IndentWidth
+			pnl.node_parent = self
+			
+			self.expand:SetVisible(true)
+			self:SetExpand(true)
+			
+			return pnl
+		end
+		
+		function PANEL:SetExpandInternal(b)
+			self:SetVisible(b)
+			self:SetStackable(b)
+
+			if b and not self.Expand then return end
+			
+			for pos, pnl in pairs(self.tree.CustomList) do
+				if pnl.node_parent == self then
+					pnl:SetExpandInternal(b)
+				end
+			end
+			
+			self.Parent:Layout()
+		end
+		
+		function PANEL:SetExpand(b)
+			
+			for pos, pnl in pairs(self.tree.CustomList) do
+				if pnl.node_parent == self then
+					pnl:SetExpandInternal(b)
+				end
+			end
+			
+			self.Expand = b
+			
+			self.expand.label:SetText("<font=snow_font><color=200,200,200>" .. (b and "-" or "+"))
+		end
+					
+		gui2.RegisterPanel(PANEL)
+	end
+
+	do
+		local PANEL = {}
+
+		PANEL.ClassName = "tree"
+		prototype.GetSet(PANEL, "IndentWidth", scale*4)
+
+		function PANEL:Initialize()
+			self:SetClipping(true)
+			self:SetSendMouseInputToParent(true)
+			self:SetStack(true)
+			self:SetForcedStackSize(Vec2(0, 10*scale + scale*2))
+			
+			self:SetStackRight(false)
+			self:SetSizeStackToWidth(true)
+			self:SetScrollable(true)
+						
+			self.CustomList = {}
+			
+			self:SetColor(Color(0,0,0,1))
+		end
+
+		function PANEL:AddNode(str, id)
+			if id and self.nodes[id] and self.nodes[id]:IsValid() then self.nodes[id]:Remove() end
+			
+			local pnl = gui2.CreatePanel("tree_node", self)
+			pnl:SetText("<font=snow_font><color=200,200,200>" .. str) 
+			pnl.offset = self.IndentWidth
+			pnl.tree = self
+						
+			table.insert(self.CustomList, pnl)
+			
+			if id then
+				self.nodes[id] = pnl 
+			end
+			
+			return pnl
+		end
+
+		function PANEL:RemovePanel(pnl)	
+			for k,v in pairs(self.CustomList) do
+				if v == pnl then
+					table.remove(self.CustomList, k)
+				end
+			end
+
+			::again::	
+			for k,v in pairs(self.CustomList) do
+				if v.node_parent == pnl then
+					self:RemovePanel(v)
+					goto again
+				end
+			end	
+			
+			pnl:Remove()
+			self:RequestLayout()
+		end
+
+		gui2.RegisterPanel(PANEL)		
+	end
 end
 
 local frame = gui2.CreatePanel("frame")
@@ -657,9 +925,60 @@ tab:Dock("fill")
 for i = 1, 10 do
 	local content = tab:AddTab("#" .. i)
 	
-	local panel = gui2.CreatePanel("base", content)
-	panel:SetColor(HSVToColor(math.random()))
-	panel:SetPosition(Vec2():Random(20, 100))
+	if i == 1 then		
+		local icons =
+		{
+			text = "silkicons/text_align_center.png",
+			bone = "silkicons/wrench.png",
+			clip = "silkicons/cut.png",
+			light = "silkicons/lightbulb.png",
+			sprite = "silkicons/layers.png",
+			bone = "silkicons/connect.png",
+			effect = "silkicons/wand.png",
+			model = "silkicons/shape_square.png",
+			animation = "silkicons/eye.png",
+			entity = "silkicons/brick.png",
+			group = "silkicons/world.png",
+			trail = "silkicons/arrow_undo.png",
+			event = "silkicons/clock.png",
+			sunbeams = "silkicons/weather_sun.png",
+			jiggle = "silkicons/chart_line.png",
+			sound = "silkicons/sound.png",
+			command = "silkicons/application_xp_terminal.png",
+			material = "silkicons/paintcan.png",
+			proxy = "silkicons/calculator.png",
+			particles = "silkicons/water.png",
+			woohoo = "silkicons/webcam_delete.png",
+			halo = "silkicons/shading.png",
+			poseparameter = "silkicons/vector.png",
+		}
+
+		local tree = gui2.CreatePanel("tree", content)	
+		tree:Dock("fill")
+		  
+		local data = serializer.ReadFile("luadata", R"data/tree.txt") or {}
+		local done = {}
+		 
+		local function fill(tbl, node)		
+			for key, val in pairs(tbl.children) do
+				local node = node:AddNode(val.self.Name)
+				node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
+				fill(val, node)
+			end  
+			
+		end 
+			 
+		for key, val in pairs(data) do
+			local node = tree:AddNode(val.self.Name)
+			node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
+			fill(val, node)
+		end
+	else
+		
+		local panel = gui2.CreatePanel("base", content)
+		panel:SetColor(HSVToColor(math.random()))
+		panel:SetPosition(Vec2():Random(20, 100))
+	end		
 end
 
 	   
@@ -672,11 +991,12 @@ bar:SetDraggable(true)
 
 local function create_button(text, options)
 	local button = gui2.CreatePanel("base", bar)
+	local label = gui2.CreatePanel("text", button)
 	button:SetClipping(true) 
-	button:SetParseTags(true)  
-	button:SetText("<font=snow_font><color=200,200,200>" .. text)
-	button:SetSize(button:GetTextSize() + Vec2(5,5) * scale)
-	button:CenterText()
+	label:SetParseTags(true)  
+	label:SetText("<font=snow_font><color=200,200,200>" .. text)
+	button:SetSize(label:GetSize() + Vec2(5,5) * scale)
+	label:Center()
 	
 	button:SetupNinepatch(skin.button_inactive, ninepatch_size, ninepatch_corner_size)
 	 

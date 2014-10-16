@@ -1115,7 +1115,7 @@ do -- mouse
 
 		local alpha = 1
 
-		if self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
+		if self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
 
 			-- WHYYYYYYY
 			-- WHYYYYYYY
@@ -1261,103 +1261,6 @@ do -- layout
 			self.layout_me = true
 		end
 	end
-end
-
-do -- text
-	prototype.GetSet(PANEL, "Text")
-	prototype.GetSet(PANEL, "ParseTags", false)
-	prototype.GetSet(PANEL, "TextEditable", false)
-	prototype.GetSet(PANEL, "WrapText", false)
-	
-	function PANEL:SetText(str, tags)
-		self.Text = str
-		self:UpdateTextCarrier()
-	end
-	
-	function PANEL:UpdateTextCarrier()
-		if self.markup_carrier and self.markup_carrier:IsValid() then
-			self.markup_carrier:Remove()
-		end
-
-		if self.Text then				
-			local carrier = gui2.CreatePanel("base", self) 
-			carrier:SetSendMouseInputToParent(true)
-			carrier:SetColor(0,0,0,0)
-			carrier:SetIgnoreMouse(not self.TextEditable)
-			self:SetRedirectFocus(carrier)
-			
-			local markup = surface.CreateMarkup()
-			markup:SetEditable(self.TextEditable)
-			markup:SetLineWrap(self.WrapText)
-			markup:AddString(self.Text, self.ParseTags)
-			
-			function carrier:OnDraw()
-				markup:SetMousePosition(self:GetMousePosition():Copy())
-
-				markup.cull_x = self.Parent.Scroll.x
-				markup.cull_y = self.Parent.Scroll.y
-				markup.cull_w = self.Parent.Size.w
-				markup.cull_h = self.Parent.Size.h
-				
-				markup:Draw()
-				
-				self.Size.w = markup.width
-				self.Size.h = markup.height
-				
-				if not input.IsMouseDown("button_1") then
-					if not markup.mouse_released then
-						markup:OnMouseInput("button_1", false)
-						markup.mouse_released = true
-					end
-				end
-			end
-			
-			function carrier:OnMouseInput(button, press)
-				markup:OnMouseInput(button, press)
-				if button == "button_1" then
-					self:RequestFocus()
-					self:BringToFront()
-					markup.mouse_released = false
-				end
-			end
-			
-			function carrier:OnKeyInput(key, press)
-				if key == "left_shift" or key == "right_shift" then  markup:SetShiftDown(press) return end
-				if key == "left_control" or key == "right_control" then  markup:SetControlDown(press) return end
-			
-				if press then
-					markup:OnKeyInput(key, press)
-				end
-			end
-			
-			function carrier:OnCharInput(char)
-				markup:OnCharInput(char)
-			end
-			
-			carrier.OnMouseEnter = function() end
-			carrier.OnMouseExit = function() end
-			
-			carrier:OnDraw() -- hack! this will update markup sizes
-			
-			carrier.markup = markup
-			self.markup_carrier = carrier
-		end
-	end
-	
-	local function DELEGATE(a, b, def)
-		PANEL[a] = function(self, ...)
-			if self.markup_carrier then
-				return self.markup_carrier[b](self.markup_carrier, ...)
-			end
-			
-			return def
-		end
-	end
-	
-	DELEGATE("GetTextSize", "GetSize", Vec2())
-	DELEGATE("CenterText", "Center")
-	DELEGATE("CenterTextX", "CenterX")
-	DELEGATE("CenterTextY", "CenterY")
 end
 
 do -- stacking
