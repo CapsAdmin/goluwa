@@ -220,7 +220,7 @@ do--label
 			pnl.ShadowBlur
 		)
 		
-		--gui.Draw("rect", Rect(0,0, pnl:GetSize()), Color(255, 0, 0, 50))
+		--gui.Draw("rect", Rect(0,0, pnl:GetSize()), ColorBytes(255, 0, 0, 50))
 	end
 
 	function SKIN:LabelLayout(pnl)

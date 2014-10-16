@@ -385,18 +385,18 @@ do
 	local COLOR_DEFAULT = -1
 
 	syntax.colors = {
-		curses.COLOR_RED,  --Color(255, 255, 255),
-		curses.COLOR_CYAN, --Color(127, 159, 191),
-		COLOR_DEFAULT, --Color(223, 223, 223),
-		curses.COLOR_GREEN, --Color(191, 127, 127),
-		curses.COLOR_GREEN, --Color(127, 191, 127),
-		curses.COLOR_YELLOW, --Color(191, 191, 159),
-		COLOR_DEFAULT, --Color(159, 159, 159),
-		COLOR_DEFAULT, --Color(159, 159, 159),
-		COLOR_DEFAULT, --Color(159, 159, 159),
-		COLOR_DEFAULT, --Color(159, 159, 159),
-		curses.COLOR_YELLOW, --Color(191, 159, 127),
-		curses.COLOR_RED, --Color(191, 127, 127),
+		curses.COLOR_RED,  --ColorBytes(255, 255, 255),
+		curses.COLOR_CYAN, --ColorBytes(127, 159, 191),
+		COLOR_DEFAULT, --ColorBytes(223, 223, 223),
+		curses.COLOR_GREEN, --ColorBytes(191, 127, 127),
+		curses.COLOR_GREEN, --ColorBytes(127, 191, 127),
+		curses.COLOR_YELLOW, --ColorBytes(191, 191, 159),
+		COLOR_DEFAULT, --ColorBytes(159, 159, 159),
+		COLOR_DEFAULT, --ColorBytes(159, 159, 159),
+		COLOR_DEFAULT, --ColorBytes(159, 159, 159),
+		COLOR_DEFAULT, --ColorBytes(159, 159, 159),
+		curses.COLOR_YELLOW, --ColorBytes(191, 159, 127),
+		curses.COLOR_RED, --ColorBytes(191, 127, 127),
 	}
 
 	syntax.keywords = {

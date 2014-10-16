@@ -128,7 +128,6 @@ META.tags.color =
 	end,
 }
 
-
 META.tags.blackhole = {
 	arguments = {1},
 	

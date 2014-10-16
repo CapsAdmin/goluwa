@@ -5,17 +5,17 @@ do
 	local reader = require("luajit-lang-toolkit.reader")
 	 
 	local colors = {
-		default = Color(255, 255, 255),
-		keyword = Color(127, 159, 191),
-		identifier = Color(223, 223, 223),
-		string = Color(191, 127, 127),
-		number = Color(127, 191, 127),
-		operator = Color(191, 191, 159),
-		ccomment = Color(159, 159, 159),
-		cmulticomment = Color(159, 159, 159),
+		default = ColorBytes(255, 255, 255),
+		keyword = ColorBytes(127, 159, 191),
+		identifier = ColorBytes(223, 223, 223),
+		string = ColorBytes(191, 127, 127),
+		number = ColorBytes(127, 191, 127),
+		operator = ColorBytes(191, 191, 159),
+		ccomment = ColorBytes(159, 159, 159),
+		cmulticomment = ColorBytes(159, 159, 159),
 		
-		comment = Color(159, 159, 159),
-		multicomment = Color(159, 159, 159),
+		comment = ColorBytes(159, 159, 159),
+		multicomment = ColorBytes(159, 159, 159),
 	}
 
 	local translate = {

@@ -55,19 +55,19 @@ end
 	surface.CreateFont(big_font, {path = "Arial Black", size = 30, read_speed = 100})
 
 	self:AddFont(big_font)
-	self:AddColor(Color(0,255,0,255))
+	self:AddColor(ColorBytes(0,255,0,255))
 	self:AddString("This font is huge and green for some reason!\n")
 	self:AddString("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\n")
-	self:AddColor(Color(255, 255, 255, 255))
+	self:AddColor(ColorBytes(255, 255, 255, 255))
 	self:AddFont("default")
 
 	local big_font = "markup_big2"
 	surface.CreateFont(big_font, {path = "Roboto", size = 20, read_speed = 100})
 
 	self:AddFont(big_font)
-	self:AddColor(Color(255,0,255,255))
+	self:AddColor(ColorBytes(255,0,255,255))
 	self:AddString("This one is slightly smaller bug with a different font\n")
-	self:AddColor(Color(255, 255, 255, 255))
+	self:AddColor(ColorBytes(255, 255, 255, 255))
 	self:AddFont("default")
 
 	--self:AddString("rotated grin<rotate=90>:D</rotate> \n", true)
