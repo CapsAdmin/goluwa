@@ -267,6 +267,7 @@ do
 		markup:AddString(self.Text, self.ParseTags)
 		
 		self:OnDraw() -- hack! this will update markup sizes
+		self:OnDraw() -- hack! this will update markup sizes
 	end
 	
 	function PANEL:OnDraw()
@@ -329,6 +330,7 @@ do
 		
 	prototype.GetSet(PANEL, "Mode", "normal")
 	prototype.GetSet(PANEL, "ResetOnMouseExit", true)
+	prototype.GetSet(PANEL, "Highlight", false)
 
 	function PANEL:Initialize()
 		self:SetStyle("button_inactive")
@@ -384,7 +386,7 @@ do
 	end
 	
 	function PANEL:OnMouseEnter()
-		self:Animate("Color", {Color(1,1,1,1)*1.25, function() return self:IsMouseOver() end, "from"}, duration, "", pow)
+		self:Animate("DrawColor", {Color(1,1,1,1)*0.3, function() return self.Highlight or self:IsMouseOver() end, "from"}, duration, "", 0.25)
 	end
 	
 	function PANEL:OnMouseExit()
@@ -535,30 +537,23 @@ do
 			local y_scroll = gui2.CreatePanel("base", self)
 			y_scroll:SetTexture(skin.gradient2)
 
-			local up = gui2.CreatePanel("base", y_scroll)				
-			up:SetStyle("button_rounded_inactive")
+			local up = gui2.CreatePanel("text_button", y_scroll)				
+			local down = gui2.CreatePanel("text_button", y_scroll)
 
-			local y_scroll_bar = gui2.CreatePanel("base", y_scroll)
+			local y_scroll_bar = gui2.CreatePanel("button", y_scroll)
 			y_scroll_bar:SetDraggable(true)	
-			y_scroll_bar:SetStyle("button_inactive")
-
-			local down = gui2.CreatePanel("base", y_scroll)
-			down:SetStyle("button_rounded_inactive")
 					
 			y_scroll_bar.OnPositionChanged = function(self, pos)
-				local frac = math.clamp(pos.y / self.Parent:GetHeight(), 0, 1)
+				if list.scrolling then return end
+				local frac = math.clamp((pos.y - scroll_width) / (list:GetSizeOfChildren().h - scroll_width), 0, 1)
+				
 				list:SetScrollFraction(Vec2(list:GetScrollFraction().x, frac))
 		 
 				pos.x = self.Parent:GetWidth() - self:GetWidth()
-				pos.y = math.clamp(pos.y, self:GetHeight(), self.Parent:GetHeight() - (self:GetHeight() * 2))
+				pos.y = math.clamp(pos.y, scroll_width, self.Parent:GetHeight() - self:GetHeight() - scroll_width)
 			end
 			
-			list.OnScroll = function(self, frac)
-				y_scroll_bar:SetPosition(Vec2(0,frac.y * self.Parent:GetHeight()))
-			end
-			
-			up.OnMouseInput = function(self, button, press)
-				if button ~= "button_1" or not press then return end
+			up.OnPress = function(self, button, press)
 				if #list:GetChildren() == 0 then return end
 				
 				local h = list:GetChildren()[1]:GetHeight()
@@ -568,8 +563,7 @@ do
 				list:SetScroll(pos)
 			end
 			
-			down.OnMouseInput = function(self, button, press)
-				if button ~= "button_1" or not press then return end
+			down.OnPress = function(self, button, press)
 				if #list:GetChildren() == 0 then return end
 				
 				local h = list:GetChildren()[1]:GetHeight()
@@ -582,7 +576,7 @@ do
 			self.list = list
 			self.down = down
 			self.up = up
-			self.y_scroll_bar = y_scroll_bar
+			self.y_scroll_bar = y_scroll_bar 
 			self.y_scroll = y_scroll
 		end
 		
@@ -590,30 +584,23 @@ do
 			local x_scroll = gui2.CreatePanel("base", self)
 			x_scroll:SetTexture(skin.gradient3)
 
-			local left = gui2.CreatePanel("base", x_scroll)				
-			left:SetStyle("button_rounded_inactive")
+			local left = gui2.CreatePanel("text_button", x_scroll)				
+			local right = gui2.CreatePanel("text_button", x_scroll)
 
-			local x_scroll_bar = gui2.CreatePanel("base", x_scroll)
-			x_scroll_bar:SetDraggable(true)	
-			x_scroll_bar:SetStyle("button_inactive")
-
-			local right = gui2.CreatePanel("base", x_scroll)
-			right:SetStyle("button_rounded_inactive")
-					
+			local x_scroll_bar = gui2.CreatePanel("button", x_scroll)
+			x_scroll_bar:SetDraggable(true)
+			
 			x_scroll_bar.OnPositionChanged = function(self, pos)
-				local frac = math.clamp(pos.x / self.Parent:GetWidth(), 0, 1)
+				if list.scrolling then return end
+				local frac = math.clamp((pos.x - scroll_width) / (list:GetSizeOfChildren().w - scroll_width), 0, 1)
+				
 				list:SetScrollFraction(Vec2(frac, list:GetScrollFraction().y))
 		 
-				pos.x = math.clamp(pos.x, self:GetWidth(), self.Parent:GetWidth() - (self:GetWidth() * 2))
+				pos.x = math.clamp(pos.x, scroll_width, x_scroll:GetWidth() - self:GetWidth() - scroll_width)
 				pos.y = self.Parent:GetHeight() - self:GetHeight()
 			end
-			
-			list.OnScroll = function(self, frac)
-				x_scroll_bar:SetPosition(Vec2(frac.x * self.Parent:GetWidth(), 0))
-			end
-			
-			left.OnMouseInput = function(self, button, press)
-				if button ~= "button_1" or not press then return end
+					
+			left.OnPress = function(self, button, press)
 				if #list:GetChildren() == 0 then return end
 				
 				local w = list:GetChildren()[1]:GetWidth()
@@ -623,8 +610,7 @@ do
 				list:SetScroll(pos)
 			end
 			
-			right.OnMouseInput = function(self, button, press)
-				if button ~= "button_1" or not press then return end
+			right.OnPress = function(self, button, press)
 				if #list:GetChildren() == 0 then return end
 				
 				local w = list:GetChildren()[1]:GetWidth()
@@ -639,6 +625,13 @@ do
 			self.left = left
 			self.x_scroll_bar = x_scroll_bar
 			self.x_scroll = x_scroll
+		end
+		
+		list.OnScroll = function(list, frac)
+			list.scrolling = true
+			self.y_scroll_bar:SetPosition(Vec2(0, math.clamp(scroll_width + frac.y * (self.y_scroll:GetHeight() - scroll_width*2), 0, self:GetHeight()-self.y_scroll_bar:GetHeight()-scroll_width*2)))
+			self.x_scroll_bar:SetPosition(Vec2(math.clamp(scroll_width + frac.x * (self.x_scroll:GetWidth() - scroll_width*2), 0, self:GetWidth()-self.x_scroll_bar:GetWidth()-scroll_width*2), 0))
+			list.scrolling = false
 		end
 	end
 	
@@ -661,31 +654,17 @@ do
 	
 		self.list:SetSize(self:GetSize()*1)
 		
-		if self.y_scroll:IsVisible() then
-			self.list:SetWidth(self:GetWidth())
-		else
-			self.list:SetWidth(self:GetWidth() - scroll_width)
-		end
-		
-		if self.x_scroll:IsVisible() then
-			self.list:SetHeight(self:GetHeight())
-		else
-			self.list:SetHeight(self:GetHeight() - scroll_width)
-		end
-		
 		do
-			self.y_scroll:SetSize(Vec2(scroll_width, self:GetHeight()))
+			self.y_scroll:SetSize(Vec2(scroll_width, self:GetHeight() - scroll_width))
 			self.y_scroll:SetPosition(Vec2(self:GetWidth() - scroll_width, 0))
 			
 			self.down:SetSize(Vec2(scroll_width, scroll_width))
-			self.down:SetPosition(Vec2(0, self:GetHeight() - self.down:GetHeight()))
+			self.down:SetPosition(Vec2(0, self:GetHeight() - self.down:GetHeight() - scroll_width))
 			
-			self.y_scroll_bar:SetSize(Vec2(scroll_width, scroll_width))
+			self.y_scroll_bar:SetSize(Vec2(scroll_width, math.max(-(self.list:GetSizeOfChildren().h - self.y_scroll:GetHeight()) + self.y_scroll:GetHeight() - scroll_width, scroll_width)))
 			
 			self.up:SetSize(Vec2(scroll_width, scroll_width))
-		
-			--self.y_scroll_bar:SetHeight(math.max((self.list:GetHeight() / self.list:GetSizeOfChildren().h) * self.list:GetHeight(), scroll_width))
-		
+				
 			if self.list:GetHeight() > self.list:GetSizeOfChildren().h then
 				self.y_scroll:SetVisible(false)
 			else
@@ -694,24 +673,36 @@ do
 		end
 		
 		do
-			self.x_scroll:SetSize(Vec2(self:GetWidth(), scroll_width))
+			self.x_scroll:SetSize(Vec2(self:GetWidth() - scroll_width, scroll_width))
 			self.x_scroll:SetPosition(Vec2(0, self:GetHeight() - scroll_width))
 			
 			self.right:SetSize(Vec2(scroll_width, scroll_width))
-			self.right:SetPosition(Vec2(self:GetWidth() - self.right:GetWidth(), 0))
+			self.right:SetPosition(Vec2(self:GetWidth() - self.right:GetWidth() - scroll_width, 0))
 			
-			self.x_scroll_bar:SetSize(Vec2(scroll_width, scroll_width))
+			self.x_scroll_bar:SetSize(Vec2(math.max(-(self.list:GetSizeOfChildren().w - self.x_scroll:GetWidth()) + self.x_scroll:GetWidth() - scroll_width, scroll_width), scroll_width))
 			
 			self.left:SetSize(Vec2(scroll_width, scroll_width))
-		
-		--	self.x_scroll_bar:SetWidth(math.max((self.list:GetWidth() / self.list:GetSizeOfChildren().w) * self.list:GetWidth(), scroll_width))
-		
+				
 			if self.list:GetWidth() > self.list:GetSizeOfChildren().w then
 				self.x_scroll:SetVisible(false)
 			else
 				self.x_scroll:SetVisible(true)
 			end
 		end
+		
+		
+		if self.y_scroll:IsVisible() then
+			self.list:SetWidth(self:GetWidth() - scroll_width)
+		else
+			self.list:SetWidth(self:GetWidth())
+		end
+		
+		if self.x_scroll:IsVisible() then
+			self.list:SetHeight(self:GetHeight() - scroll_width)
+		else
+			self.list:SetHeight(self:GetHeight())
+		end
+		
 	end
 	
 	function PANEL:AddEntry(name, on_click)		
@@ -792,7 +783,7 @@ do
 		
 		function PANEL:OnLayout()
 			local w = 0
-			local y = scale
+			local y = scale*2
 			
 			for k, v in ipairs(self:GetChildren()) do
 				v:SetPosition(Vec2(2*scale, y))
@@ -842,8 +833,7 @@ do
 				self.menu:SetVisible(true)
 				self.menu:Layout(true)
 				self.menu:SetPosition(self:GetWorldPosition() + Vec2(self:GetWidth() + scale*2, 0))
-				self.menu:Animate("DrawPositionOffset", {Vec2(-self.menu.Size.w/2), Vec2(0)}, 0.1, "+", nil, true)
-				--self.menu:Animate("DrawAngleOffset", {Ang3(0,0,0)}, 0.5, "*", nil, Ang3(0, 10, 0))
+				self.menu:Animate("DrawScaleOffset", {Vec2(0,1), Vec2(1,1)}, 0.25, "*", 0.25, true)
 			end
 		end
 		
@@ -854,6 +844,7 @@ do
 		function PANEL:SetText(str)
 			self.label:SetText(str)
 			self:SetHeight(self.label:GetSize().h + 4*scale)
+			self.label:SetPosition(Vec2(2*scale,0))
 			self.label:CenterY()
 		end
 		
@@ -964,6 +955,7 @@ do
 		content:SetStyle("frame")
 		content:SetSendMouseInputToParent(true)
 		content:SetVisible(false)
+		content:SetColor(Color(0,0,0,0))
 		self.content = content
 		
 		self:Layout(true)
@@ -1003,18 +995,16 @@ do
 			label:SetTextColor(ColorBytes(200, 200, 200))
 			label:SetFont("snow_font")
 			label:SetMargin(Rect()+2*scale)
-			label:SetColor(Color(0,0,0,0))
+			label:SetColor(Color(1,1,1,-0.001))
 			label:SetStyleTranslation("button_active", "button_rounded_active")
 			label:SetStyleTranslation("button_inactive", "button_rounded_inactive")
 			label:SetStyle("button_rounded_inactive")
-			label.OnMouseEnter = function()
-				label:Animate("Color", {Color(1,1,1,1), function() return self:IsMouseOver() end, "from"}, duration, "", pow)
-			end
-			label.OnStateChanged = function()
+			label:SetSendMouseInputToParent(true)
+			label.OnPress = function()
 				self.label:SetColor(Color(1,1,1,1))
 				for k, v in ipairs(self.tree:GetChildren()) do
 					if v ~= self then
-						v.label:SetColor(Color(1,1,1,0))
+						v.label:SetColor(Color(1,1,1,-0.001))
 					end
 				end
 			end
@@ -1039,10 +1029,12 @@ do
 		end
 		
 		function PANEL:OnMouseEnter(...)
+			self.label:SetHighlight(true)
 			self.label:OnMouseEnter(...)
 		end
 		
 		function PANEL:OnMouseExit(...)
+			self.label:SetHighlight(false)
 			self.label:OnMouseExit(...)
 		end
 		
@@ -1127,9 +1119,10 @@ do
 		local PANEL = {}
 
 		PANEL.ClassName = "tree"
-		prototype.GetSet(PANEL, "IndentWidth", 16)
+		prototype.GetSet(PANEL, "IndentWidth", 16)  
 
 		function PANEL:Initialize()
+			self:SetColor(Color(1,1,1,0))
 			self:SetClipping(true)
 			self:SetSendMouseInputToParent(true)
 			self:SetStack(true)
@@ -1138,10 +1131,8 @@ do
 			self:SetStackRight(false)
 			self:SetSizeStackToWidth(true)
 			self:SetScrollable(true)
-						
+
 			self.CustomList = {}
-			
-			self:SetColor(Color(1,1,1,0))
 		end
 
 		function PANEL:AddNode(str, id)
@@ -1221,7 +1212,7 @@ do
 		poseparameter = "silkicons/vector.png",
 	}
 
-	local tree = gui2.CreatePanel("tree", content)	
+	local tree = gui2.CreatePanel("tree", content)
 	tree:Dock("fill")
 	  
 	local data = serializer.ReadFile("luadata", R"data/tree.txt") or {}
@@ -1240,6 +1231,14 @@ end
 
 do
 	local content = tab:AddTab("huh")
+	local list = gui2.CreatePanel("list", content)
+	
+	list:Dock("fill")
+	
+	for k,v in pairs(vfs.Find("/")) do
+		if k > 30 then break end
+		list:AddEntry(v)
+	end
 end
 	 
 	   
@@ -1281,7 +1280,8 @@ local function create_button(text, options)
 		menu:Layout(true)
 		
 		menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*scale), options)
-		menu:Animate("DrawPositionOffset", {Vec2(0,-menu.Size.h/2), Vec2(0, 0)}, 0.1, "+", nil, true)
+		menu:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)
+
 
 		menu:CallOnRemove(function() button:SetState(false) end)
 	end
