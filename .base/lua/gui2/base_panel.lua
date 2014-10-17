@@ -55,7 +55,7 @@ do
 	
 	function PANEL:IsVisible()
 		if self.visible == nil then return true end -- ?????
-		return self.visible
+		return self.Visible
 	end
 	
 	function PANEL:SetVisible(bool)
@@ -380,6 +380,8 @@ do -- scrolling
 		
 		self.Scroll = vec:GetClamped(Vec2(0), size - self.Size)
 		self.ScrollFraction = self.Scroll / (size + self.Scroll - self.Size) * 2
+		
+		self:OnScroll(self.ScrollFraction)
 	end
 	
 	function PANEL:SetScrollFraction(frac)
@@ -612,8 +614,10 @@ end
 do -- animations
 	-- these are useful for animations
 	prototype.GetSet(PANEL, "DrawSizeOffset", Vec2(0, 0))
+	prototype.GetSet(PANEL, "DrawScaleOffset", Vec2(1, 1))
 	prototype.GetSet(PANEL, "DrawPositionOffset", Vec2(0, 0))
 	prototype.GetSet(PANEL, "DrawAngleOffset", Ang3(0,0,0))
+	prototype.GetSet(PANEL, "DrawColor", Color(0,0,0,0))
 	
 	PANEL.animations = {}
 
@@ -624,7 +628,7 @@ do -- animations
 			if type(values[i] ) == "number" then
 				tbl[i] = math.lerp(alpha, values[i], values[i + 1])
 			else
-				tbl[i] = values[i] :GetLerped(alpha, values[i + 1])
+				tbl[i] = values[i]:GetLerped(alpha, values[i + 1])
 			end
 		end
 
@@ -636,17 +640,25 @@ do -- animations
 	end
 
 	function PANEL:CalcAnimations()
-		render.Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
+		if not self.DrawPositionOffset:IsZero() then
+			render.Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
+		end
+		
+		if not self.DrawScaleOffset:IsZero() then
+			render.Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y, 1)
+		end
+		
+		if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
+			local w = (self.Size.w + self.DrawSizeOffset.w)/2
+			local h = (self.Size.h + self.DrawSizeOffset.h)/2
 
-		local w = (self.Size.w + self.DrawSizeOffset.w)/2
-		local h = (self.Size.h + self.DrawSizeOffset.h)/2
-
-		render.Translate(w, h, 0)
-		render.Rotate(self.DrawAngleOffset.p, 0, 0, 1)
-		render.Rotate(self.DrawAngleOffset.y, 0, 1, 0)
-		render.Rotate(self.DrawAngleOffset.r, 1, 0, 0)
-		render.Translate(-w, -h, 0)
-			
+			render.Translate(w, h, 0)
+			render.Rotate(self.DrawAngleOffset.p, 0, 0, 1)
+			render.Rotate(self.DrawAngleOffset.y, 0, 1, 0)
+			render.Rotate(self.DrawAngleOffset.r, 1, 0, 0)
+			render.Translate(-w, -h, 0)
+		end
+		
 		for key, animation in pairs(self.animations) do
 
 			local pause = false
@@ -1379,7 +1391,7 @@ end
 
 do --- ninepatch
 	prototype.GetSet(PANEL, "NinePatch", false)
-	prototype.GetSet(PANEL, "NinePatchSize", 4)
+	prototype.GetSet(PANEL, "NinePatchSize", 32)
 	prototype.GetSet(PANEL, "NinePatchCornerSize", 4)
 	prototype.GetSet(PANEL, "NinePatchUVOffset", Vec2(0, 0))
 	
@@ -1420,11 +1432,14 @@ do -- events
 	function PANEL:OnDraw()
 		if self.Color.a == 0 then return end
 		
-		surface.SetColor(self.Color:Unpack())
+		local r,g,b,a = self.Color:Unpack()
+		local mr,mg,mb,ma = self.DrawColor:Unpack()
+		
+		surface.SetColor(r+mr,g+mg,b+mb,a+ma)
 		
 		surface.SetTexture(self.Texture)
-
-		if self.NinePatch then
+		
+		if self.NinePatch then			
 			surface.DrawNinePatch(
 				0, 0, 
 				self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h,
@@ -1432,7 +1447,7 @@ do -- events
 				self.NinePatchCornerSize, 
 				self.NinePatchUVOffset.x, self.NinePatchUVOffset.y
 			)
-		else
+		else				
 			surface.DrawRect(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
 		end
 
