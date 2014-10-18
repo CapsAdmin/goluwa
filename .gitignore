@@ -1,2 +1,3 @@
 .Sync*
 .userdata/
+*.!sync
