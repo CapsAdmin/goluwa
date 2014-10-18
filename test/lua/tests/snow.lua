@@ -238,7 +238,7 @@ do
 	prototype.GetSet(PANEL, "Text")
 	prototype.GetSet(PANEL, "ParseTags", false)
 	prototype.GetSet(PANEL, "Editable", false)
-	prototype.GetSet(PANEL, "Wrap", false)
+	prototype.GetSet(PANEL, "TextWrap", false)
 	
 	prototype.GetSet(PANEL, "Font", "default")
 	prototype.GetSet(PANEL, "TextColor", Color(1,1,1,1))
@@ -259,7 +259,7 @@ do
 		local markup = self.markup
 		
 		markup:SetEditable(self.Editable)
-		markup:SetLineWrap(self.Wrap)
+		markup:SetLineWrap(self.TextWrap)
 		
 		markup:Clear()
 		markup:AddFont(self.Font)
@@ -423,8 +423,12 @@ do -- text button
 	prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
 	prototype.GetSetDelegate(PANEL, "Font", "default", "label")
 	prototype.GetSetDelegate(PANEL, "TextColor", Color(1,1,1), "label")
+	prototype.GetSetDelegate(PANEL, "TextWrap", false, "label")
 	
 	prototype.Delegate(PANEL, "label", "CenterText", "Center")
+	prototype.Delegate(PANEL, "label", "CenterTextY", "CenterY")
+	prototype.Delegate(PANEL, "label", "CenterTextX", "CenterX")
+	prototype.Delegate(PANEL, "label", "GetTextSize", "GetSize")
 	
 	function PANEL:Initialize()
 		self.BaseClass.Initialize(self)
@@ -519,20 +523,195 @@ do
 	gui2.RegisterPanel(PANEL)   
 end
 	
+do 
+	local PANEL = {}
+	
+	PANEL.ClassName = "list"
+	
+	PANEL.lists = {}
+	PANEL.last_div = NULL
+	
+	function PANEL:Initialize()	
+		self:SetColor(Color(0,0,0,0))
+		--self:SetClipping(true)
+		self:SetupSorted("")
+	end
+	
+	function PANEL:OnLayout()
+		for i, list in ipairs(self.lists) do			
+			local y = 0
+
+			for k, v in ipairs(list.entries) do
+				local button = v.button
+				button:SetPosition(Vec2(0, y))
+				button:SetWidth(self:GetWidth())
+				y = y + button:GetHeight() - scale
+			end
+		end
+		
+		self:SizeColumnsToFit()
+
+		if #self.lists > 0 then
+			self.lists[#self.lists].div:SetDividerPosition(self:GetWidth())
+		end
+	end
+	
+	function PANEL:SizeColumnsToFit()
+		for i, list in ipairs(self.lists) do			
+			list.div:SetDividerPosition(list.button:GetTextSize().w + list.button.icon:GetWidth() * 2)
+		end
+	end
+	
+	function PANEL:SetupSorted(...)
+		self:RemoveChildren()
+		self.lists = {}
+		
+		for i = 1, select("#", ...) do
+			local v = select(i, ...)
+			local name, func
+			
+			if type(v) == "table" then
+				 name, func = next(v)
+			elseif type(v) == "string" then
+				name = v
+				func = table.sort
+			end
+			
+			local content = gui2.CreatePanel("base")
+			
+			local list = gui2.CreatePanel("base", content)
+			list.entries = {}
+			list:SetColor(Color(0,0,0,1))
+			list:SetClipping(true)
+			list:Dock("fill")
+			list.content = content
+			
+			local button = gui2.CreatePanel("text_button", content)
+			button:SetMargin(Rect()+2*scale)
+			button:SetFont("snow_font")
+			button:SetTextColor(ColorBytes(200,200,200)) 
+			button:SetText(name)
+			button:SizeToText()
+			list.button = button
+			
+			local icon = gui2.CreatePanel("text", button)
+			icon:SetFont("snow_font") 
+			icon:SetTextColor(ColorBytes(200,200,200)) 
+			icon:SetText("▼")
+			icon:Dock("right")
+			button.icon = icon
+						
+			local div = gui2.CreatePanel("horizontal_divider", self)
+			div:SetColor(Color(0,0,0,1))
+			div:SetDividerHeight(20)
+			div:Dock("fill")
+			div:SetLeft(content)
+			list.div = div
+			
+			button.OnPress = function()
+				
+				if button.sorted then
+					icon:SetText("▼")
+					table.sort(list.entries, function(a, b)
+						return a.text < b.text
+					end)
+				else
+					icon:SetText("▲")
+					table.sort(list.entries, function(a, b)
+						return a.text > b.text
+					end)
+				end
+								
+				for _, other_list in pairs(self.lists) do
+					if other_list ~= list then
+						local temp = {}
+						for i,v in ipairs(list.entries) do
+							temp[i] = other_list.entries[v.i]
+							temp[i].i = i
+						end
+						other_list.entries = temp
+					end
+				end
+				
+				for i,v in ipairs(list.entries) do
+					v.i = i
+				end
+				
+				self:Layout()
+				
+				button.sorted = not button.sorted
+			end
+			
+			content.OnLayout = function()
+				button:SetSize(Vec2(content:GetWidth(), 20))
+				list:SetPosition(Vec2(0, 20))
+				list:SetSize(content:GetSize() - Vec2(0, -10))
+				button:CenterTextY()
+			end
+			
+			if self.last_div:IsValid() then 
+				self.last_div:SetRight(div)
+			end
+			self.last_div = div
+			
+			table.insert(self.lists, list)
+		end
+	end
+	
+	function PANEL:AddEntry(...)			
+		for i, list in ipairs(self.lists) do
+			local text = tostring(select(i, ...) or "nil")
+			local button = gui2.CreatePanel("text_button", list)
+			
+			button:SetSendMouseInputToParent(true)					
+			button:SetFont("snow_font_green")
+			button:SetTextColor(Color(0,1,0))
+			button:SetTextWrap(false)
+			button:SetText(text)
+			button:SetMargin(Rect()+scale)
+			button:SizeToText()
+			button:CenterTextY()
+			
+			local last_child = list:GetChildren()[#list:GetChildren()]
+			button:SetPosition(Vec2(0, last_child:GetPosition().y + last_child:GetHeight() - 2*scale))
+				
+			button:SetColor(Color(0,0,0,0))
+			button:SetStyleTranslation("button_active", "menu_select")
+			button:SetStyleTranslation("button_inactive", "menu_select")
+			button:SetStyle("menu_select")
+
+			button.OnPress = function()
+				for i, other_list in ipairs(self.lists) do
+					for k,v in ipairs(other_list:GetChildren()) do
+						if v.entry.i ~= button.entry.i then
+							v:SetColor(Color(0,0,0,0))
+						else
+							v:SetStyle("menu_select")
+							v:SetColor(Color(1,1,1,1))
+						end
+					end
+				end
+			end
+			
+			local entry = {button = button, text = text, i = #list.entries + 1}
+			button.entry = entry			
+			table.insert(list.entries, entry)
+		end
+	end
+	
+	gui2.RegisterPanel(PANEL)
+end
+	
 do	
 	local scroll_width = scale*8 
 
 	local PANEL = {}
-	PANEL.ClassName = "list"
+	PANEL.ClassName = "scroll"
 	
-	PANEL.entries = {}
+	PANEL.panel = NULL
 	
-	function PANEL:Initialize()				
-		local list = gui2.CreatePanel("base", self)
-		list:SetColor(Color(0,0,0,1))
-		list:SetClipping(true)
-		list:SetScrollable(true)
-				
+	function PANEL:Initialize()
+		self:SetColor(Color(0,0,0,0))
 		do
 			local y_scroll = gui2.CreatePanel("base", self)
 			y_scroll:SetTexture(skin.gradient2)
@@ -543,37 +722,42 @@ do
 			local y_scroll_bar = gui2.CreatePanel("button", y_scroll)
 			y_scroll_bar:SetDraggable(true)	
 					
-			y_scroll_bar.OnPositionChanged = function(self, pos)
-				if list.scrolling then return end
-				local frac = math.clamp((pos.y - scroll_width) / (list:GetSizeOfChildren().h - scroll_width), 0, 1)
+			y_scroll_bar.OnPositionChanged = function(_, pos)
+				if not self.panel:IsValid() then return end
 				
-				list:SetScrollFraction(Vec2(list:GetScrollFraction().x, frac))
+				if self.panel.scrolling then return end
+				local frac = math.clamp((pos.y - scroll_width) / (self.panel:GetSizeOfChildren().h - scroll_width), 0, 1)
+				
+				self.panel:SetScrollFraction(Vec2(self.panel:GetScrollFraction().x, frac))
 		 
-				pos.x = self.Parent:GetWidth() - self:GetWidth()
-				pos.y = math.clamp(pos.y, scroll_width, self.Parent:GetHeight() - self:GetHeight() - scroll_width)
+				pos.x = y_scroll_bar.Parent:GetWidth() - y_scroll_bar:GetWidth()
+				pos.y = math.clamp(pos.y, scroll_width, y_scroll_bar.Parent:GetHeight() - y_scroll_bar:GetHeight() - scroll_width)
 			end
 			
-			up.OnPress = function(self, button, press)
-				if #list:GetChildren() == 0 then return end
+			up.OnPress = function(_, button, press)
+				if not self.panel:IsValid() then return end
+
+				if #self.panel:GetChildren() == 0 then return end
 				
-				local h = list:GetChildren()[1]:GetHeight()
+				local h = self.panel:GetChildren()[1]:GetHeight()
 				
-				local pos = list:GetScroll()
+				local pos = self.panel:GetScroll()
 				pos.y = pos.y - h
-				list:SetScroll(pos)
+				self.panel:SetScroll(pos)
 			end
 			
-			down.OnPress = function(self, button, press)
-				if #list:GetChildren() == 0 then return end
+			down.OnPress = function(_, button, press)
+				if not self.panel:IsValid() then return end
 				
-				local h = list:GetChildren()[1]:GetHeight()
+				if #self.panel:GetChildren() == 0 then return end
 				
-				local pos = list:GetScroll()
+				local h = self.panel:GetChildren()[1]:GetHeight()
+				
+				local pos = self.panel:GetScroll()
 				pos.y = pos.y + h
-				list:SetScroll(pos)
+				self.panel:SetScroll(pos)
 			end
 			
-			self.list = list
 			self.down = down
 			self.up = up
 			self.y_scroll_bar = y_scroll_bar 
@@ -590,69 +774,65 @@ do
 			local x_scroll_bar = gui2.CreatePanel("button", x_scroll)
 			x_scroll_bar:SetDraggable(true)
 			
-			x_scroll_bar.OnPositionChanged = function(self, pos)
-				if list.scrolling then return end
-				local frac = math.clamp((pos.x - scroll_width) / (list:GetSizeOfChildren().w - scroll_width), 0, 1)
+			x_scroll_bar.OnPositionChanged = function(_, pos)
+				if not self.panel:IsValid() then return end
 				
-				list:SetScrollFraction(Vec2(frac, list:GetScrollFraction().y))
+				if self.panel.scrolling then return end
+				local frac = math.clamp((pos.x - scroll_width) / (self.panel:GetSizeOfChildren().w - scroll_width), 0, 1)
+				
+				self.panel:SetScrollFraction(Vec2(frac, self.panel:GetScrollFraction().y))
 		 
-				pos.x = math.clamp(pos.x, scroll_width, x_scroll:GetWidth() - self:GetWidth() - scroll_width)
-				pos.y = self.Parent:GetHeight() - self:GetHeight()
+				pos.x = math.clamp(pos.x, scroll_width, x_scroll:GetWidth() - x_scroll_bar:GetWidth() - scroll_width)
+				pos.y = x_scroll_bar.Parent:GetHeight() - x_scroll_bar:GetHeight()
 			end
 					
-			left.OnPress = function(self, button, press)
-				if #list:GetChildren() == 0 then return end
+			left.OnPress = function(_, button, press)
+				if not self.panel:IsValid() then return end
 				
-				local w = list:GetChildren()[1]:GetWidth()
+				if #self.panel:GetChildren() == 0 then return end
 				
-				local pos = list:GetScroll()
+				local w = self.panel:GetChildren()[1]:GetWidth()
+				
+				local pos = self.panel:GetScroll()
 				pos.x = pos.x - w
-				list:SetScroll(pos)
+				self.panel:SetScroll(pos)
 			end
 			
-			right.OnPress = function(self, button, press)
-				if #list:GetChildren() == 0 then return end
+			right.OnPress = function(_, button, press)
+				if not self.panel:IsValid() then return end
 				
-				local w = list:GetChildren()[1]:GetWidth()
+				if #self.panel:GetChildren() == 0 then return end
 				
-				local pos = list:GetScroll()
+				local w = self.panel:GetChildren()[1]:GetWidth()
+				
+				local pos = self.panel:GetScroll()
 				pos.x = pos.x + w
-				list:SetScroll(pos)
+				self.panel:SetScroll(pos)
 			end
 			
-			self.list = list
 			self.right = right
 			self.left = left
 			self.x_scroll_bar = x_scroll_bar
 			self.x_scroll = x_scroll
 		end
+	end
+	
+	function PANEL:SetPanel(panel)
+		panel:SetParent(self)
 		
-		list.OnScroll = function(list, frac)
-			list.scrolling = true
+		self.panel = panel
+		panel.OnScroll = function(panel, frac)
+			panel.scrolling = true
 			self.y_scroll_bar:SetPosition(Vec2(0, math.clamp(scroll_width + frac.y * (self.y_scroll:GetHeight() - scroll_width*2), 0, self:GetHeight()-self.y_scroll_bar:GetHeight()-scroll_width*2)))
 			self.x_scroll_bar:SetPosition(Vec2(math.clamp(scroll_width + frac.x * (self.x_scroll:GetWidth() - scroll_width*2), 0, self:GetWidth()-self.x_scroll_bar:GetWidth()-scroll_width*2), 0))
-			list.scrolling = false
+			panel.scrolling = false
 		end
 	end
 	
 	function PANEL:OnLayout()
-		local w = 0		
-		local y = 0
+		if not self.panel:IsValid() then return end
 		
-		for k, v in pairs(self.entries) do
-			v:SetPosition(Vec2(0, y))
-			y = y + v:GetHeight() - scale
-			
-			if v.label then
-				w = math.max(w, v.label:GetSize().w)
-			end
-		end
-		
-		for k,v in ipairs(self.list:GetChildren()) do
-			v:SetWidth(w)
-		end
-	
-		self.list:SetSize(self:GetSize()*1)
+		self.panel:SetSize(self:GetSize():Copy())
 		
 		do
 			self.y_scroll:SetSize(Vec2(scroll_width, self:GetHeight() - scroll_width))
@@ -661,11 +841,11 @@ do
 			self.down:SetSize(Vec2(scroll_width, scroll_width))
 			self.down:SetPosition(Vec2(0, self:GetHeight() - self.down:GetHeight() - scroll_width))
 			
-			self.y_scroll_bar:SetSize(Vec2(scroll_width, math.max(-(self.list:GetSizeOfChildren().h - self.y_scroll:GetHeight()) + self.y_scroll:GetHeight() - scroll_width, scroll_width)))
+			self.y_scroll_bar:SetSize(Vec2(scroll_width, math.max(-(self.panel:GetSizeOfChildren().h - self.y_scroll:GetHeight()) + self.y_scroll:GetHeight() - scroll_width, scroll_width)))
 			
 			self.up:SetSize(Vec2(scroll_width, scroll_width))
 				
-			if self.list:GetHeight() > self.list:GetSizeOfChildren().h then
+			if self.panel:GetHeight() > self.panel:GetSizeOfChildren().h then
 				self.y_scroll:SetVisible(false)
 			else
 				self.y_scroll:SetVisible(true)
@@ -679,11 +859,11 @@ do
 			self.right:SetSize(Vec2(scroll_width, scroll_width))
 			self.right:SetPosition(Vec2(self:GetWidth() - self.right:GetWidth() - scroll_width, 0))
 			
-			self.x_scroll_bar:SetSize(Vec2(math.max(-(self.list:GetSizeOfChildren().w - self.x_scroll:GetWidth()) + self.x_scroll:GetWidth() - scroll_width, scroll_width), scroll_width))
+			self.x_scroll_bar:SetSize(Vec2(math.max(-(self.panel:GetSizeOfChildren().w - self.x_scroll:GetWidth()) + self.x_scroll:GetWidth() - scroll_width, scroll_width), scroll_width))
 			
 			self.left:SetSize(Vec2(scroll_width, scroll_width))
 				
-			if self.list:GetWidth() > self.list:GetSizeOfChildren().w then
+			if self.panel:GetWidth() > self.panel:GetSizeOfChildren().w then
 				self.x_scroll:SetVisible(false)
 			else
 				self.x_scroll:SetVisible(true)
@@ -692,57 +872,19 @@ do
 		
 		
 		if self.y_scroll:IsVisible() then
-			self.list:SetWidth(self:GetWidth() - scroll_width)
+			self.panel:SetWidth(self:GetWidth() - scroll_width)
 		else
-			self.list:SetWidth(self:GetWidth())
+			self.panel:SetWidth(self:GetWidth())
 		end
 		
 		if self.x_scroll:IsVisible() then
-			self.list:SetHeight(self:GetHeight() - scroll_width)
+			self.panel:SetHeight(self:GetHeight() - scroll_width)
 		else
-			self.list:SetHeight(self:GetHeight())
+			self.panel:SetHeight(self:GetHeight())
 		end
 		
 	end
-	
-	function PANEL:AddEntry(name, on_click)		
-		local button = gui2.CreatePanel("base", self.list)
-		button:SetSendMouseInputToParent(true)
 		
-		local label = gui2.CreatePanel("text", button)				
-		label:SetSendMouseInputToParent(true)
-		
-		label:SetFont("snow_font_green")
-		label:SetTextColor(Color(0,1,0))
-		label:SetWrap(false)
-		label:SetText(name)
-		button:SetSize(label:GetSize() + Vec2(4,4) * scale)
-		label:CenterY()
-		button.label = label
-		
-		local last_child = self:GetChildren()[#self:GetChildren()]
-		button:SetPosition(Vec2(0, last_child:GetPosition().y + last_child:GetHeight() - 2*scale))
-			
-		button:SetColor(Color(0,0,0,0))
-		button:SetStyle("menu_select")
-
-		button.OnMouseInput = function(_, key, press)
-			if key == "button_1" then
-				if press then
-					button:SetColor(Color(1,1,1,1))
-					for k,v in ipairs(self.list:GetChildren()) do
-						if v ~= button then
-							v:SetColor(Color(0,0,0,0))
-						end
-					end
-					if on_click then on_click(button) end
-				end
-			end
-		end
-		
-		table.insert(self.entries, button)
-	end	
-	
 	gui2.RegisterPanel(PANEL)  
 end
  
@@ -1175,69 +1317,150 @@ do
 	end
 end
 
-local frame = gui2.CreatePanel("frame")
-frame:SetPosition(Vec2()+200)
-frame:SetSize(Vec2()+200)
-
-local tab = gui2.CreatePanel("tab", frame)
-tab:Dock("fill")
-
-do
-	local content = tab:AddTab("tree")
+do 
+	local PANEL = {}
 	
-	local icons =
-	{
-		text = "silkicons/text_align_center.png",
-		bone = "silkicons/wrench.png",
-		clip = "silkicons/cut.png",
-		light = "silkicons/lightbulb.png",
-		sprite = "silkicons/layers.png",
-		bone = "silkicons/connect.png",
-		effect = "silkicons/wand.png",
-		model = "silkicons/shape_square.png",
-		animation = "silkicons/eye.png",
-		entity = "silkicons/brick.png",
-		group = "silkicons/world.png",
-		trail = "silkicons/arrow_undo.png",
-		event = "silkicons/clock.png",
-		sunbeams = "silkicons/weather_sun.png",
-		jiggle = "silkicons/chart_line.png",
-		sound = "silkicons/sound.png",
-		command = "silkicons/application_xp_terminal.png",
-		material = "silkicons/paintcan.png",
-		proxy = "silkicons/calculator.png",
-		particles = "silkicons/water.png",
-		woohoo = "silkicons/webcam_delete.png",
-		halo = "silkicons/shading.png",
-		poseparameter = "silkicons/vector.png",
-	}
-
-	local tree = gui2.CreatePanel("tree", content)
-	tree:Dock("fill")
-	  
-	local data = serializer.ReadFile("luadata", R"data/tree.txt") or {}
-	local done = {}
-	 
-	local function fill(tbl, node)		
-		for key, val in pairs(tbl) do
-			local node = node:AddNode(val.self.Name)
-			node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
-			fill(val.children, node)
-		end  
-	end 
+	PANEL.ClassName = "horizontal_divider"
 	
-	fill(data, tree)
+	prototype.GetSet(PANEL, "DividerHeight", 0)
+	prototype.GetSet(PANEL, "DividerWidth", scale*4)
+	
+	function PANEL:Initialize()
+		self:SetColor(Color(0,0,0,0))
+		local divider = gui2.CreatePanel("button", self)
+		divider:SetPosition(Vec2(self:GetWidth() - self.DividerWidth/2, 0))
+		divider:SetCursor("sizewe")
+		divider:SetDraggable(true)
+		divider.OnPositionChanged = function(_, pos)
+			pos.x = math.clamp(pos.x, 0, self:GetWidth() - self.DividerWidth)
+			pos.y = 0
+			self:Layout()
+		end
+		self.divider = divider
+	end
+	
+	function PANEL:OnLayout()
+		self.divider:SetSize(Vec2(self.DividerWidth, self.DividerHeight == 0 and self:GetHeight() or self.DividerHeight))
+		
+		if self.left then
+			self.left:SetPosition(Vec2(0, 0))
+			self.left:SetSize(Vec2(self.divider:GetPosition().x, self:GetHeight()))
+		end
+		
+		if self.right then
+			self.right:SetPosition(Vec2(self.divider:GetPosition().x + self.DividerWidth, 0))
+			self.right:SetSize(Vec2(self:GetWidth() - self.divider:GetPosition().x - self.DividerWidth,  self:GetHeight()))
+		end
+	end
+	
+	function PANEL:SetLeft(pnl)
+		pnl:SetParent(self)
+		self.left = pnl
+		self:Layout()
+		return pnl
+	end
+	
+	function PANEL:SetRight(pnl)
+		pnl:SetParent(self)
+		self.right = pnl
+		self:Layout()
+		return pnl
+	end
+	
+	function PANEL:SetDividerPosition(num)
+		self.divider:SetPosition(Vec2(num, 0))
+	end
+	
+	function PANEL:GetDividerPosition()
+		return self.divider:GetPosition().x
+	end
+	
+	gui2.RegisterPanel(PANEL)
 end
 
-do
-	local content = tab:AddTab("huh")
-	local list = gui2.CreatePanel("list", content)
+do -- testing
+
+	local frame = gui2.CreatePanel("frame")
+	frame:SetPosition(Vec2()+200)
+	frame:SetSize(Vec2()+500)
+
+	local tab = gui2.CreatePanel("tab", frame)
+	tab:Dock("fill")
+
+	do
+		local content = tab:AddTab("tree")
+		
+		local icons =
+		{
+			text = "silkicons/text_align_center.png",
+			bone = "silkicons/wrench.png",
+			clip = "silkicons/cut.png",
+			light = "silkicons/lightbulb.png",
+			sprite = "silkicons/layers.png",
+			bone = "silkicons/connect.png",
+			effect = "silkicons/wand.png",
+			model = "silkicons/shape_square.png",
+			animation = "silkicons/eye.png",
+			entity = "silkicons/brick.png",
+			group = "silkicons/world.png",
+			trail = "silkicons/arrow_undo.png",
+			event = "silkicons/clock.png",
+			sunbeams = "silkicons/weather_sun.png",
+			jiggle = "silkicons/chart_line.png",
+			sound = "silkicons/sound.png",
+			command = "silkicons/application_xp_terminal.png",
+			material = "silkicons/paintcan.png",
+			proxy = "silkicons/calculator.png",
+			particles = "silkicons/water.png",
+			woohoo = "silkicons/webcam_delete.png",
+			halo = "silkicons/shading.png",
+			poseparameter = "silkicons/vector.png",
+		}
+
+		local scroll = gui2.CreatePanel("scroll", content)
+		local tree = gui2.CreatePanel("tree")
+		scroll:SetPanel(tree)
+		scroll:Dock("fill")
+		
+		local data = serializer.ReadFile("luadata", R"data/tree.txt") or {}
+		local done = {}
+		 
+		local function fill(tbl, node)		
+			for key, val in pairs(tbl) do
+				local node = node:AddNode(val.self.Name)
+				node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
+				fill(val.children, node)
+			end  
+		end 
+		
+		fill(data, tree)
+	end
 	
-	list:Dock("fill")
-	
-	for k,v in pairs(vfs.Find("/")) do
-		if k > 30 then break end
-		list:AddEntry(v)
+	do
+		local content = tab:AddTab("list")
+		local scroll = gui2.CreatePanel("scroll", content)
+		local list = gui2.CreatePanel("list")
+		list:SetupSorted("name", "date modified", "type", "size")
+		scroll:SetPanel(list)		
+		scroll:Dock("fill")
+		
+		for k,v in pairs(vfs.Find("lua/")) do
+			if k > 10 then break end
+			local file = vfs.Open("lua/"..v)
+			
+			list:AddEntry(v, os.date("%m/%d/%Y %H:%M", vfs.GetLastModified("lua/"..v) or 0), vfs.IsFile("lua/"..v) and "file" or "folder", file and utility.FormatFileSize(file:GetSize()) or "0")
+		end
+	end
+
+	do
+		local content = tab:AddTab("dividers")
+		local div = gui2.CreatePanel("horizontal_divider", content)
+		div:Dock("fill")
+		div:SetDividerPosition(400)
+
+		local huh = div:SetLeft(gui2.CreatePanel("button"))
+		
+		local div = div:SetRight(gui2.CreatePanel("horizontal_divider"))
 	end
 end
 	 
