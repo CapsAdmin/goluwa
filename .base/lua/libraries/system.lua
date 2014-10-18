@@ -320,7 +320,31 @@ do -- cursor
 			no = 32648,
 			hand = 32649,
 			appstarting = 32650,
-			help = 32651,
+			help = 32651,			
+			contexthelp = 30977, -- context sensitive help
+			magnify = 30978, -- print preview zoom
+			smallarrows = 30979, -- splitter
+			hsplitbar = 30980, -- splitter
+			vsplitbar = 30981, -- splitter
+			nodropcrsr = 30982, -- no drop cursor
+			tracknwse = 30983, -- tracker
+			tracknesw = 30984, -- tracker
+			trackns = 30985, -- tracker
+			trackwe = 30986, -- tracker
+			track4way = 30987, -- tracker
+			move4way = 30988, -- resize bar (server only)
+			mouse_pan_nw = 30998, -- pan east
+			mouse_pan_n = 30999, -- pan northeast
+			mouse_pan_ne = 31000, -- pan north
+			mouse_pan_w = 31001, -- pan northwest
+			mouse_pan_hv = 31002, -- pan both axis
+			mouse_pan_e = 31003, -- pan west
+			mouse_pan_sw = 31004, -- pan south-west
+			mouse_pan_s = 31005, -- pan south
+			mouse_pan_se = 31006, -- pan south-east
+			mouse_pan_horz = 31007, -- pan x-axis
+			mouse_pan_vert = 31008, -- pan y-axis
+			
 		}
 		
 		local current
