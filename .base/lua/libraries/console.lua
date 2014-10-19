@@ -305,6 +305,7 @@ do -- commands
 	
 	console.run_lua_environment = {
 		copy = system.SetClipboard,
+		gl = require("lj-opengl"),
 	}
 	
 	function console.SetLuaEnvironmentVariable(key, var)
