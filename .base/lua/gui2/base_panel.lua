@@ -18,6 +18,7 @@ prototype.GetSet(PANEL, "Padding", Rect(0, 0, 0, 0))
 prototype.GetSet(PANEL, "Margin", Rect(1, 1, 1, 1))
 prototype.GetSet(PANEL, "ObeyMargin", true)
 prototype.GetSet(PANEL, "BringToFrontOnClick", false)
+prototype.GetSet(PANEL, "LayoutParentOnLayout", false)
 
 function PANEL:__tostring()
 	return ("panel:%s[%p][%s %s %s %s][%s]"):format(self.ClassName, self, self.Position.x, self.Position.y, self.Size.w, self.Size.h, self.layout_count)
@@ -279,6 +280,20 @@ do -- orientation
 			table.sort(parent:GetChildren(), sorter)
 		end
 	end
+	
+	function PANEL:SetX(x)
+		self.Position.x = x
+	end
+	function PANEL:GetX()
+		return self.Position.x
+	end
+	
+	function PANEL:SetY(y)
+		self.Position.y = y
+	end
+	function PANEL:GetY()
+		return self.Position.y
+	end
 
 	function PANEL:SetWidth(w)
 		self.Size.w = w
@@ -295,6 +310,12 @@ do -- orientation
 	function PANEL:GetHeight()
 		return self.Size.h
 	end
+	
+	PANEL.SetW = PANEL.SetWidth
+	PANEL.GetW = PANEL.GetWidth
+	
+	PANEL.SetH = PANEL.SetHeight
+	PANEL.GetH = PANEL.GetHeight
 end
 
 do -- cached rendering
@@ -1274,14 +1295,18 @@ do -- layout
 	
 	function PANEL:Layout(now)
 		
+		if self.LayoutParentOnLayout and self:HasParent() then
+			self.Parent:Layout(now)
+		end
+		
 		self:MarkCacheDirty()
 	
-		if now or self.layout_me == "init" then			
+		if now then			
 			if self.in_layout then return end
 			self.in_layout = true
 				
 				for i, v in ipairs(self:GetChildren()) do
-					v:Layout(true)
+					v:Layout()
 				end
 				
 				self.layout_count = (self.layout_count or 0) + 1
