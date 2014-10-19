@@ -5,9 +5,13 @@
 
 local gui2 = _G.gui2 or {}
 
+gui2.unroll_draw = false
 gui2.hovering_panel = gui2.hovering_panel or NULL
 gui2.focus_panel = gui2.focus_panel or NULL
---gui2.panels = gui2.panels or {}
+
+if gui2.unroll_draw then
+	gui2.panels = {}
+end
 
 function gui2.CreatePanel(name, parent)		
 	local self = prototype.CreateDerivedObject("panel2", name)
@@ -17,8 +21,10 @@ function gui2.CreatePanel(name, parent)
 	self:SetParent(parent or gui2.world)
 	self:Initialize()
 	
-	--table.insert(gui2.panels, self)
-	--self.i = #gui2.panels
+	if gui2.unroll_draw then
+		table.insert(gui2.panels, self)
+		self.i = #gui2.panels
+	end
 	
 	-- this will make calls to layout always layout until next frame
 	self.layout_me = "init"
@@ -122,34 +128,37 @@ do -- events
 		end
 		
 		gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePos()
-
-		gui2.world:Draw()
+			
+		if gui2.unroll_draw then	
+			if not gui2.unrolled_draw then
+				local str = {"local panels = gui2.panels"}
+				
+				local function add_children_to_list(parent, str, level)
+					table.insert(str, ("%sif panels[%i].Visible then"):format(("\t"):rep(level), parent.i))
+						table.insert(str, ("%spanels[%i]:PreDraw()"):format(("\t"):rep(level+1), parent.i))
+						for i, child in ipairs(parent:GetChildren()) do
+							level = level + 1
+							add_children_to_list(child, str, level) 
+							level = level - 1
+						end
+						table.insert(str, ("%spanels[%i]:PostDraw()"):format(("\t"):rep(level+1), parent.i))
+					table.insert(str, ("%send"):format(("\t"):rep(level)))
+				end
+			
+				add_children_to_list(gui2.world, str, 0)
+				str = table.concat(str, "\n")
+				vfs.Write("gui2_draw.lua", str)
+				gui2.unrolled_draw = loadstring(str, "gui2_unrolled_draw")
+			end
+			
+			gui2.unrolled_draw()
+		else
+			gui2.world:Draw()
+		end
+		
 		if gui2.threedee then 
 			surface.End3D()
 		end
-		
-		do return end
-		
-		if not gui2.unrolled_draw then
-			local str = {"local panels = gui2.panels"}
-			
-			local function add_children_to_list(parent, str, level)
-				table.insert(str, ("%spanels[%i]:PreDraw()"):format((" "):rep(level), parent.i))
-				for i, child in ipairs(parent:GetChildren()) do
-					level = level + 1
-					add_children_to_list(child, str, level) 
-					level = level - 1
-				end
-				table.insert(str, ("%spanels[%i]:PostDraw()"):format((" "):rep(level), parent.i))
-			end
-		
-			add_children_to_list(gui2.world, str, 0)
-			str = table.concat(str, "\n")
-			--print(str)			
-			gui2.unrolled_draw = loadstring(str, "gui2_unrolled_draw")
-		end
-		
-		gui2.unrolled_draw()
 	end
 end
 
