@@ -61,12 +61,7 @@ function prototype.AddParentingTemplate(META)
 		return true
 	end
 		
-	local sort = function(a, b)
-		if a and b then
-			return a.DrawOrder < b.DrawOrder
-		end
-	end
-		function META:HasParent()
+	function META:HasParent()
 		return self:GetParent() and self:GetParent():IsValid()
 	end
 
@@ -87,8 +82,9 @@ function prototype.AddParentingTemplate(META)
 		for i, obj in ipairs(self.Children) do
 			if obj == var then
 			
-				obj.Parent = NULL
 				obj:OnUnParent(self)
+				
+				obj.Parent = NULL
 				
 				table.remove(self.Children, i)
 				
@@ -110,12 +106,14 @@ function prototype.AddParentingTemplate(META)
 	function META:RemoveChildren()
 		for key, obj in pairs(self.Children) do
 			
-			obj.Parent = NULL
 			obj:OnUnParent(self)
 			
 			if obj.Remove then
 				obj:Remove()
 			end
+			
+			obj.Parent = NULL
+			
 			self.Children[key] = nil
 		end
 	end
