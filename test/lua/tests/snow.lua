@@ -528,43 +528,74 @@ do
 	
 	PANEL.ClassName = "list"
 	
-	PANEL.lists = {}
+	PANEL.columns = {}
 	PANEL.last_div = NULL
+	PANEL.list = NULL
 	
 	function PANEL:Initialize()	
 		self:SetColor(Color(0,0,0,0))
-		--self:SetClipping(true)
+		
+		local top = gui2.CreatePanel("base", self)
+		top:SetLayoutParentOnLayout(true)
+		self.top = top
+		
+			
+		local list = gui2.CreatePanel("base", self)
+		list:SetColor(Color(0,0,0,1))
+		self.list = list
+		
 		self:SetupSorted("")
 	end
 	
 	function PANEL:OnLayout()
-		for i, list in ipairs(self.lists) do			
-			local y = 0
+		self.top:SetWidth(self:GetWidth())
+		self.top:SetHeight(20)
+		self.list:SetPosition(Vec2(0, 20))
+		self.list:SetWidth(self:GetWidth())
+		local y = 0
 
-			for k, v in ipairs(list.entries) do
-				local button = v.button
-				button:SetPosition(Vec2(0, y))
-				button:SetWidth(self:GetWidth())
-				y = y + button:GetHeight() - scale
+		for _, entry in ipairs(self.entries) do
+			entry:SetPosition(Vec2(0, y))
+			entry:SetWidth(self:GetWidth())
+			y = y + entry:GetHeight() - scale
+			
+			
+			local x = 0
+			for i, label in ipairs(entry.labels) do
+				local w = self.columns[i].div.left:GetWidth() + self.columns[i].div:GetDividerWidth()
+				
+				label:SetWidth(w)
+				label:SetX(x)
+				label:SetHeight(entry:GetHeight())
+				label:CenterTextY()
+				
+				if self.columns[i].div.left then
+					x = x + w
+				end
 			end
 		end
 		
-		self:SizeColumnsToFit()
+		self.list:SetHeight(y)
+		
+--		self:SizeColumnsToFit()
 
-		if #self.lists > 0 then
-			self.lists[#self.lists].div:SetDividerPosition(self:GetWidth())
+		if #self.columns > 0 then
+			self.columns[#self.columns].div:SetDividerPosition(self:GetWidth())
 		end
 	end
 	
 	function PANEL:SizeColumnsToFit()
-		for i, list in ipairs(self.lists) do			
-			list.div:SetDividerPosition(list.button:GetTextSize().w + list.button.icon:GetWidth() * 2)
+		for i, column in ipairs(self.columns) do			
+			column.div:SetDividerPosition(column:GetTextSize().w + column.icon:GetWidth() * 2)
 		end
 	end
 	
 	function PANEL:SetupSorted(...)
-		self:RemoveChildren()
-		self.lists = {}
+		self.list:RemoveChildren()
+		self.top:RemoveChildren()				
+		
+		self.columns = {}
+		self.entries = {}
 		
 		for i = 1, select("#", ...) do
 			local v = select(i, ...)
@@ -576,127 +607,107 @@ do
 				name = v
 				func = table.sort
 			end
+						
+			local column = gui2.CreatePanel("text_button")
+			column:SetMargin(Rect()+2*scale)
+			column:SetFont("snow_font")
+			column:SetTextColor(ColorBytes(200,200,200)) 
+			column:SetText(name)
+			column:SizeToText()
 			
-			local content = gui2.CreatePanel("base")
-			
-			local list = gui2.CreatePanel("base", content)
-			list.entries = {}
-			list:SetColor(Color(0,0,0,1))
-			list:SetClipping(true)
-			list:Dock("fill")
-			list.content = content
-			
-			local button = gui2.CreatePanel("text_button", content)
-			button:SetMargin(Rect()+2*scale)
-			button:SetFont("snow_font")
-			button:SetTextColor(ColorBytes(200,200,200)) 
-			button:SetText(name)
-			button:SizeToText()
-			list.button = button
-			
-			local icon = gui2.CreatePanel("text", button)
+			local icon = gui2.CreatePanel("text", column)
 			icon:SetFont("snow_font") 
 			icon:SetTextColor(ColorBytes(200,200,200)) 
 			icon:SetText("▼")
 			icon:Dock("right")
-			button.icon = icon
+			column.icon = icon
 						
-			local div = gui2.CreatePanel("horizontal_divider", self)
+			local div = gui2.CreatePanel("horizontal_divider", self.top)
 			div:SetColor(Color(0,0,0,1))
-			div:SetDividerHeight(20)
 			div:Dock("fill")
-			div:SetLeft(content)
-			list.div = div
+			div:SetLeft(column)
+			div:SetLayoutParentOnLayout(true)
+			column.div = div
 			
-			button.OnPress = function()
+			self.columns[i] = column
+			
+			column.OnPress = function()
 				
-				if button.sorted then
+				if column.sorted then
 					icon:SetText("▼")
-					table.sort(list.entries, function(a, b)
-						return a.text < b.text
+					table.sort(self.entries, function(a, b)
+						return a.labels[i].text < b.labels[i].text
 					end)
 				else
 					icon:SetText("▲")
-					table.sort(list.entries, function(a, b)
-						return a.text > b.text
+					table.sort(self.entries, function(a, b)
+						return a.labels[i].text > b.labels[i].text
 					end)
-				end
-								
-				for _, other_list in pairs(self.lists) do
-					if other_list ~= list then
-						local temp = {}
-						for i,v in ipairs(list.entries) do
-							temp[i] = other_list.entries[v.i]
-							temp[i].i = i
-						end
-						other_list.entries = temp
-					end
-				end
-				
-				for i,v in ipairs(list.entries) do
-					v.i = i
 				end
 				
 				self:Layout()
 				
-				button.sorted = not button.sorted
+				column.sorted = not column.sorted
 			end
 			
-			content.OnLayout = function()
-				button:SetSize(Vec2(content:GetWidth(), 20))
-				list:SetPosition(Vec2(0, 20))
-				list:SetSize(content:GetSize() - Vec2(0, -10))
-				button:CenterTextY()
+			column.OnLayout = function()
+				column:SetSize(Vec2(column:GetWidth(), 20))
+				column:CenterTextY()
 			end
 			
 			if self.last_div:IsValid() then 
 				self.last_div:SetRight(div)
 			end
 			self.last_div = div
-			
-			table.insert(self.lists, list)
 		end
 	end
 	
-	function PANEL:AddEntry(...)			
-		for i, list in ipairs(self.lists) do
+	function PANEL:AddEntry(...)						
+		local entry = gui2.CreatePanel("button", self.list) 
+		
+		entry.labels = {}
+					
+		for i = 1, select("#", ...) do
 			local text = tostring(select(i, ...) or "nil")
-			local button = gui2.CreatePanel("text_button", list)
 			
-			button:SetSendMouseInputToParent(true)					
-			button:SetFont("snow_font_green")
-			button:SetTextColor(Color(0,1,0))
-			button:SetTextWrap(false)
-			button:SetText(text)
-			button:SetMargin(Rect()+scale)
-			button:SizeToText()
-			button:CenterTextY()
+			local label = gui2.CreatePanel("text_button", entry)
+			label:SetFont("snow_font_green")
+			label:SetTextColor(Color(0,1,0))
+			label:SetTextWrap(false)
+			label:SetText(text)
+			label:SizeToText()
+			label.text = text
+			label:SetClipping(true)
+			label:SetColor(Color(0,0,0,0))
+			label:SetIgnoreMouse(true)
 			
-			local last_child = list:GetChildren()[#list:GetChildren()]
-			button:SetPosition(Vec2(0, last_child:GetPosition().y + last_child:GetHeight() - 2*scale))
-				
-			button:SetColor(Color(0,0,0,0))
-			button:SetStyleTranslation("button_active", "menu_select")
-			button:SetStyleTranslation("button_inactive", "menu_select")
-			button:SetStyle("menu_select")
+			entry.labels[i] = label
+		end
 
-			button.OnPress = function()
-				for i, other_list in ipairs(self.lists) do
-					for k,v in ipairs(other_list:GetChildren()) do
-						if v.entry.i ~= button.entry.i then
-							v:SetColor(Color(0,0,0,0))
-						else
-							v:SetStyle("menu_select")
-							v:SetColor(Color(1,1,1,1))
-						end
-					end
+		local last_child = self.list:GetChildren()[#self.list:GetChildren()]
+		
+		entry:SetSendMouseInputToParent(true)
+		entry:SetPosition(Vec2(0, last_child:GetPosition().y + last_child:GetHeight() - 2*scale))
+		entry:SetColor(Color(0,0,0,0))
+		entry:SetStyleTranslation("button_active", "menu_select")
+		entry:SetStyleTranslation("button_inactive", "menu_select")
+		entry:SetStyle("menu_select")
+		entry:SetHeight(entry.labels[1]:GetHeight() + 2*scale)
+
+		entry.OnPress = function()
+			for k, other_entry in ipairs(self.entries) do
+				if other_entry ~= entry then
+					other_entry:SetColor(Color(0,0,0,0))
+				else
+					entry:SetStyle("menu_select")
+					entry:SetColor(Color(1,1,1,1))
 				end
 			end
-			
-			local entry = {button = button, text = text, i = #list.entries + 1}
-			button.entry = entry			
-			table.insert(list.entries, entry)
 		end
+		
+		entry.i = #self.entries + 1
+		
+		table.insert(self.entries, entry)
 	end
 	
 	gui2.RegisterPanel(PANEL)
@@ -832,7 +843,7 @@ do
 	function PANEL:OnLayout()
 		if not self.panel:IsValid() then return end
 		
-		self.panel:SetSize(self:GetSize():Copy())
+		self.panel:SetSize(self.panel:GetSizeOfChildren())
 		
 		do
 			self.y_scroll:SetSize(Vec2(scroll_width, self:GetHeight() - scroll_width))
@@ -1328,7 +1339,7 @@ do
 	function PANEL:Initialize()
 		self:SetColor(Color(0,0,0,0))
 		local divider = gui2.CreatePanel("button", self)
-		divider:SetPosition(Vec2(self:GetWidth() - self.DividerWidth/2, 0))
+		divider:SetX(self:GetWidth() - self.DividerWidth/2)
 		divider:SetCursor("sizewe")
 		divider:SetDraggable(true)
 		divider.OnPositionChanged = function(_, pos)
@@ -1445,7 +1456,6 @@ do -- testing
 		scroll:Dock("fill")
 		
 		for k,v in pairs(vfs.Find("lua/")) do
-			if k > 10 then break end
 			local file = vfs.Open("lua/"..v)
 			
 			list:AddEntry(v, os.date("%m/%d/%Y %H:%M", vfs.GetLastModified("lua/"..v) or 0), vfs.IsFile("lua/"..v) and "file" or "folder", file and utility.FormatFileSize(file:GetSize()) or "0")
@@ -1689,3 +1699,7 @@ event.CreateTimer("zsnow", 0.01, function()
 		p:SetColor(Color(1,1,1, math.randomf(0.5, 0.8)))
 	end
 end) 
+
+menu.Close()
+window.SetMouseTrapped(false) 
+
