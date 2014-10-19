@@ -344,7 +344,7 @@ do
 	
 	function PANEL:SetState(pressed, button)
 		button = button or "button_1"
-		
+
 		if pressed then
 			self:OnStateChanged(pressed, button)
 			
@@ -469,6 +469,7 @@ do
 		self:SetDraggable(true)
 		self:SetResizable(true) 
 		self:SetBringToFrontOnClick(true)
+		self:SetCachedRendering(true)
 		
 		self:SetMargin(Rect(0,10*scale,0,0))  
 		self:SetStyle("frame")
@@ -520,6 +521,10 @@ do
 		self.title = title
 	end
 	
+	function PANEL:OnMouseInput()
+		self:MarkCacheDirty()
+	end
+	
 	gui2.RegisterPanel(PANEL)   
 end
 	
@@ -537,12 +542,20 @@ do
 		
 		local top = gui2.CreatePanel("base", self)
 		top:SetLayoutParentOnLayout(true)
+		top:SetMargin(Rect())
+		top:SetClipping(true)
 		self.top = top
-		
-			
+					
 		local list = gui2.CreatePanel("base", self)
 		list:SetColor(Color(0,0,0,1))
+		--list:SetCachedRendering(true)
+		list:SetClipping(true)
 		self.list = list
+		
+		local scroll = gui2.CreatePanel("scroll", self)
+		scroll:SetXScrollBar(false)
+		scroll:SetPanel(list)
+		self.scroll = scroll
 		
 		self:SetupSorted("")
 	end
@@ -550,10 +563,10 @@ do
 	function PANEL:OnLayout()
 		self.top:SetWidth(self:GetWidth())
 		self.top:SetHeight(20)
-		self.list:SetPosition(Vec2(0, 20))
-		self.list:SetWidth(self:GetWidth())
+		self.scroll:SetPosition(Vec2(0, 20))
+		self.scroll:SetWidth(self:GetWidth())
+		self.scroll:SetHeight(self:GetHeight() - 20)
 		local y = 0
-
 		for _, entry in ipairs(self.entries) do
 			entry:SetPosition(Vec2(0, y))
 			entry:SetWidth(self:GetWidth())
@@ -562,12 +575,13 @@ do
 			
 			local x = 0
 			for i, label in ipairs(entry.labels) do
-				local w = self.columns[i].div.left:GetWidth() + self.columns[i].div:GetDividerWidth()
-				
+				local w = self.columns[i].div.left:GetWidth()
 				label:SetWidth(w)
 				label:SetX(x)
 				label:SetHeight(entry:GetHeight())
 				label:CenterTextY()
+				
+				w = w + self.columns[i].div:GetDividerWidth()
 				
 				if self.columns[i].div.left then
 					x = x + w
@@ -613,6 +627,7 @@ do
 			column:SetFont("snow_font")
 			column:SetTextColor(ColorBytes(200,200,200)) 
 			column:SetText(name)
+			column:SetClipping(true)
 			column:SizeToText()
 			
 			local icon = gui2.CreatePanel("text", column)
@@ -721,9 +736,19 @@ do
 	
 	PANEL.panel = NULL
 	
+	prototype.GetSet(PANEL, "XScrollBar", true)
+	prototype.GetSet(PANEL, "YScrollBar", true)
+	
 	function PANEL:Initialize()
 		self:SetColor(Color(0,0,0,0))
-		do
+	end
+	
+	function PANEL:SetPanel(panel)
+		panel:SetParent(self)
+		
+		self.panel = panel
+		
+		if self.YScrollBar then
 			local y_scroll = gui2.CreatePanel("base", self)
 			y_scroll:SetTexture(skin.gradient2)
 
@@ -734,39 +759,40 @@ do
 			y_scroll_bar:SetDraggable(true)	
 					
 			y_scroll_bar.OnPositionChanged = function(_, pos)
-				if not self.panel:IsValid() then return end
+				if not panel:IsValid() then return end
 				
-				if self.panel.scrolling then return end
-				local frac = math.clamp((pos.y - scroll_width) / (self.panel:GetSizeOfChildren().h - scroll_width), 0, 1)
+				if panel.scrolling then return end
 				
-				self.panel:SetScrollFraction(Vec2(self.panel:GetScrollFraction().x, frac))
+				local frac = math.clamp((pos.y - scroll_width) / (panel:GetSizeOfChildren().h - scroll_width), 0, 1)
+				
+				panel:SetScrollFraction(Vec2(panel:GetScrollFraction().x, frac))
 		 
 				pos.x = y_scroll_bar.Parent:GetWidth() - y_scroll_bar:GetWidth()
 				pos.y = math.clamp(pos.y, scroll_width, y_scroll_bar.Parent:GetHeight() - y_scroll_bar:GetHeight() - scroll_width)
 			end
 			
 			up.OnPress = function(_, button, press)
-				if not self.panel:IsValid() then return end
+				if not panel:IsValid() then return end
 
-				if #self.panel:GetChildren() == 0 then return end
+				if #panel:GetChildren() == 0 then return end
 				
-				local h = self.panel:GetChildren()[1]:GetHeight()
+				local h = panel:GetChildren()[1]:GetHeight()
 				
-				local pos = self.panel:GetScroll()
+				local pos = panel:GetScroll()
 				pos.y = pos.y - h
-				self.panel:SetScroll(pos)
+				panel:SetScroll(pos)
 			end
 			
 			down.OnPress = function(_, button, press)
-				if not self.panel:IsValid() then return end
+				if not panel:IsValid() then return end
 				
-				if #self.panel:GetChildren() == 0 then return end
+				if #panel:GetChildren() == 0 then return end
 				
-				local h = self.panel:GetChildren()[1]:GetHeight()
+				local h = panel:GetChildren()[1]:GetHeight()
 				
-				local pos = self.panel:GetScroll()
+				local pos = panel:GetScroll()
 				pos.y = pos.y + h
-				self.panel:SetScroll(pos)
+				panel:SetScroll(pos)
 			end
 			
 			self.down = down
@@ -775,7 +801,7 @@ do
 			self.y_scroll = y_scroll
 		end
 		
-		do
+		if self.XScrollBar then
 			local x_scroll = gui2.CreatePanel("base", self)
 			x_scroll:SetTexture(skin.gradient3)
 
@@ -786,39 +812,39 @@ do
 			x_scroll_bar:SetDraggable(true)
 			
 			x_scroll_bar.OnPositionChanged = function(_, pos)
-				if not self.panel:IsValid() then return end
+				if not panel:IsValid() then return end
 				
-				if self.panel.scrolling then return end
-				local frac = math.clamp((pos.x - scroll_width) / (self.panel:GetSizeOfChildren().w - scroll_width), 0, 1)
+				if panel.scrolling then return end
+				local frac = math.clamp((pos.x - scroll_width) / (panel:GetSizeOfChildren().w - scroll_width), 0, 1)
 				
-				self.panel:SetScrollFraction(Vec2(frac, self.panel:GetScrollFraction().y))
+				panel:SetScrollFraction(Vec2(frac, panel:GetScrollFraction().y))
 		 
 				pos.x = math.clamp(pos.x, scroll_width, x_scroll:GetWidth() - x_scroll_bar:GetWidth() - scroll_width)
 				pos.y = x_scroll_bar.Parent:GetHeight() - x_scroll_bar:GetHeight()
 			end
 					
 			left.OnPress = function(_, button, press)
-				if not self.panel:IsValid() then return end
+				if not panel:IsValid() then return end
 				
-				if #self.panel:GetChildren() == 0 then return end
+				if #panel:GetChildren() == 0 then return end
 				
-				local w = self.panel:GetChildren()[1]:GetWidth()
+				local w = panel:GetChildren()[1]:GetWidth()
 				
-				local pos = self.panel:GetScroll()
+				local pos = panel:GetScroll()
 				pos.x = pos.x - w
-				self.panel:SetScroll(pos)
+				panel:SetScroll(pos)
 			end
 			
 			right.OnPress = function(_, button, press)
-				if not self.panel:IsValid() then return end
+				if not panel:IsValid() then return end
 				
-				if #self.panel:GetChildren() == 0 then return end
+				if #panel:GetChildren() == 0 then return end
 				
-				local w = self.panel:GetChildren()[1]:GetWidth()
+				local w = panel:GetChildren()[1]:GetWidth()
 				
-				local pos = self.panel:GetScroll()
+				local pos = panel:GetScroll()
 				pos.x = pos.x + w
-				self.panel:SetScroll(pos)
+				panel:SetScroll(pos)
 			end
 			
 			self.right = right
@@ -826,72 +852,72 @@ do
 			self.x_scroll_bar = x_scroll_bar
 			self.x_scroll = x_scroll
 		end
-	end
-	
-	function PANEL:SetPanel(panel)
-		panel:SetParent(self)
-		
-		self.panel = panel
-		panel.OnScroll = function(panel, frac)
+				
+		panel.OnScroll = function(_, frac)
 			panel.scrolling = true
-			self.y_scroll_bar:SetPosition(Vec2(0, math.clamp(scroll_width + frac.y * (self.y_scroll:GetHeight() - scroll_width*2), 0, self:GetHeight()-self.y_scroll_bar:GetHeight()-scroll_width*2)))
-			self.x_scroll_bar:SetPosition(Vec2(math.clamp(scroll_width + frac.x * (self.x_scroll:GetWidth() - scroll_width*2), 0, self:GetWidth()-self.x_scroll_bar:GetWidth()-scroll_width*2), 0))
+			if self.YScrollBar then
+				self.y_scroll_bar:SetPosition(Vec2(0, math.clamp(scroll_width + frac.y * (self.y_scroll:GetHeight() - scroll_width*2), 0, self:GetHeight()-self.y_scroll_bar:GetHeight()-scroll_width*2)))
+			end
+			if self.XScrollBar then
+				self.x_scroll_bar:SetPosition(Vec2(math.clamp(scroll_width + frac.x * (self.x_scroll:GetWidth() - scroll_width*2), 0, self:GetWidth()-self.x_scroll_bar:GetWidth()-scroll_width*2), 0))
+			end
 			panel.scrolling = false
 		end
 	end
 	
 	function PANEL:OnLayout()
-		if not self.panel:IsValid() then return end
+		local panel = self.panel
 		
-		self.panel:SetSize(self.panel:GetSizeOfChildren())
+		if not panel:IsValid() then return end
 		
-		do
+		panel:SetSize(panel:GetSizeOfChildren())
+		
+		if self.YScrollBar then
 			self.y_scroll:SetSize(Vec2(scroll_width, self:GetHeight() - scroll_width))
 			self.y_scroll:SetPosition(Vec2(self:GetWidth() - scroll_width, 0))
 			
 			self.down:SetSize(Vec2(scroll_width, scroll_width))
 			self.down:SetPosition(Vec2(0, self:GetHeight() - self.down:GetHeight() - scroll_width))
 			
-			self.y_scroll_bar:SetSize(Vec2(scroll_width, math.max(-(self.panel:GetSizeOfChildren().h - self.y_scroll:GetHeight()) + self.y_scroll:GetHeight() - scroll_width, scroll_width)))
+			self.y_scroll_bar:SetSize(Vec2(scroll_width, math.max(-(panel:GetSizeOfChildren().h - self.y_scroll:GetHeight()) + self.y_scroll:GetHeight() - scroll_width, scroll_width)))
 			
 			self.up:SetSize(Vec2(scroll_width, scroll_width))
 				
-			if self.panel:GetHeight() > self.panel:GetSizeOfChildren().h then
+			if panel:GetHeight() > panel:GetSizeOfChildren().h then
 				self.y_scroll:SetVisible(false)
 			else
 				self.y_scroll:SetVisible(true)
 			end
 		end
 		
-		do
+		if self.XScrollBar then
 			self.x_scroll:SetSize(Vec2(self:GetWidth() - scroll_width, scroll_width))
 			self.x_scroll:SetPosition(Vec2(0, self:GetHeight() - scroll_width))
 			
 			self.right:SetSize(Vec2(scroll_width, scroll_width))
 			self.right:SetPosition(Vec2(self:GetWidth() - self.right:GetWidth() - scroll_width, 0))
 			
-			self.x_scroll_bar:SetSize(Vec2(math.max(-(self.panel:GetSizeOfChildren().w - self.x_scroll:GetWidth()) + self.x_scroll:GetWidth() - scroll_width, scroll_width), scroll_width))
+			self.x_scroll_bar:SetSize(Vec2(math.max(-(panel:GetSizeOfChildren().w - self.x_scroll:GetWidth()) + self.x_scroll:GetWidth() - scroll_width, scroll_width), scroll_width))
 			
 			self.left:SetSize(Vec2(scroll_width, scroll_width))
 				
-			if self.panel:GetWidth() > self.panel:GetSizeOfChildren().w then
+			if panel:GetWidth() > panel:GetSizeOfChildren().w then
 				self.x_scroll:SetVisible(false)
 			else
 				self.x_scroll:SetVisible(true)
 			end
-		end
-		
-		
-		if self.y_scroll:IsVisible() then
-			self.panel:SetWidth(self:GetWidth() - scroll_width)
+		end		
+	
+		if self.YScrollBar and self.y_scroll:IsVisible() then
+			panel:SetWidth(self:GetWidth() - scroll_width)
 		else
-			self.panel:SetWidth(self:GetWidth())
+			panel:SetWidth(self:GetWidth())
 		end
-		
-		if self.x_scroll:IsVisible() then
-			self.panel:SetHeight(self:GetHeight() - scroll_width)
+	
+		if self.XScrollBar and self.x_scroll:IsVisible() then
+			panel:SetHeight(self:GetHeight() - scroll_width)
 		else
-			self.panel:SetHeight(self:GetHeight())
+			panel:SetHeight(self:GetHeight())
 		end
 		
 	end
@@ -1449,11 +1475,9 @@ do -- testing
 	
 	do
 		local content = tab:AddTab("list")
-		local scroll = gui2.CreatePanel("scroll", content)
-		local list = gui2.CreatePanel("list")
+		local list = gui2.CreatePanel("list", content)
 		list:SetupSorted("name", "date modified", "type", "size")
-		scroll:SetPanel(list)		
-		scroll:Dock("fill")
+		list:Dock("fill")
 		
 		for k,v in pairs(vfs.Find("lua/")) do
 			local file = vfs.Open("lua/"..v)
@@ -1659,11 +1683,11 @@ event.AddListener("Draw2D", "zsnow", function(dt)
 	--surface.DrawRect(5*scale,5*scale, x, 16 * scale)
 	
 	
-	surface.SetFont("snow_font")
-	surface.SetTextPos(50, 50)
-	surface.DrawText("ANIMATION 2")
-	local w,h = surface.GetTextSize("ANIMATION 2")
-	surface.DrawRect(50,50,w,h)
+	--surface.SetFont("snow_font")
+	--surface.SetTextPos(50, 50)
+	--surface.DrawText("ANIMATION 2")
+	--local w,h = surface.GetTextSize("ANIMATION 2")
+	--surface.DrawRect(50,50,w,h)
 	
 	if DX then
 		render.SetBlendMode("additive")
