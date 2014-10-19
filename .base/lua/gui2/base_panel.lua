@@ -19,6 +19,7 @@ prototype.GetSet(PANEL, "Margin", Rect(1, 1, 1, 1))
 prototype.GetSet(PANEL, "ObeyMargin", true)
 prototype.GetSet(PANEL, "BringToFrontOnClick", false)
 prototype.GetSet(PANEL, "LayoutParentOnLayout", false)
+prototype.GetSet(PANEL, "VisibilityPanel", NULL)
 
 function PANEL:__tostring()
 	return ("panel:%s[%p][%s %s %s %s][%s]"):format(self.ClassName, self, self.Position.x, self.Position.y, self.Size.w, self.Size.h, self.layout_count)
@@ -49,6 +50,14 @@ function PANEL:RequestFocus()
 	end
 	
 	gui2.focus_panel = self
+end
+
+function PANEL:OnUnParent()
+	gui2.unrolled_draw = nil
+end
+
+function PANEL:OnChildAdd()
+	gui2.unrolled_draw = nil
 end
 
 do
@@ -92,7 +101,6 @@ do -- call on remove
 		
 		-- this is important!!
 		self:UnParent()
-		gui2.unrolled_draw = nil
 	end
 	
 	function PANEL:CallOnRemove(callback, id)
@@ -123,6 +131,27 @@ function PANEL:GetSizeOfChildren()
 	return total_size
 end
 
+function PANEL:IsInsideParent()	
+	local override = self.Parent
+	
+	if not override:IsValid() then return true end
+	
+	if self.VisibilityPanel:IsValid() then
+		override = self.VisibilityPanel
+	end
+	
+	if 
+		self.Position.x - override.Scroll.x < override.Size.w and
+		self.Position.y - override.Scroll.y < override.Size.h and
+		self.Position.x + self.Size.w - override.Scroll.x > 0 and
+		self.Position.y + self.Size.h - override.Scroll.y > 0
+	then
+		return true
+	end
+		
+	return false
+end
+
 function PANEL:PreDraw(from_cache)
 	if self.layout_me then 
 		self:Layout(true) 
@@ -133,9 +162,9 @@ function PANEL:PreDraw(from_cache)
 
 
 	surface.PushMatrix()
-		render.Translate(self.Position.x, self.Position.y, 0)
+	render.Translate(self.Position.x, self.Position.y, 0)
 
-	if not no_draw or from_cache then
+	--if not no_draw or from_cache then
 		local w = (self.Size.w)/2
 		local h = (self.Size.h)/2
 
@@ -143,38 +172,32 @@ function PANEL:PreDraw(from_cache)
 		render.Rotate(self.Angle, 0, 0, 1)
 		render.Translate(-w, -h, 0)
 	
-		self:CalcMouse()
+		if not from_cache then
+			self:CalcMouse()
 		
-		self:CalcDragging()
-		self:CalcScrolling()
+			self:CalcDragging()
+			self:CalcScrolling()
+		end
 
 		self:CalcAnimations()
-	end
+	--end
+	
 	if self.CachedRendering then
 		self:DrawCache()
 		no_draw = true
 	end
 
+	self:OnUpdate()
+	
 	local sigh = false
 	if not no_draw and not no_clip and self.Clipping then
 		surface.StartClipping2(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
 		no_clip = true
 		sigh = true
 	end
-
-	self:OnUpdate()
-
+	
 	if not no_draw or from_cache then
-		if	
-			self:IsDragging() or
-			self:IsWorld() or
-			(
-				self.Position.x - self.Parent.Scroll.x < self.Parent.Size.w and
-				self.Position.y - self.Parent.Scroll.y < self.Parent.Size.h and
-				self.Position.x + self.Size.w - self.Parent.Scroll.x > 0 and
-				self.Position.y + self.Size.h - self.Parent.Scroll.y > 0
-			)
-		then
+		if self:IsDragging() or self:IsWorld() or self:IsInsideParent() then
 			self:OnDraw()
 			self.visible = true
 			no_draw = false
@@ -210,11 +233,30 @@ function PANEL:PostDraw()
 	if self.draw_sigh or not self.draw_no_draw and not self.draw_no_clip and self.Clipping then
 		surface.EndClipping2()
 	end
-	surface.PopMatrix()
 	
 	if self.layout_me == "init" then 
 		self.layout_me = false 
 	end
+	
+	if gui2.debug then
+		if self.updated_layout then
+			render.SetBlendMode("additive")
+			surface.SetColor(1, 0, 0, 0.1)
+			surface.SetWhiteTexture(self.cache_texture)
+			surface.DrawRect(0, 0, self.Size.w, self.Size.h)
+			self.updated_layout = false
+			render.SetBlendMode("alpha")
+		else
+			if self.updated_cache then
+				surface.SetColor(0, 1, 0, 0.1)
+				surface.SetWhiteTexture(self.cache_texture)
+				surface.DrawRect(0, 0, self.Size.w, self.Size.h)
+				self.updated_cache = false
+			end
+		end
+	end
+	
+	surface.PopMatrix()
 end
 
 do -- orientation
@@ -278,6 +320,7 @@ do -- orientation
 
 		if parent:IsValid() then
 			table.sort(parent:GetChildren(), sorter)
+			gui2.unrolled_draw = nil
 		end
 	end
 	
@@ -383,8 +426,10 @@ do -- cached rendering
 				self.cache_dirty = false
 			surface.PopMatrix()
 			self.cache_fb:End()
+			
+			self.updated_cache = true
 		end
-
+		
 		surface.SetColor(1, 1, 1, 1)
 		surface.SetTexture(self.cache_texture)
 		surface.DrawRect(0, 0, self.Size.w, self.Size.h)
@@ -403,6 +448,8 @@ do -- scrolling
 		self.ScrollFraction = self.Scroll / (size + self.Scroll - self.Size) * 2
 		
 		self:OnScroll(self.ScrollFraction)
+		
+		self:MarkCacheDirty()
 	end
 	
 	function PANEL:SetScrollFraction(frac)
@@ -411,6 +458,8 @@ do -- scrolling
 		self.Scroll = frac * size
 		self.Scroll:Clamp(Vec2(0, 0), size - self.Size)
 		self.ScrollFraction = frac
+		
+		self:MarkCacheDirty()
 	end
 	
 	function PANEL:StartScrolling(button)
@@ -432,7 +481,6 @@ do -- scrolling
 		
 		if input.IsMouseDown(self.scroll_button) then
 			self:SetScroll(self.scroll_drag_pos - self:GetMousePosition())
-			self:MarkCacheDirty()
 			self:OnScroll(self.ScrollFraction)
 		else
 			self:StopScrolling()
@@ -517,7 +565,7 @@ do -- drag drop
 	end
 
 	function PANEL:OnChildDrop(child, pos)
-		if gui2.debug then
+		if gui2.test then
 			self:AddChild(child)
 			child:SetPosition(pos)
 			
@@ -679,14 +727,14 @@ do -- animations
 			render.Rotate(self.DrawAngleOffset.r, 1, 0, 0)
 			render.Translate(-w, -h, 0)
 		end
-		
+				
 		for key, animation in pairs(self.animations) do
 
 			local pause = false
 
 			for i, v in ipairs(animation.pausers) do
 				if animation.alpha >= v.alpha then
-					if v.check()  then
+					if v.check() then
 						pause = true
 					else
 						table.remove(animation.pausers, i)
@@ -724,6 +772,8 @@ do -- animations
 					end
 
 					self.animations[key] = nil
+				else
+					self:MarkCacheDirty()
 				end
 			end
 		end
@@ -1223,7 +1273,10 @@ do -- mouse
 		if self:IsMouseOver() then
 			if not self.mouse_just_entered then
 				if self.SendMouseInputToParent then
-					self.Parent:OnMouseEnter(x, y)
+					if not self.Parent.mouse_just_entered then
+						self.Parent:OnMouseEnter(x, y)
+						self.Parent.mouse_just_entered = true
+					end
 				end
 				self:OnMouseEnter(x, y)
 				self.mouse_just_entered = true
@@ -1232,8 +1285,11 @@ do -- mouse
 			self:OnMouseMove(x, y)
 		else
 			if self.mouse_just_entered then
-				if self.SendMouseInputToParent then
-					self.Parent:OnMouseExit(x, y)
+				if self.SendMouseInputToParent then					
+					if self.Parent.mouse_just_entered then
+						self.Parent:OnMouseExit(x, y)
+						self.Parent.mouse_just_entered = false
+					end
 				end
 				self:OnMouseExit(x, y)
 				self.mouse_just_entered = false
@@ -1251,7 +1307,7 @@ do -- mouse
 			self:RequestFocus()
 			self:BringToFront()
 			
-			if gui2.debug then
+			if gui2.test then
 				if button == "button_2" then
 					self:SetClipping(not self:GetClipping())
 				end
@@ -1277,8 +1333,10 @@ do -- mouse
 				end
 			end
 		end
-					
+
 		self:OnMouseInput(button, press)
+		
+		self:MarkCacheDirty()
 	end
 	
 	function PANEL:KeyInput(button, press)			
@@ -1294,13 +1352,6 @@ do -- layout
 	PANEL.layout_count = 0
 	
 	function PANEL:Layout(now)
-		
-		if self.LayoutParentOnLayout and self:HasParent() then
-			self.Parent:Layout(now)
-		end
-		
-		self:MarkCacheDirty()
-	
 		if now then			
 			if self.in_layout then return end
 			self.in_layout = true
@@ -1315,10 +1366,18 @@ do -- layout
 				self:StackChildren()
 				
 				self:OnLayout(self:GetPosition(), self:GetSize())
+									
+				if self.LayoutParentOnLayout and self:HasParent() then
+					self.Parent:Layout(now)
+				end
 				
 				if self.layout_me ~= "init" then
 					self.layout_me = false
 				end
+				
+				self:MarkCacheDirty()
+				
+				self.updated_layout = true
 				
 			self.in_layout = false
 		else
@@ -1459,7 +1518,7 @@ do -- events
 		
 		local r,g,b,a = self.Color:Unpack()
 		local mr,mg,mb,ma = self.DrawColor:Unpack()
-		
+				
 		surface.SetColor(r+mr,g+mg,b+mb,a+ma)
 		
 		surface.SetTexture(self.Texture)
@@ -1476,16 +1535,18 @@ do -- events
 			surface.DrawRect(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
 		end
 
-		if gui2.debug then
-			surface.SetWhiteTexture()
-			surface.SetColor(1,0,0,1)
-			surface.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
+		if gui2.debug_layout then
+			surface.SetFont("default")
+			surface.DrawText("layout count " .. self.layout_count)
+			--surface.SetWhiteTexture()
+			--surface.SetColor(1,0,0,1)
+			--surface.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
 		end
 	end
 
-	function PANEL:OnMouseEnter(x, y) if gui2.debug then self:SetColor(Color(1,1,1,1)) end end
-	function PANEL:OnMouseExit(x, y) if gui2.debug then self:SetColor(self.original_color) end end
-	function PANEL:OnMouseMove(x, y) if gui2.debug then self:MarkCacheDirty() end end
+	function PANEL:OnMouseEnter(x, y) if gui2.test then self:SetColor(Color(1,1,1,1)) end end
+	function PANEL:OnMouseExit(x, y) if gui2.test then self:SetColor(self.original_color) end end
+	function PANEL:OnMouseMove(x, y) if gui2.test then self:MarkCacheDirty() end end
 	function PANEL:OnMouseInput(button, press) end
 	
 	function PANEL:OnKeyInput(button, press) end
