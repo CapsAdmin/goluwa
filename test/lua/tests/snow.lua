@@ -472,6 +472,61 @@ do -- text button
 	gui2.RegisterPanel(PANEL)
 end 
 
+do -- text button
+	local PANEL = {}
+	
+	PANEL.ClassName = "text_edit"
+	
+	prototype.GetSetDelegate(PANEL, "Text", "", "label")
+	prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
+	prototype.GetSetDelegate(PANEL, "Font", "default", "label")
+	prototype.GetSetDelegate(PANEL, "TextColor", Color(1,1,1), "label")
+	prototype.GetSetDelegate(PANEL, "TextWrap", false, "label")
+	
+	prototype.Delegate(PANEL, "label", "CenterText", "Center")
+	prototype.Delegate(PANEL, "label", "CenterTextY", "CenterY")
+	prototype.Delegate(PANEL, "label", "CenterTextX", "CenterX")
+	prototype.Delegate(PANEL, "label", "GetTextSize", "GetSize")
+	
+	function PANEL:Initialize()	
+		self:SetColor(Color(0,0,0,1))
+		self.BaseClass.Initialize(self)
+		
+		local label = gui2.CreatePanel("text")
+		label:SetTextColor(Color(0,1,0,1))
+		label:SetFont("snow_font")
+		label:SetEditable(true)
+		label:SetClipping(true)
+		self.label = label
+		
+		local scroll = gui2.CreatePanel("scroll", self)
+		scroll:SetPanel(label)
+		scroll:Dock("fill")
+		self.scroll = scroll
+	end
+	
+	function PANEL:SizeToText()
+		local marg = self:GetMargin()
+			
+		self.label:SetPosition(marg:GetPos())
+		self:SetSize(self.label:GetSize() + marg:GetSize()*2)
+	end
+	
+	function PANEL:OnKeyInput(...)
+		self.label:OnKeyInput(...)
+	end
+	
+	function PANEL:OnCharInput(...)
+		self.label:OnCharInput(...)
+	end
+	
+	function PANEL:OnMouseInput()
+		--self:SizeToText() 
+	end
+		
+	gui2.RegisterPanel(PANEL)
+end 
+
 do
 	local PANEL = {}
 	PANEL.ClassName = "frame"
@@ -1365,7 +1420,7 @@ do
 	end
 end
 
-do 
+do
 	local PANEL = {}
 	
 	PANEL.ClassName = "horizontal_divider"
@@ -1426,8 +1481,109 @@ do
 	gui2.RegisterPanel(PANEL)
 end
 
-do -- testing
+do -- slider
+	local PANEL = {}
+	
+	PANEL.ClassName = "slider"
+	PANEL.Base = "base"
+	
+	prototype.GetSet(PANEL, "Fraction", Vec2(0.5, 0.5))
+	
+	prototype.GetSet(PANEL, "XSlide", true)
+	prototype.GetSet(PANEL, "YSlide", false)
+	
+	prototype.GetSet(PANEL, "RightFill", true)
+	prototype.GetSet(PANEL, "LeftFill", false)
+	
+	function PANEL:Initialize()
+		self:SetMinimumSize(Vec2(35, 35))
+		self:SetColor(Color(0,0,0,0))
+	
+		local line = gui2.CreatePanel("base", self)
+		line:SetStyle("button_active")
+		line.OnPostDraw = function()
+			surface.SetTexture(skin.menu_select)
+			
+			if self.RightFill then
+				if self.XSlide and self.YSlide then
+					self:DrawRect(0, 0, self.Fraction.x * line:GetWidth(), self.Fraction.y * line:GetHeight())
+				elseif self.XSlide then
+					self:DrawRect(0, 0, self.Fraction.x * line:GetWidth(), line:GetHeight())
+				elseif self.YSlide then
+					self:DrawRect(0, 0, line:GetWidth(), self.Fraction.y * line:GetHeight())
+				end
+			elseif self.LeftFill then
+				if self.XSlide and self.YSlide then
+					self:DrawRect(
+						self.Fraction.x * line:GetWidth(), 
+						self.Fraction.y * line:GetHeight(), 
+						line:GetWidth() - (self.Fraction.x * line:GetWidth()), 
+						line:GetHeight() - (self.Fraction.y * line:GetHeight())
+					)
+				elseif self.XSlide then
+					self:DrawRect(self.Fraction.x * line:GetWidth(), 0, line:GetWidth() - (self.Fraction.x * line:GetWidth()), 4)
+				elseif self.YSlide then
+					self:DrawRect(0, self.Fraction.y * line:GetHeight(), 4, line:GetHeight() - (self.Fraction.y * line:GetHeight()))
+				end
+			end
+		end
+		self.line = line
+	
+		local button = gui2.CreatePanel("button", self)
+		button:SetStyleTranslation("button_active", "button_rounded_active")
+		button:SetStyleTranslation("button_inactive", "button_rounded_inactive")
+		button:SetStyle("button_rounded_inactive")
+		
+		button:SetDraggable(true)
+		
+		button.OnPositionChanged = function(_, pos)
+		
+			if self.XSlide and self.YSlide then
+				pos.x = math.clamp(pos.x, 0, self:GetWidth() - self.button:GetWidth())
+				pos.y = math.clamp(pos.y, 0, self:GetHeight() - self.button:GetHeight())
+			elseif self.XSlide then
+				pos.x = math.clamp(pos.x, 0, self:GetWidth() - self.button:GetWidth())
+				pos.y = self:GetHeight()/2 - button:GetHeight()/2
+			elseif self.YSlide then
+				pos.x = self:GetWidth()/2 - button:GetWidth()/2
+				pos.y = math.clamp(pos.y, 0, self:GetHeight() - self.button:GetHeight())
+			end
+			
+			self.Fraction = pos / (self:GetSize() - self.button:GetSize())
+			
+			self:MarkCacheDirty()
+		end
+		self.button = button
+	end
+			
+	function PANEL:OnLayout()
+		self.button:SetSize(self:GetSize():Copy() - scale*8)
+		
+		if self.XSlide and self.YSlide then
+			self.line:SetSize(self:GetSize():Copy())
+		end
+		
+		if self.XSlide then
+			self.button:SetWidth(scale*5)
+			self.line:SetY(8*scale)
+			self.line:SetWidth(self:GetWidth())
+			self.line:SetHeight(self:GetHeight()-8*scale*2)
+		end
+		
+		if self.YSlide then
+			self.button:SetHeight(scale*5)
+			self.line:SetX(8*scale)
+			self.line:SetHeight(self:GetHeight())
+			self.line:SetWidth(self:GetWidth()-8*scale*2)
+		end
+		
+		self.button:SetPosition(self.Fraction * self:GetSize())
+	end
+	
+	gui2.RegisterPanel(PANEL)
+end
 
+do -- testing
 	local frame = gui2.CreatePanel("frame")
 	frame:SetPosition(Vec2()+200)
 	frame:SetSize(Vec2()+500)
@@ -1509,63 +1665,34 @@ do -- testing
 	end
 	
 	do		
-		local PANEL = {}
-		
-		PANEL.ClassName = "slider"
-		PANEL.Base = "base"
-		
-		prototype.GetSet(PANEL, "Fraction", Vec2(0.5, 0.5))
-		prototype.GetSet(PANEL, "RightFill", false)
-		prototype.GetSet(PANEL, "LeftFill", true)
-		
-		function PANEL:Initialize()
-			self:SetHeight(scale*8)
-			self:SetColor(Color(0,0,0,0))
-		
-			local line = gui2.CreatePanel("base", self)
-			line:SetStyle("button_inactive")
-			line.OnPostDraw = function()
-				surface.SetTexture(skin.menu_select)
-				
-				if self.RightFill then
-					self:DrawRect(0, 0, self.Fraction.x * self:GetWidth(), 4)
-				elseif self.LeftFill then
-					self:DrawRect(self.Fraction.x * self:GetWidth(), 0, line:GetWidth() - (self.Fraction.x * self:GetWidth()), 4)
-				end
-			end
-			self.line = line
-		
-			local button = gui2.CreatePanel("button", self)
-			button:SetStyleTranslation("button_active", "button_rounded_active")
-			button:SetStyleTranslation("button_inactive", "button_rounded_inactive")
-			button:SetStyle("button_rounded_inactive")
-			
-			button:SetDraggable(true)
-			button:SetSize(Vec2(scale*5, scale*8))
-			
-			button.OnPositionChanged = function(_, pos)
-				pos.y = self:GetHeight()/2 - button:GetHeight()/2
-				pos.x = math.clamp(pos.x, 0, self:GetWidth() - self.button:GetWidth())
-				
-				self.Fraction = (pos) / (self:GetSize() - self.button:GetSize())
-				
-				self:MarkCacheDirty()
-			end
-			self.button = button
-		end
-				
-		function PANEL:OnLayout()
-			self.button:SetPosition(self.Fraction * self:GetSize())
-			self.line:SetY(self:GetHeight()/2)
-			self.line:SetSize(Vec2(self:GetWidth(), 4))
-		end
-		
-		gui2.RegisterPanel(PANEL)
-		
 		local content = tab:AddTab("sliders")
+		
+		content:SetStack(true)
+		content:SetStackRight(false)
+		--content:SetClipping(true)
+		--content:SetScrollable(true)
+				
 		local slider = gui2.CreatePanel("slider", content)
-		slider:SetWidth(256)
-		slider:SetPosition(Vec2(0,64))
+		slider:SetXSlide(true)
+		slider:SetYSlide(false)
+		slider:SetSize(Vec2(256, 35))
+		--slider:SetPosition(Vec2(8, 8))
+		
+		local slider = gui2.CreatePanel("slider", content)
+		slider:SetXSlide(true)
+		slider:SetYSlide(false)
+		slider:SetRightFill(false)
+		slider:SetSize(Vec2(256, 35))
+		--slider:SetPosition(Vec2(8, 8))
+	end
+	
+	do
+		local content = tab:AddTab("text")
+		
+		local text = gui2.CreatePanel("text_edit", content)
+		text:SetSize(Vec2(128, 128))
+		text:SetText("huh")
+		text:Dock("fill")
 	end
 end
 	 
