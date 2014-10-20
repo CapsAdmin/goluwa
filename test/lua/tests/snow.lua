@@ -139,6 +139,17 @@ local skin = {
 		return 80, 0, 160, 255
 	end),
 	
+	checkbox = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
+		y = -y + ninepatch_size
+		
+		local frac = (x+y)/(ninepatch_size*2)
+		
+		local b = math.lerp(frac, 224, 144)
+		local gr = math.lerp(frac, 192, 160)
+		
+		return b, gr, gr, 255
+	end),
+	
 	gradient = Texture(ninepatch_size, ninepatch_size, nil, {min_filter = "nearest", mag_filter = "nearest"}):Fill(function(x, y) 
 		local v = (math.sin(y / ninepatch_size * math.pi)^0.8 * 255) / 2.25 + 130
 		return v, v, v, 255
@@ -1495,6 +1506,66 @@ do -- testing
 		local huh = div:SetLeft(gui2.CreatePanel("button"))
 		
 		local div = div:SetRight(gui2.CreatePanel("horizontal_divider"))
+	end
+	
+	do		
+		local PANEL = {}
+		
+		PANEL.ClassName = "slider"
+		PANEL.Base = "base"
+		
+		prototype.GetSet(PANEL, "Fraction", Vec2(0.5, 0.5))
+		prototype.GetSet(PANEL, "RightFill", false)
+		prototype.GetSet(PANEL, "LeftFill", true)
+		
+		function PANEL:Initialize()
+			self:SetHeight(scale*8)
+			self:SetColor(Color(0,0,0,0))
+		
+			local line = gui2.CreatePanel("base", self)
+			line:SetStyle("button_inactive")
+			line.OnPostDraw = function()
+				surface.SetTexture(skin.menu_select)
+				
+				if self.RightFill then
+					self:DrawRect(0, 0, self.Fraction.x * self:GetWidth(), 4)
+				elseif self.LeftFill then
+					self:DrawRect(self.Fraction.x * self:GetWidth(), 0, line:GetWidth() - (self.Fraction.x * self:GetWidth()), 4)
+				end
+			end
+			self.line = line
+		
+			local button = gui2.CreatePanel("button", self)
+			button:SetStyleTranslation("button_active", "button_rounded_active")
+			button:SetStyleTranslation("button_inactive", "button_rounded_inactive")
+			button:SetStyle("button_rounded_inactive")
+			
+			button:SetDraggable(true)
+			button:SetSize(Vec2(scale*5, scale*8))
+			
+			button.OnPositionChanged = function(_, pos)
+				pos.y = self:GetHeight()/2 - button:GetHeight()/2
+				pos.x = math.clamp(pos.x, 0, self:GetWidth() - self.button:GetWidth())
+				
+				self.Fraction = (pos) / (self:GetSize() - self.button:GetSize())
+				
+				self:MarkCacheDirty()
+			end
+			self.button = button
+		end
+				
+		function PANEL:OnLayout()
+			self.button:SetPosition(self.Fraction * self:GetSize())
+			self.line:SetY(self:GetHeight()/2)
+			self.line:SetSize(Vec2(self:GetWidth(), 4))
+		end
+		
+		gui2.RegisterPanel(PANEL)
+		
+		local content = tab:AddTab("sliders")
+		local slider = gui2.CreatePanel("slider", content)
+		slider:SetWidth(256)
+		slider:SetPosition(Vec2(0,64))
 	end
 end
 	 
