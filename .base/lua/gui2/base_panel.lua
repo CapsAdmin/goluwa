@@ -157,30 +157,26 @@ function PANEL:PreDraw(from_cache)
 		self:Layout(true) 
 	end
 	
-	local no_clip = self:HasParent() and self.Parent.draw_no_clip
 	local no_draw = self:HasParent() and self.Parent.draw_no_draw
-
 
 	surface.PushMatrix()
 	render.Translate(self.Position.x, self.Position.y, 0)
 
-	--if not no_draw or from_cache then
-		local w = (self.Size.w)/2
-		local h = (self.Size.h)/2
+	local w = (self.Size.w)/2
+	local h = (self.Size.h)/2
 
-		render.Translate(w, h, 0)
-		render.Rotate(self.Angle, 0, 0, 1)
-		render.Translate(-w, -h, 0)
+	render.Translate(w, h, 0)
+	render.Rotate(self.Angle, 0, 0, 1)
+	render.Translate(-w, -h, 0)
+
+	if not from_cache then
+		self:CalcMouse()
 	
-		if not from_cache then
-			self:CalcMouse()
-		
-			self:CalcDragging()
-			self:CalcScrolling()
-		end
+		self:CalcDragging()
+		self:CalcScrolling()
+	end
 
-		self:CalcAnimations()
-	--end
+	self:CalcAnimations()
 	
 	if self.CachedRendering then
 		self:DrawCache()
@@ -189,14 +185,11 @@ function PANEL:PreDraw(from_cache)
 
 	self:OnUpdate()
 	
-	local sigh = false
-	if not no_draw and not no_clip and self.Clipping then
+	if not no_draw and self.Clipping then
 		surface.StartClipping2(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
-		no_clip = true
-		sigh = true
 	end
 	
-	if not no_draw or from_cache then
+	if from_cache or not no_draw then
 		if self:IsDragging() or self:IsWorld() or self:IsInsideParent() then
 			self:OnDraw()
 			self.visible = true
@@ -208,14 +201,8 @@ function PANEL:PreDraw(from_cache)
 	end
 
 	render.Translate(-self.Scroll.x, -self.Scroll.y, 0)
-
-	--for k,v in ipairs(self:GetChildren()) do
-	--	v:Draw(no_clip, no_draw)
-	--end
 	
-	self.draw_no_clip = no_clip
 	self.draw_no_draw = no_draw
-	self.draw_sigh = sigh
 end
 
 function PANEL:Draw(from_cache)
@@ -227,10 +214,10 @@ function PANEL:Draw(from_cache)
 	self:PostDraw(from_cache)
 end
 			
-function PANEL:PostDraw()
+function PANEL:PostDraw(from_cache)
 	self:CalcResizing()
 
-	if self.draw_sigh or not self.draw_no_draw and not self.draw_no_clip and self.Clipping then
+	if not self.draw_no_draw and self.Clipping then
 		surface.EndClipping2()
 	end
 	
