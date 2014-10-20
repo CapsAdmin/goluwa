@@ -191,7 +191,9 @@ function PANEL:PreDraw(from_cache)
 	
 	if from_cache or not no_draw then
 		if self:IsDragging() or self:IsWorld() or self:IsInsideParent() then
+			self:OnPreDraw()
 			self:OnDraw()
+			self:OnPostDraw()
 			self.visible = true
 			no_draw = false
 		else
@@ -402,7 +404,9 @@ do -- cached rendering
 				-- the framebuffer itself is drawn at the correct position
 				surface.LoadIdentity()
 
+				self:OnPreDraw()
 				self:OnDraw()
+				self:OnPostDraw()
 
 				surface.Translate(-self.Scroll.x, -self.Scroll.y)
 
@@ -1499,6 +1503,20 @@ do -- skin
 	end
 end
 
+function PANEL:DrawRect(x, y, w, h)
+	if self.NinePatch then			
+		surface.DrawNinePatch(
+			x or 0, y or 0, 
+			w or (self.Size.w + self.DrawSizeOffset.w), h or (self.Size.h + self.DrawSizeOffset.h),
+			self.NinePatchSize, 
+			self.NinePatchCornerSize, 
+			self.NinePatchUVOffset.x, self.NinePatchUVOffset.y
+		)
+	else				
+		surface.DrawRect(x or 0, y or 0, w or (self.Size.w + self.DrawSizeOffset.w), h or (self.Size.h + self.DrawSizeOffset.h))
+	end
+end
+
 do -- events
 	function PANEL:OnDraw()
 		if self.Color.a == 0 then return end
@@ -1510,17 +1528,7 @@ do -- events
 		
 		surface.SetTexture(self.Texture)
 		
-		if self.NinePatch then			
-			surface.DrawNinePatch(
-				0, 0, 
-				self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h,
-				self.NinePatchSize, 
-				self.NinePatchCornerSize, 
-				self.NinePatchUVOffset.x, self.NinePatchUVOffset.y
-			)
-		else				
-			surface.DrawRect(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
-		end
+		self:DrawRect()
 
 		if gui2.debug_layout then
 			surface.SetFont("default")
@@ -1530,6 +1538,9 @@ do -- events
 			--surface.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
 		end
 	end
+	
+	function PANEL:OnPreDraw() end
+	function PANEL:OnPostDraw() end
 
 	function PANEL:OnMouseEnter(x, y) if gui2.test then self:SetColor(Color(1,1,1,1)) end end
 	function PANEL:OnMouseExit(x, y) if gui2.test then self:SetColor(self.original_color) end end
