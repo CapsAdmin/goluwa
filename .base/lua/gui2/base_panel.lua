@@ -49,6 +49,12 @@ function PANEL:RequestFocus()
 		self = self.RedirectFocus
 	end
 	
+	if gui2.focus_panel:IsValid() and gui2.focus_panel ~= self then
+		gui2.focus_panel:OnUnfocus()
+	end
+	
+	self:OnFocus()
+	
 	gui2.focus_panel = self
 end
 
@@ -1332,10 +1338,12 @@ do -- mouse
 	
 	function PANEL:KeyInput(button, press)			
 		self:OnKeyInput(button, press)
+		self:MarkCacheDirty()
 	end	
 	
 	function PANEL:CharInput(char)			
 		self:OnCharInput(char)
+		self:MarkCacheDirty()
 	end
 end
 
@@ -1541,6 +1549,9 @@ do -- events
 	
 	function PANEL:OnPreDraw() end
 	function PANEL:OnPostDraw() end
+	
+	function PANEL:OnFocus() end
+	function PANEL:OnUnfocus() end
 
 	function PANEL:OnMouseEnter(x, y) if gui2.test then self:SetColor(Color(1,1,1,1)) end end
 	function PANEL:OnMouseExit(x, y) if gui2.test then self:SetColor(self.original_color) end end
