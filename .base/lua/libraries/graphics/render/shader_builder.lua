@@ -23,6 +23,7 @@ unrolled_lines.sampler2D = unrolled_lines.texture
 unrolled_lines.float = unrolled_lines.number
 
 local type_info =  {
+	int = {type = "int", arg_count = 1},
 	float = {type = "float", arg_count = 1},
 	number = {type = "float", arg_count = 1},
 	vec2 = {type = "float", arg_count = 2},
@@ -67,6 +68,7 @@ local type_translate = {
 
 local uniform_translate =
 {
+	int = render.Uniform1i,
 	float = render.Uniform1f,
 	vec2 = render.Uniform2f,
 	vec3 = render.Uniform3f,
