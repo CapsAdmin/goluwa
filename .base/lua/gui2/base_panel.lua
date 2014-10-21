@@ -190,11 +190,7 @@ function PANEL:PreDraw(from_cache)
 	end
 
 	self:OnUpdate()
-	
-	if not no_draw and self.Clipping then
-		surface.StartClipping2(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
-	end
-	
+		
 	if from_cache or not no_draw then
 		if self:IsDragging() or self:IsWorld() or self:IsInsideParent() then
 			self:OnPreDraw()
@@ -207,10 +203,30 @@ function PANEL:PreDraw(from_cache)
 			no_draw = true
 		end
 	end
-
+	
+	if true or not no_draw and self.Clipping then
+		--surface.PushClipFunction(self.DrawClippingStencil, self)
+		surface.EnableClipRect(0,0,self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
+	end
+	
 	render.Translate(-self.Scroll.x, -self.Scroll.y, 0)
 	
-	self.draw_no_draw = no_draw
+	if from_cache then
+		self.draw_no_draw = false
+	else
+		self.draw_no_draw = no_draw
+	end
+end
+
+function PANEL:DrawClippingStencil()
+	--if not self.Clipping then return end
+	local tex = surface.GetTexture()
+	surface.SetWhiteTexture()
+	--surface.SetTexture(self.Texture)
+	local r,g,b,a = surface.SetColor(1,1,1,0.1)
+	self:DrawRect()
+	surface.SetColor(r,g,b,a)
+	surface.SetTexture(tex)
 end
 
 function PANEL:Draw(from_cache)
@@ -221,12 +237,16 @@ function PANEL:Draw(from_cache)
 		end
 	self:PostDraw(from_cache)
 end
+
+local gl = require("lj-opengl")
 			
 function PANEL:PostDraw(from_cache)
 	self:CalcResizing()
 
-	if not self.draw_no_draw and self.Clipping then
-		surface.EndClipping2()
+	if true or not self.draw_no_draw and self.Clipping then
+		--surface.PopClipFunction()
+		surface.DisableClipRect()
+		--render.PopViewport()
 	end
 	
 	if self.layout_me == "init" then 
@@ -234,6 +254,15 @@ function PANEL:PostDraw(from_cache)
 	end
 	
 	if gui2.debug then
+		if self.Clipping then	
+			gl.Disable(gl.e.GL_STENCIL_TEST)
+			render.SetBlendMode("additive")
+			surface.SetColor(1, 0, 1, 0.25)
+			surface.SetWhiteTexture()
+			surface.DrawRect(0, 0, self.Size.w, self.Size.h)
+			render.SetBlendMode("alpha")
+			gl.Enable(gl.e.GL_STENCIL_TEST)
+		end
 		if self.updated_layout then
 			render.SetBlendMode("additive")
 			surface.SetColor(1, 0, 0, 0.1)
@@ -1215,6 +1244,8 @@ do -- mouse
 	end
 
 	function PANEL:CalcMouse()
+		if self:HasParent() and not self.Parent:IsWorld() and not self.Parent.mouse_over then return end
+		
 		local x, y = surface.WorldToLocal(gui2.mouse_pos.x, gui2.mouse_pos.y)
 
 		self.MousePosition.x = x
