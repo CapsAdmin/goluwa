@@ -418,18 +418,184 @@ function surface.DrawNinePatch(x, y, w, h, patch_size, corner_size, u_offset, v_
 	poly:Draw()
 end
 
-function surface.StartClipping(x, y, w, h)
-	x, y = surface.WorldToLocal(-x, -y)
-	render.SetScissor(-x, -y, w, h)
+function surface.SetScissor(x, y, w, h)
+	if not x then 
+		render.SetScissor() 
+	else
+		x, y = surface.WorldToLocal(-x, -y)
+		render.SetScissor(-x, -y, w, h)
+	end
 end
 
-function surface.EndClipping()
-	render.SetScissor()
+do
+    local stack = {}
+	local depth = 1
+	
+	local stencil_debug_tex
+	
+	function surface.DrawStencilTexture()
+	       
+	    stencil_debug_tex = stencil_debug_tex or Texture(render.GetWidth(), render.GetHeight())
+	    
+		local stencilStateArray = ffi.new("GLboolean[1]", 0)
+		gl.GetBooleanv(gl.e.GL_STENCIL_TEST, stencilStateArray)
+		
+		--if wait(0.25) then
+			
+			gl.Enable(gl.e.GL_STENCIL_TEST)
+			
+			local stencilWidth = render.GetWidth()
+			local stencilHeight = render.GetHeight()
+			local stencilSize = stencilWidth*stencilHeight
+			local stencilData = ffi.new("unsigned char[?]", stencilSize)
+			gl.ReadPixels(0, 0, stencilWidth, stencilHeight, gl.e.GL_STENCIL_INDEX, gl.e.GL_UNSIGNED_BYTE, stencilData)
+			
+			--[[for y = 0, stencilHeight-1 do
+				for x = 0, stencilWidth-1 do
+					local i = y*stencilWidth + x
+					io.stdout:write(string.format("%02X ", stencilData[i]))
+				end
+				io.stdout:write("\n")
+			end]]
+			
+			local y = math.floor(stencilHeight/2)
+			for x = math.floor(stencilWidth/2-10), math.floor(stencilWidth/2+10) do
+				local i = y*stencilWidth + x
+				stencilData[i] = 1
+			end
+			
+			local maxValue = 0
+			for i = 0, stencilSize-1 do
+				maxValue = math.max(maxValue, stencilData[i])
+			end
+			
+			local scale = 255/maxValue
+			for i = 0, stencilSize-1 do
+				stencilData[i] = math.floor(stencilData[i]*scale)
+			end
+			
+			stencil_debug_tex:Upload(stencilData, {upload_format = "red", internal_format = "r8"})
+		--end
+
+		surface.PushMatrix()
+		surface.LoadIdentity()
+    		surface.SetColor(1,1,1,1)
+    		surface.SetTexture(stencil_debug_tex)
+    		gl.Disable(gl.e.GL_STENCIL_TEST)
+    		surface.DrawRect(64,64,128,128)
+    		gl.Enable(gl.e.GL_STENCIL_TEST)
+		surface.PopMatrix()
+		
+		if stencilStateArray[0] == 0 then
+		    gl.Disable(gl.e.GL_STENCIL_TEST)
+	    end
+    end
+	
+	function surface.EnableStencilClipping()
+		--assert(#stack == 0, "I think this is good assertion, wait, you may want to draw something regardless of clipping, so nvm")
+		--table.clear(stack)
+		-- that means the stack should not be emptied, in case you want to disobey clipping?
+		
+		-- Don't consider depth buffer while stenciling or drawing
+		gl.DepthMask(gl.e.GL_FALSE)
+		gl.DepthFunc(gl.e.GL_ALWAYS)
+		
+		-- Enable stencil test
+		gl.Enable(gl.e.GL_STENCIL_TEST)
+	    
+		-- Write to all stencil bits
+		gl.StencilMask(0xFF)
+		
+		-- Don't consider stencil buffer while clearing it
+		gl.StencilFunc(gl.e.GL_ALWAYS, 0, 0xFF)
+		
+		-- Clear the stencil buffer to zero
+		gl.ClearStencil(0)
+		gl.Clear(gl.e.GL_STENCIL_BUFFER_BIT)
+	    
+		-- Stop writing to stencil
+		gl.StencilMask(gl.e.GL_FALSE)
+	end
+
+	function surface.DisableStencilClipping()
+		-- disable stencil completely, how2
+		gl.Disable(gl.e.GL_STENCIL_TEST)
+	end
+    
+    --[[
+		it works like this:
+		
+		00000000000000000000000000
+	    push frame; depth = 1
+    		00011111111111111000000000
+		    push panel; depth = 2
+        		00011222222222211000000000
+        		push button1; depth = 3
+        		    00011233322222211000000000
+    		    pop button1; depth = 2
+    		    00011222222222211000000000
+    		    push button2; depth = 3
+    		        00011222222333211000000000
+		        pop button2; depth = 2
+		        00011222222222211000000000
+	        pop panel; depth = 1
+	        00011111111111111000000000
+        pop frame; depth = 0
+        00000000000000000000000000
+        
+        gl.StencilFunc(gl.e.GL_EQUAL, depth, 0xFF)
+        means
+        only draw if stencil == current depth
+	]]
+    
+	local function update_stencil_buffer(mode)
+	    
+		-- Write to all stencil bits
+		gl.StencilMask(0xFF)
+		
+		-- For each object on the stack, increment/decrement any pixel it touches by 1
+		gl.DepthMask(gl.e.GL_FALSE) -- Don't write to depth buffer
+		gl.StencilFunc(gl.e.GL_NEVER, 0, 0xFF) -- Update stencil regardless of current value 
+		gl.StencilOp(
+			mode, -- For each pixel white pixel, increment/decrement
+			gl.e.GL_REPLACE, -- Ignore depth buffer
+			gl.e.GL_REPLACE -- Ignore depth buffer
+		)
+		
+		local data = stack[depth] 
+		data.func(unpack(data.args))
+	    
+		-- Stop writing to stencil
+		gl.StencilMask(gl.e.GL_FALSE)
+		
+		-- Now make future drawing obey stencil buffer
+		gl.DepthMask(gl.e.GL_TRUE) -- Write to depth buffer
+		gl.StencilFunc(gl.e.GL_EQUAL, depth-1, 0xFF) -- Pass test if stencil value is equal to depth
+	end
+
+	function surface.PushClipFunction(draw_func, ...)
+	    depth = depth+1		
+	    
+		stack[depth] = {func = draw_func, args = {...}}
+		
+		update_stencil_buffer(gl.e.GL_INCR)
+	end
+
+	function surface.PopClipFunction()
+		update_stencil_buffer(gl.e.GL_DECR)
+		
+		stack[depth] = nil
+		depth = depth-1
+		
+		if depth < 1 then
+			error("stack underflow", 2)
+		end
+	end
 end
 
 local gl = require("lj-opengl")
 
-function surface.StartClipping2(x, y, w, h)
+function surface.EnableClipRect(x, y, w, h)
 	gl.Enable(gl.e.GL_STENCIL_TEST)
 	
 	gl.StencilFunc(gl.e.GL_ALWAYS, 1, 0xFF) -- Set any stencil to 1
@@ -451,7 +617,7 @@ function surface.StartClipping2(x, y, w, h)
 end
 
 
-function surface.EndClipping2()
+function surface.DisableClipRect()
 	gl.Disable(gl.e.GL_STENCIL_TEST)
 end
 

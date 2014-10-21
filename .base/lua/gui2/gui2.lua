@@ -128,6 +128,8 @@ do -- events
 		end
 		
 		gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePos()
+		
+		surface.EnableStencilClipping()
 			
 		if gui2.unroll_draw then	
 			if not gui2.unrolled_draw then
@@ -155,7 +157,9 @@ do -- events
 		else
 			gui2.world:Draw()
 		end
-		
+
+		surface.DisableStencilClipping()
+
 		if gui2.threedee then 
 			surface.End3D()
 		end

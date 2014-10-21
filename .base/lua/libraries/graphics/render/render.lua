@@ -220,7 +220,7 @@ do
 	
 	function render.SetScissor(x,y,w,h)
 		--render.ScissorRect(x,y,w,h)  
-		--surface.StartClipping(x, y, w, h)
+		--surface.SetScissor(x, y, w, h)
 
 		local sw, sh = render.GetScreenSize():Unpack()
 		

@@ -110,13 +110,13 @@ do
 		if pnl:HasParent() then	
 			local size = pnl.Parent:GetSize()
 			
-			surface.StartClipping(0, 0, size.w, size.h)
+			surface.SetScissor(0, 0, size.w, size.h)
 		end
 	end
 	
 	function gui.EndClip()
 		if gui.noclip then return end
-		surface.EndClipping()
+		surface.SetScissor()
 	end
 end
 
