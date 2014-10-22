@@ -1,17 +1,20 @@
 local steam = ... or _G.steam
 
 local mount_info = {
+	["gm_.*"] = {"garry's mod"},
+	["ep1_.*"] = {"half-life 2: episode one"},
+	["ep2_.*"] = {"half-life 2: episode two"},
+	["trade_.*"] = {"half-life 2", "team fortress 2"},
+	["d%d_.*"] = {"half-life 2"},
+	["dm_.*"] = {"half-life 2: deathmatch"},
+
 	["esther"] = {"dear esther"},
 	["jakobson"] = {"dear esther"},
 	["donnelley"] = {"dear esther"},
 	["paul"] = {"dear esther"},
 	["aramaki_4d"] = {"team fortress 2", "garry's mod"},
-	["gm_bluehills_test3"] = {"garry's mod"},
 	["de_overpass"] = {"counter-strike: global offensive"},
 	["sp_a4_finale1"] = {"portal 2"},
-	["gm_construct"] = {"garry's mod"},
-	["d2_coast_07"] = {"half-life 2"},
-	["ep2_outland_06a"] = {"half-life 2: episode two"},
 	["c3m1_plankcountry"] = {"left 4 dead 2"},
 	["achievement_apg_r11b"] = {"half-life 2", "team fortress 2"},
 }
@@ -30,6 +33,15 @@ end
 
 console.AddCommand("map", function(path)
 	local mounts = mount_info[path]
+	
+	if not mounts then
+		for k,v in pairs(mount_info) do
+			if path:find(k) then
+				mounts = v
+				break
+			end
+		end
+	end
 	
 	if mounts then
 		profiler_StartTimer("mounting content")
@@ -617,15 +629,14 @@ function steam.LoadMap(path, callback)
 				world.Set("sun_specular_intensity", 0.15)
 				world.Set("sun_intensity", 1)
 				info._light.a = 1
-				world.Set("sun_color", Color(info._light.r, info._light.g, info._light.b))
-				world.Set("ambient_lighting", Color(info._ambient.r, info._ambient.g, info._ambient.b))
-				table.print(info)
+				world.Set("sun_color", ColorBytes(info._light.r, info._light.g, info._light.b))
+				world.Set("ambient_lighting", ColorBytes(info._ambient.r, info._ambient.g, info._ambient.b))
 			elseif info.classname:lower():find("light") and info._light then		
 				local ent = entities.CreateEntity("light", steam.bsp_world)
 				local pos = info.origin * 0.0254
 				ent:SetPosition(Vec3(-pos.y, pos.x, pos.z))
 				
-				ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
+				ent:SetColor(ColorBytes(info._light.r, info._light.g, info._light.b, 1))
 				ent:SetSize(2)
 				ent:SetDiffuseIntensity(info._light.a/25) 
 				ent:SetRoughness(0.5)
