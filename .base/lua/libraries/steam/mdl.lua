@@ -194,7 +194,7 @@ local header = [[
 	int linear_bone_offset;
 ]]
 
-local function load_mdl(path)
+local function load_mdl(path, thread)
 	local buffer = assert(vfs.Open(path .. ".mdl"))
 
 	local header = buffer:ReadStructure(header)
@@ -206,6 +206,8 @@ local function load_mdl(path)
 		local count = header[name .. "_count"]
 		local offset = header[name .. "_offset"]
 
+		if thread then thread:Report("reading" .. name) end
+		
 		if _debug then logf("reading %i %ss (at %i)\n", count, name, offset) end
 
 		if _debug then profiler.StartTimer(name) end
@@ -228,7 +230,7 @@ local function load_mdl(path)
 		header[name .. "_offset"] = nil
 
 		header[name] = out
-
+		
 		if _debug then profiler.StopTimer() end
 	end
 
@@ -654,7 +656,7 @@ local function load_vvd(path)
 				for i, fixup in ipairs(vvd.theFixups) do
 					if fixup.lod_index >= lod_index-1 then
 						for i = 1, fixup.vertices_count do
-							table.insert(vvd.fixed_vertices_by_lod[lod_index], vvd.vertices[fixup.vertex_index + i])
+							vvd.fixed_vertices_by_lod[lod_index][i] = vvd.vertices[fixup.vertex_index + i]
 						end
 					end
 				end
@@ -668,15 +670,15 @@ end
 
 local scale = 0.0254
 
-function steam.LoadModel(path, callback)
+function steam.LoadModel(path, callback, thread)
 
 	if path:endswith(".mdl") then
 		path = path:sub(1,-#".mdl"-1)
 	end
 
-	local mdl = load_mdl(path)
-	local vvd = load_vvd(path)
-	local vtx = load_vtx(path)
+	local mdl = load_mdl(path, thread)
+	local vvd = load_vvd(path, thread)
+	local vtx = load_vtx(path, thread)
 
 	local models = {}
 
@@ -717,6 +719,10 @@ function steam.LoadModel(path, callback)
 									callback(sub_model)
 								else
 									table.insert(models, sub_model)
+								end
+								if thread then 
+									thread:Report("creating submodels")
+									thread:Sleep() 
 								end
 							end
 						end

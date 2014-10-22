@@ -61,7 +61,7 @@ do -- model meta
 				steam.LoadModel(path, function(sub_model_data)
 					self:InsertSubmodel(sub_model_data)
 					self:InvalidateBoundingBox()
-				end, true)
+				end, thread)
 			end
 		else
 			function thread.OnStart()
