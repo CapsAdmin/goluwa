@@ -206,7 +206,7 @@ local function load_mdl(path, thread)
 		local count = header[name .. "_count"]
 		local offset = header[name .. "_offset"]
 
-		if thread then thread:Report("reading" .. name) end
+		if thread then thread:Report("reading " .. name) end
 		
 		if _debug then logf("reading %i %ss (at %i)\n", count, name, offset) end
 
@@ -238,8 +238,7 @@ local function load_mdl(path, thread)
 		do -- texture name
 			local offset = buffer:ReadInt()
 
-			if offset ~= 0 then
-				local tries = {}
+			if offset > 0 then
 				buffer:PushPos(header.material_offset + offset)
 					local str = buffer:ReadString()
 					if #str > 500 then buffer:PopPos() logf("%s: tried to read location %i but string size is %i bytes!!!!!!!!!\n", path, header.material_offset + offset, #str) return false end
@@ -252,12 +251,12 @@ local function load_mdl(path, thread)
 
 		buffer:Advance(14 * 4)
 	end)
-
+	
 	parse("bone", function(data, i)
 		do -- bone name
 			local offset = buffer:ReadInt()
 
-			if offset ~= 0 then
+			if offset > 0 then
 				buffer:PushPos(header.bone_offset + offset)
 					data.name = buffer:ReadString()
 				buffer:PopPos()
@@ -302,7 +301,7 @@ local function load_mdl(path, thread)
 		do -- bone name
 			local offset = buffer:ReadInt()
 
-			if offset ~= 0 then
+			if offset > 0 then
 				buffer:PushPos(header.bone_offset + offset)
 					data.surface_prop_name = buffer:ReadString()
 				buffer:PopPos()
