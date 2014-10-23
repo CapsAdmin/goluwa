@@ -102,6 +102,12 @@ function prototype.CreateObject(meta, override, skip_gc_callback)
 	return self
 end
 
+function prototype.SafeRemove(obj)
+	if hasindex(obj) and obj.IsValid and obj.Remove and obj:IsValid() then
+		obj:Remove()
+	end
+end
+
 function prototype.GetCreated(sorted, super_type, sub_type)
 	if sorted then
 		local out = {}
