@@ -207,6 +207,7 @@ function CONTEXT:ReadBytes(bytes)
 end
 
 function CONTEXT:SetPos(pos)
+	if pos > self.file_info.entry_length then error("position is larger than file size") end
 	self.position = math.clamp(pos, 0, self.file_info.entry_length)
 end
 
