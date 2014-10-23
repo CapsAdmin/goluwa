@@ -41,6 +41,10 @@ function surface.CreateFont(name, options, callback)
 	
 	if options.shadow then
 		options.shadow_color = options.shadow_color or Color(0,0,0,0.5)
+	
+		if type(options.shadow) ~= "number" then
+			options.shadow = options.size / 10 --???
+		end
 	end
 	
 	if options.monospace and not options.spacing then
