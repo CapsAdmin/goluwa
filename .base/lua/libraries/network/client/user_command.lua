@@ -87,7 +87,7 @@ local function process_usercommand(client)
 end
 
 event.AddListener("Update", "interpolate_user_command", function()
-	if CLIENT and clients.GetLocalClient():IsValid() then
+	if CLIENT and network.IsConnected() then
 		process_usercommand(clients.GetLocalClient())
 	end
 	
@@ -109,7 +109,7 @@ if CLIENT then
 		local last_tick = 0
 		
 		event.AddListener("Update", "user_command_tick", function()
-			if not clients.GetLocalClient():IsValid() then return end
+			if not network.IsConnected() then return end
 					
 			local cmd = clients.GetLocalClient():GetCurrentCommand()
 			local move = event.Call("CreateMove", clients.GetLocalClient(), cmd)

@@ -67,3 +67,4 @@ end
 include("input.lua", META)
 include("extended.lua", META)
 include("user_command.lua", META)
+include("chat_above_head.lua", META)

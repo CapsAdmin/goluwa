@@ -72,8 +72,12 @@ if CLIENT then
 	end)
 
 	function chat.Say(str)
-		str = tostring(str)		
-		message.Send("say", str)
+		str = tostring(str)	
+		if network.IsConnected() then
+			message.Send("say", str)
+		else	
+			chat.ClientSay(clients.GetLocalClient(), str)
+		end
 	end	
 	
 	chat.panel = NULL
