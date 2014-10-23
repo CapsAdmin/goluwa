@@ -11,7 +11,7 @@ local arg_types = {
 	vec3 = Vec3,	
 	ang3 = Ang3,
 	client = function(str)
-		return easylua.FindEntity(str) or NULL
+		return NULL-- easylua.FindEntity(str) or NULL
 	end,
 	name = function(client)
 		if client and client:IsValid() then
@@ -285,13 +285,13 @@ do -- commands
 	function console.RunString(line, skip_lua, skip_split, log_error)
 		if not skip_split and line:find("\n") then
 			for line in (line .. "\n"):gmatch("(.-)\n") do
-				console.RunString(line)
+				console.RunString(line, skip_lua, skip_split, log_error)
 			end
 			return
 		end
-	
-		local data, err = console.ParseCommandArgs(line)
 		
+		local data, err = console.ParseCommandArgs(line)
+
 		if data then						
 			if console.AddedCommands[data.cmd] then
 				return call_command(data.cmd, data.line, unpack(data.args))
@@ -301,6 +301,10 @@ do -- commands
 				return console.RunLua(line, log_error)
 			end
 		end 
+		
+		if log_error and err then
+			logn(err)
+		end
 	end
 	
 	console.run_lua_environment = {
@@ -322,7 +326,7 @@ do -- commands
 		lua = lua .. line
 
 		local func, err = loadstring(lua, env_name or line)
-		
+
 		if log_error and not func then 
 			logn(err)
 			return func, err
