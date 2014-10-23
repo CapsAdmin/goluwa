@@ -3,6 +3,34 @@ local utility = _G.utility or {}
 include("mesh.lua", utility)
 include("packed_rectangle.lua", utility)
 
+do
+	local lz4 = ffi.load("lz4")
+		
+	ffi.cdef[[
+		int LZ4_compress        (const char* source, char* dest, int inputSize);
+		int LZ4_decompress_safe (const char* source, char* dest, int inputSize, int maxOutputSize);
+	]]
+
+	function utility.Compress(data)
+		local size = #data	
+		local buf = ffi.new("uint8_t[?]", ((size) + ((size)/255) + 16))
+		local res = lz4.LZ4_compress(data, buf, size)
+	 
+		if res ~= 0 then
+			return ffi.string(buf, res)
+		end
+	end
+	 
+	function utility.Decompress(source, orig_size)
+		local dest = ffi.new("uint8_t[?]", orig_size)
+		local res = lz4.LZ4_decompress_safe(source, dest, #source, orig_size)
+		
+		if res > 0 then
+			return ffi.string(dest, res)
+		end
+	end
+end
+
 function utility.MakePushPopFunction(lib, name, func_set, func_get)
 	local stack = {}
 	local i = 1
@@ -452,16 +480,24 @@ do -- find value
 		return args_call(str, string.compare, ...) or args_call(str, string.find, ...)
 	end
 
-	local function find(tbl, name, dot, level, ...)
+	local function _find(tbl, name, dot, level, ...)
 		if level >= 3 then return end
 			
 		for key, val in pairs(tbl) do	
 			local T = type(val)
 			key = tostring(key)
+			
+			if name == "_M" then	
+				if val.Type == val.ClassName then
+					key = val.Type
+				else
+					key = val.Type .. "." .. val.ClassName
+				end
+			end
 				
 			if not skip[key] and T == "table" and not done[val] then
 				done[val] = true
-				find(val, name .. "." .. key, dot, level + 1, ...)
+				_find(val, name .. "." .. key, dot, level + 1, ...)
 			else
 				if (T == "function" or T == "number") and strfind(name .. "." .. key, ...) then					
 					
@@ -476,23 +512,28 @@ do -- find value
 					
 						nice_name = ("%s%s%s(%s)"):format(name, dot, key, table.concat(params, ", "))
 					else
-						nice_name = ("%s = %s"):format(key, val)
+						nice_name = ("%s.%s = %s"):format(name, key, val)
 					end
 				
 					if name == "_G" or name == "_M" then
 						table.insert(found, {key = key, val = val, name = name, nice_name = nice_name})
 					else
-						name = name:gsub("_G%.", "")
-						name = name:gsub("_M%.", "")
 						table.insert(found, {key = ("%s%s%s"):format(name, dot, key), val = val, name = name, nice_name = nice_name})
 					end
 				end
 			end
 		end
 	end
+	
+	local function find(tbl, ...)
+		found = {}
+		_find(...)
+		table.sort(found, function(a, b) return #a.key < #b.key end)
+		for k,v in ipairs(found) do table.insert(tbl, v) end
+	end
 
 	function utility.FindValue(...)		
-		found = {}
+		local found = {}
 		done = 
 		{
 			[_G] = true,
@@ -500,21 +541,21 @@ do -- find value
 			[_OLD_G] = true,
 		}
 			
-		find(_G, "_G", ".", 1, ...)
-		find(prototype.GetAllRegistered(), "_M", ":", 1, ...)
+		find(found, _G, "_G", ".", 1, ...)
+		find(found, prototype.GetAllRegistered(), "_M", ":", 1, ...)
+		
+		local temp = {}
 		for cmd, v in pairs(console.GetCommands()) do
 			if strfind(cmd, ...) then
 				local arg_line = table.concat(debug.getparams(v.callback), ", ")
 				arg_line = arg_line:gsub("line, ", "")
 				arg_line = arg_line:gsub("line", "")
 				
-				table.insert(found, {key = cmd, val = v.callback, name = ("console.GetCommands().%s.callback"):format(cmd), nice_name = ("command->%s(%s)"):format(cmd, arg_line)})
+				table.insert(temp, {key = cmd, val = v.callback, name = ("console.GetCommands().%s.callback"):format(cmd), nice_name = ("_C->%s(%s)"):format(cmd, arg_line)})
 			end
 		end
-		
-		table.sort(found, function(a, b) 
-			return #a.key < #b.key
-		end)
+		table.sort(temp, function(a, b) return #a.key < #b.key end)
+		for k,v in ipairs(temp) do table.insert(found, v) end
 		
 		return found
 	end
