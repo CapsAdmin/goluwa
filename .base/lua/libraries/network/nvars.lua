@@ -14,7 +14,11 @@ local function get_is_set(is, tbl, name, def, cvar)
 		
 		if CLIENT then
 			console.CreateVariable(cvar, def, function(var)
-				message.Send("ncv", cvar, var)
+				if network.IsConnected() then
+					message.Send("ncv", cvar, var)
+				else
+					clients.GetLocalClient().nv[name] = var
+				end
 			end)
 		end
 	end

@@ -68,6 +68,7 @@ if CLIENT then
 		local client = clients.Create(uniqueid, is_bot)
 		
 		if local_client then
+			prototype.SafeRemove(clients.local_client)
 			clients.local_client = client
 		end
 		

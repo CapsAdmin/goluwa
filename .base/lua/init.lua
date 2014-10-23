@@ -698,6 +698,10 @@ end
 
 steam.InitializeWebAPI()
 
+if CLIENT then
+	clients.local_client = clients.Create("unconnected")
+end
+
 do -- addons
 	-- tries to load all addons 
 	-- some might not load depending on its info.lua file.
