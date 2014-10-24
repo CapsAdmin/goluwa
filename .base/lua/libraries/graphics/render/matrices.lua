@@ -65,6 +65,7 @@ do
 		cam.ratio = cam.w / cam.h 
 	
 		gl.Viewport(cam.x, cam.y, cam.w, cam.h)
+		gl.Scissor(cam.x, cam.y, cam.w, cam.h)
 		
 		local proj = render.matrices.projection_2d
 
