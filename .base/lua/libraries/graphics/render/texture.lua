@@ -331,7 +331,9 @@ do -- texture object
 		end				
 		
 		fb:Begin()
-			surface.PushMatrix(0, 0, self.w, self.h)
+			surface.PushMatrix()
+			surface.LoadIdentity()
+			surface.Scale(self.w, self.h)
 			shader:Bind()
 			surface.rect_mesh:Draw()
 			surface.PopMatrix()
