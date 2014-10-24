@@ -276,9 +276,23 @@ do -- texture object
 		return self
 	end
 	
+	local template = [[
+		out vec4 out_color;
+		
+		vec4 shade()
+		{
+			%s
+		}
+		
+		void main()
+		{
+			out_color = shade();
+		}
+	]]
+	
 	function META:Shade(fragment_shader, vars)		
 		local data = {
-			name = "shade_texture_" .. self.id .. "_" .. tostring(system.GetTime()),
+			name = "shade_texture_" .. self.id .. "_" .. crypto.CRC32(fragment_shader),
 			shared = {
 				uniform = vars,
 			},
@@ -302,7 +316,7 @@ do -- texture object
 				attributes = {
 					{uv = "vec2"},
 				},			
-				source = fragment_shader,
+				source = template:format(fragment_shader),
 			} 
 		} 
 			
