@@ -47,8 +47,7 @@ local function blur_texture(dir)
 end
 
 blur_texture(Vec2(0,5))   
-event.Delay(0.31, function() blur_texture(Vec2(0,5)) end) -- todo: this just makes it black for some reason
-event.Delay(0.51, function() blur_texture(Vec2(5,0)) end) -- todo: this just makes it black for some reason
+blur_texture(Vec2(5,0))   
     
 event.AddListener("Draw2D", "lol", function()
 
