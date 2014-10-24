@@ -134,11 +134,16 @@ function steam.LoadMap(path, callback)
 			
 		end
 		 
-		if false then  
+		do
 			thread:Report("reading game lump")
+			
 			local lump = header.lumps[36]
+			
 			bsp_file:SetPos(lump.fileofs)
+			
 			local game_lumps = bsp_file:ReadLong()
+			
+			logf("gamelumps = %s\n", game_lumps)
 					
 			for i = 1, game_lumps do
 				local id = bsp_file:ReadBytes(4)
@@ -150,25 +155,33 @@ function steam.LoadMap(path, callback)
 				if id == "prps" then
 					bsp_file:PushPos(fileofs)
 					
+					
 					local count = bsp_file:ReadLong()
 					local paths = {}
+
+					logf("\tprps paths = %s\n", count)
+					
 					for i = 1,count do 
 						local str = bsp_file:ReadString()
 						if str ~= "" then
 							paths[i] = str
 						end
-					end 
-								
-					local leaf_count = bsp_file:ReadLong()
+						print(str)
+					end
+													
+					local count = bsp_file:ReadLong()
 					local leafs = {}
-					for i = 1, leaf_count do
+					logf("\tprps leafs = %s\n", count)
+					
+					for i = 1, count do
 						leafs[i] = bsp_file:ReadShort()
 					end
 					
+					local count = bsp_file:ReadLong()
 					local lumps = {}
-					local lump_count = bsp_file:ReadLong()
+					logf("\tprps info = %s\n", count)
 											
-					for i = 1, lump_count do
+					for i = 1, count do
 						lumps[i] = bsp_file:ReadStructure([[
 							vec3 m_Origin;
 							ang3 m_Angles;
@@ -193,9 +206,11 @@ function steam.LoadMap(path, callback)
 				if id == "prpd" then
 					bsp_file:PushPos(fileofs)
 					
-					local path_count = bsp_file:ReadLong()
+					local count = bsp_file:ReadLong()
 					local paths = {}
-					for i = 1, path_count do 
+					logf("\tprpd paths = %s\n", count)
+					
+					for i = 1, count do 
 						local str = bsp_file:ReadString()
 						if str ~= "" then
 							paths[i] = str
@@ -209,7 +224,7 @@ function steam.LoadMap(path, callback)
 					bsp_file:PushPos(fileofs)
 
 					local count = bsp_file:ReadLong()
-					print(count)
+					logf("\ttlpd paths = %s\n", count)
 					--for i = 1, count do
 					--	local a = bsp_file:ReadBytes(4)
 					--	local b = bsp_file:ReadByte()
@@ -349,12 +364,11 @@ function steam.LoadMap(path, callback)
 				local data = bsp_file:ReadStructure(structure)
 										
 				local lump = header.lumps[34]
-				local length = ((2 ^ data.power) + 1) ^ 2
 				
 				data.vertex_info = {}
 				
 				bsp_file:PushPos(lump.fileofs + (data.DispVertStart * 20))
-					for i = 1, length do
+					for i = 1, ((2 ^ data.power) + 1) ^ 2 do
 						local vertex = bsp_file:ReadVec3()
 						local dist = bsp_file:ReadFloat()
 						local alpha = bsp_file:ReadFloat()
@@ -629,8 +643,8 @@ function steam.LoadMap(path, callback)
 					world.Set("fog_end", info.fogend * 0.0254 * 2)
 				end
 			end
-			
-			if info.origin and info.angles and info.model then
+		
+			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
 				if vfs.IsFile(info.model) then
 					local ent = entities.CreateEntity("clientside", steam.bsp_world)
 					ent:SetModelPath(info.model)
