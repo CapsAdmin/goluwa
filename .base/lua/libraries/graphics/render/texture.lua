@@ -449,8 +449,9 @@ do -- texture object
 				self.size.h, 
 				0, 
 				buffer_size, 
-				nil
+				buffer
 			)
+			buffer = nil
 		elseif gl.TexStorage2D then
 			gl.TexStorage2D(
 				format.type, 
