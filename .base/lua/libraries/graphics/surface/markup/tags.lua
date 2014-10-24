@@ -273,11 +273,13 @@ META.tags.texture =
 	end,
 
 	get_size = function(markup, self, path, size)
-		if not self.mat then self.mat = render.CreateTexture(path) end 
+		if not self.mat or not self.mat:IsValid() then self.mat = render.CreateTexture(path) end 
+		if self.mat:IsLoading() then return 16, 16 end
 		return self.mat.w or size, self.mat.h or size
 	end,
 
 	pre_draw = function(markup, self, x,y, path, size)
+		if not self.mat or not self.mat:IsValid() then return end
 		surface.SetTexture(self.mat)
 		surface.DrawRect(x, y, self.mat.w or size, self.mat.h or size)
 	end,
