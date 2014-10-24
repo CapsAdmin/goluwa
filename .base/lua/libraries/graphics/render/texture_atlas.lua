@@ -43,7 +43,12 @@ end
 
 local META = prototype.CreateTemplate("texture_atlas")
 
+prototype.GetSet(META, "Padding", 1)
+
 function META:FindFreePage(w, h)
+	w = w + self.Padding
+	h = h + self.Padding
+	
 	for _, page in ipairs(self.pages) do
 		local found = insert_rect(page.tree, w, h)
 		if found then
@@ -56,7 +61,7 @@ function META:FindFreePage(w, h)
 	
 	if node then
 		local page = { 
-			texture = render.CreateTexture(self.width, self.height, nil, self.format), 
+			texture = render.CreateTexture(self.width + self.Padding, self.height + self.Padding, nil, self.format), 
 			textures = {}, 
 			tree = tree,
 		}
@@ -80,13 +85,13 @@ function META:Build()
 		
 		local x, y, w, h = node.x, node.y, node.w, node.h
 		
-		data.page_x = x
-		data.page_y = y 
+		data.page_x = x + self.Padding
+		data.page_y = y + self.Padding
 		data.page_w = w
 		data.page_h = h
 		data.page = page 
 		
-		data.page_uv = {x, y, w, h, page.texture.w, page.texture.h}
+		data.page_uv = {x+self.Padding/2, y+self.Padding/2, w, h, page.texture.w, page.texture.h}
 		
 		page.textures[data] = data
 		
@@ -116,6 +121,16 @@ function META:Build()
 			page.dirty = false
 		end
 	end
+end
+
+function META:GetTextures()
+	local out = {}
+	
+	for k,v in ipairs(self.pages) do
+		table.insert(out, v.texture)
+	end
+	
+	return out
 end
 
 function META:DebugDraw()
