@@ -251,7 +251,7 @@ function META:DrawString(str, x, y)
 					
 					local x,y, w,h, sx,sy = self.texture_atlas:GetUV(char)
 					poly:SetUV(x,y, w,h, sx,sy) 
-					poly:SetRect(i, X, Y + self.options.size, ch.w, -ch.h)
+					poly:SetRect(i, X, Y + self.options.size + (ch.h - ch.bitmap_top), ch.w, -ch.h)
 					
 					if self.options.monospace then 
 						X = X + self.options.spacing
