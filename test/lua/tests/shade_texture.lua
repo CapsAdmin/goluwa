@@ -40,11 +40,11 @@ local function blur_texture(dir)
 		dir = dir,
 	})  
 end
+
+blur_texture(Vec2(0,5))
+blur_texture(Vec2(5,0))
     
 event.AddListener("Draw2D", "lol", function()
-
-	blur_texture(Vec2(0,5))
-	blur_texture(Vec2(5,0))
 
 	surface.SetColor(1,1,1,1)
 	surface.SetTexture(tex)
