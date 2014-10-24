@@ -1,3 +1,39 @@
+local blur_shader = [[
+	float sum = 0;
+		
+	vec2 blur = radius/size;
+
+	sum += texture(self, vec2(uv.x - 4.0*blur.x*dir.x, uv.y - 4.0*blur.y*dir.y)).a * 0.0162162162;
+	sum += texture(self, vec2(uv.x - 3.0*blur.x*dir.x, uv.y - 3.0*blur.y*dir.y)).a * 0.0540540541;
+	sum += texture(self, vec2(uv.x - 2.0*blur.x*dir.x, uv.y - 2.0*blur.y*dir.y)).a * 0.1216216216;
+	sum += texture(self, vec2(uv.x - 1.0*blur.x*dir.x, uv.y - 1.0*blur.y*dir.y)).a * 0.1945945946;
+
+	sum += texture(self, vec2(uv.x, uv.y)).a * 0.2270270270;
+
+	sum += texture(self, vec2(uv.x + 1.0*blur.x*dir.x, uv.y + 1.0*blur.y*dir.y)).a * 0.1945945946;
+	sum += texture(self, vec2(uv.x + 2.0*blur.x*dir.x, uv.y + 2.0*blur.y*dir.y)).a * 0.1216216216;
+	sum += texture(self, vec2(uv.x + 3.0*blur.x*dir.x, uv.y + 3.0*blur.y*dir.y)).a * 0.0540540541;
+	sum += texture(self, vec2(uv.x + 4.0*blur.x*dir.x, uv.y + 4.0*blur.y*dir.y)).a * 0.0162162162;
+
+	sum = pow(sum, 0.5);
+	
+	float black = -sum;
+	sum -= texture(self, uv).a*2;
+			
+	return vec4(black,black,black, sum)*1.1;
+]]
+
+local max = 8
+local passes = {}
+
+for i = -max, max do
+	local f = i/max
+	local s = math.sin(f * math.pi)
+	local c = math.sin(f * math.pi)
+	
+	table.insert(passes, {source = blur_shader, vars = {dir = Vec2(c,s), radius = 0.05}})
+end
+
 chathud = { 
 	font_translate = {
 		-- usage
@@ -28,7 +64,7 @@ chathud = {
 			niggly = "<texture=masks/niggly>",
 			colbert = "<texture=masks/colbert>",
 			eli = "<texture=models/eli/eli_tex4z,4>",
-			bubu = "<remember=bubu><color=255,80,50><texture=materials/hud/killicons/default.vtf,50>  <translate=0,-15><color=148,61,148><font=ChatFont>Bubu<color=255,255,255>:</translate></remember>",
+			bubu = "<remember=bubu><color=1,0.3,0.2><texture=materials/hud/killicons/default.vtf,50>  <translate=0,-15><color=0.58,0.239,0.58><font=ChatFont>Bubu<color=1,1,1>:</translate></remember>",
 			acchan = "<remember=acchan><translate=20,-35><scale=1,0.6><texture=http://www.theonswitch.com/wp-content/uploads/wow-speech-bubble-sidebar.png,64></scale></translate><scale=0.75,1><texture=http://img1.wikia.nocookie.net/__cb20110317001632/southparkfanon/images/a/ad/Kyle.png,64></scale></remember>",
 		}
 		
@@ -38,11 +74,10 @@ chathud = {
 			name = "chathud_default",
 			data = {
 				path = "Roboto",
-				size = 15,
-				weight = 600,
-				antialias = true,
-				shadow = true,
-				prettyblur = 1,
+				size = 16,
+				padding = 8, 
+				shade = passes,
+				shadow = 2,
 			} ,
 		}
 	},
@@ -160,3 +195,7 @@ event.AddListener("MouseInput", "chathud", function(button, press)
 end)
 
 include("tradingcard_emotes.lua")
+
+if RELOAD then
+	chathud.AddText("hello world")
+end
