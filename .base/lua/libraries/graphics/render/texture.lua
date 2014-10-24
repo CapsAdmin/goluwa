@@ -311,7 +311,7 @@ do -- texture object
 			fragment = { 
 				uniform = {
 					self = self,
-					size = "vec2",
+					size = self:GetSize(),
 				},		
 				attributes = {
 					{uv = "vec2"},
@@ -323,11 +323,9 @@ do -- texture object
 		local shader = render.CreateShader(data)
 		shader.pwm_matrix = render.GetPVWMatrix2D
 		
+		
 		local fb = self.fb or render.CreateFrameBuffer(self.w, self.h, {texture = self})
-		
-		shader.self = self
-		shader.size = Vec2(surface.GetScreenSize())
-		
+				
 		for k,v in pairs(vars) do
 			shader[k] = v
 		end				
