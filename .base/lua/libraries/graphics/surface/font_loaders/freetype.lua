@@ -110,16 +110,46 @@ function META:Init()
 			mag_filter = "linear",
 		})
 		
+		self.texture_atlas:SetPadding(self.options.padding)
+		
 		for i = 32, 128 do
 			self:LoadGlyph(utf8.char(i))
 		end
 		
 		self.texture_atlas:Build()
 		
+		surface.ShadeFont(self)
+		
 		self.state = "loaded"		
 	else
 		self.state = "error"
 		error("unable to initialize font")
+	end
+end
+
+function META:GetTextures()
+	return self.texture_atlas:GetTextures()
+end
+
+function META:Rebuild()
+	if self.options.shade then		
+		self.texture_atlas = render.CreateTextureAtlas(512, 512, {
+			min_filter = "linear",
+			mag_filter = "linear",
+		})
+		
+		self.texture_atlas:SetPadding(self.options.padding)
+
+		for code in pairs(self.chars) do
+			self.chars[code] = nil
+			self:LoadGlyph(code)
+		end
+		
+		self.texture_atlas:Build()
+		
+		surface.ShadeFont(self)
+	else
+		self.texture_atlas:Build()
 	end
 end
 
@@ -223,6 +253,22 @@ function META:DrawString(str, x, y)
 	
 		local X, Y = 0, 0
 		local last_tex
+		
+		local rebuild = false
+		
+		for i = 1, utf8.length(str) do
+			local char = utf8.sub(str, i,i)
+			local ch = self.chars[char]
+			if not ch or not ch.invalid then
+				self:LoadGlyph(char)
+				ch = self.chars[char]
+				rebuild = true
+			end
+		end
+		
+		if rebuild then
+			self:Rebuild()
+		end
 				
 		for i = 1, utf8.length(str) do
 			local char = utf8.sub(str, i,i)
@@ -233,53 +279,64 @@ function META:DrawString(str, x, y)
 				Y = Y + self.options.size
 			elseif char == "\t" then
 				X = X + self.options.size
-			else			
-				if not ch or not ch.invalid then
-					self:LoadGlyph(char)
-					self.texture_atlas:Build()
-					ch = self.chars[char]
+			elseif ch then		
+				local texture = self.texture_atlas:GetPageTexture(char)
+				
+				if texture ~= last_tex then
+					poly = surface.CreatePoly(#str)
+					poly.y_offset = 0
+					table.insert(data, {poly = poly, texture = texture})
+					last_tex = texture
 				end
 				
-				if ch then		
-					local texture = self.texture_atlas:GetPageTexture(char)
-					
-					if texture ~= last_tex then
-						poly = surface.CreatePoly(#str)
-						table.insert(data, {poly = poly, texture = texture})
-						last_tex = texture
-					end
-					
-					local x,y, w,h, sx,sy = self.texture_atlas:GetUV(char)
-					poly:SetUV(x,y, w,h, sx,sy) 
-					poly:SetRect(i, X, Y + self.options.size + (ch.h - ch.bitmap_top), ch.w, -ch.h)
-					
-					if self.options.monospace then 
-						X = X + self.options.spacing
-					else
-						X = X + ch.x_advance + self.options.spacing
-					end
-					Y = Y + ch.y_advance
+				local x,y, w,h, sx,sy = self.texture_atlas:GetUV(char)
+				poly:SetUV(x,y, w,h, sx,sy) 
+				poly:SetRect(i, X-self.options.padding/2, Y-self.options.padding/2 + (ch.h - ch.bitmap_top), w, -h)
+				
+				if self.options.monospace then 
+					X = X + self.options.spacing
+				else
+					X = X + ch.x_advance + self.options.spacing
 				end
+				poly.y_offset = math.max(poly.y_offset, h)
 			end
-			
 		end
-		
+				
 		self.string_cache[str] = data
 	end
 	
 	surface.PushMatrix(x, y)
 	for i, v in ipairs(self.string_cache[str]) do
+		surface.Translate(0, v.poly.y_offset)
 		surface.SetTexture(v.texture)
 		render.SetCullMode("front")
 		v.poly:Draw()
 		render.SetCullMode("back")
+		surface.Translate(0, -v.poly.y_offset)
 	end	
 	surface.PopMatrix()
 end
 
 function META:GetTextSize(str)
 	if self.state ~= "loaded" then return 0, 0 end
-	local X, Y = 0, self.options.size
+	local X, Y = 0, 0
+	
+	local rebuild = false
+	
+	for i = 1, utf8.length(str) do
+		local char = utf8.sub(str, i,i)
+		local ch = self.chars[char]
+		if not ch or not ch.invalid then
+			self:LoadGlyph(char)
+			ch = self.chars[char]
+			rebuild = true
+		end
+	end
+	
+	if rebuild then
+		self:Rebuild()
+	end
+	
 	for i = 1, utf8.length(str) do
 		local char = utf8.sub(str, i,i)
 		local ch = self.chars[char]
@@ -287,21 +344,13 @@ function META:GetTextSize(str)
 			Y = Y + self.options.size
 		elseif char == "\t" then
 			X = X + self.options.size
-		else
-			if not ch or not ch.invalid then
-				self:LoadGlyph(char)
-				self.texture_atlas:Build()
-				ch = self.chars[char]
+		elseif ch then
+			if self.options.monospace then 
+				X = X + self.options.spacing
+			else
+				X = X + ch.x_advance + self.options.spacing
 			end
-		
-			if ch then
-				if self.options.monospace then 
-					X = X + self.options.spacing
-				else
-					X = X + ch.x_advance + self.options.spacing
-				end
-				Y = Y + ch.y_advance
-			end
+			Y = math.max(Y, ch.h)
 		end
 	end
 	return X, Y
