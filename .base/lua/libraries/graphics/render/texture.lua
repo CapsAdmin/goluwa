@@ -276,9 +276,6 @@ do -- texture object
 		return self
 	end
 	
-	local cache = {}
-	local fbos = {}
-	
 	function META:Shade(fragment_shader, vars)		
 		local data = {
 			name = "shade_texture_" .. self.id .. "_" .. tostring(system.GetTime()),
@@ -312,7 +309,7 @@ do -- texture object
 		local shader = render.CreateShader(data)
 		shader.pwm_matrix = render.GetPVWMatrix2D
 		
-		local fb = render.CreateFrameBuffer(self.w, self.h)
+		local fb = self.fb or render.CreateFrameBuffer(self.w, self.h, {texture = self})
 		
 		shader.self = self
 		shader.size = Vec2(surface.GetScreenSize())
@@ -322,14 +319,13 @@ do -- texture object
 		end				
 		
 		fb:Begin()
-		fb:Clear()
 			surface.PushMatrix(0, 0, self.w, self.h)
 			shader:Bind()
 			surface.rect_mesh:Draw()
 			surface.PopMatrix()
 		fb:End()
 		
-		self:Upload(fb:GetTexture())
+		self.fb = fb
 	end
 	
 	local SUPPRESS_GC = false
