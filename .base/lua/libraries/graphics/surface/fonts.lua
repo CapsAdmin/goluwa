@@ -38,6 +38,13 @@ function surface.CreateFont(name, options, callback)
 	options = options or {}
 	options.path = options.path or "fonts/unifont.ttf"
 	options.size = options.size or 14
+	options.padding = options.padding or 1
+	
+	if options.shade then
+		if options.shade.source then
+			options.shade = {options.shade}
+		end
+	end
 	
 	if options.shadow then
 		options.shadow_color = options.shadow_color or Color(0,0,0,0.5)
@@ -98,6 +105,16 @@ function surface.SetFont(name)
 		return 
 	end
 	font = name
+end
+
+function surface.ShadeFont(font)
+	if font.options.shade then
+		for _, info in ipairs(font.options.shade) do
+			for _, tex in ipairs(font:GetTextures()) do
+				tex:Shade(info.source, info.vars)
+			end
+		end
+	end
 end
 
 local X, Y = 0, 0
