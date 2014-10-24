@@ -88,6 +88,12 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 		cam_ang.r = math.round(cam_ang.r / math.rad(45)) * math.rad(45)
 	end
 	
+	if cam_fov > 90 then
+		side = side / ((cam_fov/90) ^ 4)
+	else
+		side = side / ((cam_fov/90) ^ 0.25)
+	end
+		
 	cam_pos = cam_pos + forward + side + up
 	smooth_cam_pos = smooth_cam_pos - ((smooth_cam_pos - cam_pos) * dt * 10)
 
