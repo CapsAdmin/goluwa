@@ -403,16 +403,10 @@ unsigned char	lowResImageWidth;	// Low resolution image width.
 unsigned char	lowResImageHeight;	// Low resolution image height.
 ]]
 
-vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_textures_dir.vpk")
-vfs.Mount(steam.GetGamePath("Half-Life 2") .. "hl2/hl2_misc_dir.vpk")
+steam.MountSourceGame("Half-Life 2")
 
-local vmt = steam.VDFToTable(vfs.Read("materials/nature/blenddirtgrass001a.vmt"))
-
-local buffer = Buffer()
-local str = vfs.Read("materials/" .. vmt.WorldVertexTransition["$basetexture"] .. ".vtf", "rb")
-buffer:WriteBytes(str)
-buffer:SetPos(0)
-
+local vmt = steam.LoadMaterial("nature/blenddirtgrass001a")
+local buffer = vfs.Open(vmt.basetexture)
 local vtf = buffer:ReadStructure(vtf_header_structure)
 
 local version = vtf.version[1] * 10 + vtf.version[2]
@@ -455,8 +449,7 @@ else
 end
 
 local function insert_textures(vtf, offset)
-	local old = buffer:GetPos()
-	buffer:SetPos(offset)
+	buffer:PushPos(offset)
 
 	for mm = 0, vtf.mipmapCount - 1 do
 		local w = bit.rshift(vtf.width, vtf.mipmapCount - mm - 1)
@@ -466,14 +459,14 @@ local function insert_textures(vtf, offset)
 			for face = 0, vtf.faces-1 do
 				for slice = 0, vtf.depth-1 do
 					local size = w * h * vtf.highResImageFormat.total_bytes
-					
+									
 					if slice ~= 0 then 
 						size = size * bit.rshift(slice, i)
 					end
 					
 					if size > 0 then
 						local image = ffi.cast("uint8_t *", buffer:ReadString(size))
-
+						
 						table.insert(vtf.textures, {
 							mip_map_level = mm,
 							slice = slice,
@@ -491,16 +484,15 @@ local function insert_textures(vtf, offset)
 		end
 	end
 	
-	buffer:SetPos(old)
+	buffer:PopPos()
 end
 
 local function insert_lowres_texture(vtf, offset)
 	local size = vtf.lowResImageWidth * vtf.lowResImageHeight * (vtf.lowResImageFormat.total_bits / 8)
 				
-	local old = buffer:GetPos()
-	buffer:SetPos(offset)
+	buffer:PushPos(offset)
 	local image = ffi.cast("uint8_t *", buffer:ReadString(size))
-	buffer:SetPos(old)
+	buffer:PopPos()
 	
 	vtf.lowresTextureData = {
 		width = vtf.lowResImageWidth,
@@ -519,7 +511,7 @@ if version >= 73 then
 	for i = 1, vtf.resourceCount do
 		local type = buffer:ReadLong()
 		local offset = buffer:ReadLong()
-			
+		
 		if type == resource_types.Lowres then
 			insert_lowres_texture(vtf, offset)
 		elseif type == resource_types.Hires then		
@@ -534,10 +526,10 @@ if version >= 73 then
 else
 	if vtf.lowResImageFormat.name ~= "none" then
 		insert_lowres_texture(vtf, vtf.headerSize)
-	else
-		buffer:SetPos(vtf.headerSize)
 	end
-
+	
+	buffer:SetPos(vtf.headerSize)
+	
 	vtf.textures = {}
 	insert_textures(vtf, buffer:GetPos())
 end
@@ -552,12 +544,13 @@ vtf.highResImageFormat = nil
 vtf.signature = nil
 vtf.lowResImageFormat = nil
 
-table.print(vtf)
+--table.print(vtf)
 
 buffer:SetPos(vtf.headerSize)
   
 for k,v in pairs(vtf.textures) do
 	v.tex = Texture{
+		mip_map_levels = 0,
 		width = v.width,
 		height = v.height, 
 		buffer = v.buffer, 
@@ -576,5 +569,5 @@ event.AddListener("Draw2D", "vtf", function()
 	surface.SetColor(1,1,1,1)
 	surface.DrawRect(0,0,512,512)
 	surface.SetTextPos(60, 60)
-	surface.DrawText(i)
+	surface.DrawText(tostring(i))
 end)
