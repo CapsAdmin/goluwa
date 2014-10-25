@@ -408,7 +408,7 @@ end
 local function load_vtx(path)
 	local MAX_NUM_BONES_PER_VERT = 3
 
-	local buffer = vfs.Open(path .. ".sw.vtx") or vfs.Open(path .. ".dx90.vtx")
+	local buffer = vfs.Open(path .. ".dx90.vtx") or vfs.Open(path .. ".dx80.vtx") or vfs.Open(path .. ".sw.vtx") 
 
 	local vtx = {}
 
@@ -428,7 +428,6 @@ local function load_vtx(path)
 		buffer:PushPos(vtx.body_part_offset)
 		vtx.body_parts = {}
 
-		if _debug then profiler.StartTimer("read %i body parts", vtx.body_part_count) end
 		for i = 1, vtx.body_part_count do
 			local stream_pos = buffer:GetPos()
 
@@ -441,7 +440,6 @@ local function load_vtx(path)
 				buffer:PushPos(stream_pos + body_part.model_offset)
 				body_part.models = {}
 
-				if _debug then profiler.StartTimer("read %i models", body_part.model_count) end
 				for i = 1, body_part.model_count do
 					local stream_pos = buffer:GetPos()
 
@@ -454,7 +452,6 @@ local function load_vtx(path)
 						buffer:PushPos(stream_pos + model.lod_offset)
 						model.model_lods = {}
 
-						if _debug then profiler.StartTimer("read %i lod models", model.lod_count) end
 						for i = 1, model.lod_count do
 							local stream_pos = buffer:GetPos()
 
@@ -468,7 +465,6 @@ local function load_vtx(path)
 								buffer:PushPos(stream_pos + lod_model.mesh_offset)
 								lod_model.meshes = {}
 
-								if _debug then profiler.StartTimer("read %i meshes", lod_model.mesh_count) end
 								for i = 1, lod_model.mesh_count do
 									local stream_pos = buffer:GetPos()
 
@@ -479,13 +475,12 @@ local function load_vtx(path)
 									lod_model.meshes[i] = mesh
 
 									if mesh.strip_group_count > 0 and mesh.strip_group_offset ~= 0 then
-										buffer:PushPos(stream_pos + mesh.strip_group_offset)
+										buffer:PushPos(stream_pos + mesh.strip_group_offset)   
 										mesh.strip_groups = {}
-
-										if _debug then profiler.StartTimer("read %i strip groups", mesh.strip_group_count) end
+										
 										for i = 1, mesh.strip_group_count do
 											local stream_pos = buffer:GetPos()
-
+											
 											local strip_group = {}
 											strip_group.vertices_count = buffer:ReadLong()
 											strip_group.vertices_offset = buffer:ReadLong()
@@ -495,86 +490,78 @@ local function load_vtx(path)
 											strip_group.strip_offset = buffer:ReadLong()
 											strip_group.flags = buffer:ReadByte()
 											mesh.strip_groups[i] = strip_group
+											
+											local vertices = {}
+											if strip_group.vertices_count > 0 and strip_group.vertices_offset ~= 0 then
+												buffer:PushPos(stream_pos + strip_group.vertices_offset)
 
-											if strip_group.strip_count > 0 and strip_group.strip_offset ~= 0 then
-												local vertices = {}
-												if strip_group.vertices_count > 0 and strip_group.vertices_offset ~= 0 then
-													buffer:PushPos(stream_pos + strip_group.vertices_offset)
-
-													if _debug then profiler.StartTimer("read %i vertices", strip_group.vertices_count) end
-													for i = 1, strip_group.vertices_count do
-														local vertex = {bone_weight_indices = {}, boneId = {}}
-														for i = 1, MAX_NUM_BONES_PER_VERT do
-															vertex.bone_weight_indices[i] = buffer:ReadByte()
-														end
-														vertex.bone_count = buffer:ReadByte()
-														vertex.mesh_vertex_index = buffer:ReadShort()
-														for i = 1, MAX_NUM_BONES_PER_VERT do
-															vertex.boneId[i] = buffer:ReadByte()
-														end
-														vertices[i] = vertex
+												for i = 1, strip_group.vertices_count do
+													local vertex = {bone_weight_indices = {}, boneId = {}}
+													for i = 1, MAX_NUM_BONES_PER_VERT do
+														vertex.bone_weight_indices[i] = buffer:ReadByte()
 													end
-													if _debug then profiler.StopTimer() end
-
-													buffer:PopPos()
-												end
-
-												local indices = {}
-												if strip_group.indices_count > 0 and strip_group.indices_offset ~= 0 then
-													buffer:PushPos(stream_pos + strip_group.indices_offset)
-
-													if _debug then profiler.StartTimer("read %i indices", strip_group.indices_count) end
-													for i = 1, strip_group.indices_count do
-														indices[i] = buffer:ReadShort()
+													vertex.bone_count = buffer:ReadByte()
+													vertex.mesh_vertex_index = buffer:ReadShort()
+													for i = 1, MAX_NUM_BONES_PER_VERT do
+														vertex.boneId[i] = buffer:ReadByte()
 													end
-													if _debug then profiler.StopTimer() end
-
-													buffer:PopPos()
+													vertices[i] = vertex
 												end
 
-												buffer:PushPos(stream_pos + strip_group.strip_offset)
-												strip_group.strips = {}
-												
-												if _debug then profiler.StartTimer("read %i strips", strip_group.strip_count) end
-												for i = 1, strip_group.strip_count do
-													local aStrip = {}
-
-													aStrip.indices_count = buffer:ReadLong()
-													aStrip.index_mesh_index = buffer:ReadLong()
-													aStrip.vertices_count = buffer:ReadLong()
-													aStrip.vertex_mesh_index = buffer:ReadLong()
-													aStrip.bone_count = buffer:ReadShort()
-													aStrip.flags = buffer:ReadByte()
-													aStrip.bone_state_change_count = buffer:ReadLong()
-													aStrip.bone_state_change_offset = buffer:ReadLong()
-
-													aStrip.indices = indices
-													aStrip.vertices = vertices
-
-													strip_group.strips[i] = aStrip
-												end
 												buffer:PopPos()
-												if _debug then profiler.StopTimer() end
 											end
+											
+											local indices = {}
+											if strip_group.indices_count > 0 and strip_group.indices_offset ~= 0 then
+												buffer:PushPos(stream_pos + strip_group.indices_offset)
+
+												for i = 1, strip_group.indices_count do
+													indices[i] = buffer:ReadShort()
+												end
+
+												buffer:PopPos()
+											end
+																						
+											local strips = {}											
+											if strip_group.strip_count > 0 and strip_group.strip_offset ~= 0 then
+												buffer:PushPos(stream_pos + strip_group.strip_offset)
+												
+												for i = 1, strip_group.strip_count do
+													local strip = {}
+
+													strip.indices_count = buffer:ReadLong()
+													strip.index_mesh_index = buffer:ReadLong()
+													strip.vertices_count = buffer:ReadLong()
+													strip.vertex_mesh_index = buffer:ReadLong()
+													strip.bone_count = buffer:ReadShort()
+													strip.flags = buffer:ReadByte()
+													strip.bone_state_change_count = buffer:ReadLong()
+													strip.bone_state_change_offset = buffer:ReadLong()
+
+													strip.indices = indices 
+													strip.vertices = vertices
+
+													strips[i] = strip
+												end
+																								
+												buffer:PopPos()
+											end						
+																						
+											strip_group.strips = strips
 										end
 										buffer:PopPos()
-										if _debug then profiler.StopTimer() end
 									end
 								end
 								buffer:PopPos()
-								if _debug then profiler.StopTimer() end
 							end
 						end
 						buffer:PopPos()
-						if _debug then profiler.StopTimer() end
 					end
 				end
 				buffer:PopPos()
-				if _debug then profiler.StopTimer() end
 			end
 		end
 		buffer:PopPos()
-		if _debug then profiler.StopTimer() end
 	end
 
 	return vtx
@@ -678,7 +665,7 @@ function steam.LoadModel(path, callback, thread)
 	local mdl = load_mdl(path, thread)
 	local vvd = load_vvd(path, thread)
 	local vtx = load_vtx(path, thread)
-
+	
 	local models = {}
 
 	for i, body_part in ipairs(vtx.body_parts) do
@@ -753,12 +740,64 @@ local path = "models/antlion" -- broken
 local path = "models/airboat"
 local path = "models/buggy" -- broken
 local path = "models/zombie/poison" -- broken
+local path = "models/pot" 
+local path = "models/majoras_mask/clocktown/pot"
 
-if RELOAD then
+if RELOAD then 
+	if true then
+		local bsp_file = assert(vfs.Open("G:/SteamLibrary/SteamApps/common/Team Fortress 2/tf/download/maps/trade_clocktown_b2a.bsp"))
+
+		local header = bsp_file:ReadStructure([[
+		long ident; // BSP file identifier
+		long version; // BSP file version
+		]])
+		 
+		do 
+			local struct = [[
+				int	fileofs;	// offset into file (bytes)
+				int	filelen;	// length of lump (bytes)
+				int	version;	// lump format version
+				char fourCC[4];	// lump ident code
+			]]
+
+			local struct_21 = [[
+				int	version;	// lump format version
+				int	fileofs;	// offset into file (bytes)
+				int	filelen;	// length of lump (bytes)
+				char fourCC[4];	// lump ident code
+			]]
+
+			if header.version > 21 then 
+				struct = struct_21
+			end
+			
+			header.lumps = {}
+
+			for i = 1, 64 do
+				header.lumps[i] = bsp_file:ReadStructure(struct) 
+			end		
+		end
+		
+		header.map_revision = bsp_file:ReadLong()
+		do 
+			local lump = header.lumps[41]
+			local length = lump.filelen
+
+			bsp_file:SetPos(lump.fileofs)
+			local pak = bsp_file:ReadBytes(length) 
+			
+			local name = "temp_bsp.zip"
+			
+			vfs.Write(name, pak)
+			
+			vfs.Mount(R(name))			
+		end
+	end
+
 	steam.MountSourceGame("half-life 2")
 	
 	entities.SafeRemove(MDL_ENT)
 	local ent = entities.CreateEntity("clientside")
-	ent:SetModelPath(path) 
+	ent:SetModelPath(path)
 	MDL_ENT = ent
 end 
