@@ -289,40 +289,48 @@ do -- texture object
 			out_color = shade();
 		}
 	]]
+
+	META.shaders = {}
 	
 	function META:Shade(fragment_shader, vars)		
-		local data = {
-			name = "shade_texture_" .. self.id .. "_" .. crypto.CRC32(fragment_shader),
-			shared = {
-				uniform = vars,
-			},
-			
-			vertex = {
-				uniform = {
-					pwm_matrix = "mat4",
-				},			
-				attributes = {
-					{pos = "vec3"},
-					{uv = "vec2"},
-				},	
-				source = "gl_Position = pwm_matrix * vec4(pos, 1);"
-			},
-			
-			fragment = { 
-				uniform = {
-					self = self,
-					size = self:GetSize(),
-				},		
-				attributes = {
-					{uv = "vec2"},
-				},			
-				source = template:format(fragment_shader),
-			} 
-		} 
-			
-		local shader = render.CreateShader(data)
-		shader.pwm_matrix = render.GetPVWMatrix2D
+		local name = "shade_texture_" .. self.id .. "_" .. crypto.CRC32(fragment_shader)
+		local shader = self.shaders[name]
 		
+		if not self.shaders[name] then
+			local data = {
+				name = name,
+				shared = {
+					uniform = vars,
+				},
+				
+				vertex = {
+					uniform = {
+						pwm_matrix = "mat4",
+					},			
+					attributes = {
+						{pos = "vec3"},
+						{uv = "vec2"},
+					},	
+					source = "gl_Position = pwm_matrix * vec4(pos, 1);"
+				},
+				
+				fragment = { 
+					uniform = {
+						self = self,
+						size = self:GetSize(),
+					},		
+					attributes = {
+						{uv = "vec2"},
+					},			
+					source = template:format(fragment_shader),
+				} 
+			} 
+				
+			shader = render.CreateShader(data)
+			shader.pwm_matrix = render.GetPVWMatrix2D		
+			
+			self.shaders[name] = shader
+		end
 		
 		local fb = self.fb or render.CreateFrameBuffer(self.w, self.h, {texture = self})
 				
