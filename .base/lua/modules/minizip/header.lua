@@ -106,10 +106,34 @@ typedef struct unz_file_info64_s
     tm_unz tmu_date;
 } unz_file_info64;
 
+typedef struct unz_file_info_s
+{
+    uint32_t version;              /* version made by                 2 bytes */
+    uint32_t version_needed;       /* version needed to extract       2 bytes */
+    uint32_t flag;                 /* general purpose bit flag        2 bytes */
+    uint32_t compression_method;   /* compression method              2 bytes */
+    uint32_t dosDate;              /* last mod file date in Dos fmt   4 bytes */
+    uint32_t crc;                  /* crc-32                          4 bytes */
+    uint32_t compressed_size;      /* compressed size                 4 bytes */
+    uint32_t uncompressed_size;    /* uncompressed size               4 bytes */
+    uint32_t size_filename;        /* filename length                 2 bytes */
+    uint32_t size_file_extra;      /* extra field length              2 bytes */
+    uint32_t size_file_comment;    /* file comment length             2 bytes */
+
+    uint32_t disk_num_start;       /* disk number start               2 bytes */
+    uint32_t internal_fa;          /* internal file attributes        2 bytes */
+    uint32_t external_fa;          /* external file attributes        4 bytes */
+
+    tm_unz tmu_date;
+} unz_file_info;
+
+
 int unzStringFileNameCompare (const char* fileName1, const char* fileName2, int iCaseSensitivity);
-unzFile unzOpen64 (const void *path);
+unzFile unzOpen64(const void *path);
+unzFile unzOpen(const void *path);
 int unzClose (unzFile file);
 int unzGetGlobalInfo64 (unzFile file, unz_global_info64 *pglobal_info);
+int unzGetGlobalInfo(unzFile file, unz_global_info64 *pglobal_info);
 int unzGetGlobalComment (unzFile file, char *szComment, uint32_t uSizeBuf);
 int unzGoToFirstFile (unzFile file);
 int unzGoToNextFile (unzFile file);
@@ -123,14 +147,21 @@ typedef struct unz64_file_pos_s
 
 int unzGetFilePos64(unzFile file, unz64_file_pos* file_pos);
 int unzGoToFilePos64(unzFile file, const unz64_file_pos* file_pos);
+
 int unzGetCurrentFileInfo64 (unzFile file, unz_file_info64 *pfile_info, char *szFileName, uint32_t fileNameBufferSize, void *extraField, uint32_t extraFieldBufferSize, char *szComment, uint32_t commentBufferSize);
+int unzGetCurrentFileInfo(unzFile file, unz_file_info *pfile_info, char *szFileName, uint32_t fileNameBufferSize, void *extraField, uint32_t extraFieldBufferSize, char *szComment, uint32_t commentBufferSize);
 uint64_t unzGetCurrentFileZStreamPos64 (unzFile file);
 int unzOpenCurrentFile3 (unzFile file, int* method, int* level, int raw, const char* password);
 int unzCloseCurrentFile (unzFile file);
 int unzReadCurrentFile (unzFile file, void* buf, unsigned len);
 uint64_t unztell64 (unzFile file);
+uint32_t unztell(unzFile file);
 int unzeof (unzFile file);
 int unzGetLocalExtrafield (unzFile file, void* buf, unsigned len);
+
 uint64_t unzGetOffset64 (unzFile file);
 int unzSetOffset64 (unzFile file, uint64_t pos);
+
+uint32_t unzGetOffset(unzFile file);
+int unzSetOffset(unzFile file, uint32_t pos);
 ]]
