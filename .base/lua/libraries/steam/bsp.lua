@@ -1,12 +1,13 @@
 local steam = ... or _G.steam
 
 local mount_info = {
-	["gm_.*"] = {"garry's mod"},
-	["ep1_.*"] = {"half-life 2: episode one"},
-	["ep2_.*"] = {"half-life 2: episode two"},
-	["trade_.*"] = {"half-life 2", "team fortress 2"},
-	["d%d_.*"] = {"half-life 2"},
+	["gm_.+"] = {"garry's mod"},
+	["ep1_.+"] = {"half-life 2: episode one"},
+	["ep2_.+"] = {"half-life 2: episode two"},
+	["trade_.+"] = {"half-life 2", "team fortress 2"},
+	["d%d_.+"] = {"half-life 2"},
 	["dm_.*"] = {"half-life 2: deathmatch"},
+	["c%dm%d_.+"] = {"left 4 dead 2"},
 
 	["esther"] = {"dear esther"},
 	["jakobson"] = {"dear esther"},
@@ -134,7 +135,7 @@ function steam.LoadMap(path, callback)
 			
 		end
 		 
-		do
+		if false then
 			thread:Report("reading game lump")
 			
 			local lump = header.lumps[36]
