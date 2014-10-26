@@ -68,7 +68,7 @@ function assimp.ImportFileEx(path, flags, callback, custom_io)
 						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
 						--print("tell", file)
 						
-						return file:GetPos()
+						return file:GetPosition()
 					end,
 					FileSizeProc = function(proxy)
 						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
@@ -80,7 +80,7 @@ function assimp.ImportFileEx(path, flags, callback, custom_io)
 						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
 						--print("seek", file)
 						
-						file:SetPos(pos)
+						file:SetPosition(pos)
 						return 0 -- 0 = success, -1 = failure, -3 = out of memory
 					end,
 					FlushProc = function(proxy)

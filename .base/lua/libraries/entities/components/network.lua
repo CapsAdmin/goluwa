@@ -188,12 +188,12 @@ do -- synchronization server > client
 					end
 					if self.debug then logf("%s - %s: received %s\n", self, info.component, var) end
 				elseif info.flags == "reliable" then
-					buffer:SetPos(1)
+					buffer:SetPosition(1)
 					table.insert(self.queued_packets, buffer)
 				end
 			end
 		else
-			buffer:SetPos(1)
+			buffer:SetPosition(1)
 			table.insert(queued_packets, buffer)
 			--logf("received sync packet %s but entity[%s] is NULL\n", typ, id)
 		end

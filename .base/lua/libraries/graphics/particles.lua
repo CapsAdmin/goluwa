@@ -2,7 +2,7 @@ local lerp,deg,randomf,clamp = math.lerp,math.deg,math.randomf,math.clamp
 
 local PARTICLE = prototype.CreateTemplate("particle")
 
-prototype.GetSet(PARTICLE, "Pos", Vec3(0,0,0))
+prototype.GetSet(PARTICLE, "Position", Vec3(0,0,0))
 prototype.GetSet(PARTICLE, "Velocity", Vec3(0,0,0))
 prototype.GetSet(PARTICLE, "Drag", 0.98)
 prototype.GetSet(PARTICLE, "Size", Vec2(1,1))
@@ -34,7 +34,7 @@ prototype.GetSet(EMITTER, "Speed", 1)
 prototype.GetSet(EMITTER, "Rate", 0.1)
 prototype.GetSet(EMITTER, "EmitCount", 1)
 prototype.GetSet(EMITTER, "Mode2D", true)
-prototype.GetSet(EMITTER, "Pos", Vec3(0, 0, 0))
+prototype.GetSet(EMITTER, "Position", Vec3(0, 0, 0))
 prototype.GetSet(EMITTER, "Additive", true)
 prototype.GetSet(EMITTER, "ThinkTime", 0.1)
 prototype.GetSet(EMITTER, "CenterAttractionForce", 0)
@@ -84,38 +84,38 @@ function EMITTER:Update(dt)
 		else
 			
 			if self.CenterAttractionForce ~= 0 and self.attraction_center then
-				p.Velocity.x = p.Velocity.x + (self.attraction_center.x - p.Pos.x) * self.CenterAttractionForce
-				p.Velocity.y = p.Velocity.y + (self.attraction_center.y - p.Pos.y) * self.CenterAttractionForce
-				p.Velocity.z = p.Velocity.z + (self.attraction_center.z - p.Pos.z) * self.CenterAttractionForce
+				p.Velocity.x = p.Velocity.x + (self.attraction_center.x - p.Position.x) * self.CenterAttractionForce
+				p.Velocity.y = p.Velocity.y + (self.attraction_center.y - p.Position.y) * self.CenterAttractionForce
+				p.Velocity.z = p.Velocity.z + (self.attraction_center.z - p.Position.z) * self.CenterAttractionForce
 			end		
 			
 			if self.PosAttractionForce ~= 0 then
-				p.Velocity.x = p.Velocity.x + (self.Pos.x - p.Pos.x) * self.PosAttractionForce
-				p.Velocity.y = p.Velocity.y + (self.Pos.y - p.Pos.y) * self.PosAttractionForce
-				p.Velocity.z = p.Velocity.z + (self.Pos.z - p.Pos.z) * self.PosAttractionForce
+				p.Velocity.x = p.Velocity.x + (self.Position.x - p.Position.x) * self.PosAttractionForce
+				p.Velocity.y = p.Velocity.y + (self.Position.y - p.Position.y) * self.PosAttractionForce
+				p.Velocity.z = p.Velocity.z + (self.Position.z - p.Position.z) * self.PosAttractionForce
 			end
 			
 		
 			-- velocity
 			if p.Velocity.x ~= 0 then			
-				p.Pos.x = p.Pos.x + (p.Velocity.x * dt)
+				p.Position.x = p.Position.x + (p.Velocity.x * dt)
 				p.Velocity.x = p.Velocity.x * p.Drag
 			end
 			
 			if p.Velocity.y ~= 0 then
-				p.Pos.y = p.Pos.y + (p.Velocity.y * dt)
+				p.Position.y = p.Position.y + (p.Velocity.y * dt)
 				p.Velocity.y = p.Velocity.y * p.Drag
 			end
 			
 			if not self.Mode2D and p.Velocity.z ~= 0 then
-				p.Pos.z = p.Pos.z + (p.Velocity.z * dt)
+				p.Position.z = p.Position.z + (p.Velocity.z * dt)
 				p.Velocity.z = p.Velocity.z * p.Drag
 			end
 		
 			p.life_mult = clamp((p.life_end - time) / p.LifeTime, 0, 1)
 
 			if self.CenterAttractionForce ~= 0 then
-				center = center + p.Pos
+				center = center + p.Position
 			end
 		end
 		
@@ -174,7 +174,7 @@ function EMITTER:Draw()
 			
 			self.poly:SetColor(p.Color.r, p.Color.g, p.Color.b, p.Color.a * alpha)
 			
-			local x, y = p.Pos:Unpack()
+			local x, y = p.Position:Unpack()
 			
 			if self.MoveResolution ~= 0 then
 				x = math.ceil(x * self.MoveResolution) / self.MoveResolution
@@ -205,7 +205,7 @@ end
   
 function EMITTER:AddParticle(...)
 	local p = setmetatable({}, PARTICLE) -- prototype.CreateObject(PARTICLE)
-	p:SetPos(self:GetPos():Copy())
+	p:SetPosition(self:GetPosition():Copy())
 	p.life_mult = 1	
 	
 	p:SetLifeTime(1)

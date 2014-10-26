@@ -528,10 +528,10 @@ else
 		insert_lowres_texture(vtf, vtf.headerSize)
 	end
 	
-	buffer:SetPos(vtf.headerSize)
+	buffer:SetPosition(vtf.headerSize)
 	
 	vtf.textures = {}
-	insert_textures(vtf, buffer:GetPos())
+	insert_textures(vtf, buffer:GetPosition())
 end
 
 -- remove useless values
@@ -546,7 +546,7 @@ vtf.lowResImageFormat = nil
 
 --table.print(vtf)
 
-buffer:SetPos(vtf.headerSize)
+buffer:SetPosition(vtf.headerSize)
   
 for k,v in pairs(vtf.textures) do
 	v.tex = Texture{

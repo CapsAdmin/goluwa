@@ -37,7 +37,7 @@ PANEL.Base = "grid"
 gui.GetSet(PANEL, "IconSize", Vec2(16, 16))
 
 function PANEL:Initialize()
-	self:SetPos(gui.GetMousePos())
+	self:SetPosition(gui.GetMousePos())
 
 	self:SetStackRight(false)
 	self:SetSizeToWidth(false)

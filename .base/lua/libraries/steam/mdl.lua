@@ -429,7 +429,7 @@ local function load_vtx(path)
 		vtx.body_parts = {}
 
 		for i = 1, vtx.body_part_count do
-			local stream_pos = buffer:GetPos()
+			local stream_pos = buffer:GetPosition()
 
 			local body_part = {}
 			body_part.model_count = buffer:ReadLong()
@@ -441,7 +441,7 @@ local function load_vtx(path)
 				body_part.models = {}
 
 				for i = 1, body_part.model_count do
-					local stream_pos = buffer:GetPos()
+					local stream_pos = buffer:GetPosition()
 
 					local model = {}
 					model.lod_count = buffer:ReadLong()
@@ -453,7 +453,7 @@ local function load_vtx(path)
 						model.model_lods = {}
 
 						for i = 1, model.lod_count do
-							local stream_pos = buffer:GetPos()
+							local stream_pos = buffer:GetPosition()
 
 							local lod_model = {}
 							lod_model.mesh_count = buffer:ReadLong()
@@ -466,7 +466,7 @@ local function load_vtx(path)
 								lod_model.meshes = {}
 
 								for i = 1, lod_model.mesh_count do
-									local stream_pos = buffer:GetPos()
+									local stream_pos = buffer:GetPosition()
 
 									local mesh = {}
 									mesh.strip_group_count = buffer:ReadLong()
@@ -479,7 +479,7 @@ local function load_vtx(path)
 										mesh.strip_groups = {}
 										
 										for i = 1, mesh.strip_group_count do
-											local stream_pos = buffer:GetPos()
+											local stream_pos = buffer:GetPosition()
 											
 											local strip_group = {}
 											strip_group.vertices_count = buffer:ReadLong()
@@ -588,7 +588,7 @@ local function load_vvd(path)
 	vvd.tangentDataOffset = buffer:ReadLong()
 
 	if vvd.lod_count > 0 then
-		buffer:SetPos(vvd.vertices_offset)
+		buffer:SetPosition(vvd.vertices_offset)
 
 		local vertices_count = vvd.lod_vertices_count[1]
 		vvd.vertices = {}
@@ -619,7 +619,7 @@ local function load_vvd(path)
 	
 	if _debug then profiler.StartTimer("processed %i fixups", vvd.fixup_count) end
 	if vvd.fixup_count > 0 and vvd.fixup_offset ~= 0 then
-		buffer:SetPos(vvd.fixup_offset)
+		buffer:SetPosition(vvd.fixup_offset)
 
 		vvd.theFixups = {}
 
@@ -634,7 +634,7 @@ local function load_vvd(path)
 		end
 
 		if vvd.lod_count > 0 then
-			buffer:SetPos(vvd.vertices_offset)
+			buffer:SetPosition(vvd.vertices_offset)
 
 			for lod_index = 1, vvd.lod_count do
 				vvd.fixed_vertices_by_lod[lod_index] = {}
@@ -783,7 +783,7 @@ if RELOAD then
 			local lump = header.lumps[41]
 			local length = lump.filelen
 
-			bsp_file:SetPos(lump.fileofs)
+			bsp_file:SetPosition(lump.fileofs)
 			local pak = bsp_file:ReadBytes(length) 
 			
 			local name = "temp_bsp.zip"

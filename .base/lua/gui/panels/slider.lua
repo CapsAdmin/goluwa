@@ -21,7 +21,7 @@ function PANEL:Initialize()
 			drag:SetWidth(self:GetWidth() - 2)
 		end
 				
-		self:SetDragPos((drag:GetPos() / (self:GetSize() - drag:GetSize())))
+		self:SetDragPos((drag:GetPosition() / (self:GetSize() - drag:GetSize())))
 		self:OnDrag(self.DragPos)
 	end 
 	
@@ -52,7 +52,7 @@ function PANEL:SetDragPos(pos)
 
 	self.DragPos = pos
 	
-	self.drag:SetPos(pos * (self:GetSize() - self.drag:GetSize()))
+	self.drag:SetPosition(pos * (self:GetSize() - self.drag:GetSize()))
 	
 	if self.LockX then
 		self.drag:CenterX()
@@ -65,12 +65,12 @@ end
 
 function PANEL:OnMouseInput(button, press, pos, ...)
 	if button == "mwheel_up" then
-		pos = self.drag:GetPos()
+		pos = self.drag:GetPosition()
 		pos.y = pos.y - 1
 		self:SetDragPos(pos / (self:GetSize() - self.drag:GetSize()))
 		self:OnDrag(self.DragPos)
 	elseif button == "mwheel_down" then
-		pos = self.drag:GetPos()
+		pos = self.drag:GetPosition()
 		pos.y = pos.y + 1
 		self:SetDragPos(pos / (self:GetSize() - self.drag:GetSize()))
 		self:OnDrag(self.DragPos)
@@ -136,15 +136,15 @@ do -- label slider
 	function PANEL:OnRequestLayout(parent, size)
 		local pad = self.NoPadding and 0 or self:GetSkinVar("Padding", 1)
 
-		self.left_label:SetPos(Vec2(0, 0))
+		self.left_label:SetPosition(Vec2(0, 0))
 		self.left_label:SizeToText()
 		
 		self.right_label:SizeToText()
 		
-		self.slider:SetPos(Vec2(self.left_label:GetWidth() + pad, 0))
+		self.slider:SetPosition(Vec2(self.left_label:GetWidth() + pad, 0))
 		self.slider:SetSize(self:GetSize() - Vec2(30 + self.left_label:GetWidth() + pad, 0))
 		
-		self.right_label:SetPos(Vec2(self.slider:GetPos().x + self.slider:GetWidth() + pad, 0))
+		self.right_label:SetPosition(Vec2(self.slider:GetPosition().x + self.slider:GetWidth() + pad, 0))
 		
 		self.slider:CenterY()
 		self.left_label:CenterY()

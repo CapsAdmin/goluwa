@@ -453,7 +453,7 @@ do -- text button
 	function PANEL:SizeToText()
 		local marg = self:GetMargin()
 			
-		self.label:SetPosition(marg:GetPos())
+		self.label:SetPosition(marg:GetPosition())
 		self:SetSize(self.label:GetSize() + marg:GetSize()*2)
 	end
 	
@@ -508,7 +508,7 @@ do -- text button
 	function PANEL:SizeToText()
 		local marg = self:GetMargin()
 			
-		self.label:SetPosition(marg:GetPos())
+		self.label:SetPosition(marg:GetPosition())
 		self:SetSize(self.label:GetSize() + marg:GetSize()*2)
 	end
 	
@@ -1830,7 +1830,7 @@ bar:SetPadding(Rect(1,1,5*scale,3*scale))
 bar:SetSize(bar:StackChildren())
 
 local emitter = ParticleEmitter(800)
-emitter:SetPos(Vec3(50,50,0)) 
+emitter:SetPosition(Vec3(50,50,0)) 
 --emitter:SetMoveResolution(0.25) 
 emitter:SetAdditive(false)
 
@@ -1899,7 +1899,7 @@ event.AddListener("Draw2D", "zsnow", function(dt)
 end, {priority = math.huge}) 
 
 event.CreateTimer("zsnow", 0.01, function()
-	emitter:SetPos(Vec3(math.random((DX and 256 or render.GetWidth()) + 100) - 150, -50, 0))
+	emitter:SetPosition(Vec3(math.random((DX and 256 or render.GetWidth()) + 100) - 150, -50, 0))
 		
 	local p = emitter:AddParticle()
 	p:SetDrag(1)

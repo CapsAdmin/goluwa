@@ -54,7 +54,7 @@ event.AddListener("Draw2D", "wowozela", function(dt)
 	
 	volume = math.clamp(pos.x / grid_size, 0, 1)
 
-	emitter:SetPos(Vec3(pos:Unpack()))
+	emitter:SetPosition(Vec3(pos:Unpack()))
 	
 	if input.IsMouseDown("button_1") or input.IsMouseDown("button_2") then
 		local p = emitter:AddParticle()

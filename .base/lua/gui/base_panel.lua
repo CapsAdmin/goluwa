@@ -8,7 +8,7 @@ function PANEL:__tostring()
 	return string.format("%s[%s][%i]", self.Type, self.ClassName, self.aahh_id or 0)
 end
 
-gui.GetSet(PANEL, "Pos", Vec2())
+gui.GetSet(PANEL, "Position", Vec2())
 gui.GetSet(PANEL, "Size", Vec2())
 gui.GetSet(PANEL, "Padding", Rect())
 gui.GetSet(PANEL, "Margin", Rect())
@@ -62,32 +62,32 @@ do -- colors
 end
 
 do -- orientation
-	function PANEL:SetPos(a, b)
+	function PANEL:SetPosition(a, b)
 		if b then
-			self.Pos.x = a
-			self.Pos.y = b
+			self.Position.x = a
+			self.Position.y = b
 		elseif typex(a) == "vec2" then
-			self.Pos = a
+			self.Position = a
 		else
-			self.Pos:Zero()
+			self.Position:Zero()
 		end
 		
-		if self.last_pos ~= self.Pos then
+		if self.last_pos ~= self.Position then
 			self:CalcTrap()
-			self.last_pos = self.Pos
+			self.last_pos = self.Position
 		end
 	end
 	
 	function PANEL:SetX(x)
-		local pos = self:GetPos()
+		local pos = self:GetPosition()
 		pos.x = x
-		self:SetPos(pos)
+		self:SetPosition(pos)
 	end
 	
 	function PANEL:SetY(y)
-		local pos = self:GetPos()
+		local pos = self:GetPosition()
 		pos.y = y
-		self:SetPos(pos)
+		self:SetPosition(pos)
 	end
 
 	function PANEL:SetSize(vec)
@@ -103,13 +103,13 @@ do -- orientation
 
 	function PANEL:SetRect(rect)
 		if typex(rect) ~= "rect" then return end
-		self.Pos = Vec2(rect.x, rect.y)
+		self.Position = Vec2(rect.x, rect.y)
 		self.Size = Vec2(rect.w, rect.h)
 		self:RequestLayout()
 	end
 
 	function PANEL:GetRect()
-		return Rect(self.Pos.x, self.Pos.y, self.Size.w, self.Size.h)
+		return Rect(self.Position.x, self.Position.y, self.Size.w, self.Size.h)
 	end
 
 	function PANEL:GetParentMargin()
@@ -149,19 +149,19 @@ do -- orientation
 		if not self.parent_list then self:BuildParentList() end
 		
 		for _, parent in ipairs(self.parent_list) do			
-			pos = pos - parent:GetPos()
+			pos = pos - parent:GetPosition()
 		end			
 
-		self:SetPos(pos)
+		self:SetPosition(pos)
 	end
 
 	function PANEL:GetWorldPos()
-		local pos = self:GetPos()	
+		local pos = self:GetPosition()	
 	
 		if not self.parent_list then self:BuildParentList() end
 		
 		for _, parent in ipairs(self.parent_list) do	
-			pos = pos + parent:GetPos()
+			pos = pos + parent:GetPosition()
 		end	
 
 		return pos
@@ -271,11 +271,11 @@ end
 
 do -- center
 	function PANEL:CenterX()
-		self:SetPos(Vec2((self.Parent:GetSize().x * 0.5) - (self:GetSize().x * 0.5), self:GetPos().y))
+		self:SetPosition(Vec2((self.Parent:GetSize().x * 0.5) - (self:GetSize().x * 0.5), self:GetPosition().y))
 	end
 
 	function PANEL:CenterY()
-		self:SetPos(Vec2(self:GetPos().x, (self.Parent:GetSize().y * 0.5) - (self:GetSize().y * 0.5)))
+		self:SetPosition(Vec2(self:GetPosition().x, (self.Parent:GetSize().y * 0.5) - (self:GetSize().y * 0.5)))
 	end
 
 	function PANEL:Center()
@@ -317,11 +317,11 @@ do -- align
 		if vec.x == -1 and vec.y == -1 then
 			return
 		elseif vec.x == -1 then
-			self.Pos.y = pos.y + off.y + padding.y
+			self.Position.y = pos.y + off.y + padding.y
 		elseif vec.y == -1 then
-			self.Pos.x = pos.x + off.x + padding.x
+			self.Position.x = pos.x + off.x + padding.x
 		else
-			self:SetPos(pos + off + padding:GetPos())
+			self:SetPosition(pos + off + padding:GetPosition())
 		end
 		
 	end
@@ -331,7 +331,7 @@ do -- fill
 	do -- normal
 		function PANEL:Fill(left, top, right, bottom)
 			self:SetSize(self.Parent:GetSize() - Vec2(right+left, bottom+top))
-			self:SetPos(Vec2(left, top))
+			self:SetPosition(Vec2(left, top))
 		end
 
 		-- todo rest ??
@@ -342,7 +342,7 @@ do -- fill
 		function PANEL:FillPercent(div)
 			div = div or 1
 
-			self:SetPos(self.Parent:GetSize() / div)
+			self:SetPosition(self.Parent:GetSize() / div)
 			self:SetSize((self.Parent:GetSize() / 2) - (self:GetSize() / 2))
 		end
 
@@ -350,7 +350,7 @@ do -- fill
 			div = div or 2
 			index = math.clamp(math.abs(index or 1), 1, div)
 
-			self:SetPos(self.Parent:GetSize() / Vec2(1, div))
+			self:SetPosition(self.Parent:GetSize() / Vec2(1, div))
 			self:SetSize(self:GetSize() * Vec2(0, -index + div))
 		end
 
@@ -364,7 +364,7 @@ do -- fill
 			div = div or 2
 			index = math.clamp(math.abs(index or 1), 1, div)
 
-			self:SetPos(self.Parent:GetSize() / Vec2(div, 1))
+			self:SetPosition(self.Parent:GetSize() / Vec2(div, 1))
 			self:SetSize(self.Parent:GetSize() - (self:GetSize() * Vec2(index, 1)))
 		end
 
@@ -386,21 +386,21 @@ do -- fill
 		end
 
 		--function PANEL:AddLeftWidth(w, prev_w, prev_x)
-			--self:SetPos(Vec2(prev_x - prev_w, self:GetPos().y))
+			--self:SetPosition(Vec2(prev_x - prev_w, self:GetPosition().y))
 			--self:SetSize(Vec2(prev_x - w + prev_w, self:GetSize().h))
 		--end
 
 		--function PANEL:AddTopHeight(h, prev_h, prev_y)
-			--self:SetPos(Vec2(self:GetPos().x, prev_h + h))
+			--self:SetPosition(Vec2(self:GetPosition().x, prev_h + h))
 			--self:SetSize(Vec2(self:GetSize().w, prev_y - h + prev_h))
 		--end
 		
 		function PANEL:StretchToBottom()
-			self:SetHeight(self:GetParentHeight() - self.Parent.Margin.h - (self.Parent:GetHeight() - self:GetPos().y))
+			self:SetHeight(self:GetParentHeight() - self.Parent.Margin.h - (self.Parent:GetHeight() - self:GetPosition().y))
 		end
 		
 		function PANEL:StretchToRight()
-			self:SetWidth(self:GetParentWidth() - self.Parent.Margin.w - (self.Parent:GetWidth() - self:GetPos().x))
+			self:SetWidth(self:GetParentWidth() - self.Parent.Margin.w - (self.Parent:GetWidth() - self:GetPosition().x))
 		end
 	end
 end
@@ -480,7 +480,7 @@ do -- dock
 		if top then
 			pad = top:GetPadding() + dpad
 			
-			top:SetPos(area:GetPos() + pad:GetPos())
+			top:SetPosition(area:GetPosition() + pad:GetPosition())
 			top:SetWidth(area.w - pad:GetXW())
 
 			area.y = area.y + top:GetHeight() + pad:GetYH()
@@ -490,7 +490,7 @@ do -- dock
 		if bottom then
 			pad = bottom:GetPadding() + dpad
 			
-			bottom:SetPos(area:GetPos() + Vec2(pad.x, area.h - bottom:GetHeight() - pad.h))
+			bottom:SetPosition(area:GetPosition() + Vec2(pad.x, area.h - bottom:GetHeight() - pad.h))
 			bottom:SetWidth(w - pad:GetXW())
 			area.h = area.h - bottom:GetHeight() - pad:GetYH()
 		end
@@ -498,7 +498,7 @@ do -- dock
 		if left then
 			pad = left:GetPadding() + dpad
 			
-			left:SetPos(area:GetPos() + pad:GetPos())
+			left:SetPosition(area:GetPosition() + pad:GetPosition())
 			left:SetHeight(area.h - pad:GetYH())
 			area.x = area.x + left:GetWidth() + pad:GetXW()
 			area.w = area.w - left:GetWidth() - pad:GetXW()
@@ -507,7 +507,7 @@ do -- dock
 		if right then
 			pad = right:GetPadding() + dpad
 			
-			right:SetPos(area:GetPos() + Vec2(area.w - right:GetWidth() - pad.w, pad.y))
+			right:SetPosition(area:GetPosition() + Vec2(area.w - right:GetWidth() - pad.w, pad.y))
 			right:SetHeight(area.h - pad:GetYH())
 			area.w = area.w - right:GetWidth() - pad:GetXW()
 		end
@@ -515,7 +515,7 @@ do -- dock
 		if fill then
 			pad = fill:GetPadding() + dpad
 			
-			fill:SetPos(area:GetPos() + pad:GetPos())
+			fill:SetPosition(area:GetPosition() + pad:GetPosition())
 			fill:SetSize(area:GetSize() - pad:GetPosSize())
 			
 			if fill.SizeToContens then
@@ -637,8 +637,8 @@ function PANEL:GetNextSpace()
 	local height = 0
 	
 	for _,child in pairs(children)do
-		local x = child:GetPos().x + child:GetSize().w + child:GetPadding().w
-		local y = child:GetPos().y + child:GetSize().h + child:GetPadding().h
+		local x = child:GetPosition().x + child:GetSize().w + child:GetPadding().w
+		local y = child:GetPosition().y + child:GetSize().h + child:GetPadding().h
 		width = math.max(width, x)
 		height = math.max(height, y)
 	end
@@ -653,7 +653,7 @@ function PANEL:GetNextSpaceX()
 	local width = 0
 	
 	for _,child in pairs(children)do
-		local x = child:GetPos().x + child:GetSize().w + child:GetPadding().w
+		local x = child:GetPosition().x + child:GetSize().w + child:GetPadding().w
 		width = math.max(width, x)
 	end
 	
@@ -667,7 +667,7 @@ function PANEL:GetNextSpaceY()
 	local height = 8
 	
 	for _,child in pairs(children)do
-		local y = child:GetPos().y + child:GetSize().h + child:GetPadding().h
+		local y = child:GetPosition().y + child:GetSize().h + child:GetPadding().h
 		height = math.max(height, y)
 	end
 	
@@ -691,12 +691,12 @@ end
 
 function PANEL:AppendToRight(offset)
 	offset = offset or 0
-	self.Pos.x = self.Parent:GetNextSpaceX()+offset
+	self.Position.x = self.Parent:GetNextSpaceX()+offset
 end
 
 function PANEL:AppendToBottom(offset)
 	offset = offset or 0
-	self.Pos.y = self.Parent:GetNextSpaceY()+offset
+	self.Position.y = self.Parent:GetNextSpaceY()+offset
 end
 
 function PANEL:KeyInput(key, press)
@@ -734,8 +734,8 @@ function PANEL:CalcTrap()
 		if self.TrapInsideParent or parent == gui.World then
 			local psize = parent:GetSize()
 
-			self.Pos.x = math.clamp(self.Pos.x, pad, (psize.w - self.Size.w) - (pad * 2))
-			self.Pos.y = math.clamp(self.Pos.y, pad, (psize.h - self.Size.h) - (pad * 2))
+			self.Position.x = math.clamp(self.Position.x, pad, (psize.w - self.Size.w) - (pad * 2))
+			self.Position.y = math.clamp(self.Position.y, pad, (psize.h - self.Size.h) - (pad * 2))
 			
 			self.Size.w = math.clamp(self.Size.w, self.MinSize.w, psize.w - pad)
 			self.Size.h = math.clamp(self.Size.h, self.MinSize.h, psize.h - pad)
@@ -906,10 +906,10 @@ do -- animation
 	ADD_ANIM(
 		"MoveTo",
 		function(self) 
-			return self:GetPos() 
+			return self:GetPosition() 
 		end, 
 		function(self, lerp, data) 
-			self:SetPos(data.original:Lerp(lerp, data.target))
+			self:SetPosition(data.original:Lerp(lerp, data.target))
 			return lerp > 1
 		end
 	)
@@ -933,7 +933,7 @@ do -- animation
 		local pos = Vec2(rect.x, rect.y)
 		local siz = Vec2(rect.w, rect.h)
 		
-		self:MoveTo(self:GetPos() + pos, ...)
+		self:MoveTo(self:GetPosition() + pos, ...)
 		self:SizeTo(self:GetSize() + siz * 2, ...)
 	end
 end
