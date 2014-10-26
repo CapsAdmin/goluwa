@@ -35,7 +35,7 @@ local function read_header(buffer)
 	
 	table.remove(buffer.buffer, 1)
 	table.remove(buffer.buffer, 1)
-	buffer:SetPos(0)
+	buffer:SetPosition(0)
 	
 	return id
 end
@@ -154,7 +154,7 @@ do -- buffer object
 		end
 		
 		function META:TheEnd()
-			return self:GetPos() >= self:GetSize()
+			return self:GetPosition() >= self:GetSize()
 		end
 		
 		function META:Clear()
@@ -172,12 +172,12 @@ do -- buffer object
 			return table.concat(temp)
 		end
 		
-		function META:SetPos(pos)
+		function META:SetPosition(pos)
 			self.position = math.clamp(pos, 1, self:GetSize())			
-			return self:GetPos()
+			return self:GetPosition()
 		end
 		
-		function META:GetPos()
+		function META:GetPosition()
 			return self.position
 		end
 		
@@ -185,19 +185,19 @@ do -- buffer object
 			function META:PushPos(pos)
 				self.stack = self.stack or {}
 				
-				table.insert(self.stack, self:GetPos())
+				table.insert(self.stack, self:GetPosition())
 				
-				self:SetPos(pos)
+				self:SetPosition(pos)
 			end
 			
 			function META:PopPos()
-				self:SetPos(table.remove(self.stack))
+				self:SetPosition(table.remove(self.stack))
 			end
 		end
 
 		function META:Advance(i)
 			i = i or 1
-			self:SetPos(self:GetPos() + i) 
+			self:SetPosition(self:GetPosition() + i) 
 		end
 		
 		META.__len = META.GetSize

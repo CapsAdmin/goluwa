@@ -79,11 +79,11 @@ function CONTEXT:ReadBytes(bytes)
 	return self.file:read(bytes)
 end
 
-function CONTEXT:SetPos(pos)
+function CONTEXT:SetPosition(pos)
 	self.file:seek("set", pos)
 end
 
-function CONTEXT:GetPos()
+function CONTEXT:GetPosition()
 	return self.file:seek()
 end
 

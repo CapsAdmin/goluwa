@@ -106,10 +106,10 @@ do -- label knob
 	function PANEL:OnRequestLayout(parent, size)
 		local pad = self.NoPadding and 0 or self:GetSkinVar("Padding", 1)
 
-		self.knob:SetPos(Vec2(0, 0))
+		self.knob:SetPosition(Vec2(0, 0))
 		self.knob:SetSize(Vec2() + self:GetHeight())
 				
-		self.left_label:SetPos(Vec2(self.knob:GetPos().x + self.knob:GetWidth() + pad, 0))
+		self.left_label:SetPosition(Vec2(self.knob:GetPosition().x + self.knob:GetWidth() + pad, 0))
 		self.left_label:SizeToText()
 
 		self.knob:CenterY()

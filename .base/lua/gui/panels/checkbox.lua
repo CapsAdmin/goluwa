@@ -61,10 +61,10 @@ do -- labeled checkbox
 	function PANEL:OnRequestLayout(parent, size)
 		local pad = self.NoPadding and 0 or self:GetSkinVar("Padding", 1)
 
-		self.checkbox:SetPos(Vec2(0, 0))
+		self.checkbox:SetPosition(Vec2(0, 0))
 		self.checkbox:SetSize(Vec2() + self:GetHeight())
 				
-		self.left_label:SetPos(Vec2(self.checkbox:GetPos().x + self.checkbox:GetWidth() + pad, 0))
+		self.left_label:SetPosition(Vec2(self.checkbox:GetPosition().x + self.checkbox:GetWidth() + pad, 0))
 		self.left_label:SizeToText()
 
 		self.checkbox:CenterY()

@@ -70,13 +70,13 @@ function PANEL:Stack(list)
 				w = siz.w
 			end
 			
-			pnl:SetPos(Vec2(w + pad, h + pad) - siz)
+			pnl:SetPosition(Vec2(w + pad, h + pad) - siz)
 		else
 			h = h or 0
 			h = h + siz.h
 			w = siz.w > w and siz.w or w
 			
-			pnl:SetPos(Vec2(pad, h + pad - siz.h))
+			pnl:SetPosition(Vec2(pad, h + pad - siz.h))
 		end
 		
 		if self.ItemSize then

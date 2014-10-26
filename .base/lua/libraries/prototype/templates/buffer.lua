@@ -556,7 +556,7 @@ function prototype.AddBufferTemplate(META)
 					end
 				else
 					if data[1] == "bufferpos" then
-						val = self:GetPos()
+						val = self:GetPosition()
 					else
 						val = self:ReadType(read_type) 
 					end
@@ -727,18 +727,18 @@ function prototype.AddBufferTemplate(META)
 		function META:PushPos(pos)
 			self.push_pop_pos_stack = self.push_pop_pos_stack or {}
 			
-			table.insert(self.push_pop_pos_stack, self:GetPos())
+			table.insert(self.push_pop_pos_stack, self:GetPosition())
 			
-			self:SetPos(pos)
+			self:SetPosition(pos)
 		end
 		
 		function META:PopPos()
-			self:SetPos(table.remove(self.push_pop_pos_stack))
+			self:SetPosition(table.remove(self.push_pop_pos_stack))
 		end
 	end
 
 	function META:TheEnd()
-		return self:GetPos() >= self:GetSize()
+		return self:GetPosition() >= self:GetSize()
 	end
 		
 	function META:PeakByte(bytes)
@@ -747,8 +747,8 @@ function prototype.AddBufferTemplate(META)
 
 	function META:Advance(i)
 		i = i or 1
-		local pos = self:GetPos() + i
-		self:SetPos(pos) 
+		local pos = self:GetPosition() + i
+		self:SetPosition(pos) 
 		return pos
 	end
 

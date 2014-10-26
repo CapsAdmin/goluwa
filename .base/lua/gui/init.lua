@@ -29,9 +29,9 @@ function gui.GetWorld()
 			return self.Size
 		end
 		
-		function WORLD:GetPos()
-			self.Pos = Vec2(0, 0)
-			return self.Pos
+		function WORLD:GetPosition()
+			self.Position = Vec2(0, 0)
+			return self.Position
 		end
 		
 		function WORLD:OnRequestLayout()

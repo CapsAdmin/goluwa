@@ -170,15 +170,15 @@ function PANEL:OnRequestLayout()
 		huh.y = math.max(huh.y, 20)
 		
 		if self.y_bar:IsValid() then
-			self.y_bar:SetPos(Vec2(self:GetWidth() - 10, math.clamp(self.y_bar:GetPos().y, 0, self:GetHeight() - huh.y - (self.x_bar:IsValid() and self.x_bar:GetHeight() or 0))))
+			self.y_bar:SetPosition(Vec2(self:GetWidth() - 10, math.clamp(self.y_bar:GetPosition().y, 0, self:GetHeight() - huh.y - (self.x_bar:IsValid() and self.x_bar:GetHeight() or 0))))
 		end
 		
 		if self.x_bar:IsValid() then
-			self.x_bar:SetPos(Vec2(math.clamp(self.x_bar:GetPos().x, 0, self:GetWidth() - huh.x - (self.y_bar:IsValid() and self.y_bar:GetWidth() or 0)), self:GetHeight() - 10 ))
+			self.x_bar:SetPosition(Vec2(math.clamp(self.x_bar:GetPosition().x, 0, self:GetWidth() - huh.x - (self.y_bar:IsValid() and self.y_bar:GetWidth() or 0)), self:GetHeight() - 10 ))
 		end
 		
 			
-		self.container:SetPos(vec)
+		self.container:SetPosition(vec)
 		self.container:SetOffset(vec)
 				
 		if huh.y >= self:GetHeight() then
@@ -213,7 +213,7 @@ function PANEL:OnMouseInput(key, press)
 		end
 		
 		if offset then
-			self.y_bar:SetY(self.y_bar:GetPos().y + offset.y / 2)
+			self.y_bar:SetY(self.y_bar:GetPosition().y + offset.y / 2)
 			self:SetScrollFraction((self.ScrollFraction * self.container:GetSize() + offset) / self.container:GetSize())
 		end
 	end

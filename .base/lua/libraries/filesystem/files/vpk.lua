@@ -47,9 +47,9 @@ local function read_vpk(file, full_path)
 				entry.directory = directory
 				entry.full_path = directory .. "/" .. entry.file_name
 				
-				file:SetPos(file:GetPos() + entry.preload_length)
+				file:SetPosition(file:GetPosition() + entry.preload_length)
 				
-				if file:GetPos() ~= entry.preload_offset + entry.preload_length then	
+				if file:GetPosition() ~= entry.preload_offset + entry.preload_length then	
 					file:Close()
 				end
 								
@@ -160,7 +160,7 @@ function CONTEXT:Open(path_info, mode, ...)
 	if self:GetMode() == "read" then
 		local file_info = tree:GetEntry(relative)
 		local file = assert(vfs.Open(file_info.archive_path))
-		file:SetPos(file_info.entry_offset)		
+		file:SetPosition(file_info.entry_offset)		
 		self.file = file
 		self.position = 0
 		self.file_info = file_info
@@ -182,7 +182,7 @@ function CONTEXT:WriteByte(byte)
 end
 
 function CONTEXT:ReadByte()					
-	self.file:SetPos(self.file_info.entry_offset + self.position)
+	self.file:SetPosition(self.file_info.entry_offset + self.position)
 	local byte = self.file:ReadByte(1)	
 	self.position = math.clamp(self.position + 1, 0, self.file_info.entry_length)
 	
@@ -197,7 +197,7 @@ function CONTEXT:ReadBytes(bytes)
 	if bytes == math.huge then bytes = self:GetSize() end
 	bytes = math.min(bytes, self.file_info.entry_length - self.position)
 
-	self.file:SetPos(self.file_info.entry_offset + self.position)
+	self.file:SetPosition(self.file_info.entry_offset + self.position)
 	local str = self.file:ReadBytes(bytes)	
 	self.position = math.clamp(self.position + bytes, 0, self.file_info.entry_length)
 	
@@ -206,12 +206,12 @@ function CONTEXT:ReadBytes(bytes)
 	return str
 end
 
-function CONTEXT:SetPos(pos)
+function CONTEXT:SetPosition(pos)
 	if pos > self.file_info.entry_length then error("position is larger than file size") end
 	self.position = math.clamp(pos, 0, self.file_info.entry_length)
 end
 
-function CONTEXT:GetPos()
+function CONTEXT:GetPosition()
 	return self.position
 end
 

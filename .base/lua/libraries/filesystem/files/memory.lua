@@ -94,7 +94,7 @@ function CONTEXT:Open(path_info, mode, ...)
 		folder[path_info.file_name] = file
 	end
 	
-	file.buffer:SetPos(0)
+	file.buffer:SetPosition(0)
 	
 	self.file = file
 end
@@ -126,12 +126,12 @@ function CONTEXT:ReadByte()
 	return self.file.buffer:ReadByte()
 end
 
-function CONTEXT:SetPos(pos)
-	self.file.buffer:SetPos(pos)
+function CONTEXT:SetPosition(pos)
+	self.file.buffer:SetPosition(pos)
 end
 
-function CONTEXT:GetPos()
-	return self.file.buffer:GetPos()
+function CONTEXT:GetPosition()
+	return self.file.buffer:GetPosition()
 end
 
 function CONTEXT:Close()

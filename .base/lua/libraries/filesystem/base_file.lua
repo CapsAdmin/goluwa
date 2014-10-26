@@ -76,11 +76,11 @@ function CONTEXT:Open(path, mode, ...)
 	error(self.Name .. ": not implemented")
 end
 
-function CONTEXT:SetPos(pos)
+function CONTEXT:SetPosition(pos)
 	error(self.Name .. ": not implemented")
 end
 
-function CONTEXT:GetPos()
+function CONTEXT:GetPosition()
 	error(self.Name .. ": not implemented")
 end
 

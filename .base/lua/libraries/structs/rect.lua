@@ -59,7 +59,7 @@ function META:Center()
 	return self
 end
 
-function META:SetPos(var)
+function META:SetPosition(var)
 	if typex(var) == "vec2" then
 		self.x = var.x
 		self.y = var.y
@@ -91,7 +91,7 @@ function META:SetSize(var)
 	return self
 end
 
-function META:GetPos()
+function META:GetPosition()
 	return structs.Vec2(self.x, self.y)
 end
 

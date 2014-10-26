@@ -254,7 +254,7 @@ function menu.SetupButtons()
 			y = y - (margin / 2)
 		else
 			b:RequestLayout(true)
-			b:SetPos(Vec2(x - b:GetWidth() / 2, y-b:GetHeight() * 2)) 
+			b:SetPosition(Vec2(x - b:GetWidth() / 2, y-b:GetHeight() * 2)) 
 			y = y - (margin / 1.25)
 		end
 	end

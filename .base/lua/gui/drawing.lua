@@ -85,7 +85,7 @@ do
 	end
 
 	function gui.StartDraw(pnl, clip)		
-		local x, y = pnl:GetPos():Unpack()
+		local x, y = pnl:GetPosition():Unpack()
 						
 		surface.PushMatrix(x, y)
 				

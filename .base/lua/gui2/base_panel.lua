@@ -924,7 +924,7 @@ do -- docking
 		elseif vec.y == -1 then
 			self.Position.x = pos.x + off.x + margin.x + padding.x
 		else
-			self:SetPosition(pos + off + margin:GetPos() + padding:GetPos())
+			self:SetPosition(pos + off + margin:GetPosition() + padding:GetPosition())
 		end
 
 	end
@@ -961,7 +961,7 @@ do -- docking
 
 					local area = Rect(x, y, w, h)	
 					
-					pnl:SetPosition(area:GetPos())
+					pnl:SetPosition(area:GetPosition())
 					pnl:SetSize(area:GetSize())
 
 					if pnl.SizeToContens then
@@ -1017,7 +1017,7 @@ do -- docking
 			local area = Rect(x, y, w, h)	
 			local pad = top:GetPadding()
 
-			top:SetPosition(area:GetPos() + pad:GetPos())
+			top:SetPosition(area:GetPosition() + pad:GetPosition())
 			top:SetWidth(area.w - pad:GetXW())
 			area.y = area.y + top:GetHeight() + pad:GetYH()
 			area.h = area.h - top:GetHeight() - pad:GetYH()
@@ -1036,7 +1036,7 @@ do -- docking
 			local area = Rect(x, y, w, h)	
 			local pad = bottom:GetMargin()
 
-			bottom:SetPosition(area:GetPos() + Vec2(pad.x, area.h - bottom:GetHeight() - pad.h))
+			bottom:SetPosition(area:GetPosition() + Vec2(pad.x, area.h - bottom:GetHeight() - pad.h))
 			bottom:SetWidth(w - pad:GetXW())
 			area.h = area.h - bottom:GetHeight() - pad:GetYH()
 		end
@@ -1054,7 +1054,7 @@ do -- docking
 			local area = Rect(x, y, w, h)	
 			local pad = left:GetMargin()
 
-			left:SetPosition(area:GetPos() + pad:GetPos())
+			left:SetPosition(area:GetPosition() + pad:GetPosition())
 			left:SetHeight(area.h - pad:GetYH())
 			area.x = area.x + left:GetWidth() + pad:GetXW()
 			area.w = area.w - left:GetWidth() - pad:GetXW()
@@ -1073,7 +1073,7 @@ do -- docking
 			local area = Rect(x, y, w, h)	
 			local pad = right:GetMargin()
 
-			right:SetPosition(area:GetPos() + Vec2(area.w - right:GetWidth() - pad.w, pad.y))
+			right:SetPosition(area:GetPosition() + Vec2(area.w - right:GetWidth() - pad.w, pad.y))
 			right:SetHeight(area.h - pad:GetYH())
 			area.w = area.w - right:GetWidth() - pad:GetXW()
 		end			

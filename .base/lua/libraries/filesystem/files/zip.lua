@@ -142,11 +142,11 @@ function CONTEXT:ReadBytes(bytes)
 	return self.archive:read(bytes)
 end
 
-function CONTEXT:SetPos(pos)
+function CONTEXT:SetPosition(pos)
 	self.archive:set_offset(math.clamp(pos, 0, self:GetSize()))
 end
 
-function CONTEXT:GetPos()
+function CONTEXT:GetPosition()
 	return self.archive:tell()
 end
 

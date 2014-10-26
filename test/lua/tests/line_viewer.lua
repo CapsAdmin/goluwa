@@ -75,7 +75,7 @@ local randompersonas = {
 }
 
 local randommessages = {
-	"!l me:SetPos(there)",
+	"!l me:SetPosition(there)",
 	"Pac3 is working again.",
 	"Time for some oohh!",
 	"Garry's Mod is outdated.",

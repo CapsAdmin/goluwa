@@ -50,7 +50,7 @@ local function read_lump_data(thread, what, bsp_file, header, index, size, struc
 	
 	local length = lump.filelen / size
 	
-	bsp_file:SetPos(lump.fileofs)
+	bsp_file:SetPosition(lump.fileofs)
 		
 	if type(struct) == "function" then
 		for i = 1, length do
@@ -124,7 +124,7 @@ function steam.LoadMap(path, callback)
 			local lump = header.lumps[41]
 			local length = lump.filelen
 
-			bsp_file:SetPos(lump.fileofs)
+			bsp_file:SetPosition(lump.fileofs)
 			local pak = bsp_file:ReadBytes(length)
 			
 			local name = "temp_bsp.zip"
@@ -140,7 +140,7 @@ function steam.LoadMap(path, callback)
 			
 			local lump = header.lumps[36]
 			
-			bsp_file:SetPos(lump.fileofs)
+			bsp_file:SetPosition(lump.fileofs)
 			
 			local game_lumps = bsp_file:ReadLong()
 			
@@ -332,7 +332,7 @@ function steam.LoadMap(path, callback)
 		header.texdatastringdata = {}
 
 		for i = 1, #texdatastringtable do
-			bsp_file:SetPos(lump.fileofs + texdatastringtable[i])
+			bsp_file:SetPosition(lump.fileofs + texdatastringtable[i])
 			header.texdatastringdata[i] = bsp_file:ReadString()
 			thread:Sleep()
 		end
@@ -357,7 +357,7 @@ function steam.LoadMap(path, callback)
 			local lump = header.lumps[27]
 			local length = lump.filelen / 176 
 			
-			bsp_file:SetPos(lump.fileofs)
+			bsp_file:SetPosition(lump.fileofs)
 			
 			header.displacements = {}
 			

@@ -153,7 +153,7 @@ do--frame
 		pnl.title:SetSkinColor("text", "light")
 		pnl.title:SetIgnoreMouse(true)
 		pnl.title:SizeToText()
-		pnl.title:SetPos(Vec2(PAD,bar_size/2 - pnl.title:GetHeight()/2))
+		pnl.title:SetPosition(Vec2(PAD,bar_size/2 - pnl.title:GetHeight()/2))
 	end
 end
 
@@ -300,7 +300,7 @@ do--menuitem
 		pnl.lbl:SizeToText()
 		pnl.lbl:SetSkinColor("text", "dark")
 		pnl.lbl:SetTrapInsideParent( false )
-		pnl.lbl:SetPos(pnl.img:GetPos() + pnl.img:GetSize() + Vec2(PAD, 0))
+		pnl.lbl:SetPosition(pnl.img:GetPosition() + pnl.img:GetSize() + Vec2(PAD, 0))
 		pnl.lbl:CenterY()
 		
 		local ctx = pnl:GetParent()
@@ -400,13 +400,13 @@ do -- tab_bar button
 	end
 	
 	function SKIN:TabBarButtonLayout(pnl)		
-		pnl.img:SetPos(Vec2(0, 0))
+		pnl.img:SetPosition(Vec2(0, 0))
 		pnl.img:SetSize(Vec2(0, 0) + pnl:GetHeight() + PAD)
 		pnl.img:SetRect(pnl.img:GetRect():Shrink(PAD/2))
 		pnl.img:CenterY()
 		
 		pnl.lbl:SetSkinColor("text", "light2")
-		pnl.lbl:SetPos(pnl.img:GetPos() + Vec2(pnl.img:GetWidth() + PAD, 0))
+		pnl.lbl:SetPosition(pnl.img:GetPosition() + Vec2(pnl.img:GetWidth() + PAD, 0))
 		pnl.lbl:CenterY()
 	end	
 	
@@ -414,13 +414,13 @@ do -- tab_bar button
 	
 	function SKIN:TabBarLayout(pnl)
 
-		pnl.bar:SetPos(Vec2(0, 0))
+		pnl.bar:SetPosition(Vec2(0, 0))
 		pnl.bar:SetSize(Vec2(pnl:GetWidth(), height))
 		
 		local tab = pnl.current_tab
 		
 		if tab:IsValid() then
-			tab:SetPos(Vec2(0, height - 1))
+			tab:SetPosition(Vec2(0, height - 1))
 			tab:SetSize(Vec2(pnl:GetWidth(), pnl:GetHeight() - height))
 		end		
 	end
@@ -429,13 +429,13 @@ end
 do -- tree
 	function SKIN:TreeNodeLayout(pnl)
 		pnl.expand:SetSize(Vec2(PAD*2, PAD*2))
-		pnl.expand:SetPos(Vec2(pnl.offset or 0,0))
+		pnl.expand:SetPosition(Vec2(pnl.offset or 0,0))
 		
 		pnl.image:SetSize(Vec2() + pnl:GetHeight())
-		pnl.image:SetPos(pnl.expand:GetPos() + Vec2(pnl.expand:GetWidth() + PAD/2, 0))
+		pnl.image:SetPosition(pnl.expand:GetPosition() + Vec2(pnl.expand:GetWidth() + PAD/2, 0))
 		
 		pnl.label:SizeToText()		 
-		pnl.label:SetPos(pnl.image:GetPos() + Vec2(pnl.image:GetWidth() + PAD/2, 0))
+		pnl.label:SetPosition(pnl.image:GetPosition() + Vec2(pnl.image:GetWidth() + PAD/2, 0))
 		
 		pnl.expand:CenterY()
 		pnl.image:CenterY()
