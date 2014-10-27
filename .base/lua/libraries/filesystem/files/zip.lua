@@ -56,25 +56,17 @@ function CONTEXT:IsFile(path_info)
 end
 
 function CONTEXT:IsFolder(path_info)	
-	-- [zipak] files are folders
-	
-	local ext = path_info.folder_name:match("^.+%.(.-)$")
-	
-	if ext and valid_names2[ext:lower()] then
-				
-		-- hmm, there is no better way to do this?
-		local archive_path, relative = split_path(path_info)
-		local archive = zip.open(archive_path, "r")
+	local archive_path, relative = split_path(path_info)
+	local archive = zip.open(archive_path, "r")
 
-		for info in archive:files() do
-			if info.filename:find(relative) then
-				archive:close()
-				return true
-			end
+	for info in archive:files() do
+		if info.filename:find(relative) then
+			archive:close()
+			return true
 		end
-		archive:close()
-		
 	end
+	archive:close()
+
 	return false
 end
 
