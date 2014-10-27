@@ -204,7 +204,7 @@ function PANEL:PreDraw(from_cache)
 		end
 	end
 	
-	if true or not no_draw and self.Clipping then
+	if --[[true or]] not no_draw and self.Clipping then
 		--surface.PushClipFunction(self.DrawClippingStencil, self)
 		surface.EnableClipRect(0,0,self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
 	end
@@ -243,7 +243,7 @@ local gl = require("lj-opengl")
 function PANEL:PostDraw(from_cache)
 	self:CalcResizing()
 
-	if true or not self.draw_no_draw and self.Clipping then
+	if --[[true or]] not self.draw_no_draw and self.Clipping then
 		--surface.PopClipFunction()
 		surface.DisableClipRect()
 		--render.PopViewport()
@@ -417,7 +417,7 @@ do -- cached rendering
 			end
 		else
 			for k,v in ipairs(self:GetParentList()) do
-				if v.CachedRendering then
+				if v:IsValid() and v.CachedRendering then
 					v:MarkCacheDirty()
 				end
 			end
@@ -1567,8 +1567,6 @@ do -- events
 		local mr,mg,mb,ma = self.DrawColor:Unpack()
 				
 		surface.SetColor(r+mr,g+mg,b+mb,a+ma)
-		
-		if typex(self.Texture) ~= "texture" then print(self:GetDebugTrace(), self) error(self) end
 		surface.SetTexture(self.Texture)
 		
 		self:DrawRect()
