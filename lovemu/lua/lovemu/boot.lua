@@ -35,8 +35,8 @@ function lovemu.RunGame(folder)
 		
 	logn("mounting love game folder: ", R("lovers/" .. lovemu.demoname .. "/"))	
 	vfs.AddModuleDirectory("")	
-	vfs.AddModuleDirectory("lovers/" .. lovemu.demoname .. "/")
 	vfs.Mount(R("lovers/" .. lovemu.demoname .. "/"))
+	vfs.AddModuleDirectory("lovers/" .. lovemu.demoname .. "/")
 			
 	local env
 	env = setmetatable({
