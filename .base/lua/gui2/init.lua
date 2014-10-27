@@ -197,9 +197,11 @@ function gui2.Initialize()
 end
 
 include("base_panel.lua", gui2)
+include("skin.lua", gui2)
 include("panels/*", gui2)
 
 gui2.Initialize()
+
 
 gui.SetCursor = function() end
 
