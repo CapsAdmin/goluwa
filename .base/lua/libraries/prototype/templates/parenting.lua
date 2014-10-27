@@ -57,6 +57,7 @@ function prototype.AddParentingTemplate(META)
 		self:OnChildAdd(var)
 		
 		self.children_list = nil
+		self.parent_list = nil
 		
 		return true
 	end
@@ -85,6 +86,8 @@ function prototype.AddParentingTemplate(META)
 				obj:OnUnParent(self)
 				
 				obj.Parent = NULL
+				obj.children_list = nil
+				obj.parent_list = nil
 				
 				table.remove(self.Children, i)
 				
@@ -113,6 +116,8 @@ function prototype.AddParentingTemplate(META)
 			end
 			
 			obj.Parent = NULL
+			obj.children_list = nil
+			obj.parent_list = nil
 			
 			self.Children[key] = nil
 		end
