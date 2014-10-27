@@ -680,6 +680,8 @@ do -- libraries
 		include("gui/init.lua")
 	end
 	
+	gui2 = include("gui2/init.lua")
+	
 	-- include the filesystem again so it will include all the details such as zip file reading
 	include("libraries/filesystem/vfs.lua")
 end

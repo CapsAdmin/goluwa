@@ -1522,7 +1522,8 @@ do --- ninepatch
 	end
 end
 
-do -- skin		
+do -- skin
+	prototype.GetSet(PANEL, "SimpleTexture", false)
 	prototype.GetSet(PANEL, "Style")
 		
 	function PANEL:SetStyle(name)
@@ -1530,7 +1531,9 @@ do -- skin
 		
 		name = self.style_translation[name] or name
 		
-		if gui2.skin[name] then
+		if self.SimpleTexture then
+			self:SetTexture(gui2.skin[name][1])
+		elseif gui2.skin[name] then
 			self:SetupNinepatch(unpack(gui2.skin[name]))
 		end
 	end
@@ -1565,6 +1568,7 @@ do -- events
 				
 		surface.SetColor(r+mr,g+mg,b+mb,a+ma)
 		
+		if typex(self.Texture) ~= "texture" then print(self:GetDebugTrace(), self) error(self) end
 		surface.SetTexture(self.Texture)
 		
 		self:DrawRect()
