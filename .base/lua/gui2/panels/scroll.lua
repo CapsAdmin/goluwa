@@ -144,6 +144,9 @@ function PANEL:OnLayout()
 	
 	if not panel:IsValid() then return end
 	
+	self.x_scroll_bar:SetPosition(self.x_scroll_bar:GetPosition())
+	self.y_scroll_bar:SetPosition(self.y_scroll_bar:GetPosition())
+	
 	panel:SetSize(panel:GetSizeOfChildren())
 	
 	if self.YScrollBar then
@@ -157,7 +160,7 @@ function PANEL:OnLayout()
 		
 		self.up:SetSize(Vec2(scroll_width, scroll_width))
 			
-		if panel:GetHeight() > panel:GetSizeOfChildren().h then
+		if self:GetHeight() > panel:GetSizeOfChildren().h then
 			self.y_scroll:SetVisible(false)
 		else
 			self.y_scroll:SetVisible(true)
@@ -175,7 +178,7 @@ function PANEL:OnLayout()
 		
 		self.left:SetSize(Vec2(scroll_width, scroll_width))
 			
-		if panel:GetWidth() > panel:GetSizeOfChildren().w then
+		if self:GetWidth() > panel:GetSizeOfChildren().w then
 			self.x_scroll:SetVisible(false)
 		else
 			self.x_scroll:SetVisible(true)
