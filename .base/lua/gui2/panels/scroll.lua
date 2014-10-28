@@ -12,13 +12,20 @@ prototype.GetSet(PANEL, "XScrollBar", true)
 prototype.GetSet(PANEL, "YScrollBar", true)
 
 function PANEL:Initialize()
-	self:SetColor(Color(0,0,0,0))
+	self:SetNoDraw(true)
+	
+	local area = gui2.CreatePanel("base", self)
+	area:SetClipping(true)
+	area:SetNoDraw(true)
+	self.area = area
 end
 
 function PANEL:SetPanel(panel)
-	panel:SetParent(self)
+	panel:SetParent(self.area)
 	
 	self.panel = panel
+	
+	local panel = self.area
 	
 	if self.YScrollBar then
 		local y_scroll = gui2.CreatePanel("base", self)
@@ -130,10 +137,10 @@ function PANEL:SetPanel(panel)
 	panel.OnScroll = function(_, frac)
 		panel.scrolling = true
 		if self.YScrollBar then
-			self.y_scroll_bar:SetPosition(Vec2(0, math.clamp(scroll_width + frac.y * (self.y_scroll:GetHeight() - scroll_width*2), 0, self:GetHeight()-self.y_scroll_bar:GetHeight()-scroll_width*2)))
+			self.y_scroll_bar:SetPosition(Vec2(0, math.clamp(scroll_width + frac.y * (self.y_scroll:GetHeight() - scroll_width*2), 0, self.area:GetHeight()-self.y_scroll_bar:GetHeight()-scroll_width*2)))
 		end
 		if self.XScrollBar then
-			self.x_scroll_bar:SetPosition(Vec2(math.clamp(scroll_width + frac.x * (self.x_scroll:GetWidth() - scroll_width*2), 0, self:GetWidth()-self.x_scroll_bar:GetWidth()-scroll_width*2), 0))
+			self.x_scroll_bar:SetPosition(Vec2(math.clamp(scroll_width + frac.x * (self.x_scroll:GetWidth() - scroll_width*2), 0, self.area:GetWidth()-self.x_scroll_bar:GetWidth()-scroll_width*2), 0))
 		end
 		panel.scrolling = false
 	end
@@ -146,7 +153,7 @@ function PANEL:OnLayout()
 	
 	self.x_scroll_bar:SetPosition(self.x_scroll_bar:GetPosition())
 	self.y_scroll_bar:SetPosition(self.y_scroll_bar:GetPosition())
-	
+		
 	panel:SetSize(panel:GetSizeOfChildren())
 	
 	if self.YScrollBar then
@@ -178,7 +185,7 @@ function PANEL:OnLayout()
 		
 		self.left:SetSize(Vec2(scroll_width, scroll_width))
 			
-		if self:GetWidth() > panel:GetSizeOfChildren().w then
+		if self.area:GetWidth() > panel:GetSizeOfChildren().w then
 			self.x_scroll:SetVisible(false)
 		else
 			self.x_scroll:SetVisible(true)
@@ -186,15 +193,15 @@ function PANEL:OnLayout()
 	end		
 
 	if self.YScrollBar and self.y_scroll:IsVisible() then
-		panel:SetWidth(self:GetWidth() - scroll_width)
+		self.area:SetWidth(self:GetWidth() - scroll_width)
 	else
-		panel:SetWidth(self:GetWidth())
+		self.area:SetWidth(self:GetWidth())
 	end
 
 	if self.XScrollBar and self.x_scroll:IsVisible() then
-		panel:SetHeight(self:GetHeight() - scroll_width)
+		self.area:SetHeight(self:GetHeight() - scroll_width)
 	else
-		panel:SetHeight(self:GetHeight())
+		self.area:SetHeight(self:GetHeight())
 	end
 	
 end

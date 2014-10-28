@@ -15,7 +15,7 @@ function PANEL:Initialize()
 	self.markup = surface.CreateMarkup()
 	
 	self:SetSendMouseInputToParent(true)
-	self:SetColor(Color(0,0,0,0))
+	self:SetNoDraw(true)
 	self:SetRedirectFocus(carrier)
 end
 

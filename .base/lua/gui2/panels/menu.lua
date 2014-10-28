@@ -64,7 +64,7 @@ do
 	PANEL.menu = NULL
 	
 	function PANEL:Initialize()
-		self:SetColor(Color(0,0,0,0))
+		self:SetNoDraw(true)
 		self:SetStyle("menu_select")
 		self:SetPadding(Rect(S, S, S, S))
 		
@@ -74,7 +74,7 @@ do
 	end
 	
 	function PANEL:OnMouseEnter()
-		self:SetColor(Color(1,1,1,1))
+		self:SetNoDraw(false)
 		
 		-- close all parent menus
 		for k,v in ipairs(self.Parent:GetChildren()) do
@@ -92,7 +92,7 @@ do
 	end
 	
 	function PANEL:OnMouseExit()
-		self:SetColor(Color(1,1,1,0))
+		self:SetNoDraw(true)
 	end
 	
 	function PANEL:SetText(str)
@@ -108,7 +108,7 @@ do
 		icon:Dock("right")
 		icon:SetIgnoreMouse(true)
 		icon:SetPadding(Rect(0,0,S*2,0))
-		icon:SetColor(Color(0,0,0,0))
+		icon:SetNoDraw(true)
 		
 		local label = gui2.CreatePanel("text", icon)
 		label:SetFont("snow_font") 
