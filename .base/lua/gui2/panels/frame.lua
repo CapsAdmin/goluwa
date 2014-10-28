@@ -57,7 +57,7 @@ function PANEL:SetTitle(str)
 	title:SetText(str)
 	title:SetPosition(Vec2(2*S,0))
 	title:CenterY()
-	title:SetColor(Color(0,0,0,0))
+	title:SetNoDraw(true)
 	self.title = title
 end
 

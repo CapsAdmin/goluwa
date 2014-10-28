@@ -10,7 +10,7 @@ PANEL.last_div = NULL
 PANEL.list = NULL
 
 function PANEL:Initialize()	
-	self:SetColor(Color(0,0,0,0))
+	self:SetNoDraw(true)
 	
 	local top = gui2.CreatePanel("base", self)
 	top:SetLayoutParentOnLayout(true)
@@ -165,7 +165,7 @@ function PANEL:AddEntry(...)
 		label:SizeToText()
 		label.text = text
 		label:SetClipping(true)
-		label:SetColor(Color(0,0,0,0))
+		label:SetNoDraw(true)
 		label:SetIgnoreMouse(true)
 		
 		entry.labels[i] = label
@@ -175,7 +175,7 @@ function PANEL:AddEntry(...)
 	
 	entry:SetSendMouseInputToParent(true)
 	entry:SetPosition(Vec2(0, last_child:GetPosition().y + last_child:GetHeight() - 2*S))
-	entry:SetColor(Color(0,0,0,0))
+	entry:SetNoDraw(true)
 	entry:SetStyleTranslation("button_active", "menu_select")
 	entry:SetStyleTranslation("button_inactive", "menu_select")
 	entry:SetStyle("menu_select")
@@ -184,7 +184,7 @@ function PANEL:AddEntry(...)
 	entry.OnPress = function()
 		for k, other_entry in ipairs(self.entries) do
 			if other_entry ~= entry then
-				other_entry:SetColor(Color(0,0,0,0))
+				other_entry:SetNoDraw(true)
 			else
 				entry:SetStyle("menu_select")
 				entry:SetColor(Color(1,1,1,1))

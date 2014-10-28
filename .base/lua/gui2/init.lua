@@ -183,7 +183,7 @@ function gui2.Initialize()
 	world:SetSize(Vec2(window.GetSize()))
 	world:SetCursor("arrow")
 	world:SetTrapChildren(true)
-	world:SetColor(Color(1,1,1,0))
+	world:SetNoDraw(true)
 	world:SetPadding(Rect(10, 10, 10, 10))
 
 	gui2.world = world

@@ -9,7 +9,7 @@ prototype.GetSet(PANEL, "DividerHeight", 0)
 prototype.GetSet(PANEL, "DividerWidth", S*4)
 
 function PANEL:Initialize()
-	self:SetColor(Color(0,0,0,0))
+	self:SetNoDraw(true)
 	local divider = gui2.CreatePanel("button", self)
 	divider:SetX(self:GetWidth() - self.DividerWidth/2)
 	divider:SetCursor("sizewe")

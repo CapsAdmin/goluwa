@@ -16,7 +16,7 @@ prototype.GetSet(PANEL, "LeftFill", false)
 
 function PANEL:Initialize()
 	self:SetMinimumSize(Vec2(35, 35))
-	self:SetColor(Color(0,0,0,0))
+	self:SetNoDraw(true)
 
 	local line = gui2.CreatePanel("base", self)
 	line:SetStyle("button_active")

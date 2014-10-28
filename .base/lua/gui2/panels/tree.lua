@@ -10,22 +10,22 @@ do -- tree node
 
 	function PANEL:Initialize()	
 		self:SetSendMouseInputToParent(true)
-		self:SetColor(Color(1,1,1,0))
+		self:SetNoDraw(true)
 
 		local label = gui2.CreatePanel("text_button", self)
 		label:SetTextColor(ColorBytes(200, 200, 200))
 		label:SetFont("snow_font")
 		label:SetMargin(Rect()+2*S)
-		label:SetColor(Color(1,1,1,-0.001))
+		label:SetNoDraw(true)
 		label:SetStyleTranslation("button_active", "button_rounded_active")
 		label:SetStyleTranslation("button_inactive", "button_rounded_inactive")
 		label:SetStyle("button_rounded_inactive")
 		label:SetSendMouseInputToParent(true)
 		label.OnPress = function()
-			self.label:SetColor(Color(1,1,1,1))
+			self.label:SetNoDraw(false)
 			for k, v in ipairs(self.tree:GetChildren()) do
 				if v ~= self then
-					v.label:SetColor(Color(1,1,1,-0.001))
+					v.label:SetNoDraw(true)
 				end
 			end
 		end
@@ -143,7 +143,7 @@ do
 	prototype.GetSet(PANEL, "IndentWidth", 16)  
 
 	function PANEL:Initialize()
-		self:SetColor(Color(1,1,1,0))
+		self:SetNoDraw(true)
 		self:SetClipping(true)
 		self:SetSendMouseInputToParent(true)
 		self:SetStack(true)

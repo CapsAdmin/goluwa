@@ -20,6 +20,7 @@ prototype.GetSet(PANEL, "ObeyMargin", true)
 prototype.GetSet(PANEL, "BringToFrontOnClick", false)
 prototype.GetSet(PANEL, "LayoutParentOnLayout", false)
 prototype.GetSet(PANEL, "VisibilityPanel", NULL)
+prototype.GetSet(PANEL, "NoDraw", false)
 
 function PANEL:__tostring()
 	return ("panel:%s[%p][%s %s %s %s][%s]"):format(self.ClassName, self, self.Position.x, self.Position.y, self.Size.w, self.Size.h, self.layout_count)
@@ -1244,7 +1245,7 @@ do -- mouse
 	end
 
 	function PANEL:CalcMouse()
-		if self:HasParent() and not self.Parent:IsWorld() and not self.Parent.mouse_over then return end
+		if self:HasParent() and not self.Parent:IsWorld() and not self.Parent.mouse_over and not self:IsDragging() then return end
 		
 		local x, y = surface.WorldToLocal(gui2.mouse_pos.x, gui2.mouse_pos.y)
 
@@ -1561,7 +1562,7 @@ end
 
 do -- events
 	function PANEL:OnDraw()
-		if self.Color.a == 0 then return end
+		if self.NoDraw then return end
 		
 		local r,g,b,a = self.Color:Unpack()
 		local mr,mg,mb,ma = self.DrawColor:Unpack()

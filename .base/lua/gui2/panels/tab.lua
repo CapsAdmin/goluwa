@@ -8,7 +8,7 @@ PANEL.tabs = {}
 
 function PANEL:Initialize()
 	self:SetSendMouseInputToParent(true)
-	self:SetColor(Color(0,0,0,0))
+	self:SetNoDraw(true)
 
 	local tab_bar =  gui2.CreatePanel("base", self)
 	tab_bar:SetColor(ColorBytes(16,16,152,255))
@@ -75,7 +75,7 @@ function PANEL:AddTab(name)
 	content:SetStyle("frame")
 	content:SetSendMouseInputToParent(true)
 	content:SetVisible(false)
-	content:SetColor(Color(0,0,0,0))
+	content:SetNoDraw(true)
 	self.content = content
 	
 	self:Layout(true)

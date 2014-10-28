@@ -43,12 +43,12 @@ function PANEL:SetTitle(str)
 	gui2.RemovePanel(self.title)
 	local title = gui2.CreatePanel("text", self.bar)
 	title:SetHeight(self.bar:GetHeight())
-	title:SetFont("snow_font")  
+	title:SetFont("snow_font")
 	title:SetTextColor(ColorBytes(200, 200, 200))
 	title:SetText(str)
 	title:SetPosition(Vec2(2*S,0))
-	title:CenterY()
-	title:SetColor(Color(0,0,0,0))
+	title:CenterY() 
+	title:SetNoDraw(true)
 	self.title = title
 end
 
@@ -63,15 +63,15 @@ if RELOAD then
 	
 	local list = gui2.CreatePanel("base")
 	list:SetStack(true)
-	list:SetStackRight(false)
-	list:SetClipping(true)
-	list:SetColor(Color(0,0,0,0))
+	list:SetStackRight(false) 
+	list:SetNoDraw(true)  
+	
 	scroll:SetPanel(list)
 	
 	local a = gui2.CreatePanel(PANEL.ClassName, list)
 	a:SetSize(Vec2(100,100))
 	local b = gui2.CreatePanel(PANEL.ClassName, list)
 	b:SetSize(Vec2(100,100)) 
-	
-	list:SetSize(Vec2(100, 500))
-end 
+	 
+	list:SetSize(Vec2(100, 500))   
+end  
