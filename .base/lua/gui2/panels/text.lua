@@ -14,7 +14,6 @@ prototype.GetSet(PANEL, "TextColor", Color(1,1,1,1))
 function PANEL:Initialize()
 	self.markup = surface.CreateMarkup()
 	
-	self:SetSendMouseInputToParent(true)
 	self:SetNoDraw(true)
 	self:SetRedirectFocus(carrier)
 end

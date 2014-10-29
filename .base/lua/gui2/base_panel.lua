@@ -106,6 +106,13 @@ do -- call on remove
 			end
 		end
 		
+		for i, v in ipairs(gui2.panels) do
+			if v == self then
+				table.remove(gui2.panels, i)
+				break
+			end
+		end
+		
 		-- this is important!!
 		self:UnParent()
 	end
@@ -440,9 +447,11 @@ do -- cached rendering
 				-- the framebuffer itself is drawn at the correct position
 				surface.LoadIdentity()
 
-				self:OnPreDraw()
-				self:OnDraw()
-				self:OnPostDraw()
+				if self:IsDragging() or self:IsInsideParent() then
+					self:OnPreDraw()
+					self:OnDraw()
+					self:OnPostDraw()
+				end
 
 				surface.Translate(-self.Scroll.x, -self.Scroll.y)
 
@@ -592,12 +601,7 @@ do -- drag drop
 	end
 
 	function PANEL:OnChildDrop(child, pos)
-		if gui2.test then
-			self:AddChild(child)
-			child:SetPosition(pos)
-			
-			--child:Dock("fill_" .. self:GetDockLocation())
-		end
+	
 	end
 end
 
@@ -1079,10 +1083,12 @@ do -- docking
 			area.w = area.w - right:GetWidth() - pad:GetXW()
 		end			
 	end
+	
+	prototype.GetSet(PANEL, "ResizePadding", Rect(4,4,4,4))
 
-	function PANEL:GetDockLocation(pos, offset) -- rename this function
+	function PANEL:GetDockLocation(pos) -- rename this function
 		pos = pos or self:GetMousePosition()
-		offset = offset or self:GetSize() / 4
+		local offset = self.ResizePadding
 
 		local siz = self:GetSize()
 
@@ -1142,7 +1148,7 @@ do -- resizing
 
 	function PANEL:GetResizeLocation(pos)
 		pos = pos or self:GetMousePosition()
-		local loc = self:GetDockLocation(pos, Vec2(8, 8))
+		local loc = self:GetDockLocation(pos)
 
 		if loc ~= "center" then
 			return loc
@@ -1238,14 +1244,15 @@ do -- resizing
 end
 
 do -- mouse
-	prototype.GetSet(PANEL, "SendMouseInputToParent", false)
+	prototype.GetSet(PANEL, "AlwaysReceiveMouseInput", false)
+	prototype.GetSet(PANEL, "SendMouseInputToPanel", NULL)
 
 	function PANEL:IsMouseOver()
 		return self:IsDragging() or self:IsResizing() or self.mouse_over and gui2.hovering_panel == self
 	end
 
 	function PANEL:CalcMouse()
-		if self:HasParent() and not self.Parent:IsWorld() and not self.Parent.mouse_over and not self:IsDragging() then return end
+		if self:HasParent() and not self.Parent:IsWorld() and not self.Parent.mouse_over and not self:IsDragging() and not self.AlwaysReceiveMouseInput then return end
 		
 		local x, y = surface.WorldToLocal(gui2.mouse_pos.x, gui2.mouse_pos.y)
 
@@ -1301,10 +1308,10 @@ do -- mouse
 
 		if self:IsMouseOver() then
 			if not self.mouse_just_entered then
-				if self.SendMouseInputToParent then
-					if not self.Parent.mouse_just_entered then
-						self.Parent:OnMouseEnter(x, y)
-						self.Parent.mouse_just_entered = true
+				if self.SendMouseInputToPanel:IsValid() then
+					if not self.SendMouseInputToPanel.mouse_just_entered then
+						self.SendMouseInputToPanel:OnMouseEnter(x, y)
+						self.SendMouseInputToPanel.mouse_just_entered = true
 					end
 				end
 				self:OnMouseEnter(x, y)
@@ -1314,10 +1321,10 @@ do -- mouse
 			self:OnMouseMove(x, y)
 		else
 			if self.mouse_just_entered then
-				if self.SendMouseInputToParent then					
-					if self.Parent.mouse_just_entered then
-						self.Parent:OnMouseExit(x, y)
-						self.Parent.mouse_just_entered = false
+				if self.SendMouseInputToPanel:IsValid() then					
+					if self.SendMouseInputToPanel.mouse_just_entered then
+						self.SendMouseInputToPanel:OnMouseExit(x, y)
+						self.SendMouseInputToPanel.mouse_just_entered = false
 					end
 				end
 				self:OnMouseExit(x, y)
@@ -1328,19 +1335,13 @@ do -- mouse
 	
 	function PANEL:MouseInput(button, press)
 		
-		if self.SendMouseInputToParent then
-			self.Parent:MouseInput(button, press)
+		if self.SendMouseInputToPanel:IsValid() then
+			self.SendMouseInputToPanel:MouseInput(button, press)
 		end
 		
 		if press then
 			self:RequestFocus()
 			self:BringToFront()
-			
-			if gui2.test then
-				if button == "button_2" then
-					self:SetClipping(not self:GetClipping())
-				end
-			end
 
 			if button == "button_1" then
 				if not self.Resizable or not self:StartResizing(nil, button) then
@@ -1587,9 +1588,9 @@ do -- events
 	function PANEL:OnFocus() end
 	function PANEL:OnUnfocus() end
 
-	function PANEL:OnMouseEnter(x, y) if gui2.test then self:SetColor(Color(1,1,1,1)) end end
-	function PANEL:OnMouseExit(x, y) if gui2.test then self:SetColor(self.original_color) end end
-	function PANEL:OnMouseMove(x, y) if gui2.test then self:MarkCacheDirty() end end
+	function PANEL:OnMouseEnter(x, y) end
+	function PANEL:OnMouseExit(x, y) end
+	function PANEL:OnMouseMove(x, y) end
 	function PANEL:OnMouseInput(button, press) end
 	
 	function PANEL:OnKeyInput(button, press) end
