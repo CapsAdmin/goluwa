@@ -9,7 +9,6 @@ do -- tree node
 	prototype.GetSet(PANEL, "Expand", true)
 
 	function PANEL:Initialize()	
-		self:SetSendMouseInputToParent(true)
 		self:SetNoDraw(true)
 
 		local label = gui2.CreatePanel("text_button", self)
@@ -20,7 +19,6 @@ do -- tree node
 		label:SetStyleTranslation("button_active", "button_rounded_active")
 		label:SetStyleTranslation("button_inactive", "button_rounded_inactive")
 		label:SetStyle("button_rounded_inactive")
-		label:SetSendMouseInputToParent(true)
 		label.OnPress = function()
 			self.label:SetNoDraw(false)
 			for k, v in ipairs(self.tree:GetChildren()) do
@@ -145,7 +143,6 @@ do
 	function PANEL:Initialize()
 		self:SetNoDraw(true)
 		self:SetClipping(true)
-		self:SetSendMouseInputToParent(true)
 		self:SetStack(true)
 		self:SetForcedStackSize(Vec2(0, 10*S))
 		

@@ -12,7 +12,6 @@ function PANEL:Initialize()
 	local bar = gui2.CreatePanel("button", self)
 	bar:SetObeyMargin(false)
 	bar:Dock("fill_top") 
-	bar:SetSendMouseInputToParent(true)
 	bar:SetHeight(10*S)
 	bar:SetSimpleTexture(true)
 	bar:SetClipping(true) 
@@ -21,7 +20,7 @@ function PANEL:Initialize()
 	bar.OnStateChanged = function(_, pressed)
 		if pressed then
 			self.last_height = self.last_height or self:GetHeight()
-			self:SetHeight(10*S)
+			self:SetHeight((10*S) - 1)
 		else		
 			self:SetHeight(self.last_height)
 			self.last_height = nil 
@@ -65,7 +64,7 @@ if RELOAD then
 	list:SetStack(true)
 	list:SetStackRight(false) 
 	list:SetNoDraw(true)  
-	
+	   
 	scroll:SetPanel(list)
 	
 	local a = gui2.CreatePanel(PANEL.ClassName, list)

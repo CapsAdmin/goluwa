@@ -9,9 +9,7 @@ gui2.unroll_draw = false
 gui2.hovering_panel = gui2.hovering_panel or NULL
 gui2.focus_panel = gui2.focus_panel or NULL
 
-if gui2.unroll_draw then
-	gui2.panels = {}
-end
+gui2.panels = {} 
 
 function gui2.CreatePanel(name, parent)		
 	local self = prototype.CreateDerivedObject("panel2", name)
@@ -21,10 +19,8 @@ function gui2.CreatePanel(name, parent)
 	self:SetParent(parent or gui2.world)
 	self:Initialize()
 	
-	if gui2.unroll_draw then
-		table.insert(gui2.panels, self)
-		self.i = #gui2.panels
-	end
+	table.insert(gui2.panels, self)
+	self.i = #gui2.panels
 	
 	-- this will make calls to layout always layout until next frame
 	self.layout_me = "init"
@@ -47,10 +43,11 @@ function gui2.GetHoveringPanel(panel, filter)
 
 	for i = #children, 1, -1 do
 		local panel = children[i]
-		if panel.mouse_over and not panel.IgnoreMouse and (not filter or panel ~= filter) then
+		if panel.Visible and panel.mouse_over and not panel.IgnoreMouse and (not filter or panel ~= filter) then			
 			if panel:HasChildren() then
 				return gui2.GetHoveringPanel(panel, filter)
 			end
+			
 			return panel
 		end
 	end
@@ -82,14 +79,22 @@ do -- events
 			panel:MouseInput(button, press)
 		end
 		
-		local panel = gui2.current_menu
-		
-		if button == "button_1" and press and panel:IsValid() and not panel:IsMouseOver() then
-			-- only start checking if we're pressing outside the second press
-			if menu_second_try then
-				panel:Remove()
+		for i, panel in ipairs(gui2.panels) do
+			if panel.AlwaysReceiveMouseInput and panel.mouse_over then 
+				panel:MouseInput(button, press)
 			end
-			menu_second_try = true
+		end
+		
+		do -- context menus
+			local panel = gui2.current_menu
+			
+			if button == "button_1" and press and panel:IsValid() and not panel:IsMouseOver() then
+				-- only start checking if we're pressing outside the second press
+				if menu_second_try then
+					panel:Remove()
+				end
+				menu_second_try = true
+			end
 		end
 	end
 
@@ -194,6 +199,57 @@ function gui2.Initialize()
 	event.AddListener("MouseInput", "gui2", gui2.MouseInput)
 	event.AddListener("KeyInputRepeat", "gui2", gui2.KeyInput)
 	event.AddListener("CharInput", "gui2", gui2.CharInput)
+	event.AddListener("WindowFramebufferResized", "gui2", function(_, w,h) 
+		gui2.world:SetSize(Vec2(w, h))
+	end)
+	
+	
+	-- should this be here?	
+	do -- task bar (well frame bare is more appropriate since the frame control adds itself to this)
+		local S = gui2.skin.scale
+		
+		local bar = gui2.CreatePanel("base") 
+		bar:SetSimpleTexture(true)
+		bar:SetStyle("gradient")
+		bar:SetColor(ColorBytes(0,72,248))
+		bar:Dock("fill_bottom")
+		bar:SetHeight(32)
+		bar:SetStack(true)
+		bar:SetPadding(Rect(1,1,5*S,3*S))
+		bar:SetVisible(false)
+		
+		bar.buttons = {}
+		
+		function bar:AddButton(text, key, callback)
+			self:SetVisible(true)
+			
+			local button = self.buttons[key] or gui2.CreatePanel("text_button", self) 
+			button:SetFont("snow_font")  
+			button:SetTextColor(ColorBytes(200, 200, 200))
+			button:SetText(text)
+			button:SetMargin(Rect()+2.5*S)
+			button:SizeToText()
+			
+			button.OnRelease = callback  
+
+			self:SetHeight(self:StackChildren().h)
+			
+			self.buttons[key] = button
+		end 
+		
+		function bar:RemoveButton(key)
+			gui2.RemovePanel(self.buttons[key])
+			self.buttons[key] = nil
+			
+			if not next(self.buttons) then
+				self:SetVisible(false)
+			end
+			
+			self:Layout()
+		end
+		
+		gui2.task_bar = bar
+	end
 end
 
 include("base_panel.lua", gui2)

@@ -23,7 +23,7 @@ function PANEL:AddGroup(name)
 	left:SetStackRight(false)
 	left:SetSizeStackToWidth(true)
 	left:Dock("fill")
-	left:SetNoDraw(true)
+	left:SetNoDraw(true)  
 	group.left = left
 	
 	local right = divider:SetRight(gui2.CreatePanel("base"))
@@ -36,35 +36,42 @@ function PANEL:AddGroup(name)
 	
 	self.current_group = group
 end
-
+ 
 function PANEL:AddProperty(key, val)
 	if not self.current_group then
 		self:AddGroup()
-	end
-	
-	local label = gui2.CreatePanel("text", self.current_group.left) 
-	label:SetFont("snow_font")
-	label:SetText(key)
+	end 
+	       
+	local label = gui2.CreatePanel("text_button", self.current_group.left) 
+	label:SetTextColor(ColorBytes(200, 200, 200))
+	label:SetFont("snow_font") 
+	label:SetText(key)   
 	label:SetHeight(16)
 	
-	local hmm = gui2.CreatePanel("text_edit", self.current_group.right)
+	local hmm = gui2.CreatePanel("text_button", self.current_group.right)
+	hmm:SetTextColor(ColorBytes(200, 200, 200))
+	hmm:SetFont("snow_font")
 	hmm:SetText("woo")
-	hmm:SetHeight(16)
-	
-	self.current_group:SetHeight(100)
-end
-
-gui2.RegisterPanel(PANEL)
-
+	hmm:SetHeight(16)       
+	 
+	self.current_group.left:Layout(true)
+	   
+	self.current_group:SetHeight(self.current_group.left:GetSizeOfChildren().h + 16)
+end  
+  
+gui2.RegisterPanel(PANEL) 
+ 
 if RELOAD then
 	local frame = gui2.CreatePanel("frame")
 	frame:SetSize(Vec2(300, 300))
-	
+	 
 	local properties = gui2.CreatePanel("properties", frame)
-	properties:Dock("fill") 
-	properties:AddProperty("test")
-	properties:AddProperty("awddaw")
-	properties:AddProperty("1234")
-	properties:AddProperty("q2523tgwe")
-	properties:AddProperty("asda")
-end 
+	properties:Dock("fill")
+	properties:AddGroup("orientation")
+	properties:AddProperty("bone")
+	properties:AddProperty("position")
+	properties:AddProperty("angles")
+	properties:AddProperty("eye angles") 
+	properties:AddProperty("size") 
+	properties:AddProperty("scale")  
+end  

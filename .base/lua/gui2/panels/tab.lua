@@ -7,7 +7,6 @@ PANEL.ClassName = "tab"
 PANEL.tabs = {}
 
 function PANEL:Initialize()
-	self:SetSendMouseInputToParent(true)
 	self:SetNoDraw(true)
 
 	local tab_bar =  gui2.CreatePanel("base", self)
@@ -29,7 +28,6 @@ function PANEL:AddTab(name)
 
 	local button = gui2.CreatePanel("text_button", self.tab_bar)
 	button:SetMode("toggle")
-	button:SetSendMouseInputToParent(true)
 
 	button:SetStyleTranslation("button_active", "tab_active")
 	button:SetStyleTranslation("button_inactive", "tab_inactive")
@@ -73,7 +71,6 @@ function PANEL:AddTab(name)
 	
 	local content = gui2.CreatePanel("base", self)
 	content:SetStyle("frame")
-	content:SetSendMouseInputToParent(true)
 	content:SetVisible(false)
 	content:SetNoDraw(true)
 	self.content = content
