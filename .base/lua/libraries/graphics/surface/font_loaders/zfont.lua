@@ -9,6 +9,9 @@ local height = 5
 local pixel_padding = 3
 
 local translate = {
+	["maximize (Win)"] = "▫",
+	["maximize (SDL)"] = "⬜",
+	["minimize (Win)"] = "‾",
 	["arrow down"] = "↓",
 	["left"] = "◀",
 	["right"] = "▶",
