@@ -178,6 +178,7 @@ function chathud.Draw()
 	y = y - markup.height
 	
 	surface.PushMatrix(x,y)
+		markup:Update()
 		markup:Draw(x, y, w, h, mat)
 	surface.PopMatrix()
 end
