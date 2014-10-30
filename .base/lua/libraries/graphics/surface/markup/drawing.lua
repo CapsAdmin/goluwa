@@ -6,7 +6,7 @@ local function set_font(self, font)
 	end
 end
 
-function META:Draw()
+function META:Update()
 	if self.need_layout then
 		self:Invalidate()
 		self.need_layout = false
@@ -24,6 +24,43 @@ function META:Draw()
 		self:SetCaretPos(unpack(self.caret_later_pos))
 		self.caret_later_pos  = nil
 	end
+	
+	if self.mouse_selecting then
+		local x, y = self:GetMousePosition():Unpack()
+		local caret = self:CaretFromPixels(x, y)
+
+		if x > caret.char.data.x + caret.char.data.w / 2 then
+			caret = self:CaretFromPixels(x + caret.w / 2, y)
+		end
+		
+		if caret then
+			self.select_stop = caret
+		end
+	end
+
+	if self.ShiftDown then
+		if not self.caret_shift_pos then
+			local START = self:GetSelectStart()
+			local END = self:GetSelectStop()
+			
+			
+			if START and END then
+				if self.caret_pos.i < END.i then
+					self.caret_shift_pos = self:CaretFromPos(END.x, END.y)
+				else
+					self.caret_shift_pos = self:CaretFromPos(START.x, START.y)
+				end
+			else
+				self.caret_shift_pos = self:CaretFromPos(self.caret_pos.x, self.caret_pos.y)
+			end
+		end
+	else
+		self.caret_shift_pos = nil
+	end
+end
+
+function META:Draw()
+	if #self.chunks == 0 then return end
 
 	-- reset font and color for every line
 	set_font(self, "default")
@@ -175,42 +212,6 @@ function META:Draw()
 end
 
 function META:DrawSelection()
-
-	if self.mouse_selecting then
-		local x, y = self:GetMousePosition():Unpack()
-		local caret = self:CaretFromPixels(x, y)
-
-		if x > caret.char.data.x + caret.char.data.w / 2 then
-			caret = self:CaretFromPixels(x + caret.w / 2, y)
-		end
-		
-		if caret then
-			self.select_stop = caret
-		end
-	end
-
-	if self.ShiftDown then
-		if not self.caret_shift_pos then
-			local START = self:GetSelectStart()
-			local END = self:GetSelectStop()
-			
-			
-			if START and END then
-				if self.caret_pos.i < END.i then
-					self.caret_shift_pos = self:CaretFromPos(END.x, END.y)
-				else
-					self.caret_shift_pos = self:CaretFromPos(START.x, START.y)
-				end
-			else
-				self.caret_shift_pos = self:CaretFromPos(self.caret_pos.x, self.caret_pos.y)
-			end
-		end
-		
-	
-	else
-		self.caret_shift_pos = nil
-	end
-
 	local START = self:GetSelectStart()
 	local END = self:GetSelectStop()
 
