@@ -186,6 +186,18 @@ console.AddCommand("find", function(line, ...)
 	end
 end)
 
+console.AddCommand("lfind", function(line) 
+	for path, lines in pairs(utility.FindInLoadedLuaFiles(line)) do
+		logn(path)
+		for _, info in ipairs(lines) do
+			local str = info.str
+			str = str:gsub("\t", " ")
+			--str = str:sub(0, info.start-1) ..  ">>>" .. str:sub(info.start, info.stop) .. "<<<" .. str:sub(info.stop+1)
+			logf("\t%d: %s", info.line, str)
+			logn((" "):rep(#tostring(info.line) + 9 + info.start), ("^"):rep(info.stop - info.start + 1))
+		end
+	end
+end)
 
 local tries = {
 	"lua/?",
