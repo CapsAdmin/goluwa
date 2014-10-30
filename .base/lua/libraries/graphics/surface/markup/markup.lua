@@ -59,6 +59,11 @@ function META:SetLineWrap(b)
 	self.need_layout = true
 end
 
+function META:SetEditable(b)
+	self.Editable = b
+	self:Unselect()
+end
+
 function META:Clear()
 	self.chunks = {}
 	self:Invalidate()
