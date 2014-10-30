@@ -5,6 +5,8 @@ local PANEL = {}
 
 PANEL.ClassName = "properties"
 
+PANEL.current_edit = NULL
+
 function PANEL:Initialize()
 	self:SetStack(true)
 	self:SetStackRight(false) 
@@ -46,19 +48,41 @@ function PANEL:AddProperty(key, val)
 	label:SetTextColor(ColorBytes(200, 200, 200))
 	label:SetFont("snow_font") 
 	label:SetText(key)   
-	label:SetHeight(16)
+	label:SetHeight(16) 
 	
-	local hmm = gui2.CreatePanel("text_button", self.current_group.right)
-	hmm:SetTextColor(ColorBytes(200, 200, 200))
-	hmm:SetFont("snow_font")
-	hmm:SetText("woo")
-	hmm:SetHeight(16)       
+	local value = gui2.CreatePanel("text_button", self.current_group.right)
+	value:SetTextColor(ColorBytes(200, 200, 200))
+	value:SetFont("snow_font")
+	value:SetText("woo")
+	value:SetHeight(16)
+	
+	value.OnPress = function()
+		if self.current_edit:IsValid() then
+			local edit = self.current_edit
+			local value = edit.value
+			value:SetText(edit:GetText()) 
+			edit:Remove() 
+		end
+		local edit = gui2.CreatePanel("text_edit", value)
+		edit:Dock("fill")
+		edit:SetTextColor(ColorBytes(0, 255, 0))
+		edit:SetFont("snow_font")
+		edit:SetHeight(16)
+		edit:SetText(value:GetText())
+		edit.OnEnter = function()  
+			value:SetText(edit:GetText()) 
+			edit:Remove()
+		end
+		edit:RequestFocus()
+		edit.value = value
+		self.current_edit = edit
+	end
 	 
 	self.current_group.left:Layout(true)
 	   
 	self.current_group:SetHeight(self.current_group.left:GetSizeOfChildren().h + 16)
-end  
-  
+end
+
 gui2.RegisterPanel(PANEL) 
  
 if RELOAD then
@@ -72,6 +96,6 @@ if RELOAD then
 	properties:AddProperty("position")
 	properties:AddProperty("angles")
 	properties:AddProperty("eye angles") 
-	properties:AddProperty("size") 
+	properties:AddProperty("size")
 	properties:AddProperty("scale")  
 end  
