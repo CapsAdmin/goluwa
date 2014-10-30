@@ -8,46 +8,68 @@ prototype.GetSet(PANEL, "ParseTags", false)
 prototype.GetSet(PANEL, "Editable", false)
 prototype.GetSet(PANEL, "TextWrap", false)
 
-prototype.GetSet(PANEL, "Font", "default")
-prototype.GetSet(PANEL, "TextColor", Color(1,1,1,1))
+prototype.GetSet(PANEL, "Font", "snow_font")
+prototype.GetSet(PANEL, "TextColor", ColorBytes(200,200,200))
 
 function PANEL:Initialize()
 	self.markup = surface.CreateMarkup()
-	
-	self:SetNoDraw(true)
-	self:SetRedirectFocus(carrier)
+	self:SetEditable(self.Editable)
+	self:SetTextWrap(self.TextWrap)
 end
 
 function PANEL:SetText(str)
 	self.Text = str
 	
-	self:SetIgnoreMouse(not self.Editable)
-
 	local markup = self.markup
 	
-	markup:SetEditable(self.Editable)
-	markup:SetLineWrap(self.TextWrap)
-	
+	markup.OnInvalidate = function() 
+		self:MarkCacheDirty()
+		self:OnTextChanged(self.markup:GetText())
+	end
+		
 	markup:Clear()
 	markup:AddFont(self.Font)
 	markup:AddColor(self.TextColor)
 	markup:AddString(self.Text, self.ParseTags)
 	
-	self:OnDraw() -- hack! this will update markup sizes
-	self:OnDraw() -- hack! this will update markup sizes
+	self:OnUpdate() -- hack! this will update markup sizes
+end
+
+function PANEL:GetText()
+	return self.markup:GetText(self.ParseTags)
+end
+
+function PANEL:SetEditable(b)
+	self.Editable = b
+	self.markup:SetEditable(b)
+end
+
+function PANEL:SetTextWrap(b)
+	self.TextWrap = b
+	self.markup:SetLineWrap(b)
 end
 
 function PANEL:OnDraw()
+	local markup = self.markup	
+	markup:Draw()
+end
+
+function PANEL:OnMouseMove(x, y)
 	local markup = self.markup
+	
+	markup:SetMousePosition(Vec2(x, y))
+	self:MarkCacheDirty()
+end
 
-	markup:SetMousePosition(self:GetMousePosition():Copy())
-
+function PANEL:OnUpdate()
+	local markup = self.markup
+	
 	markup.cull_x = self.Parent.Scroll.x
 	markup.cull_y = self.Parent.Scroll.y
 	markup.cull_w = self.Parent.Size.w
 	markup.cull_h = self.Parent.Size.h
-	
-	markup:Draw()
+		
+	markup:Update()
 	
 	self.Size.w = markup.width
 	self.Size.h = markup.height
@@ -66,8 +88,6 @@ function PANEL:OnMouseInput(button, press)
 	markup:OnMouseInput(button, press)
 	
 	if button == "button_1" then
-		self:RequestFocus()
-		self:BringToFront()
 		markup.mouse_released = false
 	end
 end
@@ -77,8 +97,9 @@ function PANEL:OnKeyInput(key, press)
 
 	if key == "left_shift" or key == "right_shift" then  markup:SetShiftDown(press) return end
 	if key == "left_control" or key == "right_control" then  markup:SetControlDown(press) return end
-
+	
 	if press then
+		if key == "enter" then self:OnEnter() end
 		markup:OnKeyInput(key, press)
 	end
 end
@@ -86,5 +107,8 @@ end
 function PANEL:OnCharInput(char)
 	self.markup:OnCharInput(char)
 end	
+
+function PANEL:OnEnter() end
+function PANEL:OnTextChanged() end
 
 gui2.RegisterPanel(PANEL)
