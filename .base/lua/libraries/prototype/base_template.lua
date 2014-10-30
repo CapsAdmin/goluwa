@@ -1,5 +1,20 @@
 local prototype = (...) or _G.prototype
 
+local remove_these = {}
+
+-- _G.event is not here at the moment :((
+local function add_event()
+	if _G.event then
+		event.AddListener("Update", "prototype_remove_objects", function()
+			for k in pairs(remove_these) do
+				remove_these[k] = nil
+				prototype.MakeNULL(k)
+			end
+		end)
+		add_event = nil
+	end
+end
+
 do
 	local META = {}
 
@@ -19,7 +34,9 @@ do
 		if self.OnRemove then 
 			self:OnRemove(...) 
 		end
-		prototype.MakeNULL(self)
+		remove_these[self] = self
+		
+		if add_event then add_event() end
 	end
 
 	function META:IsValid()
