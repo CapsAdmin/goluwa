@@ -568,6 +568,27 @@ do -- find value
 	end
 end
 
+do -- find in files
+	function utility.FindInLoadedLuaFiles(find)
+		local out = {}
+		for path in pairs(vfs.GetLoadedLuaFiles()) do
+			if not path:find("modules") or (path:find("lj-", nil, true) and (not path:find("header.lua") and not path:find("enums"))) then
+				local str = vfs.Read(path)
+				if str then
+					for i, line in ipairs(str:explode("\n")) do
+						local start, stop = line:find(find)
+						if start then
+							out[path] = out[path] or {}
+							table.insert(out[path], {str = line, line = i, start = start, stop = stop})
+						end
+					end
+				end
+			end
+		end
+		return out
+	end
+end
+
 do -- thanks etandel @ #lua!
 	function utility.SetGCCallback(t, func)
 		func = func or t.Remove
