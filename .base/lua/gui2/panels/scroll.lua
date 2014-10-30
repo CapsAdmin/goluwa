@@ -21,9 +21,19 @@ function PANEL:Initialize()
 end
 
 function PANEL:SetPanel(panel)
+	gui2.RemovePanel(self.down)
+	gui2.RemovePanel(self.up)
+	gui2.RemovePanel(self.y_handle)
+	gui2.RemovePanel(self.y_track)
+	gui2.RemovePanel(self.right)
+	gui2.RemovePanel(self.left)
+	gui2.RemovePanel(self.x_scroll_bar)
+	gui2.RemovePanel(self.x_scroll)
+
 	panel:SetParent(self.scroll_area)
 	
 	self.panel = panel
+	panel:Layout()
 	
 	local panel = self.scroll_area
 	

@@ -118,6 +118,7 @@ function PANEL:AddProperty(key, default, callback)
 end
 
 function PANEL:OnLayout()
+	if not self.left_max_width then return end
 	for i, group in ipairs(self:GetChildren()) do			
 		group:SetHeight(group.left:GetSizeOfChildren().h + S*10)
 		group:SetWidth(self.left_max_width + self.right_max_width) 
@@ -135,7 +136,7 @@ function PANEL:AddPropertiesFromObject(obj)
 			local set = obj["Set" .. field]
 			local def = get(obj)
 			
-			if get and set and obj[field] then
+			if get and set and obj[field] and type(def) ~= "table" then
 				self:AddProperty(field:gsub("%u", " %1"):lower():sub(2), def, function(val)
 					if not obj:IsValid() then return end
 					
@@ -158,7 +159,7 @@ if RELOAD then
 	local tree = div:SetTop(gui2.CreatePanel("tree"))
 	
 	local function fill(entities, node)
-		for key, ent in ipairs(entities) do
+		for key, ent in pairs(entities) do
 			local node = node:AddNode(ent.config)
 			node.ent = ent
 			--node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
