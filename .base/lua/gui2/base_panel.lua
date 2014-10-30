@@ -49,7 +49,7 @@ function PANEL:RequestFocus()
 	if self.RedirectFocus:IsValid() then
 		self = self.RedirectFocus
 	end
-	
+		
 	if gui2.focus_panel:IsValid() and gui2.focus_panel ~= self then
 		gui2.focus_panel:OnUnfocus()
 	end
@@ -1369,8 +1369,11 @@ do -- mouse
 		self:MarkCacheDirty()
 	end
 	
-	function PANEL:KeyInput(button, press)			
-		self:OnKeyInput(button, press)
+	function PANEL:KeyInput(button, press)
+		if self:OnPreKeyInput(button, press) ~= false then
+			self:OnKeyInput(button, press)
+			self:OnPostKeyInput(button, press)
+		end
 		self:MarkCacheDirty()
 	end	
 	
@@ -1593,7 +1596,9 @@ do -- events
 	function PANEL:OnMouseMove(x, y) end
 	function PANEL:OnMouseInput(button, press) end
 	
+	function PANEL:OnPreKeyInput(button, press) end
 	function PANEL:OnKeyInput(button, press) end
+	function PANEL:OnPostKeyInput(button, press) end
 	function PANEL:OnCharInput(char) end
 
 	function PANEL:OnCharTyped(char) end
