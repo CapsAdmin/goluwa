@@ -88,7 +88,7 @@ function META.LoadFont(name, options, callback)
 		dir = options.path .. "/", 
 		chars = {},
 		options = options,
-		size = math.ceil(options.size / 8),
+		size = options.size / 8,
 	})
 	
 	self:BuildAtlas()
