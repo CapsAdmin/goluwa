@@ -8,7 +8,7 @@ local bg = ColorBytes(64, 44, 128, 200)
 
 local S = scale
 
-local text_size = 5*S
+local text_size = 8*S 
 
 surface.CreateFont("snow_font", {
 	path = "fonts/zfont.txt", 
