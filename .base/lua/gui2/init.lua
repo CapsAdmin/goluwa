@@ -43,9 +43,13 @@ function gui2.GetHoveringPanel(panel, filter)
 
 	for i = #children, 1, -1 do
 		local panel = children[i]
-		if panel.Visible and panel.mouse_over and not panel.IgnoreMouse and (not filter or panel ~= filter) then			
+		if panel.Visible and panel.mouse_over and (not filter or panel ~= filter) then			
 			if panel:HasChildren() then
 				return gui2.GetHoveringPanel(panel, filter)
+			end
+			
+			if panel.IgnoreMouse then
+				return panel.Parent
 			end
 			
 			return panel
@@ -122,7 +126,7 @@ do -- events
 		end
 
 		gui2.hovering_panel = gui2.GetHoveringPanel()
-
+		
 		if gui2.hovering_panel:IsValid() then
 			local cursor = gui2.hovering_panel:GetCursor()
 
