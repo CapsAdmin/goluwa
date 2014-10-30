@@ -39,7 +39,7 @@ do -- testing
 		}
 
 		local scroll = gui2.CreatePanel("scroll", content)
-		local tree = gui2.CreatePanel("tree")
+		local tree = gui2.CreatePanel("tree") 
 		scroll:SetPanel(tree)
 		scroll:Dock("fill")
 		
@@ -122,9 +122,7 @@ do -- testing
 
 	local function create_button(text, options)
 		local button = gui2.CreatePanel("text_button", bar)
-		button:SetClipping(true) 
-		button:SetFont("snow_font")  
-		button:SetTextColor(ColorBytes(200, 200, 200))
+		button:SetClipping(true)
 		button:SetText(text)
 		button:SetMargin(Rect()+2.5*S)
 		button:SizeToText()
