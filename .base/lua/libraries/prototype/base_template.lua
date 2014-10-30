@@ -1,6 +1,6 @@
 local prototype = (...) or _G.prototype
 
-local remove_these = {}
+local remove_these
 
 -- _G.event is not here at the moment :((
 local function add_event()
@@ -8,6 +8,7 @@ local function add_event()
 		event.AddListener("Update", "prototype_remove_objects", function()
 			for k in pairs(remove_these) do
 				remove_these[k] = nil
+				prototype.created_objects[k] = nil
 				prototype.MakeNULL(k)
 			end
 		end)
@@ -34,9 +35,12 @@ do
 		if self.OnRemove then 
 			self:OnRemove(...) 
 		end
-		remove_these[self] = self
+		if add_event then 
+			remove_these = utility.CreateWeakTable()
+			add_event() 
+		end
 		
-		if add_event then add_event() end
+		remove_these[self] = true
 	end
 
 	function META:IsValid()
