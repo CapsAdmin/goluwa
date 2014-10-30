@@ -127,11 +127,11 @@ if CLIENT then
 		
 		if not visible then
 			local old_mouse_trap = window.GetMouseTrapped()
-			panel = gui.Create("text_input")
+			panel = gui2.CreatePanel("text_edit")
 				panel:SetPosition(Vec2(50, render.GetScreenSize().h - 100))
 				panel:SetSize(Vec2(512, 16))
-				panel:MakeActivePanel()
-				panel:SetMultiline(true)
+				panel:RequestFocus()
+				--panel:SetMultiline(true)
 				
 				-- autocomplete should be done after keys like space and backspace are pressed
 				-- so we can use the string after modifications
