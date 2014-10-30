@@ -49,7 +49,11 @@ function gui2.GetHoveringPanel(panel, filter)
 			end
 			
 			if panel.IgnoreMouse then
-				return panel.Parent
+				for i, panel in ipairs(panel:GetParentList()) do
+					if not panel.IgnoreMouse then
+						return panel
+					end
+				end
 			end
 			
 			return panel
@@ -228,8 +232,6 @@ function gui2.Initialize()
 			self:SetVisible(true)
 			
 			local button = self.buttons[key] or gui2.CreatePanel("text_button", self) 
-			button:SetFont("snow_font")  
-			button:SetTextColor(ColorBytes(200, 200, 200))
 			button:SetText(text)
 			button:SetMargin(Rect()+2.5*S)
 			button:SizeToText()

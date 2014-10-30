@@ -35,8 +35,6 @@ function PANEL:AddTab(name)
 	
 	button:SetSize(Vec2(22,14)*S)
 	button:SetHeight(button:GetHeight() - S)
-	
-	button:SetFont("snow_font")
 	button:SetTextColor(ColorBytes(168,168,224))
 	button:SetText(name)
 	button:SetMargin(Rect()+4*S)
