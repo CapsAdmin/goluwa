@@ -12,8 +12,6 @@ do -- tree node
 		self:SetNoDraw(true)
 
 		local label = gui2.CreatePanel("text_button", self)
-		label:SetTextColor(ColorBytes(200, 200, 200))
-		label:SetFont("snow_font")
 		label:SetMargin(Rect()+2*S)
 		label:SetNoDraw(true)
 		label:SetStyleTranslation("button_active", "button_rounded_active")
@@ -26,12 +24,11 @@ do -- tree node
 					v.label:SetNoDraw(true)
 				end
 			end
+			self.tree:OnNodeSelect(self)
 		end
 		self.label = label
 
 		local exp = gui2.CreatePanel("text_button", self)
-		exp:SetFont("snow_font")
-		exp:SetTextColor(ColorBytes(200, 200, 200))
 		exp:SetMargin(Rect()+S)
 		exp:SetVisible(false)
 		exp.OnMouseInput = function(_, button, press) 
@@ -148,7 +145,6 @@ do
 		
 		self:SetStackRight(false)
 		self:SetSizeStackToWidth(true)
-		self:SetScrollable(true)
 
 		self.CustomList = {}
 	end
@@ -167,17 +163,21 @@ do
 			self.nodes[id] = pnl 
 		end
 		
+		self:Layout()
+		
 		return pnl
 	end
 
 	function PANEL:RemovePanel(pnl)	
-		for k,v in pairs(self.CustomList) do
+		for k,v in ipairs(self.CustomList) do
 			if v == pnl then
 				table.remove(self.CustomList, k)
+				break
 			end
 		end
 
-		::again::	
+		::again::
+		
 		for k,v in pairs(self.CustomList) do
 			if v.node_parent == pnl then
 				self:RemovePanel(v)
@@ -186,8 +186,21 @@ do
 		end	
 		
 		pnl:Remove()
-		self:RequestLayout()
+		
+		self:Layout()
+	end
+	
+	function PANEL:OnLayout()
+		local w = self:GetWidth()
+		for _, v in ipairs(self:GetChildren()) do
+			w = math.max(w, v.label:GetX() + v.label:GetWidth())
+		end
+		for _, v in ipairs(self:GetChildren()) do
+			v:SetWidth(w)
+		end
 	end
 
+	function PANEL:OnNodeSelect(node) end
+	
 	gui2.RegisterPanel(PANEL)		
 end

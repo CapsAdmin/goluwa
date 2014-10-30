@@ -35,9 +35,6 @@ end
 
 function PANEL:Test()		
 	local btn = gui2.CreatePanel("text_button")
-	
-	btn:SetFont("snow_font")
-	btn:SetTextColor(ColorBytes(200, 200, 200))
 	btn:SetText("oh")
 	btn:SetMargin(Rect()+S*3)
 	btn:SizeToText()

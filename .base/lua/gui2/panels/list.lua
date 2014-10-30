@@ -16,6 +16,7 @@ function PANEL:Initialize()
 	top:SetLayoutParentOnLayout(true)
 	top:SetMargin(Rect())
 	top:SetClipping(true)
+	top:SetNoDraw(true)
 	self.top = top
 				
 	local list = gui2.CreatePanel("base", self)
@@ -63,7 +64,7 @@ function PANEL:OnLayout()
 	
 	self.list:SetHeight(y)
 	
---		self:SizeColumnsToFit()
+	self:SizeColumnsToFit()
 
 	if #self.columns > 0 then
 		self.columns[#self.columns].div:SetDividerPosition(self:GetWidth())
@@ -96,20 +97,16 @@ function PANEL:SetupSorted(...)
 					
 		local column = gui2.CreatePanel("text_button")
 		column:SetMargin(Rect()+2*S)
-		column:SetFont("snow_font")
-		column:SetTextColor(ColorBytes(200,200,200)) 
 		column:SetText(name)
 		column:SetClipping(true)
 		column:SizeToText()
 		
 		local icon = gui2.CreatePanel("text", column)
-		icon:SetFont("snow_font") 
-		icon:SetTextColor(ColorBytes(200,200,200)) 
 		icon:SetText("▼")
 		icon:Dock("right")
 		column.icon = icon
 					
-		local div = gui2.CreatePanel("horizontal_divider", self.top)
+		local div = gui2.CreatePanel("divider", self.top)
 		div:SetColor(Color(0,0,0,1))
 		div:Dock("fill")
 		div:SetLeft(column)
@@ -186,7 +183,7 @@ function PANEL:AddEntry(...)
 				other_entry:SetNoDraw(true)
 			else
 				entry:SetStyle("menu_select")
-				entry:SetColor(Color(1,1,1,1))
+				entry:SetNoDraw(false)
 			end
 		end
 	end

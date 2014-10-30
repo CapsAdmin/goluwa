@@ -8,23 +8,25 @@ local bg = ColorBytes(64, 44, 128, 200)
 
 local S = scale
 
+local text_size = 5*S
+
 surface.CreateFont("snow_font", {
 	path = "fonts/zfont.txt", 
-	size = 8*S,
+	size = text_size,
 	shadow = S,
 	shadow_color = Color(0,0,0,0.5),
 }) 
 
 surface.CreateFont("snow_font_green", {
 	path = "fonts/zfont.txt", 
-	size = 8*S,
+	size = text_size,
 	shadow = S,
 	shadow_color = Color(0,1,0,0.4),
 }) 
 
 surface.CreateFont("snow_font_noshadow", {
 	path = "fonts/zfont.txt", 
-	size = 8*S,
+	size = text_size,
 })
 
 local skin = {

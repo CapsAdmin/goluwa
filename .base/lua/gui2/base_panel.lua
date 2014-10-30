@@ -217,7 +217,7 @@ function PANEL:PreDraw(from_cache)
 		surface.EnableClipRect(0,0,self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
 	end
 	
-	render.Translate(-self.Scroll.x, -self.Scroll.y, 0)
+	surface.Translate(-self.Scroll.x, -self.Scroll.y, 0)
 	
 	if from_cache then
 		self.draw_no_draw = false
@@ -456,7 +456,9 @@ do -- cached rendering
 				surface.Translate(-self.Scroll.x, -self.Scroll.y)
 
 				for k,v in ipairs(self:GetChildren()) do
-					v:Draw(true)
+					if v.Visible then
+						v:Draw(true)
+					end
 				end
 
 				self.cache_dirty = false

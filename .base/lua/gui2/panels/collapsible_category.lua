@@ -42,12 +42,11 @@ function PANEL:SetTitle(str)
 	gui2.RemovePanel(self.title)
 	local title = gui2.CreatePanel("text", self.bar)
 	title:SetHeight(self.bar:GetHeight())
-	title:SetFont("snow_font")
-	title:SetTextColor(ColorBytes(200, 200, 200))
 	title:SetText(str)
 	title:SetPosition(Vec2(2*S,0))
 	title:CenterY() 
 	title:SetNoDraw(true)
+	title:SetIgnoreMouse(true)
 	self.title = title
 end
 

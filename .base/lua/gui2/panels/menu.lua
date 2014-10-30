@@ -68,9 +68,9 @@ do
 		self:SetStyle("menu_select")
 		self:SetPadding(Rect(S, S, S, S))
 		
-		self.label = gui2.CreatePanel("text", self)
-		self.label:SetFont("snow_font") 
-		self.label:SetTextColor(ColorBytes(200, 200, 200)) 
+		local label = gui2.CreatePanel("text", self)
+		label:SetIgnoreMouse(true)
+		self.label = label
 	end
 	
 	function PANEL:OnMouseEnter()
@@ -111,9 +111,8 @@ do
 		icon:SetNoDraw(true)
 		
 		local label = gui2.CreatePanel("text", icon)
-		label:SetFont("snow_font") 
-		label:SetTextColor(ColorBytes(200,200,200)) 
 		label:SetText("▶")
+		label:SetIgnoreMouse(true)
 		icon:SetSize(label:GetSize())
 
 		self.menu = gui2.CreatePanel("menu")

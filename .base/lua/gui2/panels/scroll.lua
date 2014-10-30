@@ -160,15 +160,15 @@ function PANEL:OnLayout()
 	
 	if not panel:IsValid() then return end
 	
-	self.x_scroll_bar:SetPosition(self.x_scroll_bar:GetPosition())
-	self.y_handle:SetPosition(self.y_handle:GetPosition())
+	if self.XScrollBar then self.x_scroll_bar:SetPosition(self.x_scroll_bar:GetPosition()) end
+	if self.YScrollBar then self.y_handle:SetPosition(self.y_handle:GetPosition()) end
 		
 	panel:SetSize(panel:GetSizeOfChildren())
 	
 	if self.YScrollBar then
 		local offset = 0
 	
-		if self.x_scroll:IsVisible() then
+		if self.XScrollBar and self.x_scroll:IsVisible() then
 			offset = scroll_width
 		end
 	
@@ -189,7 +189,7 @@ function PANEL:OnLayout()
 	if self.XScrollBar then
 		local offset = 0
 	
-		if self.y_track:IsVisible() then
+		if self.YScrollBar and self.y_track:IsVisible() then
 			offset = scroll_width
 		end	
 	
