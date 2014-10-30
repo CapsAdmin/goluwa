@@ -65,6 +65,9 @@ luadata.Types =
 	vec3 = function(var)
 		return ("Vec3(%f, %f, %f)"):format(var:Unpack()) 
 	end,
+	vec2 = function(var)
+		return ("Vec2(%f, %f)"):format(var:Unpack()) 
+	end,
 	ang3 = function(var)
 		return ("Ang3(%f, %f, %f)"):format(var:Unpack()) 
 	end,
@@ -73,6 +76,9 @@ luadata.Types =
 	end,
 	color = function(var)
 		return ("Color(%f, %f, %f, %f)"):format(var:Unpack()) 
+	end,
+	rect = function(var)
+		return ("Rect(%f, %f, %f, %f)"):format(var:Unpack()) 
 	end,
 }
 
