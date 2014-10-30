@@ -5,8 +5,8 @@ PANEL.ClassName = "text_edit"
 
 prototype.GetSetDelegate(PANEL, "Text", "", "label")
 prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
-prototype.GetSetDelegate(PANEL, "Font", "default", "label")
-prototype.GetSetDelegate(PANEL, "TextColor", Color(1,1,1), "label")
+prototype.GetSetDelegate(PANEL, "Font", "snow_font", "label")
+prototype.GetSetDelegate(PANEL, "TextColor", Color(0,1,0), "label")
 prototype.GetSetDelegate(PANEL, "TextWrap", false, "label")
 
 prototype.Delegate(PANEL, "label", "CenterText", "Center")
@@ -18,17 +18,16 @@ function PANEL:Initialize()
 	self:SetColor(Color(0,0,0,1))
 	self.BaseClass.Initialize(self)
 	
-	local label = gui2.CreatePanel("text")
-	label:SetTextColor(Color(0,1,0,1))
-	label:SetFont("snow_font")
+	local label = gui2.CreatePanel("text", self)
+	label:SetFont(self.Font)
+	label:SetTextColor(self.TextColor)
 	label:SetEditable(true)
 	label:SetClipping(true)
+	label:SetIgnoreMouse(true)
 	self.label = label
 	
-	local scroll = gui2.CreatePanel("scroll", self)
-	scroll:SetPanel(label)
-	scroll:Dock("fill")
-	self.scroll = scroll
+	label.OnTextChanged = function(_, ...) self:OnTextChanged(...) end
+	label.OnEnter = function(_, ...) self:OnEnter(...) end
 end
 
 function PANEL:SizeToText()
@@ -36,6 +35,14 @@ function PANEL:SizeToText()
 		
 	self.label:SetPosition(marg:GetPosition())
 	self:SetSize(self.label:GetSize() + marg:GetSize()*2)
+end
+
+function PANEL:OnFocus()
+	self.label:SetEditable(true)
+end
+
+function PANEL:OnUnfocus()
+	self.label:SetEditable(false)
 end
 
 function PANEL:OnKeyInput(...)
@@ -46,8 +53,15 @@ function PANEL:OnCharInput(...)
 	self.label:OnCharInput(...)
 end
 
-function PANEL:OnMouseInput()
-	--self:SizeToText() 
+function PANEL:OnMouseInput(button, press, ...)
+	self.label:OnMouseInput(button, press, ...)
 end
+
+function PANEL:OnMouseMove(...)
+	self.label:OnMouseMove(...)
+end
+
+function PANEL:OnEnter() end
+function PANEL:OnTextChanged() end
 	
 gui2.RegisterPanel(PANEL)
