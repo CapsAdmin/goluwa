@@ -19,6 +19,7 @@ function PANEL:AddGroup(name)
 	group:SetTitle(name)
 	local divider = gui2.CreatePanel("divider", group)
 	divider:Dock("fill")
+	divider:SetDividerWidth(1)
 	group.divider = divider
 	
 	local left = divider:SetLeft(gui2.CreatePanel("base"))
@@ -51,7 +52,9 @@ function PANEL:AddProperty(key, default, callback)
 	       
 	local left = gui2.CreatePanel("text_button", self.current_group.left) 
 	left:SetText(key)   
-	left:SizeToText()
+	left:SetStyle("property")
+	left:SetStyleTranslation("button_active", "property")
+	left:SetStyleTranslation("button_inactive", "property")
 	
 	local right
 	
@@ -108,8 +111,15 @@ function PANEL:AddProperty(key, default, callback)
 		end
 	end
 	
-	left:SetHeight(S*10)
-	right:SetHeight(S*10) 
+	right:SetStyle("property")
+	right:SetStyleTranslation("button_active", "property")
+	right:SetStyleTranslation("button_inactive", "property")
+	 
+	left:SetHeight(14)
+	right:SetHeight(14)
+	 
+	left:CenterTextY() 
+	if right.CenterTextY then right:CenterTextY() end
 	
 	self.left_max_width = math.max((self.left_max_width or 0), left:GetWidth())
 	self.right_max_width = math.max((self.right_max_width or 0), right:GetWidth())
@@ -185,6 +195,6 @@ if RELOAD then
 			end
 		end
 		
-		scroll:SetPanel(properties)
+		scroll:SetPanel(properties) 
 	end
-end  
+end

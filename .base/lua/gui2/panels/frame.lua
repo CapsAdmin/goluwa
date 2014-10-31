@@ -18,58 +18,47 @@ function PANEL:Initialize()
 	local bar = gui2.CreatePanel("base", self)
 	bar:SetObeyMargin(false)
 	bar:Dock("fill_top") 
-	bar:SetHeight(10*S)
-	bar:SetSimpleTexture(true)
+	bar:SetHeight(11*S)
 	bar:SetStyle("gradient")
-	bar:SetColor(ColorBytes(120, 120, 160))
 	bar:SetClipping(true)
 	bar:SetSendMouseInputToPanel(self)
-	
-	local close = gui2.CreatePanel("text_button", bar)
-	close:SetFont("snow_font_noshadow")
-	close:SetTextColor(ColorBytes(50,50,50))
-	close:SetText("X")
-	close:SizeToText()
-	close:CenterText()
-	close:SetStyle("button_rounded_inactive")
-	close:SetStyleTranslation("button_active", "button_rounded_active")
-	close:SetStyleTranslation("button_inactive", "button_rounded_inactive")
+		
+	local close = gui2.CreatePanel("button", bar)
+	close:SetStyle("close_inactive")
+	close:SetStyleTranslation("button_active", "close_active")
+	close:SetStyleTranslation("button_inactive", "close_inactive")
 	close.OnPress = function() 
 		self:Remove()
 	end
 	self.close = close
-	
-	local max = gui2.CreatePanel("text_button", bar)
-	max:SetFont("snow_font_noshadow")
-	max:SetTextColor(ColorBytes(50,50,50))
-	max:SetText("⬜")
-	max:SizeToText()
-	max:CenterText()
-	max:SetStyle("button_rounded_inactive")
-	max:SetStyleTranslation("button_active", "button_rounded_active")
-	max:SetStyleTranslation("button_inactive", "button_rounded_inactive")
+		
+	local max = gui2.CreatePanel("button", bar)
+	max:SetStyle("maximize2_inactive")
+	max:SetStyleTranslation("button_active", "maximize2_active")
+	max:SetStyleTranslation("button_inactive", "maximize2_inactive")
 	max.OnPress = function() 
 		if self.maximized then
 			self:Dock()
 			self:SetSize(self.maximized.size)
 			self:SetPosition(self.maximized.pos)
 			self.maximized = nil
+			max:SetStyle("maximize2_inactive")
+			max:SetStyleTranslation("button_active", "maximize2_active")
+			max:SetStyleTranslation("button_inactive", "maximize2_inactive")
 		else
 			self.maximized = {size = self:GetSize():Copy(), pos = self:GetPosition():Copy()}
-			self:Dock("fill")
+			self:Dock("fill")			
+			max:SetStyle("maximize_inactive")
+			max:SetStyleTranslation("button_active", "maximize_active")
+			max:SetStyleTranslation("button_inactive", "maximize_inactive")
 		end
 	end
 	self.max = max
 	
-	local min = gui2.CreatePanel("text_button", bar)
-	min:SetFont("snow_font_noshadow")
-	min:SetTextColor(ColorBytes(50,50,50))
-	min:SetText("‾")
-	min:SizeToText()
-	min:CenterText()
-	min:SetStyle("button_rounded_inactive")
-	min:SetStyleTranslation("button_active", "button_rounded_active")
-	min:SetStyleTranslation("button_inactive", "button_rounded_inactive")
+	local min = gui2.CreatePanel("text_button", bar) 
+	min:SetStyle("minimize_inactive")
+	min:SetStyleTranslation("button_active", "minimize_active")
+	min:SetStyleTranslation("button_inactive", "minimize_inactive")
 	min.OnPress = function() 
 		self:SetVisible(not self.Visible)
 	end
@@ -110,14 +99,19 @@ end
 
 function PANEL:OnLayout()
 	local p = self:GetMargin()
-	self.close:SetX(self.bar:GetWidth() - self.close:GetWidth() - p.w)
+	self.close:SetX(self.bar:GetWidth() - self.close:GetWidth() - p.w*1.5)
 	self.close:CenterY()
 	
-	self.max:SetX(self.bar:GetWidth() - self.close:GetWidth() - self.max:GetWidth() - p.w*2)
+	self.max:SetX(self.bar:GetWidth() - self.close:GetWidth() - self.max:GetWidth() - p.w*3)
 	self.max:CenterY()
 	
-	self.min:SetX(self.bar:GetWidth() - self.close:GetWidth() - self.max:GetWidth() - self.min:GetWidth() - p.w*3)
+	self.min:SetX(self.bar:GetWidth() - self.close:GetWidth() - self.max:GetWidth() - self.min:GetWidth() - p.w*4)
 	self.min:CenterY()
 end
 
-gui2.RegisterPanel(PANEL)  
+gui2.RegisterPanel(PANEL)
+
+if RELOAD then
+	local panel = gui2.CreatePanel(PANEL.ClassName)
+	panel:SetSize(Vec2(300, 300))
+end

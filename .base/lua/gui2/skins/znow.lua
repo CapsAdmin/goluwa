@@ -186,10 +186,27 @@ local skin = {
 local temp = {}
 
 for k,v in pairs(skin) do
-	temp[k] = {v, ninepatch_size, ninepatch_corner_size}
+	temp[k] = {v, Vec2(ninepatch_size, ninepatch_size), ninepatch_corner_size}
 end
+
+
+table.insert(temp.gradient, Vec2())
+table.insert(temp.gradient, ColorBytes(120, 120, 160))
+table.insert(temp.gradient, true)
+
+table.insert(temp.gradient2, Vec2())
+table.insert(temp.gradient2, ColorBytes(120, 120, 160))
+table.insert(temp.gradient2, true)
+
+table.insert(temp.gradient3, Vec2())
+table.insert(temp.gradient3, ColorBytes(120, 120, 160))
+table.insert(temp.gradient3, true)
+
+temp.task_bar = {temp.gradient[1], ninepatch_size, ninepatch_corner_size, Vec2(), ColorBytes(0,72,248), true}
 
 temp.scale = scale
 temp.background = bg
+temp.default_font_color = ColorBytes(200,200,200)
+temp.default_font = "snow_font"
 
 gui2.SetSkin(temp)

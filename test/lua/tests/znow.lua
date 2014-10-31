@@ -1,3 +1,5 @@
+gui2.world:RemoveChildren()
+
 local S = gui2.skin.scale
 
 do -- testing
@@ -72,13 +74,13 @@ do -- testing
 
 	do
 		local content = tab:AddTab("dividers")
-		local div = gui2.CreatePanel("horizontal_divider", content)
+		local div = gui2.CreatePanel("divider", content)
 		div:Dock("fill")
 		div:SetDividerPosition(400)
 
 		local huh = div:SetLeft(gui2.CreatePanel("button"))
 		
-		local div = div:SetRight(gui2.CreatePanel("horizontal_divider"))
+		local div = div:SetRight(gui2.CreatePanel("divider"))
 	end
 	
 	do		
@@ -115,10 +117,10 @@ do -- testing
 	local padding = 5 * S
 
 	local bar = gui2.CreatePanel("base") 
-	bar:SetSimpleTexture(true)
 	bar:SetStyle("gradient")
-	bar:SetColor(ColorBytes(0,72,248))
 	bar:SetDraggable(true)
+	bar:SetStack(true)
+	bar:SetPadding(Rect(1,1,5*S,3*S))
 
 	local function create_button(text, options)
 		local button = gui2.CreatePanel("text_button", bar)
@@ -154,6 +156,9 @@ do -- testing
 
 			menu:CallOnRemove(function() button:SetState(false) end)
 		end
+		
+		bar:SetSize(Vec2(1000,1000))
+		bar:SetSize(bar:StackChildren())
 	end
 
 	create_button("↓", {
@@ -237,12 +242,6 @@ do -- testing
 		{},
 		{"about"},
 	})
-
-	bar:SetStack(true)
-	bar:SetSize(Vec2(1000,1000))
-	bar:SetPadding(Rect(1,1,5*S,3*S))
-	bar:SetSize(bar:StackChildren())
-
 end
 
 local emitter = ParticleEmitter(800)

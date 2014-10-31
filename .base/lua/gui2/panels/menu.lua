@@ -30,8 +30,8 @@ do
 	
 	function PANEL:AddSeparator()
 		local panel = gui2.CreatePanel("base", self)
-		panel:SetStyle("button_active")
-		panel:SetHeight(2*S)
+		panel:SetStyle("button_inactive")
+		panel:SetHeight(S)
 		panel:SetIgnoreMouse(true)
 	end
 	
@@ -107,13 +107,7 @@ do
 		local icon = gui2.CreatePanel("base", self)
 		icon:Dock("right")
 		icon:SetIgnoreMouse(true)
-		icon:SetPadding(Rect(0,0,S*2,0))
-		icon:SetNoDraw(true)
-		
-		local label = gui2.CreatePanel("text", icon)
-		label:SetText("▶")
-		label:SetIgnoreMouse(true)
-		icon:SetSize(label:GetSize())
+		icon:SetStyle("menu_right_arrow")
 
 		self.menu = gui2.CreatePanel("menu")
 		self.menu:SetVisible(false)

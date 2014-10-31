@@ -39,19 +39,27 @@ function PANEL:SetPanel(panel)
 	
 	if self.YScrollBar then
 		local y_track = gui2.CreatePanel("base", self)
-		y_track:SetSimpleTexture(true)
-		y_track:SetStyle("gradient2")
+		y_track:SetStyle("scroll_vertical_track")
 		y_track:SetWidth(scroll_width)
 
-		local up = gui2.CreatePanel("text_button", y_track)	
+		local up = gui2.CreatePanel("button", y_track)	
 		up:SetSize(Vec2(scroll_width, scroll_width))
+		up:SetStyle("up_inactive")
+		up:SetStyleTranslation("button_active", "up_active")
+		up:SetStyleTranslation("button_inactive", "up_inactive")
 		
-		local down = gui2.CreatePanel("text_button", y_track)
+		local down = gui2.CreatePanel("button", y_track)
 		down:SetSize(Vec2(scroll_width, scroll_width))
+		down:SetStyle("down_inactive")
+		down:SetStyleTranslation("button_active", "down_active")
+		down:SetStyleTranslation("button_inactive", "down_inactive")
 		
 		local y_handle = gui2.CreatePanel("button", y_track)
 		y_handle:SetDraggable(true)	
 		y_handle:SetWidth(scroll_width)
+		y_handle:SetStyle("scroll_vertical_handle_inactive")
+		y_handle:SetStyleTranslation("button_active", "scroll_vertical_handle_active")
+		y_handle:SetStyleTranslation("button_inactive", "scroll_vertical_handle_inactive")
 				
 		y_handle.OnPositionChanged = function(_, pos)
 			if not panel:IsValid() then return end
@@ -98,18 +106,27 @@ function PANEL:SetPanel(panel)
 	
 	if self.XScrollBar then
 		local x_scroll = gui2.CreatePanel("base", self)
-		x_scroll:SetSimpleTexture(true)
-		x_scroll:SetStyle("gradient3")
+		x_scroll:SetStyle("scroll_horizontal_track")
 		x_scroll:SetHeight(scroll_width)
 		
 		local left = gui2.CreatePanel("text_button", x_scroll)	
 		left:SetSize(Vec2(scroll_width, scroll_width))
+		left:SetStyle("left_inactive")
+		left:SetStyleTranslation("button_active", "left_active")
+		left:SetStyleTranslation("button_inactive", "left_inactive")
+		
 		local right = gui2.CreatePanel("text_button", x_scroll)
 		right:SetSize(Vec2(scroll_width, scroll_width))
+		right:SetStyle("right_inactive")
+		right:SetStyleTranslation("button_active", "right_active")
+		right:SetStyleTranslation("button_inactive", "right_inactive")
 		
 		local x_scroll_bar = gui2.CreatePanel("button", x_scroll)
 		x_scroll_bar:SetDraggable(true)
 		x_scroll_bar:SetHeight(scroll_width)
+		x_scroll_bar:SetStyle("scroll_horizontal_handle_inactive")
+		x_scroll_bar:SetStyleTranslation("button_active", "scroll_horizontal_handle_active")
+		x_scroll_bar:SetStyleTranslation("button_inactive", "scroll_horizontal_handle_inactive")
 		
 		x_scroll_bar.OnPositionChanged = function(_, pos)
 			if not panel:IsValid() then return end

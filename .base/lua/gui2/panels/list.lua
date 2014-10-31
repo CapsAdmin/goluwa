@@ -20,7 +20,7 @@ function PANEL:Initialize()
 	self.top = top
 				
 	local list = gui2.CreatePanel("base", self)
-	list:SetColor(Color(0,0,0,1))
+	list:SetColor(gui2.skin.font_edit_background)
 	--list:SetCachedRendering(true)
 	list:SetClipping(true)
 	self.list = list
@@ -101,13 +101,14 @@ function PANEL:SetupSorted(...)
 		column:SetClipping(true)
 		column:SizeToText()
 		
-		local icon = gui2.CreatePanel("text", column)
-		icon:SetText("▼")
+		local icon = gui2.CreatePanel("base", column)
+		icon:SetStyle("list_down_arrow")
 		icon:Dock("right")
+		icon:SetIgnoreMouse(true)
 		column.icon = icon
 					
 		local div = gui2.CreatePanel("divider", self.top)
-		div:SetColor(Color(0,0,0,1))
+		div:SetColor(gui2.skin.font_edit_background)
 		div:Dock("fill")
 		div:SetLeft(column)
 		div:SetLayoutParentOnLayout(true)
@@ -118,12 +119,12 @@ function PANEL:SetupSorted(...)
 		column.OnPress = function()
 			
 			if column.sorted then
-				icon:SetText("▼")
+				icon:SetStyle("list_down_arrow")
 				table.sort(self.entries, function(a, b)
 					return a.labels[i].text < b.labels[i].text
 				end)
 			else
-				icon:SetText("▲")
+				icon:SetStyle("list_up_arrow")
 				table.sort(self.entries, function(a, b)
 					return a.labels[i].text > b.labels[i].text
 				end)
@@ -155,8 +156,7 @@ function PANEL:AddEntry(...)
 		local text = tostring(select(i, ...) or "nil")
 		
 		local label = gui2.CreatePanel("text_button", entry)
-		label:SetFont("snow_font_green")
-		label:SetTextColor(Color(0,1,0))
+		label:SetTextColor(gui2.skin.font_edit_color)
 		label:SetTextWrap(false)
 		label:SetText(text)
 		label:SizeToText()

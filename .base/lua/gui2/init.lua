@@ -9,7 +9,7 @@ gui2.unroll_draw = false
 gui2.hovering_panel = gui2.hovering_panel or NULL
 gui2.focus_panel = gui2.focus_panel or NULL
 
-gui2.panels = {} 
+gui2.panels = gui2.panels or {} 
 
 function gui2.CreatePanel(name, parent)		
 	local self = prototype.CreateDerivedObject("panel2", name)
@@ -181,11 +181,20 @@ end
 
 function gui2.SetSkin(tbl)
 	gui2.skin = tbl
+	for k,v in pairs(gui2.panels) do
+		v:Layout()
+		v:SetStyle(v:GetStyle())
+	end
 end
 
 function gui2.GetSkin()
 	return gui2.skin
 end
+
+console.AddCommand("gui2_skin", function(_, str)
+	str = str or "default"
+	include("gui2/skins/" .. str .. ".lua")
+end)
 
 function gui2.Initialize()
 	gui2.RemovePanel(gui2.world)
@@ -217,9 +226,7 @@ function gui2.Initialize()
 		local S = gui2.skin.scale
 		
 		local bar = gui2.CreatePanel("base") 
-		bar:SetSimpleTexture(true)
-		bar:SetStyle("gradient")
-		bar:SetColor(ColorBytes(0,72,248))
+		bar:SetStyle("task_bar")
 		bar:Dock("fill_bottom")
 		bar:SetHeight(32)
 		bar:SetStack(true)
@@ -259,11 +266,10 @@ function gui2.Initialize()
 end
 
 include("base_panel.lua", gui2)
-include("skin.lua", gui2)
+include("skins/default.lua", gui2)
 include("panels/*", gui2)
 
 gui2.Initialize()
-
 
 gui.SetCursor = function() end
 

@@ -36,7 +36,7 @@ end
 function PANEL:Test()		
 	local btn = gui2.CreatePanel("text_button")
 	btn:SetText("oh")
-	btn:SetMargin(Rect()+S*3)
+	btn:SetMargin(Rect()+S*2)
 	btn:SizeToText()
 	btn:SetMode("toggle")
 	btn:SetPosition(Vec2()+100)
