@@ -30,9 +30,7 @@ function PANEL:IsWorld()
 	return self == gui2.world
 end
 
-function PANEL:BringToFront()
-	if not self.BringToFrontOnClick then return end
-	
+function PANEL:BringToFront()	
 	if self.RedirectFocus:IsValid() then
 		return self.RedirectFocus:BringToFront()
 	end
@@ -99,20 +97,21 @@ end
 do -- call on remove
 	PANEL.call_on_remove = {}
 	
-	function PANEL:OnRemove()
+	function PANEL:OnRemove(a)
 		for k, v in pairs(self.call_on_remove) do
 			if v() == false then
 				return
 			end
 		end
 		
-		for i, v in ipairs(gui2.panels) do
-			if v == self then
-				table.remove(gui2.panels, i)
-				break
-			end
-		end
+		gui2.panels[self] = nil
 		
+		a = (a or 0) + 1
+		
+		for k,v in pairs(self:GetChildrenList()) do
+			v:Remove(a)
+		end
+			
 		-- this is important!!
 		self:UnParent()
 	end
@@ -125,6 +124,8 @@ do -- call on remove
 end
 
 function PANEL:GetSizeOfChildren()
+	self:Layout(true)
+	
 	local total_size = Vec2()
 
 	for k, v in ipairs(self:GetChildren()) do
@@ -174,7 +175,7 @@ function PANEL:PreDraw(from_cache)
 	local no_draw = self:HasParent() and self.Parent.draw_no_draw
 
 	surface.PushMatrix()
-	render.Translate(self.Position.x, self.Position.y, 0)
+	surface.Translate(self.Position.x, self.Position.y, 0)
 
 	local w = (self.Size.w)/2
 	local h = (self.Size.h)/2
@@ -897,11 +898,11 @@ end
 do -- docking
 	do -- center
 		function PANEL:CenterX()
-			self:SetPosition(Vec2(math.ceil((self.Parent:GetSize().x * 0.5) - (self:GetSize().x * 0.5)), self:GetPosition().y))
+			self:SetX((self.Parent:GetWidth() * 0.5) - (self:GetWidth() * 0.5))
 		end
 
 		function PANEL:CenterY()
-			self:SetPosition(Vec2(self:GetPosition().x, math.ceil((self.Parent:GetSize().y * 0.5) - (self:GetSize().y * 0.5))))
+			self:SetY((self.Parent:GetHeight() * 0.5) - (self:GetHeight() * 0.5))
 		end
 
 		function PANEL:Center()
@@ -952,7 +953,7 @@ do -- docking
 		self.Parent:Layout()
 	end
 
-	function PANEL:DockLayout()
+	function PANEL:DockLayout()	
 		local left, right, top, bottom, center
 
 		-- grab one of each dock type
@@ -979,6 +980,10 @@ do -- docking
 				else
 					if pnl.dock_location == "center" then
 						pnl:Center()
+					elseif pnl.dock_location == "center_x" then
+						pnl:CenterX()
+					elseif pnl.dock_location == "center_y" then
+						pnl:CenterY()
 					elseif pnl.dock_location == "top" then
 						pnl:Align(Vec2(0.5, 0))
 					elseif pnl.dock_location == "bottom" then
@@ -1344,7 +1349,10 @@ do -- mouse
 		
 		if press then
 			self:RequestFocus()
-			self:BringToFront()
+			
+			if self.BringToFrontOnClick then 
+				self:BringToFront()
+			end
 
 			if button == "button_1" then
 				if not self.Resizable or not self:StartResizing(nil, button) then
@@ -1389,6 +1397,9 @@ end
 do -- layout
 	PANEL.layout_count = 0
 	
+	prototype.GetSet(PANEL, "StretchToPanelWidth", NULL)
+	prototype.GetSet(PANEL, "StretchToPanelHeight", NULL)
+	
 	function PANEL:Layout(now)
 		if now then			
 			if self.in_layout then return end
@@ -1400,14 +1411,23 @@ do -- layout
 				
 				self.layout_count = (self.layout_count or 0) + 1
 				
-				self:DockLayout()
-				self:StackChildren()
+				self:DockLayout()			
+	
+				if self.StretchToPanelWidth:IsValid() then
+					self:SetWidth(self.StretchToPanelWidth:GetWidth())
+				end
+				
+				if self.StretchToPanelHeight:IsValid() then
+					self:SetHeight(self.StretchToPanelHeight:GetHeight())
+				end
 				
 				self:OnLayout(self:GetPosition(), self:GetSize())
 									
 				if self.LayoutParentOnLayout and self:HasParent() then
 					self.Parent:Layout(now)
 				end
+				
+				self:StackChildren()
 				
 				if self.layout_me ~= "init" then
 					self.layout_me = false
@@ -1437,8 +1457,6 @@ do -- stacking
 	 
 	function PANEL:StackChildren()
 		if not self.Stack then return end
-		
-		self:Layout(true)
 		
 		local w = 0
 		local h
