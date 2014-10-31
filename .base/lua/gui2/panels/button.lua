@@ -6,6 +6,30 @@ PANEL.ClassName = "button"
 prototype.GetSet(PANEL, "Mode", "normal")
 prototype.GetSet(PANEL, "ResetOnMouseExit", true)
 prototype.GetSet(PANEL, "Highlight", false)
+prototype.GetSet(PANEL, "ActiveStyle", "button_active")
+prototype.GetSet(PANEL, "InactiveStyle", "button_inactive")
+prototype.GetSet(PANEL, "HighlightOnMouseEnter", true)
+prototype.GetSet(PANEL, "ClicksToActivate", 1)
+
+function PANEL:SetActiveStyle(str)
+	self.ActiveStyle = str
+	
+	if self:GetState() then
+		self:SetStyle(self.ActiveStyle)
+	else
+		self:SetStyle(self.InactiveStyle)
+	end
+end
+
+function PANEL:SetInactiveStyle(str)
+	self.InactiveStyle = str
+	
+	if self:GetState() then
+		self:SetStyle(self.ActiveStyle)
+	else
+		self:SetStyle(self.InactiveStyle)
+	end
+end
 
 function PANEL:Initialize()
 	self:SetStyle("button_inactive")
@@ -26,7 +50,7 @@ function PANEL:SetState(pressed, button)
 		self.button_down[button] = pressed
 		
 		if button == "button_1" then
-			self:SetStyle("button_active")
+			self:SetStyle(self.ActiveStyle)
 			self:OnRelease() 
 		end
 		
@@ -37,7 +61,7 @@ function PANEL:SetState(pressed, button)
 		self.button_down[button] = nil
 		
 		if button == "button_1" then
-			self:SetStyle("button_inactive")
+			self:SetStyle(self.InactiveStyle)
 			self:OnPress()
 		end
 		
@@ -51,6 +75,24 @@ function PANEL:GetState(button)
 end
 
 function PANEL:OnMouseInput(button, press)
+	self.click_times = self.click_times or {}
+	
+	if press then
+		self.click_times[button] = self.click_times[button] or {last_click = 0, times = 0}
+		
+		if self.click_times[button].last_click < system.GetTime() then
+			self.click_times[button].last_click = 0
+			self.click_times[button].times = 0
+		end
+	
+		self.click_times[button].last_click = system.GetTime() + 0.2
+		self.click_times[button].times = self.click_times[button].times + 1
+		
+		if self.click_times[button].times < self.ClicksToActivate then
+			return
+		end
+	end
+
 	if self.Mode == "normal" then
 		self:SetState(press, button)
 	elseif self.Mode == "toggle" and press then
@@ -61,13 +103,14 @@ function PANEL:OnMouseInput(button, press)
 end
 
 function PANEL:OnMouseEnter()
-	self:Animate("DrawColor", {Color(1,1,1,1)*0.3, function() return self.Highlight or self:IsMouseOver() end, "from"}, duration, "", 0.25)
+	if self.HighlightOnMouseEnter then
+		self:Animate("DrawColor", {Color(1,1,1,1)*0.3, function() return self.Highlight or self:IsMouseOver() end, "from"}, duration, "", 0.25)
+	end
 end
 
 function PANEL:OnMouseExit()
 	if self.Mode ~= "toggle" and self.ResetOnMouseExit then
 		self.button_down = {}
-		self:SetStyle("button_inactive")
 	end
 end
 
