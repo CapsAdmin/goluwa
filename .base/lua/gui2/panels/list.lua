@@ -170,7 +170,7 @@ function PANEL:AddEntry(...)
 
 	local last_child = self.list:GetChildren()[#self.list:GetChildren()]
 	
-	entry:SetPosition(Vec2(0, last_child:GetPosition().y + last_child:GetHeight() - 2*S))
+	entry:SetPosition(Vec2(0, last_child:GetY() + last_child:GetHeight() - 2*S))
 	entry:SetNoDraw(true)
 	entry:SetStyleTranslation("button_active", "menu_select")
 	entry:SetStyleTranslation("button_inactive", "menu_select")

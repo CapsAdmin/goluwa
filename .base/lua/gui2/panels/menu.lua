@@ -44,7 +44,7 @@ do
 			if v.label then
 				w = math.max(w, v.label:GetSize().w)
 			end
-			y = y + v:GetSize().h + S
+			y = y + v:GetHeight() + S
 		end
 		
 		for k, v in ipairs(self:GetChildren()) do
@@ -97,7 +97,7 @@ do
 	
 	function PANEL:SetText(str)
 		self.label:SetText(str)
-		self:SetHeight(self.label:GetSize().h + 4*S)
+		self:SetHeight(self.label:GetHeight() + 4*S)
 		self.label:SetPosition(Vec2(2*S,0))
 		self.label:CenterY()
 	end
