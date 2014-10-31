@@ -81,8 +81,11 @@ add_simple("menu_right_arrow", 472,116, 4,7)
 add_simple("list_up_arrow", 385,114, 5,3) 
 add_simple("list_down_arrow", 385,122, 5,3) 
 
+add_simple("check", 448,32, 15,15) 
+add_simple("uncheck", 464,32, 15,15)
+ 
 add_simple("+", 451,99, 9,9) 
-add_simple("-", 467,99, 9,9) 
+add_simple("-", 467,99, 9,9)
 
 add("scroll_vertical_track", 384,208, 15,127, 4) 
 add("scroll_vertical_handle_inactive", 400,208, 15,127, 4) 
@@ -100,7 +103,7 @@ add("tab_inactive", 128,384, 61,24, 16)
 
 add("menu_select", 130,258, 123,27, 16)
 add("frame", 480,32, 31,31, 16)
-add("property", 256,256+1, 63-2,127, 4)
+add("property", 256,256, 63,127, 4)
 add("tab_frame", 0,256+32, 127,127-32, 16)
 
 add("gradient", 480,96, 31,31, 16)
