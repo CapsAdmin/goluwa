@@ -5,8 +5,8 @@ PANEL.ClassName = "text_edit"
 
 prototype.GetSetDelegate(PANEL, "Text", "", "label")
 prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
-prototype.GetSetDelegate(PANEL, "Font", "snow_font", "label")
-prototype.GetSetDelegate(PANEL, "TextColor", Color(0,1,0), "label")
+prototype.GetSetDelegate(PANEL, "Font", gui2.skin.default_font, "label")
+prototype.GetSetDelegate(PANEL, "TextColor", gui2.skin.font_edit_color, "label")
 prototype.GetSetDelegate(PANEL, "TextWrap", false, "label")
 
 prototype.Delegate(PANEL, "label", "CenterText", "Center")
@@ -15,7 +15,7 @@ prototype.Delegate(PANEL, "label", "CenterTextX", "CenterX")
 prototype.Delegate(PANEL, "label", "GetTextSize", "GetSize")
 
 function PANEL:Initialize()	
-	self:SetColor(Color(0,0,0,1))
+	self:SetColor(gui2.skin.font_edit_background)
 	self.BaseClass.Initialize(self)
 	
 	local label = gui2.CreatePanel("text", self)

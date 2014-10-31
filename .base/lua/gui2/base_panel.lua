@@ -309,12 +309,14 @@ do -- orientation
 	end
 
 	function PANEL:SetSize(size)
-		size.x = math.max(size.x, self.MinimumSize.w)
-		size.y = math.max(size.y, self.MinimumSize.h)
+		if self.StyleSize:IsZero() then
+			size.x = math.max(size.x, self.MinimumSize.w)
+			size.y = math.max(size.y, self.MinimumSize.h)
 
-		self.Size = size
-		
-		self:Layout()
+			self.Size = size
+			
+			self:Layout()
+		end
 	end
 
 	function PANEL:GetWorldPosition()
@@ -1263,8 +1265,7 @@ do -- mouse
 
 		local alpha = 1
 
-		if self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
-
+		if not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
 			-- WHYYYYYYY
 			-- WHYYYYYYY
 			-- WHYYYYYYY
@@ -1510,27 +1511,7 @@ do -- stacking
 	end
 end
 
-do --- ninepatch
-	prototype.GetSet(PANEL, "NinePatch", false)
-	prototype.GetSet(PANEL, "NinePatchSize", 32)
-	prototype.GetSet(PANEL, "NinePatchCornerSize", 4)
-	prototype.GetSet(PANEL, "NinePatchUVOffset", Vec2(0, 0))
-	
-	function PANEL:SetupNinepatch(texture, patch_size, corner_size, uv_offset)
-		patch_size = patch_size or self.NinePatchSize
-		corner_size = corner_size or self.NinePatchCornerSize
-		uv_offset = uv_offset or self.NinePatchUVOffset
-		
-		self:SetTexture(texture)
-		self:SetNinePatch(true)
-		self:SetNinePatchSize(patch_size)
-		self:SetNinePatchCornerSize(corner_size)
-		self:SetNinePatchUVOffset(uv_offset)
-	end
-end
-
 do -- skin
-	prototype.GetSet(PANEL, "SimpleTexture", false)
 	prototype.GetSet(PANEL, "Style")
 		
 	function PANEL:SetStyle(name)
@@ -1538,10 +1519,8 @@ do -- skin
 		
 		name = self.style_translation[name] or name
 		
-		if self.SimpleTexture then
-			self:SetTexture(gui2.skin[name][1])
-		elseif gui2.skin[name] then
-			self:SetupNinepatch(unpack(gui2.skin[name]))
+		if gui2.skin[name] then
+			self:SetupStyle(gui2.skin[name])
 		end
 	end
 	
@@ -1550,6 +1529,32 @@ do -- skin
 	function PANEL:SetStyleTranslation(from, to)
 		self.style_translation[from] = to
 	end
+	
+	prototype.GetSet(PANEL, "NinePatch", false)
+	prototype.GetSet(PANEL, "NinePatchRect", Rect(0, 0, 0, 0))
+	prototype.GetSet(PANEL, "NinePatchCornerSize", 4)
+	prototype.GetSet(PANEL, "StyleSize", Vec2(0, 0))
+	
+	function PANEL:SetStyleSize(vec)
+		if not vec:IsZero() then
+			self:SetSize(vec)
+		end
+		self.StyleSize = vec
+	end
+	
+	function PANEL:SetupStyle(tbl)
+		tbl.texture_rect = tbl.texture_rect or self.NinePatchRect
+		tbl.corner_size = tbl.corner_size or self.NinePatchCornerSize
+		tbl.color = tbl.color or self.Color
+		tbl.size = tbl.size or self.StyleSize
+		
+		self:SetNinePatch(tbl.ninepatch)
+		self:SetColor(tbl.color)
+		self:SetTexture(tbl.texture)
+		self:SetNinePatchRect(tbl.texture_rect)
+		self:SetNinePatchCornerSize(tbl.corner_size)
+		self:SetStyleSize(tbl.size)
+	end
 end
 
 function PANEL:DrawRect(x, y, w, h)
@@ -1557,12 +1562,18 @@ function PANEL:DrawRect(x, y, w, h)
 		surface.DrawNinePatch(
 			x or 0, y or 0, 
 			w or (self.Size.w + self.DrawSizeOffset.w), h or (self.Size.h + self.DrawSizeOffset.h),
-			self.NinePatchSize, 
+			self.NinePatchRect.w, self.NinePatchRect.h, 
 			self.NinePatchCornerSize, 
-			self.NinePatchUVOffset.x, self.NinePatchUVOffset.y
+			self.NinePatchRect.x, self.NinePatchRect.y
 		)
-	else				
+	else
+		if not self.NinePatchRect:IsZero() then
+			surface.SetRectUV(self.NinePatchRect.x, self.NinePatchRect.y, self.NinePatchRect.w, self.NinePatchRect.h, self.Texture.w, self.Texture.h)
+		end
 		surface.DrawRect(x or 0, y or 0, w or (self.Size.w + self.DrawSizeOffset.w), h or (self.Size.h + self.DrawSizeOffset.h))
+		if not self.NinePatchRect:IsZero() then
+			surface.SetRectUV()
+		end
 	end
 end
 

@@ -8,8 +8,8 @@ prototype.GetSet(PANEL, "ParseTags", false)
 prototype.GetSet(PANEL, "Editable", false)
 prototype.GetSet(PANEL, "TextWrap", false)
 
-prototype.GetSet(PANEL, "Font", "snow_font")
-prototype.GetSet(PANEL, "TextColor", ColorBytes(200,200,200))
+prototype.GetSet(PANEL, "Font", gui2.skin.default_font)
+prototype.GetSet(PANEL, "TextColor", gui2.skin.default_font_color)
 
 function PANEL:Initialize()
 	self.markup = surface.CreateMarkup()

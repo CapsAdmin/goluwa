@@ -10,7 +10,7 @@ function PANEL:Initialize()
 	self:SetNoDraw(true)
 
 	local tab_bar =  gui2.CreatePanel("base", self)
-	tab_bar:SetColor(ColorBytes(16,16,152,255))
+	tab_bar:SetNoDraw(true)
 	
 	tab_bar:SetStack(true)
 	tab_bar:SetStackDown(false)
@@ -33,19 +33,19 @@ function PANEL:AddTab(name)
 	button:SetStyleTranslation("button_inactive", "tab_inactive")
 	button:SetStyle("tab_inactive")
 	
-	button:SetSize(Vec2(22,14)*S)
 	button:SetHeight(button:GetHeight() - S)
-	button:SetTextColor(ColorBytes(168,168,224))
+	button:SetTextColor(gui2.skin.tab_inactive_text_color)
 	button:SetText(name)
-	button:SetMargin(Rect()+4*S)
+	button:SetMargin(Rect()+2*S)
 	button:SizeToText()
+	button:SetHeight(S*10)
 	button:CenterText()
 
 	button.text = name
 	
 	button.OnMouseInput = function(button, key, press)
 		if press and key == "button_1" then
-			button:SetTextColor(ColorBytes(160,160,0))
+			button:SetTextColor(gui2.skin.tab_active_text_color)
 			button:SetText(button.text)
 			button:CenterText()
 			button:SetState(true)
@@ -55,7 +55,7 @@ function PANEL:AddTab(name)
 			
 			for i, panel in ipairs(self.tab_bar:GetChildren()) do
 				if button ~= panel then
-					panel:SetTextColor(ColorBytes(168,168,224))
+					panel:SetTextColor(gui2.skin.tab_inactive_text_color)
 					panel:SetText(panel.text)
 					panel:CenterText()
 					panel:SetState(false)
@@ -68,9 +68,8 @@ function PANEL:AddTab(name)
 	end
 	
 	local content = gui2.CreatePanel("base", self)
-	content:SetStyle("frame")
+	content:SetStyle("tab_frame")
 	content:SetVisible(false)
-	content:SetNoDraw(true)
 	self.content = content
 	
 	self:Layout(true)
@@ -82,7 +81,7 @@ end
 
 function PANEL:OnLayout()
 	self.tab_bar:SetWidth(self:GetWidth())
-	self.tab_bar:SetHeight(12*S)
+	self.tab_bar:SetHeight(10*S)
 
 	if self.content then
 		self.content:SetPosition(Vec2(0, self.tab_bar:GetHeight()))

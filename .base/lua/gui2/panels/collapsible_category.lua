@@ -13,7 +13,6 @@ function PANEL:Initialize()
 	bar:SetObeyMargin(false)
 	bar:Dock("fill_top") 
 	bar:SetHeight(10*S)
-	bar:SetSimpleTexture(true)
 	bar:SetClipping(true) 
 	bar:SetMode("toggle")
 	

@@ -28,7 +28,7 @@ do -- tree node
 		end
 		self.label = label
 
-		local exp = gui2.CreatePanel("text_button", self)
+		local exp = gui2.CreatePanel("button", self)
 		exp:SetMargin(Rect()+S)
 		exp:SetVisible(false)
 		exp.OnMouseInput = function(_, button, press) 
@@ -74,11 +74,9 @@ do -- tree node
 		local x = self.offset
 					
 		self.image:SetSize(Vec2() + 16)
-		self.image:SetPosition(Vec2(x + S*2, 0))
+		self.image:SetPosition(Vec2(x, 0))
 		
-		self.expand:SetSize(Vec2()+S*6)
 		self.expand:SetPosition(Vec2(x - self.image:GetWidth(), 0))
-		self.expand:CenterText()
 		
 		self.label:SetPosition(self.image:GetPosition() + Vec2(self.image:GetWidth() + S*2, 0))
 		self.label:SizeToText()
@@ -125,7 +123,9 @@ do -- tree node
 		
 		self.Expand = b
 		
-		self.expand:SetText(b and "-" or "+")
+		self.expand:SetStyle(b and "-" or "+")
+		self.expand:SetStyleTranslation("button_active", b and "-" or "+")
+		self.expand:SetStyleTranslation("button_inactive", b and "-" or "+")
 	end
 				
 	gui2.RegisterPanel(PANEL)
