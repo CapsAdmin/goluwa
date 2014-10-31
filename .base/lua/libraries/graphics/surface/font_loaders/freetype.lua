@@ -284,21 +284,19 @@ function META:DrawString(str, x, y)
 				
 				if texture ~= last_tex then
 					poly = surface.CreatePoly(#str)
-					poly.y_offset = 0
 					table.insert(data, {poly = poly, texture = texture})
 					last_tex = texture
 				end
 				
 				local x,y, w,h, sx,sy = self.texture_atlas:GetUV(char)
 				poly:SetUV(x,y, w,h, sx,sy) 
-				poly:SetRect(i, X-self.options.padding/2, Y-self.options.padding/2 + (ch.h - ch.bitmap_top), w, -h)
+				poly:SetRect(i, X-self.options.padding/2, Y-self.options.padding/2 + (ch.h - ch.bitmap_top) + self.options.size, w, -h)
 				
 				if self.options.monospace then 
 					X = X + self.options.spacing
 				else
 					X = X + ch.x_advance + self.options.spacing
 				end
-				poly.y_offset = math.max(poly.y_offset, h)
 			end
 		end
 				
@@ -307,12 +305,10 @@ function META:DrawString(str, x, y)
 	
 	surface.PushMatrix(x, y)
 	for i, v in ipairs(self.string_cache[str]) do
-		surface.Translate(0, v.poly.y_offset)
 		surface.SetTexture(v.texture)
 		render.SetCullMode("front")
 		v.poly:Draw()
 		render.SetCullMode("back")
-		surface.Translate(0, -v.poly.y_offset)
 	end	
 	surface.PopMatrix()
 end
