@@ -18,6 +18,8 @@ local function create_horizontal_divider(self)
 		pos.x = math.clamp(pos.x, 0, self:GetWidth() - self.DividerWidth)
 		pos.y = 0
 		self:Layout()
+		
+		self:OnDividerPositionChanged(pos)
 	end
 	self.horizontal_divider = divider
 end
@@ -32,6 +34,8 @@ local function create_vertical_divider(self)
 		pos.x = 0
 		pos.y = math.clamp(pos.y, 0, self:GetHeight() - self.DividerWidth)
 		self:Layout()
+		
+		self:OnDividerPositionChanged(pos)
 	end
 	self.vertical_divider = divider
 end
@@ -101,8 +105,16 @@ function PANEL:SetBottom(pnl)
 end
 
 function PANEL:SetDividerPosition(x, y)
-	if self.horizontal_divider then self.horizontal_divider:SetX(x) end
-	if self.vertical_divider then self.vertical_divider:SetY(y) end
+	if self.horizontal_divider then 
+		self.horizontal_divider:SetX(x) 
+		if self.left then self.left:Layout() end
+		if self.right then self.right:Layout() end
+	end
+	if self.vertical_divider then 
+		self.vertical_divider:SetY(y or x) 
+		if self.top then self.top:Layout() end
+		if self.bottom then self.bottom:Layout() end
+	end
 end
 
 function PANEL:GetDividerPosition()
@@ -111,5 +123,7 @@ function PANEL:GetDividerPosition()
 	if self.vertical_divider then y = self.vertical_divider:GetX() end
 	return x, y
 end
+
+function PANEL:OnDividerPositionChanged() end
 
 gui2.RegisterPanel(PANEL)

@@ -180,6 +180,8 @@ function PANEL:SetPanel(panel)
 		end
 		panel.scrolling = false
 	end
+	
+	self:Layout()
 end
 
 function PANEL:OnLayout()

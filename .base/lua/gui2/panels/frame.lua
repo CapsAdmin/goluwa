@@ -72,7 +72,9 @@ function PANEL:Initialize()
 	self:SetTitle(self:GetTitle())
 	
 	self:CallOnRemove(function()
-		gui2.task_bar:RemoveButton(self)
+		if gui2.task_bar:IsValid() then
+			gui2.task_bar:RemoveButton(self)
+		end
 	end)
 end
 
@@ -88,9 +90,11 @@ function PANEL:SetTitle(str)
 	title:SetNoDraw(true)
 	self.title = title
 	
-	gui2.task_bar:AddButton(self:GetTitle(), self, function(button) 
-		self:SetVisible(not self.Visible)
-	end)
+	if gui2.task_bar:IsValid() then
+		gui2.task_bar:AddButton(self:GetTitle(), self, function(button) 
+			self:SetVisible(not self.Visible)
+		end)
+	end
 end
 
 function PANEL:OnMouseInput()

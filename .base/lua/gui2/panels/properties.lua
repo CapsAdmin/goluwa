@@ -19,7 +19,15 @@ function PANEL:AddGroup(name)
 	group:SetTitle(name)
 	local divider = gui2.CreatePanel("divider", group)
 	divider:Dock("fill")
-	divider:SetDividerWidth(1)
+	divider:SetDividerWidth(2)
+	divider.OnDividerPositionChanged = function(_, pos)
+		for i, group in ipairs(self:GetChildren()) do	
+			if group.divider ~= divider then
+				group.divider:SetDividerPosition(pos.x)
+				group:Layout()
+			end
+		end
+	end
 	group.divider = divider
 	
 	local left = divider:SetLeft(gui2.CreatePanel("base"))
@@ -119,19 +127,21 @@ function PANEL:AddProperty(key, default, callback)
 	right:SetHeight(14)
 	 
 	left:CenterTextY() 
+	
 	if right.CenterTextY then right:CenterTextY() end
 	
 	self.left_max_width = math.max((self.left_max_width or 0), left:GetWidth())
 	self.right_max_width = math.max((self.right_max_width or 0), right:GetWidth())
-	
+		
 	self:Layout()
 end
 
 function PANEL:OnLayout()
 	if not self.left_max_width then return end
-	for i, group in ipairs(self:GetChildren()) do			
+		
+	for i, group in ipairs(self:GetChildren()) do		
 		group:SetHeight(group.left:GetSizeOfChildren().h + S*10)
-		group:SetWidth(self.left_max_width + self.right_max_width) 
+		group:SetWidth(math.max(self:GetWidth(), self.left_max_width + self.right_max_width))
 		group.divider:SetWidth(self.left_max_width + self.right_max_width) 
 		group.divider:SetDividerPosition(self.left_max_width) 
 	end
@@ -160,7 +170,7 @@ end
 gui2.RegisterPanel(PANEL) 
  
 if RELOAD then
-	local frame = gui2.CreatePanel("frame")
+	local frame = utility.RemoveOldObject(gui2.CreatePanel("frame")) 
 	frame:SetSize(Vec2(300, gui2.world:GetHeight()))
 	
 	local div = gui2.CreatePanel("divider", frame)
@@ -187,6 +197,7 @@ if RELOAD then
 		gui2.RemovePanel(properties)
 		
 		properties = gui2.CreatePanel("properties")
+		properties:SetStretchToPanelWidth(frame)
 		
 		for k, v in pairs(node.ent:GetComponents()) do
 			for k,v in pairs(v) do
@@ -197,4 +208,9 @@ if RELOAD then
 		
 		scroll:SetPanel(properties) 
 	end
+	
+	
+	div:SetDividerPosition(gui2.world:GetHeight()/2) 
+	
+	tree:SelectNode(tree:GetChildren()[1]) 
 end
