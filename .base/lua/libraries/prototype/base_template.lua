@@ -1,21 +1,5 @@
 local prototype = (...) or _G.prototype
 
-local remove_these
-
--- _G.event is not here at the moment :((
-local function add_event()
-	if _G.event then
-		event.AddListener("Update", "prototype_remove_objects", function()
-			for k in pairs(remove_these) do
-				remove_these[k] = nil
-				prototype.created_objects[k] = nil
-				prototype.MakeNULL(k)
-			end
-		end)
-		add_event = nil
-	end
-end
-
 do
 	local META = {}
 
@@ -30,17 +14,28 @@ do
 	function META.New(meta, tbl, skip_gc_callback)
 		return prototype.CreateObject(nil, meta, tbl, skip_gc_callback)
 	end
+	
+	prototype.remove_these = prototype.remove_these or {}
+	local event_added = false
 
 	function META:Remove(...)
 		if self.OnRemove then 
 			self:OnRemove(...) 
 		end
-		if add_event then 
-			remove_these = utility.CreateWeakTable()
-			add_event() 
+		
+		if not event_added and _G.event then 
+			event.AddListener("Update", "prototype_remove_objects", function()
+				for k in pairs(prototype.remove_these) do
+					if self.Type == "panel2" then print(self) end
+					prototype.remove_these[k] = nil
+					prototype.created_objects[k] = nil
+					prototype.MakeNULL(k)
+				end
+			end)
+			event_added = true
 		end
 		
-		remove_these[self] = true
+		prototype.remove_these[self] = true
 	end
 
 	function META:IsValid()
