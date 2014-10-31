@@ -6,7 +6,7 @@ local PANEL = {}
 PANEL.ClassName = "collapsible_category"
 
 function PANEL:Initialize()	
-	self:SetMargin(Rect(0,10*S,0,0))  
+	self:SetMargin(Rect(0,9*S,0,0))  
 	self:SetStyle("frame")
 	
 	local bar = gui2.CreatePanel("button", self)

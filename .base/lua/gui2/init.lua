@@ -19,8 +19,7 @@ function gui2.CreatePanel(name, parent)
 	self:SetParent(parent or gui2.world)
 	self:Initialize()
 	
-	table.insert(gui2.panels, self)
-	self.i = #gui2.panels
+	gui2.panels[self] = self
 	
 	-- this will make calls to layout always layout until next frame
 	self.layout_me = "init"
@@ -87,7 +86,7 @@ do -- events
 			panel:MouseInput(button, press)
 		end
 		
-		for i, panel in ipairs(gui2.panels) do
+		for panel in pairs(gui2.panels) do
 			if panel.AlwaysReceiveMouseInput and panel.mouse_over then 
 				panel:MouseInput(button, press)
 			end
@@ -181,9 +180,9 @@ end
 
 function gui2.SetSkin(tbl)
 	gui2.skin = tbl
-	for k,v in pairs(gui2.panels) do
-		v:Layout()
-		v:SetStyle(v:GetStyle())
+	for panel in pairs(gui2.panels) do
+		panel:Layout()
+		panel:SetStyle(panel:GetStyle())
 	end
 end
 
