@@ -190,6 +190,10 @@ do
 		self:Layout()
 	end
 	
+	function PANEL:SelectNode(node)
+		node.label:OnPress()
+	end
+	
 	function PANEL:OnLayout()
 		local w = self:GetWidth()
 		for _, v in ipairs(self:GetChildren()) do
