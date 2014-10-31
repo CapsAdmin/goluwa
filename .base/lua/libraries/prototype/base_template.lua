@@ -26,7 +26,6 @@ do
 		if not event_added and _G.event then 
 			event.AddListener("Update", "prototype_remove_objects", function()
 				for k in pairs(prototype.remove_these) do
-					if self.Type == "panel2" then print(self) end
 					prototype.remove_these[k] = nil
 					prototype.created_objects[k] = nil
 					prototype.MakeNULL(k)
