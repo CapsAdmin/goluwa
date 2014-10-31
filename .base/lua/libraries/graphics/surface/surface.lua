@@ -387,7 +387,7 @@ function surface.DrawNinePatch(x, y, w, h, patch_size_w, patch_size_h, corner_si
 	poly:SetRect(1, x, y, corner_size, corner_size)
 	
 	-- 2
-	poly:SetUV(u_offset + corner_size, v_offset, patch_size_h - corner_size*2, corner_size, skin.w, skin.h)
+	poly:SetUV(u_offset + corner_size, v_offset, patch_size_w - corner_size*2, corner_size, skin.w, skin.h)
 	poly:SetRect(2, x + corner_size, y, w - corner_size*2, corner_size)
 	
 	-- 3
