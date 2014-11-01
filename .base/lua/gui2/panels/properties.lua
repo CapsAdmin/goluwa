@@ -1,7 +1,6 @@
 local gui2 = ... or _G.gui2
 local S = gui2.skin.scale
 
-
 do -- base property
 	local PANEL = {}
 	
@@ -29,6 +28,7 @@ do -- base property
 	end
 	
 	function PANEL:OnPress()
+		print("!") 
 		self:Edit()
 	end
 	
@@ -76,7 +76,7 @@ do -- base property
 	end
 	
 	function PANEL:Encode(var)
-		return tostring(str)
+		return tostring(var)
 	end
 	
 	function PANEL:Decode(str)
@@ -138,6 +138,9 @@ do -- number
 			local pos = self:GetMousePosition()
 			
 			self.base_value = self.base_value or self:GetValue()
+			
+			if not self.base_value then return end
+			
 			self.drag_y_pos = self.drag_y_pos or pos.y
 		
 			local sens = 1
@@ -244,9 +247,7 @@ function PANEL:AddProperty(key, default, callback, get_value)
 		panel.properties = self
 	elseif prototype.GetRegistered("panel2", t .. "_property") then
 		local panel = gui2.CreatePanel(t .. "_property", right)
-		
-		print(get_value())
-			
+					
 		panel:SetValue(default)
 		panel:SetDefaultValue(default)
 		panel.GetValue = get_value

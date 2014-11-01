@@ -51,7 +51,7 @@ function PANEL:SetState(pressed, button)
 		
 		if button == "button_1" then
 			self:SetStyle(self.ActiveStyle)
-			self:OnRelease() 
+			self:OnPress() 
 		end
 		
 		
@@ -62,7 +62,7 @@ function PANEL:SetState(pressed, button)
 		
 		if button == "button_1" then
 			self:SetStyle(self.InactiveStyle)
-			self:OnPress()
+			self:OnRelease()
 		end
 		
 		self:OnOtherButtonPress(button)
@@ -76,21 +76,20 @@ end
 
 function PANEL:OnMouseInput(button, press)
 	self.click_times = self.click_times or {}
+	self.click_times[button] = self.click_times[button] or {last_click = 0, times = 0}
 	
-	if press then
-		self.click_times[button] = self.click_times[button] or {last_click = 0, times = 0}
-		
+	if press then		
 		if self.click_times[button].last_click < system.GetTime() then
 			self.click_times[button].last_click = 0
 			self.click_times[button].times = 0
 		end
-	
+		
 		self.click_times[button].last_click = system.GetTime() + 0.2
 		self.click_times[button].times = self.click_times[button].times + 1
-		
-		if self.click_times[button].times < self.ClicksToActivate then
-			return
-		end
+	end
+	
+	if self.click_times[button].times < self.ClicksToActivate then
+		return
 	end
 
 	if self.Mode == "normal" then
@@ -114,8 +113,8 @@ function PANEL:OnMouseExit()
 	end
 end
 
-function PANEL:OnPress() end
 function PANEL:OnRelease() end
+function PANEL:OnPress() end
 function PANEL:OnOtherButtonPress(button) end
 function PANEL:OnStateChanged(press, button) end
 

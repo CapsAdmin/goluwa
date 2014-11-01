@@ -116,7 +116,7 @@ function PANEL:SetupSorted(...)
 		
 		self.columns[i] = column
 		
-		column.OnPress = function()
+		column.OnRelease = function()
 			
 			if column.sorted then
 				icon:SetStyle("list_down_arrow")
@@ -177,7 +177,7 @@ function PANEL:AddEntry(...)
 	entry:SetStyle("menu_select")
 	entry:SetHeight(entry.labels[1]:GetHeight() + 2*S)
 
-	entry.OnPress = function()
+	entry.OnRelease = function()
 		for k, other_entry in ipairs(self.entries) do
 			if other_entry ~= entry then
 				other_entry:SetNoDraw(true)

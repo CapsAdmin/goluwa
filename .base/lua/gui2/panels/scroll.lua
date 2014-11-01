@@ -74,7 +74,7 @@ function PANEL:SetPanel(panel)
 			pos.y = math.clamp(pos.y, scroll_width, y_handle.Parent:GetHeight() - y_handle:GetHeight() - scroll_width)
 		end
 		
-		up.OnPress = function(_, button, press)
+		up.OnRelease = function(_, button, press)
 			if not panel:IsValid() then return end
 
 			if #panel:GetChildren() == 0 then return end
@@ -86,7 +86,7 @@ function PANEL:SetPanel(panel)
 			panel:SetScroll(pos)
 		end
 		
-		down.OnPress = function(_, button, press)
+		down.OnRelease = function(_, button, press)
 			if not panel:IsValid() then return end
 			
 			if #panel:GetChildren() == 0 then return end
@@ -140,7 +140,7 @@ function PANEL:SetPanel(panel)
 			pos.y = x_scroll_bar.Parent:GetHeight() - x_scroll_bar:GetHeight()
 		end
 				
-		left.OnPress = function(_, button, press)
+		left.OnRelease = function(_, button, press)
 			if not panel:IsValid() then return end
 			
 			if #panel:GetChildren() == 0 then return end
@@ -152,7 +152,7 @@ function PANEL:SetPanel(panel)
 			panel:SetScroll(pos)
 		end
 		
-		right.OnPress = function(_, button, press)
+		right.OnRelease = function(_, button, press)
 			if not panel:IsValid() then return end
 			
 			if #panel:GetChildren() == 0 then return end

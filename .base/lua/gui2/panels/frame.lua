@@ -27,7 +27,7 @@ function PANEL:Initialize()
 	close:SetStyle("close_inactive")
 	close:SetStyleTranslation("button_active", "close_active")
 	close:SetStyleTranslation("button_inactive", "close_inactive")
-	close.OnPress = function() 
+	close.OnRelease = function() 
 		self:Remove()
 	end
 	self.close = close
@@ -36,7 +36,7 @@ function PANEL:Initialize()
 	max:SetStyle("maximize2_inactive")
 	max:SetStyleTranslation("button_active", "maximize2_active")
 	max:SetStyleTranslation("button_inactive", "maximize2_inactive")
-	max.OnPress = function() 
+	max.OnRelease = function() 
 		if self.maximized then
 			self:Dock()
 			self:SetSize(self.maximized.size)
@@ -59,7 +59,7 @@ function PANEL:Initialize()
 	min:SetStyle("minimize_inactive")
 	min:SetStyleTranslation("button_active", "minimize_active")
 	min:SetStyleTranslation("button_inactive", "minimize_inactive")
-	min.OnPress = function() 
+	min.OnRelease = function() 
 		self:SetVisible(not self.Visible)
 	end
 	self.min = min
