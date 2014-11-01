@@ -17,7 +17,7 @@ do -- tree node
 		label:SetStyleTranslation("button_active", "button_rounded_active")
 		label:SetStyleTranslation("button_inactive", "button_rounded_inactive")
 		label:SetStyle("button_rounded_inactive")
-		label.OnPress = function()
+		label.OnRelease = function()
 			self.label:SetNoDraw(false)
 			for k, v in ipairs(self.tree:GetChildren()) do
 				if v ~= self then
@@ -191,7 +191,7 @@ do
 	end
 	
 	function PANEL:SelectNode(node)
-		node.label:OnPress()
+		node.label:OnRelease()
 	end
 	
 	function PANEL:OnLayout()

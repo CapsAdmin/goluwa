@@ -242,7 +242,7 @@ function gui2.Initialize()
 			button:SetMargin(Rect()+2.5*S)
 			button:SizeToText()
 			
-			button.OnRelease = callback  
+			button.OnPress = callback  
 
 			self:SetHeight(self:StackChildren().h)
 			
