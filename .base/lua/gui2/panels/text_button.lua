@@ -18,7 +18,7 @@ prototype.Delegate(PANEL, "label", "CenterTextX", "CenterX")
 prototype.Delegate(PANEL, "label", "GetTextSize", "GetSize")
 
 function PANEL:Initialize()
-	self.BaseClass.Initialize(self)
+	prototype.GetRegistered(self.Type, "button").Initialize(self)
 	
 	local label = gui2.CreatePanel("text", self)
 	label:SetEditable(false)
