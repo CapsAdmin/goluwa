@@ -15,9 +15,15 @@ local function handle_base_field(meta, base)
 			-- make a copy of it so we don't alter the meta template
 			base = table.copy(base)
 			
+			handle_base_field(base, base.Base)
+			
 			meta.BaseList = meta.BaseList or {}
 			
-			table.insert(meta.BaseList, base)
+			if base.BaseList then
+				table.add(meta.BaseList, base.BaseList)
+			end
+			
+			table.insert(meta.BaseList, 1, base)
 		end
 	end
 end
@@ -31,18 +37,18 @@ function prototype.CreateDerivedObject(super_type, sub_type, override, skip_gc_c
     end
 	
 	meta = table.copy(meta)
-		
-	if meta.Base then 
-		handle_base_field(meta, meta.Base) 
-	end
 	
 	if meta.TypeBase then 
 		handle_base_field(meta, meta.TypeBase) 
 	end
-
+	
+	if meta.Base then 
+		handle_base_field(meta, meta.Base) 
+	end
+	
 	if meta.BaseList then	
 		local current = meta
-		for i, base in pairs(meta.BaseList) do
+		for i, base in ipairs(meta.BaseList) do
 			for key, val in pairs(base) do
 				meta[key] = meta[key] or val
 			end
