@@ -106,6 +106,12 @@ function table.merge(a, b)
 	return a
 end
 
+function table.add(a, b)
+	for i, v in pairs(b) do
+		table.insert(a, v)
+	end
+end
+
 function table.random(tbl)
 	local key = math.random(1, table.count(tbl))
 	local i = 1
