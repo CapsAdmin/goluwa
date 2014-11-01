@@ -51,8 +51,9 @@ function PANEL:AddGroup(name)
 	self.current_group = group
 end
  
-function PANEL:AddProperty(key, default, callback)
+function PANEL:AddProperty(key, default, callback, get_value)
 	callback = callback or print
+	get_value = get_value or function() return default end
 	
 	local t = type(default)
 	
@@ -80,15 +81,59 @@ function PANEL:AddProperty(key, default, callback)
 	else
 		local panel = gui2.CreatePanel("text_button", right)
 		
-		panel:SetClicksToActivate(2 )
 		panel:SetActiveStyle("property")
 		panel:SetInactiveStyle("property")
 		panel:SetHighlightOnMouseEnter(false)
+		panel:SetAlwaysReceiveMouseInput(true)
+		
+		if t == "number" then
+			-- TEMPORARY CODE
+			local old = panel.OnMouseInput
+			panel.OnMouseInput = function(self, button, press)
+				old(self, button, press)
+				
+				if press then
+					self.drag_y_pos = panel:GetMousePosition().y
+					self.base_value = get_value()
+				else
+					self.drag_y_pos = nil
+				end
+			end
+			
+			panel.OnUpdate = function(self)
+				if input.IsMouseDown("button_1") and self.drag_y_pos then
+					
+					local sens = 1
+					
+					if input.IsKeyDown("left_alt") then
+						sens = sens / 10
+					end
+				
+					local delta = (self.drag_y_pos - self:GetMousePosition().y / 10) * sens
+					local value = self.base_value + delta
+					
+					if input.IsKeyDown("left_control") then
+						value = math.round(value)
+					else
+						value = math.round(value, 3)
+					end
+					
+					panel:SetText(value)
+					
+					callback(self.base_value + delta)
+				else
+					self.drag_y_pos = nil 
+				end
+			end
+			
+			panel:SetCursor("sizens")
+		end
 		
 		if t == "string" then
 			panel:SetText(default)
 		else
 			panel:SetText(serializer.Encode("luadata", default))
+			panel:SetClicksToActivate(2) 
 		end
 		
 		right:SetSize(panel:GetSize())
