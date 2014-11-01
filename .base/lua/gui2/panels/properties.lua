@@ -1,6 +1,169 @@
 local gui2 = ... or _G.gui2
 local S = gui2.skin.scale
 
+
+do -- base property
+	local PANEL = {}
+	
+	PANEL.Base = "text_button"
+	PANEL.ClassName = "base_property"
+	
+	prototype.GetSet(PANEL, "DefaultValue")
+		
+	function PANEL:Initialize()
+		prototype.GetRegistered(self.Type, "text_button").Initialize(self)
+		 
+		self:SetActiveStyle("property")
+		self:SetInactiveStyle("property")
+		self:SetHighlightOnMouseEnter(false)
+		self:SetAlwaysReceiveMouseInput(true)
+		self:SetClicksToActivate(2)
+	end
+	
+	function PANEL:OnMouseInput(button, press)
+		prototype.GetRegistered(self.Type, "button").OnMouseInput(self, button, press)
+		
+		if button == "button_1" and press then
+			self:OnClick()
+		end
+	end
+	
+	function PANEL:OnPress()
+		self:Edit()
+	end
+	
+	function PANEL:Edit()
+		local properties = self.properties or self
+		
+		properties.current_edit = properties.current_edit or NULL
+		
+		if properties.current_edit:IsValid() then
+			properties.current_edit:OnEnter()
+		end
+	
+		local edit = gui2.CreatePanel("text_edit", self)
+		edit:Dock("fill")
+		edit:SetTextColor(Color(0, 1, 0))
+		edit:SetText(self:GetEncodedValue())
+		edit:SizeToText()
+		edit.OnEnter = function()  
+			local str = edit:GetText()
+			local val = self:Decode(str)
+			
+			str = self:Encode(val)
+			
+			self:SetText(str)
+			edit:Remove()
+			self:OnValueChanged(val)
+			properties.current_edit = NULL
+		end
+		
+		edit:RequestFocus()
+		properties.current_edit = edit
+	end
+	
+	function PANEL:SetValue(val)
+		self:SetText(self:Encode(val))
+		self:OnValueChanged(val)
+	end
+	
+	function PANEL:GetValue()
+		return self:Decode(self:GetText())
+	end
+	
+	function PANEL:GetEncodedValue()
+		return self:Encode(self:GetValue() or self:GetDefaultValue())
+	end
+	
+	function PANEL:Encode(var)
+		return tostring(str)
+	end
+	
+	function PANEL:Decode(str)
+		return str
+	end
+	
+	function PANEL:OnValueChanged(val)
+	
+	end
+	
+	function PANEL:OnClick()
+	
+	end
+	
+	gui2.RegisterPanel(PANEL)
+end
+
+do -- string
+	local PANEL = {}
+	
+	PANEL.Base = "base_property"
+	PANEL.ClassName = "string_property"
+		
+	-- for consistency 
+	
+	gui2.RegisterPanel(PANEL)
+end
+
+do -- number
+	local PANEL = {}
+	
+	PANEL.Base = "base_property"
+	PANEL.ClassName = "number_property"
+	
+	function PANEL:Initialize()
+		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
+		
+		self:SetCursor("sizens")
+	end
+	
+	function PANEL:Decode(str)
+		return tonumber(str)
+	end
+	
+	function PANEL:Encode(num)
+		return tostring(num)
+	end
+	
+	function PANEL:OnClick()
+		self.drag_number = true
+		self.base_value = nil
+		self.drag_y_pos = nil
+	end
+	
+	function PANEL:OnUpdate()
+		if not self.drag_number then return end
+		 
+		if input.IsMouseDown("button_1") then			
+			local pos = self:GetMousePosition()
+			
+			self.base_value = self.base_value or self:GetValue()
+			self.drag_y_pos = self.drag_y_pos or pos.y
+		
+			local sens = 1
+			
+			if input.IsKeyDown("left_alt") then
+				sens = sens / 10
+			end
+		
+			local delta = ((self.drag_y_pos - pos.y) / 10) * sens
+			local value = self.base_value + delta
+			
+			if input.IsKeyDown("left_control") then
+				value = math.round(value)
+			else
+				value = math.round(value, 3)
+			end
+					
+			self:SetValue(value)
+		else
+			self.drag_number = false 
+		end
+	end
+	
+	gui2.RegisterPanel(PANEL)
+end
+
 local PANEL = {}
 
 PANEL.ClassName = "properties"
@@ -50,7 +213,7 @@ function PANEL:AddGroup(name)
 	 	
 	self.current_group = group
 end
- 
+
 function PANEL:AddProperty(key, default, callback, get_value)
 	callback = callback or print
 	get_value = get_value or function() return default end
@@ -78,103 +241,41 @@ function PANEL:AddProperty(key, default, callback, get_value)
 		panel:SetActiveStyle("check")
 		panel:SetInactiveStyle("uncheck")
 		panel.OnStateChanged = function(_, b) callback(b) end
+		panel.properties = self
+	elseif prototype.GetRegistered("panel2", t .. "_property") then
+		local panel = gui2.CreatePanel(t .. "_property", right)
+		
+		print(get_value())
+			
+		panel:SetValue(default)
+		panel:SetDefaultValue(default)
+		panel.GetValue = get_value
+		panel.OnValueChanged = function(_, val) callback(val) end
+		panel:Dock("fill") 
+		panel.properties = self
 	else
-		local panel = gui2.CreatePanel("text_button", right)
-		
-		panel:SetActiveStyle("property")
-		panel:SetInactiveStyle("property")
-		panel:SetHighlightOnMouseEnter(false)
-		panel:SetAlwaysReceiveMouseInput(true)
-		
-		if t == "number" then
-			-- TEMPORARY CODE
-			local old = panel.OnMouseInput
-			panel.OnMouseInput = function(self, button, press)
-				old(self, button, press)
+		local panel = gui2.CreatePanel("base_property", right)
 				
-				if press then
-					self.drag_y_pos = panel:GetMousePosition().y
-					self.base_value = get_value()
-				else
-					self.drag_y_pos = nil
-				end
+		function panel:Decode(str)
+			local val = serializer.Decode("luadata", str)[1]
+			
+			if type(val) ~= t then
+				val = default
 			end
 			
-			panel.OnUpdate = function(self)
-				if input.IsMouseDown("button_1") and self.drag_y_pos then
-					
-					local sens = 1
-					
-					if input.IsKeyDown("left_alt") then
-						sens = sens / 10
-					end
-				
-					local delta = (self.drag_y_pos - self:GetMousePosition().y / 10) * sens
-					local value = self.base_value + delta
-					
-					if input.IsKeyDown("left_control") then
-						value = math.round(value)
-					else
-						value = math.round(value, 3)
-					end
-					
-					panel:SetText(value)
-					
-					callback(self.base_value + delta)
-				else
-					self.drag_y_pos = nil 
-				end
-			end
-			
-			panel:SetCursor("sizens")
+			return val
 		end
 		
-		if t == "string" then
-			panel:SetText(default)
-		else
-			panel:SetText(serializer.Encode("luadata", default))
-			panel:SetClicksToActivate(2) 
+		function panel:Encode(val)
+			return serializer.Encode("luadata", val)
 		end
-		
-		right:SetSize(panel:GetSize())
-		
-		panel.label:SetPosition(Vec2(S*2,S))
-		
-		panel.OnPress = function()
-			if self.current_edit:IsValid() then
-				self.current_edit:OnEnter()
-			end
-			
-			local edit = gui2.CreatePanel("text_edit", panel)
-			edit:Dock("fill")
-			edit:SetTextColor(Color(0, 1, 0))
-			edit:SetText(panel:GetText())
-			edit:SizeToText()
-			edit.OnEnter = function()  
-				local str = edit:GetText()
-				local val
 				
-				if t == "string" then
-					val = str
-				else
-					val = serializer.Decode("luadata", str)[1]
-					
-					if type(val) ~= t then
-						val = default
-					end
-
-					str = serializer.Encode("luadata", val)
-				end
-				
-				panel:SetText(str) 
-				edit:Remove()
-				callback(val)
-				self.current_edit = NULL
-			end
-			
-			edit:RequestFocus()
-			self.current_edit = edit
-		end
+		panel:SetValue(default)
+		panel:SetDefaultValue(default)
+		panel.GetValue = get_value
+		panel.OnValueChanged = function(_, val) callback(val) end
+		panel:Dock("fill")
+		panel.properties = self
 	end
 	
 	left:SetHeight(15)	
@@ -211,6 +312,10 @@ function PANEL:AddPropertiesFromObject(obj)
 					if not obj:IsValid() then return end
 					
 					set(obj, val)
+				end, function() 
+					if not obj:IsValid() then return end
+					
+					return get(obj)
 				end)
 			end
 		end
