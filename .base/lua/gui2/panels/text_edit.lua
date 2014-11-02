@@ -16,6 +16,7 @@ prototype.Delegate(PANEL, "label", "GetTextSize", "GetSize")
 
 function PANEL:Initialize()	
 	self:SetColor(gui2.skin.font_edit_background)
+	self:SetFocusOnClick(true)
 	self.BaseClass.Initialize(self)
 	
 	local label = gui2.CreatePanel("text", self)

@@ -73,23 +73,12 @@ function PANEL:OnUpdate()
 	
 	self.Size.w = markup.width
 	self.Size.h = markup.height
-	
-	if not input.IsMouseDown("button_1") then
-		if not markup.mouse_released then
-			markup:OnMouseInput("button_1", false)
-			markup.mouse_released = true
-		end
-	end
 end
 
 function PANEL:OnMouseInput(button, press)
 	local markup = self.markup
 
 	markup:OnMouseInput(button, press)
-	
-	if button == "button_1" then
-		markup.mouse_released = false
-	end
 end
 
 function PANEL:OnKeyInput(key, press)
