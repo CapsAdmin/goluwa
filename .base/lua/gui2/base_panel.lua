@@ -21,6 +21,7 @@ prototype.GetSet(PANEL, "BringToFrontOnClick", false)
 prototype.GetSet(PANEL, "LayoutParentOnLayout", false)
 prototype.GetSet(PANEL, "VisibilityPanel", NULL)
 prototype.GetSet(PANEL, "NoDraw", false)
+prototype.GetSet(PANEL, "FocusOnClick", false)
 
 function PANEL:__tostring()
 	return ("panel:%s[%p][%s %s %s %s][%s]"):format(self.ClassName, self, self.Position.x, self.Position.y, self.Size.w, self.Size.h, self.layout_count)
@@ -47,7 +48,7 @@ function PANEL:RequestFocus()
 	if self.RedirectFocus:IsValid() then
 		self = self.RedirectFocus
 	end
-		
+
 	if gui2.focus_panel:IsValid() and gui2.focus_panel ~= self then
 		gui2.focus_panel:OnUnfocus()
 	end
@@ -65,7 +66,58 @@ function PANEL:OnChildAdd()
 	gui2.unrolled_draw = nil
 end
 
-do
+
+do -- events
+	local events = {}
+	local ref_count = {}
+
+	function PANEL:AddEvent(event_type)
+		ref_count[event_type] = (ref_count[event_type] or 0) + 1
+		
+		local func_name = "On" .. event_type
+		
+		events[event_type] = events[event_type] or {}		
+		table.insert(events[event_type], self)
+		
+		event.AddListener(event_type, "gui_panel", function(a_, b_, c_) 
+			for name, self in ipairs(events[event_type]) do
+				if self[func_name] then
+					self[func_name](self, a_, b_, c_)
+				end
+			end
+		end)
+		
+		self.added_events = self.added_events or {}
+		self.added_events[event_type] = true
+		
+		self:CallOnRemove(function() 
+			for event in pairs(self.added_events) do
+				self:RemoveEvent(event)
+			end
+		end, "__events")
+	end
+
+	function PANEL:RemoveEvent(event_type)
+		ref_count[event_type] = (ref_count[event_type] or 0) - 1
+
+		events[event_type] = events[event_type] or {}
+		
+		for i, other in pairs(events[event_type]) do
+			if other == self then
+				events[event_type][i] = nil
+				break
+			end
+		end
+		
+		table.fixindices(events[event_type])
+		
+		if ref_count[event_type] <= 0 then
+			event.RemoveListener(event_type, "gui_panel")
+		end
+	end
+end
+
+do -- call on hide
 	PANEL.call_on_hide = {}
 	
 	function PANEL:IsVisible()
@@ -1341,14 +1393,18 @@ do -- mouse
 		end
 	end
 	
-	function PANEL:MouseInput(button, press)
-		
+	function PANEL:MouseInput(button, press)		
 		if self.SendMouseInputToPanel:IsValid() then
 			self.SendMouseInputToPanel:MouseInput(button, press)
 		end
 		
+		event.Call("PanelMouseInput", self, button, press)
+		
 		if press then
-			self:RequestFocus()
+			
+			if self.FocusOnClick then
+				self:RequestFocus()
+			end
 			
 			if self.BringToFrontOnClick then 
 				self:BringToFront()
