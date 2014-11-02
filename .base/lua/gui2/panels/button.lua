@@ -43,6 +43,8 @@ end
 
 function PANEL:SetState(pressed, button)
 	button = button or "button_1"
+	
+	if not self:CanPress(button) then return end
 
 	if pressed then
 		self:OnStateChanged(pressed, button)
@@ -54,7 +56,7 @@ function PANEL:SetState(pressed, button)
 			self:OnPress() 
 		end
 		
-		
+		self:OnOtherButtonPress(button)
 	elseif self.button_down[button] then
 		self:OnStateChanged(pressed, button)
 		
@@ -65,13 +67,22 @@ function PANEL:SetState(pressed, button)
 			self:OnRelease()
 		end
 		
-		self:OnOtherButtonPress(button)
+		self:OnOtherButtonRelease(button)
 	end
 end
 
 function PANEL:GetState(button)
 	button = button or "button_1"
 	return self.button_down[button]
+end
+
+function PANEL:CanPress(button)
+	button = button or "button_1"
+	
+	self.click_times = self.click_times or {}
+	self.click_times[button] = self.click_times[button] or {last_click = 0, times = 0}
+	
+	return self.click_times[button].times > self.ClicksToActivate
 end
 
 function PANEL:OnMouseInput(button, press)
@@ -87,17 +98,11 @@ function PANEL:OnMouseInput(button, press)
 		self.click_times[button].last_click = system.GetTime() + 0.2
 		self.click_times[button].times = self.click_times[button].times + 1
 	end
-	
-	if self.click_times[button].times < self.ClicksToActivate then
-		return
-	end
 
 	if self.Mode == "normal" then
 		self:SetState(press, button)
 	elseif self.Mode == "toggle" and press then
 		self:Toggle(button)
-	elseif self.Mode == "double" and press then
-		--self:SetState(press, button)
 	end
 end
 
@@ -116,6 +121,7 @@ end
 function PANEL:OnRelease() end
 function PANEL:OnPress() end
 function PANEL:OnOtherButtonPress(button) end
+function PANEL:OnOtherButtonRelease(button) end
 function PANEL:OnStateChanged(press, button) end
 
 function PANEL:Test()		
