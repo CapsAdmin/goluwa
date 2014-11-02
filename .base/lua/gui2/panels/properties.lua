@@ -15,8 +15,8 @@ do -- base property
 		self:SetActiveStyle("property")
 		self:SetInactiveStyle("property")
 		self:SetHighlightOnMouseEnter(false)
-		self:SetAlwaysReceiveMouseInput(true)
 		self:SetClicksToActivate(2)
+		self:SetMargin(Rect())
 	end
 	
 	function PANEL:OnMouseInput(button, press)
@@ -27,7 +27,7 @@ do -- base property
 		end
 	end
 	
-	function PANEL:OnPress()
+	function PANEL:OnPress()	
 		self:StartEditing()
 	end
 	
@@ -35,11 +35,11 @@ do -- base property
 		if self.edit then return end
 		
 		local edit = gui2.CreatePanel("text_edit", self)
-		
+		--edit.label:SetPosition(Vec2(S*2, S))
 		edit:Dock("fill")
-		edit:SetTextColor(Color(0, 1, 0))
 		edit:SetText(self:GetEncodedValue())
 		edit:SizeToText()
+		edit:SelectAll()
 		edit.OnEnter = function() 
 			self:StopEditing()
 		end
@@ -49,7 +49,7 @@ do -- base property
 		self.edit = edit
 	end
 	
-	function PANEL:StopEditing()
+	function PANEL:StopEditing()	
 		local edit = self.edit
 		if edit then
 			local str = edit:GetText()
@@ -69,6 +69,7 @@ do -- base property
 		self:SetText(self:Encode(val))
 		self.label:SetPosition(Vec2(S*2, S))
 		self:OnValueChanged(val)
+		--self:SizeToText()
 	end
 	
 	function PANEL:GetValue()
@@ -85,7 +86,7 @@ do -- base property
 	
 	function PANEL:Decode(str)
 		return str
-	end
+	end 
 	
 	function PANEL:OnValueChanged(val)
 	
@@ -134,6 +135,8 @@ do -- number
 	end
 	
 	function PANEL:OnClick()
+		self:SetAlwaysCalcMouse(true)
+		
 		self.drag_number = true
 		self.base_value = nil
 		self.drag_y_pos = nil
@@ -169,6 +172,7 @@ do -- number
 			self:SetValue(value)
 		else
 			self.drag_number = false 
+			self:SetAlwaysCalcMouse(false)
 		end
 	end
 	
@@ -209,6 +213,7 @@ function PANEL:Initialize()
 	self:SetStackRight(false) 
 	self:SetSizeStackToWidth(true)  
 	self:SetNoDraw(true)
+	self:SetMargin(Rect())
 	
 	self:AddEvent("PanelMouseInput")
 end
@@ -218,7 +223,9 @@ function PANEL:AddGroup(name)
 	group:SetTitle(name)
 	group.bar:SetInactiveStyle("gradient")
 	group.bar:SetActiveStyle("gradient")
-	local divider = gui2.CreatePanel("divider", group)
+	
+	local divider = gui2.CreatePanel("divider")
+	divider:SetMargin(Rect())
 	divider:SetHideDivider(true)
 	divider:Dock("fill")
 	divider.OnDividerPositionChanged = function(_, pos)
@@ -230,21 +237,26 @@ function PANEL:AddGroup(name)
 		end
 	end
 	group.divider = divider
+	group:SetPanel(divider)
 	
 	local left = divider:SetLeft(gui2.CreatePanel("base"))
 	left:SetStack(true)
+	left:SetPadding(Rect(0,0,0,-1))
 	left:SetStackRight(false)
 	left:SetSizeStackToWidth(true)
 	left:Dock("fill")
 	left:SetNoDraw(true)  
+	left:SetMargin(Rect())
 	group.left = left
 	
 	local right = divider:SetRight(gui2.CreatePanel("base"))
 	right:SetStack(true)
+	right:SetPadding(Rect(0,0,0,-1))
 	right:SetStackRight(false)
 	right:SetSizeStackToWidth(true)
 	right:Dock("fill")
 	right:SetNoDraw(true)
+	right:SetMargin(Rect())
 	group.right = right
 	 	
 	self.current_group = group
@@ -261,7 +273,7 @@ function PANEL:AddProperty(key, default, callback, get_value)
 	end 
 	       
 	local left = gui2.CreatePanel("base", self.current_group.left)
-	left:SetStyle("property")
+	left:SetStyle("property")	
 	
 	local label = gui2.CreatePanel("text", left)
 	label:SetText(key)
@@ -277,7 +289,6 @@ function PANEL:AddProperty(key, default, callback, get_value)
 		panel:SetActiveStyle("check")
 		panel:SetInactiveStyle("uncheck")
 		panel.OnStateChanged = function(_, b) callback(b) end
-		
 
 	elseif prototype.GetRegistered("panel2", t .. "_property") then
 		local panel = gui2.CreatePanel(t .. "_property", right)
@@ -316,28 +327,28 @@ function PANEL:AddProperty(key, default, callback, get_value)
 		table.insert(self.added_properties, panel)
 	end
 	
-	left:SetHeight(15)	
+	left:SetHeight(S*8)	
 	right:SetHeight(left:GetHeight())
 	
 	self.left_max_width = math.max((self.left_max_width or 0), label:GetWidth() + label:GetX()*2)
 	self.right_max_width = math.max((self.right_max_width or 0), right:GetWidth())
-		
+			
 	self:Layout()
 end
 
 function PANEL:OnLayout()
 	if not self.left_max_width then return end
-		
-	for i, group in ipairs(self:GetChildren()) do		
+
+	for i, group in ipairs(self:GetChildren()) do
 		group:SetHeight(group.left:GetSizeOfChildren().h + S*10)
 		group:SetWidth(math.max(self:GetWidth(), self.left_max_width + self.right_max_width))
 		group.divider:SetWidth(self.left_max_width + self.right_max_width) 
-		 group.divider:SetDividerPosition(self.left_max_width) 
+		group.divider:SetDividerPosition(self.left_max_width) 
 	end
 end
 
 function PANEL:OnPanelMouseInput(panel, button, press)
-	if press and button == "button_1" and panel.ClassName ~= "text_edit" then
+	if press and button == "button_1" and panel.ClassName:find("_property") then
 		for i, right in ipairs(self.added_properties) do
 			if panel ~= right then
 				right:StopEditing()
@@ -371,13 +382,14 @@ function PANEL:AddPropertiesFromObject(obj)
 end
 
 gui2.RegisterPanel(PANEL) 
- 
+
 if RELOAD then
 	local frame = utility.RemoveOldObject(gui2.CreatePanel("frame")) 
 	frame:SetSize(Vec2(300, gui2.world:GetHeight()))
 	
 	local div = gui2.CreatePanel("divider", frame)
 	div:Dock("fill")
+	div:SetHideDivider(true)
 	
 	local tree = div:SetTop(gui2.CreatePanel("tree"))
 	
@@ -389,6 +401,10 @@ if RELOAD then
 			fill(ent:GetChildren(), node)
 		end  
 	end 
+	
+	event.AddListener("EntityCreate", "asdf", function(ent)
+		
+	end)
 	
 	fill(entities.GetAll(), tree)
 	
@@ -409,9 +425,8 @@ if RELOAD then
 			end
 		end
 		
-		scroll:SetPanel(properties) 
+		scroll:SetPanel(properties)
 	end
-	
 	
 	div:SetDividerPosition(gui2.world:GetHeight()/2) 
 	

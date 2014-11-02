@@ -9,7 +9,7 @@ prototype.GetSet(PANEL, "Highlight", false)
 prototype.GetSet(PANEL, "ActiveStyle", "button_active")
 prototype.GetSet(PANEL, "InactiveStyle", "button_inactive")
 prototype.GetSet(PANEL, "HighlightOnMouseEnter", true)
-prototype.GetSet(PANEL, "ClicksToActivate", 1)
+prototype.GetSet(PANEL, "ClicksToActivate", 0)
 
 function PANEL:SetActiveStyle(str)
 	self.ActiveStyle = str
@@ -41,16 +41,14 @@ function PANEL:Toggle(button)
 	self:SetState(not self:GetState(button), button)
 end
 
-function PANEL:SetState(pressed, button)
+function PANEL:SetState(press, button)
 	button = button or "button_1"
 	
-	if not self:CanPress(button) then return end
-
-	if pressed then
-		self:OnStateChanged(pressed, button)
+	if press then
+		self:OnStateChanged(press, button)
 		
-		self.button_down[button] = pressed
-		
+		self.button_down[button] = press
+				
 		if button == "button_1" then
 			self:SetStyle(self.ActiveStyle)
 			self:OnPress() 
@@ -58,7 +56,7 @@ function PANEL:SetState(pressed, button)
 		
 		self:OnOtherButtonPress(button)
 	elseif self.button_down[button] then
-		self:OnStateChanged(pressed, button)
+		self:OnStateChanged(press, button)
 		
 		self.button_down[button] = nil
 		
@@ -82,7 +80,7 @@ function PANEL:CanPress(button)
 	self.click_times = self.click_times or {}
 	self.click_times[button] = self.click_times[button] or {last_click = 0, times = 0}
 	
-	return self.click_times[button].times > self.ClicksToActivate
+	return self.click_times[button].times >= self.ClicksToActivate
 end
 
 function PANEL:OnMouseInput(button, press)
@@ -100,6 +98,8 @@ function PANEL:OnMouseInput(button, press)
 	end
 
 	if self.Mode == "normal" then
+		if press and not self:CanPress(button) then return end
+
 		self:SetState(press, button)
 	elseif self.Mode == "toggle" and press then
 		self:Toggle(button)

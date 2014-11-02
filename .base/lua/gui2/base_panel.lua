@@ -12,8 +12,6 @@ prototype.GetSet(PANEL, "Cursor", "arrow")
 prototype.GetSet(PANEL, "TrapChildren", false)
 prototype.GetSet(PANEL, "Texture", render.GetWhiteTexture())
 prototype.GetSet(PANEL, "RedirectFocus", NULL)
-prototype.GetSet(PANEL, "IgnoreMouse", false)
-
 prototype.GetSet(PANEL, "Padding", Rect(0, 0, 0, 0))
 prototype.GetSet(PANEL, "Margin", Rect(1, 1, 1, 1))
 prototype.GetSet(PANEL, "ObeyMargin", true)
@@ -21,7 +19,6 @@ prototype.GetSet(PANEL, "BringToFrontOnClick", false)
 prototype.GetSet(PANEL, "LayoutParentOnLayout", false)
 prototype.GetSet(PANEL, "VisibilityPanel", NULL)
 prototype.GetSet(PANEL, "NoDraw", false)
-prototype.GetSet(PANEL, "FocusOnClick", false)
 
 function PANEL:__tostring()
 	return ("panel:%s[%p][%s %s %s %s][%s]"):format(self.ClassName, self, self.Position.x, self.Position.y, self.Size.w, self.Size.h, self.layout_count)
@@ -181,17 +178,14 @@ function PANEL:GetSizeOfChildren()
 	local total_size = Vec2()
 
 	for k, v in ipairs(self:GetChildren()) do
-		local x, y = v:GetPosition():Unpack()
-
-		x = x + v.Size.x
-		y = y + v.Size.y
-
-		if x > total_size.x then
-			total_size.x = x
+		local pos = v:GetPosition() + v:GetSize()
+		
+		if pos.x > total_size.x then
+			total_size.x = pos.x
 		end
 
-		if y > total_size.y then
-			total_size.y = y
+		if pos.y > total_size.y then
+			total_size.y = pos.y
 		end
 	end
 
@@ -1305,6 +1299,9 @@ do -- resizing
 end
 
 do -- mouse
+	prototype.GetSet(PANEL, "IgnoreMouse", false)
+	prototype.GetSet(PANEL, "FocusOnClick", false)
+	prototype.GetSet(PANEL, "AlwaysCalcMouse", false)
 	prototype.GetSet(PANEL, "AlwaysReceiveMouseInput", false)
 	prototype.GetSet(PANEL, "SendMouseInputToPanel", NULL)
 
@@ -1313,7 +1310,7 @@ do -- mouse
 	end
 
 	function PANEL:CalcMouse()
-		if self:HasParent() and not self.Parent:IsWorld() and not self.Parent.mouse_over and not self:IsDragging() and not self.AlwaysReceiveMouseInput then return end
+		if self:HasParent() and not self.Parent:IsWorld() and not self.Parent.mouse_over and not self:IsDragging() and not self.AlwaysCalcMouse then return end
 		
 		local x, y = surface.WorldToLocal(gui2.mouse_pos.x, gui2.mouse_pos.y)
 

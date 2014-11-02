@@ -6,9 +6,7 @@ local PANEL = {}
 PANEL.ClassName = "collapsible_category"
 
 function PANEL:Initialize()	
-	self:SetMargin(Rect(0,9*S,0,0))  
-	self:SetStyle("frame")
-	
+	self:SetNoDraw(true)
 	local bar = gui2.CreatePanel("button", self)
 	bar:SetObeyMargin(false)
 	bar:Dock("fill_top") 
@@ -20,7 +18,7 @@ function PANEL:Initialize()
 		if pressed then
 			self.last_height = self.last_height or self:GetHeight()
 			self:SetHeight((10*S) - 1)
-		else		
+		elseif self.last_height then
 			self:SetHeight(self.last_height)
 			self.last_height = nil 
 		end
@@ -28,13 +26,31 @@ function PANEL:Initialize()
 			self:GetParent():Layout()
 		end
 	end
-
-	self:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
 	
-	self.frame = self
+	local content = gui2.CreatePanel("base", self)
+	content:SetNoDraw(true)
+	self.content = content
+	
 	self.bar = bar
 	
+	self:SetStyle("frame")
+	self:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
 	self:SetTitle("no title")
+end
+
+function PANEL:SetPanel(panel)
+	panel:SetParent(self.content)
+end
+
+function PANEL:SizeToContents()
+	self:SetSize(self.content:GetSizeOfChildren() + self.bar:GetSize())
+end
+
+function PANEL:OnLayout()
+	self.content:SetY(10*S)
+	
+	self.content:SetWidth(self:GetWidth())
+	self.content:SetHeight(self:GetHeight() - 10*S)
 end
 
 function PANEL:SetTitle(str)

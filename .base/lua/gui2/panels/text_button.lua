@@ -21,7 +21,6 @@ function PANEL:Initialize()
 	prototype.GetRegistered(self.Type, "button").Initialize(self)
 	
 	local label = gui2.CreatePanel("text", self)
-	label:SetEditable(false)
 	label:SetIgnoreMouse(true)
 	self.label = label
 end

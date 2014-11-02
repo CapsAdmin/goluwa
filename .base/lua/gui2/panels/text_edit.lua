@@ -3,6 +3,8 @@ local PANEL = {}
 
 PANEL.ClassName = "text_edit"
 
+prototype.GetSet(PANEL, "Editable", true)
+
 prototype.GetSetDelegate(PANEL, "Text", "", "label")
 prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
 prototype.GetSetDelegate(PANEL, "Font", gui2.skin.default_font, "label")
@@ -20,15 +22,27 @@ function PANEL:Initialize()
 	self.BaseClass.Initialize(self)
 	
 	local label = gui2.CreatePanel("text", self)
+	label.markup:SetEditable(self.Editable)
 	label:SetFont(self.Font)
 	label:SetTextColor(self.TextColor)
-	label:SetEditable(true)
 	label:SetClipping(true)
 	label:SetIgnoreMouse(true)
 	self.label = label
 	
+	self:SetEditable(true)
+	
 	label.OnTextChanged = function(_, ...) self:OnTextChanged(...) end
 	label.OnEnter = function(_, ...) self:OnEnter(...) end
+end
+
+function PANEL:SelectAll()
+	self.label.markup:SelectAll()
+	print(self.label.markup.select_stop.x, self.label.markup.select_stop.y)
+end
+
+function PANEL:SetEditable(b)
+	self.Editable = b
+	self.label.markup:SetEditable(b)
 end
 
 function PANEL:SizeToText()
@@ -39,11 +53,13 @@ function PANEL:SizeToText()
 end
 
 function PANEL:OnFocus()
-	self.label:SetEditable(true)
+	if self.Editable then
+		self.label.markup:SetEditable(true)
+	end
 end
 
 function PANEL:OnUnfocus()
-	self.label:SetEditable(false)
+	self.label.markup:SetEditable(false)
 end
 
 function PANEL:OnKeyInput(...)
