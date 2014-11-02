@@ -38,11 +38,11 @@ do
 	end
 end
 
-function utility.MakePushPopFunction(lib, name, func_set, func_get)
+function utility.MakePushPopFunction(lib, name, func_set, func_get, reset)
 	local stack = {}
 	local i = 1
 	
-	lib["Start" .. name] = function(...)
+	lib["Push" .. name] = function(...)
 		stack[i] = {func_get()}
 		
 		func_set(...)
@@ -50,11 +50,15 @@ function utility.MakePushPopFunction(lib, name, func_set, func_get)
 		i = i + 1
 	end
 	
-	lib["End" .. name] = function()
+	lib["Pop" .. name] = function()
 		i = i - 1
 		
 		if i < 1 then
 			error("stack underflow", 2)
+		end
+		
+		if i == 1 and reset then
+			reset()
 		end
 		
 		func_set(unpack(stack[i]))
