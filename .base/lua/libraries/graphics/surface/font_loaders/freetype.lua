@@ -315,7 +315,7 @@ end
 
 function META:GetTextSize(str)
 	if self.state ~= "loaded" then return 0, 0 end
-	local X, Y = 0, 0
+	local X, Y = 0, self.options.size
 	
 	local rebuild = false
 	
@@ -346,7 +346,6 @@ function META:GetTextSize(str)
 			else
 				X = X + ch.x_advance + self.options.spacing
 			end
-			Y = math.max(Y, ch.h)
 		end
 	end
 	return X, Y
