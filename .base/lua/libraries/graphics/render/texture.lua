@@ -18,7 +18,7 @@ do -- texture binding
 		local last
 		
 		function render.BindTexture(tex)			
-			if tex ~= last then				
+			if tex ~= last and tex:IsValid() then
 				gl.BindTexture(tex.format.type, tex.override_texture and tex.override_texture.id or tex.id) 				
 				last = tex
 			end
