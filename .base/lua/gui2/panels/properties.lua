@@ -21,32 +21,37 @@ do -- base property
 	
 	function PANEL:OnMouseInput(button, press)
 		prototype.GetRegistered(self.Type, "button").OnMouseInput(self, button, press)
-		
+				
 		if button == "button_1" and press then
 			self:OnClick()
 		end
 	end
 	
 	function PANEL:OnPress()
-		print("!") 
-		self:Edit()
+		self:StartEditing()
 	end
 	
-	function PANEL:Edit()
-		local properties = self.properties or self
+	function PANEL:StartEditing()
+		if self.edit then return end
 		
-		properties.current_edit = properties.current_edit or NULL
-		
-		if properties.current_edit:IsValid() then
-			properties.current_edit:OnEnter()
-		end
-	
 		local edit = gui2.CreatePanel("text_edit", self)
+		
 		edit:Dock("fill")
 		edit:SetTextColor(Color(0, 1, 0))
 		edit:SetText(self:GetEncodedValue())
 		edit:SizeToText()
-		edit.OnEnter = function()  
+		edit.OnEnter = function() 
+			self:StopEditing()
+		end
+		
+		edit:RequestFocus()
+		
+		self.edit = edit
+	end
+	
+	function PANEL:StopEditing()
+		local edit = self.edit
+		if edit then
 			local str = edit:GetText()
 			local val = self:Decode(str)
 			
@@ -55,15 +60,14 @@ do -- base property
 			self:SetText(str)
 			edit:Remove()
 			self:OnValueChanged(val)
-			properties.current_edit = NULL
+			
+			self.edit = nil
 		end
-		
-		edit:RequestFocus()
-		properties.current_edit = edit
 	end
 	
 	function PANEL:SetValue(val)
 		self:SetText(self:Encode(val))
+		self.label:SetPosition(Vec2(S*2, S))
 		self:OnValueChanged(val)
 	end
 	
@@ -100,7 +104,11 @@ do -- string
 	PANEL.Base = "base_property"
 	PANEL.ClassName = "string_property"
 		
-	-- for consistency 
+	function PANEL:Initialize()
+		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
+		
+		self:SetClicksToActivate(1)
+	end
 	
 	gui2.RegisterPanel(PANEL)
 end
@@ -167,17 +175,42 @@ do -- number
 	gui2.RegisterPanel(PANEL)
 end
 
+do -- vector
+	local PANEL = {}
+	
+	PANEL.Base = "base_property"
+	PANEL.ClassName = "vector_property"
+	
+	function PANEL:SetupNumbers(var, ...)
+		for _, str in ipairs{...} do
+			
+		end
+	end
+		
+	function PANEL:Decode(str)
+		return tonumber(str)
+	end
+	
+	function PANEL:Encode(num)
+		return tostring(num)
+	end
+	
+	gui2.RegisterPanel(PANEL)
+end
+
 local PANEL = {}
 
 PANEL.ClassName = "properties"
 
-PANEL.current_edit = NULL
+PANEL.added_properties = {}
 
 function PANEL:Initialize()
 	self:SetStack(true)
 	self:SetStackRight(false) 
 	self:SetSizeStackToWidth(true)  
-	self:SetNoDraw(true)    
+	self:SetNoDraw(true)
+	
+	self:AddEvent("PanelMouseInput")
 end
 
 function PANEL:AddGroup(name)
@@ -244,7 +277,8 @@ function PANEL:AddProperty(key, default, callback, get_value)
 		panel:SetActiveStyle("check")
 		panel:SetInactiveStyle("uncheck")
 		panel.OnStateChanged = function(_, b) callback(b) end
-		panel.properties = self
+		
+
 	elseif prototype.GetRegistered("panel2", t .. "_property") then
 		local panel = gui2.CreatePanel(t .. "_property", right)
 					
@@ -252,8 +286,10 @@ function PANEL:AddProperty(key, default, callback, get_value)
 		panel:SetDefaultValue(default)
 		panel.GetValue = get_value
 		panel.OnValueChanged = function(_, val) callback(val) end
-		panel:Dock("fill") 
-		panel.properties = self
+		panel:Dock("fill")
+		panel.key = key
+		
+		table.insert(self.added_properties, panel)
 	else
 		local panel = gui2.CreatePanel("base_property", right)
 				
@@ -276,7 +312,8 @@ function PANEL:AddProperty(key, default, callback, get_value)
 		panel.GetValue = get_value
 		panel.OnValueChanged = function(_, val) callback(val) end
 		panel:Dock("fill")
-		panel.properties = self
+		
+		table.insert(self.added_properties, panel)
 	end
 	
 	left:SetHeight(15)	
@@ -296,6 +333,16 @@ function PANEL:OnLayout()
 		group:SetWidth(math.max(self:GetWidth(), self.left_max_width + self.right_max_width))
 		group.divider:SetWidth(self.left_max_width + self.right_max_width) 
 		 group.divider:SetDividerPosition(self.left_max_width) 
+	end
+end
+
+function PANEL:OnPanelMouseInput(panel, button, press)
+	if press and button == "button_1" and panel.ClassName ~= "text_edit" then
+		for i, right in ipairs(self.added_properties) do
+			if panel ~= right then
+				right:StopEditing()
+			end
+		end
 	end
 end
 
@@ -344,7 +391,7 @@ if RELOAD then
 	end 
 	
 	fill(entities.GetAll(), tree)
-		
+	
 	local scroll = div:SetBottom(gui2.CreatePanel("scroll"))
 	
 	local properties
