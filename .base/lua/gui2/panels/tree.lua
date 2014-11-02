@@ -13,15 +13,18 @@ do -- tree node
 
 		local label = gui2.CreatePanel("text_button", self)
 		label:SetMargin(Rect()+2*S)
-		label:SetNoDraw(true)
 		label:SetStyleTranslation("button_active", "button_rounded_active")
-		label:SetStyleTranslation("button_inactive", "button_rounded_inactive")
+		label:SetStyleTranslation("button_inactive", "menu_select")
 		label:SetStyle("button_rounded_inactive")
+		label:SetColor(Color(1,1,1,0))
+		--label:SetNoDraw(true)
 		label.OnRelease = function()
-			self.label:SetNoDraw(false)
+			self.label:SetColor(Color(1,1,1,1))
+			--self.label:SetNoDraw(false)
 			for k, v in ipairs(self.tree:GetChildren()) do
 				if v ~= self then
-					v.label:SetNoDraw(true)
+					v.label:SetColor(Color(1,1,1,0))
+					--self.label:SetNoDraw(true)
 				end
 			end
 			self.tree:OnNodeSelect(self)
@@ -104,7 +107,7 @@ do -- tree node
 
 		if b and not self.Expand then return end
 		
-		for pos, pnl in pairs(self.tree.CustomList) do
+		for pos, pnl in pairs(self.tree:GetChildren()) do
 			if pnl.node_parent == self then
 				pnl:SetExpandInternal(b)
 			end
@@ -115,7 +118,7 @@ do -- tree node
 	
 	function PANEL:SetExpand(b)
 		
-		for pos, pnl in pairs(self.tree.CustomList) do
+		for pos, pnl in pairs(self.tree:GetChildren()) do
 			if pnl.node_parent == self then
 				pnl:SetExpandInternal(b)
 			end
@@ -145,8 +148,6 @@ do
 		
 		self:SetStackRight(false)
 		self:SetSizeStackToWidth(true)
-
-		self.CustomList = {}
 	end
 
 	function PANEL:AddNode(str, id)
@@ -156,8 +157,6 @@ do
 		pnl:SetText(str) 
 		pnl.offset = self.IndentWidth
 		pnl.tree = self
-					
-		table.insert(self.CustomList, pnl)
 		
 		if id then
 			self.nodes[id] = pnl 
@@ -168,19 +167,12 @@ do
 		return pnl
 	end
 
-	function PANEL:RemovePanel(pnl)	
-		for k,v in ipairs(self.CustomList) do
-			if v == pnl then
-				table.remove(self.CustomList, k)
-				break
-			end
-		end
-
+	function PANEL:RemoveNode(pnl)
 		::again::
 		
-		for k,v in pairs(self.CustomList) do
+		for k,v in ipairs(self:GetChildren()) do
 			if v.node_parent == pnl then
-				self:RemovePanel(v)
+				self:RemoveNode(v)
 				goto again
 			end
 		end	

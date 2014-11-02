@@ -5,7 +5,6 @@ PANEL.ClassName = "text"
 
 prototype.GetSet(PANEL, "Text")
 prototype.GetSet(PANEL, "ParseTags", false)
-prototype.GetSet(PANEL, "Editable", false)
 prototype.GetSet(PANEL, "TextWrap", false)
 
 prototype.GetSet(PANEL, "Font", gui2.skin.default_font)
@@ -13,7 +12,7 @@ prototype.GetSet(PANEL, "TextColor", gui2.skin.default_font_color)
 
 function PANEL:Initialize()
 	self.markup = surface.CreateMarkup()
-	self:SetEditable(self.Editable)
+	self.markup:SetEditable(false)
 	self:SetTextWrap(self.TextWrap)
 end
 
@@ -32,16 +31,12 @@ function PANEL:SetText(str)
 	markup:AddColor(self.TextColor)
 	markup:AddString(self.Text, self.ParseTags)
 	
-	self:OnUpdate() -- hack! this will update markup sizes
+	markup:Invalidate()
+	self:OnUpdate()
 end
 
 function PANEL:GetText()
 	return self.markup:GetText(self.ParseTags)
-end
-
-function PANEL:SetEditable(b)
-	self.Editable = b
-	self.markup:SetEditable(b)
 end
 
 function PANEL:SetTextWrap(b)
@@ -50,14 +45,11 @@ function PANEL:SetTextWrap(b)
 end
 
 function PANEL:OnDraw()
-	local markup = self.markup	
-	markup:Draw()
+	self.markup:Draw()
 end
 
 function PANEL:OnMouseMove(x, y)
-	local markup = self.markup
-	
-	markup:SetMousePosition(Vec2(x, y))
+	self.markup:SetMousePosition(Vec2(x, y))
 	self:MarkCacheDirty()
 end
 
@@ -76,9 +68,7 @@ function PANEL:OnUpdate()
 end
 
 function PANEL:OnMouseInput(button, press)
-	local markup = self.markup
-
-	markup:OnMouseInput(button, press)
+	self.markup:OnMouseInput(button, press)
 end
 
 function PANEL:OnKeyInput(key, press)

@@ -17,6 +17,7 @@ function PANEL:Initialize()
 	local scroll_area = gui2.CreatePanel("base", self)
 	scroll_area:SetClipping(true)
 	scroll_area:SetNoDraw(true)
+	scroll_area:SetAlwaysReceiveMouseInput(true)
 	self.scroll_area = scroll_area
 end
 
@@ -246,8 +247,7 @@ function PANEL:OnLayout()
 		self.scroll_area:SetHeight(self:GetHeight() - scroll_width)
 	else
 		self.scroll_area:SetHeight(self:GetHeight())
-	end
-	
+	end	
 end
 	
 gui2.RegisterPanel(PANEL) 
