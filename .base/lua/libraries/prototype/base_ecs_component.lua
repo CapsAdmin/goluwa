@@ -48,42 +48,44 @@ function META:FireEvent(...)
 	end
 end
 
-local events = {}
-local ref_count = {}
+do -- events
+	local events = {}
+	local ref_count = {}
 
-function META:AddEvent(event_type)
-	ref_count[event_type] = (ref_count[event_type] or 0) + 1
-	
-	local func_name = "On" .. event_type
-	
-	events[event_type] = events[event_type] or {}		
-	table.insert(events[event_type], self)
-	
-	event.AddListener(event_type, "metatable_ecs", function(a_, b_, c_) 
-		for name, self in ipairs(events[event_type]) do
-			if self[func_name] then
-				self[func_name](self, a_, b_, c_)
+	function META:AddEvent(event_type)
+		ref_count[event_type] = (ref_count[event_type] or 0) + 1
+		
+		local func_name = "On" .. event_type
+		
+		events[event_type] = events[event_type] or {}		
+		table.insert(events[event_type], self)
+		
+		event.AddListener(event_type, "metatable_ecs", function(a_, b_, c_) 
+			for name, self in ipairs(events[event_type]) do
+				if self[func_name] then
+					self[func_name](self, a_, b_, c_)
+				end
+			end
+		end)
+	end
+
+	function META:RemoveEvent(event_type)
+		ref_count[event_type] = (ref_count[event_type] or 0) - 1
+
+		events[event_type] = events[event_type] or {}
+		
+		for i, other in pairs(events[event_type]) do
+			if other == self then
+				events[event_type][i] = nil
+				break
 			end
 		end
-	end)
-end
-
-function META:RemoveEvent(event_type)
-	ref_count[event_type] = (ref_count[event_type] or 0) - 1
-
-	events[event_type] = events[event_type] or {}
-	
-	for i, other in pairs(events[event_type]) do
-		if other == self then
-			events[event_type][i] = nil
-			break
+		
+		table.fixindices(events[event_type])
+		
+		if ref_count[event_type] <= 0 then
+			event.RemoveListener(event_type, "metatable_ecs")
 		end
-	end
-	
-	table.fixindices(events[event_type])
-	
-	if ref_count[event_type] <= 0 then
-		event.RemoveListener(event_type, "metatable_ecs")
 	end
 end
 
