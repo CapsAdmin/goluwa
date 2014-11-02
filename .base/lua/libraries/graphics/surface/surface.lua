@@ -597,31 +597,42 @@ do
 end
 
 local gl = require("lj-opengl")
+do
+	local X, Y, W, H
 
-function surface.EnableClipRect(x, y, w, h)
-	gl.Enable(gl.e.GL_STENCIL_TEST)
-	
-	gl.StencilFunc(gl.e.GL_ALWAYS, 1, 0xFF) -- Set any stencil to 1
-	gl.StencilOp(gl.e.GL_KEEP, gl.e.GL_KEEP, gl.e.GL_REPLACE)
-	gl.StencilMask(0xFF) -- Write to stencil buffer
-	gl.DepthMask(gl.e.GL_FALSE) -- Don't write to depth buffer
-	gl.Clear(gl.e.GL_STENCIL_BUFFER_BIT) -- Clear stencil buffer (0 by default)
-	
-	local tex = surface.GetTexture()
-	surface.SetWhiteTexture()
-	local r,g,b,a = surface.SetColor(0,0,0,0)
-	surface.DrawRect(x, y, w, h)
-	surface.SetColor(r,g,b,a)
-	surface.SetTexture(tex)
-	
-	gl.StencilFunc(gl.e.GL_EQUAL, 1, 0xFF) -- Pass test if stencil value is 1
-    gl.StencilMask(0x00) -- Don't write anything to stencil buffer
-    gl.DepthMask(gl.e.GL_TRUE) -- Write to depth buffer	
-end
+	function surface.EnableClipRect(x, y, w, h)
+		gl.Enable(gl.e.GL_STENCIL_TEST)
+		
+		gl.StencilFunc(gl.e.GL_ALWAYS, 1, 0xFF) -- Set any stencil to 1
+		gl.StencilOp(gl.e.GL_KEEP, gl.e.GL_KEEP, gl.e.GL_REPLACE)
+		gl.StencilMask(0xFF) -- Write to stencil buffer
+		gl.DepthMask(gl.e.GL_FALSE) -- Don't write to depth buffer
+		gl.Clear(gl.e.GL_STENCIL_BUFFER_BIT) -- Clear stencil buffer (0 by default)
+		
+		local tex = surface.GetTexture()
+		surface.SetWhiteTexture()
+		local r,g,b,a = surface.SetColor(0,0,0,0)
+		surface.DrawRect(x, y, w, h)
+		surface.SetColor(r,g,b,a)
+		surface.SetTexture(tex)
+		
+		gl.StencilFunc(gl.e.GL_EQUAL, 1, 0xFF) -- Pass test if stencil value is 1
+		gl.StencilMask(0x00) -- Don't write anything to stencil buffer
+		gl.DepthMask(gl.e.GL_TRUE) -- Write to depth buffer	
+		
+		x = X
+		y = Y
+		w = W
+		h = H
+	end
 
+	function surface.GetClipRect()
+		return X or 0, Y or 0, W or render.GetWidth(), H or render.GetHeight()
+	end
 
-function surface.DisableClipRect()
-	gl.Disable(gl.e.GL_STENCIL_TEST)
+	function surface.DisableClipRect()
+		gl.Disable(gl.e.GL_STENCIL_TEST)
+	end
 end
 
 function surface.GetMousePos()
