@@ -25,9 +25,9 @@ end
 
 function ColorHex(hex, a)
 	local r,g,b = hex:match("#?(..)(..)(..)")
-	r = tonumber("0x" .. r)
-	g = tonumber("0x" .. g)
-	b = tonumber("0x" .. b)
+	r = tonumber("0x" .. (r or 0))
+	g = tonumber("0x" .. (g or 0))
+	b = tonumber("0x" .. (b or 0))
 	return ColorBytes(r, g, b, a)
 end
 
