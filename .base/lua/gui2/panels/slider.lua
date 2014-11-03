@@ -6,7 +6,7 @@ local PANEL = {}
 PANEL.ClassName = "slider"
 PANEL.Base = "base"
 
-prototype.GetSet(PANEL, "Fraction", Vec2(0.5, 0.5))
+prototype.GetSet(PANEL, "Fraction", Vec2(0, 0))
 
 prototype.GetSet(PANEL, "XSlide", true)
 prototype.GetSet(PANEL, "YSlide", false)
