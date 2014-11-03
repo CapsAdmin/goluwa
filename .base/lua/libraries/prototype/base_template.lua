@@ -49,6 +49,8 @@ do
 		return self.creation_time
 	end
 	
+	prototype.GetSet(META, "PropertyIcon", "")
+	
 	function META:FindReferences()
 		do return utility.FindReferences(self) end
 		local found = {utility.FindReferences(self)}
