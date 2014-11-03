@@ -34,10 +34,12 @@ do -- tree node
 		local exp = gui2.CreatePanel("button", self)
 		exp:SetMargin(Rect()+S)
 		exp:SetVisible(false)
-		exp.OnMouseInput = function(_, button, press) 
-			if button == "button_1" and press then
-				self:OnExpand(b) 
-			end
+		exp:SetMode("toggle")
+		exp:SetStyle("-")
+		exp:SetStyleTranslation("button_active", "+")
+		exp:SetStyleTranslation("button_inactive", "-")
+		exp.OnStateChanged = function(_, b) 
+			self:OnExpand(b) 
 		end
 		self.expand = exp
 		
@@ -89,14 +91,15 @@ do -- tree node
 		self.label:CenterY()
 	end
 
-	function PANEL:AddNode(str, id)
-		local pnl = self.tree.AddNode(self.tree, str, id)
+	function PANEL:AddNode(str, icon, id)
+		local pnl = self.tree.AddNode(self.tree, str, icon, id)
 		
 		pnl.offset = self.offset + self.tree.IndentWidth
 		pnl.node_parent = self
 		
 		self.expand:SetVisible(true)
 		self:SetExpand(true)
+		
 		
 		return pnl
 	end
@@ -125,10 +128,7 @@ do -- tree node
 		end
 		
 		self.Expand = b
-		
-		self.expand:SetStyle(b and "-" or "+")
-		self.expand:SetStyleTranslation("button_active", b and "-" or "+")
-		self.expand:SetStyleTranslation("button_inactive", b and "-" or "+")
+		self.expand:SetState(not b)
 	end
 				
 	gui2.RegisterPanel(PANEL)
@@ -150,13 +150,16 @@ do
 		self:SetSizeStackToWidth(true)
 	end
 
-	function PANEL:AddNode(str, id)
+	function PANEL:AddNode(str, icon, id)
 		if id and self.nodes[id] and self.nodes[id]:IsValid() then self.nodes[id]:Remove() end
 		
 		local pnl = gui2.CreatePanel("tree_node", self)
 		pnl:SetText(str) 
 		pnl.offset = self.IndentWidth
 		pnl.tree = self
+		if icon then
+			pnl.image:SetTexture(Texture(icon))
+		end
 		
 		if id then
 			self.nodes[id] = pnl 
