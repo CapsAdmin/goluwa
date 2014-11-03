@@ -7,6 +7,8 @@ do -- tree node
 	PANEL.ClassName = "tree_node"
 	
 	prototype.GetSet(PANEL, "Expand", true)
+	
+	PANEL.nodes = {}
 
 	function PANEL:Initialize()	
 		self:SetNoDraw(true)
@@ -138,7 +140,9 @@ do
 	local PANEL = {}
 
 	PANEL.ClassName = "tree"
-	prototype.GetSet(PANEL, "IndentWidth", 16)  
+	prototype.GetSet(PANEL, "IndentWidth", 16)
+	
+	PANEL.nodes = {}
 
 	function PANEL:Initialize()
 		self:SetNoDraw(true)

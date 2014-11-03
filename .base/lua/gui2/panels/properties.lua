@@ -574,7 +574,7 @@ if RELOAD then
 	
 	local function fill(entities, node)
 		for key, ent in pairs(entities) do
-			local node = node:AddNode(ent.config, ent.property_icon, ent)
+			local node = node:AddNode(ent.config, ent.property_icon)
 			node.ent = ent
 			--node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
 			fill(ent:GetChildren(), node)
