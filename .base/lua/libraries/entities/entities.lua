@@ -1,9 +1,9 @@
 include("components/*", prototype)
 
-prototype.SetupComponents("light", {"transform", "light"})
-prototype.SetupComponents("clientside", {"transform", "mesh"})
-prototype.SetupComponents("physical", {"transform", "mesh", "physics"})
-prototype.SetupComponents("networked", {"transform", "mesh", "physics", "networked"})
+prototype.SetupComponents("light", {"transform", "light"}, "textures/silkicons/lightbulb.png")
+prototype.SetupComponents("clientside", {"transform", "mesh"}, "textures/silkicons/shape_square.png")
+prototype.SetupComponents("physical", {"transform", "mesh", "physics"}, "textures/silkicons/shape_handles.png")
+prototype.SetupComponents("networked", {"transform", "mesh", "physics", "networked"}, "textures/silkicons/server_connect.png")
 
 local entities = _G.entities or {}
 
