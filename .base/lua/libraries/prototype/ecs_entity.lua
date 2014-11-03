@@ -82,7 +82,7 @@ end
 
 prototype.component_configurations = prototype.component_configurations or {}
 
-function prototype.SetupComponents(name, components)	
+function prototype.SetupComponents(name, components, icon)	
 	local functions = {}
 	
 	for _, name in ipairs(components) do
@@ -99,6 +99,7 @@ function prototype.SetupComponents(name, components)
 	prototype.component_configurations[name] = {
 		components = components,
 		functions = functions,
+		icon = icon,
 	}
 end
 
@@ -119,6 +120,8 @@ function prototype.CreateEntity(config, parent)
 		for name, func in pairs(prototype.component_configurations[config].functions) do
 			self[name] = self[name] or func
 		end
+		
+		self:SetPropertyIcon(prototype.component_configurations[config].icon)
 	end
 	
 	event.Call("EntityCreate", self)
