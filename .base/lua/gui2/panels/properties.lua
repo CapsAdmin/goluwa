@@ -35,7 +35,6 @@ do -- base property
 		if self.edit then return end
 		
 		local edit = gui2.CreatePanel("text_edit", self)
-		--edit.label:SetPosition(Vec2(S*2, S))
 		edit:Dock("fill")
 		edit:SetText(self:GetEncodedValue())
 		edit:SizeToText()
@@ -273,12 +272,12 @@ do -- color
 	end
 	
 	function PANEL:Decode(str)
-		return ColorHex(str)
+		return ColorBytes(str:match("(%d+)%s-(%d+)%s-(%d+)"))
 	end
 	
 	function PANEL:Encode(color)
-		local r,g,b = (color*255):Unpack()
-		return ("#%X%X%X"):format(r,g,b)
+		local r,g,b = (color*255):Round():Unpack()
+		return ("%d %d %d"):format(r,g,b)
 	end
 	
 	gui2.RegisterPanel(PANEL)
@@ -294,44 +293,28 @@ function PANEL:Initialize()
 	self:SetStack(true)
 	self:SetStackRight(false) 
 	self:SetSizeStackToWidth(true)  
-	self:SetNoDraw(true)
+	self:SetStyle("property")
+	self:SetColor(Color(1,1,1)*0.75)
 	self:SetMargin(Rect())
 	
 	self:AddEvent("PanelMouseInput")
-end
-
-function PANEL:AddGroup(name)
-	local group = gui2.CreatePanel("collapsible_category", self)
-	group:SetTitle(name)
-	group.bar:SetInactiveStyle("gradient")
-	group.bar:SetActiveStyle("gradient")
 	
-	local divider = gui2.CreatePanel("divider")
+	local divider = gui2.CreatePanel("divider", self)
 	divider:SetMargin(Rect())
 	divider:SetHideDivider(true)
 	divider:Dock("fill")
-	divider.OnDividerPositionChanged = function(_, pos)
-		for i, group in ipairs(self:GetChildren()) do	
-			if group.divider ~= divider then
-				group.divider:SetDividerPosition(pos.x)
-				group:Layout()
-			end
-		end
-	end
-	group.divider = divider
-	group:SetPanel(divider)
+	self.divider = divider
 	
-	local left = divider:SetLeft(gui2.CreatePanel("base"))
+	local left = self.divider:SetLeft(gui2.CreatePanel("base"))
 	left:SetStack(true)
 	left:SetPadding(Rect(0,0,0,-1))
 	left:SetStackRight(false)
 	left:SetSizeStackToWidth(true)
 	left:Dock("fill")
 	left:SetNoDraw(true)  
-	left:SetMargin(Rect())
-	group.left = left
+	self.left = left
 	
-	local right = divider:SetRight(gui2.CreatePanel("base"))
+	local right = self.divider:SetRight(gui2.CreatePanel("base"))
 	right:SetStack(true)
 	right:SetPadding(Rect(0,0,0,-1))
 	right:SetStackRight(false)
@@ -339,31 +322,90 @@ function PANEL:AddGroup(name)
 	right:Dock("fill")
 	right:SetNoDraw(true)
 	right:SetMargin(Rect())
-	group.right = right
-	 	
-	self.current_group = group
+	self.right = right
 end
 
-function PANEL:AddProperty(key, default, callback, get_value)
-	callback = callback or print
+function PANEL:AddGroup(name)
+	local left = gui2.CreatePanel("base", self.left)
+	left:SetNoDraw(true)
+	left.group = true
+	--left:SetStyle("property")
+	
+	local exp = gui2.CreatePanel("button", left)
+	exp:SetMargin(Rect()+S)
+	exp:SetStyle("-")
+	exp:SetStyleTranslation("button_active", "+")
+	exp:SetStyleTranslation("button_inactive", "-")
+	exp:SetPosition(Vec2(S*2, S*2+S))
+	exp:SetMode("toggle")
+	exp.OnStateChanged = function(_, b)
+		local found
+		for i, panel in ipairs(self.left:GetChildren()) do
+			if found then
+				if panel.group then break end
+				
+				self.right:GetChildren()[i]:SetVisible(not b)
+				self.right:GetChildren()[i]:SetStackable(not b)
+				panel:SetStackable(not b)
+				panel:SetVisible(not b)
+
+				self:Layout()
+			end
+		
+			if panel == left then
+				found = true
+			end
+		end
+		
+		for i, panel in ipairs(self.left:GetChildren()) do							
+			if panel.expand and not b then
+				panel.expand:OnStateChanged(panel.expand:GetState())
+			end
+		end
+	end
+	
+	local label = gui2.CreatePanel("text", left)
+	label:SetText(name)
+	label:SetPosition(Vec2(S*4 + exp:GetWidth(), S*2))
+	left:SetHeight(S*10)	
+	
+	local right = gui2.CreatePanel("base", self.right) 
+	right:SetHeight(S*10)
+	right:SetNoDraw(true)
+end
+
+function PANEL:AddProperty(name, set_value, get_value, default, fields, label_offset)
+	set_value = set_value or print
 	get_value = get_value or function() return default end
+	
+	if default == nil then
+		default = get_value()
+	end
+	
+	if hasindex(default) then
+		fields = fields or default.Args
+	end
 	
 	local t = typex(default)
 	
-	if not self.current_group then
-		self:AddGroup() 
-	end 
-	       
-	local left = gui2.CreatePanel("base", self.current_group.left)
-	left:SetStyle("property")	
+	local left_offset = S*8
+	
+	local left = gui2.CreatePanel("base", self.left)
+	left:SetStyle("property")
+	left:SetDrawPositionOffset(Vec2(left_offset, 0))
+	left:SetHeight(S*8)	
 	
 	local label = gui2.CreatePanel("text", left)
-	label:SetText(key)
-	label:SetPosition(Vec2(S*2, S))
-	-- left:SetSize(label:GetSize()) 
+	label:SetText(name)
+	label:SetPosition(Vec2(label_offset or S*2, S))
 	
-	local right = gui2.CreatePanel("base", self.current_group.right) 
+	
+
+	local right = gui2.CreatePanel("base", self.right) 
 	right:SetMargin(Rect())
+	right:SetHeight(left:GetHeight())
+	
+	local property
 	
 	if prototype.GetRegistered("panel2", t .. "_property") then
 		local panel = gui2.CreatePanel(t .. "_property", right)
@@ -371,10 +413,13 @@ function PANEL:AddProperty(key, default, callback, get_value)
 		panel:SetValue(default)
 		panel:SetDefaultValue(default)
 		panel.GetValue = get_value
-		panel.OnValueChanged = function(_, val) callback(val) end
+		panel.OnValueChanged = function(_, val) set_value(val) end
 		panel:Dock("fill")
-		panel.key = key
-		
+		panel.left = left
+		property = panel
+				
+		right:SetWidth(panel.label:GetWidth())
+				
 		table.insert(self.added_properties, panel)
 	else
 		local panel = gui2.CreatePanel("base_property", right)
@@ -382,7 +427,7 @@ function PANEL:AddProperty(key, default, callback, get_value)
 		function panel:Decode(str)
 			local val = serializer.Decode("luadata", str)[1]
 			
-			if type(val) ~= t then
+			if typex(val) ~= t then
 				val = default
 			end
 			
@@ -396,30 +441,84 @@ function PANEL:AddProperty(key, default, callback, get_value)
 		panel:SetValue(default)
 		panel:SetDefaultValue(default)
 		panel.GetValue = get_value
-		panel.OnValueChanged = function(_, val) callback(val) end
+		panel.OnValueChanged = function(_, val) set_value(val) end
 		panel:Dock("fill")
+		panel.left = left
+		property = panel
+		
+		right:SetWidth(panel.label:GetWidth())
 		
 		table.insert(self.added_properties, panel)
 	end
 	
-	left:SetHeight(S*8)	
-	right:SetHeight(left:GetHeight())
+	if fields then
+		local exp = gui2.CreatePanel("button", left)
+		exp:SetMargin(Rect()+S)
+		exp:SetStyleTranslation("button_active", "+")
+		exp:SetStyleTranslation("button_inactive", "-")
+		exp:SetState(true)
+		exp:SetPosition(Vec2(S*2, S*2))
+		exp:SetMode("toggle")
+		left.expand = exp
+		label:SetX(S*4 + exp:GetWidth())
+		
+		local panels = {}
+		
+		exp.OnStateChanged = function(_, b)
+			for i, panel in ipairs(panels) do
+				panel.right:SetVisible(not b)
+				panel.right:SetStackable(not b)
+				
+				panel.left:SetStackable(not b)
+				panel.left:SetVisible(not b)
+					
+			end
+			self:Layout()
+		end
+		
+		for i, key in ipairs(fields) do
+			local left, right = self:AddProperty(
+				key, 
+				function(val_)
+					local val = property:GetValue()
+					val[key] = val_
+					property:SetValue(val)
+				end, 
+				function()
+					return property:GetValue()[key]
+				end,
+				default[key],
+				nil,
+				label:GetX()
+			)
+			
+			left:SetStackable(false)
+			right:SetStackable(false)
+			
+			left:SetVisible(false)
+			right:SetVisible(false)
+			
+			table.insert(panels, {left = left, right = right})
+		end			
+	end	
 	
 	self.left_max_width = math.max((self.left_max_width or 0), label:GetWidth() + label:GetX()*2)
 	self.right_max_width = math.max((self.right_max_width or 0), right:GetWidth())
 			
+	self.divider:SetDividerPosition(self.left_max_width + left_offset)	
+	
 	self:Layout()
+	
+	return left, right
 end
 
-function PANEL:OnLayout()
+function PANEL:OnLayout()	
 	if not self.left_max_width then return end
-
-	for i, group in ipairs(self:GetChildren()) do
-		group:SetHeight(group.left:GetSizeOfChildren().h + S*10)
-		group:SetWidth(math.max(self:GetWidth(), self.left_max_width + self.right_max_width))
-		group.divider:SetWidth(self.left_max_width + self.right_max_width) 
-		group.divider:SetDividerPosition(self.left_max_width) 
-	end
+	
+	local h = self.left:GetSizeOfChildren().h
+	self.divider:SetSize(Vec2(self.left_max_width + self.right_max_width, h))
+	self:SetWidth(self.left_max_width + self.right_max_width)
+	self:SetHeight(h)
 end
 
 function PANEL:OnPanelMouseInput(panel, button, press)
@@ -442,15 +541,20 @@ function PANEL:AddPropertiesFromObject(obj)
 			local def = get(obj)
 			
 			if get and set and obj[field] and type(def) ~= "table" then
-				self:AddProperty(field:gsub("%u", " %1"):lower():sub(2), def, function(val)
-					if not obj:IsValid() then return end
-					
-					set(obj, val)
-				end, function() 
-					if not obj:IsValid() then return end
-					
-					return get(obj)
-				end)
+				self:AddProperty(
+					field:gsub("%u", " %1"):lower():sub(2), 
+					function(val)
+						if not obj:IsValid() then return end
+						
+						set(obj, val)
+					end, 
+					function() 
+						if not obj:IsValid() then return end
+						
+						return get(obj)
+					end, 
+					def
+				)
 			end
 		end
 	end
@@ -470,7 +574,7 @@ if RELOAD then
 	
 	local function fill(entities, node)
 		for key, ent in pairs(entities) do
-			local node = node:AddNode(ent.config)
+			local node = node:AddNode(ent.config, ent.property_icon, ent)
 			node.ent = ent
 			--node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
 			fill(ent:GetChildren(), node)
@@ -478,7 +582,19 @@ if RELOAD then
 	end 
 	
 	event.AddListener("EntityCreate", "asdf", function(ent)
+		gui2.RemovePanel(tree)
 		
+		tree = div:SetTop(gui2.CreatePanel("tree"))
+		
+		fill(entities.GetAll(), tree)
+	end)
+	
+	event.AddListener("EntityRemove", "asdf", function(ent)
+		gui2.RemovePanel(tree)
+		
+		tree = div:SetTop(gui2.CreatePanel("tree"))
+		
+		fill(entities.GetAll(), tree)
 	end)
 	
 	fill(entities.GetAll(), tree)
@@ -491,7 +607,7 @@ if RELOAD then
 		gui2.RemovePanel(properties)
 		
 		properties = gui2.CreatePanel("properties")
-		properties:SetStretchToPanelWidth(frame)
+		--properties:SetStretchToPanelWidth(frame)
 		
 		for k, v in pairs(node.ent:GetComponents()) do
 			for k,v in pairs(v) do
