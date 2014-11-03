@@ -1588,6 +1588,15 @@ do -- skin
 	function PANEL:SetStyle(name)
 		self.Style = name
 		
+		if name == "none" then
+			self:SetNinePatch(false)
+			self:SetNinePatchRect(Rect(0, 0, 0, 0))
+			self:SetNinePatchCornerSize(4)
+			self:SetStyleSize(Vec2(0, 0))
+			self:SetTexture(render.GetWhiteTexture())
+			return
+		end
+		
 		name = self.style_translation[name] or name
 		
 		if gui2.skin[name] then
