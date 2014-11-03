@@ -60,16 +60,21 @@ do -- base property
 			self:SetText(str)
 			edit:Remove()
 			self:OnValueChanged(val)
+			self:OnValueChangedInternal(val)
 			
 			self.edit = nil
 		end
 	end
 	
-	function PANEL:SetValue(val)
+	function PANEL:SetValue(val, skip_internal)
 		self:SetText(self:Encode(val))
 		self.label:SetPosition(Vec2(S*2, S))
 		self:OnValueChanged(val)
+		if not skip_internal then
+			self:OnValueChangedInternal(val)
+		end
 		--self:SizeToText()
+		self:Layout()
 	end
 	
 	function PANEL:GetValue()
@@ -89,6 +94,10 @@ do -- base property
 	end 
 	
 	function PANEL:OnValueChanged(val)
+	
+	end
+	
+	function PANEL:OnValueChangedInternal(val)
 	
 	end
 	
@@ -179,24 +188,46 @@ do -- number
 	gui2.RegisterPanel(PANEL)
 end
 
-do -- vector
+do -- boolean
 	local PANEL = {}
 	
 	PANEL.Base = "base_property"
-	PANEL.ClassName = "vector_property"
+	PANEL.ClassName = "boolean_property"
 	
-	function PANEL:SetupNumbers(var, ...)
-		for _, str in ipairs{...} do
-			
-		end
+	function PANEL:Initialize()
+		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
+
+		local panel = gui2.CreatePanel("button", self)
+		panel:SetMode("toggle")
+		panel:SetActiveStyle("check")
+		panel:SetInactiveStyle("uncheck")
+		panel.OnStateChanged = function(_, b) self:SetValue(b, true) end
+		self.panel = panel
 	end
+	
+	function PANEL:OnLayout()
+		self.label:SetX(self.panel:GetWidth() + S)
+	end
+	
+	function PANEL:OnValueChangedInternal(val)
+		self.panel:SetState(val)
+	end
+	
+	local str2bool = {
+		["true"] = true,
+		["false"] = true,
+		["1"] = true,
+		["0"] = false,
+		["yes"] = true,
+		["no"] = false,
+	}
 		
 	function PANEL:Decode(str)
-		return tonumber(str)
+		return str2bool[str:lower()]
 	end
 	
-	function PANEL:Encode(num)
-		return tostring(num)
+	function PANEL:Encode(b)
+		return b and "true" or "false"
 	end
 	
 	gui2.RegisterPanel(PANEL)
@@ -283,14 +314,7 @@ function PANEL:AddProperty(key, default, callback, get_value)
 	local right = gui2.CreatePanel("base", self.current_group.right) 
 	right:SetMargin(Rect())
 	
-	if t == "boolean" then
-		local panel = gui2.CreatePanel("button", right)
-		panel:SetMode("toggle")
-		panel:SetActiveStyle("check")
-		panel:SetInactiveStyle("uncheck")
-		panel.OnStateChanged = function(_, b) callback(b) end
-
-	elseif prototype.GetRegistered("panel2", t .. "_property") then
+	if prototype.GetRegistered("panel2", t .. "_property") then
 		local panel = gui2.CreatePanel(t .. "_property", right)
 					
 		panel:SetValue(default)
