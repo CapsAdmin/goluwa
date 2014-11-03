@@ -38,15 +38,13 @@ function PANEL:Initialize()
 end
 
 function PANEL:Toggle(button)
-	self:SetState(not self:GetState(button), button)
+	return self:SetState(not self:GetState(button), button)
 end
 
 function PANEL:SetState(press, button)
 	button = button or "button_1"
 	
 	if press then
-		self:OnStateChanged(press, button)
-		
 		self.button_down[button] = press
 				
 		if button == "button_1" then
@@ -54,10 +52,8 @@ function PANEL:SetState(press, button)
 			self:OnPress() 
 		end
 		
-		self:OnOtherButtonPress(button)
-	elseif self.button_down[button] then
-		self:OnStateChanged(press, button)
-		
+		return true
+	elseif self.button_down[button] then		
 		self.button_down[button] = nil
 		
 		if button == "button_1" then
@@ -65,8 +61,10 @@ function PANEL:SetState(press, button)
 			self:OnRelease()
 		end
 		
-		self:OnOtherButtonRelease(button)
+		return true
 	end
+	
+	return false
 end
 
 function PANEL:GetState(button)
@@ -100,9 +98,13 @@ function PANEL:OnMouseInput(button, press)
 	if self.Mode == "normal" then
 		if press and not self:CanPress(button) then return end
 
-		self:SetState(press, button)
+		if self:SetState(press, button) then
+			self:OnStateChanged(press, button)
+		end
 	elseif self.Mode == "toggle" and press then
-		self:Toggle(button)
+		if self:Toggle(button) then
+			self:OnStateChanged(self:GetState(button), button)
+		end
 	end
 end
 
@@ -120,8 +122,6 @@ end
 
 function PANEL:OnRelease() end
 function PANEL:OnPress() end
-function PANEL:OnOtherButtonPress(button) end
-function PANEL:OnOtherButtonRelease(button) end
 function PANEL:OnStateChanged(press, button) end
 
 function PANEL:Test()		
