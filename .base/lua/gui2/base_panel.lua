@@ -178,14 +178,16 @@ function PANEL:GetSizeOfChildren()
 	local total_size = Vec2()
 
 	for k, v in ipairs(self:GetChildren()) do
-		local pos = v:GetPosition() + v:GetSize()
-		
-		if pos.x > total_size.x then
-			total_size.x = pos.x
-		end
+		if v:IsVisible() then
+			local pos = v:GetPosition() + v:GetSize()
+			
+			if pos.x > total_size.x then
+				total_size.x = pos.x
+			end
 
-		if pos.y > total_size.y then
-			total_size.y = pos.y
+			if pos.y > total_size.y then
+				total_size.y = pos.y
+			end
 		end
 	end
 
@@ -200,7 +202,7 @@ function PANEL:IsInsideParent()
 	if self.VisibilityPanel:IsValid() then
 		override = self.VisibilityPanel
 	end
-	
+		
 	if 
 		self.Position.x - override.Scroll.x < override.Size.w and
 		self.Position.y - override.Scroll.y < override.Size.h and
