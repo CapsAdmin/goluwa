@@ -233,6 +233,57 @@ do -- boolean
 	gui2.RegisterPanel(PANEL)
 end
 
+do -- color
+	local PANEL = {}
+	
+	PANEL.Base = "base_property"
+	PANEL.ClassName = "color_property"
+	
+	function PANEL:Initialize()
+		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
+
+		local panel = gui2.CreatePanel("button", self)
+		panel:SetStyle("none")
+		panel:SetActiveStyle("none")
+		panel:SetInactiveStyle("none")
+		panel:SetHighlightOnMouseEnter(false)
+		panel.OnPress = function()
+			local frame = gui2.CreatePanel("frame")
+			frame:SetSize(Vec2(300, 300))
+			frame:Center()
+			frame:SetTitle("color picker")
+			
+			local picker = gui2.CreatePanel("color_picker", frame)
+			picker:Dock("fill")
+			picker.OnColorChanged = function(_, color) self:SetValue(color) end
+			
+			panel:CallOnRemove(function() gui2.RemovePanel(frame) end)
+		end
+		self.panel = panel
+	end
+	
+	function PANEL:OnLayout()
+		self.panel:SetPosition(Vec2(1,1))
+		self.panel:SetSize(Vec2(self:GetHeight(), self:GetHeight())-2)
+		self.label:SetX(self.panel:GetWidth() + S)
+	end
+	
+	function PANEL:OnValueChangedInternal(val)
+		self.panel:SetColor(val)
+	end
+	
+	function PANEL:Decode(str)
+		return ColorHex(str)
+	end
+	
+	function PANEL:Encode(color)
+		local r,g,b = (color*255):Unpack()
+		return ("#%X%X%X"):format(r,g,b)
+	end
+	
+	gui2.RegisterPanel(PANEL)
+end
+
 local PANEL = {}
 
 PANEL.ClassName = "properties"
@@ -297,7 +348,7 @@ function PANEL:AddProperty(key, default, callback, get_value)
 	callback = callback or print
 	get_value = get_value or function() return default end
 	
-	local t = type(default)
+	local t = typex(default)
 	
 	if not self.current_group then
 		self:AddGroup() 
