@@ -1,3 +1,5 @@
+local gui2 = ...
+local S = gui2.skin.scale
 
 local PANEL = {}
 
