@@ -160,10 +160,10 @@ do -- file system
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/string.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/extensions/table.lua")
 		prototype = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/prototype.lua")
+		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/get_is_set.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/base_template.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/null.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/class.lua")
-		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/get_is_set.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/templates/buffer.lua")
 		utility = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/utilities/utility.lua")
 		
