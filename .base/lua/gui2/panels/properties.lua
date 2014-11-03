@@ -339,7 +339,7 @@ function PANEL:AddGroup(name)
 	exp:SetPosition(Vec2(S*2, S*2+S))
 	exp:SetMode("toggle")
 	exp.OnStateChanged = function(_, b)
-		local found
+		local found = false
 		for i, panel in ipairs(self.left:GetChildren()) do
 			if found then
 				if panel.group then break end
@@ -357,9 +357,19 @@ function PANEL:AddGroup(name)
 			end
 		end
 		
-		for i, panel in ipairs(self.left:GetChildren()) do							
-			if panel.expand and not b then
-				panel.expand:OnStateChanged(panel.expand:GetState())
+		found = false
+		
+		for i, panel in ipairs(self.left:GetChildren()) do	
+			if found then
+			
+				if panel.expand and not b then
+					panel.expand:OnStateChanged(panel.expand:GetState())
+				end
+				
+			end
+			
+			if panel == left then
+				found = true
 			end
 		end
 	end
@@ -503,7 +513,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, fields, label_of
 	end	
 	
 	self.left_max_width = math.max((self.left_max_width or 0), label:GetWidth() + label:GetX()*2)
-	self.right_max_width = math.max((self.right_max_width or 0), right:GetWidth())
+	self.right_max_width = math.max((self.right_max_width or 0), right:GetWidth()+ label:GetX()+S*2)
 			
 	self.divider:SetDividerPosition(self.left_max_width + left_offset)	
 	
@@ -570,7 +580,9 @@ if RELOAD then
 	div:Dock("fill")
 	div:SetHideDivider(true)
 	
-	local tree = div:SetTop(gui2.CreatePanel("tree"))
+	local scroll = div:SetTop(gui2.CreatePanel("scroll"))
+	local tree = gui2.CreatePanel("tree")
+	scroll:SetPanel(tree)
 	
 	local function fill(entities, node)
 		for key, ent in pairs(entities) do
@@ -579,14 +591,17 @@ if RELOAD then
 			--node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
 			fill(ent:GetChildren(), node)
 		end  
-	end 
+	end
 	
 	event.AddListener("EntityCreate", "asdf", function(ent)
 		gui2.RemovePanel(tree)
 		
-		tree = div:SetTop(gui2.CreatePanel("tree"))
+		tree = gui2.CreatePanel("tree")
+		scroll:SetPanel(tree)
 		
 		fill(entities.GetAll(), tree)
+		tree:SetSize(tree:GetSizeOfChildren())
+		tree:SetWidth(frame:GetWidth())
 	end)
 	
 	event.AddListener("EntityRemove", "asdf", function(ent)
@@ -595,9 +610,13 @@ if RELOAD then
 		tree = div:SetTop(gui2.CreatePanel("tree"))
 		
 		fill(entities.GetAll(), tree)
+		tree:SetSize(tree:GetSizeOfChildren())
+		tree:SetWidth(frame:GetWidth())
 	end)
 	
 	fill(entities.GetAll(), tree)
+	tree:SetSize(tree:GetSizeOfChildren())
+	tree:SetWidth(frame:GetWidth())
 	
 	local scroll = div:SetBottom(gui2.CreatePanel("scroll"))
 	
