@@ -24,6 +24,12 @@ end
 
 function PANEL:SetColor(color)
 	self.Color = color
+	local h,s,v = ColorToHSV(color)
+	
+	self:SetHue(h)
+	self:SetSaturation(s)
+	self:SetValue(v)
+	
 	self:OnColorChanged(color)
 end
 
@@ -43,8 +49,6 @@ function PANEL:Initialize()
 	xy:SetYSlide(true)
 	xy:SetRightFill(false)
 	
-	xy:SetFraction(Vec2(0.5, 0.5))
-	
 	xy.OnSlide = function(_, pos)
 		pos = pos - Vec2(0.5, 0.5)
 		
@@ -62,6 +66,9 @@ function PANEL:Initialize()
 	xy.line:SetStyle("none")
 	xy.line:SetTexture(Texture("textures/gui/hsv_square.png"))
 	self.xy_slider = xy
+	
+	xy:SetFraction(Vec2(0.5, 0.5))
+	slider:SetFraction(Vec2(0,1))
 end
 
 function PANEL:OnLayout()
