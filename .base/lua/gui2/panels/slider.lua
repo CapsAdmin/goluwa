@@ -69,10 +69,18 @@ function PANEL:Initialize()
 		end
 		
 		self.Fraction = pos / (self:GetSize() - self.button:GetSize())
+		self.Fraction.x = math.clamp(self.Fraction.x, 0, 1)
+		self.Fraction.y = math.clamp(self.Fraction.y, 0, 1)
+		
+		self:OnSlide(self.Fraction)
 		
 		self:MarkCacheDirty()
 	end
 	self.button = button
+end
+
+function PANEL:OnSlide(pos)
+
 end
 		
 function PANEL:OnLayout()
@@ -80,16 +88,13 @@ function PANEL:OnLayout()
 	
 	if self.XSlide and self.YSlide then
 		self.line:SetSize(self:GetSize():Copy())
-	end
-	
-	if self.XSlide then
+		self.button:SetSize(Vec2()+S*5)
+	elseif self.XSlide then
 		self.button:SetWidth(S*5)
 		self.line:SetY(8*S)
 		self.line:SetWidth(self:GetWidth())
 		self.line:SetHeight(self:GetHeight()-8*S*2)
-	end
-	
-	if self.YSlide then
+	elseif self.YSlide then
 		self.button:SetHeight(S*5)
 		self.line:SetX(8*S)
 		self.line:SetHeight(self:GetHeight())
