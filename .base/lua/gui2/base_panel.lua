@@ -811,7 +811,7 @@ do -- animations
 		self:UpdateAnimations()
 	end
 
-	function PANEL:Animate(var, to, time, operator, pow, set)
+	function PANEL:Animate(var, to, time, operator, pow, set, callback)
 		if self.animations[var] then
 			self.animations[var].alpha = 0
 			return
@@ -1350,6 +1350,10 @@ do -- mouse
 				end
 			end
 			
+			if button == "button_2" then
+				self:OnRightClick()
+			end
+			
 			if self.Scrollable then
 				if button == "button_3" then
 					self:StartScrolling(button)
@@ -1628,6 +1632,7 @@ do -- events
 	function PANEL:OnKeyInput(button, press) end
 	function PANEL:OnPostKeyInput(button, press) end
 	function PANEL:OnCharInput(char) end
+	function PANEL:OnRightClick() end
 
 	function PANEL:OnCharTyped(char) end
 	function PANEL:OnKeyPressed(key, pressed) end
