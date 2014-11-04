@@ -101,18 +101,13 @@ do
 		check(cmd, "string", "nil")
 
 		serializer.SetKeyValueInFile("luadata", "%DATA%/input.txt", key, cmd)
-		
-		if key:sub(1, 1) == "+" then
-			key = key:sub(2)
-		end
-		
-		local trigger = key:match("^%-(.-)%+") or key:match("^(.-)%+") or key
-		
+						
 		local modifiers = key:explode("+")
 		table.remove(modifiers, 1)
-		
-		input.binds[trigger] = {
-			original_key = key,
+			
+		input.binds[key] = {
+			key = key:sub(1, 1) == "+" and key:sub(2) or key,
+			trigger = key:match("^%-(.-)%+") or key:match("^(.-)%+") or key,
 			cmd = cmd, 
 			modifiers = modifiers, 
 			trigger_on_release = key:sub(1, 1) == "-",
@@ -126,16 +121,21 @@ do
 	function input.Call(key, press)
 		if input.DisableFocus then return end
 
-		local data = input.binds[key]
-		if data then
-			if (press and not data.trigger_on_release) or (not press and data.trigger_on_release) then
-				for i,v in ipairs(data.modifiers) do
-					if not input.IsKeyDown(v) then
+		for _, data in pairs(input.binds) do
+			if data.trigger == key then
+				if (press and not data.trigger_on_release) or (not press and data.trigger_on_release) then
+					local ok = true
+					for i,v in ipairs(data.modifiers) do
+						if not input.IsKeyDown(v) then
+							ok = false
+							break
+						end
+					end
+					if ok then
+						console.RunString(data.cmd)
 						return false
 					end
 				end
-				console.RunString(data.cmd)
-				return false
 			end
 		end
 	end
