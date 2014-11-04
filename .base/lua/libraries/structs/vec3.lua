@@ -164,7 +164,7 @@ Returns x, y, iVisibility.
 
 function META:ToScreen(pos, ang, w, h, fov)
 	pos = pos or render.GetCamPos()
-	ang = ang or render.GetCamAng():Rad()
+	ang = ang or render.GetCamAng():GetRad()
 	w = w or render.GetWidth()
 	h = h or render.GetHeight()
 	fov = fov or math.rad(render.GetCamFOV())
@@ -188,7 +188,7 @@ function META:ToScreen(pos, ang, w, h, fov)
     --Dotting the projected vector onto the right and up vectors gives us screen positions relative to the center of the screen.
     --We add half-widths / half-heights to these coordinates to give us screen positions relative to the upper-left corner of the screen.
     --We have to subtract from the "up" instead of adding, since screen coordinates decrease as they go upwards.
-    local x = 0.5 * w + ang:GetRight():GetDot(proj)
+    local x = 0.5 * w - ang:GetRight():GetDot(proj)
     local y = 0.5 * h - ang:GetUp():GetDot(proj)
 
     --Lastly we have to ensure these screen positions are actually on the screen.
