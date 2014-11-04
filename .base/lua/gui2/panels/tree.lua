@@ -13,25 +13,26 @@ do -- tree node
 	function PANEL:Initialize()	
 		self:SetNoDraw(true)
 
-		local label = gui2.CreatePanel("text_button", self)
-		label:SetMargin(Rect()+2*S)
-		label:SetStyleTranslation("button_active", "button_rounded_active")
-		label:SetStyleTranslation("button_inactive", "menu_select")
-		label:SetStyle("button_rounded_inactive")
-		label:SetColor(Color(1,1,1,0))
-		--label:SetNoDraw(true)
-		label.OnRelease = function()
-			self.label:SetColor(Color(1,1,1,1))
-			--self.label:SetNoDraw(false)
+		local button = gui2.CreatePanel("text_button", self)
+		button:SetMargin(Rect()+2*S)
+		button:SetStyleTranslation("button_active", "gradient")
+		button:SetStyleTranslation("button_inactive", "gradient")
+		button:SetStyle("gradient")
+		button:SetColor(Color(1,1,1,0))
+		--button:SetNoDraw(true)
+		button.OnPress = function()
+			self.button:SetColor(Color(1,1,1,1))
+			--self.button:SetNoDraw(false)
 			for k, v in ipairs(self.tree:GetChildren()) do
 				if v ~= self then
-					v.label:SetColor(Color(1,1,1,0))
-					--self.label:SetNoDraw(true)
+					v.button:SetColor(Color(1,1,1,0))
+					--self.button:SetNoDraw(true)
 				end
 			end
+			self.tree:SetSelectedNode(self)
 			self.tree:OnNodeSelect(self)
 		end
-		self.label = label
+		self.button = button
 
 		local exp = gui2.CreatePanel("button", self)
 		exp:SetMargin(Rect()+S)
@@ -52,17 +53,17 @@ do -- tree node
 	end
 	
 	function PANEL:OnMouseEnter(...)
-		self.label:SetHighlight(true)
-		self.label:OnMouseEnter(...)
+		self.button:SetHighlight(true)
+		self.button:OnMouseEnter(...)
 	end
 	
 	function PANEL:OnMouseExit(...)
-		self.label:SetHighlight(false)
-		self.label:OnMouseExit(...)
+		self.button:SetHighlight(false)
+		self.button:OnMouseExit(...)
 	end
 	
 	function PANEL:OnMouseInput(...)
-		self.label:OnMouseInput(...)
+		self.button:OnMouseInput(...)
 	end
 	
 	function PANEL:OnExpand()
@@ -74,7 +75,7 @@ do -- tree node
 	end
 
 	function PANEL:SetText(...)
-		self.label:SetText(...)
+		self.button:SetText(...)
 	end
 
 	function PANEL:OnLayout()
@@ -85,12 +86,12 @@ do -- tree node
 		
 		self.expand:SetPosition(Vec2(x - self.image:GetWidth(), 0))
 		
-		self.label:SetPosition(self.image:GetPosition() + Vec2(self.image:GetWidth() + S*2, 0))
-		self.label:SizeToText()
+		self.button:SetPosition(self.image:GetPosition() + Vec2(self.image:GetWidth() + S*2, 0))
+		self.button:SizeToText()
 					
 		self.expand:CenterY()
 		self.image:CenterY()
-		self.label:CenterY()
+		self.button:CenterY()
 	end
 
 	function PANEL:AddNode(str, icon, id)
@@ -141,7 +142,8 @@ do
 
 	PANEL.ClassName = "tree"
 	prototype.GetSet(PANEL, "IndentWidth", 16)
-	
+	prototype.GetSet(PANEL, "SelectedNode", NULL)
+
 	PANEL.nodes = {}
 
 	function PANEL:Initialize()
@@ -190,13 +192,13 @@ do
 	end
 	
 	function PANEL:SelectNode(node)
-		node.label:OnRelease()
+		node.button:OnPress()
 	end
 	
 	function PANEL:OnLayout()
 		local w = self:GetWidth()
 		for _, v in ipairs(self:GetChildren()) do
-			w = math.max(w, v.label:GetX() + v.label:GetWidth())
+			w = math.max(w, v.button:GetX() + v.button:GetWidth())
 		end
 		for _, v in ipairs(self:GetChildren()) do
 			v:SetWidth(w)
