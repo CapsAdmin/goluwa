@@ -8,7 +8,8 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	if not window.IsOpen() then return end
 	if chat and chat.IsVisible() then return end
 		
-	if menu and menu.visible then return end
+	if not window.GetMouseTrapped() then return end
+	
 	cam_ang:Normalize()
 	local speed = dt * 10
 
