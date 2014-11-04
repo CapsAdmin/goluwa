@@ -6,6 +6,7 @@ do
 	prototype.GetSet(META, "DebugTrace", "")
 	prototype.GetSet(META, "CreationTime", os.clock())
 	prototype.GetSet(META, "PropertyIcon", "")
+	prototype.GetSet(META, "Name", "")
 
 	function META:__tostring()
 		if self.ClassName ~= self.Type then
