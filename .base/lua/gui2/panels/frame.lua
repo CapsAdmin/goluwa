@@ -37,21 +37,7 @@ function PANEL:Initialize()
 	max:SetStyleTranslation("button_active", "maximize2_active")
 	max:SetStyleTranslation("button_inactive", "maximize2_inactive")
 	max.OnRelease = function() 
-		if self.maximized then
-			self:Dock()
-			self:SetSize(self.maximized.size)
-			self:SetPosition(self.maximized.pos)
-			self.maximized = nil
-			max:SetStyle("maximize2_inactive")
-			max:SetStyleTranslation("button_active", "maximize2_active")
-			max:SetStyleTranslation("button_inactive", "maximize2_inactive")
-		else
-			self.maximized = {size = self:GetSize():Copy(), pos = self:GetPosition():Copy()}
-			self:Dock("fill")			
-			max:SetStyle("maximize_inactive")
-			max:SetStyleTranslation("button_active", "maximize_active")
-			max:SetStyleTranslation("button_inactive", "maximize_inactive")
-		end
+		self:Maximize()
 	end
 	self.max = max
 	
@@ -60,7 +46,7 @@ function PANEL:Initialize()
 	min:SetStyleTranslation("button_active", "minimize_active")
 	min:SetStyleTranslation("button_inactive", "minimize_inactive")
 	min.OnRelease = function() 
-		self:SetVisible(not self.Visible)
+		self:Minimize()
 	end
 	self.min = min
 
@@ -76,6 +62,42 @@ function PANEL:Initialize()
 			gui2.task_bar:RemoveButton(self)
 		end
 	end)
+end
+
+function PANEL:Maximize()
+	local max = self.max
+	
+	if self.maximized then
+		self:Dock()
+		self:SetSize(self.maximized.size)
+		self:SetPosition(self.maximized.pos)
+		self.maximized = nil
+		max:SetStyle("maximize2_inactive")
+		max:SetStyleTranslation("button_active", "maximize2_active")
+		max:SetStyleTranslation("button_inactive", "maximize2_inactive")
+	else
+		self.maximized = {size = self:GetSize():Copy(), pos = self:GetPosition():Copy()}
+		self:Dock("fill")			
+		max:SetStyle("maximize_inactive")
+		max:SetStyleTranslation("button_active", "maximize_active")
+		max:SetStyleTranslation("button_inactive", "maximize_inactive")
+	end
+end
+
+function PANEL:IsMaximized()
+	return self.maximized
+end
+
+function PANEL:Minimize(b)
+	if b ~= nil then
+		self:SetVisible(b)
+	else
+		self:SetVisible(not self.Visible)
+	end
+end
+
+function PANEL:IsMinimized()
+	return self.Visible
 end
 
 function PANEL:SetTitle(str)
