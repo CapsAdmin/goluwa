@@ -62,8 +62,6 @@ function gui2.GetHoveringPanel(panel, filter)
 	return panel.mouse_over and panel or gui2.world
 end
 
-local menu_second_try
-
 do -- context menu helpers
 	gui2.current_menu = gui2.current_menu or NULL
 
@@ -73,7 +71,37 @@ do -- context menu helpers
 		end
 		
 		gui2.current_menu = panel or NULL
-		menu_second_try = false
+	end
+	
+	function gui2.CreateMenu(options, parent)
+		local menu = gui2.CreatePanel("menu")
+		gui2.SetActiveMenu(menu)
+		
+		if parent then
+			parent:CallOnRemove(function() gui2.RemovePanel(menu) end, menu)
+		end
+
+		local function add_entry(menu, val)
+			for k, v in ipairs(val) do
+				if type(v[2]) == "table" then
+					local menu, entry = menu:AddSubMenu(v[1])
+					if v[3] then entry:SetIcon(Texture(v[3])) end
+					add_entry(menu, v[2])
+				elseif v[1] then
+					local entry = menu:AddEntry(v[1], v[2])
+					if v[3] then entry:SetIcon(Texture(v[3])) end
+				else
+					menu:AddSeparator()
+				end
+			end
+		end
+
+		add_entry(menu, options)
+		
+		menu:Layout(true)
+		menu:SetPosition(gui2.world:GetMousePosition():Copy())
+		
+		return menu
 	end
 end
 
@@ -96,11 +124,7 @@ do -- events
 			local panel = gui2.current_menu
 			
 			if button == "button_1" and press and panel:IsValid() and not panel:IsMouseOver() then
-				-- only start checking if we're pressing outside the second press
-				if menu_second_try then
-					panel:Remove()
-				end
-				menu_second_try = true
+				panel:Remove()
 			end
 		end
 	end
