@@ -384,15 +384,18 @@ function PANEL:AddGroup(name)
 	right:SetNoDraw(true)
 end
 
-function PANEL:AddProperty(name, set_value, get_value, default, fields, label_offset)
+function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 	set_value = set_value or print
 	get_value = get_value or function() return default end
+	extra_info = extra_info or {}
 	
 	if default == nil then
 		default = get_value()
 	end
 	
-	if hasindex(default) then
+	local fields = extra_info.fields
+	
+	if not fields and hasindex(default) then
 		fields = fields or default.Args
 	end
 	
@@ -407,9 +410,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, fields, label_of
 	
 	local label = gui2.CreatePanel("text", left)
 	label:SetText(name)
-	label:SetPosition(Vec2(label_offset or S*2, S))
-	
-	
+	label:SetPosition(Vec2(extra_info.__label_offset or S*2, S))	
 
 	local right = gui2.CreatePanel("base", self.right) 
 	right:SetMargin(Rect())
@@ -498,8 +499,9 @@ function PANEL:AddProperty(name, set_value, get_value, default, fields, label_of
 					return property:GetValue()[key]
 				end,
 				default[key],
-				nil,
-				label:GetX()
+				{
+					__label_offset = label:GetX(),
+				}
 			)
 			
 			left:SetStackable(false)
@@ -541,32 +543,34 @@ function PANEL:OnPanelMouseInput(panel, button, press)
 	end
 end
 
-function PANEL:AddPropertiesFromObject(obj)
-	for k, v in pairs(getmetatable(obj) or obj) do
-		if type(v) == "function" and k:sub(0, 3) == "Get" then
-			local field = k:sub(4)
-			
-			local get = v 
-			local set = obj["Set" .. field]
-			local def = get(obj)
-			
-			if get and set and obj[field] and type(def) ~= "table" then
-				self:AddProperty(
-					field:gsub("%u", " %1"):lower():sub(2), 
-					function(val)
-						if not obj:IsValid() then return end
-						
-						set(obj, val)
-					end, 
-					function() 
-						if not obj:IsValid() then return end
-						
-						return get(obj)
-					end, 
-					def
-				)
-			end
-		end
+function PANEL:AddPropertiesFromObject(obj)	
+	for _, info in ipairs(prototype.GetStorableVariables(obj)) do		
+		local get = obj[info.get_name]
+		local set = obj[info.set_name]
+		local def = get(obj)
+		
+		local nice_name
+		
+		if info.var_name:upper() == info.var_name then
+			nice_name = info.var_name:lower()
+		else
+			nice_name = info.var_name:gsub("%u", " %1"):lower():sub(2)
+		end		
+				
+		self:AddProperty(
+			nice_name, 
+			function(val)
+				if obj:IsValid() then				
+					set(obj, val)
+				end
+			end, 
+			function() 
+				if obj:IsValid() then 
+					return get(obj)
+				end
+			end, 
+			def
+		)
 	end
 end
 
