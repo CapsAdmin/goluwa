@@ -1,3 +1,64 @@
+local icons = {
+	copy = "textures/silkicons/page_white_text.png",
+	uniqueid = "textures/silkicons/vcard.png",
+	paste = "textures/silkicons/paste_plain.png",
+	clone = "textures/silkicons/page_copy.png",
+	new = "textures/silkicons/add.png",
+	autoload = "textures/silkicons/transmit_go.png",
+	url = "textures/silkicons/server_go.png",
+	outfit = "textures/silkicons/group.png",
+	clear = "textures/silkicons/cross.png",
+	language = "textures/silkicons/user_comment.png",
+	font = "textures/silkicons/text_smallcaps.png",
+	load = "textures/silkicons/folder.png",
+	save = "textures/silkicons/disk.png",
+	exit = "textures/silkicons/cancel.png",
+	wear = "textures/silkicons/transmit.png",
+	help = "textures/silkicons/information.png",
+	edit = "textures/silkicons/table_edit.png",
+	revert = "textures/silkicons/table_delete.png",
+	about = "textures/silkicons/star.png",
+	appearance = "textures/silkicons/paintcan.png",
+	orientation = "textures/silkicons/shape_handles.png",
+
+	text = "textures/silkicons/text_align_center.png",
+	bone = "widgets/bone_small.png",
+	clip = "textures/silkicons/cut.png",
+	light = "textures/silkicons/lightbulb.png",
+	sprite = "textures/silkicons/layers.png",
+	bone = "textures/silkicons/connect.png",
+	effect = "textures/silkicons/wand.png",
+	model = "textures/silkicons/shape_square.png",
+	animation = "textures/silkicons/eye.png",
+	holdtype = "textures/silkicons/user_edit.png",
+	entity = "textures/silkicons/brick.png",
+	group = "textures/silkicons/world.png",
+	trail = "textures/silkicons/arrow_undo.png",
+	event = "textures/silkicons/clock.png",
+	sunbeams = "textures/silkicons/weather_sun.png",
+	jiggle = "textures/silkicons/chart_line.png",
+	sound = "textures/silkicons/sound.png",
+	command = "textures/silkicons/application_xp_terminal.png",
+	material = "textures/silkicons/paintcan.png",
+	proxy = "textures/silkicons/calculator.png",
+	particles = "textures/silkicons/water.png",
+	woohoo = "textures/silkicons/webcam_delete.png",
+	halo = "textures/silkicons/shading.png",
+	poseparameter = "textures/silkicons/disconnect.png",
+	fog = "textures/silkicons/weather_clouds.png",
+	physics = "textures/silkicons/shape_handles.png",
+	beam = "textures/silkicons/vector.png",
+	projectile = "textures/silkicons/bomb.png",
+	shake = "textures/silkicons/transmit.png",
+	ogg = "textures/silkicons/music.png",
+	webaudio = "textures/silkicons/sound_add.png",
+	script = "textures/silkicons/page_white_gear.png",
+	info = "textures/silkicons/help.png",
+	bodygroup = "textures/silkicons/user.png",
+	camera = "textures/silkicons/camera.png",
+	custom_animation = "textures/silkicons/film.png",
+}
+
 local editor = NULL
 
 input.Bind("e+left_control", "toggle_editor")
@@ -42,40 +103,73 @@ console.AddCommand("open_editor", function()
 	div:SetHideDivider(true)
 	
 	local scroll = div:SetTop(gui2.CreatePanel("scroll"))
-	local tree = gui2.CreatePanel("tree")
-	scroll:SetPanel(tree)
 	
+	local tree
+	
+	local function right_click_node(node)
+		tree:SelectNode(node)
+		
+		local options = {
+			{"wear", nil, icons.wear},
+			{"copy", nil, icons.copy},
+			{"paste", nil, icons.paste},
+			{"clone", nil, icons.clone},
+			{},
+		}
+		
+		for k,v in pairs(prototype.component_configurations) do
+			table.insert(options, {k, function() local ent = entities.CreateEntity(k, node.ent) ent:SetPosition(render.GetCamPos()) end, v.icon})
+		end
+		
+		table.add(options, {
+			{},
+			{"help", nil, icons.help},
+			{"save", nil, icons.save},
+			{"load", nil, icons.load},
+			{},
+			{"remove", function() 
+				local node = tree:GetSelectedNode()
+				if node:IsValid() and node.ent:IsValid() then
+					node.ent:Remove()
+				end
+			end, icons.clear},
+		})
+		
+		gui2.CreateMenu(options, frame)
+	end
 	local function fill(entities, node)
 		for key, ent in pairs(entities) do
-			local node = node:AddNode(ent.config, ent:GetPropertyIcon())
+			local name = ent:GetName()
+			if name == "" then
+				name = ent.config
+			end
+			local node = node:AddNode(name, ent:GetPropertyIcon())
+			node.OnRightClick = right_click_node
 			node.ent = ent
 			--node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
 			fill(ent:GetChildren(), node)
 		end  
 	end
 	
-	event.AddListener("EntityCreate", "asdf", function(ent)
+	local function repopulate()
 		gui2.RemovePanel(tree)
 		
 		tree = gui2.CreatePanel("tree")
 		scroll:SetPanel(tree)
 		
-		fill(entities.GetAll(), tree)
+		local ents = {}
+		for k,v in pairs(entities.GetAll()) do if not v:HasParent() then table.insert(ents, v) end end
+		fill(ents, tree)
 		tree:SetSize(tree:GetSizeOfChildren())
 		tree:SetWidth(frame:GetWidth())
-	end)
-	
-	event.AddListener("EntityRemove", "asdf", function(ent)
-		gui2.RemovePanel(tree)
 		
-		tree = div:SetTop(gui2.CreatePanel("tree"))
-		
-		fill(entities.GetAll(), tree)
-		tree:SetSize(tree:GetSizeOfChildren())
-		tree:SetWidth(frame:GetWidth())
-	end)
+		scroll:SetAlwaysReceiveMouseInput(true)
+	end
 	
-	fill(entities.GetAll(), tree)
+	event.AddListener("EntityCreate", "editor", repopulate)
+	event.AddListener("EntityRemove", "editor", repopulate)	
+	repopulate()
+	
 	tree:SetSize(tree:GetSizeOfChildren())
 	tree:SetWidth(frame:GetWidth())
 	
