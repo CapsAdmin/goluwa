@@ -5,6 +5,7 @@ world.vars = {}
 function world.Initialize()
 	entities.SafeRemove(world.sun)
 	world.sun = entities.CreateEntity("light")
+	world.sun:SetName("sun")
 	
 	for k, v in pairs(world.vars) do
 		v.set(v.get())
