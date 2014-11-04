@@ -728,12 +728,30 @@ do -- points
 	end
 end
 
+function surface.DrawCircle(x, y, radius, width, resolution)
+	resolution = resolution or 16
+	
+	local spacing = (resolution/radius) - 0.1
+	
+	for i = 0, resolution do		
+		local i1 = ((i+0) / resolution) * math.pi * 2
+		local i2 = ((i+1 + spacing) / resolution) * math.pi * 2
+		
+		surface.DrawLine(
+			x + math.sin(i1) * radius, 
+			y + math.cos(i1) * radius, 
+			
+			x + math.sin(i2) * radius, 
+			y + math.cos(i2) * radius, 
+			width
+		)
+	end
+end
+
 event.AddListener("RenderContextInitialized", nil, surface.Initialize)
 
 if RELOAD then
 	surface.Initialize()
 end
-
-if SOMEPOTATO then include("freetype.lua", surface) end
 
 return surface
