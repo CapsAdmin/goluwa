@@ -507,7 +507,7 @@ do -- texture object
 	end
 end
 
-render.texture_path_cache = utility.CreateWeakTable()
+render.texture_path_cache = {}
 
 function render.CreateTextureFromPath(path, format)
 	if render.texture_path_cache[path] then 
