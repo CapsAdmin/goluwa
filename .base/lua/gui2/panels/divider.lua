@@ -9,6 +9,11 @@ prototype.GetSet(PANEL, "DividerHeight", 0)
 prototype.GetSet(PANEL, "DividerWidth", S*2)
 prototype.GetSet(PANEL, "HideDivider", false)
 
+PANEL.top = NULL
+PANEL.bottom = NULL
+PANEL.left = NULL
+PANEL.right = NULL
+
 local function create_horizontal_divider(self)
 	if self.horizontal_divider then return end
 	local divider = gui2.CreatePanel("button", self)
@@ -52,11 +57,11 @@ function PANEL:OnLayout()
 	
 		self.horizontal_divider:SetSize(Vec2(self.DividerWidth, self.DividerHeight == 0 and self:GetHeight() or self.DividerHeight))
 		
-		if self.left then
+		if self.left:IsValid() then
 			self.left:SetSize(Vec2(self.horizontal_divider:GetX() + (self.HideDivider and self.DividerWidth or 0), self:GetHeight()))
 		end
 		
-		if self.right then
+		if self.right:IsValid() then
 			local offset = self.HideDivider and 0 or self.DividerWidth
 			self.right:SetX(self.horizontal_divider:GetX() + offset)
 			self.right:SetSize(Vec2(self:GetWidth() - self.horizontal_divider:GetX() + offset,  self:GetHeight()))
@@ -69,11 +74,11 @@ function PANEL:OnLayout()
 
 		self.vertical_divider:SetSize(Vec2(self.DividerHeight == 0 and self:GetWidth() or self.DividerHeight, self.DividerWidth))
 		
-		if self.top then
+		if self.top:IsValid() then
 			self.top:SetSize(Vec2(self:GetWidth(), self.vertical_divider:GetY() + (self.HideDivider and self.DividerWidth or 0)))
 		end
 		
-		if self.bottom then
+		if self.bottom:IsValid() then
 			local offset = self.HideDivider and 0 or self.DividerWidth
 			self.bottom:SetY(self.vertical_divider:GetY() + offset)
 			self.bottom:SetSize(Vec2(self:GetWidth(), self:GetHeight() - self.vertical_divider:GetY() - offset))
@@ -116,13 +121,13 @@ end
 function PANEL:SetDividerPosition(x, y)
 	if self.horizontal_divider then 
 		self.horizontal_divider:SetX(x) 
-		if self.left then self.left:Layout() end
-		if self.right then self.right:Layout() end
+		if self.left:IsValid() then self.left:Layout() end
+		if self.right:IsValid() then self.right:Layout() end
 	end
 	if self.vertical_divider then 
 		self.vertical_divider:SetY(y or x) 
-		if self.top then self.top:Layout() end
-		if self.bottom then self.bottom:Layout() end
+		if self.top:IsValid() then self.top:Layout() end
+		if self.bottom:IsValid() then self.bottom:Layout() end
 	end
 end
 
