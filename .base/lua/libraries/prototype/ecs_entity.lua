@@ -71,13 +71,20 @@ function META:HasComponent(name, id)
 end
 
 function META:OnRemove()
+	event.Call("EntityRemove", self)
+	
 	for name, components in pairs(self:GetComponents()) do
 		for id, component in pairs(components) do
 			self:RemoveComponent(name, id)
 		end
 	end
-	self:RemoveChildren()
-	event.Call("EntityRemove", self)
+	
+	for k,v in pairs(self:GetChildrenList()) do
+		v:Remove(a)
+	end
+		
+	-- this is important!!
+	self:UnParent()
 end
 
 prototype.component_configurations = prototype.component_configurations or {}
