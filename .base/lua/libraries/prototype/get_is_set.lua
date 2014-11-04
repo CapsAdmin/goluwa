@@ -19,12 +19,12 @@ end
 
 function prototype.SetupProperty(info)
 	local meta = info.meta or __meta
-	local name = info.name
 	local default = info.default
+	local name = info.var_name
+	local set_name = info.set_name
+	local get_name = info.get_name
 	local callback = info.callback
-	local set_name = info.set_name .. name
-	local get_name = info.get_name .. name
-	
+		
 	if type(default) == "number" then	
 		if callback then
 			meta[set_name] = meta[set_name] or function(self, var) self[name] = tonumber(var) or default self[callback](self) end
@@ -51,19 +51,20 @@ function prototype.SetupProperty(info)
     meta[name] = default
 
 	if __store then
+		info.type = typex(default)
+		
 		meta.storable_variables = meta.storable_variables or {}
 		table.insert(meta.storable_variables, info)
 	end
 end
 
-function prototype.GetSet(meta, name, default, extra_info)	
-	
+local function add(meta, name, default, extra_info, get)
 	local info = {
 		meta = meta, 
-		name = name, 
 		default = default,
-		set_name = "Set",
-		get_name = "Get",
+		var_name = name, 
+		set_name = "Set" .. name,
+		get_name = get .. name,
 	}
 	
 	if extra_info then
@@ -73,21 +74,20 @@ function prototype.GetSet(meta, name, default, extra_info)
 	prototype.SetupProperty(info)
 end
 
-function prototype.IsSet(meta, name, default, extra_info)
-	
-	local info = {
-		meta = meta, 
-		name = name, 
-		default = default,
-		set_name = "Set",
-		get_name = "Is",
-	}
-	
-	if extra_info then
-		table.merge(info, extra_info)
+function prototype.GetSet(meta, name, default, extra_info)
+	if type(meta) == "string" and __meta then
+		add(__meta, meta, name, default, "Get")
+	else
+		add(meta, name, default, extra_info, "Get")
 	end
-	
-	prototype.SetupProperty(info)
+end
+
+function prototype.IsSet(meta, name, default, extra_info)
+	if type(meta) == "string" and __meta then
+		add(__meta, meta, name, default, "Is")
+	else
+		add(meta, name, default, extra_info, "Is")
+	end
 end
 
 function prototype.RemoveField(meta, name)
