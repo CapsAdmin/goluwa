@@ -6,19 +6,19 @@ prototype.GetSet(COMPONENT, "TRMatrix", Matrix44())
 prototype.GetSet(COMPONENT, "ScaleMatrix", Matrix44())
 
 prototype.StartStorable()		
-	prototype.GetSet(COMPONENT, "Position", Vec3(0, 0, 0), "InvalidateTRMatrix")
-	prototype.GetSet(COMPONENT, "Rotation", Quat(0, 0, 0, 1), "InvalidateTRMatrix")
+	prototype.GetSet(COMPONENT, "Position", Vec3(0, 0, 0), {callback = "InvalidateTRMatrix"})
+	prototype.GetSet(COMPONENT, "Rotation", Quat(0, 0, 0, 1), {callback = "InvalidateTRMatrix"})
 	
-	prototype.GetSet(COMPONENT, "Scale", Vec3(1, 1, 1), "InvalidateScaleMatrix")
-	prototype.GetSet(COMPONENT, "Shear", Vec3(0, 0, 0), "InvalidateScaleMatrix")
-	prototype.GetSet(COMPONENT, "Size", 1, "InvalidateScaleMatrix")
+	prototype.GetSet(COMPONENT, "Scale", Vec3(1, 1, 1), {callback = "InvalidateScaleMatrix"})
+	prototype.GetSet(COMPONENT, "Shear", Vec3(0, 0, 0), {callback = "InvalidateScaleMatrix"})
+	prototype.GetSet(COMPONENT, "Size", 1, {callback = "InvalidateScaleMatrix"})
 	prototype.GetSet(COMPONENT, "SkipRebuild", false)
 	
 	prototype.GetSet(COMPONENT, "UseRotation", false)
 prototype.EndStorable()
 
-prototype.GetSet(COMPONENT, "OverridePosition", nil, "InvalidateTRMatrix")
-prototype.GetSet(COMPONENT, "OverrideRotation", nil, "InvalidateTRMatrix")
+prototype.GetSet(COMPONENT, "OverridePosition", nil, {callback = "InvalidateTRMatrix"})
+prototype.GetSet(COMPONENT, "OverrideRotation", nil, {callback = "InvalidateTRMatrix"})
 	
 COMPONENT.Network = {
 	Position = {"vec3", 1/30, "unreliable"},
