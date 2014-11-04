@@ -191,6 +191,8 @@ function PANEL:AddEntry(...)
 	entry.i = #self.entries + 1
 	
 	table.insert(self.entries, entry)
+	
+	return entry
 end
 
 gui2.RegisterPanel(PANEL)
