@@ -7,7 +7,7 @@ do
 	PANEL.sub_menu = NULL
 	
 	function PANEL:Initialize()
-		self:SetStyle("button_inactive")
+		self:SetStyle("frame")
 	end
 	
 	function PANEL:AddEntry(text, on_click)
@@ -18,20 +18,20 @@ do
 		
 		return entry
 	end
-	
+
 	function PANEL:AddSubMenu(text, on_click)
-		local menu = self:AddEntry(text, on_click):CreateSubMenu()
+		local menu, entry = self:AddEntry(text, on_click):CreateSubMenu()
 		
 		self:CallOnRemove(function() gui2.RemovePanel(menu) end)
 		self:CallOnHide(function() menu:SetVisible(false) end)
 		
-		return menu  
+		return menu, entry 
 	end
 	
 	function PANEL:AddSeparator()
 		local panel = gui2.CreatePanel("base", self)
-		panel:SetStyle("button_inactive")
-		panel:SetHeight(S)
+		panel:SetStyle("property")
+		panel:SetHeight(1)
 		panel:SetIgnoreMouse(true)
 	end
 	
@@ -42,7 +42,10 @@ do
 		for k, v in ipairs(self:GetChildren()) do
 			v:SetPosition(Vec2(2*S, y))
 			if v.label then
-				w = math.max(w, v.label:GetSize().w)
+				v.label:SetX(v.image:GetWidth() + 2*S)
+				w = math.max(w, v.label:GetSize().w + v.image:GetWidth())
+				v.label:CenterY()
+				v.image:CenterY()
 			end
 			y = y + v:GetHeight() + S
 		end
@@ -65,8 +68,14 @@ do
 	
 	function PANEL:Initialize()
 		self:SetNoDraw(true)
-		self:SetStyle("menu_select")
+		self:SetStyle("frame")
 		self:SetPadding(Rect(S, S, S, S))
+				
+		local img = gui2.CreatePanel("base", self)
+		img:SetIgnoreMouse(true)
+		img:SetNoDraw(true)
+		img:SetSize(Vec2()+16)
+		self.image = img
 		
 		local label = gui2.CreatePanel("text", self)
 		label:SetIgnoreMouse(true)
@@ -102,6 +111,15 @@ do
 		self.label:CenterY()
 	end
 	
+	function PANEL:SetIcon(texture)
+		if texture then
+			self.image:SetTexture(texture)
+			self.image:SetNoDraw(false)
+		else
+			self.image:SetNoDraw(true)
+		end
+	end
+	
 	function PANEL:CreateSubMenu()			
 	
 		local icon = gui2.CreatePanel("base", self)
@@ -112,7 +130,7 @@ do
 		self.menu = gui2.CreatePanel("menu")
 		self.menu:SetVisible(false)
 		
-		return self.menu
+		return self.menu, self
 	end
 			 
 	function PANEL:OnMouseInput(button, press)
