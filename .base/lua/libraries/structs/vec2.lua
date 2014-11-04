@@ -146,18 +146,12 @@ angCamRot is the angle your camera is at
 fFoV is the Field of View (FOV) of your camera in ___radians___
     Note: This must be nonzero or you will get a divide by zero error.
  ]]
-function META:ToWorld(w, h, ang, fov)
-	local cam = engine3d.GetCurrentCamera()
-	local _w, _h = render.GetScreenSize():Unpack()
-	
-	w = w or _w
-	h = h or _h
-	if not ang then
-		local a = cam:GetAngles()
-		
-		ang = Ang3(a.y, a.r, a.p)
-	end
-	fov = fov or cam:GetFov() + math.rad(15)
+function META:ToWorld(pos, ang, fov, w, h)
+	pos = pos or render.GetCamPos()
+	ang = ang or render.GetCamAng():GetRad()
+	fov = fov or (math.rad(render.GetCamFOV()) + math.rad(15))
+	w = w or render.GetWidth()
+	h = h or render.GetHeight()
 	
     --This code works by basically treating the camera like a frustrum of a pyramid.
     --We slice this frustrum at a distance "d" from the camera, where the slice will be a rectangle whose width equals the "4:3" width corresponding to the given screen height.
