@@ -94,33 +94,52 @@ function input.SetupInputEvent(name)
 end
 
 do
-	input.Binds = {}
+	input.binds = {}
 
 	function input.Bind(key, cmd)
 		check(key, "string")
 		check(cmd, "string", "nil")
 
 		serializer.SetKeyValueInFile("luadata", "%DATA%/input.txt", key, cmd)
-		input.Binds[key] = cmd
+		
+		if key:sub(1, 1) == "+" then
+			key = key:sub(2)
+		end
+		
+		local trigger = key:match("^%-(.-)%+") or key:match("^(.-)%+") or key
+		
+		local modifiers = key:explode("+")
+		table.remove(modifiers, 1)
+		
+		input.binds[trigger] = {
+			original_key = key,
+			cmd = cmd, 
+			modifiers = modifiers, 
+			trigger_on_release = key:sub(1, 1) == "-",
+		}
 	end
 
 	function input.Initialize()
-		input.Binds = serializer.ReadFile("luadata", "%DATA%/input.txt") or {}
+		input.binds = serializer.ReadFile("luadata", "%DATA%/input.txt") or {}
 	end
 
 	function input.Call(key, press)
 		if input.DisableFocus then return end
 
-		press = press and "" or "~"
-
-		local cmd = input.Binds[press .. key]
-
-		if cmd then
-			console.RunString(cmd)
-			return false
+		local data = input.binds[key]
+		if data then
+			if (press and not data.trigger_on_release) or (not press and data.trigger_on_release) then
+				for i,v in ipairs(data.modifiers) do
+					if not input.IsKeyDown(v) then
+						return false
+					end
+				end
+				console.RunString(data.cmd)
+				return false
+			end
 		end
 	end
-
+	
 	event.AddListener("KeyInput", "keybind", input.Call, {on_error = system.OnError, priority = math.huge})
 
 	function input.Command(line, key, ...)
