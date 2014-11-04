@@ -63,57 +63,6 @@ function PANEL:OnChildAdd()
 	gui2.unrolled_draw = nil
 end
 
-
-do -- events
-	local events = {}
-	local ref_count = {}
-
-	function PANEL:AddEvent(event_type)
-		ref_count[event_type] = (ref_count[event_type] or 0) + 1
-		
-		local func_name = "On" .. event_type
-		
-		events[event_type] = events[event_type] or {}		
-		table.insert(events[event_type], self)
-		
-		event.AddListener(event_type, "gui_panel", function(a_, b_, c_) 
-			for name, self in ipairs(events[event_type]) do
-				if self[func_name] then
-					self[func_name](self, a_, b_, c_)
-				end
-			end
-		end)
-		
-		self.added_events = self.added_events or {}
-		self.added_events[event_type] = true
-		
-		self:CallOnRemove(function() 
-			for event in pairs(self.added_events) do
-				self:RemoveEvent(event)
-			end
-		end, "__events")
-	end
-
-	function PANEL:RemoveEvent(event_type)
-		ref_count[event_type] = (ref_count[event_type] or 0) - 1
-
-		events[event_type] = events[event_type] or {}
-		
-		for i, other in pairs(events[event_type]) do
-			if other == self then
-				events[event_type][i] = nil
-				break
-			end
-		end
-		
-		table.fixindices(events[event_type])
-		
-		if ref_count[event_type] <= 0 then
-			event.RemoveListener(event_type, "gui_panel")
-		end
-	end
-end
-
 do -- call on hide
 	PANEL.call_on_hide = {}
 	
@@ -143,33 +92,17 @@ do -- call on hide
 	end
 end
 	
-do -- call on remove
-	PANEL.call_on_remove = {}
+function PANEL:OnRemove(a)
+	gui2.panels[self] = nil
 	
-	function PANEL:OnRemove(a)
-		for k, v in pairs(self.call_on_remove) do
-			if v() == false then
-				return
-			end
-		end
-		
-		gui2.panels[self] = nil
-		
-		a = (a or 0) + 1
-		
-		for k,v in pairs(self:GetChildrenList()) do
-			v:Remove(a)
-		end
-			
-		-- this is important!!
-		self:UnParent()
-	end
+	a = (a or 0) + 1
 	
-	function PANEL:CallOnRemove(callback, id)
-		id = id or callback
-		
-		self.call_on_remove[id] = callback
+	for k,v in pairs(self:GetChildrenList()) do
+		v:Remove(a)
 	end
+		
+	-- this is important!!
+	self:UnParent()
 end
 
 function PANEL:GetSizeOfChildren()
