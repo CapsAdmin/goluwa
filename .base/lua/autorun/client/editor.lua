@@ -1,6 +1,36 @@
-local editor
+local editor = NULL
 
-console.AddCommand("editor", function()
+input.Bind("e+left_control", "toggle_editor")
+input.Bind("e+left_alt", "toggle_focus")
+
+console.AddCommand("close_editor", function()
+	gui2.RemovePanel(editor)
+	window.SetMouseTrapped(false) 
+end)
+
+console.AddCommand("toggle_focus", function()
+	if window.GetMouseTrapped() then
+		window.SetMouseTrapped(false)
+	else
+		window.SetMouseTrapped(true)
+	end
+end)
+
+console.AddCommand("toggle_editor", function()
+	if editor:IsValid() then
+		if editor:IsMinimized() then
+			editor:Minimize(false)
+			window.SetMouseTrapped(true)
+		else
+			editor:Minimize(true)
+			window.SetMouseTrapped(false) 
+		end
+	else
+		console.RunString("open_editor")
+	end
+end)
+
+console.AddCommand("open_editor", function()
 	gui2.RemovePanel(editor)
 	
 	local frame = gui2.CreatePanel("frame")
@@ -72,4 +102,5 @@ console.AddCommand("editor", function()
 	div:SetDividerPosition(gui2.world:GetHeight()/2) 
 	
 	tree:SelectNode(tree:GetChildren()[1])  
+	window.SetMouseTrapped(false) 
 end)
