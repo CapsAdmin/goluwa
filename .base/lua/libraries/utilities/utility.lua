@@ -330,6 +330,8 @@ do
 		return "0%"
 	end
 	
+	prototype.Register(META)
+	
 	function utility.CreateThread()
 		local self = prototype.CreateObject(META)
 		
@@ -390,6 +392,8 @@ do -- tree
 				
 		return next
 	end
+	
+	prototype.Register(META)
 
 	function utility.CreateTree(delimiter)
 		local self = prototype.CreateObject(META)

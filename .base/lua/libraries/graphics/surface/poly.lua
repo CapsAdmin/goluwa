@@ -141,6 +141,8 @@ function META:Draw(count)
 	self.mesh:Draw(count)
 end
 
+prototype.Register(META)
+
 function surface.CreatePoly(size)		
 	size = size * 6
 	local mesh = surface.CreateMesh(size)

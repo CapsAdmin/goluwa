@@ -16,3 +16,5 @@ if SERVER then
 		self:SendLua("console.RunString('"..str.."')")
 	end
 end
+
+prototype.UpdateObjects(META)

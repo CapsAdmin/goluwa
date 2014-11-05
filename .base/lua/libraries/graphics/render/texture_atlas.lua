@@ -183,6 +183,8 @@ function META:GetPageTexture(id)
 	end
 end
 
+prototype.Register(META)
+
 function render.CreateTextureAtlas(page_width, page_height, format)
 	page_height = page_height or page_width
 	return prototype.CreateObject(META, {

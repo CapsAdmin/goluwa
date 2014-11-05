@@ -25,14 +25,10 @@ calllbacks.OnMonitor = nil
 do -- window meta
 	local META = prototype.CreateTemplate("render_window")
 
-	function META:Remove()
-		if self.OnRemove then self:OnRemove() end
-		
+	function META:OnRemove()		
 		event.RemoveListener("Update", self)
 		
 		glfw.DestroyWindow(self.__ptr)
-		
-		prototype.MakeNULL(self)
 	end
 
 	local x = ffi.new("int[1]")
@@ -212,6 +208,8 @@ do -- window meta
 		return out
 	end
 	end
+	
+	prototype.Register(META)
 		
 	function render.CreateWindow(width, height, title)	
 		width = width or 800

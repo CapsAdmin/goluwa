@@ -191,3 +191,5 @@ function META:DeleteSelection(skip_move)
 
 	return false
 end
+
+prototype.UpdateObjects(META)

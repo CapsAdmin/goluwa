@@ -28,6 +28,8 @@ function PARTICLE:SetLifeTime(n)
 	self.life_end = os.clock() + n
 end
 
+prototype.Register(PARTICLE)
+
 local EMITTER = prototype.CreateTemplate("particle_emitter")
 
 prototype.GetSet(EMITTER, "Speed", 1)
@@ -202,7 +204,9 @@ end
 function EMITTER:GetParticles()
 	return self.particles
 end
-  
+ 
+PARTICLE.__index = PARTICLE
+ 
 function EMITTER:AddParticle(...)
 	local p = setmetatable({}, PARTICLE) -- prototype.CreateObject(PARTICLE)
 	p:SetPosition(self:GetPosition():Copy())
@@ -228,3 +232,5 @@ function EMITTER:Emit(...)
 		end
 	end
 end
+
+prototype.Register(EMITTER)

@@ -16,7 +16,6 @@ end
 
 do -- model meta
 	local META = prototype.CreateTemplate("mesh3d")
-	META.__index = META
 	
 	function render.Create3DMesh(path, flags, now)
 		check(path, "string")
@@ -44,7 +43,7 @@ do -- model meta
 			return nil, path .. " not found"
 		end
 					
-		local self = setmetatable({}, META)
+		local self = prototype.CreateObject(META)
 		self.sub_models = {}
 		self.done = false
 		self.path = path
@@ -203,4 +202,6 @@ do -- model meta
 			model.mesh:Draw()
 		end
 	end
+	
+	prototype.Register(META)
 end

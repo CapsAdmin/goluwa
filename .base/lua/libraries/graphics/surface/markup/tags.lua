@@ -302,3 +302,5 @@ META.tags.silkicon =
 		surface.DrawRect(x, y, self.w, self.h)
 	end,
 }
+
+prototype.UpdateObjects(META)

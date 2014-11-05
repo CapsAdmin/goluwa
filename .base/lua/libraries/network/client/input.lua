@@ -36,3 +36,5 @@ end
 add_event("Key")
 add_event("Char")
 add_event("Mouse")
+
+prototype.UpdateObjects(META)

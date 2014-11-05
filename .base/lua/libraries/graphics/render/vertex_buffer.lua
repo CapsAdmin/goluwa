@@ -88,3 +88,5 @@ function META:UnreferenceMesh()
 	self.indices = nil
 	collectgarbage("step")
 end
+
+prototype.Register(META)

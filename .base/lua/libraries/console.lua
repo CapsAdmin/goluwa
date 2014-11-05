@@ -363,6 +363,8 @@ do -- console vars
 		function META:Set(var)
 			console.SetVariable(self.name, var)
 		end
+		
+		prototype.Register(META)
 	end
 	
 	function console.ReloadVariables()

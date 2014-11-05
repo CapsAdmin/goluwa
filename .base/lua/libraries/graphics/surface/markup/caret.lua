@@ -224,3 +224,5 @@ function META:AdvanceCaret(X, Y)
 
 	self.blink_offset = system.GetTime() + 0.25
 end
+
+prototype.UpdateObjects(META)

@@ -110,6 +110,8 @@ function prototype.SetupComponents(name, components, icon)
 	}
 end
 
+prototype.Register(META)
+
 function prototype.CreateEntity(config, parent)
 	local self = prototype.CreateObject(META)
 	

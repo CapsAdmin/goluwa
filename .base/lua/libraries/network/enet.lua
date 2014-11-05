@@ -132,6 +132,8 @@ do -- peer
 	function enet.CreateDummyPeer()
 		return prototype.CreateObject(CLIENT)
 	end
+	
+	prototype.Register(CLIENT)
 end
 
 do -- server
@@ -182,6 +184,8 @@ do -- server
 		
 		return self
 	end
+	
+	prototype.Register(SERVER)
 end
 
 local evt = ffi.new("ENetEvent[1]")

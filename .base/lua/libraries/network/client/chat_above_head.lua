@@ -40,4 +40,6 @@ if SERVER then
 		filter:AddAllExcept(client)
 		message.Send("coh", filter, client, str)
 	end)
-end 
+end
+
+prototype.UpdateObjects(META)

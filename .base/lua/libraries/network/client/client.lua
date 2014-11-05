@@ -1,4 +1,4 @@
-local META = (...) or prototype.GetRegistered("client")
+local META = prototype.CreateTemplate("client")
 
 META.Name = "client"
 
@@ -68,3 +68,5 @@ include("input.lua", META)
 include("extended.lua", META)
 include("user_command.lua", META)
 include("chat_above_head.lua", META)
+
+prototype.Register(META)

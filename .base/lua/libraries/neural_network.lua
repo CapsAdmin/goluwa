@@ -104,3 +104,5 @@ function META:Learn(desired_outputs)
 		end
 	end
 end
+
+prototype.Register(META)

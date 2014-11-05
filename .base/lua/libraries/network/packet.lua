@@ -221,6 +221,8 @@ do -- buffer object
 			return network.IDToString(self:ReadShort())
 		end
 	end
+	
+	prototype.Register(META)
 end
 
 _G.Buffer = packet.CreateBuffer

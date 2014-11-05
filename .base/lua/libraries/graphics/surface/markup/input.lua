@@ -171,3 +171,5 @@ function META:OnMouseInput(button, press)
 		end
 	end
 end
+
+prototype.UpdateObjects(META)
