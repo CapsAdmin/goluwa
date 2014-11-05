@@ -163,7 +163,6 @@ do -- file system
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/get_is_set.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/base_template.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/null.lua")
-		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/class.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/prototype/templates/buffer.lua")
 		utility = dofile(e.ROOT_FOLDER .. ".base/lua/libraries/utilities/utility.lua")
 		
