@@ -160,6 +160,18 @@ console.AddCommand("debug", function(line, lib)
 	end
 end)
 
+console.AddCommand("profile_start", function()	
+	profiler.EnableSectionProfiling(true)
+	profiler.EnableTraceAbortLogging(true)
+	profiler.EnableStatisticalProfiling(true)
+end)
+
+console.AddCommand("profile_stop", function()	
+	profiler.EnableSectionProfiling(false)
+	profiler.EnableTraceAbortLogging(false)
+	profiler.EnableStatisticalProfiling(false)
+end)
+
 console.AddCommand("profile_dump", function(line)
 	if line == "" or line == "st" or line == "s" then
 		profiler.PrintStatistical()

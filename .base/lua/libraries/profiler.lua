@@ -429,8 +429,4 @@ function profiler.MeasureInstrumental(time)
 	end)
 end
 
---profiler.EnableSectionProfiling(true)
---profiler.EnableTraceAbortLogging(true)
---profiler.EnableStatisticalProfiling(true)
-
 return profiler
