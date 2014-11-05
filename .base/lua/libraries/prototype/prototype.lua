@@ -1,6 +1,7 @@
 local prototype = _G.prototype or {}
 
 prototype.registered = prototype.registered or {}
+prototype.prepared_metatables = prototype.prepared_metatables or {}
 
 do
 	local function checkfield(tbl, key, def)
@@ -24,9 +25,71 @@ do
 		prototype.registered[super_type] = prototype.registered[super_type] or {}
 		prototype.registered[super_type][sub_type] = meta
 		
+		prototype.RebuildMetatables()
+		
 		prototype.UpdateObjects(meta)
 		
 		return super_type, sub_type
+	end
+end
+
+function prototype.RebuildMetatables()
+	for super_type, sub_types in pairs(prototype.registered) do
+		for sub_type, meta in pairs(sub_types) do
+			
+			local copy = {}
+			
+			-- first add all the base functions from the base object			
+			for k, v in pairs(prototype.base_metatable) do
+				copy[k] = v
+			end
+			
+			-- if this metatable has a type base derive from it first
+			if meta.TypeBase then 
+				for k, v in pairs(sub_types[meta.TypeBase]) do
+					copy[k] = v
+				end
+			end
+			
+			-- then go through the list of bases and derive from them in reversed order
+			local base_list = {}
+			
+			if meta.Base then 		
+				table.insert(base_list, meta.Base) 
+				
+				local base = meta
+				
+				for i = 1, 50 do
+					base = sub_types[base.Base]
+					if not base or not base.Base then break end 
+					table.insert(base_list, 1, base.Base)
+				end
+				
+				for k, v in ipairs(base_list) do
+					local base = sub_types[v]
+					
+					-- the base might not be registered yet
+					-- however this will be run again once it actually is
+					if base then
+						for k, v in pairs(base) do
+							copy[k] = v
+						end
+					end
+				end
+			end
+			
+			-- finally the actual metatable
+			for k, v in pairs(meta) do
+				copy[k] = v
+			end
+			
+			copy.__index = copy
+			
+			copy.BaseClass = sub_types[base_list[#base_list] or meta.TypeBase]
+			
+			prototype.prepared_metatables[super_type] = prototype.prepared_metatables[super_type] or {}				
+			prototype.prepared_metatables[super_type][sub_type] = copy
+		end
 	end
 end
 
@@ -35,8 +98,12 @@ function prototype.GetRegistered(super_type, sub_type)
 	
 	super_type = super_type:lower()
 	sub_type = sub_type:lower()
-		
-	return prototype.registered[super_type][sub_type]
+			
+	if prototype.prepared_metatables[super_type] and prototype.prepared_metatables[super_type][sub_type] then
+		return prototype.prepared_metatables[super_type][sub_type]
+	end
+	
+	return prototype.registered[super_type] and prototype.registered[super_type][sub_type]
 end
 
 function prototype.GetRegisteredSubTypes(super_type)
@@ -44,7 +111,6 @@ function prototype.GetRegisteredSubTypes(super_type)
 
 	return prototype.registered[super_type]
 end
-
 
 function prototype.GetAllRegistered()
 	local out = {}
@@ -78,7 +144,6 @@ include("base_template.lua", prototype)
 include("get_is_set.lua", prototype)
 include("templates/*", prototype)
 include("null.lua", prototype)
-include("class.lua", prototype)
 include("ecs_entity.lua", prototype)
 include("base_ecs_component.lua", prototype)
 

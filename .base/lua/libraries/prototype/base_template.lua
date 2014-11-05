@@ -112,13 +112,11 @@ do
 			end
 		end
 	end
+	
+	prototype.base_metatable = META
 
 	function prototype.CreateTemplate(super_type, sub_type, skip_register)
 		local template = type(super_type) == "table" and super_type or {}
-		
-		for k, v in pairs(META) do
-			template[k] = template[k] or v
-		end
 		
 		if type(super_type) == "string" then
 			template.Type = super_type
@@ -134,8 +132,6 @@ do
 			end
 		end
 		
-		template.__index = template
-		
 		return template
 	end
 end
@@ -146,9 +142,12 @@ function prototype.CreateObject(meta, override, skip_gc_callback)
 	if type(meta) == "string" then
 		meta = prototype.GetRegistered(meta)
 	end
-		
-	local self = setmetatable(override, table.copy(meta)) 
 	
+	-- this has to be done in order to ensure we have the prepared metatable with bases
+	meta = prototype.GetRegistered(meta.Type, meta.ClassName) or meta
+		
+	local self = setmetatable(override, table.copy(meta))
+		
 	if not skip_gc_callback then
 		utility.SetGCCallback(self, function(self)
 			if self:IsValid() then 
@@ -158,6 +157,8 @@ function prototype.CreateObject(meta, override, skip_gc_callback)
 		end)
 	end
 	
+	--print(meta, "!!!")
+	
 	self:SetDebugTrace(debug.trace(true))
 	
 	prototype.created_objects = prototype.created_objects or utility.CreateWeakTable()
@@ -166,6 +167,17 @@ function prototype.CreateObject(meta, override, skip_gc_callback)
 	self:SetCreationTime(os.clock())
 	
 	return self
+end
+
+function prototype.CreateDerivedObject(super_type, sub_type, override, skip_gc_callback)
+    local meta = prototype.GetRegistered(super_type, sub_type)
+	
+    if not meta then
+        logf("tried to create unknown %s %q!\n", super_type or "no type", sub_type or "no class")
+        return
+    end
+
+	return prototype.CreateObject(meta, override, skip_gc_callback)
 end
 
 function prototype.SafeRemove(obj)
