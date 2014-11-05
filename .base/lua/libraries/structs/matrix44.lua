@@ -61,6 +61,8 @@ function META:Copy(matrix)
 	end
 end
 
+META.__copy = META.Copy
+
 function META:Identity()
 	local m = self.m
 	
