@@ -6,14 +6,11 @@ local render = (...) or _G.render
 do -- window meta
 	local META = prototype.CreateTemplate("render_window")
 
-	function META:Remove()
-		if self.OnRemove then self:OnRemove() end
+	function META:OnRemove()
 		event.RemoveListener("OnUpdate", self)
 		
 		sdl.DestroyWindow(self.__ptr)
 		render.sdl_windows[self.sdl_window_id] = nil
-		
-		prototype.MakeNULL(self)
 	end
 
 	local x = ffi.new("int[1]")
@@ -161,6 +158,8 @@ do -- window meta
 	function META:OnTextEditing(str)
 		
 	end
+	
+	prototype.Register(META)
 	
 	function render.CreateWindow(width, height, title)	
 		width = width or 800

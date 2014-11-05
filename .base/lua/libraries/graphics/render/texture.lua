@@ -364,10 +364,9 @@ do -- texture object
 		end
 	end
 	
-	function META:Remove()
+	function META:OnRemove()
 		if self.format.no_remove then return end
 		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
-		prototype.MakeNULL(self)
 	end
 	
 	function META:IsLoading()
@@ -383,6 +382,8 @@ do -- texture object
 		self.loading = nil
 		self.override_texture = nil
 	end
+	
+	prototype.Register(META)
 	
 	function render.CreateTexture(width, height, buffer, format)
 		if type(width) == "string" and not buffer and not format and (not height or type(height) == "table") then

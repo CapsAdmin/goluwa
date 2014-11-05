@@ -562,6 +562,8 @@ do
 	function META:GetInfo()
 		return self.info
 	end
+	
+	prototype.Register(META)
 
 	function ffmpeg.Open(data, config) 
 		config = config or {}
@@ -680,7 +682,7 @@ do
 			::continue::
 		end	
 
-		local self = setmetatable({}, META)
+		local self = prototype.CreateObject(META)
 		
 		self.frame_skips = 0 
 		self.master_clock = 0

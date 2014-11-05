@@ -3,6 +3,17 @@ local prototype = _G.prototype or {}
 prototype.registered = prototype.registered or {}
 prototype.prepared_metatables = prototype.prepared_metatables or {}
 
+function prototype.CreateTemplate(super_type, sub_type)
+	local template = type(super_type) == "table" and super_type or {}
+	
+	if type(super_type) == "string" then
+		template.Type = super_type
+		template.ClassName = sub_type or super_type
+	end
+	
+	return template
+end
+
 do
 	local function checkfield(tbl, key, def)
 		tbl[key] = tbl[key] or def
@@ -27,7 +38,9 @@ do
 		
 		prototype.RebuildMetatables()
 		
-		prototype.UpdateObjects(meta)
+		if RELOAD then
+			prototype.UpdateObjects(meta)
+		end
 		
 		return super_type, sub_type
 	end
@@ -124,23 +137,102 @@ function prototype.GetAllRegistered()
 	return out
 end
 
-function prototype.Delegate(meta, key, func_name, func_name2)
-	if not func_name2 then func_name2 = func_name end
+function prototype.CreateObject(meta, override, skip_gc_callback)
+	override = override or {}
 	
-	meta[func_name] = function(self, ...)
-		return self[key][func_name2](self[key], ...)
+	if type(meta) == "string" then
+		meta = prototype.GetRegistered(meta)
+	end
+	
+	-- this has to be done in order to ensure we have the prepared metatable with bases
+	meta = prototype.GetRegistered(meta.Type, meta.ClassName) or meta
+		
+	local self = setmetatable(override, table.copy(meta))
+		
+	if not skip_gc_callback then
+		utility.SetGCCallback(self, function(self)
+			if self:IsValid() then 
+				self:Remove() 
+			end
+			prototype.created_objects[self] = nil
+		end)
+	end
+	
+	--print(meta, "!!!")
+	
+	self:SetDebugTrace(debug.trace(true))
+	
+	prototype.created_objects = prototype.created_objects or utility.CreateWeakTable()
+	prototype.created_objects[self] = self
+	
+	self:SetCreationTime(os.clock())
+	
+	return self
+end
+
+function prototype.CreateDerivedObject(super_type, sub_type, override, skip_gc_callback)
+    local meta = prototype.GetRegistered(super_type, sub_type)
+	
+    if not meta then
+        logf("tried to create unknown %s %q!\n", super_type or "no type", sub_type or "no class")
+        return
+    end
+
+	return prototype.CreateObject(meta, override, skip_gc_callback)
+end
+
+function prototype.SafeRemove(obj)
+	if hasindex(obj) and obj.IsValid and obj.Remove and obj:IsValid() then
+		obj:Remove()
 	end
 end
 
-function prototype.GetSetDelegate(meta, func_name, def, key)
-	local get = "Get" .. func_name
-	local set = "Set" .. func_name
-	prototype.GetSet(meta, func_name, def)
-	prototype.Delegate(meta, key, get)
-	prototype.Delegate(meta, key, set)
+function prototype.GetCreated(sorted, super_type, sub_type)
+	if sorted then
+		local out = {}
+		for k,v in pairs(prototype.created_objects) do
+			if (not super_type or v.Type == super_type) and (not sub_type or v.ClassName == sub_type) then
+				table.insert(out, v)
+			end
+		end
+		table.sort(out, function(a, b) return a.creation_time < b.creation_time end)
+		return out
+	end
+	return prototype.created_objects or {}
 end
 
-include("base_template.lua", prototype)
+function prototype.UpdateObjects(meta)	
+	if type(meta) == "string" then
+		meta = prototype.GetRegistered(meta)
+	end
+	
+	if not meta then return end
+	
+	for key, obj in pairs(prototype.GetCreated()) do
+		if obj.Type == meta.Type and obj.ClassName == meta.ClassName then
+			for k, v in pairs(meta) do
+				-- update entity functions only
+				-- updating variables might mess things up
+				if type(v) == "function" and k:sub(1, 2) ~= "On" then
+					obj[k] = v
+				end
+			end
+		end
+	end	
+end
+
+function prototype.RemoveObjects(super_type, sub_type)
+	sub_type = sub_type or super_type
+	for _, obj in pairs(prototype.GetCreated()) do
+		if obj.Type == super_type and obj.ClassName == sub_type then
+			if obj:IsValid() then
+				obj:Remove()
+			end
+		end
+	end
+end
+
+include("base_object.lua", prototype)
 include("get_is_set.lua", prototype)
 include("templates/*", prototype)
 include("null.lua", prototype)

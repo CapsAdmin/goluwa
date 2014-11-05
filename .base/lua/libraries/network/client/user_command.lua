@@ -188,3 +188,5 @@ if SERVER then
 		packet.Send("user_command", buffer)
 	end)
 end 
+
+prototype.UpdateObjects(META)

@@ -96,15 +96,15 @@ function META:GetTexture(type)
 	return render.GetErrorTexture()
 end
 
-function META:Remove()
+function META:OnRemove()
 	gl.DeleteFramebuffers(1, ffi.new("GLuint[1]", self.id))
 	
 	for k, v in pairs(self.buffers) do
 		gl.DeleteRenderbuffers(1, ffi.new("GLuint[1]", v.id))
 	end
-		
-	prototype.MakeNULL(self)
 end
+
+prototype.Register(META)
 
 function render.CreateFrameBuffer(width, height, format)
 	if not render.CheckSupport("GenFramebuffer") then return NULL end

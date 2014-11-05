@@ -24,3 +24,5 @@ function META:Paste(str)
 		end
 	end
 end
+
+prototype.UpdateObjects(META)

@@ -228,3 +228,5 @@ function META:StringTagsToTable(str)
 	
 	return chunks
 end
+
+prototype.UpdateObjects(META)

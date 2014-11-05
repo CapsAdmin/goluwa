@@ -811,6 +811,8 @@ do -- create data for vertex buffer
 	function META:CreateVertexBuffer(vertices, indices, is_valid_table)
 		return render.CreateVertexBuffer(self:GetVertexAttributes(), self:CreateBuffersFromTable(vertices, indices, is_valid_table))
 	end
+	
+	prototype.Register(META)
 end
 
 function render.RebuildShaders()

@@ -397,3 +397,5 @@ include("clipboard.lua", META)
 include("input.lua", META)
 include("drawing.lua", META)
 include("test.lua", META)
+
+prototype.Register(META)

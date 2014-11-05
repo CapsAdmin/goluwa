@@ -1,8 +1,6 @@
 local clients = _G.clients or {}
 
-local META = prototype.CreateTemplate("client")
-
-include("client/client.lua", META)
+include("client/client.lua")
 
 clients.active_clients = clients.active_clients or {}
 clients.local_client = clients.local_client or NULL
@@ -39,7 +37,7 @@ function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
 		return self
 	end
 	
-	local self = prototype.CreateObject(META)
+	local self = prototype.CreateObject("client")
 		
 	self:SetUniqueID(uniqueid)
 	
@@ -121,6 +119,8 @@ do -- filter
 	function clients.CreateFilter()
 		return prototype.CreateObject(META, {clients = {}}, true)
 	end
+	
+	prototype.Register(META)
 end
 
 packet.ExtendBuffer(

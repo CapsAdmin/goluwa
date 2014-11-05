@@ -647,3 +647,5 @@ function META:Invalidate()
 		self:OnInvalidate()
 	end
 end
+
+prototype.UpdateObjects(META)

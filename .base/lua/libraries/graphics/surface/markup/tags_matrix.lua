@@ -273,3 +273,5 @@ META.tags.matrix =
 		render.PopWorldMatrix()
 	end,
 }
+
+prototype.UpdateObjects(META)

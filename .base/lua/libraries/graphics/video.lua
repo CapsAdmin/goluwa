@@ -28,6 +28,8 @@ function META:Draw(x, y)
 	surface.DrawRect(x, y, tex.w, tex.h)
 end
 
+prototype.Register(META)
+
 local video = {}
 	
 function video.CreateGif(path)

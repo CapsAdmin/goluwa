@@ -169,3 +169,5 @@ function META:Enter()
 
 	self:SetCaretPos(x, y + 1, true)
 end
+
+prototype.UpdateObjects(META)

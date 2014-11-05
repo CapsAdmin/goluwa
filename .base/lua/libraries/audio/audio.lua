@@ -637,6 +637,8 @@ do -- source
 			end
 		end
 	end
+	
+	prototype.Register(META)
 end
 
 do -- buffer
@@ -680,6 +682,8 @@ do -- buffer
 
 		return nil, 0
 	end
+	
+	prototype.Register(META)
 end
 
 do -- effect
@@ -717,6 +721,8 @@ do -- effect
 	function META:GetParams()
 		return self.params
 	end
+	
+	prototype.Register(META)
 end
 
 do -- filter
@@ -739,6 +745,8 @@ do -- filter
 		local ADD_FUNCTION = GET_BINDER(META, "Filter")
 		ADD_FUNCTION("Type", "i", al.e.AL_FILTER_TYPE)
 	end
+	
+	prototype.Register(META)
 end
 
 do -- auxiliary effect slot
@@ -758,6 +766,8 @@ do -- auxiliary effect slot
 	function META:GetParams()
 		return self.params
 	end
+	
+	prototype.Register(META)
 end
 
 _G.Sound = audio.CreateSource
@@ -849,6 +859,7 @@ do -- microphone
 		return self
 	end
 
+	prototype.Register(META)
 end
 
 audio.decoders = audio.decoders or {}

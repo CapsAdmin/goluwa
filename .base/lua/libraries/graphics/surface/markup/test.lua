@@ -105,3 +105,5 @@ end
 Self publishing
 (Possibly email address or contact data)]])
 end
+
+prototype.UpdateObjects(META)
