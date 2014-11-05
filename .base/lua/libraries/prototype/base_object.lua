@@ -8,11 +8,17 @@ prototype.GetSet(META, "PropertyIcon", "")
 prototype.GetSet(META, "Name", "")
 
 function META:__tostring()
+	local additional_info = self:__tostring2()
+	
 	if self.ClassName ~= self.Type then
-		return ("%s:%s[%p]"):format(self.Type, self.ClassName, self)
+		return ("%s:%s[%p]%s"):format(self.Type, self.ClassName, self, additional_info)
 	else
-		return ("%s[%p]"):format(self.Type, self)
+		return ("%s[%p]%s"):format(self.Type, self, additional_info)
 	end
+end
+
+function META:__tostring2()
+	return ""
 end
 
 function META:IsValid()

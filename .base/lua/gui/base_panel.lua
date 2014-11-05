@@ -4,8 +4,8 @@ local PANEL = {}
 PANEL.ClassName = "base"
 PANEL.Internal = true
 
-function PANEL:__tostring()
-	return string.format("%s[%s][%i]", self.Type, self.ClassName, self.aahh_id or 0)
+function PANEL:__tostring2()
+	return string.format("[%i]", self.aahh_id or 0)
 end
 
 gui.GetSet(PANEL, "Position", Vec2())

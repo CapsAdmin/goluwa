@@ -195,7 +195,7 @@ function prototype.GetCreated(sorted, super_type, sub_type)
 				table.insert(out, v)
 			end
 		end
-		table.sort(out, function(a, b) return a.creation_time < b.creation_time end)
+		table.sort(out, function(a, b) return a:GetCreationTime() < b:GetCreationTime() end)
 		return out
 	end
 	return prototype.created_objects or {}
