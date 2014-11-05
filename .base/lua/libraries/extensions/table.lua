@@ -175,13 +175,24 @@ end
 do -- table copy
 	local lookup_table = {}
 	
+		-- this is so annoying but there's not much else i can do
+	local function has_copy(obj)
+		assert(type(obj.__copy) == "function")
+	end
+	
 	local function copy(obj, skip_meta)
 	
-		if hasindex(obj) and obj.Copy and typex(obj) ~= "table" then
-			return obj:Copy()
+		local t = type(obj)
+	
+		if t == "number" or t == "string" or t == "function" or t == "boolean" then
+			return obj
+		end
+		
+		if pcall(has_copy, obj) then
+			return obj:__copy()
 		elseif lookup_table[obj] then
 			return lookup_table[obj]
-		elseif type(obj) == "table" then
+		elseif t == "table" then		
 			local new_table = {}
 			
 			lookup_table[obj] = new_table
@@ -190,7 +201,7 @@ do -- table copy
 				new_table[copy(key, skip_meta)] = copy(val, skip_meta)
 			end
 			
-			if skip_meta then
+			if skip_meta then			
 				return new_table
 			end
 			
@@ -207,7 +218,7 @@ do -- table copy
 	end
 
 	function table.copy(obj, skip_meta)
-		lookup_table = {}
+		table.clear(lookup_table)
 		return copy(obj, skip_meta)
 	end
 end

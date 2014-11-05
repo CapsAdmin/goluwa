@@ -41,6 +41,10 @@ do -- texture object
 		return ("[%s]"):format(self.id)
 	end
 	
+	function META:__copy()
+		return self
+	end
+	
 	function META:GetSize()
 		return self.size
 	end

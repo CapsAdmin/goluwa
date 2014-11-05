@@ -244,6 +244,7 @@ function structs.AddOperator(META, operator, ...)
 					a.KEY
 				)
 			end
+		META.__copy = META.Copy
 		]==]
 		
 		lua = parse_args(META, lua, ", ")

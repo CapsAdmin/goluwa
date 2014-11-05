@@ -19,6 +19,10 @@ do
 	function NULL:__tostring()
 		return "NULL"
 	end
+	
+	function NULL:__copy()
+		return self
+	end
 		
 	function NULL:__index(key)		
 		if type(key) == "string" and key:sub(0, 2) == "Is" then

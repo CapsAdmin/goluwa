@@ -137,6 +137,13 @@ function prototype.GetAllRegistered()
 	return out
 end
 
+local function remove_callback(self)
+	if self:IsValid() then 
+		self:Remove() 
+	end
+	prototype.created_objects[self] = nil
+end
+
 function prototype.CreateObject(meta, override, skip_gc_callback)
 	override = override or {}
 	
@@ -147,25 +154,17 @@ function prototype.CreateObject(meta, override, skip_gc_callback)
 	-- this has to be done in order to ensure we have the prepared metatable with bases
 	meta = prototype.GetRegistered(meta.Type, meta.ClassName) or meta
 		
-	local self = setmetatable(override, table.copy(meta))
+	local self = setmetatable(override, table.copy(meta, true))
 		
 	if not skip_gc_callback then
-		utility.SetGCCallback(self, function(self)
-			if self:IsValid() then 
-				self:Remove() 
-			end
-			prototype.created_objects[self] = nil
-		end)
+		utility.SetGCCallback(self, remove_callback)
 	end
-	
-	--print(meta, "!!!")
-	
-	self:SetDebugTrace(debug.trace(true))
+		
+	self:SetDebugTrace(debug.traceback())
+	self:SetCreationTime(os.clock())
 	
 	prototype.created_objects = prototype.created_objects or utility.CreateWeakTable()
 	prototype.created_objects[self] = self
-	
-	self:SetCreationTime(os.clock())
 	
 	return self
 end
