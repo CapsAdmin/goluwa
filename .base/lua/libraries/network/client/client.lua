@@ -23,8 +23,8 @@ function META:GetNick()
 	return self.nv.Nick or "PubePurse"
 end
 
-function META:__tostring()
-	return string.format("client[%s][%s]", self:GetName(), self:GetUniqueID())
+function META:__tostring2()
+	return string.format("[%s][%s]", self:GetName(), self:GetUniqueID())
 end
 
 function META:GetName()	

@@ -321,7 +321,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	local META = prototype.CreateTemplate("audio_" .. type2)
 
 	local fmt = type2 .. "[%i]"
-	function META:__tostring()
+	function META:__tostring2()
 		return (fmt):format(self.id)
 	end
 

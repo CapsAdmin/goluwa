@@ -20,8 +20,8 @@ prototype.GetSet(PANEL, "LayoutParentOnLayout", false)
 prototype.GetSet(PANEL, "VisibilityPanel", NULL)
 prototype.GetSet(PANEL, "NoDraw", false)
 
-function PANEL:__tostring()
-	return ("panel:%s[%p][%s %s %s %s][%s]"):format(self.ClassName, self, self.Position.x, self.Position.y, self.Size.w, self.Size.h, self.layout_count)
+function PANEL:__tostring2()
+	return ("[%s %s %s %s][%s]"):format(self.Position.x, self.Position.y, self.Size.w, self.Size.h, self.layout_count)
 end
 
 function PANEL:IsWorld()

@@ -150,8 +150,8 @@ do -- tcp socket meta
 			}
 		end
 
-		function CLIENT:__tostring()
-			return string.format("client_%s[%s][%s]", self.socket_type, self:GetIP() or "none", self:GetPort() or "0")
+		function CLIENT:__tostring2()
+			return string.format("[%s][%s][%s]", self.socket_type, self:GetIP() or "none", self:GetPort() or "0")
 		end
 
 		function CLIENT:DebugPrintf(fmt, ...)
@@ -488,8 +488,8 @@ do -- tcp socket meta
 			}
 		end
 
-		function SERVER:__tostring()
-			return string.format("server_%s[%s][%s]", self.socket_type, self:GetIP() or "nil", self:GetPort() or "nil")
+		function SERVER:__tostring2()
+			return string.format("[%s][%s][%s]", self.socket_type, self:GetIP() or "nil", self:GetPort() or "nil")
 		end
 
 		function SERVER:DebugPrintf(fmt, ...)

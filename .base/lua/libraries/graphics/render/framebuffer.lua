@@ -3,8 +3,8 @@ local render = (...) or _G.render
 
 local META = prototype.CreateTemplate("framebuffer")
 
-function META:__tostring()
-	return ("frame_buffer[%i]"):format(self.id)
+function META:__tostring2()
+	return ("[%i]"):format(self.id)
 end
 
 do

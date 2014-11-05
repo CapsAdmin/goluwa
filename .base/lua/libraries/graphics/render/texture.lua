@@ -37,8 +37,8 @@ do -- texture object
 
 	local META = prototype.CreateTemplate("texture")
 	
-	function META:__tostring()
-		return ("texture[%s]"):format(self.id)
+	function META:__tostring2()
+		return ("[%s]"):format(self.id)
 	end
 	
 	function META:GetSize()
