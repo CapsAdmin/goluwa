@@ -61,11 +61,35 @@ do
 	end
 end
 
+do -- serializing
+	function META:SetStorableTable(tbl)
+		for _, info in ipairs(prototype.GetStorableVariables(self)) do
+			if tbl[info.var_name] then
+				self[info.set_name](self, tbl[info.var_name])
+			end
+		end
+	end
+	
+	function META:GetStorableTable()
+		local out = {}
+		
+		for _, info in ipairs(prototype.GetStorableVariables(self)) do
+			out[info.var_name] = self[info.get_name](self)
+		end
+		
+		return table.copy(out)
+	end
+end
+
 do -- call on remove
 	META.call_on_remove = {}
 
 	function META:CallOnRemove(callback, id)
 		id = id or callback
+		
+		if type(callback) == "table" and callback.Remove then
+			callback = function() prototype.SafeRemove(callback) end
+		end
 		
 		self.call_on_remove[id] = callback
 	end
