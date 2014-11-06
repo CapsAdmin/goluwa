@@ -612,6 +612,7 @@ function steam.LoadMap(path, callback)
 		entities.SafeRemove(steam.bsp_world)
 		
 		steam.bsp_world = entities.CreateEntity("clientside")
+		steam.bsp_world:SetName(path:match(".+/(.+)%.bsp"))
 		
 		if CLIENT then 
 			steam.bsp_world:SetModel(bsp_mesh) 
@@ -631,6 +632,7 @@ function steam.LoadMap(path, callback)
 					world.Set("ambient_lighting", Color(info._ambient.r, info._ambient.g, info._ambient.b))
 				elseif info.classname:lower():find("light") and info._light then		
 					local ent = entities.CreateEntity("light", steam.bsp_world)
+					ent:SetName(info.classname)
 					local pos = info.origin * 0.0254
 					ent:SetPosition(Vec3(-pos.y, pos.x, pos.z))
 					
@@ -648,6 +650,7 @@ function steam.LoadMap(path, callback)
 			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
 				if vfs.IsFile(info.model) then
 					local ent = entities.CreateEntity("clientside", steam.bsp_world)
+					ent:SetName(info.classname)
 					ent:SetModelPath(info.model)
 					local pos = info.origin * 0.0254
 					ent:SetPosition(Vec3(-pos.y, pos.x, pos.z))
@@ -662,7 +665,7 @@ function steam.LoadMap(path, callback)
 		
 
 		local count = #bsp_mesh.sub_models
-		for i, model in ipairs(bsp_mesh.sub_models) do	
+		for i_, model in ipairs(bsp_mesh.sub_models) do	
 			local triangles = ffi.new("unsigned int[?]", #model.vertices)
 			for i = 0, #model.vertices - 1 do triangles[i] = i end
 			
@@ -700,6 +703,7 @@ function steam.LoadMap(path, callback)
 			}
 			
 			local chunk = entities.CreateEntity("physical", steam.bsp_world)
+			chunk:SetName("physics chunk " .. i_)
 			chunk:SetPhysicsModel(mesh)
 			chunk:InitPhysicsTriangles(true)
 			chunk:SetMass(0)
