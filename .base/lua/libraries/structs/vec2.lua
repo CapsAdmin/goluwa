@@ -163,7 +163,7 @@ function META:ToWorld(pos, ang, fov, w, h)
     local upw = ang:GetUp()
 
     --Then convert vec to proper world coordinates and return it
-	local dir = (fwd * d) + (rgt * (self.x - 0.5 * w)) + (upw * (0.5 * h - self.y))
+	local dir = (fwd * d) + (rgt * (0.5 * w - self.x)) + (upw * (0.5 * h - self.y))
 	dir:Normalize()
     return dir
 end
