@@ -210,8 +210,6 @@ function editor.Open()
 		
 		event.Call("EditorSelectEentity", node.ent)
 		editor.selected_ent = node.ent
-		
-		print(node.ent)
 	end
 	
 	div:SetDividerPosition(gui2.world:GetHeight()/2) 
@@ -258,7 +256,6 @@ function editor.SelectEntity(ent)
 end
 
 input.Bind("e+left_control", "toggle_editor")
-input.Bind("e+left_alt", "toggle_focus")
 
 console.AddCommand("close_editor", editor.Close)
 console.AddCommand("toggle_editor", editor.Toggle)
