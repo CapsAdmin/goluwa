@@ -4,6 +4,7 @@ local S = gui2.skin.scale
 do -- tree node
 	local PANEL = {}
 
+	PANEL.Base = "button"
 	PANEL.ClassName = "tree_node"
 	
 	prototype.GetSet(PANEL, "Expand", true)
@@ -11,6 +12,8 @@ do -- tree node
 	PANEL.nodes = {}
 
 	function PANEL:Initialize()	
+		prototype.GetRegistered(self.Type, "button").Initialize(self)
+
 		self:SetNoDraw(true)
 
 		local button = gui2.CreatePanel("text_button", self)
@@ -19,19 +22,7 @@ do -- tree node
 		button:SetStyleTranslation("button_inactive", "gradient")
 		button:SetStyle("gradient")
 		button:SetColor(Color(1,1,1,0))
-		--button:SetNoDraw(true)
-		button.OnPress = function()
-			self.button:SetColor(Color(1,1,1,1))
-			--self.button:SetNoDraw(false)
-			for k, v in ipairs(self.tree:GetChildren()) do
-				if v ~= self then
-					v.button:SetColor(Color(1,1,1,0))
-					--self.button:SetNoDraw(true)
-				end
-			end
-			self.tree:SetSelectedNode(self)
-			self.tree:OnNodeSelect(self)
-		end
+		button:SetIgnoreMouse(true)
 		self.button = button
 
 		local exp = gui2.CreatePanel("button", self)
@@ -52,18 +43,28 @@ do -- tree node
 		self.image = img
 	end
 	
+	function PANEL:OnPress()
+		self.button:SetColor(Color(1,1,1,1))
+		--self.button:SetNoDraw(false)
+		for k, v in ipairs(self.tree:GetChildren()) do
+			if v ~= self then
+				v.button:SetColor(Color(1,1,1,0))
+				--self.button:SetNoDraw(true)
+			end
+		end
+		self.tree:SetSelectedNode(self)
+		self.tree:OnNodeSelect(self)
+	end
+	
 	function PANEL:OnMouseEnter(...)
+		prototype.GetRegistered(self.Type, "button").OnMouseEnter(self, ...)
 		self.button:SetHighlight(true)
-		self.button:OnMouseEnter(...)
+		self.button:OnMouseEnter()
 	end
 	
 	function PANEL:OnMouseExit(...)
+		prototype.GetRegistered(self.Type, "button").OnMouseExit(self, ...)
 		self.button:SetHighlight(false)
-		self.button:OnMouseExit(...)
-	end
-	
-	function PANEL:OnMouseInput(...)
-		self.button:OnMouseInput(...)
 	end
 	
 	function PANEL:OnExpand()
@@ -192,7 +193,7 @@ do
 	end
 	
 	function PANEL:SelectNode(node)
-		node.button:OnPress()
+		node:OnPress()
 	end
 	
 	function PANEL:OnLayout()
