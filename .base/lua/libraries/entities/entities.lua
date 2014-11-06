@@ -4,6 +4,7 @@ prototype.SetupComponents("light", {"transform", "light"}, "textures/silkicons/l
 prototype.SetupComponents("clientside", {"transform", "mesh"}, "textures/silkicons/shape_square.png")
 prototype.SetupComponents("physical", {"transform", "mesh", "physics"}, "textures/silkicons/shape_handles.png")
 prototype.SetupComponents("networked", {"transform", "mesh", "physics", "networked"}, "textures/silkicons/server_connect.png")
+prototype.SetupComponents("world", {"world"}, "textures/silkicons/world.png")
 
 local entities = _G.entities or {}
 
@@ -11,8 +12,8 @@ entities.active_entities = entities.active_entities or {}
 
 local id = 1
 
-function entities.CreateEntity(name, ...)
-	local self = prototype.CreateEntity(name, ...)
+function entities.CreateEntity(name, parent)
+	local self = prototype.CreateEntity(name, parent or entities.world)
 		
 	self.Id = id
 		
@@ -41,6 +42,16 @@ function entities.SafeRemove(ent)
 	if hasindex(ent) and ent.IsValid and ent.Remove and ent:IsValid() then
 		ent:Remove()
 	end
+end
+
+do -- world
+	entities.world = NULL
+	
+	event.AddListener("GBufferInitialized", "world_parameters", function()
+		if not entities.world:IsValid() then
+			entities.world = entities.CreateEntity("world")
+		end
+	end)
 end
 
 return entities

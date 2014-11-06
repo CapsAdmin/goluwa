@@ -105,11 +105,15 @@ function COMPONENT:RebuildMatrix()
 		self.TRMatrix:SetRotation(rot)
 		
 		if self.Entity:HasParent() then
-			self.temp_matrix = self.temp_matrix or Matrix44()
+			local parent_transform = self.Entity.Parent:GetComponent("transform")
 			
-			--self.TRMatrix = self.TRMatrix * self.Parent.TRMatrix
-			self.TRMatrix:Multiply(self.Entity.Parent:GetComponent("transform").TRMatrix, self.temp_matrix)
-			self.TRMatrix, self.temp_matrix = self.temp_matrix, self.TRMatrix
+			-- todo, skip to a higher parent?
+			if parent_transform:IsValid() then
+				self.temp_matrix = self.temp_matrix or Matrix44()				
+				--self.TRMatrix = self.TRMatrix * self.Parent.TRMatrix
+				self.TRMatrix:Multiply(parent_transform.TRMatrix, self.temp_matrix)
+				self.TRMatrix, self.temp_matrix = self.temp_matrix, self.TRMatrix
+			end
 		end
 		
 		self.rebuild_tr_matrix = false

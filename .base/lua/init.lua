@@ -667,7 +667,6 @@ do -- libraries
 
 	-- other
 	entities = include("libraries/entities/entities.lua") -- entity component system
-	world = include("libraries/entities/world.lua") -- entity component system
 	physics = include("libraries/entities/physics.lua") -- bullet physics
 	steam = include("libraries/steam/steam.lua")
 
