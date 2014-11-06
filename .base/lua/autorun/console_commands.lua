@@ -1,10 +1,14 @@
-console.AddCommand("toggle_focus", function()
-	if window.GetMouseTrapped() then
-		window.SetMouseTrapped(false)
-	else
-		window.SetMouseTrapped(true)
-	end
-end)
+do
+	input.Bind("e+left_alt", "toggle_focus")
+
+	console.AddCommand("toggle_focus", function()
+		if window.GetMouseTrapped() then
+			window.SetMouseTrapped(false)
+		else
+			window.SetMouseTrapped(true)
+		end
+	end)
+end
 
 do
 	local source = NULL
