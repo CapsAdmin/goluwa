@@ -47,7 +47,7 @@ event.AddListener("DrawHUD", "mindwave", function()
 	local x, y = 5, 5
 	
 	for k,v in pairs(eeg_power) do
-		surface.SetTextPos(x, y)
+		surface.SetTextPosition(x, y)
 		surface.DrawText(k .. " = " .. v)
 		y = y + 20
 	end

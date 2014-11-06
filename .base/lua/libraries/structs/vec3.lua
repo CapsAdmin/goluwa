@@ -121,13 +121,13 @@ function META:GetVolume()
 	return self.x * self.y * self.z
 end
 
-function META:GetAng3()
+function META:GetAngles()
 	local n = self:GetNormalized()
 	
 	local p = math.atan2(math.sqrt((n.x ^ 2) + (n.y ^ 2)), n.z)
 	local y = math.atan2(self.y, self.x)
 	
-	return structs.Ang3(p,y,0)
+	return structs.Ang3(p, y, 0)
 end
 
 function META:GetRotated(axis, ang)
@@ -163,11 +163,11 @@ Returns x, y, iVisibility.
 
 
 function META:ToScreen(pos, ang, w, h, fov)
-	pos = pos or render.GetCamPos()
-	ang = ang or render.GetCamAng():GetRad()
+	pos = pos or render.GetCameraPosition()
+	ang = ang or render.GetCameraAngles()
 	w = w or render.GetWidth()
 	h = h or render.GetHeight()
-	fov = fov or math.rad(render.GetCamFOV())
+	fov = fov or render.GetCamFOV()
 
 	local dir = pos - self
 	dir:Normalize()

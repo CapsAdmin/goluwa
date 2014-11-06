@@ -145,7 +145,7 @@ do -- orientation
 		return self:HasParent() and self:GetParent():GetHeight() or self:GetHeight()
 	end
 	
-	function PANEL:SetWorldPos(pos)		
+	function PANEL:SetWorldPosition(pos)		
 		if not self.parent_list then self:BuildParentList() end
 		
 		for _, parent in ipairs(self.parent_list) do			
@@ -155,7 +155,7 @@ do -- orientation
 		self:SetPosition(pos)
 	end
 
-	function PANEL:GetWorldPos()
+	function PANEL:GetWorldPosition()
 		local pos = self:GetPosition()	
 	
 		if not self.parent_list then self:BuildParentList() end
@@ -587,7 +587,7 @@ do -- dock
 end
 
 function PANEL:IsWorldPosInside(a)
-	local b, s = self:GetWorldPos(), self:GetSize()
+	local b, s = self:GetWorldPosition(), self:GetSize()
 	
 	if self:HasParent() and not self.Parent:IsWorldPosInside(a) then
 		return false
@@ -603,11 +603,11 @@ function PANEL:IsWorldPosInside(a)
 	return false
 end
 
-function PANEL:GetMousePos()
-	local pos = gui.GetMousePos()
+function PANEL:GetMousePosition()
+	local pos = gui.GetMousePosition()
 
 	if self:IsWorldPosInside(pos) then
-		return pos - self:GetWorldPos()
+		return pos - self:GetWorldPosition()
 	end
 
 	return Vec2()
@@ -764,13 +764,13 @@ end
 function PANEL:VisibleInsideParent()	
 	if not self:GetOffset():IsZero() then return true end
 
-	local apos = self:GetWorldPos()
+	local apos = self:GetWorldPosition()
 	local asiz = self:GetSize()
 	
 	if not self.parent_list then self:BuildParentList() end
 	
 	for _, parent in ipairs(self.parent_list) do
-		local bpos = parent:GetWorldPos()
+		local bpos = parent:GetWorldPosition()
 		local bsiz = parent:GetSize()	
 		
 		if apos.x + asiz.w < bpos.x or apos.y + asiz.h < bpos.y then
@@ -821,14 +821,14 @@ function PANEL:Think()
 		self:RequestLayout(true)
 	end
 
-	local mousepos = gui.GetMousePos()
+	local mousepos = gui.GetMousePosition()
 			
 --		if self.OnMouseMove then
 		-- Check if the mouse has moved
 		if not self.lastmousepos or self.lastmousepos ~= mousepos then
 			self.lastmousepos = mousepos
 			-- Get local position
-			local localpos = mousepos - self:GetWorldPos()
+			local localpos = mousepos - self:GetWorldPosition()
 			
 			-- Check if it is in panel
 			if self:IsWorldPosInside(mousepos) then				

@@ -64,7 +64,7 @@ if CLIENT then
 				
 				tex_shadow_map = "sampler2D",
 				
-				cam_pos = {vec3 = render.GetCamPos},
+				cam_pos = {vec3 = render.GetCameraPosition},
 				light_pos = Vec3(0,0,0),
 				
 				screen_size = {vec2 = render.GetScreenSize},
@@ -219,7 +219,7 @@ if CLIENT then
 				surface.SetTexture(tex)
 				surface.DrawRect(x, y, w, h)
 				
-				surface.SetTextPos(x, y + 5)
+				surface.SetTextPosition(x, y + 5)
 				surface.DrawText(tostring(name))
 				
 				if i%size == 0 then
@@ -292,7 +292,7 @@ if CLIENT then
 			-- setup the view matrix
 			local view = Matrix44()
 			view:Rotate(ang.r, 0, 0, 1)
-			view:Rotate(ang.p + 90, 1, 0, 0)
+			view:Rotate(ang.p + math.pi/2, 1, 0, 0)
 			view:Rotate(ang.y, 0, 0, 1)
 			view:Translate(pos.y, pos.x, pos.z)
 			
@@ -364,8 +364,8 @@ if RELOAD then
 	do return end
 	event.Delay(0.1, function()
 	world.sun:SetShadow(true)
-	world.sun:SetPosition(render.GetCamPos()) 
-	world.sun:SetAngles(render.GetCamAng()) 
+	world.sun:SetPosition(render.GetCameraPosition()) 
+	world.sun:SetAngles(render.GetCameraAngles()) 
 	world.sun:SetFOV(render.GetCamFOV())
 	world.sun:SetSize(1000) 
 	end) 

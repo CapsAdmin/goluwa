@@ -21,7 +21,7 @@ function META:Update()
 	end
 
 	if self.caret_later_pos then
-		self:SetCaretPos(unpack(self.caret_later_pos))
+		self:SetCaretPosition(unpack(self.caret_later_pos))
 		self.caret_later_pos  = nil
 	end
 	
@@ -46,12 +46,12 @@ function META:Update()
 			
 			if START and END then
 				if self.caret_pos.i < END.i then
-					self.caret_shift_pos = self:CaretFromPos(END.x, END.y)
+					self.caret_shift_pos = self:CaretFromPosition(END.x, END.y)
 				else
-					self.caret_shift_pos = self:CaretFromPos(START.x, START.y)
+					self.caret_shift_pos = self:CaretFromPosition(START.x, START.y)
 				end
 			else
-				self.caret_shift_pos = self:CaretFromPos(self.caret_pos.x, self.caret_pos.y)
+				self.caret_shift_pos = self:CaretFromPosition(self.caret_pos.x, self.caret_pos.y)
 			end
 		end
 	else
@@ -105,7 +105,7 @@ function META:Draw()
 
 					local c = chunk.color
 					surface.SetColor(c.r, c.g, c.b, c.a)
-					surface.SetTextPos(chunk.x, chunk.y)
+					surface.SetTextPosition(chunk.x, chunk.y)
 					
 					surface.DrawText(chunk.val)
 				elseif chunk.type == "tag_stopper" then
@@ -238,7 +238,7 @@ end
 
 function META:DrawLineHighlight(y)
 	do return end
-	local start_chunk = self:CaretFromPos(0, y).char.chunk
+	local start_chunk = self:CaretFromPosition(0, y).char.chunk
 	surface.SetColor(1, 1, 1, 0.1)
 	surface.DrawRect(start_chunk.x, start_chunk.y, self.width, start_chunk.line_height)
 end

@@ -147,9 +147,9 @@ fFoV is the Field of View (FOV) of your camera in ___radians___
     Note: This must be nonzero or you will get a divide by zero error.
  ]]
 function META:ToWorld(pos, ang, fov, w, h)
-	pos = pos or render.GetCamPos()
-	ang = ang or render.GetCamAng():GetRad()
-	fov = fov or (math.rad(render.GetCamFOV()) + math.rad(15))
+	pos = pos or render.GetCameraPosition()
+	ang = ang or render.GetCameraAngles()
+	fov = fov or (render.GetCamFOV() + math.rad(15))
 	w = w or render.GetWidth()
 	h = h or render.GetHeight()
 	

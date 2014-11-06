@@ -1,11 +1,11 @@
 local META = (...) or prototype.GetRegistered("markup")
 
 function META:SelectStart(x, y)
-	self.select_start = self:CaretFromPos(x, y)
+	self.select_start = self:CaretFromPosition(x, y)
 end
 
 function META:SelectStop(x, y)
-	self.select_stop = self:CaretFromPos(x, y)
+	self.select_stop = self:CaretFromPosition(x, y)
 end
 
 function META:GetSelectStart()
@@ -33,25 +33,25 @@ function META:GetSelectStop()
 end
 
 function META:SelectAll()
-	self:SetCaretPos(0, 0)
+	self:SetCaretPosition(0, 0)
 	self:SelectStart(0, 0)
 	self:SelectStop(math.huge, math.huge)
 end
 
 function META:SelectCurrentWord()
-	local x, y = self:GetNextCharacterClassPos(-1, false)
+	local x, y = self:GetNextCharacterClassPosition(-1, false)
 	self:SelectStart(x - 1, y)
 
-	local x, y = self:GetNextCharacterClassPos(1, false)
+	local x, y = self:GetNextCharacterClassPosition(1, false)
 	self:SelectStop(x + 1, y)
 	
-	self:SetCaretPos(x + 1, y)
+	self:SetCaretPosition(x + 1, y)
 end
 
 function META:SelectCurrentLine()
 	self:SelectStart(0, self.caret_pos.y)
 	self:SelectStop(math.huge, self.caret_pos.y)
-	self:SetCaretPos(math.huge, self.caret_pos.y)
+	self:SetCaretPosition(math.huge, self.caret_pos.y)
 end
 
 function META:Unselect()
@@ -74,7 +74,7 @@ function META:GetText(tags)
 		self:Unselect()
 	end
 
-	self:SetCaretPos(caret.x, caret.y)
+	self:SetCaretPosition(caret.x, caret.y)
 
 	return str
 end
@@ -136,7 +136,7 @@ function META:DeleteSelection(skip_move)
 	if start then
 
 		if not skip_move then
-			self:SetCaretPos(start.x, start.y)
+			self:SetCaretPosition(start.x, start.y)
 		end
 
 		self.text = utf8.sub(self.text, 1, start.sub_pos - 1) .. utf8.sub(self.text, stop.sub_pos)

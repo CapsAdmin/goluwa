@@ -19,7 +19,7 @@ event.AddListener("Draw2D", "lol", function()
 	atlas:DebugDraw()
 	if wait(0.25) then icon = table.random(icons) end
 	atlas:Draw(icon, 650, 600)
-	surface.SetTextPos(650, 620)
+	surface.SetTextPosition(650, 620)
 	surface.DrawText(icon)
 end)
 print(atlas.pages)

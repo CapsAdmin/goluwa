@@ -192,7 +192,7 @@ event.AddListener("DrawHUD", "chathud", function()
 end)
 
 event.AddListener("MouseInput", "chathud", function(button, press)
-	chathud.MouseInput(button, press, window.GetMousePos():Unpack())
+	chathud.MouseInput(button, press, window.GetMousePosition():Unpack())
 end)
 
 include("tradingcard_emotes.lua")

@@ -316,7 +316,7 @@ do -- font
 		
 		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 		surface.Scale(sx, sy)
-		surface.SetTextPos(x, y)
+		surface.SetTextPosition(x, y)
 		surface.DrawText(text, r)
 		surface.Scale(-sx, -sy)
 	end
@@ -338,7 +338,7 @@ do -- font
 		surface.Scale(sx, sy)
 		
 		for i = 1, #lines do
-			surface.SetTextPos(x, y + (currentFont.Size+(currentFont.Size*125/100) * i))
+			surface.SetTextPosition(x, y + (currentFont.Size+(currentFont.Size*125/100) * i))
 			surface.DrawText(lines[i])
 		end
 		

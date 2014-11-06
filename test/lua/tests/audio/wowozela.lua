@@ -47,7 +47,7 @@ local smooth_pitch = 0
 
 event.AddListener("Draw2D", "wowozela", function(dt)
 	local size = window.GetSize()
-	local pos = window.GetMousePos()
+	local pos = window.GetMousePosition()
 	 
 	pitch = ((-pos.y + grid_size) / grid_size)
 	pitch = 5 ^ pitch

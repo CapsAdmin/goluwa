@@ -72,16 +72,16 @@ local function draw_branch(node, level, i, max, px, py, ppos, pw, ph)
 		local x, y = x + 4 - w*0.5, y - h*0.5
 		surface.SetColor(1,1,1,1)
 		
-		surface.SetTextPos(x, y)
+		surface.SetTextPosition(x, y)
 		surface.DrawText(node.name)
 		
-		surface.SetTextPos(x, y + offset)
+		surface.SetTextPosition(x, y + offset)
 		surface.DrawText("samples: " .. node.times_called)
 		
-		surface.SetTextPos(x, y + offset * 2)
+		surface.SetTextPosition(x, y + offset * 2)
 		surface.DrawText("children: " .. max)
 		
-		surface.SetTextPos(x, y + offset * 3)
+		surface.SetTextPosition(x, y + offset * 3)
 		surface.DrawText("parents: " .. table.count(node.parents))
 	end
 end

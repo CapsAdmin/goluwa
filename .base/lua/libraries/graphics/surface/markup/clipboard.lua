@@ -20,7 +20,7 @@ function META:Paste(str)
 		self:InvalidateEditedText()
 
 		if str:find("\n") then
-			self:SetCaretPos(math.huge, self.caret_pos.y + string.count(str, "\n"), true)
+			self:SetCaretPosition(math.huge, self.caret_pos.y + string.count(str, "\n"), true)
 		end
 	end
 end

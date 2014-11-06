@@ -630,9 +630,9 @@ function META:Invalidate()
 
 	-- preserve caret positions
 	if self.caret_pos then
-		self:SetCaretPos(self.caret_pos.x, self.caret_pos.y)
+		self:SetCaretPosition(self.caret_pos.x, self.caret_pos.y)
 	else
-		self:SetCaretPos(0, 0)
+		self:SetCaretPosition(0, 0)
 	end
 
 	if self.select_start then

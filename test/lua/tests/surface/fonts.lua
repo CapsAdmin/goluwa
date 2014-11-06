@@ -6,7 +6,7 @@ surface.CreateFont("lol", {
 event.AddListener("Draw2D", "lol", function()
 	surface.SetColor(1,1,1,1)
 	surface.SetFont("lol")
-	surface.SetTextPos(17, 30)
+	surface.SetTextPosition(17, 30)
 	surface.DrawText("empathize foolish self benefit start off preferred occasions")
 	
 	local w, h = surface.GetTextSize("empathize foolish self benefit start off preferred occasions")

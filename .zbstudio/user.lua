@@ -21,7 +21,7 @@ end
 
 function get_text()
 	local editor = GetEditor()
-	local pos = editor:GetCurrentPos()
+	local pos = editor:GetCurrentPosition()
 	-- don't do auto-complete in comments or strings.
 	-- the current position and the previous one have default style (0),
 	-- so we need to check two positions back.
@@ -245,11 +245,11 @@ do
 		-- refresh the output window to force recalculation of wrapped lines;
 		-- otherwise a wrapped part of the last line may not be visible.
 		out:Update(); out:Refresh()
-		out:GotoPos(out:GetLength())
+		out:GotoPosition(out:GetLength())
 	end
 
 	local function positionInLine(line)
-		return out:GetCurrentPos() - out:PositionFromLine(line)
+		return out:GetCurrentPosition() - out:PositionFromLine(line)
 	end
 
 	local function caretOnPromptLine(disallowLeftmost, line)
@@ -351,7 +351,7 @@ do
 		end
 
 		out:EmptyUndoBuffer() -- don't allow the user to undo shell text
-		out:GotoPos(out:GetLength())
+		out:GotoPosition(out:GetLength())
 		out:EnsureVisibleEnforcePolicy(out:GetLineCount()-1)
 	end
 
@@ -420,7 +420,7 @@ do
 
 					local promptText = getPromptText()
 					-- save the position in the prompt text to restore
-					local pos = out:GetCurrentPos()
+					local pos = out:GetCurrentPosition()
 					local text = promptText:sub(1, positionInLine(promptline))
 					if #text == 0 then return end
 
@@ -429,7 +429,7 @@ do
 					if match then
 						setPromptText(match)
 						-- restore the position to make it easier to find the next match
-						out:GotoPos(pos)
+						out:GotoPosition(pos)
 					end
 					return
 				elseif key == wx.WXK_ESCAPE then
@@ -474,10 +474,10 @@ do
 				else
 					-- move cursor to end if not already there
 					if not caretOnPromptLine() then
-						out:GotoPos(out:GetLength())
+						out:GotoPosition(out:GetLength())
 					-- check if the selection starts before the prompt line and reset it
 					elseif out:LineFromPosition(out:GetSelectionStart()) < getPromptLine() then
-						out:GotoPos(out:GetLength())
+						out:GotoPosition(out:GetLength())
 						out:SetSelection(out:GetSelectionEnd()+1,out:GetSelectionEnd())
 					end
 				end

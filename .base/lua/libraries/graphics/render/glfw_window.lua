@@ -49,12 +49,12 @@ do -- window meta
 	
 	local x, y = ffi.new(sdl and "int[1]" or "double[1]"), ffi.new(sdl and "int[1]" or "double[1]")
 	
-	function META:GetMousePos()
+	function META:GetMousePosition()
 		glfw.GetCursorPos(self.__ptr, x, y)			
 		return Vec2(x[0], y[0])
 	end
 
-	function META:SetMousePos(pos)
+	function META:SetMousePosition(pos)
 		glfw.SetCursorPos(self.__ptr, pos:Unpack())
 	end
 	
@@ -92,7 +92,7 @@ do -- window meta
 	end
 		 
 	function META:UpdateMouseDelta()	
-		local pos = self:GetMousePos()
+		local pos = self:GetMousePosition()
 	
 		if self.last_mpos then
 			self.mouse_delta = (pos - self.last_mpos)
@@ -101,7 +101,7 @@ do -- window meta
 		self.last_mpos = pos
 		
 		if self.mouse_trapped then
-			--self:SetMousePos(self:GetSize() / 2)
+			--self:SetMousePosition(self:GetSize() / 2)
 		end
 	end
 	
@@ -129,7 +129,7 @@ do -- window meta
 		
 	end
 	
-	function META:OnCursorPos(x, y)
+	function META:OnCursorPosition(x, y)
 
 	end
 	
@@ -340,7 +340,7 @@ do -- window meta
 					end)
 				elseif nice == "OnCursorPos" then
 					func(ptr, function(ptr, x, y)
-						if self[nice](self, x, y) ~= false then
+						if self:OnCursorPosition(self, x, y) ~= false then
 							event.Call(event_name, self, x, y)
 						end
 					end)

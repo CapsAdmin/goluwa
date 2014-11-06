@@ -32,7 +32,7 @@ event.CreateTimer("fb_update", 0, 0, function()
 			if input.IsMouseDown("button_1") then
 				surface.SetTexture(brush)
 				surface.SetColor(1, 1, 1, 1)
-				local x, y = surface.GetMousePos()
+				local x, y = surface.GetMousePosition()
 				local vx, vy = surface.GetMouseVel()
 				vx = vx * 100
 				vy = vy * 100

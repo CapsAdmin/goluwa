@@ -297,7 +297,7 @@ event.AddListener("Draw2D", "zsnow", function(dt)
 	
 	
 	--surface.SetFont("snow_font")
-	--surface.SetTextPos(50, 50)
+	--surface.SetTextPosition(50, 50)
 	--surface.DrawText("ANIMATION 2")
 	--local w,h = surface.GetTextSize("ANIMATION 2")
 	--surface.DrawRect(50,50,w,h)

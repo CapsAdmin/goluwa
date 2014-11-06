@@ -2,13 +2,13 @@ local PANEL = {}
 
 PANEL.ClassName = "slider"
 
-gui.GetSet(PANEL, "DragPos", Vec2())
+gui.GetSet(PANEL, "DragPosition", Vec2())
 gui.GetSet(PANEL, "LockX", false)
 gui.GetSet(PANEL, "LockY", false)
 
 
 function PANEL:Initialize()
-	self.DragPos = Vec2()
+	self.DragPosition = Vec2()
 	
 	local drag = gui.Create("draggable", self)
 	
@@ -21,8 +21,8 @@ function PANEL:Initialize()
 			drag:SetWidth(self:GetWidth() - 2)
 		end
 				
-		self:SetDragPos((drag:GetPosition() / (self:GetSize() - drag:GetSize())))
-		self:OnDrag(self.DragPos)
+		self:SetDragPosition((drag:GetPosition() / (self:GetSize() - drag:GetSize())))
+		self:OnDrag(self.DragPosition)
 	end 
 	
 	drag.OnDraw = function(s)
@@ -45,12 +45,12 @@ function PANEL:OnRequestLayout()
 	self.drag:SetSize(Vec2() + self:GetHeight() - 4)
 end
 
-function PANEL:SetDragPos(pos)
+function PANEL:SetDragPosition(pos)
 	if input.IsKeyDown("lctrl") then
 		pos = pos:Round(1)
 	end
 
-	self.DragPos = pos
+	self.DragPosition = pos
 	
 	self.drag:SetPosition(pos * (self:GetSize() - self.drag:GetSize()))
 	
@@ -67,18 +67,18 @@ function PANEL:OnMouseInput(button, press, pos, ...)
 	if button == "mwheel_up" then
 		pos = self.drag:GetPosition()
 		pos.y = pos.y - 1
-		self:SetDragPos(pos / (self:GetSize() - self.drag:GetSize()))
-		self:OnDrag(self.DragPos)
+		self:SetDragPosition(pos / (self:GetSize() - self.drag:GetSize()))
+		self:OnDrag(self.DragPosition)
 	elseif button == "mwheel_down" then
 		pos = self.drag:GetPosition()
 		pos.y = pos.y + 1
-		self:SetDragPos(pos / (self:GetSize() - self.drag:GetSize()))
-		self:OnDrag(self.DragPos)
+		self:SetDragPosition(pos / (self:GetSize() - self.drag:GetSize()))
+		self:OnDrag(self.DragPosition)
 	else	
 		if press then
-			self:SetDragPos(pos / (self:GetSize() - self.drag:GetSize()))
+			self:SetDragPosition(pos / (self:GetSize() - self.drag:GetSize()))
 			self.drag:OnMouseInput(button, press, self.drag:GetSize()/2, ...)
-			self:OnDrag(self.DragPos)
+			self:OnDrag(self.DragPosition)
 		end
 	end
 end
@@ -126,7 +126,7 @@ do -- label slider
 	function PANEL:SetValue(num)
 		self.Value = num
 		
-		self.slider:SetDragPos(Vec2(num / self.Max, 0))
+		self.slider:SetDragPosition(Vec2(num / self.Max, 0))
 	end
 	
 	function PANEL:SetText(str)

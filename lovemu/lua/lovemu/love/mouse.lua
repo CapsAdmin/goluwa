@@ -3,19 +3,19 @@ local love = (...) or _G.lovemu.love
 love.mouse = {}
 
 function love.mouse.setPosition(x, y)
-	window.SetMousePos(Vec2(x, y))
+	window.SetMousePosition(Vec2(x, y))
 end
 
 function love.mouse.getPosition()
-	return window.GetMousePos():Unpack()
+	return window.GetMousePosition():Unpack()
 end
 
 function love.mouse.getX()
-	return window.GetMousePos().x
+	return window.GetMousePosition().x
 end
 
 function love.mouse.getY()
-	return window.GetMousePos().y
+	return window.GetMousePosition().y
 end
 
 local Cursor = {}
@@ -73,7 +73,7 @@ function love.mouse.isDown(key)
 end
 
 event.AddListener("MouseInput","lovemu_mouse",function(key,press)
-	local x, y = window.GetMousePos():Unpack()
+	local x, y = window.GetMousePosition():Unpack()
 
 	key = mouse_keymap[key]
 	if press then

@@ -40,7 +40,7 @@ function window.Open(...)
 		return e.EVENT_DESTROY
 	end, {priority = -100000})
 
-	function wnd:OnCursorPos()
+	function wnd:OnCursorPosition()
 		if system then system.SetCursor(system.GetCursor()) end
 	end
 	

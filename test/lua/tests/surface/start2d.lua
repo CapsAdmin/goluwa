@@ -17,7 +17,7 @@ event.CreateTimer("updatefb", 0.1, function()
 			surface.Rotate(t*100)
 			
 			surface.SetWhiteTexture() 
-			local x, y = surface.GetMousePos()
+			local x, y = surface.GetMousePosition()
 			
 			x = x - 50
 			y = y - 50

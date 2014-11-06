@@ -1,16 +1,16 @@
 local META = (...) or prototype.GetRegistered("markup")
 
-function META:SetCaretPos(x, y, later)
+function META:SetCaretPosition(x, y, later)
 	if later then
 		self.caret_later_pos = {x,y}
 	else
-		self.caret_pos = self:CaretFromPos(x, y)
+		self.caret_pos = self:CaretFromPosition(x, y)
 	end
 end
 
-function META:GetCaretSubPos()
+function META:GetCaretSubPosition()
 	local caret = self.caret_pos
-	return self:GetSubPosFromPos(caret.x, caret.y)
+	return self:GetSubPosFromPosition(caret.x, caret.y)
 end
 
 function META:CaretFromPixels(x, y)
@@ -84,11 +84,11 @@ function META:CaretFromPixels(x, y)
 		h = data.h,
 		i = POS,
 		char = CHAR,
-		sub_pos = self:GetSubPosFromPos(CHAR.x, CHAR.y),
+		sub_pos = self:GetSubPosFromPosition(CHAR.x, CHAR.y),
 	}
 end
 
-function META:CaretFromPos(x, y)
+function META:CaretFromPosition(x, y)
 	x = x or 0
 	y = y or 0
 
@@ -145,7 +145,7 @@ function META:CaretFromPos(x, y)
 		w = data.w,
 		i = POS,
 		char = CHAR,
-		sub_pos = self:GetSubPosFromPos(CHAR.x, CHAR.y),
+		sub_pos = self:GetSubPosFromPosition(CHAR.x, CHAR.y),
 	}
 end
 
@@ -153,9 +153,9 @@ function META:AdvanceCaret(X, Y)
 
 	if self.ControlDown then
 		if X < 0 then
-			self:SetCaretPos(self:GetNextCharacterClassPos(-1))
+			self:SetCaretPosition(self:GetNextCharacterClassPosition(-1))
 		elseif X > 0 then
-			self:SetCaretPos(self:GetNextCharacterClassPos(1))
+			self:SetCaretPosition(self:GetNextCharacterClassPosition(1))
 		end
 	end
 
@@ -181,7 +181,7 @@ function META:AdvanceCaret(X, Y)
 	elseif X ~= math.huge and X ~= -math.huge then
 		x = x + X
 		
-		self.real_x = self:CaretFromPos(x, y).char.data.x
+		self.real_x = self:CaretFromPosition(x, y).char.data.x
 
 		-- move to next or previous line
 		if X > 0 and x > utf8.length(line) and #self.lines > 1 then
@@ -217,7 +217,7 @@ function META:AdvanceCaret(X, Y)
 			self.suppress_end_char = true
 		end
 
-		self:SetCaretPos(x, y)
+		self:SetCaretPosition(x, y)
 
 		self.suppress_end_char = false
 	end

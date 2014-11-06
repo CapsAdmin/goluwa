@@ -125,7 +125,8 @@ console.AddCommand("open_editor", function()
 				node.ent:SetStorableTable(serializer.Decode("luadata", system.GetClipboard()))
 			end, icons.paste)
 			add("clone", function()
-				local ent = entities.CreateEntity(node.ent.config, node.ent:GetParent())
+				local ent = entities.CreateEntity(node.ent.config)
+				ent:SetParent(node.ent:GetParent())
 				ent:SetStorableTable(node.ent:GetStorableTable())
 			end, icons.clone)
 		end
@@ -133,11 +134,11 @@ console.AddCommand("open_editor", function()
 		add()
 		
 		for k,v in pairs(prototype.component_configurations) do
-			add(k, function() local ent = entities.CreateEntity(k, node.ent) ent:SetPosition(render.GetCamPos()) end, v.icon)
+			add(k, function() local ent = entities.CreateEntity(k, node.ent) ent:SetPosition(render.GetCameraPosition()) end, v.icon)
 		end		
 	
 		add()
-		add("help", nil, icons.help)
+		--add("help", nil, icons.help)
 		add("save", nil, icons.save)
 		add("load", nil, icons.load)
 		

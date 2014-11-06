@@ -20,7 +20,7 @@ end
 function PANEL:SetResizing(loc)
 	self.Resizing = loc
 	self.prev_size = self:GetSize()
-	self.prev_pos = self:GetWorldPos()
+	self.prev_pos = self:GetWorldPosition()
 end
 
 
@@ -66,9 +66,9 @@ end
 
 function PANEL:OnMouseMove(lpos, inside)
 
-	pos = gui.GetMousePos()
+	pos = gui.GetMousePosition()
 		
-	self:CalcCursor(pos - self:GetWorldPos())
+	self:CalcCursor(pos - self:GetWorldPosition())
 		
 	-- ugh
 	if gui.IsMouseDown("button_1") then
@@ -93,7 +93,7 @@ function PANEL:OnMouseMove(lpos, inside)
 				if loc  == "Top" then
 					pos.x = prev_pos.x
 					pos.y = math.min(pos.y, (prev_pos.y + prev_size.y) - self.MinSize.y)
-					self:SetWorldPos(pos)
+					self:SetWorldPosition(pos)
 
 					siz.w = prev_size.w
 					siz.h = prev_pos.y - pos.y + prev_size.h 
@@ -103,7 +103,7 @@ function PANEL:OnMouseMove(lpos, inside)
 				if loc  == "Left" then
 					pos.y = prev_pos.y
 					pos.x = math.min(pos.x, (prev_pos.x + prev_size.x) - self.MinSize.x)
-					self:SetWorldPos(pos)
+					self:SetWorldPosition(pos)
 
 					siz.h = prev_size.h
 					siz.w = prev_pos.x - pos.x + prev_size.w
@@ -114,7 +114,7 @@ function PANEL:OnMouseMove(lpos, inside)
 					pos.x = math.min(pos.x, (prev_pos.x + prev_size.x) - self.MinSize.x)
 					pos.y = math.min(pos.y, (prev_pos.y + prev_size.y) - self.MinSize.y)
 
-					self:SetWorldPos(pos)
+					self:SetWorldPosition(pos)
 					self:SetSize((prev_pos - pos) + prev_size)
 				end
 
@@ -124,7 +124,7 @@ function PANEL:OnMouseMove(lpos, inside)
 
 				if loc  == "BottomLeft" then
 					pos.x = math.min(pos.x, (prev_pos.x + prev_size.x) - self.MinSize.x)
-					self:SetWorldPos(Vec2(pos.x, prev_pos.y))
+					self:SetWorldPosition(Vec2(pos.x, prev_pos.y))
 
 					siz = prev_size
 					siz = prev_pos - pos + prev_size
@@ -133,7 +133,7 @@ function PANEL:OnMouseMove(lpos, inside)
 
 				if loc  == "TopRight" then
 					pos.y = math.min(pos.y, (prev_pos.y + prev_size.y) - self.MinSize.y)
-					self:SetWorldPos(Vec2(prev_pos.x, pos.y))
+					self:SetWorldPosition(Vec2(prev_pos.x, pos.y))
 
 					siz = prev_size
 					siz = prev_pos - pos + prev_size
@@ -144,7 +144,7 @@ function PANEL:OnMouseMove(lpos, inside)
 				self:RequestParentLayout(true)
 			end
 		elseif self:IsDragging() then
-			self:SetWorldPos(pos - self.lpos)
+			self:SetWorldPosition(pos - self.lpos)
 			self:SetResizing(false)
 			self:RequestParentLayout(true)
 		end

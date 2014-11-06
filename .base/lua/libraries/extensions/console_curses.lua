@@ -128,7 +128,7 @@ function console.InitializeCurses()
 				end
 			end
 			
-			curses.wmove(c.input_window, 0, math.max(markup:GetCaretSubPos()-1, 0))
+			curses.wmove(c.input_window, 0, math.max(markup:GetCaretSubPosition()-1, 0))
 			console.ClearInput(markup:GetText())
 		end
 		
@@ -584,7 +584,7 @@ function console.HandleKey(key)
 
 			if found and found[1] then
 				markup:SetText(found[1] .. " ")
-				markup:SetCaretPos(math.huge, 0)
+				markup:SetCaretPosition(math.huge, 0)
 			end
 			return
 		end
@@ -604,7 +604,7 @@ function console.HandleKey(key)
 						end
 						
 						markup:SetText(cmd .. " " .. table.concat(data.args, ",") .. found)
-						markup:SetCaretPos(math.huge, 0)
+						markup:SetCaretPosition(math.huge, 0)
 					end
 				end
 			end

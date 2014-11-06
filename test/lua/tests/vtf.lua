@@ -449,7 +449,7 @@ else
 end
 
 local function insert_textures(vtf, offset)
-	buffer:PushPos(offset)
+	buffer:PushPosition(offset)
 
 	for mm = 0, vtf.mipmapCount - 1 do
 		local w = bit.rshift(vtf.width, vtf.mipmapCount - mm - 1)
@@ -484,15 +484,15 @@ local function insert_textures(vtf, offset)
 		end
 	end
 	
-	buffer:PopPos()
+	buffer:PopPosition()
 end
 
 local function insert_lowres_texture(vtf, offset)
 	local size = vtf.lowResImageWidth * vtf.lowResImageHeight * (vtf.lowResImageFormat.total_bits / 8)
 				
-	buffer:PushPos(offset)
+	buffer:PushPosition(offset)
 	local image = ffi.cast("uint8_t *", buffer:ReadString(size))
-	buffer:PopPos()
+	buffer:PopPosition()
 	
 	vtf.lowresTextureData = {
 		width = vtf.lowResImageWidth,
@@ -568,6 +568,6 @@ event.AddListener("Draw2D", "vtf", function()
 	surface.SetTexture(tex)
 	surface.SetColor(1,1,1,1)
 	surface.DrawRect(0,0,512,512)
-	surface.SetTextPos(60, 60)
+	surface.SetTextPosition(60, 60)
 	surface.DrawText(tostring(i))
 end)

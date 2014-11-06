@@ -182,7 +182,7 @@ do -- buffer object
 		end
 		
 		do -- push pop position
-			function META:PushPos(pos)
+			function META:PushPosition(pos)
 				self.stack = self.stack or {}
 				
 				table.insert(self.stack, self:GetPosition())
@@ -190,7 +190,7 @@ do -- buffer object
 				self:SetPosition(pos)
 			end
 			
-			function META:PopPos()
+			function META:PopPosition()
 				self:SetPosition(table.remove(self.stack))
 			end
 		end

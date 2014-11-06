@@ -148,7 +148,7 @@ do -- events
 	function gui2.Draw2D()
 		render.SetCullMode("none")
 		if gui2.threedee then 
-			--surface.Start3D(Vec3(1, -5, 10), Ang3(-90, 180, 0), Vec3(8, 8, 10))
+			--surface.Start3D(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
 			surface.Start3D(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))
 		end
 
@@ -163,7 +163,7 @@ do -- events
 			end
 		end
 		
-		gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePos()
+		gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePosition()
 		
 		--surface.EnableStencilClipping()
 			

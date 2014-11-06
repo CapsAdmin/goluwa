@@ -154,7 +154,7 @@ function steam.LoadMap(path, callback)
 				local filelen = bsp_file:ReadLong()
 												
 				if id == "prps" then
-					bsp_file:PushPos(fileofs)
+					bsp_file:PushPosition(fileofs)
 					
 					
 					local count = bsp_file:ReadLong()
@@ -201,11 +201,11 @@ function steam.LoadMap(path, callback)
 						]])
 					end
 					
-					bsp_file:PopPos()
+					bsp_file:PopPosition()
 				end
 				
 				if id == "prpd" then
-					bsp_file:PushPos(fileofs)
+					bsp_file:PushPosition(fileofs)
 					
 					local count = bsp_file:ReadLong()
 					local paths = {}
@@ -218,11 +218,11 @@ function steam.LoadMap(path, callback)
 						end
 					end 			
 														
-					bsp_file:PopPos()
+					bsp_file:PopPosition()
 				end
 						
 				if id == "tlpd" then
-					bsp_file:PushPos(fileofs)
+					bsp_file:PushPosition(fileofs)
 
 					local count = bsp_file:ReadLong()
 					logf("\ttlpd paths = %s\n", count)
@@ -232,7 +232,7 @@ function steam.LoadMap(path, callback)
 					--	
 					--end
 					
-					bsp_file:PopPos()
+					bsp_file:PopPosition()
 				end
 			end
 			
@@ -246,7 +246,7 @@ function steam.LoadMap(path, callback)
 			end
 			local entities = {}
 			local i = 1 
-			bsp_file:PushPos(header.lumps[1].fileofs)
+			bsp_file:PushPosition(header.lumps[1].fileofs)
 			for vdf in bsp_file:ReadString():gmatch("{(.-)}") do
 				local ent = {}
 				for k, v in vdf:gmatch([["(.-)" "(.-)"]]) do
@@ -265,7 +265,7 @@ function steam.LoadMap(path, callback)
 				thread:Report("reading entities")
 				thread:Sleep()
 			end
-			bsp_file:PopPos()
+			bsp_file:PopPosition()
 			header.entities = entities
 			
 		end
@@ -368,7 +368,7 @@ function steam.LoadMap(path, callback)
 				
 				data.vertex_info = {}
 				
-				bsp_file:PushPos(lump.fileofs + (data.DispVertStart * 20))
+				bsp_file:PushPosition(lump.fileofs + (data.DispVertStart * 20))
 					for i = 1, ((2 ^ data.power) + 1) ^ 2 do
 						local vertex = bsp_file:ReadVec3()
 						local dist = bsp_file:ReadFloat()
@@ -381,7 +381,7 @@ function steam.LoadMap(path, callback)
 						}
 					end
 
-				bsp_file:PopPos(old_pos)
+				bsp_file:PopPosition(old_pos)
 				
 				header.displacements[i] = data
 				

@@ -96,7 +96,7 @@ if CLIENT then
 		return chat.panel:GetText()
 	end	
 	
-	function chat.GetInputPos()
+	function chat.GetInputPosition()
 		if not chat.IsVisible() then return 0, 0 end
 		return chat.panel:GetPosition()
 	end
@@ -175,7 +175,7 @@ if CLIENT then
 						local found = history[i]
 						if browse and found then
 							panel:SetText(found)
-							panel:SetCaretPos(Vec2(#found, 0))
+							panel:SetCaretPosition(Vec2(#found, 0))
 							last_history = found
 						end
 					end

@@ -74,7 +74,7 @@ function menu.RenderBackground()
 	local amplitude = 0.6 		-- Difference between light and dark
 	local median = 0.8			-- Lightness (Min: 0 Max: 1) [WARNING: median + amplitude should be between 0 and 1]
 	
-	local x, y = window.GetMousePos():Unpack()
+	local x, y = window.GetMousePosition():Unpack()
 	local t = ((x / -scrw) * 2) + 1
 
 	local r, g, b = gui.GetSkinColor("dark"):Unpack()

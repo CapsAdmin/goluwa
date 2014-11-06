@@ -10,11 +10,11 @@ prototype.GetSet(PANEL, "MultiLine", false)
 prototype.GetSet(PANEL, "LineNumbers", true)
 prototype.GetSet(PANEL, "EditorMode", false)
 
-function PANEL:SetCaretPos(pos)
-	self.markup:SetCaretPos(pos.x, pos.y)
+function PANEL:SetCaretPosition(pos)
+	self.markup:SetCaretPosition(pos.x, pos.y)
 end
 
-function PANEL:GetCaretPos()
+function PANEL:GetCaretPosition()
 	return Vec2(self.markup.caret_pos.x,self.markup.caret_pos.y)
 end
 
@@ -53,13 +53,13 @@ function PANEL:OnDraw(size)
 	--surface.DrawRect(0,0, self.markup.width or w, self.markup.height or h)
 	
 	-- this is needed for proper mouse coordinates
-	local x, y = self:GetWorldPos():Unpack()
+	local x, y = self:GetWorldPosition():Unpack()
 	self.markup:Draw(x, y, size:Unpack())
 end
 
 function PANEL:OnMouseInput(button, press)
 	self:MakeActivePanel()  
-	self.markup:OnMouseInput(button, press, window.GetMousePos():Unpack())
+	self.markup:OnMouseInput(button, press, window.GetMousePosition():Unpack())
 end
 
 function PANEL:OnKeyInput(key, press)	
