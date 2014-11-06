@@ -23,14 +23,13 @@ COMPONENT.Network = {
 	PhysicsModelPath = {"string", 1/10, "reliable", true}, -- last true means don't send default path (blank path in this case)
 }
 
-prototype.GetSet(COMPONENT, "SimulateOnClient", false)
-
 COMPONENT.matrix = Matrix44()
 COMPONENT.rigid_body = NULL
 
 local function DELEGATE(META, field, typ)
 	
 	if typ == "vec3" then
+		prototype.GetSet(META, field, Vec3())
 		local name = "Set" .. field
 		META[name] = function(s, vec)
 			s[field] = vec
@@ -48,6 +47,7 @@ local function DELEGATE(META, field, typ)
 			return s[field]
 		end
 	elseif typ == "ang3" then
+		prototype.GetSet(META, field, Ang3())
 		local name = "Set" .. field
 		META[name] = function(s, ang)
 			s[field] = ang
@@ -65,6 +65,7 @@ local function DELEGATE(META, field, typ)
 			return s[field]
 		end
 	else
+		prototype.GetSet(META, field, 0)
 		local name = "Set" .. field
 		META[name] = function(s, val)
 			s[field] = val
@@ -82,22 +83,31 @@ local function DELEGATE(META, field, typ)
 		end
 	end
 end
- 
-DELEGATE(COMPONENT, "MassOrigin", "vec3")
-DELEGATE(COMPONENT, "Gravity", "vec3")
-DELEGATE(COMPONENT, "Velocity", "vec3")
-DELEGATE(COMPONENT, "AngularVelocity", "vec3")
-DELEGATE(COMPONENT, "PhysicsBoxScale", "vec3")
-DELEGATE(COMPONENT, "PhysicsSphereRadius")
 
-DELEGATE(COMPONENT, "Mass")
-DELEGATE(COMPONENT, "AngularDamping")
-DELEGATE(COMPONENT, "LinearDamping")
-DELEGATE(COMPONENT, "LinearSleepingThreshold")
-DELEGATE(COMPONENT, "AngularSleepingThreshold")
+prototype.StartStorable()
 
-prototype.GetSet(COMPONENT, "Position", Vec3(0, 0, 0))
-prototype.GetSet(COMPONENT, "Rotation", Quat(0, 0, 0, 1))
+	prototype.GetSet(COMPONENT, "SimulateOnClient", false)
+
+	DELEGATE(COMPONENT, "MassOrigin", "vec3")
+	DELEGATE(COMPONENT, "Gravity", "vec3")
+	DELEGATE(COMPONENT, "Velocity", "vec3")
+	DELEGATE(COMPONENT, "AngularVelocity", "vec3")
+	DELEGATE(COMPONENT, "PhysicsBoxScale", "vec3")
+	DELEGATE(COMPONENT, "PhysicsSphereRadius")
+
+	DELEGATE(COMPONENT, "Mass")
+	DELEGATE(COMPONENT, "AngularDamping")
+	DELEGATE(COMPONENT, "LinearDamping")
+	DELEGATE(COMPONENT, "LinearSleepingThreshold")
+	DELEGATE(COMPONENT, "AngularSleepingThreshold")
+
+	prototype.GetSet(COMPONENT, "Position", Vec3(0, 0, 0))
+	prototype.GetSet(COMPONENT, "Rotation", Quat(0, 0, 0, 1))
+	prototype.GetSet(COMPONENT, "PhysicsModelPath", "")
+
+prototype.EndStorable()
+
+prototype.GetSet(COMPONENT, "PhysicsModel", nil)
 
 local function to_bullet(self)
 	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return end
@@ -199,9 +209,6 @@ do
 		self:SetPosition(self.Position)
 		self:SetRotation(self.Rotation)
 	end
-	
-	prototype.GetSet(COMPONENT, "PhysicsModelPath", "")
-	prototype.GetSet(COMPONENT, "PhysicsModel", nil)
 	
 	function COMPONENT:SetPhysicsModelPath(path)
 		self.PhysicsModelPath = path
