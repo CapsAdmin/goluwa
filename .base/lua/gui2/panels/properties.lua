@@ -397,6 +397,13 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 	
 	if not fields and hasindex(default) then
 		fields = fields or default.Args
+		if type(fields[1]) == "table" then
+			local temp = {}
+			for i,v in ipairs(fields) do
+				temp[i] = v[2] or v[1]
+			end
+			fields = temp
+		end
 	end
 	
 	local t = typex(default)
