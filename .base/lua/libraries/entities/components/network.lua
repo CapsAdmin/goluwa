@@ -8,8 +8,12 @@ COMPONENT.Name = "networked"
 COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Update"}
 
-prototype.GetSet(COMPONENT, "NetworkId", -1)
-prototype.GetSet(COMPONENT, "NetworkChannel", 0)
+prototype.StartStorable()
+
+	prototype.GetSet(COMPONENT, "NetworkId", -1)
+	prototype.GetSet(COMPONENT, "NetworkChannel", 0)
+
+prototype.EndStorable()
 
 do
 	COMPONENT.client_synced_vars = {}
