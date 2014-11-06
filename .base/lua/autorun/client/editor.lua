@@ -46,8 +46,8 @@ local icons = {
 	halo = "textures/silkicons/shading.png",
 	poseparameter = "textures/silkicons/disconnect.png",
 	fog = "textures/silkicons/weather_clouds.png",
-	physics = "textures/silkicons/shape_handles.png",
-	beam = "textures/silkicons/vector.png",
+		physics = "textures/silkicons/shape_handles.png",
+		beam = "textures/silkicons/vector.png",
 	projectile = "textures/silkicons/bomb.png",
 	shake = "textures/silkicons/transmit.png",
 	ogg = "textures/silkicons/music.png",
@@ -107,36 +107,46 @@ console.AddCommand("open_editor", function()
 	local tree
 	
 	local function right_click_node(node)
-		tree:SelectNode(node)
+		if node then tree:SelectNode(node) end
 		
-		local options = {
-			{"wear", nil, icons.wear},
-			{"copy", nil, icons.copy},
-			{"paste", nil, icons.paste},
-			{"clone", nil, icons.clone},
-			{},
-		}
+		local options = {}
 		
-		for k,v in pairs(prototype.component_configurations) do
-			table.insert(options, {k, function() local ent = entities.CreateEntity(k, node.ent) ent:SetPosition(render.GetCamPos()) end, v.icon})
+		local function add(...)
+			table.insert(options, {...})
 		end
 		
-		table.add(options, {
-			{},
-			{"help", nil, icons.help},
-			{"save", nil, icons.save},
-			{"load", nil, icons.load},
-			{},
-			{"remove", function() 
+		add("wear", nil, icons.wear)
+		add("copy", nil, icons.copy)
+		
+		if node then
+			add("paste", nil, icons.paste)
+			add("clone", nil, icons.clone)
+		end
+		
+		add()
+		
+		for k,v in pairs(prototype.component_configurations) do
+			add(k, function() local ent = entities.CreateEntity(k, node.ent) ent:SetPosition(render.GetCamPos()) end, v.icon)
+		end		
+	
+		add()
+		add("help", nil, icons.help)
+		add("save", nil, icons.save)
+		add("load", nil, icons.load)
+		
+		if node then
+			add()
+			add("remove", function() 
 				local node = tree:GetSelectedNode()
 				if node:IsValid() and node.ent:IsValid() then
 					node.ent:Remove()
 				end
-			end, icons.clear},
-		})
+			end, icons.clear)
+		end
 		
 		gui2.CreateMenu(options, frame)
 	end
+	
 	local function fill(entities, node)
 		for key, ent in pairs(entities) do
 			local name = ent:GetName()
@@ -152,6 +162,8 @@ console.AddCommand("open_editor", function()
 	end
 	
 	local function repopulate()
+		if not frame:IsValid() then return end
+		
 		gui2.RemovePanel(tree)
 		
 		tree = gui2.CreatePanel("tree")
@@ -172,6 +184,8 @@ console.AddCommand("open_editor", function()
 	
 	tree:SetSize(tree:GetSizeOfChildren())
 	tree:SetWidth(frame:GetWidth())
+	
+	frame.OnRightClick = function() right_click_node() end
 	
 	local scroll = div:SetBottom(gui2.CreatePanel("scroll"))
 	
@@ -195,6 +209,6 @@ console.AddCommand("open_editor", function()
 	
 	div:SetDividerPosition(gui2.world:GetHeight()/2) 
 	
-	tree:SelectNode(tree:GetChildren()[1])  
+	if tree:GetChildren()[1] then tree:SelectNode(tree:GetChildren()[1])   end
 	window.SetMouseTrapped(false) 
 end)
