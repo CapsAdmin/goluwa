@@ -68,6 +68,8 @@ function META:OnRemove()
 		
 	-- this is important!!
 	self:UnParent()
+	
+	event.Call("EntityRemoved")
 end
 
 do -- serializing
