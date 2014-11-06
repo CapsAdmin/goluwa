@@ -677,9 +677,8 @@ do -- libraries
 
 	if CLIENT then
 		include("gui/init.lua")
+		gui2 = include("gui2/init.lua")
 	end
-	
-	gui2 = include("gui2/init.lua")
 	
 	-- include the filesystem again so it will include all the details such as zip file reading
 	include("libraries/filesystem/vfs.lua")
