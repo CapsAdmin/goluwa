@@ -1,9 +1,20 @@
-local source = NULL
-console.AddCommand("play", function(path)
-	if source:IsValid() then source:Remove() end
-	source = audio.CreateSource(path)
-	source:Play()
+console.AddCommand("toggle_focus", function()
+	if window.GetMouseTrapped() then
+		window.SetMouseTrapped(false)
+	else
+		window.SetMouseTrapped(true)
+	end
 end)
+
+do
+	local source = NULL
+
+	console.AddCommand("play", function(path)
+		if source:IsValid() then source:Remove() end
+		source = audio.CreateSource(path)
+		source:Play()
+	end)
+end
 
 console.AddCommand("stopsounds", function()
 	audio.Panic()
