@@ -5,13 +5,9 @@ local META = prototype.CreateTemplate("entity")
 prototype.AddParentingTemplate(META)
 prototype.GetSet(META, "Components", {})
 
-function META:AddComponent(name, id, ...)
-	id = id or "no_id"
-	
-	self:RemoveComponent(name, id)
-	
-	self.Components[name] = self.Components[name] or {}
-	
+function META:AddComponent(name, ...)	
+	self:RemoveComponent(name)
+		
 	local component = prototype.CreateComponent(name)
 					
 	for i, other in ipairs(component.Require) do
@@ -20,30 +16,25 @@ function META:AddComponent(name, id, ...)
 		end
 	end
 	
-	component.Id = id
 	component.Entity = self
 			
 	for i, event_type in ipairs(component.Events) do
 		component:AddEvent(event_type)
 	end
 	
-	self.Components[name][id] = component
+	self.Components[name] = component
 	
 	component:OnAdd(self, ...)
 	
-	for name, components in pairs(self:GetComponents()) do
-		for id, component_ in pairs(components) do
-			component_:OnEntityAddComponent(component)
-		end
+	for name, component_ in pairs(self:GetComponents()) do
+		component_:OnEntityAddComponent(component)
 	end
 end
 
-function META:RemoveComponent(name, id)
-	id = id or "no_id"
-	
+function META:RemoveComponent(name)	
 	if not self.Components[name] then return end
 		
-	local component = self.Components[name][id] or NULL
+	local component = self.Components[name] or NULL
 
 	if component:IsValid() then
 	
@@ -56,27 +47,19 @@ function META:RemoveComponent(name, id)
 	end
 end
 
-function META:GetComponent(name, id)
-	if not self.Components[name] then return NULL end
-	
-	id = id or "no_id"
-	
-	return self.Components[name][id] or NULL
+function META:GetComponent(name)		
+	return self.Components[name] or NULL
 end
 
-function META:HasComponent(name, id)
-	id = id or "no_id"
-	
-	return self.Components[name][id] ~= nil
+function META:HasComponent(name)	
+	return self.Components[name] ~= nil
 end
 
 function META:OnRemove()
 	event.Call("EntityRemove", self)
 	
-	for name, components in pairs(self:GetComponents()) do
-		for id, component in pairs(components) do
-			self:RemoveComponent(name, id)
-		end
+	for name, component in pairs(self:GetComponents()) do
+		self:RemoveComponent(name)
 	end
 	
 	for k,v in pairs(self:GetChildrenList()) do
@@ -85,6 +68,27 @@ function META:OnRemove()
 		
 	-- this is important!!
 	self:UnParent()
+end
+
+do -- serializing
+	function META:SetStorableTable(tbl)
+		for name, vars in pairs(tbl) do
+			local component = self:GetComponent(name)
+			if component:IsValid() then
+				component:SetStorableTable(vars)
+			end
+		end
+	end
+	
+	function META:GetStorableTable()
+		local out = {}
+		
+		for name, component in pairs(self:GetComponents()) do
+			out[name] = component:GetStorableTable()
+		end
+		
+		return table.copy(out)
+	end
 end
 
 prototype.component_configurations = prototype.component_configurations or {}
@@ -123,7 +127,7 @@ function prototype.CreateEntity(config, parent)
 		self.config = config
 
 		for _, name in ipairs(prototype.component_configurations[config].components) do
-			self:AddComponent(name, nil)
+			self:AddComponent(name)
 		end
 		
 		for name, func in pairs(prototype.component_configurations[config].functions) do

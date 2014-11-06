@@ -22,7 +22,7 @@ end
 	
 function META:OnRemove()
 	if self.Entity:IsValid() and self.Entity.Components and self.Entity.Components[self.Type] then
-		self.Entity.Components[self.Type][self.Id] = nil
+		self.Entity.Components[self.Type] = nil
 	end
 end
 
@@ -33,10 +33,8 @@ end
 function META:GetEntityComponents()
 	local out = {}
 	
-	for name, components in pairs(self:GetEntity():GetComponents()) do
-		for id, component in pairs(components) do
-			table.insert(out, component)
-		end
+	for name, component in pairs(self:GetEntity():GetComponents()) do
+		table.insert(out, component)
 	end
 	
 	return out
