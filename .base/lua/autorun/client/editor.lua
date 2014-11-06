@@ -105,7 +105,7 @@ console.AddCommand("open_editor", function()
 	local scroll = div:SetTop(gui2.CreatePanel("scroll"))
 	
 	local tree
-	
+		
 	local function right_click_node(node)
 		if node then tree:SelectNode(node) end
 		
@@ -115,12 +115,19 @@ console.AddCommand("open_editor", function()
 			table.insert(options, {...})
 		end
 		
-		add("wear", nil, icons.wear)
-		add("copy", nil, icons.copy)
+		--add("wear", nil, icons.wear)
 		
 		if node then
-			add("paste", nil, icons.paste)
-			add("clone", nil, icons.clone)
+			add("copy", function()
+				system.SetClipboard(serializer.Encode("luadata", node.ent:GetStorableTable()))
+			end, icons.copy)
+			add("paste", function()
+				node.ent:SetStorableTable(serializer.Decode("luadata", system.GetClipboard()))
+			end, icons.paste)
+			add("clone", function()
+				local ent = entities.CreateEntity(node.ent.config, node.ent:GetParent())
+				ent:SetStorableTable(node.ent:GetStorableTable())
+			end, icons.clone)
 		end
 		
 		add()
@@ -198,10 +205,8 @@ console.AddCommand("open_editor", function()
 		--properties:SetStretchToPanelWidth(frame)
 		
 		for k, v in pairs(node.ent:GetComponents()) do
-			for k,v in pairs(v) do
-				properties:AddGroup(v.ClassName)
-				properties:AddPropertiesFromObject(v)
-			end
+			properties:AddGroup(v.ClassName)
+			properties:AddPropertiesFromObject(v)
 		end
 		
 		scroll:SetPanel(properties)
