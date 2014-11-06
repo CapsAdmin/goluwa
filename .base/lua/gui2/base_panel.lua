@@ -1247,6 +1247,9 @@ do -- mouse
 	prototype.GetSet(PANEL, "AlwaysCalcMouse", false)
 	prototype.GetSet(PANEL, "AlwaysReceiveMouseInput", false)
 	prototype.GetSet(PANEL, "SendMouseInputToPanel", NULL)
+	
+	prototype.GetSet(PANEL, "MouseHoverTime", 0)
+	prototype.GetSet(PANEL, "MouseHoverTimeTrigger", 1)
 
 	function PANEL:IsMouseOver()
 		return self:IsDragging() or self:IsResizing() or self.mouse_over and gui2.hovering_panel == self
@@ -1307,6 +1310,7 @@ do -- mouse
 		end
 
 		if self:IsMouseOver() then
+		
 			if not self.mouse_just_entered then
 				if self.SendMouseInputToPanel:IsValid() then
 					if not self.SendMouseInputToPanel.mouse_just_entered then
@@ -1316,8 +1320,17 @@ do -- mouse
 				end
 				self:OnMouseEnter(x, y)
 				self.mouse_just_entered = true
+				self.mouse_hover_triggered = false
+				self.MouseHoverTime = os.clock()
 			end
 
+			if self.MouseHoverTime + self.MouseHoverTimeTrigger < os.clock() then
+				if not self.mouse_hover_triggered then
+					self:OnMouseHoverTrigger(true, x, y)
+					self.mouse_hover_triggered = true
+				end
+			end
+			
 			self:OnMouseMove(x, y)
 		else
 			if self.mouse_just_entered then
@@ -1329,6 +1342,11 @@ do -- mouse
 				end
 				self:OnMouseExit(x, y)
 				self.mouse_just_entered = false
+			end
+			
+			if self.mouse_hover_triggered then
+				self:OnMouseHoverTrigger(false, x, y)
+				self.mouse_hover_triggered = false
 			end
 		end
 	end
@@ -1651,6 +1669,7 @@ do -- events
 	function PANEL:OnLayout() end
 	function PANEL:OnShow() end
 	function PANEL:OnHide() end
+	function PANEL:OnMouseHoverTrigger(x, y) end
 	function PANEL:Initialize() end
 end
 
