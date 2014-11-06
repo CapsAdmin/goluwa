@@ -1,3 +1,10 @@
+editor = _G.editor or {}
+
+editor.frame = editor.frame or NULL
+editor.tree = editor.tree or NULL
+editor.properties = editor.properties or NULL
+editor.selected_ent = editor.selected_ent or NULL
+
 local icons = {
 	copy = "textures/silkicons/page_white_text.png",
 	uniqueid = "textures/silkicons/vcard.png",
@@ -59,44 +66,12 @@ local icons = {
 	custom_animation = "textures/silkicons/film.png",
 }
 
-local editor = NULL
-
-input.Bind("e+left_control", "toggle_editor")
-input.Bind("e+left_alt", "toggle_focus")
-
-console.AddCommand("close_editor", function()
-	gui2.RemovePanel(editor)
-	window.SetMouseTrapped(false) 
-end)
-
-console.AddCommand("toggle_focus", function()
-	if window.GetMouseTrapped() then
-		window.SetMouseTrapped(false)
-	else
-		window.SetMouseTrapped(true)
-	end
-end)
-
-console.AddCommand("toggle_editor", function()
-	if editor:IsValid() then
-		if editor:IsMinimized() then
-			editor:Minimize(false)
-			window.SetMouseTrapped(true)
-		else
-			editor:Minimize(true)
-			window.SetMouseTrapped(false) 
-		end
-	else
-		console.RunString("open_editor")
-	end
-end)
-
-console.AddCommand("open_editor", function()
-	gui2.RemovePanel(editor)
+function editor.Open()
+	gui2.RemovePanel(editor.frame)
 	
 	local frame = gui2.CreatePanel("frame")
 	frame:SetSize(Vec2(300, gui2.world:GetHeight()))
-	editor = frame
+	editor.frame = frame
 	
 	local div = gui2.CreatePanel("divider", frame)
 	div:Dock("fill")
@@ -105,6 +80,22 @@ console.AddCommand("open_editor", function()
 	local scroll = div:SetTop(gui2.CreatePanel("scroll"))
 	
 	local tree
+	
+	local function show_tooltip(node, entered, x, y)
+		local ent = node.ent
+		
+		if entered then
+			local tooltip = gui2.CreatePanel("text_button")
+			tooltip:SetPosition(Vec2(surface.GetMousePosition()))
+			tooltip:SetMargin(Rect()+4)
+			tooltip:SetText(ent:GetDebugTrace())
+			tooltip:SizeToText()
+			tooltip:Layout(true)
+			node.tooltip = tooltip
+		else
+			gui2.RemovePanel(node.tooltip)
+		end
+	end
 		
 	local function right_click_node(node)
 		if node then tree:SelectNode(node) end
@@ -163,6 +154,7 @@ console.AddCommand("open_editor", function()
 			end
 			local node = node:AddNode(name, ent:GetPropertyIcon())
 			node.OnRightClick = right_click_node
+			node.OnMouseHoverTrigger = show_tooltip
 			node.ent = ent
 			--node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
 			fill(ent:GetChildren(), node)
@@ -184,10 +176,12 @@ console.AddCommand("open_editor", function()
 		tree:SetWidth(frame:GetWidth())
 		
 		scroll:SetAlwaysReceiveMouseInput(true)
+		
+		editor.tree = tree
 	end
 	
 	event.AddListener("EntityCreate", "editor", repopulate)
-	event.AddListener("EntityRemove", "editor", repopulate)	
+	event.AddListener("EntityRemoved", "editor", repopulate)	
 	repopulate()
 	
 	tree:SetSize(tree:GetSizeOfChildren())
@@ -211,10 +205,61 @@ console.AddCommand("open_editor", function()
 		end
 		
 		scroll:SetPanel(properties)
+		
+		editor.properties = properties
+		
+		event.Call("EditorSelectEentity", node.ent)
+		editor.selected_ent = node.ent
+		
+		print(node.ent)
 	end
 	
 	div:SetDividerPosition(gui2.world:GetHeight()/2) 
 	
-	if tree:GetChildren()[1] then tree:SelectNode(tree:GetChildren()[1])   end
+	if editor.selected_ent:IsValid() then
+		editor.SelectEntity(editor.selected_ent)
+	elseif tree:GetChildren()[1] then 
+		tree:SelectNode(tree:GetChildren()[1])
+	end
+		
 	window.SetMouseTrapped(false) 
-end)
+end
+
+function editor.Close()
+	gui2.RemovePanel(editor.frame)
+	window.SetMouseTrapped(false) 
+end
+
+function editor.Toggle()
+	if editor.frame:IsValid() then
+		if editor.frame:IsMinimized() then
+			editor.frame:Minimize(false)
+			window.SetMouseTrapped(true)
+		else
+			editor.frame:Minimize(true)
+			window.SetMouseTrapped(false) 
+		end
+	else
+		editor.Open()
+	end
+end
+
+function editor.SelectEntity(ent)
+	editor.selected_ent = ent
+
+	if not editor.frame:IsValid() then return end
+	
+	for i, v in ipairs(editor.tree:GetChildren()) do
+		if v.ent == ent then
+			editor.tree:SelectNode(v)
+			return v
+		end
+	end
+end
+
+input.Bind("e+left_control", "toggle_editor")
+input.Bind("e+left_alt", "toggle_focus")
+
+console.AddCommand("close_editor", editor.Close)
+console.AddCommand("toggle_editor", editor.Toggle)
+console.AddCommand("open_editor", editor.Open)
