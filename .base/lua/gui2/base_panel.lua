@@ -149,6 +149,7 @@ function PANEL:IsInsideParent()
 end
 
 function PANEL:PreDraw(from_cache)
+	if self.ThreeDee then surface.Start3D(self.ThreeDeePosition, self.ThreeDeeAngles, self.ThreeDeeScale) end
 	if self.layout_me then 
 		self:Layout(true) 
 	end
@@ -271,6 +272,8 @@ function PANEL:PostDraw(from_cache)
 	end
 	
 	surface.PopMatrix()
+	
+	if self.ThreeDee then surface.End3D() end
 end
 
 do -- orientation
@@ -280,8 +283,13 @@ do -- orientation
 	prototype.GetSet(PANEL, "Angle", 0)
 	prototype.GetSet(PANEL, "Order", 0)
 	
+	prototype.GetSet(PANEL, "ThreeDee", false)
+	prototype.GetSet(PANEL, "ThreeDeePosition", Vec3(0,0,0))
+	prototype.GetSet(PANEL, "ThreeDeeAngles", Ang3(0,0,0))
+	prototype.GetSet(PANEL, "ThreeDeeScale", Vec3(1,1,1))
+	
 	function PANEL:SetPosition(pos)
-		if self:HasParent() and self.Parent.TrapChildren then
+		if self:HasParent() and self.Parent.TrapChildren and not self.ThreeDee then
 			pos:Clamp(Vec2(0, 0), self.Parent.Size - self.Size)
 		end
 		
@@ -1219,7 +1227,7 @@ do -- resizing
 				prev_size = prev_size - diff_world
 			end
 
-			if self:HasParent() then
+			if self:HasParent() and not self.ThreeDee then
 				prev_pos.x = math.max(prev_pos.x, 0)
 				prev_pos.y = math.max(prev_pos.y, 0)
 
