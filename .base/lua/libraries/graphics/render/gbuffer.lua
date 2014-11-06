@@ -18,7 +18,7 @@ local GBUFFER = {
 			screen_size = {vec2 = render.GetScreenSize},			
 			cam_nearz = {float = function() return render.camera.nearz end},
 			cam_farz = {float = function() return render.camera.farz end},
-			cam_fov = {float = function() return math.rad(render.camera.fov) end},
+			cam_fov = {float = function() return render.camera.fov end},
 			inv_proj = {mat4 = function() return (render.matrices.projection_3d_inverse).m end},
 			inv_proj_mat = {mat4 = function() return (render.matrices.view_3d * render.matrices.projection_3d).m end},
 			inv_view_mat = {mat4 = function() return render.matrices.view_3d_inverse.m end},
@@ -280,7 +280,7 @@ do -- post process
 
 					cam_nearz = {float = function() return render.camera.nearz end},
 					cam_farz = {float = function() return render.camera.farz end},
-					cam_fov = {float = function() return math.rad(render.camera.fov) end},
+					cam_fov = {float = function() return render.camera.fov end},
 					inv_proj_mat = {mat4 = function() return (render.matrices.view_3d * render.matrices.projection_3d).m end},
 					inv_view_mat = {mat4 = function() return render.matrices.view_3d_inverse.m end},
 				},
@@ -522,7 +522,7 @@ function render.InitializeGBuffer(width, height)
 				surface.SetTexture(render.gbuffer:GetTexture(data.name))
 				surface.DrawRect(x, y, w, h)
 				
-				surface.SetTextPos(x, y + 5)
+				surface.SetTextPosition(x, y + 5)
 				surface.DrawText(data.name)
 				
 				if i%size == 0 then

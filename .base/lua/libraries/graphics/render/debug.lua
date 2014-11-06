@@ -8,7 +8,7 @@ do
 
 	local function draw_axis(axis, x, y)
 		local w,h = surface.GetTextSize(axis)
-		surface.SetTextPos(spacing * x + x_offset, spacing * y + y_offset + h/2 - 2)
+		surface.SetTextPosition(spacing * x + x_offset, spacing * y + y_offset + h/2 - 2)
 		surface.DrawText(axis)
 	end
 
@@ -36,7 +36,7 @@ do
 		
 		surface.SetColor(1,1,1,1)
 		
-		surface.SetTextPos(0, 0)
+		surface.SetTextPosition(0, 0)
 		surface.DrawText(name)
 		
 		for x = 0, 3 do
@@ -48,7 +48,7 @@ do
 				x_offset_2 = surface.GetTextSize("-")
 			end
 			local w, h = surface.GetTextSize(str)
-			surface.SetTextPos(x*spacing + x_offset - x_offset_2, y*spacing + y_offset + h/2 - 2)
+			surface.SetTextPosition(x*spacing + x_offset - x_offset_2, y*spacing + y_offset + h/2 - 2)
 			surface.DrawText(str)
 		end
 		end

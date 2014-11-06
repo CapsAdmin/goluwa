@@ -1,7 +1,7 @@
 local smooth_cam_pos = Vec3(0, 0, 0)   
 local cam_pos = Vec3(-10, -16.8, 10.02)    
-local cam_ang = Ang3(90, 0, 0)
-local cam_fov = 90
+local cam_ang = Deg3(90, 0, 0)
+local cam_fov = math.rad(90)
 
 event.AddListener("Update", "fly_camera_3d", function(dt)
 	if network.IsConnected() then return end
@@ -13,7 +13,7 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	cam_ang:Normalize()
 	local speed = dt * 10
 
-	local delta = window.GetMouseDelta() / 100
+	local delta = window.GetMouseDelta() / 3
 		
 	local r = cam_ang.r
 	local cs = math.cos(r)
@@ -28,7 +28,7 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	
 	if input.IsKeyDown("r") then
 		cam_ang.r = 0
-		cam_fov = 90
+		cam_fov = math.rad(90)
 	end
 	
 	delta = delta * (cam_fov / 175)
@@ -54,8 +54,8 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	end
 		
 	if input.IsMouseDown("button_2") then
-		cam_ang.r = cam_ang.r + original_delta.x / 2 * math.clamp(cam_fov/5, 0.5, 1)
-		cam_fov = math.clamp(cam_fov + original_delta.y * 100 * (cam_fov/180), 0.1, 175)
+		cam_ang.r = cam_ang.r + original_delta.x / 100
+		cam_fov = math.clamp(cam_fov + original_delta.y / 100 * (cam_fov/math.pi), math.rad(0.1), math.rad(175))
 	else	
 		cam_ang.p = math.clamp(cam_ang.p + delta.y, -math.pi/2, math.pi/2)
 		cam_ang.y = cam_ang.y - delta.x
@@ -86,19 +86,19 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	end
 
 	if input.IsKeyDown("left_alt") then
-		cam_ang.r = math.round(cam_ang.r / math.rad(45)) * math.rad(45)
+		cam_ang.r = math.rad(math.round(math.deg(cam_ang.r) / 45) * 45)
 	end
 	
-	if cam_fov > 90 then
-		side = side / ((cam_fov/90) ^ 4)
+	if cam_fov > math.rad(90) then
+		side = side / ((cam_fov/math.rad(90)) ^ 4)
 	else
-		side = side / ((cam_fov/90) ^ 0.25)
+		side = side / ((cam_fov/math.rad(90)) ^ 0.25)
 	end
 		
 	cam_pos = cam_pos + forward + side + up
 	smooth_cam_pos = smooth_cam_pos - ((smooth_cam_pos - cam_pos) * dt * 10)
 
-	render.SetupView3D(cam_pos, cam_ang:GetDeg(), cam_fov)
+	render.SetupView3D(cam_pos, cam_ang, cam_fov)
 end)
 
 local roll = 0

@@ -33,7 +33,7 @@ function PANEL:IsDown()
 end
 
 function PANEL:IsMouseOver()
-	return self:IsWorldPosInside(gui.GetMousePos())
+	return self:IsWorldPosInside(gui.GetMousePosition())
 end
 
 function PANEL:OnOtherKeyPress(key) end

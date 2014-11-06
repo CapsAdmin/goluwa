@@ -95,7 +95,7 @@ function autocomplete.DrawFound(x, y, found, max, offset)
 			local alpha = (-(i / max) + 1) ^ 15
 			
 			surface.SetAlphaMultiplier(alpha)
-			surface.SetTextPos(5, (i-offset+1) * h)
+			surface.SetTextPosition(5, (i-offset+1) * h)
 			surface.DrawText(i .. ". " ..  v)
 		end
 		

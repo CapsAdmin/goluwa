@@ -11,13 +11,13 @@ event.AddListener("Draw2D", "joystick", function()
 		
 		for k, v in pairs(data.axes) do	
 			v = math.round(v, 4)
-			surface.SetTextPos(x, y)
+			surface.SetTextPosition(x, y)
 			surface.DrawText(k .. " = " .. v)
 			y = y + 20
 		end
 		
 		for k, v in pairs(data.buttons) do
-			surface.SetTextPos(x, y)
+			surface.SetTextPosition(x, y)
 			surface.DrawText(k .. " = " .. v)
 			y = y + 20
 		end

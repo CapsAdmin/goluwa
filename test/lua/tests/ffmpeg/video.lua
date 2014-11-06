@@ -27,8 +27,8 @@ function goluwa.decoder_test.Draw2D()
 	surface.SetTexture(texture)
 	surface.DrawRect(0,0, texture.w,texture.h)
 	
-	surface.SetTextPos(0, 20)
+	surface.SetTextPosition(0, 20)
 	surface.DrawText("image queue size: " .. #decoder.streams[0].queue)
-	surface.SetTextPos(0, 40)
+	surface.SetTextPosition(0, 40)
 	surface.DrawText("frame skips: " .. decoder.frame_skips)
 end

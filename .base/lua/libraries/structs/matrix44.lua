@@ -204,29 +204,6 @@ function META:GetTranslation()
 	return m[12], m[13], m[14]
 end
 
-function META:GetAngles()
-	local m = self.m
-
-	if m[2] < 1 then
-        if m[2] > -1 then
-            return
-				math.atan2(-m[6], m[10]), 
-				math.asin(m[2]), 
-				math.atan2(-m[1], m[0])
-        else
-            return
-				-math.atan2(m[4], m[5]), 
-				-math.pi*2, 
-				0
-        end
-    end
-	
-	return
-		math.atan2(m[4], m[5]), 
-		math.pi*2, 
-		0
-end
-
 function META:GetClipCoordinates()
 	local m = self.m
 	
@@ -265,8 +242,8 @@ function META:Rotate(a, x, y, z, out)
 	local xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c, s, c
 	local optimized = false
 
-	local s = math.sin(math.rad(a))
-	local c = math.cos(math.rad(a))
+	local s = math.sin(a)
+	local c = math.cos(a)
 
 	if x == 0 then
 		if y == 0 then
@@ -387,7 +364,7 @@ do -- projection
 	function META:Perspective(fov, near, far, aspect)
 		local m = self.m
 
-		local yScale = 1.0 / math.tan((math.pi / 180.0) * fov / 2)
+		local yScale = 1.0 / math.tan(fov / 2)
 		local xScale = yScale / aspect
 		local nearmfar =  far - near
 		

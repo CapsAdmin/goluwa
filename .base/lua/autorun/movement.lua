@@ -64,17 +64,17 @@ if CLIENT then
 		end
 		
 		cmd.velocity = forward + side + up
-		cmd.angles = angles:GetDeg()
+		cmd.angles = angles
 		cmd.fov = fov
-		cmd.mouse_pos = window.GetMousePos()
+		cmd.mouse_pos = window.GetMousePosition()
 		
-		render.SetCamAng(cmd.angles)
+		render.SetCameraAngles(cmd.angles)
 		render.SetCamFOV(cmd.fov)
 		
 		local ghost = client.nv.ghost or NULL
 		if ghost:IsValid() then
 			local pos = ghost:GetComponent("physics"):GetPosition() 
-			render.SetCamPos(Vec3(-pos.y, -pos.x, -pos.z))
+			render.SetCamPosition(Vec3(-pos.y, -pos.x, -pos.z))
 		end
 
 		return cmd
@@ -91,7 +91,7 @@ if CLIENT then
 		for _, client in pairs(clients.GetAll()) do
 			if not client:IsBot() then
 				local cmd = client:GetCurrentCommand()
-				surface.SetTextPos(cmd.mouse_pos.x, cmd.mouse_pos.y)
+				surface.SetTextPosition(cmd.mouse_pos.x, cmd.mouse_pos.y)
 
 				local str = client:GetNick()
 				local coh = client:GetChatAboveHead()
@@ -177,7 +177,7 @@ if SERVER then
 			ent:SetModelPath("models/cube.obj")
 			ent:SetMass(100)
 			ent:SetPosition(cmd.net_position) 
-			ent:SetVelocity(cmd.angles:GetRad():GetForward() * 100)
+			ent:SetVelocity(cmd.angles:GetForward() * 100)
 			
 			event.Delay(3, function()
 				entities.SafeRemove(ent)

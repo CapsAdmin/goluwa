@@ -1,4 +1,4 @@
-local where = render.GetCamPos()
+local where = render.GetCameraPosition()
 
 if party_lights then
 	for k,v in pairs(party_lights) do

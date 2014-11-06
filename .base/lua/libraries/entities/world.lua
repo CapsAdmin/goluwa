@@ -77,7 +77,7 @@ end
 
 
 do -- sun
-	ADD("sun_angles", Ang3(-45,-45,0), function(var)
+	ADD("sun_angles", Deg3(-45,-45,0), function(var)
 		local vec = var:GetForward()
 		local size = world.Get("sun_size")
 		

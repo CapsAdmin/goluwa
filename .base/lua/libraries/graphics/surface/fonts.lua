@@ -170,7 +170,7 @@ function surface.DrawText(str, x, y)
 	surface.SetColor(r,g,b,a)
 end
 
-function surface.SetTextPos(x, y)
+function surface.SetTextPosition(x, y)
 	X = x or X
 	Y = y or Y
 end

@@ -62,14 +62,12 @@ function COMPONENT:SetTRPosition(vec)
 	self.TRMatrix:SetTranslation(vec.x, vec.y, vec.z)
 end
 
-function COMPONENT:GetTRAngles()
-	local p, y, r = self.TRMatrix:GetAngles()
-	
-	return Ang3(p, y, r):Deg()
+function COMPONENT:GetTRAngles()	
+	return self.TRMatrix:GetRotation():GetAngles()
 end
 
 function COMPONENT:SetTRAngles(ang)
-	
+	self.TRMatrix:SetRotation(Quat():SetAngles(ang))
 end
 
 function COMPONENT:GetTRRotation()

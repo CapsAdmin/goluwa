@@ -31,12 +31,12 @@ do -- window meta
 	
 	local x, y = ffi.new(sdl and "int[1]" or "double[1]"), ffi.new(sdl and "int[1]" or "double[1]")
 	
-	function META:GetMousePos()
+	function META:GetMousePosition()
 		sdl.GetMouseState(x, y)
 		return Vec2(x[0], y[0])
 	end
 
-	function META:SetMousePos(pos)
+	function META:SetMousePosition(pos)
 		sdl.WarpMouseInWindow(self.__ptr, pos:Unpack())
 	end
 
@@ -70,7 +70,7 @@ do -- window meta
 	end
 		 
 	function META:UpdateMouseDelta()	
-		local pos = self:GetMousePos()
+		local pos = self:GetMousePosition()
 	
 		if self.last_mpos then
 			self.mouse_delta = (pos - self.last_mpos)
@@ -103,7 +103,7 @@ do -- window meta
 		
 	end
 	
-	function META:OnCursorPos(x, y)
+	function META:OnCursorPosition(x, y)
 
 	end
 	
@@ -333,7 +333,7 @@ do -- window meta
 					local window = render.sdl_windows[event.motion.windowID]
 					self.mouse_delta.x = event.motion.xrel
 					self.mouse_delta.y = event.motion.yrel
-					call(window, "OnCursorPos", event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, event.motion.state, event.motion.which)
+					call(window, "OnCursorPosition", event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, event.motion.state, event.motion.which)
 				elseif event.type == sdl.e.SDL_MOUSEBUTTONDOWN or event.type == sdl.e.SDL_MOUSEBUTTONUP then
 					local window = render.sdl_windows[event.button.windowID]
 					call(window, "OnMouseInput", mbutton_translate[event.button.button], event.type == sdl.e.SDL_MOUSEBUTTONDOWN, event.button.x, event.button.y)

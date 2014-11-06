@@ -4,6 +4,10 @@ local META = {}
 
 META.ClassName = "Ang3"
 
+function Deg3(p, y, r)
+	return Ang3(p, y, r):Rad()
+end
+
 META.NumberType = "float"
 META.Args = {{"p", "x", "pitch"}, {"y", "yaw"}, {"r", "z", "roll"}}
 

@@ -724,7 +724,7 @@ function prototype.AddBufferTemplate(META)
 	end	
 
 	do -- push pop position
-		function META:PushPos(pos)
+		function META:PushPosition(pos)
 			self.push_pop_pos_stack = self.push_pop_pos_stack or {}
 			
 			table.insert(self.push_pop_pos_stack, self:GetPosition())
@@ -732,7 +732,7 @@ function prototype.AddBufferTemplate(META)
 			self:SetPosition(pos)
 		end
 		
-		function META:PopPos()
+		function META:PopPosition()
 			self:SetPosition(table.remove(self.push_pop_pos_stack))
 		end
 	end
@@ -755,9 +755,9 @@ function prototype.AddBufferTemplate(META)
 	META.__len = META.GetSize
 
 	function META:GetDebugString()
-		self:PushPos(1)
+		self:PushPosition(1)
 			local str = self:GetString():readablehex()
-		self:PopPos()
+		self:PopPosition()
 		return str
 	end
 end

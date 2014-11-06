@@ -637,11 +637,11 @@ do
 	end
 end
 
-function surface.GetMousePos()
+function surface.GetMousePosition()
 	if window.GetMouseTrapped() then
 		return render.GetWidth() / 2, render.GetHeight() / 2
 	end
-	return window.GetMousePos():Unpack()
+	return window.GetMousePosition():Unpack()
 end
 
 function surface.WorldToLocal(x, y)
@@ -673,7 +673,7 @@ local last_y = 0
 local last_diff = 0
 
 function surface.GetMouseVel()
-	local x, y = window.GetMousePos():Unpack()
+	local x, y = window.GetMousePosition():Unpack()
 	
 	local vx = x - last_x
 	local vy = y - last_y

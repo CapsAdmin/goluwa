@@ -41,7 +41,7 @@ event.AddListener("DrawHUD", "lol", function()
 	surface.SetColor(1,1,1,1)  
 
 	surface.SetFont("lol")
-	surface.SetTextPos(350, 350)
+	surface.SetTextPosition(350, 350)
 	surface.DrawText("outline blur text")
 	
 	if surface.fonts.lol.texture_atlas then

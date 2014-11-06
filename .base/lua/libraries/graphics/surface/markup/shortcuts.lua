@@ -1,12 +1,12 @@
 local META = (...) or prototype.GetRegistered("markup")
 
 function META:Backspace()
-	local sub_pos = self:GetCaretSubPos()
+	local sub_pos = self:GetCaretSubPosition()
 
 	if not self:DeleteSelection() and sub_pos ~= 1 then
 		if self.ControlDown then
 
-			local x, y = self:GetNextCharacterClassPos(-1, true)
+			local x, y = self:GetNextCharacterClassPosition(-1, true)
 			x = x - 1
 
 			if x <= 0 and #self.lines > 1 then
@@ -42,7 +42,7 @@ function META:Delete()
 		local ok = false
 
 		if self.ControlDown then
-			local x, y = self:GetNextCharacterClassPos(1, true)
+			local x, y = self:GetNextCharacterClassPosition(1, true)
 
 			x = x + 1
 
@@ -70,7 +70,7 @@ function META:Delete()
 end
 
 function META:Indent(back)
-	local sub_pos = self:GetCaretSubPos()
+	local sub_pos = self:GetCaretSubPosition()
 
 	local select_start = self:GetSelectStart()
 	local select_stop = self:GetSelectStop()
@@ -82,7 +82,7 @@ function META:Indent(back)
 		self:SelectStop(math.huge, select_stop.y)
 
 		-- and move the caret to bottom
-		self:SetCaretPos(select_stop.x, select_stop.y)
+		self:SetCaretPosition(select_stop.x, select_stop.y)
 
 		local select_start = self:GetSelectStart()
 		local select_stop = self:GetSelectStop()
@@ -167,7 +167,7 @@ function META:Enter()
 
 	self.real_x = x
 
-	self:SetCaretPos(x, y + 1, true)
+	self:SetCaretPosition(x, y + 1, true)
 end
 
 prototype.UpdateObjects(META)

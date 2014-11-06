@@ -213,7 +213,7 @@ local function load_mdl(path, thread)
 		if _debug then profiler.StartTimer(name) end
 
 		if count > 0 then
-			buffer:PushPos(offset)
+			buffer:PushPosition(offset)
 
 			for i = 1, count do
 				local data = {}
@@ -223,7 +223,7 @@ local function load_mdl(path, thread)
 				end
 			end
 
-			buffer:PopPos()
+			buffer:PopPosition()
 		end
 
 		header[name .. "_count"] = nil
@@ -239,11 +239,11 @@ local function load_mdl(path, thread)
 			local offset = buffer:ReadInt()
 
 			if offset > 0 then
-				buffer:PushPos(header.material_offset + offset)
+				buffer:PushPosition(header.material_offset + offset)
 					local str = buffer:ReadString()
-					if #str > 500 then buffer:PopPos() logf("%s: tried to read location %i but string size is %i bytes!!!!!!!!!\n", path, header.material_offset + offset, #str) return false end
+					if #str > 500 then buffer:PopPosition() logf("%s: tried to read location %i but string size is %i bytes!!!!!!!!!\n", path, header.material_offset + offset, #str) return false end
 					data.path = str
-				buffer:PopPos()
+				buffer:PopPosition()
 			end
 		end
 
@@ -257,9 +257,9 @@ local function load_mdl(path, thread)
 			local offset = buffer:ReadInt()
 
 			if offset > 0 then
-				buffer:PushPos(header.bone_offset + offset)
+				buffer:PushPosition(header.bone_offset + offset)
 					data.name = buffer:ReadString()
-				buffer:PopPos()
+				buffer:PopPosition()
 			else
 				data.name = ""
 			end
@@ -302,9 +302,9 @@ local function load_mdl(path, thread)
 			local offset = buffer:ReadInt()
 
 			if offset > 0 then
-				buffer:PushPos(header.bone_offset + offset)
+				buffer:PushPosition(header.bone_offset + offset)
 					data.surface_prop_name = buffer:ReadString()
-				buffer:PopPos()
+				buffer:PopPosition()
 			else
 				data.surface_prop_name = ""
 			end
@@ -324,9 +324,9 @@ local function load_mdl(path, thread)
 	local function string_from_offset(offset, offset2)
 		if offset2 == 0 then return "" end
 
-		buffer:PushPos(offset + offset2)
+		buffer:PushPosition(offset + offset2)
 		local str = buffer:ReadString()
-		buffer:PopPos()
+		buffer:PopPosition()
 		return str
 	end
 
@@ -381,14 +381,14 @@ local function load_mdl(path, thread)
 		data.cyclePoseIndex = buffer:ReadInt()
 	end)
 
-	buffer:PushPos(header.keyvalue_offset)
+	buffer:PushPosition(header.keyvalue_offset)
 		local str = buffer:ReadString(header.keyvalue_size)
 		if str then
 			header.keyvalues = steam.VDFToTable(str)
 		end
 		header.keyvalue_offset = nil
 		header.keyvalue_count = nil
-	buffer:PopPos()
+	buffer:PopPosition()
 
 	--[[
 	logn("these remain to be parsed:")
@@ -425,7 +425,7 @@ local function load_vtx(path)
 	vtx.body_part_offset = buffer:ReadLong()
 
 	if vtx.body_part_count > 0 and vtx.body_part_offset ~= 0 then
-		buffer:PushPos(vtx.body_part_offset)
+		buffer:PushPosition(vtx.body_part_offset)
 		vtx.body_parts = {}
 
 		for i = 1, vtx.body_part_count do
@@ -437,7 +437,7 @@ local function load_vtx(path)
 			vtx.body_parts[i] = body_part
 
 			if body_part.model_count > 0 and body_part.model_offset ~= 0 then
-				buffer:PushPos(stream_pos + body_part.model_offset)
+				buffer:PushPosition(stream_pos + body_part.model_offset)
 				body_part.models = {}
 
 				for i = 1, body_part.model_count do
@@ -449,7 +449,7 @@ local function load_vtx(path)
 					body_part.models[i] = model
 
 					if model.lod_count > 0 and model.lod_offset ~= 0 then
-						buffer:PushPos(stream_pos + model.lod_offset)
+						buffer:PushPosition(stream_pos + model.lod_offset)
 						model.model_lods = {}
 
 						for i = 1, model.lod_count do
@@ -462,7 +462,7 @@ local function load_vtx(path)
 							model.model_lods[i] = lod_model
 
 							if lod_model.mesh_count > 0 and lod_model.mesh_offset ~= 0 then
-								buffer:PushPos(stream_pos + lod_model.mesh_offset)
+								buffer:PushPosition(stream_pos + lod_model.mesh_offset)
 								lod_model.meshes = {}
 
 								for i = 1, lod_model.mesh_count do
@@ -475,7 +475,7 @@ local function load_vtx(path)
 									lod_model.meshes[i] = mesh
 
 									if mesh.strip_group_count > 0 and mesh.strip_group_offset ~= 0 then
-										buffer:PushPos(stream_pos + mesh.strip_group_offset)   
+										buffer:PushPosition(stream_pos + mesh.strip_group_offset)   
 										mesh.strip_groups = {}
 										
 										for i = 1, mesh.strip_group_count do
@@ -493,7 +493,7 @@ local function load_vtx(path)
 											
 											local vertices = {}
 											if strip_group.vertices_count > 0 and strip_group.vertices_offset ~= 0 then
-												buffer:PushPos(stream_pos + strip_group.vertices_offset)
+												buffer:PushPosition(stream_pos + strip_group.vertices_offset)
 
 												for i = 1, strip_group.vertices_count do
 													local vertex = {bone_weight_indices = {}, boneId = {}}
@@ -508,23 +508,23 @@ local function load_vtx(path)
 													vertices[i] = vertex
 												end
 
-												buffer:PopPos()
+												buffer:PopPosition()
 											end
 											
 											local indices = {}
 											if strip_group.indices_count > 0 and strip_group.indices_offset ~= 0 then
-												buffer:PushPos(stream_pos + strip_group.indices_offset)
+												buffer:PushPosition(stream_pos + strip_group.indices_offset)
 
 												for i = 1, strip_group.indices_count do
 													indices[i] = buffer:ReadShort()
 												end
 
-												buffer:PopPos()
+												buffer:PopPosition()
 											end
 																						
 											local strips = {}											
 											if strip_group.strip_count > 0 and strip_group.strip_offset ~= 0 then
-												buffer:PushPos(stream_pos + strip_group.strip_offset)
+												buffer:PushPosition(stream_pos + strip_group.strip_offset)
 												
 												for i = 1, strip_group.strip_count do
 													local strip = {}
@@ -544,24 +544,24 @@ local function load_vtx(path)
 													strips[i] = strip
 												end
 																								
-												buffer:PopPos()
+												buffer:PopPosition()
 											end						
 																						
 											strip_group.strips = strips
 										end
-										buffer:PopPos()
+										buffer:PopPosition()
 									end
 								end
-								buffer:PopPos()
+								buffer:PopPosition()
 							end
 						end
-						buffer:PopPos()
+						buffer:PopPosition()
 					end
 				end
-				buffer:PopPos()
+				buffer:PopPosition()
 			end
 		end
-		buffer:PopPos()
+		buffer:PopPosition()
 	end
 
 	return vtx

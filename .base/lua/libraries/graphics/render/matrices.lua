@@ -41,11 +41,11 @@ render.camera = {
 local cam = render.camera
 
 -- useful for shaders
-function render.GetCamPos()
+function render.GetCameraPosition()
 	return cam.pos
 end
 
-function render.GetCamAng()
+function render.GetCameraAngles()
 	return cam.ang
 end
 
@@ -163,7 +163,7 @@ function render.SetupView3D(pos, ang, fov, out)
 	if ang then
 		-- source engine style camera angles
 		view:Rotate(ang.r, 0, 0, 1)
-		view:Rotate(ang.p + 90, 1, 0, 0)
+		view:Rotate(ang.p + math.pi/2, 1, 0, 0)
 		view:Rotate(ang.y, 0, 0, 1)
 	end
 	
@@ -178,21 +178,21 @@ function render.SetupView3D(pos, ang, fov, out)
 	render.matrices.view_3d_inverse = render.matrices.view_3d:GetInverse()
 end
 
-function render.SetCamPos(pos)
+function render.SetCamPosition(pos)
 	cam.pos = pos
 	render.SetupView3D(cam.pos, cam.ang)
 end
 
-function render.GetCamPos()
+function render.GetCameraPosition()
 	return cam.pos
 end
 
-function render.SetCamAng(ang)
+function render.SetCameraAngles(ang)
 	cam.ang = ang
 	render.SetupView3D(cam.pos, cam.ang)
 end
 
-function render.GetCamAng()
+function render.GetCameraAngles()
 	return cam.ang
 end
 

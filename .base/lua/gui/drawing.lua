@@ -48,7 +48,7 @@ do
 				x = x + (w * align_normal.x)
 				y = y + (h * align_normal.y)
 
-				surface.SetTextPos(x, y)
+				surface.SetTextPosition(x, y)
 			end
 			
 			surface.SetColor(color:Unpack())

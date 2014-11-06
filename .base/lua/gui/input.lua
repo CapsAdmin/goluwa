@@ -1,7 +1,7 @@
 
 do -- events
-	function gui.GetMousePos()
-		return window.GetMousePos()
+	function gui.GetMousePosition()
+		return window.GetMousePosition()
 	end
 	
 	function gui.IsMouseDown(button)
@@ -17,7 +17,7 @@ do -- events
 	end, {on_error = system.OnError})
 
 	event.AddListener("MouseInput", "gui", function(key, press)
-		gui.MouseInput(key, press, gui.GetMousePos())
+		gui.MouseInput(key, press, gui.GetMousePosition())
 	end, {on_error = system.OnError})
 end
 
@@ -36,7 +36,7 @@ function gui.MouseInput(key, press, pos)
 		if not pnl.IgnoreMouse and pnl:IsWorldPosInside(pos) and pnl:IsVisible() then
 			
 			if pnl.AlwaysReceiveMouse then
-				pnl:OnMouseInput(key, press, pos - pnl:GetWorldPos())
+				pnl:OnMouseInput(key, press, pos - pnl:GetWorldPosition())
 			end
 			
 			table.insert(tbl, pnl)
@@ -45,13 +45,13 @@ function gui.MouseInput(key, press, pos)
 
 	for _, pnl in pairs(tbl) do
 		if pnl:IsInFront() then
-			return pnl:OnMouseInput(key, press, pos - pnl:GetWorldPos())
+			return pnl:OnMouseInput(key, press, pos - pnl:GetWorldPosition())
 		end
 	end
 	
 	for _, pnl in pairs(tbl) do	
 		if press then pnl:BringToFront() end
-		return pnl:OnMouseInput(key, press, pos - pnl:GetWorldPos())
+		return pnl:OnMouseInput(key, press, pos - pnl:GetWorldPosition())
 	end
 end
 

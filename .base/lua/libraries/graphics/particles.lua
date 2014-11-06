@@ -161,7 +161,7 @@ function EMITTER:Draw()
 			
 					
 			if not (length_x == 0 and length_y == 0) and self.Mode2D then
-				a = deg(p.Velocity:GetAng3().y)
+				a = deg(p.Velocity:GetAngles().y)
 				
 				if length_x ~= 0 then
 					w = w * length_x

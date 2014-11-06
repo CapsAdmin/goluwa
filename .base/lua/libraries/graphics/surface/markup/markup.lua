@@ -188,7 +188,7 @@ function META:CallTagFunction(chunk, name, ...)
 	end
 end
 
-function META:GetNextCharacterClassPos(delta, next_space)
+function META:GetNextCharacterClassPosition(delta, next_space)
 
 	if next_space == nil then
 		next_space = not self.caret_shift_pos
@@ -251,7 +251,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 	start_offset = start_offset or 0
 	stop_offset = stop_offset or 0
 
-	local sub_pos = self:GetCaretSubPos()
+	local sub_pos = self:GetCaretSubPosition()
 
 	self:DeleteSelection(true)
 
@@ -329,7 +329,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 
 		self.real_x = x
 
-		self:SetCaretPos(x, y)
+		self:SetCaretPosition(x, y)
 	end
 
 	self:InvalidateEditedText()
@@ -344,7 +344,7 @@ function META:InvalidateEditedText()
 	end
 end
 
-function META:GetSubPosFromPos(x, y)
+function META:GetSubPosFromPosition(x, y)
 
 	if x == math.huge and y == math.huge then
 		return #self.chars

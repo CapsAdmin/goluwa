@@ -34,7 +34,7 @@ function panel:OnDraw(size)
 	surface.DrawRect(0,0, markup.width or w, markup.height or h)
 	
 	-- this is needed for proper mouse coordinates
-	local x, y = self:GetWorldPos():Unpack()
+	local x, y = self:GetWorldPosition():Unpack()
 	markup:Draw(x, y, size:Unpack())
 end
 
@@ -43,7 +43,7 @@ function panel:OnRequestLayout()
 end
 
 function panel:OnMouseInput(button, press)
-	markup:OnMouseInput(button, press, window.GetMousePos():Unpack())
+	markup:OnMouseInput(button, press, window.GetMousePosition():Unpack())
 end
 
 function panel:OnKeyInput(key, press)

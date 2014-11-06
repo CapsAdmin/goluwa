@@ -8,7 +8,7 @@ gui.GetSet(PANEL, "DefaultValue", 0)
 function PANEL:OnDraw(size)
 
 	if self.drag_pos and gui.IsMouseDown("button_1") then
-		local delta = (self.drag_pos - gui.GetMousePos()) / 100
+		local delta = (self.drag_pos - gui.GetMousePosition()) / 100
 		
 		if input.IsKeyDown("lshift") then
 			delta = delta / 5
@@ -49,7 +49,7 @@ function PANEL:OnMouseInput(button, press, pos, ...)
 			if input.IsKeyDown("lctrl") then
 				self:SetValue(self.DefaultValue)
 			else
-				self.drag_pos = gui.GetMousePos()
+				self.drag_pos = gui.GetMousePosition()
 				self.drag_value = self.Value
 			end
 		end
