@@ -11,7 +11,7 @@ prototype.GetSet(PANEL, "Fraction", Vec2(0, 0))
 prototype.GetSet(PANEL, "XSlide", true)
 prototype.GetSet(PANEL, "YSlide", false)
 
-prototype.GetSet(PANEL, "RightFill", true)
+prototype.GetSet(PANEL, "RightFill", false)
 prototype.GetSet(PANEL, "LeftFill", false)
 
 function PANEL:Initialize()
