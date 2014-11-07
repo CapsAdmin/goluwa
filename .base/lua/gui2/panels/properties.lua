@@ -181,7 +181,34 @@ do -- number
 			if input.IsKeyDown("left_alt") then
 				sens = sens / 10
 			end
-		
+			
+			do
+				for i, parent in ipairs(self:GetParentList()) do
+					if parent.ClassName == "properties" then
+						local ppos = self:LocalToWorld(pos)
+						if ppos.y > render.GetHeight() then
+							local mpos = window.GetMousePosition()
+							mpos.y = 0
+							window.SetMousePosition(mpos)
+							
+							self.base_value = nil
+							self.drag_y_pos = nil
+							return
+						elseif ppos.y < 0 then
+							local mpos = window.GetMousePosition()
+							mpos.y = render.GetHeight()
+							window.SetMousePosition(mpos)
+							
+							self.base_value = nil
+							self.drag_y_pos = nil
+							return
+						end
+					end
+				end
+
+				--if wpos.y > render.GetHeight()
+			end
+				
 			local delta = ((self.drag_y_pos - pos.y) / 10) * sens
 			local value = self.base_value + delta
 			
