@@ -128,6 +128,12 @@ do -- number
 	PANEL.Base = "base_property"
 	PANEL.ClassName = "number_property"
 	
+	prototype.GetSet(PANEL, "Minimum")
+	prototype.GetSet(PANEL, "Maximum")
+	prototype.GetSet(PANEL, "Sensitivity", 1)
+	
+	PANEL.slider = NULL
+	
 	function PANEL:Initialize()
 		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
 		
@@ -150,6 +156,14 @@ do -- number
 		self.drag_y_pos = nil
 	end
 	
+	function PANEL:OnPostDraw()
+		if self.Minimum and self.Maximum then
+			surface.SetWhiteTexture()
+			surface.SetColor(0.5,0.75,1,0.5)
+			surface.DrawRect(0, 0, self:GetWidth() * math.normalize(self:GetValue(), self.Minimum, self.Maximum), self:GetHeight())
+		end
+	end
+		
 	function PANEL:OnUpdate()
 		if not self.drag_number then return end
 		 
@@ -162,7 +176,7 @@ do -- number
 			
 			self.drag_y_pos = self.drag_y_pos or pos.y
 		
-			local sens = 1
+			local sens = self.Sensitivity
 			
 			if input.IsKeyDown("left_alt") then
 				sens = sens / 10
@@ -176,7 +190,15 @@ do -- number
 			else
 				value = math.round(value, 3)
 			end
-					
+			
+			if self.Minimum then
+				value = math.max(value, self.Minimum)
+			end
+			
+			if self.Maximum then
+				value = math.min(value, self.Maximum)
+			end
+
 			self:SetValue(value)
 		else
 			self.drag_number = false 
@@ -435,6 +457,20 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 		panel:Dock("fill")
 		panel.left = left
 		property = panel
+		
+		if t == "number" then
+			if extra_info.editor_min then
+				panel:SetMinimum(extra_info.editor_min)
+			end
+			
+			if extra_info.editor_max then
+				panel:SetMaximum(extra_info.editor_max)
+			end
+			
+			if extra_info.editor_sens then
+				panel:SetMaximum(extra_info.max)
+			end
+		end
 				
 		right:SetWidth(panel.label:GetWidth())
 				
@@ -576,7 +612,8 @@ function PANEL:AddPropertiesFromObject(obj)
 					return get(obj)
 				end
 			end, 
-			def
+			def,
+			info
 		)
 	end
 end
