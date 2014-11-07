@@ -73,23 +73,39 @@ function META:OnRemove()
 end
 
 do -- serializing
-	function META:SetStorableTable(tbl)
-		for name, vars in pairs(tbl) do
+	function META:SetStorableTable(data)
+		self.config = data.config
+		
+		for name, vars in pairs(data.self) do
 			local component = self:GetComponent(name)
-			if component:IsValid() then
-				component:SetStorableTable(vars)
+			
+			if not component:IsValid() then
+				component = self:AddComponent(name)
 			end
+			
+			component:SetStorableTable(vars)
+		end
+		
+		for i, data in ipairs(data.children) do
+			local ent = entities.CreateEntity(data.config, self)
+			ent:SetStorableTable(data)
 		end
 	end
 	
 	function META:GetStorableTable()
-		local out = {}
+		local data = {self = {}, children = {}}
+		
+		data.config = self.config
 		
 		for name, component in pairs(self:GetComponents()) do
-			out[name] = component:GetStorableTable()
+			data.self[name] = component:GetStorableTable()
 		end
 		
-		return table.copy(out)
+		for i, v in ipairs(self:GetChildren()) do
+			data.children[i] = v:GetStorableTable()
+		end
+		
+		return table.copy(data)
 	end
 end
 
