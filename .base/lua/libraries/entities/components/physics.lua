@@ -214,13 +214,13 @@ do
 		self.PhysicsModelPath = path
 		
 		if not vfs.IsFile(path) then
-			error(path .. " not found", 2)
+			return nil, path .. " not found"
 		end
 		
 		local scene = assimp.ImportFile(R(path), assimp.e.aiProcessPreset_TargetRealtime_Quality)
 		
 		if scene.mMeshes[0].mNumVertices == 0 then
-			error("no vertices found in " .. path, 2)
+			return nil, "no vertices found in " .. path
 		end
 							
 		local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices  * 3)
@@ -255,6 +255,8 @@ do
 		
 		self:SetPosition(self.Position)
 		self:SetRotation(self.Rotation)
+		
+		return true
 	end
 	
 	function COMPONENT:InitPhysicsConvexHull()
