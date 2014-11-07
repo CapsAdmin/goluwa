@@ -214,7 +214,7 @@ do -- boolean
 	
 	local str2bool = {
 		["true"] = true,
-		["false"] = true,
+		["false"] = false,
 		["1"] = true,
 		["0"] = false,
 		["yes"] = true,
