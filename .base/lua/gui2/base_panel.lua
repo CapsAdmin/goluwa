@@ -1256,7 +1256,16 @@ do -- mouse
 	end
 
 	function PANEL:CalcMouse()
-		if self:HasParent() and not self.Parent:IsWorld() and not self.Parent.mouse_over and not self:IsDragging() and not self.AlwaysCalcMouse then return end
+		if 
+			self:HasParent() and 
+			not self.Parent:IsWorld() and 
+			not self.Parent.mouse_over and 
+			not self:IsDragging() and 
+			not self.AlwaysCalcMouse and 
+			not self.IgnoreMouse 
+		then 
+			return 
+		end
 		
 		local x, y = surface.WorldToLocal(gui2.mouse_pos.x, gui2.mouse_pos.y)
 
