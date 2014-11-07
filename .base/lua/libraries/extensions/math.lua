@@ -1,3 +1,7 @@
+function math.normalize(num, min, max)
+	return (num - min) / (max - min)
+end
+
 function math.pow2ceil(n)
 	return 2 ^ math.ceil(math.log(n) / math.log(2))
 end
