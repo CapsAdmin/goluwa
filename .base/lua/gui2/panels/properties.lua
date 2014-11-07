@@ -154,6 +154,7 @@ do -- number
 		self.drag_number = true
 		self.base_value = nil
 		self.drag_y_pos = nil
+		self.real_base_value = nil
 	end
 	
 	function PANEL:OnPostDraw()
@@ -161,16 +162,30 @@ do -- number
 			surface.SetWhiteTexture()
 			surface.SetColor(0.5,0.75,1,0.5)
 			surface.DrawRect(0, 0, self:GetWidth() * math.normalize(self:GetValue(), self.Minimum, self.Maximum), self:GetHeight())
+		elseif self.drag_number then
+			surface.SetWhiteTexture()
+			
+			local frac = math.abs((self.real_base_value - self:GetValue())) / 100
+			surface.SetColor(1,0.5,0.5,frac)
+			
+			surface.DrawRect(0, 0, self:GetWidth(), self:GetHeight())
 		end
 	end
 		
 	function PANEL:OnUpdate()
 		if not self.drag_number then return end
-		 
+				
+		if input.IsKeyDown("left_shift") then
+			self:SetValue(self.real_base_value)
+			self.base_value = nil
+			self.drag_y_pos = nil
+		end
+		
 		if input.IsMouseDown("button_1") then			
 			local pos = self:GetMousePosition()
 			
 			self.base_value = self.base_value or self:GetValue()
+			self.real_base_value = self.real_base_value or self.base_value
 			
 			if not self.base_value then return end
 			
