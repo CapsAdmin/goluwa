@@ -18,9 +18,6 @@ do -- tree node
 
 		local button = gui2.CreatePanel("text_button", self)
 		button:SetMargin(Rect()+2*S)
-		button:SetStyleTranslation("button_active", "gradient")
-		button:SetStyleTranslation("button_inactive", "gradient")
-		button:SetStyle("gradient")
 		button:SetColor(Color(1,1,1,0))
 		button:SetIgnoreMouse(true)
 		self.button = button
