@@ -1,3 +1,7 @@
+function math.map(num, in_min, in_max, out_min, out_max)	
+	return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+end
+
 function math.normalize(num, min, max)
 	return (num - min) / (max - min)
 end
