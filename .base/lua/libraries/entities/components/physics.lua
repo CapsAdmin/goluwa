@@ -26,7 +26,7 @@ COMPONENT.Network = {
 COMPONENT.matrix = Matrix44()
 COMPONENT.rigid_body = NULL
 
-local function DELEGATE(META, field, typ)
+local function DELEGATE(META, field, typ, extra_info)
 	
 	if typ == "vec3" then
 		prototype.GetSet(META, field, Vec3())
@@ -65,7 +65,7 @@ local function DELEGATE(META, field, typ)
 			return s[field]
 		end
 	else
-		prototype.GetSet(META, field, 0)
+		prototype.GetSet(META, field, 0, extra_info)
 		local name = "Set" .. field
 		META[name] = function(s, val)
 			s[field] = val
@@ -95,7 +95,7 @@ prototype.StartStorable()
 	DELEGATE(COMPONENT, "PhysicsBoxScale", "vec3")
 	DELEGATE(COMPONENT, "PhysicsSphereRadius")
 
-	DELEGATE(COMPONENT, "Mass")
+	DELEGATE(COMPONENT, "Mass", "number", {editor_min = 0})
 	DELEGATE(COMPONENT, "AngularDamping")
 	DELEGATE(COMPONENT, "LinearDamping")
 	DELEGATE(COMPONENT, "LinearSleepingThreshold")

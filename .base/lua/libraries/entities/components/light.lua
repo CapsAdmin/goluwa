@@ -17,7 +17,7 @@ prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "Roughness", 0.5)
 
 	prototype.GetSet(COMPONENT, "Shadow", false)
-	prototype.GetSet(COMPONENT, "FOV", 90)
+	prototype.GetSet(COMPONENT, "FOV", 90, {editor_min = 0, editor_max = 180})
 	prototype.GetSet(COMPONENT, "NearZ", 1)
 	prototype.GetSet(COMPONENT, "FarZ", 32000)
 	prototype.GetSet(COMPONENT, "OrthoSize", 0)
