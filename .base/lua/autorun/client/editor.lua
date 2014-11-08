@@ -5,67 +5,6 @@ editor.tree = editor.tree or NULL
 editor.properties = editor.properties or NULL
 editor.selected_ent = editor.selected_ent or NULL
 
-local icons = {
-	copy = "textures/silkicons/page_white_text.png",
-	uniqueid = "textures/silkicons/vcard.png",
-	paste = "textures/silkicons/paste_plain.png",
-	clone = "textures/silkicons/page_copy.png",
-	new = "textures/silkicons/add.png",
-	autoload = "textures/silkicons/transmit_go.png",
-	url = "textures/silkicons/server_go.png",
-	outfit = "textures/silkicons/group.png",
-	clear = "textures/silkicons/cross.png",
-	language = "textures/silkicons/user_comment.png",
-	font = "textures/silkicons/text_smallcaps.png",
-	load = "textures/silkicons/folder.png",
-	save = "textures/silkicons/disk.png",
-	exit = "textures/silkicons/cancel.png",
-	wear = "textures/silkicons/transmit.png",
-	help = "textures/silkicons/information.png",
-	edit = "textures/silkicons/table_edit.png",
-	revert = "textures/silkicons/table_delete.png",
-	about = "textures/silkicons/star.png",
-	appearance = "textures/silkicons/paintcan.png",
-	orientation = "textures/silkicons/shape_handles.png",
-
-	text = "textures/silkicons/text_align_center.png",
-	bone = "widgets/bone_small.png",
-	clip = "textures/silkicons/cut.png",
-	light = "textures/silkicons/lightbulb.png",
-	sprite = "textures/silkicons/layers.png",
-	bone = "textures/silkicons/connect.png",
-	effect = "textures/silkicons/wand.png",
-	model = "textures/silkicons/shape_square.png",
-	animation = "textures/silkicons/eye.png",
-	holdtype = "textures/silkicons/user_edit.png",
-	entity = "textures/silkicons/brick.png",
-	group = "textures/silkicons/world.png",
-	trail = "textures/silkicons/arrow_undo.png",
-	event = "textures/silkicons/clock.png",
-	sunbeams = "textures/silkicons/weather_sun.png",
-	jiggle = "textures/silkicons/chart_line.png",
-	sound = "textures/silkicons/sound.png",
-	command = "textures/silkicons/application_xp_terminal.png",
-	material = "textures/silkicons/paintcan.png",
-	proxy = "textures/silkicons/calculator.png",
-	particles = "textures/silkicons/water.png",
-	woohoo = "textures/silkicons/webcam_delete.png",
-	halo = "textures/silkicons/shading.png",
-	poseparameter = "textures/silkicons/disconnect.png",
-	fog = "textures/silkicons/weather_clouds.png",
-		physics = "textures/silkicons/shape_handles.png",
-		beam = "textures/silkicons/vector.png",
-	projectile = "textures/silkicons/bomb.png",
-	shake = "textures/silkicons/transmit.png",
-	ogg = "textures/silkicons/music.png",
-	webaudio = "textures/silkicons/sound_add.png",
-	script = "textures/silkicons/page_white_gear.png",
-	info = "textures/silkicons/help.png",
-	bodygroup = "textures/silkicons/user.png",
-	camera = "textures/silkicons/camera.png",
-	custom_animation = "textures/silkicons/film.png",
-}
-
 function editor.Open()
 	gui2.RemovePanel(editor.frame)
 	
@@ -107,20 +46,20 @@ function editor.Open()
 			table.insert(options, {...})
 		end
 		
-		--add("wear", nil, icons.wear)
+		--add("wear", nil, gui2.skin.icons.wear)
 		
 		if node then
 			add("copy", function()
 				system.SetClipboard(serializer.Encode("luadata", node.ent:GetStorableTable()))
-			end, icons.copy)
+			end, gui2.skin.icons.copy)
 			add("paste", function()
 				node.ent:SetStorableTable(serializer.Decode("luadata", system.GetClipboard()))
-			end, icons.paste)
+			end, gui2.skin.icons.paste)
 			add("clone", function()
 				local ent = entities.CreateEntity(node.ent.config)
 				ent:SetParent(node.ent:GetParent())
 				ent:SetStorableTable(node.ent:GetStorableTable())
-			end, icons.clone)
+			end, gui2.skin.icons.clone)
 		end
 		
 		add()
@@ -130,9 +69,9 @@ function editor.Open()
 		end		
 	
 		add()
-		--add("help", nil, icons.help)
-		add("save", nil, icons.save)
-		add("load", nil, icons.load)
+		--add("help", nil, gui2.skin.icons.help)
+		add("save", nil, gui2.skin.icons.save)
+		add("load", nil, gui2.skin.icons.load)
 		
 		if node then
 			add()
@@ -141,7 +80,7 @@ function editor.Open()
 				if node:IsValid() and node.ent:IsValid() then
 					node.ent:Remove()
 				end
-			end, icons.clear)
+			end, gui2.skin.icons.clear)
 		end
 		
 		gui2.CreateMenu(options, frame)
@@ -157,7 +96,7 @@ function editor.Open()
 			node.OnRightClick = right_click_node
 			node.OnMouseHoverTrigger = show_tooltip
 			node.ent = ent
-			--node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
+			--node:SetIcon(Texture("textures/" .. gui2.skin.icons[val.self.ClassName]))
 			fill(ent:GetChildren(), node)
 		end  
 	end
@@ -174,7 +113,7 @@ function editor.Open()
 		for k,v in pairs(entities.GetAll()) do if not v:HasParent() then table.insert(ents, v) end end
 		fill(ents, tree)
 		tree:SetSize(tree:GetSizeOfChildren())
-		tree:SetWidth(frame:GetWidth())
+		--tree:SetStretchToPanelWidth(frame)
 		
 		scroll:SetAlwaysReceiveMouseInput(true)
 		
