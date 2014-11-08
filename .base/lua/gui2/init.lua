@@ -11,18 +11,31 @@ gui2.focus_panel = gui2.focus_panel or NULL
 
 gui2.panels = gui2.panels or {} 
 
-function gui2.CreatePanel(name, parent)		
+function gui2.CreatePanel(name, parent, store_in_parent)
+	parent = parent or gui2.world
+	
 	local self = prototype.CreateDerivedObject("panel2", name)
 	
-	if not self then return NULL end
-					
-	self:SetParent(parent or gui2.world)
+	if not self then 
+		return NULL 
+	end
+	
+	self:SetParent(parent)
 	self:Initialize()
 	
 	gui2.panels[self] = self
 	
 	-- this will make calls to layout always layout until next frame
 	self.layout_me = "init"
+	
+	if store_in_parent then
+		prototype.SafeRemove(self)
+		if type(store_in_parent) == "string" then
+			parent[store_in_parent] = self
+		else
+			parent[name] = self
+		end
+	end
 	
 	return self
 end
