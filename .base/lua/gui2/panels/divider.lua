@@ -58,7 +58,7 @@ function PANEL:OnLayout()
 		self.horizontal_divider:SetSize(Vec2(self.DividerWidth, self.DividerHeight == 0 and self:GetHeight() or self.DividerHeight))
 		
 		if self.left:IsValid() then
-			self.left:SetSize(Vec2(self.horizontal_divider:GetX() + (self.HideDivider and self.DividerWidth or 0), self:GetHeight()))
+			self.left:SetSize(Vec2(self.horizontal_divider:GetX() + (self.HideDivider and 0 or self.DividerWidth), self:GetHeight()))
 		end
 		
 		if self.right:IsValid() then
@@ -75,7 +75,7 @@ function PANEL:OnLayout()
 		self.vertical_divider:SetSize(Vec2(self.DividerHeight == 0 and self:GetWidth() or self.DividerHeight, self.DividerWidth))
 		
 		if self.top:IsValid() then
-			self.top:SetSize(Vec2(self:GetWidth(), self.vertical_divider:GetY() + (self.HideDivider and self.DividerWidth or 0)))
+			self.top:SetSize(Vec2(self:GetWidth(), self.vertical_divider:GetY() + (self.HideDivider and 0 or self.DividerWidth)))
 		end
 		
 		if self.bottom:IsValid() then
