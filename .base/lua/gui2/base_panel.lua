@@ -20,6 +20,10 @@ prototype.GetSet(PANEL, "LayoutParentOnLayout", false)
 prototype.GetSet(PANEL, "VisibilityPanel", NULL)
 prototype.GetSet(PANEL, "NoDraw", false)
 
+function PANEL:CreatePanel(name, store_in_self)
+	return gui2.CreatePanel(name, self, store_in_self)
+end
+
 function PANEL:__tostring2()
 	return ("[%s %s %s %s][%s]"):format(self.Position.x, self.Position.y, self.Size.w, self.Size.h, self.layout_count)
 end
