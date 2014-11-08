@@ -35,6 +35,9 @@ function PANEL:SetText(str)
 	
 	markup:Invalidate()
 	self:OnUpdate()
+	if self.ConcatenateTextToSize then
+		self:Concatenate()
+	end
 end
 
 function PANEL:GetText()
