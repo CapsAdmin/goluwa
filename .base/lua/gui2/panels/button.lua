@@ -108,6 +108,12 @@ function PANEL:OnMouseInput(button, press)
 	end
 end
 
+function PANEL:OnGlobalMouseInput(button, press)
+	if self.Mode == "normal" and not press and self.button_down[button] and not self.mouse_over then
+		self:SetStyle(self.InactiveStyle)
+	end
+end
+
 function PANEL:OnMouseEnter()
 	if self.HighlightOnMouseEnter then
 		self:Animate("DrawColor", {Color(1,1,1,1)*0.3, function() return self.Highlight or self:IsMouseOver() end, "from"}, duration, "", 0.25)
