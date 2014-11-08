@@ -115,59 +115,51 @@ function PANEL:OnLayout()
 	if self.XScrollBar then self.x_handle:SetPosition(self.x_handle:GetPosition()) end
 	if self.YScrollBar then self.y_handle:SetPosition(self.y_handle:GetPosition()) end
 		
-	panel:SetSize(panel:GetSizeOfChildren())
+	
+	local children_size = panel:GetSizeOfChildren()
+	panel:SetSize(children_size)
+			
+	local y_offset = 0
+	
+	if self.XScrollBar and self.x_track:IsVisible() and children_size.h < children_size.w then
+		y_offset = scroll_width
+	end
+		
+	local x_offset = 0
+
+	if self.YScrollBar and self.y_track:IsVisible() and children_size.w < children_size.h then
+		x_offset = scroll_width
+	end	
+	
+	if self.scroll_area:GetHeight() > children_size.h + scroll_width then
+		self.y_track:SetVisible(false)
+	else
+		self.y_track:SetVisible(true)
+	end
+						
+	if self.scroll_area:GetWidth() > children_size.w + scroll_width then
+		self.x_track:SetVisible(false)
+	else
+		self.x_track:SetVisible(true)
+	end
 	
 	if self.YScrollBar then
-		local offset = 0
-	
-		if self.XScrollBar and self.x_track:IsVisible() then
-			offset = scroll_width
-		end
-	
-		self.y_track:SetHeight(self:GetHeight() - scroll_width)
+		self.y_track:SetHeight(self:GetHeight() - y_offset)
 		self.y_track:SetX(self:GetWidth() - self.y_track:GetWidth())
 		
-		self.y_handle:SetHeight(math.max(-(panel:GetSizeOfChildren().h - self.y_track:GetHeight()) + self.y_track:GetHeight(), scroll_width))
-						
-		if self.scroll_area:GetHeight() > panel:GetSizeOfChildren().h then
-			self.y_track:SetVisible(false)
-		else
-			self.y_track:SetVisible(true)
-		end
+		self.y_handle:SetHeight(math.max(-(children_size.h - self.y_track:GetHeight()) + self.y_track:GetHeight(), scroll_width))
 	end
 	
-	if self.XScrollBar then
-		local offset = 0
-	
-		if self.YScrollBar and self.y_track:IsVisible() then
-			offset = scroll_width
-		end	
-	
-		self.x_track:SetWidth(self:GetWidth() - scroll_width)
+	if self.XScrollBar then	
+		self.x_track:SetWidth(self:GetWidth() - x_offset)
 		self.x_track:SetY(self:GetHeight() - self.x_track:GetHeight())
-		
-		--self.right:SetX(self:GetWidth() - self.right:GetWidth() - offset)
-		
-		self.x_handle:SetWidth(math.max(-(panel:GetSizeOfChildren().w - self.x_track:GetWidth()) + self.x_track:GetWidth(), scroll_width))
-					
-		if self.scroll_area:GetWidth() > panel:GetSizeOfChildren().w then
-			self.x_track:SetVisible(false)
-		else
-			self.x_track:SetVisible(true)
-		end
+				
+		self.x_handle:SetWidth(math.max(-(children_size.w - self.x_track:GetWidth()) + self.x_track:GetWidth() - scroll_width - x_offset, scroll_width))
 	end		
 
-	if self.YScrollBar and self.y_track:IsVisible() then
-		self.scroll_area:SetWidth(self:GetWidth() - scroll_width)
-	else
-		self.scroll_area:SetWidth(self:GetWidth())
-	end
 
-	if self.XScrollBar and self.x_track:IsVisible() then
-		self.scroll_area:SetHeight(self:GetHeight() - scroll_width)
-	else
-		self.scroll_area:SetHeight(self:GetHeight())
-	end	
+	self.scroll_area:SetWidth(self:GetWidth() - x_offset)
+	self.scroll_area:SetHeight(self:GetHeight() - y_offset)
 end
 	
 gui2.RegisterPanel(PANEL) 
