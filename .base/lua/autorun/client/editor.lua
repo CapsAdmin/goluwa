@@ -71,6 +71,7 @@ function editor.Open()
 	
 	local frame = gui2.CreatePanel("frame")
 	frame:SetSize(Vec2(300, gui2.world:GetHeight()))
+	frame:SetTitle("editor")
 	editor.frame = frame
 	
 	local div = gui2.CreatePanel("divider", frame)
