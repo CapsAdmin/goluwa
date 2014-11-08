@@ -8,6 +8,8 @@ do -- base property
 	PANEL.ClassName = "base_property"
 	
 	prototype.GetSet(PANEL, "DefaultValue")
+	
+	PANEL.special = NULL
 		
 	function PANEL:Initialize()
 		prototype.GetRegistered(self.Type, "text_button").Initialize(self)
@@ -20,11 +22,37 @@ do -- base property
 		self:SetConcatenateTextToSize(true)
 	end
 	
+	function PANEL:SetSpecialCallback(callback)
+		prototype.SafeRemove(self.special)
+		local special = gui2.CreatePanel("text_button", self)
+		special:SetText("...")		
+		special:SetMode("toggle")
+		special.OnStateChanged = function(_, b) callback(b) end
+		self.special = special
+	end
+	
+	function PANEL:OnLayout()
+		if self.special:IsValid() then
+			self.special:SetX(self:GetWidth() - self.special:GetWidth())
+			self.special:SetSize(Vec2()+self:GetHeight())
+			self.special:CenterText()
+		end
+	end
+		
 	function PANEL:OnMouseInput(button, press)
 		prototype.GetRegistered(self.Type, "button").OnMouseInput(self, button, press)
-				
-		if button == "button_1" and press then
-			self:OnClick()
+		
+		if press then
+			if button == "button_1" then
+				self:OnClick()
+			elseif button == "button_2" then
+				gui2.CreateMenu({
+					{"copy", function() system.SetClipboard(self:GetEncodedValue()) end, gui2.skin.icons.copy},
+					{"paste", function() self:SetEncodedValue(system.GetClipboard()) end, gui2.skin.icons.paste},
+					{},
+					{"reset", function() self:SetValue(self:GetDefaultValue()) end, gui2.skin.icons.clear},
+				}, self)
+			end
 		end
 	end
 	
@@ -83,6 +111,10 @@ do -- base property
 	
 	function PANEL:GetEncodedValue()
 		return self:Encode(self:GetValue() or self:GetDefaultValue())
+	end
+	
+	function PANEL:SetEncodedValue(str)
+		self:SetValue(self:Decode(str))
 	end
 	
 	function PANEL:Encode(var)
@@ -270,6 +302,8 @@ do -- boolean
 	end
 	
 	function PANEL:OnLayout()
+		prototype.GetRegistered(self.Type, PANEL.Base).OnLayout(self)
+		
 		self.label:SetX(self.panel:GetWidth() + S)
 	end
 	
@@ -327,6 +361,8 @@ do -- color
 	end
 	
 	function PANEL:OnLayout()
+		prototype.GetRegistered(self.Type, PANEL.Base).OnLayout(self)
+		
 		self.panel:SetPosition(Vec2(1,1))
 		self.panel:SetSize(Vec2(self:GetHeight(), self:GetHeight())-2)
 		self.label:SetX(self.panel:GetWidth() + S)
@@ -472,17 +508,21 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 	end
 	
 	local t = typex(default)
-	
+		
 	local left_offset = S*8
 	
-	local left = gui2.CreatePanel("base", self.left)
+	local left = gui2.CreatePanel("button", self.left)
 	left:SetStyle("property")
 	left:SetDrawPositionOffset(Vec2(left_offset, 0))
-	left:SetHeight(S*8)	
+	left:SetHeight(S*8-1)	
+	left:SetInactiveStyle("property")
+	left:SetMode("toggle")
+	left.OnStateChanged = function(_, b) left:SetState(b) for i,v in ipairs(self.added_properties) do if v.left ~= left then v.left:SetState(false) end end end
 	
 	local label = gui2.CreatePanel("text", left)
 	label:SetText(name)
-	label:SetPosition(Vec2(extra_info.__label_offset or S*2, S))	
+	label:SetPosition(Vec2(extra_info.__label_offset or S*2, S))
+	label:SetIgnoreMouse(true)
 
 	local right = gui2.CreatePanel("base", self.right) 
 	right:SetMargin(Rect())
@@ -554,7 +594,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 		exp:SetStyleTranslation("button_active", "+")
 		exp:SetStyleTranslation("button_inactive", "-")
 		exp:SetState(true)
-		exp:SetPosition(Vec2(S*2, S*2))
+		exp:SetPosition(Vec2(S*2, S*2-1))
 		exp:SetMode("toggle")
 		left.expand = exp
 		label:SetX(S*4 + exp:GetWidth())
