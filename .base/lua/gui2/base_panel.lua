@@ -321,6 +321,9 @@ do -- orientation
 		local lpos = wpos
 		for k, v in ipairs(self:GetParentList()) do
 			lpos = lpos - v:GetPosition()
+			if v:HasParent() then
+				wpos = wpos + v.Parent:GetScroll()
+			end
 		end
 		return lpos
 	end
@@ -329,6 +332,9 @@ do -- orientation
 		local wpos = lpos
 		for k, v in npairs(self:GetParentList()) do
 			wpos = wpos + v:GetPosition()
+			if v:HasParent() then
+				wpos = wpos - v.Parent:GetScroll()
+			end
 		end
 		return wpos
 	end
