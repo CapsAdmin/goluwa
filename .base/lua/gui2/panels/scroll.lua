@@ -155,8 +155,7 @@ function PANEL:OnLayout()
 		self.x_track:SetY(self:GetHeight() - self.x_track:GetHeight())
 				
 		self.x_handle:SetWidth(math.max(-(children_size.w - self.x_track:GetWidth()) + self.x_track:GetWidth() - scroll_width - x_offset, scroll_width))
-	end		
-
+	end
 
 	self.scroll_area:SetWidth(self:GetWidth() - x_offset)
 	self.scroll_area:SetHeight(self:GetHeight() - y_offset)
