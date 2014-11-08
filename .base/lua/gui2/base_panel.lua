@@ -1668,6 +1668,7 @@ do -- events
 	function PANEL:OnPostKeyInput(button, press) end
 	function PANEL:OnCharInput(char) end
 	function PANEL:OnRightClick() end
+	function PANEL:OnGlobalMouseInput(button, press) end
 
 	function PANEL:OnCharTyped(char) end
 	function PANEL:OnKeyPressed(key, pressed) end
