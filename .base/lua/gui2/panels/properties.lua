@@ -358,7 +358,7 @@ function PANEL:Initialize()
 	self:SetStack(true)
 	self:SetStackRight(false) 
 	self:SetSizeStackToWidth(true)  
-	self:SetStyle("property")
+	--self:SetStyle("property")
 	self:SetColor(Color(1,1,1)*0.75)
 	self:SetMargin(Rect())
 	
