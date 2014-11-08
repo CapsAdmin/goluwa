@@ -115,6 +115,8 @@ do -- events
 		end
 		
 		for panel in pairs(gui2.panels) do
+			panel:OnGlobalMouseInput(button, press)
+			
 			if panel.AlwaysReceiveMouseInput and panel.mouse_over then 
 				panel:MouseInput(button, press)
 			end
