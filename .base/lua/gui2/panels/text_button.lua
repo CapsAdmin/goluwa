@@ -11,6 +11,7 @@ prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
 prototype.GetSetDelegate(PANEL, "Font", "default", "label")
 prototype.GetSetDelegate(PANEL, "TextColor", Color(1,1,1), "label")
 prototype.GetSetDelegate(PANEL, "TextWrap", false, "label")
+prototype.GetSetDelegate(PANEL, "ConcatenateTextToSize", false, "label")
 
 prototype.Delegate(PANEL, "label", "CenterText", "Center")
 prototype.Delegate(PANEL, "label", "CenterTextY", "CenterY")
