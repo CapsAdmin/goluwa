@@ -6,13 +6,20 @@ PANEL.ClassName = "text"
 prototype.GetSet(PANEL, "Text")
 prototype.GetSet(PANEL, "ParseTags", false)
 prototype.GetSet(PANEL, "TextWrap", false)
+prototype.GetSet(PANEL, "ConcatenateTextToSize", false)
 
 prototype.GetSet(PANEL, "Font", gui2.skin.default_font)
 prototype.GetSet(PANEL, "TextColor", gui2.skin.default_font_color)
 
 function PANEL:Initialize()
-	self.markup = surface.CreateMarkup()
-	self.markup:SetEditable(false)
+	local markup = surface.CreateMarkup()
+	markup:SetEditable(false)
+	markup.OnInvalidate = function() 
+		self:MarkCacheDirty()
+		self:OnTextChanged(self.markup:GetText())
+	end
+	self.markup = markup
+	
 	self:SetTextWrap(self.TextWrap)
 end
 
@@ -21,11 +28,6 @@ function PANEL:SetText(str)
 	
 	local markup = self.markup
 	
-	markup.OnInvalidate = function() 
-		self:MarkCacheDirty()
-		self:OnTextChanged(self.markup:GetText())
-	end
-		
 	markup:Clear()
 	markup:AddFont(self.Font)
 	markup:AddColor(self.TextColor)
@@ -53,11 +55,48 @@ function PANEL:OnMouseMove(x, y)
 	self:MarkCacheDirty()
 end
 
+function PANEL:Concatenate()
+	if not self.Text then return end
+			
+	self:OnUpdate()
+			
+	local markup = self.markup
+	
+	surface.SetFont(self.Font)
+	local w = surface.GetTextSize("...") * 2
+		
+	if markup.cull_w-markup.cull_x - w < markup.width then
+		
+		if self.Text == "world" then print(markup.cull_x) end
+		local caret = markup:CaretFromPixels(markup.cull_w-markup.cull_x - w, 0)
+		local sub_pos = markup:GetSubPosFromPosition(caret.x, caret.y)
+				
+		local concatenated = self.Text:sub(0, sub_pos) .. "..."	
+		
+		markup:Clear()
+		markup:AddFont(self.Font)
+		markup:AddColor(self.TextColor)
+		markup:AddString(concatenated, self.ParseTags)
+		self.concatenated = true
+		
+		self:OnUpdate()
+	elseif self.concatenated then
+		self:SetText(self.Text)
+		self.concatenated = false
+	end
+end
+
+function PANEL:OnLayout()
+	if self.ConcatenateTextToSize then
+		self:Concatenate()
+	end
+end
+
 function PANEL:OnUpdate()
 	local markup = self.markup
 	
-	markup.cull_x = self.Parent.Scroll.x
-	markup.cull_y = self.Parent.Scroll.y
+	markup.cull_x = self.Parent.Scroll.x + self.Position.x
+	markup.cull_y = self.Parent.Scroll.y + self.Position.y
 	markup.cull_w = self.Parent.Size.w
 	markup.cull_h = self.Parent.Size.h
 		

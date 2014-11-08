@@ -17,6 +17,7 @@ do -- base property
 		self:SetHighlightOnMouseEnter(false)
 		self:SetClicksToActivate(2)
 		self:SetMargin(Rect())
+		self:SetConcatenateTextToSize(true)
 	end
 	
 	function PANEL:OnMouseInput(button, press)
@@ -203,7 +204,7 @@ do -- number
 						local ppos = self:LocalToWorld(pos)
 						if ppos.y > render.GetHeight() then
 							local mpos = window.GetMousePosition()
-							mpos.y = 0
+							mpos.y = 4
 							window.SetMousePosition(mpos)
 							
 							self.base_value = nil
@@ -211,7 +212,7 @@ do -- number
 							return
 						elseif ppos.y < 0 then
 							local mpos = window.GetMousePosition()
-							mpos.y = render.GetHeight()
+							mpos.y = render.GetHeight()-4
 							window.SetMousePosition(mpos)
 							
 							self.base_value = nil
