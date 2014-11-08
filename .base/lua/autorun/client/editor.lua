@@ -113,7 +113,7 @@ function editor.Open()
 		for k,v in pairs(entities.GetAll()) do if not v:HasParent() then table.insert(ents, v) end end
 		fill(ents, tree)
 		tree:SetSize(tree:GetSizeOfChildren())
-		--tree:SetStretchToPanelWidth(frame)
+		tree:SetWidth(frame:GetWidth())
 		
 		scroll:SetAlwaysReceiveMouseInput(true)
 		
