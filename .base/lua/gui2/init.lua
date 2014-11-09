@@ -149,6 +149,7 @@ do -- events
 
 		if panel:IsValid() then
 			panel:KeyInput(button, press)
+			return true
 		end
 	end
 
@@ -157,6 +158,7 @@ do -- events
 
 		if panel:IsValid() then
 			panel:CharInput(char)
+			return true
 		end
 	end
 
@@ -244,7 +246,9 @@ function gui2.Initialize()
 	world:SetCursor("arrow")
 	world:SetTrapChildren(true)
 	world:SetNoDraw(true)
-	world:SetPadding(Rect(10, 10, 10, 10))
+	--world:SetPadding(Rect(10, 10, 10, 10))
+	world:SetPadding(Rect(0, 0, 0, 0))
+	world:SetMargin(Rect(0, 0, 0, 0))
 
 	gui2.world = world
 
@@ -264,11 +268,11 @@ function gui2.Initialize()
 		local S = gui2.skin.scale
 		
 		local bar = gui2.CreatePanel("base") 
-		bar:SetStyle("task_bar")
+		bar:SetStyle("gradient")
 		bar:Dock("fill_bottom")
 		bar:SetHeight(32)
 		bar:SetStack(true)
-		bar:SetPadding(Rect(1,1,5*S,3*S))
+		bar:SetMargin(Rect())
 		bar:SetVisible(false)
 		
 		bar.buttons = {}

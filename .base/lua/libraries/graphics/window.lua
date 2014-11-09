@@ -52,10 +52,10 @@ function window.Open(...)
 		
 		event.AddListener(name, "window_events", function(_wnd, ...) 
 			if _wnd == wnd then
-				event.Call(nice, ...)
 				if callback then
 					callback(...)
 				end
+				return event.Call(nice, ...)
 			end
 		end)
 	end

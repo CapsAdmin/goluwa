@@ -220,18 +220,22 @@ do -- window meta
 		
 		local function call(self, name, ...)
 			if not self then return end
+			
+			local b
 						
 			if not event_name_translate[name] then
-				event_name_translate[name] = name:gsub("^On", "Window")
+				b = event_name_translate[name] = name:gsub("^On", "Window")
 			end
 						
 			if self[name] then
 				if self[name](...) ~= false then
-					event.Call(event_name_translate[name], self, ...)
+					b = event.Call(event_name_translate[name], self, ...)
 				end
 			else
 				print(name, ...)
 			end
+			
+			return b
 		end
 		
 		local event = ffi.new("SDL_Event")
@@ -239,6 +243,8 @@ do -- window meta
 		for i = 1, 8 do mbutton_translate[i] = "button_" .. i end
 		mbutton_translate[3] = "button_2"
 		mbutton_translate[2] = "button_3"
+		
+		local suppress_char_input = false
 
 		_G.event.AddListener("Update", self, function(dt)
 			if not self:IsValid() or not sdl.video_init then
@@ -297,7 +303,7 @@ do -- window meta
 					key = key_translate[key] or key
 				
 					if event.key["repeat"] == 0 then
-						call(
+						if call(
 							window, 
 							"OnKeyInput", 
 							key, 
@@ -307,7 +313,7 @@ do -- window meta
 							event.key.keysym.mod, 
 							ffi.string(sdl.GetScancodeName(event.key.keysym.scancode)):lower(), 
 							event.key.keysym
-						)
+						) == false then suppress_char_input = true return end
 					end
 				
 					call(
@@ -322,6 +328,7 @@ do -- window meta
 						event.key.keysym
 					)
 				elseif event.type == sdl.e.SDL_TEXTINPUT then
+					if suppress_char_input then suppress_char_input = false return end
 					local window = render.sdl_windows[event.edit.windowID]
 
 					call(window, "OnCharInput", ffi.string(event.edit.text), event.edit.start, event.edit.length)

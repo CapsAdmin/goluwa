@@ -248,6 +248,8 @@ do -- window meta
 		end, {on_error = system.OnError})
 		
 		do -- calllbacks
+			local suppress_char_input = false
+			
 			self.availible_callbacks = {}
 
 			for nice, func in pairs(calllbacks) do
@@ -267,6 +269,8 @@ do -- window meta
 						end
 					end)					
 				elseif nice == "OnChar" then
+					if suppress_char_input then suppress_char_input = false return end
+					
 					func(ptr, function(ptr, uint)
 						local char = utf8.char(uint)
 						
@@ -281,7 +285,10 @@ do -- window meta
 						local key, press = glfw.KeyToString(key_), action == glfw.e.GLFW_PRESS or action == glfw.e.GLFW_REPEAT
 						
 						if self:OnKeyInputRepeat(key, press) ~= false then
-							event.Call("WindowKeyInputRepeat", self, key, press)
+							if event.Call("WindowKeyInputRepeat", self, key, press) == false then
+								suppress_char_input = true
+								return
+							end
 						end
 						
 						if action ~= glfw.e.GLFW_REPEAT then 
