@@ -12,11 +12,15 @@ prototype.GetSet(PANEL, "Font", gui2.skin.default_font)
 prototype.GetSet(PANEL, "TextColor", gui2.skin.default_font_color)
 
 function PANEL:Initialize()
+	self:SetNoDraw(true)
 	local markup = surface.CreateMarkup()
 	markup:SetEditable(false)
 	markup.OnInvalidate = function() 
 		self:MarkCacheDirty()
 		self:OnTextChanged(self.markup:GetText())
+			
+		self.Size.w = markup.width
+		self.Size.h = markup.height
 	end
 	self.markup = markup
 	
@@ -34,7 +38,8 @@ function PANEL:SetText(str)
 	markup:AddString(self.Text, self.ParseTags)
 	
 	markup:Invalidate()
-	self:OnUpdate()
+	markup:SetCaretPosition(0,0)
+	
 	self:Layout()
 end
 
@@ -47,7 +52,7 @@ function PANEL:SetTextWrap(b)
 	self.markup:SetLineWrap(b)
 end
 
-function PANEL:OnDraw()
+function PANEL:OnPostDraw()
 	self.markup:Draw()
 end
 
@@ -95,16 +100,15 @@ end
 
 function PANEL:OnUpdate()
 	local markup = self.markup
-	
 	markup.cull_x = self.Parent.Scroll.x + self.Position.x
 	markup.cull_y = self.Parent.Scroll.y + self.Position.y
 	markup.cull_w = self.Parent.Size.w
 	markup.cull_h = self.Parent.Size.h
-		
-	markup:Update()
 	
 	self.Size.w = markup.width
 	self.Size.h = markup.height
+	
+	markup:Update()
 end
 
 function PANEL:OnMouseInput(button, press)
