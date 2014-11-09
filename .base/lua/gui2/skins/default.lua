@@ -104,7 +104,7 @@ add("tab_inactive", 128,384, 61,24, 16)
 add("menu_select", 130,258, 123,27, 16)
 add("frame", 480,32, 31,31, 16)
 add("property", 256,256, 63,127, 4)
-add("tab_frame", 0,256+32, 127,127-32, 16)
+add("tab_frame", 0,256+2, 127,127-2, 16)
 
 add("gradient", 480,96, 31,31, 16)
 add("gradient1", 480,96, 31,31, 16)
