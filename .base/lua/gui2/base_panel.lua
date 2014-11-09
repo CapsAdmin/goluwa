@@ -1418,16 +1418,21 @@ do -- mouse
 	end
 	
 	function PANEL:KeyInput(button, press)
+		local b
+		
 		if self:OnPreKeyInput(button, press) ~= false then
-			self:OnKeyInput(button, press)
+			b = self:OnKeyInput(button, press)
 			self:OnPostKeyInput(button, press)
 		end
+		
 		self:MarkCacheDirty()
+		
+		return b
 	end	
 	
 	function PANEL:CharInput(char)			
-		self:OnCharInput(char)
 		self:MarkCacheDirty()
+		return self:OnCharInput(char)
 	end
 end
 

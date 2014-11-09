@@ -63,11 +63,11 @@ function PANEL:OnUnfocus()
 end
 
 function PANEL:OnKeyInput(...)
-	self.label:OnKeyInput(...)
+	return self.label:OnKeyInput(...)
 end
 
 function PANEL:OnCharInput(...)
-	self.label:OnCharInput(...)
+	return self.label:OnCharInput(...)
 end
 
 function PANEL:OnMouseInput(button, press, ...)
