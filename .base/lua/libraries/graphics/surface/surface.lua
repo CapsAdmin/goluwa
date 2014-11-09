@@ -611,12 +611,12 @@ do
 		gl.DepthMask(gl.e.GL_FALSE) -- Don't write to depth buffer
 		gl.Clear(gl.e.GL_STENCIL_BUFFER_BIT) -- Clear stencil buffer (0 by default)
 		
-		local tex = surface.GetTexture()
-		surface.SetWhiteTexture()
+		--local tex = surface.GetTexture()
+		--surface.SetWhiteTexture()
 		local r,g,b,a = surface.SetColor(0,0,0,0)
 		surface.DrawRect(x, y, w, h)
 		surface.SetColor(r,g,b,a)
-		surface.SetTexture(tex)
+		--surface.SetTexture(tex)
 		
 		gl.StencilFunc(gl.e.GL_EQUAL, 1, 0xFF) -- Pass test if stencil value is 1
 		gl.StencilMask(0x00) -- Don't write anything to stencil buffer
