@@ -129,9 +129,9 @@ function gui.Update(delta)
 	end
 
 	if gui.ActivePanel:IsValid() then
-		input.DisableFocus = true
+--		input.DisableFocus = true
 	else
-		input.DisableFocus = false
+	--	input.DisableFocus = false
 	end
 	
 	event.Call("DrawHUD", delta)
