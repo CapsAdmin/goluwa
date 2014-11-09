@@ -11,7 +11,7 @@ prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1))
 	prototype.GetSet(COMPONENT, "Alpha", 1)
 	prototype.GetSet(COMPONENT, "Cull", true)
-	prototype.GetSet(COMPONENT, "ModelPath", "models/face.obj")
+	prototype.GetSet(COMPONENT, "ModelPath", "")
 prototype.EndStorable()
 
 prototype.GetSet(COMPONENT, "Model", nil)
