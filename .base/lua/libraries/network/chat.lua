@@ -136,6 +136,9 @@ if CLIENT then
 			local edit = frame:CreatePanel("text_edit")
 			edit:SetStretchToPanelWidth(frame)
 			edit:SetHeight(10*S)
+			edit:SetColor(Color(1,1,1,1))
+			edit:SetStyle("frame")
+			edit:SetTextColor(Color(0,0,0,1))
 			frame.edit = edit
 			
 			local scroll = frame:CreatePanel("scroll")
@@ -143,6 +146,7 @@ if CLIENT then
 			frame.scroll = scroll
 
 			local text = scroll:SetPanel(gui2.CreatePanel("text"))
+			text:SetPosition(Vec2()+S*2)
 			text.markup:SetLineWrap(true)
 			text:AddEvent("ChatAddText")
 
@@ -225,6 +229,7 @@ if CLIENT then
 					
 					edit:SetText("")
 					frame:Minimize()
+					input.DisableFocus = false
 					
 					event.Call("ChatTextChanged", "")
 					
@@ -242,6 +247,7 @@ if CLIENT then
 			edit.OnLayout = function()
 				edit:SizeToText()
 				edit:SetHeight(math.max(edit:GetHeight(), S*8))
+				edit:SetWidth(frame:GetWidth())
 				edit:SetY(frame:GetHeight() - edit:GetHeight())
 				edit:SetX(0)
 				edit.label.markup:SetMaxWidth(frame:GetWidth())
@@ -265,6 +271,7 @@ if CLIENT then
 		frame.scroll.scroll_area:SetScrollFraction(Vec2(0,1))
 		frame.edit:SetText("")
 		frame:Layout(true)
+		input.DisableFocus = true
 
 		chat.panel = frame
 	end)
