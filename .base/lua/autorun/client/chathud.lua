@@ -151,6 +151,8 @@ function chathud.AddText(...)
 			table.insert(args, v)
 		end
 	end
+	
+	event.Call("ChatAddText", args)
 	 
 	local markup = chathud.markup
 	
