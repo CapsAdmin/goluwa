@@ -395,7 +395,7 @@ function PANEL:Initialize()
 	self:SetStackRight(false) 
 	self:SetSizeStackToWidth(true)  
 	--self:SetStyle("property")
-	self:SetColor(Color(1,1,1)*0.75)
+	self:SetColor(gui2.skin.property_background)
 	self:SetMargin(Rect())
 	
 	self:AddEvent("PanelMouseInput")

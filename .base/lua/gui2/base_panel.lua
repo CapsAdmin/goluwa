@@ -59,6 +59,17 @@ function PANEL:RequestFocus()
 	gui2.focus_panel = self
 end
 
+function PANEL:Unfocus()
+	if self.RedirectFocus:IsValid() then
+		self = self.RedirectFocus
+	end
+
+	if gui2.focus_panel:IsValid() and gui2.focus_panel == self then
+		self:OnUnfocus()
+		gui2.focus_panel = NULL
+	end
+end
+
 function PANEL:OnUnParent()
 	gui2.unrolled_draw = nil
 end

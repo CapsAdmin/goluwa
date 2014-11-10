@@ -16,6 +16,7 @@ function PANEL:Initialize()
 	tab_bar:SetStackDown(false)
 	tab_bar:SetClipping(true)
 	tab_bar:SetScrollable(true)
+	tab_bar:SetMargin(Rect())
 			
 	self.tab_bar = tab_bar
 end
@@ -33,8 +34,7 @@ function PANEL:AddTab(name)
 	button:SetStyleTranslation("button_inactive", "tab_inactive")
 	button:SetStyle("tab_inactive")
 	
-	button:SetHeight(button:GetHeight() - S)
-	button:SetTextColor(gui2.skin.tab_inactive_text_color)
+	button:SetTextColor(gui2.skin.text_color_inactive)
 	button:SetText(name)
 	button:SetMargin(Rect()+2*S)
 	button:SizeToText()
@@ -45,25 +45,7 @@ function PANEL:AddTab(name)
 	
 	button.OnMouseInput = function(button, key, press)
 		if press and key == "button_1" then
-			button:SetTextColor(gui2.skin.tab_active_text_color)
-			button:SetText(button.text)
-			button:CenterText()
-			button:SetState(true)
-			
-			self.content = self.tabs[name].content
-			self.content:SetVisible(true)
-			
-			for i, panel in ipairs(self.tab_bar:GetChildren()) do
-				if button ~= panel then
-					panel:SetTextColor(gui2.skin.tab_inactive_text_color)
-					panel:SetText(panel.text)
-					panel:CenterText()
-					panel:SetState(false)
-					self.tabs[panel.text].content:SetVisible(false)
-				end
-			end
-			
-			self:Layout()
+			self:SelectTab(name)
 		end
 	end
 	
@@ -79,9 +61,38 @@ function PANEL:AddTab(name)
 	return content
 end
 
+function PANEL:SelectTab(name)
+	local button = self.tabs[name].button
+	
+	button:SetTextColor(gui2.skin.text_color)
+	button:SetText(button.text)
+	button:CenterText()
+	button:SetState(true)
+	
+	self.content = self.tabs[name].content
+	self.content:SetVisible(true)
+	
+	for i, panel in ipairs(self.tab_bar:GetChildren()) do
+		if button ~= panel then
+			panel:SetTextColor(gui2.skin.text_color_inactive)
+			panel:SetText(panel.text)
+			panel:CenterText()
+			panel:SetState(false)
+			self.tabs[panel.text].content:SetVisible(false)
+		end
+	end
+	
+	self:Layout()
+end
+
+function PANEL:GetSelectedPage(name)
+	return self.content
+end
+
 function PANEL:OnLayout()
 	self.tab_bar:SetWidth(self:GetWidth())
 	self.tab_bar:SetHeight(10*S)
+	self.tab_bar:SetY(1)
 
 	if self.content then
 		self.content:SetPosition(Vec2(0, self.tab_bar:GetHeight()))

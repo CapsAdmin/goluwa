@@ -9,7 +9,7 @@ prototype.GetSet(PANEL, "TextWrap", false)
 prototype.GetSet(PANEL, "ConcatenateTextToSize", false)
 
 prototype.GetSet(PANEL, "Font", gui2.skin.default_font)
-prototype.GetSet(PANEL, "TextColor", gui2.skin.default_font_color)
+prototype.GetSet(PANEL, "TextColor", gui2.skin.text_color)
 
 function PANEL:Initialize()
 	self:SetNoDraw(true)
