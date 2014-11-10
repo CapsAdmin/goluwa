@@ -249,13 +249,18 @@ do
 		gl.AlphaFunc(gl.e.GL_GEQUAL, 0)
 		
 		if mode == "alpha" then
-			gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
+			gl.BlendFuncSeparate(	
+				gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA, 
+				gl.e.GL_ONE, gl.e.GL_ONE_MINUS_SRC_ALPHA
+			)
 		elseif mode == "multiplicative" then
-			gl.BlendFunc(gl.e.GL_DST_COLOR, gl.e.GL_ONE_MINUS_SRC_ALPHA)
+			gl.BlendFunc(gl.e.GL_DST_COLOR, gl.e.GL_ZERO)
 		elseif mode == "premultiplied" then
 			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE_MINUS_SRC_ALPHA)
-		else
+		elseif mode == "additive" then
 			gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE)
+		else
+			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ZERO)
 		end
 		
 		MODE = mode
