@@ -8,7 +8,7 @@ prototype.GetSet(PANEL, "Editable", true)
 prototype.GetSetDelegate(PANEL, "Text", "", "label")
 prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
 prototype.GetSetDelegate(PANEL, "Font", gui2.skin.default_font, "label")
-prototype.GetSetDelegate(PANEL, "TextColor", gui2.skin.font_edit_color, "label")
+prototype.GetSetDelegate(PANEL, "TextColor", gui2.skin.text_edit_color, "label")
 prototype.GetSetDelegate(PANEL, "TextWrap", false, "label")
 
 prototype.Delegate(PANEL, "label", "CenterText", "Center")
@@ -17,7 +17,7 @@ prototype.Delegate(PANEL, "label", "CenterTextX", "CenterX")
 prototype.Delegate(PANEL, "label", "GetTextSize", "GetSize")
 
 function PANEL:Initialize()	
-	self:SetColor(gui2.skin.font_edit_background)
+	self:SetStyle("text_edit")
 	self:SetFocusOnClick(true)
 	self.BaseClass.Initialize(self)
 	

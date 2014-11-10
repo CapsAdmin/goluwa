@@ -15,7 +15,7 @@ function PANEL:Initialize()
 	local top = gui2.CreatePanel("base", self)
 	top:SetLayoutParentOnLayout(true)
 	top:SetMargin(Rect())
-	top:SetClipping(true)
+	--top:SetClipping(true)
 	top:SetNoDraw(true)
 	self.top = top
 				
@@ -65,6 +65,11 @@ function PANEL:OnLayout()
 	self.list:SetHeight(y)
 	
 	self:SizeColumnsToFit()
+	
+	for i, column in ipairs(self.columns) do
+		column:SetHeight(20)
+		column:CenterTextY()
+	end
 
 	if #self.columns > 0 then
 		self.columns[#self.columns].div:SetDividerPosition(self:GetWidth())
@@ -98,9 +103,9 @@ function PANEL:SetupSorted(...)
 		local column = gui2.CreatePanel("text_button")
 		column:SetMargin(Rect()+2*S)
 		column:SetText(name)
-		column:SetClipping(true)
+		--column:SetClipping(true)
 		column:SizeToText()
-		
+				
 		local icon = gui2.CreatePanel("base", column)
 		icon:SetStyle("list_down_arrow")
 		icon:Dock("right")
@@ -135,11 +140,6 @@ function PANEL:SetupSorted(...)
 			column.sorted = not column.sorted
 		end
 		
-		column.OnLayout = function()
-			column:SetSize(Vec2(column:GetWidth(), 20))
-			column:CenterTextY()
-		end
-		
 		if self.last_div:IsValid() then 
 			self.last_div:SetRight(div)
 		end
@@ -156,7 +156,7 @@ function PANEL:AddEntry(...)
 		local text = tostring(select(i, ...) or "nil")
 		
 		local label = gui2.CreatePanel("text_button", entry)
-		label:SetTextColor(gui2.skin.font_edit_color)
+		label:SetTextColor(gui2.skin.text_color)
 		label:SetTextWrap(false)
 		label:SetText(text)
 		label:SizeToText()

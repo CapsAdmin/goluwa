@@ -27,7 +27,7 @@ surface.CreateFont("snow_font_noshadow", {
 	size = 11,
 })
 
-local texture = Texture("textures/gui/skin.png")
+local texture = Texture("textures/gui/skin2.png")
 
 local skin = {}
 
@@ -98,25 +98,33 @@ add("scroll_horizontal_handle_active", 384,176, 127,15, 4)
 add("button_rounded_active", 480,64, 31,31, 4) 
 add("button_rounded_inactive", 480,64, 31,31, 4) 
 
-add("tab_active", 0,384, 61,24, 16) 
+add("tab_active", 1,384, 61,24, 8) 
 add("tab_inactive", 128,384, 61,24, 16) 
+add("tab_frame", 1,256+4, 127-2,127-4, 16)
 
 add("menu_select", 130,258, 123,27, 16)
 add("frame", 480,32, 31,31, 16)
 add("property", 256,256, 63,127, 4)
-add("tab_frame", 0,256+2, 127,127-2, 16)
 
 add("gradient", 480,96, 31,31, 16)
 add("gradient1", 480,96, 31,31, 16)
 add("gradient2", 480,96, 31,31, 16)
 add("gradient3", 480,96, 31,31, 16)
+add("text_edit", 0,150, 127,21, 16)
 
 skin.tab_active_text_color = Color(0.25,0.25,0.25)
 skin.tab_inactive_text_color = Color(0.5,0.5,0.5)
 
-skin.default_font_color = Color(0.25,0.25,0.25)
-skin.font_edit_color = Color(0.75,0.75,0.75)
-skin.font_edit_background = Color(0.1,0.1,0.1)
+local buffer, length = texture:Download()
+
+skin.text_color = texture:GetPixelColor(187, 504, buffer)
+skin.text_color.a = 1
+skin.text_color_inactive = skin.text_color * 0.80
+skin.text_edit_color = texture:GetPixelColor(110, 497, buffer)
+skin.text_edit_color.a = 1
+skin.property_background = texture:GetPixelColor(28, 500, buffer)
+
+
 skin.default_font = "snow_font"
 skin.scale = scale
 
