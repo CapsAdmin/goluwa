@@ -5,9 +5,7 @@ local cam_fov = math.rad(90)
 
 event.AddListener("Update", "fly_camera_3d", function(dt)
 	if network.IsConnected() then return end
-	if not window.IsOpen() then return end
-	if chat and chat.IsVisible() then return end
-		
+	if not window.IsOpen() then return end		
 	if not window.GetMouseTrapped() then return end
 	
 	cam_ang:Normalize()
