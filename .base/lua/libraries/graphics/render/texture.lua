@@ -212,16 +212,18 @@ do -- texture object
 		x = math.clamp(math.floor(x), 1, self.w-1)		
 		y = math.clamp(math.floor(y), 1, self.h-1)		
 		
+		y = self.h-y
+		
 		buffer = buffer or self:Download()
 		local i = (y * self.w + x) * self.format.stride
 		
 		local temp = {}
 		
 		for j = 1, self.format.stride do
-			temp[j] = tonumber(buffer[i + j - 1] or 0) / 255
+			temp[j] = tonumber(buffer[i + j - 1] or 0) 
 		end
 		
-		return Color(unpack(temp))
+		return ColorBytes(unpack(temp))
 	end
 
 	local colors = ffi.new("char[4]")
