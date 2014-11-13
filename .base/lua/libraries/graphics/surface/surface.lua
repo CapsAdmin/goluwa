@@ -371,56 +371,58 @@ end
 	7 8 9
 ]]
 
-local poly
+do
+	local poly
 
-function surface.DrawNinePatch(x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset)
-	poly = poly or surface.CreatePoly(9)
-	
-	u_offset = u_offset or 0
-	v_offset = v_offset or 0
-	
-	if w < corner_size then corner_size = w end
-	if h < corner_size then corner_size = h end
-	
-	local skin = surface.GetTexture()
+	function surface.DrawNinePatch(x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset)
+		poly = poly or surface.CreatePoly(9)
 		
-	-- 1
-	poly:SetUV(u_offset, v_offset, corner_size, corner_size, skin.w, skin.h)
-	poly:SetRect(1, x, y, corner_size, corner_size)
-	
-	-- 2
-	poly:SetUV(u_offset + corner_size, v_offset, patch_size_w - corner_size*2, corner_size, skin.w, skin.h)
-	poly:SetRect(2, x + corner_size, y, w - corner_size*2, corner_size)
-	
-	-- 3
-	poly:SetUV(u_offset + patch_size_w - corner_size, v_offset, corner_size, corner_size, skin.w, skin.h)
-	poly:SetRect(3, x + w - corner_size, y, corner_size, corner_size)
-	
-	-- 4
-	poly:SetUV(u_offset, v_offset + corner_size, corner_size, patch_size_w - corner_size*2, skin.w, skin.h)
-	poly:SetRect(4, x, y + corner_size, corner_size, h - corner_size*2)
-	
-	-- 5
-	poly:SetUV(u_offset + corner_size, v_offset + corner_size, patch_size_w - corner_size*2, patch_size_h - corner_size*2, skin.w, skin.h)
-	poly:SetRect(5, x + corner_size, y + corner_size, w - corner_size*2, h - corner_size*2)
-	
-	-- 6
-	poly:SetUV(u_offset + patch_size_w - corner_size, v_offset + corner_size, corner_size, patch_size_h - corner_size*2, skin.w, skin.h)
-	poly:SetRect(6, x + w - corner_size, y + corner_size, corner_size, h - corner_size*2)
-	
-	-- 7
-	poly:SetUV(u_offset, v_offset + patch_size_h - corner_size, corner_size, corner_size, skin.w, skin.h)
-	poly:SetRect(7, x, y + h - corner_size, corner_size, corner_size)
-	
-	-- 8
-	poly:SetUV(u_offset + corner_size, v_offset + patch_size_h - corner_size, patch_size_w - corner_size*2, corner_size, skin.w, skin.h)
-	poly:SetRect(8, x + corner_size, y + h - corner_size, w - corner_size*2, corner_size)
-	
-	-- 9
-	poly:SetUV(u_offset + patch_size_w - corner_size, v_offset + patch_size_h - corner_size, corner_size, corner_size, skin.w, skin.h)
-	poly:SetRect(9, x + w - corner_size, y + h - corner_size, corner_size, corner_size)
-	
-	poly:Draw()
+		u_offset = u_offset or 0
+		v_offset = v_offset or 0
+		
+		if w/2 < corner_size then corner_size = w/2 end
+		if h/2 < corner_size then corner_size = h/2 end
+		
+		local skin = surface.GetTexture()
+			
+		-- 1
+		poly:SetUV(u_offset, v_offset, corner_size, corner_size, skin.w, skin.h)
+		poly:SetRect(1, x, y, corner_size, corner_size)
+		
+		-- 2
+		poly:SetUV(u_offset + corner_size, v_offset, patch_size_w - corner_size*2, corner_size, skin.w, skin.h)
+		poly:SetRect(2, x + corner_size, y, w - corner_size*2, corner_size)
+		
+		-- 3
+		poly:SetUV(u_offset + patch_size_w - corner_size, v_offset, corner_size, corner_size, skin.w, skin.h)
+		poly:SetRect(3, x + w - corner_size, y, corner_size, corner_size)
+		
+		-- 4
+		poly:SetUV(u_offset, v_offset + corner_size, corner_size, patch_size_h - corner_size*2, skin.w, skin.h)
+		poly:SetRect(4, x, y + corner_size, corner_size, h - corner_size*2)
+		
+		-- 5
+		poly:SetUV(u_offset + corner_size, v_offset + corner_size, patch_size_w - corner_size*2, patch_size_h - corner_size*2, skin.w, skin.h)
+		poly:SetRect(5, x + corner_size, y + corner_size, w - corner_size*2, h - corner_size*2)
+		
+		-- 6
+		poly:SetUV(u_offset + patch_size_w - corner_size, v_offset + corner_size, corner_size, patch_size_h - corner_size*2, skin.w, skin.h)
+		poly:SetRect(6, x + w - corner_size, y + corner_size, corner_size, h - corner_size*2)
+		
+		-- 7
+		poly:SetUV(u_offset, v_offset + patch_size_h - corner_size, corner_size, corner_size, skin.w, skin.h)
+		poly:SetRect(7, x, y + h - corner_size, corner_size, corner_size)
+		
+		-- 8
+		poly:SetUV(u_offset + corner_size, v_offset + patch_size_h - corner_size, patch_size_w - corner_size*2, corner_size, skin.w, skin.h)
+		poly:SetRect(8, x + corner_size, y + h - corner_size, w - corner_size*2, corner_size)
+		
+		-- 9
+		poly:SetUV(u_offset + patch_size_w - corner_size, v_offset + patch_size_h - corner_size, corner_size, corner_size, skin.w, skin.h)
+		poly:SetRect(9, x + w - corner_size, y + h - corner_size, corner_size, corner_size)
+		
+		poly:Draw()
+	end
 end
 
 function surface.SetScissor(x, y, w, h)
