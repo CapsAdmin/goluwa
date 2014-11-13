@@ -125,7 +125,7 @@ function editor.Open()
 	repopulate()
 	
 	tree:SetSize(tree:GetSizeOfChildren())
-	tree:SetWidth(frame:GetWidth())
+	tree:SetWidth(frame:GetWidth()-20)
 	
 	frame.OnRightClick = function() right_click_node() end
 	
