@@ -6,7 +6,8 @@ PANEL.ClassName = "text_edit"
 prototype.GetSet(PANEL, "CaretColor", gui2.skin.text_edit_color)
 prototype.GetSet(PANEL, "SelectionColor", gui2.skin.text_edit_color:SetAlpha(0.5))
 prototype.GetSet(PANEL, "Editable", true)
-
+prototype.GetSet(PANEL, "CaretPosition", Vec2(0, 0))
+ 
 prototype.GetSetDelegate(PANEL, "Text", "", "label")
 prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
 prototype.GetSetDelegate(PANEL, "Font", gui2.skin.default_font, "label")
@@ -41,6 +42,14 @@ function PANEL:Initialize()
 	label.OnEnter = function(_, ...) self:OnEnter(...) end
 	
 	self:SetCursor("ibeam")
+end
+
+function PANEL:SetCaretPosition(pos)
+	self.label.markup:SetCaretPosition(pos.x, pos.y)
+end
+
+function PANEL:GetCaretPosition()
+	return Vec2(self.label.markup:GetCaretPosition())
 end
 
 function PANEL:SelectAll()
