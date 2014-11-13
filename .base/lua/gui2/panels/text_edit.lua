@@ -3,6 +3,8 @@ local PANEL = {}
 
 PANEL.ClassName = "text_edit"
 
+prototype.GetSet(PANEL, "CaretColor", gui2.skin.text_edit_color)
+prototype.GetSet(PANEL, "SelectionColor", gui2.skin.text_edit_color:SetAlpha(0.5))
 prototype.GetSet(PANEL, "Editable", true)
 
 prototype.GetSetDelegate(PANEL, "Text", "", "label")
@@ -23,6 +25,10 @@ function PANEL:Initialize()
 	
 	local label = gui2.CreatePanel("text", self)
 	label.markup:SetEditable(self.Editable)
+	
+	label.markup:SetCaretColor(self.CaretColor)
+	label.markup:SetSelectionColor(self.SelectionColor)
+	
 	label:SetFont(self.Font)
 	label:SetTextColor(self.TextColor)
 	label:SetClipping(true)
@@ -33,11 +39,13 @@ function PANEL:Initialize()
 	
 	label.OnTextChanged = function(_, ...) self:OnTextChanged(...) end
 	label.OnEnter = function(_, ...) self:OnEnter(...) end
+	
+	self:SetCursor("ibeam")
 end
 
 function PANEL:SelectAll()
 	self.label.markup:SelectAll()
-	print(self.label.markup.select_stop.x, self.label.markup.select_stop.y)
+	--print(self.label.markup.select_stop.x, self.label.markup.select_stop.y)
 end
 
 function PANEL:SetEditable(b)
