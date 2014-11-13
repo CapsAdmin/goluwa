@@ -268,11 +268,10 @@ function gui2.Initialize()
 		local S = gui2.skin.scale
 		
 		local bar = gui2.CreatePanel("base") 
-		bar:SetStyle("gradient")
-		bar:Dock("fill_bottom")
-		bar:SetHeight(32)
-		bar:SetStack(true)
-		bar:SetMargin(Rect())
+		bar:SetStyle("frame_bar")
+		bar:SetHeight(S*14)
+		bar:SetupLayoutChain("bottom", "fill_x")
+		bar:SetMargin(Rect()+S*2)
 		bar:SetVisible(false)
 		
 		bar.buttons = {}
@@ -287,7 +286,7 @@ function gui2.Initialize()
 			
 			button.OnPress = callback  
 
-			self:SetHeight(self:StackChildren().h)
+			button:SetupLayoutChain("left")
 			
 			self.buttons[key] = button
 		end 

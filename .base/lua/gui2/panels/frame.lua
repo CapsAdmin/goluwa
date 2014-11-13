@@ -11,22 +11,25 @@ function PANEL:Initialize()
 	self:SetResizable(true) 
 	self:SetBringToFrontOnClick(true)
 	self:SetCachedRendering(true)
-		
-	self:SetMargin(Rect(S,10*S,S,S))  
-	self:SetStyle("frame")
+	self:SetMargin(Rect(S,S,S,S))
+	self:SetStyle("frame2")
 		
 	local bar = gui2.CreatePanel("base", self)
 	bar:SetObeyMargin(false)
-	bar:Dock("fill_top") 
-	bar:SetHeight(11*S)
-	bar:SetStyle("gradient")
+	bar:SetHeight(12*S)
+	bar:SetStyle("frame_bar")
 	bar:SetClipping(true)
 	bar:SetSendMouseInputToPanel(self)
+	bar:SetupLayoutChain("top", "fill_x")
+	bar:SetMargin(Rect()+S*2)
+	bar:SetPadding(Rect()-S-1)
+	--bar:SetDrawScaleOffset(Vec2()+2)
 		
 	local close = gui2.CreatePanel("button", bar)
 	close:SetStyle("close_inactive")
 	close:SetStyleTranslation("button_active", "close_active")
 	close:SetStyleTranslation("button_inactive", "close_inactive")
+	close:SetupLayoutChain("right")
 	close.OnRelease = function() 
 		self:Remove()
 	end
@@ -36,6 +39,7 @@ function PANEL:Initialize()
 	max:SetStyle("maximize2_inactive")
 	max:SetStyleTranslation("button_active", "maximize2_active")
 	max:SetStyleTranslation("button_inactive", "maximize2_inactive")
+	max:SetupLayoutChain("right")
 	max.OnRelease = function() 
 		self:Maximize()
 	end
@@ -45,7 +49,8 @@ function PANEL:Initialize()
 	min:SetStyle("minimize_inactive")
 	min:SetStyleTranslation("button_active", "minimize_active")
 	min:SetStyleTranslation("button_inactive", "minimize_inactive")
-	min.OnRelease = function() 
+	min:SetupLayoutChain("right")
+	min.OnRelease = function()
 		self:Minimize()
 	end
 	self.min = min
@@ -68,16 +73,16 @@ function PANEL:Maximize()
 	local max = self.max
 	
 	if self.maximized then
-		self:Dock()
 		self:SetSize(self.maximized.size)
 		self:SetPosition(self.maximized.pos)
+		self:SetupLayoutChain()
 		self.maximized = nil
 		max:SetStyle("maximize2_inactive")
 		max:SetStyleTranslation("button_active", "maximize2_active")
 		max:SetStyleTranslation("button_inactive", "maximize2_inactive")
 	else
 		self.maximized = {size = self:GetSize():Copy(), pos = self:GetPosition():Copy()}
-		self:Dock("fill")			
+		self:SetupLayoutChain("fill_x", "fill_y")
 		max:SetStyle("maximize_inactive")
 		max:SetStyleTranslation("button_active", "maximize_active")
 		max:SetStyleTranslation("button_inactive", "maximize_inactive")
@@ -105,11 +110,10 @@ function PANEL:SetTitle(str)
 	
 	gui2.RemovePanel(self.title)
 	local title = gui2.CreatePanel("text", self.bar)
-	title:SetHeight(self.bar:GetHeight())
 	title:SetText(str)
 	title:SetPosition(Vec2(2*S,0))
-	title:CenterY()
 	title:SetNoDraw(true)
+	title:SetupLayoutChain("left")
 	self.title = title
 	
 	if gui2.task_bar:IsValid() then
@@ -121,18 +125,6 @@ end
 
 function PANEL:OnMouseInput()
 	self:MarkCacheDirty()
-end
-
-function PANEL:OnLayout()
-	local p = self:GetMargin()
-	self.close:SetX(self.bar:GetWidth() - self.close:GetWidth() - p.w*1.5)
-	self.close:CenterY()
-	
-	self.max:SetX(self.bar:GetWidth() - self.close:GetWidth() - self.max:GetWidth() - p.w*3)
-	self.max:CenterY()
-	
-	self.min:SetX(self.bar:GetWidth() - self.close:GetWidth() - self.max:GetWidth() - self.min:GetWidth() - p.w*4)
-	self.min:CenterY()
 end
 
 gui2.RegisterPanel(PANEL)

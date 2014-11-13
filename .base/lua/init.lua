@@ -695,7 +695,7 @@ if not ZEROBRANE and not DISABLE_CURSES then
 	console.InitializeCurses()
 end
 
-steam.InitializeWebAPI()
+--steam.InitializeWebAPI()
 
 if CLIENT then
 	clients.local_client = clients.Create("unconnected")

@@ -111,25 +111,28 @@ if CLIENT then
 		
 		frame:CallOnRemove(chat.Close)
 		
+		local S = gui2.skin.scale
+		
+		local edit = frame:CreatePanel("text_edit")
+		edit:SetHeight(9*S)
+		edit:SetupLayoutChain("bottom", "fill_x")
+		frame.edit = edit
+		
 		local tab = frame:CreatePanel("tab")
-		tab:Dock("fill")
+		tab:SetSize(Vec2())
+		tab:SetupLayoutChain("fill_x", "fill_y")
 		frame.tab = tab
 		
 		local page = tab:AddTab("chat")
 		
-		local S = gui2.skin.scale
-		
-		local edit = frame:CreatePanel("text_edit")
-		edit:SetStretchToPanelWidth(frame)
-		edit:SetHeight(10*S)
-		frame.edit = edit
-		
 		local scroll = page:CreatePanel("scroll")
 		scroll:SetXScrollBar(false)
+		scroll:SetupLayoutChain("fill_x", "fill_y")
 		page.scroll = scroll
 
 		local text = scroll:SetPanel(gui2.CreatePanel("text"))
 		text:SetPosition(Vec2()+S*2)
+
 		text.markup:SetLineWrap(true)
 		text:AddEvent("ChatAddText")
 
@@ -138,6 +141,8 @@ if CLIENT then
 			self.markup:AddTable(args, true)
 			self.markup:AddTagStopper()
 			self.markup:AddString("\n")
+			
+			page.scroll.scroll_area:SetScrollFraction(Vec2(0,1))
 		end
 		
 		function text:OnLayout()
@@ -221,9 +226,15 @@ if CLIENT then
 			event.Call("ChatTextChanged", str)
 		end
 			
-		edit.OnTextChanged = function(self, str)
+		edit.OnTextChanged = function(_, str)
 			event.Call("ChatTextChanged", str)
-			frame:Layout()
+			event.Delay(0, function()
+				if frame:IsValid() then
+					edit:SizeToText()
+					edit:SetupLayoutChain("bottom", "fill_x")
+					frame:Layout()
+				end
+			end)
 		end
 		
 		edit.OnPostDraw = function()
@@ -237,6 +248,7 @@ if CLIENT then
 		
 		local scroll = page:CreatePanel("scroll")
 		scroll:SetXScrollBar(false)
+		scroll:SetupLayoutChain("fill_x", "fill_y")
 		page.scroll = scroll
 
 		local text = scroll:SetPanel(gui2.CreatePanel("text"))
@@ -248,6 +260,8 @@ if CLIENT then
 			self.markup:AddFont(gui2.skin.default_font)
 			self.markup:AddString(str, true)
 			self.markup:AddTagStopper()
+			
+			page.scroll.scroll_area:SetScrollFraction(Vec2(0,1))
 		end
 		
 		for i, v in pairs(console.history) do
@@ -258,28 +272,7 @@ if CLIENT then
 			self.markup:SetMaxWidth(self.Parent:GetWidth())
 		end
 		
-		text:Layout()
-				
-		local old = tab.OnLayout
-		
-		tab.OnLayout = function()
-			old(tab)
 			
-			local page = tab:GetSelectedPage()
-			local scroll = page.scroll
-			
-			edit:SizeToText()
-			edit:SetHeight(math.max(edit:GetHeight(), S*8))
-			edit:SetWidth(page:GetWidth()-S)
-			edit:SetY(frame:GetHeight() - edit:GetHeight()-S)
-			edit:SetX(S)
-			edit.label.markup:SetMaxWidth(page:GetWidth()-S)
-			
-			scroll:SetHeight(page:GetHeight() - edit:GetHeight())
-			scroll:SetWidth(page:GetWidth())
-			scroll.scroll_area:SetScrollFraction(Vec2(0,1))
-		end
-		
 		chat.panel = frame
 		
 		return frame

@@ -64,9 +64,9 @@ do -- base property
 		if self.edit then return end
 		
 		local edit = gui2.CreatePanel("text_edit", self)
-		edit:Dock("fill")
 		edit:SetText(self:GetEncodedValue())
 		edit:SizeToText()
+		edit:SetupLayoutChain("fill_x", "fill_y")
 		edit:SelectAll()
 		edit.OnEnter = function() 
 			self:StopEditing()
@@ -352,7 +352,7 @@ do -- color
 			frame:SetTitle("color picker")
 			
 			local picker = gui2.CreatePanel("color_picker", frame)
-			picker:Dock("fill")
+			picker:SetupLayoutChain("fill_x", "fill_y")
 			picker.OnColorChanged = function(_, color) self:SetValue(color) end
 			
 			panel:CallOnRemove(function() gui2.RemovePanel(frame) end)
@@ -403,7 +403,7 @@ function PANEL:Initialize()
 	local divider = gui2.CreatePanel("divider", self)
 	divider:SetMargin(Rect())
 	divider:SetHideDivider(true)
-	divider:Dock("fill")
+	divider:SetupLayoutChain("fill_x", "fill_y")
 	self.divider = divider
 	
 	local left = self.divider:SetLeft(gui2.CreatePanel("base"))
@@ -411,7 +411,7 @@ function PANEL:Initialize()
 	left:SetPadding(Rect(0,0,0,-1))
 	left:SetStackRight(false)
 	left:SetSizeStackToWidth(true)
-	left:Dock("fill")
+	--left:SetupLayoutChain("fill_x", "fill_y")
 	left:SetNoDraw(true)  
 	self.left = left
 	
@@ -420,7 +420,7 @@ function PANEL:Initialize()
 	right:SetPadding(Rect(0,0,0,-1))
 	right:SetStackRight(false)
 	right:SetSizeStackToWidth(true)
-	right:Dock("fill")
+	--right:SetupLayoutChain("fill_x", "fill_y")
 	right:SetNoDraw(true)
 	right:SetMargin(Rect())
 	self.right = right
@@ -537,7 +537,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 		panel:SetDefaultValue(default)
 		panel.GetValue = get_value
 		panel.OnValueChanged = function(_, val) set_value(val) end
-		panel:Dock("fill")
+		panel:SetupLayoutChain("fill_x", "fill_y")
 		panel.left = left
 		property = panel
 		
@@ -579,7 +579,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 		panel:SetDefaultValue(default)
 		panel.GetValue = get_value
 		panel.OnValueChanged = function(_, val) set_value(val) end
-		panel:Dock("fill")
+		panel:SetupLayoutChain("fill_x", "fill_y")
 		panel.left = left
 		property = panel
 		
