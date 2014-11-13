@@ -108,13 +108,13 @@ function PANEL:SetupSorted(...)
 				
 		local icon = gui2.CreatePanel("base", column)
 		icon:SetStyle("list_down_arrow")
-		icon:Dock("right")
+		icon:SetupLayoutChain("right")
 		icon:SetIgnoreMouse(true)
 		column.icon = icon
 					
 		local div = gui2.CreatePanel("divider", self.top)
 		div:SetColor(gui2.skin.font_edit_background)
-		div:Dock("fill")
+		div:SetupLayoutChain("fill_x", "fill_y")
 		div:SetLeft(column)
 		div:SetLayoutParentOnLayout(true)
 		column.div = div

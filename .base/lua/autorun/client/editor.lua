@@ -14,7 +14,7 @@ function editor.Open()
 	editor.frame = frame
 	
 	local div = gui2.CreatePanel("divider", frame)
-	div:Dock("fill")
+	div:SetupLayoutChain("fill_x", "fill_y")
 	div:SetHideDivider(true)
 	
 	local scroll = div:SetTop(gui2.CreatePanel("scroll"))

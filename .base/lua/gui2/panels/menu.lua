@@ -123,7 +123,7 @@ do
 	function PANEL:CreateSubMenu()			
 	
 		local icon = gui2.CreatePanel("base", self)
-		icon:Dock("right")
+		icon:SetupLayoutChain("right")
 		icon:SetIgnoreMouse(true)
 		icon:SetStyle("menu_right_arrow")
 

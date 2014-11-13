@@ -404,6 +404,33 @@ do -- orientation
 	
 	PANEL.SetH = PANEL.SetHeight
 	PANEL.GetH = PANEL.GetHeight
+	
+	function PANEL:SetRect(rect)
+		self:SetPosition(Vec2(rect.x, rect.y))
+		self:SetSize(Vec2(rect.w, rect.h))
+	end
+	
+	function PANEL:GetRect()
+		return Rect(self.Position.x, self.Position.y, self.Size.w, self.Size.h)
+	end
+	
+	function PANEL:GetWorldRect(pad)
+		local rect = self:GetRect()
+		
+		-- convert to world
+		rect.w = rect.x + rect.w
+		rect.h = rect.y + rect.h
+		
+		-- add padding
+		if pad then
+			rect.left = rect.left - self.Padding.left
+			rect.top = rect.top - self.Padding.top
+			rect.right = rect.right + self.Padding.right
+			rect.bottom = rect.bottom + self.Padding.bottom
+		end
+		
+		return rect
+	end
 end
 
 do -- cached rendering
@@ -509,6 +536,8 @@ do -- scrolling
 		self.Scroll = frac * size
 		self.Scroll:Clamp(Vec2(0, 0), size - self.Size)
 		self.ScrollFraction = frac
+		
+		self:OnScroll(self.ScrollFraction)
 		
 		self:MarkCacheDirty()
 	end
@@ -1475,6 +1504,7 @@ do -- layout
 				end
 				
 				self:OnLayout(self:GetPosition(), self:GetSize())
+				self:CalcLayoutChain()
 									
 				if self.LayoutParentOnLayout and self:HasParent() then
 					self.Parent:Layout(now)
@@ -1494,6 +1524,261 @@ do -- layout
 		else
 			self.layout_me = true
 		end
+	end
+end
+
+do -- layout chain
+	local function ray_cast(self, where, panel, collide, asdf)
+		local pos = where:GetPosition()
+		local dir = (where:GetPosition() - panel:GetPosition()):Normalize()
+		local found
+			
+		if collide then
+			found = {}
+			local panel_rect = panel:GetWorldRect()
+			
+			for i, child in ipairs(self:GetChildren()) do
+				if child ~= panel and child.laid_out then
+					local child_rect = child:GetWorldRect()
+					
+					if 
+						dir.y == 1 and 
+						child_rect.top > panel_rect.top and 
+						(
+							child_rect.left <= panel_rect.left and 
+							child_rect.right >= panel_rect.right
+							or
+							child_rect.left >= panel_rect.left and 
+							child_rect.right <= panel_rect.right
+							or 
+							child_rect.right >= panel_rect.right and
+							child_rect.left <= panel_rect.right
+							or 
+							child_rect.right >= panel_rect.left and
+							child_rect.left <= panel_rect.left
+						)
+					then	
+						table.insert(found, {child = child, point = child_rect.top})
+					elseif 
+						dir.y == -1 and 
+						child_rect.bottom < panel_rect.bottom and
+						(
+							child_rect.left <= panel_rect.left and
+							child_rect.right >= panel_rect.right
+							or
+							child_rect.left >= panel_rect.left and 
+							child_rect.right <= panel_rect.right
+							or 
+							child_rect.right >= panel_rect.right and
+							child_rect.left <= panel_rect.right
+							or 
+							child_rect.right >= panel_rect.left and
+							child_rect.left <= panel_rect.left
+						)
+					then
+						table.insert(found, {child = child, point = child_rect.bottom})
+					elseif
+						dir.x == 1 and 
+						child_rect.right > panel_rect.right and					
+						(
+							child_rect.top <= panel_rect.top and 
+							child_rect.bottom >= panel_rect.bottom 
+							or
+							child_rect.top >= panel_rect.top and 
+							child_rect.bottom <= panel_rect.bottom
+							or 
+							child_rect.bottom >= panel_rect.bottom and
+							child_rect.top <= panel_rect.bottom
+							or 
+							child_rect.bottom >= panel_rect.top and
+							child_rect.top <= panel_rect.top
+						)
+					then
+						table.insert(found, {child = child, point = child_rect.left})
+					elseif 
+						dir.x == -1 and 
+						child_rect.left < panel_rect.left and 
+						(
+							child_rect.top <= panel_rect.top and 
+							child_rect.bottom >= panel_rect.bottom 
+							or
+							child_rect.top >= panel_rect.top and 
+							child_rect.bottom <= panel_rect.bottom 
+							or 
+							child_rect.bottom >= panel_rect.bottom and
+							child_rect.top <= panel_rect.bottom
+							or 
+							child_rect.bottom >= panel_rect.top and
+							child_rect.top <= panel_rect.top
+						)
+					then
+						table.insert(found, {child = child, point = child_rect.right})
+					end
+				end
+			end
+			
+			local origin
+			
+			if dir.y == 1 then
+				origin = panel_rect.bottom
+			elseif dir.y == -1 then
+				origin = panel_rect.top
+			elseif dir.x == 1 then
+				origin = panel_rect.right
+			elseif dir.x == -1 then
+				origin = panel_rect.left
+			end
+			
+			table.sort(found, function(a, b) 
+				return math.abs(a.point-origin) < math.abs(b.point-origin)
+			end)		
+		end
+			
+		if found and found[1] then		
+			local child = found[1].child
+			
+			pos = child:GetPosition():Copy()
+				
+			if dir.x == -1 then
+				pos.y = panel:GetY()
+				pos.x = pos.x + child:GetWidth() + child.Padding.right			
+			elseif dir.x == 1 then
+				pos.y = panel:GetY()
+				pos.x = pos.x - panel:GetWidth() - child.Padding.left			
+			elseif dir.y == -1 then
+				pos.x = panel:GetX()
+				pos.y = pos.y + child:GetHeight() + child.Padding.bottom
+			elseif dir.y == 1 then
+				pos.x = panel:GetX()
+				pos.y = pos.y - panel:GetHeight() - child.Padding.top			
+			end
+		else
+			if dir.x == -1 then
+				pos.x = pos.x + self.Margin.right + panel.Padding.right		
+			elseif dir.x == 1 then                  
+				pos.x = pos.x - self.Margin.left - panel.Padding.left	
+			elseif dir.y == -1 then                  	
+				pos.y = pos.y + self.Margin.bottom + panel.Padding.bottom
+			elseif dir.y == 1 then            
+				pos.y = pos.y - self.Margin.top - panel.Padding.top
+			end                                     
+		end                                         
+		
+		return pos
+	end
+
+	local function process_commands(self, child, commands)
+		local collide = true
+		local args
+		
+		for i, cmd in ipairs(commands) do
+			if type(cmd) == "table" then
+				args = cmd
+				cmd = cmd[1]
+			end
+			if cmd == "collide" then
+				collide = true
+			elseif cmd == "no_collide" then
+				collide = false
+			elseif typex(cmd) == "vec2" then
+				child:SetSize(cmd:Copy())
+			elseif cmd == "fill_x" then
+				child:SetWidth(0)
+				
+				local left = ray_cast(self, child:GetRect():SetX(0), child, collide)
+				local right = ray_cast(self, child:GetRect():SetX(self:GetWidth()), child, collide)
+				right.x = right.x - left.x
+							
+				local x = left.x
+				local w = right.x
+				
+				local min_width = child.MinimumSize.w
+				
+				if args and args[2] then
+					x = math.max(math.lerp(args[2], left.x, right.x + child:GetWidth()), min_width/2) - min_width/2 + left.x
+					w = w-x*2 + left.x*2
+					if w < min_width then
+						x = -left.x
+						w = right.x
+					end
+				end
+				
+				child:SetX(math.max(x, left.x)) -- HACK???
+				child:SetWidth(math.max(w, min_width))
+			elseif cmd == "fill_y" then
+				child:SetHeight(0)
+				
+				local top = ray_cast(self, child:GetRect():SetY(0), child, collide)
+				child:SetPosition(top)
+				
+				local bottom = ray_cast(self, child:GetRect():SetY(self:GetHeight()), child, collide)
+				bottom.h = bottom.h - top.y
+				if bottom.h <= child.MinimumSize.h then
+					--self:StopDragging()
+				end
+				child:SetHeight(bottom.h)
+			elseif cmd == "center" then
+				child:SetPosition(self:GetPosition() - (child:GetSize() / 2))
+			elseif cmd == "center_x" then				
+				local left = ray_cast(self, child:GetRect():SetX(0), child, collide)
+				local right = ray_cast(self, Rect(left, child:GetSize()):SetX(self:GetWidth()), child, collide)
+
+				if right.x < child:GetX() then	
+					break
+				else
+					child:SetX(math.lerp(0.5, left.x, right.x))
+				end	
+			elseif cmd == "center_x_frame" then
+				local left = ray_cast(self, child:GetRect():SetX(0), child, collide)
+				local right = ray_cast(self, Rect(left, child:GetSize()):SetX(self:GetWidth()), child, collide)
+				
+				if 
+					child:GetX()+child:GetWidth()+child.Padding.right < right.x+child:GetWidth()-child.Padding.right and
+					child:GetX()-child.Padding.x > left.x
+				then
+					child:SetX(self:GetWidth() / 2 - child:GetWidth() / 2)
+					break
+				end
+			elseif cmd == "center_y" then
+				local top = ray_cast(self, child:GetRect():SetY(0), child, collide)
+				local bottom = ray_cast(self, Rect(top, child:GetSize()):SetY(self:GetHeight()), child, collide)					
+				child:SetY(top.y + (bottom.y/2 - child:GetHeight()/2) - child.Padding.top + child.Padding.bottom)
+			elseif cmd == "top" then
+				child:SetY(math.max(child:GetY(), 1))
+				child:SetY(ray_cast(self, child:GetRect():SetY(0), child, collide).y)
+			elseif cmd == "left" then
+				child:SetX(math.max(child:GetX(), 1))
+				child:SetX(ray_cast(self, child:GetRect():SetX(0), child, collide).x)
+			elseif cmd == "bottom" then
+				child:SetY(ray_cast(self, child:GetRect():SetY(self:GetHeight() - child:GetHeight()), child, collide).y)
+			elseif cmd == "right" then
+				child:SetX(math.max(child:GetX(), 1))
+				child:SetX(ray_cast(self, child:GetRect():SetX(self:GetWidth() - child:GetWidth()), child, collide).x)
+			end
+		end
+	end
+
+	function PANEL:CalcLayoutChain()
+		for i, child in ipairs(self:GetChildren()) do
+			if child.layout_chain then
+				child:SetSize(child.layout_size:Copy())
+				child:SetPosition((self:GetSize() / 2) - (child:GetSize() / 2))
+				child.laid_out = false
+			end
+		end
+				
+		for i, child in ipairs(self:GetChildren()) do
+			if child.layout_chain then
+				process_commands(self, child, child.layout_chain)
+				child.laid_out = true
+			end
+		end
+	end
+	
+	function PANEL:SetupLayoutChain(...)
+		self.layout_chain = {...}
+		self.layout_size = self:GetSize():Copy()
+		if self:HasParent() then self.Parent:Layout() end
 	end
 end
 
