@@ -217,7 +217,7 @@ function META:DrawSelection()
 
 	if START and END then
 		surface.SetWhiteTexture()
-		surface.SetColor(1, 1, 1, 0.5)
+		surface.SetColor(self.SelectionColor)
 
 		for i = START.i, END.i - 1 do
 			local char = self.chars[i]
@@ -264,7 +264,7 @@ function META:DrawCaret()
 
 		surface.SetWhiteTexture()
 		self.blink_offset = self.blink_offset or 0
-		surface.SetColor(1, 1, 1, (system.GetTime() - self.blink_offset)%0.5 > 0.25 and 1 or 0)
+		surface.SetColor(self.CaretColor.r, self.CaretColor.g, self.CaretColor.b, (system.GetTime() - self.blink_offset)%0.5 > 0.25 and self.CaretColor.a or 0)
 		surface.DrawRect(x, y, 1, h)
 	end
 end
