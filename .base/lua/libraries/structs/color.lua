@@ -52,6 +52,11 @@ function META:Get255()
 	return Color(self.r * 255, self.g * 255, self.b * 255, self.a * 255)
 end
 
+function META:SetAlpha(a)
+	self.a = a
+	return self
+end
+
 function META:SetHue(h)
 	local _h,s,l = ColorToHSV(self)
 	_h = (_h + h)%360
