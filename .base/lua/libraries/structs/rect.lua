@@ -79,6 +79,17 @@ function META:IsPosInside(v)
 		v.y < self.h
 end
 
+function META.IsRectInside(a, b)
+	return 
+		not 
+		(
+			b.x > a.x + a.w or
+			b.x + b.w < a.x or 
+			b.y > a.y + a.h or
+			b.y + b.h < a.y
+		)		
+end
+
 function META:SetSize(var)
 	if typex(var) == "vec2" then
 		self.w = var.x
@@ -88,6 +99,26 @@ function META:SetSize(var)
 		self.h = var
 	end
 
+	return self
+end
+
+function META:SetX(x)
+	self.x = x
+	return self
+end
+
+function META:SetY(y)
+	self.y = y
+	return self
+end
+
+function META:SetWidth(w)
+	self.w = w
+	return self
+end
+
+function META:SetHeight(h)
+	self.h = h
 	return self
 end
 
