@@ -11,15 +11,9 @@ local S = scale
 local text_size = 5*S 
 
 surface.CreateFont("snow_font", {
-	path = "Roboto", 
+	path = "Roboto",
+	fallback = "default",
 	size = 11,
-}) 
-
-surface.CreateFont("snow_font_green", {
-	path = "fonts/zfont.txt", 
-	size = text_size,
-	shadow = S,
-	shadow_color = Color(0,1,0,0.4),
 }) 
 
 surface.CreateFont("snow_font_noshadow", {
