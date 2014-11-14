@@ -78,7 +78,7 @@ chathud = {
 				size = 16,
 				padding = 8, 
 				shade = passes,
-				shadow = 2,
+				shadow = 1,
 			} ,
 		}
 	},
