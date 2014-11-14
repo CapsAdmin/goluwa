@@ -50,10 +50,10 @@ function editor.Open()
 		
 		if node then
 			add("copy", function()
-				system.SetClipboard(serializer.Encode("luadata", node.ent:GetStorableTable()))
+				system.SetClipboard(assert(serializer.Encode("luadata", node.ent:GetStorableTable())))
 			end, gui2.skin.icons.copy)
 			add("paste", function()
-				node.ent:SetStorableTable(serializer.Decode("luadata", system.GetClipboard()))
+				node.ent:SetStorableTable(assert(serializer.Decode("luadata", system.GetClipboard())))
 			end, gui2.skin.icons.paste)
 			add("clone", function()
 				local ent = entities.CreateEntity(node.ent.config)
