@@ -586,25 +586,20 @@ end
 
 local function align_y_axis(self, chunks)
 	for _, chunk in ipairs(chunks) do
-		
-		
-		-- align the y axis properly
-		if chunk.type ~= "newline" then
-			chunk.y = chunk.y - chunk.h + chunk.line_height
-		end
-
 		-- mouse testing
+		chunk.y = chunk.y + chunk.line_height - chunk.h
+
+		if chunk.chars then 
+			for i, char in ipairs(chunk.chars) do
+				char.top = char.y + chunk.line_height
+				char.h = chunk.line_height
+			end
+		end
+		
 		chunk.right = chunk.x + chunk.w
-		chunk.top = chunk.y + chunk.h
+		chunk.top = chunk.y
 	end
 
-	-- fix last newline..
-	local chunk = chunks[#chunks-1]
-
-	if chunk and chunk.type == "newline" then
-		chunk.y = chunk.y + chunk.line_height + chunk.h
-		chunk.x = 0
-	end		
 end
 		
 function META:Invalidate()		
