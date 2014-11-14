@@ -108,11 +108,11 @@ if CLIENT then
 		local last_send = 0
 		local last_tick = 0
 		
-		event.AddListener("Update", "user_command_tick", function()
+		event.AddListener("Update", "user_command_tick", function(dt)
 			if not network.IsConnected() then return end
 					
 			local cmd = clients.GetLocalClient():GetCurrentCommand()
-			local move = event.Call("CreateMove", clients.GetLocalClient(), cmd)
+			local move = event.Call("CreateMove", clients.GetLocalClient(), cmd, dt)
 			
 			local time = system.GetTime()
 			
