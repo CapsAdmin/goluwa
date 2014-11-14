@@ -74,6 +74,7 @@ chathud = {
 			name = "chathud_default",
 			data = {
 				path = "Roboto",
+				fallback = "default",
 				size = 16,
 				padding = 8, 
 				shade = passes,

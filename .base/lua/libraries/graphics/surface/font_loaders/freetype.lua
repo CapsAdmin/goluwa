@@ -45,12 +45,14 @@ function META:OnRemove()
 	freetype.DoneFace(self.face)
 end
 
-function META:LoadGlyph(code)
-	if self.chars[code] then return end
-	
+function META:GetGlyphData(code)	
 	if freetype.LoadChar(self.face, utf8.byte(code), 4) == 0 then
 		local glyph = self.face.glyph
 		local bitmap = glyph.bitmap
+		
+		if bitmap.width == 0 and bitmap.rows == 0 and utf8.byte(code) > 128 then
+			return
+		end
 
 		local char = {
 			char = code,
@@ -80,15 +82,32 @@ function META:LoadGlyph(code)
 			end
 		end
 		
+		return copy, char
+	end
+end
+
+function META:LoadGlyph(code)
+	if self.chars[code] then return end
+	
+	local buffer, char = self:GetGlyphData(code)
+	
+	if not buffer and self.options.fallback then
+		for i, font in ipairs(self.options.fallback) do
+			if surface.fonts[font] and surface.fonts[font].GetGlyphData then
+				buffer, char = surface.fonts[font]:GetGlyphData(code)
+				if buffer then break end
+			end
+		end
+	end
+	
+	if buffer then		
 		self.texture_atlas:Insert(code, {		
 			w = char.w, 
 			h = char.h, 
-			buffer = copy,
+			buffer = buffer,
 		})
 		
 		self.chars[code] = char
-	else		
-		self.chars[code] = {invalid = true}
 	end
 end
 
@@ -153,96 +172,6 @@ function META:Rebuild()
 	end
 end
 
-function META:DrawString(str, x, y)
-	if self.state ~= "loaded" or not str or not x or not y then return false end
-	local X, Y = x, y
-	local tex
-	for i = 1, utf8.length(str) do
-		local char = utf8.sub(str, i,i)
-		local ch = self.chars[char]
-		if char == "\n" then
-			X = x
-			Y = Y + self.options.size
-		elseif char == "\t" then
-			X = X + self.options.size
-		elseif ch and not ch.invalid then
-			if tex ~= ch.page.texture then
-				surface.SetTexture(ch.page.texture)
-				tex = ch.page.texture
-			end
-			surface.SetRectUV(ch.x, ch.y, ch.w, ch.h, 256, 256)
-			surface.DrawRect(X, Y - (ch.bitmap_top) + self.options.size, ch.w, ch.h)
-			X = X + ch.x_advance
-			Y = Y + ch.y_advance
-		elseif not ch or not ch.invalid then
-			self:LoadGlyph(char)
-		end
-	end
-	
-	return X, Y
-end
-
-function META:DrawString(str, x, y)
-	self.vertex_buffer = self.vertex_buffer or surface.CreatePoly(500)
-	
-	self.string_cache = self.string_cache or {}
-	
-	if not self.string_cache[str] then		
-		local data = {}
-	
-		local X, Y = 0, 0
-		local last_texture
-		local chars
-			
-		for i = 1, utf8.length(str) do
-			local char = utf8.sub(str, i,i)
-			local ch = self.chars[char]
-			
-			if char == "\n" then
-				X = x
-				Y = Y + self.options.size
-			elseif char == "\t" then
-				X = X + self.options.size
-			else			
-				if not ch or not ch.invalid then
-					self:LoadGlyph(char)
-					ch = self.chars[char]
-				end
-				
-				if ch then				
-					if last_texture ~= ch.page.texture then
-						chars = {}
-						table.insert(data, {texture = ch.page.texture, chars = chars})
-						last_texture = ch.page.texture
-					end
-				
-					table.insert(chars, {
-						uv = {ch.x, ch.y, ch.w, ch.h, ch.page.texture.w, ch.page.texture.h},
-						rect = {i, X, Y - (ch.bitmap_top) + self.options.size, ch.w, ch.h},					
-						tex = ch.page.texture, -- todo: sort by texture
-					})
-					
-					X = X + ch.x_advance
-					Y = Y + ch.y_advance
-				end
-			end
-		end
-				
-		self.string_cache[str] = data
-	end
-	
-	surface.PushMatrix(x, y)
-	for i, v in ipairs(self.string_cache[str]) do
-		surface.SetTexture(v.texture)
-		for i, char in ipairs(v.chars) do
-			self.vertex_buffer:SetUV(char.uv[1], char.uv[2], char.uv[3], char.uv[4], char.uv[5], char.uv[6])
-			self.vertex_buffer:SetRect(char.rect[1], char.rect[2], char.rect[3], char.rect[4], char.rect[5])
-		end
-		self.vertex_buffer:Draw(#v.chars)
-	end	
-	surface.PopMatrix()
-end
-
 function META:DrawString(str, x, y)	
 	self.string_cache = self.string_cache or {}
 	
@@ -259,9 +188,8 @@ function META:DrawString(str, x, y)
 		for i = 1, utf8.length(str) do
 			local char = utf8.sub(str, i,i)
 			local ch = self.chars[char]
-			if not ch or not ch.invalid then
+			if not ch then
 				self:LoadGlyph(char)
-				ch = self.chars[char]
 				rebuild = true
 			end
 		end
@@ -322,9 +250,8 @@ function META:GetTextSize(str)
 	for i = 1, utf8.length(str) do
 		local char = utf8.sub(str, i,i)
 		local ch = self.chars[char]
-		if not ch or not ch.invalid then
+		if not ch then
 			self:LoadGlyph(char)
-			ch = self.chars[char]
 			rebuild = true
 		end
 	end
@@ -335,7 +262,7 @@ function META:GetTextSize(str)
 	
 	for i = 1, utf8.length(str) do
 		local char = utf8.sub(str, i,i)
-		local ch = self.chars[char]
+		local ch = self.chars[char] 
 		if char == "\n" then
 			Y = Y + self.options.size
 		elseif char == "\t" then

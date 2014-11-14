@@ -39,6 +39,9 @@ function surface.CreateFont(name, options, callback)
 	options.path = options.path or "fonts/unifont.ttf"
 	options.size = options.size or 14
 	options.padding = options.padding or 1
+	if type(options.fallback) == "string" then
+		options.fallback = {options.fallback}
+	end
 	
 	if options.shade then
 		if options.shade.source then
@@ -203,7 +206,6 @@ do
 	
 	function surface.InvalidateFontSizeCache(font)
 		if font then
-			print(cache[font])
 			cache[font] = nil
 		else
 			cache = {}
