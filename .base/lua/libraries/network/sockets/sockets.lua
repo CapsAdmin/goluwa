@@ -470,6 +470,7 @@ do -- tcp socket meta
 		end
 
 		sockets.ClientMeta = CLIENT
+		prototype.Register(CLIENT)
 	end
 
 	do -- server
@@ -697,6 +698,7 @@ do -- tcp socket meta
 		end
 
 		sockets.ServerMeta = SERVER
+		prototype.Register(SERVER)
 	end
 end
 
