@@ -110,6 +110,7 @@ local width_mult = console.CreateVariable("cl_chathud_width_mult", 0.6)
 
 chathud.markup =  surface.CreateMarkup()
 chathud.markup:SetEditable(false)
+chathud.markup:SetSelectable(false)
 chathud.life_time = 20
 
 function chathud.AddText(...)
