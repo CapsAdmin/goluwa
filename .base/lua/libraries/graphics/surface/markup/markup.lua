@@ -327,7 +327,6 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 		local y = self.caret_pos.y + string.count(str, "\n")
 
 		if self.caret_pos.char.str == "\n" then
-			self.move_caret_right = true
 			x = x + 1
 		end
 

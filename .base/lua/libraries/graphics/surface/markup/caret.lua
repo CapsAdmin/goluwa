@@ -1,11 +1,7 @@
 local META = (...) or prototype.GetRegistered("markup")
 
-function META:SetCaretPosition(x, y, later)
-	if later then
-		self.caret_later_pos = {x,y}
-	else
-		self.caret_pos = self:CaretFromPosition(x, y)
-	end
+function META:SetCaretPosition(x, y)
+	self.caret_pos = self:CaretFromPosition(x, y)
 end
 
 function META:GetCaretSubPosition()

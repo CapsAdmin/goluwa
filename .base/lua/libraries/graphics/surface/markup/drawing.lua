@@ -16,20 +16,7 @@ function META:Update()
 		self.height = self.MinimumHeight
 	end
 	
-	if self.Selectable then
-		if #self.chunks == 0 then return end
-
-		-- this is to move the caret to the right at the end of a line or the very end of the text
-		if self.move_caret_right then
-			self.move_caret_right = false
-			self:OnKeyInput("right", true)
-		end
-
-		if self.caret_later_pos then
-			self:SetCaretPosition(unpack(self.caret_later_pos))
-			self.caret_later_pos  = nil
-		end
-		
+	if self.Selectable and self.chunks[1] then		
 		if self.mouse_selecting then
 			local x, y = self:GetMousePosition():Unpack()
 			local caret = self:CaretFromPixels(x, y)
