@@ -51,19 +51,18 @@ function META:Update()
 	end
 end
 
-local remove_these = {}
-local start_remove = false
-local started_tags = {}
-
 function META:Draw()
 	if self.chunks[1] then
 		-- reset font and color for every line
 		set_font(self, "default")
 		surface.SetColor(1, 1, 1, 1)
 
-		table.clear(remove_these)
 		local start_remove = false
-		table.clear(started_tags)
+		
+		self.remove_these = self.remove_these or {}
+		table.clear(self.remove_these)
+		self.started_tags = self.started_tags or {}
+		table.clear(self.started_tags)
 
 		for i, chunk in ipairs(self.chunks) do
 
@@ -92,7 +91,7 @@ function META:Draw()
 					end
 
 					if start_remove then
-						remove_these[i] = true
+						self.remove_these[i] = true
 					end
 
 					if chunk.type == "string" then
@@ -104,7 +103,7 @@ function META:Draw()
 						
 						surface.DrawText(chunk.val)
 					elseif chunk.type == "tag_stopper" then
-						for _, chunks in pairs(started_tags) do
+						for _, chunks in pairs(self.started_tags) do
 							local fix = false
 							
 							for key, chunk in pairs(chunks) do
@@ -129,7 +128,7 @@ function META:Draw()
 
 						-- we need to make sure post_draw is called on tags to prevent
 						-- engine matrix stack inbalance with the matrix tags
-						started_tags[chunk.val.type] = started_tags[chunk.val.type] or {}
+						self.started_tags[chunk.val.type] = self.started_tags[chunk.val.type] or {}
 
 						-- draw_under
 						if chunk.tag_start_draw then
@@ -138,7 +137,7 @@ function META:Draw()
 								
 								-- only if there's a post_draw
 								if self.tags[chunk.val.type].post_draw then
-									table.insert(started_tags[chunk.val.type], chunk)
+									table.insert(self.started_tags[chunk.val.type], chunk)
 								end
 							end
 
@@ -152,7 +151,7 @@ function META:Draw()
 
 						-- draw_over
 						if chunk.tag_stop_draw then
-							if table.remove(started_tags[chunk.val.type]) then
+							if table.remove(self.started_tags[chunk.val.type]) then
 								--print("post_draw", chunk.val.type, chunk.i)
 								self:CallTagFunction(chunk.start_chunk, "post_draw", chunk.start_chunk.x, chunk.start_chunk.y)
 							end
@@ -163,7 +162,7 @@ function META:Draw()
 					if chunk.tag_stop_draw then
 						--print("post_draw_chunks", chunk.type, chunk.i, chunk.chunks_inbetween, chunk.start_chunk.val.type)
 						
-						if table.remove(started_tags[chunk.start_chunk.val.type]) then
+						if table.remove(self.started_tags[chunk.start_chunk.val.type]) then
 							--print("post_draw", chunk.start_chunk.val.type, chunk.i)
 							self:CallTagFunction(chunk.start_chunk, "post_draw", chunk.start_chunk.x, chunk.start_chunk.y)
 						end
@@ -185,7 +184,7 @@ function META:Draw()
 			end
 		end
 
-		for _, chunks in pairs(started_tags) do
+		for _, chunks in pairs(self.started_tags) do
 			for _, chunk in pairs(chunks) do
 				--print("force stop", chunk.val.type, chunk.i)
 
@@ -193,8 +192,8 @@ function META:Draw()
 			end
 		end
 
-		if next(remove_these) then
-			for k,v in pairs(remove_these) do
+		if next(self.remove_these) then
+			for k,v in pairs(self.remove_these) do
 				self.chunks[k] = nil
 			end
 
