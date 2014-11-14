@@ -24,7 +24,14 @@ function PANEL:Initialize()
 	end
 	self.markup = markup
 	
+	self:SetFont(self.Font)
 	self:SetTextWrap(self.TextWrap)
+end
+
+function PANEL:SetFont(font)
+	surface.SetFont(font)
+	self.markup:SetMinimumHeight(select(2, surface.GetTextSize("")))
+	self.Font = font
 end
 
 function PANEL:SetText(str)

@@ -24,6 +24,8 @@ prototype.GetSet(META, "MousePosition", Vec2())
 prototype.GetSet(META, "FastMode", false)
 prototype.GetSet(META, "SelectionColor", Color(1, 1, 1, 0.5))
 prototype.GetSet(META, "CaretColor", Color(1, 1, 1, 1))
+prototype.IsSet(META, "Selectable", true)
+prototype.GetSet(META, "MinimumHeight", 10)
 
 if SERVER then
 	prototype.GetSet(META, "FixedSize", 14) -- sigh
