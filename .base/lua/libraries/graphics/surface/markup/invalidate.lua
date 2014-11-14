@@ -130,21 +130,22 @@ local function get_size_info(self, chunks)
 			local w, h = get_text_size(self, chunk.val)
 
 			chunk.w = w
-			chunk.h = h
+			chunk.h = h + self.HeightSpacing
 
 			if chunk.internal then
 				chunk.w = 0
 				chunk.h = 0
-				chunk.real_h = h
+				chunk.real_h = h + self.HeightSpacing
 				chunk.real_w = w
 			end
 		elseif chunk.type == "newline" then
 			local w, h = get_text_size(self, "|")
 
 			chunk.w = w
-			chunk.h = h
+			chunk.h = h + self.HeightSpacing
 		elseif chunk.type == "custom" and not chunk.val.stop_tag  then
 			local ok, w, h = self:CallTagFunction(chunk, "get_size")
+			if h then h = h + self.HeightSpacing end
 			chunk.w = w
 			chunk.h = h
 
@@ -515,7 +516,7 @@ local function store_tag_info(self, chunks)
 				local data = {}
 
 				data.w = chunk.w
-				data.h = chunk.h
+				data.h = line_height
 				data.x = chunk.x
 				data.y = chunk.y
 				data.right = chunk.x + chunk.w
@@ -592,7 +593,7 @@ local function align_y_axis(self, chunks)
 		if chunk.chars then 
 			for i, char in ipairs(chunk.chars) do
 				char.top = char.y + chunk.line_height
-				char.h = chunk.line_height
+				char.h = chunk.line_height 
 			end
 		end
 		
