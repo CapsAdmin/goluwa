@@ -8,12 +8,8 @@ prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1))
 	
 	-- automate this!!
-	prototype.GetSet(COMPONENT, "AmbientIntensity", 0)
 	prototype.GetSet(COMPONENT, "DiffuseIntensity", 0.5)
 	prototype.GetSet(COMPONENT, "SpecularIntensity", 1)
-	prototype.GetSet(COMPONENT, "AttenuationConstant", 0)
-	prototype.GetSet(COMPONENT, "AttenuationLinear", 0)
-	prototype.GetSet(COMPONENT, "AttenuationExponent", 0.01)
 	prototype.GetSet(COMPONENT, "Roughness", 0.5)
 
 	prototype.GetSet(COMPONENT, "Shadow", false)
