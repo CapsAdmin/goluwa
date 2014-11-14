@@ -1,69 +1,17 @@
 if CLIENT then
 	local angles = Ang3(0, 0, 0)
-	local fov = 75
+	local fov = math.rad(75)
 
-	event.AddListener("CreateMove", "spooky", function(client, prev_cmd)	
+	event.AddListener("CreateMove", "spooky", function(client, prev_cmd, dt)	
 		if not window.IsOpen() then return end
 		if chat and chat.IsVisible() then return end
 		if menu and menu.visible then return end
 		
+		local dir, angles, fov = CalcMovement(1, angles, fov)
+		
 		local cmd = {}
-		local velocity = Vec3(0, 0, 0)
-		local speed = 10
-		local delta = window.GetMouseDelta() / 100
-		
-		angles:Normalize()
-		
-		if input.IsKeyDown("r") then
-			angles.r = 0
-			fov = 90
-		end
-		
-		delta = delta * (fov / 175)
-		
-		if input.IsMouseDown("button_2") then
-			angles.r = angles.r + delta.x / 2
-			fov = math.clamp(fov + delta.y * 100, 0.1, 175)
-		else
-			angles.p = math.clamp(angles.p + delta.y, -math.pi/2, math.pi/2)
-			angles.y = angles.y - delta.x
-		end
-
-		if input.IsKeyDown("left_shift") then
-			speed = speed * 8
-		elseif input.IsKeyDown("left_control") then
-			speed = speed / 4
-		end
-		
-		local forward = Vec3(0,0,0)
-		local side = Vec3(0,0,0)
-		local up = Vec3(0,0,0)
-
-		if input.IsKeyDown("space") then
-			up = up + angles:GetUp() * speed
-		end
-
-		local offset = angles:GetForward() * speed
-
-		if input.IsKeyDown("w") then
-			side = side + offset
-		elseif input.IsKeyDown("s") then
-			side = side - offset
-		end
-
-		offset = angles:GetRight() * speed
-
-		if input.IsKeyDown("a") then 
-			forward = forward + offset
-		elseif input.IsKeyDown("d") then
-			forward = forward - offset
-		end
-
-		if input.IsKeyDown("left_alt") then
-			angles.r = math.round(angles.r / math.rad(45)) * math.rad(45)
-		end
-		
-		cmd.velocity = forward + side + up
+				
+		cmd.velocity = dir
 		cmd.angles = angles
 		cmd.fov = fov
 		cmd.mouse_pos = window.GetMousePosition()

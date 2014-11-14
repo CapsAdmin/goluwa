@@ -1,13 +1,8 @@
-local smooth_cam_pos = Vec3(0, 0, 0)   
 local cam_pos = Vec3(-10, -16.8, 10.02)    
 local cam_ang = Deg3(90, 0, 0)
 local cam_fov = math.rad(90)
 
-event.AddListener("Update", "fly_camera_3d", function(dt)
-	if network.IsConnected() then return end
-	if not window.IsOpen() then return end		
-	if not window.GetMouseTrapped() then return end
-	
+function CalcMovement(dt, cam_ang, cam_fov)
 	cam_ang:Normalize()
 	local speed = dt * 10
 
@@ -92,9 +87,18 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	else
 		side = side / ((cam_fov/math.rad(90)) ^ 0.25)
 	end
+
+	return forward + side + up, cam_ang, cam_fov
+end
+
+event.AddListener("Update", "fly_camera_3d", function(dt)
+	if network.IsConnected() then return end
+	if not window.IsOpen() then return end		
+	if not window.GetMouseTrapped() then return end
 		
-	cam_pos = cam_pos + forward + side + up
-	smooth_cam_pos = smooth_cam_pos - ((smooth_cam_pos - cam_pos) * dt * 10)
+	local dir, ang, fov = CalcMovement(dt, cam_ang, cam_fov)
+		
+	cam_pos = cam_pos + dir
 
 	render.SetupView3D(cam_pos, cam_ang, cam_fov)
 end)
