@@ -245,10 +245,10 @@ end
 do
 	local MODE = "alpha"
 
-	function render.SetBlendMode(mode)
-		gl.AlphaFunc(gl.e.GL_GEQUAL, 0)
-		
+	function render.SetBlendMode(mode)		
 		if mode == "alpha" then
+			gl.AlphaFunc(gl.e.GL_GEQUAL, 0)
+			
 			gl.BlendFuncSeparate(	
 				gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA, 
 				gl.e.GL_ONE, gl.e.GL_ONE_MINUS_SRC_ALPHA

@@ -344,6 +344,8 @@ do -- texture object
 			shader[k] = v
 		end				
 		
+		gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
+		--render.SetBlendMode("alpha")
 		fb:Begin()
 			surface.PushMatrix()
 			surface.LoadIdentity()
