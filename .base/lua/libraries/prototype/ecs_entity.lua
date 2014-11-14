@@ -74,6 +74,14 @@ end
 
 do -- serializing
 	function META:SetStorableTable(data)
+		for name, component in pairs(self:GetComponents()) do
+			self:RemoveComponent(name)
+		end
+		
+		for k,v in pairs(self:GetChildrenList()) do
+			v:Remove(a)
+		end
+		
 		self.config = data.config
 		
 		for name, vars in pairs(data.self) do
