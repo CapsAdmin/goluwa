@@ -218,7 +218,7 @@ function META:DrawString(str, x, y)
 				
 				local x,y, w,h, sx,sy = self.texture_atlas:GetUV(char)
 				poly:SetUV(x,y, w,h, sx,sy) 
-				poly:SetRect(i, X-self.options.padding/2, Y-self.options.padding/2 + (ch.h - ch.bitmap_top) + self.options.size, w, -h)
+				poly:SetRect(i, X-self.options.padding/2, Y+self.options.padding/2 + (ch.h - ch.bitmap_top) + self.options.size, w, -h)
 				
 				if self.options.monospace then 
 					X = X + self.options.spacing
@@ -239,6 +239,12 @@ function META:DrawString(str, x, y)
 		render.SetCullMode("back")
 	end	
 	surface.PopMatrix()
+	
+	if surface.debug_font_size then
+		surface.SetColor(1,0,0,0.25)
+		surface.SetWhiteTexture()
+		surface.DrawRect(x, y, surface.GetTextSize(str))
+	end
 end
 
 function META:GetTextSize(str)
