@@ -186,17 +186,23 @@ do -- events
 			
 		if gui2.unroll_draw then	
 			if not gui2.unrolled_draw then
-				local str = {"local panels = gui2.panels"}
+				gui2.panels_unroll = {}
+				gui2.world.unroll_i = 1
+				for i,v in ipairs(gui2.world:GetChildrenList()) do
+					v.unroll_i = i+1
+					gui2.panels_unroll[i] = v
+				end
+				local str = {"local panels = gui2.panels_unroll"}
 				
 				local function add_children_to_list(parent, str, level)
-					table.insert(str, ("%sif panels[%i].Visible then"):format(("\t"):rep(level), parent.i))
-						table.insert(str, ("%spanels[%i]:PreDraw()"):format(("\t"):rep(level+1), parent.i))
+					table.insert(str, ("%sif panels[%i] and panels[%i].Visible then"):format(("\t"):rep(level), parent.unroll_i, parent.unroll_i))
+						table.insert(str, ("%spanels[%i]:PreDraw()"):format(("\t"):rep(level+1), parent.unroll_i))
 						for i, child in ipairs(parent:GetChildren()) do
 							level = level + 1
 							add_children_to_list(child, str, level) 
 							level = level - 1
 						end
-						table.insert(str, ("%spanels[%i]:PostDraw()"):format(("\t"):rep(level+1), parent.i))
+						table.insert(str, ("%spanels[%i]:PostDraw()"):format(("\t"):rep(level+1), parent.unroll_i))
 					table.insert(str, ("%send"):format(("\t"):rep(level)))
 				end
 			
