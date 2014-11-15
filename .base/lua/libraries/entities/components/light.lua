@@ -362,7 +362,7 @@ if RELOAD then
 	world.sun:SetShadow(true)
 	world.sun:SetPosition(render.GetCameraPosition()) 
 	world.sun:SetAngles(render.GetCameraAngles()) 
-	world.sun:SetFOV(render.GetCamFOV())
+	world.sun:SetFOV(render.GetCameraFOV())
 	world.sun:SetSize(1000) 
 	end) 
 end

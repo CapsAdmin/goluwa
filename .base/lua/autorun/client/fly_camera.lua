@@ -1,6 +1,6 @@
-local cam_pos = Vec3(-10, -16.8, 10.02)    
-local cam_ang = Deg3(90, 0, 0)
-local cam_fov = math.rad(90)
+render.SetCameraPosition(Vec3(-10, -16.8, 10.02))
+render.SetCameraAngles(Deg3(90, 0, 0))
+render.SetCameraFOV(math.rad(90))
 
 function CalcMovement(dt, cam_ang, cam_fov)
 	cam_ang:Normalize()
@@ -96,11 +96,15 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	if not window.IsOpen() then return end		
 	if not window.GetMouseTrapped() then return end
 		
+	local cam_pos = render.GetCameraPosition()
+	local cam_ang = render.GetCameraAngles()
+	local cam_fov = render.GetCameraFOV()
+		
 	local dir, ang, fov = CalcMovement(dt, cam_ang, cam_fov)
 		
 	cam_pos = cam_pos + dir
 
-	render.SetupView3D(cam_pos, cam_ang, cam_fov)
+	render.SetupView3D(cam_pos, ang, fov)
 end)
 
 local roll = 0

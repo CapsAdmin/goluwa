@@ -167,7 +167,7 @@ function META:ToScreen(pos, ang, w, h, fov)
 	ang = ang or render.GetCameraAngles()
 	w = w or render.GetWidth()
 	h = h or render.GetHeight()
-	fov = fov or render.GetCamFOV()
+	fov = fov or render.GetCameraFOV()
 
 	local dir = pos - self
 	dir:Normalize()
