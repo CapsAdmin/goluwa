@@ -1,4 +1,5 @@
 local score = utility.RemoveOldObject(gui2.CreatePanel("base"), "score")
+score:SetVisible(false)
 score:SetSize(window.GetSize()/1.25)
 score:Center()
 score:SetNoDraw(true)
@@ -166,19 +167,12 @@ team:SetupLayoutChain("top", "left")
 add_player("http://cdn.akamai.steamstatic.com/steamcommunity/public/images/avatars/78/78e60cd9f3178dd8a841b87c9bb8049ee65540e6_full.jpg", "CapsAdmin")
 add_player("http://cdn.akamai.steamstatic.com/steamcommunity/public/images/avatars/b8/b8ae62638fb03a5b9ec65c9c46f73a362a51382c_full.jpg", "Bubu")
 
-event.AddListener("DrawHUD", "scoreboard", function()
-	if not input.IsKeyDown("tab") then return end
-	
-	surface.SetColor(1,1,1,1)
-	surface.SetFont("default")
-	
-	local i = 0
-	local w, h = surface.GetScreenSize()
-	for _, client in pairs(clients.GetAll()) do
-		if not client:IsBot() then
-			surface.SetTextPosition(w/2, h/2 + i * 20 + 5)
-			surface.DrawText(client:GetNick())
-			i = i + 1
-		end
-	end
+console.AddCommand("+score", function()
+	score:SetVisible(true)
 end)
+console.AddCommand("-score", function()
+	score:SetVisible(false)
+end)
+
+input.Bind("tab", "+score")
+input.Bind("tab", "-score")
