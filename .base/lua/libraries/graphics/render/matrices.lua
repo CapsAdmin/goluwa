@@ -49,7 +49,7 @@ function render.GetCameraAngles()
 	return cam.ang
 end
 
-function render.GetCamFOV()
+function render.GetCameraFOV()
 	return cam.fov
 end
 
@@ -178,7 +178,7 @@ function render.SetupView3D(pos, ang, fov, out)
 	render.matrices.view_3d_inverse = render.matrices.view_3d:GetInverse()
 end
 
-function render.SetCamPosition(pos)
+function render.SetCameraPosition(pos)
 	cam.pos = pos
 	render.SetupView3D(cam.pos, cam.ang)
 end
@@ -196,11 +196,11 @@ function render.GetCameraAngles()
 	return cam.ang
 end
 
-function render.SetCamFOV(fov)
+function render.SetCameraFOV(fov)
 	cam.fov = fov
 end
 
-function render.GetCamFOV()
+function render.GetCameraFOV()
 	return cam.fov
 end
   

@@ -1,11 +1,12 @@
 if CLIENT then
-	local angles = Ang3(0, 0, 0)
-	local fov = math.rad(75)
 
 	event.AddListener("CreateMove", "spooky", function(client, prev_cmd, dt)	
 		if not window.IsOpen() then return end
 		if chat and chat.IsVisible() then return end
 		if menu and menu.visible then return end
+		
+		local angles = render.GetCameraAngles()
+		local fov = render.GetCameraFOV()
 		
 		local dir, angles, fov = CalcMovement(1, angles, fov)
 		
@@ -17,12 +18,12 @@ if CLIENT then
 		cmd.mouse_pos = window.GetMousePosition()
 		
 		render.SetCameraAngles(cmd.angles)
-		render.SetCamFOV(cmd.fov)
+		render.SetCameraFOV(cmd.fov)
 		
 		local ghost = client.nv.ghost or NULL
 		if ghost:IsValid() then
 			local pos = ghost:GetComponent("physics"):GetPosition() 
-			render.SetCamPosition(Vec3(-pos.y, -pos.x, -pos.z))
+			render.SetCameraPosition(Vec3(-pos.y, -pos.x, -pos.z))
 		end
 
 		return cmd
