@@ -107,14 +107,14 @@ end
 
 function PANEL:OnUpdate()
 	local markup = self.markup
-	markup.cull_x = self.Parent.Scroll.x + self.Position.x
-	markup.cull_y = self.Parent.Scroll.y + self.Position.y
+	markup.cull_x = self.Parent.Scroll.x
+	markup.cull_y = self.Parent.Scroll.y
 	markup.cull_w = self.Parent.Size.w
 	markup.cull_h = self.Parent.Size.h
 	
 	self.Size.w = markup.width
 	self.Size.h = markup.height
-	
+		
 	markup:Update()
 end
 
