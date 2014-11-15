@@ -105,12 +105,12 @@ do
 		local modifiers = key:explode("+")
 		table.remove(modifiers, 1)
 			
-		input.binds[key] = {
+		input.binds[key .. cmd] = {
 			key = key:sub(1, 1) == "+" and key:sub(2) or key,
 			trigger = key:match("^%-(.-)%+") or key:match("^(.-)%+") or key,
 			cmd = cmd, 
 			modifiers = modifiers, 
-			trigger_on_release = key:sub(1, 1) == "-",
+			trigger_on_release = cmd:sub(1, 1) == "-",
 		}
 	end
 
