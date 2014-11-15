@@ -60,6 +60,12 @@ function editor.Open()
 				ent:SetParent(node.ent:GetParent())
 				ent:SetStorableTable(node.ent:GetStorableTable())
 			end, gui2.skin.icons.clone)
+			
+			if node.ent:HasComponent("transform") then
+				add("goto", function()
+					render.SetCameraPosition(node.ent:GetPosition())
+				end, "textures/silkicons/brick_go.png")
+			end
 		end
 		
 		add()
