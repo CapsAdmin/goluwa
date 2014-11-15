@@ -1532,7 +1532,7 @@ do -- layout chain
 		local pos = where:GetPosition()
 		local dir = (where:GetPosition() - panel:GetPosition()):Normalize()
 		local found
-			
+		
 		if collide then
 			found = {}
 			local panel_rect = panel:GetWorldRect()
@@ -1542,77 +1542,43 @@ do -- layout chain
 					local child_rect = child:GetWorldRect()
 					
 					if 
-						dir.y == 1 and 
-						child_rect.top > panel_rect.top and 
-						(
-							child_rect.left <= panel_rect.left and 
-							child_rect.right >= panel_rect.right
-							or
-							child_rect.left >= panel_rect.left and 
-							child_rect.right <= panel_rect.right
-							or 
-							child_rect.right >= panel_rect.right and
-							child_rect.left <= panel_rect.right
-							or 
-							child_rect.right >= panel_rect.left and
-							child_rect.left <= panel_rect.left
-						)
-					then	
-						table.insert(found, {child = child, point = child_rect.top})
-					elseif 
-						dir.y == -1 and 
-						child_rect.bottom < panel_rect.bottom and
-						(
-							child_rect.left <= panel_rect.left and
-							child_rect.right >= panel_rect.right
-							or
-							child_rect.left >= panel_rect.left and 
-							child_rect.right <= panel_rect.right
-							or 
-							child_rect.right >= panel_rect.right and
-							child_rect.left <= panel_rect.right
-							or 
-							child_rect.right >= panel_rect.left and
-							child_rect.left <= panel_rect.left
-						)
-					then
-						table.insert(found, {child = child, point = child_rect.bottom})
-					elseif
-						dir.x == 1 and 
-						child_rect.right > panel_rect.right and					
-						(
-							child_rect.top <= panel_rect.top and 
-							child_rect.bottom >= panel_rect.bottom 
-							or
-							child_rect.top >= panel_rect.top and 
-							child_rect.bottom <= panel_rect.bottom
-							or 
-							child_rect.bottom >= panel_rect.bottom and
-							child_rect.top <= panel_rect.bottom
-							or 
-							child_rect.bottom >= panel_rect.top and
-							child_rect.top <= panel_rect.top
-						)
-					then
-						table.insert(found, {child = child, point = child_rect.left})
-					elseif 
-						dir.x == -1 and 
-						child_rect.left < panel_rect.left and 
-						(
-							child_rect.top <= panel_rect.top and 
-							child_rect.bottom >= panel_rect.bottom 
-							or
-							child_rect.top >= panel_rect.top and 
-							child_rect.bottom <= panel_rect.bottom 
-							or 
-							child_rect.bottom >= panel_rect.bottom and
-							child_rect.top <= panel_rect.bottom
-							or 
-							child_rect.bottom >= panel_rect.top and
-							child_rect.top <= panel_rect.top
-						)
-					then
-						table.insert(found, {child = child, point = child_rect.right})
+						child_rect.left <= panel_rect.left and 
+						child_rect.right >= panel_rect.right
+						or
+						child_rect.left >= panel_rect.left and 
+						child_rect.right <= panel_rect.right
+						or 
+						child_rect.right > panel_rect.right and
+						child_rect.left < panel_rect.right
+						or 
+						child_rect.right > panel_rect.left and
+						child_rect.left < panel_rect.left
+					then					
+						if dir.y == 1 and child_rect.top > panel_rect.top then
+							table.insert(found, {child = child, point = child_rect.top})
+						elseif dir.y == -1 and child_rect.bottom < panel_rect.bottom then
+							table.insert(found, {child = child, point = child_rect.bottom})
+						end
+					end	
+					
+					if
+						child_rect.top <= panel_rect.top and 
+						child_rect.bottom >= panel_rect.bottom 
+						or
+						child_rect.top >= panel_rect.top and 
+						child_rect.bottom <= panel_rect.bottom
+						or 
+						child_rect.bottom > panel_rect.bottom and
+						child_rect.top < panel_rect.bottom
+						or 
+						child_rect.bottom > panel_rect.top and
+						child_rect.top < panel_rect.top
+					then					
+						if dir.x == 1 and child_rect.right > panel_rect.right then
+							table.insert(found, {child = child, point = child_rect.left})
+						elseif dir.x == -1 and child_rect.left < panel_rect.left then
+							table.insert(found, {child = child, point = child_rect.right})
+						end
 					end
 				end
 			end
@@ -1688,7 +1654,7 @@ do -- layout chain
 				local left = ray_cast(self, child:GetRect():SetX(0), child, collide)
 				local right = ray_cast(self, child:GetRect():SetX(self:GetWidth()), child, collide)
 				right.x = right.x - left.x
-							
+				
 				local x = left.x
 				local w = right.x
 				
@@ -1995,3 +1961,7 @@ do -- events
 end
 
 gui2.RegisterPanel(PANEL)
+
+for k,v in pairs(gui2.panels) do
+	v:Layout()
+end
