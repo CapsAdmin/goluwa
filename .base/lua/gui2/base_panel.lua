@@ -98,6 +98,9 @@ do -- call on hide
 				end
 			end
 		end
+		if self:HasParent() then
+			self.Parent:Layout()
+		end
 	end
 	
 	function PANEL:CallOnHide(callback, id)
@@ -127,7 +130,7 @@ function PANEL:GetSizeOfChildren()
 
 	for k, v in ipairs(self:GetChildren()) do
 		if v:IsVisible() then
-			local pos = v:GetPosition() + v:GetSize()
+			local pos = v:GetPosition() + v:GetSize() + v.Padding:GetPosition()
 			
 			if pos.x > total_size.x then
 				total_size.x = pos.x
@@ -165,9 +168,6 @@ end
 
 function PANEL:PreDraw(from_cache)
 	if self.ThreeDee then surface.Start3D(self.ThreeDeePosition, self.ThreeDeeAngles, self.ThreeDeeScale) end
-	if self.layout_me then 
-		self:Layout(true) 
-	end
 	
 	local no_draw = self:HasParent() and self.Parent.draw_no_draw
 
@@ -189,6 +189,10 @@ function PANEL:PreDraw(from_cache)
 	end
 
 	self:CalcAnimations()
+	
+	if self.layout_me then 
+		self:Layout(true) 
+	end
 	
 	if self.CachedRendering then
 		self:DrawCache()
@@ -834,9 +838,9 @@ do -- animations
 				val = lerp_values(to, alpha)
 
 				if val == false then return end
-
+	
 				animation.func(self, val)
-
+				
 				if alpha >= 1 then
 					if animation.callback then
 						if animation.callback(self) ~= false then
@@ -848,6 +852,7 @@ do -- animations
 
 					self.animations[key] = nil
 				else
+					if self:HasParent() then self.Parent:CalcLayoutChain() end
 					self:MarkCacheDirty()
 				end
 			end
@@ -1528,6 +1533,8 @@ do -- layout
 end
 
 do -- layout chain
+	prototype.GetSet(PANEL, "LayoutSize", nil)
+
 	local function ray_cast(self, where, panel, collide, asdf)
 		local pos = where:GetPosition()
 		local dir = (where:GetPosition() - panel:GetPosition()):Normalize()
@@ -1538,7 +1545,7 @@ do -- layout chain
 			local panel_rect = panel:GetWorldRect()
 			
 			for i, child in ipairs(self:GetChildren()) do
-				if child ~= panel and child.laid_out then
+				if child ~= panel and child.laid_out and child.Visible then
 					local child_rect = child:GetWorldRect()
 					
 					if 
@@ -1628,26 +1635,29 @@ do -- layout chain
 			elseif dir.y == 1 then            
 				pos.y = pos.y - self.Margin.top - panel.Padding.top
 			end                                     
-		end                                         
-		
+		end
+				
 		return pos
 	end
 
 	local function process_commands(self, child, commands)
 		local collide = true
 		local args
-		
+			
 		for i, cmd in ipairs(commands) do
 			if type(cmd) == "table" then
 				args = cmd
 				cmd = cmd[1]
 			end
+			
 			if cmd == "collide" then
 				collide = true
 			elseif cmd == "no_collide" then
 				collide = false
 			elseif typex(cmd) == "vec2" then
 				child:SetSize(cmd:Copy())
+			elseif cmd == "size_to_children" then
+				--self:SetWidth(self:GetSizeOfChildren().w)
 			elseif cmd == "fill_x" then
 				child:SetWidth(0)
 				
@@ -1727,23 +1737,25 @@ do -- layout chain
 	function PANEL:CalcLayoutChain()
 		for i, child in ipairs(self:GetChildren()) do
 			if child.layout_chain then
-				child:SetSize(child.layout_size:Copy())
+				if child.LayoutSize then 
+					child:SetSize(child.LayoutSize:Copy())
+				end
 				child:SetPosition((self:GetSize() / 2) - (child:GetSize() / 2))
 				child.laid_out = false
 			end
 		end
-				
+		
 		for i, child in ipairs(self:GetChildren()) do
 			if child.layout_chain then
 				process_commands(self, child, child.layout_chain)
 				child.laid_out = true
 			end
-		end
+		end		
 	end
 	
 	function PANEL:SetupLayoutChain(...)
 		self.layout_chain = {...}
-		self.layout_size = self:GetSize():Copy()
+		self.LayoutSize = self:GetSize():Copy()
 		if self:HasParent() then self.Parent:Layout() end
 	end
 end
