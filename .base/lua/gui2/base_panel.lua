@@ -852,7 +852,7 @@ do -- animations
 
 					self.animations[key] = nil
 				else
-					if self:HasParent() then self.Parent:CalcLayoutChain() end
+					if self:HasParent() then self.Parent:Layout(true) end
 					self:MarkCacheDirty()
 				end
 			end
@@ -872,6 +872,10 @@ do -- animations
 			self.animations[key] = nil
 		end
 		self:UpdateAnimations()
+	end
+	
+	function PANEL:IsAnimating()
+		return next(self.animations) ~= nil
 	end
 
 	function PANEL:Animate(var, to, time, operator, pow, set, callback)
@@ -1493,13 +1497,18 @@ do -- layout
 	prototype.GetSet(PANEL, "StretchToPanelWidth", NULL)
 	prototype.GetSet(PANEL, "StretchToPanelHeight", NULL)
 	
+	function PANEL:SuppressLayout(b)
+		self.suppress_layout = b
+	end
+	
 	function PANEL:Layout(now)
+		if self.suppress_layout and not now then return end
 		if now then			
 			if self.in_layout then return end
 			self.in_layout = true
 				
 				for i, v in ipairs(self:GetChildren()) do
-					v:Layout()
+					v.layout_me = true
 				end
 				
 				self.layout_count = (self.layout_count or 0) + 1
@@ -1662,20 +1671,36 @@ do -- layout chain
 				collide = false
 			elseif typex(cmd) == "vec2" then
 				child:SetSize(cmd:Copy())
-			elseif cmd == "layout_children" then
-				child:Layout(true)
 			elseif cmd == "size_to_width" then
 				local old = child:GetRect()
+				child:SuppressLayout(true)
 				child:SetHeight(self:GetHeight())									
 				child:SetWidth(1)
-				child:SetX(self:GetWidth() - 1)
-				child:SetY(1)
+				child:SetX(self:GetWidth())
+				child:SetY(0)
 				
-				local left = ray_cast(child, child:GetRect():SetX(child:GetWidth()), child, collide)
+				local pos = ray_cast(child, child:GetRect():SetX(1), child, collide)
 				
 				child:SetRect(old)
 				
-				child:SetWidth(left.x + 1)
+				child:SetWidth(pos.x)
+				child:SuppressLayout(false)
+			elseif cmd == "size_to_height" then
+				child:SuppressLayout(true)
+				local old = child:GetRect()
+				
+				child:SetWidth(self:GetWidth())
+				child:SetHeight(1)
+				child:SetY(self:GetHeight())
+				child:SetX(1)
+				
+				local pos = ray_cast(child, child:GetRect():SetY(1), child, collide)
+				
+				child:SetRect(old)
+								
+				--child:SetHeight(left.y)
+				child:SetHeight(pos.y)
+				child:SuppressLayout(false)
 			elseif cmd == "fill_x" then
 				child:SetWidth(0)
 				
@@ -1720,6 +1745,8 @@ do -- layout chain
 				child:SetX(math.lerp(0.5, left.x, right.x))
 			elseif cmd == "center_x_simple" then				
 				child:SetX(self:GetWidth() / 2 - child:GetWidth() / 2)
+			elseif cmd == "center_y_simple" then				
+				child:SetY(self:GetHeight() / 2 - child:GetHeight() / 2)
 			elseif cmd == "center_x_frame" then
 				local left = ray_cast(self, child:GetRect():SetX(0), child, collide)
 				local right = ray_cast(self, Rect(left, child:GetSize()):SetX(self:GetWidth()), child, collide)
@@ -1749,7 +1776,7 @@ do -- layout chain
 			end
 		end
 	end
-
+	
 	function PANEL:CalcLayoutChain()
 		for i, child in ipairs(self:GetChildren()) do
 			if child.layout_chain then
@@ -1763,16 +1790,19 @@ do -- layout chain
 		
 		for i, child in ipairs(self:GetChildren()) do
 			if child.layout_chain then
-				child.laid_out = true
 				process_commands(self, child, child.layout_chain)
+				child.laid_out = true
 			end
-		end		
+		end
 	end
 	
 	function PANEL:SetupLayoutChain(...)
 		self.layout_chain = {...}
 		self.LayoutSize = self:GetSize():Copy()
-		if self:HasParent() then self.Parent:Layout() end
+		
+		if self:HasParent() then
+			self.Parent:Layout() 
+		end
 	end
 end
 
