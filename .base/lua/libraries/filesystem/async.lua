@@ -4,6 +4,7 @@ local queue = {}
 
 local file_queue = {}
 vfs.file_queue = file_queue
+vfs.download_queue = queue
 
 local function update()
 	local data = file_queue[1]
