@@ -1319,6 +1319,12 @@ do -- mouse
 			not self.AlwaysCalcMouse and 
 			not self.IgnoreMouse 
 		then 
+	
+			if self.mouse_just_entered then
+				self:OnMouseExit()
+				self.mouse_just_entered = false
+			end
+	
 			return 
 		end
 		
@@ -1656,8 +1662,20 @@ do -- layout chain
 				collide = false
 			elseif typex(cmd) == "vec2" then
 				child:SetSize(cmd:Copy())
-			elseif cmd == "size_to_children" then
-				--self:SetWidth(self:GetSizeOfChildren().w)
+			elseif cmd == "layout_children" then
+				child:Layout(true)
+			elseif cmd == "size_to_width" then
+				local old = child:GetRect()
+				child:SetHeight(self:GetHeight())									
+				child:SetWidth(1)
+				child:SetX(self:GetWidth() - 1)
+				child:SetY(1)
+				
+				local left = ray_cast(child, child:GetRect():SetX(child:GetWidth()), child, collide)
+				
+				child:SetRect(old)
+				
+				child:SetWidth(left.x + 1)
 			elseif cmd == "fill_x" then
 				child:SetWidth(0)
 				
@@ -1699,11 +1717,9 @@ do -- layout chain
 				local left = ray_cast(self, child:GetRect():SetX(0), child, collide)
 				local right = ray_cast(self, Rect(left, child:GetSize()):SetX(self:GetWidth()), child, collide)
 
-				if right.x < child:GetX() then	
-					break
-				else
-					child:SetX(math.lerp(0.5, left.x, right.x))
-				end	
+				child:SetX(math.lerp(0.5, left.x, right.x))
+			elseif cmd == "center_x_simple" then				
+				child:SetX(self:GetWidth() / 2 - child:GetWidth() / 2)
 			elseif cmd == "center_x_frame" then
 				local left = ray_cast(self, child:GetRect():SetX(0), child, collide)
 				local right = ray_cast(self, Rect(left, child:GetSize()):SetX(self:GetWidth()), child, collide)
@@ -1747,8 +1763,8 @@ do -- layout chain
 		
 		for i, child in ipairs(self:GetChildren()) do
 			if child.layout_chain then
-				process_commands(self, child, child.layout_chain)
 				child.laid_out = true
+				process_commands(self, child, child.layout_chain)
 			end
 		end		
 	end
