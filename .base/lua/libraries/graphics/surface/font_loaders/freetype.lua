@@ -15,6 +15,7 @@ function META.LoadFont(name, options, callback)
 	if not surface.freetype_lib then
 		local lib = ffi.new("FT_Library[1]")
 		freetype.InitFreeType(lib)
+		freetype.LibrarySetLcdFilter(lib[0], 1)
 		surface.freetype_lib = lib
 	end
 
@@ -45,8 +46,27 @@ function META:OnRemove()
 	freetype.DoneFace(self.face)
 end
 
+local flags = {
+	default = 0x0,
+	no_scale = bit.lshift(1, 0),
+	no_hinting = bit.lshift(1, 1),
+	render = bit.lshift(1, 2),
+	no_bitmap = bit.lshift(1, 3),
+	vertical_layout = bit.lshift(1, 4),
+	force_autohint = bit.lshift(1, 5),
+	crop_bitmap = bit.lshift(1, 6),
+	pedantic = bit.lshift(1, 7),
+	ignore_global_advance_width = bit.lshift(1, 9),
+	no_recurse = bit.lshift(1, 10),
+	ignore_transform = bit.lshift(1, 11),
+	monochrome = bit.lshift(1, 12),
+	linear_design = bit.lshift(1, 13),
+	no_autohint = bit.lshift(1, 15),
+	color = bit.lshift(1, 20),
+}
+
 function META:GetGlyphData(code)	
-	if freetype.LoadChar(self.face, utf8.byte(code), 4) == 0 then
+	if freetype.LoadChar(self.face, utf8.byte(code), bit.bor(flags.render, flags.color, flags.force_autohint)) == 0 then
 		local glyph = self.face.glyph
 		local bitmap = glyph.bitmap
 		
