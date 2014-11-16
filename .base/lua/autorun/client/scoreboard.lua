@@ -1,8 +1,24 @@
 local score = utility.RemoveOldObject(gui2.CreatePanel("base"), "score")
-score:SetVisible(false)
+
+console.AddCommand("+score", function()
+	score:SetVisible(true)
+end)
+
+console.AddCommand("-score", function()
+	score:SetVisible(false)
+	window.SetMouseTrapped(true)
+end)
+
+input.Bind("tab", "+score")
+input.Bind("tab", "-score")
+
+if not RELOAD then 
+	score:SetVisible(false)
+end
+
 score:SetSize(window.GetSize()/1.25)
-score:Center()
 score:SetNoDraw(true)
+score:SetupLayoutChain("layout_children", "size_to_height", "center_x_simple", "center_y_simple")
 
 surface.CreateFont("scoreboard_title", {
 	path = "Oswald",
@@ -31,7 +47,7 @@ do
 	info:SetStyle("frame2")
 	info:SetupLayoutChain("top", "fill_x")
 	info:SetClipping(true)
-	info.wow = true
+	info:SetMinimumSize(Vec2())
 	info:SetLayoutSize()
 
 	title.OnStateChanged = function(_, b)
@@ -41,6 +57,7 @@ do
 		else
 			info:Animate("Size", {Vec2(1,1), Vec2(1,0)}, 0.25, "*", 0.25, true, function()
 				info:SetVisible(false)
+				title:SetState(false)
 			end)
 		end
 	end
@@ -112,9 +129,8 @@ local function add_player(avatar_path, name_str)
 	local tags = player_info:CreatePanel("base")
 	tags:SetHeight(30)
 	tags:SetWidth(200)
-	tags:SetupLayoutChain("size_to_children", "center_x")
+	tags:SetupLayoutChain("layout_children", "size_to_width", "center_x_simple")
 	tags:SetNoDraw(true)
-	tags:SetAlwaysReceiveMouseInput(true)
 
 	tags.OnMouseEnter = function()
 		for i, child in ipairs(tags:GetChildren()) do
@@ -147,7 +163,7 @@ local function add_player(avatar_path, name_str)
 		text:SetText(str)
 		text:SetPadding(Rect()+10)
 		text:SetIgnoreMouse(true)
-		text:SetupLayoutChain("right", "left")
+		text:SetupLayoutChain("right", "left", "size_parent_to_width")
 		
 		tags:Layout()
 	end
@@ -166,13 +182,19 @@ team:SetupLayoutChain("top", "left")
 
 add_player("http://cdn.akamai.steamstatic.com/steamcommunity/public/images/avatars/78/78e60cd9f3178dd8a841b87c9bb8049ee65540e6_full.jpg", "CapsAdmin")
 add_player("http://cdn.akamai.steamstatic.com/steamcommunity/public/images/avatars/b8/b8ae62638fb03a5b9ec65c9c46f73a362a51382c_full.jpg", "Bubu")
+add_player("http://cdn.akamai.steamstatic.com/steamcommunity/public/images/avatars/be/be1e045bb4d999294a235a6ec33991fec05e370a_full.jpg", "Immortalyes")
 
-console.AddCommand("+score", function()
-	score:SetVisible(true)
-end)
-console.AddCommand("-score", function()
-	score:SetVisible(false)
-end)
+local help = score:CreatePanel("text")
+help:SetFont("scoreboard_title")
+help:SetText("right click to show cursor")
+help:SetPadding(Rect()+10)
+help:SetupLayoutChain("top")
 
-input.Bind("tab", "+score")
-input.Bind("tab", "-score")
+score.OnShow = function() help:SetVisible(true) end
+
+help.OnGlobalMouseInput = function(_, button, press)
+	if score:IsVisible() and button == "button_2" then
+		window.SetMouseTrapped(false)
+		help:SetVisible(false)
+	end
+end
