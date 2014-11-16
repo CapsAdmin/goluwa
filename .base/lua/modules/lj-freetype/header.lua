@@ -604,4 +604,18 @@ typedef enum FT_Orientation_
 FT_Orientation
 FT_Outline_Get_Orientation( FT_Outline* outline );
 
+typedef enum  FT_LcdFilter_
+{
+FT_LCD_FILTER_NONE    = 0,
+FT_LCD_FILTER_DEFAULT = 1,
+FT_LCD_FILTER_LIGHT   = 2,
+FT_LCD_FILTER_LEGACY  = 16,
+
+FT_LCD_FILTER_MAX   /* do not remove */
+
+} FT_LcdFilter;
+
+FT_Error FT_Library_SetLcdFilter(FT_Library library, FT_LcdFilter  filter);
+FT_Error FT_Library_SetLcdFilterWeights(FT_Library library, unsigned char* weights);
+
 ]]
