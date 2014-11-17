@@ -21,7 +21,6 @@ function META:Initialize()
 	end
 	
 	local ok, err = vfs.ReadAsync(self.Path, function(data, err)
-		print(err, self.Name)
 		assert(data, err)
 		self.binary_font_data = data
 
@@ -46,9 +45,7 @@ function META:Initialize()
 		
 		self:OnLoad()
 	end, self.LoadSpeed, "font")
-	
-	print(err, self.Name, ok, err)
-	
+		
 	return ok, err
 end
 
