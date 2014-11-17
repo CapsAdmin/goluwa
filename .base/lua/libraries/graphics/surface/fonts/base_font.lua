@@ -38,8 +38,6 @@ function META:CreateTextureAtlas()
 	end
 	
 	self.texture_atlas:Build()
-	
-	self:Shade()
 end
 
 function META:Shade(source, vars)
@@ -51,7 +49,7 @@ function META:Shade(source, vars)
 		self:CreateTextureAtlas()
 		
 		for _, info in ipairs(self.ShadingInfo) do
-			for _, tex in ipairs(self:GetTextures()) do
+			for _, tex in ipairs(self.texture_atlas:GetTextures()) do
 				tex:Shade(info.source, info.vars)
 			end
 		end
@@ -213,6 +211,10 @@ function META:GetTextSize(str)
 		end
 	end
 	return X, Y
+end
+
+function META:OnLoad()
+
 end
 
 prototype.Register(META)

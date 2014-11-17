@@ -6,10 +6,11 @@ local META = {}
 
 META.ClassName = "freetype"
 
-function META:Initialize(callback)
+function META:Initialize()
 
+	-- zsnes font loader hack..
 	if self.Path:endswith(".txt") then
-		error("not a valid font")
+		return false, "not a valid font"
 	end
 
 	if not surface.freetype_lib then
@@ -19,7 +20,8 @@ function META:Initialize(callback)
 		surface.freetype_lib = lib
 	end
 	
-	assert(vfs.ReadAsync(self.Path, function(data, err)
+	local ok, err = vfs.ReadAsync(self.Path, function(data, err)
+		print(err, self.Name)
 		assert(data, err)
 		self.binary_font_data = data
 
@@ -42,8 +44,12 @@ function META:Initialize(callback)
 		
 		vfs.UncacheAsync(self.Path)
 		
-		if callback then callback(self) end 
-	end, self.LoadSpeed, "font"))
+		self:OnLoad()
+	end, self.LoadSpeed, "font")
+	
+	print(err, self.Name, ok, err)
+	
+	return ok, err
 end
 
 local flags = {
