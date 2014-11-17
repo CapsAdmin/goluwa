@@ -225,21 +225,23 @@ do -- events
 	end
 end
 
-function gui2.SetSkin(tbl)
+function gui2.SetSkin(tbl, reload_panels)
+	if RELOAD or reload_panels then include("gui2/panels/*", gui2) end
 	gui2.skin = tbl
 	for panel in pairs(gui2.panels) do
 		panel:Layout()
 		panel:SetStyle(panel:GetStyle())
 	end
+	logn("gui skin changed. you might need to reopen some panels to fully see the changes")
 end
 
 function gui2.GetSkin()
 	return gui2.skin
 end
 
-console.AddCommand("gui2_skin", function(_, str)
-	str = str or "default"
-	include("gui2/skins/" .. str .. ".lua")
+console.AddCommand("gui_skin", function(_, str, sub_skin)
+	str = str or "gwen"
+	include("gui2/skins/" .. str .. ".lua", gui2, sub_skin)
 end)
 
 function gui2.Initialize()
@@ -313,7 +315,7 @@ function gui2.Initialize()
 end
 
 include("base_panel.lua", gui2)
-include("skins/default.lua", gui2)
+include("skins/gwen.lua", gui2)
 include("panels/*", gui2)
 
 gui2.Initialize()
