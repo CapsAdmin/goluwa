@@ -26,8 +26,14 @@ function surface.CreateFont(name, options, callback)
 	
 	local path = options.path or "fonts/unifont.ttf"
 	local size = options.size or 14
+	local scale = options.scale or Vec2(1,1)
 	local padding = options.padding or 1
 	local fallback = options.fallback
+	local filtering = options.filtering or "linear"
+	
+	if type(scale) == "number" then
+		scale = Vec2()+scale
+	end
 	
 	if fallback then 
 		if type(fallback) == "string" then fallback = {options.fallback} end
@@ -43,10 +49,21 @@ function surface.CreateFont(name, options, callback)
 	end
 	
 	local shadow = options.shadow
-	local shadow_color = options.shadow_color or Color(0,0,0,0.5)
+	local shadow_color = options.shadow_color or Color(0,0,0,0.25)
 
 	if shadow and type(shadow) ~= "number" then
 		shadow = size / 10 --???
+	end
+	
+	if shadow then
+		shader = shader or {}
+		table.insert(shader, {
+			source = "return texture(self, uv + dir / size) * vec4(shadow_color.rgb, shadow_color.a) + texture(self, uv);",
+			vars = {
+				dir = Vec2()-shadow,
+				shadow_color = shadow_color,
+			},
+		})
 	end
 	
 	local monospace = options.monospace
@@ -66,6 +83,7 @@ function surface.CreateFont(name, options, callback)
 		self:SetName(name)
 		self:SetPath(path)
 		self:SetSize(size)
+		self:SetScale(scale)
 		self:SetPadding(padding)
 		self:SetFallbackFonts(fallback)
 		self:SetShadingInfo(shader)
@@ -73,6 +91,7 @@ function surface.CreateFont(name, options, callback)
 		self:SetShadowColor(shadow_color)
 		self:SetMonospace(monospace)
 		self:SetSpacing(spacing)
+		self:SetFiltering(filtering)
 				
 		self.OnLoad = function(...)
 			self:SetReady(true)

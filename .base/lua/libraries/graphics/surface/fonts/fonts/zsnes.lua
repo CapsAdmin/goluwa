@@ -122,6 +122,8 @@ function META:Initialize()
 	end
 	
 	self:CreateTextureAtlas()
+	
+	self:OnLoad()
 end
 
 function META:GetGlyphData(code)
