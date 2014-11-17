@@ -13,12 +13,12 @@ local text_size = 5*S
 surface.CreateFont("snow_font", {
 	path = "Roboto",
 	fallback = "default",
-	size = 11,
+	size = S*5.5,
 }) 
 
 surface.CreateFont("snow_font_noshadow", {
 	path = "Roboto", 
-	size = 11,
+	size = S*5.5,
 })
 
 local texture = Texture("textures/gui/skin2.png")
