@@ -64,7 +64,7 @@ local X, Y = 0, 0
 local W, H = 0, 0
 local R,G,B,A,A2 = 1,1,1,1,1
 
-include("fonts.lua", surface)
+include("fonts/fonts.lua", surface)
 
 do -- orientation
 	function surface.Translate(x, y)	
