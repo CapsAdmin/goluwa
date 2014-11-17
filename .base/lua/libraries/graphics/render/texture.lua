@@ -220,7 +220,7 @@ do -- texture object
 		local temp = {}
 		
 		for j = 1, self.format.stride do
-			temp[j] = tonumber(buffer[i + j - 1] or 0) 
+			temp[self.format.stride-j] = tonumber(buffer[i + j - 1] or 0) 
 		end
 		
 		return ColorBytes(unpack(temp))
