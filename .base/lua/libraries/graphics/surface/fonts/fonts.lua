@@ -8,13 +8,12 @@ local ready = false
 local queue = {}
 
 function surface.InitializeFonts()
-	local font = surface.CreateFont("default", {path = "fonts/unifont.ttf"})
-	surface.SetFont(font)
-
 	ready = true
 	
-	for k,v in pairs(queue) do
-		surface.CreateFont(unpack(v))
+	surface.SetFont(surface.CreateFont("default", {path = "fonts/unifont.ttf"}))
+	
+	for _, args in pairs(queue) do
+		surface.CreateFont(unpack(args))
 	end
 end
 
@@ -30,7 +29,7 @@ function surface.CreateFont(name, options, callback)
 	local padding = options.padding or 1
 	local fallback = options.fallback
 	
-	if fallback then
+	if fallback then 
 		if type(fallback) == "string" then fallback = {options.fallback} end
 		for k,v in ipairs(fallback) do fallback[k] = surface.fonts[v] end
 	end
@@ -74,27 +73,26 @@ function surface.CreateFont(name, options, callback)
 		self:SetShadowColor(shadow_color)
 		self:SetMonospace(monospace)
 		self:SetSpacing(spacing)
-		
-		local ok, err = pcall(self.Initialize, self, function(...)
+				
+		self.OnLoad = function(...)
 			self:SetReady(true)
-			
 			event.Call("FontChanged", name, options)
-			if callback then
-				callback(...)
-			end
-		end)
+		end
 		
-		if ok then			
+		local ok, err = pcall(self.Initialize, self)
+		
+		if ok and err ~= false then		
 			surface.fonts[name] = self
 			surface.InvalidateFontSizeCache(name)
 			
 			return self
 		else
+			if err ~= false or surface.debug then
+				debug.trace()
+				logf("%s: failed to load font %s %q\n", class_name, name, err)
+			end
+			
 			self:Remove()
-		end
-		
-		if surface.debug then
-			logf("%s failed to load font %s: %s\n", class_name, name, err)
 		end
 	end
 end

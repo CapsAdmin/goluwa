@@ -75,8 +75,16 @@ local translate = {
 	["shw fullstop"] = ".",	
 }
 
-function META:Initialize(callback)
-	local file = vfs.Open(self.Path)
+function META:Initialize()
+	if not self.Path:endswith(".txt") then
+		return false, "not a valid font"
+	end
+
+	local file, err = vfs.Open(self.Path)
+	
+	if not file then
+		return false, "no such file"
+	end
 	
 	if file:ReadBytes(18) ~= "; empty space 0x00" then
 		error("first line of font is not '; empty space 0x00'")
@@ -114,10 +122,6 @@ function META:Initialize(callback)
 	end
 	
 	self:CreateTextureAtlas()
-	
-	if callback then callback(self) end
-	
-	return self
 end
 
 function META:GetGlyphData(code)

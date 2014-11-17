@@ -10,7 +10,11 @@ local TYPE_PAGES = 3
 local TYPE_CHARS = 4
 
 function META:Initialize()
-	local buffer = assert(vfs.Open(self.Path .. "/" .. (self.Path:match(".+/(.+)") or self.Path) .. ".fnt"))
+	local buffer, err = vfs.Open(self.Path .. "/" .. (self.Path:match(".+/(.+)") or self.Path) .. ".fnt")
+	
+	if not buffer then
+		return false, err
+	end
 	
 	local magic = buffer:ReadString(4)
 	assert(magic == "BMF\3")
