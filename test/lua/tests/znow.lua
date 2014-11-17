@@ -1,5 +1,3 @@
-gui2.world:RemoveChildren()
-
 local S = gui2.skin.scale
 
 do -- testing
@@ -8,7 +6,7 @@ do -- testing
 	frame:SetSize(Vec2()+500)
 
 	local tab = gui2.CreatePanel("tab", frame)
-	tab:Dock("fill")
+	tab:SetupLayoutChain("fill_x", "fill_y")
 
 	do
 		local content = tab:AddTab("tree")
@@ -43,7 +41,8 @@ do -- testing
 		local scroll = gui2.CreatePanel("scroll", content)
 		local tree = gui2.CreatePanel("tree") 
 		scroll:SetPanel(tree)
-		scroll:Dock("fill")
+		tree:SetupLayoutChain("fill_x", "fill_y")
+		scroll:SetupLayoutChain("fill_x", "fill_y")
 		
 		local data = serializer.ReadFile("luadata", R"data/tree.txt") or {}
 		local done = {}
@@ -63,7 +62,7 @@ do -- testing
 		local content = tab:AddTab("list")
 		local list = gui2.CreatePanel("list", content)
 		list:SetupSorted("name", "date modified", "type", "size")
-		list:Dock("fill")
+		list:SetupLayoutChain("fill_x", "fill_y")
 		
 		for k,v in pairs(vfs.Find("lua/")) do
 			local file = vfs.Open("lua/"..v)
@@ -75,7 +74,7 @@ do -- testing
 	do
 		local content = tab:AddTab("dividers")
 		local div = gui2.CreatePanel("divider", content)
-		div:Dock("fill")
+		div:SetupLayoutChain("fill_x", "fill_y")
 		div:SetDividerPosition(400)
 
 		local huh = div:SetLeft(gui2.CreatePanel("button"))
@@ -111,7 +110,7 @@ do -- testing
 		local text = gui2.CreatePanel("text_edit", content)
 		text:SetSize(Vec2(128, 128))
 		text:SetText("huh")
-		text:Dock("fill")
+		text:SetupLayoutChain("fill_x", "fill_y")
 	end		 
 		   
 	local padding = 5 * S
@@ -119,8 +118,8 @@ do -- testing
 	local bar = gui2.CreatePanel("base") 
 	bar:SetStyle("gradient")
 	bar:SetDraggable(true)
-	bar:SetStack(true)
 	bar:SetPadding(Rect(1,1,5*S,3*S))
+	bar:SetSize(Vec2(500, 15*S))
 
 	local function create_button(text, options)
 		local button = gui2.CreatePanel("text_button", bar)
@@ -129,36 +128,15 @@ do -- testing
 		button:SetMargin(Rect()+2.5*S)
 		button:SizeToText()
 		button:SetMode("toggle")
-		 
-		button.OnRelease = function()		
-			local menu = gui2.CreatePanel("menu")
-			gui2.SetActiveMenu(menu)
-			
-			local function add_entry(menu, val)
-				for k, v in ipairs(val) do
-					if type(v[2]) == "table" then
-						add_entry(menu:AddSubMenu(v[1]), v[2])
-					elseif v[1] then
-						menu:AddEntry(v[1], v[2])
-					else
-						menu:AddSeparator()
-					end
-				end
-			end
-			
-			add_entry(menu, options)			
-			
-			menu:Layout(true)
-			
-			menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*S), options)
-			menu:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)
-
-
-			menu:CallOnRemove(function() button:SetState(false) end)
-		end
+		button:SetupLayoutChain("left")
 		
-		bar:SetSize(Vec2(1000,1000))
-		bar:SetSize(bar:StackChildren())
+		button.OnStateChanged = function(_, b, ...)
+			if b then return end
+			local menu = gui2.CreateMenu(options)
+			
+			--menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*S), options)
+		--	menu:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)
+		end
 	end
 
 	create_button("↓", {
@@ -185,7 +163,7 @@ do -- testing
 			frame:SetTitle("file browser")
 			
 			local panel = gui2.CreatePanel("list", frame)
-			panel:Dock("fill") 
+			panel:SetupLayoutChain("fill_x", "fill_y")
 			for k,v in pairs(vfs.Find("/")) do
 				panel:AddEntry(v)
 			end
