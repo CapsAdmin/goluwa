@@ -81,7 +81,7 @@ function EMITTER:Update(dt)
 		
 		if not p then break end
 		
-		if not p:IsValid() or p.life_end < time or (not p.Jitter and p.life_mult < 0.001) then
+		if p.life_end < time or (not p.Jitter and p.life_mult < 0.001) then
 			table.insert(remove_these, i)
 		else
 			
