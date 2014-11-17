@@ -1,18 +1,15 @@
 local score = utility.RemoveOldObject(gui2.CreatePanel("base"), "score")
 
-console.AddCommand("+score", function()
+input.Bind("tab", "+score", function()
 	score:SetVisible(true)
 end)
 
-console.AddCommand("-score", function()
+input.Bind("tab", "-score", function()
 	score:SetVisible(false)
 	window.SetMouseTrapped(true)
 end)
 
-input.Bind("tab", "+score")
-input.Bind("tab", "-score")
-
-if not RELOAD then 
+if not RELOAD then
 	score:SetVisible(false)
 end
 
@@ -24,8 +21,6 @@ surface.CreateFont("scoreboard_title", {
 	path = "Oswald",
 	fallback = "default",
 	size = 17,
-	padding = 8, 
-	shade = passes,
 	shadow = 1,
 })
 
@@ -36,7 +31,6 @@ title:SetText("Bubu's Server - Subway Simulator")
 
 title:SetMargin(Rect()+7)
 title:SizeToText()
-
 title:SetupLayoutChain("top", "fill_x")
 title.label:SetupLayoutChain("left")
 
@@ -101,6 +95,22 @@ local function add_player(avatar_path, name_str)
 	info:SetHeight(30)
 	info:SetStyle("tab_frame")
 	info:SetupLayoutChain("left", "fill_x")
+	
+	info.OnRightClick = function()
+		gui2.CreateMenu({
+			{"goto", {{"bring", nil, "textures/silkicons/arrow_in.png"}}, "textures/silkicons/arrow_right.png"},
+			{},
+			{"spawn", {{"revive", nil, "textures/silkicons/heart.png"}}, "textures/silkicons/heart_add.png"},
+			{"cleanup", {{"kick", nil, "textures/silkicons/connect.png"}}, "textures/silkicons/bin.png"},
+			{},
+			{"admin menu", {
+				{"ban weapons", nil, "textures/silkicons/gun.png"},
+				{"kick", nil, "textures/silkicons/door_out.png"},
+				{"ban", nil, "textures/silkicons/delete.png"},
+			}, "textures/silkicons/lock.png"},			
+			{"mute", {{"gag", nil, "textures/silkicons/comment_delete.png"}}, "textures/silkicons/sound_mute.png"},
+		}, info)
+	end
 	
 	do
 		local ping = info:CreatePanel("base")
