@@ -95,7 +95,7 @@ end
 
 function debug.openfunction(func, line)
 	local info = debug.getinfo(func)
-	if info.what == "Lua" then
+	if info.what == "Lua" or info.what == "main" then
 		if info.source:sub(1, 1) == "@" then
 			info.source = info.source:sub(2)
 		end
