@@ -96,7 +96,7 @@ end
 do
 	input.binds = {}
 
-	function input.Bind(key, cmd)
+	function input.Bind(key, cmd, callback)
 		check(key, "string")
 		check(cmd, "string", "nil")
 
@@ -112,6 +112,10 @@ do
 			modifiers = modifiers, 
 			trigger_on_release = cmd:sub(1, 1) == "-",
 		}
+		
+		if callback then
+			console.AddCommand(cmd, callback)
+		end
 	end
 
 	function input.Initialize()
