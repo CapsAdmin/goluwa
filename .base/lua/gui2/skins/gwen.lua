@@ -21,7 +21,13 @@ surface.CreateFont("snow_font_noshadow", {
 	size = S*5.5,
 })
 
-local texture = Texture("textures/gui/skin2.png")
+local sub_skin = select(2, ...)
+
+if type(sub_skin) ~= "string" then 
+	sub_skin = "dark" 
+end
+
+local texture = Texture("textures/gui/skins/"..sub_skin..".png")
 
 local skin = {}
 
@@ -187,4 +193,4 @@ skin.icons = {
 	custom_animation = "textures/silkicons/film.png",
 }
 
-gui2.SetSkin(skin) 
+gui2.SetSkin(skin, select(2, ...) ~= nil)
