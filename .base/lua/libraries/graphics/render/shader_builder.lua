@@ -257,7 +257,7 @@ function render.CreateShader(data)
 
 	local build_output = {}
 
-	for shader in pairs(data) do
+	for shader, info in pairs(data) do
 		local source = source_template
 		
 		if OPENGL_ES then
@@ -270,7 +270,7 @@ function render.CreateShader(data)
 			end
 		end
 		
-		build_output[shader] = {source = source, out = {}}
+		build_output[shader] = {source = source, original_source = info.source, out = {}}
 	end
 
 	do -- figure out vertex attributes other shaders need
@@ -430,13 +430,40 @@ function render.CreateShader(data)
 			local ok, shader = pcall(render.CreateGLShader, enum, data.source)
 
 			if not ok then
-				local err = shader
+				
+				local line_offset = 0
+				local source = debug.getinfo(2).source
+				
+				if source then
+					local lua_file = vfs.Read(source:sub(2))
+					if lua_file then
+						lua_file = lua_file:gsub("[ %t\r]", "")
+						local source = data.original_source:gsub("[ %t\r]", "")
+						
+						local start, stop = lua_file:find(source, 0, true)
+						line_offset = lua_file:sub(0, -stop):count("\n")
+					end
+				end
+				
+				
+				local err = "\n" .. shader
+				
+				if source then
+					err = source:match(".+/(.+)") .. ":" .. err
+				end
+				
+				local goto_line
+				
 				err = err:gsub("0%((%d+)%) ", function(line)
 					line = tonumber(line)
-					return data.source:explode("\n")[line]:trim() .. (line - data.line_start + 1)
+					goto_line = line - data.line_start + 1 + line_offset
+					return goto_line
 				end)
-				err = err .. data.source
-				error(err)
+				
+				table.print(debug.getinfo(debug.getinfo(2).func))
+				debug.openfunction(debug.getinfo(2).func, tonumber(goto_line))
+				
+				error(err, 2)
 			end
 
 			table.insert(shaders, shader)
@@ -473,9 +500,6 @@ function render.CreateShader(data)
 	end, unpack(shaders))
 
 	if not ok then
-		for shader, data in pairs(build_output) do
-			print(data.source)
-		end
 		error(prog, 2)
 	end
 
