@@ -73,7 +73,7 @@ vfs.async_readers = {
 			local cache_path = "fonts/" .. path .. ".woff"
 			
 			if vfs.Exists(cache_path) then
-				return vfs.ReadAsync(cache_path, queue[path].callback, mbps, context, "file")
+				return vfs.ReadAsync(cache_path, function(...) return queue[path].callback(...) end, mbps, context, "file")
 			else
 				if sockets.Download("http://fonts.googleapis.com/css?family=" .. path:gsub("%s", "+"), 
 					function(data)
@@ -106,7 +106,7 @@ vfs.async_readers = {
 		end
 		
 		if cache_path and vfs.Exists(cache_path) then
-			return vfs.ReadAsync(cache_path, queue[path].callback, mbps, context, "file")
+			return vfs.ReadAsync(cache_path, function(...) return queue[path].callback(...) end, mbps, context, "file")
 		else
 			if sockets.Download(path, function(data)
 					if cache_path then
@@ -146,9 +146,8 @@ function vfs.ReadAsync(path, callback, mbps, context, reader, dont_cache)
 	if queue[path] then
 		local old = queue[path].callback
 		queue[path].callback = function(...)
-			callback(...)
 			old(...)
-			queue[path] = nil
+			callback(...)
 		end
 		return true
 	end
@@ -177,7 +176,7 @@ function vfs.ReadAsync(path, callback, mbps, context, reader, dont_cache)
 	
 	logf("[vfs] async %q: not a valid path\n", path)
 	
-	return false
+	return false, "not a valid path"
 end
 
 function vfs.UncacheAsync(path)
