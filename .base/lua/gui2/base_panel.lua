@@ -173,14 +173,14 @@ function PANEL:PreDraw(from_cache)
 
 	surface.PushMatrix()
 	surface.Translate(self.Position.x, self.Position.y, 0)
-
+	
 	local w = (self.Size.w)/2
 	local h = (self.Size.h)/2
 
 	render.Translate(w, h, 0)
 	render.Rotate(self.Angle, 0, 0, 1)
 	render.Translate(-w, -h, 0)
-
+	
 	if not from_cache then
 		self:CalcMouse()
 	
@@ -1960,7 +1960,12 @@ do -- skin
 		self:SetTexture(tbl.texture)
 		self:SetNinePatchRect(tbl.texture_rect)
 		self:SetNinePatchCornerSize(tbl.corner_size)
-		self:SetStyleSize(tbl.size)
+		
+		local scale = tbl.size
+		if gui2.skin.pixel_scale then
+			scale = scale * gui2.skin.pixel_scale
+		end
+		self:SetStyleSize(scale)
 	end
 end
 
@@ -1971,7 +1976,8 @@ function PANEL:DrawRect(x, y, w, h)
 			w or (self.Size.w + self.DrawSizeOffset.w), h or (self.Size.h + self.DrawSizeOffset.h),
 			self.NinePatchRect.w, self.NinePatchRect.h, 
 			self.NinePatchCornerSize, 
-			self.NinePatchRect.x, self.NinePatchRect.y
+			self.NinePatchRect.x, self.NinePatchRect.y,
+			gui2.skin.pixel_scale
 		)
 	else
 		if not self.NinePatchRect:IsZero() then
