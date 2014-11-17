@@ -11,6 +11,7 @@ prototype.GetSet(META, "Path", "")
 prototype.GetSet(META, "Padding", 0)
 prototype.IsSet(META, "Spacing", 1)
 prototype.IsSet(META, "Size", 12)
+prototype.IsSet(META, "Scale", Vec2(1,1))
 prototype.GetSet(META, "Filtering", "linear")
 prototype.GetSet(META, "ShadingInfo")
 prototype.GetSet(META, "FallbackFonts")
@@ -136,7 +137,7 @@ function META:DrawString(str, x, y)
 				
 				local x,y, w,h, sx,sy = self.texture_atlas:GetUV(char)
 				poly:SetUV(x,y, w,h, sx,sy) 
-				poly:SetRect(i, X-self.Padding/2, Y+self.Padding/2 + (ch.h - ch.bitmap_top) + self.Size, w, -h)
+				poly:SetRect(i, (X-self.Padding/2) * self.Scale.w, (Y+self.Padding/2 + (ch.h - ch.bitmap_top) + self.Size), w * self.Scale.w, -h * self.Scale.h)
 				
 				if self.Monospace then 
 					X = X + self.Spacing
@@ -153,13 +154,6 @@ function META:DrawString(str, x, y)
 	for i, v in ipairs(self.string_cache[str]) do
 		surface.SetTexture(v.texture)
 		render.SetCullMode("front")
-		if self.Shadow > 0 then
-			local r,g,b,a = surface.SetColor(self.ShadowColor:Unpack())
-			surface.Translate(self.Shadow, self.Shadow)
-			v.poly:Draw()
-			surface.Translate(-self.Shadow, self.Shadow)
-			surface.SetColor(r,g,b,a)
-		end
 		v.poly:Draw()
 		render.SetCullMode("back")
 	end	
@@ -197,16 +191,16 @@ function META:GetTextSize(str)
 		local char = utf8.sub(str, i,i)
 		local ch = self.chars[char] 
 		if char == "\n" then
-			Y = Y + self.Size
+			Y = Y + self.Size * self.Scale.h
 		elseif char == "\t" then
-			X = X + self.Size
+			X = X + self.Size * self.Scale.w
 		elseif not ch and char == " " then
-			X = X + self.Size
+			X = X + self.Size * self.Scale.w
 		elseif ch then
 			if self.Monospace then 
 				X = X + self.Spacing
 			else
-				X = X + ch.x_advance + self.Spacing
+				X = X + (ch.x_advance + self.Spacing) * self.Scale.w
 			end
 		end
 	end
