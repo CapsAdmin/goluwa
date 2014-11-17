@@ -1799,6 +1799,24 @@ do -- layout chain
 	function PANEL:SetupLayoutChain(...)
 		self.layout_chain = {...}
 		self.LayoutSize = self:GetSize():Copy()
+				
+		local where = table.hasvalue(self.layout_chain, "layout_children")
+		
+		if where then
+			self.layout_chain_defered = {}
+			
+			table.clear(self.layout_chain)
+			
+			for i = 1, select("#", ...) do
+				local val = select(i, ...)
+				
+				if i > where then
+					table.insert(self.layout_chain_defered, val)
+				else
+					table.insert(self.layout_chain, val)
+				end
+			end
+		end
 		
 		if self:HasParent() then
 			self.Parent:Layout() 
