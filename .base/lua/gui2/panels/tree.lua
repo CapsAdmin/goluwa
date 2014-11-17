@@ -79,7 +79,7 @@ do -- tree node
 	function PANEL:OnLayout()
 		local x = self.offset
 					
-		self.image:SetSize(Vec2() + 16)
+		self.image:SetSize(Vec2() + S*8)
 		self.image:SetPosition(Vec2(x, 0))
 		
 		self.expand:SetPosition(Vec2(x - self.image:GetWidth(), 0))
@@ -139,7 +139,7 @@ do
 	local PANEL = {}
 
 	PANEL.ClassName = "tree"
-	prototype.GetSet(PANEL, "IndentWidth", 16)
+	prototype.GetSet(PANEL, "IndentWidth", S*8)
 	prototype.GetSet(PANEL, "SelectedNode", NULL)
 
 	PANEL.nodes = {}

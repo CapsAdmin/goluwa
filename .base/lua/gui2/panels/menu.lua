@@ -30,8 +30,8 @@ do
 	
 	function PANEL:AddSeparator()
 		local panel = gui2.CreatePanel("base", self)
-		panel:SetStyle("property")
-		panel:SetHeight(1)
+		panel:SetStyle("button_active")
+		panel:SetHeight(S*2)
 		panel:SetIgnoreMouse(true)
 	end
 	
@@ -74,7 +74,7 @@ do
 		local img = gui2.CreatePanel("base", self)
 		img:SetIgnoreMouse(true)
 		img:SetNoDraw(true)
-		img:SetSize(Vec2()+16)
+		img:SetSize(Vec2()+S*8)
 		self.image = img
 		
 		local label = gui2.CreatePanel("text", self)

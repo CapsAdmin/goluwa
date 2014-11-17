@@ -226,7 +226,7 @@ do -- events
 end
 
 function gui2.SetSkin(tbl, reload_panels)
-	if RELOAD or reload_panels then include("gui2/panels/*", gui2) end
+	if reload_panels then include("gui2/panels/*", gui2) end
 	gui2.skin = tbl
 	for panel in pairs(gui2.panels) do
 		panel:Layout()
@@ -276,7 +276,7 @@ function gui2.Initialize()
 		local S = gui2.skin.scale
 		
 		local bar = gui2.CreatePanel("base") 
-		bar:SetStyle("frame_bar")
+		bar:SetStyle("gradient")
 		bar:SetHeight(S*14)
 		bar:SetupLayoutChain("bottom", "fill_x")
 		bar:SetMargin(Rect()+S*2)
