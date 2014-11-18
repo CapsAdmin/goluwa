@@ -675,7 +675,6 @@ do -- libraries
 	end
 
 	if CLIENT then
-		include("gui/init.lua")
 		gui2 = include("gui2/init.lua")
 	end
 	

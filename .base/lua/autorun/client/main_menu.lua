@@ -2,6 +2,8 @@ surface.CreateFont("impact", {path = "Rosario", size = 20})
 
 menu = menu or {}
 
+menu.panel = menu.panel or NULL
+
 do -- open close  
 	function menu.Open()
 		if menu.visible then return end
@@ -17,7 +19,7 @@ do -- open close
 		window.SetMouseTrapped(true) 
 		event.RemoveListener("PreDrawMenu", "StartupMenu")
 		event.RemoveTimer("StartupMenu")
-		menu.panel:SetVisible(false)
+		prototype.SafeRemove(menu.panel)
 		menu.visible = false
 	end
 	
@@ -52,15 +54,6 @@ emitter:SetPosition(Vec3(50,50,0))
 --emitter:SetMoveResolution(0.25) 
 emitter:SetAdditive(false)
 
-local fb
-local DX = false
-
-if DX then
-	fb = render.CreateFrameBuffer(128, 128)
-end
-
-local background = ColorBytes(64, 44, 128, 200)
-
 function menu.UpdateBackground()
 	emitter:SetPosition(Vec3(math.random((DX and 256 or render.GetWidth()) + 100) - 150, -50, 0))
 		
@@ -77,68 +70,20 @@ function menu.UpdateBackground()
 
 	p:SetStartSize(2 * (1 + math.random() ^ 50))
 	p:SetEndSize(2 * (1 + math.random() ^ 50))
-	
-	if DX then
-		p:SetColor(HSVToColor(os.clock()/30,0.75, 1))
-	else
-		p:SetColor(Color(1,1,1, math.randomf(0.5, 0.8)))
-	end
+
+	p:SetColor(Color(1,1,1, math.randomf(0.5, 0.8)))
 end
 
-function menu.RenderBackground(dt)	
-	if DX then
-		fb:Begin()
-			surface.SetColor(0,0,0,0.01)
-			surface.DrawRect(0,0,128,128)
-			
-			surface.PushMatrix()
-				for i = -4, 4 do
-					i = (i / 4) * math.pi
-					
-					surface.PushMatrix(math.sin(i)/2, math.cos(i)/2)
-						render.Translate(-0.4, -0.4, 0)
-						surface.SetColor(1,1,1,1)
-						surface.SetTexture(fb:GetTexture())
-						surface.DrawRect(0,0,128,128)
-					surface.PopMatrix()
-				end
-			surface.PopMatrix()
-			
-			render.SetBlendMode("additive")
-			emitter:Update(dt)
-			emitter:Draw()
-			render.SetBlendMode("alpha")
-		fb:End()
-	else
-		emitter:Update(dt)
-	end
-		
+local background = ColorBytes(64, 44, 128, 200)
+
+function menu.RenderBackground(dt)		
+	emitter:Update(dt)
+	
 	surface.SetWhiteTexture()
 	surface.SetColor(DX and Color(0,0,0,1) or background)
 	surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
-	
-	--surface.SetColor(1,1,1,1)
-	--emitter:Draw()
-	
-	--surface.SetColor(0,0,0,0.25)
-	--surface.DrawRect(5*S,5*S, x, 16 * S)
-	
-	
-	--surface.SetFont("snow_font")
-	--surface.SetTextPosition(50, 50)
-	--surface.DrawText("ANIMATION 2")
-	--local w,h = surface.GetTextSize("ANIMATION 2")
-	--surface.DrawRect(50,50,w,h)
-	
-	if DX then
-		render.SetBlendMode("additive")
-		surface.SetColor(1,1,1,1)
-		surface.SetTexture(fb:GetTexture())
-		surface.DrawRect(0,0,render.GetWidth(), render.GetHeight())
-		render.SetBlendMode("alpha")
-	else
-		emitter:Draw()
-	end
+		
+	emitter:Draw()
 end
 
 local skin = include("gui2/skins/zsnes.lua")
