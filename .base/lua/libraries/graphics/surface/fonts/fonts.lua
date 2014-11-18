@@ -43,6 +43,12 @@ function surface.CreateFont(name, options, callback)
 	local shader = options.shade
 	
 	if shader then
+		if type(shader) == "string" then
+			if not shader:find("return") then
+				shader = "return " .. shader
+			end
+			shader = {source = shader}
+		end
 		if shader.source then
 			shader = {shader}
 		end
@@ -58,7 +64,7 @@ function surface.CreateFont(name, options, callback)
 	if shadow then
 		shader = shader or {}
 		table.insert(shader, {
-			source = "return texture(self, uv + dir / size) * vec4(shadow_color.rgb, shadow_color.a) + texture(self, uv);",
+			source = "return texture(self, uv + dir / size) * vec4(shadow_color.rgb, shadow_color.a) - texture(self, uv);",
 			vars = {
 				dir = Vec2()-shadow,
 				shadow_color = shadow_color,
