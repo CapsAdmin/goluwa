@@ -339,10 +339,12 @@ do -- texture object
 		end
 		
 		local fb = self.fb or render.CreateFrameBuffer(self.w, self.h, {texture = self})
-				
-		for k,v in pairs(vars) do
-			shader[k] = v
-		end				
+		
+		if vars then
+			for k,v in pairs(vars) do
+				shader[k] = v
+			end				
+		end
 		
 		gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
 		--render.SetBlendMode("alpha")
