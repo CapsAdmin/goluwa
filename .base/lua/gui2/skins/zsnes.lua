@@ -1,6 +1,6 @@
 local gui2 = ... or _G.gui2
 
-local scale = 1
+local scale = 2
 local ninepatch_size = 32
 local ninepatch_corner_size = 4
 local ninepatch_pixel_border = scale
@@ -75,8 +75,8 @@ add_simple("menu_right_arrow", 472,116, 4,7)
 add_simple("list_up_arrow", 385,114, 5,3) 
 add_simple("list_down_arrow", 385,122, 5,3) 
 
-add_simple("check", 448,32, 7,7)
-add_simple("uncheck", 464,32, 7,7)
+add_simple("check", 449,34, 7,7)
+add_simple("uncheck", 465,34, 7,7)
  
 add_simple("+", 451,99, 5,5) 
 add_simple("-", 467,99, 5,5)
