@@ -1,5 +1,4 @@
 local gui2 = ... or _G.gui2
-local S = gui2.skin.scale
 
 local PANEL = {}
 
@@ -34,10 +33,7 @@ function PANEL:AddTab(name)
 	
 	button:SetTextColor(gui2.skin.text_color_inactive)
 	button:SetText(name)
-	button:SetMargin(Rect()+2*S)
-	button:SizeToText()
-	button:SetHeight(S*10)
-	button:CenterText()
+	button.label:SetupLayoutChain("center_y")
 
 	button.text = name
 	
@@ -87,10 +83,16 @@ function PANEL:GetSelectedPage(name)
 	return self.content
 end
 
-function PANEL:OnLayout()
+function PANEL:OnLayout(S)
 	self.tab_bar:SetWidth(self:GetWidth())
 	self.tab_bar:SetHeight(10*S)
 	self.tab_bar:SetY(1)
+	
+	for i, v in pairs(self.tabs) do
+		v.button:SetMargin(Rect()+2*S)
+		v.button:SizeToText()
+		v.button:SetHeight(S*10)
+	end
 
 	if self.content then
 		self.content:SetPosition(Vec2(0, self.tab_bar:GetHeight()))

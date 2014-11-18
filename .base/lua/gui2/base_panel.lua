@@ -1523,7 +1523,7 @@ do -- layout
 					self:SetHeight(self.StretchToPanelHeight:GetHeight())
 				end
 				
-				self:OnLayout(self:GetPosition(), self:GetSize())
+				self:OnLayout(gui2.scale)
 				self:CalcLayoutChain()
 									
 				if self.LayoutParentOnLayout and self:HasParent() then

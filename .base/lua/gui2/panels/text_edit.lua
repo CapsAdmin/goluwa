@@ -53,7 +53,6 @@ end
 
 function PANEL:SelectAll()
 	self.label.markup:SelectAll()
-	--print(self.label.markup.select_stop.x, self.label.markup.select_stop.y)
 end
 
 function PANEL:SetEditable(b)
