@@ -234,8 +234,7 @@ do -- skin
 		gui2.scale = tbl.scale or gui2.scale
 		
 		for panel in pairs(gui2.panels) do
-			panel:SetStyle(panel:GetStyle())
-			panel:Layout()
+			panel:ReloadStyle()
 		end
 		logn("gui skin changed. you might need to reopen some panels to fully see the changes")
 	end
@@ -254,11 +253,13 @@ do -- gui scaling
 	gui2.scale = 1
 
 	function gui2.SetScale(scale)
+		gui2.scale = scale
 		for panel in pairs(gui2.panels) do
-			panel:SetStyle(panel:GetStyle())
+			if panel.GetText then
+				panel:SetText(panel:GetText())
+			end
 			panel:Layout()
 		end
-		gui2.scale = scale
 	end
 
 	function gui2.GetScale(scale)

@@ -392,7 +392,6 @@ function PANEL:Initialize()
 	self:SetStackRight(false) 
 	self:SetSizeStackToWidth(true)  
 	--self:SetStyle("property")
-	self:SetColor(gui2.skin.property_background)
 	self:SetMargin(Rect())
 	
 	self:AddEvent("PanelMouseInput")
@@ -643,6 +642,8 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 end
 
 function PANEL:OnLayout(S)		
+	self:SetColor(gui2.skin.property_background)
+	
 	for i, left in ipairs(self.left:GetChildren()) do
 		if left.group then
 			left:SetHeight(S*10)

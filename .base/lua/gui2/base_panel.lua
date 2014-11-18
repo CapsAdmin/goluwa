@@ -1909,7 +1909,7 @@ do -- stacking
 	end
 end
 
-do -- skin
+do -- skin	
 	prototype.GetSet(PANEL, "Style")
 		
 	function PANEL:SetStyle(name)
@@ -1966,6 +1966,22 @@ do -- skin
 			scale = scale * gui2.skin.pixel_scale
 		end
 		self:SetStyleSize(scale)
+	end
+
+	function PANEL:ReloadStyle()
+		
+		local style = self:GetStyle()
+		
+		if style then
+			self:SetStyle("none")
+			self:SetStyle(style)
+		end
+		
+		if self.GetText then
+			self:SetText(self:GetText())
+		end
+		
+		self:Layout()
 	end
 end
 
