@@ -17,28 +17,39 @@ do -- tree node
 		self:SetNoDraw(true)
 
 		local exp = self:CreatePanel("button", "expand")
-		exp:SetMargin(Rect()+S)
 		exp:SetVisible(false)
 		exp:SetMode("toggle")
 		exp:SetStyle("-")
 		exp:SetStyleTranslation("button_active", "+")
 		exp:SetStyleTranslation("button_inactive", "-")
 		exp:SetupLayoutChain("left")
-		exp:SetPadding(Rect()+2*S)
 		exp.OnStateChanged = function(_, b) 
 			self:OnExpand(b) 
 		end
 		
 		local img = self:CreatePanel("base", "image")
 		img:SetIgnoreMouse(true)
-		img:SetMargin(Rect()+2*S)
 		self:SetIcon(Texture("textures/silkicons/heart.png"))
 		
 		local button = self:CreatePanel("text_button", "button")
-		button:SetMargin(Rect()+2*S)
 		button:SetColor(Color(1,1,1,0))
 		button:SetIgnoreMouse(true)
 		self:SetText("nil")
+	end
+	
+	function PANEL:OnLayout()
+		self.expand:SetPadding(Rect()+2*S)
+		
+		self.image:SetPadding(Rect()+2*S)
+		self.image:SetSize(Vec2() + S*8)
+		self.image:SetupLayoutChain("left")
+		
+		self.button:SetPadding(Rect()+2*S)
+		self.button:SetMargin(Rect()+2*S)
+		self.button:SizeToText()
+		self.button:SetupLayoutChain("left")
+		
+		self:SetMargin(Rect(0,0,self.offset*S,0))
 	end
 	
 	function PANEL:OnPress()
@@ -67,18 +78,16 @@ do -- tree node
 	
 	function PANEL:OnExpand()
 		self:SetExpand(not self.Expand)
+		self:Layout()
 	end
 	
 	function PANEL:SetIcon(...)
 		self.image:SetTexture(...)
-		self.image:SetSize(Vec2() + S*8)
-		self.image:SetupLayoutChain("left")
+		self:Layout()
 	end
 
 	function PANEL:SetText(...)
 		self.button:SetText(...)
-		self.button:SizeToText()
-		self.button:SetupLayoutChain("left")
 		self:Layout()
 	end
 
@@ -87,11 +96,9 @@ do -- tree node
 		
 		pnl.offset = self.offset + self.tree.IndentWidth
 		pnl.node_parent = self
-		pnl:SetMargin(Rect(0,0,pnl.offset,0))
 		
 		self.expand:SetVisible(true)
-		self:SetExpand(true)
-		
+		self:SetExpand(true)		
 		
 		return pnl
 	end
@@ -130,7 +137,7 @@ do
 	local PANEL = {}
 
 	PANEL.ClassName = "tree"
-	prototype.GetSet(PANEL, "IndentWidth", S*8)
+	prototype.GetSet(PANEL, "IndentWidth", 8)
 	prototype.GetSet(PANEL, "SelectedNode", NULL)
 
 	PANEL.nodes = {}
@@ -139,7 +146,6 @@ do
 		self:SetNoDraw(true)
 		self:SetClipping(true)
 		self:SetStack(true)
-		self:SetForcedStackSize(Vec2(0, 10*S))
 		
 		self:SetStackRight(false)
 		self:SetSizeStackToWidth(true)
@@ -151,7 +157,7 @@ do
 		local pnl = self:CreatePanel("tree_node")
 		
 		pnl:SetText(str) 
-		pnl.offset = self.IndentWidth
+		pnl.offset = 0
 		pnl.tree = self
 		
 		if icon then
@@ -187,6 +193,8 @@ do
 	end
 	
 	function PANEL:OnLayout()
+		self:SetForcedStackSize(Vec2(0, 10*S))
+
 		local w = self:GetWidth()
 		for _, v in ipairs(self:GetChildren()) do
 			w = math.max(w, v.button:GetX() + v.button:GetWidth())
