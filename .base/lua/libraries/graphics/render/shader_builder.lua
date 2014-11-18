@@ -460,7 +460,6 @@ function render.CreateShader(data)
 					return goto_line
 				end)
 				
-				table.print(debug.getinfo(debug.getinfo(2).func))
 				debug.openfunction(debug.getinfo(2).func, tonumber(goto_line))
 				
 				error(err, 2)
