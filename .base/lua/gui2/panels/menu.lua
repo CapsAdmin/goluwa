@@ -1,5 +1,4 @@
 local gui2 = ... or _G.gui2
-local S = gui2.skin.scale
 
 do
 	local PANEL = {}
@@ -8,6 +7,9 @@ do
 	
 	function PANEL:Initialize()
 		self:SetStyle("frame")
+		self:SetStack(true)
+		self:SetStackRight(false)
+		self:SetSizeStackToWidth(true)
 	end
 	
 	function PANEL:AddEntry(text, on_click)
@@ -15,6 +17,9 @@ do
 		
 		entry:SetText(text)
 		entry.OnClick = on_click
+		
+		entry:Layout(true)
+		self:Layout(true)
 		
 		return entry
 	end
@@ -25,36 +30,38 @@ do
 		self:CallOnRemove(function() gui2.RemovePanel(menu) end)
 		self:CallOnHide(function() menu:SetVisible(false) end)
 		
+		self:Layout()
+		
 		return menu, entry 
 	end
 	
 	function PANEL:AddSeparator()
 		local panel = self:CreatePanel("base")
 		panel:SetStyle("button_active")
-		panel:SetHeight(S*2)
 		panel:SetIgnoreMouse(true)
+		panel.separator = true
+		
+		self:Layout()
 	end
 	
 	function PANEL:OnLayout(S)
+		self:SetWidth(1000)
+		
+		self:CalcLayoutChain()
+		
 		local w = 0
-		local y = S*2
 		
-		for k, v in ipairs(self:GetChildren()) do
-			v:SetPosition(Vec2(2*S, y))
-			if v.label then
-				v.label:SetX(v.image:GetWidth() + 2*S)
-				w = math.max(w, v.label:GetSize().w + v.image:GetWidth())
-				v.label:CenterY()
-				v.image:CenterY()
+		for i,v in ipairs(self:GetChildren()) do
+			if v.separator then
+				v:SetHeight(S*2)
+			else
+				v:SetHeight(S*10)
+				w = math.max(w, v.label:GetX() + v.label:GetWidth() + v.label:GetPadding().right)
 			end
-			y = y + v:GetHeight() + S
 		end
 		
-		for k, v in ipairs(self:GetChildren()) do
-			v:SetWidth(w + 4*S)
-		end
-		
-		self:SetSize(Vec2(w + 8*S, y + S))
+		self:SetHeight(self:StackChildren().h)
+		self:SetWidth(w + self:GetMargin().right)
 	end
 	
 	gui2.RegisterPanel(PANEL)
@@ -69,12 +76,11 @@ do
 	function PANEL:Initialize()
 		self:SetNoDraw(true)
 		self:SetStyle("frame")
-		self:SetPadding(Rect(S, S, S, S))
 				
 		local img = self:CreatePanel("base", "image")
 		img:SetIgnoreMouse(true)
-		img:SetNoDraw(true)
-		img:SetSize(Vec2()+S*8)
+		img:SetVisible(false)
+		img:SetupLayoutChain("left")
 		
 		local label = self:CreatePanel("text", "label")
 		label:SetIgnoreMouse(true)
@@ -93,9 +99,16 @@ do
 		if self.menu:IsValid() then				
 			self.menu:SetVisible(true)
 			self.menu:Layout(true)
-			self.menu:SetPosition(self:GetWorldPosition() + Vec2(self:GetWidth() + S*2, 0))
+			self.menu:SetPosition(self:GetWorldPosition() + Vec2(self:GetWidth(), 0))
 			self.menu:Animate("DrawScaleOffset", {Vec2(0,1), Vec2(1,1)}, 0.25, "*", 0.25, true)
 		end
+	end
+	
+	function PANEL:OnLayout(S)
+		self:SetMargin(Rect()+S*2)
+		self.label:SetPadding(Rect()+S*2)
+		self.image:SetPadding(Rect()+S*2)
+		self.image:SetLayoutSize(Vec2(math.min(S*8, self.image.Texture.w), math.min(S*8, self.image.Texture.h)))
 	end
 	
 	function PANEL:OnMouseExit()
@@ -104,9 +117,8 @@ do
 	
 	function PANEL:SetText(str)
 		self.label:SetText(str)
-		self:SetHeight(self.label:GetHeight() + 4*S)
-		self.label:SetPosition(Vec2(2*S,0))
-		self.label:CenterY()
+		self.label:SetupLayoutChain("left")
+		self:Layout()
 	end
 	
 	function PANEL:SetIcon(texture)
@@ -121,12 +133,14 @@ do
 	function PANEL:CreateSubMenu()			
 	
 		local icon = self:CreatePanel("base")
-		icon:SetupLayoutChain("right")
 		icon:SetIgnoreMouse(true)
 		icon:SetStyle("menu_right_arrow")
+		icon:SetupLayoutChain("right")
 
 		self.menu = gui2.CreatePanel("menu")
 		self.menu:SetVisible(false)
+		
+		if self.Skin then self.menu:SetSkin(self:GetSkin()) end
 		
 		return self.menu, self
 	end

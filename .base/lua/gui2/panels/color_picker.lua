@@ -1,5 +1,4 @@
-local gui2 = ...
-local S = gui2.skin.scale
+local gui2 = ... or _G.gui2
 
 local PANEL = {}
 

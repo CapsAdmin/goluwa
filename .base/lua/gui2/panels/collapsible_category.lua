@@ -1,5 +1,4 @@
 local gui2 = ... or _G.gui2
-local S = gui2.skin.scale
 
 local PANEL = {}
 
@@ -55,7 +54,6 @@ function PANEL:SetTitle(str)
 	
 	title:SetHeight(self.bar:GetHeight())
 	title:SetText(str)
-	title:SetPosition(Vec2(2*S,0))
 	title:CenterY() 
 	title:SetNoDraw(true)
 	title:SetIgnoreMouse(true)

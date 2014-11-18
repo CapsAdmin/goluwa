@@ -3,15 +3,15 @@ local PANEL = {}
 
 PANEL.ClassName = "text_edit"
 
-prototype.GetSet(PANEL, "CaretColor", gui2.skin.text_edit_color)
-prototype.GetSet(PANEL, "SelectionColor", gui2.skin.text_edit_color:SetAlpha(0.5))
+prototype.GetSet(PANEL, "CaretColor")
+prototype.GetSet(PANEL, "SelectionColor")
 prototype.GetSet(PANEL, "Editable", true)
 prototype.GetSet(PANEL, "CaretPosition", Vec2(0, 0))
  
 prototype.GetSetDelegate(PANEL, "Text", "", "label")
 prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
-prototype.GetSetDelegate(PANEL, "Font", gui2.skin.default_font, "label")
-prototype.GetSetDelegate(PANEL, "TextColor", gui2.skin.text_edit_color, "label")
+prototype.GetSetDelegate(PANEL, "Font", nil, "label")
+prototype.GetSetDelegate(PANEL, "TextColor", nil, "label")
 prototype.GetSetDelegate(PANEL, "TextWrap", false, "label")
 
 prototype.Delegate(PANEL, "label", "CenterText", "Center")
@@ -25,13 +25,9 @@ function PANEL:Initialize()
 	self.BaseClass.Initialize(self)
 	
 	local label = self:CreatePanel("text", "label")
+	label.OnStyleChanged = nil
 	label.markup:SetEditable(self.Editable)
 	
-	label.markup:SetCaretColor(self.CaretColor)
-	label.markup:SetSelectionColor(self.SelectionColor)
-	
-	label:SetFont(self.Font)
-	label:SetTextColor(self.TextColor)
 	label:SetClipping(true)
 	label:SetIgnoreMouse(true)
 	
@@ -41,6 +37,13 @@ function PANEL:Initialize()
 	label.OnEnter = function(_, ...) self:OnEnter(...) end
 	
 	self:SetCursor("ibeam")
+end
+
+function PANEL:OnStyleChanged(skin)
+	self:SetCaretColor(skin.text_edit_color)
+	self:SetSelectionColor(skin.text_edit_color:SetAlpha(0.5))
+	self:SetTextColor(skin.text_edit_color)
+	self:SetFont(skin.default_font)
 end
 
 function PANEL:SetCaretPosition(pos)

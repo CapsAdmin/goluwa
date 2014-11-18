@@ -4,7 +4,6 @@ local scale = 2
 local ninepatch_size = 32
 local ninepatch_corner_size = 4
 local ninepatch_pixel_border = scale
-local bg = ColorBytes(64, 44, 128, 200) 
 
 local S = scale
 
@@ -12,7 +11,7 @@ local text_size = 5*S
 
 local font = surface.CreateFont("default_gui_zsnes", {path = "fonts/unifont.ttf", size = 10, filtering = "nearest"})
 
-surface.CreateFont("snow_font", {
+surface.CreateFont("zsnes_gui_font", {
 	path = "fonts/zfont.txt",
 	fallback = "default_gui_zsnes",
 	shadow = 1,
@@ -35,13 +34,15 @@ local function add(name, u,v, w,h, corner_size, color)
 	}
 end
 
-local function add_simple(name, u,v, w,h, color)
+local function add_simple(name, u,v, w,h, color, no_size)
 	skin[name] = {
 		texture = texture, 
 		texture_rect = Rect(u, v, w, h),
-		size = Vec2(w, h),
 		color = color,
 	}
+	if not no_size then
+		skin[name].size = Vec2(w, h)
+	end
 end
 
 add("button_inactive", 480,0, 31,31, 4)
@@ -102,7 +103,7 @@ add("frame2", 320,384+19, 63,63-19, 20)
 add("frame_bar", 320,384, 63,19, 19/2)
 add("property", 256,256, 63,127, 4)
 
-add("gradient", 0,128, 127,21, 21/2)
+add_simple("gradient", 0,128, 127,21, nil, true)
 add("gradient1", 480,96, 31,31, 16)
 add("gradient2", 480,96, 31,31, 16)
 add("gradient3", 480,96, 31,31, 16)
@@ -121,71 +122,12 @@ skin.text_edit_color.a = 1
 skin.property_background = texture:GetPixelColor(28, 500, buffer)
 
 
-skin.default_font = "snow_font"
+skin.default_font = "zsnes_gui_font"
 skin.scale = scale
 skin.pixel_scale = S
 
 skin.background = Color(0.5, 0.5, 0.5)
 
-skin.icons = {
-	copy = "textures/silkicons/page_white_text.png",
-	uniqueid = "textures/silkicons/vcard.png",
-	paste = "textures/silkicons/paste_plain.png",
-	clone = "textures/silkicons/page_copy.png",
-	new = "textures/silkicons/add.png",
-	autoload = "textures/silkicons/transmit_go.png",
-	url = "textures/silkicons/server_go.png",
-	outfit = "textures/silkicons/group.png",
-	clear = "textures/silkicons/cross.png",
-	language = "textures/silkicons/user_comment.png",
-	font = "textures/silkicons/text_smallcaps.png",
-	load = "textures/silkicons/folder.png",
-	save = "textures/silkicons/disk.png",
-	exit = "textures/silkicons/cancel.png",
-	wear = "textures/silkicons/transmit.png",
-	help = "textures/silkicons/information.png",
-	edit = "textures/silkicons/table_edit.png",
-	revert = "textures/silkicons/table_delete.png",
-	about = "textures/silkicons/star.png",
-	appearance = "textures/silkicons/paintcan.png",
-	orientation = "textures/silkicons/shape_handles.png",
+skin.icons = include("gui2/icons.lua")
 
-	text = "textures/silkicons/text_align_center.png",
-	bone = "widgets/bone_small.png",
-	clip = "textures/silkicons/cut.png",
-	light = "textures/silkicons/lightbulb.png",
-	sprite = "textures/silkicons/layers.png",
-	bone = "textures/silkicons/connect.png",
-	effect = "textures/silkicons/wand.png",
-	model = "textures/silkicons/shape_square.png",
-	animation = "textures/silkicons/eye.png",
-	holdtype = "textures/silkicons/user_edit.png",
-	entity = "textures/silkicons/brick.png",
-	group = "textures/silkicons/world.png",
-	trail = "textures/silkicons/arrow_undo.png",
-	event = "textures/silkicons/clock.png",
-	sunbeams = "textures/silkicons/weather_sun.png",
-	jiggle = "textures/silkicons/chart_line.png",
-	sound = "textures/silkicons/sound.png",
-	command = "textures/silkicons/application_xp_terminal.png",
-	material = "textures/silkicons/paintcan.png",
-	proxy = "textures/silkicons/calculator.png",
-	particles = "textures/silkicons/water.png",
-	woohoo = "textures/silkicons/webcam_delete.png",
-	halo = "textures/silkicons/shading.png",
-	poseparameter = "textures/silkicons/disconnect.png",
-	fog = "textures/silkicons/weather_clouds.png",
-	physics = "textures/silkicons/shape_handles.png",
-	beam = "textures/silkicons/vector.png",
-	projectile = "textures/silkicons/bomb.png",
-	shake = "textures/silkicons/transmit.png",
-	ogg = "textures/silkicons/music.png",
-	webaudio = "textures/silkicons/sound_add.png",
-	script = "textures/silkicons/page_white_gear.png",
-	info = "textures/silkicons/help.png",
-	bodygroup = "textures/silkicons/user.png",
-	camera = "textures/silkicons/camera.png",
-	custom_animation = "textures/silkicons/film.png",
-}
-
-gui2.SetSkin(skin)
+return skin

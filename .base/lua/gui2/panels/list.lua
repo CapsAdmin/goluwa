@@ -1,5 +1,4 @@
 local gui2 = ... or _G.gui2
-local S = gui2.skin.scale
 
 local PANEL = {}
 
@@ -19,7 +18,6 @@ function PANEL:Initialize()
 	top:SetNoDraw(true)
 				
 	local list = self:CreatePanel("base", "list")
-	list:SetColor(gui2.skin.font_edit_background)
 	--list:SetCachedRendering(true)
 	list:SetClipping(true)
 	list:SetNoDraw(true)
@@ -29,6 +27,20 @@ function PANEL:Initialize()
 	scroll:SetPanel(list)
 	
 	self:SetupSorted("")
+end
+
+function PANEL:OnStyleChanged(skin)
+	self.list:SetColor(skin.font_edit_background)
+	
+	for i, column in ipairs(self.columns) do
+		column.div:SetColor(skin.font_edit_background)
+	end
+	
+	for _, entry in ipairs(self.entries) do
+		for i, label in ipairs(entry.labels) do
+			label:SetTextColor(skin.text_color)
+		end
+	end
 end
 
 function PANEL:OnLayout(S)
@@ -116,7 +128,6 @@ function PANEL:SetupSorted(...)
 		icon:SetIgnoreMouse(true)
 					
 		local div = self.top:CreatePanel("divider")
-		div:SetColor(gui2.skin.font_edit_background)
 		--div:SetupLayoutChain("fill_x", "fill_y")
 		div:SetHideDivider(true)
 		div:SetLeft(column)
@@ -155,6 +166,7 @@ end
 
 function PANEL:AddEntry(...)						
 	local entry = self.list:CreatePanel("button") 
+	entry.OnSelect = function() end
 	
 	entry.labels = {}
 				
@@ -163,7 +175,6 @@ function PANEL:AddEntry(...)
 		
 		local label = entry:CreatePanel("text_button")
 		label:SetParseTags(true)
-		label:SetTextColor(gui2.skin.text_color)
 		label:SetTextWrap(false)
 		label:SetText(text)
 		label:SizeToText()
@@ -178,8 +189,6 @@ function PANEL:AddEntry(...)
 
 	local last_child = self.list:GetChildren()[#self.list:GetChildren()]
 	
-	entry:SetPosition(Vec2(0, last_child:GetY() + last_child:GetHeight() - 2*S))
-	entry:SetHeight(entry.labels[1]:GetHeight() + 2*S)
 	entry:SetStyle("button_active")
 	entry:SetNoDraw(true)
 
@@ -190,6 +199,7 @@ function PANEL:AddEntry(...)
 			else
 				entry:SetNoDraw(false)
 				entry:SetStyle("button_active")
+				entry:OnSelect()
 			end
 		end
 	end
