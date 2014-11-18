@@ -27,7 +27,7 @@ end
 local function queue_reader(update_reader, path, callback)
 	table.insert(file_queue, {update_reader = update_reader, path = path, callback = callback})
 	event.AddListener("Update", "vfs_asyc_file_read", update)
-	--update()
+	update()
 end
 
 vfs.async_readers = {
@@ -36,11 +36,11 @@ vfs.async_readers = {
 		if file then	
 			local buffer = {}
 						
-			--mbps = mbps / 2
+			mbps = mbps / 2
 			local read_size = 1048576 * mbps
 			queue_reader(function()
 				--in case mbps is higher than the file size
-				--for i = 1, 2 do
+				for i = 1, 2 do
 					local str = file:ReadBytes(read_size)					
 					
 					if str then
@@ -55,7 +55,7 @@ vfs.async_readers = {
 						file:Close()
 						return false
 					end
-				--end
+				end
 			end, path, queue[path].callback)
 			
 			if read_size >= file:GetSize()  then
