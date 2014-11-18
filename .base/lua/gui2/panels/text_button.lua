@@ -7,8 +7,8 @@ PANEL.Base = "button"
 
 prototype.GetSetDelegate(PANEL, "Text", "", "label")
 prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
-prototype.GetSetDelegate(PANEL, "Font", "default", "label")
-prototype.GetSetDelegate(PANEL, "TextColor", Color(1,1,1), "label")
+prototype.GetSetDelegate(PANEL, "Font", nil, "label")
+prototype.GetSetDelegate(PANEL, "TextColor", nil, "label")
 prototype.GetSetDelegate(PANEL, "TextWrap", false, "label")
 prototype.GetSetDelegate(PANEL, "ConcatenateTextToSize", false, "label")
 
@@ -22,6 +22,7 @@ function PANEL:Initialize()
 	
 	local label = self:CreatePanel("text", "label")
 	label:SetIgnoreMouse(true)
+	self:Layout(true)
 end
 
 function PANEL:SizeToText()

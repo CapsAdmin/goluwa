@@ -1523,7 +1523,7 @@ do -- layout
 					self:SetHeight(self.StretchToPanelHeight:GetHeight())
 				end
 				
-				self:OnLayout(gui2.scale)
+				self:OnLayout(self:GetLayoutScale(), self:GetSkin())
 				self:CalcLayoutChain()
 									
 				if self.LayoutParentOnLayout and self:HasParent() then
@@ -1911,6 +1911,39 @@ end
 
 do -- skin	
 	prototype.GetSet(PANEL, "Style")
+	prototype.GetSet(PANEL, "Skin")
+	prototype.GetSet(PANEL, "LayoutScale")
+	
+	function PANEL:SetLayoutScale(scale)
+		self.LayoutScale = scale
+		for i,v in ipairs(self:GetChildrenList()) do
+			v.LayoutScale = scale
+		end
+	end
+	
+	function PANEL:GetLayoutScale()
+		return self.LayoutScale or gui2.scale
+	end
+	
+	function PANEL:SetSkin(skin)
+		self.Skin = skin
+		if skin then
+			self.LayoutScale = skin.scale
+			self:ReloadStyle()
+			self:OnStyleChanged(skin)
+			
+			for i,v in ipairs(self:GetChildrenList()) do
+				v.LayoutScale = skin.scale
+				v.Skin = skin
+				v:ReloadStyle()
+				v:OnStyleChanged(skin)
+			end
+		end
+	end
+	
+	function PANEL:GetSkin()
+		return self.Skin or gui2.skin
+	end
 		
 	function PANEL:SetStyle(name)
 		self.Style = name
@@ -1926,8 +1959,10 @@ do -- skin
 		
 		name = self.style_translation[name] or name
 		
-		if gui2.skin[name] then
-			self:SetupStyle(gui2.skin[name])
+		local skin = self:GetSkin()
+		
+		if skin[name] then
+			self:SetupStyle(skin[name])
 		end
 	end
 	
@@ -1961,9 +1996,12 @@ do -- skin
 		self:SetNinePatchRect(tbl.texture_rect)
 		self:SetNinePatchCornerSize(tbl.corner_size)
 		
+		local skin = self:GetSkin()
+		
 		local scale = tbl.size
-		if gui2.skin.pixel_scale then
-			scale = scale * gui2.skin.pixel_scale
+		
+		if skin.pixel_scale then
+			scale = scale * skin.pixel_scale
 		end
 		self:SetStyleSize(scale)
 	end
@@ -1975,10 +2013,10 @@ do -- skin
 		if style then
 			self:SetStyle("none")
 			self:SetStyle(style)
-		end
-		
-		if self.GetText then
-			self:SetText(self:GetText())
+			
+			if self.GetText then
+				self:SetText(self:GetText())
+			end
 		end
 		
 		self:Layout()
@@ -1993,7 +2031,7 @@ function PANEL:DrawRect(x, y, w, h)
 			self.NinePatchRect.w, self.NinePatchRect.h, 
 			self.NinePatchCornerSize, 
 			self.NinePatchRect.x, self.NinePatchRect.y,
-			gui2.skin.pixel_scale
+			self:GetSkin().pixel_scale
 		)
 	else
 		if not self.NinePatchRect:IsZero() then
@@ -2048,6 +2086,7 @@ do -- events
 	function PANEL:OnCharTyped(char) end
 	function PANEL:OnKeyPressed(key, pressed) end
 	function PANEL:OnUpdate() end
+	function PANEL:OnStyleChanged(skin) end
 
 	function PANEL:OnPositionChanged(pos) end
 	function PANEL:OnScroll(fraction) end

@@ -9,8 +9,9 @@ function editor.Open()
 	gui2.RemovePanel(editor.frame)
 	
 	local frame = gui2.CreatePanel("frame")
-	frame:SetSize(Vec2(300, gui2.world:GetHeight()))
+	frame:SetWidth(300)
 	frame:SetTitle("editor")
+	frame:SetupLayoutChain("left", "fill_y")
 	editor.frame = frame
 	
 	local div = gui2.CreatePanel("divider", frame)
@@ -46,20 +47,20 @@ function editor.Open()
 			table.insert(options, {...})
 		end
 		
-		--add("wear", nil, gui2.skin.icons.wear)
+		--add("wear", nil, node:GetSkin().icons.wear)
 		
 		if node then
 			add("copy", function()
 				system.SetClipboard(assert(serializer.Encode("luadata", node.ent:GetStorableTable())))
-			end, gui2.skin.icons.copy)
+			end, node:GetSkin().icons.copy)
 			add("paste", function()
 				node.ent:SetStorableTable(assert(serializer.Decode("luadata", system.GetClipboard())))
-			end, gui2.skin.icons.paste)
+			end, node:GetSkin().icons.paste)
 			add("clone", function()
 				local ent = entities.CreateEntity(node.ent.config)
 				ent:SetParent(node.ent:GetParent())
 				ent:SetStorableTable(node.ent:GetStorableTable())
-			end, gui2.skin.icons.clone)
+			end, node:GetSkin().icons.clone)
 			
 			if node.ent:HasComponent("transform") then
 				add("goto", function()
@@ -75,9 +76,9 @@ function editor.Open()
 		end		
 	
 		add()
-		--add("help", nil, gui2.skin.icons.help)
-		add("save", nil, gui2.skin.icons.save)
-		add("load", nil, gui2.skin.icons.load)
+		--add("help", nil, node:GetSkin().icons.help)
+		add("save", nil, node:GetSkin().icons.save)
+		add("load", nil, node:GetSkin().icons.load)
 		
 		if node then
 			add()
@@ -86,7 +87,7 @@ function editor.Open()
 				if node:IsValid() and node.ent:IsValid() then
 					node.ent:Remove()
 				end
-			end, gui2.skin.icons.clear)
+			end, node:GetSkin().icons.clear)
 		end
 		
 		gui2.CreateMenu(options, frame)
@@ -102,7 +103,7 @@ function editor.Open()
 			node.OnRightClick = right_click_node
 			node.OnMouseHoverTrigger = show_tooltip
 			node.ent = ent
-			--node:SetIcon(Texture("textures/" .. gui2.skin.icons[val.self.ClassName]))
+			--node:SetIcon(Texture("textures/" .. node:GetSkin().icons[val.self.ClassName]))
 			fill(ent:GetChildren(), node)
 		end  
 	end

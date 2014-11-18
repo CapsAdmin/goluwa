@@ -8,8 +8,8 @@ prototype.GetSet(PANEL, "ParseTags", false)
 prototype.GetSet(PANEL, "TextWrap", false)
 prototype.GetSet(PANEL, "ConcatenateTextToSize", false)
 
-prototype.GetSet(PANEL, "Font", gui2.skin.default_font)
-prototype.GetSet(PANEL, "TextColor", gui2.skin.text_color)
+prototype.GetSet(PANEL, "Font")
+prototype.GetSet(PANEL, "TextColor")
 
 function PANEL:Initialize()
 	self:SetNoDraw(true)
@@ -24,7 +24,6 @@ function PANEL:Initialize()
 	end
 	self.markup = markup
 	
-	self:SetFont(self.Font)
 	self:SetTextWrap(self.TextWrap)
 end
 
@@ -32,9 +31,15 @@ function PANEL:SetFont(font)
 	surface.SetFont(font)
 	self.markup:SetMinimumHeight(select(2, surface.GetTextSize("")))
 	self.Font = font
+	self:SetText(self:GetText())
 end
 
-function PANEL:SetText(str)
+function PANEL:SetTextColor(color)
+	self.TextColor = color
+	self:SetText(self:GetText())
+end
+
+function PANEL:SetText(str)	
 	self.Text = str
 	
 	local markup = self.markup
@@ -87,8 +92,8 @@ function PANEL:Concatenate()
 		local concatenated = self.Text:sub(0, sub_pos) .. "..."	
 		
 		markup:Clear()
-		markup:AddFont(self.Font)
-		markup:AddColor(self.TextColor)
+		if self.Font then markup:AddFont(self.Font) end 
+		if self.TextColor then markup:AddColor(self.TextColor) end
 		markup:AddString(concatenated, self.ParseTags)
 		self.concatenated = true
 		
@@ -99,7 +104,12 @@ function PANEL:Concatenate()
 	end
 end
 
-function PANEL:OnLayout()
+function PANEL:OnStyleChanged(skin)
+	self:SetTextColor(skin.text_color)
+	self:SetFont(skin.default_font)
+end
+
+function PANEL:OnLayout(S)
 	if self.ConcatenateTextToSize then
 		self:Concatenate()
 	end

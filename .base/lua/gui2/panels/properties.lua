@@ -1,5 +1,4 @@
 local gui2 = ... or _G.gui2
-local S = gui2.skin.scale
 
 do -- base property
 	local PANEL = {}
@@ -47,10 +46,10 @@ do -- base property
 				self:OnClick()
 			elseif button == "button_2" then
 				gui2.CreateMenu({
-					{"copy", function() system.SetClipboard(self:GetEncodedValue()) end, gui2.skin.icons.copy},
-					{"paste", function() self:SetEncodedValue(system.GetClipboard()) end, gui2.skin.icons.paste},
+					{"copy", function() system.SetClipboard(self:GetEncodedValue()) end, self:GetSkin().icons.copy},
+					{"paste", function() self:SetEncodedValue(system.GetClipboard()) end, self:GetSkin().icons.paste},
 					{},
-					{"reset", function() self:SetValue(self:GetDefaultValue()) end, gui2.skin.icons.clear},
+					{"reset", function() self:SetValue(self:GetDefaultValue()) end, self:GetSkin().icons.clear},
 				}, self)
 			end
 		end
@@ -641,9 +640,11 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 	return left, right
 end
 
-function PANEL:OnLayout(S)		
-	self:SetColor(gui2.skin.property_background)
-	
+function PANEL:OnStyleChanged(skin)
+	self:SetColor(skin.property_background)
+end
+
+function PANEL:OnLayout(S)	
 	for i, left in ipairs(self.left:GetChildren()) do
 		if left.group then
 			left:SetHeight(S*10)

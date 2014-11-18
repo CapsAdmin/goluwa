@@ -1,5 +1,4 @@
 local gui2 = ... or _G.gui2
-local S = gui2.skin.scale
 
 local PANEL = {}
 
@@ -58,7 +57,7 @@ function PANEL:OnButtonPositionChanged(button, pos)
 end
 
 function PANEL:OnLineDraw(line)
-	surface.SetTexture(gui2.skin.menu_select[1])
+	surface.SetTexture(self:GetSkin().menu_select[1])
 		
 	if self.RightFill then
 		if self.XSlide and self.YSlide then

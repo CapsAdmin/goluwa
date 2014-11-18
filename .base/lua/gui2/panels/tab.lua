@@ -31,9 +31,8 @@ function PANEL:AddTab(name)
 	button:SetStyleTranslation("button_inactive", "tab_inactive")
 	button:SetStyle("tab_inactive")
 	
-	button:SetTextColor(gui2.skin.text_color_inactive)
 	button:SetText(name)
-	button.label:SetupLayoutChain("center_y")
+	button.label:SetupLayoutChain("center_y_simple")
 
 	button.text = name
 	
@@ -58,7 +57,6 @@ end
 function PANEL:SelectTab(name)
 	local button = self.tabs[name].button
 	
-	button:SetTextColor(gui2.skin.text_color)
 	button:SetText(button.text)
 	button:CenterText()
 	button:SetState(true)
@@ -68,7 +66,6 @@ function PANEL:SelectTab(name)
 	
 	for i, panel in ipairs(self.tab_bar:GetChildren()) do
 		if button ~= panel then
-			panel:SetTextColor(gui2.skin.text_color_inactive)
 			panel:SetText(panel.text)
 			panel:CenterText()
 			panel:SetState(false)
@@ -83,12 +80,17 @@ function PANEL:GetSelectedPage(name)
 	return self.content
 end
 
-function PANEL:OnLayout(S)
+function PANEL:OnLayout(S, skin)
 	self.tab_bar:SetWidth(self:GetWidth())
 	self.tab_bar:SetHeight(10*S)
 	self.tab_bar:SetY(1)
 	
 	for i, v in pairs(self.tabs) do
+		if v.button:GetState() then
+			v.button:SetTextColor(skin.text_color_inactive)
+		else
+			v.button:SetTextColor(skin.text_color)
+		end
 		v.button:SetMargin(Rect()+2*S)
 		v.button:SizeToText()
 		v.button:SetHeight(S*10)

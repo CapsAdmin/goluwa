@@ -21,8 +21,15 @@ function gui2.CreatePanel(name, parent, store_in_parent)
 	end
 	
 	self:SetParent(parent)
-	self:Initialize()
 	
+	self:Initialize()	
+	
+	if parent and parent.Skin then
+		self:SetSkin(parent:GetSkin())
+	else
+		self:OnStyleChanged(gui2.skin)
+	end
+
 	gui2.panels[self] = self
 	
 	-- this will make calls to layout always layout until next frame
@@ -89,9 +96,12 @@ do -- context menu helpers
 	
 	function gui2.CreateMenu(options, parent)
 		local menu = gui2.CreatePanel("menu")
-		gui2.SetActiveMenu(menu)
+		event.Delay(0, function() gui2.SetActiveMenu(menu) end)
 		
 		if parent then
+			if parent.Skin then
+				menu:SetSkin(parent:GetSkin())
+			end
 			parent:CallOnRemove(function() gui2.RemovePanel(menu) end, menu)
 		end
 
@@ -228,10 +238,10 @@ end
 
 do -- skin
 	function gui2.SetSkin(tbl, reload_panels)
-		if reload_panels then include("gui2/panels/*", gui2) end
-		
 		gui2.skin = tbl
 		gui2.scale = tbl.scale or gui2.scale
+		print(gui2.scale)
+		if reload_panels then include("gui2/panels/*", gui2) end
 		
 		for panel in pairs(gui2.panels) do
 			panel:ReloadStyle()
@@ -245,7 +255,7 @@ do -- skin
 
 	console.AddCommand("gui_skin", function(_, str, sub_skin)
 		str = str or "gwen"
-		include("gui2/skins/" .. str .. ".lua", gui2, sub_skin)
+		gui2.SetSkin(include("gui2/skins/" .. str .. ".lua", gui2), sub_skin)
 	end)
 end
 
@@ -346,8 +356,9 @@ function gui2.Initialize()
 end
 
 include("base_panel.lua", gui2)
-include("skins/gwen.lua", gui2)
+gui2.SetSkin(include("skins/gwen.lua", gui2))
 include("panels/*", gui2)
+include("helpers.lua", gui2)
 
 gui2.Initialize()
 
