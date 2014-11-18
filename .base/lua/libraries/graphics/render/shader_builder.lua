@@ -441,7 +441,9 @@ function render.CreateShader(data)
 						local source = data.original_source:gsub("[ %t\r]", "")
 						
 						local start, stop = lua_file:find(source, 0, true)
-						line_offset = lua_file:sub(0, -stop):count("\n")
+						if start then
+							line_offset = lua_file:sub(0, -stop):count("\n")
+						end
 					end
 				end
 				
