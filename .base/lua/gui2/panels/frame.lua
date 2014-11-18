@@ -14,7 +14,7 @@ function PANEL:Initialize()
 	self:SetMargin(Rect(S,S,S,S))
 	self:SetStyle("frame2")
 		
-	local bar = gui2.CreatePanel("base", self)
+	local bar = self:CreatePanel("base", "bar")
 	bar:SetObeyMargin(false)
 	bar:SetHeight(12*S)
 	bar:SetStyle("frame_bar")
@@ -25,7 +25,7 @@ function PANEL:Initialize()
 	bar:SetPadding(Rect()-S)
 	--bar:SetDrawScaleOffset(Vec2()+2)
 		
-	local close = gui2.CreatePanel("button", bar)
+	local close = bar:CreatePanel("button")
 	close:SetStyle("close_inactive")
 	close:SetStyleTranslation("button_active", "close_active")
 	close:SetStyleTranslation("button_inactive", "close_inactive")
@@ -35,7 +35,7 @@ function PANEL:Initialize()
 	end
 	self.close = close
 		
-	local max = gui2.CreatePanel("button", bar)
+	local max = bar:CreatePanel("button")
 	max:SetStyle("maximize2_inactive")
 	max:SetStyleTranslation("button_active", "maximize2_active")
 	max:SetStyleTranslation("button_inactive", "maximize2_inactive")
@@ -45,7 +45,7 @@ function PANEL:Initialize()
 	end
 	self.max = max
 	
-	local min = gui2.CreatePanel("text_button", bar) 
+	local min = bar:CreatePanel("text_button") 
 	min:SetStyle("minimize_inactive")
 	min:SetStyleTranslation("button_active", "minimize_active")
 	min:SetStyleTranslation("button_inactive", "minimize_inactive")
@@ -56,10 +56,7 @@ function PANEL:Initialize()
 	self.min = min
 
 	self:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
-	
-	self.frame = self
-	self.bar = bar
-		
+			
 	self:SetTitle(self:GetTitle())
 	
 	self:CallOnRemove(function()
@@ -109,7 +106,7 @@ function PANEL:SetTitle(str)
 	self.Title = str
 	
 	gui2.RemovePanel(self.title)
-	local title = gui2.CreatePanel("text", self.bar)
+	local title = self.bar:CreatePanel("text")
 	title:SetText(str)
 	title:SetPosition(Vec2(2*S,0))
 	title:SetNoDraw(true)

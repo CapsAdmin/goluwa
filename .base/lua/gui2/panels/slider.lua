@@ -18,7 +18,7 @@ function PANEL:Initialize()
 	self:SetMinimumSize(Vec2(35, 35))
 	self:SetNoDraw(true)
 
-	local line = gui2.CreatePanel("base", self)
+	local line = self:CreatePanel("base", "line")
 	line:SetStyle("button_active")
 	line.OnPostDraw = function()
 		surface.SetTexture(gui2.skin.menu_select[1])
@@ -46,9 +46,8 @@ function PANEL:Initialize()
 			end
 		end
 	end
-	self.line = line
 
-	local button = gui2.CreatePanel("button", self)
+	local button = self:CreatePanel("button", "button")
 	button:SetStyleTranslation("button_active", "button_rounded_active")
 	button:SetStyleTranslation("button_inactive", "button_rounded_inactive")
 	button:SetStyle("button_rounded_inactive")
@@ -76,7 +75,6 @@ function PANEL:Initialize()
 		
 		self:MarkCacheDirty()
 	end
-	self.button = button
 end
 
 function PANEL:OnSlide(pos)

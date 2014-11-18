@@ -37,16 +37,15 @@ end
 
 function PANEL:Initialize()
 	self:SetNoDraw(true)
-	local slider = gui2.CreatePanel("slider", self)
+	local slider = self:CreatePanel("slider", "y_slider")
 	slider:SetXSlide(false)
 	slider:SetYSlide(true)
 	slider.OnSlide = function(_, pos)
 		self:SetValue(-pos.y+1)
 		self.xy_slider.line:SetColor(Color(1,1,1)*self:GetValue())
 	end
-	self.y_slider = slider
 	
-	local xy = gui2.CreatePanel("slider", self)
+	local xy = self:CreatePanel("slider", "xy_slider")
 	xy:SetXSlide(true)
 	xy:SetYSlide(true)
 	xy:SetRightFill(false)
@@ -67,7 +66,6 @@ function PANEL:Initialize()
 	
 	xy.line:SetStyle("none")
 	xy.line:SetTexture(Texture("textures/gui/hsv_square.png"))
-	self.xy_slider = xy
 	
 	xy:SetFraction(Vec2(0.5, 0.5))
 	slider:SetFraction(Vec2(0,1))

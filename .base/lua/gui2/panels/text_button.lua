@@ -21,9 +21,8 @@ prototype.Delegate(PANEL, "label", "GetTextSize", "GetSize")
 function PANEL:Initialize()
 	prototype.GetRegistered(self.Type, "button").Initialize(self)
 	
-	local label = gui2.CreatePanel("text", self)
+	local label = self:CreatePanel("text", "label")
 	label:SetIgnoreMouse(true)
-	self.label = label
 end
 
 function PANEL:SizeToText()

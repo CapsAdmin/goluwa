@@ -16,13 +16,12 @@ do -- tree node
 
 		self:SetNoDraw(true)
 
-		local button = gui2.CreatePanel("text_button", self)
+		local button = self:CreatePanel("text_button", "button")
 		button:SetMargin(Rect()+2*S)
 		button:SetColor(Color(1,1,1,0))
 		button:SetIgnoreMouse(true)
-		self.button = button
 
-		local exp = gui2.CreatePanel("button", self)
+		local exp = self:CreatePanel("button", "expand")
 		exp:SetMargin(Rect()+S)
 		exp:SetVisible(false)
 		exp:SetMode("toggle")
@@ -32,12 +31,10 @@ do -- tree node
 		exp.OnStateChanged = function(_, b) 
 			self:OnExpand(b) 
 		end
-		self.expand = exp
 		
-		local img = gui2.CreatePanel("base", self)
+		local img = self:CreatePanel("base", "image")
 		img:SetIgnoreMouse(true)
 		img:SetTexture(Texture("textures/silkicons/heart.png"))
-		self.image = img
 	end
 	
 	function PANEL:OnPress()
@@ -157,10 +154,12 @@ do
 	function PANEL:AddNode(str, icon, id)
 		if id and self.nodes[id] and self.nodes[id]:IsValid() then self.nodes[id]:Remove() end
 		
-		local pnl = gui2.CreatePanel("tree_node", self)
+		local pnl = self:CreatePanel("tree_node")
+		
 		pnl:SetText(str) 
 		pnl.offset = self.IndentWidth
 		pnl.tree = self
+		
 		if icon then
 			pnl.image:SetTexture(Texture(icon))
 		end

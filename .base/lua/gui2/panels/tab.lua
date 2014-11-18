@@ -9,7 +9,7 @@ PANEL.tabs = {}
 function PANEL:Initialize()
 	self:SetNoDraw(true)
 
-	local tab_bar =  gui2.CreatePanel("base", self)
+	local tab_bar =  self:CreatePanel("base", "tab_bar")
 	tab_bar:SetNoDraw(true)
 	
 	tab_bar:SetStack(true)
@@ -17,8 +17,6 @@ function PANEL:Initialize()
 	tab_bar:SetClipping(true)
 	tab_bar:SetScrollable(true)
 	tab_bar:SetMargin(Rect())
-			
-	self.tab_bar = tab_bar
 end
 
 function PANEL:AddTab(name)
@@ -27,7 +25,7 @@ function PANEL:AddTab(name)
 		gui2.RemovePanel(self.tabs[name].content)
 	end
 
-	local button = gui2.CreatePanel("text_button", self.tab_bar)
+	local button = self.tab_bar:CreatePanel("text_button")
 	button:SetMode("toggle")
 
 	button:SetStyleTranslation("button_active", "tab_active")
@@ -49,7 +47,7 @@ function PANEL:AddTab(name)
 		end
 	end
 	
-	local content = gui2.CreatePanel("base", self)
+	local content = self:CreatePanel("base")
 	content:SetStyle("tab_frame")
 	content:SetVisible(false)
 	self.content = content

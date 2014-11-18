@@ -24,11 +24,10 @@ do -- base property
 	
 	function PANEL:SetSpecialCallback(callback)
 		prototype.SafeRemove(self.special)
-		local special = gui2.CreatePanel("text_button", self)
+		local special = self:CreatePanel("text_button", "special")
 		special:SetText("...")		
 		special:SetMode("toggle")
 		special.OnStateChanged = function(_, b) callback(b) end
-		self.special = special
 	end
 	
 	function PANEL:OnLayout()
@@ -63,7 +62,7 @@ do -- base property
 	function PANEL:StartEditing()
 		if self.edit then return end
 		
-		local edit = gui2.CreatePanel("text_edit", self)
+		local edit = self:CreatePanel("text_edit", "edit")
 		edit:SetText(self:GetEncodedValue())
 		edit:SizeToText()
 		edit:SetupLayoutChain("fill_x", "fill_y")
@@ -73,8 +72,6 @@ do -- base property
 		end
 		
 		edit:RequestFocus()
-		
-		self.edit = edit
 	end
 	
 	function PANEL:StopEditing()	
@@ -293,12 +290,11 @@ do -- boolean
 	function PANEL:Initialize()
 		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
 
-		local panel = gui2.CreatePanel("button", self)
+		local panel = self:CreatePanel("button", "panel")
 		panel:SetMode("toggle")
 		panel:SetActiveStyle("check")
 		panel:SetInactiveStyle("uncheck")
 		panel.OnStateChanged = function(_, b) self:SetValue(b, true) end
-		self.panel = panel
 	end
 	
 	function PANEL:OnLayout()
@@ -340,7 +336,7 @@ do -- color
 	function PANEL:Initialize()
 		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
 
-		local panel = gui2.CreatePanel("button", self)
+		local panel = self:CreatePanel("button", "panel")
 		panel:SetStyle("none")
 		panel:SetActiveStyle("none")
 		panel:SetInactiveStyle("none")
@@ -351,13 +347,12 @@ do -- color
 			frame:Center()
 			frame:SetTitle("color picker")
 			
-			local picker = gui2.CreatePanel("color_picker", frame)
+			local picker = frame:CreatePanel("color_picker")
 			picker:SetupLayoutChain("fill_x", "fill_y")
 			picker.OnColorChanged = function(_, color) self:SetValue(color) end
 			
 			panel:CallOnRemove(function() gui2.RemovePanel(frame) end)
 		end
-		self.panel = panel
 	end
 	
 	function PANEL:OnLayout()
@@ -400,11 +395,10 @@ function PANEL:Initialize()
 	
 	self:AddEvent("PanelMouseInput")
 	
-	local divider = gui2.CreatePanel("divider", self)
+	local divider = self:CreatePanel("divider", "divider")
 	divider:SetMargin(Rect())
 	divider:SetHideDivider(true)
 	divider:SetupLayoutChain("fill_x", "fill_y")
-	self.divider = divider
 	
 	local left = self.divider:SetLeft(gui2.CreatePanel("base"))
 	left:SetStack(true)
@@ -427,12 +421,12 @@ function PANEL:Initialize()
 end
 
 function PANEL:AddGroup(name)
-	local left = gui2.CreatePanel("base", self.left)
+	local left = self.left:CreatePanel("base")
 	left:SetNoDraw(true)
 	left.group = true
 	--left:SetStyle("property")
 	
-	local exp = gui2.CreatePanel("button", left)
+	local exp = left:CreatePanel("button")
 	exp:SetMargin(Rect()+S)
 	exp:SetStyle("-")
 	exp:SetStyleTranslation("button_active", "+")
@@ -475,12 +469,12 @@ function PANEL:AddGroup(name)
 		end
 	end
 	
-	local label = gui2.CreatePanel("text", left)
+	local label = left:CreatePanel("text")
 	label:SetText(name)
 	label:SetPosition(Vec2(S*4 + exp:GetWidth(), S*2))
 	left:SetHeight(S*10)	
 	
-	local right = gui2.CreatePanel("base", self.right) 
+	local right = self.right:CreatePanel("base")
 	right:SetHeight(S*10)
 	right:SetNoDraw(true)
 end
@@ -511,7 +505,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 		
 	local left_offset = S*8
 	
-	local left = gui2.CreatePanel("button", self.left)
+	local left = self.left:CreatePanel("button")
 	left:SetStyle("property")
 	left:SetDrawPositionOffset(Vec2(left_offset, 0))
 	left:SetHeight(S*8-1)	
@@ -519,19 +513,19 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 	left:SetMode("toggle")
 	left.OnStateChanged = function(_, b) left:SetState(b) for i,v in ipairs(self.added_properties) do if v.left ~= left then v.left:SetState(false) end end end
 	
-	local label = gui2.CreatePanel("text", left)
+	local label = left:CreatePanel("text")
 	label:SetText(name)
 	label:SetPosition(Vec2(extra_info.__label_offset or S*2, S))
 	label:SetIgnoreMouse(true)
 
-	local right = gui2.CreatePanel("base", self.right) 
+	local right = self.right:CreatePanel("base") 
 	right:SetMargin(Rect())
 	right:SetHeight(left:GetHeight())
 	
 	local property
 	
 	if prototype.GetRegistered("panel2", t .. "_property") then
-		local panel = gui2.CreatePanel(t .. "_property", right)
+		local panel = right:CreatePanel(t .. "_property")
 					
 		panel:SetValue(default)
 		panel:SetDefaultValue(default)
@@ -559,7 +553,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 				
 		table.insert(self.added_properties, panel)
 	else
-		local panel = gui2.CreatePanel("base_property", right)
+		local panel = right:CreatePanel("base_property")
 				
 		function panel:Decode(str)
 			local val = serializer.Decode("luadata", str)[1]
@@ -589,14 +583,13 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 	end
 	
 	if fields then
-		local exp = gui2.CreatePanel("button", left)
+		local exp = left:CreatePanel("button", "expand")
 		exp:SetMargin(Rect()+S)
 		exp:SetStyleTranslation("button_active", "+")
 		exp:SetStyleTranslation("button_inactive", "-")
 		exp:SetState(true)
 		exp:SetPosition(Vec2(S*2, S*2-1))
 		exp:SetMode("toggle")
-		left.expand = exp
 		label:SetX(S*4 + exp:GetWidth())
 		
 		local panels = {}

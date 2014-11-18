@@ -29,10 +29,11 @@ function gui2.CreatePanel(name, parent, store_in_parent)
 	self.layout_me = "init"
 	
 	if store_in_parent then
-		prototype.SafeRemove(self)
 		if type(store_in_parent) == "string" then
+			prototype.SafeRemove(parent[store_in_parent])
 			parent[store_in_parent] = self
 		else
+			prototype.SafeRemove(parent[name])
 			parent[name] = self
 		end
 	end
