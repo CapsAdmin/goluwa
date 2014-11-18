@@ -35,7 +35,7 @@ do
 		panel:SetIgnoreMouse(true)
 	end
 	
-	function PANEL:OnLayout()
+	function PANEL:OnLayout(S)
 		local w = 0
 		local y = S*2
 		

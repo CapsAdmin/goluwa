@@ -11,18 +11,14 @@ function PANEL:Initialize()
 	self:SetResizable(true) 
 	self:SetBringToFrontOnClick(true)
 	self:SetCachedRendering(true)
-	self:SetMargin(Rect(S,S,S,S))
 	self:SetStyle("frame2")
 		
 	local bar = self:CreatePanel("base", "bar")
 	bar:SetObeyMargin(false)
-	bar:SetHeight(12*S)
 	bar:SetStyle("frame_bar")
 	bar:SetClipping(true)
 	bar:SetSendMouseInputToPanel(self)
 	bar:SetupLayoutChain("top", "fill_x")
-	bar:SetMargin(Rect()+S)
-	bar:SetPadding(Rect()-S)
 	--bar:SetDrawScaleOffset(Vec2()+2)
 		
 	local close = bar:CreatePanel("button")
@@ -64,6 +60,19 @@ function PANEL:Initialize()
 			gui2.task_bar:RemoveButton(self)
 		end
 	end)
+end
+
+function PANEL:OnLayout(S)
+	self:SetMargin(Rect(S,S,S,S))
+	
+	self.bar:SetLayoutSize(Vec2()+12*S)
+	self.bar:SetMargin(Rect()+S)
+	self.bar:SetPadding(Rect()-S)
+	
+	self.min:SetPadding(Rect()+S)
+	self.max:SetPadding(Rect()+S)
+	self.close:SetPadding(Rect()+S)
+	self.title:SetPadding(Rect()+S)
 end
 
 function PANEL:Maximize()
@@ -108,7 +117,6 @@ function PANEL:SetTitle(str)
 	gui2.RemovePanel(self.title)
 	local title = self.bar:CreatePanel("text")
 	title:SetText(str)
-	title:SetPosition(Vec2(2*S,0))
 	title:SetNoDraw(true)
 	title:SetupLayoutChain("left")
 	self.title = title

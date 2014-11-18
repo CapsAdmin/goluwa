@@ -1,5 +1,4 @@
 local gui2 = ... or _G.gui2
-local S = gui2.skin.scale
 
 local PANEL = {}
 
@@ -30,15 +29,10 @@ function PANEL:SizeToText()
 		
 	self.label:SetPosition(marg:GetPosition())
 	self:SetSize(self.label:GetSize() + marg:GetSize()*2)
-end
-
-function PANEL:Test()		
-	local btn = gui2.CreatePanel("text_button")
-	btn:SetText("oh")
-	btn:SetMargin(Rect()+S*2)
-	btn:SizeToText()
-	btn:SetMode("toggle")
-	btn:SetPosition(Vec2()+100)
+	
+	if self.LayoutSize then
+		self.LayoutSize = self:GetSize():Copy()
+	end
 end
 
 gui2.RegisterPanel(PANEL)

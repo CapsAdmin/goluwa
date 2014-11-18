@@ -226,24 +226,45 @@ do -- events
 	end
 end
 
-function gui2.SetSkin(tbl, reload_panels)
-	if reload_panels then include("gui2/panels/*", gui2) end
-	gui2.skin = tbl
-	for panel in pairs(gui2.panels) do
-		panel:Layout()
-		panel:SetStyle(panel:GetStyle())
+do -- skin
+	function gui2.SetSkin(tbl, reload_panels)
+		if reload_panels then include("gui2/panels/*", gui2) end
+		
+		gui2.skin = tbl
+		gui2.scale = tbl.scale or gui2.scale
+		
+		for panel in pairs(gui2.panels) do
+			panel:SetStyle(panel:GetStyle())
+			panel:Layout()
+		end
+		logn("gui skin changed. you might need to reopen some panels to fully see the changes")
 	end
-	logn("gui skin changed. you might need to reopen some panels to fully see the changes")
+
+	function gui2.GetSkin()
+		return gui2.skin
+	end
+
+	console.AddCommand("gui_skin", function(_, str, sub_skin)
+		str = str or "gwen"
+		include("gui2/skins/" .. str .. ".lua", gui2, sub_skin)
+	end)
 end
 
-function gui2.GetSkin()
-	return gui2.skin
-end
+do -- gui scaling
+	gui2.scale = 1
 
-console.AddCommand("gui_skin", function(_, str, sub_skin)
-	str = str or "gwen"
-	include("gui2/skins/" .. str .. ".lua", gui2, sub_skin)
-end)
+	function gui2.SetScale(scale)
+		for panel in pairs(gui2.panels) do
+			panel:SetStyle(panel:GetStyle())
+			panel:Layout()
+		end
+		gui2.scale = scale
+	end
+
+	function gui2.GetScale(scale)
+		return gui2.scale
+	end
+end
 
 function gui2.Initialize()
 	gui2.RemovePanel(gui2.world)
@@ -278,11 +299,9 @@ function gui2.Initialize()
 		
 		local bar = gui2.CreatePanel("base") 
 		bar:SetStyle("gradient")
-		bar:SetHeight(S*14)
 		bar:SetupLayoutChain("bottom", "fill_x")
-		bar:SetMargin(Rect()+S*2)
 		bar:SetVisible(false)
-		
+				
 		bar.buttons = {}
 		
 		function bar:AddButton(text, key, callback)
@@ -290,9 +309,7 @@ function gui2.Initialize()
 			
 			local button = self.buttons[key] or gui2.CreatePanel("text_button", self) 
 			button:SetText(text)
-			button:SetMargin(Rect()+2.5*S)
-			button:SizeToText()
-			
+			button.label:SetupLayoutChain("left")
 			button.OnPress = callback  
 
 			button:SetupLayoutChain("left")
@@ -311,6 +328,18 @@ function gui2.Initialize()
 			self:Layout()
 		end
 		
+		function bar:OnLayout(S)
+			self:SetLayoutSize(Vec2()+S*14)
+			self:SetMargin(Rect()+S*2)
+			
+			for i,v in ipairs(self:GetChildren()) do
+				v:SetMargin(Rect()+2.5*S)
+				v:SizeToText()
+			end
+		end
+		
+		bar:Layout(true)
+	
 		gui2.task_bar = bar
 	end
 end

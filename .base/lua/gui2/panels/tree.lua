@@ -1,5 +1,4 @@
 local gui2 = ... or _G.gui2
-local S = gui2.skin.scale
 
 do -- tree node
 	local PANEL = {}
@@ -13,7 +12,8 @@ do -- tree node
 
 	function PANEL:Initialize()	
 		prototype.GetRegistered(self.Type, "button").Initialize(self)
-
+		
+		self:SetWidth(1000)
 		self:SetNoDraw(true)
 
 		local exp = self:CreatePanel("button", "expand")
@@ -33,15 +33,19 @@ do -- tree node
 		
 		local button = self:CreatePanel("text_button", "button")
 		button:SetColor(Color(1,1,1,0))
+		
 		button:SetIgnoreMouse(true)
+		button.label:SetIgnoreMouse(true)
+		button.OnMouseInput = function(_,...)self:OnMouseInput(...) end -- FIX IGNORE MOUSE
+		 
 		self:SetText("nil")
 	end
 	
-	function PANEL:OnLayout()
+	function PANEL:OnLayout(S)
 		self.expand:SetPadding(Rect()+2*S)
 		
 		self.image:SetPadding(Rect()+2*S)
-		self.image:SetSize(Vec2() + S*8)
+		self.image:SetSize(Vec2(math.min(S*8, self.image.Texture.w), math.min(S*8, self.image.Texture.h)))
 		self.image:SetupLayoutChain("left")
 		
 		self.button:SetPadding(Rect()+2*S)
@@ -192,16 +196,8 @@ do
 		node:OnPress()
 	end
 	
-	function PANEL:OnLayout()
+	function PANEL:OnLayout(S)
 		self:SetForcedStackSize(Vec2(0, 10*S))
-
-		local w = self:GetWidth()
-		for _, v in ipairs(self:GetChildren()) do
-			w = math.max(w, v.button:GetX() + v.button:GetWidth())
-		end
-		for _, v in ipairs(self:GetChildren()) do
-			v:SetWidth(w)
-		end
 	end
 
 	function PANEL:OnNodeSelect(node) end

@@ -7,10 +7,10 @@ PANEL.ClassName = "collapsible_category"
 
 function PANEL:Initialize()	
 	self:SetNoDraw(true)
+	
 	local bar = self:CreatePanel("button", "bar")
 	bar:SetObeyMargin(false)
 	bar:SetupLayoutChain("top", "fill_x")
-	bar:SetHeight(10*S)
 	bar:SetClipping(true) 
 	bar:SetMode("toggle")
 	
@@ -18,9 +18,11 @@ function PANEL:Initialize()
 		if pressed then
 			self.last_height = self.last_height or self:GetHeight()
 			self:SetHeight((10*S) - 1)
+			self.content:SetVisible(false)
 		elseif self.last_height then
 			self:SetHeight(self.last_height)
 			self.last_height = nil 
+			self.content:SetVisible(true)
 		end
 		if self:HasParent() then
 			self:GetParent():Layout()
@@ -28,8 +30,8 @@ function PANEL:Initialize()
 	end
 	
 	local content = self:CreatePanel("base", "content")
-	content:SetNoDraw(true)
-		
+	--content:SetNoDraw(true)
+	content:SetupLayoutChain("fill_x", "fill_y")
 	self:SetStyle("frame")
 	self:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
 	self:SetTitle("no title")
@@ -44,21 +46,20 @@ function PANEL:SizeToContents()
 end
 
 function PANEL:OnLayout()
-	self.content:SetY(10*S)
-	
-	self.content:SetWidth(self:GetWidth())
-	self.content:SetHeight(self:GetHeight() - 10*S)
+	self.bar:SetLayoutSize(Vec2()+10*S)
 end
 
 function PANEL:SetTitle(str)
 	gui2.RemovePanel(self.title)
 	local title = self.bar:CreatePanel("text")
+	
 	title:SetHeight(self.bar:GetHeight())
 	title:SetText(str)
 	title:SetPosition(Vec2(2*S,0))
 	title:CenterY() 
 	title:SetNoDraw(true)
 	title:SetIgnoreMouse(true)
+	title:SetupLayoutChain("left")
 	self.title = title
 end
 
@@ -69,7 +70,7 @@ if RELOAD then
 	frame:SetSize(Vec2(200, 400))
 	
 	local scroll = frame:CreatePanel("scroll")
-	scroll:Dock("fill")
+	scroll:SetupLayoutChain("fill_x", "fill_y")
 	
 	local list = gui2.CreatePanel("base")
 	list:SetStack(true)
@@ -84,4 +85,4 @@ if RELOAD then
 	b:SetSize(Vec2(100,100)) 
 	 
 	list:SetSize(Vec2(100, 500))   
-end  
+end

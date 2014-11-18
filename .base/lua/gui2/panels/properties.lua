@@ -12,13 +12,12 @@ do -- base property
 	PANEL.special = NULL
 		
 	function PANEL:Initialize()
-		prototype.GetRegistered(self.Type, "text_button").Initialize(self)
+		prototype.GetRegistered(self.Type, PANEL.Base).Initialize(self)
 		 
 		self:SetActiveStyle("property")
 		self:SetInactiveStyle("property")
 		self:SetHighlightOnMouseEnter(false)
 		self:SetClicksToActivate(2)
-		self:SetMargin(Rect())
 		self:SetConcatenateTextToSize(true)
 	end
 	
@@ -30,7 +29,9 @@ do -- base property
 		special.OnStateChanged = function(_, b) callback(b) end
 	end
 	
-	function PANEL:OnLayout()
+	function PANEL:OnLayout(S)
+		self.label:SetPadding(Rect()+S)
+		
 		if self.special:IsValid() then
 			self.special:SetX(self:GetWidth() - self.special:GetWidth())
 			self.special:SetSize(Vec2()+self:GetHeight())
@@ -64,8 +65,7 @@ do -- base property
 		
 		local edit = self:CreatePanel("text_edit", "edit")
 		edit:SetText(self:GetEncodedValue())
-		edit:SizeToText()
-		edit:SetupLayoutChain("fill_x", "fill_y")
+		edit:SetSize(self:GetSize())
 		edit:SelectAll()
 		edit.OnEnter = function() 
 			self:StopEditing()
@@ -93,12 +93,12 @@ do -- base property
 	
 	function PANEL:SetValue(val, skip_internal)
 		self:SetText(self:Encode(val))
-		self.label:SetPosition(Vec2(S*2, S))
 		self:OnValueChanged(val)
 		if not skip_internal then
 			self:OnValueChangedInternal(val)
 		end
 		--self:SizeToText()
+		self.label:SetupLayoutChain("left")
 		self:Layout()
 	end
 	
@@ -144,7 +144,7 @@ do -- string
 	PANEL.ClassName = "string_property"
 		
 	function PANEL:Initialize()
-		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
+		prototype.GetRegistered(self.Type, PANEL.Base).Initialize(self)
 		
 		self:SetClicksToActivate(1)
 	end
@@ -165,7 +165,7 @@ do -- number
 	PANEL.slider = NULL
 	
 	function PANEL:Initialize()
-		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
+		prototype.GetRegistered(self.Type, PANEL.Base).Initialize(self)
 		
 		self:SetCursor("sizens")
 	end
@@ -288,19 +288,14 @@ do -- boolean
 	PANEL.ClassName = "boolean_property"
 	
 	function PANEL:Initialize()
-		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
-
 		local panel = self:CreatePanel("button", "panel")
 		panel:SetMode("toggle")
 		panel:SetActiveStyle("check")
 		panel:SetInactiveStyle("uncheck")
+		panel:SetupLayoutChain("left")
 		panel.OnStateChanged = function(_, b) self:SetValue(b, true) end
-	end
-	
-	function PANEL:OnLayout()
-		prototype.GetRegistered(self.Type, PANEL.Base).OnLayout(self)
 		
-		self.label:SetX(self.panel:GetWidth() + S)
+		prototype.GetRegistered(self.Type, PANEL.Base).Initialize(self)
 	end
 	
 	function PANEL:OnValueChangedInternal(val)
@@ -324,6 +319,12 @@ do -- boolean
 		return b and "true" or "false"
 	end
 	
+	function PANEL:OnLayout(S)
+		prototype.GetRegistered(self.Type, PANEL.Base).OnLayout(self, S)
+		
+		self.panel:SetPadding(Rect()+S)
+	end
+	
 	gui2.RegisterPanel(PANEL)
 end
 
@@ -334,13 +335,13 @@ do -- color
 	PANEL.ClassName = "color_property"
 	
 	function PANEL:Initialize()
-		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
-
 		local panel = self:CreatePanel("button", "panel")
 		panel:SetStyle("none")
 		panel:SetActiveStyle("none")
 		panel:SetInactiveStyle("none")
 		panel:SetHighlightOnMouseEnter(false)
+		panel:SetupLayoutChain("left")
+		
 		panel.OnPress = function()
 			local frame = gui2.CreatePanel("frame")
 			frame:SetSize(Vec2(300, 300))
@@ -353,16 +354,10 @@ do -- color
 			
 			panel:CallOnRemove(function() gui2.RemovePanel(frame) end)
 		end
-	end
-	
-	function PANEL:OnLayout()
-		prototype.GetRegistered(self.Type, PANEL.Base).OnLayout(self)
 		
-		self.panel:SetPosition(Vec2(1,1))
-		self.panel:SetSize(Vec2(self:GetHeight(), self:GetHeight())-2)
-		self.label:SetX(self.panel:GetWidth() + S)
+		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
 	end
-	
+		
 	function PANEL:OnValueChangedInternal(val)
 		self.panel:SetColor(val)
 	end
@@ -374,6 +369,13 @@ do -- color
 	function PANEL:Encode(color)
 		local r,g,b = (color*255):Round():Unpack()
 		return ("%d %d %d"):format(r,g,b)
+	end
+	
+	function PANEL:OnLayout(S)
+		prototype.GetRegistered(self.Type, PANEL.Base).OnLayout(self, S)
+		
+		self.panel:SetLayoutSize(Vec2(S*8, S*8) - S*2)
+		self.panel:SetPadding(Rect()+S)
 	end
 	
 	gui2.RegisterPanel(PANEL)
@@ -426,13 +428,12 @@ function PANEL:AddGroup(name)
 	left.group = true
 	--left:SetStyle("property")
 	
-	local exp = left:CreatePanel("button")
-	exp:SetMargin(Rect()+S)
+	local exp = left:CreatePanel("button", "expand")
 	exp:SetStyle("-")
 	exp:SetStyleTranslation("button_active", "+")
 	exp:SetStyleTranslation("button_inactive", "-")
-	exp:SetPosition(Vec2(S*2, S*2+S))
 	exp:SetMode("toggle")
+	exp:SetupLayoutChain("left")
 	exp.OnStateChanged = function(_, b)
 		local found = false
 		for i, panel in ipairs(self.left:GetChildren()) do
@@ -469,13 +470,12 @@ function PANEL:AddGroup(name)
 		end
 	end
 	
-	local label = left:CreatePanel("text")
+	local label = left:CreatePanel("text", "label")
 	label:SetText(name)
-	label:SetPosition(Vec2(S*4 + exp:GetWidth(), S*2))
-	left:SetHeight(S*10)	
+	label:SetupLayoutChain("left")
 	
 	local right = self.right:CreatePanel("base")
-	right:SetHeight(S*10)
+	right.group = true
 	right:SetNoDraw(true)
 end
 
@@ -502,25 +502,36 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 	end
 	
 	local t = typex(default)
-		
-	local left_offset = S*8
 	
+	self.left_offset = 8
+			
 	local left = self.left:CreatePanel("button")
 	left:SetStyle("property")
-	left:SetDrawPositionOffset(Vec2(left_offset, 0))
-	left:SetHeight(S*8-1)	
+	left.left_offset = self.left_offset	
 	left:SetInactiveStyle("property")
 	left:SetMode("toggle")
 	left.OnStateChanged = function(_, b) left:SetState(b) for i,v in ipairs(self.added_properties) do if v.left ~= left then v.left:SetState(false) end end end
 	
-	local label = left:CreatePanel("text")
+	local exp
+	
+	if fields then
+		exp = left:CreatePanel("button", "expand")
+		exp:SetStyleTranslation("button_active", "+")
+		exp:SetStyleTranslation("button_inactive", "-")
+		exp:SetState(true)
+		exp:SetMode("toggle")
+		exp:SetupLayoutChain("left")
+	end
+	
+	local label = left:CreatePanel("text", "label")
 	label:SetText(name)
-	label:SetPosition(Vec2(extra_info.__label_offset or S*2, S))
+	label.label_offset = extra_info.__label_offset
 	label:SetIgnoreMouse(true)
-
+	label:SetupLayoutChain("left")
+	
 	local right = self.right:CreatePanel("base") 
 	right:SetMargin(Rect())
-	right:SetHeight(left:GetHeight())
+	right:SetWidth(500)
 	
 	local property
 	
@@ -580,18 +591,9 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 		right:SetWidth(panel.label:GetWidth())
 		
 		table.insert(self.added_properties, panel)
-	end
-	
-	if fields then
-		local exp = left:CreatePanel("button", "expand")
-		exp:SetMargin(Rect()+S)
-		exp:SetStyleTranslation("button_active", "+")
-		exp:SetStyleTranslation("button_inactive", "-")
-		exp:SetState(true)
-		exp:SetPosition(Vec2(S*2, S*2-1))
-		exp:SetMode("toggle")
-		label:SetX(S*4 + exp:GetWidth())
+	end	
 		
+	if fields then
 		local panels = {}
 		
 		exp.OnStateChanged = function(_, b)
@@ -619,7 +621,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 				end,
 				default[key],
 				{
-					__label_offset = label:GetX(),
+					__label_offset = self.left_offset + (label.label_offset or self.left_offset),
 				}
 			)
 			
@@ -631,25 +633,60 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 			
 			table.insert(panels, {left = left, right = right})
 		end			
-	end	
+	end
 	
-	self.left_max_width = math.max((self.left_max_width or 0), label:GetWidth() + label:GetX()*2)
-	self.right_max_width = math.max((self.right_max_width or 0), right:GetWidth()+ label:GetX()+S*2)
-			
-	self.divider:SetDividerPosition(self.left_max_width + left_offset)	
+	self.first_time = true
 	
 	self:Layout()
 	
 	return left, right
 end
 
-function PANEL:OnLayout()	
-	if not self.left_max_width then return end
+function PANEL:OnLayout(S)		
+	for i, left in ipairs(self.left:GetChildren()) do
+		if left.group then
+			left:SetHeight(S*10)
+		else
+			left:SetHeight(S*8)
+		end
+		
+		if left.left_offset then
+			left:SetDrawPositionOffset(Vec2(left.left_offset*S, 0))	
+		end
+		
+		if left.expand then
+			left.expand:SetPadding(Rect()+S)
+		end
+		
+		left.label:SetPadding(Rect(S*2,S*2,left.label.label_offset or S*2,S*2))
+		
+		if self.first_time then
+			self.left_max_width = math.max((self.left_max_width or 0), left.label:GetWidth() + left.label:GetX() + (self.left_offset*S) + left.label:GetPadding().right)
+		end
+	end
+	
+	for i, right in ipairs(self.right:GetChildren()) do
+		if right.group then
+			right:SetHeight(S*10)
+		else
+			right:SetHeight(S*8)
+		end
+				
+		if self.first_time then
+			self.right_max_width = math.max((self.right_max_width or 0), right:GetWidth() + S*5) -- *5, why?
+		end
+	end
+	
+	if self.first_time then
+		self.divider:SetDividerPosition(self.left_max_width)
+	end
 	
 	local h = self.left:GetSizeOfChildren().h
 	self.divider:SetSize(Vec2(self.left_max_width + self.right_max_width, h))
 	self:SetWidth(self.left_max_width + self.right_max_width)
 	self:SetHeight(h)
+	
+	self.first_time = false
 end
 
 function PANEL:OnPanelMouseInput(panel, button, press)

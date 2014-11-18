@@ -31,24 +31,25 @@ function PANEL:Initialize()
 	self:SetupSorted("")
 end
 
-function PANEL:OnLayout()
+function PANEL:OnLayout(S)
 	self.top:SetWidth(self:GetWidth())
-	self.top:SetHeight(20)
-	self.scroll:SetPosition(Vec2(0, 20))
+	self.top:SetHeight(S*10)
+	self.scroll:SetPosition(Vec2(0, S*10))
 	self.scroll:SetWidth(self:GetWidth())
-	self.scroll:SetHeight(self:GetHeight() - 20)
+	self.scroll:SetHeight(self:GetHeight() - S*10)
+	
 	local y = 0
 	for _, entry in ipairs(self.entries) do
 		entry:SetPosition(Vec2(0, y))
+		entry:SetHeight(S*8)
 		entry:SetWidth(self:GetWidth())
-		y = y + entry:GetHeight() - S
-		
+		y = y + entry:GetHeight() - S		
 		
 		local x = 0
 		for i, label in ipairs(entry.labels) do
 			local w = self.columns[i].div.left:GetWidth()
 			label:SetWidth(w)
-			label:SetX(x)
+			label:SetX(x+S)
 			label:SetHeight(entry:GetHeight())
 			label:CenterTextY()
 			
@@ -66,7 +67,8 @@ function PANEL:OnLayout()
 	--self:SizeColumnsToFit()
 	
 	for i, column in ipairs(self.columns) do
-		column:SetHeight(20)
+		column:SetMargin(Rect()+2*S)
+		column:SetHeight(S*10)
 		column:CenterTextY()
 		column.div:SetWidth(self:GetWidth())
 	end
@@ -103,9 +105,9 @@ function PANEL:SetupSorted(...)
 		end
 					
 		local column = gui2.CreatePanel("text_button")
-		column:SetMargin(Rect()+2*S)
 		column:SetText(name)
 		column:SetClipping(true)
+		column.label:SetupLayoutChain("left")
 		column:SizeToText()
 				
 		local icon = column:CreatePanel("base", "icon")
