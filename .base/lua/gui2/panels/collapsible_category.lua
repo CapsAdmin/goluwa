@@ -7,7 +7,7 @@ PANEL.ClassName = "collapsible_category"
 
 function PANEL:Initialize()	
 	self:SetNoDraw(true)
-	local bar = gui2.CreatePanel("button", self)
+	local bar = self:CreatePanel("button", "bar")
 	bar:SetObeyMargin(false)
 	bar:SetupLayoutChain("top", "fill_x")
 	bar:SetHeight(10*S)
@@ -27,12 +27,9 @@ function PANEL:Initialize()
 		end
 	end
 	
-	local content = gui2.CreatePanel("base", self)
+	local content = self:CreatePanel("base", "content")
 	content:SetNoDraw(true)
-	self.content = content
-	
-	self.bar = bar
-	
+		
 	self:SetStyle("frame")
 	self:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
 	self:SetTitle("no title")
@@ -55,7 +52,7 @@ end
 
 function PANEL:SetTitle(str)
 	gui2.RemovePanel(self.title)
-	local title = gui2.CreatePanel("text", self.bar)
+	local title = self.bar:CreatePanel("text")
 	title:SetHeight(self.bar:GetHeight())
 	title:SetText(str)
 	title:SetPosition(Vec2(2*S,0))
@@ -71,7 +68,7 @@ if RELOAD then
 	local frame = gui2.CreatePanel("frame")
 	frame:SetSize(Vec2(200, 400))
 	
-	local scroll = gui2.CreatePanel("scroll", frame)
+	local scroll = frame:CreatePanel("scroll")
 	scroll:Dock("fill")
 	
 	local list = gui2.CreatePanel("base")

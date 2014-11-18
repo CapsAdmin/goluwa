@@ -16,7 +16,7 @@ PANEL.right = NULL
 
 local function create_horizontal_divider(self)
 	if self.horizontal_divider then return end
-	local divider = gui2.CreatePanel("button", self)
+	local divider = self:CreatePanel("button", "horizontal_divider")
 	divider:SetX(self:GetWidth() - self.DividerWidth/2)
 	divider:SetCursor("sizewe")
 	divider:SetDraggable(true)
@@ -32,7 +32,7 @@ end
 
 local function create_vertical_divider(self)
 	if self.vertical_divider then return end
-	local divider = gui2.CreatePanel("button", self)
+	local divider = self:CreatePanel("button", "vertical_divider")
 	divider:SetY(self:GetHeight() - self.DividerWidth/2)
 	divider:SetCursor("sizens")
 	divider:SetDraggable(true)
@@ -43,7 +43,6 @@ local function create_vertical_divider(self)
 		
 		self:OnDividerPositionChanged(pos)
 	end
-	self.vertical_divider = divider
 end
 
 function PANEL:Initialize()

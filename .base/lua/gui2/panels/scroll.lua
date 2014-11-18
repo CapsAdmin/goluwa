@@ -14,12 +14,11 @@ prototype.GetSet(PANEL, "YScrollBar", true)
 function PANEL:Initialize()
 	self:SetNoDraw(true)
 	
-	local scroll_area = gui2.CreatePanel("base", self)
+	local scroll_area = self:CreatePanel("base", "scroll_area")
 	scroll_area:SetClipping(true)
 	scroll_area:SetNoDraw(true)
 	scroll_area:SetAlwaysReceiveMouseInput(true)
 	scroll_area:SetMargin(Rect())
-	self.scroll_area = scroll_area
 end
 
 function PANEL:SetPanel(panel)
@@ -36,11 +35,11 @@ function PANEL:SetPanel(panel)
 	local area = self.scroll_area
 	
 	if self.YScrollBar then
-		local y_track = gui2.CreatePanel("base", self)
+		local y_track = self:CreatePanel("base", "y_track")
 		y_track:SetStyle("scroll_vertical_track")
 		y_track:SetWidth(scroll_width)
 
-		local y_handle = gui2.CreatePanel("button", y_track)
+		local y_handle = y_track:CreatePanel("button")
 		y_handle:SetDraggable(true)	
 		y_handle:SetWidth(scroll_width)
 		y_handle:SetStyle("scroll_vertical_handle_inactive")
@@ -69,11 +68,11 @@ function PANEL:SetPanel(panel)
 	end
 	
 	if self.XScrollBar then
-		local x_track = gui2.CreatePanel("base", self)
+		local x_track = self:CreatePanel("base", "x_track")
 		x_track:SetStyle("scroll_horizontal_track")
 		x_track:SetHeight(scroll_width)
 		
-		local x_handle = gui2.CreatePanel("button", x_track)
+		local x_handle = x_track:CreatePanel("button")
 		x_handle:SetDraggable(true)
 		x_handle:SetHeight(scroll_width)
 		x_handle:SetStyle("scroll_horizontal_handle_inactive")
@@ -94,7 +93,6 @@ function PANEL:SetPanel(panel)
 		end
 		
 		self.x_handle = x_handle
-		self.x_track = x_track
 	end
 			
 	area.OnScroll = function(_, frac)

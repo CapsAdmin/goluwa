@@ -24,7 +24,7 @@ function PANEL:Initialize()
 	self:SetFocusOnClick(true)
 	self.BaseClass.Initialize(self)
 	
-	local label = gui2.CreatePanel("text", self)
+	local label = self:CreatePanel("text", "label")
 	label.markup:SetEditable(self.Editable)
 	
 	label.markup:SetCaretColor(self.CaretColor)
@@ -34,7 +34,6 @@ function PANEL:Initialize()
 	label:SetTextColor(self.TextColor)
 	label:SetClipping(true)
 	label:SetIgnoreMouse(true)
-	self.label = label
 	
 	self:SetEditable(true)
 	

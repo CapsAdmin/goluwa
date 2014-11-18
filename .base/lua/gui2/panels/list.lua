@@ -12,24 +12,21 @@ PANEL.list = NULL
 function PANEL:Initialize()	
 	self:SetNoDraw(true)
 	
-	local top = gui2.CreatePanel("base", self)
+	local top = self:CreatePanel("base", "top")
 	top:SetLayoutParentOnLayout(true)
 	top:SetMargin(Rect())
 	top:SetClipping(true)
 	top:SetNoDraw(true)
-	self.top = top
 				
-	local list = gui2.CreatePanel("base", self)
+	local list = self:CreatePanel("base", "list")
 	list:SetColor(gui2.skin.font_edit_background)
 	--list:SetCachedRendering(true)
 	list:SetClipping(true)
 	list:SetNoDraw(true)
-	self.list = list
 	
-	local scroll = gui2.CreatePanel("scroll", self)
+	local scroll = self:CreatePanel("scroll", "scroll")
 	scroll:SetXScrollBar(false)
 	scroll:SetPanel(list)
-	self.scroll = scroll
 	
 	self:SetupSorted("")
 end
@@ -111,13 +108,12 @@ function PANEL:SetupSorted(...)
 		column:SetClipping(true)
 		column:SizeToText()
 				
-		local icon = gui2.CreatePanel("base", column)
+		local icon = column:CreatePanel("base", "icon")
 		icon:SetStyle("list_down_arrow")
 		icon:SetupLayoutChain("right")
 		icon:SetIgnoreMouse(true)
-		column.icon = icon
 					
-		local div = gui2.CreatePanel("divider", self.top)
+		local div = self.top:CreatePanel("divider")
 		div:SetColor(gui2.skin.font_edit_background)
 		--div:SetupLayoutChain("fill_x", "fill_y")
 		div:SetHideDivider(true)
@@ -156,14 +152,14 @@ function PANEL:SetupSorted(...)
 end
 
 function PANEL:AddEntry(...)						
-	local entry = gui2.CreatePanel("button", self.list) 
+	local entry = self.list:CreatePanel("button") 
 	
 	entry.labels = {}
 				
 	for i = 1, #self.columns do
 		local text = tostring(select(i, ...) or "nil")
 		
-		local label = gui2.CreatePanel("text_button", entry)
+		local label = entry:CreatePanel("text_button")
 		label:SetParseTags(true)
 		label:SetTextColor(gui2.skin.text_color)
 		label:SetTextWrap(false)

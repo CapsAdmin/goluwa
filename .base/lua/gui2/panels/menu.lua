@@ -11,7 +11,7 @@ do
 	end
 	
 	function PANEL:AddEntry(text, on_click)
-		local entry = gui2.CreatePanel("menu_entry", self)
+		local entry = self:CreatePanel("menu_entry")
 		
 		entry:SetText(text)
 		entry.OnClick = on_click
@@ -29,7 +29,7 @@ do
 	end
 	
 	function PANEL:AddSeparator()
-		local panel = gui2.CreatePanel("base", self)
+		local panel = self:CreatePanel("base")
 		panel:SetStyle("button_active")
 		panel:SetHeight(S*2)
 		panel:SetIgnoreMouse(true)
@@ -71,15 +71,13 @@ do
 		self:SetStyle("frame")
 		self:SetPadding(Rect(S, S, S, S))
 				
-		local img = gui2.CreatePanel("base", self)
+		local img = self:CreatePanel("base", "image")
 		img:SetIgnoreMouse(true)
 		img:SetNoDraw(true)
 		img:SetSize(Vec2()+S*8)
-		self.image = img
 		
-		local label = gui2.CreatePanel("text", self)
+		local label = self:CreatePanel("text", "label")
 		label:SetIgnoreMouse(true)
-		self.label = label
 	end
 	
 	function PANEL:OnMouseEnter()
@@ -122,7 +120,7 @@ do
 	
 	function PANEL:CreateSubMenu()			
 	
-		local icon = gui2.CreatePanel("base", self)
+		local icon = self:CreatePanel("base")
 		icon:SetupLayoutChain("right")
 		icon:SetIgnoreMouse(true)
 		icon:SetStyle("menu_right_arrow")
