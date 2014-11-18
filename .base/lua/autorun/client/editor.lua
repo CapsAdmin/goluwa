@@ -47,20 +47,20 @@ function editor.Open()
 			table.insert(options, {...})
 		end
 		
-		--add("wear", nil, node:GetSkin().icons.wear)
+		--add("wear", nil, frame:GetSkin().icons.wear)
 		
 		if node then
 			add("copy", function()
 				system.SetClipboard(assert(serializer.Encode("luadata", node.ent:GetStorableTable())))
-			end, node:GetSkin().icons.copy)
+			end, frame:GetSkin().icons.copy)
 			add("paste", function()
 				node.ent:SetStorableTable(assert(serializer.Decode("luadata", system.GetClipboard())))
-			end, node:GetSkin().icons.paste)
+			end, frame:GetSkin().icons.paste)
 			add("clone", function()
 				local ent = entities.CreateEntity(node.ent.config)
 				ent:SetParent(node.ent:GetParent())
 				ent:SetStorableTable(node.ent:GetStorableTable())
-			end, node:GetSkin().icons.clone)
+			end, frame:GetSkin().icons.clone)
 			
 			if node.ent:HasComponent("transform") then
 				add("goto", function()
@@ -76,9 +76,9 @@ function editor.Open()
 		end		
 	
 		add()
-		--add("help", nil, node:GetSkin().icons.help)
-		add("save", nil, node:GetSkin().icons.save)
-		add("load", nil, node:GetSkin().icons.load)
+		--add("help", nil, frame:GetSkin().icons.help)
+		add("save", nil, frame:GetSkin().icons.save)
+		add("load", nil, frame:GetSkin().icons.load)
 		
 		if node then
 			add()
@@ -87,7 +87,7 @@ function editor.Open()
 				if node:IsValid() and node.ent:IsValid() then
 					node.ent:Remove()
 				end
-			end, node:GetSkin().icons.clear)
+			end, frame:GetSkin().icons.clear)
 		end
 		
 		gui.CreateMenu(options, frame)
@@ -103,7 +103,7 @@ function editor.Open()
 			node.OnRightClick = right_click_node
 			node.OnMouseHoverTrigger = show_tooltip
 			node.ent = ent
-			--node:SetIcon(Texture("textures/" .. node:GetSkin().icons[val.self.ClassName]))
+			--node:SetIcon(Texture("textures/" .. frame:GetSkin().icons[val.self.ClassName]))
 			fill(ent:GetChildren(), node)
 		end  
 	end
