@@ -1,6 +1,7 @@
 local S = gui2.skin.scale
+local skin = include("gui2/skins/zsnes.lua")
 
-do -- testing
+if false then -- frame
 	local frame = gui2.CreatePanel("frame")
 	frame:SetPosition(Vec2()+200)
 	frame:SetSize(Vec2()+500)
@@ -11,33 +12,6 @@ do -- testing
 	do
 		local content = tab:AddTab("tree")
 		
-		local icons =
-		{
-			text = "silkicons/text_align_center.png",
-			bone = "silkicons/wrench.png",
-			clip = "silkicons/cut.png",
-			light = "silkicons/lightbulb.png",
-			sprite = "silkicons/layers.png",
-			bone = "silkicons/connect.png",
-			effect = "silkicons/wand.png",
-			model = "silkicons/shape_square.png",
-			animation = "silkicons/eye.png",
-			entity = "silkicons/brick.png",
-			group = "silkicons/world.png",
-			trail = "silkicons/arrow_undo.png",
-			event = "silkicons/clock.png",
-			sunbeams = "silkicons/weather_sun.png",
-			jiggle = "silkicons/chart_line.png",
-			sound = "silkicons/sound.png",
-			command = "silkicons/application_xp_terminal.png",
-			material = "silkicons/paintcan.png",
-			proxy = "silkicons/calculator.png",
-			particles = "silkicons/water.png",
-			woohoo = "silkicons/webcam_delete.png",
-			halo = "silkicons/shading.png",
-			poseparameter = "silkicons/vector.png",
-		}
-
 		local scroll = gui2.CreatePanel("scroll", content)
 		local tree = gui2.CreatePanel("tree") 
 		scroll:SetPanel(tree)
@@ -50,7 +24,7 @@ do -- testing
 		local function fill(tbl, node)		
 			for key, val in pairs(tbl) do
 				local node = node:AddNode(val.self.Name)
-				node:SetIcon(Texture("textures/" .. icons[val.self.ClassName]))
+				node:SetIcon(Texture("textures/" .. node:GetSkin().icons[val.self.ClassName]))
 				fill(val.children, node)
 			end  
 		end 
@@ -111,31 +85,35 @@ do -- testing
 		text:SetSize(Vec2(128, 128))
 		text:SetText("huh")
 		text:SetupLayoutChain("fill_x", "fill_y")
-	end		 
-		   
+	end	
+end
+	
+do -- menu bar
 	local padding = 5 * S
 
-	local bar = gui2.CreatePanel("base") 
+	local bar = gui2.CreatePanel("base", gui2.world, "top_bar") 
+	bar:SetSkin(skin)
 	bar:SetStyle("gradient")
 	bar:SetDraggable(true)
-	bar:SetPadding(Rect(1,1,5*S,3*S))
-	bar:SetSize(Vec2(500, 15*S))
+	bar:SetSize(Vec2(700, 15*S))
+	bar:SetupLayoutChain("left", "top")
 
 	local function create_button(text, options)
 		local button = gui2.CreatePanel("text_button", bar)
-		button:SetClipping(true)
 		button:SetText(text)
-		button:SetMargin(Rect()+2.5*S)
+		button:SetMargin(Rect()+S*3)
+		button:SetPadding(Rect()+S*3)
 		button:SizeToText()
 		button:SetMode("toggle")
 		button:SetupLayoutChain("left")
 		
-		button.OnStateChanged = function(_, b, ...)
-			if b then return end
-			local menu = gui2.CreateMenu(options)
-			
-			--menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*S), options)
-		--	menu:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)
+		button.OnPress = function()
+			local menu = gui2.CreateMenu(options, bar)
+			menu:SetSkin(skin)
+			menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*S), options)
+			menu:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)
+			menu:SetVisible(true)
+			menu:CallOnRemove(function() button:SetState(false) end)
 		end
 	end
 
@@ -164,26 +142,43 @@ do -- testing
 			
 			local panel = gui2.CreatePanel("list", frame)
 			panel:SetupLayoutChain("fill_x", "fill_y")
-			for k,v in pairs(vfs.Find("/")) do
-				panel:AddEntry(v)
+
+			local function populate(dir)
+				panel:SetupSorted("name")
+				frame:SetTitle(dir)
+				
+				if utility.GetParentFolder(dir):find("/", nil, true) then
+					panel:AddEntry("<<").OnSelect = function()
+						populate(utility.GetParentFolder(dir))
+					end
+				end
+				
+				for name in vfs.Iterate(dir) do 
+					if name ~= "." and name ~= ".." then
+						if name:find(".lua", nil, true) then
+							panel:AddEntry(name).OnSelect = function()
+								tester.Begin(name)
+									include(dir .. name)
+								tester.End()
+								frame:Remove()
+							end
+						elseif not name:find("%.") then
+							panel:AddEntry(name).OnSelect = function()
+								populate(dir .. name .. "/")
+							end
+						else
+							function btn:OnPress()
+
+							end
+						end
+					end
+				end
 			end
+			
+			populate("lua/tests/") 
 		end},
 		{"run  [ESC]", function() debug.trace() end},
-		{"reset", {
-			{"video"},
-			{"sound"},
-			{"paths"},
-			{"huh", {
-				{"misc keys"},
-				{"gui opts"},
-				{"key comb."},
-				{"save cfg"},
-				{},
-				{"about"},
-			}},
-			{"saves"},
-			{"speed"},
-		}},
+		{"reset"},
 		{},
 		{"save state"},
 		{"open state"},
@@ -210,7 +205,22 @@ do -- testing
 		{"search"},
 	})
 	create_button("netplay", {
-		{"internet"},
+		{"connect", function()
+			gui2.StringInput("Enter the server IP", cookies.Get("lastip", "localhost"), function(str)
+				console.RunString("start_client")
+				cookies.Set("lastip", str)
+				console.RunString("connect "..str .." 1234")
+				menu.Close()
+			end)
+		end},
+		{"disconnect", function() console.RunString("disconnect menu disconnect") end},
+		{"host", function() 
+			system.StartLuaInstance("start_server", "host")
+			
+			event.Delay(0.25, function()
+				console.RunString("connect localhost 1234")
+			end) 
+		end},
 	})
 	create_button("misc", {
 		{"misc keys"},
@@ -234,6 +244,8 @@ if DX then
 	fb = render.CreateFrameBuffer(128, 128)
 end
 
+local background = ColorBytes(64, 44, 128, 200)
+
 event.AddListener("Draw2D", "zsnow", function(dt)
 	if DX then
 		fb:Begin()
@@ -241,7 +253,6 @@ event.AddListener("Draw2D", "zsnow", function(dt)
 			surface.DrawRect(0,0,128,128)
 			
 			surface.PushMatrix()
-							
 				for i = -4, 4 do
 					i = (i / 4) * math.pi
 					
@@ -264,7 +275,7 @@ event.AddListener("Draw2D", "zsnow", function(dt)
 	end
 		
 	surface.SetWhiteTexture()
-	surface.SetColor(DX and Color(0,0,0,1) or gui2.skin.background)
+	surface.SetColor(DX and Color(0,0,0,1) or background)
 	surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
 	
 	--surface.SetColor(1,1,1,1)
