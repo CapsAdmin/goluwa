@@ -14,12 +14,6 @@ surface.CreateFont("snow_font", {
 	fallback = "default",
 	size = S*5.5,
 }) 
-
-surface.CreateFont("snow_font_noshadow", {
-	path = "Roboto", 
-	size = S*5.5,
-})
-
 local sub_skin = select(2, ...)
 
 if type(sub_skin) ~= "string" then 
