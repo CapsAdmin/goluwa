@@ -25,11 +25,11 @@ LuaJit's FFI api is used to bind to the following shared libraries:
 In theoery everything should work without using any of these libraries. The only actual requirement is [LFS](https://github.com/keplerproject/luafilesystem) and LuaJIT 2+
 
 There is also a WIP Love2D wrapper which is used for fun and unit testing 2D graphics.
-![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-10_15-54-03.png)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_22-34-03.png)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_22-37-16.png)
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-08/2014-08-16_01-53-14.jpg)
-![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-06/2014-06-02_16-00-59.png)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_22-38-33.png)
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-06/2014-06-04_17-21-33.png)
-![ScreenShot](https://dl.dropbox.com/u/244444/ShareX/2014-05/2014-05-02_04-19-30.png)
 ![ScreenShot](https://dl.dropbox.com/u/244444/ShareX/2014-05/2014-05-02_04-20-26.png)
 ![ScreenShot](https://dl.dropbox.com/u/244444/ShareX/2014-05/2014-05-02_04-21-03.png)
 ![ScreenShot](https://dl.dropbox.com/u/244444/ShareX/2014-05/2014-05-02_04-28-32.png)
