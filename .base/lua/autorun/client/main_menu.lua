@@ -1,27 +1,23 @@
 surface.CreateFont("impact", {path = "Rosario", size = 20})
 
 menu = menu or {}
-menu.buttons = menu.buttons or {}
 
 do -- open close  
 	function menu.Open()
 		if menu.visible then return end
 		window.SetMouseTrapped(false) 
-		menu.MakeButtons()
+		menu.CreateTopBar()
 		event.AddListener("PreDrawMenu", "StartupMenu", menu.RenderBackground)
+		event.CreateTimer("StartupMenu", 0.1, menu.UpdateBackground)
 		menu.visible = true
 	end
 
 	function menu.Close()
 		if not menu.visible then return end
 		window.SetMouseTrapped(true) 
-		for k,v in ipairs(menu.buttons)do
-			if type(v) == "table" and v.Remove then 
-				v:Remove() 
-			end
-		end
-		menu.buttons = {}
 		event.RemoveListener("PreDrawMenu", "StartupMenu")
+		event.RemoveTimer("StartupMenu")
+		menu.panel:SetVisible(false)
 		menu.visible = false
 	end
 	
@@ -47,225 +43,254 @@ do -- open close
 	console.AddCommand("toggle_menu", function()
 		menu.Toggle()
 	end)
-
-	function menu.FadeIn()
-		local i = 1 
-		event.AddListener("PostDrawMenu", "StartupMenu", function(dt)
-			i = i - (i*1.5) * dt * 5
-			surface.SetColor(0,0,0,i)
-			surface.DrawRect(0,0,surface.GetScreenSize())
-			if i < 0 then
-				return HOOK_DESTROY
-			end
-		end)
-	end
 	
 	event.AddListener("Disconnected", "main_menu", menu.Open)
 end
 
-function menu.RenderBackground()	
-	local scrw, scrh = render.GetScreenSize():Unpack()
-	
-	local alpha = 0.75
+local emitter = ParticleEmitter(800)
+emitter:SetPosition(Vec3(50,50,0)) 
+--emitter:SetMoveResolution(0.25) 
+emitter:SetAdditive(false)
 
-	local steps = 8			-- Amount of detail
-	local wavelength = 30		-- Distance between dark and light
-	local speed =  0.2 			-- Speed
-	local amplitude = 0.6 		-- Difference between light and dark
-	local median = 0.8			-- Lightness (Min: 0 Max: 1) [WARNING: median + amplitude should be between 0 and 1]
-	
-	local x, y = window.GetMousePosition():Unpack()
-	local t = ((x / -scrw) * 2) + 1
+local fb
+local DX = false
 
-	local r, g, b = gui.GetSkinColor("dark"):Unpack()
+if DX then
+	fb = render.CreateFrameBuffer(128, 128)
+end
+
+local background = ColorBytes(64, 44, 128, 200)
+
+function menu.UpdateBackground()
+	emitter:SetPosition(Vec3(math.random((DX and 256 or render.GetWidth()) + 100) - 150, -50, 0))
+		
+	local p = emitter:AddParticle()
+	p:SetDrag(1)
+
+	--p:SetStartLength(Vec2(0))
+	--p:SetEndLength(Vec2(30, 0))
+	p:SetAngle(math.random(360)) 
+	 
+	p:SetVelocity(Vec3(math.random(100),math.random(40, 80)*2,0) * (DX and 0.25 or 1))
+
+	p:SetLifeTime(20)
+
+	p:SetStartSize(2 * (1 + math.random() ^ 50))
+	p:SetEndSize(2 * (1 + math.random() ^ 50))
 	
-	y =  -(y / scrh) + 2
-	r = r * y
-	g = g * y 
-	b = b * y
-	
-	surface.SetWhiteTexture()
-	
-	for i=0, steps-1 do
-		local fract = i/steps
-		local f = math.sin(fract*100/wavelength+t)*amplitude+median
-		surface.SetColor(r*f, g*f, b*f, alpha)
-		surface.DrawRect(scrw*fract, 0, scrw/steps, scrh)
+	if DX then
+		p:SetColor(HSVToColor(os.clock()/30,0.75, 1))
+	else
+		p:SetColor(Color(1,1,1, math.randomf(0.5, 0.8)))
 	end
 end
 
-function menu.MakeButtons()
-	for key, pnl in pairs(menu.buttons) do
-		if typex(v) == "panel" then 
-			pnl:Remove()
+function menu.RenderBackground(dt)	
+	if DX then
+		fb:Begin()
+			surface.SetColor(0,0,0,0.01)
+			surface.DrawRect(0,0,128,128)
+			
+			surface.PushMatrix()
+				for i = -4, 4 do
+					i = (i / 4) * math.pi
+					
+					surface.PushMatrix(math.sin(i)/2, math.cos(i)/2)
+						render.Translate(-0.4, -0.4, 0)
+						surface.SetColor(1,1,1,1)
+						surface.SetTexture(fb:GetTexture())
+						surface.DrawRect(0,0,128,128)
+					surface.PopMatrix()
+				end
+			surface.PopMatrix()
+			
+			render.SetBlendMode("additive")
+			emitter:Update(dt)
+			emitter:Draw()
+			render.SetBlendMode("alpha")
+		fb:End()
+	else
+		emitter:Update(dt)
+	end
+		
+	surface.SetWhiteTexture()
+	surface.SetColor(DX and Color(0,0,0,1) or background)
+	surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
+	
+	--surface.SetColor(1,1,1,1)
+	--emitter:Draw()
+	
+	--surface.SetColor(0,0,0,0.25)
+	--surface.DrawRect(5*S,5*S, x, 16 * S)
+	
+	
+	--surface.SetFont("snow_font")
+	--surface.SetTextPosition(50, 50)
+	--surface.DrawText("ANIMATION 2")
+	--local w,h = surface.GetTextSize("ANIMATION 2")
+	--surface.DrawRect(50,50,w,h)
+	
+	if DX then
+		render.SetBlendMode("additive")
+		surface.SetColor(1,1,1,1)
+		surface.SetTexture(fb:GetTexture())
+		surface.DrawRect(0,0,render.GetWidth(), render.GetHeight())
+		render.SetBlendMode("alpha")
+	else
+		emitter:Draw()
+	end
+end
+
+local skin = include("gui2/skins/zsnes.lua")
+
+function menu.CreateTopBar()
+	local S = skin.scale
+	local padding = 5 * S
+
+	local bar = gui2.CreatePanel("base", gui2.world, "main_menu_bar") 
+	bar:SetSkin(skin)
+	bar:SetStyle("gradient")
+	bar:SetDraggable(true)
+	bar:SetSize(Vec2(700, 15*S))
+	bar:SetupLayoutChain("left", "top")
+	
+	menu.panel = bar
+
+	local function create_button(text, options)
+		local button = gui2.CreatePanel("text_button", bar)
+		button:SetText(text)
+		button:SetMargin(Rect()+S*3)
+		button:SetPadding(Rect()+S*3)
+		button:SizeToText()
+		button:SetMode("toggle")
+		button:SetupLayoutChain("left")
+		
+		button.OnPress = function()
+			local menu = gui2.CreateMenu(options, bar)
+			menu:SetSkin(skin)
+			menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*S), options)
+			menu:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)
+			menu:SetVisible(true)
+			menu:CallOnRemove(function() button:SetState(false) end)
 		end
 	end
 
-	menu.buttons = {}
-	
-	if CLIENT and network.IsConnected() then
-		menu.AddButton("Resume", function() event.Delay(0.1, function() menu.Close() end) end)
-		menu.AddButtonSpace()
-	end
+	create_button("↓", {
+		{"1."},
+		{"2."},
+		{"3."},
+		{"4."},
+		{"5."},
+		{"6."},
+		{"7."},
+		{"8."},
+		{"9."},
+		{"0."},
+		{},
+		{"freeze data: off"},
+		{"clear all data"},
+	}) 
+	create_button("game", {
+		{"load", function() 
+			local frame = gui2.CreatePanel("frame") 
 
+			frame:SetPosition(Vec2(100, 100))
+			frame:SetSize(Vec2(300, 300))
+			frame:SetTitle("file browser")
+			
+			local panel = gui2.CreatePanel("list", frame)
+			panel:SetupLayoutChain("fill_x", "fill_y")
 
-	if not SERVER then
-		menu.AddButton("Connect", function()
-			gui.StringInput("Enter the server IP", cookies.Get("lastip", "localhost"), function(str)
+			local function populate(dir)
+				panel:SetupSorted("name")
+				frame:SetTitle(dir)
+				
+				if utility.GetParentFolder(dir):find("/", nil, true) then
+					panel:AddEntry("<<").OnSelect = function()
+						populate(utility.GetParentFolder(dir))
+					end
+				end
+				
+				for name in vfs.Iterate(dir) do 
+					if name ~= "." and name ~= ".." then
+						if name:find(".lua", nil, true) then
+							panel:AddEntry(name).OnSelect = function()
+								tester.Begin(name)
+									include(dir .. name)
+								tester.End()
+								frame:Remove()
+							end
+						elseif not name:find("%.") then
+							panel:AddEntry(name).OnSelect = function()
+								populate(dir .. name .. "/")
+							end
+						else
+							function btn:OnPress()
+
+							end
+						end
+					end
+				end
+			end
+			
+			populate("lua/tests/") 
+		end},
+		{"run  [ESC]", function() debug.trace() end},
+		{"reset"},
+		{},
+		{"save state"},
+		{"open state"},
+		{"pick state"},
+		{},
+		{"quit", function() os.exit() end} 
+	})
+	create_button("config", {
+		{"input"},
+		{},
+		{"devices"},
+		{"chip cfg"},
+		{},
+		{"options"},
+		{"video"},
+		{"sound"},
+		{"paths"},
+		{"saves"},
+		{"speed"},
+	})
+	create_button("cheat", {
+		{"add code"},
+		{"browse"},
+		{"search"},
+	})
+	create_button("netplay", {
+		{"connect", function()
+			gui2.StringInput("Enter the server IP", cookies.Get("lastip", "localhost"), function(str)
 				console.RunString("start_client")
 				cookies.Set("lastip", str)
 				console.RunString("connect "..str .." 1234")
 				menu.Close()
 			end)
-		end)
-		
-		if CLIENT and network.IsConnected() then
-			menu.AddButton("Disconnect", function()
-				console.RunString("disconnect menu disconnect")
-				menu.Remake()
-			end)
-		else
-			menu.AddButton("Host", function()
-				system.StartLuaInstance("start_server", "host")
-				menu.Remake()
-				
-				event.Delay(0.25, function()
-					console.RunString("connect localhost 1234")
-				end)
-				menu.Close()
-			end)
-		end
-	end
-		 
-	menu.AddButtonSpace()
-
-	menu.AddButton("Tests", function()
-
-		local frame = gui.Create("frame")
-		frame:SetTitle("test")
-		frame:SetSize(Vec2(512, 512))
-		frame:Center()
-		
-		local scroll = gui.Create("scrollable", frame)
-		scroll:Dock("fill")
-	
-		local grid = gui.Create("grid")
-		grid:SetSizeToWidth(true)	
-		grid:SetStackRight(false)
-		grid:SetItemSize(Vec2()+25)
-		
-		local function populate(dir)
-			frame:SetTitle(dir)
+		end},
+		{"disconnect", function() console.RunString("disconnect menu disconnect") end},
+		{"host", function() 
+			system.StartLuaInstance("start_server", "host")
 			
-			if utility.GetParentFolder(dir):find("/", nil, true) then
-				local btn = gui.Create("text_button")
-					btn:SetText("<<")
-					
-					function btn:OnPress()
-						grid:RemoveChildren()
-						populate(utility.GetParentFolder(dir))
-					end
-					
-				grid:AddChild(btn)
-			end
-			
-			for name in vfs.Iterate(dir) do 
-				if name ~= "." and name ~= ".." then
-					local btn = gui.Create("text_button")
-					btn:SetText(name)
-
-					if name:find(".lua", nil, true) then
-						function btn:OnPress()
-							tester.Begin(name)
-								include(dir .. name)
-							tester.End()
-							frame:Remove()
-						end
-					elseif not name:find("%.") then
-						function btn:OnPress()
-							grid:RemoveChildren()
-							populate(dir .. name .. "/")
-						end
-					else
-						function btn:OnPress()
-
-						end
-					end	
-					
-					grid:AddChild(btn)  
-				end
-			end
-		end
-		
-		populate("lua/tests/") 
-				
-		grid:SizeToContents()
-		grid:SetWidth(500)
-		
-		scroll:SetPanel(grid)
-	end)
-	
-	menu.AddButtonSpace() 
- 
-	menu.AddButton("Exit", function() os.exit() end)
-	
-	-- the world has to be setup..hmm
-	event.AddListener("WorldPanelLayout", "menu_resize", menu.SetupButtons)
-end
- 
-function menu.AddButton(name, func)
-
-	local pnl = gui.Create("label")
-		pnl:SetSkinColor("text", "light")
-		pnl:SetSkinColor("shadow", Color(0,0,0,0.1)) 
-		pnl:SetFont("impact")
-		pnl:SetText(name)
-		pnl:SetCursor("hand")
-		
-		--pnl:SetShadowDir(Vec2())
-		--pnl:SetShadowSize(18)
-		
-		pnl:SetIgnoreMouse(false)
-		pnl:SetSize(Vec2(100, 18))	
-		function pnl:OnMouseInput(key, press)
-			if key == "button_1" and press then
-				func()
-			end
-		end
-	
-	menu.buttons[#menu.buttons+1] = pnl
-end 
-
-function menu.AddButtonSpace()
-	menu.buttons[#menu.buttons+1] = true
-end
-
-function menu.SetupButtons()
-	local sw, sh = render.GetScreenSize():Unpack()
-			
-	local margin = 50
-	local x = sw/2
-	local y = sh/1.5
-	
-	for i=1, #menu.buttons do
-		local b = menu.buttons[#menu.buttons-i+1]
-
-		if b == true then
-			y = y - (margin / 2)
-		else
-			b:RequestLayout(true)
-			b:SetPosition(Vec2(x - b:GetWidth() / 2, y-b:GetHeight() * 2)) 
-			y = y - (margin / 1.25)
-		end
-	end
-	
+			event.Delay(0.25, function()
+				console.RunString("connect localhost 1234")
+			end) 
+		end},
+	})
+	create_button("misc", {
+		{"misc keys"},
+		{"gui opts"},
+		{"key comb."},
+		{"save cfg"},
+		{},
+		{"about"},
+	})
 end
  
 event.AddListener("RenderContextInitialized", menu.Open)
-
-if not network.IsStarted() then
-	menu.FadeIn()
-end
 
 if RELOAD then 
 	menu.Remake() 
