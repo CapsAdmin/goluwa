@@ -42,6 +42,8 @@ function gui.StringInput(msg, default, callback, check)
 	end
 	
 	frame:Center()
+	
+	return frame
 end
 
 
