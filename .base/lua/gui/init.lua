@@ -3,16 +3,16 @@
 -- support rotation in TrapChildren and drag drop
 -- clipping isn't "recursive"
 
-local gui2 = _G.gui2 or {}
+local gui = _G.gui or {}
 
-gui2.unroll_draw = false
-gui2.hovering_panel = gui2.hovering_panel or NULL
-gui2.focus_panel = gui2.focus_panel or NULL
+gui.unroll_draw = false
+gui.hovering_panel = gui.hovering_panel or NULL
+gui.focus_panel = gui.focus_panel or NULL
 
-gui2.panels = gui2.panels or {} 
+gui.panels = gui.panels or {} 
 
-function gui2.CreatePanel(name, parent, store_in_parent)
-	parent = parent or gui2.world
+function gui.CreatePanel(name, parent, store_in_parent)
+	parent = parent or gui.world
 	
 	local self = prototype.CreateDerivedObject("panel2", name)
 	
@@ -27,10 +27,10 @@ function gui2.CreatePanel(name, parent, store_in_parent)
 	if parent and parent.Skin then
 		self:SetSkin(parent:GetSkin())
 	else
-		self:OnStyleChanged(gui2.skin)
+		self:OnStyleChanged(gui.skin)
 	end
 
-	gui2.panels[self] = self
+	gui.panels[self] = self
 	
 	-- this will make calls to layout always layout until next frame
 	self.layout_me = "init"
@@ -48,24 +48,24 @@ function gui2.CreatePanel(name, parent, store_in_parent)
 	return self
 end
 
-function gui2.RegisterPanel(META)
+function gui.RegisterPanel(META)
 	META.TypeBase = "base"
 	prototype.Register(META, "panel2")
 end
 
-function gui2.RemovePanel(pnl)
+function gui.RemovePanel(pnl)
 	if pnl and pnl:IsValid() then pnl:Remove() end
 end
 
-function gui2.GetHoveringPanel(panel, filter)
-	panel = panel or gui2.world
+function gui.GetHoveringPanel(panel, filter)
+	panel = panel or gui.world
 	local children = panel:GetChildren()
 
 	for i = #children, 1, -1 do
 		local panel = children[i]
 		if panel.Visible and panel.mouse_over and (not filter or panel ~= filter) then			
 			if panel:HasChildren() then
-				return gui2.GetHoveringPanel(panel, filter)
+				return gui.GetHoveringPanel(panel, filter)
 			end
 			
 			if panel.IgnoreMouse then
@@ -80,29 +80,29 @@ function gui2.GetHoveringPanel(panel, filter)
 		end
 	end
 
-	return panel.mouse_over and panel or gui2.world
+	return panel.mouse_over and panel or gui.world
 end
 
 do -- context menu helpers
-	gui2.current_menu = gui2.current_menu or NULL
+	gui.current_menu = gui.current_menu or NULL
 
-	function gui2.SetActiveMenu(panel)
-		if gui2.current_menu:IsValid() then
-			gui2.current_menu:Remove()
+	function gui.SetActiveMenu(panel)
+		if gui.current_menu:IsValid() then
+			gui.current_menu:Remove()
 		end
 		
-		gui2.current_menu = panel or NULL
+		gui.current_menu = panel or NULL
 	end
 	
-	function gui2.CreateMenu(options, parent)
-		local menu = gui2.CreatePanel("menu")
-		event.Delay(0, function() gui2.SetActiveMenu(menu) end)
+	function gui.CreateMenu(options, parent)
+		local menu = gui.CreatePanel("menu")
+		event.Delay(0, function() gui.SetActiveMenu(menu) end)
 		
 		if parent then
 			if parent.Skin then
 				menu:SetSkin(parent:GetSkin())
 			end
-			parent:CallOnRemove(function() gui2.RemovePanel(menu) end, menu)
+			parent:CallOnRemove(function() gui.RemovePanel(menu) end, menu)
 		end
 
 		local function add_entry(menu, val)
@@ -123,7 +123,7 @@ do -- context menu helpers
 		add_entry(menu, options)
 		
 		menu:Layout(true)
-		menu:SetPosition(gui2.world:GetMousePosition():Copy())
+		menu:SetPosition(gui.world:GetMousePosition():Copy())
 		
 		return menu
 	end
@@ -131,14 +131,14 @@ end
 
 do -- events
 
-	function gui2.MouseInput(button, press)
-		local panel = gui2.hovering_panel
+	function gui.MouseInput(button, press)
+		local panel = gui.hovering_panel
 
 		if panel:IsValid() and panel:IsMouseOver() then
 			panel:MouseInput(button, press)
 		end
 		
-		for panel in pairs(gui2.panels) do
+		for panel in pairs(gui.panels) do
 			panel:OnGlobalMouseInput(button, press)
 			
 			if panel.AlwaysReceiveMouseInput and panel.mouse_over then 
@@ -147,7 +147,7 @@ do -- events
 		end
 		
 		do -- context menus
-			local panel = gui2.current_menu
+			local panel = gui.current_menu
 			
 			if button == "button_1" and press and panel:IsValid() and not panel:IsMouseOver() then
 				panel:Remove()
@@ -155,8 +155,8 @@ do -- events
 		end
 	end
 
-	function gui2.KeyInput(button, press)
-		local panel = gui2.focus_panel
+	function gui.KeyInput(button, press)
+		local panel = gui.focus_panel
 
 		if panel:IsValid() then
 			panel:KeyInput(button, press)
@@ -164,8 +164,8 @@ do -- events
 		end
 	end
 
-	function gui2.CharInput(char)
-		local panel = gui2.focus_panel
+	function gui.CharInput(char)
+		local panel = gui.focus_panel
 
 		if panel:IsValid() then
 			panel:CharInput(char)
@@ -173,41 +173,41 @@ do -- events
 		end
 	end
 
-	function gui2.Draw2D(dt)
+	function gui.Draw2D(dt)
 		event.Call("DrawHUD", dt)
 		
 		event.Call("PreDrawMenu", dt)
 		
 		render.SetCullMode("none")
-		if gui2.threedee then 
+		if gui.threedee then 
 			--surface.Start3D(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
 			surface.Start3D(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))
 		end
 
-		gui2.hovering_panel = gui2.GetHoveringPanel()
+		gui.hovering_panel = gui.GetHoveringPanel()
 		
-		if gui2.hovering_panel:IsValid() then
-			local cursor = gui2.hovering_panel:GetCursor()
+		if gui.hovering_panel:IsValid() then
+			local cursor = gui.hovering_panel:GetCursor()
 
-			if gui2.active_cursor ~= cursor then
+			if gui.active_cursor ~= cursor then
 				system.SetCursor(cursor)
-				gui2.active_cursor = cursor
+				gui.active_cursor = cursor
 			end
 		end
 		
-		gui2.mouse_pos.x, gui2.mouse_pos.y = surface.GetMousePosition()
+		gui.mouse_pos.x, gui.mouse_pos.y = surface.GetMousePosition()
 		
 		--surface.EnableStencilClipping()
 			
-		if gui2.unroll_draw then	
-			if not gui2.unrolled_draw then
-				gui2.panels_unroll = {}
-				gui2.world.unroll_i = 1
-				for i,v in ipairs(gui2.world:GetChildrenList()) do
+		if gui.unroll_draw then	
+			if not gui.unrolled_draw then
+				gui.panels_unroll = {}
+				gui.world.unroll_i = 1
+				for i,v in ipairs(gui.world:GetChildrenList()) do
 					v.unroll_i = i+1
-					gui2.panels_unroll[i] = v
+					gui.panels_unroll[i] = v
 				end
-				local str = {"local panels = gui2.panels_unroll"}
+				local str = {"local panels = gui.panels_unroll"}
 				
 				local function add_children_to_list(parent, str, level)
 					table.insert(str, ("%sif panels[%i] and panels[%i].Visible then"):format(("\t"):rep(level), parent.unroll_i, parent.unroll_i))
@@ -221,20 +221,20 @@ do -- events
 					table.insert(str, ("%send"):format(("\t"):rep(level)))
 				end
 			
-				add_children_to_list(gui2.world, str, 0)
+				add_children_to_list(gui.world, str, 0)
 				str = table.concat(str, "\n")
 				vfs.Write("gui2_draw.lua", str)
-				gui2.unrolled_draw = loadstring(str, "gui2_unrolled_draw")
+				gui.unrolled_draw = loadstring(str, "gui2_unrolled_draw")
 			end
 			
-			gui2.unrolled_draw()
+			gui.unrolled_draw()
 		else
-			gui2.world:Draw()
+			gui.world:Draw()
 		end
 
 		--surface.DisableStencilClipping()
 
-		if gui2.threedee then 
+		if gui.threedee then 
 			surface.End3D()
 		end
 		
@@ -243,34 +243,34 @@ do -- events
 end
 
 do -- skin
-	function gui2.SetSkin(tbl, reload_panels)
-		gui2.skin = tbl
-		gui2.scale = tbl.scale or gui2.scale
-		print(gui2.scale)
-		if reload_panels then include("gui2/panels/*", gui2) end
+	function gui.SetSkin(tbl, reload_panels)
+		gui.skin = tbl
+		gui.scale = tbl.scale or gui.scale
+		print(gui.scale)
+		if reload_panels then include("gui/panels/*", gui) end
 		
-		for panel in pairs(gui2.panels) do
+		for panel in pairs(gui.panels) do
 			panel:ReloadStyle()
 		end
 		logn("gui skin changed. you might need to reopen some panels to fully see the changes")
 	end
 
-	function gui2.GetSkin()
-		return gui2.skin
+	function gui.GetSkin()
+		return gui.skin
 	end
 
 	console.AddCommand("gui_skin", function(_, str, sub_skin)
 		str = str or "gwen"
-		gui2.SetSkin(include("gui2/skins/" .. str .. ".lua", gui2), sub_skin)
+		gui.SetSkin(include("gui/skins/" .. str .. ".lua", gui), sub_skin)
 	end)
 end
 
 do -- gui scaling
-	gui2.scale = 1
+	gui.scale = 1
 
-	function gui2.SetScale(scale)
-		gui2.scale = scale
-		for panel in pairs(gui2.panels) do
+	function gui.SetScale(scale)
+		gui.scale = scale
+		for panel in pairs(gui.panels) do
 			if panel.GetText then
 				panel:SetText(panel:GetText())
 			end
@@ -278,15 +278,15 @@ do -- gui scaling
 		end
 	end
 
-	function gui2.GetScale(scale)
-		return gui2.scale
+	function gui.GetScale(scale)
+		return gui.scale
 	end
 end
 
-function gui2.Initialize()
-	gui2.RemovePanel(gui2.world)
+function gui.Initialize()
+	gui.RemovePanel(gui.world)
 	
-	local world = gui2.CreatePanel("base")
+	local world = gui.CreatePanel("base")
 
 	world:SetPosition(Vec2(0, 0))
 	world:SetSize(Vec2(window.GetSize()))
@@ -297,24 +297,24 @@ function gui2.Initialize()
 	world:SetPadding(Rect(0, 0, 0, 0))
 	world:SetMargin(Rect(0, 0, 0, 0))
 
-	gui2.world = world
+	gui.world = world
 
-	gui2.mouse_pos = Vec2()
+	gui.mouse_pos = Vec2()
 
-	event.AddListener("Draw2D", "gui2", gui2.Draw2D)
-	event.AddListener("MouseInput", "gui2", gui2.MouseInput)
-	event.AddListener("KeyInputRepeat", "gui2", gui2.KeyInput)
-	event.AddListener("CharInput", "gui2", gui2.CharInput)
-	event.AddListener("WindowFramebufferResized", "gui2", function(_, w,h) 
-		gui2.world:SetSize(Vec2(w, h))
+	event.AddListener("Draw2D", "gui", gui.Draw2D)
+	event.AddListener("MouseInput", "gui", gui.MouseInput)
+	event.AddListener("KeyInputRepeat", "gui", gui.KeyInput)
+	event.AddListener("CharInput", "gui", gui.CharInput)
+	event.AddListener("WindowFramebufferResized", "gui", function(_, w,h) 
+		gui.world:SetSize(Vec2(w, h))
 	end)
 	
 	
 	-- should this be here?	
 	do -- task bar (well frame bare is more appropriate since the frame control adds itself to this)
-		local S = gui2.skin.scale
+		local S = gui.skin.scale
 		
-		local bar = gui2.CreatePanel("base") 
+		local bar = gui.CreatePanel("base") 
 		bar:SetStyle("gradient")
 		bar:SetupLayoutChain("bottom", "fill_x")
 		bar:SetVisible(false)
@@ -324,7 +324,7 @@ function gui2.Initialize()
 		function bar:AddButton(text, key, callback)
 			self:SetVisible(true)
 			
-			local button = self.buttons[key] or gui2.CreatePanel("text_button", self) 
+			local button = self.buttons[key] or gui.CreatePanel("text_button", self) 
 			button:SetText(text)
 			button.label:SetupLayoutChain("left")
 			button.OnPress = callback  
@@ -335,7 +335,7 @@ function gui2.Initialize()
 		end 
 		
 		function bar:RemoveButton(key)
-			gui2.RemovePanel(self.buttons[key])
+			gui.RemovePanel(self.buttons[key])
 			self.buttons[key] = nil
 			
 			if not next(self.buttons) then
@@ -357,16 +357,16 @@ function gui2.Initialize()
 		
 		bar:Layout(true)
 	
-		gui2.task_bar = bar
+		gui.task_bar = bar
 	end
 end
 
-include("base_panel.lua", gui2)
-gui2.SetSkin(include("skins/gwen.lua", gui2))
-include("panels/*", gui2)
-include("helpers.lua", gui2)
+include("base_panel.lua", gui)
+gui.SetSkin(include("skins/gwen.lua", gui))
+include("panels/*", gui)
+include("helpers.lua", gui)
 
-gui2.Initialize()
+gui.Initialize()
 
-return gui2
+return gui
 --for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end

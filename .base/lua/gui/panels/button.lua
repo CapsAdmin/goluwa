@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 local PANEL = {}
 
 PANEL.ClassName = "button"
@@ -131,7 +131,7 @@ function PANEL:OnPress() end
 function PANEL:OnStateChanged(press, button) end
 
 function PANEL:Test()		
-	local btn = gui2.CreatePanel("button")
+	local btn = gui.CreatePanel("button")
 	
 	btn:SetMode("toggle")
 	btn:SetPosition(Vec2()+100)
@@ -139,4 +139,4 @@ function PANEL:Test()
 	return btn
 end
 
-gui2.RegisterPanel(PANEL)
+gui.RegisterPanel(PANEL)

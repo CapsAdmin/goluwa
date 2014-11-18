@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 
 local PANEL = {}
 
@@ -116,7 +116,7 @@ function PANEL:SetupSorted(...)
 			func = table.sort
 		end
 					
-		local column = gui2.CreatePanel("text_button")
+		local column = gui.CreatePanel("text_button")
 		column:SetText(name)
 		column:SetClipping(true)
 		column.label:SetupLayoutChain("left")
@@ -211,4 +211,4 @@ function PANEL:AddEntry(...)
 	return entry
 end
 
-gui2.RegisterPanel(PANEL)
+gui.RegisterPanel(PANEL)

@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 
 local PANEL = {}
 PANEL.ClassName = "frame"
@@ -55,8 +55,8 @@ function PANEL:Initialize()
 	self:SetTitle(self:GetTitle())
 	
 	self:CallOnRemove(function()
-		if gui2.task_bar:IsValid() then
-			gui2.task_bar:RemoveButton(self)
+		if gui.task_bar:IsValid() then
+			gui.task_bar:RemoveButton(self)
 		end
 	end)
 end
@@ -113,15 +113,15 @@ end
 function PANEL:SetTitle(str)
 	self.Title = str
 	
-	gui2.RemovePanel(self.title)
+	gui.RemovePanel(self.title)
 	local title = self.bar:CreatePanel("text")
 	title:SetText(str)
 	title:SetNoDraw(true)
 	title:SetupLayoutChain("left")
 	self.title = title
 	
-	if gui2.task_bar:IsValid() then
-		gui2.task_bar:AddButton(self:GetTitle(), self, function(button) 
+	if gui.task_bar:IsValid() then
+		gui.task_bar:AddButton(self:GetTitle(), self, function(button) 
 			self:SetVisible(not self.Visible)
 		end)
 	end
@@ -131,9 +131,9 @@ function PANEL:OnMouseInput()
 	self:MarkCacheDirty()
 end
 
-gui2.RegisterPanel(PANEL)
+gui.RegisterPanel(PANEL)
 
 if RELOAD then
-	local panel = gui2.CreatePanel(PANEL.ClassName)
+	local panel = gui.CreatePanel(PANEL.ClassName)
 	panel:SetSize(Vec2(300, 300))
 end

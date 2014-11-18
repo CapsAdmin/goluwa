@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 
 local PANEL = {}
 
@@ -20,8 +20,8 @@ end
 
 function PANEL:AddTab(name)
 	if self.tabs[name] then
-		gui2.RemovePanel(self.tabs[name].button)
-		gui2.RemovePanel(self.tabs[name].content)
+		gui.RemovePanel(self.tabs[name].button)
+		gui.RemovePanel(self.tabs[name].content)
 	end
 
 	local button = self.tab_bar:CreatePanel("text_button")
@@ -103,4 +103,4 @@ function PANEL:OnLayout(S, skin)
 	end
 end
 
-gui2.RegisterPanel(PANEL)
+gui.RegisterPanel(PANEL)

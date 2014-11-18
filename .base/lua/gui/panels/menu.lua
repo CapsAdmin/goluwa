@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 
 do
 	local PANEL = {}
@@ -27,7 +27,7 @@ do
 	function PANEL:AddSubMenu(text, on_click)
 		local menu, entry = self:AddEntry(text, on_click):CreateSubMenu()
 		
-		self:CallOnRemove(function() gui2.RemovePanel(menu) end)
+		self:CallOnRemove(function() gui.RemovePanel(menu) end)
 		self:CallOnHide(function() menu:SetVisible(false) end)
 		
 		self:Layout()
@@ -64,7 +64,7 @@ do
 		self:SetWidth(w + self:GetMargin().right)
 	end
 	
-	gui2.RegisterPanel(PANEL)
+	gui.RegisterPanel(PANEL)
 end
 
 do
@@ -137,7 +137,7 @@ do
 		icon:SetStyle("menu_right_arrow")
 		icon:SetupLayoutChain("right")
 
-		self.menu = gui2.CreatePanel("menu")
+		self.menu = gui.CreatePanel("menu")
 		self.menu:SetVisible(false)
 		
 		if self.Skin then self.menu:SetSkin(self:GetSkin()) end
@@ -151,7 +151,7 @@ do
 		end
 	end
 	
-	function PANEL:OnClick() gui2.SetActiveMenu() end 
+	function PANEL:OnClick() gui.SetActiveMenu() end 
 	
-	gui2.RegisterPanel(PANEL)
+	gui.RegisterPanel(PANEL)
 end

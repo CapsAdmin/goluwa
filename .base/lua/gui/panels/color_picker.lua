@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 
 local PANEL = {}
 
@@ -79,4 +79,4 @@ end
 
 function PANEL:OnColorChanged(color) end
 
-gui2.RegisterPanel(PANEL)
+gui.RegisterPanel(PANEL)

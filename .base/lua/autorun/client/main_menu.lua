@@ -86,13 +86,13 @@ function menu.RenderBackground(dt)
 	emitter:Draw()
 end
 
-local skin = include("gui2/skins/zsnes.lua")
+local skin = include("gui/skins/zsnes.lua")
 
 function menu.CreateTopBar()
 	local S = skin.scale
 	local padding = 5 * S
 
-	local bar = gui2.CreatePanel("base", gui2.world, "main_menu_bar") 
+	local bar = gui.CreatePanel("base", gui.world, "main_menu_bar") 
 	bar:SetSkin(skin)
 	bar:SetStyle("gradient")
 	bar:SetDraggable(true)
@@ -102,7 +102,7 @@ function menu.CreateTopBar()
 	menu.panel = bar
 
 	local function create_button(text, options)
-		local button = gui2.CreatePanel("text_button", bar)
+		local button = gui.CreatePanel("text_button", bar)
 		button:SetText(text)
 		button:SetMargin(Rect()+S*3)
 		button:SetPadding(Rect()+S*3)
@@ -111,7 +111,7 @@ function menu.CreateTopBar()
 		button:SetupLayoutChain("left")
 		
 		button.OnPress = function()
-			local menu = gui2.CreateMenu(options, bar)
+			local menu = gui.CreateMenu(options, bar)
 			menu:SetSkin(skin)
 			menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*S), options)
 			menu:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)
@@ -137,13 +137,13 @@ function menu.CreateTopBar()
 	}) 
 	create_button("game", {
 		{"load", function() 
-			local frame = gui2.CreatePanel("frame") 
+			local frame = gui.CreatePanel("frame") 
 
 			frame:SetPosition(Vec2(100, 100))
 			frame:SetSize(Vec2(300, 300))
 			frame:SetTitle("file browser")
 			
-			local panel = gui2.CreatePanel("list", frame)
+			local panel = gui.CreatePanel("list", frame)
 			panel:SetupLayoutChain("fill_x", "fill_y")
 
 			local function populate(dir)
@@ -209,7 +209,7 @@ function menu.CreateTopBar()
 	})
 	create_button("netplay", {
 		{"connect", function()
-			gui2.StringInput("Enter the server IP", cookies.Get("lastip", "localhost"), function(str)
+			gui.StringInput("Enter the server IP", cookies.Get("lastip", "localhost"), function(str)
 				console.RunString("start_client")
 				cookies.Set("lastip", str)
 				console.RunString("connect "..str .." 1234")

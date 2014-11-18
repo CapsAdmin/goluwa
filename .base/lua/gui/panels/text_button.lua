@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 
 local PANEL = {}
 
@@ -36,4 +36,4 @@ function PANEL:SizeToText()
 	end
 end
 
-gui2.RegisterPanel(PANEL)
+gui.RegisterPanel(PANEL)
