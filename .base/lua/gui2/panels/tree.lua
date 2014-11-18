@@ -16,11 +16,6 @@ do -- tree node
 
 		self:SetNoDraw(true)
 
-		local button = self:CreatePanel("text_button", "button")
-		button:SetMargin(Rect()+2*S)
-		button:SetColor(Color(1,1,1,0))
-		button:SetIgnoreMouse(true)
-
 		local exp = self:CreatePanel("button", "expand")
 		exp:SetMargin(Rect()+S)
 		exp:SetVisible(false)
@@ -28,13 +23,22 @@ do -- tree node
 		exp:SetStyle("-")
 		exp:SetStyleTranslation("button_active", "+")
 		exp:SetStyleTranslation("button_inactive", "-")
+		exp:SetupLayoutChain("left")
+		exp:SetPadding(Rect()+2*S)
 		exp.OnStateChanged = function(_, b) 
 			self:OnExpand(b) 
 		end
 		
 		local img = self:CreatePanel("base", "image")
 		img:SetIgnoreMouse(true)
-		img:SetTexture(Texture("textures/silkicons/heart.png"))
+		img:SetMargin(Rect()+2*S)
+		self:SetIcon(Texture("textures/silkicons/heart.png"))
+		
+		local button = self:CreatePanel("text_button", "button")
+		button:SetMargin(Rect()+2*S)
+		button:SetColor(Color(1,1,1,0))
+		button:SetIgnoreMouse(true)
+		self:SetText("nil")
 	end
 	
 	function PANEL:OnPress()
@@ -67,26 +71,15 @@ do -- tree node
 	
 	function PANEL:SetIcon(...)
 		self.image:SetTexture(...)
+		self.image:SetSize(Vec2() + S*8)
+		self.image:SetupLayoutChain("left")
 	end
 
 	function PANEL:SetText(...)
 		self.button:SetText(...)
-	end
-
-	function PANEL:OnLayout()
-		local x = self.offset
-					
-		self.image:SetSize(Vec2() + S*8)
-		self.image:SetPosition(Vec2(x, 0))
-		
-		self.expand:SetPosition(Vec2(x - self.image:GetWidth(), 0))
-		
-		self.button:SetPosition(self.image:GetPosition() + Vec2(self.image:GetWidth() + S*2, 0))
 		self.button:SizeToText()
-					
-		self.expand:CenterY()
-		self.image:CenterY()
-		self.button:CenterY()
+		self.button:SetupLayoutChain("left")
+		self:Layout()
 	end
 
 	function PANEL:AddNode(str, icon, id)
@@ -94,6 +87,7 @@ do -- tree node
 		
 		pnl.offset = self.offset + self.tree.IndentWidth
 		pnl.node_parent = self
+		pnl:SetMargin(Rect(0,0,pnl.offset,0))
 		
 		self.expand:SetVisible(true)
 		self:SetExpand(true)
