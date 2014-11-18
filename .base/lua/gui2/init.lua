@@ -173,7 +173,11 @@ do -- events
 		end
 	end
 
-	function gui2.Draw2D()
+	function gui2.Draw2D(dt)
+		event.Call("DrawHUD", dt)
+		
+		event.Call("PreDrawMenu", dt)
+		
 		render.SetCullMode("none")
 		if gui2.threedee then 
 			--surface.Start3D(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
@@ -233,6 +237,8 @@ do -- events
 		if gui2.threedee then 
 			surface.End3D()
 		end
+		
+		event.Call("PostDrawMenu", dt)
 	end
 end
 
@@ -361,8 +367,6 @@ include("panels/*", gui2)
 include("helpers.lua", gui2)
 
 gui2.Initialize()
-
-gui.SetCursor = function() end
 
 return gui2
 --for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
