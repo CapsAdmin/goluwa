@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 local PANEL = {}
 
 PANEL.ClassName = "text"
@@ -151,4 +151,4 @@ end
 function PANEL:OnEnter() end
 function PANEL:OnTextChanged() end
 
-gui2.RegisterPanel(PANEL)
+gui.RegisterPanel(PANEL)

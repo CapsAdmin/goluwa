@@ -1,11 +1,11 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 
-function gui2.StringInput(msg, default, callback, check)
+function gui.StringInput(msg, default, callback, check)
 	msg = msg or "no message"
 	default = default or " "
 	callback = callback or logn
 	
-	local frame = gui2.CreatePanel("frame")
+	local frame = gui.CreatePanel("frame")
 	frame:SetTitle("Text Input Request")
 	frame:SetSize(Vec2(250, 120)) -- Should probably be based off their screen size...
 	

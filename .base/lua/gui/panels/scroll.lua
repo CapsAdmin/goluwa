@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 
 local PANEL = {}
 PANEL.ClassName = "scroll"
@@ -20,10 +20,10 @@ function PANEL:Initialize()
 end
 
 function PANEL:SetPanel(panel)
-	gui2.RemovePanel(self.y_handle)
-	gui2.RemovePanel(self.y_track)
-	gui2.RemovePanel(self.x_handle)
-	gui2.RemovePanel(self.x_track)
+	gui.RemovePanel(self.y_handle)
+	gui.RemovePanel(self.y_track)
+	gui.RemovePanel(self.x_handle)
+	gui.RemovePanel(self.x_track)
 
 	panel:SetParent(self.scroll_area)
 	
@@ -186,4 +186,4 @@ function PANEL:OnLayout(S)
 	self.scroll_area.scrolling = false
 end
 	
-gui2.RegisterPanel(PANEL) 
+gui.RegisterPanel(PANEL) 

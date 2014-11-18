@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 
 do -- tree node
 	local PANEL = {}
@@ -134,7 +134,7 @@ do -- tree node
 		self.expand:SetState(not b)
 	end
 				
-	gui2.RegisterPanel(PANEL)
+	gui.RegisterPanel(PANEL)
 end
 
 do
@@ -202,5 +202,5 @@ do
 
 	function PANEL:OnNodeSelect(node) end
 	
-	gui2.RegisterPanel(PANEL)		
+	gui.RegisterPanel(PANEL)		
 end

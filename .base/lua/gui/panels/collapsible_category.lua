@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 
 local PANEL = {}
 
@@ -49,7 +49,7 @@ function PANEL:OnLayout()
 end
 
 function PANEL:SetTitle(str)
-	gui2.RemovePanel(self.title)
+	gui.RemovePanel(self.title)
 	local title = self.bar:CreatePanel("text")
 	
 	title:SetHeight(self.bar:GetHeight())
@@ -61,25 +61,25 @@ function PANEL:SetTitle(str)
 	self.title = title
 end
 
-gui2.RegisterPanel(PANEL)
+gui.RegisterPanel(PANEL)
 
 if RELOAD then
-	local frame = gui2.CreatePanel("frame")
+	local frame = gui.CreatePanel("frame")
 	frame:SetSize(Vec2(200, 400))
 	
 	local scroll = frame:CreatePanel("scroll")
 	scroll:SetupLayoutChain("fill_x", "fill_y")
 	
-	local list = gui2.CreatePanel("base")
+	local list = gui.CreatePanel("base")
 	list:SetStack(true)
 	list:SetStackRight(false) 
 	list:SetNoDraw(true)  
 	   
 	scroll:SetPanel(list)
 	
-	local a = gui2.CreatePanel(PANEL.ClassName, list)
+	local a = gui.CreatePanel(PANEL.ClassName, list)
 	a:SetSize(Vec2(100,100))
-	local b = gui2.CreatePanel(PANEL.ClassName, list)
+	local b = gui.CreatePanel(PANEL.ClassName, list)
 	b:SetSize(Vec2(100,100)) 
 	 
 	list:SetSize(Vec2(100, 500))   

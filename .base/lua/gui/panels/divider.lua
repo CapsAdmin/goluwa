@@ -1,5 +1,5 @@
-local gui2 = ... or _G.gui2
-local S = gui2.skin.scale
+local gui = ... or _G.gui
+local S = gui.skin.scale
 
 local PANEL = {}
 
@@ -139,4 +139,4 @@ end
 
 function PANEL:OnDividerPositionChanged() end
 
-gui2.RegisterPanel(PANEL)
+gui.RegisterPanel(PANEL)

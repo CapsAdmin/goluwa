@@ -6,19 +6,19 @@ editor.properties = editor.properties or NULL
 editor.selected_ent = editor.selected_ent or NULL
 
 function editor.Open()
-	gui2.RemovePanel(editor.frame)
+	gui.RemovePanel(editor.frame)
 	
-	local frame = gui2.CreatePanel("frame")
+	local frame = gui.CreatePanel("frame")
 	frame:SetWidth(300)
 	frame:SetTitle("editor")
 	frame:SetupLayoutChain("left", "fill_y")
 	editor.frame = frame
 	
-	local div = gui2.CreatePanel("divider", frame)
+	local div = gui.CreatePanel("divider", frame)
 	div:SetupLayoutChain("fill_x", "fill_y")
 	div:SetHideDivider(true)
 	
-	local scroll = div:SetTop(gui2.CreatePanel("scroll"))
+	local scroll = div:SetTop(gui.CreatePanel("scroll"))
 	
 	local tree
 	
@@ -26,7 +26,7 @@ function editor.Open()
 		local ent = node.ent
 		
 		if entered then
-			local tooltip = gui2.CreatePanel("text_button")
+			local tooltip = gui.CreatePanel("text_button")
 			tooltip:SetPosition(Vec2(surface.GetMousePosition()))
 			tooltip:SetMargin(Rect()+4)
 			tooltip:SetText(ent:GetDebugTrace())
@@ -34,7 +34,7 @@ function editor.Open()
 			tooltip:Layout(true)
 			node.tooltip = tooltip
 		else
-			gui2.RemovePanel(node.tooltip)
+			gui.RemovePanel(node.tooltip)
 		end
 	end
 		
@@ -90,7 +90,7 @@ function editor.Open()
 			end, node:GetSkin().icons.clear)
 		end
 		
-		gui2.CreateMenu(options, frame)
+		gui.CreateMenu(options, frame)
 	end
 	
 	local function fill(entities, node)
@@ -111,9 +111,9 @@ function editor.Open()
 	local function repopulate()
 		if not frame:IsValid() then return end
 		
-		gui2.RemovePanel(tree)
+		gui.RemovePanel(tree)
 		
-		tree = gui2.CreatePanel("tree")
+		tree = gui.CreatePanel("tree")
 		scroll:SetPanel(tree)
 		
 		local ents = {}
@@ -136,14 +136,14 @@ function editor.Open()
 	
 	frame.OnRightClick = function() right_click_node() end
 	
-	local scroll = div:SetBottom(gui2.CreatePanel("scroll"))
+	local scroll = div:SetBottom(gui.CreatePanel("scroll"))
 	
 	local properties
 	
 	tree.OnNodeSelect = function(_, node)
-		gui2.RemovePanel(properties)
+		gui.RemovePanel(properties)
 		
-		properties = gui2.CreatePanel("properties")
+		properties = gui.CreatePanel("properties")
 		--properties:SetStretchToPanelWidth(frame)
 		
 		for k, v in pairs(node.ent:GetComponents()) do
@@ -159,7 +159,7 @@ function editor.Open()
 		editor.selected_ent = node.ent
 	end
 	
-	div:SetDividerPosition(gui2.world:GetHeight()/2) 
+	div:SetDividerPosition(gui.world:GetHeight()/2) 
 	
 	if editor.selected_ent:IsValid() then
 		editor.SelectEntity(editor.selected_ent)
@@ -171,7 +171,7 @@ function editor.Open()
 end
 
 function editor.Close()
-	gui2.RemovePanel(editor.frame)
+	gui.RemovePanel(editor.frame)
 	window.SetMouseTrapped(false) 
 end
 

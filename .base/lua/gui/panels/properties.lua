@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 
 do -- base property
 	local PANEL = {}
@@ -45,7 +45,7 @@ do -- base property
 			if button == "button_1" then
 				self:OnClick()
 			elseif button == "button_2" then
-				gui2.CreateMenu({
+				gui.CreateMenu({
 					{"copy", function() system.SetClipboard(self:GetEncodedValue()) end, self:GetSkin().icons.copy},
 					{"paste", function() self:SetEncodedValue(system.GetClipboard()) end, self:GetSkin().icons.paste},
 					{},
@@ -133,7 +133,7 @@ do -- base property
 	
 	end
 	
-	gui2.RegisterPanel(PANEL)
+	gui.RegisterPanel(PANEL)
 end
 
 do -- string
@@ -148,7 +148,7 @@ do -- string
 		self:SetClicksToActivate(1)
 	end
 	
-	gui2.RegisterPanel(PANEL)
+	gui.RegisterPanel(PANEL)
 end
 
 do -- number
@@ -277,7 +277,7 @@ do -- number
 		end
 	end
 	
-	gui2.RegisterPanel(PANEL)
+	gui.RegisterPanel(PANEL)
 end
 
 do -- boolean
@@ -324,7 +324,7 @@ do -- boolean
 		self.panel:SetPadding(Rect()+S)
 	end
 	
-	gui2.RegisterPanel(PANEL)
+	gui.RegisterPanel(PANEL)
 end
 
 do -- color
@@ -342,7 +342,7 @@ do -- color
 		panel:SetupLayoutChain("left")
 		
 		panel.OnPress = function()
-			local frame = gui2.CreatePanel("frame")
+			local frame = gui.CreatePanel("frame")
 			frame:SetSize(Vec2(300, 300))
 			frame:Center()
 			frame:SetTitle("color picker")
@@ -351,7 +351,7 @@ do -- color
 			picker:SetupLayoutChain("fill_x", "fill_y")
 			picker.OnColorChanged = function(_, color) self:SetValue(color) end
 			
-			panel:CallOnRemove(function() gui2.RemovePanel(frame) end)
+			panel:CallOnRemove(function() gui.RemovePanel(frame) end)
 		end
 		
 		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
@@ -377,7 +377,7 @@ do -- color
 		self.panel:SetPadding(Rect()+S)
 	end
 	
-	gui2.RegisterPanel(PANEL)
+	gui.RegisterPanel(PANEL)
 end
 
 local PANEL = {}
@@ -400,7 +400,7 @@ function PANEL:Initialize()
 	divider:SetHideDivider(true)
 	divider:SetupLayoutChain("fill_x", "fill_y")
 	
-	local left = self.divider:SetLeft(gui2.CreatePanel("base"))
+	local left = self.divider:SetLeft(gui.CreatePanel("base"))
 	left:SetStack(true)
 	left:SetPadding(Rect(0,0,0,-1))
 	left:SetStackRight(false)
@@ -409,7 +409,7 @@ function PANEL:Initialize()
 	left:SetNoDraw(true)  
 	self.left = left
 	
-	local right = self.divider:SetRight(gui2.CreatePanel("base"))
+	local right = self.divider:SetRight(gui.CreatePanel("base"))
 	right:SetStack(true)
 	right:SetPadding(Rect(0,0,0,-1))
 	right:SetStackRight(false)
@@ -733,4 +733,4 @@ function PANEL:AddPropertiesFromObject(obj)
 	end
 end
 
-gui2.RegisterPanel(PANEL)
+gui.RegisterPanel(PANEL)

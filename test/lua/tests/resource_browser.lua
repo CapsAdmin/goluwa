@@ -1,9 +1,9 @@
-local frame = utility.RemoveOldObject(gui2.CreatePanel("frame"), "resource_browser")
+local frame = utility.RemoveOldObject(gui.CreatePanel("frame"), "resource_browser")
 frame:SetSize(window.GetSize()*0.5)
 frame:Center()
 frame:SetCachedRendering(false)
 
-local list = gui2.CreatePanel("list", frame)
+local list = gui.CreatePanel("list", frame)
 list:SetupLayoutChain("fill_x", "fill_y")
 list:SetupSorted("name", "type", "size", "date modified")
 

@@ -1,4 +1,4 @@
-local score = utility.RemoveOldObject(gui2.CreatePanel("base"), "score")
+local score = utility.RemoveOldObject(gui.CreatePanel("base"), "score")
 
 input.Bind("tab", "+score", function()
 	score:SetVisible(true)
@@ -97,7 +97,7 @@ local function add_player(avatar_path, name_str)
 	info:SetupLayoutChain("left", "fill_x")
 	
 	info.OnRightClick = function()
-		gui2.CreateMenu({
+		gui.CreateMenu({
 			{"goto", {{"bring", nil, "textures/silkicons/arrow_in.png"}}, "textures/silkicons/arrow_right.png"},
 			{},
 			{"spawn", {{"revive", nil, "textures/silkicons/heart.png"}}, "textures/silkicons/heart_add.png"},

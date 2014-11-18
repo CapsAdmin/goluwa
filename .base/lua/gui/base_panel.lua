@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 
 local PANEL = prototype.CreateTemplate("panel2", "base")
 
@@ -21,7 +21,7 @@ prototype.GetSet(PANEL, "VisibilityPanel", NULL)
 prototype.GetSet(PANEL, "NoDraw", false)
 
 function PANEL:CreatePanel(name, store_in_self)
-	return gui2.CreatePanel(name, self, store_in_self)
+	return gui.CreatePanel(name, self, store_in_self)
 end
 
 function PANEL:__tostring2()
@@ -29,7 +29,7 @@ function PANEL:__tostring2()
 end
 
 function PANEL:IsWorld()
-	return self == gui2.world
+	return self == gui.world
 end
 
 function PANEL:BringToFront()	
@@ -50,13 +50,13 @@ function PANEL:RequestFocus()
 		self = self.RedirectFocus
 	end
 
-	if gui2.focus_panel:IsValid() and gui2.focus_panel ~= self then
-		gui2.focus_panel:OnUnfocus()
+	if gui.focus_panel:IsValid() and gui.focus_panel ~= self then
+		gui.focus_panel:OnUnfocus()
 	end
 	
 	self:OnFocus()
 	
-	gui2.focus_panel = self
+	gui.focus_panel = self
 end
 
 function PANEL:Unfocus()
@@ -64,18 +64,18 @@ function PANEL:Unfocus()
 		self = self.RedirectFocus
 	end
 
-	if gui2.focus_panel:IsValid() and gui2.focus_panel == self then
+	if gui.focus_panel:IsValid() and gui.focus_panel == self then
 		self:OnUnfocus()
-		gui2.focus_panel = NULL
+		gui.focus_panel = NULL
 	end
 end
 
 function PANEL:OnUnParent()
-	gui2.unrolled_draw = nil
+	gui.unrolled_draw = nil
 end
 
 function PANEL:OnChildAdd()
-	gui2.unrolled_draw = nil
+	gui.unrolled_draw = nil
 end
 
 do -- call on hide
@@ -111,7 +111,7 @@ do -- call on hide
 end
 	
 function PANEL:OnRemove(a)
-	gui2.panels[self] = nil
+	gui.panels[self] = nil
 	
 	a = (a or 0) + 1
 	
@@ -263,7 +263,7 @@ function PANEL:PostDraw(from_cache)
 		self.layout_me = false 
 	end
 	
-	if gui2.debug then
+	if gui.debug then
 		if self.Clipping then	
 			gl.Disable(gl.e.GL_STENCIL_TEST)
 			render.SetBlendMode("additive")
@@ -369,7 +369,7 @@ do -- orientation
 
 		if parent:IsValid() then
 			table.sort(parent:GetChildren(), sorter)
-			gui2.unrolled_draw = nil
+			gui.unrolled_draw = nil
 		end
 	end
 	
@@ -577,7 +577,7 @@ do -- drag drop
 	prototype.GetSet(PANEL, "DragDrop", false)
 
 	function PANEL:StartDragging(button)
-		self.drag_world_pos = gui2.mouse_pos:Copy()
+		self.drag_world_pos = gui.mouse_pos:Copy()
 		self.drag_stop_button = button
 	end
 
@@ -601,7 +601,7 @@ do -- drag drop
 
 			self:SetPosition(self.drag_panel_start_pos + self:GetMousePosition() - drag_pos)
 
-			local panel = gui2.GetHoveringPanel(nil, self)
+			local panel = gui.GetHoveringPanel(nil, self)
 
 			local drop_pos = panel:GetMousePosition() - self:GetMousePosition() + panel.Scroll
 
@@ -1217,7 +1217,7 @@ do -- resizing
 		if loc then
 			self.resize_start_pos = self:GetMousePosition():Copy()
 			self.resize_location = loc
-			self.resize_prev_mouse_pos = gui2.mouse_pos:Copy()
+			self.resize_prev_mouse_pos = gui.mouse_pos:Copy()
 			self.resize_prev_pos = self:GetPosition():Copy()
 			self.resize_prev_size = self:GetSize():Copy()
 			self.resize_button = button
@@ -1250,7 +1250,7 @@ do -- resizing
 			if location2cursor[loc] then
 				system.SetCursor(location2cursor[loc])
 			else
-				gui2.active_cursor = nil
+				gui.active_cursor = nil
 			end
 		end
 	
@@ -1262,7 +1262,7 @@ do -- resizing
 			end
 
 			local diff = self:GetMousePosition() - self.resize_start_pos
-			local diff_world = gui2.mouse_pos - self.resize_prev_mouse_pos
+			local diff_world = gui.mouse_pos - self.resize_prev_mouse_pos
 			local loc = self.resize_location
 			local prev_size = self.resize_prev_size:Copy()
 			local prev_pos = self.resize_prev_pos:Copy()
@@ -1311,7 +1311,7 @@ do -- mouse
 	prototype.GetSet(PANEL, "MouseHoverTimeTrigger", 1)
 
 	function PANEL:IsMouseOver()
-		return self:IsDragging() or self:IsResizing() or self.mouse_over and gui2.hovering_panel == self
+		return self:IsDragging() or self:IsResizing() or self.mouse_over and gui.hovering_panel == self
 	end
 
 	function PANEL:CalcMouse()
@@ -1332,7 +1332,7 @@ do -- mouse
 			return 
 		end
 		
-		local x, y = surface.WorldToLocal(gui2.mouse_pos.x, gui2.mouse_pos.y)
+		local x, y = surface.WorldToLocal(gui.mouse_pos.x, gui.mouse_pos.y)
 
 		self.MousePosition.x = x
 		self.MousePosition.y = y
@@ -1922,7 +1922,7 @@ do -- skin
 	end
 	
 	function PANEL:GetLayoutScale()
-		return self.LayoutScale or gui2.scale
+		return self.LayoutScale or gui.scale
 	end
 	
 	function PANEL:SetSkin(skin)
@@ -1942,7 +1942,7 @@ do -- skin
 	end
 	
 	function PANEL:GetSkin()
-		return self.Skin or gui2.skin
+		return self.Skin or gui.skin
 	end
 		
 	function PANEL:SetStyle(name)
@@ -2056,7 +2056,7 @@ do -- events
 		
 		self:DrawRect()
 
-		if gui2.debug_layout then
+		if gui.debug_layout then
 			surface.SetFont("default")
 			surface.DrawText("layout count " .. self.layout_count)
 			--surface.SetWhiteTexture()
@@ -2097,8 +2097,8 @@ do -- events
 	function PANEL:Initialize() end
 end
 
-gui2.RegisterPanel(PANEL)
+gui.RegisterPanel(PANEL)
 
-for k,v in pairs(gui2.panels) do
+for k,v in pairs(gui.panels) do
 	v:Layout()
 end

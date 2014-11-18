@@ -1,19 +1,19 @@
-local S = gui2.skin.scale
-local skin = include("gui2/skins/zsnes.lua")
+local S = gui.skin.scale
+local skin = include("gui/skins/zsnes.lua")
 
 if false then -- frame
-	local frame = gui2.CreatePanel("frame")
+	local frame = gui.CreatePanel("frame")
 	frame:SetPosition(Vec2()+200)
 	frame:SetSize(Vec2()+500)
 
-	local tab = gui2.CreatePanel("tab", frame)
+	local tab = gui.CreatePanel("tab", frame)
 	tab:SetupLayoutChain("fill_x", "fill_y")
 
 	do
 		local content = tab:AddTab("tree")
 		
-		local scroll = gui2.CreatePanel("scroll", content)
-		local tree = gui2.CreatePanel("tree") 
+		local scroll = gui.CreatePanel("scroll", content)
+		local tree = gui.CreatePanel("tree") 
 		scroll:SetPanel(tree)
 		tree:SetupLayoutChain("fill_x", "fill_y")
 		scroll:SetupLayoutChain("fill_x", "fill_y")
@@ -34,7 +34,7 @@ if false then -- frame
 	
 	do
 		local content = tab:AddTab("list")
-		local list = gui2.CreatePanel("list", content)
+		local list = gui.CreatePanel("list", content)
 		list:SetupSorted("name", "date modified", "type", "size")
 		list:SetupLayoutChain("fill_x", "fill_y")
 		
@@ -47,13 +47,13 @@ if false then -- frame
 
 	do
 		local content = tab:AddTab("dividers")
-		local div = gui2.CreatePanel("divider", content)
+		local div = gui.CreatePanel("divider", content)
 		div:SetupLayoutChain("fill_x", "fill_y")
 		div:SetDividerPosition(400)
 
-		local huh = div:SetLeft(gui2.CreatePanel("button"))
+		local huh = div:SetLeft(gui.CreatePanel("button"))
 		
-		local div = div:SetRight(gui2.CreatePanel("divider"))
+		local div = div:SetRight(gui.CreatePanel("divider"))
 	end
 	
 	do		
@@ -64,13 +64,13 @@ if false then -- frame
 		--content:SetClipping(true)
 		--content:SetScrollable(true)
 				
-		local slider = gui2.CreatePanel("slider", content)
+		local slider = gui.CreatePanel("slider", content)
 		slider:SetXSlide(true)
 		slider:SetYSlide(false)
 		slider:SetSize(Vec2(256, 35))
 		--slider:SetPosition(Vec2(8, 8))
 		
-		local slider = gui2.CreatePanel("slider", content)
+		local slider = gui.CreatePanel("slider", content)
 		slider:SetXSlide(true)
 		slider:SetYSlide(false)
 		slider:SetRightFill(false)
@@ -81,7 +81,7 @@ if false then -- frame
 	do
 		local content = tab:AddTab("text")
 		
-		local text = gui2.CreatePanel("text_edit", content)
+		local text = gui.CreatePanel("text_edit", content)
 		text:SetSize(Vec2(128, 128))
 		text:SetText("huh")
 		text:SetupLayoutChain("fill_x", "fill_y")
@@ -91,7 +91,7 @@ end
 do -- menu bar
 	local padding = 5 * S
 
-	local bar = gui2.CreatePanel("base", gui2.world, "top_bar") 
+	local bar = gui.CreatePanel("base", gui.world, "top_bar") 
 	bar:SetSkin(skin)
 	bar:SetStyle("gradient")
 	bar:SetDraggable(true)
@@ -99,7 +99,7 @@ do -- menu bar
 	bar:SetupLayoutChain("left", "top")
 
 	local function create_button(text, options)
-		local button = gui2.CreatePanel("text_button", bar)
+		local button = gui.CreatePanel("text_button", bar)
 		button:SetText(text)
 		button:SetMargin(Rect()+S*3)
 		button:SetPadding(Rect()+S*3)
@@ -108,7 +108,7 @@ do -- menu bar
 		button:SetupLayoutChain("left")
 		
 		button.OnPress = function()
-			local menu = gui2.CreateMenu(options, bar)
+			local menu = gui.CreateMenu(options, bar)
 			menu:SetSkin(skin)
 			menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*S), options)
 			menu:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)
@@ -134,13 +134,13 @@ do -- menu bar
 	}) 
 	create_button("game", {
 		{"load", function() 
-			local frame = gui2.CreatePanel("frame") 
+			local frame = gui.CreatePanel("frame") 
 
 			frame:SetPosition(Vec2(100, 100))
 			frame:SetSize(Vec2(300, 300))
 			frame:SetTitle("file browser")
 			
-			local panel = gui2.CreatePanel("list", frame)
+			local panel = gui.CreatePanel("list", frame)
 			panel:SetupLayoutChain("fill_x", "fill_y")
 
 			local function populate(dir)
@@ -206,7 +206,7 @@ do -- menu bar
 	})
 	create_button("netplay", {
 		{"connect", function()
-			gui2.StringInput("Enter the server IP", cookies.Get("lastip", "localhost"), function(str)
+			gui.StringInput("Enter the server IP", cookies.Get("lastip", "localhost"), function(str)
 				console.RunString("start_client")
 				cookies.Set("lastip", str)
 				console.RunString("connect "..str .." 1234")

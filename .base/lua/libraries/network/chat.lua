@@ -104,14 +104,14 @@ if CLIENT then
 	function chat.GetPanel()
 		if chat.panel:IsValid() then return chat.panel end
 			
-		local frame = gui2.CreatePanel("frame")
+		local frame = gui.CreatePanel("frame")
 		frame:SetTitle("chatbox")
 		frame:SetSize(Vec2(400, 250))
 		frame:SetPosition(Vec2(20, render.GetHeight()-frame:GetHeight()-20))
 		
 		frame:CallOnRemove(chat.Close)
 		
-		local S = gui2.skin.scale
+		local S = gui.skin.scale
 		
 		local edit = frame:CreatePanel("text_edit")
 		edit:SetHeight(9*S)
@@ -130,14 +130,14 @@ if CLIENT then
 		scroll:SetupLayoutChain("fill_x", "fill_y")
 		page.scroll = scroll
 
-		local text = scroll:SetPanel(gui2.CreatePanel("text"))
+		local text = scroll:SetPanel(gui.CreatePanel("text"))
 		text:SetPosition(Vec2()+S*2)
 
 		text.markup:SetLineWrap(true)
 		text:AddEvent("ChatAddText")
 
 		function text:OnChatAddText(args)
-			self.markup:AddFont(gui2.skin.default_font)
+			self.markup:AddFont(gui.skin.default_font)
 			self.markup:AddTable(args, true)
 			self.markup:AddTagStopper()
 			self.markup:AddString("\n")
@@ -244,20 +244,20 @@ if CLIENT then
 		end
 		
 		local page = tab:AddTab("console")	
-		page:SetColor(gui2.skin.font_edit_background)
+		page:SetColor(gui.skin.font_edit_background)
 		
 		local scroll = page:CreatePanel("scroll")
 		scroll:SetXScrollBar(false)
 		scroll:SetupLayoutChain("fill_x", "fill_y")
 		page.scroll = scroll
 
-		local text = scroll:SetPanel(gui2.CreatePanel("text"))
+		local text = scroll:SetPanel(gui.CreatePanel("text"))
 		text:SetPosition(Vec2()+S*2)
 		text.markup:SetLineWrap(true)
 		text:AddEvent("ConsolePrint")
 
 		function text:OnConsolePrint(str)
-			self.markup:AddFont(gui2.skin.default_font)
+			self.markup:AddFont(gui.skin.default_font)
 			self.markup:AddString(str, true)
 			self.markup:AddTagStopper()
 			

@@ -1,4 +1,4 @@
-local gui2 = ... or _G.gui2
+local gui = ... or _G.gui
 
 local scale = 2
 local ninepatch_size = 32
@@ -9,24 +9,18 @@ local S = scale
 
 local text_size = 5*S 
 
-surface.CreateFont("snow_font", {
-	path = "Roboto",
-	fallback = "default",
-	size = S*5.5,
+local font = surface.CreateFont("default_gui_zsnes", {path = "fonts/unifont.ttf", size = 10, filtering = "nearest"})
+
+surface.CreateFont("zsnes_gui_font", {
+	path = "fonts/zfont.txt",
+	fallback = "default_gui_zsnes",
+	shadow = 1,
+	size = 5*S,
+	scale = S,
+	filtering = "nearest",
 }) 
 
-surface.CreateFont("snow_font_noshadow", {
-	path = "Roboto", 
-	size = S*5.5,
-})
-
-local sub_skin = select(2, ...)
-
-if type(sub_skin) ~= "string" then 
-	sub_skin = "dark" 
-end
-
-local texture = Texture("textures/gui/skins/"..sub_skin..".png")
+local texture = Texture("textures/gui/skins/zsnes.png", {min_filter = "nearest", mag_filter = "nearest"})
 
 local skin = {}
 
@@ -40,29 +34,31 @@ local function add(name, u,v, w,h, corner_size, color)
 	}
 end
 
-local function add_simple(name, u,v, w,h, color)
+local function add_simple(name, u,v, w,h, color, no_size)
 	skin[name] = {
 		texture = texture, 
 		texture_rect = Rect(u, v, w, h),
-		size = Vec2(w, h),
 		color = color,
 	}
+	if not no_size then
+		skin[name].size = Vec2(w, h)
+	end
 end
 
 add("button_inactive", 480,0, 31,31, 4)
 add("button_active", 480,96, 31,31, 4) 
 
-add_simple("close_inactive", 32,452, 29,16) 
-add_simple("close_active", 96,452, 29,16) 
+add_simple("close_inactive", 32,452, 9,7) 
+add_simple("close_active", 96,452, 9,7) 
 
-add_simple("minimize_inactive", 132,452, 29,16) 
-add_simple("minimize_active", 196,452, 29,16) 
+add_simple("minimize_inactive", 132,452, 9,7) 
+add_simple("minimize_active", 196,452, 9,7) 
 
-add_simple("maximize_inactive", 225,484, 29,16) 
-add_simple("maximize_active", 290,484, 29,16) 
+add_simple("maximize_inactive", 225,484, 9,7) 
+add_simple("maximize_active", 290,484, 9,7) 
 
-add_simple("maximize2_inactive", 225,452, 29,16) 
-add_simple("maximize2_active", 290,452, 29,16) 
+add_simple("maximize2_inactive", 225,452, 9,7) 
+add_simple("maximize2_active", 290,452, 9,7) 
 
 add_simple("up_inactive", 464,224, 15,15) 
 add_simple("up_active", 480,224, 15,15) 
@@ -80,11 +76,11 @@ add_simple("menu_right_arrow", 472,116, 4,7)
 add_simple("list_up_arrow", 385,114, 5,3) 
 add_simple("list_down_arrow", 385,122, 5,3) 
 
-add_simple("check", 448,32, 15,15) 
-add_simple("uncheck", 464,32, 15,15)
+add_simple("check", 449,34, 7,7)
+add_simple("uncheck", 465,34, 7,7)
  
-add_simple("+", 451,99, 9,9) 
-add_simple("-", 467,99, 9,9)
+add_simple("+", 451,99, 5,5) 
+add_simple("-", 467,99, 5,5)
 
 add("scroll_vertical_track", 384,208, 15,127, 4) 
 add("scroll_vertical_handle_inactive", 400,208, 15,127, 4) 
@@ -104,10 +100,10 @@ add("tab_frame", 1,256+4, 127-2,127-4, 16)
 add("menu_select", 130,258, 123,27, 16)
 add("frame", 480,32, 31,31, 16)
 add("frame2", 320,384+19, 63,63-19, 20)
-add("frame_bar", 320,384, 63,19, 11)
+add("frame_bar", 320,384, 63,19, 19/2)
 add("property", 256,256, 63,127, 4)
 
-add("gradient", 480,96, 31,31, 16)
+add_simple("gradient", 0,128, 127,21, nil, true)
 add("gradient1", 480,96, 31,31, 16)
 add("gradient2", 480,96, 31,31, 16)
 add("gradient3", 480,96, 31,31, 16)
@@ -126,11 +122,12 @@ skin.text_edit_color.a = 1
 skin.property_background = texture:GetPixelColor(28, 500, buffer)
 
 
-skin.default_font = "snow_font"
+skin.default_font = "zsnes_gui_font"
 skin.scale = scale
+skin.pixel_scale = S
 
 skin.background = Color(0.5, 0.5, 0.5)
 
-skin.icons = include("gui2/icons.lua")
+skin.icons = include("gui/icons.lua")
 
 return skin

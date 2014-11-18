@@ -119,14 +119,14 @@ do
 	end  
 end 
    
-local frame = utility.RemoveOldObject(gui2.CreatePanel("frame"), "markup")
+local frame = utility.RemoveOldObject(gui.CreatePanel("frame"), "markup")
 frame:SetSize(1000, 1000)
 frame:RequestLayout(true) 
 
-local scroll = gui2.CreatePanel("scroll", frame)
+local scroll = gui.CreatePanel("scroll", frame)
 scroll:SetupLayoutChain("fill_x", "fill_y")
 
-local markup = scroll:SetPanel(gui2.Create("text_input"))
+local markup = scroll:SetPanel(gui.Create("text_input"))
 markup:SetMultiLine(true)
 markup:SetEditorMode(true)
 markup:SetWrap(false )
