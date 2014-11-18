@@ -45,7 +45,9 @@ do
 	end
 	
 	function PANEL:OnLayout(S)
-		self:SetWidth(1000)
+		self:SetMargin(Rect()+S*2)
+		self:SetSize(Vec2()+500)
+		self:SetLayoutSize(Vec2()+500)
 		
 		self:CalcLayoutChain()
 		
@@ -56,7 +58,7 @@ do
 				v:SetHeight(S*2)
 			else
 				v:SetHeight(S*10)
-				w = math.max(w, v.label:GetX() + v.label:GetWidth() + v.label:GetPadding().right)
+				w = math.max(w, v.label:GetX() + v.label:GetWidth() + v.label:GetPadding().right*8)
 			end
 		end
 		
@@ -75,7 +77,7 @@ do
 	
 	function PANEL:Initialize()
 		self:SetNoDraw(true)
-		self:SetStyle("frame")
+		self:SetStyle("menu_select")
 				
 		local img = self:CreatePanel("base", "image")
 		img:SetIgnoreMouse(true)
@@ -124,10 +126,9 @@ do
 	function PANEL:SetIcon(texture)
 		if texture then
 			self.image:SetTexture(texture)
-			self.image:SetNoDraw(false)
-		else
-			self.image:SetNoDraw(true)
+			self.image:SetVisible(true)
 		end
+		self:Layout()
 	end
 	
 	function PANEL:CreateSubMenu()			
