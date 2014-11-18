@@ -15,8 +15,11 @@ surface.CreateFont("zsnes_gui_font", {
 	path = "fonts/zfont.txt",
 	fallback = "default_gui_zsnes",
 	shadow = 1,
+	padding = 2,
+	shadow_color = Color(0,0,0,0.8),
 	size = 5*S,
 	scale = S,
+	--shade = "vec4(sin(uv.x*130)+cos(uv.y*50))*texture(self, uv).a;",
 	filtering = "nearest",
 }) 
 
@@ -114,9 +117,9 @@ skin.tab_inactive_text_color = Color(0.5,0.5,0.5)
 
 local buffer, length = texture:Download()
 
-skin.text_color = texture:GetPixelColor(187, 504, buffer)
-skin.text_color.a = 1
+skin.text_color = Color(0.8, 0.8, 0.8, 1)
 skin.text_color_inactive = skin.text_color * 0.80
+
 skin.text_edit_color = texture:GetPixelColor(110, 497, buffer)
 skin.text_edit_color.a = 1
 skin.property_background = texture:GetPixelColor(28, 500, buffer)
