@@ -132,7 +132,7 @@ META.tags.blackhole = {
 	arguments = {1},
 	
 	pre_draw = function(markup, self, x,y, force)
-		local delta = FrameTime() * 2
+		local delta = system.GetFrameTime() * 2
 		
 		for k,v in ipairs(markup.chunks) do
 			if v ~= self and v.w > 0 and v.h > 0 then
