@@ -222,6 +222,7 @@ local GBUFFER = {
 				out_color.rgb *= light;
 				
 				out_color.rgb = mix_fog(out_color.rgb);
+				out_color.rgb += texture(tex_lens_flare, uv).rgb;
 				
 				out_color.rgb = pow(out_color.rgb, vec3(gamma));
 			}
@@ -599,7 +600,13 @@ function render.DrawDeferred(dt, w, h)
 	render.SetBlendMode("alpha")	
 	render.SetCullMode("back")
 	render.Start2D()
-		
+	
+		for i, pass in ipairs(render.gbuffer_passes) do
+			if pass.Draw2D then 
+				pass:Draw2D() 
+			end
+		end
+	
 		if render.pp_shaders[1] and false then		
 		
 			-- copy the gbuffer to the screen buffer

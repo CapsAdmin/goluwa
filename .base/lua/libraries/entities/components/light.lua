@@ -2,7 +2,7 @@ local COMPONENT = {}
 
 COMPONENT.Name = "light"
 COMPONENT.Require = {"transform"}
-COMPONENT.Events = {"Draw3DLights", "DrawShadowMaps"}
+COMPONENT.Events = {"Draw3DLights", "DrawShadowMaps", "DrawLensFlare"}
 
 prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1))
@@ -17,12 +17,119 @@ prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "NearZ", 1)
 	prototype.GetSet(COMPONENT, "FarZ", 32000)
 	prototype.GetSet(COMPONENT, "OrthoSize", 0)
+	prototype.GetSet(COMPONENT, "LensFlare", false)
 prototype.EndStorable()
 
-if CLIENT then			
-	do -- shader
-		local gl = require("lj-opengl") -- OpenGL
+if CLIENT then
+	local gl = require("lj-opengl")
+	
+	do -- shadow map stage 1
+		local PASS = render.CreateGBufferPass("shadow", 2)
+
+		function PASS:Draw3D()
+			event.Call("DrawShadowMaps", render.gbuffer_shadow_shader)
+		end
 		
+		function PASS:DrawDebug(i,x,y,w,h,size)
+			for name, map in pairs(render.shadow_maps) do
+				local tex = map:GetTexture("depth")
+		
+			
+				surface.SetWhiteTexture()
+				surface.SetColor(1, 1, 1, 1)
+				surface.DrawRect(x, y, w, h)
+				
+				surface.SetColor(1,1,1,1)
+				surface.SetTexture(tex)
+				surface.DrawRect(x, y, w, h)
+				
+				surface.SetTextPosition(x, y + 5)
+				surface.DrawText(tostring(name))
+				
+				if i%size == 0 then
+					y = y + h
+					x = 0
+				else
+					x = x + w
+				end
+				
+				i = i + 1
+			end
+			
+			return i,x,y,w,h
+		end
+
+		PASS:ShaderStage("vertex", { 
+			uniform = {
+				pvm_matrix = {mat4 = render.GetPVWMatrix2D},
+			},			
+			attributes = {
+				{pos = "vec3"},
+				{normal = "vec3"},
+				{uv = "vec2"},
+				{texture_blend = "float"},
+			},	
+			source = "gl_Position = pvm_matrix * vec4(pos, 1);"
+		})
+		
+		render.shadow_maps = render.shadow_maps or utility.CreateWeakTable()
+								
+		function COMPONENT:OnDrawShadowMaps(shader)
+			if self.Shadow then
+				if not render.shadow_maps[self] then
+					self.shadow_map = render.CreateFrameBuffer(render.GetWidth(), render.GetHeight(), {
+						name = "depth",
+						attach = "depth",
+						draw_manual = true,
+						texture_format = {
+							internal_format = "DEPTH_COMPONENT32",	 
+							depth_texture_mode = gl.e.GL_RED,
+							min_filter = "nearest",				
+						} 
+					})
+					
+					render.shadow_maps[self] = self.shadow_map
+				end
+			else
+				if render.shadow_maps[self] then
+					render.shadow_maps[self] = nil
+				end
+				return
+			end
+			
+			local transform = self:GetComponent("transform")					
+			local pos = transform:GetPosition()
+			local ang = transform:GetAngles()
+			
+			-- setup the view matrix
+			local view = Matrix44()
+			view:Rotate(ang.r, 0, 0, 1)
+			view:Rotate(ang.p + math.pi/2, 1, 0, 0)
+			view:Rotate(ang.y, 0, 0, 1)
+			view:Translate(pos.y, pos.x, pos.z)
+			
+			-- setup the projection matrix
+			local projection = Matrix44()
+			
+			if self.OrthoSize == 0 then
+				projection:Perspective(self.FOV, self.NearZ, self.FarZ, render.camera.ratio) 
+			else
+				local size = self.OrthoSize
+				projection:Ortho(-size, size, -size, size, 200, 0) 
+			end
+			
+			-- make a view_projection matrix
+			self.vp_matrix = view * projection
+			
+			-- render the scene with this matrix
+			self.shadow_map:Begin("depth")
+				self.shadow_map:Clear("depth")
+				event.Call("Draw3DGeometry", shader, self.vp_matrix)
+			self.shadow_map:End("depth")
+		end
+	end
+	
+	do -- light stage 2
 		local PASS = render.CreateGBufferPass("light", 3)
 		PASS:AddBuffer("light", "RGBA16F")
 
@@ -166,7 +273,7 @@ if CLIENT then
 				{					
 					vec2 uv = get_uv();					
 					vec3 world_pos = get_pos(uv);	
-					
+										
 					//out_color.rgb = world_pos; out_color.a = 1; {return;}
 										
 					{					
@@ -191,46 +298,84 @@ if CLIENT then
 				}
 			]]  
 		})
+		
+		function COMPONENT:OnDraw3DLights(shader)
+			if not render.matrices.vp_matrix or not self.light_mesh then return end -- grr
+			if not self.light_mesh.sub_models[1] then return end
+			
+			local transform = self:GetComponent("transform")
+			local matrix = transform:GetMatrix() 
+			local screen = matrix * render.matrices.vp_matrix
+			
+			shader.pvm_matrix = screen.m
+			self.screen_matrix = screen
+
+			
+			local mat = matrix * render.matrices.view_3d
+			local x,y,z = mat:GetTranslation()
+			shader.light_pos:Set(x*2,y*2,z*2) -- why do i need to multiply by 2?
+			shader.light_radius = transform:GetSize()
+			shader.inverse_projection = render.matrices.projection_3d_inverse.m
+			shader.inverse_view_projection = (render.matrices.vp_3d_inverse).m
+			
+			-- automate this!!
+			shader.light_color = self.Color
+			shader.light_ambient_intensity = self.AmbientIntensity
+			shader.light_diffuse_intensity = self.DiffuseIntensity
+			shader.light_specular_intensity = self.SpecularIntensity
+			shader.light_attenuation_constant = self.AttenuationConstant
+			shader.light_attenuation_linear = self.AttenuationLinear
+			shader.light_attenuation_exponent = self.AttenuationExponent
+			shader.light_roughness = self.Roughness
+			shader.light_shadow = self.Shadow and 1 or 0
+			
+			if self.Shadow then
+				shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
+				shader.light_vp_matrix = self.vp_matrix.m
+			end		
+
+			shader:Bind()
+			self.light_mesh.sub_models[1].mesh:Draw()
+			wtf = self
+		end
 	end
 	
-	do -- shadow map
-		local gl = require("lj-opengl") -- OpenGL
+	do -- lens flares stage 3
+		local PASS = render.CreateGBufferPass("lens_flare", 4)
+		PASS:AddBuffer("lens_flare", "RGBA16F")
 		
-		local PASS = render.CreateGBufferPass("shadow", 2)
-
-		function PASS:Draw3D()
-			event.Call("DrawShadowMaps", render.gbuffer_shadow_shader)
-		end
+		function PASS:Draw2D()
+			if not self.LensFlare then return end
+		--	gl.Disable(gl.e.GL_DEPTH_TEST)	
 		
-		function PASS:DrawDebug(i,x,y,w,h,size)
-			for name, map in pairs(render.shadow_maps) do
-				local tex = map:GetTexture("depth")
-		
+			--gl.Enable(gl.e.GL_BLEND)
+--			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
 			
-				surface.SetWhiteTexture()
-				surface.SetColor(1, 1, 1, 1)
-				surface.DrawRect(x, y, w, h)
-				
-				surface.SetColor(1,1,1,1)
-				surface.SetTexture(tex)
-				surface.DrawRect(x, y, w, h)
-				
-				surface.SetTextPosition(x, y + 5)
-				surface.DrawText(tostring(name))
-				
-				if i%size == 0 then
-					y = y + h
-					x = 0
-				else
-					x = x + w
-				end
-				
-				i = i + 1
+			render.SetCullMode("front")
+			render.gbuffer:Begin("lens_flare")
+				render.gbuffer:Clear(0,0,0,0, "lens_flare")
+				event.Call("DrawLensFlare", render.gbuffer_lens_flare_shader)
+			render.gbuffer:End()
+			render.SetCullMode("back")			
+			
+			render.SetBlendMode("alpha")
+		end
+			
+		function COMPONENT:OnDrawLensFlare(shader)
+			local x, y, z = self.screen_matrix:GetClipCoordinates()
+			
+			shader.pvm_matrix = self.screen_matrix.m
+			
+			if z > -1 then
+				shader.screen_pos:Set(x, y)
+			else
+				shader.screen_pos:Set(-2,-2)
 			end
 			
-			return i,x,y,w,h
+			shader:Bind()
+			self.light_mesh.sub_models[1].mesh:Draw()
 		end
-
+		
 		PASS:ShaderStage("vertex", { 
 			uniform = {
 				pvm_matrix = {mat4 = render.GetPVWMatrix2D},
@@ -241,7 +386,141 @@ if CLIENT then
 				{uv = "vec2"},
 				{texture_blend = "float"},
 			},	
-			source = "gl_Position = pvm_matrix * vec4(pos, 1);"
+			source = "gl_Position = pvm_matrix * vec4(pos*7.5, 1);"
+		})
+		
+		PASS:ShaderStage("fragment", { 
+			uniform = {				
+				tex_depth = "sampler2D",
+				tex_diffuse = "sampler2D",
+				tex_normal = "sampler2D",
+				tex_position = "sampler2D",
+				
+				tex_noise = render.GetNoiseTexture(),
+				noise_tex_size = render.GetNoiseTexture():GetSize(),
+		
+				screen_pos = Vec2(0,0),
+				
+				screen_size = {vec2 = render.GetScreenSize},
+				light_color = Color(1,1,1,1),				
+				light_diffuse_intensity = 0.5,
+				light_radius = 1000,
+				
+				
+				inverse_projection = "mat4",
+				cam_nearz = {float = function() return render.camera.nearz end},
+				cam_farz = {float = function() return render.camera.farz end},
+				view_matrix = {mat4 = function() return render.matrices.view_3d.m end},
+			},
+			source = [[			
+				out vec4 out_color;
+				
+				vec2 get_uv()
+				{
+					return gl_FragCoord.xy / screen_size;
+				}
+									
+				float get_depth(vec2 uv) 
+				{
+					return (2.0 * cam_nearz) / (cam_farz + cam_nearz - texture2D(tex_depth, uv).r * (cam_farz - cam_nearz));
+				}
+				
+				vec3 get_pos(vec2 uv)
+				{
+					float z = -texture2D(tex_depth, uv).r;
+					vec4 sPos = vec4(uv * 2.0 - 1.0, z, 1.0);
+					sPos = inverse_projection * sPos;
+
+					return (sPos.xyz / sPos.w);
+				}
+				
+				/*by musk License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+
+				 Trying to get some interesting looking lens flares.
+
+				 13/08/13: 
+					published
+
+				muuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuusk!*/
+
+				float noise(float t)
+				{
+					return texture2D(tex_noise,vec2(t,.0)/noise_tex_size).x;
+				}
+				float noise(vec2 t)
+				{
+					return texture2D(tex_noise,t/noise_tex_size).x;
+				}
+
+				vec3 lensflare(vec2 uv,vec2 pos)
+				{
+					vec2 main = uv-pos;
+					vec2 uvd = uv*(length(uv));
+					
+					float ang = atan(main.x,main.y);
+					float dist=length(main); dist = pow(dist,.1);
+					float n = noise(vec2(ang*16.0,dist*32.0));
+					
+					float f0 = 1.0/(length(uv-pos)*16.0+1.0);
+					
+					f0 = f0+f0*(sin(noise((pos.x+pos.y)*2.2+ang*4.0+5.954)*16.0)*.1+dist*.1+.8);
+					
+					float f1 = max(0.01-pow(length(uv+1.2*pos),1.9),.0)*7.0;
+
+					float f2 = max(1.0/(1.0+32.0*pow(length(uvd+0.8*pos),2.0)),.0)*00.25;
+					float f22 = max(1.0/(1.0+32.0*pow(length(uvd+0.85*pos),2.0)),.0)*00.23;
+					float f23 = max(1.0/(1.0+32.0*pow(length(uvd+0.9*pos),2.0)),.0)*00.21;
+					
+					vec2 uvx = mix(uv,uvd,-0.5);
+					
+					float f4 = max(0.01-pow(length(uvx+0.4*pos),2.4),.0)*6.0;
+					float f42 = max(0.01-pow(length(uvx+0.45*pos),2.4),.0)*5.0;
+					float f43 = max(0.01-pow(length(uvx+0.5*pos),2.4),.0)*3.0;
+					
+					uvx = mix(uv,uvd,-.4);
+					
+					float f5 = max(0.01-pow(length(uvx+0.2*pos),5.5),.0)*2.0;
+					float f52 = max(0.01-pow(length(uvx+0.4*pos),5.5),.0)*2.0;
+					float f53 = max(0.01-pow(length(uvx+0.6*pos),5.5),.0)*2.0;
+					
+					uvx = mix(uv,uvd,-0.5);
+					
+					float f6 = max(0.01-pow(length(uvx-0.3*pos),1.6),.0)*6.0;
+					float f62 = max(0.01-pow(length(uvx-0.325*pos),1.6),.0)*3.0;
+					float f63 = max(0.01-pow(length(uvx-0.35*pos),1.6),.0)*5.0;
+					
+					vec3 c = vec3(.0);
+					
+					c.r+=f2+f4+f5+f6; c.g+=f22+f42+f52+f62; c.b+=f23+f43+f53+f63;
+					c = c*1.3 - vec3(length(uvd)*.05);
+					c+=vec3(f0);
+					
+					return c;
+				}
+
+				vec3 cc(vec3 color, float factor,float factor2) // color modifier
+				{
+					float w = color.x+color.y+color.z;
+					return mix(color,vec3(w)*factor,w*factor2);
+				}
+				
+				void main()
+				{					
+					vec2 uv = get_uv();
+					
+					out_color.a = 1;
+					
+					
+					if (screen_pos != vec2(-2, -2))
+					{					
+						vec3 color = light_color.rgb*lensflare(uv-vec2(0.5), screen_pos);
+						color -= noise(gl_FragCoord.xy)*0.015;
+						color = cc(color, 0.5, 0.1);
+						
+						out_color.rgb = color;
+					}
+				}
+			]]  
 		})
 	end
 	
@@ -251,105 +530,7 @@ if CLIENT then
 
 	function COMPONENT:OnRemove(ent)
 		render.shadow_maps[self] = nil
-	end	
-	
-	local gl = require("lj-opengl")
-	do -- shadow map		
-		
-		render.shadow_maps = render.shadow_maps or utility.CreateWeakTable()
-								
-		function COMPONENT:OnDrawShadowMaps(shader)
-			if self.Shadow then
-				if not render.shadow_maps[self] then
-					self.shadow_map = render.CreateFrameBuffer(render.GetWidth(), render.GetHeight(), {
-						name = "depth",
-						attach = "depth",
-						draw_manual = true,
-						texture_format = {
-							internal_format = "DEPTH_COMPONENT32",	 
-							depth_texture_mode = gl.e.GL_RED,
-							min_filter = "nearest",				
-						} 
-					})
-					
-					render.shadow_maps[self] = self.shadow_map
-				end
-			else
-				if render.shadow_maps[self] then
-					render.shadow_maps[self] = nil
-				end
-				return
-			end
-			
-			local transform = self:GetComponent("transform")					
-			local pos = transform:GetPosition()
-			local ang = transform:GetAngles()
-			
-			-- setup the view matrix
-			local view = Matrix44()
-			view:Rotate(ang.r, 0, 0, 1)
-			view:Rotate(ang.p + math.pi/2, 1, 0, 0)
-			view:Rotate(ang.y, 0, 0, 1)
-			view:Translate(pos.y, pos.x, pos.z)
-			
-			-- setup the projection matrix
-			local projection = Matrix44()
-			
-			if self.OrthoSize == 0 then
-				projection:Perspective(self.FOV, self.NearZ, self.FarZ, render.camera.ratio) 
-			else
-				local size = self.OrthoSize
-				projection:Ortho(-size, size, -size, size, 200, 0) 
-			end
-			
-			-- make a view_projection matrix
-			self.vp_matrix = view * projection
-			
-			-- render the scene with this matrix
-			self.shadow_map:Begin()
-				self.shadow_map:Clear()
-				event.Call("Draw3DGeometry", shader, self.vp_matrix)
-			self.shadow_map:End()
-		end
 	end
-
-	function COMPONENT:OnDraw3DLights(shader)
-		if not render.matrices.vp_matrix or not self.light_mesh then return end -- grr
-		if not self.light_mesh.sub_models[1] then return end
-		
-		local transform = self:GetComponent("transform")
-		local matrix = transform:GetMatrix() 
-		local screen = matrix * render.matrices.vp_matrix
-		
-		shader.pvm_matrix = screen.m
-
-		
-		local mat = matrix * render.matrices.view_3d
-		local x,y,z = mat:GetTranslation()
-		shader.light_pos:Set(x*2,y*2,z*2) -- why do i need to multiply by 2?
-		shader.light_radius = transform:GetSize()
-		shader.inverse_projection = render.matrices.projection_3d_inverse.m
-		shader.inverse_view_projection = (render.matrices.vp_3d_inverse).m
-		
-		-- automate this!!
-		shader.light_color = self.Color
-		shader.light_ambient_intensity = self.AmbientIntensity
-		shader.light_diffuse_intensity = self.DiffuseIntensity
-		shader.light_specular_intensity = self.SpecularIntensity
-		shader.light_attenuation_constant = self.AttenuationConstant
-		shader.light_attenuation_linear = self.AttenuationLinear
-		shader.light_attenuation_exponent = self.AttenuationExponent
-		shader.light_roughness = self.Roughness
-		shader.light_shadow = self.Shadow and 1 or 0
-		
-		if self.Shadow then
-			shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
-			shader.light_vp_matrix = self.vp_matrix.m
-		end		
-
-		shader:Bind()
-		self.light_mesh.sub_models[1].mesh:Draw()
-	end	
 end
 
 prototype.RegisterComponent(COMPONENT)
