@@ -1,5 +1,5 @@
 GL_ARB_vertex_shader
-http://www.opengl.org/registry/specs/gl/ARB/vertex_shader.txt
+http://www.opengl.org/registry/specs/ARB/vertex_shader.txt
 GL_ARB_vertex_shader
 	GL_VERTEX_SHADER_ARB 0x8B31
 	GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB 0x8B4A

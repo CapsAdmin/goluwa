@@ -1,5 +1,5 @@
 GL_ARB_tessellation_shader
-http://www.opengl.org/registry/specs/gl/ARB/tessellation_shader.txt
+http://www.opengl.org/registry/specs/ARB/tessellation_shader.txt
 GL_ARB_tessellation_shader
 	GL_PATCHES 0xE
 	GL_UNIFORM_BLOCK_REFERENCED_BY_TESS_CONTROL_SHADER 0x84F0

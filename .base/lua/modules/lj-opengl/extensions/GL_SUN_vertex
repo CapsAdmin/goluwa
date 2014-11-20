@@ -1,5 +1,5 @@
 GL_SUN_vertex
-http://www.opengl.org/registry/specs/gl/SUN/vertex.txt
+http://www.opengl.org/registry/specs/SUN/vertex.txt
 GL_SUN_vertex
 	void glColor3fVertex3fSUN (GLfloat r, GLfloat g, GLfloat b, GLfloat x, GLfloat y, GLfloat z)
 	void glColor3fVertex3fvSUN (const GLfloat* c, const GLfloat *v)

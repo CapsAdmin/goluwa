@@ -1,5 +1,5 @@
 GL_ARB_shader_storage_buffer_object
-http://www.opengl.org/registry/specs/gl/ARB/shader_storage_buffer_object.txt
+http://www.opengl.org/registry/specs/ARB/shader_storage_buffer_object.txt
 GL_ARB_shader_storage_buffer_object
 	GL_SHADER_STORAGE_BARRIER_BIT 0x2000
 	GL_MAX_COMBINED_SHADER_OUTPUT_RESOURCES 0x8F39

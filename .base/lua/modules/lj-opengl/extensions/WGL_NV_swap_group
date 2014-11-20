@@ -1,5 +1,5 @@
 WGL_NV_swap_group
-http://www.opengl.org/registry/specs/gl/NV/wgl_swap_group.txt
+http://www.opengl.org/registry/specs/NV/wgl_swap_group.txt
 WGL_NV_swap_group
 	BOOL wglBindSwapBarrierNV (GLuint group, GLuint barrier)
 	BOOL wglJoinSwapGroupNV (HDC hDC, GLuint group)

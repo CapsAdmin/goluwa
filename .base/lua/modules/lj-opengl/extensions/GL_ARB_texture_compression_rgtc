@@ -1,5 +1,5 @@
 GL_ARB_texture_compression_rgtc
-http://www.opengl.org/registry/specs/gl/ARB/texture_compression_rgtc.txt
+http://www.opengl.org/registry/specs/ARB/texture_compression_rgtc.txt
 GL_ARB_texture_compression_rgtc
 	GL_COMPRESSED_RED_RGTC1 0x8DBB
 	GL_COMPRESSED_SIGNED_RED_RGTC1 0x8DBC

@@ -1,5 +1,5 @@
 GLX_NV_video_capture
-http://www.opengl.org/registry/specs/gl/NV/video_capture.txt
+http://www.opengl.org/registry/specs/NV/video_capture.txt
 GLX_NV_video_capture
 	GLX_DEVICE_ID_NV 0x20CD
 	GLX_UNIQUE_ID_NV 0x20CE

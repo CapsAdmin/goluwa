@@ -1,5 +1,5 @@
 GL_ARB_copy_buffer
-http://www.opengl.org/registry/specs/gl/ARB/copy_buffer.txt
+http://www.opengl.org/registry/specs/ARB/copy_buffer.txt
 GL_ARB_copy_buffer
 	GL_COPY_READ_BUFFER 0x8F36
 	GL_COPY_WRITE_BUFFER 0x8F37

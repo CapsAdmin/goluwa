@@ -1,5 +1,5 @@
 GL_NV_bindless_texture
-http://www.opengl.org/registry/specs/gl/NV/bindless_texture.txt
+http://www.opengl.org/registry/specs/NV/bindless_texture.txt
 GL_NV_bindless_texture
 	GLuint64 glGetImageHandleNV (GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum format)
 	GLuint64 glGetTextureHandleNV (GLuint texture)

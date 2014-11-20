@@ -1,5 +1,5 @@
 GL_AMD_name_gen_delete
-http://www.opengl.org/registry/specs/gl/AMD/name_gen_delete.txt
+http://www.opengl.org/registry/specs/AMD/name_gen_delete.txt
 GL_AMD_name_gen_delete
 	GL_DATA_BUFFER_AMD 0x9151
 	GL_PERFORMANCE_MONITOR_AMD 0x9152

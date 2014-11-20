@@ -1,5 +1,5 @@
 GL_SUN_triangle_list
-http://www.opengl.org/registry/specs/gl/SUN/triangle_list.txt
+http://www.opengl.org/registry/specs/SUN/triangle_list.txt
 GL_SUN_triangle_list
 	GL_RESTART_SUN 0x01
 	GL_REPLACE_MIDDLE_SUN 0x02
@@ -18,7 +18,7 @@ GL_SUN_triangle_list
 	GL_R1UI_T2F_V3F_SUN 0x85C9
 	GL_R1UI_T2F_N3F_V3F_SUN 0x85CA
 	GL_R1UI_T2F_C4F_N3F_V3F_SUN 0x85CB
-	void glReplacementCodePointerSUN (GLenum type, GLsizei stride, const GLvoid *pointer)
+	void glReplacementCodePointerSUN (GLenum type, GLsizei stride, const void *pointer)
 	void glReplacementCodeubSUN (GLubyte code)
 	void glReplacementCodeubvSUN (const GLubyte* code)
 	void glReplacementCodeuiSUN (GLuint code)

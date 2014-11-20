@@ -1,5 +1,5 @@
 GL_EXT_histogram
-http://www.opengl.org/registry/specs/gl/EXT/histogram.txt
+http://www.opengl.org/registry/specs/EXT/histogram.txt
 GL_EXT_histogram
 	GL_HISTOGRAM_EXT 0x8024
 	GL_PROXY_HISTOGRAM_EXT 0x8025
@@ -14,10 +14,10 @@ GL_EXT_histogram
 	GL_MINMAX_EXT 0x802E
 	GL_MINMAX_FORMAT_EXT 0x802F
 	GL_MINMAX_SINK_EXT 0x8030
-	void glGetHistogramEXT (GLenum target, GLboolean reset, GLenum format, GLenum type, GLvoid *values)
+	void glGetHistogramEXT (GLenum target, GLboolean reset, GLenum format, GLenum type, void *values)
 	void glGetHistogramParameterfvEXT (GLenum target, GLenum pname, GLfloat* params)
 	void glGetHistogramParameterivEXT (GLenum target, GLenum pname, GLint* params)
-	void glGetMinmaxEXT (GLenum target, GLboolean reset, GLenum format, GLenum type, GLvoid *values)
+	void glGetMinmaxEXT (GLenum target, GLboolean reset, GLenum format, GLenum type, void *values)
 	void glGetMinmaxParameterfvEXT (GLenum target, GLenum pname, GLfloat* params)
 	void glGetMinmaxParameterivEXT (GLenum target, GLenum pname, GLint* params)
 	void glHistogramEXT (GLenum target, GLsizei width, GLenum internalformat, GLboolean sink)

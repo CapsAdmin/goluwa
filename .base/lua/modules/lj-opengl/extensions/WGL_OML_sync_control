@@ -1,5 +1,5 @@
 WGL_OML_sync_control
-http://www.opengl.org/registry/specs/gl/OML/wgl_sync_control.txt
+http://www.opengl.org/registry/specs/OML/wgl_sync_control.txt
 WGL_OML_sync_control
 	BOOL wglGetMscRateOML (HDC hdc, INT32* numerator, INT32 *denominator)
 	BOOL wglGetSyncValuesOML (HDC hdc, INT64* ust, INT64 *msc, INT64 *sbc)

@@ -1,5 +1,5 @@
 GL_EXT_shader_image_load_store
-http://www.opengl.org/registry/specs/gl/EXT/shader_image_load_store.txt
+http://www.opengl.org/registry/specs/EXT/shader_image_load_store.txt
 GL_EXT_shader_image_load_store
 	GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT_EXT 0x00000001
 	GL_ELEMENT_ARRAY_BARRIER_BIT_EXT 0x00000002

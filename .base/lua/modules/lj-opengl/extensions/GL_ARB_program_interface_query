@@ -1,5 +1,5 @@
 GL_ARB_program_interface_query
-http://www.opengl.org/registry/specs/gl/ARB/program_interface_query.txt
+http://www.opengl.org/registry/specs/ARB/program_interface_query.txt
 GL_ARB_program_interface_query
 	GL_UNIFORM 0x92E1
 	GL_UNIFORM_BLOCK 0x92E2

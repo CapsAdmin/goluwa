@@ -1,5 +1,5 @@
 GL_NV_texture_rectangle
-http://www.opengl.org/registry/specs/gl/NV/texture_rectangle.txt
+http://www.opengl.org/registry/specs/NV/texture_rectangle.txt
 GL_NV_texture_rectangle
 	GL_TEXTURE_RECTANGLE_NV 0x84F5
 	GL_TEXTURE_BINDING_RECTANGLE_NV 0x84F6

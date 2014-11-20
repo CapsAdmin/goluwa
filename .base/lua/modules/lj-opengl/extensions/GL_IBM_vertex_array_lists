@@ -1,5 +1,5 @@
 GL_IBM_vertex_array_lists
-http://www.opengl.org/registry/specs/gl/IBM/vertex_array_lists.txt
+http://www.opengl.org/registry/specs/IBM/vertex_array_lists.txt
 GL_IBM_vertex_array_lists
 	GL_VERTEX_ARRAY_LIST_IBM 103070
 	GL_NORMAL_ARRAY_LIST_IBM 103071
@@ -17,11 +17,11 @@ GL_IBM_vertex_array_lists
 	GL_EDGE_FLAG_ARRAY_LIST_STRIDE_IBM 103085
 	GL_FOG_COORDINATE_ARRAY_LIST_STRIDE_IBM 103086
 	GL_SECONDARY_COLOR_ARRAY_LIST_STRIDE_IBM 103087
-	void glColorPointerListIBM (GLint size, GLenum type, GLint stride, const GLvoid ** pointer, GLint ptrstride)
+	void glColorPointerListIBM (GLint size, GLenum type, GLint stride, const void** pointer, GLint ptrstride)
 	void glEdgeFlagPointerListIBM (GLint stride, const GLboolean ** pointer, GLint ptrstride)
-	void glFogCoordPointerListIBM (GLenum type, GLint stride, const GLvoid ** pointer, GLint ptrstride)
-	void glIndexPointerListIBM (GLenum type, GLint stride, const GLvoid ** pointer, GLint ptrstride)
-	void glNormalPointerListIBM (GLenum type, GLint stride, const GLvoid ** pointer, GLint ptrstride)
-	void glSecondaryColorPointerListIBM (GLint size, GLenum type, GLint stride, const GLvoid ** pointer, GLint ptrstride)
-	void glTexCoordPointerListIBM (GLint size, GLenum type, GLint stride, const GLvoid ** pointer, GLint ptrstride)
-	void glVertexPointerListIBM (GLint size, GLenum type, GLint stride, const GLvoid ** pointer, GLint ptrstride)
+	void glFogCoordPointerListIBM (GLenum type, GLint stride, const void** pointer, GLint ptrstride)
+	void glIndexPointerListIBM (GLenum type, GLint stride, const void** pointer, GLint ptrstride)
+	void glNormalPointerListIBM (GLenum type, GLint stride, const void** pointer, GLint ptrstride)
+	void glSecondaryColorPointerListIBM (GLint size, GLenum type, GLint stride, const void** pointer, GLint ptrstride)
+	void glTexCoordPointerListIBM (GLint size, GLenum type, GLint stride, const void** pointer, GLint ptrstride)
+	void glVertexPointerListIBM (GLint size, GLenum type, GLint stride, const void** pointer, GLint ptrstride)

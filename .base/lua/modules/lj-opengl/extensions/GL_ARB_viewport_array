@@ -1,5 +1,5 @@
 GL_ARB_viewport_array
-http://www.opengl.org/registry/specs/gl/ARB/viewport_array.txt
+http://www.opengl.org/registry/specs/ARB/viewport_array.txt
 GL_ARB_viewport_array
 	GL_DEPTH_RANGE 0x0B70
 	GL_VIEWPORT 0x0BA2

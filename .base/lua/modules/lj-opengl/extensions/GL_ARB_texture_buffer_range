@@ -1,5 +1,5 @@
 GL_ARB_texture_buffer_range
-http://www.opengl.org/registry/specs/gl/ARB/texture_buffer_range.txt
+http://www.opengl.org/registry/specs/ARB/texture_buffer_range.txt
 GL_ARB_texture_buffer_range
 	GL_TEXTURE_BUFFER_OFFSET 0x919D
 	GL_TEXTURE_BUFFER_SIZE 0x919E

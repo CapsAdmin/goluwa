@@ -1,5 +1,5 @@
 GL_EXT_vertex_weighting
-http://www.opengl.org/registry/specs/gl/EXT/vertex_weighting.txt
+http://www.opengl.org/registry/specs/EXT/vertex_weighting.txt
 GL_EXT_vertex_weighting
 	GL_MODELVIEW0_STACK_DEPTH_EXT 0x0BA3
 	GL_MODELVIEW0_MATRIX_EXT 0x0BA6
@@ -14,6 +14,6 @@ GL_EXT_vertex_weighting
 	GL_VERTEX_WEIGHT_ARRAY_TYPE_EXT 0x850E
 	GL_VERTEX_WEIGHT_ARRAY_STRIDE_EXT 0x850F
 	GL_VERTEX_WEIGHT_ARRAY_POINTER_EXT 0x8510
-	void glVertexWeightPointerEXT (GLint size, GLenum type, GLsizei stride, GLvoid *pointer)
+	void glVertexWeightPointerEXT (GLint size, GLenum type, GLsizei stride, void *pointer)
 	void glVertexWeightfEXT (GLfloat weight)
 	void glVertexWeightfvEXT (GLfloat* weight)

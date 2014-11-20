@@ -1,5 +1,5 @@
 GLX_SGIX_video_resize
-http://www.opengl.org/registry/specs/gl/SGIX/video_resize.txt
+http://www.opengl.org/registry/specs/SGIX/video_resize.txt
 GLX_SGIX_video_resize
 	GLX_SYNC_FRAME_SGIX 0x00000000
 	GLX_SYNC_SWAP_SGIX 0x00000001

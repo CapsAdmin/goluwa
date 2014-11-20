@@ -1,5 +1,5 @@
 GL_ARB_point_parameters
-http://www.opengl.org/registry/specs/gl/ARB/point_parameters.txt
+http://www.opengl.org/registry/specs/ARB/point_parameters.txt
 GL_ARB_point_parameters
 	GL_POINT_SIZE_MIN_ARB 0x8126
 	GL_POINT_SIZE_MAX_ARB 0x8127

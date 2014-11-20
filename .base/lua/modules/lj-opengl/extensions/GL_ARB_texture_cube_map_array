@@ -1,5 +1,5 @@
 GL_ARB_texture_cube_map_array
-http://www.opengl.org/registry/specs/gl/ARB/texture_cube_map_array.txt
+http://www.opengl.org/registry/specs/ARB/texture_cube_map_array.txt
 GL_ARB_texture_cube_map_array
 	GL_TEXTURE_CUBE_MAP_ARRAY_ARB 0x9009
 	GL_TEXTURE_BINDING_CUBE_MAP_ARRAY_ARB 0x900A

@@ -1,5 +1,5 @@
 GL_NV_fragment_program
-http://www.opengl.org/registry/specs/gl/NV/fragment_program.txt
+http://www.opengl.org/registry/specs/NV/fragment_program.txt
 GL_NV_fragment_program
 	GL_MAX_FRAGMENT_PROGRAM_LOCAL_PARAMETERS_NV 0x8868
 	GL_FRAGMENT_PROGRAM_NV 0x8870

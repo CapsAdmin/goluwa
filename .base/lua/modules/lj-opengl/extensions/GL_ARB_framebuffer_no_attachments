@@ -1,5 +1,5 @@
 GL_ARB_framebuffer_no_attachments
-http://www.opengl.org/registry/specs/gl/ARB/framebuffer_no_attachments.txt
+http://www.opengl.org/registry/specs/ARB/framebuffer_no_attachments.txt
 GL_ARB_framebuffer_no_attachments
 	GL_FRAMEBUFFER_DEFAULT_WIDTH 0x9310
 	GL_FRAMEBUFFER_DEFAULT_HEIGHT 0x9311

@@ -1,5 +1,5 @@
 GL_ARB_fragment_program
-http://www.opengl.org/registry/specs/gl/ARB/fragment_program.txt
+http://www.opengl.org/registry/specs/ARB/fragment_program.txt
 GL_ARB_fragment_program
 	GL_FRAGMENT_PROGRAM_ARB 0x8804
 	GL_PROGRAM_ALU_INSTRUCTIONS_ARB 0x8805

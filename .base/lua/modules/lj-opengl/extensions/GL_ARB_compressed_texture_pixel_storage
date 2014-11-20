@@ -1,5 +1,5 @@
 GL_ARB_compressed_texture_pixel_storage
-http://www.opengl.org/registry/specs/gl/ARB/compressed_texture_pixel_storage.txt
+http://www.opengl.org/registry/specs/ARB/compressed_texture_pixel_storage.txt
 GL_ARB_compressed_texture_pixel_storage
 	GL_UNPACK_COMPRESSED_BLOCK_WIDTH 0x9127
 	GL_UNPACK_COMPRESSED_BLOCK_HEIGHT 0x9128

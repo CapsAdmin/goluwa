@@ -1,5 +1,5 @@
 GL_AMD_interleaved_elements
-http://www.opengl.org/registry/specs/gl/AMD/interleaved_elements.txt
+http://www.opengl.org/registry/specs/AMD/interleaved_elements.txt
 GL_AMD_interleaved_elements
 	GL_RED 0x1903
 	GL_GREEN 0x1904

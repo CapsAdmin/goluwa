@@ -1,5 +1,5 @@
 GLX_EXT_texture_from_pixmap
-http://www.opengl.org/registry/specs/gl/EXT/texture_from_pixmap.txt
+http://www.opengl.org/registry/specs/EXT/texture_from_pixmap.txt
 GLX_EXT_texture_from_pixmap
 	GLX_TEXTURE_1D_BIT_EXT 0x00000001
 	GLX_TEXTURE_2D_BIT_EXT 0x00000002

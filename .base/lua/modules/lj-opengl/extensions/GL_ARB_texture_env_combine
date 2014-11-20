@@ -1,5 +1,5 @@
 GL_ARB_texture_env_combine
-http://www.opengl.org/registry/specs/gl/ARB/texture_env_combine.txt
+http://www.opengl.org/registry/specs/ARB/texture_env_combine.txt
 GL_ARB_texture_env_combine
 	GL_SUBTRACT_ARB 0x84E7
 	GL_COMBINE_ARB 0x8570

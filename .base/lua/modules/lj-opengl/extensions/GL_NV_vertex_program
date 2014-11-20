@@ -1,5 +1,5 @@
 GL_NV_vertex_program
-http://www.opengl.org/registry/specs/gl/NV/vertex_program.txt
+http://www.opengl.org/registry/specs/NV/vertex_program.txt
 GL_NV_vertex_program
 	GL_VERTEX_PROGRAM_NV 0x8620
 	GL_VERTEX_STATE_PROGRAM_NV 0x8621
@@ -94,7 +94,7 @@ GL_NV_vertex_program
 	void glGetProgramStringNV (GLuint id, GLenum pname, GLubyte* program)
 	void glGetProgramivNV (GLuint id, GLenum pname, GLint* params)
 	void glGetTrackMatrixivNV (GLenum target, GLuint address, GLenum pname, GLint* params)
-	void glGetVertexAttribPointervNV (GLuint index, GLenum pname, GLvoid** pointer)
+	void glGetVertexAttribPointervNV (GLuint index, GLenum pname, void** pointer)
 	void glGetVertexAttribdvNV (GLuint index, GLenum pname, GLdouble* params)
 	void glGetVertexAttribfvNV (GLuint index, GLenum pname, GLfloat* params)
 	void glGetVertexAttribivNV (GLuint index, GLenum pname, GLint* params)
@@ -134,7 +134,7 @@ GL_NV_vertex_program
 	void glVertexAttrib4svNV (GLuint index, const GLshort* v)
 	void glVertexAttrib4ubNV (GLuint index, GLubyte x, GLubyte y, GLubyte z, GLubyte w)
 	void glVertexAttrib4ubvNV (GLuint index, const GLubyte* v)
-	void glVertexAttribPointerNV (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer)
+	void glVertexAttribPointerNV (GLuint index, GLint size, GLenum type, GLsizei stride, const void *pointer)
 	void glVertexAttribs1dvNV (GLuint index, GLsizei n, const GLdouble* v)
 	void glVertexAttribs1fvNV (GLuint index, GLsizei n, const GLfloat* v)
 	void glVertexAttribs1svNV (GLuint index, GLsizei n, const GLshort* v)

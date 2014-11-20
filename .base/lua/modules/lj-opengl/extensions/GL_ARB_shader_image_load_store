@@ -1,5 +1,5 @@
 GL_ARB_shader_image_load_store
-http://www.opengl.org/registry/specs/gl/ARB/shader_image_load_store.txt
+http://www.opengl.org/registry/specs/ARB/shader_image_load_store.txt
 GL_ARB_shader_image_load_store
 	GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT 0x00000001
 	GL_ELEMENT_ARRAY_BARRIER_BIT 0x00000002

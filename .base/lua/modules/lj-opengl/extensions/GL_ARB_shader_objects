@@ -1,5 +1,5 @@
 GL_ARB_shader_objects
-http://www.opengl.org/registry/specs/gl/ARB/shader_objects.txt
+http://www.opengl.org/registry/specs/ARB/shader_objects.txt
 GL_ARB_shader_objects
 	GL_PROGRAM_OBJECT_ARB 0x8B40
 	GL_SHADER_OBJECT_ARB 0x8B48

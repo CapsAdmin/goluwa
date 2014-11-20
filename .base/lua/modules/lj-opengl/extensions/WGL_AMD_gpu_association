@@ -1,5 +1,5 @@
 WGL_AMD_gpu_association
-http://www.opengl.org/registry/specs/gl/AMD/wgl_gpu_association.txt
+http://www.opengl.org/registry/specs/AMD/wgl_gpu_association.txt
 WGL_AMD_gpu_association
 	WGL_GPU_VENDOR_AMD 0x1F00
 	WGL_GPU_RENDERER_STRING_AMD 0x1F01

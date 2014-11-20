@@ -1,5 +1,5 @@
 GL_ARB_gpu_shader_fp64
-http://www.opengl.org/registry/specs/gl/ARB/gpu_shader_fp64.txt
+http://www.opengl.org/registry/specs/ARB/gpu_shader_fp64.txt
 GL_ARB_gpu_shader_fp64
 	GL_DOUBLE_MAT2 0x8F46
 	GL_DOUBLE_MAT3 0x8F47

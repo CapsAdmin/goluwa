@@ -1,5 +1,5 @@
 GL_ARB_bindless_texture
-http://www.opengl.org/registry/specs/gl/ARB/bindless_texture.txt
+http://www.opengl.org/registry/specs/ARB/bindless_texture.txt
 GL_ARB_bindless_texture
 	GL_UNSIGNED_INT64_ARB 0x140F
 	GLuint64 glGetImageHandleARB (GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum format)

@@ -1,6 +1,10 @@
 GL_NV_blend_equation_advanced
-http://www.opengl.org/registry/specs/gl/NV/blend_equation_advanced.txt
+http://www.opengl.org/registry/specs/NV/blend_equation_advanced.txt
 GL_NV_blend_equation_advanced
+	GL_XOR_NV 0x1506
+	GL_RED_NV 0x1903
+	GL_GREEN_NV 0x1904
+	GL_BLUE_NV 0x1905
 	GL_BLEND_PREMULTIPLIED_SRC_NV 0x9280
 	GL_BLEND_OVERLAP_NV 0x9281
 	GL_UNCORRELATED_NV 0x9282
