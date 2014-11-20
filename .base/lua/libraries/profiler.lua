@@ -143,15 +143,14 @@ do
 	local stack = {}
 	local enabled = false
 	local i = 0
-	
+		
 	function profiler.PushSection(section_name)
 		if not enabled then return end
 		
-		collectgarbage("stop")
+		local info = debug.getinfo(2)		
 		local start_gc = collectgarbage("count")
 		local start_time = system.GetTime()
-		local info = debug.getinfo(2)
-		
+				
 		info.source = info.source:sub(2)
 		
 		table.insert(stack, {	
@@ -161,6 +160,8 @@ do
 			info = info, 
 			level = #stack,
 		})
+		
+		collectgarbage("stop")
 	end
 
 	function profiler.PopSection()
@@ -170,8 +171,8 @@ do
 		
 		if not res then return end
 		
-		local gc = ((collectgarbage("count") - res.start_gc) * 1024) - base_garbage
 		local time = system.GetTime() - res.start_time
+		local gc = ((collectgarbage("count") - res.start_gc) * 1024) - base_garbage
 		
 		collectgarbage("restart")
 		
@@ -396,11 +397,11 @@ end
 
 function profiler.MeasureInstrumental(time)
 	profiler.EnableSectionProfiling(true, true)
-
+	
 	debug.sethook(function(what) 
 		local info = debug.getinfo(2)
 			
-		if info.linedefined <= 0 then return end
+		if info.linedefined <= 0 or info.source:endswith("profiler.lua") then return end
 		
 		if what == "call" then
 			profiler.PushSection(info.source .. ":" .. info.linedefined)

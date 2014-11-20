@@ -7,23 +7,10 @@ META.ClassName = "Rect"
 META.NumberType = "float"
 META.Args = {{"x", "left"}, {"y", "top"}, {"w", "right"}, {"h", "bottom"}}
 
-function META.Constructor(a,b,c,d)
+function META.Constructor(a, b, c, d)
 	if a and not b and not c and not d then
-		return a,a,a,a
+		return a, a, a, a
 	end
-	
-	if typex(a) == "vec2" and typex(b) == "vec2" then
-		return a.x, a.y, b.w, b.h
-	end
-	
-	if type(a) == "number" and type(b) == "number" and typex(c) == "vec2" then
-		return a, b, c.w, c.h
-	end
-	
-	if type(b) == "number" and type(c) == "number" and typex(a) == "vec2" then
-		return a.x, a.y, b, c
-	end
-	
 	
 	return a or 0, b or 0, c or 0, d or 0
 end
@@ -59,14 +46,9 @@ function META:Center()
 	return self
 end
 
-function META:SetPosition(var)
-	if typex(var) == "vec2" then
-		self.x = var.x
-		self.y = var.y
-	else
-		self.x = var
-		self.y = var
-	end
+function META:SetPosition(x, y)
+	self.x = x
+	self.y = y
 
 	return self
 end
@@ -90,14 +72,9 @@ function META.IsRectInside(a, b)
 		)		
 end
 
-function META:SetSize(var)
-	if typex(var) == "vec2" then
-		self.w = var.x
-		self.h = var.y
-	else
-		self.w = var
-		self.h = var
-	end
+function META:SetSize(w, h)
+	self.w = w
+	self.h = h
 
 	return self
 end

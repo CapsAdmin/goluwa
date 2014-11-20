@@ -63,7 +63,7 @@ function prototype.AddParentingTemplate(META)
 	end
 		
 	function META:HasParent()
-		return self:GetParent() and self:GetParent():IsValid()
+		return self.Parent:IsValid()
 	end
 
 	function META:HasChildren()
