@@ -1,3 +1,5 @@
+if SCITE then return end
+
 local function go()
 	console.RunString("map gm_flatgrass")
 
