@@ -1,3 +1,0 @@
-if CLIENT then
-	
-end
