@@ -1,6 +1,10 @@
 local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
+function render.GetGBufferSize()
+	return Vec2(render.gbuffer_width or render.GetWidth(), render.gbuffer_height or render.GetHeight())
+end
+
 local GBUFFER = {
 	name = "gbuffer",
 	vertex = {
@@ -15,7 +19,7 @@ local GBUFFER = {
 	},
 	fragment = {
 		uniform = {			
-			screen_size = {vec2 = render.GetScreenSize},			
+			screen_size = {vec2 = render.GetGBufferSize},			
 			cam_nearz = {float = function() return render.camera.nearz end},
 			cam_farz = {float = function() return render.camera.farz end},
 			cam_fov = {float = function() return render.camera.fov end},
@@ -222,7 +226,7 @@ local GBUFFER = {
 				out_color.rgb *= light;
 				
 				out_color.rgb = mix_fog(out_color.rgb);
-				out_color.rgb += texture(tex_lens_flare, uv).rgb;
+				//out_color.rgb += texture(tex_lens_flare, uv).rgb;
 				
 				out_color.rgb = pow(out_color.rgb, vec3(gamma));
 			}
@@ -258,8 +262,8 @@ do -- post process
 		priority = priority or #render.pp_shaders
 		down_sample = down_sample or 1
 		
-		local width = render.GetWidth() / down_sample
-		local height = render.GetHeight() / down_sample  
+		local width = render.gbuffer_width / down_sample
+		local height = render.gbuffer_height / down_sample  
 		
 		local shader = {
 			name = "gbuffer_post_process_" .. name,
@@ -303,6 +307,8 @@ do -- post process
 				attach = "color",
 				texture_format = {
 					internal_format = "RGBA8",
+					--mag_filter = "nearest",
+					--min_filter = "nearest",
 				}
 			},
 		})
@@ -408,11 +414,20 @@ function render.CreateGBufferPass(name, stage)
 	return PASS
 end
  
+local w_cvar = console.CreateVariable("render_width", 0, function() render.InitializeGBuffer() end)
+local h_cvar = console.CreateVariable("render_height", 0, function() render.InitializeGBuffer() end)
+ 
 function render.InitializeGBuffer(width, height)
 	width = width or render.GetWidth()
 	height = height or render.GetHeight()
 	
+	if w_cvar:Get() > 0 then width = w_cvar:Get() end
+	if h_cvar:Get() > 0 then height = h_cvar:Get() end
+	
 	if width == 0 or height == 0 then return end
+		
+	render.gbuffer_width = width
+	render.gbuffer_height = height
 	
 	if render.debug then
 		logn("[render] initializing gbuffer: ", width, " ", height)
@@ -438,6 +453,8 @@ function render.InitializeGBuffer(width, height)
 					attach = buffer.attach or "color",
 					texture_format = {
 						internal_format = buffer.format or "RGB16F",
+						--mag_filter = "nearest",
+						--min_filter = "nearest",
 					},
 				})
 			end
@@ -481,6 +498,8 @@ function render.InitializeGBuffer(width, height)
 				attach = "color",
 				texture_format = {
 					internal_format = "RGBA8",
+					--mag_filter = "nearest",
+					--min_filter = "nearest",
 				}
 			},
 		})
@@ -495,7 +514,7 @@ function render.InitializeGBuffer(width, height)
 		end
 		render["gbuffer_" .. pass.name .. "_shader"] = shader
 	end
-		
+				
 	event.AddListener("WindowFramebufferResized", "gbuffer", function(window, w, h)
 		render.InitializeGBuffer(w, h)
 	end)

@@ -77,7 +77,7 @@ if CLIENT then
 		function COMPONENT:OnDrawShadowMaps(shader)
 			if self.Shadow then
 				if not render.shadow_maps[self] then
-					self.shadow_map = render.CreateFrameBuffer(render.GetWidth(), render.GetHeight(), {
+					self.shadow_map = render.CreateFrameBuffer(render.gbuffer_width, render.gbuffer_height, {
 						name = "depth",
 						attach = "depth",
 						draw_manual = true,
@@ -170,7 +170,7 @@ if CLIENT then
 				cam_pos = {vec3 = render.GetCameraPosition},
 				light_pos = Vec3(0,0,0),
 				
-				screen_size = {vec2 = render.GetScreenSize},
+				screen_size = {vec2 = render.GetGBufferSize},
 				light_color = Color(1,1,1,1),				
 				light_diffuse_intensity = 0.5,
 				light_radius = 1000,
@@ -340,7 +340,7 @@ if CLIENT then
 		end
 	end
 	
-	do -- lens flares stage 3
+	if false then -- lens flares stage 3
 		local PASS = render.CreateGBufferPass("lens_flare", 4)
 		PASS:AddBuffer("lens_flare", "RGBA16F")
 		
@@ -401,7 +401,7 @@ if CLIENT then
 		
 				screen_pos = Vec2(0,0),
 				
-				screen_size = {vec2 = render.GetScreenSize},
+				screen_size = {vec2 = render.GetGBufferSize},
 				light_color = Color(1,1,1,1),				
 				light_diffuse_intensity = 0.5,
 				light_radius = 1000,
