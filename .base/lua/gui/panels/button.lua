@@ -82,6 +82,7 @@ function PANEL:CanPress(button)
 end
 
 function PANEL:OnMouseInput(button, press)
+	if button == "button_3" then return end
 	self.click_times = self.click_times or {}
 	self.click_times[button] = self.click_times[button] or {last_click = 0, times = 0}
 	
