@@ -17,6 +17,7 @@ function PANEL:Initialize()
 	scroll_area:SetNoDraw(true)
 	scroll_area:SetAlwaysReceiveMouseInput(true)
 	scroll_area:SetMargin(Rect())
+	scroll_area:SetScrollable(true)
 end
 
 function PANEL:SetPanel(panel)
@@ -102,6 +103,8 @@ function PANEL:SetPanel(panel)
 	end
 	
 	self:SetScrollWidth(self.ScrollWidth)
+	
+	self:Layout()
 	
 	return panel
 end

@@ -124,6 +124,11 @@ function PANEL:OnRemove(a)
 end
 
 function PANEL:GetSizeOfChildren()
+	
+	if self.last_children_size then
+		return self.last_children_size
+	end
+	
 	self:Layout(true)
 	
 	local total_size = Vec2()
@@ -141,6 +146,8 @@ function PANEL:GetSizeOfChildren()
 			end
 		end
 	end
+	
+	self.last_children_size = total_size
 
 	return total_size
 end
@@ -172,7 +179,7 @@ function PANEL:PreDraw(from_cache)
 	local no_draw = self:HasParent() and self.Parent.draw_no_draw
 
 	surface.PushMatrix()
-	surface.Translate(self.Position.x, self.Position.y, 0)
+	surface.Translate(self.Position.x, self.Position.y)
 	
 	local w = (self.Size.w)/2
 	local h = (self.Size.h)/2
@@ -187,6 +194,36 @@ function PANEL:PreDraw(from_cache)
 		self:CalcDragging()
 		self:CalcScrolling()
 	end
+	
+	if 
+		from_cache or 
+		not no_draw or
+		not (self:HasParent() and 
+		not self.Parent:IsWorld() and 
+		not self.Parent.mouse_over and 
+		not self:IsDragging() and 
+		not self.AlwaysCalcMouse and 
+		not self.IgnoreMouse)
+	then
+		if not self.DrawPositionOffset:IsZero() then
+			render.Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
+		end
+		
+		if not self.DrawScaleOffset:IsZero() then
+			render.Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y, 1)
+		end
+		
+		if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
+			local w = (self.Size.w + self.DrawSizeOffset.w)/2
+			local h = (self.Size.h + self.DrawSizeOffset.h)/2
+
+			render.Translate(w, h, 0)
+			render.Rotate(self.DrawAngleOffset.p, 0, 0, 1)
+			render.Rotate(self.DrawAngleOffset.y, 0, 1, 0)
+			render.Rotate(self.DrawAngleOffset.r, 1, 0, 0)
+			render.Translate(-w, -h, 0)
+		end
+	end
 
 	self:CalcAnimations()
 	
@@ -194,7 +231,7 @@ function PANEL:PreDraw(from_cache)
 		self:Layout(true) 
 	end
 	
-	if self.CachedRendering then
+	if self.CachedRendering and not gui.debug then
 		self:DrawCache()
 		no_draw = true
 	end
@@ -264,7 +301,7 @@ function PANEL:PostDraw(from_cache)
 	end
 	
 	if gui.debug then
-		if self.Clipping then	
+		if false and self.Clipping then	
 			gl.Disable(gl.e.GL_STENCIL_TEST)
 			render.SetBlendMode("additive")
 			surface.SetColor(1, 0, 1, 0.25)
@@ -277,7 +314,7 @@ function PANEL:PostDraw(from_cache)
 			render.SetBlendMode("additive")
 			surface.SetColor(1, 0, 0, 0.1)
 			surface.SetWhiteTexture(self.cache_texture)
-			surface.DrawRect(0, 0, self.Size.w, self.Size.h)
+			surface.DrawRect(self.Scroll.x, self.Scroll.y, self.Size.w, self.Size.h)
 			self.updated_layout = false
 			render.SetBlendMode("alpha")
 		else
@@ -291,6 +328,7 @@ function PANEL:PostDraw(from_cache)
 	end
 	
 	surface.PopMatrix()
+	
 	
 	if self.ThreeDee then surface.End3D() end
 end
@@ -592,43 +630,43 @@ do -- drag drop
 	end
 
 	function PANEL:CalcDragging()
-		if self.drag_world_pos then
-			if not self.drag_panel_start_pos then
-				self.drag_panel_start_pos = self:GetPosition()
+		if not self.drag_world_pos then return end
+		
+		if not self.drag_panel_start_pos then
+			self.drag_panel_start_pos = self:GetPosition()
+		end
+
+		local drag_pos = Vec2(surface.WorldToLocal(self.drag_world_pos:Unpack()))
+
+		self:SetPosition(self.drag_panel_start_pos + self:GetMousePosition() - drag_pos)
+
+		local panel = gui.GetHoveringPanel(nil, self)
+
+		local drop_pos = panel:GetMousePosition() - self:GetMousePosition() + panel.Scroll
+
+		if self.drag_last_hover ~= panel then
+
+			if self.drag_last_hover then
+				self.drag_last_hover:OnDraggedChildExit(self, drop_pos)
 			end
 
-			local drag_pos = Vec2(surface.WorldToLocal(self.drag_world_pos:Unpack()))
+			panel:OnDraggedChildEnter(self, drop_pos)
 
-			self:SetPosition(self.drag_panel_start_pos + self:GetMousePosition() - drag_pos)
+			self.drag_last_hover = panel
+		end
 
-			local panel = gui.GetHoveringPanel(nil, self)
+		if self.SnapWhileDragging then
+			self:SnapToClosestPanel()
+		end
 
-			local drop_pos = panel:GetMousePosition() - self:GetMousePosition() + panel.Scroll
+		panel:OnPanelHover(self, drop_pos)
 
-			if self.drag_last_hover ~= panel then
+		if not input.IsMouseDown(self.drag_stop_button) then
 
-				if self.drag_last_hover then
-					self.drag_last_hover:OnDraggedChildExit(self, drop_pos)
-				end
+			self:OnParentLand(panel)
+			panel:OnChildDrop(self, drop_pos)
 
-				panel:OnDraggedChildEnter(self, drop_pos)
-
-				self.drag_last_hover = panel
-			end
-
-			if self.SnapWhileDragging then
-				self:SnapToClosestPanel()
-			end
-
-			panel:OnPanelHover(self, drop_pos)
-
-			if not input.IsMouseDown(self.drag_stop_button) then
-
-				self:OnParentLand(panel)
-				panel:OnChildDrop(self, drop_pos)
-
-				self:StopDragging()
-			end
+			self:StopDragging()
 		end
 	end
 
@@ -787,26 +825,7 @@ do -- animations
 		end
 	end
 
-	function PANEL:CalcAnimations()
-		if not self.DrawPositionOffset:IsZero() then
-			render.Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
-		end
-		
-		if not self.DrawScaleOffset:IsZero() then
-			render.Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y, 1)
-		end
-		
-		if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
-			local w = (self.Size.w + self.DrawSizeOffset.w)/2
-			local h = (self.Size.h + self.DrawSizeOffset.h)/2
-
-			render.Translate(w, h, 0)
-			render.Rotate(self.DrawAngleOffset.p, 0, 0, 1)
-			render.Rotate(self.DrawAngleOffset.y, 0, 1, 0)
-			render.Rotate(self.DrawAngleOffset.r, 1, 0, 0)
-			render.Translate(-w, -h, 0)
-		end
-				
+	function PANEL:CalcAnimations()				
 		for key, animation in pairs(self.animations) do
 
 			local pause = false
@@ -1318,20 +1337,23 @@ do -- mouse
 		if 
 			self:HasParent() and 
 			not self.Parent:IsWorld() and 
-			not self.Parent.mouse_over and 
+			not self.Parent.mouse_over and
 			not self:IsDragging() and 
+			not self:IsScrolling() and 
 			not self.AlwaysCalcMouse and 
-			not self.IgnoreMouse 
+			not self.IgnoreMouse
 		then 
 	
 			if self.mouse_just_entered then
 				self:OnMouseExit()
 				self.mouse_just_entered = false
 			end
+			
+			self.mouse_over = false
 	
 			return 
 		end
-		
+				
 		local x, y = surface.WorldToLocal(gui.mouse_pos.x, gui.mouse_pos.y)
 
 		self.MousePosition.x = x
@@ -1453,23 +1475,27 @@ do -- mouse
 			if button == "button_2" then
 				self:OnRightClick()
 			end
-			
-			if self.Scrollable then
-				if button == "button_3" then
-					self:StartScrolling(button)
-				end
-				
-				if button == "mwheel_down" then
-					self:SetScroll(self:GetScroll() + Vec2(0, 20))
-				elseif button == "mwheel_up" then
-					self:SetScroll(self:GetScroll() + Vec2(0, -20))
-				end
-			end
 		end
 
 		self:OnMouseInput(button, press)
 		
 		self:MarkCacheDirty()
+	end
+	
+	function PANEL:GlobalMouseInput(button, press)
+		if self.Scrollable and self.mouse_over then
+			if button == "button_3" then
+				self:StartScrolling(button)
+			end
+			
+			if button == "mwheel_down" then
+				self:SetScroll(self:GetScroll() + Vec2(0, 20))
+			elseif button == "mwheel_up" then
+				self:SetScroll(self:GetScroll() + Vec2(0, -20))
+			end
+		end
+		
+		self:OnGlobalMouseInput(button, press)
 	end
 	
 	function PANEL:KeyInput(button, press)
@@ -1541,6 +1567,7 @@ do -- layout
 				self.updated_layout = true
 				
 			self.in_layout = false
+			self.last_children_size = nil
 		else
 			self.layout_me = true
 		end
@@ -1669,8 +1696,6 @@ do -- layout chain
 				collide = true
 			elseif cmd == "no_collide" then
 				collide = false
-			elseif typex(cmd) == "vec2" then
-				child:SetSize(cmd:Copy())
 			elseif cmd == "size_to_width" then
 				local old = child:GetRect()
 				child:SuppressLayout(true)
@@ -1773,6 +1798,8 @@ do -- layout chain
 			elseif cmd == "right" then
 				child:SetX(math.max(child:GetX(), 1))
 				child:SetX(ray_cast(self, child:GetRect():SetX(self:GetWidth() - child:GetWidth()), child, collide).x)
+			elseif typex(cmd) == "vec2" then
+				child:SetSize(cmd:Copy())
 			end
 		end
 	end
