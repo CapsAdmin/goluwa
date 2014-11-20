@@ -147,6 +147,12 @@ do
 		render.PushWorldMatrix()
 	end
 	
+	event.AddListener("GBufferInitialized", "reset_camera_projection", function()
+		last_fov = nil
+		last_nearz = nil
+		last_farz = nil	
+	end)
+	
 	function render.End3D()
 		render.PopWorldMatrix()
 	end		
