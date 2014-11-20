@@ -98,6 +98,7 @@ function menu.CreateTopBar()
 	bar:SetDraggable(true)
 	bar:SetSize(Vec2(2000, 15*S))
 	bar:SetupLayoutChain("left", "top")
+	bar:SetCachedRendering(true)
 	
 	menu.panel = bar
 
