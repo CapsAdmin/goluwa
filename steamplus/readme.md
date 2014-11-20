@@ -1,1 +1,0 @@
-SteamPlus is a mess at the moment, it should clean up over time as I figure out ways to generalize things.
