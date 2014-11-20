@@ -1,5 +1,5 @@
 GL_KHR_texture_compression_astc_ldr
-http://www.opengl.org/registry/specs/gl/KHR/texture_compression_astc_ldr.txt
+http://www.opengl.org/registry/specs/KHR/texture_compression_astc_hdr.txt
 GL_KHR_texture_compression_astc_ldr
 	GL_COMPRESSED_RGBA_ASTC_4x4_KHR 0x93B0
 	GL_COMPRESSED_RGBA_ASTC_5x4_KHR 0x93B1

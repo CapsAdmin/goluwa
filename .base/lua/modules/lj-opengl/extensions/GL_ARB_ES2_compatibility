@@ -1,5 +1,5 @@
 GL_ARB_ES2_compatibility
-http://www.opengl.org/registry/specs/gl/ARB/ES2_compatibility.txt
+http://www.opengl.org/registry/specs/ARB/ES2_compatibility.txt
 GL_ARB_ES2_compatibility
 	GL_FIXED 0x140C
 	GL_IMPLEMENTATION_COLOR_READ_TYPE 0x8B9A
@@ -21,5 +21,5 @@ GL_ARB_ES2_compatibility
 	void glDepthRangef (GLclampf n, GLclampf f)
 	void glGetShaderPrecisionFormat (GLenum shadertype, GLenum precisiontype, GLint* range, GLint *precision)
 	void glReleaseShaderCompiler (void)
-	void glShaderBinary (GLsizei count, const GLuint* shaders, GLenum binaryformat, const GLvoid*binary, GLsizei length)
+	void glShaderBinary (GLsizei count, const GLuint* shaders, GLenum binaryformat, const void*binary, GLsizei length)
 	typedef int GLfixed

@@ -1,5 +1,5 @@
 GL_EXT_texture_snorm
-http://www.opengl.org/registry/specs/gl/EXT/texture_snorm.txt
+http://www.opengl.org/registry/specs/EXT/texture_snorm.txt
 GL_EXT_texture_snorm
 	GL_RED_SNORM 0x8F90
 	GL_RG_SNORM 0x8F91

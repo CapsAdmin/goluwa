@@ -1,5 +1,5 @@
 GL_NV_vertex_buffer_unified_memory
-http://www.opengl.org/registry/specs/gl/NV/vertex_buffer_unified_memory.txt
+http://www.opengl.org/registry/specs/NV/vertex_buffer_unified_memory.txt
 GL_NV_vertex_buffer_unified_memory
 	GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV 0x8F1E
 	GL_ELEMENT_ARRAY_UNIFIED_NV 0x8F1F

@@ -1,5 +1,5 @@
 GL_ARB_framebuffer_object
-http://www.opengl.org/registry/specs/gl/ARB/framebuffer_object.txt
+http://www.opengl.org/registry/specs/ARB/framebuffer_object.txt
 GL_ARB_framebuffer_object
 	GL_INVALID_FRAMEBUFFER_OPERATION 0x0506
 	GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING 0x8210

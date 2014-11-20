@@ -1,5 +1,5 @@
 GL_ARB_multisample
-http://www.opengl.org/registry/specs/gl/ARB/multisample.txt
+http://www.opengl.org/registry/specs/ARB/multisample.txt
 GL_ARB_multisample
 	GL_MULTISAMPLE_ARB 0x809D
 	GL_SAMPLE_ALPHA_TO_COVERAGE_ARB 0x809E

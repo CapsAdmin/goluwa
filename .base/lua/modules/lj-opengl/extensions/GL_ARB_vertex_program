@@ -1,5 +1,5 @@
 GL_ARB_vertex_program
-http://www.opengl.org/registry/specs/gl/ARB/vertex_program.txt
+http://www.opengl.org/registry/specs/ARB/vertex_program.txt
 GL_ARB_vertex_program
 	GL_COLOR_SUM_ARB 0x8458
 	GL_VERTEX_PROGRAM_ARB 0x8620
@@ -89,9 +89,9 @@ GL_ARB_vertex_program
 	void glGetProgramEnvParameterfvARB (GLenum target, GLuint index, GLfloat* params)
 	void glGetProgramLocalParameterdvARB (GLenum target, GLuint index, GLdouble* params)
 	void glGetProgramLocalParameterfvARB (GLenum target, GLuint index, GLfloat* params)
-	void glGetProgramStringARB (GLenum target, GLenum pname, GLvoid *string)
+	void glGetProgramStringARB (GLenum target, GLenum pname, void *string)
 	void glGetProgramivARB (GLenum target, GLenum pname, GLint* params)
-	void glGetVertexAttribPointervARB (GLuint index, GLenum pname, GLvoid** pointer)
+	void glGetVertexAttribPointervARB (GLuint index, GLenum pname, void** pointer)
 	void glGetVertexAttribdvARB (GLuint index, GLenum pname, GLdouble* params)
 	void glGetVertexAttribfvARB (GLuint index, GLenum pname, GLfloat* params)
 	void glGetVertexAttribivARB (GLuint index, GLenum pname, GLint* params)
@@ -104,7 +104,7 @@ GL_ARB_vertex_program
 	void glProgramLocalParameter4dvARB (GLenum target, GLuint index, const GLdouble* params)
 	void glProgramLocalParameter4fARB (GLenum target, GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 	void glProgramLocalParameter4fvARB (GLenum target, GLuint index, const GLfloat* params)
-	void glProgramStringARB (GLenum target, GLenum format, GLsizei len, const GLvoid *string)
+	void glProgramStringARB (GLenum target, GLenum format, GLsizei len, const void *string)
 	void glVertexAttrib1dARB (GLuint index, GLdouble x)
 	void glVertexAttrib1dvARB (GLuint index, const GLdouble* v)
 	void glVertexAttrib1fARB (GLuint index, GLfloat x)
@@ -141,4 +141,4 @@ GL_ARB_vertex_program
 	void glVertexAttrib4ubvARB (GLuint index, const GLubyte* v)
 	void glVertexAttrib4uivARB (GLuint index, const GLuint* v)
 	void glVertexAttrib4usvARB (GLuint index, const GLushort* v)
-	void glVertexAttribPointerARB (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer)
+	void glVertexAttribPointerARB (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer)

@@ -1,5 +1,5 @@
 GL_NV_evaluators
-http://www.opengl.org/registry/specs/gl/NV/evaluators.txt
+http://www.opengl.org/registry/specs/NV/evaluators.txt
 GL_NV_evaluators
 	GL_EVAL_2D_NV 0x86C0
 	GL_EVAL_TRIANGULAR_2D_NV 0x86C1
@@ -28,9 +28,9 @@ GL_NV_evaluators
 	void glEvalMapsNV (GLenum target, GLenum mode)
 	void glGetMapAttribParameterfvNV (GLenum target, GLuint index, GLenum pname, GLfloat* params)
 	void glGetMapAttribParameterivNV (GLenum target, GLuint index, GLenum pname, GLint* params)
-	void glGetMapControlPointsNV (GLenum target, GLuint index, GLenum type, GLsizei ustride, GLsizei vstride, GLboolean packed, GLvoid *points)
+	void glGetMapControlPointsNV (GLenum target, GLuint index, GLenum type, GLsizei ustride, GLsizei vstride, GLboolean packed, void *points)
 	void glGetMapParameterfvNV (GLenum target, GLenum pname, GLfloat* params)
 	void glGetMapParameterivNV (GLenum target, GLenum pname, GLint* params)
-	void glMapControlPointsNV (GLenum target, GLuint index, GLenum type, GLsizei ustride, GLsizei vstride, GLint uorder, GLint vorder, GLboolean packed, const GLvoid *points)
+	void glMapControlPointsNV (GLenum target, GLuint index, GLenum type, GLsizei ustride, GLsizei vstride, GLint uorder, GLint vorder, GLboolean packed, const void *points)
 	void glMapParameterfvNV (GLenum target, GLenum pname, const GLfloat* params)
 	void glMapParameterivNV (GLenum target, GLenum pname, const GLint* params)

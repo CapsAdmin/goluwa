@@ -1,5 +1,5 @@
 GL_ARB_compute_variable_group_size
-http://www.opengl.org/registry/specs/gl/ARB/compute_variable_group_size.txt
+http://www.opengl.org/registry/specs/ARB/compute_variable_group_size.txt
 GL_ARB_compute_variable_group_size
 	GL_MAX_COMPUTE_FIXED_GROUP_INVOCATIONS_ARB 0x90EB
 	GL_MAX_COMPUTE_FIXED_GROUP_SIZE_ARB 0x91BF

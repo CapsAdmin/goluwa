@@ -12,5 +12,5 @@ GL_REGAL_ES1_1_compatibility
 	void glGetTexParameterxv (GLenum target, GLenum pname, GLfixed* params)
 	void glPointParameterx (GLenum pname, GLfixed param)
 	void glPointParameterxv (GLenum pname, const GLfixed* params)
-	void glPointSizePointerOES (GLenum type, GLsizei stride, const GLvoid* pointer)
+	void glPointSizePointerOES (GLenum type, GLsizei stride, const void *pointer)
 	void glTexParameterxv (GLenum target, GLenum pname, const GLfixed* params)

@@ -1,5 +1,5 @@
 GL_SGI_color_table
-http://www.opengl.org/registry/specs/gl/SGI/color_table.txt
+http://www.opengl.org/registry/specs/SGI/color_table.txt
 GL_SGI_color_table
 	GL_COLOR_TABLE_SGI 0x80D0
 	GL_POST_CONVOLUTION_COLOR_TABLE_SGI 0x80D1
@@ -19,8 +19,8 @@ GL_SGI_color_table
 	GL_COLOR_TABLE_INTENSITY_SIZE_SGI 0x80DF
 	void glColorTableParameterfvSGI (GLenum target, GLenum pname, const GLfloat* params)
 	void glColorTableParameterivSGI (GLenum target, GLenum pname, const GLint* params)
-	void glColorTableSGI (GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *table)
+	void glColorTableSGI (GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const void *table)
 	void glCopyColorTableSGI (GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width)
 	void glGetColorTableParameterfvSGI (GLenum target, GLenum pname, GLfloat* params)
 	void glGetColorTableParameterivSGI (GLenum target, GLenum pname, GLint* params)
-	void glGetColorTableSGI (GLenum target, GLenum format, GLenum type, GLvoid *table)
+	void glGetColorTableSGI (GLenum target, GLenum format, GLenum type, void *table)

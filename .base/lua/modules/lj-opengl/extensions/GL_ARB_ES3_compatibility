@@ -1,5 +1,5 @@
 GL_ARB_ES3_compatibility
-http://www.opengl.org/registry/specs/gl/ARB/ES3_compatibility.txt
+http://www.opengl.org/registry/specs/ARB/ES3_compatibility.txt
 GL_ARB_ES3_compatibility
 	GL_TEXTURE_IMMUTABLE_LEVELS 0x82DF
 	GL_PRIMITIVE_RESTART_FIXED_INDEX 0x8D69

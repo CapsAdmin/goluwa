@@ -1,5 +1,5 @@
 GL_OML_resample
-http://www.opengl.org/registry/specs/gl/OML/resample.txt
+http://www.opengl.org/registry/specs/OML/resample.txt
 GL_OML_resample
 	GL_PACK_RESAMPLE_OML 0x8984
 	GL_UNPACK_RESAMPLE_OML 0x8985

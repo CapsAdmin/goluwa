@@ -1,5 +1,5 @@
 WGL_NV_video_capture
-http://www.opengl.org/registry/specs/gl/NV/video_capture.txt
+http://www.opengl.org/registry/specs/NV/video_capture.txt
 WGL_NV_video_capture
 	WGL_UNIQUE_ID_NV 0x20CE
 	WGL_NUM_VIDEO_CAPTURE_SLOTS_NV 0x20CF

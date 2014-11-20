@@ -1,5 +1,5 @@
 GL_NV_video_capture
-http://www.opengl.org/registry/specs/gl/NV/video_capture.txt
+http://www.opengl.org/registry/specs/NV/video_capture.txt
 GL_NV_video_capture
 	GL_VIDEO_BUFFER_NV 0x9020
 	GL_VIDEO_BUFFER_BINDING_NV 0x9021

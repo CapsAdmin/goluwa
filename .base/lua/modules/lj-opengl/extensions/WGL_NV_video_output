@@ -1,5 +1,5 @@
 WGL_NV_video_output
-http://www.opengl.org/registry/specs/gl/NV/wgl_video_output.txt
+http://www.opengl.org/registry/specs/NV/wgl_video_output.txt
 WGL_NV_video_output
 	WGL_BIND_TO_VIDEO_RGB_NV 0x20C0
 	WGL_BIND_TO_VIDEO_RGBA_NV 0x20C1

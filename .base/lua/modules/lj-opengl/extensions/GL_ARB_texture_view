@@ -1,5 +1,5 @@
 GL_ARB_texture_view
-http://www.opengl.org/registry/specs/gl/ARB/texture_view.txt
+http://www.opengl.org/registry/specs/ARB/texture_view.txt
 GL_ARB_texture_view
 	GL_TEXTURE_VIEW_MIN_LEVEL 0x82DB
 	GL_TEXTURE_VIEW_NUM_LEVELS 0x82DC

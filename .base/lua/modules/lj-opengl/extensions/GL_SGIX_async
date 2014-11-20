@@ -1,5 +1,5 @@
 GL_SGIX_async
-http://www.opengl.org/registry/specs/gl/SGIX/async.txt
+http://www.opengl.org/registry/specs/SGIX/async.txt
 GL_SGIX_async
 	GL_ASYNC_MARKER_SGIX 0x8329
 	void glAsyncMarkerSGIX (GLuint marker)

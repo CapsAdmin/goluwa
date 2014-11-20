@@ -1,5 +1,5 @@
 GL_ARB_debug_output
-http://www.opengl.org/registry/specs/gl/ARB/debug_output.txt
+http://www.opengl.org/registry/specs/ARB/debug_output.txt
 GL_ARB_debug_output
 	GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
 	GL_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
@@ -23,8 +23,8 @@ GL_ARB_debug_output
 	GL_DEBUG_SEVERITY_HIGH_ARB 0x9146
 	GL_DEBUG_SEVERITY_MEDIUM_ARB 0x9147
 	GL_DEBUG_SEVERITY_LOW_ARB 0x9148
-	void glDebugMessageCallbackARB (GLDEBUGPROCARB callback, const GLvoid *userParam)
+	void glDebugMessageCallbackARB (GLDEBUGPROCARB callback, const void *userParam)
 	void glDebugMessageControlARB (GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint* ids, GLboolean enabled)
 	void glDebugMessageInsertARB (GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* buf)
-	GLuint glGetDebugMessageLogARB (GLuint count, GLsizei bufsize, GLenum* sources, GLenum* types, GLuint* ids, GLenum* severities, GLsizei* lengths, GLchar* messageLog)
-	typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
+	GLuint glGetDebugMessageLogARB (GLuint count, GLsizei bufSize, GLenum* sources, GLenum* types, GLuint* ids, GLenum* severities, GLsizei* lengths, GLchar* messageLog)
+	typedef void (GLAPIENTRY *GLDEBUGPROCARB)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)

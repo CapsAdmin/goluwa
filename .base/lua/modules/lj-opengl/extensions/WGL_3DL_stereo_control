@@ -1,5 +1,5 @@
 WGL_3DL_stereo_control
-http://www.opengl.org/registry/specs/gl/3DL/stereo_control.txt
+http://www.opengl.org/registry/specs/3DL/stereo_control.txt
 WGL_3DL_stereo_control
 	WGL_STEREO_EMITTER_ENABLE_3DL 0x2055
 	WGL_STEREO_EMITTER_DISABLE_3DL 0x2056

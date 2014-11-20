@@ -1,5 +1,5 @@
 GL_SGIX_sprite
-http://www.opengl.org/registry/specs/gl/SGIX/sprite.txt
+http://www.opengl.org/registry/specs/SGIX/sprite.txt
 GL_SGIX_sprite
 	void glSpriteParameterfSGIX (GLenum pname, GLfloat param)
 	void glSpriteParameterfvSGIX (GLenum pname, GLfloat* params)

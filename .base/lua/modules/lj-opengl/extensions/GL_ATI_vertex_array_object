@@ -1,5 +1,5 @@
 GL_ATI_vertex_array_object
-http://www.opengl.org/registry/specs/gl/ATI/vertex_array_object.txt
+http://www.opengl.org/registry/specs/ATI/vertex_array_object.txt
 GL_ATI_vertex_array_object
 	GL_STATIC_ATI 0x8760
 	GL_DYNAMIC_ATI 0x8761
@@ -18,6 +18,6 @@ GL_ATI_vertex_array_object
 	void glGetVariantArrayObjectfvATI (GLuint id, GLenum pname, GLfloat* params)
 	void glGetVariantArrayObjectivATI (GLuint id, GLenum pname, GLint* params)
 	GLboolean glIsObjectBufferATI (GLuint buffer)
-	GLuint glNewObjectBufferATI (GLsizei size, const GLvoid *pointer, GLenum usage)
-	void glUpdateObjectBufferATI (GLuint buffer, GLuint offset, GLsizei size, const GLvoid *pointer, GLenum preserve)
+	GLuint glNewObjectBufferATI (GLsizei size, const void *pointer, GLenum usage)
+	void glUpdateObjectBufferATI (GLuint buffer, GLuint offset, GLsizei size, const void *pointer, GLenum preserve)
 	void glVariantArrayObjectATI (GLuint id, GLenum type, GLsizei stride, GLuint buffer, GLuint offset)

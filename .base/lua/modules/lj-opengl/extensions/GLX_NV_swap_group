@@ -1,5 +1,5 @@
 GLX_NV_swap_group
-http://www.opengl.org/registry/specs/gl/NV/glx_swap_group.txt
+http://www.opengl.org/registry/specs/NV/glx_swap_group.txt
 GLX_NV_swap_group
 	Bool glXBindSwapBarrierNV (Display* dpy, GLuint group, GLuint barrier)
 	Bool glXJoinSwapGroupNV (Display* dpy, GLXDrawable drawable, GLuint group)

@@ -1,5 +1,5 @@
 GL_APPLE_object_purgeable
-http://www.opengl.org/registry/specs/gl/APPLE/object_purgeable.txt
+http://www.opengl.org/registry/specs/APPLE/object_purgeable.txt
 GL_APPLE_object_purgeable
 	GL_BUFFER_OBJECT_APPLE 0x85B3
 	GL_RELEASED_APPLE 0x8A19

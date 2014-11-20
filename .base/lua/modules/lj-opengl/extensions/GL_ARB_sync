@@ -1,5 +1,5 @@
 GL_ARB_sync
-http://www.opengl.org/registry/specs/gl/ARB/sync.txt
+http://www.opengl.org/registry/specs/ARB/sync.txt
 GL_ARB_sync
 	GL_SYNC_FLUSH_COMMANDS_BIT 0x00000001
 	GL_MAX_SERVER_WAIT_TIMEOUT 0x9111

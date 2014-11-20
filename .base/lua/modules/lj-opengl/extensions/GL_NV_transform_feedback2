@@ -1,5 +1,5 @@
 GL_NV_transform_feedback2
-http://www.opengl.org/registry/specs/gl/NV/transform_feedback2.txt
+http://www.opengl.org/registry/specs/NV/transform_feedback2.txt
 GL_NV_transform_feedback2
 	GL_TRANSFORM_FEEDBACK_NV 0x8E22
 	GL_TRANSFORM_FEEDBACK_BUFFER_PAUSED_NV 0x8E23

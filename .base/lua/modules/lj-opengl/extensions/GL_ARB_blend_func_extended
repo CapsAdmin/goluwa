@@ -1,5 +1,5 @@
 GL_ARB_blend_func_extended
-http://www.opengl.org/registry/specs/gl/ARB/blend_func_extended.txt
+http://www.opengl.org/registry/specs/ARB/blend_func_extended.txt
 GL_ARB_blend_func_extended
 	GL_SRC1_COLOR 0x88F9
 	GL_ONE_MINUS_SRC1_COLOR 0x88FA

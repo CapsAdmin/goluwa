@@ -1,5 +1,5 @@
 GL_ARB_vertex_type_2_10_10_10_rev
-http://www.opengl.org/registry/specs/gl/ARB/vertex_type_2_10_10_10_rev.txt
+http://www.opengl.org/registry/specs/ARB/vertex_type_2_10_10_10_rev.txt
 GL_ARB_vertex_type_2_10_10_10_rev
 	GL_UNSIGNED_INT_2_10_10_10_REV 0x8368
 	GL_INT_2_10_10_10_REV 0x8D9F

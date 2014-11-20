@@ -1,5 +1,5 @@
 GL_ARB_provoking_vertex
-http://www.opengl.org/registry/specs/gl/ARB/provoking_vertex.txt
+http://www.opengl.org/registry/specs/ARB/provoking_vertex.txt
 GL_ARB_provoking_vertex
 	GL_QUADS_FOLLOW_PROVOKING_VERTEX_CONVENTION 0x8E4C
 	GL_FIRST_VERTEX_CONVENTION 0x8E4D
