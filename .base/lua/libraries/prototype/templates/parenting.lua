@@ -107,10 +107,12 @@ function prototype.AddParentingTemplate(META)
 	end
 
 	function META:RemoveChildren()
-		for key, obj in pairs(self.Children) do
-			obj:OnUnParent(self)
-			
-			obj:Remove()
+		for key, obj in pairs(self:GetChildrenList()) do
+			if obj:IsValid() then
+				obj:OnUnParent(self)
+				
+				obj:Remove()
+			end
 		end
 	end
 
