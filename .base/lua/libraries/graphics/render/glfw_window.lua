@@ -245,7 +245,7 @@ do -- window meta
 		event.AddListener("Update", self, function(dt)
 			self:UpdateMouseDelta()
 			self:OnUpdate(dt)
-		end, {on_error = system.OnError})
+		end, {on_error = system.OnError, priority = math.huge})
 		
 		do -- calllbacks
 			local suppress_char_input = false
