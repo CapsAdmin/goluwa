@@ -10,7 +10,7 @@ do -- open close
 		window.SetMouseTrapped(false) 
 		menu.CreateTopBar()
 		event.AddListener("PreDrawMenu", "StartupMenu", menu.RenderBackground)
-		event.CreateTimer("StartupMenu", 0.1, menu.UpdateBackground)
+		event.CreateTimer("StartupMenu", 0.025, menu.UpdateBackground)
 		menu.visible = true
 	end
 
@@ -53,9 +53,10 @@ local emitter = ParticleEmitter(800)
 emitter:SetPosition(Vec3(50,50,0)) 
 --emitter:SetMoveResolution(0.25) 
 emitter:SetAdditive(false)
+emitter:SetScreenRect(Rect(-100, -100, surface.GetScreenSize()))
 
 function menu.UpdateBackground()
-	emitter:SetPosition(Vec3(math.random((DX and 256 or render.GetWidth()) + 100) - 150, -50, 0))
+	emitter:SetPosition(Vec3(math.random(render.GetWidth() + 100) - 150, -50, 0))
 		
 	local p = emitter:AddParticle()
 	p:SetDrag(1)
@@ -64,7 +65,7 @@ function menu.UpdateBackground()
 	--p:SetEndLength(Vec2(30, 0))
 	p:SetAngle(math.random(360)) 
 	 
-	p:SetVelocity(Vec3(math.random(100),math.random(40, 80)*2,0) * (DX and 0.25 or 1))
+	p:SetVelocity(Vec3(math.random(100),math.random(40, 80)*2,0))
 
 	p:SetLifeTime(20)
 
@@ -74,14 +75,16 @@ function menu.UpdateBackground()
 	p:SetColor(Color(1,1,1, math.randomf(0.5, 0.8)))
 end
 
-local background = ColorBytes(64, 44, 128, 200)
+local background = ColorBytes(64, 44, 128, 255)
 
 function menu.RenderBackground(dt)		
 	emitter:Update(dt)
 	
+	render.SetBlendMode2("src_color", "src_color", "add")
 	surface.SetWhiteTexture()
-	surface.SetColor(DX and Color(0,0,0,1) or background)
+	surface.SetColor(background)
 	surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
+	render.SetBlendMode("alpha")
 		
 	emitter:Draw()
 end
@@ -105,7 +108,7 @@ function menu.CreateTopBar()
 	local function create_button(text, options)
 		local button = gui.CreatePanel("text_button", bar)
 		button:SetText(text)
-		button:SetMargin(Rect(S*4, S*3, S*3, S*3))
+		button:SetMargin(Rect(S*3, S*3, S*3, S*2+1))
 		button:SetPadding(Rect()+S*4)
 		button:SizeToText()
 		button:SetMode("toggle")
