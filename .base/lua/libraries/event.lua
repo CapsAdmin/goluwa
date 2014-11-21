@@ -359,7 +359,7 @@ do -- timers
 		data.times_ran = 1
 		data.paused = false
 		
-		event.timers[id] = data
+		table.insert(event.timers, data)
 		
 		setmetatable(data, event.TimerMeta)	
 		
@@ -457,8 +457,9 @@ do -- timers
 			end
 		end
 		
-		if #remove_these > 0 then
+		if remove_these[1] then
 			for k, v in ipairs(remove_these) do
+				--print(event.timers[v].type)
 				event.timers[v] = nil
 			end
 			table.fixindices(event.timers)
