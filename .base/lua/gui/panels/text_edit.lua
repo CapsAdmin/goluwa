@@ -46,6 +46,10 @@ function PANEL:OnStyleChanged(skin)
 	self:SetFont(skin.default_font)
 end
 
+function PANEL:OnLayout(S)
+--	self.label:SetPosition(Vec2()+S)
+end
+
 function PANEL:SetCaretPosition(pos)
 	self.label.markup:SetCaretPosition(pos.x, pos.y)
 end

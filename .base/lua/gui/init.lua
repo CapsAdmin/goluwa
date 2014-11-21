@@ -79,7 +79,15 @@ function gui.GetHoveringPanel(panel, filter)
 			return panel
 		end
 	end
-
+	
+	if panel.IgnoreMouse then
+		for i, panel in ipairs(panel:GetParentList()) do
+			if not panel.IgnoreMouse and panel.mouse_over then
+				return panel
+			end
+		end
+	end
+	
 	return panel.mouse_over and panel or gui.world
 end
 
