@@ -1,5 +1,3 @@
-surface.CreateFont("impact", {path = "Rosario", size = 20})
-
 menu = menu or {}
 
 menu.panel = menu.panel or NULL
@@ -219,23 +217,43 @@ function menu.CreateTopBar()
 			
 			do
 				local label = gui.CreatePanel("checkbox_label", frame)
+				label:SetCollisionGroup("load_area")
 				label:SetPadding(Rect(25,2,5,5))
 				label:SetMargin(Rect()+5)
 				label:SetText("hirom")
+				label:SetupLayoutChain("bottom", "right")
+				label:SizeToText()
+				
+				local label = gui.CreatePanel("checkbox_label", frame)
+				label:SetCollisionGroup("load_area")
+				label:SetPadding(Rect(25,2,5,2))
+				label:SetMargin(Rect()+5)
+				label:SetText("lorom")
+				label:SetupLayoutChain("right", "bottom")
+				label:SizeToText()
+				
+				local button = gui.CreatePanel("text_button", frame)
+				button:SetCollisionGroup("load_area")
+				button:SetText("load")
+				button:SetPadding(Rect(25,3,5,3))
+				button:SetMargin(Rect()+6)
+				button:SizeToText()
+				button:SetWidth(90)
+				button:SetupLayoutChain("right", "bottom")
+				
+				local label = gui.CreatePanel("checkbox_label", frame)
+				label:SetCollisionGroup("load_area")
+				label:SetPadding(Rect(5,3,5,3))
+				label:SetMargin(Rect()+5)
+				label:SetText("pal")
 				label:SetupLayoutChain("no_collide", "bottom", "collide", "right")
 				label:SizeToText()
 				
-				--[[local label = gui.CreatePanel("checkbox_label", frame)
-				label:SetPadding(Rect(25,1,5,1))
-				label:SetMargin(Rect()+5)
-				label:SetText("lorom")
-				label:SetupLayoutChain("no_collide", "right", "collide", "bottom")
-				label:SizeToText()]]
-				
 				local label = gui.CreatePanel("checkbox_label", frame)
+				label:SetCollisionGroup("load_area")
 				label:SetPadding(Rect(5,2,5,1))
 				label:SetMargin(Rect()+5)
-				label:SetText("pal")
+				label:SetText("ntsc")
 				label:SetupLayoutChain("no_collide", "bottom", "collide", "right")
 				label:SizeToText()
 			end
