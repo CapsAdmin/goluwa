@@ -271,6 +271,45 @@ do
 	end
 end
 
+do 
+	local enums = {
+		zero = gl.e.GL_ZERO,
+		one = gl.e.GL_ONE,
+		src_color = gl.e.GL_SRC_COLOR,
+		one_minus_src_color = gl.e.GL_ONE_MINUS_SRC_COLOR,
+		dst_color = gl.e.GL_DST_COLOR,
+		one_minus_dst_color = gl.e.GL_ONE_MINUS_DST_COLOR,
+		src_alpha = gl.e.GL_SRC_ALPHA,
+		one_minus_src_alpha = gl.e.GL_ONE_MINUS_SRC_ALPHA,
+		dst_alpha = gl.e.GL_DST_ALPHA,
+		one_minus_dst_alpha = gl.e.GL_ONE_MINUS_DST_ALPHA,
+		constant_color = gl.e.GL_CONSTANT_COLOR,
+		one_minus_constant_color = gl.e.GL_ONE_MINUS_CONSTANT_COLOR,
+		constant_alpha = gl.e.GL_CONSTANT_ALPHA,
+		one_minus_constant_alpha = gl.e.GL_ONE_MINUS_CONSTANT_ALPHA,
+		src_alpha_saturate = gl.e.GL_SRC_ALPHA_SATURATE,
+		
+		add = gl.e.GL_FUNC_ADD,
+		sub = gl.e.GL_FUNC_SUBTRACT,
+		reverse_sub = gl.e.GL_FUNC_REVERSE_SUBTRACT,
+		min = gl.e.GL_MIN,
+		max = gl.e.GL_MAX,
+	}
+
+	function render.SetBlendMode2(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
+		src_color = enums[src_color or "src_alpha"]
+		dst_color = enums[dst_color or "one_minus_src_alpha"]
+		func_color = enums[func_color or "add"]
+		
+		src_alpha = enums[src_alpha] or src_color
+		dst_alpha = enums[dst_alpha] or dst_color
+		func_alpha = enums[func_alpha] or func_color
+		
+		gl.BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
+		gl.BlendEquationSeparate(func_color, func_alpha)
+	end
+end
+
 do	
 	local cull_mode = "front"
 
