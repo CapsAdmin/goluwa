@@ -24,6 +24,8 @@ local texture = Texture("textures/gui/skins/"..sub_skin..".png")
 
 local skin = {}
 
+skin.name = "gwen"
+
 local function add(name, u,v, w,h, corner_size, color)
 	skin[name] = {
 		texture = texture, 
@@ -128,5 +130,13 @@ skin.scale = scale
 skin.background = Color(0.5, 0.5, 0.5)
 
 skin.icons = include("gui/icons.lua")
+
+if RELOAD then
+	for k,v in pairs(gui.panels) do
+		if v:GetSkin().name == skin.name then
+			v:SetSkin(skin)
+		end
+	end
+end
 
 return skin
