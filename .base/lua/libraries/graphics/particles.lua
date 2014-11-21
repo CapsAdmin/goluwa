@@ -43,6 +43,7 @@ prototype.GetSet(EMITTER, "CenterAttractionForce", 0)
 prototype.GetSet(EMITTER, "PosAttractionForce", 0)
 prototype.GetSet(EMITTER, "MoveResolution", 0)
 prototype.GetSet(EMITTER, "Texture", NULL)
+prototype.GetSet(EMITTER, "ScreenRect", Rect())
 
 function ParticleEmitter(max)
 	max = max or 1000
@@ -75,6 +76,9 @@ function EMITTER:Update(dt)
 	local center = Vec3(0,0,0)
 	
 	dt = dt * self.Speed
+	
+	local w, h = surface.GetScreenSize()
+	local cull = not self.ScreenRect:IsZero()
 	
 	for i = 1, self.max do
 		local p = self.particles[i]
@@ -115,9 +119,20 @@ function EMITTER:Update(dt)
 			end
 		
 			p.life_mult = clamp((p.life_end - time) / p.LifeTime, 0, 1)
-
+			
 			if self.CenterAttractionForce ~= 0 then
 				center = center + p.Position
+			end
+			
+			if cull then 
+				if 
+					p.Position.x > self.ScreenRect.w or
+					p.Position.y > self.ScreenRect.h or
+					p.Position.x < self.ScreenRect.x or
+					p.Position.y < self.ScreenRect.y
+				then
+					table.insert(remove_these, i)
+				end
 			end
 		end
 		
