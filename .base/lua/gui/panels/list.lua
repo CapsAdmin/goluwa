@@ -8,9 +8,7 @@ PANEL.columns = {}
 PANEL.last_div = NULL
 PANEL.list = NULL
 
-function PANEL:Initialize()	
-	self:SetNoDraw(true)
-	
+function PANEL:Initialize()		
 	local top = self:CreatePanel("base", "top")
 	top:SetLayoutParentOnLayout(true)
 	top:SetMargin(Rect())
@@ -19,13 +17,14 @@ function PANEL:Initialize()
 				
 	local list = self:CreatePanel("base", "list")
 	--list:SetCachedRendering(true)
+	self:SetStyle("property")
 	list:SetClipping(true)
 	list:SetNoDraw(true)
 	
 	local scroll = self:CreatePanel("scroll", "scroll")
-	scroll:SetXScrollBar(false)
 	scroll:SetPanel(list)
-	
+	scroll:SetXScrollBar(false)
+		
 	self:SetupSorted("")
 end
 
@@ -116,7 +115,7 @@ function PANEL:SetupSorted(...)
 			func = table.sort
 		end
 					
-		local column = gui.CreatePanel("text_button")
+		local column = gui.CreatePanel("text_button", self)
 		column:SetText(name)
 		column:SetClipping(true)
 		column.label:SetupLayoutChain("left")
@@ -164,10 +163,14 @@ function PANEL:SetupSorted(...)
 	self:Layout()
 end
 
+function PANEL:ClearList()
+	self.list:RemoveChildren()
+end
+
 function PANEL:AddEntry(...)						
 	local entry = self.list:CreatePanel("button") 
-	entry.OnSelect = function() end
 	
+	entry.OnSelect = function() end
 	entry.labels = {}
 				
 	for i = 1, #self.columns do
@@ -176,6 +179,7 @@ function PANEL:AddEntry(...)
 		local label = entry:CreatePanel("text_button")
 		label:SetParseTags(true)
 		label:SetTextWrap(false)
+		label:SetTextColor(self:GetSkin().text_list_color)		
 		label:SetText(text)
 		label:SizeToText()
 		label.text = text
@@ -189,18 +193,14 @@ function PANEL:AddEntry(...)
 
 	local last_child = self.list:GetChildren()[#self.list:GetChildren()]
 	
-	entry:SetStyle("button_active")
-	entry:SetNoDraw(true)
+	entry:SetMode("toggle")
+	entry:SetActiveStyle("menu_select")
+	entry:SetInactiveStyle("nodraw")
 
-	entry.OnPress = function()
-		for k, other_entry in ipairs(self.entries) do
-			if other_entry ~= entry then
-				other_entry:SetNoDraw(true)
-			else
-				entry:SetNoDraw(false)
-				entry:SetStyle("button_active")
-				entry:OnSelect()
-			end
+	entry.OnStateChanged = function(_, b)
+		print(entry, b)
+		if b then
+			entry:OnSelect()
 		end
 	end
 	

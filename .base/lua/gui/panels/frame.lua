@@ -64,7 +64,7 @@ end
 function PANEL:OnLayout(S)
 	self:SetMargin(Rect(S,S,S,S))
 	
-	self.bar:SetLayoutSize(Vec2()+12*S)
+	self.bar:SetLayoutSize(Vec2()+10*S)
 	self.bar:SetMargin(Rect()+S)
 	self.bar:SetPadding(Rect()-S)
 	

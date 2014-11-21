@@ -20,6 +20,10 @@ function PANEL:Initialize()
 	scroll_area:SetScrollable(true)
 end
 
+function PANEL:OnStyleChanged(skin)
+	self:SetScrollWidth(self:GetSkin().scroll_width or 8)
+end
+
 function PANEL:SetPanel(panel)
 	gui.RemovePanel(self.y_handle)
 	gui.RemovePanel(self.y_track)
@@ -102,7 +106,7 @@ function PANEL:SetPanel(panel)
 		area.scrolling = false
 	end
 	
-	self:SetScrollWidth(self.ScrollWidth)
+	self:SetScrollWidth(self:GetSkin().scroll_width or self.ScrollWidth)
 	
 	self:Layout()
 	

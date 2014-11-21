@@ -203,7 +203,7 @@ help:SetupLayoutChain("top")
 score.OnShow = function() help:SetVisible(true) end
 
 help.OnGlobalMouseInput = function(_, button, press)
-	if score:IsVisible() and button == "button_2" then
+	if score.Visible and button == "button_2" then
 		window.SetMouseTrapped(false)
 		help:SetVisible(false)
 	end

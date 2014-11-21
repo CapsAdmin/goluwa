@@ -49,7 +49,6 @@ function PANEL:SetState(press, button)
 				
 		if button == "button_1" then
 			self:SetStyle(self.ActiveStyle)
-			self:OnPress() 
 		end
 		
 		return true
@@ -58,7 +57,6 @@ function PANEL:SetState(press, button)
 		
 		if button == "button_1" then
 			self:SetStyle(self.InactiveStyle)
-			self:OnRelease()
 		end
 		
 		return true
@@ -82,7 +80,8 @@ function PANEL:CanPress(button)
 end
 
 function PANEL:OnMouseInput(button, press)
-	if button == "button_3" then return end
+	if button == "button_3" or button == "mwheel_up" or button == "mwheel_down" then return end
+	
 	self.click_times = self.click_times or {}
 	self.click_times[button] = self.click_times[button] or {last_click = 0, times = 0}
 	
@@ -101,10 +100,23 @@ function PANEL:OnMouseInput(button, press)
 
 		if self:SetState(press, button) then
 			self:OnStateChanged(press, button)
+			if button == "button_1" then
+				if press then
+					self:OnPress()
+				else
+					self:OnRelease()
+				end
+			end
 		end
 	elseif self.Mode == "toggle" and press then
 		if self:Toggle(button) then
-			self:OnStateChanged(self:GetState(button), button)
+			local press = self:GetState(button)
+			self:OnStateChanged(press, button)
+			if press then
+				self:OnPress()
+			else
+				self:OnRelease()
+			end
 		end
 	end
 end

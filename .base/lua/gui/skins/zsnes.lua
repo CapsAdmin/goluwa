@@ -16,7 +16,7 @@ surface.CreateFont("zsnes_gui_font", {
 	fallback = "default_gui_zsnes",
 	shadow = 1,
 	padding = 2,
-	shadow_color = Color(0,0,0,0.8),
+	shadow_color = Color(0.6,0.6,0.6,0.8),
 	size = 5*S,
 	scale = S,
 	--shade = "vec4(sin(uv.x*130)+cos(uv.y*50))*texture(self, uv).a;",
@@ -81,6 +81,8 @@ add_simple("list_down_arrow", 385,122, 5,3)
 
 add_simple("check", 449,34, 7,7)
 add_simple("uncheck", 465,34, 7,7)
+add_simple("rad_check", 449,65, 7,7)
+add_simple("rad_uncheck", 465,65, 7,7)
  
 add_simple("+", 451,99, 5,5) 
 add_simple("-", 467,99, 5,5)
@@ -102,8 +104,8 @@ add("tab_frame", 1,256+4, 127-2,127-4, 16)
 
 add("menu_select", 130,258, 123,27, 16)
 add("frame", 480,32, 31,31, 16)
-add("frame2", 320,384+19, 63,63-19, 20)
-add("frame_bar", 320,384, 63,19, 19/2)
+add("frame2", 320,384+19, 63,63-19, 4)
+add_simple("frame_bar", 320,384, 63,19, nil, true)
 add("property", 256,256, 63,127, 4)
 
 add_simple("gradient", 0,128, 127,21, nil, true)
@@ -117,14 +119,15 @@ skin.tab_inactive_text_color = Color(0.5,0.5,0.5)
 
 local buffer, length = texture:Download()
 
-skin.text_color = Color(0.8, 0.8, 0.8, 1)
+skin.text_color = Color(0.8, 0.8, 0.8, 1)-- ColorBytes(168, 168, 224, 255)
 skin.text_color_inactive = skin.text_color * 0.80
 
-skin.text_edit_color = texture:GetPixelColor(110, 497, buffer)
-skin.text_edit_color.a = 1
+skin.text_list_color = Color(0,1,0,1)
+skin.text_edit_color = skin.text_list_color:Copy()
+
 skin.property_background = texture:GetPixelColor(28, 500, buffer)
 
-
+skin.scroll_width = 20
 skin.default_font = "zsnes_gui_font"
 skin.scale = scale
 skin.pixel_scale = S

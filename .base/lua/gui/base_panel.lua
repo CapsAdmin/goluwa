@@ -202,8 +202,7 @@ function PANEL:PreDraw(from_cache)
 		not self.Parent:IsWorld() and 
 		not self.Parent.mouse_over and 
 		not self:IsDragging() and 
-		not self.AlwaysCalcMouse and 
-		not self.IgnoreMouse)
+		not self.AlwaysCalcMouse)
 	then
 		if not self.DrawPositionOffset:IsZero() then
 			render.Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
@@ -1340,8 +1339,7 @@ do -- mouse
 			not self.Parent.mouse_over and
 			not self:IsDragging() and 
 			not self:IsScrolling() and 
-			not self.AlwaysCalcMouse and 
-			not self.IgnoreMouse
+			not self.AlwaysCalcMouse
 		then 
 	
 			if self.mouse_just_entered then
@@ -1353,7 +1351,7 @@ do -- mouse
 	
 			return 
 		end
-				
+		
 		local x, y = surface.WorldToLocal(gui.mouse_pos.x, gui.mouse_pos.y)
 
 		self.MousePosition.x = x
@@ -1576,6 +1574,7 @@ end
 
 do -- layout chain
 	prototype.GetSet(PANEL, "LayoutSize", nil)
+	prototype.GetSet(PANEL, "IgnoreLayout", false)
 
 	local function ray_cast(self, where, panel, collide, asdf)
 		local pos = where:GetPosition()
@@ -1587,7 +1586,7 @@ do -- layout chain
 			local panel_rect = panel:GetWorldRect()
 			
 			for i, child in ipairs(self:GetChildren()) do
-				if child ~= panel and child.laid_out and child.Visible then
+				if child ~= panel and child.laid_out and child.Visible and not child.IgnoreLayout then
 					local child_rect = child:GetWorldRect()
 					
 					if 
@@ -1656,16 +1655,16 @@ do -- layout chain
 				
 			if dir.x == -1 then
 				pos.y = panel:GetY()
-				pos.x = pos.x + child:GetWidth() + child.Padding.right			
+				pos.x = pos.x + child:GetWidth() + panel.Padding.right			
 			elseif dir.x == 1 then
 				pos.y = panel:GetY()
-				pos.x = pos.x - panel:GetWidth() - child.Padding.left			
+				pos.x = pos.x - panel:GetWidth() - panel.Padding.left			
 			elseif dir.y == -1 then
 				pos.x = panel:GetX()
-				pos.y = pos.y + child:GetHeight() + child.Padding.bottom
+				pos.y = pos.y + child:GetHeight() + panel.Padding.bottom
 			elseif dir.y == 1 then
 				pos.x = panel:GetX()
-				pos.y = pos.y - panel:GetHeight() - child.Padding.top			
+				pos.y = pos.y - panel:GetHeight() - panel.Padding.top			
 			end
 		else
 			if dir.x == -1 then
@@ -1975,7 +1974,12 @@ do -- skin
 	function PANEL:SetStyle(name)
 		self.Style = name
 		
-		if name == "none" then
+		self.style_nodraw = false
+		
+		if name == "nodraw" then
+			self.style_nodraw = true
+			return
+		elseif name == "none" then
 			self:SetNinePatch(false)
 			self:SetNinePatchRect(Rect(0, 0, 0, 0))
 			self:SetNinePatchCornerSize(4)
@@ -2073,7 +2077,7 @@ end
 
 do -- events
 	function PANEL:OnDraw()
-		if self.NoDraw then return end
+		if self.NoDraw or self.style_nodraw then return end
 		
 		local r,g,b,a = self.Color:Unpack()
 		local mr,mg,mb,ma = self.DrawColor:Unpack()

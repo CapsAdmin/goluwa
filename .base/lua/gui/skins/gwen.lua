@@ -116,6 +116,8 @@ skin.text_color = texture:GetPixelColor(187, 504, buffer)
 skin.text_color.a = 1
 skin.text_color_inactive = skin.text_color * 0.80
 skin.text_edit_color = texture:GetPixelColor(110, 497, buffer)
+skin.text_list_color = skin.text_color
+skin.text_list_font = "snow_font"
 skin.text_edit_color.a = 1
 skin.property_background = texture:GetPixelColor(28, 500, buffer)
 
