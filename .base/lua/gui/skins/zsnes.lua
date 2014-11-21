@@ -112,7 +112,7 @@ add_simple("gradient", 0,128, 127,21, nil, true)
 add("gradient1", 480,96, 31,31, 16)
 add("gradient2", 480,96, 31,31, 16)
 add("gradient3", 480,96, 31,31, 16)
-add("text_edit", 0,172, 127,21, 16)
+add("text_edit", 256,256, 63,127, 4)
 
 skin.tab_active_text_color = Color(0.25,0.25,0.25)
 skin.tab_inactive_text_color = Color(0.5,0.5,0.5)
