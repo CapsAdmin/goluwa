@@ -1575,6 +1575,7 @@ end
 do -- layout chain
 	prototype.GetSet(PANEL, "LayoutSize", nil)
 	prototype.GetSet(PANEL, "IgnoreLayout", false)
+	prototype.GetSet(PANEL, "CollisionGroup", "none")
 
 	local function ray_cast(self, where, panel, collide, asdf)
 		local pos = where:GetPosition()
@@ -1586,7 +1587,7 @@ do -- layout chain
 			local panel_rect = panel:GetWorldRect()
 			
 			for i, child in ipairs(self:GetChildren()) do
-				if child ~= panel and child.laid_out and child.Visible and not child.IgnoreLayout then
+				if child ~= panel and child.laid_out and child.Visible and not child.IgnoreLayout and (panel.CollisionGroup == "none" or panel.CollisionGroup == child.CollisionGroup) then
 					local child_rect = child:GetWorldRect()
 					
 					if 
@@ -1821,7 +1822,7 @@ do -- layout chain
 			end
 		end
 	end
-	
+		
 	function PANEL:SetupLayoutChain(...)
 		self.layout_chain = {...}
 		self.LayoutSize = self:GetSize():Copy()
