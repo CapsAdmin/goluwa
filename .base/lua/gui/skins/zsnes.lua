@@ -27,6 +27,8 @@ local texture = Texture("textures/gui/skins/zsnes.png", {min_filter = "nearest",
 
 local skin = {}
 
+skin.name = "zsnes"
+
 local function add(name, u,v, w,h, corner_size, color)
 	skin[name] = {
 		texture = texture, 
@@ -54,14 +56,14 @@ add("button_active", 480,96, 31,31, 4)
 add_simple("close_inactive", 32,452, 9,7) 
 add_simple("close_active", 96,452, 9,7) 
 
-add_simple("minimize_inactive", 132,452, 9,7) 
-add_simple("minimize_active", 196,452, 9,7) 
+add_simple("minimize_inactive", 131,452, 9,7) 
+add_simple("minimize_active", 195,452, 9,7) 
 
 add_simple("maximize_inactive", 225,484, 9,7) 
-add_simple("maximize_active", 290,484, 9,7) 
+add_simple("maximize_active", 289,484, 9,7) 
 
 add_simple("maximize2_inactive", 225,452, 9,7) 
-add_simple("maximize2_active", 290,452, 9,7) 
+add_simple("maximize2_active", 289,452, 9,7) 
 
 add_simple("up_inactive", 464,224, 15,15) 
 add_simple("up_active", 480,224, 15,15) 
@@ -105,7 +107,7 @@ add("tab_frame", 1,256+4, 127-2,127-4, 16)
 add("menu_select", 130,258, 123,27, 16)
 add("frame", 480,32, 31,31, 16)
 add("frame2", 320,384+19, 63,63-19, 4)
-add_simple("frame_bar", 320,384, 63,19, nil, true)
+add("frame_bar", 320,384, 63,19, 2)
 add("property", 256,256, 63,127, 4)
 
 add_simple("gradient", 0,128, 127,21, nil, true)
@@ -135,5 +137,13 @@ skin.pixel_scale = S
 skin.background = Color(0.5, 0.5, 0.5)
 
 skin.icons = include("gui/icons.lua")
+
+if RELOAD then
+	for k,v in pairs(gui.panels) do
+		if v:GetSkin().name == skin.name then
+			v:SetSkin(skin)
+		end
+	end
+end
 
 return skin
