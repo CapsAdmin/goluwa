@@ -144,7 +144,6 @@ function editor.Open()
 		gui.RemovePanel(properties)
 		
 		properties = gui.CreatePanel("properties")
-		--properties:SetStretchToPanelWidth(frame)
 		
 		for k, v in pairs(node.ent:GetComponents()) do
 			properties:AddGroup(v.ClassName)

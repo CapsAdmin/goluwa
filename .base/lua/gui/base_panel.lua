@@ -32,97 +32,6 @@ function PANEL:IsWorld()
 	return self == gui.world
 end
 
-function PANEL:BringToFront()	
-	if self.RedirectFocus:IsValid() then
-		return self.RedirectFocus:BringToFront()
-	end
-
-	local parent = self:GetParent()
-
-	if parent:IsValid() then
-		self:SetParent()
-		parent:AddChild(self)
-	end
-end
-
-function PANEL:RequestFocus()
-	if self.RedirectFocus:IsValid() then
-		self = self.RedirectFocus
-	end
-
-	if gui.focus_panel:IsValid() and gui.focus_panel ~= self then
-		gui.focus_panel:OnUnfocus()
-	end
-	
-	self:OnFocus()
-	
-	gui.focus_panel = self
-end
-
-function PANEL:Unfocus()
-	if self.RedirectFocus:IsValid() then
-		self = self.RedirectFocus
-	end
-
-	if gui.focus_panel:IsValid() and gui.focus_panel == self then
-		self:OnUnfocus()
-		gui.focus_panel = NULL
-	end
-end
-
-function PANEL:OnUnParent()
-	gui.unrolled_draw = nil
-end
-
-function PANEL:OnChildAdd()
-	gui.unrolled_draw = nil
-end
-
-do -- call on hide
-	PANEL.call_on_hide = {}
-	
-	function PANEL:IsVisible()
-		if self.visible == nil then return true end -- ?????
-		return self.Visible
-	end
-	
-	function PANEL:SetVisible(bool)
-		self.Visible = bool
-		if bool then
-			self:OnShow()
-		else
-			self:OnHide()
-			for k, v in pairs(self.call_on_hide) do
-				if v() == false then
-					return
-				end
-			end
-		end
-		if self:HasParent() then
-			self.Parent:Layout()
-		end
-	end
-	
-	function PANEL:CallOnHide(callback, id)
-		id = id or callback
-		
-		self.call_on_hide[id] = callback		
-	end
-end
-	
-function PANEL:OnRemove(a)
-	gui.panels[self] = nil
-	
-	a = (a or 0) + 1
-	
-	for k,v in pairs(self:GetChildrenList()) do
-		v:Remove(a)
-	end
-		
-	-- this is important!!
-	self:UnParent()
-end
-
 function PANEL:GetSizeOfChildren()
 	
 	if self.last_children_size then
@@ -173,163 +82,276 @@ function PANEL:IsInsideParent()
 	return false
 end
 
-function PANEL:PreDraw(from_cache)
-	if self.ThreeDee then surface.Start3D(self.ThreeDeePosition, self.ThreeDeeAngles, self.ThreeDeeScale) end
-	
-	local no_draw = self:HasParent() and self.Parent.draw_no_draw
-
-	surface.PushMatrix()
-	surface.Translate(self.Position.x, self.Position.y)
-	
-	local w = (self.Size.w)/2
-	local h = (self.Size.h)/2
-
-	render.Translate(w, h, 0)
-	render.Rotate(self.Angle, 0, 0, 1)
-	render.Translate(-w, -h, 0)
-	
-	if not from_cache then
-		self:CalcMouse()
-	
-		self:CalcDragging()
-		self:CalcScrolling()
-	end
-	
-	if 
-		from_cache or 
-		not no_draw or
-		not (self:HasParent() and 
-		not self.Parent:IsWorld() and 
-		not self.Parent.mouse_over and 
-		not self:IsDragging() and 
-		not self.AlwaysCalcMouse)
-	then
-		if not self.DrawPositionOffset:IsZero() then
-			render.Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
+do -- focus
+	function PANEL:BringToFront()	
+		if self.RedirectFocus:IsValid() then
+			return self.RedirectFocus:BringToFront()
 		end
-		
-		if not self.DrawScaleOffset:IsZero() then
-			render.Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y, 1)
-		end
-		
-		if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
-			local w = (self.Size.w + self.DrawSizeOffset.w)/2
-			local h = (self.Size.h + self.DrawSizeOffset.h)/2
 
-			render.Translate(w, h, 0)
-			render.Rotate(self.DrawAngleOffset.p, 0, 0, 1)
-			render.Rotate(self.DrawAngleOffset.y, 0, 1, 0)
-			render.Rotate(self.DrawAngleOffset.r, 1, 0, 0)
-			render.Translate(-w, -h, 0)
+		local parent = self:GetParent()
+
+		if parent:IsValid() then
+			self:SetParent()
+			parent:AddChild(self)
 		end
 	end
 
-	self:CalcAnimations()
-	
-	if self.layout_me then 
-		self:Layout(true) 
-	end
-	
-	if self.CachedRendering and not gui.debug then
-		self:DrawCache()
-		no_draw = true
+	function PANEL:RequestFocus()
+		if self.RedirectFocus:IsValid() then
+			self = self.RedirectFocus
+		end
+
+		if gui.focus_panel:IsValid() and gui.focus_panel ~= self then
+			gui.focus_panel:OnUnfocus()
+		end
+		
+		self:OnFocus()
+		
+		gui.focus_panel = self
 	end
 
-	self:OnUpdate()
-		
-	if from_cache or not no_draw then
-		if self:IsDragging() or self:IsWorld() or self:IsInsideParent() then
-			self:OnPreDraw()
-			self:OnDraw()
-			self:OnPostDraw()
-			self.visible = true
-			no_draw = false
+	function PANEL:Unfocus()
+		if self.RedirectFocus:IsValid() then
+			self = self.RedirectFocus
+		end
+
+		if gui.focus_panel:IsValid() and gui.focus_panel == self then
+			self:OnUnfocus()
+			gui.focus_panel = NULL
+		end
+	end
+end
+
+do -- call on hide
+	PANEL.call_on_hide = {}
+	
+	function PANEL:IsVisible()
+		if self.visible == nil then return true end -- ?????
+		return self.Visible
+	end
+	
+	function PANEL:SetVisible(bool)
+		self.Visible = bool
+		if bool then
+			self:OnShow()
 		else
-			self.visible = false
+			self:OnHide()
+			for k, v in pairs(self.call_on_hide) do
+				if v() == false then
+					return
+				end
+			end
+		end
+		if self:HasParent() then
+			self.Parent:Layout()
+		end
+	end
+	
+	function PANEL:CallOnHide(callback, id)
+		id = id or callback
+		
+		self.call_on_hide[id] = callback		
+	end
+end
+
+do -- drawing
+
+	function PANEL:PreDraw(from_cache)
+		if self.ThreeDee then surface.Start3D(self.ThreeDeePosition, self.ThreeDeeAngles, self.ThreeDeeScale) end
+		
+		local no_draw = self:HasParent() and self.Parent.draw_no_draw
+
+		surface.PushMatrix()
+		surface.Translate(self.Position.x, self.Position.y)
+		
+		local w = (self.Size.w)/2
+		local h = (self.Size.h)/2
+
+		render.Translate(w, h, 0)
+		render.Rotate(self.Angle, 0, 0, 1)
+		render.Translate(-w, -h, 0)
+		
+		if not from_cache then
+			self:CalcMouse()
+		
+			self:CalcDragging()
+			self:CalcScrolling()
+		end
+		
+		if 
+			from_cache or 
+			not no_draw or
+			not (self:HasParent() and 
+			not self.Parent:IsWorld() and 
+			not self.Parent.mouse_over and 
+			not self:IsDragging() and 
+			not self.AlwaysCalcMouse)
+		then
+			if not self.DrawPositionOffset:IsZero() then
+				render.Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
+			end
+			
+			if not self.DrawScaleOffset:IsZero() then
+				render.Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y, 1)
+			end
+			
+			if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
+				local w = (self.Size.w + self.DrawSizeOffset.w)/2
+				local h = (self.Size.h + self.DrawSizeOffset.h)/2
+
+				render.Translate(w, h, 0)
+				render.Rotate(self.DrawAngleOffset.p, 0, 0, 1)
+				render.Rotate(self.DrawAngleOffset.y, 0, 1, 0)
+				render.Rotate(self.DrawAngleOffset.r, 1, 0, 0)
+				render.Translate(-w, -h, 0)
+			end
+		end
+
+		self:CalcAnimations()
+		
+		if self.layout_me then 
+			self:Layout(true)
+			self.laid_out_deferred = false
+		end
+		
+		if self.layout_chain_defered and self:HasParent() and not self.laid_out_deferred then
+			local laid_out = true
+
+			for i,v in ipairs(self:GetChildrenList()) do
+				if v.layout_chain and not v.laid_out and v.Visible then
+					laid_out = false
+					break
+				end
+			end
+			
+			if laid_out then
+				self.Parent:CalcLayoutChain(true)
+				self.laid_out_deferred = true
+			end
+		end
+		
+		if self.CachedRendering and not gui.debug then
+			self:DrawCache()
 			no_draw = true
 		end
-	end
-	
-	if --[[true or]] not no_draw and self.Clipping then
-		--surface.PushClipFunction(self.DrawClippingStencil, self)
-		surface.EnableClipRect(0,0,self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
-	end
-	
-	surface.Translate(-self.Scroll.x, -self.Scroll.y, 0)
-	
-	if from_cache then
-		self.draw_no_draw = false
-	else
-		self.draw_no_draw = no_draw
-	end
-end
 
-function PANEL:DrawClippingStencil()
-	--if not self.Clipping then return end
-	local tex = surface.GetTexture()
-	surface.SetWhiteTexture()
-	--surface.SetTexture(self.Texture)
-	local r,g,b,a = surface.SetColor(1,1,1,0.1)
-	self:DrawRect()
-	surface.SetColor(r,g,b,a)
-	surface.SetTexture(tex)
-end
-
-function PANEL:Draw(from_cache)
-	if not self.Visible then return end
-	self:PreDraw(from_cache)
-		for k,v in ipairs(self:GetChildren()) do
-			v:Draw(from_cache)
-		end
-	self:PostDraw(from_cache)
-end
-
-local gl = require("lj-opengl")
+		self:OnUpdate()
 			
-function PANEL:PostDraw(from_cache)
-	self:CalcResizing()
-
-	if --[[true or]] not self.draw_no_draw and self.Clipping then
-		--surface.PopClipFunction()
-		surface.DisableClipRect()
-		--render.PopViewport()
-	end
-	
-	if self.layout_me == "init" then 
-		self.layout_me = false 
-	end
-	
-	if gui.debug then
-		if false and self.Clipping then	
-			gl.Disable(gl.e.GL_STENCIL_TEST)
-			render.SetBlendMode("additive")
-			surface.SetColor(1, 0, 1, 0.25)
-			surface.SetWhiteTexture()
-			surface.DrawRect(0, 0, self.Size.w, self.Size.h)
-			render.SetBlendMode("alpha")
-			gl.Enable(gl.e.GL_STENCIL_TEST)
+		if from_cache or not no_draw then
+			if self:IsDragging() or self:IsWorld() or self:IsInsideParent() then
+				self:OnPreDraw()
+				self:OnDraw()
+				self:OnPostDraw()
+				self.visible = true
+				no_draw = false
+			else
+				self.visible = false
+				no_draw = true
+			end
 		end
-		if self.updated_layout then
-			render.SetBlendMode("additive")
-			surface.SetColor(1, 0, 0, 0.1)
-			surface.SetWhiteTexture(self.cache_texture)
-			surface.DrawRect(self.Scroll.x, self.Scroll.y, self.Size.w, self.Size.h)
-			self.updated_layout = false
-			render.SetBlendMode("alpha")
+		
+		if --[[true or]] not no_draw and self.Clipping then
+			--surface.PushClipFunction(self.DrawClippingStencil, self)
+			surface.EnableClipRect(0,0,self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
+		end
+		
+		surface.Translate(-self.Scroll.x, -self.Scroll.y, 0)
+		
+		if from_cache then
+			self.draw_no_draw = false
 		else
-			if self.updated_cache then
-				surface.SetColor(0, 1, 0, 0.1)
-				surface.SetWhiteTexture(self.cache_texture)
+			self.draw_no_draw = no_draw
+		end
+	end
+
+	function PANEL:DrawClippingStencil()
+		--if not self.Clipping then return end
+		local tex = surface.GetTexture()
+		surface.SetWhiteTexture()
+		--surface.SetTexture(self.Texture)
+		local r,g,b,a = surface.SetColor(1,1,1,0.1)
+		self:DrawRect()
+		surface.SetColor(r,g,b,a)
+		surface.SetTexture(tex)
+	end
+
+	function PANEL:Draw(from_cache)
+		if not self.Visible then return end
+		self:PreDraw(from_cache)
+			for k,v in ipairs(self:GetChildren()) do
+				v:Draw(from_cache)
+			end
+		self:PostDraw(from_cache)
+	end
+
+	local gl = require("lj-opengl")
+				
+	function PANEL:PostDraw(from_cache)
+		self:CalcResizing()
+
+		if --[[true or]] not self.draw_no_draw and self.Clipping then
+			--surface.PopClipFunction()
+			surface.DisableClipRect()
+			--render.PopViewport()
+		end
+		
+		if self.layout_me == "init" then 
+			self.layout_me = false 
+		end
+		
+		if gui.debug then
+			if false and self.Clipping then	
+				gl.Disable(gl.e.GL_STENCIL_TEST)
+				render.SetBlendMode("additive")
+				surface.SetColor(1, 0, 1, 0.25)
+				surface.SetWhiteTexture()
 				surface.DrawRect(0, 0, self.Size.w, self.Size.h)
-				self.updated_cache = false
+				render.SetBlendMode("alpha")
+				gl.Enable(gl.e.GL_STENCIL_TEST)
+			end
+			if self.updated_layout then
+				render.SetBlendMode("additive")
+				surface.SetColor(1, 0, 0, 0.1)
+				surface.SetWhiteTexture(self.cache_texture)
+				surface.DrawRect(self.Scroll.x, self.Scroll.y, self.Size.w, self.Size.h)
+				self.updated_layout = false
+				render.SetBlendMode("alpha")
+			else
+				if self.updated_cache then
+					surface.SetColor(0, 1, 0, 0.1)
+					surface.SetWhiteTexture(self.cache_texture)
+					surface.DrawRect(0, 0, self.Size.w, self.Size.h)
+					self.updated_cache = false
+				end
+			end
+		end
+		
+		surface.PopMatrix()
+		
+		
+		if self.ThreeDee then surface.End3D() end
+	end
+		
+	function PANEL:DrawRect(x, y, w, h)
+		if self.NinePatch then			
+			surface.DrawNinePatch(
+				x or 0, y or 0, 
+				w or (self.Size.w + self.DrawSizeOffset.w), h or (self.Size.h + self.DrawSizeOffset.h),
+				self.NinePatchRect.w, self.NinePatchRect.h, 
+				self.NinePatchCornerSize, 
+				self.NinePatchRect.x, self.NinePatchRect.y,
+				self:GetSkin().pixel_scale
+			)
+		else
+			if not self.NinePatchRect:IsZero() then
+				surface.SetRectUV(self.NinePatchRect.x, self.NinePatchRect.y, self.NinePatchRect.w, self.NinePatchRect.h, self.Texture.w, self.Texture.h)
+			end
+			surface.DrawRect(x or 0, y or 0, w or (self.Size.w + self.DrawSizeOffset.w), h or (self.Size.h + self.DrawSizeOffset.h))
+			if not self.NinePatchRect:IsZero() then
+				surface.SetRectUV()
 			end
 		end
 	end
-	
-	surface.PopMatrix()
-	
-	
-	if self.ThreeDee then surface.End3D() end
 end
 
 do -- orientation
@@ -471,6 +493,19 @@ do -- orientation
 		end
 		
 		return rect
+	end
+	
+	function PANEL:CenterX()
+		self:SetX((self.Parent:GetWidth() * 0.5) - (self:GetWidth() * 0.5))
+	end
+
+	function PANEL:CenterY()
+		self:SetY((self.Parent:GetHeight() * 0.5) - (self:GetHeight() * 0.5))
+	end
+
+	function PANEL:Center()
+		self:CenterY()
+		self:CenterX()
 	end
 end
 
@@ -961,269 +996,13 @@ do -- animations
 	end
 end
 
-do -- docking
-	do -- center
-		function PANEL:CenterX()
-			self:SetX((self.Parent:GetWidth() * 0.5) - (self:GetWidth() * 0.5))
-		end
-
-		function PANEL:CenterY()
-			self:SetY((self.Parent:GetHeight() * 0.5) - (self:GetHeight() * 0.5))
-		end
-
-		function PANEL:Center()
-			self:CenterY()
-			self:CenterX()
-		end
-	end
-
-	function PANEL:Align(vec, off, parent)
-		off = off or Vec2()
-		parent = parent or self:GetParent()
-
-		local margin = parent:GetMargin()
-		local padding = self:GetPadding()
-		
-		if not self.ObeyMargin then
-			margin = Rect()
-		end
-		
-		local size = self:GetSize() + margin:GetPosSize() + padding:GetPosSize()
-		local centerparent = parent:GetSize() * vec
-		local centerself = size * vec
-		local pos = centerparent - centerself
-
-		if vec.x == -1 and vec.y == -1 then
-			return
-		elseif vec.x == -1 then
-			self.Position.y = pos.y + off.y + margin.y + padding.y
-		elseif vec.y == -1 then
-			self.Position.x = pos.x + off.x + margin.x + padding.x
-		else
-			self:SetPosition(pos + off + margin:GetPosition() + padding:GetPosition())
-		end
-
-	end
-
-	function PANEL:Undock()
-		self:Dock()
-	end
-
-	function PANEL:Dock(location)
-		if not location then
-			self.dock_location = nil
-		else
-			self.dock_location = location
-		end
-
-		self.Parent:Layout()
-	end
-
-	function PANEL:DockLayout()	
-		local left, right, top, bottom, center
-
-		-- grab one of each dock type
-		for _, pnl in ipairs(self:GetChildren()) do
-			if pnl.dock_location then
-				if pnl.dock_location == "fill" then
-					local margin = self:GetMargin()
-				
-					if not pnl.ObeyMargin then margin = Rect() end
-					
-					local x = margin.x
-					local y = margin.y
-					local w = self:GetWidth() - x - margin.w
-					local h = self:GetHeight() - y - margin.h
-
-					local area = Rect(x, y, w, h)	
-					
-					pnl:SetPosition(area:GetPosition())
-					pnl:SetSize(area:GetSize())
-
-					if pnl.SizeToContens then
-						pnl:SizeToContents()
-					end
-				else
-					if pnl.dock_location == "center" then
-						pnl:Center()
-					elseif pnl.dock_location == "center_x" then
-						pnl:CenterX()
-					elseif pnl.dock_location == "center_y" then
-						pnl:CenterY()
-					elseif pnl.dock_location == "top" then
-						pnl:Align(Vec2(0.5, 0))
-					elseif pnl.dock_location == "bottom" then
-						pnl:Align(Vec2(0.5, 1))
-					elseif pnl.dock_location == "left" then
-						pnl:Align(Vec2(0, 0.5))
-					elseif pnl.dock_location == "right" then
-						pnl:Align(Vec2(1, 0.5))
-					elseif pnl.dock_location == "top_left" then
-						pnl:Align(Vec2(0, 0))
-					elseif pnl.dock_location == "top_right" then
-						pnl:Align(Vec2(1, 0))
-					elseif pnl.dock_location == "bottom_left" then
-						pnl:Align(Vec2(0, 1))
-					elseif pnl.dock_location == "bottom_right" then
-						pnl:Align(Vec2(1, 1))
-					else
-						if not left and pnl.dock_location == "fill_left" then
-							left = pnl
-						end
-						if not right and pnl.dock_location == "fill_right" then
-							right = pnl
-						end
-						if not top and pnl.dock_location == "fill_top" then
-							top = pnl
-						end
-						if not bottom and pnl.dock_location == "fill_bottom" then
-							bottom = pnl
-						end
-					end
-				end
-			end
-		end
-				
-		if top then				
-			local margin = self:GetMargin()
-			
-			if not top.ObeyMargin then margin = Rect() end
-			
-			local x = margin.x
-			local y = margin.y
-			local w = self:GetWidth() - x - margin.w
-			local h = self:GetHeight() - y - margin.h
-
-			local area = Rect(x, y, w, h)	
-			local pad = top:GetPadding()
-
-			top:SetPosition(area:GetPosition() + pad:GetPosition())
-			top:SetWidth(area.w - pad:GetXW())
-			area.y = area.y + top:GetHeight() + pad:GetYH()
-			area.h = area.h - top:GetHeight() - pad:GetYH()
-		end
-
-		if bottom then
-			local margin = self:GetMargin()
-			
-			if not bottom.ObeyMargin then margin = Rect() end
-			
-			local x = margin.x
-			local y = margin.y
-			local w = self:GetWidth() - x - margin.w
-			local h = self:GetHeight() - y - margin.h
-
-			local area = Rect(x, y, w, h)	
-			local pad = bottom:GetMargin()
-
-			bottom:SetPosition(area:GetPosition() + Vec2(pad.x, area.h - bottom:GetHeight() - pad.h))
-			bottom:SetWidth(w - pad:GetXW())
-			area.h = area.h - bottom:GetHeight() - pad:GetYH()
-		end
-
-		if left then
-			local margin = self:GetMargin()
-			
-			if not left.ObeyMargin then margin = Rect() end
-			
-			local x = margin.x
-			local y = margin.y
-			local w = self:GetWidth() - x - margin.w
-			local h = self:GetHeight() - y - margin.h
-
-			local area = Rect(x, y, w, h)	
-			local pad = left:GetMargin()
-
-			left:SetPosition(area:GetPosition() + pad:GetPosition())
-			left:SetHeight(area.h - pad:GetYH())
-			area.x = area.x + left:GetWidth() + pad:GetXW()
-			area.w = area.w - left:GetWidth() - pad:GetXW()
-		end
-
-		if right then
-			local margin = self:GetMargin()
-			
-			if not right.ObeyMargin then margin = Rect() end
-			
-			local x = margin.x
-			local y = margin.y
-			local w = self:GetWidth() - x - margin.w
-			local h = self:GetHeight() - y - margin.h
-
-			local area = Rect(x, y, w, h)	
-			local pad = right:GetMargin()
-
-			right:SetPosition(area:GetPosition() + Vec2(area.w - right:GetWidth() - pad.w, pad.y))
-			right:SetHeight(area.h - pad:GetYH())
-			area.w = area.w - right:GetWidth() - pad:GetXW()
-		end			
-	end
-	
-	prototype.GetSet(PANEL, "ResizePadding", Rect(4,4,4,4))
-
-	function PANEL:GetDockLocation(pos) -- rename this function
-		pos = pos or self:GetMousePosition()
-		local offset = self.ResizePadding
-
-		local siz = self:GetSize()
-
-		if
-			(pos.y > 0 and pos.y < offset.h) and -- top
-			(pos.x > 0 and pos.x < offset.w) -- left
-		then
-			return "top_left"
-		end
-
-		if
-			(pos.y > 0 and pos.y < offset.h) and -- top
-			(pos.x > siz.w - offset.w and pos.x < siz.w) -- right
-		then
-			return "top_right"
-		end
-
-
-		if
-			(pos.y > siz.h - offset.h and pos.y < siz.h) and -- bottom
-			(pos.x > 0 and pos.x < offset.w) -- left
-		then
-			return "bottom_left"
-		end
-
-		if
-			(pos.y > siz.h - offset.h and pos.y < siz.h) and -- bottom
-			(pos.x > siz.w - offset.w and pos.x < siz.w) --right
-		then
-			return "bottom_right"
-		end
-
-		--
-
-		if pos.x > 0 and pos.x < offset.w then
-			return "left"
-		end
-
-		if pos.x > siz.w - offset.w and pos.x < siz.w then
-			return "right"
-		end
-
-		if pos.y > siz.h - offset.h and pos.y < siz.h then
-			return "bottom"
-		end
-
-		if pos.y > 0 and pos.y < offset.h then
-			return "top"
-		end
-
-		return "center"
-	end
-end
-
 do -- resizing
+	prototype.GetSet(PANEL, "ResizePadding", Rect(4,4,4,4))
 	prototype.GetSet(PANEL, "Resizable", false)
 
 	function PANEL:GetResizeLocation(pos)
 		pos = pos or self:GetMousePosition()
-		local loc = self:GetDockLocation(pos)
+		local loc = self:GetMouseLocation(pos)
 
 		if loc ~= "center" then
 			return loc
@@ -1332,6 +1111,62 @@ do -- mouse
 		return self:IsDragging() or self:IsResizing() or self.mouse_over and gui.hovering_panel == self
 	end
 
+	function PANEL:GetMouseLocation(pos) -- rename this function
+		pos = pos or self:GetMousePosition()
+		local offset = self.ResizePadding
+
+		local siz = self:GetSize()
+
+		if
+			(pos.y > 0 and pos.y < offset.h) and -- top
+			(pos.x > 0 and pos.x < offset.w) -- left
+		then
+			return "top_left"
+		end
+
+		if
+			(pos.y > 0 and pos.y < offset.h) and -- top
+			(pos.x > siz.w - offset.w and pos.x < siz.w) -- right
+		then
+			return "top_right"
+		end
+
+
+		if
+			(pos.y > siz.h - offset.h and pos.y < siz.h) and -- bottom
+			(pos.x > 0 and pos.x < offset.w) -- left
+		then
+			return "bottom_left"
+		end
+
+		if
+			(pos.y > siz.h - offset.h and pos.y < siz.h) and -- bottom
+			(pos.x > siz.w - offset.w and pos.x < siz.w) --right
+		then
+			return "bottom_right"
+		end
+
+		--
+
+		if pos.x > 0 and pos.x < offset.w then
+			return "left"
+		end
+
+		if pos.x > siz.w - offset.w and pos.x < siz.w then
+			return "right"
+		end
+
+		if pos.y > siz.h - offset.h and pos.y < siz.h then
+			return "bottom"
+		end
+
+		if pos.y > 0 and pos.y < offset.h then
+			return "top"
+		end
+
+		return "center"
+	end
+	
 	function PANEL:CalcMouse()
 		if 
 			self:HasParent() and 
@@ -1517,62 +1352,7 @@ end
 
 do -- layout
 	PANEL.layout_count = 0
-	
-	prototype.GetSet(PANEL, "StretchToPanelWidth", NULL)
-	prototype.GetSet(PANEL, "StretchToPanelHeight", NULL)
-	
-	function PANEL:SuppressLayout(b)
-		self.suppress_layout = b
-	end
-	
-	function PANEL:Layout(now)
-		if self.suppress_layout and not now then return end
-		if now then			
-			if self.in_layout then return end
-			self.in_layout = true
-				
-				for i, v in ipairs(self:GetChildren()) do
-					v.layout_me = true
-				end
-				
-				self.layout_count = (self.layout_count or 0) + 1
-				
-				self:DockLayout()			
-	
-				if self.StretchToPanelWidth:IsValid() then
-					self:SetWidth(self.StretchToPanelWidth:GetWidth())
-				end
-				
-				if self.StretchToPanelHeight:IsValid() then
-					self:SetHeight(self.StretchToPanelHeight:GetHeight())
-				end
-				
-				self:OnLayout(self:GetLayoutScale(), self:GetSkin())
-				self:CalcLayoutChain()
-									
-				if self.LayoutParentOnLayout and self:HasParent() then
-					self.Parent:Layout(now)
-				end
-				
-				self:StackChildren()
-				
-				if self.layout_me ~= "init" then
-					self.layout_me = false
-				end
-				
-				self:MarkCacheDirty()
-				
-				self.updated_layout = true
-				
-			self.in_layout = false
-			self.last_children_size = nil
-		else
-			self.layout_me = true
-		end
-	end
-end
 
-do -- layout chain
 	prototype.GetSet(PANEL, "LayoutSize", nil)
 	prototype.GetSet(PANEL, "IgnoreLayout", false)
 	prototype.GetSet(PANEL, "CollisionGroup", "none")
@@ -1698,7 +1478,6 @@ do -- layout chain
 				collide = false
 			elseif cmd == "size_to_width" then
 				local old = child:GetRect()
-				child:SuppressLayout(true)
 				child:SetHeight(self:GetHeight())									
 				child:SetWidth(1)
 				child:SetX(self:GetWidth())
@@ -1709,9 +1488,7 @@ do -- layout chain
 				child:SetRect(old)
 				
 				child:SetWidth(pos.x)
-				child:SuppressLayout(false)
 			elseif cmd == "size_to_height" then
-				child:SuppressLayout(true)
 				local old = child:GetRect()
 				
 				child:SetWidth(self:GetWidth())
@@ -1725,7 +1502,6 @@ do -- layout chain
 								
 				--child:SetHeight(left.y)
 				child:SetHeight(pos.y)
-				child:SuppressLayout(false)
 			elseif cmd == "fill_x" then
 				child:SetWidth(0)
 				
@@ -1803,10 +1579,53 @@ do -- layout chain
 			end
 		end
 	end
+			
+	function PANEL:SuppressLayout(b)
+		self.suppress_layout = b
+	end
 	
-	function PANEL:CalcLayoutChain()
+	function PANEL:Layout(now)
+		if self.suppress_layout and not now then return end
+		if now then			
+			if self.in_layout then return end
+			self.in_layout = true
+				
+				for i, v in ipairs(self:GetChildrenList()) do
+					v.layout_me = true
+				end
+				
+				self.layout_count = (self.layout_count or 0) + 1
+				
+				self:OnLayout(self:GetLayoutScale(), self:GetSkin())
+				self:CalcLayoutChain()
+									
+				if self.LayoutParentOnLayout and self:HasParent() then
+					self.Parent:Layout(now)
+				end
+				
+				self:StackChildren()
+				
+				if self.layout_me ~= "init" then
+					self.layout_me = false
+				end
+				
+				self:MarkCacheDirty()
+				
+				self.updated_layout = true
+				
+			self.in_layout = false
+			self.last_children_size = nil
+		else
+			self.layout_me = true
+		end
+	end
+	
+	function PANEL:CalcLayoutChain(defered)
+		local key = "layout_chain"
+		if defered then key = "layout_chain_defered" end
+
 		for i, child in ipairs(self:GetChildren()) do
-			if child.layout_chain then
+			if child[key] then
 				if child.LayoutSize then 
 					child:SetSize(child.LayoutSize:Copy())
 				end
@@ -1816,13 +1635,13 @@ do -- layout chain
 		end
 		
 		for i, child in ipairs(self:GetChildren()) do
-			if child.layout_chain then
-				process_commands(self, child, child.layout_chain)
+			if child[key] then
+				process_commands(self, child, child[key])
 				child.laid_out = true
 			end
 		end
 	end
-		
+			
 	function PANEL:SetupLayoutChain(...)
 		self.layout_chain = {...}
 		self.LayoutSize = self:GetSize():Copy()
@@ -2055,27 +1874,6 @@ do -- skin
 	end
 end
 
-function PANEL:DrawRect(x, y, w, h)
-	if self.NinePatch then			
-		surface.DrawNinePatch(
-			x or 0, y or 0, 
-			w or (self.Size.w + self.DrawSizeOffset.w), h or (self.Size.h + self.DrawSizeOffset.h),
-			self.NinePatchRect.w, self.NinePatchRect.h, 
-			self.NinePatchCornerSize, 
-			self.NinePatchRect.x, self.NinePatchRect.y,
-			self:GetSkin().pixel_scale
-		)
-	else
-		if not self.NinePatchRect:IsZero() then
-			surface.SetRectUV(self.NinePatchRect.x, self.NinePatchRect.y, self.NinePatchRect.w, self.NinePatchRect.h, self.Texture.w, self.Texture.h)
-		end
-		surface.DrawRect(x or 0, y or 0, w or (self.Size.w + self.DrawSizeOffset.w), h or (self.Size.h + self.DrawSizeOffset.h))
-		if not self.NinePatchRect:IsZero() then
-			surface.SetRectUV()
-		end
-	end
-end
-
 do -- events
 	function PANEL:OnDraw()
 		if self.NoDraw or self.style_nodraw then return end
@@ -2095,6 +1893,27 @@ do -- events
 			--surface.SetColor(1,0,0,1)
 			--surface.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
 		end
+	end
+	
+	function PANEL:OnUnParent()
+		gui.unrolled_draw = nil
+	end
+
+	function PANEL:OnChildAdd()
+		gui.unrolled_draw = nil
+	end
+
+	function PANEL:OnRemove(a)
+		gui.panels[self] = nil
+		
+		a = (a or 0) + 1
+		
+		for k,v in pairs(self:GetChildrenList()) do
+			v:Remove(a)
+		end
+			
+		-- this is important!!
+		self:UnParent()
 	end
 	
 	function PANEL:OnPreDraw() end
