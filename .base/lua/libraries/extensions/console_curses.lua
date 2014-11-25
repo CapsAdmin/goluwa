@@ -306,11 +306,17 @@ function console.Print(str)
 		
 	console.SyntaxPrint(str, c.log_window)
 	
-	console.ScrollLogHistory(0) 
+	console.ScrollLogHistory(console.scroll_offset)
 	
 	if console.status_window then
 		console.ClearStatus(console.last_status)
 	end
+end
+
+function console.Clear()
+	table.clear(console.history)
+	curses.wclear(c.log_window)
+	console.ScrollLogHistory(0) 
 end
 
 function console.Resize(w, h)
@@ -481,13 +487,17 @@ do
 	end
 end
 
-console.scroll_log_history = 0 
+console.scroll_log_history = 0
+console.scroll_offset = 0
 
 function console.ScrollLogHistory(offset, skip_refresh)
 
+	console.scroll_offset = math.max(offset, 0)
+	
 	if offset == 0 then
 		console.scroll_log_history = #console.history
-		return console.ScrollLogHistory(1, true)
+		offset = 1
+		skip_refresh = true
 	end
 	
 	curses.werase(c.log_window)
