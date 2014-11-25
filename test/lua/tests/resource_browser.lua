@@ -4,7 +4,7 @@ frame:Center()
 frame:SetCachedRendering(false)
 
 local list = gui.CreatePanel("list", frame)
-list:SetupLayoutChain("fill_x", "fill_y")
+list:SetupLayout("fill_x", "fill_y")
 list:SetupSorted("name", "type", "size", "date modified")
 
 for i, info in ipairs(vfs.Find(".", invert, full_path, start, plain, true)) do

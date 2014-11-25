@@ -33,7 +33,7 @@ function lovemu.RunGame(folder)
 		
 	window.Open()	
 		
-	logn("mounting love game folder: ", R("lovers/" .. lovemu.demoname .. "/"))	
+	warning("mounting love game folder: ", R("lovers/" .. lovemu.demoname .. "/"))	
 	vfs.AddModuleDirectory("")	
 	vfs.Mount(R("lovers/" .. lovemu.demoname .. "/"))
 	vfs.AddModuleDirectory("lovers/" .. lovemu.demoname .. "/")
@@ -124,7 +124,7 @@ function lovemu.RunGame(folder)
 			local err, msg = xpcall(run, system.OnError, dt)
 			surface.PopMatrix()
 			if not err then
-				logn(msg)
+				warning(msg)
 				
 				lovemu.errored = true
 				lovemu.error_msg = msg

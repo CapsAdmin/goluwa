@@ -261,11 +261,11 @@ do -- list parsing
 		local out = {}
 		
 		-- freezes occur here
-		print(#snd, "!!")
-		coroutine.yield()
+		--print(#snd, "!!")
+		--coroutine.yield()
 		local content = snd:reverse():match("(.+)zTADV")
-		coroutine.yield()
-		print(#content, "??")
+		--coroutine.yield()
+		--print(#content, "??")
 		do return end
 		if not content then return end
 		content = content:reverse()
@@ -576,7 +576,7 @@ do -- list parsing
 			vfs.Search("sound/", {"wav", "ogg", "mp3"}, function(path, userdata)
 
 				local data = vfs.Read(path)
-				if not data then print(path) return end -- 0 bytes
+				if not data then logn(path) return end -- 0 bytes
 				local sentence = data:match("PLAINTEXT%s{%s(.-)%s}%s")
 			
 				if not sentence or sentence == "" then
@@ -606,7 +606,7 @@ do -- list parsing
 		end		
 		
 		function thread:Save()
-			print("saving..")
+			logn("saving..")
 
 			for game_name, found in pairs(found) do
 				local game = {}
@@ -625,7 +625,7 @@ do -- list parsing
 		
 		function thread:OnUpdate()
 			if wait(1) then
-				print(table.count(found) .. " realms found")
+				logn(table.count(found) .. " realms found")
 				local i = 0
 				local size = 0
 				for k,v in pairs(found) do size = size + #k for k,v in pairs(v) do i = i + 1 size = size + #v end end
@@ -714,7 +714,7 @@ do -- list parsing
 						if prev[word].data.realms then
 							prev[word].data.realms[realm] = {sounds = sounds, realm = realm}
 						else
-							print(word) -- ???
+							logn(word) -- ???
 						end
 					end
 

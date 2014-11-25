@@ -400,7 +400,7 @@ do -- dll paths
 	
 	if LINUX then
 		set = function(path)
-			logn("seting LD_LIBRARY_PATH to ", path)
+			warning("seting LD_LIBRARY_PATH to ", path)
 			os.setenv("LD_LIBRARY_PATH", path)
 		end
 		
@@ -466,7 +466,7 @@ do -- fonts
 
 			X11.XCloseDisplay(display)
 		else
-			print("NO X DISPLAY FOUND BUT WHATEVER")
+			warning("NO X DISPLAY FOUND BUT WHATEVER")
 			--return
 		end
 	end

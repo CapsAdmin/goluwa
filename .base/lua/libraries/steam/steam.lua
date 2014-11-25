@@ -26,7 +26,7 @@ local ok, err = pcall(function()
 end)
 
 if not ok then
-	logn("could not load steamfriends: ", err)
+	warning("could not load steamfriends: ", err)
 end
 
 function steam.IsSteamClientAvailible()

@@ -141,16 +141,14 @@ function luadata.Decode(str)
 	local func, err = loadstring("return {\n" .. str .. "\n}")
 	
 	if not func then
-		logn("luadata syntax error:")
-		logn(err)		
+		warning("luadata syntax error: ", err)
 		return {}
 	end
 	
 	local ok, err = xpcall(func, system.OnError)
 	
 	if not ok then
-		logn("luadata runtime error:")
-		logn(err)
+		warning("luadata runtime error: ", err)
 		return {}
 	end
 	

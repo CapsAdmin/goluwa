@@ -71,7 +71,7 @@ do
 			end
 		end
 	else
-		print(lib)
+		logn(lib)
 		
 		utility.Compress = function() error("lz4 is not avaible: " .. lib, 2) end
 		utility.Decompress = utility.Compress
@@ -821,7 +821,7 @@ do -- header parse
 			if line:find("#") then
 				local type = line:match("#%s-([%l%d_]+)()")
 			
-				print(type, line)
+				--print(type, line)
 			end
 		end
 		
@@ -913,7 +913,7 @@ do -- header parse
 			if line:find("enum%s-{") then
 				local i = 0
 				local um = line:match(" enum {(.-)}")
-				if not um then print(line) end
+				--if not um then print(line) end
 				for enum in (um .. ","):gmatch(" (.-),") do
 					if enum:find("=") then
 						local left, operator, right = enum:match(" = (%d) (.-) (%d)")

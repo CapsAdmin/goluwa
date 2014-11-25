@@ -30,7 +30,7 @@ function tester.End()
 		end
 
 		local grd = gui.CreatePanel("base", frm)
-		grd:SetupLayoutChain("fill_x", "fill_y")
+		grd:SetupLayout("fill_x", "fill_y")
 		grd:SetSizeStackToWidth(true)
 		grd:SetForcedStackSize(Vec2(0,25))
 

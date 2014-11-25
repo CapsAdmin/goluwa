@@ -188,7 +188,7 @@ local function read_vpk_dir(path)
 	
 	serializer.Encode("luadata", self, function(data, err)
 		if data then
-			logn("saved cache of vpk tree ", path)
+			warning("saved cache of vpk tree ", path)
 			vfs.Write(cache_path, data)
 		end
 	end, 1000)

@@ -187,7 +187,7 @@ do -- window meta
 		sdl.GL_MakeCurrent(ptr, context) 
 		gl.GetProcAddress = sdl.GL_GetProcAddress
 
-		logn("sdl version: ", ffi.string(sdl.GetRevision()))	
+		warning("sdl version: ", ffi.string(sdl.GetRevision()))	
 		
 		-- this needs to be initialized once after a context has been created..
 		if gl and gl.InitMiniGlew and not gl.gl_init then

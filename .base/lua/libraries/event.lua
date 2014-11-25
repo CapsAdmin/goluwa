@@ -172,9 +172,7 @@ function event.GetErrorHistory()
 end
 
 function event.DisableAll()
-	if event.enabled == false then
-		logn("events are already disabled.")
-	else
+	if event.enabled ~= false then
 		event.enabled = false
 		event.__backup_events = table.copy(event.GetTable())
 		table.clear(event.GetTable())
@@ -182,9 +180,7 @@ function event.DisableAll()
 end
 
 function event.EnableAll()
-	if event.enabled == true then
-		logn("events are already enabled.")
-	else
+	if event.enabled ~= true then
 		event.enabled = true
 		table.merge(event.GetTable(), event.__backup_events)
 		event.__backup_events = nil

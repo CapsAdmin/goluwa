@@ -116,11 +116,11 @@ do -- socket
 		local data = read_struct(str, connect.response)
 					
 		if data.type == CONNECTION_REJECTED then -- rejected
-			logn("connection rejected: ", data.disconnect_reason)
+			warning("connection rejected: ", data.disconnect_reason)
 		elseif data.type == CHALLENGE_SERVER_RESPONSE then -- challenge
 			send_struct(self, connect.request[CHALLENGE_CLIENT_RESPONSE], data) 
 		elseif data.type == CONNECTION_SUCCESS then -- connection
-			logn("connection success")
+			warning("connection success")
 			self:Remove()
 		end
 	end

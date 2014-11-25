@@ -36,7 +36,7 @@ local function main()
 	local function update()	
 		if (collectgarbage("count")*1024) > 1024*1024*1024 then 
 			if wait(1) then
-				logn("emergency collect! memory > 1 gb") 
+				warning("emergency collect! memory > 1 gb") 
 			end
 			collectgarbage()
 		end
@@ -86,7 +86,7 @@ local function main()
 		function OnUpdate()
 			local ok, err = pcall(update)
 			if not ok then 
-				print(err) 
+				logn(err) 
 			end
 		end
 	else

@@ -16,7 +16,7 @@ for line in glfw.header:gmatch("(.-)\n") do
 	end
 end
 
-calllbacks.OnError(function(code, str) logn("[glfw] ", ffi.string(str)) end)
+calllbacks.OnError(function(code, str) warning(ffi.string(str)) end)
 calllbacks.OnError = nil
 
 calllbacks.OnMonitor(function() event.Call("OnMonitorConnected") end)
@@ -228,7 +228,7 @@ do -- window meta
 		glfw.MakeContextCurrent(ptr)
 		gl.GetProcAddress = glfw.GetProcAddress
 
-		logn("glfw version: ", ffi.string(glfw.GetVersionString()))
+		logn("glfw version: ", ffi.string(glfw.GetVersionString()):trim())
 		
 		-- this needs to be initialized once after a context has been created..
 		if gl and gl.InitMiniGlew and not gl.gl_init then

@@ -45,7 +45,7 @@ function physics.GetPhysicsModelsFromPath(path)
 		for i = 0, scene.mNumMeshes - 1 do
 			
 			if scene.mMeshes[i].mNumVertices == 0 then
-				logn("no vertices found in " .. path, 2)
+				warning("no vertices found in " .. path)
 			else
 									
 				local vertices = ffi.new("float[?]", scene.mMeshes[i].mNumVertices  * 3)

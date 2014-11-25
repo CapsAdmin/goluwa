@@ -35,7 +35,7 @@ function vfs.AutorunAddon(addon, folder, force)
 					if path:find("%.lua") then
 						local ok, err = xpcall(include, system.OnError, info.path .. "lua/autorun/" .. folder .. "/" ..  path)
 						if not ok then
-							logn(err)
+							warning(err)
 						end
 					end
 				end
