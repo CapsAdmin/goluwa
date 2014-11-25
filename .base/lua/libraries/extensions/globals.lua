@@ -16,37 +16,16 @@ do -- verbose print
 	end
 end
 
-do -- warning
-	local function get_verbosity_level()
-		return console and console.GetVariable("log_verbosity", 0) or 0
-	end
+function warning(format, ...)
+	format = tostringx(format)
 	
-	local function get_debug_filter()
-		return console and console.GetVariable("log_debug_filter", "") or ""
-	end	
+	local str = format:safeformat(...)
+	local source = debug.getprettysource(2, true)
 
-	function warning(verbosity, format, ...)
-		local level = get_verbosity_level()
-				
-		-- if verbosity is a string only show warnings log_debug_filter is set to
-		if type(verbosity) == "string" then
-			if verbosity == get_debug_filter() then
-				return logf(format, ...)
-			end
-		else
-			-- if the level is below 0 always log
-			if level < 0 then
-				return log(format, ...)
-			end
-		
-			-- otherwise check the verbosity level against the input	
-			if level <= verbosity then
-				return log(format, ...)
-			end
-		end
-		return ...
-	end	
-end
+	logn(source, ": ", format)
+
+	return format, ...
+end	
 	
 do -- nospam
 	local last = {}

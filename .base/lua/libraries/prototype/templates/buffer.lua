@@ -123,8 +123,8 @@ local function header_to_table(str)
 		end
 		
 		if not type then 	
-			print(field)
-			error("somethings wrong with this line!", 2) 
+			logn("somethings wrong with the above line!")
+			error(field, 2) 
 		end
 		
 		if qualifier == nil then

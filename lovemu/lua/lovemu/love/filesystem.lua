@@ -77,7 +77,7 @@ function love.filesystem.read(path)
 end
 
 function love.filesystem.remove(path) --partial
-	logn("[lovemu] attempted to remove folder/file ", path)
+	warning("attempted to remove folder/file ", path)
 end
 
 function love.filesystem.setIdentity(name) --partial

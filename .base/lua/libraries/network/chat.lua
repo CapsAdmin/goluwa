@@ -115,19 +115,19 @@ if CLIENT then
 		
 		local edit = frame:CreatePanel("text_edit")
 		edit:SetHeight(9*S)
-		edit:SetupLayoutChain("bottom", "fill_x")
+		edit:SetupLayout("bottom", "fill_x")
 		frame.edit = edit
 		
 		local tab = frame:CreatePanel("tab")
 		tab:SetSize(Vec2())
-		tab:SetupLayoutChain("fill_x", "fill_y")
+		tab:SetupLayout("fill_x", "fill_y")
 		frame.tab = tab
 		
 		local page = tab:AddTab("chat")
 		
 		local scroll = page:CreatePanel("scroll")
 		scroll:SetXScrollBar(false)
-		scroll:SetupLayoutChain("fill_x", "fill_y")
+		scroll:SetupLayout("fill_x", "fill_y")
 		page.scroll = scroll
 
 		local text = scroll:SetPanel(gui.CreatePanel("text"))
@@ -231,7 +231,7 @@ if CLIENT then
 			event.Delay(0, function()
 				if frame:IsValid() then
 					edit:SizeToText()
-					edit:SetupLayoutChain("bottom", "fill_x")
+					edit:SetupLayout("bottom", "fill_x")
 					frame:Layout()
 				end
 			end)
@@ -248,7 +248,7 @@ if CLIENT then
 		
 		local scroll = page:CreatePanel("scroll")
 		scroll:SetXScrollBar(false)
-		scroll:SetupLayoutChain("fill_x", "fill_y")
+		scroll:SetupLayout("fill_x", "fill_y")
 		page.scroll = scroll
 
 		local text = scroll:SetPanel(gui.CreatePanel("text"))

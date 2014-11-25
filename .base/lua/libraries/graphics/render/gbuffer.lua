@@ -430,7 +430,7 @@ function render.InitializeGBuffer(width, height)
 	render.gbuffer_height = height
 	
 	if render.debug then
-		logn("[render] initializing gbuffer: ", width, " ", height)
+		warning("initializing gbuffer: ", width, " ", height)
 	end 
 	
 	do -- gbuffer	  
@@ -463,7 +463,7 @@ function render.InitializeGBuffer(width, height)
 		render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_buffers)  
 		
 		if not render.gbuffer:IsValid() then
-			logn("[render] failed to initialize gbuffer")
+			warning("failed to initialize gbuffer")
 			return
 		end
 		
@@ -583,7 +583,7 @@ function render.ShutdownGBuffer()
 		render.gbuffer_screen_quad:Remove()
 	end
 	
-	logn("[render] gbuffer shutdown")
+	warning("gbuffer shutdown")
 end
 
 local size = 4
@@ -688,7 +688,7 @@ event.AddListener("RenderContextInitialized", nil, function()
 	local ok, err = xpcall(render.InitializeGBuffer, system.OnError)
 	
 	if not ok then
-		logn("[render] failed to initialize gbuffer: ", err)
+		warning("failed to initialize gbuffer: ", err)
 		render.EnableGBuffer(false)
 	end
 end)

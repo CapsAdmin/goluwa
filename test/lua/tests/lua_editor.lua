@@ -124,7 +124,7 @@ frame:SetSize(1000, 1000)
 frame:RequestLayout(true) 
 
 local scroll = gui.CreatePanel("scroll", frame)
-scroll:SetupLayoutChain("fill_x", "fill_y")
+scroll:SetupLayout("fill_x", "fill_y")
 
 local markup = scroll:SetPanel(gui.Create("text_input"))
 markup:SetMultiLine(true)

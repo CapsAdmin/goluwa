@@ -136,7 +136,7 @@ function META:Indent(back)
 		end
 	else
 		-- TODO
-		print(self.text:usub(sub_pos-1, sub_pos-1), back)
+		--print(self.text:usub(sub_pos-1, sub_pos-1), back)
 		if back and self.text:usub(sub_pos-1, sub_pos-1) == "\t" then
 			self:Backspace()
 		else

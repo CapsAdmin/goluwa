@@ -1,5 +1,5 @@
 if not steam.IsSteamClientAvailible() then
-	logn("steam friends extension not available")
+	warning("steam friends extension not available")
 return end
 
 chatsounds.Initialize()

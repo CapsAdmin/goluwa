@@ -1,3 +1,5 @@
+console.AddCommand("clear", console.Clear)
+
 do
 	input.Bind("e+left_alt", "toggle_focus")
 
@@ -275,7 +277,7 @@ console.AddCommand("source", function(line, path, line_number, ...)
 		table.remove(data, 1)
 		
 		if not debug.openfunction(func) then
-			print(func:src())
+			logn(func:src())
 		end
 	else
 		logf("function %q could not be found in _G or in added commands\n", line)

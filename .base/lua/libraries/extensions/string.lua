@@ -146,8 +146,12 @@ end
 
 function string.safeformat(str, ...)	
 	str = str:gsub("%%(%d+)", "%%s")
-	
 	local count = select(2, str:gsub("(%%)", ""))
+	
+	if count == 0 then	
+		return table.concat({str, ...}, "")
+	end
+	
 	local copy = {}
 	for i = 1, count do
 		table.insert(copy, tostringx(select(i, ...)))
