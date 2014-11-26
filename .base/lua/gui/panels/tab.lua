@@ -32,7 +32,7 @@ function PANEL:AddTab(name)
 	button:SetStyle("tab_inactive")
 	
 	button:SetText(name)
-	button.label:SetupLayoutChain("center_y_simple")
+	button.label:SetupLayout("center_y_simple")
 
 	button.text = name
 	

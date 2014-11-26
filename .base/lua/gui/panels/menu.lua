@@ -49,7 +49,7 @@ do
 		self:SetSize(Vec2()+500)
 		self:SetLayoutSize(Vec2()+500)
 		
-		self:CalcLayoutChain()
+		self:Layout(true)
 		
 		local w = 0
 		
@@ -82,7 +82,7 @@ do
 		local img = self:CreatePanel("base", "image")
 		img:SetIgnoreMouse(true)
 		img:SetVisible(false)
-		img:SetupLayoutChain("left")
+		img:SetupLayout("left")
 		
 		local label = self:CreatePanel("text", "label")
 		label:SetIgnoreMouse(true)
@@ -119,7 +119,7 @@ do
 	
 	function PANEL:SetText(str)
 		self.label:SetText(str)
-		self.label:SetupLayoutChain("left")
+		self.label:SetupLayout("left")
 		self:Layout()
 	end
 	
@@ -136,7 +136,7 @@ do
 		local icon = self:CreatePanel("base")
 		icon:SetIgnoreMouse(true)
 		icon:SetStyle("menu_right_arrow")
-		icon:SetupLayoutChain("right")
+		icon:SetupLayout("right")
 
 		self.menu = gui.CreatePanel("menu")
 		self.menu:SetVisible(false)

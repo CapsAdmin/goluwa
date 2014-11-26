@@ -11,11 +11,11 @@ function editor.Open()
 	local frame = gui.CreatePanel("frame")
 	frame:SetWidth(300)
 	frame:SetTitle("editor")
-	frame:SetupLayoutChain("left", "fill_y")
+	frame:SetupLayout("left", "fill_y")
 	editor.frame = frame
 	
 	local div = gui.CreatePanel("divider", frame)
-	div:SetupLayoutChain("fill_x", "fill_y")
+	div:SetupLayout("fill_x", "fill_y")
 	div:SetHideDivider(true)
 	
 	local scroll = div:SetTop(gui.CreatePanel("scroll"))
