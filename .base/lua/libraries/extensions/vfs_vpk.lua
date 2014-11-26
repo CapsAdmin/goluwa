@@ -166,7 +166,7 @@ end
 local function read_vpk_dir(path)
 	check(path, "string")
 	
-	local cache_path = "%DATA%/vpk_cache/" .. crypto.CRC32(path)
+	local cache_path = "data/vpk_cache/" .. crypto.CRC32(path)
 	
 	if vfs.Exists(cache_path) then
 		local str = vfs.Read(cache_path, "b")

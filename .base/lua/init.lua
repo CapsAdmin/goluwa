@@ -183,7 +183,7 @@ do -- file system
 	end
 	
 	-- mount the /userdata/*username*/ folder
-	vfs.MountAddon(e.USERDATA_FOLDER)
+	vfs.Mount(e.USERDATA_FOLDER, "data")
 	
 	-- mount the /.base folder
 	vfs.MountAddon(e.BASE_FOLDER)
@@ -585,7 +585,7 @@ do -- include
 				table.insert(include_buffer, "do")
 				table.insert(include_buffer, lua)
 				table.insert(include_buffer, "end")
-				vfs.Write("include.lua", table.concat(include_buffer, "\n"))
+				vfs.Write("data/include.lua", table.concat(include_buffer, "\n"))
 			end]]
 			
 			include_stack[#include_stack] = nil

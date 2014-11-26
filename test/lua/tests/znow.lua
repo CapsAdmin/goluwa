@@ -7,7 +7,7 @@ if false then -- frame
 	frame:SetSize(Vec2()+500)
 
 	local tab = gui.CreatePanel("tab", frame)
-	tab:SetupLayoutChain("fill_x", "fill_y")
+	tab:SetupLayout("fill_x", "fill_y")
 
 	do
 		local content = tab:AddTab("tree")
@@ -15,8 +15,8 @@ if false then -- frame
 		local scroll = gui.CreatePanel("scroll", content)
 		local tree = gui.CreatePanel("tree") 
 		scroll:SetPanel(tree)
-		tree:SetupLayoutChain("fill_x", "fill_y")
-		scroll:SetupLayoutChain("fill_x", "fill_y")
+		tree:SetupLayout("fill_x", "fill_y")
+		scroll:SetupLayout("fill_x", "fill_y")
 		
 		local data = serializer.ReadFile("luadata", R"data/tree.txt") or {}
 		local done = {}
@@ -36,7 +36,7 @@ if false then -- frame
 		local content = tab:AddTab("list")
 		local list = gui.CreatePanel("list", content)
 		list:SetupSorted("name", "date modified", "type", "size")
-		list:SetupLayoutChain("fill_x", "fill_y")
+		list:SetupLayout("fill_x", "fill_y")
 		
 		for k,v in pairs(vfs.Find("lua/")) do
 			local file = vfs.Open("lua/"..v)
@@ -48,7 +48,7 @@ if false then -- frame
 	do
 		local content = tab:AddTab("dividers")
 		local div = gui.CreatePanel("divider", content)
-		div:SetupLayoutChain("fill_x", "fill_y")
+		div:SetupLayout("fill_x", "fill_y")
 		div:SetDividerPosition(400)
 
 		local huh = div:SetLeft(gui.CreatePanel("button"))
@@ -84,7 +84,7 @@ if false then -- frame
 		local text = gui.CreatePanel("text_edit", content)
 		text:SetSize(Vec2(128, 128))
 		text:SetText("huh")
-		text:SetupLayoutChain("fill_x", "fill_y")
+		text:SetupLayout("fill_x", "fill_y")
 	end	
 end
 	
@@ -96,7 +96,7 @@ do -- menu bar
 	bar:SetStyle("gradient")
 	bar:SetDraggable(true)
 	bar:SetSize(Vec2(700, 15*S))
-	bar:SetupLayoutChain("left", "top")
+	bar:SetupLayout("left", "top")
 
 	local function create_button(text, options)
 		local button = gui.CreatePanel("text_button", bar)
@@ -105,7 +105,7 @@ do -- menu bar
 		button:SetPadding(Rect()+S*3)
 		button:SizeToText()
 		button:SetMode("toggle")
-		button:SetupLayoutChain("left")
+		button:SetupLayout("left")
 		
 		button.OnPress = function()
 			local menu = gui.CreateMenu(options, bar)
@@ -141,7 +141,7 @@ do -- menu bar
 			frame:SetTitle("file browser")
 			
 			local panel = gui.CreatePanel("list", frame)
-			panel:SetupLayoutChain("fill_x", "fill_y")
+			panel:SetupLayout("fill_x", "fill_y")
 
 			local function populate(dir)
 				panel:SetupSorted("name")

@@ -85,7 +85,7 @@ function love.filesystem.setIdentity(name) --partial
 end
 
 function love.filesystem.write(path, data)
-	vfs.Write("lovemu/" .. path, data)
+	vfs.Write("data/lovemu/" .. path, data)
 end
 
 function love.filesystem.isFused() -- partial

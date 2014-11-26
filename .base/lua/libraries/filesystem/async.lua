@@ -70,18 +70,18 @@ vfs.async_readers = {
 	
 		-- for font names only
 		if context:find("font") and not path:find("%p") then			
-			local cache_path = "fonts/" .. path .. ".woff"
-			
+			local cache_path = "data/fonts/" .. path .. ".woff"
+						
 			if vfs.Exists(cache_path) then
 				return vfs.ReadAsync(cache_path, function(...) return queue[path].callback(...) end, mbps, context, "file")
 			else
-				if sockets.Download("http://fonts.googleapis.com/css?family=" .. path:gsub("%s", "+"), 
-					function(data)
+				if 	
+					sockets.Download("http://fonts.googleapis.com/css?family=" .. path:gsub("%s", "+"), function(data)
 						local url = data:match("url%((.-)%)")
 						if url then
 							local format = data:match("format%('(.-)'%)")
-							sockets.Download(url, function(data) 
-								vfs.Write("fonts/" .. path .. "." .. format, data, "b")				
+							sockets.Download(url, function(data)
+								vfs.Write("data/fonts/" .. path .. "." .. format, data)				
 								queue[path].callback(data)
 							end)
 						else
@@ -102,15 +102,15 @@ vfs.async_readers = {
 		-- we skip caching
 		-- (FIX ME??)
 		if not path:find("?", nil, true) then
-			cache_path = "download_cache/" .. crypto.CRC32(path) .. ext
+			cache_path = "data/download_cache/" .. crypto.CRC32(path) .. ext
 		end
-		
+				
 		if cache_path and vfs.Exists(cache_path) then
 			return vfs.ReadAsync(cache_path, function(...) return queue[path].callback(...) end, mbps, context, "file")
 		else
 			if sockets.Download(path, function(data)
 					if cache_path then
-						vfs.Write(cache_path, data, "b")			
+						vfs.Write(cache_path, data)			
 					end
 					queue[path].callback(data)
 				end) 

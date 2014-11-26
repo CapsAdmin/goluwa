@@ -786,7 +786,7 @@ if RELOAD then
 			bsp_file:SetPosition(lump.fileofs)
 			local pak = bsp_file:ReadBytes(length) 
 			
-			local name = "temp_bsp.zip"
+			local name = "data/temp_bsp.zip"
 			
 			vfs.Write(name, pak)
 			
