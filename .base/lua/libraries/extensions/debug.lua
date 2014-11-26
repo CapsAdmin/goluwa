@@ -1,3 +1,23 @@
+function debug.getprettysource(level, append_line)
+	local info = debug.getinfo(level + 1)
+	local pretty_source
+	
+	if info.source:sub(1, 1) == "@" then
+		pretty_source = info.source:sub(2 + #e.ROOT_FOLDER):match(".-/(.+)")
+		
+		if append_line then
+			pretty_source = pretty_source .. ":" .. info.currentline
+		end
+	else
+		pretty_source = info.source:sub(0, 25)
+		if pretty_source ~= info.source then
+			pretty_source = pretty_source .. "...(+"..#info.source - #pretty_source.." chars)"
+		end
+	end
+	
+	return pretty_source
+end
+
 do 
 	local started = {}	
 	
