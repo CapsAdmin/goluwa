@@ -9,7 +9,7 @@ function PANEL:Initialize()
 	
 	local bar = self:CreatePanel("button", "bar")
 	bar:SetObeyMargin(false)
-	bar:SetupLayoutChain("top", "fill_x")
+	bar:SetupLayout("top", "fill_x")
 	bar:SetClipping(true) 
 	bar:SetMode("toggle")
 	
@@ -30,7 +30,7 @@ function PANEL:Initialize()
 	
 	local content = self:CreatePanel("base", "content")
 	--content:SetNoDraw(true)
-	content:SetupLayoutChain("fill_x", "fill_y")
+	content:SetupLayout("fill_x", "fill_y")
 	self:SetStyle("frame")
 	self:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
 	self:SetTitle("no title")
@@ -57,7 +57,7 @@ function PANEL:SetTitle(str)
 	title:CenterY() 
 	title:SetNoDraw(true)
 	title:SetIgnoreMouse(true)
-	title:SetupLayoutChain("left")
+	title:SetupLayout("left")
 	self.title = title
 end
 
@@ -68,7 +68,7 @@ if RELOAD then
 	frame:SetSize(Vec2(200, 400))
 	
 	local scroll = frame:CreatePanel("scroll")
-	scroll:SetupLayoutChain("fill_x", "fill_y")
+	scroll:SetupLayout("fill_x", "fill_y")
 	
 	local list = gui.CreatePanel("base")
 	list:SetStack(true)

@@ -22,7 +22,7 @@ do -- tree node
 		exp:SetStyle("-")
 		exp:SetStyleTranslation("button_active", "+")
 		exp:SetStyleTranslation("button_inactive", "-")
-		exp:SetupLayoutChain("left")
+		exp:SetupLayout("left")
 		exp.OnStateChanged = function(_, b) 
 			self:OnExpand(b) 
 		end
@@ -46,12 +46,12 @@ do -- tree node
 		
 		self.image:SetPadding(Rect()+2*S)
 		self.image:SetSize(Vec2(math.min(S*8, self.image.Texture.w), math.min(S*8, self.image.Texture.h)))
-		self.image:SetupLayoutChain("left")
+		self.image:SetupLayout("left")
 		
 		self.button:SetPadding(Rect()+2*S)
 		self.button:SetMargin(Rect()+2*S)
 		self.button:SizeToText()
-		self.button:SetupLayoutChain("left")
+		self.button:SetupLayout("left")
 		
 		self:SetMargin(Rect(0,0,self.offset*S,0))
 	end

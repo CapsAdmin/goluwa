@@ -32,9 +32,6 @@ function gui.CreatePanel(name, parent, store_in_parent)
 
 	gui.panels[self] = self
 	
-	-- this will make calls to layout always layout until next frame
-	self.layout_me = "init"
-	
 	if store_in_parent then
 		if type(store_in_parent) == "string" then
 			prototype.SafeRemove(parent[store_in_parent])
@@ -231,7 +228,7 @@ do -- events
 			
 				add_children_to_list(gui.world, str, 0)
 				str = table.concat(str, "\n")
-				vfs.Write("gui2_draw.lua", str)
+				vfs.Write("data/gui2_draw.lua", str)
 				gui.unrolled_draw = loadstring(str, "gui2_unrolled_draw")
 			end
 			
@@ -254,13 +251,11 @@ do -- skin
 	function gui.SetSkin(tbl, reload_panels)
 		gui.skin = tbl
 		gui.scale = tbl.scale or gui.scale
-		print(gui.scale)
 		if reload_panels then include("gui/panels/*", gui) end
 		
 		for panel in pairs(gui.panels) do
 			panel:ReloadStyle()
 		end
-		logn("gui skin changed. you might need to reopen some panels to fully see the changes")
 	end
 
 	function gui.GetSkin()
@@ -324,7 +319,7 @@ function gui.Initialize()
 		
 		local bar = gui.CreatePanel("base") 
 		bar:SetStyle("gradient")
-		bar:SetupLayoutChain("bottom", "fill_x")
+		bar:SetupLayout("bottom", "fill_x")
 		bar:SetVisible(false)
 				
 		bar.buttons = {}
@@ -334,10 +329,10 @@ function gui.Initialize()
 			
 			local button = self.buttons[key] or gui.CreatePanel("text_button", self) 
 			button:SetText(text)
-			button.label:SetupLayoutChain("left")
+			button.label:SetupLayout("left")
 			button.OnPress = callback  
 
-			button:SetupLayoutChain("left")
+			button:SetupLayout("left")
 			
 			self.buttons[key] = button
 		end 
