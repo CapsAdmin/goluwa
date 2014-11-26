@@ -7,14 +7,6 @@ META.ClassName = "Rect"
 META.NumberType = "float"
 META.Args = {{"x", "left"}, {"y", "top"}, {"w", "right"}, {"h", "bottom"}}
 
-function META.Constructor(a, b, c, d)
-	if a and not b and not c and not d then
-		return a, a, a, a
-	end
-	
-	return a or 0, b or 0, c or 0, d or 0
-end
-
 structs.AddAllOperators(META)
 
 function META:Shrink(amt)
