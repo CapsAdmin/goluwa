@@ -424,7 +424,7 @@ function render.CreateShader(data)
 			data.source = data.source:gsub("(@@.-@@)", "")
 
 			if BUILD_OUTPUT then
-				vfs.Write("shader_builder_output/" .. shader_id .. "/" .. shader .. ".c", data.source)
+				vfs.Write("data/shader_builder_output/" .. shader_id .. "/" .. shader .. ".c", data.source)
 			end
 
 			local ok, shader = pcall(render.CreateGLShader, enum, data.source)
@@ -697,7 +697,7 @@ function render.CreateShader(data)
 		end
 
 		if BUILD_OUTPUT then
-			vfs.Write("shader_builder_output/" .. shader_id .. "/unrolled_lines.lua", lua)
+			vfs.Write("data/shader_builder_output/" .. shader_id .. "/unrolled_lines.lua", lua)
 			serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/uniforms.lua", uniforms)
 		end
 

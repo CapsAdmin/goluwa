@@ -63,7 +63,7 @@ function server:OnReceive(str, client)
 			})
 			
 			client:Send("HTTP/1.1 200 OK\r\n" .. header .. "\r\n" .. data)
-			vfs.Write("header.txt", "HTTP/1.1 200 OK\r\n" .. header)
+			vfs.Write("data/header.txt", "HTTP/1.1 200 OK\r\n" .. header)
 		else
 			client:Send(self:NotFound(path)) 
 		end

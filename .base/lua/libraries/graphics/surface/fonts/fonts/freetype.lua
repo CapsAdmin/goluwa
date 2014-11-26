@@ -37,15 +37,15 @@ function META:Initialize()
 			self.max_height = (face.ascender - face.descender) / surface.font_dpi
 			
 			self:CreateTextureAtlas()
+			
+			vfs.UncacheAsync(self.Path)
+			
+			self:OnLoad()
 		else
 			error("unable to initialize font")
 		end
-		
-		vfs.UncacheAsync(self.Path)
-		
-		self:OnLoad()
 	end, self.LoadSpeed, "font")
-		
+
 	return ok, err
 end
 
@@ -69,6 +69,7 @@ local flags = {
 }
 
 function META:GetGlyphData(code)
+	if not self.Ready then return end -- ????????
 	if freetype.LoadChar(self.face, utf8.byte(code), bit.bor(flags.color, flags.force_autohint)) == 0 then
 		freetype.RenderGlyph(self.face.glyph, 1)
 		
