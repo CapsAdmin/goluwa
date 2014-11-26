@@ -19,9 +19,11 @@ function vfs.Delete(path, ...)
 	return false, "No such file or directory"
 end
 
-local function add_helper(name, func, mode)
+local function add_helper(name, func, mode, cb)
 	vfs[name] = function(path, ...)
 		check(path, "string")
+		
+		if cb then cb(path) end
 		
 		local file, err = vfs.Open(path, mode)
 		
@@ -38,7 +40,20 @@ local function add_helper(name, func, mode)
 end
 
 add_helper("Read", "ReadAll", "read")
-add_helper("Write", "WriteBytes", "write")
+add_helper("Write", "WriteBytes", "write", function(path) 
+	if path:startswith("data/") then
+		local fs = vfs.GetFileSystem("os")
+		if fs then
+			local dir = ""
+			local base
+			for folder in path:gmatch("(.-/)") do
+				dir = dir .. folder
+				base = base or vfs.GetAbsolutePath(dir)
+				fs:CreateFolder({full_path = base .. dir:sub(#"data/"+1)})
+			end
+		end
+	end
+end)
 add_helper("GetLastModified", "GetLastModified", "read")
 add_helper("GetLastAccessed", "GetLastAccessed", "read")
 
