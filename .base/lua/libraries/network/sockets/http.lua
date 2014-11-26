@@ -129,7 +129,7 @@ local function request(url, callback, method, timeout, post_data, user_agent, bi
 				warning(err)
 			end
 		else
-			warning("no content was found")
+			--warning("no content was found")
 		end
 	end
 end
