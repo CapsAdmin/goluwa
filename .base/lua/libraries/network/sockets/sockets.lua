@@ -1,6 +1,6 @@
 local sockets = _G.sockets or {}
 
-sockets.active_sockets = sockets.active_sockets or utility.CreateWeakTable()
+sockets.active_sockets = sockets.active_sockets or {}
 
 include("helpers.lua", sockets)
 include("http.lua", sockets)
