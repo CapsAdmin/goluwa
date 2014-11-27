@@ -118,8 +118,6 @@ event.AddListener("Update", "fly_camera_2d", function(dt)
 	if not window.IsOpen() then return end
 	
 	local speed = dt * 1000
-
-	local delta = window.GetMouseDelta() / 100
 	
 	if input.IsKeyDown("kp_5") then
 		pos = Vec2(0,0)
@@ -140,9 +138,9 @@ event.AddListener("Update", "fly_camera_2d", function(dt)
 	end
 
 	if input.IsKeyDown("kp_7") then
-		roll = roll - speed / 4
+		roll = roll - speed / 360
 	elseif input.IsKeyDown("kp_9") then
-		roll = roll + speed / 4 
+		roll = roll + speed / 360
 	end
 	
 	if input.IsKeyDown("left_alt") then
@@ -161,5 +159,5 @@ event.AddListener("Update", "fly_camera_2d", function(dt)
 		pos.x = pos.x - speed
 	end
 			
-	render.SetupView2D(pos:GetRotated(math.rad(-roll)), roll, 1/zoom)
+	render.SetupView2D(pos:GetRotated(-roll), roll, 1/zoom)
 end)  
