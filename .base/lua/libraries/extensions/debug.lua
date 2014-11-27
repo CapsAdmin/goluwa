@@ -3,7 +3,7 @@ function debug.getprettysource(level, append_line)
 	local pretty_source
 	
 	if info.source:sub(1, 1) == "@" then
-		pretty_source = info.source:sub(2 + #e.ROOT_FOLDER):match(".-/(.+)")
+		pretty_source = info.source:sub(2 + #e.ROOT_FOLDER):match(".-/(.+)") or info.source:sub(2)
 		
 		if append_line then
 			pretty_source = pretty_source .. ":" .. info.currentline
