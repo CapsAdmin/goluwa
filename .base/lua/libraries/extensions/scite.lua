@@ -61,7 +61,7 @@ do
 		serializer.WriteFile("luadata", "%DATA%/editor_style.txt", tbl)
 	end
 	
-	local function reload() scite.SetStyle(serializer.ReadFile("luadata", "%DATA%/editor_style.txt")) end 
+	local function reload() local tbl = serializer.ReadFile("luadata", "%DATA%/editor_style.txt") if tbl then scite.SetStyle(tbl) end end 
 	
 	event.AddListener("SciTEUpdateUI", "scite_set_style", function()
 		reload()
