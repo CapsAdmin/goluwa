@@ -259,7 +259,7 @@ do -- timers
 		end
 	end
 
-	function event.CreateThinker(callback, speed, in_seconds, run_now)	
+	function event.CreateThinker(callback, run_now, frequency, iterations)	
 		if run_now and callback() ~= nil then
 			return
 		end
@@ -269,10 +269,10 @@ do -- timers
 		table.insert(event.timers, {
 			key = callback,
 			type = "thinker", 
-			realtime = system.GetElapsedTime(), 
+			realtime = 0, 
 			callback = callback, 
-			speed = speed, 
-			in_seconds = in_seconds
+			frequency = frequency or 0, 
+			iterations = iterations or 1,
 		})
 	end
 
@@ -347,7 +347,7 @@ do -- timers
 		
 		data.key = id
 		data.type = "timer"
-		data.realtime = system.GetElapsedTime() + time
+		data.realtime = 0
 		data.id = id
 		data.time = time
 		data.repeats = repeats
@@ -378,34 +378,26 @@ do -- timers
 				
 		for i, data in ipairs(event.timers) do
 			if data.type == "thinker" then
-				if data.in_seconds and data.speed then
-					if data.realtime < cur then
-						local ok, res = xpcall(data.callback, system.OnError)
-						if not ok or res ~= nil then
-							table.insert(remove_these, i)
-							break
-						end
-						data.realtime = cur + data.speed
-					end
-				elseif data.speed then
+				if data.realtime < cur then
+					
+					local fps = ((cur + data.frequency) - data.realtime)
+					local extra_iterations = math.ceil(fps/data.frequency) - 2
+					
 					local errored = false
-					for i=0, data.speed do
+					for i = 1, data.iterations + extra_iterations do
 						local ok, res = xpcall(data.callback, system.OnError)
 						if not ok or res ~= nil then
 							errored = true
 							break
 						end	
 					end
+					
 					if errored then
 						table.insert(remove_these, i)
 						break
 					end
-				else
-					local ok, res = xpcall(data.callback, system.OnError)
-					if not ok or res ~= nil then
-						table.insert(remove_these, i)
-						break
-					end
+					
+					data.realtime = cur + data.frequency
 				end
 			elseif data.type == "delay" then
 				if data.realtime < cur then
