@@ -20,7 +20,7 @@ function surface.IsReady()
 	return surface.ready == true
 end
 
-function surface.GetScreenSize()
+function surface.GetSize()
 	return render.camera.w, render.camera.h
 end
 

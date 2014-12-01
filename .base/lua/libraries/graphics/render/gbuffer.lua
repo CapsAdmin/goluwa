@@ -521,7 +521,7 @@ function render.InitializeGBuffer(width, height)
 	
 	event.AddListener("Draw2D", "gbuffer_debug", function()
 		local size = 4
-		local w, h = surface.GetScreenSize()
+		local w, h = surface.GetSize()
 		if render.debug then
 			w = w / size
 			h = h / size
@@ -604,7 +604,9 @@ function render.DrawDeferred(dt, w, h)
 		render.SetBlendMode("alpha")	
 		render.SetCullMode("back")
 		gl.Disable(gl.e.GL_DEPTH_TEST)
-		event.Call("Draw2D", dt)
+		render.Start2D()
+			event.Call("Draw2D", dt)
+		render.End2D()
 	return end
 	
 	render.Start3D()

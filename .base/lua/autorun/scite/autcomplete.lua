@@ -44,7 +44,6 @@ local function update_current_string()
 		else			
 			for key, val in pairs(node) do				
 				local str = tostring(key)
-				
 				if current_func then
 					local params = debug.getparams(current_func)
 					--event.AddListener(

@@ -51,9 +51,9 @@ local emitter = ParticleEmitter(800)
 emitter:SetPosition(Vec3(50,50,0)) 
 --emitter:SetMoveResolution(0.25) 
 emitter:SetAdditive(false)
-emitter:SetScreenRect(Rect(-100, -100, surface.GetScreenSize()))
 
 function menu.UpdateBackground()
+	emitter:SetScreenRect(Rect(-100, -100, surface.GetSize()))
 	emitter:SetPosition(Vec3(math.random(render.GetWidth() + 100) - 150, -50, 0))
 		
 	local p = emitter:AddParticle()

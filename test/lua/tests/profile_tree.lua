@@ -49,7 +49,7 @@ event.AddListener("Draw2D", "lol", function()
 	
 	if not root then return end
 	
-	local w, h = surface.GetScreenSize()
+	local w, h = surface.GetSize()
 	local x, y = w / 2, h
 	
 	surface.SetFont("default")
