@@ -21,7 +21,7 @@ event.AddListener("Draw2D", "illusion", function()
 	surface.SetColor(0.75, 0.75, 0.75, 1)
 	surface.DrawRect(0,0,5000,5000)
 	
-	local w, h = surface.GetScreenSize()
+	local w, h = surface.GetSize()
 	local t = system.GetTime()  * 4
 		
 	for x = 0, 100 do

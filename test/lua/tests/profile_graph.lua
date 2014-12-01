@@ -101,7 +101,7 @@ event.AddListener("Draw2D", "lol", function()
 	surface.SetFont("impact")
 	surface.SetWhiteTexture()
 	
-	local w, h = surface.GetScreenSize()
+	local w, h = surface.GetSize()
 	local x, y = w / 2, h / 2
 	
 	surface.PushMatrix(x, y, 1, 1, 0)

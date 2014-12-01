@@ -1,7 +1,7 @@
 local eeg_power = {}
 local esense = {attention = 50, meditation = 50}
 
-local W, H = surface.GetScreenSize()
+local W, H = surface.GetSize()
 
 local last_x = 0
 local last_y = 0

@@ -36,7 +36,7 @@ local font = surface.CreateFont("lol", {
 })
 
 event.AddListener("DrawHUD", "lol", function()
-	local w, h = surface.GetScreenSize()
+	local w, h = surface.GetSize()
 	
 	surface.SetColor(1,1,1,1)  
 

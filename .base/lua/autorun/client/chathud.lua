@@ -166,7 +166,7 @@ function chathud.AddText(...)
 		markup:AddString("\n")
 	markup:EndLifeTime()
 	
-	markup:SetMaxWidth(surface.GetScreenSize() * width_mult:Get())
+	markup:SetMaxWidth(surface.GetSize() * width_mult:Get())
 		
 	for k,v in pairs(chathud.tags) do
 		markup.tags[k] = v
@@ -176,7 +176,7 @@ end
 function chathud.Draw()
 	local markup = chathud.markup
 	
-	local w, h = surface.GetScreenSize()
+	local w, h = surface.GetSize()
 	local x, y = 30, h * height_mult:Get()
 	
 	y = y - markup.height

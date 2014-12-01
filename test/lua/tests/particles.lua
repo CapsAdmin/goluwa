@@ -30,7 +30,7 @@ local particles = {}
 
 local poly_head = surface.CreatePoly(particle_count)
 local poly_tail = surface.CreatePoly(particle_count)
-local W, H = surface.GetScreenSize()
+local W, H = surface.GetSize()
  
 for i = 1, particle_count do
 	particles[i] = {
@@ -87,7 +87,7 @@ event.AddListener("Draw2D", "particles", function(dt)
 	
 	render.SetBlendMode("additive")
 	
-	W,H = surface.GetScreenSize()
+	W,H = surface.GetSize()
 	surface.SetTexture(head_tex)
 			
 	local ext_vel_x, ext_vel_y = surface.GetMouseVel()

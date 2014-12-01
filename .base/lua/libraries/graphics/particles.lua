@@ -77,7 +77,7 @@ function EMITTER:Update(dt)
 	
 	dt = dt * self.Speed
 	
-	local w, h = surface.GetScreenSize()
+	local w, h = surface.GetSize()
 	local cull = not self.ScreenRect:IsZero()
 	
 	for i = 1, self.max do
