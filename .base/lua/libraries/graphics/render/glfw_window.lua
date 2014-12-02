@@ -216,7 +216,9 @@ do -- window meta
 		height = height or 600
 		title = title or ""
 		
-		glfw.Init()
+		if not glfw.init then
+			glfw.Init()
+		end
 		
 		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MAJOR, 2)
 		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MINOR, 0)
@@ -224,16 +226,21 @@ do -- window meta
 		
 		glfw.WindowHint(glfw.e.GLFW_SAMPLES, 4)
 
-		local ptr = glfw.CreateWindow(width, height, title, nil, nil)
-		glfw.MakeContextCurrent(ptr)
-		gl.GetProcAddress = glfw.GetProcAddress
-
-		logn("glfw version: ", ffi.string(glfw.GetVersionString()):trim())
+		local ptr = glfw.CreateWindow(width, height, title, nil, render.main_window and render.main_window.__ptr)
 		
-		-- this needs to be initialized once after a context has been created..
-		if gl and gl.InitMiniGlew and not gl.gl_init then
-			gl.gl_init = true
-			gl.InitMiniGlew()
+		if not glfw.init then			
+			glfw.MakeContextCurrent(ptr)
+			gl.GetProcAddress = glfw.GetProcAddress
+
+			logn("glfw version: ", ffi.string(glfw.GetVersionString()):trim())
+			
+			-- this needs to be initialized once after a context has been created..
+			if gl and gl.InitMiniGlew and not gl.gl_init then
+				gl.gl_init = true
+				gl.InitMiniGlew()
+			end
+			
+			glfw.init = true
 		end
 
 		local self = prototype.CreateObject(META)
@@ -378,7 +385,12 @@ do -- window meta
 		end
 				
 		render.context_created = true
-		render.Initialize()
+		
+		if not render.init then
+			render.Initialize()
+			render.init = true
+			render.main_window = self
+		end
 				
 		return self
 	end
