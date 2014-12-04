@@ -311,14 +311,14 @@ do -- font
 		y = y or 0
 		sx = sx or 1
 		sy = sy or 1
-		r=r or 0
-		r=r/0.0174532925
+		r = r or 0
+		r = r / 0.0174532925
 		
 		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
-		surface.Scale(sx, sy)
+		--surface.Scale(sx, sy)
 		surface.SetTextPosition(x, y)
-		surface.DrawText(text, r)
-		surface.Scale(-sx, -sy)
+		surface.DrawText(text)
+		--surface.Scale(-sx, -sy)
 	end
 
 	function love.graphics.printf(text, x, y, limit, align, r, sx, sy)
@@ -332,17 +332,22 @@ do -- font
 		r=r or 0
 		r=r/0.0174532925
 		
+		surface.SetTextPosition(x, y)
+		surface.DrawText(text)
+		do return end
+		-- todo: is this really a format function?
+		
 		local lines = string.explode(text, "\n")
 		
 		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
-		surface.Scale(sx, sy)
+		--surface.Scale(sx, sy)
 		
 		for i = 1, #lines do
-			surface.SetTextPosition(x, y + (currentFont.Size+(currentFont.Size*125/100) * i))
+			surface.SetTextPosition(x, y + (currentFont.Size+(currentFont.Size*125/100) * (i - 1)))
 			surface.DrawText(lines[i])
 		end
 		
-		surface.Scale(-sx, -sy)
+		--surface.Scale(-sx, -sy)
 	end
 end
 
