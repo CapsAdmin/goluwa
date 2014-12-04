@@ -308,11 +308,13 @@ do -- timers
 		
 		for k,v in ipairs(event.timers) do 
 			if v.key == id then 
+				v.realtime = system.GetElapsedTime() + (time or 0)
 				return
 			end 
 		end
 		
 		table.insert(event.timers, {
+			key = id,
 			type = "delay",
 			callback = callback,
 			args = {...},
