@@ -33,8 +33,9 @@ function lovemu.RunGame(folder)
 		
 	window.Open()	
 		
-	warning("mounting love game folder: ", R("lovers/" .. lovemu.demoname .. "/"))	
-	vfs.AddModuleDirectory("")	
+	warning("mounting love game folder: ", R("lovers/" .. lovemu.demoname .. "/"))
+	vfs.CreateFolder("data/lovemu/")
+	vfs.AddModuleDirectory("data/lovemu/")	
 	vfs.Mount(R("lovers/" .. lovemu.demoname .. "/"))
 	vfs.AddModuleDirectory("lovers/" .. lovemu.demoname .. "/")
 			

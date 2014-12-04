@@ -78,6 +78,10 @@ do -- image data
 	local freeimage = require("lj-freeimage")
 	
 	function love.image.newImageData(a, b) --partial
+		if lovemu.Type(a) == "ImageData" then
+			return a -- uhhh
+		end
+		
 		check(a, "string", "number")
 		check(b, "number", "nil")
 

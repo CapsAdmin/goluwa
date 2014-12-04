@@ -3,7 +3,7 @@ local love = (...) or _G.lovemu.love
 love.filesystem = {}
 
 function love.filesystem.getAppdataDirectory()
-	return R("%DATA%/lovemu/")
+	return R("data/lovemu/")
 end
 
 function love.filesystem.getLastModified(path)
@@ -11,15 +11,15 @@ function love.filesystem.getLastModified(path)
 end
 
 function love.filesystem.getSaveDirectory()
-	return R("%DATA%/lovemu/")
+	return R("data/lovemu/")
 end
 
 function love.filesystem.getUserDirectory()
-	return R("%DATA%/lovemu/")
+	return R("data/lovemu/")
 end
 
 function love.filesystem.getWorkingDirectory()
-	return R("%DATA%/lovemu/")
+	return R("data/lovemu/")
 end
 
 function love.filesystem.exists(path)
@@ -63,7 +63,7 @@ function love.filesystem.load(path ,mode)
 end
 
 function love.filesystem.mkdir(path) --partial
-	local ok ,err = lfs.mkdir(R("%DATA%/lovemu/") .. path)
+	local ok ,err = lfs.mkdir(R("data/lovemu/") .. path)
 	if err:find("File exist") then
 		return true
 	end
