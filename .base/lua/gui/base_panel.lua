@@ -61,6 +61,18 @@ function PANEL:GetSizeOfChildren()
 	return total_size
 end
 
+function PANEL:GetVisibleChildren()
+	local tbl = {}
+	
+	for i,v in ipairs(self:GetChildren()) do
+		if v.Visible then
+			table.insert(tbl, v)
+		end
+	end
+	
+	return tbl
+end
+
 function PANEL:IsInsideParent()	
 	local override = self.Parent
 	
@@ -222,6 +234,15 @@ do -- drawing
 				self:OnPreDraw()
 				self:OnDraw()
 				self:OnPostDraw()
+				
+				if gui.keyboard_selected_panel == self then
+					render.SetBlendMode("additive")
+					surface.SetColor(1, 1, 1, 0.5)
+					surface.SetWhiteTexture()
+					surface.DrawRect(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
+					render.SetBlendMode("alpha")
+				end
+				
 				self.visible = true
 				no_draw = false
 			else
@@ -274,7 +295,7 @@ do -- drawing
 			surface.DisableClipRect()
 			--render.PopViewport()
 		end
-		
+				
 		if gui.debug then
 			if false and self.Clipping then	
 				gl.Disable(gl.e.GL_STENCIL_TEST)
@@ -1093,6 +1114,10 @@ do -- mouse
 	prototype.GetSet(PANEL, "MouseHoverTime", 0)
 	prototype.GetSet(PANEL, "MouseHoverTimeTrigger", 1)
 
+	function PANEL:BringMouse()
+		window.SetMousePosition(self:GetWorldPosition() + self:GetSize() / 2)
+	end
+	
 	function PANEL:IsMouseOver()
 		return self:IsDragging() or self:IsResizing() or self.mouse_over and gui.hovering_panel == self
 	end

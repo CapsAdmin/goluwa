@@ -6,8 +6,6 @@
 local gui = _G.gui or {}
 
 gui.unroll_draw = false
-gui.hovering_panel = gui.hovering_panel or NULL
-gui.focus_panel = gui.focus_panel or NULL
 
 gui.panels = gui.panels or {} 
 
@@ -135,12 +133,17 @@ do -- context menu helpers
 end
 
 do -- events
-
+	gui.last_clicked = gui.last_clicked or NULL
+	gui.hovering_panel = gui.hovering_panel or NULL
+	gui.focus_panel = gui.focus_panel or NULL
+	gui.keyboard_selected_panel = gui.keyboard_selected_panel or NULL
+	
 	function gui.MouseInput(button, press)
 		local panel = gui.hovering_panel
 
 		if panel:IsValid() and panel:IsMouseOver() then
 			panel:MouseInput(button, press)
+			gui.last_clicked = panel
 		end
 		
 		for panel in pairs(gui.panels) do
@@ -159,6 +162,8 @@ do -- events
 			end
 		end
 	end
+	
+	local i = 1
 
 	function gui.KeyInput(button, press)
 		local panel = gui.focus_panel
@@ -167,6 +172,72 @@ do -- events
 			panel:KeyInput(button, press)
 			return true
 		end
+		
+		if press then		
+			if not gui.last_clicked:IsValid() then 
+				gui.last_clicked = gui.world
+			end
+			
+			local children
+			
+			if gui.last_clicked:HasParent() then
+				children = gui.last_clicked:GetParent():GetVisibleChildren()
+			else
+				children = gui.last_clicked:GetVisibleChildren()
+			end
+			
+			if button == "down" or button == "up" then
+				if button == "down" then
+					i = (i + 1) % (#children + 1)
+				elseif button == "up" then
+					i = (i - 1) % (#children + 1)
+					if i == 0 then i = #children end
+				end
+				
+				i = math.max(i, 1)
+				
+				local panel = children[i] or gui.world
+				
+				gui.keyboard_selected_panel = panel
+				panel:Layout()
+				panel:BringMouse()
+			end
+								
+			if children then
+				if button == "right" then
+					gui.last_clicked = children[i] and children[i]:GetVisibleChildren()[1] or gui.last_clicked or gui.world
+					--[[while #gui.last_clicked:GetVisibleChildren() == 1 do
+						gui.last_clicked = gui.last_clicked:GetVisibleChildren()[1]
+						if not gui.last_clicked then
+							gui.last_clicked = gui.world
+							break
+						end
+					end]]
+					gui.last_clicked:Layout()
+					gui.last_clicked:BringMouse()
+					gui.keyboard_selected_panel = gui.last_clicked
+				elseif button == "left" then
+					gui.last_clicked = gui.last_clicked:HasParent() and gui.last_clicked:GetParent() or gui.world
+					--[[while #gui.last_clicked:GetVisibleChildren() == 1 do
+						gui.last_clicked = gui.last_clicked:GetVisibleChildren()[1]
+						if not gui.last_clicked then
+							gui.last_clicked = gui.world
+							break
+						end
+					end]]
+					gui.last_clicked:Layout()
+					gui.last_clicked:BringMouse()
+					gui.keyboard_selected_panel = gui.last_clicked
+				end
+			end
+		end
+		
+		if gui.keyboard_selected_panel:IsValid() then
+			if button == "space" then
+				gui.MouseInput("button_1", press)
+			end
+		end
+		
 	end
 
 	function gui.CharInput(char)
