@@ -1,6 +1,22 @@
 table.new = require("table.new") or function() return {} end
 table.clear = require("table.clear") or function(t) for k,v in pairs(t) do t[k] = nil end end
 
+function table.shuffle(a, times)
+	times = times or 1
+	local c = #a
+	
+	for i = 1, c * times do
+		local ndx0 = math.random(1, c)
+		local ndx1 = math.random(1, c)
+		
+		local temp = a[ndx0]
+		a[ndx0] = a[ndx1]
+		a[ndx1] = temp
+	end
+	
+    return a
+end
+
 function table.scroll(tbl, offset)
 	if offset == 0 then return end
 	
