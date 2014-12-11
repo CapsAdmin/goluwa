@@ -165,8 +165,14 @@ function steam.MountSourceGame(game_info)
 					vfs.Mount(path, nil, game_info)
 				end
 									
-				if vfs.IsDir(path .. "addons/") and not vfs.GetMounts()[path .. "addons/"] then
-					vfs.Mount(path .. "addons/", nil, game_info)
+				
+				if vfs.IsDir(path .. "addons/") then
+					for k, v in pairs(vfs.Find(path .. "addons/")) do
+						if vfs.IsDir(path .. "addons/" .. v) then
+							vfs.Mount(path .. "addons/" .. v, nil, game_info)
+							logn("[vfs] also mounting addon ", v)
+						end
+					end
 				end
 							
 				-- garry's mod exceptions..
@@ -244,6 +250,8 @@ local translate = {
 	["alien swarm"] = 630,
 	["counter-strike: global offensive"] = 730,
 	["dota 2"] = 570,
+	["gmod"] = 4000	,
+	["garrysmod"] = 4000,
 }
 
 function steam.FindSourceGame(name, title)
