@@ -1374,10 +1374,10 @@ do -- layout
 		return math.abs(a.point-origin) < math.abs(b.point-origin)
 	end
 	
-	local function ray_cast(self, panel, collide, x,y,w,h)
+	function PANEL:RayCast(panel, x,y,w,h, collide)
 		local dir_x = x - panel.Position.x
 		local dir_y = y - panel.Position.y
-		
+			
 		local found
 		
 		if collide then
@@ -1454,7 +1454,7 @@ do -- layout
 			
 			table.sort(found, sort)		
 		end
-		
+				
 		local pos
 			
 		if found and found[1] then		
@@ -1515,7 +1515,7 @@ do -- layout
 				self:SetX(parent:GetWidth())
 				self:SetY(0)
 				
-				local pos = ray_cast(self, self, collide, 1, self.Position.y, self.Size.w, self.Size.h)
+				local pos = self:RayCast(self, 1, self.Position.y, self.Size.w, self.Size.h, collide)
 				
 				self:SetRectFast(ox,oy,ow,oh)
 				
@@ -1528,7 +1528,7 @@ do -- layout
 				self:SetY(parent:GetHeight())
 				self:SetX(1)
 				
-				local pos = ray_cast(self, self, collide, self.Position.x, 1, self.Size.w, self.Size.h)
+				local pos = self:RayCast(self, self.Position.x, 1, self.Size.w, self.Size.h, collide)
 				
 				self:SetRectFast(ox,oy,ow,oh)
 								
@@ -1537,8 +1537,8 @@ do -- layout
 			elseif cmd == "fill_x" then
 				self:SetWidth(0)
 				
-				local left = ray_cast(parent, self, collide, 0, self.Position.y, self.Size.w, self.Size.h)
-				local right = ray_cast(parent, self, collide, parent:GetWidth(), self.Position.y, self.Size.w, self.Size.h)
+				local left = parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, collide)
+				local right = parent:RayCast(self, parent:GetWidth(), self.Position.y, self.Size.w, self.Size.h, collide)
 				right.x = right.x - left.x
 				
 				local x = left.x
@@ -1560,10 +1560,10 @@ do -- layout
 			elseif cmd == "fill_y" then
 				self:SetHeight(0)
 				
-				local top = ray_cast(parent, self, collide, self.Position.x, 0, self.Size.w, self.Size.h)
+				local top = parent:RayCast(self, self.Position.x, 0, self.Size.w, self.Size.h, collide)
 				self:SetPosition(top)
 				
-				local bottom = ray_cast(parent, self, collide, self.Position.x, parent:GetHeight(), self.Size.w, self.Size.h)
+				local bottom = parent:RayCast(self, self.Position.x, parent:GetHeight(), self.Size.w, self.Size.h, collide)
 				bottom.h = bottom.h - top.y
 				if bottom.h <= self.MinimumSize.h then
 					--parent:StopDragging()
@@ -1572,8 +1572,8 @@ do -- layout
 			elseif cmd == "center" then
 				self:SetPosition(parent:GetPosition() - (self:GetSize() / 2))
 			elseif cmd == "center_x" then				
-				local left = ray_cast(parent, self, collide, 0, self.Position.y, self.Size.w, self.Size.h)
-				local right = ray_cast(parent, self, collide, parent.Size.w, left.y, self.Size.w, self.Size.h)
+				local left = parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, collide)
+				local right = parent:RayCast(self, parent.Size.w, left.y, self.Size.w, self.Size.h, collide)
 
 				self:SetX(math.lerp(0.5, left.x, right.x))
 			elseif cmd == "center_x_simple" then				
@@ -1581,8 +1581,8 @@ do -- layout
 			elseif cmd == "center_y_simple" then				
 				self:SetY(parent:GetHeight() / 2 - self:GetHeight() / 2)
 			elseif cmd == "center_x_frame" then
-				local left = ray_cast(parent, self, collide, 0, self.Position.y, self.Size.w, self.Size.h)
-				local right = ray_cast(parent, self, collide, parent:GetWidth(), left.y, self.Size.w, self.Size.h)
+				local left = parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, collide)
+				local right = parent:RayCast(self, parent:GetWidth(), left.y, self.Size.w, self.Size.h, collide)
 				
 				if 
 					self:GetX()+self:GetWidth()+self.Padding.right < right.x+self:GetWidth()-self.Padding.right and
@@ -1592,20 +1592,20 @@ do -- layout
 					break
 				end
 			elseif cmd == "center_y" then
-				local top = ray_cast(parent, self, collide, self.Position.x, 0, self.Size.w, self.Size.h)
-				local bottom = ray_cast(parent, self, collide, top.x, parent:GetHeight(), self.Size.w, self.Size.h)
+				local top = parent:RayCast(self, self.Position.x, 0, self.Size.w, self.Size.h, collide)
+				local bottom = parent:RayCast(self, top.x, parent:GetHeight(), self.Size.w, self.Size.h, collide)
 				self:SetY(top.y + (bottom.y/2 - self:GetHeight()/2) - self.Padding.top + self.Padding.bottom)
 			elseif cmd == "top" then
 				self:SetY(math.max(self:GetY(), 1))
-				self:SetY(ray_cast(parent, self, collide, self.Position.x, 0, self.Size.w, self.Size.h).y)
+				self:SetY(parent:RayCast(self, self.Position.x, 0, self.Size.w, self.Size.h, collide).y)
 			elseif cmd == "left" then
 				self:SetX(math.max(self:GetX(), 1))
-				self:SetX(ray_cast(parent, self, collide, 0, self.Position.y, self.Size.w, self.Size.h).x)
+				self:SetX(parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, collide).x)
 			elseif cmd == "bottom" then
-				self:SetY(ray_cast(parent, self, collide, self.Position.x, parent:GetHeight() - self:GetHeight(), self.Size.w, self.Size.h).y)
+				self:SetY(parent:RayCast(self, self.Position.x, parent:GetHeight() - self:GetHeight(), self.Size.w, self.Size.h, collide).y)
 			elseif cmd == "right" then
 				self:SetX(math.max(self:GetX(), 1))
-				self:SetX(ray_cast(parent, self, collide, parent:GetWidth() - self:GetWidth(), self.Position.y, self.Size.w, self.Size.h).x)
+				self:SetX(parent:RayCast(self, parent:GetWidth() - self:GetWidth(), self.Position.y, self.Size.w, self.Size.h, collide).x)
 			elseif typex(cmd) == "vec2" then
 				self:SetSize(cmd:Copy())
 			end
