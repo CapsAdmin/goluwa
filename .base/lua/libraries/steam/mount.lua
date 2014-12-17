@@ -105,22 +105,20 @@ function steam.GetSourceGames()
 	local found = {}
 	
 	for i, game_dir in ipairs(steam.GetGameFolders()) do
-		for i, folder in ipairs(vfs.Find(game_dir, nil, true)) do
-			if vfs.IsDir(folder) then
-				for i, path in ipairs(vfs.Find(folder .. "/", nil, true)) do
-					if path:lower():find("gameinfo") then
-						local str = vfs.Read(path)
-						
-						local tbl = steam.VDFToTable(str, true, {gameinfo_path = path:match("(.+/)"), all_source_engine_paths = path:match("(.+/).+/")})
-						if tbl and tbl.gameinfo and tbl.gameinfo.game then
-							tbl = tbl.gameinfo
-							
-							tbl.game_dir = game_dir
-							
-							table.insert(found, tbl)
-						end
-					end
+		for i, folder in ipairs(vfs.Find("os:" .. game_dir, nil, true)) do
+			local path = folder .. "/gameinfo.txt"
+			local str = vfs.Read("os:" .. path)
+			
+			if str then				
+				local tbl = steam.VDFToTable(str, true, {gameinfo_path = path:match("(.+/)"), all_source_engine_paths = path:match("(.+/).+/")})
+				if tbl and tbl.gameinfo and tbl.gameinfo.game then
+					tbl = tbl.gameinfo
+					
+					tbl.game_dir = game_dir
+					
+					table.insert(found, tbl)
 				end
+				break
 			end
 		end
 	end
@@ -142,7 +140,7 @@ function steam.MountSourceGame(game_info)
 		str_game_info = game_info
 		game_info = steam.FindSourceGame(game_info) 
 	end
-	
+		
 	steam.UnmountSourceGame(game_info)
 	
 	local done = {}
@@ -151,8 +149,11 @@ function steam.MountSourceGame(game_info)
 		if type(paths) == "string" then 
 			paths = {paths} 
 		end
-		
+				
 		for i, path in pairs(paths) do				
+			
+			local path = "os:" .. path
+			
 			
 			if not vfs.IsDir(path) then
 				path = game_info.game_dir .. path .. "/"
@@ -169,8 +170,8 @@ function steam.MountSourceGame(game_info)
 				if vfs.IsDir(path .. "addons/") then
 					for k, v in pairs(vfs.Find(path .. "addons/")) do
 						if vfs.IsDir(path .. "addons/" .. v) then
-							vfs.Mount(path .. "addons/" .. v, nil, game_info)
 							logn("[vfs] also mounting addon ", v)
+							vfs.Mount(path .. "addons/" .. v, nil, game_info)
 						end
 					end
 				end
