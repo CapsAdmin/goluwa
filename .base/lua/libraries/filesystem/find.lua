@@ -18,7 +18,7 @@ function vfs.Find(path, invert, full_path, start, plain, info)
 		end
 		
 		if ok then	
-			for i, v in pairs(found) do
+			for i, v in ipairs(found) do
 				if not done[v] then
 					done[v] = true
 					if (not pattern or pattern == "" or v:find(pattern, start, plain)) then
