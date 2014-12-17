@@ -395,7 +395,7 @@ function profiler.PrintStatistical()
 	))
 end
 
-function profiler.MeasureInstrumental(time)
+function profiler.MeasureInstrumental(time, file_filter)
 	profiler.EnableSectionProfiling(true, true)
 	
 	debug.sethook(function(what) 
@@ -403,6 +403,10 @@ function profiler.MeasureInstrumental(time)
 			
 		if info.linedefined <= 0 or info.source:endswith("profiler.lua") then return end
 		
+		if file_filter and not info.source:find(file_filter, nil, true) then 
+			return
+		end
+				
 		if what == "call" then
 			profiler.PushSection(info.source .. ":" .. info.linedefined)
 		elseif what == "return" then
@@ -422,7 +426,7 @@ function profiler.MeasureInstrumental(time)
 				{key = "average_time", friendly = "time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
 				{key = "average_garbage", friendly = "garbage", tostring = function(val) return utility.FormatFileSize(val) end},
 			}, 
-			function(a) return a.average_time > 0.0001 and a.times_called > 100 end,
+			function(a) return a.average_time > 0.0001 and (file_filter or a.times_called > 100) end,
 			function(a, b) return a.average_time < b.average_time end
 		))
 		
