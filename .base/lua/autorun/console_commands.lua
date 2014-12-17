@@ -203,8 +203,8 @@ console.AddCommand("profile_dump", function(line)
 	end
 end)
 
-console.AddCommand("profile", function(line, time)
-	profiler.MeasureInstrumental(tonumber(time) or 5)
+console.AddCommand("profile", function(line, time, file_filter)
+	profiler.MeasureInstrumental(tonumber(time) or 5, file_filter)
 end)
 
 console.AddCommand("find", function(line, ...)
