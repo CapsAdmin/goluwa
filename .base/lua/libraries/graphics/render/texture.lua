@@ -298,7 +298,7 @@ do -- texture object
 
 	META.shaders = {}
 	
-	function META:Shade(fragment_shader, vars)		
+	function META:Shade(fragment_shader, vars, dont_blend)		
 		local name = "shade_texture_" .. self.id .. "_" .. crypto.CRC32(fragment_shader)
 		local shader = self.shaders[name]
 		
@@ -346,7 +346,7 @@ do -- texture object
 			end				
 		end
 		
-		gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
+		if not dont_blend then gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA) end
 		--render.SetBlendMode("alpha")
 		fb:Begin()
 			surface.PushMatrix()
