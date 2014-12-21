@@ -406,9 +406,11 @@ do -- orientation
 	function PANEL:LocalToWorld(lpos)
 		local wpos = lpos
 		for k, v in npairs(self:GetParentList()) do
-			wpos = wpos + v:GetPosition()
-			if v:HasParent() then
-				wpos = wpos - v.Parent:GetScroll()
+			if v:IsValid() then
+				wpos = wpos + v:GetPosition()
+				if v:HasParent() then
+					wpos = wpos - v.Parent:GetScroll()
+				end
 			end
 		end
 		return wpos
