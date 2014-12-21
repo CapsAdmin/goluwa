@@ -172,69 +172,67 @@ do -- events
 			panel:KeyInput(button, press)
 			return true
 		end
-		
-		if press then		
-			if not gui.last_clicked:IsValid() then 
-				gui.last_clicked = gui.world
-			end
-			
-			local children
-			
-			if gui.last_clicked:HasParent() then
-				children = gui.last_clicked:GetParent():GetVisibleChildren()
-			else
-				children = gui.last_clicked:GetVisibleChildren()
-			end
-			
-			if button == "down" or button == "up" then
-				if button == "down" then
-					i = (i + 1) % (#children + 1)
-				elseif button == "up" then
-					i = (i - 1) % (#children + 1)
-					if i == 0 then i = #children end
-				end
+
+		if button == "space" then
+			gui.MouseInput("button_1", press)
+		end		
 				
-				i = math.max(i, 1)
-				
-				local panel = children[i] or gui.world
-				
-				gui.keyboard_selected_panel = panel
-				panel:Layout()
-				panel:BringMouse()
-			end
-								
-			if children then
-				if button == "right" then
-					gui.last_clicked = children[i] and children[i]:GetVisibleChildren()[1] or gui.last_clicked or gui.world
-					--[[while #gui.last_clicked:GetVisibleChildren() == 1 do
-						gui.last_clicked = gui.last_clicked:GetVisibleChildren()[1]
-						if not gui.last_clicked then
-							gui.last_clicked = gui.world
+		if press and input.IsKeyDown("left_control") then
+			
+			local last = gui.hovering_panel
+			
+			if button == "up" then
+				local x, y = window.GetMousePosition():Unpack()
+				for i = y, 1, -16 do
+					window.SetMousePosition(Vec2(x, i))
+					gui.UpdateMousePosition()
+					gui.world:Draw()
+					if last ~= gui.hovering_panel and last.Parent ~= gui.hovering_panel then
+						gui.hovering_panel:BringMouse()
+						if window.GetMousePosition().y > i then 
 							break
 						end
-					end]]
-					gui.last_clicked:Layout()
-					gui.last_clicked:BringMouse()
-					gui.keyboard_selected_panel = gui.last_clicked
-				elseif button == "left" then
-					gui.last_clicked = gui.last_clicked:HasParent() and gui.last_clicked:GetParent() or gui.world
-					--[[while #gui.last_clicked:GetVisibleChildren() == 1 do
-						gui.last_clicked = gui.last_clicked:GetVisibleChildren()[1]
-						if not gui.last_clicked then
-							gui.last_clicked = gui.world
+					end
+				end
+			elseif button == "left" then
+				local x, y = window.GetMousePosition():Unpack()
+				for i = x, 1, -16 do
+					window.SetMousePosition(Vec2(i, y))
+					gui.UpdateMousePosition()
+					gui.world:Draw()
+					if last ~= gui.hovering_panel and last.Parent ~= gui.hovering_panel then
+						gui.hovering_panel:BringMouse()
+						if window.GetMousePosition().x > i then 
 							break
 						end
-					end]]
-					gui.last_clicked:Layout()
-					gui.last_clicked:BringMouse()
-					gui.keyboard_selected_panel = gui.last_clicked
+					end
 				end
-			end
-		end
-		
-		if gui.keyboard_selected_panel:IsValid() then
-			if button == "space" then
-				gui.MouseInput("button_1", press)
+			elseif button == "right" then
+				local x, y = window.GetMousePosition():Unpack()
+				for i = x, window.GetSize().w, 16 do
+					window.SetMousePosition(Vec2(i, y))
+					gui.UpdateMousePosition()
+					gui.world:Draw()
+					if last ~= gui.hovering_panel and last.Parent ~= gui.hovering_panel then
+						gui.hovering_panel:BringMouse()
+						if window.GetMousePosition().x < i then 
+							break
+						end
+					end
+				end
+			elseif button == "down" then
+				local x, y = window.GetMousePosition():Unpack()
+				for i = y, window.GetSize().h, 16 do
+					window.SetMousePosition(Vec2(x, i))
+					gui.UpdateMousePosition()
+					gui.world:Draw()
+					if last ~= gui.hovering_panel and last.Parent ~= gui.hovering_panel then
+						gui.hovering_panel:BringMouse()
+						if window.GetMousePosition().y > i then 
+							break
+						end
+					end
+				end
 			end
 		end
 		
@@ -249,17 +247,7 @@ do -- events
 		end
 	end
 
-	function gui.Draw2D(dt)
-		event.Call("DrawHUD", dt)
-		
-		event.Call("PreDrawMenu", dt)
-		
-		render.SetCullMode("none")
-		if gui.threedee then 
-			--surface.Start3D(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
-			surface.Start3D(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))
-		end
-
+	function gui.UpdateMousePosition()
 		gui.hovering_panel = gui.GetHoveringPanel()
 		
 		if gui.hovering_panel:IsValid() then
@@ -272,6 +260,32 @@ do -- events
 		end
 		
 		gui.mouse_pos.x, gui.mouse_pos.y = surface.GetMousePosition()
+
+		if not input.IsKeyDown("left_control") then
+			if input.IsKeyDown("up") then
+				window.SetMousePosition(Vec2(gui.mouse_pos.x, gui.mouse_pos.y - 1))
+			elseif input.IsKeyDown("down") then
+				window.SetMousePosition(Vec2(gui.mouse_pos.x, gui.mouse_pos.y + 1))
+			elseif input.IsKeyDown("left") then
+				window.SetMousePosition(Vec2(gui.mouse_pos.x - 1, gui.mouse_pos.y))
+			elseif input.IsKeyDown("right") then
+				window.SetMousePosition(Vec2(gui.mouse_pos.x + 1, gui.mouse_pos.y))
+			end
+		end
+	end
+	
+	function gui.Draw2D(dt)
+		event.Call("DrawHUD", dt)
+		
+		event.Call("PreDrawMenu", dt)
+		
+		render.SetCullMode("none")
+		if gui.threedee then 
+			--surface.Start3D(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
+			surface.Start3D(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))
+		end
+		
+		gui.UpdateMousePosition()
 		
 		--surface.EnableStencilClipping()
 			
