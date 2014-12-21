@@ -235,6 +235,7 @@ end
 local translate = {
 	["half-life 2"] = 220,
 	["counter-strike: source"] = 240,
+	["css"] = 240,
 	["half-life: source"] = 280,
 	["day of defeat: source"] = 300,
 	["half-life 2: deathmatch"] = 320,
@@ -244,6 +245,7 @@ local translate = {
 	["portal"] = 400,
 	["half-life 2: episode two"] = 420,
 	["team fortress 2"] = 440,
+	["tf2"] = 440,
 	["left 4 dead"] = 500,
 	["left 4 dead 2"] = 550,
 	["dota 2"] = 570,
