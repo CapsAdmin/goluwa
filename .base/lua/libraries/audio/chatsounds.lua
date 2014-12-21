@@ -752,7 +752,7 @@ do -- list parsing
 		local tree = "data/chatsounds/"..name..".tree"
 
 		if vfs.Exists(list) and vfs.Exists(tree) then
-			chatsounds.BuildTreeFromCache(vfs.Read(list), vfs.Read(tree, "b"))
+			chatsounds.BuildTreeFromCache(vfs.Read(list), vfs.Read(tree))
 		elseif vfs.Exists(list) then
 			chatsounds.BuildTreeFromCache(vfs.Read(list))
 		else
@@ -1381,7 +1381,6 @@ function chatsounds.Initialize()
 end
 
 function chatsounds.Shutdown()
-	chatsounds.UnmountPaks()
 	autocomplete.RemoveList("chatsounds")
 	event.RemoveListener("Update", "chatsounds")
 end
