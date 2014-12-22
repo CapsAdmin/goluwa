@@ -362,7 +362,7 @@ function surface.DrawLine(x1,y1, x2,y2, w, skip_tex, ox, oy)
 	ox = ox or (w*0.5)
 	oy = oy or 0 
 		
-	surface.DrawRect(x1, y1, w, dst, -math.deg(ang), ox, oy)
+	surface.DrawRect(x1, y1, w, dst, -ang, ox, oy)
 end
 
 --[[
