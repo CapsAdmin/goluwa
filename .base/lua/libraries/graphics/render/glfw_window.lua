@@ -44,6 +44,7 @@ do -- window meta
 	end
 
 	function META:SetTitle(title)
+		title = tostring(title)
 		glfw.SetWindowTitle(self.__ptr, title)
 	end
 	
