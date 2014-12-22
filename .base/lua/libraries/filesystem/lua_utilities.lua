@@ -66,6 +66,11 @@ function vfs.AddModuleDirectory(dir)
 		table.insert(package.loaders, function(path)
 			return vfs.loadfile(path .. ".lua")
 		end)
+		
+		table.insert(package.loaders, function(path)
+			path = path:gsub("(.)%.(.)", "%1/%2")
+			return vfs.loadfile(path .. ".lua")
+		end)
 	end
 		
 	do -- relative path
