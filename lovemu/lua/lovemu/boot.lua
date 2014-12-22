@@ -44,6 +44,11 @@ function lovemu.RunGame(folder)
 		love = love,
 		require = function(name, ...)
 			logn("[lovemu] requre: ", name)
+			
+			if name:startswith("love.") and love[name:match(".+%.(.+)")] then
+				return love[name:match(".+%.(.+)")]
+			end
+			
 			local func, err, path = require.load(name, folder, true) 
 						
 			if type(func) == "function" then
