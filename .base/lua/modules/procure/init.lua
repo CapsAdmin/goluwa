@@ -160,10 +160,13 @@ local function require(name)
 end
 
 
+local MODULE_CALLED
 local IN_MODULE
 local OLD_MODULE = _G.module
 function module(name, ...)
+	_M.module_name = name
 	if IN_MODULE then
+		MODULE_CALLED = true
 		return OLD_MODULE(IN_MODULE, ...)
 	else
 		return OLD_MODULE(name, ...)
@@ -178,6 +181,10 @@ local function require_function(name, func, path)
 	
 	IN_MODULE = name
 		local result = func(dir)
+		if MODULE_CALLED then
+			_G[_M.module_name] = result or package.loaded[path] or package.loaded[name]
+			MODULE_CALLED = false
+		end
 	IN_MODULE = false
 	
 		if result ~= nil and not package.loaded[path] and not package.loaded[name] then
