@@ -44,7 +44,7 @@ do
 end
 
 function lovemu.ErrorNotSupported(str, level)
-	error("[lovemu] " .. str, level or 4)
+	warning("[lovemu] " .. str)
 end
 
 function lovemu.CheckSupported(demo)

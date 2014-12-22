@@ -2,28 +2,30 @@ local love = (...) or _G.lovemu.love
 
 love.filesystem = {}
 
-function love.filesystem.getAppdataDirectory()
-	return R("data/lovemu/")
-end
+local IDENTITY = "none"
 
-function love.filesystem.getLastModified(path)
-	return vfs.GetLastModified(path)
+function love.filesystem.getAppdataDirectory()
+	return R("data/lovemu/" .. IDENTITY)
 end
 
 function love.filesystem.getSaveDirectory()
-	return R("data/lovemu/")
+	return R("data/lovemu/" .. IDENTITY)
 end
 
 function love.filesystem.getUserDirectory()
-	return R("data/lovemu/")
+	return R("data/lovemu/" .. IDENTITY)
 end
 
 function love.filesystem.getWorkingDirectory()
-	return R("data/lovemu/")
+	return R("data/lovemu/" .. IDENTITY)
+end
+
+function love.filesystem.getLastModified(path)
+	return vfs.GetLastModified("data/lovemu/" .. IDENTITY .. "/" .. path) or vfs.GetLastModified(path)
 end
 
 function love.filesystem.exists(path)
-	return vfs.Exists(path)
+	return vfs.Exists("data/lovemu/" .. IDENTITY .. "/" .. path) or vfs.Exists(path)
 end
 
 function love.filesystem.enumerate(path)
@@ -41,29 +43,45 @@ function love.filesystem.init() -- partial
 end
 
 function love.filesystem.isDirectory(path)
-	return vfs.IsDir(path)
+	return vfs.IsDir("data/lovemu/" .. IDENTITY .. "/" .. path) or vfs.IsDir(path)
 end
 
 function love.filesystem.isFile(path)
-	return vfs.IsFile(path)
+	return vfs.IsFile("data/lovemu/" .. IDENTITY .. "/" .. path) or vfs.IsFile(path)
 end
 
 function love.filesystem.lines(path)
-	return vfs.Open(path):Lines()
+	local file = assert(vfs.Open("data/lovemu/" .. IDENTITY .. "/" .. path))
+	
+	if ok then
+		return ok:Lines()
+	end
+	
+	local file = assert(vfs.Open(path))
+	
+	return file:Lines()
 end
 
-function love.filesystem.load(path ,mode)
-	local func, err = vfs.loadfile(path, mode)
+function love.filesystem.load(path, mode)
+	mode = mode or "read"
+	
+	local func, err = vfs.loadfile("data/lovemu/" .. IDENTITY .. "/" .. path, mode)
 	
 	if func then
 		setfenv(func, getfenv(2))
+	elseif mode == "read" then
+		func, err = vfs.loadfile(path, mode)
+	
+		if func then
+			setfenv(func, getfenv(2))
+		end
 	end
 	
 	return func, err
 end
 
 function love.filesystem.mkdir(path) --partial
-	local ok ,err = lfs.mkdir(R("data/lovemu/") .. path)
+	local ok ,err = lfs.mkdir(R("data/lovemu/" .. IDENTITY .. "/") .. path)
 	if err:find("File exist") then
 		return true
 	end
@@ -73,7 +91,7 @@ end
 love.filesystem.createDirectory = love.filesystem.mkdir
 
 function love.filesystem.read(path)
-	return vfs.Read(path) or ""	 
+	return vfs.Read("data/lovemu/" .. IDENTITY .. "/" .. path) or vfs.Read(path) or ""
 end
 
 function love.filesystem.remove(path) --partial
@@ -81,7 +99,14 @@ function love.filesystem.remove(path) --partial
 end
 
 function love.filesystem.setIdentity(name) --partial
+	lfs.mkdir(R("data/") .. "lovemu/")
+	lfs.mkdir(R("data/lovemu/") .. name .. "/")
 	
+	IDENTITY = name
+end
+
+function love.filesystem.getIdentity()
+	return IDENTITY
 end
 
 function love.filesystem.write(path, data)
@@ -164,7 +189,7 @@ do -- File object
 			self.file:WriteBytes(data)
 			return true
 		elseif lovemu.Type(data) == "Data" then
-			lovemu.ThrowNotSupportedError("Data not supported")
+			lovemu.ErrorNotSupported("Data not supported")
 		end
 	end
 	

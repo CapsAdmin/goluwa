@@ -328,11 +328,11 @@ do -- Source
 			
 			return self
 		elseif lovemu.Type(var) == "File" then
-			lovemu.ThrowNotSupportedError("Decoder is not supported yet")
+			lovemu.ErrorNotSupported("Decoder is not supported yet")
 		elseif lovemu.Type(var) == "Decoder" then
-			lovemu.ThrowNotSupportedError("Decoder is not supported yet")
+			lovemu.ErrorNotSupported("Decoder is not supported yet")
 		elseif lovemu.Type(var) == "SoundData" then
-			lovemu.ThrowNotSupportedError("SoundData is not supported yet")
+			lovemu.ErrorNotSupported("SoundData is not supported yet")
 		end
 		
 		warning("tried to create unknown source type: ", lovemu.Type(var), ", ", type)
