@@ -81,10 +81,15 @@ function love.filesystem.load(path, mode)
 end
 
 function love.filesystem.mkdir(path) --partial
-	local ok ,err = lfs.mkdir(R("data/lovemu/" .. IDENTITY .. "/") .. path)
-	if err:find("File exist") then
+	lfs.mkdir(R("data/") .. "lovemu/")
+	lfs.mkdir(R("data/lovemu/") .. IDENTITY .. "/")
+	
+	local ok, err = lfs.mkdir(R("data/lovemu/" .. IDENTITY .. "/") .. path)
+	
+	if not ok and err:find("File exist") then
 		return true
 	end
+	
 	return ok
 end
 

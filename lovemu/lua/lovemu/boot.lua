@@ -41,7 +41,7 @@ function lovemu.RunGame(folder)
 			
 	local env
 	env = setmetatable({
-		love = love, 
+		love = love,
 		require = function(name, ...)
 			logn("[lovemu] requre: ", name)
 			local func, err, path = require.load(name, folder, true) 
@@ -54,9 +54,22 @@ function lovemu.RunGame(folder)
 				return require.require_function(name, func, path) 
 			end
 			
+			if pcall(require, name) then
+				return require(name)
+			end
+			
 			if not func and err then print(name, err) end
 			
 			return func
+		end,
+		type = function(v)
+			local t = type(v)
+			
+			if t == "table" and v.__lovemu_type then
+				return "userdata"
+			end
+			
+			return t
 		end,
 	}, 
 	{
@@ -103,7 +116,7 @@ function lovemu.RunGame(folder)
 	setfenv(love.load, env)
 	
 	if not xpcall(main, system.OnError) then return end
-	if not xpcall(love.load, system.OnError) then return end
+	if not xpcall(love.load, system.OnError, {}) then return end
 			
 	
 	local id = "lovemu_" .. folder
