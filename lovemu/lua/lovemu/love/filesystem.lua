@@ -198,11 +198,28 @@ do -- File object
 		end
 	end
 	
-	function love.filesystem.newFile(file_name, mode)	
-		local self = lovemu.CreateObject(File)
+	function File:open(mode)
+		if mode == "w" then mode = "write" end
+		if mode == "r" then mode = "read" end
+	
+		logn("[lovemu] file open ", self.path, " ", mode)
+		local path = self.path
 		
-		self.file = vfs.Open(file_name, mode)
+		if mode == "w" then
+			path = "data/lovemu/" .. IDENTITY .. "/" .. self.path
+		end
+		
+		self.file = assert(vfs.Open(path, mode))
 		self.mode = mode
+	end
+	
+	function love.filesystem.newFile(path, mode)		
+		local self = lovemu.CreateObject(File)
+		self.path = path
+		
+		if mode then 
+			self:open(mode)
+		end
 		
 		return self
 	end
