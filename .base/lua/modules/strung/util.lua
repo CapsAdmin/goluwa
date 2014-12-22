@@ -33,7 +33,12 @@ local noglobals do
     end
 end
 
-
+local writelock do
+  local wlmt = {__newindex = function(_, k) error(
+    "attempt to set the "..tostring(k).." field of a writelocked table"
+  )end}
+  function witrelock(t) return setmetatable(t, wlmt) end
+end
 
 local _ENV = noglobals() ------------------------------------------------------
 

@@ -1,12 +1,19 @@
--- strung.lua, a rewrite of the Lua string patterns in Lua + FFI, for LuaJIT
--- Copyright (C) 2013 Pierre-Yves Gérardy
+-------------------------------------------------------------------------------
+-- strung.lua -----------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+-- A rewrite of the Lua string patterns in Lua + FFI, for LuaJIT
+-- Copyright (C) 2013 - 2014 Pierre-Yves Gérardy
 -- MIT licensed (see the LICENSE file for the detais).
---
+
 -- strung compiles patterns to Lua functions, asssociated with an FFI array
 -- holding bit sets, for the character sets (`[...]`) and classes (`%x`), and
 -- slots for the capture bounds. This array is allocated once at pattern
 -- compile time, and reused for each matching attempt, minimizing memory
 -- pressure.
+
+-------------------------------------------------------------------------------
+--- localize globals ---
 
 local assert, error, getmetatable, ipairs, loadstring, pairs, print
     , rawset, require, setmetatable, tonumber, tostring, type, pcall
@@ -15,14 +22,19 @@ local assert, error, getmetatable, ipairs, loadstring, pairs, print
 
 --[[DBG]] local unpack = unpack
 
-local _u, expose, noglobals
+-- used only for development. strung works fine in the absence of util.lua
+local expose, writelock do
+  local noglobals
+  pcall(function()
+    local u = require"util"
+    expose, noglobals, writelock = u.expose, u.noglobals, u.writelock
+  end)
+  -- throw an error when accessing a global.
+  ;(noglobals or type)""
+end
 
-pcall(function() -- used only for development.
-  _u = require"util"
-  expose, noglobals = _u.expose, _u.noglobals
-end)
-
-;(noglobals or type)("") -------------------------------------------------------------
+-------------------------------------------------------------------------------
+--- localize library functions ---
 
 local m_max = require"math".max
 
@@ -30,35 +42,32 @@ local o_setlocale = require"os".setlocale
 
 local s, t = require"string", require"table"
 
-local s_byte, s_char, s_find, s_gmatch, s_gsub, s_match, s_rep, s_sub
-    = s.byte, s.char, s.find, s.gmatch, s.gsub, s.match, s.rep, s.sub
+local s_byte, s_find, s_gmatch, s_gsub, s_len, s_rep, s_sub
+    = s.byte, s.find, s.gmatch, s.gsub, s.len, s.rep, s.sub
 
-local t_concat, t_insert, t_remove
-    = t.concat, t.insert, t.remove
+local t_concat, t_insert
+    = t.concat, t.insert
 
 local ffi = require"ffi"
-local C = ffi.C
 
-local     cdef,     copy,     metatype,     new, ffi_string,     typeof
-    = ffi.cdef, ffi.copy, ffi.metatype, ffi.new, ffi.string, ffi.typeof
+local     C,     cdef,     copy,     metatype,     new, ffi_string,     typeof
+    = ffi.C, ffi.cdef, ffi.copy, ffi.metatype, ffi.new, ffi.string, ffi.typeof
 
 local bit = require("bit")
 local band, bor, bxor = bit.band, bit.bor, bit.xor
 local lshift, rshift, rol = bit.lshift, bit.rshift, bit.rol
 
--- C types
-local u32ary = typeof"uint32_t[?]"
-local u32ptr = typeof"uint32_t *"
+-------------------------------------------------------------------------------
+--- C types ---
+
+local u32ary    = typeof"uint32_t[?]"
+local u32ptr    = typeof"uint32_t *"
 local constchar = typeof"const unsigned char *"
 
---[[DBG]] local ffimt = {__gc = function(self, ...)
--- [[DBG]]   print("GC", self, ...)
--- [[DBG]]   expose(self)
---[[DBG]] end}
 
---[[DBG]] local u32arys = metatype("struct {uint32_t ary[?];}", ffimt)
-
--- bit sets, code released by Mike Pall in the public domain.
+-------------------------------------------------------------------------------
+--- bit sets
+--- written by Mike Pall released in the public domain.
 
 -- local bitary = ffi.typeof"int32_t[?]"
 -- local function bitnew(n)
@@ -73,7 +82,11 @@ local function bitset(b, i)
   local x = rshift(i, 5); b[x] = bor(b[x], lshift(1, i))
 end
 
--- pseudo-enum, just for the kicks. This might as well be a Lua table.
+-------------------------------------------------------------------------------
+--- Pseudo-enum ---
+
+-- This allows the compiler to treat the values as constants.
+
 cdef[[
 struct placeholder {
   static const int POS = 1;
@@ -96,16 +109,20 @@ local P = new"struct placeholder"
 
 local g_i, g_subj, g_ins, g_start, g_end
 
----------------------- TEMPLATES -----------------------
+
+-------------------------------------------------------------------------------
+--- Templates -----------------------------------------------------------------
+-------------------------------------------------------------------------------
+
 -- patterns are compiled to Lua by stitching these:
 
 local templates = {}
 
 -- charsets, caps and qstn are the FFI pointers to the corresponding resources.
 templates.head = {[=[
-local bittest, charsetsS, caps, constchar, expose = ...
+local bittest, charsets, caps, constchar, expose = ...
 return function(subj, _, i)
-  local charsets = charsetsS.ary
+  local charsets = charsets
   local len = #subj
   local i0 = i - 1
   local chars = constchar(subj) - 1 -- substract one to keep the 1-based index
@@ -182,7 +199,6 @@ templates.char = {[[(i <= len) and chars[i] == ]], P.VAL}
 templates.any = {[[i <= len]]}
 templates.set = {[[(i <= len) and ]], P.INV, [[ bittest(charsets, ]], P.SET, [=[ + chars[i])]=]}
 
-
 templates.ballanced = {[[ -- %b
   if chars[i] ~= ]], P.OPEN, [[ then
     i = 0; goto done --break
@@ -208,8 +224,8 @@ templates.frontier = {[[ -- %f
   then i = 0; goto done end]]
 }
 templates.poscap = {[[ -- ()
-  caps[]], P.OPEN, [[] = i
-  caps[]], P.CLOSE, [[] = 4294967295
+  caps[]], P.OPEN, [[] = 0
+  caps[]], P.CLOSE, [[] = i
 ]]
 }
 templates.refcap = {[[ -- %n for n = 1, 9
@@ -227,16 +243,21 @@ templates.open = {[[ -- (
 templates.close = {[[ -- )
   caps[]], P.CLOSE, [[] = i - 1]]
 }
-  templates.dollar = {[[ --
+templates.dollar = {[[ --
   if i ~= #subj + 1 then i = 0 end -- $]]
 }
 
 
----- Simple pattern compiler ----
+-------------------------------------------------------------------------------
+---- Compiler -----------------------------------------------------------------
+-------------------------------------------------------------------------------
 
-local function hash_find (s, p, i) --
+-------------------------------------------------------------------------------
+--- Simple pattern compiler ---
+
+local function hash_find (s, p, i)
   if p == "" then return i, i - 1 end
-  local lp, ls = #p, #s
+  local lp, ls = s_len(p), s_len(s)
   if ls < lp then return nil end
   if p == s then return i, i + lp - 1 end
   local chars = constchar(s) - 1
@@ -284,19 +305,19 @@ end
 --   return true
 -- end
 
+local simplefind = {hash_find, {"simple find"}, 0}
 
 
----- Main pattern compiler ---
+-------------------------------------------------------------------------------
+--- Main pattern compiler helpers ---
 
-local --[[function]] compile
+local --[[function]] compile --(pattern, mode) forward declaration
 
 --- The caches for the compiled pattern matchers.
 local findcodecache
-
-local simplefind = {hash_find, {"simple find"}, 0}
 findcodecache = setmetatable({}, {
-  __mode="k",
-  __index=function(codecache, pat)
+  __mode = "k",
+  __index = function(codecache, pat)
 
     local code = normal(pat) and simplefind or compile(pat, "find")
     rawset(findcodecache, pat, code)
@@ -307,8 +328,8 @@ findcodecache = setmetatable({}, {
 local simplematch = {hash_match, {"simple match"}, 0}
 local matchcodecache
 matchcodecache = setmetatable({}, {
-  __mode="k",
-  __index=function(codecache, pat)
+  __mode = "k",
+  __index = function(codecache, pat)
 
     local code = normal(pat) and simplematch or compile(pat, "match")
     rawset(matchcodecache, pat, code)
@@ -318,8 +339,8 @@ matchcodecache = setmetatable({}, {
 
 local gmatchcodecache
 gmatchcodecache = setmetatable({}, {
-  __mode="k",
-  __index=function(codecache, pat)
+  __mode = "k",
+  __index = function(codecache, pat)
 
     local code = --[[normal(pat) and simple(pat) or]] compile(pat, "gmatch")
     rawset(gmatchcodecache, pat, code)
@@ -329,8 +350,8 @@ gmatchcodecache = setmetatable({}, {
 
 local gsubcodecache
 gsubcodecache = setmetatable({}, {
-  __mode="k",
-  __index=function(codecache, pat)
+  __mode = "k",
+  __index = function(codecache, pat)
 
     local code = --[[normal(pat) and simple(pat) or]] compile(pat, "gsub")
     rawset(gsubcodecache, pat, code)
@@ -361,33 +382,25 @@ local function push (tpl, data, buf, backbuf, ind)
   end end
 end
 
--- Character classes...
+--- Character classes...
 cdef[[
-  int isalpha (int c);
-  int iscntrl (int c);
-  int isdigit (int c);
-  int islower (int c);
-  int ispunct (int c);
-  int isspace (int c);
-  int isupper (int c);
-  int isalnum (int c);
-  int isxdigit (int c);
-]]
-
+  int isalpha (int c); int iscntrl (int c); int isdigit (int c);
+  int islower (int c); int ispunct (int c); int isspace (int c);
+  int isupper (int c); int isalnum (int c); int isxdigit (int c);]]
 
 local ccref = {
     a = "isalpha", c = "iscntrl", d = "isdigit",
     l = "islower", p = "ispunct", s = "isspace",
     u = "isupper", w = "isalnum", x = "isxdigit"
 }
-local allchars = {}; for i = 0, 255 do
-    allchars[i] = s_char(i)
-end
+
 local charclass = setmetatable({}, {__index = function(self, c)
   local func = ccref[c:lower()]
   if not func then return nil end
   local cc0, cc1 = u32ary(8), u32ary(8)
   for i = 0, 255 do
+    -- This is slow, but only used once per
+    -- (pair of charachter class) x (program run).
     if C[func](i) ~= 0 then
       bitset(cc0, i)
     else
@@ -399,16 +412,19 @@ local charclass = setmetatable({}, {__index = function(self, c)
   return self[c]
 end})
 
--- %Z
+--- %Z
 do
   local Z = u32ary(8)
   for i = 1, 255 do bitset(Z, i) end
   charclass.Z = Z
 end
+
+--- build keys for the character class cache (used at pattern compilation time)
 local function key (cs)
   return t_concat({cs[0], cs[1], cs[2], cs[3], cs[4], cs[5], cs[6], cs[7]}, ":")
 end
 
+--- character class builder
 local function makecc(pat, i, sets)
   local c = pat:sub(i , i)
   local class = charclass[c]
@@ -420,19 +436,18 @@ local function makecc(pat, i, sets)
   return "", (sets[k] - 1) * 256
 end
 
+--- Character set builder
 local hat = ('^'):byte()
 local function makecs(pat, i, sets)
   local inv = s_byte(pat,i) == hat
   i = inv and i + 1 or i
-  local cl, last = i + 1, #pat
-  while ']' ~= s_sub(pat, cl, cl) do cl = cl + 1 if i > last then error"unfinished character class" end end
+  local last = #pat
   local cs = u32ary(8)
-  local c
-  while i < cl do
-    c = s_sub(pat,i, i)
+  local c = s_sub(pat,i, i)
+  while i <= last do
     if c == '%' then
       i = i + 1
-      if i == cl then error"invalid escape sequence" end
+      -- if i == cl then error"invalid escape sequence" end
       local cc = charclass[s_sub(pat, i, i)]
       if cc then
         for i = 0, 7 do
@@ -444,23 +459,31 @@ local function makecs(pat, i, sets)
         then bitset(cs, 0); i = i + 1; goto continue
       end -- else, skip the % and evaluate the character as itself.
     end
-    if i + 2 < cl and s_sub(pat, i + 1, i + 1) == '-' then
+
+
+    if s_sub(pat, i + 1, i + 1) == '-' and s_sub(pat, i+2, i+2) ~= ']' then
       for i = s_byte(pat, i), s_byte(pat, i+2) do bitset(cs, i) end
       i = i + 3
     else
       bitset(cs, s_byte(pat, i)); i = i + 1
     end
+
     ::continue::
+
+    c = s_sub(pat,i, i)
+    if c == ']' then break end
   end
+  if i > last then error"unfinished character class" end
   local k = key(cs)
   if not sets[k] then
     sets[#sets + 1] = cs
     sets[k]  = #sets
   end
-  return inv, (sets[k] - 1) * 256, cl
+  return inv, (sets[k] - 1) * 256, i
 end
 
-cdef[[const char * strchr ( const char * str, int character );]]
+-------------------------------------------------------------------------------
+--- Main pattern compiler ---
 
 local suffixes = {
   ["*"] = true,
@@ -561,7 +584,7 @@ local function body(pat, i, caps, sets, data, buf, backbuf)
         templates.char[P.VAL] = c:byte()
         data[P.TEST] = t_concat(templates.char)
         i, ind = suffix(i + 1, ind, len, pat, data, buf, backbuf)
-      end
+      end -- /"%"
     elseif c == '$' and i == #pat then
       push(templates.dollar, data, buf,backbuf, ind)
     else
@@ -575,14 +598,34 @@ local function body(pat, i, caps, sets, data, buf, backbuf)
 end
 
 --- Create the uint32_t array that holds the character sets and capture bounds.
+
+--[[
+
+Memory layout of the charset/capture bounds uint32_t array:
+
+Character sets each take 8 solts, starting from the start of the array.
+
+Each capture uses two slots corresponding to its first ("open") and last ("close")
+character.
+
+Position captures are tagged by having the "open" bound set to 0. The "close" slot
+holds the position.
+
+The zeroth capture is implicit, and corresponds to the whole match.
+
+`capsptr[-n*2]` is the "open" bound of the nth capture.
+`capsptr[-n*2 + 1]` is the corresponding "close" bound.
+
+--]]
+
 local function pack (sets, ncaps)
   local nsets = #sets
-  local len = nsets*8 + ncaps*2
-  local charsets = u32arys(len + 2) -- add two slots for the bounds of the match.
-  local capsptr= u32ptr(charsets.ary) + len
+  local len = nsets * 8 + ncaps * 2
+  local charsets = u32ary(len + 2) -- add two slots for the bounds of the match.
+  local capsptr= u32ptr(charsets) + len
   for i = 1, nsets do
     for j = 0, 7 do
-      charsets.ary[(i - 1) * 8 + j] = sets[i][j]
+      charsets[(i - 1) * 8 + j] = sets[i][j]
     end
   end
   return charsets, capsptr
@@ -594,8 +637,8 @@ struct M {
   static const int SOURCE = 2;
   static const int NCAPS = 3;
   static const int CAPS = 4;
+  static const int ANCHORED = 5;
 }]] local M = new"struct M" -- fields of the "_M_atchers" table.
-
 
 function compile (pat, mode) -- local, declared above
   local anchored = (pat:sub(1,1) == "^")
@@ -656,7 +699,7 @@ function compile (pat, mode) -- local, declared above
     local rc = {}
     for i = 2, #caps, 2 do
       if caps.type[i/2] == "pos" then
-        rc[#rc + 1] = "caps[".. -i.. "]"
+        rc[#rc + 1] = "caps[".. -i + 1 .. "]"
       else
         rc[#rc + 1] = "subj:sub(caps[".. -i .."], caps[" .. -i + 1 .. "]) "
       end
@@ -672,16 +715,20 @@ function compile (pat, mode) -- local, declared above
 
   -- load the source
   local source = t_concat(buf)
-  -- [[DBG]] print("Compile; mode, ncaps, source", mode, ncaps, "\n"..source)
   local loader, err = loadstring(source)
   if not loader then error(source.."\nERROR:"..err) end
   local code = loader(bittest, charsets, capsptr, constchar, expose)
-  return {code,   source,   ncaps,   capsptr}
+  return {code,   source,   ncaps,   capsptr, anchored}
      -- m.CODE, m.SOURCE,   m.NCAPS, m.CAPS -- anchor the charset array? Seems to fix the segfault.
 end
 
 
----- API ----
+-------------------------------------------------------------------------------
+---- API ----------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+--- Helpers
 
 local function checki(i, subj)
   if not i then return 1 end
@@ -690,17 +737,12 @@ local function checki(i, subj)
   return i
 end
 
-local function _wrp (src, pat, success, ...)
-  if not success then error("-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"..src.. "\n"..pat.. "\n".. (...)) end
-  return ...
-end
-
 local producers = setmetatable({}, {__index = function(self, n)
   local acc = {}
   for open = -2, -n * 2, -2 do
     local close = open + 1
     acc[#acc + 1] =
-      "c["..close.."] == 4294967295 and c["..open.."] or "..
+      "c["..open.."] == 0 and c["..close.."] or "..
         "subj:sub(c["..open.."], c["..close.."])"
   end
   local res = loadstring([=[ --
@@ -715,45 +757,27 @@ producers[0] = function(caps, subj)
   return subj:sub(caps[0], caps[1])
 end
 
-
+-------------------------------------------------------------------------------
+--- find
 
 local function find(subj, pat, i, plain)
   if plain then
     return s_find(subj, pat, i, true)
   end
   i = checki(i, subj)
-  -- if plain then
-  --   return hash_find(subj, pat, i, true)
-  -- end
-  --[==[
-  return _wrp(
-    codecache[pat][M.SOURCE],
-    pat,
-    pcall(codecache[pat][M.CODE], subj, pat, checki(i, subj), false, false)
-  )
-  --[=[]==]
   return findcodecache[pat][M.CODE](subj, pat, i)
-  --]=]
 end
+
+-------------------------------------------------------------------------------
+--- match
 
 local function match(subj, pat, i, raw)
-  --[[
-  return _wrp(
-    codecache[pat][M.SOURCE],
-    pat,
-    pcall(codecache[pat][M.CODE], subj, pat, checki(i, subj), false, true)
-  )
-  --[=[]]
   return matchcodecache[pat][M.CODE](subj, pat, checki(i, subj))
-  --]=]
 end
 
 
--- gmatch paraphernalia --
-
---- lazily build a table of functions that produce n captures at a given offset.
---- the offset * n combo is encoded as a single number by lshifting the offset
---- by 8 then adding it to n.
+-------------------------------------------------------------------------------
+--- gmatch
 
 local gmatch do
   cdef[[
@@ -791,34 +815,49 @@ local gmatch do
   end
 end
 
+
+-------------------------------------------------------------------------------
+--- gsub
+
 local gsub do
+  -- buffers
   local BUFF_INIT_SIZE = 16
   cdef"void* malloc (size_t size);"
   cdef"void free (void* ptr);"
+  local charsize = ffi.sizeof"char"
   local acache = setmetatable({},{__mode = "k"})
+
+  local function malloc(s)
+    local p = C.malloc(s)
+    if p == nil then
+      collectgarbage()
+      p = C.malloc(s)
+    end
+    if p == nil then error"out of memory, `ffi.C.malloc()` failed" end
+    return p
+  end
+
   local Buffer = metatype(
     --               size,       index,            array
     "struct{uint32_t s; uint32_t i; unsigned char* a;}",
     {__gc = function(self) C.free(self.a) end}
   )
-  local charsize = ffi.sizeof"char"
   local function buffer()
     local b = Buffer(
       BUFF_INIT_SIZE,
       0,
-      C.malloc(BUFF_INIT_SIZE * charsize)
+      malloc(BUFF_INIT_SIZE * charsize)
     )
     return b
   end
 
   local function reserve (buf, size)
     if size <= buf.s then return end
-    local a = buf.a
-    size = buf.s * 2
-    buf.a = C.malloc(size * charsize)
-    buf.s = size
-    copy(buf.a, a, buf.i)
-    C.free(a)
+    repeat buf.s = buf.s * 2 until size <= buf.s
+    local a = malloc(buf.s * charsize)
+    ffi.copy(a, buf.a, buf.i)
+    ffi.C.free(buf.a)
+    buf.a = a
   end
 
   local function mergebuf (acc, new)
@@ -841,12 +880,29 @@ local gsub do
 
   local function mergeonebyte (acc, byte)
     reserve(acc, acc.i + 1)
-    acc.i = acc.i + 1
     acc.a[acc.i] = byte
+    acc.i = acc.i + 1
   end
 
-  local function table_handler (subj, caps, ncaps, producer, buf, tbl)
+  -- handlers for each type of replacement
+  local function table_handler (subj, caps, _, producer, buf, tbl)
     local res = tbl[producer(caps, subj)]
+    if not res then
+      local i, e = caps[0], caps [1]
+      mergebytes(buf, constchar(subj) + i - 1, e - i + 1)
+    else
+      local t = type(res)
+      if t == "string" or t == "number" then
+        res = tostring(res)
+        mergestr(buf, res)
+      else
+        error("invalid replacement type (a "..t..")")
+      end
+    end
+  end
+
+  local function function_handler (subj, caps, _, producer, buf, fun)
+    local res = fun(producer(caps, subj))
     if not res then
       local i, e = caps[0], caps [1]
       mergebytes(buf, constchar(subj) + i - 1, e - i + 1)
@@ -865,73 +921,7 @@ local gsub do
     mergestr(buf, str)
   end
 
-  local function prepare(repl, n, buf, i)
-    local i0 = i
-    local c = repl[i]
-    if c == 37 then -- "%"
-      i = i + 1
-      if i == n then return end -- skip a "%" in terminal position.
-      c = repl[i]
-      if not (48 <= c and c <= 57) then return prepare(repl, n, buf, i) end
-      i = i
-      mergeonebyte(buf, 0)
-      mergeonebyte(buf, c - 48)
-      return prepare(repl, n, buf, i + 1)
-    else
-      local bufi =  buf.i + 2
-      mergeonebyte(buf, 0)
-      while true do
-        mergeonebyte(buf, c)
-        i = i + 1
-        if buf.i - bufi > 255 then
-          buf[bufi] = 255
-          bufi = buf.i + 2
-        end
-        c = repl[i]
-        if c == 37 then -- "%"
-          i = i + 1
-          if i == n then
-            buf[bufi] = buf.i - bufi
-            return
-          end
-          if 48 <= c and c <= 57 then return prepare(repl, n, buf, i - 1) end
-        end
-        mergeonebyte(buf, c)
-        i = i + 1
-      end
-    end
-  end
-
-  local charary = typeof"unsigned char[?]"
-  local long_pattern_cache = setmetatable({}, {__index = function(self, repl)
-    local buf = buffer()
-    repl = constchar(repl)
-    prepare(repl, buf, 0)
-    return buf
-  end})
-
-  local function long_pattern_handler (subj, caps, ncaps, replacement, buf, pat)
-    local i, L, ary = 0, replacement.i, replacement.a
-    ncaps = m_max(1, ncaps) -- for simple matchers, %0 and %1 mean the same thing.
-    subj = constchar(subj) - 1 -- subj is anchored in `gsub()`
-    while i < L do
-      local l = ary[i]
-      i = i + 1
-      if l == 0 then
-        local n = ary[i]
-        if n > ncaps then error"invalid capture index" end
-        local s = caps[-2*n]
-        local ll = caps[-2*n + 1] - s
-        mergebytes(buf, subj + s, ll)
-        i = i + 1
-      else
-        mergebytes(buf, ary + i, l)
-        i = i + l
-      end
-    end
-  end
-
-  local function short_pattern_handler (subj, caps, ncaps, _, buf, pat)
+  local function string_with_captures_handler (subj, caps, ncaps, _, buf, pat)
     local i, L = 1, #pat
     ncaps = m_max(1, ncaps) -- for simple matchers, %0 and %1 mean the same thing.
     subj = constchar(subj) - 1 -- subj is anchored in `gsub()`
@@ -945,8 +935,12 @@ local gsub do
           n = n - 48
           if n > ncaps then error"invalid capture index" end
           local s = caps[-2*n]
-          local ll = caps[-2*n + 1] - s + 1
-          mergebytes(buf, subj + s, ll)
+          if s == 0 then
+            mergestr(buf, tostring(caps[-2*n + 1]))
+          else
+            local ll = caps[-2*n + 1] - s + 1
+            mergebytes(buf, subj + s, ll)
+          end
         else
           mergeonebyte(buf, n)
         end
@@ -957,31 +951,11 @@ local gsub do
     end
   end
 
-  local function function_handler (subj, caps, ncaps, producer, buf, fun)
-    -- [[DBG]]local _ = {producer(caps, subj)}
-    -- [[DBG]]for _,v in ipairs(_) do print("V:", v, tostring(v):byte())print("#",#tostring(v)) end
-    -- [[DBG]]local res = fun(unpack(_))
-    local res = fun(producer(caps, subj))
-    if not res then
-      local i, e = caps[0], caps [1]
-      mergebytes(buf, constchar(subj) + i - 1, e - i + 1)
-    else
-      local t = type(res)
-      if t == "string" or t == "number" then
-        res = tostring(res)
-        mergestr(buf, res)
-      else
-        error("invalid replacement type (a "..t..")")
-      end
-    end
-  end
-
   local function select_handler (ncaps, repl)
     t = type(repl)
     if t == "string" then
       if repl:find("%%") then
-        return short_pattern_handler, short_pattern_handler
-        -- return short_pattern_handler, long_pattern_cache[repl]
+        return string_with_captures_handler, string_with_captures_handler
       else
         return string_handler, string_handler
       end
@@ -998,13 +972,17 @@ local gsub do
     n = n or -1
     local c = gsubcodecache[pat]
     local matcher = c[M.CODE]
-    local handler, helper = select_handler(c[M.NCAPS], repl)
-    local caps = c[M.CAPS]
-    local ncaps = c[M.NCAPS]
     local success = matcher(subj, pat, 1)
 
     if not success then return subj, 0 end
 
+    local handler, producer = select_handler(c[M.NCAPS], repl)
+
+    -- Anchored patterns should not be matched more than once.
+    if c[M.ANCHORED] then n = 1 end
+
+    local caps = c[M.CAPS]
+    local ncaps = c[M.NCAPS]
     local count = 0
     local buf = buffer()
     local subjptr = constchar(subj)
@@ -1014,7 +992,7 @@ local gsub do
       count = count + 1
       mergebytes(buf, subjptr + last_e, caps[0] - last_e - 1)
       last_e = caps[1]
-      handler(subj, caps, ncaps, helper, buf, repl)
+      handler(subj, caps, ncaps, producer, buf, repl)
       success = matcher(subj, pat, m_max(caps[0], caps[1]) + 1)
     end
     mergebytes(buf, subjptr + last_e, #subj - last_e)
@@ -1034,30 +1012,87 @@ local function _assert(test, pat, msg)
   end
 end
 
+
+-------------------------------------------------------------------------------
+--- Misc API functions
+
 -- reset the compiler cache to match the new locale.
 local function reset ()
-  codecache = setmetatable({}, getmetatable(codecache))
-  charclass = setmetatable({}, getmetatable(charclass))
+  findcodecache   = setmetatable({}, getmetatable(findcodecache))
+  matchcodecache  = setmetatable({}, getmetatable(matchcodecache))
+  gmatchcodecache = setmetatable({}, getmetatable(gmatchcodecache))
+  gsubcodecache   = setmetatable({}, getmetatable(gsubcodecache))
+  charclass       = setmetatable({}, getmetatable(charclass))
 end
+
+-- os.setlocale wrapper
 local function setlocale (loc, mode)
   reset()
   return o_setlocale(loc, mode)
 end
 
+-- show the source code of the compiled pattern matcher
 local function showpat(p)
   print(p,"\n---------")
   print(gsubcodecache[p][M.SOURCE])
 end
+
+
+-------------------------------------------------------------------------------
+--- Monkey patching and export table
+
+local strung, install, uninstall do
+  local os, string = require"os", require"string"
+  local installable = {"find", "match", "gmatch", "gfind", "gsub"}
+
+  local instset = {}
+  for _, func in ipairs(installable) do
+    instset[func] = string[func]
+  end
+
+  installable[#installable + 1] = "setlocale"
+
+-- monkey patches the string library.
+  function install(...)
+    local m = {...}
+    if #m == 0 then
+      m = installable
+    end
+    for _, func in ipairs(m) do
+      if instset[func] then string[func] = strung[func] end
+      if func == "setlocale" then os.setlocale = setlocale end
+    end
+  end
+
+-- revert install
+  function uninstall(...)
+    local m = {...}
+    if #m == 0 then
+      m = installable
+      os.setlocale = o_setlocale
+    end
+    for _, func in ipairs(m) do
+      if instset[func] then string[func] = instset[func] end
+      if func == "setlocale" then os.setlocale = o_setlocale end
+    end
+  end
+
+  strung = {
+    install = install,
+    uninstall = uninstall,
+    find = find,
+    match = match,
+    gfind = gmatch,
+    gmatch = gmatch,
+    gsub = gsub,
+    reset = reset,
+    setlocale = setlocale,
+    assert = _assert,
+    showpat = showpat,
+    _VERSION = "1.0.0-rc1"
+  }
+end
+
 -------------------------------------------------------------------------------
 
-return {
-  find = find,
-  match = match,
-  gfind = gmatch,
-  gmatch = gmatch,
-  gsub = gsub,
-  reset = reset,
-  setlocale = setlocale,
-  assert = _assert,
-  showpat = showpat
-}
+return strung
