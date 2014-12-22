@@ -707,7 +707,9 @@ do -- addons
 	-- only if the CAPSADMIN constant is not nil.
 
 	for folder in vfs.Iterate(e.ROOT_FOLDER, nil, true) do
-		vfs.MountAddon(folder .. "/")
+		if not folder:endswith(".git") then
+			vfs.MountAddon(folder .. "/")
+		end
 	end
 		
 	-- load everything in lua/autorun/*
