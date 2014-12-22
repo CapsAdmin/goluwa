@@ -92,6 +92,8 @@ function META:DrawString(str, x, y)
 	if not self.Ready then return end
 	self.string_cache = self.string_cache or {}
 	
+	str = tostring(str)
+	
 	if not self.string_cache[str] then
 		
 		local poly
@@ -168,6 +170,8 @@ end
 
 function META:GetTextSize(str)
 	if not self.Ready then return 0,0 end
+	
+	str = tostring(str)
 	
 	local X, Y = 0, self.Size
 	
