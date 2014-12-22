@@ -42,7 +42,8 @@ function lovemu.RunGame(folder)
 	local env
 	env = setmetatable({
 		love = love, 
-		require = function(name, ...)			
+		require = function(name, ...)
+			logn("[lovemu] requre: ", name)
 			local func, err, path = require.load(name, folder, true) 
 						
 			if type(func) == "function" then
@@ -114,7 +115,11 @@ function lovemu.RunGame(folder)
 		
 	setfenv(run, env)
 		
-	event.AddListener("Draw2D", id, function(dt)		
+	surface.CreateFont("lovemu", {path = "fonts/vera.ttf", size = 11})
+		
+	event.AddListener("Draw2D", id, function(dt)
+		render.SetCullMode("none")
+		surface.SetFont("lovemu")
 		love.graphics.clear()
 		lovemu.delta = dt
 		surface.SetColor(1,1,1,1)
@@ -135,5 +140,6 @@ function lovemu.RunGame(folder)
 		else
 			love.errhand(lovemu.error_msg)
 		end
+		render.SetCullMode("back")
 	end, {priority = math.huge}) -- draw this first
 end

@@ -87,8 +87,8 @@ do -- quad
 		self.w = w
 		self.h = h
 		
-		self.sw = sw or 0
-		self.sh = sh or 0
+		self.sw = sw or 1
+		self.sh = sh or 1
 		
 		self.vertices = vertices
 		
@@ -252,6 +252,14 @@ do -- font
 		return 1, 1
 	end
 
+	function Font:setFilter(filter)
+		self.filter = filter
+	end
+	
+	function Font:getFilter()
+		return self.filter
+	end
+	
 	local i = 0
 	
 	function love.graphics.newFont(a, b)
@@ -522,10 +530,10 @@ function love.graphics.rectangle(mode, x, y, w, h)
 		surface.SetWhiteTexture()
 		surface.DrawRect(x, y, w, h)
 	else
-		surface.DrawLine(x,y, x+w,y, LineWidth, true)
-		surface.DrawLine(x,y, x,y+h, LineWidth, true)
-		surface.DrawLine(x+w,y, x+w,y+h, LineWidth, true)
-		surface.DrawLine(x,y+h, x+w,y+h, LineWidth, true)
+		love.graphics.line(x,y, x+w,y)
+		love.graphics.line(x,y, x,y+h)
+		love.graphics.line(x+w,y, x+w,y+h)
+		love.graphics.line(x,y+h, x+w,y+h)
 	end
 end
 
