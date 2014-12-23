@@ -70,7 +70,7 @@ local function set_uv(self, i, x,y, w,h, sx,sy)
 end
 
 function META:SetVertex(i, x,y, u,v)
-	if i > self.size or i < 0 then logf("i = %i size = %i\n", i, size) return end
+	if i > self.size or i < 0 then logf("i = %i size = %i\n", i, self.size) return end
 	
 	x = x or 0
 	y = y or 0
@@ -110,7 +110,7 @@ function META:SetRect(i, x,y,w,h, r, ox,oy)
 	
 	i = i - 1
 	i = i * 6
-	
+		
 	set_uv(self, i, self.U1, self.V1, self.U2, self.V2, self.UVSW, self.UVSH)
 
 	self:SetVertex(i + 0, self.X + OX, self.Y + OY)
