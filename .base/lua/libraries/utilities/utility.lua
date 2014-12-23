@@ -283,7 +283,7 @@ do
 	 
 	function META:Start()
 		local co = coroutine.create(function(...) return select(2, xpcall(self.OnStart, system.OnError, ...)) end)
-
+		self.co = co
 		event.CreateThinker(function()
 			if not self:IsValid() then return false end -- removed
 			

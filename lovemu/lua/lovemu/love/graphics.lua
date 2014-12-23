@@ -689,16 +689,18 @@ do -- sprite batch
 		sx = sx or self.w
 		sy = sy or self.h
 		
-		--sx = sx * self.w
-		--sy = sy * self.h
-		self.poly:SetRect(i+1, x,y, sx,sy, r, ox,oy)		
+		if ox then ox = -ox end
+		if oy then oy = -oy end
+				
+		self.poly:SetRect(i, x,y, sx,sy, r, ox,oy)		
 	end
 		
 	function SpriteBatch:set(id, q, ...)
 		id = id or 1
 		if lovemu.Type(q) == "Quad" then
 			self.poly:SetUV(q.x,q.y, q.w,q.h, q.sw,q.sh)
-			set_rect(self, id, ...)
+			local x,y, r, sx,sy, ox,oy, kx,ky = ...
+			set_rect(self, id, x,y, r, q.w,q.h, ox,oy,kx,ky)
 		else
 			set_rect(self, id, q, ...)
 		end
@@ -706,8 +708,10 @@ do -- sprite batch
 	
 	SpriteBatch.setq = SpriteBatch.set
 	
-	function SpriteBatch:add(q, ...)
-		self:set(i, q, ...)
+	function SpriteBatch:add(...)
+		if self.i < self.size then
+			self:set(self.i, ...)
+		end
 		
 		self.i = self.i + 1
 		
@@ -727,7 +731,7 @@ do -- sprite batch
 	end
 	
 	function SpriteBatch:clear()  -- partial
-		
+		self.i = 1
 	end
 	
 	function SpriteBatch:getImage()  -- partial
@@ -754,13 +758,15 @@ do -- sprite batch
 
 	function love.graphics.newSpriteBatch(image, size, usagehint) -- partial
 		local self = lovemu.CreateObject(SpriteBatch)
-		local poly = surface.CreatePoly(size+1)
+		local poly = surface.CreatePoly(size)
+		
+		self.size = size
 		
 		self.poly = poly
 		self.img = image
 		self.w = image:getWidth()
 		self.h = image:getHeight()
-		self.i = 0
+		self.i = 1
 		
 		return self
 	end
