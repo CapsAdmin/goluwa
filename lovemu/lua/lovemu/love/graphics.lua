@@ -20,15 +20,18 @@ local function ADD_FILTER(obj)
 	obj.getFilter = function() return s.filter_min, s.filter_mag, s.filter_anistropy end
 end
 
-local DEFAULT_FILTER = "linear"
+local FILTER_MIN = "linear"
+local FILTER_MIN = "linear"
+local FILTER_ANISOTROPY = 1
 
-do -- filter
-
-	function love.graphics.setDefaultFilter(filter)
-		DEFAULT_FILTER = filter
+do -- filter	
+	function love.graphics.setDefaultImageFilter(min, mag, anisotropy) --partial
+		FILTER_MIN = min
+		FILTER_MAG = mag
+		FILTER_ANISOTROPY = anisotropy 
 	end
-
-	love.graphics.setDefaultImageFilter = setDefaultFilter
+	
+	love.graphics.setDefaultFilter = love.graphics.setDefaultImageFilter
 end
 
 do -- quad
@@ -281,10 +284,14 @@ do -- font
 				
 		local self = lovemu.CreateObject(Font)
 		
-		self.Name = surface.CreateFont("lovemu_" .. font .. i, {
+		self.font = surface.CreateFont("lovemu_" .. font .. i, {
 			size = size,
 			path = font,
+			filtering = FILTER_MIN,
 		})
+		
+		
+		self.Name = self.font:GetName()
 		
 		i = i + 1
 		
@@ -439,7 +446,10 @@ do -- canvas
 				
 		local self = lovemu.CreateObject(Canvas)
 		
-		self.fb = render.CreateFrameBuffer(w, h)
+		self.fb = render.CreateFrameBuffer(w, h, {texture_format = {
+			mag_filter = FILTER_MAG,
+			min_filter = FILTER_MIN,
+		}})
 		
 		lovemu.textures[self] = self.fb:GetTexture()
 		
@@ -497,8 +507,8 @@ do -- image
 			local self = lovemu.CreateObject(Image)
 			
 			lovemu.textures[self] = Texture(path, {
-				mag_filter = DEFAULT_FILTER,
-				min_filter = DEFAULT_FILTER,
+				mag_filter = FILTER_MAG,
+				min_filter = FILTER_MIN,
 				read_speed = math.huge,
 			}) 
 			
@@ -510,8 +520,8 @@ do -- image
 		local obj = lovemu.CreateObject(Image)
 		
 		lovemu.textures[obj] = Texture(path, {
-			mag_filter = DEFAULT_FILTER,
-			min_filter = DEFAULT_FILTER,
+			mag_filter = FILTER_MAG,
+			min_filter = FILTER_MIN,
 			read_speed = math.huge,
 		}) 
 		
@@ -598,9 +608,6 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 end
 
 function love.graphics.present() --partial
-end
-
-function love.graphics.setDefaultImageFilter() --partial
 end
 
 function love.graphics.setIcon() --partial
