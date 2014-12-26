@@ -311,8 +311,9 @@ do -- Source
 	end
 
 	function love.audio.newSource(var, type) --partial
+		local self = lovemu.CreateObject(Source)
+		
 		if lovemu.Type(var) == "string" then
-			local self = lovemu.CreateObject(Source)
 			
 			self.path = var
 			
@@ -324,19 +325,18 @@ do -- Source
 					self.source:SetChannel(1)
 				end
 				
-			end
-			
-			return self
+			end			
 		elseif lovemu.Type(var) == "File" then
 			lovemu.ErrorNotSupported("Decoder is not supported yet")
 		elseif lovemu.Type(var) == "Decoder" then
 			lovemu.ErrorNotSupported("Decoder is not supported yet")
 		elseif lovemu.Type(var) == "SoundData" then
-			lovemu.ErrorNotSupported("SoundData is not supported yet")
+			self.source = audio.CreateSource(var)
+			self.source:SetBuffer(var.buffer)
+		else
+			warning("tried to create unknown source type: ", lovemu.Type(var), ", ", type)
 		end
 		
-		warning("tried to create unknown source type: ", lovemu.Type(var), ", ", type)
-		
-		return lovemu.CreateObject(Source)
+		return self
 	end
 end
