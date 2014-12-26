@@ -40,6 +40,7 @@ function love.thread.newThread(name, script_path)
 		logn("[lovemu] thread ", name ," finished")
 	end
 	
+	self.thread = thread
 	threads[name] = self
 	threads2[thread.co] = self
 	

@@ -25,3 +25,11 @@ end
 function love.timer.getAverageDelta() -- partial
 	return love.timer.getDelta()
 end
+
+function love.timer.sleep(ms)
+	local thread = love.thread.getThread()
+	
+	if thread then
+		thread.thread:Sleep(ms)
+	end
+end
