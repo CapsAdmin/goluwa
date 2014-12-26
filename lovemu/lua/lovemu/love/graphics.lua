@@ -217,7 +217,8 @@ do -- points
 	end
 
 	function love.graphics.point(x, y)
-		surface.DrawPoint(x, y)
+		--surface.DrawPoint(x, y)
+		surface.DrawRect(x, y, 1, 1)
 	end
 end
 
@@ -231,7 +232,7 @@ do -- font
 	function Font:getWidth(str) 
 		str = str or "W"
 		surface.SetFont(self.Name)
-		return surface.GetTextSize(str)
+		return (surface.GetTextSize(str))
 	end
 	
 	function Font:getHeight(str)	
@@ -421,6 +422,7 @@ do -- canvas
 	function Canvas:clear(...) 
 		self.fb:Begin() 
 		love.graphics.clear(...) 
+		self.fb:End()
 	end
 	
 	function Canvas:setWrap() 
@@ -453,8 +455,10 @@ do -- canvas
 		
 		if canvas then
 			gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, canvas.fb.id)
+			render.PushViewport(0, 0, canvas.fb:GetTexture().w, canvas.fb:GetTexture().h)
 		else
 			gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
+			render.PushViewport(0, 0, window.GetSize():Unpack())
 		end
 	end
 	
