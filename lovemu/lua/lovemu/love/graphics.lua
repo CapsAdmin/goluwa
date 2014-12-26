@@ -328,7 +328,6 @@ do -- font
 		sx = sx or 1
 		sy = sy or 1
 		r = r or 0
-		r = r / 0.0174532925
 		
 		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 		--surface.Scale(sx, sy)
@@ -346,7 +345,6 @@ do -- font
 		sx = sx or 1
 		sy = sy or 1
 		r=r or 0
-		r=r/0.0174532925
 		
 		surface.SetTextPosition(x, y)
 		surface.DrawText(text)
@@ -564,7 +562,6 @@ function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy) -- partial
 	ox=ox or 0
 	oy=oy or 0
 	r=r or 0
-	r=r/0.0174532925
 	
 	surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 	surface.SetTexture(lovemu.textures[drawable])
@@ -589,13 +586,8 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 				sy=sy or 1
 				ox=ox or 0
 				oy=oy or 0
-				
-				if r then
-					r = r / 0.0174532925
-				else
-					r = 0
-				end
-				
+				r=r or 0
+								
 				local tex = lovemu.textures[drawable]
 				
 				--if drawable.fb then  sx = 5 sy = 6 end
