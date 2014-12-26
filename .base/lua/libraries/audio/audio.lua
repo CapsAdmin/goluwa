@@ -662,11 +662,19 @@ do -- buffer
 
 		local ADD_FUNCTION = GET_BINDER(META, "Buffer")
 
-		ADD_FUNCTION("AL_BITS", "iv")
+		ADD_FUNCTION("AL_BITS", "i")
 		ADD_FUNCTION("AL_CHANNELS", "i")
 		ADD_FUNCTION("AL_FREQUENCY", "i")
 		ADD_FUNCTION("AL_SIZE", "i")
 
+	end
+	
+	function META:GetLength()
+		return self:GetSize() * 8 / (self:GetChannels() * self:GetBits())
+	end
+	
+	function META:GetDuration()
+		return self:GetLength() / self:GetFrequency()
 	end
 
 	function META:SetData(data, size)
