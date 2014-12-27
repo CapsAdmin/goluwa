@@ -173,14 +173,14 @@ function module(name, ...)
 	end
 end
 
-local function require_function(name, func, path)	
+local function require_function(name, func, path, arg_override)	
 	if package.loaded[name] == nil and package.loaded[path] == nil then
 	
 	local dir = path
 	if dir then dir = dir:match("(.+)[\\/]") end
 	
 	IN_MODULE = name
-		local result = func(dir)
+		local result = func(arg_override or dir)
 		if MODULE_CALLED then
 			_G[_M.module_name] = result or package.loaded[path] or package.loaded[name]
 			MODULE_CALLED = false

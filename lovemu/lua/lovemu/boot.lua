@@ -56,7 +56,7 @@ function lovemu.RunGame(folder)
 					setfenv(func, env)
 				end
 				
-				return require.require_function(name, func, path) 
+				return require.require_function(name, func, path, name) 
 			end
 			
 			if pcall(require, name) then
