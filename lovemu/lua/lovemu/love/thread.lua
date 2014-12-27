@@ -26,7 +26,7 @@ function love.thread.newThread(name, script_path)
 	self.vars = {}
 	
 	local env = getfenv(2)
-	local func = love.filesystem.load(script_path)
+	local func = love.filesystem.load(script_path or name)
 	local thread = utility.CreateThread()
 	function thread:OnStart()
 		setfenv(func, env)
