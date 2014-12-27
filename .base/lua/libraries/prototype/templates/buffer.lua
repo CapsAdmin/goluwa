@@ -1,5 +1,15 @@
 local prototype = (...) or _G.prototype
 
+-- <cmtptr> CapsAdmin, http://codepad.org/uN7qlQTm
+local function swap_endian(num, size)
+	local result = 0
+	for shift = 0, size - 8, 8 do
+		result = bit.bor(bit.lshift(result, 8),
+				bit.band(bit.rshift(num, shift), 0xff))
+	end
+	return result
+end
+
 local type_info = {
 	LongLong = {type = "int64_t", field = "integer_signed", union = "longlong"},
 	UnsignedLongLong = {type = "uint64_t", field = "integer_unsigned", union = "longlong"},
@@ -98,6 +108,14 @@ local function header_to_table(str)
 	for field in str:gmatch("(.-);") do
 		local type, key
 		local assert
+		local swap_endianess = false
+		
+		field = field:trim()
+		
+		if field:startswith("swap") then
+			field = field:sub(#"swap" + 1)
+			swap_endianess = true
+		end
 		
 		if field:find("=") then
 			type, key, assert = field:match("^(.+) (.+) = (.+)$")
@@ -111,8 +129,8 @@ local function header_to_table(str)
 		
 		local length
 		
-		key = key:gsub("%[(.-)%]$", function(num)
-			length = tonumber(num)
+		key = key:gsub("%[(.-)%]$", function(num)			
+			length = tonumber(num) or num
 			return ""
 		end)	
 		
@@ -142,6 +160,7 @@ local function header_to_table(str)
 			length = length, 
 			padding = qualifier == "padding",
 			assert = assert,
+			swap_endianess = swap_endianess,
 		})
 	end
 	
@@ -276,6 +295,23 @@ function prototype.AddBufferTemplate(META)
 			mantissa=mantissa+b/4/256
 			if mantissa==0.0 and exponent==-15 then return 0.0
 			else return (mantissa+1.0)*math.pow(2,exponent)*sign end
+		end
+		
+		function META:ReadVarInt()
+			local num = 0
+			
+			for i = 0, 128 do
+				local byte = self:ReadByte()
+				num = bit.bor(num, bit.band(byte, 0x7F))
+			
+				if bit.band(byte, 0x80) ~= 0 then
+					num = bit.lshift(num, 7)
+				else
+					break
+				end
+			end
+			
+			return num
 		end
 		
 		function META:ReadAll()
@@ -531,8 +567,7 @@ function prototype.AddBufferTemplate(META)
 		
 			local out = {}
 				
-			for i, data in ipairs(structure) do
-			
+			for i, data in ipairs(structure) do			
 				if data.match then
 					local key, val = next(data.match)
 					if (type(val) == "function" and not val(out[key])) or out[key] ~= val then
@@ -545,11 +580,21 @@ function prototype.AddBufferTemplate(META)
 				local val
 				
 				if data.length then
+					local length = data.length
+					
+					if type(length) == "string" then
+						if out[length] then
+							length = out[length]
+						else
+							error(length .. "  is not defined!")
+						end
+					end
+					
 					if data[1] == "char" or data[1] == "string" then
-						val = self:ReadString(data.length)
+						val = self:ReadString(length)
 					else
 						local values = {}
-						for i = 1, data.length do
+						for i = 1, length do
 							table.insert(values, self:ReadType(read_type))
 						end
 						val = values
@@ -558,13 +603,21 @@ function prototype.AddBufferTemplate(META)
 					if data[1] == "bufferpos" then
 						val = self:GetPosition()
 					else
-						val = self:ReadType(read_type) 
+						val = self:ReadType(read_type)
+						if data.swap_endianess then
+							
+							local size = 16
+							if read_type:find("32", nil, true) or read_type:find("long") then
+								size = 32 -- asdasdasd
+							end
+							val = swap_endian(val, size)
+						end
 					end
 				end
 				
 				if data.assert then
 					if val ~= data.assert then
-						errorf("error in header: %s %s expected %X got %s", 2, data[1], data[2], data.assert, (type(val) == "number" and ("%X"):format(val) or type(val)))
+						errorf("error in header: %s %s expected %s got %s", 2, data[1], data[2], data.assert, (type(val) == "number" and ("%X"):format(val) or val))
 					end
 				end
 		
