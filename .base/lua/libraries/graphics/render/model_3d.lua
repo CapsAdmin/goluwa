@@ -18,14 +18,32 @@ do -- model meta
 	local META = prototype.CreateTemplate("mesh3d")
 	
 	function render.Create3DMesh(path, flags, now)
-		check(path, "string")
-			
-		if render.model_cache[path] then
+		
+		if path and render.model_cache[path] then
 			return render.model_cache[path]
 		end
+	
+		local self = prototype.CreateObject(META)
+		self.sub_models = {}
 		
-		if render.debug then logn("[render] loading mesh: ", path) end
-
+		self:InvalidateBoundingBox()
+		
+		if path then				
+			if render.model_cache[path] then
+				return render.model_cache[path]
+			end
+			
+			self:LoadFromDisk(path, flags)
+			
+			render.model_cache[path] = self
+		end
+				
+		return self
+	end
+		
+	function META:LoadFromDisk(path, flags)
+		check(path, "string")
+					
 		flags = flags or bit.bor(
 			assimp.e.aiProcess_CalcTangentSpace, 
 			assimp.e.aiProcess_GenSmoothNormals, 
@@ -35,6 +53,10 @@ do -- model meta
 		
 		flags = assimp.e.aiProcessPreset_TargetRealtime_Quality
 		
+		if render.debug then 
+			logn("[render] loading mesh: ", path) 
+		end
+		
 		if not vfs.Exists(path) and vfs.Exists(path .. ".mdl") then
 			path = path .. ".mdl"
 		end
@@ -42,15 +64,11 @@ do -- model meta
 		if not vfs.Exists(path) then
 			return nil, path .. " not found"
 		end
-					
-		local self = prototype.CreateObject(META)
-		self.sub_models = {}
+		
 		self.done = false
 		self.path = path
 		self.dir = path:match("(.+/)")
-		
-		render.model_cache[path] = self
-		
+							
 		self:InvalidateBoundingBox()
 		
 		local thread = utility.CreateThread()
@@ -80,8 +98,6 @@ do -- model meta
 		--thread:SetIterationsPerTick(math.huge)
 		
 		thread:Start()
-		
-		return self
 	end
 	
 	function META:InsertSubmodel(model_data)
@@ -198,7 +214,7 @@ do -- model meta
 	end
 
 	function META:Draw()
-		for _, model in pairs(self.sub_models) do
+		for _, model in ipairs(self.sub_models) do
 			model.mesh:Draw()
 		end
 	end
