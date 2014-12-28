@@ -34,11 +34,13 @@ do
 			
 			local track = {}
 			track.events = {}
+			
+			local time = 0ULL
 				
 			for i = 1, 1000000 do		
 				local event = {}
 						
-				local delta_time = file:ReadVarInt()
+				time = time + file:ReadVarInt()
 				local event_type = file:ReadByte()
 				
 				if bit.band(event_type, 0xf0) == 0xf0 then
@@ -65,24 +67,24 @@ do
 						elseif sub_type == 0x20 then
 							event.subtype = "midi_channel_prefix"
 							if length ~= 1 then 
-								error("Expected length for midiChannelPrefix event is 1, got " .. length) 
+								error("Expected length for midi_channel_prefix event is 1, got " .. length) 
 							end
 							event.channel = file:ReadByte();
 						elseif sub_type == 0x2f then
 							--event.subtype = "end_of_track"
 							if length ~= 0 then 
-								error("Expected length for endOfTrack event is 0, got " .. length) 
+								error("Expected length for end_of_track event is 0, got " .. length) 
 							end
 							break
 						elseif sub_type == 0x51 then
 							track.set_tempo = bit.lshift(file:ReadByte(), 16) + bit.lshift(file:ReadByte(), 8) + file:ReadByte()
 							if length ~= 3 then 
-								error("Expected length for setTempo event is 3, got " .. length) 
+								error("Expected length for set_tempo event is 3, got " .. length) 
 							end
 						elseif sub_type == 0x54 then
 							track.smpte_offset = {}
 							if length ~= 5 then 
-								error("Expected length for smpteOffset event is 5, got " .. length) 
+								error("Expected length for smpte_offset event is 5, got " .. length) 
 							end
 							local hour_byte = file:ReadByte()
 							track.smpte_offset.frame_rate = frame_rate_flags[bit.band(hour_byte, 0x60)]
@@ -99,7 +101,7 @@ do
 							track.time_signature.numerator = file:ReadByte()
 							track.time_signature.denominator = file:ReadByte() ^ 2
 							track.time_signature.metronome = file:ReadByte()
-							track.time_signature.thirtyseconds = file:ReadByte()
+							track.time_signature.thirty_seconds = file:ReadByte()
 						elseif sub_type == 0x59 then
 							track.key_signature = {}
 							if length ~= 2 then 
@@ -114,11 +116,11 @@ do
 						end
 					elseif event_type == 0xf0 then
 						event.type = "sysex"
-						local length = file:readVarInt()
+						local length = file:ReadVarInt()
 						event.data = file:ReadBytes(length)
 					elseif event_type == 0xf7 then
 						event.type = "divided_sysex"
-						local length = file:readVarInt()
+						local length = file:ReadVarInt()
 						event.data = file:ReadBytes(length)
 					else
 						error("Unrecognised MIDI event type byte: " .. event_type)
@@ -137,15 +139,16 @@ do
 					track.channel = bit.band(event_type, 0x0f)
 					
 					local event = {}
+					event.time = time
 
 					local event_type = bit.rshift(event_type, 4)
 					
 					if event_type == 0x08 then
 						event.subtype = "note_off"
-						event.noteNumber = param1
+						event.note_number = param1
 						event.velocity = file:ReadByte()
 					elseif event_type == 0x09 then
-						event.noteNumber = param1
+						event.note_number = param1
 						event.velocity = file:ReadByte()
 						if event.velocity == 0 then
 							event.subtype = "note_off"
@@ -154,15 +157,15 @@ do
 						end
 					elseif event_type == 0x0a then
 						event.subtype = "note_aftertouch"
-						event.noteNumber = param1;
+						event.note_number = param1
 						event.amount = file:ReadByte()
 					elseif event_type == 0x0b then
 						event.subtype = "controller"
-						event.controllerType = param1
+						event.controller_type = param1
 						event.value = file:ReadByte()
 					elseif event_type == 0x0c then
 						event.subtype = "program_change"
-						event.programNumber = param1;
+						event.program_number = param1
 					elseif event_type == 0x0d then
 						event.subtype = "channel_aftertouch"
 						event.amount = param1;
