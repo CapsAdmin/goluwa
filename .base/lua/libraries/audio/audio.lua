@@ -511,7 +511,7 @@ do -- source
 
 	do -- length stuff
 		function META:Seek(offset, type)
-			if type~="samples" then
+			if type ~= "samples" then
 				offset = offset * self:GetBuffer():GetSampleRate()
 			end
 
@@ -519,7 +519,7 @@ do -- source
 		end
 
 		function META:Tell(type)
-			if type=="samples" then
+			if type == "samples" then
 				return self:GetSampleOffset()
 			else
 				return self:GetSampleOffset() / self:GetBuffer():GetSampleRate()
@@ -584,7 +584,6 @@ do -- source
 		-- http://wiki.delphigl.com/index.php/alGetSource
 
 		local ADD_FUNCTION = GET_BINDER(META, "Source")
-
 		ADD_FUNCTION("AL_SAMPLE_OFFSET", "i")
 		ADD_FUNCTION("AL_GAIN", "f")
 		ADD_FUNCTION("AL_LOOPING", "b")
@@ -642,7 +641,7 @@ do -- source
 end
 
 do -- buffer
-	local META = GEN_TEMPLATE("Buffer", function(self, data, size, format, sample_rate)
+	local META = GEN_TEMPLATE("Buffer", function(self, data, size, format, sample_rate, start_loop, stop_loop)
 		if data and size then
 			if format then 
 				self:SetFormat(format)
@@ -650,6 +649,10 @@ do -- buffer
 			if sample_rate then
 				self:SetSampleRate(sample_rate)
 			end
+			if start_loop and stop_loop then
+				self:SetLoopPoints(start_loop, stop_loop)
+			end
+			self:SetSize(size)
 			self:SetData(data, size)
 		end
 	end)
@@ -666,6 +669,7 @@ do -- buffer
 		ADD_FUNCTION("AL_CHANNELS", "i")
 		ADD_FUNCTION("AL_FREQUENCY", "i")
 		ADD_FUNCTION("AL_SIZE", "i")
+		ADD_FUNCTION("AL_LOOP_POINTS", "iv")
 
 	end
 	
