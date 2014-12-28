@@ -179,10 +179,6 @@ do
 					table.insert(track.events, event)
 				end
 
-				if next(event) then
-					events[i] = event
-				end
-
 				if file:GetPosition() >= info.track_size then
 					break
 				end
@@ -251,17 +247,17 @@ do
 				if id == "ifil" then
 					chunk.version = sf2:ReadShort() .. "." .. sf2:ReadShort()
 				elseif id == "INAM" then
-					chunk.name = sf2:ReadBytes(size):removepadding()
+					chunk.name = sf2:ReadString(size, true)
 				elseif id == "isng" then
-					chunk.engine = sf2:ReadBytes(size):removepadding()
+					chunk.engine = sf2:ReadString(size, true)
 				elseif id == "IENG" then
-					chunk.engineers = sf2:ReadBytes(size):removepadding()
+					chunk.engineers = sf2:ReadString(size, true)
 				elseif id == "ISFT" then
-					chunk.tools = sf2:ReadBytes(size):removepadding()
+					chunk.tools = sf2:ReadString(size, true)
 				elseif id == "ICMT" then
-					chunk.comments = sf2:ReadBytes(size):removepadding()
+					chunk.comments = sf2:ReadString(size, true)
 				elseif id == "ICOP" then
-					chunk.copyright = sf2:ReadBytes(size):removepadding()
+					chunk.copyright = sf2:ReadString(size, true)
 				elseif id == "smpl" then
 					chunk.data =  ffi.cast("uint8_t *", sf2:ReadBytes(size))
 					chunk.size = size
@@ -270,7 +266,7 @@ do
 
 					repeat
 						local info = {}
-						info.preset_name = sf2:ReadBytes(20):removepadding()
+						info.preset_name = sf2:ReadString(20, true)
 						info.preset = sf2:ReadShort()
 						info.bank = sf2:ReadShort()
 						info.preset_bag_index = sf2:ReadShort()
@@ -346,7 +342,7 @@ do
 
 					repeat
 						local info = {}
-						info.instrument_name = sf2:ReadBytes(20):removepadding()
+						info.instrument_name = sf2:ReadString(20, true)
 						info.instrument_bag_index = sf2:ReadShort()
 						table.insert(list, info)
 					until sf2:GetPosition() >= the_end
@@ -368,7 +364,7 @@ do
 					local list = {}
 					repeat
 						local info = {}
-						info.sample_name = sf2:ReadBytes(20):removepadding()
+						info.sample_name = sf2:ReadString(20, true)
 						
 						info.start = sf2:ReadUnsignedLong()
 						info.stop = sf2:ReadUnsignedLong()

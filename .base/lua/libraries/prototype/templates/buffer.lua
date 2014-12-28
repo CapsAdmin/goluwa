@@ -198,19 +198,23 @@ function prototype.AddBufferTemplate(META)
 			return self
 		end
 
-		function META:ReadString(length)
+		function META:ReadString(length, advance)
 		
-			if length then
+			if length and not advance then
 				return self:ReadBytes(length)
 			end
 			
 			local str = {}
+			
+			local pos = self:GetPosition()
 			
 			for i = 1, length or self:GetSize() do
 				local byte = self:ReadByte()
 				if not byte or byte == 0 then break end
 				table.insert(str, string.char(byte))
 			end
+			
+			if advance then self:SetPosition(pos + length) end
 			
 			return table.concat(str)
 		end
