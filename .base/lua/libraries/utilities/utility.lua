@@ -328,7 +328,7 @@ do
 				
 				return res
 			end
-		end, true, 1/self.Frequency, self.IterationsPerTick)
+		end, true, self.Frequency == 0 and 0 or 1/self.Frequency, self.IterationsPerTick, self.wtf)
 	end
 	 
 	function META:Sleep(sec)
