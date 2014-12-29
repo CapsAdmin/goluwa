@@ -71,7 +71,7 @@ end
 function steam.LoadMap(path, callback)
 	local thread = utility.CreateThread()
 	
-	thread:SetFrequency(30)
+	thread:SetFrequency(120)
 	thread:SetIterationsPerTick(10)
 	
 	function thread:OnStart()
