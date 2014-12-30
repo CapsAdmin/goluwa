@@ -52,7 +52,7 @@ do -- current window
 	end
 end
 
-console.CreateVariable("render_accum", false)
+console.CreateVariable("render_accum", 0)
 
 function render.DrawScene(window, dt)
 	render.delta = dt
@@ -61,9 +61,8 @@ function render.DrawScene(window, dt)
 	
 		render.DrawDeferred(dt, window:GetSize():Unpack())
 		
-		if console.GetVariable("render_accum") then
-			local blur_amt = 0.5		
-			
+		local blur_amt = console.GetVariable("render_accum") or 0
+		if blur_amt ~= 0 then			
 			gl.Accum(gl.e.GL_ACCUM, 1)
 			gl.Accum(gl.e.GL_RETURN, 1-blur_amt)
 			gl.Accum(gl.e.GL_MULT, blur_amt)
