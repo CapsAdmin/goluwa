@@ -1,7 +1,6 @@
 local utility = _G.utility or {}
 
 include("midi.lua", utility)
-include("mesh.lua", utility)
 include("packed_rectangle.lua", utility)
 
 local EPSILON = 1E-12

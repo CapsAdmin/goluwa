@@ -735,7 +735,7 @@ do -- create data for vertex buffer
 	-- this will unpack all structs  so ffi.new can accept the table
 	local function unpack_structs(output)
 		local found = {}
-
+		
 		-- only bother doing this if the first line has structs
 		for key, val in pairs(output[1]) do
 			if hasindex(val) and val.Unpack then
@@ -834,7 +834,7 @@ do -- create data for vertex buffer
 	end
 
 	function META:CreateVertexBuffer(vertices, indices, is_valid_table)
-		return render.CreateVertexBuffer(self:GetVertexAttributes(), self:CreateBuffersFromTable(vertices, indices, is_valid_table))
+		return render.CreateVertexBuffer(self, vertices, indices, is_valid_table)
 	end
 	
 	prototype.Register(META)

@@ -6,10 +6,13 @@ local META = prototype.CreateTemplate("vertex_buffer")
 prototype.GetSet(META, "UpdateIndices", true)
 prototype.GetSet(META, "Mode", "triangles")
 
-function render.CreateVertexBuffer(vertex_attributes, vertices, indices, vertices_size, indices_size)
-	check(vertex_attributes, "table")
-	check(vertices, "cdata")
-	check(indices, "cdata")
+function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
+	checkx(shader, "shader")
+	--check(vertices, "cdata", "table")
+	--check(indices, "cdata", "table", "number", "nil")
+	
+	local vertex_attributes = shader:GetVertexAttributes() 
+	local vertices, indices, vertices_size, indices_size = shader:CreateBuffersFromTable(vertices, indices, is_valid_table)
 	
 	local self = prototype.CreateObject(META)
 	self.vertices_id = gl.GenBuffer()

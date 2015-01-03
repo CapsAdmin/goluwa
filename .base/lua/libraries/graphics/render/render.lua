@@ -362,6 +362,7 @@ include("gbuffer.lua", render)
 include("model_3d.lua", render)
 include("vertex_buffer.lua", render)
 include("texture_atlas.lua", render)
+include("mesh_builder.lua", render)
 
 if USE_SDL then
 	include("sdl_window.lua", render)
