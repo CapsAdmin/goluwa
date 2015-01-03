@@ -1,6 +1,6 @@
 local COMPONENT = {}
 
-COMPONENT.Name = "mesh"
+COMPONENT.Name = "model"
 COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Draw3DGeometry"}
 
@@ -29,7 +29,7 @@ if CLIENT then
 	do -- shader
 		local gl = require("lj-opengl") -- OpenGL
 
-		local PASS = render.CreateGBufferPass("mesh", 1)
+		local PASS = render.CreateGBufferPass(COMPONENT.Name, 1)
 
 		PASS:AddBuffer("diffuse", "RGBA8")
 		PASS:AddBuffer("normal", "RGB16f")
@@ -46,7 +46,7 @@ if CLIENT then
 				render.gbuffer:Clear()
 				
 				--gl.Clear(gl.e.GL_DEPTH_BUFFER_BIT)
-				event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
+				event.Call("Draw3DGeometry", render.gbuffer_model_shader)
 				
 				--skybox?				
 				
@@ -54,7 +54,7 @@ if CLIENT then
 				--local view = Matrix44()
 				--view = render.SetupView3D(Vec3(234.1, -234.1, 361.967)*scale + render.GetCameraPosition(), render.GetCameraAngles(), render.GetCameraFOV(), view)
 				--view:Scale(scale,scale,scale)
-				--event.Call("Draw3DGeometry", render.gbuffer_mesh_shader, view * render.matrices.projection_3d, true)			
+				--event.Call("Draw3DGeometry", render.gbuffer_model_shader, view * render.matrices.projection_3d, true)			
 			render.gbuffer:End()
 		end
 
@@ -320,16 +320,27 @@ if CLIENT then
 		COMPONENT.sub_models = {}
 		
 		function COMPONENT:AddMesh(mesh)
+			checkx(mesh, "mesh_builder")
 			table.insert(self.sub_models, mesh)
+			mesh:CallOnRemove(function()
+				if self:IsValid() then
+					self:RemoveMesh(mesh)
+				end
+			end, self)
 		end
 		
-		function COMPONENT:RemoveMesh()
-			
+		function COMPONENT:RemoveMesh(mesh)
+			for i, _mesh in ipairs(self.sub_models) do
+				if mesh == _mesh then
+					table.remove(self.sub_models, i)
+					break
+				end
+			end
 		end
 		
-		function COMPONENT:GetMesh()
-		
-		end		
+		function COMPONENT:GetMeshes()
+			return self.sub_models
+		end
 	end
 	
 	do

@@ -6,7 +6,7 @@ function render.GetGBufferSize()
 end
 
 function render.CreateMesh(vertices, indices, is_valid_table)		
-	return vertices and render.gbuffer_mesh_shader:CreateVertexBuffer(vertices, indices, is_valid_table) or NULL
+	return vertices and render.gbuffer_model_shader:CreateVertexBuffer(vertices, indices, is_valid_table) or NULL
 end
 
 local GBUFFER = {
@@ -601,7 +601,7 @@ function render.DrawDeferred(dt, w, h)
 		gl.DepthMask(gl.e.GL_TRUE)
 		gl.Enable(gl.e.GL_DEPTH_TEST)
 		gl.Disable(gl.e.GL_BLEND)
-		event.Call("Draw3DGeometry", render.gbuffer_mesh_shader)
+		event.Call("Draw3DGeometry", render.gbuffer_model_shader)
 		
 		gl.Disable(gl.e.GL_DEPTH_TEST)	
 		gl.Enable(gl.e.GL_BLEND)
