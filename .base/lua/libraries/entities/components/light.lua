@@ -527,7 +527,7 @@ if CLIENT then
 		-- grabbin puke
 		local ent = entities.CreateEntity("clientside")
 		ent:LoadModelFromDisk("models/cube.obj", nil, function()
-			self.light_mesh = ent:GetComponent("mesh").sub_models[1]
+			self.light_mesh = ent:GetComponent("model").sub_models[1]
 			ent:Remove()
 			print(self.light_mesh)
 		end)		

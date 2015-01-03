@@ -45,6 +45,18 @@ local META = prototype.CreateTemplate("texture_atlas")
 
 prototype.GetSet(META, "Padding", 1)
 
+function render.CreateTextureAtlas(page_width, page_height, format)
+	page_height = page_height or page_width
+	return prototype.CreateObject(META, {
+		dirty_textures = {}, 
+		pages = {}, 
+		textures = {}, 
+		width = page_width, 
+		height = page_height,
+		format = format,
+	})
+end
+
 function META:FindFreePage(w, h)
 	w = w + self.Padding
 	h = h + self.Padding
@@ -184,15 +196,3 @@ function META:GetPageTexture(id)
 end
 
 prototype.Register(META)
-
-function render.CreateTextureAtlas(page_width, page_height, format)
-	page_height = page_height or page_width
-	return prototype.CreateObject(META, {
-		dirty_textures = {}, 
-		pages = {}, 
-		textures = {}, 
-		width = page_width, 
-		height = page_height,
-		format = format,
-	})
-end

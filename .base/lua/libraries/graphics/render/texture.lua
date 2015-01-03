@@ -27,6 +27,8 @@ do -- texture binding
 end
 
 do -- texture object
+	local SUPPRESS_GC = false
+
 	local CHECK_FIELD = function(t, str) 
 		if type(str) == "number" then
 			return str
@@ -36,6 +38,133 @@ do -- texture object
 	end
 
 	local META = prototype.CreateTemplate("texture")
+	
+	function render.CreateTexture(width, height, buffer, format)
+		if type(width) == "string" and not buffer and not format and (not height or type(height) == "table") then
+			return render.CreateTextureFromPath(width, height)
+		end
+										
+		local buffer_size
+		
+		if type(width) == "table" then
+			if type(width[1]) == "string" and table.isarray(width) then
+				for k, v in ipairs(width) do
+					if vfs.Exists(v) then
+						return render.CreateTextureFromPath(v, height)
+					end
+				end
+			elseif not height and not buffer and not format then
+				format = width.parameters
+				buffer = width.buffer
+				height = width.height
+				buffer_size = width.size
+				width = width.width
+			end
+		end
+		
+		check(width, "number")
+		check(height, "number")
+		check(buffer, "nil", "cdata")
+		check(format, "table", "nil")
+				
+		if width == 0 or height == 0 then
+			errorf("bad texture size (w = %i, h = %i)", 2, width, height)
+		end
+				
+		format = format or {}
+
+		for k, v in pairs(format) do
+			format[k] = CHECK_FIELD(k, v) or v
+		end
+		
+		format.type = format.type or gl.e.GL_TEXTURE_2D
+		format.upload_format = format.upload_format or gl.e.GL_BGRA
+		format.internal_format = format.internal_format or gl.e.GL_RGBA8
+		format.format_type = format.format_type or gl.e.GL_UNSIGNED_BYTE
+		format.filter = format.filter ~= nil
+		format.stride = format.stride or 4
+		format.buffer_type = format.buffer_type or "unsigned char"
+		format.channel = format.channel or 0
+
+		format.mip_map_levels = format.mip_map_levels or 3 --ATI doesn't like level under 3
+		
+		-- create a new texture
+		local id = gl.GenTexture()
+
+		local self = prototype.CreateObject(META, 
+			{
+				id = id, 
+				size = Vec2(width, height), 
+				format = format,
+				w = width,
+				h = height,
+			},
+			SUPPRESS_GC
+		)
+		
+		if gl.FindInEnum(format.upload_format, "compress") or gl.FindInEnum(format.internal_format, "compress") then	
+			self.compressed = true
+		end		
+		
+		self.texture_channel = gl.e.GL_TEXTURE0 + format.channel
+		self.texture_channel_uniform = format.channel
+		
+		gl.BindTexture(format.type, self.id)
+
+		self:UpdateFormat()
+		
+		if self.compressed then
+			gl.CompressedTexImage2D(
+				format.type, 
+				format.mip_map_levels, 
+				format.upload_format, 
+				self.size.w, 
+				self.size.h, 
+				0, 
+				buffer_size, 
+				buffer
+			)
+			buffer = nil
+		elseif gl.TexStorage2D then
+			gl.TexStorage2D(
+				format.type, 
+				format.mip_map_levels, 
+				format.internal_format, 
+				self.size.w, 
+				self.size.h
+			)
+		else
+			gl.TexImage2D(
+				format.type,
+				format.mip_map_levels,
+				format.internal_format,
+				self.size.w,
+				self.size.h,
+				0,
+				format.upload_format,
+				format.format_type,
+				nil
+			)
+				
+		end
+		
+		if buffer then	
+			self:Upload(buffer, {size = buffer_size})
+		end
+		
+		gl.BindTexture(format.type, 0)
+						
+		if render.debug then
+			logf("creating texture w = %s h = %s buffer size = %s\n", self.w, self.h, utility.FormatFileSize(buffer and ffi.sizeof(buffer) or 0)) --The texture size was never broken... someone used two non-existant variables w,h
+		end
+				
+		return self
+	end
+	
+	function META:OnRemove()
+		if self.format.no_remove then return end
+		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
+	end
 	
 	function META:__tostring2()
 		return ("[%s]"):format(self.id)
@@ -226,141 +355,144 @@ do -- texture object
 		return ColorBytes(unpack(temp))
 	end
 
-	local colors = ffi.new("char[4]")
-	
-	function META:Fill(callback, write_only, read_only)
-		check(callback, "function")
+	do
+		local colors = ffi.new("char[4]")
 		
-		if write_only == nil then
-			write_only = true
-		end
-		
-		local width = self.size.w
-		local height = self.size.h		
-		local stride = self.format.stride
-		local x, y = 0, 0
-		
+		function META:Fill(callback, write_only, read_only)
+			check(callback, "function")
+			
+			if write_only == nil then
+				write_only = true
+			end
+			
+			local width = self.size.w
+			local height = self.size.h		
+			local stride = self.format.stride
+			local x, y = 0, 0
+			
 
-		local buffer
-		
-		if write_only then
-			buffer = self:CreateBuffer()
-		else
-			buffer = self:Download()
-		end	
-	
-		for y = 0, height-1 do
-		for x = 0, width-1 do
-			local pos = (y * width + x) * stride
+			local buffer
 			
 			if write_only then
-				colors[0], colors[1], colors[2], colors[3] = callback(x, y, pos)
+				buffer = self:CreateBuffer()
 			else
-				local temp = {}
-				for i = 0, stride-1 do
-					temp[i] = buffer[pos+i]
-				end
-				if read_only then
-					if callback(x, y, pos, unpack(temp)) ~= nil then return end
+				buffer = self:Download()
+			end	
+		
+			for y = 0, height-1 do
+			for x = 0, width-1 do
+				local pos = (y * width + x) * stride
+				
+				if write_only then
+					colors[0], colors[1], colors[2], colors[3] = callback(x, y, pos)
 				else
-					colors[0], colors[1], colors[2], colors[3] = callback(x, y, pos, unpack(temp))
+					local temp = {}
+					for i = 0, stride-1 do
+						temp[i] = buffer[pos+i]
+					end
+					if read_only then
+						if callback(x, y, pos, unpack(temp)) ~= nil then return end
+					else
+						colors[0], colors[1], colors[2], colors[3] = callback(x, y, pos, unpack(temp))
+					end
 				end
-			end
-		
-			if not read_only then
-				for i = 0, stride-1 do
-					buffer[pos+i] = colors[i]
-				end
-			end
-		end
-		end
-
-		if not read_only then
-			self:Upload(buffer)
-		end
-		
-		return self
-	end
-	
-	local template = [[
-		out vec4 out_color;
-		
-		vec4 shade()
-		{
-			%s
-		}
-		
-		void main()
-		{
-			out_color = shade();
-		}
-	]]
-
-	META.shaders = {}
-	
-	function META:Shade(fragment_shader, vars, dont_blend)		
-		local name = "shade_texture_" .. self.id .. "_" .. crypto.CRC32(fragment_shader)
-		local shader = self.shaders[name]
-		
-		if not self.shaders[name] then
-			local data = {
-				name = name,
-				shared = {
-					uniform = vars,
-				},
-				
-				vertex = {
-					uniform = {
-						pwm_matrix = "mat4",
-					},			
-					attributes = {
-						{pos = "vec3"},
-						{uv = "vec2"},
-					},	
-					source = "gl_Position = pwm_matrix * vec4(pos, 1);"
-				},
-				
-				fragment = { 
-					uniform = {
-						self = self,
-						size = self:GetSize(),
-					},		
-					attributes = {
-						{uv = "vec2"},
-					},			
-					source = template:format(fragment_shader),
-				} 
-			} 
-				
-			shader = render.CreateShader(data)
-			shader.pwm_matrix = render.GetPVWMatrix2D		
 			
-			self.shaders[name] = shader
+				if not read_only then
+					for i = 0, stride-1 do
+						buffer[pos+i] = colors[i]
+					end
+				end
+			end
+			end
+
+			if not read_only then
+				self:Upload(buffer)
+			end
+			
+			return self
 		end
-		
-		local fb = self.fb or render.CreateFrameBuffer(self.w, self.h, {texture = self})
-		
-		if vars then
-			for k,v in pairs(vars) do
-				shader[k] = v
-			end				
-		end
-		
-		if not dont_blend then gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA) end
-		--render.SetBlendMode("alpha")
-		fb:Begin()
-			surface.PushMatrix()
-			surface.LoadIdentity()
-			surface.Scale(self.w, self.h)
-			shader:Bind()
-			surface.rect_mesh:Draw()
-			surface.PopMatrix()
-		fb:End()
-		
-		self.fb = fb
 	end
 	
-	local SUPPRESS_GC = false
+	do
+		local template = [[
+			out vec4 out_color;
+			
+			vec4 shade()
+			{
+				%s
+			}
+			
+			void main()
+			{
+				out_color = shade();
+			}
+		]]
+
+		META.shaders = {}
+		
+		function META:Shade(fragment_shader, vars, dont_blend)		
+			local name = "shade_texture_" .. self.id .. "_" .. crypto.CRC32(fragment_shader)
+			local shader = self.shaders[name]
+			
+			if not self.shaders[name] then
+				local data = {
+					name = name,
+					shared = {
+						uniform = vars,
+					},
+					
+					vertex = {
+						uniform = {
+							pwm_matrix = "mat4",
+						},			
+						attributes = {
+							{pos = "vec3"},
+							{uv = "vec2"},
+						},	
+						source = "gl_Position = pwm_matrix * vec4(pos, 1);"
+					},
+					
+					fragment = { 
+						uniform = {
+							self = self,
+							size = self:GetSize(),
+						},		
+						attributes = {
+							{uv = "vec2"},
+						},			
+						source = template:format(fragment_shader),
+					} 
+				} 
+					
+				shader = render.CreateShader(data)
+				shader.pwm_matrix = render.GetPVWMatrix2D		
+				
+				self.shaders[name] = shader
+			end
+			
+			local fb = self.fb or render.CreateFrameBuffer(self.w, self.h, {texture = self})
+			
+			if vars then
+				for k,v in pairs(vars) do
+					shader[k] = v
+				end				
+			end
+			
+			if not dont_blend then gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA) end
+			--render.SetBlendMode("alpha")
+			fb:Begin()
+				surface.PushMatrix()
+				surface.LoadIdentity()
+				surface.Scale(self.w, self.h)
+				shader:Bind()
+				surface.rect_mesh:Draw()
+				surface.PopMatrix()
+			fb:End()
+			
+			self.fb = fb
+		end
+	
+	end
 	
 	function META:Replace(data, w, h)
 		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
@@ -372,11 +504,6 @@ do -- texture object
 		for k, v in pairs(new) do
 			self[k] = v
 		end
-	end
-	
-	function META:OnRemove()
-		if self.format.no_remove then return end
-		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
 	end
 	
 	function META:IsLoading()
@@ -394,128 +521,6 @@ do -- texture object
 	end
 	
 	prototype.Register(META)
-	
-	function render.CreateTexture(width, height, buffer, format)
-		if type(width) == "string" and not buffer and not format and (not height or type(height) == "table") then
-			return render.CreateTextureFromPath(width, height)
-		end
-										
-		local buffer_size
-		
-		if type(width) == "table" then
-			if type(width[1]) == "string" and table.isarray(width) then
-				for k, v in ipairs(width) do
-					if vfs.Exists(v) then
-						return render.CreateTextureFromPath(v, height)
-					end
-				end
-			elseif not height and not buffer and not format then
-				format = width.parameters
-				buffer = width.buffer
-				height = width.height
-				buffer_size = width.size
-				width = width.width
-			end
-		end
-		
-		check(width, "number")
-		check(height, "number")
-		check(buffer, "nil", "cdata")
-		check(format, "table", "nil")
-				
-		if width == 0 or height == 0 then
-			errorf("bad texture size (w = %i, h = %i)", 2, width, height)
-		end
-				
-		format = format or {}
-
-		for k, v in pairs(format) do
-			format[k] = CHECK_FIELD(k, v) or v
-		end
-		
-		format.type = format.type or gl.e.GL_TEXTURE_2D
-		format.upload_format = format.upload_format or gl.e.GL_BGRA
-		format.internal_format = format.internal_format or gl.e.GL_RGBA8
-		format.format_type = format.format_type or gl.e.GL_UNSIGNED_BYTE
-		format.filter = format.filter ~= nil
-		format.stride = format.stride or 4
-		format.buffer_type = format.buffer_type or "unsigned char"
-		format.channel = format.channel or 0
-
-		format.mip_map_levels = format.mip_map_levels or 3 --ATI doesn't like level under 3
-		
-		-- create a new texture
-		local id = gl.GenTexture()
-
-		local self = prototype.CreateObject(META, 
-			{
-				id = id, 
-				size = Vec2(width, height), 
-				format = format,
-				w = width,
-				h = height,
-			},
-			SUPPRESS_GC
-		)
-		
-		if gl.FindInEnum(format.upload_format, "compress") or gl.FindInEnum(format.internal_format, "compress") then	
-			self.compressed = true
-		end		
-		
-		self.texture_channel = gl.e.GL_TEXTURE0 + format.channel
-		self.texture_channel_uniform = format.channel
-		
-		gl.BindTexture(format.type, self.id)
-
-		self:UpdateFormat()
-		
-		if self.compressed then
-			gl.CompressedTexImage2D(
-				format.type, 
-				format.mip_map_levels, 
-				format.upload_format, 
-				self.size.w, 
-				self.size.h, 
-				0, 
-				buffer_size, 
-				buffer
-			)
-			buffer = nil
-		elseif gl.TexStorage2D then
-			gl.TexStorage2D(
-				format.type, 
-				format.mip_map_levels, 
-				format.internal_format, 
-				self.size.w, 
-				self.size.h
-			)
-		else
-			gl.TexImage2D(
-				format.type,
-				format.mip_map_levels,
-				format.internal_format,
-				self.size.w,
-				self.size.h,
-				0,
-				format.upload_format,
-				format.format_type,
-				nil
-			)
-				
-		end
-		
-		if buffer then	
-			self:Upload(buffer, {size = buffer_size})
-		end
-		
-		gl.BindTexture(format.type, 0)
-						
-		if render.debug then
-			logf("creating texture w = %s h = %s buffer size = %s\n", self.w, self.h, utility.FormatFileSize(buffer and ffi.sizeof(buffer) or 0)) --The texture size was never broken... someone used two non-existant variables w,h
-		end
-				
-		return self
-	end
 end
 
 render.texture_path_cache = {}
@@ -564,7 +569,6 @@ function render.CreateTextureFromPath(path, format)
 	
 	return self
 end
-
 
 render.texture_decoders = render.texture_decoders or {}
 

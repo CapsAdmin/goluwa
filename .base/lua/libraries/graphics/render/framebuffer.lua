@@ -3,108 +3,7 @@ local render = (...) or _G.render
 
 local META = prototype.CreateTemplate("framebuffer")
 
-function META:__tostring2()
-	return ("[%i]"):format(self.id)
-end
 
-do
-	local stack = {}
-	local current = 0
-	
-	function META:Begin(...)
-		table.insert(stack, current)
-		
-		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, self.id)
-		current = self.id
-		
-		if not self.building then
-			self:SetDrawBuffers(...)
-		end
-		
-		render.PushViewport(0, 0, self.w, self.h)
-	end
-
-	function META:End()
-		render.PopViewport()
-		local id = table.remove(stack)		
-		
-		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
-		current = id
-	end
-end
-
-function META:SetDrawBuffers(...)	
-	local key = ... and table.concat({...}, "") or ""
-	
-	if key ~= self.last_draw_buffers then
-		
-		self.draw_buffers = {}
-			
-		if ... then			
-			local args = {...}
-			
-			for i, buffer in pairs(self.buffers) do
-				if not buffer.draw_manual then
-					if table.hasvalue(args, buffer.name) then
-						self.draw_buffers[buffer.attach_pos] = buffer.attach
-					else
-						self.draw_buffers[buffer.attach_pos] = gl.e.GL_NONE
-					end
-				end
-			end
-		else
-			for i, buffer in pairs(self.buffers) do
-				if not buffer.draw_manual then
-					self.draw_buffers[buffer.attach_pos] = buffer.attach
-				end
-			end
-		end
-				
-		self.draw_buffers_size = #self.draw_buffers
-		self.draw_buffers = ffi.new("GLenum["..self.draw_buffers_size.."]", self.draw_buffers)
-		
-		gl.DrawBuffers(self.draw_buffers_size, self.draw_buffers)
-				
-		self.last_draw_buffers = key
-	end
-end
-
-function META:Clear(r,g,b,a, buffer)
-	r = r or 0
-	g = g or 0
-	b = b or 0
-	a = a or 0
-	
-	if buffer then
-		local buffer = self.buffers[name]
-		if buffer then
-			gl.ClearBufferfv(gl.e.GL_COLOR, buffer.attach_pos - 1, ffi.cast("float *", Color(r,g,b,a)))
-		end
-	else
-		gl.ClearColor(r, g, b, a)
-		gl.Clear(bit.bor(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT))
-	end
-end
-
-function META:GetTexture(type)
-	type = type or "default"
-	
-	if self.buffers[type] then
-		return self.buffers[type].tex
-	end
-	
-	return render.GetErrorTexture()
-end
-
-function META:OnRemove()
-	gl.DeleteFramebuffers(1, ffi.new("GLuint[1]", self.id))
-	
-	for k, v in pairs(self.buffers) do
-		gl.DeleteRenderbuffers(1, ffi.new("GLuint[1]", v.id))
-	end
-end
-
-prototype.Register(META)
 
 function render.CreateFrameBuffer(width, height, format)
 	if not render.CheckSupport("GenFramebuffer") then return NULL end
@@ -233,3 +132,106 @@ function render.CreateFrameBuffer(width, height, format)
 	
 	return self
 end
+
+function META:OnRemove()
+	gl.DeleteFramebuffers(1, ffi.new("GLuint[1]", self.id))
+	
+	for k, v in pairs(self.buffers) do
+		gl.DeleteRenderbuffers(1, ffi.new("GLuint[1]", v.id))
+	end
+end
+
+function META:__tostring2()
+	return ("[%i]"):format(self.id)
+end
+
+do
+	local stack = {}
+	local current = 0
+	
+	function META:Begin(...)
+		table.insert(stack, current)
+		
+		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, self.id)
+		current = self.id
+		
+		if not self.building then
+			self:SetDrawBuffers(...)
+		end
+		
+		render.PushViewport(0, 0, self.w, self.h)
+	end
+
+	function META:End()
+		render.PopViewport()
+		local id = table.remove(stack)		
+		
+		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
+		current = id
+	end
+end
+
+function META:SetDrawBuffers(...)	
+	local key = ... and table.concat({...}, "") or ""
+	
+	if key ~= self.last_draw_buffers then
+		
+		self.draw_buffers = {}
+			
+		if ... then			
+			local args = {...}
+			
+			for i, buffer in pairs(self.buffers) do
+				if not buffer.draw_manual then
+					if table.hasvalue(args, buffer.name) then
+						self.draw_buffers[buffer.attach_pos] = buffer.attach
+					else
+						self.draw_buffers[buffer.attach_pos] = gl.e.GL_NONE
+					end
+				end
+			end
+		else
+			for i, buffer in pairs(self.buffers) do
+				if not buffer.draw_manual then
+					self.draw_buffers[buffer.attach_pos] = buffer.attach
+				end
+			end
+		end
+				
+		self.draw_buffers_size = #self.draw_buffers
+		self.draw_buffers = ffi.new("GLenum["..self.draw_buffers_size.."]", self.draw_buffers)
+		
+		gl.DrawBuffers(self.draw_buffers_size, self.draw_buffers)
+				
+		self.last_draw_buffers = key
+	end
+end
+
+function META:Clear(r,g,b,a, buffer)
+	r = r or 0
+	g = g or 0
+	b = b or 0
+	a = a or 0
+	
+	if buffer then
+		local buffer = self.buffers[name]
+		if buffer then
+			gl.ClearBufferfv(gl.e.GL_COLOR, buffer.attach_pos - 1, ffi.cast("float *", Color(r,g,b,a)))
+		end
+	else
+		gl.ClearColor(r, g, b, a)
+		gl.Clear(bit.bor(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT))
+	end
+end
+
+function META:GetTexture(type)
+	type = type or "default"
+	
+	if self.buffers[type] then
+		return self.buffers[type].tex
+	end
+	
+	return render.GetErrorTexture()
+end
+
+prototype.Register(META)

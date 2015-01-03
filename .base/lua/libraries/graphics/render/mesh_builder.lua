@@ -23,6 +23,7 @@ end
 
 function META:Upload(skip_unref)
 	if #self.Vertices == 0 then return end
+	
 	self.mesh = render.CreateMesh(self.Vertices, self.Indices)
 	-- don't store the geometry on the lua side
 	if not skip_unref then

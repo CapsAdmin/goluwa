@@ -530,9 +530,9 @@ local function load_vtx(path)
 													local strip = {}
 
 													strip.indices_count = buffer:ReadLong()
-													strip.index_mesh_index = buffer:ReadLong()
+													strip.index_model_index = buffer:ReadLong()
 													strip.vertices_count = buffer:ReadLong()
-													strip.vertex_mesh_index = buffer:ReadLong()
+													strip.vertex_model_index = buffer:ReadLong()
 													strip.bone_count = buffer:ReadShort()
 													strip.flags = buffer:ReadByte()
 													strip.bone_state_change_count = buffer:ReadLong()
