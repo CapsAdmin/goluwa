@@ -301,7 +301,6 @@ if CLIENT then
 		
 		function COMPONENT:OnDraw3DLights(shader)
 			if not render.matrices.vp_matrix or not self.light_mesh then return end -- grr
-			if not self.light_mesh.sub_models[1] then return end
 			
 			local transform = self:GetComponent("transform")
 			local matrix = transform:GetMatrix() 
@@ -335,7 +334,7 @@ if CLIENT then
 			end		
 
 			shader:Bind()
-			self.light_mesh.sub_models[1].mesh:Draw()
+			self.light_mesh:Draw()
 			wtf = self
 		end
 	end
@@ -373,7 +372,7 @@ if CLIENT then
 			end
 			
 			shader:Bind()
-			self.light_mesh.sub_models[1].mesh:Draw()
+			self.light_mesh:Draw()
 		end
 		
 		PASS:ShaderStage("vertex", { 
@@ -524,8 +523,14 @@ if CLIENT then
 		})
 	end
 	
-	function COMPONENT:OnAdd(ent)
-		self.light_mesh = render.Create3DMesh("models/cube.obj")
+	function COMPONENT:OnAdd(ent)		
+		-- grabbin puke
+		local ent = entities.CreateEntity("clientside")
+		ent:LoadModelFromDisk("models/cube.obj", nil, function()
+			self.light_mesh = ent:GetComponent("mesh").sub_models[1]
+			ent:Remove()
+			print(self.light_mesh)
+		end)		
 	end
 
 	function COMPONENT:OnRemove(ent)

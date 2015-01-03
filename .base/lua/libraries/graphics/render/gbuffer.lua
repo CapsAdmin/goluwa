@@ -5,6 +5,10 @@ function render.GetGBufferSize()
 	return Vec2(render.gbuffer_width or render.GetWidth(), render.gbuffer_height or render.GetHeight())
 end
 
+function render.CreateMesh(vertices, indices, is_valid_table)		
+	return vertices and render.gbuffer_mesh_shader:CreateVertexBuffer(vertices, indices, is_valid_table) or NULL
+end
+
 local GBUFFER = {
 	name = "gbuffer",
 	vertex = {

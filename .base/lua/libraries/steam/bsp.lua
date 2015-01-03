@@ -405,7 +405,7 @@ function steam.LoadMap(path, callback)
 		--	local brush = header.brushes[i]
 		--end
 
-		local bsp_mesh = {sub_models = {}}
+		local models = {}
 
 		do 
 			local scale = 0.0254
@@ -421,7 +421,7 @@ function steam.LoadMap(path, callback)
 				
 				blend = math.clamp(blend, 0, 1)
 				
-				table.insert(model.vertices, {
+				model:AddVertex({
 					pos = Vec3(-pos.x * scale, pos.y * scale, -pos.z * scale), -- copy
 					texture_blend = blend,
 					uv = Vec2(
@@ -456,9 +456,7 @@ function steam.LoadMap(path, callback)
 			local meshes = {}
 			local texture_format = {mip_map_levels = 8, read_speed = math.huge}
 
-			for _, model in ipairs(header.models) do
-				local sub_model =  {vertices = {}}
-						
+			for _, model in ipairs(header.models) do						
 				for i = 1, model.numfaces do
 					local face = header.faces[model.firstface + i]
 								
@@ -472,12 +470,12 @@ function steam.LoadMap(path, callback)
 					
 					if texname:find("skyb") then goto continue end
 					if texname:find("water") then goto continue end
-									
+										
 					-- split the world up into sub models by texture
 					if not meshes[texname] then				
-						local model = {vertices = {}}
+						local mesh = render.CreateMeshBuilder()
 										
-						meshes[texname] = model
+						meshes[texname] = mesh
 						
 						if CLIENT then
 							local vmt = steam.LoadMaterial(texname)
@@ -486,88 +484,90 @@ function steam.LoadMap(path, callback)
 								logn(vmt.error)
 							else
 								if vmt.basetexture then
-									model.diffuse = Texture(vmt.basetexture, texture_format)
+									mesh.diffuse = Texture(vmt.basetexture, texture_format)
 								end
 								
 								if vmt.basetexture2 then
-									model.diffuse2 = Texture(vmt.basetexture2, texture_format)
+									mesh.diffuse2 = Texture(vmt.basetexture2, texture_format)
 								end
 								
 								if vmt.bumpmap then
-									model.bump = Texture(vmt.bumpmap, texture_format)
+									mesh.bump = Texture(vmt.bumpmap, texture_format)
 								end
 								
 								if vmt.specular then
-									model.specular = Texture(vmt.envmap, texture_format)
+									mesh.specular = Texture(vmt.envmap, texture_format)
 								end
 							end
 						end
-						table.insert(bsp_mesh.sub_models, meshes[texname])
+						table.insert(models, meshes[texname])
 					end
 
-					sub_model = meshes[texname]
-					
-					if face.dispinfo < 0 then
-						local first, previous, current
-					
-						for j = 1, face.numedges do
-							local surfedge = header.surfedges[face.firstedge + j]
-							local edge = header.edges[1 + math.abs(surfedge)]
-							local current = edge[surfedge < 0 and 2 or 1] + 1
+					do
+						local mesh = meshes[texname]
+						
+						if face.dispinfo < 0 then
+							local first, previous, current
+						
+							for j = 1, face.numedges do
+								local surfedge = header.surfedges[face.firstedge + j]
+								local edge = header.edges[1 + math.abs(surfedge)]
+								local current = edge[surfedge < 0 and 2 or 1] + 1
 
-							if j >= 3 then
-								if header.vertices[first] and header.vertices[current] and header.vertices[previous] then
-									add_vertex(sub_model, texinfo, texdata, header.vertices[first])
-									add_vertex(sub_model, texinfo, texdata, header.vertices[current])
-									add_vertex(sub_model, texinfo, texdata, header.vertices[previous])
+								if j >= 3 then
+									if header.vertices[first] and header.vertices[current] and header.vertices[previous] then
+										add_vertex(mesh, texinfo, texdata, header.vertices[first])
+										add_vertex(mesh, texinfo, texdata, header.vertices[current])
+										add_vertex(mesh, texinfo, texdata, header.vertices[previous])
+									end
+								elseif j == 1 then
+									first = current
 								end
-							elseif j == 1 then
-								first = current
+
+								previous = current
+							end
+						else
+							local dispinfo = header.displacements[face.dispinfo + 1]
+							local size = 2 ^ dispinfo.power + 1
+							
+							local start_corner_dist = math.huge
+							local start_corner = 0
+							
+							local corners = {}
+							
+							for j = 1, 4 do
+								local face = header.faces[1 + dispinfo.MapFace]
+								local surfedge = header.surfedges[1 + face.firstedge + (j - 1)]
+								local edge = header.edges[1 + math.abs(surfedge)]
+								local vertex = edge[1 + (surfedge < 0 and 1 or 0)]
+							
+								local corner = header.vertices[1 + vertex]
+								local cough = corner:Distance(dispinfo.startPosition)
+									
+								if cough < start_corner_dist then
+									start_corner_dist = cough
+									start_corner = j - 1
+								end
+								
+								corners[j] = corner
 							end
 
-							previous = current
-						end
-					else
-						local dispinfo = header.displacements[face.dispinfo + 1]
-						local size = 2 ^ dispinfo.power + 1
-						
-						local start_corner_dist = math.huge
-						local start_corner = 0
-						
-						local corners = {}
-						
-						for j = 1, 4 do
-							local face = header.faces[1 + dispinfo.MapFace]
-							local surfedge = header.surfedges[1 + face.firstedge + (j - 1)]
-							local edge = header.edges[1 + math.abs(surfedge)]
-							local vertex = edge[1 + (surfedge < 0 and 1 or 0)]
-						
-							local corner = header.vertices[1 + vertex]
-							local cough = corner:Distance(dispinfo.startPosition)
-								
-							if cough < start_corner_dist then
-								start_corner_dist = cough
-								start_corner = j - 1
+							local dims = 2 ^ dispinfo.power + 1
+											
+							for x = 1, dims - 1 do
+								for y = 1, dims - 1 do
+									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
+									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
+									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y + 1))
+									
+									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
+									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y))
+									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
+								end
 							end
 							
-							corners[j] = corner
+							mesh.displacement = true
 						end
-
-						local dims = 2 ^ dispinfo.power + 1
-										
-						for x = 1, dims - 1 do
-							for y = 1, dims - 1 do
-								add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
-								add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
-								add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y + 1))
-								
-								add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
-								add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y))
-								add_vertex(sub_model, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
-							end
-						end
-						
-						sub_model.displacement = true
 					end
 					
 					::continue::
@@ -581,33 +581,32 @@ function steam.LoadMap(path, callback)
 			
 		end
 		
-		for i, data in ipairs(bsp_mesh.sub_models) do
-			utility.GenerateNormals(data.vertices)	
-			thread:ReportProgress("generating normals", #bsp_mesh.sub_models)
+		for i, mesh in ipairs(models) do
+			mesh:BuildNormals()
+			thread:ReportProgress("generating normals", #models)
 			thread:Sleep()
 		end 		
 
-		for i, data in ipairs(bsp_mesh.sub_models) do
-			if data.displacement then
-				utility.SmoothNormals(data.vertices) 
+		for i, mesh in ipairs(models) do
+			if mesh.displacement then
+				mesh:SmoothNormals()
 			end
-			thread:Report("smoothing displacements", #bsp_mesh.sub_models)
+			thread:Report("smoothing displacements", #models)
 			thread:Sleep()
 		end 
 		
 
 		if CLIENT then
-			for i, data in ipairs(bsp_mesh.sub_models) do
-				data.mesh = render.CreateMesh(data.vertices)
-				--data.vertices = nil
-				thread:ReportProgress("creating meshes", #bsp_mesh.sub_models)
+			for i, mesh in ipairs(models) do
+				mesh:Upload(true)
+				thread:ReportProgress("creating meshes", #models)
 				thread:Sleep()
 			end
 			
 		end
 
 		if steam.debug or _debug then 
-			logn("SUB_MODELS ", #bsp_mesh.sub_models) 
+			logn("SUB_MODELS ", #models) 
 		end
 		
 		entities.SafeRemove(steam.bsp_world)
@@ -615,8 +614,10 @@ function steam.LoadMap(path, callback)
 		steam.bsp_world = entities.CreateEntity("clientside")
 		steam.bsp_world:SetName(path:match(".+/(.+)%.bsp"))
 		
-		if CLIENT then 
-			steam.bsp_world:SetModel(bsp_mesh) 
+		if CLIENT then
+			for i, model in ipairs(models) do
+				steam.bsp_world:AddMesh(model)
+			end
 		end
 		
 		local count = table.count(header.entities)
@@ -666,17 +667,20 @@ function steam.LoadMap(path, callback)
 		end
 		
 
-		local count = #bsp_mesh.sub_models
-		for i_, model in ipairs(bsp_mesh.sub_models) do	
-			local triangles = ffi.new("unsigned int[?]", #model.vertices)
-			for i = 0, #model.vertices - 1 do triangles[i] = i end
+		local count = #models
+		for i_, model in ipairs(models) do	
+			local vertices_tbl = model:GetVertices()
+			local vertices_count = #vertices_tbl
 			
-			local vertices = ffi.new("float[?]", #model.vertices * 3)
+			local triangles = ffi.new("unsigned int[?]", vertices_count)
+			for i = 0, vertices_count - 1 do triangles[i] = i end
+			
+			local vertices = ffi.new("float[?]", vertices_count * 3)
 			
 			local i = 0
 			
 			if SERVER then
-				for j, data in ipairs(model.vertices) do 
+				for j, data in ipairs(vertices_tbl) do 
 					vertices[i] = data.pos.x i = i + 1		
 					vertices[i] = data.pos.y i = i + 1		
 					vertices[i] = data.pos.z i = i + 1		
@@ -684,7 +688,7 @@ function steam.LoadMap(path, callback)
 			end
 			
 			if CLIENT then
-				for j, data in ipairs(model.vertices) do 
+				for j, data in ipairs(vertices_tbl) do 
 					vertices[i] = data.pos[1] i = i + 1		
 					vertices[i] = data.pos[2] i = i + 1		
 					vertices[i] = data.pos[3] i = i + 1		
@@ -693,12 +697,12 @@ function steam.LoadMap(path, callback)
 			
 			local mesh = {	
 				triangles = {
-					count = #model.vertices / 3, 
+					count = vertices_count / 3, 
 					pointer = triangles, 
 					stride = ffi.sizeof("unsigned int") * 3, 
 				},					
 				vertices = {
-					count = #model.vertices,  
+					count = vertices_count,  
 					pointer = vertices, 
 					stride = ffi.sizeof("float") * 3,
 				},
