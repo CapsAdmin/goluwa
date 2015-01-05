@@ -186,10 +186,22 @@ function structs.AddOperator(META, operator, ...)
 				a.KEY == b.KEY
 			end
 		]==]
-		
+				
 		lua = parse_args(META, lua, " and ")
 
 		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
+		
+		local lua = [==[
+		local META, structs = ...
+		META["IsEqual"] = function(self, ARG)
+			return 
+				self.KEY == KEY
+			end
+		]==]
+		
+		lua = parse_args(META, lua, " and ")
+
+		assert(loadstring(lua, META.ClassName .. " operator IsEqual"))(META, structs)
 	elseif operator == "unm" then
 		local lua = [==[
 		local META, structs = ...
