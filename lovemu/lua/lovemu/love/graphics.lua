@@ -264,7 +264,32 @@ do -- font
 		return self.filter
 	end
 	
+	
+	
 	local i = 0
+	
+	local function create_font(path, size, glyphs, texture)
+		local self = lovemu.CreateObject(Font)
+		
+		self.font = surface.CreateFont("lovemu_" .. path .. i, {
+			size = size,
+			path = path,
+			filtering = FILTER_MIN,
+			glyphs = glyphs,
+			texture = texture,
+		})
+		
+		
+		self.Name = self.font:GetName()
+		
+		i = i + 1
+		
+		surface.SetFont(self.Name)
+		local w, h = surface.GetTextSize("W")
+		self.Size = size or w
+
+		return self
+	end
 	
 	function love.graphics.newFont(a, b)
 		local font = a
@@ -282,29 +307,16 @@ do -- font
 		
 		size = size or 12
 				
-		local self = lovemu.CreateObject(Font)
-		
-		self.font = surface.CreateFont("lovemu_" .. font .. i, {
-			size = size,
-			path = font,
-			filtering = FILTER_MIN,
-		})
-		
-		
-		self.Name = self.font:GetName()
-		
-		i = i + 1
-		
-		surface.SetFont(self.Name)
-		local w, h = surface.GetTextSize("W")
-
-		self.Size = size
-
-		return self
+		return create_font(font, size)
 	end
 	
-	function love.graphics.newImageFont()
-		return love.graphics.newFont()
+	function love.graphics.newImageFont(path, glyphs)
+		local tex
+		if lovemu.Type(path) == "Image" then
+			tex = lovemu.textures[path]
+			path = "memory"
+		end
+		return create_font(path, nil, glyphs, tex)
 	end
 	
 	local currentFont = love.graphics.newFont(12)
@@ -344,8 +356,9 @@ do -- font
 		align = align or "left"
 		sx = sx or 1
 		sy = sy or 1
-		r=r or 0
+		r = r or 0
 		
+		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 		surface.SetTextPosition(x, y)
 		surface.DrawText(text)
 		do return end
