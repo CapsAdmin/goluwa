@@ -1,1 +1,0 @@
-local love = (...) or _G.lovemu.love
