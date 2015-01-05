@@ -12,6 +12,8 @@ function META:Initialize(options)
 	local tex, err = options.texture or render.CreateTextureFromPath(self.Path)
 	
 	if not tex then return false, err end
+	
+	self:SetSize(tex.h)
 		
 	local glyphs = options.glyphs:explode()
 	local separator = ColorBytes()
