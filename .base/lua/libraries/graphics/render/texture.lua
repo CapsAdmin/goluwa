@@ -388,7 +388,7 @@ do -- texture object
 				else
 					local temp = {}
 					for i = 0, stride-1 do
-						temp[i] = buffer[pos+i]
+						temp[i+1] = buffer[pos+i]
 					end
 					if read_only then
 						if callback(x, y, pos, unpack(temp)) ~= nil then return end
@@ -531,6 +531,11 @@ function render.CreateTextureFromPath(path, format)
 	end
 			
 	format = format or {}
+	
+	if path:endswith(".png") then
+		format.internal_format = format.internal_format or "rgba8"
+		format.upload_format = format.upload_format or "bgra"
+	end
 	
 	local loading = render.GetLoadingTexture()
 	local self = render.CreateTexture(loading.w, loading.h, nil, format)
