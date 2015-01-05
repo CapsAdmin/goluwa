@@ -185,7 +185,7 @@ local function variables_to_string(type, variables, prepend, macro, array)
 			if prepend then
 				name = prepend .. name
 			end
-			
+
 			table.insert(out, ("%s %s %s %s%s;"):format(type, data.precision, data.type, name, array))
 
 			if macro then
