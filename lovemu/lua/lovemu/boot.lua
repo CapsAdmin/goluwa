@@ -138,10 +138,12 @@ function lovemu.RunGame(folder)
 	event.AddListener("Draw2D", id, function(dt)
 		render.SetCullMode("none")
 		surface.SetFont("lovemu")
-		love.graphics.clear()
 		lovemu.delta = dt
-		surface.SetColor(1,1,1,1)
 		surface.SetWhiteTexture()
+		
+		love.graphics.clear()
+		love.graphics.setColor(love.graphics.getColor())
+		love.graphics.setFont(love.graphics.getFont())
 		
 		if not lovemu.errored then
 			surface.PushMatrix()
