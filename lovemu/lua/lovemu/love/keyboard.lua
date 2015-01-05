@@ -16,7 +16,7 @@ do
 	end
 end
 
-local keyboard_map={
+local keyboard_map = {
 	lshift = "left_shift",
 	rshift = "right_shift",
 	lctrl = "left_control",
@@ -47,13 +47,19 @@ local keyboard_map={
 	enter = "return",
 }
 
+local reverse_keyboard_map = {}
+
+for k,v in pairs(keyboard_map) do
+	reverse_keyboard_map[v] = k
+end
+
 function love.keyboard.isDown(key) --partial
-	return input.IsKeyDown(keyboard_map[key] or key)
+	return input.IsKeyDown(reverse_keyboard_map[key] or key)
 end
 
 local CURRENT_CHAR
 
-event.AddListener("KeyInput","lovemu_keyboard",function(key,press)
+event.AddListener("KeyInput","lovemu_keyboard",function(key, press)
 	key = keyboard_map[key] or key
 	
 	if press then
