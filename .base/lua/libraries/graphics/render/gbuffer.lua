@@ -57,7 +57,7 @@ local GBUFFER = {
 			
 			vec3 get_pos(vec2 uv)
 			{
-				float z = -texture2D(tex_depth, uv).r;
+				float z = -texture(tex_depth, uv).r;
 				vec4 sPos = vec4(uv * 2.0 - 1.0, z, 1.0);
 				sPos = inv_proj * sPos;
 
@@ -66,12 +66,12 @@ local GBUFFER = {
 			
 			float get_depth(vec2 coord) 
 			{
-				return (2.0 * cam_nearz) / (cam_farz + cam_nearz - texture2D(tex_depth, coord).r * (cam_farz - cam_nearz));
+				return (2.0 * cam_nearz) / (cam_farz + cam_nearz - texture(tex_depth, coord).r * (cam_farz - cam_nearz));
 			}
 			
 			float get_depth2(vec2 coord, float start, float end) 
 			{
-				return (2.0 * start) / (end + start - texture2D(tex_depth, coord).r * (end - start));
+				return (2.0 * start) / (end + start - texture(tex_depth, coord).r * (end - start));
 			}
 			
 			//
@@ -86,7 +86,7 @@ local GBUFFER = {
 			
 			vec3 get_pos2(vec2 uv)
 			{
-				float z = -texture2D(tex_depth, uv).r;
+				float z = -texture(tex_depth, uv).r;
 				vec4 sPos = vec4(uv * 2.0 - 1.0, z, 1.0);
 				sPos = inv_proj_mat * sPos; 
 
