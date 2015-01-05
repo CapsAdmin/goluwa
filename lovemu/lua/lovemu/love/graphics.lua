@@ -101,7 +101,7 @@ do -- quad
 	end
 end
 
-love.graphics.origin = render.LoadIdentity
+love.graphics.origin = surface.LoadIdentity
 love.graphics.translate = surface.Translate
 love.graphics.scale = surface.Scale
 love.graphics.rotate = surface.Rotate
