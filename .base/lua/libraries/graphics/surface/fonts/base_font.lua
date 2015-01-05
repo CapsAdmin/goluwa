@@ -125,9 +125,29 @@ function META:DrawString(str, x, y)
 				X = x
 				Y = Y + self.Size
 			elseif char == "\t" then
-				X = X + self.Size * 4
+				local ch = self.chars[" "]
+
+				if ch then
+					if self.Monospace then 
+						X = X + self.Spacing * 4
+					else
+						X = X + ((ch.x_advance + self.Spacing) * self.Scale.w) * 4
+					end
+				else
+					X = X + self.Size * 4
+				end
 			elseif not ch and char == " " then
-				X = X + self.Size
+				local ch = self.chars[" "]
+
+				if ch then
+					if self.Monospace then 
+						X = X + self.Spacing
+					else
+						X = X + (ch.x_advance + self.Spacing) * self.Scale.w
+					end
+				else
+					X = X + self.Size
+				end
 			elseif ch then		
 				local texture = self.texture_atlas:GetPageTexture(char)
 				
@@ -197,10 +217,29 @@ function META:GetTextSize(str)
 		if char == "\n" then
 			Y = Y + self.Size * self.Scale.h
 		elseif char == "\t" then
-			X = X + self.Size * self.Scale.w
+			local ch = self.chars[" "]
+			if ch then
+				if self.Monospace then 
+					X = X + self.Spacing * 4
+				else
+					X = X + ((ch.x_advance + self.Spacing) * self.Scale.w) * 4
+				end
+			else
+				X = X + self.Size * 4
+			end
 		elseif not ch and char == " " then
-			X = X + self.Size * self.Scale.w
-		elseif ch then
+			local ch = self.chars[" "]
+
+			if ch then
+				if self.Monospace then 
+					X = X + self.Spacing
+				else
+					X = X + (ch.x_advance + self.Spacing) * self.Scale.w
+				end
+			else
+				X = X + self.Size
+			end
+		elseif ch then	
 			if self.Monospace then 
 				X = X + self.Spacing
 			else
