@@ -326,7 +326,7 @@ do -- font
 		surface.SetFont(font.Name)
 	end
 	
-	function love.graphics.getFont(font)
+	function love.graphics.getFont()
 		return currentFont
 	end
 
