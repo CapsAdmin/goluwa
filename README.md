@@ -1,15 +1,14 @@
-Goluwa is an experimental game engine/framework/personal toolbox written in LuaJIT targeted at games. It includes high level libraries to render graphics, play audio, handle input, networking and much more. 3D is the main interest but 2D is also important.
+Goluwa is a framework that I use to make stuff made in LuaJIT. It's very similar GLua (Garry's Mod Lua) because that's where I started learning programming and it's what I'm used to. 
 
-The coding style is inspired by Source Engine, Garry's Mod and CryEngine. [UFO](https://github.com/malkia/ufo) gave me the initial idea and motivation.
+There are a lot of of sub projects included such as the GUI, a wrapper for running Löve games, tools for reading and mounting source engine assets, midi and sf2 parsers and so on.
 
-I can't guarantee that Goluwa will run out of box if you download it at the moment. There is a BitSync version that I could invite you to if you're interested but that means you'll have to contact me.
+I don't have any plans so I just code whatever I feel like coding. Because I'm interested in game engines and middleware for games the byproduct of doing that ends up with Goluwa being something that vaguely resembles a game engine. For these reasons I can't recommend using Goluwa to make a game or anything too serious.
 
-My goal with this isn't very clear. I don't have any grand business plans or anything. I like to implement new features and refactor old features. I just like programming so if anything I hope I'll never finish this project.
-
-LuaJit's FFI api is used to bind to the following shared libraries:
+LuaJIT's FFI library is used to bind to the following shared libraries:
 
 * [OpenGL](http://www.opengl.org/) - graphics
 * [GLFW](https://github.com/glfw/glfw) - window and input handler
+* [SDL](https://www.libsdl.org/) - window and input handler (mainly for android)
 * [OpenAL Soft](http://kcat.strangesoft.net/openal.html) - sound library
 * [FreeType](http://www.freetype.org/) - font decoding
 * [Libsndfile](http://www.mega-nerd.com/libsndfile/) - sound decoding
@@ -22,14 +21,29 @@ LuaJit's FFI api is used to bind to the following shared libraries:
 * [ENet](https://github.com/lsalzman/enet) - udp library targeted at games
 * SteamFriends - extension to the steam library to deal with steam friends communication
 
-In theoery everything should work without using any of these libraries. The only actual requirement is [LFS](https://github.com/keplerproject/luafilesystem) and LuaJIT 2+
+The rest is then made in LuaJIT.
 
-There is also a WIP Love2D wrapper which is used for fun and unit testing 2D graphics.
-![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_22-34-03.png)
-![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_22-37-16.png)
-![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-05_13-59-49.png)
-![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_22-38-33.png)
+GUI:
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-05_13-57-28.png)
-![ScreenShot](https://dl.dropbox.com/u/244444/ShareX/2014-05/2014-05-02_04-20-26.png)
-![ScreenShot](https://dl.dropbox.com/u/244444/ShareX/2014-05/2014-05-02_04-21-03.png)
-![ScreenShot](https://dl.dropbox.com/u/244444/ShareX/2014-05/2014-05-02_04-28-32.png)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_22-37-16.png)
+Similar to derma/gwen in gmod. It's also compatible with gwen skins. The blue skin tries to be identical to zsnes. The zsnes skin is only used in the "main menu".
+
+Source engine content:
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-05_13-59-49.png)
+Here I'm loading de_overpass from CSGO. Goluwa will find steam, mount csgo and the required source games, read the BSP, VTF, VMT, MDL, etc files and load the assets. This is all very WIP but somewhat works.
+
+Entity editor:
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_22-34-03.png)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_23-03-29.gif)
+It's sort of similar to PAC3 (a character editor I made for Garry's Mod). All objects have properties and some of them can be marked for being storable. If they are you can edit them with this editor.
+
+Löve wrapper:
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-05_15-02-49.png)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-05_15-01-08.png)
+So you can run games made in Löve for some reason. The first game is Mr. Rescue and the second one is Sienna (I didn't make them). As with almost everything in Goluwa it's WIP. Some games work and some games don't.
+
+Markup language:
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-05/2014-05-02_04-21-03.png)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_23-48-43.gif)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_23-40-58.gif)
+This is used by the GUI and chat. It has lots of tags to change colors, rotation, offsets, fonts etc.
