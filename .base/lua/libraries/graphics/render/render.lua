@@ -373,6 +373,4 @@ include("cvars.lua", render)
 include("globals.lua", render)
 include("debug.lua", render)
 
-include("model_3d.lua", render)
-
 return render

@@ -399,7 +399,7 @@ do -- ffi
 	ffi.load = function(path, ...)
 		local ok, msg = pcall(_OLD_G.ffi_load, path, ...)
 		
-		if not ok then
+		if not ok and system and system.SetSharedLibraryPath then
 			if vfs then
 				for _, where in ipairs(where) do
 					for full_path in vfs.Iterate(where .. path, nil, true, nil, true) do
