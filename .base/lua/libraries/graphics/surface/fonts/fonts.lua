@@ -104,7 +104,7 @@ function surface.CreateFont(name, options, callback)
 			event.Call("FontChanged", name, options)
 		end
 		
-		local ok, err = pcall(self.Initialize, self)
+		local ok, err = pcall(self.Initialize, self, options)
 		
 		if ok and err ~= false then		
 			surface.fonts[name] = self
