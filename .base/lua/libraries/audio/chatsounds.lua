@@ -156,11 +156,11 @@ function chatsounds.CreateSound(path, udata)
 		self.csp:Remove()
 	end
 
-	function self:SetPitch(pitch, time)
+	function self:SetPitch(pitch)
 		self.csp:SetPitch(pitch / 100)
 	end
 
-	function self:SetVolume(volume, time)
+	function self:SetVolume(volume)
 		self.csp:SetGain(volume / 100)
 	end
 
@@ -216,27 +216,20 @@ chatsounds.Modifiers = {
 		end,
 	},
 	pitch = {
-		args = {
-			[2] = function(time) return tonumber(time) or 0 end
-		},
-		init = function(self, pitch, time)
-			self.duration = self.duration / (pitch / 100)
-			self.duration = self.duration + time
+		init = function(self, pitch)
+			self.duration = self.duration / (math.abs(pitch) / 100)
 		end,
 
-		think = function(self, pitch, time)
+		think = function(self, pitch)
 			if self.snd then
-				self.snd:SetPitch(pitch, time)
+				self.snd:SetPitch(pitch)
 			end
 		end,
 	},
 	volume = {
-		args = {
-			[2] = function(time) return time or 0 end
-		},
-		think = function(self, volume, time)
+		think = function(self, volume)
 			if self.snd then
-				self.snd:SetVolume(volume, time)
+				self.snd:SetVolume(volume)
 			end
 		end,
 	},
@@ -759,6 +752,36 @@ do -- list parsing
 			chatsounds.BuildTreeFromAddon()
 		end
 	end
+	
+	function chatsounds.BuildFromAutoadd()
+		local tree = {}
+		local list = {}
+		
+		for realm in vfs.Iterate("sounds/chatsounds/") do
+			tree[realm] = {}
+			for trigger in vfs.Iterate("sounds/chatsounds/" .. realm .. "/") do
+				local path = "sounds/chatsounds/" .. realm .. "/" .. trigger
+				
+				if vfs.IsFile(path) then
+					tree[realm][trigger:match("(.+)%.")] = {path}
+					list[trigger:match("(.+)%.")] = path
+				else
+					tree[realm][trigger] = {}
+					for file_name in vfs.Iterate(path .. "/") do
+						table.insert(tree[realm][trigger], path .. "/" .. file_name)
+						list[trigger] = path .. "/" .. file_name
+					end
+				end
+			end
+		end
+		
+		chatsounds.list = chatsounds.list or {}
+		table.merge(chatsounds.list, list)
+		
+		tree = chatsounds.TableToTree(tree)
+		chatsounds.tree = chatsounds.tree or {}
+		table.merge(chatsounds.tree, tree)
+	end
 
 	function chatsounds.BuildTreeFromAddon()
 		steam.MountAllSourceGames()
@@ -894,12 +917,13 @@ do
 
 		for i = 1, #str + 1 do
 			local char = str:sub(i,i)
+			local next = str:sub(i+1, i+1)
 			local type = char:getchartype()
 
 			if type ~= "space" then
 
 				-- 0.1234
-				if last == "digit" and char == "." then
+				if last == "digit" and char == "." or (char == "-" and next and next:getchartype() == "digit") then
 					type = "digit"
 				end
 				
@@ -925,7 +949,7 @@ do
 	local function find_modifiers(words)
 	
 		local count = #words
-
+		
 		for i = 1, 1000 do
 			local word = words[i]
 
@@ -1166,9 +1190,15 @@ function chatsounds.PlayScript(script, udata)
 				if not info then
 					info = table.random(data.sounds)
 				end
-
-				local path = info.path
-
+				
+				local path
+				
+				if type(info) == "table" then
+					path = info.path
+				else
+					path = info
+				end
+				
 				if path then
 					local sound = {}
 
@@ -1280,7 +1310,7 @@ chatsounds.active_tracks = {}
 
 function chatsounds.Update()
 	local time = system.GetElapsedTime()
-
+	
 	for i, track in pairs(chatsounds.active_tracks) do
 		for i, sound in pairs(track) do
 			if sound.start_time < time then
@@ -1352,24 +1382,17 @@ end
 function chatsounds.Initialize()
 	if chatsounds.tree then return end
 
-	steam.MountAllSourceGames()
-
-	chatsounds.BuildTree("game")
-	chatsounds.BuildTree("custom")
+	--steam.MountAllSourceGames()
+	--chatsounds.BuildTree("game")
+	--chatsounds.BuildTree("custom")
+	
+	chatsounds.BuildFromAutoadd()
 
 	if autocomplete then
-		local temp = {}
-
-		for realm, sounds in pairs(chatsounds.list) do
-			for key, val in pairs(sounds) do
-				temp[key] = true
-			end
-		end
-
 		local list = {}
 
-		for k,v in pairs(temp) do
-			table.insert(list, k)
+		for key, val in pairs(chatsounds.list) do
+			table.insert(list, key)
 		end
 
 		table.sort(list, function(a, b) return #a < #b end)
