@@ -605,6 +605,36 @@ do -- source
 		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Buffer", "i", al.e.AL_BUFFER)
 		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Filter", "i", al.e.AL_DIRECT_FILTER)
 	end
+	
+	do
+		local old = META.SetPitch
+		function META:SetPitch(num)
+			if num < 0 then
+				if not self.reverse_source then
+					local data, size = self:GetBuffer():GetData()
+					local eek = tostring(ffi.typeof(data)):match("<(.-) ")
+					local length = tonumber(size / ffi.sizeof(eek))
+					
+					local buffer = ffi.new(eek .. "[?]", size)
+					
+					for i = 0, length - 1 do
+						buffer[i] = data[-i+length + 1]
+					end
+					
+					self.reverse_source = audio.CreateSource(buffer, size)
+				end
+				
+				if self:IsPlaying() then
+					self.reverse_source:Play()
+					self:Stop()
+				end
+				self.reverse_source:SetPitch(-num)
+												
+				return
+			end
+			old(self, num)
+		end
+	end
 
 	function META:SetChannel(channel, ...)
 		self:SetAuxiliaryEffectSlot(audio.GetEffectChannel(channel), ...)
