@@ -62,6 +62,7 @@ do -- mounting/links
 	function vfs.GetMounts()
 		local out = {}
 		for filesystem, context in pairs(vfs.GetFileSystems()) do
+			context.mounted_paths = context.mounted_paths or {}	
 			for i, v in ipairs(context.mounted_paths) do
 				out[v.full_where] = v
 			end
@@ -81,7 +82,8 @@ do -- mounting/links
 		end
 		
 		for i, context in ipairs(filesystems) do	
-			if path_info.relative then				
+			if path_info.relative then
+				context.mounted_paths = context.mounted_paths or {}	
 				for i, mount_info in ipairs(context.mounted_paths) do
 					local where = mount_info.where
 				
