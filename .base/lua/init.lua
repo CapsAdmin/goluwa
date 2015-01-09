@@ -631,6 +631,9 @@ do -- libraries
 	autocomplete = include("libraries/autocomplete.lua")
 	input = include("libraries/input.lua")
 	
+	language = include("libraries/language.lua")
+	_G.L = language.LanguageString
+	
 	-- meta
 	include("libraries/extensions/function.lua")
 		
