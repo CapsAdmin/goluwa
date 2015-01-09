@@ -51,11 +51,11 @@ function freeimage.LoadMultiPageImage(data, flags)
 	return out
 end
 
-function freeimage.LoadImage(data, flags)
+function freeimage.LoadImage(data, flags, format)
 	local buffer = ffi.cast("const unsigned char *const ", data)
 
 	local stream = lib.FreeImage_OpenMemory(buffer, #data)
-	local type = lib.FreeImage_GetFileTypeFromMemory(stream, #data)
+	local type = format or lib.FreeImage_GetFileTypeFromMemory(stream, #data)
 	
 	if type == enums.FIF_UNKNOWN or type > enums.FIF_RAW then -- huh...
 		lib.FreeImage_CloseMemory(stream)

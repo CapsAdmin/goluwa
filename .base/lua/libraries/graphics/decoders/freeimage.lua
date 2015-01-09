@@ -1,5 +1,11 @@
 local freeimage = require("lj-freeimage") -- image decoder 
 
 render.AddTextureDecoder("freeimage", function(data, path_hint)
-	return freeimage.LoadImage(data)
+	local format
+	
+	if path_hint and path_hint:endswith(".dds") then
+		format = freeimage.e.FIF_DDS
+	end
+	
+	return freeimage.LoadImage(data, nil, format)
 end)
