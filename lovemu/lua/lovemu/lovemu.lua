@@ -118,7 +118,7 @@ function lovemu.CreateLoveEnv(version)
 	return love
 end
 
-function lovemu.RunGame(folder)
+function lovemu.RunGame(folder, ...)
 	--require("socket")
 	--require("socket.http")
 	
@@ -184,6 +184,7 @@ function lovemu.RunGame(folder)
 	})
 	
 	env._G = env
+	env.arg = {...}
 	
 	do -- config
 		lovemu.config = {
