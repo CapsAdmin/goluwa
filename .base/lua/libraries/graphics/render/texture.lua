@@ -551,6 +551,7 @@ function render.CreateTextureFromPath(path, format)
 			local buffer, w, h, info = render.DecodeTexture(data, path)
 			
 			if buffer == nil or w == 0 or h == 0 then
+				logf("error loading texture %s: %s\n", path, buffer or w or h or "unknown error")
 				self:MakeError()
 			else
 				if info.format then
@@ -569,6 +570,7 @@ function render.CreateTextureFromPath(path, format)
 			self:MakeError()
 		end		
 	end, format.read_speed) then
+		logf("error loading texture %s: %s\n", path, "file does not exist")
 		self:MakeError()
 	end
 	
