@@ -18,6 +18,7 @@ do -- current window
 	end
 
 	function render.End()
+		event.Call("PostDrawScene")
 		if render.current_window:IsValid() then
 			render.current_window:SwapBuffers()
 		end
