@@ -389,7 +389,7 @@ do -- tree
 				
 		for i, key in ipairs(keys) do
 			if key ~= "" then
-				if not next[key] then
+				if type(next[key]) ~= "table" then
 					next[key] = {}
 				end
 				next = next[key]
