@@ -684,6 +684,7 @@ function prototype.AddBufferTemplate(META)
 			for k, v in ipairs(structure) do
 				local t = v[1]
 				
+				if t == "longlong" then t = "long long" end
 				if t == "byte" then t = "uint8_t" end
 				
 				if t == "vec3" or t == "ang3" then
