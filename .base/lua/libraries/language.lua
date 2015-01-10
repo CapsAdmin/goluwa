@@ -99,25 +99,32 @@ function language.SaveCurrentTranslation()
 	serializer.WriteFile("simple", "languages/" .. cvar:Get(), language.current_translation)
 end
 
-function language.GetOutputForTranslation()
+function language.Translate(to, nice)	
 	local str = ""
+	
+	local lookup = {}
+	local i = 1
 	 
 	for key, val in pairs(language.known_strings) do
-		str = str .. ("%s = %s\n"):format(key:gsub("(.)","_%1_"), val)
+		str = str .. val .. "\n"
+		lookup[i] = key
+		i = i + 1
 	end
+	
+	google.Translate("en", to, str, function(data)		
+		local res = ""
+		
+		for i, line in ipairs(data.translated:gsub("\\n", "\n"):explode("\n")) do
+			res = res .. lookup[i] .. "="..line.."\n"
+		end
+		
+		print(res)
+		
+		local tbl = serializer.Decode("simple", res)
+		serializer.WriteFile("simple", "%ROOT%/.base/languages/" .. (nice or to), tbl)
+	end)
 	
 	return str
-end
-
-function language.TranslationOutputToString(str)
-	local out = ""
-	for i, line in ipairs(str:explode("\n")) do
-		out = out .. line:gsub("_", "")
-	end
-	
-	out = out:gsub(" = ", "=")
-	
-	return out
 end
 
 function language.Set(lang)

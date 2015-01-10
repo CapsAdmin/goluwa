@@ -134,8 +134,8 @@ function menu.CreateTopBar()
 		{"9."},
 		{"0."},
 		{},
-		{"freeze data: off"},
-		{"clear all data"},
+		{L"freeze data: off"},
+		{L"clear all data"},
 	}) 
 	create_button(L"game", {
 		{L"load", function() 
@@ -303,7 +303,7 @@ function menu.CreateTopBar()
 		{},
 		{L"quit", function() os.exit() end} 
 	})
-	create_button("config", {
+	create_button(L"config", {
 		{L"input"},
 		{},
 		{L"devices"},
