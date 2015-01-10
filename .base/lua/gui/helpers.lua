@@ -46,5 +46,39 @@ function gui.StringInput(msg, default, callback, check)
 	return frame
 end
 
+function gui.CreateMenu(options, parent)
+	local menu = gui.CreatePanel("menu")
+	event.Delay(0, function() gui.SetActiveMenu(menu) end)
+	
+	if parent then
+		if parent.Skin then
+			menu:SetSkin(parent:GetSkin())
+		end
+		parent:CallOnRemove(function() gui.RemovePanel(menu) end, menu)
+	end
+
+	local function add_entry(menu, val)
+		for k, v in ipairs(val) do
+			if type(v[2]) == "table" then
+				local menu, entry = menu:AddSubMenu(v[1])
+				if v[3] then entry:SetIcon(Texture(v[3])) end
+				add_entry(menu, v[2])
+			elseif v[1] then
+				local entry = menu:AddEntry(v[1], v[2])
+				if v[3] then entry:SetIcon(Texture(v[3])) end
+			else
+				menu:AddSeparator()
+			end
+		end
+	end
+
+	add_entry(menu, options)
+	
+	menu:Layout(true)
+	menu:SetPosition(gui.world:GetMousePosition():Copy())
+	
+	return menu
+end
+
 
 
