@@ -137,8 +137,8 @@ function menu.CreateTopBar()
 		{"freeze data: off"},
 		{"clear all data"},
 	}) 
-	create_button("game", {
-		{"load", function() 
+	create_button(L"game", {
+		{L"load", function() 
 			local current_dir
 			
 			local frame = gui.CreatePanel("frame")
@@ -294,35 +294,35 @@ function menu.CreateTopBar()
 			
 			populate("lua/gui/") 
 		end},
-		{"run [ESC]", function() menu.Close() end},
-		{"reset", function() console.RunString("restart") end},
+		{L"run [ESC]", function() menu.Close() end},
+		{L"reset", function() console.RunString("restart") end},
 		{},
-		{"save state"},
-		{"open state"},
-		{"pick state"},
+		{L"save state"},
+		{L"open state"},
+		{L"pick state"},
 		{},
-		{"quit", function() os.exit() end} 
+		{L"quit", function() os.exit() end} 
 	})
 	create_button("config", {
-		{"input"},
+		{L"input"},
 		{},
-		{"devices"},
-		{"chip cfg"},
+		{L"devices"},
+		{L"chip cfg"},
 		{},
-		{"options"},
-		{"video"},
-		{"sound"},
-		{"paths"},
-		{"saves"},
-		{"speed"},
+		{L"options"},
+		{L"video"},
+		{L"sound"},
+		{L"paths"},
+		{L"saves"},
+		{L"speed"},
 	})
-	create_button("cheat", {
-		{"add code"},
-		{"browse"},
-		{"search"},
+	create_button(L"cheat", {
+		{L"add code"},
+		{L"browse"},
+		{L"search"},
 	})
-	create_button("netplay", {
-		{"connect", function()
+	create_button(L"netplay", {
+		{L"connect", function()
 			gui.StringInput("Enter the server IP", cookies.Get("lastip", "localhost"), function(str)
 				console.RunString("start_client")
 				cookies.Set("lastip", str)
@@ -330,8 +330,8 @@ function menu.CreateTopBar()
 				menu.Close()
 			end)
 		end},
-		{"disconnect", function() console.RunString("disconnect menu disconnect") end},
-		{"host", function() 
+		{L"disconnect", function() console.RunString("disconnect menu disconnect") end},
+		{L"host", function() 
 			system.StartLuaInstance("start_server", "host")
 			
 			event.Delay(0.25, function()
@@ -339,13 +339,13 @@ function menu.CreateTopBar()
 			end) 
 		end},
 	})
-	create_button("misc", {
-		{"misc keys"},
-		{"gui opts"},
-		{"key comb."},
-		{"save cfg"},
+	create_button(L"misc", {
+		{L"misc keys"},
+		{L"gui opts"},
+		{L"key comb."},
+		{L"save cfg"},
 		{},
-		{"about"},
+		{L"about"},
 	})
 end
  
