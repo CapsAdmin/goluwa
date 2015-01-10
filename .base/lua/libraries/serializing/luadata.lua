@@ -1,90 +1,78 @@
 local luadata = _G.luadata or {}
 local encode_table
 
-luadata.Types =
-{
-	number = function(var)
-		return ("%s"):format(var)
-	end,
-	string = function(var)
-		return ("%q"):format(var)
-	end,
-	boolean = function(var)
-		return var and "true" or "false"
-	end,
-	table = function(tbl, context)
-		local str
-		
-		context.tab = context.tab + 1
-		
-		if context.tab == 0 then 	
-			str = {}
-		else
-			str = {"{\n"} 
+local env = {}
+
+luadata.Types = {}
+
+function luadata.SetModifier(type, callback, global_ctor)
+	luadata.Types[type] = callback
+	
+	if global_ctor then 
+		env[global_ctor] = _G[global_ctor]
+	end
+end
+
+luadata.SetModifier("rect", function() return ("Rect(%f, %f, %f, %f)"):format(var:Unpack()) end, "Rect")
+luadata.SetModifier("color", function() return ("Color(%f, %f, %f, %f)"):format(var:Unpack()) end, "Color")
+luadata.SetModifier("quat", function() return ("Quat(%f, %f, %f, %f)"):format(var:Unpack()) end, "Quat")
+luadata.SetModifier("vec3", function(var) return ("Vec3(%f, %f, %f)"):format(var:Unpack()) end, "vec3")
+luadata.SetModifier("vec2", function(var) return ("Vec2(%f, %f)"):format(var:Unpack()) end, "vec2")
+luadata.SetModifier("ang3", function(var) return ("Ang3(%f, %f, %f)"):format(var:Unpack()) end, "Ang3")
+
+luadata.SetModifier("cdata", function(var) return tostring(var) end)
+luadata.SetModifier("cdata", function(var) return tostring(var) end)
+
+luadata.SetModifier("number", function(var) return ("%s"):format(var) end)
+luadata.SetModifier("string", function(var) return ("%q"):format(var) end)
+luadata.SetModifier("boolean", function(var) return var and "true" or "false" end)
+luadata.SetModifier("table", function(tbl, context)
+	local str
+	
+	context.tab = context.tab + 1
+	
+	if context.tab == 0 then 	
+		str = {}
+	else
+		str = {"{\n"} 
+	end
+	
+	if table.isarray(tbl) then
+		for i = 1, #tbl do
+			str[#str+1] = ("%s%s,\n"):format(("\t"):rep(context.tab), luadata.ToString(tbl[i], context))
+			
+			if context.thread then thread:Sleep() end
 		end
-		
-		if table.isarray(tbl) then
-			for i = 1, #tbl do
-				str[#str+1] = ("%s%s,\n"):format(("\t"):rep(context.tab), luadata.ToString(tbl[i], context))
-				
-				if context.thread then thread:Sleep() end
-			end
-		else
-			for key, value in pairs(tbl) do
-				value = luadata.ToString(value, context)
-				
-				if value then	
-					if type(key) == "string" and key:find("^%a[%w_]+$") then
-						str[#str+1] = ("%s%s = %s,\n"):format(("\t"):rep(context.tab), key, value)
-					else
-						key = luadata.ToString(key, context)
-						
-						if key then
-							str[#str+1] = ("%s[%s] = %s,\n"):format(("\t"):rep(context.tab), key, value)
-						end
+	else
+		for key, value in pairs(tbl) do
+			value = luadata.ToString(value, context)
+			
+			if value then	
+				if type(key) == "string" and key:find("^%a[%w_]+$") then
+					str[#str+1] = ("%s%s = %s,\n"):format(("\t"):rep(context.tab), key, value)
+				else
+					key = luadata.ToString(key, context)
+					
+					if key then
+						str[#str+1] = ("%s[%s] = %s,\n"):format(("\t"):rep(context.tab), key, value)
 					end
 				end
-
-				if context.thread then thread:Sleep() end
 			end
-		end
-		
-		if context.tab == 0 then
-			str[#str+1] = "\n"
-		else
-			str[#str+1] = ("%s}"):format(("\t"):rep(context.tab))
-		end
-			
-		context.tab = context.tab - 1
-		
-		return table.concat(str, "")
-	end,
-	cdata = function(var)		
-		return tostring(var)
-	end,	
-	vec3 = function(var)
-		return ("Vec3(%f, %f, %f)"):format(var:Unpack()) 
-	end,
-	vec2 = function(var)
-		return ("Vec2(%f, %f)"):format(var:Unpack()) 
-	end,
-	ang3 = function(var)
-		return ("Ang3(%f, %f, %f)"):format(var:Unpack()) 
-	end,
-	quat = function(var)
-		return ("Quat(%f, %f, %f, %f)"):format(var:Unpack()) 
-	end,
-	color = function(var)
-		return ("Color(%f, %f, %f, %f)"):format(var:Unpack()) 
-	end,
-	rect = function(var)
-		return ("Rect(%f, %f, %f, %f)"):format(var:Unpack()) 
-	end,
-}
 
-function luadata.SetModifier(type, callback)
-	luadata.Types[type] = callback
-end
+			if context.thread then thread:Sleep() end
+		end
+	end
+	
+	if context.tab == 0 then
+		str[#str+1] = "\n"
+	else
+		str[#str+1] = ("%s}"):format(("\t"):rep(context.tab))
+	end
+		
+	context.tab = context.tab - 1
+	
+	return table.concat(str, "")
+end)
 
 function luadata.Type(var)
 	local t = typex(var)
@@ -109,6 +97,7 @@ end
 
 function luadata.FromString(str)
 	local func = assert(loadstring("return " .. str))
+	setfenv(func, env)
 	return func()
 end
 
@@ -144,6 +133,8 @@ function luadata.Decode(str, skip_error)
 		if not skip_error then warning("luadata syntax error: ", err) end
 		return {}
 	end
+	
+	setfenv(func, env)
 	
 	local ok, err
 	
