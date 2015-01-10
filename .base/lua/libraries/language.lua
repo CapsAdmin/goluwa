@@ -3,9 +3,11 @@ local language = _G.language or {}
 language.known_strings = language.known_strings or {}
 language.current_translation = {}
 
-local cvar = console.CreateVariable("language", "english", true)
+local cvar = console.CreateVariable("language", "english", function(val)
+	language.Set(val)
+end)
 
-function language.LanguageString(val)
+function language.LanguageString(val)	
 	local key = val:trim():lower()
 		
 	language.known_strings[key] = val
@@ -22,8 +24,8 @@ function language.AddLanguagesToMenu(menu)
 		language.SetLanguage("english")
 	end)
 	
-	for key, val in pairs(file.Find("data/translations/*", "LUA")) do
-		val = val:gsub("%.lua", "")
+	for key, val in pairs(vfs.Find("translations/")) do
+		val = val:match("(.+)%.")
 		menu:AddOption(val, function()
 			language.SetLanguage(val)
 		end)
@@ -57,38 +59,36 @@ function language.ShowLanguageEditor()
 	for english, other in pairs(strings) do	
 		local line = list:AddEntry(english, other)
 		line.OnRightClick = function()
-			local menu = gui.CreatePanel("menu")
-			menu:SetPosition(window.GetMousePosition())
-			menu:AddEntry(L"edit", function()
-				local window = Derma_StringRequest(
-					L"translate",
-					english,
-					other,
-
-					function(new)
-						language.current_translation[english] = new
-						line:SetValue(2, new)
-						language.SaveCurrentTranslation()
-					end
-				)
-				for _, pnl in pairs(window:GetChildren()) do
-					if pnl.ClassName == "DPanel" then
-						for key, pnl in pairs(pnl:GetChildren()) do
-							if pnl.ClassName == "DTextEntry" then
-								pnl:SetAllowNonAsciiCharacters(true)
-							end
-						end
-					end
-				end
-			end):SetImage(language.MiscIcons.edit)
-			menu:AddOption(L"revert", function()
-				local new = CompileFile("pac3/editor/client/translations/"..lang..".lua")()[english]
-				language.current_translation[english] = new
-				line:SetValue(2, new or english)
-				language.SaveCurrentTranslation()
-			end):SetImage(language.MiscIcons.revert)
 			
-			menu:MakePopup()
+			gui.CreateMenu({
+				{
+					L"edit", 
+					function()
+						local window = gui.StringInput(
+							L"translate",
+							english,
+							other,
+
+							function(new)
+								language.current_translation[english] = new
+								line:SetValue(2, new)
+								language.SaveCurrentTranslation()
+							end
+						)	
+					end, 
+					gui.skin.icons.edit
+				},
+				{
+					L"revert",
+					function()
+						local new = serializer.ReadFile("simple", "translations/"..lang)[english]
+						language.current_translation[english] = new
+						line:SetValue(2, new or english)
+						language.SaveCurrentTranslation()
+					end,
+					gui.skin.icons.revert,
+				}
+			})
 		end
 	end
 	
@@ -96,7 +96,7 @@ function language.ShowLanguageEditor()
 end
 
 function language.SaveCurrentTranslation()
-	serializer.WriteFile("luadata", "%ROOT%/.base/languages/" .. cvar:Get(), language.current_translation)
+	serializer.WriteFile("simple", "languages/" .. cvar:Get(), language.current_translation)
 end
 
 function language.GetOutputForTranslation()
@@ -109,7 +109,18 @@ function language.GetOutputForTranslation()
 	return str
 end
 
-function language.SetLanguage(lang)
+function language.TranslationOutputToString(str)
+	local out = ""
+	for i, line in ipairs(str:explode("\n")) do
+		out = out .. line:gsub("_", "")
+	end
+	
+	out = out:gsub(" = ", "=")
+	
+	return out
+end
+
+function language.Set(lang)
 	lang = lang or cvar:GetString()
 	
 	cvar:Set(lang)
@@ -117,7 +128,7 @@ function language.SetLanguage(lang)
 	if lang == "english" then
 		language.current_translation = {}
 	else
-		language.current_translation = serializer.ReadFile("luadata", "%ROOT%/.base/languages/" .. cvar:Get())
+		language.current_translation = serializer.ReadFile("simple", "languages/" .. cvar:Get())
 	end
 end
 
