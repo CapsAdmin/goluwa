@@ -1,3 +1,14 @@
+do
+	local luadata
+
+	function fromstring(str)
+		local num = tonumber(str)
+		if num then return num end
+		luadata = luadata or serializer.GetLibrary("luadata")
+		return unpack(luadata.Decode(str, true)) or str
+	end
+end
+
 do -- verbose print
 	function vprint(...)		
 		logf("%s:\n", debug.getinfo(2, "n").name or "unknown")
