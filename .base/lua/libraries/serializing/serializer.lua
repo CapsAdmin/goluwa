@@ -81,6 +81,10 @@ serializer.AddLibrary("von", function(...) return von.serialize(...) end, functi
 local luadata = include("luadata.lua")
 serializer.AddLibrary("luadata", function(...) return luadata.Encode(...) end, function(...) return luadata.Decode(...) end, luadata)
 
+
+local simple = include("simple.lua")
+serializer.AddLibrary("simple", function(...) return simple.Encode(...) end, function(...) return simple.Decode(...) end, simple)
+
 local sigh = include("sigh.lua")
 serializer.AddLibrary("sigh", function(...) return sigh.Encode(...) end, function(...) return sigh.Decode(...) end, sigh)
 
