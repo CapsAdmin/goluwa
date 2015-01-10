@@ -135,20 +135,26 @@ function luadata.Encode(tbl, callback, speed)
 	end
 end
 
-function luadata.Decode(str)
+function luadata.Decode(str, skip_error)
 	if not str then return {} end
 
 	local func, err = loadstring("return {\n" .. str .. "\n}")
 	
 	if not func then
-		warning("luadata syntax error: ", err)
+		if not skip_error then warning("luadata syntax error: ", err) end
 		return {}
 	end
 	
-	local ok, err = xpcall(func, system.OnError)
+	local ok, err
+	
+	if not skip_error then 
+		ok, err = xpcall(func, system.OnError)
+	else 
+		ok, err = pcall(func)
+	end
 	
 	if not ok then
-		warning("luadata runtime error: ", err)
+		if not skip_error then warning("luadata runtime error: ", err) end
 		return {}
 	end
 	
