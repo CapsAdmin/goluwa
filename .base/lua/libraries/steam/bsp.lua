@@ -136,7 +136,7 @@ function steam.LoadMap(path, callback)
 			
 		end
 		 
-		if false then
+		if true then
 			thread:Report("reading game lump")
 			
 			local lump = header.lumps[36]
@@ -153,58 +153,59 @@ function steam.LoadMap(path, callback)
 				local version = bsp_file:ReadShort()
 				local fileofs = bsp_file:ReadLong()
 				local filelen = bsp_file:ReadLong()
-												
+																						
 				if id == "prps" then
-					bsp_file:PushPosition(fileofs)
-					
+					bsp_file:PushPosition(fileofs)					
 					
 					local count = bsp_file:ReadLong()
-					local paths = {}
-
-					logf("\tprps paths = %s\n", count)
-					
-					for i = 1,count do 
-						local str = bsp_file:ReadString()
+					local paths = {}					
+					for i = 1, count do 
+						local str = bsp_file:ReadString(128, true)
 						if str ~= "" then
 							paths[i] = str
 						end
-						print(str)
 					end
-													
+
 					local count = bsp_file:ReadLong()
-					local leafs = {}
-					logf("\tprps leafs = %s\n", count)
-					
+					local leafs = {}					
 					for i = 1, count do
 						leafs[i] = bsp_file:ReadShort()
 					end
 					
 					local count = bsp_file:ReadLong()
-					local lumps = {}
-					logf("\tprps info = %s\n", count)
-											
+					local lumps = {}					
 					for i = 1, count do
-						lumps[i] = bsp_file:ReadStructure([[
-							vec3 m_Origin;
-							ang3 m_Angles;
-							short m_PropType;
-							short m_FirstLeaf;
-							short m_LeafCount;
-							byte m_Solid;
-							byte m_Flags;
-							long m_Skin;
-							float m_FadeMinDist;
-							float m_FadeMaxDist;
-							vec3 m_LightingOrigin;
-							float m_flForcedFadeScale;
-							short m_nMinDXLevel;
-							short m_nMaxDXLevel;
+						local lump = bsp_file:ReadStructure([[
+							vec3 origin;
+							ang3 angles;
+							short prop_type;
+							short first_leaf;
+							short leaf_count;
+							byte solid;
+							byte flags;
+							long skin;
+							float fade_min_dist;
+							float fade_max_dist;
+							vec3 lighting_origin;
+							float forced_fade_scale;
 						]])
+						
+						if version > 5 then
+							lump.min_dx_level = bsp_file:ReadShort()
+							lump.max_dx_level = bsp_file:ReadShort()
+						end
+												
+						lump.model = paths[lump.prop_type + 1] or paths[1]
+						
+						lumps[i] = lump
 					end
+					
+					header.static_entities = lumps
 					
 					bsp_file:PopPosition()
 				end
-				
+								id = nil
+
 				if id == "prpd" then
 					bsp_file:PushPosition(fileofs)
 					
@@ -665,7 +666,24 @@ function steam.LoadMap(path, callback)
 			thread:ReportProgress("spawning entities", count)
 			thread:Sleep()
 		end
-		
+
+		local count = #header.static_entities
+		for i, info in ipairs(header.static_entities) do
+			if vfs.IsFile(info.model) then
+				local ent = entities.CreateEntity("clientside", steam.bsp_world)
+				ent:SetName("static_entity_" .. i)
+				ent:SetModelPath(info.model)
+				local pos = info.origin * 0.0254
+				ent:SetPosition(Vec3(-pos.y, pos.x, pos.z))				
+				local ang = info.angles:Rad()
+				ang = Ang3(ang.p, ang.y, ang.r)
+		--		ang:RotateAroundAxis(Vec3(1,0,0), math.rad(90))
+				ent:SetAngles(ang)
+			end
+			
+			thread:ReportProgress("spawning static entities", count)
+			thread:Sleep()
+		end
 
 		local count = #models
 		for i_, model in ipairs(models) do	
