@@ -39,7 +39,7 @@ local function ADD(name, default, callback)
 		elseif callback then
 			callback(self, var) 
 		else
-			render.gbuffer_shader[name] = var
+			render.SetGBufferValue(name, var)
 		end
 	end
 end

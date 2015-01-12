@@ -1,4 +1,9 @@
-render.AddPostProcessShader("fxaa", [[
+local PASS = {}
+
+PASS.Name = "fxaa"
+PASS.Position = 2
+
+PASS.Source = [[
 	out vec4 out_color;
 			
 	//
@@ -12,8 +17,8 @@ render.AddPostProcessShader("fxaa", [[
 	#define FxaaFloat2 vec2
 	#define FxaaTexLod0(t, p) textureLod(t, p, 0.0)
 	#define FxaaTexOff(t, p, o, r) textureLodOffset(t, p, 0.0, o)
-	
-	vec2 rcpFrame = 1.0/screen_size;
+
+	vec2 rcpFrame = 1.0/size;
 	vec4 posPos = vec4(uv, uv - (rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT)));
 
 	vec3 FxaaPixelShader(vec4 posPos, sampler2D tex)
@@ -70,10 +75,12 @@ render.AddPostProcessShader("fxaa", [[
 
 		return rgbB; 
 	}
-	
+
 	void main() 
 	{ 
-		out_color.rgb = FxaaPixelShader(posPos, tex_last);
+		out_color.rgb = FxaaPixelShader(posPos, self);
 		out_color.a = 1;
 	}
-]], math.huge)
+]]
+
+render.AddGBufferShader(PASS)
