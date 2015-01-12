@@ -234,4 +234,10 @@ function META:GetTexture(type)
 	return render.GetErrorTexture()
 end
 
+function META:Copy(framebuffer)
+	gl.BindFramebuffer(gl.e.GL_DRAW_FRAMEBUFFER, self.id)
+	gl.BindFramebuffer(gl.e.GL_READ_FRAMEBUFFER, framebuffer.id)
+	gl.BlitFramebuffer(0,0,framebuffer.w,framebuffer.h, 0,0,self.w,self.h, gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_LINEAR)
+end
+
 prototype.Register(META)
