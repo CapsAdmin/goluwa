@@ -60,7 +60,7 @@ function render.DrawScene(window, dt)
 	render.Clear(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
 	render.Start(window)
 	
-		render.DrawDeferred(dt, window:GetSize():Unpack())
+		render.DrawGBuffer(dt, window:GetSize():Unpack())
 		
 		local blur_amt = console.GetVariable("render_accum") or 0
 		if blur_amt ~= 0 then			

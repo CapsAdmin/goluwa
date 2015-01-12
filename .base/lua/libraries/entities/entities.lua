@@ -50,8 +50,6 @@ do -- world
 	event.AddListener("GBufferInitialized", "world_parameters", function()
 		if not entities.world:IsValid() then
 			entities.world = entities.CreateEntity("world")
-		else
-			entities.world:GetComponent("world"):SetStorableTable(entities.world:GetComponent("world"):GetStorableTable())
 		end
 	end)
 end
