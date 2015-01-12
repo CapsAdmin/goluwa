@@ -1,6 +1,7 @@
 local PASS = {}
 
 PASS.Name = "what"
+PASS.Default = false
 
 PASS.Source = [[
 	out vec4 out_color;
