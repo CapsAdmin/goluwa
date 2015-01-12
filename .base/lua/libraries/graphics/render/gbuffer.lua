@@ -144,8 +144,13 @@ do -- mixer
 		
 		
 		local pass = table.copy(PASS)
+		local default = PASS.Default
 		
-		console.CreateVariable("render_g_" .. pass.Name, true, function(val)
+		if default == nil then
+			default = true
+		end
+		
+		console.CreateVariable("render_g_" .. pass.Name, default, function(val)
 			if val then
 				render.AddGBufferShader(pass)
 			else
