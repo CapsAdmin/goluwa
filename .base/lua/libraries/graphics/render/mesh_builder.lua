@@ -76,7 +76,8 @@ do -- helpers
 			
 			local a, b, c = self.Vertices[ai], self.Vertices[bi], self.Vertices[ci] 
 			local normal = (a.pos - b.pos):Cross(b.pos - c.pos):GetNormalized()
-
+			normal = -Vec3(normal.x, normal.y, normal.z)
+			
 			self.Vertices[ai].normal = normal
 			self.Vertices[bi].normal = normal
 			self.Vertices[ci].normal = normal
