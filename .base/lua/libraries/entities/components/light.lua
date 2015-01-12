@@ -103,10 +103,11 @@ if CLIENT then
 			
 			-- setup the view matrix
 			local view = Matrix44()
-			view:Rotate(ang.r, 0, 0, 1)
-			view:Rotate(ang.p + math.pi/2, 1, 0, 0)
+			view:Rotate(ang.p, 0, 0, 1)
+			view:Rotate(ang.r + math.pi/2, 1, 0, 0)
 			view:Rotate(ang.y, 0, 0, 1)
-			view:Translate(pos.y, pos.x, pos.z)
+			view:Translate(pos.y, pos.x, pos.z)			
+			
 			
 			-- setup the projection matrix
 			local projection = Matrix44()
@@ -118,12 +119,15 @@ if CLIENT then
 				projection:Ortho(-size, size, -size, size, 200, 0) 
 			end
 			
+			--entities.world:GetComponent("world").sun:SetPosition(render.GetCameraPosition()) 
+			--entities.world:GetComponent("world").sun:SetAngles(render.GetCameraAngles())
+			
 			-- make a view_projection matrix
 			self.vp_matrix = view * projection
-			
+						
 			-- render the scene with this matrix
 			self.shadow_map:Begin("depth")
-				self.shadow_map:Clear("depth")
+				self.shadow_map:Clear()
 				event.Call("Draw3DGeometry", shader, self.vp_matrix)
 			self.shadow_map:End("depth")
 		end
@@ -264,7 +268,7 @@ if CLIENT then
 
 					float shadow_depth = texture(tex_shadow_map, 0.5*shadow_uv.xy+vec2(0.5)).r;
 
-					float shadow = shadow_depth > view_depth ? 0.5 : 1.0;
+					float shadow = shadow_depth < view_depth ? 0.5 : 1.0;
 					
 					return shadow;
 				}  
@@ -308,7 +312,6 @@ if CLIENT then
 			
 			shader.pvm_matrix = screen.m
 			self.screen_matrix = screen
-
 			
 			local mat = matrix * render.matrices.view_3d
 			local x,y,z = mat:GetTranslation()
@@ -523,14 +526,20 @@ if CLIENT then
 		})
 	end
 	
-	function COMPONENT:OnAdd(ent)		
+	function COMPONENT:OnAdd(ent)
 		-- grabbin puke
+		-- grabbin puke
+		-- grabbin puke
+		if LIGHT_MESH then
+			self.light_mesh = LIGHT_MESH
+			return
+		end
 		local ent = entities.CreateEntity("clientside")
 		ent:LoadModelFromDisk("models/cube.obj", nil, function()
-			self.light_mesh = ent:GetComponent("model").sub_models[1]
+			LIGHT_MESH = ent:GetComponent("model").sub_models[1]
+			self.light_mesh = LIGHT_MESH
 			ent:Remove()
-			print(self.light_mesh)
-		end)		
+		end)
 	end
 
 	function COMPONENT:OnRemove(ent)

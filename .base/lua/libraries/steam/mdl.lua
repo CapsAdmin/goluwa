@@ -1,5 +1,7 @@
 local steam = ... or _G.steam
 
+local scale = 0.0254
+
 local _debug = false
 
 local header = [[
@@ -607,8 +609,10 @@ local function load_vvd(path)
 
 			--vertex.boneWeight = boneWeight
 
-			vertex.pos = -buffer:ReadVec3() * 0.0254
-			vertex.normal = -buffer:ReadVec3()
+			local pos = buffer:ReadVec3()
+			vertex.pos = -Vec3(pos.y, pos.x, pos.z) * scale
+			local normal = buffer:ReadVec3()
+			vertex.normal = -Vec3(normal.y, normal.x, normal.z)
 			vertex.uv = buffer:ReadVec2()
 
 			vvd.vertices[i] = vertex
@@ -723,81 +727,3 @@ function steam.LoadModel(path, callback, thread)
 	
 	return model
 end
-
---for i = 1, #model.sub_models do model.sub_models[i] = nil end
---local huh = model.sub_models[4]
---table.clear(model.sub_models)
---model.sub_models[1] = huh
-
-local path = "models/airboat"
-local path = "models/alyx"
-local path = "models/props_canal/canal_bridge02"
-local path = "models/cranes/crane_frame"
-local path = "models/props_borealis/door_wheel001a"
-local path = "models/props_citizen_tech/steamengine001a"
-local path = "models/props_combine/cell_array_01_extended" -- broken ish
-local path = "models/antlion" -- broken
-local path = "models/airboat"
-local path = "models/buggy" -- broken
-local path = "models/zombie/poison" -- broken
-local path = "models/pot" 
-local path = "models/majoras_mask/clocktown/pot"
-
-if RELOAD then 
-	if true then
-		local bsp_file = assert(vfs.Open("G:/SteamLibrary/SteamApps/common/Team Fortress 2/tf/download/maps/trade_clocktown_b2a.bsp"))
-
-		local header = bsp_file:ReadStructure([[
-		long ident; // BSP file identifier
-		long version; // BSP file version
-		]])
-		 
-		do 
-			local struct = [[
-				int	fileofs;	// offset into file (bytes)
-				int	filelen;	// length of lump (bytes)
-				int	version;	// lump format version
-				char fourCC[4];	// lump ident code
-			]]
-
-			local struct_21 = [[
-				int	version;	// lump format version
-				int	fileofs;	// offset into file (bytes)
-				int	filelen;	// length of lump (bytes)
-				char fourCC[4];	// lump ident code
-			]]
-
-			if header.version > 21 then 
-				struct = struct_21
-			end
-			
-			header.lumps = {}
-
-			for i = 1, 64 do
-				header.lumps[i] = bsp_file:ReadStructure(struct) 
-			end		
-		end
-		
-		header.map_revision = bsp_file:ReadLong()
-		do 
-			local lump = header.lumps[41]
-			local length = lump.filelen
-
-			bsp_file:SetPosition(lump.fileofs)
-			local pak = bsp_file:ReadBytes(length) 
-			
-			local name = "data/temp_bsp.zip"
-			
-			vfs.Write(name, pak)
-			
-			vfs.Mount(R(name))			
-		end
-	end
-
-	steam.MountSourceGame("half-life 2")
-	
-	entities.SafeRemove(MDL_ENT)
-	local ent = entities.CreateEntity("clientside")
-	ent:SetModelPath(path)
-	MDL_ENT = ent
-end 

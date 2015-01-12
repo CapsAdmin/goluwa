@@ -1,5 +1,7 @@
 local steam = ... or _G.steam
 
+local scale = 0.0254
+
 local mount_info = {
 	["gm_.+"] = {"garry's mod"},
 	["ep1_.+"] = {"half-life 2: episode one"},
@@ -144,9 +146,7 @@ function steam.LoadMap(path, callback)
 			bsp_file:SetPosition(lump.fileofs)
 			
 			local game_lumps = bsp_file:ReadLong()
-			
-			logf("gamelumps = %s\n", game_lumps)
-					
+								
 			for i = 1, game_lumps do
 				local id = bsp_file:ReadBytes(4)
 				local flags = bsp_file:ReadShort()
@@ -186,13 +186,23 @@ function steam.LoadMap(path, callback)
 							long skin;
 							float fade_min_dist;
 							float fade_max_dist;
-							vec3 lighting_origin;
-							float forced_fade_scale;
+							
+							long lighting_origin_x;
+							long lighting_origin_y;
+							long lighting_origin_z;
 						]])
+						
+						if version > 4 then
+							lump.forced_fade_scale = bsp_file:ReadFloat()
+						end						
 						
 						if version > 5 then
 							lump.min_dx_level = bsp_file:ReadShort()
 							lump.max_dx_level = bsp_file:ReadShort()
+						end
+						
+						if version > 6 then
+							bsp_file:Advance(4*3) -- ???
 						end
 												
 						lump.model = paths[lump.prop_type + 1] or paths[1]
@@ -204,21 +214,20 @@ function steam.LoadMap(path, callback)
 					
 					bsp_file:PopPosition()
 				end
-								id = nil
 
 				if id == "prpd" then
 					bsp_file:PushPosition(fileofs)
 					
 					local count = bsp_file:ReadLong()
 					local paths = {}
-					logf("\tprpd paths = %s\n", count)
+					logf("prpd paths = %s\n", count)
 					
-					for i = 1, count do 
-						local str = bsp_file:ReadString()
-						if str ~= "" then
-							paths[i] = str
-						end
-					end 			
+					-- for i = 1, count do 
+						-- local str = bsp_file:ReadString()
+						-- if str ~= "" then
+							-- paths[i] = str
+						-- end
+					-- end
 														
 					bsp_file:PopPosition()
 				end
@@ -227,7 +236,7 @@ function steam.LoadMap(path, callback)
 					bsp_file:PushPosition(fileofs)
 
 					local count = bsp_file:ReadLong()
-					logf("\ttlpd paths = %s\n", count)
+					logf("tlpd paths = %s\n", count)
 					--for i = 1, count do
 					--	local a = bsp_file:ReadBytes(4)
 					--	local b = bsp_file:ReadByte()
@@ -408,9 +417,7 @@ function steam.LoadMap(path, callback)
 
 		local models = {}
 
-		do 
-			local scale = 0.0254
-			
+		do 			
 			local function add_vertex(model, texinfo, texdata, pos, blend, normal)
 				local a = texinfo.textureVecs
 				
@@ -423,13 +430,12 @@ function steam.LoadMap(path, callback)
 				blend = math.clamp(blend, 0, 1)
 				
 				model:AddVertex({
-					pos = Vec3(-pos.x * scale, pos.y * scale, -pos.z * scale), -- copy
+					pos = -Vec3(pos.y, pos.x, pos.z) * scale, -- copy
 					texture_blend = blend,
 					uv = Vec2(
 						(a[1] * pos.x + a[2] * pos.y + a[3] * pos.z + a[4]) / texdata.width,
 						(a[5] * pos.x + a[6] * pos.y + a[7] * pos.z + a[8]) / texdata.height
-					),
-					normal = normal,
+					)
 				}) 
 			end
 
@@ -517,8 +523,8 @@ function steam.LoadMap(path, callback)
 
 								if j >= 3 then
 									if header.vertices[first] and header.vertices[current] and header.vertices[previous] then
-										add_vertex(mesh, texinfo, texdata, header.vertices[first])
 										add_vertex(mesh, texinfo, texdata, header.vertices[current])
+										add_vertex(mesh, texinfo, texdata, header.vertices[first])
 										add_vertex(mesh, texinfo, texdata, header.vertices[previous])
 									end
 								elseif j == 1 then
@@ -557,12 +563,12 @@ function steam.LoadMap(path, callback)
 											
 							for x = 1, dims - 1 do
 								for y = 1, dims - 1 do
-									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
 									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
+									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
 									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y + 1))
 									
-									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
 									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y))
+									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
 									add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
 								end
 							end
@@ -613,7 +619,7 @@ function steam.LoadMap(path, callback)
 		entities.SafeRemove(steam.bsp_world)
 		
 		steam.bsp_world = entities.CreateEntity("clientside")
-		steam.bsp_world:SetName(path:match(".+/(.+)%.bsp"))
+		steam.bsp_world:SetName(path:match(".+/(.+)%.bsp"))		
 		
 		if CLIENT then
 			for i, model in ipairs(models) do
@@ -625,9 +631,9 @@ function steam.LoadMap(path, callback)
 		for _, info in pairs(header.entities) do
 			if CLIENT and info.classname then
 				if info.classname and info.classname:find("light_environment") then
-					local ang = Deg3(info.angles.y, info.pitch, 0)
-					
-					entities.world:SetSunAngles(ang)					
+
+					local p, y = info.pitch, info.angles.y
+					entities.world:SetSunAngles(Deg3(y, p, 0))					
 					entities.world:SetSunSpecularIntensity(0.15)
 					entities.world:SetSunIntensity(1)
 					
@@ -637,11 +643,10 @@ function steam.LoadMap(path, callback)
 				elseif info.classname:lower():find("light") and info._light then		
 					local ent = entities.CreateEntity("light", steam.bsp_world)
 					ent:SetName(info.classname)
-					local pos = info.origin * 0.0254
-					ent:SetPosition(Vec3(-pos.y, pos.x, pos.z))
+					ent:SetPosition(info.origin * 0.0254)
 					
 					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
-					ent:SetSize(2)
+					ent:SetSize(5)
 					ent:SetDiffuseIntensity(info._light.a/25) 
 					ent:SetRoughness(0.5)
 				elseif CLIENT and info.classname == "env_fog_controller" then
@@ -656,10 +661,8 @@ function steam.LoadMap(path, callback)
 					local ent = entities.CreateEntity("clientside", steam.bsp_world)
 					ent:SetName(info.classname)
 					ent:SetModelPath(info.model)
-					local pos = info.origin * 0.0254
-					ent:SetPosition(Vec3(-pos.y, pos.x, pos.z))
-					local ang = info.angles:Rad()
-					ent:SetAngles(Ang3(ang.p, ang.y, ang.r))
+					ent:SetPosition(info.origin * scale)
+					ent:SetAngles(info.angles:Rad())
 				end
 			end
 			
@@ -673,12 +676,8 @@ function steam.LoadMap(path, callback)
 				local ent = entities.CreateEntity("clientside", steam.bsp_world)
 				ent:SetName("static_entity_" .. i)
 				ent:SetModelPath(info.model)
-				local pos = info.origin * 0.0254
-				ent:SetPosition(Vec3(-pos.y, pos.x, pos.z))				
-				local ang = info.angles:Rad()
-				ang = Ang3(ang.p, ang.y, ang.r)
-		--		ang:RotateAroundAxis(Vec3(1,0,0), math.rad(90))
-				ent:SetAngles(ang)
+				ent:SetPosition(info.origin * scale)
+				ent:SetAngles(info.angles:Rad())
 			end
 			
 			thread:ReportProgress("spawning static entities", count)

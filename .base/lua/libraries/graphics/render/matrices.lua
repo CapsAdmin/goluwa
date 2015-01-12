@@ -16,7 +16,7 @@ render.matrices = {
 	view_3d_inverse = Matrix44(),
 }
 
-render.camera = {
+render.camera = render.camera or {
 	x = 0,
 	y = 0,
 	
