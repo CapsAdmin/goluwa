@@ -325,23 +325,18 @@ if CLIENT then
 		function COMPONENT:BuildBoundingBox()
 			local min, max = Vec3(), Vec3()
 
-			for i, sub_model in ipairs(self.sub_models) do
-				if 
-					sub_model.BBMin.x < min.x and 
-					sub_model.BBMin.y < min.y and 
-					sub_model.BBMin.z < min.z 
-				then
-					min = sub_model.BBMin
-				end
+			for i, sub_model in ipairs(self.sub_models) do				
+				if sub_model.BBMin.x < min.x then min.x = sub_model.BBMin.x end
+				if sub_model.BBMin.y < min.y then min.y = sub_model.BBMin.y end
+				if sub_model.BBMin.z < min.z then min.z = sub_model.BBMin.z end
 				
-				if 
-					sub_model.BBMax.x > max.x and 
-					sub_model.BBMax.y > max.y and 
-					sub_model.BBMax.z > max.z 
-				then
-					max = sub_model.BBMax
-				end
+				if sub_model.BBMax.x > max.x then max.x = sub_model.BBMax.x end
+				if sub_model.BBMax.y > max.y then max.y = sub_model.BBMax.y end
+				if sub_model.BBMax.z > max.z then max.z = sub_model.BBMax.z end
 			end
+			
+			self.BBMin = min
+			self.BBMax = max
 			
 			self.corners = {}
 			
