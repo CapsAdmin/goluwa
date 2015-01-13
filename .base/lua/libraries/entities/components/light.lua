@@ -342,16 +342,16 @@ if CLIENT then
 		end
 	end
 	
-	if false then -- lens flares stage 3
+	if true then -- lens flares stage 3
 		local PASS = render.CreateGBufferPass("lens_flare", 4)
 		PASS:AddBuffer("lens_flare", "RGBA16F")
 		
 		function PASS:Draw2D()
-			if not self.LensFlare then return end
-		--	gl.Disable(gl.e.GL_DEPTH_TEST)	
+			gl.Disable(gl.e.GL_DEPTH_TEST)	
 		
-			--gl.Enable(gl.e.GL_BLEND)
---			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
+			gl.Enable(gl.e.GL_BLEND)
+			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
+			
 			
 			render.SetCullMode("front")
 			render.gbuffer:Begin("lens_flare")
@@ -364,6 +364,7 @@ if CLIENT then
 		end
 			
 		function COMPONENT:OnDrawLensFlare(shader)
+			if not self.LensFlare or not self.screen_matrix then return end
 			local x, y, z = self.screen_matrix:GetClipCoordinates()
 			
 			shader.pvm_matrix = self.screen_matrix.m
@@ -493,7 +494,10 @@ if CLIENT then
 					
 					vec3 c = vec3(.0);
 					
-					c.r+=f2+f4+f5+f6; c.g+=f22+f42+f52+f62; c.b+=f23+f43+f53+f63;
+					c.r+=f2+f4+f5+f6; 
+					c.g+=f22+f42+f52+f62; 
+					c.b+=f23+f43+f53+f63;
+					
 					c = c*1.3 - vec3(length(uvd)*.05);
 					c+=vec3(f0);
 					
@@ -518,7 +522,7 @@ if CLIENT then
 						vec3 color = light_color.rgb*lensflare(uv-vec2(0.5), screen_pos);
 						color -= noise(gl_FragCoord.xy)*0.015;
 						color = cc(color, 0.5, 0.1);
-						
+												
 						out_color.rgb = color;
 					}
 				}

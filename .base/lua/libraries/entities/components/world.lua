@@ -6,6 +6,7 @@ function COMPONENT:OnAdd(ent)
 	prototype.SafeRemove(self.sun)
 	
 	self.sun = entities.CreateEntity("light", ent)
+	self.sun:SetLensFlare(true)
 	self.sun:SetName("sun")
 	
 	for _, info in ipairs(prototype.GetStorableVariables(self)) do		
