@@ -440,6 +440,10 @@ do -- console vars
 		
 		return prototype.CreateObject("cvar", {name = name})
 	end
+	
+	function console.IsVariableAdded(var)
+		return console.AddedCommands and console.AddedCommands[var] ~= nil
+	end
 
 	function console.GetVariable(var, def)
 		if not console.vars then console.ReloadVariables() end
