@@ -158,6 +158,10 @@ do -- mixer
 				end
 			end)
 		end
+		
+		if not console.GetVariable("render_g_" .. PASS.Name) then
+			render.RemoveGBufferShader(PASS.Name)
+		end
 	end
 	
 	function render.RemoveGBufferShader(name)
