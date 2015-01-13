@@ -148,7 +148,11 @@ do -- mixer
 		PASS.shader = shader
 		
 		if PASS.Initialize then
-			PASS:Initialize()
+			local ok, err = pcall(function() PASS:Initialize() end)
+			if not ok then
+				logn("failed to initialize gbuffer pass ", PASS.Name, ": ", err)
+				render.RemoveGBufferShader(PASS.Name)
+			end
 		end
 
 		if not console.IsVariableAdded("render_g_" .. PASS.Name) then			
