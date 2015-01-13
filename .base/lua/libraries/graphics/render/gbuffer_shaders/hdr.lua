@@ -5,19 +5,22 @@ PASS.Default = false
 
 PASS.Variables = {
 	tex_extracted = "sampler2D",
+	bloom_factor = 0.2,
+	exposure = 1,
 }
 
 function PASS:Initialize()
-	self.fb = render.CreateFrameBuffer(render.GetWidth()/2, render.GetHeight()/2)
+	self.fb = render.CreateFrameBuffer(render.GetWidth()/4, render.GetHeight()/4)
+	self.area = render.CreateFrameBuffer(1,1)
+	
+	self.exposure = 1
+	self.smooth_exposure = 1
 	
 	self.extract = render.CreateShader([[				
-		if (dot(vec4(0.30, 0.59, 0.11, 0.0), texture(self, uv)) > 0.5)
-		{
-			return texture(self, uv);
-		}
-		
-		return vec4(0.0, 0.0, 0.0, 1.0);
-	]], {self = self.fb:GetTexture()})
+		vec4 color = vec4(1,1,1,1);
+		color.rgb = pow(texture(self, uv).rgb, vec3(1.25))*1.25;
+		return color;
+	]], {self = self.fb:GetTexture(), exposure = 1})
 	
 	self.blur = render.CreateShader([[
 		float dx = blur_size / size.x;
@@ -47,14 +50,17 @@ end
 function PASS:Update()
 	self.fb:Copy(render.gbuffer_mixer_buffer)
 	
+	render.SetBlendMode("alpha")
+	
 	surface.PushMatrix(0, 0, self.fb.w, self.fb.h)
 		self.fb:Begin()
+			self.shader.exposure = self.smooth_exposure
 			self.extract:Bind()
 			surface.rect_mesh:Draw()
 		self.fb:End()
 		
-		for i = 1, 4 do
-			self.blur.blur_size = i * 2
+		for i = 1, 3 do
+			self.blur.blur_size = i*2
 			self.fb:Begin()
 				self.blur:Bind()
 				surface.rect_mesh:Draw()
@@ -62,32 +68,31 @@ function PASS:Update()
 		end
 	surface.PopMatrix()
 	
+	
+	if not self.next_update or self.next_update < system.GetTime() then
+		self.area:Copy(self.fb)
+		self.area:Begin()	
+			local r,g,b = render.ReadPixels(0,0, 1,1)
+			self.exposure = math.clamp((-math.max(r,g,b)+1) * 2, 0.1, 1) ^ 0.75
+		self.area:End()
+		self.next_update = system.GetTime() + 1/30
+	end
+		
+	self.smooth_exposure = self.smooth_exposure or 0
+	self.smooth_exposure = math.lerp(render.delta, self.smooth_exposure, self.exposure)
+		
+
 	self.shader.tex_extracted = self.fb:GetTexture()
 end
 
 
 PASS.Source = [[
 	out vec4 out_color;
-	
-	float exposure = 1;
-	float bloomFactor = 1;
-	float brightMax = 2;
-	
+		
 	void main() 
-	{ 		
-		vec4 original_image = texture(self, uv); 
-		vec4 downsampled_extracted_bloom = texture(tex_extracted, uv);
-		
-		vec4 color = original_image + downsampled_extracted_bloom * bloomFactor;
-		
-		// Perform tone-mapping
-		float Y = dot(vec4(0.30, 0.59, 0.11, 0.0), color);
-		float YD = exposure * (exposure/brightMax + 1.0) / (exposure + 1.0);
-		color *= YD;
-		
-		color.a = 1;
-		
-		out_color = color;
+	{ 	
+		out_color.rgb = 1 - exp2(-(texture(self, uv).rgb + bloom_factor * texture(tex_extracted, uv).rgb) * exposure);
+		out_color.rgb *= 2;
 		out_color.a = 1;
 	}
 ]]
