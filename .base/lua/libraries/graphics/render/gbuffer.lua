@@ -141,22 +141,23 @@ do -- mixer
 		table.sort(render.gbuffer_shaders_sorted, function(a, b)
 			return a.gbuffer_position < b.gbuffer_position
 		end)
-		
-		
-		local pass = table.copy(PASS)
-		local default = PASS.Default
-		
-		if default == nil then
-			default = true
-		end
-		
-		console.CreateVariable("render_g_" .. pass.Name, default, function(val)
-			if val then
-				render.AddGBufferShader(pass)
-			else
-				render.RemoveGBufferShader(pass.Name)
+
+		if not console.IsVariableAdded("render_g_" .. PASS.Name) then			
+			local pass = table.copy(PASS)
+			local default = PASS.Default
+			
+			if default == nil then
+				default = true
 			end
-		end)
+					
+			console.CreateVariable("render_g_" .. pass.Name, default, function(val)
+				if val then
+					render.AddGBufferShader(pass)
+				else
+					render.RemoveGBufferShader(pass.Name)
+				end
+			end)
+		end
 	end
 	
 	function render.RemoveGBufferShader(name)
