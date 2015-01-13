@@ -412,159 +412,137 @@ local function load_vtx(path)
 
 	local buffer = vfs.Open(path .. ".dx90.vtx") or vfs.Open(path .. ".dx80.vtx") or vfs.Open(path .. ".sw.vtx") 
 
-	local vtx = {}
-
-	vtx.version = buffer:ReadLong()
-	vtx.vertexCacheSize = buffer:ReadLong()
-	vtx.maxBonesPerStrip = buffer:ReadShort()
-	vtx.maxBonesPerTri = buffer:ReadShort()
-	vtx.maxBonesPerVertex = buffer:ReadLong()
-	vtx.checksum = buffer:ReadLong()
-	vtx.lod_count = buffer:ReadLong()
-	vtx.materialReplacementListOffset = buffer:ReadLong()
+	local vtx = buffer:ReadStructure([[
+		long version;
+		long vertex_cache_size;
+		short max_bones_per_strip;
+		short max_bones_per_tri;
+		long max_bones_per_vertex;
+		long checksum;
+		long lod_count;
+		long material_replacement_list_offset;
+	]])
 
 	vtx.body_part_count = buffer:ReadLong()
 	vtx.body_part_offset = buffer:ReadLong()
 
-	if vtx.body_part_count > 0 and vtx.body_part_offset ~= 0 then
-		buffer:PushPosition(vtx.body_part_offset)
-		vtx.body_parts = {}
+	buffer:PushPosition(vtx.body_part_offset)
+	vtx.body_parts = {}
 
-		for i = 1, vtx.body_part_count do
+	for i = 1, vtx.body_part_count do
+		local stream_pos = buffer:GetPosition()
+
+		local body_part = {}
+		body_part.model_count = buffer:ReadLong()
+		body_part.model_offset = buffer:ReadLong()
+		vtx.body_parts[i] = body_part
+
+		buffer:PushPosition(stream_pos + body_part.model_offset)
+		body_part.models = {}
+
+		for i = 1, body_part.model_count do
 			local stream_pos = buffer:GetPosition()
 
-			local body_part = {}
-			body_part.model_count = buffer:ReadLong()
-			body_part.model_offset = buffer:ReadLong()
-			vtx.body_parts[i] = body_part
+			local model = {}
+			model.lod_count = buffer:ReadLong()
+			model.lod_offset = buffer:ReadLong()
+			body_part.models[i] = model
 
-			if body_part.model_count > 0 and body_part.model_offset ~= 0 then
-				buffer:PushPosition(stream_pos + body_part.model_offset)
-				body_part.models = {}
+			buffer:PushPosition(stream_pos + model.lod_offset)
+			model.model_lods = {}
 
-				for i = 1, body_part.model_count do
+			for i = 1, model.lod_count do
+				local stream_pos = buffer:GetPosition()
+
+				local lod_model = {}
+				lod_model.mesh_count = buffer:ReadLong()
+				lod_model.mesh_offset = buffer:ReadLong()
+				lod_model.switchPoint = buffer:ReadFloat()
+				model.model_lods[i] = lod_model
+
+				buffer:PushPosition(stream_pos + lod_model.mesh_offset)
+				lod_model.meshes = {}
+
+				for i = 1, lod_model.mesh_count do
 					local stream_pos = buffer:GetPosition()
 
-					local model = {}
-					model.lod_count = buffer:ReadLong()
-					model.lod_offset = buffer:ReadLong()
-					body_part.models[i] = model
+					local mesh = {}
+					mesh.strip_group_count = buffer:ReadLong()
+					mesh.strip_group_offset = buffer:ReadLong()
+					mesh.flags = buffer:ReadByte()
+					lod_model.meshes[i] = mesh
 
-					if model.lod_count > 0 and model.lod_offset ~= 0 then
-						buffer:PushPosition(stream_pos + model.lod_offset)
-						model.model_lods = {}
-
-						for i = 1, model.lod_count do
-							local stream_pos = buffer:GetPosition()
-
-							local lod_model = {}
-							lod_model.mesh_count = buffer:ReadLong()
-							lod_model.mesh_offset = buffer:ReadLong()
-							lod_model.switchPoint = buffer:ReadFloat()
-							model.model_lods[i] = lod_model
-
-							if lod_model.mesh_count > 0 and lod_model.mesh_offset ~= 0 then
-								buffer:PushPosition(stream_pos + lod_model.mesh_offset)
-								lod_model.meshes = {}
-
-								for i = 1, lod_model.mesh_count do
-									local stream_pos = buffer:GetPosition()
-
-									local mesh = {}
-									mesh.strip_group_count = buffer:ReadLong()
-									mesh.strip_group_offset = buffer:ReadLong()
-									mesh.flags = buffer:ReadByte()
-									lod_model.meshes[i] = mesh
-
-									if mesh.strip_group_count > 0 and mesh.strip_group_offset ~= 0 then
-										buffer:PushPosition(stream_pos + mesh.strip_group_offset)   
-										mesh.strip_groups = {}
-										
-										for i = 1, mesh.strip_group_count do
-											local stream_pos = buffer:GetPosition()
-											
-											local strip_group = {}
-											strip_group.vertices_count = buffer:ReadLong()
-											strip_group.vertices_offset = buffer:ReadLong()
-											strip_group.indices_count = buffer:ReadLong()
-											strip_group.indices_offset = buffer:ReadLong()
-											strip_group.strip_count = buffer:ReadLong()
-											strip_group.strip_offset = buffer:ReadLong()
-											strip_group.flags = buffer:ReadByte()
-											mesh.strip_groups[i] = strip_group
-											
-											local vertices = {}
-											if strip_group.vertices_count > 0 and strip_group.vertices_offset ~= 0 then
-												buffer:PushPosition(stream_pos + strip_group.vertices_offset)
-
-												for i = 1, strip_group.vertices_count do
-													local vertex = {bone_weight_indices = {}, boneId = {}}
-													for i = 1, MAX_NUM_BONES_PER_VERT do
-														vertex.bone_weight_indices[i] = buffer:ReadByte()
-													end
-													vertex.bone_count = buffer:ReadByte()
-													vertex.mesh_vertex_index = buffer:ReadShort()
-													for i = 1, MAX_NUM_BONES_PER_VERT do
-														vertex.boneId[i] = buffer:ReadByte()
-													end
-													vertices[i] = vertex
-												end
-
-												buffer:PopPosition()
-											end
-											
-											local indices = {}
-											if strip_group.indices_count > 0 and strip_group.indices_offset ~= 0 then
-												buffer:PushPosition(stream_pos + strip_group.indices_offset)
-
-												for i = 1, strip_group.indices_count do
-													indices[i] = buffer:ReadShort()
-												end
-
-												buffer:PopPosition()
-											end
-																						
-											local strips = {}											
-											if strip_group.strip_count > 0 and strip_group.strip_offset ~= 0 then
-												buffer:PushPosition(stream_pos + strip_group.strip_offset)
-												
-												for i = 1, strip_group.strip_count do
-													local strip = {}
-
-													strip.indices_count = buffer:ReadLong()
-													strip.index_model_index = buffer:ReadLong()
-													strip.vertices_count = buffer:ReadLong()
-													strip.vertex_model_index = buffer:ReadLong()
-													strip.bone_count = buffer:ReadShort()
-													strip.flags = buffer:ReadByte()
-													strip.bone_state_change_count = buffer:ReadLong()
-													strip.bone_state_change_offset = buffer:ReadLong()
-
-													strip.indices = indices 
-													strip.vertices = vertices
-
-													strips[i] = strip
-												end
-																								
-												buffer:PopPosition()
-											end						
-																						
-											strip_group.strips = strips
-										end
-										buffer:PopPosition()
-									end
-								end
-								buffer:PopPosition()
+					buffer:PushPosition(stream_pos + mesh.strip_group_offset)   
+					mesh.strip_groups = {}
+					
+					for i = 1, mesh.strip_group_count do
+						local stream_pos = buffer:GetPosition()
+						
+						local strip_group = {}
+						strip_group.vertices_count = buffer:ReadLong()
+						strip_group.vertices_offset = buffer:ReadLong()
+						strip_group.indices_count = buffer:ReadLong()
+						strip_group.indices_offset = buffer:ReadLong()
+						strip_group.strip_count = buffer:ReadLong()
+						strip_group.strip_offset = buffer:ReadLong()
+						strip_group.flags = buffer:ReadByte()
+						mesh.strip_groups[i] = strip_group
+						
+						local vertices = {}
+						buffer:PushPosition(stream_pos + strip_group.vertices_offset)
+						for i = 1, strip_group.vertices_count do
+							local vertex = {bone_weight_indices = {}, boneId = {}}
+							for i = 1, MAX_NUM_BONES_PER_VERT do
+								vertex.bone_weight_indices[i] = buffer:ReadByte()
 							end
+							vertex.bone_count = buffer:ReadByte()
+							vertex.mesh_vertex_index = buffer:ReadShort()
+							for i = 1, MAX_NUM_BONES_PER_VERT do
+								vertex.boneId[i] = buffer:ReadByte()
+							end
+							vertices[i] = vertex
 						end
 						buffer:PopPosition()
+						
+						local indices = {}
+						buffer:PushPosition(stream_pos + strip_group.indices_offset)
+						for i = 1, strip_group.indices_count do
+							indices[i] = buffer:ReadShort()
+						end
+						buffer:PopPosition()
+
+						local strips = {}											
+						buffer:PushPosition(stream_pos + strip_group.strip_offset)						
+						for i = 1, strip_group.strip_count do
+							local strip = {}
+
+							strip.indices_count = buffer:ReadLong()
+							strip.index_model_index = buffer:ReadLong()
+							strip.vertices_count = buffer:ReadLong()
+							strip.vertex_model_index = buffer:ReadLong()
+							strip.bone_count = buffer:ReadShort()
+							strip.flags = buffer:ReadByte()
+							strip.bone_state_change_count = buffer:ReadLong()
+							strip.bone_state_change_offset = buffer:ReadLong()
+
+							strip.indices = indices 
+							strip.vertices = vertices
+
+							strips[i] = strip
+						end
+						buffer:PopPosition()
+
+						strip_group.strips = strips
 					end
+					buffer:PopPosition()
 				end
 				buffer:PopPosition()
 			end
+			buffer:PopPosition()
 		end
 		buffer:PopPosition()
 	end
+	buffer:PopPosition()
 
 	return vtx
 end
@@ -676,12 +654,12 @@ function steam.LoadModel(path, callback, thread)
 		for _, model_ in ipairs(body_part.models) do
 			for lod_index, lod_model in ipairs(model_.model_lods) do
 				if lod_model.meshes then
-					for _, mesh in ipairs(lod_model.meshes) do
+					for model_i, mesh in ipairs(lod_model.meshes) do
 						for _, strip_group in ipairs(mesh.strip_groups) do
 							for _, strip in ipairs(strip_group.strips) do
 								local vertices = vvd.fixed_vertices_by_lod[lod_index] or vvd.vertices
 								local indices = {}
-
+								
 								for i, v in ipairs(strip.indices) do
 									indices[i] = strip.vertices[v+1].mesh_vertex_index 
 								end
