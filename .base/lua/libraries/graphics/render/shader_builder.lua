@@ -215,13 +215,13 @@ local cdef_defined = {}
 
 local META = prototype.CreateTemplate("shader")
 
-function render.CreateShader(data)	
+function render.CreateShader(data)
 	check(data, "table")
 
 	if not render.CheckSupport("CreateShader") then
 		return NULL
 	end
-
+	
 	-- rebuild the type info when creating the first shader to ensure
 	-- we have all the enums and functions nessceary to build it
 	if rebuild_info then

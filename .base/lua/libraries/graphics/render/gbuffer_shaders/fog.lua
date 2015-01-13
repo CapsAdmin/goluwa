@@ -1,7 +1,7 @@
 local PASS = {}
 
 PASS.Name = "fog"
-PASS.Position = 3
+PASS.Position = 2
 
 PASS.Variables = {
 	fog_color = Color(0.9,0.9,0.9),
