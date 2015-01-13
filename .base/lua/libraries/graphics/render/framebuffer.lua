@@ -145,15 +145,16 @@ function META:__tostring2()
 	return ("[%i]"):format(self.id)
 end
 
+local current_id = 0
+
 do
 	local stack = {}
-	local current = 0
 	
 	function META:Begin(...)
-		table.insert(stack, current)
+		table.insert(stack, current_id)
 		
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, self.id)
-		current = self.id
+		current_id = self.id
 		
 		if not self.building then
 			self:SetDrawBuffers(...)
@@ -167,7 +168,7 @@ do
 		local id = table.remove(stack)		
 		
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
-		current = id
+		current_id = id
 	end
 end
 
@@ -238,6 +239,7 @@ function META:Copy(framebuffer)
 	gl.BindFramebuffer(gl.e.GL_DRAW_FRAMEBUFFER, self.id)
 	gl.BindFramebuffer(gl.e.GL_READ_FRAMEBUFFER, framebuffer.id)
 	gl.BlitFramebuffer(0,0,framebuffer.w,framebuffer.h, 0,0,self.w,self.h, gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_LINEAR)
+	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, current_id)
 end
 
 prototype.Register(META)
