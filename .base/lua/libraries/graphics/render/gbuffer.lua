@@ -63,6 +63,9 @@ do -- mixer
 	function render.DrawGBufferShader(name)
 		local shader = render.gbuffer_shaders[name]
 		if shader then	
+			if shader.gbuffer_pass.Update then
+				shader.gbuffer_pass:Update()
+			end
 			render.gbuffer_mixer_buffer:Begin()		
 				surface.PushMatrix(0, 0, render.GetWidth(), render.GetHeight())
 					shader:Bind()
@@ -119,9 +122,9 @@ do -- mixer
 			shader.gbuffer_values = PASS.Variables
 		end
 		
-		
 		render.gbuffer_shaders[PASS.Name] = shader
 		
+		shader.gbuffer_pass = PASS
 		shader.gbuffer_name = PASS.Name
 		shader.gbuffer_position = PASS.Position or #render.gbuffer_shaders_sorted
 		
@@ -141,6 +144,12 @@ do -- mixer
 		table.sort(render.gbuffer_shaders_sorted, function(a, b)
 			return a.gbuffer_position < b.gbuffer_position
 		end)
+		
+		PASS.shader = shader
+		
+		if PASS.Initialize then
+			PASS:Initialize()
+		end
 
 		if not console.IsVariableAdded("render_g_" .. PASS.Name) then			
 			local pass = table.copy(PASS)
