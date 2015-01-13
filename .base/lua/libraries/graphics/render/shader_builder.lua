@@ -111,6 +111,20 @@ void main()
 }
 ]]
 
+local lazy_template = [[
+	out vec4 out_color;
+	
+	vec4 shade()
+	{
+		%s
+	}
+	
+	void main()
+	{
+		out_color = shade();
+	}
+]]
+
 local function rebuild_info()
 	-- grab all valid shaders from enums
 	for k,v in pairs(gl.e) do
@@ -215,8 +229,34 @@ local cdef_defined = {}
 
 local META = prototype.CreateTemplate("shader")
 
-function render.CreateShader(data)
-	check(data, "table")
+function render.CreateShader(data, vars)
+	
+	if type(data) == "string" then
+		local fragment_source = data
+		local name = "shader_lazy_" .. crypto.CRC32(fragment_source)
+	
+		data = {
+			name = name,			
+			vertex = {
+				uniform = {
+					pwm_matrix = {mat4 = render.GetPVWMatrix2D},
+				},			
+				attributes = {
+					{pos = "vec3"},
+					{uv = "vec2"},
+				},	
+				source = "gl_Position = pwm_matrix * vec4(pos, 1);"
+			},
+			
+			fragment = { 
+				uniform = vars,
+				attributes = {
+					{uv = "vec2"},
+				},			
+				source = fragment_source,
+			} 
+		}
+	end
 
 	if not render.CheckSupport("CreateShader") then
 		return NULL
@@ -377,6 +417,11 @@ function render.CreateShader(data)
 
 		if info.source then
 			if info.source:find("\n") then
+				if not info.source:find("main", nil, true) and info.source:find("return", nil, true) then
+					info.source = lazy_template:format(info.source)
+				end
+			
+			--	source = replace_field(source, "SOURCE", ("void mainx()\n{\n\t%s\n}\n"):format(info.source))
 				-- replace void *main* () with mainx
 				info.source = info.source:gsub("void%s+([main]-)%s-%(", function(str) if str == "main" then return "void mainx(" end end)
 
