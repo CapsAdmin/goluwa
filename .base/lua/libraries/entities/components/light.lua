@@ -347,15 +347,9 @@ if CLIENT then
 		PASS:AddBuffer("lens_flare", "RGBA16F")
 		
 		function PASS:Draw2D()
-			gl.Disable(gl.e.GL_DEPTH_TEST)	
-		
-			gl.Enable(gl.e.GL_BLEND)
-			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
-			
-			
 			render.SetCullMode("front")
 			render.gbuffer:Begin("lens_flare")
-				render.gbuffer:Clear(0,0,0,0, "lens_flare")
+				--render.gbuffer:Clear(0,0,0,0, "lens_flare")
 				event.Call("DrawLensFlare", render.gbuffer_lens_flare_shader)
 			render.gbuffer:End()
 			render.SetCullMode("back")			
@@ -375,6 +369,8 @@ if CLIENT then
 				shader.screen_pos:Set(-2,-2)
 			end
 			
+			shader.intensity = self.DiffuseIntensity^0.25
+			
 			shader:Bind()
 			self.light_mesh:Draw()
 		end
@@ -389,7 +385,7 @@ if CLIENT then
 				{uv = "vec2"},
 				{texture_blend = "float"},
 			},	
-			source = "gl_Position = pvm_matrix * vec4(pos*7.5, 1);"
+			source = "gl_Position = pvm_matrix * vec4(pos*7.50, 1);"
 		})
 		
 		PASS:ShaderStage("fragment", { 
@@ -403,6 +399,7 @@ if CLIENT then
 				noise_tex_size = render.GetNoiseTexture():GetSize(),
 		
 				screen_pos = Vec2(0,0),
+				intensity = 1,
 				
 				screen_size = {vec2 = render.GetGBufferSize},
 				light_color = Color(1,1,1,1),				
@@ -513,17 +510,15 @@ if CLIENT then
 				void main()
 				{					
 					vec2 uv = get_uv();
-					
-					out_color.a = 1;
-					
-					
+										
 					if (screen_pos != vec2(-2, -2))
 					{					
 						vec3 color = light_color.rgb*lensflare(uv-vec2(0.5), screen_pos);
 						color -= noise(gl_FragCoord.xy)*0.015;
-						color = cc(color, 0.5, 0.1);
-												
+						color = cc(color, 0.5, 0.1)*intensity;
+						
 						out_color.rgb = color;
+						out_color.a = 1;
 					}
 				}
 			]]  
