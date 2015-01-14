@@ -258,17 +258,44 @@ local translate = {
 }
 
 function steam.FindSourceGame(name, title)
-	if name then 
-		name = translate[name:lower()] or name
-	end
 	title = title or ""
 	
-	for i, game_info in ipairs(steam.GetSourceGames()) do
-		if 
-			(type(name) == "number" and game_info.filesystem.steamappid == name) or 
-			(type(name) == "string" and ((game_info.filesystem.searchpaths.mod and game_info.filesystem.searchpaths.mod:compare(name)) or game_info.game:compare(name)) and (game_info.title2 or game_info.title):compare(title))
-		then 
-			return game_info
+	local games = steam.GetSourceGames()
+	
+	if type(name) == "number" then
+		for i, game_info in ipairs(games) do
+			if game_info.filesystem.steamappid == name then 
+				return game_info
+			end
+		end
+	else
+		local id = translate[name:lower()]
+		
+		if id then
+			for i, game_info in ipairs(games) do
+				if game_info.game ~= "SDK" and game_info.filesystem.steamappid == id then 
+					return game_info
+				end
+			end
+		end
+	
+		for i, game_info in ipairs(games) do
+			if game_info.game:lower() == name then 
+				return game_info
+			end
+		end
+	
+		for i, game_info in ipairs(games) do
+			print(game_info.game)
+			if game_info.game:compare(name) and (game_info.title2 or game_info.title):compare(title) then 
+				return game_info
+			end
+		end
+	
+		for i, game_info in ipairs(games) do
+			if game_info.filesystem.searchpaths.mod and game_info.filesystem.searchpaths.mod:compare(name) then 
+				return game_info
+			end
 		end
 	end
 end
