@@ -323,6 +323,13 @@ local function load_mdl(path, thread)
 		data.flex_desc_index = buffer:ReadInt()
 	end)
 
+	parse("texturedir", function(data, i)
+		local offset = buffer:ReadLong()
+		buffer:PushPosition(offset)
+			data.path = buffer:ReadString()
+		buffer:PopPosition()
+	end)
+	
 	local function string_from_offset(offset, offset2)
 		if offset2 == 0 then return "" end
 
@@ -670,9 +677,15 @@ function steam.LoadModel(path, callback, thread)
 								sub_model.bbox = {min = mdl.hull_min*scale, max = mdl.hull_max*scale}
 
 								if mdl.material[i] and mdl.material[i].path then
-									local vmt = steam.LoadMaterial(mdl.material[i].path, path)
+									local vmt_path = mdl.material[i].path
+									
+									if mdl.texturedir[1] then
+										vmt_path = mdl.texturedir[1].path .. vmt_path
+									end
+									
+									local vmt = steam.LoadMaterial(vmt_path, path)
 									if vmt.error then
-										logn(vmt.error) 
+										logn(vmt.error)
 									else
 										sub_model.material = {
 											paths_solved = true,
