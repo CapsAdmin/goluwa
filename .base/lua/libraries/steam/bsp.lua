@@ -633,13 +633,13 @@ function steam.LoadMap(path, callback)
 				if info.classname and info.classname:find("light_environment") then
 
 					local p, y = info.pitch, info.angles.y
-					entities.world:SetSunAngles(Deg3(y, p, 0))					
+					entities.world:SetSunAngles(Deg3(p, y+180, 0))
 					entities.world:SetSunSpecularIntensity(0.15)
 					entities.world:SetSunIntensity(1)
 					
 					info._light.a = 1
 					entities.world:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
-					entities.world:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b))
+					entities.world:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b)*0.5)
 				elseif info.classname:lower():find("light") and info._light then		
 					local ent = entities.CreateEntity("light", steam.bsp_world)
 					ent:SetName(info.classname)
@@ -650,9 +650,9 @@ function steam.LoadMap(path, callback)
 					ent:SetDiffuseIntensity(info._light.a/25) 
 					ent:SetRoughness(0.5)
 				elseif CLIENT and info.classname == "env_fog_controller" then
-					entities.world:SetFogColor(info.fogcolor*0.5)
-					entities.world:SetFogStart(info.fogstart* 0.0254)
-					entities.world:SetFogEnd(info.fogend * 0.0254 * 2)
+					entities.world:SetFogColor(info.fogcolor)
+					entities.world:SetFogStart(info.fogstart* scale)
+					entities.world:SetFogEnd(info.fogend * scale)
 				end
 			end
 		
