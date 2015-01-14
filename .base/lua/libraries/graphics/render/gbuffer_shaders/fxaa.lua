@@ -10,7 +10,7 @@ PASS.Source = [[
 	//FXAA
 	//
 	float FXAA_SPAN_MAX = 8.0;
-	float FXAA_REDUCE_MUL = 1/800.0;
+	float FXAA_REDUCE_MUL = 1/8.0;
 	float FXAA_SUBPIX_SHIFT = 1.0/128.0;
 	#define FXAA_REDUCE_MIN   (1.0/128.0)
 

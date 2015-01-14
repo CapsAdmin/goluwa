@@ -1,11 +1,10 @@
 local PASS = {}
 
 PASS.Name = "hdr"
-PASS.Default = false
 
 PASS.Variables = {
 	tex_extracted = "sampler2D",
-	bloom_factor = 0.2,
+	bloom_factor = 0.05,
 	exposure = 1,
 }
 
@@ -18,7 +17,7 @@ function PASS:Initialize()
 	
 	self.extract = render.CreateShader([[				
 		vec4 color = vec4(1,1,1,1);
-		color.rgb = pow(texture(self, uv).rgb, vec3(1.25))*1.25;
+		color.rgb = pow(texture(self, uv).rgb, vec3(3));
 		return color;
 	]], {self = self.fb:GetTexture(), exposure = 1})
 	
@@ -59,8 +58,8 @@ function PASS:Update()
 			surface.rect_mesh:Draw()
 		self.fb:End()
 		
-		for i = 1, 3 do
-			self.blur.blur_size = i*2
+		for i = 1, 2 do
+			self.blur.blur_size = i
 			self.fb:Begin()
 				self.blur:Bind()
 				surface.rect_mesh:Draw()
@@ -73,7 +72,9 @@ function PASS:Update()
 		self.area:Copy(self.fb)
 		self.area:Begin()	
 			local r,g,b = render.ReadPixels(0,0, 1,1)
-			self.exposure = math.clamp((-math.max(r,g,b)+1) * 2, 0.1, 1) ^ 0.75
+			if r and g and b then
+				self.exposure = math.clamp((-math.max(r,g,b)+1) * 2, 0.4, 1) ^ 0.5  
+			end
 		self.area:End()
 		self.next_update = system.GetTime() + 1/30
 	end
@@ -91,8 +92,8 @@ PASS.Source = [[
 		
 	void main() 
 	{ 	
-		out_color.rgb = 1 - exp2(-(texture(self, uv).rgb + bloom_factor * texture(tex_extracted, uv).rgb) * exposure);
-		out_color.rgb *= 2;
+		out_color.rgb = 1 - exp2(-(texture(self, uv).rgb + (bloom_factor * texture(tex_extracted, uv).rgb)) * exposure);
+		out_color.rgb *= (-bloom_factor+1)*1.75;
 		out_color.a = 1;
 	}
 ]]

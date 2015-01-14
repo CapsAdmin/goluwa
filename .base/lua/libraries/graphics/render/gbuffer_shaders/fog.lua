@@ -25,7 +25,7 @@ PASS.Source = [[
 			color = mix(fog_color.rgb, color, clamp(get_depth2(uv, cam_nearz, fog_start) * fog_color.a, 0.0, 1.0));
 		
 		if (fog_start < fog_end)
-			color = mix(fog_color.rgb, color, clamp((-get_depth2(uv, cam_nearz, fog_end)+1) * fog_color.a, 0.0, 1.0));
+			color = mix(fog_color.rgb, color, clamp((-pow(get_depth2(uv, cam_nearz, fog_end),5)*6.5+1) * fog_color.a, 0.0, 1.0));
 		
 		
 		return color;
