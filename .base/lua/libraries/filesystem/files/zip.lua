@@ -46,10 +46,12 @@ function CONTEXT:IsFile(path_info)
 	local archive_path, relative = split_path(path_info)
 	
 	local archive = zip.open(archive_path, "r")
-
-	if archive:locate_file(relative) then
-		archive:close()
-		return true
+	
+	for info in archive:files() do				
+		if info.filename:lower() == relative then
+			archive:close()
+			return true
+		end
 	end
 	
 	archive:close()
@@ -60,7 +62,7 @@ function CONTEXT:IsFolder(path_info)
 	local archive = zip.open(archive_path, "r")
 
 	for info in archive:files() do
-		if info.filename:find(relative) then
+		if info.filename:lower():find(relative, nil, true) then
 			archive:close()
 			return true
 		end
@@ -78,14 +80,14 @@ function CONTEXT:GetFiles(path_info)
 		
 	local dir = relative:match("(.*/)")
 	local done = {}
-		
+			
 	for info in archive:files() do
-		local path = info.filename
+		local path = info.filename:lower()
 				
 		if path:endswith("/") then
 			path = path:sub(0, -2)
 		end
-		
+				
 		if path:find(relative, nil, true) and (not dir or path:match("(.*/)") == dir) then
 			-- path is just . so it needs to be handled a bit different
 			--print(path)
@@ -112,8 +114,16 @@ function CONTEXT:Open(path_info, mode, ...)
 	
 	if self:GetMode() == "read" then
 		local archive = zip.open(archive_path, "r")
+			
+		local found = false
+		for info in archive:files() do				
+			if info.filename:lower() == relative then
+				found = true
+				break
+			end
+		end
 		
-		if not archive:locate_file(relative) then
+		if not found then
 			archive:close()
 			error("file not found in archive")
 		end
