@@ -678,10 +678,10 @@ function steam.LoadMap(path, callback)
 				ent:SetModelPath(info.model)
 				ent:SetPosition(info.origin * scale)
 				ent:SetAngles(info.angles:Rad())
+				
+				thread:ReportProgress("spawning static entities", count)
+				thread:Sleep(0.05)
 			end
-			
-			thread:ReportProgress("spawning static entities", count)
-			thread:Sleep()
 		end
 
 		local count = #models
