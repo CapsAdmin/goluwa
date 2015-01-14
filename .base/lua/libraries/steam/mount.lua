@@ -1,11 +1,13 @@
 local steam = ... or _G.steam
 
 console.AddCommand("mount", function(game)
-	steam.MountSourceGame(game)
+	local game_info = assert(steam.MountSourceGame(game))
+	logf("mounted %s %s\n", game_info.game, game_info.title2 or game_info.short_name)
 end)
 
 console.AddCommand("unmount", function(game)
-	steam.UnmountSourceGame(game)
+	local game_info = assert(steam.UnmountSourceGame(game))
+	logf("mounted %s %s\n", game_info.game, game_info.title2 or game_info.title)
 end)
 
 function steam.FindGamePaths(force_cache_update)
@@ -116,9 +118,35 @@ function steam.GetSourceGames()
 					
 					tbl.game_dir = game_dir
 					
-					table.insert(found, tbl)
+					local asdf = false
+					
+					if tbl.filesystem and tbl.filesystem.steamappid then
+						for k,v in ipairs(found) do
+							if v.filesystem and v.filesystem.steamappid == tbl.filesystem.steamappid then
+								table.add(v.filesystem.searchpaths, tbl.filesystem.searchpaths)
+								asdf = true
+								break
+							end
+						end
+					end
+					
+					if not asdf then
+						for k,v in pairs(tbl.filesystem.searchpaths) do
+							for k,v in pairs(type(v) == "string" and {v} or v) do
+								local name = v:match(".+/(.+)/%.")
+								if name then
+									tbl.short_name = name
+									goto next
+								end
+							end
+						end
+						::next::
+						
+						tbl.short_name = tbl.short_name or "none"
+					
+						table.insert(found, tbl)
+					end
 				end
-				break
 			end
 		end
 	end
@@ -131,7 +159,7 @@ local cache_mounted = {}
 function steam.MountSourceGame(game_info)
 
 	if cache_mounted[game_info] then
-		return
+		return cache_mounted[game_info]
 	end
 	
 	local str_game_info
@@ -140,6 +168,8 @@ function steam.MountSourceGame(game_info)
 		str_game_info = game_info
 		game_info = steam.FindSourceGame(game_info) 
 	end
+	
+	if not game_info then return nil, "could not find " .. str_game_info end
 		
 	steam.UnmountSourceGame(game_info)
 	
@@ -213,27 +243,36 @@ function steam.MountSourceGame(game_info)
 	end
 	
 	if str_game_info then
-		cache_mounted[str_game_info] = true
-	end
-end
-
-function steam.UnmountSourceGame(game_info, title)
-
-	if type(game_info) == "string" then 
-		cache_mounted[game_info] = nil
-		game_info = steam.FindSourceGame(game_info, title) 
+		cache_mounted[str_game_info] = game_info
 	end
 	
-	for k, v in pairs(vfs.GetMounts()) do
-		if v.userdata and v.userdata.filesystem.steamappid == game_info.filesystem.steamappid then
-			vfs.Unmount(v.full_where, v.full_to)
+	return game_info
+end
+
+function steam.UnmountSourceGame(game_info)
+	local str_game_info = game_info
+	
+	if type(game_info) == "string" then 
+		cache_mounted[game_info] = nil
+		str_game_info = game_info
+		game_info = steam.FindSourceGame(game_info) 
+	end
+	
+	if not game_info then return nil, "could not find " .. str_game_info end
+	
+	if game_info then
+		for k, v in pairs(vfs.GetMounts()) do
+			if v.userdata and v.userdata.filesystem.steamappid == game_info.filesystem.steamappid then
+				vfs.Unmount(v.full_where, v.full_to)
+			end
 		end
 	end
+	
+	return game_info
 end
 
 
 local translate = {
-	["half-life 2"] = 220,
 	["counter-strike: source"] = 240,
 	["css"] = 240,
 	["half-life: source"] = 280,
@@ -244,22 +283,27 @@ local translate = {
 	["half-life 2: episode one"] = 380,
 	["portal"] = 400,
 	["half-life 2: episode two"] = 420,
+	["hl2ep2"] = 420,
 	["team fortress 2"] = 440,
 	["tf2"] = 440,
 	["left 4 dead"] = 500,
+	["l4d2"] = 550,
 	["left 4 dead 2"] = 550,
 	["dota 2"] = 570,
 	["portal 2"] = 620,
 	["alien swarm"] = 630,
 	["counter-strike: global offensive"] = 730,
+	["csgo"] = 730,
 	["dota 2"] = 570,
 	["gmod"] = 4000	,
 	["garrysmod"] = 4000,
 }
 
-function steam.FindSourceGame(name, title)
-	title = title or ""
-	
+local name_translate = {
+	["ep1"] = "episodic",
+}
+
+function steam.FindSourceGame(name)	
 	local games = steam.GetSourceGames()
 	
 	if type(name) == "number" then
@@ -273,7 +317,7 @@ function steam.FindSourceGame(name, title)
 		
 		if id then
 			for i, game_info in ipairs(games) do
-				if game_info.game ~= "SDK" and game_info.filesystem.steamappid == id then 
+				if game_info.filesystem.steamappid == id then 
 					return game_info
 				end
 			end
@@ -284,14 +328,19 @@ function steam.FindSourceGame(name, title)
 				return game_info
 			end
 		end
-	
+		
 		for i, game_info in ipairs(games) do
-			print(game_info.game)
-			if game_info.game:compare(name) and (game_info.title2 or game_info.title):compare(title) then 
+			if game_info.short_name == (name_translate[name] or name) then 
 				return game_info
 			end
 		end
 	
+		for i, game_info in ipairs(games) do
+			if game_info.game:compare(name) then 
+				return game_info
+			end
+		end
+			
 		for i, game_info in ipairs(games) do
 			if game_info.filesystem.searchpaths.mod and game_info.filesystem.searchpaths.mod:compare(name) then 
 				return game_info
@@ -299,6 +348,7 @@ function steam.FindSourceGame(name, title)
 		end
 	end
 end
+
 function steam.MountAllSourceGames()
 	for i, game_info in ipairs(steam.GetSourceGames()) do
 		steam.MountSourceGame(game_info)
