@@ -29,7 +29,7 @@ GUI:
 Similar to derma/gwen in gmod. It's also compatible with gwen skins. The blue skin tries to be identical to zsnes. The zsnes skin is only used in the "main menu".
 
 Source engine content:
-![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-05_13-59-49.png)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-14_18-12-58.png)
 Here I'm loading de_overpass from CSGO. Goluwa will find steam, mount csgo and the required source games, read the BSP, VTF, VMT, MDL, etc files and load the assets. This is all very WIP but somewhat works.
 
 Entity editor:
