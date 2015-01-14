@@ -47,14 +47,13 @@ end
 local clock = -1
 
 event.AddListener("Update", "asdf", function(dt)
-	for _, track in ipairs(data.tracks) do	
-		if not track.sound then
-			local sound = create_source(_)
-			track.sound = sound
-			
+	for _, track in ipairs(data.tracks) do
+		if not track.init then
+			track.voices = {}
 			track.start_i = 1
 			track.pitch_bend = 0
 			track.volume = 1
+			track.init = true
 		end
 		
 		for i = track.start_i, #track.events do
@@ -65,30 +64,45 @@ event.AddListener("Update", "asdf", function(dt)
 				if time > clock then break end
 				
 				if v.subtype == "program_change" then
-					track.sound:Remove()
-					local sound = create_source(v.program_number-1)
-					track.sound = sound
+					track.program = v.program_number-1
+					track.start_i = 1
+					track.volume = 1
 				elseif v.subtype == "note_on" then
-					
-					if track.sound.last_event ~= v.subtype then
-						track.sound:Play()
-						track.sound.last_event = v.subtype
+					track.voices[v.note_number] = track.voices[v.note_number] or create_source(track.program)
+				
+					local sound = track.voices[v.note_number]
+				
+					if not sound:IsPlaying() then
+						sound:Play()
 					end
-
-					track.sound:SetPitch((2 ^ (((track.sound.sample_info.original_pitch + v.note_number) - 24 + (track.pitch_bend * 8))/12) / 128))
-					track.sound:SetGain((v.velocity/127) * track.volume * 0.75)
-					track.pitch_bend = 0
+					sound.last_event = v.subtype
 					
-				elseif v.subtype == "note_off" then 
-					track.sound:Stop()
-					track.sound.last_event = v.subtype					
+					sound.pitch = 2 ^ (((sound.sample_info.original_pitch + v.note_number) - 24)/12) / 128
+
+					sound.gain = (v.velocity/127) * 0.75
+					
+					sound:SetPitch(sound.pitch)
+					sound:SetGain(sound.gain)
+				elseif v.subtype == "note_off" then					
+					local sound = track.voices[v.note_number]
+					
+					if sound then
+						sound:Stop()
+						sound.last_event = v.subtype					
+					end
 				elseif v.subtype == "pitch_bend" then
-					track.pitch_bend = (v.value/16383)
+					for i, sound in pairs(track.voices) do
+						sound:SetPitch(sound.pitch + (track.pitch_bend))
+					end
 				elseif v.subtype == "controller" then
 					if v.controller_type == 7 then
-						track.volume = v.value/127
+						for i, sound in pairs(track.voices) do
+							sound:SetGain(sound.gain * (v.value/127))
+						end
 					elseif v.controller_type == 10 then
-						track.sound:SetPosition(0, (v.value-64)/64, 0)
+						for i, sound in pairs(track.voices) do
+							sound:SetPosition(0, (v.value-64)/64, 0)
+						end
 					else
 					--	table.print(v)
 					end
