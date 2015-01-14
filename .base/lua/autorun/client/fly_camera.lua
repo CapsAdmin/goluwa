@@ -1,6 +1,6 @@
 render.SetCameraPosition(Vec3(-10, -16.8, 10.02))
 render.SetCameraAngles(Deg3(90, 0, 0))
-render.SetCameraFOV(math.rad(90))
+render.SetCameraFOV(math.rad(75))
 
 function CalcMovement(dt, cam_ang, cam_fov)
 	cam_ang:Normalize()
@@ -21,7 +21,7 @@ function CalcMovement(dt, cam_ang, cam_fov)
 	
 	if input.IsKeyDown("r") then
 		cam_ang.r = 0
-		cam_fov = math.rad(90)
+		cam_fov = math.rad(75)
 	end
 	
 	delta = delta * (cam_fov / 175)
