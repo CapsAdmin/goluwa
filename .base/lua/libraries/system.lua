@@ -244,7 +244,7 @@ do -- editors
 		},
 		{
 			name = "notepad++",
-			args = "%PATH% -n%LINE%",
+			args = "\"%PATH%\" -n%LINE%",
 		},
 		{
 			name = "notepad",
