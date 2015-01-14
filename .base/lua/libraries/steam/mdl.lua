@@ -676,14 +676,8 @@ function steam.LoadModel(path, callback, thread)
 								sub_model.indices = indices								
 								sub_model.bbox = {min = mdl.hull_min*scale, max = mdl.hull_max*scale}
 
-								if mdl.material[i] and mdl.material[i].path then
-									local vmt_path = mdl.material[i].path
-									
-									if mdl.texturedir[1] then
-										vmt_path = mdl.texturedir[1].path .. vmt_path
-									end
-									
-									local vmt = steam.LoadMaterial(vmt_path, path)
+								if mdl.material[i] and mdl.material[i].path then																		
+									local vmt = steam.LoadMaterial(mdl.material[i].path, mdl.texturedir[i].path)
 									if vmt.error then
 										logn(vmt.error)
 									else

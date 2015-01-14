@@ -6,9 +6,16 @@ function solve_path(name, extensions, directory_hint)
 	local tries = {}
 	
 	do
-		local temp = {"materials/" .. name, "textures/" .. name}
+		local temp = {
+			"materials/" .. name, 
+			"textures/" .. name,
+		}
 		
 		if directory_hint then
+		
+			table.insert(temp, 1, "materials/" .. directory_hint .. name)
+			table.insert(temp, 1, "textures/" .. directory_hint .. name)
+		
 			local dir = directory_hint:match("(.+/)")
 			local dir2 = directory_hint:match("(.+)%.")
 			
