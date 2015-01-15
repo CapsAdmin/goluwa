@@ -10,7 +10,7 @@ function editor.Open()
 	
 	local frame = gui.CreatePanel("frame")
 	frame:SetWidth(300)
-	frame:SetTitle("editor")
+	frame:SetTitle(L"editor")
 	frame:SetupLayout("left", "fill_y")
 	editor.frame = frame
 	
@@ -50,20 +50,20 @@ function editor.Open()
 		--add("wear", nil, frame:GetSkin().icons.wear)
 		
 		if node then
-			add("copy", function()
+			add(L"copy", function()
 				system.SetClipboard(assert(serializer.Encode("luadata", node.ent:GetStorableTable())))
 			end, frame:GetSkin().icons.copy)
-			add("paste", function()
+			add(L"paste", function()
 				node.ent:SetStorableTable(assert(serializer.Decode("luadata", system.GetClipboard())))
 			end, frame:GetSkin().icons.paste)
-			add("clone", function()
+			add(L"clone", function()
 				local ent = entities.CreateEntity(node.ent.config)
 				ent:SetParent(node.ent:GetParent())
 				ent:SetStorableTable(node.ent:GetStorableTable())
 			end, frame:GetSkin().icons.clone)
 			
 			if node.ent:HasComponent("transform") then
-				add("goto", function()
+				add(L"goto", function()
 					render.SetCameraPosition(node.ent:GetPosition())
 				end, "textures/silkicons/brick_go.png")
 			end
@@ -72,17 +72,17 @@ function editor.Open()
 		add()
 		
 		for k,v in pairs(prototype.component_configurations) do
-			add(k, function() local ent = entities.CreateEntity(k, node.ent) ent:SetPosition(render.GetCameraPosition()) end, v.icon)
+			add(L(k), function() local ent = entities.CreateEntity(k, node.ent) ent:SetPosition(render.GetCameraPosition()) end, v.icon)
 		end		
 	
 		add()
 		--add("help", nil, frame:GetSkin().icons.help)
-		add("save", nil, frame:GetSkin().icons.save)
-		add("load", nil, frame:GetSkin().icons.load)
+		add(L"save", nil, frame:GetSkin().icons.save)
+		add(L"load", nil, frame:GetSkin().icons.load)
 		
 		if node then
 			add()
-			add("remove", function() 
+			add(L"remove", function() 
 				local node = tree:GetSelectedNode()
 				if node:IsValid() and node.ent:IsValid() then
 					node.ent:Remove()
@@ -95,16 +95,19 @@ function editor.Open()
 	
 	local function fill(entities, node)
 		for key, ent in pairs(entities) do
-			local name = ent:GetName()
-			if name == "" then
-				name = ent.config
+			if not ent:GetHideFromEditor() then
+				local name = ent:GetName()
+				if name == "" then
+					name = ent.config
+				end
+				local node = node:AddNode(name, ent:GetPropertyIcon())
+				node.OnRightClick = right_click_node
+				node.OnMouseHoverTrigger = show_tooltip
+				node.ent = ent
+				ent.editor_node = node
+				--node:SetIcon(Texture("textures/" .. frame:GetSkin().icons[val.self.ClassName]))
+				fill(ent:GetChildren(), node)
 			end
-			local node = node:AddNode(name, ent:GetPropertyIcon())
-			node.OnRightClick = right_click_node
-			node.OnMouseHoverTrigger = show_tooltip
-			node.ent = ent
-			--node:SetIcon(Texture("textures/" .. frame:GetSkin().icons[val.self.ClassName]))
-			fill(ent:GetChildren(), node)
 		end  
 	end
 	
@@ -117,7 +120,11 @@ function editor.Open()
 		scroll:SetPanel(tree)
 		
 		local ents = {}
-		for k,v in pairs(entities.GetAll()) do if not v:HasParent() then table.insert(ents, v) end end
+		for k,v in pairs(entities.GetAll()) do
+			if not v:HasParent() then 
+				table.insert(ents, v) 
+			end 
+		end
 		fill(ents, tree)
 		tree:SetSize(tree:GetSizeOfChildren())
 		tree:SetWidth(frame:GetWidth())
