@@ -122,7 +122,11 @@ function PANEL:SetTitle(str)
 	
 	if gui.task_bar:IsValid() then
 		gui.task_bar:AddButton(self:GetTitle(), self, function(button) 
-			self:SetVisible(not self.Visible)
+			self:Minimize(not self:IsMinimized())
+		end, function(button)
+			gui.CreateMenu({
+				{L"remove", function() self:Remove() end, self:GetSkin().icons.delete},
+			})
 		end)
 	end
 end

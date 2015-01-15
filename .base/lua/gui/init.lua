@@ -365,7 +365,7 @@ function gui.Initialize()
 	
 	
 	-- should this be here?	
-	do -- task bar (well frame bare is more appropriate since the frame control adds itself to this)
+	do -- task bar (well frame bar is more appropriate since the frame control adds itself to this)
 		local S = gui.skin.scale
 		
 		local bar = gui.CreatePanel("base") 
@@ -375,13 +375,14 @@ function gui.Initialize()
 				
 		bar.buttons = {}
 		
-		function bar:AddButton(text, key, callback)
+		function bar:AddButton(text, key, callback, callback2)
 			self:SetVisible(true)
 			
 			local button = self.buttons[key] or gui.CreatePanel("text_button", self) 
 			button:SetText(text)
 			button.label:SetupLayout("left")
-			button.OnPress = callback  
+			button.OnPress = callback
+			button.OnRightClick = callback2
 
 			button:SetupLayout("left")
 			
