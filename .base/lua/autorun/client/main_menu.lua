@@ -53,7 +53,7 @@ emitter:SetPosition(Vec3(50,50,0))
 emitter:SetAdditive(false)
 
 function menu.UpdateBackground()
-	emitter:SetScreenRect(Rect(-100, -100, surface.GetSize()))
+	emitter:SetScreenRect(Rect(-100, -100, render.GetScreenSize():Unpack()))
 	emitter:SetPosition(Vec3(math.random(render.GetWidth() + 100) - 150, -50, 0))
 		
 	local p = emitter:AddParticle()
