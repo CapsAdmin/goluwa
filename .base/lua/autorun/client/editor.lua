@@ -153,7 +153,7 @@ function editor.Open()
 		properties = gui.CreatePanel("properties")
 		
 		for k, v in pairs(node.ent:GetComponents()) do
-			properties:AddGroup(v.ClassName)
+			properties:AddGroup(L(v.ClassName))
 			properties:AddPropertiesFromObject(v)
 		end
 		
