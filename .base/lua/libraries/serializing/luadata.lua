@@ -13,9 +13,9 @@ function luadata.SetModifier(type, callback, global_ctor)
 	end
 end
 
-luadata.SetModifier("rect", function() return ("Rect(%f, %f, %f, %f)"):format(var:Unpack()) end, "Rect")
-luadata.SetModifier("color", function() return ("Color(%f, %f, %f, %f)"):format(var:Unpack()) end, "Color")
-luadata.SetModifier("quat", function() return ("Quat(%f, %f, %f, %f)"):format(var:Unpack()) end, "Quat")
+luadata.SetModifier("rect", function(var) return ("Rect(%f, %f, %f, %f)"):format(var:Unpack()) end, "Rect")
+luadata.SetModifier("color", function(var) return ("Color(%f, %f, %f, %f)"):format(var:Unpack()) end, "Color")
+luadata.SetModifier("quat", function(var) return ("Quat(%f, %f, %f, %f)"):format(var:Unpack()) end, "Quat")
 luadata.SetModifier("vec3", function(var) return ("Vec3(%f, %f, %f)"):format(var:Unpack()) end, "vec3")
 luadata.SetModifier("vec2", function(var) return ("Vec2(%f, %f)"):format(var:Unpack()) end, "vec2")
 luadata.SetModifier("ang3", function(var) return ("Ang3(%f, %f, %f)"):format(var:Unpack()) end, "Ang3")
