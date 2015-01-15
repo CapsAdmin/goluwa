@@ -49,14 +49,14 @@ PASS.Source = [[
 	 
 		ao/=4.0;
 	 
-		return 0.5+clamp(ao*1.9, 0, 1)*0.5;
+		return 0.5+clamp(ao*2, 0, 1)*0.5;
 	}
 	
 	out vec4 out_color;
 		
 	void main()
 	{		
-		out_color.rgb = texture(tex_diffuse, uv).rgb*1.75;
+		out_color.rgb = texture(tex_diffuse, uv).rgb;
 		out_color.a = 1;
 						
 		vec3 light = texture(tex_light, uv).rgb;

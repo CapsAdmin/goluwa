@@ -1,6 +1,7 @@
 local PASS = {}
 
 PASS.Name = "hdr"
+PASS.Default = false
 
 PASS.Variables = {
 	tex_extracted = "sampler2D",
@@ -73,7 +74,7 @@ function PASS:Update()
 		self.area:Begin()	
 			local r,g,b = render.ReadPixels(0,0, 1,1)
 			if r and g and b then
-				self.exposure = math.clamp((-math.max(r,g,b)+1) * 2, 0.4, 1) ^ 0.5  
+				self.exposure = math.clamp((-math.max(r,g,b)+1) * 2, 0.2, 1) ^ 0.5  
 			end
 		self.area:End()
 		self.next_update = system.GetTime() + 1/30
@@ -92,7 +93,7 @@ PASS.Source = [[
 		
 	void main() 
 	{ 	
-		out_color.rgb = 1 - exp2(-(texture(self, uv).rgb + (bloom_factor * texture(tex_extracted, uv).rgb)) * exposure);
+		out_color.rgb = 1 - exp2(-((texture(self, uv).rgb*1.75) + (bloom_factor * (texture(tex_extracted, uv).rgb)*1.75)) * exposure);
 		out_color.rgb *= (-bloom_factor+1)*1.75;
 		out_color.a = 1;
 	}
