@@ -46,10 +46,10 @@ do -- base property
 				self:OnClick()
 			elseif button == "button_2" then
 				gui.CreateMenu({
-					{"copy", function() system.SetClipboard(self:GetEncodedValue()) end, self:GetSkin().icons.copy},
-					{"paste", function() self:SetEncodedValue(system.GetClipboard()) end, self:GetSkin().icons.paste},
+					{L"copy", function() system.SetClipboard(self:GetEncodedValue()) end, self:GetSkin().icons.copy},
+					{L"paste", function() self:SetEncodedValue(system.GetClipboard()) end, self:GetSkin().icons.paste},
 					{},
-					{"reset", function() self:SetValue(self:GetDefaultValue()) end, self:GetSkin().icons.clear},
+					{L"reset", function() self:SetValue(self:GetDefaultValue()) end, self:GetSkin().icons.clear},
 				}, self)
 			end
 		end
@@ -716,7 +716,7 @@ function PANEL:AddPropertiesFromObject(obj)
 		end		
 				
 		self:AddProperty(
-			nice_name, 
+			L(nice_name), 
 			function(val)
 				if obj:IsValid() then				
 					set(obj, val)
