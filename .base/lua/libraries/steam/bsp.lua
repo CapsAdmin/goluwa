@@ -726,6 +726,7 @@ function steam.LoadMap(path, callback)
 			}
 			
 			local chunk = entities.CreateEntity("physical", steam.bsp_world)
+			chunk:SetHideFromEditor(true)
 			chunk:SetName("physics chunk " .. i_)
 			chunk:SetPhysicsModel(mesh)
 			chunk:InitPhysicsTriangles(true)
