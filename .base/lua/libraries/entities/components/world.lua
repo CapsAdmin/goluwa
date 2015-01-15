@@ -8,6 +8,7 @@ function COMPONENT:OnAdd(ent)
 	self.sun = entities.CreateEntity("light", ent)
 	self.sun:SetLensFlare(true)
 	self.sun:SetName("sun")
+	self.sun:SetHideFromEditor(true)
 	
 	for _, info in ipairs(prototype.GetStorableVariables(self)) do		
 		self[info.set_name](self, self[info.get_name](self))
