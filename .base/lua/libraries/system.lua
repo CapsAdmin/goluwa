@@ -97,7 +97,7 @@ do-- time in ms
 		-- Little complex number library
 
 		ffi.cdef[[
-		typedef union _LARGE_INTEGER {
+		typedef union goluwa_system_GetTime_ {
 			struct {
 				unsigned long LowPart;
 				long HighPart;
@@ -108,16 +108,16 @@ do-- time in ms
 			} u;
 
 			long long QuadPart;
-		} LARGE_INTEGER;
+		} goluwa_system_GetTime;
 
-		__declspec(dllimport) int __stdcall QueryPerformanceCounter(LARGE_INTEGER *lpPerformanceCount);
-		__declspec(dllimport) int __stdcall QueryPerformanceFrequency(LARGE_INTEGER *lpPerformanceCount);
+		__declspec(dllimport) int __stdcall QueryPerformanceCounter(goluwa_system_GetTime *lpPerformanceCount);
+		__declspec(dllimport) int __stdcall QueryPerformanceFrequency(goluwa_system_GetTime *lpPerformanceCount);
 		]]
 
 		local freq
-		local llstart = ffi.new("LARGE_INTEGER")
+		local llstart = ffi.new("goluwa_system_GetTime")
 
-		local li = ffi.new("LARGE_INTEGER")
+		local li = ffi.new("goluwa_system_GetTime")
 		
 		get = function()
 			ffi.C.QueryPerformanceCounter(li)
@@ -126,7 +126,7 @@ do-- time in ms
 			return tonumber(li.QuadPart) / freq
 		end
 
-		local li = ffi.new("LARGE_INTEGER")
+		local li = ffi.new("goluwa_system_GetTime")
 		ffi.C.QueryPerformanceFrequency(li)
 		freq = tonumber(li.QuadPart)
 	
@@ -550,7 +550,7 @@ do -- clipboard
 	system.GetClipboard = get	
 end
 
-if CLIENT then -- transparent window
+if false and CLIENT then -- transparent window
 	local gl = require("lj-opengl") -- OpenGL
 	
 	local set = not_implemented
