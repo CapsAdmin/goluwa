@@ -13,6 +13,27 @@ else
 	end
 end
 
+do
+	local lfs = require("lfs")
+
+	local stack = {}
+	
+	function os.pushcd(dir)
+		table.insert(stack, lfs.currentdir())
+		lfs.chdir(dir)
+	end
+	
+	function os.popcd()
+		local old = table.remove(stack)
+		if old then
+			lfs.chdir(old)
+		end
+	end
+	
+	os.setcd = lfs.chdir
+	os.getcd = lfs.currentdir
+end
+
 do -- by Python1320
 	local dd=60*60*24
 	local hh=60*60
