@@ -4,9 +4,21 @@ console.history = console.history or {}
 console.curses = console.curses or {}
 local c = console.curses
 
-if SERVER then
+if SERVER or not surface then
+	-- the renderer might fail to load :( !
+	local hack = false
+	
+	if not SERVER then
+		SERVER = true
+		hack = true
+	end
+	
 	_G.surface = {}
 	include("libraries/graphics/surface/markup/markup.lua")	
+	
+	if hack then
+		SERVER = nil
+	end
 end
 
 local markup = surface.CreateMarkup()

@@ -3,7 +3,7 @@ local header = require("lj-glfw.header")
 
 ffi.cdef(header)
 
-local lib = ffi.load(jit.os == "Linux" and "glfw" or "glfw3")
+local lib = print(assert(ffi.load(jit.os == "Linux" and "glfw" or "glfw3")))
 
 local glfw = {
 	e = enums,
@@ -16,7 +16,9 @@ for line in header:gmatch("(.-)\n") do
 	local name = line:match("glfw(.-)%(")
 	
 	if name then
-		glfw[name] = lib["glfw" .. name]
+		pcall(function()
+			glfw[name] = lib["glfw" .. name]
+		end)
 	end
 end
 

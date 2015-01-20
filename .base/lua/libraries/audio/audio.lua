@@ -1,5 +1,7 @@
-local al = require("lj-openal.al")
-local alc = require("lj-openal.alc")
+local al = requirew("lj-openal.al")
+local alc = requirew("lj-openal.alc")
+
+if not al or not alc then return end
 
 local audio = _G.audio or {}
 

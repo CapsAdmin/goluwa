@@ -1,5 +1,7 @@
 local surface = _G.surface or {}
 
+local gl = requirew("lj-opengl")
+
 include("mesh2d.lua", surface)
 include("markup/markup.lua", surface)
 
@@ -31,8 +33,6 @@ end
 function surface.End(...)	
 	render.End2D(...)
 end
-
-local gl = require("lj-opengl")
 
 function surface.Start3D(pos, ang, scale)	
 	local w, h = render.GetHeight(), render.GetHeight()
@@ -700,7 +700,6 @@ do
 	end
 end
 
-local gl = require("lj-opengl")
 do
 	local X, Y, W, H
 
@@ -793,9 +792,7 @@ end
 
 include("poly.lua", surface)
 
-do -- points
-	local gl = require("lj-opengl")
-	
+do -- points	
 	local SIZE = 1
 	local STYLE = "smooth"
 

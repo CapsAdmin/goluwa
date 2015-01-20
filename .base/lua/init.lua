@@ -397,37 +397,37 @@ do -- ffi
 		
 	-- make ffi.load search using our file system
 	ffi.load = function(path, ...)
-		local ok, msg = pcall(_OLD_G.ffi_load, path, ...)
+		local args = {pcall(_OLD_G.ffi_load, path, ...)}
 		
-		if not ok and system and system.SetSharedLibraryPath then
-			if vfs then
-				for _, where in ipairs(where) do
-					for full_path in vfs.Iterate(where .. path, nil, true, nil, true) do
-						-- look first in the vfs' bin directories
-						local old = system.GetSharedLibraryPath()
-						system.SetSharedLibraryPath(full_path:match("(.+/)"))
-						local ok, msg = pcall(_OLD_G.ffi_load, full_path, ...)
-						system.SetSharedLibraryPath(old)
-						
-						if ok then
-							return msg
-						end
-						
-						-- if not try the default OS specific dll directories
-						local ok, msg = pcall(_OLD_G.ffi_load, full_path, ...)
-						if ok then
-							return msg
-						end
-					end			
-				end
+		if not args[1] then
+			if system and system.SetSharedLibraryPath then
+				if vfs then
+					for _, where in ipairs(where) do
+						for full_path in vfs.Iterate(where .. path, nil, true, nil, true) do
+							-- look first in the vfs' bin directories
+							local old = system.GetSharedLibraryPath()
+							system.SetSharedLibraryPath(full_path:match("(.+/)"))
+							local args = {pcall(_OLD_G.ffi_load, full_path, ...)}
+							system.SetSharedLibraryPath(old)
+							
+							if args[1] then
+								return select(2, unpack(args))
+							end
+							
+							-- if not try the default OS specific dll directories
+							local args = {pcall(_OLD_G.ffi_load, full_path, ...)}
+							if args[1] then
+								return select(2, unpack(args))
+							end
+						end			
+					end
+				end				
 			end
 			
-			error(msg, 2)
-			
-			return nil
+			return unpack(args)
 		end
-		
-		return msg
+						
+		return select(2, unpack(args))
 	end
 	
 	ffi.cdef("void* malloc(size_t size); void free(void* ptr);")
@@ -535,7 +535,7 @@ do -- include
 		if previous_dir then
 			dir = previous_dir .. dir
 		end
-				
+		
 		-- try first with the last directory
 		-- once with lua prepended
 		local path = "lua/" .. dir .. file
@@ -641,19 +641,24 @@ do -- libraries
 
 		-- graphics
 		render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
-
-		surface = include("libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
-		window = include("libraries/graphics/window.lua") -- high level window implementation
-		video = include("libraries/graphics/video.lua") -- gif support (for now)
-		include("libraries/graphics/particles.lua")
 		
-		if not SCITE then
-			window.Open()
+		if render then
+			surface = include("libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
+			window = include("libraries/graphics/window.lua") -- high level window implementation
+			video = include("libraries/graphics/video.lua") -- gif support (for now)
+			include("libraries/graphics/particles.lua")
+					
+			if not SCITE then
+				window.Open()
+			end
 		end
 		
 		-- audio
 		audio = include("libraries/audio/audio.lua") -- high level implementation of OpenAl
-		chatsounds = include("libraries/audio/chatsounds.lua")
+		
+		if audio then
+			chatsounds = include("libraries/audio/chatsounds.lua")
+		end
 	end
 
 	-- network
@@ -677,7 +682,7 @@ do -- libraries
 		include("libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
 	end
 
-	if CLIENT then
+	if CLIENT and surface and render then
 		gui = include("gui/init.lua")
 	end
 	

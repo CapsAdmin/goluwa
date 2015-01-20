@@ -452,22 +452,24 @@ do -- fonts
 		]])
 
 		local X11 = ffi.load("X11")
+		
+		if X11 then
+			local display = X11.XOpenDisplay(nil)
 
-		local display = X11.XOpenDisplay(nil)
+			if display ~= nil then
+				local count = ffi.new("int[1]")
+				local names = X11.XListFonts(display, "*", 65535, count)
+				count = count[0]
 
-		if display ~= nil then
-			local count = ffi.new("int[1]")
-			local names = X11.XListFonts(display, "*", 65535, count)
-			count = count[0]
+				for i = 1, count do
+					local name = ffi.string(names[i - 1])
+				end
 
-			for i = 1, count do
-				local name = ffi.string(names[i - 1])
+				X11.XCloseDisplay(display)
+			else
+				warning("NO X DISPLAY FOUND BUT WHATEVER")
+				--return
 			end
-
-			X11.XCloseDisplay(display)
-		else
-			warning("NO X DISPLAY FOUND BUT WHATEVER")
-			--return
 		end
 	end
 

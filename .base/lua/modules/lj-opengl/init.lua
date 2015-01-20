@@ -3,7 +3,7 @@ local enums = require("lj-opengl.enums")
 
 ffi.cdef(header)
 
-local lib = {
+local translate = {
 	OSX = "OpenGL.framework/OpenGL",
 	Windows = "OPENGL32.DLL",
 	Linux = "libGL.so",
@@ -12,7 +12,7 @@ local lib = {
 	Other = "libGL.so",
 }
 
-local lib = ffi.load(lib[ffi.os])
+local lib = assert(ffi.load(translate[ffi.os]))
 
 local gl = {
 	lib = lib,
