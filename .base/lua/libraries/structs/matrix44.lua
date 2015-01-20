@@ -447,26 +447,6 @@ do -- projection
 end
 
 if CLIENT then -- helpers
-	local gl = require("lj-opengl") -- OpenGL
-	
-	function META:OpenGLFunc(func, ...)
-		func = gl[func]
-		local old = ffi.new("GLint[1]")
-		gl.GetIntegerv(gl.e.GL_MATRIX_MODE, old)
-		gl.MatrixMode(gl.e.GL_MODELVIEW)
-		
-		gl.PushMatrix()
-		gl.LoadIdentity()
-		func(...)
-		gl.GetFloatv(gl.e.GL_MODELVIEW_MATRIX, self.m)
-		gl.PopMatrix()
-		
-		gl.MatrixMode(old[0])
-		
-		return self
-	end
-
-
 	function META:LookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz)
 		local m = self.m
 
