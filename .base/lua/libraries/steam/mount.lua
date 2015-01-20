@@ -55,7 +55,7 @@ function steam.GetInstallPath()
 		path = os.getenv("HOME") .. "/.local/share/Steam"
 	end
 
-	return lfs.symlinkattributes(path, "mode") and path or nil
+	return path --lfs.symlinkattributes(path, "mode") and path or nil
 end
 
 function steam.GetLibraryFolders()

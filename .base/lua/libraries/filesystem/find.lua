@@ -12,7 +12,7 @@ function vfs.Find(path, invert, full_path, start, plain, info)
 		
 	for i, data in ipairs(vfs.TranslatePath(path, true)) do
 		local ok, found = pcall(data.context.GetFiles, data.context, data.path_info)
-		
+				
 		if vfs.debug and not ok then
 			vfs.DebugPrint("%s: error getting files: %s", data.context.Name, found)
 		end
@@ -78,7 +78,7 @@ function vfs.Traverse(path, callback, level)
 	if attributes then
 		callback(path, attributes, level)
 
-		if attributes.mode == "directory" then
+		if attributes.type == "directory" then
 			for child in vfs.Iterate(path) do
 				if child ~= "." and child ~= ".." then
 					vfs.Traverse(path .. "/" .. child, callback, level + 1)

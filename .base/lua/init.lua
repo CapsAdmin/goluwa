@@ -2,14 +2,9 @@
 -- ROOT/.base/lua/modules/bin/linux/x64/foobar.so
 package.cpath = package.cpath .. ";../../../lua/modules/bin/" .. jit.os:lower() .. "/" .. jit.arch:lower() .. "/?." .. (jit.os == "Windows" and "dll" or "so")
 
-do -- check if this environment is compatible
-	if not require("ffi") then
-		error("goluwa requires luajit 2+ to run!")
-	end
-	
-	if not require("lfs") then 
-		error("unable to load lfs! are you sure the cd is ROOT/.base/bin/*OS*/*ARCH*/ and that ROOT/.base/lua/modules/bin/*OS*/*ARCH*/ ?")
-	end
+-- check if this environment is compatible
+if not require("ffi") then
+	error("goluwa requires luajit 2+ to run!")
 end
 
 do -- constants
@@ -104,9 +99,9 @@ if DEBUG then
 		jit.verbose.on(base .. "jit_verbose_output.txt")
 			
 	-- remove the loader we just made. it's made more properly later on
-	table.remove(package.loaders, 1)
-	table.remove(package.loaders, 1)
-	table.remove(package.loaders, 1)
+	table.remove(package.loaders)
+	table.remove(package.loaders)
+	table.remove(package.loaders)
 end
 
 -- put all c functions in a table so we can override them if needed 
@@ -134,19 +129,21 @@ if not _OLD_G then
 end
 
 do -- file system
-	lfs = require("lfs")
+
+	table.insert(package.loaders, function(name) return loadfile("../../../lua/modules/" .. name .. ".lua") end)
+	fs = require("fs")
+	table.remove(package.loaders)
 
 	-- the root folder is always 4 paths up (.base/bin/os/arch)
-	e.ROOT_FOLDER = lfs.currentdir():gsub("\\", "/"):match("(.+/)" .. (".-/"):rep(4 - 1))
-	
-	e.BASE_FOLDER = lfs.currentdir():gsub("\\", "/"):match("(.+/)" .. (".-/"):rep(3 - 1))
+	e.ROOT_FOLDER = fs.getcd():gsub("\\", "/"):match("(.+/)" .. (".-/"):rep(4 - 1))
+	e.BASE_FOLDER = fs.getcd():gsub("\\", "/"):match("(.+/)" .. (".-/"):rep(3 - 1))
 	
 	-- the userdata folder
 	e.USERDATA_FOLDER = e.ROOT_FOLDER .. ".userdata/" .. e.USERNAME:lower() .. "/"
 	
 	-- create them
-	lfs.mkdir(e.ROOT_FOLDER .. ".userdata/")
-	lfs.mkdir(e.USERDATA_FOLDER)
+	fs.createdir(e.ROOT_FOLDER .. ".userdata/")
+	fs.createdir(e.USERDATA_FOLDER)
 
 	do -- this is ugly but it's because we haven't included the global extensions yet..
 		_G.check = function() end
@@ -296,7 +293,7 @@ do -- logging
 	local count = 0
 	local last_count_length = 0
 		
-	lfs.mkdir(base_log_dir)
+	fs.createdir(base_log_dir)
 		
 	local function raw_log(args, sep, append)	
 		local line = table.concat(args, sep)
@@ -460,7 +457,7 @@ do -- ffi
 end
 
 do -- include
-	local base = lfs.currentdir()
+	local base = fs.getcd()
 
 	local include_stack = {}
 	

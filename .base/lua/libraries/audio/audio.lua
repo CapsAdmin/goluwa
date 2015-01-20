@@ -13,7 +13,7 @@ audio.effect_channels = audio.effect_channels or utility.CreateWeakTable()
 function audio.Initialize(name)
 	include("libraries/audio/decoders/*")
 	
-	os.setenv("ALSOFT_CONF", lfs.currentdir() .. "\\" .. "al_config.ini")
+	os.setenv("ALSOFT_CONF", fs.getcd() .. "\\" .. "al_config.ini")
 	audio.Shutdown()
 
 	if not name then

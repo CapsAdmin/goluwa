@@ -39,7 +39,7 @@ function utility.QuickBMSOpenFile(archive_path, file_path, script)
 		last_written = script
 	end
 
-	lfs.mkdir(temp_dir)
+	fs.createdir(temp_dir)
 	
 	os.pushcd(quickbms_location)	
 		os.execute(("quickbms -R -f %q temp_script.bms %q %q"):format(file_path, archive_path, temp_dir))

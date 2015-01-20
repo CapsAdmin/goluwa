@@ -1,7 +1,5 @@
 local vfs = (...) or _G.vfs
 
-local lfs = require("lfs")
-
 function vfs.MonitorFile(file_path, callback)
 	check(file_path, "string")
 	check(callback, "function")
@@ -9,11 +7,11 @@ function vfs.MonitorFile(file_path, callback)
 	local last = vfs.GetAttributes(file_path)
 	
 	if last then
-		last = last.modification
+		last = last.last_modified 
 		event.CreateTimer(file_path, 0, 0, function()
 			local time = vfs.GetAttributes(file_path)
 			if time then
-				time = time.modification
+				time = time.last_modified
 				if last ~= time then
 					logf("[vfs monitor] %s changed!\n", file_path)
 					last = time
@@ -48,7 +46,7 @@ function vfs.MonitorEverything(b)
 
 	event.CreateTimer("vfs_monitor_everything", 0.1, 0, function()
 		for path, data in pairs(vfs.GetLoadedLuaFiles()) do
-			local info = lfs.attributes(path)
+			local info = fs.getattributes(path)
 			
 			if info then
 				if not data.modification then
