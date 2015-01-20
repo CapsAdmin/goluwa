@@ -24,7 +24,7 @@ typedef unsigned char   UCHAR;
 typedef UCHAR           *PUCHAR;
 typedef char            *PSZ;
 typedef unsigned long   DWORD;
-typedef int             BOOL;
+typedef bool             BOOL;
 typedef unsigned char   BYTE;
 typedef unsigned short  WORD;
 typedef float           FLOAT;
