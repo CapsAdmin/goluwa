@@ -133,9 +133,7 @@ do-- time in ms
 		ffi.C.QueryPerformanceCounter(llstart)
 	end
 	
-	if LINUX then
-		--ffi.cdef"struct timeval {uint32_t sec, uint32_t usec}; int gettimeofday(struct timeval *tv, void *);"
-		
+	if LINUX then		
 		local t1 = ffi.new("struct timeval[1]")
 		local t2 = ffi.new("struct timeval[1]")
 		local time = 0
@@ -145,14 +143,14 @@ do-- time in ms
 		get = function() 
 			
 			if not init then
-				ffi.C.gettimeofday(t1)
+				ffi.C.gettimeofday(t1, nil)
 				init = true
 			end
 		
-			ffi.C.gettimeofday(t2) 
+			ffi.C.gettimeofday(t2, nil) 
 			
-			time = tonumber(t2[0].sec - t1[0].sec) * 1000
-			time = time + tonumber(t2[0].usec - t1[0].usec) / 1000
+			time = tonumber(t2[0].tv_sec - t1[0].tv_sec) * 1000
+			time = time + tonumber(t2[0].tv_usec - t1[0].tv_usec) / 1000
 		
 			return time
 		end
