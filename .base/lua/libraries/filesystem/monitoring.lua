@@ -49,15 +49,15 @@ function vfs.MonitorEverything(b)
 			local info = fs.getattributes(path)
 			
 			if info then
-				if not data.modification then
-					data.modification = info.modification
-				else 
-					if data.modification ~= info.modification then
+				if not data.last_modified then
+					data.last_modified = info.last_modified
+				else
+					if data.last_modified ~= info.last_modified then
 						logn("reloading ", vfs.GetFileNameFromPath(path))
 						_G.RELOAD = true
 						include(path) 
 						_G.RELOAD = nil
-						data.modification = info.modification
+						data.last_modified = info.last_modified
 					end
 				end			
 			end

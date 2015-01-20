@@ -5,8 +5,8 @@ if WINDOWS then
 	
 	ffi.cdef([[
 		typedef struct goluwa_file_time {
-			long high;
-			long low;
+			unsigned long high;
+			unsigned long low;
 		} goluwa_file_time;
 
 		typedef struct goluwa_find_data {
@@ -117,6 +117,9 @@ if WINDOWS then
 	end
 	
 	local info = ffi.new("goluwa_file_attributes[1]")
+	
+	local COMBINE = function(hi, lo) return bit.band(bit.lshift(hi, 8), lo) end
+	
 	function fs.getattributes(path)	
 		if ffi.C.GetFileAttributesExA(path, 0, info) then
 			--local flags = flags_to_table(info[0].dwFileAttributes) -- overkill
@@ -129,15 +132,17 @@ if WINDOWS then
 				type = "directory"
 			end
 			
-			return {
-				creation_time = info[0].ftCreationTime.low,
-				last_accessed = info[0].ftLastAccessTime.low,
-				last_modified = info[0].ftLastWriteTime.low,
+			local info = {
+				creation_time = COMBINE(info[0].ftCreationTime.high, info[0].ftCreationTime.low),
+				last_accessed = COMBINE(info[0].ftLastAccessTime.high, info[0].ftLastAccessTime.low),
+				last_modified = COMBINE(info[0].ftLastWriteTime.high, info[0].ftLastWriteTime.low),
 				last_changed = -1, -- last permission changes
-				size = info[0].nFileSizeLow,
+				size = info[0].nFileSizeLow,--COMBINE(info[0].nFileSizeLow, info[0].nFileSizeHigh),
 				type = type,
 			---	flags = flags,
 			}
+			
+			return info
 		end
 	end
 else
