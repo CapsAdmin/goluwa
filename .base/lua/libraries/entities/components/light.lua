@@ -1,3 +1,5 @@
+if not render then return end
+
 local COMPONENT = {}
 
 COMPONENT.Name = "light"

@@ -1,6 +1,7 @@
-local physics = physics or {}
+local bullet = requirew("lj-bullet3")
+if not bullet then return end
 
-local bullet = require("lj-bullet3")
+local physics = physics or {}
 
 if not physics.bullet then
 	bullet.Initialize()	

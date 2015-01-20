@@ -20,7 +20,7 @@ end
 
 ffi.cdef(header)
 
-local lib = ffi.load(WINDOWS and "openal32" or "openal")
+local lib = assert(ffi.load(WINDOWS and "openal32" or "openal"))
 
 local al = {
 	lib = lib,

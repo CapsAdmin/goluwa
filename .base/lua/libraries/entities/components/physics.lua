@@ -1,4 +1,6 @@
-local bullet = require("lj-bullet3")
+local bullet = requirew("lj-bullet3")
+
+if not bullet then return end
 
 local COMPONENT = {}
 

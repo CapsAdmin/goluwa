@@ -1,8 +1,14 @@
-local gl = require("lj-opengl") -- OpenGL
+local gl = requirew("lj-opengl") -- OpenGL
+
+if not gl then return end
 
 local render = _G.render or {}
 
-function render.Initialize()		
+function render.Initialize()
+
+	if not gl then 
+		logn("cannot initialize render: ", err)
+	return end
 	
 	if not render.context_created then error("a window must exist before the renderer can be initialized", 2) end
 
@@ -272,7 +278,7 @@ do
 end
 
 do 
-	local enums = {
+	local enums = gl and {
 		zero = gl.e.GL_ZERO,
 		one = gl.e.GL_ONE,
 		src_color = gl.e.GL_SRC_COLOR,
@@ -294,7 +300,7 @@ do
 		reverse_sub = gl.e.GL_FUNC_REVERSE_SUBTRACT,
 		min = gl.e.GL_MIN,
 		max = gl.e.GL_MAX,
-	}
+	} or {}
 
 	function render.SetBlendMode2(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
 		src_color = enums[src_color or "src_alpha"]

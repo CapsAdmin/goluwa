@@ -1,6 +1,6 @@
 local utility = _G.utility or ...
 
-local temp_dir = R"data/" .. "bms_temp/"
+local temp_dir = R"data/" .. "bms/"
 local temp_script = R"bin/"..jit.os.."/" .. "temp_script.bms"
 local quickbms_location = R("bin/"..jit.os.."/")
 local exists = vfs.Find(quickbms_location .. "quickbms")[1] ~= nil
@@ -41,7 +41,7 @@ function utility.QuickBMSOpenFile(archive_path, file_path, script)
 
 	lfs.mkdir(temp_dir)
 	
-	os.pushcd(quickbms_location)
+	os.pushcd(quickbms_location)	
 		os.execute(("quickbms -R -f %q temp_script.bms %q %q"):format(file_path, archive_path, temp_dir))
 	os.popcd()
 	

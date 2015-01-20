@@ -7,9 +7,9 @@ include("web_api.lua", steam)
 include("server_query.lua", steam)
 include("mount.lua", steam)
 
-local ok, err = pcall(function()
-	local steamfriends = require("lj-steamfriends")
-	
+local steamfriends = requirew("lj-steamfriends")
+
+if steamfriends then
 	for k,v in pairs(steamfriends) do
 		if k ~= "Update" and k ~= "OnChatMessage" then
 			steam[k] = v
@@ -23,10 +23,6 @@ local ok, err = pcall(function()
 	function steamfriends.OnChatMessage(sender_steam_id, text, receiver_steam_id)
 		event.Call("SteamFriendsMessage", sender_steam_id, text, receiver_steam_id)
 	end
-end)
-
-if not ok then
-	warning("could not load steamfriends: ", err)
 end
 
 function steam.IsSteamClientAvailible()

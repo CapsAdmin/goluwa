@@ -1,4 +1,4 @@
-local lib = ffi.load("steamfriends")
+local lib = assert(ffi.load("steamfriends"))
 
 ffi.cdef[[
 	const char *steamGetLastError();

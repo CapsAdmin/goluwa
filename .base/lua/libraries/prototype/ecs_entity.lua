@@ -123,11 +123,13 @@ function prototype.SetupComponents(name, components, icon)
 	local functions = {}
 	
 	for _, name in ipairs(components) do
-		for k, v in pairs(prototype.GetRegistered("component", name)) do
-			if type(v) == "function" then			
-				functions[k] = function(ent, a,b,c,d)
-					local obj = ent:GetComponent(name)
-					return obj[k](obj, a,b,c,d)
+		if prototype.GetRegistered("component", name) then
+			for k, v in pairs(prototype.GetRegistered("component", name)) do
+				if type(v) == "function" then			
+					functions[k] = function(ent, a,b,c,d)
+						local obj = ent:GetComponent(name)
+						return obj[k](obj, a,b,c,d)
+					end
 				end
 			end
 		end

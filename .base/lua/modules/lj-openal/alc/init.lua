@@ -12,7 +12,7 @@ end
 
 ffi.cdef(header)
 
-local lib = ffi.load(jit.os == "Windows" and "openal32" or "openal")
+local lib = assert(ffi.load(jit.os == "Windows" and "openal32" or "openal"))
 
 local alc = {
 	lib = lib, 
