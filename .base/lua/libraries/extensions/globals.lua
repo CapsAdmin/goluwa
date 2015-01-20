@@ -27,16 +27,34 @@ do -- verbose print
 	end
 end
 
-function warning(format, ...)
-	format = tostringx(format)
-	
-	local str = format:safeformat(...)
-	local source = debug.getprettysource(2, true)
+do
+	local level = 2
 
-	logn(source, ": ", format)
+	function warning(format, ...)
+		format = tostringx(format)
+		
+		local str = format:safeformat(...)
+		local source = debug.getprettysource(level, true)
 
-	return format, ...
-end	
+		logn(source, ": ", str)
+
+		return format, ...
+	end	
+
+	function requirew(str, ...)
+		local args = {pcall(require, str, ...)}
+
+		if not args[1] then
+			level = 3
+			warning("unable to require %s: %s", str, args[2])
+			level = 2
+			
+			return unpack(args)
+		end
+		
+		return select(2, unpack(args))
+	end
+end
 	
 do -- nospam
 	local last = {}
