@@ -142,12 +142,16 @@ local function require(name)
 		if vfs and vfs.PushToIncludeStack and path then	
 			vfs.PushToIncludeStack(path .. "/")
 		end
-
-		local result = func(path)
+		
+		local args = {pcall(func, path)}
 		
 		if vfs and vfs.PopFromIncludeStack and path then	
 			vfs.PopFromIncludeStack()
 		end
+		
+		if args[1] == false then error(args[2], 2) end
+		
+		local result = args[2]
 	
 		if result ~= nil then
 			package.loaded[name] = result
