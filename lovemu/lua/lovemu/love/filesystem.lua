@@ -81,10 +81,10 @@ function love.filesystem.load(path, mode)
 end
 
 function love.filesystem.mkdir(path) --partial
-	lfs.mkdir(R("data/") .. "lovemu/")
-	lfs.mkdir(R("data/lovemu/") .. IDENTITY .. "/")
+	fs.createdir(R("data/") .. "lovemu/")
+	fs.createdir(R("data/lovemu/") .. IDENTITY .. "/")
 	
-	local ok, err = lfs.mkdir(R("data/lovemu/" .. IDENTITY .. "/") .. path)
+	local ok, err = fs.createdir(R("data/lovemu/" .. IDENTITY .. "/") .. path)
 	
 	if not ok and err:find("File exist") then
 		return true
@@ -104,8 +104,8 @@ function love.filesystem.remove(path) --partial
 end
 
 function love.filesystem.setIdentity(name) --partial
-	lfs.mkdir(R("data/") .. "lovemu/")
-	lfs.mkdir(R("data/lovemu/") .. name .. "/")
+	fs.createdir(R("data/") .. "lovemu/")
+	fs.createdir(R("data/lovemu/") .. name .. "/")
 	
 	IDENTITY = name
 end

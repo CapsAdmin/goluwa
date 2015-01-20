@@ -1,5 +1,4 @@
 local vfs = (...) or _G.vfs
-local lfs = require("lfs")
 
 if vfs.use_appdata then
 	if WINDOWS then
@@ -15,36 +14,35 @@ end
 
 vfs.SetEnv("ROOT", "os:" .. e.ROOT_FOLDER)
 vfs.SetEnv("BASE", "os:" .. e.BASE_FOLDER)
-vfs.SetEnv("BIN", function() return "os:" .. lfs.currentdir() end)
+vfs.SetEnv("BIN", function() return "os:" .. fs.getcd() end)
 
 local CONTEXT = {}
 
 CONTEXT.Name = "os"
 
 function CONTEXT:CreateFolder(path_info)
-	lfs.mkdir(path_info.full_path)
+	fs.createdir(path_info.full_path)
 end
 
 function CONTEXT:GetFiles(path_info)
-	local out = {}
-		
-	for file_name in lfs.dir(path_info.full_path) do
-		if file_name ~= "." and file_name ~= ".." then
-			table.insert(out, file_name)
-		end
-	end
+	local out = fs.find(path_info.full_path)
+	
+	if #out == 0 then error("not a valid folder", 2) end
+
+	table.remove(out, 1) -- .
+	table.remove(out, 1) -- ..
 	
 	return out
 end
 
 function CONTEXT:IsFile(path_info)
-	local info = lfs.attributes(path_info.full_path)
-	return info and info.mode ~= "directory"
+	local info = fs.getattributes(path_info.full_path)
+	return info and info.type ~= "directory"
 end
 
 function CONTEXT:IsFolder(path_info)
-	local info = lfs.attributes(path_info.full_path:sub(0, -2))
-	return info and info.mode == "directory"
+	local info = fs.getattributes(path_info.full_path:sub(0, -2))
+	return info and info.type == "directory"
 end
 
 -- if CONTEXT:Open errors the virtual file system will assume 
@@ -66,7 +64,7 @@ function CONTEXT:Open(path_info, ...)
 	mode = mode .. "b" -- always open in binary
 
 	self.file = assert(io.open(path_info.full_path, mode)) 
-	self.attributes = lfs.attributes(path_info.full_path)
+	self.attributes = fs.getattributes(path_info.full_path)
 end
 
 function CONTEXT:WriteBytes(str)
@@ -97,11 +95,11 @@ function CONTEXT:GetSize()
 end
 
 function CONTEXT:GetLastModified()
-	return self.attributes.modification
+	return self.attributes.last_modified
 end
 
 function CONTEXT:GetLastAccessed()
-	return self.attributes.access
+	return self.attributes.last_accessed
 end
 
 vfs.RegisterFileSystem(CONTEXT)

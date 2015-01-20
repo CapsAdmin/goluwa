@@ -1,6 +1,8 @@
 local fs = {}
 
 if WINDOWS then
+	local ffi = require("ffi")
+	
 	ffi.cdef([[
 		typedef struct goluwa_file_time {
 			long high;
@@ -54,7 +56,9 @@ if WINDOWS then
 	function fs.find(dir)
 		local out = {}
 		
-		local handle = ffi.C.FindFirstFileA(dir, data)
+		if dir:sub(-1) ~= "/" then dir = dir .. "/" end
+		
+		local handle = ffi.C.FindFirstFileA(dir .. "*", data)
 		
 		if ffi.cast("unsigned long", handle) ~= 0xffffffff then
 			for i = 1, math.huge do
@@ -82,15 +86,57 @@ if WINDOWS then
 		ffi.C.CreateDirectoryA(path, nil)
 	end
 	
+	local flags = {
+		archive = 0x20, -- A file or directory that is an archive file or directory. Applications typically use this attribute to mark files for backup or removal . 
+		compressed = 0x800, -- A file or directory that is compressed. For a file, all of the data in the file is compressed. For a directory, compression is the default for newly created files and subdirectories.
+		device = 0x40, -- This value is reserved for system use.
+		directory = 0x10, -- The handle that identifies a directory.
+		encrypted = 0x4000, -- A file or directory that is encrypted. For a file, all data streams in the file are encrypted. For a directory, encryption is the default for newly created files and subdirectories.
+		hidden = 0x2, -- The file or directory is hidden. It is not included in an ordinary directory listing.
+		integrity_stream = 0x8000, -- The directory or user data stream is configured with integrity (only supported on ReFS volumes). It is not included in an ordinary directory listing. The integrity setting persists with the file if it's renamed. If a file is copied the destination file will have integrity set if either the source file or destination directory have integrity set.
+		normal = 0x80, -- A file that does not have other attributes set. This attribute is valid only when used alone.
+		not_content_indexed = 0x2000, -- The file or directory is not to be indexed by the content indexing service.
+		no_scrub_data = 0x20000, -- The user data stream not to be read by the background data integrity scanner (AKA scrubber). When set on a directory it only provides inheritance. This flag is only supported on Storage Spaces and ReFS volumes. It is not included in an ordinary directory listing.
+		offline = 0x1000, -- The data of a file is not available immediately. This attribute indicates that the file data is physically moved to offline storage. This attribute is used by Remote Storage, which is the hierarchical storage management software. Applications should not arbitrarily change this attribute.
+		readonly = 0x1, -- A file that is read-only. Applications can read the file, but cannot write to it or delete it. This attribute is not honored on directories. For more information, see You cannot view or change the Read-only or the System attributes of folders in Windows Server 2003, in Windows XP, in Windows Vista or in Windows 7.
+		reparse_point = 0x400, -- A file or directory that has an associated reparse point, or a file that is a symbolic link.
+		sparse_file = 0x200, -- A file that is a sparse file.
+		system = 0x4, -- A file or directory that the operating system uses a part of, or uses exclusively.
+		temporary = 0x100, -- A file that is being used for temporary storage. File systems avoid writing data back to mass storage if sufficient cache memory is available, because typically, an application deletes a temporary file after the handle is closed. In that scenario, the system can entirely avoid writing the data. Otherwise, the data is written after the handle is closed.
+		virtual = 0x10000, -- This value is reserved for system use.
+	}
+	
+	local function flags_to_table(bits)
+		local out = {}
+		
+		for k,v in pairs(flags) do
+			out[k] = bit.bor(bits, v) == v
+		end
+		
+		return out
+	end
+	
 	local info = ffi.new("goluwa_file_attributes[1]")
 	function fs.getattributes(path)	
 		if ffi.C.GetFileAttributesExA(path, 0, info) then
+			--local flags = flags_to_table(info[0].dwFileAttributes) -- overkill
+			local type
+
+			-- hmmm
+			if --[[flags.archive]] bit.bor(info[0].dwFileAttributes, flags.archive) == flags.archive then
+				type = "file"
+			else
+				type = "directory"
+			end
+			
 			return {
 				creation_time = info[0].ftCreationTime.low,
 				last_accessed = info[0].ftLastAccessTime.low,
 				last_modified = info[0].ftLastWriteTime.low,
 				last_changed = -1, -- last permission changes
 				size = info[0].nFileSizeLow,
+				type = type,
+			---	flags = flags,
 			}
 		end
 	end
@@ -139,6 +185,7 @@ else
 				last_accessed = info.access,
 				last_changed = info.change,
 				last_modified = info.modification,
+				type = info.typename,
 				size = info.size,
 			}
 		end
