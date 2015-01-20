@@ -45,8 +45,8 @@ ARCH=$(get_arch)
 cd $ARCH 2>/dev/null || die "CPU architecture '%s' not supported" ${ARCH}
 
 export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
-#export LD_PRELOAD="libSegFault.so:$LD_PRELOAD"
-#export TERM="xterm-color"
+export LD_PRELOAD="libSegFault.so:$LD_PRELOAD"
+export TERM="xterm-color"
 
 while true; do
 	./luajit ../../../lua/init.lua
