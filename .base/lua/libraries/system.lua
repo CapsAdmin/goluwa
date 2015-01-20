@@ -66,23 +66,20 @@ do
 	
 	if LINUX then
 		ffi.cdef[[	
-			typedef long time_t;
-			typedef long suseconds_t;
-
-			struct timezone {
+			struct goluwa_timezone {
 				int tz_minuteswest;     /* minutes west of Greenwich */
 				int tz_dsttime;         /* type of DST correction */
 			};
 			
-			struct timeval {
-				time_t      tv_sec;     /* seconds */
-				suseconds_t tv_usec;    /* microseconds */
+			struct goluwa_timeval {
+				long      tv_sec;     /* seconds */
+				long tv_usec;    /* microseconds */
 			};
 			
-			int gettimeofday(struct timeval *tv, struct timezone *tz);
+			int gettimeofday(struct goluwa_timeval *tv, struct goluwa_timezone *tz);
 		]]
 		
-		local temp = ffi.new("struct timeval[1]")
+		local temp = ffi.new("struct goluwa_timeval[1]")
 		get = function() ffi.C.gettimeofday(temp, nil) return temp[0].tv_usec*100 end
 	end
 	
@@ -134,25 +131,21 @@ do-- time in ms
 	end
 	
 	if LINUX then		
-		local t1 = ffi.new("struct timeval[1]")
-		local t2 = ffi.new("struct timeval[1]")
-		local time = 0
-		
-		local init
+		ffi.cdef[[
+		struct goluwa_timespec {
+			unsigned long   tv_sec;        /* seconds */
+			long     tv_nsec;       /* nanoseconds */
+		};
+		   
+			int clock_gettime(size_t clk_id, struct goluwa_timespec *tp);
+		]]
+				
+		local time = ffi.new("struct goluwa_timespec[1]")		
 		
 		get = function() 
+			ffi.C.clock_gettime(1, time)
 			
-			if not init then
-				ffi.C.gettimeofday(t1, nil)
-				init = true
-			end
-		
-			ffi.C.gettimeofday(t2, nil) 
-			
-			time = tonumber(t2[0].tv_sec - t1[0].tv_sec) * 1000
-			time = time + tonumber(t2[0].tv_usec - t1[0].tv_usec) / 1000
-		
-			return time
+			return tonumber(time[0].tv_sec * 1000000000 + time[0].tv_nsec) * 1e-9
 		end
 	end
 	
