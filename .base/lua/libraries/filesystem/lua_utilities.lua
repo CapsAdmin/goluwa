@@ -3,7 +3,7 @@ local vfs = (...) or _G.vfs
 vfs.included_files = vfs.included_files or {}
 
 local function store(path)
-	local path = vfs.FixPath(path:lower())
+	local path = vfs.FixPath(path)
 	vfs.included_files[path] = lfs.attributes(path)
 end
 
