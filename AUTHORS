@@ -1,0 +1,8 @@
+Morten A. Erlandsen (https://github.com/mortenae) 
+	provided help and code with BSP (especially the displacement bit) and supporting linux
+	
+Leandro Fonseca (https://github.com/Shell64)
+	started and worked on lovemu early on and has helped with explaining how löve works
+	
+Somepotato (https://github.com/Someguynamedpie) 
+	started proper font support (mainly using a font atlas)
