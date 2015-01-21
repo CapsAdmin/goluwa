@@ -9,6 +9,8 @@ function META:AddComponent(name, ...)
 	self:RemoveComponent(name)
 		
 	local component = prototype.CreateComponent(name)
+	
+	if not component then return end
 					
 	for i, other in ipairs(component.Require) do
 		if not self.Components[other] then
