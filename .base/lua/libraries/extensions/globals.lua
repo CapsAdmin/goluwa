@@ -1,3 +1,169 @@
+do -- logging	
+	local pretty_prints = {}
+	
+	pretty_prints.table = function(t)
+		local str = tostring(t) or "nil"
+				
+		str = str .. " [" .. table.count(t) .. " subtables]"
+		
+		-- guessing the location of a library
+		local sources = {}
+		
+		for k,v in pairs(t) do	
+			if type(v) == "function" then
+				local src = debug.getinfo(v).source
+				sources[src] = (sources[src] or 0) + 1
+			end
+		end
+		
+		local tmp = {}
+		
+		for k,v in pairs(sources) do
+			table.insert(tmp, {k=k,v=v})
+		end
+		
+		table.sort(tmp, function(a,b) return a.v > b.v end)
+		
+		if #tmp > 0 then 
+			str = str .. "[" .. tmp[1].k:gsub("!/%.%./", "") .. "]"
+		end		
+		
+		return str
+	end
+	
+	local function tostringx(val)
+		local t = (typex or type)(val)
+		
+		return pretty_prints[t] and pretty_prints[t](val) or tostring(val)
+	end
+
+	local function tostring_args(...)
+		local copy = {}
+		
+		for i = 1, select("#", ...) do
+			table.insert(copy, tostringx(select(i, ...)))
+		end
+		
+		return copy
+	end
+
+	local function formatx(str, ...)		
+		local copy = {}
+		local i = 1
+		
+		for arg in str:gmatch("%%(.)") do
+			arg = arg:lower()
+			
+			if arg == "s" then
+				table.insert(copy, tostringx(select(i, ...)))
+			else
+				table.insert(copy, (select(i, ...)))
+			end
+				
+			i = i + 1
+		end
+		
+		return string.format(str, unpack(copy))
+	end
+	
+	local base_log_dir = e.USERDATA_FOLDER .. "logs/"
+	
+	local log_files = {}
+	local log_file
+	
+	function setlogfile(name)
+		name = name or "console"
+		
+		if not log_files[name] then
+			local file = io.open(base_log_dir .. name .. "_" .. jit.os:lower() .. ".txt", "w")
+		
+			log_files[name] = file			
+		end
+		
+		log_file = log_files[name]
+	end
+	
+	function getlogfile(name)
+		name = name or "console" 
+		
+		return log_files[name]
+	end
+	
+	local last_line
+	local count = 0
+	local last_count_length = 0
+		
+	fs.createdir(base_log_dir)
+		
+	local function raw_log(args, sep, append)	
+		local line = table.concat(args, sep)
+	
+		if append then
+			line = line .. append
+		end
+	
+		if vfs then						
+			if not log_file then
+				setlogfile()
+			end
+							
+			if line == last_line then
+				if count > 0 then
+					local count_str = ("[%i x] "):format(count)
+					log_file:seek("cur", -#line-1-last_count_length)
+					log_file:write(count_str, line)
+					last_count_length = #count_str
+				end
+				count = count + 1
+			else
+				log_file:write(line)
+				count = 0
+				last_count_length = 0
+			end
+			
+			log_file:flush()
+			
+			last_line = line
+		end
+		
+		if log_files.console == log_file then
+			
+			if console and console.Print then
+				console.Print(line)
+			else
+				io.write(line)
+			end
+			
+			if _G.LOG_BUFFER then
+				table.insert(_G.LOG_BUFFER, args)
+			end
+		end
+	end
+		
+	function log(...)
+		raw_log(tostring_args(...), "")
+	end
+	
+	function logn(...)
+		raw_log(tostring_args(...), "", "\n")
+		return ...
+	end
+	
+	function print(...)
+		raw_log(tostring_args(...), ",\t", "\n")
+		return ...
+	end
+
+	function logf(str, ...)
+		log(formatx(str, ...))
+		return ...
+	end
+
+	function errorf(str, level, ...)
+		error(formatx(str, ...), level)
+	end
+end
+
 do
 	local luadata
 

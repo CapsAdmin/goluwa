@@ -3,6 +3,14 @@ local vfs = (...) or _G.vfs
 vfs.loaded_addons = {}
 vfs.disabled_addons = {}
 
+function vfs.MountAddons(dir)
+	for folder in vfs.Iterate(dir, nil, true) do
+		if not folder:endswith(".git") then
+			vfs.MountAddon(folder .. "/")
+		end
+	end
+end
+
 function vfs.SortAddonsAfterPriority()
 	table.sort(vfs.loaded_addons, function(a,b) return a.priority > b.priority end)
 end
