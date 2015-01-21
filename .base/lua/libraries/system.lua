@@ -2,6 +2,32 @@ local system = _G.system or {}
 
 local function not_implemented() debug.trace() logn("this function is not yet implemented!") end
 
+function system.ExecuteArgs(args)
+	args = args or _G.ARGS
+	
+	if not args and os.getenv("ARGS") then
+		local func, err = loadstring("return " .. os.getenv("ARGS"))
+		
+		if func then 
+			local ok, tbl = pcall(func)
+			
+			if not ok then
+				logn("failed to execute ARGS: ", tbl)
+			end
+			
+			args = tbl
+		else
+			logn("failed to execute ARGS: ", err)
+		end
+	end
+	
+	if args then
+		for _, arg in pairs(args) do
+			print(console.RunString(tostring(arg)))
+		end	
+	end
+end
+
 do -- frame time
 	local frame_time = 0.1
 
@@ -685,337 +711,371 @@ function system.Restart( run_on_launch )
 	os.exit()
 end
 
--- this should be used for xpcall
-local suppress = false
-local last_openfunc = 0
-function system.OnError(msg, ...)
-	msg = msg or "no error"
-	if suppress then logn("error in system.OnError: ", msg, ...) for i = 3, 100 do local t = debug.getinfo(i) if t then table.print(t) else break end end return end
-	suppress = true
-	if LINUX and msg == "interrupted!\n" then return end
-	
-	if event.Call("LuaError", msg) == false then return end
-	
-	if msg:find("stack overflow") then
-		logn(msg)
-		table.print(debug.getinfo(3))
-		return
-	end
-	
-	logn("STACK TRACE:")
-	logn("{")
-	
-	local base_folder = e.ROOT_FOLDER:gsub("%p", "%%%1")
-	local data = {}
-		
-	for level = 3, 100 do
-		local info = debug.getinfo(level)
-		if info then
-			if info.currentline >= 0 then			
-				local args = {}
-				
-				for arg = 1, info.nparams do
-					local key, val = debug.getlocal(level, arg)
-					if type(val) == "table" then
-						val = tostring(val)
-					else
-						val = serializer.GetLibrary("luadata").ToString(val)
-						if val and #val > 200 then
-							val = val:sub(0, 200) .. "...."
-						end
-					end
-					table.insert(args, ("%s = %s"):format(key, val))
-				end
-				
-				info.arg_line = table.concat(args, ", ")
-	
-				info.name = info.name or "unknown"
-				
-				table.insert(data, info)
-			end
-		else
-			break
-		end
-    end
-	
-	local function resize_field(tbl, field)
-		local length = 0
-		
-		for _, info in pairs(tbl) do
-			local str = tostring(info[field])
-			if str then
-				if #str > length then
-					length = #str
-				end
-				info[field] = str
-			end
-		end
-		
-		for _, info in pairs(tbl) do
-			local str = info[field]
-			if str then				
-				local diff = length - #str
-				
-				if diff > 0 then
-					info[field] = str .. (" "):rep(diff)
-				end
-			end
-		end
-	end
-	
-	table.insert(data, {currentline = "LINE:", source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
-	
-	resize_field(data, "currentline")
-	resize_field(data, "source")
-	resize_field(data, "name")
-	
-	for _, info in npairs(data) do
-		logf("  %s   %s   %s  (%s)\n", info.currentline, info.source, info.name, info.arg_line)
-	end
-	
-	table.clear(data)
+do
 
-	logn("}")
-	logn("LOCALS: ")
-	logn("{")
-	for _, param in pairs(debug.getparamsx(4)) do
-		--if not param.key:find("(",nil,true) then
-			local val
+	-- this should be used for xpcall
+	local suppress = false
+	local last_openfunc = 0
+	function system.OnError(msg, ...)
+		msg = msg or "no error"
+		if suppress then logn("error in system.OnError: ", msg, ...) for i = 3, 100 do local t = debug.getinfo(i) if t then table.print(t) else break end end return end
+		suppress = true
+		if LINUX and msg == "interrupted!\n" then return end
+		
+		if event.Call("LuaError", msg) == false then return end
+		
+		if msg:find("stack overflow") then
+			logn(msg)
+			table.print(debug.getinfo(3))
+			return
+		end
+		
+		logn("STACK TRACE:")
+		logn("{")
+		
+		local base_folder = e.ROOT_FOLDER:gsub("%p", "%%%1")
+		local data = {}
 			
-			if type(param.val) == "table" then
-				val = tostring(param.val)
-			elseif type(param.val) == "string" then
-				val = param.val:sub(0, 10)
-				
-				if val ~= param.val then
-					val = val .. " .. " .. utility.FormatFileSize(#param.val)
-				end
-			else
-				val = serializer.GetLibrary("luadata").ToString(param.val)
-			end
-			
-			table.insert(data, {key = param.key, value = val})
-		--end
-	end
-	
-	table.insert(data, {key = "KEY:", value = "VALUE:"})
-	
-	resize_field(data, "key")
-	resize_field(data, "value")
-	
-	for _, info in npairs(data) do
-		logf("  %s   %s\n", info.key, info.value)
-	end
-	logn("}")
-	
-	logn("ERROR:")
-	logn("{")
-	local source, _msg = msg:match("(.+): (.+)")
-	
-	if source then
-		source = source:trim()
-		
-		local info
-		
-		-- this should be replaced with some sort of configuration
-		-- gl.lua never shows anything useful but the level above does..			
-		if source:find("ffi_bind") then
-			info = debug.getinfo(4)
-		else
-			info = debug.getinfo(2)
-		end
-			
-		if last_openfunc < os.clock() then
-			debug.openfunction(info.func, info.currentline)
-			last_openfunc = os.clock() + 3
-		else
-			--logf("debug.openfunction(%q)\n", source)
-		end
-		
-		logn("  ", source)
-		logn("  ", _msg:trim())
-	else
-		logn(msg)
-	end
-	
-	logn("}")
-	logn("")
-	
-	suppress = false
-end
-
-if system.lua_environment_sockets then
-	for key, val in pairs(system.lua_environment_sockets) do
-		utility.SafeRemove(val)
-	end
-end
-
-function system.StartLuaInstance(...)
-	local args = {...}
-	local arg_line = ""
-	
-	for k,v in pairs(args) do
-		arg_line = arg_line .. serializer.GetLibrary("luadata").ToString(v)
-		if #args ~= k then
-			arg_line = arg_line .. ", "
-		end
-	end
-	
-	arg_line = arg_line:gsub('"', "'")
-	
-	local arg = ([[-e ARGS={%s}loadfile('%sinit.lua')()]]):format(arg_line, e.ROOT_FOLDER .. "/.base/lua/")
-		
-	if WINDOWS then
-		os.execute([[start "" "luajit" "]] .. arg .. [["]])
-	elseif LINUX then
-		os.execute([[luajit "]] .. arg .. [[" &]])
-	end
-end
-
-system.lua_environment_sockets = {}
-
-function system.CreateLuaEnvironment(title, globals, id)	
-	check(globals, "table", "nil")
-	id = id or title
-	
-	local socket = system.lua_environment_sockets[id] or NULL
-	
-	if socket:IsValid() then 
-		socket:Remove()
-	end
-	
-	local socket = sockets.CreateServer()
-	socket:Host("*", 0)
+		for level = 3, 100 do
+			local info = debug.getinfo(level)
+			if info then
+				if info.currentline >= 0 then			
+					local args = {}
 					
-	system.lua_environment_sockets[id] = socket
-	
-	local arg = ""
+					for arg = 1, info.nparams do
+						local key, val = debug.getlocal(level, arg)
+						if type(val) == "table" then
+							val = tostring(val)
+						else
+							val = serializer.GetLibrary("luadata").ToString(val)
+							if val and #val > 200 then
+								val = val:sub(0, 200) .. "...."
+							end
+						end
+						table.insert(args, ("%s = %s"):format(key, val))
+					end
+					
+					info.arg_line = table.concat(args, ", ")
 		
-	globals = globals or {}
-	
-	globals.PLATFORM = _G.PLATFORM or globals.PLATFORM
-	globals.PORT = socket:GetPort()
-	globals.CREATED_ENV = true
-	globals.TITLE = tostring(title)
-
-	for key, val in pairs(globals) do
-		arg = arg .. key .. "=" .. serializer.GetLibrary("luadata").ToString(val) .. ";"
-	end	
-	
-	arg = arg:gsub([["]], [[']])	
-	arg = ([[-e %sloadfile('%sinit.lua')()]]):format(arg, e.ROOT_FOLDER .. "/.base/lua/")
-		
-	if WINDOWS then
-		os.execute([[start "" "luajit" "]] .. arg .. [["]])
-	elseif LINUX then
-		os.execute([[luajit "]] .. arg .. [[" &]])
-	end
-	
-	local env = {}
-	
-	function env:OnReceive(line)
-		local func, msg = loadstring(line)
-		if func then
-			local ok, msg = xpcall(func, system.OnError) 
-			if not ok then
-				logn("runtime error:", client, msg)
+					info.name = info.name or "unknown"
+					
+					table.insert(data, info)
+				end
+			else
+				break
 			end
+		end
+		
+		local function resize_field(tbl, field)
+			local length = 0
+			
+			for _, info in pairs(tbl) do
+				local str = tostring(info[field])
+				if str then
+					if #str > length then
+						length = #str
+					end
+					info[field] = str
+				end
+			end
+			
+			for _, info in pairs(tbl) do
+				local str = info[field]
+				if str then				
+					local diff = length - #str
+					
+					if diff > 0 then
+						info[field] = str .. (" "):rep(diff)
+					end
+				end
+			end
+		end
+		
+		table.insert(data, {currentline = "LINE:", source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
+		
+		resize_field(data, "currentline")
+		resize_field(data, "source")
+		resize_field(data, "name")
+		
+		for _, info in npairs(data) do
+			logf("  %s   %s   %s  (%s)\n", info.currentline, info.source, info.name, info.arg_line)
+		end
+		
+		table.clear(data)
+
+		logn("}")
+		logn("LOCALS: ")
+		logn("{")
+		for _, param in pairs(debug.getparamsx(4)) do
+			--if not param.key:find("(",nil,true) then
+				local val
+				
+				if type(param.val) == "table" then
+					val = tostring(param.val)
+				elseif type(param.val) == "string" then
+					val = param.val:sub(0, 10)
+					
+					if val ~= param.val then
+						val = val .. " .. " .. utility.FormatFileSize(#param.val)
+					end
+				else
+					val = serializer.GetLibrary("luadata").ToString(param.val)
+				end
+				
+				table.insert(data, {key = param.key, value = val})
+			--end
+		end
+		
+		table.insert(data, {key = "KEY:", value = "VALUE:"})
+		
+		resize_field(data, "key")
+		resize_field(data, "value")
+		
+		for _, info in npairs(data) do
+			logf("  %s   %s\n", info.key, info.value)
+		end
+		logn("}")
+		
+		logn("ERROR:")
+		logn("{")
+		local source, _msg = msg:match("(.+): (.+)")
+		
+		if source then
+			source = source:trim()
+			
+			local info
+			
+			-- this should be replaced with some sort of configuration
+			-- gl.lua never shows anything useful but the level above does..			
+			if source:find("ffi_bind") then
+				info = debug.getinfo(4)
+			else
+				info = debug.getinfo(2)
+			end
+				
+			if last_openfunc < os.clock() then
+				debug.openfunction(info.func, info.currentline)
+				last_openfunc = os.clock() + 3
+			else
+				--logf("debug.openfunction(%q)\n", source)
+			end
+			
+			logn("  ", source)
+			logn("  ", _msg:trim())
 		else
-			logn("compile error:", client, msg)
-		end
-	end
-	
-	local queue = {}
-		
-	function env:Send(line)
-		if not socket:HasClients() then
-			table.insert(queue, line)
-		else
-			socket:Broadcast(line, true)
-		end
-	end
-	
-	function env:Remove()
-		self:Send("os.exit()")
-		socket:Remove()
-	end
-	
-	socket.OnClientConnected = function(self, client)	
-		for k,v in pairs(queue) do
-			socket:Broadcast(v, true)
+			logn(msg)
 		end
 		
-		table.clear(queue)
+		logn("}")
+		logn("")
 		
-		return true 
+		suppress = false
 	end
-		
-	socket.OnReceive = function(self, line)
-		env:OnReceive(line)
-	end
-		
-	env.socket = socket
-	
-	return env
 end
 
-function system.CreateConsole(title)
-	if CONSOLE then return logn("tried to create a console in a console!!!") end
-	local env = system.CreateLuaEnvironment(title, {CONSOLE = true})
-	
-	env:Send([[
-		local __stop__
-		
-		local function clear() 
-			logn(("\n"):rep(1000)) -- lol
-		end
-				
-		local function exit()
-			__stop__ = true
-			os.exit()
-		end
-		
-		clear()
-		
-		ENV_SOCKET.OnClose = function() exit() end
+do -- environment
 
-		event.AddListener("ConsoleEnvReceive", TITLE, function()
-			::again::
-			
-			local str = io.read()
-			
-			if str == "exit" then
-				exit()
-			elseif str == "clear" then
-				clear()
+	if system.lua_environment_sockets then
+		for key, val in pairs(system.lua_environment_sockets) do
+			utility.SafeRemove(val)
+		end
+	end
+
+	function system.StartLuaInstance(...)
+		local args = {...}
+		local arg_line = ""
+		
+		for k,v in pairs(args) do
+			arg_line = arg_line .. serializer.GetLibrary("luadata").ToString(v)
+			if #args ~= k then
+				arg_line = arg_line .. ", "
 			end
+		end
+		
+		arg_line = arg_line:gsub('"', "'")
+		
+		local arg = ([[-e ARGS={%s}loadfile('%sinit.lua')()]]):format(arg_line, e.ROOT_FOLDER .. "/.base/lua/")
+			
+		if WINDOWS then
+			os.execute([[start "" "luajit" "]] .. arg .. [["]])
+		elseif LINUX then
+			os.execute([[luajit "]] .. arg .. [[" &]])
+		end
+	end
 
-			if str and #str:trim() > 0 then
-				ENV_SOCKET:Send(str, true)
+	system.lua_environment_sockets = {}
+
+	function system.CreateLuaEnvironment(title, globals, id)	
+		check(globals, "table", "nil")
+		id = id or title
+		
+		local socket = system.lua_environment_sockets[id] or NULL
+		
+		if socket:IsValid() then 
+			socket:Remove()
+		end
+		
+		local socket = sockets.CreateServer()
+		socket:Host("*", 0)
+						
+		system.lua_environment_sockets[id] = socket
+		
+		local arg = ""
+			
+		globals = globals or {}
+		
+		globals.PLATFORM = _G.PLATFORM or globals.PLATFORM
+		globals.PORT = socket:GetPort()
+		globals.CREATED_ENV = true
+		globals.TITLE = tostring(title)
+
+		for key, val in pairs(globals) do
+			arg = arg .. key .. "=" .. serializer.GetLibrary("luadata").ToString(val) .. ";"
+		end	
+		
+		arg = arg:gsub([["]], [[']])	
+		arg = ([[-e %sloadfile('%sinit.lua')()]]):format(arg, e.ROOT_FOLDER .. "/.base/lua/")
+			
+		if WINDOWS then
+			os.execute([[start "" "luajit" "]] .. arg .. [["]])
+		elseif LINUX then
+			os.execute([[luajit "]] .. arg .. [[" &]])
+		end
+		
+		local env = {}
+		
+		function env:OnReceive(line)
+			local func, msg = loadstring(line)
+			if func then
+				local ok, msg = xpcall(func, system.OnError) 
+				if not ok then
+					logn("runtime error:", client, msg)
+				end
 			else
-				goto again
+				logn("compile error:", client, msg)
 			end
-		end)
+		end
 		
-		event.AddListener("ShutDown", TITLE, function()
-			ENV_SOCKET:Remove()
-		end)
-	]])	
+		local queue = {}
+			
+		function env:Send(line)
+			if not socket:HasClients() then
+				table.insert(queue, line)
+			else
+				socket:Broadcast(line, true)
+			end
+		end
 		
-	event.AddListener("Print", title .. "_console_output", function(...)
-		local line = tostring_args(...)
-		env:Send(string.format("logn(%q)", line))
-	end)
-	
+		function env:Remove()
+			self:Send("os.exit()")
+			socket:Remove()
+		end
 		
-	function env:Remove()
-		self:Send("os.exit()")
-		utility.SafeRemove(self.socket)
-		event.RemoveListener("Print", title .. "_console_output")
+		socket.OnClientConnected = function(self, client)	
+			for k,v in pairs(queue) do
+				socket:Broadcast(v, true)
+			end
+			
+			table.clear(queue)
+			
+			return true 
+		end
+			
+		socket.OnReceive = function(self, line)
+			env:OnReceive(line)
+		end
+			
+		env.socket = socket
+		
+		return env
 	end
 	
-	
-	return env
+	function system._CheckCreatedEnv()
+		if CREATED_ENV then
+			console.SetTitle(TITLE, "env")
+			
+			utility.SafeRemove(ENV_SOCKET)
+			
+			ENV_SOCKET = sockets.CreateClient()
+
+			ENV_SOCKET:Connect("localhost", PORT)	
+			ENV_SOCKET:SetTimeout()
+			
+			ENV_SOCKET.OnReceive = function(self, line)		
+				local func, msg = loadstring(line)
+
+				if func then
+					local ok, msg = xpcall(func, system.OnError) 
+					if not ok then
+						logn("runtime error:", client, msg)
+					end
+				else
+					logn("compile error:", client, msg)
+				end
+				
+				event.Delay(0, function() event.Call("ConsoleEnvReceive", line) end)
+			end 
+		end
+	end
+
+	function system.CreateConsole(title)
+		if CONSOLE then return logn("tried to create a console in a console!!!") end
+		local env = system.CreateLuaEnvironment(title, {CONSOLE = true})
+		
+		env:Send([[
+			local __stop__
+			
+			local function clear() 
+				logn(("\n"):rep(1000)) -- lol
+			end
+					
+			local function exit()
+				__stop__ = true
+				os.exit()
+			end
+			
+			clear()
+			
+			ENV_SOCKET.OnClose = function() exit() end
+
+			event.AddListener("ConsoleEnvReceive", TITLE, function()
+				::again::
+				
+				local str = io.read()
+				
+				if str == "exit" then
+					exit()
+				elseif str == "clear" then
+					clear()
+				end
+
+				if str and #str:trim() > 0 then
+					ENV_SOCKET:Send(str, true)
+				else
+					goto again
+				end
+			end)
+			
+			event.AddListener("ShutDown", TITLE, function()
+				ENV_SOCKET:Remove()
+			end)
+		]])	
+			
+		event.AddListener("Print", title .. "_console_output", function(...)
+			local line = tostring_args(...)
+			env:Send(string.format("logn(%q)", line))
+		end)
+		
+			
+		function env:Remove()
+			self:Send("os.exit()")
+			utility.SafeRemove(self.socket)
+			event.RemoveListener("Print", title .. "_console_output")
+		end
+		
+		
+		return env
+	end
 end
 
 return system
