@@ -130,8 +130,10 @@ end
 
 do -- file system
 
-	table.insert(package.loaders, function(name) return loadfile("../../../lua/modules/" .. name .. ".lua") end)
+	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../lua/modules/" .. name .. ".lua") end)
+	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../lua/modules/" .. name .. "/init.lua") end)
 	fs = require("fs")
+	table.remove(package.loaders)
 	table.remove(package.loaders)
 
 	-- the root folder is always 4 paths up (.base/bin/os/arch)
@@ -601,6 +603,12 @@ do -- include
 end
 
 do -- libraries
+	if WINDOWS then
+		winapi = require("winapi")
+	else
+		posix = require("syscall")
+	end
+
 	-- standard library extensions
 	include("libraries/extensions/globals.lua")
 	include("libraries/extensions/debug.lua")
