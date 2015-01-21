@@ -79,7 +79,7 @@ event.AddListener("Move", "spooky", function(client, cmd)
 			ghost:ServerFilterSync(filter, "Rotation")
 			
 			--ghost:SetNetworkChannel(1) 
-			ghost:SetModelPath("models/sphere.obj")
+			ghost:SetPhysicsModelPath("models/sphere.obj")
 			ghost:SetMass(85)
 			ghost:InitPhysicsSphere(0.5)
 			ghost:SetPosition(Vec3(0,0,-40))  

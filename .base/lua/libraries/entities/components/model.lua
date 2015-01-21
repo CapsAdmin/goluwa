@@ -1,5 +1,3 @@
-if not render then return end
-
 local COMPONENT = {}
 
 COMPONENT.Name = "model"
@@ -27,7 +25,7 @@ COMPONENT.Network = {
 	Color = {"color", 1/5},
 }
 
-if CLIENT then 
+if CLIENT and render then 
 	do -- shader
 		local gl = require("lj-opengl") -- OpenGL
 

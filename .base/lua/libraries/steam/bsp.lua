@@ -429,14 +429,22 @@ function steam.LoadMap(path, callback)
 				
 				blend = math.clamp(blend, 0, 1)
 				
-				model:AddVertex({
+				local vertex = {
 					pos = -Vec3(pos.y, pos.x, pos.z) * scale, -- copy
 					texture_blend = blend,
 					uv = Vec2(
 						(a[1] * pos.x + a[2] * pos.y + a[3] * pos.z + a[4]) / texdata.width,
 						(a[5] * pos.x + a[6] * pos.y + a[7] * pos.z + a[8]) / texdata.height
 					)
-				}) 
+				}
+				
+				if CLIENT then
+					model:AddVertex(vertex) 
+				end
+				
+				if SERVER then
+					table.insert(model, vertex)
+				end
 			end
 
 			local function bilerpvec(a, b, c, d, alpha1, alpha2)
@@ -480,7 +488,7 @@ function steam.LoadMap(path, callback)
 										
 					-- split the world up into sub models by texture
 					if not meshes[texname] then				
-						local mesh = render.CreateMeshBuilder()
+						local mesh = CLIENT and render.CreateMeshBuilder() or {}
 										
 						meshes[texname] = mesh
 						
@@ -587,23 +595,21 @@ function steam.LoadMap(path, callback)
 			end
 			
 		end
-		
-		for i, mesh in ipairs(models) do
-			mesh:BuildNormals()
-			thread:ReportProgress("generating normals", #models)
-			thread:Sleep()
-		end 		
+		if CLIENT then			
+			for i, mesh in ipairs(models) do
+				mesh:BuildNormals()
+				thread:ReportProgress("generating normals", #models)
+				thread:Sleep()
+			end 		
 
-		for i, mesh in ipairs(models) do
-			if mesh.displacement then
-				mesh:SmoothNormals()
-			end
-			thread:Report("smoothing displacements", #models)
-			thread:Sleep()
-		end 
-		
-
-		if CLIENT then
+			for i, mesh in ipairs(models) do
+				if mesh.displacement then
+					mesh:SmoothNormals()
+				end
+				thread:Report("smoothing displacements", #models)
+				thread:Sleep()
+			end 
+						
 			for i, mesh in ipairs(models) do
 				mesh:Upload(true)
 				thread:ReportProgress("creating meshes", #models)
@@ -686,7 +692,7 @@ function steam.LoadMap(path, callback)
 
 		local count = #models
 		for i_, model in ipairs(models) do	
-			local vertices_tbl = model:GetVertices()
+			local vertices_tbl = SERVER and model or model:GetVertices()
 			local vertices_count = #vertices_tbl
 			
 			local triangles = ffi.new("unsigned int[?]", vertices_count)
