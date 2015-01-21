@@ -55,97 +55,29 @@ end
 
 local function not_implemented() debug.trace() logn("this function is not yet implemented!") end
 
-do 
+do -- time in ms
 	local get = not_implemented
 	
 	if WINDOWS then
-		ffi.cdef("int GetTickCount();")
+		require("winapi.time")
 		
-		get = function() return ffi.C.GetTickCount() end
+		local freq = tonumber(winapi.QueryPerformanceFrequency().QuadPart)
+		local start_time = winapi.QueryPerformanceCounter()
+		
+		get = function()
+			local time = winapi.QueryPerformanceCounter()
+			
+			time.QuadPart = time.QuadPart - start_time.QuadPart
+			return tonumber(time.QuadPart) / freq
+		end		
 	end
 	
 	if LINUX then
-		ffi.cdef[[	
-			struct goluwa_timezone {
-				int tz_minuteswest;     /* minutes west of Greenwich */
-				int tz_dsttime;         /* type of DST correction */
-			};
-			
-			struct goluwa_timeval {
-				long      tv_sec;     /* seconds */
-				long tv_usec;    /* microseconds */
-			};
-			
-			int gettimeofday(struct goluwa_timeval *tv, struct goluwa_timezone *tz);
-		]]
-		
-		local temp = ffi.new("struct goluwa_timeval[1]")
-		get = function() ffi.C.gettimeofday(temp, nil) return temp[0].tv_usec*100 end
-	end
-	
-	system.GetTickCount = get
-end
-
-do-- time in ms
-	local get = not_implemented
-	
-	if WINDOWS then		
-		-- Script by montoyo
-		-- Little complex number library
-
-		ffi.cdef[[
-		typedef union goluwa_system_GetTime_ {
-			struct {
-				unsigned long LowPart;
-				long HighPart;
-			}  ;
-			struct {
-				unsigned long LowPart;
-				long HighPart;
-			} u;
-
-			long long QuadPart;
-		} goluwa_system_GetTime;
-
-		__declspec(dllimport) int __stdcall QueryPerformanceCounter(goluwa_system_GetTime *lpPerformanceCount);
-		__declspec(dllimport) int __stdcall QueryPerformanceFrequency(goluwa_system_GetTime *lpPerformanceCount);
-		]]
-
-		local freq
-		local llstart = ffi.new("goluwa_system_GetTime")
-
-		local li = ffi.new("goluwa_system_GetTime")
-		
-		get = function()
-			ffi.C.QueryPerformanceCounter(li)
-			
-			li.QuadPart = li.QuadPart - llstart.QuadPart
-			return tonumber(li.QuadPart) / freq
-		end
-
-		local li = ffi.new("goluwa_system_GetTime")
-		ffi.C.QueryPerformanceFrequency(li)
-		freq = tonumber(li.QuadPart)
-	
-		ffi.C.QueryPerformanceCounter(llstart)
-	end
-	
-	if LINUX then		
-		ffi.cdef[[
-		struct goluwa_timespec {
-			unsigned long   tv_sec;        /* seconds */
-			long     tv_nsec;       /* nanoseconds */
-		};
-		   
-			int clock_gettime(size_t clk_id, struct goluwa_timespec *tp);
-		]]
-				
-		local time = ffi.new("struct goluwa_timespec[1]")		
+		local ts = posix.t.timespec()
 		
 		get = function() 
-			ffi.C.clock_gettime(1, time)
-			
-			return tonumber(time[0].tv_sec * 1000000000 + time[0].tv_nsec) * 1e-9
+			posix.clock_gettime("MONOTONIC", ts)			
+			return tonumber(ts.tv_sec * 1000000000 + ts.tv_nsec) * 1e-9
 		end
 	end
 	
@@ -156,12 +88,12 @@ do -- sleep
 	local sleep = not_implemented
 	
 	if WINDOWS then
-		ffi.cdef("void Sleep(int ms)")
+		ffi.cdef("VOID Sleep(DWORD dwMilliseconds);")
 		sleep = function(ms) ffi.C.Sleep(ms) end
 	end
 
 	if LINUX then
-		ffi.cdef("void usleep(unsigned int ns)")
+		ffi.cdef("void usleep(unsigned int ns);")
 		sleep = function(ms) ffi.C.usleep(ms*1000) end
 	end
 	
@@ -181,26 +113,28 @@ do -- memory
 	if WINDOWS then
 		 
 		ffi.cdef([[
-		typedef struct _PROCESS_MEMORY_COUNTERS {
-		  unsigned long cb;
-		  unsigned long PageFaultCount;
-		  size_t PeakWorkingSetSize;
-		  size_t WorkingSetSize;
-		  size_t QuotaPeakPagedPoolUsage;
-		  size_t QuotaPagedPoolUsage;
-		  size_t QuotaPeakNonPagedPoolUsage;
-		  size_t QuotaNonPagedPoolUsage;
-		  size_t PagefileUsage;
-		  size_t PeakPagefileUsage;
-		} PROCESS_MEMORY_COUNTERS, *PPROCESS_MEMORY_COUNTERS;
-		int GetProcessMemoryInfo(void* Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, unsigned long long cb);
+			typedef struct _PROCESS_MEMORY_COUNTERS {
+				DWORD  cb;
+				DWORD  PageFaultCount;
+				SIZE_T PeakWorkingSetSize;
+				SIZE_T WorkingSetSize;
+				SIZE_T QuotaPeakPagedPoolUsage;
+				SIZE_T QuotaPagedPoolUsage;
+				SIZE_T QuotaPeakNonPagedPoolUsage;
+				SIZE_T QuotaNonPagedPoolUsage;
+				SIZE_T PagefileUsage;
+				SIZE_T PeakPagefileUsage;
+			} PROCESS_MEMORY_COUNTERS, *PPROCESS_MEMORY_COUNTERS;
+			
+			BOOL GetProcessMemoryInfo(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb);
 		]])
 		
-		local lib = ffi.load("kernel32")
+		local lib = ffi.load("psapi")
 		local pmc = ffi.new("PROCESS_MEMORY_COUNTERS[1]")
+		local size = ffi.sizeof(pmc)
 		
 		function system.GetMemoryInfo()
-			lib.GetProcessMemoryInfo(nil, pmc, sizeof(pmc))
+			lib.GetProcessMemoryInfo(nil, pmc, size)
 			local pmc = pmc[0]
 			
 			return {
@@ -271,11 +205,11 @@ end
 do -- message box
 	local set = not_implemented
 	
-	if WINDOWS then		
-		ffi.cdef("int MessageBoxA(void *w, const char *txt, const char *cap, int type);")
+	if WINDOWS then	
+		require("winapi.messagebox")
 		
 		set = function(title, message)
-			ffi.C.MessageBoxA(nil, message, title, 0)
+			winapi.MessageBox(message, title)
 		end
 	end
 	
@@ -287,11 +221,8 @@ do -- cursor
 	local get = not_implemented
 
 	if WINDOWS then
-		ffi.cdef[[
-			void* SetCursor(void *);
-			void* LoadCursorA(void*, uint16_t);
-		]]
-		
+		require("winapi.cursor")
+				
 		local lib = ffi.load("user32.dll")
 		local cache = {}
 		
@@ -345,11 +276,11 @@ do -- cursor
 		set = function(id)
 			id = id or "arrow"
 			
-			cache[id] = cache[id] or lib.LoadCursorA(nil, enums[id] or enums.arrow)
+			cache[id] = cache[id] or winapi.LoadCursor(enums[id] or enums.arrow)
 			
 			--if last ~= id then
 				current = id
-				lib.SetCursor(cache[id])
+				winapi.SetCursor(cache[id])
 			--	last = id
 			--end
 		end
@@ -372,8 +303,8 @@ do -- dll paths
 	
 	if WINDOWS then		
 		ffi.cdef[[
-			int SetDllDirectoryA(const char *path);
-			unsigned long GetDllDirectoryA(unsigned long length, char *path);
+			BOOL SetDllDirectoryA(LPCTSTR lpPathName);
+			DWORD GetDllDirectoryA(DWORD nBufferLength, LPTSTR lpBuffer);
 		]]
 		
 		set = function(path)
@@ -475,7 +406,7 @@ do -- registry
 	if WINDOWS then
 		ffi.cdef([[
 			typedef unsigned HKEY;
-			long __stdcall RegGetValueA(HKEY, const char*, const char*, unsigned, unsigned*, void*, unsigned*);
+			LONG RegGetValueA(HKEY, LPCTSTR, LPCTSTR, DWORD, LPDWORD, PVOID, LPDWORD);
 		]])
 
 		local advapi = ffi.load("advapi32")
@@ -549,14 +480,12 @@ if false and CLIENT then -- transparent window
 	local set = not_implemented
 
 	if WINDOWS then
+		require("winapi.gdi")
+		
 		set = function(window, b)
 			-- http://stackoverflow.com/questions/4052940/how-to-make-an-opengl-rendering-context-with-transparent-background
 		
-			ffi.cdef([[
-				typedef unsigned char BYTE;
-				typedef unsigned short WORD;
-				typedef unsigned long DWORD;
-				
+			ffi.cdef([[				
 				typedef struct {
 					WORD  nSize;
 					WORD  nVersion;

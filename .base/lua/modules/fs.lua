@@ -1,4 +1,4 @@
-local fs = {}
+local fs = _G.fs or {}
 
 if WINDOWS then
 	local ffi = require("ffi")
