@@ -1,3 +1,5 @@
 .Sync*
 .userdata/
 *.!sync
+/.base/bin/windows/quickbms.exe
+/.base/bin/windows/temp_script.bms
