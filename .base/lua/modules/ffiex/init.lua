@@ -8,7 +8,7 @@ local originalCompileFile = lcpp.compileFile
 local lastTryPath
 local currentState
 
-local function search_header_file(filename, predefines, nxt, _local)
+local function search_header_file(filename, predefines, nxt, _local, no_throw)
 	lastTryPath = lastTryPath or predefines.__FILE__:gsub('^(.*/)[^/]+$', '%1')
 	if nxt then
 		local process
@@ -48,13 +48,24 @@ local function search_header_file(filename, predefines, nxt, _local)
 			end
 		end
 	end
-	print('not found:' .. filename)
+	--> OMG header not found...
+	if not no_throw then
+		local paths = ""
+		for _,path in ipairs(currentState.searchPath) do
+			paths = paths .. "\n" .. path
+		end
+		error(filename .. ' not found in:' .. paths .. "\n at \n" .. debug.traceback())
+	end
 	return nil
 end
 
 lcpp.compileFile = function (filename, predefines, macro_sources, nxt, _local)
 	filename, lastTryPath = search_header_file(filename, predefines, nxt, _local)
-	-- print('include:'..filename)
+	if ffi.__DEBUG_CDEF__ then
+		local out = {originalCompileFile(filename, predefines, macro_sources, nxt)}
+ print('include:'..filename)--.."=>"..out[1])
+ 		return unpack(out)
+ 	end
 	return originalCompileFile(filename, predefines, macro_sources, nxt)
 end
 
@@ -65,7 +76,13 @@ local header_name = "__has_include_next%(%s*[\"<]+(.*)[\">]+%s*%)"
 local function has_include_next(decl)
 	local file = decl:match(header_name)
 	-- print("has_include_next:", file, decl)
-	return search_header_file(file, currentState.lcpp_defs, true, false) ~= nil and "1" or "0"
+	return search_header_file(file, currentState.lcpp_defs, true, false, true) ~= nil and "1" or "0"
+end
+local header_name2 = "__has_include%(%s*[\"<]+(.*)[\">]+%s*%)"
+local function has_include(decl)
+	local file = decl:match(header_name2)
+	-- print("has_include_next:", file, decl)
+	return search_header_file(file, currentState.lcpp_defs, false, false, true) ~= nil and "1" or "0"
 end
 local function __asm(exp)
 	return exp:gsub("__asm_*%s*%b()", "")
@@ -85,13 +102,20 @@ local function replace_table(src, rep)
 	end
 end
 
-local function macro_to_lua_func(macro_source)
+local function macro_to_lua_func(st, macro_source)
 	return function (...)
 		local args = {...}
-		local src = "return " .. macro_source:gsub("%$(%d+)", function (m) return args[tonumber(m)] end)
-		local ok, r = pcall(loadstring, src)
-		if not ok then error(r) end
-		return r()
+		local state = st:expr_processor()
+		local src = macro_source:gsub("%$(%d+)", function (m) return args[tonumber(m)] end)
+		local val = state:parseExpr(src)
+		-- print(val, src)
+		if type(val) ~= 'string' then
+			return val
+		else -- more parse with lua lexer
+			local f, err = loadstring("return "..val)
+			if not f then error(err) end
+			return f()
+		end
 	end
 end
 
@@ -102,18 +126,19 @@ local function generate_cdefs(state, code)
 	local decl = ""
 	repeat
 		local _, offset = string.find(code, '\n', current+1, true)
-		local line = code:sub(current+1, offset)
+		local line = code:sub(current+1, offset):gsub('%b{}', '')
+		-- print('line = '..line)
 		-- matching simple function declaration (e.g. void foo(t1 a1, t2 a2))
-		local _, count = line:gsub('^%s*([_%a][_%w]*%s+[_%a][_%w]*%b())%s*%b{}', function (s)
-			--print(s)
+		local _, count = line:gsub('^%s*([_%a][_%w]*%s+[_%a][_%w]*%b())%s*', function (s)
+			-- print(s)
 			decl = (decl .. "extern " .. s .. ";\n")
 		end)
 		-- matching function declaration with access specifier 
 		-- (e.g. extern void foo(t1 a1, t2 a2), static void bar())
 		-- and not export function declaration contains 'static' specifier
 		if count <= 0 then
-			line:gsub('(.*)%s+([_%a][_%w]*%s+[_%a][_%w]*%b())%s*%b{}', function (s1, s2)
-				--print(s1 .. "|" .. s2)
+			line:gsub('(.*)%s+([_%a][_%w]*%s+[_%a][_%w]*%b())%s*', function (s1, s2)
+				-- print(s1 .. "|" .. s2)
 				if not s1:find('static') then
 					decl = (decl .. "extern " .. s2 .. ";\n")
 				end
@@ -121,8 +146,9 @@ local function generate_cdefs(state, code)
 		end
 		current = offset
 	until not current
+	-- print('code = ['..code..']')
 	if #decl > 0 then
-		-- print('decl = ' .. decl)
+		-- print('decl = [' .. decl..']')
 		state:cdef(decl)
 	end
 end
@@ -181,19 +207,27 @@ local defs_mt = {
 				return rawget(t, k)
 			end
 		elseif type(def) == 'string' then
-			local state = lcpp.init('', st.lcpp_defs, st.lcpp_macro_sources)
+			local state = st:expr_processor()
 			local expr = state:parseExpr(def)
 			rawset(t, k, expr)
 			return rawget(t, k)
 		elseif type(def) == 'function' then
 			def = st.lcpp_macro_sources[k]
 			if not def then return nil end
-			def = macro_to_lua_func(def)
+			def = macro_to_lua_func(st, def)
 		end
 		rawset(t, k, def)
 		return def
 	end
 }
+function ffi_state:expr_processor()
+	if not self.processor then
+		self.processor = lcpp.init('', {}, {})
+	end
+	self.processor.defines = self.lcpp_defs
+	self.processor.macro_sources = self.lcpp_macro_sources
+	return self.processor
+end
 function ffi_state:init(try_init_path)
 	self.defs = setmetatable({ ["#state"] = self }, defs_mt)
 	self.searchPath = {"./"}
@@ -202,6 +236,7 @@ function ffi_state:init(try_init_path)
 
 	-- add built in macro here
 	self.lcpp_defs = {
+		["__has_include"] = has_include, 
 		["__has_include_next"] = has_include_next, 
 		-- i don't know the reason but OSX __asm alias not works for luajit symbol search
 		["__asm"] = __asm, -- just return empty string TODO : investigate reason.
@@ -210,16 +245,22 @@ function ffi_state:init(try_init_path)
 	-- if gcc is available, try using it for initial builder.
 	if try_init_path then
 		local ok, rv = pcall(os.execute, "gcc -v 2>/dev/null")
-		if ok and (rv == 0) then
+		if ok then
+			local has_gcc = (rv == 0)
 			ok, rv = pcall(require, 'ffiex.builder.gcc')
 			if ok and rv then
 				local builder = rv.new()
-				builder:init(self)
-				self.builder = builder
-				self:copt({ cc = "gcc" })
-			else
-				print('gcc available but fail to initialize gcc builder:'..rv)
+				if has_gcc then
+					builder:init(self)
+					self.builder = builder
+					self:copt({ cc = "gcc" })
+				else
+					ok, rv = pcall(builder.init, builder, self)
+				end
 			end
+		end
+		if not ok then
+			print('gcc available but fail to initialize gcc builder:'..rv)
 		end
 	end
 end
@@ -229,30 +270,41 @@ function importer_lib.new(state, sym)
 	return setmetatable({state = state, sym = sym}, { __index = importer_lib})
 end
 function importer_lib:from(code)
-	self.state:parse(code)
+	local tree = self.state:parse(code)
 	
-	local injected = parser_lib.inject(self.state.tree, self.sym)
-	-- print('injected source:[['..injected..']]')
-	ffi.lcpp_cdef_backup(injected)
+	return ffi.native_cdef_with_guard(tree, self.sym)
 end
 
 function ffi_state:import(sym)
 	return importer_lib.new(self, sym)
 end
-function ffi_state:parse(decl)
+function ffi_state:parse(decl, tmptree)
 	if not parser_lib then
 		parser_lib = require 'ffiex.parser'
 	end
 	currentState = self
 	local output, state = lcpp.compile(decl, self.lcpp_defs, self.lcpp_macro_sources)
+	--print('output='..output)
+	local has_ssize_t = output:match('ssize_t;')
 	self.lcpp_defs = state.defines
 	self.lcpp_macro_sources = state.macro_sources
-	self.tree = parser_lib.parse(self.tree, output)
-	return output
+	if tmptree and self.tree then
+		tmptree = parser_lib.parse(nil, output)
+		for _,sym in pairs(tmptree[1]) do
+			table.insert(self.tree[1], sym)
+		end
+		for k,v in pairs(tmptree) do
+			if not self.tree[k] then self.tree[k] = tmptree[k] end
+		end
+		return tmptree, output
+	else
+		self.tree = parser_lib.parse(self.tree, output)
+		return self.tree, output
+	end
 end
 function ffi_state:cdef(decl)
-	local output = self:parse(decl)
-	ffi.lcpp_cdef_backup(output)
+	local tmp = self:parse(decl, true)
+	ffi.native_cdef_with_guard(tmp, nil)
 end
 function ffi_state:define(defs)
 	for k,v in pairs(defs) do
@@ -428,7 +480,7 @@ function ffi_state:csrc(name, src, opts)
 			-- os.remove(path)
 			return lib,ext
 		else
-			--	os.remove(path)
+			-- os.remove(path)
 			return nil,lib
 		end
 	else
@@ -441,7 +493,7 @@ end
 function ffi_state:src_of(symbol, recursive)
 	symbol = parser_lib.name(self.tree, symbol)
 	return recursive and 
-		parser_lib.inject({symbol}) or 
+		parser_lib.inject(self.tree, {symbol}) or 
 		assert(self.tree[symbol], "no such symbol:"..symbol).cdef
 end
 
@@ -450,6 +502,20 @@ end
 -----------------------
 -- ffiex module
 -----------------------
+-- already imported symbols (and guard them from dupe)
+ffi.imported_csymbols = {}
+function ffi.native_cdef_with_guard(tree, symbols_or_ppcode)
+	local injected = parser_lib.inject(tree, symbols_or_ppcode, ffi.imported_csymbols)
+	if ffi.__DEBUG_CDEF__ then
+		print('injected source:[['..injected..']]')
+		local f = io.open('./tmp.txt', 'w')
+		f:write(injected)
+		f:close()
+	end
+	ffi.lcpp_cdef_backup(injected)
+	return injected
+end
+
 -- wrappers of ffi_state object.
 local main_ffi_state = ffi_state.new(true)
 ffi.main_ffi_state = main_ffi_state
@@ -486,6 +552,12 @@ function ffi.import(symbols)
 end
 function ffi.newstate()
 	return ffi_state.new()
+end
+function ffi.init_cdef_cache()
+	(require 'ffiex.util').create_builtin_config_cache()
+end
+function ffi.clear_cdef_cache()
+	(require 'ffiex.util').clear_builtin_config_cache()
 end
 
 return ffi

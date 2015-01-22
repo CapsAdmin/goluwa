@@ -32,32 +32,22 @@ local function make_sym_dep(sym, name, deps, cdef)
 	end
 	local cdef = cdef:gsub("^%s+", ""):gsub("%s+$", "")
 	if sym[name] then
-		if sym[name].temp then
-			local prev_cdef = sym[name].cdef
-			if prev_cdef:gsub('%s', ''):gsub('__asm__%s*%b()', '') ~= 
-				cdef:gsub('%s', ''):gsub('__asm__%s*%b()', '') then
-				-- struct/union/enum hoge hoge; => struct/union/enum hoge {...} is valid.
-				if #prev_cdef <= 0 or prev_cdef:find('^typedef%s+[_%w]+%s+'..name.."%s+"..name) then
-					log(name..' ok: ['..sym[name].cdef..']=>['..cdef..']')
-				elseif prev_cdef:find('^struct+%s+[_%w]') then
-					log(name..' ok: ['..sym[name].cdef..']=>['..cdef..']')
-				else
-					print(name..' conflict: ['..sym[name].cdef..']=>['..cdef..']')
-				end
-			end
-		else
-			log('caution:'..name.." already exist:"..debug.traceback())
-		end
+		log('caution:'..name.." already exist:"..debug.traceback())
 	end
+	table.insert(sym[1], name)
 	sym[name] = {
 		name = name,
 		deps = deps,
 		cdef = cdef,
+		prio = #(sym[1]),
 	}
 end
 
+local function get_real_sym_name(pfx, name)
+	return pfx.." "..name
+end
 local function get_func_sym_name(name)
-	return "func "..name
+	return get_real_sym_name("func", name)
 end
 local function make_func_dep(sym, name, deps, cdef)
 	make_sym_dep(sym, get_func_sym_name(name), deps, cdef)
@@ -68,10 +58,12 @@ local function make_incomplete_decl(sym, name, cdef)
 		log(name .. " already declared as:["..sym[name].cdef.."]")
 		return
 	end
+	table.insert(sym[1], name)
 	sym[name] = {
 		name = name,
 		cdef = cdef,
 		temp = true,
+		prio = #(sym[1]),
 	}
 end
 
@@ -80,7 +72,7 @@ local function has_sym(sym, name)
 end
 
 local function new_sym_table()
-	local sym = {}
+	local sym = {[1] = {}}
 	make_sym_dep(sym, "void", nil, "")
 
 	make_sym_dep(sym, "_Bool", nil, "")
@@ -111,6 +103,7 @@ local function new_sym_table()
 	make_sym_dep(sym, "float", nil, "")
 
 	make_sym_dep(sym, "__builtin_va_list", nil, "")
+
 	return sym
 end
 
@@ -315,10 +308,19 @@ local function common_parse_qualifier(sym, src, ext_attr_list)
 			base_type = kw.." "..(base_type or "int")
 		end
 	end
+
 	-- otherwise symbol is actually typename.
 	vlog('ret:', base_type or symbol, attr, varname)
 	if base_type then
 		symbol = base_type
+	else
+		for _,kw in ipairs({"struct", "union", "enum"}) do
+			if attr[kw] then
+				log("attr has kw:"..kw)
+				symbol = kw.." "..symbol
+				break
+			end
+		end
 	end
 	if not has_sym(sym, symbol) then
 		make_incomplete_decl(sym, symbol, src)
@@ -379,7 +381,7 @@ local function parse_var_decl_var(sym, opaque, deps, matches, src)
 end
 
 -- (*var[size])(...)
-local VAR_DECL_VAR_FUNC="^".."%(?"..
+local VAR_DECL_VAR_FUNC="^"..OPT_SPACE_OR_STAR.."%(?"..
 	VAR_DECL_CAPTURE..OPTSPACE.."%)?"..OPTSPACE..
 	"("..ARG_VAR_LIST..")"..OPTSPACE
 local function parse_var_decl_var_func(sym, opaque, deps, matches, src)
@@ -390,7 +392,7 @@ local function parse_var_decl_var_func(sym, opaque, deps, matches, src)
 end
 
 -- (*(*var[size])(...))(...)
-local VAR_DECL_VAR_HO_FUNC="^".."%(?"..
+local VAR_DECL_VAR_HO_FUNC="^"..OPT_SPACE_OR_STAR.."%(?"..
 	VAR_DECL_CAPTURE..OPTSPACE..
 	"("..ARG_VAR_LIST..")"..OPTSPACE.."%)?"..OPTSPACE..
 	"("..ARG_VAR_LIST..")"..OPTSPACE
@@ -421,6 +423,7 @@ local function parse_typedef(sym, opaque, deps, matches, src)
 	end
 	for _,typedecl in ipairs(typedecls) do
 		local depends = depslist[typedecl]
+		-- predecl is not counted as dependency (because no actual declaration required)
 		if depends then
 			table.insert(depends, typename)
 		else
@@ -445,7 +448,7 @@ local STRUCTURE_TYPEDEF="^"..TYPEDEF_SYMBOL..SPACE..
 	"("..ALL_REMAINS..")"..";"
 local function parse_structure_typedef(sym, opaque, deps, matches, src)
 	src = restore_src(src, opaque)
-	local typename = matches[2]
+	local typename = get_real_sym_name(matches[1], matches[2])
 	local vardeps = {}
 	if matches[1] == "enum" then
 		make_sym_dep(sym, typename, {}, src)
@@ -533,10 +536,10 @@ end
 local STRUCTURE_DECL="^"..
 	"("..STRUCTURE_SYMBOL..")"..SPACE..
 	"("..TYPENAME..")"..OPTSPACE..
-	"("..STRUCT_VAR_LIST..")"..OPTSPACE..";"
+	"("..STRUCT_VAR_LIST..")"..OPT_QUALIFIER..";"
 local function parse_structure_decl(sym, opaque, deps, matches, src)
 	src = restore_src(src, opaque)
-	local typename, vardeps = matches[2], {}
+	local typename, vardeps = get_real_sym_name(matches[1], matches[2]), {}
 	common_parse_struct_deps(sym, vardeps, matches[3], typename)
 	make_sym_dep(sym, typename, vardeps, src)
 end
@@ -558,7 +561,7 @@ local STRUCTURE_PREDECL="^"..
 	"("..TYPENAME..")"..OPTSPACE..";"
 local function parse_structure_predecl(sym, opaque, deps, matches, src)
 	src = restore_src(src, opaque)
-	local typename = matches[2]
+	local typename = get_real_sym_name(matches[1], matches[2])
 	make_incomplete_decl(sym, typename, src)
 end
 
@@ -633,7 +636,7 @@ local STRUCT_VAR_STRUCT="^"..
 	"("..ALL_REMAINS..")"
 local function parse_struct_var_struct(sym, opaque, deps, matches, src)
 	local vardeps = {}
-	local typename = matches[2]
+	local typename = get_real_sym_name(matches[1], matches[2])
 	common_parse_struct_deps(sym, vardeps, matches[3], opaque)
 	-- currently, struct declaration in struct cannot be injected (empty string returns)
 	make_sym_dep(sym, typename, vardeps, "")
@@ -783,15 +786,12 @@ local function parse(tree, code)
 end
 
 local function traverse_cdef(tree, symbol, injected, depth)
-	local sym = assert(tree[symbol], "cdef not found:"..symbol)
+	local sym = assert(tree[symbol], "cdef not found:["..symbol.."]")
 	assert(#sym.name > 0, "invalid sym:"..sym.name)
 	for _,dep in ipairs(sym.deps or {}) do
 		if not injected.lookup[dep] then
 			if not injected.seen[dep] then
 				injected.seen[dep] = true
-				if depth > 1000 then
-					error('stack depth too deep:'..symbol)
-				end
 				traverse_cdef(tree, dep, injected, depth + 1)
 			end
 		end
@@ -799,7 +799,8 @@ local function traverse_cdef(tree, symbol, injected, depth)
 	if not injected.lookup[symbol] then
 		injected.lookup[symbol] = true
 		-- it is possible that multiple symbols defined in same cdef
-		-- de-dupe that
+		-- eg) typedef struct A {...} B; >> A and B is declared at the same time, 
+		-- so has same cdef. de-dupe that
 		if not injected.chunks[sym.cdef] then
 			injected.chunks[sym.cdef] = true
 			table.insert(injected.list, sym)
@@ -810,27 +811,44 @@ end
 local function get_name_in_sym(tree, symbol)
 	local s, e = symbol:find('%s+')
 	if s then
-		local pfx = symbol:sub(1, s)
-		return pfx == "func" and symbol or symbol:sub(e+1)
+		local pfx = symbol:sub(1, s - 1)
+		return pfx == "typename" and symbol:sub(e+1) or symbol
 	else
-		local fsym = get_func_sym_name(symbol)
-		return tree[fsym] and fsym or symbol
+		for _,pfx in ipairs({"struct", "func", "union", "enum"}) do
+			local fsym = get_real_sym_name(pfx, symbol)
+			if tree[fsym] then
+				return fsym
+			end
+		end
+		return symbol
 	end
 end
 
-local function inject(tree, symbols)
+local function inject(tree, symbols, already_imported)
 	local injected = {
-		lookup = {},
+		lookup = already_imported or {},
 		list = {},
 		seen = {},
 		chunks = {},
 	}
-	for _,symbol in ipairs(symbols) do
-		traverse_cdef(tree, get_name_in_sym(tree, symbol), injected, 0)
+	if type(symbols) == 'table' then
+		for _,symbol in ipairs(symbols) do
+			if not injected.lookup[symbol] then
+				traverse_cdef(tree, get_name_in_sym(tree, symbol), injected, 0)
+			end
+		end
+	else
+		for _,k in pairs(tree[1]) do
+			if not injected.lookup[k] then
+				-- print('inject:'..k..'['..tree[k].cdef..']')
+				traverse_cdef(tree, k, injected, 0)
+			end
+		end
 	end
 	local cdef = ""
+	table.sort(injected.list, function (e1, e2) return e1.prio < e2.prio end)
 	for _,sym in ipairs(injected.list) do
-		log("sym injected:["..sym.name.."]")
+		log("sym injected:["..sym.name.."]["..sym.cdef.."]")
 		assert(sym.cdef, "invalid sym no cdef:"..sym.name)
 		cdef = (cdef .. "\n" .. (sym.cdef or ""))
 	end
