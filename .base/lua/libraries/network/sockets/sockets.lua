@@ -1,3 +1,6 @@
+local ssl = requirew("ssl")
+_G.ssl = nil -- grr
+
 local sockets = _G.sockets or {}
 
 sockets.active_sockets = sockets.active_sockets or {}
@@ -77,7 +80,7 @@ local function new_socket(override, META, typ, id)
 		
 		sockets.luasocket = luasocket
 	end
-	
+		
 	typ = typ or "tcp"
 	typ = typ:lower()
 
@@ -92,7 +95,6 @@ local function new_socket(override, META, typ, id)
 		end
 	
 		local self = prototype.CreateObject(META)
-
 		self.socket = override or assert(sockets.luasocket[typ]())
 		self.socket:settimeout(0)
 		self.socket_type = typ
@@ -156,6 +158,26 @@ do -- tcp socket meta
 
 		function CLIENT:DebugPrintf(fmt, ...)
 			sockets.DebugPrint(self, "%s - " .. fmt, self, ...)
+		end
+		
+		do
+			prototype.GetSet(CLIENT, "SSLParams")
+			local https_default = {
+				protocol = "tlsv1",
+				options = "all",
+				verify = "none",
+				mode = "client",
+			}
+			
+			function CLIENT:SetSSLParams(params)
+				if not ssl then warning("cannot use ssl parameters: luasec not found!") return end
+
+				if not params or params == "https" then
+					params = https_default
+				end
+				
+				self.SSLParams = params
+			end
 		end
 
 		function CLIENT:Connect(ip, port)
@@ -230,11 +252,21 @@ do -- tcp socket meta
 			if self.connecting then
 				local res, msg = sock:getpeername()
 				if res then
-					
 					self:DebugPrintf("connected to %s:%s", res, msg)
 
+					if self.SSLParams then
+						self.old_socket = sock
+						sock = assert(ssl.wrap(sock, self.SSLParams))						
+						assert(sock:settimeout(0, "t"))
+						self.socket = sock
+						
+						self.ssl_socket = sock
+						self.shaking_hands = true
+						
+						self:DebugPrintf("start handshake")
+					end
+					
 					-- ip, port = res, msg
-
 					self.connected = true
 					self.connecting = nil
 					self:OnConnect(res, msg)
@@ -246,6 +278,15 @@ do -- tcp socket meta
 					self:DebugPrintf("errored: %s", msg)
 					self:OnError(msg)
 				end
+			end
+			
+			if self.shaking_hands then
+				if sock:dohandshake() then
+					self.shaking_hands = nil
+					self:DebugPrintf("done shaking hands")
+				end
+				
+				return
 			end
 			
 			if self.connected then			
@@ -412,11 +453,12 @@ do -- tcp socket meta
 		function CLIENT:GetIP()
 			if not self.connected then return "nil" end
 			local ip, port 
+			local socket = self.old_socket or self.socket
 			
 			if self.__server then 
-				ip, port = self.socket:getpeername()
+				ip, port = socket:getpeername()
 			else
-				ip, port = self.socket:getsockname()
+				ip, port = socket:getsockname()
 			end
 			
 			return ip
@@ -425,29 +467,31 @@ do -- tcp socket meta
 		function CLIENT:GetPort()
 			if not self.connected then return "nil" end
 			local ip, port 
+			local socket = self.old_socket or self.socket
 			
 			if self.__server then 
-				ip, port = self.socket:getpeername()
+				ip, port = socket:getpeername()
 			else
-				ip, port = self.socket:getsockname()
+				ip, port = socket:getsockname()
 			end
 			return ip and port or nil
 		end
 				
 		function CLIENT:GetIPPort()
 			if not self.connected then return "nil" end
-			local ip, port 
+			local ip, port
+			local socket = self.old_socket or self.socket
 			
 			if self.__server then 
-				ip, port = self.socket:getpeername()
+				ip, port = socket:getpeername()
 			else
-				ip, port = self.socket:getsockname()
+				ip, port = socket:getsockname()
 			end
 			return ip .. ":" .. port
 		end
 		
 		function CLIENT:GetSocketName()
-			return self.socket:getpeername()
+			return (self.old_socket or self.socket):getpeername()
 		end
 
 		function CLIENT:IsValid()
@@ -463,7 +507,7 @@ do -- tcp socket meta
 
 		function sockets.CreateClient(type, ip, port, id)
 			local self = new_socket(nil, CLIENT, type, id)
-			if ip or port then
+			if ip and port then
 				self:Connect(ip, port)
 			end
 			return self
