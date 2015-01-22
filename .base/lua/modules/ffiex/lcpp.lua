@@ -122,12 +122,16 @@ local MLCOMMENT       = "/[*].-[*]/"
 local WHITESPACES     = "%s+"
 local OPTSPACES       = "%s*"
 local IDENTIFIER      = "[_%a][_%w]*"
+local FUNCMACRO_ARG	  = "[_%a%.][_%w%.]*" -- support ...
 local NOIDENTIFIER    = "[^%w_]+"
 local FILENAME        = "[0-9a-zA-Z.%-_/\\]+"
 local TEXT            = ".+"
 local STRINGIFY       = "#"
 local STRINGIFY_BYTE  = STRINGIFY:byte(1)
 local STRING_LITERAL  = ".*"
+local EXPRESSION      = ".*"
+local CHAR_LITERAL	  = "L?'.*'"
+local CTYPE_DECL	  = "[_%a][_%w%s]*"
 
 -- BNF WORDS
 local _INCLUDE        = "include"
@@ -146,27 +150,27 @@ local _WARNING		  = "warning"
 local _PRAGMA         = "pragma"
 
 -- BNF RULES
-local INCLUDE         = STARTL.._INCLUDE..WHITESPACES.."[<]("..FILENAME..")[>]"..OPTSPACES..ENDL
-local LOCAL_INCLUDE   = STARTL.._INCLUDE..WHITESPACES.."[\"]("..FILENAME..")[\"]"..OPTSPACES..ENDL
-local INCLUDE_NEXT    = STARTL.._INCLUDE_NEXT..WHITESPACES.."[\"<]("..FILENAME..")[\">]"..OPTSPACES..ENDL
+local INCLUDE         = STARTL.._INCLUDE..OPTSPACES.."[<]("..FILENAME..")[>]"..OPTSPACES..ENDL
+local LOCAL_INCLUDE   = STARTL.._INCLUDE..OPTSPACES.."[\"]("..FILENAME..")[\"]"..OPTSPACES..ENDL
+local INCLUDE_NEXT    = STARTL.._INCLUDE_NEXT..OPTSPACES.."[\"<]("..FILENAME..")[\">]"..OPTSPACES..ENDL
 local DEFINE          = STARTL.._DEFINE
-local IFDEF           = STARTL.._IFDEF..WHITESPACES.."("..IDENTIFIER..")"..OPTSPACES..ENDL
-local IFNDEF          = STARTL.._IFNDEF..WHITESPACES.."("..IDENTIFIER..")"..OPTSPACES..ENDL
+local IFDEF           = STARTL.._IFDEF..OPTSPACES.."("..EXPRESSION..")"..OPTSPACES..ENDL
+local IFNDEF          = STARTL.._IFNDEF..OPTSPACES.."("..EXPRESSION..")"..OPTSPACES..ENDL
 local ENDIF           = STARTL.._ENDIF..OPTSPACES..ENDL
-local UNDEF           = STARTL.._UNDEF..WHITESPACES.."("..IDENTIFIER..")"..OPTSPACES..ENDL
-local IF              = STARTL.._IF..WHITESPACES.."(.*)"..ENDL
+local UNDEF           = STARTL.._UNDEF..OPTSPACES.."("..IDENTIFIER..")"..OPTSPACES..ENDL
+local IF              = STARTL.._IF..OPTSPACES.."("..EXPRESSION..")"..OPTSPACES..ENDL
 local ELSE            = STARTL.._ELSE..OPTSPACES..ENDL
-local ELIF            = STARTL.._ELIF..WHITESPACES.."(.*)"..ENDL
-local ELSEIF          = STARTL.._ELSE..WHITESPACES.._IF..WHITESPACES.."(.*)"..ENDL
-local ERROR           = STARTL.._ERROR..WHITESPACES.."("..TEXT..")"..OPTSPACES..ENDL
-local WARNING         = STARTL.._WARNING..WHITESPACES.."("..TEXT..")"..OPTSPACES..ENDL
+local ELIF            = STARTL.._ELIF..OPTSPACES.."(.*)"..ENDL
+local ELSEIF          = STARTL.._ELSE..WHITESPACES.._IF..OPTSPACES.."(.*)"..ENDL
+local ERROR           = STARTL.._ERROR..OPTSPACES.."("..TEXT..")"..OPTSPACES..ENDL
+local WARNING         = STARTL.._WARNING..OPTSPACES.."("..TEXT..")"..OPTSPACES..ENDL
 local ERROR_NOTEXT    = STARTL.._ERROR..OPTSPACES..ENDL	--> not required when we have POSIX regex
 local PRAGMA          = STARTL.._PRAGMA
 
 -- speedups
 local TRUEMACRO = STARTL.."("..IDENTIFIER..")%s*$"
 local REPLMACRO = STARTL.."("..IDENTIFIER..")"..WHITESPACES.."(.+)$"
-local FUNCMACRO = STARTL.."("..IDENTIFIER..")%(([_%s%w,]*)%)%s*(.*)"
+local FUNCMACRO = STARTL.."("..IDENTIFIER..")%(([_%s%w%.,]*)%)%s*(.*)"
 
 
 -- ------------
@@ -428,7 +432,7 @@ local LCPP_TOKENIZE_COMMENT = {
 	string = false,
 	keywords = { 
 		MLCOMMENT = "^/%*.-%*/",
-		SLCOMMENT = "^//.-\n",
+		SLCOMMENT = "^//[^\n]*\n?",
 		STRING_LITERAL = '^"[^"]*"',
 	},
 }
@@ -463,38 +467,79 @@ local LCPP_TOKENIZE_INTEGER = {
 	},
 	keywords = { 
 		STRING_LITERAL = '^"[^"]*"',
-		CHAR_LITERAL = "^L'.*'",
-		HEX_LITERAL = '^[%+%-]?%s*0x[a-fA-F%d]+[UL]*',
-		BIN_LITERAL = '^[%+%-]?%s*0b%d+[UL]*',
-		OCT_LITERAL = '^[%+%-]?%s*0%d+[UL]*',
+		CHAR_LITERAL = "^"..CHAR_LITERAL,
+		HEX_LITERAL = '^[%+%-%~]?%s*0x[a-fA-F%d]+[uUlL]*',
+		BIN_LITERAL = '^[%+%-%~]?%s*0b%d+[uUlL]*',
+		OCT_LITERAL = '^[%+%-%~]?%s*0%d+[uUlL]*',
 		FPNUM_LITERAL = '^[%+%-]?%s*%d+[%.]?%d*e[%+%-]%d*',
-		NUMBER_LITERAL = '^[%+%-]?%s*%d+[%.]?%d*[UL]+',
+		NUMBER_LITERAL = '^[%+%-%~]?%s*%d+[%.]?%d*[uUlL]+',
 	},
 }
-local function parseCInteger(input)
-	-- print('parseCInteger:input:' .. input)
+-- luajit reports error with L postfix of integer, so remove them
+-- eg) 0xFFFFFFFFL 
+local function trimBadNumericPostfix(input)
+	-- print('parseCInteger:input:' .. input .. "\n" .. debug.traceback())
 	local out = {}
 	for k, v, start, end_ in tokenizer(input, LCPP_TOKENIZE_INTEGER) do
 	-- print('parseCInteger:' .. k .. "|" .. v)
-		if k == "CHAR_LITERAL" then
-			table.insert(out, tostring(string.byte(loadstring("return \"" .. v:gsub("^L%'(.+)%'", "%1") .. "\"")())))
-		elseif k == "HEX_LITERAL" then 
-			unary, v = v:match('([%+%-]?)0x([a-fA-F%d]+)[UL]*')
-			local n = tonumber(v, 16)
-			table.insert(out, unary..tostring(n))
+		local unary, n
+		if k == "HEX_LITERAL" then 
+			table.insert(out, v:match('([%+%-%~]?0x[a-fA-F%d]+[uU]*)[lL]*'))
 		elseif k == "NUMBER_LITERAL" then 
-			v = v:match('([^UL]+)[UL]+')
-			table.insert(out, v)
+			table.insert(out, v:match('([%+%-%~]?[^lL]+)[lL]*'))
 		elseif k == "BIN_LITERAL" then 
-			unary, v = v:match('([%+%-]?)0b([01]+)[UL]*')
-			local n = tonumber(v, 2)
-			table.insert(out, unary..tostring(n))
+			table.insert(out, v:match('([%+%-%~]?0b[01]+[uU]*)[lL]*'))
 		elseif k == "OCT_LITERAL" then 
-			unary, v = v:match('([%+%-]?)(0%d+)[UL]*')
-			local n = tonumber(v, 8)
-			table.insert(out, unary..tostring(n))
+			table.insert(out, v:match('([%+%-%~]?0%d+[uU]*)[lL]*'))
 		else
 			table.insert(out, input:sub(start, end_))
+		end
+	end
+	local str = table.concat(out)
+	-- print('parseCInteger:result:'..str)
+	return str
+end
+local function parseCInteger(input)
+	-- print('parseCInteger:input:' .. input .. "\n" .. debug.traceback())
+	local out = {}
+	for k, v, start, end_ in tokenizer(input, LCPP_TOKENIZE_INTEGER) do
+	-- print('parseCInteger:' .. k .. "|" .. v)
+		local unary, n
+		if k == "CHAR_LITERAL" then
+			local body = v:match("^L?'(.*)'")
+			if body:byte() == ('\\'):byte() then
+				if body:byte(2) == ('x'):byte() then -- seems hex character representation
+					-- print('CHAR_LITERAL:hex:'..body:sub(3))
+					n = tonumber(body:sub(3), 16)
+				else -- seems octal character representation
+					-- print('CHAR_LITERAL:octet:'..body:sub(2))
+					n = tonumber(body:sub(2), 8)
+				end
+			else
+				n = body:byte()
+			end
+			table.insert(out, tostring(n))
+		elseif k == "HEX_LITERAL" then 
+			unary, v = v:match('([%+%-%~]?)0x([a-fA-F%d]+)[uUlL]*')
+			n = tonumber(v, 16)
+		elseif k == "NUMBER_LITERAL" then 
+			unary, v = v:match('([%+%-%~]?)([^uUlL]+)[uUlL]+')
+			n = v
+		elseif k == "BIN_LITERAL" then 
+			unary, v = v:match('([%+%-%~]?)0b([01]+)[uUlL]*')
+			n = tonumber(v, 2)
+		elseif k == "OCT_LITERAL" then 
+			unary, v = v:match('([%+%-%~]?)(0%d+)[uUlL]*')
+			n = tonumber(v, 8)
+		else
+			table.insert(out, input:sub(start, end_))
+		end
+		if unary then
+			if unary == '~' then
+				table.insert(out, tostring(bit.bnot(n)))
+			else
+				table.insert(out, unary..tostring(n))
+			end
 		end
 	end
 	local str = table.concat(out)
@@ -560,7 +605,8 @@ local function apply(state, input)
 			-- print('tokenize:'..tostring(k).."["..tostring(v).."]")
 			if k == "identifier" then 
 				local repl = v
-				local macro = state.defines[v] 
+				local macro = state.defines[v]
+				-- print(tostring(state.defines)..' tokenize:'..tostring(v).."=>"..tostring(macro))
 				if macro then
 					if type(macro)     == "boolean" then
 						repl = ""
@@ -577,6 +623,8 @@ local function apply(state, input)
 						if cnt > 0 then
 							repl = macro(decl)
 							-- print("d&r:"..decl.."|"..repl)
+							-- evaluate and replace functional macro and restart applying process
+							-- because we look ahead parse buffer to process functional macro argument correctly.
 							expand = true
 							table.insert(out, repl)
 							table.insert(out, input:sub(end_ + #decl))
@@ -610,7 +658,7 @@ local function apply(state, input)
 
 	-- C liberal string concatenation, processing U,L,UL,LL
 	-- print('input ==> ' .. input .. "|#####|" .. concatStringLiteral(input))
-	return parseCInteger(concatStringLiteral(input)),false
+	return trimBadNumericPostfix(concatStringLiteral(input)),false
 end
 
 -- processes an input line. called from lcpp doWork loop
@@ -622,6 +670,7 @@ local function processLine(state, line)
 
 	--[[ IF/THEN/ELSE STRUCTURAL BLOCKS ]]--
 	if cmd then
+		--[[
 		local ifdef   = cmd:match(IFDEF)
 		local ifexp   = cmd:match(IF)
 		local ifndef  = cmd:match(IFNDEF)
@@ -630,18 +679,32 @@ local function processLine(state, line)
 		local else_   = cmd:match(ELSE)
 		local endif   = cmd:match(ENDIF)
 		local struct  = ifdef or ifexp or ifndef or elif or elseif_ or else_ or endif
-		
-		if struct then 
-			local skip = state:skip()
-			if ifdef   then state:openBlock(state:defined(ifdef))      end
-			-- if skipped, it may have undefined expression. so not parse them
-			if ifexp   then state:openBlock(skip and true or CBoolean(state:parseExpr(ifexp)))    end
-			if ifndef  then state:openBlock(not state:defined(ifndef)) end
-			if elif    then state:elseBlock((skip and skip < #state.stack) and true or CBoolean(state:parseExpr(elif)))     end
-			if elseif_ then state:elseBlock((skip and skip < #state.stack) and true or CBoolean(state:parseExpr(elseif_)))  end
-			if else_   then state:elseBlock(true)                      end
-			if endif   then state:closeBlock()                         end
-			return -- remove structural directives
+		]]
+
+		local dmap = {
+			["ifdef"] = IFDEF,
+			["ifexp"] = IF,
+			["ifndef"] = IFNDEF,
+			["elif"] = ELIF,
+			["elseif"] = ELSEIF,
+			["else"] = ELSE,
+			["endif"] = ENDIF,
+		}
+		for _,d in ipairs({"ifdef","ifndef","ifexp","elif","elseif","else","endif"}) do
+			local m = cmd:match(dmap[d])
+			-- print("match|"..d.."|"..tostring(dmap[d]).."|"..line)
+			if m then
+				local skip = state:skip()
+				if d == "ifdef"   then state:openBlock(state:defined(m))      end
+				-- if skipped, it may have undefined expression. so not parse them
+				if d == "ifexp"   then state:openBlock(skip and true or CBoolean(state:parseExpr(m, true)))    end
+				if d == "ifndef"  then state:openBlock(not state:defined(m)) end
+				if d == "elif"    then state:elseBlock((skip and skip < #state.stack) and true or CBoolean(state:parseExpr(m, true)))     end
+				if d == "elseif"  then state:elseBlock((skip and skip < #state.stack) and true or CBoolean(state:parseExpr(m, true)))  end
+				if d == "else"    then state:elseBlock(true)                      end
+				if d == "endif"   then state:closeBlock()                         end
+				return -- remove structural directives
+			end
 		end
 	end
 
@@ -733,9 +796,7 @@ local function processLine(state, line)
 
 	
 	--[[ APPLY MACROS ]]--
-	-- print(line)
 	local _line,more = state:apply(line);
-	-- print('endprocess:'.._line)
 	if more then
 		state.incompleteLine = line
 		return ""
@@ -773,7 +834,7 @@ end
 
 -- sets a global define
 local function define(state, key, value, override, macro_source)
-	--print("define:"..key.." type:"..tostring(value).." value:"..tostring(pval))
+	-- print(tostring(state.defines).." define:"..key.." value:"..tostring(value).." src:"..tostring(state.macro_sources[key]))
 	if value and not override then
 		if type(value) == 'function' then
 			assert(macro_source, "macro source should specify to check identity")
@@ -782,7 +843,10 @@ local function define(state, key, value, override, macro_source)
 			state.macro_sources[key] = macro_source
 		else
 			local pval = state.defines[key]
-			if pval and (pval ~= value) then error("already defined: "..key) end
+			value = state:prepareMacro(value)
+			if pval and pval ~= value then error("already defined: "..key) end
+			state.defines[key] = value 
+			return
 		end
 	end
 	state.defines[key] = state:prepareMacro(value)
@@ -843,7 +907,9 @@ local LCPP_TOKENIZE_EXPR = {
 	string = false,
 	keywords_order = {
 		"DEFINED", 
+		"SIZEOF",
 		"FUNCTIONAL_MACRO",
+		"CAST", -- unary cast
 		"BROPEN", 
 		"BRCLOSE", 
 
@@ -880,7 +946,9 @@ local LCPP_TOKENIZE_EXPR = {
 	},
 	keywords = { 
 		DEFINED = '^defined', 
+		SIZEOF = '^sizeof', 
 		FUNCTIONAL_MACRO = '^' .. IDENTIFIER .. "%s*%b()",
+		CAST = '^%(%s*'..CTYPE_DECL..'%s*%)%s*',
 		BROPEN = '^[(]', 
 		BRCLOSE = '^[)]', 
 
@@ -909,27 +977,49 @@ local LCPP_TOKENIZE_EXPR = {
 		NOT = '^!', 
 		BNOT = '^~',
 
-		CHAR_LITERAL = "^L?'.*'",
+		CHAR_LITERAL = "^"..CHAR_LITERAL,
 		STRING_LITERAL = '^L?"[^"]*"',
-		HEX_LITERAL = '^[%+%-]?0?x[a-fA-F%d]+[UL]*',
+		HEX_LITERAL = '^[%+%-]?0?x[a-fA-F%d]+[uUlL]*',
 		FPNUM_LITERAL = '^[%+%-]?%d+[%.]?%d*e[%+%-]%d*',
-		NUMBER_LITERAL = '^[%+%-]?0?b?%d+[%.]?%d*[UL]*',
+		NUMBER_LITERAL = '^[%+%-]?0?b?%d+[%.]?%d*[uUlL]*',
 	},
 }
 
+local function getCastType(state, v)
+	local decl = v:match(CTYPE_DECL)
+	local eval = state:apply(decl)
+	-- print('getCastType:d&e:'..tostring(decl).."|"..tostring(eval))
+	if decl ~= eval then
+		eval = state:parseExpr(eval, true)
+	-- print('getCastType:d&e2:'..tostring(decl).."|"..tostring(eval))
+		if type(eval) == 'string' then
+			return eval:match(CTYPE_DECL)
+		end
+		return nil
+	else
+		return decl
+	end
+end
+
 local function parseDefined(state, input)
-	local result = false
 	local bropen = false
 	local brclose = false
 	local ident = nil
 	
 	for key, value in input do
+		-- print('parseDefined:'..key.."|"..value)
 		if key == "BROPEN" then
 			bropen = true
 		end
 		if key == "identifier" then
-			 ident = value
-			 if not bropen then break end
+			ident = value
+			if not bropen then break end
+		end
+		if key == "CAST" then
+			ident = value:match(IDENTIFIER) -- because no casts are possible here.
+			bropen = true
+			brclose = true
+			break
 		end
 		if key == "BRCLOSE" and ident then
 			brclose = true
@@ -945,6 +1035,24 @@ local function parseDefined(state, input)
 	error("expression parse error: defined(ident)")
 end
 
+local function parseSizeof(state, input)
+	local idents = {}
+	for key, value in input do
+		-- print('parseSizeof:'..key.."|"..value)
+		if key == "identifier" then
+			table.insert(idents, value)			
+		end
+		if key == "CAST" then
+			return ffi.sizeof(getCastType(state, value))
+		end
+		if key == "BRCLOSE" then
+			-- print('idents:'..table.concat(idents, " "))
+			return ffi.sizeof(table.concat(idents, " "))
+		end
+	end
+	
+	error("expression parse error: sizeof(ident)")
+end
 
 --[[
 order : smaller is higher priority
@@ -966,6 +1074,8 @@ order : smaller is higher priority
 local combination_order = function (op, unary)
 	if unary then
 		if op == '-' or op == '!' or op == '~' then
+			return 2
+		elseif op:match(CTYPE_DECL) then
 			return 2
 		else
 			assert(false, 'unsupported unary operator:' .. op)
@@ -1005,13 +1115,15 @@ evaluate = function (node)
 		local v = node.v
 		if node.uops then
 			for _, uop in ipairs(node.uops) do
-				-- print('apply uop:'..uop.."|"..tostring(v))
+			-- print('apply uop:'..uop.."|"..tostring(v))
 				if uop == '-' then
 					v = -v
 				elseif uop == '!' then
 					v = (not v)
 				elseif uop == '~' then
 					v = bit.bnot(v)
+				elseif uop:match(CTYPE_DECL) then -- cast operator
+					v = ffi.cast(uop, v)
 				else
 					assert(false, 'invalid uop:' .. tostring(uop))			
 				end
@@ -1035,19 +1147,19 @@ evaluate = function (node)
 	elseif node.op == '!=' then
 		return (evaluate(node.l) ~= evaluate(node.r))
 	elseif node.op == '<<' then
-		return bit.lshift(evaluate(node.l), evaluate(node.r))
+		return bit.lshift(tonumber(evaluate(node.l)), tonumber(evaluate(node.r)))
 	elseif node.op == '>>' then
-		return bit.rshift(evaluate(node.l), evaluate(node.r))
+		return bit.rshift(tonumber(evaluate(node.l)), tonumber(evaluate(node.r)))
 	elseif node.op == '&&' then
 		return (CBoolean(evaluate(node.l)) and CBoolean(evaluate(node.r)))
 	elseif node.op == '||' then
 		return (CBoolean(evaluate(node.l)) or CBoolean(evaluate(node.r)))
 	elseif node.op == '&' then
-		return bit.band(evaluate(node.l), evaluate(node.r))
+		return bit.band(tonumber(evaluate(node.l)), tonumber(evaluate(node.r)))
 	elseif node.op == '|' then
-		return bit.bor(evaluate(node.l), evaluate(node.r))
+		return bit.bor(tonumber(evaluate(node.l)), tonumber(evaluate(node.r)))
 	elseif node.op == '^' then
-		return bit.bxor(evaluate(node.l), evaluate(node.r))
+		return bit.bxor(tonumber(evaluate(node.l)), tonumber(evaluate(node.r)))
 	elseif node.op == '<=' then
 		return (evaluate(node.l) <= evaluate(node.r))
 	elseif node.op == '>=' then
@@ -1064,7 +1176,7 @@ end
 local function setValue(node, v)
 	-- print('setValue:' .. tostring(v).."|"..tostring(node.uops))-- .. "\t" .. debug.traceback())
 	if not node.op then
-		assert(not node.v, debug.traceback())
+		assert(not node.v)
 		node.v = v
 	else
 		assert(node.l and (not node.r))
@@ -1078,7 +1190,7 @@ local function setUnaryOp(node, uop)
 	table.insert(node.uops, 1, uop)
 end
 
-local function parseExpr(state, input) 
+local function parseExpr(state, input, no_cast_possible) 
 	local node = {}
 	local root = node
 	-- first call gets string input. rest uses tokenizer
@@ -1088,8 +1200,25 @@ local function parseExpr(state, input)
 	end
 	
 	for type, value in input do
-		-- print("type:"..type.." value:"..value)
+	-- print("type:"..type.." value:"..value)
 		-- unary operator
+		if type == "CAST" then
+			if no_cast_possible then
+				-- if called from defined directives or cast expression, no casts are possible.
+				setValue(node, state:parseExpr(value:match(CTYPE_DECL)))
+				break
+			else
+				local tp = getCastType(state, value)
+				if tp then
+					-- print('tp:'..tp)
+					setUnaryOp(node, tp)
+				else
+					-- value is not c type declaration. 
+					-- maybe parenthesed macro symbol
+					setValue(node, state:parseExpr(value:match(CTYPE_DECL)))
+				end	
+			end
+		end
 		if type == "NOT" or 
 			type == "BNOT" then
 			setUnaryOp(node, value)
@@ -1192,25 +1321,30 @@ local function parseExpr(state, input)
 					node.op = value
 				end
 			else -- unary operator : uop1 uop2 ... [uopN]
-				assert(type == "MINUS", "error: invalid unary operator:" .. value)
+				assert(type == "MINUS", "error: invalid unary operator:" .. value .. "|" .. type)
 				setUnaryOp(node, value)
 			end
 		end
 		if type == "DEFINED" then
 			setValue(node, parseDefined(state, input))
+		elseif type == "SIZEOF" then
+			setValue(node, parseSizeof(state, input))
 		elseif type == "identifier" or type == "FUNCTIONAL_MACRO" then
 			-- print('ident:' .. value)
 			local eval = state:apply(value)
-			-- print('apply result ' .. eval .. "|" .. tostring(unprocessed))
+			-- print('apply result ' .. eval)
 			if eval ~= value then
 				eval = state:parseExpr(eval)
 				-- print('re-evaluate expr ' .. tostring(eval))
 				setValue(node, eval)
+			elseif state:defined(value) then
+				-- print('same value but defined:no change!!', value)
+				setValue(node, value)
 			else
 				-- undefined macro symbol is always treated as 0.
 				-- http://gcc.gnu.org/onlinedocs/cpp/If.html#If
 				setValue(node, 0)
-			end
+			end	
 		end
 	end
 	
@@ -1235,7 +1369,7 @@ local function prepareMacro(state, input)
 		end
 		input = table.concat(out)
 	until not concat
-	return input
+	return parseCInteger(input)
 end
 
 -- macro args replacement function slower but more torelant for pathological case 
@@ -1259,6 +1393,7 @@ local function replaceArgs(argsstr, repl)
 		end
 	end
 	local v = repl:gsub("%$(%d+)", function (m) return args[tonumber(m)] or "" end)
+	v = v:gsub("__VA_ARGS__%((%d+)%)", function (m) return table.concat({unpack(args, m)}, ",") end)
 	-- print("replaceArgs:" .. repl .. "|" .. tostring(#args) .. "|" .. v)
 	return v
 end
@@ -1272,16 +1407,20 @@ local function parseFunction(state, input)
 
 	-- rename args to $1,$2... for later gsub
 	local noargs = 0
-	for argname in argsstr:gmatch(IDENTIFIER) do
+	for argname in argsstr:gmatch(FUNCMACRO_ARG) do
 		noargs = noargs + 1
 		-- avoid matching substring of another identifier (eg. attrib matches __attribute__ and replace it)
-		repl = repl:gsub("(#*)(%s*)("..argname..")([_%w]?)", function (s1, s2, s3, s4)
-			if #s4 <= 0 then
-				return (#s1 == 1) and ("\"$"..noargs.."\"") or (s1..s2.."$"..noargs)
-			else
-				return s1..s2..s3..s4
-			end
-		end)
+		if argname ~= "..." then		
+			repl = repl:gsub("(#*)(%s*)("..argname..")([_%w]?)", function (s1, s2, s3, s4)
+				if #s4 <= 0 then
+					return (#s1 == 1) and ("\"$"..noargs.."\"") or (s1..s2.."$"..noargs)
+				else
+					return s1..s2..s3..s4
+				end
+			end)
+		else
+			repl = repl:gsub("__VA_ARGS__", "__VA_ARGS__("..noargs..")")
+		end
 	end
 	-- remove concat (after replace matching argument name to $1, $2, ...)
 	repl = repl:gsub("%s*##%s*", "")
@@ -1449,6 +1588,7 @@ function lcpp.test(suppressMsg)
 
 
 		#define TRUE
+		#define ZERO (0)
 		#define ONE (1)
 		#define TWO (2)
 		#define THREE_FUNC(x) (3)
@@ -1482,6 +1622,9 @@ function lcpp.test(suppressMsg)
 		#pragma ignored
 		assert __P((BINARY == -9, "parse, binary literal fails"))
 		assert(OCTET == 61 and NON_OCTET == 75, "parse octet literal fails")
+
+		#define BNOT_ZERO (~0ull)
+		assert(BNOT_ZERO == -1, "bnot for integer literal")
 	
 		lcpp_test.assertTrue()
 		assert(LEET == 0x1337, "simple #define replacement")
@@ -1518,7 +1661,13 @@ function lcpp.test(suppressMsg)
 		# if defined TRUE 
 			lcpp_test.assertTrue() -- valid strange syntax test (spaces and missing brackets)
 		# endif
-
+		# if 1
+		#else
+			assert(false, "#if 1 should evaluate as true")
+		#endif
+		# if ZERO
+			assert(false, "#if 0 should evaluate as false")
+		#endif
 
 		msg = "#define if/else test"
 		#ifdef TRUE
@@ -1666,20 +1815,20 @@ function lcpp.test(suppressMsg)
 		msg = "macro chaining"
 		#define FOO 0x7B
 		#define BAR (FOO+0x7B)
-		assert(-BAR == -0x7B*2, msg)
+		assert(-BAR == -0x7B*2, msg.."1")
 		#define BAZ 456
 		#define BLUR BA##Z
-		assert(BLUR == 456, msg)
+		assert(BLUR == 456, msg.."2")
 		local testfunc = function (x) return "["..tostring(x).."]" end
 		#define FOOBAR(x) testfunc(x)
-		assert(FOOBAR(1) == "[1]", msg)
+		assert(FOOBAR(1) == "[1]", msg.."3")
 		#define testfunc(x)
 		#define FOOBAZ(x) testfunc(x)
-		assert(check_argnum(FOOBAR(1)) == 0, msg)
-		assert(check_argnum(FOOBAZ(1)) == 0, msg)
+		assert(check_argnum(FOOBAR(1)) == 0, msg.."4")
+		assert(check_argnum(FOOBAZ(1)) == 0, msg.."5")
 		#undef testfunc
-		assert(FOOBAR(1) == "[1]", msg)
-		assert(FOOBAZ(1) == "[1]", msg)
+		assert(FOOBAR(1) == "[1]", msg.."6")
+		assert(FOOBAZ(1) == "[1]", msg.."7")
 
 
 		msg = "indentation test"
@@ -1885,7 +2034,12 @@ function lcpp.test(suppressMsg)
 		msg = "process string literal which contains escaped \""
 		#define BUGGY_MACRO ("if string contains \", text here ignored")
 		assert(BUGGY_MACRO == "if string contains \", text here ignored", msg)
-		
+
+		msg = "test VA_ARGS"
+		#define SUM_AND_CONCAT(a, b, c, ...) (a + b + c + #{__VA_ARGS__})
+		assert(SUM_AND_CONCAT(1, 2, 3, "x", "y", "z") == 9, msg)
+		#if HOGE
+		#endif // HOGE
 	]]
 	lcpp.FAST = false	-- enable full valid output for testing
 	lcpp.SELF_TEST = true
