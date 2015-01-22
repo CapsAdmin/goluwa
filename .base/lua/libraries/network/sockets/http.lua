@@ -32,8 +32,11 @@ function sockets.TableToHeader(tbl)
 	return str
 end
 
-local function request(url, callback, method, timeout, post_data, user_agent, binary, debug)		
-	url = url:gsub("http://", "")
+local function request(url, callback, method, timeout, post_data, user_agent, binary, debug)
+	local ssl = url:sub(0, 5) == "https"
+	
+	url = url:match("^.-://(.+)")
+	
 	callback = callback or table.print
 	method = method or "GET"
 	user_agent = user_agent or "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
@@ -44,12 +47,18 @@ local function request(url, callback, method, timeout, post_data, user_agent, bi
 		host = url:gsub("/", "")
 		location = ""
 	end
-	
+		
 	local socket = sockets.CreateClient("tcp")
 	socket.debug = debug
 	socket:SetTimeout(timeout or 2)
-	socket:Connect(host, 80)
-
+	
+	if ssl then 
+		socket:SetSSLParams("https") 
+		socket:Connect(host, 443)
+	else
+		socket:Connect(host, 80)
+	end
+	
 	socket:Send(("%s /%s HTTP/1.1\r\n"):format(method, location))
 	socket:Send(("Host: %s\r\n"):format(host))
 	socket:Send(("User-Agent: %s\r\n"):format(user_agent))
@@ -156,12 +165,7 @@ function sockets.Post(url, post_data, callback, timeout, user_agent, binary, deb
 end
 
 function sockets.Download(url, callback)
-	if url:sub(0, 4) == "http" then
-		
-		if url:sub(0, 5) == "https" then
-			url = "http" .. url:sub(6)
-		end
-					
+	if url:sub(0, 4) == "http" then					
 		if callback then
 			sockets.Get(url, function(data) callback(data.content) end, nil, nil, true)
 			return true
