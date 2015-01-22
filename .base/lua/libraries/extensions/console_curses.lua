@@ -259,8 +259,8 @@ function console.InitializeCurses()
 		console.Print(str)
 	end
 
-	for _, args in pairs(_G.LOG_BUFFER) do
-		io.write(unpack(args))
+	for _, line in ipairs(_G.LOG_BUFFER) do
+		io.write(line)
 	end
 
 	_G.LOG_BUFFER = nil
