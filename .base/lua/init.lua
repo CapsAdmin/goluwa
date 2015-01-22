@@ -44,10 +44,8 @@ if not DISABLE_CURSES then
 	-- this will be replaced later on with logn
 	_G.LOG_BUFFER = {}
 
-	print = function(...) 
-		local args =  {...}
-		table.insert(args, "\n")
-		table.insert(_G.LOG_BUFFER, args) 
+	print = function(...)
+		table.insert(_G.LOG_BUFFER, table.concat(..., ", ") .. "\n")
 	end
 end
 
