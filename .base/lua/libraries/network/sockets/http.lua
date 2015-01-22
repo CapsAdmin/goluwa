@@ -15,7 +15,7 @@ function sockets.HeaderToTable(header)
 		local key, value = line:match("(.+):%s+(.+)\r")
 
 		if key and value then
-			tbl[key] = tonumber(value) or value
+			tbl[key:lower()] = tonumber(value) or value
 		end
 	end
 
@@ -113,15 +113,14 @@ local function request(url, callback, method, timeout, post_data, user_agent, bi
 			length = length + #str
 		end
 		
-		if header["Content-Length"] then
-			if length >= header["Content-Length"] then
+		table.print(header)
+
+		if header["content-length"] then
+			if length >= header["content-length"] then
 				self:Remove()
 			end
-		elseif header["Transfer-Encoding"] == "chunked" then
-			if #content == 1 and content[1]:sub(-5) == "0\r\n\r\n" then 
-				self:Remove()
-			end
-			if content[#content - 2] == "" and str == "0" then
+		elseif header["transfer-encoding"] == "chunked" then
+			if str:sub(-5) == "0\r\n\r\n" then 
 				self:Remove()
 			end
 		end
