@@ -98,7 +98,7 @@ end
 
 local function find_chunk(loaders, errors, name, hint)
 	for _, loader in ipairs(loaders) do
-		local chunk, err, path = loader(name)
+		local chunk, err, path = select(2, pcall(loader, name))
 		if type(chunk) == "function" then			
 			if hint and not (path and path:lower():find(hint:lower(), nil, true)) then
 				table.insert(errors, ("hint %q was given but it was not found in in the returned path %q\n"):format(hint, path))
