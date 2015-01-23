@@ -82,17 +82,25 @@ end
 local cache = {}
 
 local function get_file_tree(path)
-
 	if cache[path] then
+		return cache[path]
+	end
+
+	local cache_path = "data/vpk_cache/" .. crypto.CRC32(path)
+	local tree_data = serializer.ReadFile("msgpack", cache_path)
+	
+	if tree_data then
+		cache[path] = utility.CreateTree("/", tree_data)
 		return cache[path]
 	end
 
 	local file = assert(vfs.Open("os:" .. path))	
 	local tree = read_vpk(file, path)
-		
 	file:Close()
 	
 	cache[path] = tree
+	
+	serializer.WriteFile("msgpack", cache_path, tree.tree)
 	
 	return tree
 end
