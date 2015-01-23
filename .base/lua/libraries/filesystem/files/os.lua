@@ -25,12 +25,9 @@ function CONTEXT:CreateFolder(path_info)
 end
 
 function CONTEXT:GetFiles(path_info)
-	local out = fs.find(path_info.full_path)
+	local out = fs.find(path_info.full_path, true)
 	
 	if #out == 0 then error("not a valid folder", 2) end
-
-	table.remove(out, 1) -- .
-	table.remove(out, 1) -- ..
 	
 	return out
 end

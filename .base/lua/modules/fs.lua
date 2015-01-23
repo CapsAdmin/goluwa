@@ -53,7 +53,7 @@ if WINDOWS then
 
 	local data = ffi.new("goluwa_find_data[1]")
 
-	function fs.find(dir)
+	function fs.find(dir, exclude_dot)
 		local out = {}
 		
 		if dir:sub(-1) ~= "/" then dir = dir .. "/" end
@@ -61,9 +61,14 @@ if WINDOWS then
 		local handle = ffi.C.FindFirstFileA(dir .. "*", data)
 		
 		if ffi.cast("unsigned long", handle) ~= 0xffffffff then
-			for i = 1, math.huge do
-				out[i] = ffi.string(data[0].cFileName)
-				if not ffi.C.FindNextFileA(handle, data) then break end
+			local i = 1
+			
+			while ffi.C.FindNextFileA(handle, data) do
+				local name = ffi.string(data[0].cFileName)
+				if not exclude_dot or (name ~= "." and name ~= "..") then
+					out[i] = name
+					i = i + 1
+				end
 			end	
 			
 			ffi.C.FindClose(handle)
@@ -151,7 +156,7 @@ else
 	local size = 4096
 	local buf = S.t.buffer(size)
 	
-	function fs.find(dir)		
+	function fs.find(dir, exclude_dot)
 		local out = {}
 		
 		local fd, err = S.open(dir, "directory, rdonly")
@@ -159,10 +164,13 @@ else
 		if fd then
 			local iterator, err = fd:getdents(buf, size)
 			
-			for i = 1, math.huge do
-				local info = iterator()
-				if not info then break end
-				out[i] = info.name
+			local i = 1
+			
+			for info in iterator do				
+				if not exclude_dot or (info.name ~= "." and info.name ~= "..") then
+					out[i] = info.name
+					i = i + 1
+				end
 			end
 			
 			fd:close()
