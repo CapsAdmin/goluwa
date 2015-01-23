@@ -180,7 +180,7 @@ else
 	end
 	
 	function fs.createdir(path)
-		S.mkdir(path)
+		S.mkdir(path, "rwxu")
 	end
 	
 	function fs.getattributes(path)
