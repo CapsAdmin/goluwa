@@ -1,0 +1,2 @@
+[alias]
+    addscr = !sh -c 'if [[ ${0: -3} == ".sh" ]]; then git update-index --chmod=+x $0; git add $0'
