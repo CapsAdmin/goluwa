@@ -4,7 +4,7 @@ local enums = require("lj-assimp.enums")
  
 ffi.cdef(header)
 
-local lib = ffi.load("assimp")
+local lib = assert(ffi.load("assimp"))
 
 local assimp = {
 	lib = lib,

@@ -5,7 +5,7 @@ local errors = require("lj-freetype.errors")
   
 ffi.cdef(header) 
  
-local lib = ffi.load("freetype") 
+local lib = assert(ffi.load("freetype"))
  
 local freetype = {
 	lib = lib,

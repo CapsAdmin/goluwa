@@ -5,7 +5,7 @@ local enums = require("lj-enet.enums")
 
 ffi.cdef(header) 
  
-local lib = ffi.load("enet") 
+local lib = assert(ffi.load("enet"))
  
 local enet = {
 	lib = lib,
