@@ -136,7 +136,6 @@ do -- logging
 			
 			if _G.LOG_BUFFER then
 				table.insert(_G.LOG_BUFFER, line)
-				_OLD_G.print(line)
 			end
 		end
 	end
