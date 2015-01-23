@@ -1,29 +1,141 @@
 local steam = ... or _G.steam
 
-steam.webapi_httpmethods = {
-	GET = function(interface, func_info, data, url, callback)
-		local arguments = ""
-		
-		for key, val in pairs(data) do
-			arguments = arguments .. ("%s=%s&"):format(key, val)
-		end
-		
-		-- remove the last &..
-		arguments = arguments:sub(0, -2)
-		
-		url = url .. arguments
-	
-		sockets.Get(url, function(data)
-			if data.content then
-				callback(serializer.Decode("json", data.content))
-			end
-		end, nil, "Steam 1291812 / iPhone")
-	end,
-	POST = function(interface, func_info, data, url, callback)
-		sockets.Post(url, data, function(data)
-			callback(serializer.Decode("json", data.content))
-		end, nil, "Steam 1291812 / iPhone")
-	end,
+local patch = {
+	{
+		https = true,
+		name = "ISteamUserOAuth",
+		methods = {
+			{
+				httpmethod = "GET",
+				name = "GetFriendList",
+				version = 1,
+				parameters = {
+					{
+						type = "string",
+						optional = false,
+						name = "access_token",
+						description = "OAuth2 token for which to return details",
+					},
+					{
+						type = "string",
+						optional = true,
+						name = "steamid",
+						description = "steam id",
+					},					
+				},
+			},
+		},
+	},
+	{
+		https = true,
+		name = "ISteamOAuth2",
+		methods = {
+			{
+				httpmethod = "POST",
+				name = "GetTokenWithCredentials",
+				version = 1,
+				parameters = {
+					{
+						type = "string",
+						optional = false,
+						description = "oauth client id",
+						name = "client_id",
+						default = "DE45CD61",
+					},
+					{
+						type = "string",
+						optional = false,
+						description = "grant type",
+						name = "grant_type",
+						default = "password",
+					},
+					{
+						type = "string",
+						optional = false,
+						description = "username",
+						name = "username",
+					},
+					{
+						type = "string",
+						optional = false,
+						description = "password",
+						name = "password",
+					},
+					{
+						type = "string",
+						optional = true,
+						description = "steam guard code",
+						name = "x_emailauthcode",
+						default = "",
+					},
+					{
+						type = "string",
+						optional = false,
+						description = "scope",
+						name = "scope",
+						default = "read_profile write_profile read_client write_client",
+					},
+				}
+			}
+		},
+	},
+	{
+		https = true,
+		name = "ISteamWebUserPresenceOAuth",
+		methods = {
+			{
+				httpmethod = "GET",
+				name = "Logon",
+				version = 1,
+				parameters = {
+					{
+						type = "string",
+						optional = false,
+						description = "access token",
+						name = "acess_token",
+					},
+				}
+			},
+			{
+				httpmethod = "GET",
+				name = "Message",
+				version = 1,
+				parameters = {
+					{
+						type = "string",
+						optional = false,
+						description = "access token",
+						name = "acess_token",
+					},
+					{
+						type = "string",
+						optional = false,
+						description = "no idea",
+						name = "umqid",
+					},
+					{
+						type = "string",
+						optional = false,
+						description = "like \"saytext\"",
+						name = "type",
+						default = "saytext",
+					},
+					{
+						type = "string",
+						optional = false,
+						description = "what you want to say",
+						name = "text",
+					},
+					{
+						type = "string",
+						optional = false,
+						description = "targets steam id",
+						name = "steamid_dst",
+					},
+				}
+			},
+		},
+	}
 }
 
 local type_translate = {
@@ -38,9 +150,26 @@ function steam.GetWebAPIKey()
 	return console.GetVariable("steam_webapi_key", "")
 end
 
-function steam.InitializeWebAPI()
+function steam.InitializeWebAPI(force)
+	if force then
+		steam.supported = nil
+	end
+	
 	steam.key = steam.GetWebAPIKey()
-	steam.supported = steam.supported or serializer.ReadFile("luadata", "steam_webapi_supported.lua") or {}
+
+	if not steam.supported then
+		steam.supported = serializer.ReadFile("luadata", "steam_webapi_supported.lua") or {}
+		for patch_key, patched_interface in pairs(patch) do
+			for _, interface in pairs(steam.supported.apilist.interfaces) do
+				if patched_interface.name == interface.name then
+					table.add(interface.methods, patched_interface.methods)
+					patch[patch_key] = nil
+				end
+			end
+		end
+		table.print(patch)
+		table.add(steam.supported.apilist.interfaces, patch)
+	end
 	
 	if key == "" then
 		logn("steam key is not set (run steam_webapi_key *key*)")
@@ -55,28 +184,41 @@ function steam.InitializeWebAPI()
 			for key, info in pairs(interface.methods) do
 				local parameters = {}
 				
-				for key, val in pairs(info.parameters) do
+				for i, val in pairs(info.parameters) do
 					if val.optional == false then
+						val.i = i
 						parameters[val.name] = val
 					end
 				end
 				
 				functions[info.name] = function(data, callback)
-					if not steam.webapi_httpmethods[info.httpmethod] then
-						errorf("http method %s is not supported", 2, info.httpmethod)
+					if not data then
+						callback = data
+						data = {}
 					end
-				
+					
+					--[[if type(data) ~= "table" and type(callback) ~= "function" and (select("#", ...) == 0 or type(select(select("#", ...), ...)) == "function") then
+						local args = {data, callback, ...}
+						if type(args[#args]) == "function" then
+							callback = table.remove(args)
+						end
+						data = {}
+						for name, info in pairs(parameters) do
+							data[name] = args[info.i]
+						end
+					end]]
+									
 					callback = callback or table.print
 
-					if parameters.key and not data.key then
-						data.key = steam.key
-					end
-								
+					data.key = steam.key
+													
 					-- check and convert parameters
 					for key, info in pairs(parameters) do
+						if data[key] == nil and info.default then data[key] = info.default end
+						
 						local t = type(data[key])
 						local expected = type_translate[info.type] or info.type
-						
+
 						if t == "stringnumber" then
 							local num = tonumber(data[key])
 							if not num then
@@ -102,18 +244,55 @@ function steam.InitializeWebAPI()
 							data[key] = crypto.Base64Encode(data[key])
 						end
 						
-						if t ~= expected and expected ~= "stringnumber" and not info.optional then
-							errorf("field %q is not a valid type (expected %s got %s)", 2, key, expected, type(data[key]))
+						if t ~= expected and not info.optional and (expected ~= "stringnumber" or t ~= "string") then
+							errorf("field %q (%s) is not a valid type (expected %s got %s)", 2, key, info.description, expected, type(data[key]))
 						end
 					end
 									
-					local url = ("http://api.steampowered.com/%s/%s/v%.4d/?"):format(interface.name, info.name, data.version or 1)
+					local url = ("%s://api.steampowered.com/%s/%s/v%.4d/?"):format(interface.https and "https" or "http", interface.name, info.name, data.version or 1)
 					
 					if steam.debug then	
 						logf("[steam] http url: %s\n", url)
-					end				
+					end	
+
+					local arguments = ""
 					
-					steam.webapi_httpmethods[info.httpmethod](interface, info, data, url, callback)
+					if info.httpmethod == "GET" then
+						arguments = "?"
+					end
+					
+					for key, val in pairs(data) do
+						arguments = arguments .. ("%s=%s&"):format(key, val)
+					end
+					
+					arguments = arguments:sub(0, -2)		
+				
+					sockets.Request({
+						method = info.httpmethod,
+						host = "api.steampowered.com",
+						ssl_parameters = interface.https and "https",
+						location = ("%s/%s/v%.4d%s"):format(interface.name, info.name, data.version or 1, info.httpmethod == "GET" and arguments or ""),
+						post_data = info.httpmethod == "POST" and arguments,
+						header = {
+							["Content-type"] = "/application/x-www-form-urlencoded", 
+							["User-Agent"] = "Steam 1291812 / iPhone", 
+							["Accept-Language"] = "en-us", 
+							["Accept-Encoding"] = "gzip, deflate", 
+							["Accept"] = "*/*",
+						},
+						callback = function(data)
+							local tbl, err = serializer.Decode("json", data.content)
+							
+							if not tbl then
+								logf("failed to decode data from %s::%s\n", interface.name, info.name)
+								logn("\turl = ", url)
+								logn("\thtml = ", data.content:gsub("%b<>", "\n"):gsub("%s+", " "):trim())
+								return
+							end
+							
+							callback(tbl.result)
+						end,
+					})
 				end
 			end
 			
@@ -127,7 +306,7 @@ end
 function steam.UpdateSupportedWebAPI(callback)
 	logn("[steam] fetching supported api..")
 	
-	sockets.Get("http://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steam.key, function(data)
+	sockets.Get("https://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steam.key, function(data)
 		if data.content then
 			local tbl = serializer.Decode("json", data.content)
 			
@@ -136,7 +315,7 @@ function steam.UpdateSupportedWebAPI(callback)
 			
 			logn("[steam] supported api updated")		
 			
-			callback()
+			if callback then callback() end
 		else
 			logn("[steam] could not fetch api, no content!")
 		end
@@ -145,4 +324,8 @@ end
 
 function steam.GetWebAPIService(name)
 	return steam.services[name]
+end
+
+if RELOAD then
+	steam.InitializeWebAPI(true)
 end
