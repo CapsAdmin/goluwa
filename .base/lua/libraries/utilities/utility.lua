@@ -436,10 +436,10 @@ do -- tree
 	
 	prototype.Register(META)
 
-	function utility.CreateTree(delimiter)
+	function utility.CreateTree(delimiter, tree)
 		local self = prototype.CreateObject(META)
 		
-		self.tree = {}	
+		self.tree = tree or {}
 		self.delimiter = delimiter
 		
 		return self
