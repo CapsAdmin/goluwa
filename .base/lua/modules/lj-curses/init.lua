@@ -4,7 +4,7 @@ local enums = require("lj-curses.enums")
 ffi.cdef("typedef uint64_t chtype;")
 ffi.cdef(header)
 
-local lib = ffi.load(jit.os == "Windows" and "pdcurses" or "ncursesw")
+local lib = assert(ffi.load(jit.os == "Windows" and "pdcurses" or "ncursesw"))
 
 local curses = {
 	lib = lib, 
