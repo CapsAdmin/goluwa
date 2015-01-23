@@ -1,7 +1,7 @@
 local header = require("lj-libarchive.header")
 local enums = require("lj-libarchive.enums")
 
-local lib = ffi.load("archive")
+local lib = assert(ffi.load("archive"))
 
 ffi.cdef(header)  
 

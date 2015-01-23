@@ -5,7 +5,7 @@ local enums =require("lj-libusb.enums")
 
 ffi.cdef(header) 
  
-local lib = ffi.load("libusb") 
+local lib = assert(ffi.load("libusb"))
  
 local libusb = {
 	lib = lib,

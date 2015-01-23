@@ -1,7 +1,7 @@
 local header = require("lj-libsoundfile.header")
 local enums = require("lj-libsoundfile.enums")
 
-local lib = ffi.load("libsndfile")
+local lib = assert(ffi.load("libsndfile"))
 
 ffi.cdef(header)  
 

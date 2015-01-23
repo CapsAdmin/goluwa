@@ -77,7 +77,7 @@ void bulletDrawDebugWorld();
 ]]
 ffi.cdef(header)
 
-local lib = ffi.load("bullet3")
+local lib = assert(ffi.load("bullet3"))
 local bullet = {}
 local bodies = {}
 local body_lookup = {}

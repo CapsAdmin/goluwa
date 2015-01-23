@@ -3,7 +3,7 @@ local enums = require("lj-freeimage.enums")
 
 ffi.cdef(header)
 
-local lib = ffi.load("freeimage") 
+local lib = assert(ffi.load("freeimage"))
 
 local freeimage = {
 	lib = lib, 

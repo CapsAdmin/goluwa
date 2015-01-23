@@ -3,7 +3,7 @@ local header = require("lj-vtflib.header")
 
 ffi.cdef(header) 
 
-local lib = ffi.load("vtflib")
+local lib = assert(ffi.load("vtflib"))
 
 local vl = {
 	lib = lib,
