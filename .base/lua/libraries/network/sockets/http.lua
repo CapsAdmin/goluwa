@@ -32,50 +32,83 @@ function sockets.TableToHeader(tbl)
 	return str
 end
 
-local function request(url, callback, method, timeout, post_data, user_agent, binary, debug)
-	local ssl = url:sub(0, 5) == "https"
-	
-	url = url:match("^.-://(.+)")
-	
-	callback = callback or table.print
-	method = method or "GET"
-	user_agent = user_agent or "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
+local function request(info)
 
-	local host, location = url:match("(.-)/(.+)")
-
-	if not location then
-		host = url:gsub("/", "")
-		location = ""
+	if info.url then
+		local protocol, host, location = info.url:match("(.+)://(.-)/(.+)")
+		
+		if not protocol then
+			host, location = info.url:match("(.-)/(.+)")
+			protocol = "http"
+		end
+		
+		info.location = info.location or location
+		info.host = info.host or host
+		info.protocol = info.protocol or protocol
+	end
+	
+	if info.protocol == "https" and not info.ssl_parameters then
+		info.ssl_parameters = "https"
+	end
+	
+	if info.ssl_parameters and not info.protocol then
+		info.protocol = "https"
+	end
+	
+	if not info.port then
+		if info.protocol == "https" then
+			info.port = 443
+		else
+			info.port = 80
+		end
+	end
+	
+	info.method = info.method or "GET"
+	info.user_agent = info.user_agent or "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
+	info.connection = info.connection or "Keep-Alive"
+	info.receive_mode = info.receive_mode or 61440
+	info.timeout = info.timeout or 2
+	info.callback = info.callback or table.print
+	
+	if info.method == "POST" and not info.post_data then
+		error("no post data!", 2)
 	end
 		
-	local socket = sockets.CreateClient("tcp")
-	socket.debug = debug
-	socket:SetTimeout(timeout or 2)
-	
-	if ssl then 
-		socket:SetSSLParams("https") 
-		socket:Connect(host, 443)
-	else
-		socket:Connect(host, 80)
+	if sockets.debug then
+		logn("sockets request:")
+		table.print(info)
 	end
 	
-	socket:Send(("%s /%s HTTP/1.1\r\n"):format(method, location))
-	socket:Send(("Host: %s\r\n"):format(host))
-	socket:Send(("User-Agent: %s\r\n"):format(user_agent))
-	socket:Send("Connection: Keep-Alive\r\n")
-	socket:SetReceiveMode(61440)
-				
-	if binary then
-		socket:SetReceiveMode("all")
-	end		
+	local socket = sockets.CreateClient("tcp")
+	socket.debug = info.debug
+	socket:SetTimeout(info.timeout)
 	
-	if method == "POST" then
-		socket:Send(("Content-Length: %i"):format(#post_data))
-		socket:Send(post_data)
+	if info.ssl_parameters then 
+		socket:SetSSLParams(info.ssl_parameters) 
+	end
+	
+	socket:Connect(info.host, info.port)
+	socket:SetReceiveMode(info.receive_mode)
+
+	socket:Send(("%s /%s HTTP/1.1\r\n"):format(info.method, info.location))
+	socket:Send(("Host: %s\r\n"):format(info.host))
+	
+	if not info.header or not info.header.user_agent then socket:Send(("User-Agent: %s\r\n"):format(info.user_agent)) end
+	if not info.header or not info.header.user_agent then socket:Send(("Connection: %s\r\n"):format(info.connection)) end
+	
+	if info.header then
+		for k,v in pairs(info.header) do
+			socket:Send(("%s: %s\r\n"):format(k, v))
+		end
+	end
+
+	if info.method == "POST" then
+		socket:Send(("Content-Length: %i"):format(#info.post_data))
+		socket:Send(info.post_data)
 	end
 
 	socket:Send("\r\n")
-
+	
 	local header = {}
 	local content = {}
 	local temp = {}
@@ -91,11 +124,10 @@ local function request(url, callback, method, timeout, post_data, user_agent, bi
 			if header_data then
 				header = sockets.HeaderToTable(header_data)
 				
-				if header.location then
-					if header.location:sub(0, 5) == "https" then header.location = "http" .. header.location:sub(6) end
-					
+				if header.location then					
 					if header.location ~= "" then
-						request(header.location, callback, method, timeout, post_data, user_agent, binary)
+						info.url = header.location
+						request(info)
 						self:Remove()
 						return
 					end
@@ -105,7 +137,7 @@ local function request(url, callback, method, timeout, post_data, user_agent, bi
 					table.insert(content, content_data)
 					length = length + #content_data
 				end
-									
+
 				in_header = false
 			end
 		else
@@ -113,8 +145,6 @@ local function request(url, callback, method, timeout, post_data, user_agent, bi
 			length = length + #str
 		end
 		
-		table.print(header)
-
 		if header["content-length"] then
 			if length >= header["content-length"] then
 				self:Remove()
@@ -125,13 +155,12 @@ local function request(url, callback, method, timeout, post_data, user_agent, bi
 			end
 		end
 	end
-
 	
 	function socket:OnClose()			
 		local content = table.concat(content, "")
 
 		if content ~= "" then
-			local ok, err = xpcall(callback, system.OnError, {content = content, header = header})
+			local ok, err = xpcall(info.callback, system.OnError, {content = content, header = header})
 			
 			if err then
 				warning(err)
@@ -142,12 +171,42 @@ local function request(url, callback, method, timeout, post_data, user_agent, bi
 	end
 end
 
+function sockets.Download(url, callback)
+	if callback then
+		sockets.Request({
+			url = url, 
+			receive_mode = "all",
+			callback = function(data) 
+				callback(data.content) 
+			end, 
+		})
+		return true
+	end
+	
+	return 
+	{
+		Download = function(_, callback) 
+			sockets.Download(url, function(data) 
+				callback(data.content, data.header) 
+			end) 
+		end
+	}
+end
+
 function sockets.Get(url, callback, timeout, user_agent, binary, debug)
 	check(url, "string")
 	check(callback, "function", "nil", "false")
 	check(user_agent, "nil", "string")
 	
-	return request(url, callback, "GET", timeout, nil, user_agent, binary, debug)
+	return request({
+		url = url, 
+		callback = callback, 
+		method = "GET", 
+		timeout = timeout, 
+		user_agent = user_agent, 
+		receive_mode = binary and "all", 
+		debug = debug
+	})
 end
 
 function sockets.Post(url, post_data, callback, timeout, user_agent, binary, debug)
@@ -160,18 +219,16 @@ function sockets.Post(url, post_data, callback, timeout, user_agent, binary, deb
 		post_data = sockets.TableToHeader(post_data)
 	end
 	
-	return request(url, callback, "POST", timeout, post_data, user_agent, binary, debug)
+	return request({
+		url = url, 
+		callback = callback, 
+		method = "POST", 
+		timeout = timeout, 
+		post_data = post_data, 
+		user_agent = user_agent, 
+		receive_mode = binary and "all", 
+		debug = debug
+	})
 end
 
-function sockets.Download(url, callback)
-	if url:sub(0, 4) == "http" then					
-		if callback then
-			sockets.Get(url, function(data) callback(data.content) end, nil, nil, true)
-			return true
-		else
-			return {Download = function(_, callback) sockets.Get(url, function(data) callback(data.content, data.header) end, nil, nil, true) end}
-		end
-	end
-	
-	return false
-end
+sockets.Request = request
