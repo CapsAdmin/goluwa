@@ -139,7 +139,9 @@ function gl.InitMiniGlew()
 	end
 	local invalid = 0
 	
-	setlogfile("unexpected_extensions")
+	if DEBUG then
+		setlogfile("unexpected_extensions")
+	end
 	
 	for line in header:gmatch("(.-)\n") do
 		local func_name = line:match(" (gl%u.-) %(")
@@ -148,49 +150,76 @@ function gl.InitMiniGlew()
 		end 
 	end
 	
-	local time = system.GetTime()
-	for path in vfs.Iterate("lua/modules/lj-opengl/extensions/", nil, true) do
-		local str, err = vfs.Read(path)
-		for line in str:gmatch("\t(.-)\n") do
-			local key, val = line:match("([1-9a-Z_]+) (.+)")
-			
-			if key and val then
-				enums[key] = tonumber(val)
-			elseif line:find("typedef") then
-				--print(line)
+	local cache = serializer.ReadFile("msgpack", "gl_extensions_cache")
+	
+	if cache then
+		for i, info in ipairs(cache) do
+			if info.enum then
+				enums[info[1]] = info[2]
 			else
-				local ret, nam, args = line:match("(.-) (gl.-) (%(.+%))")
+				if info[4] then ffi.cdef(info[4]) end
+				add_gl_func(info[1], ffi.cast(info[3], gl.GetProcAddress(info[2])))
+			end
+		end
+	else
+		cache = {}
+		
+		local time = system.GetTime()
+		for path in vfs.Iterate("lua/modules/lj-opengl/extensions/", nil, true) do
+			local str, err = vfs.Read(path)
+			for line in str:gmatch("\t(.-)\n") do
+				local key, val = line:match("([1-9a-Z_]+) (.+)")
 				
-				if not nam or nam:trim() == "" then
-					ret, nam, args = line:match("(.-) (wgl.-) (%(.+%))")
-				end
-				
-				if nam then
-					nam = nam:trim()
-					local func = gl.GetProcAddress(nam)
-					if func ~= nil then
-						local ok, var = pcall(ffi.cast, ret .. "(*)" ..  args, func) 
-						if not ok and var:find("specifier expected near") then
-							local type = var:match("near.-'(.-)'")
-							ffi.cdef(("typedef struct %s {} %s;"):format(type, type))
-							ok, var = pcall(ffi.cast, ret .. "(*)" ..  args, func)
-							if not ok then 
-								logn(line)
-								invalid = invalid + 1
-							else
-								add_gl_func(nam:match(".-gl(%u.+)"), var)
+				if key and val then
+					enums[key] = tonumber(val)
+					table.insert(cache, {key, enums[key], enum = true})
+				elseif line:find("typedef") then
+					--print(line)
+				else
+					local ret, nam, args = line:match("(.-) (gl.-) (%(.+%))")
+					
+					if not nam or nam:trim() == "" then
+						ret, nam, args = line:match("(.-) (wgl.-) (%(.+%))")
+					end
+					
+					if nam then
+						nam = nam:trim()
+						local func = gl.GetProcAddress(nam)
+						if func ~= nil then
+							local cdef_str
+							local cast_str = ret .. "(*)" ..  args
+							
+							local ok, var = pcall(ffi.cast, cast_str, func) 
+							
+							if not ok and var:find("specifier expected near") then
+								local type = var:match("near.-'(.-)'")
+								cdef_str = ("typedef struct %s {} %s;"):format(type, type)
+								ffi.cdef(cdef_str)
+								ok, var = pcall(ffi.cast, cast_str, func)
+								if not ok and DEBUG then
+									logn(line)
+									invalid = invalid + 1
+								end
 							end
-						else
-							add_gl_func(nam:match(".-gl(%u.+)"), var)
+							
+							if ok then
+								local friendly = nam:match(".-gl(%u.+)")
+								
+								table.insert(cache, {friendly, nam, cast_str, cdef_str})
+								
+								add_gl_func(friendly, var)
+							end
+						elseif DEBUG then
+							logn(line)
+							invalid = invalid + 1
 						end
-					else
-						logn(line)
-						invalid = invalid + 1
 					end
 				end
 			end
 		end
-	end 
+		
+		serializer.WriteFile("msgpack", "gl_extensions_cache", cache)
+	end
 	
 	-- adds gl.GenBuffer which creates and returns a single id from gl.GenBuffers 
 	-- no support for ARB stuff yet lol
@@ -212,7 +241,9 @@ function gl.InitMiniGlew()
 		enums[k] = v
 	end
 		
-	setlogfile()
+	if DEBUG then
+		setlogfile()
+	end
 	
 	if gl.debug then
 		logf("glew extensions took %f ms to parse\n", (system.GetTime() - time) * 100)
