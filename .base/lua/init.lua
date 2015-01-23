@@ -40,15 +40,6 @@ do -- constants
 	end
 end
 
-if not DISABLE_CURSES then
-	-- this will be replaced later on with logn
-	_G.LOG_BUFFER = {}
-
-	print = function(...)
-		table.insert(_G.LOG_BUFFER, table.concat(..., ", ") .. "\n")
-	end
-end
-
 -- put all c functions in a table so we can override them if needed 
 -- without doing the local oldfunc = print thing over and over again
 if not _OLD_G then
@@ -71,6 +62,16 @@ if not _OLD_G then
 	end
 	
 	scan(_G, _OLD_G)
+end
+
+if not DISABLE_CURSES then
+	-- this will be replaced later on with logn
+	_G.LOG_BUFFER = {}
+
+	print = function(...)
+		table.insert(_G.LOG_BUFFER, table.concat(..., ", ") .. "\n")
+		return _OLD_G.print(...)
+	end
 end
 
 do -- file system
