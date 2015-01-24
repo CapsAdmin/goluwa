@@ -73,7 +73,7 @@ local function request(info)
 	if info.method == "POST" and not info.post_data then
 		error("no post data!", 2)
 	end
-		
+	
 	if sockets.debug then
 		logn("sockets request:")
 		table.print(info)
@@ -172,6 +172,8 @@ local function request(info)
 end
 
 function sockets.Download(url, callback)
+	if not url:find("^(.-)://") then return end
+	
 	if callback then
 		sockets.Request({
 			url = url, 
