@@ -68,7 +68,12 @@ if CLIENT then
 		table.insert(tbl, ColorBytes(255, 255, 255, 255))
 		table.insert(tbl, ": ")
 		table.insert(tbl, str)
-		chathud.AddText(unpack(tbl))
+		
+		if chathud then
+			chathud.AddText(unpack(tbl))
+		else
+			print(unpack(tbl))
+		end
     end)
 end
 
