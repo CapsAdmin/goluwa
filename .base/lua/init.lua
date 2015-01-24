@@ -24,6 +24,8 @@ do -- constants
 		"USE_SDL",
 		"SERVER",
 		"CLIENT",
+		"GRAPHICS",
+		"SOUND",
 		"DEBUG",
 		"DISABLE_CURSES",
 	}
@@ -38,6 +40,8 @@ do -- constants
 	if SERVER == nil and CLIENT == nil then
 		CLIENT = true
 	end
+	if SOUND == nil then SOUND = true end
+	if GRAPHICS == nil then GRAPHICS = true end
 end
 
 -- put all c functions in a table so we can override them if needed 
@@ -205,6 +209,8 @@ do -- libraries
 			if not SCITE then
 				window.Open()
 			end
+		else
+			GRAPHICS = nil
 		end
 		
 		-- audio
@@ -212,6 +218,8 @@ do -- libraries
 		
 		if audio then
 			chatsounds = include("libraries/audio/chatsounds.lua")
+		else
+			SOUND = nil
 		end
 	end
 
@@ -236,7 +244,7 @@ do -- libraries
 		include("libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
 	end
 
-	if CLIENT and surface and render then
+	if GRAPHICS then
 		gui = include("gui/init.lua")
 	end
 	
@@ -282,6 +290,14 @@ end
 -- load everything in lua/autorun/server/*
 if SERVER then
 	vfs.AutorunAddons("server/")
+end
+
+if SOUND then
+	vfs.AutorunAddons("sound/")
+end
+
+if GRAPHICS then
+	vfs.AutorunAddons("graphics/")
 end
 
 -- execute /.userdata/*USERNAME*/cfg/autoexec.lua

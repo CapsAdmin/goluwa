@@ -25,7 +25,7 @@ COMPONENT.Network = {
 	Color = {"color", 1/5},
 }
 
-if CLIENT and render then 
+if GRAPHICS then 
 	do -- shader
 		local gl = require("lj-opengl") -- OpenGL
 

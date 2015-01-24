@@ -22,7 +22,7 @@ prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "LensFlare", false)
 prototype.EndStorable()
 
-if CLIENT then
+if GRAPHICS then
 	local gl = require("lj-opengl")
 	
 	do -- shadow map stage 1

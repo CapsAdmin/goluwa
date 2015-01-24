@@ -438,7 +438,7 @@ function steam.LoadMap(path, callback)
 					)
 				}
 				
-				if CLIENT then
+				if GRAPHICS then
 					model:AddVertex(vertex) 
 				end
 				
@@ -488,11 +488,11 @@ function steam.LoadMap(path, callback)
 										
 					-- split the world up into sub models by texture
 					if not meshes[texname] then				
-						local mesh = CLIENT and render.CreateMeshBuilder() or {}
+						local mesh = GRAPHICS and render.CreateMeshBuilder() or {}
 										
 						meshes[texname] = mesh
 						
-						if CLIENT then
+						if GRAPHICS then
 							local vmt = steam.LoadMaterial(texname)
 							
 							if vmt.error then
@@ -595,7 +595,7 @@ function steam.LoadMap(path, callback)
 			end
 			
 		end
-		if CLIENT then			
+		if GRAPHICS then			
 			for i, mesh in ipairs(models) do
 				mesh:BuildNormals()
 				thread:ReportProgress("generating normals", #models)
@@ -627,7 +627,7 @@ function steam.LoadMap(path, callback)
 		steam.bsp_world = entities.CreateEntity("clientside")
 		steam.bsp_world:SetName(path:match(".+/(.+)%.bsp"))		
 		
-		if CLIENT then
+		if GRAPHICS then
 			for i, model in ipairs(models) do
 				steam.bsp_world:AddMesh(model)
 			end
@@ -635,7 +635,7 @@ function steam.LoadMap(path, callback)
 		
 		local count = table.count(header.entities)
 		for _, info in pairs(header.entities) do
-			if CLIENT and info.classname then
+			if GRAPHICS and info.classname then
 				if info.classname and info.classname:find("light_environment") then
 
 					local p, y = info.pitch, info.angles.y
@@ -655,7 +655,7 @@ function steam.LoadMap(path, callback)
 					ent:SetSize(5)
 					ent:SetDiffuseIntensity(info._light.a/25) 
 					ent:SetRoughness(0.5)
-				elseif CLIENT and info.classname == "env_fog_controller" then
+				elseif GRAPHICS and info.classname == "env_fog_controller" then
 					entities.world:SetFogColor(info.fogcolor)
 					entities.world:SetFogStart(info.fogstart* scale)
 					entities.world:SetFogEnd(info.fogend * scale)
@@ -692,7 +692,7 @@ function steam.LoadMap(path, callback)
 
 		local count = #models
 		for i_, model in ipairs(models) do	
-			local vertices_tbl = SERVER and model or model:GetVertices()
+			local vertices_tbl = GRAPHICS and model:GetVertices() or model
 			local vertices_count = #vertices_tbl
 			
 			local triangles = ffi.new("unsigned int[?]", vertices_count)
@@ -702,7 +702,7 @@ function steam.LoadMap(path, callback)
 			
 			local i = 0
 			
-			if SERVER then
+			if not GRAPHICS then
 				for j, data in ipairs(vertices_tbl) do 
 					vertices[i] = data.pos.x i = i + 1		
 					vertices[i] = data.pos.y i = i + 1		
@@ -710,7 +710,7 @@ function steam.LoadMap(path, callback)
 				end	
 			end
 			
-			if CLIENT then
+			if GRAPHICS then
 				for j, data in ipairs(vertices_tbl) do 
 					vertices[i] = data.pos[1] i = i + 1		
 					vertices[i] = data.pos[2] i = i + 1		
@@ -741,7 +741,7 @@ function steam.LoadMap(path, callback)
 			thread:ReportProgress("building physics meshes", count)
 		end
 
-		if SERVER and WORLD then 
+		if not GRAPHICS and WORLD then 
 			WORLD:Remove() 
 		end
 		
