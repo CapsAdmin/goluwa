@@ -29,35 +29,36 @@ local function read_vpk(file, full_path)
 
 	for extension in file:IterateStrings() do		
 		for directory in file:IterateStrings() do
+			directory = directory:lower()
+			
 			for name in file:IterateStrings() do
 			
 				local entry = file:ReadStructure(entry)
 				
 				entry.is_file = true
-				
+				entry.file_name = name .. "." .. extension
+				entry.file_name = entry.file_name:lower()
+
 				if entry.archive_index == 0x7FFF then
-					entry.archive_path = "os:" .. full_path
 					entry.entry_length = entry.preload_length
 					entry.entry_offset = entry.preload_offset
-				else
-					entry.archive_path = "os:" .. full_path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(entry.archive_index) end)
 				end
-				
-				entry.file_name = name .. "." .. extension
-				entry.directory = directory
-				entry.full_path = directory .. "/" .. entry.file_name
-				
+			
 				file:SetPosition(file:GetPosition() + entry.preload_length)
 				
 				if file:GetPosition() ~= entry.preload_offset + entry.preload_length then	
 					file:Close()
 				end
-								
-				tree:SetEntry(entry.full_path, entry)
+				
+				-- remove these because we don't need them and they will take up memory and blow up the size of the cache
+				entry.preload_offset = nil
+				entry.preload_length = nil
+				entry.terminator = nil
+				entry.crc = nil
+
+				tree:SetEntry(directory .. "/" .. entry.file_name, entry)
 			end
-			
-			directory = directory:lower()
-			
+
 			tree:SetEntry(directory, {path = directory, is_dir = true, file_name = directory:match(".+/(.+)")})
 			
 			for i = 0, 100 do
@@ -86,7 +87,7 @@ local function get_file_tree(path)
 		return cache[path]
 	end
 
-	local cache_path = "data/vpk_cache/" .. crypto.CRC32(path)
+	local cache_path = "os:data/vpk_cache/" .. crypto.CRC32(path)
 	local tree_data = serializer.ReadFile("msgpack", cache_path)
 	
 	if tree_data then
@@ -100,7 +101,9 @@ local function get_file_tree(path)
 	
 	cache[path] = tree
 	
-	serializer.WriteFile("msgpack", cache_path, tree.tree)
+	event.Delay(math.random(), function()
+		serializer.WriteFile("msgpack", cache_path, tree.tree)
+	end)
 	
 	return tree
 end
@@ -112,9 +115,11 @@ CONTEXT.Name = "vpk"
 local function split_path(path_info)
 	local vpk_path, relative = path_info.full_path:match("(.-%.vpk)/(.*)")
 	
-	if not vpk_path and not relative then
+	if not vpk_path or not relative then
 		error("not a valid vpk path", 2)
 	end
+	
+	relative = relative:lower()
 	
 	return vpk_path, relative
 end
@@ -167,7 +172,16 @@ function CONTEXT:Open(path_info, mode, ...)
 		
 	if self:GetMode() == "read" then
 		local file_info = tree:GetEntry(relative)
-		local file = assert(vfs.Open(file_info.archive_path))
+		
+		local archive_path
+		
+		if file_info.archive_index == 0x7FFF then
+			archive_path = "os:" .. vpk_path
+		else
+			archive_path = "os:" .. vpk_path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(file_info.archive_index) end)
+		end		
+		
+		local file = assert(vfs.Open(archive_path))
 		file:SetPosition(file_info.entry_offset)		
 		self.file = file
 		self.position = 0
