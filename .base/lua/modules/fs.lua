@@ -131,7 +131,10 @@ if WINDOWS then
 			local type
 
 			-- hmmm
-			if --[[flags.archive]] bit.bor(info[0].dwFileAttributes, flags.archive) == flags.archive then
+			if --[[flags.archive]] 
+				bit.bor(info[0].dwFileAttributes, flags.archive) == flags.archive or
+				bit.bor(info[0].dwFileAttributes, flags.normal) == flags.normal
+			then
 				type = "file"
 			else
 				type = "directory"
