@@ -28,6 +28,8 @@ function window.Open(...)
 	
 	local wnd = render.CreateWindow(...)
 	
+	if not wnd:IsValid() then return end
+	
 	local size = wnd:GetSize()
 	render.camera.w = size.w
 	render.camera.h = size.h

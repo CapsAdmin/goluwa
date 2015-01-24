@@ -218,7 +218,7 @@ do -- libraries
 		end
 	end
 	
-	if not render then
+	if not render or not window.IsOpen() then
 		GRAPHICS = nil
 	end
 	

@@ -221,13 +221,18 @@ do -- window meta
 			glfw.Init()
 		end
 		
-		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MAJOR, 2)
-		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MINOR, 0)
+		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MAJOR, 3)
+		--glfw.WindowHint(glfw.e.GLFW_CONTEXT_VERSION_MINOR, 3)
 		--glfw.WindowHint(glfw.e.GLFW_CLIENT_API, glfw.e.GLFW_OPENGL_ES_API)
 		
 		glfw.WindowHint(glfw.e.GLFW_SAMPLES, 4)
 
 		local ptr = glfw.CreateWindow(width, height, title, nil, render.main_window and render.main_window.__ptr)
+		
+		if ptr == nil then 
+			warning("failed to create opengl window") 
+			return NULL
+		end
 		
 		if not glfw.init then			
 			glfw.MakeContextCurrent(ptr)
