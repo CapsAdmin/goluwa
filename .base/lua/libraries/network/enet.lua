@@ -138,9 +138,7 @@ end
 
 do -- server
 	local SERVER = prototype.CreateTemplate("enet_server")
-	
-	SERVER.peers = {}
-	
+		
 	function SERVER:GetPeers()
 		return self.peers
 	end
@@ -177,6 +175,7 @@ do -- server
 	function enet.CreateServer(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)		
 		local self = prototype.CreateObject(SERVER)
 		
+		self.peers = {}
 		self.host = create_host(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
 		self.peer = peer
 		

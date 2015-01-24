@@ -29,16 +29,16 @@ function COMPONENT:OnRemove(ent)
 
 end
 
-do
-	COMPONENT.temp_scale = Vec3(1, 1, 1)
-	
+do	
 	function COMPONENT:SetScale(vec3) 
+		self.temp_scale = self.temp_scale or Vec3(1, 1, 1)
 		self.Scale = vec3
 		self.temp_scale = vec3 * self.Size
 		self:InvalidateScaleMatrix()
 	end
 			
 	function COMPONENT:SetSize(num) 
+		self.temp_scale = self.temp_scale or Vec3(1, 1, 1)
 		self.Size = num
 		self.temp_scale = num * self.Scale
 		self:InvalidateScaleMatrix()
@@ -87,7 +87,9 @@ function COMPONENT:GetAngles()
 	return self.Rotation:GetAngles()
 end
 
-function COMPONENT:RebuildMatrix()		
+function COMPONENT:RebuildMatrix()
+	self.temp_scale = self.temp_scale or Vec3(1, 1, 1)
+	
 	if not self.SkipRebuild and self.rebuild_tr_matrix then				
 		local pos = self.Position
 		local rot = self.Rotation
@@ -165,6 +167,8 @@ end
 
 function COMPONENT:GetMatrix()
 	self:RebuildMatrix()
+	
+	self.temp_scale = self.temp_scale or Vec3(1, 1, 1)
 		
 	if self.temp_scale.x == 1 and self.temp_scale.y == 1 and self.temp_scale.z == 1 then
 		return self.TRMatrix 

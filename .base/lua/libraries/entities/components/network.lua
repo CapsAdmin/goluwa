@@ -16,10 +16,6 @@ prototype.StartStorable()
 prototype.EndStorable()
 
 do
-	COMPONENT.client_synced_vars = {}
-	COMPONENT.server_synced_vars = {}
-	COMPONENT.server_synced_vars_stringtable = {}
-
 	function COMPONENT:ServerSyncVar(component_name, key, type, rate, flags, skip_default, smooth)
 		self:ServerDesyncVar(component_name, key)
 		
@@ -36,8 +32,10 @@ do
 			smooth = smooth,
 		}
 		
+		self.server_synced_vars = self.server_synced_vars or {}
 		table.insert(self.server_synced_vars, info)
 		
+		self.server_synced_vars_stringtable = self.server_synced_vars_stringtable or {}
 		self.server_synced_vars_stringtable[component_name..key] = info
 		
 		if SERVER then
@@ -64,15 +62,18 @@ do
 		end
 	end
 
-	function COMPONENT:ServerDesyncVar(component_name, key)
+	function COMPONENT:ServerDesyncVar(component_name, key)		
 		if not key then 
 			key = component 
 			component = nil  
 		end
 		
+		if not self.server_synced_vars then return  end
+		
 		for key, info in ipairs(self.server_synced_vars) do
 			if (info.component == component or component == nil) and info.key == key then
 				table.remove(self.server_synced_vars, key)
+				self.server_synced_vars_stringtable = self.server_synced_vars_stringtable or {}
 				self.server_synced_vars_stringtable[info.component..key] = nil
 				
 				if info.old_set_func then
@@ -91,6 +92,8 @@ do
 	end
 	
 	function COMPONENT:ServerFilterSync(filter, component, key)
+		self.server_synced_vars = self.server_synced_vars or {}
+		
 		if not key then 
 			key = component 
 			component = nil  
@@ -141,11 +144,7 @@ function COMPONENT:OnUpdate(dt)
 	end
 end
 
-do -- synchronization server > client
-	COMPONENT.last = {}
-	COMPONENT.last_update = {}
-	COMPONENT.queued_packets = {}
-	
+do -- synchronization server > client	
 	local function handle_packet(buffer)
 		local what = buffer:ReadNetString()
 		local id = buffer:ReadShort()
@@ -167,6 +166,7 @@ do -- synchronization server > client
 			if what == "entity_networked_remove" then
 				self:GetEntity():Remove() 
 			elseif self:IsValid() then
+				self.server_synced_vars_stringtable = self.server_synced_vars_stringtable or {}
 				local info = self.server_synced_vars_stringtable[what]
 						
 				if info then
@@ -216,7 +216,9 @@ do -- synchronization server > client
 			
 			if info.skip_default and var == getmetatable(component)[info.key] then return end
 		end
-						
+		
+		self.last = self.last or {}
+		
 		if force_update or var ~= self.last[info.key] then
 			local buffer = packet.CreateBuffer()
 			
@@ -235,6 +237,11 @@ do -- synchronization server > client
 	end
 	
 	function COMPONENT:UpdateVars(client, force_update)
+		self.client_synced_vars = self.client_synced_vars or {}
+		self.server_synced_vars = self.server_synced_vars or {}
+		
+		self.last_update = self.last_update or {}
+		
 		for i, info in ipairs(SERVER and self.server_synced_vars or CLIENT and self.client_synced_vars) do
 			if force_update or not self.last_update[info.key] or self.last_update[info.key] < system.GetTime() then
 				self:UpdateVariableFromSyncInfo(info, client, force_update)
@@ -243,6 +250,8 @@ do -- synchronization server > client
 
 		
 		if CLIENT then
+			self.queued_packets = self.queued_packets or {}
+			
 			local buffer = table.remove(self.queued_packets)
 			
 			if buffer then

@@ -3,13 +3,13 @@ local gui = ... or _G.gui
 local PANEL = {}
 PANEL.ClassName = "scroll"
 
-PANEL.panel = NULL
-
 prototype.GetSet(PANEL, "XScrollBar", true)
 prototype.GetSet(PANEL, "YScrollBar", true)
 prototype.GetSet(PANEL, "ScrollWidth", 8)
 
 function PANEL:Initialize()
+	self.panel = NULL
+	
 	self:SetNoDraw(true)
 	
 	local scroll_area = self:CreatePanel("base", "scroll_area")

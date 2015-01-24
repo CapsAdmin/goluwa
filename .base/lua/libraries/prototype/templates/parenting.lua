@@ -4,11 +4,9 @@ function prototype.AddParentingTemplate(META)
 	META.OnParent = META.OnChildAdd or function() end
 	META.OnChildAdd = META.OnChildAdd or function() end
 	META.OnUnParent = META.OnUnParent or function() end
-	
-	META.RootPart = NULL
-	
+		
 	prototype.GetSet(META, "Parent", NULL)
-	META.Children = {}
+	prototype.GetSet(META, "Children", {})
 	
 	function META:GetChildrenList()
 		if not self.children_list then
@@ -17,11 +15,7 @@ function prototype.AddParentingTemplate(META)
 		
 		return self.children_list
 	end
-	
-	function META:GetChildren()
-		return self.Children
-	end
-	
+		
 	function META:GetParentList()
 		
 		if not self.parent_list then
@@ -71,7 +65,7 @@ function prototype.AddParentingTemplate(META)
 	end
 
 	function META:HasChild(obj)
-		for key, child in ipairs(self:GetChildren(true)) do
+		for key, child in ipairs(self:GetChildrenList()) do
 			if child == obj then
 				return true
 			end
@@ -98,6 +92,8 @@ function prototype.AddParentingTemplate(META)
 	
 	function META:GetRoot()
 		if not self:HasParent() then return self end
+		
+		self.RootPart = self.RootPart or NULL
 	
 		if not self.RootPart:IsValid() then
 			self:BuildParentList()

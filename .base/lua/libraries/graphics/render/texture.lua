@@ -427,12 +427,13 @@ do -- texture object
 				out_color = shade();
 			}
 		]]
-
-		META.shaders = {}
 		
 		function META:Shade(fragment_shader, vars, dont_blend)		
+			self.shaders = self.shaders or {}
+			
 			local name = "shade_texture_" .. self.id .. "_" .. crypto.CRC32(fragment_shader)
 			local shader = self.shaders[name]
+			
 			
 			if not self.shaders[name] then
 				local data = {

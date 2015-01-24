@@ -17,6 +17,10 @@ function prototype.GetStorableVariables(meta)
 	return meta.storable_variables or {}
 end
 
+local function has_copy(obj)
+	assert(type(obj.__copy) == "function")
+end
+
 function prototype.SetupProperty(info)
 	local meta = info.meta or __meta
 	local default = info.default
@@ -55,6 +59,27 @@ function prototype.SetupProperty(info)
 		
 		meta.storable_variables = meta.storable_variables or {}
 		table.insert(meta.storable_variables, info)
+	end
+	
+	do
+		if pcall(has_copy, info.default) then
+			info.copy = function()
+				return info.default:__copy()
+			end
+		elseif typex(info.default) == "table" then
+			if not next(info.default) then
+				info.copy = function()
+					return {}
+				end
+			else
+				info.copy = function()
+					return table.copy(info.default)
+				end
+			end
+		end
+		
+		meta.prototype_variables = meta.prototype_variables or {}
+		meta.prototype_variables[info.var_name] = info
 	end
 end
 

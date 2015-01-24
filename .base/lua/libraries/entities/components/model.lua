@@ -132,10 +132,9 @@ if GRAPHICS then
 		self:LoadModelFromDisk(path)		
 	end
 
-	do
-		COMPONENT.sub_models = {}
-		
+	do		
 		function COMPONENT:AddMesh(mesh)
+			self.sub_models = self.sub_models or {}
 			checkx(mesh, "mesh_builder")
 			table.insert(self.sub_models, mesh)
 			mesh:CallOnRemove(function()
@@ -146,6 +145,7 @@ if GRAPHICS then
 		end
 		
 		function COMPONENT:RemoveMesh(mesh)
+			self.sub_models = self.sub_models or {}
 			for i, _mesh in ipairs(self.sub_models) do
 				if mesh == _mesh then
 					table.remove(self.sub_models, i)
@@ -155,6 +155,7 @@ if GRAPHICS then
 		end
 		
 		function COMPONENT:GetMeshes()
+			self.sub_models = self.sub_models or {}
 			return self.sub_models
 		end
 	end
@@ -322,7 +323,8 @@ if GRAPHICS then
 			return bit.band(bit.rshift(i, j), 1) == 0 and self.BBMin or self.BBMax
 		end
 		
-		function COMPONENT:BuildBoundingBox()
+		function COMPONENT:BuildBoundingBox()	
+			self.sub_models = self.sub_models or {}
 			local min, max = Vec3(), Vec3()
 
 			for i, sub_model in ipairs(self.sub_models) do				
@@ -351,6 +353,7 @@ if GRAPHICS then
 	end
 
 	function COMPONENT:OnDraw3DGeometry(shader, vp_matrix)
+		self.sub_models = self.sub_models or {}
 		vp_matrix = vp_matrix or render.matrices.vp_matrix
 
 		local matrix = self:GetComponent("transform"):GetMatrix()

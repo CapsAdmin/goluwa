@@ -134,15 +134,15 @@ do -- focus
 	end
 end
 
-do -- call on hide
-	PANEL.call_on_hide = {}
-	
+do -- call on hide	
 	function PANEL:IsVisible()
 		if self.visible == nil then return true end -- ?????
 		return self.Visible
 	end
 	
 	function PANEL:SetVisible(bool)
+		self.call_on_hide = self.call_on_hide or {}
+		
 		self.Visible = bool
 		if bool then
 			self:OnShow()
@@ -159,6 +159,8 @@ do -- call on hide
 	end
 	
 	function PANEL:CallOnHide(callback, id)
+		self.call_on_hide = self.call_on_hide or {}
+		
 		id = id or callback
 		
 		self.call_on_hide[id] = callback		
@@ -845,8 +847,6 @@ do -- animations
 	prototype.GetSet(PANEL, "DrawAngleOffset", Ang3(0,0,0))
 	prototype.GetSet(PANEL, "DrawColor", Color(0,0,0,0))
 	
-	PANEL.animations = {}
-
 	local function lerp_values(values, alpha)
 		local tbl = {}
 
@@ -865,7 +865,9 @@ do -- animations
 		end
 	end
 
-	function PANEL:CalcAnimations()				
+	function PANEL:CalcAnimations()			
+		self.animations = self.animations or {}
+		
 		for key, animation in pairs(self.animations) do
 
 			local pause = false
@@ -919,6 +921,8 @@ do -- animations
 	end
 
 	function PANEL:StopAnimations()
+		self.animations = self.animations or {}
+		
 		for key, animation in pairs(self.animations) do
 			if animation.callback then
 				if animation.callback(self) ~= false then
@@ -934,10 +938,14 @@ do -- animations
 	end
 	
 	function PANEL:IsAnimating()
+		self.animations = self.animations or {}
+		
 		return next(self.animations) ~= nil
 	end
 
 	function PANEL:Animate(var, to, time, operator, pow, set, callback)
+		self.animations = self.animations or {}
+		
 		if self.animations[var] then
 			self.animations[var].alpha = 0
 			return
@@ -1889,6 +1897,7 @@ do -- skin
 			return
 		end
 		
+		self.style_translation = self.style_translation or {}
 		name = self.style_translation[name] or name
 		
 		local skin = self:GetSkin()
@@ -1897,10 +1906,9 @@ do -- skin
 			self:SetupStyle(skin[name])
 		end
 	end
-	
-	PANEL.style_translation = {}
-	
+		
 	function PANEL:SetStyleTranslation(from, to)
+		self.style_translation = self.style_translation or {}
 		self.style_translation[from] = to
 	end
 	

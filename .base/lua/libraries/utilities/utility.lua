@@ -285,6 +285,9 @@ do
 	function META:Start()
 		local co = coroutine.create(function(...) return select(2, xpcall(self.OnStart, system.OnError, ...)) end)
 		self.co = co
+		
+		self.progress = {}
+		
 		event.CreateThinker(function()
 			if not self:IsValid() then return false end -- removed
 			
@@ -354,9 +357,7 @@ do
 			self.last_report = system.GetTime() + 1
 		end
 	end
-	
-	META.progress = {}
-	
+		
 	function META:ReportProgress(what, max)
 		self.progress[what] = self.progress[what] or {}
 		self.progress[what].i = (self.progress[what].i or 0) + 1

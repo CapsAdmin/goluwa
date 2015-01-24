@@ -86,6 +86,10 @@ function surface.CreateFont(name, options, callback)
 	for class_name, _ in pairs(surface.registered_fonts) do
 		local self = prototype.CreateDerivedObject("font", class_name)
 		
+		self.pages = {}
+		self.chars = {}
+		self.state = "reading"
+		
 		self:SetName(name)
 		self:SetPath(path)
 		self:SetSize(size)
