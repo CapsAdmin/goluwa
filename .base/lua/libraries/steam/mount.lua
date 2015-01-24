@@ -230,7 +230,7 @@ function steam.MountSourceGame(game_info)
 					for k, v in pairs(vfs.Find(path)) do
 						if not done[path .. v] then
 							if v:find("%.vpk") and v:find("_dir") and not vfs.GetMounts()[path .. v .. "/"] then
-								vfs.Mount(path .. v .. "/", nil, game_info)
+								vfs.Mount(path:sub(4) .. v .. "/", nil, game_info)
 							end
 							done[path .. v] = true
 						end

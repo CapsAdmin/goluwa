@@ -5,8 +5,8 @@ vfs.disabled_addons = {}
 
 function vfs.MountAddons(dir)
 	for folder in vfs.Iterate(dir, nil, true) do
-		if not folder:endswith(".git") then
-			vfs.MountAddon(folder .. "/")
+		if not folder:endswith(".git") and vfs.IsFolder(folder) then
+			vfs.MountAddon("os:" .. folder .. "/")
 		end
 	end
 end
