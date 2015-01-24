@@ -196,7 +196,6 @@ do -- libraries
 	include("libraries/extensions/function.lua")
 		
 	if CLIENT then
-
 		-- graphics
 		render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
 		
@@ -209,8 +208,6 @@ do -- libraries
 			if not SCITE then
 				window.Open()
 			end
-		else
-			GRAPHICS = nil
 		end
 		
 		-- audio
@@ -218,9 +215,15 @@ do -- libraries
 		
 		if audio then
 			chatsounds = include("libraries/audio/chatsounds.lua")
-		else
-			SOUND = nil
 		end
+	end
+	
+	if not render then
+		GRAPHICS = nil
+	end
+	
+	if not audio then
+		SOUND = nil
 	end
 
 	-- network
