@@ -9,11 +9,6 @@ prototype.GetSet(PANEL, "DividerHeight", 0)
 prototype.GetSet(PANEL, "DividerWidth", S*2)
 prototype.GetSet(PANEL, "HideDivider", false)
 
-PANEL.top = NULL
-PANEL.bottom = NULL
-PANEL.left = NULL
-PANEL.right = NULL
-
 local function create_horizontal_divider(self)
 	if self.horizontal_divider then return end
 	local divider = self:CreatePanel("button", "horizontal_divider")
@@ -47,6 +42,10 @@ end
 
 function PANEL:Initialize()
 	self:SetNoDraw(true)
+	self.top = NULL
+	self.bottom = NULL
+	self.left = NULL
+	self.right = NULL
 end
 
 function PANEL:OnLayout()

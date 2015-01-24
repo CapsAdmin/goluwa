@@ -31,9 +31,11 @@ do
 	local event_added = false
 
 	function META:Remove(...)
-		for k, v in pairs(self.call_on_remove) do
-			if v() == false then
-				return
+		if self.call_on_remove then
+			for k, v in pairs(self.call_on_remove) do
+				if v() == false then
+					return
+				end
 			end
 		end
 		
@@ -82,18 +84,15 @@ do -- serializing
 	end
 end
 
-do -- call on remove
-	META.call_on_remove = {}
-
-	function META:CallOnRemove(callback, id)
-		id = id or callback
-		
-		if type(callback) == "table" and callback.Remove then
-			callback = function() prototype.SafeRemove(callback) end
-		end
-		
-		self.call_on_remove[id] = callback
+function META:CallOnRemove(callback, id)
+	id = id or callback
+	
+	if type(callback) == "table" and callback.Remove then
+		callback = function() prototype.SafeRemove(callback) end
 	end
+	
+	self.call_on_remove = self.call_on_remove or {}
+	self.call_on_remove[id] = callback
 end
 
 do -- events

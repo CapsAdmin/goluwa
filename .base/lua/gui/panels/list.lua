@@ -4,11 +4,11 @@ local PANEL = {}
 
 PANEL.ClassName = "list"
 
-PANEL.columns = {}
-PANEL.last_div = NULL
-PANEL.list = NULL
-
 function PANEL:Initialize()		
+	self.columns = {}
+	self.last_div = NULL
+	self.list = NULL
+
 	local top = self:CreatePanel("base", "top")
 	top:SetLayoutParentOnLayout(true)
 	top:SetMargin(Rect())

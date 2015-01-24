@@ -3,9 +3,9 @@ local gui = ... or _G.gui
 local PANEL = {}
 
 PANEL.ClassName = "tab"
-PANEL.tabs = {}
 
 function PANEL:Initialize()
+	self.tabs = {}
 	self:SetNoDraw(true)
 
 	local tab_bar =  self:CreatePanel("base", "tab_bar")

@@ -8,9 +8,9 @@ do -- tree node
 	
 	prototype.GetSet(PANEL, "Expand", true)
 	
-	PANEL.nodes = {}
-
 	function PANEL:Initialize()	
+		self.nodes = {}
+		
 		prototype.GetRegistered(self.Type, "button").Initialize(self)
 		
 		self:SetWidth(1000)
@@ -143,8 +143,6 @@ do
 	PANEL.ClassName = "tree"
 	prototype.GetSet(PANEL, "IndentWidth", 8)
 	prototype.GetSet(PANEL, "SelectedNode", NULL)
-
-	PANEL.nodes = {}
 
 	function PANEL:Initialize()
 		self:SetNoDraw(true)

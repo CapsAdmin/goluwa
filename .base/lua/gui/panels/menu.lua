@@ -3,9 +3,10 @@ local gui = ... or _G.gui
 do
 	local PANEL = {}
 	PANEL.ClassName = "menu"
-	PANEL.sub_menu = NULL
 	
-	function PANEL:Initialize()
+	function PANEL:Initialize()	
+		self.sub_menu = NULL
+		
 		self:SetStyle("frame")
 		self:SetStack(true)
 		self:SetStackRight(false)
@@ -73,9 +74,10 @@ do
 	local PANEL = {}
 	
 	PANEL.ClassName = "menu_entry"
-	PANEL.menu = NULL
-	
+
 	function PANEL:Initialize()
+		self.menu = NULL
+		
 		self:SetNoDraw(true)
 		self:SetStyle("menu_select")
 				

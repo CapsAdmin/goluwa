@@ -3,10 +3,6 @@
 META.Type = "font"
 META.ClassName = "base"
 
-META.pages = {}
-META.chars = {}
-META.state = "reading"
-
 prototype.GetSet(META, "Path", "")
 prototype.GetSet(META, "Padding", 0)
 prototype.IsSet(META, "Spacing", 1)

@@ -8,9 +8,9 @@ do -- base property
 	
 	prototype.GetSet(PANEL, "DefaultValue")
 	
-	PANEL.special = NULL
-		
 	function PANEL:Initialize()
+		self.special = NULL
+		
 		prototype.GetRegistered(self.Type, PANEL.Base).Initialize(self)
 		 
 		self:SetActiveStyle("property")
@@ -384,9 +384,8 @@ local PANEL = {}
 
 PANEL.ClassName = "properties"
 
-PANEL.added_properties = {}
-
 function PANEL:Initialize()
+	self.added_properties = {}
 	self:SetStack(true)
 	self:SetStackRight(false) 
 	self:SetSizeStackToWidth(true)  

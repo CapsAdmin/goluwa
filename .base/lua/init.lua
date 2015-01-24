@@ -128,7 +128,7 @@ do -- file system
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/addons.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/monitoring.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/files/os.lua")
-		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/files/vpk.lua")
+	--	dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/files/vpk.lua")
 
 		vfs.IsDir = vfs.IsFolder
 	end
