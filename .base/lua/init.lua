@@ -130,10 +130,10 @@ do -- file system
 	end
 	
 	-- mount the /userdata/*username*/ folder
-	vfs.Mount(e.USERDATA_FOLDER, "data")
+	vfs.Mount("os:" .. e.USERDATA_FOLDER, "data")
 	
 	-- mount the /.base folder
-	vfs.MountAddon(e.BASE_FOLDER)
+	vfs.MountAddon("os:" .. e.BASE_FOLDER)
 	
 	-- a nice global for loading resources externally from current dir
 	-- 

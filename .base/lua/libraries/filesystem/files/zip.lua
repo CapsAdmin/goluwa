@@ -6,15 +6,13 @@ local CONTEXT = {}
 
 CONTEXT.Name = "zip"
 
-local function split_path(path_info)	
-	local archive_path, relative
-	
+local function split_path(path_info)		
 	local archive_path, relative = path_info.full_path:match("(.+%..-)/(.*)")
 		
 	if archive_path:endswith("/") then
 		archive_path = archive_path:sub(0, -2)
 	end
-	
+		
 	local temp = assert(vfs.Open("os:" .. archive_path))
 	--[[local temp, err = vfs.Open("os:" .. archive_path)
 	
