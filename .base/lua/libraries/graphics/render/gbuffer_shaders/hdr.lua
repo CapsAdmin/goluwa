@@ -69,7 +69,7 @@ function PASS:Update()
 	surface.PopMatrix()
 	
 	
-	if not self.next_update or self.next_update < system.GetTime() then
+	if not self.next_update or self.next_update < system.GetElapsedTime() then
 		self.area:Copy(self.fb)
 		self.area:Begin()	
 			local r,g,b = render.ReadPixels(0,0, 1,1)
@@ -77,7 +77,7 @@ function PASS:Update()
 				self.exposure = math.clamp((-math.max(r,g,b)+1) * 2, 0.2, 1) ^ 0.5  
 			end
 		self.area:End()
-		self.next_update = system.GetTime() + 1/30
+		self.next_update = system.GetElapsedTime() + 1/30
 	end
 		
 	self.smooth_exposure = self.smooth_exposure or 0

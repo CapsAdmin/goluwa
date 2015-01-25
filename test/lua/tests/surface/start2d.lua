@@ -9,7 +9,7 @@ local fb = render.CreateFrameBuffer(256, 256, {
 local tex = fb:GetTexture()
 
 event.CreateTimer("updatefb", 0.1, function()
-	local t = system.GetTime()
+	local t = system.GetElapsedTime()
 	
 	fb:Begin()				
 		surface.Start(0, 0, tex.w, tex.h)
@@ -38,7 +38,7 @@ event.CreateTimer("updatefb", 0.1, function()
 end)
  
 event.AddListener("Draw2D", "lol", function() 
-	local t = system.GetTime()
+	local t = system.GetElapsedTime()
 	
 	surface.SetWhiteTexture()
 	surface.SetColor(0, 0, 1, 1) 

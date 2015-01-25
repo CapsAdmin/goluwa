@@ -27,7 +27,7 @@ light:SetSize(40)
 light:SetDiffuseIntensity(5)]]
 
 event.AddListener("Update", "light movement", function() 
-	local t = system.GetTime()
+	local t = system.GetElapsedTime()
 	for i, v in ipairs(party_lights) do
 		v:SetPosition(v.start_pos + (Vec3(math.sin(t + v.seed + i), math.cos(t + v.seed + i), math.sin(t + v.seed + i)) * 20))
 	end

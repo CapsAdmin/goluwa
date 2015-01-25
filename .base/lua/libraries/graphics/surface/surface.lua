@@ -779,7 +779,7 @@ function surface.GetMouseVel()
 	local vx = x - last_x
 	local vy = y - last_y
 	
-	local time = system.GetTime()
+	local time = system.GetElapsedTime()
 	
 	if last_diff < time then
 		last_x = x

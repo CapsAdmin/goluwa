@@ -265,7 +265,7 @@ function META:DrawCaret()
 
 		surface.SetWhiteTexture()
 		self.blink_offset = self.blink_offset or 0
-		surface.SetColor(self.CaretColor.r, self.CaretColor.g, self.CaretColor.b, (system.GetTime() - self.blink_offset)%0.5 > 0.25 and self.CaretColor.a or 0)
+		surface.SetColor(self.CaretColor.r, self.CaretColor.g, self.CaretColor.b, (system.GetElapsedTime() - self.blink_offset)%0.5 > 0.25 and self.CaretColor.a or 0)
 		surface.DrawRect(x, y, 1, h)
 	end
 end

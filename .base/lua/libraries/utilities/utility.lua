@@ -291,7 +291,7 @@ do
 		event.CreateThinker(function()
 			if not self:IsValid() then return false end -- removed
 			
-			local time = system.GetTime()
+			local time = system.GetElapsedTime()
 
 			if next(self.progress) then
 				for k, v in pairs(self.progress) do	
@@ -354,7 +354,7 @@ do
 	function META:Report(what)
 		if not self.last_report or self.last_report < system.GetTime() then
 			logf("%s report: %s\n", self, what)
-			self.last_report = system.GetTime() + 1
+			self.last_report = system.GetElapsedTime() + 1
 		end
 	end
 		
