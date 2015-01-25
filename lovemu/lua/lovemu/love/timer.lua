@@ -11,14 +11,14 @@ function love.timer.getFPS()
 end
 
 function love.timer.getMicroTime()
-	return system.GetTime()
+	return system.GetElapsedTime()
 end
 
 function love.timer.getTime()
 	if lovemu.version == "0.8.0" then
-		return math.ceil(system.GetTime())
+		return math.ceil(system.GetElapsedTime())
 	else
-		return system.GetTime()
+		return system.GetElapsedTime()
 	end
 end
 

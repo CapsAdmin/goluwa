@@ -5,7 +5,7 @@ local count = 100
 local poly = surface.CreatePoly(count)
  
 event.AddListener("Draw2D", "lol", function()
-	local time = system.GetTime()
+	local time = system.GetElapsedTime()
 	
 	for i = 1, count do
 		poly:SetColor(math.random(), math.random(), math.random(), math.random())
