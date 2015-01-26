@@ -316,15 +316,10 @@ if CLIENT then
 		
 		return false
 	end)]]
-		
-	-- this depends on "gui" which is an addon, which may as well be a part of goluwa
- 	-- TODO!!
 			
-	console.AddCommand("showchat", function()	
+	input.Bind("y", "showchat", function()
 		chat.Open()
 	end)
-	
-	input.Bind("y", "showchat")
 end
 
 local SEED = 0

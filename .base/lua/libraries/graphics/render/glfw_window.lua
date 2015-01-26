@@ -282,9 +282,8 @@ do -- window meta
 						end
 					end)					
 				elseif nice == "OnChar" then
-					if suppress_char_input then suppress_char_input = false return end
-					
 					func(ptr, function(ptr, uint)
+						if suppress_char_input then suppress_char_input = false return end
 						local char = utf8.char(uint)
 						
 						if self:OnCharInput(self, char) ~= false then
@@ -297,18 +296,21 @@ do -- window meta
 					func(ptr, function(ptr, key_, scancode, action, mods)
 						local key, press = glfw.KeyToString(key_), action == glfw.e.GLFW_PRESS or action == glfw.e.GLFW_REPEAT
 						
-						if self:OnKeyInputRepeat(key, press) ~= false then
-							if event.Call("WindowKeyInputRepeat", self, key, press) == false then
-								suppress_char_input = true
-								return
-							end
-						end
-						
 						if action ~= glfw.e.GLFW_REPEAT then 
 							local key, press = glfw.KeyToString(key_), action == glfw.e.GLFW_PRESS
 							
 							if self:OnKeyInput(key, press) ~= false then
-								event.Call("WindowKeyInput", self, key, press)
+								if event.Call("WindowKeyInput", self, key, press) == false then
+									suppress_char_input = true
+									return
+								end
+							end
+						end
+						
+						if self:OnKeyInputRepeat(key, press) ~= false then
+							if event.Call("WindowKeyInputRepeat", self, key, press) == false then
+								suppress_char_input = true
+								return
 							end
 						end
 					end)
