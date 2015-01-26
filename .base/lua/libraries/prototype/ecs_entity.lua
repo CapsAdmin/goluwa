@@ -31,6 +31,8 @@ function META:AddComponent(name, ...)
 	for name, component_ in pairs(self:GetComponents()) do
 		component_:OnEntityAddComponent(component)
 	end
+	
+	return component
 end
 
 function META:RemoveComponent(name)	
@@ -75,15 +77,19 @@ function META:OnRemove()
 end
 
 do -- serializing
-	function META:SetStorableTable(data)
-		for name, component in pairs(self:GetComponents()) do
-			self:RemoveComponent(name)
-		end
+	function META:SetStorableTable(data, skip_remove)
+		if type(data.self) ~= "table" or type(data.config) ~= "string" then return end
 		
-		for k,v in pairs(self:GetChildrenList()) do
-			v:Remove(a)
+		if not skip_remove then
+			for name, component in pairs(self:GetComponents()) do
+				component:Remove()
+			end
+			
+			for k,v in pairs(self:GetChildrenList()) do
+				v:Remove(a)
+			end
 		end
-		
+
 		self.config = data.config
 		
 		for name, vars in pairs(data.self) do
@@ -92,13 +98,13 @@ do -- serializing
 			if not component:IsValid() then
 				component = self:AddComponent(name)
 			end
-			
+
 			component:SetStorableTable(vars)
 		end
 		
 		for i, data in ipairs(data.children) do
 			local ent = entities.CreateEntity(data.config, self)
-			ent:SetStorableTable(data)
+			ent:SetStorableTable(data, true)
 		end
 	end
 	
@@ -119,9 +125,15 @@ do -- serializing
 	end
 end
 
+function META:OnParent(ent)
+	event.Call("EntityParent", self, ent)
+end
+
+prototype.Register(META)
+
 prototype.component_configurations = prototype.component_configurations or {}
 
-function prototype.SetupComponents(name, components, icon)	
+function prototype.SetupComponents(name, components, icon, friendly)	
 	local functions = {}
 	
 	for _, name in ipairs(components) do
@@ -136,15 +148,18 @@ function prototype.SetupComponents(name, components, icon)
 			end
 		end
 	end
-
+	
 	prototype.component_configurations[name] = {
+		name = friendly or name, 
 		components = components,
 		functions = functions,
 		icon = icon,
 	}
 end
 
-prototype.Register(META)
+function prototype.GetConfigurations()
+	return prototype.component_configurations
+end
 
 function prototype.CreateEntity(config, parent)
 	local self = prototype.CreateObject(META)

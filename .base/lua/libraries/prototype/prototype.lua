@@ -220,10 +220,21 @@ function prototype.CreateObject(meta, override, skip_gc_callback)
 	self:SetDebugTrace(debug.traceback())
 	self:SetCreationTime(os.clock())
 	
+	if crypto then
+		self:SetGUID(("%x"):format(math.random(999999999999999999)) .. ("%x"):format(math.random(999999999999999999)))
+	end
+	
 	prototype.created_objects = prototype.created_objects or utility.CreateWeakTable()
 	prototype.created_objects[self] = self
 	
+	prototype.created_objects_guid = prototype.created_objects_guid or utility.CreateWeakTable()
+	prototype.created_objects_guid[self.GUID] = self
+	
 	return self
+end
+
+function prototype.GetObjectByGUID(guid)
+	return prototype.created_objects_guid[guid]
 end
 
 function prototype.CreateDerivedObject(super_type, sub_type, override, skip_gc_callback)

@@ -7,6 +7,7 @@ prototype.GetSet(META, "CreationTime", os.clock())
 prototype.GetSet(META, "PropertyIcon", "")
 prototype.GetSet(META, "HideFromEditor", false)
 prototype.GetSet(META, "Name", "")
+prototype.GetSet(META, "GUID", "")
 
 function META:__tostring()
 	local additional_info = self:__tostring2()
@@ -65,11 +66,24 @@ do
 end
 
 do -- serializing
+	local callbacks = {}
+
 	function META:SetStorableTable(tbl)
+		self:SetGUID(tbl.GUID)
+				
 		for _, info in ipairs(prototype.GetStorableVariables(self)) do
 			if tbl[info.var_name] then
 				self[info.set_name](self, tbl[info.var_name])
 			end
+		end
+		
+		if self.OnDeserialize then
+			self:OnDeserialize(tbl.__extra_data)
+		end
+		
+		if callbacks[self.GUID] then
+			callbacks[self.GUID](self)
+			callbacks[self.GUID] = nil
 		end
 	end
 	
@@ -80,7 +94,17 @@ do -- serializing
 			out[info.var_name] = self[info.get_name](self)
 		end
 		
+		out.GUID = self.GUID
+		
+		if self.OnSerialize then
+			out.__extra_data = self:OnSerialize()
+		end
+		
 		return table.copy(out)
+	end
+	
+	function META:WaitForGUID(guid, callback)
+		callbacks[guid] = callback
 	end
 end
 
