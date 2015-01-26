@@ -1,5 +1,6 @@
 include("components/*", prototype)
 
+prototype.SetupComponents("group", {}, "textures/silkicons/world.png")
 prototype.SetupComponents("light", {"transform", "light"}, "textures/silkicons/lightbulb.png")
 prototype.SetupComponents("clientside", {"transform", "model"}, "textures/silkicons/shape_square.png")
 prototype.SetupComponents("physical", {"transform", "model", "physics"}, "textures/silkicons/shape_handles.png")
