@@ -644,6 +644,9 @@ function PANEL:OnStyleChanged(skin)
 end
 
 function PANEL:OnLayout(S)	
+	self.left_max_width = self.left_max_width or 0
+	self.right_max_width = self.right_max_width or 0
+	
 	for i, left in ipairs(self.left:GetChildren()) do
 		if left.group then
 			left:SetHeight(S*10)
@@ -662,7 +665,7 @@ function PANEL:OnLayout(S)
 		left.label:SetPadding(Rect(S*2,S*2,left.label.label_offset or S*2,S*2))
 		
 		if self.first_time then
-			self.left_max_width = math.max((self.left_max_width or 0), left.label:GetWidth() + left.label:GetX() + (self.left_offset*S) + left.label:GetPadding().right)
+			self.left_max_width = math.max(self.left_max_width, left.label:GetWidth() + left.label:GetX() + (self.left_offset*S) + left.label:GetPadding().right)
 		end
 	end
 	
@@ -674,7 +677,7 @@ function PANEL:OnLayout(S)
 		end
 				
 		if self.first_time then
-			self.right_max_width = math.max((self.right_max_width or 0), right:GetWidth() + S*5) -- *5, why?
+			self.right_max_width = math.max(self.right_max_width, right:GetWidth() + S*5) -- *5, why?
 		end
 	end
 	
