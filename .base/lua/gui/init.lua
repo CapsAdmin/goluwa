@@ -52,6 +52,10 @@ function gui.RemovePanel(pnl)
 	if pnl and pnl:IsValid() then pnl:Remove() end
 end
 
+function gui.Panic()
+	gui.Initialize()
+end
+
 function gui.GetHoveringPanel(panel, filter)
 	panel = panel or gui.world
 	local children = panel:GetChildren()
