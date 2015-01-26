@@ -18,7 +18,8 @@ function editor.Open()
 	div:SetupLayout("fill_x", "fill_y")
 	div:SetHideDivider(true)
 	
-	local scroll = div:SetTop(gui.CreatePanel("scroll"))
+	editor.top_scroll = div:SetTop(gui.CreatePanel("scroll"))
+	editor.bottom_scroll = div:SetBottom(gui.CreatePanel("scroll"))
 	
 	local tree
 	
@@ -71,9 +72,36 @@ function editor.Open()
 		
 		add()
 		
-		for k,v in pairs(prototype.component_configurations) do
-			add(L(k), function() local ent = entities.CreateEntity(k, node.ent) ent:SetPosition(render.GetCameraPosition()) end, v.icon)
-		end		
+		
+		local groups = {}
+		
+		for config_name, info in pairs(prototype.GetConfigurations()) do
+			local group
+			
+			if #info.components == 1 then
+				local meta = prototype.GetRegistered("component", info.components[1])
+				if meta.Base then
+					groups[meta.Base] = groups[meta.Base] or {configs = {}}
+					groups[meta.Base].configs[config_name] = info
+				end
+			else			
+				groups.default = groups.default or {configs = {}}
+				groups.default.configs[config_name] = info
+			end
+		end
+		
+		for group_name, group in pairs(groups) do
+			local tbl = {}
+			for config_name, info in pairs(group.configs) do		
+				table.insert(tbl, {L(info.name), function() 
+					local ent = entities.CreateEntity(config_name, node and node.ent) 
+					if ent.SetPosition then 
+						ent:SetPosition(render.GetCameraPosition())
+					end
+				end, info.icon})				
+			end
+			add(L(group_name), tbl, group.icon) -- FIX ME
+		end
 	
 		add()
 		--add("help", nil, frame:GetSkin().icons.help)
@@ -113,11 +141,11 @@ function editor.Open()
 	
 	local function repopulate()
 		if not frame:IsValid() then return end
-		
+				
 		gui.RemovePanel(tree)
 		
 		tree = gui.CreatePanel("tree")
-		scroll:SetPanel(tree)
+		editor.top_scroll:SetPanel(tree)
 		
 		local ents = {}
 		for k,v in pairs(entities.GetAll()) do
@@ -129,12 +157,35 @@ function editor.Open()
 		tree:SetSize(tree:GetSizeOfChildren())
 		tree:SetWidth(frame:GetWidth())
 		
-		scroll:SetAlwaysReceiveMouseInput(true)
+		editor.top_scroll:SetAlwaysReceiveMouseInput(true)
+		
+		tree.OnNodeSelect = function(_, node)
+			gui.RemovePanel(editor.properties)
+			
+			local properties = gui.CreatePanel("properties")
+			
+			local found_anything = false
+			
+			for k, v in pairs(node.ent:GetComponents()) do
+				if next(prototype.GetStorableVariables(v)) then
+					properties:AddGroup(L(v.ClassName))
+					properties:AddPropertiesFromObject(v)
+					found_anything = true
+				end
+			end
+			
+			editor.bottom_scroll:SetPanel(properties)
+			
+			editor.properties = properties
+			
+			event.Call("EditorSelectEentity", node.ent)
+			editor.selected_ent = node.ent
+		end
 		
 		editor.tree = tree
 	end
 	
-	event.AddListener("EntityCreate", "editor", repopulate)
+	event.AddListener("EntityCreate", "editor", function() event.Delay(0.1, repopulate) end)
 	event.AddListener("EntityRemoved", "editor", repopulate)	
 	repopulate()
 	
@@ -142,28 +193,6 @@ function editor.Open()
 	tree:SetWidth(frame:GetWidth()-20)
 	
 	frame.OnRightClick = function() right_click_node() end
-	
-	local scroll = div:SetBottom(gui.CreatePanel("scroll"))
-	
-	local properties
-	
-	tree.OnNodeSelect = function(_, node)
-		gui.RemovePanel(properties)
-		
-		properties = gui.CreatePanel("properties")
-		
-		for k, v in pairs(node.ent:GetComponents()) do
-			properties:AddGroup(L(v.ClassName))
-			properties:AddPropertiesFromObject(v)
-		end
-		
-		scroll:SetPanel(properties)
-		
-		editor.properties = properties
-		
-		event.Call("EditorSelectEentity", node.ent)
-		editor.selected_ent = node.ent
-	end
 	
 	div:SetDividerPosition(gui.world:GetHeight()/2) 
 	
