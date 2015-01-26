@@ -45,9 +45,34 @@ do -- base property
 			if button == "button_1" then
 				self:OnClick()
 			elseif button == "button_2" then
+			
+				local option
+				
+				if PROPERTY_LINK_INFO then
+					option = {L"link to property", function() 
+						local info = PROPERTY_LINK_INFO						
+						prototype.AddPropertyLink(
+							info.obj, 
+							self.obj, 
+							info.info.var_name, 
+							self.info.var_name, 
+							info.info.field, 
+							self.info.field
+						)
+						PROPERTY_LINK_INFO = nil
+					end, "textures/silkicons/link.png"}
+				else
+					option = {L"link", function() 
+						PROPERTY_LINK_INFO = {obj = self.obj, info = self.info}
+					end, "textures/silkicons/link_add.png"}
+				end
+			
 				gui.CreateMenu({
 					{L"copy", function() system.SetClipboard(self:GetEncodedValue()) end, self:GetSkin().icons.copy},
 					{L"paste", function() self:SetEncodedValue(system.GetClipboard()) end, self:GetSkin().icons.paste},
+					{},
+					option,
+					{L"remove links", function() prototype.RemovePropertyLinks(self.obj) end, "textures/silkicons/link_break.png"},
 					{},
 					{L"reset", function() self:SetValue(self:GetDefaultValue()) end, self:GetSkin().icons.clear},
 				}, self)
@@ -476,7 +501,7 @@ function PANEL:AddGroup(name)
 	right:SetNoDraw(true)
 end
 
-function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
+function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 	set_value = set_value or print
 	get_value = get_value or function() return default end
 	extra_info = extra_info or {}
@@ -606,6 +631,13 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 		end
 		
 		for i, key in ipairs(fields) do
+			local extra_info = table.merge({
+				__label_offset = self.left_offset + (label.label_offset or self.left_offset),
+				field = key,
+			}, extra_info)
+			
+			extra_info.fields = nil
+			
 			local left, right = self:AddProperty(
 				key, 
 				function(val_)
@@ -617,9 +649,8 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 					return property:GetValue()[key]
 				end,
 				default[key],
-				{
-					__label_offset = self.left_offset + (label.label_offset or self.left_offset),
-				}
+				extra_info,
+				obj
 			)
 			
 			left:SetStackable(false)
@@ -631,6 +662,9 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info)
 			table.insert(panels, {left = left, right = right})
 		end			
 	end
+		
+	property.obj = obj
+	property.info = extra_info
 	
 	self.first_time = true
 	
@@ -730,7 +764,8 @@ function PANEL:AddPropertiesFromObject(obj)
 				end
 			end, 
 			def,
-			info
+			info,
+			obj
 		)
 	end
 end

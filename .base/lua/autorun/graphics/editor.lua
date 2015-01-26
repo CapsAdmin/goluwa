@@ -78,18 +78,17 @@ function editor.Open()
 		for config_name, info in pairs(prototype.GetConfigurations()) do
 			local group
 			
-			if #info.components == 1 then
-				local meta = prototype.GetRegistered("component", info.components[1])
-				if meta.Base then
-					groups[meta.Base] = groups[meta.Base] or {configs = {}}
-					groups[meta.Base].configs[config_name] = info
-				end
+			local meta = #info.components == 1 and prototype.GetRegistered("component", info.components[1])
+			
+			if meta and meta.Base then		
+				groups[meta.Base] = groups[meta.Base] or {configs = {}}
+				groups[meta.Base].configs[config_name] = info
 			else			
 				groups.default = groups.default or {configs = {}}
 				groups.default.configs[config_name] = info
 			end
 		end
-		
+				
 		for group_name, group in pairs(groups) do
 			local tbl = {}
 			for config_name, info in pairs(group.configs) do		
@@ -130,7 +129,7 @@ function editor.Open()
 				end
 				local node = node:AddNode(name, ent:GetPropertyIcon())
 				node.OnRightClick = right_click_node
-				node.OnMouseHoverTrigger = show_tooltip
+				--node.OnMouseHoverTrigger = show_tooltip
 				node.ent = ent
 				ent.editor_node = node
 				--node:SetIcon(Texture("textures/" .. frame:GetSkin().icons[val.self.ClassName]))

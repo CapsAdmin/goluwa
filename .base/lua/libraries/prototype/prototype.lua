@@ -227,14 +227,90 @@ function prototype.CreateObject(meta, override, skip_gc_callback)
 	prototype.created_objects = prototype.created_objects or utility.CreateWeakTable()
 	prototype.created_objects[self] = self
 	
-	prototype.created_objects_guid = prototype.created_objects_guid or utility.CreateWeakTable()
-	prototype.created_objects_guid[self.GUID] = self
-	
 	return self
 end
 
-function prototype.GetObjectByGUID(guid)
-	return prototype.created_objects_guid[guid]
+do
+	prototype.linked_objects = prototype.linked_objects or {}
+		
+	function prototype.AddPropertyLink(obj_a, obj_b, field_a, field_b, key_a, key_b)
+	
+		event.AddListener("Update", "update_object_properties", function()
+			for i, v in ipairs(prototype.linked_objects) do
+				local obj_a, obj_b, field_a, field_b, key_a, key_b = unpack(v)
+				
+				if obj_a:IsValid() and obj_b:IsValid() then
+					local info_a = obj_a.prototype_variables[field_a]
+					local info_b = obj_b.prototype_variables[field_b]
+									
+					if info_a then
+						if key_a and key_b then
+							local val = obj_a[info.get_name](obj_a)
+							
+							val[key_a] = obj_b[info_b.get_name](obj_b)[key_b]
+							
+							obj_a[info_a.set_name](obj_a, val)
+						elseif key_a and not key_b then
+							local val = obj_a[info.get_name](obj_a)
+							
+							val[key_a] = obj_b[info_b.get_name](obj_b)
+							
+							obj_a[info_a.set_name](obj_a, val)
+						elseif key_b and not key_a then
+							obj_a[info_a.set_name](obj_a, obj_b[info_b.get_name](obj_b)[key_b])
+						else
+							
+							obj_a[info_a.set_name](obj_a, obj_b[info_b.get_name](obj_b))
+						end
+					end
+				else
+					table.remove(prototype.linked_objects, i)
+					break
+				end
+			end
+		end)
+	
+		table.insert(prototype.linked_objects, {obj_a, obj_b, field_a, field_b, key_a, key_b})
+	end
+	
+	function prototype.RemovePropertyLink(obj_a, obj_b, field_a, field_b, key_a, key_b)
+		for i, v in ipairs(prototype.linked_objects) do
+			local obj_a_, obj_b_, field_a_, field_b_, key_a_, key_b_ = unpack(v)
+			if 
+				obj_a == obj_a_ and 
+				obj_b == obj_b_ and 
+				field_a == field_a_ and 
+				field_b == field_b_ and
+				key_a == key_a_ and
+				key_b == key_b_
+			then
+				table.remove(prototype.linked_objects, i)
+				break
+			end
+		end
+	end
+	
+	function prototype.RemovePropertyLinks(obj)
+		for i, v in pairs(prototype.linked_objects) do
+			if v[1] == obj then
+				prototype.linked_objects[i] = nil
+			end
+		end
+		
+		table.fixindices(prototype.linked_objects)
+	end
+	
+	function prototype.GetPropertyLinks(obj)
+		local out = {}
+		
+		for i, v in ipairs(prototype.linked_objects) do
+			if v[1] == obj then
+				table.insert(out, {unpack(v)})
+			end
+		end
+		
+		return out
+	end
 end
 
 function prototype.CreateDerivedObject(super_type, sub_type, override, skip_gc_callback)

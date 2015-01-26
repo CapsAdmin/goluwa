@@ -6,8 +6,11 @@ prototype.GetSet(META, "DebugTrace", "")
 prototype.GetSet(META, "CreationTime", os.clock())
 prototype.GetSet(META, "PropertyIcon", "")
 prototype.GetSet(META, "HideFromEditor", false)
-prototype.GetSet(META, "Name", "")
 prototype.GetSet(META, "GUID", "")
+
+prototype.StartStorable(META)
+	prototype.GetSet("Name", "")
+prototype.EndStorable()
 
 function META:__tostring()
 	local additional_info = self:__tostring2()
@@ -80,12 +83,17 @@ do -- serializing
 				self[info.set_name](self, tbl[info.var_name])
 			end
 		end
-				
-		if callbacks[self.GUID] then
-			for i, cb in ipairs(callbacks[self.GUID]) do
-				cb(self)
+		
+		if tbl.__property_links then
+			for i, v in ipairs(tbl.__property_links) do
+				self:WaitForGUID(v[1], function(obj)
+					v[1] = obj
+					self:WaitForGUID(v[2], function(obj)
+						v[2] = obj
+						prototype.AddPropertyLink(unpack(v))
+					end)
+				end)
 			end
-			callbacks[self.GUID] = nil
 		end
 	end
 	
@@ -98,6 +106,16 @@ do -- serializing
 		
 		out.GUID = self.GUID
 		
+		local info = prototype.GetPropertyLinks(self)
+		
+		if next(info) then
+			for i,v in ipairs(info) do
+				v[1] = v[1].GUID
+				v[2] = v[2].GUID
+			end
+			out.__property_links = info
+		end
+		
 		if self.OnSerialize then
 			out.__extra_data = self:OnSerialize()
 		end
@@ -105,14 +123,40 @@ do -- serializing
 		return table.copy(out)
 	end
 	
+	function META:SetGUID(guid)
+		prototype.created_objects_guid = prototype.created_objects_guid or utility.CreateWeakTable()
+				
+		if prototype.created_objects_guid[self.GUID] then
+			prototype.created_objects_guid[self.GUID] = nil
+		end
+		
+		self.GUID = guid
+		
+		prototype.created_objects_guid[self.GUID] = self
+				
+		if callbacks[self.GUID] then
+			for i, cb in ipairs(callbacks[self.GUID]) do
+				cb(self)
+			end
+			callbacks[self.GUID] = nil
+		end
+	end
+	
 	function META:WaitForGUID(guid, callback)
 		local obj = prototype.GetObjectByGUID(guid)
-		if obj then
+		if obj:IsValid() then
 			callback(obj)
 		else
 			callbacks[guid] = callbacks[guid] or {}
 			table.insert(callbacks[guid], callback)
+			print("added callback for ", guid)
 		end
+	end
+			
+	function prototype.GetObjectByGUID(guid)
+		prototype.created_objects_guid = prototype.created_objects_guid or utility.CreateWeakTable()
+		
+		return prototype.created_objects_guid[guid] or NULL
 	end
 end
 
@@ -175,3 +219,7 @@ do -- events
 end
 
 prototype.base_metatable = META
+
+if RELOAD then
+	prototype.RebuildMetatables()
+end
