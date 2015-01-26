@@ -1,38 +1,4 @@
 ﻿do
-	wire = wire or {}
-	wire.current_wires = wire.current_wires or {}
-	
-	event.AddListener("Draw2D", "draw_wires", function()
-		rope = rope or Texture("materials/cable/cable.vtf")
-		surface.SetColor(1,1,1,1)
-		surface.SetTexture(rope)
-			
-		if wire.connection_point then
-			local a_pos = wire.connection_point:GetWorldPosition() + wire.connection_point:GetSize() / 2
-			local b_pos = Vec2(surface.GetMousePosition())
-			
-			surface.DrawLine(a_pos.x, a_pos.y, b_pos.x, b_pos.y, 2, true)
-			
-			if input.IsMouseDown("button_2") then
-				wire.connection_point = nil
-			end
-		end
-	
-		for a, b in pairs(wire.current_wires) do
-			if not a:IsValid() then wire.current_wires[a] = nil goto continue end
-			if not b:IsValid() then wire.current_wires[a] = nil goto continue end
-			
-			local a_pos = a:GetWorldPosition() + a:GetSize() / 2
-			local b_pos = b:GetWorldPosition() + b:GetSize() / 2
-			
-			surface.DrawLine(a_pos.x, a_pos.y, b_pos.x, b_pos.y, 2, true)
-			
-			::continue::
-		end
-	end)
-end
-
-do
 	local COMPONENT = {}
 
 	COMPONENT.Name = "io"
@@ -41,6 +7,7 @@ do
 	function COMPONENT:OnAdd(ent)
 		self.input_connections = {}
 		self.output_connections = {}
+		self.output_objects = {}
 	
 		do
 			self.input_values = {}
@@ -73,9 +40,9 @@ do
 				end
 			end
 		end
-	
-		if gui then
-			local panel = gui.CreatePanel("logic_gate")
+		
+		if gui and ent:HasParent() and ent:GetParent().GetWirePanel then	
+			local panel = gui.CreatePanel("logic_gate", ent:GetParent():GetWirePanel())
 			if panel:IsValid() then
 				panel:SetGate(self)
 				self.panel = panel
@@ -99,6 +66,26 @@ do
 		end
 		
 		self:ComputeInputs(self.input_values, self.output_values)
+		
+		for i, info in ipairs(self.output_objects) do
+			if not info.obj:IsValid() then table.remove(self.output_objects, i) break end
+
+			if info.info then
+				if info.field then
+					local val = info.obj[info.info.get_name](info.obj)
+					val[info.field] = self:GetOutput(info.i)
+					info.obj[info.info.set_name](info.obj, val)
+				else
+					info.obj[info.info.set_name](info.obj, self:GetOutput(info.i))
+				end
+			else
+				if info.field then
+					info.obj[info.var_name][info.field] = self:GetOutput(info.i)
+				else
+					info.obj[info.var_name] = self:GetOutput(info.i)
+				end
+			end
+		end
 	end
 	
 	function COMPONENT:SetOutput(i, val)
@@ -118,7 +105,6 @@ do
 		return self.input_values[i or 1]
 	end
 	
-
 	function COMPONENT.Connect(output, input, input_i, output_i)
 		if input.GetIO then input = input:GetIO() end
 				
@@ -130,7 +116,17 @@ do
 			output_i = output_i,
 		}
 		
-		wire.current_wires[input.panel.inputs[input_i]] = output.panel.outputs[output_i]
+		local ent = output:GetEntity()
+		if ent:HasParent() and ent:GetParent().GetWirePanel then
+			local wire = ent:GetParent():GetWirePanel()
+			wire.current_wires[input.panel.inputs[input_i]] = output.panel.outputs[output_i]
+		end
+	end
+	
+	function COMPONENT:ConnectToObject(obj, var_name, i, field)
+		i = i or 1
+		
+		table.insert(self.output_objects, {obj = obj, info = obj.prototype_variables[var_name], var_name = var_name, i = i, field = field})
 	end
 	
 	function COMPONENT:Disconnect(i)
@@ -190,11 +186,43 @@ local function ADD_GATE(name, inputs, outputs, callback, callback2)
 	if callback2 then
 		callback2(COMPONENT)
 	end
-
+	
 	COMPONENT.Inputs = inputs
-
 	COMPONENT.Outputs = outputs
-
+	
+	prototype.StartStorable(COMPONENT)
+	if type(inputs) == "number" then
+		for i = 1, inputs do
+			local name = "Input" .. string.char(64 + i)
+			
+			prototype.GetSet(name, 0)
+			
+			COMPONENT["Set" .. name] = function(self, num)
+				self:SetInput(i, num)
+			end
+			
+			COMPONENT["Get" .. name] = function(self)
+				return self:GetInput(i)
+			end
+		end
+	end		
+	
+	if type(outputs) == "number" then
+		for i = 1, outputs do
+			local name = "Output" .. string.char(64 + i)
+			prototype.GetSet(name, 0)
+			
+			COMPONENT["Set" .. name] = function(self, num)
+				self:SetOutput(i, num)
+			end
+			
+			COMPONENT["Get" .. name] = function(self)
+				return self:GetOutput(i)
+			end
+		end
+	end
+	prototype.EndStorable()
+	
 	COMPONENT.ComputeInputs = callback
 	
 	prototype.RegisterComponent(COMPONENT)
@@ -258,4 +286,37 @@ do
 	ADD_1IN1OUT("ceil", math.ceil)
 	ADD_1IN1OUT("floor", math.floor)
 	ADD_1IN1OUT("round", math.round)
+end
+
+do
+	local COMPONENT = {}
+
+	COMPONENT.Name = "wire_board"
+	
+	function COMPONENT:OnAdd(ent)
+		if gui then
+			self.panel = gui.CreatePanel("wire_board")
+		end
+	end
+	
+	function COMPONENT:OnRemove(ent)
+		if gui then
+			gui.RemovePanel(self.panel)
+		end
+	end
+	
+	function COMPONENT:GetWirePanel()
+		return self.panel
+	end
+	
+	function COMPONENT:OnSerialize()		
+		return self.panel:GetRect()
+	end
+	
+	function COMPONENT:OnDeserialize(rect)
+		self.panel:SetRect(rect)
+	end
+	
+	prototype.RegisterComponent(COMPONENT)
+	prototype.SetupComponents(COMPONENT.Name, {COMPONENT.Name}, "textures/silkicons/computer.png")
 end

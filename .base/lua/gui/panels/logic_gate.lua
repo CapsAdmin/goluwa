@@ -61,6 +61,17 @@ function PANEL:OnUpdate()
 	end
 end
 
+function PANEL:OnGlobalMouseInput(button, press)
+	local point = self:GetParent().connection_point
+	if point then
+		local panel = gui.GetHoveringPanel()
+		if panel.info and panel.obj then
+			self.gate:ConnectToObject(panel.obj, panel.info.var_name, point.i, panel.info.field)
+			self:GetParent().connection_point = nil
+		end
+	end
+end
+
 function PANEL:AddInput(i, info)
 	local btn = self:CreatePanel("button")
 	btn:SetSize(Vec2()+connection_size)
@@ -70,6 +81,8 @@ function PANEL:AddInput(i, info)
 	btn.i = i
 	
 	btn.OnPress = function()
+		local wire = self:GetParent()
+		
 		if btn.gate:Disconnect(i) then
 			wire.connection_point = wire.current_wires[btn]
 			wire.current_wires[btn] = nil
@@ -98,7 +111,9 @@ function PANEL:AddOutput(i, info)
 	btn.gate = self.gate
 	btn.i = i
 	
-	btn.OnPress = function()
+	btn.OnPress = function()	
+		local wire = self:GetParent()
+		
 		if wire.connection_point then
 			local input = btn
 			local output = wire.connection_point

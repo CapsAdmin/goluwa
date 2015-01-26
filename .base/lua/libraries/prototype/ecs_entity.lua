@@ -80,11 +80,7 @@ do -- serializing
 	function META:SetStorableTable(data, skip_remove)
 		if type(data.self) ~= "table" or type(data.config) ~= "string" then return end
 		
-		if not skip_remove then
-			for name, component in pairs(self:GetComponents()) do
-				component:Remove()
-			end
-			
+		if not skip_remove then			
 			for k,v in pairs(self:GetChildrenList()) do
 				v:Remove(a)
 			end
