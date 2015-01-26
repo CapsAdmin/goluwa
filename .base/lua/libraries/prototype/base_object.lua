@@ -70,19 +70,21 @@ do -- serializing
 
 	function META:SetStorableTable(tbl)
 		self:SetGUID(tbl.GUID)
-				
-		for _, info in ipairs(prototype.GetStorableVariables(self)) do
-			if tbl[info.var_name] then
-				self[info.set_name](self, tbl[info.var_name])
-			end
-		end
 		
 		if self.OnDeserialize then
 			self:OnDeserialize(tbl.__extra_data)
 		end
 		
+		for _, info in ipairs(prototype.GetStorableVariables(self)) do
+			if tbl[info.var_name] then
+				self[info.set_name](self, tbl[info.var_name])
+			end
+		end
+				
 		if callbacks[self.GUID] then
-			callbacks[self.GUID](self)
+			for i, cb in ipairs(callbacks[self.GUID]) do
+				cb(self)
+			end
 			callbacks[self.GUID] = nil
 		end
 	end
@@ -104,7 +106,13 @@ do -- serializing
 	end
 	
 	function META:WaitForGUID(guid, callback)
-		callbacks[guid] = callback
+		local obj = prototype.GetObjectByGUID(guid)
+		if obj then
+			callback(obj)
+		else
+			callbacks[guid] = callbacks[guid] or {}
+			table.insert(callbacks[guid], callback)
+		end
 	end
 end
 
