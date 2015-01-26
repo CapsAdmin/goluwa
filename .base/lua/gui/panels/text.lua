@@ -46,7 +46,7 @@ function PANEL:SetText(str)
 	
 	markup:Clear()
 	markup:AddFont(self.Font)
-	markup:AddColor(self.TextColor)
+	markup:AddColor(self.TextColor:Copy())
 	markup:AddString(self.Text, self.ParseTags)
 	
 	markup:Invalidate()

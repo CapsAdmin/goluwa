@@ -40,10 +40,16 @@ function PANEL:Initialize()
 end
 
 function PANEL:OnStyleChanged(skin)
-	self:SetCaretColor(skin.text_edit_color)
-	self:SetSelectionColor(skin.text_edit_color:SetAlpha(0.5))
-	self:SetTextColor(skin.text_edit_color)
+	self:SetCaretColor(skin.text_edit_color:Copy())
+	self:SetSelectionColor(skin.text_edit_color:Copy():SetAlpha(0.5))
+	self:SetTextColor(skin.text_edit_color:Copy())
+	self.label:SetTextColor(skin.text_edit_color:Copy())
 	self:SetFont(skin.default_font)
+	
+	if self.label and self.label.markup then
+		self.label.markup:SetCaretColor(self.CaretColor)
+		self.label.markup:SetSelectionColor(self.SelectionColor)
+	end
 end
 
 function PANEL:OnLayout(S)
