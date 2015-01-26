@@ -91,6 +91,13 @@ function META:DrawString(str, x, y)
 	str = tostring(str)
 	
 	if not self.string_cache[str] then
+		self.total_strings_stored = self.total_strings_stored or 0
+		
+		if self.total_strings_stored > 200 then
+			logf("surface warning: string cache for %s is above 200, flushing cache\n", self)
+			table.clear(self.string_cache)
+			self.total_strings_stored = 0
+		end
 		
 		local poly
 		local data = {}
@@ -172,6 +179,7 @@ function META:DrawString(str, x, y)
 		end
 				
 		self.string_cache[str] = data
+		self.total_strings_stored = self.total_strings_stored + 1
 	end
 	
 	surface.PushMatrix(x, y)
