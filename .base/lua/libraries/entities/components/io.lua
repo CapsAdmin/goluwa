@@ -145,8 +145,14 @@ do
 	function COMPONENT:OnSerialize()
 		local out = {}
 		
+		if self.panel and self.panel:IsValid() then
+			out.gui_pos = self.panel:GetPosition():Copy()
+		end
+		
+		out.input_connections = {}
+		
 		for i,v in pairs(self.input_connections) do
-			out[i] = {
+			out.input_connections[i] = {
 				output = v.output:GetGUID(), 
 				output_i = v.output_i,
 			}
@@ -156,7 +162,12 @@ do
 	end
 	
 	function COMPONENT:OnDeserialize(tbl)
-		for i,v in pairs(tbl) do
+		
+		if self.panel and self.panel:IsValid() then
+			self.panel:SetPosition(tbl.gui_pos)
+		end
+	
+		for i,v in pairs(tbl.input_connections) do
 			self:WaitForGUID(v.output, function(output)
 				output:Connect(self, i, v.output_i)
 			end)
@@ -244,4 +255,7 @@ do
 	ADD_1IN1OUT("cos", math.cos)
 	ADD_1IN1OUT("rad", math.cos)
 	ADD_1IN1OUT("deg", math.cos)
+	ADD_1IN1OUT("ceil", math.ceil)
+	ADD_1IN1OUT("floor", math.floor)
+	ADD_1IN1OUT("round", math.round)
 end
