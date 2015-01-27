@@ -184,6 +184,8 @@ function editor.Open()
 		editor.tree = tree
 	end
 	
+	--editor.top_scroll.OnRightClick = function() right_click_node() end
+	
 	event.AddListener("EntityCreate", "editor", function() event.Delay(0.1, repopulate) end)
 	event.AddListener("EntityRemoved", "editor", repopulate)	
 	repopulate()
