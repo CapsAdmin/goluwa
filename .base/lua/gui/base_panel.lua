@@ -1326,6 +1326,7 @@ do -- mouse
 				end
 			end
 			
+		else
 			if button == "button_2" then
 				self:OnRightClick()
 			end
@@ -1507,7 +1508,7 @@ do -- layout
 		local parent = self:GetParent()
 		local collide = true
 		local args
-			
+		
 		for i, cmd in ipairs(commands) do
 			if type(cmd) == "table" then
 				args = cmd
@@ -1990,8 +1991,8 @@ do -- events
 
 	function PANEL:OnChildAdd(child)
 		gui.unrolled_draw = nil
-		self:Layout()
-		child:Layout()
+		--self:Layout()
+		--child:Layout()
 	end
 
 	function PANEL:OnRemove(a)
