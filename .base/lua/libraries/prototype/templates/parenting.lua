@@ -7,6 +7,7 @@ function prototype.AddParentingTemplate(META)
 		
 	prototype.GetSet(META, "Parent", NULL)
 	prototype.GetSet(META, "Children", {})
+	prototype.GetSet(META, "Children2", {})
 	
 	function META:GetChildrenList()
 		if not self.children_list then
@@ -25,30 +26,31 @@ function prototype.AddParentingTemplate(META)
 		return self.parent_list
 	end
 
-	function META:SetParent(var)
-		if not var or not var:IsValid() then
+	function META:SetParent(obj)
+		if not obj or not obj:IsValid() then
 			self:UnParent()
 			return false
-		else
-			return var:AddChild(self)
 		end
+		
+		return obj:AddChild(self)
 	end
 	
-	function META:AddChild(var)		
-		if self == var or var:HasChild(self) then 
+	function META:AddChild(obj)		
+		if self == obj or obj:HasChild(self) then 
 			return false 
 		end
 	
-		var:UnParent()
+		obj:UnParent()
 	
-		var.Parent = self
+		obj.Parent = self
 
-		if not table.hasvalue(self.Children, var) then
-			table.insert(self.Children, var)
+		if not self:HasChild(obj) then
+			self.Children2[obj] = obj
+			table.insert(self.Children, obj)
 		end
 		
-		var:OnParent(self)
-		self:OnChildAdd(var)
+		obj:OnParent(self)
+		self:OnChildAdd(obj)
 		
 		self.children_list = nil
 		self.parent_list = nil
@@ -61,31 +63,28 @@ function prototype.AddParentingTemplate(META)
 	end
 
 	function META:HasChildren()
-		return next(self.Children) ~= nil
+		return self.Children[1] ~= nil
 	end
 
 	function META:HasChild(obj)
-		for key, child in ipairs(self:GetChildrenList()) do
-			if child == obj then
-				return true
-			end
-		end
-		return false
+		return self.Children2[obj] ~= nil
 	end
 	
 	function META:UnparentChild(var)
-		for i, obj in ipairs(self.Children) do
-			if obj == var then
+		local obj = self.Children2[var]
+		if obj == var then
+			obj:OnUnParent(self)
 			
-				obj:OnUnParent(self)
-				
-				obj.Parent = NULL
-				obj.children_list = nil
-				obj.parent_list = nil
-				
-				table.remove(self.Children, i)
-				
-				break
+			obj.Parent = NULL
+			obj.children_list = nil
+			obj.parent_list = nil
+			
+			self.Children2[obj] = nil
+			for i,v in ipairs(self.Children) do
+				if v == var then
+					table.remove(self.Children, i)
+					break
+				end
 			end
 		end
 	end
@@ -103,10 +102,9 @@ function prototype.AddParentingTemplate(META)
 	end
 
 	function META:RemoveChildren()
-		for key, obj in pairs(self:GetChildrenList()) do
+		for key, obj in ipairs(self:GetChildrenList()) do
 			if obj:IsValid() then
 				obj:OnUnParent(self)
-				
 				obj:Remove()
 			end
 		end

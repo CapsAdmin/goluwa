@@ -131,7 +131,7 @@ skin.background = Color(0.5, 0.5, 0.5)
 
 skin.icons = include("gui/icons.lua")
 
-if RELOAD then
+if RELOAD or select(2, ...) then
 	for k,v in pairs(gui.panels) do
 		if v:GetSkin().name == skin.name then
 			v:SetSkin(skin)

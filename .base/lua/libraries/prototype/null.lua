@@ -39,7 +39,7 @@ function prototype.MakeNULL(tbl)
 
 	for k,v in pairs(tbl) do tbl[k] = nil end
 	tbl.Type = "null"
-	setmetatable(tbl, prototype.GetRegistered("null"))
+	setmetatable(tbl, prototype.GetRegistered("NULL"))
 	
 	if prototype.created_objects then
 		prototype.created_objects[tbl] = nil
