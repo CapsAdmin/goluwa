@@ -1,48 +1,31 @@
 local structs = _G.structs or {}
 
 function structs.Register(META)
-	local arg_line = ""
-	local translation = {}
+	local arg_lines = {}
 	
-	for i, trans in pairs(META.Args) do
-		local arg = trans
+	for arg_i, arg in pairs(META.Args) do
+		if type(arg) ~= "table" then arg = {arg} end
 		
-		if type(trans) == "table" then
-			arg = trans[1]
-			table.remove(trans, 1)
-			for _, val in pairs(trans) do
-				translation[val] = arg
+		for i, v in pairs(arg) do
+			if arg_i == 1 then
+				arg_lines[i] = "\tstruct { " .. META.NumberType .. " "
+			end
+			
+			arg_lines[i] = arg_lines[i] .. v
+					
+			if arg_i ~= #META.Args then
+				arg_lines[i] = arg_lines[i] .. ", "
+			else
+				arg_lines[i] = arg_lines[i] .. "; };"
 			end
 		end
-		
-		arg_line = arg_line .. arg
-		
-		if i ~= #META.Args then
-			arg_line = arg_line .. ", "
-		end
-	end
-		
-	local tr
-	META.__index = function(self, key)
-		if META[key] then
-			return META[key]
-		end
-		
-		tr = translation[key]
-		if tr then
-			return self[tr]
-		end
 	end
 	
-	local tr
-	META.__newindex = function(self, key, val)
-		tr = translation[key]
-		if tr then
-			self[tr] = val
-		end
-	end
-		
+	table.insert(arg_lines, "\t" .. META.NumberType .. " _[" .. #META.Args .. "];")
+	
+	META.__index = META
 	META.Type = META.ClassName:lower()
+	META.TypeX = META.TypeX or META.Type
 	
 	local obj
 	
@@ -53,7 +36,7 @@ function structs.Register(META)
 		while pcall(ffi.typeof, type_name) do
 			type_name = type_name .. "_" 
 		end
-		ffi.cdef("typedef struct " .. type_name .. " { " .. META.NumberType .. " " .. arg_line .. "; }" .. type_name .. ";")
+		ffi.cdef("typedef union " .. type_name .. " {\n" .. table.concat(arg_lines, "\n") .. "\n} " .. type_name .. ";")
 		obj = assert(ffi.metatype(type_name, META))
 	end
 		
