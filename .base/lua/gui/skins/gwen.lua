@@ -110,7 +110,7 @@ add("gradient3", 480,96, 31,31, 16)
 add("text_edit", 0,172, 127,21, 16)
 
 skin.tab_active_text_color = Color(0.25,0.25,0.25)
-skin.tab_inactive_text_color = Color(0.5,0.5,0.5)
+skin.tab_inactive_text_color = Color(0.5,0.5,0.5, 1)
 
 local buffer, length = texture:Download()
 
@@ -127,7 +127,7 @@ skin.property_background = texture:GetPixelColor(28, 500, buffer)
 skin.default_font = "snow_font"
 skin.scale = scale
 
-skin.background = Color(0.5, 0.5, 0.5)
+skin.background = Color(0.5, 0.5, 0.5, 1)
 
 skin.icons = include("gui/icons.lua")
 

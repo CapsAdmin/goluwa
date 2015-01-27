@@ -41,7 +41,7 @@ function PANEL:Initialize()
 	slider:SetYSlide(true)
 	slider.OnSlide = function(_, pos)
 		self:SetValue(-pos.y+1)
-		self.xy_slider.line:SetColor(Color(1,1,1)*self:GetValue())
+		self.xy_slider.line:SetColor(Color(1,1,1,1)*self:GetValue())
 	end
 	
 	local xy = self:CreatePanel("slider", "xy_slider")
@@ -58,7 +58,7 @@ function PANEL:Initialize()
 		
 		self:SetHue(hue)
 		self:SetSaturation(sat)
-		xy.line:SetColor(Color(1,1,1)*self:GetValue())
+		xy.line:SetColor(Color(1,1,1,1)*self:GetValue())
 		
 		self:OnColorChanged(HSVToColor(self:GetHue(), self:GetSaturation(), self:GetValue()))
 	end
