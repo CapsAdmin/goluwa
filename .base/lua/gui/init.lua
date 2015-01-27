@@ -12,7 +12,7 @@ gui.panels = gui.panels or {}
 function gui.CreatePanel(name, parent, store_in_parent)
 	parent = parent or gui.world
 	
-	local self = prototype.CreateDerivedObject("panel2", name)
+	local self = prototype.CreateDerivedObject("panel2", name, nil, true)
 	
 	if not self then 
 		return NULL 
@@ -319,7 +319,7 @@ do -- skin
 
 	console.AddCommand("gui_skin", function(_, str, sub_skin)
 		str = str or "gwen"
-		gui.SetSkin(include("gui/skins/" .. str .. ".lua", gui), sub_skin)
+		gui.SetSkin(include("gui/skins/" .. str .. ".lua", gui, sub_skin))
 	end)
 end
 

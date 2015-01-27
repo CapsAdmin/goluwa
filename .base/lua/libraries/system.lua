@@ -655,13 +655,13 @@ do
 		maxirconst = 1000, -- Max. number of IR constants of a trace                default = 500
 		maxside = 400, -- Max. number of side traces of a root trace                default = 100
 		maxsnap = 1000, -- Max. number of snapshots for a trace                     default = 500
-		hotloop = 100, -- Number of iterations to detect a hot loop or hot call     default = 56
-		hotexit = 2, -- Number of taken exits to start a side trace                 default = 10
+		hotloop = 5, -- Number of iterations to detect a hot loop or hot call     default = 56
+		hotexit = 10, -- Number of taken exits to start a side trace                 default = 10
 		tryside = 8, -- Number of attempts to compile a side trace                  default = 4
 		instunroll = 5000, -- Max. unroll factor for instable loops                  default = 4
 		loopunroll = 5000, -- Max. unroll factor for loop ops in side traces         default = 15
 		callunroll = 5000, -- Max. unroll factor for pseudo-recursive calls          default = 3
-		recunroll = 0, -- Min. unroll factor for true recursion                     default = 2
+		recunroll = 1, -- Min. unroll factor for true recursion                     default = 2
 		sizemcode = 64, -- Size of each machine code area in KBytes (Windows: 64K)  default = 32
 		maxmcode = 2048, -- Max. total size of all machine code areas in KBytes     default = 512
 	}
