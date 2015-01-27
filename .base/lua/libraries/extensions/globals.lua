@@ -340,18 +340,34 @@ function hasindex(var)
 end
 
 function typex(var)
+
+	local t = type(var)
+
+	if 
+		t == "nil" or
+		t == "boolean" or
+		t == "number" or
+		t == "string" or
+		t == "userdata" or
+		t == "function" or
+		t == "thread"
+	then
+		return t
+	end
 	
 	if getmetatable(var) == getmetatable(NULL) then return "null" end
 
-	if hasindex(var) then
-		-- why does ffi throw error when trying to index instead of nil?
-		local ok, res = pcall(idx, var)
-		if ok and res and getmetatable(var) then
-			return res
-		end
+	if t == "table" then
+		return var.TypeX or var.Type or t
+	end
+		
+	local ok, res = pcall(idx, var)
+		
+	if ok then
+		return res
 	end
 
-	return type(var)
+	return t
 end
 
 function istype(var, t)
