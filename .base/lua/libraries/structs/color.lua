@@ -5,15 +5,6 @@ local META = {}
 
 META.ClassName = "Color"
 
-function META.Constructor(r,g,b,a)
-	r = r or 0
-	g = g or 0
-	b = b or 0
-	a = a or 1
-
-	return r,g,b,a
-end
-
 function ColorBytes(r, g, b, a)
 	r = r or 0
 	g = g or 0
@@ -170,6 +161,7 @@ function HSVToColor(h, s, v, a)
 	h = (h%1 * 360) / 60
 	s = s or 1
 	v = v or 1
+	a = a or 1
 
 	if s == 0 then
 		return Color(v, v, v, a)
