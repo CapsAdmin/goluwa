@@ -70,7 +70,7 @@ function PANEL:Initialize()
 	slider:SetFraction(Vec2(0,1))
 end
 
-function PANEL:OnLayout()
+function PANEL:OnLayout(S)
 	self.xy_slider:SetSize(self:GetSize() - Vec2(S*10 + S*4, 0))
 	self.y_slider:SetX(self.xy_slider:GetWidth() - S*5 + S*2)
 	self.y_slider:SetHeight(self:GetHeight())
