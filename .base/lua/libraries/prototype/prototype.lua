@@ -245,13 +245,13 @@ do
 									
 					if info_a then
 						if key_a and key_b then
-							local val = obj_a[info.get_name](obj_a)
+							local val = obj_a[info_a.get_name](obj_a)
 							
 							val[key_a] = obj_b[info_b.get_name](obj_b)[key_b]
 							
 							obj_a[info_a.set_name](obj_a, val)
 						elseif key_a and not key_b then
-							local val = obj_a[info.get_name](obj_a)
+							local val = obj_a[info_a.get_name](obj_a)
 							
 							val[key_a] = obj_b[info_b.get_name](obj_b)
 							
