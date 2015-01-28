@@ -379,6 +379,7 @@ function render.DrawGBuffer(dt, w, h)
 		end
 
 		surface.SetTexture(render.gbuffer_mixer_buffer:GetTexture())
+		surface.SetColor(1,1,1,1)
 		surface.DrawRect(0, 0, w, h)		
 		
 		event.Call("Draw2D", dt)
