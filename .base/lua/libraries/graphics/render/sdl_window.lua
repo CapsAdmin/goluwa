@@ -220,12 +220,12 @@ do -- window meta
 		
 		local function call(self, name, ...)
 			if not self then return end
+				
+			if not event_name_translate[name] then
+				event_name_translate[name] = name:gsub("^On", "Window")
+			end
 			
 			local b
-						
-			if not event_name_translate[name] then
-				b = event_name_translate[name] = name:gsub("^On", "Window")
-			end
 						
 			if self[name] then
 				if self[name](...) ~= false then
