@@ -194,9 +194,9 @@ do -- texture object
 	function META:CreateBuffer()
 		-- +1 to height cause there seems to always be some noise on the last line :s
 		local length = self.size.w * (self.size.h+1) * self.format.stride
-		local buffer = ffi.malloc(self.format.buffer_type, length)
-		ffi.fill(buffer, length)
-		--local buffer = ffi.new(self.format.buffer_type.."[?]", length)
+	--	local buffer = ffi.malloc(self.format.buffer_type, length)
+		--ffi.fill(buffer, length)
+		local buffer = ffi.new(self.format.buffer_type.."[?]", length)
 		
 		return buffer, length
 	end
@@ -338,12 +338,12 @@ do -- texture object
 	end
 		
 	function META:GetPixelColor(x, y, buffer)
-		x = math.clamp(math.floor(x), 1, self.w-1)		
-		y = math.clamp(math.floor(y), 1, self.h-1)		
+		x = math.clamp(math.floor(x), 1, self.w)		
+		y = math.clamp(math.floor(y), 1, self.h)		
 		
 		y = self.h-y
 		
-		buffer = buffer or self:Download()
+		buffer = buffer or self.downloaded_buffer or self:Download()
 		local i = (y * self.w + x) * self.format.stride
 		
 		local temp = {}
@@ -351,6 +351,8 @@ do -- texture object
 		for j = 1, self.format.stride do
 			temp[self.format.stride-j] = tonumber(buffer[i + j - 1] or 0) 
 		end
+		
+		self.downloaded_buffer = buffer
 		
 		return ColorBytes(unpack(temp))
 	end
