@@ -4,45 +4,100 @@ local PANEL = {}
 
 PANEL.ClassName = "color_picker"
 
+prototype.GetSet(PANEL, "Color", Color(1,1,1,1))
 prototype.GetSet(PANEL, "Hue", 0)
 prototype.GetSet(PANEL, "Saturation", 1)
 prototype.GetSet(PANEL, "Value", 1)
+prototype.GetSet(PANEL, "Pallete", "textures/gui/hsv_wheel.png")
 
 function PANEL:SetValue(val)
 	self.Value = val
-	self:OnColorChanged(HSVToColor(self:GetHue(), self:GetSaturation(), self:GetValue()))
+	self:Invalidate()
 end
 
 function PANEL:SetSaturation(sat)
 	self.Saturation = sat
-	self:OnColorChanged(HSVToColor(self:GetHue(), self:GetSaturation(), self:GetValue()))
+	self:Invalidate()
 end
 
 function PANEL:SetHue(hue)
 	self.Hue = hue
-	self:OnColorChanged(HSVToColor(self:GetHue(), self:GetSaturation(), self:GetValue()))
+	self:Invalidate()
 end
 
 function PANEL:SetColor(color)
 	self.Color = color
-	local h,s,v = ColorToHSV(color)
-	
-	self:SetHue(h)
-	self:SetSaturation(s)
-	self:SetValue(v)
+	self:Invalidate(color)
+end
+
+function PANEL:Invalidate(override)
+	local color = override or HSVToColor(self:GetHue(), self:GetSaturation(), self:GetValue())
+		
+	self.Color = color
 	
 	self:OnColorChanged(color)
+	self.xy_slider:SetFraction(self:ColorToPos(color)/self.xy_slider.line:GetTexture():GetSize())
+end
+
+function PANEL:ColorToPos(color)
+	if not self.lookup_tree then return Vec2(0,0) end
+	
+	local r,g,b,a = (color*255):Round():Unpack()
+	a = a * 255
+
+	if 
+		self.lookup_tree[r] and 
+		self.lookup_tree[r][g] and 
+		self.lookup_tree[r][g][b] and 
+		self.lookup_tree[r][g][b][a] 
+	then
+		return self.lookup_tree[r][g][b][a]
+	end
+	
+	return Vec2(0, 0)
+end
+
+function PANEL:PosToColor(pos)
+	return ColorBytes(self.xy_slider.line:GetTexture():GetPixelColor(pos:Unpack()))
+end
+
+function PANEL:SetPallete(path)
+	local tex = Texture(path)
+	
+	self.lookup_tree = nil
+	
+	tex.OnLoad = function(tex, w, h)
+		local tree = {}
+		
+		for x = 0, w do
+			for y = 0, h do
+				local r,g,b,a = self:GetPixelColor(x,y)
+			
+				tree[r] = tree[r] or {}
+				tree[r][g] = tree[r][g] or {}
+				tree[r][g][b] = tree[r][g][b] or {}
+				tree[r][g][b][a] = tree[r][g][b][a] or Vec2(x,y)
+			end
+		end
+		
+		self.lookup_tree = tree
+	end
+	
+	self.text_edit:SetText(path)
+	
+	self.xy_slider.line:SetStyle("none")
+	self.xy_slider.line:SetTexture(tex)
 end
 
 function PANEL:Initialize()
 	self:SetNoDraw(true)
-	local slider = self:CreatePanel("slider", "y_slider")
-	slider:SetXSlide(false)
-	slider:SetYSlide(true)
-	slider.OnSlide = function(_, pos)
-		self:SetValue(-pos.y+1)
-		self.xy_slider.line:SetColor(Color(1,1,1,1)*self:GetValue())
-	end
+
+	local text = self:CreatePanel("text_edit", true)
+	text:SetHeight(17)
+	text:SetupLayout("bottom", "fill_x")
+	text.OnEnter = function(text) 
+		self:SetPallete(text:GetText())
+	end	
 	
 	local xy = self:CreatePanel("slider", "xy_slider")
 	xy:SetXSlide(true)
@@ -50,33 +105,26 @@ function PANEL:Initialize()
 	xy:SetRightFill(false)
 	
 	xy.OnSlide = function(_, pos)
-		pos = pos - Vec2(0.5, 0.5)
-		
-		local sat = (pos:GetLength() ^ 2) * 2
-		local hue = Vec2(-pos.y+1, pos.x):GetRad()
-		hue = (hue + 1) / 2
-		
-		self:SetHue(hue)
-		self:SetSaturation(sat)
-		xy.line:SetColor(Color(1,1,1,1)*self:GetValue())
-		
-		self:OnColorChanged(HSVToColor(self:GetHue(), self:GetSaturation(), self:GetValue()))
+		pos = (pos * self.xy_slider.line:GetTexture():GetSize()):Round()
+		local color = self:PosToColor(pos)
+		self:SetColor(color)
 	end
 	
-	xy.line:SetStyle("none")
-	xy.line:SetTexture(Texture("textures/gui/hsv_square.png"))
+	xy:SetupLayout("fill_x", "fill_y")
 	
-	xy:SetFraction(Vec2(0.5, 0.5))
-	slider:SetFraction(Vec2(0,1))
-end
-
-function PANEL:OnLayout(S)
-	self.xy_slider:SetSize(self:GetSize() - Vec2(S*10 + S*4, 0))
-	self.y_slider:SetX(self.xy_slider:GetWidth() - S*5 + S*2)
-	self.y_slider:SetHeight(self:GetHeight())
-	self.y_slider:SetWidth(S*20)
+	self:SetPallete(self.Pallete)
 end
 
 function PANEL:OnColorChanged(color) end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(PANEL) 
+
+if RELOAD then
+	local frame = gui.CreatePanel("frame", nil, "color_picker_test")
+	frame:SetSize(Vec2(200, 200))
+	
+	local self = frame:CreatePanel("color_picker")
+	self:SetupLayout("fill_x", "fill_y")
+	self:SetColor(print(Color():GetRandom(0,1)))   
+	self.OnColorChanged = print
+end

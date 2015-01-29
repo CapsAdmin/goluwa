@@ -139,7 +139,7 @@ function PANEL:OnKeyInput(key, press)
 	if key == "left_control" or key == "right_control" then  markup:SetControlDown(press) return end
 	
 	if press then
-		if key == "enter" then self:OnEnter() end
+		if key == "enter" then if self:OnEnter() == false then return end end
 		markup:OnKeyInput(key, press)
 	end
 end
