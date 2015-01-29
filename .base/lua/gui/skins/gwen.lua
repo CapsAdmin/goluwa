@@ -112,16 +112,14 @@ add("text_edit", 0,172, 127,21, 16)
 skin.tab_active_text_color = Color(0.25,0.25,0.25)
 skin.tab_inactive_text_color = Color(0.5,0.5,0.5, 1)
 
-local buffer, length = texture:Download()
-
-skin.text_color = texture:GetPixelColor(187, 504, buffer)
+skin.text_color = ColorBytes(texture:GetPixelColor(187, 504))
 skin.text_color.a = 1
 skin.text_color_inactive = skin.text_color * 0.80
-skin.text_edit_color = texture:GetPixelColor(110, 497, buffer)*0
+skin.text_edit_color = ColorBytes(texture:GetPixelColor(110, 497))*0
 skin.text_edit_color.a = 1
 skin.text_list_color = skin.text_color
 skin.text_list_font = "snow_font"
-skin.property_background = texture:GetPixelColor(28, 500, buffer)
+skin.property_background = ColorBytes(texture:GetPixelColor(28, 500))
 
 
 skin.default_font = "snow_font"

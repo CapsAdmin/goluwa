@@ -119,15 +119,13 @@ add("text_edit", 256,256, 63,127, 4)
 skin.tab_active_text_color = Color(0.25,0.25,0.25)
 skin.tab_inactive_text_color = Color(0.5,0.5,0.5)
 
-local buffer, length = texture:Download()
-
 skin.text_color = Color(0.8, 0.8, 0.8, 1)-- ColorBytes(168, 168, 224, 255)
 skin.text_color_inactive = skin.text_color * 0.80
 
 skin.text_list_color = Color(0,1,0,1)
 skin.text_edit_color = skin.text_list_color:Copy()
 
-skin.property_background = texture:GetPixelColor(28, 500, buffer)
+skin.property_background = texture:GetPixelColor(28, 500)
 
 skin.scroll_width = 20
 skin.default_font = "zsnes_gui_font"

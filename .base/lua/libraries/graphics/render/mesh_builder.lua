@@ -430,9 +430,7 @@ do -- helpers
 			size = size or 1024
 			res = res or 128
 			height = height or -128
-			
-			local buffer = tex:Download()
-			
+						
 			local s = size / res
 				
 			local i = 1
@@ -445,10 +443,10 @@ do -- helpers
 					
 					y2 = -y2 + tex.h
 					
-					local z1 = tex:GetPixelColor(x2, y2, buffer).r * height -- top left
-					local z2 = tex:GetPixelColor(x2 + 1, y2, buffer).r * height -- top right
-					local z3 = tex:GetPixelColor(x2, y2 + 1, buffer).r * height -- bottom left
-					local z4 = tex:GetPixelColor(x2 + 1, y2 + 1, buffer).r * height -- bottom right
+					local z1 = tex:GetPixelColor(x2, y2) / 255 * height -- top left
+					local z2 = tex:GetPixelColor(x2 + 1, y2) / 255 * height -- top right
+					local z3 = tex:GetPixelColor(x2, y2 + 1) / 255 * height -- bottom left
+					local z4 = tex:GetPixelColor(x2 + 1, y2 + 1) / 255 * height -- bottom right
 
 					local x = x * s
 					local y = y * s
