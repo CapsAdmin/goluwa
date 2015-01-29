@@ -337,24 +337,29 @@ do -- texture object
 		return self
 	end
 		
-	function META:GetPixelColor(x, y, buffer)
+	function META:GetPixelColor(x, y)
 		x = math.clamp(math.floor(x), 1, self.w)		
 		y = math.clamp(math.floor(y), 1, self.h)		
 		
 		y = self.h-y
 		
-		buffer = buffer or self.downloaded_buffer or self:Download()
 		local i = (y * self.w + x) * self.format.stride
-		
-		local temp = {}
-		
-		for j = 1, self.format.stride do
-			temp[self.format.stride-j] = tonumber(buffer[i + j - 1] or 0) 
-		end
+				
+		local buffer = self.downloaded_buffer or self:Download()
 		
 		self.downloaded_buffer = buffer
-		
-		return ColorBytes(unpack(temp))
+
+		if self.format.upload_format == gl.e.GL_BGRA then
+			return buffer[i+2], buffer[i+1], buffer[i+0], buffer[i+3]
+		elseif self.format.upload_format == gl.e.GL_RGBA then
+			return buffer[i+0], buffer[i+1], buffer[i+2], buffer[i+3]		
+		elseif self.format.upload_format == gl.e.GL_BGR then
+			return buffer[i+0], buffer[i+1], buffer[i+2]
+		elseif self.format.upload_format == gl.e.GL_RGB then
+			return buffer[i+2], buffer[i+1], buffer[i+0]
+		elseif self.format.upload_format == gl.e.GL_RED then
+			return buffer[i]
+		end
 	end
 
 	do
@@ -538,6 +543,7 @@ function render.CreateTextureFromPath(path, format)
 	if path:endswith(".png") then
 		format.internal_format = format.internal_format or "rgba8"
 		format.upload_format = format.upload_format or "bgra"
+		format.stride = 4
 	end
 	
 	local loading = render.GetLoadingTexture()
@@ -566,6 +572,10 @@ function render.CreateTextureFromPath(path, format)
 				vfs.UncacheAsync(path)
 				
 				self:Replace(buffer, w, h)
+				
+				if self.OnLoad then
+					self:OnLoad(w, h, info)
+				end
 			end
 			self.decode_info = info
 		else
