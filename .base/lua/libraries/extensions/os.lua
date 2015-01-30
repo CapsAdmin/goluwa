@@ -77,21 +77,21 @@ do -- by Python1320
 
 		local tbl={}
 		if t.d~=0 then
-			table.insert(tbl,t.d .." day"..(t.d==1 and "" or "s"))
+			table.insert(tbl,t.day .." day"..(t.day==1 and "" or "s"))
 		end
 
 		local lastand
 		if t.h~=0 then
 			if #tbl>0 then lastand=table.insert(tbl,conjunction)table.insert(tbl," ")end
-			table.insert(tbl,t.h .." hour"..(t.h==1 and "" or "s"))
+			table.insert(tbl,t.hour .." hour"..(t.hour==1 and "" or "s"))
 		end
 		if t.m~=0 then
 			if #tbl>0 then lastand=table.insert(tbl,conjunction)table.insert(tbl," ")end
-			table.insert(tbl,t.m .." minute"..(t.m==1 and "" or "s"))
+			table.insert(tbl,t.min .." minute"..(t.min==1 and "" or "s"))
 		end
 		if t.s~=0 or #tbl==0 then
 			if #tbl>0 then lastand=table.insert(tbl,conjunction)table.insert(tbl," ")end
-			table.insert(tbl,t.s .."."..math.Round(t.f*10).." seconds")
+			table.insert(tbl,t.sec .."."..math.round((t.f or 0)*10).." seconds")
 		end
 		if t.n then
 			table.insert(tbl," in the past")
