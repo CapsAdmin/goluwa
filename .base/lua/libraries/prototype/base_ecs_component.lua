@@ -12,6 +12,10 @@ prototype.Delegate(META, "Entity", "GetComponent")
 prototype.Delegate(META, "Entity", "AddComponent")
 prototype.Delegate(META, "Entity", "RemoveComponent")
 
+function META:Initialize()
+
+end
+
 function META:OnAdd(ent)
 
 end
@@ -53,7 +57,9 @@ function prototype.RegisterComponent(meta)
 end
 
 function prototype.CreateComponent(name)		
-	return prototype.CreateDerivedObject("component", name)
+	local self = prototype.CreateDerivedObject("component", name)
+	self:Initialize()
+	return self
 end
 
 prototype.Register(META, "component")
