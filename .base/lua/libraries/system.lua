@@ -692,7 +692,7 @@ end
 
 function system.Restart( run_on_launch )
 	run_on_launch = run_on_launch or ""
-	lfs.chdir("../../../../") 
+	os.setcd("../../../../") 
 	
 	if not WINDOWS then
 		if CLIENT then
