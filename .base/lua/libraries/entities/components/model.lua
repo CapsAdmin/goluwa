@@ -284,6 +284,9 @@ if GRAPHICS then
 						
 					end, thread)
 				end
+			elseif path:endswith(".bsp") and steam.LoadMap then
+				steam.LoadMap(path, nil, self:GetEntity())	
+				render.model_cache[path] = nil
 			else
 				function thread.OnStart()
 					assimp.ImportFileEx(path, flags, function(model_data, i, total_meshes)

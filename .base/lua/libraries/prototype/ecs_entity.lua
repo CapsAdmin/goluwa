@@ -114,7 +114,9 @@ do -- serializing
 		end
 		
 		for i, v in ipairs(self:GetChildren()) do
-			data.children[i] = v:GetStorableTable()
+			if not v:GetHideFromEditor() then
+				data.children[i] = v:GetStorableTable()
+			end
 		end
 		
 		return table.copy(data)
