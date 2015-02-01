@@ -3,8 +3,6 @@ editor = _G.editor or {}
 local mctrl = {}
 
 do -- PUT ME IN TRANSFORM
-	local vector_origin = Vec3()
-
 	local AXIS_X = 1
 	local AXIS_Y = 2
 	local AXIS_Z = 3
@@ -20,22 +18,33 @@ do -- PUT ME IN TRANSFORM
 	mctrl.target = NULL
 
 	local function get_axes(ang)
-		return ang:GetForward(),
+		return 
+			ang:GetForward(),
 			ang:GetRight(),
 			ang:GetUp()
 	end
 	
+	local function get_target_pos_ang(pos, ang)
+		local parent = mctrl.target:GetParent()				
+		
+		if parent:IsValid() and parent:HasComponent("transform") then
+			return utility.WorldToLocal(pos, ang, parent:GetTRPosition(), parent:GetTRAngles())
+		end
+		
+		return pos, ang
+	end
+	
 	local function get_target_position(pos, ang) 
-		return (utility.WorldToLocal(pos, ang, mctrl.target:GetPosition(), mctrl.target:GetAngles()))
+		return (get_target_pos_ang(pos, ang))
 	end
 
 	local function get_target_angles(pos, ang) 
-		return select(2, utility.WorldToLocal(pos, ang, mctrl.target:GetPosition(), mctrl.target:GetAngles()))
+		return select(2, get_target_pos_ang(pos, ang))
 	end
 
 	local function draw_line_to_box(origin, point, siz)
 		siz = siz or 7
-		surface.DrawLine(origin.x, origin.y, point.x, point.y)
+		surface.DrawLine(origin.x, origin.y, point.x, point.y, 3)
 		surface.DrawCircle(point.x, point.y, siz, 2, 32)
 	end
 
@@ -43,44 +52,43 @@ do -- PUT ME IN TRANSFORM
 		local pr = utility.WorldPositionToScreen(pos + dir * r * mctrl.angle_pos)
 		local pra = utility.WorldPositionToScreen(pos + dir * r * (mctrl.angle_pos * 0.9) + dir2*r*0.08)
 		local prb = utility.WorldPositionToScreen(pos + dir * r * (mctrl.angle_pos * 0.9) + dir2*r*-0.08)
-		surface.DrawLine(pr.x, pr.y, pra.x, pra.y)
-		surface.DrawLine(pr.x, pr.y, prb.x, prb.y)
+		surface.DrawLine(pr.x, pr.y, pra.x, pra.y, 3)
+		surface.DrawLine(pr.x, pr.y, prb.x, prb.y, 3)
 	end
 
-	function mctrl.Move(axis, x, y)
+	function mctrl.Move(axis, mouse_pos)
 		local target = mctrl.target
 		if target:IsValid() then
-		
-			local pos, ang = mctrl.target:GetPosition(), mctrl.target:GetAngles()
+			local pos, ang = mctrl.target:GetTRPosition(), mctrl.target:GetTRAngles()
 			local forward, right, up = get_axes(ang)
 			local final
 					
 			if axis == AXIS_X then
-				local pos = utility.PointToAxis(pos, right, x, y):Unpack()
-				local localpos = utility.LinePlaneIntersection(pos, right, x, y)
+				local screen_pos = utility.PointToAxis(pos, forward, mouse_pos)
+				local localpos = utility.LinePlaneIntersection(pos, right, screen_pos)
 				
 				if localpos then
-					final = get_target_position(localpos:GetDot(forward)*forward - forward*mctrl.size, ang)
+					final = get_target_position(pos + localpos:GetDot(forward)*forward - forward*mctrl.size, ang)
 				end
 			elseif axis == AXIS_Y then
-				local x, y = utility.PointToAxis(pos, right, x, y):Unpack()
-				local localpos = utility.LinePlaneIntersection(pos, forward, x, y)
+				local screen_pos = utility.PointToAxis(pos, right, mouse_pos)
+				local localpos = utility.LinePlaneIntersection(pos, forward, screen_pos)
 
 				if localpos then
-					final = get_target_position(localpos:GetDot(right)*right - right*mctrl.size, ang)
+					final = get_target_position(pos + localpos:GetDot(right)*right - right*mctrl.size, ang)
 				end
 			elseif axis == AXIS_Z then
-				local x, y = utility.PointToAxis(pos, up, x, y):Unpack()
-				local localpos = utility.LinePlaneIntersection(pos, forward, x, y) or utility.LinePlaneIntersection(pos, right, x, y)
+				local screen_pos = utility.PointToAxis(pos, up, mouse_pos)
+				local localpos = utility.LinePlaneIntersection(pos, forward, screen_pos) or utility.LinePlaneIntersection(pos, right, screen_pos)
 
 				if localpos then
-					final = get_target_position(localpos:GetDot(up)*up - up*mctrl.size, ang)
+					final = get_target_position(pos + localpos:GetDot(up)*up - up*mctrl.size, ang)
 				end
 			elseif axis == AXIS_VIEW then
-				local localpos = utility.LinePlaneIntersection(pos, render.GetCameraAngles():GetForward(), x, y)
+				local localpos = utility.LinePlaneIntersection(pos, render.GetCameraAngles():GetForward(), mouse_pos)
 				
 				if localpos then
-					final = get_target_position(localpos, ang)
+					final = get_target_position(pos + localpos, ang)
 				end
 			end
 					
@@ -97,46 +105,46 @@ do -- PUT ME IN TRANSFORM
 		end
 	end
 
-	function mctrl.Rotate(axis, x, y)
+	function mctrl.Rotate(axis, mouse_pos)
 		local target = mctrl.target
 		if target:IsValid() then
 			
-			local pos, ang = mctrl.target:GetPosition(), mctrl.target:GetAngles()
+			local pos, ang = mctrl.target:GetTRPosition(), mctrl.target:GetTRAngles()
 			local forward, right, up = get_axes(ang) 
 			local final
 			
 			if axis == AXIS_X then
-				local localpos = utility.LinePlaneIntersection(pos, right, x, y)
+				local localpos = utility.LinePlaneIntersection(pos, right, mouse_pos)
 				if localpos then
 					local diffang = (pos - (localpos + pos)):GetAngles()
 					diffang:RotateAroundAxis(right, math.rad(180))
-
-					local  _, localang = utility.WorldToLocal(vector_origin, diffang, vector_origin, ang)
-					local _, newang = utility.LocalToWorld(vector_origin, Ang3(math.normalizeangle(localang.p + localang.y), 0, 0), vector_origin, ang)
-					final = get_target_angles(vector_origin, newang)
+					
+					local _, localang = utility.WorldToLocal(nil, diffang, nil, ang)
+					local _, newang = utility.LocalToWorld(nil, Ang3(localang.p + localang.y, 0, 0):Normalize(), nil, ang)
+					final = get_target_angles(nil, newang)
 				end
 			elseif axis == AXIS_Y then
-				local localpos = utility.LinePlaneIntersection(pos, up, x, y)
+				local localpos = utility.LinePlaneIntersection(pos, up, mouse_pos)
 				if localpos then
-					local diffang = (pos - (localpos + pos)):GetAngles()
+					local diffang = ((localpos + pos) - pos):GetAngles()
 					diffang:RotateAroundAxis(up, math.rad(90))
 
-					local _, localang = utility.WorldToLocal(vector_origin, diffang, vector_origin, ang)
-					local _, newang = utility.LocalToWorld(vector_origin, Ang3(0, math.normalizeangle(localang.p + localang.y), 0), vector_origin, ang)
+					local _, localang = utility.WorldToLocal(nil, diffang, nil, ang)
+					local _, newang = utility.LocalToWorld(nil, Ang3(0, localang.p - localang.y, 0):Normalize(), nil, ang)
 
-					final = get_target_angles(vector_origin, newang)
+					final = get_target_angles(nil, newang)
 				end
 			elseif axis == AXIS_Z then
-				local localpos = utility.LinePlaneIntersection(pos, forward, x, y)
+				local localpos = utility.LinePlaneIntersection(pos, forward, mouse_pos)
 				
 				if localpos then
 					local diffang = (pos - (localpos + pos)):GetAngles()
 					diffang:RotateAroundAxis(forward, math.rad(-90))
 
-					local _, localang = utility.WorldToLocal(vector_origin, diffang, vector_origin, ang)
-					local _, newang = utility.LocalToWorld(vector_origin, Ang3(0, 0, math.normalizeangle(localang.p)), vector_origin, ang)
+					local _, localang = utility.WorldToLocal(nil, diffang, nil, ang)
+					local _, newang = utility.LocalToWorld(nil, Ang3(0, 0, localang.p):Normalize(), nil, ang)
 
-					final = get_target_angles(vector_origin, newang)
+					final = get_target_angles(nil, newang)
 				end
 			end
 			
@@ -150,15 +158,15 @@ do -- PUT ME IN TRANSFORM
 		local target = mctrl.target
 		
 		if not target:IsValid() or not target:HasComponent("transform") then return end
-
+		
 		local x, y = surface.GetMousePosition()
 		if mctrl.grab.axis and mctrl.grab.mode == MODE_MOVE then
-			mctrl.Move(mctrl.grab.axis, x, y)
+			mctrl.Move(mctrl.grab.axis, Vec2(x, y))
 		elseif mctrl.grab.axis and mctrl.grab.mode == MODE_ROTATE then
-			mctrl.Rotate(mctrl.grab.axis, x, y)
+			mctrl.Rotate(mctrl.grab.axis, Vec2(x, y))
 		end
 
-		local pos, ang = mctrl.target:GetPosition(), mctrl.target:GetAngles()
+		local pos, ang = mctrl.target:GetTRPosition(), mctrl.target:GetTRAngles()
 
 		local forward, right, up = get_axes(ang)
 
@@ -211,7 +219,7 @@ do -- PUT ME IN TRANSFORM
 		if not target:IsValid() or not target:HasComponent("transform") then return end
 		
 		local x, y = surface.GetMousePosition()
-		local pos, ang = mctrl.target:GetPosition(), mctrl.target:GetAngles()
+		local pos, ang = mctrl.target:GetTRPosition(), mctrl.target:GetTRAngles()
 		
 		local forward, right, up = get_axes(ang)
 		local r = mctrl.size
@@ -446,6 +454,11 @@ function editor.Open()
 			event.Call("EditorSelectEentity", node.ent)
 			editor.selected_ent = node.ent
 			mctrl.target = node.ent
+		end
+		
+		tree.OnNodeDrop = function(_, node, dropped_node, drop_pos)
+			node.ent:AddChild(dropped_node.ent)
+			repopulate()
 		end
 		
 		editor.tree = tree
