@@ -1,27 +1,39 @@
 local utility = ... or _G.utility
 
 function utility.WorldToLocal(world_pos, world_ang, local_pos, local_ang)
-	local lmat = Matrix44():SetRotation(Quat():SetAngles(local_ang))
-	local wmat = Matrix44():SetRotation(Quat():SetAngles(world_ang))
-	local ang = (lmat * wmat):GetRotation():GetAngles()
+	local pos, ang
 	
-	local lmat = Matrix44():SetTranslation(local_pos:Unpack())
-	local wmat = Matrix44():SetTranslation(world_pos:Unpack())
-	local pos = Vec3((lmat * wmat):GetTranslation())
+	if world_ang and local_ang then
+		local lmat = Matrix44():SetRotation(Quat():SetAngles(local_ang))
+		local wmat = Matrix44():SetRotation(Quat():SetAngles(world_ang))
+		ang = (lmat * wmat):GetRotation():GetAngles()
+	end
+	
+	if world_pos and local_pos then
+		local lmat = Matrix44():SetTranslation(local_pos:Unpack())
+		local wmat = Matrix44():SetTranslation(world_pos:Unpack())
+		pos = Vec3((lmat * wmat):GetTranslation())
+	end
 		
 	return pos, ang
 end
 
 
 function utility.LocalToWorld(world_pos, world_ang, local_pos, local_ang)
-	local lmat = Matrix44():SetRotation(Quat():SetAngles(local_ang))
-	local wmat = Matrix44():SetRotation(Quat():SetAngles(world_ang)):GetInverse()
-	local ang = (wmat * lmat):GetRotation():GetAngles()
+	local pos, ang
 	
-	local lmat = Matrix44():SetTranslation(local_pos:Unpack())
-	local wmat = Matrix44():SetTranslation(world_pos:Unpack()):GetInverse()
-	local pos = Vec3((wmat * lmat):GetTranslation())
-		
+	if world_ang and local_ang then
+		local lmat = Matrix44():SetRotation(Quat():SetAngles(local_ang))
+		local wmat = Matrix44():SetRotation(Quat():SetAngles(world_ang)):GetInverse()
+		ang = (wmat * lmat):GetRotation():GetAngles()
+	end
+	
+	if world_pos and local_pos then
+		local lmat = Matrix44():SetTranslation(local_pos:Unpack())
+		local wmat = Matrix44():SetTranslation(world_pos:Unpack()):GetInverse()
+		pos = Vec3((wmat * lmat):GetTranslation())
+	end
+			
 	return pos, ang
 end
 
@@ -103,11 +115,11 @@ function utility.WorldPositionToScreen(position, cam_pos, cam_ang, screen_width,
 	
 	--Simple check to see if the object is in front of the camera
     if fdp < 0 then 
-        vis = -1
+        vis = 1
     elseif x < 0 or x > screen_width or y < 0 or y > screen_height then  --We've already determined the object is in front of us, but it may be lurking just outside our field of vision.
         vis = 0
     else
-        vis = 1
+        vis = -1
     end
 
     return Vec2(x, y), vis
