@@ -50,7 +50,7 @@ do -- world
 	
 	event.AddListener("GBufferInitialized", "world_parameters", function()
 		if not entities.world:IsValid() then
-			entities.world = entities.CreateEntity("world")
+			entities.world = entities.CreateEntity("group")
 		end
 	end)
 end

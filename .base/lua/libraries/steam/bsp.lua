@@ -40,7 +40,10 @@ console.AddCommand("map", function(path)
 		end
 	end
 	
-	steam.LoadMap("maps/" .. path .. ".bsp")	
+	steam.bsp_world = steam.bsp_world or entities.CreateEntity("clientside")
+	steam.bsp_world:SetName(path)
+	steam.bsp_world:SetCull(false)
+	steam.bsp_world:SetModelPath("maps/" .. path .. ".bsp")	
 end)
 
 local function read_lump_data(thread, what, bsp_file, header, index, size, struct)
@@ -70,7 +73,7 @@ local function read_lump_data(thread, what, bsp_file, header, index, size, struc
 	return out
 end
 
-function steam.LoadMap(path, callback)
+function steam.LoadMap(path, callback, entity)
 	local thread = utility.CreateThread()
 	
 	thread:SetFrequency(120)
@@ -621,15 +624,30 @@ function steam.LoadMap(path, callback)
 		if steam.debug or _debug then 
 			logn("SUB_MODELS ", #models) 
 		end
+				
+		for k,v in ipairs(entity:GetChildrenList()) do
+			if v.config ~= "world" and v:GetName() ~= "sun" then -- FIX ME
+				v:Remove()
+			end
+		end
 		
-		entities.SafeRemove(steam.bsp_world)
-		
-		steam.bsp_world = entities.CreateEntity("clientside")
-		steam.bsp_world:SetName(path:match(".+/(.+)%.bsp"))		
+		if not entity.world_params then
+			for k, v in pairs(entity:GetChildren()) do
+				if v.config == "world" then
+					entity.world_params = v
+					break
+				end
+			end
+			
+			entity.world_params = entity.world_params or entities.CreateEntity("world", entity)
+		end
 		
 		if GRAPHICS then
+			for i, model in pairs(entity:GetMeshes()) do
+				entity:RemoveMesh(model)
+			end
 			for i, model in ipairs(models) do
-				steam.bsp_world:AddMesh(model)
+				entity:AddMesh(model)
 			end
 		end
 		
@@ -637,38 +655,39 @@ function steam.LoadMap(path, callback)
 		for _, info in pairs(header.entities) do
 			if GRAPHICS and info.classname then
 				if info.classname and info.classname:find("light_environment") then
-
 					local p, y = info.pitch, info.angles.y
-					entities.world:SetSunAngles(Deg3(p, y+180, 0))
-					entities.world:SetSunSpecularIntensity(0.15)
-					entities.world:SetSunIntensity(1)
+					entity.world_params:SetSunAngles(Deg3(p, y+180, 0))
+					entity.world_params:SetSunSpecularIntensity(0.15)
+					entity.world_params:SetSunIntensity(1)
 					
 					info._light.a = 1
-					entities.world:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
-					entities.world:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b)*0.5)
+					entity.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
+					entity.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b)*0.5)
 				elseif info.classname:lower():find("light") and info._light then		
-					local ent = entities.CreateEntity("light", steam.bsp_world)
+					local ent = entities.CreateEntity("light", entity)
 					ent:SetName(info.classname)
 					ent:SetPosition(info.origin * 0.0254)
+					ent:SetHideFromEditor(true)
 					
 					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
 					ent:SetSize(5)
 					ent:SetDiffuseIntensity(info._light.a/25) 
 					ent:SetRoughness(0.5)
 				elseif GRAPHICS and info.classname == "env_fog_controller" then
-					entities.world:SetFogColor(info.fogcolor)
-					entities.world:SetFogStart(info.fogstart* scale)
-					entities.world:SetFogEnd(info.fogend * scale)
+					entity.world_params:SetFogColor(info.fogcolor)
+					entity.world_params:SetFogStart(info.fogstart* scale)
+					entity.world_params:SetFogEnd(info.fogend * scale)
 				end
 			end
 		
 			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
 				if vfs.IsFile(info.model) then
-					local ent = entities.CreateEntity("clientside", steam.bsp_world)
+					local ent = entities.CreateEntity("clientside", entity)
 					ent:SetName(info.classname)
 					ent:SetModelPath(info.model)
 					ent:SetPosition(info.origin * scale)
 					ent:SetAngles(info.angles:Rad())
+					ent:SetHideFromEditor(true)
 				end
 			end
 			
@@ -679,11 +698,12 @@ function steam.LoadMap(path, callback)
 		local count = #header.static_entities
 		for i, info in ipairs(header.static_entities) do
 			if vfs.IsFile(info.model) then
-				local ent = entities.CreateEntity("clientside", steam.bsp_world)
+				local ent = entities.CreateEntity("clientside", entity)
 				ent:SetName("static_entity_" .. i)
 				ent:SetModelPath(info.model)
 				ent:SetPosition(info.origin * scale)
 				ent:SetAngles(info.angles:Rad())
+				ent:SetHideFromEditor(true)
 				
 				thread:ReportProgress("spawning static entities", count)
 				thread:Sleep(0.05)
@@ -731,7 +751,7 @@ function steam.LoadMap(path, callback)
 				},
 			}
 			
-			local chunk = entities.CreateEntity("physical", steam.bsp_world)
+			local chunk = entities.CreateEntity("physical", entity)
 			chunk:SetHideFromEditor(true)
 			chunk:SetName("physics chunk " .. i_)
 			chunk:SetPhysicsModel(mesh)
