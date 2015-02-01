@@ -9,6 +9,7 @@ do -- tree node
 	prototype.GetSet(PANEL, "Expand", true)
 	
 	function PANEL:Initialize()	
+		self:SetDraggable(true)
 		self.nodes = {}
 		
 		prototype.GetRegistered(self.Type, "button").Initialize(self)
@@ -39,6 +40,14 @@ do -- tree node
 		button.OnMouseInput = function(_,...)self:OnMouseInput(...) end -- FIX IGNORE MOUSE
 		 
 		self:SetText("nil")
+	end
+	
+	function PANEL:OnChildDrop(child, drop_pos)
+		self.tree:OnNodeDrop(self, child, drop_pos)
+	end
+	
+	function PANEL:OnParentLand(parent)
+		
 	end
 	
 	function PANEL:OnLayout(S)
@@ -102,7 +111,7 @@ do -- tree node
 		pnl.node_parent = self
 		
 		self.expand:SetVisible(true)
-		self:SetExpand(true)		
+		self:SetExpand(true)
 		
 		return pnl
 	end
@@ -199,6 +208,7 @@ do
 	end
 
 	function PANEL:OnNodeSelect(node) end
+	function PANEL:OnNodeDrop(node, dropped_node, drop_pos) end
 	
 	gui.RegisterPanel(PANEL)		
 end
