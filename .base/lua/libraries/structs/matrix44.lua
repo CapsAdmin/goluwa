@@ -211,7 +211,7 @@ function META:GetClipCoordinates()
 end
 
 function META:Translate(x, y, z)
-	if x == 0 and y == 0 and (z == 0 or not z) then return result end
+	if x == 0 and y == 0 and (z == 0 or not z) then return self end
 
 	local m = self.m
 
@@ -578,6 +578,14 @@ function META:SetRotation(q)
 	m[6] = 2.0 * (tmp1 - tmp2)*invs
 	
 	return self
+end
+
+function META:SetAngles(ang)
+	self:SetRotation(Quat():SetAngles(ang))
+end
+
+function META:GetAngles()
+	return self:GetRotation():GetAngles()
 end
 
 local t = ffi.typeof("float[16]")
