@@ -3,6 +3,7 @@ local utility = _G.utility or {}
 include("midi.lua", utility)
 include("packed_rectangle.lua", utility)
 include("quickbms.lua", utility)
+include("3d.lua", utility)
 
 local EPSILON = 1E-12
 
