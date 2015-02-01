@@ -624,13 +624,13 @@ function steam.LoadMap(path, callback, entity)
 		if steam.debug or _debug then 
 			logn("SUB_MODELS ", #models) 
 		end
-				
+
 		for k,v in ipairs(entity:GetChildrenList()) do
-			if v.config ~= "world" and v:GetName() ~= "sun" then -- FIX ME
+			if v.config ~= "world" and v:GetName() ~= "sun" and v:GetHideFromEditor() then -- FIX ME
 				v:Remove()
 			end
 		end
-		
+
 		if not entity.world_params then
 			for k, v in pairs(entity:GetChildren()) do
 				if v.config == "world" then
