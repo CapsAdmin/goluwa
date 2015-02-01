@@ -7,7 +7,7 @@ end)
 
 console.AddCommand("unmount", function(game)
 	local game_info = assert(steam.UnmountSourceGame(game))
-	logf("mounted %s %s\n", game_info.game, game_info.title2 or game_info.title)
+	logf("unmounted %s %s\n", game_info.game, game_info.title2 or game_info.title)
 end)
 
 function steam.FindGamePaths(force_cache_update)
@@ -263,7 +263,7 @@ function steam.UnmountSourceGame(game_info)
 	if game_info then
 		for k, v in pairs(vfs.GetMounts()) do
 			if v.userdata and v.userdata.filesystem.steamappid == game_info.filesystem.steamappid then
-				vfs.Unmount(v.full_where, v.full_to)
+				vfs.Unmount(v.full_where, v.full_to)				
 			end
 		end
 	end
