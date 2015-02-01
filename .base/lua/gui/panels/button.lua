@@ -67,7 +67,7 @@ end
 
 function PANEL:GetState(button)
 	button = button or "button_1"
-	return self.button_down[button]
+	return self.button_down[button] or false
 end
 
 function PANEL:CanPress(button)

@@ -336,7 +336,7 @@ do -- boolean
 	}
 		
 	function PANEL:Decode(str)
-		return str2bool[str:lower()]
+		return str2bool[str:lower()] or false
 	end
 	
 	function PANEL:Encode(b)
