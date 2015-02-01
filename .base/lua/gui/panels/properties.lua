@@ -561,7 +561,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 		local panel = right:CreatePanel(t .. "_property")
 					
 		panel:SetValue(default)
-		panel:SetDefaultValue(default)
+		panel:SetDefaultValue(extra_info.default or default)
 		panel.GetValue = get_value
 		panel.OnValueChanged = function(_, val) set_value(val) end
 		panel:SetupLayout("fill_x", "fill_y")
@@ -603,7 +603,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 		end
 				
 		panel:SetValue(default)
-		panel:SetDefaultValue(default)
+		panel:SetDefaultValue(extra_info.default or default)
 		panel.GetValue = get_value
 		panel.OnValueChanged = function(_, val) set_value(val) end
 		panel:SetupLayout("fill_x", "fill_y")
@@ -636,6 +636,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 				field = key,
 			}, extra_info)
 			
+			extra_info.default = extra_info.default[key]
 			extra_info.fields = nil
 			
 			local left, right = self:AddProperty(
