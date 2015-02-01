@@ -127,7 +127,13 @@ do -- base property
 	end
 	
 	function PANEL:GetValue()
-		return self:Decode(self:GetText())
+		local val = self:Decode(self:GetText()) 
+		
+		if val == nil then
+			return self:GetDefaultValue()
+		end
+		
+		return val
 	end
 	
 	function PANEL:GetEncodedValue()
@@ -763,6 +769,8 @@ function PANEL:AddPropertiesFromObject(obj)
 				if obj:IsValid() then 
 					return get(obj)
 				end
+				
+				return def
 			end, 
 			def,
 			info,
