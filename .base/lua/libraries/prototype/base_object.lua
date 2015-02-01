@@ -175,7 +175,10 @@ do -- events
 	local events = {}
 	local ref_count = {}
 
-	function META:AddEvent(event_type)			
+	function META:AddEvent(event_type)
+		self.added_events = self.added_events or {}
+		if self.added_events[event_type] then return end
+		
 		ref_count[event_type] = (ref_count[event_type] or 0) + 1
 		
 		local func_name = "On" .. event_type
@@ -193,12 +196,14 @@ do -- events
 			logn(str)
 			self:RemoveEvent(event_type)
 		end})
-		
-		self.added_events = self.added_events or {}
+				
 		self.added_events[event_type] = true
 	end
 
 	function META:RemoveEvent(event_type)
+		self.added_events = self.added_events or {}
+		if not self.added_events[event_type] then return end
+
 		ref_count[event_type] = (ref_count[event_type] or 0) - 1
 
 		events[event_type] = events[event_type] or utility.CreateWeakTable()
@@ -211,6 +216,8 @@ do -- events
 		end
 		
 		table.fixindices(events[event_type])
+		
+		self.added_events[event_type] = nil
 		
 		if ref_count[event_type] <= 0 then
 			event.RemoveListener(event_type, "prototype_events")
