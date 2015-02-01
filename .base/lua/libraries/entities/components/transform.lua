@@ -123,7 +123,7 @@ function COMPONENT:RebuildMatrix()
 
 	if self.rebuild_scale_matrix and not (self.temp_scale.x == 1 and self.temp_scale.y == 1 and self.temp_scale.z == 1) then
 		self.ScaleMatrix:Identity()
-		self.ScaleMatrix:Scale(self.temp_scale.x, self.temp_scale.z, self.temp_scale.y)
+		self.ScaleMatrix:Scale(self.temp_scale.y, self.temp_scale.x, self.temp_scale.z)
 		--self.ScaleMatrix:Shear(self.Shear)
 		
 		self.rebuild_scale_matrix = false
