@@ -710,6 +710,8 @@ do -- drag drop
 
 			self:StopDragging()
 		end
+		
+		self:MarkCacheDirty()
 	end
 
 	function PANEL:OnDraggedChildEnter(child, drop_pos)
