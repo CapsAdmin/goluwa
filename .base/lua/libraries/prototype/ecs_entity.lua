@@ -115,7 +115,7 @@ do -- serializing
 		
 		for i, v in ipairs(self:GetChildren()) do
 			if not v:GetHideFromEditor() then
-				data.children[i] = v:GetStorableTable()
+				table.insert(data.children, v:GetStorableTable())
 			end
 		end
 		
