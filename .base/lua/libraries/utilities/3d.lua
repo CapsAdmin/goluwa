@@ -1,6 +1,6 @@
 local utility = ... or _G.utility
 
-function utility.WorldToLocal(world_pos, world_ang, local_pos, local_ang)
+function utility.WorldToLocal(local_pos, local_ang, world_pos, world_ang)
 	local pos, ang
 	
 	if world_ang and local_ang then
@@ -19,26 +19,26 @@ function utility.WorldToLocal(world_pos, world_ang, local_pos, local_ang)
 end
 
 
-function utility.LocalToWorld(world_pos, world_ang, local_pos, local_ang)
+function utility.LocalToWorld(local_pos, local_ang, world_pos, world_ang)
 	local pos, ang
 	
 	if world_ang and local_ang then
-		local lmat = Matrix44():SetRotation(Quat():SetAngles(local_ang))
-		local wmat = Matrix44():SetRotation(Quat():SetAngles(world_ang)):GetInverse()
-		ang = (wmat * lmat):GetRotation():GetAngles()
+		local lmat = Matrix44():SetRotation(Quat():SetAngles(local_ang)):GetInverse()
+		local wmat = Matrix44():SetRotation(Quat():SetAngles(world_ang))
+		ang = (lmat * wmat):GetRotation():GetAngles()
 	end
 	
 	if world_pos and local_pos then
-		local lmat = Matrix44():SetTranslation(local_pos:Unpack())
-		local wmat = Matrix44():SetTranslation(world_pos:Unpack()):GetInverse()
-		pos = Vec3((wmat * lmat):GetTranslation())
+		local lmat = Matrix44():SetTranslation(local_pos:Unpack()):GetInverse()
+		local wmat = Matrix44():SetTranslation(world_pos:Unpack())
+		pos = Vec3((lmat * wmat):GetTranslation())
 	end
 			
 	return pos, ang
 end
 
-function utility.LinePlaneIntersection(pos, normal, x, y)
-	local ln = utility.ScreenToWorldDirection(Vec2(x, y))
+function utility.LinePlaneIntersection(pos, normal, screen_pos)
+	local ln = utility.ScreenToWorldDirection(screen_pos)
 	local lp = render.GetCameraPosition() - pos
 	local t = lp:GetDot(normal) / ln:GetDot(normal)
 	
@@ -47,12 +47,12 @@ function utility.LinePlaneIntersection(pos, normal, x, y)
 	end
 end
 
-function utility.PointToAxis(pos, axis, x, y)
+function utility.PointToAxis(pos, axis, screen_pos)
 	local origin = utility.WorldPositionToScreen(pos)
 	local point = utility.WorldPositionToScreen(pos + (axis * 8))
 
 	local a = math.atan2(point.y - origin.y, point.x - origin.x)
-	local d = math.cos(a) * (point.x - x) + math.sin(a) * (point.y - y)
+	local d = math.cos(a) * (point.x - screen_pos.x) + math.sin(a) * (point.y - screen_pos.y)
 
 	return Vec2(point.x + math.cos(a) * -d, point.y + math.sin(a) * -d)
 end
