@@ -47,10 +47,22 @@ end
 
 function COMPONENT:InvalidateScaleMatrix()
 	self.rebuild_scale_matrix = true
+	for i,v in ipairs(self.Entity:GetChildrenList()) do
+		local v = v.Components[COMPONENT.Name]
+		if v then
+			v.rebuild_scale_matrix = true
+		end
+	end
 end
 
 function COMPONENT:InvalidateTRMatrix()
 	self.rebuild_tr_matrix = true
+	for i,v in ipairs(self.Entity:GetChildrenList()) do
+		local v = v.Components[COMPONENT.Name]
+		if v then
+			v.rebuild_tr_matrix = true
+		end
+	end
 end
 
 function COMPONENT:GetTRPosition()
