@@ -35,7 +35,6 @@ if GRAPHICS then
 		function PASS:DrawDebug(i,x,y,w,h,size)
 			for name, map in pairs(render.shadow_maps) do
 				local tex = map:GetTexture("depth")
-		
 			
 				surface.SetWhiteTexture()
 				surface.SetColor(1, 1, 1, 1)
@@ -340,7 +339,6 @@ if GRAPHICS then
 
 			shader:Bind()
 			self.light_mesh:Draw()
-			wtf = self
 		end
 	end
 	
