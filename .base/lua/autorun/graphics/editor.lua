@@ -453,7 +453,7 @@ function editor.Open()
 			
 			event.Call("EditorSelectEentity", node.ent)
 			editor.selected_ent = node.ent
-			mctrl.target = node.ent
+			mctrl.target = node.ent			
 		end
 		
 		tree.OnNodeDrop = function(_, node, dropped_node, drop_pos)
@@ -466,8 +466,8 @@ function editor.Open()
 	
 	--editor.top_scroll.OnRightClick = function() right_click_node() end
 	
-	event.AddListener("EntityCreate", "editor", function() event.Delay(0.1, repopulate) end)
-	event.AddListener("EntityRemoved", "editor", repopulate)	
+	event.AddListener("EntityCreate", "editor", function() event.DeferExecution(function() repopulate() end, 0.1, "editor_repopulate_hack") end)
+	event.AddListener("EntityRemoved", "editor", function() event.DeferExecution(function() repopulate() end, 0.1, "editor_repopulate_hack") end)	
 	event.AddListener("MouseInput", "editor", mctrl.MouseInput)	
 	event.AddListener("PreDrawMenu", "editor", mctrl.Draw)	
 	repopulate()
