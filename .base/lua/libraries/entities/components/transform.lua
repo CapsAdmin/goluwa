@@ -1,43 +1,43 @@
-local COMPONENT = {}
+local META = prototype.CreateTemplate()
 
-COMPONENT.Name = "transform"
+META.Name = "transform"
 
-prototype.GetSet(COMPONENT, "TRMatrix", Matrix44())
-prototype.GetSet(COMPONENT, "ScaleMatrix", Matrix44())
+META:GetSet("TRMatrix", Matrix44())
+META:GetSet("ScaleMatrix", Matrix44())
 
-prototype.StartStorable(COMPONENT)	
-	prototype.GetSet("Position", Vec3(0, 0, 0), {callback = "InvalidateTRMatrix"})
-	prototype.GetSet("Rotation", Quat(0, 0, 0, 1), {callback = "InvalidateTRMatrix"})
+META:StartStorable()
+	META:GetSet("Position", Vec3(0, 0, 0), {callback = "InvalidateTRMatrix"})
+	META:GetSet("Rotation", Quat(0, 0, 0, 1), {callback = "InvalidateTRMatrix"})
 	
-	prototype.GetSet("Scale", Vec3(1, 1, 1), {callback = "InvalidateScaleMatrix"})
-	prototype.GetSet("Shear", Vec3(0, 0, 0), {callback = "InvalidateScaleMatrix"})
-	prototype.GetSet("Size", 1, {callback = "InvalidateScaleMatrix"})
-	prototype.GetSet("SkipRebuild", false)
-prototype.EndStorable()
+	META:GetSet("Scale", Vec3(1, 1, 1), {callback = "InvalidateScaleMatrix"})
+	META:GetSet("Shear", Vec3(0, 0, 0), {callback = "InvalidateScaleMatrix"})
+	META:GetSet("Size", 1, {callback = "InvalidateScaleMatrix"})
+	META:GetSet("SkipRebuild", false)
+META:EndStorable()
 
-prototype.GetSet(COMPONENT, "OverridePosition", nil, {callback = "InvalidateTRMatrix"})
-prototype.GetSet(COMPONENT, "OverrideRotation", nil, {callback = "InvalidateTRMatrix"})
+META:GetSet("OverridePosition", nil, {callback = "InvalidateTRMatrix"})
+META:GetSet("OverrideRotation", nil, {callback = "InvalidateTRMatrix"})
 	
-COMPONENT.Network = {
+META.Network = {
 	Position = {"vec3", 1/30, "unreliable"},
 	Rotation = {"quat", 1/30, "unreliable"},
 	Scale = {"vec3", 1/15},
 	Size = {"float", 1/15},
 }
 
-function COMPONENT:OnRemove(ent)
+function META:OnRemove(ent)
 
 end
 
 do	
-	function COMPONENT:SetScale(vec3) 
+	function META:SetScale(vec3) 
 		self.temp_scale = self.temp_scale or Vec3(1, 1, 1)
 		self.Scale = vec3
 		self.temp_scale = vec3 * self.Size
 		self:InvalidateScaleMatrix()
 	end
 			
-	function COMPONENT:SetSize(num) 
+	function META:SetSize(num) 
 		self.temp_scale = self.temp_scale or Vec3(1, 1, 1)
 		self.Size = num
 		self.temp_scale = num * self.Scale
@@ -45,61 +45,61 @@ do
 	end
 end
 
-function COMPONENT:InvalidateScaleMatrix()
+function META:InvalidateScaleMatrix()
 	self.rebuild_scale_matrix = true
 	for i,v in ipairs(self.Entity:GetChildrenList()) do
-		local v = v.Components[COMPONENT.Name]
+		local v = v.Components[META.Name]
 		if v then
 			v.rebuild_scale_matrix = true
 		end
 	end
 end
 
-function COMPONENT:InvalidateTRMatrix()
+function META:InvalidateTRMatrix()
 	self.rebuild_tr_matrix = true
 	for i,v in ipairs(self.Entity:GetChildrenList()) do
-		local v = v.Components[COMPONENT.Name]
+		local v = v.Components[META.Name]
 		if v then
 			v.rebuild_tr_matrix = true
 		end
 	end
 end
 
-function COMPONENT:GetTRPosition()
+function META:GetTRPosition()
 	local x, y, z = self.TRMatrix:GetTranslation()
 	return Vec3(-y, -x, -z)
 end
 
-function COMPONENT:SetTRPosition(vec)
+function META:SetTRPosition(vec)
 	self.TRMatrix:SetTranslation(vec.x, vec.y, vec.z)
 end
 
-function COMPONENT:GetTRAngles()	
+function META:GetTRAngles()	
 	return self.TRMatrix:GetRotation():GetAngles()
 end
 
-function COMPONENT:SetTRAngles(ang)
+function META:SetTRAngles(ang)
 	self.TRMatrix:SetRotation(Quat():SetAngles(ang))
 end
 
-function COMPONENT:GetTRRotation()
+function META:GetTRRotation()
 	return self.TRMatrix:GetRotation()
 end
 
-function COMPONENT:SetTRRotation(quat)
+function META:SetTRRotation(quat)
 	self.TRMatrix:SetRotation(quat)
 end
 
-function COMPONENT:SetAngles(ang)
+function META:SetAngles(ang)
 	self.Rotation:SetAngles(ang)
 	self:InvalidateTRMatrix()
 end
 
-function COMPONENT:GetAngles()
+function META:GetAngles()
 	return self.Rotation:GetAngles()
 end
 
-function COMPONENT:RebuildMatrix()
+function META:RebuildMatrix()
 	self.temp_scale = self.temp_scale or Vec3(1, 1, 1)
 	
 	if not self.SkipRebuild and self.rebuild_tr_matrix then				
@@ -153,7 +153,7 @@ end
 do
 	local temp = Matrix44()
 
-	function COMPONENT:IsPointsVisible(points, view)
+	function META:IsPointsVisible(points, view)
 		view = view or render.matrices.vp_matrix
 		self.visible_matrix_cache = self.visible_matrix_cache or {}
 		
@@ -185,7 +185,7 @@ do
 	end
 end
 
-function COMPONENT:GetMatrix()
+function META:GetMatrix()
 	self:RebuildMatrix()
 	
 	self.temp_scale = self.temp_scale or Vec3(1, 1, 1)
@@ -197,4 +197,4 @@ function COMPONENT:GetMatrix()
 	return self.ScaleMatrix * self.TRMatrix 
 end
 
-prototype.RegisterComponent(COMPONENT)
+prototype.RegisterComponent(META)

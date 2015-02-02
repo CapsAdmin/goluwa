@@ -3,6 +3,16 @@ local prototype = _G.prototype or {}
 prototype.registered = prototype.registered or {}
 prototype.prepared_metatables = prototype.prepared_metatables or {}
 
+local template_functions = {
+	"GetSet",
+	"IsSet",
+	"Delegate",
+	"GetSetDelegate",
+	"RemoveField",
+	"StartStorable",
+	"EndStorable",
+}
+
 function prototype.CreateTemplate(super_type, sub_type)
 	local template = type(super_type) == "table" and super_type or {}
 	
@@ -11,6 +21,10 @@ function prototype.CreateTemplate(super_type, sub_type)
 		template.ClassName = sub_type or super_type
 	end
 	
+	for _, key in ipairs(template_functions) do
+		template[key] = prototype[key]
+	end
+		
 	return template
 end
 
@@ -38,10 +52,16 @@ do
 		ProtectedFields = true,
 	}
 
-	function prototype.Register(meta, super_type, sub_type)
+	function prototype.Register(meta, super_type, sub_type)	
 		local super_type = checkfield(meta, "Type", super_type)
 		sub_type = sub_type or super_type
 		local sub_type = checkfield(meta, "ClassName", sub_type)
+				
+		for _, key in ipairs(template_functions) do
+			if meta[key] == prototype[key] then
+				meta[key] = nil
+			end
+		end
 				
 		super_type = super_type:lower()
 		sub_type = sub_type:lower()
