@@ -10,7 +10,7 @@ do -- base property
 	
 	function PANEL:Initialize()
 		self.special = NULL
-		
+			
 		prototype.GetRegistered(self.Type, PANEL.Base).Initialize(self)
 		 
 		self:SetActiveStyle("property")
@@ -35,6 +35,15 @@ do -- base property
 			self.special:SetX(self:GetWidth() - self.special:GetWidth())
 			self.special:SetSize(Vec2()+self:GetHeight())
 			self.special:CenterText()
+		end
+	end
+	
+	function PANEL:OnUpdate()
+		if self.edit then return end
+		local val = self:GetValue()
+		if val ~= self.last_value then
+			self:SetText(self:Encode(val))
+			self.last_value = val
 		end
 	end
 		
@@ -233,6 +242,8 @@ do -- number
 	end
 		
 	function PANEL:OnUpdate()
+		prototype.GetRegistered(self.Type, PANEL.Base).OnUpdate(self)
+		
 		if not self.drag_number then return end
 				
 		if input.IsKeyDown("left_shift") then
