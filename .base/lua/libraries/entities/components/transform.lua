@@ -121,7 +121,15 @@ function COMPONENT:RebuildMatrix()
 		if self.Entity:HasParent() then
 			local parent_transform = self.Entity.Parent:GetComponent("transform")
 			
-			-- todo, skip to a higher parent?
+			if not parent_transform:IsValid() then
+				for i, ent in ipairs(self.Entity:GetParentList()) do
+					parent_transform = ent:GetComponent("transform")
+					if parent_transform:IsValid() then
+						break
+					end
+				end
+			end
+			
 			if parent_transform:IsValid() then
 				self.temp_matrix = self.temp_matrix or Matrix44()				
 				--self.TRMatrix = self.TRMatrix * self.Parent.TRMatrix
