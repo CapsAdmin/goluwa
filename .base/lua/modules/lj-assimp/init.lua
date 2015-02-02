@@ -26,95 +26,7 @@ local function fix_path(path)
 	return (path:gsub("\\", "/"):gsub("(/+)", "/"))
 end
 
-function assimp.ImportFileEx(path, flags, callback, custom_io)		
-	local scene
-
-	if custom_io then
-		local file_io_data = ffi.new("aiFileIO", {
-			OpenProc = function(self, path, mode)
-				path = ffi.string(path)
-				path = vfs.FixPath(path)
-				path = path:gsub("/./", "/")
-				
-				local file, err = vfs.Open(path, "read")
-				--print("file open", file, err, path)
-				
-				if not file then return nil end
-				
-				local proxy_data = ffi.new("aiFile", {
-					ReadProc = function(proxy, buffer_out, size, count)
-						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
-						local length = size * count
-						--print("read", file, buffer_out, size)
-												
-						local str = file:ReadBytes(tonumber(length))
-						
-						local temp = ffi.cast("char *", str)
-						ffi.copy(buffer_out, temp, #str)
-						
-						--print(#str, length, ffi.string(buffer_out, #str) == str)
-						
-						return #str
-					end,
-					WriteProc = function(proxy, buffer_in, buffer_length, length)
-						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
-						--print("write", file, buffer_in, buffer_length, length)
-						
-						file:WriteBytes(ffi.string(buffer_in, buffer_length))
-					
-						return buffer_length
-					end,
-					TellProc = function(proxy)
-						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
-						--print("tell", file)
-						
-						return file:GetPosition()
-					end,
-					FileSizeProc = function(proxy)
-						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
-						--print("file size", file)
-						
-						return file:GetSize()
-					end,
-					SeekProc = function(proxy, pos, current_pos)
-						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
-						--print("seek", file)
-						
-						file:SetPosition(pos)
-						return 0 -- 0 = success, -1 = failure, -3 = out of memory
-					end,
-					FlushProc = function(proxy)
-						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
-						--print("flush", file)
-						
-					end,
-				})
-				--ffi.gc(proxy_data, print)
-				local proxy = ffi.new("aiFile[1]", proxy_data)
-				
-				vfs.proxies = vfs.proxies or {}
-				vfs.proxies[tostring(proxy):match(".+: (.+)")] = file
-								
-				return ffi.cast("aiFile_*", proxy)
-			end,
-			CloseProc = function(self, proxy)
-				local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
-				--print("file close", file)
-
-				file:Close()
-			end,
-		})
-		--ffi.gc(file_io_data, print)
-		local file_io = ffi.new("aiFileIO[1]", file_io_data)
-		
-		assimp.file_ios = assimp.file_ios or {}
-		assimp.file_ios[path] = file_io
-			
-		scene = lib.aiImportFileEx(path, flags, file_io)
-	else
-		scene = assimp.ImportFile(path, flags)
-	end
-		
+local function parse_scene(scene, path, callback)
 	if not scene then
 		return nil, ffi.string(assimp.GetErrorString())
 	end
@@ -204,9 +116,6 @@ function assimp.ImportFileEx(path, flags, callback, custom_io)
 		
 		if callback then
 			callback(sub_model, i+1, scene.mNumMeshes)
-		end
-		
-		if callback then
 			coroutine.yield()
 		end
 	end	
@@ -214,6 +123,103 @@ function assimp.ImportFileEx(path, flags, callback, custom_io)
 	assimp.ReleaseImport(scene)
 	
 	return out
+end
+
+function assimp.ImportFileMemory(data, flags, hint, callback)
+	local scene = assimp.ImportFileFromMemory(data, #data, flags, hint)
+	return parse_scene(scene, hint, callback)
+end
+
+function assimp.ImportFileEx(path, flags, callback, custom_io)		
+	local scene
+	
+	if custom_io then
+		local file_io_data = ffi.new("aiFileIO", {
+			OpenProc = function(self, path, mode)
+				path = ffi.string(path)
+				path = vfs.FixPath(path)
+				path = path:gsub("/./", "/")
+				
+				local file, err = vfs.Open(path, "read")
+				--print("file open", file, err, path)
+				
+				if not file then return nil end
+				
+				local proxy_data = ffi.new("aiFile", {
+					ReadProc = function(proxy, buffer_out, size, count)
+						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
+						local length = size * count
+						--print("read", file, buffer_out, size)
+												
+						local str = file:ReadBytes(tonumber(length))
+						
+						local temp = ffi.cast("char *", str)
+						ffi.copy(buffer_out, temp, #str)
+						
+						--print(#str, length, ffi.string(buffer_out, #str) == str)
+						
+						return #str
+					end,
+					WriteProc = function(proxy, buffer_in, buffer_length, length)
+						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
+						--print("write", file, buffer_in, buffer_length, length)
+						
+						file:WriteBytes(ffi.string(buffer_in, buffer_length))
+					
+						return buffer_length
+					end,
+					TellProc = function(proxy)
+						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
+						--print("tell", file)
+						
+						return file:GetPosition()
+					end,
+					FileSizeProc = function(proxy)
+						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
+						--print("file size", file)
+						
+						return file:GetSize()
+					end,
+					SeekProc = function(proxy, pos, current_pos)
+						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
+						--print("seek", file)
+						
+						file:SetPosition(pos)
+						return 0 -- 0 = success, -1 = failure, -3 = out of memory
+					end,
+					FlushProc = function(proxy)
+						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
+						--print("flush", file)
+						
+					end,
+				})
+				--ffi.gc(proxy_data, print)
+				local proxy = ffi.new("aiFile[1]", proxy_data)
+				
+				vfs.proxies = vfs.proxies or {}
+				vfs.proxies[tostring(proxy):match(".+: (.+)")] = file
+								
+				return ffi.cast("aiFile_*", proxy)
+			end,
+			CloseProc = function(self, proxy)
+				local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
+				--print("file close", file)
+
+				file:Close()
+			end,
+		})
+		--ffi.gc(file_io_data, print)
+		local file_io = ffi.new("aiFileIO[1]", file_io_data)
+		
+		assimp.file_ios = assimp.file_ios or {}
+		assimp.file_ios[path] = file_io
+			
+		scene = lib.aiImportFileEx(path, flags, file_io)
+	else
+		scene = assimp.ImportFile(path, flags)
+	end
+		
+	return parse_scene(scene, path, callback)
 end
 
 return assimp

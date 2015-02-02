@@ -5,17 +5,21 @@ COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Draw3DGeometry"}
 
 prototype.StartStorable()
-	prototype.GetSet(COMPONENT, "DiffuseTexture")
-	prototype.GetSet(COMPONENT, "BumpTexture")
-	prototype.GetSet(COMPONENT, "SpecularTexture")
 	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1))
 	prototype.GetSet(COMPONENT, "Alpha", 1)
 	prototype.GetSet(COMPONENT, "Cull", true)
 	prototype.GetSet(COMPONENT, "ModelPath", "")
+	prototype.GetSet(COMPONENT, "DiffuseTexturePath", "")
+	prototype.GetSet(COMPONENT, "BumpTexturePath", "")
+	prototype.GetSet(COMPONENT, "SpecularTexturePath", "")
+
 	prototype.GetSet(COMPONENT, "BBMin", Vec3())
 	prototype.GetSet(COMPONENT, "BBMax", Vec3())
 prototype.EndStorable()
 
+prototype.GetSet(COMPONENT, "DiffuseTexture")
+prototype.GetSet(COMPONENT, "BumpTexture")
+prototype.GetSet(COMPONENT, "SpecularTexture")
 prototype.GetSet(COMPONENT, "Model", nil)
 
 COMPONENT.Network = {
@@ -132,6 +136,21 @@ if GRAPHICS then
 		self:LoadModelFromDisk(path)		
 	end
 
+	function COMPONENT:SetDiffuseTexturePath(path)
+		self.DiffuseTexturePath = path
+		self.DiffuseTexture = Texture(path)
+	end
+	
+	function COMPONENT:SetBumpTexturePath(path)
+		self.BumpTexturePath = path
+		self.BumpTexture = Texture(path)
+	end
+	
+	function COMPONENT:SetSpecularTexturePath(path)
+		self.SpecularTexturePath = path
+		self.SpecularTexture = Texture(path)
+	end
+
 	do		
 		function COMPONENT:AddMesh(mesh)
 			self.sub_models = self.sub_models or {}
@@ -234,9 +253,7 @@ if GRAPHICS then
 				self:BuildBoundingBox()
 				return
 			end
-						
-			render.model_cache[path] = {}
-								
+											
 			flags = flags or bit.bor(
 				assimp.e.aiProcess_CalcTangentSpace, 
 				assimp.e.aiProcess_GenSmoothNormals, 
@@ -254,7 +271,8 @@ if GRAPHICS then
 				path = path .. ".mdl"
 			end
 
-			if not vfs.Exists(path) then
+			if not path:startswith("http") and not vfs.Exists(path) then
+				logn("model not found: ", path)
 				return nil, path .. " not found"
 			end
 			
@@ -263,9 +281,34 @@ if GRAPHICS then
 								
 			self:BuildBoundingBox()
 			
+			render.model_cache[path] = {}
+			
 			local thread = utility.CreateThread()
 			
-			if path:endswith(".mdl") and steam.LoadModel then
+			if path:startswith("http") then
+				vfs.ReadAsync(path, function(data, err)
+					if not data then error(err) end
+					local meshes = assert(assimp.ImportFileMemory(data, flags, path))
+					
+					for i, model_data in pairs(meshes) do
+						if render.debug then logf("[render] %s loading %q %s\n", path, model_data.name, i .. "/" .. #meshes) end
+					
+						local mesh = render.CreateMeshBuilder()
+						
+						solve_material_paths(mesh, model_data, dir)
+
+						mesh:SetName(model_data.name)
+						mesh:SetVertices(model_data.vertices)
+						mesh:SetIndices(model_data.indices)						
+						mesh:BuildBoundingBox()
+												
+						mesh:Upload()
+						self:AddMesh(mesh)						
+						table.insert(render.model_cache[path], mesh)						
+						self:BuildBoundingBox()
+					end
+				end)				
+			elseif path:endswith(".mdl") and steam.LoadModel then
 				function thread.OnStart()
 					steam.LoadModel(path, function(model_data)					
 						local mesh = render.CreateMeshBuilder()
