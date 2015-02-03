@@ -9,6 +9,10 @@ META.Args = {"x", "y", "z", "w"}
 
 structs.AddAllOperators(META)
 
+function QuatDeg3(...)
+    return Quat():SetAngles(Deg3(...))
+end
+
 function META:Identity()
 	self.x = 0
 	self.y = 0
@@ -16,7 +20,7 @@ function META:Identity()
 	self.w = 1
 end
 
-function META.Multiply(a, b)
+function META.HamRight(a, b)
 
 	if type(b) == "number" then
 		a.x = a.x * b
@@ -35,13 +39,39 @@ function META.Multiply(a, b)
 	return a
 end
 
+
+function META.VecMul(a, b)
+    local vec, quat
+    if typex(a) == "vec3" then
+        vec, quat = a, b
+    else
+        vec, quat = b, a
+    end
+        local qvec = Vec3(quat.x, quat.y, quat.z)
+        local uvec = qvec:GetCross(vec)
+        local uuvec = qvec:GetCross(uvec)
+        uvec, uuvec = uvec*2*a.x, uuvec*2
+        return vec+uvec+uuvec
+end
+
+function META:Right() return self:VecMul(Vec3( 0, -1, 0)) end META.GetRight = META.Right
+function META:Left () return self:VecMul(Vec3( 0, 1, 0)) end META.GetLeft  = META.Left
+function META:Up   () return self:VecMul(Vec3( 0, 0, 1)) end META.GetUp    = META.Up  
+function META:Down () return self:VecMul(Vec3( 0, 0, -1)) end META.GetDown  = META.Down
+function META:Front() return self:VecMul(Vec3( 1, 0, 0)) end META.GetFront = META.Front
+function META:Back () return self:VecMul(Vec3( -1, 0,0)) end META.GetBack = META.Back
+META.Forward = META.Front
+META.GetForward = META.Front
+META.Backward = META.Back
+META.GetBackward = META.Back
+
 function META.Divide(a, b)
 
 	if type(b) == "number" then
-		a.x = a.x * b
-		a.y = a.y * b
-		a.z = a.z * b
-		a.w = a.w * b
+		a.x = a.x / b
+		a.y = a.y / b
+		a.z = a.z / b
+		a.w = a.w / b
 	elseif type(a) == "number" then
 		return META.Multiply(b, a)
 	else
@@ -80,7 +110,7 @@ function META:GetLength()
 end
 
 function META:Normalize()
-	local len = self:Length()
+	local len = self:GetLength()
 	
 	if len > 0 then
 		local div = 1 / len
