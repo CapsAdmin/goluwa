@@ -272,24 +272,32 @@ do
 			
 			if scale then 
 				render.Scale(scale.x, scale.y, scale.z) 
-			end	
+			end
 	
 			i = i + 1
 			
 			return render.matrices.world
 		end
 		
-		function render.PushWorldMatrix(mat)
+		function render.PushWorldMatrix(mat, dont_multiply)
 			if not stack[i] then
 				stack[i] = Matrix44()
 			else
 				stack[i] = render.matrices.world
 			end
 
-			if mat then
-				render.matrices.world = stack[i] * mat
+			if dont_multiply then	
+				if mat then
+					render.matrices.world = mat
+				else
+					render.matrices.world = Matrix44()
+				end
 			else
-				render.matrices.world = stack[i]:Copy()
+				if mat then
+					render.matrices.world = stack[i] * mat
+				else
+					render.matrices.world = stack[i]:Copy()
+				end
 			end
 			
 			i = i + 1
