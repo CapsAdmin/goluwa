@@ -356,6 +356,14 @@ do
 	end
 end
 
+function render.EnableDepth(b)
+	if b then
+		gl.Enable(gl.e.GL_DEPTH_TEST)
+	else
+		gl.Disable(gl.e.GL_DEPTH_TEST)
+	end
+end
+
 if RELOAD then return end
 
 include("enum_translate.lua", render)
