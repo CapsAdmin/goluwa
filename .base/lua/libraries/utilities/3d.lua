@@ -70,7 +70,7 @@ function utility.ScreenToWorldDirection(screen_pos, cam_pos, cam_ang, cam_fov, s
 
     --Forward, right, and up vectors (need these to convert from local to world coordinates
     local fwd = cam_ang:GetForward()
-    local rgt = cam_ang:GetRight()
+    local rgt = -cam_ang:GetRight()
     local upw = cam_ang:GetUp()
 
     --Then convert vec to proper world coordinates and return it
@@ -107,7 +107,7 @@ function utility.WorldPositionToScreen(position, cam_pos, cam_ang, screen_width,
     --Dotting the projected vector onto the right and up vectors gives us screen positions relative to the center of the screen.
     --We add half-widths / half-heights to these coordinates to give us screen positions relative to the upper-left corner of the screen.
     --We have to subtract from the "up" instead of adding, since screen coordinates decrease as they go upwards.
-    local x = 0.5 * screen_width - cam_ang:GetRight():GetDot(proj)
+    local x = 0.5 * screen_width + cam_ang:GetRight():GetDot(proj)
     local y = 0.5 * screen_height - cam_ang:GetUp():GetDot(proj)
 
     --Lastly we have to ensure these screen positions are actually on the screen.
