@@ -1,5 +1,53 @@
 console.AddCommand("clear", console.Clear)
 
+do -- url monitoring
+	console.AddCommand("monitor_url", function(_, url, interval)
+		interval = tonumber(interval) or 0.5
+		
+		local last_modified
+		local busy
+			
+		event.CreateTimer("monitor_" .. url, interval, 0, function()
+			if busy then return end
+			busy = true
+			sockets.Request({
+				url = url,
+				method = "HEAD",
+				callback = function(data) 
+					busy = false
+					local date = data.header["last-modified"] or data.header["date"]
+					
+					if date ~= last_modified then					
+						sockets.Download(url, function(lua)
+							local func, err = loadstring(lua)
+							if func then
+								local ok, err = pcall(func)
+								if ok then
+									logf("%s reloaded\n", url)
+								else
+									logf("%s failed: %s\n", url, err)
+								end
+							else
+								logf("%s loadstring failed: %s\n", url, err)
+							end
+						end)
+						
+						last_modified = date
+					end
+				end,
+			})
+		end)
+		
+		logf("%s start monitoring\n", url)
+	end)
+
+	console.AddCommand("unmonitor_url", function(_, url)
+		event.RemoveTimer("monitor_" .. url)
+		
+		logf("%s stop monitoring\n", url)
+	end)
+end
+
 do
 	input.Bind("e+left_alt", "toggle_focus")
 
