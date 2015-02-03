@@ -126,11 +126,11 @@ do -- PUT ME IN TRANSFORM
 			elseif axis == AXIS_Y then
 				local localpos = utility.LinePlaneIntersection(pos, up, mouse_pos)
 				if localpos then
-					local diffang = ((localpos + pos) - pos):GetAngles()
+					local diffang = (pos - (localpos + pos)):GetAngles()
 					diffang:RotateAroundAxis(up, math.rad(90))
 
 					local _, localang = utility.WorldToLocal(nil, diffang, nil, ang)
-					local _, newang = utility.LocalToWorld(nil, Ang3(0, localang.p - localang.y, 0):Normalize(), nil, ang)
+					local _, newang = utility.LocalToWorld(nil, Ang3(0, localang.p + localang.y, 0):Normalize(), nil, ang)
 
 					final = get_target_angles(nil, newang)
 				end
