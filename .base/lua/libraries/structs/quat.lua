@@ -142,4 +142,36 @@ function META:GetAngles()
 		)
 end
 
+
+function META:GetAnglesSafe()
+	-- http:--www.mathworks.com/access/helpdesk/help/toolbox/aeroblks/quaternionstoeulerangles.html
+
+    local sqw = self.w*self.w
+    local sqx = self.x*self.x
+    local sqy = self.y*self.y
+    local sqz = self.z*self.z
+	local unit = sqx + sqy + sqz + sqw -- if normalised is one, otherwise is correction factor
+	local test = self.x*self.y + self.z*self.w
+	
+	local heading
+	local attitude
+	local bank
+	
+	if test > 0.499*unit then -- singularity at north pole
+		heading = 2 * math.atan2(self.x, self.w)
+		attitude = math.pi/2
+		bank = 0
+	elseif test < -0.499 * unit then -- singularity at south pole
+		heading = -2 * math.atan2(self.x,self.w)
+		attitude = -math.pi/2
+		bank = 0
+	else
+		heading = math.atan2(2*self.y*self.w-2*self.x*self.z , sqx - sqy - sqz + sqw)
+		attitude = math.asin(2*test/unit)
+		bank = math.atan2(2*self.x*self.w-2*self.y*self.z , -sqx + sqy - sqz + sqw)
+	end		
+	
+	return Ang3(heading, attitude, bank)
+end
+
 structs.Register(META) 
