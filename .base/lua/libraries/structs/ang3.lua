@@ -33,11 +33,7 @@ function META.GetUp(a)
 end
 
 function META.GetRight(a)
-	return Vec3(
-	   -sin(a.y) * cos(a.z) + cos(a.y) * sin(a.x) * sin(a.z),
-		cos(a.y) * cos(a.z) + sin(a.y) * sin(a.x) * sin(a.z),
-		cos(a.x) * sin(a.z)
-	)
+	return a:GetForward():Cross(a:GetUp())
 end
 
 local PI1 = math.pi

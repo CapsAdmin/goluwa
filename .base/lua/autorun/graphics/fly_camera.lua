@@ -73,9 +73,9 @@ function CalcMovement(dt, cam_ang, cam_fov)
 	offset = cam_ang:GetRight() * speed
 
 	if input.IsKeyDown("a") then
-		forward = forward + offset
-	elseif input.IsKeyDown("d") then
 		forward = forward - offset
+	elseif input.IsKeyDown("d") then
+		forward = forward + offset
 	end
 
 	if input.IsKeyDown("left_alt") then
