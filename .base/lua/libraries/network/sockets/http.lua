@@ -37,6 +37,13 @@ local function request(info)
 	if info.url then
 		local protocol, host, location = info.url:match("(.+)://(.-)/(.+)")
 		
+		local _host, port = host:match("(.+):(.+)")
+		
+		if _host and port then
+			host = _host
+			info.port = tonumber(port)
+		end
+		
 		if not protocol then
 			host, location = info.url:match("(.-)/(.+)")
 			protocol = "http"
