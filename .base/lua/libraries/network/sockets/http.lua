@@ -128,6 +128,11 @@ local function request(info)
 			
 			local str = table.concat(temp, "")
 			local header_data, content_data = str:match("(.-\r\n\r\n)(.+)")
+			
+			if info.method == "HEAD" then
+				header_data = str
+			end
+			
 			if header_data then
 				header = sockets.HeaderToTable(header_data)
 				
@@ -146,6 +151,10 @@ local function request(info)
 				end
 
 				in_header = false
+								
+				if info.method == "HEAD" then
+					self:Remove()
+				end
 			end
 		else
 			table.insert(content, str)
@@ -166,7 +175,7 @@ local function request(info)
 	function socket:OnClose()			
 		local content = table.concat(content, "")
 
-		if content ~= "" then
+		if content ~= "" or info.method == "HEAD" then
 			local ok, err = xpcall(info.callback, system.OnError, {content = content, header = header})
 			
 			if err then
