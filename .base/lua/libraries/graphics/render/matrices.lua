@@ -84,8 +84,8 @@ do
 		
 		function render.PopViewport()
 			render.SetViewport(unpack(table.remove(stack)))
-			end
 		end
+	end
 
 	function render.Start2D(x, y, w, h)				
 		render.PushWorldMatrix()
@@ -246,7 +246,7 @@ do
 		local stack = {}
 		local i = 1
 		
-		function render.PushWorldMatrix(pos, ang, scale, dont_multiply)
+		function render.PushWorldMatrixEx(pos, ang, scale, dont_multiply)
 			if not stack[i] then
 				stack[i] = Matrix44()
 			else
@@ -279,14 +279,18 @@ do
 			return render.matrices.world
 		end
 		
-		function render.PushWorldMatrixEx(mat)
+		function render.PushWorldMatrix(mat)
 			if not stack[i] then
 				stack[i] = Matrix44()
 			else
 				stack[i] = render.matrices.world
 			end
-			
-			render.matrices.world = stack[i] * mat
+
+			if mat then
+				render.matrices.world = stack[i] * mat
+			else
+				render.matrices.world = stack[i]:Copy()
+			end
 			
 			i = i + 1
 			

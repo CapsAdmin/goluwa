@@ -50,7 +50,7 @@ function surface.Start3D(pos, ang, scale)
 	-- tell the 2d shader to use the 3d matrix instead
 	surface.mesh_2d_shader.pvm_matrix = render.GetPVWMatrix3D
 
-	render.PushWorldMatrix(pos, ang, Vec3(scale.x / w, scale.y / h, 1))
+	render.PushWorldMatrixEx(pos, ang, Vec3(scale.x / w, scale.y / h, 1))
 end
 
 function surface.End3D()
@@ -84,7 +84,7 @@ do -- orientation
 	end
 		
 	function surface.PushMatrix(x,y, w,h, a, dont_multiply)
-		render.PushWorldMatrix(nil, nil, nil, dont_multiply)
+		render.PushWorldMatrixEx(nil, nil, nil, dont_multiply)
 
 		if x and y then surface.Translate(x, y) end
 		if w and h then surface.Scale(w, h) end
