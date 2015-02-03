@@ -126,52 +126,126 @@ end
 
 -- https://github.com/grrrwaaa/gct753/blob/master/modules/quat.lua#L465
 
-function META:GetAngles()
-	-- http:--www.mathworks.com/access/helpdesk/help/toolbox/aeroblks/quaternionstoeulerangles.html
-	
-	local sqw = self.w*self.w
-	local sqx = self.x*self.x
-	local sqy = self.y*self.y
-	local sqz = self.z*self.z
-	
-	return
-		Ang3(
-			math.asin (-2.0 * (self.x*self.z - self.w*self.y)),
-			math.atan2( 2.0 * (self.x*self.y + self.w*self.z), (sqw + sqx - sqy - sqz)),
-			math.atan2( 2.0 * (self.y*self.z + self.w*self.x), (sqw - sqx - sqy + sqz))
-		)
+local function twoaxisrot(r11, r12, r21, r31, r32, res)
+	return Ang3(math.atan2(r11, r12), math.acos(r21), math.atan2(r31, r32))
+end
+		
+local function threeaxisrot(r11, r12, r21, r31, r32, res)
+	return Ang3(math.atan2(r31, r32), math.asin(r21), math.atan2(r11, r12))
 end
 
-
-function META:GetAnglesSafe()
-	-- http:--www.mathworks.com/access/helpdesk/help/toolbox/aeroblks/quaternionstoeulerangles.html
-
-    local sqw = self.w*self.w
-    local sqx = self.x*self.x
-    local sqy = self.y*self.y
-    local sqz = self.z*self.z
-	local unit = sqx + sqy + sqz + sqw -- if normalised is one, otherwise is correction factor
-	local test = self.x*self.y + self.z*self.w
+function META.GetAngles(q, seq)
+	--seq = seq or "xzy"
 	
-	local heading
-	local attitude
-	local bank
-	
-	if test > 0.499*unit then -- singularity at north pole
-		heading = 2 * math.atan2(self.x, self.w)
-		attitude = math.pi/2
-		bank = 0
-	elseif test < -0.499 * unit then -- singularity at south pole
-		heading = -2 * math.atan2(self.x,self.w)
-		attitude = -math.pi/2
-		bank = 0
-	else
-		heading = math.atan2(2*self.y*self.w-2*self.x*self.z , sqx - sqy - sqz + sqw)
-		attitude = math.asin(2*test/unit)
-		bank = math.atan2(2*self.x*self.w-2*self.y*self.z , -sqx + sqy - sqz + sqw)
-	end		
-	
-	return Ang3(heading, attitude, bank)
+	if not seq then		
+		local sqw = q.w*q.w
+		local sqx = q.x*q.x
+		local sqy = q.y*q.y
+		local sqz = q.z*q.z
+		
+		return
+			Ang3(
+				math.asin (-2.0 * (q.x*q.z - q.w*q.y)),
+				math.atan2( 2.0 * (q.x*q.y + q.w*q.z), (sqw + sqx - sqy - sqz)),
+				math.atan2( 2.0 * (q.y*q.z + q.w*q.x), (sqw - sqx - sqy + sqz))
+			)
+	elseif seq == "zyx" then
+		return threeaxisrot(
+			2*(q.x*q.y + q.w*q.z),
+			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z,
+			-2*(q.x*q.z - q.w*q.y),
+			2*(q.y*q.z + q.w*q.x),
+			q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z
+		)
+	elseif seq == "zyz" then
+		return twoaxisrot(
+			2*(q.y*q.z - q.w*q.x),
+			2*(q.x*q.z + q.w*q.y),
+			q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z,
+			2*(q.y*q.z + q.w*q.x),
+			-2*(q.x*q.z - q.w*q.y)
+		)
+	elseif seq == "zxy" then
+		return threeaxisrot(
+			-2*(q.x*q.y - q.w*q.z),
+			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
+			2*(q.y*q.z + q.w*q.x),
+			-2*(q.x*q.z - q.w*q.y),
+			q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z
+		)
+	elseif seq == "zxz" then
+		return twoaxisrot(
+			2*(q.x*q.z + q.w*q.y),
+			-2*(q.y*q.z - q.w*q.x),
+			q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z,
+			2*(q.x*q.z - q.w*q.y),
+			2*(q.y*q.z + q.w*q.x)
+		)
+	elseif seq == "yxz" then
+		return threeaxisrot(
+			2*(q.x*q.z + q.w*q.y),
+			q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z,
+			-2*(q.y*q.z - q.w*q.x),
+			2*(q.x*q.y + q.w*q.z),
+			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z
+		)
+	elseif seq == "yxy" then
+		return twoaxisrot( 
+			2*(q.x*q.y - q.w*q.z),
+			2*(q.y*q.z + q.w*q.x),
+			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
+			2*(q.x*q.y + q.w*q.z),
+			-2*(q.y*q.z - q.w*q.x)
+		)
+	elseif seq == "yzx" then
+		return threeaxisrot(
+			-2*(q.x*q.z - q.w*q.y),
+			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z,
+			2*(q.x*q.y + q.w*q.z),
+			-2*(q.y*q.z - q.w*q.x),
+			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z
+		)
+	elseif seq == "yzy" then
+		return twoaxisrot( 
+			2*(q.y*q.z + q.w*q.x),
+			-2*(q.x*q.y - q.w*q.z),
+			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
+			2*(q.y*q.z - q.w*q.x),
+			2*(q.x*q.y + q.w*q.z)
+		)
+	elseif seq == "xyz" then
+		return threeaxisrot( 
+			-2*(q.y*q.z - q.w*q.x),
+			q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z,
+			2*(q.x*q.z + q.w*q.y),
+			-2*(q.x*q.y - q.w*q.z),
+			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z
+		)
+	elseif seq == "xyx" then
+		return twoaxisrot( 
+			2*(q.x*q.y + q.w*q.z),
+			-2*(q.x*q.z - q.w*q.y),
+			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z,
+			2*(q.x*q.y - q.w*q.z),
+			2*(q.x*q.z + q.w*q.y)
+		)
+	elseif seq == "xzy" then
+		return threeaxisrot( 
+			2*(q.y*q.z + q.w*q.x),
+			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
+			-2*(q.x*q.y - q.w*q.z),
+			2*(q.x*q.z + q.w*q.y),
+			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z
+		)
+	elseif seq == "xzx" then
+		return twoaxisrot(
+			2*(q.x*q.z - q.w*q.y),
+			2*(q.x*q.y + q.w*q.z),
+			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z,
+			2*(q.x*q.z + q.w*q.y),
+			-2*(q.x*q.y - q.w*q.z)
+		)
+	end
 end
 
 structs.Register(META) 
