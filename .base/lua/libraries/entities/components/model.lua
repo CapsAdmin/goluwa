@@ -173,6 +173,11 @@ if GRAPHICS then
 			end
 		end
 		
+		function COMPONENT:RemoveMeshes()
+			self.sub_models = {}
+			collectgarbage("step")
+		end
+		
 		function COMPONENT:GetMeshes()
 			self.sub_models = self.sub_models or {}
 			return self.sub_models
@@ -272,7 +277,10 @@ if GRAPHICS then
 			end
 
 			if not path:startswith("http") and not vfs.Exists(path) then
-				logn("model not found: ", path)
+				logf("model not found: %q\n", path)
+				
+				self:RemoveMeshes()
+				
 				return nil, path .. " not found"
 			end
 			
