@@ -51,7 +51,20 @@ pac3_outfit = entities.CreateEntity("clientside")
 pac3_outfit:SetName("pac3 outfit")
 pac3_outfit:RemoveChildren()
 
-if false then
+--[[
+ffi.cdef("int fastlz_decompress(const void* input, int length, void* output, int maxout);")
+local decompress = ffi.load("fastlz").fastlz_decompress
+
+local data = vfs.Read("data/advdupe2/woho.txt") 
+local size = #data
+
+local out = ffi.new("uint8_t[?]", size * 2)
+logn("compression level = ", bit.rshift(data:sub(1,1):byte(), 5))
+logn("compression size = ", size)
+data = ffi.cast("const void *", data)
+decompress(data, size, out, ffi.sizeof(out))
+
+print(#ffi.string(out))
 
 for k,v in pairs(vfs.Find("E:/Garrysmod Server/sigh/garrysmodw/data/permaprops/gm_endlessocean/", nil, true)) do
 	local save = vfs.Read(v)
@@ -66,7 +79,7 @@ for k,v in pairs(vfs.Find("E:/Garrysmod Server/sigh/garrysmodw/data/permaprops/g
 		ent:SetPosition(tbl.pos * scale)
 	end
 end
-end
+]]
 
 for k,v in pairs(tbl) do
 	iterate(v, pac3_outfit)
