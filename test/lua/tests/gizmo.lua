@@ -21,11 +21,11 @@ event.AddListener("PreDrawMenu", "gizmo", function()
     render.SetCullMode("none")
     render.EnableDepth(true)
     
-    render.PushWorldMatrix(mat)
+    render.PushWorldMatrixEx(pos, nil, scale)
         for i, info in ipairs(directions) do
             surface.Start3D(nil, info.ang)            
 				local mouse_pos = Vec2(surface.WorldToLocal(surface.GetMousePosition()))
-				local mouse_ang = math.atan2(mouse_pos.x, mouse_pos.y)
+				local mouse_ang = math.atan2(mouse_pos.y, mouse_pos.x)
 				local dist = mouse_pos:GetLength()
 				
 				surface.SetColor(info.color)
@@ -62,7 +62,7 @@ event.AddListener("PreDrawMenu", "gizmo", function()
             local info = current_axis
             surface.Start3D(nil, info.ang)				
 				local mouse_pos = Vec2(surface.WorldToLocal(surface.GetMousePosition()))
-				local mouse_ang = math.atan2(mouse_pos.x, mouse_pos.y)
+				local mouse_ang = math.atan2(mouse_pos.y, mouse_pos.x)
 				
 				local rad = math.normalizeangle(mouse_start_ang-mouse_ang)
 				
