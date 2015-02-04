@@ -20,6 +20,14 @@ function META:Identity()
 	self.w = 1
 end
 
+function META:SetAxis(rad, axis)
+	rad = rad * 0.5
+	local s = math.sin(rad)	
+	self:Set(axis.x * s, axis.y * s, axis.z * s, math.cos(rad))
+	
+	return self
+end
+
 function META.HamRight(a, b)
 
 	if type(b) == "number" then
@@ -47,11 +55,11 @@ function META.VecMul(a, b)
     else
         vec, quat = b, a
     end
-        local qvec = Vec3(quat.x, quat.y, quat.z)
-        local uvec = qvec:GetCross(vec)
-        local uuvec = qvec:GetCross(uvec)
-        uvec, uuvec = uvec*2*a.x, uuvec*2
-        return vec+uvec+uuvec
+	local qvec = Vec3(quat.x, quat.y, quat.z)
+	local uvec = qvec:GetCross(vec)
+	local uuvec = qvec:GetCross(uvec)
+	uvec, uuvec = uvec*2*a.x, uuvec*2
+	return vec+uvec+uuvec
 end
 
 function META:Right() return self:VecMul(Vec3( 0, -1, 0)) end META.GetRight = META.Right
