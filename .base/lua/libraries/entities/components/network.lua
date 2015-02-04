@@ -173,10 +173,11 @@ do -- synchronization server > client
 				self:GetEntity():Remove() 
 			elseif self:IsValid() then
 				local info = self.server_synced_vars_stringtable[what]
+				
 						
 				if info then
 					local var = buffer:ReadType(info.type)
-					
+										
 					if info.smooth then
 						if type(var) == "number" then
 							info.smooth_var = info.smooth_var or var
@@ -192,6 +193,7 @@ do -- synchronization server > client
 						else
 							local component = self:GetComponent(info.component)
 							component[info.set_name](component, var)
+							
 						end
 					end
 					if self.debug then logf("%s - %s: received %s\n", self, info.component, var) end
