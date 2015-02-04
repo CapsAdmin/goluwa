@@ -246,7 +246,7 @@ do -- number
 		
 		if not self.drag_number then return end
 				
-		if input.IsKeyDown("left_shift") then
+		if input.IsKeyDown("left_shift") and self.real_base_value then
 			self:SetValue(self.real_base_value)
 			self.base_value = nil
 			self.drag_y_pos = nil
