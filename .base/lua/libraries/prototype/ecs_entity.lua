@@ -2,6 +2,10 @@ local prototype = ... or _G.prototype
 
 local META = prototype.CreateTemplate("entity")
 
+function META:__tostring2()
+	return ("[%s][%s]"):format(self.config, self:GetName())
+end
+
 prototype.AddParentingTemplate(META)
 prototype.GetSet(META, "Components", {})
 
