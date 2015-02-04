@@ -185,7 +185,7 @@ do
 		self.rigid_body:InitPhysicsSphere(rad)
 		
 		if SERVER then
-			local obj = self:GetComponent("networked")
+			local obj = self:GetComponent("network")
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsSphere", rad) end
 		end
 		
@@ -204,7 +204,7 @@ do
 		end
 		
 		if SERVER then
-			local obj = self:GetComponent("networked")
+			local obj = self:GetComponent("network")
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsBox", scale) end
 		end
 		
@@ -266,10 +266,12 @@ do
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
 		
-		self.rigid_body:InitPhysicsConvexHull(self:GetPhysicsModel().vertices.pointer, self:GetPhysicsModel().vertices.count)
+		if self:GetPhysicsModel() then
+			self.rigid_body:InitPhysicsConvexHull(self:GetPhysicsModel().vertices.pointer, self:GetPhysicsModel().vertices.count)
+		end
 		
 		if SERVER then
-			local obj = self:GetComponent("networked")
+			local obj = self:GetComponent("network")
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexHull") end
 		end
 		
@@ -281,10 +283,12 @@ do
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
 		
-		self.rigid_body:InitPhysicsConvexTriangles(self:GetPhysicsModel())
+		if self:GetPhysicsModel() then
+			self.rigid_body:InitPhysicsConvexTriangles(self:GetPhysicsModel())
+		end
 		
 		if SERVER then
-			local obj = self:GetComponent("networked")
+			local obj = self:GetComponent("network")
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexTriangles") end
 		end
 		
@@ -296,10 +300,12 @@ do
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
 		
-		self.rigid_body:InitPhysicsTriangles(self:GetPhysicsModel(), quantized_aabb_compression)
+		if self:GetPhysicsModel() then
+			self.rigid_body:InitPhysicsTriangles(self:GetPhysicsModel(), quantized_aabb_compression)
+		end
 		
 		if SERVER then
-			local obj = self:GetComponent("networked")
+			local obj = self:GetComponent("network")
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsTriangles") end
 		end
 		

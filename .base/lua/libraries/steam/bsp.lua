@@ -40,7 +40,7 @@ console.AddCommand("map", function(path)
 		end
 	end
 	
-	steam.bsp_world = steam.bsp_world or entities.CreateEntity("clientside")
+	steam.bsp_world = steam.bsp_world or entities.CreateEntity("visual")
 	steam.bsp_world:SetName(path)
 	steam.bsp_world:SetCull(false)
 	steam.bsp_world:SetModelPath("maps/" .. path .. ".bsp")
@@ -686,7 +686,7 @@ function steam.LoadMap(path, callback, entity)
 		
 			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
 				if vfs.IsFile(info.model) then
-					local ent = entities.CreateEntity("clientside", entity)
+					local ent = entities.CreateEntity("visual", entity)
 					ent:SetName(info.classname)
 					ent:SetModelPath(info.model)
 					ent:SetPosition(info.origin * scale)
@@ -702,7 +702,7 @@ function steam.LoadMap(path, callback, entity)
 		local count = #header.static_entities
 		for i, info in ipairs(header.static_entities) do
 			if vfs.IsFile(info.model) then
-				local ent = entities.CreateEntity("clientside", entity)
+				local ent = entities.CreateEntity("visual", entity)
 				ent:SetName("static_entity_" .. i)
 				ent:SetModelPath(info.model)
 				ent:SetPosition(info.origin * scale)
