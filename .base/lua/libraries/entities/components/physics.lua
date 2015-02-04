@@ -214,8 +214,9 @@ do
 	
 	function COMPONENT:SetPhysicsModelPath(path)
 		self.PhysicsModelPath = path
-		
+				
 		if not vfs.IsFile(path) then
+			logf("physics model not found: %q\n", path)
 			return nil, path .. " not found"
 		end
 		

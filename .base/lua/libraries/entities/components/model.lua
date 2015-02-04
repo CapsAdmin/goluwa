@@ -23,7 +23,7 @@ prototype.GetSet(COMPONENT, "SpecularTexture")
 prototype.GetSet(COMPONENT, "Model", nil)
 
 COMPONENT.Network = {
-	ModelPath = {"string", 1/5},
+	ModelPath = {"string", 1/5, "reliable", true},
 	Cull = {"boolean", 1/5},
 	Alpha = {"float", 1/30, "unreliable"},
 	Color = {"color", 1/5},

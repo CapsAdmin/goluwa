@@ -43,7 +43,11 @@ console.AddCommand("map", function(path)
 	steam.bsp_world = steam.bsp_world or entities.CreateEntity("clientside")
 	steam.bsp_world:SetName(path)
 	steam.bsp_world:SetCull(false)
-	steam.bsp_world:SetModelPath("maps/" .. path .. ".bsp")	
+	steam.bsp_world:SetModelPath("maps/" .. path .. ".bsp")
+	
+	if SERVER then
+		steam.LoadMap("maps/" .. path .. ".bsp", nil, steam.bsp_world)
+	end
 end)
 
 local function read_lump_data(thread, what, bsp_file, header, index, size, struct)
@@ -631,7 +635,7 @@ function steam.LoadMap(path, callback, entity)
 			end
 		end
 
-		if not entity.world_params then
+		if GRAPHICS and not entity.world_params then
 			for k, v in pairs(entity:GetChildren()) do
 				if v.config == "world" then
 					entity.world_params = v
@@ -673,7 +677,7 @@ function steam.LoadMap(path, callback, entity)
 					ent:SetSize(5)
 					ent:SetDiffuseIntensity(info._light.a/25) 
 					ent:SetRoughness(0.5)
-				elseif GRAPHICS and info.classname == "env_fog_controller" then
+				elseif info.classname == "env_fog_controller" then
 					entity.world_params:SetFogColor(info.fogcolor)
 					entity.world_params:SetFogStart(info.fogstart* scale)
 					entity.world_params:SetFogEnd(info.fogend * scale)
@@ -711,6 +715,7 @@ function steam.LoadMap(path, callback, entity)
 		end
 
 		local count = #models
+
 		for i_, model in ipairs(models) do	
 			local vertices_tbl = GRAPHICS and model:GetVertices() or model
 			local vertices_count = #vertices_tbl
@@ -757,7 +762,7 @@ function steam.LoadMap(path, callback, entity)
 			chunk:SetPhysicsModel(mesh)
 			chunk:InitPhysicsTriangles(true)
 			chunk:SetMass(0)
-			
+
 			thread:ReportProgress("building physics meshes", count)
 		end
 

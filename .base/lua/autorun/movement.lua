@@ -131,8 +131,6 @@ if SERVER then
 			event.Delay(3, function()
 				entities.SafeRemove(ent)
 			end)
-			
-			print(client, button, press, ent, cmd.net_position)
 		end
 	end)
 end
