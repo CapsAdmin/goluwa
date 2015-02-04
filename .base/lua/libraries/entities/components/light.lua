@@ -533,7 +533,7 @@ if GRAPHICS then
 			self.light_mesh = LIGHT_MESH
 			return
 		end
-		local ent = entities.CreateEntity("clientside")
+		local ent = entities.CreateEntity("visual")
 		ent:LoadModelFromDisk("models/cube.obj", nil, function()
 			LIGHT_MESH = ent:GetComponent("model").sub_models[1]
 			self.light_mesh = LIGHT_MESH

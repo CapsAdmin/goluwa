@@ -1,6 +1,6 @@
 for k,v in pairs(entities.GetAll()) do v:Remove() end
 
-local world = entities.CreateEntity("networked")
+local world = entities.CreateEntity("physical")
 world:SetModelPath("models/skpfile.obj")  
 world:SetMass(0)
 world:SetPhysicsModelPath("models/skpfile.obj")
@@ -12,7 +12,7 @@ world:SetCull(false)
 WORLD = world
  
 for i = 1, 10 do
-	local body = entities.CreateEntity("networked")
+	local body = entities.CreateEntity("physical")
 	body:SetModelPath("models/cube.obj")
 	body:SetMass(10)
 	body:InitPhysicsBox(Vec3(1, 1, 1))  

@@ -71,7 +71,7 @@ event.AddListener("Move", "spooky", function(client, cmd)
 	
 	if SERVER then
 		if not client.nv.ghost or not client.nv.ghost:IsValid() then
-			ghost = entities.CreateEntity("networked")
+			ghost = entities.CreateEntity("physical")
 				
 			local filter = clients.CreateFilter():AddAllExcept(client)
 			
@@ -120,7 +120,7 @@ if SERVER then
 		if button == "button_1" and press then
 			local cmd = client:GetCurrentCommand()
 			
-			local ent = entities.CreateEntity("networked")
+			local ent = entities.CreateEntity("physical")
 			ent:InitPhysicsBox(Vec3(1, 1, 1)/12)
 			ent:SetSize(1/12)
 			ent:SetModelPath("models/cube.obj")

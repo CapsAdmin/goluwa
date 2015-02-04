@@ -1,6 +1,6 @@
 entities.SafeRemove(LOL_PARENT)
 
-local parent = entities.CreateEntity("clientside")
+local parent = entities.CreateEntity("visual")
  
 LOL_PARENT = parent
 
@@ -16,7 +16,7 @@ do
 
 	for i = 1, 2000 do 
 
-		local child = entities.CreateEntity("clientside", parent)
+		local child = entities.CreateEntity("visual", parent)
 		child:SetPosition(Vec3(0, 2, 0)) 
 		child:SetAngles(Ang3(0,0,0)) 
 		child:SetScale(Vec3(1, 1, 1)) 

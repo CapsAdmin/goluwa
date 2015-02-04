@@ -4,8 +4,7 @@ local spawned_networked = {}
 local queued_packets = {}
 
 
-COMPONENT.Name = "networked"
-COMPONENT.Require = {"transform"}
+COMPONENT.Name = "network"
 COMPONENT.Events = {"Update"}
 
 prototype.StartStorable()
@@ -162,7 +161,7 @@ do -- synchronization server > client
 			local ent = entities.CreateEntity(config)
 			ent:SetNetworkId(id)
 			
-			local self = ent:GetComponent("networked")
+			local self = ent:GetComponent("network")
 			self:SetupSyncVariables()
 			
 			spawned_networked[id] = self

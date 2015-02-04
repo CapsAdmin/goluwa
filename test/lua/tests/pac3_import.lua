@@ -47,7 +47,7 @@ end
 if tbl.self then tbl = {tbl} end
 
 prototype.SafeRemove(pac3_outfit)
-pac3_outfit = entities.CreateEntity("clientside")
+pac3_outfit = entities.CreateEntity("visual")
 pac3_outfit:SetName("pac3 outfit")
 pac3_outfit:RemoveChildren()
 
@@ -72,7 +72,7 @@ for k,v in pairs(vfs.Find("E:/Garrysmod Server/sigh/garrysmodw/data/permaprops/g
 	save = save:gsub("Angle%(", "Ang3(")
 	local tbl = serializer.Decode("luadata", save)	
 	if next(tbl) then
-		local ent = entities.CreateEntity("clientside", pac3_outfit)
+		local ent = entities.CreateEntity("visual", pac3_outfit)
 		ent:SetColor(ColorBytes(unpack(tbl.col)))
 		ent:SetModelPath(tbl.mdl)
 		ent:SetAngles(tbl.ang:Rad())
