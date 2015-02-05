@@ -162,7 +162,12 @@ do -- table logn
 				
 				logf("%s]\n", tab:rep(indent))
 			elseif t == "string" then
-				logf("%s%s = %q,\n", tab:rep(indent), key, tostringx(val))
+				local str = tostringx(val)
+				if str:find("\n") then
+					logf("%s%s = %s,\n", tab:rep(indent), key, str)
+				else
+					logf("%s%s = %q,\n", tab:rep(indent), key, str)
+				end
 			else
 				logf("%s%s = %s,\n", tab:rep(indent), key, tostringx(val))
 			end
