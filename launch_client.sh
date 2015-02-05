@@ -1,2 +1,2 @@
 cd .base/bin
-./launch.sh
+./launch_linux.sh
