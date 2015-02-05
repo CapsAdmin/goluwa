@@ -9,16 +9,20 @@ end
 prototype.AddParentingTemplate(META)
 prototype.GetSet(META, "Components", {})
 
+local DEFER_COMPONENT_CHECKS_AND_EVENTS
+
 function META:AddComponent(name, ...)	
 	self:RemoveComponent(name)
 		
 	local component = prototype.CreateComponent(name)
 	
 	if not component then return end
-					
-	for i, other in ipairs(component.Require) do
-		if not self.Components[other] then
-			error("component " .. name .. " requires component " .. other, 2)
+	
+	if not DEFER_COMPONENT_CHECKS_AND_EVENTS then
+		for i, other in ipairs(component.Require) do
+			if not self.Components[other] then
+				error("component " .. name .. " requires component " .. other, 2)
+			end
 		end
 	end
 	
@@ -30,10 +34,12 @@ function META:AddComponent(name, ...)
 	
 	self.Components[name] = component
 	
-	component:OnAdd(self, ...)
-	
-	for name, component_ in pairs(self:GetComponents()) do
-		component_:OnEntityAddComponent(component)
+	if not DEFER_COMPONENT_CHECKS_AND_EVENTS then
+		component:OnAdd(self, ...)
+		
+		for name, component_ in pairs(self:GetComponents()) do
+			component_:OnEntityAddComponent(component)
+		end
 	end
 	
 	return component
@@ -142,10 +148,14 @@ function prototype.SetupComponents(name, components, icon, friendly)
 		if prototype.GetRegistered("component", name) then
 			for k, v in pairs(prototype.GetRegistered("component", name)) do
 				if type(v) == "function" then			
-					functions[k] = function(ent, a,b,c,d)
-						local obj = ent:GetComponent(name)
-						return obj[k](obj, a,b,c,d)
-					end
+					table.insert(functions, {
+						func = function(ent, a,b,c,d)
+							local obj = ent:GetComponent(name)
+							return obj[k](obj, a,b,c,d)
+						end,
+						name = k,
+						component = name,
+					})
 				end
 			end
 		end
@@ -163,22 +173,48 @@ function prototype.GetConfigurations()
 	return prototype.component_configurations
 end
 
-function prototype.CreateEntity(config, parent)
+function prototype.CreateEntity(config, parent, info)
 	local self = prototype.CreateObject(META)
 	
 	if parent then
 		self:SetParent(parent)
 	end
 	
-	if prototype.component_configurations[config] then
+	if prototype.component_configurations[config] then	
+		info = info or {}
+		
 		self.config = config
 
+		DEFER_COMPONENT_CHECKS_AND_EVENTS = true
+		
 		for _, name in ipairs(prototype.component_configurations[config].components) do
-			self:AddComponent(name)
+			if not info.exclude_components or not table.hasvalue(info.exclude_components, name) then
+				self:AddComponent(name)
+			end
+		end
+				
+		for name, component in pairs(self:GetComponents()) do
+			for i, other in ipairs(component.Require) do
+				if not self.Components[other] then
+					self:Remove()
+					error("component " .. name .. " requires component " .. other, 1)
+				end
+			end
+			component:OnAdd(self)
 		end
 		
-		for name, func in pairs(prototype.component_configurations[config].functions) do
-			self[name] = self[name] or func
+		for _, component in pairs(self:GetComponents()) do
+			for _, component_ in pairs(self:GetComponents()) do
+				component_:OnEntityAddComponent(component)
+			end
+		end
+		
+		DEFER_COMPONENT_CHECKS_AND_EVENTS = false
+		
+		for _, data in ipairs(prototype.component_configurations[config].functions) do
+			if not info.exclude_components or not table.hasvalue(info.exclude_components, data.component) then
+				self[data.name] = self[data.name] or data.func
+			end
 		end
 		
 		self:SetPropertyIcon(prototype.component_configurations[config].icon)

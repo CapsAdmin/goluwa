@@ -25,8 +25,9 @@ COMPONENT.Network = {
 	PhysicsModelPath = {"string", 1/10, "reliable", true}, -- last true means don't send default path (blank path in this case)
 }
 
-COMPONENT.matrix = Matrix44()
-COMPONENT.rigid_body = NULL
+function COMPONENT:Initialize()
+	self.rigid_body = NULL	
+end
 
 local function DELEGATE(META, field, typ, extra_info)
 	
@@ -143,8 +144,14 @@ local function from_bullet(self)
 	--out:Rotate(math.deg(r), 1, 0, 0)
 	
 	--out:Scale(1,-1,-1)
-		
+			
+--	print(self:GetEntity(), self.Position, out:GetTranslation())
+			
 	return out:Copy() 
+end
+
+function COMPONENT:UpdatePhysicsObject()
+	to_bullet(self)
 end
 
 local temp = Matrix44()
@@ -189,8 +196,7 @@ do
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsSphere", rad) end
 		end
 		
-		self:SetPosition(self.Position)
-		self:SetRotation(self.Rotation)
+		to_bullet(self)
 	end
 	
 	function COMPONENT:InitPhysicsBox(scale)
@@ -208,8 +214,7 @@ do
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsBox", scale) end
 		end
 		
-		self:SetPosition(self.Position)
-		self:SetRotation(self.Rotation)
+		to_bullet(self)
 	end
 	
 	function COMPONENT:SetPhysicsModelPath(path)
@@ -256,8 +261,7 @@ do
 		
 		self:SetPhysicsModel(mesh)
 		
-		self:SetPosition(self.Position)
-		self:SetRotation(self.Rotation)
+		to_bullet(self)
 		
 		return true
 	end
@@ -275,8 +279,7 @@ do
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexHull") end
 		end
 		
-		self:SetPosition(self.Position)
-		self:SetRotation(self.Rotation)
+		to_bullet(self)
 	end
 	
 	function COMPONENT:InitPhysicsConvexTriangles()
@@ -292,8 +295,7 @@ do
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexTriangles") end
 		end
 		
-		self:SetPosition(self.Position)
-		self:SetRotation(self.Rotation)
+		to_bullet(self)
 	end
 		
 	function COMPONENT:InitPhysicsTriangles(quantized_aabb_compression)
@@ -309,8 +311,7 @@ do
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsTriangles") end
 		end
 		
-		self:SetPosition(self.Position)
-		self:SetRotation(self.Rotation)
+		to_bullet(self)
 	end
 end		
 
@@ -325,6 +326,7 @@ function COMPONENT:OnUpdate()
 		if not self.SimulateOnClient then
 			if self.rigid_body:GetMass() ~= 0 then
 				self.rigid_body:SetMass(0)
+				to_bullet(self)
 			end
 		end
 	end

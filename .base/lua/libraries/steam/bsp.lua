@@ -686,7 +686,7 @@ function steam.LoadMap(path, callback, entity)
 		
 			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
 				if vfs.IsFile(info.model) then
-					local ent = entities.CreateEntity("visual", entity)
+					local ent = entities.CreateEntity("physical", entity, {exclude_components = {"network"}})
 					ent:SetName(info.classname)
 					ent:SetModelPath(info.model)
 					ent:SetPosition(info.origin * scale)
@@ -702,7 +702,7 @@ function steam.LoadMap(path, callback, entity)
 		local count = #header.static_entities
 		for i, info in ipairs(header.static_entities) do
 			if vfs.IsFile(info.model) then
-				local ent = entities.CreateEntity("visual", entity)
+				local ent = entities.CreateEntity("physical", entity, {exclude_components = {"network"}})
 				ent:SetName("static_entity_" .. i)
 				ent:SetModelPath(info.model)
 				ent:SetPosition(info.origin * scale)
@@ -756,7 +756,7 @@ function steam.LoadMap(path, callback, entity)
 				},
 			}
 			
-			local chunk = entities.CreateEntity("physical", entity)
+			local chunk = entities.CreateEntity("physical", entity, {exclude_components = {"network"}})
 			chunk:SetHideFromEditor(true)
 			chunk:SetName("physics chunk " .. i_)
 			chunk:SetPhysicsModel(mesh)

@@ -256,6 +256,7 @@ if GRAPHICS then
 					self:AddMesh(mesh)
 				end
 				self:BuildBoundingBox()
+				if callback then callback() end
 				return
 			end
 											
