@@ -49,7 +49,7 @@ export LD_PRELOAD="libSegFault.so:$LD_PRELOAD"
 export TERM="xterm-color"
 
 while true; do
-	./luajit ../../../lua/init.lua
+	./luajit ../../lua/init.lua
 
 	if [ $? -eq 0 ] || [ $? -ge 128 ]; then
 		log i "I'm outta here!"

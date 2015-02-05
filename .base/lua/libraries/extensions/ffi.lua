@@ -19,8 +19,8 @@ function ffi.new_dbg_gc(...)
 end
 
 local where = {
-	"bin/" .. ffi.os .. "/" .. ffi.arch .. "/",
-	"lua/modules/bin/" .. ffi.os .. "/" .. ffi.arch .. "/",
+	"bin/" .. ffi.os .. "_" .. ffi.arch .. "/",
+	"lua/modules/bin/" .. ffi.os .. "_" .. ffi.arch .. "/",
 }
 	
 -- make ffi.load search using our file system
