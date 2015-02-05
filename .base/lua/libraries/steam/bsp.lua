@@ -636,6 +636,7 @@ function steam.LoadMap(path, callback)
 			end 
 						
 			for i, mesh in ipairs(models) do
+				mesh:BuildBoundingBox()
 				mesh:Upload(true)
 				thread:ReportProgress("creating meshes", #models)
 				thread:Sleep()
