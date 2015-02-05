@@ -7,12 +7,16 @@ local queued_packets = {}
 COMPONENT.Name = "network"
 COMPONENT.Events = {"Update"}
 
-prototype.StartStorable()
+-- these are either part the base object or the entity itself
+COMPONENT.Network = {
+	Name = {"string", 1/10, "reliable"},
+	Parent = {"entity", 1/5, "reliable"},
+--	HideFromEditor = {"boolean", 1/5, "reliable"},
+	GUID = {"string", 1/5, "reliable"},
+}
 
-	prototype.GetSet(COMPONENT, "NetworkId", -1)
-	prototype.GetSet(COMPONENT, "NetworkChannel", 0)
-
-prototype.EndStorable()
+prototype.GetSet(COMPONENT, "NetworkId", -1)
+prototype.GetSet(COMPONENT, "NetworkChannel", 0)
 
 function COMPONENT:Initialize()
 	self.server_synced_vars = {}
@@ -31,6 +35,7 @@ do
 		local info = {
 			component = component_name, 
 			key = key,
+			key2 = component_name .. key,
 			get_name = "Get" .. key,
 			set_name = "Set" .. key,
 			type = type,
@@ -71,54 +76,77 @@ do
 
 	function COMPONENT:ServerDesyncVar(component_name, key)		
 		if not key then 
-			key = component 
-			component = nil  
+			key = component_name 
+			component_name = nil  
+		end
+			
+		local i, info
+				
+		if component_name and key then
+			for i_, info_ in ipairs(self.server_synced_vars) do
+				if info_.key == key and info_.component == component_name then
+					i, info = i_, info_
+					break
+				end
+			end	
+		elseif key then
+			for i_, info_ in ipairs(self.server_synced_vars) do
+				if info_.key == key then
+					i, info = i_, info_
+					break
+				end
+			end	
 		end
 		
-		if not self.server_synced_vars then return  end
-		
-		for key, info in ipairs(self.server_synced_vars) do
-			if (info.component == component or component == nil) and info.key == key then
-				table.remove(self.server_synced_vars, key)
-				
-				self.server_synced_vars_stringtable[info.component..key] = nil
-				
-				if info.old_set_func then
-					if info.component == "unknown" then
-						info.old_set_func = info.old_set_func or self:GetEntity()[info.set_name]					
-						self:GetEntity()[info.set_name] = info.old_set_func
-					else
-						local component = self:GetEntity():GetComponent(component_name)					
-						info.old_set_func = info.old_set_func or component[info.set_name]					
-						component[info.set_name] = info.old_set_func
-					end
+		if i then
+			table.remove(self.server_synced_vars, i)
+			
+			self.server_synced_vars_stringtable[info.component..key] = nil
+			
+			if info.old_set_func then
+				if info.component == "unknown" then
+					info.old_set_func = info.old_set_func or self:GetEntity()[info.set_name]					
+					self:GetEntity()[info.set_name] = info.old_set_func
+				else
+					local component = self:GetEntity():GetComponent(component_name)					
+					info.old_set_func = info.old_set_func or component[info.set_name]					
+					component[info.set_name] = info.old_set_func
 				end
-				break
 			end
 		end
 	end
 	
-	function COMPONENT:ServerFilterSync(filter, component, key)		
+	function COMPONENT:ServerFilterSync(filter, component_name, key)		
 		if not key then 
-			key = component 
-			component = nil  
+			key = component_name 
+			component_name = nil  
 		end
 		
-		for k, v in ipairs(self.server_synced_vars) do
-			if (v.component == component or component == nil) and v.key == key then
-				v.filter = filter
-			end
-		end	
+		if component_name and key then
+			for _, info in ipairs(self.server_synced_vars) do
+				if info.key == key and info.component == component_name then
+					info.filter = filter
+				end
+			end	
+		elseif key then
+			for _, info in ipairs(self.server_synced_vars) do
+				if info.key == key then
+					info.filter = filter
+				end
+			end	
+		end
 	end
 	
 	function COMPONENT:SetupSyncVariables()
 		local done = {}
 		
-		for i, component in npairs(self:GetEntityComponents()) do
+		for i, component in ipairs(self:GetEntityComponents()) do
 			if component.Network then
 				for key, info in pairs(component.Network) do
 					if not done[key] then
-						self:ServerSyncVar(component.Name, key, unpack(info))
+						local name = component.Name
+						if name == "network" then name = "unknown" end -- see top of script
+						self:ServerSyncVar(name, key, unpack(info))
 						done[key] = true
 					end
 				end
@@ -172,11 +200,10 @@ do -- synchronization server > client
 				self:GetEntity():Remove() 
 			elseif self:IsValid() then
 				local info = self.server_synced_vars_stringtable[what]
-				
-						
+										
 				if info then
 					local var = buffer:ReadType(info.type)
-										
+					
 					if info.smooth then
 						if type(var) == "number" then
 							info.smooth_var = info.smooth_var or var
@@ -223,7 +250,7 @@ do -- synchronization server > client
 		end
 		
 		
-		if force_update or var ~= self.last_var[info.key] then
+		if force_update or var ~= self.last_var[info.key2] then
 			local buffer = packet.CreateBuffer()
 			
 			buffer:WriteShort(info.id)
@@ -234,16 +261,21 @@ do -- synchronization server > client
 				
 			packet.Send("ecs_network", buffer, client or info.filter, force_update and "reliable" or info.flags, self.NetworkChannel)
 			
-			self.last_var[info.key] = var
+			self.last_var[info.key2] = var
 		end
 		
-		self.last_update[info.key] = system.GetTime() + info.rate
+		if info.set_name:find("Position") then
+			--print(info.key2)
+		end
+
+		
+		self.last_update[info.key2] = system.GetTime() + info.rate
 	end
 	
 	function COMPONENT:UpdateVars(client, force_update)
 			
 		for i, info in ipairs(SERVER and self.server_synced_vars or CLIENT and self.client_synced_vars) do
-			if force_update or not self.last_update[info.key] or self.last_update[info.key] < system.GetTime() then
+			if force_update or not self.last_update[info.key2] or self.last_update[info.key2] < system.GetTime() then
 				self:UpdateVariableFromSyncInfo(info, client, force_update)
 			end
 		end
@@ -287,7 +319,7 @@ if SERVER then
 		buffer:WriteShort(id)
 		buffer:WriteString(config)
 		
-		--logf("spawning entity %s with id %s for %s\n", config, id, client)
+		logf("spawning entity %s with id %s for %s\n", config, id, client)
 		
 		packet.Send("ecs_network", buffer, client, "reliable")
 	end
@@ -326,8 +358,10 @@ end
 
 packet.ExtendBuffer(
 	"Entity", 
-	function(buffer, ent) 
-		buffer:WriteLong(ent:GetNetworkId())
+	function(buffer, ent)
+		if ent:IsValid() then
+			buffer:WriteLong(ent:GetNetworkId())
+		end
 	end,
 	function(buffer) 
 		local component = spawned_networked[buffer:ReadLong()] or NULL

@@ -6,13 +6,14 @@ local function go()
 
 		for i = 1, 1 do
 			local body = entities.CreateEntity("physical")
-			body:SetPhysicsModelPath("models/cube.obj")
+			body:SetName("those boxes " .. i)
+			--body:SetPhysicsModelPath("models/cube.obj")
 			body:SetModelPath("models/cube.obj")
-			body:SetMass(10)
+			--body:SetMass(10)
 			body:InitPhysicsBox(Vec3(1, 1, 1))  
-			body:SetPosition(Vec3(0,0,100+i*2)) 
 			--body:SetScale(Vec3(1,5,1))
-			body:SetSize(1) 
+			--body:SetSize(1) 
+			body:SetPosition(Vec3(0,0,-100+i*2)) 
 		end 
 	end
 end

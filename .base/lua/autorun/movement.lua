@@ -1,9 +1,7 @@
 if CLIENT then
 
 	event.AddListener("CreateMove", "spooky", function(client, prev_cmd, dt)	
-		if not window.IsOpen() then return end
-		if chat and chat.IsVisible() then return end
-		if menu and menu.visible then return end
+		if not window.IsOpen() or not window.GetMouseTrapped() then return end
 		
 		local angles = render.GetCameraAngles()
 		local fov = render.GetCameraFOV()
@@ -72,6 +70,7 @@ event.AddListener("Move", "spooky", function(client, cmd)
 	if SERVER then
 		if not client.nv.ghost or not client.nv.ghost:IsValid() then
 			ghost = entities.CreateEntity("physical")
+			ghost:SetName(client:GetNick() .. "'s ghost")
 				
 			local filter = clients.CreateFilter():AddAllExcept(client)
 			
@@ -117,7 +116,7 @@ end)
  
 if SERVER then
 	event.AddListener("ClientMouseInput", "bsp_lol", function(client, button, press)	
-		if button == "button_1" and press then
+		if button == "button_3" and press then
 			local cmd = client:GetCurrentCommand()
 			
 			local ent = entities.CreateEntity("physical")
