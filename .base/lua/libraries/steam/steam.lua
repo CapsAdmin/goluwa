@@ -7,7 +7,7 @@ include("web_api.lua", steam)
 include("server_query.lua", steam)
 include("mount.lua", steam)
 
-local steamfriends = requirew("lj-steamfriends")
+--[[local steamfriends = requirew("lj-steamfriends")
 
 if steamfriends then
 	for k,v in pairs(steamfriends) do
@@ -23,10 +23,10 @@ if steamfriends then
 	function steamfriends.OnChatMessage(sender_steam_id, text, receiver_steam_id)
 		event.Call("SteamFriendsMessage", sender_steam_id, text, receiver_steam_id)
 	end
-end
+end]]
 
 function steam.IsSteamClientAvailible()
-	return ok
+	return steamfriends
 end
 
 function steam.SteamIDToCommunityID(id)

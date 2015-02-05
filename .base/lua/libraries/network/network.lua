@@ -1,7 +1,5 @@
 local network = _G.network or {}
 
-network.debug = true
-
 network.socket = network.socket or NULL
 
 local function ipport_to_uid(peer)

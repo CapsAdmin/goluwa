@@ -109,6 +109,10 @@ do -- window meta
 		
 	end
 	
+	function META:OnShow()
+		
+	end
+	
 	function META:OnClose()
 		
 	end
@@ -197,7 +201,7 @@ do -- window meta
 		sdl.GL_MakeCurrent(ptr, context) 
 		gl.GetProcAddress = sdl.GL_GetProcAddress
 
-		warning("sdl version: ", ffi.string(sdl.GetRevision()))	
+		logn("sdl version: ", ffi.string(sdl.GetRevision()))	
 		
 		-- this needs to be initialized once after a context has been created..
 		if gl and gl.InitMiniGlew and not gl.gl_init then
@@ -241,8 +245,6 @@ do -- window meta
 				if self[name](...) ~= false then
 					b = event.Call(event_name_translate[name], self, ...)
 				end
-			else
-				print(name, ...)
 			end
 			
 			return b

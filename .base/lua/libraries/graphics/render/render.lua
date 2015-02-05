@@ -13,7 +13,7 @@ function render.Initialize()
 	if not render.context_created then error("a window must exist before the renderer can be initialized", 2) end
 
 	logf("opengl version: %s\n", render.GetVersion())
-	logf("opengl glsl version: %s\n", render.GetShadingLanguageVersion())
+	logf("glsl version: %s\n", render.GetShadingLanguageVersion())
 	logf("vendor: %s\n", render.GetVendor())
 	
 	if render.GetVersion():find("OpenGL ES") then

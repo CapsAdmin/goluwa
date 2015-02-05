@@ -212,7 +212,7 @@ do
 
 		if not args[1] then
 			level = 3
-			warning("unable to require %s: %s", str, args[2])
+			warning("unable to require %s:\n\t%s", str, args[2]:trim())
 			level = 2
 			
 			return unpack(args)
