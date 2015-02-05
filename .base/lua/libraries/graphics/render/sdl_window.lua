@@ -57,8 +57,10 @@ do -- window meta
 		self.mouse_trapped = b
 		
 		sdl.SetWindowGrab(self.__ptr, b and 1 or 0)
-		sdl.ShowCursor(sdl.e.SDL_DISABLE)
+		self:ShowCursor(not b)
 		sdl.SetRelativeMouseMode(b and 1 or 0)
+		
+		self.mouse_trapped_start = true
 	end
 	
 	function META:GetMouseTrapped()
@@ -66,6 +68,14 @@ do -- window meta
 	end
 		
 	function META:GetMouseDelta()
+		if self.mouse_trapped_start then
+			self.mouse_trapped_start = nil
+			return Vec2()
+		end
+		if self.mouse_trapped then
+			sdl.GetRelativeMouseState(x, y)
+			return Vec2(x[0], y[0])
+		end
 		return self.mouse_delta or Vec2()
 	end
 		 
@@ -253,7 +263,7 @@ do -- window meta
 			end
 			
 			self.mouse_delta:Zero()
-			--self:UpdateMouseDelta()
+			self:UpdateMouseDelta()
 			self:OnUpdate(dt)
 			
 			while sdl.PollEvent(event) ~= 0 do
@@ -360,4 +370,50 @@ do -- window meta
 		
 		return self
 	end
+end
+
+function system.SetClipboard(str)
+	sdl.SetClipboardText(str)
+end
+
+function system.GetClipboard()
+	return ffi.string(sdl.GetClipboardText())
+end
+
+do
+
+	local enums = {	
+		arrow = sdl.e.SDL_SYSTEM_CURSOR_ARROW,
+		ibeam = sdl.e.SDL_SYSTEM_CURSOR_IBEAM,
+		wait = sdl.e.SDL_SYSTEM_CURSOR_WAIT,
+		crosshair = sdl.e.SDL_SYSTEM_CURSOR_CROSSHAIR,
+		waitarrow = sdl.e.SDL_SYSTEM_CURSOR_WAITARROW,
+		sizenwse = sdl.e.SDL_SYSTEM_CURSOR_SIZENWSE,
+		sizenesw = sdl.e.SDL_SYSTEM_CURSOR_SIZENESW,
+		sizewe = sdl.e.SDL_SYSTEM_CURSOR_SIZEWE,
+		sizens = sdl.e.SDL_SYSTEM_CURSOR_SIZENS,
+		sizeall = sdl.e.SDL_SYSTEM_CURSOR_SIZEALL,
+		no = sdl.e.SDL_SYSTEM_CURSOR_NO,
+		hand = sdl.e.SDL_SYSTEM_CURSOR_HAND,		
+	}
+
+	local current
+	local last 
+	local cache = {}
+
+	function system.SetCursor(id)
+		id = id or "arrow"
+		
+		cache[id] = cache[id] or sdl.CreateSystemCursor(enums[id] or enums.arrow)
+		--if last ~= id then
+			current = id
+			sdl.SetCursor(cache[id])
+		--	last = id
+		--end
+	end
+
+	function system.GetCursor()
+		return current
+	end
+
 end

@@ -1,3 +1,4 @@
+jit.off(true, true)
 local gl = require("lj-opengl") -- OpenGL
 local glfw = require("lj-glfw") -- window manager
 
@@ -12,14 +13,13 @@ for line in glfw.header:gmatch("(.-)\n") do
 		local nice = "On" .. name:match("glfwSet(.-)Callback")
 		nice = nice:gsub("Window", "")		
 		
-		calllbacks[nice] = glfw.lib[name]
+		calllbacks[nice] = function(ptr, cb, ...) jit.off(cb) glfw.lib[name](ptr, cb, ...) end
 	end
 end
 
-calllbacks.OnError(function(code, str) warning(ffi.string(str)) end)
+glfw.SetErrorCallback(function(code, str) warning(ffi.string(str)) end)
 calllbacks.OnError = nil
-
-calllbacks.OnMonitor(function() event.Call("OnMonitorConnected") end)
+glfw.SetMonitorCallback(function() event.Call("OnMonitorConnected") end)
 calllbacks.OnMonitor = nil
 
 do -- window meta
@@ -408,3 +408,18 @@ end
 local cb = function() glfw.PollEvents() end
 jit.off(cb)
 event.CreateTimer("glfw_pollevents", 1/60, 0, cb)
+
+function system.SetClipboard(str)
+	if window.wnd:IsValid() then
+		glfw.SetClipboardString(window.wnd.__ptr, str)
+	end
+end
+
+function system.GetClipboard()
+	if window.wnd:IsValid() then
+		local str = glfw.GetClipboardString(window.wnd.__ptr)
+		if str ~= nil then
+			return ffi.string(str)
+		end
+	end
+end

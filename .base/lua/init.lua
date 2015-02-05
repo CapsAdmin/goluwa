@@ -17,7 +17,7 @@ do -- constants
 	_G[e.USERNAME:upper()] = true
 	
 	local env_vars = {
-		"USE_SDL",
+		"USE_GLFW",
 		"SERVER",
 		"CLIENT",
 		"GRAPHICS",
