@@ -174,10 +174,10 @@ do
 	local vsync = 0
 	
 	function render.SetVSync(b)
-		if gl.SwapIntervalEXT and not (NVIDIA and X64 and WINDOWS) then
+		if gl.SwapIntervalEXT then
 			gl.SwapIntervalEXT(b == true and 1 or b == "adaptive" and -1 or 0)
 		elseif window and window.IsOpen() then
-			window.SwapInterval(b and 1 or 0) -- works on linux
+			window.SwapInterval(b) -- works on linux
 		end
 		vsync = b
 	end
@@ -377,10 +377,10 @@ include("vertex_buffer.lua", render)
 include("texture_atlas.lua", render)
 include("mesh_builder.lua", render)
 
-if USE_SDL then
-	include("sdl_window.lua", render)
-else
+if USE_GLFW then
 	include("glfw_window.lua", render)
+else
+	include("sdl_window.lua", render)
 end
 
 include("cvars.lua", render)

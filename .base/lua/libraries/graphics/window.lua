@@ -119,33 +119,4 @@ function window.Close()
 	end
 end
 
-if USE_SDL then
-	local sdl = require("lj-sdl")
-	
-	function system.SetClipboard(str)
-		sdl.SetClipboardText(str)
-	end
-	
-	function system.GetClipboard()
-		return ffi.string(sdl.GetClipboardText())
-	end
-else
-	local glfw = require("lj-glfw")
-
-	function system.SetClipboard(str)
-		if window.wnd:IsValid() then
-			glfw.SetClipboardString(window.wnd.__ptr, str)
-		end
-	end
-
-	function system.GetClipboard()
-		if window.wnd:IsValid() then
-			local str = glfw.GetClipboardString(window.wnd.__ptr)
-			if str ~= nil then
-				return ffi.string(str)
-			end
-		end
-	end
-end
-
 return window
