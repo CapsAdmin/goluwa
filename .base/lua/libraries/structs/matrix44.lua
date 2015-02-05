@@ -5,8 +5,20 @@ local META = {}
 META.Type = "matrix44"
 META.TypeX = "matrix44"
 
+META.Args = {
+	"m00", "m01", "m02", "m03",
+	"m10", "m11", "m12", "m13",
+	"m20", "m21", "m22", "m23",
+	"m30", "m31", "m32", "m33",
+}
+
+local translate = {}
+for i, key in ipairs(META.Args) do
+	translate[key] = i - 1
+end
+
 function META:__index(key)
-	return META[key] or self.m[key]
+	return META[key] or self.m[translate[key] or key]
 end
 
 function META:__newindex(key, val)

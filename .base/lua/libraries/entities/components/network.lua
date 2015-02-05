@@ -319,7 +319,7 @@ if SERVER then
 		buffer:WriteShort(id)
 		buffer:WriteString(config)
 		
-		logf("spawning entity %s with id %s for %s\n", config, id, client)
+		--logf("spawning entity %s with id %s for %s\n", config, id, client)
 		
 		packet.Send("ecs_network", buffer, client, "reliable")
 	end

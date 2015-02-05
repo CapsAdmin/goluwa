@@ -40,14 +40,11 @@ console.AddCommand("map", function(path)
 		end
 	end
 	
-	steam.bsp_world = steam.bsp_world or entities.CreateEntity("visual")
+	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical")
 	steam.bsp_world:SetName(path)
 	steam.bsp_world:SetCull(false)
 	steam.bsp_world:SetModelPath("maps/" .. path .. ".bsp")
-	
-	if SERVER then
-		steam.LoadMap("maps/" .. path .. ".bsp", nil, steam.bsp_world)
-	end
+	steam.bsp_world:SetPhysicsModelPath("maps/" .. path .. ".bsp")
 end)
 
 local function read_lump_data(thread, what, bsp_file, header, index, size, struct)
@@ -77,7 +74,26 @@ local function read_lump_data(thread, what, bsp_file, header, index, size, struc
 	return out
 end
 
-function steam.LoadMap(path, callback, entity)
+steam.bsp_cache = steam.bsp_cache or {}
+
+function steam.LoadMap(path, callback)
+
+	if type(steam.bsp_cache[path]) == "function" then
+		local old = steam.bsp_cache[path]
+		steam.bsp_cache[path] = function(...)
+			old(...)
+			callback(...)
+		end
+		return
+	end
+
+	if steam.bsp_cache[path] then
+		callback(steam.bsp_cache[path])
+		return
+	end
+	
+	steam.bsp_cache[path] = callback
+	
 	local thread = utility.CreateThread()
 	
 	thread:SetFrequency(120)
@@ -222,7 +238,7 @@ function steam.LoadMap(path, callback, entity)
 					bsp_file:PopPosition()
 				end
 
-				if id == "prpd" then
+				--[[if id == "prpd" then
 					bsp_file:PushPosition(fileofs)
 					
 					local count = bsp_file:ReadLong()
@@ -251,7 +267,7 @@ function steam.LoadMap(path, callback, entity)
 					--end
 					
 					bsp_file:PopPosition()
-				end
+				end]]
 			end
 			
 		end
@@ -277,6 +293,7 @@ function steam.LoadMap(path, callback, entity)
 					end
 					ent[k] = tonumber(v) or v
 				end
+				ent.classname = ent.classname or "unknown"
 				entities[i] = ent
 				i = i + 1  
 				
@@ -602,6 +619,7 @@ function steam.LoadMap(path, callback, entity)
 			end
 			
 		end
+		
 		if GRAPHICS then			
 			for i, mesh in ipairs(models) do
 				mesh:BuildNormals()
@@ -622,98 +640,10 @@ function steam.LoadMap(path, callback, entity)
 				thread:ReportProgress("creating meshes", #models)
 				thread:Sleep()
 			end
-			
-		end
-
-		if steam.debug or _debug then 
-			logn("SUB_MODELS ", #models) 
-		end
-
-		for k,v in ipairs(entity:GetChildrenList()) do
-			if v.config ~= "world" and v:GetName() ~= "sun" and v:GetHideFromEditor() then -- FIX ME
-				v:Remove()
-			end
-		end
-
-		if GRAPHICS and not entity.world_params then
-			for k, v in pairs(entity:GetChildren()) do
-				if v.config == "world" then
-					entity.world_params = v
-					break
-				end
-			end
-			
-			entity.world_params = entity.world_params or entities.CreateEntity("world", entity)
 		end
 		
-		if GRAPHICS then
-			for i, model in pairs(entity:GetMeshes()) do
-				entity:RemoveMesh(model)
-			end
-			for i, model in ipairs(models) do
-				entity:AddMesh(model)
-			end
-		end
+		local physics_meshes = {}
 		
-		local count = table.count(header.entities)
-		for _, info in pairs(header.entities) do
-			if GRAPHICS and info.classname then
-				if info.classname and info.classname:find("light_environment") then
-					local p, y = info.pitch, info.angles.y
-					entity.world_params:SetSunAngles(Deg3(p, y+180, 0))
-					entity.world_params:SetSunSpecularIntensity(0.15)
-					entity.world_params:SetSunIntensity(1)
-					
-					info._light.a = 1
-					entity.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
-					entity.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b)*0.5)
-				elseif info.classname:lower():find("light") and info._light then		
-					local ent = entities.CreateEntity("light", entity)
-					ent:SetName(info.classname)
-					ent:SetPosition(info.origin * 0.0254)
-					ent:SetHideFromEditor(true)
-					
-					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
-					ent:SetSize(5)
-					ent:SetDiffuseIntensity(info._light.a/25) 
-					ent:SetRoughness(0.5)
-				elseif info.classname == "env_fog_controller" then
-					entity.world_params:SetFogColor(info.fogcolor)
-					entity.world_params:SetFogStart(info.fogstart* scale)
-					entity.world_params:SetFogEnd(info.fogend * scale)
-				end
-			end
-		
-			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
-				if vfs.IsFile(info.model) then
-					local ent = entities.CreateEntity("physical", entity, {exclude_components = {"network"}})
-					ent:SetName(info.classname)
-					ent:SetModelPath(info.model)
-					ent:SetPosition(info.origin * scale)
-					ent:SetAngles(info.angles:Rad())
-					ent:SetHideFromEditor(true)
-				end
-			end
-			
-			thread:ReportProgress("spawning entities", count)
-			thread:Sleep()
-		end
-
-		local count = #header.static_entities
-		for i, info in ipairs(header.static_entities) do
-			if vfs.IsFile(info.model) then
-				local ent = entities.CreateEntity("physical", entity, {exclude_components = {"network"}})
-				ent:SetName("static_entity_" .. i)
-				ent:SetModelPath(info.model)
-				ent:SetPosition(info.origin * scale)
-				ent:SetAngles(info.angles:Rad())
-				ent:SetHideFromEditor(true)
-				
-				thread:ReportProgress("spawning static entities", count)
-				thread:Sleep(0.05)
-			end
-		end
-
 		local count = #models
 
 		for i_, model in ipairs(models) do	
@@ -756,22 +686,99 @@ function steam.LoadMap(path, callback, entity)
 				},
 			}
 			
-			local chunk = entities.CreateEntity("physical", entity, {exclude_components = {"network"}})
-			chunk:SetHideFromEditor(true)
-			chunk:SetName("physics chunk " .. i_)
-			chunk:SetPhysicsModel(mesh)
-			chunk:InitPhysicsTriangles(true)
-			chunk:SetMass(0)
+			physics_meshes[i_] = mesh
 
 			thread:ReportProgress("building physics meshes", count)
 		end
 
-		if not GRAPHICS and WORLD then 
-			WORLD:Remove() 
+		for i, info in ipairs(header.static_entities) do
+			info.classname = "static_entity"
+			table.insert(header.entities, info)
 		end
 		
+		local func = steam.bsp_cache[path]
+		
+		steam.bsp_cache[path] = {
+			render_meshes = models,
+			entities = header.entities,
+			physics_meshes = physics_meshes,
+		}
+		
+		func(steam.bsp_cache[path], thread)
+				
 		thread:ReportProgress("finished reading " .. path)
+		
 	end
 
 	thread:Start()
+end
+
+function steam.SpawnMapEntities(path, parent, thread)
+	local data = steam.bsp_cache[path]
+	
+	for k,v in ipairs(parent:GetChildrenList()) do
+		if v.spawned_from_bsp then
+			v:Remove()
+		end
+	end
+
+	if GRAPHICS then		
+		prototype.SafeRemove(parent.world_params)
+		parent.world_params = entities.CreateEntity("world", parent)
+		parent.world_params.spawned_from_bsp = true
+
+		parent:RemoveMeshes()
+		
+		for i, model in ipairs(data.render_meshes) do
+			parent:AddMesh(model)
+		end
+	end
+	
+	local count = table.count(data.entities)
+	for i, info in pairs(data.entities) do
+		if GRAPHICS then
+			if info.classname and info.classname:find("light_environment") then
+				local p, y = info.pitch, info.angles.y
+				parent.world_params:SetSunAngles(Deg3(p, y+180, 0))
+				parent.world_params:SetSunSpecularIntensity(0.15)
+				parent.world_params:SetSunIntensity(1)
+				
+				info._light.a = 1
+				parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
+				parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b)*0.5)
+			elseif info.classname:lower():find("light") and info._light then		
+				local ent = entities.CreateEntity("light", parent)
+				ent:SetName(info.classname .. "_" .. i)
+				ent:SetPosition(info.origin * 0.0254)
+				ent:SetHideFromEditor(true)
+				
+				ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
+				ent:SetSize(5)
+				ent:SetDiffuseIntensity(info._light.a/25) 
+				ent:SetRoughness(0.5)
+				ent.spawned_from_bsp = true
+			elseif info.classname == "env_fog_controller" then
+				parent.world_params:SetFogColor(info.fogcolor)
+				parent.world_params:SetFogStart(info.fogstart* scale)
+				parent.world_params:SetFogEnd(info.fogend * scale)
+			end
+		end
+	
+		if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
+			if vfs.IsFile(info.model) then
+				local ent = entities.CreateEntity("visual", parent)
+				ent:SetName(info.classname .. "_" .. i)
+				ent:SetModelPath(info.model)
+				ent:SetPosition(info.origin * scale)
+				ent:SetAngles(info.angles:Rad())
+				ent:SetHideFromEditor(true)
+				ent.spawned_from_bsp = true
+			end
+		end
+		
+		if thread then
+			thread:ReportProgress("spawning entities", count)
+			thread:Sleep()
+		end
+	end	
 end

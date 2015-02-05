@@ -23,7 +23,7 @@ function system.ExecuteArgs(args)
 	
 	if args then
 		for _, arg in pairs(args) do
-			print(console.RunString(tostring(arg)))
+			console.RunString(tostring(arg))
 		end	
 	end
 end
