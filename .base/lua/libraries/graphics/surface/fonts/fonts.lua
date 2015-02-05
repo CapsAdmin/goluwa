@@ -4,13 +4,17 @@ surface.fonts = surface.fonts or {}
 surface.registered_fonts = surface.registered_fonts or {}
 surface.font_dpi = 72
 
+surface.default_font_path = "fonts/unifont.ttf" 
+--"http://unifoundry.com/pub/unifont-7.0.06/font-builds/unifont-7.0.06.ttf"
+-- TODO: downloading is too slow for this atm
+
 local ready = false
 local queue = {}
 
 function surface.InitializeFonts()
 	ready = true
 	
-	surface.SetFont(surface.CreateFont("default", {path = "fonts/unifont.ttf"}))
+	surface.SetFont(surface.CreateFont("default", {path = surface.default_font_path}))
 	
 	for _, args in pairs(queue) do
 		surface.CreateFont(unpack(args))
@@ -24,7 +28,7 @@ function surface.CreateFont(name, options, callback)
 		return
 	end
 	
-	local path = options.path or "fonts/unifont.ttf"
+	local path = options.path or surface.default_font_path
 	local size = options.size or 14
 	local scale = options.scale or Vec2(1,1)
 	local padding = options.padding or 1

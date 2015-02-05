@@ -190,10 +190,12 @@ end
 function sockets.Download(url, callback)
 	if not url:find("^(.-)://") then return end
 	
+	logn("[sockets] downloading ", url)
+	
 	if callback then
 		sockets.Request({
 			url = url, 
-			receive_mode = "all",
+			receive_mode = 10000000,
 			callback = function(data) 
 				callback(data.content) 
 			end, 

@@ -70,10 +70,11 @@ vfs.async_readers = {
 	
 		-- for font names only
 		if context:find("font") and not path:find("%p") then			
-			local cache_path = "data/fonts/" .. path .. ".woff"
-						
-			if vfs.Exists(cache_path) then
-				return vfs.ReadAsync(cache_path, function(...) return queue[path].callback(...) end, mbps, context, "file")
+			local cache_path = "data/download_cache/" .. crypto.CRC32(path)
+			local found = vfs.Find(cache_path, nil, true)	
+			
+			if #found == 1 then
+				return vfs.ReadAsync(found[1], function(...) return queue[path].callback(...) end, mbps, context, "file")
 			else
 				if 	
 					sockets.Download("http://fonts.googleapis.com/css?family=" .. path:gsub("%s", "+"), function(data)
@@ -81,7 +82,7 @@ vfs.async_readers = {
 						if url then
 							local format = data:match("format%('(.-)'%)")
 							sockets.Download(url, function(data)
-								vfs.Write("data/fonts/" .. path .. "." .. format, data)				
+								vfs.Write("data/download_cache/" .. crypto.CRC32(path) .. "." .. format, data)				
 								queue[path].callback(data)
 							end)
 						else

@@ -9,7 +9,7 @@ local S = scale
 
 local text_size = 5*S 
 
-local font = surface.CreateFont("default_gui_zsnes", {path = "fonts/unifont.ttf", size = 10, filtering = "nearest"})
+local font = surface.CreateFont("default_gui_zsnes", {path = surface.default_font_path, size = 10, filtering = "nearest"})
 
 surface.CreateFont("zsnes_gui_font", {
 	path = "fonts/zfont.txt",
