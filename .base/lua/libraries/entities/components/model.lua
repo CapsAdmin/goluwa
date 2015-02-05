@@ -133,7 +133,26 @@ if GRAPHICS then
 
 	function COMPONENT:SetModelPath(path)
 		self.ModelPath = path
-		self:LoadModelFromDisk(path)		
+		
+		local ok, err = utility.LoadRenderModel(
+			path, 
+			function() 
+				if path:endswith(".bsp") and steam.LoadMap then
+					steam.LoadMap(path, function(data, thread)
+						steam.SpawnMapEntities(path, self:GetEntity(), thread)
+					end)	
+				end
+			end, 
+			function(mesh)
+				self:AddMesh(mesh)
+				self:BuildBoundingBox()
+			end
+		)
+		
+		if not ok then
+			logf("%s failed to load model %q: %s\n", self, path, err)
+			self:RemoveMeshes()
+		end
 	end
 
 	function COMPONENT:SetDiffuseTexturePath(path)
@@ -183,196 +202,7 @@ if GRAPHICS then
 			return self.sub_models
 		end
 	end
-	
-	do
-		local assimp = require("lj-assimp") -- model decoder
 
-		local default_texture_format = {
-			mip_map_levels = 4,
-			mag_filter = "linear",
-			min_filter = "linear_mipmap_linear",
-		}
-		render.model_cache = render.model_cache or {}
-		
-		local function solve_material_paths(mesh, model_data, dir)
-			if model_data.material then
-				model_data.material.directory = dir							
-				
-				if model_data.material.paths_solved then
-					if model_data.material.diffuse then
-						mesh.diffuse = render.CreateTexture(model_data.material.diffuse, default_texture_format)
-					elseif model_data.material.bump then
-						mesh.bump = render.CreateTexture(model_data.material.bump, default_texture_format)
-					elseif model_data.material.specular then
-						mesh.specular = render.CreateTexture(model_data.material.specular, default_texture_format)
-					end
-				elseif model_data.material.path then
-					local path = model_data.material.path
-					
-					-- this is kind of ue4 specific
-					if model_data.material.name and model_data.material.name:sub(1, 1) == "/" then
-						local ext = path:match("^.+(%..+)$")
-						local path = model_data.material.name
-						path = model_data.material.directory .. path:sub(2)
-						
-						mesh.diffuse = render.CreateTexture(path .. "_D" .. ext)
-						mesh.bump = render.CreateTexture(path .. "_N" .. ext)
-						mesh.specular = render.CreateTexture(path .. "_S" .. ext)
-					else	
-						local paths = {path, model_data.material.directory .. path}
-						
-						for _, path in ipairs(paths) do
-							if vfs.Exists(path) then
-								mesh.diffuse = render.CreateTexture(path, default_texture_format)
-
-								do -- try to find normal map
-									local path = utility.FindTextureFromSuffix(path, "_n", "_ddn", "_nrm")
-
-									if path then
-										mesh.bump = render.CreateTexture(path, default_texture_format)
-									end
-								end
-
-								do -- try to find specular map
-									local path = utility.FindTextureFromSuffix(path, "_s", "_spec")
-
-									if path then
-										mesh.specular = render.CreateTexture(path, default_texture_format)
-									end
-								end
-								break
-							end
-						end
-					end
-				end
-			end
-		end
-		
-		function COMPONENT:LoadModelFromDisk(path, flags, callback)
-			check(path, "string")
-			
-			if render.model_cache[path] then
-				for i, mesh in ipairs(render.model_cache[path]) do
-					self:AddMesh(mesh)
-				end
-				self:BuildBoundingBox()
-				if callback then callback() end
-				return
-			end
-											
-			flags = flags or bit.bor(
-				assimp.e.aiProcess_CalcTangentSpace, 
-				assimp.e.aiProcess_GenSmoothNormals, 
-				assimp.e.aiProcess_Triangulate,
-				assimp.e.aiProcess_JoinIdenticalVertices			
-			)
-			
-			flags = assimp.e.aiProcessPreset_TargetRealtime_Quality
-			
-			if render.debug then 
-				logn("loading mesh: ", path) 
-			end
-			
-			if not vfs.Exists(path) and vfs.Exists(path .. ".mdl") then
-				path = path .. ".mdl"
-			end
-
-			if not path:startswith("http") and not vfs.Exists(path) then
-				logf("model not found: %q\n", path)
-				
-				self:RemoveMeshes()
-				
-				return nil, path .. " not found"
-			end
-			
-			self.done = false
-			local dir = path:match("(.+/)")
-								
-			self:BuildBoundingBox()
-			
-			render.model_cache[path] = {}
-			
-			local thread = utility.CreateThread()
-			
-			if path:startswith("http") then
-				vfs.ReadAsync(path, function(data, err)
-					if not data then error(err) end
-					local meshes = assert(assimp.ImportFileMemory(data, flags, path))
-					
-					for i, model_data in pairs(meshes) do
-						if render.debug then logf("[render] %s loading %q %s\n", path, model_data.name, i .. "/" .. #meshes) end
-					
-						local mesh = render.CreateMeshBuilder()
-						
-						solve_material_paths(mesh, model_data, dir)
-
-						mesh:SetName(model_data.name)
-						mesh:SetVertices(model_data.vertices)
-						mesh:SetIndices(model_data.indices)						
-						mesh:BuildBoundingBox()
-												
-						mesh:Upload()
-						self:AddMesh(mesh)						
-						table.insert(render.model_cache[path], mesh)						
-						self:BuildBoundingBox()
-					end
-				end)				
-			elseif path:endswith(".mdl") and steam.LoadModel then
-				function thread.OnStart()
-					steam.LoadModel(path, function(model_data)					
-						local mesh = render.CreateMeshBuilder()
-						
-						solve_material_paths(mesh, model_data, dir)
-												
-						mesh:SetName(model_data.name)
-						mesh:SetVertices(model_data.vertices)
-						mesh:SetIndices(model_data.indices)						
-						mesh:BuildBoundingBox()
-						
-						mesh:Upload()
-						self:AddMesh(mesh)						
-						table.insert(render.model_cache[path], mesh)						
-						self:BuildBoundingBox()
-						
-					end, thread)
-				end
-			elseif path:endswith(".bsp") and steam.LoadMap then
-				steam.LoadMap(path, nil, self:GetEntity())	
-				render.model_cache[path] = nil
-			else
-				function thread.OnStart()
-					assimp.ImportFileEx(path, flags, function(model_data, i, total_meshes)
-						if render.debug then logf("[render] %s loading %q %s\n", path, model_data.name, i .. "/" .. total_meshes) end
-						
-						local mesh = render.CreateMeshBuilder()
-						
-						solve_material_paths(mesh, model_data, dir)
-
-						mesh:SetName(model_data.name)
-						mesh:SetVertices(model_data.vertices)
-						mesh:SetIndices(model_data.indices)						
-						mesh:BuildBoundingBox()
-						
-						mesh:Upload()
-						self:AddMesh(mesh)						
-						table.insert(render.model_cache[path], mesh)						
-						self:BuildBoundingBox()
-						
-					end, true)
-				end
-			end
-			
-			function thread.OnFinish()
-				self.done = true
-				if callback then callback() end
-			end
-			
-			thread:SetIterationsPerTick(15)
-			
-			thread:Start()
-		end
-	end
-	
 	do		
 		local function corner_helper(self, i, j)
 			return bit.band(bit.rshift(i, j), 1) == 0 and self.BBMin or self.BBMax

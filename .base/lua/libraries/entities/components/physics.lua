@@ -1,7 +1,3 @@
-local bullet = requirew("lj-bullet3")
-
-if not bullet then return end
-
 local COMPONENT = {}
 
 COMPONENT.Name = "physics"
@@ -29,92 +25,41 @@ function COMPONENT:Initialize()
 	self.rigid_body = NULL	
 end
 
-local function DELEGATE(META, field, typ, extra_info)
-	
-	if typ == "vec3" then
-		prototype.GetSet(META, field, Vec3())
-		local name = "Set" .. field
-		META[name] = function(s, vec)
-			s[field] = vec
-			if s.rigid_body:IsValid() then
-				s.rigid_body[name](s.rigid_body, -vec.y, -vec.x, -vec.z)
-			end
-		end
-				
-		local name = "Get" .. field
-		META[name] = function(s, ...)
-			if s.rigid_body:IsValid() then
-				local x, y, z = s.rigid_body[name](s.rigid_body, ...)
-				return Vec3(-y, -x, -z)
-			end
-			return s[field]
-		end
-	elseif typ == "ang3" then
-		prototype.GetSet(META, field, Ang3())
-		local name = "Set" .. field
-		META[name] = function(s, ang)
-			s[field] = ang
-			if s.rigid_body:IsValid() then
-				s.rigid_body[name](s.rigid_body, ang.p, ang.y, ang.r)
-			end
-		end
-				
-		local name = "Get" .. field
-		META[name] = function(s, ...)
-			if s.rigid_body:IsValid() then
-				local x, y, z = s.rigid_body[name](s.rigid_body, ...)
-				return Ang3(x, y, z) 
-			end
-			return s[field]
-		end
-	else
-		prototype.GetSet(META, field, 0, extra_info)
-		local name = "Set" .. field
-		META[name] = function(s, val)
-			s[field] = val
-			if s.rigid_body:IsValid() then
-				s.rigid_body[name](s.rigid_body, val)
-			end
-		end
-		
-		local name = "Get" .. field
-		META[name] = function(s, val)
-			if s.rigid_body:IsValid() then
-				return s.rigid_body[name](s.rigid_body)
-			end
-			return s[field]
-		end
-	end
-end
-
 prototype.StartStorable()
 
-	prototype.GetSet(COMPONENT, "SimulateOnClient", false)
-
-	DELEGATE(COMPONENT, "MassOrigin", "vec3")
-	DELEGATE(COMPONENT, "Gravity", "vec3")
-	DELEGATE(COMPONENT, "Velocity", "vec3")
-	DELEGATE(COMPONENT, "AngularVelocity", "vec3")
-	DELEGATE(COMPONENT, "PhysicsBoxScale", "vec3")
-	DELEGATE(COMPONENT, "PhysicsSphereRadius")
-
-	DELEGATE(COMPONENT, "Mass", "number", {editor_min = 0})
-	DELEGATE(COMPONENT, "AngularDamping")
-	DELEGATE(COMPONENT, "LinearDamping")
-	DELEGATE(COMPONENT, "LinearSleepingThreshold")
-	DELEGATE(COMPONENT, "AngularSleepingThreshold")
-
+	prototype.GetSet(COMPONENT, "SimulateOnClient", false)	
 	prototype.GetSet(COMPONENT, "Position", Vec3(0, 0, 0))
 	prototype.GetSet(COMPONENT, "Rotation", Quat(0, 0, 0, 1))
 	prototype.GetSet(COMPONENT, "PhysicsModelPath", "")
-
+	
+	do		
+		for _, info in pairs(prototype.GetRegistered("physics_body").prototype_variables) do
+			prototype.GetSet(COMPONENT, info.var_name, info.default)
+			
+			COMPONENT[info.set_name] = function(self, var)
+				self[info.var_name] = var
+				
+				if self.rigid_body:IsValid() then
+					self.rigid_body[info.set_name](self.rigid_body, var)
+				end
+			end
+		
+			COMPONENT[info.get_name] = function(self)			
+				if self.rigid_body:IsValid() then
+					return self.rigid_body[info.get_name](self.rigid_body)
+				end
+				
+				return self[info.var_name]
+			end
+		end
+	end
+	
 prototype.EndStorable()
 
 prototype.GetSet(COMPONENT, "PhysicsModel", nil)
 
 local function to_bullet(self)
 	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return end
-	
 	
 	local pos = self.Position
 	local rot = self.Rotation
@@ -123,14 +68,13 @@ local function to_bullet(self)
 	out:SetTranslation(pos.x, pos.y, pos.z)  
 	out:SetRotation(rot)
 	
-	self.rigid_body:SetMatrix(out.m)
+	self.rigid_body:SetMatrix(out)
 end
 
 local function from_bullet(self)
 	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return Matrix44() end
 
-	local out = Matrix44()
-	out.m = self.rigid_body:GetMatrix()
+	local out = self.rigid_body:GetMatrix()
  	
 --	local x,y,z = out:GetTranslation()
 	--local p,y,r = out:GetAngles()
@@ -187,7 +131,7 @@ do
 
 	function COMPONENT:InitPhysicsSphere(rad)
 		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
+		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 		
 		self.rigid_body:InitPhysicsSphere(rad)
 		
@@ -201,10 +145,10 @@ do
 	
 	function COMPONENT:InitPhysicsBox(scale)
 		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
+		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 		
 		if scale then
-			self.rigid_body:InitPhysicsBox(scale.x, scale.y, scale.z)
+			self.rigid_body:InitPhysicsBox(scale)
 		else
 			self.rigid_body:InitPhysicsBox()
 		end
@@ -219,56 +163,39 @@ do
 	
 	function COMPONENT:SetPhysicsModelPath(path)
 		self.PhysicsModelPath = path
+		
+		utility.LoadPhysicsModel(path, function(physics_meshes)
+			if not self:IsValid() then return end
+			
+			-- TODO: support for more bodies
+			if #physics_meshes > 1 then
 				
-		if not vfs.IsFile(path) then
-			logf("physics model not found: %q\n", path)
-			return nil, path .. " not found"
-		end
-		
-		local scene = assimp.ImportFile(R(path), assimp.e.aiProcessPreset_TargetRealtime_Quality)
-		
-		if scene.mMeshes[0].mNumVertices == 0 then
-			return nil, "no vertices found in " .. path
-		end
-							
-		local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices  * 3)
-		local triangles = ffi.new("unsigned int[?]", scene.mMeshes[0].mNumFaces * 3)
-		
-		ffi.copy(vertices, scene.mMeshes[0].mVertices, ffi.sizeof(vertices))
-
-		local i = 0
-		for j = 0, scene.mMeshes[0].mNumFaces - 1 do
-			for k = 0, scene.mMeshes[0].mFaces[j].mNumIndices - 1 do
-				triangles[i] = scene.mMeshes[0].mFaces[j].mIndices[k]
-				i = i + 1 
+				for k,v in pairs(self:GetEntity():GetChildren()) do
+					if v.physics_chunk then
+						v:Remove()
+					end
+				end
+				
+				for i, mesh in ipairs(physics_meshes) do
+					local chunk = entities.CreateEntity("physical", self:GetEntity(), {exclude_components = {"network"}})
+					chunk:SetHideFromEditor(true)
+					chunk:SetName("physics chunk " .. i)
+					chunk:SetPhysicsModel(mesh)
+					chunk:InitPhysicsTriangles(true)
+					chunk:SetMass(0)
+					chunk.physics_chunk = true
+				end
+			else
+				self:SetPhysicsModel(physics_meshes[1])
 			end
-		end
-					
-		local mesh = {	
-			triangles = {
-				count = tonumber(scene.mMeshes[0].mNumFaces), 
-				pointer = triangles, 
-				stride = ffi.sizeof("unsigned int") * 3, 
-			},					
-			vertices = {
-				count = tonumber(scene.mMeshes[0].mNumVertices),  
-				pointer = vertices, 
-				stride = ffi.sizeof("float") * 3,
-			},
-		}
-		
-		assimp.ReleaseImport(scene)
-		
-		self:SetPhysicsModel(mesh)
-		
-		to_bullet(self)
-		
-		return true
+			
+			to_bullet(self)
+		end)
 	end
 	
 	function COMPONENT:InitPhysicsConvexHull()
 		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
+		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 		
 		if self:GetPhysicsModel() then
 			self.rigid_body:InitPhysicsConvexHull(self:GetPhysicsModel().vertices.pointer, self:GetPhysicsModel().vertices.count)
@@ -284,7 +211,7 @@ do
 	
 	function COMPONENT:InitPhysicsConvexTriangles()
 		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
+		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 		
 		if self:GetPhysicsModel() then
 			self.rigid_body:InitPhysicsConvexTriangles(self:GetPhysicsModel())
@@ -300,7 +227,7 @@ do
 		
 	function COMPONENT:InitPhysicsTriangles(quantized_aabb_compression)
 		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix():Copy().m)
+		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 		
 		if self:GetPhysicsModel() then
 			self.rigid_body:InitPhysicsTriangles(self:GetPhysicsModel(), quantized_aabb_compression)
@@ -328,13 +255,17 @@ function COMPONENT:OnUpdate()
 				self.rigid_body:SetMass(0)
 				to_bullet(self)
 			end
+		else
+			if self.rigid_body:GetMass() ~= self:GetMass() then
+				self:SetMass(self:GetMass())
+			end
 		end
 	end
 end
 
 function COMPONENT:OnAdd(ent)	
 	self:GetComponent("transform"):SetSkipRebuild(true)
-	self.rigid_body = bullet.CreateRigidBody()
+	self.rigid_body = physics.CreateBody()
 	self.rigid_body.ent = self
 end
 
@@ -345,3 +276,5 @@ function COMPONENT:OnRemove(ent)
 end
 
 prototype.RegisterComponent(COMPONENT)
+
+--include("physics_container.lua")

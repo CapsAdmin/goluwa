@@ -526,18 +526,8 @@ if GRAPHICS then
 	end
 	
 	function COMPONENT:OnAdd(ent)
-		-- grabbin puke
-		-- grabbin puke
-		-- grabbin puke
-		if LIGHT_MESH then
-			self.light_mesh = LIGHT_MESH
-			return
-		end
-		local ent = entities.CreateEntity("visual")
-		ent:LoadModelFromDisk("models/cube.obj", nil, function()
-			LIGHT_MESH = ent:GetComponent("model").sub_models[1]
-			self.light_mesh = LIGHT_MESH
-			ent:Remove()
+		utility.LoadRenderModel("models/cube.obj", function(meshes)
+			self.light_mesh = meshes[1]
 		end)
 	end
 

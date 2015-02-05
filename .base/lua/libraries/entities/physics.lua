@@ -1,90 +1,95 @@
-local bullet = requirew("lj-bullet3")
-if not bullet then return end
-
 local physics = physics or {}
 
-if not physics.bullet then
-	bullet.Initialize()	
-	physics.bullet = bullet
+physics.bullet = requirew("lj-bullet3")
+physics.bodies = {}
+
+local function vec3_to_bullet(x, y, z)
+	return -y, -x, -z
 end
 
-bullet.SetGravity(0,0,9.8)
-
-event.AddListener("Update", "bullet", function(dt)
-	bullet.Update(dt)
-end)
-
-function bullet.OnCollision(body_a, body_b)
-	event.Call("PhysicsCollide", body_a.ent, body_b.ent)
+local function vec3_from_bullet(x, y, z)
+	return -y, -x, -z
 end
 
-function physics.RayCast(a, b)
-	local res = bullet.RayCast(a.x, a.y, a.z, b.x, b.y, b.z)
-	
-	if res then 
-		res.body = res.body and res.body.ent or NULL 
-		res.hit_normal = Vec3(res.hit_normal[0], res.hit_normal[1], res.hit_normal[3])
-		res.hit_pos = Vec3(res.hit_pos[0], res.hit_pos[1], res.hit_pos[3])
-	end
-	
-	return res
-end
+physics.Vec3ToBullet = vec3_to_bullet
+physics.Vec3FromBullet = vec3_from_bullet
 
-function physics.SetGravity(vec)
-	bullet.SetGravity(vec:Unpack())
-end
+include("physics_body.lua", physics)
 
-local assimp = require("lj-assimp")
-
-function physics.GetPhysicsModelsFromPath(path)
-	local meshes = {}
-	
-	if vfs.Exists(path) then
-		
-		local scene = assimp.ImportFile(R(path), assimp.e.aiProcessPreset_TargetRealtime_Quality)
-		
-		for i = 0, scene.mNumMeshes - 1 do
-			
-			if scene.mMeshes[i].mNumVertices == 0 then
-				warning("no vertices found in " .. path)
-			else
-									
-				local vertices = ffi.new("float[?]", scene.mMeshes[i].mNumVertices  * 3)
-				local triangles = ffi.new("unsigned int[?]", scene.mMeshes[i].mNumFaces * 3)
-				
-				ffi.copy(vertices, scene.mMeshes[i].mVertices, ffi.sizeof(vertices))
-
-				local j = 0
-				for k = 0, scene.mMeshes[i].mNumFaces - 1 do
-					for l = 0, scene.mMeshes[i].mFaces[k].mNumIndices - 1 do
-						triangles[j] = scene.mMeshes[i].mFaces[k].mIndices[l]
-						j = j + 1 
-					end
-				end
-							
-				local mesh = {	
-					triangles = {
-						count = tonumber(scene.mMeshes[i].mNumFaces), 
-						pointer = triangles, 
-						stride = ffi.sizeof("unsigned int") * 3, 
-					},					
-					vertices = {
-						count = tonumber(scene.mMeshes[i].mNumVertices),  
-						pointer = vertices, 
-						stride = ffi.sizeof("float") * 3,
-					},
-				}
-				
-				meshes[i + 1] = mesh
-			end
+function physics.Initialize()
+	for k,v in pairs(physics.bodies) do 
+		if v:IsValid() then
+			v:Remove() 
 		end
-		
-		assimp.ReleaseImport(scene)
-		
-		return meshes
+	end
+
+	physics.bullet.Initialize()
+	
+	physics.bodies = {}
+	physics.body_lookup = utility.CreateWeakTable()
+			
+	do
+		local out = ffi.new("bullet_collision_value[1]")
+
+		event.AddListener("Update", "bullet", function(dt)		
+			physics.bullet.StepSimulation(dt or 0, physics.sub_steps, physics.fixed_time_step)
+			
+			while physics.bullet.ReadCollision(out) do
+				if physics.body_lookup[out[0].a] and physics.body_lookup[out[0].b] then
+					event.Call("PhysicsCollide", physics.body_lookup[out[0].a].ent, physics.body_lookup[out[0].b].ent)
+				end
+			end
+		end)
 	end
 	
-	return nil, "file does not exist"
+	physics.SetGravity(Vec3(0, 0, -9.8))
+	physics.sub_steps = 1
+	physics.fixed_time_step = 1/60	
 end
+
+function physics.EnableDebug(draw_line, contact_point, _3d_text, report_error_warning)
+	physics.bullet.EnableDebug(draw_line, contact_point, _3d_text, report_error_warning)
+end
+
+function physics.DisableDebug()
+	physics.bullet.DisableDebug()
+end
+
+function physics.DrawDebugWorld()
+	physics.bullet.DrawDebugWorld()
+end
+
+function physics.GetBodies()
+	return physics.bodies
+end
+
+do
+	local out = ffi.new("bullet_raycast_result[1]")
+	
+	function physics.RayCast(from, to)
+		if physics.bullet.RayCast(from.x, from.y, from.z, to.x, to.y, to.z, out) then
+			return {
+				hit_pos = Vec3(out[0].hit_pos[0], out[0].hit_pos[1], out[0].hit_pos[2]),
+				hit_normal = Vec3(out[0].hit_normal[0], out[0].hit_normal[1], out[0].hit_normal[2]),
+				body = body_lookup[out[0].body].ent,
+			}
+		end
+	end
+end
+
+do
+	local out = ffi.new("float[3]")
+	
+	function physics.GetGravity()
+		physics.bullet.GetWorldGravity(out)
+		return Vec3(vec3_from_bullet(out[0], out[1], out[2]))
+	end
+	
+	function physics.SetGravity(vec)
+		physics.bullet.SetWorldGravity(vec3_to_bullet(vec:Unpack()))
+	end
+end
+
+physics.Initialize()
 
 return physics

@@ -208,7 +208,7 @@ local function load_mdl(path, thread)
 		local count = header[name .. "_count"]
 		local offset = header[name .. "_offset"]
 
-		if thread then thread:Report("reading " .. name) end
+		--if thread then thread:Report("reading " .. name) end
 		
 		if _debug then logf("reading %i %ss (at %i)\n", count, name, offset) end
 

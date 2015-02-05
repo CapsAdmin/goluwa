@@ -4,16 +4,21 @@ local function go()
 	if SERVER then
 		console.RunString("map gm_flatgrass")
 
-		for i = 1, 1 do
+		for i = 1, 10 do 
 			local body = entities.CreateEntity("physical")
 			body:SetName("those boxes " .. i)
-			--body:SetPhysicsModelPath("models/cube.obj")
+			
 			body:SetModelPath("models/cube.obj")
-			--body:SetMass(10)
-			body:InitPhysicsBox(Vec3(1, 1, 1))  
-			--body:SetScale(Vec3(1,5,1))
-			--body:SetSize(1) 
+			
+			--body:SetPhysicsModelPath("models/cube.obj")
+			--body:InitPhysicsConvexTriangles(true)
+
+			body:InitPhysicsBox(-Vec3(1, 1, 1))
+			
+			body:SetMass(10)
 			body:SetPosition(Vec3(0,0,-100+i*2)) 
+			
+			body:SetSize(-1)  -- FIX ME
 		end 
 	end
 end

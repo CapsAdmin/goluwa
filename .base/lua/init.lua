@@ -239,8 +239,8 @@ do -- libraries
 	chat = include("libraries/network/chat.lua") -- chat, duh!
 
 	-- other
-	entities = include("libraries/entities/entities.lua") -- entity component system
 	physics = include("libraries/entities/physics.lua") -- bullet physics
+	entities = include("libraries/entities/entities.lua") -- entity component system
 	steam = include("libraries/steam/steam.lua")
 
 	if not DISABLE_CURSES then
