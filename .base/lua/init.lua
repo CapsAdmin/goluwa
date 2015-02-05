@@ -1,9 +1,5 @@
 local profile_start_time = os.clock()
 
--- load normal lua modules from this directory
--- ROOT/.base/lua/modules/bin/linux/x64/foobar.so
-package.cpath = package.cpath .. ";../../../lua/modules/bin/" .. jit.os:lower() .. "/" .. jit.arch:lower() .. "/?." .. (jit.os == "Windows" and "dll" or "so")
-
 -- check if this environment is compatible
 if not require("ffi") then
 	error("goluwa requires ffi to run!")
@@ -81,16 +77,16 @@ end
 do -- file system
 
 	-- this is required because fs needs winapi and syscall
-	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../lua/modules/" .. name .. ".lua") end)
-	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../lua/modules/" .. name .. "/init.lua") end)
+	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../lua/modules/" .. name .. ".lua") end)
+	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../lua/modules/" .. name .. "/init.lua") end)
 	fs = require("fs")
 	table.remove(package.loaders)
 	table.remove(package.loaders)
 	-- remove them because we do it properly later on
 
 	-- the root folder is always 4 paths up (.base/bin/os/arch)
-	e.ROOT_FOLDER = fs.getcd():gsub("\\", "/"):match("(.+/)" .. (".-/"):rep(4 - 1))
-	e.BASE_FOLDER = fs.getcd():gsub("\\", "/"):match("(.+/)" .. (".-/"):rep(3 - 1))
+	e.ROOT_FOLDER = fs.getcd():gsub("\\", "/"):match("(.+/)" .. (".-/"):rep(3 - 1))
+	e.BASE_FOLDER = fs.getcd():gsub("\\", "/"):match("(.+/)" .. (".-/"):rep(2 - 1))
 	
 	-- the userdata folder
 	e.USERDATA_FOLDER = e.ROOT_FOLDER .. ".userdata/" .. e.USERNAME:lower() .. "/"

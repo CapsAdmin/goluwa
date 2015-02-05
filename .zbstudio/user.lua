@@ -46,7 +46,7 @@ function get_text()
 	return lt
 end
 
-local bin = ".base/bin/" .. jit.os:lower() ..	"/" .. "x86" .. "/"
+local bin = ".base/bin/" .. jit.os:lower() ..	"_" .. "x86" .. "/"
 
 local sockets = require("socket")
 

@@ -1,0 +1,1 @@
+start luajit.exe ../../../lua/init.lua

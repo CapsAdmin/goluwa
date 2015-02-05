@@ -262,7 +262,7 @@ function vfs.AddModuleDirectory(dir)
 	
 	table.insert(package.loaders, function(path)
 		local c_name = "luaopen_" .. path:gsub("^.*%-", "", 1):gsub("%.", "_")
-		path = R(dir .. "bin/" .. jit.os:lower() .. "/" .. jit.arch:lower() .. "/" .. path .. (jit.os == "Windows" and ".dll" or ".so")) or path
+		path = R(dir .. "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. path .. (jit.os == "Windows" and ".dll" or ".so")) or path
 		return package.loadlib(path, c_name)
 	end)
 end	

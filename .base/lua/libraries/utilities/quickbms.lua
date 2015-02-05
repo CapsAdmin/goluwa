@@ -1,8 +1,8 @@
 local utility = _G.utility or ...
 
 local temp_dir = R"data/" .. "bms/"
-local temp_script = R"bin/"..jit.os:lower().."/" .. "temp_script.bms"
-local quickbms_location = R("bin/"..jit.os:lower().."/")
+local temp_script = R"bin/temp_script.bms"
+local quickbms_location = R("bin/")
 local exists = vfs.Find(quickbms_location .. "quickbms")[1] ~= nil
 
 local bms_opened_files = {}
