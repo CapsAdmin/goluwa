@@ -3,4 +3,8 @@
 *.!sync
 /.base/bin/quickbms.exe
 /.base/bin/temp_script.bms
+/.base/bin/windows_x64
+/.base/bin/windows_x86
+/.base/bin/linux_x64
+/.base/bin/linux_x86
 /goluwa_ffmpeg
