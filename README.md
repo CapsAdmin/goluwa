@@ -32,7 +32,7 @@ Source engine content:
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-14_18-12-58.png)
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-02/2015-02-06_05-33-37.jpg)
 
-Here I'm loading de_overpass from CSGO. Goluwa will find steam, mount csgo and the required source games, read the BSP, VTF, VMT, MDL, etc files and load the assets. This is all very WIP but somewhat works.
+Here I'm loading de_overpass from CSGO and esther from dear esther. Goluwa will find steam from registry (different method on linux), mount the games vpk files and the required source games, read the BSP, VTF, VMT, MDL, etc files and load the assets. This is all very WIP but somewhat works.
 
 Entity editor:
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_22-34-03.png)
