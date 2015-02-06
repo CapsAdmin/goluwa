@@ -7,7 +7,6 @@ I don't have any plans so I just code whatever I feel like coding. Because I'm i
 LuaJIT's FFI library is used to bind to the following shared libraries:
 
 * [OpenGL](http://www.opengl.org/) - graphics
-* [GLFW](https://github.com/glfw/glfw) - window and input handler
 * [SDL](https://www.libsdl.org/) - window and input handler (mainly for android)
 * [OpenAL Soft](http://kcat.strangesoft.net/openal.html) - sound library
 * [FreeType](http://www.freetype.org/) - font decoding
@@ -19,17 +18,20 @@ LuaJIT's FFI library is used to bind to the following shared libraries:
 * [Assimp](https://github.com/assimp/assimp) - model decoding
 * [Bullet3](https://github.com/bulletphysics/bullet3) - physics engine
 * [ENet](https://github.com/lsalzman/enet) - udp library targeted at games
-* SteamFriends - extension to the steam library to deal with steam friends communication
 
 The rest is then made in LuaJIT.
 
 GUI:
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-05_13-57-28.png)
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_22-37-16.png)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-02/2015-02-01_18-13-43.png)
 Similar to derma/gwen in gmod. It's also compatible with gwen skins. The blue skin tries to be identical to zsnes. The zsnes skin is only used in the "main menu".
 
 Source engine content:
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-02/2015-02-02_01-14-06.png)
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-14_18-12-58.png)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-02/2015-02-06_05-33-37.jpg)
+
 Here I'm loading de_overpass from CSGO. Goluwa will find steam, mount csgo and the required source games, read the BSP, VTF, VMT, MDL, etc files and load the assets. This is all very WIP but somewhat works.
 
 Entity editor:
