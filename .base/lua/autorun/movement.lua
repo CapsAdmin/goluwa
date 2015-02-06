@@ -29,6 +29,15 @@ if CLIENT then
 	
 	-- 2d
 	event.AddListener("DrawHUD", "cursors", function()
+	
+		for _, client in pairs(clients.GetAll()) do
+			if client ~= clients.GetLocalClient() then
+				local ghost = client.nv.ghost
+				if ghost and ghost:IsValid() then 
+					ghost:SetMass(0)
+				end
+			end
+		end
 
 		if not menu.IsVisible() then return end
 		
@@ -61,7 +70,7 @@ for k,v in pairs(clients.GetAll()) do
 		v.nv.ghost:Remove()
 	end
 end    
-    
+	
 event.AddListener("Move", "spooky", function(client, cmd)
 	if CLIENT and not network.IsConnected() then return end
 	
@@ -74,17 +83,18 @@ event.AddListener("Move", "spooky", function(client, cmd)
 				
 			local filter = clients.CreateFilter():AddAllExcept(client)
 			
-			ghost:ServerFilterSync(filter, "Position")
-			ghost:ServerFilterSync(filter, "Rotation")
+			--ghost:ServerFilterSync(filter, "Position")
+			--ghost:ServerFilterSync(filter, "Rotation")
 			
 			--ghost:SetNetworkChannel(1) 
 			ghost:SetPhysicsModelPath("models/sphere.obj")
+			ghost:SetModelPath("models/sphere.obj")
 			ghost:SetMass(85)
 			ghost:InitPhysicsSphere(0.5)
 			ghost:SetPosition(Vec3(0,0,-40))  
 			ghost:SetLinearSleepingThreshold(0)  
 			ghost:SetAngularSleepingThreshold(0)  
-			ghost:SetSize(1/12)  
+			ghost:SetSize(-1/12)  
  			ghost:SetSimulateOnClient(true) 
 			
 			client.nv.ghost = ghost
