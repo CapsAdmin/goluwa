@@ -22,7 +22,7 @@ function vfs.Find(path, invert, full_path, start, plain, info)
 				if not done[v] then
 					done[v] = true
 					if (not pattern or pattern == "" or v:find(pattern, start, plain)) then
-						if full_path then
+						if full_path and not info then
 							v = --[[data.context.Name .. ":" ..]] data.path_info.full_path .. v
 						end
 						
@@ -31,6 +31,7 @@ function vfs.Find(path, invert, full_path, start, plain, info)
 								name = v, 
 								filesystem = data.context.Name,
 								full_path = data.context.Name .. ":" .. data.path_info.full_path .. v,
+								full_path2 = data.path_info.full_path .. v,
 								userdata = data.userdata,
 							})
 						else
@@ -64,7 +65,10 @@ function vfs.Iterate(path, ...)
 		
 		i = i + 1
 		
-		if val then 
+		if val then
+			if type(val) == "table" then
+				return val
+			end
 			return val, dir .. val
 		end
 	end
