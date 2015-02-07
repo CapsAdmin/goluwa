@@ -27,6 +27,7 @@ markup:SetFixedSize(14)
 
 local history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt") or {}
 local dirty = false
+local hush
 
 local USE_COLORS = (os.getenv("USE_COLORS") or "1") == "1"
 
@@ -252,7 +253,7 @@ function console.InitializeCurses()
 	end
 	
 	console.Resize(curses.COLS, curses.LINES)
-
+		
 	function io.write(...)
 		local str = table.concat({...}, "")
 
@@ -260,7 +261,9 @@ function console.InitializeCurses()
 	end
 
 	for _, line in ipairs(_G.LOG_BUFFER) do
-		io.write(line)
+		hush = true
+		console.Print(line)
+		hush = false
 	end
 
 	_G.LOG_BUFFER = nil
@@ -300,6 +303,10 @@ function console.Print(str)
 		end
 		
 		return
+	end
+	
+	if not hush then
+		_OLD_G.io.write(str)
 	end
 	
 	if curses.COLS > 0 then
