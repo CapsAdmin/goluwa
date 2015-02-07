@@ -9,9 +9,15 @@ do
 		system.run = code
 	end
 	
+	local old = os.exit
+
 	function os.exit(code)
 		logn("os.exit() called")
 		system.ShutDown(code)
+	end
+	
+	function os.realexit(code)
+		old(code)
 	end
 end
 
