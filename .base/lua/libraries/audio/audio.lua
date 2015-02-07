@@ -41,6 +41,8 @@ function audio.Initialize(name)
 
 	audio.device = device
 	audio.context = context
+	
+	event.AddListener("ShutDown", "openal", audio.Shutdown)
 end
 
 function audio.Shutdown()
