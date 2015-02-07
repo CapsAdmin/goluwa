@@ -73,7 +73,7 @@ local function request(info)
 	info.method = info.method or "GET"
 	info.user_agent = info.user_agent or "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
 	info.connection = info.connection or "Keep-Alive"
-	info.receive_mode = info.receive_mode or 61440
+	info.receive_mode = info.receive_mode or "all"
 	info.timeout = info.timeout or 2
 	info.callback = info.callback or table.print
 	
@@ -155,10 +155,18 @@ local function request(info)
 				if info.method == "HEAD" then
 					self:Remove()
 				end
+				
+				if info.header_callback then
+					info.header_callback(header)
+				end
 			end
 		else
 			table.insert(content, str)
 			length = length + #str
+			
+			if info.progress_callback then
+				info.progress_callback(content, str, length, header)
+			end
 		end
 		
 		if header["content-length"] then
@@ -192,13 +200,32 @@ function sockets.Download(url, callback)
 	
 	logn("[sockets] downloading ", url)
 	
+	local last_downloaded = 0
+	local last_report = os.clock() + 4
+	
 	if callback then
 		sockets.Request({
 			url = url, 
-			receive_mode = 10000000,
 			callback = function(data) 
 				callback(data.content) 
-			end, 
+			end,
+			header_callback = function(header)
+				if header["content-length"] then
+					logn("[sockets] size of ", url, " is ", utility.FormatFileSize(header["content-length"]))
+				else
+					logn("[sockets] size of ", url, " is unkown!")
+				end
+			end,
+			progress_callback = function(current_content, chunk, current_length, header)
+				if not header["content-length"] then return end
+				if last_report < os.clock() then
+					logn(url, ":")
+					logn("\tprogress: ", math.round((current_length / header["content-length"]) * 100, 3), "%")
+					logn("\tspeed: ", utility.FormatFileSize(current_length - last_downloaded))
+					last_downloaded = current_length
+					last_report = os.clock() + 4
+				end
+			end,
 		})
 		return true
 	end
