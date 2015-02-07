@@ -39,5 +39,39 @@ if(!(Test-Path ($output_folder + "\luajit.exe")))
 	Remove-Item ($download_location) -ErrorAction SilentlyContinue -Confirm:$false -Recurse:$true
 }
 
-Set-Location ($(PSScriptRoot) + "\windows_$arch\")
-Start-Process "luajit" "../../lua/init.lua "
+$pinfo = New-Object System.Diagnostics.ProcessStartInfo
+$pinfo.FileName = ($(PSScriptRoot) + "\windows_$arch\") + "luajit.exe"
+$pinfo.WorkingDirectory = ($(PSScriptRoot) + "\windows_$arch\")
+$pinfo.RedirectStandardError = $true
+$pinfo.RedirectStandardOutput = $true
+$pinfo.UseShellExecute = $false
+$pinfo.Arguments = "../../lua/init.lua"
+$p = New-Object System.Diagnostics.Process
+$p.StartInfo = $pinfo
+$p.Start() | Out-Null
+$p.WaitForExit()
+$stdout = $p.StandardOutput.ReadToEnd()
+$stderr = $p.StandardError.ReadToEnd()
+
+Write-Host "======== stdout ========`n$stdout========================`n`n"
+Write-Host "======== stderr ========`n$stderr========================`n`n"
+Write-Host "exit code: " $p.ExitCode "`n`n"
+
+if ($stderr)
+{
+
+$src = @'
+    [DllImport("Kernel32.dll")]
+    public static extern IntPtr GetConsoleWindow();
+    [DllImport("User32.dll")]
+    public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
+'@
+
+Add-Type -Name ConsoleUtils -Namespace Foo -MemberDefinition $src
+$hWnd = [Foo.ConsoleUtils]::GetConsoleWindow()
+[Foo.ConsoleUtils]::ShowWindow($hWnd, 1)
+
+Write-Host "press any key to exit"
+$host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+
+}
