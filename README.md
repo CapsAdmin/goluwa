@@ -1,8 +1,8 @@
-Goluwa is a framework that I use to make stuff made in LuaJIT. It's very similar GLua (Garry's Mod Lua) because that's where I started learning programming and it's what I'm used to. 
+Goluwa is a framework made with LuaJIT that I use to make stuff/goluwa with. Goluwa tries to be dynamic and modifiable without the need to restart.
 
-There are a lot of of sub projects included such as the GUI, a wrapper for running Löve games, tools for reading and mounting source engine assets, midi and sf2 parsers and so on.
+There are lots of sub projects included such as the GUI, a wrapper for running Löve games, tools for reading and mounting source engine assets, midi and sf2 parsers, some async socket library based on luasocket, etc.
 
-I don't have any plans so I just code whatever I feel like coding. Because I'm interested in game engines and middleware for games the byproduct of doing that ends up with Goluwa being something that vaguely resembles a game engine. For these reasons I can't recommend using Goluwa to make a game or anything too serious.
+I don't really have any big plans so I just code whatever I feel like coding. Because I'm interested in game engines and middleware for games Goluwa ends up being something that vaguely resembles a game engine. For these reasons I can't recommend using Goluwa to make a game or anything too serious.
 
 LuaJIT's FFI library is used to bind to the following shared libraries:
 
@@ -24,18 +24,18 @@ The rest is then made in LuaJIT.
 GUI:
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-05_13-57-28.png)
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_22-37-16.png)
-![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-02/2015-02-01_18-13-43.png)
 Similar to derma/gwen in gmod. It's also compatible with gwen skins. The blue skin tries to be identical to zsnes. The zsnes skin is only used in the "main menu".
 
 Source engine content:
-![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-02/2015-02-02_01-14-06.png)
-![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-14_18-12-58.png)
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-02/2015-02-06_05-33-37.jpg)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-14_18-12-58.png)
 
 Here I'm loading de_overpass from CSGO and esther from dear esther. Goluwa will find steam from registry (different method on linux), mount the games vpk files and the required source games, read the BSP, VTF, VMT, MDL, etc files and load the assets. This is all very WIP but somewhat works.
 
 Entity editor:
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-02/2015-02-02_01-14-06.png)
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_22-34-03.png)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-02/2015-02-01_18-13-43.png)
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_23-03-29.gif)
 It's sort of similar to PAC3 (a character editor I made for Garry's Mod). All objects have properties and some of them can be marked for being storable. If they are you can edit them with this editor.
 
