@@ -57,7 +57,7 @@ Write-Host "======== stdout ========`n$stdout========================`n`n"
 Write-Host "======== stderr ========`n$stderr========================`n`n"
 Write-Host "exit code: " $p.ExitCode "`n`n"
 
-if ($stderr)
+if ($stderr -or ($p.ExitCode -ne 0))
 {
 
 $src = @'
