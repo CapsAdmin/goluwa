@@ -1,5 +1,20 @@
 local system = _G.system or {}
 
+do
+	system.run = true
+
+	function system.ShutDown(code)	
+		code = code or 0
+		logn("shutting down with code ", code)
+		system.run = code
+	end
+	
+	function os.exit(code)
+		logn("os.exit() called")
+		system.ShutDown(code)
+	end
+end
+
 local function not_implemented() debug.trace() logn("this function is not yet implemented!") end
 
 function system.ExecuteArgs(args)
