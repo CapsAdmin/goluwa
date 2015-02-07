@@ -54,7 +54,6 @@ local function main()
 		local ok, err = pcall(update_, dt)
 		
 		if not ok then				
-			event.Call("ShutDown")
 			system.MessageBox("fatal error", tostring(err))
 			os.exit()
 			return false
@@ -90,7 +89,7 @@ local function main()
 			end
 		end
 	else
-		while true do
+		while system.run == true do
 			if update() == false then
 				return
 			end
@@ -99,3 +98,5 @@ local function main()
 end
 
 main()
+event.Call("ShutDown")
+os.exit(system.run)
