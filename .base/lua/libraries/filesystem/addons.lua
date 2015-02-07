@@ -4,9 +4,9 @@ vfs.loaded_addons = {}
 vfs.disabled_addons = {}
 
 function vfs.MountAddons(dir)
-	for folder in vfs.Iterate(dir, nil, true) do
-		if not folder:endswith(".git") and vfs.IsFolder(folder) then
-			vfs.MountAddon("os:" .. folder .. "/")
+	for info in vfs.Iterate(dir, nil, true, nil, nil, true) do
+		if vfs.IsFolder(info.full_path2) then
+			vfs.MountAddon(info.full_path2 .. "/")
 		end
 	end
 end
@@ -37,7 +37,7 @@ function vfs.AutorunAddon(addon, folder, force)
 						info.startup_launched = true
 					end
 				end
-								
+				
 				-- autorun folders			
 				for path in vfs.Iterate(info.path .. "lua/autorun/" .. folder) do
 					if path:find("%.lua") then
@@ -76,7 +76,7 @@ function vfs.AutorunAddons(folder, force)
 end
 
 function vfs.MountAddon(path, force)									
-	local func, msg = loadfile(path .. "info.lua")
+	local func, msg = vfs.loadfile(path .. "info.lua")
 	
 	local info = {}
 	
