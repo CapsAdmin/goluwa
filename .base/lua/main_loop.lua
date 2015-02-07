@@ -99,4 +99,4 @@ end
 
 main()
 event.Call("ShutDown")
-os.exit(system.run)
+os.realexit(system.run)
