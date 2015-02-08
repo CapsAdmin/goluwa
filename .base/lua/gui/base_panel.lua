@@ -848,6 +848,7 @@ do -- animations
 	prototype.GetSet(PANEL, "DrawPositionOffset", Vec2(0, 0))
 	prototype.GetSet(PANEL, "DrawAngleOffset", Ang3(0,0,0))
 	prototype.GetSet(PANEL, "DrawColor", Color(0,0,0,0))
+	prototype.GetSet(PANEL, "DrawAlpha", 1)
 	
 	local function lerp_values(values, alpha)
 		local tbl = {}
@@ -1972,7 +1973,8 @@ do -- events
 		
 		local r,g,b,a = self.Color:Unpack()
 		local mr,mg,mb,ma = self.DrawColor:Unpack()
-				
+		
+		surface.SetAlphaMultiplier(self.DrawAlpha)
 		surface.SetColor(r+mr,g+mg,b+mb,a+ma)
 		surface.SetTexture(self.Texture)
 		
