@@ -64,33 +64,24 @@ do -- render model
 			end
 		end
 	end
+		
+	local cb = utility.CreateCallbackThing(utility.render_model_cache)
 
 	function utility.LoadRenderModel(path, callback, callback2)
 		check(path, "string")
 		callback2 = callback2 or function() end
 		
-		if utility.render_model_cache[path] and utility.render_model_cache[path].callback then
-			local old = utility.render_model_cache[path].callback
-			utility.render_model_cache[path].callback = function(...)
-				old(...)
-				callback(...)
-			end
-			
-			local old = utility.render_model_cache[path].callback2
-			utility.render_model_cache[path].callback2 = function(...)
-				old(...)
-				callback2(...)
-			end
-			return true
-		end
+		if cb:check(path, callback, {mesh = callback2}) then return true end
 		
-		if utility.render_model_cache[path] then
+		local data = cb:get(path)
+		
+		if data then
 			if callback2 then
-				for i, mesh in ipairs(utility.render_model_cache[path]) do
+				for i, mesh in ipairs(data) do
 					callback2(mesh)
 				end
 			end
-			callback(utility.render_model_cache[path])
+			callback(data)
 			return true
 		end
 		
@@ -104,7 +95,8 @@ do -- render model
 		
 		local dir = path:match("(.+/)")
 		
-		utility.render_model_cache[path] = {callback = callback, callback2 = callback2}
+		cb:start(path, callback, {mesh = callback2})
+		
 		local out = {}
 		
 		if path:endswith(".mdl") and steam.LoadModel then
@@ -123,15 +115,14 @@ do -- render model
 					mesh:BuildBoundingBox()
 					
 					mesh:Upload()
-					utility.render_model_cache[path].callback2(mesh)
+					cb:callextra(path, "mesh", mesh)
 					table.insert(out, mesh)
 					
 				end, thread)
 			end
 			
 			function thread.OnFinish()
-				utility.render_model_cache[path].callback(out)
-				utility.render_model_cache[path] = out
+				cb:stop(path, out)
 			end
 			
 			thread:SetIterationsPerTick(15)
@@ -140,12 +131,11 @@ do -- render model
 		elseif path:endswith(".bsp") and steam.LoadMap then
 			steam.LoadMap(path, function(data, thread)
 				for _, mesh in ipairs(data.render_meshes) do 
-					utility.render_model_cache[path].callback2(mesh)
+					cb:callextra(path, "mesh", mesh)
 					table.insert(out, mesh)
 				end
 				
-				utility.render_model_cache[path].callback(out)
-				utility.render_model_cache[path] = out
+				cb:stop(path, out)
 			end)
 		elseif assimp then		
 			local flags = assimp.e.aiProcessPreset_TargetRealtime_Quality
@@ -178,7 +168,7 @@ do -- render model
 						mesh:BuildBoundingBox()
 												
 						mesh:Upload()
-						utility.render_model_cache[path].callback2(mesh)	
+						cb:callextra(path, "mesh", mesh)
 						table.insert(out, mesh)
 					end
 				end)				
@@ -197,15 +187,14 @@ do -- render model
 						mesh:BuildBoundingBox()
 						
 						mesh:Upload()
-						utility.render_model_cache[path].callback2(mesh)
+						cb:callextra(path, "mesh", mesh)
 						table.insert(out, mesh)
 					end, true)
 				end
 			end
 			
 			function thread.OnFinish()
-				utility.render_model_cache[path].callback(out)
-				utility.render_model_cache[path] = out
+				cb:stop(path, out)
 			end
 			
 			thread:SetIterationsPerTick(15)
@@ -222,18 +211,15 @@ end
 do -- physics model
 	utility.physics_model_cache = {}
 
+	local cb = utility.CreateCallbackThing(utility.physics_model_cache)
+	
 	function utility.LoadPhysicsModel(path, callback)
-		if type(utility.physics_model_cache[path]) == "function" then
-			local old = utility.physics_model_cache[path]
-			utility.physics_model_cache[path] = function(...)
-				old(...)
-				callback(...)
-			end
-			return true
-		end
+		if cb:check(path, callback) then return true end
 		
-		if utility.physics_model_cache[path] then
-			callback(utility.physics_model_cache[path])
+		local data = cb:get(path)
+		
+		if data then
+			callback(data)
 			return true
 		end
 
@@ -241,12 +227,11 @@ do -- physics model
 			return nil, path .. " not found"
 		end
 		
-		utility.physics_model_cache[path] = callback
+		cb:start(path, callback)
 		
 		if path:endswith(".bsp") and steam.LoadMap then
 			steam.LoadMap(path, function(data, thread)
-				utility.physics_model_cache[path](data.physics_meshes)
-				utility.physics_model_cache[path] = data.physics_meshes
+				cb:stop(path, data.physics_meshes)
 			end)	
 		elseif assimp then
 			local scene = assimp.ImportFile(R(path), assimp.e.aiProcessPreset_TargetRealtime_Quality)
@@ -281,9 +266,7 @@ do -- physics model
 				},
 			}
 			
-			local res = {mesh}
-			utility.physics_model_cache[path](res)
-			utility.physics_model_cache[path] = res
+			cb:stop(path, {mesh})
 			
 			assimp.ReleaseImport(scene)
 		else
