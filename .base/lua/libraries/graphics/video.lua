@@ -41,7 +41,7 @@ function video.CreateGif(path)
 	
 	self.loading = true
 
-	vfs.ReadAsync(path, function(data)
+	resource.Read(path, function(data)
 		local frames = freeimage.LoadMultiPageImage(data)
 		
 		local w, h = 0, 0

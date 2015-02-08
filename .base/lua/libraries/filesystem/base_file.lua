@@ -56,19 +56,19 @@ function CONTEXT:WriteByte(byte)
 	self:WriteBytes(string.char(byte))
 end
 
-function CONTEXT:GetFiles()
+function CONTEXT:GetFiles(path_info)
 	error(self.Name .. ": not implemented")
 end
 
-function CONTEXT:IsFile()
+function CONTEXT:IsFile(path_info)
 	error(self.Name .. ": not implemented")
 end
 
-function CONTEXT:IsFolder()
+function CONTEXT:IsFolder(path_info)
 	error(self.Name .. ": not implemented")
 end
 
-function CONTEXT:CreateFolder()
+function CONTEXT:CreateFolder(path_info)
 	error(self.Name .. ": not implemented")
 end
 

@@ -119,7 +119,6 @@ do -- file system
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/base_file.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/find.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/helpers.lua")
-		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/async.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/lua_utilities.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/addons.lua")
 		dofile(e.ROOT_FOLDER .. ".base/lua/libraries/filesystem/monitoring.lua")
@@ -202,6 +201,8 @@ do -- libraries
 	nvars = include("libraries/network/nvars.lua") -- variable synchronization between server and client
 	clients = include("libraries/network/clients.lua") -- high level wrapper for a connected client
 	chat = include("libraries/network/chat.lua") -- chat, duh!
+		
+	resource = include("libraries/resource.lua")
 		
 	if CLIENT then
 		-- graphics

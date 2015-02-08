@@ -450,7 +450,7 @@ do -- source
 		elseif typex(var) == "buffer" then
 			self:SetBuffer(var)
 		elseif type(var) == "string" then		
-			vfs.ReadAsync(var, function(data)
+			resource.Read(var, function(data)
 				local data, length, info = audio.Decode(data, var)
 				
 				if data then
