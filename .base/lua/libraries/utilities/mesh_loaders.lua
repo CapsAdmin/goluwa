@@ -151,7 +151,7 @@ do -- render model
 			local thread = utility.CreateThread()
 			
 			if path:startswith("http") then
-				vfs.ReadAsync(path, function(data, err)
+				resource.Read(path, function(data, err)
 					if not data then error(err) end
 					local meshes = assert(assimp.ImportFileMemory(data, flags, path))
 					

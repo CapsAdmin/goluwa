@@ -552,7 +552,7 @@ function render.CreateTextureFromPath(path, format)
 	self.override_texture = loading
 	self.loading = true
 
-	if not vfs.ReadAsync(path, function(data, reason)
+	if not resource.Read(path, function(data, reason)
 		self.loading = false
 		self.override_texture = nil
 		
@@ -569,7 +569,7 @@ function render.CreateTextureFromPath(path, format)
 				end
 				
 				render.texture_path_cache[path] = self			
-				vfs.UncacheAsync(path)
+				resource.RemoveResourceFromMemory(path)
 				
 				self:Replace(buffer, w, h)
 				

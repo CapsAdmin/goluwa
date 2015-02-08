@@ -288,7 +288,6 @@ include("path_utilities.lua", vfs)
 include("base_file.lua", vfs)
 include("find.lua", vfs)
 include("helpers.lua", vfs) 
-include("async.lua", vfs)
 include("addons.lua", vfs)
 include("lua_utilities.lua", vfs)
 

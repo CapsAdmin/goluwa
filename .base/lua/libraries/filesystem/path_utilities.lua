@@ -73,7 +73,7 @@ function vfs.CreateFoldersFromPath(filesystem, path)
 	for i = 1, #folders - 1 do
 		local folder = folders[i]
 		
-		vfs.CreateFolder(filesystem, folder)
+		vfs.CreateFolder(filesystem ..":"..  folder)
 	end
 end
 

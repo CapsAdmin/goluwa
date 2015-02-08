@@ -20,7 +20,7 @@ function META:Initialize()
 		surface.freetype_lib = lib
 	end
 	
-	local ok, err = vfs.ReadAsync(self.Path, function(data, err)
+	local ok, err = resource.Read(self.Path, function(data, err)
 		assert(data, err)
 		self.binary_font_data = data
 
@@ -38,7 +38,7 @@ function META:Initialize()
 			
 			self:CreateTextureAtlas()
 			
-			vfs.UncacheAsync(self.Path)
+			resource.RemoveResourceFromMemory(self.Path)
 			
 			self:OnLoad()
 		else
