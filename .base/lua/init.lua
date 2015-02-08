@@ -190,6 +190,18 @@ do -- libraries
 	
 	-- meta
 	include("libraries/extensions/function.lua")
+	
+	-- network
+	sockets = include("libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
+	enet = include("libraries/network/enet.lua") -- low level udp library
+	
+	network = include("libraries/network/network.lua") -- high level implementation of enet
+	packet = include("libraries/network/packet.lua") -- medium (?) level communication between server and client
+	message = include("libraries/network/message.lua") -- high level communication between server and client
+	
+	nvars = include("libraries/network/nvars.lua") -- variable synchronization between server and client
+	clients = include("libraries/network/clients.lua") -- high level wrapper for a connected client
+	chat = include("libraries/network/chat.lua") -- chat, duh!
 		
 	if CLIENT then
 		-- graphics
@@ -221,19 +233,7 @@ do -- libraries
 	if not audio then
 		SOUND = nil
 	end
-
-	-- network
-	sockets = include("libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
-	enet = include("libraries/network/enet.lua") -- low level udp library
 	
-	network = include("libraries/network/network.lua") -- high level implementation of enet
-	packet = include("libraries/network/packet.lua") -- medium (?) level communication between server and client
-	message = include("libraries/network/message.lua") -- high level communication between server and client
-	
-	nvars = include("libraries/network/nvars.lua") -- variable synchronization between server and client
-	clients = include("libraries/network/clients.lua") -- high level wrapper for a connected client
-	chat = include("libraries/network/chat.lua") -- chat, duh!
-
 	-- other
 	physics = include("libraries/entities/physics.lua") -- bullet physics
 	entities = include("libraries/entities/entities.lua") -- entity component system
