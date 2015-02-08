@@ -17,43 +17,48 @@ for line in header:gmatch("(.-)\n") do
 	if name then
 		local ok, err = pcall(function()
 			local func = lib["SDL_" .. name]
-			sdl[name] = function(...) 
-				local res = func(...)
-				
-				if name ~= "GetError" then
-					local err = ffi.string(sdl.GetError())
-					if err ~= "" then
-						sdl.ClearError()
-						error(err, 2)
-					end
+			
+			if DEBUG then				
+				sdl[name] = function(...) 
+					local res = func(...)
 					
-					if sdl.logcalls then
-						setlogfile("sdl_calls")			
-							local args = {}
-							for i =  1, select("#", ...) do
-								local val = select(i, ...)
-								if type(val) == "number" and sdl.reverse_enums[val] and val > 10 then
-									args[#args+1] = sdl.reverse_enums[val]
-								else
-									args[#args+1] = serializer.GetLibrary("luadata").ToString(val)
-								end
-							end
-							
-							if not val then
-								logf("SDL_%s(%s)\n", name, table.concat(args, ", "))
-							else
-								local val = val
-								if sdl.reverse_enums[val] then
-									val = sdl.reverse_enums[val]
+					if name ~= "GetError" then
+						local err = ffi.string(sdl.GetError())
+						if err ~= "" then
+							sdl.ClearError()
+							error(err, 2)
+						end
+						
+						if sdl.logcalls then
+							setlogfile("sdl_calls")			
+								local args = {}
+								for i =  1, select("#", ...) do
+									local val = select(i, ...)
+									if type(val) == "number" and sdl.reverse_enums[val] and val > 10 then
+										args[#args+1] = sdl.reverse_enums[val]
+									else
+										args[#args+1] = serializer.GetLibrary("luadata").ToString(val)
+									end
 								end
 								
-								logf("%s = SDL_%s(%s)\n", val, name, table.concat(args, ", "))
-							end
-						setlogfile()
+								if not val then
+									logf("SDL_%s(%s)\n", name, table.concat(args, ", "))
+								else
+									local val = val
+									if sdl.reverse_enums[val] then
+										val = sdl.reverse_enums[val]
+									end
+									
+									logf("%s = SDL_%s(%s)\n", val, name, table.concat(args, ", "))
+								end
+							setlogfile()
+						end
 					end
+					
+					return res
 				end
-				
-				return res
+			else
+				sdl[name] = func
 			end
 		end)
 		
