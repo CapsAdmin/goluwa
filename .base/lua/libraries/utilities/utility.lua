@@ -1,5 +1,55 @@
 local utility = _G.utility or {}
 
+function utility.CreateCallbackThing(cache)		
+	local self = {}
+	
+	function self:check(path, callback, extra)
+		if cache[path] then 				
+			if cache[path].extra_callbacks then
+				for key, old in pairs(cache[path].extra_callbacks) do						
+					local callback = extra[key]
+					if callback then
+						cache[path].extra_callbacks[key] = function(...)
+							old(...)
+							callback(...)
+						end
+					end
+					
+				end
+			end
+			
+			if cache[path].callback then
+				local old = cache[path].callback
+				
+				cache[path].callback = function(...)
+					old(...)
+					callback(...)
+				end
+				return true
+			end
+		end
+	end
+	
+	function self:start(path, callback, extra)
+		cache[path] = {callback = callback, extra_callbacks = extra}
+	end
+	
+	function self:callextra(path, key, out)
+		cache[path].extra_callbacks[key](out)
+	end
+					
+	function self:stop(path, out)
+		cache[path].callback(out)
+		cache[path] = out
+	end
+	
+	function self:get(path)
+		return cache[path]
+	end
+	
+	return self
+end
+
 include("midi.lua", utility)
 include("packed_rectangle.lua", utility)
 include("quickbms.lua", utility)
