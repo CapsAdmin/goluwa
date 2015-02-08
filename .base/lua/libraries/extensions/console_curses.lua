@@ -295,6 +295,10 @@ end
 function console.Print(str)
 	if not console.CanPrint(str) then return end
 
+	if not hush then
+		_OLD_G.io.write(str)
+	end
+	
 	str = str:gsub("\r", "\n")
 	
 	if str:count("\n") > 1 then
@@ -304,11 +308,7 @@ function console.Print(str)
 		
 		return
 	end
-	
-	if not hush then
-		_OLD_G.io.write(str)
-	end
-	
+		
 	if curses.COLS > 0 then
 		local lines = str:lengthsplit(curses.COLS)
 		if #lines > 2 then		

@@ -49,7 +49,7 @@ $pinfo.Arguments = "../../lua/init.lua"
 $p = New-Object System.Diagnostics.Process
 $p.StartInfo = $pinfo
 $p.Start() | Out-Null
-$p.WaitForExit()
+#$p.WaitForExit()
 $stdout = $p.StandardOutput.ReadToEnd()
 $stderr = $p.StandardError.ReadToEnd()
 
