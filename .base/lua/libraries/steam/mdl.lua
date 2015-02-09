@@ -678,8 +678,7 @@ function steam.LoadModel(path, callback, thread)
 
 								if mdl.material[i] and mdl.material[i].path then																		
 									steam.LoadMaterial(
-										mdl.material[i].path, 
-										mdl.texturedir[i].path, 
+										vfs.FixPath("materials/" .. mdl.texturedir[i].path .. mdl.material[i].path),
 										function(vmt)
 											if vmt.error then
 												logn(vmt.error)
