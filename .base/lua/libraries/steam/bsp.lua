@@ -700,6 +700,10 @@ function steam.LoadMap(path, callback)
 			table.insert(header.entities, info)
 		end
 		
+		for i, mesh in ipairs(models) do
+			mesh:UnreferenceVertices()
+		end
+		
 		local func = steam.bsp_cache[path]
 		
 		steam.bsp_cache[path] = {
@@ -711,7 +715,6 @@ function steam.LoadMap(path, callback)
 		func(steam.bsp_cache[path], thread)
 				
 		thread:ReportProgress("finished reading " .. path)
-		
 	end
 
 	thread:Start()
