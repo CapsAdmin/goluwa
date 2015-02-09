@@ -1,6 +1,10 @@
 local render = ... or _G.render
 
 local META = prototype.CreateTemplate("mesh_builder")
+
+function META:__tostring2()
+	return ("[%i vertices]"):format(#self.Vertices)
+end
 	
 prototype.GetSet(META, "Vertices", {})
 prototype.GetSet(META, "Indices")
@@ -27,9 +31,13 @@ function META:Upload(skip_unref)
 	self.mesh = render.CreateMesh(self.Vertices, self.Indices)
 	-- don't store the geometry on the lua side
 	if not skip_unref then
-		self.mesh:UnreferenceMesh()
-		self:Clear()
+		self:UnreferenceVertices()
 	end
+end
+
+function META:UnreferenceVertices()
+	self.mesh:UnreferenceMesh()
+	self:Clear()
 end
 
 function META:GetMesh()
