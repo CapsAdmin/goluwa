@@ -1,5 +1,15 @@
 console.AddCommand("clear", console.Clear)
 
+console.AddCommand("dump_object_count", function()
+	local found = {}
+	
+	for obj in pairs(prototype.GetCreated()) do
+		found[obj.ClassName] = (found[obj.ClassName] or 0) + 1
+	end
+	
+	table.print(found)
+end)
+
 do -- url monitoring
 	console.AddCommand("monitor_url", function(_, url, interval)
 		interval = tonumber(interval) or 0.5
