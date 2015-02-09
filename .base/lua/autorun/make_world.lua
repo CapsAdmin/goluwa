@@ -2,7 +2,7 @@ if SCITE then return end
 
 local function go()
 	if SERVER then
-		console.RunString("map gm_flatgrass")
+		console.RunString("map gm_old_flatgrass")
 
 		for i = 1, 10 do 
 			local body = entities.CreateEntity("physical")
