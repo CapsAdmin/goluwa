@@ -36,7 +36,7 @@ function utility.CreateCallbackThing(cache)
 	end
 	
 	function self:callextra(path, key, out)
-		if not cache[path] then return end
+		if not cache[path] or not cache[path].extra_callbacks[key] then return end
 		cache[path].extra_callbacks[key](out)
 	end
 					
@@ -352,12 +352,14 @@ do
 			
 			local time = system.GetElapsedTime()
 
-			if next(self.progress) then
-				for k, v in pairs(self.progress) do	
-					if v.i < v.max then 
-						if not v.last_print or v.last_print < time then
-							logf("%s %s progress: %s\n", self, k, self:GetProgress(k))
-							v.last_print = time + 1
+			if self.debug then 
+				if next(self.progress) then
+					for k, v in pairs(self.progress) do	
+						if v.i < v.max then 
+							if not v.last_print or v.last_print < time then
+								logf("%s %s progress: %s\n", self, k, self:GetProgress(k))
+								v.last_print = time + 1
+							end
 						end
 					end
 				end
@@ -411,6 +413,7 @@ do
 	end
 	
 	function META:Report(what)
+		if not self.debug then return end
 		if not self.last_report or self.last_report < system.GetTime() then
 			logf("%s report: %s\n", self, what)
 			self.last_report = system.GetElapsedTime() + 1
@@ -418,6 +421,7 @@ do
 	end
 		
 	function META:ReportProgress(what, max)
+		if not self.debug then return end
 		self.progress[what] = self.progress[what] or {}
 		self.progress[what].i = (self.progress[what].i or 0) + 1
 		self.progress[what].max = max or 100

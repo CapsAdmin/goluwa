@@ -95,9 +95,9 @@ function steam.LoadMap(path, callback)
 	steam.bsp_cache[path] = callback
 	
 	local thread = utility.CreateThread()
-	
+	thread.debug = true
 	thread:SetFrequency(120)
-	thread:SetIterationsPerTick(10)
+	thread:SetIterationsPerTick(50)
 	
 	function thread:OnStart()
 		
@@ -517,8 +517,7 @@ function steam.LoadMap(path, callback)
 						
 						if GRAPHICS then
 							steam.LoadMaterial(
-								texname, 
-								nil, 
+								"materials/" .. texname, 
 								function(vmt)
 									if vmt.error then
 										logn(vmt.error)									

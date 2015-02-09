@@ -73,7 +73,6 @@ do -- render model
 
 	function utility.LoadRenderModel(path, callback, callback2, on_fail)
 		check(path, "string")
-		callback2 = callback2 or function() end
 		
 		if cb:check(path, callback, {mesh = callback2, on_fail = on_fail}) then return true end
 		
@@ -177,10 +176,12 @@ do -- render model
 				thread:SetIterationsPerTick(15)
 				
 				thread:Start()
-			elseif on_fail then
-				on_fail("unknown format " .. path)
+			else
+				cb:callextra(path, "on_fail", "unknown format " .. path)
 			end
-		end, on_fail)
+		end, function(reason)
+			cb:callextra(path, "on_fail", reason)
+		end)
 		
 		return true
 	end
@@ -244,10 +245,12 @@ do -- physics model
 				cb:stop(path, {mesh})
 				
 				assimp.ReleaseImport(scene)
-			elseif on_fail then
-				on_fail("unknown format " .. path)
+			else
+				cb:callextra(path, "on_fail", "unknown format " .. path)
 			end
-		end, on_fail)
+		end, function(reason)
+			cb:callextra(path, "on_fail", reason)
+		end)
 		
 		return true
 	end

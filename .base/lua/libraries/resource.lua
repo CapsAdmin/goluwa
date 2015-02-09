@@ -94,7 +94,7 @@ function resource.Download(path, callback, on_fail, crc)
 	check(path, "string")
 	check(callback, "function")
 	on_fail = on_fail or logn
-	
+		
 	local url
 	
 	if path:find("^(.-)://") then 
@@ -102,9 +102,11 @@ function resource.Download(path, callback, on_fail, crc)
 		local ext = url:match(".+(%.%a+)") or ".dat"
 		path = "cache/" .. (crc or crypto.CRC32(path)) .. ext
 	end
-		
-	if vfs.IsFile(path) then
-		callback(R(path))
+	
+	local path2 = R(path)
+
+	if path2 then
+		callback(path2)
 		return true
 	end
 
@@ -133,7 +135,7 @@ function resource.Download(path, callback, on_fail, crc)
 		)
 	else
 		if #resource.providers > 0 then
-			logn("[resource] donwnloading ", url)
+			logn("[resource] donwnloading ", path)
 		end
 		download_from_providers(
 			path, 
