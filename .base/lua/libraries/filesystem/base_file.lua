@@ -100,6 +100,10 @@ function CONTEXT:GetLastAccessed()
 	error(self.Name .. ": not implemented")
 end
 
+function CONTEXT:Flush()
+	error(self.Name .. ": not implemented")
+end
+
 prototype.AddBufferTemplate(CONTEXT)
 
 prototype.Register(CONTEXT, "file_system", CONTEXT.Name)

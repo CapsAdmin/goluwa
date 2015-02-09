@@ -10,7 +10,7 @@ function sockets.HeaderToTable(header)
 	local tbl = {}
 	
 	if not header then return tbl end
-
+		
 	for line in header:gmatch("(.-)\n") do
 		local key, value = line:match("(.+):%s+(.+)\r")
 
@@ -52,6 +52,8 @@ local function request(info)
 		info.location = info.location or location
 		info.host = info.host or host
 		info.protocol = info.protocol or protocol
+		
+		info.location = info.location:gsub(" ", "%%20")
 	end
 	
 	if info.protocol == "https" and not info.ssl_parameters then
@@ -118,37 +120,50 @@ local function request(info)
 	
 	local header = {}
 	local content = {}
-	local temp = {}
 	local length = 0
 	local in_header = true
 	
+	local protocol
+	local code
+	local code_desc
+	
 	function socket:OnReceive(str)
-		if in_header then
-			table.insert(temp, str)
+		if in_header then			
+			protocol, code, code_desc = str:match("^(%S-) (%S-) (.+)\n")
+			code = tonumber(code)
 			
-			local str = table.concat(temp, "")
+			if info.code_callback and info.code_callback(code) == false then
+				self.just_remove = true
+				self:Remove()
+				return
+			end
+			
 			local header_data, content_data = str:match("(.-\r\n\r\n)(.+)")
-			
-			if info.method == "HEAD" then
+						
+			-- just the header?
+			if not header_data then
 				header_data = str
 			end
 			
-			if header_data then
+			if header_data then								
 				header = sockets.HeaderToTable(header_data)
 				
-				if header.location then					
-					if header.location ~= "" then
-						info.url = header.location
-						request(info)
-						self:Remove()
-						return
-					end
+				 -- redirection
+				if header.location then
+					info.protocol = nil
+					info.location = nil
+					info.host = nil
+					
+					info.url = header.location
+					
+					request(info)
+					self.just_remove = true
+					self:Remove()
+										
+					return
 				end
 				
-				if content_data then
-					table.insert(content, content_data)
-					length = length + #content_data
-				end
+				str = content_data
 
 				in_header = false
 								
@@ -156,68 +171,100 @@ local function request(info)
 					self:Remove()
 				end
 				
-				if info.header_callback then
-					info.header_callback(header)
+				if info.header_callback and info.header_callback(header) == false then
+					self.just_remove = true
+					self:Remove()
+					return
 				end
 			end
-		else
-			table.insert(content, str)
+		end
+		
+		if str then			
 			length = length + #str
+			
+			if info.on_chunks then
+				info.on_chunks(str)
+			else
+				table.insert(content, str)
+			end
 			
 			if info.progress_callback then
 				info.progress_callback(content, str, length, header)
 			end
+						
+			if header["content-length"] then
+				if length >= header["content-length"] then
+					self:Remove()
+				end
+			elseif header["transfer-encoding"] == "chunked" then
+				if str:sub(-5) == "0\r\n\r\n" then
+					self:Remove()
+				end
+			end
+		end
+	end
+	
+	function socket:OnClose()				
+		if self.just_remove then return end -- redirection
+		if info.on_chunks then xpcall(info.callback, system.OnError) return end
+		
+		local content = table.concat(content, "")
+		local length = header["content-length"]
+		
+		if sockets.debug then 
+			print(protocol, code, code_desc)
+			table.print(header) 
 		end
 		
-		if header["content-length"] then
-			if length >= header["content-length"] then
-				self:Remove()
-			end
-		elseif header["transfer-encoding"] == "chunked" then
-			if str:sub(-5) == "0\r\n\r\n" then 
-				self:Remove()
-			end
+		if (not length and #content ~= 0) or (length and #content == length) or info.method == "HEAD" then
+			xpcall(info.callback, system.OnError, {content = content, header = header, protocol = protocol, code = code, code_desc = code_desc})
+		elseif info.on_fail then
+			xpcall(info.on_fail, system.OnError, content)
 		end
 	end
 	
-	function socket:OnClose()			
-		local content = table.concat(content, "")
-
-		if content ~= "" or info.method == "HEAD" then
-			local ok, err = xpcall(info.callback, system.OnError, {content = content, header = header})
-			
-			if err then
-				warning(err)
-			end
-		else
-			--warning("no content was found")
-		end
-	end
+	return socket
 end
 
-function sockets.Download(url, callback)
+local active_downloads = utility.CreateWeakTable()
+local cb = utility.CreateCallbackThing()
+
+function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 	if not url:find("^(.-)://") then return end
 	
-	logn("[sockets] downloading ", url)
-	
+	if cb:check(url, callback) then return true end
+		
 	local last_downloaded = 0
 	local last_report = os.clock() + 4
 	
-	if callback then
-		sockets.Request({
-			url = url, 
-			callback = function(data) 
-				callback(data.content) 
-			end,
-			header_callback = function(header)
+	cb:start(url, callback)
+
+	active_downloads[url] = sockets.Request({
+		url = url,
+		on_chunks = on_chunks,
+		callback = function(data)
+			if sockets.debug_download then logn("[sockets] finished downloading ", url) end
+			cb:stop(url, data and data.content)
+			cb:uncache(url)
+			active_downloads[url] = nil
+		end,
+		header_callback = function(header)
+			if on_header and on_header(header) == false then
+				return false
+			end
+			
+			if sockets.debug_download then 
 				if header["content-length"] then
 					logn("[sockets] size of ", url, " is ", utility.FormatFileSize(header["content-length"]))
 				else
 					logn("[sockets] size of ", url, " is unkown!")
 				end
-			end,
-			progress_callback = function(current_content, chunk, current_length, header)
-				if not header["content-length"] then return end
+			end
+		end,
+		progress_callback = function(_, _, current_length, header)
+			if not header["content-length"] then return end
+			
+			if sockets.debug_download then 
 				if last_report < os.clock() then
 					logn(url, ":")
 					logn("\tprogress: ", math.round((current_length / header["content-length"]) * 100, 3), "%")
@@ -225,19 +272,34 @@ function sockets.Download(url, callback)
 					last_downloaded = current_length
 					last_report = os.clock() + 4
 				end
-			end,
-		})
-		return true
-	end
-	
-	return 
-	{
-		Download = function(_, callback) 
-			sockets.Download(url, function(data) 
-				callback(data.content, data.header) 
-			end) 
+			end
+		end,
+		code_callback = function(code) 
+			if code == 404 or code == 400 then 
+				cb:uncache(url) 
+				
+				if on_fail then
+					on_fail(data)
+				end
+				
+				return false 
+			end 
+			
+			if sockets.debug_download then logn("[sockets] downloading ", url) end
 		end
-	}
+	})
+	
+	return true
+end
+
+function sockets.AbortDownload(url)
+	if active_downloads[url] then
+		cb:uncache(url)
+		active_downloads[url].just_remove = true
+		active_downloads[url]:Remove()
+		active_downloads[url] = nil
+		if sockets.debug_download then logn("[sockets] download aborted ", url) end
+	end
 end
 
 function sockets.Get(url, callback, timeout, user_agent, binary, debug)

@@ -1,8 +1,6 @@
 local steam = ... or _G.steam
 
-function solve_path(name, extensions, directory_hint)
-	extensions = extensions or {".vmt"}
-	
+function solve_path(name, extensions, directory_hint, on_success, on_fail)
 	local tries = {}
 	
 	do
@@ -32,20 +30,29 @@ function solve_path(name, extensions, directory_hint)
 			
 		for _, ext in ipairs(extensions) do
 			for i, path in ipairs(temp) do
-				table.insert(tries, path .. ext)
+				table.insert(tries, (vfs.FixPath(path .. ext)))
 			end
 		end
 	end
 	
-	for i, path in ipairs(tries) do
-		path = vfs.FixPath(path)
-		if vfs.IsFile(path) then
-			return path
-		end
-		tries[i] = path -- so it looks nicer in the error
-	end
+	local fail = 0
+	local errors = {}
 		
-	return nil, "material \"" .. name .. "\" could not be found in:\n\t" .. table.concat(tries, "\n\t")
+	for _, path in ipairs(tries) do
+		resource.Download(
+			path, 
+			function(path)
+				on_success(path)
+			end, 
+			function()
+				fail = fail + 1 
+				if fail == #tries then 
+					on_fail("material \"" .. name .. "\" could not be found in:\n\t" .. table.concat(errors, "\n\t")) 
+				end 
+				table.insert(errors, path)
+			end
+		)		
+	end
 end
 
 local path_fields = {
@@ -57,53 +64,69 @@ local path_fields = {
 	"normalmap",
 }
 
-function steam.LoadMaterial(name, directory_hint)
-	local path, err = solve_path(name, {".vmt", ".vtf", "_01.vmt", "_02.vmt"}, directory_hint)
-	
-	if err then	
-		return {
-			error = err,
-			basetexture = "error",
-		}
-	end
-		
-	if path:endswith(".vtf") then
-		return {
-			fullpath = path,
-			basetexture = path,
-		}
-	else
-		local vmt, err = steam.VDFToTable(vfs.Read(path), function(key) return (key:lower():gsub("%$", "")) end)
-		
-		if err then	
-			return {
-				fullpath = path,
-				error = path .. ": " .. err,
-				basetexture = "error",
-			}
-		end
-		
-		local k,v = next(vmt)
-		
-		if type(k) ~= "string" or type(v) ~= "table" then
-			return {
-				fullpath = path,
-				error = "bad material " .. path,
-				basetexture = "error",
-			}
-		end
-		
-		vmt = v
-		vmt.shader = k
-	
-		for i, field in ipairs(path_fields) do
-			if vmt[field] then 
-				vmt[field] = solve_path(vmt[field], {".vtf", ""}) or vmt[field]
+function steam.LoadMaterial(name, directory_hint, callback, texture_callback)
+	solve_path(
+		name, 
+		{".vmt", ".vtf", "_01.vmt", "_02.vmt"}, 
+		directory_hint, 
+		function(path)
+			if path:endswith(".vtf") then
+				callback({
+					fullpath = path,
+					basetexture = path,
+				})
+				texture_callback("basetexture", path)
+			else
+				local vmt, err = steam.VDFToTable(vfs.Read(path), function(key) return (key:lower():gsub("%$", "")) end)
+				
+				if err then	
+					return {
+						fullpath = path,
+						error = path .. ": " .. err,
+						basetexture = "error",
+					}
+				end
+				
+				local k,v = next(vmt)
+				
+				if type(k) ~= "string" or type(v) ~= "table" then
+					return {
+						fullpath = path,
+						error = "bad material " .. path,
+						basetexture = "error",
+					}
+				end
+				
+				vmt = v
+				vmt.shader = k
+				vmt.fullpath = path
+										
+				for i, field in ipairs(path_fields) do
+					if vmt[field] then 
+						solve_path(
+							vmt[field], 
+							{".vtf", ""}, 
+							nil, 
+							function(path)
+								vmt[field] = path 	
+								texture_callback(field, path)
+							end, 
+							function(reason)
+								--logn(reason)
+							end
+						)
+					end
+				end
+				
+				callback(vmt)
 			end
+			
+		end, 
+		function(reason)
+			callback({
+				error = err,
+				basetexture = "error",
+			})
 		end
-		
-		vmt.fullpath = path
-		
-		return vmt
-	end
+	)
 end

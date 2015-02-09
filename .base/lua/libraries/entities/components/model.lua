@@ -134,7 +134,7 @@ if GRAPHICS then
 	function COMPONENT:SetModelPath(path)
 		self.ModelPath = path
 		
-		local ok, err = utility.LoadRenderModel(
+		utility.LoadRenderModel(
 			path, 
 			function() 
 				if path:endswith(".bsp") and steam.LoadMap then
@@ -146,13 +146,13 @@ if GRAPHICS then
 			function(mesh)
 				self:AddMesh(mesh)
 				self:BuildBoundingBox()
+			end,
+			function(err)
+				logf("%s failed to load model %q: %s\n", self, path, err)
+				self:RemoveMeshes()
 			end
 		)
 		
-		if not ok then
-			logf("%s failed to load model %q: %s\n", self, path, err)
-			self:RemoveMeshes()
-		end
 	end
 
 	function COMPONENT:SetDiffuseTexturePath(path)

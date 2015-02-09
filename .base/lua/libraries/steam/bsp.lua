@@ -297,7 +297,6 @@ function steam.LoadMap(path, callback)
 				entities[i] = ent
 				i = i + 1  
 				
-				thread:Report("reading entities")
 				thread:Sleep()
 			end
 			bsp_file:PopPosition()
@@ -517,27 +516,32 @@ function steam.LoadMap(path, callback)
 						meshes[texname] = mesh
 						
 						if GRAPHICS then
-							local vmt = steam.LoadMaterial(texname)
-							
-							if vmt.error then
-								logn(vmt.error)
-							else
-								if vmt.basetexture then
-									mesh.diffuse = Texture(vmt.basetexture, texture_format)
+							steam.LoadMaterial(
+								texname, 
+								nil, 
+								function(vmt)
+									if vmt.error then
+										logn(vmt.error)									
+									end
+								end, 
+								function(field, path)
+									if field == "basetexture" then
+										mesh.diffuse = Texture(path, texture_format)
+									end
+									
+									if field == "basetexture2" then
+										mesh.diffuse2 = Texture(path, texture_format)
+									end
+									
+									if field == "bumpmap" then
+										mesh.bump = Texture(path, texture_format)
+									end
+									
+									if field == "specular" then
+										mesh.specular = Texture(path, texture_format)
+									end
 								end
-								
-								if vmt.basetexture2 then
-									mesh.diffuse2 = Texture(vmt.basetexture2, texture_format)
-								end
-								
-								if vmt.bumpmap then
-									mesh.bump = Texture(vmt.bumpmap, texture_format)
-								end
-								
-								if vmt.specular then
-									mesh.specular = Texture(vmt.envmap, texture_format)
-								end
-							end
+							)
 						end
 						table.insert(models, meshes[texname])
 					end

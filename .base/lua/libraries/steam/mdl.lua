@@ -677,17 +677,28 @@ function steam.LoadModel(path, callback, thread)
 								sub_model.bbox = {min = mdl.hull_min*scale, max = mdl.hull_max*scale}
 
 								if mdl.material[i] and mdl.material[i].path then																		
-									local vmt = steam.LoadMaterial(mdl.material[i].path, mdl.texturedir[i].path)
-									if vmt.error then
-										logn(vmt.error)
-									else
-										sub_model.material = {
-											paths_solved = true,
-											diffuse = vmt.basetexture,
-											bump = vmt.bumpmap,
-											specular = vmt.envmapmask,
-										}
-									end
+									steam.LoadMaterial(
+										mdl.material[i].path, 
+										mdl.texturedir[i].path, 
+										function(vmt)
+											if vmt.error then
+												logn(vmt.error)
+											end
+										end,
+										function(field, path)
+											sub_model.material = sub_model.material or {}
+											
+											if field == "basetexture" then
+												sub_model.material.diffuse = Texture(path)
+											end
+											if field == "bumpmap" then
+												sub_model.material.bump = Texture(path)
+											end
+											if field == "envmapmask" then
+												sub_model.material.specular = Texture(path)
+											end
+										end
+									)
 								end
 								
 								if callback then

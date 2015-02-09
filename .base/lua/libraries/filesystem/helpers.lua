@@ -65,6 +65,19 @@ function vfs.CreateFolder(path)
 	end
 end
 
+function vfs.CreateFolders(fs, path)
+	local fs = vfs.GetFileSystem(fs)
+	if fs then
+		local dir = ""
+		local base
+		for folder in path:gmatch("(.-/)") do
+			dir = dir .. folder
+			base = base or vfs.GetAbsolutePath(dir)
+			fs:CreateFolder({full_path = base .. dir:sub(#"data/"+1)})
+		end
+	end
+end
+
 function vfs.IsFolder(path)
 	if path == "" then return false end
 	
