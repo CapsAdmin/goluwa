@@ -72,7 +72,9 @@ function love.sound.newSoundData(samples, rate, bits, channels)
 	self.buffer = buffer
 	
 	if type(samples) == "string" then
-		resource.Read(samples, function(data)
+		resource.Download(samples, function(path)
+			local data = vfs.Read(path)
+			
 			local data, length, info = audio.Decode(data, var)
 			
 			if data then
@@ -97,7 +99,7 @@ function love.sound.newSoundData(samples, rate, bits, channels)
 					end 
 				end)
 			end
-		end, 20)
+		end)
 		
 		return self
 	end

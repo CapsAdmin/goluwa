@@ -20,8 +20,9 @@ function META:Initialize()
 		surface.freetype_lib = lib
 	end
 	
-	local ok, err = resource.Read(self.Path, function(data, err)
-		assert(data, err)
+	local function load(path)
+		local data = vfs.Read(path)
+		
 		self.binary_font_data = data
 
 		local face = ffi.new("FT_Face[1]")
@@ -38,15 +39,41 @@ function META:Initialize()
 			
 			self:CreateTextureAtlas()
 			
-			resource.RemoveResourceFromMemory(self.Path)
-			
 			self:OnLoad()
 		else
 			error("unable to initialize font")
 		end
-	end, self.LoadSpeed, "font")
-
-	return ok, err
+	end
+	
+	local tbl = vfs.Find("cache/" .. crypto.CRC32(self.Path), nil, true)
+	
+	if tbl[1] then
+		load(tbl[1])
+		return
+	end
+	
+	resource.Download(self.Path, load, function(reason)
+		sockets.Download("http://fonts.googleapis.com/css?family=" .. self.Path:gsub("%s", "+"), function(data)
+			local url = data:match("url%((.-)%)")
+			if url then
+				local format = data:match("format%('(.-)'%)")
+				resource.Download(url, load, nil, crypto.CRC32(self.Path))
+			end
+		end, function()
+			logf("unable to find url for %s from google web fonts\n", self.Path)
+			
+			sockets.Download("http://dl.dafont.com/dl/?f=" .. self.Path:lower():gsub(" ", "_"), function(zip_content)
+				vfs.Write("data/temp_dafont.zip", zip_content)
+				local base = R("data/temp_dafont.zip") -- FIX ME
+				for i,v in pairs(vfs.Find(base .. "/")) do
+					if v:find(".ttf") then
+						local ext = v:match(".+(%.%a+)") or ".dat"
+						vfs.Write("download/cache/" .. crypto.CRC32(self.Path) .. ext, vfs.Read(base .."/".. v))
+					end
+				end
+			end)		
+		end)
+	end)
 end
 
 local flags = {

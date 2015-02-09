@@ -54,7 +54,7 @@ function vfs.ParseVariables(path)
 end
 
 function vfs.FixPath(path)
-	return path:gsub("\\", "/"):gsub("(/+)", "/")
+	return (path:gsub("\\", "/"):gsub("(/+)", "/"))
 end
 	
 function vfs.CreateFoldersFromPath(filesystem, path)

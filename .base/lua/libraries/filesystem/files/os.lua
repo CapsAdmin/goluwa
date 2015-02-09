@@ -74,6 +74,10 @@ function CONTEXT:ReadBytes(bytes)
 	return self.file:read(bytes)
 end
 
+function CONTEXT:ReadAll()
+	return self:ReadBytes(math.huge)
+end
+
 function CONTEXT:SetPosition(pos)
 	self.file:seek("set", pos)
 end
@@ -97,6 +101,10 @@ end
 
 function CONTEXT:GetLastAccessed()
 	return self.attributes.last_accessed
+end
+
+function CONTEXT:Flush()
+	self.file:flush()
 end
 
 vfs.RegisterFileSystem(CONTEXT)

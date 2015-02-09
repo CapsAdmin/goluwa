@@ -80,50 +80,48 @@ function META:Initialize()
 		return false, "not a valid font"
 	end
 
-	local file, err = vfs.Open(self.Path)
-	
-	if not file then
-		return false, "no such file"
-	end
-	
-	if file:ReadBytes(18) ~= "; empty space 0x00" then
-		error("first line of font is not '; empty space 0x00'")
-	end
-
-	self.font_data = {}
-	
-	for glyph in file:ReadAll():gmatch("(.-)\n; ") do
-		local name, byte, data = glyph:match("(.+) (0x.-)\n(.+)")
-		byte = tonumber(byte) or byte
-			
-		if data then
-			data = data:gsub("%s", "")
-			data = data:gsub("0", "\0")
-			data = data:gsub("1", "\255")
-			
-			local buffer = ffi.cast("unsigned char *", data)
-			local copy = ffi.new("unsigned char["..width.."]["..height.."][4]")
-			
-			local i = 0
-			for x = 0, width - 1 do
-				for y = 0, height - 1 do
-					copy[x][y][0] = 255
-					copy[x][y][1] = 255
-					copy[x][y][2] = 255
-					copy[x][y][3] = buffer[i] 
-					i = i + 1
-				end
-			end
-			
-			name = translate[name] or name
-			
-			self.font_data[name] = {w = width, h = height , buffer = copy}
+	resource.Download(self.Path, function(path)
+		local file = vfs.Open(path)
+ 		
+		if file:ReadBytes(18) ~= "; empty space 0x00" then
+			error("first line of font is not '; empty space 0x00'")
 		end
-	end
-	
-	self:CreateTextureAtlas()
-	
-	self:OnLoad()
+
+		self.font_data = {}
+		
+		for glyph in file:ReadAll():gmatch("(.-)\n; ") do
+			local name, byte, data = glyph:match("(.+) (0x.-)\n(.+)")
+			byte = tonumber(byte) or byte
+				
+			if data then
+				data = data:gsub("%s", "")
+				data = data:gsub("0", "\0")
+				data = data:gsub("1", "\255")
+				
+				local buffer = ffi.cast("unsigned char *", data)
+				local copy = ffi.new("unsigned char["..width.."]["..height.."][4]")
+				
+				local i = 0
+				for x = 0, width - 1 do
+					for y = 0, height - 1 do
+						copy[x][y][0] = 255
+						copy[x][y][1] = 255
+						copy[x][y][2] = 255
+						copy[x][y][3] = buffer[i] 
+						i = i + 1
+					end
+				end
+				
+				name = translate[name] or name
+				
+				self.font_data[name] = {w = width, h = height , buffer = copy}
+			end
+		end
+		
+		self:CreateTextureAtlas()
+		
+		self:OnLoad()
+	end)
 end
 
 function META:GetGlyphData(code)

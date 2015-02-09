@@ -16,10 +16,7 @@ function render.GenerateTextures()
 		end
 	end)
 	
-	local freeimage = require("lj-freeimage") -- image decoder
-
-	local buffer, w, h = freeimage.LoadImage(vfs.Read("textures/loading.jpg", "b")) --rb flags used on old one.
-	render.loading_texture = render.CreateTexture(w, h, buffer, {no_remove = true})
+	render.loading_texture = render.CreateTexture("textures/loading.jpg", {no_remove = true})
 end
 
 function render.GetWhiteTexture()
@@ -39,7 +36,7 @@ function render.GetErrorTexture()
 end
 
 function render.GetLoadingTexture()	
-	return render.loading_texture
+	return render.loading_texture or render.error_tex
 end
 
 function render.GetNoiseTexture()	

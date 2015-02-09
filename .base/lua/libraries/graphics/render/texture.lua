@@ -552,13 +552,15 @@ function render.CreateTextureFromPath(path, format)
 	self.override_texture = loading
 	self.loading = true
 
-	if not resource.Read(path, function(data, reason)
-		self.loading = false
-		self.override_texture = nil
-		
-		if data then
-			local buffer, w, h, info = render.DecodeTexture(data, path)
+	resource.Download(
+		path, 
+		function(path)
+			local data = vfs.Read(path)
 			
+			self.loading = false
+			self.override_texture = nil
+
+			local buffer, w, h, info = render.DecodeTexture(data, path)
 			if buffer == nil or w == 0 or h == 0 then
 				logf("error loading texture %s: %s\n", path, buffer or w or h or "unknown error")
 				self:MakeError()
@@ -569,7 +571,6 @@ function render.CreateTextureFromPath(path, format)
 				end
 				
 				render.texture_path_cache[path] = self			
-				resource.RemoveResourceFromMemory(path)
 				
 				self:Replace(buffer, w, h)
 				
@@ -578,14 +579,15 @@ function render.CreateTextureFromPath(path, format)
 				end
 			end
 			self.decode_info = info
-		else
-			logf("error loading texture %s: %s\n", path, reason)
-			self:MakeError()
-		end		
-	end, format.read_speed) then
-		logf("error loading texture %s: %s\n", path, "file does not exist")
-		self:MakeError()
-	end
+		end, 
+		function(reason)
+			self.loading = false
+			self.override_texture = nil
+		
+			logf("error loading texture %s: %s\n", path, reason) 
+			self:MakeError() 
+		end
+	)
 	
 	return self
 end

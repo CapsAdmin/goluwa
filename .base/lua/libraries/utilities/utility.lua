@@ -1,6 +1,7 @@
 local utility = _G.utility or {}
 
-function utility.CreateCallbackThing(cache)		
+function utility.CreateCallbackThing(cache)	
+	cache = cache or {}
 	local self = {}
 	
 	function self:check(path, callback, extra)
@@ -35,16 +36,22 @@ function utility.CreateCallbackThing(cache)
 	end
 	
 	function self:callextra(path, key, out)
+		if not cache[path] then return end
 		cache[path].extra_callbacks[key](out)
 	end
 					
-	function self:stop(path, out)
-		cache[path].callback(out)
+	function self:stop(path, out, ...)
+		if not cache[path] then return end
+		cache[path].callback(out, ...)
 		cache[path] = out
 	end
 	
 	function self:get(path)
 		return cache[path]
+	end
+	
+	function self:uncache(path)
+		cache[path] = nil
 	end
 	
 	return self
