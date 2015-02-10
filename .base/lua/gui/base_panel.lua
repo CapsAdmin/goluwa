@@ -222,12 +222,12 @@ do -- drawing
 
 		self:CalcAnimations()
 		
-		self:CheckLayout()
-		
 		if self.CachedRendering and not gui.debug then
 			self:DrawCache()
 			no_draw = true
 		end
+		
+		self:CheckLayout()
 
 		self:OnUpdate()
 			
