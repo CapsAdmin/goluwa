@@ -204,7 +204,7 @@ do -- libraries
 		
 	resource = include("libraries/resource.lua")
 	
-	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extra/")
+	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
 	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
 	
 	if CLIENT then
