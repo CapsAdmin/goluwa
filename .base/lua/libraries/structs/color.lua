@@ -51,7 +51,7 @@ end
 function META:SetHue(h)
 	local _h,s,l = ColorToHSV(self)
 	_h = (_h + h)%360
-	local new = HSVToColor(_h, s, l)
+	local new = HSVToColor(_h, s, l, self.a)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
@@ -92,7 +92,7 @@ structs.AddGetFunc(META, "Lerp", "Lerped")
 function META:SetSaturation(s)
 	local h, _s, l = ColorToHSV(self)
 	_s = s
-	local new = HSVToColor(h, _s, l)
+	local new = HSVToColor(h, _s, l, self.a)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
@@ -103,7 +103,7 @@ end
 function META:SetLightness(l)
 	local h, s, _l = ColorToHSV(self)
 	_l = l
-	local new = HSVToColor(h, s, _l)
+	local new = HSVToColor(h, s, _l, self.a)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
@@ -174,15 +174,15 @@ function HSVToColor(h, s, v, a)
 	local t = v * (1-s*(1-f))
 
 	if i == 0 then
-		return Color(v, t, p)
+		return Color(v, t, p, a)
 	elseif i == 1 then
-		return Color(q, v, p)
+		return Color(q, v, p, a)
 	elseif i == 2 then
-		return Color(p, v, t)
+		return Color(p, v, t, a)
 	elseif i == 3 then
-		return Color(p, q, v)
+		return Color(p, q, v, a)
 	elseif i == 4 then
-		return Color(t, p, v)
+		return Color(t, p, v, a)
 	end
 
 	return Color(v, p, q, a)

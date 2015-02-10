@@ -43,7 +43,7 @@ end
 
 function META:GetUniqueColor()
 	local r,g,b = tostring(crypto.CRC32(self:GetUniqueID())):match(("(%d%d%d)"):rep(3))
-	local c = Color(tonumber(r), tonumber(g), tonumber(b))
+	local c = Color(tonumber(r), tonumber(g), tonumber(b), 1)
 	c:SetLightness(1)
 	return c
 end
