@@ -5,6 +5,8 @@ local PANEL = {}
 PANEL.ClassName = "text_button"
 PANEL.Base = "button"
 
+prototype.GetSet(PANEL, "SizeToTextOnLayout", false)
+
 prototype.GetSetDelegate(PANEL, "Text", "", "label")
 prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
 prototype.GetSetDelegate(PANEL, "Font", nil, "label")
@@ -33,6 +35,12 @@ function PANEL:SizeToText()
 	
 	if self.LayoutSize then
 		self.LayoutSize = self:GetSize():Copy()
+	end
+end
+
+function PANEL:OnLayout(S)
+	if self.SizeToTextOnLayout then
+		self:SizeToText()
 	end
 end
 

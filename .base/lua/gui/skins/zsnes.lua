@@ -26,8 +26,16 @@ surface.CreateFont("zsnes_gui_font", {
 local texture = Texture("textures/gui/skins/zsnes.png", {min_filter = "nearest", mag_filter = "nearest"})
 
 local skin = {}
-
 skin.name = "zsnes"
+
+texture.OnLoad = function()
+	skin.property_background = texture:GetPixelColor(28, 500)
+	for k,v in pairs(gui.panels) do
+		if v:HasSkin(skin.name) then
+			v:SetSkin(skin)
+		end
+	end
+end
 
 local function add(name, u,v, w,h, corner_size, color)
 	skin[name] = {
@@ -125,8 +133,6 @@ skin.text_color_inactive = skin.text_color * 0.80
 skin.text_list_color = Color(0,1,0,1)
 skin.text_edit_color = skin.text_list_color:Copy()
 
-skin.property_background = texture:GetPixelColor(28, 500)
-
 skin.scroll_width = 20
 skin.default_font = "zsnes_gui_font"
 skin.scale = scale
@@ -138,7 +144,7 @@ skin.icons = include("gui/icons.lua")
 
 if RELOAD then
 	for k,v in pairs(gui.panels) do
-		if v:GetSkin().name == skin.name then
+		if v:HasSkin(skin.name) then
 			v:SetSkin(skin)
 		end
 	end

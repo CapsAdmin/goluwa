@@ -45,8 +45,8 @@ function PANEL:SetText(str)
 	local markup = self.markup
 	
 	markup:Clear()
-	markup:AddFont(self.Font)
-	markup:AddColor(self.TextColor:Copy())
+	if self.Font then markup:AddFont(self.Font) end
+	if self.TextColor then markup:AddColor(self.TextColor:Copy()) end
 	markup:AddString(self.Text, self.ParseTags)
 	
 	markup:Invalidate()
