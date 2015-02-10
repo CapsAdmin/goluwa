@@ -517,7 +517,7 @@ function steam.LoadMap(path, callback)
 						
 						if GRAPHICS then
 							steam.LoadMaterial(
-								"materials/" .. texname, 
+								"materials/" .. texname .. ".vmt", 
 								function(vmt)
 									if vmt.error then
 										logn(vmt.error)									

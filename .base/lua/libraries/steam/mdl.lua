@@ -677,8 +677,14 @@ function steam.LoadModel(path, callback, thread)
 								sub_model.bbox = {min = mdl.hull_min*scale, max = mdl.hull_max*scale}
 
 								if mdl.material[i] and mdl.material[i].path then																		
+									local path = mdl.material[i].path
+									
+									if not path:find("/", nil, true) then
+										path = mdl.texturedir[i].path .. path
+									end
+									
 									steam.LoadMaterial(
-										vfs.FixPath("materials/" .. mdl.texturedir[i].path .. mdl.material[i].path),
+										vfs.FixPath("materials/" .. path .. ".vmt"),
 										function(vmt)
 											if vmt.error then
 												logn(vmt.error)
