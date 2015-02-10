@@ -105,10 +105,10 @@ function menu.CreateTopBar()
 
 	local function create_button(text, options)
 		local button = gui.CreatePanel("text_button", bar)
+		button:SetSizeToTextOnLayout(true)
 		button:SetText(text)
 		button:SetMargin(Rect(S*3, S*3, S*3, S*2+1))
 		button:SetPadding(Rect()+S*4)
-		button:SizeToText()
 		button:SetMode("toggle")
 		button:SetupLayout("left")
 		

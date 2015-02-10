@@ -20,11 +20,31 @@ if type(sub_skin) ~= "string" then
 	sub_skin = "dark" 
 end
 
-local texture = Texture("textures/gui/skins/"..sub_skin..".png")
+if not sub_skin:find("%p") then
+	sub_skin = "textures/gui/skins/" .. sub_skin .. ".png"
+end
 
 local skin = {}
-
 skin.name = "gwen"
+
+local texture = Texture(sub_skin)
+
+texture.OnLoad = function()
+	skin.text_color = ColorBytes(texture:GetPixelColor(187, 504))
+	skin.text_color.a = 1
+	skin.text_color_inactive = skin.text_color * 0.80
+	skin.text_edit_color = ColorBytes(texture:GetPixelColor(110, 497))*0
+	skin.text_edit_color.a = 1
+	skin.text_list_color = skin.text_color
+	skin.property_background = ColorBytes(texture:GetPixelColor(28, 500))
+	
+	for k,v in pairs(gui.panels) do
+		if v:HasSkin(skin.name) then
+			v:SetSkin(skin)
+		end
+	end
+
+end
 
 local function add(name, u,v, w,h, corner_size, color)
 	skin[name] = {
@@ -112,18 +132,9 @@ add("text_edit", 0,172, 127,21, 16)
 skin.tab_active_text_color = Color(0.25,0.25,0.25)
 skin.tab_inactive_text_color = Color(0.5,0.5,0.5, 1)
 
-skin.text_color = ColorBytes(texture:GetPixelColor(187, 504))
-skin.text_color.a = 1
-skin.text_color_inactive = skin.text_color * 0.80
-skin.text_edit_color = ColorBytes(texture:GetPixelColor(110, 497))*0
-skin.text_edit_color.a = 1
-skin.text_list_color = skin.text_color
-skin.text_list_font = "snow_font"
-skin.property_background = ColorBytes(texture:GetPixelColor(28, 500))
-
-
 skin.default_font = "snow_font"
 skin.scale = scale
+skin.text_list_font = "snow_font"
 
 skin.background = Color(0.5, 0.5, 0.5, 1)
 
@@ -131,7 +142,7 @@ skin.icons = include("gui/icons.lua")
 
 if RELOAD or select(2, ...) then
 	for k,v in pairs(gui.panels) do
-		if v:GetSkin().name == skin.name then
+		if v:HasSkin(skin.name) then
 			v:SetSkin(skin)
 		end
 	end

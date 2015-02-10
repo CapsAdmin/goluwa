@@ -1864,6 +1864,10 @@ do -- skin
 		return self.LayoutScale or gui.scale
 	end
 	
+	function PANEL:HasSkin(name)
+		return self.Skin and self:GetSkin().name == name
+	end
+	
 	function PANEL:SetSkin(skin)
 		self.Skin = skin
 		if skin then
