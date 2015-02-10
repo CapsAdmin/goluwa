@@ -9,31 +9,16 @@ local path_fields = {
 	"normalmap",
 }
 
-local function solve_path(path, extensions, on_success, on_fail)		
+function steam.LoadMaterial(path, callback, texture_callback)
 	local fail = 0
 	local errors = {}
-		
-	for _, ext in ipairs(extensions) do
-		resource.Download(
-			path .. ext, 
-			function(path)
-				on_success(path)
-			end, 
-			function()
-				fail = fail + 1 
-				if fail == #extensions then 
-					on_fail("material \"" .. path .. "\" could not be found in:\n\t" .. table.concat(errors, "\n\t")) 
-				end 
-				table.insert(errors, path)
-			end
-		)		
-	end
-end
 
-function steam.LoadMaterial(path, callback, texture_callback)
-	solve_path(
-		path, 
-		{".vmt", ".vtf"}, 
+	if not path:endswith(".vmt") then
+		path = path .. ".vmt"
+	end
+	
+	resource.Download(
+		path,  
 		function(path)
 			if path:endswith(".vtf") then
 				callback({
@@ -50,6 +35,7 @@ function steam.LoadMaterial(path, callback, texture_callback)
 						error = path .. ": " .. err,
 						basetexture = "error",
 					})
+					return
 				end
 				
 				local k,v = next(vmt)
@@ -60,6 +46,7 @@ function steam.LoadMaterial(path, callback, texture_callback)
 						error = "bad material " .. path,
 						basetexture = "error",
 					})
+					return
 				end
 				
 				vmt = v
@@ -67,15 +54,17 @@ function steam.LoadMaterial(path, callback, texture_callback)
 				vmt.fullpath = path
 										
 				for i, field in ipairs(path_fields) do
-					if vmt[field] then 
-						solve_path(
-							vfs.FixPath("materials/" .. vmt[field]), 
-							{".vtf", ""}, 
+					if vmt[field] then 					
+						local new_path = vfs.FixPath("materials/" .. vmt[field])
+						if not new_path:endswith(".vtf") then
+							new_path = new_path .. ".vtf"
+						end
+						resource.Download(
+							new_path,
 							function(path)
 								vmt[field] = path 	
 								texture_callback(field, path)
-							end, 
-							logn
+							end
 						)
 					end
 				end
@@ -84,9 +73,9 @@ function steam.LoadMaterial(path, callback, texture_callback)
 			end
 			
 		end, 
-		function(reason)
+		function()
 			callback({
-				error = err,
+				error = "material "..path.." not found",
 				basetexture = "error",
 			})
 		end
