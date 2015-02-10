@@ -127,13 +127,33 @@ local function request(info)
 	local code
 	local code_desc
 	
+	local function done(self)
+		if info.on_chunks then xpcall(info.callback, system.OnError) return end
+		
+		local content = table.concat(content, "")
+		local length = header["content-length"]
+		
+		if sockets.debug then 
+			print(protocol, code, code_desc)
+			table.print(header) 
+		end
+		
+		if (not length and #content ~= 0) or (length and #content == length) or info.method == "HEAD" then
+			xpcall(info.callback, system.OnError, {content = content, header = header, protocol = protocol, code = code, code_desc = code_desc})
+		elseif info.on_fail then
+			xpcall(info.on_fail, system.OnError, content)
+		end
+	end
+	
 	function socket:OnReceive(str)
 		if in_header then			
 			protocol, code, code_desc = str:match("^(%S-) (%S-) (.+)\n")
 			code = tonumber(code)
 			
 			if info.code_callback and info.code_callback(code) == false then
-				self.just_remove = true
+				if info.on_fail then
+					xpcall(info.on_fail, system.OnError, "bad code")
+				end
 				self:Remove()
 				return
 			end
@@ -157,7 +177,6 @@ local function request(info)
 					info.url = header.location
 					
 					request(info)
-					self.just_remove = true
 					self:Remove()
 										
 					return
@@ -167,13 +186,13 @@ local function request(info)
 
 				in_header = false
 								
-				if info.method == "HEAD" then
+				if info.header_callback and info.header_callback(header) == false then
 					self:Remove()
+					return
 				end
 				
-				if info.header_callback and info.header_callback(header) == false then
-					self.just_remove = true
-					self:Remove()
+				if info.method == "HEAD" then
+					done(self)
 					return
 				end
 			end
@@ -194,32 +213,13 @@ local function request(info)
 						
 			if header["content-length"] then
 				if length >= header["content-length"] then
-					self:Remove()
+					done(self)
 				end
 			elseif header["transfer-encoding"] == "chunked" then
 				if str:sub(-5) == "0\r\n\r\n" then
-					self:Remove()
+					done(self)
 				end
 			end
-		end
-	end
-	
-	function socket:OnClose()				
-		if self.just_remove then return end -- redirection
-		if info.on_chunks then xpcall(info.callback, system.OnError) return end
-		
-		local content = table.concat(content, "")
-		local length = header["content-length"]
-		
-		if sockets.debug then 
-			print(protocol, code, code_desc)
-			table.print(header) 
-		end
-		
-		if (not length and #content ~= 0) or (length and #content == length) or info.method == "HEAD" then
-			xpcall(info.callback, system.OnError, {content = content, header = header, protocol = protocol, code = code, code_desc = code_desc})
-		elseif info.on_fail then
-			xpcall(info.on_fail, system.OnError, content)
 		end
 	end
 	
