@@ -159,22 +159,8 @@ function surface.DrawText(str, x, y)
 	local font = surface.current_font
 	
 	if not font or not font:IsReady() then
-		surface.SetColor(0.8, 0.8, 0.8, 1)
-		surface.SetWhiteTexture()
-		surface.DrawRect(x, y, 32, 32)
-		local deg = 360 / 8
-		for i = 0, 7 do
-			local n=0
-			if math.floor(os.clock()*5)%18>=9 then
-				n = ((math.floor(os.clock()*5) % 9) - i)
-			else
-				n = 1-(((math.floor(os.clock()*5)+9) % 9) - i)
-			end
-			surface.SetColor(n, n, n, 1)
-			local ang = math.rad(deg * i)
-			local X, Y = math.sin(ang), math.cos(ang)
-			surface.DrawLine(X*2+16, Y*2+16, X*16 + 16, Y*16 + 16, 2)
-		end
+		surface.SetTexture(render.GetLoadingTexture())
+		surface.DrawRect(x,y,32,32)
 	else
 		font:DrawString(str, x, y)
 	end
