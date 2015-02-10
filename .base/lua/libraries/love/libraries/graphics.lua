@@ -2,6 +2,8 @@ local love = (...) or _G.lovemu.love
 
 local gl = require("lj-opengl") -- OpenGL
 
+local love = love or ...
+
 love.graphics = {}
 
 local function ADD_FILTER(obj)
@@ -264,8 +266,6 @@ do -- font
 		return self.filter
 	end
 	
-	
-	
 	local i = 0
 	
 	local function create_font(path, size, glyphs, texture)
@@ -296,12 +296,12 @@ do -- font
 		local size = b
 		
 		if type(a) == "number" then
-			font = R("fonts/vera.ttf")
+			font = "fonts/vera.ttf"
 			size = a
 		end
 		
 		if not a then
-			font = R("fonts/vera.ttf")
+			font = "fonts/vera.ttf"
 			size = b or 12
 		end
 		
@@ -319,15 +319,19 @@ do -- font
 		return create_font(path, nil, glyphs, tex)
 	end
 	
-	local currentFont = love.graphics.newFont(12)
+	local current_font
+	local default_font
 	
 	function love.graphics.setFont(font)
-		currentFont = font
+		current_font = font
 		surface.SetFont(font.Name)
 	end
 	
 	function love.graphics.getFont()
-		return currentFont
+		if not default_font then
+			default_font = love.graphics.newFont(12)
+		end
+		return current_font or default_font
 	end
 
 	function love.graphics.setNewFont(...)
@@ -370,7 +374,7 @@ do -- font
 		--surface.Scale(sx, sy)
 		
 		for i = 1, #lines do
-			surface.SetTextPosition(x, y + (currentFont.Size+(currentFont.Size*125/100) * (i - 1)))
+			surface.SetTextPosition(x, y + (current_font.Size+(current_font.Size*125/100) * (i - 1)))
 			surface.DrawText(lines[i])
 		end
 		
