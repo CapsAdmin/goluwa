@@ -46,6 +46,11 @@ texture.OnLoad = function()
 
 end
 
+-- FIX ME
+if not texture.loading then
+	texture:OnLoad()
+end
+
 local function add(name, u,v, w,h, corner_size, color)
 	skin[name] = {
 		texture = texture, 
