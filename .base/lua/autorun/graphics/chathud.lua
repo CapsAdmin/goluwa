@@ -199,6 +199,20 @@ event.AddListener("MouseInput", "chathud", function(button, press)
 	chathud.MouseInput(button, press, window.GetMousePosition():Unpack())
 end)
 
+event.AddListener("Chat", "chathud", function(name, str, client)
+	local tbl = chat.AddTimeStamp()
+	
+	if client:IsValid() then
+		table.insert(tbl, client:GetUniqueColor())
+	end
+	
+	table.insert(tbl, name)
+	table.insert(tbl, Color(1,1,1,1))
+	table.insert(tbl, ": ")
+	table.insert(tbl, str)
+	chathud.AddText(unpack(tbl))
+end)
+
 include("tradingcard_emotes.lua")
 
 if RELOAD then
