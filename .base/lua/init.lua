@@ -84,9 +84,9 @@ do -- file system
 	table.remove(package.loaders)
 	-- remove them because we do it properly later on
 
-	-- the root folder is always 4 paths up (.base/bin/os/arch)
-	e.ROOT_FOLDER = fs.getcd():gsub("\\", "/"):match("(.+/)" .. (".-/"):rep(3 - 1))
-	e.BASE_FOLDER = fs.getcd():gsub("\\", "/"):match("(.+/)" .. (".-/"):rep(2 - 1))
+	e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
+	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 paths up (.base/bin/os_arch)
+	e.BASE_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(2))
 	
 	-- the userdata folder
 	e.USERDATA_FOLDER = e.ROOT_FOLDER .. ".userdata/" .. e.USERNAME:lower() .. "/"
