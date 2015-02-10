@@ -203,7 +203,10 @@ do -- libraries
 	chat = include("libraries/network/chat.lua") -- chat, duh!
 		
 	resource = include("libraries/resource.lua")
-		
+	
+	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extra/")
+	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
+	
 	if CLIENT then
 		-- graphics
 		render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
