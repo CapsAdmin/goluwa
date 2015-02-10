@@ -258,7 +258,30 @@ function console.InitializeCurses()
 		local str = table.concat({...}, "")
 
 		console.Print(str)
+	end	
+		
+	local function override(file, prefix)
+		local meta = getmetatable(file)
+		if not meta then return file end
+		local copy = {}
+		for k, v in pairs(meta) do 
+			if k == "write" then
+				copy[k] = function(_, ...) 
+					io.write(...)
+					return v(file, prefix, ...)
+				end 
+			else
+				copy[k] = function(_, ...) 
+					return v(file, ...)
+				end 
+			end
+		end
+		copy.__index = copy
+		return setmetatable({}, copy)
 	end
+	
+	io.stderr = override(io.stderr, "io.stderr: ")
+	io.stdout = override(io.stdout, "io.stdout: ")
 
 	for _, line in ipairs(_G.LOG_BUFFER) do
 		hush = true
