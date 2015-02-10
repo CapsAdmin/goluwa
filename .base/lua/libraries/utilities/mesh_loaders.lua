@@ -200,17 +200,17 @@ do -- physics model
 		if data then
 			callback(data)
 			return true
-		end
+		end		
 		
 		cb:start(path, callback, {on_fail = on_fail})
 		
-		resource.Download(path, function(path)
+		resource.Download(path, function(full_path)
 			if path:endswith(".bsp") and steam.LoadMap then
-				steam.LoadMap(path, function(data, thread)
+				steam.LoadMap(full_path, function(data, thread)
 					cb:stop(path, data.physics_meshes)
 				end)	
 			elseif assimp then
-				local scene = assimp.ImportFile(R(path), assimp.e.aiProcessPreset_TargetRealtime_Quality)
+				local scene = assimp.ImportFile(full_path, assimp.e.aiProcessPreset_TargetRealtime_Quality)
 				
 				if scene.mMeshes[0].mNumVertices == 0 then
 					return nil, "no vertices found in " .. path
@@ -241,6 +241,8 @@ do -- physics model
 						stride = ffi.sizeof("float") * 3,
 					},
 				}
+				
+				print(mesh, "???")
 				
 				cb:stop(path, {mesh})
 				

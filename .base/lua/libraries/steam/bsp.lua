@@ -700,8 +700,10 @@ function steam.LoadMap(path, callback)
 			table.insert(header.entities, info)
 		end
 		
-		for i, mesh in ipairs(models) do
-			mesh:UnreferenceVertices()
+		if GRAPHICS then
+			for i, mesh in ipairs(models) do
+				mesh:UnreferenceVertices()
+			end
 		end
 		
 		local func = steam.bsp_cache[path]
