@@ -12,8 +12,8 @@ do
 	local old = os.exit
 
 	function os.exit(code)
-		logn("os.exit() called")
-		system.ShutDown(code)
+		warning("os.exit() called with code %i",code or 0))
+		--system.ShutDown(code)
 	end
 	
 	function os.realexit(code)
