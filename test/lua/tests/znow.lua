@@ -1,5 +1,5 @@
 local S = gui.skin.scale
-local skin = include("gui/skins/zsnes.lua")
+local skin = include("libraries/gui/skins/zsnes.lua")
 
 if false then -- frame
 	local frame = gui.CreatePanel("frame")

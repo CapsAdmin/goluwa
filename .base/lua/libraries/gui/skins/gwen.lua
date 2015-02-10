@@ -143,7 +143,7 @@ skin.text_list_font = "snow_font"
 
 skin.background = Color(0.5, 0.5, 0.5, 1)
 
-skin.icons = include("gui/icons.lua")
+skin.icons = include("libraries/gui/icons.lua")
 
 if RELOAD or select(2, ...) then
 	for k,v in pairs(gui.panels) do

@@ -306,7 +306,7 @@ do -- skin
 	function gui.SetSkin(tbl, reload_panels)
 		gui.skin = tbl
 		gui.scale = tbl.scale or gui.scale
-		if reload_panels then include("gui/panels/*", gui) end
+		if reload_panels then include("libraries/gui/panels/*", gui) end
 		
 		for panel in pairs(gui.panels) do
 			panel:ReloadStyle()
@@ -319,7 +319,7 @@ do -- skin
 
 	console.AddCommand("gui_skin", function(_, str, sub_skin)
 		str = str or "gwen"
-		gui.SetSkin(include("gui/skins/" .. str .. ".lua", gui, sub_skin))
+		gui.SetSkin(include("libraries/gui/skins/" .. str .. ".lua", gui, sub_skin))
 	end)
 end
 
