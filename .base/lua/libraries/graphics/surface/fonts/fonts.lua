@@ -23,7 +23,7 @@ function surface.CreateFont(name, options, callback)
 	
 	if not ready then
 		table.insert(queue, {name, options, callback})
-		return
+		return 
 	end
 	
 	local path = options.path or surface.default_font_path
@@ -126,6 +126,8 @@ function surface.CreateFont(name, options, callback)
 			self:Remove()
 		end
 	end
+	
+	return surface.fonts.default
 end
 
 function surface.RegisterFont(meta)

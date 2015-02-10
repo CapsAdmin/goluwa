@@ -1,6 +1,4 @@
--- this was started by shell32 (http://steamcommunity.com/id/76561197995203430/) but has been mostly rewritten by me (capsadmin)
-
-lovemu = {}
+local lovemu = _G.lovemu or {}
 
 lovemu.version = "0.9.0"
 lovemu.speed = 1
@@ -51,7 +49,7 @@ end
 function lovemu.CheckSupported(demo)
 	local supported = {}
 	
-	for path in vfs.Iterate("lua/lovemu/love/", nil, true) do
+	for path in vfs.Iterate("lua/libraries/love/libraries/", nil, true) do
 		local file = vfs.Open(path)
 		for line in file:Lines() do
 			local name = line:match("(love%..-)%b()")
@@ -100,7 +98,7 @@ function lovemu.GetGames()
 	return vfs.Find("lovers/")
 end
 
-function lovemu.CreateLoveEnv(version)
+function lovemu.CreateLoveEnv()
 	local love = {}
 	
 	love._version = lovemu.version
@@ -111,7 +109,7 @@ function lovemu.CreateLoveEnv(version)
 	love._version_minor = tonumber(version[2])
 	love._version_revision = tonumber(version[3])
 
-	include("lovemu/love/*", love)
+	include("libraries/love/libraries/*", love)
 	
 	love.math = math
 	
@@ -132,8 +130,6 @@ function lovemu.RunGame(folder, ...)
 	lovemu.demoname = folder
 	lovemu.love = love
 	lovemu.textures = {}
-		
-	window.Open()	
 		
 	warning("mounting love game folder: ", R("lovers/" .. lovemu.demoname .. "/"))
 	vfs.CreateFolder("data/lovemu/")
@@ -269,7 +265,7 @@ function lovemu.RunGame(folder, ...)
 	end, {priority = math.huge}) -- draw this first
 end
 
-console.AddCommand("lovemu", function(line, command, ...)	
+console.AddCommand("love", function(line, command, ...)	
 	if command == "run" then
 		local name = tostring((...))
 		if vfs.IsDir("lovers/" .. name) then
@@ -300,3 +296,5 @@ end, function()
 	logn("\trun        <folder name>        //runs a game  ")
 	logn("\tversion    <version>            //change internal love version, default: 0.9.0")
 end)
+
+return lovemu

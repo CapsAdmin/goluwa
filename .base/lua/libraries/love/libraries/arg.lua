@@ -1,4 +1,4 @@
-local love = (...) or _G.lovemu.love
+local love = love or ...
 
 love.arg = love.arg or {}
 

@@ -242,6 +242,8 @@ do -- libraries
 	physics = include("libraries/entities/physics.lua") -- bullet physics
 	entities = include("libraries/entities/entities.lua") -- entity component system
 	steam = include("libraries/steam/steam.lua")
+	lovemu = include("libraries/love/lovemu.lua")
+	love = lovemu.CreateLoveEnv()
 
 	if not DISABLE_CURSES then
 		include("libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	

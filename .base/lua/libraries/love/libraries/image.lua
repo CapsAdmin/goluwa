@@ -1,4 +1,4 @@
-local love = (...) or _G.lovemu.love
+local love = love or ...
 
 local textures = lovemu.textures
 local FILTER = "nearest"

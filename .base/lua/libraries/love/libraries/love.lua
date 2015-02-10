@@ -1,4 +1,4 @@
-local love = (...) or _G.lovemu.love
+local love = love or ...
 
 function love.load()
 end
@@ -26,10 +26,8 @@ function love.conf(t) --partial
 end
 
 do -- error screen
-	local font = love.graphics.newFont(8)
-
 	function love.errhand(msg)
-		love.graphics.setFont(font)
+		love.graphics.setFont()
 		msg = tostring(msg)
 		love.graphics.setBackgroundColor(89, 157, 220)
 		love.graphics.setColor(255, 255, 255, 255)
