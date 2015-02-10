@@ -87,7 +87,7 @@ function menu.RenderBackground(dt)
 	emitter:Draw()
 end
 
-local skin = include("gui/skins/zsnes.lua")
+local skin = include("libraries/gui/skins/zsnes.lua")
 
 function menu.CreateTopBar()
 	local S = skin.scale

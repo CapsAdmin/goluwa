@@ -144,7 +144,7 @@ skin.pixel_scale = S
 
 skin.background = Color(0.5, 0.5, 0.5)
 
-skin.icons = include("gui/icons.lua")
+skin.icons = include("libraries/gui/icons.lua")
 
 if RELOAD then
 	for k,v in pairs(gui.panels) do
