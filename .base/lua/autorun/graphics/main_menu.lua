@@ -301,7 +301,7 @@ function menu.CreateTopBar()
 		{L"open state"},
 		{L"pick state"},
 		{},
-		{L"quit", function() os.exit() end} 
+		{L"quit", function() system.ShutDown() end} 
 	})
 	create_button(L"config", {
 		{L"input"},
