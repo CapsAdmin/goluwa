@@ -5,8 +5,6 @@ surface.registered_fonts = surface.registered_fonts or {}
 surface.font_dpi = 72
 
 surface.default_font_path = "fonts/unifont.ttf" 
---"http://unifoundry.com/pub/unifont-7.0.06/font-builds/unifont-7.0.06.ttf"
--- TODO: downloading is too slow for this atm
 
 local ready = false
 local queue = {}
