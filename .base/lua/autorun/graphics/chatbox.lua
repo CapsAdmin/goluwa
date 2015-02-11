@@ -1,3 +1,124 @@
+local syntax_process
+do       
+	local lex_setup = require("luajit-lang-toolkit.lexer")
+	local reader = require("luajit-lang-toolkit.reader")
+	 
+	local colors = {
+		default = ColorBytes(255, 255, 255),
+		keyword = ColorBytes(127, 159, 191),
+		identifier = ColorBytes(223, 223, 223),
+		string = ColorBytes(191, 127, 127),
+		number = ColorBytes(127, 191, 127),
+		operator = ColorBytes(191, 191, 159),
+		ccomment = ColorBytes(159, 159, 159),
+		cmulticomment = ColorBytes(159, 159, 159),
+		
+		comment = ColorBytes(159, 159, 159),
+		multicomment = ColorBytes(159, 159, 159),
+	}
+
+	local translate = {
+		TK_ge = colors.operator, 
+		TK_le = colors.operator, 
+		TK_concat = colors.operator, 
+		TK_eq = colors.operator,
+		TK_label = colors.operator,
+		["#"] = colors.operator,
+		["]"] = colors.operator,
+		[">"] = colors.operator,
+		["/"] = colors.operator,
+		["{"] = colors.operator,
+		["}"] = colors.operator,
+		[":"] = colors.operator,
+		["*"] = colors.operator,
+		["["] = colors.operator,
+		["("] = colors.operator,
+		[")"] = colors.operator,
+		["+"] = colors.operator,
+		[","] = colors.operator,
+		["="] = colors.operator,
+		["."] = colors.operator,
+		["<"] = colors.operator,
+		["-"] = colors.operator,
+		[""] = colors.operator,
+		TK_dots = colors.operator,
+				
+			
+		TK_else = colors.keyword,
+		TK_goto = colors.keyword,
+		TK_if = colors.keyword,
+		TK_nil = colors.keyword,
+		TK_end = colors.keyword,
+		TK_or = colors.keyword,
+		TK_return = colors.keyword,
+		TK_true = colors.keyword,
+		TK_elseif = colors.keyword,
+		TK_function = colors.keyword,
+		TK_while = colors.keyword,
+		TK_and = colors.keyword,
+		TK_then = colors.keyword,
+		TK_in = colors.keyword,
+		TK_for = colors.keyword,
+		TK_do = colors.keyword,
+		TK_for = colors.keyword,
+		TK_false = colors.keyword,
+		TK_break = colors.keyword,
+		TK_not = colors.keyword,
+
+		TK_local = colors.keyword,
+
+		TK_ne = colors.keyword,
+		["/37"] = colors.keyword,
+			
+		TK_number = colors.number,
+		TK_string = colors.string,
+		TK_name = colors.default,
+	} 
+  
+  
+	function syntax_process(str, markup)
+		local ls = lex_setup(reader.string(str), str)
+
+		local last_pos = 1
+		local last_color
+			
+		for i = 1, 1000 do
+			local ok, msg = pcall(ls.next, ls)
+			
+			if not ok then
+				local tbl = msg:explode("\n")
+				markup:AddString(str:sub(-ls.p))
+				break
+			end
+					
+			if #ls.token == 1 then
+				local color = colors.operator
+				if color ~= last_color then   
+					markup:AddColor(color)
+					last_color = color
+				end
+			else
+				local color = translate[ls.token] or colors.comment
+				if color ~= last_color then
+					markup:AddColor(color)
+					last_color = color
+				end
+			end
+						
+			markup:AddString(str:sub(last_pos-1, ls.p-2))
+			
+			last_pos = ls.p 
+								
+			if ls.token == "TK_eof" then break end
+		end
+		
+		markup:AddString(str:sub(last_pos-1, last_pos-2))
+		  		  
+		return out
+	end  
+end 
+
+
 chat.panel = chat.panel or NULL
 
 function chat.IsVisible()
@@ -84,39 +205,58 @@ function chat.GetPanel()
 		
 		local str = self:GetText():trim()
 		
-		local scroll = 0
-		 
-		if key == "tab" then
-			scroll = input.IsKeyDown("left_shift") and -1 or 1
-		end
-		
-		found_autocomplete = autocomplete.Query("chatsounds", str, scroll)
-							
-		if key == "tab" and found_autocomplete then
-			edit:SetText(found_autocomplete[1])
-			return false
+		if not str:find("\n") then
+			
+			local scroll = 0
+			 
+			if key == "tab" then
+				scroll = input.IsKeyDown("left_shift") and -1 or 1
+			end
+			
+			found_autocomplete = autocomplete.Query("chatsounds", str, scroll)
+								
+			if key == "tab" and found_autocomplete then
+				edit:SetText(found_autocomplete[1])
+				return false
+			end
 		end
 	end
+	
+	local command_history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt") or {}
 	
 	edit.OnPreKeyInput = function(self, key, press)	
 		if not press then return end
 		
+		local ctrl = input.IsKeyDown("left_control") or input.IsKeyDown("right_control")
 		local str = self:GetText()
 		
-		local ctrl = input.IsKeyDown("left_control") or input.IsKeyDown("right_control")
+		if key == "`" then 
+			if chat.panel.tab:IsTabSelected("chat") then
+				chat.Close()
+				chat.Open("console")
+			else
+				chat.Close() 
+			end
+			
+			return 
+		end
 		
-		if ctrl or str == "" or str == last_history then
+		if str ~= "" and ctrl then
+			return 
+		end
+		
+		if str == last_history or str == "" then
 			local browse = false
 			
 			if key == "up" then
-				i = math.clamp(i + 1, 1, #history)
+				i = math.clamp(i + 1, 1, #command_history)
 				browse = true
 			elseif key == "down" then
-				i = math.clamp(i - 1, 1, #history)
+				i = math.clamp(i - 1, 1, #command_history)
 				browse = true
 			end
 			
-			local found = history[i]
+			local found = command_history[i]
 			if browse and found then
 				edit:SetText(found)
 				edit:SetCaretPosition(Vec2(#found, 0))
@@ -126,20 +266,22 @@ function chat.GetPanel()
 		
 		if key == "escape" then
 			chat.Close()
-		elseif key == "enter" then		
+		elseif (key == "enter" or key == "keypad_enter") and not str:find("\n") then
 			i = 0
 			
 			if #str > 0 then
-				if history[1] ~= str then
-					table.insert(history, 1, str)
+				if command_history[1] ~= str then
+					table.insert(command_history, 1, str)
 				end
 			
-				if chat.opened_tab == "chat" then
+				if chat.panel.tab:IsTabSelected("chat") then
 					chat.Say(str)
 					chat.Close()
-				elseif chat.opened_tab == "console" then
+				elseif chat.panel.tab:IsTabSelected("console") then
+					--chat.markup:AddString("<mark>", true)
 					logn("> ", str)
-					console.RunString(str, nil, nil, true)
+					--chat.markup:AddString("</mark>", true)
+					console.RunString(str, nil, true, true)
 					edit:SetText("")
 					chat.panel:Layout(true)
 					return false
@@ -182,13 +324,15 @@ function chat.GetPanel()
 	local text = scroll:SetPanel(gui.CreatePanel("text"))
 	text:SetPosition(Vec2()+S*2)
 	text.markup:SetLineWrap(true)
+	text.markup:AddFont(gui.skin.default_font)
 	text:AddEvent("ConsolePrint")
+	
+	chat.markup = text.markup
 
 	function text:OnConsolePrint(str)
-		self.markup:AddFont(gui.skin.default_font)
-		self.markup:AddString(str, true)
-		self.markup:AddTagStopper()
-		
+		syntax_process(str, self.markup)
+		--self.markup:AddTagStopper()
+		self.markup:AddString("\n")
 		if chat.panel:IsValid() then
 			chat.panel:Layout(true)
 		end
@@ -223,10 +367,12 @@ function chat.Open(tab)
 	
 	local page = panel.tab:SelectTab(tab)
 	
-	if tab == "console" and not panel:IsMaximized() then
-		panel:Maximize()
-	elseif tab == "chat" and panel:IsMaximized() then
-		panel:Maximize()
+	if tab == "console" then
+		panel:SetSize(Vec2(window.GetSize().w, 300))
+		panel:SetPosition(Vec2(0, 0))
+	elseif tab == "chat" then
+		panel:SetSize(Vec2(400, 250))
+		panel:SetPosition(Vec2(50, window.GetSize().h - panel:GetHeight() - 50))
 	end
 	
 	panel:Minimize(true)
@@ -238,8 +384,6 @@ function chat.Open(tab)
 	
 	input.DisableFocus = true
 	window.SetMouseTrapped(false)
-	
-	chat.opened_tab = tab
 end
 
 function chat.Close()
