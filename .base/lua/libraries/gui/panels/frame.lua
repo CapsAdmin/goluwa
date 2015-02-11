@@ -74,10 +74,16 @@ function PANEL:OnLayout(S)
 	self.title:SetPadding(Rect()+S)
 end
 
-function PANEL:Maximize()
+function PANEL:Maximize(b)
 	local max = self.max
 	
-	if self.maximized then
+	if not self.maximized or b then
+		self.maximized = {size = self:GetSize():Copy(), pos = self:GetPosition():Copy()}
+		self:SetupLayout("fill_x", "fill_y")
+		max:SetStyle("maximize_inactive")
+		max:SetStyleTranslation("button_active", "maximize_active")
+		max:SetStyleTranslation("button_inactive", "maximize_inactive")
+	else
 		self:SetSize(self.maximized.size)
 		self:SetPosition(self.maximized.pos)
 		self:SetupLayout()
@@ -85,12 +91,6 @@ function PANEL:Maximize()
 		max:SetStyle("maximize2_inactive")
 		max:SetStyleTranslation("button_active", "maximize2_active")
 		max:SetStyleTranslation("button_inactive", "maximize2_inactive")
-	else
-		self.maximized = {size = self:GetSize():Copy(), pos = self:GetPosition():Copy()}
-		self:SetupLayout("fill_x", "fill_y")
-		max:SetStyle("maximize_inactive")
-		max:SetStyleTranslation("button_active", "maximize_active")
-		max:SetStyleTranslation("button_inactive", "maximize_inactive")
 	end
 end
 

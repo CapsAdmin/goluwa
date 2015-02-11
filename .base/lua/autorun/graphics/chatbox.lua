@@ -123,20 +123,30 @@ function chat.GetPanel()
 				last_history = found
 			end
 		end
-
-		if key == "enter" and not ctrl or key == "escape" then
 		
-			if key ~= "escape" then
-				i = 0
-				if #str > 0 then
+		if key == "escape" then
+			chat.Close()
+		elseif key == "enter" then		
+			i = 0
+			
+			if #str > 0 then
+				if history[1] ~= str then
+					table.insert(history, 1, str)
+				end
+			
+				if chat.opened_tab == "chat" then
 					chat.Say(str)
-					if history[1] ~= str then
-						table.insert(history, 1, str)
-					end
+					chat.Close()
+				elseif chat.opened_tab == "console" then
+					logn("> ", str)
+					console.RunString(str, nil, nil, true)
+					edit:SetText("")
+					chat.panel:Layout(true)
+					return false
+				else
+					print("!?")
 				end
 			end
-			
-			chat.Close()
 			
 			return
 		end	
@@ -178,10 +188,16 @@ function chat.GetPanel()
 		self.markup:AddFont(gui.skin.default_font)
 		self.markup:AddString(str, true)
 		self.markup:AddTagStopper()
-
-		self:Layout(true)
+		
+		if chat.panel:IsValid() then
+			chat.panel:Layout(true)
+		end
 		
 		page.scroll.scroll_area:SetScrollFraction(Vec2(0,1))
+		
+		if chat.panel:IsValid() then
+			chat.panel:Layout()
+		end
 	end
 	
 	for i, v in pairs(console.history) do
@@ -200,11 +216,19 @@ end
 local old_mouse_trap
 
 function chat.Open(tab)
+	tab = tab or "chat"
 	old_mouse_trap = window.GetMouseTrapped()
 	
 	local panel = chat.GetPanel()
 	
-	local page = panel.tab:SelectTab(tab or "chat")
+	local page = panel.tab:SelectTab(tab)
+	
+	if tab == "console" and not panel:IsMaximized() then
+		panel:Maximize()
+	elseif tab == "chat" and panel:IsMaximized() then
+		panel:Maximize()
+	end
+	
 	panel:Minimize(true)
 	panel.edit:SetText("")
 	panel.edit:RequestFocus()
@@ -214,6 +238,8 @@ function chat.Open(tab)
 	
 	input.DisableFocus = true
 	window.SetMouseTrapped(false)
+	
+	chat.opened_tab = tab
 end
 
 function chat.Close()
@@ -225,7 +251,6 @@ function chat.Close()
 	
 	input.DisableFocus = false
 	window.SetMouseTrapped(old_mouse_trap) 
-	
 end
 
 input.Bind("y", "show_chat", function()
