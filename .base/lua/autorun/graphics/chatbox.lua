@@ -32,7 +32,7 @@ function chat.GetPanel()
 	local S = gui.skin.scale
 	
 	local edit = frame:CreatePanel("text_edit")
-	edit:SetHeight(9*S)
+	edit:SetMargin(Rect()+3)
 	edit:SetupLayout("bottom", "fill_x")
 	frame.edit = edit
 	
@@ -178,6 +178,8 @@ function chat.GetPanel()
 		self.markup:AddFont(gui.skin.default_font)
 		self.markup:AddString(str, true)
 		self.markup:AddTagStopper()
+
+		self:Layout(true)
 		
 		page.scroll.scroll_area:SetScrollFraction(Vec2(0,1))
 	end
@@ -189,7 +191,6 @@ function chat.GetPanel()
 	function text:OnLayout()
 		self.markup:SetMaxWidth(self.Parent:GetWidth())
 	end
-	
 		
 	chat.panel = frame
 	
@@ -198,16 +199,18 @@ end
 
 local old_mouse_trap
 
-function chat.Open()
+function chat.Open(tab)
 	old_mouse_trap = window.GetMouseTrapped()
 	
 	local panel = chat.GetPanel()
 	
-	panel.tab:SelectTab("chat")
+	local page = panel.tab:SelectTab(tab or "chat")
 	panel:Minimize(true)
 	panel.edit:SetText("")
 	panel.edit:RequestFocus()
 	panel:Layout(true)
+	
+	page.scroll:SetScrollFraction(Vec2(0,1))
 	
 	input.DisableFocus = true
 	window.SetMouseTrapped(false)
@@ -225,6 +228,10 @@ function chat.Close()
 	
 end
 
-input.Bind("y", "showchat", function()
+input.Bind("y", "show_chat", function()
 	chat.Open()
+end)
+
+input.Bind("`", "show_chat_console", function()
+	chat.Open("console")
 end)

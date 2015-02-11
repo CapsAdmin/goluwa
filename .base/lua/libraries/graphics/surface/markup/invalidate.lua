@@ -583,6 +583,11 @@ local function store_tag_info(self, chunks)
 	self.line_count = line
 	self.width = width
 	self.height = height
+	
+		
+	if self.height < self.MinimumHeight then
+		self.height = self.MinimumHeight
+	end
 end
 
 local function align_y_axis(self, chunks)

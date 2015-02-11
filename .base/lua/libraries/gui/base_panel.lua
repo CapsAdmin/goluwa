@@ -78,8 +78,12 @@ function PANEL:IsInsideParent()
 	
 	if not override:IsValid() then return true end
 	
-	if self.VisibilityPanel:IsValid() then
-		override = self.VisibilityPanel
+	local override = override.Parent
+	
+	if not override:IsValid() then return true end
+	
+	if override.VisibilityPanel:IsValid() then
+	--	override = override.VisibilityPanel
 	end
 		
 	if 

@@ -42,7 +42,8 @@ function surface.CreateMarkup()
 		cull_x = 0,
 		cull_y = 0,
 		cull_w = math.huge,
-		cull_h = math.huge
+		cull_h = math.huge,
+		blink_offset = 0,
 	})
 
 	self:Invalidate()

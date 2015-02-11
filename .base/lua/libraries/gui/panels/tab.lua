@@ -74,9 +74,19 @@ function PANEL:SelectTab(name)
 	end
 	
 	self:Layout()
+	
+	return self.content
 end
 
-function PANEL:GetSelectedPage(name)
+function PANEL:GetTab(name)
+	local info = self.tabs[name]
+	if info then
+		return info.content
+	end
+	return NULL
+end
+
+function PANEL:GetSelectedTab()
 	return self.content
 end
 

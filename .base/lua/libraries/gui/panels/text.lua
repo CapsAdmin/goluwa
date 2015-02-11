@@ -122,10 +122,23 @@ function PANEL:OnUpdate()
 	markup.cull_w = self.Parent.Size.w
 	markup.cull_h = self.Parent.Size.h
 	
-	self.Size.w = markup.width
-	self.Size.h = markup.height
-		
 	markup:Update()
+	
+	self.Size.w = markup.width
+	self.Size.h = markup.height		
+	
+	-- :(
+	if markup:IsCaretVisible() then
+		if not self.sadface then
+			self:MarkCacheDirty()
+			self.sadface = true
+		end
+	else
+		if self.sadface then
+			self:MarkCacheDirty()
+			self.sadface = false
+		end
+	end
 end
 
 function PANEL:OnMouseInput(button, press)
