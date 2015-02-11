@@ -86,6 +86,10 @@ function PANEL:GetTab(name)
 	return NULL
 end
 
+function PANEL:IsTabSelected(name)
+	return self:GetSelectedTab() == self:GetTab(name)
+end
+
 function PANEL:GetSelectedTab()
 	return self.content
 end
