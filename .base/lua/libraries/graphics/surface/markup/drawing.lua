@@ -12,10 +12,6 @@ function META:Update()
 		self.need_layout = false
 	end
 	
-	if self.height < self.MinimumHeight then
-		self.height = self.MinimumHeight
-	end
-	
 	if self.Selectable and self.chunks[1] then		
 		if self.mouse_selecting then
 			local x, y = self:GetMousePosition():Unpack()
@@ -240,6 +236,10 @@ function META:DrawLineHighlight(y)
 	surface.DrawRect(start_chunk.x, start_chunk.y, self.width, start_chunk.line_height)
 end
 
+function META:IsCaretVisible()
+	return (system.GetElapsedTime() - self.blink_offset)%0.5 > 0.25
+end
+
 function META:DrawCaret()
 	if self.caret_pos then
 		local x = self.caret_pos.px
@@ -264,8 +264,7 @@ function META:DrawCaret()
 		end
 
 		surface.SetWhiteTexture()
-		self.blink_offset = self.blink_offset or 0
-		surface.SetColor(self.CaretColor.r, self.CaretColor.g, self.CaretColor.b, (system.GetElapsedTime() - self.blink_offset)%0.5 > 0.25 and self.CaretColor.a or 0)
+		surface.SetColor(self.CaretColor.r, self.CaretColor.g, self.CaretColor.b, self:IsCaretVisible() and self.CaretColor.a or 0)
 		surface.DrawRect(x, y, 1, h)
 	end
 end

@@ -285,7 +285,6 @@ function editor.Open()
 	local frame = gui.CreatePanel("frame")
 	frame:SetWidth(300)
 	frame:SetTitle(L"editor")
-	frame:SetupLayout("left", "fill_y")
 	editor.frame = frame
 	
 	local div = gui.CreatePanel("divider", frame)
@@ -486,6 +485,9 @@ function editor.Open()
 	end
 		
 	window.SetMouseTrapped(false) 
+	
+	frame:SetY(500)
+	frame:ProcessLayoutCommands({"left", "fill_y"})
 end
 
 function editor.Close()
