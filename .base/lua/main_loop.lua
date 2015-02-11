@@ -15,6 +15,10 @@ local function calc_fps(dt)
 		if utility and utility.FormatFileSize then
 			console.SetTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
 		end
+		
+		if GRAPHICS then
+			window.SetTitle(console.GetTitle())
+		end
 	end
 end
 
