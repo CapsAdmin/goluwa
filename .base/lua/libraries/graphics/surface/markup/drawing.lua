@@ -47,18 +47,46 @@ function META:Update()
 	end
 end
 
+local start_remove = false
+local remove_these = false
+local started_tags = false
+
 function META:Draw()
-	if self.chunks[1] then
+	if self.LightMode or self.SuperLightMode and self.light_mode_obj then
+		self.light_mode_obj:Draw()
+		
+		if self.Selectable then
+			self:DrawSelection()
+		end
+		
+		if self.SuperLightMode then
+			return
+		end
+	end
+
+	if self.chunks[1] then		
 		-- reset font and color for every line
 		set_font(self, "default")
 		surface.SetColor(1, 1, 1, 1)
 
-		local start_remove = false
+		start_remove = false
+		remove_these = false
+		started_tags = false
 		
-		self.remove_these = self.remove_these or {}
-		table.clear(self.remove_these)
-		self.started_tags = self.started_tags or {}
-		table.clear(self.started_tags)
+		--[[if 
+			self.cull_x ~= self.last_cull_x or
+			self.cull_y ~= self.last_cull_y or
+			self.cull_w ~= self.last_cull_w or
+			self.cull_h ~= self.last_cull_h
+		then
+			
+			
+			
+			self.last_cull_x = self.cull_x
+			self.last_cull_y = self.cull_y
+			self.last_cull_w = self.cull_w
+			self.last_cull_h = self.cull_h
+		end]]
 
 		for i, chunk in ipairs(self.chunks) do
 
@@ -88,9 +116,10 @@ function META:Draw()
 
 					if start_remove then
 						self.remove_these[i] = true
+						remove_these = true
 					end
 
-					if chunk.type == "string" then
+					if chunk.type == "string" and not self.LightMode then
 						set_font(self, chunk.font)
 
 						local c = chunk.color
@@ -126,6 +155,8 @@ function META:Draw()
 						-- engine matrix stack inbalance with the matrix tags
 						self.started_tags[chunk.val.type] = self.started_tags[chunk.val.type] or {}
 
+						started_tags = true
+						
 						-- draw_under
 						if chunk.tag_start_draw then
 							if self:CallTagFunction(chunk, "pre_draw", chunk.x, chunk.y) then
@@ -180,27 +211,27 @@ function META:Draw()
 			end
 		end
 
-		for _, chunks in pairs(self.started_tags) do
-			for _, chunk in pairs(chunks) do
-				--print("force stop", chunk.val.type, chunk.i)
+		if started_tags then
+			for _, chunks in pairs(self.started_tags) do
+				for _, chunk in pairs(chunks) do
+					--print("force stop", chunk.val.type, chunk.i)
 
-				self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
+					self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
+				end
 			end
+			
+			table.clear(self.started_tags)
 		end
 
-		if next(self.remove_these) then
-			for k,v in pairs(self.remove_these) do
-				self.chunks[k] = nil
-			end
-
+		if remove_these then
+			table.clear(self.remove_these)
 			table.fixindices(self.chunks)
-
 			self:Invalidate()
 		end
-	end
-	
-	if self.Selectable then
-		self:DrawSelection()
+		
+		if self.Selectable then
+			self:DrawSelection()
+		end
 	end
 end
 

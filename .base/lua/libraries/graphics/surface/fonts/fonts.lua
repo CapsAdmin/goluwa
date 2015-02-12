@@ -26,6 +26,8 @@ function surface.CreateFont(name, options, callback)
 		return 
 	end
 	
+	options = options or {}
+	
 	local path = options.path or surface.default_font_path
 	local size = options.size or 14
 	local scale = options.scale or Vec2(1,1)

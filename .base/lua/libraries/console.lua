@@ -337,7 +337,7 @@ do -- commands
 		local ret = {xpcall(func, system.OnError)}
 		
 		if log_error and not ret[1] then
-			logn(ret[2])
+			if ret[2] then logn(ret[2]) end
 			return unpack(ret)
 		end
 		

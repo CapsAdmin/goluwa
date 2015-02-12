@@ -7,6 +7,8 @@ prototype.GetSet(PANEL, "Text")
 prototype.GetSet(PANEL, "ParseTags", false)
 prototype.GetSet(PANEL, "TextWrap", false)
 prototype.GetSet(PANEL, "ConcatenateTextToSize", false)
+prototype.GetSet(PANEL, "LightMode", false)
+prototype.GetSet(PANEL, "CopyTags", true)
 
 prototype.GetSet(PANEL, "Font")
 prototype.GetSet(PANEL, "TextColor")
@@ -23,8 +25,6 @@ function PANEL:Initialize()
 		self.Size.h = markup.height
 	end
 	self.markup = markup
-	
-	self:SetTextWrap(self.TextWrap)
 end
 
 function PANEL:SetFont(font)
@@ -39,10 +39,29 @@ function PANEL:SetTextColor(color)
 	self:SetText(self:GetText())
 end
 
+function PANEL:SetLightMode(b)
+	self.LightMode = b
+	self:SetText(self:GetText())
+end
+
+function PANEL:SetTextWrap(b)
+	self.TextWrap = b
+	self:SetText(self:GetText())
+end
+
+function PANEL:SetCopyTags(b)
+	self.CopyTags = b
+	self.markup:SetCopyTags(b)
+end
+
 function PANEL:SetText(str)	
 	self.Text = str
 	
 	local markup = self.markup
+	
+	markup:SetLightMode(self.LightMode)
+	markup:SetLineWrap(self.TextWrap)
+	markup:SetCopyTags(self.CopyTags)
 	
 	markup:Clear()
 	if self.Font then markup:AddFont(self.Font) end
@@ -57,11 +76,6 @@ end
 
 function PANEL:GetText()
 	return self.markup:GetText(self.ParseTags)
-end
-
-function PANEL:SetTextWrap(b)
-	self.TextWrap = b
-	self.markup:SetLineWrap(b)
 end
 
 function PANEL:OnPostDraw()

@@ -86,116 +86,150 @@ end
 
 function META:DrawString(str, x, y)
 	if not self.Ready then return end
-	self.string_cache = self.string_cache or {}
 	
-	str = tostring(str)
+	if str == nil then str = "nil" end
+		
+	self.string_cache = self.string_cache or {}
 	
 	if not self.string_cache[str] then
 		self.total_strings_stored = self.total_strings_stored or 0
 		
-		if self.total_strings_stored > 200 then
-			logf("surface warning: string cache for %s is above 200, flushing cache\n", self)
+		if self.total_strings_stored > 1000 then
+			--logf("surface warning: string cache for %s is above 1000, flushing cache\n", self)
 			table.clear(self.string_cache)
 			self.total_strings_stored = 0
 		end
+				
+		self.string_cache[str] = self:CompileString({tostring(str)})
 		
-		local poly
-		local data = {}
-	
-		local X, Y = 0, 0
-		local last_tex
-		
-		local rebuild = false
-		
-		for i = 1, utf8.length(str) do
-			local char = utf8.sub(str, i,i)
-			local ch = self.chars[char]
-			if not ch then
-				self:LoadGlyph(char)
-				rebuild = true
-			end
-		end
-		
-		if rebuild then
-			self:Rebuild()
-		end
-				
-		for i = 1, utf8.length(str) do
-			local char = utf8.sub(str, i,i)
-			local ch = self.chars[char]
-			
-			if char == "\n" then
-				X = x
-				Y = Y + self.Size
-			elseif char == "\t" then
-				local ch = self.chars[" "]
-
-				if ch then
-					if self.Monospace then 
-						X = X + self.Spacing * 4
-					else
-						X = X + ((ch.x_advance + self.Spacing) * self.Scale.w) * 4
-					end
-				else
-					X = X + self.Size * 4
-				end
-			elseif not ch and char == " " then
-				local ch = self.chars[" "]
-
-				if ch then
-					if self.Monospace then 
-						X = X + self.Spacing
-					else
-						X = X + (ch.x_advance + self.Spacing) * self.Scale.w
-					end
-				else
-					X = X + self.Size
-				end
-			elseif ch then		
-				local texture = self.texture_atlas:GetPageTexture(char)
-				
-				if texture ~= last_tex then
-					poly = surface.CreatePoly(#str)
-					table.insert(data, {poly = poly, texture = texture})
-					last_tex = texture
-				end
-				
-				local x,y, w,h, sx,sy = self.texture_atlas:GetUV(char)
-				poly:SetUV(x,y, w,h, sx,sy) 
-				poly:SetRect(
-					i, 
-					(X-self.Padding/2) * self.Scale.w, 
-					((Y+self.Padding/2) * self.Scale.h) + (ch.h - ch.bitmap_top) + self.Size, 
-					w * self.Scale.w, 
-					-h * self.Scale.h
-				)
-				
-				if self.Monospace then 
-					X = X + self.Spacing
-				else
-					X = X + ch.x_advance + self.Spacing
-				end
-			end
-		end
-				
-		self.string_cache[str] = data
 		self.total_strings_stored = self.total_strings_stored + 1
 	end
 	
-	surface.PushMatrix(x, y)
-	for i, v in ipairs(self.string_cache[str]) do
-		surface.SetTexture(v.texture)
-		render.SetCullMode("front")
-		v.poly:Draw()
-		render.SetCullMode("back")
-	end	
-	surface.PopMatrix()
-	
+	self.string_cache[str]:Draw(x, y)
+		
 	if surface.debug_font_size then
 		surface.SetColor(1,0,0,0.25)
 		surface.SetWhiteTexture()
 		surface.DrawRect(x, y, surface.GetTextSize(str))
 	end
+end
+
+function META:CompileString(data)	
+	local size = 0
+	
+	do
+		for _, str in ipairs(data) do
+			if type(str) == "string" then
+				local rebuild = false
+				size = size + utf8.length(str)
+				for i = 1, utf8.length(str) do
+					local char = utf8.sub(str, i,i)
+					local ch = self.chars[char]
+					if not ch then
+						self:LoadGlyph(char)
+						rebuild = true
+					end
+				end
+				
+				if rebuild then
+					self:Rebuild()
+				end
+			end
+		end
+	end
+		
+	local poly = surface.CreatePoly(size)
+	local out = {}
+
+	local X, Y = 0, 0
+	local i = 1
+	local last_tex
+	
+	for _, str in ipairs(data) do
+		if type(str) ~= "string" then
+			if typex(str) == "vec2" then
+				X = str.x
+				Y = str.y
+			else
+				poly:SetColor(str:Unpack())
+			end
+		else
+			for str_i = 1, utf8.length(str) do
+				local char = utf8.sub(str, str_i,str_i)
+				local ch = self.chars[char]
+				
+				if char == "\n" then
+					X = 0
+					Y = Y + self.Size
+				elseif char == "\t" then
+					local ch = self.chars[" "]
+
+					if ch then
+						if self.Monospace then 
+							X = X + self.Spacing * 4
+						else
+							X = X + ((ch.x_advance + self.Spacing) * self.Scale.w) * 4
+						end
+					else
+						X = X + self.Size * 4
+					end
+				elseif not ch and char == " " then
+					local ch = self.chars[" "]
+
+					if ch then
+						if self.Monospace then 
+							X = X + self.Spacing
+						else
+							X = X + (ch.x_advance + self.Spacing) * self.Scale.w
+						end
+					else
+						X = X + self.Size
+					end
+				elseif ch then		
+					local texture = self.texture_atlas:GetPageTexture(char)
+					
+					if texture ~= last_tex then
+						table.insert(out, {poly = poly, texture = texture})
+						last_tex = texture
+					end
+					
+					local x,y, w,h, sx,sy = self.texture_atlas:GetUV(char)
+					poly:SetUV(x,y, w,h, sx,sy) 
+					
+					poly:SetRect(
+						i, 
+						(X-self.Padding/2) * self.Scale.w, 
+						((Y+self.Padding/2) * self.Scale.h) + (ch.h - ch.bitmap_top) + self.Size, 
+						w * self.Scale.w, 
+						-h * self.Scale.h
+					)
+					
+					i = i + 1
+					
+					if self.Monospace then 
+						X = X + self.Spacing
+					else
+						X = X + ch.x_advance + self.Spacing
+					end
+				end			
+			end
+		end
+	end
+	
+	local string = {}
+	
+	function string:Draw(x, y)
+		surface.PushMatrix(x, y)
+		for i, v in ipairs(out) do
+			surface.SetTexture(v.texture)
+			render.SetCullMode("front")
+			v.poly:Draw()
+			render.SetCullMode("back")
+		end	
+		surface.PopMatrix()
+	end
+	
+	return string
 end
 
 function META:GetTextSize(str)

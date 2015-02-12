@@ -86,9 +86,8 @@ do
 			local ok, msg = pcall(ls.next, ls)
 			
 			if not ok then
-				local tbl = msg:explode("\n")
-				markup:AddString(str:sub(-ls.p))
-				break
+				markup:AddString(str)
+				return
 			end
 					
 			if #ls.token == 1 then
@@ -113,9 +112,9 @@ do
 		end
 		
 		markup:AddString(str:sub(last_pos-1, last_pos-2))
-		  		  
-		return out
-	end  
+	end
+	
+	loll = syntax_process
 end 
 
 
@@ -139,6 +138,8 @@ function chat.GetInputPosition()
 	if not chat.IsVisible() then return 0, 0 end
 	return chat.panel:GetPosition()
 end
+
+surface.CreateFont("console_font", {path = "Roboto", size = 10})
 
 function chat.GetPanel()
 	if chat.panel:IsValid() then return chat.panel end
@@ -221,9 +222,7 @@ function chat.GetPanel()
 			end
 		end
 	end
-	
-	local command_history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt") or {}
-	
+		
 	edit.OnPreKeyInput = function(self, key, press)	
 		if not press then return end
 		
@@ -244,6 +243,8 @@ function chat.GetPanel()
 		if str ~= "" and ctrl then
 			return 
 		end
+		
+		local command_history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt") or {}
 		
 		if str == last_history or str == "" then
 			local browse = false
@@ -272,15 +273,14 @@ function chat.GetPanel()
 			if #str > 0 then
 				if command_history[1] ~= str then
 					table.insert(command_history, 1, str)
+					serializer.WriteFile("luadata", "%DATA%/cmd_history.txt", command_history)
 				end
 			
 				if chat.panel.tab:IsTabSelected("chat") then
 					chat.Say(str)
 					chat.Close()
 				elseif chat.panel.tab:IsTabSelected("console") then
-					--chat.markup:AddString("<mark>", true)
 					logn("> ", str)
-					--chat.markup:AddString("</mark>", true)
 					console.RunString(str, nil, true, true)
 					edit:SetText("")
 					chat.panel:Layout(true)
@@ -322,14 +322,44 @@ function chat.GetPanel()
 	page.scroll = scroll
 
 	local text = scroll:SetPanel(gui.CreatePanel("text"))
+	text:SetLightMode(true)
+	text:SetCopyTags(false)
+	text.markup:SetSuperLightMode(true)
+	text:SetTextWrap(false)
 	text:SetPosition(Vec2()+S*2)
-	text.markup:SetLineWrap(true)
-	text.markup:AddFont(gui.skin.default_font)
+	text.markup:AddFont("console_font")
 	text:AddEvent("ConsolePrint")
+	text:AddEvent("ConsoleClear")
+	--text:AddEvent("LogSection")
 	
 	chat.markup = text.markup
 
+	--[[function text:OnLogSection(type, b)
+		if type == "lua error" then
+			if b then
+				self.markup:AddString("<texture=textures/silkicons/error.png> ", true)
+				self.capture = ""
+			else
+				local error = self.capture:match("ERROR:%s-(%b{})")
+				if error then
+					self.markup:AddColor(Color(1,0,0,1))
+					self.markup:AddString(error:sub(2, -2):trim())
+					self.markup:AddString("\n")
+				end
+				self.capture = nil
+			end
+		end
+	end]]
+	
+	function text:OnConsoleClear()
+		self.markup:Clear()
+	end
+	
 	function text:OnConsolePrint(str)
+		--if self.capture then
+		--	self.capture = self.capture .. str
+		--	return 
+		--end
 		syntax_process(str, self.markup)
 		--self.markup:AddTagStopper()
 		self.markup:AddString("\n")
@@ -337,7 +367,7 @@ function chat.GetPanel()
 			chat.panel:Layout(true)
 		end
 		
-		page.scroll.scroll_area:SetScrollFraction(Vec2(0,1))
+		page.scroll:SetScrollFraction(Vec2(0,1))
 		
 		if chat.panel:IsValid() then
 			chat.panel:Layout()
@@ -349,7 +379,7 @@ function chat.GetPanel()
 	end
 	
 	function text:OnLayout()
-		self.markup:SetMaxWidth(self.Parent:GetWidth())
+	--	self.markup:SetMaxWidth(self.Parent:GetWidth())
 	end
 		
 	chat.panel = frame
@@ -370,6 +400,7 @@ function chat.Open(tab)
 	if tab == "console" then
 		panel:SetSize(Vec2(window.GetSize().w, 300))
 		panel:SetPosition(Vec2(0, 0))
+		panel:ProcessLayoutCommands({"top"})
 	elseif tab == "chat" then
 		panel:SetSize(Vec2(400, 250))
 		panel:SetPosition(Vec2(50, window.GetSize().h - panel:GetHeight() - 50))
