@@ -130,7 +130,10 @@ function PANEL:OnLayout(S)
 end
 
 function PANEL:OnUpdate()
+	if not self:HasParent() then return end
+	
 	local markup = self.markup
+	
 	markup.cull_x = self.Parent.Scroll.x
 	markup.cull_y = self.Parent.Scroll.y
 	markup.cull_w = self.Parent.Size.w
