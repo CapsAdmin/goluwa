@@ -207,6 +207,7 @@ do
 	function profiler.EnableSectionProfiling(b, reset)
 		enabled = b
 		if reset then table.clear(data) end
+		table.clear(stack)
 	end
 	
 	profiler.PushSection()
