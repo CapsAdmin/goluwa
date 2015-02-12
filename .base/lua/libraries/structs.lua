@@ -1,54 +1,70 @@
 local structs = _G.structs or {}
 
 function structs.Register(META)
-	local arg_lines = {}
+	local number_types = META.NumberType
 	
-	for arg_i, arg in pairs(META.Args) do
-		if type(arg) ~= "table" then arg = {arg} end
+	if type(number_types) == "string" then number_types = {number_types} end
+	local i = 1
+	for prepend, number_type in pairs(number_types) do
+		local arg_lines = {}
 		
-		for i, v in pairs(arg) do
-			if arg_i == 1 then
-				arg_lines[i] = "\tstruct { " .. META.NumberType .. " "
-			end
+		
+		if i >= 2 then 
+			local copy = {}
+			for k,v in pairs(META) do copy[k] = v end
+			META = copy
+			META.ClassName = META.ClassName .. prepend
+		end
+		
+		i = i + 1
+		
+		for arg_i, arg in pairs(META.Args) do
+			if type(arg) ~= "table" then arg = {arg} end
 			
-			arg_lines[i] = arg_lines[i] .. v
-					
-			if arg_i ~= #META.Args then
-				arg_lines[i] = arg_lines[i] .. ", "
-			else
-				arg_lines[i] = arg_lines[i] .. "; };"
+			for i, v in pairs(arg) do
+				if arg_i == 1 then
+					arg_lines[i] = "\tstruct { " .. number_type .. " "
+				end
+				
+				arg_lines[i] = arg_lines[i] .. v
+						
+				if arg_i ~= #META.Args then
+					arg_lines[i] = arg_lines[i] .. ", "
+				else
+					arg_lines[i] = arg_lines[i] .. "; };"
+				end
 			end
 		end
-	end
-	
-	table.insert(arg_lines, "\t" .. META.NumberType .. " _[" .. #META.Args .. "];")
-	
-	META.__index = META
-	META.Type = META.ClassName:lower()
-	META.TypeX = META.TypeX or META.Type
-	
-	local obj
-	
-	if META.StructOverride then
-		obj = META.StructOverride()
-	else
-		local type_name = META.ClassName
-		while pcall(ffi.typeof, type_name) do
-			type_name = type_name .. "_" 
+		
+		table.insert(arg_lines, "\t" .. number_type .. " _[" .. #META.Args .. "];")
+		
+		META.__index = META
+		META.Type = META.ClassName:lower()
+		META.TypeX = META.TypeX or META.Type
+		
+		local obj
+		
+		if META.StructOverride then
+			obj = META.StructOverride()
+		else
+			local type_name = META.ClassName
+			while pcall(ffi.typeof, type_name) do
+				type_name = type_name .. "_" 
+			end
+			ffi.cdef("typedef union " .. type_name .. " {\n" .. table.concat(arg_lines, "\n") .. "\n} " .. type_name .. ";")
+			obj = assert(ffi.metatype(type_name, META))
 		end
-		ffi.cdef("typedef union " .. type_name .. " {\n" .. table.concat(arg_lines, "\n") .. "\n} " .. type_name .. ";")
-		obj = assert(ffi.metatype(type_name, META))
+			
+		if META.Constructor then
+			structs[META.ClassName] = function(...) return obj(META.Constructor(...)) end
+		else
+			structs[META.ClassName] = obj
+		end
+			
+		_G[META.ClassName] = structs[META.ClassName]
+		
+		prototype.Register(META)
 	end
-		
-	if META.Constructor then
-		structs[META.ClassName] = function(...) return obj(META.Constructor(...)) end
-	else
-		structs[META.ClassName] = obj
- 	end
-		
-	_G[META.ClassName] = structs[META.ClassName]
-	
-	prototype.Register(META)
 end 
  
 -- helpers
