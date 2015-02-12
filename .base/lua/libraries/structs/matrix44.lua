@@ -61,7 +61,7 @@ local size = ffi.sizeof("float") * 16
 
 function META:Copy(matrix)
 	if matrix then
-		fi.copy(result.m, matrix.m)
+		ffi.copy(self.m, matrix.m, 16)
 		
 		return self
 	else
