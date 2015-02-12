@@ -733,11 +733,11 @@ function system.Restart( run_on_launch )
 end
 
 do
-
 	-- this should be used for xpcall
 	local suppress = false
 	local last_openfunc = 0
 	function system.OnError(msg, ...)
+		logsection("lua error", true)
 		msg = msg or "no error"
 		if suppress then logn("error in system.OnError: ", msg, ...) for i = 3, 100 do local t = debug.getinfo(i) if t then table.print(t) else break end end return end
 		suppress = true
@@ -891,6 +891,7 @@ do
 		logn("")
 		
 		suppress = false
+		logsection("lua error", false)
 	end
 end
 

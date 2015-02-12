@@ -162,6 +162,10 @@ do -- logging
 	function errorf(str, level, ...)
 		error(formatx(str, ...), level)
 	end
+	
+	function logsection(type, b)
+		event.Call("LogSection", type, b)
+	end
 end
 
 do

@@ -13,6 +13,8 @@ function META:SetColor(r,g,b,a)
 	self.G = g or 1
 	self.B = b or 1
 	self.A = a or 1
+	
+	self.dirty = true
 end
 
 function META:SetUV(u1, v1, u2, v2, sw, sh)
@@ -22,6 +24,8 @@ function META:SetUV(u1, v1, u2, v2, sw, sh)
 	self.V2 = v2
 	self.UVSW = sw
 	self.UVSH = sh
+	
+	self.dirty = true
 end
 	
 local function set_uv(self, i, x,y, w,h, sx,sy)
@@ -98,6 +102,8 @@ function META:SetVertex(i, x,y, u,v)
 		self.vertices[i].uv.A = u
 		self.vertices[i].uv.B = v
 	end
+	
+	self.dirty = true
 end
 
 function META:SetRect(i, x,y,w,h, r, ox,oy)
@@ -134,7 +140,10 @@ end
 
 function META:Draw(count)
 	if count then count = count * 6 end
-	self.mesh:UpdateBuffer()
+	if self.dirty then
+		self.mesh:UpdateBuffer()
+		self.dirty = false
+	end
 	surface.mesh_2d_shader.tex = surface.GetTexture()
 	surface.mesh_2d_shader.global_color = surface.GetColor(true)
 	surface.mesh_2d_shader:Bind()

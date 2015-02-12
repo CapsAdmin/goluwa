@@ -619,12 +619,8 @@ function META:Invalidate()
 		chunks = solve_max_width(self, chunks)
 	end
 	
---	chunks = string_wrap(self, chunks)
-	
-	--chunks = solve_max_width(self, chunks)
-	--chunks = newline_break(self, chunks)
-	
 	store_tag_info(self, chunks)
+
 	align_y_axis(self, chunks)
 	
 	self.chunks = chunks
@@ -643,10 +639,57 @@ function META:Invalidate()
 	if self.select_stop then
 		self:SelectStop(self.select_stop.x, self.select_stop.y)
 	end
+	
+	if self.LightMode or self.SuperLightMode then
+		self.light_mode_obj = self:CompileString()
+	end
 
 	if self.OnInvalidate then
 		self:OnInvalidate()
 	end
+end
+
+function META:CompileString()
+	local last_font
+
+	local strings = {}
+	local current_font
+	local data
+
+	local X, Y = 0,0
+
+	for i, chunk in ipairs(self.chunks) do
+		if chunk.type == "string" or chunk.type == "newline" then
+			if chunk.font then
+				if chunk.font ~= last_font then
+					data = {}
+					table.insert(strings, {font = chunk.font, data = data})
+				end
+			end
+			
+			table.insert(data, Vec2(chunk.x, chunk.y))
+			table.insert(data, chunk.color)
+			table.insert(data, chunk.val or "\n")
+			
+			if chunk.font then
+				last_font = chunk.font
+			end
+		end
+	end
+
+	for k,v in ipairs(strings) do
+		strings[k] = surface.fonts[v.font]:CompileString(v.data)
+	end
+
+	local obj = {}
+	
+	function obj:Draw()
+		for k,v in ipairs(strings) do
+			v:Draw(0, 0)
+		end
+	end
+	
+	return obj
 end
 
 prototype.UpdateObjects(META)

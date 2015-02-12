@@ -26,6 +26,9 @@ prototype.GetSet(META, "CaretColor", Color(1, 1, 1, 1))
 prototype.IsSet(META, "Selectable", true)
 prototype.GetSet(META, "MinimumHeight", 10)
 prototype.GetSet(META, "HeightSpacing", 2)
+prototype.GetSet(META, "LightMode", false)
+prototype.GetSet(META, "SuperLightMode", false)
+prototype.GetSet(META, "CopyTags", true)
 
 if SERVER then
 	prototype.GetSet(META, "FixedSize", 14) -- sigh
@@ -44,6 +47,8 @@ function surface.CreateMarkup()
 		cull_w = math.huge,
 		cull_h = math.huge,
 		blink_offset = 0,
+		remove_these = {},
+		started_tags = {},
 	})
 
 	self:Invalidate()

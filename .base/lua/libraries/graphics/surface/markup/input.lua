@@ -101,6 +101,8 @@ end
 function META:OnMouseInput(button, press)
 	if #self.chunks == 0 then return end
 	
+	if button == "mwheel_up" or button == "mwheel_down" then return end
+	
 	local x, y = self:GetMousePosition():Unpack()
 
 	local chunk = self:CaretFromPixels(x, y).char.chunk
@@ -160,7 +162,7 @@ function META:OnMouseInput(button, press)
 			end
 		else
 			if not self.Editable then
-				local str = self:Copy(true)
+				local str = self:Copy(self.CopyTags)
 				if str ~= "" then
 					system.SetClipboard(str)
 					self:Unselect()

@@ -87,9 +87,10 @@ META.tags.background =
 		local r,g,b,a = surface.SetColor(r,g,b,a)
 		
 		local w, h = self.tag_width, self.tag_height
-		
+		if h > self.h then y = y - h end
 		surface.SetWhiteTexture()
-		surface.DrawRect(x, y - h, w, h)
+		surface.DrawRect(x, y, w, h)
+		
 		surface.SetColor(r,g,b,a)
 	end,
 	
@@ -125,6 +126,19 @@ META.tags.color =
 
 	pre_draw = function(markup, self, x,y, r,g,b,a)
 		surface.SetColor(r, g, b, a)
+	end,
+}
+
+META.tags.alpha =
+{
+	arguments = {1},
+	
+	pre_draw = function(markup, self, x, y, alpha)
+		surface.SetAlphaMultiplier(alpha)
+	end,
+
+	post_draw = function(markup, self)
+		surface.SetAlphaMultiplier(1)
 	end,
 }
 

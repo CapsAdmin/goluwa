@@ -358,7 +358,8 @@ end
 function console.Clear()
 	table.clear(console.history)
 	curses.wclear(c.log_window)
-	console.ScrollLogHistory(0) 
+	console.ScrollLogHistory(0)
+	event.Call("ConsoleClear")
 end
 
 function console.Resize(w, h)
