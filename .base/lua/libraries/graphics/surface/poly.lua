@@ -150,6 +150,162 @@ function META:Draw(count)
 	self.mesh:Draw(count)
 end
 
+function META:SetNinePatch(i, x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale, skin_w, skin_h)		
+	u_offset = u_offset or 0
+	v_offset = v_offset or 0
+	uv_scale = uv_scale or 1
+	
+	if w/2 < corner_size then corner_size = w/2 end
+	if h/2 < corner_size then corner_size = h/2 end
+	
+	-- 1
+	self:SetUV(
+		u_offset, 
+		v_offset, 
+		corner_size/uv_scale, 
+		corner_size/uv_scale, 
+		skin_w, skin_h
+	)
+	self:SetRect(i + 0, 
+		x, 
+		y, 
+		corner_size, 
+		corner_size
+	)
+	
+	-- 2
+	self:SetUV(
+		u_offset + corner_size, 
+		v_offset, 
+		(patch_size_w - corner_size*2)/uv_scale, 
+		corner_size/uv_scale, 
+		skin_w, skin_h
+	)
+	self:SetRect(i + 1, 
+		x + corner_size, 
+		y, 
+		w - corner_size*2, 
+		corner_size
+	)
+	
+	-- 3
+	self:SetUV(
+		u_offset + patch_size_w - corner_size/uv_scale, 
+		v_offset, 
+		corner_size/uv_scale, 
+		corner_size/uv_scale, 
+		skin_w, skin_h
+	)
+	self:SetRect(i + 2, 
+		x + w - corner_size, 
+		y, 
+		corner_size, 
+		corner_size
+	)
+	
+	-- 4
+	self:SetUV(
+		u_offset, 
+		v_offset + corner_size, 
+		corner_size/uv_scale, 
+		(patch_size_h - corner_size*2)/uv_scale, 
+		skin_w, skin_h
+	)
+	self:SetRect(i + 3, 
+		x, 
+		y + corner_size, 
+		corner_size, 
+		h - corner_size*2
+	)
+	
+	-- 5
+	self:SetUV(
+		u_offset + corner_size, 
+		v_offset + corner_size, 
+		patch_size_w - corner_size*2, 
+		patch_size_h - corner_size*2, 
+		skin_w, skin_h
+	)
+	self:SetRect(i + 4, 
+		x + corner_size, 
+		y + corner_size, 
+		w - corner_size*2, 
+		h - corner_size*2
+	)
+	
+	-- 6
+	self:SetUV(
+		u_offset + patch_size_w - corner_size/uv_scale, 
+		v_offset + corner_size/uv_scale, 
+		corner_size/uv_scale, 
+		(patch_size_h - corner_size*2)/uv_scale, 
+		skin_w, skin_h
+	)
+	self:SetRect(i + 5, 
+		x + w - corner_size, 
+		y + corner_size, 
+		corner_size, 
+		h - corner_size*2
+	)
+	
+	-- 7
+	self:SetUV(
+		u_offset, 
+		v_offset + patch_size_h - corner_size/uv_scale,
+		corner_size/uv_scale, 
+		corner_size/uv_scale, 
+		skin_w, skin_h
+	)
+	self:SetRect(i + 6, 
+		x, 
+		y + h - corner_size, 
+		corner_size, 
+		corner_size
+	)
+	
+	-- 8
+	self:SetUV(
+		u_offset + corner_size/uv_scale, 
+		v_offset + patch_size_h - corner_size/uv_scale, 
+		(patch_size_w - corner_size*2)/uv_scale, 
+		corner_size/uv_scale, 
+		skin_w, skin_h
+	)
+	self:SetRect(i + 7, 
+		x + corner_size, 
+		y + h - corner_size, 
+		w - corner_size*2, 
+		corner_size
+	)
+	
+	-- 9
+	self:SetUV(
+		u_offset + patch_size_w - corner_size/uv_scale, 
+		v_offset + patch_size_h - corner_size/uv_scale, 
+		corner_size/uv_scale, 
+		corner_size/uv_scale, 
+		skin_w, skin_h
+	)
+	self:SetRect(i + 8, 
+		x + w - corner_size, 
+		y + h - corner_size, 
+		corner_size, 
+		corner_size
+	)	
+end
+
+function META:AddRect(...)
+	self.added = (self.added or 1)
+	self:SetRect(self.added, ...)
+	self.added = self.added + 1
+end
+
+function META:AddNinePatch(...)
+	self.added = (self.added or 1)
+	self:SetRect(self.added, ...)
+	self.added = self.added + 9
+end
+
 prototype.Register(META)
 
 function surface.CreatePoly(size)		
@@ -166,4 +322,8 @@ function surface.CreatePoly(size)
 	self.vertices = mesh.vertices
 
 	return self
+end
+
+if RELOAD then
+
 end
