@@ -70,6 +70,7 @@ function META:HasComponent(name)
 end
 
 function META:OnRemove()
+	if self.removed then return end
 	event.Call("EntityRemove", self)
 	
 	for name, component in pairs(self:GetComponents()) do
@@ -84,6 +85,7 @@ function META:OnRemove()
 	self:UnParent()
 	
 	event.Call("EntityRemoved")
+	self.removed = true
 end
 
 do -- serializing
