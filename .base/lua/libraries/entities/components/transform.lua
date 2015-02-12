@@ -87,23 +87,27 @@ function TMPL:SetSize(num)
 end
 
 function TMPL:InvalidateScaleMatrix()
-	self.rebuild_scale_matrix = true
-	for i,v in ipairs(self.Entity:GetChildrenList()) do
-		local v = v.Components[TMPL.Name]
-		if v then
-			v.rebuild_scale_matrix = true
+	if not self.rebuild_tr_matrix then
+		for i,v in ipairs(self.Entity:GetChildrenList()) do
+			local v = v.Components[TMPL.Name]
+			if v then
+				v.rebuild_scale_matrix = true
+			end
 		end
 	end
+	self.rebuild_scale_matrix = true
 end
 
 function TMPL:InvalidateTRMatrix()
-	self.rebuild_tr_matrix = true
-	for i,v in ipairs(self.Entity:GetChildrenList()) do
-		local v = v.Components[TMPL.Name]
-		if v then
-			v.rebuild_tr_matrix = true
+	if not self.rebuild_tr_matrix then
+		for i,v in ipairs(self.Entity:GetChildrenList()) do
+			local v = v.Components[TMPL.Name]
+			if v then
+				v.rebuild_tr_matrix = true
+			end
 		end
 	end
+	self.rebuild_tr_matrix = true
 end
 
 function TMPL:RebuildMatrix()	
