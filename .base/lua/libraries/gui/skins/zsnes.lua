@@ -33,7 +33,7 @@ function SKIN:Build()
 	local texture = Texture("textures/gui/skins/zsnes.png", {min_filter = "nearest", mag_filter = "nearest"})
 
 	texture.OnLoad = function()
-		skin.property_background = texture:GetPixelColor(28, 500)
+		skin.property_background = ColorBytes(texture:GetPixelColor(28, 500))
 		for k,v in pairs(gui.panels) do
 			if v:HasSkin(skin.name) then
 				v:SetSkin(skin)

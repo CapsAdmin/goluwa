@@ -12,13 +12,34 @@ gui.panels = gui.panels or {}
 function gui.CreatePanel(name, parent, store_in_parent)
 	parent = parent or gui.world
 	
+	local child_i
+	
+	if store_in_parent then
+		if type(store_in_parent) ~= "string" then
+			store_in_parent = name
+		end
+		
+		for i,v in ipairs(parent:GetChildren()) do
+			if v == parent[store_in_parent] then
+				child_i = i
+			end
+		end
+	end
+		
 	local self = prototype.CreateDerivedObject("panel2", name, nil, true)
 	
 	if not self then 
 		return NULL 
 	end
 	
-	self:SetParent(parent)
+	if parent then
+		parent:AddChild(self)
+		
+		if child_i then
+			table.remove(parent:GetChildren())
+			table.insert(parent:GetChildren(), child_i, self)
+		end
+	end
 	
 	self:Initialize()	
 	
@@ -31,13 +52,8 @@ function gui.CreatePanel(name, parent, store_in_parent)
 	gui.panels[self] = self
 	
 	if store_in_parent then
-		if type(store_in_parent) == "string" then
-			prototype.SafeRemove(parent[store_in_parent])
-			parent[store_in_parent] = self
-		else
-			prototype.SafeRemove(parent[name])
-			parent[name] = self
-		end
+		prototype.SafeRemove(parent[store_in_parent])
+		parent[store_in_parent] = self
 	end
 	
 	return self

@@ -119,7 +119,6 @@ function menu.CreateTopBar()
 		
 		button.OnPress = function()
 			local menu = gui.CreateMenu(options, bar)
-			menu:SetSkin(skin)
 			menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*S), options)
 			menu:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)
 			menu:SetVisible(true)
@@ -147,8 +146,6 @@ function menu.CreateTopBar()
 			local current_dir
 			
 			local frame = gui.CreatePanel("frame")
-			frame:SetSkin(skin)
-
 			frame:SetPosition(Vec2(100, 100))
 			frame:SetSize(Vec2(500, 400))
 			frame:SetTitle("load lua")

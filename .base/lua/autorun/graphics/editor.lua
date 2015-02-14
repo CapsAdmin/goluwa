@@ -285,6 +285,7 @@ function editor.Open()
 	local frame = gui.CreatePanel("frame")
 	frame:SetWidth(300)
 	frame:SetTitle(L"editor")
+	frame:SetIcon(frame:GetSkin().icons.application_edit)
 	editor.frame = frame
 	
 	local div = gui.CreatePanel("divider", frame)
@@ -416,7 +417,7 @@ function editor.Open()
 				
 		gui.RemovePanel(tree)
 		
-		tree = gui.CreatePanel("tree")
+		tree = frame:CreatePanel("tree")
 		editor.top_scroll:SetPanel(tree)
 		
 		local ents = {}
@@ -434,7 +435,7 @@ function editor.Open()
 		tree.OnNodeSelect = function(_, node)
 			gui.RemovePanel(editor.properties)
 			
-			local properties = gui.CreatePanel("properties")
+			local properties = frame:CreatePanel("properties")
 			
 			local found_anything = false
 			
