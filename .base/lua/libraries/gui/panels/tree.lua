@@ -23,7 +23,7 @@ do -- tree node
 		exp:SetStyle("-")
 		exp:SetStyleTranslation("button_active", "+")
 		exp:SetStyleTranslation("button_inactive", "-")
-		exp:SetupLayout("left")
+		exp:SetupLayout("center_left")
 		exp.OnStateChanged = function(_, b) 
 			self:OnExpand(b) 
 		end
@@ -55,12 +55,12 @@ do -- tree node
 		
 		self.image:SetPadding(Rect()+2*S)
 		self.image:SetSize(Vec2(math.min(S*8, self.image.Texture.w), math.min(S*8, self.image.Texture.h)))
-		self.image:SetupLayout("left")
+		self.image:SetupLayout("center_left")
 		
 		self.button:SetPadding(Rect()+2*S)
 		self.button:SetMargin(Rect()+2*S)
 		self.button:SizeToText()
-		self.button:SetupLayout("left")
+		self.button:SetupLayout("center_left")
 		
 		self:SetMargin(Rect(0,0,self.offset*S,0))
 	end
@@ -211,4 +211,19 @@ do
 	function PANEL:OnNodeDrop(node, dropped_node, drop_pos) end
 	
 	gui.RegisterPanel(PANEL)		
+end
+
+if RELOAD then
+	local frame = gui.CreatePanel("frame", nil, "tree_test")
+	frame:SetSize(Vec2(200, 400))
+	
+	local tree = frame:CreatePanel("tree")
+	tree:SetupLayout("fill")
+	local node = tree:AddNode("test") 
+	node:AddNode("yea")
+	local node = node:AddNode("wo")
+		node:AddNode("!")
+		node:AddNode("!")
+		node:AddNode("!") 
+		node:AddNode("!")
 end

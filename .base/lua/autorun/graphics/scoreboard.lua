@@ -13,7 +13,7 @@ end)
 
 if not RELOAD then
 	score:SetVisible(false)
-end
+end  
 
 score:SetSize(window.GetSize()/1.25)
 --score:SetNoDraw(true)
@@ -25,6 +25,10 @@ surface.CreateFont("scoreboard_title", {
 	size = 17,
 	shadow = 1,
 })
+
+--[[
+	 
+]]
 
 local title = score:CreatePanel("text_button")
 title:SetMode("toggle")
@@ -142,7 +146,7 @@ local function add_player(avatar_path, name_str)
 	tags:SetHeight(30)
 	tags:SetWidth(200)
 	tags:SetupLayout("layout_children", "size_to_width", "center_x_simple")
-	tags:SetNoDraw(true)
+	--tags:SetNoDraw(true)
 
 	tags.OnMouseEnter = function()
 		for i, child in ipairs(tags:GetChildren()) do

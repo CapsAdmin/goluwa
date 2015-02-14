@@ -4,6 +4,7 @@ local PANEL = {}
 PANEL.ClassName = "frame"
 
 prototype.GetSet(PANEL, "Title", "no title")
+prototype.GetSet(PANEL, "Icon", "textures/silkicons/heart.png")
 
 function PANEL:Initialize()	
 	self:SetDraggable(true)
@@ -24,7 +25,7 @@ function PANEL:Initialize()
 	close:SetStyle("close_inactive")
 	close:SetStyleTranslation("button_active", "close_active")
 	close:SetStyleTranslation("button_inactive", "close_inactive")
-	close:SetupLayout("right")
+	close:SetupLayout("right", "center_y_simple")
 	close.OnRelease = function() 
 		self:Remove()
 	end
@@ -34,7 +35,7 @@ function PANEL:Initialize()
 	max:SetStyle("maximize2_inactive")
 	max:SetStyleTranslation("button_active", "maximize2_active")
 	max:SetStyleTranslation("button_inactive", "maximize2_inactive")
-	max:SetupLayout("right")
+	max:SetupLayout("right", "center_y_simple")
 	max.OnRelease = function() 
 		self:Maximize()
 	end
@@ -44,7 +45,7 @@ function PANEL:Initialize()
 	min:SetStyle("minimize_inactive")
 	min:SetStyleTranslation("button_active", "minimize_active")
 	min:SetStyleTranslation("button_inactive", "minimize_inactive")
-	min:SetupLayout("right")
+	min:SetupLayout("right", "center_y_simple")
 	min.OnRelease = function()
 		self:Minimize()
 	end
@@ -52,6 +53,7 @@ function PANEL:Initialize()
 
 	self:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
 			
+	self:SetIcon(self:GetIcon())
 	self:SetTitle(self:GetTitle())
 	
 	self:CallOnRemove(function()
@@ -79,14 +81,14 @@ function PANEL:Maximize(b)
 	
 	if not self.maximized or b then
 		self.maximized = {size = self:GetSize():Copy(), pos = self:GetPosition():Copy()}
-		self:SetupLayout("fill_x", "fill_y")
 		max:SetStyle("maximize_inactive")
 		max:SetStyleTranslation("button_active", "maximize_active")
 		max:SetStyleTranslation("button_inactive", "maximize_inactive")
+		self:FillX()
+		self:FillY()
 	else
 		self:SetSize(self.maximized.size)
 		self:SetPosition(self.maximized.pos)
-		self:SetupLayout()
 		self.maximized = nil
 		max:SetStyle("maximize2_inactive")
 		max:SetStyleTranslation("button_active", "maximize2_active")
@@ -110,6 +112,23 @@ function PANEL:IsMinimized()
 	return self.Visible
 end
 
+function PANEL:SetIcon(str)
+	self.Icon = str
+	
+	local icon = self.bar:CreatePanel("base") 
+	icon:SetTexture(Texture(str))
+	icon:SetSize(icon.Texture:GetSize())
+	icon:SetupLayout("center_x_simple", "left", "center_y_simple")
+	icon.OnRightClick = function()
+		local skins = gui.GetRegisteredSkins()
+		for i, name in ipairs(skins) do
+			skins[i] = {name, function() self:SetSkin(name) end}
+		end
+		gui.CreateMenu({{"skins", skins}}, self)
+	end
+	self.icon = icon
+end
+
 function PANEL:SetTitle(str)
 	self.Title = str
 	
@@ -117,7 +136,7 @@ function PANEL:SetTitle(str)
 	local title = self.bar:CreatePanel("text")
 	title:SetText(str)
 	title:SetNoDraw(true)
-	title:SetupLayout("left")
+	title:SetupLayout("center_x", "center_y_simple")
 	self.title = title
 	
 	if gui.task_bar:IsValid() then
@@ -138,6 +157,6 @@ end
 gui.RegisterPanel(PANEL)
 
 if RELOAD then
-	local panel = gui.CreatePanel(PANEL.ClassName)
+	local panel = gui.CreatePanel(PANEL.ClassName, nil, "test")
 	panel:SetSize(Vec2(300, 300))
 end

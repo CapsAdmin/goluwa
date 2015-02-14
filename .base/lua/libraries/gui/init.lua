@@ -303,10 +303,17 @@ do -- events
 end
 
 do -- skin
-	function gui.SetSkin(tbl, reload_panels)
-		gui.skin = tbl
-		gui.scale = tbl.scale or gui.scale
-		if reload_panels then include("libraries/gui/panels/*", gui) end
+	function gui.SetSkin(skin, reload_panels)		
+		if type(skin) == "string" then
+			skin = gui.GetRegisteredSkin(skin).skin
+		end
+		
+		gui.skin = skin
+		gui.scale = skin.scale or gui.scale
+		
+		if reload_panels then 
+			include("libraries/gui/panels/*", gui) 
+		end
 		
 		for panel in pairs(gui.panels) do
 			panel:ReloadStyle()
@@ -316,11 +323,44 @@ do -- skin
 	function gui.GetSkin()
 		return gui.skin
 	end
+	
+	gui.registered_skins = {}
+	
+	function gui.GetRegisteredSkin(name)
+		if gui.registered_skins[name] then 
+			return gui.registered_skins[name] 
+		end
+	end
+	
+	function gui.GetRegisteredSkins()
+		local out = {}
+		for k, v in pairs(gui.registered_skins) do
+			table.insert(out, k)
+		end
+		return out
+	end
 
 	console.AddCommand("gui_skin", function(_, str, sub_skin)
 		str = str or "gwen"
-		gui.SetSkin(include("libraries/gui/skins/" .. str .. ".lua", gui, sub_skin))
+		gui.SetSkin(str, sub_skin)
 	end)
+	
+	function gui.RegisterSkin(tbl)
+		gui.registered_skins[tbl.Name] = tbl
+		
+		local skin = tbl:Build()
+		skin.name = tbl.Name
+		
+		tbl.skin = skin
+		
+		if RELOAD then
+			for k,v in pairs(gui.panels) do
+				if v:HasSkin(skin.Name) then
+					v:SetSkin(skin)
+				end
+			end
+		end
+	end
 end
 
 do -- gui scaling
@@ -381,7 +421,6 @@ function gui.Initialize()
 		
 		local bar = gui.CreatePanel("base") 
 		bar:SetStyle("gradient")
-		bar:SetupLayout("bottom", "fill_x")
 		bar:SetVisible(false)
 				
 		bar.buttons = {}
@@ -391,13 +430,14 @@ function gui.Initialize()
 			
 			local button = self.buttons[key] or gui.CreatePanel("text_button", self) 
 			button:SetText(text)
-			button.label:SetupLayout("left")
 			button.OnPress = callback
 			button.OnRightClick = callback2
 
-			button:SetupLayout("left")
+			button:SetupLayout("center_left")
 			
 			self.buttons[key] = button
+						
+			self:Layout()
 		end 
 		
 		function bar:RemoveButton(key)
@@ -412,13 +452,17 @@ function gui.Initialize()
 		end
 		
 		function bar:OnLayout(S)
-			self:SetLayoutSize(Vec2()+S*14)
+			self:SetHeight(S*14)
 			self:SetMargin(Rect()+S*2)
 			
 			for i,v in ipairs(self:GetChildren()) do
 				v:SetMargin(Rect()+2.5*S)
 				v:SizeToText()
 			end
+			
+			
+			self:MoveDown()
+			self:FillX()
 		end
 		
 		bar:Layout(true)
@@ -427,10 +471,13 @@ function gui.Initialize()
 	end
 end
 
+include("skins/*", gui)
+gui.SetSkin("gwen_dark")
+
 include("base_panel.lua", gui)
-gui.SetSkin(include("skins/gwen.lua", gui))
 include("panels/*", gui)
 include("helpers.lua", gui)
+
 
 gui.Initialize()
 

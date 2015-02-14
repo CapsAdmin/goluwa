@@ -160,14 +160,14 @@ function chat.GetPanel()
 	
 	local tab = frame:CreatePanel("tab")
 	tab:SetSize(Vec2())
-	tab:SetupLayout("fill_x", "fill_y")
+	tab:SetupLayout("bottom", "fill")
 	frame.tab = tab
 	
 	local page = tab:AddTab("chat")
 	
 	local scroll = page:CreatePanel("scroll")
 	scroll:SetXScrollBar(false)
-	scroll:SetupLayout("fill_x", "fill_y")
+	scroll:SetupLayout("fill")
 	page.scroll = scroll
 
 	local text = scroll:SetPanel(gui.CreatePanel("text"))
@@ -318,7 +318,7 @@ function chat.GetPanel()
 	
 	local scroll = page:CreatePanel("scroll")
 	scroll:SetXScrollBar(false)
-	scroll:SetupLayout("fill_x", "fill_y")
+	scroll:SetupLayout("fill")
 	page.scroll = scroll
 
 	local text = scroll:SetPanel(gui.CreatePanel("text"))
@@ -398,9 +398,11 @@ function chat.Open(tab)
 	local page = panel.tab:SelectTab(tab)
 	
 	if tab == "console" then
-		panel:SetSize(Vec2(window.GetSize().w, 300))
 		panel:SetPosition(Vec2(0, 0))
-		panel:ProcessLayoutCommands({"top"})
+		panel:SetHeight(300)
+		panel:MoveLeft()
+		panel:MoveUp()
+		panel:FillX()
 	elseif tab == "chat" then
 		panel:SetSize(Vec2(400, 250))
 		panel:SetPosition(Vec2(50, window.GetSize().h - panel:GetHeight() - 50))

@@ -384,7 +384,7 @@ do -- timers
 					
 					local fps = ((cur + data.frequency) - data.realtime)
 					local extra_iterations = math.ceil(fps/data.frequency) - 2
-					
+					if extra_iterations == math.huge then extra_iterations = 1 end
 					local errored = false
 					for i = 1, data.iterations + extra_iterations do
 						local ok, res = xpcall(data.callback, system.OnError)
