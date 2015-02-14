@@ -115,7 +115,7 @@ end
 function PANEL:SetIcon(str)
 	self.Icon = str
 	
-	local icon = self.bar:CreatePanel("base") 
+	local icon = self.bar:CreatePanel("base", "icon") 
 	icon:SetTexture(Texture(str))
 	icon:SetSize(icon.Texture:GetSize())
 	icon:SetupLayout("center_x_simple", "left", "center_y_simple")
@@ -132,8 +132,7 @@ end
 function PANEL:SetTitle(str)
 	self.Title = str
 	
-	gui.RemovePanel(self.title)
-	local title = self.bar:CreatePanel("text")
+	local title = self.bar:CreatePanel("text", "title")
 	title:SetText(str)
 	title:SetNoDraw(true)
 	title:SetupLayout("center_x", "center_y_simple")
