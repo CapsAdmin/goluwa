@@ -208,7 +208,7 @@ do -- drawing
 				render.Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
 			end
 			
-			if not self.DrawScaleOffset:IsZero() then
+			if self.DrawScaleOffset.x ~= 1 or self.DrawScaleOffset.y ~= 1 then
 				render.Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y, 1)
 			end
 			
@@ -225,13 +225,13 @@ do -- drawing
 		end
 
 		self:CalcAnimations()
-		
+		self:CalcLayout()
+
 		if self.CachedRendering and not gui.debug then
 			self:DrawCache()
 			no_draw = true
 		end
 		
-		self:CheckLayout()
 
 		self:OnUpdate()
 			
@@ -1395,7 +1395,7 @@ do -- layout
 	function PANEL:RayCast(panel, x,y,w,h, collide)
 		local dir_x = x - panel.Position.x
 		local dir_y = y - panel.Position.y
-			
+		
 		local found
 		
 		if collide then
@@ -1426,7 +1426,7 @@ do -- layout
 						or 
 						child_right > panel_left and
 						child_left < panel_left
-					then					
+					then				
 						if dir_y > 0 and child_top > panel_top then
 							found[i] = {child = child, point = child_top}
 							i = i + 1
@@ -1472,7 +1472,7 @@ do -- layout
 			
 			table.sort(found, sort)		
 		end
-				
+
 		local pos
 			
 		if found and found[1] then		
@@ -1508,262 +1508,390 @@ do -- layout
 				
 		return Vec2(x, y)
 	end
+	
+	function PANEL:ExecuteLayoutCommands()		
+	--	if self:HasParent() then self = self.Parent end
 
-	function PANEL:ProcessLayoutCommands(commands)
-		commands = commands or self.layout_commands
-		
-		local parent = self:GetParent()
-		local collide = true
-		local args
-		
-		for i, cmd in ipairs(commands) do
-			if type(cmd) == "table" then
-				args = cmd
-				cmd = cmd[1]
-			end
-			
-			if cmd == "collide" then
-				collide = true
-			elseif cmd == "no_collide" then
-				collide = false
-			elseif cmd == "size_to_width" then
-				local ox,oy,ow,oh = self:GetRectFast()
-				self:SetHeight(parent:GetHeight())									
-				self:SetWidth(1)
-				self:SetX(parent:GetWidth())
-				self:SetY(0)
+		if not self.layout_us then return end
 				
-				local pos = self:RayCast(self, 1, self.Position.y, self.Size.w, self.Size.h, collide)
-				
-				self:SetRectFast(ox,oy,ow,oh)
-				
-				self:SetWidth(pos.x)
-			elseif cmd == "size_to_height" then
-				local ox,oy,ow,oh = self:GetRectFast()
-				
-				self:SetWidth(parent:GetWidth())
-				self:SetHeight(1)
-				self:SetY(parent:GetHeight())
-				self:SetX(1)
-				
-				local pos = self:RayCast(self, self.Position.x, 1, self.Size.w, self.Size.h, collide)
-				
-				self:SetRectFast(ox,oy,ow,oh)
-								
-				--self:SetHeight(left.y)
-				self:SetHeight(pos.y)
-			elseif cmd == "fill_x" then
-				self:SetWidth(0)
-				
-				local left = parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, collide)
-				local right = parent:RayCast(self, parent:GetWidth(), self.Position.y, self.Size.w, self.Size.h, collide)
-				right.x = right.x - left.x
-				
-				local x = left.x
-				local w = right.x
-				
-				local min_width = self.MinimumSize.w
-				
-				if args and args[2] then
-					x = math.max(math.lerp(args[2], left.x, right.x + self:GetWidth()), min_width/2) - min_width/2 + left.x
-					w = w-x*2 + left.x*2
-					if w < min_width then
-						x = -left.x
-						w = right.x
-					end
+		for _, child in ipairs(self:GetChildren()) do
+			if child.layout_commands then
+				if child.LayoutSize then 
+					child:SetSize(child.LayoutSize:Copy())
 				end
-				
-				self:SetX(math.max(x, left.x)) -- HACK???
-				self:SetWidth(math.max(w, min_width))
-			elseif cmd == "fill_y" then
-				self:SetHeight(0)
-				
-				local top = parent:RayCast(self, self.Position.x, 0, self.Size.w, self.Size.h, collide)
-				self:SetPosition(top)
-				
-				local bottom = parent:RayCast(self, self.Position.x, parent:GetHeight(), self.Size.w, self.Size.h, collide)
-				bottom.h = bottom.h - top.y
-				if bottom.h <= self.MinimumSize.h then
-					--parent:StopDragging()
-				end
-				self:SetHeight(bottom.h)
-			elseif cmd == "center" then
-				self:SetPosition(parent:GetPosition() - (self:GetSize() / 2))
-			elseif cmd == "center_x" then				
-				local left = parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, collide)
-				local right = parent:RayCast(self, parent.Size.w, left.y, self.Size.w, self.Size.h, collide)
-
-				self:SetX(math.lerp(0.5, left.x, right.x))
-			elseif cmd == "center_x_simple" then				
-				self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
-			elseif cmd == "center_y_simple" then				
-				self:SetY(parent:GetHeight() / 2 - self:GetHeight() / 2)
-			elseif cmd == "center_x_frame" then
-				local left = parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, collide)
-				local right = parent:RayCast(self, parent:GetWidth(), left.y, self.Size.w, self.Size.h, collide)
-				
-				if 
-					self:GetX()+self:GetWidth()+self.Padding.right < right.x+self:GetWidth()-self.Padding.right and
-					self:GetX()-self.Padding.x > left.x
-				then
-					self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
-					break
-				end
-			elseif cmd == "center_y" then
-				local top = parent:RayCast(self, self.Position.x, 0, self.Size.w, self.Size.h, collide)
-				local bottom = parent:RayCast(self, top.x, parent:GetHeight(), self.Size.w, self.Size.h, collide)
-				self:SetY(top.y + (bottom.y/2 - self:GetHeight()/2) - self.Padding.top + self.Padding.bottom)
-			elseif cmd == "top" then
-				self:SetY(math.max(self:GetY(), 1))
-				self:SetY(parent:RayCast(self, self.Position.x, 0, self.Size.w, self.Size.h, collide).y)
-			elseif cmd == "left" then
-				self:SetX(math.max(self:GetX(), 1))
-				self:SetX(parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, collide).x)
-			elseif cmd == "bottom" then
-				self:SetY(parent:RayCast(self, self.Position.x, parent:GetHeight() - self:GetHeight(), self.Size.w, self.Size.h, collide).y)
-			elseif cmd == "right" then
-				self:SetX(math.max(self:GetX(), 1))
-				self:SetX(parent:RayCast(self, parent:GetWidth() - self:GetWidth(), self.Position.y, self.Size.w, self.Size.h, collide).x)
-			elseif typex(cmd) == "vec2" then
-				self:SetSize(cmd:Copy())
+				child.laid_out = false		
 			end
 		end
-		
-		self:MarkCacheDirty()
-	end
-	
-	local suppress_layout
-			
-	function PANEL:SuppressLayout(b)
-		suppress_layout = b
+		for _, child in ipairs(self:GetChildren()) do
+			if child.layout_commands then
+				for i, cmd in ipairs(child.layout_commands) do
+					if cmd == "collide" then
+						child:Collide(true)
+					elseif cmd == "no_collide" then
+						child:Collide(false)
+					elseif cmd == "size_to_width" then
+						child:SizeToWidth()
+					elseif cmd == "size_to_height" then
+						child:SizeToHeight()
+					elseif cmd == "fill" then
+						child:MoveUp()
+						child:MoveLeft()
+						child:FillX()
+						child:FillY()
+					elseif cmd == "fill_x" then	
+						child:CenterXSimple()
+						child:FillX()
+					elseif cmd == "fill_y" then
+						child:CenterYSimple()
+						child:FillY()
+					elseif cmd == "center" then
+						child:Center()
+					elseif cmd == "center_left" then
+						child:MoveLeft()
+						child:CenterYSimple()
+					elseif cmd == "center_simple" then
+						child:CenterSimple()
+					elseif cmd == "center_x" then				
+						child:CenterX()
+					elseif cmd == "center_x_simple" then				
+						child:CenterXSimple()
+					elseif cmd == "center_y_simple" then				
+						child:CenterYSimple()
+					elseif cmd == "center_x_frame" then
+						if child:CenterXFrame() then break end
+					elseif cmd == "center_y" then
+						child:CenterY()
+					elseif cmd == "top" then
+						child:MoveUp()
+					elseif cmd == "left" then
+						child:MoveLeft()
+					elseif cmd == "bottom" then
+						child:MoveDown()
+					elseif cmd == "right" then
+						child:MoveRight()
+					elseif typex(cmd) == "vec2" then
+						child:SetSize(cmd:Copy())
+					end
+				end
+			end
+		end
 	end
 	
 	function PANEL:Layout(now)
-		if suppress_layout and not now then return end
-		if now then			
-			do	
-				self:SuppressLayout(true)
-				local panel = self
-				
-				if panel:HasParent() then panel = panel.Parent end
-				
-				for _, child in ipairs(panel:GetChildren()) do
-					if child.layout_commands then
-						if child.LayoutSize then 
-							child:SetSize(child.LayoutSize:Copy())
-						end
-						child:Center()
-						child.laid_out = false		
-					end
-				end
-				
-				for _, child in ipairs(panel:GetChildren()) do
-					if child.layout_commands then
-						child:ProcessLayoutCommands(child.layout_commands)
-						child.laid_out = true
-					end
-				end
-				
-				self:SuppressLayout(false)
-			end
-			
-			if self.LayoutParentOnLayout and self:HasParent() then
-				self.Parent.layout_me = true
-			end
-			
+		if now then		
 			if not self.in_layout then 
 				self.in_layout = true
-				self:OnLayout(self:GetLayoutScale(), self:GetSkin())
+				
+					self:OnLayout(self:GetLayoutScale(), self:GetSkin())
+					self:ExecuteLayoutCommands()					
+					self:StackChildren()
+					
+					for _, v in ipairs(self:GetChildren()) do
+						v.layout_me = true
+					end
+					
+					self.updated_layout = true
+					self.layout_count = (self.layout_count or 0) + 1
+			
+					self.last_children_size = nil
+					self.layout_me = false				
+				
+					self:MarkCacheDirty()
+
 				self.in_layout = false
 			end
-			
-			self:StackChildren()
-			
-			self:MarkCacheDirty()
-
-			for _, v in ipairs(self:GetChildren()) do
-				v.layout_me = true
-			end
-			
-			self.updated_layout = true
-			self.layout_count = (self.layout_count or 0) + 1
-	
-			self.last_children_size = nil
-			
-			self.layout_me = false
 		else
 			self.layout_me = true
 		end
 	end
 	
-	function PANEL:CheckLayout()
+	function PANEL:CalcLayout()
 		if self.layout_me or gui.layout_stress then 
 			self:Layout(true)
-			self.laid_out_deferred = false
-		end
-		
-		if self.layout_commands_deferred and self:HasParent() and not self.laid_out_deferred then
-			local laid_out = true
-
-			for i,v in ipairs(self:GetChildrenList()) do
-				if (v.layout_commands and not v.laid_out) and (v.layout_commands_deferred and not v.laid_out_deferred) and v.Visible then
-					laid_out = false
-					break
-				end
-			end
-			
-			if laid_out then
-				suppress_layout = true
-				local panel = self
-				
-				if panel:HasParent() then panel = panel.Parent end
-				
-				for _, child in ipairs(self.Parent:GetChildren()) do
-					if child.layout_commands_deferred then
-						if child.LayoutSize then 
-							child:SetSize(child.LayoutSize:Copy())
-						end
-						child:Center()
-						child.laid_out = false		
-					end
-				end
-				
-				for _, child in ipairs(self.Parent:GetChildren()) do
-					if child.layout_commands_deferred then
-						child:ProcessLayoutCommands(child.layout_commands_deferred)
-						child.laid_out = true
-					end
-				end
-				
-				suppress_layout = false
-				self.laid_out_deferred = true
-			end
 		end
 	end
 
 	function PANEL:SetupLayout(...)
-		self.layout_commands = {...}
-		self.LayoutSize = self:GetSize():Copy()
-				
-		local where = table.hasvalue(self.layout_commands, "layout_children")
+		self:Layout(true)
 		
-		if where then
-			self.layout_commands_deferred = {}
-			
-			table.clear(self.layout_commands)
-			
-			for i = 1, select("#", ...) do
-				local val = select(i, ...)
-				
-				if i > where then
-					table.insert(self.layout_commands_deferred, val)
-				else
-					table.insert(self.layout_commands, val)
-				end
-			end
+		if ... then
+			self.layout_commands = {...}
+			self.LayoutSize = self:GetSize():Copy()		
+			self.Parent.layout_us = true
+		else
+			self.layout_commands = nil
+			self.Parent.layout_us = nil
+			self.LayoutSize = nil
 		end
 		
 		self:Layout()
+	end
+	
+	do -- layout commands	
+	
+		function PANEL:ResetLayout()
+			self.laid_out = false
+			
+			for _, child in ipairs(self:GetChildren()) do
+				if child.LayoutSize then 
+					child:SetSize(child.LayoutSize:Copy())
+				end
+				child.laid_out = false
+			end
+		end
+		
+		PANEL.layout_collide = true
+		
+		function PANEL:Collide()
+			self.layout_collide = true
+		end
+
+		function PANEL:NoCollide()
+			self.layout_collide = false
+		end
+
+		function PANEL:SizeToWidth()
+			local parent = self:GetParent()
+
+			local ox,oy,ow,oh = self:GetRectFast()
+			self:SetHeight(parent:GetHeight())
+			self:SetWidth(1)
+			self:SetX(parent:GetWidth())
+			self:SetY(0)
+
+			local pos = self:RayCast(self, 1, self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
+
+			self:SetRectFast(ox,oy,ow,oh)
+
+			self:SetWidth(pos.x)
+			
+			self.laid_out = true
+		end
+
+		function PANEL:SizeToHeight()
+			local parent = self:GetParent()
+
+			local ox,oy,ow,oh = self:GetRectFast()
+
+			--self:SetWidth(parent:GetWidth())
+			self:SetHeight(1)
+			self:SetY(parent:GetHeight())
+			self:SetX(0)
+
+			local pos = self:RayCast(self, self.Position.x, 1, self.Size.w, self.Size.h, self.layout_collide)
+
+			self:SetRectFast(ox,oy,ow,oh)
+
+			--self:SetHeight(left.y)
+			self:SetHeight(pos.y + self.Margin.y)
+			
+			self.laid_out = true
+		end
+
+		function PANEL:FillX(percent)
+			local parent = self:GetParent()
+
+			self:SetWidth(1)
+
+			local left = parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
+			local right = parent:RayCast(self, parent:GetWidth(), self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
+			right.x = right.x - left.x
+
+			local x = left.x
+			local w = right.x
+
+			local min_width = self.MinimumSize.w
+
+			if percent then
+				x = math.max(math.lerp(percent*0.5, left.x, right.x + self:GetWidth()), min_width) - min_width + left.x
+				w = w-x*2 + left.x*2
+				if w < min_width then
+					x = -left.x
+					w = right.x
+				end
+			end
+
+			self:SetX(math.max(x, left.x)) -- HACK???
+			self:SetWidth(math.max(w, min_width))
+			
+			self.laid_out = true
+		end
+
+		function PANEL:FillY(percent)
+			local parent = self:GetParent()
+
+			self:SetHeight(1)
+
+			local top = parent:RayCast(self, self.Position.x, 0, self.Size.w, self.Size.h, self.layout_collide)
+			local bottom = parent:RayCast(self, self.Position.x, parent:GetHeight(), self.Size.w, self.Size.h, self.layout_collide)
+			bottom.y = bottom.y - top.y
+
+			local y = top.y
+			local h = bottom.y
+
+			local min_height = self.MinimumSize.h
+
+			if percent then
+				y = math.max(math.lerp(percent, top.y, bottom.y + self:GetHeight()), min_height/2) - min_height/2 + top.y
+				h = h-y*2 + top.y*2
+				if h < min_height then
+					y = -top.y
+					h = bottom.y
+				end
+			end
+			
+			self:SetY(math.max(y, top.y)) -- HACK???
+			self:SetHeight(math.max(h, min_height))
+			
+			self.laid_out = true
+		end
+
+		function PANEL:Center()
+			self:CenterX()
+			self:CenterY()
+		end
+
+		function PANEL:CenterX()
+			local parent = self:GetParent()
+
+			local left = parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
+			local right = parent:RayCast(self, parent.Size.w, left.y, self.Size.w, self.Size.h, self.layout_collide)
+
+			self:SetX(math.lerp(0.5, left.x, right.x))
+			
+			self.laid_out = true
+		end
+		
+		function PANEL:CenterY()
+			local parent = self:GetParent()
+
+			local top = parent:RayCast(self, self.Position.x, 0, self.Size.w, self.Size.h, self.layout_collide)
+			local bottom = parent:RayCast(self, top.x, parent:GetHeight(), self.Size.w, self.Size.h, self.layout_collide)
+			self:SetY(top.y + (bottom.y/2 - self:GetHeight()/2) - self.Padding.top + self.Padding.bottom)
+			
+			self.laid_out = true
+		end
+
+
+		function PANEL:CenterXSimple()
+			local parent = self:GetParent()
+
+			self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
+			
+			self.laid_out = true
+		end
+
+		function PANEL:CenterYSimple()
+			local parent = self:GetParent()
+
+			self:SetY(parent:GetHeight() / 2 - self:GetHeight() / 2)
+			
+			self.laid_out = true
+		end
+
+		function PANEL:CenterSimple()
+			local parent = self:GetParent()
+
+			self:SetPosition(parent:GetPosition() - (self:GetSize() / 2))
+			
+			self.laid_out = true
+		end
+
+		function PANEL:CenterXFrame()
+			local parent = self:GetParent()
+
+			local left = parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
+			local right = parent:RayCast(self, parent:GetWidth(), left.y, self.Size.w, self.Size.h, self.layout_collide)
+
+			if
+				self:GetX()+self:GetWidth()+self.Padding.right < right.x+self:GetWidth()-self.Padding.right and
+				self:GetX()-self.Padding.x > left.x
+			then
+				self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
+			end
+			
+			self.laid_out = true
+		end
+
+		function PANEL:MoveUp()
+			local parent = self:GetParent()
+			
+			if not self.laid_out then
+				self:SetY(parent:GetHeight() == math.huge and 999999999999 or parent:GetHeight()) -- :(
+			end
+			
+			self:SetY(math.max(self:GetY(), 1))
+			self:SetY(parent:RayCast(self, self.Position.x, 0, self.Size.w, self.Size.h, self.layout_collide).y)
+			
+			self.laid_out = true
+		end
+
+		function PANEL:MoveLeft()
+			local parent = self:GetParent()
+			
+			if not self.laid_out then
+				self:SetX(parent:GetWidth() == math.huge and 999999999999 or parent:GetWidth()) -- :(
+			end
+			
+			self:SetX(math.max(self:GetX(), 1))
+			self:SetX(parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, self.layout_collide).x)
+			
+			self.laid_out = true
+		end
+
+		function PANEL:MoveDown()
+			local parent = self:GetParent()
+
+			if not self.laid_out then
+				self:SetY(0 - self:GetHeight())
+			end
+			
+			self:SetY(math.max(self:GetY(), 1))
+			self:SetY(parent:RayCast(self, self.Position.x, parent:GetHeight() - self:GetHeight(), self.Size.w, self.Size.h, self.layout_collide).y)
+			
+			self.laid_out = true
+		end
+
+		function PANEL:MoveRight()
+			local parent = self:GetParent()
+
+			if not self.laid_out then
+				self:SetX(0 - self:GetWidth())
+			end
+			
+			self:SetX(math.max(self:GetX(), 1))
+			self:SetX(parent:RayCast(self, parent:GetWidth() - self:GetWidth(), self.Position.y, self.Size.w, self.Size.h, self.layout_collide).x)
+			
+			self.laid_out = true
+		end
+		
+		function PANEL:MoveRightOf(panel)
+			self:SetY(panel:GetY())
+			self:SetX(panel:GetX() + panel:GetWidth())
+			
+			self.laid_out = true
+		end
+		
+		function PANEL:MoveDownOf(panel)
+			self:SetX(panel:GetX())
+			self:SetY(panel:GetY() + panel:GetHeight())
+			
+			self.laid_out = true
+		end
+		
+		function PANEL:MoveLeftOf(panel)
+			self:SetY(panel:GetY())
+			self:SetX(panel:GetX() - self:GetWidth())
+			
+			self.laid_out = true
+		end
+		
+		function PANEL:MoveUpOf(panel)
+			self:SetX(panel:GetX())
+			self:SetY(panel:GetY() - self:GetHeight())
+			
+			self.laid_out = true
+		end
 	end
 end
 
@@ -1873,7 +2001,12 @@ do -- skin
 	end
 	
 	function PANEL:SetSkin(skin)
+		if type(skin) == "string" then
+			skin = gui.GetRegisteredSkin(skin).skin
+		end
+		
 		self.Skin = skin
+		
 		if skin then
 			self.LayoutScale = skin.scale
 			self:ReloadStyle()

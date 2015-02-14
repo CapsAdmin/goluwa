@@ -16,8 +16,8 @@ function PANEL:Initialize()
 	bar.OnStateChanged = function(_, pressed)
 		if pressed then
 			self.last_height = self.last_height or self:GetHeight()
-			self:SetHeight((10*S) - 1)
-			self.content:SetVisible(false)
+			self:SetHeight((10*self:GetLayoutScale()) - 1)
+			self.content:SetVisible(false) 
 		elseif self.last_height then
 			self:SetHeight(self.last_height)
 			self.last_height = nil 
@@ -30,7 +30,7 @@ function PANEL:Initialize()
 	
 	local content = self:CreatePanel("base", "content")
 	--content:SetNoDraw(true)
-	content:SetupLayout("fill_x", "fill_y")
+	content:SetupLayout("fill")
 	self:SetStyle("frame")
 	self:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
 	self:SetTitle("no title")
@@ -44,7 +44,7 @@ function PANEL:SizeToContents()
 	self:SetSize(self.content:GetSizeOfChildren() + self.bar:GetSize())
 end
 
-function PANEL:OnLayout()
+function PANEL:OnLayout(S)
 	self.bar:SetLayoutSize(Vec2()+10*S)
 end
 
@@ -57,24 +57,24 @@ function PANEL:SetTitle(str)
 	title:CenterY() 
 	title:SetNoDraw(true)
 	title:SetIgnoreMouse(true)
-	title:SetupLayout("left")
+	title:SetupLayout("center_left")
 	self.title = title
 end
 
 gui.RegisterPanel(PANEL)
 
 if RELOAD then
-	local frame = gui.CreatePanel("frame")
+	local frame = gui.CreatePanel("frame", nil, PANEL.ClassName .. "_test")
 	frame:SetSize(Vec2(200, 400))
 	
 	local scroll = frame:CreatePanel("scroll")
-	scroll:SetupLayout("fill_x", "fill_y")
+	scroll:SetupLayout("fill")
 	
 	local list = gui.CreatePanel("base")
-	list:SetStack(true)
+	list:SetStack(true) 
 	list:SetStackRight(false) 
 	list:SetNoDraw(true)  
-	   
+	    
 	scroll:SetPanel(list)
 	
 	local a = gui.CreatePanel(PANEL.ClassName, list)

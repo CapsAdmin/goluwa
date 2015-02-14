@@ -110,7 +110,7 @@ function PANEL:Initialize()
 		self:SetColor(color)
 	end
 	
-	xy:SetupLayout("fill_x", "fill_y")
+	xy:SetupLayout("fill")
 	
 	self:SetPallete(self.Pallete)
 end
@@ -124,7 +124,7 @@ if RELOAD then
 	frame:SetSize(Vec2(200, 200))
 	
 	local self = frame:CreatePanel("color_picker")
-	self:SetupLayout("fill_x", "fill_y")
+	self:SetupLayout("fill")
 	self:SetColor(print(Color():GetRandom(0,1)))   
 	self.OnColorChanged = print
 end

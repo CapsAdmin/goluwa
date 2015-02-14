@@ -23,6 +23,8 @@ function PANEL:Initialize()
 			
 		self.Size.w = markup.width
 		self.Size.h = markup.height
+		
+		self.LayoutSize = self.Size
 	end
 	self.markup = markup
 end

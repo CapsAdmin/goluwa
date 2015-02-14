@@ -288,9 +288,9 @@ function editor.Open()
 	editor.frame = frame
 	
 	local div = gui.CreatePanel("divider", frame)
-	div:SetupLayout("fill_x", "fill_y")
+	div:SetupLayout("fill")
 	div:SetHideDivider(true)
-	
+		
 	editor.top_scroll = div:SetTop(gui.CreatePanel("scroll"))
 	editor.bottom_scroll = div:SetBottom(gui.CreatePanel("scroll"))
 	
@@ -487,7 +487,8 @@ function editor.Open()
 	window.SetMouseTrapped(false) 
 	
 	frame:SetY(500)
-	frame:ProcessLayoutCommands({"left", "fill_y"})
+	frame:MoveLeft()
+	frame:FillY()
 end
 
 function editor.Close()

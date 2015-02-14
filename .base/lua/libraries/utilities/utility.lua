@@ -337,7 +337,7 @@ do
 	local META = prototype.CreateTemplate("thread")
 	
 	prototype.GetSet(META, "Frequency", 0)
-	prototype.GetSet(META, "IterationsPerTick", 0)
+	prototype.GetSet(META, "IterationsPerTick", 1)
 	 
 	META.wait = 0
 	 
@@ -396,7 +396,7 @@ do
 	end
 	 
 	function META:Sleep(sec)
-		if sec then self.wait = system.GetTime() + sec end
+		if sec then self.wait = system.GetElapsedTime() + sec end
 		coroutine.yield()
 	end
 	

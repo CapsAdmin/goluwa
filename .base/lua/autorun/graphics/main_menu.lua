@@ -87,19 +87,24 @@ function menu.RenderBackground(dt)
 	emitter:Draw()
 end
 
-local skin = include("libraries/gui/skins/zsnes.lua")
+local skin = gui.GetRegisteredSkin("zsnes")
+local S = skin.Scale
+local skin = skin.skin
 
 function menu.CreateTopBar()
-	local S = skin.scale
 	local padding = 5 * S
 
 	local bar = gui.CreatePanel("base", gui.world, "main_menu_bar") 
 	bar:SetSkin(skin)
 	bar:SetStyle("gradient")
 	bar:SetDraggable(true)
-	bar:SetSize(Vec2(2000, 15*S))
-	bar:SetupLayout("left", "top")
+	bar:SetSize(Vec2(window.GetSize().w, 15*S))
 	bar:SetCachedRendering(true)
+	
+	bar:MoveLeft()
+	bar:MoveUp()
+	
+	bar:SetPadding(Rect()+S*4)
 	
 	menu.panel = bar
 
@@ -110,7 +115,7 @@ function menu.CreateTopBar()
 		button:SetMargin(Rect(S*3, S*3, S*3, S*2+1))
 		button:SetPadding(Rect()+S*4)
 		button:SetMode("toggle")
-		button:SetupLayout("left")
+		button:SetupLayout("left", "center_y_simple")
 		
 		button.OnPress = function()
 			local menu = gui.CreateMenu(options, bar)
@@ -347,6 +352,9 @@ function menu.CreateTopBar()
 		{},
 		{L"about"},
 	})
+	
+	bar:Layout(true)
+	bar:SizeToWidth()
 end
  
 event.AddListener("RenderContextInitialized", menu.Open)

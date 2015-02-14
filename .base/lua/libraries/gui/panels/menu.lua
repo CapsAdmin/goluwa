@@ -19,8 +19,7 @@ do
 		entry:SetText(text)
 		entry.OnClick = on_click
 		
-		entry:Layout(true)
-		self:Layout(true)
+		self:Layout()
 		
 		return entry
 	end
@@ -50,15 +49,14 @@ do
 		self:SetSize(Vec2()+500)
 		self:SetLayoutSize(Vec2()+500)
 		
-		self:Layout(true)
-		
 		local w = 0
 		
-		for i,v in ipairs(self:GetChildren()) do
+		for i,v in ipairs(self:GetChildren()) do	
 			if v.separator then
 				v:SetHeight(S*2)
 			else
 				v:SetHeight(S*10)
+				v:Layout(true)
 				w = math.max(w, v.label:GetX() + v.label:GetWidth() + v.label:GetPadding().right*8)
 			end
 		end
@@ -84,10 +82,12 @@ do
 		local img = self:CreatePanel("base", "image")
 		img:SetIgnoreMouse(true)
 		img:SetVisible(false)
-		img:SetupLayout("left")
+		img:SetupLayout("left", "center_y_simple")
 		
 		local label = self:CreatePanel("text", "label")
+		label:SetupLayout("left", "center_y_simple")
 		label:SetIgnoreMouse(true)
+		self:SetWidth(100)
 	end
 	
 	function PANEL:OnMouseEnter()
@@ -102,7 +102,6 @@ do
 		
 		if self.menu:IsValid() then				
 			self.menu:SetVisible(true)
-			self.menu:Layout(true)
 			self.menu:SetPosition(self:GetWorldPosition() + Vec2(self:GetWidth(), 0))
 			self.menu:Animate("DrawScaleOffset", {Vec2(0,1), Vec2(1,1)}, 0.25, "*", 0.25, true)
 		end
@@ -121,7 +120,6 @@ do
 	
 	function PANEL:SetText(str)
 		self.label:SetText(str)
-		self.label:SetupLayout("left")
 		self:Layout()
 	end
 	
@@ -138,7 +136,7 @@ do
 		local icon = self:CreatePanel("base")
 		icon:SetIgnoreMouse(true)
 		icon:SetStyle("menu_right_arrow")
-		icon:SetupLayout("right")
+		icon:SetupLayout("left", "right", "center_y_simple")
 
 		self.menu = gui.CreatePanel("menu")
 		self.menu:SetVisible(false)

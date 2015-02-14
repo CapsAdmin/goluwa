@@ -17,7 +17,6 @@ do -- base property
 		self:SetInactiveStyle("property")
 		self:SetHighlightOnMouseEnter(false)
 		self:SetClicksToActivate(2)
-		self:SetConcatenateTextToSize(true)
 	end
 	
 	function PANEL:SetSpecialCallback(callback)
@@ -131,7 +130,7 @@ do -- base property
 			self:OnValueChangedInternal(val)
 		end
 		--self:SizeToText()
-		self.label:SetupLayout("left")
+		self.label:SetupLayout("center_left")
 		self:Layout()
 	end
 	
@@ -333,7 +332,7 @@ do -- boolean
 		panel:SetMode("toggle")
 		panel:SetActiveStyle("check")
 		panel:SetInactiveStyle("uncheck")
-		panel:SetupLayout("left")
+		panel:SetupLayout("center_left")
 		panel.OnStateChanged = function(_, b) self:SetValue(b, true) end
 		
 		prototype.GetRegistered(self.Type, PANEL.Base).Initialize(self)
@@ -381,7 +380,7 @@ do -- color
 		panel:SetActiveStyle("none")
 		panel:SetInactiveStyle("none")
 		panel:SetHighlightOnMouseEnter(false)
-		panel:SetupLayout("left")
+		panel:SetupLayout("center_left")
 		
 		panel.OnPress = function()
 			local frame = gui.CreatePanel("frame")
@@ -390,7 +389,7 @@ do -- color
 			frame:SetTitle("color picker")
 			
 			local picker = frame:CreatePanel("color_picker")
-			picker:SetupLayout("fill_x", "fill_y")
+			picker:SetupLayout("fill")
 			picker.OnColorChanged = function(_, color) self:SetValue(color) end
 			
 			panel:CallOnRemove(function() gui.RemovePanel(frame) end)
@@ -439,14 +438,14 @@ function PANEL:Initialize()
 	local divider = self:CreatePanel("divider", "divider")
 	divider:SetMargin(Rect())
 	divider:SetHideDivider(true)
-	divider:SetupLayout("fill_x", "fill_y")
+	divider:SetupLayout("fill")
 	
 	local left = self.divider:SetLeft(gui.CreatePanel("base"))
 	left:SetStack(true)
 	left:SetPadding(Rect(0,0,0,-1))
 	left:SetStackRight(false)
 	left:SetSizeStackToWidth(true)
-	--left:SetupLayout("fill_x", "fill_y")
+	--left:SetupLayout("fill")
 	left:SetNoDraw(true)  
 	self.left = left
 	
@@ -455,7 +454,7 @@ function PANEL:Initialize()
 	right:SetPadding(Rect(0,0,0,-1))
 	right:SetStackRight(false)
 	right:SetSizeStackToWidth(true)
-	--right:SetupLayout("fill_x", "fill_y")
+	--right:SetupLayout("fill")
 	right:SetNoDraw(true)
 	right:SetMargin(Rect())
 	self.right = right
@@ -472,7 +471,7 @@ function PANEL:AddGroup(name)
 	exp:SetStyleTranslation("button_active", "+")
 	exp:SetStyleTranslation("button_inactive", "-")
 	exp:SetMode("toggle")
-	exp:SetupLayout("left")
+	exp:SetupLayout("center_left")
 	exp.OnStateChanged = function(_, b)
 		local found = false
 		for i, panel in ipairs(self.left:GetChildren()) do
@@ -511,7 +510,7 @@ function PANEL:AddGroup(name)
 	
 	local label = left:CreatePanel("text", "label")
 	label:SetText(name)
-	label:SetupLayout("left")
+	label:SetupLayout("center_left")
 	
 	local right = self.right:CreatePanel("base")
 	right.group = true
@@ -559,14 +558,14 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 		exp:SetStyleTranslation("button_inactive", "-")
 		exp:SetState(true)
 		exp:SetMode("toggle")
-		exp:SetupLayout("left")
+		exp:SetupLayout("center_left")
 	end
 	
 	local label = left:CreatePanel("text", "label")
 	label:SetText(name)
 	label.label_offset = extra_info.__label_offset
 	label:SetIgnoreMouse(true)
-	label:SetupLayout("left")
+	label:SetupLayout("center_left")
 	
 	local right = self.right:CreatePanel("base") 
 	right:SetMargin(Rect())
@@ -575,13 +574,13 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 	local property
 	
 	if prototype.GetRegistered("panel2", t .. "_property") then
-		local panel = right:CreatePanel(t .. "_property")
+		local panel = right:CreatePanel(t .. "_property", "property")
 					
 		panel:SetValue(default)
 		panel:SetDefaultValue(extra_info.default or default)
 		panel.GetValue = get_value
 		panel.OnValueChanged = function(_, val) set_value(val) end
-		panel:SetupLayout("fill_x", "fill_y")
+		panel:SetupLayout("fill")
 		panel.left = left
 		property = panel
 		
@@ -599,11 +598,9 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 			end
 		end
 				
-		right:SetWidth(panel.label:GetWidth())
-				
 		table.insert(self.added_properties, panel)
 	else
-		local panel = right:CreatePanel("base_property")
+		local panel = right:CreatePanel("base_property", "property")
 				
 		function panel:Decode(str)
 			local val = serializer.Decode("luadata", str)[1]
@@ -623,11 +620,9 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 		panel:SetDefaultValue(extra_info.default or default)
 		panel.GetValue = get_value
 		panel.OnValueChanged = function(_, val) set_value(val) end
-		panel:SetupLayout("fill_x", "fill_y")
+		panel:SetupLayout("fill")
 		panel.left = left
 		property = panel
-		
-		right:SetWidth(panel.label:GetWidth())
 		
 		table.insert(self.added_properties, panel)
 	end	
@@ -717,6 +712,7 @@ function PANEL:OnLayout(S)
 		left.label:SetPadding(Rect(S*2,S*2,left.label.label_offset or S*2,S*2))
 		
 		if self.first_time then
+			left:Layout(true)
 			self.left_max_width = math.max(self.left_max_width, left.label:GetWidth() + left.label:GetX() + (self.left_offset*S) + left.label:GetPadding().right)
 		end
 	end
@@ -726,10 +722,11 @@ function PANEL:OnLayout(S)
 			right:SetHeight(S*10)
 		else
 			right:SetHeight(S*8)
-		end
-				
-		if self.first_time then
-			self.right_max_width = math.max(self.right_max_width, right:GetWidth() + S*5) -- *5, why?
+					
+			if self.first_time then
+				self.right_max_width = math.max(self.right_max_width, right.property.label:GetWidth() + S*5)
+			end
+		
 		end
 	end
 	
