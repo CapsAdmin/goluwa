@@ -223,6 +223,8 @@ local function load_mdl(path, thread)
 				if callback(data, i) ~= false then
 					out[i] = data
 				end
+				
+				if thread then thread:Sleep() end
 			end
 
 			buffer:PopPosition()
@@ -414,7 +416,7 @@ local function load_mdl(path, thread)
 	return header
 end
 
-local function load_vtx(path)
+local function load_vtx(path, thread)
 	local MAX_NUM_BONES_PER_VERT = 3
 
 	local buffer = vfs.Open(path .. ".dx90.vtx") or vfs.Open(path .. ".dx80.vtx") or vfs.Open(path .. ".sw.vtx") 
@@ -508,6 +510,7 @@ local function load_vtx(path)
 								vertex.boneId[i] = buffer:ReadByte()
 							end
 							vertices[i] = vertex
+							if thread then thread:Sleep() end
 						end
 						buffer:PopPosition()
 						
@@ -536,10 +539,12 @@ local function load_vtx(path)
 							strip.vertices = vertices
 
 							strips[i] = strip
+							if thread then thread:Sleep() end
 						end
 						buffer:PopPosition()
 
 						strip_group.strips = strips
+						if thread then thread:Sleep() end
 					end
 					buffer:PopPosition()
 				end
@@ -554,7 +559,7 @@ local function load_vtx(path)
 	return vtx
 end
 
-local function load_vvd(path)
+local function load_vvd(path, thread)
 	local MAX_NUM_LODS = 8
 	local MAX_NUM_BONES_PER_VERT = 3
 
@@ -601,6 +606,7 @@ local function load_vvd(path)
 			vertex.uv = buffer:ReadVec2()
 
 			vvd.vertices[i] = vertex
+			if thread then thread:Sleep() end
 		end
 	end
 
@@ -632,6 +638,7 @@ local function load_vvd(path)
 					if fixup.lod_index >= lod_index-1 then
 						for i = 1, fixup.vertices_count do
 							vvd.fixed_vertices_by_lod[lod_index][i] = vvd.vertices[fixup.vertex_index + i]
+							if thread then thread:Sleep() end
 						end
 					end
 				end
@@ -663,7 +670,7 @@ function steam.LoadModel(path, callback, thread)
 				if lod_model.meshes then
 					for model_i, mesh in ipairs(lod_model.meshes) do
 						for _, strip_group in ipairs(mesh.strip_groups) do
-							for _, strip in ipairs(strip_group.strips) do
+							for _, strip in ipairs(strip_group.strips) do								
 								local vertices = vvd.fixed_vertices_by_lod[lod_index] or vvd.vertices
 								local indices = {}
 								
@@ -711,10 +718,7 @@ function steam.LoadModel(path, callback, thread)
 								else
 									table.insert(models, sub_model)
 								end
-								if thread then 
-									thread:Report("creating submodels")
-									thread:Sleep() 
-								end
+								if thread then thread:Sleep() end
 							end
 						end
 					end

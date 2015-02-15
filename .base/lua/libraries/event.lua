@@ -266,14 +266,22 @@ do -- timers
 		
 		remove_timer(callback)
 		
-		table.insert(event.timers, {
+		local info = {
 			key = callback,
 			type = "thinker", 
 			realtime = 0, 
-			callback = callback, 
-			frequency = frequency or 0, 
-			iterations = iterations or 1,
-		})
+			callback = callback,
+		}
+		
+		if iterations == true then
+			info.fps = frequency or 120
+			info.fps = 1/info.fps
+		else
+			info.frequency = frequency or 0
+			info.iterations = iterations or 1
+		end
+		
+		table.insert(event.timers, info)
 	end
 
 	function event.Delay(time, callback, obj)
@@ -380,26 +388,42 @@ do -- timers
 				
 		for i, data in ipairs(event.timers) do
 			if data.type == "thinker" then
-				if data.realtime < cur then
-					
-					local fps = ((cur + data.frequency) - data.realtime)
-					local extra_iterations = math.ceil(fps/data.frequency) - 2
-					if extra_iterations == math.huge then extra_iterations = 1 end
-					local errored = false
-					for i = 1, data.iterations + extra_iterations do
+				if data.fps then
+					local time = 0
+					repeat
+						local start = system.GetTime()
 						local ok, res = xpcall(data.callback, system.OnError)
+						
 						if not ok or res ~= nil then
-							errored = true
+							table.insert(remove_these, i)
 							break
-						end	
+						end		
+						
+						time = time + (system.GetTime() - start)
+					until time >= data.fps
+				else
+					if data.realtime < cur then					
+						local fps = ((cur + data.frequency) - data.realtime)
+						local extra_iterations = math.ceil(fps/data.frequency) - 2
+						if extra_iterations == math.huge then extra_iterations = 1 end
+						
+						local errored = false
+						
+						for i = 1, data.iterations + extra_iterations do
+							local ok, res = xpcall(data.callback, system.OnError)
+							if not ok or res ~= nil then
+								errored = true
+								break
+							end	
+						end
+						
+						if errored then
+							table.insert(remove_these, i)
+							break
+						end
+						
+						data.realtime = cur + data.frequency
 					end
-					
-					if errored then
-						table.insert(remove_these, i)
-						break
-					end
-					
-					data.realtime = cur + data.frequency
 				end
 			elseif data.type == "delay" then
 				if data.realtime < cur then

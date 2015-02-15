@@ -146,7 +146,7 @@ function menu.CreateTopBar()
 			local current_dir
 			
 			local frame = gui.CreatePanel("frame")
-			--frame:SetSkin(bar:GetSkin())
+			frame:SetSkin(bar:GetSkin())
 			frame:SetPosition(Vec2(100, 100))
 			frame:SetSize(Vec2(500, 400))
 			frame:SetTitle("load lua")

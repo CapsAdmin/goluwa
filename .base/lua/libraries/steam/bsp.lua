@@ -3,7 +3,7 @@ local steam = ... or _G.steam
 local scale = 0.0254
 
 local mount_info = {
-	["gm_.+"] = {"garry's mod"},
+	["gm_.+"] = {"garry's mod", "tf2", "css"},
 	["ep1_.+"] = {"half-life 2: episode one"},
 	["ep2_.+"] = {"half-life 2: episode two"},
 	["trade_.+"] = {"half-life 2", "team fortress 2"},
@@ -61,22 +61,24 @@ local function read_lump_data(thread, what, bsp_file, header, index, size, struc
 	if type(struct) == "function" then
 		for i = 1, length do
 			out[i] = struct()
+			thread:ReportProgress(what, length)
+			thread:Sleep()
 		end
 	else
 		for i = 1, length do
 			out[i] = bsp_file:ReadStructure(struct)
+			thread:ReportProgress(what, length)
+			thread:Sleep()
 		end
 	end
-		
-	thread:Report(what)
-	thread:Sleep()
-		
+				
 	return out
 end
 
 steam.bsp_cache = steam.bsp_cache or {}
 
 function steam.LoadMap(path, callback)
+	path = R(path)
 
 	if type(steam.bsp_cache[path]) == "function" then
 		local old = steam.bsp_cache[path]
@@ -94,10 +96,10 @@ function steam.LoadMap(path, callback)
 	
 	steam.bsp_cache[path] = callback
 	
-	local thread = utility.CreateThread()
+	local thread = threads.CreateThread()
 	thread.debug = true
-	thread:SetFrequency(120)
-	thread:SetIterationsPerTick(50)
+	
+	logn("loading map: ", path)
 	
 	function thread:OnStart()
 		
@@ -145,7 +147,8 @@ function steam.LoadMap(path, callback)
 			logn("REVISION ", header.map_revision)
 		end
 		
-		do 
+		do	
+			thread:Sleep()
 			thread:Report("mounting pak")-- pak
 			local lump = header.lumps[41]
 			local length = lump.filelen
@@ -157,11 +160,11 @@ function steam.LoadMap(path, callback)
 			
 			vfs.Write(name, pak)
 			
-			vfs.Mount(R(name))
-			
+			vfs.Mount(R(name))			
 		end
-		 
-		if true then
+	
+		do
+			thread:Sleep()
 			thread:Report("reading game lump")
 			
 			local lump = header.lumps[36]
@@ -169,14 +172,14 @@ function steam.LoadMap(path, callback)
 			bsp_file:SetPosition(lump.fileofs)
 			
 			local game_lumps = bsp_file:ReadLong()
-								
+			
 			for i = 1, game_lumps do
 				local id = bsp_file:ReadBytes(4)
 				local flags = bsp_file:ReadShort()
 				local version = bsp_file:ReadShort()
 				local fileofs = bsp_file:ReadLong()
 				local filelen = bsp_file:ReadLong()
-																						
+
 				if id == "prps" then
 					bsp_file:PushPosition(fileofs)					
 					
@@ -196,7 +199,9 @@ function steam.LoadMap(path, callback)
 					end
 					
 					local count = bsp_file:ReadLong()
-					local lumps = {}					
+					
+					local lumps = {}
+
 					for i = 1, count do
 						local lump = bsp_file:ReadStructure([[
 							vec3 origin;
@@ -231,6 +236,9 @@ function steam.LoadMap(path, callback)
 						lump.model = paths[lump.prop_type + 1] or paths[1]
 						
 						lumps[i] = lump
+						
+						thread:Sleep()
+						thread:ReportProgress("reading static props", count)
 					end
 					
 					header.static_entities = lumps
@@ -271,8 +279,9 @@ function steam.LoadMap(path, callback)
 			end
 			
 		end
-
+		
 		do
+			thread:Sleep()
 			local function unpack_numbers(str)
 				local t = str:explode(" ")
 				for k,v in ipairs(t) do t[k] = tonumber(v) end
@@ -303,6 +312,7 @@ function steam.LoadMap(path, callback)
 			header.entities = entities
 			
 		end
+
 		header.brushes = read_lump_data(thread, "reading brushes", bsp_file, header, 19, 12, [[
 			int	firstside;	// first brushside
 			int	numsides;	// number of brushsides
@@ -357,7 +367,6 @@ function steam.LoadMap(path, callback)
 			int view_width;
 			int view_height;
 		]])
-		
 	
 		local texdatastringtable = read_lump_data(thread, "reading texdatastringtable", bsp_file, header, 45, 4, "int")
 
@@ -493,7 +502,7 @@ function steam.LoadMap(path, callback)
 			
 			local meshes = {}
 			local texture_format = {mip_map_levels = 8, read_speed = math.huge}
-
+			
 			for _, model in ipairs(header.models) do						
 				for i = 1, model.numfaces do
 					local face = header.faces[model.firstface + i]
@@ -625,14 +634,14 @@ function steam.LoadMap(path, callback)
 		
 		if GRAPHICS then			
 			for i, mesh in ipairs(models) do
-				mesh:BuildNormals()
+				mesh:BuildNormals(thread)
 				thread:ReportProgress("generating normals", #models)
 				thread:Sleep()
 			end 		
 
 			for i, mesh in ipairs(models) do
 				if mesh.displacement then
-					mesh:SmoothNormals()
+					mesh:SmoothNormals(thread)
 				end
 				thread:Report("smoothing displacements", #models)
 				thread:Sleep()
@@ -692,6 +701,7 @@ function steam.LoadMap(path, callback)
 			
 			physics_meshes[i_] = mesh
 
+			thread:Sleep()
 			thread:ReportProgress("building physics meshes", count)
 		end
 
@@ -722,72 +732,80 @@ function steam.LoadMap(path, callback)
 	thread:Start()
 end
 
-function steam.SpawnMapEntities(path, parent, thread)
+function steam.SpawnMapEntities(path, parent)
+	path = R(path)	
 	local data = steam.bsp_cache[path]
 	
-	for k,v in ipairs(parent:GetChildrenList()) do
-		if v.spawned_from_bsp then
-			v:Remove()
-		end
-	end
-
-	if GRAPHICS then		
-		prototype.SafeRemove(parent.world_params)
-		parent.world_params = entities.CreateEntity("world", parent)
-		parent.world_params.spawned_from_bsp = true
-
-		parent:RemoveMeshes()
-		
-		for i, model in ipairs(data.render_meshes) do
-			parent:AddMesh(model)
-		end
-	end
+	local thread = threads.CreateThread()
+	thread.debug = true
 	
-	local count = table.count(data.entities)
-	for i, info in pairs(data.entities) do
-		if GRAPHICS then
-			if info.classname and info.classname:find("light_environment") then
-				local p, y = info.pitch, info.angles.y
-				parent.world_params:SetSunAngles(Deg3(p, y+180, 0))
-				parent.world_params:SetSunSpecularIntensity(0.15)
-				parent.world_params:SetSunIntensity(1)
-				
-				info._light.a = 1
-				parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
-				parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b)*0.5)
-			elseif info.classname:lower():find("light") and info._light then		
-				local ent = entities.CreateEntity("light", parent)
-				ent:SetName(info.classname .. "_" .. i)
-				ent:SetPosition(info.origin * 0.0254)
-				ent:SetHideFromEditor(true)
-				
-				ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
-				ent:SetSize(5)
-				ent:SetDiffuseIntensity(info._light.a/25) 
-				ent:SetRoughness(0.5)
-				ent.spawned_from_bsp = true
-			elseif info.classname == "env_fog_controller" then
-				parent.world_params:SetFogColor(info.fogcolor)
-				parent.world_params:SetFogStart(info.fogstart* scale)
-				parent.world_params:SetFogEnd(info.fogend * scale)
+	logn("spawning map entities: ", path)
+	
+	function thread:OnStart()
+		
+		for k,v in ipairs(parent:GetChildrenList()) do
+			if v.spawned_from_bsp then
+				v:Remove()
 			end
 		end
-	
-		if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
-			if vfs.IsFile(info.model) then
-				local ent = entities.CreateEntity("visual", parent)
-				ent:SetName(info.classname .. "_" .. i)
-				ent:SetModelPath(info.model)
-				ent:SetPosition(info.origin * scale)
-				ent:SetAngles(info.angles:Rad())
-				ent:SetHideFromEditor(true)
-				ent.spawned_from_bsp = true
+
+		if GRAPHICS then		
+			prototype.SafeRemove(parent.world_params)
+			parent.world_params = entities.CreateEntity("world", parent)
+			parent.world_params.spawned_from_bsp = true
+
+			parent:RemoveMeshes()
+			
+			for i, model in ipairs(data.render_meshes) do
+				parent:AddMesh(model)
 			end
 		end
 		
-		if thread then
+		local count = table.count(data.entities)
+		for i, info in pairs(data.entities) do
+			if GRAPHICS then
+				if info.classname and info.classname:find("light_environment") then
+					local p, y = info.pitch, info.angles.y
+					parent.world_params:SetSunAngles(Deg3(p, y+180, 0))
+					parent.world_params:SetSunSpecularIntensity(0.15)
+					parent.world_params:SetSunIntensity(1)
+					
+					info._light.a = 1
+					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
+					parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b)*0.5)
+				elseif info.classname:lower():find("light") and info._light then		
+					local ent = entities.CreateEntity("light", parent)
+					ent:SetName(info.classname .. "_" .. i)
+					ent:SetPosition(info.origin * 0.0254)
+					ent:SetHideFromEditor(true)
+					
+					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
+					ent:SetSize(5)
+					ent:SetDiffuseIntensity(info._light.a/25) 
+					ent:SetRoughness(0.5)
+					ent.spawned_from_bsp = true
+				elseif info.classname == "env_fog_controller" then
+					parent.world_params:SetFogColor(info.fogcolor)
+					parent.world_params:SetFogStart(info.fogstart* scale)
+					parent.world_params:SetFogEnd(info.fogend * scale)
+				end
+			end
+		
+			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
+				if vfs.IsFile(info.model) then
+					local ent = entities.CreateEntity("visual", parent)
+					ent:SetName(info.classname .. "_" .. i)
+					ent:SetModelPath(info.model)
+					ent:SetPosition(info.origin * scale)
+					ent:SetAngles(info.angles:Rad())
+					ent:SetHideFromEditor(true)
+					ent.spawned_from_bsp = true
+				end
+			end
 			thread:ReportProgress("spawning entities", count)
 			thread:Sleep()
-		end
-	end	
+		end	
+	end
+	
+	thread:Start()
 end
