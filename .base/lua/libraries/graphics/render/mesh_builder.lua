@@ -138,129 +138,120 @@ do -- helpers
 	   3|/	
 	]]
 
-	function META:LoadObj(data, callback, generate_normals)
-		local thread = threads.CreateThread()
-		function thread:OnStart()		
-			local positions = {}
-			local texcoords = {}
-			local normals = {}
-			
-			local output = {}
-			
-			local lines = {}
-			
-			local i = 1
-			for line in data:gmatch("(.-)\n") do
-				local parts = line:gsub("%s+", " "):trim():explode(" ")
+	function META:LoadObj(data, generate_normals)
+		local positions = {}
+		local texcoords = {}
+		local normals = {}
+		
+		local output = {}
+		
+		local lines = {}
+		
+		local i = 1
+		for line in data:gmatch("(.-)\n") do
+			local parts = line:gsub("%s+", " "):trim():explode(" ")
 
-				table.insert(lines, parts)
-				self:ReportProgress("inserting lines", math.huge)
-				self:Sleep()
-				i = i + 1
+			table.insert(lines, parts)
+			threads.ReportProgress("inserting lines", math.huge)
+			threads.Sleep()
+			i = i + 1
+		end
+	
+		local vert_count = #lines
+	
+		for i, parts in pairs(lines) do		
+			if parts[1] == "v" and #parts >= 4 then
+				table.insert(positions, Vec3(tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])))
+			elseif parts[1] == "vt" and #parts >= 3 then
+				table.insert(texcoords, Vec2(tonumber(parts[2]), tonumber(parts[3])))
+			elseif not generate_normals and parts[1] == "vn" and #parts >= 4 then
+				table.insert(normals, Vec3(tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])):GetNormalized())
 			end
-		
-			local vert_count = #lines
-		
-			for i, parts in pairs(lines) do		
-				if parts[1] == "v" and #parts >= 4 then
-					table.insert(positions, Vec3(tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])))
-				elseif parts[1] == "vt" and #parts >= 3 then
-					table.insert(texcoords, Vec2(tonumber(parts[2]), tonumber(parts[3])))
-				elseif not generate_normals and parts[1] == "vn" and #parts >= 4 then
-					table.insert(normals, Vec3(tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])):GetNormalized())
-				end
+			
+			self:ReportProgress("parsing lines", vert_count)
+			self:Sleep()
+		end
 				
-				self:ReportProgress("parsing lines", vert_count)
-				self:Sleep()
-			end
+		for i, parts in pairs(lines) do
+			if parts[1] == "f" and #parts > 3 then
+				local first, previous
+
+				for i = 2, #parts do
+					local current = parts[i]:explode("/")
+
+					if i == 2 then
+						first = current
+					end
 					
-			for i, parts in pairs(lines) do
-				if parts[1] == "f" and #parts > 3 then
-					local first, previous
+					if i >= 4 then
+						local v1, v2, v3 = {}, {}, {}
 
-					for i = 2, #parts do
-						local current = parts[i]:explode("/")
-
-						if i == 2 then
-							first = current
+						v1.pos_index = tonumber(first[1])
+						v2.pos_index = tonumber(current[1])
+						v3.pos_index = tonumber(previous[1])
+						
+						v1.pos = positions[tonumber(first[1])]
+						v2.pos = positions[tonumber(current[1])]
+						v3.pos = positions[tonumber(previous[1])]
+						
+						if #texcoords > 0 then
+							v1.uv = texcoords[tonumber(first[2])]
+							v2.uv = texcoords[tonumber(current[2])]
+							v3.uv = texcoords[tonumber(previous[2])]
 						end
 						
-						if i >= 4 then
-							local v1, v2, v3 = {}, {}, {}
-
-							v1.pos_index = tonumber(first[1])
-							v2.pos_index = tonumber(current[1])
-							v3.pos_index = tonumber(previous[1])
-							
-							v1.pos = positions[tonumber(first[1])]
-							v2.pos = positions[tonumber(current[1])]
-							v3.pos = positions[tonumber(previous[1])]
-							
-							if #texcoords > 0 then
-								v1.uv = texcoords[tonumber(first[2])]
-								v2.uv = texcoords[tonumber(current[2])]
-								v3.uv = texcoords[tonumber(previous[2])]
-							end
-							
-							if #normals > 0 then
-								v1.normal = normals[tonumber(first[3])]
-								v2.normal = normals[tonumber(current[3])]
-								v3.normal = normals[tonumber(previous[3])]
-							end				
-							
-							table.insert(output, v1)
-							table.insert(output, v2)
-							table.insert(output, v3)
-						end
-
-						previous = current
+						if #normals > 0 then
+							v1.normal = normals[tonumber(first[3])]
+							v2.normal = normals[tonumber(current[3])]
+							v3.normal = normals[tonumber(previous[3])]
+						end				
+						
+						table.insert(output, v1)
+						table.insert(output, v2)
+						table.insert(output, v3)
 					end
-				end
-				
-				self:ReportProgress("solving indices", vert_count)
-				self:Sleep()
-			end
-			
-			if generate_normals then
-				local vertex_normals = {}
-				local count = #output/3
-				for i = 1, count do
-					local a, b, c = output[1+(i-1)*3+0], output[1+(i-1)*3+1], output[1+(i-1)*3+2] 
-					local normal = (c.pos - a.pos):Cross(b.pos - a.pos):GetNormalized()
 
-					vertex_normals[a.pos_index] = vertex_normals[a.pos_index] or Vec3()
-					vertex_normals[a.pos_index] = (vertex_normals[a.pos_index] + normal)
-
-					vertex_normals[b.pos_index] = vertex_normals[b.pos_index] or Vec3()
-					vertex_normals[b.pos_index] = (vertex_normals[b.pos_index] + normal)
-
-					vertex_normals[c.pos_index] = vertex_normals[c.pos_index] or Vec3()
-					vertex_normals[c.pos_index] = (vertex_normals[c.pos_index] + normal)
-					self:ReportProgress("generating normals", count)
-					self:Sleep()
-				end
-				
-				local default_normal = Vec3(0, 0, -1)
-
-				local count = #output
-				for i = 1, count do
-					local n = vertex_normals[output[i].pos_index] or default_normal
-					n:Normalize()
-					normals[i] = n
-					output[i].normal = n
-					self:ReportProgress("smoothing normals", count)
-					self:Sleep()
+					previous = current
 				end
 			end
 			
-			return output
+			threads.ReportProgress("solving indices", vert_count)
+			threads.Sleep()
 		end
 		
-		function thread:OnFinish(output)
-			callback(output)
+		if generate_normals then
+			local vertex_normals = {}
+			local count = #output/3
+			for i = 1, count do
+				local a, b, c = output[1+(i-1)*3+0], output[1+(i-1)*3+1], output[1+(i-1)*3+2] 
+				local normal = (c.pos - a.pos):Cross(b.pos - a.pos):GetNormalized()
+
+				vertex_normals[a.pos_index] = vertex_normals[a.pos_index] or Vec3()
+				vertex_normals[a.pos_index] = (vertex_normals[a.pos_index] + normal)
+
+				vertex_normals[b.pos_index] = vertex_normals[b.pos_index] or Vec3()
+				vertex_normals[b.pos_index] = (vertex_normals[b.pos_index] + normal)
+
+				vertex_normals[c.pos_index] = vertex_normals[c.pos_index] or Vec3()
+				vertex_normals[c.pos_index] = (vertex_normals[c.pos_index] + normal)
+				threads.ReportProgress("generating normals", count)
+				threads.Sleep()
+			end
+			
+			local default_normal = Vec3(0, 0, -1)
+
+			local count = #output
+			for i = 1, count do
+				local n = vertex_normals[output[i].pos_index] or default_normal
+				n:Normalize()
+				normals[i] = n
+				output[i].normal = n
+				threads.ReportProgress("smoothing normals", count)
+				threads.Sleep()
+			end
 		end
-				
-		thread:Start()
+		
+		return output
 	end
 
 	function META:CreateCube(size, texture_scale)

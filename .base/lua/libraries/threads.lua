@@ -136,4 +136,18 @@ function threads.Sleep(time)
 	end
 end
 
+function threads.ReportProgress(what, max)
+	local thread = threads.created[coroutine.running()]
+	if thread then
+		thread:ReportProgress(what, max)
+	end
+end
+
+function threads.Report(what)
+	local thread = threads.created[coroutine.running()]
+	if thread then
+		thread:Report(what)
+	end
+end
+
 return threads

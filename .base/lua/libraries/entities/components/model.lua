@@ -137,10 +137,8 @@ if GRAPHICS then
 		utility.LoadRenderModel(
 			path, 
 			function() 
-				if path:endswith(".bsp") and steam.LoadMap then
-					steam.LoadMap(path, function(data, thread)
-						steam.SpawnMapEntities(path, self:GetEntity(), thread)
-					end)	
+				if steam.LoadMap and path:endswith(".bsp") then
+					steam.SpawnMapEntities(path, self:GetEntity())
 				end
 			end, 
 			function(mesh)

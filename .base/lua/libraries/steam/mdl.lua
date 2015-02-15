@@ -208,7 +208,7 @@ local function load_mdl(path, thread)
 		local count = header[name .. "_count"]
 		local offset = header[name .. "_offset"]
 
-		--if thread then thread:Report("reading " .. name) end
+		--threads.Report("reading " .. name)
 		
 		if _debug then logf("reading %i %ss (at %i)\n", count, name, offset) end
 
@@ -224,7 +224,7 @@ local function load_mdl(path, thread)
 					out[i] = data
 				end
 				
-				if thread then thread:Sleep() end
+				threads.Sleep()
 			end
 
 			buffer:PopPosition()
@@ -510,7 +510,7 @@ local function load_vtx(path, thread)
 								vertex.boneId[i] = buffer:ReadByte()
 							end
 							vertices[i] = vertex
-							if thread then thread:Sleep() end
+							threads.Sleep()
 						end
 						buffer:PopPosition()
 						
@@ -539,12 +539,12 @@ local function load_vtx(path, thread)
 							strip.vertices = vertices
 
 							strips[i] = strip
-							if thread then thread:Sleep() end
+							threads.Sleep()
 						end
 						buffer:PopPosition()
 
 						strip_group.strips = strips
-						if thread then thread:Sleep() end
+						threads.Sleep()
 					end
 					buffer:PopPosition()
 				end
@@ -606,7 +606,7 @@ local function load_vvd(path, thread)
 			vertex.uv = buffer:ReadVec2()
 
 			vvd.vertices[i] = vertex
-			if thread then thread:Sleep() end
+			threads.Sleep()
 		end
 	end
 
@@ -638,7 +638,7 @@ local function load_vvd(path, thread)
 					if fixup.lod_index >= lod_index-1 then
 						for i = 1, fixup.vertices_count do
 							vvd.fixed_vertices_by_lod[lod_index][i] = vvd.vertices[fixup.vertex_index + i]
-							if thread then thread:Sleep() end
+							threads.Sleep()
 						end
 					end
 				end
@@ -652,15 +652,15 @@ end
 
 local scale = 0.0254
 
-function steam.LoadModel(path, callback, thread)
+function steam.LoadModel(path, sub_model_callback)
 
 	if path:endswith(".mdl") then
 		path = path:sub(1,-#".mdl"-1)
 	end
 
-	local mdl = load_mdl(path, thread)
-	local vvd = load_vvd(path, thread)
-	local vtx = load_vtx(path, thread)
+	local mdl = load_mdl(path)
+	local vvd = load_vvd(path)
+	local vtx = load_vtx(path)
 	
 	local models = {}
 
@@ -713,12 +713,12 @@ function steam.LoadModel(path, callback, thread)
 									)
 								end
 								
-								if callback then
-									callback(sub_model)
+								if sub_model_callback then
+									sub_model_callback(sub_model)
 								else
 									table.insert(models, sub_model)
 								end
-								if thread then thread:Sleep() end
+								threads.Sleep()
 							end
 						end
 					end
