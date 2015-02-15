@@ -98,13 +98,17 @@ function menu.CreateTopBar()
 	bar:SetSkin(skin)
 	bar:SetStyle("gradient")
 	bar:SetDraggable(true)
-	bar:SetSize(Vec2(window.GetSize().w, 15*S))
+	bar:SetHeight(15*S)
 	bar:SetCachedRendering(true)
 	
 	bar:MoveLeft()
 	bar:MoveUp()
 	
 	bar:SetPadding(Rect()+S*4)
+	
+	function bar:OnLayout()
+		self:SetWidth(window.GetSize().w)
+	end
 	
 	menu.panel = bar
 
@@ -259,9 +263,6 @@ function menu.CreateTopBar()
 		{},
 		{L"about"},
 	})
-	
-	bar:Layout(true)
-	bar:SizeToWidth()
 end
  
 event.AddListener("RenderContextInitialized", menu.Open)

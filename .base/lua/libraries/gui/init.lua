@@ -416,11 +416,7 @@ function gui.Initialize()
 	gui.mouse_pos = Vec2()
 
 	event.AddListener("FontChanged", "gui", function(name) 
-		for k,v in pairs(gui.panels) do
-			if v.Font == name then
-				v:Layout()
-			end
-		end
+		gui.world:Layout()
 	end)
 	event.AddListener("Draw2D", "gui", gui.Draw2D)
 	event.AddListener("MouseInput", "gui", gui.MouseInput)

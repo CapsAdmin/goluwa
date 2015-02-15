@@ -74,6 +74,8 @@ function PANEL:OnLayout(S)
 	self.max:SetPadding(Rect()+S)
 	self.close:SetPadding(Rect()+S)
 	self.title:SetPadding(Rect()+S)
+	
+	self.icon:SetLayoutSize(Vec2(math.min(S*8, self.icon.Texture.w), math.min(S*8, self.icon.Texture.h)))
 end
 
 function PANEL:Maximize(b)
