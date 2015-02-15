@@ -21,11 +21,11 @@ function PANEL:Initialize()
 		self:MarkCacheDirty()
 		self:OnTextChanged(self.markup:GetText())
 			
-		self.Size.w = markup.width
-		self.Size.h = markup.height
+			self.Size.w = markup.width
+			self.Size.h = markup.height
 		
-		self.LayoutSize = self.Size
-	end
+			self.LayoutSize = self.Size
+		end
 	self.markup = markup
 end
 
@@ -93,7 +93,7 @@ function PANEL:Concatenate()
 	if not self.Text then return end
 			
 	self:OnUpdate()
-			
+				
 	local markup = self.markup
 	
 	surface.SetFont(self.Font)
@@ -101,7 +101,6 @@ function PANEL:Concatenate()
 		
 	if markup.cull_w-markup.cull_x - w < markup.width then
 		
-		if self.Text == "world" then print(markup.cull_x) end
 		local caret = markup:CaretFromPixels(markup.cull_w-markup.cull_x - w, 0)
 		local sub_pos = markup:GetSubPosFromPosition(caret.x, caret.y)
 				
@@ -142,10 +141,7 @@ function PANEL:OnUpdate()
 	markup.cull_h = self.Parent.Size.h
 	
 	markup:Update()
-	
-	self.Size.w = markup.width
-	self.Size.h = markup.height		
-	
+		
 	-- :(
 	if markup:IsCaretVisible() then
 		if not self.sadface then
