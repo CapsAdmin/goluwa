@@ -12,18 +12,18 @@ function PANEL:Initialize()
 	local top = self:CreatePanel("base", "top")
 	--top:SetLayoutParentOnLayout(true)
 	top:SetMargin(Rect())
-	top:SetClipping(true)
+	--top:SetClipping(true)
 	top:SetNoDraw(true)
 				
 	local list = self:CreatePanel("base", "list")
-	--list:SetCachedRendering(true)
 	self:SetStyle("property")
-	list:SetClipping(true)
-	list:SetNoDraw(true)
+	--list:SetClipping(true)
+	 list:SetNoDraw(true)
+	--list:SetCachedRendering(true)
 	
 	local scroll = self:CreatePanel("scroll", "scroll")
+	scroll:SetYScrollBar(true)
 	scroll:SetPanel(list)
-	scroll:SetXScrollBar(false)
 		
 	self:SetupSorted("")
 end
@@ -54,7 +54,7 @@ function PANEL:OnLayout(S)
 		entry:SetPosition(Vec2(0, y))
 		entry:SetHeight(S*8)
 		entry:SetWidth(self:GetWidth())
-		y = y + entry:GetHeight() - S		
+		y = y + entry:GetHeight()		
 		
 		local x = 0
 		for i, label in ipairs(entry.labels) do
@@ -62,7 +62,6 @@ function PANEL:OnLayout(S)
 			label:SetWidth(w)
 			label:SetX(x+S)
 			label:SetHeight(entry:GetHeight())
-			label:CenterTextY()
 			
 			w = w + self.columns[i].div:GetDividerWidth()
 			
@@ -80,7 +79,6 @@ function PANEL:OnLayout(S)
 	for i, column in ipairs(self.columns) do
 		column:SetMargin(Rect()+2*S)
 		column:SetHeight(S*10)
-		column:CenterTextY()
 		column.div:SetWidth(self:GetWidth())
 	end
 
@@ -117,26 +115,25 @@ function PANEL:SetupSorted(...)
 					
 		local column = gui.CreatePanel("text_button", self)
 		column:SetText(name)
-		column:SetClipping(true)
-		column.label:SetupLayout("center_left")
 		column:SizeToText()
-				
+		column.label:SetupLayout("left", "top", "center_y_simple") 
+		
 		local icon = column:CreatePanel("base", "icon")
 		icon:SetStyle("list_down_arrow")
-		icon:SetupLayout("right", "center_y_simple")
+		icon:SetupLayout("left", "right", "top", "center_y_simple")
 		icon:SetIgnoreMouse(true)
 					
 		local div = self.top:CreatePanel("divider")
 		--div:SetupLayout("fill")
 		div:SetHideDivider(true)
+		div:SetHeight(column:GetHeight())
 		div:SetLeft(column)
-		div:SetLayoutParentOnLayout(true)
+		div.OnDividerPositionChanged = function() self:Layout() end
 		column.div = div
 		
 		self.columns[i] = column
 		
-		column.OnRelease = function()
-			
+		column.OnRelease = function()			
 			if column.sorted then
 				icon:SetStyle("list_down_arrow")
 				table.sort(self.entries, function(a, b)
@@ -174,20 +171,23 @@ function PANEL:AddEntry(...)
 	entry.labels = {}
 				
 	for i = 1, #self.columns do
-		local text = tostring(select(i, ...) or "nil")
+		local text = select(i, ...) or "nil"
 		
 		local label = entry:CreatePanel("text_button")
-		label:SetParseTags(true)
 		label:SetTextWrap(false)
+		label.label:SetLightMode(true)
+		label.label.markup:SetSuperLightMode(true)
 		label:SetTextColor(self:GetSkin().text_list_color)		
-		label:SetText(text)
+		label:SetText(self.columns[i].converter and self.columns[i].converter(text) or text)
 		label:SizeToText()
 		label.text = text
-		label:SetClipping(true)
+--		label:SetFixedSize(true)
+		label:SetWidth(20)
+		--label:SetClipping(true) 
 		label:SetNoDraw(true)
 		label:SetIgnoreMouse(true)
 		label:SetConcatenateTextToSize(true)
-		
+				
 		entry.labels[i] = label
 	end
 
@@ -197,11 +197,26 @@ function PANEL:AddEntry(...)
 	entry:SetActiveStyle("menu_select")
 	entry:SetInactiveStyle("nodraw")
 
+	entry.SetIcon = function(_, path)
+		local label = entry.labels[1]
+		
+		table.remove(label:GetChildren())
+		local icon = label:CreatePanel("base")
+		table.insert(label:GetChildren(), label.label)
+		
+		local image = Texture(path or "textures/silkicons/folder.png") 
+		icon:SetTexture(image)
+		icon:SetSize(image:GetSize())
+
+		icon:SetupLayout("left", "center_y_simple")
+		label.label:SetupLayout("left", "center_y_simple")
+	end
+	
 	entry.OnStateChanged = function(_, b)
-		print(entry, b)
 		if b then
 			entry:OnSelect()
 		end
+		self:OnEntrySelect(entry, b)
 	end
 	
 	entry.i = #self.entries + 1
@@ -211,4 +226,40 @@ function PANEL:AddEntry(...)
 	return entry
 end
 
+function PANEL:OnEntrySelect(entry, select)
+ 
+end
+
+function PANEL:SetupConverters(...)
+	for i = 1, #self.columns do
+		self.columns[i].converter = select(i, ...)
+	end
+end
+
 gui.RegisterPanel(PANEL)
+
+if RELOAD then
+	local frame = gui.CreatePanel("frame", nil, "test")
+	frame:SetSize(Vec2()+500)
+	local list = frame:CreatePanel("list")
+	list:SetupLayout("fill")
+	list:SetupSorted("name", "modified", "type", "size")
+	list:SetupConverters(nil, function(num) return os.date("%c", num) end, nil, utility.FormatFileSize)
+	for i, name in ipairs(vfs.Find("lua/")) do
+		local file = vfs.Open("lua/" .. name)
+		local type = "folder"
+		local size = 0
+		local last_modified = 0
+		
+		if file then 
+			type = name:match(".+%.(.+)")
+			size = file:GetSize()
+			last_modified = file:GetLastModified()
+		end
+		local entry = list:AddEntry(name, last_modified, type, size)
+		entry:SetIcon("textures/silkicons/"..(type == "folder" and "folder" or "script")..".png")
+		if file then
+			file:Close()
+		end
+	end
+end
