@@ -82,13 +82,19 @@ end
  
 local cache = {}
 
+local never
+
 local function get_file_tree(path)
 	if cache[path] then
 		return cache[path]
 	end
 
-	local cache_path = "os:data/vpk_cache/" .. crypto.CRC32(path)
+	if never then error("grr") end
+	
+	never = true
+	local cache_path = "data/vpk_cache/" .. crypto.CRC32(path)
 	local tree_data = serializer.ReadFile("msgpack", cache_path)
+	never = false
 	
 	if tree_data then
 		cache[path] = utility.CreateTree("/", tree_data)
