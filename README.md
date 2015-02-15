@@ -1,4 +1,4 @@
-Goluwa is a framework made with LuaJIT that I use to make stuff/goluwa with. Goluwa tries to be dynamic and modifiable without the need to restart.
+Goluwa is a framework made with LuaJIT that I use to make stuff/goluwa with. I try to make it so the code can be modified without the need to restart and have all assets loaded from the internet.
 
 There are lots of sub projects included such as the GUI, a wrapper for running Löve games, tools for reading and mounting source engine assets, midi and sf2 parsers, some async socket library based on luasocket, etc.
 
