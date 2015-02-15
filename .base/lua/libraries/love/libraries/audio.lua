@@ -1,3 +1,5 @@
+if not SOUND then return end
+
 local love = love or ...
 
 love.audio = {}

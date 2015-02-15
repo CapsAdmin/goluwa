@@ -146,155 +146,65 @@ function menu.CreateTopBar()
 			local current_dir
 			
 			local frame = gui.CreatePanel("frame")
+			--frame:SetSkin(bar:GetSkin())
 			frame:SetPosition(Vec2(100, 100))
 			frame:SetSize(Vec2(500, 400))
 			frame:SetTitle("load lua")
 		
-			local label = gui.CreatePanel("text", frame)
-			label:SetPadding(Rect()+10)
-			label:SetText("filename")
-			label:SetupLayout("left", "top")
-					
-			local label = gui.CreatePanel("text", frame)
-			label:SetPadding(Rect()+10)
-			label:SetText("directory")
-			label:SetupLayout("right", "top")
-			
-			local folders = gui.CreatePanel("list", frame)
-			folders:SetPadding(Rect()+10)
-			folders:SetSize(Vec2(160, 225))
-			folders:SetupLayout("right", "top")
-			
-					
-			local files = gui.CreatePanel("list", frame)
-			files:SetPadding(Rect()+10)
-			files:SetSize(Vec2(300, 225))
-			files:SetupLayout("left", "top", "fill_x")
-						
-			local label = gui.CreatePanel("text", frame)
-			label:SetPadding(Rect(10,2,10,2))
-			label:SetText("D:\\")
-			label:SetupLayout("no_collide", "bottom", "collide", "left", "top")
-			
-			local edit = gui.CreatePanel("text_edit", frame)
-			edit:SetPadding(Rect(30,2,10,2))
-			edit:SetHeight(20)
-			edit:SetupLayout("no_collide", "bottom", "collide", "left", "top", "fill_x")
-			edit.label:SetPosition(Vec2()+4)
-			
-			local name_label = gui.CreatePanel("text", frame)
-			name_label:SetPadding(Rect(10,5,10,5))
-			name_label:SetText("nil")
-			name_label:SetupLayout("no_collide", "bottom", "collide", "left", "top")
-			
-			do
-				local label = gui.CreatePanel("checkbox_label", frame)
-				label:SetPadding(Rect(15,1,15,1))
-				label:SetMargin(Rect()+5)
-				label:SetText("long filename")
-				label:SetupLayout("no_collide", "bottom", "collide", "left", "top")
-				label:SizeToText()
-				local other = label
-				
-				local label = gui.CreatePanel("checkbox_label", frame)
-				label:SetPadding(Rect(15,1,15,1))
-				label:SetMargin(Rect()+5)
-				label:SetText("snes header name")
-				label:SetupLayout("no_collide", "bottom", "collide", "left", "top")
-				label:SizeToText()
-				label:TieCheckbox(other)
-			end
-			
-			local populate
-			
-			local all_extensions = gui.CreatePanel("checkbox_label", frame)
-			all_extensions:SetPadding(Rect(15,2,15,1))
-			all_extensions:SetMargin(Rect()+5)
-			all_extensions:SetText("show all extensions")
-			all_extensions:SetupLayout("no_collide", "bottom", "collide", "left")
-			all_extensions:SizeToText()
-			all_extensions.OnCheck = function()
-				populate(current_dir)
-			end
-			
-			do
-				local label = gui.CreatePanel("checkbox_label", frame)
-				label:SetCollisionGroup("load_area")
-				label:SetPadding(Rect(25,2,5,5))
-				label:SetMargin(Rect()+5)
-				label:SetText("hirom")
-				label:SetupLayout("bottom", "right")
-				label:SizeToText()
-				
-				local label = gui.CreatePanel("checkbox_label", frame)
-				label:SetCollisionGroup("load_area")
-				label:SetPadding(Rect(25,2,5,2))
-				label:SetMargin(Rect()+5)
-				label:SetText("lorom")
-				label:SetupLayout("right", "bottom")
-				label:SizeToText()
-				
-				local button = gui.CreatePanel("text_button", frame)
-				button:SetCollisionGroup("load_area")
-				button:SetText("load")
-				button:SetPadding(Rect(25,3,5,3))
-				button:SetMargin(Rect()+6)
-				button:SizeToText()
-				button:SetWidth(90)
-				button:SetupLayout("right", "bottom")
-				
-				local label = gui.CreatePanel("checkbox_label", frame)
-				label:SetCollisionGroup("load_area")
-				label:SetPadding(Rect(5,3,5,3))
-				label:SetMargin(Rect()+5)
-				label:SetText("pal")
-				label:SetupLayout("no_collide", "bottom", "collide", "right")
-				label:SizeToText()
-				
-				local label = gui.CreatePanel("checkbox_label", frame)
-				label:SetCollisionGroup("load_area")
-				label:SetPadding(Rect(5,2,5,1))
-				label:SetMargin(Rect()+5)
-				label:SetText("ntsc")
-				label:SetupLayout("no_collide", "bottom", "collide", "right")
-				label:SizeToText()
-			end
+			local list = frame:CreatePanel("list")
+			list:SetupLayout("fill")
 			
 			populate = function(dir)
+				list:SetupSorted("name"--[[, "modified", "type", "size"]])
+				--list:SetupConverters(nil, function(num) return os.date("%c", num) end, nil, utility.FormatFileSize)
+			
 				current_dir = dir
-				files:SetupSorted("name")
-				folders:SetupSorted("name")
 				
 				if utility.GetParentFolder(dir):find("/", nil, true) then
-					folders:AddEntry("..").OnSelect = function()
+					list:AddEntry("..", 0, "folder", 0).OnSelect = function()
 						populate(utility.GetParentFolder(dir))
 					end
 				end
 				
 				for name in vfs.Iterate(dir) do 
-					if name ~= "." and name ~= ".." then
-						if not name:find("%.") then
-							folders:AddEntry(name).OnSelect = function()
-								populate(dir .. name .. "/")
-							end
-						elseif all_extensions:IsChecked() or name:find(".lua", nil, true) then
-							files:AddEntry(name).OnSelect = function()
-								name_label:SetText(name)
-								--tester.Begin(name)
-								--	include(dir .. name)
-								--tester.End()
-								--frame:Remove()
-							end
-						else
-							--function files:OnPress()
+					local file = vfs.Open(dir .. name)
+					local type = "folder"
+					local size = 0
+					local last_modified = 0
+					
+					if file then 
+						type = name:match(".+%.(.+)")
+						size = file:GetSize()
+						last_modified = file:GetLastModified()
+					end
 
-							--end
+					if file then
+						file:Close()
+					end
+				
+					if type == "folder" then
+						local entry = list:AddEntry(name--[[, last_modified, type, size]])
+						
+						entry.OnSelect = function()
+							populate(dir .. name .. "/")
 						end
+						
+						entry:SetIcon("textures/silkicons/folder.png")
+					else
+						local entry = list:AddEntry(name--[[, last_modified, type, size]])
+						
+						entry.OnSelect = function()
+							tester.Begin(name)
+								include(dir .. name)
+							tester.End()
+						end
+						
+						entry:SetIcon("textures/silkicons/script.png")
 					end
 				end
 			end
 			
-			populate("lua/gui/") 
+			populate("lua/tests/") 
 		end},
 		{L"run [ESC]", function() menu.Close() end},
 		{L"reset", function() console.RunString("restart") end},
