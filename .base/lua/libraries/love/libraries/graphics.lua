@@ -1,3 +1,5 @@
+if not GRAPHICS then return end
+
 local love = (...) or _G.lovemu.love
 
 local gl = require("lj-opengl") -- OpenGL

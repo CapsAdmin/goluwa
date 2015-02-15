@@ -1,3 +1,5 @@
+if not GRAPHICS then return end
+
 local love = love or ...
 
 local ParticleSystem = {}
