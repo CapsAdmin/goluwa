@@ -534,7 +534,7 @@ do -- cached rendering
 		if self.CachedRendering then
 			self.cache_dirty = true
 
-			if not self.cache_fb or self.cache_texture:GetSize() ~= self.Size then
+			if (not self.cache_fb or self.cache_texture:GetSize() ~= self.Size) and self.Size.w ~= 0 and self.Size.h ~= 0 then
 				self.cache_fb = render.CreateFrameBuffer(self.Size.w, self.Size.h, {
 					{
 						name = "color",
