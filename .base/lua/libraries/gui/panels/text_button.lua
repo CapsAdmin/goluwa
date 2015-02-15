@@ -32,10 +32,6 @@ function PANEL:SizeToText()
 		
 	self.label:SetPosition(marg:GetPosition())
 	self:SetSize(self.label:GetSize() + marg:GetSize()*2)
-	
-	if self.LayoutSize then
-		self.LayoutSize = self:GetSize():Copy()
-	end
 end
 
 function PANEL:OnLayout(S)
