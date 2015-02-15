@@ -358,7 +358,7 @@ do -- list parsing
 	end
 
 	function chatsounds.BuildSoundInfo()
-		local thread = utility.CreateThread()
+		local thread = threads.CreateThread()
 		
 		function thread:OnStart()
 			local out = {}
@@ -556,14 +556,13 @@ do -- list parsing
 			chatsounds.TranslateSoundListsFromSoundInfo()
 		end
 
-		thread:SetIterationsPerTick(5)
 		thread:Start()
 	end
 
 	function chatsounds.BuildSoundLists()
 		local found = {}
 		
-		local thread = utility.CreateThread()
+		local thread = threads.CreateThread()
 
 		function thread:OnStart()
 			vfs.Search("sound/", {"wav", "ogg", "mp3"}, function(path, userdata)
@@ -636,7 +635,6 @@ do -- list parsing
 			chatsounds.BuildSoundInfo()
 		end
 		
-		thread:SetIterationsPerTick(5)
 		thread:Start()
 		
 		chatsounds.build_info_thread = thread

@@ -579,8 +579,7 @@ function prototype.AddBufferTemplate(META)
 					end
 				end				
 				
-				local read_type = data.signed and data[1] or "unsigned " .. data[1]
-				
+				local read_type = data.signed and data[1] or "unsigned " .. data[1]				
 				local val
 				
 				if data.length then
@@ -599,7 +598,7 @@ function prototype.AddBufferTemplate(META)
 					else
 						local values = {}
 						for i = 1, length do
-							table.insert(values, self:ReadType(read_type))
+							values[i] = self:ReadType(read_type)
 						end
 						val = values
 					end
@@ -611,7 +610,7 @@ function prototype.AddBufferTemplate(META)
 						if data.swap_endianess then
 							
 							local size = 16
-							if read_type:find("32", nil, true) or read_type:find("long") then
+							if read_type:find("32", nil, true) or read_type:find("long", nil, true) then
 								size = 32 -- asdasdasd
 							end
 							val = swap_endian(val, size)

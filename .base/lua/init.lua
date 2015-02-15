@@ -172,6 +172,7 @@ do -- libraries
 	event = include("libraries/event.lua") goluwa = event.events -- event handler
 	utility = include("libraries/utilities/utility.lua") -- more like i-dont-know-where-these-functions-go
 	crypto = include("libraries/crypto.lua")
+	threads = include("libraries/threads.lua")
 
 	-- serializing
 	serializer = include("libraries/serializing/serializer.lua")

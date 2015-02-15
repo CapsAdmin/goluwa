@@ -100,7 +100,8 @@ do -- render model
 			local out = {}
 						
 			if path:endswith(".mdl") and steam.LoadModel then
-				local thread = utility.CreateThread()
+				local thread = threads.CreateThread()
+				thread.debug = true
 				
 				function thread.OnStart()
 					local meshes = {}
@@ -125,8 +126,6 @@ do -- render model
 					cb:stop(path, out)
 				end
 				
-				thread:SetIterationsPerTick(15)
-				
 				thread:Start()			
 			elseif path:endswith(".bsp") and steam.LoadMap then
 				steam.LoadMap(path, function(data, thread)
@@ -148,7 +147,7 @@ do -- render model
 					)
 				]]
 				
-				local thread = utility.CreateThread()
+				local thread = threads.CreateThread()
 									
 				function thread.OnStart()
 					assimp.ImportFileEx(path, flags, function(model_data, i, total_meshes)
@@ -172,8 +171,6 @@ do -- render model
 				function thread.OnFinish()
 					cb:stop(path, out)
 				end
-				
-				thread:SetIterationsPerTick(15)
 				
 				thread:Start()
 			else
@@ -241,8 +238,6 @@ do -- physics model
 						stride = ffi.sizeof("float") * 3,
 					},
 				}
-				
-				print(mesh, "???")
 				
 				cb:stop(path, {mesh})
 				

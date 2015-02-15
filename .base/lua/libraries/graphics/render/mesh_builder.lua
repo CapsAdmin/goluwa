@@ -75,7 +75,7 @@ do -- helpers
 		return min, max
 	end
 
-	function META:BuildNormals()
+	function META:BuildNormals(thread)
 		for i = 1, #self.Vertices, 3 do
 
 			local ai = i + 0
@@ -89,6 +89,7 @@ do -- helpers
 			self.Vertices[ai].normal = normal
 			self.Vertices[bi].normal = normal
 			self.Vertices[ci].normal = normal
+			if thread then thread:Sleep() end
 		end
 	end
 
@@ -125,6 +126,7 @@ do -- helpers
 					for _, vertex in pairs(z) do				
 						vertex.normal = normal
 					end
+					if thread then thread:Sleep() end
 				end
 			end
 		end
@@ -137,7 +139,7 @@ do -- helpers
 	]]
 
 	function META:LoadObj(data, callback, generate_normals)
-		local thread = utility.CreateThread()
+		local thread = threads.CreateThread()
 		function thread:OnStart()		
 			local positions = {}
 			local texcoords = {}
@@ -257,9 +259,7 @@ do -- helpers
 		function thread:OnFinish(output)
 			callback(output)
 		end
-		
-		thread:SetIterationsPerTick(1024 * 16)
-		
+				
 		thread:Start()
 	end
 

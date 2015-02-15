@@ -101,9 +101,9 @@ function luadata.FromString(str)
 	return func()
 end
 
-function luadata.Encode(tbl, callback, speed)
+function luadata.Encode(tbl, callback)
 	if callback then
-		local thread = utility.CreateThread()
+		local thread = threads.CreateThread()
 		
 		function thread:OnStart()
 			return luadata.ToString(tbl, {thread = self})
@@ -117,7 +117,6 @@ function luadata.Encode(tbl, callback, speed)
 			callback(false, msg)
 		end
 		
-		thread:SetIterationsPerTick(speed)
 		thread:Start()
 	else
 		return luadata.ToString(tbl)
