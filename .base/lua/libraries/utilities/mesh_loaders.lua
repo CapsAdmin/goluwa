@@ -106,8 +106,8 @@ do -- render model
 			thread.debug = true
 			
 			function thread:OnStart()							
-				if steam.LoadModel and path:endswith(".mdl") then				
-					steam.LoadModel(path, function(model_data)					
+				if steam.LoadModel and full_path:endswith(".mdl") then				
+					steam.LoadModel(full_path, function(model_data)					
 						local mesh = render.CreateMeshBuilder()
 						
 						solve_material_paths(mesh, model_data, dir)
@@ -121,8 +121,8 @@ do -- render model
 						cb:callextra(path, "mesh", mesh)
 						table.insert(out, mesh)					
 					end)
-				elseif steam.LoadMap and path:endswith(".bsp") then
-					for _, mesh in ipairs(steam.LoadMap(path).render_meshes) do 
+				elseif steam.LoadMap and full_path:endswith(".bsp") then
+					for _, mesh in ipairs(steam.LoadMap(full_path).render_meshes) do 
 						cb:callextra(path, "mesh", mesh)
 						table.insert(out, mesh)
 					end
@@ -137,8 +137,8 @@ do -- render model
 						)
 					]]
 									
-					assimp.ImportFileEx(path, flags, function(model_data, i, total_meshes)
-						if render.debug then logf("[render] %s loading %q %s\n", path, model_data.name, i .. "/" .. total_meshes) end
+					assimp.ImportFileEx(full_path, flags, function(model_data, i, total_meshes)
+						if render.debug then logf("[render] %s loading %q %s\n", full_path, model_data.name, i .. "/" .. total_meshes) end
 						
 						local mesh = render.CreateMeshBuilder()
 						
