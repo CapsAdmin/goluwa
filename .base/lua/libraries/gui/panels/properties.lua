@@ -98,12 +98,12 @@ do -- base property
 		local edit = self:CreatePanel("text_edit", "edit")
 		edit:SetText(self:GetEncodedValue())
 		edit:SetSize(self:GetSize())
-		edit:SelectAll()
 		edit.OnEnter = function() 
 			self:StopEditing()
 		end
-		
 		edit:RequestFocus()
+		
+		edit:SelectAll()
 	end
 	
 	function PANEL:StopEditing()	
@@ -385,14 +385,16 @@ do -- color
 		panel.OnPress = function()
 			local frame = gui.CreatePanel("frame")
 			frame:SetSize(Vec2(300, 300))
-			frame:Center()
 			frame:SetTitle("color picker")
 			
 			local picker = frame:CreatePanel("color_picker")
 			picker:SetupLayout("fill")
 			picker.OnColorChanged = function(_, color) self:SetValue(color) end
+			picker:SetColor(self:GetValue())
 			
 			panel:CallOnRemove(function() gui.RemovePanel(frame) end)
+			
+			frame:SetupLayout("center")
 		end
 		
 		prototype.GetRegistered(self.Type, "base_property").Initialize(self)

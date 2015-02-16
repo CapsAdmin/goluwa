@@ -35,6 +35,11 @@ function PANEL:Initialize()
 	end
 end
 
+function PANEL:SetFraction(pos)
+	self.Fraction = pos
+	self:OnButtonPositionChanged(self.button, self.button:GetPosition())
+end
+
 function PANEL:OnButtonPositionChanged(button, pos)
 	if self.XSlide and self.YSlide then
 		pos.x = math.clamp(pos.x, 0, self:GetWidth() - button:GetWidth())
