@@ -7,6 +7,7 @@ sockets.active_sockets = sockets.active_sockets or {}
 
 include("helpers.lua", sockets)
 include("http.lua", sockets)
+include("irc.lua", sockets)
 
 function sockets.Initialize()
 	event.CreateTimer("sockets", 1/30, 0, sockets.Update)
