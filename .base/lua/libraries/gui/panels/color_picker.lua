@@ -8,7 +8,7 @@ prototype.GetSet(PANEL, "Color", Color(1,1,1,1))
 prototype.GetSet(PANEL, "Hue", 0)
 prototype.GetSet(PANEL, "Saturation", 1)
 prototype.GetSet(PANEL, "Value", 1)
-prototype.GetSet(PANEL, "Pallete", "textures/gui/hsv_wheel.png")
+prototype.GetSet(PANEL, "Pallete", "textures/gui/hsv_wheel.png") 
 
 function PANEL:SetValue(val)
 	self.Value = val
@@ -35,7 +35,7 @@ function PANEL:Invalidate(override)
 		
 	self.Color = color
 	
-	self:OnColorChanged(color)
+	self:OnColorChanged(color) 
 	self.xy_slider:SetFraction(self:ColorToPos(color)/self.xy_slider.line:GetTexture():GetSize())
 end
 
@@ -66,12 +66,12 @@ function PANEL:SetPallete(path)
 	
 	self.lookup_tree = nil
 	
-	tex.OnLoad = function(tex, w, h)
+	local function on_load(tex, w, h)
 		local tree = {}
 		
 		for x = 0, w do
 			for y = 0, h do
-				local r,g,b,a = self:GetPixelColor(x,y)
+				local r,g,b,a = tex:GetPixelColor(x,y)
 			
 				tree[r] = tree[r] or {}
 				tree[r][g] = tree[r][g] or {}
@@ -81,6 +81,12 @@ function PANEL:SetPallete(path)
 		end
 		
 		self.lookup_tree = tree
+	end
+	
+	if tex.loading == false then
+		on_load(tex, tex.w, tex.h)
+	else
+		tex.OnLoad = on_load
 	end
 	
 	self.text_edit:SetText(path)
@@ -105,19 +111,22 @@ function PANEL:Initialize()
 	xy:SetRightFill(false)
 	
 	xy.OnSlide = function(_, pos)
+		if xy.suppress then return end
+		xy.suppress = true
 		pos = (pos * self.xy_slider.line:GetTexture():GetSize()):Round()
 		local color = self:PosToColor(pos)
 		self:SetColor(color)
+		xy.suppress = false
 	end
 	
-	xy:SetupLayout("fill")
+	xy:SetupLayout("center", "fill")
 	
 	self:SetPallete(self.Pallete)
 end
 
 function PANEL:OnColorChanged(color) end
 
-gui.RegisterPanel(PANEL) 
+gui.RegisterPanel(PANEL)
 
 if RELOAD then
 	local frame = gui.CreatePanel("frame", nil, "color_picker_test")
@@ -125,6 +134,6 @@ if RELOAD then
 	
 	local self = frame:CreatePanel("color_picker")
 	self:SetupLayout("fill")
-	self:SetColor(print(Color():GetRandom(0,1)))   
 	self.OnColorChanged = print
+	self:SetColor(print(Color():GetRandom(0,1)))   
 end

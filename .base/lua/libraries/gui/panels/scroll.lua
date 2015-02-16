@@ -115,6 +115,7 @@ function PANEL:SetPanel(panel)
 		if self.x_track then
 			self.x_handle:SetX(math.clamp(frac.x * (self.x_track:GetWidth()), 0, self.scroll_area:GetWidth()-self.x_handle:GetWidth()))
 		end
+		self:Layout(true)
 		area.scrolling = false
 	end
 	
@@ -150,7 +151,10 @@ function PANEL:OnLayout(S)
 	local panel = self.panel
 	
 	if not panel:IsValid() then return end
+	panel:Layout(true)
 
+	if self.scroll_area.scrolling then return end
+	
 	self.scroll_area.scrolling = true
 	
 	if self.x_track then self.x_handle:SetPosition(self.x_handle:GetPosition()) end

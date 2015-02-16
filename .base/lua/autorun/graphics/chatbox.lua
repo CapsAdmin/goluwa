@@ -400,7 +400,7 @@ function chat.Open(tab)
 	if tab == "console" then
 		panel:SetPosition(Vec2(0, 0))
 		panel:SetHeight(300)
-		panel:MoveLeft()
+		panel:CenterSimple()
 		panel:MoveUp()
 		panel:FillX()
 	elseif tab == "chat" then
