@@ -105,7 +105,7 @@ function resource.Download(path, callback, on_fail, crc)
 	
 	local path2 = R(path)
 
-	if path2 then
+	if path2 and vfs.IsFile(path2) then
 		callback(path2)
 		return true
 	end
