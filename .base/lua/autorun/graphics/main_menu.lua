@@ -238,21 +238,26 @@ function menu.CreateTopBar()
 		{L"search"},
 	})
 	create_button(L"netplay", {
-		{L"connect", function()
-			gui.StringInput("Enter the server IP", cookies.Get("lastip", "localhost"), function(str)
-				console.RunString("start_client")
-				cookies.Set("lastip", str)
-				console.RunString("connect "..str .." 1234")
-				menu.Close()
-			end)
-		end},
-		{L"disconnect", function() console.RunString("disconnect menu disconnect") end},
-		{L"host", function() 
-			system.StartLuaInstance("start_server", "host")
+		{L"internet", function()
+			local frame = gui.CreatePanel("frame")
+			frame:SetSkin(bar:GetSkin())
+			frame:SetPosition(Vec2(100, 100))
+			frame:SetSize(Vec2(500, 400))
+			frame:SetTitle("server list (fetching public servers..)")
+		
+			local list = frame:CreatePanel("list")
+			list:SetupLayout("fill")
 			
-			event.Delay(0.25, function()
-				console.RunString("connect localhost 1234")
-			end) 
+			network.JoinIRCServer()
+			
+			list:SetupSorted(L"name", L"ip")
+			
+			event.AddListener("PublicServerFound", "server_list", function(ip, name)
+				frame:SetTitle("server list")
+				list:AddEntry(name, ip).OnSelect = function()
+					console.RunString("connect " .. ip)
+				end
+			end)
 		end},
 	})
 	create_button(L"misc", {

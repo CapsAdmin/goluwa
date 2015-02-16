@@ -208,6 +208,8 @@ if SERVER then
 		network.socket = server
 		
 		event.Call("NetworkStarted")
+		
+		network.JoinIRCServer()
 	end
 	
 	function network.CloseServer(reason)		
@@ -233,6 +235,100 @@ if SERVER then
 	function network.BroadcastPacket(str, flags, channel)	
 		for _, peer in pairs(network.GetPeers()) do
 			network.SendPacketToPeer(peer, str)
+		end
+	end
+end
+
+do
+	network.irc_client = network.irc_client or NULL
+	network.available_servers = {}
+	network.server = "chat.freenode.net"
+	network.channel = "#goluwa"
+
+	function network.SetHostName(str)
+		nvars.Set("hostname", str)
+	end
+
+	function network.GetHostname()
+		return nvars.Get("hostname", e.USERNAME .. "'s server")
+	end
+	
+	function network.GetAvailableServers()
+		return network.available_servers
+	end
+
+	function network.JoinIRCServer()
+		if not network.irc_client:IsValid() then
+			local client = sockets.CreateIRCClient()
+			
+			if SERVER then
+				client:SetNick(client:GetNick() .. "_server")
+				
+				client.OnPrivateMessage = network.OnIRCMessage
+				
+				client.OnReady = function() logn("successfully joined irc channel") end
+			end
+			
+			if CLIENT then
+				client:SetNick(client:GetNick() .. "_client")
+				client.OnPrivateMessage = network.OnIRCMessage
+				client.OnJoin = function(s, nick) 
+					if nick:endswith("_server") then
+						client.asked[nick] = true
+						client:PRIVMSG(nick .. " hostname")
+					end
+				end
+				client.OnPart = function(s, nick, ip) 
+					if nick:endswith("_server") then
+						network.available_servers[ip] = nil
+					end
+				end
+				client.OnReady = function() logn("successfully joined irc channel") network.QueryAvailableServers() end
+			end
+			
+			client:Connect(network.server)	
+			client:Join(network.channel)
+
+			logf("joining %s:%s\n", network.server, network.channel)
+			
+			network.irc_client = client
+		end
+	end
+
+	function network.QueryAvailableServers()
+		network.available_servers = {}
+		
+		local irc_client = network.irc_client
+		
+		if not irc_client:IsValid() then 
+			warning("irc client not available")
+			return 
+		end
+		
+		logn("fetching public servers...")
+		
+		irc_client.asked = {}
+		
+		for user in pairs(network.irc_client:GetUsers()) do
+			if user:endswith("_server") then
+				irc_client.asked[user] = true
+				irc_client:PRIVMSG(user .. " hostname")
+			end
+		end
+	end
+	
+	function network.OnIRCMessage(irc_client, message, nick, ip)
+		if CLIENT then
+			if irc_client.asked[nick] then
+				network.available_servers[ip] = message
+				event.Call("PublicServerFound", ip, message)
+			end
+		end
+		
+		if SERVER then
+			if message == "hostname" then
+				irc_client:PRIVMSG(nick .. " :" .. network.GetHostname())
+			end
 		end
 	end
 end
