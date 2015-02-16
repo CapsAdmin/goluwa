@@ -394,13 +394,15 @@ do -- timers
 						local start = system.GetTime()
 						local ok, res = xpcall(data.callback, system.OnError)
 						
+						if system.GetFrameTime() >= data.fps then break end
+						
 						if not ok or res ~= nil then
 							table.insert(remove_these, i)
 							break
 						end		
 						
 						time = time + (system.GetTime() - start)
-					until time >= data.fps
+					until time >= data.fps 
 				else
 					if data.realtime < cur then					
 						local fps = ((cur + data.frequency) - data.realtime)
