@@ -167,7 +167,11 @@ function prototype.RebuildMetatables()
 				copy.copy_variables = tbl
 			end
 			
-			copy.__index = copy
+			if copy.__index2 then
+				copy.__index = function(s, k) return copy[k] or copy.__index2(s, k) end
+			else
+				copy.__index = copy
+			end
 			
 			copy.BaseClass = sub_types[base_list[#base_list] or meta.TypeBase]
 			
