@@ -76,6 +76,8 @@ function network.UpdateStatistics()
 end
 
 if CLIENT then
+	local var = console.CreateVariable("connect_translate", "")
+	
 	function network.Connect(ip, port, retries)
 		network.Disconnect("already connected")
 		
@@ -93,6 +95,13 @@ if CLIENT then
 					network.Connect(ip, port, retries - 1)
 				end	
 			end)
+		end
+		
+		if var:Get() ~= "" then
+			local from, to = unpack(var:Get():explode(">"))
+			if ip == from then
+				ip = to
+			end
 		end
 		
 		local peer = enet.CreatePeer(ip, port)
@@ -147,6 +156,8 @@ if SERVER then
 	function network.Host(ip, port)				
 		ip = tostring(ip)
 		port = tonumber(port) or check(port, "number")
+		
+		network.port = port
 		
 		if network.IsHosting() then
 			network.CloseServer("already hosting")
@@ -241,7 +252,7 @@ end
 
 do
 	network.irc_client = network.irc_client or NULL
-	network.available_servers = {}
+	network.available_servers = network.available_servers or {}
 	network.server = "chat.freenode.net"
 	network.channel = "#goluwa"
 
@@ -275,7 +286,7 @@ do
 				client.OnJoin = function(s, nick) 
 					if nick:endswith("_server") then
 						client.asked[nick] = true
-						client:PRIVMSG(nick .. " hostname")
+						client:PRIVMSG(nick .. " info")
 					end
 				end
 				client.OnPart = function(s, nick, ip) 
@@ -312,7 +323,7 @@ do
 		for user in pairs(network.irc_client:GetUsers()) do
 			if user:endswith("_server") then
 				irc_client.asked[user] = true
-				irc_client:PRIVMSG(user .. " hostname")
+				irc_client:PRIVMSG(user .. " info")
 			end
 		end
 	end
@@ -320,14 +331,16 @@ do
 	function network.OnIRCMessage(irc_client, message, nick, ip)
 		if CLIENT then
 			if irc_client.asked[nick] then
-				network.available_servers[ip] = message
-				event.Call("PublicServerFound", ip, message)
+				local info = serializer.Decode("msgpack", message)
+				info.ip = ip
+				network.available_servers[ip] = info
+				event.Call("PublicServerFound", info)
 			end
 		end
 		
 		if SERVER then
-			if message == "hostname" then
-				irc_client:PRIVMSG(nick .. " :" .. network.GetHostname())
+			if message == "info" then
+				irc_client:PRIVMSG(nick .. " :" .. serializer.Encode("msgpack", {name = network.GetHostname(), port = network.port}))
 			end
 		end
 	end
