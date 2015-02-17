@@ -167,14 +167,23 @@ local function translate_fields(data)
 
 	for k, v in pairs(data) do
 
+		local params = {}
+	
 		if type(k) == "number" then
+			params = v
 			k, v = next(v)
 		end
 
 		local t, default, get = type_of_attribute(v)
-		local precision, type_ = t:match("(.-) (.+)")
-
-		table.insert(out, {name = k, type = type_ or t, default = default, precision = precision or "highp", get = get})
+		
+		table.insert(out, {
+			name = k, 
+			type = type_ or t, 
+			default = default, 
+			precision = params.precision or "highp",
+			varying = params.varying and "varying" or "",
+			get = get,
+		})
 	end
 
 	return out
@@ -200,7 +209,7 @@ local function variables_to_string(type, variables, prepend, macro, array)
 				name = prepend .. name
 			end
 
-			table.insert(out, ("%s %s %s %s%s;"):format(type, data.precision, data.type, name, array))
+			table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array))
 
 			if macro then
 				table.insert(out, ("#define %s %s"):format(data.name, name))
