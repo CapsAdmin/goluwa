@@ -17,6 +17,7 @@ prototype.GetSet(PANEL, "Margin", Rect(1, 1, 1, 1))
 prototype.GetSet(PANEL, "ObeyMargin", true)
 prototype.GetSet(PANEL, "BringToFrontOnClick", false)
 prototype.GetSet(PANEL, "LayoutParentOnLayout", false)
+prototype.GetSet(PANEL, "LayoutWhenInvisible", true)
 prototype.GetSet(PANEL, "VisibilityPanel", NULL)
 prototype.GetSet(PANEL, "NoDraw", false)
 
@@ -1578,7 +1579,7 @@ do -- layout
 	end
 	
 	function PANEL:Layout(now)
-		if now then		
+		if now and (self.LayoutWhenInvisible or not self.draw_no_draw) then		
 			if not self.in_layout then 
 				self.in_layout = true
 				
