@@ -33,10 +33,48 @@ function META:Upload(skip_unref)
 	if #self.Vertices == 0 then return end
 	
 	self.mesh = render.CreateMesh(self.Vertices, self.Indices)
+		
 	-- don't store the geometry on the lua side
 	if not skip_unref then
 		self:UnreferenceVertices()
 	end
+end
+
+function META:SaveToFile(path)
+	--self.mesh = render.CreateMesh()
+	--self.mesh:UpdateBuffer(vertices, indices, vertices_size, indices_size)
+			
+	self.mesh = render.CreateMesh(self.Vertices, self.Indices)
+	
+	local vtx_count = #self.Vertices
+	local vtx = ffi.string(self.mesh.vertices, self.mesh.vertices_size) .. ffi.string(ffi.cast("uint32_t", vtx_count), ffi.sizeof("uint32_t"))
+	vfs.Write(path .. ".vtx", vtx)
+	
+	if self.Indices then
+		local idx_count = #self.Indices
+		local idx = ffi.string(self.mesh.indices, self.mesh.indices_size) .. ffi.string(ffi.cast("uint32_t", idx_count), ffi.sizeof("uint32_t"))
+		vfs.Write(path .. ".idx", idx)
+	end
+end
+
+function META:LoadFromFile(path)
+	self.mesh = render.CreateMesh(self.Vertices, self.Indices)
+	
+	local vtx = vfs.Read(path .. ".vtx")
+	local vtx_count = ffi.cast("uint32_t", vtx:sub(-ffi.sizeof("uint32_t")))
+	vtx = vtx:sub(ffi.sizeof("uint32_t") + 1)
+	
+	local idx = vfs.Read(path .. ".idx")
+	local idx_count
+	if idx then
+		idx_count = ffi.cast("uint32_t", idx:sub(-ffi.sizeof("uint32_t")))
+		idx = idx:sub(ffi.sizeof("uint32_t") + 1)
+	end
+	
+	print(vtx_count, idx_count, #vtx, idx and #idx)
+	
+	self.mesh = render.CreateMesh(vtx_count, idx_count)
+	self.mesh:UpdateBuffer(ffi.cast(self.mesh.vertices, vtx), idx and ffi.cast(self.mesh.indices, idx), #vtx, idx and #idx)
 end
 
 function META:UnreferenceVertices()
@@ -446,6 +484,8 @@ do -- helpers
 				local r,g,b,a = tex:GetPixelColor(x, y)
 				return (((r+g+b+a) / 4) / 255) ^ pow
 			end
+			
+			local offset = -Vec3(size.x, size.y, height) / 2
 					
 			for x = 0, res.x do				
 				local x2 = (x/res.x) * tex.w
@@ -469,7 +509,7 @@ do -- helpers
 					
 					local z5 = (z1+z2+z3+z4)/4
 										
-					local x = x * s.x
+					local x = (x * s.x)
 					local y = y * s.y
 										
 					--[[
@@ -478,18 +518,18 @@ do -- helpers
 					]]
 				
 					local a1 = {}
-					a1.pos = Vec3(x, y, z1)
-					a1.uv = Vec2(a1.pos.x / size.x, a1.pos.y / size.y)
+					a1.pos = Vec3(x, y, z1) + offset
+					a1.uv = Vec2(a1.pos.x + offset.x, a1.pos.y + offset.y) / size
 					self:AddVertex(a1)	
 					
 					local b1 = {}
-					b1.pos = Vec3(x + s.x, y, z2)
-					b1.uv = Vec2(b1.pos.x / size.x, b1.pos.y / size.y)
+					b1.pos = Vec3(x + s.x, y, z2) + offset
+					b1.uv = Vec2(b1.pos.x + offset.x, b1.pos.y + offset.y) / size
 					self:AddVertex(b1)
 
 					local c1 = {}
-					c1.pos = Vec3(x + s2.x, y + s2.y, z5)
-					c1.uv = Vec2(c1.pos.x / size.x, c1.pos.y / size.y)
+					c1.pos = Vec3(x + s2.x, y + s2.y, z5) + offset
+					c1.uv = Vec2(c1.pos.x + offset.x, c1.pos.y + offset.y) / size
 					self:AddVertex(c1)
 					
 					local normal = -(a1.pos - b1.pos):Cross(b1.pos - c1.pos):GetNormalized()
@@ -504,18 +544,18 @@ do -- helpers
 					]]
 				
 					local a2 = {}
-					a2.pos = Vec3(x, y, z1)
-					a2.uv = Vec2(a2.pos.x / size.x, a2.pos.y / size.y)
+					a2.pos = Vec3(x, y, z1) + offset
+					a2.uv = Vec2(a2.pos.x + offset.x, a2.pos.y + offset.y) / size
 					self:AddVertex(a2)	
 					
 					local b2 = {}
-					b2.pos = Vec3(x + s2.x, y + s2.y, z5)
-					b2.uv = Vec2(b2.pos.x / size.x, b2.pos.y / size.y)
+					b2.pos = Vec3(x + s2.x, y + s2.y, z5) + offset
+					b2.uv = Vec2(b2.pos.x + offset.x, b2.pos.y + offset.y) / size
 					self:AddVertex(b2)
 					
 					local c2 = {}
-					c2.pos = Vec3(x, y + s.y, z3)
-					c2.uv = Vec2(c2.pos.x / size.x, c2.pos.y / size.y)
+					c2.pos = Vec3(x, y + s.y, z3) + offset
+					c2.uv = Vec2(c2.pos.x + offset.x, c2.pos.y + offset.y) / size
 					self:AddVertex(c2)				
 					
 					local normal = -(a2.pos - b2.pos):Cross(b2.pos - c2.pos):GetNormalized()
@@ -530,18 +570,18 @@ do -- helpers
 					]]
 				
 					local a3 = {}
-					a3.pos = Vec3(x, y + s.y, z3)
-					a3.uv = Vec2(a3.pos.x / size.x, a3.pos.y / size.y)
+					a3.pos = Vec3(x, y + s.y, z3) + offset
+					a3.uv = Vec2(a3.pos.x + offset.x, a3.pos.y + offset.y) / size
 					self:AddVertex(a3)	
 					
 					local b3 = {}
-					b3.pos = Vec3(x + s2.x, y + s2.y, z5)
-					b3.uv = Vec2(b3.pos.x / size.x, b3.pos.y / size.y)
+					b3.pos = Vec3(x + s2.x, y + s2.y, z5) + offset
+					b3.uv = Vec2(b3.pos.x + offset.x, b3.pos.y + offset.y) / size
 					self:AddVertex(b3)
 
 					local c3 = {}
-					c3.pos = Vec3(x + s.x, y + s.y, z4)
-					c3.uv = Vec2(c3.pos.x / size.x, c3.pos.y / size.y)
+					c3.pos = Vec3(x + s.x, y + s.y, z4) + offset
+					c3.uv = Vec2(c3.pos.x + offset.x, c3.pos.y + offset.y) / size
 					self:AddVertex(c3)
 					
 					local normal = -(a3.pos - b3.pos):Cross(b3.pos - c3.pos):GetNormalized()
@@ -556,18 +596,18 @@ do -- helpers
 					]]
 				
 					local a4 = {}
-					a4.pos = Vec3(x + s2.x, y + s2.y, z5)
-					a4.uv = Vec2(a4.pos.x / size.x, a4.pos.y / size.y)
+					a4.pos = Vec3(x + s2.x, y + s2.y, z5) + offset
+					a4.uv = Vec2(a4.pos.x + offset.x, a4.pos.y + offset.y) / size
 					self:AddVertex(a4)	
 					
 					local b4 = {}
-					b4.pos = Vec3(x + s.x, y, z2)
-					b4.uv = Vec2(b4.pos.x / size.x, b4.pos.y / size.y)
+					b4.pos = Vec3(x + s.x, y, z2) + offset
+					b4.uv = Vec2(b4.pos.x + offset.x, b4.pos.y + offset.y) / size
 					self:AddVertex(b4)
 					
 					local c4 = {}
-					c4.pos = Vec3(x + s.x, y + s.y, z4)
-					c4.uv = Vec2(c4.pos.x / size.x, c4.pos.y / size.y)
+					c4.pos = Vec3(x + s.x, y + s.y, z4) + offset
+					c4.uv = Vec2(c4.pos.x + offset.x, c4.pos.y + offset.y) / size
 					self:AddVertex(c4)		
 
 					local normal = -(a4.pos - b4.pos):Cross(b4.pos - c4.pos):GetNormalized()
