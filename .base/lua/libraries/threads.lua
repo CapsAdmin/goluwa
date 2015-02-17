@@ -121,7 +121,7 @@ prototype.Register(META)
 function threads.CreateThread(on_start, on_finish)
 	local self = prototype.CreateObject(META)
 	
-	if on_start then self.OnFinish = function(_, ...) return on_start(...) end end
+	if on_start then self.OnStart = function(_, ...) return on_start(...) end end
 	if on_finish then self.OnFinish = function(_, ...) return on_finish(...) end end
 	
 	if on_start then self:Start() end
