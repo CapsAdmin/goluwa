@@ -247,6 +247,37 @@ function utility.CreateWeakTable()
 end
 
 function utility.TableToColumns(title, tbl, columns, check, sort_key)
+
+	if gui then
+		local frame = gui.CreatePanel("frame", nil, "table_to_columns_" .. title)
+		frame:SetSize(Vec2() + 300)
+		frame:SetTitle(title)
+		
+		local list = frame:CreatePanel("list")
+		list:SetupLayout("fill")
+		
+		local keys = {} 
+		for i,v in ipairs(columns) do keys[i] = v.friendly or v.key end
+		list:SetupSorted(unpack(keys))
+		
+		for _, data in ipairs(tbl) do
+			local args = {}
+			for i, info in ipairs(columns) do
+				if info.tostring then 
+					args[i] = info.tostring(data[info.key], data, tbl)
+				else	
+					args[i] = data[info.key]
+				end
+				if type(args[i]) == "string" then
+					args[i] = args[i]:trim()
+				end
+			end
+			list:AddEntry(unpack(args))
+		end
+	
+		return
+	end
+
 	local top = {}
 	
 	for k, v in pairs(tbl) do
