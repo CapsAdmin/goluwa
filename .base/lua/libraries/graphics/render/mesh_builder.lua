@@ -15,11 +15,15 @@ function render.CreateMeshBuilder()
 	return prototype.CreateObject(META)
 end
 
+META.i = 1
+
 function META:AddVertex(vertex)
-	table.insert(self.Vertices, vertex)
+	self.Vertices[self.i] = vertex
+	self.i = self.i + 1
 end
 
 function META:Clear()
+	self.i = 1
 	table.clear(self.Vertices)
 	if self.Indices then table.clear(self.Indices) end
 end
@@ -75,7 +79,7 @@ do -- helpers
 		return min, max
 	end
 
-	function META:BuildNormals(thread)
+	function META:BuildNormals()
 		for i = 1, #self.Vertices, 3 do
 
 			local ai = i + 0
@@ -89,7 +93,7 @@ do -- helpers
 			self.Vertices[ai].normal = normal
 			self.Vertices[bi].normal = normal
 			self.Vertices[ci].normal = normal
-			if thread then thread:Sleep() end
+			threads.Sleep()
 		end
 	end
 
@@ -126,7 +130,7 @@ do -- helpers
 					for _, vertex in pairs(z) do				
 						vertex.normal = normal
 					end
-					if thread then thread:Sleep() end
+					threads.Sleep()
 				end
 			end
 		end
@@ -423,70 +427,155 @@ do -- helpers
 	end
 		
 	do	
-		local up = Vec3(0, 0, -1)	
+		local up = Vec3(0, 0, -1)
 		
 		function META:LoadHeightmap(tex, size, res, height)
 			size = size or 1024
 			res = res or 128
-			height = height or -128
+			height = height or -64
 						
 			local s = size / res
+			local s2 = s / 2
 				
 			local i = 1
+		
+			local xw = (1/res) * tex.w
+			local yh = (1/res) * tex.h
 			
+			local function get_color(x, y)
+				local r,g,b,a = tex:GetPixelColor(x, y)
+				return ((r+g+b+a) / 4) / 255
+			end
+					
 			for x = 0, res do				
 				local x2 = (x/res) * tex.w
 				
 				for y = 0, res do	
 					local y2 = (y/res) * tex.h
 					
-					y2 = -y2 + tex.h
+					y2 = -y2 + tex.h -- fix me
 					
-					local z1 = tex:GetPixelColor(x2, y2) / 255 * height -- top left
-					local z2 = tex:GetPixelColor(x2 + 1, y2) / 255 * height -- top right
-					local z3 = tex:GetPixelColor(x2, y2 + 1) / 255 * height -- bottom left
-					local z4 = tex:GetPixelColor(x2 + 1, y2 + 1) / 255 * height -- bottom right
+					--[[
+							  __
+						    |\ /|
+							|/_\|
+					]]
 
+					
+					local z3 = get_color(x2, y2) * height -- top left
+					local z4 = get_color(x2+xw, y2) * height -- top right
+					local z1 = get_color(x2, y2+yh) * height -- bottom left
+					local z2 = get_color(x2+xw, y2+yh) * height -- bottom right
+					
+					local z5 = (z1+z2+z3+z4)/4
+										
 					local x = x * s
 					local y = y * s
-					
-					local vertex = {}
-					vertex.pos = Vec3(x, y + s, z3)
-					vertex.normal = up
-					vertex.uv = Vec2(vertex.pos.x / size, vertex.pos.y / size)
-					self:AddVertex(vertex)
+										
+					--[[
+						___
+						\ /
+					]]
 				
-					local vertex = {}
-					vertex.pos = Vec3(x + s, y, z2)
-					vertex.normal = up
-					vertex.uv = Vec2(vertex.pos.x / size, vertex.pos.y / size)
-					self:AddVertex(vertex)
+					local a1 = {}
+					a1.pos = Vec3(x, y, z1)
+					a1.uv = Vec2(a1.pos.x / size, a1.pos.y / size)
+					self:AddVertex(a1)	
+					
+					local b1 = {}
+					b1.pos = Vec3(x + s, y, z2)
+					b1.uv = Vec2(b1.pos.x / size, b1.pos.y / size)
+					self:AddVertex(b1)
 
-					local vertex = {}
-					vertex.pos = Vec3(x, y, z1)
-					vertex.normal = up
-					vertex.uv = Vec2(vertex.pos.x / size, vertex.pos.y / size)
-					self:AddVertex(vertex)
+					local c1 = {}
+					c1.pos = Vec3(x + s2, y + s2, z5)
+					c1.uv = Vec2(c1.pos.x / size, c1.pos.y / size)
+					self:AddVertex(c1)
 					
+					local normal = -(a1.pos - b1.pos):Cross(b1.pos - c1.pos):GetNormalized()
+					a1.normal = normal
+					b1.normal = normal
+					c1.normal = normal
 				
+					--[[
+						 ___
+						|\ /
+						|/ 
+					]]
 				
-					local vertex = {}
-					vertex.pos = Vec3(x, y + s, z3)
-					vertex.normal = up
-					vertex.uv = Vec2(vertex.pos.x / size, vertex.pos.y / size)
-					self:AddVertex(vertex)
+					local a2 = {}
+					a2.pos = Vec3(x, y, z1)
+					a2.uv = Vec2(a2.pos.x / size, a2.pos.y / size)
+					self:AddVertex(a2)	
 					
-					local vertex = {}
-					vertex.pos = Vec3(x + s, y + s, z4)
-					vertex.normal = up
-					vertex.uv = Vec2(vertex.pos.x / size, vertex.pos.y / size)
-					self:AddVertex(vertex)
+					local b2 = {}
+					b2.pos = Vec3(x + s2, y + s2, z5)
+					b2.uv = Vec2(b2.pos.x / size, b2.pos.y / size)
+					self:AddVertex(b2)
 					
-					local vertex = {}
-					vertex.pos = Vec3(x + s, y, z3)
-					vertex.normal = up
-					vertex.uv = Vec2(vertex.pos.x / size, vertex.pos.y / size)
-					self:AddVertex(vertex)				
+					local c2 = {}
+					c2.pos = Vec3(x, y + s, z3)
+					c2.uv = Vec2(c2.pos.x / size, c2.pos.y / size)
+					self:AddVertex(c2)				
+					
+					local normal = -(a2.pos - b2.pos):Cross(b2.pos - c2.pos):GetNormalized()
+					a2.normal = normal
+					b2.normal = normal
+					c2.normal = normal
+				
+					--[[
+						___
+					   |\_/
+					   |/_\
+					]]
+				
+					local a3 = {}
+					a3.pos = Vec3(x, y + s, z3)
+					a3.uv = Vec2(a3.pos.x / size, a3.pos.y / size)
+					self:AddVertex(a3)	
+					
+					local b3 = {}
+					b3.pos = Vec3(x + s2, y + s2, z5)
+					b3.uv = Vec2(b3.pos.x / size, b3.pos.y / size)
+					self:AddVertex(b3)
+
+					local c3 = {}
+					c3.pos = Vec3(x + s, y + s, z4)
+					c3.uv = Vec2(c3.pos.x / size, c3.pos.y / size)
+					self:AddVertex(c3)
+					
+					local normal = -(a3.pos - b3.pos):Cross(b3.pos - c3.pos):GetNormalized()
+					a3.normal = normal
+					b3.normal = normal
+					c3.normal = normal
+				
+					--[[
+						___
+					   |\_/|
+					   |/_\|
+					]]
+				
+					local a4 = {}
+					a4.pos = Vec3(x + s2, y + s2, z5)
+					a4.uv = Vec2(a4.pos.x / size, a4.pos.y / size)
+					self:AddVertex(a4)	
+					
+					local b4 = {}
+					b4.pos = Vec3(x + s, y, z2)
+					b4.uv = Vec2(b4.pos.x / size, b4.pos.y / size)
+					self:AddVertex(b4)
+					
+					local c4 = {}
+					c4.pos = Vec3(x + s, y + s, z4)
+					c4.uv = Vec2(c4.pos.x / size, c4.pos.y / size)
+					self:AddVertex(c4)		
+
+					local normal = -(a4.pos - b4.pos):Cross(b4.pos - c4.pos):GetNormalized()
+					a4.normal = normal
+					b4.normal = normal
+					c4.normal = normal
+					
+					threads.Sleep()
 				end
 			end
 		end
