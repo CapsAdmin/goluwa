@@ -25,6 +25,7 @@ function PANEL:Initialize()
 	local label = self:CreatePanel("text", "label")
 	label:SetIgnoreMouse(true)
 	self:Layout(true)
+	self:SetLayoutWhenInvisible(false)
 end
 
 function PANEL:SizeToText()

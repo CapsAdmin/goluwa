@@ -344,7 +344,15 @@ do -- skin
 	
 	function gui.GetRegisteredSkin(name)
 		if gui.registered_skins[name] then 
-			return gui.registered_skins[name] 
+			local tbl = gui.registered_skins[name] 
+			
+			if not tbl.skin then
+				local skin = tbl:Build()
+				skin.name = tbl.Name	
+				tbl.skin = skin
+			end
+			
+			return tbl
 		end
 	end
 	
@@ -363,16 +371,17 @@ do -- skin
 	
 	function gui.RegisterSkin(tbl)
 		gui.registered_skins[tbl.Name] = tbl
-		
-		local skin = tbl:Build()
-		skin.name = tbl.Name
-		
-		tbl.skin = skin
-		
+				
 		if RELOAD then
+			if not tbl.skin then
+				local skin = tbl:Build()
+				skin.name = tbl.Name	
+				tbl.skin = skin
+			end
+		
 			for k,v in pairs(gui.panels) do
-				if v:HasSkin(skin.Name) then
-					v:SetSkin(skin)
+				if v:HasSkin(tbl.Name) then
+					v:SetSkin(tbl.skin)
 				end
 			end
 		end

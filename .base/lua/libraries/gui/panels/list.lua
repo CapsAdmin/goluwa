@@ -165,7 +165,6 @@ end
 
 function PANEL:AddEntry(...)						
 	local entry = self.list:CreatePanel("button") 
-	
 	entry.OnSelect = function() end
 	entry.labels = {}
 				

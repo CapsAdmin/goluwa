@@ -15,6 +15,7 @@ prototype.GetSet(PANEL, "TextColor")
 
 function PANEL:Initialize()
 	self:SetNoDraw(true)
+	self:SetLayoutWhenInvisible(false)
 	local markup = surface.CreateMarkup()
 	markup:SetEditable(false)
 	markup.OnInvalidate = function() 
@@ -56,7 +57,9 @@ function PANEL:SetCopyTags(b)
 	self.markup:SetCopyTags(b)
 end
 
-function PANEL:SetText(str)	
+function PANEL:SetText(str)
+	str = tostring(str)
+	
 	self.Text = str
 	
 	local markup = self.markup
