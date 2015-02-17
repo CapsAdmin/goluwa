@@ -224,7 +224,7 @@ function META:HandleMessage(line)
 				
 				self:OnJoin(nick, ip)
 				return
-			elseif cmd == "PART" then
+			elseif cmd == "PART" or cmd == "QUIT" then
 				self.Users[nick] = nil
 				self:OnPart(nick, ip)
 				return
@@ -325,15 +325,4 @@ function sockets.CreateIRCClient()
 	self.queries = {}
 	
 	return self
-end
-
-if RELOAD then
-	if IRC_CLIENT then return end
-	
-	local client = sockets.CreateIRCClient()
-	client:Connect("chat.freenode.net")	
-	client:JOIN("#goluwa")
-	client:PRIVMSG("#goluwa :hi")
-
-	IRC_CLIENT = client
 end
