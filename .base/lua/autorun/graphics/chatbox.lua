@@ -139,11 +139,11 @@ function chat.GetInputPosition()
 	return chat.panel:GetPosition()
 end
 
-surface.CreateFont("console_font", {path = "Roboto", size = 10})
-
 function chat.GetPanel()
 	if chat.panel:IsValid() then return chat.panel end
-		
+
+	surface.CreateFont("console_font", {path = "Roboto", size = 10})
+	
 	local frame = gui.CreatePanel("frame")
 	frame:SetTitle("chatbox")
 	frame:SetSize(Vec2(400, 250))
