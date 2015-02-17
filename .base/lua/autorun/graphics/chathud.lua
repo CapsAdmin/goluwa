@@ -96,14 +96,6 @@ if surface.DrawFlag then
 	}
 end
 
-for _, v in pairs(vfs.Find("textures/silkicons/")) do
-	chathud.config.shortcuts[v:gsub("(%.png)$","")] = "<texture=textures/silkicons/" .. v .. ",16>"
-end
-
-for name, data in pairs(chathud.fonts) do
-	surface.CreateFont(data.name, data.data)
-end
-
 local chathud_show = console.CreateVariable("cl_chathud_show", 1)
 local height_mult = console.CreateVariable("cl_chathud_height_mult", 0.76)
 local width_mult = console.CreateVariable("cl_chathud_width_mult", 0.6)
@@ -113,7 +105,21 @@ chathud.markup:SetEditable(false)
 chathud.markup:SetSelectable(false)
 chathud.life_time = 20
 
+local first = true
+
 function chathud.AddText(...)
+	
+	if first then
+		for _, v in pairs(vfs.Find("textures/silkicons/")) do
+			chathud.config.shortcuts[v:gsub("(%.png)$","")] = "<texture=textures/silkicons/" .. v .. ",16>"
+		end
+
+		for name, data in pairs(chathud.fonts) do
+			surface.CreateFont(data.name, data.data)
+		end
+		first = nil
+	end
+
 	local args = {}
 		
 	for k,v in pairs({...}) do
