@@ -240,24 +240,55 @@ function menu.CreateTopBar()
 	create_button(L"netplay", {
 		{L"internet", function()
 			local frame = gui.CreatePanel("frame")
-			frame:SetSkin(bar:GetSkin())
+			--frame:SetSkin(bar:GetSkin())
 			frame:SetPosition(Vec2(100, 100))
 			frame:SetSize(Vec2(500, 400))
-			frame:SetTitle("server list (fetching public servers..)")
+			frame:SetTitle("servers (fetching public servers..)")
+			
+			local tab = frame:CreatePanel("tab")
+			tab:SetupLayout("fill")
+						
+			local page = tab:AddTab(L"internet")
 		
-			local list = frame:CreatePanel("list")
+			local list = page:CreatePanel("list")
 			list:SetupLayout("fill")
+			list:SetupSorted(L"name", L"players", L"map", L"latency")
+			list:SetupConverters(nil, function(num) tostring(num) end)
 			
 			network.JoinIRCServer()
 			
-			list:SetupSorted(L"name", L"ip")
-			
-			event.AddListener("PublicServerFound", "server_list", function(ip, name)
+			local function add(info)
 				frame:SetTitle("server list")
-				list:AddEntry(name, ip).OnSelect = function()
-					console.RunString("connect " .. ip)
+				list:AddEntry(info.name, info.players, info.map, info.latency).OnSelect = function()
+					network.Connect(info.ip, info.port)
 				end
+			end
+			
+			for ip, info in pairs(network.GetAvailableServers()) do
+				add(info)
+			end
+			
+			event.AddListener("PublicServerFound", "server_list", function(info)
+				add(info)
 			end)
+			
+			local page = tab:AddTab(L"favorites")
+			local list = page:CreatePanel("list")
+			list:SetupLayout("fill")
+			list:SetupSorted(L"name", L"players", L"map", L"latency")
+			
+			local page = tab:AddTab(L"history")
+			local list = page:CreatePanel("list")
+			list:SetupLayout("fill")
+			list:SetupSorted(L"name", L"players", L"map", L"latency")
+			
+			local page = tab:AddTab(L"lan")
+			local list = page:CreatePanel("list")
+			list:SetupLayout("fill")
+			list:SetupSorted(L"name", L"players", L"map", L"latency")
+			
+			
+			tab:SelectTab(L"internet")
 		end},
 	})
 	create_button(L"misc", {
