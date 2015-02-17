@@ -6,7 +6,7 @@ function render.GetGBufferSize()
 end
 
 function render.CreateMesh(vertices, indices, is_valid_table)		
-	return vertices and render.gbuffer_model_shader:CreateVertexBuffer(vertices, indices, is_valid_table) or NULL
+	return render.gbuffer_model_shader:CreateVertexBuffer(vertices, indices, is_valid_table)
 end
 
 render.gbuffer = render.gbuffer or NULL
