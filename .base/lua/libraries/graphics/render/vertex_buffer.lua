@@ -12,7 +12,6 @@ function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
 	--check(indices, "cdata", "table", "number", "nil")
 	
 	local vertex_attributes = shader:GetVertexAttributes() 
-	local vertices, indices, vertices_size, indices_size = shader:CreateBuffersFromTable(vertices, indices, is_valid_table)
 	
 	local self = prototype.CreateObject(META)
 	self.vertices_id = gl.GenBuffer()
@@ -20,7 +19,9 @@ function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
 	self.vao_id = gl.GenVertexArray()
 	self.vertex_attributes = vertex_attributes
 	
-	self:UpdateBuffer(vertices, indices, vertices_size, indices_size)
+	if vertices then
+		self:UpdateBuffer(shader:CreateBuffersFromTable(vertices, indices, is_valid_table))
+	end
 
 	return self
 end 
