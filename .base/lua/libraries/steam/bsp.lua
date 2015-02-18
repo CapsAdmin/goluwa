@@ -2,44 +2,7 @@ local steam = ... or _G.steam
 
 local scale = 0.0254
 
-local mount_info = {
-	["gm_.+"] = {"garry's mod", "tf2", "css"},
-	["ep1_.+"] = {"half-life 2: episode one"},
-	["ep2_.+"] = {"half-life 2: episode two"},
-	["trade_.+"] = {"half-life 2", "team fortress 2"},
-	["d%d_.+"] = {"half-life 2"},
-	["dm_.*"] = {"half-life 2: deathmatch"},
-	["c%dm%d_.+"] = {"left 4 dead 2"},
-
-	["esther"] = {"dear esther"},
-	["jakobson"] = {"dear esther"},
-	["donnelley"] = {"dear esther"},
-	["paul"] = {"dear esther"},
-	["aramaki_4d"] = {"team fortress 2", "garry's mod"},
-	["de_overpass"] = {"counter-strike: global offensive"},
-	["sp_a4_finale1"] = {"portal 2"},
-	["c3m1_plankcountry"] = {"left 4 dead 2"},
-	["achievement_apg_r11b"] = {"half-life 2", "team fortress 2"},
-}
-
-console.AddCommand("map", function(path)
-	local mounts = mount_info[path]
-	
-	if not mounts then
-		for k,v in pairs(mount_info) do
-			if path:find(k) then
-				mounts = v
-				break
-			end
-		end
-	end
-	
-	if mounts then
-		for _, mount in ipairs(mounts) do
-			steam.MountSourceGame(mount)
-		end
-	end
-	
+console.AddCommand("map", function(path)	
 	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical")
 	steam.bsp_world:SetName(path)
 	steam.bsp_world:SetCull(false)
