@@ -1,8 +1,10 @@
 if SCITE then return end
 
+local map = console.CreateVariable("default_map", "gm_old_flatgrass")
+
 local function go()
 	if SERVER then
-		console.RunString("map gm_old_flatgrass")
+		console.RunString("map " .. map:Get())
 
 		for i = 1, 10 do 
 			local body = entities.CreateEntity("physical")
