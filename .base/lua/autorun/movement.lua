@@ -92,11 +92,13 @@ event.AddListener("Move", "spooky", function(client, cmd)
 			ghost:SetPhysicsCapsuleZRadius(0.5)
 			ghost:InitPhysicsCapsuleZ()
 			ghost:SetPosition(Vec3(0,0,-20))
-			ghost:SetAngularFactor(Vec3(0,0,1))     
+			ghost:SetAngularFactor(Vec3(0,0,1))
 			ghost:SetLinearSleepingThreshold(0)  
 			ghost:SetAngularSleepingThreshold(0)  
 			ghost:SetScale(-Vec3(0.5,0.5,1.85))   
  			ghost:SetSimulateOnClient(true) 
+			
+			ghost:SetAngles(Ang3(0,0,0))
 			
 			client.nv.ghost = ghost
 		end
@@ -120,7 +122,7 @@ event.AddListener("Move", "spooky", function(client, cmd)
 			
 	--physics:SetAngularVelocity(physics:GetAngularVelocity() * 0.75)
 	
-	local hit = _G.physics.RayCast(physics:GetPosition(), physics:GetPosition() + (physics:GetRotation():GetUp()*1.5)) 
+	local hit = _G.physics.RayCast(physics:GetPosition(), physics:GetPosition() + (physics:GetRotation():GetUp()*1.25)) 
 	if hit then
 		physics:SetVelocity(physics:GetVelocity() + cmd.velocity * 0.05)  
 		physics:SetVelocity(physics:GetVelocity() * 0.75)   
@@ -131,12 +133,22 @@ event.AddListener("Move", "spooky", function(client, cmd)
 			velocity = velocity * 20/speed
 			physics:SetVelocity(velocity)
 		end
-	elseif false then
-		if physics:GetVelocity():GetLength() < 10 then
-			physics:SetVelocity(physics:GetVelocity() + cmd.velocity * 0.05)  
-		--		physics:SetVelocity(physics:GetVelocity() * 0.75) 
+	else
+		local velocity = cmd.velocity:GetNormalized() * 4
+		velocity.z = 0
+	
+		local lol = physics:GetVelocity()
+		
+		velocity.x = velocity.x + lol.x
+		velocity.y = velocity.y + lol.y		
+		velocity.z = lol.z
+
+		if velocity:GetLength() - lol:GetLength() < 2 then
+			physics:SetVelocity(velocity)
 		end
 	end
+	
+	--physics:SetAngles(cmd.angles)
 	
 	return pos, physics:GetVelocity()
 end) 
