@@ -95,6 +95,18 @@ do -- init box options
 	end
 end
 
+do -- init capsule options
+	META:GetSet("PhysicsBoxScale", Vec3(1, 1, 1))
+	META:GetSet("PhysicsCapsuleZRadius", 0.5) 
+	META:GetSet("PhysicsCapsuleZHeight", 1.85)
+	
+	function META:InitPhysicsCapsuleZ()	
+		self.body = bullet.CreateCapsuleZ(self:GetMass(), self:GetMatrix().m, self:GetPhysicsCapsuleZRadius(), self:GetPhysicsCapsuleZHeight())
+		physics.body_lookup[self.body] = self		
+		update_params(self)
+	end
+end
+
 do -- mesh init options
 		
 	function META:InitPhysicsConvexHull(tbl)	
@@ -217,8 +229,13 @@ do -- generic get set
 
 	GET_SET("Matrix", Matrix44())
 	GET_SET("Gravity", Vec3())
+	
 	GET_SET("Velocity", Vec3())
 	GET_SET("AngularVelocity", Vec3())
+	
+	GET_SET("AngularFactor", Vec3())
+	GET_SET("LinearFactor", Vec3())
+	
 	GET_SET("LinearSleepingThreshold", 0)
 	GET_SET("AngularSleepingThreshold", 0)
 end

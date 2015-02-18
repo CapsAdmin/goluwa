@@ -71,7 +71,7 @@ do
 			return {
 				hit_pos = Vec3(out[0].hit_pos[0], out[0].hit_pos[1], out[0].hit_pos[2]),
 				hit_normal = Vec3(out[0].hit_normal[0], out[0].hit_normal[1], out[0].hit_normal[2]),
-				body = body_lookup[out[0].body].ent,
+				body = physics.body_lookup[out[0].body] and physics.body_lookup[out[0].body].ent,
 			}
 		end
 	end

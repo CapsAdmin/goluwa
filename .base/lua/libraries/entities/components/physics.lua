@@ -15,6 +15,8 @@ COMPONENT.Network = {
 	MassOrigin = {"vec3", 1/5},
 	PhysicsBoxScale = {"vec3", 1/5},
 	PhysicsSphereRadius = {"float", 1/5},
+	PhysicsCapsuleZRadius = {"float", 1/5},
+	PhysicsCapsuleZHeight = {"float", 1/5},
 	AngularSleepingThreshold = {"float", 1/5},
 	LinearSleepingThreshold = {"float", 1/5},
 	SimulateOnClient = {"boolean", 1/5},
@@ -156,6 +158,21 @@ do
 		if SERVER then
 			local obj = self:GetComponent("network")
 			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsBox", scale) end
+		end
+		
+		to_bullet(self)
+	end
+	
+	function COMPONENT:InitPhysicsCapsuleZ()
+		local tr = self:GetComponent("transform")
+		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
+		
+
+		self.rigid_body:InitPhysicsCapsuleZ()
+		
+		if SERVER then
+			local obj = self:GetComponent("network")
+			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsCapsuleZ") end
 		end
 		
 		to_bullet(self)
