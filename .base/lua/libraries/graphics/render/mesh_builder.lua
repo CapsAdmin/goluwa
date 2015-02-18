@@ -475,9 +475,7 @@ do -- helpers
 			
 			local s = size / res
 			local s2 = s / 2
-				
-			local i = 1
-		
+						
 			local pixel_advance = (Vec2(1, 1)/res) * tex:GetSize()
 			
 			local function get_color(x, y)
