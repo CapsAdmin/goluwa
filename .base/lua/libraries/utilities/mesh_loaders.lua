@@ -1,6 +1,50 @@
 local assimp = requirew("lj-assimp")
 local cb_render 
 
+local mount_info = {
+	["gm_.+"] = {"garry's mod", "tf2", "css"},
+	["ep1_.+"] = {"half-life 2: episode one"},
+	["ep2_.+"] = {"half-life 2: episode two"},
+	["trade_.+"] = {"half-life 2", "team fortress 2"},
+	["d%d_.+"] = {"half-life 2"},
+	["dm_.*"] = {"half-life 2: deathmatch"},
+	["c%dm%d_.+"] = {"left 4 dead 2"},
+
+	["esther"] = {"dear esther"},
+	["jakobson"] = {"dear esther"},
+	["donnelley"] = {"dear esther"},
+	["paul"] = {"dear esther"},
+	["aramaki_4d"] = {"team fortress 2", "garry's mod"},
+	["de_overpass"] = {"counter-strike: global offensive"},
+	["sp_a4_finale1"] = {"portal 2"},
+	["c3m1_plankcountry"] = {"left 4 dead 2"},
+	["achievement_apg_r11b"] = {"half-life 2", "team fortress 2"},
+}
+
+local function mount_needed(path)
+	local name = path:match("maps/(.+)%.bsp")
+
+	if name then
+		local mounts = mount_info[name]
+		
+		if not mounts then
+			for k,v in pairs(mount_info) do
+				if name:find(k) then
+					mounts = v
+					break
+				end
+			end
+		end
+		
+		if mounts then
+			for _, mount in ipairs(mounts) do
+				steam.MountSourceGame(mount)
+			end
+		end
+	end
+end
+
+
 do -- render model
 	utility.render_model_cache = {}
 
@@ -78,6 +122,8 @@ do -- render model
 		check(path, "string")
 		
 		if cb:check(path, callback, {mesh = callback2, on_fail = on_fail}) then return true end
+		
+		mount_needed(path)
 		
 		local data = cb:get(path)
 		
@@ -176,6 +222,8 @@ do -- physics model
 	
 	function utility.LoadPhysicsModel(path, callback, on_fail)
 		if cb:check(path, callback, {on_fail = on_fail}) then return true end
+		
+		mount_needed(path)
 		
 		local data = cb:get(path)
 		
