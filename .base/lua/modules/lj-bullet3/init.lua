@@ -30,6 +30,7 @@ void bulletGetWorldGravity(float* out);
 btTriangleIndexVertexArray *bulletCreateMesh(int num_triangles, int* triangles, int triangles_stride, int num_vertices, float* vertices, int vertex_stride);
 
 btRigidBody *bulletCreateRigidBodyBox(float mass, float *matrix, float x, float y, float z);
+btRigidBody *bulletCreateCapsuleZ(float mass, float *matrix, float radius, float scale);
 btRigidBody *bulletCreateRigidBodySphere(float mass, float *matrix, float radius);
 
 btRigidBody *bulletCreateRigidBodyConvexHull(float mass, float *matrix, float *mesh);
@@ -47,6 +48,12 @@ void bulletRigidBodySetVelocity(btRigidBody *body, float x, float y, float z);
 void bulletRigidBodyGetVelocity(btRigidBody *body, float *out);
 void bulletRigidBodySetAngularVelocity(btRigidBody *body, float x, float y, float z);
 void bulletRigidBodyGetAngularVelocity(btRigidBody *body, float *out);
+
+void bulletRigidBodySetLinearFactor(btRigidBody *body, float x, float y, float z);
+void bulletRigidBodyGetLinearFactor(btRigidBody *body, float *out);
+void bulletRigidBodySetAngularFactor(btRigidBody *body, float x, float y, float z);
+void bulletRigidBodyGetAngularFactor(btRigidBody *body, float *out);
+
 void bulletRigidBodySetDamping(btRigidBody *body, float linear, float angular);
 
 void bulletRigidBodyGetLinearSleepingThreshold(btRigidBody *body, float *out);
