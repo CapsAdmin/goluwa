@@ -266,6 +266,8 @@ do
 	end
 end		
 
+local zero = Vec3()
+
 function COMPONENT:OnUpdate()
 	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return end
 	
@@ -275,7 +277,9 @@ function COMPONENT:OnUpdate()
 	
 	if CLIENT then
 		if not self.SimulateOnClient then
-			if self.rigid_body:GetMass() ~= 0 then
+			if self.rigid_body:GetMass() ~= 0 then	
+				self.rigid_body:SetVelocity(zero)
+				self.rigid_body:SetAngularVelocity(zero)
 				self.rigid_body:SetMass(0)
 				to_bullet(self)
 			end
