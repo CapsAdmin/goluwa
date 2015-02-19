@@ -76,7 +76,7 @@ do -- init sphere options
 		if rad then self:SetPhysicsSphereRadius(rad) end
 		
 		self.body = bullet.CreateRigidBodySphere(self:GetMass(), self:GetMatrix().m, self:GetPhysicsSphereRadius())
-		physics.body_lookup[self.body] = self
+		physics.StoreBodyPointer(self.body, self)
 		
 		update_params(self)
 	end
@@ -89,7 +89,7 @@ do -- init box options
 		if scale then self:SetPhysicsBoxScale(scale) end
 		
 		self.body = bullet.CreateRigidBodyBox(self:GetMass(), self:GetMatrix().m, vec3_to_bullet(self:GetPhysicsBoxScale():Unpack()))
-		physics.body_lookup[self.body] = self
+		physics.StoreBodyPointer(self.body, self)
 		
 		update_params(self)
 	end
@@ -102,7 +102,7 @@ do -- init capsule options
 	
 	function META:InitPhysicsCapsuleZ()	
 		self.body = bullet.CreateCapsuleZ(self:GetMass(), self:GetMatrix().m, self:GetPhysicsCapsuleZRadius(), self:GetPhysicsCapsuleZHeight())
-		physics.body_lookup[self.body] = self		
+		physics.StoreBodyPointer(self.body, self)		
 		update_params(self)
 	end
 end
@@ -119,7 +119,7 @@ do -- mesh init options
 		self.mesh = tbl
 		
 		self.body = bullet.CreateRigidBodyConvexHull(self:GetMass(), self:GetMatrix().m, mesh)
-		physics.body_lookup[self.body] = self
+		physics.StoreBodyPointer(self.body, self)
 		
 		update_params(self)
 	end
@@ -142,7 +142,7 @@ do -- mesh init options
 		self.mesh = tbl
 		
 		self.body = bullet.CreateRigidBodyConvexTriangleMesh(self:GetMass(), self:GetMatrix().m, mesh)
-		physics.body_lookup[self.body] = self
+		physics.StoreBodyPointer(self.body, self)
 		
 		update_params(self)
 	end
@@ -165,7 +165,7 @@ do -- mesh init options
 		self.mesh = tbl
 
 		self.body = bullet.CreateRigidBodyTriangleMesh(self:GetMass(), self:GetMatrix().m, mesh, not not quantized_aabb_compression)
-		physics.body_lookup[self.body] = self
+		physics.StoreBodyPointer(self.body, self)
 		
 		update_params(self)
 	end
@@ -232,6 +232,7 @@ do -- generic get set
 	
 	GET_SET("Velocity", Vec3())
 	GET_SET("AngularVelocity", Vec3())
+	GET_SET("InvInertiaDiagLocal", Vec3())
 	
 	GET_SET("AngularFactor", Vec3())
 	GET_SET("LinearFactor", Vec3())

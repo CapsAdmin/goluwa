@@ -1,7 +1,7 @@
 local physics = physics or {}
 
 physics.bullet = requirew("lj-bullet3")
-physics.bodies = {}
+physics.bodies = physics.bodies or {}
 
 local function vec3_to_bullet(x, y, z)
 	return -y, -x, -z
@@ -14,29 +14,43 @@ end
 physics.Vec3ToBullet = vec3_to_bullet
 physics.Vec3FromBullet = vec3_from_bullet
 
+function physics.BodyToLua(ptr)
+	local udata = ffi.cast("uint32_t *", physics.bullet.RigidBodyGetUserData(ptr))
+	
+	return physics.body_lookup[udata[0]]
+end
+
+function physics.StoreBodyPointer(ptr, obj)
+	local idx = ffi.new("uint32_t[1]", tonumber(("%p"):format(obj)))
+	physics.bullet.RigidBodySetUserData(ptr, idx)
+	physics.body_lookup[idx[0]] = obj
+end
+
 include("physics_body.lua", physics)
 
 function physics.Initialize()
-	for k,v in pairs(physics.bodies) do 
-		if v:IsValid() then
-			v:Remove() 
+	if not RELOAD then
+		for k,v in pairs(physics.bodies) do 
+			if v:IsValid() then
+				v:Remove() 
+			end
 		end
+		physics.bullet.Initialize()
+		physics.bodies = {}
+		physics.body_lookup = utility.CreateWeakTable()
 	end
-
-	physics.bullet.Initialize()
 	
-	physics.bodies = {}
-	physics.body_lookup = utility.CreateWeakTable()
-			
 	do
 		local out = ffi.new("bullet_collision_value[1]")
-
 		event.AddListener("Update", "bullet", function(dt)		
-			physics.bullet.StepSimulation(dt or 0, physics.sub_steps, physics.fixed_time_step)
+			physics.bullet.StepSimulation(dt, physics.sub_steps, physics.fixed_time_step)
 			
 			while physics.bullet.ReadCollision(out) do
-				if physics.body_lookup[out[0].a] and physics.body_lookup[out[0].b] then
-					event.Call("PhysicsCollide", physics.body_lookup[out[0].a].ent, physics.body_lookup[out[0].b].ent)
+				local a = physics.BodyToLua(out[0].a)
+				local b = physics.BodyToLua(out[0].b)
+				
+				if a and b then
+					event.Call("PhysicsCollide", a.ent, b.ent)
 				end
 			end
 		end)
@@ -44,7 +58,7 @@ function physics.Initialize()
 	
 	physics.SetGravity(Vec3(0, 0, -9.8))
 	physics.sub_steps = 1
-	physics.fixed_time_step = 1/60	
+	physics.fixed_time_step = 1/120	
 end
 
 function physics.EnableDebug(draw_line, contact_point, _3d_text, report_error_warning)
@@ -68,11 +82,26 @@ do
 	
 	function physics.RayCast(from, to)
 		if physics.bullet.RayCast(from.x, from.y, from.z, to.x, to.y, to.z, out) then
-			return {
-				hit_pos = Vec3(out[0].hit_pos[0], out[0].hit_pos[1], out[0].hit_pos[2]),
-				hit_normal = Vec3(out[0].hit_normal[0], out[0].hit_normal[1], out[0].hit_normal[2]),
-				body = physics.body_lookup[out[0].body] and physics.body_lookup[out[0].body].ent,
+			local tbl = {
+				hit_pos = Vec3(),
+				hit_normal = Vec3(),
+				body = NULL,
 			}
+			
+			tbl.hit_pos._ = out[0].hit_pos
+			tbl.hit_normal._ = out[0].hit_normal
+			
+
+			
+			if out[0].body ~= nil then
+				local body = physics.BodyToLua(out[0].body)
+				if body then
+					tbl.body = body.ent
+				end
+			end
+			
+			return tbl
+			
 		end
 	end
 end
