@@ -18,10 +18,10 @@ if CLIENT then
 		local forward = Vec3()
 		local up = Vec3()
 		do
-			local speed = 40
+			local speed = 5
 			
 			if input.IsKeyDown("left_shift") and input.IsKeyDown("left_control") then
-				speed = speed * 3
+				speed = speed * 4
 			elseif input.IsKeyDown("left_shift") then
 				speed = speed * 2
 			elseif input.IsKeyDown("left_control") then
@@ -45,7 +45,7 @@ if CLIENT then
 			end
 			
 			if input.IsKeyDown("space") then
-				up.z = 150
+				up.z = 2000
 			end			
 		end
 		
@@ -67,7 +67,11 @@ for k,v in pairs(clients.GetAll()) do
 	if v.nv.ghost and v.nv.ghost:IsValid() then
 		v.nv.ghost:Remove()
 	end
-end    
+end
+
+event.AddListener("PhysicsCollide", "ground_enttiy", function(a, b)
+	print(a, b) 
+end)
 	
 event.AddListener("Move", "spooky", function(client, cmd)
 	if CLIENT and not network.IsConnected() then return end
@@ -81,24 +85,23 @@ event.AddListener("Move", "spooky", function(client, cmd)
 				
 			local filter = clients.CreateFilter():AddAllExcept(client)
 			
-			--ghost:ServerFilterSync(filter, "Position")
-			--ghost:ServerFilterSync(filter, "Rotation")
+			ghost:ServerFilterSync(filter, "Position")
+			ghost:ServerFilterSync(filter, "Rotation")
 			
 			--ghost:SetNetworkChannel(1) 
 			ghost:SetPhysicsModelPath("models/cube.obj")
 			ghost:SetModelPath("models/cube.obj")
-			ghost:SetMass(85)
 			ghost:SetPhysicsCapsuleZHeight(1.5)   
 			ghost:SetPhysicsCapsuleZRadius(0.5)
 			ghost:InitPhysicsCapsuleZ()
+			ghost:SetMass(85)
 			ghost:SetPosition(Vec3(0,0,-20))
-			ghost:SetAngularFactor(Vec3(0,0,1))
-			ghost:SetLinearSleepingThreshold(0)  
-			ghost:SetAngularSleepingThreshold(0)  
+			ghost:SetAngularFactor(Vec3(0,0,0))
 			ghost:SetScale(-Vec3(0.5,0.5,1.85))   
  			ghost:SetSimulateOnClient(true) 
 			
 			ghost:SetAngles(Ang3(0,0,0))
+			
 			
 			client.nv.ghost = ghost
 		end
@@ -111,28 +114,59 @@ event.AddListener("Move", "spooky", function(client, cmd)
 	if not ghost:IsValid() then return end
 	
 	local physics = ghost:GetComponent("physics")
-	local pos =  physics:GetPosition() 
+	local pos =  physics:GetPosition()
+	local dt = system.GetFrameTime()
 			
-	if CLIENT then		
-		if cmd.net_position and cmd.net_position:Distance(pos) > 1 then
-			physics:SetPosition(cmd.net_position)   
-			physics:SetAngles(cmd.angles)
+	if CLIENT then		  
+		if cmd.net_position then
+			physics.sync_now = physics.sync_now or 0
+			
+			local distance = cmd.net_position:Distance(pos)
+			
+			if distance > 2 then
+				physics:SetPosition(cmd.net_position)   
+				physics:SetAngles(cmd.angles) 
+				physics:SetVelocity(cmd.net_velocity)
+				physics.sync_now = os.clock() + 2
+				logn("prediction error: physics position differs too much ", distance)
+			end
+			
+			local distance = cmd.net_position:Distance(pos)
+			
+			if physics.sync_now < os.clock() and distance > 0.1 then
+				physics:SetPosition(cmd.net_position)  
+				physics.sync_now = os.clock() + 2
+				logn("prediction error: (timer check) physics position differs too much ", distance)
+			end
+		end
+		
+		if cmd.net_velocity then
+			local distance = cmd.net_velocity:Distance(physics:GetVelocity())
+			
+			if distance > 2 then
+				physics:SetVelocity(cmd.net_velocity)
+				logn("prediction error: physics velocity differs too much by ", distance)
+			end
 		end
 	end
 			
-	--physics:SetAngularVelocity(physics:GetAngularVelocity() * 0.75)
+	-- WHY
+	physics:SetAngularVelocity(Vec3(0,0,0)) 
+	physics:SetAngularFactor(Vec3(0,0,0))
+	physics:SetAngularSleepingThreshold(0)  
+	physics:SetLinearSleepingThreshold(0)  
+	--
 	
-	local hit = _G.physics.RayCast(physics:GetPosition(), physics:GetPosition() + (physics:GetRotation():GetUp()*1.25)) 
+	local hit = _G.physics.RayCast(physics:GetPosition(), physics:GetPosition() + (physics:GetRotation():GetUp()*1.36)) 
 	if hit then
-		physics:SetVelocity(physics:GetVelocity() + cmd.velocity * 0.05)  
-		physics:SetVelocity(physics:GetVelocity() * 0.75)   
+		local vel = cmd.velocity
 		
-		local velocity = physics:GetVelocity()
-		local speed = velocity:GetLength()
-		if speed > 20 then
-			velocity = velocity * 20/speed
-			physics:SetVelocity(velocity)
-		end
+		vel.x = math.clamp(vel.x, -10, 10)
+		vel.y = math.clamp(vel.y, -10, 10)
+		vel.z = math.clamp(vel.z, 0, 7)
+		
+		physics:SetVelocity(physics:GetVelocity() + vel)  
+		physics:SetVelocity(physics:GetVelocity() * 0.5)		
 	else
 		local velocity = cmd.velocity:GetNormalized() * 4
 		velocity.z = 0
@@ -147,7 +181,7 @@ event.AddListener("Move", "spooky", function(client, cmd)
 			physics:SetVelocity(velocity)
 		end
 	end
-	
+		
 	--physics:SetAngles(cmd.angles)
 	
 	return pos, physics:GetVelocity()
