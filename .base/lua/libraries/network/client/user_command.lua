@@ -1,5 +1,5 @@
-local client_command_length = 50 -- sample length in ms
-local client_tick_rate = 66 -- in ms
+local client_command_length = 33 -- sample length in ms
+local client_tick_rate = 33 -- in ms
 
 local server_command_length = client_command_length
 local server_tick_rate = 10
@@ -86,15 +86,20 @@ local function process_usercommand(client)
 	end
 end
 
+local lol = 0
+
 event.AddListener("Update", "interpolate_user_command", function()
-	if CLIENT and network.IsConnected() then
-		process_usercommand(clients.GetLocalClient())
-	end
-	
-	if SERVER then
-		for _, client in pairs(clients.GetAll()) do
-			process_usercommand(client)
+	if lol < system.GetElapsedTime() then
+		if CLIENT and network.IsConnected() then
+			process_usercommand(clients.GetLocalClient())
 		end
+		
+		if SERVER then
+			for _, client in pairs(clients.GetAll()) do
+				process_usercommand(client)
+			end
+		end
+		lol = system.GetElapsedTime() + 1/33
 	end
 end)
 
@@ -114,7 +119,7 @@ if CLIENT then
 			local cmd = clients.GetLocalClient():GetCurrentCommand()
 			local move = event.Call("CreateMove", clients.GetLocalClient(), cmd, dt)
 			
-			local time = system.GetTime()
+			local time = system.GetElapsedTime()
 			
 			if time > last_tick then
 				buffer:WriteDouble(time)
