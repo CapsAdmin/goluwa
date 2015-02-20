@@ -663,11 +663,13 @@ do -- drag drop
 
 	function PANEL:StartDragging(button)
 		self.drag_world_pos = gui.mouse_pos:Copy()
+		self.drag_local_pos = self:GetMousePosition():Copy()
 		self.drag_stop_button = button
 	end
 
 	function PANEL:StopDragging()
 		self.drag_world_pos = nil
+		self.drag_local_pos = nil
 		self.drag_panel_start_pos = nil
 		self.drag_last_hover = nil
 	end
@@ -689,7 +691,7 @@ do -- drag drop
 
 		local panel = gui.GetHoveringPanel(nil, self)
 
-		local drop_pos = panel:GetMousePosition() - self:GetMousePosition() + panel.Scroll
+		local drop_pos = panel:GetMousePosition()
 
 		if self.drag_last_hover ~= panel then
 
@@ -710,6 +712,7 @@ do -- drag drop
 
 		if not input.IsMouseDown(self.drag_stop_button) then
 
+			self:SetPosition(drop_pos - self.drag_local_pos)
 			self:OnParentLand(panel)
 			panel:OnChildDrop(self, drop_pos)
 
@@ -1393,7 +1396,7 @@ do -- layout
 		return math.abs(a.point-origin) < math.abs(b.point-origin)
 	end
 	
-	function PANEL:RayCast(panel, x,y,w,h, collide)
+	function PANEL:RayCast(panel, x,y,w,h, collide, always)
 		local dir_x = x - panel.Position.x
 		local dir_y = y - panel.Position.y
 		
@@ -1408,8 +1411,9 @@ do -- layout
 			for _, child in ipairs(self:GetChildren()) do
 				if 
 					child ~= panel and 
-					child.laid_out and 
+					(always or child.laid_out) and 
 					child.Visible and 
+					not child.ThreeDee and 
 					not child.IgnoreLayout and 
 					(panel.CollisionGroup == "none" or panel.CollisionGroup == child.CollisionGroup) 
 				then
@@ -1507,7 +1511,7 @@ do -- layout
 			end                                     
 		end
 				
-		return Vec2(x, y)
+		return Vec2(x, y), found and found[1] and found[1].child
 	end
 	
 	function PANEL:ExecuteLayoutCommands()		
