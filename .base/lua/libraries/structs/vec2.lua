@@ -104,6 +104,13 @@ function META.GetCrossed(a, b)
 	return a.x * b.y - a.y * b.x
 end
 
+function META:GetReflected(normal)
+	local proj = self:GetNormalized()
+	local dot = proj:GetDot(normal)
+
+  return Vec2(2 * (-dot) * normal.x + proj.x, 2 * (-dot) * normal.y + proj.y) * self:GetLength()          
+end
+
 function META:Rotate90CCW()
 	local x, y = self:Unpack()
 
