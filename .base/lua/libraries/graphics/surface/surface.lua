@@ -100,14 +100,14 @@ do -- orientation
 		if a then surface.Rotate(a) end
 		
 		if surface.in_3d then
-			surface.push_count_3d = (surface.push_count_3d or -1) + 1
-			render.Translate(0, 0, surface.push_count_3d * (surface.scale_3d or 1))
+		--	surface.push_count_3d = (surface.push_count_3d or -1) + 1
+		--	render.Translate(0, 0, surface.push_count_3d * (surface.scale_3d or 1))
 		end
 	end
 	
 	function surface.PopMatrix()
 		if surface.in_3d then
-			surface.push_count_3d = (surface.push_count_3d or -1) - 1
+		--	surface.push_count_3d = (surface.push_count_3d or -1) - 1
 		end
 	
 		render.PopWorldMatrix() 
