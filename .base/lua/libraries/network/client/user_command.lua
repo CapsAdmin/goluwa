@@ -89,7 +89,8 @@ end
 local lol = 0
 
 event.AddListener("Update", "interpolate_user_command", function()
-	if lol < system.GetElapsedTime() then
+	local time = system.GetTime()
+	if lol < time - (1/33) then
 		if CLIENT and network.IsConnected() then
 			process_usercommand(clients.GetLocalClient())
 		end
@@ -99,7 +100,7 @@ event.AddListener("Update", "interpolate_user_command", function()
 				process_usercommand(client)
 			end
 		end
-		lol = system.GetElapsedTime() + 1/33
+		lol = time
 	end
 end)
 
