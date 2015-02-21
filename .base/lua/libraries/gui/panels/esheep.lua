@@ -120,7 +120,7 @@ function PANEL:OnUpdate()
 		
 	else
 		if self.on_ground then
-			if math.abs(mpos.x) > 25 then
+			if math.abs(mpos.x - self.Size.w/2) > 25 then
 				self.Velocity.x = self.Velocity.x + mpos.x * dt * 0.1
 			else
 				self.Velocity:Set(0,0)
