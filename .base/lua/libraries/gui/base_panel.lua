@@ -1,5 +1,7 @@
 local gui = ... or _G.gui
 
+local USE_MATRIX = false
+
 local PANEL = prototype.CreateTemplate("panel2", "base")
 
 prototype.AddParentingTemplate(PANEL)
@@ -178,50 +180,64 @@ do -- drawing
 		if self.ThreeDee then surface.Start3D(self.ThreeDeePosition, self.ThreeDeeAngles, self.ThreeDeeScale) end
 		
 		local no_draw = self:HasParent() and self.Parent.draw_no_draw
+		
+		--self:InvalidateMatrix()
+	
+		if USE_MATRIX then	
+			self:RebuildMatrix()
+			render.SetWorldMatrixOverride(self.Matrix)
+			
+			if not from_cache then
+				self:CalcMouse()
+			
+				self:CalcDragging()
+				self:CalcScrolling()
+			end
+		else
+			surface.PushMatrix()
+			surface.Translate(self.Position.x, self.Position.y)
+			
+			local w = (self.Size.w)/2
+			local h = (self.Size.h)/2
 
-		surface.PushMatrix()
-		surface.Translate(self.Position.x, self.Position.y)
-		
-		local w = (self.Size.w)/2
-		local h = (self.Size.h)/2
-
-		render.Translate(w, h, 0)
-		render.Rotate(self.Angle, 0, 0, 1)
-		render.Translate(-w, -h, 0)
-		
-		if not from_cache then
-			self:CalcMouse()
-		
-			self:CalcDragging()
-			self:CalcScrolling()
-		end
-		
-		if 
-			from_cache or 
-			not no_draw or
-			not (self:HasParent() and 
-			not self.Parent:IsWorld() and 
-			not self.Parent.mouse_over and 
-			not self:IsDragging() and 
-			not self.AlwaysCalcMouse)
-		then
-			if not self.DrawPositionOffset:IsZero() then
-				render.Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
+			render.Translate(w, h, 0)
+			render.Rotate(self.Angle, 0, 0, 1)
+			render.Translate(-w, -h, 0)
+			
+			if not from_cache then
+				self:CalcMouse()
+			
+				self:CalcDragging()
+				self:CalcScrolling()
 			end
 			
-			if self.DrawScaleOffset.x ~= 1 or self.DrawScaleOffset.y ~= 1 then
-				render.Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y, 1)
-			end
-			
-			if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
-				local w = (self.Size.w + self.DrawSizeOffset.w)/2
-				local h = (self.Size.h + self.DrawSizeOffset.h)/2
+			if 
+				from_cache or 
+				not no_draw or
+				not (self:HasParent() and 
+				not self.Parent:IsWorld() and 
+				not self.Parent.mouse_over and 
+				not self:IsDragging() and 
+				not self.AlwaysCalcMouse)
+			then
+				if not self.DrawPositionOffset:IsZero() then
+					render.Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
+				end
+				
+				if self.DrawScaleOffset.x ~= 1 or self.DrawScaleOffset.y ~= 1 then
+					render.Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y, 1)
+				end
+				
+				if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
+					local w = (self.Size.w + self.DrawSizeOffset.w)/2
+					local h = (self.Size.h + self.DrawSizeOffset.h)/2
 
-				render.Translate(w, h, 0)
-				render.Rotate(self.DrawAngleOffset.p, 0, 0, 1)
-				render.Rotate(self.DrawAngleOffset.y, 0, 1, 0)
-				render.Rotate(self.DrawAngleOffset.r, 1, 0, 0)
-				render.Translate(-w, -h, 0)
+					render.Translate(w, h, 0)
+					render.Rotate(self.DrawAngleOffset.p, 0, 0, 1)
+					render.Rotate(self.DrawAngleOffset.y, 0, 1, 0)
+					render.Rotate(self.DrawAngleOffset.r, 1, 0, 0)
+					render.Translate(-w, -h, 0)
+				end
 			end
 		end
 
@@ -263,7 +279,9 @@ do -- drawing
 			surface.EnableClipRect(0,0,self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
 		end
 		
-		surface.Translate(-self.Scroll.x, -self.Scroll.y, 0)
+		if not USE_MATRIX then
+			surface.Translate(-self.Scroll.x, -self.Scroll.y, 0)
+		end
 		
 		if from_cache then
 			self.draw_no_draw = false
@@ -330,7 +348,11 @@ do -- drawing
 			end
 		end
 		
-		surface.PopMatrix()
+		if USE_MATRIX then
+			render.SetWorldMatrixOverride()
+		else
+			surface.PopMatrix()
+		end
 		
 		
 		if self.ThreeDee then surface.End3D() end
@@ -370,6 +392,72 @@ do -- orientation
 	prototype.GetSet(PANEL, "ThreeDeeAngles", Ang3(0,0,0))
 	prototype.GetSet(PANEL, "ThreeDeeScale", Vec3(1,1,1))
 	
+	do
+		prototype.GetSet(PANEL, "Matrix", Matrix44())
+		
+		function PANEL:InvalidateMatrix()			
+			if not self.rebuild_matrix then
+				for i, v in ipairs(self:GetChildrenList()) do
+					v.rebuild_matrix = true
+				end
+			end
+			self.rebuild_matrix = true
+		end
+		
+		function PANEL:RebuildMatrix()
+			if self:IsWorld() then return end
+			if self.rebuild_matrix then
+				self.rebuild_matrix = false
+
+				self.Matrix:Identity()
+				
+				self.temp_matrix = self.temp_matrix or Matrix44()				
+				self.Matrix:Multiply(self.Parent.Matrix, self.temp_matrix)
+				self.Matrix, self.temp_matrix = self.temp_matrix, self.Matrix
+				
+				self.Matrix:Translate(math.ceil(self.Position.x), math.ceil(self.Position.y), 0)
+
+				local w = (self.Size.w)/2
+				local h = (self.Size.h)/2
+				
+				if self.Angle ~= 0 then
+					self.Matrix:Translate(w, h, 0)
+						self.Matrix:SetRotation(Quat():SetAngles(Ang3(0,self.Angle,0)))
+					self.Matrix:Translate(-w, -h, 0)
+				end
+				
+				if not self.DrawPositionOffset:IsZero() then
+					self.Matrix:Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
+				end
+				
+				if self.DrawScaleOffset.x ~= 1 or self.DrawScaleOffset.y ~= 1 then
+					self.Matrix:Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y, 1)
+				end
+				
+				if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
+					local w = (self.Size.w + self.DrawSizeOffset.w)/2
+					local h = (self.Size.h + self.DrawSizeOffset.h)/2
+
+					self.Matrix:Translate(w, h, 0)
+					
+					self.Matrix:Rotate(self.DrawAngleOffset.p, 0, 0, 1)
+					self.Matrix:Rotate(self.DrawAngleOffset.y, 0, 1, 0)
+					self.Matrix:Rotate(self.DrawAngleOffset.r, 1, 0, 0)
+				
+					self.Matrix:Translate(-w, -h, 0)
+				end
+				
+				self.Matrix:Translate(math.ceil(-self.Parent.Scroll.x), math.ceil(-self.Parent.Scroll.y), 0)
+				
+				self.rebuild_matrix = false
+			end
+		end
+
+		function PANEL:GetMatrix()			
+			return self.Matrix 
+		end
+	end
+	
 	function PANEL:SetPosition(pos)
 		if self:HasParent() and self.Parent.TrapChildren and not self.ThreeDee then
 			pos:Clamp(Vec2(0, 0), self.Parent.Size - self.Size)
@@ -391,14 +479,6 @@ do -- orientation
 		end
 	end
 
-	function PANEL:GetWorldPosition()
-		return self:LocalToWorld(self:GetPosition())
-	end
-
-	function PANEL:SetWorldPosition(wpos)
-		self:SetPosition(self:WorldToLocal(wpos))
-	end
-
 	function PANEL:WorldToLocal(wpos)
 		local lpos = wpos
 		for k, v in ipairs(self:GetParentList()) do
@@ -409,18 +489,43 @@ do -- orientation
 		end
 		return lpos
 	end
+	
+	if USE_MATRIX then
+		function PANEL:GetWorldPosition()
+			local x, y = self.Matrix:GetTranslation()
+			return Vec2(x, y)
+		end
 
-	function PANEL:LocalToWorld(lpos)
-		local wpos = lpos
-		for k, v in npairs(self:GetParentList()) do
-			if v:IsValid() then
-				wpos = wpos + v:GetPosition()
-				if v:HasParent() then
-					wpos = wpos - v.Parent:GetScroll()
+		function PANEL:SetWorldPosition(wpos)
+			self.Matrix:SetTranslation(wpos.x, wpos.y, 0)
+		end
+
+		function PANEL:LocalToWorld(lpos)
+			local x, y = self.Matrix:GetTranslation()
+			
+			return Vec2(x + lpos.x, y + lpos.y)
+		end
+	else
+		function PANEL:GetWorldPosition()
+			return self:LocalToWorld(self:GetPosition())
+		end
+
+		function PANEL:SetWorldPosition(wpos)
+			self:SetPosition(self:WorldToLocal(wpos))
+		end
+		
+		function PANEL:LocalToWorld(lpos)
+			local wpos = lpos
+			for k, v in npairs(self:GetParentList()) do
+				if v:IsValid() then
+					wpos = wpos + v:GetPosition()
+					if v:HasParent() then
+						wpos = wpos - v.Parent:GetScroll()
+					end
 				end
 			end
-		end
-		return wpos
+			return wpos
+		end	
 	end
 
 	local sorter = function(a,b)
@@ -559,6 +664,7 @@ do -- cached rendering
 				end
 			end
 		end
+		self:InvalidateMatrix()
 	end
 
 	function PANEL:IsCacheDirty()
@@ -569,6 +675,8 @@ do -- cached rendering
 		if self:IsCacheDirty() then
 			self.cache_fb:Begin()
 			self.cache_fb:Clear()
+			
+		--	if USE_MATRIX then render.SetWorldMatrixOverride() end
 
 			surface.PushMatrix()
 				-- this matrix needs to be reset so it will draw
@@ -595,6 +703,8 @@ do -- cached rendering
 			self.cache_fb:End()
 			
 			self.updated_cache = true
+			
+		--	if USE_MATRIX then render.SetWorldMatrixOverride(self:GetMatrix()) end
 		end
 		
 		surface.SetColor(1, 1, 1, 1)
