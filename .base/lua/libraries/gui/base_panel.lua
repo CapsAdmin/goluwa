@@ -181,11 +181,11 @@ do -- drawing
 		
 		local no_draw = self:HasParent() and self.Parent.draw_no_draw
 		
-		--self:InvalidateMatrix()
+		self:InvalidateMatrix()
 	
 		if USE_MATRIX then	
 			self:RebuildMatrix()
-			render.SetWorldMatrixOverride(self.Matrix)
+			render.PushWorldMatrix(self.Matrix, true)
 			
 			if not from_cache then
 				self:CalcMouse()
@@ -349,7 +349,7 @@ do -- drawing
 		end
 		
 		if USE_MATRIX then
-			render.SetWorldMatrixOverride()
+			render.PopWorldMatrix()
 		else
 			surface.PopMatrix()
 		end
@@ -411,16 +411,19 @@ do -- orientation
 
 				self.Matrix:Identity()
 				
+				
 				self.temp_matrix = self.temp_matrix or Matrix44()				
 				self.Matrix:Multiply(self.Parent.Matrix, self.temp_matrix)
 				self.Matrix, self.temp_matrix = self.temp_matrix, self.Matrix
+			
 				
 				self.Matrix:Translate(math.ceil(self.Position.x), math.ceil(self.Position.y), 0)
-
-				local w = (self.Size.w)/2
-				local h = (self.Size.h)/2
+				
 				
 				if self.Angle ~= 0 then
+					local w = (self.Size.w)/2
+					local h = (self.Size.h)/2
+				
 					self.Matrix:Translate(w, h, 0)
 						self.Matrix:SetRotation(Quat():SetAngles(Ang3(0,self.Angle,0)))
 					self.Matrix:Translate(-w, -h, 0)
@@ -676,30 +679,41 @@ do -- cached rendering
 			self.cache_fb:Begin()
 			self.cache_fb:Clear()
 			
-		--	if USE_MATRIX then render.SetWorldMatrixOverride() end
-
-			surface.PushMatrix()
+			if USE_MATRIX then 
+				render.PushWorldMatrix(self.Matrix, true)
+				self:InvalidateMatrix()
+				self:RebuildMatrix()
+			else
+				surface.PushMatrix()
+				
 				-- this matrix needs to be reset so it will draw
 				-- from the origin of the framebuffer
 				-- the framebuffer itself is drawn at the correct position
 				surface.LoadIdentity()
+			end
+		
+			if self:IsDragging() or self:IsInsideParent() then
+				self:OnPreDraw()
+				self:OnDraw()
+				self:OnPostDraw()
+			end
 
-				if self:IsDragging() or self:IsInsideParent() then
-					self:OnPreDraw()
-					self:OnDraw()
-					self:OnPostDraw()
+			--surface.Translate(-self.Scroll.x, -self.Scroll.y)
+
+			for k,v in ipairs(self:GetChildren()) do
+				if v.Visible then
+					v:Draw(true)
 				end
+			end
 
-				surface.Translate(-self.Scroll.x, -self.Scroll.y)
-
-				for k,v in ipairs(self:GetChildren()) do
-					if v.Visible then
-						v:Draw(true)
-					end
-				end
-
-				self.cache_dirty = false
-			surface.PopMatrix()
+			self.cache_dirty = false
+		
+			if USE_MATRIX then
+				render.PopWorldMatrix()
+			else
+				surface.PopMatrix()
+			end
+			
 			self.cache_fb:End()
 			
 			self.updated_cache = true
