@@ -58,7 +58,12 @@ local function download(from, to, callback, on_fail, on_header)
 	)	
 end
 
-local function download_from_providers(path, callback, on_fail, file)
+local function download_from_providers(path, callback, on_fail)
+	
+	if event.Call("ResourceDownload", path, callback, on_fail) ~= nil then
+		return
+	end
+
 	if #resource.providers == 0 then
 		on_fail("[resource] no providers added\n")
 	return end
@@ -137,6 +142,7 @@ function resource.Download(path, callback, on_fail, crc)
 		if #resource.providers > 0 then
 			logn("[resource] donwnloading ", path)
 		end
+		
 		download_from_providers(
 			path, 
 			function(...)
