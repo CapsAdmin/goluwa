@@ -5,7 +5,7 @@ COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Draw3DGeometry"}
 
 prototype.StartStorable()
-	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1))
+	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1, 1))
 	prototype.GetSet(COMPONENT, "Alpha", 1)
 	prototype.GetSet(COMPONENT, "Cull", true)
 	prototype.GetSet(COMPONENT, "ModelPath", "")
@@ -41,10 +41,11 @@ if GRAPHICS then
 		local gl = require("lj-opengl") -- OpenGL
 
 		function PASS:Draw3D()
-			gl.DepthMask(gl.e.GL_TRUE)
-			gl.Enable(gl.e.GL_DEPTH_TEST)
-			gl.Disable(gl.e.GL_BLEND)
-			render.SetCullMode("front")
+			--gl.DepthMask(gl.e.GL_TRUE)
+			--gl.Enable(gl.e.GL_DEPTH_TEST)
+			--gl.Disable(gl.e.GL_BLEND)
+			--gl.Disable(gl.e.GL_BLEND)
+			render.SetCullMode("none")
 
 			render.gbuffer:Begin()
 				render.gbuffer:Clear()
@@ -96,13 +97,22 @@ if GRAPHICS then
 			source = [[
 				out vec4 out_color[3];
 
+				float rand(vec2 co){
+					return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+				}
+				
 				void main()
 				{
 					// diffuse
 					out_color[0] = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;
-
+					
+					//if (out_color[0].a < pow(rand(uv), 0.5))
+					//if (pow(out_color[0].a+0.5, 4) < 0.5)
+					if (out_color[0].a < 0.25)
+						discard;
+					
 					// specular
-					out_color[0].a = texture(specular, uv).r;
+					out_color[1].a = texture(specular, uv).r;
 
 					// normals
 					{
@@ -277,3 +287,7 @@ if GRAPHICS then
 end
 
 prototype.RegisterComponent(COMPONENT)
+
+if RELOAD then
+	render.InitializeGBuffer()
+end

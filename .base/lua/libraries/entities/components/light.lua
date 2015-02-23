@@ -229,14 +229,14 @@ if GRAPHICS then
 				{
 					float normalDotLight = dot(normal, cLight);
 				
-					if (normalDotLight < 0) return vec3(0,0,0);
+					//if (normalDotLight < 0) return vec3(0,0,0);
 							
 					vec3 cEye = normalize(-world_pos);	
 
 					vec3 cHalf = normalize(cLight + cEye);					
 					float normalDotHalf = dot(normal, cHalf);
 					
-					if (normalDotHalf < 0) return vec3(0,0,0);
+					//if (normalDotHalf < 0) return vec3(0,0,0);
 					
 					float normalDotEye = dot(normal, cEye);
 					float roughness = light_roughness;					
@@ -291,11 +291,11 @@ if GRAPHICS then
 						{
 							out_color.rgb = vec3(fade);
 							
-							float specular = texture(tex_diffuse, uv).a;
-							vec3 normal = texture(tex_normal, uv).xyz;							
+							vec4 normal = texture(tex_normal, uv);							
+							float specular = normal.a;
 							vec3 light_dir = normalize(light_pos - world_pos);
 							
-							out_color.rgb *= CookTorrance2(light_dir, normal,  world_pos, specular);
+							out_color.rgb *= CookTorrance2(light_dir, normal.xyz,  world_pos, specular);
 						}
 
 						out_color.a = light_color.a;   

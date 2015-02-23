@@ -447,7 +447,6 @@ function steam.LoadMap(path)
 		end
 		
 		local meshes = {}
-		local texture_format = {mip_map_levels = 8, read_speed = math.huge}
 		
 		for _, model in ipairs(header.models) do						
 			for i = 1, model.numfaces do
@@ -480,19 +479,19 @@ function steam.LoadMap(path)
 							end, 
 							function(field, path)
 								if field == "basetexture" then
-									mesh.diffuse = Texture(path, texture_format)
+									mesh.diffuse = Texture(path)
 								end
 								
 								if field == "basetexture2" then
-									mesh.diffuse2 = Texture(path, texture_format)
+									mesh.diffuse2 = Texture(path)
 								end
 								
 								if field == "bumpmap" then
-									mesh.bump = Texture(path, texture_format)
+									mesh.bump = Texture(path)
 								end
 								
 								if field == "specular" then
-									mesh.specular = Texture(path, texture_format)
+									mesh.specular = Texture(path)
 								end
 							end
 						)

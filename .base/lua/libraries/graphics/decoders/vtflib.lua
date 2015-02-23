@@ -8,6 +8,6 @@ render.AddTextureDecoder("vtflib", function(data, path_hint)
 	else
 		format = "rgb"
 	end
-	
-	return buffer, w, h, {format = {upload_format = format, internal_format = format.."8"}}
+		
+	return buffer, w, h, {format = {upload_format = format, internal_format = format.."8", mip_map_levels = 8}}
 end)
