@@ -485,40 +485,45 @@ function render.CreateShader(data, vars)
 
 			if not ok then
 				
-				local line_offset = 0
-				local source = debug.getinfo(2).source
-				
-				if source then
-					local lua_file = vfs.Read(source:sub(2))
-					if lua_file then
-						lua_file = lua_file:gsub("[ %t\r]", "")
-						local source = data.original_source:gsub("[ %t\r]", "")
+				for i = 2, 20 do
+					local line_offset
+					local path = debug.getinfo(i).source
+					
+					if path then
+						path = path:sub(2) 
 						
-						local start, stop = lua_file:find(source, 0, true)
-						if start then
-							line_offset = lua_file:sub(0, -stop):count("\n")
+						local lua_file = vfs.Read(path)
+						if lua_file then
+							lua_file = lua_file:gsub("[ %t\r]", "")
+
+							local source = data.original_source:gsub("[ %t\r]", "")
+							local start, stop = lua_file:find(source, 0, true)
+							if start then
+								line_offset = lua_file:sub(0, start):count("\n")
+							end
 						end
 					end
+					
+					if line_offset or i == 20 then	
+						local err = "\n" .. shader
+						
+						if path then
+							err = path:match(".+/(.+)") .. ":" .. err
+						end
+						
+						local goto_line
+						
+						err = err:gsub("0%((%d+)%) ", function(line)
+							line = tonumber(line)
+							goto_line = line - data.line_start + 1 + line_offset
+							return goto_line
+						end)
+						
+						debug.openfunction(debug.getinfo(2).func, tonumber(goto_line))
+						
+						error(err, 2)
+					end
 				end
-				
-				
-				local err = "\n" .. shader
-				
-				if source then
-					err = source:match(".+/(.+)") .. ":" .. err
-				end
-				
-				local goto_line
-				
-				err = err:gsub("0%((%d+)%) ", function(line)
-					line = tonumber(line)
-					goto_line = line - data.line_start + 1 + line_offset
-					return goto_line
-				end)
-				
-				debug.openfunction(debug.getinfo(2).func, tonumber(goto_line))
-				
-				error(err, 2)
 			end
 
 			table.insert(shaders, shader)
