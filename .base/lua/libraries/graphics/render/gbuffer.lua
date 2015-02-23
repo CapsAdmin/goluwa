@@ -268,9 +268,9 @@ function render.InitializeGBuffer(width, height)
 	end)
 	
 	event.AddListener("Draw2D", "gbuffer_debug", function()
-		local size = 4
-		local w, h = surface.GetSize()
 		if render.debug then
+			local size = 4
+			local w, h = surface.GetSize()
 			w = w / size
 			h = h / size
 			

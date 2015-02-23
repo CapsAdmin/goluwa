@@ -513,9 +513,9 @@ if GRAPHICS then
 										
 					if (screen_pos != vec2(-2, -2))
 					{					
-						vec3 color = light_color.rgb*lensflare(uv-vec2(0.5), screen_pos);
+						vec3 color = light_color.rgb*lensflare(uv-vec2(0.5), screen_pos/2);
 						color -= noise(gl_FragCoord.xy)*0.015;
-						color = cc(color, 0.5, 0.1)*intensity;
+						color = cc(color, 0.5, 0.1)*intensity*0.75;
 						
 						out_color.rgb = color;
 						out_color.a = 1;
