@@ -2,6 +2,7 @@ local PASS = {}
 
 PASS.Name = "hdr"
 PASS.Default = false
+PASS.Position = 10
 
 PASS.Variables = {
 	tex_extracted = "sampler2D",
