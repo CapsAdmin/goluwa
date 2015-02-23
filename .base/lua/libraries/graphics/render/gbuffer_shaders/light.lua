@@ -56,8 +56,7 @@ PASS.Source = [[
 		
 	void main()
 	{		
-		out_color.rgb = texture(tex_diffuse, uv).rgb;
-		out_color.a = 1;
+		out_color = texture(tex_diffuse, uv);
 						
 		vec3 light = texture(tex_light, uv).rgb;
 		if (out_color.rgb != vec3(0,0,0)) light *= ssao();
