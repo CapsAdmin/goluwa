@@ -17,6 +17,7 @@ PASS.Source = [[
 		light = max(light, ambient_lighting.rgb);
 
 		out_color.rgb *= light;
+		out_color.a = 1;
 	}
 ]]
 
