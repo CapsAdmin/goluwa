@@ -52,11 +52,11 @@ do -- sun
 		local vec = var:GetForward()
 		local size = self:GetSunSize()
 		
-		self.sun:SetPosition(vec * size)
+		self.sun:SetPosition(vec * size/10)
 		self.sun:SetSize(size)
 	end)
 
-	ADD("sun_size", 2000, "sun_angles") 
+	ADD("sun_size", 10000, "sun_angles") 
 	ADD("sun_color", Color(1, 0.95, 0.8), function(self, var) self.sun:SetColor(var) end)
 	ADD("sun_intensity", 1, function(self, var) self.sun:SetDiffuseIntensity(var) end)
 	ADD("sun_specular_intensity", 0.2, function(self, var) self.sun:SetSpecularIntensity(var) end)

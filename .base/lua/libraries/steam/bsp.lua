@@ -476,23 +476,22 @@ function steam.LoadMap(path)
 								if vmt.error then
 									logn(vmt.error)									
 								end
-							end, 
-							function(field, path)
-								if field == "basetexture" then
-									mesh.diffuse = Texture(path)
+								if vmt.selfillum == 1 then
+									mesh.illumination = render.GetWhiteTexture()
 								end
-								
-								if field == "basetexture2" then
-									mesh.diffuse2 = Texture(path)
-								end
-								
-								if field == "bumpmap" then
-									mesh.bump = Texture(path)
-								end
-								
-								if field == "specular" then
-									mesh.specular = Texture(path)
-								end
+
+								mesh.illumination_color = vmt.selfillumtint
+								mesh.detail_scale = vmt.detailscale
+								mesh.detail_blend_factor = vmt.detailblendfactor
+							end,
+							function(field, path)								
+								if field == "basetexture" then mesh.diffuse = Texture(path) end
+								if field == "basetexture2" then mesh.diffuse2 = Texture(path) end
+								if field == "bumpmap" then mesh.bump = Texture(path) end
+								if field == "bumpmap2" then mesh.bump2 = Texture(path) end
+								if field == "envmapmask" then mesh.specular = Texture(path) end
+								if field == "selfillummask" then mesh.illumination = Texture(path) end
+								if field == "detail" then mesh.detail = Texture(path) end
 							end
 						)
 					end
@@ -706,14 +705,17 @@ function steam.SpawnMapEntities(path, parent)
 		for i, info in pairs(data.entities) do
 			if GRAPHICS then
 				if info.classname and info.classname:find("light_environment") then
+					
+					if path:find("esther.bsp") then parent.world_params:SetSunSize(1) end
+				
 					local p, y = info.pitch, info.angles.y
 					parent.world_params:SetSunAngles(Deg3(p, y+180, 0))
 					parent.world_params:SetSunSpecularIntensity(0.15)
-					parent.world_params:SetSunIntensity(1)
+					parent.world_params:SetSunIntensity(0.6)
 					
 					info._light.a = 1
 					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
-					parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b)*0.5)
+					parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b, 1))
 				elseif info.classname:lower():find("light") and info._light then		
 					local ent = entities.CreateEntity("light", parent)
 					ent:SetName(info.classname .. "_" .. i)
@@ -721,9 +723,10 @@ function steam.SpawnMapEntities(path, parent)
 					ent:SetHideFromEditor(true)
 					
 					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
-					ent:SetSize(5)
-					ent:SetDiffuseIntensity(info._light.a/25) 
-					ent:SetRoughness(0.5)
+					ent:SetSize(math.max(info._light.a, 15))
+					ent:SetSpecularIntensity(0.1)
+					ent:SetRoughness(0.15)
+					ent:SetDiffuseIntensity(math.clamp(info._light.a, 0, 0.7))
 					ent.spawned_from_bsp = true
 				elseif info.classname == "env_fog_controller" then
 					parent.world_params:SetFogColor(info.fogcolor)
@@ -738,7 +741,7 @@ function steam.SpawnMapEntities(path, parent)
 					ent:SetName(info.classname .. "_" .. i)
 					ent:SetModelPath(info.model)
 					ent:SetPosition(info.origin * scale)
-					ent:SetAngles(info.angles:Rad())
+					ent:SetAngles(info.angles:GetRad())
 					ent:SetHideFromEditor(true)
 					ent.spawned_from_bsp = true
 				end
@@ -748,5 +751,15 @@ function steam.SpawnMapEntities(path, parent)
 		end	
 	end
 	
-	thread:Start()
+	thread:Start() 
+end
+
+
+for k,v in pairs(entities.GetAll()) do 
+	if v:HasComponent("model") then 
+		local mesh = v:GetComponent("model").sub_models[1]
+		if mesh and mesh.bump2 then
+			print(mesh.bump2) 
+		end
+	end 
 end

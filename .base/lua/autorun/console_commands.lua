@@ -1,3 +1,26 @@
+do -- source engine
+	console.AddCommand("getpos", function()
+		local pos = render.GetCameraPosition() * (1/0.0254)
+		local ang = render.GetCameraAngles():GetDeg()
+		
+		logf("setpos %f %f %f;setang %f %f %f", pos.x, pos.y, pos.z, ang.p, ang.y, ang.r)
+	end)
+	
+	console.AddCommand("setpos", function(line)
+		local x,y,z = unpack(line:match("(.-);"):explode(" "))
+		x = tonumber(x)
+		y = tonumber(y)
+		z = tonumber(z)
+		render.SetCameraPosition(Vec3(x,y,z) * 0.0254)
+		
+		local p,y,r = unpack(line:match("setang (.+)"):explode(" "))
+		p = tonumber(p)
+		y = tonumber(y)
+		r = tonumber(r)
+		render.SetCameraAngles(Deg3(p,y,r))
+	end)
+end
+
 console.AddCommand("clear", console.Clear)
 
 console.AddCommand("dump_object_count", function()

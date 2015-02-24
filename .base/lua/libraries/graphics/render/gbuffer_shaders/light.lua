@@ -16,7 +16,8 @@ PASS.Source = [[
 		vec3 light = texture(tex_light, uv).rgb;
 		light = max(light, ambient_lighting.rgb);
 
-		out_color.rgb *= light;
+		out_color.rgb *= light/2;
+		out_color.rgb += texture(tex_illumination, uv).rgb*2;
 		out_color.a = 1;
 	}
 ]]

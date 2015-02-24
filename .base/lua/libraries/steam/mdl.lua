@@ -696,19 +696,25 @@ function steam.LoadModel(path, sub_model_callback)
 											if vmt.error then
 												logn(vmt.error)
 											end
+
+											if vmt.selfillum == 1 then
+												sub_model.material.illumination = render.GetWhiteTexture()
+											end
+
+											sub_model.material.illumination_color = vmt.selfillumtint
+											sub_model.material.detail_scale = vmt.detailscale
+											sub_model.material.detail_blend_factor = vmt.detailblendfactor
+											sub_model.material.no_cull = vmt.nocull == 1
+											sub_model.material.alpha_test = vmt.alphatest == 1 or vmt.translucent == 1 -- todo
 										end,
 										function(field, path)
 											sub_model.material = sub_model.material or {}
 											
-											if field == "basetexture" then
-												sub_model.material.diffuse = Texture(path)
-											end
-											if field == "bumpmap" then
-												sub_model.material.bump = Texture(path)
-											end
-											if field == "envmapmask" then
-												sub_model.material.specular = Texture(path)
-											end
+											if field == "basetexture" then sub_model.material.diffuse = Texture(path) end
+											if field == "bumpmap" then sub_model.material.bump = Texture(path) end
+											if field == "envmapmask" then sub_model.material.specular = Texture(path) end
+											if field == "selfillummask" then sub_model.material.illumination = Texture(path) end
+											if field == "detail" then sub_model.material.detail = Texture(path) end
 										end
 									)
 								end
