@@ -72,6 +72,9 @@ do -- mixer
 					surface.rect_mesh:Draw()
 				surface.PopMatrix()
 			render.gbuffer_mixer_buffer:End()	
+			if shader.gbuffer_pass.PostRender then
+				shader.gbuffer_pass:PostRender()
+			end
 		end
 	end
 	
@@ -363,11 +366,12 @@ function render.DrawGBuffer(dt, w, h)
 		end
 	render.End3D()
 			
+	--render.Clear(1,1,1,1)		
+	
 	-- gbuffer
 	render.SetBlendMode("alpha")	
 	render.SetCullMode("back")
 	render.Start2D()
-	
 		for i, pass in ipairs(render.gbuffer_passes) do
 			if pass.Draw2D then 
 				pass:Draw2D() 

@@ -5,6 +5,7 @@ PASS.Default = false
 PASS.Position = 10
 
 PASS.Variables = {
+	tex_area = "sampler2D",
 	tex_extracted = "sampler2D",
 	bloom_factor = 0.05,
 	exposure = 1,
@@ -21,7 +22,7 @@ function PASS:Initialize()
 		vec4 color = vec4(1,1,1,1);
 		color.rgb = pow(texture(self, uv).rgb, vec3(3));
 		return color;
-	]], {self = self.fb:GetTexture(), exposure = 1})
+	]], {self = self.fb:GetTexture()})
 	
 	self.blur = render.CreateShader([[
 		float dx = blur_size / size.x;
@@ -55,7 +56,7 @@ function PASS:Update()
 	
 	surface.PushMatrix(0, 0, self.fb.w, self.fb.h)
 		self.fb:Begin()
-			self.shader.exposure = self.smooth_exposure
+			self.shader.exposure = 1
 			self.extract:Bind()
 			surface.rect_mesh:Draw()
 		self.fb:End()
@@ -70,31 +71,36 @@ function PASS:Update()
 	surface.PopMatrix()
 	
 	
-	if not self.next_update or self.next_update < system.GetElapsedTime() then
-		self.area:Copy(self.fb)
-		self.area:Begin()	
+	--if not self.next_update or self.next_update < system.GetElapsedTime() then
+		--self.area:Copy(render.gbuffer_mixer_buffer)
+		--[[self.area:Begin()	
 			local r,g,b = render.ReadPixels(0,0, 1,1)
 			if r and g and b then
 				self.exposure = math.clamp((-math.max(r,g,b)+1) * 2, 0.2, 1) ^ 0.5  
 			end
-		self.area:End()
-		self.next_update = system.GetElapsedTime() + 1/30
-	end
+		self.area:End()]]
+	--	self.next_update = system.GetElapsedTime() + 1/30
+	--end
 		
-	self.smooth_exposure = self.smooth_exposure or 0
-	self.smooth_exposure = math.lerp(render.delta, self.smooth_exposure, self.exposure)
-		
-
+	--self.smooth_exposure = self.smooth_exposure or 0
+	--self.smooth_exposure = math.lerp(render.delta, self.smooth_exposure, self.exposure)
+	
 	self.shader.tex_extracted = self.fb:GetTexture()
+	self.shader.tex_area = self.area:GetTexture()
 end
 
+
+function PASS:PostRender()
+	self.area:Copy(render.gbuffer_mixer_buffer)
+end
 
 PASS.Source = [[
 	out vec4 out_color;
 		
 	void main() 
 	{ 	
-		out_color.rgb = 1 - exp2(-((texture(self, uv).rgb*1.75) + (bloom_factor * (texture(tex_extracted, uv).rgb)*1.75)) * exposure);
+		float prev_exposure = clamp(-(length(texture(tex_area, uv).rgb)/3) +1, 0, 1);
+		out_color.rgb = 1 - exp2(-((texture(self, uv).rgb*1.75) + (bloom_factor * (texture(tex_extracted, uv).rgb)*1.75)) * (exposure * prev_exposure));
 		out_color.rgb *= (-bloom_factor+1)*1.75;
 		out_color.a = 1;
 	}
