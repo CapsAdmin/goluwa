@@ -6,6 +6,7 @@ COMPONENT.Events = {"Draw3DGeometry"}
 
 prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1, 1))
+	prototype.GetSet(COMPONENT, "IlluminationColor", Color(1, 1, 1, 1))
 	prototype.GetSet(COMPONENT, "Alpha", 1)
 	prototype.GetSet(COMPONENT, "Cull", true)
 	prototype.GetSet(COMPONENT, "ModelPath", "")
@@ -20,6 +21,7 @@ prototype.EndStorable()
 prototype.GetSet(COMPONENT, "DiffuseTexture")
 prototype.GetSet(COMPONENT, "BumpTexture")
 prototype.GetSet(COMPONENT, "SpecularTexture")
+prototype.GetSet(COMPONENT, "IlluminationTexture")
 prototype.GetSet(COMPONENT, "Model", nil)
 
 COMPONENT.Network = {
@@ -37,6 +39,7 @@ if GRAPHICS then
 
 		PASS:AddBuffer("diffuse", "RGBA8")
 		PASS:AddBuffer("normal", "RGB16f")
+		PASS:AddBuffer("illumination", "RGBA8")
 
 		local gl = require("lj-opengl") -- OpenGL
 
@@ -45,7 +48,7 @@ if GRAPHICS then
 			--gl.Enable(gl.e.GL_DEPTH_TEST)
 			--gl.Disable(gl.e.GL_BLEND)
 			--gl.Disable(gl.e.GL_BLEND)
-			render.SetCullMode("none")
+			render.SetCullMode("front")
 
 			render.gbuffer:Begin()
 				render.gbuffer:Clear()
@@ -82,11 +85,17 @@ if GRAPHICS then
 				diffuse = "sampler2D",
 				diffuse2 = "sampler2D",
 				vm_matrix = "mat4",
-				--detail = "sampler2D",
-				--detailscale = 1,
+				
+				detail = "sampler2D",
+				detail_scale = 1,
+				detail_blend_factor = 0,
+				alpha_test = 0,
 
 				bump = "sampler2D",
+				bump2 = "sampler2D",
 				specular = "sampler2D",
+				illumination = "sampler2D",
+				illumination_color = Color(1,1,1,1),
 			},
 			attributes = {
 				{pos = "vec3"},
@@ -102,14 +111,20 @@ if GRAPHICS then
 				}
 				
 				void main()
-				{
+				{				
 					// diffuse
 					out_color[0] = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;
 					
-					//if (out_color[0].a < pow(rand(uv), 0.5))
-					//if (pow(out_color[0].a+0.5, 4) < 0.5)
-					if (out_color[0].a < 0.25)
-						discard;
+					if (alpha_test == 1)
+					{
+						//if (out_color[0].a < pow(rand(uv), 0.5))
+						//if (pow(out_color[0].a+0.5, 4) < 0.5)
+						if (out_color[0].a < 0.25)
+							discard;
+					}
+					
+					//if (detail_blend_factor > 0)
+						//out_color[0].rgb = (out_color[0].rgb - texture(detail, uv * detail_scale*10).rgb);
 					
 					// specular
 					out_color[1].a = texture(specular, uv).r;
@@ -118,17 +133,19 @@ if GRAPHICS then
 					{
 						out_color[1].rgb = mat3(vm_matrix) * normal;
 						
-						vec3 bump_detail = texture(bump, uv).grb;
-
+						vec3 bump_detail = mix(texture(bump, uv).rgb, texture(bump2, uv).rgb, texture_blend);
+						
+					//	bump_detail.rgb = normalize(bump_detail.grb);
+						
 						if (bump_detail != vec3(0,0,0))
 						{
 							//bump_detail = normalize(bump_detail);
-							out_color[1].rgb += (mat3(vm_matrix)) * -(bump_detail - vec3(0.5));
+							out_color[1].rgb += (mat3(vm_matrix)) * -(normalize(bump_detail.grb) - vec3(0.5));
 							out_color[1].rgb = normalize(out_color[1].rgb);
 						}
 					}
 
-					//out_color.rgb *= texture(detail, uv * detailscale).rgb;
+					out_color[2] = texture(illumination, uv)*illumination_color;
 				}
 			]]
 		})
@@ -271,13 +288,18 @@ if GRAPHICS then
 			shader.color = self.Color
 
 			for i, model in ipairs(self.sub_models) do
+				if model.no_cull then render.SetCullMode("none") else render.SetCullMode("front") end
+				shader.alpha_test = model.alpha_test and 1 or 0
 				shader.diffuse = self.DiffuseTexture or model.diffuse or render.GetErrorTexture()
-				shader.diffuse2 = self.DiffuseTexture or model.diffuse2 or render.GetErrorTexture()
+				shader.diffuse2 = self.DiffuseTexture2 or model.diffuse2 or render.GetErrorTexture()
 				shader.specular = self.SpecularTexture or model.specular or render.GetWhiteTexture()
+				shader.illumination = self.IlluminationTexture or model.illumination or render.GetBlackTexture()
+				shader.illumination_color = model.illumination_color or self.IlluminationColor
 				shader.bump = self.BumpTexture or model.bump or render.GetBlackTexture()
-				shader.displacement = self.Displacement or model.displacement or render.GetNoiseTexture()
-
-				--shader.detail = model.detail or render.GetWhiteTexture()
+				shader.bump2 = self.BumpTexture2 or model.bump2 or render.GetBlackTexture()
+				shader.displacement = self.Displacement or model.displacement or render.GetWhiteTexture()
+				shader.detail = model.detail or render.GetWhiteTexture()
+				shader.detail_blend_factor = model.detail_blend_factor 
 
 				shader:Bind()
 				model:Draw()

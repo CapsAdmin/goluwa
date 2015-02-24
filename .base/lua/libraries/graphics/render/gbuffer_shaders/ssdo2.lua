@@ -6,9 +6,9 @@ PASS.Position = 1
 PASS.Variables = {
 	inverse_projection = {mat4 = function() return render.matrices.projection_3d_inverse.m end},
 	num_samples = 16,
-	occlusion_max_distance = 0.1,
-	occlusion_radius = 0.2,
-	angle_threshold = 2.25,
+	occlusion_max_distance = 0.2,
+	occlusion_radius = 0.25,
+	angle_threshold = 2,
 	tex_noise =  {texture = render.GetNoiseTexture},
 }
 

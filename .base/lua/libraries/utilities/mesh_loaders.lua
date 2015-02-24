@@ -60,16 +60,8 @@ do -- render model
 		if model_data.material then
 			model_data.material.directory = dir							
 			
-			if typex(model_data.material.diffuse) == "texture" then
-				mesh.diffuse = model_data.material.diffuse
-			end
-			
-			if typex(model_data.material.bump) == "texture" then
-				mesh.bump = model_data.material.bump
-			end
-			
-			if typex(model_data.material.specular) == "texture" then
-				mesh.specular = model_data.material.specular
+			for k,v in pairs(model_data.material) do
+				mesh[k] = mesh[k] or v
 			end
 			
 			if model_data.material.path then

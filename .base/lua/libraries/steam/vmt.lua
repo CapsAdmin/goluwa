@@ -6,6 +6,9 @@ local path_fields = {
 	"basetexture3",
 	"detail",
 	"bumpmap",
+	"bumpmap2",
+	"envmapmask",
+	"selfillummask",
 	"normalmap",
 }
 
@@ -41,7 +44,7 @@ function steam.LoadMaterial(path, callback, texture_callback)
 			vmt = v
 			vmt.shader = k
 			vmt.fullpath = path
-									
+
 			for i, field in ipairs(path_fields) do
 				if vmt[field] then 					
 					local new_path = vfs.FixPath("materials/" .. vmt[field])

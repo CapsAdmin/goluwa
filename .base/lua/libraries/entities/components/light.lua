@@ -141,6 +141,7 @@ if GRAPHICS then
 		function PASS:Draw3D()
 			gl.Disable(gl.e.GL_DEPTH_TEST)	
 			gl.Enable(gl.e.GL_BLEND)
+			--render.SetBlendMode("additive")
 			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
 			render.SetCullMode("front")
 			
@@ -160,7 +161,7 @@ if GRAPHICS then
 				{uv = "vec2"},
 				{texture_blend = "float"},
 			},	
-			source = "gl_Position = pvm_matrix * vec4(pos*7.5, 1);"
+			source = "gl_Position = pvm_matrix * vec4(pos, 1);"
 		})
 
 		PASS:ShaderStage("fragment", { 
@@ -168,7 +169,7 @@ if GRAPHICS then
 				tex_depth = "sampler2D",
 				tex_diffuse = "sampler2D",
 				tex_normal = "sampler2D",
-				tex_position = "sampler2D",
+				tex_illumination = "sampler2D",
 				
 				tex_shadow_map = "sampler2D",
 				
@@ -215,17 +216,17 @@ if GRAPHICS then
 				float get_attenuation(vec3 world_pos)
 				{												
 					float distance = length(light_pos - world_pos);
-					distance = distance / light_radius / 9;
-					distance = -distance + 2; 
+					distance = distance / (light_radius * 2);
+					distance = -distance + 1;
 					
-					return pow(clamp(distance, 0, 1), 0.5);
+					return clamp(distance, 0, 1);
 				}
 				
 				const float e = 2.71828182845904523536028747135;
 				const float pi = 3.1415926535897932384626433832;
 
 				
-				vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular)
+				vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular, float roughness)
 				{
 					float normalDotLight = dot(normal, cLight);
 				
@@ -238,9 +239,7 @@ if GRAPHICS then
 					
 					//if (normalDotHalf < 0) return vec3(0,0,0);
 					
-					float normalDotEye = dot(normal, cEye);
-					float roughness = light_roughness;					
-					
+					float normalDotEye = dot(normal, cEye);					
 					float normalDotHalf2 = normalDotHalf * normalDotHalf;
 					
 					float roughness2 = roughness * roughness;
@@ -255,9 +254,9 @@ if GRAPHICS then
 					float CookTorrance = (D*F*G) / (normalDotEye * pi);
 					
 					vec3 diffuse_ = light_color.rgb * max(0.0, normalDotLight);
-					vec3 specular_ = light_color.rgb * max(max(0.0, CookTorrance) * specular * light_specular_intensity, normalDotLight);
+					vec3 specular_ = light_color.rgb * max(max(0.0, CookTorrance) * specular, normalDotLight);
 					
-					return (diffuse_ + specular_) * light_diffuse_intensity;
+					return diffuse_ + specular_;
 				}
 				
 				float get_shadow(vec2 uv)    
@@ -282,21 +281,24 @@ if GRAPHICS then
 					//out_color.rgb = world_pos; out_color.a = 1; {return;}
 										
 					{					
-						float fade = pow(get_attenuation(world_pos), 4);	
+						float fade = get_attenuation(world_pos);
 						
+						//{out_color.rgb = vec3(fade, 0,0); return;}
+							
 						if (light_shadow == 1)
 							fade = fade*get_shadow(uv);
 						
 						if (fade > 0)
-						{
-							out_color.rgb = vec3(fade);
-							
+						{							
 							vec4 normal = texture(tex_normal, uv);							
 							float specular = normal.a;
 							vec3 light_dir = normalize(light_pos - world_pos);
 							
-							out_color.rgb *= CookTorrance2(light_dir, normal.xyz,  world_pos, specular);
-						}
+							fade = pow(fade * 4, 2) / 2;
+							float intensity = light_diffuse_intensity * light_diffuse_intensity;
+							
+							out_color.rgb += CookTorrance2(light_dir, normal.xyz,  world_pos, specular * light_specular_intensity, light_roughness) * intensity * fade;
+						} 
 
 						out_color.a = light_color.a;   
 					}

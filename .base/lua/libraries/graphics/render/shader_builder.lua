@@ -519,9 +519,14 @@ function render.CreateShader(data, vars)
 							return goto_line
 						end)
 						
-						debug.openfunction(debug.getinfo(2).func, tonumber(goto_line))
+						if path then
+							debug.openscript(path, tonumber(goto_line))
+						else
+							debug.openfunction(debug.getinfo(i).func, tonumber(goto_line))
+						end
 						
-						error(err, 2)
+						error(err, i)
+						return
 					end
 				end
 			end
