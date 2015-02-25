@@ -1,7 +1,6 @@
 local PASS = {}
 
 PASS.Name = "ssdo"
-PASS.Position = 1
 PASS.Default = false
 
 PASS.Variables = {

@@ -34,7 +34,10 @@ function vfs.loadfile(path)
 			return res, err, full_path 
 		end
 		
-		local res, err = loadstring(res, "@" .. path) -- put @ in front of the path so it will be treated as such intenrally
+		-- prepend "@" in front of the path so it will be treated as a lua file and not a string by lua internally
+		-- for nicer error messages and debug
+		local res, err = loadstring(res, "@" .. path) 
+				
 		return res, err, full_path
 	end
 	
@@ -103,11 +106,15 @@ do -- include
 			
 			for script in vfs.Iterate(dir, nil, true) do
 				if script:find("%.lua") then
-					local func, err = vfs.loadfile(script)
+					local func, err, full_path = vfs.loadfile(script)
 					
 					if func then
+						_G.FILE_PATH = full_path
+						_G.FILE_NAME = full_path:match(".*/(.+)") or full_path
 						local ok, err = xpcall(func, system and system.OnError or logn, ...)
-
+						_G.FILE_NAME = nil
+						_G.FILE_PATH = nil
+						
 						if not ok then
 							logn(err)
 						end
@@ -134,22 +141,23 @@ do -- include
 		-- try first with the last directory
 		-- once with lua prepended
 		local path = "lua/" .. dir .. file
-		func, err = vfs.loadfile(path)
-					
+		local full_path
+		func, err, full_path = vfs.loadfile(path)
+
 		if not_found(err) then
 			path = dir .. file
-			func, err = vfs.loadfile(path)
+			func, err, full_path = vfs.loadfile(path)
 			
 			-- and without the last directory
 			-- once with lua prepended
 			if not_found(err) then
 				path = "lua/" .. source
-				func, err = vfs.loadfile(path)	
+				func, err, full_path = vfs.loadfile(path)	
 				
 				-- try the absolute path given
 				if not_found(err) then
 					path = source
-					func, err = vfs.loadfile(loaded_path)
+					func, err, full_path = vfs.loadfile(loaded_path)
 				else
 					path = source
 				end
@@ -161,27 +169,17 @@ do -- include
 		if func then
 			dir = path:match("(.+/)(.+)")
 			include_stack[#include_stack + 1] = dir
-					
+			
+			
+			_G.FILE_PATH = full_path
+			_G.FILE_NAME = full_path:match(".*/(.+)") or full_path
 			local res = {xpcall(func, system and system.OnError or logn, ...)}
+			_G.FILE_PATH = nil
+			_G.FILE_NAME = nil
 			
 			if not res[1] then
 				logn(res[2])
 			end
-			
-			--[[if res and CAPSADMIN then
-				local lua, err = vfs.Read(path)
-				if not include_buffer then 
-					include_buffer = {}
-					local lua = vfs.Read(e.ROOT_FOLDER .. "lua/init.lua")
-					table.insert(include_buffer, "do")
-					table.insert(include_buffer, lua)
-					table.insert(include_buffer, "end")
-				end
-				table.insert(include_buffer, "do")
-				table.insert(include_buffer, lua)
-				table.insert(include_buffer, "end")
-				vfs.Write("data/include.lua", table.concat(include_buffer, "\n"))
-			end]]
 			
 			include_stack[#include_stack] = nil
 						 

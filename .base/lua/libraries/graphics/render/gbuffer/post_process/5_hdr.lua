@@ -2,7 +2,7 @@ local PASS = {}
 
 PASS.Name = "hdr"
 PASS.Default = false
-PASS.Position = 10
+PASS.Position = FILE_NAME:sub(1, 1)
 
 PASS.Variables = {
 	tex_area = "sampler2D",

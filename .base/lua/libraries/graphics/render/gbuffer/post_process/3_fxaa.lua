@@ -1,7 +1,7 @@
 local PASS = {}
 
 PASS.Name = "fxaa"
-PASS.Position = 3
+PASS.Position = FILE_NAME:sub(1, 1)
 
 PASS.Source = [[
 	out vec4 out_color;
