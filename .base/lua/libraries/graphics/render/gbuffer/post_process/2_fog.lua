@@ -1,7 +1,7 @@
 local PASS = {}
 
 PASS.Name = "fog"
-PASS.Position = 2
+PASS.Position = FILE_NAME:sub(1, 1)
 
 PASS.Variables = {
 	fog_color = Color(0.9,0.9,0.9),

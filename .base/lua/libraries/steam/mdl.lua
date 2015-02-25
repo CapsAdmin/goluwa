@@ -700,6 +700,8 @@ function steam.LoadModel(path, sub_model_callback)
 											if vmt.selfillum == 1 then
 												sub_model.material.illumination = render.GetWhiteTexture()
 											end
+											
+											sub_model.material = sub_model.material or {}
 
 											sub_model.material.illumination_color = vmt.selfillumtint
 											sub_model.material.detail_scale = vmt.detailscale

@@ -1,7 +1,7 @@
 local PASS = {}
 
 PASS.Name = "light"
-PASS.Position = 1
+PASS.Position = FILE_NAME:sub(1, 1)
 
 PASS.Variables = {
 	ambient_lighting = Color(0.3, 0.3, 0.3, 1),

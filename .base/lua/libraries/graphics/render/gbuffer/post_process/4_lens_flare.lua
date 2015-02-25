@@ -1,7 +1,7 @@
 local PASS = {}
 
 PASS.Name = "lens_flare"
-PASS.Position = 4
+PASS.Position = FILE_NAME:sub(1, 1)
 
 PASS.Variables = {
 	lens_flare_intensity = 1,

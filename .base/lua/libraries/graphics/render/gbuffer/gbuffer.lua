@@ -25,7 +25,7 @@ function render.CreateGBufferPass(name, stage)
 	local PASS = {}
 	
 	PASS.name = name
-	PASS.stage = stage or math.huge
+	PASS.stage = tonumber(stage) or math.huge
 	PASS.shader = {}
 	PASS.shader.name = "gbuffer_" .. name
 	PASS.buffers = {}
@@ -129,7 +129,7 @@ do -- mixer
 		
 		shader.gbuffer_pass = PASS
 		shader.gbuffer_name = PASS.Name
-		shader.gbuffer_position = PASS.Position or #render.gbuffer_shaders_sorted
+		shader.gbuffer_position = tonumber(PASS.Position) or #render.gbuffer_shaders_sorted
 		
 		for k,v in pairs(render.gbuffer_values) do
 			render.SetGBufferValue(k,v)
@@ -195,6 +195,8 @@ local w_cvar = console.CreateVariable("render_width", 0, function() render.Initi
 local h_cvar = console.CreateVariable("render_height", 0, function() render.InitializeGBuffer() end)
  
 function render.InitializeGBuffer(width, height)
+	include("libraries/graphics/render/gbuffer/passes/*")
+
 	width = width or render.GetWidth()
 	height = height or render.GetHeight()
 	
@@ -314,7 +316,7 @@ function render.InitializeGBuffer(width, height)
 		end
 	end)
 	
-	include("libraries/graphics/render/gbuffer_shaders/*")
+	include("libraries/graphics/render/gbuffer/post_process/*")
 	
 	for k,v in pairs(render.gbuffer_values) do
 		render.SetGBufferValue(k,v)

@@ -11,6 +11,8 @@ local template_functions = {
 	"RemoveField",
 	"StartStorable",
 	"EndStorable",
+	"Register",
+	"CreateObject",
 }
 
 function prototype.CreateTemplate(super_type, sub_type)

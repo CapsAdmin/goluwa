@@ -372,10 +372,11 @@ include("matrices.lua", render)
 include("scene.lua", render)
 include("texture.lua", render)
 include("framebuffer.lua", render)
-include("gbuffer.lua", render)
+include("gbuffer/gbuffer.lua", render)
 include("vertex_buffer.lua", render)
 include("texture_atlas.lua", render)
 include("mesh_builder.lua", render)
+include("material.lua", render)
 
 if USE_GLFW then
 	include("glfw_window.lua", render)
