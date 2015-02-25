@@ -28,10 +28,10 @@ GUI:
 Similar to derma/gwen in gmod. It's also compatible with gwen skins. The blue skin tries to be identical to zsnes. The zsnes skin is only used in the "main menu".
 
 Source engine content:
-![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-02/2015-02-06_05-33-37.jpg)
-![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-14_18-12-58.png)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-02/2015-02-25_04-53-33.jpg)
+![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-02/2015-02-25_05-24-21.jpg)
 
-Here I'm loading de_overpass from CSGO and esther from dear esther. Goluwa will find steam from registry (different method on linux), mount the games vpk files and the required source games, read the BSP, VTF, VMT, MDL, etc files and load the assets. This is all very WIP but somewhat works.
+Here I've loaded a dear esther and hl2 ep2 map. Goluwa will find steam from registry (different method on linux), mount the games vpk files and the required source games, read the BSP, VTF, VMT, MDL, etc files and load the assets. This is all very WIP but somewhat works.
 
 Entity editor:
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-02/2015-02-02_01-14-06.png)
