@@ -131,7 +131,7 @@ if GRAPHICS then
 		self.vp_matrix = view * projection
 					
 		-- render the scene with this matrix
-		render.SetCullMode("back")
+		render.SetCullMode("none")
 		self.shadow_map:Begin("depth")
 			self.shadow_map:Clear()
 			event.Call("Draw3DGeometry", shader, self.vp_matrix, true)

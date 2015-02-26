@@ -10,8 +10,10 @@ function COMPONENT:OnAdd(ent)
 	self.sun:SetName("sun")
 	self.sun:SetHideFromEditor(false)
 	self.sun:SetProjectFromCamera(true)
-	self.sun:SetOrthoSize(80)
+	self.sun:SetOrthoSize(150)
 	self.sun:SetShadow(true)
+	
+	SUN = self.sun
 	
 	for _, info in ipairs(prototype.GetStorableVariables(self)) do		
 		self[info.set_name](self, self[info.get_name](self))
@@ -55,8 +57,12 @@ do -- sun
 		local vec = var:GetForward()
 		local size = self:GetSunSize()
 		local sun_pos = vec * size/10
-		self.sun:SetAngles(Ang3(var.p, var.y, var.r))
-		--self.sun:GetTRRotation():Conjugate()
+		
+		local grr = Matrix44()
+		grr:Rotate(-var.p-math.pi/2, -1,0,0)
+		grr:Rotate(var.y, 0,0,1)
+		
+		self.sun:SetRotation(grr:GetRotation())
 		self.sun:SetPosition(sun_pos)
 		self.sun:SetSize(size)
 	end)
@@ -70,7 +76,7 @@ do -- sun
 end
 
 do -- fog 
-	ADD("fog_color", Color(0.8, 0.95, 1, 1))
+	ADD("fog_color", Color(0.18867780436772762, 0.4978442963618773, 0.6616065586417131, 1))
 	ADD("fog_intensity", 1)
 	ADD("fog_start", 1)
 	ADD("fog_end", 4000)
