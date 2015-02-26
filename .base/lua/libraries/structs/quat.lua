@@ -36,7 +36,7 @@ function META.HamRight(a, b)
 		a.z = a.z * b
 		a.w = a.w * b
 	elseif type(a) == "number" then
-		return META.Multiply(b, a)
+		return META.HamRight(b, a)
 	else
 		a.x = a.w*b.x + a.x*b.w + a.y*b.z - a.z*b.y
 		a.y = a.w*b.y + a.y*b.w + a.z*b.x - a.x*b.z
