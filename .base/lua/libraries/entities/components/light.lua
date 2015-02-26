@@ -18,11 +18,16 @@ prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "FOV", 90, {editor_min = 0, editor_max = 180})
 	prototype.GetSet(COMPONENT, "NearZ", 1)
 	prototype.GetSet(COMPONENT, "FarZ", 32000)
+	prototype.GetSet(COMPONENT, "ProjectFromCamera", false) 
 	prototype.GetSet(COMPONENT, "OrthoSize", 0)
 	prototype.GetSet(COMPONENT, "LensFlare", false)
 prototype.EndStorable()
 
 if GRAPHICS then	
+	local gl = require("lj-opengl")
+	
+	render.shadow_maps = render.shadow_maps or utility.CreateWeakTable()
+	
 	function COMPONENT:OnAdd(ent)
 		utility.LoadRenderModel("models/cube.obj", function(meshes)
 			self.light_mesh = meshes[1]
@@ -60,6 +65,7 @@ if GRAPHICS then
 		shader.light_attenuation_exponent = self.AttenuationExponent
 		shader.light_roughness = self.Roughness
 		shader.light_shadow = self.Shadow and 1 or 0
+		shader.project_from_camera = self.ProjectFromCamera and 1 or 0
 		
 		if self.Shadow then
 			shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
@@ -69,13 +75,11 @@ if GRAPHICS then
 		shader:Bind()
 		self.light_mesh:Draw()
 	end
-	
-	render.shadow_maps = render.shadow_maps or utility.CreateWeakTable()
-							
+								
 	function COMPONENT:OnDrawShadowMaps(shader)
 		if self.Shadow then
 			if not render.shadow_maps[self] then
-				self.shadow_map = render.CreateFrameBuffer(render.gbuffer_width, render.gbuffer_height, {
+				self.shadow_map = render.CreateFrameBuffer(2048*2, 2048*2, {
 					name = "depth",
 					attach = "depth",
 					draw_manual = true,
@@ -97,36 +101,40 @@ if GRAPHICS then
 		
 		local transform = self:GetComponent("transform")					
 		local pos = transform:GetPosition()
-		local ang = transform:GetAngles()
-		
+		local ang = transform:GetRotation()
+
 		-- setup the view matrix
 		local view = Matrix44()
-		view:Rotate(ang.p, 0, 0, 1)
-		view:Rotate(ang.r + math.pi/2, 1, 0, 0)
-		view:Rotate(ang.y, 0, 0, 1)
-		view:Translate(pos.y, pos.x, pos.z)			
-		
+		view:SetRotation(ang)
+
+		if self.ProjectFromCamera then
+			pos = render.GetCameraPosition()
+			view:Translate(pos.y, pos.x, pos.z)			
+		else
+			view:Translate(pos.y, pos.x, pos.z)			
+		end
 		
 		-- setup the projection matrix
 		local projection = Matrix44()
 		
 		if self.OrthoSize == 0 then
-			projection:Perspective(self.FOV, self.NearZ, self.FarZ, render.camera.ratio) 
+			projection:Perspective(math.rad(self.FOV), render.camera.farz, render.camera.nearz, render.camera.ratio) 
 		else
 			local size = self.OrthoSize
-			projection:Ortho(-size, size, -size, size, 200, 0) 
+			projection:Ortho(-size, size, -size, size, 200, -200) 
 		end
 		
 		--entities.world:GetComponent("world").sun:SetPosition(render.GetCameraPosition()) 
 		--entities.world:GetComponent("world").sun:SetAngles(render.GetCameraAngles())
-		
+			
 		-- make a view_projection matrix
 		self.vp_matrix = view * projection
 					
 		-- render the scene with this matrix
+		render.SetCullMode("back")
 		self.shadow_map:Begin("depth")
 			self.shadow_map:Clear()
-			event.Call("Draw3DGeometry", shader, self.vp_matrix)
+			event.Call("Draw3DGeometry", shader, self.vp_matrix, true)
 		self.shadow_map:End("depth")
 	end
 end
@@ -137,7 +145,7 @@ function COMPONENT:OnDrawLensFlare(shader)
 	
 	shader.pvm_matrix = self.screen_matrix.m
 	
-	if z > -1 then
+	if z < 1 then
 		shader.screen_pos:Set(x, y)
 	else
 		shader.screen_pos:Set(-2,-2)

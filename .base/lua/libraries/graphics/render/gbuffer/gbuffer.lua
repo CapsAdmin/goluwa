@@ -42,6 +42,10 @@ function render.CreateGBufferPass(name, stage)
 		
 	table.sort(render.gbuffer_passes, function(a, b) return a.stage < b.stage end)
 	
+	if RELOAD then
+		event.Delay(0.1, render.InitializeGBuffer)
+	end
+	
 	return PASS
 end
 

@@ -143,7 +143,7 @@ if GRAPHICS then
 		end
 	end
 
-	function COMPONENT:OnDraw3DGeometry(shader, vp_matrix)
+	function COMPONENT:OnDraw3DGeometry(shader, vp_matrix, skip_cull)
 		self.sub_models = self.sub_models or {}
 		vp_matrix = vp_matrix or render.matrices.vp_matrix
 
@@ -158,7 +158,7 @@ if GRAPHICS then
 			shader.color = self.Color
 
 			for i, model in ipairs(self.sub_models) do
-				if model.no_cull then render.SetCullMode("none") else render.SetCullMode("front") end
+				if not skip_cull then if model.no_cull then render.SetCullMode("none") else render.SetCullMode("front") end end
 				shader.alpha_test = model.alpha_test and 1 or 0
 				shader.diffuse = self.DiffuseTexture or model.diffuse or render.GetErrorTexture()
 				shader.diffuse2 = self.DiffuseTexture2 or model.diffuse2 or render.GetErrorTexture()

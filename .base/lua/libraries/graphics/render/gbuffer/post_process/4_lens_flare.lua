@@ -17,4 +17,4 @@ PASS.Source = [[
 	}
 ]]
 
-render.AddGBufferShader(PASS)
+render.AddGBufferShader(PASS) 
