@@ -426,14 +426,14 @@ function gui.Initialize()
 
 	event.AddListener("FontChanged", "gui", function(name) 
 		gui.world:Layout()
-	end)
-	event.AddListener("Draw2D", "gui", gui.Draw2D)
-	event.AddListener("MouseInput", "gui", gui.MouseInput)
-	event.AddListener("KeyInputRepeat", "gui", gui.KeyInput)
-	event.AddListener("CharInput", "gui", gui.CharInput)
+	end, {on_error = system.OnError})
+	event.AddListener("Draw2D", "gui", gui.Draw2D, {on_error = system.OnError})
+	event.AddListener("MouseInput", "gui", gui.MouseInput, {on_error = system.OnError})
+	event.AddListener("KeyInputRepeat", "gui", gui.KeyInput, {on_error = system.OnError})
+	event.AddListener("CharInput", "gui", gui.CharInput, {on_error = system.OnError})
 	event.AddListener("WindowFramebufferResized", "gui", function(_, w,h) 
 		gui.world:SetSize(Vec2(w, h))
-	end)
+	end, {on_error = system.OnError})
 	
 	
 	-- should this be here?	
