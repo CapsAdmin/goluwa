@@ -140,6 +140,13 @@ function META:GetRotated(axis, ang)
 	return xax * ca + yax * sa + zax
 end
 
+function META:GetReflected(normal)
+	local proj = self:GetNormalized()
+	local dot = proj:GetDot(normal)
+
+  return Vec3(2 * (-dot) * normal.x + proj.x, 2 * (-dot) * normal.y + proj.y, 2 * (-dot) * normal.z + proj.z) * self:GetLength()          
+end
+
 META.ToScreen = utility.WorldPositionToScreen
 
 structs.Register(META)
