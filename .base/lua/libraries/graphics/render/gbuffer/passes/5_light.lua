@@ -51,6 +51,7 @@ PASS:ShaderStage("fragment", {
 		light_specular_intensity = 1,
 		light_roughness = 0.5,
 		light_shadow = 0,
+		project_from_camera = 0,
 		
 		inverse_projection = "mat4",
 		inverse_view_projection = "mat4",
@@ -73,7 +74,7 @@ PASS:ShaderStage("fragment", {
 		
 		vec3 get_pos(vec2 uv)
 		{
-			float z = -texture2D(tex_depth, uv).r;
+			float z = texture2D(tex_depth, uv).r;
 			vec4 sPos = vec4(uv * 2.0 - 1.0, z, 1.0);
 			sPos = inverse_projection * sPos;
 
@@ -128,25 +129,28 @@ PASS:ShaderStage("fragment", {
 		
 		float get_shadow(vec2 uv)    
 		{
-			// get world position from depth
-			float view_depth = texture(tex_depth, uv).r;
-			vec4 temp = light_vp_matrix * inverse_view_projection * vec4(uv * 2.0 - 1.0, -view_depth, 1.0);				
-			vec2 shadow_uv = (temp.xyz / temp.w).xy;   
-
-			float shadow_depth = texture(tex_shadow_map, 0.5*shadow_uv.xy+vec2(0.5)).r;
-
-			float shadow = shadow_depth < view_depth ? 0.5 : 1.0;
+			vec4 temp = light_vp_matrix * inverse_view_projection * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1 , 1.0);				
+			vec3 shadow_coord = (temp.xyz / temp.w);
 			
-			return shadow;
+			//if (shadow_coord.z < -1) return 0;
+			
+			if (shadow_coord.x > -1 && shadow_coord.x < 1 && shadow_coord.y > -1 && shadow_coord.y < 1)
+			{	if (texture(tex_shadow_map, 0.5 * shadow_coord.xy + vec2(0.5)).r > ((0.5 * shadow_coord.z + 0.5) - 0.001))
+					return 1.0;
+			}
+			else if (project_from_camera == 1)
+			{
+				return 1;
+			}
+			
+			return 0;
 		}  
 		
 		void main()
 		{					
 			vec2 uv = get_uv();					
 			vec3 world_pos = get_pos(uv);	
-								
-			//out_color.rgb = world_pos; out_color.a = 1; {return;}
-								
+
 			{					
 				float fade = get_attenuation(world_pos);
 				

@@ -128,7 +128,7 @@ do
 			local proj = render.matrices.projection_3d
 		
 			proj:LoadIdentity()
-			proj:Perspective(cam.fov, cam.nearz, cam.farz, cam.ratio) 
+			proj:Perspective(cam.fov, cam.farz, cam.nearz, cam.ratio) 
 			--proj:OpenGLFunc("Perspective", cam.fov, cam.nearz, cam.farz, cam.ratio)
 			
 			last_fov = cam.fov

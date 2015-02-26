@@ -52,10 +52,6 @@ function render.Initialize()
 	gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
 	gl.Disable(gl.e.GL_DEPTH_TEST)
 	
-	if gl.DepthRangef then
-		gl.DepthRangef(1, 0)
-	end
-	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
 	
 	include("libraries/graphics/render/shader_builder.lua", render)

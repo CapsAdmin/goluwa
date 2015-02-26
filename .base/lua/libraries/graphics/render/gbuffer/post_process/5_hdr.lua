@@ -7,12 +7,12 @@ PASS.Position = FILE_NAME:sub(1, 1)
 PASS.Variables = {
 	tex_area = "sampler2D",
 	tex_extracted = "sampler2D",
-	bloom_factor = 0.05,
-	exposure = 1,
+	bloom_factor = 0.005,
+	exposure = 0.75,
 }
 
 function PASS:Initialize()
-	self.fb = render.CreateFrameBuffer(render.GetWidth()/4, render.GetHeight()/4)
+	self.fb = render.CreateFrameBuffer(render.GetWidth()/2, render.GetHeight()/2)
 	self.area = render.CreateFrameBuffer(1,1)
 	
 	self.exposure = 1
@@ -56,12 +56,12 @@ function PASS:Update()
 	
 	surface.PushMatrix(0, 0, self.fb.w, self.fb.h)
 		self.fb:Begin()
-			self.shader.exposure = 1
+			--self.shader.exposure = 1
 			self.extract:Bind()
 			surface.rect_mesh:Draw()
 		self.fb:End()
 		
-		for i = 1, 2 do
+		for i = 1,4 do
 			self.blur.blur_size = i
 			self.fb:Begin()
 				self.blur:Bind()
@@ -99,8 +99,8 @@ PASS.Source = [[
 		
 	void main() 
 	{ 	
-		float prev_exposure = clamp(-(length(texture(tex_area, uv).rgb)/3) +1, 0, 1);
-		out_color.rgb = 1 - exp2(-((texture(self, uv).rgb*1.75) + (bloom_factor * (texture(tex_extracted, uv).rgb)*1.75)) * (exposure * prev_exposure));
+		//float prev_exposure = clamp(-(length(texture(tex_area, uv).rgb)/3) +1, 0, 1);
+		out_color.rgb = 1 - exp2(-((texture(self, uv).rgb) + (bloom_factor * (texture(tex_extracted, uv).rgb)*1.75)) * (exposure));
 		out_color.rgb *= (-bloom_factor+1)*1.75;
 		out_color.a = 1;
 	}

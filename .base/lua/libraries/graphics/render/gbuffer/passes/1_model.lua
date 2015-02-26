@@ -15,7 +15,6 @@ function PASS:Draw3D()
 	--gl.Enable(gl.e.GL_DEPTH_TEST)
 	--gl.Disable(gl.e.GL_BLEND)
 	--gl.Disable(gl.e.GL_BLEND)
-	render.SetCullMode("front")
 
 	render.gbuffer:Begin()
 		render.gbuffer:Clear()

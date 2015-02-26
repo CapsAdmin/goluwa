@@ -8,7 +8,10 @@ function COMPONENT:OnAdd(ent)
 	self.sun = entities.CreateEntity("light", ent)
 	self.sun:SetLensFlare(true)
 	self.sun:SetName("sun")
-	self.sun:SetHideFromEditor(true)
+	self.sun:SetHideFromEditor(false)
+	self.sun:SetProjectFromCamera(true)
+	self.sun:SetOrthoSize(80)
+	self.sun:SetShadow(true)
 	
 	for _, info in ipairs(prototype.GetStorableVariables(self)) do		
 		self[info.set_name](self, self[info.get_name](self))
@@ -51,8 +54,10 @@ do -- sun
 	ADD("sun_angles", Deg3(-45,-45,0), function(self, var)
 		local vec = var:GetForward()
 		local size = self:GetSunSize()
-		
-		self.sun:SetPosition(vec * size/10)
+		local sun_pos = vec * size/10
+		self.sun:SetAngles(Ang3(var.p, var.r, var.y))
+		--self.sun:GetTRRotation():Conjugate()
+		self.sun:SetPosition(sun_pos)
 		self.sun:SetSize(size)
 	end)
 

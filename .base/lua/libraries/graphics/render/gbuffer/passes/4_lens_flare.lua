@@ -24,16 +24,11 @@ PASS:ShaderStage("vertex", {
 		{uv = "vec2"},
 		{texture_blend = "float"},
 	},	
-	source = "gl_Position = pvm_matrix * vec4(pos*7.50, 1);"
+	source = "gl_Position = pvm_matrix * vec4(pos, 1);"
 })
 
 PASS:ShaderStage("fragment", { 
-	uniform = {				
-		tex_depth = "sampler2D",
-		tex_diffuse = "sampler2D",
-		tex_normal = "sampler2D",
-		tex_position = "sampler2D",
-		
+	uniform = {	
 		tex_noise = render.GetNoiseTexture(),
 		noise_tex_size = render.GetNoiseTexture():GetSize(),
 
@@ -42,14 +37,6 @@ PASS:ShaderStage("fragment", {
 		
 		screen_size = {vec2 = render.GetGBufferSize},
 		light_color = Color(1,1,1,1),				
-		light_diffuse_intensity = 0.5,
-		light_radius = 1000,
-		
-		
-		inverse_projection = "mat4",
-		cam_nearz = {float = function() return render.camera.nearz end},
-		cam_farz = {float = function() return render.camera.farz end},
-		view_matrix = {mat4 = function() return render.matrices.view_3d.m end},
 	},
 	source = [[			
 		out vec4 out_color;
@@ -57,20 +44,6 @@ PASS:ShaderStage("fragment", {
 		vec2 get_uv()
 		{
 			return gl_FragCoord.xy / screen_size;
-		}
-							
-		float get_depth(vec2 uv) 
-		{
-			return (2.0 * cam_nearz) / (cam_farz + cam_nearz - texture2D(tex_depth, uv).r * (cam_farz - cam_nearz));
-		}
-		
-		vec3 get_pos(vec2 uv)
-		{
-			float z = -texture2D(tex_depth, uv).r;
-			vec4 sPos = vec4(uv * 2.0 - 1.0, z, 1.0);
-			sPos = inverse_projection * sPos;
-
-			return (sPos.xyz / sPos.w);
 		}
 		
 		/*by musk License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
