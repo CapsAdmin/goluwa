@@ -55,7 +55,7 @@ do -- sun
 		local vec = var:GetForward()
 		local size = self:GetSunSize()
 		local sun_pos = vec * size/10
-		self.sun:SetAngles(Ang3(var.p, var.r, var.y))
+		self.sun:SetAngles(Ang3(var.p, var.y, var.r))
 		--self.sun:GetTRRotation():Conjugate()
 		self.sun:SetPosition(sun_pos)
 		self.sun:SetSize(size)

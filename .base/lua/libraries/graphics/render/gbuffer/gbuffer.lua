@@ -14,39 +14,24 @@ render.gbuffer_passes = render.gbuffer_passes or {}
 render.gbuffer_values = render.gbuffer_values or {}
 render.gbuffer_shaders = render.gbuffer_shaders or {}
 
-function render.CreateGBufferPass(name, stage) 
-	for i, pass in pairs(render.gbuffer_passes) do 
-		if pass.name == name then 
+function render.RegisterGBufferPass(PASS)
+	for i, pass in ipairs(render.gbuffer_passes) do 
+		if pass.Name == PASS.Name then 
 			table.remove(render.gbuffer_passes, i) 
 			break 
 		end
 	end
-	
-	local PASS = {}
-	
-	PASS.name = name
-	PASS.stage = tonumber(stage) or math.huge
-	PASS.shader = {}
-	PASS.shader.name = "gbuffer_" .. name
-	PASS.buffers = {}
-	
-	function PASS:ShaderStage(name, stage)
-		self.shader[name] = stage
-	end
-	
-	function PASS:AddBuffer(name, format, attach)
-		table.insert(self.buffers, {name = name, format = format, attach = attach})
-	end
-	
+		
+	PASS.Stage = tonumber(PASS.Stage) or 0
+	PASS.Shader.name = PASS.Name
+		
 	table.insert(render.gbuffer_passes, PASS)
 		
-	table.sort(render.gbuffer_passes, function(a, b) return a.stage < b.stage end)
+	table.sort(render.gbuffer_passes, function(a, b) return a.Stage < b.Stage end)
 	
 	if RELOAD then
-		event.Delay(0.1, render.InitializeGBuffer)
+		render.InitializeGBuffer()
 	end
-	
-	return PASS
 end
 
 do -- mixer
@@ -199,7 +184,9 @@ local w_cvar = console.CreateVariable("render_width", 0, function() render.Initi
 local h_cvar = console.CreateVariable("render_height", 0, function() render.InitializeGBuffer() end)
  
 function render.InitializeGBuffer(width, height)
-	include("libraries/graphics/render/gbuffer/passes/*")
+	if not RELOAD then
+		include("libraries/graphics/render/gbuffer/passes/*")
+	end
 
 	width = width or render.GetWidth()
 	height = height or render.GetHeight()
@@ -229,17 +216,24 @@ function render.InitializeGBuffer(width, height)
 			} 
 		}
 	
-		for _, pass in pairs(render.gbuffer_passes) do
-			for _, buffer in pairs(pass.buffers) do
-				table.insert(render.gbuffer_buffers, #render.gbuffer_buffers, {
-					name = buffer.name,
-					attach = buffer.attach or "color",
-					texture_format = {
-						internal_format = buffer.format or "RGB16F",
-						--mag_filter = "nearest",
-						--min_filter = "nearest",
-					},
-				})
+		for _, pass in ipairs(render.gbuffer_passes) do
+			if pass.Buffers then
+				for _, args in ipairs(pass.Buffers) do
+					local name, format, attach = unpack(args)
+					
+					attach = attach or "color"
+					format = format or "RGB16F"
+					
+					table.insert(render.gbuffer_buffers, #render.gbuffer_buffers, {
+						name = name,
+						attach = attach,
+						texture_format = {
+							internal_format = format,
+							--mag_filter = "nearest",
+							--min_filter = "nearest",
+						},
+					})
+				end
 			end
 		end
 	
@@ -264,12 +258,12 @@ function render.InitializeGBuffer(width, height)
 		},
 	})
 		
-	for _, pass in pairs(render.gbuffer_passes) do
-		local shader = render.CreateShader(pass.shader)
+	for _, pass in ipairs(render.gbuffer_passes) do
+		local shader = render.CreateShader(pass.Shader)
 		for i, info in ipairs(render.gbuffer_buffers) do
 			shader["tex_" .. info.name] = render.gbuffer:GetTexture(info.name)
 		end
-		render["gbuffer_" .. pass.name .. "_shader"] = shader
+		render["gbuffer_" .. pass.Name .. "_shader"] = shader
 	end
 				
 	event.AddListener("WindowFramebufferResized", "gbuffer", function(window, w, h)
@@ -320,7 +314,9 @@ function render.InitializeGBuffer(width, height)
 		end
 	end)
 	
-	include("libraries/graphics/render/gbuffer/post_process/*")
+	if not RELOAD then
+		include("libraries/graphics/render/gbuffer/post_process/*")
+	end
 	
 	for k,v in pairs(render.gbuffer_values) do
 		render.SetGBufferValue(k,v)

@@ -103,6 +103,9 @@ do
 					last_color = color
 				end
 			end
+			
+			
+			if not ls.p then break end
 						
 			markup:AddString(str:sub(last_pos-1, ls.p-2))
 			

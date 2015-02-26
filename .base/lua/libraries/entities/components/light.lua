@@ -50,7 +50,7 @@ if GRAPHICS then
 		
 		local mat = matrix * render.matrices.view_3d
 		local x,y,z = mat:GetTranslation()
-		shader.light_pos:Set(x*2,y*2,z*2) -- why do i need to multiply by 2?
+		shader.light_pos:Set(x,y,z)
 		shader.light_radius = transform:GetSize()
 		shader.inverse_projection = render.matrices.projection_3d_inverse.m
 		shader.inverse_view_projection = (render.matrices.vp_3d_inverse).m
