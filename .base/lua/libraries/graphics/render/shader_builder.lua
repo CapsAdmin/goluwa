@@ -492,7 +492,7 @@ function render.CreateShader(data, vars)
 					
 					if not info then break end
 					
-					local line_offset = 0
+					local line_offset
 					local path = info.source
 					
 					if path then
@@ -517,18 +517,20 @@ function render.CreateShader(data, vars)
 							err = path:match(".+/(.+)") .. ":" .. err
 						end
 						
-						local goto_line
-						
-						err = err:gsub("0%((%d+)%) ", function(line)
-							line = tonumber(line)
-							goto_line = line - data.line_start + 1 + line_offset
-							return goto_line
-						end)
-						
-						if path then
-							debug.openscript(path, tonumber(goto_line))
-						else
-							debug.openfunction(debug.getinfo(i).func, tonumber(goto_line))
+						if line_offset then
+							local goto_line
+							
+							err = err:gsub("0%((%d+)%) ", function(line)
+								line = tonumber(line)
+								goto_line = line - data.line_start + 1 + line_offset
+								return goto_line
+							end)
+							
+							if path then
+								debug.openscript(path, tonumber(goto_line))
+							else
+								debug.openfunction(info.func, tonumber(goto_line))
+							end
 						end
 						
 						error(err, i)
