@@ -19,25 +19,68 @@ do -- texture binding
 		
 		function render.BindTexture(tex)			
 			if tex ~= last and tex:IsValid() then
-				gl.BindTexture(tex.format.type, tex.override_texture and tex.override_texture.id or tex.id) 				
+				tex:Bind()
 				last = tex
 			end
 		end
 	end
 end
 
-do -- texture object
-	local SUPPRESS_GC = false
+local SUPPRESS_GC = false
+	
+local CHECK_FIELD = function(t, str) 
+	if type(str) == "number" then
+		return str
+	end
+	
+	return render.TranslateStringToEnum("texture", t, str, 5) 
+end
 
-	local CHECK_FIELD = function(t, str) 
-		if type(str) == "number" then
-			return str
-		end
-		
-		return render.TranslateStringToEnum("texture", t, str, 5) 
+local function update_format(self)
+	local f = self.format	
+	
+	f.min_filter = CHECK_FIELD("min_filter", f.min_filter) or gl.e.GL_LINEAR_MIPMAP_LINEAR
+	f.mag_filter = CHECK_FIELD("mag_filter", f.mag_filter) or gl.e.GL_LINEAR				
+	
+	f.wrap_s = CHECK_FIELD("wrap", f.wrap_s) or gl.e.GL_REPEAT
+	f.wrap_t = CHECK_FIELD("wrap", f.wrap_t) or gl.e.GL_REPEAT
+	f.wrap_r = CHECK_FIELD("wrap", f.wrap_r) or gl.e.GL_REPEAT
+	
+	do
+		local largest = ffi.new("float[1]")
+		gl.GetFloatv(gl.e.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, largest)
+		f.anisotropy = CHECK_FIELD("anisotropy", f.anisotropy) or largest[0]
+	end
+	
+	if f.type == gl.e.GL_TEXTURE_3D then
+		f.wrap_r = CHECK_FIELD("wrap", f.wrap_r) or gl.e.GL_REPEAT
 	end
 
+	for k,v in pairs(render.GetAvaibleEnums("texture", "parameters")) do
+		if f[k:lower()] then
+			gl.TexParameterf(f.type, v, f[k:lower()])
+		end
+	end
+	
+	-- only really used for caching..
+	self.format_string = {}
+	for k,v in pairs(f) do
+		table.insert(self.format_string, tostring(k) .. " == " .. tostring(v))
+	end
+	self.format_string = table.concat(self.format_string, "\n")		
+end 
+
+do -- texture object
 	local META = prototype.CreateTemplate("texture")
+	
+	META:GetSet("TextureType", "2D")
+	META:GetSet("UploadFormat", "bgra")
+	META:GetSet("InternalFormat", "rgba8")
+	META:GetSet("FormatType", "unsigned_byte")
+	META:GetSet("Channel", 0)
+	META:GetSet("Filter", "linear")
+	META:GetSet("Size", Vec2())
+	META:GetSet("MipMapLevels", 3)
 	
 	function render.CreateTexture(width, height, buffer, format)
 		if type(width) == "string" and not buffer and not format and (not height or type(height) == "table") then
@@ -76,7 +119,7 @@ do -- texture object
 		for k, v in pairs(format) do
 			format[k] = CHECK_FIELD(k, v) or v
 		end
-		
+
 		format.type = format.type or gl.e.GL_TEXTURE_2D
 		format.upload_format = format.upload_format or gl.e.GL_BGRA
 		format.internal_format = format.internal_format or gl.e.GL_RGBA8
@@ -111,7 +154,7 @@ do -- texture object
 		
 		gl.BindTexture(format.type, self.id)
 
-		self:UpdateFormat()
+		update_format(self)
 		
 		if self.compressed then
 			gl.CompressedTexImage2D(
@@ -126,26 +169,53 @@ do -- texture object
 			)
 			buffer = nil
 		elseif gl.TexStorage2D then
-			gl.TexStorage2D(
-				format.type, 
-				format.mip_map_levels, 
-				format.internal_format, 
-				self.size.w, 
-				self.size.h
-			)
+			if format.type == gl.e.GL_TEXTURE_CUBE_MAP then
+				for i = 0, 5 do
+					gl.TexStorage2D(
+						gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+						format.mip_map_levels, 
+						format.internal_format, 
+						self.size.w, 
+						self.size.h
+					)
+				end
+			else
+				gl.TexStorage2D(
+					format.type, 
+					format.mip_map_levels, 
+					format.internal_format, 
+					self.size.w, 
+					self.size.h
+				)
+			end
 		else
-			gl.TexImage2D(
-				format.type,
-				format.mip_map_levels,
-				format.internal_format,
-				self.size.w,
-				self.size.h,
-				0,
-				format.upload_format,
-				format.format_type,
-				nil
-			)
-				
+			if format.type == gl.e.GL_TEXTURE_CUBE_MAP then
+				for i = 0, 5 do
+					gl.TexImage2D(
+						gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+						format.mip_map_levels,
+						format.internal_format,
+						self.size.w,
+						self.size.h,
+						0,
+						format.upload_format,
+						format.format_type,
+						nil
+					)
+				end
+			else
+				gl.TexImage2D(
+					format.type,
+					format.mip_map_levels,
+					format.internal_format,
+					self.size.w,
+					self.size.h,
+					0,
+					format.upload_format,
+					format.format_type,
+					nil
+				)
+			end				
 		end
 		
 		if buffer then	
@@ -174,6 +244,10 @@ do -- texture object
 		return self
 	end
 	
+	function META:Bind()
+		gl.BindTexture(self.format.type, self.override_texture and self.override_texture.id or self.id)
+	end
+	
 	function META:GetSize()
 		return self.size
 	end
@@ -191,12 +265,12 @@ do -- texture object
 		return buffer, length
 	end
 	
-	function META:CreateBuffer()
-		-- +1 to height cause there seems to always be some noise on the last line :s
+	function META:CreateBuffer(buffer_type, stride)
+		buffer_type = self.BufferType or "unsigned char"
+		stride = self.Stride or 4
+		
 		local length = self.size.w * (self.size.h+1) * self.format.stride
-	--	local buffer = ffi.malloc(self.format.buffer_type, length)
-		--ffi.fill(buffer, length)
-		local buffer = ffi.new(self.format.buffer_type.."[?]", length)
+		local buffer = ffi.new(buffer_type.."[?]", length)
 		
 		return buffer, length
 	end
@@ -232,39 +306,6 @@ do -- texture object
 		return self
 	end
 	
-	function META:UpdateFormat()
-		local f = self.format	
-		
-		f.min_filter = CHECK_FIELD("min_filter", f.min_filter) or gl.e.GL_LINEAR_MIPMAP_LINEAR
-		f.mag_filter = CHECK_FIELD("mag_filter", f.mag_filter) or gl.e.GL_LINEAR				
-		
-		f.wrap_s = CHECK_FIELD("wrap", f.wrap_s) or gl.e.GL_REPEAT
-		f.wrap_t = CHECK_FIELD("wrap", f.wrap_t) or gl.e.GL_REPEAT
-		
-		do
-			local largest = ffi.new("float[1]")
-			gl.GetFloatv(gl.e.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, largest)
-			f.anisotropy = CHECK_FIELD("anisotropy", f.anisotropy) or largest[0]
-		end
-		
-		if f.type == gl.e.GL_TEXTURE_3D then
-			f.wrap_r = CHECK_FIELD("wrap", f.wrap_r) or gl.e.GL_REPEAT
-		end
-
-		for k,v in pairs(render.GetAvaibleEnums("texture", "parameters")) do
-			if f[k:lower()] then
-				gl.TexParameterf(f.type, v, f[k:lower()])
-			end
-		end
-		
-		-- only really used for caching..
-		self.format_string = {}
-		for k,v in pairs(f) do
-			table.insert(self.format_string, tostring(k) .. " == " .. tostring(v))
-		end
-		self.format_string = table.concat(self.format_string, "\n")		
-	end 
-	
 	function META:Upload(buffer, format_override)
 		local f = format_override or self.format		
 		local f2 = self.format
@@ -290,7 +331,7 @@ do -- texture object
 			gl.PixelStorei(gl.e.GL_PACK_ALIGNMENT, f.stride or f2.stride)
 			gl.PixelStorei(gl.e.GL_UNPACK_ALIGNMENT, f.stride or f2.stride)
 				
-			self:UpdateFormat()
+			update_format(self)
 		
 			if f2.clear then
 				if f2.clear == true then
@@ -420,6 +461,21 @@ do -- texture object
 		end
 	end
 	
+	function META:BeginWrite()
+		local fb = self.fb or render.CreateFrameBuffer(self.w, self.h, {texture = self})
+		self.fb = fb
+		
+		fb:Begin()
+		surface.PushMatrix()
+		surface.LoadIdentity()
+		surface.Scale(self.w, self.h)
+	end
+	
+	function META:EndWrite()
+		surface.PopMatrix()
+		self.fb:End()
+	end
+	
 	do
 		local template = [[
 			out vec4 out_color;
@@ -478,26 +534,21 @@ do -- texture object
 				self.shaders[name] = shader
 			end
 			
-			local fb = self.fb or render.CreateFrameBuffer(self.w, self.h, {texture = self})
 			
-			if vars then
-				for k,v in pairs(vars) do
-					shader[k] = v
-				end				
-			end
+			self:BeginWrite()
+				if vars then
+					for k,v in pairs(vars) do
+						shader[k] = v
+					end				
+				end
 			
-			if not dont_blend then gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA) end
-			--render.SetBlendMode("alpha")
-			fb:Begin()
-				surface.PushMatrix()
-				surface.LoadIdentity()
-				surface.Scale(self.w, self.h)
+				if not dont_blend then 
+					gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA) 
+				end
+				
 				shader:Bind()
 				surface.rect_mesh:Draw()
-				surface.PopMatrix()
-			fb:End()
-			
-			self.fb = fb
+			self:EndWrite()
 		end
 	
 	end
@@ -567,7 +618,7 @@ function render.CreateTextureFromPath(path, format)
 			else
 				if info.format then
 					table.merge(self.format, info.format)
-					self:UpdateFormat()
+					update_format(self)
 				end
 				
 				render.texture_path_cache[path] = self			
