@@ -1,5 +1,5 @@
 local SOMETHING = false
-local BUILD_OUTPUT = false
+local BUILD_OUTPUT = true
 
 local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
@@ -20,6 +20,7 @@ local unrolled_lines = {
 
 unrolled_lines.vec4 = unrolled_lines.color
 unrolled_lines.sampler2D = unrolled_lines.texture
+unrolled_lines.samplerCube = unrolled_lines.texture
 unrolled_lines.float = unrolled_lines.number
 
 local type_info =  {
@@ -75,6 +76,7 @@ local uniform_translate =
 	vec4 = render.Uniform4f,
 	mat4 = function(location, ptr) render.UniformMatrix4fv(location, 1, 0, ptr) end,
 	sampler2D = render.Uniform1i,
+	samplerCube = render.Uniform1i,
 	not_implemented = function() end,
 }
 
@@ -486,8 +488,12 @@ function render.CreateShader(data, vars)
 			if not ok then
 				
 				for i = 2, 20 do
-					local line_offset
-					local path = debug.getinfo(i).source
+					local info = debug.getinfo(i)
+					
+					if not info then break end
+					
+					local line_offset = 0
+					local path = info.source
 					
 					if path then
 						path = path:sub(2) 
@@ -745,7 +751,7 @@ function render.CreateShader(data, vars)
 			else
 				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
-				if data.val.type == "texture" or data.val.type == "sampler2D" then
+				if data.val.type == "texture" or data.val.type == "sampler2D" or data.val.type == "samplerCube" then
 					line = line:format(texture_channel, data.id)
 					texture_channel = texture_channel + 1
 				else
