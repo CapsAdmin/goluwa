@@ -81,6 +81,8 @@ function prototype.SetupProperty(info)
 		meta.prototype_variables = meta.prototype_variables or {}
 		meta.prototype_variables[info.var_name] = info
 	end
+	
+	return info
 end
 
 local function add(meta, name, default, extra_info, get)
@@ -96,22 +98,22 @@ local function add(meta, name, default, extra_info, get)
 		table.merge(info, extra_info)
 	end
 	
-	prototype.SetupProperty(info)
+	return prototype.SetupProperty(info)
 end
 
 function prototype.GetSet(meta, name, default, extra_info)
 	if type(meta) == "string" and __meta then
-		add(__meta, meta, name, default, "Get")
+		return add(__meta, meta, name, default, "Get")
 	else
-		add(meta, name, default, extra_info, "Get")
+		return add(meta, name, default, extra_info, "Get")
 	end
 end
 
 function prototype.IsSet(meta, name, default, extra_info)
 	if type(meta) == "string" and __meta then
-		add(__meta, meta, name, default, "Is")
+		return add(__meta, meta, name, default, "Is")
 	else
-		add(meta, name, default, extra_info, "Is")
+		return add(meta, name, default, extra_info, "Is")
 	end
 end
 
@@ -126,9 +128,10 @@ end
 function prototype.GetSetDelegate(meta, func_name, def, key)
 	local get = "Get" .. func_name
 	local set = "Set" .. func_name
-	prototype.GetSet(meta, func_name, def)
+	local info = prototype.GetSet(meta, func_name, def)
 	prototype.Delegate(meta, key, get)
 	prototype.Delegate(meta, key, set)
+	return info
 end
 
 function prototype.RemoveField(meta, name)
