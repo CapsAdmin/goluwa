@@ -72,7 +72,6 @@ function render.CreateFrameBuffer(width, height, format)
 			
 			tex = info.texture
 			id = tex.id
-			
 		elseif tex_info and info.attach ~= gl.e.GL_DEPTH_STENCIL_ATTACHMENT then
 			tex_info.upload_format = tex_info.upload_format or "rgba"
 			tex_info.channel = i - 1
@@ -92,10 +91,12 @@ function render.CreateFrameBuffer(width, height, format)
 	end
 
 	for i, data in pairs(self.buffers) do
-		if data.tex:IsValid() then
-			gl.FramebufferTexture2D(gl.e.GL_FRAMEBUFFER, data.info.attach, gl.e.GL_TEXTURE_2D, data.id, 0)
-		else
-			gl.FramebufferRenderbuffer(gl.e.GL_FRAMEBUFFER, data.info.attach, gl.e.GL_RENDERBUFFER, data.id)
+		if not data.info.texture_format or data.info.texture_format.type ~= gl.e.GL_TEXTURE_CUBE_MAP then
+			if data.tex:IsValid() then
+				gl.FramebufferTexture2D(gl.e.GL_FRAMEBUFFER, data.attach, gl.e.GL_TEXTURE_2D, data.id, 0)
+			else
+				gl.FramebufferRenderbuffer(gl.e.GL_FRAMEBUFFER, data.attach, gl.e.GL_RENDERBUFFER, data.id)
+			end
 		end
 		data.info = nil
 	end
@@ -170,6 +171,16 @@ do
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
 		current_id = id
 	end
+end
+
+function META:SetWriteBuffer(name, target)
+	local buffer = self.buffers[name]
+	gl.FramebufferTexture2D(gl.e.GL_DRAW_FRAMEBUFFER, buffer.attach, target or gl.e.GL_TEXTURE_2D, buffer.id, 0)
+end
+
+function META:SetReadBuffer(name, target)
+	local buffer = self.buffers[name]
+	gl.FramebufferTexture2D(gl.e.GL_READ_FRAMEBUFFER, buffer.attach, target or gl.e.GL_TEXTURE_2D, buffer.id, 0)
 end
 
 function META:SetDrawBuffers(...)	
