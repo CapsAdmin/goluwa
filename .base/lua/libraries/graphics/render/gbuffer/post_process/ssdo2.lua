@@ -6,9 +6,9 @@ PASS.Position = 1
 PASS.Variables = {
 	inverse_projection = {mat4 = function() return render.matrices.projection_3d_inverse.m end},
 	num_samples = 16,
-	occlusion_max_distance = 0.3,
+	occlusion_max_distance = 0.2,
 	occlusion_radius = 0.1,
-	angle_threshold = 0.5,
+	angle_threshold = 0.4,
 	tex_noise =  {texture = render.GetNoiseTexture},
 }
 
@@ -65,7 +65,7 @@ PASS.Source = [[
 		vec3 noise = texture(tex_noise, uv*size.xy/noise_texture_size).xyz*2-1;
 		vec3 center_normal = texture(tex_normal, uv).xyz;
 		float occlusion = 0;
-		float weight = 1 / float(num_samples);
+		float weight = 2 / float(num_samples);
 	
 		for( int i = 0; i < num_samples; ++i)
 		{

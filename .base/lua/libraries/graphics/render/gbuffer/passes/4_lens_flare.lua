@@ -41,7 +41,11 @@ PASS.Shader = {
 			intensity = 1,
 			
 			screen_size = {vec2 = render.GetGBufferSize},
-			light_color = Color(1,1,1,1),				
+			light_color = Color(1,1,1,1),
+			
+			cam_nearz = {float = function() return render.camera.nearz end},
+			cam_farz = {float = function() return render.camera.farz end},
+			tex_depth =  {texture = function() return render.gbuffer:GetTexture("depth") end},
 		},
 		source = [[			
 			out vec4 out_color;
@@ -50,6 +54,11 @@ PASS.Shader = {
 			{
 				return gl_FragCoord.xy / screen_size;
 			}
+			
+			float get_depth(vec2 coord) 
+			{
+				return (2.0 * cam_nearz) / (cam_farz + cam_nearz - texture(tex_depth, coord).r * (cam_farz - cam_nearz));
+			}	
 			
 			/*by musk License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
@@ -70,12 +79,13 @@ PASS.Shader = {
 			}
 
 			vec3 lensflare(vec2 uv,vec2 pos)
-			{
+			{			
 				vec2 main = uv-pos;
 				vec2 uvd = uv*(length(uv));
 				
 				float ang = atan(main.x,main.y);
-				float dist=length(main); dist = pow(dist,.1);
+				float dist=length(main); 
+				dist = pow(dist,.1);
 				float n = noise(vec2(ang*16.0,dist*32.0));
 				
 				float f0 = 1.0/(length(uv-pos)*16.0+1.0);
@@ -129,7 +139,9 @@ PASS.Shader = {
 				vec2 uv = get_uv();
 									
 				if (screen_pos != vec2(-2, -2))
-				{					
+				{	
+					//float depth = get_depth(uv);
+					//{out_color = vec4(depth, depth, depth, 1); return;}
 					vec3 color = light_color.rgb*lensflare(uv-vec2(0.5), screen_pos/2);
 					color -= noise(gl_FragCoord.xy)*0.015;
 					color = cc(color, 0.5, 0.1)*intensity*0.75;
