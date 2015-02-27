@@ -44,9 +44,11 @@ PASS.Shader = {
 			tex_normal = "sampler2D",
 			tex_illumination = "sampler2D",
 			
+			tex_shadow_map_cube = "samplerCube",
 			tex_shadow_map = "sampler2D",
 			
 			light_pos = Vec3(0,0,0),
+			light_dir = Vec3(0,0,0),
 			
 			screen_size = {vec2 = render.GetGBufferSize},
 			light_color = Color(1,1,1,1),				
@@ -56,6 +58,7 @@ PASS.Shader = {
 			light_specular_intensity = 1,
 			light_roughness = 0.5,
 			light_shadow = 0,
+			light_point_shadow = 0, 
 			project_from_camera = 0,
 			
 			inverse_projection = "mat4",
@@ -78,7 +81,7 @@ PASS.Shader = {
 			float get_attenuation(vec3 world_pos)
 			{												
 				float distance = length(light_pos - world_pos);
-				distance = distance / (light_radius * 2);
+				distance = distance / light_radius;
 				distance = -distance + 1;
 				
 				return clamp(distance, 0, 1);
@@ -121,23 +124,40 @@ PASS.Shader = {
 				return diffuse_ + specular_;
 			}
 			
+			#define EPSILON 0.00001			
+			#extension GL_NV_shadow_samplers_cube:enable
+			
 			float get_shadow(vec2 uv)    
 			{
-				vec4 temp = light_vp_matrix * inverse_view_projection * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1 , 1.0);				
-				vec3 shadow_coord = (temp.xyz / temp.w);
-				
-				//if (shadow_coord.z < -1) return 0;
-				
-				if (shadow_coord.x > -1 && shadow_coord.x < 1 && shadow_coord.y > -1 && shadow_coord.y < 1 && shadow_coord.z > -1 && shadow_coord.z < 1)
-				{	if (texture(tex_shadow_map, 0.5 * shadow_coord.xy + vec2(0.5)).r > ((0.5 * shadow_coord.z + 0.5) - 0.001))
-						return 1.0;
-				}
-				else if (project_from_camera == 1)
+				if (light_point_shadow == 1)
 				{
-					return 1;
+					float SampledDistance = textureCube(tex_shadow_map_cube, light_dir).r;
+
+					float Distance = length(light_dir);
+
+					if (Distance <= SampledDistance + EPSILON)
+						return 1.0;
+					else
+						return 0;
 				}
-				
-				return 0;
+				else
+				{
+					vec4 temp = light_vp_matrix * inverse_view_projection * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1 , 1.0);				
+					vec3 shadow_coord = (temp.xyz / temp.w);
+					
+					//if (shadow_coord.z < -1) return 0;
+					
+					if (shadow_coord.x > -1 && shadow_coord.x < 1 && shadow_coord.y > -1 && shadow_coord.y < 1 && shadow_coord.z > -1 && shadow_coord.z < 1)
+					{	if (texture(tex_shadow_map, 0.5 * shadow_coord.xy + vec2(0.5)).r > ((0.5 * shadow_coord.z + 0.5) - 0.0025))
+							return 1;
+					}
+					else if (project_from_camera == 1)
+					{
+						return 1;
+					}
+					
+					return 0;
+				}
 			}  
 			
 			void main()
@@ -151,18 +171,19 @@ PASS.Shader = {
 					//{out_color.rgb = vec3(fade, 0,0); return;}
 						
 					if (light_shadow == 1)
+					{
 						fade = fade*get_shadow(uv);
-					
+					}
+										
 					if (fade > 0)
 					{							
 						vec4 normal = texture(tex_normal, uv);							
 						float specular = normal.a;
 						vec3 light_dir = normalize(light_pos - world_pos);
 						
-						fade = pow(fade * 4, 2) / 2;
-						float intensity = light_diffuse_intensity * light_diffuse_intensity;
+						float intensity = light_diffuse_intensity;
 						
-						out_color.rgb += CookTorrance2(light_dir, normal.xyz,  world_pos, specular * light_specular_intensity, light_roughness) * intensity * fade;
+						out_color.rgb = CookTorrance2(light_dir, normal.xyz,  world_pos, specular * light_specular_intensity, light_roughness) * intensity * fade * 2;
 					} 
 
 					out_color.a = light_color.a;   

@@ -21,7 +21,7 @@ PASS.Variables = {
 	end},
 	
 	Kr = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131),
-	rayleigh_brightness = 3.3,
+	rayleigh_brightness = 3.3*1500,
 	mie_brightness = 0.1,
 	spot_brightness = 800,
 	scatter_strength = 0.028,
@@ -141,14 +141,14 @@ PASS.Source = [[
 		
 		if (texture(tex_depth, uv).r != 1)
 		{
-			out_color.rgb =  mix_fog(texture(self, uv).rgb, vec4(Kr, fog_color.a));
-			out_color.a = 1;
+			out_color.rgb =  mix_fog(texture(self, uv).rgb, vec4(Kr, 1));
+			out_color.a = fog_color.a;
 		}
 		else
 		{
 			vec3 color = vec3(spot*mie_collected + mie_factor*mie_collected + rayleigh_factor*rayleigh_collected)*abs(data.w);
 
-			out_color = vec4(normalize(color), sqrt(length(color))/16.0)*7;
+			out_color = vec4(normalize(color)+vec3(0.3), sqrt(length(color))/16.0);
 		}
     }
 ]]
