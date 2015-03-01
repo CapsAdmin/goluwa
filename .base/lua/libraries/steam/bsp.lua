@@ -483,13 +483,17 @@ function steam.LoadMap(path)
 								mesh.illumination_color = vmt.selfillumtint
 								mesh.detail_scale = vmt.detailscale
 								mesh.detail_blend_factor = vmt.detailblendfactor
+								mesh.alpha_specular = vmt.normalmapalphaenvmapmask or vmt.basealphaenvmapmask
+								
+								mesh.no_cull = vmt.nocull == 1
+								mesh.alpha_test = vmt.alphatest == 1 or vmt.translucent == 1 -- todo
 							end,
 							function(field, path)								
 								if field == "basetexture" then mesh.diffuse = Texture(path) end
 								if field == "basetexture2" then mesh.diffuse2 = Texture(path) end
-								if field == "bumpmap" then mesh.bump = Texture(path) end
-								if field == "bumpmap2" then mesh.bump2 = Texture(path) end
-								if field == "envmapmask" then mesh.specular = Texture(path) end
+								if field == "bumpmap" then mesh.normal = Texture(path) end
+								if field == "bumpmap2" then mesh.normal2 = Texture(path) end
+								if field == "envmapmask" then mesh.roughness = Texture(path) end
 								if field == "selfillummask" then mesh.illumination = Texture(path) end
 								if field == "detail" then mesh.detail = Texture(path) end
 							end
@@ -708,7 +712,6 @@ function steam.SpawnMapEntities(path, parent)
 					
 					local p, y = info.pitch, info.angles.y
 					parent.world_params:SetSunAngles(Deg3(p, y+180, 0))
-					parent.world_params:SetSunSpecularIntensity(0.15)
 					parent.world_params:SetSunIntensity(1)
 					
 					info._light.a = 1
@@ -722,9 +725,7 @@ function steam.SpawnMapEntities(path, parent)
 					
 					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
 					ent:SetSize(math.max(info._light.a, 15))
-					ent:SetSpecularIntensity(0.1)
-					ent:SetRoughness(0.15)
-					ent:SetDiffuseIntensity(math.clamp(info._light.a, 0, 1))
+					ent:SetIntensity(math.clamp(info._light.a/3, 0, 1))
 					ent.spawned_from_bsp = true
 				elseif info.classname == "env_fog_controller" then
 					parent.world_params:SetFogColor(Color(info.fogcolor.r, info.fogcolor.g, info.fogcolor.b, info.fogcolor.a * info.fogmaxdensity/4))

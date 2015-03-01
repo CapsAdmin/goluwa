@@ -47,16 +47,15 @@ PASS.Shader = {
 			tex_shadow_map_cube = "samplerCube",
 			tex_shadow_map = "sampler2D",
 			
-			light_pos = Vec3(0,0,0),
+			light_view_pos = Vec3(0,0,0),
+			light_world_pos = Vec3(0,0,0),
 			light_dir = Vec3(0,0,0),
 			
 			screen_size = {vec2 = render.GetGBufferSize},
 			light_color = Color(1,1,1,1),				
-			light_diffuse_intensity = 0.5,
+			light_intensity = 0.5,
 			light_radius = 1000,
 			light_vp_matrix = "mat4",
-			light_specular_intensity = 1,
-			light_roughness = 0.5,
 			light_shadow = 0,
 			light_point_shadow = 0, 
 			project_from_camera = 0,
@@ -64,6 +63,10 @@ PASS.Shader = {
 			
 			inverse_projection = "mat4",
 			inverse_view_projection = "mat4",
+			
+			inverse_view = {mat4 = function() return render.matrices.view_3d_inverse.m end},
+			view = {mat4 = function() return render.matrices.view_3d.m end},
+			cam_dir = {vec3 = function() return render.GetCameraAngles():GetForward() end},
 		},  
 		source = [[			
 			out vec4 out_color;
@@ -73,10 +76,21 @@ PASS.Shader = {
 				return gl_FragCoord.xy / screen_size;
 			}
 			
-			vec3 get_pos(vec2 uv)
+			vec3 get_view_pos(vec2 uv)
 			{
 				vec4 pos = inverse_projection * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
 				return pos.xyz / pos.w;
+			}
+			
+			vec3 get_world_pos(vec2 uv)
+			{
+				vec4 pos = inverse_view * inverse_projection * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
+				return pos.xyz / pos.w;
+			}
+			
+			vec3 get_normal(vec2 uv)
+			{
+				return texture(tex_normal, uv).xyz * mat3(view);
 			}
 			
 			
@@ -133,11 +147,11 @@ PASS.Shader = {
 				return visibility;
 			}  
 						
-			float get_attenuation(vec3 world_pos, vec2 uv)
+			float get_attenuation(vec3 view_pos, vec2 uv)
 			{												
 				if (project_from_camera == 1) return 1;
 				
-				float distance = length(light_pos - world_pos);
+				float distance = length(light_view_pos - view_pos);
 				distance = distance / light_radius;
 				distance = -distance + 1;
 				float fade = clamp(distance, 0, 1);
@@ -149,10 +163,50 @@ PASS.Shader = {
 			const float pi = 3.1415926535897932384626433832;
 
 			
-			vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float specular, float roughness)
+			float beckmannDistribution(float x, float roughness) {
+			  float NdotH = max(x, 0.0001);
+			  float cos2Alpha = NdotH * NdotH;
+			  float tan2Alpha = (cos2Alpha - 1.0) / cos2Alpha;
+			  float roughness2 = roughness * roughness;
+			  float denom = 3.141592653589793 * roughness2 * cos2Alpha * cos2Alpha;
+			  return exp(tan2Alpha / roughness2) / denom;
+			}
+			
+			float cookTorranceSpecular(
+			  vec3 lightDirection,
+			  vec3 viewDirection,
+			  vec3 surfaceNormal,
+			  float roughness,
+			  float fresnel) {
+
+			  float VdotN = max(dot(viewDirection, surfaceNormal), 0.0);
+			  float LdotN = max(dot(lightDirection, surfaceNormal), 0.0);
+
+			  //Half angle vector
+			  vec3 H = normalize(lightDirection + viewDirection);
+
+			  //Geometric term
+			  float NdotH = max(dot(surfaceNormal, H), 0.0);
+			  float VdotH = max(dot(viewDirection, H), 0.000001);
+			  float LdotH = max(dot(lightDirection, H), 0.000001);
+			  float G1 = (2.0 * NdotH * VdotN) / VdotH;
+			  float G2 = (2.0 * NdotH * LdotN) / LdotH;
+			  float G = min(1.0, min(G1, G2));
+			  
+			  //Distribution term
+			  float D = beckmannDistribution(NdotH, roughness);
+			  
+			  //Fresnel term
+			  float F = pow(1.0 - VdotN, fresnel);
+
+			  //Multiply terms and done
+			  return  G * F * D / max(3.14159265 * VdotN, 0.000001);
+			}
+						
+			vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float metallic, float roughness)
 			{
 				float normalDotLight = dot(normal, cLight);
-			
+
 				//if (normalDotLight < 0) return vec3(0,0,0);
 						
 				vec3 cEye = normalize(-world_pos);	
@@ -165,7 +219,7 @@ PASS.Shader = {
 				float normalDotEye = dot(normal, cEye);					
 				float normalDotHalf2 = normalDotHalf * normalDotHalf;
 				
-				float roughness2 = roughness * roughness;
+				float roughness2 = roughness;
 				float exponent = -(1.0 - normalDotHalf2) / (normalDotHalf2 * roughness2);
 				
 				float D = pow(e, exponent) / (roughness2 * normalDotHalf2 * normalDotHalf2);
@@ -177,27 +231,27 @@ PASS.Shader = {
 				float CookTorrance = (D*F*G) / (normalDotEye * pi);
 				
 				vec3 diffuse_ = light_color.rgb * max(0.0, normalDotLight);
-				vec3 specular_ = light_color.rgb * max(max(0.0, CookTorrance) * specular, normalDotLight);
+				vec3 specular_ = light_color.rgb * max(max(0.0, CookTorrance) * metallic, normalDotLight);
 				
 				return diffuse_ + specular_;
-			}
+			} 
 						
 			void main()
 			{
 				out_color.rgb = vec3(0);
 			
 				vec2 uv = get_uv();					
-				vec3 world_pos = get_pos(uv);	
+				vec3 view_pos = get_view_pos(uv);	
 
-				float fade = get_attenuation(world_pos, uv);
-			
+				float fade = get_attenuation(view_pos, uv);
+						
 				if (light_shadow == 1)
 				{
 					float shadow = get_shadow(uv);
 					
 					if (shadow <= 1)
 					{
-						out_color.rgb += normalize(light_color.rgb) * light_diffuse_intensity*2;
+						out_color.rgb += normalize(light_color.rgb) * light_intensity * fade;
 					}
 					
 					fade *= shadow;
@@ -205,13 +259,24 @@ PASS.Shader = {
 				
 				if (fade > 0)
 				{							
-					vec4 normal = texture(tex_normal, uv);							
-					float specular = normal.a;
-					vec3 light_dir = normalize(light_pos - world_pos);
+					vec4 normal = texture(tex_normal, uv);
+					float metallic = texture(tex_illumination, uv).g;
+					float roughness = texture(tex_illumination, uv).b;
+					float intensity = light_intensity;
 					
-					float intensity = light_diffuse_intensity;
+					vec3 light_dir = normalize(light_view_pos - view_pos);
 					
-					out_color.rgb += CookTorrance2(light_dir, normal.xyz,  world_pos, specular * light_specular_intensity, light_roughness) * intensity * fade * 2;
+					out_color.rgb += CookTorrance2(light_dir, normal.xyz,  view_pos, metallic, roughness) * intensity * fade * 2;
+					
+					/*float specular = cookTorranceSpecular(
+						normalize(-light_view_pos), 
+						normal.xyz, 
+						normalize(-view_pos), 
+						roughness*2,
+						metallic
+					);
+										
+					out_color.rgb += light_color.rgb + (light_color.rgb * specular) * (intensity * fade * 2);*/
 				}
 			
 				out_color.a = 1;
