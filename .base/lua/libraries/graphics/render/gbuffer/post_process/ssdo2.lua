@@ -7,8 +7,8 @@ PASS.Variables = {
 	inverse_projection = {mat4 = function() return render.matrices.projection_3d_inverse.m end},
 	num_samples = 16,
 	occlusion_max_distance = 0.2,
-	occlusion_radius = 0.1,
-	angle_threshold = 0.4,
+	occlusion_radius = 0.2,
+	angle_threshold = 0.2,
 	tex_noise =  {texture = render.GetNoiseTexture},
 }
 
@@ -65,19 +65,22 @@ PASS.Source = [[
 		vec3 noise = texture(tex_noise, uv*size.xy/noise_texture_size).xyz*2-1;
 		vec3 center_normal = texture(tex_normal, uv).xyz;
 		float occlusion = 0;
-		float weight = 2 / float(num_samples);
-	
-		for( int i = 0; i < num_samples; ++i)
+		float weight = (4 / float(num_samples)) + center_pos.z/700;
+		
+		if (weight > 0)
 		{
-			vec3 sample_pos = get_pos(uv + reflect(points[i].xyz, noise.xyz).xy * radius);
-			vec3 center_to_sample = sample_pos - center_pos;
-			float dist = length(center_to_sample);
-			float dp = dot(center_normal, center_to_sample / dist);
-			if (dp > angle_threshold && dist < max_distance_inv)
+			for( int i = 0; i < num_samples; ++i)
 			{
-				float attenuation = 1-clamp(dist * max_distance_inv, 0, 1);
-				//attenuation *= step(angle_threshold, dp);
-				occlusion += attenuation*weight; 
+				vec3 sample_pos = get_pos(uv + reflect(points[i].xyz, noise.xyz).xy * radius);
+				vec3 center_to_sample = sample_pos - center_pos;
+				float dist = length(center_to_sample);
+				float dp = dot(center_normal, center_to_sample / dist);
+				if (dp > angle_threshold && dist < max_distance_inv)
+				{
+					float attenuation = 1-clamp(dist * max_distance_inv, 0, 1);
+					//attenuation *= step(angle_threshold, dp);
+					occlusion += attenuation*weight; 
+				}
 			}
 		}
 

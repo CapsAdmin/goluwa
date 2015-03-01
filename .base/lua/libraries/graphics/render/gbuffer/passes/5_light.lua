@@ -60,6 +60,7 @@ PASS.Shader = {
 			light_shadow = 0,
 			light_point_shadow = 0, 
 			project_from_camera = 0,
+			cascade_pass = 1,
 			
 			inverse_projection = "mat4",
 			inverse_view_projection = "mat4",
@@ -77,14 +78,71 @@ PASS.Shader = {
 				vec4 pos = inverse_projection * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
 				return pos.xyz / pos.w;
 			}
+			
+			
+			#define EPSILON 0.00001			
+			#extension GL_NV_shadow_samplers_cube:enable
+			
+			float rand(vec2 co){
+				return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+			}
+			
+			vec2 poissonDisk[4] = vec2[](
+			  vec2( -0.94201624, -0.39906216 ),
+			  vec2( 0.94558609, -0.76890725 ),
+			  vec2( -0.094184101, -0.92938870 ),
+			  vec2( 0.34495938, 0.29387760 )
+			);
+			
+			float get_shadow(vec2 uv)    
+			{
+				float visibility = 0;
+			
+				if (light_point_shadow == 1)
+				{
+					float SampledDistance = textureCube(tex_shadow_map_cube, light_dir).r;
+
+					float Distance = length(light_dir);
+
+					if (Distance <= SampledDistance + EPSILON)
+						return 1.0;
+					else
+						return 0;
+				}
+				else
+				{
+					vec4 temp = light_vp_matrix * inverse_view_projection * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
+					vec3 shadow_coord = (temp.xyz / temp.w);
+					
+					//if (shadow_coord.z < -1) return 0;
+					
+					if (shadow_coord.x > -1 && shadow_coord.x < 1 && shadow_coord.y > -1 && shadow_coord.y < 1 && shadow_coord.z > -1 && shadow_coord.z < 1)
+					{	
+						for (int i=0;i<4;i++)
+						{
+							if (texture(tex_shadow_map, 0.5 * shadow_coord.xy + vec2(0.5) + (poissonDisk[i]/5000.0)).r > ((0.5 * shadow_coord.z + 0.5)))
+								visibility += 0.25;
+						}
+					}
+					else if(project_from_camera == 1)
+					{
+						visibility = 1;
+					}
+				}
+				
+				return visibility;
+			}  
 						
-			float get_attenuation(vec3 world_pos)
+			float get_attenuation(vec3 world_pos, vec2 uv)
 			{												
+				if (project_from_camera == 1) return 1;
+				
 				float distance = length(light_pos - world_pos);
 				distance = distance / light_radius;
 				distance = -distance + 1;
-				
-				return clamp(distance, 0, 1);
+				float fade = clamp(distance, 0, 1);
+	
+				return fade;
 			}
 			
 			const float e = 2.71828182845904523536028747135;
@@ -123,71 +181,40 @@ PASS.Shader = {
 				
 				return diffuse_ + specular_;
 			}
-			
-			#define EPSILON 0.00001			
-			#extension GL_NV_shadow_samplers_cube:enable
-			
-			float get_shadow(vec2 uv)    
-			{
-				if (light_point_shadow == 1)
-				{
-					float SampledDistance = textureCube(tex_shadow_map_cube, light_dir).r;
-
-					float Distance = length(light_dir);
-
-					if (Distance <= SampledDistance + EPSILON)
-						return 1.0;
-					else
-						return 0;
-				}
-				else
-				{
-					vec4 temp = light_vp_matrix * inverse_view_projection * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1 , 1.0);				
-					vec3 shadow_coord = (temp.xyz / temp.w);
-					
-					//if (shadow_coord.z < -1) return 0;
-					
-					if (shadow_coord.x > -1 && shadow_coord.x < 1 && shadow_coord.y > -1 && shadow_coord.y < 1 && shadow_coord.z > -1 && shadow_coord.z < 1)
-					{	if (texture(tex_shadow_map, 0.5 * shadow_coord.xy + vec2(0.5)).r > ((0.5 * shadow_coord.z + 0.5) - 0.0025))
-							return 1;
-					}
-					else if (project_from_camera == 1)
-					{
-						return 1;
-					}
-					
-					return 0;
-				}
-			}  
-			
+						
 			void main()
-			{					
+			{
+				out_color.rgb = vec3(0);
+			
 				vec2 uv = get_uv();					
 				vec3 world_pos = get_pos(uv);	
 
-				{					
-					float fade = get_attenuation(world_pos);
+				float fade = get_attenuation(world_pos, uv);
+			
+				if (light_shadow == 1)
+				{
+					float shadow = get_shadow(uv);
 					
-					//{out_color.rgb = vec3(fade, 0,0); return;}
-						
-					if (light_shadow == 1)
+					if (shadow <= 1)
 					{
-						fade = fade*get_shadow(uv);
+						out_color.rgb += normalize(light_color.rgb) * light_diffuse_intensity*2;
 					}
-										
-					if (fade > 0)
-					{							
-						vec4 normal = texture(tex_normal, uv);							
-						float specular = normal.a;
-						vec3 light_dir = normalize(light_pos - world_pos);
-						
-						float intensity = light_diffuse_intensity;
-						
-						out_color.rgb = CookTorrance2(light_dir, normal.xyz,  world_pos, specular * light_specular_intensity, light_roughness) * intensity * fade * 2;
-					} 
-
-					out_color.a = light_color.a;   
+					
+					fade *= shadow;
 				}
+				
+				if (fade > 0)
+				{							
+					vec4 normal = texture(tex_normal, uv);							
+					float specular = normal.a;
+					vec3 light_dir = normalize(light_pos - world_pos);
+					
+					float intensity = light_diffuse_intensity;
+					
+					out_color.rgb += CookTorrance2(light_dir, normal.xyz,  world_pos, specular * light_specular_intensity, light_roughness) * intensity * fade * 2;
+				}
+			
+				out_color.a = 1;
 			}
 		]]  
 	}
