@@ -82,7 +82,7 @@ local function ADD_FFI_OPTIMIZED_TYPES(META)
 			
 		local size = ffi.sizeof(info.type)
 		
-		local read_unroll = "\tlocal chars = ffi.cast('char *', self:ReadBytes(" .. size .. "))\n"	
+		local read_unroll = "\tlocal bytes = self:ReadBytes(" .. size .. ")\nif not bytes then return end\nlocal chars = ffi.cast('char *', bytes)\n"	
 		for i = 1, size do
 			read_unroll = read_unroll .. "\tbuff.chars[" .. i-1 .. "] = chars[" .. i-1 .. "]\n"
 		end
@@ -301,21 +301,29 @@ function prototype.AddBufferTemplate(META)
 			else return (mantissa+1.0)*math.pow(2,exponent)*sign end
 		end
 		
-		function META:ReadVarInt()
-			local num = 0
+		function META:ReadVarInt(signed)
+			local res = 0
+			local size = 0
 			
-			for i = 0, 128 do
-				local byte = self:ReadByte()
-				num = bit.bor(num, bit.band(byte, 0x7F))
-			
-				if bit.band(byte, 0x80) ~= 0 then
-					num = bit.lshift(num, 7)
+			for shift = 0, math.huge, 7 do
+				local b = self:ReadByte()
+				
+				if shift < 28 then
+					res = res + bit.lshift(bit.band(b, 0x7F), shift)
 				else
-					break
+					res = res + bit.band(b, 0x7F) * (2 ^ shift)
 				end
+				
+				size = size + 1
+				
+				if b < 0x80 then break end
 			end
 			
-			return num
+			if signed then
+				res = res - bit.band(res, 2^15) * 2
+			end
+			
+			return res
 		end
 		
 		function META:ReadAll()
