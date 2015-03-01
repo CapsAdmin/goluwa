@@ -72,11 +72,24 @@ end
 local msgpack = require("luajit-msgpack-pure")
 serializer.AddLibrary("msgpack", function(...) return msgpack.pack({...}) end, function(var) return unpack(select(2, msgpack.unpack(var))) end, msgpack)
 
-local json = require("dkjson")
+local json = require("json")
 serializer.AddLibrary("json", function(...) return json.encode(...) end, function(...) return json.decode(...) end, json)
 
 local von = require("von")
 serializer.AddLibrary("von", function(...) return von.serialize(...) end, function(...) return von.deserialize(...) end, von)
+
+local gz = require("deflatelua")
+serializer.AddLibrary("gunzip", function() end, function(str) 
+	local out = {}
+	local i = 1
+	
+	gz.gunzip({input = str, output = function(byte) 
+		out[i] = string.char(byte) 
+		i = i + 1 
+	end, disable_crc = true})
+		
+	return table.concat(out)
+end, gz)
 
 local luadata = include("luadata.lua")
 serializer.AddLibrary("luadata", function(...) return luadata.Encode(...) end, function(...) return luadata.Decode(...) end, luadata)
