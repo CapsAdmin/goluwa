@@ -182,7 +182,7 @@ end
 
 local function runtime_error(s, level)
   level = level or 1
-  error({s}, level+1)
+  error(s, level+1)
 end
 
 
