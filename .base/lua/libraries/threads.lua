@@ -6,7 +6,7 @@ local META = prototype.CreateTemplate("thread")
 
 prototype.GetSet(META, "Frequency", 0)
 prototype.GetSet(META, "IterationsPerTick", 1)
-prototype.GetSet(META, "EnsureFPS", 120)
+prototype.GetSet(META, "EnsureFPS", 30)
  
 META.wait = 0
  
