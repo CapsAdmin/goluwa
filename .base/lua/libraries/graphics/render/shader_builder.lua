@@ -534,9 +534,9 @@ function render.CreateShader(data, vars)
 						end
 						
 						error(err, i)
-						return
 					end
 				end
+				error(shader)
 			end
 
 			table.insert(shaders, shader)
