@@ -6,7 +6,7 @@ PASS.Name = "shadow"
 PASS.Stage = FILE_NAME:sub(1, 1)
 
 function PASS:Draw3D()
-	event.Call("DrawShadowMaps", render.gbuffer_shadow_shader, nil, true)
+	
 end
 
 function PASS:DrawDebug(i,x,y,w,h,size)
