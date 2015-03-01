@@ -10,9 +10,7 @@ prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1))
 	
 	-- automate this!!
-	prototype.GetSet(COMPONENT, "DiffuseIntensity", 0.5)
-	prototype.GetSet(COMPONENT, "SpecularIntensity", 1)
-	prototype.GetSet(COMPONENT, "Roughness", 0.5)
+	prototype.GetSet(COMPONENT, "Intensity", 0.5)
 
 	prototype.GetSet(COMPONENT, "Shadow", false)
 	prototype.GetSet(COMPONENT, "ShadowCubemap", false)
@@ -52,7 +50,8 @@ if GRAPHICS then
 		
 		local mat = matrix * render.matrices.view_3d
 		local x,y,z = mat:GetTranslation()
-		shader.light_pos:Set(x,y,z)
+		shader.light_view_pos:Set(x,y,z)
+	--	shader.light_world_pos:Set(matrix:GetTranslation())
 		shader.light_dir = -transform:GetRotation():GetForward()
 		shader.light_radius = transform:GetSize()
 		shader.inverse_projection = render.matrices.projection_3d_inverse.m
@@ -60,13 +59,7 @@ if GRAPHICS then
 		
 		-- automate this!!
 		shader.light_color = self.Color
-		shader.light_ambient_intensity = self.AmbientIntensity
-		shader.light_diffuse_intensity = self.DiffuseIntensity
-		shader.light_specular_intensity = self.SpecularIntensity
-		shader.light_attenuation_constant = self.AttenuationConstant
-		shader.light_attenuation_linear = self.AttenuationLinear
-		shader.light_attenuation_exponent = self.AttenuationExponent
-		shader.light_roughness = self.Roughness
+		shader.light_intensity = self.Intensity
 		shader.light_shadow = self.Shadow and 1 or 0
 		shader.light_point_shadow = self.ShadowCubemap and 1 or 0
 		shader.project_from_camera = self.ProjectFromCamera and 1 or 0
@@ -206,7 +199,7 @@ function COMPONENT:OnDrawLensFlare(shader)
 		shader.screen_pos:Set(-2,-2)
 	end
 	
-	shader.intensity = self.DiffuseIntensity^0.25
+	shader.intensity = self.Intensity^0.25
 	
 	shader:Bind()
 	self.light_mesh:Draw()

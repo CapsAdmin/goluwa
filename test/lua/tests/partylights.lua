@@ -16,7 +16,7 @@ for y = -5, 5 do
 		light.seed = math.random()
 		light:SetColor(Color(math.randomf(0, 1), math.randomf(0, 1), math.randomf(0, 1)))
 		light:SetSize(math.randomf(2, 10))
-		light:SetDiffuseIntensity(1)
+		light:SetIntensity(1)
 		table.insert(party_lights, light)
 	end
 end
@@ -24,7 +24,7 @@ end
 --[[local light = entities.CreateEntity("light")
 light:SetPosition(Vec3(-341, 135, 25))
 light:SetSize(40)
-light:SetDiffuseIntensity(5)]]
+light:SetIntensity(5)]]
 
 event.AddListener("Update", "light movement", function() 
 	local t = system.GetElapsedTime()

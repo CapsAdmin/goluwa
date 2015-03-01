@@ -74,8 +74,8 @@ do -- render model
 					path = model_data.material.directory .. path:sub(2)
 					
 					mesh.diffuse = render.CreateTexture(path .. "_D" .. ext)
-					mesh.bump = render.CreateTexture(path .. "_N" .. ext)
-					mesh.specular = render.CreateTexture(path .. "_S" .. ext)
+					mesh.normal = render.CreateTexture(path .. "_N" .. ext)
+					mesh.roughness = render.CreateTexture(path .. "_S" .. ext)
 				else	
 					local paths = {path, model_data.material.directory .. path}
 					
@@ -87,7 +87,7 @@ do -- render model
 								local path = utility.FindTextureFromSuffix(path, "_n", "_ddn", "_nrm")
 
 								if path then
-									mesh.bump = render.CreateTexture(path, default_texture_format)
+									mesh.normal = render.CreateTexture(path, default_texture_format)
 								end
 							end
 
@@ -95,7 +95,7 @@ do -- render model
 								local path = utility.FindTextureFromSuffix(path, "_s", "_spec")
 
 								if path then
-									mesh.specular = render.CreateTexture(path, default_texture_format)
+									mesh.roughness = render.CreateTexture(path, default_texture_format)
 								end
 							end
 							break
@@ -190,7 +190,7 @@ do -- render model
 						mesh:Upload()
 						cb:callextra(path, "mesh", mesh)
 						table.insert(out, mesh)
-					end, true)
+					end, not vfs.IsFile("os:"..path))
 				else
 					cb:callextra(path, "on_fail", "unknown format " .. path)
 				end

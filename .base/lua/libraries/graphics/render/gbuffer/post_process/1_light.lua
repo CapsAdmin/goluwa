@@ -4,7 +4,7 @@ PASS.Name = "light"
 PASS.Position = FILE_NAME:sub(1, 1)
 
 PASS.Variables = {
-	ambient_lighting = Color(0.3, 0.3, 0.3, 1),
+--	ambient_lighting = Color(0.3, 0.3, 0.3, 1),
 }
 PASS.Source = [[
 	out vec4 out_color;
@@ -15,9 +15,9 @@ PASS.Source = [[
 						
 		vec3 light = texture(tex_light, uv).rgb;
 		//light = max(light, ambient_lighting.rgb);
-
+		
 		out_color.rgb *= light/2;
-		out_color.rgb += texture(tex_illumination, uv).rgb*2;
+		out_color.rgb += vec3(texture(tex_illumination, uv).r)*2;
 		out_color.a = 1;
 	}
 ]]

@@ -10,19 +10,44 @@ prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "Alpha", 1)
 	prototype.GetSet(COMPONENT, "Cull", true)
 	prototype.GetSet(COMPONENT, "ModelPath", "")
-	prototype.GetSet(COMPONENT, "DiffuseTexturePath", "")
-	prototype.GetSet(COMPONENT, "BumpTexturePath", "")
-	prototype.GetSet(COMPONENT, "SpecularTexturePath", "")
-
 	prototype.GetSet(COMPONENT, "BBMin", Vec3())
 	prototype.GetSet(COMPONENT, "BBMax", Vec3())
 prototype.EndStorable()
 
-prototype.GetSet(COMPONENT, "DiffuseTexture")
-prototype.GetSet(COMPONENT, "BumpTexture")
-prototype.GetSet(COMPONENT, "SpecularTexture")
-prototype.GetSet(COMPONENT, "IlluminationTexture")
 prototype.GetSet(COMPONENT, "Model", nil)
+
+render.model_textures = {}
+
+local function add_texture(name, default)
+	prototype.StartStorable()
+	prototype.GetSet(COMPONENT, name .. "TexturePath", "")
+	prototype.EndStorable()
+	
+	prototype.GetSet(COMPONENT, name .. "Texture")
+	
+	COMPONENT["Set" .. name .. "TexturePath"] = function(self, path)
+		self[name .. "TexturePath"] = path
+		self[name .. "Texture"] = Texture(path)
+	end
+	
+	table.insert(render.model_textures, {
+		shader_name = "tex_" .. name:lower(), 
+		lookup_name = name .. "Texture", 
+		lookup_name2 = name:lower(),
+		default_texture = default
+	})
+end
+
+add_texture("Diffuse", render.GetErrorTexture())
+add_texture("Normal", render.GetBlackTexture())
+add_texture("Metallic", render.GetWhiteTexture())
+add_texture("Roughness", render.GetWhiteTexture()) 
+
+-- source engine specific
+add_texture("Illumination", render.GetBlackTexture())
+add_texture("Detail", render.GetWhiteTexture())
+add_texture("Diffuse2", render.GetErrorTexture())
+add_texture("Normal2", render.GetBlackTexture()) 
 
 COMPONENT.Network = {
 	ModelPath = {"string", 1/5, "reliable", true},
@@ -60,22 +85,7 @@ if GRAPHICS then
 		)
 		
 	end
-
-	function COMPONENT:SetDiffuseTexturePath(path)
-		self.DiffuseTexturePath = path
-		self.DiffuseTexture = Texture(path)
-	end
 	
-	function COMPONENT:SetBumpTexturePath(path)
-		self.BumpTexturePath = path
-		self.BumpTexture = Texture(path)
-	end
-	
-	function COMPONENT:SetSpecularTexturePath(path)
-		self.SpecularTexturePath = path
-		self.SpecularTexture = Texture(path)
-	end
-
 	do		
 		function COMPONENT:AddMesh(mesh)
 			self.sub_models = self.sub_models or {}
@@ -160,15 +170,12 @@ if GRAPHICS then
 			for i, model in ipairs(self.sub_models) do
 				if not skip_cull then if model.no_cull then render.SetCullMode("none") else render.SetCullMode("front") end end
 				shader.alpha_test = model.alpha_test and 1 or 0
-				shader.diffuse = self.DiffuseTexture or model.diffuse or render.GetErrorTexture()
-				shader.diffuse2 = self.DiffuseTexture2 or model.diffuse2 or render.GetErrorTexture()
-				shader.specular = self.SpecularTexture or model.specular or render.GetWhiteTexture()
-				shader.illumination = self.IlluminationTexture or model.illumination or render.GetBlackTexture()
+			
+				for i,v in ipairs(render.model_textures) do
+					shader[v.shader_name] = self[v.lookup_name] or model[v.lookup_name2] or v.default_texture
+				end
+				
 				shader.illumination_color = model.illumination_color or self.IlluminationColor
-				shader.bump = self.BumpTexture or model.bump or render.GetBlackTexture()
-				shader.bump2 = self.BumpTexture2 or model.bump2 or render.GetBlackTexture()
-				shader.displacement = self.Displacement or model.displacement or render.GetWhiteTexture()
-				shader.detail = model.detail or render.GetWhiteTexture()
 				shader.detail_blend_factor = model.detail_blend_factor 
 
 				shader:Bind()

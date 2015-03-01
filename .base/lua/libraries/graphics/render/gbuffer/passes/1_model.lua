@@ -53,20 +53,12 @@ PASS.Shader = {
 	fragment = {
 		uniform = {
 			color = Color(1,1,1,1),
-			diffuse = "sampler2D",
-			diffuse2 = "sampler2D",
 			vm_matrix = "mat4",
-			
-			detail = "sampler2D",
 			--detail_scale = 1,
 			--detail_blend_factor = 0,
 			alpha_test = 0,
-
-			bump = "sampler2D",
-			bump2 = "sampler2D",
-			specular = "sampler2D",
-			illumination = "sampler2D",
 			illumination_color = Color(1,1,1,1),
+			alpha_specular = 0,
 		},
 		attributes = {
 			{pos = "vec3"},
@@ -84,7 +76,7 @@ PASS.Shader = {
 			void main()
 			{				
 				// diffuse
-				out_color[0] = mix(texture(diffuse, uv), texture(diffuse2, uv), texture_blend) * color;
+				out_color[0] = mix(texture(tex_diffuse, uv), texture(tex_diffuse2, uv), texture_blend) * color;
 				
 				if (alpha_test == 1)
 				{
@@ -99,16 +91,14 @@ PASS.Shader = {
 				}
 				
 				//if (detail_blend_factor > 0)
-					//out_color[0].rgb = (out_color[0].rgb - texture(detail, uv * detail_scale*10).rgb);
-				
-				// specular
-				out_color[1].a = texture(specular, uv).r;
-
+					//out_color[0].rgb = (out_color[0].rgb - texture(tex_detail, uv * detail_scale*10).rgb);
+								
 				// normals
 				{
 					out_color[1].rgb = mat3(vm_matrix) * normal;
+					out_color[1].a = 1;
 					
-					vec3 bump_detail = mix(texture(bump, uv).rgb, texture(bump2, uv).rgb, texture_blend);
+					vec3 bump_detail = mix(texture(tex_normal, uv).rgb, texture(tex_normal2, uv).rgb, texture_blend);
 				
 					if (bump_detail != vec3(0,0,0))
 					{
@@ -119,10 +109,28 @@ PASS.Shader = {
 					
 				}
 
-				out_color[2] = texture(illumination, uv)*illumination_color;
+				
+				out_color[2].r = texture(tex_illumination, uv).r;
+				
+				// metallic
+				out_color[2].g = texture(tex_metallic, uv).g;
+				if (alpha_specular == 1)
+				{
+					out_color[2].b = texture(tex_normal, uv).a;
+				}
+				else
+				{
+					out_color[2].b = -texture(tex_normal, uv).a+1;
+					out_color[2].g = 1;
+				}
+				out_color[2].a = 1;
 			}
 		]]
 	}
 }
+
+for i,v in ipairs(render.model_textures) do
+	PASS.Shader.fragment.uniform[v.shader_name] = "sampler2D"
+end
 
 render.RegisterGBufferPass(PASS)

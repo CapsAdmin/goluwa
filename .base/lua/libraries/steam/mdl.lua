@@ -708,13 +708,14 @@ function steam.LoadModel(path, sub_model_callback)
 											sub_model.material.detail_blend_factor = vmt.detailblendfactor
 											sub_model.material.no_cull = vmt.nocull == 1
 											sub_model.material.alpha_test = vmt.alphatest == 1 or vmt.translucent == 1 -- todo
+											sub_model.material.alpha_specular = vmt.normalmapalphaenvmapmask or vmt.basealphaenvmapmask
 										end,
 										function(field, path)
 											sub_model.material = sub_model.material or {}
 											
 											if field == "basetexture" then sub_model.material.diffuse = Texture(path) end
-											if field == "bumpmap" then sub_model.material.bump = Texture(path) end
-											if field == "envmapmask" then sub_model.material.specular = Texture(path) end
+											if field == "bumpmap" then sub_model.material.normal = Texture(path) end
+											if field == "envmapmask" then sub_model.material.roughness = Texture(path) end
 											if field == "selfillummask" then sub_model.material.illumination = Texture(path) end
 											if field == "detail" then sub_model.material.detail = Texture(path) end
 										end
