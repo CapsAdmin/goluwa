@@ -2,20 +2,75 @@ local surface = _G.surface or {}
 
 local gl = requirew("lj-opengl")
 
-include("mesh2d.lua", surface)
+local SHADER = {	
+	name = "mesh_2d",
+	vertex = {
+		uniform = {
+			pvm_matrix = "mat4",
+		},			
+		attributes = {
+			{pos = "vec3"}, 
+			{uv = "vec2"},
+			{color = "vec4"},
+		},
+		source = "gl_Position = pvm_matrix * vec4(pos, 1);"
+	},
+	
+	fragment = { 
+		uniform = {
+			global_color = Color(1, 1, 1, 1), 
+			tex = "sampler2D",
+			alpha_multiplier = 1,
+		},
+		attributes = {
+			{uv = "vec2"},
+			{color = "vec4"},
+		},			
+		source = [[
+			out highp vec4 frag_color;
+
+			highp vec4 texel = texture(tex, uv);
+
+			void main()
+			{	
+				frag_color = texel * color * global_color;
+				frag_color.a = frag_color.a * alpha_multiplier;
+			}
+		]]
+	} 
+}
+
+local RECT = {
+	{pos = {0, 0, 0}, uv = {0, 1}, color = {1,1,1,1}},
+	{pos = {0, 1, 0}, uv = {0, 0}, color = {1,1,1,1}},
+	{pos = {1, 1, 0}, uv = {1, 0}, color = {1,1,1,1}},
+	{pos = {1, 1, 0}, uv = {1, 0}, color = {1,1,1,1}},
+	{pos = {1, 0, 0}, uv = {1, 1}, color = {1,1,1,1}},
+	{pos = {0, 0, 0}, uv = {0, 1}, color = {1,1,1,1}},
+}
+
+function surface.CreateMesh(vertices, indices)
+	vertices = vertices or RECT
+	return surface.mesh_2d_shader:CreateVertexBuffer(vertices, indices)
+end
+
+surface.mesh_2d_shader = surface.mesh_2d_shader or NULL
+
 include("markup/markup.lua", surface)
 
 function surface.Initialize()		
-	surface.rect_mesh = surface.CreateMesh() -- mesh defaults to rect, see mesh2d.lua
+	local shader = render.CreateShader(SHADER)
+	
+	shader.pvm_matrix = render.GetPVWMatrix2D
+	
+	surface.mesh_2d_shader = shader
+	
+	surface.rect_mesh = surface.CreateMesh()
 		
-	surface.SetWhiteTexture()				 
+	surface.SetWhiteTexture()
 	surface.InitializeFonts()
 	
 	surface.ready = true
-end
-
-if surface.ready then
-	surface.Initialize()
 end
 
 function surface.IsReady()
