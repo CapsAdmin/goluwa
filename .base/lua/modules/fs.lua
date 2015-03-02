@@ -138,6 +138,16 @@ if WINDOWS then
 				type = "file"
 			else
 				type = "directory"
+				
+				-- GRRRR
+				-- GRRRR
+				local file = io.open(path, "r")
+				if file then
+					io.close(file)
+					type = "file"
+				end
+				-- GRRRR
+				-- GRRRR
 			end
 			
 			local info = {
@@ -149,7 +159,7 @@ if WINDOWS then
 				type = type,
 			---	flags = flags,
 			}
-			
+
 			return info
 		end
 	end
