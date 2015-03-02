@@ -5,23 +5,15 @@ local gl = requirew("lj-opengl")
 local SHADER = {	
 	name = "mesh_2d",
 	vertex = {
-		uniform = {
-			pvm_matrix = "mat4",
-		},			
 		attributes = {
 			{pos = "vec3"}, 
 			{uv = "vec2"},
 			{color = "vec4"},
 		},
-		source = "gl_Position = pvm_matrix * vec4(pos, 1);"
+		source = "gl_Position = lua[(mat4)render.GetPVWMatrix2D] * vec4(pos, 1);"
 	},
 	
 	fragment = { 
-		uniform = {
-			global_color = Color(1, 1, 1, 1), 
-			tex = "sampler2D",
-			alpha_multiplier = 1,
-		},
 		attributes = {
 			{uv = "vec2"},
 			{color = "vec4"},
@@ -29,12 +21,12 @@ local SHADER = {
 		source = [[
 			out highp vec4 frag_color;
 
-			highp vec4 texel = texture(tex, uv);
+			highp vec4 texel = texture(lua[tex = "sampler2D"], uv);
 
 			void main()
 			{	
-				frag_color = texel * color * global_color;
-				frag_color.a = frag_color.a * alpha_multiplier;
+				frag_color = texel * color * lua[global_color = Color(1,1,1,1)];
+				frag_color.a = frag_color.a * lua[alpha_multiplier = 1];
 			}
 		]]
 	} 
@@ -60,9 +52,7 @@ include("markup/markup.lua", surface)
 
 function surface.Initialize()		
 	local shader = render.CreateShader(SHADER)
-	
-	shader.pvm_matrix = render.GetPVWMatrix2D
-	
+		
 	surface.mesh_2d_shader = shader
 	
 	surface.rect_mesh = surface.CreateMesh()

@@ -102,7 +102,7 @@ local source_template =
 
 @@OUT@@
 @@OUT3@@
-
+@@GLOBAL CODE@@
 //__SOURCE_START
 @@SOURCE@@
 //__SOURCE_END
@@ -303,7 +303,16 @@ function render.CreateShader(data, vars)
 	end
 
 	if not data.vertex then
-		error("no vertex shader was found", 2)
+		data.vertex = {
+			uniform = {
+				pwm_matrix = {mat4 = render.GetPVWMatrix2D},
+			},			
+			attributes = {
+				{pos = "vec3"},
+				{uv = "vec2"},
+			},	
+			source = "gl_Position = pwm_matrix * vec4(pos, 1);"
+		}
 	end
 
 	local build_output = {}
@@ -407,26 +416,78 @@ function render.CreateShader(data, vars)
 	end
 
 	for shader, info in pairs(data) do
-		local source = build_output[shader].source
+		local template = build_output[shader].source
 
-		if info.uniform then
-			source = replace_field(source, "UNIFORM", variables_to_string("uniform", info.uniform))
-			build_output[shader].uniform = translate_fields(info.uniform)
+		template = replace_field(template, "GLOBAL CODE", render.GetGlobalShaderCode(info.source))
+		
+		if info.source then			
+			local var_i = 0
+			info.source = info.source:gsub("lua(%b[])", function(code) 
+				if code:find("=", nil, true) then
+					local key, default = code:sub(2, -2):match("(.-)=(.+)")
+					key = key:trim()
+					default = default:trim()
+					local ok, default = pcall(loadstring("return " .. default))
+					
+					if not ok then
+						error(default, 3)
+					end
+					
+					info.uniform = info.uniform or {}
+					info.uniform[key] = default
+					
+					return key
+				else
+					local type, code = code:sub(2, -2):match("(%b())(.+)")
+					type = type:sub(2, -2)
+					local ok, var = pcall(loadstring("return " .. code))
+					
+					if not ok then
+						error(var, 3)
+					end
+					
+					local name = "auto_lua_variable_" .. var_i
+					
+					info.uniform = info.uniform or {}
+					info.uniform[name] = {[type] = var}
+					
+					var_i = var_i + 1
+					
+					return name
+				end
+			end)
 		end
-
+		
+		if info.uniform then
+			local uniform = {}
+			
+			for k,v in pairs(info.uniform) do uniform[k] = v end
+			
+			if info.source then
+				for k,v in pairs(render.global_shader_variables) do
+					if info.source:find(k, nil, true) or template:find(k, nil, true) then
+						uniform[k] = v
+					end
+				end
+			end
+		
+			template = replace_field(template, "UNIFORM", variables_to_string("uniform", uniform))
+			build_output[shader].uniform = translate_fields(uniform)
+		end
+		
 		if info.attributes then
 			if shader == "vertex" then
 				-- in highp vec3 foo;
-				source = replace_field(source, "IN", variables_to_string("in", info.attributes))
+				template = replace_field(template, "IN", variables_to_string("in", info.attributes))
 				build_output[shader].attributes = translate_fields(info.attributes)
 			else
 				-- in highp vec3 glw_out_foo;
 				-- #define foo glw_out_foo
-				source = replace_field(source, "IN", variables_to_string("in", info.attributes, reserve_prepend, true, shader == "tess_control" and "[]"))
+				template = replace_field(template, "IN", variables_to_string("in", info.attributes, reserve_prepend, true, shader == "tess_control" and "[]"))
 			end
 		end
 
-		if info.source then
+		if info.source then					
 			if info.source:find("\n") then
 				if not info.source:find("main", nil, true) and info.source:find("return", nil, true) then
 					info.source = lazy_template:format(info.source)
@@ -436,18 +497,18 @@ function render.CreateShader(data, vars)
 				-- replace void *main* () with mainx
 				info.source = info.source:gsub("void%s+([main]-)%s-%(", function(str) if str == "main" then return "void mainx(" end end)
 
-				source = replace_field(source, "SOURCE", info.source)
+				template = replace_field(template, "SOURCE", info.source)
 			else
 				-- if it's just a single line then wrap void mainx() {*line*} around it
-				source = replace_field(source, "SOURCE", ("void mainx()\n{\n\t%s\n}\n"):format(info.source))
+				template = replace_field(template, "SOURCE", ("void mainx()\n{\n\t%s\n}\n"):format(info.source))
 			end
 
 			-- get line numbers for errors
-			build_output[shader].line_start = select(2, source:match(".+__SOURCE_START"):gsub("\n", "")) + 2
-			build_output[shader].line_end = select(2, source:match(".+__SOURCE_END"):gsub("\n", ""))
+			build_output[shader].line_start = select(2, template:match(".+__SOURCE_START"):gsub("\n", "")) + 2
+			build_output[shader].line_end = select(2, template:match(".+__SOURCE_END"):gsub("\n", ""))
 		end
 
-		build_output[shader].source = source
+		build_output[shader].source = template
 	end
 
 	-- shared uniform across all shaders
@@ -511,7 +572,7 @@ function render.CreateShader(data, vars)
 					end
 					
 					if line_offset or i == 20 then	
-						local err = "\n" .. shader
+						local err = "\n" .. shader_id .. "\n" .. shader
 						
 						if path then
 							err = path:match(".+/(.+)") .. ":" .. err
@@ -535,8 +596,8 @@ function render.CreateShader(data, vars)
 						
 						error(err, i)
 					end
+					error("\n" .. shader_id .. "\n" .. shader, i)
 				end
-				error(shader)
 			end
 
 			table.insert(shaders, shader)

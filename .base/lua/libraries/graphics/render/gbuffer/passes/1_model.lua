@@ -16,10 +16,9 @@ PASS.Buffers = {
 local gl = require("lj-opengl") -- OpenGL
 
 function PASS:Draw3D()
-	--gl.DepthMask(gl.e.GL_TRUE)
-	--gl.Enable(gl.e.GL_DEPTH_TEST)
-	--gl.Disable(gl.e.GL_BLEND)
-	--gl.Disable(gl.e.GL_BLEND)
+	gl.DepthMask(gl.e.GL_TRUE)
+	gl.Enable(gl.e.GL_DEPTH_TEST)
+	gl.Disable(gl.e.GL_BLEND)
 
 	render.gbuffer:Begin()
 		render.gbuffer:Clear()
@@ -59,6 +58,8 @@ PASS.Shader = {
 			alpha_test = 0,
 			illumination_color = Color(1,1,1,1),
 			alpha_specular = 0,
+			roughness_multiplier = 1,
+			metallic_multiplier = 1,
 		},
 		attributes = {
 			{pos = "vec3"},
@@ -107,22 +108,27 @@ PASS.Shader = {
 						out_color[1].rgb = normalize(out_color[1].rgb);
 					}
 					
+					out_color[1].rgb = (out_color[1].rgb); // GRR
 				}
 
 				
 				out_color[2].r = texture(tex_illumination, uv).r;
 				
 				// metallic
-				out_color[2].g = texture(tex_metallic, uv).g;
+				out_color[2].g = -texture(tex_metallic, uv).r+1;
+				
 				if (alpha_specular == 1)
 				{
-					out_color[2].b = texture(tex_normal, uv).a;
+					out_color[2].g = texture(tex_normal, uv).a;
 				}
 				else
 				{
-					out_color[2].b = -texture(tex_normal, uv).a+1;
-					out_color[2].g = 1;
+					out_color[2].b = texture(tex_roughness, uv).r;
 				}
+				
+				out_color[2].g += metallic_multiplier;
+				out_color[2].b += roughness_multiplier;
+				
 				out_color[2].a = 1;
 			}
 		]]

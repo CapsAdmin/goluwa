@@ -8,6 +8,8 @@ prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1, 1))
 	prototype.GetSet(COMPONENT, "IlluminationColor", Color(1, 1, 1, 1))
 	prototype.GetSet(COMPONENT, "Alpha", 1)
+	prototype.GetSet(COMPONENT, "Roughness", 0)
+	prototype.GetSet(COMPONENT, "Metallic", 0)
 	prototype.GetSet(COMPONENT, "Cull", true)
 	prototype.GetSet(COMPONENT, "ModelPath", "")
 	prototype.GetSet(COMPONENT, "BBMin", Vec3())
@@ -175,9 +177,13 @@ if GRAPHICS then
 					shader[v.shader_name] = self[v.lookup_name] or model[v.lookup_name2] or v.default_texture
 				end
 				
+				shader.alpha_specular = model.alpha_specular
 				shader.illumination_color = model.illumination_color or self.IlluminationColor
 				shader.detail_blend_factor = model.detail_blend_factor 
-
+				
+				shader.roughness_multiplier = model.roughness_multiplier or self.Roughness
+				shader.metallic_multiplier = model.metallic_multiplier or self.Metallic
+			
 				shader:Bind()
 				model:Draw()
 			end

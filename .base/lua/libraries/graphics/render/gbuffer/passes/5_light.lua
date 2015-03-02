@@ -27,23 +27,15 @@ end
 PASS.Shader = {
 	vertex = { 
 		uniform = {
-			pvm_matrix = {mat4 = render.GetPVWMatrix2D},
+			pvm_matrix = {mat4 = render.GetPVWMatrix3D},
 		},			
 		attributes = {
 			{pos = "vec3"},
-			{normal = "vec3"},
-			{uv = "vec2"},
-			{texture_blend = "float"},
 		},	
 		source = "gl_Position = pvm_matrix * vec4(pos, 1);"
 	},
 	fragment = { 
-		uniform = {				
-			tex_depth = "sampler2D",
-			tex_diffuse = "sampler2D",
-			tex_normal = "sampler2D",
-			tex_illumination = "sampler2D",
-			
+		uniform = {			
 			tex_shadow_map_cube = "samplerCube",
 			tex_shadow_map = "sampler2D",
 			
@@ -60,53 +52,12 @@ PASS.Shader = {
 			light_point_shadow = 0, 
 			project_from_camera = 0,
 			cascade_pass = 1,
-			
-			inverse_projection = "mat4",
-			inverse_view_projection = "mat4",
-			
-			inverse_view = {mat4 = function() return render.matrices.view_3d_inverse.m end},
-			view = {mat4 = function() return render.matrices.view_3d.m end},
-			cam_dir = {vec3 = function() return render.GetCameraAngles():GetForward() end},
 		},  
 		source = [[			
 			out vec4 out_color;
 			
-			vec2 get_uv()
-			{
-				return gl_FragCoord.xy / screen_size;
-			}
-			
-			vec3 get_view_pos(vec2 uv)
-			{
-				vec4 pos = inverse_projection * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
-				return pos.xyz / pos.w;
-			}
-			
-			vec3 get_world_pos(vec2 uv)
-			{
-				vec4 pos = inverse_view * inverse_projection * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
-				return pos.xyz / pos.w;
-			}
-			
-			vec3 get_normal(vec2 uv)
-			{
-				return texture(tex_normal, uv).xyz * mat3(view);
-			}
-			
-			
 			#define EPSILON 0.00001			
 			#extension GL_NV_shadow_samplers_cube:enable
-			
-			float rand(vec2 co){
-				return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-			}
-			
-			vec2 poissonDisk[4] = vec2[](
-			  vec2( -0.94201624, -0.39906216 ),
-			  vec2( 0.94558609, -0.76890725 ),
-			  vec2( -0.094184101, -0.92938870 ),
-			  vec2( 0.34495938, 0.29387760 )
-			);
 			
 			float get_shadow(vec2 uv)    
 			{
@@ -125,7 +76,7 @@ PASS.Shader = {
 				}
 				else
 				{
-					vec4 temp = light_vp_matrix * inverse_view_projection * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
+					vec4 temp = light_vp_matrix * g_view_projection_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
 					vec3 shadow_coord = (temp.xyz / temp.w);
 					
 					//if (shadow_coord.z < -1) return 0;
@@ -134,7 +85,7 @@ PASS.Shader = {
 					{	
 						for (int i=0;i<4;i++)
 						{
-							if (texture(tex_shadow_map, 0.5 * shadow_coord.xy + vec2(0.5) + (poissonDisk[i]/5000.0)).r > ((0.5 * shadow_coord.z + 0.5)))
+							if (texture(tex_shadow_map, 0.5 * shadow_coord.xy + vec2(0.5) + (g_poisson_disk[i]/5000.0)).r > ((0.5 * shadow_coord.z + 0.5)))
 								visibility += 0.25;
 						}
 					}
@@ -231,7 +182,7 @@ PASS.Shader = {
 				float CookTorrance = (D*F*G) / (normalDotEye * pi);
 				
 				vec3 diffuse_ = light_color.rgb * max(0.0, normalDotLight);
-				vec3 specular_ = light_color.rgb * max(max(0.0, CookTorrance) * metallic, normalDotLight);
+				vec3 specular_ = light_color.rgb * max(max(0.0, CookTorrance) * metallic * 5, normalDotLight);
 				
 				return diffuse_ + specular_;
 			} 
@@ -240,8 +191,8 @@ PASS.Shader = {
 			{
 				out_color.rgb = vec3(0);
 			
-				vec2 uv = get_uv();					
-				vec3 view_pos = get_view_pos(uv);	
+				vec2 uv = get_screen_uv();					
+				vec3 view_pos = get_view_pos(uv);
 
 				float fade = get_attenuation(view_pos, uv);
 						
@@ -268,7 +219,8 @@ PASS.Shader = {
 					
 					out_color.rgb += CookTorrance2(light_dir, normal.xyz,  view_pos, metallic, roughness) * intensity * fade * 2;
 					
-					/*float specular = cookTorranceSpecular(
+					/*
+					float specular = cookTorranceSpecular(
 						normalize(-light_view_pos), 
 						normal.xyz, 
 						normalize(-view_pos), 
@@ -276,7 +228,8 @@ PASS.Shader = {
 						metallic
 					);
 										
-					out_color.rgb += light_color.rgb + (light_color.rgb * specular) * (intensity * fade * 2);*/
+					out_color.rgb += light_color.rgb + (light_color.rgb * specular) * (intensity * fade * 2);
+					*/
 				}
 			
 				out_color.a = 1;

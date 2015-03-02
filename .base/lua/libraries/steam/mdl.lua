@@ -709,6 +709,8 @@ function steam.LoadModel(path, sub_model_callback)
 											sub_model.material.no_cull = vmt.nocull == 1
 											sub_model.material.alpha_test = vmt.alphatest == 1 or vmt.translucent == 1 -- todo
 											sub_model.material.alpha_specular = vmt.normalmapalphaenvmapmask or vmt.basealphaenvmapmask
+											if vmt.phongexponent then sub_model.material.roughness_multiplier = vmt.phongexponent/255 end
+											if vmt.phongboost then sub_model.material.metallic_multiplier = vmt.phongboost/50 end
 										end,
 										function(field, path)
 											sub_model.material = sub_model.material or {}
