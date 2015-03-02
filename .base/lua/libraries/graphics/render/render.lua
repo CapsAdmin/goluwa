@@ -32,7 +32,7 @@ function render.Initialize()
 	if render.debug then
 		render.EnableDebug(true)
 	end
-	
+		
 	render.GenerateTextures()
 	
 	include("libraries/graphics/decoders/*")
@@ -56,6 +56,8 @@ function render.Initialize()
 	
 	include("libraries/graphics/render/shader_builder.lua", render)
 	
+	surface.Initialize()
+	
 	event.Delay(function()
 		event.Call("RenderContextInitialized")	
 	end)
@@ -63,6 +65,37 @@ end
 
 function render.Shutdown()
 	
+end
+
+render.global_shader_variables = render.global_shader_variables or {}
+
+function render.SetGlobalShaderVariable(key, val, type)
+	render.global_shader_variables[key] = {[type] = val}
+end
+
+render.global_shader_code = render.global_shader_code or {}
+
+function render.AddGlobalShaderCode(glsl_code, require)
+	for i,v in ipairs(render.global_shader_code) do
+		if v.code == glsl_code then
+			table.remove(render.global_shader_code, i)
+			break
+		end
+	end
+	
+	table.insert(render.global_shader_code, {code = glsl_code, require = require})
+end
+
+function render.GetGlobalShaderCode(code)
+	local out = {}
+	
+	for i, v in ipairs(render.global_shader_code) do
+		if not code or (v.require and code:find(v.require, nil, true)) then
+			table.insert(out, v.code)
+		end
+	end
+	
+	return table.concat(out, "\n\n")
 end
 
 do -- shaders

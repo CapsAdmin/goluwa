@@ -2,18 +2,20 @@ local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
 render.matrices = {
-	projection_2d = Matrix44(),
 	projection_3d = Matrix44(),
-	view_2d = Matrix44(),
-	view_3d = Matrix44(),
-	world = Matrix44(),
+	projection_3d_inverse = Matrix44(),
 	
-	vpm_matrix = Matrix44(),
+	view_3d = Matrix44(),
+	view_3d_inverse = Matrix44(),
+	
 	vp_matrix = Matrix44(),
 	vp_3d_inverse = Matrix44(),
-	projection_3d_inverse = Matrix44(),
+	
+	world = Matrix44(),
+	
+	projection_2d = Matrix44(),	
+	view_2d = Matrix44(),
 	view_2d_inverse = Matrix44(),
-	view_3d_inverse = Matrix44(),
 }
 
 render.camera = render.camera or {
@@ -369,3 +371,37 @@ end
 function render.GetPVWMatrix3D()
 	return ((render.matrices.world_override or render.matrices.world) * render.matrices.view_3d * render.matrices.projection_3d).m
 end
+
+
+
+render.SetGlobalShaderVariable("g_screen_size", function() return Vec2(cam.w, cam.h) end, "vec2")
+
+render.SetGlobalShaderVariable("g_view", function() return render.matrices.view_3d.m end, "mat4")
+render.SetGlobalShaderVariable("g_view_inverse", function() return render.matrices.view_3d_inverse.m end, "mat4")
+
+render.SetGlobalShaderVariable("g_projection", function() return render.matrices.projection_3d.m end, "mat4")
+render.SetGlobalShaderVariable("g_projection_inverse", function() return render.matrices.projection_3d_inverse.m end, "mat4")
+
+render.SetGlobalShaderVariable("g_view_projection", function() return render.matrices.vp_matrix.m end, "mat4")
+render.SetGlobalShaderVariable("g_view_projection_inverse", function() return render.matrices.vp_3d_inverse.m end, "mat4")
+
+render.SetGlobalShaderVariable("g_world", render.GetWorldMatrix, "mat4")
+render.SetGlobalShaderVariable("g_projection_view_world", render.GetPVWMatrix3D, "mat4")
+
+-- lol
+
+--[[
+Shader Inputs
+uniform vec3      iResolution;           // viewport resolution (in pixels)
+uniform float     iGlobalTime;           // shader playback time (in seconds)
+uniform float     iChannelTime[4];       // channel playback time (in seconds)
+uniform vec3      iChannelResolution[4]; // channel resolution (in pixels)
+uniform vec4      iMouse;                // mouse pixel coords. xy: current (if MLB down), zw: click
+uniform samplerXX iChannel0..3;          // input channel. XX = 2D/Cube
+uniform vec4      iDate;                 // (year, month, day, time in seconds)
+uniform float     iSampleRate;           // sound sample rate (i.e., 44100)]]
+
+render.SetGlobalShaderVariable("iResolution", function() return Vec2(cam.w, cam.h, cam.ratio) end, "vec3")
+render.SetGlobalShaderVariable("iGlobalTime", function() return system.GetElapsedTime() end, "float")
+render.SetGlobalShaderVariable("iMouse", function() return Vec2(surface.GetMousePosition()) end, "float")
+render.SetGlobalShaderVariable("iDate", function() return Color(os.date("%y"), os.date("%m"), os.date("%d"), os.date("%s")) end, "vec4")

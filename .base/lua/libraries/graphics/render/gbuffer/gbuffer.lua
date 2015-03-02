@@ -1,6 +1,42 @@
 local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
+render.AddGlobalShaderCode([[
+vec3 get_view_pos(vec2 uv)
+{
+	vec4 pos = g_projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
+	return pos.xyz / pos.w;
+}]], "get_view_pos")
+
+render.AddGlobalShaderCode([[
+float random(vec2 co)
+{
+	return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}]], "random")
+
+
+render.AddGlobalShaderCode([[
+vec2 get_screen_uv()
+{
+	return gl_FragCoord.xy / g_screen_size;
+}]], "get_screen_uv")
+ 
+render.AddGlobalShaderCode([[
+vec2 g_poisson_disk[4] = vec2[](
+	vec2( -0.94201624, -0.39906216 ),
+	vec2( 0.94558609, -0.76890725 ),
+	vec2( -0.094184101, -0.92938870 ),
+	vec2( 0.34495938, 0.29387760 )
+);]], "g_poisson_disk")
+ 
+ 
+render.AddGlobalShaderCode([[
+vec3 get_world_pos(vec2 uv)
+{
+	vec4 pos = g_view_inverse * g_projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
+	return pos.xyz / pos.w;
+}]], "get_world_pos")
+
 function render.GetGBufferSize()
 	return Vec2(render.gbuffer_width or render.GetWidth(), render.gbuffer_height or render.GetHeight())
 end
@@ -11,6 +47,7 @@ end
 
 render.gbuffer = render.gbuffer or NULL
 render.gbuffer_passes = render.gbuffer_passes or {}
+render.gbuffer_shaders_ = render.gbuffer_shaders_ or {}
 render.gbuffer_values = render.gbuffer_values or {}
 render.gbuffer_shaders = render.gbuffer_shaders or {}
 
@@ -108,65 +145,73 @@ do -- mixer
 			table.merge(shader.fragment.uniform, PASS.Variables)
 		end
 		
-		local shader = render.CreateShader(shader)
+		render.gbuffer_shaders_[PASS.Name] = PASS
 		
-		if PASS.Variables then
-			shader.gbuffer_values = PASS.Variables
-		end
-		
-		render.gbuffer_shaders[PASS.Name] = shader
-		
-		shader.gbuffer_pass = PASS
-		shader.gbuffer_name = PASS.Name
-		shader.gbuffer_position = tonumber(PASS.Position) or #render.gbuffer_shaders_sorted
-		
-		for k,v in pairs(render.gbuffer_values) do
-			render.SetGBufferValue(k,v)
-		end
+		function PASS:__init()
+			self.__init = nil
+			
+			local shader = render.CreateShader(shader)
+			
+			render.gbuffer_shaders[PASS.Name] = shader
 
-		for k,v in pairs(render.gbuffer_shaders_sorted) do
-			if v.gbuffer_name == PASS.Name then
-				table.remove(render.gbuffer_shaders_sorted, k)
-				break
+			if PASS.Variables then
+				shader.gbuffer_values = PASS.Variables
 			end
-		end
-		
-		table.insert(render.gbuffer_shaders_sorted, shader)
-		
-		table.sort(render.gbuffer_shaders_sorted, function(a, b)
-			return a.gbuffer_position < b.gbuffer_position
-		end)
-		
-		PASS.shader = shader
-		
-		if PASS.Initialize then
-			local ok, err = pcall(function() PASS:Initialize() end)
-			if not ok then
-				logn("failed to initialize gbuffer pass ", PASS.Name, ": ", err)
+			
+			shader.gbuffer_pass = PASS
+			shader.gbuffer_name = PASS.Name
+			shader.gbuffer_position = tonumber(PASS.Position) or #render.gbuffer_shaders_sorted
+			
+			for k,v in pairs(render.gbuffer_values) do
+				render.SetGBufferValue(k,v)
+			end
+
+			for k,v in pairs(render.gbuffer_shaders_sorted) do
+				if v.gbuffer_name == PASS.Name then
+					table.remove(render.gbuffer_shaders_sorted, k)
+					break
+				end
+			end
+			
+			table.insert(render.gbuffer_shaders_sorted, shader)
+			
+			table.sort(render.gbuffer_shaders_sorted, function(a, b)
+				return a.gbuffer_position < b.gbuffer_position
+			end)
+			
+			PASS.shader = shader
+			
+			if PASS.Initialize then
+				local ok, err = pcall(function() PASS:Initialize() end)
+				if not ok then
+					logn("failed to initialize gbuffer pass ", PASS.Name, ": ", err)
+					render.RemoveGBufferShader(PASS.Name)
+				end
+			end
+
+			if not console.IsVariableAdded("render_g_" .. PASS.Name) then			
+				local pass = table.copy(PASS)
+				local default = PASS.Default
+				
+				if default == nil then
+					default = true
+				end
+						
+				console.CreateVariable("render_g_" .. pass.Name, default, function(val)
+					if val then
+						render.AddGBufferShader(pass)
+					else
+						render.RemoveGBufferShader(pass.Name)
+					end
+				end)
+			end
+			
+			if not console.GetVariable("render_g_" .. PASS.Name) then
 				render.RemoveGBufferShader(PASS.Name)
 			end
 		end
-
-		if not console.IsVariableAdded("render_g_" .. PASS.Name) then			
-			local pass = table.copy(PASS)
-			local default = PASS.Default
-			
-			if default == nil then
-				default = true
-			end
-					
-			console.CreateVariable("render_g_" .. pass.Name, default, function(val)
-				if val then
-					render.AddGBufferShader(pass)
-				else
-					render.RemoveGBufferShader(pass.Name)
-				end
-			end)
-		end
 		
-		if not console.GetVariable("render_g_" .. PASS.Name) then
-			render.RemoveGBufferShader(PASS.Name)
-		end
+		if RELOAD then PASS:__init() end
 	end
 	
 	function render.RemoveGBufferShader(name)
@@ -215,6 +260,8 @@ function render.InitializeGBuffer(width, height)
 				} 
 			} 
 		}
+		
+		render.SetGlobalShaderVariable("tex_depth", function() return render.gbuffer:GetTexture("depth") end, "texture")
 	
 		for _, pass in ipairs(render.gbuffer_passes) do
 			if pass.Buffers then
@@ -223,6 +270,8 @@ function render.InitializeGBuffer(width, height)
 					
 					attach = attach or "color"
 					format = format or "RGB16F"
+					
+					render.SetGlobalShaderVariable("tex_" .. name, function() return render.gbuffer:GetTexture(name) end, "texture")
 					
 					table.insert(render.gbuffer_buffers, #render.gbuffer_buffers, {
 						name = name,
@@ -257,6 +306,12 @@ function render.InitializeGBuffer(width, height)
 			}
 		},
 	})
+	
+	for k,v in pairs(render.gbuffer_shaders_) do
+		v:__init()
+	end
+	
+	table.clear(render.gbuffer_shaders_)
 		
 	for _, pass in ipairs(render.gbuffer_passes) do
 		local shader = render.CreateShader(pass.Shader)
