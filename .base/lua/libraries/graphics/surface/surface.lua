@@ -10,7 +10,7 @@ local SHADER = {
 			{uv = "vec2"},
 			{color = "vec4"},
 		},
-		source = "gl_Position = lua[(mat4)render.GetPVWMatrix2D] * vec4(pos, 1);"
+		source = "gl_Position = lua[(mat4)render.GetProjectionViewWorld2DMatrix] * vec4(pos, 1);"
 	},
 	
 	fragment = { 
@@ -99,7 +99,7 @@ function surface.Start3D(pos, ang, scale)
 	surface.in_3d = true
 	
 	-- tell the 2d shader to use the 3d matrix instead
-	surface.mesh_2d_shader.pvm_matrix = render.GetPVWMatrix3D
+	surface.mesh_2d_shader.pvm_matrix = render.GetProjectionViewWorld3DMatrix
 
 	render.PushWorldMatrixEx(pos, ang, Vec3(scale.x / w, scale.y / h, 1))
 end
@@ -108,7 +108,7 @@ function surface.Start3Dm(mat, dont_multiply)
 	surface.in_3d = true
 	
 	-- tell the 2d shader to use the 3d matrix instead
-	surface.mesh_2d_shader.pvm_matrix = render.GetPVWMatrix3D
+	surface.mesh_2d_shader.pvm_matrix = render.GetProjectionViewWorld3DMatrix
 
 	render.PushWorldMatrix(mat, dont_multiply)
 end
@@ -116,7 +116,7 @@ end
 function surface.End3D()
 	render.PopWorldMatrix()
 	
-	surface.mesh_2d_shader.pvm_matrix = render.GetPVWMatrix2D
+	surface.mesh_2d_shader.pvm_matrix = render.GetProjectionViewWorld2DMatrix
 	surface.in_3d = false
 end
 

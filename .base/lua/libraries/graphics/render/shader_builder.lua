@@ -13,7 +13,7 @@ local unrolled_lines = {
 
 	color = "render.Uniform4f(%i, val.r, val.g, val.b, val.a)",
 
-	mat4 = "render.UniformMatrix4fv(%i, 1, 0, val)",
+	mat4 = "if type(val) == 'table' then val = val.m end render.UniformMatrix4fv(%i, 1, 0, val)",
 
 	texture = "local channel = %i\n\trender.ActiveTexture(channel)\n\trender.BindTexture(val)\n\trender.Uniform1i(%i, channel)",
 }
@@ -74,7 +74,7 @@ local uniform_translate =
 	vec2 = render.Uniform2f,
 	vec3 = render.Uniform3f,
 	vec4 = render.Uniform4f,
-	mat4 = function(location, ptr) render.UniformMatrix4fv(location, 1, 0, ptr) end,
+	mat4 = function(location, ptr) if type(ptr) == "table" then ptr = ptr.m end render.UniformMatrix4fv(location, 1, 0, ptr) end,
 	sampler2D = render.Uniform1i,
 	samplerCube = render.Uniform1i,
 	not_implemented = function() end,
@@ -250,7 +250,7 @@ function render.CreateShader(data, vars)
 			name = name,			
 			vertex = {
 				uniform = {
-					pwm_matrix = {mat4 = render.GetPVWMatrix2D},
+					pwm_matrix = {mat4 = render.GetProjectionViewWorld2DMatrix},
 				},			
 				attributes = {
 					{pos = "vec3"},
@@ -305,7 +305,7 @@ function render.CreateShader(data, vars)
 	if not data.vertex then
 		data.vertex = {
 			uniform = {
-				pwm_matrix = {mat4 = render.GetPVWMatrix2D},
+				pwm_matrix = {mat4 = render.GetProjectionViewWorld2DMatrix},
 			},			
 			attributes = {
 				{pos = "vec3"},
@@ -414,48 +414,53 @@ function render.CreateShader(data, vars)
 			build_output.vertex.vtx_atrb_type = type
 		end
 	end
+	
+	local function preprocess(str, info)
+		local var_i = 0
+		return str:gsub("lua(%b[])", function(code) 
+			if code:find("=", nil, true) then
+				local key, default = code:sub(2, -2):match("(.-)=(.+)")
+				key = key:trim()
+				default = default:trim()
+				local ok, default = pcall(loadstring("return " .. default))
+				
+				if not ok then
+					error(default, 3)
+				end
+				
+				info.uniform = info.uniform or {}
+				info.uniform[key] = default
+				
+				return key
+			else
+				local type, code = code:sub(2, -2):match("(%b())(.+)")
+				type = type:sub(2, -2)
+				local ok, var = pcall(loadstring("return " .. code))
+				
+				if not ok then
+					error(var, 3)
+				end
+				
+				local name = "auto_lua_variable_" .. var_i
+				
+				info.uniform = info.uniform or {}
+				info.uniform[name] = {[type] = var}
+				
+				var_i = var_i + 1
+				
+				return name
+			end
+		end)
+	end
 
 	for shader, info in pairs(data) do
 		local template = build_output[shader].source
 
 		template = replace_field(template, "GLOBAL CODE", render.GetGlobalShaderCode(info.source))
+		template = preprocess(template, info)
 		
 		if info.source then			
-			local var_i = 0
-			info.source = info.source:gsub("lua(%b[])", function(code) 
-				if code:find("=", nil, true) then
-					local key, default = code:sub(2, -2):match("(.-)=(.+)")
-					key = key:trim()
-					default = default:trim()
-					local ok, default = pcall(loadstring("return " .. default))
-					
-					if not ok then
-						error(default, 3)
-					end
-					
-					info.uniform = info.uniform or {}
-					info.uniform[key] = default
-					
-					return key
-				else
-					local type, code = code:sub(2, -2):match("(%b())(.+)")
-					type = type:sub(2, -2)
-					local ok, var = pcall(loadstring("return " .. code))
-					
-					if not ok then
-						error(var, 3)
-					end
-					
-					local name = "auto_lua_variable_" .. var_i
-					
-					info.uniform = info.uniform or {}
-					info.uniform[name] = {[type] = var}
-					
-					var_i = var_i + 1
-					
-					return name
-				end
-			end)
+			info.source = preprocess(info.source, info)
 		end
 		
 		if info.uniform then

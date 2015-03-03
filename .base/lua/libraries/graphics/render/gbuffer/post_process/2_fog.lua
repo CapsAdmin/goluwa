@@ -8,8 +8,6 @@ PASS.Variables = {
 	fog_intensity = 256,
 	fog_start = 0,
 	fog_end = 0,
-	inv_proj = {mat4 = function() return render.matrices.projection_3d_inverse.m end},
-	inv_view_rot = {mat4 = function() return render.matrices.view_3d_inverse.m end},
 	lightdir = {vec3 = function() 
 		if SUN and SUN:IsValid() then
 			local dir = SUN:GetTRPosition():GetNormalized()
@@ -43,8 +41,8 @@ PASS.Source = [[
         vec2 frag_coord = uv;
         frag_coord = (frag_coord-0.5)*2.0;
         vec4 device_normal = vec4(frag_coord, 0.0, 1.0);
-        vec3 eye_normal = normalize((inv_proj * device_normal).xyz);
-        vec3 world_normal = normalize(mat3(inv_view_rot)*eye_normal).xyz;
+        vec3 eye_normal = normalize((g_projection_inverse * device_normal).xyz);
+        vec3 world_normal = normalize(mat3(g_view_inverse)*eye_normal).xyz;
         return vec4(world_normal.x, -world_normal.z, world_normal.y, eye_normal.z);
     }
     

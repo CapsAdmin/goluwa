@@ -23,15 +23,6 @@ local function go()
 			body:SetSize(-1)  -- FIX ME
 		end 
 	end
-	
-	local gun = entities.CreateEntity("visual")
-	gun:SetModelPath("models/cerebus/Cerberus_LP.FBX")
-	gun:SetDiffuseTexturePath("textures/Cerberus_A.tga")
-	gun:SetRoughnessTexturePath("textures/Cerberus_R.tga")
-	gun:SetMetallicTexturePath("textures/Cerberus_M.tga") 
-	gun:SetNormalTexturePath("textures/Cerberus_N.tga")
-	gun:SetCull(false)
-	gun:SetSize(-0.05)
 end
 
 if RELOAD  then

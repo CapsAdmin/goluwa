@@ -155,21 +155,37 @@ if GRAPHICS then
 		end
 	end
 
-	function COMPONENT:OnDraw3DGeometry(shader, projection_view, skip_cull)
+	function COMPONENT:OnDraw3DGeometry(shader, projection_view, simple)
 		self.sub_models = self.sub_models or {}
 		projection_view = projection_view or render.matrices.vp_matrix
+		
+		if simple then
+			local matrix = self:GetComponent("transform"):GetMatrix()
+
+			shader.projection_view_world = matrix * projection_view
+			for i, model in ipairs(self.sub_models) do
+				shader.tex_diffuse = self.DiffuseTexture
+				shader:Bind()
+				model:Draw()
+				shader.alpha_test = model.alpha_test and 1 or 0
+			end
+			return
+		end
 
 		local matrix = self:GetComponent("transform"):GetMatrix()
 		
 		if not self.Cull or not self.corners or self:GetComponent("transform"):IsPointsVisible(self.corners, projection_view) then
-
-			local screen = matrix * projection_view
-			shader.projection_view_world = screen.m
-			shader.view_world = (matrix * render.matrices.view_3d).m
+			shader.projection_view_world = matrix * projection_view
+			shader.view_world = matrix * render.matrices.view_3d -- for bump maps
 			shader.color = self.Color
 
 			for i, model in ipairs(self.sub_models) do
-				if not skip_cull then if model.no_cull then render.SetCullMode("none") else render.SetCullMode("front") end end
+				if model.no_cull then 
+					render.SetCullMode("none") 
+				else 
+					render.SetCullMode("front") 
+				end 
+				
 				shader.alpha_test = model.alpha_test and 1 or 0
 			
 				for i,v in ipairs(render.model_textures) do

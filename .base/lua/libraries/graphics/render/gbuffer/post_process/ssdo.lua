@@ -10,16 +10,7 @@ PASS.Variables = {
 function PASS:Initialize()
 	self.fb = render.CreateFrameBuffer(render.GetWidth()/2, render.GetHeight()/2)
 		
-	self.extract = render.CreateShader([[						
-		vec3 get_pos(vec2 uv)
-		{
-			float z = -texture(tex_depth, uv).r;
-			vec4 sPos = vec4(uv * 2.0 - 1.0, z, 1.0);
-			sPos = inverse_projection * sPos;
-
-			return (sPos.xyz / sPos.w);
-		}
-		
+	self.extract = render.CreateShader([[		
 		uniform vec3 points[] =
 		{
 			vec3(-0.134, 0.044, -0.825),
@@ -68,13 +59,13 @@ function PASS:Initialize()
 		vec3 dssdo()
 		{				
 			vec2 noise_texture_size = vec2(512,512)*2;
-			vec3 center_pos = get_pos(uv);
+			vec3 center_pos = get_view_pos(uv);
 
 			float radius = occlusion_radius / center_pos.z;
 						
 			float max_distance_inv = 1.f / occlusion_max_distance;
 
-			vec3 noise = texture(tex_noise, uv*size.xy/noise_texture_size).xyz*2-1;
+			vec3 noise = texture(tex_noise, uv*g_screen_size.xy/noise_texture_size).xyz*2-1;
 					
 			vec3 center_normal = get_view_normal(uv);
 
@@ -90,7 +81,7 @@ function PASS:Initialize()
 			for( int i=0; i<num_samples; ++i )
 			{
 				vec2 textureOffset = reflect( points[ i ].xy, noise.xy ).xy * radius;
-				vec3 sample_pos = get_pos(uv + textureOffset);
+				vec3 sample_pos = get_view_pos(uv + textureOffset);
 				vec3 center_to_sample = sample_pos - center_pos;
 				float dist = length(center_to_sample);
 				vec3 center_to_sample_normalized = center_to_sample / dist;
@@ -111,7 +102,7 @@ function PASS:Initialize()
 		
 			for( int i = 0; i < num_samples; ++i)
 			{
-				vec3 sample_pos = get_pos(uv + reflect(points[i].xyz, noise.xyz).xy * radius);
+				vec3 sample_pos = get_view_pos(uv + reflect(points[i].xyz, noise.xyz).xy * radius);
 				vec3 center_to_sample = sample_pos - center_pos;
 				float dist = length(center_to_sample)*0.25;
 				float dp = dot(center_normal, center_to_sample / dist);
@@ -135,12 +126,7 @@ function PASS:Initialize()
 		}
 	]], {
 		self = self.fb:GetTexture(), 
-		tex_normal =  {texture = function() return render.gbuffer:GetTexture("normal") end},
-		tex_depth =  {texture = function() return render.gbuffer:GetTexture("depth") end},
 		tex_noise =  {texture = render.GetNoiseTexture},
-		size = Vec2(render.GetWidth(), render.GetHeight()), 
-		cam_eye = {vec3 = function() return render.GetCameraPosition() end},
-		inverse_projection = {mat4 = function() return render.matrices.projection_3d_inverse.m end},
 		num_samples = 32,
 		occlusion_max_distance = 1,
 		occlusion_radius = 0.25,
@@ -204,8 +190,7 @@ function PASS:Initialize()
 
 		return res;
 	]], {
-		self = self.fb:GetTexture(), 
-		size = Vec2(render.GetWidth(), render.GetHeight()), 
+		self = self.fb:GetTexture(),
 		blur_size = 666,
 		blur_dir = Vec2(0,0),
 	})

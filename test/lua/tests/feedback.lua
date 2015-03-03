@@ -16,7 +16,7 @@ local shader = render.CreateShader({
 	},
 	vertex = {
 		uniform = {
-			pwm_matrix = {mat4 = render.GetPVWMatrix2D}
+			pwm_matrix = {mat4 = render.GetProjectionViewWorld2DMatrix}
 		},			
 		attributes = {
 			{pos = "vec2"},

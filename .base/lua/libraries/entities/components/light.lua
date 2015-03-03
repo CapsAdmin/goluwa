@@ -55,7 +55,7 @@ if GRAPHICS then
 		shader.light_dir = -transform:GetRotation():GetForward()
 		shader.light_radius = transform:GetSize()
 		shader.inverse_projection = render.matrices.projection_3d_inverse.m
-		shader.inverse_view_projection = (render.matrices.vp_3d_inverse).m
+		shader.inverse_projection_view = (render.matrices.vp_3d_inverse).m
 		
 		-- automate this!!
 		shader.light_color = self.Color
@@ -65,9 +65,12 @@ if GRAPHICS then
 		shader.project_from_camera = self.ProjectFromCamera and 1 or 0
 		
 		if self.Shadow then
-			event.Call("DrawShadowMaps", render.gbuffer_shadow_shader)
+			self:DrawShadowMap()
 			shader.cascade_pass = i
-			shader.tex_shadow_map = self.ShadowCubemap and self.shadow_map:GetTexture("cubemap") or self.shadow_map:GetTexture("depth")
+			shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
+			if self.ShadowCubemap then 	
+				shader.tex_shadow_map_cube = self.shadow_map:GetTexture("cubemap")
+			end
 			shader.light_vp_matrix = self.vp_matrix.m
 			gl.Disable(gl.e.GL_DEPTH_TEST)
 		end
@@ -83,18 +86,46 @@ if GRAPHICS then
 		{ e = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_Z, rot = QuatDeg3(0,0,0)},
 		{ e = gl.e.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, rot = QuatDeg3(180,0,0)},
 	}
+	
+	render.shadow_map_shader = nil
 						
-	function COMPONENT:OnDrawShadowMaps(shader, ortho_divider)
-		gl.Enable(gl.e.GL_DEPTH_TEST)	
-		--render.SetBlendMode("additive")
-		gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
-		render.SetCullMode("front")
-		
+	function COMPONENT:DrawShadowMap(shader, ortho_divider)
 		if not self.Shadow then
 			if render.shadow_maps[self] then
 				render.shadow_maps[self] = nil
 			end
 			return 
+		end
+		
+		if not render.shadow_map_shader then
+			render.shadow_map_shader = render.CreateShader({
+				name = "shadow_map",
+				vertex = {
+					attributes = {
+						{pos = "vec3"},
+						{normal = "vec3"},
+						{uv = "vec2"},
+						{texture_blend = "float"},
+					},	
+					source = "gl_Position = lua[projection_view_world = 'mat4'] * vec4(pos, 1);"
+				},
+				fragment = {
+					attributes = {
+						{uv = "vec2"},
+					},
+					source = [[
+						out vec4 out_color;
+						
+						void main()
+						{				
+							if (lua[alpha_test = 0] == 1 && texture(lua[diffuse = "sampler2D"], uv).a < 0.25)
+							{
+								discard;
+							}
+						}
+					]],
+				},
+			})
 		end
 			
 		if not render.shadow_maps[self] then
@@ -131,59 +162,63 @@ if GRAPHICS then
 			
 			render.shadow_maps[self] = self.shadow_map
 		end
+		
+		gl.Enable(gl.e.GL_DEPTH_TEST)	
+		--render.SetBlendMode("additive")
+		gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
+		render.SetCullMode("front")
 	
 		local transform = self:GetComponent("transform")
-		if true then
-			local pos = transform:GetPosition()
-			local rot = transform:GetRotation()
+		local pos = transform:GetPosition()
+		local rot = transform:GetRotation()
+		
+		self.shadow_map:Begin()
+		self.shadow_map:Clear()
+				
+		--self.shadow_map:SetReadBuffer("depth")
+		--self.shadow_map:SetWriteBuffer("depth")
+		
+		for i, info in ipairs(directions) do
+			--self.shadow_map:SetWriteBuffer("cubemap", info.e)
 			
-			self.shadow_map:Begin()
-			self.shadow_map:Clear()
-					
-			--self.shadow_map:SetReadBuffer("depth")
-			--self.shadow_map:SetWriteBuffer("depth")
+			-- setup the view matrix
+			local view = Matrix44()
 			
-			for i, info in ipairs(directions) do
-				--self.shadow_map:SetWriteBuffer("cubemap", info.e)
-				
-				-- setup the view matrix
-				local view = Matrix44()
-				view:SetRotation(self.ShadowCubemap and info.rot or rot)
-
-				if self.ProjectFromCamera then
-					pos = render.GetCameraPosition()
-					view:Translate(pos.y, pos.x, pos.z)			
-				else
-					view:Translate(pos.y, pos.x, pos.z)			
-				end
-				
-				-- setup the projection matrix
-				local projection = Matrix44()
-				
-				if self.OrthoSize == 0 then
-					projection:Perspective(math.rad(self.FOV), render.camera.farz, render.camera.nearz, render.camera.ratio) 
-				else
-					local size = self.OrthoSize * (ortho_divider or 1)
-					projection:Ortho(-size, size, -size, size, size, -size) 
-				end
-				
-				--entities.world:GetComponent("world").sun:SetPosition(render.GetCameraPosition()) 
-				--entities.world:GetComponent("world").sun:SetAngles(render.GetCameraAngles())
-				
-					
-				-- make a view_projection matrix
-				self.vp_matrix = view * projection
-							
-				-- render the scene with this matrix
-				render.SetCullMode("front")
-				event.Call("Draw3DGeometry", shader, self.vp_matrix, true)
-				
-				if not self.ShadowCubemap then 
-					break 
-				end
+			if self.ShadowCubemap then
+				view:SetRotation(info.rot)
+			else
+				view:SetRotation(rot)
 			end
-			self.shadow_map:End()
+
+			if self.ProjectFromCamera then
+				pos = render.GetCameraPosition()
+				view:Translate(pos.y, pos.x, pos.z)			
+			else
+				view:Translate(pos.y, pos.x, pos.z)			
+			end
+			
+			-- setup the projection matrix
+			local projection = Matrix44()
+			
+			if self.OrthoSize == 0 then
+				projection:Perspective(math.rad(self.FOV), render.camera.farz, render.camera.nearz, render.camera.ratio) 
+			else
+				local size = self.OrthoSize * (ortho_divider or 1)
+				projection:Ortho(-size, size, -size, size, size, -size) 
+			end
+				
+			-- make a projection_view matrix
+			self.vp_matrix = view * projection
+						
+			-- render the scene with this matrix
+			render.SetCullMode("front")
+			event.Call("Draw3DGeometry", render.shadow_map_shader, self.vp_matrix, true)
+			
+			if not self.ShadowCubemap then 
+				break 
+			end
 		end
+		self.shadow_map:End()
 	end
 end
 

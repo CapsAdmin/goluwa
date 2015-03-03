@@ -7,6 +7,11 @@ float random(vec2 co)
 	return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }]], "random")
 
+render.AddGlobalShaderCode([[
+vec4 get_noise(vec2 uv)
+{
+	return texture(lua[(sampler2D)render.GetNoiseTexture], uv);
+}]], "get_noise")
 
 render.AddGlobalShaderCode([[
 vec2 get_screen_uv()
@@ -96,7 +101,7 @@ do -- mixer
 			name = PASS.Name,
 			vertex = {
 				uniform = {
-					pwm_matrix = {mat4 = render.GetPVWMatrix2D}
+					pwm_matrix = {mat4 = render.GetProjectionViewWorld2DMatrix}
 				},			
 				attributes = {
 					{pos = "vec2"},
@@ -109,7 +114,6 @@ do -- mixer
 				uniform = {
 					cam_nearz = {float = function() return render.camera.nearz end},
 					cam_farz = {float = function() return render.camera.farz end},
-					size = {vec2 = function() return render.gbuffer_mixer_buffer:GetTexture():GetSize() end},
 					self = {texture = function() return render.gbuffer_mixer_buffer:GetTexture() end},
 				},
 				attributes = {
@@ -285,7 +289,7 @@ function render.InitializeGBuffer(width, height)
 			name = "screen_buffer",
 			attach = "color",
 			texture_format = {
-				internal_format = "RGBA8",
+				internal_format = "RGB32F",
 				--mag_filter = "nearest",
 				--min_filter = "nearest",
 			}
