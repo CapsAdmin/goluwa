@@ -84,6 +84,7 @@ PASS.Shader = {
 		uniform = {	
 			view_world = "mat4",
 			--illumination_color = Color(1,1,1,1),
+			alpha_specular = 1,
 		},
 		attributes = {
 			{normal = "vec3"},
@@ -102,13 +103,13 @@ PASS.Shader = {
 			{	
 				// diffuse
 				{
-					diffuse_buffer.rgb = texture(tex_model_diffuse, uv).rgb;
+					diffuse_buffer = texture(tex_model_diffuse, uv);
 					
-					vec3 diffuse_blend = texture(tex_model_diffuse2, uv).rgb;
-					if (diffuse_blend != vec3(0,0,0))
-						diffuse_buffer.rgb = mix(diffuse_buffer.rgb, diffuse_blend, texture_blend);
+					vec4 diffuse_blend = texture(tex_model_diffuse2, uv);
+					if (diffuse_blend != vec4(0))
+						diffuse_buffer = mix(diffuse_buffer, diffuse_blend, texture_blend);
 					
-					if (lua[alpha_test = 0] == 1)
+					if (lua[alpha_test = 0] == 1 && alpha_specular != 0)
 					{
 						//if (diffuse_buffer.a < pow(rand(uv), 0.5))
 						//if (pow(diffuse_buffer.a+0.5, 4) < 0.5)
@@ -119,7 +120,7 @@ PASS.Shader = {
 					//if (lua[detail_blend_factor = 0] > 0)
 						//diffuse_buffer.rgb = (diffuse_buffer.rgb - texture(tex_model_detail, uv * lua[detail_scale = 1]*10).rgb);
 						
-					diffuse_buffer.rgb *= lua[color = Color(1,1,1,1)].rgb;
+					diffuse_buffer *= lua[color = Color(1,1,1,1)];
 				}
 				
 				// normals
@@ -127,21 +128,21 @@ PASS.Shader = {
 					vec3 bump_detail = texture(tex_model_normal, uv).rgb;
 					
 					if (bump_detail == vec3(0,0,0))
+					{				
+						normal_buffer.rgb = mat3(view_world) * normal;
+					}
+					else
 					{
 						vec3 bump_detail2 = texture(tex_model_normal2, uv).rgb;
 						
 						if (bump_detail2 != vec3(0,0,0))
 							bump_detail = mix(bump_detail, bump_detail2, texture_blend);
-				
-						normal_buffer.rgb = mat3(view_world) * normal;
-					}
-					else
-					{
+					
 						mat3 normal_matrix = mat3(inverse(transpose(view_world)));
 						
 						vec3 Normal = normalize(normal_matrix * normal);
 						vec3 Tangent = -normalize(normal_matrix[1]);
-						vec3 Binormal = normalize(normal_matrix[0] + normal_matrix[2]);
+						vec3 Binormal = normalize(normal_matrix[2]);
 						
 						mat3 tangentToWorld = mat3(
 							Tangent.x, Binormal.x, Normal.x,
@@ -152,36 +153,22 @@ PASS.Shader = {
 						normal_buffer.rgb = (2 * bump_detail - 1) * tangentToWorld;
 					}
 					
-					//normal_buffer.rgb = normalize(normal_buffer.rgb);
+					normal_buffer.rgb = normalize(normal_buffer.rgb);
 				}
-				
-				
-				normal_buffer.a = texture(tex_model_metallic, uv).r + lua[metallic_multiplier = 0];
-				diffuse_buffer.a = texture(tex_model_roughness, uv).r + lua[roughness_multiplier = 0];
-				
-				/*
-				// illumination
+
+				if (alpha_specular == 1)
 				{
-					illumination_buffer.r = texture(tex_model_illumination, uv).r;
-					
-					// metallic
-					illumination_buffer.g = -texture(tex_model_metallic, uv).r+1;
-					
-					if (lua[alpha_specular = 1] == 1)
-					{
-						illumination_buffer.g = texture(tex_model_normal, uv).a;
-					}
-					else
-					{
-						illumination_buffer.b = texture(tex_model_roughness, uv).r;
-					}
-					
-					illumination_buffer.g += metallic_multiplier;
-					illumination_buffer.b += roughness_multiplier;
-					
-					illumination_buffer.a = 1;
+					normal_buffer.a = -diffuse_buffer.a+1;
 				}
-				*/
+				else
+				{
+					normal_buffer.a = texture(tex_model_metallic, uv).r;
+				}
+				
+				diffuse_buffer.a = texture(tex_model_roughness, uv).r;
+				
+				normal_buffer.a += lua[metallic_multiplier = 0];
+				diffuse_buffer.a += lua[roughness_multiplier = 0];
 			}
 		]]
 	}
