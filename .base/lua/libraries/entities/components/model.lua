@@ -43,11 +43,11 @@ end
 add_texture("Diffuse", render.GetErrorTexture())
 add_texture("Normal", render.GetBlackTexture())
 add_texture("Metallic", render.GetBlackTexture())
-add_texture("Roughness", render.GetBlackTexture()) 
+add_texture("Roughness", render.GetGreyTexture()) 
 
 -- source engine specific
 --add_texture("Illumination", render.GetBlackTexture())
-add_texture("Detail", render.GetWhiteTexture())
+--add_texture("Detail", render.GetWhiteTexture())
 add_texture("Diffuse2", render.GetBlackTexture())
 add_texture("Normal2", render.GetBlackTexture()) 
 
