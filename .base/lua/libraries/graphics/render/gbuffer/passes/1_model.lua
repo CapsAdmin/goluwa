@@ -86,7 +86,6 @@ PASS.Shader = {
 			--illumination_color = Color(1,1,1,1),
 		},
 		attributes = {
-			{pos = "vec3"},
 			{normal = "vec3"},
 			{uv = "vec2"},
 			{texture_blend = "float"},

@@ -23,8 +23,8 @@ PASS.Source = [[
 		
 		if (depth > 0.05) return 1;
 		
-		float pw = 1.0 / size.x;
-		float ph = 1.0 / size.y;
+		float pw = 1.0 / g_screen_size.x;
+		float ph = 1.0 / g_screen_size.y;
 
 		float ao = 0;
 		

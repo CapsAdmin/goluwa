@@ -25,8 +25,8 @@ function PASS:Initialize()
 	]], {self = self.fb:GetTexture()})
 	
 	self.blur = render.CreateShader([[
-		float dx = blur_size / size.x;
-		float dy = blur_size / size.y;
+		float dx = blur_size / g_screen_size.x;
+		float dy = blur_size / g_screen_size.y;
 		
 		vec4 color = 4.0 * texture(self, uv);
 		color += texture(self, uv + vec2(+dx, 0.0)) * 2.0;
@@ -44,7 +44,6 @@ function PASS:Initialize()
 		return color;
 	]], {
 		self = self.fb:GetTexture(), 
-		size = Vec2(render.GetWidth(), render.GetHeight()), 
 		blur_size = 1,
 	})
 end

@@ -341,52 +341,40 @@ do
 		render.matrices.world:LoadIdentity()
 	end	
 end  
- 
--- these are for shaders and they return the raw float[16] array
- 
-function render.GetProjectionMatrix3D()
-	return render.matrices.projection_3d.m
+
+function render.GetProjectionViewWorld2DMatrix()
+	return (render.matrices.world_override or render.matrices.world) * render.matrices.view_2d * render.matrices.projection_2d
 end
 
-function render.GetProjectionMatrix2D()
-	return render.matrices.projection_2d.m
+function render.GetProjectionViewWorld3DMatrix()
+	return (render.matrices.world_override or render.matrices.world) * render.matrices.view_3d * render.matrices.projection_3d
 end
-
-function render.GetViewMatrix3D()
-	return render.matrices.view_3d.m
-end
-
-function render.GetViewMatrix2D()
-	return render.matrices.view_2d.m
-end
-
-function render.GetWorldMatrix()
-	return render.matrices.world_override and render.matrices.world_override.m or render.matrices.world.m
-end
-
-function render.GetPVWMatrix2D()
-	return ((render.matrices.world_override or render.matrices.world) * render.matrices.view_2d * render.matrices.projection_2d).m
-end
-
-function render.GetPVWMatrix3D()
-	return ((render.matrices.world_override or render.matrices.world) * render.matrices.view_3d * render.matrices.projection_3d).m
-end
-
-
 
 render.SetGlobalShaderVariable("g_screen_size", function() return Vec2(cam.w, cam.h) end, "vec2")
 
-render.SetGlobalShaderVariable("g_view", function() return render.matrices.view_3d.m end, "mat4")
-render.SetGlobalShaderVariable("g_view_inverse", function() return render.matrices.view_3d_inverse.m end, "mat4")
+render.SetGlobalShaderVariable("g_projection", function() return render.matrices.projection_3d end, "mat4")
+render.SetGlobalShaderVariable("g_projection_inverse", function() return render.matrices.projection_3d_inverse end, "mat4")
 
-render.SetGlobalShaderVariable("g_projection", function() return render.matrices.projection_3d.m end, "mat4")
-render.SetGlobalShaderVariable("g_projection_inverse", function() return render.matrices.projection_3d_inverse.m end, "mat4")
+render.SetGlobalShaderVariable("g_view", function() return render.matrices.view_3d end, "mat4")
+render.SetGlobalShaderVariable("g_view_inverse", function() return render.matrices.view_3d_inverse end, "mat4")
 
-render.SetGlobalShaderVariable("g_view_projection", function() return render.matrices.vp_matrix.m end, "mat4")
-render.SetGlobalShaderVariable("g_view_projection_inverse", function() return render.matrices.vp_3d_inverse.m end, "mat4")
+render.SetGlobalShaderVariable("g_world", function() return render.matrices.world_override and render.matrices.world_override or render.matrices.world end, "mat4")
+render.SetGlobalShaderVariable("g_world_inverse", function() return (render.matrices.world_override and render.matrices.world_override or render.matrices.world):GetInverse() end, "mat4")
 
-render.SetGlobalShaderVariable("g_world", render.GetWorldMatrix, "mat4")
-render.SetGlobalShaderVariable("g_projection_view_world", render.GetPVWMatrix3D, "mat4")
+render.SetGlobalShaderVariable("g_projection_view", function() return render.matrices.vp_matrix end, "mat4")
+render.SetGlobalShaderVariable("g_projection_view_inverse", function() return render.matrices.vp_3d_inverse end, "mat4")
+
+render.SetGlobalShaderVariable("g_view_world", function() return (render.matrices.world_override and render.matrices.world_override or render.matrices.world) * render.matrices.view_3d end, "mat4")
+render.SetGlobalShaderVariable("g_projection_view_world", render.GetProjectionViewWorld3DMatrix, "mat4")
+
+render.SetGlobalShaderVariable("g_cam_nearz", function() return cam.nearz end, "float")
+render.SetGlobalShaderVariable("g_cam_farz", function() return cam.farz end, "float")
+
+render.AddGlobalShaderCode([[
+float get_depth(vec2 uv) 
+{
+	return (2.0 * g_cam_nearz) / (g_cam_farz + g_cam_nearz - texture(tex_depth, uv).r * (g_cam_farz - g_cam_nearz));
+}]], "get_noise")
 
 -- lol
 
