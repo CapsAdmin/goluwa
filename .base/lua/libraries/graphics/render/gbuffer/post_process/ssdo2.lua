@@ -63,7 +63,7 @@ PASS.Source = [[
 		float radius = occlusion_radius / center_pos.z;
 		float max_distance_inv = 1 / occlusion_max_distance;
 		vec3 noise = texture(tex_noise, uv*size.xy/noise_texture_size).xyz*2-1;
-		vec3 center_normal = texture(tex_normal, uv).xyz;
+		vec3 center_normal = get_view_normal(uv);
 		float occlusion = 0;
 		float weight = (4 / float(num_samples)) + center_pos.z/700;
 		

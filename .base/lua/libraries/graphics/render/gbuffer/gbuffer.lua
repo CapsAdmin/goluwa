@@ -2,13 +2,6 @@ local gl = require("lj-opengl") -- OpenGL
 local render = (...) or _G.render
 
 render.AddGlobalShaderCode([[
-vec3 get_view_pos(vec2 uv)
-{
-	vec4 pos = g_projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
-	return pos.xyz / pos.w;
-}]], "get_view_pos")
-
-render.AddGlobalShaderCode([[
 float random(vec2 co)
 {
 	return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
@@ -28,14 +21,6 @@ vec2 g_poisson_disk[4] = vec2[](
 	vec2( -0.094184101, -0.92938870 ),
 	vec2( 0.34495938, 0.29387760 )
 );]], "g_poisson_disk")
- 
- 
-render.AddGlobalShaderCode([[
-vec3 get_world_pos(vec2 uv)
-{
-	vec4 pos = g_view_inverse * g_projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
-	return pos.xyz / pos.w;
-}]], "get_world_pos")
 
 function render.GetGBufferSize()
 	return Vec2(render.gbuffer_width or render.GetWidth(), render.gbuffer_height or render.GetHeight())
@@ -308,7 +293,9 @@ function render.InitializeGBuffer(width, height)
 	})
 	
 	for k,v in pairs(render.gbuffer_shaders_) do
-		v:__init()
+		if v.__init then
+			v:__init()
+		end
 	end
 	
 	table.clear(render.gbuffer_shaders_)
@@ -325,49 +312,78 @@ function render.InitializeGBuffer(width, height)
 		render.InitializeGBuffer(w, h)
 	end)
 	
-	event.AddListener("DrawHUD", "gbuffer_debug", function()
-		if render.debug then
-			local size = 4
-			local w, h = surface.GetSize()
-			w = w / size
-			h = h / size
+	do -- eww
+		local size = 4
+		local x,y,w,h,i
+		
+		local function draw_buffer(name, tex, bg)
+			if name == "diffuse" or name == "normal" then surface.mesh_2d_shader.color_override.a = 1 end
+			surface.SetColor(1,1,1,1)
+			surface.SetTexture(tex)
+			surface.DrawRect(x, y, w, h)
+			if name == "diffuse" or name == "normal" then surface.mesh_2d_shader.color_override.a = 0 end
 			
-			local x = 0
-			local y = 0
-						
-			local grey = 0.5 + math.sin(os.clock() * 10) / 10
-			surface.SetFont("default")
+			surface.SetTextPosition(x, y + 5)
+			surface.DrawText(name)
 			
-			for i, data in pairs(render.gbuffer_buffers) do
-				surface.SetWhiteTexture()
-				surface.SetColor(grey, grey, grey, 1)
-				surface.DrawRect(x, y, w, h)
-				surface.SetRectUV(0,0,1,1)
-				
-				surface.SetColor(1,1,1,1)
-				surface.SetTexture(render.gbuffer:GetTexture(data.name))
-				surface.DrawRect(x, y, w, h)
-				
-				surface.SetTextPosition(x, y + 5)
-				surface.DrawText(data.name)
-				
-				if i%size == 0 then
-					y = y + h
-					x = 0
-				else
-					x = x + w
-				end
+			if i%size == 0 then
+				y = y + h
+				x = 0
+			else
+				x = x + w
 			end
 			
-			local i = 1
-			
-			for _, pass in ipairs(render.gbuffer_passes) do
-				if pass.DrawDebug then 
-					i,x,y,w,h = pass:DrawDebug(i,x,y,w,h,size) 
-				end
-			end
+			i = i  + 1
 		end
-	end)
+		
+		event.AddListener("DrawHUD", "gbuffer_debug", function()
+			if render.debug then
+				w, h = surface.GetSize()
+				w = w / size
+				h = h / size
+				
+				x= 0
+				y = 0
+				i = 1
+				
+				local grey = 0.5 + math.sin(os.clock() * 10) / 10
+				surface.SetFont("default")
+							
+				for _, data in pairs(render.gbuffer_buffers) do
+					draw_buffer(data.name, render.gbuffer:GetTexture(data.name))
+				end
+				
+				
+				surface.SetColor(0,0,0,1)
+				surface.SetTexture(tex)
+				surface.DrawRect(x, y, w, h)
+				surface.mesh_2d_shader.color_override.r = 1
+				surface.mesh_2d_shader.color_override.g = 1
+				surface.mesh_2d_shader.color_override.b = 1				
+				draw_buffer("roughness", render.gbuffer:GetTexture("diffuse"), true)
+				surface.mesh_2d_shader.color_override.r = 0
+				surface.mesh_2d_shader.color_override.g = 0
+				surface.mesh_2d_shader.color_override.b = 0
+				
+				surface.SetColor(0,0,0,1)
+				surface.SetTexture(tex)
+				surface.DrawRect(x, y, w, h)
+				surface.mesh_2d_shader.color_override.r = 1
+				surface.mesh_2d_shader.color_override.g = 1
+				surface.mesh_2d_shader.color_override.b = 1				
+				draw_buffer("metallic", render.gbuffer:GetTexture("normal"), true)
+				surface.mesh_2d_shader.color_override.r = 0
+				surface.mesh_2d_shader.color_override.g = 0
+				surface.mesh_2d_shader.color_override.b = 0
+								
+				for _, pass in ipairs(render.gbuffer_passes) do
+					if pass.DrawDebug then 
+						i,x,y,w,h = pass:DrawDebug(i,x,y,w,h,size) 
+					end
+				end
+			end
+		end)
+	end
 	
 	if not RELOAD then
 		include("libraries/graphics/render/gbuffer/post_process/*")

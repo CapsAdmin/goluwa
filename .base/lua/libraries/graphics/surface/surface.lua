@@ -20,12 +20,18 @@ local SHADER = {
 		},			
 		source = [[
 			out highp vec4 frag_color;
-
-			highp vec4 texel = texture(lua[tex = "sampler2D"], uv);
-
+			
 			void main()
 			{	
-				frag_color = texel * color * lua[global_color = Color(1,1,1,1)];
+				vec4 tex_color = texture(lua[tex = "sampler2D"], uv);
+				vec4 override = lua[color_override = Color(0,0,0,0)];
+				
+				if (override.r > 0) tex_color.r = override.r;
+				if (override.g > 0) tex_color.g = override.g;
+				if (override.b > 0) tex_color.b = override.b;
+				if (override.a > 0) tex_color.a = override.a;
+			
+				frag_color = tex_color * color * lua[global_color = Color(1,1,1,1)];
 				frag_color.a = frag_color.a * lua[alpha_multiplier = 1];
 			}
 		]]

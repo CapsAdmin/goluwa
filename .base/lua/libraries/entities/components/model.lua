@@ -33,7 +33,7 @@ local function add_texture(name, default)
 	end
 	
 	table.insert(render.model_textures, {
-		shader_name = "tex_" .. name:lower(), 
+		shader_name = "tex_model_" .. name:lower(), 
 		lookup_name = name .. "Texture", 
 		lookup_name2 = name:lower(),
 		default_texture = default
@@ -42,13 +42,13 @@ end
 
 add_texture("Diffuse", render.GetErrorTexture())
 add_texture("Normal", render.GetBlackTexture())
-add_texture("Metallic", render.GetWhiteTexture())
-add_texture("Roughness", render.GetWhiteTexture()) 
+add_texture("Metallic", render.GetBlackTexture())
+add_texture("Roughness", render.GetBlackTexture()) 
 
 -- source engine specific
 add_texture("Illumination", render.GetBlackTexture())
 add_texture("Detail", render.GetWhiteTexture())
-add_texture("Diffuse2", render.GetErrorTexture())
+add_texture("Diffuse2", render.GetBlackTexture())
 add_texture("Normal2", render.GetBlackTexture()) 
 
 COMPONENT.Network = {

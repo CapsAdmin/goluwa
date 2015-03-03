@@ -76,7 +76,7 @@ function PASS:Initialize()
 
 			vec3 noise = texture(tex_noise, uv*size.xy/noise_texture_size).xyz*2-1;
 					
-			vec3 center_normal = texture(tex_normal, uv).xyz;
+			vec3 center_normal = get_view_normal(uv);
 
 			vec4 occlusion_sh2 = vec4(0);
 
@@ -167,15 +167,15 @@ function PASS:Initialize()
 
 		vec3 normal[9] =
 		vec3[](
-			texture(tex_normal, uv + indices[0]*step).xyz,
-			texture(tex_normal, uv + indices[1]*step).xyz,
-			texture(tex_normal, uv + indices[2]*step).xyz,
-			texture(tex_normal, uv + indices[3]*step).xyz,
-			texture(tex_normal, uv + indices[4]*step).xyz,
-			texture(tex_normal, uv + indices[5]*step).xyz,
-			texture(tex_normal, uv + indices[6]*step).xyz,
-			texture(tex_normal, uv + indices[7]*step).xyz,
-			texture(tex_normal, uv + indices[8]*step).xyz
+			get_view_normal(uv + indices[0]*step).xyz,
+			get_view_normal(uv + indices[1]*step).xyz,
+			get_view_normal(uv + indices[2]*step).xyz,
+			get_view_normal(uv + indices[3]*step).xyz,
+			get_view_normal(uv + indices[4]*step).xyz,
+			get_view_normal(uv + indices[5]*step).xyz,
+			get_view_normal(uv + indices[6]*step).xyz,
+			get_view_normal(uv + indices[7]*step).xyz,
+			get_view_normal(uv + indices[8]*step).xyz
 		);
 
 		float total_weight = 1;
@@ -206,7 +206,6 @@ function PASS:Initialize()
 	]], {
 		self = self.fb:GetTexture(), 
 		size = Vec2(render.GetWidth(), render.GetHeight()), 
-		tex_normal =  {texture = function() return render.gbuffer:GetTexture("normal") end},
 		blur_size = 666,
 		blur_dir = Vec2(0,0),
 	})

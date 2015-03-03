@@ -8,7 +8,7 @@ PASS.Name = "light"
 PASS.Stage = FILE_NAME:sub(1, 1)
 
 PASS.Buffers = {
-	{"light", "RGBA16F"},
+	{"light", "RGB16F"},
 }
 
 function PASS:Draw3D()
@@ -210,19 +210,19 @@ PASS.Shader = {
 				
 				if (fade > 0)
 				{							
-					vec4 normal = texture(tex_normal, uv);
-					float metallic = texture(tex_illumination, uv).g;
-					float roughness = texture(tex_illumination, uv).b;
+					vec3 normal = get_view_normal(uv);
+					float metallic = get_metallic(uv);
+					float roughness = get_roughness(uv);
 					float intensity = light_intensity;
 					
 					vec3 light_dir = normalize(light_view_pos - view_pos);
 					
-					out_color.rgb += CookTorrance2(light_dir, normal.xyz,  view_pos, metallic, roughness) * intensity * fade * 2;
+					out_color.rgb += CookTorrance2(light_dir, normal,  view_pos, metallic, roughness) * intensity * fade * 2;
 					
 					/*
 					float specular = cookTorranceSpecular(
 						normalize(-light_view_pos), 
-						normal.xyz, 
+						normal, 
 						normalize(-view_pos), 
 						roughness*2,
 						metallic
