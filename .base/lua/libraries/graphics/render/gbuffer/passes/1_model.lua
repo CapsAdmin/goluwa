@@ -70,7 +70,7 @@ end
 PASS.Shader = {
 	vertex = {
 		uniform = {
-			pvm_matrix = "mat4",
+			projection_view_world = "mat4",
 		},
 		attributes = {
 			{pos = "vec3"},
@@ -78,21 +78,12 @@ PASS.Shader = {
 			{uv = "vec2"},
 			{texture_blend = "float"},
 		},
-		source = "gl_Position = pvm_matrix * vec4(pos, 1.0);"
+		source = "gl_Position = projection_view_world * vec4(pos, 1.0);"
 	},
 	fragment = {
 		uniform = {	
-		
-			pvm_matrix = "mat4",
-			color = Color(1,1,1,1),
-			vm_matrix = "mat4",
-			--detail_scale = 1,
-			--detail_blend_factor = 0,
-			alpha_test = 0,
-			illumination_color = Color(1,1,1,1),
-			alpha_specular = 0,
-			roughness_multiplier = 1,
-			metallic_multiplier = 1,
+			view_world = "mat4",
+			--illumination_color = Color(1,1,1,1),
 		},
 		attributes = {
 			{pos = "vec3"},
@@ -103,7 +94,6 @@ PASS.Shader = {
 		source = [[
 			out vec4 diffuse_buffer;
 			out vec4 normal_buffer;
-			out vec4 illumination_buffer;
 
 			float rand(vec2 co){
 				return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
@@ -119,36 +109,36 @@ PASS.Shader = {
 					if (diffuse_blend != vec3(0,0,0))
 						diffuse_buffer.rgb = mix(diffuse_buffer.rgb, diffuse_blend, texture_blend);
 					
-					if (alpha_test == 1)
+					if (lua[alpha_test = 0] == 1)
 					{
 						//if (diffuse_buffer.a < pow(rand(uv), 0.5))
 						//if (pow(diffuse_buffer.a+0.5, 4) < 0.5)
 						if (diffuse_buffer.a < 0.25)
 							discard;
 					}
-					else
-					{
-						diffuse_buffer.a = 1;
-					}
 					
-					//if (detail_blend_factor > 0)
-						//diffuse_buffer.rgb = (diffuse_buffer.rgb - texture(tex_model_detail, uv * detail_scale*10).rgb);
+					//if (lua[detail_blend_factor = 0] > 0)
+						//diffuse_buffer.rgb = (diffuse_buffer.rgb - texture(tex_model_detail, uv * lua[detail_scale = 1]*10).rgb);
+						
+					diffuse_buffer.rgb *= lua[color = Color(1,1,1,1)].rgb;
 				}
 				
 				// normals
-				{					
-					normal_buffer.rgb = mat3(vm_matrix) * normal;
-					
-					
+				{				
 					vec3 bump_detail = texture(tex_model_normal, uv).rgb;
 					
-					vec3 bump_detail2 = texture(tex_model_normal2, uv).rgb;
-					if (bump_detail2 != vec3(0,0,0))
-						bump_detail = mix(bump_detail, bump_detail2, texture_blend);
-				
-					if (bump_detail != vec3(0,0,0))
+					if (bump_detail == vec3(0,0,0))
 					{
-						mat3 normal_matrix = mat3(inverse(transpose(vm_matrix)));
+						vec3 bump_detail2 = texture(tex_model_normal2, uv).rgb;
+						
+						if (bump_detail2 != vec3(0,0,0))
+							bump_detail = mix(bump_detail, bump_detail2, texture_blend);
+				
+						normal_buffer.rgb = mat3(view_world) * normal;
+					}
+					else
+					{
+						mat3 normal_matrix = mat3(inverse(transpose(view_world)));
 						
 						vec3 Normal = normalize(normal_matrix * normal);
 						vec3 Tangent = -normalize(normal_matrix[1]);
@@ -166,8 +156,9 @@ PASS.Shader = {
 					//normal_buffer.rgb = normalize(normal_buffer.rgb);
 				}
 				
-				normal_buffer.a = texture(tex_model_metallic, uv).r + metallic_multiplier;
-				diffuse_buffer.a = texture(tex_model_roughness, uv).r + roughness_multiplier;
+				
+				normal_buffer.a = texture(tex_model_metallic, uv).r + lua[metallic_multiplier = 0];
+				diffuse_buffer.a = texture(tex_model_roughness, uv).r + lua[roughness_multiplier = 0];
 				
 				/*
 				// illumination
@@ -177,7 +168,7 @@ PASS.Shader = {
 					// metallic
 					illumination_buffer.g = -texture(tex_model_metallic, uv).r+1;
 					
-					if (alpha_specular == 1)
+					if (lua[alpha_specular = 1] == 1)
 					{
 						illumination_buffer.g = texture(tex_model_normal, uv).a;
 					}

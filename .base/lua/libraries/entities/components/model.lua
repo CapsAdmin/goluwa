@@ -46,7 +46,7 @@ add_texture("Metallic", render.GetBlackTexture())
 add_texture("Roughness", render.GetBlackTexture()) 
 
 -- source engine specific
-add_texture("Illumination", render.GetBlackTexture())
+--add_texture("Illumination", render.GetBlackTexture())
 add_texture("Detail", render.GetWhiteTexture())
 add_texture("Diffuse2", render.GetBlackTexture())
 add_texture("Normal2", render.GetBlackTexture()) 
@@ -155,18 +155,17 @@ if GRAPHICS then
 		end
 	end
 
-	function COMPONENT:OnDraw3DGeometry(shader, vp_matrix, skip_cull)
+	function COMPONENT:OnDraw3DGeometry(shader, projection_view, skip_cull)
 		self.sub_models = self.sub_models or {}
-		vp_matrix = vp_matrix or render.matrices.vp_matrix
+		projection_view = projection_view or render.matrices.vp_matrix
 
 		local matrix = self:GetComponent("transform"):GetMatrix()
 		
-		if not self.Cull or not self.corners or self:GetComponent("transform"):IsPointsVisible(self.corners, vp_matrix) then
+		if not self.Cull or not self.corners or self:GetComponent("transform"):IsPointsVisible(self.corners, projection_view) then
 
-			local screen = matrix * vp_matrix
-			shader.pvm_matrix = screen.m
-			shader.vm_matrix = (matrix * render.matrices.view_3d).m
-			shader.v_matrix = render.GetViewMatrix3D()
+			local screen = matrix * projection_view
+			shader.projection_view_world = screen.m
+			shader.view_world = (matrix * render.matrices.view_3d).m
 			shader.color = self.Color
 
 			for i, model in ipairs(self.sub_models) do
