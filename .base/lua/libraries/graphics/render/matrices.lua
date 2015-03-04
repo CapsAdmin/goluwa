@@ -364,7 +364,9 @@ render.SetGlobalShaderVariable("g_world_inverse", function() return (render.matr
 render.SetGlobalShaderVariable("g_projection_view", function() return render.matrices.vp_matrix end, "mat4")
 render.SetGlobalShaderVariable("g_projection_view_inverse", function() return render.matrices.vp_3d_inverse end, "mat4")
 
+render.SetGlobalShaderVariable("g_normal_matrix", function() return ((render.matrices.world_override and render.matrices.world_override or render.matrices.world) * render.matrices.view_3d):GetInverse():GetTranspose() end, "mat4")
 render.SetGlobalShaderVariable("g_view_world", function() return (render.matrices.world_override and render.matrices.world_override or render.matrices.world) * render.matrices.view_3d end, "mat4")
+render.SetGlobalShaderVariable("g_view_world_inverse", function() return ((render.matrices.world_override and render.matrices.world_override or render.matrices.world) * render.matrices.view_3d):GetInverse() end, "mat4")
 render.SetGlobalShaderVariable("g_projection_view_world", render.GetProjectionViewWorld3DMatrix, "mat4")
 
 render.SetGlobalShaderVariable("g_cam_nearz", function() return cam.nearz end, "float")
