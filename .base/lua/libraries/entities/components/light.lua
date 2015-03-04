@@ -175,11 +175,13 @@ if GRAPHICS then
 		self.shadow_map:Begin()
 		self.shadow_map:Clear()
 				
-		--self.shadow_map:SetReadBuffer("depth")
-		--self.shadow_map:SetWriteBuffer("depth")
+		---self.shadow_map:SetWriteBuffer("depth")
 		
 		for i, info in ipairs(directions) do
-			--self.shadow_map:SetWriteBuffer("cubemap", info.e)
+			if self.ShadowCubemap then
+				self.shadow_map:SetReadBuffer("depth")
+				self.shadow_map:SetWriteBuffer("cubemap", info.e)
+			end
 			
 			-- setup the view matrix
 			local view = Matrix44()
