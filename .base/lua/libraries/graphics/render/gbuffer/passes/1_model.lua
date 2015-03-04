@@ -50,11 +50,10 @@ function PASS:Draw3D()
 	gl.DepthMask(gl.e.GL_TRUE)
 	gl.Enable(gl.e.GL_DEPTH_TEST)
 	gl.Disable(gl.e.GL_BLEND)
-
+	
 	render.gbuffer:Begin()
-		render.gbuffer:Clear()
+	render.gbuffer:Clear()
 		
-		--gl.Clear(gl.e.GL_DEPTH_BUFFER_BIT)
 		event.Call("Draw3DGeometry", render.gbuffer_model_shader)
 		
 		--skybox?				
@@ -74,33 +73,52 @@ PASS.Shader = {
 		},
 		attributes = {
 			{pos = "vec3"},
-			{normal = "vec3"},
 			{uv = "vec2"},
+			{normal = "vec3"},
+			--[[{tangent = "vec3"},
+			{binormal = "vec3"},]]
 			{texture_blend = "float"},
 		},
-		source = "gl_Position = projection_view_world * vec4(pos, 1.0);"
+		source = [[
+			out mat3 tangent_to_world;
+		
+			void main()
+			{
+				out_normal = mat3(g_view_world) * normal;
+				
+				vec3 tangent = -normalize(mat3(g_normal_matrix) * out_normal);
+				vec3 binormal = normalize(cross(out_normal, tangent));
+
+				tangent_to_world = mat3(
+					tangent.x, binormal.x, out_normal.x,
+					tangent.y, binormal.y, out_normal.y,
+					tangent.z, binormal.z, out_normal.z
+				);
+
+				gl_Position = projection_view_world * vec4(pos, 1.0);
+			}
+		]]
 	},
 	fragment = {
 		uniform = {	
-			view_world = "mat4",
 			--illumination_color = Color(1,1,1,1),
 			alpha_specular = 1,
 		},
 		attributes = {
-			{normal = "vec3"},
 			{uv = "vec2"},
+			{normal = "vec3"},
+			--[[{tangent = "vec3"},
+			{binormal = "vec3"},]]
 			{texture_blend = "float"},
 		},
 		source = [[
+			in mat3 tangent_to_world;
+		
 			out vec4 diffuse_buffer;
 			out vec4 normal_buffer;
-
-			float rand(vec2 co){
-				return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-			}
 			
 			void main()
-			{	
+			{			
 				// diffuse
 				{
 					diffuse_buffer = texture(tex_model_diffuse, uv);
@@ -127,30 +145,16 @@ PASS.Shader = {
 				{				
 					vec3 bump_detail = texture(tex_model_normal, uv).rgb;
 					
-					if (bump_detail == vec3(0,0,0))
-					{				
-						normal_buffer.rgb = mat3(view_world) * normal;
-					}
-					else
+					normal_buffer.rgb = normal;
+					
+					if (bump_detail != vec3(1,1,1))
 					{
 						vec3 bump_detail2 = texture(tex_model_normal2, uv).rgb;
 						
 						if (bump_detail2 != vec3(0,0,0))
 							bump_detail = mix(bump_detail, bump_detail2, texture_blend);
 					
-						mat3 normal_matrix = mat3(inverse(transpose(view_world)));
-						
-						vec3 Normal = normalize(normal_matrix * normal);
-						vec3 Tangent = -normalize(normal_matrix[1]);
-						vec3 Binormal = normalize(normal_matrix[2]);
-						
-						mat3 tangentToWorld = mat3(
-							Tangent.x, Binormal.x, Normal.x,
-							Tangent.y, Binormal.y, Normal.y,
-							Tangent.z, Binormal.z, Normal.z
-						);
-						
-						normal_buffer.rgb = (2 * bump_detail - 1) * tangentToWorld;
+						normal_buffer.rgb += (2 * bump_detail - 1) * tangent_to_world*1;
 					}
 					
 					normal_buffer.rgb = normalize(normal_buffer.rgb);
