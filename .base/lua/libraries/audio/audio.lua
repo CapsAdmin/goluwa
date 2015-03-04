@@ -45,7 +45,7 @@ end
 
 function audio.Shutdown()
 	audio.Panic()
-7
+
 	if audio.context then
 		alc.DestroyContext(audio.context)
 	end
@@ -939,6 +939,6 @@ function audio.Decode(data, path_hint)
 	end
 end
 
-include("libraries/audio/decoders/*")
+include("decoders/*", audio)
 
 return audio
