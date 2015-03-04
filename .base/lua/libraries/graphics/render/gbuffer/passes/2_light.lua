@@ -26,7 +26,7 @@ end
 
 function PASS:DrawDebug(i,x,y,w,h,size)
 	for name, map in pairs(render.shadow_maps) do
-		local tex = map:GetTexture("depth")
+		local tex = map:GetTexture("cubemap") or map:GetTexture("depth")
 	
 		surface.SetWhiteTexture()
 		surface.SetColor(1, 1, 1, 1)
@@ -81,14 +81,16 @@ PASS.Shader = {
 			
 				if (lua[light_point_shadow = 0] == 1)
 				{
-					/*float SampledDistance = textureCube(lua[tex_shadow_map_cube = "samplerCube"], light_dir).r;
+					vec3 light_dir = get_view_pos(uv) - light_view_pos;
+				
+					float SampledDistance = textureCube(lua[tex_shadow_map_cube = "samplerCube"], light_dir).r;
 
 					float Distance = length(light_dir);
 
 					if (Distance <= SampledDistance + EPSILON)
 						return 1.0;
 					else
-						return 0;*/
+						return 0;
 				}
 				else
 				{
