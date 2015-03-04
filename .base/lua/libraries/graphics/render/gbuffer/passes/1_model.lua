@@ -70,6 +70,7 @@ PASS.Shader = {
 	vertex = {
 		uniform = {
 			projection_view_world = "mat4",
+			view_world = "mat4",
 		},
 		attributes = {
 			{pos = "vec3"},
@@ -84,7 +85,7 @@ PASS.Shader = {
 		
 			void main()
 			{
-				out_normal = mat3(g_view_world) * normal;
+				out_normal = mat3(view_world) * normal;
 				
 				vec3 tangent = -normalize(mat3(g_normal_matrix) * out_normal);
 				vec3 binormal = normalize(cross(out_normal, tangent));
@@ -154,7 +155,7 @@ PASS.Shader = {
 						if (bump_detail2 != vec3(0,0,0))
 							bump_detail = mix(bump_detail, bump_detail2, texture_blend);
 					
-						normal_buffer.rgb += (2 * bump_detail - 1) * tangent_to_world*1;
+						normal_buffer.rgb += (2 * bump_detail - 1) * tangent_to_world;
 					}
 					
 					normal_buffer.rgb = normalize(normal_buffer.rgb);
