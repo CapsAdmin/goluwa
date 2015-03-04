@@ -170,28 +170,22 @@ PASS.Shader = {
 			  return  G * F * D / max(3.14159265 * VdotN, 0.000001);
 			}
 						
-			vec3 CookTorrance2(vec3 cLight, vec3 normal, vec3 world_pos, float metallic, float roughness)
+			vec3 CookTorrance2(vec3 direction, vec3 surface_normal, vec3 eye_dir, float metallic, float roughness)
 			{
-				float normalDotLight = dot(normal, cLight);
-
-				//if (normalDotLight < 0) return vec3(0,0,0);
+				float normalDotLight = dot(surface_normal, direction);
 						
-				vec3 cEye = normalize(-world_pos);	
-
-				vec3 cHalf = normalize(cLight + cEye);					
-				float normalDotHalf = dot(normal, cHalf);
-				
-				//if (normalDotHalf < 0) return vec3(0,0,0);
-				
-				float normalDotEye = dot(normal, cEye);					
+				vec3 cHalf = normalize(direction + eye_dir);					
+				float normalDotHalf = dot(surface_normal, cHalf);
+								
+				float normalDotEye = dot(surface_normal, eye_dir);					
 				float normalDotHalf2 = normalDotHalf * normalDotHalf;
 				
-				float roughness2 = roughness;
+				float roughness2 = roughness*roughness;
 				float exponent = -(1.0 - normalDotHalf2) / (normalDotHalf2 * roughness2);
 				
 				float D = pow(e, exponent) / (roughness2 * normalDotHalf2 * normalDotHalf2);
 				float F = mix(pow(1.0 - normalDotEye, 5.0), 1.0, 0.5);															
-				float X = 2.0 * normalDotHalf / dot(cEye, cHalf);
+				float X = 2.0 * normalDotHalf / dot(eye_dir, cHalf);
 				float G = min(1.0, min(X * normalDotLight, X * normalDotEye));
 				
 				// Compute final Cook-Torrance specular term, load textures, mix them
@@ -229,10 +223,14 @@ PASS.Shader = {
 					vec3 normal = get_view_normal(uv);
 					float metallic = get_metallic(uv);
 					float roughness = get_roughness(uv);
-					
-					vec3 light_dir = normalize(light_view_pos - view_pos);
-					
-					out_color.rgb += CookTorrance2(light_dir, normal,  view_pos, metallic, roughness) * light_intensity * fade * 2;
+
+					out_color.rgb += CookTorrance2(
+						normalize(light_view_pos - view_pos), 
+						normal, 
+						normalize(-view_pos), 
+						metallic, 
+						roughness
+					) * light_intensity * fade * 2;
 					
 					/*
 					float specular = cookTorranceSpecular(
