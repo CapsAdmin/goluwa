@@ -77,7 +77,7 @@ render.global_shader_code = render.global_shader_code or {}
 
 function render.AddGlobalShaderCode(glsl_code, require)
 	for i,v in ipairs(render.global_shader_code) do
-		if v.code == glsl_code then
+		if v.require == require then
 			table.remove(render.global_shader_code, i)
 			break
 		end
