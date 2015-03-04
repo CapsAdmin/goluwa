@@ -1,6 +1,6 @@
 local PASS = {}
 
-PASS.Name = "ssao"
+PASS.Name = FILE_NAME:sub(3)
 PASS.Default = false
 
 PASS.Source = [[

@@ -110,10 +110,12 @@ do -- include
 					
 					if func then
 						_G.FILE_PATH = full_path
-						_G.FILE_NAME = full_path:match(".*/(.+)") or full_path
+						_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
+						_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
 						local ok, err = xpcall(func, system and system.OnError or logn, ...)
 						_G.FILE_NAME = nil
 						_G.FILE_PATH = nil
+						_G.FILE_EXTENSION = nil
 						
 						if not ok then
 							logn(err)
