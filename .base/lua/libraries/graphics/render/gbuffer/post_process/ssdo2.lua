@@ -1,6 +1,6 @@
 local PASS = {}
 
-PASS.Name = "ssdo2"
+PASS.Name = FILE_NAME:sub(3)
 PASS.Position = 1
 
 PASS.Variables = {

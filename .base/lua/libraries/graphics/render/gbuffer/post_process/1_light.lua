@@ -1,6 +1,6 @@
 local PASS = {}
 
-PASS.Name = "light"
+PASS.Name = FILE_NAME:sub(3)
 PASS.Position = FILE_NAME:sub(1, 1)
 
 PASS.Source = [[

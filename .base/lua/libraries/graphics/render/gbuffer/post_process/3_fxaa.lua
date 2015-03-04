@@ -1,6 +1,6 @@
 local PASS = {}
 
-PASS.Name = "fxaa"
+PASS.Name = FILE_NAME:sub(3)
 PASS.Position = FILE_NAME:sub(1, 1)
 
 PASS.Source = [[
