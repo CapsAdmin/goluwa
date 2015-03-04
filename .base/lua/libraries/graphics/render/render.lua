@@ -1,4 +1,4 @@
-local gl = requirew("lj-opengl") -- OpenGL
+local gl = requirew("libraries.ffi.opengl") -- OpenGL
 
 if not gl then return end
 

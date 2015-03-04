@@ -1,4 +1,4 @@
-local lib = require("lj-enet")
+local lib = require("libraries.ffi.enet")
 
 lib.initialize()
 

@@ -522,7 +522,7 @@ do -- clipboard
 end
 
 if false and CLIENT then -- transparent window
-	local gl = require("lj-opengl") -- OpenGL
+	local gl = require("libraries.ffi.opengl") -- OpenGL
 	
 	local set = not_implemented
 

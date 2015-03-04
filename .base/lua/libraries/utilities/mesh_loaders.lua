@@ -1,4 +1,4 @@
-local assimp = requirew("lj-assimp")
+local assimp = requirew("libraries.ffi.assimp")
 local cb_render 
 
 local mount_info = {
@@ -48,7 +48,7 @@ end
 do -- render model
 	utility.render_model_cache = {}
 
-	local assimp = require("lj-assimp") -- model decoder
+	local assimp = require("libraries.ffi.assimp") -- model decoder
 
 	local default_texture_format = {
 		mip_map_levels = 4,

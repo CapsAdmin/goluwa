@@ -1,4 +1,4 @@
-local curses = require("lj-curses")
+local curses = require("libraries.ffi.curses")
 
 curses.start_color()
 

@@ -1,5 +1,5 @@
-local enums = require("lj-glfw.enums")
-local header = require("lj-glfw.header")
+local header = include("header.lua") 
+local enums = include("enums.lua")
 
 ffi.cdef(header)
 

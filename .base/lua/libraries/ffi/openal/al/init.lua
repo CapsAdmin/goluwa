@@ -5,9 +5,9 @@
 -- http://connect.creativelabs.com/openal/Downloads/oalinst.zip
 -- and run the executable from inside of it (I've seen couple of games use it).
 
-local header = require("lj-openal.al.header") 
-local enums = require("lj-openal.al.enums")
-local extensions = require("lj-openal.al.extensions")
+local header = include("header.lua") 
+local enums = include("enums.lua")
+local extensions = include("extensions.lua")
 
 local reverse_enums = {}
 for k,v in pairs(enums) do 

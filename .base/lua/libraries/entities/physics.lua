@@ -1,6 +1,6 @@
 local physics = physics or {}
 
-physics.bullet = requirew("lj-bullet3")
+physics.bullet = requirew("libraries.ffi.bullet3")
 physics.bodies = physics.bodies or {}
 
 local function vec3_to_bullet(x, y, z)

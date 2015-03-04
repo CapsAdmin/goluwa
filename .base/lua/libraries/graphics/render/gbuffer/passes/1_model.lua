@@ -1,6 +1,6 @@
 local render = ... or _G.render
 
-local gl = require("lj-opengl") -- OpenGL
+local gl = require("libraries.ffi.opengl") -- OpenGL
 
 local PASS = {}
 
@@ -44,7 +44,7 @@ vec3 get_world_pos(vec2 uv)
 	return pos.xyz / pos.w;
 }]], "get_world_pos")
 
-local gl = require("lj-opengl") -- OpenGL
+local gl = require("libraries.ffi.opengl") -- OpenGL
 
 function PASS:Draw3D()
 	gl.DepthMask(gl.e.GL_TRUE)

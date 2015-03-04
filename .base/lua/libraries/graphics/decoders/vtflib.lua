@@ -1,4 +1,4 @@
-local vl = require("lj-vtflib") -- HLLib
+local vl = require("libraries.ffi.vtflib") -- HLLib
 
 render.AddTextureDecoder("vtflib", function(data, path_hint)
 	local buffer, w, h, format = vl.LoadImage(data)

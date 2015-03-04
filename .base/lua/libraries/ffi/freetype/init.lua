@@ -1,7 +1,7 @@
 -- header stolen from https://code.google.com/p/lua-files!!
 
-local header = require("lj-freetype.header")
-local errors = require("lj-freetype.errors")
+local header = include("header.lua") 
+local enums = include("enums.lua")
   
 ffi.cdef(header) 
  

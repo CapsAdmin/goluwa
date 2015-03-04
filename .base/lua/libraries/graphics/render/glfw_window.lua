@@ -1,6 +1,6 @@
 jit.off(true, true)
-local gl = require("lj-opengl") -- OpenGL
-local glfw = require("lj-glfw") -- window manager
+local gl = require("libraries.ffi.opengl") -- OpenGL
+local glfw = require("libraries.ffi.glfw") -- window manager
 
 local render = (...) or _G.render
 

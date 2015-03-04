@@ -309,7 +309,7 @@ do -- commands
 	
 	console.run_lua_environment = {
 		copy = system.SetClipboard,
-		gl = requirew("lj-opengl"),
+		gl = requirew("libraries.ffi.opengl"),
 	}
 	
 	function console.SetLuaEnvironmentVariable(key, var)

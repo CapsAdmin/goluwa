@@ -1,6 +1,6 @@
 local render = ... or _G.render
 
-local gl = require("lj-opengl")
+local gl = require("libraries.ffi.opengl")
 
 local PASS = {}
 

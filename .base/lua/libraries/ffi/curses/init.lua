@@ -1,5 +1,5 @@
-local header = require("lj-curses.header")
-local enums = require("lj-curses.enums")
+local header = include("header.lua") 
+local enums = include("enums.lua")
 
 ffi.cdef("typedef uint64_t chtype;")
 ffi.cdef(header)

@@ -79,7 +79,7 @@ do -- file system
 	-- this is required because fs needs winapi and syscall
 	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../lua/modules/" .. name .. ".lua") end)
 	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../lua/modules/" .. name .. "/init.lua") end)
-	fs = require("fs")
+	fs = dofile("../../lua/libraries/fs.lua")
 	table.remove(package.loaders)
 	table.remove(package.loaders)
 	-- remove them because we do it properly later on
@@ -143,7 +143,7 @@ do -- file system
 	
 	-- replace require with the pure lua version (lua/procure/init.lua)
 	-- this is needed for the file system and lovemu
-	_G.require = require("procure")
+	_G.require = dofile("../../lua/libraries/require.lua")
 end
 
 do -- libraries
