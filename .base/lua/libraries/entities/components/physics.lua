@@ -129,7 +129,7 @@ function COMPONENT:GetAngles()
 end
 
 do
-	local assimp = require("lj-assimp")
+	local assimp = require("libraries.ffi.assimp")
 
 	function COMPONENT:InitPhysicsSphere(rad)
 		local tr = self:GetComponent("transform")

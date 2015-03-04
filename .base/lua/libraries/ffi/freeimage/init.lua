@@ -1,5 +1,5 @@
-local header = require("lj-freeimage.header")
-local enums = require("lj-freeimage.enums")
+local header = include("header.lua") 
+local enums = include("enums.lua")
 
 ffi.cdef(header)
 

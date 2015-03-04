@@ -1,5 +1,5 @@
-local al = requirew("lj-openal.al")
-local alc = requirew("lj-openal.alc")
+local al = requirew("libraries.ffi.openal.al")
+local alc = requirew("libraries.ffi.openal.alc")
 
 if not al or not alc then return end
 
@@ -10,9 +10,7 @@ alc.debug = true
 
 audio.effect_channels = audio.effect_channels or utility.CreateWeakTable()
 
-function audio.Initialize(name)
-	include("libraries/audio/decoders/*")
-	
+function audio.Initialize(name)	
 	os.setenv("ALSOFT_CONF", fs.getcd() .. "\\" .. "al_config.ini")
 	audio.Shutdown()
 
@@ -47,7 +45,7 @@ end
 
 function audio.Shutdown()
 	audio.Panic()
-
+7
 	if audio.context then
 		alc.DestroyContext(audio.context)
 	end
@@ -940,5 +938,7 @@ function audio.Decode(data, path_hint)
 		end
 	end
 end
+
+include("libraries/audio/decoders/*")
 
 return audio

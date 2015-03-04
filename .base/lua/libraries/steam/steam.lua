@@ -7,7 +7,7 @@ include("web_api.lua", steam)
 include("server_query.lua", steam)
 include("mount.lua", steam)
 
---[[local steamfriends = requirew("lj-steamfriends")
+--[[local steamfriends = requirew("libraries.ffi.steamfriends")
 
 if steamfriends then
 	for k,v in pairs(steamfriends) do

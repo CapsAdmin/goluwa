@@ -1,4 +1,4 @@
-local libusb = require("lj-libusb")
+local libusb = require("libraries.ffi.libusb")
 
 libusb.init(nil)
 

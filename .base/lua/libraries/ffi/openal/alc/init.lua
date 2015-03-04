@@ -1,5 +1,5 @@
-local header = require("lj-openal.alc.header")
-local enums = require("lj-openal.alc.enums")
+local header = include("header.lua") 
+local enums = include("enums.lua")
 
 local reverse_enums = {}
 for k,v in pairs(enums) do 

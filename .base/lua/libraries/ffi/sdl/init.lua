@@ -1,5 +1,5 @@
-local enums = require("lj-sdl.enums")
-local header = require("lj-sdl.header")
+local header = include("header.lua") 
+local enums = include("enums.lua")
 
 ffi.cdef(header)
   

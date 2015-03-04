@@ -1,6 +1,5 @@
-local ffi = require("ffi")
-local header = require("lj-assimp.header") 
-local enums = require("lj-assimp.enums")
+local header = include("header.lua") 
+local enums = include("enums.lua")
  
 ffi.cdef(header)
 

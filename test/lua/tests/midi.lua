@@ -1,7 +1,7 @@
 local data = utility.MidiToTable("sounds/hyrule.mid")
 local sf2 = utility.SF2ToTable("sounds/zelda.sf2")
 
-local al = require("lj-openal.al")
+local al = require("libraries.ffi.openal.al")
 sf2.sdta.data = ffi.cast("uint16_t *", sf2.sdta.data)
 
 local bank = {}

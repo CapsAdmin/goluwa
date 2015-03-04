@@ -1,5 +1,5 @@
-local header = require("lj-opengl.header")
-local enums = require("lj-opengl.enums")
+local header = include("header.lua") 
+local enums = include("enums.lua")
 
 ffi.cdef(header)
 

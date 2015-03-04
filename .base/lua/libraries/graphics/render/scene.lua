@@ -1,4 +1,4 @@
-local gl = require("lj-opengl") -- OpenGL
+local gl = require("libraries.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
 do -- current window

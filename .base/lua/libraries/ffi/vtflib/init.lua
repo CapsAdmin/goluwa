@@ -1,5 +1,5 @@
-local enums = require("lj-vtflib.enums")
-local header = require("lj-vtflib.header")
+local enums = include("enums.lua")
+local header = include("header.lua")
 
 ffi.cdef(header) 
 

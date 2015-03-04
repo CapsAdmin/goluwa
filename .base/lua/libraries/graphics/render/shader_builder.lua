@@ -1,7 +1,7 @@
 local SOMETHING = false
 local BUILD_OUTPUT = false
 
-local gl = require("lj-opengl") -- OpenGL
+local gl = require("libraries.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
 -- used to figure out how to upload types
