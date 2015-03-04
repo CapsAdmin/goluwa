@@ -1,3 +1,4 @@
+local audio = ... or _G.audio
 local soundfile = require("libraries.ffi.libsoundfile") -- sound decoder
 
 -- googled: https://github.com/mkottman/lua-git/issues/13
