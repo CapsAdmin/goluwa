@@ -1,10 +1,10 @@
 local PASS = {}
 
-PASS.Name = "fog"
+PASS.Name = FILE_NAME:sub(3)
 PASS.Position = FILE_NAME:sub(1, 1)
 
 PASS.Variables = {
-	fog_color = Color(0.18867780436772762, 0.4978442963618773, 0.6616065586417131, 1),
+	fog_color = Color(0.18867780436772762, 0.4978442963618773, 0.6616065586417131, 0),
 	fog_intensity = 256,
 	fog_start = 0,
 	fog_end = 0,
@@ -19,22 +19,22 @@ PASS.Variables = {
 	end},
 	
 	Kr = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131),
-	rayleigh_brightness = 3.3*1500,
-	mie_brightness = 0.1,
-	spot_brightness = 800,
+	rayleigh_brightness = 2,
+	mie_brightness = 0.05,
+	spot_brightness = 0.5,
 	scatter_strength = 0.028,
 	rayleigh_strength = 0.139,
 	mie_strength = 0.264,
-	rayleigh_collection_power = 0.81,
+	rayleigh_collection_power = 0.5,
 	mie_collection_power = 0.39,
-	mie_distribution = 0.63,
+	mie_distribution = 0.5,
 }
 
 PASS.Source = [[	    
     float surface_height = 0.99;
-    float range = 0.01;
-    float intensity = 1.8;
-    const int step_count = 16;
+    float range = 0.1;
+    float intensity = 2000;
+    const int step_count = 4;
     
     vec4 get_world_normal()
 	{
@@ -119,7 +119,7 @@ PASS.Source = [[
 		vec3 eye_position = vec3(0.0, surface_height, 0.0);
 		float eye_depth = atmospheric_depth(eye_position, eyedir);
 		float step_length = eye_depth/float(step_count);
-		float eye_extinction = horizon_extinction(eye_position, eyedir, surface_height-0.15);
+		float eye_extinction = horizon_extinction(eye_position, eyedir/3, surface_height-0.15);
 		
 		vec3 rayleigh_collected = vec3(0.0, 0.0, 0.0);
 		vec3 mie_collected = vec3(0.0, 0.0, 0.0);
@@ -147,6 +147,7 @@ PASS.Source = [[
 			vec3 color = vec3(spot*mie_collected + mie_factor*mie_collected + rayleigh_factor*rayleigh_collected)*abs(data.w);
 
 			out_color = vec4(normalize(color)+vec3(0.3), sqrt(length(color))/16.0);
+			out_color *= 1;
 		}
     }
 ]]
