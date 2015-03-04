@@ -175,12 +175,16 @@ end
 
 function META:SetWriteBuffer(name, target)
 	local buffer = self.buffers[name]
-	gl.FramebufferTexture2D(gl.e.GL_DRAW_FRAMEBUFFER, buffer.attach, target or gl.e.GL_TEXTURE_2D, buffer.id, 0)
+	if buffer then
+		gl.FramebufferTexture2D(gl.e.GL_DRAW_FRAMEBUFFER, buffer.attach, target or gl.e.GL_TEXTURE_2D, buffer.id, 0)
+	end
 end
 
 function META:SetReadBuffer(name, target)
 	local buffer = self.buffers[name]
-	gl.FramebufferTexture2D(gl.e.GL_READ_FRAMEBUFFER, buffer.attach, target or gl.e.GL_TEXTURE_2D, buffer.id, 0)
+	if buffer then
+		gl.FramebufferTexture2D(gl.e.GL_READ_FRAMEBUFFER, buffer.attach, target or gl.e.GL_TEXTURE_2D, buffer.id, 0)
+	end
 end
 
 function META:SetDrawBuffers(...)	
