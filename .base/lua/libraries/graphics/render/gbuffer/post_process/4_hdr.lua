@@ -1,6 +1,6 @@
 local PASS = {}
 
-PASS.Name = FILE_NAME:sub(3)
+PASS.Name = FILE_NAME
 PASS.Position = FILE_NAME:sub(1, 1)
 
 local size = 8
