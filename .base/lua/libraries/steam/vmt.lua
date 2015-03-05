@@ -1,18 +1,25 @@
 local steam = ... or _G.steam
 
-local path_fields = {
-	"basetexture",
-	"basetexture2",
-	"basetexture3",
-	"detail",
-	"bumpmap",
-	"bumpmap2",
-	"envmapmask",
-	"selfillummask",
-	"normalmap",
+local path_translate = {
+	DiffuseTexture = "basetexture",
+	Diffuse2Texture = "basetexture2",
+	NormalTexture = "bumpmap",
+	Normal2Texture = "bumpmap2",
+	RoughnessTexture = "envmapmask",
 }
 
-function steam.LoadMaterial(path, callback, texture_callback)
+local property_translate = {
+	IlluminationColor = {"selfillumtint"},
+	DetailScale = {"detailscale"},
+	DetailBlendFactor = {"detailblendfactor"},
+	NoCull = {"nocull"},
+	AlphaTest = {"alphatest", --[["translucent",]] function(num) return num == 1 end},
+	AlphaSpecular = {"normalmapalphaenvmapmask", "basealphaenvmapmask", function(num) return num == 1 end},
+	RoughnessMultiplier = {"phongexponent", function(num) return num/255 end},
+	MetallicMultiplier = {"phongboost", function(num) return num/100 end},
+}
+
+function steam.LoadMaterial(path, material)
 	local fail = 0
 	local errors = {}
 	
@@ -22,30 +29,35 @@ function steam.LoadMaterial(path, callback, texture_callback)
 			local vmt, err = steam.VDFToTable(vfs.Read(path), function(key) return (key:lower():gsub("%$", "")) end)
 			
 			if err then	
-				callback({
-					fullpath = path,
-					error = path .. ": " .. err,
-					basetexture = "error",
-				})
+				material:SetError(err)
 				return
 			end
 			
 			local k,v = next(vmt)
 			
 			if type(k) ~= "string" or type(v) ~= "table" then
-				callback({
-					fullpath = path,
-					error = "bad material " .. path,
-					basetexture = "error",
-				})
+				material:SetError("bad material " .. path)
 				return
 			end
 			
 			vmt = v
 			vmt.shader = k
 			vmt.fullpath = path
+			
+			for key, info in pairs(property_translate) do
+				for i,v in ipairs(info) do
+					local val = vmt[v]
+					if val then
+						local func = info[#info]
+						
+						material["Set" .. key](material, (type(func) == "function" and func(val)) or val)
+						
+						break
+					end
+				end
+			end
 
-			for i, field in ipairs(path_fields) do
+			for key, field in pairs(path_translate) do
 				if vmt[field] then 					
 					local new_path = vfs.FixPath("materials/" .. vmt[field])
 					if not new_path:endswith(".vtf") then
@@ -54,20 +66,17 @@ function steam.LoadMaterial(path, callback, texture_callback)
 					resource.Download(
 						new_path,
 						function(path)
-							vmt[field] = path 	
-							texture_callback(field, path)
+							vmt[field] = path
+							material["Set" .. key](material, render.CreateTexture(path))
 						end
 					)
 				end
 			end
 			
-			callback(vmt)			
+			material.vmt = vmt	
 		end, 
 		function()
-			callback({
-				error = "material "..path.." not found",
-				basetexture = "error",
-			})
+			material:SetError("material "..path.." not found")
 		end
 	)
 end

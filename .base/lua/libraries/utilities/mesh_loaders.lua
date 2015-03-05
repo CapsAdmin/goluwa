@@ -49,63 +49,7 @@ do -- render model
 	utility.render_model_cache = {}
 
 	local assimp = require("libraries.ffi.assimp") -- model decoder
-
-	local default_texture_format = {
-		mip_map_levels = 4,
-		mag_filter = "linear",
-		min_filter = "linear_mipmap_linear",
-	}
-
-	local function solve_material_paths(mesh, model_data, dir)
-		if model_data.material then
-			model_data.material.directory = dir							
-			
-			for k,v in pairs(model_data.material) do
-				mesh[k] = mesh[k] or v
-			end
-			
-			if model_data.material.path then
-				local path = model_data.material.path
-				
-				-- this is kind of ue4 specific
-				if model_data.material.name and model_data.material.name:sub(1, 1) == "/" then
-					local ext = path:match("^.+(%..+)$")
-					local path = model_data.material.name
-					path = model_data.material.directory .. path:sub(2)
-					
-					mesh.diffuse = render.CreateTexture(path .. "_D" .. ext)
-					mesh.normal = render.CreateTexture(path .. "_N" .. ext)
-					mesh.roughness = render.CreateTexture(path .. "_S" .. ext)
-				else	
-					local paths = {path, model_data.material.directory .. path}
-					
-					for _, path in ipairs(paths) do
-						if vfs.Exists(path) then
-							mesh.diffuse = render.CreateTexture(path, default_texture_format)
-
-							do -- try to find normal map
-								local path = utility.FindTextureFromSuffix(path, "_n", "_ddn", "_nrm")
-
-								if path then
-									mesh.normal = render.CreateTexture(path, default_texture_format)
-								end
-							end
-
-							do -- try to find specular map
-								local path = utility.FindTextureFromSuffix(path, "_s", "_spec")
-
-								if path then
-									mesh.roughness = render.CreateTexture(path, default_texture_format)
-								end
-							end
-							break
-						end
-					end
-				end
-			end
-		end
-	end
-		
+	
 	local cb = utility.CreateCallbackThing(utility.render_model_cache)
 	
 	cb_render = cb
@@ -148,8 +92,7 @@ do -- render model
 					steam.LoadModel(full_path, function(model_data)					
 						local mesh = render.CreateMeshBuilder()
 						
-						solve_material_paths(mesh, model_data, dir)
-												
+						mesh.material = model_data.material
 						mesh:SetName(model_data.name)
 						mesh:SetVertices(model_data.vertices)
 						mesh:SetIndices(model_data.indices)						
@@ -180,8 +123,51 @@ do -- render model
 						
 						local mesh = render.CreateMeshBuilder()
 						
-						solve_material_paths(mesh, model_data, dir)
+						if model_data.material and model_data.material.path then
+							local material = render.CreateMaterial("model")
+							
+							mesh.material = material
+							
+							local path = model_data.material.path
+							
+							-- this is kind of ue4 specific
+							if model_data.material.name and model_data.material.name:sub(1, 1) == "/" then
+								local ext = path:match("^.+(%..+)$")
+								local path = model_data.material.name
+								path = model_data.material.directory .. path:sub(2)
+								
+								material:SetDiffuseTexture(path .. "_D" .. ext)
+								material:SetNormalTexture(path .. "_N" .. ext)
+								material:SetRoughnessTexture(path .. "_S" .. ext)
+							else	
+								local paths = {path, model_data.material.directory .. path}
+								
+								for _, path in ipairs(paths) do
+									if vfs.Exists(path) then
+										material:SetDiffuseTexture(render.CreateTexture(path))
 
+										do -- try to find normal map
+											local path = utility.FindTextureFromSuffix(path, "_n", "_ddn", "_nrm")
+
+											if path then
+												material:SetNormalTexture(path)
+											end
+										end
+
+										do -- try to find specular map
+											local path = utility.FindTextureFromSuffix(path, "_s", "_spec")
+
+											if path then
+												material:SetRoughnessTexture(path)
+											end
+										end
+										break
+									end
+								end
+							end
+						end
+						
+						
 						mesh:SetName(model_data.name)
 						mesh:SetVertices(model_data.vertices)
 						mesh:SetIndices(model_data.indices)						
