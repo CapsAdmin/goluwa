@@ -1,11 +1,12 @@
 local SOMETHING = false
-local BUILD_OUTPUT = false
+local BUILD_OUTPUT = true
 
 local gl = require("libraries.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
 -- used to figure out how to upload types
 local unrolled_lines = {
+	boolean = "render.Uniform1i(%i, val and 1 or 0)",
 	number = "render.Uniform1f(%i, val)",
 
 	vec2 = "render.Uniform2f(%i, val.x, val.y)",
@@ -24,6 +25,7 @@ unrolled_lines.samplerCube = unrolled_lines.texture
 unrolled_lines.float = unrolled_lines.number
 
 local type_info =  {
+	boolean = {type = "int", arg_count = 1},
 	int = {type = "int", arg_count = 1},
 	float = {type = "float", arg_count = 1},
 	number = {type = "float", arg_count = 1},
@@ -61,6 +63,7 @@ do -- extend typeinfo
 end
 
 local type_translate = {
+	boolean = "float",
 	color = "vec4",
 	number = "float",
 	texture = "sampler2D",
@@ -70,6 +73,7 @@ local type_translate = {
 local uniform_translate =
 {
 	int = render.Uniform1i,
+	boolean = function(location, b) render.Uniform1i(location, b and 1 or 0) end,
 	float = render.Uniform1f,
 	vec2 = render.Uniform2f,
 	vec3 = render.Uniform3f,
@@ -777,7 +781,7 @@ function render.CreateShader(data, vars)
 			end
 		end
 
-		self.uniforms = uniform
+		self.uniforms = uniforms
 
 		table.sort(temp, function(a, b) return a.id < b.id end) -- sort the data by uniform id
 
@@ -825,12 +829,10 @@ function render.CreateShader(data, vars)
 				else
 					line = line:format(data.id)
 				end
-
-				lua = lua .. "local val = self."..data.key.." or self.defaults."..data.key.."\n"
-				lua = lua .. "if val then\n"
-				lua = lua .. "\tif type(val) == 'function' then val = val() end\n"
-				lua = lua .. "\t" .. line .. "\n"
-				lua = lua .. "end\n\n"
+				
+				lua = lua .. "if self.material and self.material."..data.key.." ~= nil then\n \tlocal val = self.material." .. data.key .. "\n\t" .. line .. "\n"
+				lua = lua .. "elseif self."..data.key.." ~= nil then\n\tlocal val = self."..data.key.."\n\tif type(val) == 'function' then\n\t\tval = val()\n\tend\n\t"..line.."\n"
+				lua = lua .. "elseif self.defaults."..data.key.." then\n\tlocal val = self.defaults."..data.key.."\n\t"..line.."\nend\n"
 			end
 		end
 
@@ -864,9 +866,11 @@ function render.CreateShader(data, vars)
 	return self
 end
 
-function META:Bind()
+function META:Bind(material)
+	self.material = material
 	render.UseProgram(self.program_id)
 	self.unrolled_bind_func()
+	self.material = nil
 end
 
 do -- create data for vertex buffer

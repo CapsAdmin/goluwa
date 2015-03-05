@@ -466,41 +466,12 @@ function steam.LoadMap(path)
 				-- split the world up into sub models by texture
 				if not meshes[texname] then				
 					local mesh = GRAPHICS and render.CreateMeshBuilder() or {}
-									
+					
 					meshes[texname] = mesh
 					
 					if GRAPHICS then
-						steam.LoadMaterial(
-							"materials/" .. texname .. ".vmt", 
-							function(vmt)
-								if vmt.error then
-									logn(vmt.error)									
-								end
-								if vmt.selfillum == 1 then
-									mesh.illumination = render.GetWhiteTexture()
-								end
-
-								mesh.illumination_color = vmt.selfillumtint
-								mesh.detail_scale = vmt.detailscale
-								mesh.detail_blend_factor = vmt.detailblendfactor
-								mesh.alpha_specular = vmt.normalmapalphaenvmapmask or vmt.basealphaenvmapmask
-								
-								mesh.no_cull = vmt.nocull == 1
-								mesh.alpha_test = vmt.alphatest == 1 or vmt.translucent == 1 -- todo
-								
-								if vmt.phongexponent then mesh.roughness_multiplier = vmt.phongexponent/255 end
-								if vmt.phongboost then mesh.metallic_multiplier = vmt.phongboost/100 end
-							end,
-							function(field, path)								
-								if field == "basetexture" then mesh.diffuse = Texture(path) end
-								if field == "basetexture2" then mesh.diffuse2 = Texture(path) end
-								if field == "bumpmap" then mesh.normal = Texture(path) end
-								if field == "bumpmap2" then mesh.normal2 = Texture(path) end
-								if field == "envmapmask" then mesh.roughness = Texture(path) end
-								if field == "selfillummask" then mesh.illumination = Texture(path) end
-								if field == "detail" then mesh.detail = Texture(path) end
-							end
-						)
+						mesh.material = render.CreateMaterial("model")
+						steam.LoadMaterial("materials/" .. texname .. ".vmt", mesh.material)
 					end
 					table.insert(models, meshes[texname])
 				end

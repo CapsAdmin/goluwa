@@ -682,6 +682,7 @@ function steam.LoadModel(path, sub_model_callback)
 								sub_model.vertices = vertices
 								sub_model.indices = indices								
 								sub_model.bbox = {min = mdl.hull_min*scale, max = mdl.hull_max*scale}
+								sub_model.material = render.CreateMaterial("model")
 
 								if mdl.material[i] and mdl.material[i].path then																		
 									local path = mdl.material[i].path
@@ -690,38 +691,7 @@ function steam.LoadModel(path, sub_model_callback)
 										path = mdl.texturedir[i].path .. path
 									end
 									
-									steam.LoadMaterial(
-										vfs.FixPath("materials/" .. path .. ".vmt"),
-										function(vmt)
-											if vmt.error then
-												logn(vmt.error)
-											end
-
-											if vmt.selfillum == 1 then
-												sub_model.material.illumination = render.GetWhiteTexture()
-											end
-											
-											sub_model.material = sub_model.material or {}
-
-											sub_model.material.illumination_color = vmt.selfillumtint
-											sub_model.material.detail_scale = vmt.detailscale
-											sub_model.material.detail_blend_factor = vmt.detailblendfactor
-											sub_model.material.no_cull = vmt.nocull == 1
-											sub_model.material.alpha_test = vmt.alphatest == 1 or vmt.translucent == 1 -- todo
-											sub_model.material.alpha_specular = vmt.normalmapalphaenvmapmask or vmt.basealphaenvmapmask
-											if vmt.phongexponent then sub_model.material.roughness_multiplier = vmt.phongexponent/255 end
-											if vmt.phongboost then sub_model.material.metallic_multiplier = vmt.phongboost/100 end
-										end,
-										function(field, path)
-											sub_model.material = sub_model.material or {}
-											
-											if field == "basetexture" then sub_model.material.diffuse = Texture(path) end
-											if field == "bumpmap" then sub_model.material.normal = Texture(path) end
-											if field == "envmapmask" then sub_model.material.roughness = Texture(path) end
-											if field == "selfillummask" then sub_model.material.illumination = Texture(path) end
-											if field == "detail" then sub_model.material.detail = Texture(path) end
-										end
-									)
+									steam.LoadMaterial(vfs.FixPath("materials/" .. path .. ".vmt"), sub_model.material)
 								end
 								
 								if sub_model_callback then

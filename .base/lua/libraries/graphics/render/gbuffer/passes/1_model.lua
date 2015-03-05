@@ -103,7 +103,7 @@ PASS.Shader = {
 	fragment = {
 		uniform = {	
 			--illumination_color = Color(1,1,1,1),
-			alpha_specular = 1,
+			AlphaSpecular = 1,
 		},
 		attributes = {
 			{uv = "vec2"},
@@ -122,13 +122,13 @@ PASS.Shader = {
 			{			
 				// diffuse
 				{
-					diffuse_buffer = texture(tex_model_diffuse, uv);
+					diffuse_buffer = texture(DiffuseTexture, uv);
 					
-					vec4 diffuse_blend = texture(tex_model_diffuse2, uv);
-					if (diffuse_blend != vec4(0))
+					vec4 diffuse_blend = texture(Diffuse2Texture, uv);
+					if (diffuse_blend != vec4(1))
 						diffuse_buffer = mix(diffuse_buffer, diffuse_blend, texture_blend);
 					
-					if (lua[alpha_test = 0] == 1 && alpha_specular != 0)
+					if (lua[AlphaTest = false] == 1 && AlphaSpecular != 0)
 					{
 						//if (diffuse_buffer.a < pow(rand(uv), 0.5))
 						//if (pow(diffuse_buffer.a+0.5, 4) < 0.5)
@@ -136,51 +136,86 @@ PASS.Shader = {
 							discard;
 					}
 					
-					//if (lua[detail_blend_factor = 0] > 0)
-						//diffuse_buffer.rgb = (diffuse_buffer.rgb - texture(tex_model_detail, uv * lua[detail_scale = 1]*10).rgb);
+					//if (lua[DetailBlendFactor = 0] > 0)
+						//diffuse_buffer.rgb = (diffuse_buffer.rgb - texture(DetailTexture, uv * lua[DetailScale = 1]*10).rgb);
 						
-					diffuse_buffer *= lua[color = Color(1,1,1,1)];
+					diffuse_buffer *= lua[Color = Color(1,1,1,1)];
 				}
 				
 				// normals
 				{				
-					vec3 bump_detail = texture(tex_model_normal, uv).rgb;
+					vec4 bump_detail = texture(NormalTexture, uv);
 					
 					normal_buffer.rgb = normal;
 					
-					if (bump_detail != vec3(1,1,1))
+					if (bump_detail != vec4(1))
 					{
-						vec3 bump_detail2 = texture(tex_model_normal2, uv).rgb;
+						vec4 bump_detail2 = texture(Normal2Texture, uv);
 						
-						if (bump_detail2 != vec3(0,0,0))
+						if (bump_detail2 != vec4(1))
 							bump_detail = mix(bump_detail, bump_detail2, texture_blend);
 					
-						normal_buffer.rgb += (2 * bump_detail - 1) * tangent_to_world;
+						normal_buffer.rgb += (2 * bump_detail.rgb - 1) * tangent_to_world;
 					}
 					
 					normal_buffer.rgb = normalize(normal_buffer.rgb);
 				}
 
-				if (alpha_specular == 1)
+				if (AlphaSpecular == 1)
 				{
 					normal_buffer.a = -diffuse_buffer.a+1;
 				}
 				else
 				{
-					normal_buffer.a = texture(tex_model_metallic, uv).r;
+					normal_buffer.a = texture(MetallicTexture, uv).r;
 				}
 				
-				diffuse_buffer.a = texture(tex_model_roughness, uv).r;
+				diffuse_buffer.a = texture(RoughnessTexture, uv).r;
 				
-				normal_buffer.a += lua[metallic_multiplier = 0];
-				diffuse_buffer.a += lua[roughness_multiplier = 0];
+				normal_buffer.a += lua[MetallicMultiplier = 0];
+				diffuse_buffer.a += lua[RoughnessMultiplier = 0];
 			}
 		]]
 	}
 }
 
-for i,v in ipairs(render.model_textures) do
-	PASS.Shader.fragment.uniform[v.shader_name] = "sampler2D"
+do
+	local META = render.CreateMaterialTemplate("model")
+
+	prototype.StartStorable()
+		META:GetSet("IlluminationColor", Color(1,1,1,1))
+		META:GetSet("DetailScale", 1)
+		META:GetSet("DetailBlendFactor", 0)
+		META:GetSet("NoCull", false)
+		META:GetSet("AlphaTest", false)
+		META:GetSet("AlphaSpecular", false)
+		META:GetSet("RoughnessMultiplier", 0)
+		META:GetSet("MetallicMultiplier", 0)
+	prototype.EndStorable()
+
+	do
+		local function add_texture(name, default)	
+			prototype.StartStorable()
+				META:GetSet(name .. "Texture", default)
+			prototype.EndStorable()
+			
+			PASS.Shader.fragment.uniform[name .. "Texture"] = default
+		end
+
+		add_texture("Diffuse", render.GetErrorTexture())
+		add_texture("Diffuse2", render.GetWhiteTexture())
+		add_texture("Normal", render.GetWhiteTexture())
+		add_texture("Normal2", render.GetWhiteTexture()) 
+		
+		add_texture("Metallic", render.GetBlackTexture())
+		add_texture("Roughness", render.GetGreyTexture()) 
+
+		-- source engine specific
+		--add_texture("Illumination", render.GetBlackTexture())
+		--add_texture("Detail", render.GetWhiteTexture())
+	end
+
+	META:Register()
 end
 
 render.RegisterGBufferPass(PASS)

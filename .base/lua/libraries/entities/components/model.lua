@@ -5,51 +5,13 @@ COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Draw3DGeometry"}
 
 prototype.StartStorable()
-	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1, 1))
-	prototype.GetSet(COMPONENT, "IlluminationColor", Color(1, 1, 1, 1))
-	prototype.GetSet(COMPONENT, "Alpha", 1)
-	prototype.GetSet(COMPONENT, "Roughness", 0)
-	prototype.GetSet(COMPONENT, "Metallic", 0)
-	prototype.GetSet(COMPONENT, "Cull", true)
-	prototype.GetSet(COMPONENT, "ModelPath", "")
+	prototype.GetSet(COMPONENT, "MaterialOverride", nil)
+	prototype.GetSet(COMPONENT, "Cull", true)	prototype.GetSet(COMPONENT, "ModelPath", "")
 	prototype.GetSet(COMPONENT, "BBMin", Vec3())
 	prototype.GetSet(COMPONENT, "BBMax", Vec3())
 prototype.EndStorable()
 
 prototype.GetSet(COMPONENT, "Model", nil)
-
-render.model_textures = {}
-
-local function add_texture(name, default)
-	prototype.StartStorable()
-	prototype.GetSet(COMPONENT, name .. "TexturePath", "")
-	prototype.EndStorable()
-	
-	prototype.GetSet(COMPONENT, name .. "Texture")
-	
-	COMPONENT["Set" .. name .. "TexturePath"] = function(self, path)
-		self[name .. "TexturePath"] = path
-		self[name .. "Texture"] = Texture(path)
-	end
-	
-	table.insert(render.model_textures, {
-		shader_name = "tex_model_" .. name:lower(), 
-		lookup_name = name .. "Texture", 
-		lookup_name2 = name:lower(),
-		default_texture = default
-	})
-end
-
-add_texture("Diffuse", render.GetErrorTexture())
-add_texture("Normal", render.GetWhiteTexture())
-add_texture("Metallic", render.GetBlackTexture())
-add_texture("Roughness", render.GetGreyTexture()) 
-
--- source engine specific
---add_texture("Illumination", render.GetBlackTexture())
---add_texture("Detail", render.GetWhiteTexture())
-add_texture("Diffuse2", render.GetBlackTexture())
-add_texture("Normal2", render.GetWhiteTexture()) 
 
 COMPONENT.Network = {
 	ModelPath = {"string", 1/5, "reliable", true},
@@ -158,48 +120,33 @@ if GRAPHICS then
 	function COMPONENT:OnDraw3DGeometry(shader, projection_view, simple)
 		self.sub_models = self.sub_models or {}
 		projection_view = projection_view or render.matrices.vp_matrix
-		
-		if simple then
-			local matrix = self:GetComponent("transform"):GetMatrix()
-
-			shader.projection_view_world = matrix * projection_view
-			for i, model in ipairs(self.sub_models) do
-				shader.tex_diffuse = self.DiffuseTexture
-				shader:Bind()
-				model:Draw()
-				shader.alpha_test = model.alpha_test and 1 or 0
-			end
-			return
-		end
 
 		local matrix = self:GetComponent("transform"):GetMatrix()
 		
 		if not self.Cull or not self.corners or self:GetComponent("transform"):IsPointsVisible(self.corners, projection_view) then
 			shader.projection_view_world = matrix * projection_view
-			shader.view_world = matrix * render.matrices.view_3d -- for bump maps
-			shader.color = self.Color
-
+			if not simple then 
+				shader.view_world = matrix * render.matrices.view_3d -- for bump maps
+			end 
+	
 			for i, model in ipairs(self.sub_models) do
-				if model.no_cull then 
-					render.SetCullMode("none") 
-				else 
-					render.SetCullMode("front") 
+				if not simple then 
+					shader.view_world = matrix * render.matrices.view_3d -- for bump maps
+					if self.MaterialOverride then 	
+						if self.MaterialOverride.NoCull then
+							render.SetCullMode("none") 
+						else
+							render.SetCullMode("front") 
+						end					
+					elseif model.material then
+						if model.material.NoCull then
+							render.SetCullMode("none") 
+						else
+							render.SetCullMode("front") 
+						end
+					end
 				end 
-				
-				shader.alpha_test = model.alpha_test and 1 or 0
-			
-				for i,v in ipairs(render.model_textures) do
-					shader[v.shader_name] = self[v.lookup_name] or model[v.lookup_name2] or v.default_texture
-				end
-				
-				shader.alpha_specular = model.alpha_specular
-				shader.illumination_color = model.illumination_color or self.IlluminationColor
-				shader.detail_blend_factor = model.detail_blend_factor 
-				
-				shader.roughness_multiplier = model.roughness_multiplier or self.Roughness
-				shader.metallic_multiplier = model.metallic_multiplier or self.Metallic
-			
-				shader:Bind()
+				shader:Bind(self.MaterialOverride or model.material)
 				model:Draw()
 			end
 		end
