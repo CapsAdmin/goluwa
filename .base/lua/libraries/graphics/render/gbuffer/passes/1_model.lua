@@ -4,8 +4,7 @@ local gl = require("libraries.ffi.opengl") -- OpenGL
 
 local PASS = {}
 
-PASS.Name = "model"
-PASS.Stage = FILE_NAME:sub(1,1)
+PASS.Stage, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 
 PASS.Buffers = {
 	{"diffuse", "RGBA8"},
@@ -53,7 +52,7 @@ function PASS:Draw3D()
 	
 	render.gbuffer:Begin()
 	render.gbuffer:Clear()
-		
+	render.Start3D()
 		event.Call("Draw3DGeometry", render.gbuffer_model_shader)
 		
 		--skybox?				
@@ -62,16 +61,13 @@ function PASS:Draw3D()
 		--local view = Matrix44()
 		--view = render.SetupView3D(Vec3(234.1, -234.1, 361.967)*scale + render.GetCameraPosition(), render.GetCameraAngles(), render.GetCameraFOV(), view)
 		--view:Scale(scale,scale,scale)
-		--event.Call("Draw3DGeometry", render.gbuffer_model_shader, view * render.matrices.projection_3d, true)			
+		--event.Call("Draw3DGeometry", render.gbuffer_model_shader, true)			
+	render.End3D()
 	render.gbuffer:End()
 end
 
 PASS.Shader = {
 	vertex = {
-		uniform = {
-			projection_view_world = "mat4",
-			view_world = "mat4",
-		},
 		attributes = {
 			{pos = "vec3"},
 			{uv = "vec2"},
@@ -85,7 +81,7 @@ PASS.Shader = {
 		
 			void main()
 			{
-				out_normal = mat3(view_world) * normal;
+				out_normal =  mat3(g_view_world) * normal;
 				
 				vec3 tangent = -normalize(mat3(g_normal_matrix) * out_normal);
 				vec3 binormal = normalize(cross(out_normal, tangent));
@@ -96,7 +92,7 @@ PASS.Shader = {
 					tangent.z, binormal.z, out_normal.z
 				);
 
-				gl_Position = projection_view_world * vec4(pos, 1.0);
+				gl_Position = g_projection_view_world * vec4(pos, 1.0);
 			}
 		]]
 	},

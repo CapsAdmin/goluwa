@@ -529,7 +529,7 @@ do -- texture object
 				} 
 					
 				shader = render.CreateShader(data)
-				shader.pwm_matrix = render.GetProjectionViewWorld2DMatrix		
+				shader.pwm_matrix = render.GetProjectionViewWorldMatrix		
 				
 				self.shaders[name] = shader
 			end

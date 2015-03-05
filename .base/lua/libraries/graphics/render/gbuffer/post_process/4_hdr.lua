@@ -1,7 +1,6 @@
 local PASS = {}
 
-PASS.Name = FILE_NAME
-PASS.Position = FILE_NAME:sub(1, 1)
+PASS.Position, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 
 local size = 8
 local exposure = 1

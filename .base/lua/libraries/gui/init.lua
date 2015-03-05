@@ -261,14 +261,14 @@ do -- events
 	end
 	
 	function gui.Draw2D(dt)
-		event.Call("DrawHUD", dt)
+		render.SetCullMode("none")
 		
+		event.Call("DrawHUD", dt)
 		event.Call("PreDrawMenu", dt)
 		
-		render.SetCullMode("none")
 		if gui.threedee then 
-			--surface.Start3D(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
-			surface.Start3D(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))
+			--render.Start3D2DEx(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
+			render.Start3D2DEx(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))
 		end
 		
 		gui.UpdateMousePosition()
@@ -311,7 +311,7 @@ do -- events
 		--surface.DisableStencilClipping()
 
 		if gui.threedee then 
-			surface.End3D()
+			render.End3D2D()
 		end
 		
 		event.Call("PostDrawMenu", dt)

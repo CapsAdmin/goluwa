@@ -4,8 +4,7 @@ local gl = require("libraries.ffi.opengl")
 
 local PASS = {}
 
-PASS.Name = "light"
-PASS.Stage = FILE_NAME:sub(1, 1)
+PASS.Stage, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 
 PASS.Buffers = {
 	{"light", "RGB16F"},
@@ -19,14 +18,16 @@ function PASS:Draw3D()
 	render.SetCullMode("front")
 	
 	render.gbuffer:Begin("light")
+		render.Start3D()
 		render.gbuffer:Clear(0,0,0,0, "light")
 		event.Call("Draw3DLights", render.gbuffer_light_shader)
+		render.End3D()
 	render.gbuffer:End() 	
 end
 
 function PASS:DrawDebug(i,x,y,w,h,size)
 	for name, map in pairs(render.shadow_maps) do
-		local tex = map:GetTexture("cubemap") or map:GetTexture("depth")
+		local tex = map:GetTexture("depth")
 	
 		surface.SetWhiteTexture()
 		surface.SetColor(1, 1, 1, 1)
@@ -53,21 +54,18 @@ function PASS:DrawDebug(i,x,y,w,h,size)
 end
 
 PASS.Shader = {
-	vertex = { 
-		uniform = {
-			pvm_matrix = {mat4 = render.GetProjectionViewWorld3DMatrix},
-		},			
+	vertex = {
 		attributes = {
 			{pos = "vec3"},
 		},	
-		source = "gl_Position = pvm_matrix * vec4(pos, 1);"
+		source = "gl_Position = g_projection_view_world * vec4(pos, 1);"
 	},
 	fragment = { 
 		uniform = {			
 			light_view_pos = Vec3(0,0,0),
 			light_color = Color(1,1,1,1),				
 			light_intensity = 0.5,
-			light_vp_matrix = "mat4",
+			light_projection_view = "mat4",
 		},  
 		source = [[			
 			out vec4 out_color;
@@ -94,7 +92,7 @@ PASS.Shader = {
 				}
 				else
 				{
-					vec4 temp = light_vp_matrix * g_projection_view_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
+					vec4 temp = light_projection_view * g_projection_view_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
 					vec3 shadow_coord = (temp.xyz / temp.w);
 					
 					//if (shadow_coord.z < -1) return 0;

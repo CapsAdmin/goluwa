@@ -10,9 +10,8 @@ local SHADER = {
 			{uv = "vec2"},
 			{color = "vec4"},
 		},
-		source = "gl_Position = lua[(mat4)render.GetProjectionViewWorld2DMatrix] * vec4(pos, 1);"
+		source = "gl_Position = g_projection_view_world * vec4(pos, 1);"
 	},
-	
 	fragment = { 
 		attributes = {
 			{uv = "vec2"},
@@ -77,56 +76,13 @@ function surface.GetSize()
 	return render.camera.w, render.camera.h
 end
 
-function surface.Start(...)	
-	render.Start2D(...)
-end
-
-function surface.End(...)	
-	render.End2D(...)
-end
-
-function surface.Start3D(pos, ang, scale)	
-	local w, h = render.GetHeight(), render.GetHeight()
-	
-	pos = pos or Vec3(0, 0, 0)
-	ang = ang or Ang3(0, 0, 0)
-	scale = scale or Vec3(4, 4 * (w / h), 1)
-		
-	
-	-- this is the amount the gui will translate upwards for each
-	-- call to surface.PushMatrix
-	surface.scale_3d = -scale.z / (w + h) -- dunno
-	surface.in_3d = true
-	
-	-- tell the 2d shader to use the 3d matrix instead
-	surface.mesh_2d_shader.pvm_matrix = render.GetProjectionViewWorld3DMatrix
-
-	render.PushWorldMatrixEx(pos, ang, Vec3(scale.x / w, scale.y / h, 1))
-end
-
-function surface.Start3Dm(mat, dont_multiply)
-	surface.in_3d = true
-	
-	-- tell the 2d shader to use the 3d matrix instead
-	surface.mesh_2d_shader.pvm_matrix = render.GetProjectionViewWorld3DMatrix
-
-	render.PushWorldMatrix(mat, dont_multiply)
-end
-
-function surface.End3D()
-	render.PopWorldMatrix()
-	
-	surface.mesh_2d_shader.pvm_matrix = render.GetProjectionViewWorld2DMatrix
-	surface.in_3d = false
-end
-
 local X, Y = 0, 0
 local W, H = 0, 0
 local R,G,B,A,A2 = 1,1,1,1,1
 
 include("fonts/fonts.lua", surface)
 
-do -- orientation
+do -- render world matrix helpers
 	function surface.Translate(x, y)	
 		render.Translate(math.ceil(tonumber(x)), math.ceil(tonumber(y)), 0)
 	end
@@ -149,18 +105,9 @@ do -- orientation
 		if x and y then surface.Translate(x, y) end
 		if w and h then surface.Scale(w, h) end
 		if a then surface.Rotate(a) end
-		
-		if surface.in_3d then
-		--	surface.push_count_3d = (surface.push_count_3d or -1) + 1
-		--	render.Translate(0, 0, surface.push_count_3d * (surface.scale_3d or 1))
-		end
 	end
 	
 	function surface.PopMatrix()
-		if surface.in_3d then
-		--	surface.push_count_3d = (surface.push_count_3d or -1) - 1
-		end
-	
 		render.PopWorldMatrix() 
 	end
 end
@@ -449,7 +396,7 @@ function surface.SetScissor(x, y, w, h)
 	if not x then 
 		render.SetScissor() 
 	else
-		x, y = surface.WorldToLocal(-x, -y)
+		x, y = render.ScreenToWorld(-x, -y)
 		render.SetScissor(-x, -y, w, h)
 	end
 end
@@ -663,30 +610,6 @@ function surface.GetMousePosition()
 		return render.GetWidth() / 2, render.GetHeight() / 2
 	end
 	return window.GetMousePosition():Unpack()
-end
-
-function surface.WorldToLocal(x, y)
-	if surface.in_3d then
-		x = ((x / render.GetWidth()) - 0.5) * 2
-		y = ((y / render.GetHeight()) - 0.5) * 2
-		
-		local m = render.matrices.view_3d_inverse * (render.matrices.world_override or render.matrices.world):GetInverse()
-		
-		cursor_x, cursor_y, cursor_z = m:TransformVector(render.matrices.projection_3d_inverse:TransformVector(x, -y, 1))
-		local camera_x, camera_y, camera_z = m:TransformVector(0, 0, 0)
-
-		--local intersect = camera + ( camera.z / ( camera.z - cursor.z ) ) * ( cursor - camera )
-		
-		local z = camera_z / ( camera_z - cursor_z )
-		local intersect_x = camera_x + z * ( cursor_x - camera_x )
-		local intersect_y = camera_y + z * ( cursor_y - camera_y )
-				
-		return intersect_x, intersect_y
-	else
-		local x, y = (render.matrices.view_2d_inverse * (render.matrices.world_override or render.matrices.world):GetInverse()):TransformVector(x, y, 1)
-	
-		return x, y
-	end
 end
 
 local last_x = 0

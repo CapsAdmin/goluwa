@@ -1,152 +1,194 @@
 local gl = require("libraries.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
-render.matrices = {
-	projection_3d = Matrix44(),
-	projection_3d_inverse = Matrix44(),
-	
-	view_3d = Matrix44(),
-	view_3d_inverse = Matrix44(),
-	
-	vp_matrix = Matrix44(),
-	vp_3d_inverse = Matrix44(),
-	
-	world = Matrix44(),
-	
-	projection_2d = Matrix44(),	
-	view_2d = Matrix44(),
-	view_2d_inverse = Matrix44(),
-}
+do -- camera
+	render.camera = render.camera or {
+		x = 0,
+		y = 0,
+		
+		-- if this is defined here it will be "1000" in Update and other events
+		--w = 1000,
+		--h = 1000,
+		
+		pos = Vec3(0,0,0),
+		ang = Ang3(0,0,0),
+		
+		pos2d = Vec2(0,0),
+		ang2d = 0,
+		zoom2d = 1,
+		
+		fov = 75,
+		farz = 32000,
+		nearz = 0.1,
+		
+		ratio = 1,
+	}
 
-render.camera = render.camera or {
-	x = 0,
-	y = 0,
-	
-	-- if this is defined here it will be "1000" in Update and other events
-	--w = 1000,
-	--h = 1000,
-	
-	pos = Vec3(0,0,0),
-	ang = Ang3(0,0,0),
-	
-	pos2d = Vec2(0,0),
-	ang2d = 0,
-	zoom2d = 1,
-	
-	fov = 75,
-	farz = 32000,
-	nearz = 0.1,
-	
-	ratio = 1,
-}
+	function render.SetCameraPosition(pos)
+		render.camera.pos = pos
+		render.SetupView3D()
+	end
 
-local cam = render.camera
+	function render.GetCameraPosition()
+		return render.camera.pos
+	end
 
--- useful for shaders
-function render.GetCameraPosition()
-	return cam.pos
+	function render.SetCameraAngles(ang)
+		render.camera.ang = ang
+		render.SetupView3D()
+	end
+
+	function render.GetCameraAngles()
+		return render.camera.ang
+	end
+
+	function render.GetCameraForward()
+		return render.camera.ang:GetUp()
+	end
+
+	function render.SetCameraFOV(fov)
+		render.camera.fov = fov
+	end
+
+	function render.GetCameraFOV()
+		return render.camera.fov
+	end
+	
+	render.SetGlobalShaderVariable("g_screen_size", function() return Vec2(render.camera.w, render.camera.h) end, "vec2")
+
+	render.SetGlobalShaderVariable("g_cam_nearz", function() return render.camera.nearz end, "float")
+	render.SetGlobalShaderVariable("g_cam_farz", function() return render.camera.farz end, "float")
 end
 
-function render.GetCameraAngles()
-	return cam.ang
+function render.SetViewport(x, y, w, h)	
+	render.camera.x = x or render.camera.x
+	render.camera.y = y or render.camera.y
+	render.camera.w = w or render.camera.w
+	render.camera.h = h or render.camera.h
+	
+	gl.Viewport(render.camera.x, render.camera.y, render.camera.w, render.camera.h)
+	gl.Scissor(render.camera.x, render.camera.y, render.camera.w, render.camera.h)
+	render.SetupProjection2D()
 end
 
-function render.GetCameraFOV()
-	return cam.fov
-end
-
--- projection  
 do
-	-- this isn't really matrix related..
-	function render.SetViewport(x, y, w, h)	
-		cam.x = x or cam.x
-		cam.y = y or cam.y
-		cam.w = w or cam.w
-		cam.h = h or cam.h
-		
-		cam.ratio = cam.w / cam.h 
+	local stack = {}
 	
-		gl.Viewport(cam.x, cam.y, cam.w, cam.h)
-		gl.Scissor(cam.x, cam.y, cam.w, cam.h)
-		
-		local proj = render.matrices.projection_2d
+	function render.PushViewport(x, y, w, h)
+		table.insert(stack, {render.camera.x, render.camera.y, render.camera.w, render.camera.h})
+				
+		render.SetViewport(x, y, w, h)
+	end
+	
+	function render.PopViewport()
+		render.SetViewport(unpack(table.remove(stack)))
+	end
+end
 
+do -- orthographic / 2d
+	function render.SetupProjection2D(w, h)
+		render.camera.w = w or render.camera.w
+		render.camera.h = h or render.camera.h
+		render.camera.ratio = render.camera.w / render.camera.h 
+
+		local proj = render.matrices.projection
 		proj:LoadIdentity()
-		proj:Ortho(0, cam.w, cam.h, 0, -1, 1)
-	end
-	
-	do
-		local stack = {}
+		proj:Ortho(0, render.camera.w, render.camera.h, 0, -1, 1)
 		
-		function render.PushViewport(x, y, w, h)
-			table.insert(stack, {cam.x, cam.y, cam.w, cam.h})
-					
-			render.SetViewport(x, y, w, h)
-		end
-		
-		function render.PopViewport()
-			render.SetViewport(unpack(table.remove(stack)))
-		end
+		render.InvalidateMatrices("projection")
 	end
 
-	function render.Start2D(x, y, w, h)				
+	function render.SetupView2D(pos, ang, zoom)
+		render.camera.pos2d = pos or render.camera.pos2d
+		render.camera.ang2d = ang or render.camera.ang2d
+		render.camera.zoom2d = zoom or render.camera.zoom2d
+		
+		local view = render.matrices.view 
+		view:LoadIdentity()		
+			
+		local x, y = render.camera.w/2, render.camera.h/2
+		view:Translate(x, y, 0)
+		view:Rotate(render.camera.ang2d, 0, 0, 1)
+		view:Translate(-x, -y, 0)
+		
+		view:Translate(render.camera.pos2d.x, render.camera.pos2d.y, 0)
+		
+		local x, y = render.camera.w/2, render.camera.h/2
+		view:Translate(x, y, 0)
+		view:Scale(render.camera.zoom2d, render.camera.zoom2d, 1)
+		view:Translate(-x, -y, 0)
+		
+		render.InvalidateMatrices("view")
+	end
+
+	function render.Start2D(x, y, w, h)
+		render.camera.x = x or render.camera.x 
+		render.camera.y = y or render.camera.y
+		render.camera.w = w or render.camera.w
+		render.camera.h = h or render.camera.h
+		
+		--render.PushViewport(render.camera.x, render.camera.y, render.camera.w, render.camera.h)
+		
+		render.SetupProjection2D()
+		render.SetupView2D()
 		render.PushWorldMatrix()
 		
-		x = x or cam.x 
-		y = y or cam.y
-		w = w or cam.w
-		h = h or cam.h
-		
-		render.Translate(x, y, 0)
-		
-		cam.x = x 
-		cam.y = y
-		cam.w = w
-		cam.h = h
-		
-		gl.Disable(gl.e.GL_DEPTH_TEST)				
+		render.InvalidateMatrices(true)
+		render.render_mode = "2d"
 	end
 	
 	function render.End2D()	
 		render.PopWorldMatrix()
-	--	render.PopViewport() 
+		--render.PopViewport()
+		
+		render.InvalidateMatrices(true)
+	end
+end
+
+do -- projection / 3d
+	function render.SetupProjection3D(fov, nearz, farz, ratio)
+		render.camera.fov = fov or render.camera.fov
+		render.camera.nearz = nearz or render.camera.nearz
+		render.camera.farz = farz or render.camera.farz
+		render.camera.ratio = ratio or render.camera.ratio
+		
+		local proj = render.matrices.projection
+		proj:LoadIdentity()
+		proj:Perspective(render.camera.fov, render.camera.farz, render.camera.nearz, render.camera.ratio) 
+		
+		render.InvalidateMatrices("projection")
+	end
+
+	function render.SetupView3D(pos, ang)
+		render.camera.pos = pos or render.camera.pos
+		render.camera.ang = ang or render.camera.ang
+		
+		local view = render.matrices.view 
+		view:LoadIdentity()		
+		
+		-- source engine style camera angles
+		view:Rotate(render.camera.ang.r, 0, 0, 1)
+		view:Rotate(render.camera.ang.p + math.pi/2, 1, 0, 0)
+		view:Rotate(render.camera.ang.y, 0, 0, 1)
+
+		view:Translate(render.camera.pos.y, render.camera.pos.x, render.camera.pos.z)
+		
+		render.InvalidateMatrices("view")
 	end
 	
-	local last_farz
-	local last_nearz
-	local last_fov
-	local last_ratio
-		
 	function render.Start3D(pos, ang, fov, nearz, farz)				
-		cam.fov = fov or cam.fov
-		cam.nearz = nearz or cam.nearz
-		cam.farz = farz or cam.farz
-				
-		if 
-			last_fov ~= cam.fov or
-			last_nearz ~= cam.nearz or
-			last_farz ~= cam.farz
-		then
-			local proj = render.matrices.projection_3d
+		render.camera.pos = pos or render.camera.pos
+		render.camera.ang = ang or render.camera.ang
+		render.camera.fov = fov or render.camera.fov
+		render.camera.nearz = nearz or render.camera.nearz
+		render.camera.farz = farz or render.camera.farz
 		
-			proj:LoadIdentity()
-			proj:Perspective(cam.fov, cam.farz, cam.nearz, cam.ratio) 
-			--proj:OpenGLFunc("Perspective", cam.fov, cam.nearz, cam.farz, cam.ratio)
-			
-			last_fov = cam.fov
-			last_nearz = cam.nearz
-			last_farz = cam.farz
-			
-			render.matrices.projection_3d_inverse = proj:GetInverse()
-		end
-		
-		if pos and ang then
-			render.SetupView3D(pos, ang, fov)
-		end
-				
-		gl.Enable(gl.e.GL_DEPTH_TEST) 
-		
+		render.SetupProjection3D()
+		render.SetupView3D()		
 		render.PushWorldMatrix()
+		
+		render.InvalidateMatrices(true)
+		render.render_mode = "3d"
 	end
 	
 	event.AddListener("GBufferInitialized", "reset_camera_projection", function()
@@ -157,104 +199,77 @@ do
 	
 	function render.End3D()
 		render.PopWorldMatrix()
-	end		
-end
-
-function render.SetupView3D(pos, ang, fov, out)
-	cam.pos = pos or cam.pos
-	cam.ang = ang or cam.ang
-	cam.fov = fov or cam.fov
-	
-	local view = out or render.matrices.view_3d 
-	view:LoadIdentity()		
-	
-	if ang then
-		-- source engine style camera angles
-		view:Rotate(ang.r, 0, 0, 1)
-		view:Rotate(ang.p + math.pi/2, 1, 0, 0)
-		view:Rotate(ang.y, 0, 0, 1)
+		render.InvalidateMatrices(true)
 	end
-	
-	if pos then
-		view:Translate(pos.y, pos.x, pos.z)
-	end
-	
-	if out then return out end
-	
-	render.matrices.vp_matrix = render.matrices.view_3d * render.matrices.projection_3d
-	render.matrices.vp_3d_inverse = render.matrices.vp_matrix:GetInverse()
-	render.matrices.view_3d_inverse = render.matrices.view_3d:GetInverse()
 end
 
-function render.SetCameraPosition(pos)
-	cam.pos = pos
-	render.SetupView3D(cam.pos, cam.ang)
-end
-
-function render.GetCameraPosition()
-	return cam.pos
-end
-
-function render.SetCameraAngles(ang)
-	cam.ang = ang
-	render.SetupView3D(cam.pos, cam.ang)
-end
-
-function render.GetCameraAngles()
-	return cam.ang
-end
-
-function render.SetCameraFOV(fov)
-	cam.fov = fov
-end
-
-function render.GetCameraFOV()
-	return cam.fov
-end
-  
-
-function render.SetupView2D(pos, ang, zoom)
-	cam.pos2d = pos or cam.pos2d
-	cam.ang2d = ang or cam.ang2d
-	cam.zoom2d = zoom or cam.zoom2d
-	
-	local view = render.matrices.view_2d 
-	view:LoadIdentity()		
+do -- 2d in 3d
+	function render.Start3D2DEx(pos, ang, scale)	
+		local w, h = render.GetHeight(), render.GetHeight()
 		
-	if ang then
-		local x, y = cam.w/2, cam.h/2
-		view:Translate(x, y, 0)
-		view:Rotate(ang, 0, 0, 1)
-		view:Translate(-x, -y, 0)
+		pos = pos or Vec3(0, 0, 0)
+		ang = ang or Ang3(0, 0, 0)
+		scale = scale or Vec3(4, 4 * (w / h), 1)
+		
+		render.is_3d2d = true
+		
+		render.SetupProjection3D()
+		render.SetupView3D()
+		render.PushWorldMatrixEx(pos, ang, Vec3(scale.x / w, scale.y / h, 1))
 	end
-	
-	if pos then
-		view:Translate(pos.x, pos.y, 0)
+
+	function render.Start3D2D(mat, dont_multiply)
+		render.is_3d2d = true
+		
+		render.SetupProjection3D()	
+		render.SetupView3D()
+		render.PushWorldMatrix(mat, dont_multiply)
 	end
-	
-	if zoom then
-		local x, y = cam.w/2, cam.h/2
-		view:Translate(x, y, 0)
-		view:Scale(zoom, zoom, 1)
-		view:Translate(-x, -y, 0)
+
+	function render.End3D2D()
+		render.PopWorldMatrix()	
+		render.is_3d2d = false
 	end
-	
-	render.matrices.view_2d_inverse = view:GetInverse()
+
+	function render.ScreenToWorld(x, y)
+		if render.is_3d2d then
+			x = ((x / render.GetWidth()) - 0.5) * 2
+			y = ((y / render.GetHeight()) - 0.5) * 2
+			
+			local m = render.GetViewWorldInverseMatrix()
+			
+			cursor_x, cursor_y, cursor_z = m:TransformVector(render.GetProjectionInverseMatrix():TransformVector(x, -y, 1))
+			local camera_x, camera_y, camera_z = m:TransformVector(0, 0, 0)
+
+			--local intersect = camera + ( camera.z / ( camera.z - cursor.z ) ) * ( cursor - camera )
+			
+			local z = camera_z / ( camera_z - cursor_z )
+			local intersect_x = camera_x + z * ( cursor_x - camera_x )
+			local intersect_y = camera_y + z * ( cursor_y - camera_y )
+					
+			return intersect_x, intersect_y
+		else
+			render.InvalidateMatrices(true) 
+			local x, y = (render.GetViewMatrix() * render.GetWorldMatrix():GetInverse()):TransformVector(x, y, 1)
+			return x, y
+		end
+	end
 end
 
--- world
-do
+do -- world / model
 	do -- push pop helper
-		local stack = {}
-		local i = 1
+		local stack = render.matrix_stack or {}
+		local i = #stack + 1
+		
+		render.matrix_stack = stack
 		
 		function render.PushWorldMatrixEx(pos, ang, scale, dont_multiply)
 			if not stack[i] then
-				stack[i] = Matrix44()
-			else
-				stack[i] = render.matrices.world
+				stack[i] = render.matrices.world or Matrix44()
 			end
 			
+			stack[i] = render.matrices.world
+		
 			if dont_multiply then	
 				render.matrices.world = Matrix44()
 			else				
@@ -277,6 +292,8 @@ do
 			end
 	
 			i = i + 1
+			
+			render.InvalidateMatrices("world")
 			
 			return render.matrices.world
 		end
@@ -304,6 +321,8 @@ do
 			
 			i = i + 1
 			
+			render.InvalidateMatrices("world")
+			
 			return render.matrices.world
 		end
 		
@@ -315,62 +334,129 @@ do
 			end
 						
 			render.matrices.world = stack[i]
+			
+			render.InvalidateMatrices("world")
 		end
-		
-		render.matrix_stack = stack
 	end
-	
-	function render.SetWorldMatrixOverride(matrix)
-		render.matrices.world_override = matrix
-	end
-	
+
 	-- world matrix helper functions
 	function render.Translate(x, y, z)
 		render.matrices.world:Translate(x, y, z)
+		render.InvalidateMatrices("world")
 	end
 	
 	function render.Rotate(a, x, y, z)
 		render.matrices.world:Rotate(a, x, y, z)
+		render.InvalidateMatrices("world")
 	end
 	
 	function render.Scale(x, y, z)
 		render.matrices.world:Scale(x, y, z)
+		render.InvalidateMatrices("world")
 	end
 	
 	function render.LoadIdentity()
 		render.matrices.world:LoadIdentity()
+		render.InvalidateMatrices("world")
 	end	
-end  
-
-function render.GetProjectionViewWorld2DMatrix()
-	return (render.matrices.world_override or render.matrices.world) * render.matrices.view_2d * render.matrices.projection_2d
 end
 
-function render.GetProjectionViewWorld3DMatrix()
-	return (render.matrices.world_override or render.matrices.world) * render.matrices.view_3d * render.matrices.projection_3d
+do -- pre multiplied matrices
+	render.matrices = render.matrices or {
+		projection = Matrix44(),
+		projection_inverse = Matrix44(),
+		
+		view = Matrix44(),
+		view_inverse = Matrix44(),
+		
+		projection_view = Matrix44(),
+		projection_view_inverse = Matrix44(),
+		
+		
+		world = Matrix44(),
+		world_inverse = Matrix44(),
+		
+		view_world = Matrix44(),
+		view_world_inverse = Matrix44(),
+		
+		projection_view_world = Matrix44(),	
+	}
+	
+	local invalidate = true
+
+	function render.RebuildMatrices(now)
+		if now then render.InvalidateMatrices(true) end
+		
+		if invalidate then
+			
+			if invalidate == true or invalidate == "projection" or invalidate == "view" then
+				render.matrices.projection_view = render.matrices.view * render.matrices.projection
+				render.matrices.projection_view_inverse = render.matrices.projection_view:GetInverse()
+				
+				render.matrices.view_inverse = render.matrices.view:GetInverse()
+			end
+			
+			if invalidate == true or invalidate == "view" or invalidate == "world" then
+				render.matrices.view_world =  render.matrices.world * render.matrices.view		
+				render.matrices.view_world_inverse = render.matrices.view_world:GetInverse()
+			end
+			
+			if invalidate == true or invalidate == "world" then
+				render.matrices.world_inverse = render.matrices.world:GetInverse()
+			end
+			
+			render.matrices.projection_view_world = render.matrices.world * render.matrices.view * render.matrices.projection
+			
+			invalidate = false
+		end
+	end
+
+	function render.InvalidateMatrices(type)
+		if invalidate then invalidate = true return end -- todo
+		invalidate = type or true
+	end
+		
+	function render.SetWorldMatrix(mat)
+		render.matrices.world = mat
+		render.InvalidateMatrices("world")
+	end
+
+	function render.SetViewMatrix(mat)
+		render.matrices.view = mat
+		render.InvalidateMatrices("view")
+	end
+
+	function render.SetProjectionMatrix(mat)
+		render.matrices.projection = mat
+		render.InvalidateMatrices("projection")
+	end
+
+	for k, v in pairs(render.matrices) do
+		local name = "Get" .. ("_" .. k):gsub("_(.)", string.upper) .. "Matrix"
+		render[name] = function()
+			render.RebuildMatrices()
+			return render.matrices[k]
+		end
+	end
+	
+	render.SetGlobalShaderVariable("g_projection", render.GetProjectionMatrix, "mat4")
+	render.SetGlobalShaderVariable("g_projection_inverse", render.GetProjectionInverseMatrix, "mat4")
+
+	render.SetGlobalShaderVariable("g_view", render.GetViewMatrix, "mat4")
+	render.SetGlobalShaderVariable("g_view_inverse", render.GetViewInverseMatrix, "mat4")
+
+	render.SetGlobalShaderVariable("g_world", render.GetWorldMatrix, "mat4")
+	render.SetGlobalShaderVariable("g_world_inverse", render.GetWorldInverseMatrix, "mat4")
+
+	render.SetGlobalShaderVariable("g_projection_view", render.GetProjectionViewMatrix, "mat4")
+	render.SetGlobalShaderVariable("g_projection_view_inverse", render.GetProjectionViewInverseMatrix, "mat4")
+
+	render.SetGlobalShaderVariable("g_view_world", render.GetViewWorldMatrix, "mat4")
+	render.SetGlobalShaderVariable("g_view_world_inverse", render.GetViewWorldInverseMatrix, "mat4")
+	render.SetGlobalShaderVariable("g_projection_view_world", render.GetProjectionViewWorldMatrix, "mat4")
+
+	render.SetGlobalShaderVariable("g_normal_matrix", function() return (render.matrices.world * render.matrices.view):GetInverse():GetTranspose() end, "mat4")
 end
-
-render.SetGlobalShaderVariable("g_screen_size", function() return Vec2(cam.w, cam.h) end, "vec2")
-
-render.SetGlobalShaderVariable("g_projection", function() return render.matrices.projection_3d end, "mat4")
-render.SetGlobalShaderVariable("g_projection_inverse", function() return render.matrices.projection_3d_inverse end, "mat4")
-
-render.SetGlobalShaderVariable("g_view", function() return render.matrices.view_3d end, "mat4")
-render.SetGlobalShaderVariable("g_view_inverse", function() return render.matrices.view_3d_inverse end, "mat4")
-
-render.SetGlobalShaderVariable("g_world", function() return render.matrices.world_override and render.matrices.world_override or render.matrices.world end, "mat4")
-render.SetGlobalShaderVariable("g_world_inverse", function() return (render.matrices.world_override and render.matrices.world_override or render.matrices.world):GetInverse() end, "mat4")
-
-render.SetGlobalShaderVariable("g_projection_view", function() return render.matrices.vp_matrix end, "mat4")
-render.SetGlobalShaderVariable("g_projection_view_inverse", function() return render.matrices.vp_3d_inverse end, "mat4")
-
-render.SetGlobalShaderVariable("g_normal_matrix", function() return ((render.matrices.world_override and render.matrices.world_override or render.matrices.world) * render.matrices.view_3d):GetInverse():GetTranspose() end, "mat4")
-render.SetGlobalShaderVariable("g_view_world", function() return (render.matrices.world_override and render.matrices.world_override or render.matrices.world) * render.matrices.view_3d end, "mat4")
-render.SetGlobalShaderVariable("g_view_world_inverse", function() return ((render.matrices.world_override and render.matrices.world_override or render.matrices.world) * render.matrices.view_3d):GetInverse() end, "mat4")
-render.SetGlobalShaderVariable("g_projection_view_world", render.GetProjectionViewWorld3DMatrix, "mat4")
-
-render.SetGlobalShaderVariable("g_cam_nearz", function() return cam.nearz end, "float")
-render.SetGlobalShaderVariable("g_cam_farz", function() return cam.farz end, "float")
 
 render.AddGlobalShaderCode([[
 float get_depth(vec2 uv) 
@@ -391,7 +477,7 @@ uniform samplerXX iChannel0..3;          // input channel. XX = 2D/Cube
 uniform vec4      iDate;                 // (year, month, day, time in seconds)
 uniform float     iSampleRate;           // sound sample rate (i.e., 44100)]]
 
-render.SetGlobalShaderVariable("iResolution", function() return Vec2(cam.w, cam.h, cam.ratio) end, "vec3")
+render.SetGlobalShaderVariable("iResolution", function() return Vec2(render.camera.w, render.camera.h, render.camera.ratio) end, "vec3")
 render.SetGlobalShaderVariable("iGlobalTime", function() return system.GetElapsedTime() end, "float")
 render.SetGlobalShaderVariable("iMouse", function() return Vec2(surface.GetMousePosition()) end, "float")
 render.SetGlobalShaderVariable("iDate", function() return Color(os.date("%y"), os.date("%m"), os.date("%d"), os.date("%s")) end, "vec4")

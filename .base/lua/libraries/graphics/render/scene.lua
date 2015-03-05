@@ -14,7 +14,7 @@ do -- current window
 		local w, h = window:GetSize():Unpack()
 		render.w = w
 		render.h = h
-		render.PushViewport(0, 0, w, h)
+		render.SetViewport(0, 0, w, h)
 	end
 
 	function render.End()
@@ -23,9 +23,7 @@ do -- current window
 			render.current_window:SwapBuffers()
 		end
 
-		render.frame = render.frame + 1	
-		
-		render.PopViewport()
+		render.frame = render.frame + 1
 	end
 
 	function system.GetFrameNumber()
@@ -59,7 +57,9 @@ function render.DrawScene(window, dt)
 	render.delta = dt
 	render.Clear(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
 	render.Start(window)
-	
+		
+		render.SetCullMode("none")
+		
 		render.DrawGBuffer(dt, window:GetSize():Unpack())
 		
 		local blur_amt = console.GetVariable("render_accum") or 0

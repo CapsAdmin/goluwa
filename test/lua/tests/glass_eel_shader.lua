@@ -159,7 +159,7 @@ local data = {
 local tex = Texture("textures/debug/brain.jpg")
 
 local shader = render.CreateShader(data)
-shader.pwm_matrix = render.GetProjectionViewWorld2DMatrix
+shader.pwm_matrix = render.GetProjectionViewWorldMatrix
 
 -- this creates mesh from the attributes field
 local mesh = shader:CreateVertexBuffer({

@@ -23,8 +23,8 @@ event.AddListener("PreDrawMenu", "gizmo", function()
     
     render.PushWorldMatrixEx(pos, nil, scale)
         for i, info in ipairs(directions) do
-            surface.Start3D(nil, info.ang)            
-				local mouse_pos = Vec2(surface.WorldToLocal(surface.GetMousePosition()))
+            render.Start3D2DEx(nil, info.ang)            
+				local mouse_pos = Vec2(render.ScreenToWorld(surface.GetMousePosition()))
 				local mouse_ang = math.atan2(mouse_pos.y, mouse_pos.x)
 				local dist = mouse_pos:GetLength()
 				
@@ -53,15 +53,15 @@ event.AddListener("PreDrawMenu", "gizmo", function()
 				surface.SetWhiteTexture()				
 				surface.DrawRect(mouse_pos.x, mouse_pos.y, 2, 2, 0, -1, -1)				
 				surface.DrawCircle(0, 0, 128, 4)            
-            surface.End3D()
+            render.End3D2D()
         end
         
         render.EnableDepth(false)
 		
         if current_axis then
             local info = current_axis
-            surface.Start3D(nil, info.ang)				
-				local mouse_pos = Vec2(surface.WorldToLocal(surface.GetMousePosition()))
+            render.Start3D2DEx(nil, info.ang)				
+				local mouse_pos = Vec2(render.ScreenToWorld(surface.GetMousePosition()))
 				local mouse_ang = math.atan2(mouse_pos.y, mouse_pos.x)
 				
 				local rad = math.normalizeangle(mouse_start_ang-mouse_ang)
@@ -70,15 +70,15 @@ event.AddListener("PreDrawMenu", "gizmo", function()
 				temp:Rotate(rad, info.dir:Unpack())
 				
 				mat = temp						
-            surface.End3D()
+            render.End3D2D()
         end
         
-        surface.Start3Dm(mat) 
+        render.Start3D2D(mat) 
 			surface.SetTexture(tex)
 			
 			surface.SetColor(1,1,1,1)
 			
 			surface.DrawRect(-1, -1, 2, 2)
-        surface.End3D()    
+        render.End3D2D()    
     render.PopWorldMatrix()
 end)

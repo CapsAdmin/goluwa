@@ -1,7 +1,6 @@
 local PASS = {}
 
-PASS.Name = FILE_NAME
-PASS.Position = FILE_NAME:sub(1, 1)
+PASS.Position, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 
 PASS.Variables = {
 	fog_color = Color(0.18867780436772762, 0.4978442963618773, 0.6616065586417131, 0),

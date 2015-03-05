@@ -117,21 +117,15 @@ if GRAPHICS then
 		end
 	end
 
-	function COMPONENT:OnDraw3DGeometry(shader, projection_view, simple)
+	function COMPONENT:OnDraw3DGeometry(shader, skip_cull)
 		self.sub_models = self.sub_models or {}
-		projection_view = projection_view or render.matrices.vp_matrix
 
-		local matrix = self:GetComponent("transform"):GetMatrix()
+		render.SetWorldMatrix(self:GetComponent("transform"):GetMatrix())
 		
-		if not self.Cull or not self.corners or self:GetComponent("transform"):IsPointsVisible(self.corners, projection_view) then
-			shader.projection_view_world = matrix * projection_view
-			if not simple then 
-				shader.view_world = matrix * render.matrices.view_3d -- for bump maps
-			end 
-	
+		if not self.Cull or not self.corners or self:GetComponent("transform"):IsPointsVisible(self.corners, render.GetProjectionViewMatrix()) then
 			for i, model in ipairs(self.sub_models) do
-				if not simple then 
-					shader.view_world = matrix * render.matrices.view_3d -- for bump maps
+				
+				if not skip_cull then 
 					if self.MaterialOverride then 	
 						if self.MaterialOverride.NoCull then
 							render.SetCullMode("none") 
@@ -146,6 +140,7 @@ if GRAPHICS then
 						end
 					end
 				end 
+				
 				shader:Bind(self.MaterialOverride or model.material)
 				model:Draw()
 			end

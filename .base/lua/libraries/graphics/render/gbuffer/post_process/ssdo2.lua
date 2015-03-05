@@ -1,10 +1,9 @@
 local PASS = {}
 
-PASS.Name = FILE_NAME:sub(3)
+PASS.Name = FILE_NAME
 PASS.Position = 1
 
 PASS.Variables = {
-	inverse_projection = {mat4 = function() return render.matrices.projection_3d_inverse.m end},
 	num_samples = 16,
 	occlusion_max_distance = 0.2,
 	occlusion_radius = 0.12,
@@ -12,12 +11,6 @@ PASS.Variables = {
 }
 
 PASS.Source = [[
-	vec3 get_pos(vec2 uv)
-	{
-		vec4 pos = inverse_projection * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
-		return pos.xyz / pos.w;
-	}
-	
 	uniform vec3 points[] =
 	{
 		vec3(-0.134, 0.044, -0.825),
@@ -57,7 +50,7 @@ PASS.Source = [[
 	float dssdo()
 	{				
 		vec2 noise_texture_size = vec2(512,512);
-		vec3 center_pos = get_pos(uv);
+		vec3 center_pos = get_view_pos(uv);
 		
 		float radius = occlusion_radius / center_pos.z;
 		float max_distance_inv = 1 / occlusion_max_distance;
@@ -70,7 +63,7 @@ PASS.Source = [[
 		{
 			for( int i = 0; i < num_samples; ++i)
 			{
-				vec3 sample_pos = get_pos(uv + reflect(points[i].xyz, noise.xyz).xy * radius);
+				vec3 sample_pos = get_view_pos(uv + reflect(points[i].xyz, noise.xyz).xy * radius);
 				vec3 center_to_sample = sample_pos - center_pos;
 				float dist = length(center_to_sample);
 				float dp = dot(center_normal, center_to_sample / dist);

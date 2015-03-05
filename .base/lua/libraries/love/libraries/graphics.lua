@@ -482,10 +482,10 @@ do -- canvas
 		
 		if canvas then
 			gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, canvas.fb.id)
-			render.PushViewport(0, 0, canvas.fb:GetTexture().w, canvas.fb:GetTexture().h)
+			render.SetViewport(0, 0, canvas.fb:GetTexture().w, canvas.fb:GetTexture().h)
 		else
 			gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, 0)
-			render.PushViewport(0, 0, window.GetSize():Unpack())
+			render.SetViewport(0, 0, window.GetSize():Unpack())
 		end
 	end
 	

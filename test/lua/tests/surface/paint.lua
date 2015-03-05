@@ -28,7 +28,7 @@ local size = 16
    
 event.CreateTimer("fb_update", 0, 0, function()
 	fb:Begin()
-		surface.Start(0, 0, 512, 512)			
+		render.Start2D(0, 0, 512, 512)			
 			if input.IsMouseDown("button_1") then
 				surface.SetTexture(brush)
 				surface.SetColor(1, 1, 1, 1)
@@ -46,7 +46,7 @@ event.CreateTimer("fb_update", 0, 0, function()
 					end
 				end
 			end
-		surface.End()
+		render.End2D()
 	fb:End()
 end)
 

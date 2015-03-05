@@ -104,7 +104,9 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 		
 	cam_pos = cam_pos + dir
 
-	render.SetupView3D(cam_pos, ang, fov)
+	render.SetCameraPosition(cam_pos)
+	render.SetCameraAngles(ang)
+	render.SetCameraFOV(fov)
 end)
 
 local roll = 0
@@ -158,6 +160,8 @@ event.AddListener("Update", "fly_camera_2d", function(dt)
 	elseif input.IsKeyDown("kp_6") then
 		pos.x = pos.x - speed
 	end
-			
-	render.SetupView2D(pos:GetRotated(-roll), roll, 1/zoom)
+	
+	render.camera.pos2d = pos:GetRotated(-roll)
+	render.camera.ang2d = roll
+	render.camera.zoom2d = 1/zoom
 end)  
