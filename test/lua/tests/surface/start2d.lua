@@ -12,7 +12,7 @@ event.CreateTimer("updatefb", 0.1, function()
 	local t = system.GetElapsedTime()
 	
 	fb:Begin()				
-		surface.Start(0, 0, tex.w, tex.h)
+		render.Start2D(0, 0, tex.w, tex.h)
 			surface.Translate(math.sin(t) * 100, math.cos(t) * 100)
 			surface.Rotate(t*100)
 			
@@ -22,7 +22,7 @@ event.CreateTimer("updatefb", 0.1, function()
 			x = x - 50
 			y = y - 50
 			
-			local x, y = surface.WorldToLocal(x, y) 
+			local x, y = render.ScreenToWorld(x, y) 
 			surface.DrawRect(x,y,5,5, 0, 2.5, 2.5)  
 			
 			render.SetBlendMode("additive")
@@ -33,7 +33,7 @@ event.CreateTimer("updatefb", 0.1, function()
 			end
 			
 			render.SetBlendMode("alpha")
-		surface.End()
+		render.End2D()
 	fb:End() 
 end)
  

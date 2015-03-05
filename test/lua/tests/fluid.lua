@@ -25,7 +25,7 @@ function META:update()
 end
 
 function META:handleInput()
-	local x, y = surface.WorldToLocal(surface.GetMousePosition())
+	local x, y = render.ScreenToWorld(surface.GetMousePosition())
 	
 	-- Lower boundary
 	x = math.max(0, x);

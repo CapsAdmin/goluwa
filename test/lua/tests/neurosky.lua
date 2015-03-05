@@ -18,7 +18,7 @@ local client = sockets.CreateClient("tcp", "localhost", 13854, "neurosky")
 
 local function update_rt(eeg)
 	fb:Begin()
-		surface.Start(0, 0, W, H)
+		render.Start2D(0, 0, W, H)
 			surface.SetWhiteTexture()
 			surface.SetColor(1, 1, 1, 1)
 			
@@ -33,7 +33,7 @@ local function update_rt(eeg)
 				fb:Clear() 
 			end
 			
-		surface.End()
+		render.End2D()
 	fb:End()
 end
 

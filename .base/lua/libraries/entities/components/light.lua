@@ -39,23 +39,17 @@ if GRAPHICS then
 	end
 	
 	function COMPONENT:OnDraw3DLights(shader)
-		if not render.matrices.vp_matrix or not self.light_mesh then return end -- grr
+		if not self.light_mesh then return end -- grr
 		
 		local transform = self:GetComponent("transform")
-		local matrix = transform:GetMatrix() 
-		local screen = matrix * render.matrices.vp_matrix
-		
-		shader.pvm_matrix = screen.m
-		self.screen_matrix = screen
-		
-		local mat = matrix * render.matrices.view_3d
+		render.SetWorldMatrix(transform:GetMatrix())
+				
+		local mat = render.GetViewWorldMatrix()
 		local x,y,z = mat:GetTranslation()
 		shader.light_view_pos:Set(x,y,z)
 	--	shader.light_world_pos:Set(matrix:GetTranslation())
 		shader.light_dir = -transform:GetRotation():GetForward()
 		shader.light_radius = transform:GetSize()
-		shader.inverse_projection = render.matrices.projection_3d_inverse.m
-		shader.inverse_projection_view = (render.matrices.vp_3d_inverse).m
 		
 		-- automate this!!
 		shader.light_color = self.Color
@@ -64,15 +58,8 @@ if GRAPHICS then
 		shader.light_point_shadow = self.ShadowCubemap and 1 or 0
 		shader.project_from_camera = self.ProjectFromCamera and 1 or 0
 		
-		if self.Shadow then
-			self:DrawShadowMap()
-			shader.cascade_pass = i
-			shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
-			if self.ShadowCubemap then 	
-				shader.tex_shadow_map_cube = self.shadow_map:GetTexture("cubemap")
-			end
-			shader.light_vp_matrix = self.vp_matrix.m
-			gl.Disable(gl.e.GL_DEPTH_TEST)
+		if self.Shadow then			
+			self:DrawShadowMap(shader)
 		end
 		shader:Bind()
 		self.light_mesh:Draw()
@@ -107,7 +94,7 @@ if GRAPHICS then
 						{uv = "vec2"},
 						{texture_blend = "float"},
 					},	
-					source = "gl_Position = lua[projection_view_world = 'mat4'] * vec4(pos, 1);"
+					source = "gl_Position = g_projection_view_world * vec4(pos, 1);"
 				},
 				fragment = {
 					attributes = {
@@ -174,6 +161,8 @@ if GRAPHICS then
 		
 		self.shadow_map:Begin()
 		self.shadow_map:Clear()
+		
+		render.Start3D()
 				
 		---self.shadow_map:SetWriteBuffer("depth")
 		
@@ -209,37 +198,35 @@ if GRAPHICS then
 				projection:Ortho(-size, size, -size, size, size, -size) 
 			end
 				
-			-- make a projection_view matrix
-			self.vp_matrix = view * projection
-						
+			render.SetViewMatrix(view)
+			render.SetProjectionMatrix(projection)
+			
+			shader.light_projection_view = render.GetProjectionViewMatrix()
+			
 			-- render the scene with this matrix
 			render.SetCullMode("front")
-			event.Call("Draw3DGeometry", render.shadow_map_shader, self.vp_matrix, true)
+			event.Call("Draw3DGeometry", render.shadow_map_shader, true)
 			
 			if not self.ShadowCubemap then 
 				break 
 			end
 		end
+					
+		shader.cascade_pass = i
+		shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
+		
+		if self.ShadowCubemap then 	
+			shader.tex_shadow_map_cube = self.shadow_map:GetTexture("cubemap")
+		end
+		
+		gl.Disable(gl.e.GL_DEPTH_TEST)
+		
+		render.End3D()
 		self.shadow_map:End()
+		
+		render.SetupProjection3D()
+		render.SetupView3D()
 	end
-end
-
-function COMPONENT:OnDrawLensFlare(shader)
-	if not self.LensFlare or not self.screen_matrix then return end
-	local x, y, z = self.screen_matrix:GetClipCoordinates()
-	
-	shader.pvm_matrix = self.screen_matrix.m
-	
-	if z < 1 then
-		shader.screen_pos:Set(x, y)
-	else
-		shader.screen_pos:Set(-2,-2)
-	end
-	
-	shader.intensity = self.Intensity^0.25
-	
-	shader:Bind()
-	self.light_mesh:Draw()
 end
 
 prototype.RegisterComponent(COMPONENT)

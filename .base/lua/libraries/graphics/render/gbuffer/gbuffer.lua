@@ -101,7 +101,7 @@ do -- mixer
 			name = PASS.Name,
 			vertex = {
 				uniform = {
-					pwm_matrix = {mat4 = render.GetProjectionViewWorld2DMatrix}
+					pwm_matrix = {mat4 = render.GetProjectionViewWorldMatrix}
 				},			
 				attributes = {
 					{pos = "vec2"},
@@ -423,38 +423,44 @@ function render.DrawGBuffer(dt, w, h)
 		gl.DepthMask(gl.e.GL_TRUE)
 		gl.Enable(gl.e.GL_DEPTH_TEST)
 		gl.Disable(gl.e.GL_BLEND)
-		event.Call("Draw3DGeometry", render.gbuffer_model_shader)
+		
+		render.Start3D()
+			event.Call("Draw3DGeometry", render.gbuffer_model_shader)
+		render.End3D()
 		
 		gl.Disable(gl.e.GL_DEPTH_TEST)	
 		gl.Enable(gl.e.GL_BLEND)
 		render.SetBlendMode("alpha")	
 		render.SetCullMode("back")
 		gl.Disable(gl.e.GL_DEPTH_TEST)
+		
 		render.Start2D()
 			event.Call("Draw2D", dt)
 		render.End2D()
 	return end
 	
-	render.Start3D()
-		for i, pass in ipairs(render.gbuffer_passes) do
-			if pass.Draw3D then 
-				pass:Draw3D() 
-			end
+	render.Clear(1,1,1,1)
+	gl.DepthMask(gl.e.GL_TRUE)
+	gl.Enable(gl.e.GL_DEPTH_TEST)
+	gl.Disable(gl.e.GL_BLEND)
+	
+
+	for i, pass in ipairs(render.gbuffer_passes) do
+		if pass.Draw3D then 
+			pass:Draw3D() 
 		end
-	render.End3D()
-			
+	end
+		
 	--render.Clear(1,1,1,1)		
 	
 	-- gbuffer
 	render.SetBlendMode("alpha")	
 	render.SetCullMode("back")
+	gl.Disable(gl.e.GL_DEPTH_TEST)	
+	gl.Enable(gl.e.GL_BLEND)
+	gl.Disable(gl.e.GL_DEPTH_TEST)
+	
 	render.Start2D()
-		for i, pass in ipairs(render.gbuffer_passes) do
-			if pass.Draw2D then 
-				pass:Draw2D() 
-			end
-		end
-		
 		for i, shader in ipairs(render.gbuffer_shaders_sorted) do
 			render.DrawGBufferShader(shader.gbuffer_name)
 		end

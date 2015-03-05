@@ -163,7 +163,7 @@ do
 	local temp = Matrix44()
 
 	function TMPL:IsPointsVisible(points, view)
-		view = view or render.matrices.vp_matrix
+		view = view or render.GetProjectionViewMatrix()
 		
 		temp:Identity()
 		

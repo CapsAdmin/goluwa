@@ -40,6 +40,7 @@ function META:__tostring()
 end
 
 function META:__mul(b)
+	if not self then debug.trace() end
 	return self:GetMultiplied(b)
 end
 
@@ -181,7 +182,7 @@ end
 function META.GetMultiplied(a, b, out)
 	out = out or Matrix44()
 	local r = out.m
-	
+		
 	local a = a.m
 	local b = b.m
 

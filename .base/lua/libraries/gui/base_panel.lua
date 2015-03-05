@@ -177,7 +177,7 @@ end
 do -- drawing
 
 	function PANEL:PreDraw(from_cache)
-		if self.ThreeDee then surface.Start3D(self.ThreeDeePosition, self.ThreeDeeAngles, self.ThreeDeeScale) end
+		if self.ThreeDee then render.Start3D2DEx(self.ThreeDeePosition, self.ThreeDeeAngles, self.ThreeDeeScale) end
 		
 		local no_draw = self:HasParent() and self.Parent.draw_no_draw
 		
@@ -185,7 +185,7 @@ do -- drawing
 	
 		if USE_MATRIX then	
 			self:RebuildMatrix()
-			render.PushWorldMatrix(self.Matrix, true)
+			render.SetWorldMatrix(self.Matrix)
 			
 			if not from_cache then
 				self:CalcMouse()
@@ -249,7 +249,6 @@ do -- drawing
 			no_draw = true
 		end
 		
-
 		self:OnUpdate()
 			
 		if from_cache or not no_draw then
@@ -349,13 +348,13 @@ do -- drawing
 		end
 		
 		if USE_MATRIX then
-			render.PopWorldMatrix()
+			--render.PopWorldMatrix()
 		else
 			surface.PopMatrix()
 		end
 		
 		
-		if self.ThreeDee then surface.End3D() end
+		if self.ThreeDee then render.End3D2D() end
 	end
 		
 	function PANEL:DrawRect(x, y, w, h)
@@ -411,14 +410,13 @@ do -- orientation
 
 				self.Matrix:Identity()
 				
-				
+				--if not self.DrawCache then
 				self.temp_matrix = self.temp_matrix or Matrix44()				
 				self.Matrix:Multiply(self.Parent.Matrix, self.temp_matrix)
 				self.Matrix, self.temp_matrix = self.temp_matrix, self.Matrix
-			
 				
+				--end
 				self.Matrix:Translate(math.ceil(self.Position.x), math.ceil(self.Position.y), 0)
-				
 				
 				if self.Angle ~= 0 then
 					local w = (self.Size.w)/2
@@ -635,6 +633,7 @@ do -- cached rendering
 
 	function PANEL:SetCachedRendering(b)
 		self.CachedRendering = b
+		--if USE_MATRIX then self.CachedRendering = false end
 
 		self:MarkCacheDirty()
 	end
@@ -679,10 +678,11 @@ do -- cached rendering
 			self.cache_fb:Begin()
 			self.cache_fb:Clear()
 			
-			if USE_MATRIX then 
-				render.PushWorldMatrix(self.Matrix, true)
-				self:InvalidateMatrix()
+			if USE_MATRIX then
+				--self:InvalidateMatrix()
 				self:RebuildMatrix()
+			--	render.Start2D()
+				render.SetWorldMatrix(self.Matrix)
 			else
 				surface.PushMatrix()
 				
@@ -690,14 +690,20 @@ do -- cached rendering
 				-- from the origin of the framebuffer
 				-- the framebuffer itself is drawn at the correct position
 				surface.LoadIdentity()
+				
+				--surface.Scale(1, self.Size.h/2)
 			end
+		
+			--render.SetupProjection2D(self.Size.w, self.Size.h)
+		
+		
 		
 			if self:IsDragging() or self:IsInsideParent() then
 				self:OnPreDraw()
 				self:OnDraw()
 				self:OnPostDraw()
 			end
-
+			
 			--surface.Translate(-self.Scroll.x, -self.Scroll.y)
 
 			for k,v in ipairs(self:GetChildren()) do
@@ -709,7 +715,8 @@ do -- cached rendering
 			self.cache_dirty = false
 		
 			if USE_MATRIX then
-				render.PopWorldMatrix()
+				--render.PopWorldMatrix()
+				--render.End2D()
 			else
 				surface.PopMatrix()
 			end
@@ -717,8 +724,6 @@ do -- cached rendering
 			self.cache_fb:End()
 			
 			self.updated_cache = true
-			
-		--	if USE_MATRIX then render.SetWorldMatrixOverride(self:GetMatrix()) end
 		end
 		
 		surface.SetColor(1, 1, 1, 1)
@@ -809,7 +814,7 @@ do -- drag drop
 			self.drag_panel_start_pos = self:GetPosition()
 		end
 
-		local drag_pos = Vec2(surface.WorldToLocal(self.drag_world_pos:Unpack()))
+		local drag_pos = Vec2(render.ScreenToWorld(self.drag_world_pos:Unpack()))
 
 		self:SetPosition(self.drag_panel_start_pos + self:GetMousePosition() - drag_pos)
 
@@ -1343,8 +1348,8 @@ do -- mouse
 			return 
 		end
 		
-		local x, y = surface.WorldToLocal(gui.mouse_pos.x, gui.mouse_pos.y)
-
+		local x, y = render.ScreenToWorld(gui.mouse_pos.x, gui.mouse_pos.y)
+		
 		self.MousePosition.x = x
 		self.MousePosition.y = y
 

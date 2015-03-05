@@ -6,10 +6,10 @@ function wnd:OnUpdate(dt)
 	--do return end
 	render.Start(self)
 		render.Clear(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
-		surface.Start()
+		render.Start2D()
 			surface.SetWhiteTexture()
 			surface.SetColor(Color():GetRandom())
 			surface.DrawRect(0,0,50,50)
-		surface.End()
+		render.End2D()
 	render.End()
 end

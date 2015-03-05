@@ -254,7 +254,7 @@ function render.CreateShader(data, vars)
 			name = name,			
 			vertex = {
 				uniform = {
-					pwm_matrix = {mat4 = render.GetProjectionViewWorld2DMatrix},
+					pwm_matrix = {mat4 = render.GetProjectionViewWorldMatrix},
 				},			
 				attributes = {
 					{pos = "vec3"},
@@ -309,7 +309,7 @@ function render.CreateShader(data, vars)
 	if not data.vertex then
 		data.vertex = {
 			uniform = {
-				pwm_matrix = {mat4 = render.GetProjectionViewWorld2DMatrix},
+				pwm_matrix = {mat4 = render.GetProjectionViewWorldMatrix},
 			},			
 			attributes = {
 				{pos = "vec3"},
@@ -466,23 +466,23 @@ function render.CreateShader(data, vars)
 		if info.source then			
 			info.source = preprocess(info.source, info)
 		end
+			
+		local uniform = {}
 		
 		if info.uniform then
-			local uniform = {}
-			
 			for k,v in pairs(info.uniform) do uniform[k] = v end
-			
-			if info.source then
-				for k,v in pairs(render.global_shader_variables) do
-					if info.source:find(k, nil, true) or template:find(k, nil, true) then
-						uniform[k] = v
-					end
+		end
+		
+		if info.source then
+			for k,v in pairs(render.global_shader_variables) do
+				if info.source:find(k, nil, true) or template:find(k, nil, true) then
+					uniform[k] = v
 				end
 			end
-		
-			template = replace_field(template, "UNIFORM", variables_to_string("uniform", uniform))
-			build_output[shader].uniform = translate_fields(uniform)
 		end
+	
+		template = replace_field(template, "UNIFORM", variables_to_string("uniform", uniform))
+		build_output[shader].uniform = translate_fields(uniform)
 		
 		if info.attributes then
 			if shader == "vertex" then

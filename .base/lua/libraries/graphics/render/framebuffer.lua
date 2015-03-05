@@ -3,8 +3,6 @@ local render = (...) or _G.render
 
 local META = prototype.CreateTemplate("framebuffer")
 
-
-
 function render.CreateFrameBuffer(width, height, format)
 	if not render.CheckSupport("GenFramebuffer") then return NULL end
 	
@@ -170,6 +168,11 @@ do
 		
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
 		current_id = id
+		
+		-- TODO: CAMERA OBJECTS
+		if render.render_mode == "3d" then
+			render.SetupProjection3D()
+		end
 	end
 end
 
