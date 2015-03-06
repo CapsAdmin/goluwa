@@ -1348,7 +1348,7 @@ do -- mouse
 			return 
 		end
 		
-		local x, y = render.ScreenToWorld(gui.mouse_pos.x, gui.mouse_pos.y)
+		local x, y = render.camera_2d:ScreenToWorld(gui.mouse_pos.x, gui.mouse_pos.y)
 		
 		self.MousePosition.x = x
 		self.MousePosition.y = y

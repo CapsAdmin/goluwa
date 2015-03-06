@@ -100,20 +100,17 @@ do -- mixer
 		local shader = {
 			name = PASS.Name,
 			vertex = {
-				uniform = {
-					pwm_matrix = {mat4 = render.GetProjectionViewWorldMatrix}
-				},			
 				attributes = {
-					{pos = "vec2"},
+					{pos = "vec3"},
 					{uv = "vec2"},
 				},	
-				source = "gl_Position = pwm_matrix * vec4(pos, 0, 1);"
+				source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);"
 			},
 			
 			fragment = { 
 				uniform = {
-					cam_nearz = {float = function() return render.camera.nearz end},
-					cam_farz = {float = function() return render.camera.farz end},
+					cam_nearz = {float = function() return render.camera_3d.NearZ end},
+					cam_farz = {float = function() return render.camera_3d.FarZ end},
 					self = {texture = function() return render.gbuffer_mixer_buffer:GetTexture() end},
 				},
 				attributes = {
@@ -424,9 +421,7 @@ function render.DrawGBuffer(dt, w, h)
 		gl.Enable(gl.e.GL_DEPTH_TEST)
 		gl.Disable(gl.e.GL_BLEND)
 		
-		render.Start3D()
-			event.Call("Draw3DGeometry", render.gbuffer_model_shader)
-		render.End3D()
+		event.Call("Draw3DGeometry", render.gbuffer_model_shader)
 		
 		gl.Disable(gl.e.GL_DEPTH_TEST)	
 		gl.Enable(gl.e.GL_BLEND)
@@ -434,9 +429,7 @@ function render.DrawGBuffer(dt, w, h)
 		render.SetCullMode("back")
 		gl.Disable(gl.e.GL_DEPTH_TEST)
 		
-		render.Start2D()
-			event.Call("Draw2D", dt)
-		render.End2D()
+		event.Call("Draw2D", dt)
 	return end
 	
 	render.Clear(1,1,1,1)
@@ -459,18 +452,16 @@ function render.DrawGBuffer(dt, w, h)
 	gl.Disable(gl.e.GL_DEPTH_TEST)	
 	gl.Enable(gl.e.GL_BLEND)
 	gl.Disable(gl.e.GL_DEPTH_TEST)
-	
-	render.Start2D()
-		for i, shader in ipairs(render.gbuffer_shaders_sorted) do
-			render.DrawGBufferShader(shader.gbuffer_name)
-		end
 
-		surface.SetTexture(render.gbuffer_mixer_buffer:GetTexture())
-		surface.SetColor(1,1,1,1)
-		surface.DrawRect(0, 0, w, h)		
-		
-		event.Call("Draw2D", dt)
-	render.End2D()
+	for i, shader in ipairs(render.gbuffer_shaders_sorted) do
+		render.DrawGBufferShader(shader.gbuffer_name)
+	end
+
+	surface.SetTexture(render.gbuffer_mixer_buffer:GetTexture())
+	surface.SetColor(1,1,1,1)
+	surface.DrawRect(0, 0, w, h)		
+	
+	event.Call("Draw2D", dt)
 end
 
 function render.EnableGBuffer(b)

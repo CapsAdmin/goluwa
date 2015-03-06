@@ -1,7 +1,3 @@
-render.SetCameraPosition(Vec3(-10, -16.8, 10.02))
-render.SetCameraAngles(Deg3(90, 0, 0))
-render.SetCameraFOV(math.rad(75))
-
 function CalcMovement(dt, cam_ang, cam_fov)
 	cam_ang:Normalize()
 	local speed = dt * 10
@@ -96,17 +92,17 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	if not window.IsOpen() then return end		
 	if not window.GetMouseTrapped() then return end
 		
-	local cam_pos = render.GetCameraPosition()
-	local cam_ang = render.GetCameraAngles()
-	local cam_fov = render.GetCameraFOV()
+	local cam_pos = render.camera_3d:GetPosition()
+	local cam_ang = render.camera_3d:GetAngles()
+	local cam_fov = render.camera_3d:GetFOV()
 		
 	local dir, ang, fov = CalcMovement(dt, cam_ang, cam_fov)
 		
 	cam_pos = cam_pos + dir
 
-	render.SetCameraPosition(cam_pos)
-	render.SetCameraAngles(ang)
-	render.SetCameraFOV(fov)
+	render.camera_3d:SetPosition(cam_pos)
+	render.camera_3d:SetAngles(ang)
+	render.camera_3d:SetFOV(fov)
 end)
 
 local roll = 0
@@ -161,7 +157,9 @@ event.AddListener("Update", "fly_camera_2d", function(dt)
 		pos.x = pos.x - speed
 	end
 	
-	render.camera.pos2d = pos:GetRotated(-roll)
-	render.camera.ang2d = roll
-	render.camera.zoom2d = 1/zoom
+	local pos = pos:GetRotated(-roll)
+	
+	render.camera_2d:SetPosition(Vec3(pos.x, pos.y, 0))
+	render.camera_2d:SetAngles(Ang3(0, roll))
+	render.camera_2d:SetZoom(1/zoom)
 end)  

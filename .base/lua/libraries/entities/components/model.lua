@@ -120,7 +120,7 @@ if GRAPHICS then
 	function COMPONENT:OnDraw3DGeometry(shader, skip_cull)
 		self.sub_models = self.sub_models or {}
 
-		render.SetWorldMatrix(self:GetComponent("transform"):GetMatrix())
+		render.camera_3d:SetWorld(self:GetComponent("transform"):GetMatrix())
 		
 		if not self.Cull or not self.corners or self:GetComponent("transform"):IsPointsVisible(self.corners, render.GetProjectionViewMatrix()) then
 			for i, model in ipairs(self.sub_models) do

@@ -10,7 +10,7 @@ local SHADER = {
 			{uv = "vec2"},
 			{color = "vec4"},
 		},
-		source = "gl_Position = g_projection_view_world * vec4(pos, 1);"
+		source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);"
 	},
 	fragment = { 
 		attributes = {
@@ -73,7 +73,7 @@ function surface.IsReady()
 end
 
 function surface.GetSize()
-	return render.camera.w, render.camera.h
+	return render.camera_2d.Viewport.w, render.camera_2d.Viewport.h
 end
 
 local X, Y = 0, 0
@@ -335,7 +335,7 @@ do
 	end
 end
 
-function surface.DrawRect(x,y, w,h, a, ox,oy)	
+function surface.DrawRect(x,y, w,h, a, ox,oy)
 	surface.PushMatrix()			
 		surface.Translate(x, y)
 		
