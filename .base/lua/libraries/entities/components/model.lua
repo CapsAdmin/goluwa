@@ -122,7 +122,7 @@ if GRAPHICS then
 
 		render.camera_3d:SetWorld(self:GetComponent("transform"):GetMatrix())
 		
-		if not self.Cull or not self.corners or self:GetComponent("transform"):IsPointsVisible(self.corners, render.GetProjectionViewMatrix()) then
+		if not self.Cull or not self.corners or self:GetComponent("transform"):IsPointsVisible(self.corners, render.camera_3d:GetMatrices().projection_view) then
 			for i, model in ipairs(self.sub_models) do
 				
 				if not skip_cull then 

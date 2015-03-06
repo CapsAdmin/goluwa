@@ -31,9 +31,12 @@ META:GetSet("FarZ", 32000, {callback = "InvalidateProjection"})
 META:GetSet("Viewport", Rect(0, 0, 1000, 1000), {callback = "InvalidateProjection"})
 META:GetSet("3D", true, {callback = "Invalidate"})
 
-META:GetSet("Projection", Matrix44(), {callback = "InvalidateProjection"})
-META:GetSet("View", Matrix44(), {callback = "InvalidateView"})
+META:GetSet("Projection", nil, {callback = "InvalidateProjection"})
+META:GetSet("View", nil, {callback = "InvalidateView"})
+
 META:GetSet("World", Matrix44(), {callback = "InvalidateWorld"})
+
+local gl = require("libraries.ffi.opengl") -- OpenGL
 
 function META:ApplyViewport()
 	gl.Viewport(self.Viewport.x, self.Viewport.y, self.Viewport.w, self.Viewport.h)
@@ -174,7 +177,7 @@ do -- 3d 2d
 			
 			local m = (self.View * self:GetWorld()):GetInverse()
 			
-			cursor_x, cursor_y, cursor_z = m:TransformVector(self.Projection:GetInverse():TransformVector(x, -y, 1))
+			cursor_x, cursor_y, cursor_z = m:TransformVector(self:GetMatrices().projection_inverse:TransformVector(x, -y, 1))
 			local camera_x, camera_y, camera_z = m:TransformVector(0, 0, 0)
 
 			--local intersect = camera + ( camera.z / ( camera.z - cursor.z ) ) * ( cursor - camera )
@@ -185,7 +188,7 @@ do -- 3d 2d
 					
 			return intersect_x, intersect_y
 		else
-			local x, y = (self.View * self:GetWorld()):GetInverse():TransformVector(x, y, 1)
+			local x, y = (self:GetMatrices().view * self:GetMatrices().world):GetInverse():TransformVector(x, y, 1)
 			return x, y
 		end
 	end
@@ -196,46 +199,50 @@ function META:Rebuild(type)
 	local vars = self.shader_variables
 	
 	if type == nil or type == "projection" then
-		local proj = self.Projection
-		
-		proj:LoadIdentity()
-		
-		if self:Get3D() then
-			proj:Perspective(self.FOV, self.FarZ, self.NearZ, self.Viewport.w / self.Viewport.h)
+		if self.Projection then
+			vars.projection = self.Projection
 		else
-			proj:Ortho(0, self.Viewport.w, self.Viewport.h, 0, -1, 1)
+			local proj = Matrix44()
+			
+			if self:Get3D() then
+				proj:Perspective(self.FOV, self.FarZ, self.NearZ, self.Viewport.w / self.Viewport.h)
+			else
+				proj:Ortho(0, self.Viewport.w, self.Viewport.h, 0, -1, 1)
+			end
+			
+			vars.projection = proj
 		end
-		
-		vars.projection = proj
 	end
 	
 	if type == nil or type == "view" then
-		local view = self.View
-		
-		view:LoadIdentity()
-
-		if self:Get3D() then
-			-- source engine style camera angles
-			view:Rotate(self.Angles.r, 0, 0, 1)
-			view:Rotate(self.Angles.p + math.pi/2, 1, 0, 0)
-			view:Rotate(self.Angles.y, 0, 0, 1)
-
-			view:Translate(self.Position.y, self.Position.x, self.Position.z)
+		if self.View then
+			vars.view = self.View
 		else
-			local x, y = self.Viewport.w/2, self.Viewport.h/2
-			view:Translate(x, y, 0)
-			view:Rotate(self.Angles.y, 0, 0, 1)
-			view:Translate(-x, -y, 0)
+			local view = Matrix44()
 			
-			view:Translate(self.Position.x, self.Position.y, 0)
+			if self:Get3D() then
+				-- source engine style camera angles
+				view:Rotate(self.Angles.r, 0, 0, 1)
+				view:Rotate(self.Angles.p + math.pi/2, 1, 0, 0)
+				view:Rotate(self.Angles.y, 0, 0, 1)
+
+				view:Translate(self.Position.y, self.Position.x, self.Position.z)
+			else
+				local x, y = self.Viewport.w/2, self.Viewport.h/2
+				view:Translate(x, y, 0)
+				view:Rotate(self.Angles.y, 0, 0, 1)
+				view:Translate(-x, -y, 0)
+				
+				view:Translate(self.Position.x, self.Position.y, 0)
+				
+				local x, y = self.Viewport.w/2, self.Viewport.h/2
+				view:Translate(x, y, 0)
+				view:Scale(self.Zoom, self.Zoom, 1)
+				view:Translate(-x, -y, 0)
+			end
 			
-			local x, y = self.Viewport.w/2, self.Viewport.h/2
-			view:Translate(x, y, 0)
-			view:Scale(self.FOV, self.FOV, 1)
-			view:Translate(-x, -y, 0)
+			vars.view = view
 		end
-		
-		vars.view = view
 	end
 	
 	if type == nil or type == "projection" or type == "view" then
@@ -260,14 +267,17 @@ function META:Rebuild(type)
 end
 
 function META:InvalidateProjection()
+	if self.rebuild_matrix then self.rebuild_matrix = true return end
 	self.rebuild_matrix = "projection"
 end
 
 function META:InvalidateView()
+	if self.rebuild_matrix then self.rebuild_matrix = true return end
 	self.rebuild_matrix = "view"
 end
 
 function META:InvalidateWorld()
+	if self.rebuild_matrix then self.rebuild_matrix = true return end
 	self.rebuild_matrix = "world"
 end
 
@@ -277,7 +287,11 @@ end
 
 function META:GetMatrices()
 	if self.rebuild_matrix then
-		self:Rebuild(self.rebuild_matrix)
+		if self.rebuild_matrix == true then
+			self:Rebuild()
+		else
+			self:Rebuild(self.rebuild_matrix)
+		end
 		self.rebuild_matrix = false
 	end
 	

@@ -168,11 +168,6 @@ do
 		
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
 		current_id = id
-		
-		-- TODO: CAMERA OBJECTS
-		if render.render_mode == "3d" then
-			render.SetupProjection3D()
-		end
 	end
 end
 

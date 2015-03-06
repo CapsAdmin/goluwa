@@ -41,15 +41,9 @@ if GRAPHICS then
 	function COMPONENT:OnDraw3DLights(shader)
 		if not self.light_mesh then return end -- grr
 		
-		local transform = self:GetComponent("transform")
-		render.camera_3d:SetWorld(transform:GetMatrix())
-				
-		local mat = render.camera_3d:GetMatrices().view_world
-		local x,y,z = mat:GetTranslation()
-		shader.light_view_pos:Set(x,y,z)
-	--	shader.light_world_pos:Set(matrix:GetTranslation())
-		shader.light_dir = -transform:GetRotation():GetForward()
-		shader.light_radius = transform:GetSize()
+		if self.Shadow then			
+			self:DrawShadowMap(shader)
+		end
 		
 		-- automate this!!
 		shader.light_color = self.Color
@@ -58,9 +52,14 @@ if GRAPHICS then
 		shader.light_point_shadow = self.ShadowCubemap and 1 or 0
 		shader.project_from_camera = self.ProjectFromCamera and 1 or 0
 		
-		if self.Shadow then			
-			self:DrawShadowMap(shader)
-		end
+		local transform = self:GetComponent("transform")
+		
+		render.camera_3d:SetWorld(transform:GetMatrix())
+		local mat = render.camera_3d:GetMatrices().view_world
+		local x,y,z = mat:GetTranslation()
+		shader.light_view_pos:Set(x,y,z)
+		shader.light_radius = transform:GetSize()
+		
 		shader:Bind()
 		self.light_mesh:Draw()
 	end
@@ -163,7 +162,7 @@ if GRAPHICS then
 		self.shadow_map:Clear()
 				
 		---self.shadow_map:SetWriteBuffer("depth")
-		
+				
 		for i, info in ipairs(directions) do
 			if self.ShadowCubemap then
 				self.shadow_map:SetReadBuffer("depth")
@@ -181,36 +180,32 @@ if GRAPHICS then
 
 			if self.ProjectFromCamera then
 				pos = render.camera_3d:GetPosition()
-				view:Translate(pos.y, pos.x, pos.z)			
+				view:Translate(pos.y, pos.x, pos.z)
 			else
 				view:Translate(pos.y, pos.x, pos.z)			
 			end
-			
-			self.camera = self.camera or render.CreateCamera()
-			
+		
 			-- setup the projection matrix
 			local projection = Matrix44()
 			
 			if self.OrthoSize == 0 then
-				projection:Perspective(math.rad(self.FOV), render.camera.FarZ, render.camera.NearZ, render.camera.Viewport.w / render.camera.Viewport.h) 
+				projection:Perspective(math.rad(self.FOV), render.camera_3d.FarZ, render.camera_3d.NearZ, render.camera_3d.Viewport.w / render.camera_3d.Viewport.h) 
 			else
 				local size = self.OrthoSize * (ortho_divider or 1)
 				projection:Ortho(-size, size, -size, size, size, -size) 
 			end
-				
-			self.camera:SetView(view)
-			self.camera:SetProjection(projection)
 			
-			shader.light_projection_view = self.camera:GetMatrices().projection_view
+			render.camera_3d:SetView(view)
+			render.camera_3d:SetProjection(projection)
 			
-			local LOL = render.camera_3d
-			render.camera_3d = self.camera
+			shader.light_projection_view = render.camera_3d:GetMatrices().projection_view
 			
 			-- render the scene with this matrix
 			render.SetCullMode("front")
 			event.Call("Draw3DGeometry", render.shadow_map_shader, true)
 			
-			render.camera_3d = LOL
+			render.camera_3d:SetView()
+			render.camera_3d:SetProjection()
 			
 			if not self.ShadowCubemap then 
 				break 
