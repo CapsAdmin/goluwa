@@ -58,7 +58,7 @@ function PASS:Draw3D()
 		
 		--local scale = 16
 		--local view = Matrix44()
-		--view = render.SetupView3D(Vec3(234.1, -234.1, 361.967)*scale + render.GetCameraPosition(), render.GetCameraAngles(), render.GetCameraFOV(), view)
+		--view = render.SetupView3D(Vec3(234.1, -234.1, 361.967)*scale + render.camera_3d:GetPosition(), render.camera_3d:GetAngles(), render.camera_3d:GetFOV(), view)
 		--view:Scale(scale,scale,scale)
 		--event.Call("Draw3DGeometry", render.gbuffer_model_shader, true)			
 	render.gbuffer:End()

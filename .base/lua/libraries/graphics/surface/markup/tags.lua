@@ -244,7 +244,7 @@ META.tags.physics =
 			part.vel.y = part.vel.y * -part.drag
 		end
 		
-		render.PushWorldMatrix()
+		surface.PushMatrix()
 
 		
 		local center_x = self.tag_center_x
@@ -261,7 +261,7 @@ META.tags.physics =
 	end,
 
 	post_draw = function()
-		render.PopWorldMatrix()
+		surface.PopMatrix()
 	end,
 }
 

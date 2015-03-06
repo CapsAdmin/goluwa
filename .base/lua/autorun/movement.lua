@@ -4,13 +4,13 @@ if CLIENT then
 		local ghost = client.nv.ghost or NULL
 		if ghost:IsValid() then
 			local pos = ghost:GetComponent("physics"):GetPosition() 
-			render.SetCameraPosition(Vec3(-pos.y, -pos.x, -pos.z))
+			render.camera_3d:SetPosition(Vec3(-pos.y, -pos.x, -pos.z))
 		end
 		
 		if not window.IsOpen() or not window.GetMouseTrapped() then return end
 		
-		local angles = render.GetCameraAngles()
-		local fov = render.GetCameraFOV()
+		local angles = render.camera_3d:GetAngles()
+		local fov = render.camera_3d:GetFOV()
 		
 		local dir, angles, fov = CalcMovement(1, angles, fov)
 		
@@ -56,8 +56,8 @@ if CLIENT then
 		cmd.fov = fov
 		cmd.mouse_pos = window.GetMousePosition()
 		
-		render.SetCameraAngles(cmd.angles)
-		render.SetCameraFOV(cmd.fov)
+		render.camera_3d:SetAngles(cmd.angles)
+		render.camera_3d:SetFOV(cmd.fov)
 		
 		return cmd
 	end) 

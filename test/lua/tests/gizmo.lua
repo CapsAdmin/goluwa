@@ -21,7 +21,7 @@ event.AddListener("PreDrawMenu", "gizmo", function()
     render.SetCullMode("none")
     render.EnableDepth(true)
     
-    render.PushWorldMatrixEx(pos, nil, scale)
+    render.camera_2d:PushWorldEx(pos, nil, scale)
         for i, info in ipairs(directions) do
             render.Start3D2DEx(nil, info.ang)            
 				local mouse_pos = Vec2(render.ScreenToWorld(surface.GetMousePosition()))
@@ -80,5 +80,5 @@ event.AddListener("PreDrawMenu", "gizmo", function()
 			
 			surface.DrawRect(-1, -1, 2, 2)
         render.End3D2D()    
-    render.PopWorldMatrix()
+    render.camera_2d:PopWorld()
 end)

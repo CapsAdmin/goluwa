@@ -185,7 +185,7 @@ do -- drawing
 	
 		if USE_MATRIX then	
 			self:RebuildMatrix()
-			render.SetWorldMatrix(self.Matrix)
+			render.camera_2d:SetWorld(self.Matrix)
 			
 			if not from_cache then
 				self:CalcMouse()
@@ -200,9 +200,9 @@ do -- drawing
 			local w = (self.Size.w)/2
 			local h = (self.Size.h)/2
 
-			render.Translate(w, h, 0)
-			render.Rotate(self.Angle, 0, 0, 1)
-			render.Translate(-w, -h, 0)
+			surface.Translatef(w, h, 0)
+			surface.Rotate(self.Angle)
+			surface.Translatef(-w, -h, 0)
 			
 			if not from_cache then
 				self:CalcMouse()
@@ -221,22 +221,22 @@ do -- drawing
 				not self.AlwaysCalcMouse)
 			then
 				if not self.DrawPositionOffset:IsZero() then
-					render.Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
+					surface.Translatef(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
 				end
 				
 				if self.DrawScaleOffset.x ~= 1 or self.DrawScaleOffset.y ~= 1 then
-					render.Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y, 1)
+					surface.Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y)
 				end
 				
 				if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
 					local w = (self.Size.w + self.DrawSizeOffset.w)/2
 					local h = (self.Size.h + self.DrawSizeOffset.h)/2
 
-					render.Translate(w, h, 0)
-					render.Rotate(self.DrawAngleOffset.p, 0, 0, 1)
-					render.Rotate(self.DrawAngleOffset.y, 0, 1, 0)
-					render.Rotate(self.DrawAngleOffset.r, 1, 0, 0)
-					render.Translate(-w, -h, 0)
+					surface.Translatef(w, h, 0)
+					render.camera_2d:RotateWorld(self.DrawAngleOffset.p, 0, 0, 1)
+					render.camera_2d:RotateWorld(self.DrawAngleOffset.y, 0, 1, 0)
+					render.camera_2d:RotateWorld(self.DrawAngleOffset.r, 1, 0, 0)
+					surface.Translatef(-w, -h, 0)
 				end
 			end
 		end
@@ -348,7 +348,7 @@ do -- drawing
 		end
 		
 		if USE_MATRIX then
-			--render.PopWorldMatrix()
+			--render.camera_2d:PopWorld()
 		else
 			surface.PopMatrix()
 		end
@@ -681,8 +681,7 @@ do -- cached rendering
 			if USE_MATRIX then
 				--self:InvalidateMatrix()
 				self:RebuildMatrix()
-			--	render.Start2D()
-				render.SetWorldMatrix(self.Matrix)
+				surface.SetWorldMatrix(self.Matrix)
 			else
 				surface.PushMatrix()
 				
@@ -693,11 +692,7 @@ do -- cached rendering
 				
 				--surface.Scale(1, self.Size.h/2)
 			end
-		
-			--render.SetupProjection2D(self.Size.w, self.Size.h)
-		
-		
-		
+				
 			if self:IsDragging() or self:IsInsideParent() then
 				self:OnPreDraw()
 				self:OnDraw()
@@ -715,8 +710,7 @@ do -- cached rendering
 			self.cache_dirty = false
 		
 			if USE_MATRIX then
-				--render.PopWorldMatrix()
-				--render.End2D()
+
 			else
 				surface.PopMatrix()
 			end
@@ -814,7 +808,7 @@ do -- drag drop
 			self.drag_panel_start_pos = self:GetPosition()
 		end
 
-		local drag_pos = Vec2(render.camera_2d:ScreenToWorld(self.drag_world_pos:Unpack()))
+		local drag_pos = Vec2(surface.ScreenToWorld(self.drag_world_pos:Unpack()))
 
 		self:SetPosition(self.drag_panel_start_pos + self:GetMousePosition() - drag_pos)
 
@@ -1348,7 +1342,7 @@ do -- mouse
 			return 
 		end
 		
-		local x, y = render.camera_2d:ScreenToWorld(gui.mouse_pos.x, gui.mouse_pos.y)
+		local x, y = surface.ScreenToWorld(gui.mouse_pos.x, gui.mouse_pos.y)
 		
 		self.MousePosition.x = x
 		self.MousePosition.y = y

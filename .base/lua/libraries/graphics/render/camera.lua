@@ -1,25 +1,5 @@
 local render = ... or _G.render
 
-render.camera_shader_matrices = {
-	"projection",
-	"projection_inverse",
-    
-	"view",
-	"view_inverse",
-    
-	"world",
-	"world_inverse",
-    
-	"projection_view",
-	"projection_view_inverse",
-    
-	"view_world",
-	"view_world_inverse",
-	"projection_view_world",
-    
-	"normal_matrix",
-}
-
 local META = prototype.CreateTemplate("camera")
 
 META:GetSet("Position", Vec3(0, 0, 0), {callback = "InvalidateView"})
@@ -61,17 +41,17 @@ do
 					
 		-- source engine style world orientation
 		if pos then
-			render.Translate(-pos.y, -pos.x, -pos.z) -- Vec3(left/right, back/forth, down/up)	
+			render.camera_2d:TranslateWorld(-pos.y, -pos.x, -pos.z) -- Vec3(left/right, back/forth, down/up)	
 		end
 		
 		if ang then
-			render.Rotate(-ang.y, 0, 0, 1)
-			render.Rotate(-ang.r, 0, 1, 0)
-			render.Rotate(-ang.p, 1, 0, 0) 
+			render.camera_2d:RotateWorld(-ang.y, 0, 0, 1)
+			render.camera_2d:RotateWorld(-ang.r, 0, 1, 0)
+			render.camera_2d:RotateWorld(-ang.p, 1, 0, 0) 
 		end
 		
 		if scale then 
-			render.Scale(scale.x, scale.y, scale.z) 
+			render.camera_2d:ScaleWorld(scale.x, scale.y, scale.z) 
 		end
 
 		self.matrix_stack_i = self.matrix_stack_i + 1
@@ -154,18 +134,18 @@ do -- 3d 2d
 		self:Set3D(true)
 		self:Rebuild()
 		
-		render.PushWorldMatrixEx(pos, ang, Vec3(scale.x / self.Viewport.w, scale.y / self.Viewport.h, 1))
+		render.camera_2d:PushWorldEx(pos, ang, Vec3(scale.x / self.Viewport.w, scale.y / self.Viewport.h, 1))
 	end
 
 	function META:Start3D2D(mat, dont_multiply)
 		self:Set3D(true)
 		self:Rebuild()
 		
-		render.PushWorldMatrix(mat, dont_multiply)
+		render.camera_2d:PushWorld(mat, dont_multiply)
 	end
 
 	function META:End3D2D()
-		render.PopWorldMatrix()	
+		render.camera_2d:PopWorld()	
 		self:Set3D(false)
 		self:Rebuild()
 	end
@@ -306,3 +286,42 @@ function render.CreateCamera()
 	self:Rebuild()
 	return self
 end
+
+render.camera_2d = render.CreateCamera()
+render.camera_2d:Set3D(false)
+
+render.camera_3d = render.CreateCamera()
+
+local variables = {
+	"projection",
+	"projection_inverse",
+    
+	"view",
+	"view_inverse",
+    
+	"world",
+	"world_inverse",
+    
+	"projection_view",
+	"projection_view_inverse",
+    
+	"view_world",
+	"view_world_inverse",
+	"projection_view_world",
+    
+	"normal_matrix",
+}
+
+for i, v in pairs(variables) do
+	render.SetGlobalShaderVariable("g_" .. v .. "_2d", function() return render.camera_2d:GetMatrices()[v] end, "mat4")
+	render.SetGlobalShaderVariable("g_" .. v, function() return render.camera_3d:GetMatrices()[v] end, "mat4")
+end
+
+render.SetGlobalShaderVariable("g_cam_nearz", function() return render.camera_3d.NearZ end, "float")
+render.SetGlobalShaderVariable("g_cam_farz", function() return render.camera_3d.FarZ end, "float")
+
+render.AddGlobalShaderCode([[
+float get_depth(vec2 uv) 
+{
+	return (2.0 * g_cam_nearz) / (g_cam_farz + g_cam_nearz - texture(tex_depth, uv).r * (g_cam_farz - g_cam_nearz));
+}]], "get_depth")

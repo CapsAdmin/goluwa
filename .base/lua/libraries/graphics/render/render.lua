@@ -434,7 +434,6 @@ if RELOAD then return end
 include("enum_translate.lua", render)
 include("generated_textures.lua", render)
 include("camera.lua", render)
-include("matrices.lua", render)
 include("scene.lua", render)
 include("texture.lua", render)
 include("framebuffer.lua", render)
@@ -453,5 +452,25 @@ end
 include("cvars.lua", render)
 include("globals.lua", render)
 include("debug.lua", render)
+
+
+-- shadertoy
+
+--[[
+Shader Inputs
+uniform vec3      iResolution;           // viewport resolution (in pixels)
+uniform float     iGlobalTime;           // shader playback time (in seconds)
+uniform float     iChannelTime[4];       // channel playback time (in seconds)
+uniform vec3      iChannelResolution[4]; // channel resolution (in pixels)
+uniform vec4      iMouse;                // mouse pixel coords. xy: current (if MLB down), zw: click
+uniform samplerXX iChannel0..3;          // input channel. XX = 2D/Cube
+uniform vec4      iDate;                 // (year, month, day, time in seconds)
+uniform float     iSampleRate;           // sound sample rate (i.e., 44100)]]
+
+render.SetGlobalShaderVariable("g_screen_size", function() return Vec2(surface.GetSize()) end, "vec2")
+render.SetGlobalShaderVariable("iResolution", function() return Vec2(render.camera.w, render.camera.h, render.camera.ratio) end, "vec3")
+render.SetGlobalShaderVariable("iGlobalTime", function() return system.GetElapsedTime() end, "float")
+render.SetGlobalShaderVariable("iMouse", function() return Vec2(surface.GetMousePosition()) end, "float")
+render.SetGlobalShaderVariable("iDate", function() return Color(os.date("%y"), os.date("%m"), os.date("%d"), os.date("%s")) end, "vec4")
 
 return render
