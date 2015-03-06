@@ -45,7 +45,7 @@ META.tags.translate =
 	arguments = {0, 0},
 
 	pre_draw = function(markup, self, x, y, dx, dy)
-		render.PushWorldMatrix()
+		surface.PushMatrix()
 		
 		surface.Translate(dx, dy)
 
@@ -53,7 +53,7 @@ META.tags.translate =
 	end,
 
 	post_draw = function()
-		render.PopWorldMatrix()
+		surface.PopMatrix()
 	end,
 }
 
@@ -66,7 +66,7 @@ META.tags.scale =
 	end,
 
 	pre_draw = function(markup, self, x, y, scaleX, scaleY)
-		render.PushWorldMatrix()
+		surface.PushMatrix()
 		
 		self.matrixDeterminant = scaleX * scaleY
 
@@ -95,7 +95,7 @@ META.tags.scale =
 			set_cull_clockwise(false)
 		end
 
-		render.PopWorldMatrix()
+		surface.PopMatrix()
 	end,
 }
 
@@ -117,7 +117,7 @@ META.tags.rotate =
 	arguments = {45},
 
 	pre_draw = function(markup, self, x, y, deg)
-		render.PushWorldMatrix()
+		surface.PushMatrix()
 
 		local center_x = self.tag_center_x
 		local center_y = self.tag_center_y
@@ -130,7 +130,7 @@ META.tags.rotate =
 	end,
 
 	post_draw = function()
-		render.PopWorldMatrix()
+		surface.PopMatrix()
 	end,
 }
 
@@ -149,7 +149,7 @@ META.tags.matrixez =
 		local centerX = self.tag_center_x
 		local centerY = self.tag_center_y
 
-		render.PushWorldMatrix()
+		surface.PushMatrix()
 		
 		surface.Translate(x, centerY)
 			surface.Translate(X,Y)
@@ -174,7 +174,7 @@ META.tags.matrixez =
 			set_cull_clockwise(false)
 		end
 
-		render.PopWorldMatrix()
+		surface.PopMatrix()
 	end,
 }
 
@@ -249,7 +249,7 @@ META.tags.matrix =
 
 		self.matrixDeterminant = detM2x2(a11, a12, a21, a22)
 		
-		render.PushWorldMatrix()
+		surface.PushMatrix()
 
 		surface.Translate(x, y)
 			surface.Translate(dx, dy)
@@ -270,7 +270,7 @@ META.tags.matrix =
 			set_cull_clockwise(false)
 		end
 
-		render.PopWorldMatrix()
+		surface.PopMatrix()
 	end,
 }
 

@@ -39,7 +39,7 @@ end
 
 function utility.LinePlaneIntersection(pos, normal, screen_pos)
 	local ln = utility.ScreenToWorldDirection(screen_pos)
-	local lp = render.GetCameraPosition() - pos
+	local lp = render.camera_3d:GetPosition() - pos
 	local t = lp:GetDot(normal) / ln:GetDot(normal)
 	
 	if t < 0 then 
@@ -58,9 +58,9 @@ function utility.PointToAxis(pos, axis, screen_pos)
 end
 
 function utility.ScreenToWorldDirection(screen_pos, cam_pos, cam_ang, cam_fov, screen_width, screen_height)
-	cam_pos = cam_pos or render.GetCameraPosition()
-	cam_ang = cam_ang or render.GetCameraAngles()
-	cam_fov = cam_fov or render.GetCameraFOV()
+	cam_pos = cam_pos or render.camera_3d:GetPosition()
+	cam_ang = cam_ang or render.camera_3d:GetAngles()
+	cam_fov = cam_fov or render.camera_3d:GetFOV()
 	screen_width = screen_width or render.GetWidth()
 	screen_height = screen_height or render.GetHeight()
 	
@@ -82,11 +82,11 @@ function utility.ScreenToWorldDirection(screen_pos, cam_pos, cam_ang, cam_fov, s
 end
 
 function utility.WorldPositionToScreen(position, cam_pos, cam_ang, screen_width, screen_height, cam_fov)
-	cam_pos = cam_pos or render.GetCameraPosition()
-	cam_ang = cam_ang or render.GetCameraAngles()
+	cam_pos = cam_pos or render.camera_3d:GetPosition()
+	cam_ang = cam_ang or render.camera_3d:GetAngles()
 	screen_width = screen_width or render.GetWidth()
 	screen_height = screen_height or render.GetHeight()
-	cam_fov = cam_fov or render.GetCameraFOV()
+	cam_fov = cam_fov or render.camera_3d:GetFOV()
 
 	local dir = cam_pos - position
 	dir:Normalize()

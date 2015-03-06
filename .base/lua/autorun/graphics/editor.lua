@@ -85,7 +85,7 @@ do -- PUT ME IN TRANSFORM
 					final = get_target_position(pos + localpos:GetDot(up)*up - up*mctrl.size, ang)
 				end
 			elseif axis == AXIS_VIEW then
-				local localpos = utility.LinePlaneIntersection(pos, render.GetCameraAngles():GetForward(), mouse_pos)
+				local localpos = utility.LinePlaneIntersection(pos, render.camera_3d:GetAngles():GetForward(), mouse_pos)
 				
 				if localpos then
 					final = get_target_position(pos + localpos, ang)
@@ -339,7 +339,7 @@ function editor.Open()
 			
 			if node.ent:HasComponent("transform") then
 				add(L"goto", function()
-					render.SetCameraPosition(node.ent:GetPosition())
+					render.camera_3d:SetPosition(node.ent:GetPosition())
 				end, "textures/silkicons/brick_go.png")
 			end
 		end
@@ -369,7 +369,7 @@ function editor.Open()
 				table.insert(tbl, {L(info.name), function() 
 					local ent = entities.CreateEntity(config_name, node and node.ent) 
 					if ent.SetPosition then 
-						ent:SetPosition(render.GetCameraPosition())
+						ent:SetPosition(render.camera_3d:GetPosition())
 					end
 				end, info.icon})				
 			end

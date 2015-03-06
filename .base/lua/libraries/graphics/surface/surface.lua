@@ -83,24 +83,28 @@ local R,G,B,A,A2 = 1,1,1,1,1
 include("fonts/fonts.lua", surface)
 
 do -- render world matrix helpers
-	function surface.Translate(x, y)	
-		render.Translate(math.ceil(tonumber(x)), math.ceil(tonumber(y)), 0)
+	function surface.Translate(x, y, z)	
+		render.camera_2d:TranslateWorld(math.ceil(tonumber(x)), math.ceil(tonumber(y)), z or 0)
 	end
 	
-	function surface.Rotate(a)		
-		render.Rotate(a, 0, 0, 1)
+	function surface.Translatef(x, y, z)	
+		render.camera_2d:TranslateWorld(x, y, z or 0)
 	end
 	
-	function surface.Scale(w, h)
-		render.Scale(w, h or w, 1)
+	function surface.Rotate(a)
+		render.camera_2d:RotateWorld(a, 0, 0, 1)
+	end
+	
+	function surface.Scale(w, h, z)
+		render.camera_2d:ScaleWorld(w, h or w, z or 1)
 	end
 	
 	function surface.LoadIdentity()
-		render.LoadIdentity()
+		render.camera_2d:LoadIdentityWorld()
 	end
 		
 	function surface.PushMatrix(x,y, w,h, a, dont_multiply)
-		render.PushWorldMatrixEx(nil, nil, nil, dont_multiply)
+		render.camera_2d:PushWorldEx(nil, nil, nil, dont_multiply)
 
 		if x and y then surface.Translate(x, y) end
 		if w and h then surface.Scale(w, h) end
@@ -108,7 +112,19 @@ do -- render world matrix helpers
 	end
 	
 	function surface.PopMatrix()
-		render.PopWorldMatrix() 
+		render.camera_2d:PopWorld() 
+	end
+	
+	function surface.SetWorldMatrix(mat)
+		render.camera_2d:SetWorld(mat)
+	end
+	
+	function surface.GetWorldMatrix(mat)
+		return render.camera_2d:GetWorld()
+	end
+	
+	function surface.ScreenToWorld(x, y)
+		return render.camera_2d:ScreenToWorld(x, y)
 	end
 end
 
@@ -396,7 +412,7 @@ function surface.SetScissor(x, y, w, h)
 	if not x then 
 		render.SetScissor() 
 	else
-		x, y = render.ScreenToWorld(-x, -y)
+		x, y = surface.ScreenToWorld(-x, -y)
 		render.SetScissor(-x, -y, w, h)
 	end
 end

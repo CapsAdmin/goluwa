@@ -257,7 +257,7 @@ event.AddListener("Draw2D", "zsnow", function(dt)
 					i = (i / 4) * math.pi
 					
 					surface.PushMatrix(math.sin(i)/2, math.cos(i)/2)
-						render.Translate(-0.4, -0.4, 0)
+						render.camera_2d:TranslateWorld(-0.4, -0.4, 0)
 						surface.SetColor(1,1,1,1)
 						surface.SetTexture(fb:GetTexture())
 						surface.DrawRect(0,0,128,128)
