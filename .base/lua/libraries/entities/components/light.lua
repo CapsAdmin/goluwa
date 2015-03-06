@@ -42,9 +42,9 @@ if GRAPHICS then
 		if not self.light_mesh then return end -- grr
 		
 		local transform = self:GetComponent("transform")
-		render.SetWorldMatrix(transform:GetMatrix())
+		render.camera_3d:SetWorld(transform:GetMatrix())
 				
-		local mat = render.GetViewWorldMatrix()
+		local mat = render.camera_3d:GetMatrices().view_world
 		local x,y,z = mat:GetTranslation()
 		shader.light_view_pos:Set(x,y,z)
 	--	shader.light_world_pos:Set(matrix:GetTranslation())
@@ -66,12 +66,12 @@ if GRAPHICS then
 	end
 						
 	local directions = {
-		{ e = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X, rot = QuatDeg3(0,90,0)},
-		{ e = gl.e.GL_TEXTURE_CUBE_MAP_NEGATIVE_X, rot = QuatDeg3(0,-90,0)},
-		{ e = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_Y, rot = QuatDeg3(90,0,0)},
-		{ e = gl.e.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, rot = QuatDeg3(-90,0,0)},
-		{ e = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_Z, rot = QuatDeg3(0,0,0)},
-		{ e = gl.e.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, rot = QuatDeg3(180,0,0)},
+		{e = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X, rot = QuatDeg3(0,90,0)},
+		{e = gl.e.GL_TEXTURE_CUBE_MAP_NEGATIVE_X, rot = QuatDeg3(0,-90,0)},
+		{e = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_Y, rot = QuatDeg3(90,0,0)},
+		{e = gl.e.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, rot = QuatDeg3(-90,0,0)},
+		{e = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_Z, rot = QuatDeg3(0,0,0)},
+		{e = gl.e.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, rot = QuatDeg3(180,0,0)},
 	}
 	
 	render.shadow_map_shader = nil
@@ -161,8 +161,6 @@ if GRAPHICS then
 		
 		self.shadow_map:Begin()
 		self.shadow_map:Clear()
-		
-		render.Start3D()
 				
 		---self.shadow_map:SetWriteBuffer("depth")
 		
@@ -182,36 +180,43 @@ if GRAPHICS then
 			end
 
 			if self.ProjectFromCamera then
-				pos = render.GetCameraPosition()
+				pos = render.camera_3d:GetPosition()
 				view:Translate(pos.y, pos.x, pos.z)			
 			else
 				view:Translate(pos.y, pos.x, pos.z)			
 			end
+			
+			self.camera = self.camera or render.CreateCamera()
 			
 			-- setup the projection matrix
 			local projection = Matrix44()
 			
 			if self.OrthoSize == 0 then
-				projection:Perspective(math.rad(self.FOV), render.camera.farz, render.camera.nearz, render.camera.ratio) 
+				projection:Perspective(math.rad(self.FOV), render.camera.FarZ, render.camera.NearZ, render.camera.Viewport.w / render.camera.Viewport.h) 
 			else
 				local size = self.OrthoSize * (ortho_divider or 1)
 				projection:Ortho(-size, size, -size, size, size, -size) 
 			end
 				
-			render.SetViewMatrix(view)
-			render.SetProjectionMatrix(projection)
+			self.camera:SetView(view)
+			self.camera:SetProjection(projection)
 			
-			shader.light_projection_view = render.GetProjectionViewMatrix()
+			shader.light_projection_view = self.camera:GetMatrices().projection_view
+			
+			local LOL = render.camera_3d
+			render.camera_3d = self.camera
 			
 			-- render the scene with this matrix
 			render.SetCullMode("front")
 			event.Call("Draw3DGeometry", render.shadow_map_shader, true)
 			
+			render.camera_3d = LOL
+			
 			if not self.ShadowCubemap then 
 				break 
 			end
 		end
-					
+		
 		shader.cascade_pass = i
 		shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
 		
@@ -221,11 +226,7 @@ if GRAPHICS then
 		
 		gl.Disable(gl.e.GL_DEPTH_TEST)
 		
-		render.End3D()
 		self.shadow_map:End()
-		
-		render.SetupProjection3D()
-		render.SetupView3D()
 	end
 end
 
@@ -233,13 +234,4 @@ prototype.RegisterComponent(COMPONENT)
 
 if RELOAD then
 	render.InitializeGBuffer()
-	
-	do return end
-	event.Delay(0.1, function()
-	world.sun:SetShadow(true)
-	world.sun:SetPosition(render.GetCameraPosition()) 
-	world.sun:SetAngles(render.GetCameraAngles()) 
-	world.sun:SetFOV(render.GetCameraFOV())
-	world.sun:SetSize(1000) 
-	end) 
 end

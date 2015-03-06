@@ -18,10 +18,8 @@ function PASS:Draw3D()
 	render.SetCullMode("front")
 	
 	render.gbuffer:Begin("light")
-		render.Start3D()
 		render.gbuffer:Clear(0,0,0,0, "light")
 		event.Call("Draw3DLights", render.gbuffer_light_shader)
-		render.End3D()
 	render.gbuffer:End() 	
 end
 

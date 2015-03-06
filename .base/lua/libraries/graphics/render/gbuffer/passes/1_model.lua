@@ -52,7 +52,6 @@ function PASS:Draw3D()
 	
 	render.gbuffer:Begin()
 	render.gbuffer:Clear()
-	render.Start3D()
 		event.Call("Draw3DGeometry", render.gbuffer_model_shader)
 		
 		--skybox?				
@@ -62,7 +61,6 @@ function PASS:Draw3D()
 		--view = render.SetupView3D(Vec3(234.1, -234.1, 361.967)*scale + render.GetCameraPosition(), render.GetCameraAngles(), render.GetCameraFOV(), view)
 		--view:Scale(scale,scale,scale)
 		--event.Call("Draw3DGeometry", render.gbuffer_model_shader, true)			
-	render.End3D()
 	render.gbuffer:End()
 end
 

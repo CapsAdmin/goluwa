@@ -1,5 +1,5 @@
 local SOMETHING = false
-local BUILD_OUTPUT = true
+local BUILD_OUTPUT = false
 
 local gl = require("libraries.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
@@ -253,14 +253,11 @@ function render.CreateShader(data, vars)
 		data = {
 			name = name,			
 			vertex = {
-				uniform = {
-					pwm_matrix = {mat4 = render.GetProjectionViewWorldMatrix},
-				},			
 				attributes = {
 					{pos = "vec3"},
 					{uv = "vec2"},
 				},	
-				source = "gl_Position = pwm_matrix * vec4(pos, 1);"
+				source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);"
 			},
 			
 			fragment = { 

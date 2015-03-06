@@ -45,6 +45,16 @@ function render.Initialize()
 	render.UniformMatrix4fv = gl.UniformMatrix4fv
 	
 	render.frame = 0
+	
+	render.camera_2d = render.CreateCamera()
+	render.camera_2d:Set3D(false)
+	
+	render.camera_3d = render.CreateCamera()
+	
+	for i, v in pairs(render.camera_shader_matrices) do
+		render.SetGlobalShaderVariable("g_" .. v .. "_2d", function() return render.camera_2d:GetMatrices()[v] end, "mat4")
+		render.SetGlobalShaderVariable("g_" .. v, function() return render.camera_3d:GetMatrices()[v] end, "mat4")
+	end
 		
 	gl.Enable(gl.e.GL_BLEND)
 	gl.Enable(gl.e.GL_SCISSOR_TEST)
@@ -278,6 +288,33 @@ do
 end
 
 do
+	local X,Y,W,H = 0,0,0,0
+	function render.SetViewport(x, y, w, h)
+	
+		X,Y,W,H = x,y,w,h
+	
+		gl.Viewport(x, y, w, h)
+		gl.Scissor(x, y, w, h)
+	end
+	
+	function render.GetViewport()
+		return x,y,w,h
+	end
+
+	local stack = {}
+	
+	function render.PushViewport(x, y, w, h)
+		table.insert(stack, {X,Y,W,H})
+				
+		render.SetViewport(x, y, w, h)
+	end
+	
+	function render.PopViewport()
+		render.SetViewport(unpack(table.remove(stack)))
+	end
+end
+
+do
 	local MODE = "alpha"
 
 	function render.SetBlendMode(mode)		
@@ -406,6 +443,7 @@ include("vertex_buffer.lua", render)
 include("texture_atlas.lua", render)
 include("mesh_builder.lua", render)
 include("material.lua", render)
+include("camera.lua", render)
 
 if USE_GLFW then
 	include("glfw_window.lua", render)
