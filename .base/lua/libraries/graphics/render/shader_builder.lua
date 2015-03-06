@@ -305,14 +305,11 @@ function render.CreateShader(data, vars)
 
 	if not data.vertex then
 		data.vertex = {
-			uniform = {
-				pwm_matrix = {mat4 = render.GetProjectionViewWorldMatrix},
-			},			
 			attributes = {
 				{pos = "vec3"},
 				{uv = "vec2"},
 			},	
-			source = "gl_Position = pwm_matrix * vec4(pos, 1);"
+			source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);"
 		}
 	end
 

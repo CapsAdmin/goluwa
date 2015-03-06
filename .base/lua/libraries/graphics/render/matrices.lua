@@ -1,6 +1,42 @@
 local gl = require("libraries.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
+do
+	render.camera_2d = render.CreateCamera()
+	render.camera_2d:Set3D(false)
+	
+	render.camera_3d = render.CreateCamera()
+	
+	for i, v in pairs(render.camera_shader_matrices) do
+		render.SetGlobalShaderVariable("g_" .. v .. "_2d", function() return render.camera_2d:GetMatrices()[v] end, "mat4")
+		render.SetGlobalShaderVariable("g_" .. v, function() return render.camera_3d:GetMatrices()[v] end, "mat4")
+	end
+
+	function render.GetCameraPosition()
+		return render.camera_3d:GetPosition()
+	end
+
+	function render.GetCameraAngles()
+		return render.camera_3d:GetAngles()
+	end
+
+	function render.GetCameraFOV()
+		return render.camera_3d:GetFOV()
+	end
+
+	function render.SetCameraPosition(pos)
+		return render.camera_3d:SetPosition(pos)
+	end
+
+	function render.SetCameraAngles(ang)
+		return render.camera_3d:SetAngles(ang)
+	end
+
+	function render.SetCameraFOV(num)
+		return render.camera_3d:SetFOV(num)
+	end
+end
+
 function render.PushWorldMatrixEx(...)
 	return render.camera_2d:PushWorldEx(...)
 end
@@ -34,11 +70,14 @@ function render.SetWorldMatrix(mat)
 	render.camera_2d:SetWorld(mat)
 end
 
+render.SetGlobalShaderVariable("g_cam_nearz", function() return render.camera_3d.NearZ end, "float")
+render.SetGlobalShaderVariable("g_cam_farz", function() return render.camera_3d.FarZ end, "float")
+
 render.AddGlobalShaderCode([[
 float get_depth(vec2 uv) 
 {
 	return (2.0 * g_cam_nearz) / (g_cam_farz + g_cam_nearz - texture(tex_depth, uv).r * (g_cam_farz - g_cam_nearz));
-}]], "get_noise")
+}]], "get_depth")
 
 -- lol
 

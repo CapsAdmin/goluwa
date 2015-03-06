@@ -46,16 +46,6 @@ function render.Initialize()
 	
 	render.frame = 0
 	
-	render.camera_2d = render.CreateCamera()
-	render.camera_2d:Set3D(false)
-	
-	render.camera_3d = render.CreateCamera()
-	
-	for i, v in pairs(render.camera_shader_matrices) do
-		render.SetGlobalShaderVariable("g_" .. v .. "_2d", function() return render.camera_2d:GetMatrices()[v] end, "mat4")
-		render.SetGlobalShaderVariable("g_" .. v, function() return render.camera_3d:GetMatrices()[v] end, "mat4")
-	end
-		
 	gl.Enable(gl.e.GL_BLEND)
 	gl.Enable(gl.e.GL_SCISSOR_TEST)
 	
@@ -288,13 +278,22 @@ do
 end
 
 do
-	local X,Y,W,H = 0,0,0,0
+	local X,Y,W,H
+	
 	function render.SetViewport(x, y, w, h)
 	
 		X,Y,W,H = x,y,w,h
-	
+		
 		gl.Viewport(x, y, w, h)
 		gl.Scissor(x, y, w, h)
+		
+		render.camera_2d.Viewport.w = w
+		render.camera_2d.Viewport.h = h
+		render.camera_2d:Rebuild()
+		
+		render.camera_3d.Viewport.w = w
+		render.camera_3d.Viewport.h = h
+		render.camera_3d:Rebuild()
 	end
 	
 	function render.GetViewport()
@@ -304,7 +303,7 @@ do
 	local stack = {}
 	
 	function render.PushViewport(x, y, w, h)
-		table.insert(stack, {X,Y,W,H})
+		table.insert(stack, {X or 0,Y or 0,W or render.GetWidth(),H or render.GetHeight()})
 				
 		render.SetViewport(x, y, w, h)
 	end
@@ -434,6 +433,7 @@ if RELOAD then return end
 
 include("enum_translate.lua", render)
 include("generated_textures.lua", render)
+include("camera.lua", render)
 include("matrices.lua", render)
 include("scene.lua", render)
 include("texture.lua", render)
@@ -443,7 +443,6 @@ include("vertex_buffer.lua", render)
 include("texture_atlas.lua", render)
 include("mesh_builder.lua", render)
 include("material.lua", render)
-include("camera.lua", render)
 
 if USE_GLFW then
 	include("glfw_window.lua", render)

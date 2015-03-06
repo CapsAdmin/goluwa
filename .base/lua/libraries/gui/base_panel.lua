@@ -814,7 +814,7 @@ do -- drag drop
 			self.drag_panel_start_pos = self:GetPosition()
 		end
 
-		local drag_pos = Vec2(render.ScreenToWorld(self.drag_world_pos:Unpack()))
+		local drag_pos = Vec2(render.camera_2d:ScreenToWorld(self.drag_world_pos:Unpack()))
 
 		self:SetPosition(self.drag_panel_start_pos + self:GetMousePosition() - drag_pos)
 

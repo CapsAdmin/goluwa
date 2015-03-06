@@ -14,10 +14,12 @@ do -- current window
 		local w, h = window:GetSize():Unpack()
 		render.w = w
 		render.h = h
-		render.SetViewport(0, 0, w, h)
+		
+		render.PushViewport(0, 0, w, h)
 	end
 
 	function render.End()
+		render.PopViewport()
 		event.Call("PostDrawScene")
 		if render.current_window:IsValid() then
 			render.current_window:SwapBuffers()
@@ -59,7 +61,7 @@ function render.DrawScene(window, dt)
 	render.Start(window)
 		
 		render.SetCullMode("none")
-		
+				
 		render.DrawGBuffer(dt, window:GetSize():Unpack())
 		
 		local blur_amt = console.GetVariable("render_accum") or 0

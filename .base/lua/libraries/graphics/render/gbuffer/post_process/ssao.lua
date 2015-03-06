@@ -3,12 +3,7 @@ local PASS = {}
 PASS.Name = FILE_NAME
 PASS.Default = false
 
-PASS.Source = [[
-	float get_depth(vec2 coord) 
-	{
-		return (2.0 * cam_nearz) / (cam_farz + cam_nearz - texture(tex_depth, coord).r * (cam_farz - cam_nearz));
-	}	
-	
+PASS.Source = [[	
 	float compare_depths( in float depth1, in float depth2 ) {
 		float diff = (depth2)-(depth1-0.000005);
 		diff = clamp(diff *= 30000, 0, 0.25);
