@@ -84,7 +84,7 @@ function PANEL:GetText()
 end
 
 function PANEL:OnPostDraw()
-	self.markup:Draw()
+	self.markup:Draw(self.ConcatenateTextToSize and (self.markup.cull_w - self.markup.cull_x))
 end
 
 function PANEL:OnMouseMove(x, y)
@@ -92,45 +92,9 @@ function PANEL:OnMouseMove(x, y)
 	self:MarkCacheDirty()
 end
 
-function PANEL:Concatenate()
-	if not self.Text then return end
-			
-	self:OnUpdate()
-				
-	local markup = self.markup
-	
-	surface.SetFont(self.Font)
-	local w = surface.GetTextSize("...") * 2
-		
-	if markup.cull_w-markup.cull_x - w < markup.width then
-		
-		local caret = markup:CaretFromPixels(markup.cull_w-markup.cull_x - w, 0)
-		local sub_pos = markup:GetSubPosFromPosition(caret.x, caret.y)
-				
-		local concatenated = self.Text:sub(0, sub_pos) .. "..."	
-		
-		markup:Clear()
-		if self.Font then markup:AddFont(self.Font) end 
-		if self.TextColor then markup:AddColor(self.TextColor) end
-		markup:AddString(concatenated, self.ParseTags)
-		self.concatenated = true
-		
-		self:OnUpdate()
-	elseif self.concatenated then
-		self:SetText(self.Text)
-		self.concatenated = false
-	end
-end
-
 function PANEL:OnStyleChanged(skin)
 	self:SetTextColor(skin.text_color)
 	self:SetFont(skin.default_font)
-end
-
-function PANEL:OnLayout(S)
-	if self.ConcatenateTextToSize then
-		self:Concatenate()
-	end
 end
 
 function PANEL:OnUpdate()

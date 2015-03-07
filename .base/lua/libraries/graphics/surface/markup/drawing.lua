@@ -51,9 +51,9 @@ local start_remove = false
 local remove_these = false
 local started_tags = false
 
-function META:Draw()
+function META:Draw(max_w)
 	if self.LightMode or self.SuperLightMode and self.light_mode_obj then
-		self.light_mode_obj:Draw()
+		self.light_mode_obj:Draw(max_w)
 		
 		if self.Selectable then
 			self:DrawSelection()
@@ -124,9 +124,8 @@ function META:Draw()
 
 						local c = chunk.color
 						surface.SetColor(c.r, c.g, c.b, c.a)
-						surface.SetTextPosition(chunk.x, chunk.y)
 						
-						surface.DrawText(chunk.val)
+						surface.DrawText(chunk.val, chunk.x, chunk.y, max_w)
 					elseif chunk.type == "tag_stopper" then
 						for _, chunks in pairs(self.started_tags) do
 							local fix = false

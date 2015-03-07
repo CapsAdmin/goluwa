@@ -151,8 +151,7 @@ end
 
 local X, Y = 0, 0
 
-function surface.DrawText(str, x, y)
-	
+function surface.DrawText(str, x, y, w)
 	local ux,uy,uw,uh,usx,usy = surface.GetRectUV()
 	local old_tex = surface.GetTexture()
 	local r,g,b,a = surface.GetColor()
@@ -165,8 +164,8 @@ function surface.DrawText(str, x, y)
 	if not font or not font:IsReady() then
 		surface.SetTexture(render.GetLoadingTexture())
 		surface.DrawRect(x,y,32,32)
-	else
-		font:DrawString(str, x, y)
+	else	
+		font:DrawString(str, x, y, w)
 	end
 	
 	surface.SetRectUV(ux,uy,uw,uh,usx,usy)
