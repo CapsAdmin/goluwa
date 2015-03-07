@@ -418,24 +418,22 @@ function render.DrawGBuffer(dt, w, h)
 	if not gbuffer_enabled or not deferred:Get() then
 		render.Clear(1,1,1,1)
 		gl.DepthMask(gl.e.GL_TRUE)
-		gl.Enable(gl.e.GL_DEPTH_TEST)
-		gl.Disable(gl.e.GL_BLEND)
+		render.EnableDepth(true)
+		render.SetBlendMode()
 		
 		event.Call("Draw3DGeometry", render.gbuffer_model_shader)
 		
-		gl.Disable(gl.e.GL_DEPTH_TEST)	
-		gl.Enable(gl.e.GL_BLEND)
+		render.EnableDepth(false)	
 		render.SetBlendMode("alpha")	
 		render.SetCullMode("back")
-		gl.Disable(gl.e.GL_DEPTH_TEST)
 		
 		event.Call("Draw2D", dt)
 	return end
 	
 	render.Clear(1,1,1,1)
 	gl.DepthMask(gl.e.GL_TRUE)
-	gl.Enable(gl.e.GL_DEPTH_TEST)
-	gl.Disable(gl.e.GL_BLEND)
+	render.EnableDepth(true)
+	render.SetBlendMode()
 	
 
 	for i, pass in ipairs(render.gbuffer_passes) do
@@ -449,9 +447,7 @@ function render.DrawGBuffer(dt, w, h)
 	-- gbuffer
 	render.SetBlendMode("alpha")	
 	render.SetCullMode("back")
-	gl.Disable(gl.e.GL_DEPTH_TEST)	
-	gl.Enable(gl.e.GL_BLEND)
-	gl.Disable(gl.e.GL_DEPTH_TEST)
+	render.EnableDepth(false)	
 
 	for i, shader in ipairs(render.gbuffer_shaders_sorted) do
 		render.DrawGBufferShader(shader.gbuffer_name)

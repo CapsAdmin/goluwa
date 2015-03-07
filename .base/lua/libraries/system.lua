@@ -651,8 +651,7 @@ if false and CLIENT then -- transparent window
 			print(ffi.C.GetLastError(), window, hdc)
 			local pxfmt = ffi.load("Gdi32.dll").ChoosePixelFormat(hdc, pfd)
 			ffi.load("Gdi32.dll").SetPixelFormat(hdc, pxfmt, pfd)
-			gl.Enable(gl.e.GL_BLEND)
-			gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
+			render.SetBlendMode("src_alpha", "one_minus_src_alpha")
 			
 			render.SetClearColor(0,0,0,0)
 		end

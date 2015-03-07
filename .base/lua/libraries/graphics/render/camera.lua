@@ -16,13 +16,6 @@ META:GetSet("View", nil, {callback = "InvalidateView"})
 
 META:GetSet("World", Matrix44(), {callback = "InvalidateWorld"})
 
-local gl = require("libraries.ffi.opengl") -- OpenGL
-
-function META:ApplyViewport()
-	gl.Viewport(self.Viewport.x, self.Viewport.y, self.Viewport.w, self.Viewport.h)
-	gl.Scissor(self.Viewport.x, self.Viewport.y, self.Viewport.w, self.Viewport.h)
-end
-
 do
 	META.matrix_stack_i = 1
 	

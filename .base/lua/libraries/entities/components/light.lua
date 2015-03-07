@@ -149,9 +149,9 @@ if GRAPHICS then
 			render.shadow_maps[self] = self.shadow_map
 		end
 		
-		gl.Enable(gl.e.GL_DEPTH_TEST)	
+		render.EnableDepth(true)	
 		--render.SetBlendMode("additive")
-		gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
+		render.SetBlendMode("one", "one")
 		render.SetCullMode("front")
 	
 		local transform = self:GetComponent("transform")
@@ -219,7 +219,7 @@ if GRAPHICS then
 			shader.tex_shadow_map_cube = self.shadow_map:GetTexture("cubemap")
 		end
 		
-		gl.Disable(gl.e.GL_DEPTH_TEST)
+		render.EnableDepth(false)
 		
 		self.shadow_map:End()
 	end

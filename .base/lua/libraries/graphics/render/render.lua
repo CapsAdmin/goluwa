@@ -45,12 +45,9 @@ function render.Initialize()
 	render.UniformMatrix4fv = gl.UniformMatrix4fv
 	
 	render.frame = 0
-	
-	gl.Enable(gl.e.GL_BLEND)
-	gl.Enable(gl.e.GL_SCISSOR_TEST)
-	
-	gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA)
-	gl.Disable(gl.e.GL_DEPTH_TEST)
+		
+	render.SetBlendMode("src_alpha", "one_minus_src_alpha")
+	render.EnableDepth(false)
 	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
 	
@@ -313,35 +310,6 @@ do
 	end
 end
 
-do
-	local MODE = "alpha"
-
-	function render.SetBlendMode(mode)		
-		if mode == "alpha" then
-			gl.AlphaFunc(gl.e.GL_GEQUAL, 0)
-			
-			gl.BlendFuncSeparate(	
-				gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA, 
-				gl.e.GL_ONE, gl.e.GL_ONE_MINUS_SRC_ALPHA
-			)
-		elseif mode == "multiplicative" then
-			gl.BlendFunc(gl.e.GL_DST_COLOR, gl.e.GL_ZERO)
-		elseif mode == "premultiplied" then
-			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE_MINUS_SRC_ALPHA)
-		elseif mode == "additive" then
-			gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE)
-		else
-			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ZERO)
-		end
-		
-		MODE = mode
-	end
-	
-	function render.GetBlendMode()
-		return MODE
-	end
-end
-
 do 
 	local enums = gl and {
 		zero = gl.e.GL_ZERO,
@@ -367,17 +335,40 @@ do
 		max = gl.e.GL_MAX,
 	} or {}
 
-	function render.SetBlendMode2(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
-		src_color = enums[src_color or "src_alpha"]
-		dst_color = enums[dst_color or "one_minus_src_alpha"]
-		func_color = enums[func_color or "add"]
+	function render.SetBlendMode(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
+
+		if src_color then
+			gl.Enable(gl.e.GL_BLEND)
+		else
+			gl.Disable(gl.e.GL_BLEND)
+			return
+		end
 		
-		src_alpha = enums[src_alpha] or src_color
-		dst_alpha = enums[dst_alpha] or dst_color
-		func_alpha = enums[func_alpha] or func_color
-		
-		gl.BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
-		gl.BlendEquationSeparate(func_color, func_alpha)
+		if src_color == "alpha" then
+			gl.AlphaFunc(gl.e.GL_GEQUAL, 0)
+			
+			gl.BlendFuncSeparate(	
+				gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA, 
+				gl.e.GL_ONE, gl.e.GL_ONE_MINUS_SRC_ALPHA
+			)
+		elseif src_color == "multiplicative" then
+			gl.BlendFunc(gl.e.GL_DST_COLOR, gl.e.GL_ZERO)
+		elseif src_color == "premultiplied" then
+			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE_MINUS_SRC_ALPHA)
+		elseif src_color == "additive" then
+			gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE)
+		else		
+			src_color = enums[src_color or "src_alpha"]
+			dst_color = enums[dst_color or "one_minus_src_alpha"]
+			func_color = enums[func_color or "add"]
+			
+			src_alpha = enums[src_alpha] or src_color
+			dst_alpha = enums[dst_alpha] or dst_color
+			func_alpha = enums[func_alpha] or func_color
+			
+			gl.BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
+			gl.BlendEquationSeparate(func_color, func_alpha)		
+		end
 	end
 end
 
@@ -449,7 +440,6 @@ else
 	include("sdl_window.lua", render)
 end
 
-include("cvars.lua", render)
 include("globals.lua", render)
 include("debug.lua", render)
 

@@ -179,7 +179,7 @@ local shader = render.CreateShader({
 event.CreateTimer("fb_update", 0.5, 0, function()
 
 	fb:Begin()
-		render.SetBlendMode2("src_color", "one_minus_dst_alpha", "add")
+		render.SetBlendMode("src_color", "one_minus_dst_alpha", "add")
 		surface.PushMatrix(0, 0, fb:GetTexture():GetSize():Unpack())
 			shader:Bind()
 			surface.rect_mesh:Draw()

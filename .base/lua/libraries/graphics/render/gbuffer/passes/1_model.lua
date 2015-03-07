@@ -47,8 +47,8 @@ local gl = require("libraries.ffi.opengl") -- OpenGL
 
 function PASS:Draw3D()
 	gl.DepthMask(gl.e.GL_TRUE)
-	gl.Enable(gl.e.GL_DEPTH_TEST)
-	gl.Disable(gl.e.GL_BLEND)
+	render.EnableDepth(true)
+	render.SetBlendMode()
 	
 	render.gbuffer:Begin()
 	render.gbuffer:Clear()
