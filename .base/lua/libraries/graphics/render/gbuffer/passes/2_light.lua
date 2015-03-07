@@ -11,10 +11,9 @@ PASS.Buffers = {
 }
 
 function PASS:Draw3D()
-	gl.Disable(gl.e.GL_DEPTH_TEST)	
-	gl.Enable(gl.e.GL_BLEND)
+	render.EnableDepth(false)	
 	--render.SetBlendMode("additive")
-	gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE)
+	render.SetBlendMode("one", "one")
 	render.SetCullMode("front")
 	
 	render.gbuffer:Begin("light")

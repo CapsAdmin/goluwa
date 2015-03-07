@@ -4,7 +4,7 @@ local tex = Texture({width = render.GetWidth(), height = render.GetHeight(), min
 end)
 
 event.CreateTimer("update_cells", 0, 0,function()
-render.SetBlendMode2("src_color", "src_color", "add")
+render.SetBlendMode("src_color", "src_color", "add")
 tex:Shade([[
 	vec4 color = texture(self, uv);
 	vec2 uv = gl_FragCoord.xy / size;

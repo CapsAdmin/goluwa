@@ -78,7 +78,7 @@ local background = ColorBytes(64, 44, 128, 255)
 function menu.RenderBackground(dt)		
 	emitter:Update(dt)
 	
-	render.SetBlendMode2("src_color", "src_color", "add")
+	render.SetBlendMode("src_color", "src_color", "add")
 	surface.SetWhiteTexture()
 	surface.SetColor(background)
 	surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())

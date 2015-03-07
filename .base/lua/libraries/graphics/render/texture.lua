@@ -543,7 +543,7 @@ do -- texture object
 				end
 			
 				if not dont_blend then 
-					gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA) 
+					render.SetBlendMode("src_alpha", "one_minus_src_alpha")
 				end
 				
 				shader:Bind()

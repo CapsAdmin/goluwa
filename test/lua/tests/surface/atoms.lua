@@ -116,7 +116,7 @@ local brush_size = 4
 event.CreateTimer("fb_update", fps, 0, function()
 
 	fb:Begin()
-		render.SetBlendMode2("src_color", "one_minus_dst_alpha", "add")
+		render.SetBlendMode("src_color", "one_minus_dst_alpha", "add")
 		
 		surface.PushMatrix(0, 0, W, H)
 			shader:Bind()
@@ -125,10 +125,10 @@ event.CreateTimer("fb_update", fps, 0, function()
 		
 		if input.IsMouseDown("button_1") or input.IsMouseDown("button_2") then
 			if input.IsMouseDown("button_1") then
-				render.SetBlendMode2()
+				render.SetBlendMode()
 				surface.SetColor(1,1,1,1)
 			else
-				render.SetBlendMode2(nil,nil,nil, "src_alpha","one_minus_src_alpha","sub") 
+				render.SetBlendMode(nil,nil,nil, "src_alpha","one_minus_src_alpha","sub") 
 				surface.SetColor(1,1,1,0)
 			end
 			surface.SetTexture(brush)
