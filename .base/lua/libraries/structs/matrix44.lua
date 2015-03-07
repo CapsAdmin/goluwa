@@ -40,7 +40,6 @@ function META:__tostring()
 end
 
 function META:__mul(b)
-	if not self then debug.trace() end
 	return self:GetMultiplied(b)
 end
 
