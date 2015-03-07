@@ -24,7 +24,7 @@ function google.Translate(from, to, str, callback)
 	end)
 end
 
-function google.AutoComplete(question)
+function google.AutoComplete(question, callback)
 	local _q = question
 	question = question:gsub("(%A)", function(char) return "%"..("%x"):format(char:byte()) end)
 
@@ -41,13 +41,33 @@ function google.AutoComplete(question)
 			local tbl = str:explode(',')
 			table.remove(tbl, 1)
 
-			local msg = table.random(tbl)
-			
-			chat.Append("Google", msg)
-			
-			message.Broadcast("google_say", msg)
+			callback(tbl)
 		end
 	)
+end
+
+
+
+function google.YoutubeSearch(query, callback)
+	sockets.Get(("http://gdata.youtube.com/feeds/api/videos?q=%s&max-results=1&v=2&prettyprint=flase&alt=json"):format(query), function(data)
+		local hashed = serializer.Decode("json", data.content)
+		
+		if not hashed.feed or not hashed.feed.entry then return end
+		
+		local page_url = "https://www.youtube.com/results?search_query=#" .. query
+
+		local name = hashed["feed"]["entry"][1]["media$group"]["media$title"]["$t"]
+		local id = hashed["feed"]["entry"][1]["media$group"]["yt$videoid"]["$t"]
+		local views = hashed["feed"]["entry"][1]["yt$statistics"]["viewCount"] or 0
+		local likes = hashed["feed"]["entry"][1]["yt$rating"] and hashed["feed"]["entry"][1]["yt$rating"]["numLikes"] or 0
+		local dislikes = hashed["feed"]["entry"][1]["yt$rating"] and hashed["feed"]["entry"][1]["yt$rating"]["numDislikes"] or 0
+		local length = hashed["feed"]["entry"][1]["media$group"]["yt$duration"]["seconds"]
+
+		--local embed = hashed["feed"]["entry"][0]["yt$accessControl"].find{|i| i["action"] == "embed"}
+
+		--local views = add_commas(views) 
+		callback({name = name, id = id, views = views, likes = likes, dislikes = dislikes, length = length})
+	end)
 end
 
 if CLIENT then
@@ -84,10 +104,34 @@ if SERVER then
 			question = question:match("google.-(%a.+)?")
 
 			if not question then return end
-			google.AutoComplete(question)
+			google.AutoComplete(question, function(tbl)
+				local msg = table.random(tbl)
+							
+				chat.Append("Google", msg)
+				
+				message.Broadcast("google_say", msg)
+			end)
 		end
 	end)
 end
+
+console.AddCommand("yt", function(query)
+	google.YoutubeSearch(query, function(info)
+		local votes = info.likes + info.dislikes
+		
+		local rating = ((info.likes+0.0)/votes)*100
+		rating = math.round(rating) .. "%"
+
+		chat.Append("Google", ("YouTube | %s | %s | %s views | %s | http://youtu.be/%s | More results: %s"):format(info.name, info.length, info.views, info.rating, info.id, info.page_url))
+	end)	
+end)
+
+console.AddCommand("gauto", function(line)
+	google.AutoComplete(line, function(tbl)
+		local msg = table.random(tbl)
+		chat.Append("Google", msg)
+	end)
+end)
 
 console.AddCommand("t", function(line, from, to, str)
 	local client = console.GetClient()

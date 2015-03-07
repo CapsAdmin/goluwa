@@ -50,41 +50,6 @@ console.AddCommand("kill", function()
 	end 
 end)
 
-local function youtube_query(query)
-	sockets.Get(("http://gdata.youtube.com/feeds/api/videos?q=%s&max-results=1&v=2&prettyprint=flase&alt=json"):format(query), function(data)
-		local hashed = serializer.Decode("json", data.content)
-		
-		if not hashed.feed or not hashed.feed.entry then return end
-		
-		local page_url = "https://www.youtube.com/results?search_query=#" .. query
-
-		local name = hashed["feed"]["entry"][1]["media$group"]["media$title"]["$t"]
-		local id = hashed["feed"]["entry"][1]["media$group"]["yt$videoid"]["$t"]
-		local views = hashed["feed"]["entry"][1]["yt$statistics"]["viewCount"] or 0
-		local likes = hashed["feed"]["entry"][1]["yt$rating"] and hashed["feed"]["entry"][1]["yt$rating"]["numLikes"] or 0
-		local dislikes = hashed["feed"]["entry"][1]["yt$rating"] and hashed["feed"]["entry"][1]["yt$rating"]["numDislikes"] or 0
-		local length = hashed["feed"]["entry"][1]["media$group"]["yt$duration"]["seconds"]
-
-		--local embed = hashed["feed"]["entry"][0]["yt$accessControl"].find{|i| i["action"] == "embed"}
-
-		--local views = add_commas(views) 
-		local votes = likes + dislikes
-		
-		local rating = ((likes+0.0)/votes)*100
-		rating = math.round(rating) .. "%"
-
-		local reply = ("YouTube | %s | %s | %s views | %s | http://youtu.be/%s | More results: %s"):format(name, length, views, rating, id, page_url)
-		
-		if STEAM_FRIENDS_SUBJECT and STEAM_FRIENDS_SUBJECT:IsValid() then
-			steam.SendChatMessage(STEAM_FRIENDS_SUBJECT:GetUniqueID(), reply)
-		end
-	end)
-end
-
-console.AddCommand("yt", function(line)
-	youtube_query(line)
-end)
-
 event.AddListener("ClientChat", "chatsounds", function(client, txt, seed)
 	local url = txt:match("(http%S+)")
 	
