@@ -683,9 +683,9 @@ function META:CompileString()
 
 	local obj = {}
 	
-	function obj:Draw()
+	function obj:Draw(max_w)
 		for k,v in ipairs(strings) do
-			v:Draw(0, 0)
+			v:Draw(0, 0, max_w)
 		end
 	end
 	

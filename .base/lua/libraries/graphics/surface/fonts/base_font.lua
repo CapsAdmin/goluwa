@@ -84,7 +84,7 @@ function META:LoadGlyph(code)
 	end
 end
 
-function META:DrawString(str, x, y)
+function META:DrawString(str, x, y, w)
 	if not self.Ready then return end
 	
 	if str == nil then str = "nil" end
@@ -105,7 +105,7 @@ function META:DrawString(str, x, y)
 		self.total_strings_stored = self.total_strings_stored + 1
 	end
 	
-	self.string_cache[str]:Draw(x, y)
+	self.string_cache[str]:Draw(x, y, w)
 		
 	if surface.debug_font_size then
 		surface.SetColor(1,0,0,0.25)
@@ -139,6 +139,7 @@ function META:CompileString(data)
 	end
 		
 	local poly = surface.CreatePoly(size)
+	local width_info = {}
 	local out = {}
 
 	local X, Y = 0, 0
@@ -204,13 +205,15 @@ function META:CompileString(data)
 						-h * self.Scale.h
 					)
 					
-					i = i + 1
-					
 					if self.Monospace then 
 						X = X + self.Spacing
 					else
 						X = X + ch.x_advance + self.Spacing
 					end
+					
+					width_info[i] = X
+					
+					i = i + 1
 				end			
 			end
 		end
@@ -218,12 +221,23 @@ function META:CompileString(data)
 	
 	local string = {}
 	
-	function string:Draw(x, y)
+	local width_cache = {}
+	
+	function string:Draw(x, y, w)
+		if w and not width_cache[w] then			
+			for i, x in ipairs(width_info) do
+				if x > w then
+					width_cache[w] = i - 1
+					break
+				end
+			end
+		end
+	
 		surface.PushMatrix(x, y)
 		for i, v in ipairs(out) do
 			surface.SetTexture(v.texture)
 			render.SetCullMode("front")
-			v.poly:Draw()
+			v.poly:Draw(width_cache[w])
 			render.SetCullMode("back")
 		end	
 		surface.PopMatrix()
@@ -299,3 +313,10 @@ function META:OnLoad()
 end
 
 prototype.Register(META)
+
+if RELOAD then
+	for k,v in pairs(surface.fonts) do
+		v.string_cache = {}
+		v.total_strings_stored = 0
+	end
+end
