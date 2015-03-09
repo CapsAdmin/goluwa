@@ -2,7 +2,6 @@ local COMPONENT = {}
 
 COMPONENT.Name = "model"
 COMPONENT.Require = {"transform"}
-COMPONENT.Events = {"Draw3DGeometry"}
 
 prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "MaterialOverride", nil)
@@ -20,12 +19,13 @@ COMPONENT.Network = {
 	Color = {"color", 1/5},
 }
 
-if GRAPHICS then 
+if GRAPHICS then 	
 	function COMPONENT:OnAdd(ent)
+		table.insert(render.scene_3d, self)
 	end
 
 	function COMPONENT:OnRemove(ent)
-
+		table.removevalue(render.scene_3d, self)
 	end
 
 	function COMPONENT:SetModelPath(path)
@@ -117,7 +117,7 @@ if GRAPHICS then
 		end
 	end
 
-	function COMPONENT:OnDraw3DGeometry(shader, skip_cull)
+	function COMPONENT:Draw(shader, skip_cull)
 		self.sub_models = self.sub_models or {}
 
 		render.camera_3d:SetWorld(self:GetComponent("transform"):GetMatrix())
@@ -142,6 +142,7 @@ if GRAPHICS then
 				end 
 				
 				shader:Bind(self.MaterialOverride or model.material)
+
 				model:Draw()
 			end
 		end

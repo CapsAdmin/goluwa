@@ -104,7 +104,7 @@ if GRAPHICS then
 						
 						void main()
 						{				
-							if (lua[AlphaTest = false] == 1 && texture(lua[DiffuseTexture = "sampler2D"], uv).a < 0.25)
+							if (lua[Translucent = false] == 1 && texture(lua[DiffuseTexture = "sampler2D"], uv).a < 0.9)
 							{
 								discard;
 							}
@@ -202,7 +202,7 @@ if GRAPHICS then
 			
 			-- render the scene with this matrix
 			render.SetCullMode("front")
-			event.Call("Draw3DGeometry", render.shadow_map_shader, true)
+			render.Draw3DScene(render.shadow_map_shader, true)
 			
 			render.camera_3d:SetView()
 			render.camera_3d:SetProjection()

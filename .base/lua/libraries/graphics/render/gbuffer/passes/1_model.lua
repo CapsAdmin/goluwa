@@ -45,6 +45,25 @@ vec3 get_world_pos(vec2 uv)
 
 local gl = require("libraries.ffi.opengl") -- OpenGL
 
+render.scene_3d = render.scene_3d or {}
+
+function render.Draw3DScene(shader, simple)
+	--[[local cam_pos = render.camera_3d:GetPosition()
+	
+	table.sort(render.scene_3d, function(a, b)
+		return 
+			a:GetComponent("transform"):GetPosition():Distance(cam_pos) <
+			b:GetComponent("transform"):GetPosition():Distance(cam_pos)
+			
+	end)]]
+	
+	--render.SetCullMode("none")
+	
+	for i, model in ipairs(render.scene_3d) do
+		model:Draw(shader, simple)
+	end
+end
+
 function PASS:Draw3D()
 	gl.DepthMask(gl.e.GL_TRUE)
 	render.EnableDepth(true)
@@ -52,7 +71,8 @@ function PASS:Draw3D()
 	
 	render.gbuffer:Begin()
 	render.gbuffer:Clear()
-		event.Call("Draw3DGeometry", render.gbuffer_model_shader)
+		
+		render.Draw3DScene(render.gbuffer_model_shader)
 		
 		--skybox?				
 		
@@ -78,7 +98,7 @@ PASS.Shader = {
 			out mat3 tangent_to_world;
 		
 			void main()
-			{
+			{				
 				out_normal =  mat3(g_view_world) * normal;
 				
 				vec3 tangent = -normalize(mat3(g_normal_matrix) * out_normal);
@@ -107,10 +127,24 @@ PASS.Shader = {
 			{texture_blend = "float"},
 		},
 		source = [[
+			#extension GL_ARB_arrays_of_arrays: enable
+			
 			in mat3 tangent_to_world;
 		
 			out vec4 diffuse_buffer;
 			out vec4 normal_buffer;
+					
+					
+			// https://www.shadertoy.com/view/MslGR8
+			float dither(vec2 uv, float alpha)
+			{			
+				vec2 ij = floor(mod( gl_FragCoord.xy, vec2(2.0)));
+				float idx = ij.x + 2.0*ij.y;
+				vec4 m = step( abs(vec4(idx)-vec4(0,1,2,3)), vec4(0.5)) * vec4(0.75,0.25,0.00,0.50);
+				float d = m.x+m.y+m.z+m.w;
+				
+				return alpha + d;
+			}
 			
 			void main()
 			{			
@@ -122,12 +156,12 @@ PASS.Shader = {
 					if (diffuse_blend != vec4(1))
 						diffuse_buffer = mix(diffuse_buffer, diffuse_blend, texture_blend);
 					
-					if (lua[AlphaTest = false] == 1)
+					if (lua[Translucent = false] == 1)
 					{
-						//if (diffuse_buffer.a < pow(rand(uv), 0.5))
-						//if (pow(diffuse_buffer.a+0.5, 4) < 0.5)
-						if (diffuse_buffer.a < 0.5)
+						if (dither(uv, diffuse_buffer.a) < 0.9)
+						{
 							discard;
+						}
 					}
 					
 					//if (lua[DetailBlendFactor = 0] > 0)
@@ -182,6 +216,7 @@ do
 		META:GetSet("DetailBlendFactor", 0)
 		META:GetSet("NoCull", false)
 		META:GetSet("AlphaTest", false)
+		META:GetSet("Translucent", false)
 		META:GetSet("AlphaSpecular", false)
 		META:GetSet("RoughnessMultiplier", 0)
 		META:GetSet("MetallicMultiplier", 0)
