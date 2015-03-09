@@ -27,10 +27,21 @@ console.AddCommand("dump_object_count", function()
 	local found = {}
 	
 	for obj in pairs(prototype.GetCreated()) do
-		found[obj.ClassName] = (found[obj.ClassName] or 0) + 1
+		local name = obj.ClassName
+		if obj.ClassName ~= obj.Type then
+			name = obj.Type .. "_" .. name
+		end
+		found[name] = (found[name] or 0) + 1
 	end
 	
 	table.print(found)
+end)
+
+console.AddCommand("find_object", function(str)
+	local obj = prototype.FindObject(str)
+	if obj then
+		table.print(obj:GetStorableTable())
+	end
 end)
 
 do -- url monitoring
