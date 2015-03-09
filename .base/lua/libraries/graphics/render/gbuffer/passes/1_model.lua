@@ -122,11 +122,11 @@ PASS.Shader = {
 					if (diffuse_blend != vec4(1))
 						diffuse_buffer = mix(diffuse_buffer, diffuse_blend, texture_blend);
 					
-					if (lua[AlphaTest = false] == 1 && AlphaSpecular != 0)
+					if (lua[AlphaTest = false] == 1)
 					{
 						//if (diffuse_buffer.a < pow(rand(uv), 0.5))
 						//if (pow(diffuse_buffer.a+0.5, 4) < 0.5)
-						if (diffuse_buffer.a < 0.25)
+						if (diffuse_buffer.a < 0.5)
 							discard;
 					}
 					
@@ -147,7 +147,7 @@ PASS.Shader = {
 						vec4 bump_detail2 = texture(Normal2Texture, uv);
 						
 						if (bump_detail2 != vec4(1))
-							bump_detail = mix(bump_detail, bump_detail2, texture_blend);
+							bump_detail = bump_detail + (bump_detail2 * texture_blend);
 					
 						normal_buffer.rgb += (2 * bump_detail.rgb - 1) * tangent_to_world;
 					}
