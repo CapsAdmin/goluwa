@@ -734,7 +734,7 @@ function steam.SpawnMapEntities(path, parent)
 					ent:SetIntensity(math.clamp(info._light.a/30, 0.1, 1))
 					ent.spawned_from_bsp = true
 				elseif info.classname == "env_fog_controller" then
-					parent.world_params:SetFogColor(Color(info.fogcolor.r, info.fogcolor.g, info.fogcolor.b, info.fogcolor.a * info.fogmaxdensity/4))
+					parent.world_params:SetFogColor(Color(info.fogcolor.r, info.fogcolor.g, info.fogcolor.b, info.fogcolor.a * (info.fogmaxdensity or 1)/4))
 					parent.world_params:SetFogStart(info.fogstart* scale)
 					parent.world_params:SetFogEnd(info.fogend * scale)
 				end
