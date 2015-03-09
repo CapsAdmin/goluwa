@@ -13,7 +13,7 @@ local property_translate = {
 	DetailScale = {"detailscale"},
 	DetailBlendFactor = {"detailblendfactor"},
 	NoCull = {"nocull"},
-	AlphaTest = {"alphatest", --[["translucent",]] function(num) return num == 1 end},
+	Translucent = {"alphatest", "translucent", function(num) return num == 1 end},
 	AlphaSpecular = {"normalmapalphaenvmapmask", "basealphaenvmapmask", function(num) return num == 1 end},
 	RoughnessMultiplier = {"phongexponent", function(num) return num/255 end},
 	MetallicMultiplier = {"phongboost", function(num) return num/100 end},
