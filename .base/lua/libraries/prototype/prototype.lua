@@ -370,6 +370,38 @@ function prototype.GetCreated(sorted, super_type, sub_type)
 	return prototype.created_objects or {}
 end
 
+function prototype.FindObject(str)
+	local name, property = str:match("(.-):(.+)")
+	if not name then name = str end
+	
+	local objects = prototype.GetCreated()
+	local found
+	
+	local function try(compare)
+		for obj in pairs(objects) do
+			if compare(obj) then
+				found = obj
+				return true
+			end
+		end
+	end
+	
+	local function find_property(obj)
+		if not property then return true end
+		for k,v in pairs(prototype.GetStorableVariables(obj)) do
+			if tostring(obj[v.get_name](obj)):compare(property) then
+				return true
+			end
+		end
+	end
+	
+	if try(function(obj) return obj:GetName() == name and find_property(obj) end) then return found end
+	if try(function(obj) return obj:GetName():compare(name) and find_property(obj) end) then return found end
+	
+	if try(function(obj) return obj:GetNiceClassName() == name and find_property(obj) end) then return found end
+	if try(function(obj) return obj:GetNiceClassName():compare(name) and find_property(obj) end) then return found end
+end
+
 function prototype.UpdateObjects(meta)	
 	if type(meta) == "string" then
 		meta = prototype.GetRegistered(meta)
