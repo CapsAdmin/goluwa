@@ -237,6 +237,9 @@ do -- texture object
 	end
 	
 	function META:__tostring2()
+		if self.texture_path then
+			return ("[%s][%s]"):format(self.id, self.texture_path)
+		end
 		return ("[%s]"):format(self.id)
 	end
 	
@@ -602,7 +605,8 @@ function render.CreateTextureFromPath(path, format)
 
 	self.override_texture = loading
 	self.loading = true
-
+	self.texture_path = "loading"
+	local short_path = path
 	resource.Download(
 		path, 
 		function(path)
@@ -628,6 +632,7 @@ function render.CreateTextureFromPath(path, format)
 				if self.OnLoad then
 					self:OnLoad(w, h, info)
 				end
+				self.texture_path = short_path
 			end
 			self.decode_info = info
 		end, 
