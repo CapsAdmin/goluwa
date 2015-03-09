@@ -63,6 +63,15 @@ function table.multiremove(tbl, locations)
 	return tbl
 end
 
+function table.removevalue(tbl, val)
+	for i,v in ipairs(tbl) do
+		if v == val then
+			table.remove(tbl, i)
+			break
+		end
+	end
+end
+
 function table.fixindices(tbl)
 	local temp = {}
 	
