@@ -12,6 +12,14 @@ prototype.StartStorable(META)
 	prototype.GetSet("Name", "")
 prototype.EndStorable()
 
+function META:GetNiceClassName()
+	if self.ClassName ~= self.Type then
+		return self.Type .. "_" .. self.ClassName
+	end
+	
+	return self.ClassName
+end
+
 function META:__tostring()
 	local additional_info = self:__tostring2()
 	
