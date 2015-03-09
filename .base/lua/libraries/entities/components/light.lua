@@ -104,7 +104,7 @@ if GRAPHICS then
 						
 						void main()
 						{				
-							if (lua[alpha_test = 0] == 1 && texture(lua[diffuse = "sampler2D"], uv).a < 0.25)
+							if (lua[AlphaTest = false] == 1 && texture(lua[DiffuseTexture = "sampler2D"], uv).a < 0.25)
 							{
 								discard;
 							}
