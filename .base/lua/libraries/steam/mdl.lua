@@ -460,7 +460,7 @@ local function load_vtx(path, thread)
 			buffer:PushPosition(stream_pos + model.lod_offset)
 			model.model_lods = {}
 
-			for i = 1, model.lod_count do
+			for i = 1, 1 or model.lod_count do
 				local stream_pos = buffer:GetPosition()
 
 				local lod_model = {}
@@ -483,7 +483,7 @@ local function load_vtx(path, thread)
 
 					buffer:PushPosition(stream_pos + mesh.strip_group_offset)   
 					mesh.strip_groups = {}
-					
+
 					for i = 1, mesh.strip_group_count do
 						local stream_pos = buffer:GetPosition()
 						
@@ -517,7 +517,7 @@ local function load_vtx(path, thread)
 						local indices = {}
 						buffer:PushPosition(stream_pos + strip_group.indices_offset)
 						for i = 1, strip_group.indices_count do
-							indices[i] = buffer:ReadShort()
+							indices[i] = buffer:ReadShort() + 1
 						end
 						buffer:PopPosition()
 
@@ -571,6 +571,7 @@ local function load_vvd(path, thread)
 	vvd.version = buffer:ReadLong()
 	vvd.checksum = buffer:ReadLong()
 	vvd.lod_count = buffer:ReadLong()
+
 	for i = 1, MAX_NUM_LODS do
 		vvd.lod_vertices_count[i] = buffer:ReadLong()
 	end
@@ -578,6 +579,9 @@ local function load_vvd(path, thread)
 	vvd.fixup_offset = buffer:ReadLong()
 	vvd.vertices_offset = buffer:ReadLong()
 	vvd.tangentDataOffset = buffer:ReadLong()
+	
+	print(path)
+	table.print(vvd)
 
 	if vvd.lod_count > 0 then
 		buffer:SetPosition(vvd.vertices_offset)
@@ -587,10 +591,10 @@ local function load_vvd(path, thread)
 		for i = 1, vertices_count do
 			local boneWeight = {weight = {}, bone = {}}
 
-			for x = 0, MAX_NUM_BONES_PER_VERT - 1 do
+			for x = 1, MAX_NUM_BONES_PER_VERT do
 				boneWeight.weight[x] = buffer:ReadFloat()
 			end
-			for x = 0, MAX_NUM_BONES_PER_VERT - 1 do
+			for x = 1, MAX_NUM_BONES_PER_VERT do
 				boneWeight.bone[x] = buffer:ReadByte()
 			end
 			boneWeight.bone_count = buffer:ReadByte()
@@ -617,33 +621,35 @@ local function load_vvd(path, thread)
 		buffer:SetPosition(vvd.fixup_offset)
 
 		vvd.theFixups = {}
-
 		for i = 1, vvd.fixup_count do
 			local fixup = {}
 
-			fixup.lod_index = buffer:ReadLong()
-			fixup.vertex_index = buffer:ReadLong()
+			fixup.lod_index = buffer:ReadLong() + 1
+			fixup.vertex_index = buffer:ReadLong() + 1
 			fixup.vertices_count = buffer:ReadLong()
 
 			vvd.theFixups[i] = fixup
 		end
 
 		if vvd.lod_count > 0 then
+			print(vvd.vertices_offset)
 			buffer:SetPosition(vvd.vertices_offset)
 
 			for lod_index = 1, vvd.lod_count do
 				vvd.fixed_vertices_by_lod[lod_index] = {}
 
 				for i, fixup in ipairs(vvd.theFixups) do
-					if fixup.lod_index >= lod_index-1 then
+					if fixup.lod_index >= lod_index then
 						for i = 1, fixup.vertices_count do
-							vvd.fixed_vertices_by_lod[lod_index][i] = vvd.vertices[fixup.vertex_index + i]
+							table.insert(vvd.fixed_vertices_by_lod[lod_index], vvd.vertices[fixup.vertex_index + i - 1])
 							threads.Sleep()
 						end
 					end
 				end
 			end
 		end
+		
+		table.print(vvd.fixed_vertices_by_lod, 1)
 	end
 	if _debug then profiler.StopTimer() end
 
@@ -663,7 +669,7 @@ function steam.LoadModel(path, sub_model_callback)
 	local vtx = load_vtx(path)
 	
 	local models = {}
-
+	
 	for i, body_part in ipairs(vtx.body_parts) do
 		for _, model_ in ipairs(body_part.models) do
 			for lod_index, lod_model in ipairs(model_.model_lods) do
@@ -675,7 +681,7 @@ function steam.LoadModel(path, sub_model_callback)
 								local indices = {}
 								
 								for i, v in ipairs(strip.indices) do
-									indices[i] = strip.vertices[v+1].mesh_vertex_index 
+									indices[i] = strip.vertices[v].mesh_vertex_index 
 								end
 
 								local sub_model = {}
@@ -712,4 +718,15 @@ function steam.LoadModel(path, sub_model_callback)
 	end
 	
 	return model
+end
+
+if RELOAD then
+	include("libraries/utilities/mesh_loaders.lua")
+	local ent = utility.RemoveOldObject(entities.CreateEntity("visual"), "test")
+	ent:SetPosition(render.camera_3d:GetPosition() + render.camera_3d:GetAngles():GetForward() * 5)
+	ent:SetModelPath("models/props_wasteland/exterior_fence001b.mdl")
+	
+	local ent = utility.RemoveOldObject(entities.CreateEntity("visual"), "test2")
+	ent:SetPosition(render.camera_3d:GetPosition() + render.camera_3d:GetAngles():GetForward() * 5)
+	ent:SetModelPath("models/props_canal/boat001b.mdl")
 end
