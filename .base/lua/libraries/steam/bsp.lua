@@ -2,6 +2,11 @@ local steam = ... or _G.steam
 
 local scale = 0.0254
 
+local skyboxes = {
+	["gm_construct"] = {AABB(-400, -400, 255,   400, 400, 320) * (1/scale), 0.0025},
+	["gm_flatgrass"] = {AABB(-400, -400, -430,   400, 400, -360) * (1/scale), 0},
+}
+
 console.AddCommand("map", function(path)	
 	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical")
 	steam.bsp_world:SetName(path)
@@ -46,7 +51,7 @@ function steam.LoadMap(path)
 	if steam.bsp_cache[path] then
 		return steam.bsp_cache[path]
 	end
-
+	
 	logn("loading map: ", path)
 		
 	local bsp_file = assert(vfs.Open(path))
@@ -55,6 +60,13 @@ function steam.LoadMap(path)
 	long ident; // BSP file identifier
 	long version; // BSP file version
 	]])
+	
+	local info = skyboxes[path:match(".+/(.+)%.bsp")]
+	
+	if info then
+		header.sky_aabb = info[1]
+		header.sky_scale = info[2]
+	end
 	 
 	do 
 		local struct = [[
@@ -111,6 +123,42 @@ function steam.LoadMap(path)
 
 	do
 		threads.Sleep()
+		local function unpack_numbers(str)
+			local t = str:explode(" ")
+			for k,v in ipairs(t) do t[k] = tonumber(v) end
+			return unpack(t)
+		end
+		local entities = {}
+		local i = 1 
+		bsp_file:PushPosition(header.lumps[1].fileofs)
+		for vdf in bsp_file:ReadString():gmatch("{(.-)}") do
+			local ent = {}
+			for k, v in vdf:gmatch([["(.-)" "(.-)"]]) do
+				if k == "angles" then
+					v = Ang3(unpack_numbers(v))
+				elseif k == "_light" or k == "_ambient" or k:find("color", nil, true) then
+					v = ColorBytes(unpack_numbers(v))
+				elseif k == "origin" or k:find("dir", nil, true) or k:find("mins", nil, true) or k:find("maxs", nil, true) then
+					v = Vec3(unpack_numbers(v))
+				end
+				ent[k] = tonumber(v) or v
+			end
+			ent.classname = ent.classname or "unknown"
+			if header.sky_aabb and ent.classname == "sky_camera" then
+				header.sky_origin = ent.origin
+				header.sky_scale = header.sky_scale + ent.scale
+			end
+			entities[i] = ent
+			i = i + 1  
+			
+			threads.Sleep()
+		end
+		bsp_file:PopPosition()
+		header.entities = entities
+	end
+		
+	do
+		threads.Sleep()
 		threads.Report("reading game lump")
 		
 		local lump = header.lumps[36]
@@ -146,8 +194,6 @@ function steam.LoadMap(path)
 				
 				local count = bsp_file:ReadLong()
 				
-				local lumps = {}
-
 				for i = 1, count do
 					local lump = bsp_file:ReadStructure([[
 						vec3 origin;
@@ -165,7 +211,7 @@ function steam.LoadMap(path)
 						long lighting_origin_y;
 						long lighting_origin_z;
 					]])
-					
+										
 					if version > 4 then
 						lump.forced_fade_scale = bsp_file:ReadFloat()
 					end						
@@ -180,15 +226,14 @@ function steam.LoadMap(path)
 					end
 											
 					lump.model = paths[lump.prop_type + 1] or paths[1]
+					lump.classname = "static_entity"
 					
-					lumps[i] = lump
+					table.insert(header.entities, lump)
 					
 					threads.Sleep()
 					threads.ReportProgress("reading static props", count)
 				end
-				
-				header.static_entities = lumps
-				
+								
 				bsp_file:PopPosition()
 			end
 
@@ -226,39 +271,6 @@ function steam.LoadMap(path)
 		
 	end
 	
-	do
-		threads.Sleep()
-		local function unpack_numbers(str)
-			local t = str:explode(" ")
-			for k,v in ipairs(t) do t[k] = tonumber(v) end
-			return unpack(t)
-		end
-		local entities = {}
-		local i = 1 
-		bsp_file:PushPosition(header.lumps[1].fileofs)
-		for vdf in bsp_file:ReadString():gmatch("{(.-)}") do
-			local ent = {}
-			for k, v in vdf:gmatch([["(.-)" "(.-)"]]) do
-				if k == "angles" then
-					v = Ang3(unpack_numbers(v))
-				elseif k == "_light" or k == "_ambient" or k:find("color", nil, true) then
-					v = ColorBytes(unpack_numbers(v))
-				elseif k == "origin" or k:find("dir", nil, true) or k:find("mins", nil, true) or k:find("maxs", nil, true) then
-					v = Vec3(unpack_numbers(v))
-				end
-				ent[k] = tonumber(v) or v
-			end
-			ent.classname = ent.classname or "unknown"
-			entities[i] = ent
-			i = i + 1  
-			
-			threads.Sleep()
-		end
-		bsp_file:PopPosition()
-		header.entities = entities
-		
-	end
-
 	header.brushes = read_lump_data(thread, "reading brushes", bsp_file, header, 19, 12, [[
 		int	firstside;	// first brushside
 		int	numsides;	// number of brushsides
@@ -388,14 +400,30 @@ function steam.LoadMap(path)
 		int firstface;
 		int numfaces;
 	]])
-	
+		
 	--for i = 1, #header.brushes do
 	--	local brush = header.brushes[i]
 	--end
-
+	
+	local function sky_to_world(pos)
+		if header.sky_aabb:IsPointInside(pos) then
+			return (pos - header.sky_origin) * header.sky_scale, header.sky_scale
+		end
+		
+		return pos
+	end
+	
+	if header.sky_aabb then
+		for i,v in ipairs(header.entities) do
+			if v.origin then
+				v.origin, v.model_size_mult = sky_to_world(v.origin)
+			end
+		end
+	end
+	
 	local models = {}
 
-	do 			
+	do 				
 		local function add_vertex(model, texinfo, texdata, pos, blend, normal)
 			local a = texinfo.textureVecs
 			
@@ -407,12 +435,21 @@ function steam.LoadMap(path)
 			
 			blend = math.clamp(blend, 0, 1)
 			
+			local uv_scale
+			
+			if header.sky_aabb then
+				pos, uv_scale = sky_to_world(pos)
+				if uv_scale then uv_scale = 1/uv_scale  end
+			end
+			
+			uv_scale = uv_scale or 1
+			
 			local vertex = {
 				pos = -Vec3(pos.y, pos.x, pos.z) * scale, -- copy
 				texture_blend = blend,
 				uv = Vec2(
-					(a[1] * pos.x + a[2] * pos.y + a[3] * pos.z + a[4]) / texdata.width,
-					(a[5] * pos.x + a[6] * pos.y + a[7] * pos.z + a[8]) / texdata.height
+					uv_scale * (a[1] * pos.x + a[2] * pos.y + a[3] * pos.z + a[4]) / texdata.width,
+					uv_scale * (a[5] * pos.x + a[6] * pos.y + a[7] * pos.z + a[8]) / texdata.height
 				)
 			}
 			
@@ -460,8 +497,8 @@ function steam.LoadMap(path)
 					texname = texname:gsub("maps/.-/(.+)_.-_.-_.+", "%1")
 				end
 				
-				if texname:find("skyb") then goto continue end
-				if texname:find("water") then goto continue end
+				if texname:find("skyb", nil, true) then goto continue end
+				if texname:find("water", nil, true) then goto continue end
 									
 				-- split the world up into sub models by texture
 				if not meshes[texname] then				
@@ -627,11 +664,6 @@ function steam.LoadMap(path)
 		threads.ReportProgress("building physics meshes", count)
 	end
 
-	for i, info in ipairs(header.static_entities) do
-		info.classname = "static_entity"
-		table.insert(header.entities, info)
-	end
-	
 	if GRAPHICS then
 		for i, mesh in ipairs(models) do
 			mesh:UnreferenceVertices()
@@ -714,6 +746,7 @@ function steam.SpawnMapEntities(path, parent)
 					ent:SetName(info.classname .. "_" .. i)
 					ent:SetModelPath(info.model)
 					ent:SetPosition(info.origin * scale)
+					if info.model_size_mult then ent:SetSize(info.model_size_mult) end
 					ent:SetAngles(info.angles:GetRad())
 					ent:SetHideFromEditor(true)
 					ent.spawned_from_bsp = true
