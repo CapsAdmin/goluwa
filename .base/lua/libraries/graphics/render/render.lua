@@ -37,13 +37,6 @@ function render.Initialize()
 	
 	include("libraries/graphics/decoders/*")
 	
-	render.Uniform4f = gl.Uniform4f
-	render.Uniform3f = gl.Uniform3f
-	render.Uniform2f = gl.Uniform2f
-	render.Uniform1f = gl.Uniform1f
-	render.Uniform1i = gl.Uniform1i
-	render.UniformMatrix4fv = gl.UniformMatrix4fv
-	
 	render.frame = 0
 		
 	render.SetBlendMode("src_alpha", "one_minus_src_alpha")
@@ -67,7 +60,7 @@ end
 render.global_shader_variables = render.global_shader_variables or {}
 
 function render.SetGlobalShaderVariable(key, val, type)
-	render.global_shader_variables[key] = {[type] = val}
+	render.global_shader_variables[key] = {[type] = val, global_variable = true}
 end
 
 render.global_shader_code = render.global_shader_code or {}
@@ -93,6 +86,39 @@ function render.GetGlobalShaderCode(code)
 	end
 	
 	return table.concat(out, "\n\n")
+end
+
+do -- occlusion query
+	local META = prototype.CreateTemplate("occlusion_query")
+	
+	function META:Begin()
+		gl.BeginQuery(gl.e.GL_SAMPLES_PASSED, self.id)
+	end
+	
+	function META:End()
+		gl.EndQuery(gl.e.GL_SAMPLES_PASSED)
+	end
+	
+	local ready = ffi.new("GLuint[1]")
+	
+	function META:GetVisibility()
+		gl.GetQueryObjectuiv(self.id, gl.e.GL_QUERY_RESULT_AVAILABLE, ready)
+		if ready[0] ~= 0 then
+			gl.GetQueryObjectuiv(self.id, gl.e.GL_QUERY_RESULT, ready)
+			return tonumber(ready[0])/480000
+		end
+		
+		return 0
+	end
+	
+	META:Register()
+	
+	function render.CreateOcclusionQuery()
+		local self = prototype.CreateObject("occlusion_query")
+		self.id = gl.GenQuerie()
+		
+		return self
+	end
 end
 
 do -- shaders
@@ -374,8 +400,11 @@ end
 
 do	
 	local cull_mode = "front"
+	local override_
 
-	function render.SetCullMode(mode)
+	function render.SetCullMode(mode, override)
+		if override == false then override_ = nil end
+		if override_ then return end
 		
 		if mode == "none" then
 			gl.Disable(gl.e.GL_CULL_FACE)
@@ -392,6 +421,7 @@ do
 		end
 		
 		cull_mode = mode
+		override_ = override
 	end
 
 	function render.GetCullMode()
@@ -420,7 +450,7 @@ function render.EnableDepth(b)
 	else
 		gl.Disable(gl.e.GL_DEPTH_TEST)
 		gl.DepthMask(gl.e.GL_FALSE)
-		gl.DepthFunc(gl.e.GL_ALWAYS)
+		--gl.DepthFunc(gl.e.GL_ALWAYS)
 	end
 end
 
@@ -437,6 +467,7 @@ include("vertex_buffer.lua", render)
 include("texture_atlas.lua", render)
 include("mesh_builder.lua", render)
 include("material.lua", render)
+include("model_loader.lua", render)
 
 if USE_GLFW then
 	include("glfw_window.lua", render)

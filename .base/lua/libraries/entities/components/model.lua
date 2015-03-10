@@ -5,7 +5,8 @@ COMPONENT.Require = {"transform"}
 
 prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "MaterialOverride", nil)
-	prototype.GetSet(COMPONENT, "Cull", true)	prototype.GetSet(COMPONENT, "ModelPath", "")
+	prototype.GetSet(COMPONENT, "Cull", true)	
+	prototype.GetSet(COMPONENT, "ModelPath", "models/cube.obj")
 	prototype.GetSet(COMPONENT, "BBMin", Vec3())
 	prototype.GetSet(COMPONENT, "BBMax", Vec3())
 prototype.EndStorable()
@@ -19,7 +20,12 @@ COMPONENT.Network = {
 	Color = {"color", 1/5},
 }
 
-if GRAPHICS then 	
+if GRAPHICS then 
+	function COMPONENT:Initialize()
+		self.sub_models = {}
+		self:SetModelPath(self.ModelPath)
+	end
+
 	function COMPONENT:OnAdd(ent)
 		table.insert(render.scene_3d, self)
 	end
@@ -29,9 +35,11 @@ if GRAPHICS then
 	end
 
 	function COMPONENT:SetModelPath(path)
+		self:RemoveMeshes()
+		
 		self.ModelPath = path
 		
-		utility.LoadRenderModel(
+		render.LoadModel(
 			path, 
 			function() 
 				if steam.LoadMap and path:endswith(".bsp") then
@@ -47,12 +55,10 @@ if GRAPHICS then
 				self:RemoveMeshes()
 			end
 		)
-		
 	end
 	
 	do		
 		function COMPONENT:AddMesh(mesh)
-			self.sub_models = self.sub_models or {}
 			checkx(mesh, "mesh_builder")
 			table.insert(self.sub_models, mesh)
 			mesh:CallOnRemove(function()
@@ -63,7 +69,6 @@ if GRAPHICS then
 		end
 		
 		function COMPONENT:RemoveMesh(mesh)
-			self.sub_models = self.sub_models or {}
 			for i, _mesh in ipairs(self.sub_models) do
 				if mesh == _mesh then
 					table.remove(self.sub_models, i)
@@ -73,12 +78,11 @@ if GRAPHICS then
 		end
 		
 		function COMPONENT:RemoveMeshes()
-			self.sub_models = {}
+			table.clear(self.sub_models)
 			collectgarbage("step")
 		end
 		
 		function COMPONENT:GetMeshes()
-			self.sub_models = self.sub_models or {}
 			return self.sub_models
 		end
 	end
@@ -89,7 +93,6 @@ if GRAPHICS then
 		end
 		
 		function COMPONENT:BuildBoundingBox()	
-			self.sub_models = self.sub_models or {}
 			local min, max = Vec3(), Vec3()
 
 			for i, sub_model in ipairs(self.sub_models) do				
@@ -117,36 +120,17 @@ if GRAPHICS then
 		end
 	end
 
-	function COMPONENT:Draw(shader, skip_cull)
-		self.sub_models = self.sub_models or {}
-
+	function COMPONENT:Draw()	
 		render.camera_3d:SetWorld(self:GetComponent("transform"):GetMatrix())
-		
-		if self.corners and not skip_cull then
+
+		if self.corners then
 			self.visible = self:GetComponent("transform"):IsPointsVisible(self.corners, render.camera_3d:GetMatrices().projection_view)
 		end
-		
-		if not self.Cull or self.visible == nil or self.visible == true then
-			for i, model in ipairs(self.sub_models) do
-				
-				if not skip_cull then 
-					if self.MaterialOverride then 	
-						if self.MaterialOverride.NoCull then
-							render.SetCullMode("none") 
-						else
-							render.SetCullMode("front") 
-						end					
-					elseif model.material then
-						if model.material.NoCull then
-							render.SetCullMode("none") 
-						else
-							render.SetCullMode("front") 
-						end
-					end
-				end 
-				
-				shader:Bind(self.MaterialOverride or model.material)
 
+		if not self.Cull or self.visible == nil or self.visible == true then
+			if self.MaterialOverride then render.SetMaterial(self.MaterialOverride) end
+			for i, model in ipairs(self.sub_models) do				
+				if not self.MaterialOverride then render.SetMaterial(model.material) end
 				model:Draw()
 			end
 		end

@@ -75,7 +75,7 @@ do -- init sphere options
 	function META:InitPhysicsSphere(rad)
 		if rad then self:SetPhysicsSphereRadius(rad) end
 		
-		self.body = bullet.CreateRigidBodySphere(self:GetMass(), self:GetMatrix()._, self:GetPhysicsSphereRadius())
+		self.body = bullet.CreateRigidBodySphere(self:GetMass(), self:GetMatrix().ptr, self:GetPhysicsSphereRadius())
 		physics.StoreBodyPointer(self.body, self)
 		
 		update_params(self)
@@ -88,7 +88,7 @@ do -- init box options
 	function META:InitPhysicsBox(scale)
 		if scale then self:SetPhysicsBoxScale(scale) end
 		
-		self.body = bullet.CreateRigidBodyBox(self:GetMass(), self:GetMatrix()._, vec3_to_bullet(self:GetPhysicsBoxScale():Unpack()))
+		self.body = bullet.CreateRigidBodyBox(self:GetMass(), self:GetMatrix().ptr, vec3_to_bullet(self:GetPhysicsBoxScale():Unpack()))
 		physics.StoreBodyPointer(self.body, self)
 		
 		update_params(self)
@@ -101,7 +101,7 @@ do -- init capsule options
 	META:GetSet("PhysicsCapsuleZHeight", 1.85)
 	
 	function META:InitPhysicsCapsuleZ()	
-		self.body = bullet.CreateCapsuleZ(self:GetMass(), self:GetMatrix()._, self:GetPhysicsCapsuleZRadius(), self:GetPhysicsCapsuleZHeight())
+		self.body = bullet.CreateCapsuleZ(self:GetMass(), self:GetMatrix().ptr, self:GetPhysicsCapsuleZRadius(), self:GetPhysicsCapsuleZHeight())
 		physics.StoreBodyPointer(self.body, self)		
 		update_params(self)
 	end
@@ -118,7 +118,7 @@ do -- mesh init options
 		
 		self.mesh = tbl
 		
-		self.body = bullet.CreateRigidBodyConvexHull(self:GetMass(), self:GetMatrix()._, mesh)
+		self.body = bullet.CreateRigidBodyConvexHull(self:GetMass(), self:GetMatrix().ptr, mesh)
 		physics.StoreBodyPointer(self.body, self)
 		
 		update_params(self)
@@ -141,7 +141,7 @@ do -- mesh init options
 		
 		self.mesh = tbl
 		
-		self.body = bullet.CreateRigidBodyConvexTriangleMesh(self:GetMass(), self:GetMatrix()._, mesh)
+		self.body = bullet.CreateRigidBodyConvexTriangleMesh(self:GetMass(), self:GetMatrix().ptr, mesh)
 		physics.StoreBodyPointer(self.body, self)
 		
 		update_params(self)
@@ -164,7 +164,7 @@ do -- mesh init options
 		
 		self.mesh = tbl
 
-		self.body = bullet.CreateRigidBodyTriangleMesh(self:GetMass(), self:GetMatrix()._, mesh, not not quantized_aabb_compression)
+		self.body = bullet.CreateRigidBodyTriangleMesh(self:GetMass(), self:GetMatrix().ptr, mesh, not not quantized_aabb_compression)
 		physics.StoreBodyPointer(self.body, self)
 		
 		update_params(self)
@@ -212,16 +212,16 @@ do -- generic get set
 			META["Set" .. name] = function(self, var)
 				self[name] = var
 				if not self.body then return end
-				set_func(self.body, var._)
+				set_func(self.body, var.ptr)
 			end
 			
 			local out = Matrix44()
 
 			META["Get" .. name] = function(self)
 				if not self.body then return self[name] end
-				get_func(self.body, out._)
+				get_func(self.body, out.ptr)
 				local mat = Matrix44()
-				mat._ = out._
+				mat.ptr = out.ptr
 				return mat
 			end
 		end

@@ -203,25 +203,26 @@ function PASS:Update()
 	
 	surface.PushMatrix(0, 0, self.fb.w, self.fb.h)		
 		self.fb:Begin()
-			self.extract:Bind()
+			render.SetShaderOverride(self.extract)
 			surface.rect_mesh:Draw()
 		self.fb:End()
 	
 		self.blur.blur_dir = Vec3(1, 0) 
 		self.fb:Begin()
-			self.blur:Bind()
+			render.SetShaderOverride(self.blur)
 			surface.rect_mesh:Draw()
 		self.fb:End()
 		
 		self.blur.blur_dir = Vec3(0, 1) 
 		self.fb:Begin()
-			self.blur:Bind()
+			render.SetShaderOverride(self.blur)
 			surface.rect_mesh:Draw()
 		self.fb:End()
 		
 	surface.PopMatrix()
 	
 	self.shader.tex_ssdo = self.fb:GetTexture()
+	render.SetShaderOverride()
 end
 
 

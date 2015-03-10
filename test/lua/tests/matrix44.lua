@@ -18,22 +18,22 @@ local function test(lua_func, gl_func, ...)
 	local args = {}
 	for k,v in pairs({...}) do
 		if typex(v) == "matrix44" then
-			v = v._
+			v = v.ptr
 		end
 		args[k] = v
 	end
 
 	gl_func(unpack(args))
-	gl.GetFloatv(gl.e.GL_MODELVIEW_MATRIX, m._)
+	gl.GetFloatv(gl.e.GL_MODELVIEW_MATRIX, m.ptr)
 	
 	local equal = true
 	
 	for i = 0, 15 do
-		if math.round(copy._[i], 3) ~= math.round(m._[i], 3) then
+		if math.round(copy.ptr[i], 3) ~= math.round(m.ptr[i], 3) then
 			
 			logf("%s member %i is not equal\n", lua_func, i)
-			logn("lua: ", copy._[i])
-			logn("ogl: ", m._[i])
+			logn("lua: ", copy.ptr[i])
+			logn("ogl: ", m.ptr[i])
 			
 			equal = false
 		end
@@ -60,7 +60,7 @@ local function random_matrix()
 	local m = Matrix44()
 	
 	for i = 0, 15 do
-		m._[i] = math.randomf(-100,100)
+		m.ptr[i] = math.randomf(-100,100)
 	end
 	
 	return m

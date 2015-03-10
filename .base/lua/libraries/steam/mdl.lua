@@ -196,7 +196,7 @@ local header = [[
 	int linear_bone_offset;
 ]]
 
-local function load_mdl(path, thread)
+local function load_mdl(path)
 	local buffer = assert(vfs.Open(path .. ".mdl"))
 
 	local header = buffer:ReadStructure(header)
@@ -427,7 +427,7 @@ local function load_mdl(path, thread)
 	return header
 end
 
-local function load_vtx(path, thread)
+local function load_vtx(path)
 	local MAX_NUM_BONES_PER_VERT = 3
 
 	local buffer = vfs.Open(path .. ".dx90.vtx") or vfs.Open(path .. ".dx80.vtx") or vfs.Open(path .. ".sw.vtx") 
@@ -570,7 +570,7 @@ local function load_vtx(path, thread)
 	return vtx
 end
 
-local function load_vvd(path, thread)
+local function load_vvd(path)
 	local MAX_NUM_LODS = 8
 	local MAX_NUM_BONES_PER_VERT = 3
 
@@ -661,6 +661,9 @@ end
 local scale = 0.0254
 
 function steam.LoadModel(path, sub_model_callback)
+	local models = {}
+
+	local ok, err = pcall(function()
 
 	if path:endswith(".mdl") then
 		path = path:sub(1,-#".mdl"-1)
@@ -669,9 +672,7 @@ function steam.LoadModel(path, sub_model_callback)
 	local mdl = load_mdl(path)
 	local vvd = load_vvd(path)
 	local vtx = load_vtx(path)
-	
-	local models = {}
-	
+		
 	for i, body_part in ipairs(vtx.body_parts) do
 		for _, model_ in ipairs(body_part.models) do
 			for lod_index, lod_model in ipairs(model_.model_lods) do
@@ -711,15 +712,15 @@ function steam.LoadModel(path, sub_model_callback)
 						end
 						
 						WHAT2 = WHAT
-						
+
 						mesh:SetVertices(vertices)
-						mesh:SetIndices(indices)
-						
+						mesh:SetIndices(indices)						
 						mesh:BuildBoundingBox()
-						
 						mesh:Upload()
 						
 						sub_model_callback(mesh)
+						
+						table.insert(models, mesh)
 					end
 				end
 				
@@ -729,11 +730,18 @@ function steam.LoadModel(path, sub_model_callback)
 	--	break -- only first body part
 	end
 	
-	return model
+	end)
+	
+	if not ok then 
+		print(err)
+	end
+	
+	return models
 end
 
 if RELOAD then
-	include("libraries/utilities/mesh_loaders.lua")
+	steam.MountSourceGame("hl2")
+	include("libraries/graphics/render/model_loader.lua")
 	local ent = utility.RemoveOldObject(entities.CreateEntity("visual"), "test")
 	ent:SetPosition(render.camera_3d:GetPosition() + render.camera_3d:GetAngles():GetForward() * 5)
 	ent:SetModelPath("models/props_wasteland/exterior_fence001b.mdl")

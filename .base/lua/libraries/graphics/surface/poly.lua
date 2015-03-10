@@ -146,7 +146,6 @@ function META:Draw(count)
 	end
 	surface.mesh_2d_shader.tex = surface.GetTexture()
 	surface.mesh_2d_shader.global_color = surface.GetColor(true)
-	surface.mesh_2d_shader:Bind()
 	self.mesh:Draw(count)
 end
 

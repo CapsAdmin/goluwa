@@ -3,17 +3,17 @@ local data = {
 	
 	-- these are declared as uniform on all shaders
 	shared = {
-		uniform = {
+		variables = {
 			time = 0,
 			mouse = Vec2(0,0),
 		},
 	},
 	
 	vertex = {
-		uniform = {
+		variables = {
 			pwm_matrix = "mat4",
 		},			
-		attributes = { 
+		mesh_layout = { 
 			{pos = "vec2"},
 			{uv = "vec2"},
 		},	
@@ -22,14 +22,14 @@ local data = {
 	},
 	
 	fragment = { 
-		uniform = {
+		variables = {
 			resolution = "vec2",
 			tex = "texture",
 		},		
 		-- when attributes is used outside of vertex they are simply sent from vertex shader
 		-- as "__out_foo" and then grabbed from the other shader with a macro to turn its name 
 		-- back to "foo" with #define
-		attributes = {
+		mesh_layout = {
 			uv = "vec2",
 		},			
 		source = [[
@@ -179,7 +179,6 @@ event.AddListener("DrawHUD", "hm", function()
 		shader.tex = tex	
 		shader.resolution = Vec2(surface.GetSize())
 		shader.mouse = window.GetMousePosition()
-		shader:Bind()
 		mesh:Draw()
 	surface.PopMatrix()
 end) 

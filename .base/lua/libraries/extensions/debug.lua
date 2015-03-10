@@ -52,7 +52,7 @@ do
 						
 						local ret = {}
 						for i = 1, select("#", ...) do 
-							table.insert(ret, serializer.GetLibrary("luadata").ToString((select(i, ...))))
+							table.insert(ret, serializer.GetLibrary("luadata").ToString((select(i, ...))):sub(0,20))
 						end
 						
 						if #ret == 0 then
@@ -80,7 +80,7 @@ do
 								table.insert(args, serializer.GetLibrary("luadata").ToString((select(i, ...)))) 
 							end
 							
-							logf("%s.%s(%s) >> ", lib_name, name, table.concat(args, ", "))
+							logf("%s.%s(%s) >> ", lib_name, name, table.concat(args, ", "):sub(0,20))
 						end
 
 						return log_return(func(...))

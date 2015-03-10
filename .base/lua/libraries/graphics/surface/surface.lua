@@ -5,7 +5,7 @@ local gl = requirew("libraries.ffi.opengl")
 local SHADER = {	
 	name = "mesh_2d",
 	vertex = {
-		attributes = {
+		mesh_layout = {
 			{pos = "vec3"}, 
 			{uv = "vec2"},
 			{color = "vec4"},
@@ -13,7 +13,7 @@ local SHADER = {
 		source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);"
 	},
 	fragment = { 
-		attributes = {
+		mesh_layout = {
 			{uv = "vec2"},
 			{color = "vec4"},
 		},			
@@ -366,7 +366,6 @@ function surface.DrawRect(x,y, w,h, a, ox,oy)
 		surface.Scale(w, h)
 		
 		surface.mesh_2d_shader.tex = surface.bound_texture
-		surface.mesh_2d_shader:Bind()
 		surface.rect_mesh:Draw()
 	surface.PopMatrix()
 end

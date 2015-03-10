@@ -3,16 +3,16 @@ local data = {
 	
 	-- these are declared as uniform on all shaders
 	shared = {
-		uniform = {
+		variables = {
 			time = 0,
 		},
 	},
 	
 	vertex = {
-		uniform = {
+		variables = {
 			pwm_matrix = "mat4",
 		},			
-		attributes = {
+		mesh_layout = {
 			{pos = "vec2"},
 			{uv = "vec2"},
 		},	
@@ -21,14 +21,14 @@ local data = {
 	},
 	
 	fragment = { 
-		uniform = {
+		variables = {
 			global_color = Color(1,1,1,1),
 			tex = "texture",
 		},		
 		-- when attributes is used outside of vertex they are simply sent from vertex shader
 		-- as "__out_foo" and then grabbed from the other shader with a macro to turn its name 
 		-- back to "foo" with #define
-		attributes = {
+		mesh_layout = {
 			{uv = "vec2"},
 		},			
 		source = [[
@@ -70,7 +70,6 @@ event.AddListener("Draw2D", "hm", function()
 		shader.global_color = HSVToColor(system.GetTime())
 		shader.time = system.GetTime()
 		shader.tex = render.GetWhiteTexture()
-		shader:Bind()
 		mesh:Draw()
 	surface.PopMatrix()
 end)  

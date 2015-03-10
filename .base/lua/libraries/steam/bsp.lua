@@ -5,6 +5,7 @@ local scale = 0.0254
 local skyboxes = {
 	["gm_construct"] = {AABB(-400, -400, 255,   400, 400, 320) * (1/scale), 0.0025},
 	["gm_flatgrass"] = {AABB(-400, -400, -430,   400, 400, -360) * (1/scale), 0},
+	["gm_bluehills_test3"] = {AABB(130, 130, 340,   340, 320, 380) * (1/scale), 0},
 }
 
 console.AddCommand("map", function(path)	
@@ -663,7 +664,7 @@ function steam.LoadMap(path)
 		threads.Sleep()
 		threads.ReportProgress("building physics meshes", count)
 	end
-
+	
 	if GRAPHICS then
 		for i, mesh in ipairs(models) do
 			mesh:UnreferenceVertices()
@@ -690,7 +691,7 @@ function steam.SpawnMapEntities(path, parent)
 	thread.debug = true
 	
 	logn("spawning map entities: ", path)
-	
+
 	function thread:OnStart()
 		
 		for k,v in ipairs(parent:GetChildrenList()) do
@@ -703,7 +704,7 @@ function steam.SpawnMapEntities(path, parent)
 			prototype.SafeRemove(parent.world_params)
 			parent.world_params = entities.CreateEntity("world", parent)
 			parent.world_params.spawned_from_bsp = true
-
+			
 			parent:RemoveMeshes()
 			
 			for i, model in ipairs(data.render_meshes) do

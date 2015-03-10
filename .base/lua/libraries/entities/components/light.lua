@@ -4,7 +4,7 @@ local COMPONENT = {}
 
 COMPONENT.Name = "light"
 COMPONENT.Require = {"transform"}
-COMPONENT.Events = {"Draw3DLights", "DrawShadowMaps", "DrawLensFlare"}
+COMPONENT.Events = {"Draw3DLights", "DrawShadowMaps"}
 
 prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1))
@@ -29,7 +29,7 @@ if GRAPHICS then
 	render.shadow_maps = render.shadow_maps or utility.CreateWeakTable()
 	
 	function COMPONENT:OnAdd(ent)
-		utility.LoadRenderModel("models/cube.obj", function(meshes)
+		render.LoadModel("models/cube.obj", function(meshes)
 			self.light_mesh = meshes[1]
 		end)
 	end
@@ -38,32 +38,34 @@ if GRAPHICS then
 		render.shadow_maps[self] = nil
 	end
 	
-	function COMPONENT:OnDraw3DLights(shader)
+	function COMPONENT:OnDraw3DLights()
 		if not self.light_mesh then return end -- grr
 		
 		if self.Shadow then			
-			self:DrawShadowMap(shader)
+			self:DrawShadowMap()
 		end
 		
 		-- automate this!!
-		shader.light_color = self.Color
-		shader.light_intensity = self.Intensity
-		shader.light_shadow = self.Shadow and 1 or 0
-		shader.light_point_shadow = self.ShadowCubemap and 1 or 0
-		shader.project_from_camera = self.ProjectFromCamera and 1 or 0
+		render.gbuffer_light_shader.light_color = self.Color
+		render.gbuffer_light_shader.light_intensity = self.Intensity
+		render.gbuffer_light_shader.light_shadow = self.Shadow
+		render.gbuffer_light_shader.light_point_shadow = self.ShadowCubemap
+		render.gbuffer_light_shader.project_from_camera = self.ProjectFromCamera
 		
 		local transform = self:GetComponent("transform")
 		
 		render.camera_3d:SetWorld(transform:GetMatrix())
 		local mat = render.camera_3d:GetMatrices().view_world
 		local x,y,z = mat:GetTranslation()
-		shader.light_view_pos:Set(x,y,z)
-		shader.light_radius = transform:GetSize()
 		
-		shader:Bind()
+		render.gbuffer_light_shader.light_view_pos:Set(x,y,z)
+		render.gbuffer_light_shader.light_radius = transform:GetSize()		
+		
+		render.SetShaderOverride(render.gbuffer_light_shader)
 		self.light_mesh:Draw()
+		render.SetShaderOverride()
 	end
-						
+
 	local directions = {
 		{e = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X, rot = QuatDeg3(0,90,0)},
 		{e = gl.e.GL_TEXTURE_CUBE_MAP_NEGATIVE_X, rot = QuatDeg3(0,-90,0)},
@@ -75,7 +77,7 @@ if GRAPHICS then
 	
 	render.shadow_map_shader = nil
 						
-	function COMPONENT:DrawShadowMap(shader, ortho_divider)
+	function COMPONENT:DrawShadowMap(ortho_divider)
 		if not self.Shadow then
 			if render.shadow_maps[self] then
 				render.shadow_maps[self] = nil
@@ -87,7 +89,7 @@ if GRAPHICS then
 			render.shadow_map_shader = render.CreateShader({
 				name = "shadow_map",
 				vertex = {
-					attributes = {
+					mesh_layout = {
 						{pos = "vec3"},
 						{normal = "vec3"},
 						{uv = "vec2"},
@@ -96,7 +98,7 @@ if GRAPHICS then
 					source = "gl_Position = g_projection_view_world * vec4(pos, 1);"
 				},
 				fragment = {
-					attributes = {
+					mesh_layout = {
 						{uv = "vec2"},
 					},
 					source = [[
@@ -104,7 +106,7 @@ if GRAPHICS then
 						
 						void main()
 						{				
-							if (lua[Translucent = false] == 1 && texture(lua[DiffuseTexture = "sampler2D"], uv).a < 0.9)
+							if (lua[Translucent = false] && texture(lua[DiffuseTexture = "sampler2D"], uv).a < 0.9)
 							{
 								discard;
 							}
@@ -162,6 +164,9 @@ if GRAPHICS then
 		self.shadow_map:Clear()
 				
 		---self.shadow_map:SetWriteBuffer("depth")
+		
+		render.SetCullMode("front", true)
+		render.SetShaderOverride(render.shadow_map_shader)
 				
 		for i, info in ipairs(directions) do
 			if self.ShadowCubemap then
@@ -198,11 +203,11 @@ if GRAPHICS then
 			render.camera_3d:SetView(view)
 			render.camera_3d:SetProjection(projection)
 			
-			shader.light_projection_view = render.camera_3d:GetMatrices().projection_view
+			render.gbuffer_light_shader.light_projection_view = render.camera_3d:GetMatrices().projection_view
 			
 			-- render the scene with this matrix
-			render.SetCullMode("front")
-			render.Draw3DScene(render.shadow_map_shader, true)
+			
+			render.Draw3DScene()
 			
 			render.camera_3d:SetView()
 			render.camera_3d:SetProjection()
@@ -212,11 +217,14 @@ if GRAPHICS then
 			end
 		end
 		
-		shader.cascade_pass = i
-		shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
+		render.SetShaderOverride()
+		render.SetCullMode(nil, false)
+		
+		render.gbuffer_light_shader.cascade_pass = i
+		render.gbuffer_light_shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
 		
 		if self.ShadowCubemap then 	
-			shader.tex_shadow_map_cube = self.shadow_map:GetTexture("cubemap")
+			render.gbuffer_light_shader.tex_shadow_map_cube = self.shadow_map:GetTexture("cubemap")
 		end
 		
 		render.EnableDepth(false)
