@@ -250,7 +250,7 @@ function META:InvalidateView()
 end
 
 function META:InvalidateWorld()
-	if self.rebuild_matrix then self.rebuild_matrix = true return end
+	if self.rebuild_matrix and self.rebuild_matrix ~= "world" then self.rebuild_matrix = true return end
 	self.rebuild_matrix = "world"
 end
 
