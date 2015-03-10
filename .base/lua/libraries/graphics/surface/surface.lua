@@ -487,7 +487,8 @@ do
 		-- that means the stack should not be emptied, in case you want to disobey clipping?
 		
 		-- Don't consider depth buffer while stenciling or drawing
-		render.EnableDepth(false)
+		gl.DepthMask(gl.e.GL_FALSE)
+		gl.DepthFunc(gl.e.GL_ALWAYS)
 		
 		-- Enable stencil test
 		gl.Enable(gl.e.GL_STENCIL_TEST)
@@ -591,7 +592,7 @@ do
 		gl.StencilFunc(gl.e.GL_ALWAYS, 1, 0xFF) -- Set any stencil to 1
 		gl.StencilOp(gl.e.GL_KEEP, gl.e.GL_KEEP, gl.e.GL_REPLACE)
 		gl.StencilMask(0xFF) -- Write to stencil buffer
-		render.EnableDepth(false)
+		gl.DepthMask(gl.e.GL_FALSE) -- Don't write to depth buffer
 		gl.Clear(gl.e.GL_STENCIL_BUFFER_BIT) -- Clear stencil buffer (0 by default)
 		
 		--local tex = surface.GetTexture()
@@ -603,7 +604,7 @@ do
 		
 		gl.StencilFunc(gl.e.GL_EQUAL, 1, 0xFF) -- Pass test if stencil value is 1
 		gl.StencilMask(0x00) -- Don't write anything to stencil buffer
-		render.EnableDepth(true)
+		gl.DepthMask(gl.e.GL_TRUE) -- Write to depth buffer	
 		
 		x = X
 		y = Y
