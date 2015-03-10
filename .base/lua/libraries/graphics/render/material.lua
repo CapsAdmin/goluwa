@@ -16,6 +16,10 @@ do
 	end
 end
 
+function META:OnBind()
+
+end
+
 function META:SetError(reason)
 	self.Error = reason
 	self.DiffuseTexture = render.GetErrorTexture()
@@ -23,8 +27,12 @@ end
 
 META:Register()
 
-function render.CreateMaterial(name)
-	return prototype.CreateDerivedObject("material", name)
+function render.CreateMaterial(name, shader)
+	local self = prototype.CreateDerivedObject("material", name)
+	
+	self.required_shader = shader
+	
+	return self
 end
 
 function render.CreateMaterialTemplate(name)
@@ -41,9 +49,18 @@ function render.CreateMaterialTemplate(name)
 end
 
 function render.SetMaterial(mat)
-	render.material = mat
+	render.current_material = mat
+	if mat then mat:OnBind() end
 end
 
 function render.GetMaterial()
-	return render.material
+	return render.current_material
+end
+
+function render.SetShaderOverride(shader)
+	render.current_shader_override = shader
+end
+
+function render.GetShader()
+	return render.current_shader_override
 end

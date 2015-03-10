@@ -88,8 +88,8 @@ do
 				body = NULL,
 			}
 			
-			tbl.hit_pos._ = out[0].hit_pos
-			tbl.hit_normal._ = out[0].hit_normal
+			tbl.hit_pos.ptr = out[0].hit_pos
+			tbl.hit_normal.ptr = out[0].hit_normal
 			
 
 			
@@ -116,6 +116,95 @@ do
 	
 	function physics.SetGravity(vec)
 		physics.bullet.SetWorldGravity(vec3_to_bullet(vec:Unpack()))
+	end
+end
+
+do -- physcs models
+
+	local assimp = requirew("libraries.ffi.assimp")
+
+	physics.model_cache = {}
+
+	local cb = utility.CreateCallbackThing(physics.model_cache)
+
+	function physics.LoadModel(path, callback, on_fail)
+		if cb:check(path, callback, {on_fail = on_fail}) then return true end
+		
+		steam.MountGamesFromPath(path)
+		
+		local data = cb:get(path)
+		
+		if data then
+			callback(data)
+			return true
+		end		
+		
+		cb:start(path, callback, {on_fail = on_fail})
+		
+		resource.Download(path, function(full_path)
+			local thread = threads.CreateThread()
+			thread.debug = true
+			
+			function thread:OnStart()
+				if steam.LoadMap and path:endswith(".bsp") then
+				
+					-- :(
+					if GRAPHICS and render.model_loader_cb and render.model_loader_cb:get(path) and render.model_loader_cb:get(path).callback then
+						threads.Report("waiting for render mesh to finish loading")
+						repeat 
+							threads.Sleep()
+						until not render.model_loader_cb:get(path) or not render.model_loader_cb:get(path).callback
+					end
+					-- :(
+					
+					cb:stop(path, steam.LoadMap(full_path).physics_meshes)
+				elseif assimp then
+					local scene = assimp.ImportFile(full_path, assimp.e.aiProcessPreset_TargetRealtime_Quality)
+					
+					if scene.mMeshes[0].mNumVertices == 0 then
+						return nil, "no vertices found in " .. path
+					end
+										
+					local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices  * 3)
+					local triangles = ffi.new("unsigned int[?]", scene.mMeshes[0].mNumFaces * 3)
+					
+					ffi.copy(vertices, scene.mMeshes[0].mVertices, ffi.sizeof(vertices))
+
+					local i = 0
+					for j = 0, scene.mMeshes[0].mNumFaces - 1 do
+						for k = 0, scene.mMeshes[0].mFaces[j].mNumIndices - 1 do
+							triangles[i] = scene.mMeshes[0].mFaces[j].mIndices[k]
+							i = i + 1 
+						end
+					end
+								
+					local mesh = {	
+						triangles = {
+							count = tonumber(scene.mMeshes[0].mNumFaces), 
+							pointer = triangles, 
+							stride = ffi.sizeof("unsigned int") * 3, 
+						},					
+						vertices = {
+							count = tonumber(scene.mMeshes[0].mNumVertices),  
+							pointer = vertices, 
+							stride = ffi.sizeof("float") * 3,
+						},
+					}
+					
+					cb:stop(path, {mesh})
+					
+					assimp.ReleaseImport(scene)
+				else
+					cb:callextra(path, "on_fail", "unknown format " .. path)
+				end
+			end
+			
+			thread:Start()
+		end, function(reason)
+			cb:callextra(path, "on_fail", reason)
+		end)
+		
+		return true
 	end
 end
 

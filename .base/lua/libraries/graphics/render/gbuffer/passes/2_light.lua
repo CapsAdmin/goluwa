@@ -1,7 +1,5 @@
 local render = ... or _G.render
 
-local gl = require("libraries.ffi.opengl")
-
 local PASS = {}
 
 PASS.Stage, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
@@ -12,13 +10,12 @@ PASS.Buffers = {
 
 function PASS:Draw3D()
 	render.EnableDepth(false)	
-	--render.SetBlendMode("additive")
 	render.SetBlendMode("one", "one")
 	render.SetCullMode("front")
 	
 	render.gbuffer:Begin("light")
 		render.gbuffer:Clear(0,0,0,0, "light")
-		event.Call("Draw3DLights", render.gbuffer_light_shader)
+		event.Call("Draw3DLights")
 	render.gbuffer:End() 	
 end
 
@@ -52,13 +49,13 @@ end
 
 PASS.Shader = {
 	vertex = {
-		attributes = {
+		mesh_layout = {
 			{pos = "vec3"},
 		},	
 		source = "gl_Position = g_projection_view_world * vec4(pos, 1);"
 	},
 	fragment = { 
-		uniform = {			
+		variables = {			
 			light_view_pos = Vec3(0,0,0),
 			light_color = Color(1,1,1,1),				
 			light_intensity = 0.5,
@@ -74,7 +71,7 @@ PASS.Shader = {
 			{
 				float visibility = 0;
 			
-				if (lua[light_point_shadow = 0] == 1)
+				if (lua[light_point_shadow = false])
 				{
 					vec3 light_dir = get_view_pos(uv) - light_view_pos;
 				
@@ -102,7 +99,7 @@ PASS.Shader = {
 								visibility += 0.25;
 						}
 					}
-					else if(lua[project_from_camera = 0] == 1)
+					else if(lua[project_from_camera = false])
 					{
 						visibility = 1;
 					}
@@ -113,7 +110,7 @@ PASS.Shader = {
 						
 			float get_attenuation(vec3 view_pos, vec2 uv)
 			{												
-				if (project_from_camera == 1) return 1;
+				if (project_from_camera) return 1;
 				
 				float distance = length(light_view_pos - view_pos);
 				distance = distance / lua[light_radius = 1000];
@@ -202,8 +199,10 @@ PASS.Shader = {
 				vec3 view_pos = get_view_pos(uv);
 
 				float fade = get_attenuation(view_pos, uv);
+				
+				//{out_color.rgb = vec3(fade); out_color.a = 1; return;}
 						
-				if (lua[light_shadow = 0] == 1)
+				if (lua[light_shadow = false])
 				{
 					float shadow = get_shadow(uv);
 					

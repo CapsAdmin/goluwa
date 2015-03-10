@@ -5,6 +5,7 @@ local META = prototype.CreateTemplate("vertex_buffer")
 
 prototype.GetSet(META, "UpdateIndices", true)
 prototype.GetSet(META, "Mode", "triangles")
+prototype.GetSet(META, "Shader")
 
 function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
 	checkx(shader, "shader")
@@ -45,6 +46,13 @@ local translate = {
 }
 
 function META:Draw(count)
+
+	if render.current_shader_override then
+		render.current_shader_override:Bind()
+	elseif self.Shader then
+		self.Shader:Bind()	
+	end
+	
 	render.BindVertexArray(self.vao_id)
 	--render.BindArrayBuffer(self.vertices_id)	
 	gl.BindBuffer(gl.e.GL_ELEMENT_ARRAY_BUFFER, self.indices_id)

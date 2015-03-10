@@ -20,15 +20,15 @@ local W, H = fb:GetTexture():GetSize():Unpack()
 local shader = render.CreateShader({
 	name = "test",
 	shared = {
-		uniform = {
+		variables = {
 			time = {number =  system.GetTime},
 		},
 	},
 	vertex = {
-		uniform = {
+		variables = {
 			pwm_matrix = {mat4 = render.GetProjectionViewWorldMatrix}
 		},			
-		attributes = {
+		mesh_layout = {
 			{pos = "vec2"},
 			{uv = "vec2"},
 		},	
@@ -36,12 +36,12 @@ local shader = render.CreateShader({
 	},
 	
 	fragment = { 
-		uniform = {
+		variables = {
 			size = {vec2 = function() return fb:GetTexture():GetSize() end},
 			self = {texture = function() return fb:GetTexture() end},
 			generate_random = 1,
 		},
-		attributes = {
+		mesh_layout = {
 			{uv = "vec2"},
 		},			
 		source = [[
@@ -119,8 +119,9 @@ event.CreateTimer("fb_update", fps, 0, function()
 		render.SetBlendMode("src_color", "one_minus_dst_alpha", "add")
 		
 		surface.PushMatrix(0, 0, W, H)
-			shader:Bind()
+			render.SetShaderOverride(shader)
 			surface.rect_mesh:Draw()
+			render.SetShaderOverride()
 		surface.PopMatrix()
 		
 		if input.IsMouseDown("button_1") or input.IsMouseDown("button_2") then

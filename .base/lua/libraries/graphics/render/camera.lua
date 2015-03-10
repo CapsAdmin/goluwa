@@ -227,7 +227,7 @@ function META:Rebuild(type)
 	
 	if type == nil or type == "view" or type == "world" then
 		vars.world = self.World
-		vars.view_world =  vars.world * vars.view		
+		vars.view_world =  vars.world * vars.view
 		vars.view_world_inverse = vars.view_world:GetInverse()
 		vars.normal_matrix = vars.view_world:GetInverse():GetTranspose()
 	end

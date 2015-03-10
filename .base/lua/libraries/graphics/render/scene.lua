@@ -53,22 +53,55 @@ do -- current window
 	end
 end
 
+render.scene_3d = render.scene_3d or {}
+
+function render.Draw3DScene()
+	--[[local cam_pos = render.camera_3d:GetPosition()
+	
+	table.sort(render.scene_3d, function(a, b)
+		return 
+			a:GetComponent("transform"):GetPosition():Distance(cam_pos) <
+			b:GetComponent("transform"):GetPosition():Distance(cam_pos)
+			
+	end)]]
+	
+	--render.SetCullMode("none")
+	
+	for i, model in ipairs(render.scene_3d) do
+		model:Draw()
+	end
+end
+
 console.CreateVariable("render_accum", 0)
+local deferred = console.CreateVariable("render_deferred", true, "whether or not deferred rendering is enabled.")
 
 function render.DrawScene(window, dt)
 	render.delta = dt
 	render.Clear(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
 	render.Start(window)
-		
-		render.SetCullMode("none")
-				
+	
+	if deferred:Get() then
 		render.DrawGBuffer(dt, window:GetSize():Unpack())
-		
-		local blur_amt = console.GetVariable("render_accum") or 0
-		if blur_amt ~= 0 then			
-			gl.Accum(gl.e.GL_ACCUM, 1)
-			gl.Accum(gl.e.GL_RETURN, 1-blur_amt)
-			gl.Accum(gl.e.GL_MULT, blur_amt)
-		end
+	else
+		render.EnableDepth(true)
+		render.SetBlendMode("alpha")	
+		render.SetCullMode("back")
+
+		render.Draw3DScene()
+	end
+	
+	render.EnableDepth(false)	
+	render.SetBlendMode("alpha")	
+	render.SetCullMode("back")
+	
+	event.Call("Draw2D", dt)
+	
+	local blur_amt = console.GetVariable("render_accum") or 0
+	if blur_amt ~= 0 then			
+		gl.Accum(gl.e.GL_ACCUM, 1)
+		gl.Accum(gl.e.GL_RETURN, 1-blur_amt)
+		gl.Accum(gl.e.GL_MULT, blur_amt)
+	end
+	
 	render.End()
 end

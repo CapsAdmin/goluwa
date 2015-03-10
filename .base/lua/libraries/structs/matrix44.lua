@@ -29,7 +29,7 @@ if MATRIX_CTYPE then
 	function META.__eq(a, b)
 		if getmetatable(b) == META then
 			for i = 0, 15 do
-				if a._[i] ~= b._[i] then
+				if a.ptr[i] ~= b.ptr[i] then
 					return false
 				end
 			end
@@ -44,13 +44,13 @@ if MATRIX_CTYPE then
 
 	function META:Copy(matrix)
 		if matrix then
-			ffi.copy(self._, matrix._, 16)
+			ffi.copy(self.ptr, matrix.ptr, 16)
 			
 			return self
 		else
 			local result = light_ctor()
 			
-			ffi.copy(result._, self._, size)
+			ffi.copy(result.ptr, self.ptr, size)
 			
 			return result
 		end
@@ -514,7 +514,7 @@ if MATRIX_CTYPE then
 	ffi.cdef[[
 		typedef union Matrix44 {
 			struct { float m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33; };
-			float _[16];
+			float ptr[16];
 	} Matrix44;]]
 	
 	local meta = ffi.metatype("Matrix44", META)
@@ -530,8 +530,28 @@ else
 	local META = {}
 	META.__index = META
 
+	META.Args = {
+		"m00", "m01", "m02", "m03",
+		"m10", "m11", "m12", "m13",
+		"m20", "m21", "m22", "m23",
+		"m30", "m31", "m32", "m33",
+	}
+	
 	META.Type = "matrix44"
 	META.TypeX = "matrix44"
+	
+	local translate = {}
+	for i, key in ipairs(META.Args) do
+		translate[key] = i - 1
+	end
+
+	function META:__index(key)
+		return META[key] or self.ptr[translate[key] or key]
+	end
+
+	function META:__newindex(key, val)
+		rawset(self, key, val)
+	end
 
 	function META.__eq(a, b)
 		if getmetatable(b) == META then
@@ -551,13 +571,13 @@ else
 
 	function META:Copy(matrix)
 		if matrix then
-			ffi.copy(self._, matrix._, 16)
+			ffi.copy(self.ptr, matrix.ptr, 16)
 			
 			return self
 		else
 			local result = Matrix44()
 			
-			ffi.copy(result._, self._, size)
+			ffi.copy(result.ptr, self.ptr, size)
 			
 			return result
 		end
@@ -566,7 +586,7 @@ else
 	META.__copy = META.Copy
 	
 	function META:__tostring()
-		return string.format("matrix44[%p]:\n" .. ("%f %f %f %f\n"):rep(4), self._,
+		return string.format("matrix44[%p]:\n" .. ("%f %f %f %f\n"):rep(4), self.ptr,
 			--self[0], self[4], self[8], self[12],
 			--self[1], self[5], self[9], self[13],
 			--self[2], self[6], self[10], self[14],
@@ -584,7 +604,7 @@ else
 	end
 
 	function META:Identity()
-		local m = self._
+		local m = self.ptr
 		
 		m[0] = 1 
 		m[5] = 1
@@ -611,8 +631,8 @@ else
 
 	function META:GetInverse(out)
 		out = out or Matrix44()
-		local r = out._
-		local m = self._
+		local r = out.ptr
+		local m = self.ptr
 
 		r[0] = m[5]*m[10]*m[15] - m[5]*m[14]*m[11] - m[6]*m[9]*m[15] + m[6]*m[13]*m[11] + m[7]*m[9]*m[14] - m[7]*m[13]*m[10]
 		r[1] = -m[1]*m[10]*m[15] + m[1]*m[14]*m[11] + m[2]*m[9]*m[15] - m[2]*m[13]*m[11] - m[3]*m[9]*m[14] + m[3]*m[13]*m[10]
@@ -660,8 +680,8 @@ else
 
 	function META:GetTranspose(out)
 		out = out or Matrix44()
-		local r = out._
-		local m = self._
+		local r = out.ptr
+		local m = self.ptr
 		
 		r[0] = m[0] 
 		r[1] = m[4] 
@@ -688,10 +708,10 @@ else
 
 	function META.GetMultiplied(a, b, out)
 		out = out or Matrix44()
-		local r = out._
+		local r = out.ptr
 			
-		local a = a._
-		local b = b._
+		local a = a.ptr
+		local b = b.ptr
 
 		r[0] = a[0] * b[0] + a[1] * b[4] + a[2] * b[8] + a[3] * b[12]
 		r[1] = a[0] * b[1] + a[1] * b[5] + a[2] * b[9] + a[3] * b[13]
@@ -719,13 +739,13 @@ else
 	META.Multiply = META.GetMultiplied
 
 	function META:GetTranslation()
-		local m = self._
+		local m = self.ptr
 		
 		return m[12], m[13], m[14]
 	end
 
 	function META:GetClipCoordinates()
-		local m = self._
+		local m = self.ptr
 		
 		return m[12] / m[15], m[13] / m[15], m[14] / m[15]
 	end
@@ -733,7 +753,7 @@ else
 	function META:Translate(x, y, z)
 		if x == 0 and y == 0 and (z == 0 or not z) then return self end
 
-		local m = self._
+		local m = self.ptr
 
 		m[12] = m[0] * x + m[4] * y + m[8]  * z + m[12]
 		m[13] = m[1] * x + m[5] * y + m[9]  * z + m[13]
@@ -744,7 +764,7 @@ else
 	end
 
 	function META:SetTranslation(x, y, z)
-		local m = self._
+		local m = self.ptr
 		
 		m[12] = x
 		m[13] = y
@@ -757,7 +777,7 @@ else
 		if a == 0 then return self end
 		
 		out = out or Matrix44()
-		local m = out._
+		local m = out.ptr
 
 		local xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c, s, c
 		local optimized = false
@@ -859,7 +879,7 @@ else
 	function META:Scale(x, y, z)
 		if x == 1 and y == 1 and z == 1 then return self end
 		
-		local m = self._
+		local m = self.ptr
 
 		m[0] = m[0] * x 
 		m[4] = m[4] * y
@@ -882,7 +902,7 @@ else
 
 	do -- projection
 		function META:Perspective(fov, near, far, aspect)
-			local m = self._
+			local m = self.ptr
 
 			local yScale = 1.0 / math.tan(fov / 2)
 			local xScale = yScale / aspect
@@ -912,7 +932,7 @@ else
 		end
 
 		function META:Frustum(l, r, b, t, n, f)
-			local m = self._
+			local m = self.ptr
 				
 			local temp = 2.0 * n
 			local temp2 = r - l
@@ -940,7 +960,7 @@ else
 		end
 
 		function META:Ortho(left, right, bottom, top, near, far)
-			local m = self._
+			local m = self.ptr
 			
 			m[0*4] = 2 / (right - left)
 			--m[1*4] = 0
@@ -968,7 +988,7 @@ else
 
 	if CLIENT then -- helpers
 		function META:LookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz)
-			local m = self._
+			local m = self.ptr
 
 			local e = Vec3(ex, ey, ez)
 			local c = Vec3(cx, cy, cz)
@@ -1002,7 +1022,7 @@ else
 	end
 
 	function META:TransformPoint(v)
-		local m = self._
+		local m = self.ptr
 		
 		return Vec3(
 			m[0] * v.x + m[1] * v.y + m[2] * v.z + m[3],
@@ -1013,7 +1033,7 @@ else
 	end
 
 	function META:TransformVector(v)
-		local m = self._
+		local m = self.ptr
 		local x, y, z = v.x - m[12], v.y - m[13], v.z - m[14]
 		return Vec3(
 			(m[0] * x + m[1] * y + m[2] * z),
@@ -1023,7 +1043,7 @@ else
 	end
 
 	function META:TransformVector(x, y, z)
-		local m = self._
+		local m = self.ptr
 		
 		local div = x * m[3] + y * m[7] + z * m[11] + m[15]
 			
@@ -1034,7 +1054,7 @@ else
 	end
 
 	function META:Shear(v)
-		local m = self._
+		local m = self.ptr
 		
 		 for i = 0, 3 do
 			m[i + 2] = m[i + 2] + y * m[i] + v.z * m[i + 1]
@@ -1043,14 +1063,14 @@ else
 	end
 
 	function META:Lerp(alpha, other)
-		local m = self._
+		local m = self.ptr
 		for i = 1, 16 do
-			math.lerp(alpha, m[i-1], other._[i-1])
+			math.lerp(alpha, m[i-1], other.ptr[i-1])
 		end
 	end
 
 	function META:GetRotation(out)
-		local m = self._
+		local m = self.ptr
 		
 		local w = math.sqrt(1 + m[0] + m[5] + m[10]) / 2
 		local w2 = w * 4
@@ -1066,7 +1086,7 @@ else
 	end
 
 	function META:SetRotation(q)
-		local m = self._
+		local m = self.ptr
 
 		local sqw = q.w*q.w
 		local sqx = q.x*q.x
@@ -1114,7 +1134,7 @@ else
 	function Matrix44()
 		local self = setmetatable({}, META)
 		
-		self._ = new(t)
+		self.ptr = new(t)
 		self:Identity()
 	
 		return self

@@ -1,7 +1,5 @@
 local render = ... or _G.render
 
-local gl = require("libraries.ffi.opengl") -- OpenGL
-
 local PASS = {}
 
 PASS.Stage, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
@@ -11,58 +9,21 @@ PASS.Buffers = {
 	{"normal", "RGBA8_SNORM"},
 }
 
-render.AddGlobalShaderCode([[
-vec3 get_view_pos(vec2 uv)
-{
-	vec4 pos = g_projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
-	return pos.xyz / pos.w;
-}]], "get_view_pos")
+function PASS:Initialize()
+	local META = self.shader:CreateMaterialTemplate(PASS.Name)
+	
+	function META:OnBind()
+		if self.NoCull then
+			render.SetCullMode("none") 
+		else
+			render.SetCullMode("front") 
+		end
+	end
 
-render.AddGlobalShaderCode([[
-vec3 get_view_normal(vec2 uv)
-{
-	return texture(tex_normal, uv).xyz;
-}]], "get_view_normal")
-
-render.AddGlobalShaderCode([[
-float get_metallic(vec2 uv)
-{
-	return texture(tex_normal, uv).a;
-}]], "get_metallic")
-
-render.AddGlobalShaderCode([[
-float get_roughness(vec2 uv)
-{
-	return texture(tex_diffuse, uv).a;
-}]], "get_roughness")
- 
-render.AddGlobalShaderCode([[
-vec3 get_world_pos(vec2 uv)
-{
-	vec4 pos = g_view_inverse * g_projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
-	return pos.xyz / pos.w;
-}]], "get_world_pos")
+	META:Register()
+end
 
 local gl = require("libraries.ffi.opengl") -- OpenGL
-
-render.scene_3d = render.scene_3d or {}
-
-function render.Draw3DScene(shader, simple)
-	--[[local cam_pos = render.camera_3d:GetPosition()
-	
-	table.sort(render.scene_3d, function(a, b)
-		return 
-			a:GetComponent("transform"):GetPosition():Distance(cam_pos) <
-			b:GetComponent("transform"):GetPosition():Distance(cam_pos)
-			
-	end)]]
-	
-	--render.SetCullMode("none")
-	
-	for i, model in ipairs(render.scene_3d) do
-		model:Draw(shader, simple)
-	end
-end
 
 function PASS:Draw3D()
 	gl.DepthMask(gl.e.GL_TRUE)
@@ -71,22 +32,13 @@ function PASS:Draw3D()
 	
 	render.gbuffer:Begin()
 	render.gbuffer:Clear()
-		
-		render.Draw3DScene(render.gbuffer_model_shader)
-		
-		--skybox?				
-		
-		--local scale = 16
-		--local view = Matrix44()
-		--view = render.SetupView3D(Vec3(234.1, -234.1, 361.967)*scale + render.camera_3d:GetPosition(), render.camera_3d:GetAngles(), render.camera_3d:GetFOV(), view)
-		--view:Scale(scale,scale,scale)
-		--event.Call("Draw3DGeometry", render.gbuffer_model_shader, true)			
+		render.Draw3DScene()		
 	render.gbuffer:End()
 end
 
 PASS.Shader = {
 	vertex = {
-		attributes = {
+		mesh_layout = {
 			{pos = "vec3"},
 			{uv = "vec2"},
 			{normal = "vec3"},
@@ -101,13 +53,13 @@ PASS.Shader = {
 			{				
 				out_normal =  mat3(g_view_world) * normal;
 				
-				vec3 tangent = -normalize(mat3(g_normal_matrix) * out_normal);
-				vec3 binormal = normalize(cross(out_normal, tangent));
+				vec3 tangent = normalize(mat3(g_normal_matrix) * out_normal);
+				vec3 binormal = -normalize(cross(out_normal, tangent));
 
 				tangent_to_world = mat3(
-					tangent.x, binormal.x, out_normal.x,
-					tangent.y, binormal.y, out_normal.y,
-					tangent.z, binormal.z, out_normal.z
+					binormal.x, tangent.x, out_normal.x,
+					binormal.y, tangent.y, out_normal.y,
+					binormal.z, tangent.z, out_normal.z
 				);
 
 				gl_Position = g_projection_view_world * vec4(pos, 1.0);
@@ -115,11 +67,23 @@ PASS.Shader = {
 		]]
 	},
 	fragment = {
-		uniform = {	
+		variables = {	
 			--illumination_color = Color(1,1,1,1),
-			AlphaSpecular = 1,
+			AlphaSpecular = false,
+			NoCull = false,
+			
+			DiffuseTexture = render.GetErrorTexture(),
+			Diffuse2Texture = render.GetBlackTexture(),
+			NormalTexture = render.GetBlackTexture(),
+			Normal2Texture = render.GetBlackTexture(),
+			
+			MetallicTexture = render.GetBlackTexture(),
+			RoughnessTexture = render.GetGreyTexture(),
+			-- source engine specific
+			--IlluminationTexture = render.GetBlackTexture(),
+			--DetailTexture = render.GetBlackTexture(),
 		},
-		attributes = {
+		mesh_layout = {
 			{uv = "vec2"},
 			{normal = "vec3"},
 			--[[{tangent = "vec3"},
@@ -155,10 +119,11 @@ PASS.Shader = {
 					diffuse_buffer = texture(DiffuseTexture, uv);
 					
 					vec4 diffuse_blend = texture(Diffuse2Texture, uv);
-					if (diffuse_blend != vec4(1))
+					
+					if (diffuse_blend != vec4(0))
 						diffuse_buffer = mix(diffuse_buffer, diffuse_blend, texture_blend);
 					
-					if (lua[Translucent = false] == 1)
+					if (lua[Translucent = false])
 					{
 						if (dither(uv, diffuse_buffer.a))
 						{
@@ -174,24 +139,26 @@ PASS.Shader = {
 				
 				// normals
 				{				
-					vec4 bump_detail = texture(NormalTexture, uv);
+					vec3 bump_detail = texture(NormalTexture, uv).xyz;
 					
-					normal_buffer.rgb = normal;
-					
-					if (bump_detail != vec4(1))
+					if (bump_detail == vec3(0))
 					{
-						vec4 bump_detail2 = texture(Normal2Texture, uv);
+						normal_buffer.xyz = normal;
+					}
+					else
+					{
+						vec3 bump_detail2 = texture(Normal2Texture, uv).xyz;
 						
-						if (bump_detail2 != vec4(1))
+						if (bump_detail2 != vec3(0))
 							bump_detail = bump_detail + (bump_detail2 * texture_blend);
 					
-						normal_buffer.rgb += (2 * bump_detail.rgb - 1) * tangent_to_world;
+						normal_buffer.xyz = (2 * bump_detail - 1) * tangent_to_world;
 					}
 					
-					normal_buffer.rgb = normalize(normal_buffer.rgb);
+					normal_buffer.xyz = normalize(normal_buffer.xyz);
 				}
 
-				if (AlphaSpecular == 1)
+				if (AlphaSpecular)
 				{
 					normal_buffer.a = -diffuse_buffer.a+1;
 				}
@@ -209,44 +176,40 @@ PASS.Shader = {
 	}
 }
 
-do
-	local META = render.CreateMaterialTemplate("model")
+render.RegisterGBufferPass(PASS)
 
-	prototype.StartStorable()
-		META:GetSet("IlluminationColor", Color(1,1,1,1))
-		META:GetSet("DetailScale", 1)
-		META:GetSet("DetailBlendFactor", 0)
-		META:GetSet("NoCull", false)
-		META:GetSet("AlphaTest", false)
-		META:GetSet("Translucent", false)
-		META:GetSet("AlphaSpecular", false)
-		META:GetSet("RoughnessMultiplier", 0)
-		META:GetSet("MetallicMultiplier", 0)
-	prototype.EndStorable()
-
-	do
-		local function add_texture(name, default)	
-			prototype.StartStorable()
-				META:GetSet(name .. "Texture", default)
-			prototype.EndStorable()
-			
-			PASS.Shader.fragment.uniform[name .. "Texture"] = default
-		end
-
-		add_texture("Diffuse", render.GetErrorTexture())
-		add_texture("Diffuse2", render.GetWhiteTexture())
-		add_texture("Normal", render.GetWhiteTexture())
-		add_texture("Normal2", render.GetWhiteTexture()) 
-		
-		add_texture("Metallic", render.GetBlackTexture())
-		add_texture("Roughness", render.GetGreyTexture()) 
-
-		-- source engine specific
-		--add_texture("Illumination", render.GetBlackTexture())
-		--add_texture("Detail", render.GetWhiteTexture())
-	end
-
-	META:Register()
+function render.CreateMesh(vertices, indices, is_valid_table)		
+	return render.gbuffer_model_shader:CreateVertexBuffer(vertices, indices, is_valid_table)
 end
 
-render.RegisterGBufferPass(PASS)
+render.AddGlobalShaderCode([[
+vec3 get_view_pos(vec2 uv)
+{
+	vec4 pos = g_projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
+	return pos.xyz / pos.w;
+}]], "get_view_pos")
+
+render.AddGlobalShaderCode([[
+vec3 get_view_normal(vec2 uv)
+{
+	return texture(tex_normal, uv).xyz;
+}]], "get_view_normal")
+
+render.AddGlobalShaderCode([[
+float get_metallic(vec2 uv)
+{
+	return texture(tex_normal, uv).a;
+}]], "get_metallic")
+
+render.AddGlobalShaderCode([[
+float get_roughness(vec2 uv)
+{
+	return texture(tex_diffuse, uv).a;
+}]], "get_roughness")
+ 
+render.AddGlobalShaderCode([[
+vec3 get_world_pos(vec2 uv)
+{
+	vec4 pos = g_view_inverse * g_projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
+	return pos.xyz / pos.w;
+}]], "get_world_pos")

@@ -41,7 +41,7 @@ function structs.Register(META)
 			end
 		end
 		
-		table.insert(arg_lines, "\t" .. number_type .. " _[" .. #META.Args .. "];")
+		table.insert(arg_lines, "\t" .. number_type .. " ptr[" .. #META.Args .. "];")
 		
 		META.__index = META
 		META.Type = META.ClassName:lower()

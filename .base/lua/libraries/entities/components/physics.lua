@@ -181,7 +181,7 @@ do
 	function COMPONENT:SetPhysicsModelPath(path)
 		self.PhysicsModelPath = path
 		
-		utility.LoadPhysicsModel(path, function(physics_meshes)
+		physics.LoadModel(path, function(physics_meshes)
 			if not self:IsValid() then return end
 			
 			-- TODO: support for more bodies

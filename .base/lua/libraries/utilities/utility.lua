@@ -1,5 +1,10 @@
 local utility = _G.utility or {}
 
+include("midi.lua", utility)
+include("packed_rectangle.lua", utility)
+include("quickbms.lua", utility)
+include("3d.lua", utility)
+
 function utility.CreateCallbackThing(cache)	
 	cache = cache or {}
 	local self = {}
@@ -56,12 +61,6 @@ function utility.CreateCallbackThing(cache)
 	
 	return self
 end
-
-include("midi.lua", utility)
-include("packed_rectangle.lua", utility)
-include("quickbms.lua", utility)
-include("3d.lua", utility)
-include("mesh_loaders.lua", utility)
 
 local EPSILON = 1E-12
 

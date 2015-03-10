@@ -3,6 +3,8 @@ local gl = require("libraries.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
 do -- texture binding
+	local last_texture
+	
 	do
 		local base = gl.e.GL_TEXTURE0 
 		local last
@@ -10,17 +12,16 @@ do -- texture binding
 			if id ~= last then
 				gl.ActiveTexture(base + id)
 				last = id
+				last_texture = nil
 			end
 		end
 	end
 
-	do
-		local last
-		
-		function render.BindTexture(tex)			
-			if tex ~= last and tex:IsValid() then
+	do		
+		function render.BindTexture(tex)
+			if tex ~= last_texture then
 				tex:Bind()
-				last = tex
+				last_texture = tex
 			end
 		end
 	end
@@ -505,14 +506,14 @@ do -- texture object
 				local data = {
 					name = name,
 					shared = {
-						uniform = vars,
+						variables = vars,
 					},
 					
 					vertex = {
-						uniform = {
+						variables = {
 							pwm_matrix = "mat4",
 						},			
-						attributes = {
+						mesh_layout = {
 							{pos = "vec3"},
 							{uv = "vec2"},
 						},	
@@ -520,11 +521,11 @@ do -- texture object
 					},
 					
 					fragment = { 
-						uniform = {
+						variables = {
 							self = self,
 							size = self:GetSize(),
 						},		
-						attributes = {
+						mesh_layout = {
 							{uv = "vec2"},
 						},			
 						source = template:format(fragment_shader),
@@ -549,8 +550,9 @@ do -- texture object
 					render.SetBlendMode("src_alpha", "one_minus_src_alpha")
 				end
 				
-				shader:Bind()
+				render.SetShaderOverride(shader)
 				surface.rect_mesh:Draw()
+				render.SetShaderOverride()
 			self:EndWrite()
 		end
 	

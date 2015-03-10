@@ -31,10 +31,6 @@ function render.GetGBufferSize()
 	return Vec2(render.gbuffer_width or render.GetWidth(), render.gbuffer_height or render.GetHeight())
 end
 
-function render.CreateMesh(vertices, indices, is_valid_table)		
-	return render.gbuffer_model_shader:CreateVertexBuffer(vertices, indices, is_valid_table)
-end
-
 render.gbuffer = render.gbuffer or NULL
 render.gbuffer_passes = render.gbuffer_passes or {}
 render.gbuffer_shaders_ = render.gbuffer_shaders_ or {}
@@ -84,8 +80,9 @@ do -- mixer
 			end
 			render.gbuffer_mixer_buffer:Begin()		
 				surface.PushMatrix(0, 0, render.GetWidth(), render.GetHeight())
-					shader:Bind()
+					render.SetShaderOverride(shader)
 					surface.rect_mesh:Draw()
+					render.SetShaderOverride()
 				surface.PopMatrix()
 			render.gbuffer_mixer_buffer:End()	
 			if shader.gbuffer_pass.PostRender then
@@ -100,7 +97,7 @@ do -- mixer
 		local shader = {
 			name = PASS.Name,
 			vertex = {
-				attributes = {
+				mesh_layout = {
 					{pos = "vec3"},
 					{uv = "vec2"},
 				},	
@@ -108,12 +105,12 @@ do -- mixer
 			},
 			
 			fragment = { 
-				uniform = {
+				variables = {
 					cam_nearz = {float = function() return render.camera_3d.NearZ end},
 					cam_farz = {float = function() return render.camera_3d.FarZ end},
 					self = {texture = function() return render.gbuffer_mixer_buffer:GetTexture() end},
 				},
-				attributes = {
+				mesh_layout = {
 					{uv = "vec2"},
 				},			
 				source = PASS.Source
@@ -123,12 +120,12 @@ do -- mixer
 		for i, info in ipairs(render.gbuffer_buffers) do
 			local name = "tex_" .. info.name
 			if PASS.Source:find(name) then
-				shader.fragment.uniform[name] = {texture = function() return render.gbuffer:GetTexture(info.name) end}
+				shader.fragment.variables[name] = {texture = function() return render.gbuffer:GetTexture(info.name) end}
 			end
 		end
 			
 		if PASS.Variables then
-			table.merge(shader.fragment.uniform, PASS.Variables)
+			table.merge(shader.fragment.variables, PASS.Variables)
 		end
 		
 		render.gbuffer_shaders_[PASS.Name] = PASS
@@ -249,7 +246,7 @@ function render.InitializeGBuffer(width, height)
 		
 		render.SetGlobalShaderVariable("tex_depth", function() return render.gbuffer:GetTexture("depth") end, "texture")
 	
-		for _, pass in ipairs(render.gbuffer_passes) do
+		for _, pass in ipairs(render.gbuffer_passes) do		
 			if pass.Buffers then
 				for _, args in ipairs(pass.Buffers) do
 					local name, format, attach = unpack(args)
@@ -303,6 +300,8 @@ function render.InitializeGBuffer(width, height)
 		
 	for _, pass in ipairs(render.gbuffer_passes) do
 		local shader = render.CreateShader(pass.Shader)
+		pass.shader = shader
+		if pass.Initialize then pass:Initialize() end
 		for i, info in ipairs(render.gbuffer_buffers) do
 			shader["tex_" .. info.name] = render.gbuffer:GetTexture(info.name)
 		end
@@ -409,42 +408,23 @@ function render.ShutdownGBuffer()
 	warning("gbuffer shutdown")
 end
 
-local size = 4
-local deferred = console.CreateVariable("render_deferred", true, "whether or not deferred rendering is enabled.")
 local gbuffer_enabled = true
 
 function render.DrawGBuffer(dt, w, h)
+	if not gbuffer_enabled then return end
 
-	if not gbuffer_enabled or not deferred:Get() then
-		render.Clear(1,1,1,1)
-		gl.DepthMask(gl.e.GL_TRUE)
-		render.EnableDepth(true)
-		render.SetBlendMode()
-		
-		event.Call("Draw3DGeometry", render.gbuffer_model_shader)
-		
-		render.EnableDepth(false)	
-		render.SetBlendMode("alpha")	
-		render.SetCullMode("back")
-		
-		event.Call("Draw2D", dt)
-	return end
-	
 	render.Clear(1,1,1,1)
 	gl.DepthMask(gl.e.GL_TRUE)
 	render.EnableDepth(true)
 	render.SetBlendMode()
 	
-
 	for i, pass in ipairs(render.gbuffer_passes) do
 		if pass.Draw3D then 
 			pass:Draw3D() 
 		end
 	end
-		
-	--render.Clear(1,1,1,1)		
 	
-	-- gbuffer
+	-- gbuffer	
 	render.SetBlendMode("alpha")	
 	render.SetCullMode("back")
 	render.EnableDepth(false)	
@@ -452,12 +432,10 @@ function render.DrawGBuffer(dt, w, h)
 	for i, shader in ipairs(render.gbuffer_shaders_sorted) do
 		render.DrawGBufferShader(shader.gbuffer_name)
 	end
-
+		
 	surface.SetTexture(render.gbuffer_mixer_buffer:GetTexture())
 	surface.SetColor(1,1,1,1)
-	surface.DrawRect(0, 0, w, h)		
-	
-	event.Call("Draw2D", dt)
+	surface.DrawRect(0, 0, w, h)
 end
 
 function render.EnableGBuffer(b)
