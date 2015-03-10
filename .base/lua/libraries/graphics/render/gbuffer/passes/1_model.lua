@@ -65,7 +65,6 @@ function render.Draw3DScene(shader, simple)
 end
 
 function PASS:Draw3D()
-	gl.DepthMask(gl.e.GL_TRUE)
 	render.EnableDepth(true)
 	render.SetBlendMode()
 	
