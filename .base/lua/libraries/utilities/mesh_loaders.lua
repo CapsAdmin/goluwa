@@ -89,16 +89,7 @@ do -- render model
 			
 			function thread:OnStart()							
 				if steam.LoadModel and full_path:endswith(".mdl") then				
-					steam.LoadModel(full_path, function(model_data)					
-						local mesh = render.CreateMeshBuilder()
-						
-						mesh.material = model_data.material
-						mesh:SetName(model_data.name)
-						mesh:SetVertices(model_data.vertices)
-						mesh:SetIndices(model_data.indices)						
-						mesh:BuildBoundingBox()
-						
-						mesh:Upload()
+					steam.LoadModel(full_path, function(mesh)
 						cb:callextra(path, "mesh", mesh)
 						table.insert(out, mesh)					
 					end)
