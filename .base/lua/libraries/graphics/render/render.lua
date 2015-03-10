@@ -415,8 +415,11 @@ end
 function render.EnableDepth(b)
 	if b then
 		gl.Enable(gl.e.GL_DEPTH_TEST)
+		gl.DepthMask(gl.e.GL_TRUE)
 	else
 		gl.Disable(gl.e.GL_DEPTH_TEST)
+		gl.DepthMask(gl.e.GL_FALSE)
+		gl.DepthFunc(gl.e.GL_ALWAYS)
 	end
 end
 
