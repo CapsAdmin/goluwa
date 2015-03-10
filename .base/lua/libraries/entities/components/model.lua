@@ -122,7 +122,11 @@ if GRAPHICS then
 
 		render.camera_3d:SetWorld(self:GetComponent("transform"):GetMatrix())
 		
-		if not self.Cull or not self.corners or self:GetComponent("transform"):IsPointsVisible(self.corners, render.camera_3d:GetMatrices().projection_view) then
+		if self.corners and not skip_cull then
+			self.visible = self:GetComponent("transform"):IsPointsVisible(self.corners, render.camera_3d:GetMatrices().projection_view)
+		end
+		
+		if not self.Cull or self.visible == nil or self.visible == true then
 			for i, model in ipairs(self.sub_models) do
 				
 				if not skip_cull then 
