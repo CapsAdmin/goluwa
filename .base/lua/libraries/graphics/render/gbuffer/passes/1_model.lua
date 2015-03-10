@@ -136,14 +136,16 @@ PASS.Shader = {
 					
 					
 			// https://www.shadertoy.com/view/MslGR8
-			float dither(vec2 uv, float alpha)
+			bool dither(vec2 uv, float alpha)
 			{			
+				//{return alpha < 0.5;}
+			
 				vec2 ij = floor(mod( gl_FragCoord.xy, vec2(2.0)));
 				float idx = ij.x + 2.0*ij.y;
 				vec4 m = step( abs(vec4(idx)-vec4(0,1,2,3)), vec4(0.5)) * vec4(0.75,0.25,0.00,0.50);
 				float d = m.x+m.y+m.z+m.w;
 				
-				return alpha + d;
+				return (alpha + d) < 0.9;
 			}
 			
 			void main()
@@ -158,7 +160,7 @@ PASS.Shader = {
 					
 					if (lua[Translucent = false] == 1)
 					{
-						if (dither(uv, diffuse_buffer.a) < 0.9)
+						if (dither(uv, diffuse_buffer.a))
 						{
 							discard;
 						}
