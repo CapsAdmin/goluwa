@@ -368,7 +368,7 @@ function prototype.AddBufferTemplate(META)
 		-- matrix44
 		function META:WriteMatrix44(matrix)
 			for i = 1, 16 do
-				self:WriteFloat(matrix.m[i - 1])
+				self:WriteFloat(matrix[i - 1])
 			end
 			return self
 		end
@@ -386,7 +386,7 @@ function prototype.AddBufferTemplate(META)
 		-- matrix33
 		function META:WriteMatrix33(matrix)
 			for i = 1, 8 do
-				self:WriteFloat(matrix.m[i - 1])
+				self:WriteFloat(matrix[i - 1])
 			end
 			return self
 		end

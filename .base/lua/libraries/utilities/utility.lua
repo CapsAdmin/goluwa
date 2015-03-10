@@ -248,7 +248,7 @@ end
 
 function utility.TableToColumns(title, tbl, columns, check, sort_key)
 
-	if gui then
+	if false and gui then
 		local frame = gui.CreatePanel("frame", nil, "table_to_columns_" .. title)
 		frame:SetSize(Vec2() + 300)
 		frame:SetTitle(title)

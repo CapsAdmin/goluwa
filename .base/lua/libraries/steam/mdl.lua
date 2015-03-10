@@ -301,7 +301,7 @@ local function load_mdl(path, thread)
 		local matrix = Matrix44()
 		for i = 1, 12 do
 			local val = buffer:ReadFloat()
-			--matrix.m[-i-12] = val
+			--matrix[-i-12] = val
 		end
 
 		data.pose_to_bone = matrix
