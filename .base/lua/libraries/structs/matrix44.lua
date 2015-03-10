@@ -8,15 +8,6 @@ if MATRIX_CTYPE then
 		self:LoadIdentity()
 	end
 
-	META.ClassName = "Matrix44"
-	META.NumberType = "float"
-	META.Args = {
-		"m00", "m01", "m02", "m03",
-		"m10", "m11", "m12", "m13",
-		"m20", "m21", "m22", "m23",
-		"m30", "m31", "m32", "m33",
-	}
-
 	structs.AddOperator(META, "==")
 	structs.AddOperator(META, "copy")]]
 	
@@ -25,7 +16,16 @@ if MATRIX_CTYPE then
 
 	META.Type = "matrix44"
 	META.TypeX = "matrix44"
-
+	
+	META.ClassName = "Matrix44"
+	META.NumberType = "float"
+	META.Args = {
+		"m00", "m01", "m02", "m03",
+		"m10", "m11", "m12", "m13",
+		"m20", "m21", "m22", "m23",
+		"m30", "m31", "m32", "m33",
+	}
+	
 	function META.__eq(a, b)
 		if getmetatable(b) == META then
 			for i = 0, 15 do
