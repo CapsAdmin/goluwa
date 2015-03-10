@@ -14,7 +14,7 @@ local unrolled_lines = {
 
 	color = "render.Uniform4f(%i, val.r, val.g, val.b, val.a)",
 
-	mat4 = "if type(val) == 'table' then val = val.m end render.UniformMatrix4fv(%i, 1, 0, val)",
+	mat4 = "render.UniformMatrix4fv(%i, 1, 0, val._)",
 
 	texture = "local channel = %i\n\trender.ActiveTexture(channel)\n\trender.BindTexture(val)\n\trender.Uniform1i(%i, channel)",
 }

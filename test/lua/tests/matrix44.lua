@@ -9,32 +9,31 @@ gl.PushMatrix()
 gl.LoadIdentity()
 
 local function test(lua_func, gl_func, ...)
+	gl.LoadIdentity()
+	m:LoadIdentity()
 	m[lua_func](m, ...)
 	
-	local copy = ffi.new("float[16]")
-	for i = 0, 15 do
-		copy[i] = m.m[i]
-	end
+	local copy = m:Copy()
 	
 	local args = {}
 	for k,v in pairs({...}) do
 		if typex(v) == "matrix44" then
-			v = v.m
+			v = v._
 		end
 		args[k] = v
 	end
 
 	gl_func(unpack(args))
-	gl.GetFloatv(gl.e.GL_MODELVIEW_MATRIX, m.m)
+	gl.GetFloatv(gl.e.GL_MODELVIEW_MATRIX, m._)
 	
 	local equal = true
 	
 	for i = 0, 15 do
-		if math.round(copy[i], 3) ~= math.round(m.m[i], 3) then
+		if math.round(copy._[i], 3) ~= math.round(m._[i], 3) then
 			
-			logf("member %i is not equal\n", i)
-			logn("lua: ", copy[i])
-			logn("ogl: ", m.m[i])
+			logf("%s member %i is not equal\n", lua_func, i)
+			logn("lua: ", copy._[i])
+			logn("ogl: ", m._[i])
 			
 			equal = false
 		end
@@ -48,12 +47,9 @@ local function test(lua_func, gl_func, ...)
 	
 	logf("%s results are not equal!\n", lua_func)
 	
-	local old = m.m
-	m.m = copy
 	logn("\nLua result:")
-	logn(m, "\n")
+	logn(copy, "\n")
 
-	m.m = old
 	logn("\nOpenGL result:")
 	logn(m, "\n")
 	
@@ -63,8 +59,8 @@ end
 local function random_matrix()
 	local m = Matrix44()
 	
-	for i = 1, 15 do
-		m[i] = math.randomf(-100,100)
+	for i = 0, 15 do
+		m._[i] = math.randomf(-100,100)
 	end
 	
 	return m
@@ -79,6 +75,4 @@ for i = 1, 20 do
 	if not test("Multiply", gl.MultMatrixf, random_matrix()) then break end
 end
    
-print(m) 
-
 --test("Ortho", gl.Ortho, 0, 512, 0, 512, -1, 1) 

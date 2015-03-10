@@ -8,12 +8,17 @@ function structs.Register(META)
 	for prepend, number_type in pairs(number_types) do
 		local arg_lines = {}
 		
-		
 		if i >= 2 then 
 			local copy = {}
 			for k,v in pairs(META) do copy[k] = v end
 			META = copy
 			META.ClassName = META.ClassName .. prepend
+			
+			local size = ffi.sizeof(number_type) * #META.Args
+			function META:GetByteSize() return size end
+		else
+			local size = ffi.sizeof(number_type) * #META.Args
+			function META:GetByteSize() return size end
 		end
 		
 		i = i + 1
@@ -56,11 +61,11 @@ function structs.Register(META)
 		end
 			
 		if META.Constructor then
-			structs[META.ClassName] = function(...) return obj(META.Constructor(...)) end
+			structs[META.ClassName] = function() local self = obj() self:Constructor() return self end
 		else
 			structs[META.ClassName] = obj
 		end
-			
+		
 		_G[META.ClassName] = structs[META.ClassName]
 		
 		prototype.Register(META)
@@ -250,13 +255,26 @@ function structs.AddOperator(META, operator, ...)
 		local lua = [==[
 		local META, structs = ...
 		META["Copy"] = function(a)
-				return
-				CTOR(
-					a.KEY
-				)
+			return
+			CTOR(
+				a.KEY
+			)
+		end
+		META["Copy"] = function(a, b)
+			if b then
+				ffi.copy(a, b, a:GetByteSize())
+				return a
+			else
+				local out = CTOR()
+				
+				ffi.copy(out, a, a:GetByteSize())
+				
+				return out
 			end
+		end
 		META.__copy = META.Copy
 		]==]
+		
 		
 		lua = parse_args(META, lua, ", ")
 		
