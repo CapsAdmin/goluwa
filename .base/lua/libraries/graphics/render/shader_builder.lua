@@ -1,5 +1,5 @@
 local SOMETHING = false
-local BUILD_OUTPUT = true
+local BUILD_OUTPUT = false
 
 local gl = require("libraries.ffi.opengl") -- OpenGL
 local render = (...) or _G.render

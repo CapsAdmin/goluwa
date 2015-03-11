@@ -78,8 +78,8 @@ do -- mixer
 			if shader.gbuffer_pass.Update then
 				shader.gbuffer_pass:Update()
 			end
-			render.gbuffer_mixer_buffer:Begin()		
-				surface.PushMatrix(0, 0, render.GetWidth(), render.GetHeight())
+			render.gbuffer_mixer_buffer:Begin()
+				surface.PushMatrix(0, 0, render.gbuffer_width , render.gbuffer_height)
 					render.SetShaderOverride(shader)
 					surface.rect_mesh:Draw()
 					render.SetShaderOverride()
@@ -219,6 +219,8 @@ function render.InitializeGBuffer(width, height)
 	width = width or render.GetWidth()
 	height = height or render.GetHeight()
 	
+	render.camera_3d:SetViewport(Rect(0,0,width,height))
+
 	if w_cvar:Get() > 0 then width = w_cvar:Get() end
 	if h_cvar:Get() > 0 then height = h_cvar:Get() end
 	
@@ -417,7 +419,7 @@ function render.DrawGBuffer(dt, w, h)
 	gl.DepthMask(gl.e.GL_TRUE)
 	render.EnableDepth(true)
 	render.SetBlendMode()
-	
+		
 	for i, pass in ipairs(render.gbuffer_passes) do
 		if pass.Draw3D then 
 			pass:Draw3D() 
