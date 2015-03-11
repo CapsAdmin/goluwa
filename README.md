@@ -51,3 +51,6 @@ Markup language:
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_23-48-43.gif)
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_23-40-58.gif)
 This is used by the GUI and chat. It has lots of tags to change colors, rotation, offsets, fonts etc.
+
+
+[![Join the chat at https://gitter.im/CapsAdmin/goluwa](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/CapsAdmin/goluwa?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
