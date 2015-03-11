@@ -103,7 +103,7 @@ function render.EnableDebug(b)
 			
 			debug.sethook(function() 
 				local info = debug.getinfo(2)
-				if info.source:find("lj-opengl", nil, true) then
+				if info.source:find("opengl", nil, true) then
 					gl.GetDebugMessageLog(1, length, nil, nil, nil, nil, nil, buffer)
 					local str = ffi.string(buffer)
 					if str ~= "" then

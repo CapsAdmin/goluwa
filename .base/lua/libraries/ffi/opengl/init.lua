@@ -84,7 +84,7 @@ function gl.InitMiniGlew()
 		cache = {}
 		
 		local time = system.GetTime()
-		for path in vfs.Iterate("lua/modules/lj-opengl/extensions/", nil, true) do
+		for path in vfs.Iterate("lua/libraries/ffi/opengl/extensions/", nil, true) do
 			local str, err = vfs.Read(path)
 			for line in str:gmatch("\t(.-)\n") do
 				local key, val = line:match("([1-9a-Z_]+) (.+)")

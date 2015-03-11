@@ -603,7 +603,7 @@ do -- find in files
 	function utility.FindInLoadedLuaFiles(find)
 		local out = {}
 		for path in pairs(vfs.GetLoadedLuaFiles()) do
-			if not path:find("modules") or (path:find("lj-", nil, true) and (not path:find("header.lua") and not path:find("enums"))) then
+			if not path:find("modules") or (path:find("ffi", nil, true) and (not path:find("header.lua") and not path:find("enums"))) then
 				local str = vfs.Read(path)
 				if str then
 					for i, line in ipairs(str:explode("\n")) do
