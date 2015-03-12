@@ -125,6 +125,7 @@ function steam.LoadMap(path)
 	do
 		threads.Sleep()
 		local function unpack_numbers(str)
+			str = str:gsub("%s+", " ")
 			local t = str:explode(" ")
 			for k,v in ipairs(t) do t[k] = tonumber(v) end
 			return unpack(t)
