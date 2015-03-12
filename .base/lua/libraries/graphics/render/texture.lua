@@ -608,7 +608,7 @@ function render.CreateTextureFromPath(path, format)
 	self.override_texture = loading
 	self.loading = true
 	self.texture_path = "loading"
-	local short_path = path
+	local real_path = path
 	resource.Download(
 		path, 
 		function(path)
@@ -627,14 +627,14 @@ function render.CreateTextureFromPath(path, format)
 					update_format(self)
 				end
 				
-				render.texture_path_cache[path] = self			
+				render.texture_path_cache[real_path] = self			
 				
 				self:Replace(buffer, w, h)
 				
 				if self.OnLoad then
 					self:OnLoad(w, h, info)
 				end
-				self.texture_path = short_path
+				self.texture_path = real_path
 			end
 			self.decode_info = info
 		end, 

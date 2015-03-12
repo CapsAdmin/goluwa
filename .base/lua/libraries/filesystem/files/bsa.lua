@@ -1,3 +1,4 @@
+do return end
 local vfs = (...) or _G.vfs
 
 local function read_bsa(file, full_path)

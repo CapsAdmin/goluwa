@@ -14,7 +14,7 @@ prototype.StartStorable()
 
 	prototype.GetSet(COMPONENT, "Shadow", false)
 	prototype.GetSet(COMPONENT, "ShadowCubemap", false)
-	prototype.GetSet(COMPONENT, "ShadowSize", 4096)
+	prototype.GetSet(COMPONENT, "ShadowSize", 1024)
 	prototype.GetSet(COMPONENT, "FOV", 90, {editor_min = 0, editor_max = 180})
 	prototype.GetSet(COMPONENT, "NearZ", 1)
 	prototype.GetSet(COMPONENT, "FarZ", 32000)
@@ -36,6 +36,13 @@ if GRAPHICS then
 
 	function COMPONENT:OnRemove(ent)
 		render.shadow_maps[self] = nil
+	end
+	
+	function COMPONENT:SetShadow(b)
+		self.Shadow = b
+		if not b then
+			render.shadow_maps[self] = nil
+		end
 	end
 	
 	function COMPONENT:OnDraw3DLights()

@@ -303,16 +303,24 @@ end
 do
 	local X,Y,W,H
 	
-	function render.SetViewport(x, y, w, h)
+	local last = Rect()
 	
+	function render.SetViewport(x, y, w, h)
 		X,Y,W,H = x,y,w,h
 		
-		gl.Viewport(x, y, w, h)
-		gl.Scissor(x, y, w, h)
-		
-		render.camera_2d.Viewport.w = w
-		render.camera_2d.Viewport.h = h
-		render.camera_2d:Rebuild()
+		if last.x ~= x or last.y ~= y or last.w ~= w or last.h ~= h then
+			gl.Viewport(x, y, w, h)
+			gl.Scissor(x, y, w, h)
+			
+			render.camera_2d.Viewport.w = w
+			render.camera_2d.Viewport.h = h
+			render.camera_2d:Rebuild()
+			
+			last.x = x
+			last.y = y
+			last.w = w
+			last.h = h
+		end
 	end
 	
 	function render.GetViewport()

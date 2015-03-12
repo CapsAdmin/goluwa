@@ -218,22 +218,27 @@ function META:Rebuild(type)
 		end
 	end
 	
-	if type == nil or type == "projection" or type == "view" then
-		vars.projection_inverse = vars.projection:GetInverse()
-		vars.view_inverse = vars.view:GetInverse()
-		vars.projection_view = vars.view * vars.projection
-		vars.projection_view_inverse = vars.projection_view:GetInverse()
-	end
+	if self:Get3D() then
+		if type == nil or type == "projection" or type == "view" then
+			vars.projection_inverse = vars.projection:GetInverse()
+			vars.view_inverse = vars.view:GetInverse()
+			vars.projection_view = vars.view * vars.projection
+			vars.projection_view_inverse = vars.projection_view:GetInverse()
+		end
+		
+		if type == nil or type == "view" or type == "world" then
+			vars.world = self.World
+			vars.view_world =  vars.world * vars.view
+			vars.view_world_inverse = vars.view_world:GetInverse()
+			vars.normal_matrix = vars.view_world:GetInverse():GetTranspose()
+		end
 	
-	if type == nil or type == "view" or type == "world" then
+		
+		if type == nil or type == "world" then
+			vars.world_inverse = vars.world:GetInverse()
+		end		
+	else
 		vars.world = self.World
-		vars.view_world =  vars.world * vars.view
-		vars.view_world_inverse = vars.view_world:GetInverse()
-		vars.normal_matrix = vars.view_world:GetInverse():GetTranspose()
-	end
-	
-	if type == nil or type == "world" then
-		vars.world_inverse = vars.world:GetInverse()
 	end
 	
 	vars.projection_view_world = vars.world * vars.view * vars.projection
@@ -245,12 +250,12 @@ function META:InvalidateProjection()
 end
 
 function META:InvalidateView()
-	if self.rebuild_matrix then self.rebuild_matrix = true return end
+	if self.rebuild_matrix and self.rebuild_matrix ~= "view" and self.rebuild_matrix ~= "projection" then return end
 	self.rebuild_matrix = "view"
 end
 
-function META:InvalidateWorld()
-	if self.rebuild_matrix and self.rebuild_matrix ~= "world" then self.rebuild_matrix = true return end
+function META:InvalidateWorld()	
+	if self.rebuild_matrix and self.rebuild_matrix ~= "world" then return end
 	self.rebuild_matrix = "world"
 end
 

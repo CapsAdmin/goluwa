@@ -126,6 +126,7 @@ if WINDOWS then
 	local COMBINE = function(hi, lo) return bit.band(bit.lshift(hi, 8), lo) end
 	
 	function fs.getattributes(path)	
+		if fs.debug then logn(path) end
 		if ffi.C.GetFileAttributesExA(path, 0, info) then
 			--local flags = flags_to_table(info[0].dwFileAttributes) -- overkill
 			local type
