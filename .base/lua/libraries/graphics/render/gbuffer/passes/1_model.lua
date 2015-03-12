@@ -140,19 +140,17 @@ PASS.Shader = {
 				// normals
 				{				
 					vec3 bump_detail = texture(NormalTexture, uv).xyz;
+
+					normal_buffer.xyz = normal;
 					
-					if (bump_detail == vec3(0))
-					{
-						normal_buffer.xyz = normal;
-					}
-					else
+					if (bump_detail != vec3(0))
 					{
 						vec3 bump_detail2 = texture(Normal2Texture, uv).xyz;
 						
 						if (bump_detail2 != vec3(0))
 							bump_detail = bump_detail + (bump_detail2 * texture_blend);
 					
-						normal_buffer.xyz = (2 * bump_detail - 1) * tangent_to_world;
+						normal_buffer.xyz += ((2 * bump_detail - 1) * tangent_to_world);
 					}
 					
 					normal_buffer.xyz = normalize(normal_buffer.xyz);
