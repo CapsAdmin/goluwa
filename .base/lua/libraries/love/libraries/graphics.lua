@@ -4,7 +4,7 @@ local love = (...) or _G.lovemu.love
 
 local gl = require("libraries.ffi.opengl") -- OpenGL
 
-local love = love or ...
+local love = ... or love
 
 love.graphics = {}
 

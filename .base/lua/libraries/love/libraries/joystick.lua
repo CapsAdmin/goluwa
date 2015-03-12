@@ -1,4 +1,5 @@
-local love = love or ...
+print("wow")
+local love = ... or love
 
 love.joystick = {}
 

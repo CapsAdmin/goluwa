@@ -1,6 +1,6 @@
 if not GRAPHICS then return end
 
-local love = love or ...
+local love = ... or love
 
 local textures = lovemu.textures
 local FILTER = "nearest"
