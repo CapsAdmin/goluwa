@@ -176,7 +176,7 @@ function steam.BuildSteamWorksHeader()
 	header = header:gsub("_Bool", "bool")
 	header = header:gsub("&", "*")
 	
-	header = header:gsub("struct SteamWorks_CSteamID %b{} SteamWorks_CSteamID", "uint64_t SteamWorks_CSteamID")
+	header = header:gsub("struct "..prepend.."CSteamID %b{} "..prepend.."CSteamID", "uint64_t "..prepend.."CSteamID")
 	
 	-- post fix (for callbacks since they don't have json info for their parameters)
 	for i = 1, 500 do
@@ -199,6 +199,8 @@ assert(lib.SteamAPI_Init())
 local steamworks = {}
 	]])
 	
+	local steam_id_meta = {}
+	
 	for interface in pairs(interfaces) do
 		local friendly = interface:sub(2):sub(6):lower()
 		table.insert(lua, "steamworks." .. friendly .. " = {}")
@@ -211,16 +213,45 @@ local steamworks = {}
 						args = args .. ("%s%s"):format(arg.paramname, i == #info.params and "" or ", ")
 					end
 				end
+				local arg_line = args
 				local func = "function steamworks." .. friendly .. "." .. info.methodname .. "(" .. args .. ")"
 				if #args > 0 then args = ", " .. args end
-				func = func .. " return lib.SteamAPI_"..interface.."_" .. info.methodname .. "(steamworks." .. friendly .. "_ptr" .. args .. ")"
+				if info.returntype == "const char *" then
+					func = func .. "local str = lib.SteamAPI_"..interface.."_" .. info.methodname .. "(steamworks." .. friendly .. "_ptr" .. args .. ") if str ~= nil then return ffi.string(str) end"
+				else
+					func = func .. " return lib.SteamAPI_"..interface.."_" .. info.methodname .. "(steamworks." .. friendly .. "_ptr" .. args .. ")"
+				end
 				func = func .. " end"
+				
+				if info.params and info.params[1].paramtype == prepend .. "CSteamID" then
+					info.friendly_interface = friendly
+					info.arg_line = arg_line:match(".-, (.+)") or ""
+					table.insert(steam_id_meta, info)
+				end
 				
 				table.insert(lua, func)
 			end
 		end
 	end
 	
+	table.insert(lua, "local META = {}")
+	table.insert(lua, "META.__index = META")
+	
+	for i, info in ipairs(steam_id_meta) do
+	
+		local name = info.methodname
+		name = name:gsub("User", "")
+		name = name:gsub("Friend", "")
+		local arg_line = info.arg_line
+		if #arg_line > 0 then arg_line =  ", " .. arg_line end
+		local func = "function META:" .. name .. "(" .. info.arg_line .. ") return steamworks." .. info.friendly_interface .. "." .. info.methodname .. "(self.id" .. arg_line .. ") end"
+		table.insert(lua, func)
+	end
+	
+	table.insert(lua, "META.__tostring = function(self) return ('[%s]%s'):format(self.id, self:GetPersonaName()) end")
+	table.insert(lua, "function steamworks.GetFriendObjectFromSteamID(id) return setmetatable({id = id}, META) end")
+	table.insert(lua, "steamworks.steamid_meta = META")
+		
 	table.insert(lua, "return steamworks")
 	
 	vfs.Write("lua/libraries/ffi/steamworks/init.lua", table.concat(lua, "\n"))

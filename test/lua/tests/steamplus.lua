@@ -1,3 +1,6 @@
+-- WIP
+do return end
+
 if not steam.IsSteamClientAvailible() then
 	warning("steam friends extension not available")
 return end
@@ -6,7 +9,7 @@ chatsounds.Initialize()
 
 local subject
 
-event.AddListener("SteamFriendsMessage", "steam_friends", function(sender_steam_id, txt, receiver_steam_id)
+event.AddListener("SteamFriendsMessage", "steam_friends", function(id, txt)
 	if txt == "" then return end
 	if txt:sub(1, 2) == ">>" then return end
 
@@ -36,13 +39,13 @@ event.AddListener("ConsolePrint", "steam_friends", function(line)
 	end
 end)
 
-for i, steam_id in pairs(steam.GetFriends()) do
-	local ply = clients.Create(steam_id, true)
-	ply:SetNick(steam.GetNickFromSteamID(ply:GetUniqueID()))
+for i, info in pairs(steam.GetFriends()) do
+	local ply = clients.Create(tostring(info.id), true)
+	ply:SetNick(info.nick)
 end
 
 local ply = clients.Create(steam.GetClientSteamID(), true)
-ply:SetNick(steam.GetNickFromSteamID(ply:GetUniqueID()))
+ply:SetNick(steam.GetNickFromSteamID(steam.GetClientSteamID()))
 
 console.AddCommand("kill", function() 
 	if STEAM_FRIENDS_SUBJECT and STEAM_FRIENDS_SUBJECT:IsValid() then

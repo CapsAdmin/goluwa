@@ -2359,28 +2359,28 @@ function steamworks.unifiedmessages.ReleaseMethod(hHandle) return lib.SteamAPI_I
 function steamworks.unifiedmessages.SendNotification(pchServiceNotification, pNotificationBuffer, unNotificationBufferSize) return lib.SteamAPI_ISteamUnifiedMessages_SendNotification(steamworks.unifiedmessages_ptr, pchServiceNotification, pNotificationBuffer, unNotificationBufferSize) end
 steamworks.friends = {}
 steamworks.friends_ptr = lib.SteamFriends()
-function steamworks.friends.GetPersonaName() return lib.SteamAPI_ISteamFriends_GetPersonaName(steamworks.friends_ptr) end
+function steamworks.friends.GetPersonaName()local str = lib.SteamAPI_ISteamFriends_GetPersonaName(steamworks.friends_ptr) if str ~= nil then return ffi.string(str) end end
 function steamworks.friends.SetPersonaName(pchPersonaName) return lib.SteamAPI_ISteamFriends_SetPersonaName(steamworks.friends_ptr, pchPersonaName) end
 function steamworks.friends.GetPersonaState() return lib.SteamAPI_ISteamFriends_GetPersonaState(steamworks.friends_ptr) end
 function steamworks.friends.GetFriendCount(iFriendFlags) return lib.SteamAPI_ISteamFriends_GetFriendCount(steamworks.friends_ptr, iFriendFlags) end
 function steamworks.friends.GetFriendByIndex(iFriend, iFriendFlags) return lib.SteamAPI_ISteamFriends_GetFriendByIndex(steamworks.friends_ptr, iFriend, iFriendFlags) end
 function steamworks.friends.GetFriendRelationship(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendRelationship(steamworks.friends_ptr, steamIDFriend) end
 function steamworks.friends.GetFriendPersonaState(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendPersonaState(steamworks.friends_ptr, steamIDFriend) end
-function steamworks.friends.GetFriendPersonaName(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendPersonaName(steamworks.friends_ptr, steamIDFriend) end
+function steamworks.friends.GetFriendPersonaName(steamIDFriend)local str = lib.SteamAPI_ISteamFriends_GetFriendPersonaName(steamworks.friends_ptr, steamIDFriend) if str ~= nil then return ffi.string(str) end end
 function steamworks.friends.GetFriendGamePlayed(steamIDFriend, pFriendGameInfo) return lib.SteamAPI_ISteamFriends_GetFriendGamePlayed(steamworks.friends_ptr, steamIDFriend, pFriendGameInfo) end
-function steamworks.friends.GetFriendPersonaNameHistory(steamIDFriend, iPersonaName) return lib.SteamAPI_ISteamFriends_GetFriendPersonaNameHistory(steamworks.friends_ptr, steamIDFriend, iPersonaName) end
+function steamworks.friends.GetFriendPersonaNameHistory(steamIDFriend, iPersonaName)local str = lib.SteamAPI_ISteamFriends_GetFriendPersonaNameHistory(steamworks.friends_ptr, steamIDFriend, iPersonaName) if str ~= nil then return ffi.string(str) end end
 function steamworks.friends.GetFriendSteamLevel(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendSteamLevel(steamworks.friends_ptr, steamIDFriend) end
-function steamworks.friends.GetPlayerNickname(steamIDPlayer) return lib.SteamAPI_ISteamFriends_GetPlayerNickname(steamworks.friends_ptr, steamIDPlayer) end
+function steamworks.friends.GetPlayerNickname(steamIDPlayer)local str = lib.SteamAPI_ISteamFriends_GetPlayerNickname(steamworks.friends_ptr, steamIDPlayer) if str ~= nil then return ffi.string(str) end end
 function steamworks.friends.GetFriendsGroupCount() return lib.SteamAPI_ISteamFriends_GetFriendsGroupCount(steamworks.friends_ptr) end
 function steamworks.friends.GetFriendsGroupIDByIndex(iFG) return lib.SteamAPI_ISteamFriends_GetFriendsGroupIDByIndex(steamworks.friends_ptr, iFG) end
-function steamworks.friends.GetFriendsGroupName(friendsGroupID) return lib.SteamAPI_ISteamFriends_GetFriendsGroupName(steamworks.friends_ptr, friendsGroupID) end
+function steamworks.friends.GetFriendsGroupName(friendsGroupID)local str = lib.SteamAPI_ISteamFriends_GetFriendsGroupName(steamworks.friends_ptr, friendsGroupID) if str ~= nil then return ffi.string(str) end end
 function steamworks.friends.GetFriendsGroupMembersCount(friendsGroupID) return lib.SteamAPI_ISteamFriends_GetFriendsGroupMembersCount(steamworks.friends_ptr, friendsGroupID) end
 function steamworks.friends.GetFriendsGroupMembersList(friendsGroupID, pOutSteamIDMembers, nMembersCount) return lib.SteamAPI_ISteamFriends_GetFriendsGroupMembersList(steamworks.friends_ptr, friendsGroupID, pOutSteamIDMembers, nMembersCount) end
 function steamworks.friends.HasFriend(steamIDFriend, iFriendFlags) return lib.SteamAPI_ISteamFriends_HasFriend(steamworks.friends_ptr, steamIDFriend, iFriendFlags) end
 function steamworks.friends.GetClanCount() return lib.SteamAPI_ISteamFriends_GetClanCount(steamworks.friends_ptr) end
 function steamworks.friends.GetClanByIndex(iClan) return lib.SteamAPI_ISteamFriends_GetClanByIndex(steamworks.friends_ptr, iClan) end
-function steamworks.friends.GetClanName(steamIDClan) return lib.SteamAPI_ISteamFriends_GetClanName(steamworks.friends_ptr, steamIDClan) end
-function steamworks.friends.GetClanTag(steamIDClan) return lib.SteamAPI_ISteamFriends_GetClanTag(steamworks.friends_ptr, steamIDClan) end
+function steamworks.friends.GetClanName(steamIDClan)local str = lib.SteamAPI_ISteamFriends_GetClanName(steamworks.friends_ptr, steamIDClan) if str ~= nil then return ffi.string(str) end end
+function steamworks.friends.GetClanTag(steamIDClan)local str = lib.SteamAPI_ISteamFriends_GetClanTag(steamworks.friends_ptr, steamIDClan) if str ~= nil then return ffi.string(str) end end
 function steamworks.friends.GetClanActivityCounts(steamIDClan, pnOnline, pnInGame, pnChatting) return lib.SteamAPI_ISteamFriends_GetClanActivityCounts(steamworks.friends_ptr, steamIDClan, pnOnline, pnInGame, pnChatting) end
 function steamworks.friends.DownloadClanActivityCounts(psteamIDClans, cClansToRequest) return lib.SteamAPI_ISteamFriends_DownloadClanActivityCounts(steamworks.friends_ptr, psteamIDClans, cClansToRequest) end
 function steamworks.friends.GetFriendCountFromSource(steamIDSource) return lib.SteamAPI_ISteamFriends_GetFriendCountFromSource(steamworks.friends_ptr, steamIDSource) end
@@ -2404,9 +2404,9 @@ function steamworks.friends.GetClanOfficerByIndex(steamIDClan, iOfficer) return 
 function steamworks.friends.GetUserRestrictions() return lib.SteamAPI_ISteamFriends_GetUserRestrictions(steamworks.friends_ptr) end
 function steamworks.friends.SetRichPresence(pchKey, pchValue) return lib.SteamAPI_ISteamFriends_SetRichPresence(steamworks.friends_ptr, pchKey, pchValue) end
 function steamworks.friends.ClearRichPresence() return lib.SteamAPI_ISteamFriends_ClearRichPresence(steamworks.friends_ptr) end
-function steamworks.friends.GetFriendRichPresence(steamIDFriend, pchKey) return lib.SteamAPI_ISteamFriends_GetFriendRichPresence(steamworks.friends_ptr, steamIDFriend, pchKey) end
+function steamworks.friends.GetFriendRichPresence(steamIDFriend, pchKey)local str = lib.SteamAPI_ISteamFriends_GetFriendRichPresence(steamworks.friends_ptr, steamIDFriend, pchKey) if str ~= nil then return ffi.string(str) end end
 function steamworks.friends.GetFriendRichPresenceKeyCount(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendRichPresenceKeyCount(steamworks.friends_ptr, steamIDFriend) end
-function steamworks.friends.GetFriendRichPresenceKeyByIndex(steamIDFriend, iKey) return lib.SteamAPI_ISteamFriends_GetFriendRichPresenceKeyByIndex(steamworks.friends_ptr, steamIDFriend, iKey) end
+function steamworks.friends.GetFriendRichPresenceKeyByIndex(steamIDFriend, iKey)local str = lib.SteamAPI_ISteamFriends_GetFriendRichPresenceKeyByIndex(steamworks.friends_ptr, steamIDFriend, iKey) if str ~= nil then return ffi.string(str) end end
 function steamworks.friends.RequestFriendRichPresence(steamIDFriend) return lib.SteamAPI_ISteamFriends_RequestFriendRichPresence(steamworks.friends_ptr, steamIDFriend) end
 function steamworks.friends.InviteUserToGame(steamIDFriend, pchConnectString) return lib.SteamAPI_ISteamFriends_InviteUserToGame(steamworks.friends_ptr, steamIDFriend, pchConnectString) end
 function steamworks.friends.GetCoplayFriendCount() return lib.SteamAPI_ISteamFriends_GetCoplayFriendCount(steamworks.friends_ptr) end
@@ -2494,10 +2494,10 @@ function steamworks.userstats.ClearAchievement(pchName) return lib.SteamAPI_ISte
 function steamworks.userstats.GetAchievementAndUnlockTime(pchName, pbAchieved, punUnlockTime) return lib.SteamAPI_ISteamUserStats_GetAchievementAndUnlockTime(steamworks.userstats_ptr, pchName, pbAchieved, punUnlockTime) end
 function steamworks.userstats.StoreStats() return lib.SteamAPI_ISteamUserStats_StoreStats(steamworks.userstats_ptr) end
 function steamworks.userstats.GetAchievementIcon(pchName) return lib.SteamAPI_ISteamUserStats_GetAchievementIcon(steamworks.userstats_ptr, pchName) end
-function steamworks.userstats.GetAchievementDisplayAttribute(pchName, pchKey) return lib.SteamAPI_ISteamUserStats_GetAchievementDisplayAttribute(steamworks.userstats_ptr, pchName, pchKey) end
+function steamworks.userstats.GetAchievementDisplayAttribute(pchName, pchKey)local str = lib.SteamAPI_ISteamUserStats_GetAchievementDisplayAttribute(steamworks.userstats_ptr, pchName, pchKey) if str ~= nil then return ffi.string(str) end end
 function steamworks.userstats.IndicateAchievementProgress(pchName, nCurProgress, nMaxProgress) return lib.SteamAPI_ISteamUserStats_IndicateAchievementProgress(steamworks.userstats_ptr, pchName, nCurProgress, nMaxProgress) end
 function steamworks.userstats.GetNumAchievements() return lib.SteamAPI_ISteamUserStats_GetNumAchievements(steamworks.userstats_ptr) end
-function steamworks.userstats.GetAchievementName(iAchievement) return lib.SteamAPI_ISteamUserStats_GetAchievementName(steamworks.userstats_ptr, iAchievement) end
+function steamworks.userstats.GetAchievementName(iAchievement)local str = lib.SteamAPI_ISteamUserStats_GetAchievementName(steamworks.userstats_ptr, iAchievement) if str ~= nil then return ffi.string(str) end end
 function steamworks.userstats.RequestUserStats(steamIDUser) return lib.SteamAPI_ISteamUserStats_RequestUserStats(steamworks.userstats_ptr, steamIDUser) end
 function steamworks.userstats.GetUserStat(steamIDUser, pchName, pData) return lib.SteamAPI_ISteamUserStats_GetUserStat(steamworks.userstats_ptr, steamIDUser, pchName, pData) end
 function steamworks.userstats.GetUserStat(steamIDUser, pchName, pData) return lib.SteamAPI_ISteamUserStats_GetUserStat(steamworks.userstats_ptr, steamIDUser, pchName, pData) end
@@ -2506,7 +2506,7 @@ function steamworks.userstats.GetUserAchievementAndUnlockTime(steamIDUser, pchNa
 function steamworks.userstats.ResetAllStats(bAchievementsToo) return lib.SteamAPI_ISteamUserStats_ResetAllStats(steamworks.userstats_ptr, bAchievementsToo) end
 function steamworks.userstats.FindOrCreateLeaderboard(pchLeaderboardName, eLeaderboardSortMethod, eLeaderboardDisplayType) return lib.SteamAPI_ISteamUserStats_FindOrCreateLeaderboard(steamworks.userstats_ptr, pchLeaderboardName, eLeaderboardSortMethod, eLeaderboardDisplayType) end
 function steamworks.userstats.FindLeaderboard(pchLeaderboardName) return lib.SteamAPI_ISteamUserStats_FindLeaderboard(steamworks.userstats_ptr, pchLeaderboardName) end
-function steamworks.userstats.GetLeaderboardName(hSteamLeaderboard) return lib.SteamAPI_ISteamUserStats_GetLeaderboardName(steamworks.userstats_ptr, hSteamLeaderboard) end
+function steamworks.userstats.GetLeaderboardName(hSteamLeaderboard)local str = lib.SteamAPI_ISteamUserStats_GetLeaderboardName(steamworks.userstats_ptr, hSteamLeaderboard) if str ~= nil then return ffi.string(str) end end
 function steamworks.userstats.GetLeaderboardEntryCount(hSteamLeaderboard) return lib.SteamAPI_ISteamUserStats_GetLeaderboardEntryCount(steamworks.userstats_ptr, hSteamLeaderboard) end
 function steamworks.userstats.GetLeaderboardSortMethod(hSteamLeaderboard) return lib.SteamAPI_ISteamUserStats_GetLeaderboardSortMethod(steamworks.userstats_ptr, hSteamLeaderboard) end
 function steamworks.userstats.GetLeaderboardDisplayType(hSteamLeaderboard) return lib.SteamAPI_ISteamUserStats_GetLeaderboardDisplayType(steamworks.userstats_ptr, hSteamLeaderboard) end
@@ -2551,8 +2551,8 @@ function steamworks.apps.BIsSubscribed() return lib.SteamAPI_ISteamApps_BIsSubsc
 function steamworks.apps.BIsLowViolence() return lib.SteamAPI_ISteamApps_BIsLowViolence(steamworks.apps_ptr) end
 function steamworks.apps.BIsCybercafe() return lib.SteamAPI_ISteamApps_BIsCybercafe(steamworks.apps_ptr) end
 function steamworks.apps.BIsVACBanned() return lib.SteamAPI_ISteamApps_BIsVACBanned(steamworks.apps_ptr) end
-function steamworks.apps.GetCurrentGameLanguage() return lib.SteamAPI_ISteamApps_GetCurrentGameLanguage(steamworks.apps_ptr) end
-function steamworks.apps.GetAvailableGameLanguages() return lib.SteamAPI_ISteamApps_GetAvailableGameLanguages(steamworks.apps_ptr) end
+function steamworks.apps.GetCurrentGameLanguage()local str = lib.SteamAPI_ISteamApps_GetCurrentGameLanguage(steamworks.apps_ptr) if str ~= nil then return ffi.string(str) end end
+function steamworks.apps.GetAvailableGameLanguages()local str = lib.SteamAPI_ISteamApps_GetAvailableGameLanguages(steamworks.apps_ptr) if str ~= nil then return ffi.string(str) end end
 function steamworks.apps.BIsSubscribedApp(appID) return lib.SteamAPI_ISteamApps_BIsSubscribedApp(steamworks.apps_ptr, appID) end
 function steamworks.apps.BIsDlcInstalled(appID) return lib.SteamAPI_ISteamApps_BIsDlcInstalled(steamworks.apps_ptr, appID) end
 function steamworks.apps.GetEarliestPurchaseUnixTime(nAppID) return lib.SteamAPI_ISteamApps_GetEarliestPurchaseUnixTime(steamworks.apps_ptr, nAppID) end
@@ -2568,7 +2568,7 @@ function steamworks.apps.GetInstalledDepots(appID, pvecDepots, cMaxDepots) retur
 function steamworks.apps.GetAppInstallDir(appID, pchFolder, cchFolderBufferSize) return lib.SteamAPI_ISteamApps_GetAppInstallDir(steamworks.apps_ptr, appID, pchFolder, cchFolderBufferSize) end
 function steamworks.apps.BIsAppInstalled(appID) return lib.SteamAPI_ISteamApps_BIsAppInstalled(steamworks.apps_ptr, appID) end
 function steamworks.apps.GetAppOwner() return lib.SteamAPI_ISteamApps_GetAppOwner(steamworks.apps_ptr) end
-function steamworks.apps.GetLaunchQueryParam(pchKey) return lib.SteamAPI_ISteamApps_GetLaunchQueryParam(steamworks.apps_ptr, pchKey) end
+function steamworks.apps.GetLaunchQueryParam(pchKey)local str = lib.SteamAPI_ISteamApps_GetLaunchQueryParam(steamworks.apps_ptr, pchKey) if str ~= nil then return ffi.string(str) end end
 function steamworks.apps.GetDlcDownloadProgress(nAppID, punBytesDownloaded, punBytesTotal) return lib.SteamAPI_ISteamApps_GetDlcDownloadProgress(steamworks.apps_ptr, nAppID, punBytesDownloaded, punBytesTotal) end
 function steamworks.apps.GetAppBuildId() return lib.SteamAPI_ISteamApps_GetAppBuildId(steamworks.apps_ptr) end
 steamworks.inventory = {}
@@ -2690,12 +2690,12 @@ function steamworks.matchmaking.LeaveLobby(steamIDLobby) return lib.SteamAPI_ISt
 function steamworks.matchmaking.InviteUserToLobby(steamIDLobby, steamIDInvitee) return lib.SteamAPI_ISteamMatchmaking_InviteUserToLobby(steamworks.matchmaking_ptr, steamIDLobby, steamIDInvitee) end
 function steamworks.matchmaking.GetNumLobbyMembers(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_GetNumLobbyMembers(steamworks.matchmaking_ptr, steamIDLobby) end
 function steamworks.matchmaking.GetLobbyMemberByIndex(steamIDLobby, iMember) return lib.SteamAPI_ISteamMatchmaking_GetLobbyMemberByIndex(steamworks.matchmaking_ptr, steamIDLobby, iMember) end
-function steamworks.matchmaking.GetLobbyData(steamIDLobby, pchKey) return lib.SteamAPI_ISteamMatchmaking_GetLobbyData(steamworks.matchmaking_ptr, steamIDLobby, pchKey) end
+function steamworks.matchmaking.GetLobbyData(steamIDLobby, pchKey)local str = lib.SteamAPI_ISteamMatchmaking_GetLobbyData(steamworks.matchmaking_ptr, steamIDLobby, pchKey) if str ~= nil then return ffi.string(str) end end
 function steamworks.matchmaking.SetLobbyData(steamIDLobby, pchKey, pchValue) return lib.SteamAPI_ISteamMatchmaking_SetLobbyData(steamworks.matchmaking_ptr, steamIDLobby, pchKey, pchValue) end
 function steamworks.matchmaking.GetLobbyDataCount(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_GetLobbyDataCount(steamworks.matchmaking_ptr, steamIDLobby) end
 function steamworks.matchmaking.GetLobbyDataByIndex(steamIDLobby, iLobbyData, pchKey, cchKeyBufferSize, pchValue, cchValueBufferSize) return lib.SteamAPI_ISteamMatchmaking_GetLobbyDataByIndex(steamworks.matchmaking_ptr, steamIDLobby, iLobbyData, pchKey, cchKeyBufferSize, pchValue, cchValueBufferSize) end
 function steamworks.matchmaking.DeleteLobbyData(steamIDLobby, pchKey) return lib.SteamAPI_ISteamMatchmaking_DeleteLobbyData(steamworks.matchmaking_ptr, steamIDLobby, pchKey) end
-function steamworks.matchmaking.GetLobbyMemberData(steamIDLobby, steamIDUser, pchKey) return lib.SteamAPI_ISteamMatchmaking_GetLobbyMemberData(steamworks.matchmaking_ptr, steamIDLobby, steamIDUser, pchKey) end
+function steamworks.matchmaking.GetLobbyMemberData(steamIDLobby, steamIDUser, pchKey)local str = lib.SteamAPI_ISteamMatchmaking_GetLobbyMemberData(steamworks.matchmaking_ptr, steamIDLobby, steamIDUser, pchKey) if str ~= nil then return ffi.string(str) end end
 function steamworks.matchmaking.SetLobbyMemberData(steamIDLobby, pchKey, pchValue) return lib.SteamAPI_ISteamMatchmaking_SetLobbyMemberData(steamworks.matchmaking_ptr, steamIDLobby, pchKey, pchValue) end
 function steamworks.matchmaking.SendLobbyChatMsg(steamIDLobby, pvMsgBody, cubMsgBody) return lib.SteamAPI_ISteamMatchmaking_SendLobbyChatMsg(steamworks.matchmaking_ptr, steamIDLobby, pvMsgBody, cubMsgBody) end
 function steamworks.matchmaking.GetLobbyChatEntry(steamIDLobby, iChatID, pSteamIDUser, pvData, cubData, peChatEntryType) return lib.SteamAPI_ISteamMatchmaking_GetLobbyChatEntry(steamworks.matchmaking_ptr, steamIDLobby, iChatID, pSteamIDUser, pvData, cubData, peChatEntryType) end
@@ -2715,7 +2715,7 @@ function steamworks.utils.GetSecondsSinceAppActive() return lib.SteamAPI_ISteamU
 function steamworks.utils.GetSecondsSinceComputerActive() return lib.SteamAPI_ISteamUtils_GetSecondsSinceComputerActive(steamworks.utils_ptr) end
 function steamworks.utils.GetConnectedUniverse() return lib.SteamAPI_ISteamUtils_GetConnectedUniverse(steamworks.utils_ptr) end
 function steamworks.utils.GetServerRealTime() return lib.SteamAPI_ISteamUtils_GetServerRealTime(steamworks.utils_ptr) end
-function steamworks.utils.GetIPCountry() return lib.SteamAPI_ISteamUtils_GetIPCountry(steamworks.utils_ptr) end
+function steamworks.utils.GetIPCountry()local str = lib.SteamAPI_ISteamUtils_GetIPCountry(steamworks.utils_ptr) if str ~= nil then return ffi.string(str) end end
 function steamworks.utils.GetImageSize(iImage, pnWidth, pnHeight) return lib.SteamAPI_ISteamUtils_GetImageSize(steamworks.utils_ptr, iImage, pnWidth, pnHeight) end
 function steamworks.utils.GetImageRGBA(iImage, pubDest, nDestBufferSize) return lib.SteamAPI_ISteamUtils_GetImageRGBA(steamworks.utils_ptr, iImage, pubDest, nDestBufferSize) end
 function steamworks.utils.GetCSERIPPort(unIP, usPort) return lib.SteamAPI_ISteamUtils_GetCSERIPPort(steamworks.utils_ptr, unIP, usPort) end
@@ -2734,7 +2734,7 @@ function steamworks.utils.CheckFileSignature(szFileName) return lib.SteamAPI_ISt
 function steamworks.utils.ShowGamepadTextInput(eInputMode, eLineInputMode, pchDescription, unCharMax, pchExistingText) return lib.SteamAPI_ISteamUtils_ShowGamepadTextInput(steamworks.utils_ptr, eInputMode, eLineInputMode, pchDescription, unCharMax, pchExistingText) end
 function steamworks.utils.GetEnteredGamepadTextLength() return lib.SteamAPI_ISteamUtils_GetEnteredGamepadTextLength(steamworks.utils_ptr) end
 function steamworks.utils.GetEnteredGamepadTextInput(pchText, cchText) return lib.SteamAPI_ISteamUtils_GetEnteredGamepadTextInput(steamworks.utils_ptr, pchText, cchText) end
-function steamworks.utils.GetSteamUILanguage() return lib.SteamAPI_ISteamUtils_GetSteamUILanguage(steamworks.utils_ptr) end
+function steamworks.utils.GetSteamUILanguage()local str = lib.SteamAPI_ISteamUtils_GetSteamUILanguage(steamworks.utils_ptr) if str ~= nil then return ffi.string(str) end end
 function steamworks.utils.IsSteamRunningInVR() return lib.SteamAPI_ISteamUtils_IsSteamRunningInVR(steamworks.utils_ptr) end
 steamworks.remotestorage = {}
 steamworks.remotestorage_ptr = lib.SteamRemoteStorage()
@@ -2754,7 +2754,7 @@ function steamworks.remotestorage.GetFileSize(pchFile) return lib.SteamAPI_IStea
 function steamworks.remotestorage.GetFileTimestamp(pchFile) return lib.SteamAPI_ISteamRemoteStorage_GetFileTimestamp(steamworks.remotestorage_ptr, pchFile) end
 function steamworks.remotestorage.GetSyncPlatforms(pchFile) return lib.SteamAPI_ISteamRemoteStorage_GetSyncPlatforms(steamworks.remotestorage_ptr, pchFile) end
 function steamworks.remotestorage.GetFileCount() return lib.SteamAPI_ISteamRemoteStorage_GetFileCount(steamworks.remotestorage_ptr) end
-function steamworks.remotestorage.GetFileNameAndSize(iFile, pnFileSizeInBytes) return lib.SteamAPI_ISteamRemoteStorage_GetFileNameAndSize(steamworks.remotestorage_ptr, iFile, pnFileSizeInBytes) end
+function steamworks.remotestorage.GetFileNameAndSize(iFile, pnFileSizeInBytes)local str = lib.SteamAPI_ISteamRemoteStorage_GetFileNameAndSize(steamworks.remotestorage_ptr, iFile, pnFileSizeInBytes) if str ~= nil then return ffi.string(str) end end
 function steamworks.remotestorage.GetQuota(pnTotalBytes, puAvailableBytes) return lib.SteamAPI_ISteamRemoteStorage_GetQuota(steamworks.remotestorage_ptr, pnTotalBytes, puAvailableBytes) end
 function steamworks.remotestorage.IsCloudEnabledForAccount() return lib.SteamAPI_ISteamRemoteStorage_IsCloudEnabledForAccount(steamworks.remotestorage_ptr) end
 function steamworks.remotestorage.IsCloudEnabledForApp() return lib.SteamAPI_ISteamRemoteStorage_IsCloudEnabledForApp(steamworks.remotestorage_ptr) end
@@ -2884,4 +2884,95 @@ function steamworks.user.GetEncryptedAppTicket(pTicket, cbMaxTicket, pcbTicket) 
 function steamworks.user.GetGameBadgeLevel(nSeries, bFoil) return lib.SteamAPI_ISteamUser_GetGameBadgeLevel(steamworks.user_ptr, nSeries, bFoil) end
 function steamworks.user.GetPlayerSteamLevel() return lib.SteamAPI_ISteamUser_GetPlayerSteamLevel(steamworks.user_ptr) end
 function steamworks.user.RequestStoreAuthURL(pchRedirectURL) return lib.SteamAPI_ISteamUser_RequestStoreAuthURL(steamworks.user_ptr, pchRedirectURL) end
+local META = {}
+META.__index = META
+function META:GetRelationship() return steamworks.friends.GetFriendRelationship(self.id) end
+function META:GetPersonaState() return steamworks.friends.GetFriendPersonaState(self.id) end
+function META:GetPersonaName() return steamworks.friends.GetFriendPersonaName(self.id) end
+function META:GetGamePlayed(pFriendGameInfo) return steamworks.friends.GetFriendGamePlayed(self.id, pFriendGameInfo) end
+function META:GetPersonaNameHistory(iPersonaName) return steamworks.friends.GetFriendPersonaNameHistory(self.id, iPersonaName) end
+function META:GetSteamLevel() return steamworks.friends.GetFriendSteamLevel(self.id) end
+function META:GetPlayerNickname() return steamworks.friends.GetPlayerNickname(self.id) end
+function META:Has(iFriendFlags) return steamworks.friends.HasFriend(self.id, iFriendFlags) end
+function META:GetClanName() return steamworks.friends.GetClanName(self.id) end
+function META:GetClanTag() return steamworks.friends.GetClanTag(self.id) end
+function META:GetClanActivityCounts(pnOnline, pnInGame, pnChatting) return steamworks.friends.GetClanActivityCounts(self.id, pnOnline, pnInGame, pnChatting) end
+function META:GetCountFromSource() return steamworks.friends.GetFriendCountFromSource(self.id) end
+function META:GetFromSourceByIndex(iFriend) return steamworks.friends.GetFriendFromSourceByIndex(self.id, iFriend) end
+function META:IsInSource(steamIDSource) return steamworks.friends.IsUserInSource(self.id, steamIDSource) end
+function META:SetInGameVoiceSpeaking(bSpeaking) return steamworks.friends.SetInGameVoiceSpeaking(self.id, bSpeaking) end
+function META:SetPlayedWith() return steamworks.friends.SetPlayedWith(self.id) end
+function META:ActivateGameOverlayInviteDialog() return steamworks.friends.ActivateGameOverlayInviteDialog(self.id) end
+function META:GetSmallAvatar() return steamworks.friends.GetSmallFriendAvatar(self.id) end
+function META:GetMediumAvatar() return steamworks.friends.GetMediumFriendAvatar(self.id) end
+function META:GetLargeAvatar() return steamworks.friends.GetLargeFriendAvatar(self.id) end
+function META:RequestInformation(bRequireNameOnly) return steamworks.friends.RequestUserInformation(self.id, bRequireNameOnly) end
+function META:RequestClanOfficerList() return steamworks.friends.RequestClanOfficerList(self.id) end
+function META:GetClanOwner() return steamworks.friends.GetClanOwner(self.id) end
+function META:GetClanOfficerCount() return steamworks.friends.GetClanOfficerCount(self.id) end
+function META:GetClanOfficerByIndex(iOfficer) return steamworks.friends.GetClanOfficerByIndex(self.id, iOfficer) end
+function META:GetRichPresence(pchKey) return steamworks.friends.GetFriendRichPresence(self.id, pchKey) end
+function META:GetRichPresenceKeyCount() return steamworks.friends.GetFriendRichPresenceKeyCount(self.id) end
+function META:GetRichPresenceKeyByIndex(iKey) return steamworks.friends.GetFriendRichPresenceKeyByIndex(self.id, iKey) end
+function META:RequestRichPresence() return steamworks.friends.RequestFriendRichPresence(self.id) end
+function META:InviteToGame(pchConnectString) return steamworks.friends.InviteUserToGame(self.id, pchConnectString) end
+function META:GetCoplayTime() return steamworks.friends.GetFriendCoplayTime(self.id) end
+function META:GetCoplayGame() return steamworks.friends.GetFriendCoplayGame(self.id) end
+function META:JoinClanChatRoom() return steamworks.friends.JoinClanChatRoom(self.id) end
+function META:LeaveClanChatRoom() return steamworks.friends.LeaveClanChatRoom(self.id) end
+function META:GetClanChatMemberCount() return steamworks.friends.GetClanChatMemberCount(self.id) end
+function META:GetChatMemberByIndex(iUser) return steamworks.friends.GetChatMemberByIndex(self.id, iUser) end
+function META:SendClanChatMessage(pchText) return steamworks.friends.SendClanChatMessage(self.id, pchText) end
+function META:GetClanChatMessage(iMessage, prgchText, cchTextMax, peChatEntryType, psteamidChatter) return steamworks.friends.GetClanChatMessage(self.id, iMessage, prgchText, cchTextMax, peChatEntryType, psteamidChatter) end
+function META:IsClanChatAdmin(steamIDUser) return steamworks.friends.IsClanChatAdmin(self.id, steamIDUser) end
+function META:IsClanChatWindowOpenInSteam() return steamworks.friends.IsClanChatWindowOpenInSteam(self.id) end
+function META:OpenClanChatWindowInSteam() return steamworks.friends.OpenClanChatWindowInSteam(self.id) end
+function META:CloseClanChatWindowInSteam() return steamworks.friends.CloseClanChatWindowInSteam(self.id) end
+function META:ReplyToMessage(pchMsgToSend) return steamworks.friends.ReplyToFriendMessage(self.id, pchMsgToSend) end
+function META:GetMessage(iMessageID, pvData, cubData, peChatEntryType) return steamworks.friends.GetFriendMessage(self.id, iMessageID, pvData, cubData, peChatEntryType) end
+function META:GetFollowerCount() return steamworks.friends.GetFollowerCount(self.id) end
+function META:IsFollowing() return steamworks.friends.IsFollowing(self.id) end
+function META:SendP2PPacket(pubData, cubData, eP2PSendType, nChannel) return steamworks.networking.SendP2PPacket(self.id, pubData, cubData, eP2PSendType, nChannel) end
+function META:AcceptP2PSessionWith() return steamworks.networking.AcceptP2PSessionWithUser(self.id) end
+function META:CloseP2PSessionWith() return steamworks.networking.CloseP2PSessionWithUser(self.id) end
+function META:CloseP2PChannelWith(nChannel) return steamworks.networking.CloseP2PChannelWithUser(self.id, nChannel) end
+function META:GetP2PSessionState(pConnectionState) return steamworks.networking.GetP2PSessionState(self.id, pConnectionState) end
+function META:CreateP2PConnectionSocket(nVirtualPort, nTimeoutSec, bAllowUseOfPacketRelay) return steamworks.networking.CreateP2PConnectionSocket(self.id, nVirtualPort, nTimeoutSec, bAllowUseOfPacketRelay) end
+function META:RequestStats() return steamworks.userstats.RequestUserStats(self.id) end
+function META:GetStat(pchName, pData) return steamworks.userstats.GetUserStat(self.id, pchName, pData) end
+function META:GetStat(pchName, pData) return steamworks.userstats.GetUserStat(self.id, pchName, pData) end
+function META:GetAchievement(pchName, pbAchieved) return steamworks.userstats.GetUserAchievement(self.id, pchName, pbAchieved) end
+function META:GetAchievementAndUnlockTime(pchName, pbAchieved, punUnlockTime) return steamworks.userstats.GetUserAchievementAndUnlockTime(self.id, pchName, pbAchieved, punUnlockTime) end
+function META:AddRequestLobbyListCompatibleMembersFilter() return steamworks.matchmaking.AddRequestLobbyListCompatibleMembersFilter(self.id) end
+function META:JoinLobby() return steamworks.matchmaking.JoinLobby(self.id) end
+function META:LeaveLobby() return steamworks.matchmaking.LeaveLobby(self.id) end
+function META:InviteToLobby(steamIDInvitee) return steamworks.matchmaking.InviteUserToLobby(self.id, steamIDInvitee) end
+function META:GetNumLobbyMembers() return steamworks.matchmaking.GetNumLobbyMembers(self.id) end
+function META:GetLobbyMemberByIndex(iMember) return steamworks.matchmaking.GetLobbyMemberByIndex(self.id, iMember) end
+function META:GetLobbyData(pchKey) return steamworks.matchmaking.GetLobbyData(self.id, pchKey) end
+function META:SetLobbyData(pchKey, pchValue) return steamworks.matchmaking.SetLobbyData(self.id, pchKey, pchValue) end
+function META:GetLobbyDataCount() return steamworks.matchmaking.GetLobbyDataCount(self.id) end
+function META:GetLobbyDataByIndex(iLobbyData, pchKey, cchKeyBufferSize, pchValue, cchValueBufferSize) return steamworks.matchmaking.GetLobbyDataByIndex(self.id, iLobbyData, pchKey, cchKeyBufferSize, pchValue, cchValueBufferSize) end
+function META:DeleteLobbyData(pchKey) return steamworks.matchmaking.DeleteLobbyData(self.id, pchKey) end
+function META:GetLobbyMemberData(steamIDUser, pchKey) return steamworks.matchmaking.GetLobbyMemberData(self.id, steamIDUser, pchKey) end
+function META:SetLobbyMemberData(pchKey, pchValue) return steamworks.matchmaking.SetLobbyMemberData(self.id, pchKey, pchValue) end
+function META:SendLobbyChatMsg(pvMsgBody, cubMsgBody) return steamworks.matchmaking.SendLobbyChatMsg(self.id, pvMsgBody, cubMsgBody) end
+function META:GetLobbyChatEntry(iChatID, pSteamIDUser, pvData, cubData, peChatEntryType) return steamworks.matchmaking.GetLobbyChatEntry(self.id, iChatID, pSteamIDUser, pvData, cubData, peChatEntryType) end
+function META:RequestLobbyData() return steamworks.matchmaking.RequestLobbyData(self.id) end
+function META:SetLobbyGameServer(unGameServerIP, unGameServerPort, steamIDGameServer) return steamworks.matchmaking.SetLobbyGameServer(self.id, unGameServerIP, unGameServerPort, steamIDGameServer) end
+function META:GetLobbyGameServer(punGameServerIP, punGameServerPort, psteamIDGameServer) return steamworks.matchmaking.GetLobbyGameServer(self.id, punGameServerIP, punGameServerPort, psteamIDGameServer) end
+function META:SetLobbyMemberLimit(cMaxMembers) return steamworks.matchmaking.SetLobbyMemberLimit(self.id, cMaxMembers) end
+function META:GetLobbyMemberLimit() return steamworks.matchmaking.GetLobbyMemberLimit(self.id) end
+function META:SetLobbyType(eLobbyType) return steamworks.matchmaking.SetLobbyType(self.id, eLobbyType) end
+function META:SetLobbyJoinable(bLobbyJoinable) return steamworks.matchmaking.SetLobbyJoinable(self.id, bLobbyJoinable) end
+function META:GetLobbyOwner() return steamworks.matchmaking.GetLobbyOwner(self.id) end
+function META:SetLobbyOwner(steamIDNewOwner) return steamworks.matchmaking.SetLobbyOwner(self.id, steamIDNewOwner) end
+function META:SetLinkedLobby(steamIDLobbyDependent) return steamworks.matchmaking.SetLinkedLobby(self.id, steamIDLobbyDependent) end
+function META:EnumerateSharedWorkshopFiles(unStartIndex, pRequiredTags, pExcludedTags) return steamworks.remotestorage.EnumerateUserSharedWorkshopFiles(self.id, unStartIndex, pRequiredTags, pExcludedTags) end
+function META:EndAuthSession() return steamworks.user.EndAuthSession(self.id) end
+function META:HasLicenseForApp(appID) return steamworks.user.UserHasLicenseForApp(self.id, appID) end
+function META:AdvertiseGame(unIPServer, usPortServer) return steamworks.user.AdvertiseGame(self.id, unIPServer, usPortServer) end
+META.__tostring = function(self) return ('[%s]%s'):format(self.id, self:GetPersonaName()) end
+function steamworks.GetFriendObjectFromSteamID(id) return setmetatable({id = id}, META) end
+steamworks.steamid_meta = META
 return steamworks
