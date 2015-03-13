@@ -191,11 +191,43 @@ function steam.BuildSteamWorksHeader()
 		end
 	end
 	
-	local lua = {"ffi.cdef[[" .. header .. "]]"}
-
+	local lua = {}
+	table.insert(lua, "--this file has been auto generated")
+	table.insert(lua, "local ffi = require('ffi')")
+	table.insert(lua, "ffi.cdef[[" .. header .. "]]")
 	table.insert(lua, [[
-local lib = ffi.load("steam_api64")
-assert(lib.SteamAPI_Init())
+local lib
+
+if jit.os == "Windows" then
+	if jit.arch == "x64" then
+		lib = ffi.load("steam_api64")
+	elseif jit.arch == "x86" then
+		lib = ffi.load("steam_api")
+	end
+else
+	lib = ffi.load("libsteam_api")
+end
+
+do
+	local file = io.open("steam_appid.txt")
+	if file then
+		io.close(file)
+	else
+		local file, err = io.open("steam_appid.txt", "w")
+		if file then
+			file:write("999999")
+			io.close(file)
+		else
+			error("failed to write steam_appid.txt (because it's needed) in cd : " .. err)
+		end
+	end
+	
+end
+
+if not lib.SteamAPI_Init() then
+	error("failed to initialize steamworks")
+end
+
 local steamworks = {}
 	]])
 	
