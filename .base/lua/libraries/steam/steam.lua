@@ -6,6 +6,7 @@ include("bsp.lua", steam)
 include("web_api.lua", steam)
 include("server_query.lua", steam)
 include("mount.lua", steam)
+include("steamworks.lua", steam)
 
 --[[local steamfriends = requirew("libraries.ffi.steamfriends")
 

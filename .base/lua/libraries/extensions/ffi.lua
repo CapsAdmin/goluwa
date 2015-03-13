@@ -81,6 +81,8 @@ ffi.cdef = function(str, ...)
 	return warn_pcall(cdef, str, ...)
 end
 
+ffi.real_cdef = cdef
+
 local metatype = ffi.metatype
 ffi.metatype = function(str, ...)
 	return warn_pcall(metatype, str, ...)
