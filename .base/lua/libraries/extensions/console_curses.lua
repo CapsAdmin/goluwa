@@ -544,7 +544,13 @@ function console.ScrollLogHistory(offset, skip_refresh)
 	end
 	
 	curses.werase(c.log_window)
-	
+
+	console.SyntaxPrint(console.GetCurrentText(offset))
+end
+
+function console.GetCurrentText(offset)
+	offset = offset or 0
+	local out = {}
 	local lines = curses.LINES-1
 	local count = #console.history
 	
@@ -553,8 +559,10 @@ function console.ScrollLogHistory(offset, skip_refresh)
 	for i = 1, lines  do
 		local str = console.history[i + console.scroll_log_history] or ""
 		
-		console.SyntaxPrint(str)
+		out[i] = str
 	end
+	
+	return table.concat(out, "")
 end
 
 function console.GetCurrentLine()
