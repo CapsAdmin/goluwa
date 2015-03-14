@@ -173,6 +173,10 @@ do -- window meta
 		
 	end
 	
+	function META:IsFocused()
+		return self.focused
+	end
+	
 	prototype.Register(META)
 	
 	function render.CreateWindow(width, height, title)	
@@ -303,8 +307,10 @@ do -- window meta
 						call(window, "OnCursorEnter", true)
 					elseif case == sdl.e.SDL_WINDOWEVENT_FOCUS_GAINED then
 						call(window, "OnFocus", true)
+						window.focused = true
 					elseif case == sdl.e.SDL_WINDOWEVENT_FOCUS_LOST then
 						call(window, "OnFocus", false)
+						window.focused = false
 					elseif case == sdl.e.SDL_WINDOWEVENT_CLOSE then
 						call(window, "OnClose")
 					end
