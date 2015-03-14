@@ -1,10 +1,12 @@
 local steam = ... or steam 
 
-for k, v in pairs(requirew("libraries.ffi.steamworks")) do
+local steamworks = requirew("libraries.ffi.steamworks")
+
+if not steamworks then return end
+
+for k, v in pairs(steamworks) do
 	steam[k] = v
 end
-
-steam.client = steam.GetFriendObjectFromSteamID(steam.user.GetSteamID())
 
 function steam.GetFriends()
 	local out = {}
@@ -25,6 +27,8 @@ function steam.FindFriend(nick)
 	end
 end
 
+steam.client = steam.GetFriendObjectFromSteamID(steam.user.GetSteamID())
+
 function steam.GetClient()
 	return steam.client
 end
@@ -38,7 +42,7 @@ do
 	function META:GetChatMessage(message_id)
 		local length = steam.friends.GetFriendMessage(self.id, message_id, str, 512, type)
 		if length > 0 then
-			return str, type[0]
+			return ffi.string(str), type[0]
 		end
 	end
 	
@@ -52,7 +56,7 @@ do
 		while true do
 			type[0] = 0
 			
-			local length = steam.friends.GetFriendMessage(id, i, str, 512, type)
+			local length = steam.friends.GetFriendMessage(self.id, i, str, 512, type)
 			
 			if type[0] == 0 and length == 0 then break end
 			
@@ -61,7 +65,7 @@ do
 		
 		last[tostring(self.id)] = i 
 		
-		return steam.GetChatMessage(self.id, i - 1)
+		return self:GetChatMessage(i - 1)
 	end
 	
 	--[[
