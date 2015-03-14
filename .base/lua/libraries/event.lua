@@ -106,6 +106,7 @@ local blacklist = {
 	DrawHUD = true,
 	PostDrawMenu = true,
 	PreDrawMenu = true,
+	PostDrawScene = true,
 }
 
 local status, a,b,c,d,e
