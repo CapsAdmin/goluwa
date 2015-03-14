@@ -183,7 +183,13 @@ event.CreateTimer("threads", 0.25, 0, function()
 		
 		if i >= threads.max then return end
 	end
-		
+	
+	if i == 0 then
+		system.SetJITOption("minstitch", 0)
+	else
+		system.SetJITOption("minstitch", 100000)
+	end
+	
 	for thread in pairs(threads.created) do
 		if thread.run_me then
 			thread:Start(true)
