@@ -5,6 +5,34 @@ include("packed_rectangle.lua", utility)
 include("quickbms.lua", utility)
 include("3d.lua", utility)
 
+function utility.StripLuaCommentsAndStrings(code)
+	local singleline_comments = {}
+	local multiline_comments = {}
+	local double_quote_strings = {}
+	local single_quote_strings = {}
+	local multiline_strings = {}
+	
+	code = code:gsub("%b\"\"", function(str) table.insert(double_quote_strings, str) return "____STRING_DOUBLE_QUOTE_" .. #double_quote_strings .. "____" .. " "  end)
+	code = code:gsub("(%-%-%[(=*)%[.-%]%2%])", function(str) table.insert(multiline_comments, str) return "____COMMENT_MULTILINE_" .. #multiline_comments .. "____" .. " "  end)
+	code = code:gsub("(%-%-.-)\n", function(str) table.insert(singleline_comments, str) return "____COMMENT_SINGLELINE_" .. #singleline_comments .. "____" .. " " end)
+	code = code:gsub("(%[(=*)%[.-%]%2%])", function(str) table.insert(multiline_strings, str) return "____STRING_MULTILINE_" .. #multiline_strings .. "____" .. " "  end)
+	code = code:gsub("%b''", function(str) table.insert(single_quote_strings, str) return "____STRING_SINGLE_QUOTE_" .. #single_quote_strings .. "____" .. " "  end)
+	
+	return code, {singleline_comments, multiline_comments, double_quote_strings, single_quote_strings, multiline_strings}
+end
+
+function utility.RestoreLuaCommentsAndStrings(code, data)
+	local singleline_comments, multiline_comments, double_quote_strings, single_quote_strings, multiline_strings = unpack(data)
+
+	for i, v in ipairs(double_quote_strings) do	code = code:replace("____STRING_DOUBLE_QUOTE_" .. i .. "____", v) end
+	for i, v in ipairs(multiline_comments) do code = code:replace("____COMMENT_MULTILINE_" .. i .. "____", v) end
+	for i, v in ipairs(singleline_comments) do	code = code:replace("____COMMENT_SINGLELINE_" .. i .. "____", v .. "\n") end
+	for i, v in ipairs(multiline_strings) do code = code:replace("____STRING_MULTILINE_" .. i .. "____", v) end
+	for i, v in ipairs(single_quote_strings) do	code = code:replace("____STRING_SINGLE_QUOTE_" .. i .. "____", v) end
+	
+	return code 
+end
+
 function utility.CreateCallbackThing(cache)	
 	cache = cache or {}
 	local self = {}
