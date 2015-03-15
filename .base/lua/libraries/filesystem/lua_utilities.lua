@@ -36,7 +36,9 @@ function vfs.loadfile(path)
 		
 		-- prepend "@" in front of the path so it will be treated as a lua file and not a string by lua internally
 		-- for nicer error messages and debug
+		if event then res = event.Call("PreLoadString", res, full_path) or res end
 		local res, err = loadstring(res, "@" .. path) 
+		if event and res then res = event.Call("PostLoadString", res, full_path) or res end
 				
 		return res, err, full_path
 	end
@@ -202,27 +204,27 @@ end
 
 -- although vfs will add a loader for each mount, the module folder has to be an exception for modules only
 -- this loader should support more ways of loading than just adding ".lua"
-function vfs.AddModuleDirectory(dir)
-	do -- full path
-		table.insert(package.loaders, function(path)
-			return vfs.loadfile(path)
-		end)
-		
-		table.insert(package.loaders, function(path)
-			return vfs.loadfile(path .. ".lua")
-		end)
-		
-		table.insert(package.loaders, function(path)
-			path = path:gsub("(.)%.(.)", "%1/%2")
-			return vfs.loadfile(path .. ".lua")
-		end)
-		
-		table.insert(package.loaders, function(path)
-			path = path:gsub("(.+/)(.+)", function(a, str) return a .. str:gsub("(.)%.(.)", "%1/%2") end)
-			return vfs.loadfile(path .. ".lua")
-		end)
-	end
-		
+do -- full path
+	table.insert(package.loaders, function(path)
+		return vfs.loadfile(path)
+	end)
+	
+	table.insert(package.loaders, function(path)
+		return vfs.loadfile(path .. ".lua")
+	end)
+	
+	table.insert(package.loaders, function(path)
+		path = path:gsub("(.)%.(.)", "%1/%2")
+		return vfs.loadfile(path .. ".lua")
+	end)
+	
+	table.insert(package.loaders, function(path)
+		path = path:gsub("(.+/)(.+)", function(a, str) return a .. str:gsub("(.)%.(.)", "%1/%2") end)
+		return vfs.loadfile(path .. ".lua")
+	end)
+end
+
+function vfs.AddModuleDirectory(dir)		
 	do -- relative path
 		table.insert(package.loaders, function(path)
 			return vfs.loadfile(dir .. path)
@@ -260,11 +262,5 @@ function vfs.AddModuleDirectory(dir)
 	table.insert(package.loaders, function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
 		return vfs.loadfile(dir .. path .. "/" .. path ..  ".lua")
-	end)
-	
-	table.insert(package.loaders, function(path)
-		local c_name = "luaopen_" .. path:gsub("^.*%-", "", 1):gsub("%.", "_")
-		path = R(dir .. "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. path .. (jit.os == "Windows" and ".dll" or ".so")) or path
-		return package.loadlib(path, c_name)
 	end)
 end	
