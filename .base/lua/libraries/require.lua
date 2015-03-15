@@ -99,6 +99,7 @@ end
 local function find_chunk(loaders, errors, name, hint)
 	for _, loader in ipairs(loaders) do
 		local chunk, err, path = select(2, pcall(loader, name))
+		if require.debug then print(chunk, err, path) end
 		if type(chunk) == "function" then			
 			if hint and not (path and path:lower():find(hint:lower(), nil, true)) then
 				table.insert(errors, ("hint %q was given but it was not found in in the returned path %q\n"):format(hint, path))
@@ -107,6 +108,8 @@ local function find_chunk(loaders, errors, name, hint)
 			end
 		elseif type(chunk) == "string" then
 			table.insert(errors, chunk)
+		elseif chunk == nil and type(err) == "string" then
+			table.insert(errors, err)
 		end
 	end
 end
