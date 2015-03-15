@@ -733,7 +733,7 @@ function steam.LoadModel(path, sub_model_callback)
 	end)
 	
 	if not ok then 
-		print(err)
+		logf("failed to decompile %s: %s\n", path, err)
 	end
 	
 	return models
