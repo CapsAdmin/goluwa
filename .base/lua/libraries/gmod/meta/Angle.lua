@@ -3,20 +3,40 @@ local gmod = ... or gmod
 local META = gmod.env.FindMetaTable("Angle")
 META.__index = META
 
+function META:__index(key)
+	if key == "p" then
+		return self.v.x
+	elseif key == "y" then
+		return self.v.y
+	elseif key == "r" then
+		return self.v.z
+	end
+	
+	return META[key]
+end
+
+function META:__newindex(key, val)
+	self.v[key] = val
+end
+
 function META:__tostring()
 	return ("Angle(%f, %f, %f)"):format(self.q:GetAngles():Deg():Unpack())
 end
 
+function META.__eq(a, b)
+	return a.q == b.q
+end
+
 function META:Forward()
-	return self.q:Forward()
+	return gmod.env.Vector(self.q:Forward():Unpack())
 end
 
 function META:Right()
-	return self.q:Right()
+	return gmod.env.Vector(self.q:Right():Unpack())
 end
 
 function META:Up()
-	return self.q:Up()
+	return gmod.env.Vector(self.q:Up():Unpack())
 end
 
 function META:IsZero()
@@ -42,7 +62,7 @@ end
 function gmod.env.Angle(p, y, r)
 	local self = {} 
 	
-	self.q = QuatDeg3(p,y,r)
+	self.q = QuatDeg3(p, y, r)
 	
 	return setmetatable(self, META)
 end

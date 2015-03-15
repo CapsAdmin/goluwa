@@ -1,0 +1,90 @@
+local gmod = ... or gmod
+
+local META = gmod.env.FindMetaTable("Vector")
+
+function META:__index(key)
+	if key == "x" then
+		return self.v.x
+	elseif key == "y" then
+		return self.v.y
+	elseif key == "z" then
+		return self.v.z
+	end
+	
+	return META[key]
+end
+
+function META:__newindex(key, val)
+	self.v[key] = val
+end
+
+function META:__tostring()
+	return ("Vector(%f, %f, %f)"):format(self.v:Unpack())
+end
+
+function META.__eq(a, b)
+	return a.v == b.v
+end
+
+function META:ToScreen()
+	local pos,vis = utility.WorldPositionToScreen(self.v)
+	return {
+		x = pos.x, 
+		y = pos.y,
+		visible = vis > 0,
+	}
+end
+
+function META:Zero()
+	self.v:Set(0,0,0)
+end
+
+function META:Cross(vec)
+	return gmod.env.Vector(self.v:Cross(vec):Unpack())
+end
+
+function META:Cross(vec)
+	return self.v:Distance(vec.v)
+end
+
+function META:Dot(vec)
+	return self.v:Dot(vec.v)
+end
+
+META.DotProduct = META.Dot
+
+function META:Normalize()
+	self.v:Normalize()
+end
+
+function META:GetNormalized()
+	self.v:GetNormalized()
+end
+
+META.GetNormal = META.GetNormalized
+
+function META:Add(vec)
+	self.x = self.x + vec.x
+	self.y = self.y + vec.y
+	self.z = self.z + vec.z
+end
+
+function META:Angle()
+	return gmod.env.Angle(self.v:GetAngles():Unpack())
+end
+
+function META:Length()
+	return self.v:GetLength()
+end
+
+function META:IsZero()
+	return self.v.x == 0 and self.v.y == 0 and self.v.z == 0
+end
+
+function gmod.env.Vector(x, y, z)
+	local self = {} 
+	
+	self.v = Vec3(x, y, z)
+	
+	return setmetatable(self, META)
+end
