@@ -1,4 +1,5 @@
-local env = ...
+local gmod = ... or gmod
+local env = gmod.env
 
 env.SENSORBONE = {}
 local SENSORBONE = env.SENSORBONE

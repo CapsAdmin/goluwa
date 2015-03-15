@@ -1,4 +1,5 @@
-local surface = ...
+local gmod = ... or gmod
+local surface = gmod.env.surface
 
 for k,v in pairs(_G.surface) do
 	surface[k] = v

@@ -1,4 +1,5 @@
-local hook = ...
+local gmod = ... or gmod
+local hook = gmod.env.hook
 
 function hook.Add(eventName, identifier, func)
 	return event.AddListener(eventName, identifier, func)

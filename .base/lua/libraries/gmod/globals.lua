@@ -1,7 +1,8 @@
-local env, gmod = ...
+local gmod = ... or gmod
+local globals = gmod.env
 
 local function make_is(name) 
-	env["is" .. name:lower()] = function(var) 
+	globals["is" .. name:lower()] = function(var) 
 		return type(var) == name
 	end
 end
@@ -17,24 +18,24 @@ make_is("Vector")
 make_is("Color")
 make_is("function")
 
-env.Vector = Vec3
-env.Angle = Ang3
+globals.Vector = Vec3
+globals.Angle = Ang3
 
-function env.AddCSLuaFile()
+function globals.AddCSLuaFile()
 
 end
 
-function env.FindMetaTable(name) 
-	return env._R[name] 
+function globals.FindMetaTable(name) 
+	return globals._R[name] 
 end
 
-function env.Material(path)
+function globals.Material(path)
 	local mat = render.CreateMaterial("model")
 	steam.LoadMaterial("materials/" .. path, mat)
 	return mat
 end
 
-function env.LoadPresets()
+function globals.LoadPresets()
 	local out = {}
 	
 	for folder_name in vfs.Iterate("settings/presets/") do
@@ -49,19 +50,19 @@ function env.LoadPresets()
 	return out
 end
 
-function env.SavePresets()
+function globals.SavePresets()
 
 end
 
-env.include = _G.include
+globals.include = _G.include
 
-function env.module(name, _ENV)
+function globals.module(name, _ENV)
 	logn("gmod: module(",name,")")
 
 	local tbl = {}
 	
 	if _ENV == package.seeall then
-		_ENV = env
+		_ENV = globals
 		setmetatable(tbl, {__index = _ENV})
 	elseif _ENV then
 		print(_ENV, "!?!??!?!")
@@ -74,19 +75,19 @@ function env.module(name, _ENV)
 	end
 	
 	package.loaded[name] = tbl
-	env[name] = tbl
+	globals[name] = tbl
 	
 	setfenv(2, tbl)	
 end
 
-function env.require(name, ...)
+function globals.require(name, ...)
 	logn("gmod: require(",name,")")
 	
 	local func, err, path = require.load(name, gmod.dir, true) 
 				
 	if type(func) == "function" then
 		if debug.getinfo(func).what ~= "C" then
-			setfenv(func, env)
+			setfenv(func, globals)
 		end
 		
 		return require.require_function(name, func, path, name) 
@@ -96,7 +97,7 @@ function env.require(name, ...)
 		return require(name)
 	end
 
-	if env[name] then return env[name] end
+	if globals[name] then return globals[name] end
 
 	if not func and err then print(name, err) end
 

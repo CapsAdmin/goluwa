@@ -1,9 +1,12 @@
 local gmod = ... or _G.gmod
 
-gmod.env = {}
-
-local env = gmod.env
+local env = {}
 env._R = {}
+env._G = env
+
+setmetatable(env, {__index = _G})
+
+gmod.env = env
 
 local data = include("exported.lua")
 local globals = data.functions._G
@@ -34,7 +37,7 @@ do -- enums
 		env[enum_name] = env[enum_name] or value
 	end
 	
-	include("libraries/gmod/enums.lua", env, gmod)
+	include("libraries/gmod/enums.lua", gmod)
 end
 
 do -- libraries
@@ -51,7 +54,7 @@ do -- libraries
 		
 		env[lib_name] = env[lib_name] or {}
 		
-		include("libraries/gmod/libraries/" .. file_name, env[lib_name], env, gmod)
+		include("libraries/gmod/libraries/" .. file_name, gmod)
 	end
 end
 
@@ -60,7 +63,7 @@ do -- global functions
 		env[func_name] = env[func_name] or function(...) logf("%s(%s)\n", func_name, table.concat(tostring_args(...), ",")) error("NYI", 2) end
 	end
 	
-	include("libraries/gmod/globals.lua", env, gmod)
+	include("libraries/gmod/globals.lua", gmod)
 end
 
 do -- metatables
@@ -77,8 +80,6 @@ do -- metatables
 		env._R[meta_name] = env._R[meta_name] or {}
 		env._R[meta_name].MetaName = env._R[meta_name].MetaName or meta_name
 		
-		include("libraries/gmod/meta/" .. file_name, env._R[meta_name], env, gmod)
+		include("libraries/gmod/meta/" .. file_name, gmod)
 	end
 end
-
-setmetatable(env, {__index = _G})

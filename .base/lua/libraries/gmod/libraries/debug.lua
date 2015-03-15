@@ -1,5 +1,6 @@
-local debug, env = ...
+local gmod = ... or gmod
+local debug = gmod.env.debug
 
 function debug.getregistry()
-	return env._R
+	return gmod.env._R
 end

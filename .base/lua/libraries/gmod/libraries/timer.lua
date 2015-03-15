@@ -1,4 +1,5 @@
-local timer = ...
+local gmod = ... or gmod
+local timer = gmod.env.timer
 
 timer.current = {}
 
