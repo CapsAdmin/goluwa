@@ -545,7 +545,16 @@ function console.ScrollLogHistory(offset, skip_refresh)
 	
 	curses.werase(c.log_window)
 
-	console.SyntaxPrint(console.GetCurrentText(offset))
+	local lines = curses.LINES-1
+	local count = #console.history
+	
+	console.scroll_log_history = math.clamp(console.scroll_log_history - offset, 0, count - lines)
+	
+	for i = 1, lines  do
+		local str = console.history[i + console.scroll_log_history] or ""
+		
+		console.SyntaxPrint(str)
+	end
 end
 
 function console.GetCurrentText(offset)
