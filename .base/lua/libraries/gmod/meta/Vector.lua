@@ -26,6 +26,11 @@ function META.__eq(a, b)
 	return a.v == b.v
 end
 
+function META.__add(a, b) return gmod.env.Vector((a.v + b.v):Unpack()) end
+function META.__sub(a, b) return gmod.env.Vector((a.v - b.v):Unpack()) end
+function META.__mul(a, b) if type(b) == "number" then return gmod.env.Vector((a.v * b):Unpack()) elseif type(a) == "number" then return gmod.env.Vector((a * b.v):Unpack()) else return gmod.env.Vector((a.v * b.v):Unpack()) end end
+function META.__div(a, b) if type(b) == "number" then return gmod.env.Vector((a.v / b):Unpack()) elseif type(a) == "number" then return gmod.env.Vector((a / b.v):Unpack()) else return gmod.env.Vector((a.v / b.v):Unpack()) end end
+
 function META:ToScreen()
 	local pos,vis = utility.WorldPositionToScreen(self.v)
 	return {
@@ -84,7 +89,7 @@ end
 function gmod.env.Vector(x, y, z)
 	local self = {} 
 	
-	self.v = Vec3(x, y, z)
+	self.v = Vec3(x or 0, y or 0, z or 0)
 	
 	return setmetatable(self, META)
 end

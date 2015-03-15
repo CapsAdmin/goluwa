@@ -18,11 +18,42 @@ make_is("Vector")
 make_is("Color")
 make_is("function")
 
-globals.Vector = Vec3
-globals.Angle = Ang3
+do
+	local nw_globals = {}
+
+	local function ADD(name)
+		globals["SetGlobal" .. name] = function(key, val) nw_globals[key] = val end
+		globals["GetGlobal" .. name] = function(key) return nw_globals[key] end
+	end
+	
+	ADD("String")
+	ADD("Int")
+	ADD("Float")
+	ADD("Vector")
+	ADD("Angles")
+	ADD("Entity")
+	ADD("Bool")
+end
+
+function globals.GetHostName()
+	return "TODO: hostname"
+end
 
 function globals.AddCSLuaFile()
 
+end
+
+function globals.AddConsoleCommand(name)
+	console.AddCommand(name, function(line, ...)
+		gmod.env.concommand.Run(NULL, name, {...}, line)
+	end)
+end
+
+function globals.RealTime()
+	return system.GetElapsedTime()
+end
+function globals.FrameTime()
+	return system.GetFrameTime()
 end
 
 function globals.FindMetaTable(name) 
@@ -53,6 +84,10 @@ end
 function globals.SavePresets()
 
 end
+
+function globals.Msg(...) log(...) end
+function globals.MsgC(...) log(...) end
+function globals.MsgN(...) logn(...) end
 
 globals.include = _G.include
 

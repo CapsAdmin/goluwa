@@ -1,7 +1,5 @@
 local gmod = _G.gmod or {}
 
-include("environment.lua", gmod)
-
 function gmod.PreprocessLua(code)
 	local code, data = utility.StripLuaCommentsAndStrings(code)
 	
@@ -101,25 +99,64 @@ function gmod.SetFunctionEnvironment(func)
 end
 
 function gmod.Initialize()
-	steam.MountSourceGame("gmod")
-	
-	gmod.dir = R("garrysmod_dir.vpk"):match("(.+/)")
-	
-	vfs.AddModuleDirectory(R"lua/includes/modules/")
-
-	event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
-		if not path:startswith(gmod.dir) then return end
-			
-		return gmod.PreprocessLua(code)
-	end)
-
-	event.AddListener("PostLoadString", "gmod_function_env", function(func, path)
-		if not path:startswith(gmod.dir) then return end
+	if not gmod.init then
+		include("libraries/gmod/environment.lua", gmod)
 		
-		gmod.SetFunctionEnvironment(func)
-	end)
+		steam.MountSourceGame("gmod")
+		
+		gmod.dir = R("garrysmod_dir.vpk"):match("(.+/)")
+		
+		vfs.AddModuleDirectory(R"lua/includes/modules/")
 
-	include("includes/init.lua")
+		event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
+			if not path:startswith(gmod.dir) then return end
+				
+			return gmod.PreprocessLua(code)
+		end)
+
+		event.AddListener("PostLoadString", "gmod_function_env", function(func, path)
+			if not path:startswith(gmod.dir) then return end
+			
+			gmod.SetFunctionEnvironment(func)
+		end)
+
+		include("includes/init.lua")
+		include("derma/init.lua")
+		
+	end
+	
+	gmod.gamemodes =  {}
+	
+	gmod.env.GM = {}
+	include("gamemodes/base/gamemode/init.lua")
+	gmod.gamemodes.base = gmod.env.GM
+	gmod.env.GM = nil
+	
+	gmod.env.GM = {}
+	include("gamemodes/sandbox/gamemode/init.lua")
+	gmod.gamemodes.sandbox = gmod.env.GM
+	gmod.env.GM = nil
+	
+	for k,v in pairs(gmod.gamemodes.base) do
+		gmod.gamemodes.sandbox[k] = gmod.gamemodes.sandbox[k] or v
+	end
+	
+	for file_name in vfs.Iterate("lua/entities/") do
+		logn("gmod: registering entity ", file_name)
+		if file_name:endswith(".lua") then
+			gmod.env.ENT = {}
+			include("lua/entities/" .. file_name)
+			local name = file_name:match("(.+)%.")
+			gmod.env.scripted_ents.Register(gmod.env.ENT, name)
+		else
+			gmod.env.ENT = {}
+			include("lua/entities/" .. file_name .. "/init.lua")
+			include("lua/entities/" .. file_name .. "/cl_init.lua")
+			gmod.env.scripted_ents.Register(gmod.env.ENT, file_name)
+		end
+	end
+	
+	gmod.init = true
 end
 
 gmod.Initialize()

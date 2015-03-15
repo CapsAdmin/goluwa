@@ -4,8 +4,6 @@ local env = {}
 env._R = {}
 env._G = env
 
-setmetatable(env, {__index = _G})
-
 gmod.env = env
 
 local data = include("exported.lua")
@@ -83,3 +81,5 @@ do -- metatables
 		include("libraries/gmod/meta/" .. file_name, gmod)
 	end
 end
+
+setmetatable(env, {__index = _G})
