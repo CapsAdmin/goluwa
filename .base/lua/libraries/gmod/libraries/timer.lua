@@ -1,4 +1,4 @@
-local timer = {}
+local timer = ...
 
 timer.current = {}
 
@@ -13,17 +13,3 @@ end
 function timer.Simple(delay, func)
 	return event.Delay(delay, func)
 end
-
-function timer.Exists() end
-function timer.UnPause() end
-function timer.Toggle() end
-function timer.Adjust() end
-function timer.Stop() end
-function timer.Start() end
-function timer.Remove() end
-function timer.Check() end
-function timer.RepsLeft() end
-function timer.TimeLeft() end
-function timer.Pause() end
-
-return timer

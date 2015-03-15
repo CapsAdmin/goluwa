@@ -1,10 +1,8 @@
-steam.MountSourceGame("gmod")
-vfs.AddModuleDirectory(R"lua/includes/modules/")
-vfs.AddModuleDirectory(R"lua/libraries/gmod/libraries/")
+local gmod = _G.gmod or {}
 
-event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
-	if not path:find("garrysmod", nil, true) then return end
-		
+include("environment.lua", gmod)
+
+function gmod.PreprocessLua(code)
 	local code, data = utility.StripLuaCommentsAndStrings(code)
 	
 	code = code:gsub("&&", " and ")
@@ -14,6 +12,7 @@ event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
 	code = code:gsub("/%*", "--[[")
 	code = code:gsub("%*/", "]]")
 	code = code:gsub("//", "--")
+	code = code:gsub("DEFINE_BASECLASS", "local BaseClass = baseclass.Get")
 	
 	code = utility.RestoreLuaCommentsAndStrings(code, data)
 	
@@ -48,6 +47,7 @@ event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
 				
 				local balance = 0
 				local found_start
+				local return_line
 				
 				for i = start.stack_pos, #stack do
 					local v = stack[i]
@@ -59,6 +59,10 @@ event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
 						balance = balance - 1
 					end
 					
+					if stack[i - 1].token == "TK_return" then
+						return_line = stack[i - 1].linenumber
+					end
+					
 					if found_start and balance == 0 then
 						stop = v
 						break
@@ -66,6 +70,10 @@ event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
 				end
 				
 				local lines = code:explode("\n")
+				
+				if return_line then
+					lines[return_line] = " do ".. lines[return_line] .. " end "
+				end
 				
 				if not lines[stop.linenumber]:find("CONTINUE") then
 					lines[stop.linenumber] = " ::CONTINUE:: ".. lines[stop.linenumber]
@@ -82,76 +90,37 @@ event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
 	
 	code = utility.RestoreLuaCommentsAndStrings(code, data)
 	
-	if path:find("includes/util/client.lua") then vfs.Write("gmod_out.lua", code) end
-		
-	
+	local ok, err = loadstring(code)
+	if not ok then print(err) vfs.Write("gmod_preprocess_error.lua", code) end
 		
 	return code
-end)
-
-local env = {}
-
-env.Vector = Vec3
-env.Angle = Ang3
-env.module = function(name, _ENV)
-	local tbl = {}
-	
-	if _ENV == package.seeall then
-		_ENV = env
-		setmetatable(tbl, {__index = _ENV})
-	elseif _ENV then
-		print(_ENV, "!?!??!?!")
-	end
-	
-	if not tbl._NAME then
-		tbl._NAME = name
-		tbl._M = tbl
-		tbl._PACKAGE = name:gsub("[^.]*$", "")
-	end
-	
-	package.loaded[name] = tbl
-	env[name] = tbl
-	
-	setfenv(2, tbl)
 end
 
-local function add_lib_copy(name)
-	local lib = {}
-
-	for k,v in pairs(_G[name]) do lib[k] = v end
-
-	env[name] = lib
+function gmod.SetFunctionEnvironment(func)
+	setfenv(func, gmod.env)
 end
 
-add_lib_copy("string")
-add_lib_copy("math")
-add_lib_copy("table")
-add_lib_copy("coroutine")
-
-include("libraries/gmod/globals.lua", env)
-include("libraries/gmod/constants.lua", env)
-
-for name in vfs.Iterate("lua/libraries/gmod/libraries/") do
-	env[name:match("(.+)%.")] = include("libraries/gmod/libraries/" .. name)
-end
-
-do
-	env.MetaTables = {}
-
-	for name in vfs.Iterate("lua/libraries/gmod/meta/") do
-		local meta = include("libraries/gmod/meta/" .. name)
-		env.MetaTables[meta.Type] = meta
-	end
+function gmod.Initialize()
+	steam.MountSourceGame("gmod")
 	
-	env.FindMetaTable = function(name) return env.MetaTables[name] end
+	gmod.dir = R("garrysmod_dir.vpk"):match("(.+/)")
+	
+	vfs.AddModuleDirectory(R"lua/includes/modules/")
+
+	event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
+		if not path:startswith(gmod.dir) then return end
+			
+		return gmod.PreprocessLua(code)
+	end)
+
+	event.AddListener("PostLoadString", "gmod_function_env", function(func, path)
+		if not path:startswith(gmod.dir) then return end
+		
+		gmod.SetFunctionEnvironment(func)
+	end)
+
+	include("includes/init.lua")
 end
 
-setmetatable(env, {__index = _G})
-
-event.AddListener("PostLoadString", "gmod_function_env", function(func, path)
-	if not path:find("garrysmod", nil, true) then return end
-	
-	setfenv(func, env)
-end)
-
-include("includes/init.lua")
+gmod.Initialize()
+_G.gmod = gmod
