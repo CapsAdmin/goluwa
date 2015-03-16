@@ -329,6 +329,26 @@ do
 		function surface.GetRectUV()
 			return X, Y, W, H, SX, SY
 		end
+		
+		function surface.SetRectUV2(u1,v1, u2,v2)
+			surface.rect_mesh.vertices[0].uv.A = u1
+			surface.rect_mesh.vertices[0].uv.B = v1
+			
+			surface.rect_mesh.vertices[1].uv.A = u1
+			surface.rect_mesh.vertices[1].uv.B = v1
+			
+			surface.rect_mesh.vertices[2].uv.A = u2
+			surface.rect_mesh.vertices[2].uv.B = v1
+			
+			--
+			
+			surface.rect_mesh.vertices[3].uv = surface.rect_mesh.vertices[2].uv
+			
+			surface.rect_mesh.vertices[4].uv.A = u2
+			surface.rect_mesh.vertices[4].uv.B = v2
+			
+			surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[0].uv	
+		end
 	end
 
 	local white_t = {1,1,1,1}

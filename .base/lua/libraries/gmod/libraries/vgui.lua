@@ -15,15 +15,15 @@ function vgui.Create(class, parent, name)
 	local obj = gui.CreatePanel("base")
 	local self = gmod.WrapObject(obj, "Panel")
 	
-	obj.OnDraw = function(self) if self.Paint then self:Paint(obj:GetWidth(), obj:GetHeight()) end end
-	obj.OnPostDraw = function(self) if self.PaintOver then self:PaintOver(obj:GetWidth(), obj:GetHeight()) end end
-	obj.OnUpdate = function(self) if self.Think then self:Think() end end
-	obj.OnMouseMove = function(self, x, y) if self.OnCursorMoved then self:OnCursorMoved(x, y) end end
-	obj.OnMouseEnter = function(self) if self.OnMouseEnter then self:OnMouseEnter() end end
-	obj.OnCursorExited = function(self) if self.OnCursorExited then self:OnCursorExited() end end	
-	obj.OnChildAdd = function(self, child) if self.OnChildAdded then self:OnChildAdded(child) end end	
-	obj.OnLayout = function(self) if self.PerformLayout then self:PerformLayout(obj:GetWidth(), obj:GetHeight()) end end	
-	obj.OnMouseInput = function(self, button, press) 
+	obj.OnDraw = function() if self.Paint then self:Paint(obj:GetWidth(), obj:GetHeight()) end end
+	obj.OnPostDraw = function() if self.PaintOver then self:PaintOver(obj:GetWidth(), obj:GetHeight()) end end
+	obj.OnUpdate = function() if self.Think then self:Think() end end
+	obj.OnMouseMove = function(_, x, y) if self.OnCursorMoved then self:OnCursorMoved(x, y) end end
+	obj.OnMouseEnter = function() if self.OnMouseEnter then self:OnMouseEnter() end end
+	obj.OnCursorExited = function() if self.OnCursorExited then self:OnCursorExited() end end	
+	obj.OnChildAdd = function(_, child) if self.OnChildAdded then self:OnChildAdded(child) end end	
+	obj.OnLayout = function() if self.PerformLayout then self:PerformLayout(obj:GetWidth(), obj:GetHeight()) end end	
+	obj.OnMouseInput = function(_, button, press) 
 		if translate_mouse[button] then
 			if press then
 				if self.OnMousePressed then

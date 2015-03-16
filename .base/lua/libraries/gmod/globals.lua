@@ -72,6 +72,7 @@ end
 function globals.RealTime() return system.GetElapsedTime() end
 function globals.FrameTime() return system.GetFrameTime() end
 function globals.CurTime() return system.GetElapsedTime() end --system.GetServerTime()
+function globals.SysTime() return system.GetTime() end --system.GetServerTime()
 
 function globals.FindMetaTable(name) 
 	return globals._R[name] 
@@ -79,7 +80,11 @@ end
 
 function globals.Material(path)
 	local mat = render.CreateMaterial("model")
-	steam.LoadMaterial("materials/" .. path .. ".vmt", mat)
+	if vfs.IsFile("materials/" .. path) then
+		steam.LoadMaterial("materials/" .. path, mat)
+	else
+		steam.LoadMaterial("materials/" .. path .. ".vmt", mat)
+	end
 	return gmod.WrapObject(mat, "IMaterial")
 end
 

@@ -24,6 +24,20 @@ function META:GetChildren()
 	return children
 end
 
+function META:SetFGColor(r,g,b,a)
+	self.__obj.Color.r = r/255
+	self.__obj.Color.g = g/255
+	self.__obj.Color.b = b/255
+	self.__obj.Color.a = (a or 255)/255
+end
+
+function META:SetBGColor(r,g,b,a)
+	self.__obj.Color.r = r/255
+	self.__obj.Color.g = g/255
+	self.__obj.Color.b = b/255
+	self.__obj.Color.a = (a or 255)/255
+end
+
 function META:CursorPos()
 	return self.__obj:GetMousePosition():Unpack()
 end
@@ -53,13 +67,20 @@ function META:Remove()
 end
 
 function META:DockPadding(left, top, right, bottom)
-	self.__obj:SetPadding(left, top, right, bottom)
+	self.__obj:SetPadding(Rect(left, top, right, bottom))
+end
+
+function META:DockMargin(left, top, right, bottom)
+	self.__obj:SetMargin(Rect(left, top, right, bottom))
 end
 
 function META:SetMouseInputEnabled(b)
 	self.__obj:SetIgnoreMouse(not b)
 end
 
+function META:MouseCapture(b)
+	self:SetMouseInputEnabled(b)
+end
 
 function META:SetKeyboardInputEnabled(b)
 	--self.__obj:SetIgnoreMouse(not b)
@@ -74,11 +95,25 @@ function META:GetTall()
 end
 
 function META:SetSize(w,h)
-	return self.__obj:SetSize(Vec2(w,h))
+	self.__obj:SetSize(Vec2(w,h))
 end
 
-function META:SetFontInternal(font)
-	self.__obj.font_internal = font
+function META:GetSize()
+	return self.__obj:GetSize():Unpack()
+end
+
+do
+	function META:SetFontInternal(font)
+		self.__obj.font_internal = font
+	end
+
+	function META:SetText(text)
+		self.__obj.text_internal = text
+	end
+end
+
+function META:SetAlpha(a)
+	self.__obj.Color.a = a/255
 end
 
 function META:GetParent()
@@ -94,22 +129,35 @@ function META:InvalidateLayout(b)
 	self.__obj:Layout(b)
 end
 
+function META:SizeToContents()
+	self.__obj:MoveUp()
+	self.__obj:MoveLeft()
+	self.__obj:FillX()
+	self.__obj:FillY()
+end
+
 function META:Dock(enum)
-	if enum == gmod.env.DOCK_FILL then
+	if enum == gmod.env.FILL then
 		self.__obj:SetupLayout("fill")
-	elseif enum == gmod.env.DOCK_LEFT then
+	elseif enum == gmod.env.LEFT then
 		self.__obj:SetupLayout("left")
-	elseif enum == gmod.env.DOCK_RIGHT then
+	elseif enum == gmod.env.RIGHT then
 		self.__obj:SetupLayout("right")
-	elseif enum == gmod.env.DOCK_TOP then
+	elseif enum == gmod.env.TOP then
 		self.__obj:SetupLayout("top")
-	elseif enum == gmod.env.DOCK_BOTTOM then
+	elseif enum == gmod.env.BOTTOM then
 		self.__obj:SetupLayout("bottom")
-	elseif enum == gmod.env.DOCK_NODOCK then
+	elseif enum == gmod.env.NODOCK then
 		self.__obj:SetupLayout()
 	end	
 end
 
+function META:SetCursor(typ)
+	self.__obj:SetCursor(typ)
+end
+
+function META:SetContentAlignment(num) end
+function META:SetExpensiveShadow() end
 function META:Prepare() end
 function META:SetPaintBorderEnabled() end
 function META:SetPaintBackgroundEnabled() end
