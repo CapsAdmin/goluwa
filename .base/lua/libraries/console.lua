@@ -348,7 +348,8 @@ end
 
 do -- console vars
 	console.cvar_file_name = "%DATA%/cvars.txt"
- 	
+	console.variable_objects = console.variable_objects or {}
+	
 	-- what's the use?
 	do -- cvar meta
 		local META = prototype.CreateTemplate("cvar")
@@ -360,6 +361,10 @@ do -- console vars
 			
 			return console.vars[self.name]
 		end
+		
+		function META:GetHelp() return self.help end
+		function META:GetCallback() return self.callback end
+		function META:GetDefault() return self.def end
 		
 		function META:Set(var)
 			console.SetVariable(self.name, var)
@@ -439,7 +444,13 @@ do -- console vars
 			end)
 		end
 		
-		return prototype.CreateObject("cvar", {name = name})
+		console.variable_objects[name] = prototype.CreateObject("cvar", {name = name, def = def, help = help, callback = callback})
+		
+		return console.GetVariableObject(name)
+	end
+	
+	function console.GetVariableObject(name)
+		return console.variable_objects[name]
 	end
 	
 	function console.IsVariableAdded(var)
