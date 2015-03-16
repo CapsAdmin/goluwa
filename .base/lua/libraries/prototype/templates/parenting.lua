@@ -1,7 +1,7 @@
 local prototype = (...) or _G.prototype
 
 function prototype.AddParentingTemplate(META)
-	META.OnParent = META.OnChildAdd or function() end
+	META.OnParent = META.OnParent or function() end
 	META.OnChildAdd = META.OnChildAdd or function() end
 	META.OnUnParent = META.OnUnParent or function() end
 		
