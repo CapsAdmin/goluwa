@@ -100,7 +100,7 @@ end
 
 function gmod.Initialize()
 	if not gmod.init then
-		include("libraries/gmod/environment.lua", gmod)
+		include("lua/libraries/gmod/environment.lua", gmod)
 		
 		steam.MountSourceGame("gmod")
 		
@@ -127,16 +127,32 @@ function gmod.Initialize()
 	
 	gmod.gamemodes =  {}
 	
-	gmod.env.GM = {}
-	include("gamemodes/base/gamemode/init.lua")
-	gmod.gamemodes.base = gmod.env.GM
-	gmod.env.GM = nil
+	local function load_gamemode(name)
+		gmod.env.GM = {}
+		include("gamemodes/"..name.."/gamemode/init.lua")
+		gmod.gamemodes[name] = gmod.env.GM
+		gmod.env.GM = nil
+		
+		for file_name in vfs.Iterate("gamemodes/"..name.."/entities/") do
+			logn("gmod: registering entity ", file_name)
+			if file_name:endswith(".lua") then
+				gmod.env.ENT = {}
+				include("gamemodes/"..name.."/entities/" .. file_name)
+				local name = file_name:match("(.+)%.")
+				gmod.env.scripted_ents.Register(gmod.env.ENT, name)
+			else
+				gmod.env.ENT = {}
+				include("gamemodes/"..name.."/entities/" .. file_name .. "/init.lua")
+				include("gamemodes/"..name.."/entities/" .. file_name .. "/cl_init.lua")
+				gmod.env.scripted_ents.Register(gmod.env.ENT, file_name)
+			end
+		end
+	end
 	
-	gmod.env.GM = {}
-	include("gamemodes/sandbox/gamemode/init.lua")
-	gmod.gamemodes.sandbox = gmod.env.GM
-	gmod.env.GM = nil
+	load_gamemode("base")
+	load_gamemode("sandbox")
 	
+	-- todo
 	for k,v in pairs(gmod.gamemodes.base) do
 		gmod.gamemodes.sandbox[k] = gmod.gamemodes.sandbox[k] or v
 	end
@@ -155,6 +171,7 @@ function gmod.Initialize()
 			gmod.env.scripted_ents.Register(gmod.env.ENT, file_name)
 		end
 	end
+
 	
 	gmod.init = true
 end
