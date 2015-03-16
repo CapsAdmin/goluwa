@@ -109,7 +109,7 @@ function lovemu.CreateLoveEnv()
 	love._version_minor = tonumber(version[2])
 	love._version_revision = tonumber(version[3])
 
-	include("libraries/love/libraries/*", love)
+	include("lua/libraries/love/libraries/*", love)
 	
 	love.math = math
 	

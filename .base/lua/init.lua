@@ -149,7 +149,7 @@ end
 do -- libraries
 	_G.include = vfs.include
 		
-	include("libraries/extensions/ffi.lua")
+	include("lua/libraries/extensions/ffi.lua")
 
 	if WINDOWS then
 		winapi = require("winapi")
@@ -158,65 +158,65 @@ do -- libraries
 	end
 
 	-- standard library extensions
-	include("libraries/extensions/globals.lua")
-	include("libraries/extensions/debug.lua")
-	include("libraries/extensions/math.lua")
-	include("libraries/extensions/string.lua")
-	include("libraries/extensions/table.lua")
-	include("libraries/extensions/os.lua")
+	include("lua/libraries/extensions/globals.lua")
+	include("lua/libraries/extensions/debug.lua")
+	include("lua/libraries/extensions/math.lua")
+	include("lua/libraries/extensions/string.lua")
+	include("lua/libraries/extensions/table.lua")
+	include("lua/libraries/extensions/os.lua")
 
 	-- libraries
-	prototype = include("libraries/prototype/prototype.lua")
-	structs = include("libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
-	utf8 = include("libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
-	event = include("libraries/event.lua") goluwa = event.events -- event handler
-	utility = include("libraries/utilities/utility.lua") -- more like i-dont-know-where-these-functions-go
-	crypto = include("libraries/crypto.lua")
-	threads = include("libraries/threads.lua")
+	prototype = include("lua/libraries/prototype/prototype.lua")
+	structs = include("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
+	utf8 = include("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
+	event = include("lua/libraries/event.lua") goluwa = event.events -- event handler
+	utility = include("lua/libraries/utilities/utility.lua") -- more like i-dont-know-where-these-functions-go
+	crypto = include("lua/libraries/crypto.lua")
+	threads = include("lua/libraries/threads.lua")
 
 	-- serializing
-	serializer = include("libraries/serializing/serializer.lua")
+	serializer = include("lua/libraries/serializing/serializer.lua")
 
-	system = include("libraries/system.lua")
-	console = include("libraries/console.lua")
-	profiler = include("libraries/profiler.lua")
-	cookies = include("libraries/cookies.lua")
-	expression = include("libraries/expression.lua")
-	autocomplete = include("libraries/autocomplete.lua")
-	input = include("libraries/input.lua")
+	system = include("lua/libraries/system.lua")
+	console = include("lua/libraries/console.lua")
+	profiler = include("lua/libraries/profiler.lua")
+	cookies = include("lua/libraries/cookies.lua")
+	expression = include("lua/libraries/expression.lua")
+	autocomplete = include("lua/libraries/autocomplete.lua")
+	input = include("lua/libraries/input.lua")
 	
-	language = include("libraries/language.lua")
+	language = include("lua/libraries/language.lua")
 	_G.L = language.LanguageString
 	
 	-- meta
-	include("libraries/extensions/function.lua")
+	include("lua/libraries/extensions/function.lua")
 	
 	-- network
-	sockets = include("libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
-	enet = include("libraries/network/enet.lua") -- low level udp library
+	sockets = include("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
+	enet = include("lua/libraries/network/enet.lua") -- low level udp library
 	
-	network = include("libraries/network/network.lua") -- high level implementation of enet
-	packet = include("libraries/network/packet.lua") -- medium (?) level communication between server and client
-	message = include("libraries/network/message.lua") -- high level communication between server and client
+	network = include("lua/libraries/network/network.lua") -- high level implementation of enet
+	packet = include("lua/libraries/network/packet.lua") -- medium (?) level communication between server and client
+	message = include("lua/libraries/network/message.lua") -- high level communication between server and client
 	
-	nvars = include("libraries/network/nvars.lua") -- variable synchronization between server and client
-	clients = include("libraries/network/clients.lua") -- high level wrapper for a connected client
-	chat = include("libraries/network/chat.lua") -- chat, duh!
+	nvars = include("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
+	clients = include("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
+	chat = include("lua/libraries/network/chat.lua") -- chat, duh!
 		
-	resource = include("libraries/resource.lua")
+	resource = include("lua/libraries/resource.lua")
 	
 	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
 	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
 	
 	if CLIENT then
 		-- graphics
-		render = include("libraries/graphics/render/render.lua") -- OpenGL abstraction
+		render = include("lua/libraries/graphics/render/render.lua") -- OpenGL abstraction
 		
 		if render then
-			surface = include("libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
-			window = include("libraries/graphics/window.lua") -- high level window implementation
-			video = include("libraries/graphics/video.lua") -- gif support (for now)
-			include("libraries/graphics/particles.lua")
+			surface = include("lua/libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
+			window = include("lua/libraries/graphics/window.lua") -- high level window implementation
+			video = include("lua/libraries/graphics/video.lua") -- gif support (for now)
+			include("lua/libraries/graphics/particles.lua")
 					
 			if not SCITE then
 				window.Open()
@@ -224,10 +224,10 @@ do -- libraries
 		end
 		
 		-- audio
-		audio = include("libraries/audio/audio.lua") -- high level implementation of OpenAl
+		audio = include("lua/libraries/audio/audio.lua") -- high level implementation of OpenAl
 		
 		if audio then
-			chatsounds = include("libraries/audio/chatsounds.lua")
+			chatsounds = include("lua/libraries/audio/chatsounds.lua")
 		end
 	end
 	
@@ -240,22 +240,22 @@ do -- libraries
 	end
 	
 	-- other
-	physics = include("libraries/entities/physics.lua") -- bullet physics
-	entities = include("libraries/entities/entities.lua") -- entity component system
-	steam = include("libraries/steam/steam.lua")
-	lovemu = include("libraries/love/lovemu.lua")
+	physics = include("lua/libraries/entities/physics.lua") -- bullet physics
+	entities = include("lua/libraries/entities/entities.lua") -- entity component system
+	steam = include("lua/libraries/steam/steam.lua")
+	lovemu = include("lua/libraries/love/lovemu.lua")
 	love = lovemu.CreateLoveEnv()
 
 	if not DISABLE_CURSES then
-		include("libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
+		include("lua/libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
 	end
 
 	if GRAPHICS then
-		gui = include("libraries/gui/init.lua")
+		gui = include("lua/libraries/gui/init.lua")
 	end
 	
 	-- include the filesystem again so it will include all the details such as zip file reading
-	include("libraries/filesystem/vfs.lua")
+	include("lua/libraries/filesystem/vfs.lua")
 end
 
 console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
@@ -317,4 +317,4 @@ system.ExecuteArgs()
 logf("launched on %s by %s as %s\n", os.date(), e.USERNAME, CLIENT and "client" or "server")
 logf("launch time took %s seconds\n", os.clock() - profile_start_time)
 
-include("main_loop.lua")
+include("lua/main_loop.lua")

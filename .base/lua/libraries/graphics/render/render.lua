@@ -35,7 +35,7 @@ function render.Initialize()
 		
 	render.GenerateTextures()
 	
-	include("libraries/graphics/decoders/*")
+	include("lua/libraries/graphics/decoders/*")
 	
 	render.frame = 0
 		
@@ -44,7 +44,7 @@ function render.Initialize()
 	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
 	
-	include("libraries/graphics/render/shader_builder.lua", render)
+	include("lua/libraries/graphics/render/shader_builder.lua", render)
 	
 	surface.Initialize()
 	

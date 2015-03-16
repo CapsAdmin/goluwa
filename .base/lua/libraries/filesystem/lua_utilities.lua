@@ -97,14 +97,10 @@ do -- include
 			if previous_dir then
 				dir = previous_dir .. dir
 			end
-						
+			
 			if not vfs.IsDir(dir) then
-				dir = "lua/" .. dir
-			end
-
-			if not vfs.IsDir(dir) then
-				dir = "lua/" .. original_dir
-			end
+				dir = original_dir
+			end			
 			
 			for script in vfs.Iterate(dir, nil, true) do
 				if script:find("%.lua") then
@@ -144,7 +140,7 @@ do -- include
 		
 		-- try first with the last directory
 		-- once with lua prepended
-		local path = "lua/" .. dir .. file
+		local path = dir .. file
 		local full_path
 		func, err, full_path = vfs.loadfile(path)
 
@@ -155,7 +151,7 @@ do -- include
 			-- and without the last directory
 			-- once with lua prepended
 			if not_found(err) then
-				path = "lua/" .. source
+				path = source
 				func, err, full_path = vfs.loadfile(path)	
 				
 				-- try the absolute path given

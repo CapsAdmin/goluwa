@@ -14,7 +14,7 @@ if SERVER or not surface then
 	end
 	
 	_G.surface = {}
-	include("libraries/graphics/surface/markup/markup.lua")	
+	include("lua/libraries/graphics/surface/markup/markup.lua")	
 	
 	if hack then
 		SERVER = nil

@@ -288,7 +288,7 @@ local steamworks = {}
 	
 	vfs.Write("lua/libraries/ffi/steamworks/init.lua", table.concat(lua, "\n"))
 	
-	include("libraries/ffi/steamworks/init.lua")
+	include("lua/libraries/ffi/steamworks/init.lua")
 end
 
 steam.BuildSteamWorksHeader()

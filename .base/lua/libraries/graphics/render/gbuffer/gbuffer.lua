@@ -213,7 +213,7 @@ local h_cvar = console.CreateVariable("render_height", 0, function() render.Init
  
 function render.InitializeGBuffer(width, height)
 	if not RELOAD then
-		include("libraries/graphics/render/gbuffer/passes/*")
+		include("lua/libraries/graphics/render/gbuffer/passes/*")
 	end
 
 	width = width or render.GetWidth()
@@ -388,7 +388,7 @@ function render.InitializeGBuffer(width, height)
 	end
 	
 	if not RELOAD then
-		include("libraries/graphics/render/gbuffer/post_process/*")
+		include("lua/libraries/graphics/render/gbuffer/post_process/*")
 	end
 	
 	for k,v in pairs(render.gbuffer_values) do

@@ -148,7 +148,7 @@ function SKIN:Build()
 
 	skin.background = Color(0.5, 0.5, 0.5)
 
-	skin.icons = include("libraries/gui/icons.lua")
+	skin.icons = include("lua/libraries/gui/icons.lua")
 	
 	return skin
 end

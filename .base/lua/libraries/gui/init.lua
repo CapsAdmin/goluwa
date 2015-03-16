@@ -328,7 +328,7 @@ do -- skin
 		gui.scale = skin.scale or gui.scale
 		
 		if reload_panels then 
-			include("libraries/gui/panels/*", gui) 
+			include("lua/libraries/gui/panels/*", gui) 
 		end
 		
 		for panel in pairs(gui.panels) do

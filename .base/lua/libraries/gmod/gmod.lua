@@ -120,8 +120,8 @@ function gmod.Initialize()
 			gmod.SetFunctionEnvironment(func)
 		end)
 
-		include("includes/init.lua")
-		include("derma/init.lua")
+		include("lua/includes/init.lua")
+		include("lua/derma/init.lua")
 		
 	end
 	

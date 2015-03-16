@@ -158,7 +158,7 @@ for i, sub_skin in ipairs(skins) do
 
 		skin.background = Color(0.5, 0.5, 0.5, 1)
 
-		skin.icons = include("libraries/gui/icons.lua")
+		skin.icons = include("lua/libraries/gui/icons.lua")
 
 		return skin
 	end
