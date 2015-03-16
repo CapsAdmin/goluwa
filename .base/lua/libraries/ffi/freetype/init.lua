@@ -1,6 +1,7 @@
 -- header stolen from https://code.google.com/p/lua-files!!
 
 local header = include("header.lua") 
+local errors = include("errors.lua")
 local enums = include("enums.lua")
   
 ffi.cdef(header) 
