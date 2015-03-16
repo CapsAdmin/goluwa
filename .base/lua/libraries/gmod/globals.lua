@@ -1,9 +1,15 @@
 local gmod = ... or gmod
 local globals = gmod.env
 
-local function make_is(name) 
-	globals["is" .. name:lower()] = function(var) 
-		return type(var) == name
+local function make_is(name)
+	if name:sub(1,1) == name:sub(1,1):upper() then
+		globals["is" .. name:lower()] = function(var) 
+			return typex(var) == name
+		end
+	else
+		globals["is" .. name:lower()] = function(var) 
+			return type(var) == name
+		end
 	end
 end
 
@@ -17,6 +23,17 @@ make_is("Angle")
 make_is("Vector")
 make_is("Color")
 make_is("function")
+make_is("Panel")
+
+function globals.type(obj)
+	local t = type(obj)
+	
+	if t == "table" and obj.MetaName then
+		return obj.MetaName
+	end
+	
+	return t
+end
 
 do
 	local nw_globals = {}
@@ -63,7 +80,7 @@ end
 function globals.Material(path)
 	local mat = render.CreateMaterial("model")
 	steam.LoadMaterial("materials/" .. path .. ".vmt", mat)
-	return mat
+	return gmod.WrapObject(mat, "IMaterial")
 end
 
 function globals.LoadPresets()
@@ -92,9 +109,10 @@ function globals.MsgC(...) log(...) end
 function globals.MsgN(...) logn(...) end
 
 globals.include = function(path)
-	local ok, err = include(path)
-	if ok == false and err then
+	if vfs.IsFile("lua/" .. path) then
 		include("lua/" .. path)
+	else
+		include(path)
 	end
 end
 

@@ -55,6 +55,11 @@ do -- metatables
 			local META = {}
 			META.MetaName = meta_name
 			META.__index = META
+			
+			function META:IsValid() 
+				return self.__obj and self.__obj:IsValid()
+			end
+			
 			env._R[meta_name] = META
 		end
 		for func_name in pairs(functions) do
