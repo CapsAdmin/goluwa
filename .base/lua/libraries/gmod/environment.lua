@@ -6,7 +6,7 @@ env._G = env
 
 gmod.env = env
 
-local data = include("exported.lua")
+local data = include("lua/libraries/gmod/exported.lua")
 local globals = data.functions._G
 
 data.functions._G = nil
@@ -38,12 +38,39 @@ do -- enums
 	include("lua/libraries/gmod/enums.lua", gmod)
 end
 
+do -- global functions
+	for func_name in pairs(globals) do
+		env[func_name] = env[func_name] or function(...) error(("NYI: %s(%s)\n"):format(func_name, table.concat(tostring_args(...), ",")), 2) end
+	end
+	
+	include("lua/libraries/gmod/globals.lua", gmod)
+end
+
+do -- metatables
+	for meta_name, functions in pairs(data.meta) do
+		functions.__tostring = nil
+		functions.__newindex = nil
+	
+		if not env._R[meta_name] then 
+			local META = {}
+			META.MetaName = meta_name
+			META.__index = META
+			env._R[meta_name] = META
+		end
+		for func_name in pairs(functions) do
+			env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) error(("NYI: %s:%s(%s)\n"):format(meta_name, func_name, table.concat(tostring_args(...), ",")), 2) end
+		end	
+	end
+	
+	include("lua/libraries/gmod/meta/*")
+end
+
 do -- libraries
 	for lib_name, functions in pairs(data.functions) do
 		env[lib_name] = env[lib_name] or {}
 		
 		for func_name in pairs(functions) do
-			env[lib_name][func_name] = env[lib_name][func_name] or function(...) logf("%s.%s(%s)\n", lib_name, func_name, table.concat(tostring_args(...), ",")) error("NYI", 2) end
+			env[lib_name][func_name] = env[lib_name][func_name] or function(...) error(("NYI: %s.%s(%s)\n"):format(lib_name, func_name, table.concat(tostring_args(...), ",")), 2) end
 		end
 	end
 	
@@ -53,32 +80,6 @@ do -- libraries
 		env[lib_name] = env[lib_name] or {}
 		
 		include("lua/libraries/gmod/libraries/" .. file_name, gmod)
-	end
-end
-
-do -- global functions
-	for func_name in pairs(globals) do
-		env[func_name] = env[func_name] or function(...) logf("%s(%s)\n", func_name, table.concat(tostring_args(...), ",")) error("NYI", 2) end
-	end
-	
-	include("lua/libraries/gmod/globals.lua", gmod)
-end
-
-do -- metatables
-	for meta_name, functions in pairs(data.meta) do
-		env._R[meta_name] = env._R[meta_name] or {}
-		for func_name in pairs(functions) do
-			env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) logf("%s:%s(%s)\n", meta_name, func_name, table.concat(tostring_args(...), ",")) error("NYI", 2) end
-		end	
-	end
-	
-	for file_name in vfs.Iterate("lua/libraries/gmod/meta/") do
-		local meta_name = file_name:match("(.+)%.")
-		
-		env._R[meta_name] = env._R[meta_name] or {}
-		env._R[meta_name].MetaName = env._R[meta_name].MetaName or meta_name
-		
-		include("lua/libraries/gmod/meta/" .. file_name, gmod)
 	end
 end
 

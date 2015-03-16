@@ -245,6 +245,7 @@ do -- libraries
 	steam = include("lua/libraries/steam/steam.lua")
 	lovemu = include("lua/libraries/love/lovemu.lua")
 	love = lovemu.CreateLoveEnv()
+	gmod = include("lua/libraries/gmod/gmod.lua")
 
 	if not DISABLE_CURSES then
 		include("lua/libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	

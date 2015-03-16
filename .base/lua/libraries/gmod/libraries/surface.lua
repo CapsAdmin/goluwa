@@ -30,12 +30,14 @@ function surface.SetTextPos(x, y)
 end
 
 function surface.CreateFont(name, tbl)
+	do return end
 	local tbl = table.copy(tbl)
 	tbl.path = tbl.font
 	lib.CreateFont(name, tbl)
 end
 
 function surface.SetFont(name) 
+	name = "default"
 	lib.SetFont(name) 
 end
 

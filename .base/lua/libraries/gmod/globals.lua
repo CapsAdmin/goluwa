@@ -35,6 +35,9 @@ do
 	ADD("Bool")
 end
 
+function globals.ScrW() return render.GetWidth() end
+function globals.ScrH() return render.GetHeight() end
+
 function globals.GetHostName()
 	return "TODO: hostname"
 end
@@ -49,12 +52,9 @@ function globals.AddConsoleCommand(name)
 	end)
 end
 
-function globals.RealTime()
-	return system.GetElapsedTime()
-end
-function globals.FrameTime()
-	return system.GetFrameTime()
-end
+function globals.RealTime() return system.GetElapsedTime() end
+function globals.FrameTime() return system.GetFrameTime() end
+function globals.CurTime() return system.GetElapsedTime() end --system.GetServerTime()
 
 function globals.FindMetaTable(name) 
 	return globals._R[name] 
@@ -62,7 +62,7 @@ end
 
 function globals.Material(path)
 	local mat = render.CreateMaterial("model")
-	steam.LoadMaterial("materials/" .. path, mat)
+	steam.LoadMaterial("materials/" .. path .. ".vmt", mat)
 	return mat
 end
 
@@ -85,11 +85,18 @@ function globals.SavePresets()
 
 end
 
+function globals.PrecacheParticleSystem() end
+
 function globals.Msg(...) log(...) end
 function globals.MsgC(...) log(...) end
 function globals.MsgN(...) logn(...) end
 
-globals.include = _G.include
+globals.include = function(path)
+	local ok, err = include(path)
+	if ok == false and err then
+		include("lua/" .. path)
+	end
+end
 
 function globals.module(name, _ENV)
 	logn("gmod: module(",name,")")

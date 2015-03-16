@@ -1,45 +1,51 @@
 local gmod = ... or gmod
 
 local META = gmod.env.FindMetaTable("ConVar")
-META.__index = META
 
 function META:GetBool()
-	return not not self.var
+	return not not self.__obj:Get()
 end
 
 function META:GetFloat()
-	return tonumber(self.var) or 0
+	return tonumber(self.__obj:Get()) or 0
 end
 
 function META:GetDefault()
-	return self.default
+	return self.__obj:GetDefault()
 end
 
 function META:GetHelpText()
-	return self.help or ""
+	return self.__obj:GetHelp()
 end
 
 function META:GetName()
-	return self.name
+	return self.__obj:GetName()
 end
 
 function META:GetString()
-	return tostring(self.var)
+	return tostring(self.__obj:Get())
 end
 
 function META:GetInt()
-	return math.ceil(tonumber(self.var) or 0)
+	return math.ceil(tonumber(self.__obj:Get()) or 0)
 end
 
 function gmod.env.GetConVar(name)
-	local var = console.GetVariable(name)
-
-	return var and setmetatable({name = name, var = var}, META) or nil
+	return gmod.WrapObject(console.GetVariable(name), "ConVar")
 end
 
-
 function gmod.env.CreateConVar(name, def, flags, help)
-	console.CreateVariable(name, tostring(def), nil, help)
+	return gmod.WrapObject(console.CreateVariable(name, tostring(def), nil, help), "ConVar")
+end
 
-	return gmod.env.GetConVar(name)
+function gmod.env.CreateClientConVar(name, def)
+	return gmod.WrapObject(console.CreateVariable(name, tostring(def), nil, help), "ConVar")
+end
+
+function gmod.env.GetConVarNumber(name)
+	return tonumber(console.GetVariable(name)) or 0
+end
+
+function gmod.env.GetConVarString(name)
+	return tostring(console.GetVariable(name, ""))
 end

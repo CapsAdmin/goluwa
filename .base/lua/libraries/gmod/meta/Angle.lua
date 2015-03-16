@@ -1,7 +1,6 @@
 local gmod = ... or gmod
 
 local META = gmod.env.FindMetaTable("Angle")
-META.__index = META
 
 function META:__index(key)
 	if key == "p" then
