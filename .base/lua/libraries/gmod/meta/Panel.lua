@@ -24,18 +24,18 @@ function META:GetChildren()
 	return children
 end
 
-function META:SetFGColor(r,g,b,a)
-	self.__obj.Color.r = r/255
-	self.__obj.Color.g = g/255
-	self.__obj.Color.b = b/255
-	self.__obj.Color.a = (a or 255)/255
+function META:SetFGColor(r,g,b,a)	
+	self.__obj.fg_color.r = r/255
+	self.__obj.fg_color.g = g/255
+	self.__obj.fg_color.b = b/255
+	self.__obj.fg_color.a = (a or 0)/255
 end
 
 function META:SetBGColor(r,g,b,a)
-	self.__obj.Color.r = r/255
-	self.__obj.Color.g = g/255
-	self.__obj.Color.b = b/255
-	self.__obj.Color.a = (a or 255)/255
+	self.__obj.bg_color.r = r/255
+	self.__obj.bg_color.g = g/255
+	self.__obj.bg_color.b = b/255
+	self.__obj.bg_color.a = (a or 0)/255
 end
 
 function META:CursorPos()
@@ -113,7 +113,7 @@ do
 end
 
 function META:SetAlpha(a)
-	self.__obj.Color.a = a/255
+	self.__obj.DrawAlpha = a/255
 end
 
 function META:GetParent()
@@ -130,10 +130,7 @@ function META:InvalidateLayout(b)
 end
 
 function META:SizeToContents()
-	self.__obj:MoveUp()
-	self.__obj:MoveLeft()
-	self.__obj:FillX()
-	self.__obj:FillY()
+	self.__obj:SetSize(self.__obj:GetSizeOfChildren())
 end
 
 function META:Dock(enum)
@@ -159,5 +156,13 @@ end
 function META:SetContentAlignment(num) end
 function META:SetExpensiveShadow() end
 function META:Prepare() end
-function META:SetPaintBorderEnabled() end
-function META:SetPaintBackgroundEnabled() end
+function META:SetPaintBorderEnabled() 
+
+end
+function META:SetPaintBackgroundEnabled(b) 
+	self.__obj.paint_bg = b
+end
+
+function META:PaintManual(b)
+	self.__obj.draw_manual = b
+end

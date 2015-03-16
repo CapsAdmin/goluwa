@@ -101,14 +101,19 @@ end
 gmod.objects = gmod.objects or {}
 
 function gmod.WrapObject(obj, meta)
-	gmod.objects[obj.Type] = gmod.objects[obj.Type] or {}
+	gmod.objects[meta] = gmod.objects[meta] or {}
 	
-	if not gmod.objects[obj.Type][obj] then
-		gmod.objects[obj.Type][obj] = setmetatable({__obj = obj}, gmod.env.FindMetaTable(meta))
-		obj:CallOnRemove(function(self) if gmod.objects[self.Type] then prototype.MakeNULL(gmod.objects[self.Type][self]) gmod.objects[self.Type][self] = nil end end)
+	if not gmod.objects[meta][obj] then
+		gmod.objects[meta][obj] = setmetatable({__obj = obj}, gmod.env.FindMetaTable(meta))
+		obj:CallOnRemove(function() 
+			if gmod.objects[meta] and gmod.objects[meta][obj] then 
+				prototype.MakeNULL(gmod.objects[meta][obj]) 
+				gmod.objects[meta][obj] = nil 
+			end 
+		end)
 	end
 	
-	return gmod.objects[obj.Type][obj]
+	return gmod.objects[meta][obj]
 end
 
 function gmod.Initialize()
@@ -227,7 +232,22 @@ function gmod.Initialize()
 
 	gmod.current_gamemode = gmod.gamemodes.sandbox
 	gmod.env.GAMEMODE = gmod.current_gamemode
-	gmod.gamemodes.sandbox:Initialize()
+	
+	gmod.env.hook.Call("Initialize", gmod.current_gamemode)
+	
+	event.AddListener("DrawHUD", "gmod", function() 
+		gmod.env.hook.Call("PreDrawHUD", gmod.current_gamemode) 
+		gmod.env.hook.Call("HUDPaint", gmod.current_gamemode) 
+		gmod.env.hook.Call("HUDPaintBackground", gmod.current_gamemode) 
+	end)
+	event.AddListener("PostDrawMenu", "gmod", function()
+		gmod.env.hook.Call("PostRenderVGUI", gmod.current_gamemode) 
+	end)
+	event.AddListener("Update", "gmod", function() 
+		gmod.env.hook.Call("Think", gmod.current_gamemode) 
+		gmod.env.hook.Call("Tick", gmod.current_gamemode) 
+	end)
+	
 end
 
 return gmod

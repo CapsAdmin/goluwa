@@ -474,7 +474,6 @@ return {
 			["ScreenToLocal"] = true,
 			["SelectNone"] = true,
 			["SetContentAlignment"] = true,
-			["OnMousePressed"] = true,
 			["SetWrap"] = true,
 			["Exec"] = true,
 			["InsertClickableTextStart"] = true,

@@ -55,6 +55,7 @@ function surface.SetTextPos(x, y)
 end
 
 function surface.CreateFont(name, tbl)
+	logn("gmod create font: ", tbl.font)
 	do return end
 	local tbl = table.copy(tbl)
 	tbl.path = tbl.font
