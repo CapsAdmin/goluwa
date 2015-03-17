@@ -19,16 +19,20 @@ function surface.SetDrawColor(r,g,b,a)
 	lib.SetColor(r/255,g/255,b/255,a/255)
 end
 
+local txt_r, txt_g, txt_b, txt_a = 0,0,0,0
+
 function surface.SetTextColor(r,g,b,a)
 	if type(r) == "table" then
 		r,g,b,a = r.r, r.g, r.b, r.a
 	end
-	a = a or 255
-	lib.SetColor(r/255,g/255,b/255,a/255)
+	txt_r = r/255
+	txt_g = g/255
+	txt_b = b/255
+	txt_a = (a or 0) / 255
 end
 
 function surface.SetMaterial(mat)
-	lib.SetTexture(mat.DiffuseTexture)
+	lib.SetTexture(mat.__obj.DiffuseTexture)
 end
 
 function surface.DrawTexturedRectRotated(x,y,w,h,r)
@@ -40,8 +44,10 @@ function surface.DrawTexturedRect(x,y,w,h)
 end
 
 function surface.DrawRect(x,y,w,h)
-	surface.SetWhiteTexture()
+	local old = lib.bound_texture
+	lib.SetWhiteTexture()
 	lib.DrawRect(x,y,w,h)
+	lib.bound_texture = old
 end
 
 function surface.DrawTexturedRectUV(x,y,w,h, u1,v1, u2,v2)
@@ -56,14 +62,12 @@ end
 
 function surface.CreateFont(name, tbl)
 	logn("gmod create font: ", tbl.font)
-	do return end
 	local tbl = table.copy(tbl)
 	tbl.path = tbl.font
 	lib.CreateFont(name, tbl)
 end
 
 function surface.SetFont(name) 
-	name = "default"
 	lib.SetFont(name) 
 end
 
@@ -72,7 +76,9 @@ function surface.GetTextSize(str)
 end
 
 function surface.DrawText(str)
+	local r,g,b,a = lib.SetColor(txt_r, txt_g, txt_b, txt_a)
 	lib.DrawText(str)
+	lib.SetColor(r,g,b,a)
 end
 
 function surface.PlaySound(path)

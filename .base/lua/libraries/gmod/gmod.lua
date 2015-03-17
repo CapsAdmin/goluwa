@@ -1,8 +1,7 @@
 local gmod = _G.gmod or {}
 
 function gmod.PreprocessLua(code)
-	local code, data = utility.StripLuaCommentsAndStrings(code)
-	
+	local code, data = utility.StripLuaCommentsAndStrings(code)	
 	code = code:gsub("&&", " and ")
 	code = code:gsub("||", " or ")
 	code = code:gsub("!=", " ~= ")
@@ -10,8 +9,7 @@ function gmod.PreprocessLua(code)
 	code = code:gsub("/%*", "--[[")
 	code = code:gsub("%*/", "]]")
 	code = code:gsub("//", "--")
-	code = code:gsub("DEFINE_BASECLASS", "local BaseClass = baseclass.Get")
-	
+	code = code:gsub("DEFINE_BASECLASS", "local BaseClass = baseclass.Get")	
 	code = utility.RestoreLuaCommentsAndStrings(code, data)
 	
 	if code:find("continue", nil, true) then
@@ -82,15 +80,10 @@ function gmod.PreprocessLua(code)
 		end
 	end
 	
-	local code, data = utility.StripLuaCommentsAndStrings(code)
-	
+	local code, data = utility.StripLuaCommentsAndStrings(code)	
 	code = code:gsub("continue", " goto CONTINUE ")
-	
 	code = utility.RestoreLuaCommentsAndStrings(code, data)
 	
-	local ok, err = loadstring(code)
-	if not ok then print(err) vfs.Write("gmod_preprocess_error.lua", code) end
-		
 	return code
 end
 
@@ -139,11 +132,57 @@ function gmod.Initialize()
 		end)
 		
 		include("lua/includes/init.lua")
+		
+		if CLIENT then	
+			for file_name in vfs.Iterate(gmod.dir .. "/lua/autorun/client/") do
+				include(gmod.dir .. "/lua/autorun/client/")
+			end
+		end
+		if SERVER then	
+			for file_name in vfs.Iterate(gmod.dir .. "/lua/autorun/server/") do
+				include(gmod.dir .. "/lua/autorun/server/")
+			end
+		end
+		
+		for file_name in vfs.Iterate(gmod.dir .. "/lua/autorun/") do
+			include(gmod.dir .. "/lua/autorun/")
+		end
+		
 		include("lua/derma/init.lua")
 		
 		gmod.env.require("notification")
 		
 		gmod.gamemodes =  {}
+		
+		local function load_entities(base_folder, global, register, create_table)
+			for file_name in vfs.Iterate(base_folder.."/") do
+				logn("gmod: registering ",base_folder," ", file_name)
+				if file_name:endswith(".lua") then
+					gmod.env[global] = create_table()
+					include(base_folder.."/" .. file_name)
+					register(gmod.env[global], file_name:match("(.+)%."))
+				else
+					if SERVER then 
+						if vfs.IsFile(base_folder.."/" .. file_name .. "/init.lua") then
+							gmod.env[global] = create_table()
+							gmod.env[global].Folder = file_name
+							include(base_folder.."/" .. file_name .. "/init.lua") 
+							register(gmod.env[global], file_name)
+						end
+					end
+					
+					if CLIENT then 
+						if vfs.IsFile(base_folder.."/" .. file_name .. "/cl_init.lua") then
+							gmod.env[global] = create_table()
+							gmod.env[global].Folder = file_name
+							include(base_folder.."/" .. file_name .. "/cl_init.lua")
+							register(gmod.env[global], file_name)
+						end
+					end
+				end
+			end
+			gmod.env[global] = nil
+		end
 		
 		local function load_gamemode(name)
 			local info = steam.VDFToTable(vfs.Read("gamemodes/" .. name .. "/" .. name .. ".txt"))
@@ -170,70 +209,31 @@ function gmod.Initialize()
 				end
 			end
 			
-			for file_name in vfs.Iterate("gamemodes/"..name.."/entities/entities/") do
-				logn("gmod: registering entity ", file_name)
-				if file_name:endswith(".lua") then
-					gmod.env.ENT = {}
-					include("gamemodes/"..name.."/entities/entities/" .. file_name)
-					local name = file_name:match("(.+)%.")
-					gmod.env.scripted_ents.Register(gmod.env.ENT, name)
-				else
-					if SERVER then 
-						if vfs.IsFile("gamemodes/"..name.."/entities/entities/" .. file_name .. "/init.lua") then
-							gmod.env.ENT = {}
-							include("gamemodes/"..name.."/entities/entities/" .. file_name .. "/init.lua") 
-							gmod.env.scripted_ents.Register(gmod.env.ENT, file_name)
-						end
-					end
-					
-					if CLIENT then 
-						if vfs.IsFile("gamemodes/"..name.."/entities/entities/" .. file_name .. "/cl_init.lua") then
-							gmod.env.ENT = {}
-							include("gamemodes/"..name.."/entities/entities/" .. file_name .. "/cl_init.lua")
-							gmod.env.scripted_ents.Register(gmod.env.ENT, file_name)
-						end
-					end
-				end
-			end
+			load_entities("gamemodes/"..name.."/entities/entities", "ENT", gmod.env.scripted_ents.Register, function() return {} end)
+			load_entities("gamemodes/"..name.."/entities/weapons", "SWEP", gmod.env.weapons.Register, function() return {Primary = {}, Secondary = {}} end)
+			load_entities("gamemodes/"..name.."/entities/effects", "EFFECT", gmod.env.effects.Register, function() return {} end)
 		end
+		
+		include("lua/skins/*")
+		include("lua/vgui/*")
 		
 		load_gamemode("base")
 		load_gamemode("sandbox")
 		
-		for file_name in vfs.Iterate("lua/entities/") do
-			logn("gmod: registering entity ", file_name)
-			if file_name:endswith(".lua") then
-				gmod.env.ENT = {}
-				include("lua/entities/" .. file_name)
-				local name = file_name:match("(.+)%.")
-				gmod.env.scripted_ents.Register(gmod.env.ENT, name)
-			else			
-				if SERVER then 
-					if vfs.IsFile("lua/entities/" .. file_name .. "/init.lua") then
-						gmod.env.ENT = {}
-						include("lua/entities/" .. file_name .. "/init.lua") 
-						gmod.env.scripted_ents.Register(gmod.env.ENT, file_name)
-					end
-				end
-				if CLIENT then 
-					if vfs.IsFile("lua/entities/" .. file_name .. "/cl_init.lua") then
-						gmod.env.ENT = {}
-						include("lua/entities/" .. file_name .. "/cl_init.lua") 
-						gmod.env.scripted_ents.Register(gmod.env.ENT, file_name)
-					end
-				end
-			end
-		end
+		load_entities("lua/entities", "ENT", gmod.env.scripted_ents.Register, function() return {} end)
+		load_entities("lua/weapons", "SWEP", gmod.env.weapons.Register, function() return {Primary = {}, Secondary = {}} end)
+		load_entities("lua/effects", "EFFECT", gmod.env.effects.Register, function() return {} end)
+		
 		gmod.init = true
 	end
 	
-	include("lua/skins/*")
-	include("lua/vgui/*")
-
 	gmod.current_gamemode = gmod.gamemodes.sandbox
 	gmod.env.GAMEMODE = gmod.current_gamemode
 	
 	gmod.env.hook.Call("Initialize", gmod.current_gamemode)
+	gmod.env.hook.Call("PreGamemodeLoaded", gmod.current_gamemode)
+	gmod.env.hook.Call("OnGamemodeLoaded", gmod.current_gamemode)
+	gmod.env.hook.Call("PostGamemodeLoaded", gmod.current_gamemode)
 	
 	event.AddListener("DrawHUD", "gmod", function() 
 		gmod.env.hook.Call("PreDrawHUD", gmod.current_gamemode) 

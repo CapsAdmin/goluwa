@@ -3,15 +3,20 @@ local gmod = ... or gmod
 local META = gmod.env.FindMetaTable("Panel")
 
 function META:__index(key)
-	if META[key] then 
-		return META[key] 
+	local val = rawget(META, key)
+	if val then 
+		return val
 	end
 	
 	local base = rawget(self, "BaseClass")
 	
-	if base and base[key] then
-		return base[key]
+	if base then
+		return rawget(base, key)
 	end
+end
+
+function META:SetParent(panel)
+	self.__obj:SetParent(panel and panel.__obj or NULL)
 end
 
 function META:GetChildren()
@@ -55,7 +60,7 @@ function META:GetTable()
 end
 
 function META:SetPos(x, y)
-	self.__obj:SetPosition(Vec2(x,y))
+	self.__obj:SetPosition(Vec2(x or 0, y or 0))
 end
 
 function META:HasChildren()
@@ -118,6 +123,7 @@ end
 
 function META:GetParent()
 	local parent = self.__obj:GetParent()
+	
 	if parent:IsValid() then
 		return gmod.WrapObject(parent, "Panel")
 	end
@@ -130,7 +136,32 @@ function META:InvalidateLayout(b)
 end
 
 function META:SizeToContents()
+	if self.__obj.vgui_type == "label" then
+		local w, h = surface.GetFont(self.__obj.font_internal):GetTextSize(self.__obj.text_internal)
+		local marg = self.__obj:GetMargin()
+			
+		self.__obj.text_offset = Vec2(w, h)
+		self.__obj:SetSize(Vec2(w, h) + marg:GetSize()*2)
+		
+		self.__obj.LayoutSize = self.__obj:GetSize():Copy()
+		
+		if self.__obj.content_alignment == 5 then
+			self.__obj.text_offset = (self.__obj:GetSize() / 2)
+		end
+	end
+end
+
+function META:SetTextInset(x, y)
+	self.__obj.Margin.x = x
+	self.__obj.Margin.y = y
+end
+
+function META:SizeToChildren()
 	self.__obj:SetSize(self.__obj:GetSizeOfChildren())
+end
+
+function META:SetVisible(b)
+	self.__obj:SetNoDraw(not b)
 end
 
 function META:Dock(enum)
@@ -153,9 +184,9 @@ function META:SetCursor(typ)
 	self.__obj:SetCursor(typ)
 end
 
-function META:SetContentAlignment(num) end
+function META:SetContentAlignment(num) self.__obj.content_alignment = num end
 function META:SetExpensiveShadow() end
-function META:Prepare() end
+function META:Prepare() self.__obj:Layout(true) end
 function META:SetPaintBorderEnabled() 
 
 end
