@@ -166,15 +166,15 @@ end
 
 function META:Dock(enum)
 	if enum == gmod.env.FILL then
-		self.__obj:SetupLayout("fill")
+		self.__obj:SetupLayout("center_simple", "fill")
 	elseif enum == gmod.env.LEFT then
-		self.__obj:SetupLayout("left")
+		self.__obj:SetupLayout("left", "fill_y")
 	elseif enum == gmod.env.RIGHT then
-		self.__obj:SetupLayout("right")
+		self.__obj:SetupLayout("right", "fill_y")
 	elseif enum == gmod.env.TOP then
-		self.__obj:SetupLayout("top")
+		self.__obj:SetupLayout("top", "fill_x")
 	elseif enum == gmod.env.BOTTOM then
-		self.__obj:SetupLayout("bottom")
+		self.__obj:SetupLayout("bottom", "fill_x")
 	elseif enum == gmod.env.NODOCK then
 		self.__obj:SetupLayout()
 	end	
