@@ -67,10 +67,6 @@ function META:HasChildren()
 	return self.__obj:HasChildren()
 end
 
-function META:Remove()
-	self.__obj:Remove()
-end
-
 function META:DockPadding(left, top, right, bottom)
 	self.__obj:SetPadding(Rect(left, top, right, bottom))
 end
@@ -136,18 +132,17 @@ function META:InvalidateLayout(b)
 end
 
 function META:SizeToContents()
-	if self.__obj.vgui_type == "label" then
-		local w, h = surface.GetFont(self.__obj.font_internal):GetTextSize(self.__obj.text_internal)
-		local marg = self.__obj:GetMargin()
-			
-		self.__obj.text_offset = Vec2(w, h)
-		self.__obj:SetSize(Vec2(w, h) + marg:GetSize()*2)
+	local panel = self.__obj
+	
+	if panel.vgui_type == "label" then
+		local w, h = surface.GetFont(panel.font_internal):GetTextSize(panel.text_internal)
 		
-		self.__obj.LayoutSize = self.__obj:GetSize():Copy()
+		panel:Layout(true)
 		
-		if self.__obj.content_alignment == 5 then
-			self.__obj.text_offset = (self.__obj:GetSize() / 2)
-		end
+		local size = panel.text_offset + Vec2(w, h)
+		panel:SetSize(size)
+		
+		panel.LayoutSize = panel:GetSize():Copy()
 	end
 end
 
@@ -184,7 +179,9 @@ function META:SetCursor(typ)
 	self.__obj:SetCursor(typ)
 end
 
-function META:SetContentAlignment(num) self.__obj.content_alignment = num end
+function META:SetContentAlignment(num) 
+	self.__obj.content_alignment = num 
+end
 function META:SetExpensiveShadow() end
 function META:Prepare() self.__obj:Layout(true) end
 function META:SetPaintBorderEnabled() 

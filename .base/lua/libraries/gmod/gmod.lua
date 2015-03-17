@@ -230,24 +230,29 @@ function gmod.Initialize()
 	gmod.current_gamemode = gmod.gamemodes.sandbox
 	gmod.env.GAMEMODE = gmod.current_gamemode
 	
-	gmod.env.hook.Call("Initialize", gmod.current_gamemode)
-	gmod.env.hook.Call("PreGamemodeLoaded", gmod.current_gamemode)
-	gmod.env.hook.Call("OnGamemodeLoaded", gmod.current_gamemode)
-	gmod.env.hook.Call("PostGamemodeLoaded", gmod.current_gamemode)
+	event.Delay(0.1, function()
+		gmod.env.hook.Call("Initialize", gmod.current_gamemode)
+		
+		event.Delay(0.1, function()
+			gmod.env.hook.Call("PreGamemodeLoaded", gmod.current_gamemode)
+			gmod.env.hook.Call("OnGamemodeLoaded", gmod.current_gamemode)
+			gmod.env.hook.Call("PostGamemodeLoaded", gmod.current_gamemode)
+		end)
 	
-	event.AddListener("DrawHUD", "gmod", function() 
-		gmod.env.hook.Call("PreDrawHUD", gmod.current_gamemode) 
-		gmod.env.hook.Call("HUDPaint", gmod.current_gamemode) 
-		gmod.env.hook.Call("HUDPaintBackground", gmod.current_gamemode) 
+		
+		event.AddListener("DrawHUD", "gmod", function() 
+			gmod.env.hook.Call("PreDrawHUD", gmod.current_gamemode) 
+			gmod.env.hook.Call("HUDPaint", gmod.current_gamemode) 
+			gmod.env.hook.Call("HUDPaintBackground", gmod.current_gamemode) 
+		end)
+		event.AddListener("PostDrawMenu", "gmod", function()
+			gmod.env.hook.Call("PostRenderVGUI", gmod.current_gamemode) 
+		end)
+		event.AddListener("Update", "gmod", function() 
+			gmod.env.hook.Call("Think", gmod.current_gamemode) 
+			gmod.env.hook.Call("Tick", gmod.current_gamemode) 
+		end)
 	end)
-	event.AddListener("PostDrawMenu", "gmod", function()
-		gmod.env.hook.Call("PostRenderVGUI", gmod.current_gamemode) 
-	end)
-	event.AddListener("Update", "gmod", function() 
-		gmod.env.hook.Call("Think", gmod.current_gamemode) 
-		gmod.env.hook.Call("Tick", gmod.current_gamemode) 
-	end)
-	
 end
 
 return gmod

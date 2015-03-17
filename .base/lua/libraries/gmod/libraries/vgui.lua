@@ -67,7 +67,47 @@ function vgui.CreateX(class, parent, name)
 	obj.OnCursorExited = function() if self.OnCursorExited then self:OnCursorExited() end end	
 	obj.OnChildAdd = function(_, child) if self.OnChildAdded then self:OnChildAdded(gmod.WrapObject(child, "Panel")) end end	
 	obj.OnChildRemove = function(_, child) if self.OnChildRemoved then self:OnChildRemoved(gmod.WrapObject(child, "Panel")) end end	
-	obj.OnLayout = function() if self.PerformLayout then self:PerformLayout(obj:GetWidth(), obj:GetHeight()) end end	
+	obj.OnLayout = function() 
+		local panel = obj
+	
+		if panel.vgui_type == "label" then
+			local w, h = surface.GetFont(panel.font_internal):GetTextSize(panel.text_internal)
+			
+			local m = panel:GetMargin()
+		
+			if panel.content_alignment == 5 then
+				panel.text_offset = (panel:GetSize() / 2) + (Vec2(w, h) / 2)
+			elseif panel.content_alignment == 4 then
+				panel.text_offset.x = m.left
+				panel.text_offset.y = (panel:GetHeight() / 2) + (h / 2)
+			elseif panel.content_alignment == 6 then
+				panel.text_offset.x = panel:GetWidth() - w - m.right
+				panel.text_offset.y = (panel:GetHeight() / 2) + (h / 2)
+			elseif panel.content_alignment == 2 then
+				panel.text_offset.x = (panel:GetWidth() / 2) + (w / 2)
+				panel.text_offset.y = panel:GetHeight() - h - m.bottom
+			elseif panel.content_alignment == 8 then
+				panel.text_offset.x = (panel:GetWidth() / 2) + (w / 2)
+				panel.text_offset.y = m.top
+			elseif panel.content_alignment == 7 then
+				panel.text_offset.x = m.left
+				panel.text_offset.y = m.top
+			elseif panel.content_alignment == 9 then
+				panel.text_offset.x = panel:GetWidth() - w - m.right
+				panel.text_offset.y = m.top
+			elseif panel.content_alignment == 1 then
+				panel.text_offset.x = m.left
+				panel.text_offset.y = panel:GetHeight() - h - m.bottom
+			elseif panel.content_alignment == 3 then
+				panel.text_offset.x = panel:GetWidth() - w - m.right
+				panel.text_offset.y = panel:GetHeight() - h - m.bottom
+			end
+		end
+	
+		if self.PerformLayout then 
+			self:PerformLayout(obj:GetWidth(), obj:GetHeight()) 
+		end
+	end	
 	obj.OnMouseInput = function(_, button, press) 
 		if translate_mouse[button] then
 			if press then

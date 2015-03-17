@@ -56,8 +56,18 @@ do -- metatables
 			META.MetaName = meta_name
 			META.__index = META
 			
-			function META:IsValid() 
-				return self.__obj and self.__obj:IsValid()
+			if functions.IsValid then
+				function META:IsValid() 
+					if self.__removed then return false end
+					return self.__obj and self.__obj:IsValid()
+				end
+			end
+			
+			if functions.Remove then
+				function META:Remove()
+					self.__removed = true
+					prototype.SafeRemove(self.__obj)
+				end
 			end
 			
 			env._R[meta_name] = META

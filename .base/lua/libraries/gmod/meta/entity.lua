@@ -21,7 +21,3 @@ end
 function ENT:GetPos()
 	return gmod.env.Vector(self.__obj:GetPosition():Unpack())
 end
-
-function ENT:Remove()
-	self.__obj:Remove()
-end
