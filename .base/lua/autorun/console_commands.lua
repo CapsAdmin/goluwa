@@ -192,18 +192,6 @@ do
 	end
 end
 
-console.AddCommand("l", function(line)
-	console.RunString(line)
-end)
-
-console.AddCommand("print", function(line)
-	console.RunString(("log(%s)"):format(line))
-end)
-
-console.AddCommand("table", function(line)
-	console.RunString(("table.print(%s)"):format(line))
-end)
-
 console.AddCommand("trace_calls", function(_, line, ...)
 	line = "_G." .. line
 	local ok, old_func = assert(pcall(assert(loadstring("return " .. line))))
