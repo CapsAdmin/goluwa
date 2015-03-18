@@ -1,5 +1,5 @@
-local al = requirew("audio.ffi.openal.al")
-local alc = requirew("audio.ffi.openal.alc")
+local al = desire("audio.ffi.openal.al")
+local alc = desire("audio.ffi.openal.alc")
 
 if not al or not alc then return end
 

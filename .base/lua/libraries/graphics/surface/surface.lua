@@ -1,6 +1,6 @@
 local surface = _G.surface or {}
 
-local gl = requirew("graphics.ffi.opengl")
+local gl = desire("graphics.ffi.opengl")
 
 local SHADER = {	
 	name = "mesh_2d",

@@ -1,6 +1,6 @@
 local physics = physics or {}
 
-physics.bullet = requirew("physics.ffi.bullet3")
+physics.bullet = desire("physics.ffi.bullet3")
 physics.bodies = physics.bodies or {}
 
 local function vec3_to_bullet(x, y, z)
@@ -121,7 +121,7 @@ end
 
 do -- physcs models
 
-	local assimp = requirew("ffi.assimp")
+	local assimp = desire("ffi.assimp")
 
 	physics.model_cache = {}
 

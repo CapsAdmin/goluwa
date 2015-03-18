@@ -1,4 +1,4 @@
-local ssl = requirew("ssl")
+local ssl = desire("ssl")
 _G.ssl = nil -- grr
 
 local sockets = _G.sockets or {}

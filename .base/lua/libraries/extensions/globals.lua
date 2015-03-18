@@ -211,7 +211,7 @@ do
 		return format, ...
 	end	
 
-	function requirew(str, ...)
+	function desire(str, ...)
 		local args = {pcall(require, str, ...)}
 
 		if not args[1] then

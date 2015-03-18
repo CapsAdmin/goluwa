@@ -1,6 +1,6 @@
 local render = ... or _G.render
 
-local assimp = requirew("ffi.assimp")
+local assimp = desire("ffi.assimp")
 local cb_render 
 
 local mount_info = {
@@ -48,7 +48,7 @@ end
 
 render.model_cache = {}
 
-local assimp = requirew("ffi.assimp") -- model decoder
+local assimp = desire("ffi.assimp") -- model decoder
 
 local cb = utility.CreateCallbackThing(render.model_cache)
 

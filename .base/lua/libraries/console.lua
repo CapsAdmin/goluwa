@@ -309,7 +309,7 @@ do -- commands
 	
 	console.run_lua_environment = {
 		copy = system.SetClipboard,
-		gl = requirew("graphics.ffi.opengl"),
+		gl = desire("graphics.ffi.opengl"),
 		findo = prototype.FindObject,
 	}
 	
