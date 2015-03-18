@@ -64,14 +64,14 @@ PASS.Shader = {
 		source = [[			
 			out vec4 out_color;
 			
-			#define EPSILON 0.00001			
-			#extension GL_NV_shadow_samplers_cube:enable
+			//#define EPSILON 0.00001			
+			//#extension GL_NV_shadow_samplers_cube:enable
 			
 			float get_shadow(vec2 uv)    
 			{
 				float visibility = 0;
 			
-				if (lua[light_point_shadow = false])
+				/*if (lua[light_point_shadow = false])
 				{
 					vec3 light_dir = get_view_pos(uv) - light_view_pos;
 				
@@ -84,7 +84,7 @@ PASS.Shader = {
 					else
 						return 0;
 				}
-				else
+				else*/
 				{
 					vec4 temp = light_projection_view * g_projection_view_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
 					vec3 shadow_coord = (temp.xyz / temp.w);
