@@ -24,7 +24,7 @@ prototype.StartStorable()
 prototype.EndStorable()
 
 if GRAPHICS then	
-	local gl = require("libraries.graphics.ffi.opengl")
+	local gl = require("graphics.ffi.opengl")
 	
 	render.shadow_maps = render.shadow_maps or utility.CreateWeakTable()
 	

@@ -309,7 +309,7 @@ do -- drawing
 		self:PostDraw(from_cache)
 	end
 
-	local gl = require("libraries.graphics.ffi.opengl")
+	local gl = require("graphics.ffi.opengl")
 				
 	function PANEL:PostDraw(from_cache)
 		self:CalcResizing()

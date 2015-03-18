@@ -1,7 +1,7 @@
 local SOMETHING = false
 local BUILD_OUTPUT = false
 
-local gl = require("libraries.graphics.ffi.opengl") -- OpenGL
+local gl = require("graphics.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
 render.Uniform4f = gl.Uniform4f

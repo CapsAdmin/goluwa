@@ -139,7 +139,7 @@ do -- file system
 	_G.R = vfs.GetAbsolutePath
 	
 	vfs.AddModuleDirectory("lua/modules/")
-	vfs.AddModuleDirectory("lua/")
+	vfs.AddModuleDirectory("lua/libraries/")
 	
 	-- replace require with the pure lua version (lua/procure/init.lua)
 	-- this is needed for the file system and lovemu

@@ -1,4 +1,4 @@
-local curses = require("libraries.ffi.curses")
+local curses = require("ffi.curses")
 
 curses.start_color()
 

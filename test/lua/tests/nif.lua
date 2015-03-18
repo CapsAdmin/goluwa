@@ -2,7 +2,7 @@
 --local file = assert(vfs.Open(steam.GetGamePath("Crysis Wars") .. "/Game/GameData.pak"))
 local file = assert(vfs.Open("D:/downloads/libvlc-master.zip"))
 
-local archive = require("libraries.ffi.libarchive")
+local archive = require("ffi.libarchive")
 
 local a = archive.read_new()
 archive.read_support_filter_all(a)

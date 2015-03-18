@@ -1,4 +1,4 @@
-local gl = requirew("libraries.graphics.ffi.opengl") -- OpenGL
+local gl = requirew("graphics.ffi.opengl") -- OpenGL
 
 if not gl then return end
 

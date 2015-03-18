@@ -1,4 +1,4 @@
-local curses = require("libraries.ffi.curses")
+local curses = require("ffi.curses")
 
 console.history = console.history or {}
 console.curses = console.curses or {}

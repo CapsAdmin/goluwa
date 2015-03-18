@@ -1,5 +1,5 @@
-local gl = require("libraries.graphics.ffi.opengl") -- OpenGL
-local sdl = require("libraries.graphics.ffi.sdl") -- window manager
+local gl = require("graphics.ffi.opengl") -- OpenGL
+local sdl = require("graphics.ffi.sdl") -- window manager
 
 local render = (...) or _G.render
 
