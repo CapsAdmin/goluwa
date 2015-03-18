@@ -244,7 +244,12 @@ do -- synchronization server > client
 			var = self:GetEntity()[info.get_name](self:GetEntity())
 		else
 			local component = self:GetComponent(info.component)
-			var = component[info.get_name](component)
+			local func = component[info.get_name]
+			if func then
+				var = func(component)
+			else
+				logf("%s: unable to find function %s\n", component, info.get_name)
+			end
 			
 			if info.skip_default and var == getmetatable(component)[info.key] then return end
 		end

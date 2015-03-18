@@ -156,7 +156,7 @@ do -- physcs models
 						until not render.model_loader_cb:get(path) or not render.model_loader_cb:get(path).callback
 					end
 					-- :(
-					
+					print(full_path, "!!!!!")
 					cb:stop(path, steam.LoadMap(full_path).physics_meshes)
 				elseif assimp then
 					local scene = assimp.ImportFile(full_path, assimp.e.aiProcessPreset_TargetRealtime_Quality)

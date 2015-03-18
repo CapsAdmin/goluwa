@@ -45,7 +45,7 @@ function vfs.MonitorEverything(b)
 	end
 
 	event.CreateTimer("vfs_monitor_everything", 0.1, 0, function()
-		if window.IsFocused() then return end
+		if GRAPHICS and window.IsFocused() then return end
 		for path, data in pairs(vfs.GetLoadedLuaFiles()) do
 			local info = fs.getattributes(path)
 			
