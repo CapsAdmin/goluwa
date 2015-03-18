@@ -1,4 +1,4 @@
-local gl = require("libraries.ffi.opengl") -- OpenGL
+local gl = require("libraries.graphics.ffi.opengl") -- OpenGL
 
 window.Open()
 

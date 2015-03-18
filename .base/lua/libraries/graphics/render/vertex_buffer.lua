@@ -1,4 +1,4 @@
-local gl = require("libraries.ffi.opengl")
+local gl = require("libraries.graphics.ffi.opengl")
 local render = (...) or _G.render
 
 local META = prototype.CreateTemplate("vertex_buffer")

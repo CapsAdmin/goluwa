@@ -240,7 +240,7 @@ do -- libraries
 	end
 	
 	-- other
-	physics = include("lua/libraries/entities/physics.lua") -- bullet physics
+	physics = include("lua/libraries/physics/physics.lua") -- bullet physics
 	entities = include("lua/libraries/entities/entities.lua") -- entity component system
 	steam = include("lua/libraries/steam/steam.lua")
 	lovemu = include("lua/libraries/love/lovemu.lua")

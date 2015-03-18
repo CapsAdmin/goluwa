@@ -23,7 +23,7 @@ function PASS:Initialize()
 	META:Register()
 end
 
-local gl = require("libraries.ffi.opengl") -- OpenGL
+local gl = require("libraries.graphics.ffi.opengl") -- OpenGL
 
 function PASS:Draw3D()
 	gl.DepthMask(gl.e.GL_TRUE)

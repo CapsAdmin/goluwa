@@ -1,5 +1,5 @@
 local audio = ... or _G.audio
-local soundfile = require("libraries.ffi.libsoundfile") -- sound decoder
+local soundfile = require("libraries.audio.ffi.libsoundfile") -- sound decoder
 
 -- googled: https://github.com/mkottman/lua-git/issues/13
 local function tmpname()

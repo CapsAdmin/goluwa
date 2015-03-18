@@ -1,6 +1,6 @@
 local surface = ... or _G.surface
 
-local freetype = require("libraries.ffi.freetype")
+local freetype = require("libraries.graphics.ffi.freetype")
 
 local META = {}
 

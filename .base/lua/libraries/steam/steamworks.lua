@@ -1,6 +1,6 @@
 local steam = ... or steam 
 
-local steamworks = requirew("libraries.ffi.steamworks")
+local steamworks = requirew("libraries.steam.ffi.steamworks")
 
 if not steamworks then return end
 

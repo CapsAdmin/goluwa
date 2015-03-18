@@ -1,4 +1,4 @@
-local lib = require("libraries.ffi.enet")
+local lib = require("libraries.network.ffi.enet")
 
 lib.initialize()
 

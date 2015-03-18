@@ -52,7 +52,7 @@ function SoundData:setSample(i, sample)
 	self.buffer:SetData(self.buffer:GetData()) -- slow!!!
 end
 
-local al = require("libraries.ffi.openal.al")
+local al = require("libraries.audio.ffi.openal.al")
 
 local function get_format(channels, bits)
 	if channels == 1 and bits == 8 then

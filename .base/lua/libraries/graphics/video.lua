@@ -1,4 +1,4 @@
-local freeimage = require("libraries.ffi.freeimage") -- image decoder
+local freeimage = require("libraries.graphics.ffi.freeimage") -- image decoder
 
 local META = prototype.CreateTemplate("gif")
 

@@ -1,4 +1,4 @@
-local gl = require("libraries.ffi.opengl") -- OpenGL
+local gl = require("libraries.graphics.ffi.opengl") -- OpenGL
 local wnd = utility.RemoveOldObject(render.CreateWindow(512, 512))
 
 function wnd:OnUpdate(dt)
