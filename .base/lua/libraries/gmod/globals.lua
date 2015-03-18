@@ -52,6 +52,22 @@ do
 	ADD("Bool")
 end
 
+gmod.render_targets = gmod.render_targets or {}
+
+function globals.GetRenderTarget(name, w, h)
+	local fb = gmod.render_targets[name] or render.CreateFrameBuffer(w, h)
+	gmod.render_targets[name] = fb
+	fb:GetTexture().fb = fb
+	return gmod.WrapObject(fb:GetTexture(), "ITexture")
+end
+
+function globals.GetRenderTargetEx(name, w, h, size_mode, depth_mode, texture_flags, rt_flags, image_format)
+	local fb = gmod.render_targets[name] or render.CreateFrameBuffer(w, h)
+	gmod.render_targets[name] = fb
+	fb:GetTexture().fb = fb
+	return gmod.WrapObject(fb:GetTexture(), "ITexture")
+end
+
 function globals.ScrW() return render.GetWidth() end
 function globals.ScrH() return render.GetHeight() end
 
@@ -71,6 +87,7 @@ end
 
 function globals.RealTime() return system.GetElapsedTime() end
 function globals.FrameTime() return system.GetFrameTime() end
+function globals.VGUIFrameTime() return system.GetFrameTime() end
 function globals.CurTime() return system.GetElapsedTime() end --system.GetServerTime()
 function globals.SysTime() return system.GetTime() end --system.GetServerTime()
 

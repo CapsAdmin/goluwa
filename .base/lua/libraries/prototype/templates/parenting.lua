@@ -3,6 +3,7 @@ local prototype = (...) or _G.prototype
 function prototype.AddParentingTemplate(META)
 	META.OnParent = META.OnParent or function() end
 	META.OnChildAdd = META.OnChildAdd or function() end
+	META.OnChildRemove = META.OnChildRemove or function() end
 	META.OnUnParent = META.OnUnParent or function() end
 		
 	prototype.GetSet(META, "Parent", NULL)
@@ -74,10 +75,11 @@ function prototype.AddParentingTemplate(META)
 		local obj = self.Children2[var]
 		if obj == var then
 			obj:OnUnParent(self)
+			self:OnChildRemove(obj)
 			
 			obj.Parent = NULL
 			obj.children_list = nil
-			obj.parent_list = nil
+			obj.parent_list = nil			
 			
 			self.Children2[obj] = nil
 			for i,v in ipairs(self.Children) do

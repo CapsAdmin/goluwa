@@ -149,26 +149,45 @@ local current_id = 0
 do
 	local stack = {}
 	
-	function META:Begin(...)
+	function render.PushFramebuffer(fb, ...)
 		table.insert(stack, current_id)
 		
-		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, self.id)
-		current_id = self.id
+		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, fb.id)
+		current_id = fb.id
 		
-		if not self.building then
-			self:SetDrawBuffers(...)
+		if not fb.building then
+			fb:SetDrawBuffers(...)
 		end
-		
-		render.PushViewport(0, 0, self.w, self.h)
 	end
-
-	function META:End()
-		render.PopViewport()
+	
+	function render.PopFramebuffer()
 		local id = table.remove(stack)		
 		
 		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
 		current_id = id
 	end
+	
+	function META:Push(...)
+		render.PushFramebuffer(self, ...)
+	end
+	
+	function META:Pop()		
+		render.PopFramebuffer()
+	end
+	
+	function META:Begin(...)
+		self:Push(...)
+		render.PushViewport(0, 0, self.w, self.h)
+	end
+
+	function META:End()
+		render.PopViewport()
+		self:Pop()
+	end
+end
+
+function META:Bind()
+	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, self.id)
 end
 
 function META:SetWriteBuffer(name, target)

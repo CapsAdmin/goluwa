@@ -53,6 +53,77 @@ function META:Initialize()
 	end
 	
 	resource.Download(self.Path, load, function(reason)
+		
+		if WINDOWS then					
+			-- TODO: EnumFontFamiliesEx
+			
+			local flags = {
+				bold = "b",
+				semibold = "sb",
+				semilight = "sl",
+				regular = "",
+				light = "l",
+				italic = "i",
+				black = "bl",
+			}
+
+			local translate = {
+				["arial black"] = "ariblk",
+				["arial bold"] = "arialbd",
+			}
+			
+			local name_translate = {
+				["lucida console"] = "lucon",
+				["trebuchet ms"] = "trebuc",
+				["courier new"] = "cour",
+			}
+			
+			local path
+			local font = self.Path:lower()
+			
+			if translate[font] then
+				path = vfs.ParseVariables("%windir%/fonts/" .. translate[font] .. ".ttf")
+			else				
+				-- http://snook.ca/archives/html_and_css/windows-subs-helvetica-arial
+				if font == "helvetica" then
+					font = "arial"
+				end
+				
+				font = font:lower()
+				
+				for k,v in pairs(name_translate) do
+					if font:startswith(k) then
+						font = font:sub(#k+2)
+						break
+					end
+				end
+				
+				local parts = font:lower():explode(" ")
+				local name = parts[1]
+				
+				for i = 2, #parts do
+					local flag = parts[i]
+					
+					if flag == "bold" then
+						flag = "b"
+					elseif flag == "semibold" then
+						flag = "sb"
+					elseif flag == "semibold" then
+					
+					end
+					
+					name = name .. flag
+				end
+				
+				path = vfs.ParseVariables("%windir%/fonts/" .. name .. ".ttf")
+			end
+			
+			if vfs.IsFile(path) then
+				resource.Download(path, load)
+				return
+			end
+		end
+	
 		sockets.Download("http://fonts.googleapis.com/css?family=" .. self.Path:gsub("%s", "+"), function(data)
 			local url = data:match("url%((.-)%)")
 			if url then

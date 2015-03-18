@@ -11,22 +11,38 @@ local translate_mouse = {
 	mwheel_down = gmod.env.MOUSE_WHEEL_DOWN,
 }
 
-function vgui.Create(class, parent, name)
+local translate_key = {}
+for k,v in pairs(gmod.env) do
+	if k:startswith("KEY_") then
+		translate_key[k:match("KEY_(.+)"):lower()] = v
+	end
+end
+
+function vgui.CreateX(class, parent, name)
+	
+	class = class:lower()
+		
+	logn("vgui create ", class)
+		
 	local obj = gui.CreatePanel("base")
 	if parent then obj:SetParent(parent.__obj) end
 	
 	local self = gmod.WrapObject(obj, "Panel")
 	
 	obj.fg_color = Color(1,1,1,1)
-	obj.bg_color = Color(0,0,0,1)
+	obj.bg_color = Color(1,1,1,1)
+	obj.text_offset = Vec2()
+	obj.vgui_type = class
 	self:SetPaintBackgroundEnabled(true)
 	
-	obj.OnDraw = function() 
-		if obj.Paint then 
-			self:Paint(obj:GetWidth(), obj:GetHeight()) 
+	obj.OnDraw = function()
+		local paint_rest = true
+		
+		if self.Paint then 
+			paint_rest = self:Paint(obj:GetWidth(), obj:GetHeight()) 
 		end 
 		
-		if not obj.draw_manual then
+		if paint_rest and not obj.draw_manual and class == "label" then
 			if obj.paint_bg then
 				surface.SetColor(obj.bg_color:Unpack())
 				surface.DrawRect(0,0,obj.Size.w,obj.Size.h)
@@ -34,22 +50,64 @@ function vgui.Create(class, parent, name)
 			
 			if obj.text_internal and obj.text_internal ~= "" then
 				surface.SetColor(obj.fg_color:Unpack())
-				surface.SetTextPosition(0,0)
+				surface.SetTextPosition(obj.text_offset.x, obj.text_offset.y)
 				surface.SetFont(obj.font_internal)
 				surface.DrawText(obj.text_internal)
 			end
 		end
 		
-		if obj.PaintOver then 
+		if self.PaintOver then 
 			self:PaintOver(obj:GetWidth(), obj:GetHeight()) 
 		end 
 	end
+	obj.OnRemove = function() if self.OnDeletion then self:OnDeletion() end end
 	obj.OnUpdate = function() if self.Think then self:Think() end end
 	obj.OnMouseMove = function(_, x, y) if self.OnCursorMoved then self:OnCursorMoved(x, y) end end
 	obj.OnMouseEnter = function() if self.OnMouseEnter then self:OnMouseEnter() end end
 	obj.OnCursorExited = function() if self.OnCursorExited then self:OnCursorExited() end end	
-	obj.OnChildAdd = function(_, child) if self.OnChildAdded then self:OnChildAdded(child) end end	
-	obj.OnLayout = function() if self.PerformLayout then self:PerformLayout(obj:GetWidth(), obj:GetHeight()) end end	
+	obj.OnChildAdd = function(_, child) if self.OnChildAdded then self:OnChildAdded(gmod.WrapObject(child, "Panel")) end end	
+	obj.OnChildRemove = function(_, child) if self.OnChildRemoved then self:OnChildRemoved(gmod.WrapObject(child, "Panel")) end end	
+	obj.OnLayout = function() 
+		local panel = obj
+	
+		if panel.vgui_type == "label" then
+			local w, h = surface.GetFont(panel.font_internal):GetTextSize(panel.text_internal)
+			
+			local m = panel:GetMargin()
+		
+			if panel.content_alignment == 5 then
+				panel.text_offset = (panel:GetSize() / 2) + (Vec2(w, h) / 2)
+			elseif panel.content_alignment == 4 then
+				panel.text_offset.x = m.left
+				panel.text_offset.y = (panel:GetHeight() / 2) + (h / 2)
+			elseif panel.content_alignment == 6 then
+				panel.text_offset.x = panel:GetWidth() - w - m.right
+				panel.text_offset.y = (panel:GetHeight() / 2) + (h / 2)
+			elseif panel.content_alignment == 2 then
+				panel.text_offset.x = (panel:GetWidth() / 2) + (w / 2)
+				panel.text_offset.y = panel:GetHeight() - h - m.bottom
+			elseif panel.content_alignment == 8 then
+				panel.text_offset.x = (panel:GetWidth() / 2) + (w / 2)
+				panel.text_offset.y = m.top
+			elseif panel.content_alignment == 7 then
+				panel.text_offset.x = m.left
+				panel.text_offset.y = m.top
+			elseif panel.content_alignment == 9 then
+				panel.text_offset.x = panel:GetWidth() - w - m.right
+				panel.text_offset.y = m.top
+			elseif panel.content_alignment == 1 then
+				panel.text_offset.x = m.left
+				panel.text_offset.y = panel:GetHeight() - h - m.bottom
+			elseif panel.content_alignment == 3 then
+				panel.text_offset.x = panel:GetWidth() - w - m.right
+				panel.text_offset.y = panel:GetHeight() - h - m.bottom
+			end
+		end
+	
+		if self.PerformLayout then 
+			self:PerformLayout(obj:GetWidth(), obj:GetHeight()) 
+		end
+	end	
 	obj.OnMouseInput = function(_, button, press) 
 		if translate_mouse[button] then
 			if press then
@@ -63,8 +121,22 @@ function vgui.Create(class, parent, name)
 			end
 		end
 	end
+	obj.OnKeyInput = function(_, key, press)
+		if press and self.OnKeyCodePressed then
+			if translate_key[key] then
+				self:OnKeyCodePressed(translate_key[key])
+			else
+				logf("key %q could not be translated!\n", key)
+			end
+		end
+	end
 	
 	return self
+end
+
+if not vgui.Create then
+	vgui.Create = vgui.CreateX
+	vgui.CreateX = nil
 end
 
 function vgui.GetHoveredPanel()
