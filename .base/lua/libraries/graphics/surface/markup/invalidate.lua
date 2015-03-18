@@ -54,7 +54,7 @@ local function prepare_chunks(self)
 	end 
 	
 	table.insert(out, 1, {type = "font", val = "default", internal = true})
-	table.insert(out, 1, {type = "color", val = Color(1, 1, 1), internal = true})
+	table.insert(out, 1, {type = "color", val = Color(1, 1, 1, 1), internal = true})
 	for i = 1, 3 do table.insert(out, {type = "string", val = "", internal = true}) end
 
 	return out

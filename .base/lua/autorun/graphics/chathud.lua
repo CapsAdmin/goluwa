@@ -173,7 +173,7 @@ function chathud.AddText(...)
 	markup:EndLifeTime()
 	
 	markup:SetMaxWidth(surface.GetSize() * width_mult:Get())
-		
+	
 	for k,v in pairs(chathud.tags) do
 		markup.tags[k] = v
 	end
@@ -189,7 +189,7 @@ function chathud.Draw()
 	
 	surface.PushMatrix(x,y)
 		markup:Update()
-		markup:Draw(x, y, w, h, mat)
+		markup:Draw()
 	surface.PopMatrix()
 end
 
