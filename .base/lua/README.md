@@ -5,9 +5,7 @@ Lua files in this folder are run after everything has been initialized. It conta
 Goluwa specific libraries.
 
 ##modules/##
-Standard Lua modules.
-
-Well almost. Modules prefixed with lj- are ffi bindings/low level libraries made for Goluwa. They may not work outside of Goluwa yet.
+Unmodified standard Lua modules.
 
 ##init.lua##
 This is the init file launched by luajit (luajit ../../../lua/init.lua)
