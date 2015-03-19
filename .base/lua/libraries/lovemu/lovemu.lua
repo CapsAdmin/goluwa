@@ -49,7 +49,7 @@ end
 function lovemu.CheckSupported(demo)
 	local supported = {}
 	
-	for path in vfs.Iterate("lua/libraries/love/libraries/", nil, true) do
+	for path in vfs.Iterate("lua/libraries/lovemu/libraries/", nil, true) do
 		local file = vfs.Open(path)
 		for line in file:Lines() do
 			local name = line:match("(love%..-)%b()")
@@ -109,7 +109,7 @@ function lovemu.CreateLoveEnv()
 	love._version_minor = tonumber(version[2])
 	love._version_revision = tonumber(version[3])
 
-	include("lua/libraries/love/libraries/*", love)
+	include("lua/libraries/lovemu/libraries/*", love)
 	
 	love.math = math
 	
