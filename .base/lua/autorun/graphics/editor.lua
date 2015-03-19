@@ -28,7 +28,7 @@ do -- PUT ME IN TRANSFORM
 		local parent = mctrl.target:GetParent()				
 		
 		if parent:IsValid() and parent:HasComponent("transform") then
-			return utility.WorldToLocal(pos, ang, parent:GetTRPosition(), parent:GetTRAngles())
+			return math3d.WorldToLocal(pos, ang, parent:GetTRPosition(), parent:GetTRAngles())
 		end
 		
 		return pos, ang
@@ -49,9 +49,9 @@ do -- PUT ME IN TRANSFORM
 	end
 
 	local function draw_rotation_lines(pos, dir, dir2, r)
-		local pr = utility.WorldPositionToScreen(pos + dir * r * mctrl.angle_pos)
-		local pra = utility.WorldPositionToScreen(pos + dir * r * (mctrl.angle_pos * 0.9) + dir2*r*0.08)
-		local prb = utility.WorldPositionToScreen(pos + dir * r * (mctrl.angle_pos * 0.9) + dir2*r*-0.08)
+		local pr = math3d.WorldPositionToScreen(pos + dir * r * mctrl.angle_pos)
+		local pra = math3d.WorldPositionToScreen(pos + dir * r * (mctrl.angle_pos * 0.9) + dir2*r*0.08)
+		local prb = math3d.WorldPositionToScreen(pos + dir * r * (mctrl.angle_pos * 0.9) + dir2*r*-0.08)
 		surface.DrawLine(pr.x, pr.y, pra.x, pra.y, 3)
 		surface.DrawLine(pr.x, pr.y, prb.x, prb.y, 3)
 	end
@@ -64,28 +64,28 @@ do -- PUT ME IN TRANSFORM
 			local final
 					
 			if axis == AXIS_X then
-				local screen_pos = utility.PointToAxis(pos, forward, mouse_pos)
-				local localpos = utility.LinePlaneIntersection(pos, right, screen_pos)
+				local screen_pos = math3d.PointToAxis(pos, forward, mouse_pos)
+				local localpos = math3d.LinePlaneIntersection(pos, right, screen_pos)
 				
 				if localpos then
 					final = get_target_position(pos + localpos:GetDot(forward)*forward - forward*mctrl.size, ang)
 				end
 			elseif axis == AXIS_Y then
-				local screen_pos = utility.PointToAxis(pos, right, mouse_pos)
-				local localpos = utility.LinePlaneIntersection(pos, forward, screen_pos)
+				local screen_pos = math3d.PointToAxis(pos, right, mouse_pos)
+				local localpos = math3d.LinePlaneIntersection(pos, forward, screen_pos)
 
 				if localpos then
 					final = get_target_position(pos + localpos:GetDot(right)*right - right*mctrl.size, ang)
 				end
 			elseif axis == AXIS_Z then
-				local screen_pos = utility.PointToAxis(pos, up, mouse_pos)
-				local localpos = utility.LinePlaneIntersection(pos, forward, screen_pos) or utility.LinePlaneIntersection(pos, right, screen_pos)
+				local screen_pos = math3d.PointToAxis(pos, up, mouse_pos)
+				local localpos = math3d.LinePlaneIntersection(pos, forward, screen_pos) or math3d.LinePlaneIntersection(pos, right, screen_pos)
 
 				if localpos then
 					final = get_target_position(pos + localpos:GetDot(up)*up - up*mctrl.size, ang)
 				end
 			elseif axis == AXIS_VIEW then
-				local localpos = utility.LinePlaneIntersection(pos, render.camera_3d:GetAngles():GetForward(), mouse_pos)
+				local localpos = math3d.LinePlaneIntersection(pos, render.camera_3d:GetAngles():GetForward(), mouse_pos)
 				
 				if localpos then
 					final = get_target_position(pos + localpos, ang)
@@ -114,35 +114,35 @@ do -- PUT ME IN TRANSFORM
 			local final
 			
 			if axis == AXIS_X then
-				local localpos = utility.LinePlaneIntersection(pos, right, mouse_pos)
+				local localpos = math3d.LinePlaneIntersection(pos, right, mouse_pos)
 				if localpos then
 					local diffang = (pos - (localpos + pos)):GetAngles()
 					diffang:RotateAroundAxis(right, math.rad(180))
 					
-					local _, localang = utility.WorldToLocal(nil, diffang, nil, ang)
-					local _, newang = utility.LocalToWorld(nil, Ang3(localang.p + localang.y, 0, 0):Normalize(), nil, ang)
+					local _, localang = math3d.WorldToLocal(nil, diffang, nil, ang)
+					local _, newang = math3d.LocalToWorld(nil, Ang3(localang.p + localang.y, 0, 0):Normalize(), nil, ang)
 					final = get_target_angles(nil, newang)
 				end
 			elseif axis == AXIS_Y then
-				local localpos = utility.LinePlaneIntersection(pos, up, mouse_pos)
+				local localpos = math3d.LinePlaneIntersection(pos, up, mouse_pos)
 				if localpos then
 					local diffang = (pos - (localpos + pos)):GetAngles()
 					diffang:RotateAroundAxis(up, math.rad(90))
 
-					local _, localang = utility.WorldToLocal(nil, diffang, nil, ang)
-					local _, newang = utility.LocalToWorld(nil, Ang3(0, localang.p + localang.y, 0):Normalize(), nil, ang)
+					local _, localang = math3d.WorldToLocal(nil, diffang, nil, ang)
+					local _, newang = math3d.LocalToWorld(nil, Ang3(0, localang.p + localang.y, 0):Normalize(), nil, ang)
 
 					final = get_target_angles(nil, newang)
 				end
 			elseif axis == AXIS_Z then
-				local localpos = utility.LinePlaneIntersection(pos, forward, mouse_pos)
+				local localpos = math3d.LinePlaneIntersection(pos, forward, mouse_pos)
 				
 				if localpos then
 					local diffang = (pos - (localpos + pos)):GetAngles()
 					diffang:RotateAroundAxis(forward, math.rad(-90))
 
-					local _, localang = utility.WorldToLocal(nil, diffang, nil, ang)
-					local _, newang = utility.LocalToWorld(nil, Ang3(0, 0, localang.p):Normalize(), nil, ang)
+					local _, localang = math3d.WorldToLocal(nil, diffang, nil, ang)
+					local _, newang = math3d.LocalToWorld(nil, Ang3(0, 0, localang.p):Normalize(), nil, ang)
 
 					final = get_target_angles(nil, newang)
 				end
@@ -171,7 +171,7 @@ do -- PUT ME IN TRANSFORM
 		local forward, right, up = get_axes(ang)
 
 		local r = mctrl.size
-		local o, visible = utility.WorldPositionToScreen(pos)
+		local o, visible = math3d.WorldPositionToScreen(pos)
 
 		if visible > 0 then
 			if mctrl.grab.axis == AXIS_X or mctrl.grab.axis == AXIS_VIEW then
@@ -179,7 +179,7 @@ do -- PUT ME IN TRANSFORM
 			else
 				surface.SetColor(ColorBytes(255, 80, 80, 255))
 			end
-			draw_line_to_box(o, (utility.WorldPositionToScreen(pos + forward * r)))
+			draw_line_to_box(o, (math3d.WorldPositionToScreen(pos + forward * r)))
 			draw_rotation_lines(pos, forward, up, r)
 
 
@@ -188,7 +188,7 @@ do -- PUT ME IN TRANSFORM
 			else
 				surface.SetColor(ColorBytes(80, 255, 80, 255))
 			end
-			draw_line_to_box(o, (utility.WorldPositionToScreen(pos + right * r)))
+			draw_line_to_box(o, (math3d.WorldPositionToScreen(pos + right * r)))
 			draw_rotation_lines(pos, right, forward, r)
 
 			if mctrl.grab.axis == AXIS_Z or mctrl.grab.axis == AXIS_VIEW then
@@ -196,7 +196,7 @@ do -- PUT ME IN TRANSFORM
 			else
 				surface.SetColor(ColorBytes(80, 80, 255, 255))
 			end
-			draw_line_to_box(o, (utility.WorldPositionToScreen(pos + up * r)))
+			draw_line_to_box(o, (math3d.WorldPositionToScreen(pos + up * r)))
 			draw_rotation_lines(pos, up, right, r)
 
 			surface.SetColor(ColorBytes(255, 200, 0, 255))
@@ -230,10 +230,10 @@ do -- PUT ME IN TRANSFORM
 
 		for i, v in pairs
 			{
-				[AXIS_X] = utility.WorldPositionToScreen(pos + forward * r),
-				[AXIS_Y] = utility.WorldPositionToScreen(pos + right * r),
-				[AXIS_Z] = utility.WorldPositionToScreen(pos + up * r),
-				[AXIS_VIEW] = utility.WorldPositionToScreen(pos)
+				[AXIS_X] = math3d.WorldPositionToScreen(pos + forward * r),
+				[AXIS_Y] = math3d.WorldPositionToScreen(pos + right * r),
+				[AXIS_Z] = math3d.WorldPositionToScreen(pos + up * r),
+				[AXIS_VIEW] = math3d.WorldPositionToScreen(pos)
 			}
 		do
 			local d = math.sqrt((v.x - x)^2 + (v.y - y)^2)
@@ -254,9 +254,9 @@ do -- PUT ME IN TRANSFORM
 		local dist = mctrl.grab_dist
 		for i, v in pairs
 			{
-				[AXIS_X] = utility.WorldPositionToScreen(pos + forward * r * mctrl.angle_pos),
-				[AXIS_Y] = utility.WorldPositionToScreen(pos + right * r * mctrl.angle_pos),
-				[AXIS_Z] = utility.WorldPositionToScreen(pos + up * r * mctrl.angle_pos)
+				[AXIS_X] = math3d.WorldPositionToScreen(pos + forward * r * mctrl.angle_pos),
+				[AXIS_Y] = math3d.WorldPositionToScreen(pos + right * r * mctrl.angle_pos),
+				[AXIS_Z] = math3d.WorldPositionToScreen(pos + up * r * mctrl.angle_pos)
 			}
 		do
 			local d = math.sqrt((v.x - x)^2 + (v.y - y)^2)

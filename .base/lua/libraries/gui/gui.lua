@@ -407,6 +407,9 @@ do -- gui scaling
 end
 
 function gui.Initialize()
+	include("lua/libraries/gui/skins/*", gui)
+	gui.SetSkin("gwen_dark")
+
 	gui.RemovePanel(gui.world)
 	
 	local world = gui.CreatePanel("base")
@@ -492,13 +495,9 @@ function gui.Initialize()
 	end
 end
 
-include("skins/*", gui)
-gui.SetSkin("gwen_dark")
-
 include("base_panel.lua", gui)
 include("panels/*", gui)
 include("helpers.lua", gui)
-
 
 gui.Initialize()
 

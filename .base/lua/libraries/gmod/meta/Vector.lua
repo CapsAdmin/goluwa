@@ -32,7 +32,7 @@ function META.__mul(a, b) if type(b) == "number" then return gmod.env.Vector((a.
 function META.__div(a, b) if type(b) == "number" then return gmod.env.Vector((a.v / b):Unpack()) elseif type(a) == "number" then return gmod.env.Vector((a / b.v):Unpack()) else return gmod.env.Vector((a.v / b.v):Unpack()) end end
 
 function META:ToScreen()
-	local pos,vis = utility.WorldPositionToScreen(self.v)
+	local pos,vis = math3d.WorldPositionToScreen(self.v)
 	return {
 		x = pos.x, 
 		y = pos.y,

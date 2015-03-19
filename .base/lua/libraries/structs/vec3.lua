@@ -147,6 +147,6 @@ function META:GetReflected(normal)
   return Vec3(2 * (-dot) * normal.x + proj.x, 2 * (-dot) * normal.y + proj.y, 2 * (-dot) * normal.z + proj.z) * self:GetLength()          
 end
 
-META.ToScreen = utility.WorldPositionToScreen
+META.ToScreen = math3d.WorldPositionToScreen
 
 structs.Register(META)

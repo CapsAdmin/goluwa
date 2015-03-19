@@ -1,4 +1,4 @@
-local utility = _G.utility or ...
+local audio = _G.audio or ...
 
 do
 	local frame_rate_flags = {
@@ -8,7 +8,7 @@ do
 		[0x60] = 30,
 	}
 
-	function utility.MidiToTable(path)
+	function audio.MidiToTable(path)
 		local file = vfs.Open(path)
 
 		local midi = file:ReadStructure([[
@@ -213,7 +213,7 @@ do
 		}
 	end
 
-	function utility.SF2ToTable(path)
+	function audio.SF2ToTable(path)
 		local sf2 = vfs.Open(path)
 
 		local header = sf2:ReadStructure([[

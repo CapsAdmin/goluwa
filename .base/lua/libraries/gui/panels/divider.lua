@@ -1,12 +1,10 @@
 local gui = ... or _G.gui
-local S = gui.skin.scale
-
 local PANEL = {}
 
 PANEL.ClassName = "divider"
 
 prototype.GetSet(PANEL, "DividerHeight", 0)
-prototype.GetSet(PANEL, "DividerWidth", S*2)
+prototype.GetSet(PANEL, "DividerWidth", 0)
 prototype.GetSet(PANEL, "HideDivider", false)
 
 local function create_horizontal_divider(self)
@@ -41,6 +39,7 @@ local function create_vertical_divider(self)
 end
 
 function PANEL:Initialize()
+	self.DividerWidth = gui.skin.scale*2
 	self:SetNoDraw(true)
 	self.top = NULL
 	self.bottom = NULL

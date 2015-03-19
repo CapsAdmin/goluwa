@@ -167,6 +167,7 @@ do -- libraries
 
 	-- libraries
 	prototype = include("lua/libraries/prototype/prototype.lua")
+	math3d = include("lua/libraries/math3d.lua") -- 3d math functions
 	structs = include("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
 	utf8 = include("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 	event = include("lua/libraries/event.lua") goluwa = event.events -- event handler
@@ -174,8 +175,8 @@ do -- libraries
 	crypto = include("lua/libraries/crypto.lua")
 	threads = include("lua/libraries/threads.lua")
 
-	-- serializing
-	serializer = include("lua/libraries/serializing/serializer.lua")
+	-- serializer
+	serializer = include("lua/libraries/serializer/serializer.lua")
 
 	system = include("lua/libraries/system.lua")
 	console = include("lua/libraries/console.lua")
@@ -201,12 +202,11 @@ do -- libraries
 	
 	nvars = include("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
 	clients = include("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
-	chat = include("lua/libraries/network/chat.lua") -- chat, duh!
+	chat = include("lua/libraries/network/chat.lua") -- in game chat
 		
-	resource = include("lua/libraries/resource.lua")
-	
-	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
+	resource = include("lua/libraries/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
 	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
+	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
 	
 	if CLIENT then
 		-- graphics
@@ -242,17 +242,17 @@ do -- libraries
 	-- other
 	physics = include("lua/libraries/physics/physics.lua") -- bullet physics
 	entities = include("lua/libraries/entities/entities.lua") -- entity component system
-	steam = include("lua/libraries/steam/steam.lua")
-	lovemu = include("lua/libraries/love/lovemu.lua")
-	love = lovemu.CreateLoveEnv()
-	gmod = include("lua/libraries/gmod/gmod.lua")
+	steam = include("lua/libraries/steam/steam.lua") -- utilities for dealing with steam, the source engine and steamworks
+	lovemu = include("lua/libraries/lovemu/lovemu.lua") -- a löve wrapper that lets you run löve games
+	love = lovemu.CreateLoveEnv() -- https://www.love2d.org/wiki/love
+	gmod = include("lua/libraries/gmod/gmod.lua") -- a gmod wrapper that lets you run gmod scripts
 
 	if not DISABLE_CURSES then
 		include("lua/libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
 	end
 
 	if GRAPHICS then
-		gui = include("lua/libraries/gui/init.lua")
+		gui = include("lua/libraries/gui/gui.lua")
 	end
 	
 	-- include the filesystem again so it will include all the details such as zip file reading

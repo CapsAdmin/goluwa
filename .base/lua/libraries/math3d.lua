@@ -1,6 +1,6 @@
-local utility = ... or _G.utility
+local math3d = _G.math3d or {}
 
-function utility.WorldToLocal(local_pos, local_ang, world_pos, world_ang)
+function math3d.WorldToLocal(local_pos, local_ang, world_pos, world_ang)
 	local pos, ang
 	
 	if world_ang and local_ang then
@@ -19,7 +19,7 @@ function utility.WorldToLocal(local_pos, local_ang, world_pos, world_ang)
 end
 
 
-function utility.LocalToWorld(local_pos, local_ang, world_pos, world_ang)
+function math3d.LocalToWorld(local_pos, local_ang, world_pos, world_ang)
 	local pos, ang
 	
 	if world_ang and local_ang then
@@ -37,8 +37,8 @@ function utility.LocalToWorld(local_pos, local_ang, world_pos, world_ang)
 	return pos, ang
 end
 
-function utility.LinePlaneIntersection(pos, normal, screen_pos)
-	local ln = utility.ScreenToWorldDirection(screen_pos)
+function math3d.LinePlaneIntersection(pos, normal, screen_pos)
+	local ln = math3d.ScreenToWorldDirection(screen_pos)
 	local lp = render.camera_3d:GetPosition() - pos
 	local t = lp:GetDot(normal) / ln:GetDot(normal)
 	
@@ -47,9 +47,9 @@ function utility.LinePlaneIntersection(pos, normal, screen_pos)
 	end
 end
 
-function utility.PointToAxis(pos, axis, screen_pos)
-	local origin = utility.WorldPositionToScreen(pos)
-	local point = utility.WorldPositionToScreen(pos + (axis * 8))
+function math3d.PointToAxis(pos, axis, screen_pos)
+	local origin = math3d.WorldPositionToScreen(pos)
+	local point = math3d.WorldPositionToScreen(pos + (axis * 8))
 
 	local a = math.atan2(point.y - origin.y, point.x - origin.x)
 	local d = math.cos(a) * (point.x - screen_pos.x) + math.sin(a) * (point.y - screen_pos.y)
@@ -57,7 +57,7 @@ function utility.PointToAxis(pos, axis, screen_pos)
 	return Vec2(point.x + math.cos(a) * -d, point.y + math.sin(a) * -d)
 end
 
-function utility.ScreenToWorldDirection(screen_pos, cam_pos, cam_ang, cam_fov, screen_width, screen_height)
+function math3d.ScreenToWorldDirection(screen_pos, cam_pos, cam_ang, cam_fov, screen_width, screen_height)
 	cam_pos = cam_pos or render.camera_3d:GetPosition()
 	cam_ang = cam_ang or render.camera_3d:GetAngles()
 	cam_fov = cam_fov or render.camera_3d:GetFOV()
@@ -81,7 +81,7 @@ function utility.ScreenToWorldDirection(screen_pos, cam_pos, cam_ang, cam_fov, s
     return dir
 end
 
-function utility.WorldPositionToScreen(position, cam_pos, cam_ang, screen_width, screen_height, cam_fov)
+function math3d.WorldPositionToScreen(position, cam_pos, cam_ang, screen_width, screen_height, cam_fov)
 	cam_pos = cam_pos or render.camera_3d:GetPosition()
 	cam_ang = cam_ang or render.camera_3d:GetAngles()
 	screen_width = screen_width or render.GetWidth()
@@ -124,3 +124,5 @@ function utility.WorldPositionToScreen(position, cam_pos, cam_ang, screen_width,
 
     return Vec2(x, y), vis
 end
+
+return math3d

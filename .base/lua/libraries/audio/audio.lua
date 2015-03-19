@@ -940,5 +940,6 @@ function audio.Decode(data, path_hint)
 end
 
 include("decoders/*", audio)
+include("midi.lua", audio)
 
 return audio

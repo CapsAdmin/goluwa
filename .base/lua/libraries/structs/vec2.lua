@@ -139,6 +139,6 @@ end
 
 structs.AddGetFunc(META, "Normalize", "Normalized")
 
-META.ToWorld = utility.ScreenToWorldDirection
+META.ToWorld = math3d.ScreenToWorldDirection
 
 structs.Register(META)

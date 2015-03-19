@@ -65,11 +65,11 @@ do -- include
 	local include_stack = {}
 	
 	function vfs.PushToIncludeStack(path)
-		include_stack[#include_stack + 1] = path
+		table.insert(include_stack, path)
 	end
 	
 	function vfs.PopFromIncludeStack()
-		include_stack[#include_stack] = nil
+		table.remove(include_stack)
 	end
 	
 	local function not_found(err)
@@ -82,7 +82,7 @@ do -- include
 	end
 	
 	function vfs.include(source, ...)
-			
+		
 		local dir, file = source:match("(.+/)(.+)")
 		
 		if not dir then
@@ -101,12 +101,14 @@ do -- include
 			if not vfs.IsDir(dir) then
 				dir = original_dir
 			end			
-			
+						
 			for script in vfs.Iterate(dir, nil, true) do
 				if script:find("%.lua") then
 					local func, err, full_path = vfs.loadfile(script)
 					
 					if func then
+						vfs.PushToIncludeStack(dir)
+
 						_G.FILE_PATH = full_path
 						_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
 						_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
@@ -115,9 +117,9 @@ do -- include
 						_G.FILE_PATH = nil
 						_G.FILE_EXTENSION = nil
 						
-						if not ok then
-							logn(err)
-						end
+						if not ok then logn(err) end
+						
+						vfs.PopFromIncludeStack()
 					end
 					
 					if not func then
@@ -168,7 +170,7 @@ do -- include
 		
 		if func then
 			dir = path:match("(.+/)(.+)")
-			include_stack[#include_stack + 1] = dir
+			vfs.PushToIncludeStack(dir)
 			
 			
 			_G.FILE_PATH = full_path
@@ -183,7 +185,7 @@ do -- include
 				logn(res[2])
 			end
 			
-			include_stack[#include_stack] = nil
+			vfs.PopFromIncludeStack()
 						 
 			return select(2, unpack(res))
 		end		
