@@ -208,9 +208,10 @@ do -- mixer
 	end
 end
  
-local w_cvar = console.CreateVariable("render_width", 0, function() render.InitializeGBuffer() end)
-local h_cvar = console.CreateVariable("render_height", 0, function() render.InitializeGBuffer() end)
- 
+local gbuffer_enabled = false
+local w_cvar = console.CreateVariable("render_width", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
+local h_cvar = console.CreateVariable("render_height", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
+
 function render.InitializeGBuffer(width, height)
 	if not RELOAD then
 		include("lua/libraries/graphics/render/gbuffer/passes/*")
@@ -395,7 +396,11 @@ function render.InitializeGBuffer(width, height)
 		render.SetGBufferValue(k,v)
 	end
 	
-	event.Call("GBufferInitialized")	
+	gbuffer_enabled = true
+	
+	event.Call("GBufferInitialized")
+	
+	logn("render: gbuffer initialized")
 end
 
 function render.ShutdownGBuffer()
@@ -410,7 +415,9 @@ function render.ShutdownGBuffer()
 	warning("gbuffer shutdown")
 end
 
-local gbuffer_enabled = true
+function render.IsGBufferReady()
+	return gbuffer_enabled
+end
 
 function render.DrawGBuffer(dt, w, h)
 	if not gbuffer_enabled then return end
@@ -450,10 +457,19 @@ function render.EnableGBuffer(b)
 end
 
 event.AddListener("RenderContextInitialized", nil, function() 
-	local ok, err = xpcall(render.InitializeGBuffer, system.OnError)
+	event.AddListener("EntityCreate", "gbuffer", function(ent)
+		if table.count(entities.GetAll()) ~= 0 then return end
 	
-	if not ok then
-		warning("failed to initialize gbuffer: ", err)
+		local ok, err = xpcall(render.InitializeGBuffer, system.OnError)
+		
+		if not ok then
+			warning("failed to initialize gbuffer: ", err)
+			render.EnableGBuffer(false)
+		end
+	end)
+	event.AddListener("EntityRemove", "gbuffer", function(ent)
+		if table.count(entities.GetAll()) ~= 0 then return end
+		
 		render.EnableGBuffer(false)
-	end
+	end)
 end)

@@ -80,7 +80,7 @@ function render.DrawScene(window, dt)
 	render.Clear(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
 	render.Start(window)
 	
-	if deferred:Get() then
+	if deferred:Get() and render.IsGBufferReady() then
 		render.DrawGBuffer(dt, window:GetSize():Unpack())
 	else
 		render.EnableDepth(true)
