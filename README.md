@@ -12,7 +12,7 @@ LuaJIT's FFI library is used to bind to the following shared libraries:
 * [FreeType](http://www.freetype.org/) - font decoding
 * [Libsndfile](http://www.mega-nerd.com/libsndfile/) - sound decoding
 * [FreeImage](http://freeimage.sourceforge.net/) - image decoding
-* [VTFLib](https://github.com/panzi/VTFLib) - image decoding (valves texture format)
+* [DevIL](https://github.com/DentonW/DevIL/tree/master/DevIL) - image decoding
 * [PDCurses](http://www.projectpluto.com/win32a.htm) - console
 * [Assimp](https://github.com/assimp/assimp) - model decoding
 * [Bullet3](https://github.com/bulletphysics/bullet3) - physics engine
