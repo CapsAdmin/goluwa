@@ -34,56 +34,25 @@ for i = -max, max do
 	table.insert(passes, {source = blur_shader, vars = {dir = Vec2(c,s), radius = 0.05}})
 end
 
-chathud = { 
-	font_translate = {
-		-- usage
-		-- chathud.font_translate.chathud_default = "my_font"
-		-- to override fonts
-	},
-	config = {
-		max_width = 500,
-		max_height = 1200,
-		height_spacing = 3,
-		history_life = 20,
-		
-		extras = {
-			["...."] = {type = "font", val = "DefaultFixed"},
-			["!!!!"] = {type = "font", val = "Trebuchet24"},
-			["!!!!!11"] = {type = "font", val = "DermaLarge"},
-		},
-		
-		smiley_translate =
-		{
-			v = "vee",
-		},	
-
-		shortcuts = {		
-			smug = "<texture=masks/smug>",
-			downs = "<texture=masks/downs>",
-			saddowns = "<texture=masks/saddowns>",
-			niggly = "<texture=masks/niggly>",
-			colbert = "<texture=masks/colbert>",
-			eli = "<texture=models/eli/eli_tex4z,4>",
-			bubu = "<remember=bubu><color=1,0.3,0.2><texture=materials/hud/killicons/default.vtf,50>  <translate=0,-15><color=0.58,0.239,0.58><font=ChatFont>Bubu<color=1,1,1>:</translate></remember>",
-			acchan = "<remember=acchan><translate=20,-35><scale=1,0.6><texture=http://www.theonswitch.com/wp-content/uploads/wow-speech-bubble-sidebar.png,64></scale></translate><scale=0.75,1><texture=http://img1.wikia.nocookie.net/__cb20110317001632/southparkfanon/images/a/ad/Kyle.png,64></scale></remember>",
-		}
-		
-	},
-	fonts = {
-		default = {
-			name = "chathud_default",
-			data = {
-				path = "Roboto",
-				fallback = "default",
-				size = 16,
-				padding = 8, 
-				shade = passes,
-				shadow = 1,
-			} ,
-		}
-	},
-	tags = {},
+chathud = chathud or {} 
+chathud.font_modifiers = {
+	["...."] = {type = "font", val = "DefaultFixed"},
+	["!!!!"] = {type = "font", val = "Trebuchet24"},
+	["!!!!!11"] = {type = "font", val = "DermaLarge"},
 }
+
+chathud.emote_shortucts = chathud.emote_shortucts or {		
+	smug = "<texture=masks/smug>",
+	downs = "<texture=masks/downs>",
+	saddowns = "<texture=masks/saddowns>",
+	niggly = "<texture=masks/niggly>",
+	colbert = "<texture=masks/colbert>",
+	eli = "<texture=models/eli/eli_tex4z,4>",
+	bubu = "<remember=bubu><color=1,0.3,0.2><texture=materials/hud/killicons/default.vtf,50>  <translate=0,-15><color=0.58,0.239,0.58><font=ChatFont>Bubu<color=1,1,1>:</translate></remember>",
+	acchan = "<remember=acchan><translate=20,-35><scale=1,0.6><texture=http://www.theonswitch.com/wp-content/uploads/wow-speech-bubble-sidebar.png,64></scale></translate><scale=0.75,1><texture=http://img1.wikia.nocookie.net/__cb20110317001632/southparkfanon/images/a/ad/Kyle.png,64></scale></remember>",
+}
+
+chathud.tags = chathud.tags or {}
  
 if surface.DrawFlag then
 	chathud.tags.flag =
@@ -110,12 +79,17 @@ local first = true
 function chathud.AddText(...)
 	
 	if first then
+		surface.CreateFont("chathud_default", {
+			path = "Roboto",
+			fallback = "default",
+			size = 16,
+			padding = 8, 
+			shade = passes,
+			shadow = 1,
+		})
+		
 		for _, v in pairs(vfs.Find("textures/silkicons/")) do
-			chathud.config.shortcuts[v:gsub("(%.png)$","")] = "<texture=textures/silkicons/" .. v .. ",16>"
-		end
-
-		for name, data in pairs(chathud.fonts) do
-			surface.CreateFont(data.name, data.data)
+			chathud.emote_shortucts[v:gsub("(%.png)$","")] = "<texture=textures/silkicons/" .. v .. ",16>"
 		end
 		first = nil
 	end
@@ -135,20 +109,20 @@ function chathud.AddText(...)
 			end
 		
 			v = v:gsub("<remember=(.-)>(.-)</remember>", function(key, val) 
-				chathud.config.shortcuts[key] = val
+				chathud.emote_shortucts[key] = val
 			end)
 		
 			v = v:gsub("(:[%a%d]-:)", function(str)
 				str = str:sub(2, -2)
-				if chathud.config.shortcuts[str] then
-					return chathud.config.shortcuts[str]
+				if chathud.emote_shortucts[str] then
+					return chathud.emote_shortucts[str]
 				end
 			end)
 			
 			v = v:gsub("\\n", "\n")
 			v = v:gsub("\\t", "\t")
 			
-			for pattern, font in pairs(chathud.config.extras) do
+			for pattern, font in pairs(chathud.font_modifiers) do
 				if v:find(pattern, nil, true) then
 					table.insert(args, #args-1, font)
 				end
@@ -218,8 +192,6 @@ event.AddListener("Chat", "chathud", function(name, str, client)
 	table.insert(tbl, str)
 	chathud.AddText(unpack(tbl))
 end)
-
-include("tradingcard_emotes.lua")
 
 if RELOAD then
 	chathud.AddText("hello world")
