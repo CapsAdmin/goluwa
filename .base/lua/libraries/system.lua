@@ -719,25 +719,27 @@ do
 	end
 end
 
-function system.Restart( run_on_launch )
+function system.Restart(run_on_launch)
 	run_on_launch = run_on_launch or ""
-	os.setcd("../../../../") 
-	
-	if not WINDOWS then
+	os.setcd("../../../") 
+		
+	if LINUX then
 		if CLIENT then
 			os.execute("./launch_client.sh " .. run_on_launch .. "&") 
 		else	
 			os.execute("./launch_server.sh " .. run_on_launch .. "&") 
 		end
-	else
+	end
+	
+	if WINDOWS then
 		if CLIENT then
-			os.execute("launch_client.bat " .. run_on_launch) 
+			os.execute("start \"\" \"launch_client.bat\" \"" .. run_on_launch .. "\"") 
 		else	
-			os.execute("launch_server.bat " .. run_on_launch) 
+			os.execute("start \"\" \"launch_server.bat\" \"" .. run_on_launch .. "\"") 
 		end
 	end
 	
-	os.exit()
+	system.ShutDown()
 end
 
 do
