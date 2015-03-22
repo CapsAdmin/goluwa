@@ -108,15 +108,15 @@ function PANEL:SetPanel(panel)
 	self:SetXScrollBar(self:GetXScrollBar())
 			
 	area.OnScroll = function(_, frac)
-		area.scrolling = true
+		--area.scrolling = true
 		if self.y_track then
 			self.y_handle:SetY(math.clamp(frac.y * (self.y_track:GetHeight()), 0, self.scroll_area:GetHeight()-self.y_handle:GetHeight()))
 		end
 		if self.x_track then
 			self.x_handle:SetX(math.clamp(frac.x * (self.x_track:GetWidth()), 0, self.scroll_area:GetWidth()-self.x_handle:GetWidth()))
 		end
-		self:Layout(true)
-		area.scrolling = false
+		--self:Layout(true)
+		--area.scrolling = false
 	end
 	
 	self:SetScrollWidth(self:GetSkin().scroll_width or self.ScrollWidth)
@@ -126,9 +126,9 @@ function PANEL:SetPanel(panel)
 end
 
 function PANEL:SetScrollFraction(scroll)
-	self.scroll_area.scrolling = true
+	--self.scroll_area.scrolling = true
 	self.scroll_area:SetScrollFraction(scroll)
-	self.scroll_area.scrolling = false
+	--self.scroll_area.scrolling = false
 end
 
 function PANEL:SetScrollWidth(num)
@@ -151,7 +151,7 @@ function PANEL:OnLayout(S)
 	local panel = self.panel
 	
 	if not panel:IsValid() then return end
-	panel:Layout(true)
+	--panel:Layout(true)
 
 	if self.scroll_area.scrolling then return end
 	
@@ -161,7 +161,7 @@ function PANEL:OnLayout(S)
 	if self.y_track then self.y_handle:SetPosition(self.y_handle:GetPosition()) end
 		
 	local children_size = self.scroll_area:GetSizeOfChildren()
-	panel:SetSize(children_size)
+--	panel:SetSize(children_size)
 				
 	local y_offset = 0
 	

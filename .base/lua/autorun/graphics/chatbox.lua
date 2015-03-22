@@ -270,7 +270,7 @@ function chat.GetPanel()
 		
 		if key == "escape" then
 			chat.Close()
-		elseif (key == "enter" or key == "keypad_enter") and not str:find("\n") then
+		elseif key == "enter" or key == "keypad_enter" then
 			i = 0
 			
 			if #str > 0 then
@@ -301,13 +301,13 @@ function chat.GetPanel()
 		
 	edit.OnTextChanged = function(_, str)
 		event.Call("ChatTextChanged", str)
-		event.Delay(0, function()
-			if frame:IsValid() then
+	--	event.Delay(0, function()
+		--	if frame:IsValid() then
 				edit:SizeToText()
 				edit:SetupLayout("bottom", "fill_x")
 				frame:Layout()
-			end
-		end)
+		--	end
+	--	end)
 	end
 	
 	edit.OnPostDraw = function()
@@ -315,6 +315,11 @@ function chat.GetPanel()
 			autocomplete.DrawFound(0, edit:GetHeight(), found_autocomplete, nil, 2) 
 		end
 	end
+	
+	function tab:OnSelectTab() 
+		page.scroll:SetScrollFraction(Vec2(0,1)) 
+	end
+
 	
 	local page = tab:AddTab("console")	
 	page:SetColor(gui.skin.font_edit_background)

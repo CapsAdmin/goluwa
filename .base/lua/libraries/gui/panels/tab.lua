@@ -75,6 +75,8 @@ function PANEL:SelectTab(name)
 	
 	self:Layout()
 	
+	self:OnSelectTab()
+	
 	return self.content
 end
 
@@ -116,5 +118,7 @@ function PANEL:OnLayout(S, skin)
 		self.content:SetWidth(self:GetWidth())
 	end
 end
+
+function PANEL:OnSelectTab() end
 
 gui.RegisterPanel(PANEL)
