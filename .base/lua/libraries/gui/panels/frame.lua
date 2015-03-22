@@ -60,7 +60,66 @@ function PANEL:Initialize()
 		if gui.task_bar:IsValid() then
 			gui.task_bar:RemoveButton(self)
 		end
+		prototype.SafeRemove(self.os_window)
 	end)
+end
+
+function PANEL:ToWindow()
+	local gl = require("graphics.ffi.opengl")
+	local window = render.CreateWindow(self:GetSize().w, self:GetSize().h, nil, {"borderless"})
+	local world = gui.CreateWorld()
+	
+	world:SetSize(Vec2(1680*2,1050))
+	
+	local pnl = self
+	window.global_mouse = true
+	
+	function window:OnUpdate()
+		local old_world = gui.world
+		gui.world = world
+		
+		render.PushWindow(self)
+			render.Clear(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
+			render.EnableDepth(false)	
+			render.SetBlendMode("alpha")	
+			render.SetCullMode("back")
+			
+			local x,y = pnl:GetPosition():Unpack()
+			render.camera_2d:TranslateWorld(-x,-y, 0)
+			gui.UpdateMousePosition()
+			world:Draw()
+			render.camera_2d:TranslateWorld(x,y, 0) 
+			
+			self:SetPosition(pnl:GetPosition()) 
+			self:SetSize(pnl:GetSize())
+			
+			render.SwapBuffers()
+		render.PopWindow()
+		
+		gui.world = old_world
+	end
+	
+	function window:OnMouseInput(button, press)
+		local old_world = gui.world
+		gui.world = world
+		
+		gui.UpdateMousePosition()
+		gui.MouseInput(button, press)
+		
+		gui.world = old_world
+	end
+	
+	function window:OnClose()
+		self:Remove()
+		world:Remove()
+	end
+	
+	local pos = self:GetPosition()
+	
+	self:SetParent(world)
+	window:SetPosition(pos)
+	
+	self.os_window = window
 end
 
 function PANEL:OnLayout(S)
@@ -160,4 +219,5 @@ gui.RegisterPanel(PANEL)
 if RELOAD then
 	local panel = gui.CreatePanel(PANEL.ClassName, nil, "test")
 	panel:SetSize(Vec2(300, 300))
+	panel:ToWindow()
 end

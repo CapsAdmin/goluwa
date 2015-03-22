@@ -125,6 +125,7 @@ do -- events
 	gui.keyboard_selected_panel = gui.keyboard_selected_panel or NULL
 	
 	function gui.MouseInput(button, press)
+		gui.UpdateMousePosition()
 		local panel = gui.hovering_panel
 
 		if panel:IsValid() and panel:IsMouseOver() then
@@ -406,14 +407,9 @@ do -- gui scaling
 	end
 end
 
-function gui.Initialize()
-	include("lua/libraries/gui/skins/*", gui)
-	gui.SetSkin("gwen_dark")
-
-	gui.RemovePanel(gui.world)
-	
+function gui.CreateWorld()
 	local world = gui.CreatePanel("base")
-
+	world:SetParent()
 	world:SetPosition(Vec2(0, 0))
 	world:SetSize(Vec2(window.GetSize()))
 	world:SetCursor("arrow")
@@ -422,20 +418,34 @@ function gui.Initialize()
 	--world:SetPadding(Rect(10, 10, 10, 10))
 	world:SetPadding(Rect(0, 0, 0, 0))
 	world:SetMargin(Rect(0, 0, 0, 0))
+	world.is_world = true
+	
+	return world
+end
 
-	gui.world = world
+function gui.Initialize()
+	include("lua/libraries/gui/skins/*", gui)
+	gui.SetSkin("gwen_dark")
+
+	gui.RemovePanel(gui.world)
+	
+	gui.world = gui.CreateWorld()
 
 	gui.mouse_pos = Vec2()
 
 	event.AddListener("FontChanged", "gui", function(name) 
 		gui.world:Layout()
 	end, {on_error = system.OnError})
+	
 	event.AddListener("Draw2D", "gui", gui.Draw2D, {on_error = system.OnError})
 	event.AddListener("MouseInput", "gui", gui.MouseInput, {on_error = system.OnError})
 	event.AddListener("KeyInputRepeat", "gui", gui.KeyInput, {on_error = system.OnError})
 	event.AddListener("CharInput", "gui", gui.CharInput, {on_error = system.OnError})
-	event.AddListener("WindowFramebufferResized", "gui", function(_, w,h) 
-		gui.world:SetSize(Vec2(w, h))
+	local window = render.GetWindow()
+	event.AddListener("WindowFramebufferResized", "gui", function(wnd, w,h) 
+		if window == wnd then
+			gui.world:SetSize(Vec2(w, h))
+		end
 	end, {on_error = system.OnError})
 	
 	

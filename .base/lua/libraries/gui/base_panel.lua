@@ -32,7 +32,7 @@ function PANEL:__tostring2()
 end
 
 function PANEL:IsWorld()
-	return self == gui.world
+	return self.is_world
 end
 
 function PANEL:GetSizeOfChildren()
@@ -815,7 +815,7 @@ do -- drag drop
 		local panel = gui.GetHoveringPanel(nil, self)
 
 		local drop_pos = panel:GetMousePosition()
-
+		
 		if self.drag_last_hover ~= panel then
 
 			if self.drag_last_hover then
@@ -1346,7 +1346,7 @@ do -- mouse
 		
 		self.MousePosition.x = x
 		self.MousePosition.y = y
-
+		
 		local alpha = 1
 
 		if not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
@@ -1392,9 +1392,8 @@ do -- mouse
 		else
 			self.mouse_over = false
 		end
-
-		if self:IsMouseOver() then
 		
+		if self:IsMouseOver() then
 			if not self.mouse_just_entered then
 				if self.SendMouseInputToPanel:IsValid() then
 					if not self.SendMouseInputToPanel.mouse_just_entered then
