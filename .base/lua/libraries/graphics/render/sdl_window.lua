@@ -16,6 +16,15 @@ do -- window meta
 	local x = ffi.new("int[1]")
 	local y = ffi.new("int[1]")
 	
+	function META:GetPosition()
+		sdl.GetWindowPosition(self.__ptr, x, y)
+		return Vec2(x[0], y[0])
+	end
+	
+	function META:SetPosition(pos)
+		sdl.SetWindowPosition(self.__ptr, pos:Unpack())
+	end	
+	
 	function META:GetSize()
 		sdl.GetWindowSize(self.__ptr, x, y)
 		return Vec2(x[0], y[0])
@@ -32,8 +41,8 @@ do -- window meta
 	local x, y = ffi.new(sdl and "int[1]" or "double[1]"), ffi.new(sdl and "int[1]" or "double[1]")
 	
 	function META:GetMousePosition()
-		sdl.GetMouseState(x, y)
-		return Vec2(x[0], y[0])
+		sdl.GetGlobalMouseState(x, y)
+		return Vec2(x[0], y[0]) - self:GetPosition()
 	end
 
 	function META:SetMousePosition(pos)

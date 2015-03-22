@@ -1312,6 +1312,7 @@ SDL_SYSTEM_CURSOR_HAND,
 SDL_NUM_SYSTEM_CURSORS } SDL_SystemCursor;
 extern __attribute__((dllexport)) SDL_Window * SDL_GetMouseFocus(void);
 extern __attribute__((dllexport)) Uint32 SDL_GetMouseState(int *x, int *y);
+extern __attribute__((dllexport)) Uint32 SDL_GetGlobalMouseState(int *x, int *y);
 extern __attribute__((dllexport)) Uint32 SDL_GetRelativeMouseState(int *x, int *y);
 extern __attribute__((dllexport)) void SDL_WarpMouseInWindow(SDL_Window * window, int x, int y);
 extern __attribute__((dllexport)) int SDL_SetRelativeMouseMode(SDL_bool enabled);
