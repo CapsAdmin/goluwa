@@ -11,6 +11,9 @@ do -- current window
 		window:MakeContextCurrent()
 			
 		render.current_window = window
+		
+		_G.window.wnd = window
+		
 		local w, h = window:GetSize():Unpack()
 		render.w = w
 		render.h = h

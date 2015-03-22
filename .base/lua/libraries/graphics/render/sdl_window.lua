@@ -41,8 +41,13 @@ do -- window meta
 	local x, y = ffi.new(sdl and "int[1]" or "double[1]"), ffi.new(sdl and "int[1]" or "double[1]")
 	
 	function META:GetMousePosition()
-		sdl.GetGlobalMouseState(x, y)
-		return Vec2(x[0], y[0]) - self:GetPosition()
+		if self.global_mouse then
+			sdl.GetGlobalMouseState(x, y)
+			return Vec2(x[0], y[0])
+		else
+			sdl.GetGlobalMouseState(x, y)
+			return Vec2(x[0], y[0]) - self:GetPosition()
+		end
 	end
 
 	function META:SetMousePosition(pos)
@@ -188,7 +193,20 @@ do -- window meta
 	
 	prototype.Register(META)
 	
-	function render.CreateWindow(width, height, title)	
+	local flags_to_enums = {
+		fullscreen = sdl.e.SDL_WINDOW_FULLSCREEN, -- fullscreen window
+		fullscreen_desktop = sdl.e.SDL_WINDOW_FULLSCREEN_DESKTOP, -- fullscreen window at the current desktop resolution
+--		opengl = sdl.e.SDL_WINDOW_OPENGL, -- window usable with OpenGL context
+		hidden = sdl.e.SDL_WINDOW_HIDDEN, -- window is not visible
+		borderless = sdl.e.SDL_WINDOW_BORDERLESS, -- no window decoration
+		resizable = sdl.e.SDL_WINDOW_RESIZABLE, -- window can be resized
+		minimized = sdl.e.SDL_WINDOW_MINIMIZED, -- window is minimized
+		maximized = sdl.e.SDL_WINDOW_MAXIMIZED, -- window is maximized
+		input_grabbed = sdl.e.SDL_WINDOW_INPUT_GRABBED, -- window has grabbed input focus
+		allow_highdpi = sdl.e.SDL_WINDOW_ALLOW_HIGHDPI, -- window should be created in high-DPI mode if supported (>= SDL 2.0.1)
+	}
+	
+	function render.CreateWindow(width, height, title, flags, reset_flags)	
 		width = width or 800
 		height = height or 600
 		title = title or ""
@@ -205,13 +223,23 @@ do -- window meta
 			sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_PROFILE_MASK, sdl.e.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY)
 		end
 		
+		local bit_flags = bit.bor(sdl.e.SDL_WINDOW_OPENGL, sdl.e.SDL_WINDOW_SHOWN, sdl.e.SDL_WINDOW_RESIZABLE)
+		
+		if flags then
+			bit_flags = sdl.e.SDL_WINDOW_OPENGL
+			
+			for k,v in pairs(flags) do
+				bit_flags = bit.bor(bit_flags, flags_to_enums[v])
+			end
+		end
+		
 		local ptr = sdl.CreateWindow(
 			title, 
 			sdl.e.SDL_WINDOWPOS_CENTERED, 
 			sdl.e.SDL_WINDOWPOS_CENTERED,
 			width, 
 			height, 
-			bit.bor(sdl.e.SDL_WINDOW_OPENGL, sdl.e.SDL_WINDOW_SHOWN, sdl.e.SDL_WINDOW_RESIZABLE)
+			bit_flags
 		)
 		
 		if not render.gl_context then
@@ -263,7 +291,7 @@ do -- window meta
 			local b
 						
 			if self[name] then
-				if self[name](...) ~= false then
+				if self[name](self, ...) ~= false then
 					b = event.Call(event_name_translate[name], self, ...)
 				end
 			end
@@ -294,8 +322,8 @@ do -- window meta
 				if event.window and event.window.windowID then
 					window = render.sdl_windows[event.window.windowID]
 				end
-								
-				if event.type == sdl.e.SDL_WINDOWEVENT then
+
+				if event.type == sdl.e.SDL_WINDOWEVENT and window then
 					local case = event.window.event
 										
 					if case == sdl.e.SDL_WINDOWEVENT_SHOWN then

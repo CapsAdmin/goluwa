@@ -49,11 +49,11 @@ function window.Open(...)
 		local nice = name:sub(7)
 		
 		event.AddListener(name, "window_events", function(_wnd, ...) 
-			if _wnd == wnd then
+			--if _wnd == window.wnd then
 				if not callback or callback(...) ~= false then
 					return event.Call(nice, ...)
 				end
-			end
+			--end
 		end)
 	end
 	
