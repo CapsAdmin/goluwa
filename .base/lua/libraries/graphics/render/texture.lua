@@ -510,14 +510,11 @@ do -- texture object
 					},
 					
 					vertex = {
-						variables = {
-							pwm_matrix = "mat4",
-						},			
 						mesh_layout = {
 							{pos = "vec3"},
 							{uv = "vec2"},
 						},	
-						source = "gl_Position = pwm_matrix * vec4(pos, 1);"
+						source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);"
 					},
 					
 					fragment = { 
@@ -533,7 +530,6 @@ do -- texture object
 				} 
 					
 				shader = render.CreateShader(data)
-				shader.pwm_matrix = render.GetProjectionViewWorldMatrix		
 				
 				self.shaders[name] = shader
 			end
