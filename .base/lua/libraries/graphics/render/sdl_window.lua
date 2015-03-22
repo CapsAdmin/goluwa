@@ -122,7 +122,7 @@ do -- window meta
 	end
 	
 	function META:OnFileDrop(paths)
-	
+		print(paths, "dropped!")
 	end
 	
 	function META:OnCharInput(str)
@@ -237,7 +237,7 @@ do -- window meta
 		end
 		
 		local function call(self, name, ...)
-			if not self then return end
+			if not self then print(name, ...) return end
 				
 			if not event_name_translate[name] then
 				event_name_translate[name] = name:gsub("^On", "Window")
@@ -313,7 +313,7 @@ do -- window meta
 						window.focused = false
 					elseif case == sdl.e.SDL_WINDOWEVENT_CLOSE then
 						call(window, "OnClose")
-					end
+					else print("unknown window event", case) end
 				elseif event.type == sdl.e.SDL_KEYDOWN or event.type == sdl.e.SDL_KEYUP then
 					local window = render.sdl_windows[event.key.windowID]
 					local key = ffi.string(sdl.GetKeyName(event.key.keysym.sym)):lower():gsub(" ", "_")
@@ -365,7 +365,13 @@ do -- window meta
 				elseif event.type == sdl.e.SDL_MOUSEWHEEL then
 					local window = render.sdl_windows[event.button.windowID]
 					call(window, "OnMouseScroll", event.wheel.x, event.wheel.y, event.wheel.which)
-				end
+				elseif event.type == sdl.e.SDL_DROPFILE then
+					for _, window in pairs(render.sdl_windows) do
+						call(window, "OnFileDrop", ffi.string(event.drop.file))
+					end
+				elseif event.type == sdl.e.SDL_QUIT then
+					system.ShutDown()
+				else print("unknown event", event.type) end
 			end
 		end)
 		
