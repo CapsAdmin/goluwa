@@ -1,4 +1,3 @@
-print("wow")
 local love = ... or love
 
 love.joystick = {}
