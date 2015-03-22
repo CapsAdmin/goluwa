@@ -7,7 +7,7 @@ do -- current window
 	local last_w
 	local last_h
 
-	function render.Start(window)
+	function render.SetWindow(window)
 		window:MakeContextCurrent()
 			
 		render.current_window = window
@@ -15,22 +15,20 @@ do -- current window
 		render.w = w
 		render.h = h
 		
-		render.PushViewport(0, 0, w, h)
+		render.SetViewport(0, 0, w, h)
+	end
+	
+	function render.GetWindow()
+		return render.current_window
 	end
 
-	function render.End()
-		render.PopViewport()
-		event.Call("PostDrawScene")
+	function render.SwapBuffers()		
 		if render.current_window:IsValid() then
 			render.current_window:SwapBuffers()
 		end
-
-		render.frame = render.frame + 1
 	end
 
-	function system.GetFrameNumber()
-		return render.frame
-	end
+	utility.MakePushPopFunction(render, "Window", render.SetWindow, render.GetWindow, reset)
 	
 	function render.GetWidth()
 		if render.current_window:IsValid() then
@@ -78,7 +76,7 @@ local deferred = console.CreateVariable("render_deferred", true, "whether or not
 function render.DrawScene(window, dt)
 	render.delta = dt
 	render.Clear(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
-	render.Start(window)
+	render.PushWindow(window)
 	
 	if deferred:Get() and render.IsGBufferReady() then
 		render.DrawGBuffer(dt, window:GetSize():Unpack())
@@ -103,5 +101,8 @@ function render.DrawScene(window, dt)
 		gl.Accum(gl.e.GL_MULT, blur_amt)
 	end
 	
-	render.End()
+	event.Call("PostDrawScene")
+	
+	render.SwapBuffers()
+	render.PopWindow()
 end

@@ -99,7 +99,7 @@ do -- window meta
 	end
 	
 	function META:MakeContextCurrent()
-		sdl.GL_MakeCurrent(self.__ptr, self.context) 
+		sdl.GL_MakeCurrent(self.__ptr, render.gl_context) 
 	end
 	
 	function META:SwapBuffers()
@@ -192,15 +192,18 @@ do -- window meta
 		width = width or 800
 		height = height or 600
 		title = title or ""
-	
-		sdl.Init(sdl.e.SDL_INIT_VIDEO)
-		sdl.video_init = true
-
-	--	sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MAJOR_VERSION, 4)
-	--	sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MINOR_VERSION, 4)
 		
-		sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_FLAGS, sdl.e.SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG)
-		sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_PROFILE_MASK, sdl.e.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY)
+		if not render.gl_context then
+		
+			sdl.Init(sdl.e.SDL_INIT_VIDEO)
+			sdl.video_init = true
+
+		--	sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MAJOR_VERSION, 4)
+		--	sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MINOR_VERSION, 4)
+			
+			sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_FLAGS, sdl.e.SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG)
+			sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_PROFILE_MASK, sdl.e.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY)
+		end
 		
 		local ptr = sdl.CreateWindow(
 			title, 
@@ -209,17 +212,22 @@ do -- window meta
 			width, 
 			height, 
 			bit.bor(sdl.e.SDL_WINDOW_OPENGL, sdl.e.SDL_WINDOW_SHOWN, sdl.e.SDL_WINDOW_RESIZABLE)
-		)		
-		local context = sdl.GL_CreateContext(ptr)
-		sdl.GL_MakeCurrent(ptr, context) 
-		gl.GetProcAddress = sdl.GL_GetProcAddress
-
-		logn("sdl version: ", ffi.string(sdl.GetRevision()))	
+		)
 		
-		-- this needs to be initialized once after a context has been created..
-		if gl and gl.InitMiniGlew and not gl.gl_init then
-			gl.gl_init = true
-			gl.InitMiniGlew()
+		if not render.gl_context then
+			local context = sdl.GL_CreateContext(ptr)
+			sdl.GL_MakeCurrent(ptr, context) 
+			gl.GetProcAddress = sdl.GL_GetProcAddress
+
+			logn("sdl version: ", ffi.string(sdl.GetRevision()))	
+			
+			-- this needs to be initialized once after a context has been created..
+			if gl and gl.InitMiniGlew and not gl.gl_init then
+				gl.gl_init = true
+				gl.InitMiniGlew()
+			end
+			
+			render.gl_context = context
 		end
 			
 		local self = prototype.CreateObject(META)
@@ -227,7 +235,7 @@ do -- window meta
 		self.last_mpos = Vec2()
 		self.mouse_delta = Vec2()
 		self.__ptr = ptr
-		self.context = context
+		
 			
 		render.sdl_windows = render.sdl_windows or {}
 		local id = sdl.GetWindowID(ptr)
@@ -387,9 +395,11 @@ do -- window meta
 		if not render.current_window:IsValid() then
 			render.current_window = self
 		end
-
-		render.context_created = true
-		render.Initialize()
+	
+		if not render.context_created then
+			render.context_created = true
+			render.Initialize()
+		end
 		
 		return self
 	end
