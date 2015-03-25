@@ -79,7 +79,7 @@ function PANEL:ToWindow()
 		gui.world = world
 		
 		render.PushWindow(self)
-			render.Clear(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
+			render.Clear("color", "depth")
 			render.EnableDepth(false)	
 			render.SetBlendMode("alpha")	
 			render.SetCullMode("back")

@@ -50,6 +50,8 @@ function render.CreateFrameBuffer(width, height, format)
 					attach = attach + i - 1
 				end
 				
+			elseif attach == "depth_stencil" then
+				attach = gl.e.GL_DEPTH_STENCIL
 			elseif attach == "depth" then
 				attach = gl.e.GL_DEPTH_ATTACHMENT
 			elseif attach == "stencil" then

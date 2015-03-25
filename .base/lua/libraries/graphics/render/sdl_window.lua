@@ -434,7 +434,7 @@ do -- window meta
 end
 
 function system.SetClipboard(str)
-	sdl.SetClipboardText(str)
+	sdl.SetClipboardText(tostring(str))
 end
 
 function system.GetClipboard()

@@ -76,13 +76,9 @@ end
 console.CreateVariable("render_accum", 0)
 local deferred = console.CreateVariable("render_deferred", true, "whether or not deferred rendering is enabled.")
 
-function render.DrawScene(window, dt)
-	render.delta = dt
-	render.Clear(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
-	render.PushWindow(window)
-	
+function render.DrawScene(skip_2d)	
 	if deferred:Get() and render.IsGBufferReady() then
-		render.DrawGBuffer(dt, window:GetSize():Unpack())
+		render.DrawGBuffer()
 	else
 		render.EnableDepth(true)
 		render.SetBlendMode("alpha")	
@@ -91,11 +87,13 @@ function render.DrawScene(window, dt)
 		render.Draw3DScene()
 	end
 	
+	if skip_2d then return end
+	
 	render.EnableDepth(false)	
 	render.SetBlendMode("alpha")	
 	render.SetCullMode("back")
 	
-	event.Call("Draw2D", dt)
+	event.Call("Draw2D", system.GetFrameTime())
 	
 	local blur_amt = console.GetVariable("render_accum") or 0
 	if blur_amt ~= 0 then			
@@ -105,7 +103,4 @@ function render.DrawScene(window, dt)
 	end
 	
 	event.Call("PostDrawScene")
-	
-	render.SwapBuffers()
-	render.PopWindow()
 end

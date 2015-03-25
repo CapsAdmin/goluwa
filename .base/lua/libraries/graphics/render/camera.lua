@@ -118,7 +118,7 @@ end
 
 do -- 3d 2d
 	function META:Start3D2DEx(pos, ang, scale)	
-		local w, h = render.GetHeight(), render.GetHeight()
+		local w, h = surface.GetSize()
 		
 		pos = pos or Vec3(0, 0, 0)
 		ang = ang or Ang3(0, 0, 0)

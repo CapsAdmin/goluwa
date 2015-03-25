@@ -3,11 +3,11 @@ local love = ... or love
 love.timer = {}
 
 function love.timer.getDelta()
-	return render.delta or 0
+	return system.GetFrameTime() or 0
 end
 
 function love.timer.getFPS()
-	return math.ceil(1/render.delta or 0)
+	return math.ceil(1/system.GetFrameTime() or 0)
 end
 
 function love.timer.getMicroTime()

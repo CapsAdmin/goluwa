@@ -244,10 +244,21 @@ function render.InitializeGBuffer(width, height)
 					internal_format = "DEPTH_COMPONENT32F",	 
 					depth_texture_mode = gl.e.GL_RED,
 				} 
-			} 
+			},
 		}
 		
+		render.gbuffer_discard = render.CreateFrameBuffer(
+			width, 
+			height, 
+			{
+				texture_format = {
+					internal_format = "r8",
+				},
+			}
+		)
+		
 		render.SetGlobalShaderVariable("tex_depth", function() return render.gbuffer:GetTexture("depth") end, "texture")
+		render.SetGlobalShaderVariable("tex_discard", function() return render.gbuffer_discard:GetTexture() end, "texture")
 	
 		for _, pass in ipairs(render.gbuffer_passes) do		
 			if pass.Buffers then
@@ -345,7 +356,7 @@ function render.InitializeGBuffer(width, height)
 				w = w / size
 				h = h / size
 				
-				x= 0
+				x = 0
 				y = 0
 				i = 1
 				
@@ -378,6 +389,8 @@ function render.InitializeGBuffer(width, height)
 				surface.mesh_2d_shader.color_override.r = 0
 				surface.mesh_2d_shader.color_override.g = 0
 				surface.mesh_2d_shader.color_override.b = 0
+				
+				draw_buffer("discard", render.gbuffer_discard:GetTexture())
 								
 				for _, pass in ipairs(render.gbuffer_passes) do
 					if pass.DrawDebug then 
@@ -419,10 +432,9 @@ function render.IsGBufferReady()
 	return gbuffer_enabled
 end
 
-function render.DrawGBuffer(dt, w, h)
+function render.DrawGBuffer()
 	if not gbuffer_enabled then return end
 
-	render.Clear(1,1,1,1)
 	gl.DepthMask(gl.e.GL_TRUE)
 	render.EnableDepth(true)
 	render.SetBlendMode()
@@ -444,7 +456,7 @@ function render.DrawGBuffer(dt, w, h)
 		
 	surface.SetTexture(render.gbuffer_mixer_buffer:GetTexture())
 	surface.SetColor(1,1,1,1)
-	surface.DrawRect(0, 0, w, h)
+	surface.DrawRect(0, 0, surface.GetSize())
 end
 
 function render.EnableGBuffer(b)

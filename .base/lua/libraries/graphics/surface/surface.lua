@@ -126,6 +126,20 @@ do -- render world matrix helpers
 	function surface.ScreenToWorld(x, y)
 		return render.camera_2d:ScreenToWorld(x, y)
 	end
+	
+	function surface.Start3D2D(pos, ang, scale)
+		render.camera_2d:Set3D(true)
+		render.camera_2d:SetProjection(render.camera_3d:GetMatrices().projection)
+		render.camera_2d:SetView(render.camera_3d:GetMatrices().view)
+		render.camera_2d:PushWorldEx(pos, ang, scale)
+	end
+	
+	function surface.End3D2D()
+		render.camera_2d:PopWorld()
+		render.camera_2d:SetView()
+		render.camera_2d:SetProjection()
+		render.camera_2d:Set3D(false)
+	end
 end
 
 local COLOR = Color()

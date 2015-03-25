@@ -307,17 +307,16 @@ do -- commands
 		end
 	end
 	
-	console.run_lua_environment = {
-		copy = system.SetClipboard,
-		gl = desire("graphics.ffi.opengl"),
-		findo = prototype.FindObject,
-	}
+	console.run_lua_environment = {}
 	
 	function console.SetLuaEnvironmentVariable(key, var)
 		console.run_lua_environment[key] = var
 	end
 	
 	function console.RunLua(line, log_error, env_name)
+		console.SetLuaEnvironmentVariable("copy", system.SetClipboard)
+		console.SetLuaEnvironmentVariable("gl", desire("graphics.ffi.opengl"))
+		console.SetLuaEnvironmentVariable("findo", prototype.FindObject)	
 		local lua = ""
 		
 		for k, v in pairs(console.run_lua_environment) do

@@ -32,7 +32,9 @@ function PASS:Draw3D()
 	
 	render.gbuffer:Begin()
 	render.gbuffer:Clear()
-		render.Draw3DScene()		
+		event.Call("PreGBufferModelPass")
+		render.Draw3DScene()
+		event.Call("PostGBufferModelPass")
 	render.gbuffer:End()
 end
 
@@ -96,9 +98,8 @@ PASS.Shader = {
 			in mat3 tangent_to_world;
 		
 			out vec4 diffuse_buffer;
-			out vec4 normal_buffer;
-					
-					
+			out vec4 normal_buffer;					
+
 			// https://www.shadertoy.com/view/MslGR8
 			bool dither(vec2 uv, float alpha)
 			{			
@@ -113,7 +114,9 @@ PASS.Shader = {
 			}
 			
 			void main()
-			{			
+			{
+				if (texture(tex_discard, get_screen_uv()).r > 0) discard;
+				
 				// diffuse
 				{
 					diffuse_buffer = texture(DiffuseTexture, uv);

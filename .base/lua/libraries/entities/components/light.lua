@@ -207,6 +207,9 @@ if GRAPHICS then
 				projection:Ortho(-size, size, -size, size, size, -size) 
 			end
 			
+			local old_view = render.camera_3d:GetView()
+			local old_projection = render.camera_3d:GetProjection()
+			
 			render.camera_3d:SetView(view)
 			render.camera_3d:SetProjection(projection)
 			
@@ -216,8 +219,8 @@ if GRAPHICS then
 			
 			render.Draw3DScene()
 			
-			render.camera_3d:SetView()
-			render.camera_3d:SetProjection()
+			render.camera_3d:SetView(old_view)
+			render.camera_3d:SetProjection(old_projection)
 			
 			if not self.ShadowCubemap then 
 				break 

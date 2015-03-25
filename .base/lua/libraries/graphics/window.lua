@@ -33,7 +33,11 @@ function window.Open(...)
 	-- don't draw anything until the everything has be
 	event.AddListener("RenderContextInitialized", "window_start_rendering", function()
 		function wnd:OnUpdate(dt)
-			render.DrawScene(self, dt)
+			render.PushWindow(self)
+				render.Clear("color", "depth")
+				render.DrawScene()			
+			render.SwapBuffers()
+			render.PopWindow()
 		end
 		return e.EVENT_DESTROY
 	end, {priority = -100000})

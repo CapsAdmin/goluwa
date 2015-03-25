@@ -268,9 +268,23 @@ function render.SetClearColor(r,g,b,a)
 	gl.ClearColor(r,g,b, a or 1)
 end
 
-function render.Clear(flag, ...)
-	flag = flag or gl.e.GL_COLOR_BUFFER_BIT
-	gl.Clear(bit.bor(flag, ...))
+do
+	local enums = {
+		color = gl.e.GL_COLOR_BUFFER_BIT,
+		depth = gl.e.GL_DEPTH_BUFFER_BIT,
+		stencil = gl.e.GL_STENCIL_BUFFER_BIT,
+		accum = gl.e.GL_ACCUM_BUFFER_BIT,
+	}
+	
+	function render.Clear(a, b, c, d)		
+	
+		local flag = enums[a] or enums.color
+		if b then flag = bit.bor(flag, enums[b]) end
+		if c then flag = bit.bor(flag, enums[c]) end
+		if d then flag = bit.bor(flag, enums[d]) end
+		
+		gl.Clear(flag)
+	end
 end
 
 do
