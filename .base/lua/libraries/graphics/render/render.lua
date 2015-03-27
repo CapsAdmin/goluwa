@@ -92,19 +92,19 @@ do -- occlusion query
 	local META = prototype.CreateTemplate("occlusion_query")
 	
 	function META:Begin()
-		gl.BeginQuery(gl.e.GL_SAMPLES_PASSED, self.id)
+		gl.BeginQuery("GL_SAMPLES_PASSED", self.id)
 	end
 	
 	function META:End()
-		gl.EndQuery(gl.e.GL_SAMPLES_PASSED)
+		gl.EndQuery("GL_SAMPLES_PASSED")
 	end
 	
 	local ready = ffi.new("GLuint[1]")
 	
 	function META:GetVisibility()
-		gl.GetQueryObjectuiv(self.id, gl.e.GL_QUERY_RESULT_AVAILABLE, ready)
+		gl.GetQueryObjectuiv(self.id, "GL_QUERY_RESULT_AVAILABLE", ready)
 		if ready[0] ~= 0 then
-			gl.GetQueryObjectuiv(self.id, gl.e.GL_QUERY_RESULT, ready)
+			gl.GetQueryObjectuiv(self.id, "GL_QUERY_RESULT", ready)
 			return tonumber(ready[0])/480000
 		end
 		
@@ -137,7 +137,7 @@ do -- shaders
 		shader_strings[0] = ffi.cast("const char *", source)
 		gl.ShaderSource(shader, 1, shader_strings, nil)
 		gl.CompileShader(shader)
-		gl.GetShaderiv(shader, gl.e.GL_COMPILE_STATUS, status)		
+		gl.GetShaderiv(shader, "GL_COMPILE_STATUS", status)		
 
 		if status[0] == 0 then			
 		
@@ -165,7 +165,7 @@ do -- shaders
 
 		gl.LinkProgram(program)
 
-		gl.GetProgramiv(program, gl.e.GL_LINK_STATUS, status)
+		gl.GetProgramiv(program, "GL_LINK_STATUS", status)
 
 		if status[0] == 0 then
 		
@@ -200,7 +200,7 @@ do -- shaders
 
 		function render.BindArrayBuffer(id)
 			if last ~= id then
-				gl.BindBuffer(gl.e.GL_ARRAY_BUFFER, id)
+				gl.BindBuffer("GL_ARRAY_BUFFER", id)
 				last = id
 			end
 		end
@@ -244,15 +244,15 @@ function render.Shutdown()
 end
 
 function render.GetVersion()		
-	return ffi.string(gl.GetString(gl.e.GL_VERSION))
+	return ffi.string(gl.GetString("GL_VERSION"))
 end
 
 function render.GetShadingLanguageVersion()		
-	return ffi.string(gl.GetString(gl.e.GL_SHADING_LANGUAGE_VERSION))
+	return ffi.string(gl.GetString("GL_SHADING_LANGUAGE_VERSION"))
 end
 
 function render.GetVendor()		
-	return ffi.string(gl.GetString(gl.e.GL_VENDOR))
+	return ffi.string(gl.GetString("GL_VENDOR"))
 end
 
 function render.CheckSupport(func)
@@ -382,25 +382,25 @@ do
 	function render.SetBlendMode(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
 
 		if src_color then
-			gl.Enable(gl.e.GL_BLEND)
+			gl.Enable("GL_BLEND")
 		else
-			gl.Disable(gl.e.GL_BLEND)
+			gl.Disable("GL_BLEND")
 			return
 		end
 		
 		if src_color == "alpha" then
-			gl.AlphaFunc(gl.e.GL_GEQUAL, 0)
+			gl.AlphaFunc("GL_GEQUAL", 0)
 			
 			gl.BlendFuncSeparate(	
-				gl.e.GL_SRC_ALPHA, gl.e.GL_ONE_MINUS_SRC_ALPHA, 
-				gl.e.GL_ONE, gl.e.GL_ONE_MINUS_SRC_ALPHA
+				"GL_SRC_ALPHA", "GL_ONE_MINUS_SRC_ALPHA", 
+				"GL_ONE", "GL_ONE_MINUS_SRC_ALPHA"
 			)
 		elseif src_color == "multiplicative" then
-			gl.BlendFunc(gl.e.GL_DST_COLOR, gl.e.GL_ZERO)
+			gl.BlendFunc("GL_DST_COLOR", "GL_ZERO")
 		elseif src_color == "premultiplied" then
-			gl.BlendFunc(gl.e.GL_ONE, gl.e.GL_ONE_MINUS_SRC_ALPHA)
+			gl.BlendFunc("GL_ONE", "GL_ONE_MINUS_SRC_ALPHA")
 		elseif src_color == "additive" then
-			gl.BlendFunc(gl.e.GL_SRC_ALPHA, gl.e.GL_ONE)
+			gl.BlendFunc("GL_SRC_ALPHA", "GL_ONE")
 		else		
 			src_color = enums[src_color or "src_alpha"]
 			dst_color = enums[dst_color or "one_minus_src_alpha"]
@@ -425,17 +425,17 @@ do
 		if override_ then return end
 		
 		if mode == "none" then
-			gl.Disable(gl.e.GL_CULL_FACE)
+			gl.Disable("GL_CULL_FACE")
 		else
-			gl.Enable(gl.e.GL_CULL_FACE)
+			gl.Enable("GL_CULL_FACE")
 		end
 	
 		if mode == "front" then
-			gl.CullFace(gl.e.GL_FRONT)
+			gl.CullFace("GL_FRONT")
 		elseif mode == "back" then
-			gl.CullFace(gl.e.GL_BACK)
+			gl.CullFace("GL_BACK")
 		elseif mode == "front_and_back" then
-			gl.CullFace(gl.e.GL_FRONT_AND_BACK)
+			gl.CullFace("GL_FRONT_AND_BACK")
 		end
 		
 		cull_mode = mode
@@ -454,7 +454,7 @@ do
 		w = w or 1
 		h = h or 1
 		
-		gl.ReadPixels(x, y, w, h, gl.e.GL_RGBA, gl.e.GL_FLOAT, data)
+		gl.ReadPixels(x, y, w, h, "GL_RGBA", "GL_FLOAT", data)
 			
 		return data[0], data[1], data[2], data[3]
 	end
@@ -462,12 +462,12 @@ end
 
 function render.EnableDepth(b)
 	if b then
-		gl.Enable(gl.e.GL_DEPTH_TEST)
-		gl.DepthMask(gl.e.GL_TRUE)
-		gl.DepthFunc(gl.e.GL_LESS)
+		gl.Enable("GL_DEPTH_TEST")
+		gl.DepthMask(1)
+		gl.DepthFunc("GL_LESS")
 	else
-		gl.Disable(gl.e.GL_DEPTH_TEST)
-		gl.DepthMask(gl.e.GL_FALSE)
+		gl.Disable("GL_DEPTH_TEST")
+		gl.DepthMask(0)
 		--gl.DepthFunc(gl.e.GL_ALWAYS)
 	end
 end

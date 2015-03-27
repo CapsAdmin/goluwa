@@ -435,7 +435,7 @@ end
 function render.DrawGBuffer()
 	if not gbuffer_enabled then return end
 
-	gl.DepthMask(gl.e.GL_TRUE)
+	gl.DepthMask(1)
 	render.EnableDepth(true)
 	render.SetBlendMode()
 		

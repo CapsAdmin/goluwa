@@ -82,9 +82,9 @@ function render.CreateFrameBuffer(width, height, format)
 			tex.framebuffer_name = info.name
 		else
 			id = gl.GenRenderbuffer()
-			gl.BindRenderbuffer(gl.e.GL_RENDERBUFFER, id)		
+			gl.BindRenderbuffer("GL_RENDERBUFFER", id)		
 
-			gl.RenderbufferStorage(gl.e.GL_RENDERBUFFER, info.internal_format, width, height)
+			gl.RenderbufferStorage("GL_RENDERBUFFER", info.internal_format, width, height)
 		end
 		
 		self.buffers[info.name] = {name = info.name, id = id, tex = tex, info = info, attach = info.attach, draw_manual = info.draw_manual, attach_pos = i}
@@ -93,9 +93,9 @@ function render.CreateFrameBuffer(width, height, format)
 	for i, data in pairs(self.buffers) do
 		if not data.info.texture_format or data.info.texture_format.type ~= gl.e.GL_TEXTURE_CUBE_MAP then
 			if data.tex:IsValid() then
-				gl.FramebufferTexture2D(gl.e.GL_FRAMEBUFFER, data.attach, gl.e.GL_TEXTURE_2D, data.id, 0)
+				gl.FramebufferTexture2D("GL_FRAMEBUFFER", data.attach, "GL_TEXTURE_2D", data.id, 0)
 			else
-				gl.FramebufferRenderbuffer(gl.e.GL_FRAMEBUFFER, data.attach, gl.e.GL_RENDERBUFFER, data.id)
+				gl.FramebufferRenderbuffer("GL_FRAMEBUFFER", data.attach, "GL_RENDERBUFFER", data.id)
 			end
 		end
 		data.info = nil
@@ -154,7 +154,7 @@ do
 	function render.PushFramebuffer(fb, ...)
 		table.insert(stack, current_id)
 		
-		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, fb.id)
+		gl.BindFramebuffer("GL_FRAMEBUFFER", fb.id)
 		current_id = fb.id
 		
 		if not fb.building then
@@ -165,7 +165,7 @@ do
 	function render.PopFramebuffer()
 		local id = table.remove(stack)		
 		
-		gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, id)
+		gl.BindFramebuffer("GL_FRAMEBUFFER", id)
 		current_id = id
 	end
 	
@@ -189,20 +189,20 @@ do
 end
 
 function META:Bind()
-	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, self.id)
+	gl.BindFramebuffer("GL_FRAMEBUFFER", self.id)
 end
 
 function META:SetWriteBuffer(name, target)
 	local buffer = self.buffers[name]
 	if buffer then
-		gl.FramebufferTexture2D(gl.e.GL_DRAW_FRAMEBUFFER, buffer.attach, target or gl.e.GL_TEXTURE_2D, buffer.id, 0)
+		gl.FramebufferTexture2D("GL_DRAW_FRAMEBUFFER", buffer.attach, target or "GL_TEXTURE_2D", buffer.id, 0)
 	end
 end
 
 function META:SetReadBuffer(name, target)
 	local buffer = self.buffers[name]
 	if buffer then
-		gl.FramebufferTexture2D(gl.e.GL_READ_FRAMEBUFFER, buffer.attach, target or gl.e.GL_TEXTURE_2D, buffer.id, 0)
+		gl.FramebufferTexture2D("GL_READ_FRAMEBUFFER", buffer.attach, target or "GL_TEXTURE_2D", buffer.id, 0)
 	end
 end
 
@@ -242,6 +242,8 @@ function META:SetDrawBuffers(...)
 	end
 end
 
+local clear_flag = bit.bor(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT)
+
 function META:Clear(r,g,b,a, buffer)
 	r = r or 0
 	g = g or 0
@@ -251,11 +253,11 @@ function META:Clear(r,g,b,a, buffer)
 	if buffer then
 		local buffer = self.buffers[name]
 		if buffer then
-			gl.ClearBufferfv(gl.e.GL_COLOR, buffer.attach_pos - 1, ffi.cast("float *", Color(r,g,b,a)))
+			gl.ClearBufferfv("GL_COLOR", buffer.attach_pos - 1, ffi.cast("float *", Color(r,g,b,a)))
 		end
 	else
 		gl.ClearColor(r, g, b, a)
-		gl.Clear(bit.bor(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT))
+		gl.Clear(clear_flag)
 	end
 end
 
@@ -270,10 +272,10 @@ function META:GetTexture(type)
 end
 
 function META:Copy(framebuffer)
-	gl.BindFramebuffer(gl.e.GL_DRAW_FRAMEBUFFER, self.id)
-	gl.BindFramebuffer(gl.e.GL_READ_FRAMEBUFFER, framebuffer.id)
-	gl.BlitFramebuffer(0,0,framebuffer.w,framebuffer.h, 0,0,self.w,self.h, gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_LINEAR)
-	gl.BindFramebuffer(gl.e.GL_FRAMEBUFFER, current_id)
+	gl.BindFramebuffer("GL_DRAW_FRAMEBUFFER", self.id)
+	gl.BindFramebuffer("GL_READ_FRAMEBUFFER", framebuffer.id)
+	gl.BlitFramebuffer(0,0,framebuffer.w,framebuffer.h, 0,0,self.w,self.h, "GL_COLOR_BUFFER_BIT", "GL_LINEAR")
+	gl.BindFramebuffer("GL_FRAMEBUFFER", current_id)
 end
 
 prototype.Register(META)

@@ -236,15 +236,11 @@ do -- window meta
 		
 		if not glfw.init then			
 			glfw.MakeContextCurrent(ptr)
-			gl.GetProcAddress = glfw.GetProcAddress
-
 			logn("glfw version: ", ffi.string(glfw.GetVersionString()):trim())
 			
-			-- this needs to be initialized once after a context has been created..
-			if gl and gl.InitMiniGlew and not gl.gl_init then
-				gl.gl_init = true
-				gl.InitMiniGlew()
-			end
+			-- this needs to be initialized once after a context has been created
+			gl.GetProcAddress = sdl.GL_GetProcAddress
+			gl.Initialize()		
 			
 			glfw.init = true
 		end

@@ -49,7 +49,7 @@ local function update_format(self)
 	
 	do
 		local largest = ffi.new("float[1]")
-		gl.GetFloatv(gl.e.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, largest)
+		gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
 		f.anisotropy = CHECK_FIELD("anisotropy", f.anisotropy) or largest[0]
 	end
 	
@@ -145,10 +145,6 @@ do -- texture object
 			},
 			SUPPRESS_GC
 		)
-		
-		if gl.FindInEnum(format.upload_format, "compress") or gl.FindInEnum(format.internal_format, "compress") then	
-			self.compressed = true
-		end		
 		
 		self.texture_channel = gl.e.GL_TEXTURE0 + format.channel
 		self.texture_channel_uniform = format.channel
@@ -261,8 +257,8 @@ do -- texture object
 		local buffer, length = self:CreateBuffer()
 
 		gl.BindTexture(f.type, self.id)
-			gl.PixelStorei(gl.e.GL_PACK_ALIGNMENT, f.stride)
-			gl.PixelStorei(gl.e.GL_UNPACK_ALIGNMENT, f.stride)
+			gl.PixelStorei("GL_PACK_ALIGNMENT", f.stride)
+			gl.PixelStorei("GL_UNPACK_ALIGNMENT", f.stride)
 			gl.GetTexImage(f.type, level or 0, f.upload_format, format or f.format_type, buffer)
 		gl.BindTexture(f.type, 0)
 
@@ -332,8 +328,8 @@ do -- texture object
 		
 		gl.BindTexture(f2.type, self.id)			
 	
-			gl.PixelStorei(gl.e.GL_PACK_ALIGNMENT, f.stride or f2.stride)
-			gl.PixelStorei(gl.e.GL_UNPACK_ALIGNMENT, f.stride or f2.stride)
+			gl.PixelStorei("GL_PACK_ALIGNMENT", f.stride or f2.stride)
+			gl.PixelStorei("GL_UNPACK_ALIGNMENT", f.stride or f2.stride)
 				
 			update_format(self)
 		

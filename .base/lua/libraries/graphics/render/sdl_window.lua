@@ -245,15 +245,11 @@ do -- window meta
 		if not render.gl_context then
 			local context = sdl.GL_CreateContext(ptr)
 			sdl.GL_MakeCurrent(ptr, context) 
-			gl.GetProcAddress = sdl.GL_GetProcAddress
-
 			logn("sdl version: ", ffi.string(sdl.GetRevision()))	
 			
-			-- this needs to be initialized once after a context has been created..
-			if gl and gl.InitMiniGlew and not gl.gl_init then
-				gl.gl_init = true
-				gl.InitMiniGlew()
-			end
+			-- this needs to be initialized once after a context has been created
+			gl.GetProcAddress = sdl.GL_GetProcAddress
+			gl.Initialize()			
 			
 			render.gl_context = context
 		end

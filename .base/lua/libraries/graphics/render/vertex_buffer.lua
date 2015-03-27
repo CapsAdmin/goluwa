@@ -55,8 +55,8 @@ function META:Draw(count)
 	
 	render.BindVertexArray(self.vao_id)
 	--render.BindArrayBuffer(self.vertices_id)	
-	gl.BindBuffer(gl.e.GL_ELEMENT_ARRAY_BUFFER, self.indices_id)
-	gl.DrawElements(translate[self.Mode] or translate.triangles, count or self.indices_count, gl.e.GL_UNSIGNED_INT, nil)
+	gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
+	gl.DrawElements(translate[self.Mode] or translate.triangles, count or self.indices_count, "GL_UNSIGNED_INT", nil)
 end
 
 function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
@@ -68,7 +68,7 @@ function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
 		self.vertices_size = vertices_size or ffi.sizeof(vertices)
 		
 		render.BindArrayBuffer(self.vertices_id)
-		gl.BufferData(gl.e.GL_ARRAY_BUFFER, self.vertices_size, vertices, gl.e.GL_STATIC_DRAW)
+		gl.BufferData("GL_ARRAY_BUFFER", self.vertices_size, vertices, "GL_STATIC_DRAW")
 	end
 	
 	if indices and self.UpdateIndices then
@@ -78,8 +78,8 @@ function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
 		self.indices_size = indices_size
 		self.indices_count = indices_size / ffi.sizeof("unsigned int")
 		
-		gl.BindBuffer(gl.e.GL_ELEMENT_ARRAY_BUFFER, self.indices_id)
-		gl.BufferData(gl.e.GL_ELEMENT_ARRAY_BUFFER, indices_size, indices, gl.e.GL_STATIC_DRAW)
+		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
+		gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices_size, indices, "GL_STATIC_DRAW")
 	end
 		
 	render.BindVertexArray(self.vao_id)		
@@ -90,7 +90,7 @@ function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
 	render.BindVertexArray(0)
 	
 	render.BindArrayBuffer(0)
-	gl.BindBuffer(gl.e.GL_ELEMENT_ARRAY_BUFFER, 0)
+	gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", 0)
 	
 	--logf("[render] updated %s with %s amount of data\n", self, utility.FormatFileSize(self.vertices_size + self.indices_size))
 end
