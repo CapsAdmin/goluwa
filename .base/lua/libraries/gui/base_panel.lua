@@ -308,8 +308,6 @@ do -- drawing
 			end
 		self:PostDraw(from_cache)
 	end
-
-	local gl = require("graphics.ffi.opengl")
 				
 	function PANEL:PostDraw(from_cache)
 		self:CalcResizing()
@@ -321,15 +319,6 @@ do -- drawing
 		end
 				
 		if gui.debug then
-			if false and self.Clipping then	
-				gl.Disable(gl.e.GL_STENCIL_TEST)
-				render.SetBlendMode("additive")
-				surface.SetColor(1, 0, 1, 0.25)
-				surface.SetWhiteTexture()
-				surface.DrawRect(0, 0, self.Size.w, self.Size.h)
-				render.SetBlendMode("alpha")
-				gl.Enable(gl.e.GL_STENCIL_TEST)
-			end
 			if self.updated_layout then
 				render.SetBlendMode("additive")
 				surface.SetColor(1, 0, 0, 0.1)
