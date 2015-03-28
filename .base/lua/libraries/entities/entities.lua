@@ -22,6 +22,8 @@ function entities.CreateEntity(name, parent, info)
 	
 	id = id + 1
 	
+	event.Call("EntityCreated", self)
+	
 	return self
 end
 
