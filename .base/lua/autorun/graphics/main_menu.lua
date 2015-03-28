@@ -213,8 +213,38 @@ function menu.CreateTopBar()
 		{L"run [ESC]", function() menu.Close() end},
 		{L"reset", function() console.RunString("restart") end},
 		{},
-		{L"save state"},
-		{L"open state"},
+		{L"save state", function()
+			if _SAVING then return end
+			
+			local out = {}
+			
+			out.entities = {}
+			out.camera = render.camera_3d:GetStorableTable()
+			
+			for k,v in pairs(entities.GetAll()) do
+				if not v:HasParent() then
+					table.insert(out.entities, v:GetStorableTable())
+				end
+			end
+			
+			serializer.WriteFile("luadata", "world.lua", out)
+		end},
+		{L"open state", function()
+			_SAVING = true
+
+			local data = serializer.ReadFile("luadata", "world.lua")
+
+			for k,v in pairs(data.entities) do
+				if not prototype.GetObjectByGUID(v.self.GUID):IsValid() then
+					local ent = entities.CreateEntity(v.config)
+					ent:SetStorableTable(v, true)
+				end
+			end
+
+			render.camera_3d:SetStorableTable(data.camera)
+			
+			_SAVING = nil
+		end},
 		{L"pick state"},
 		{},
 		{L"quit", function() system.ShutDown() end} 
@@ -301,7 +331,7 @@ function menu.CreateTopBar()
 	})
 end
  
-event.AddListener("RenderContextInitialized", menu.Open)
+menu.Open()
 
 if RELOAD then 
 	menu.Remake() 
