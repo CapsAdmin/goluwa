@@ -90,6 +90,8 @@ end
 
 do -- serializing
 	function META:SetStorableTable(data, skip_remove)
+		prototype.base_metatable.SetStorableTable(self, data.self)
+		
 		if type(data.self) ~= "table" or type(data.config) ~= "string" then return end
 		
 		if not skip_remove then			
@@ -100,7 +102,7 @@ do -- serializing
 
 		self.config = data.config
 		
-		for name, vars in pairs(data.self) do
+		for name, vars in pairs(data.components) do
 			local component = self:GetComponent(name)
 			
 			if not component:IsValid() then
@@ -117,12 +119,12 @@ do -- serializing
 	end
 	
 	function META:GetStorableTable()
-		local data = {self = {}, children = {}}
+		local data = {self = prototype.base_metatable.GetStorableTable(self), children = {}, components = {}}
 		
 		data.config = self.config
 		
 		for name, component in pairs(self:GetComponents()) do
-			data.self[name] = component:GetStorableTable()
+			data.components[name] = component:GetStorableTable()
 		end
 		
 		for i, v in ipairs(self:GetChildren()) do
