@@ -2,6 +2,8 @@ local render = ... or _G.render
 
 local META = prototype.CreateTemplate("camera")
 
+META:StartStorable()
+
 META:GetSet("Position", Vec3(0, 0, 0), {callback = "InvalidateView"})
 META:GetSet("Angles", Ang3(0, 0, 0), {callback = "InvalidateView"})
 META:GetSet("FOV", math.pi/2, {callback = "InvalidateProjection"})
@@ -10,6 +12,8 @@ META:GetSet("NearZ", 0.1, {callback = "InvalidateProjection"})
 META:GetSet("FarZ", 32000, {callback = "InvalidateProjection"})
 META:GetSet("Viewport", Rect(0, 0, 1000, 1000), {callback = "InvalidateProjection"})
 META:GetSet("3D", true, {callback = "Invalidate"})
+
+META:EndStorable()
 
 META:GetSet("Projection", nil, {callback = "InvalidateProjection"})
 META:GetSet("View", nil, {callback = "InvalidateView"})
