@@ -33540,8 +33540,8 @@ function gl.Initialize(get_proc_address)
 		function META:GetParameterIivEXT(target, pname, params)
 			return gl.GetTextureParameterIivEXT(self.id, target, pname, params)
 		end
-		function META:BufferRange(internalformat, buffer, offset, size)
-			return gl.TextureBufferRange(self.id, internalformat, buffer, offset, size)
+		function META:BufferRange(internalformat, offset, size)
+			return gl.TextureBufferRange("GL_TEXTURE_BUFFER", internalformat, self.id, offset, size)
 		end
 		function META:GetCompressedImage(level, bufSize, pixels)
 			return gl.GetCompressedTextureImage(self.id, level, bufSize, pixels)
@@ -33567,8 +33567,8 @@ function gl.Initialize(get_proc_address)
 		function META:GetLevelParameterfv(level, pname, params)
 			return gl.GetTextureLevelParameterfv(self.id, level, pname, params)
 		end
-		function META:BufferRangeEXT(target, internalformat, buffer, offset, size)
-			return gl.TextureBufferRangeEXT(self.id, target, internalformat, buffer, offset, size)
+		function META:BufferRangeEXT(internalformat, offset, size)
+			return gl.TextureBufferRangeEXT("GL_TEXTURE_BUFFER", internalformat, self.id, offset, size)
 		end
 		function META:Image2D(target, level, internalformat, width, height, border, format, type, pixels)
 			return gl.TextureImage2DEXT(self.id, target, level, internalformat, width, height, border, format, type, pixels)
@@ -33594,8 +33594,8 @@ function gl.Initialize(get_proc_address)
 		function META:CompressedSubImage3D(level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data)
 			return gl.CompressedTextureSubImage3D(self.id, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data)
 		end
-		function META:Buffer(internalformat, buffer)
-			return gl.TextureBuffer(self.id, internalformat, buffer)
+		function META:Buffer(internalformat)
+			return gl.TextureBuffer("GL_TEXTURE_BUFFER", internalformat, self.id)
 		end
 		function META:ParameteriEXT(target, pname, param)
 			return gl.TextureParameteriEXT(self.id, target, pname, param)
