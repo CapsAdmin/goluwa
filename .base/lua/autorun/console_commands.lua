@@ -392,7 +392,7 @@ console.AddCommand("open", function(line)
 			return
 		end
 		if vfs.IsFile("lua/" .. path) then
-			include(path)
+			include("lua/" .. path)
 			return
 		end
 		table.insert(tried, "\t" .. path)
