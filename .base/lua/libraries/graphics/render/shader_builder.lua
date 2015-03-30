@@ -322,13 +322,20 @@ function render.CreateShader(data, vars)
 	for shader, info in pairs(data) do
 		local source = source_template
 		
-		if OPENGL_ES then
-			source = "#version 300 es" .. source
+		if info.source and info.source:find("#version") then
+			info.source = info.source:gsub("(#version.-\n)", function(line)
+				source = line .. source
+				return ""
+			end)			
 		else
-			if shader:find("tess") then
-				source = "#version 400" .. source
+			if OPENGL_ES then
+				source = "#version 300 es" .. source
 			else
-				source = "#version 150" .. source
+				if shader:find("tess") then
+					source = "#version 400" .. source
+				else
+					source = "#version 150" .. source
+				end
 			end
 		end
 		
