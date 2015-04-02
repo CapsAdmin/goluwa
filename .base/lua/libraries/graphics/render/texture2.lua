@@ -22,19 +22,59 @@ function META:Upload(data)
 	if type(data.buffer) == "string" then 
 		data.buffer = ffi.cast("uint8_t *", data.buffer) 
 	end
+
+	if not self.storage_setup then
+		if self.StorageType == "3d" then
+			self.gl_tex:Storage3D(
+				self.MipMapLevels, 
+				TOENUM(self.InternalFormat), 
+				data.width, 
+				data.height, 
+				data.depth
+			)	
+		elseif self.StorageType == "2d" or self.StorageType == "rectangle" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then		
+			self.gl_tex:Storage2D(
+				self.MipMapLevels, 
+				TOENUM(self.InternalFormat), 
+				data.width, 
+				data.height
+			)
+		elseif self.StorageType == "1d" or self.StorageType == "1d_array" then		
+			self.gl_tex:Storage1D(
+				self.MipMapLevels, 
+				TOENUM(self.InternalFormat), 
+				data.width
+			)
+		end
+		self.last_storage_setup = true
+	end
 	
-	if self.StorageType == "3d" or self.StorageType == "2d_array" then		
-		self.gl_tex:Storage3D(
-			self.MipMapLevels, 
-			TOENUM(self.InternalFormat), 
-			data.wgl_texth, 
-			data.height, 
-			data.depth
-		)
+	if self.StorageType == "cube_map" then
+		data.z = data.face or data.z
+		data.depth = data.depth or 1
+	end
+	
+	if self.StorageType == "3d" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then		
+		data.x = data.x or 0
+		data.y = data.y or 0
+		data.z = data.z or 0
 		
-		if data.x and data.y and data.z then
-			if data.image_size then
-				self.gl_tex:CompressedSubImage3D(
+		if data.image_size then
+			self.gl_tex:CompressedSubImage3D(
+			data.mip_map_level, 
+			data.x, 
+			data.y, 
+			data.z, 
+			data.width, 
+			data.height, 
+			data.depth, 
+			TOENUM(data.format), 
+			TOENUM(data.type), 
+			data.image_size, 
+			data.buffer
+		)
+		else
+			self.gl_tex:SubImage3D(
 				data.mip_map_level, 
 				data.x, 
 				data.y, 
@@ -44,136 +84,60 @@ function META:Upload(data)
 				data.depth, 
 				TOENUM(data.format), 
 				TOENUM(data.type), 
+				data.buffer
+			)
+		end		
+	elseif self.StorageType == "2d" or self.StorageType == "1d_array" or self.StorageType == "rectangle" then		
+		data.x = data.x or 0
+		data.y = data.y or 0
+	
+		if data.image_size then
+			self.gl_tex:CompressedSubImage2D(
+				data.mip_map_level, 
+				data.x, 
+				data.y, 
+				data.width, 
+				data.height, 
+				TOENUM(data.format), 
+				TOENUM(data.type), 
 				data.image_size, 
 				data.buffer
 			)
-			else
-				self.gl_tex:SubImage3D(
-					data.mip_map_level, 
-					data.x, 
-					data.y, 
-					data.z, 
-					data.width, 
-					data.height, 
-					data.depth, 
-					TOENUM(data.format), 
-					TOENUM(data.type), 
-					data.buffer
-				)
-			end
 		else
-			self.gl_tex:Image3D(
-				data.target, 
+			self.gl_tex:SubImage2D(
 				data.mip_map_level, 
-				TOENUM(data.format), 
+				data.x, 
+				data.y, 
 				data.width, 
 				data.height, 
-				data.depth, 
-				0, 
 				TOENUM(data.format), 
 				TOENUM(data.type), 
 				data.buffer
 			)
-		end
-	elseif self.StorageType == "2d" or self.StorageType == "1d_array" or self.StorageType == "rectangle" then		
-		self.gl_tex:Storage2D(
-			self.MipMapLevels, 
-			TOENUM(self.InternalFormat), 
-			data.width, 
-			data.height
-		)
-		
-		if data.x and data.y then
-			if data.image_size then
-				self.gl_tex:CompressedSubImage2D(
-					data.mip_map_level, 
-					data.x, 
-					data.y, 
-					data.width, 
-					data.height, 
-					TOENUM(data.format), 
-					TOENUM(data.type), 
-					data.image_size, 
-					data.buffer
-				)
-			else
-				self.gl_tex:SubImage2D(
-					data.mip_map_level, 
-					data.x, 
-					data.y, 
-					data.width, 
-					data.height, 
-					TOENUM(data.format), 
-					TOENUM(data.type), 
-					data.buffer
-				)
-			end
-		else
-			local target = data.target
-			
-			if data.cube_map_face then
-				if type(data.cube_map_face) == "number" then
-					target = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + data.cube_map_face
-				else
-					target = "GL_TEXTURE_CUBE_MAP_" .. data.cube_map_face
-				end
-			end
-			
-			gl.BindBuffer("GL_PIXEL_UNPACK_BUFFER", 0)
-
-			self.gl_tex:Image2D(
-				target,
-				data.mip_map_level, 
-				gl.e[TOENUM(self.InternalFormat)], 
-				data.width, 
-				data.height,
-				0,
-				TOENUM(data.format), 
-				TOENUM(data.type), 
-				data.buffer
-			)
-			
 		end
 	elseif self.StorageType == "1d" then		
-		self.gl_tex:Storage1D(
-			self.MipMapLevels, 
-			TOENUM(self.InternalFormat), 
-			data.width
-		)
+		data.x = data.x or 0
 		
-		if data.x then
-			if data.image_size then
-				self.gl_tex:CompressedSubImage1D(
-					data.mip_map_level, 
-					data.x, 
-					data.width, 
-					TOENUM(data.format), 
-					TOENUM(data.type), 
-					data.image_size, 
-					data.buffer
-				)
-			else
-				self.gl_tex:SubImage1D(
-					data.mip_map_level, 
-					data.x, 
-					data.width, 
-					TOENUM(data.format), 
-					TOENUM(data.type), 
-					data.buffer
-				)
-			end
-		else
-			self.gl_tex:Image1D(
-				data.target, 
+		if data.image_size then
+			self.gl_tex:CompressedSubImage1D(
 				data.mip_map_level, 
-				TOENUM(data.format), 
+				data.x, 
 				data.width, 
-				0, 
+				TOENUM(data.format), 
+				TOENUM(data.type), 
+				data.image_size, 
+				data.buffer
+			)
+		else
+			self.gl_tex:SubImage1D(
+				data.mip_map_level, 
+				data.x, 
+				data.width, 
 				TOENUM(data.format), 
 				TOENUM(data.type), 
 				data.buffer
 			)
-		end	
+		end
 	elseif self.StorageType == "buffer" then
 		--self.gl_tex:Buffer(TOENUM(self.InternalFormat))
 		--self.gl_tex:BufferRange(TOENUM(self.InternalFormat), )
@@ -204,25 +168,26 @@ local function Texture(storage_type)
 	return self
 end
 
-local tex = Texture("2d")
-local devil = require("graphics.ffi.devil")
+local tex = Texture("cube_map")
 local str = vfs.Read("textures/gui/skins/zsnes.png")
-local buffer, w, h = devil.LoadImage(str, true)
+local buffer, w, h = require("graphics.ffi.devil").LoadImage(str, true)
 
---for i = 0, 5 do
+for i = 0, 5 do
 	tex:Upload({
 		buffer = buffer,
 		width = w,		
 		height = h,
 		format = "bgra",
-	--	x = 0,y = 0,
-		--cube_map_face = i,
+		face = i,
 	})
---end
+end
 
 local shader = render.CreateShader({
 	name = "test",
 	fragment = {
+		variables = {
+			cam_dir = {vec3 = function() return render.camera_3d:GetAngles():GetForward() end},
+		},
 		mesh_layout = {
 			{uv = "vec2"},
 		},			
@@ -230,12 +195,12 @@ local shader = render.CreateShader({
 			#version 420
 			#extension GL_NV_shadow_samplers_cube:enable
 			
-			layout(binding = 0) uniform sampler2D tex1;
+			layout(binding = 0) uniform samplerCube tex1;
 			out highp vec4 frag_color;
 			
 			void main()
 			{	
-				vec4 tex_color = texture(tex1, vec2(uv));
+				vec4 tex_color = texture(tex1, cam_dir);
 				
 				frag_color = tex_color;
 			}
