@@ -128,7 +128,7 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 						end
 					elseif val:find("%b[]") then
 						local values = val:match("%[(.+)%]"):explode(" ")
-						if #values == 3 then
+						if #values == 3 and tonumber(values[1]) and tonumber(values[2]) and tonumber(values[3]) then
 							val = Vec3(tonumber(values[1]), tonumber(values[2]), tonumber(values[3]))
 						end
 					else
