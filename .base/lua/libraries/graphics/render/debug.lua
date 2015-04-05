@@ -94,9 +94,9 @@ function render.EnableDebug(b)
 	do return end
 	if gl.DebugMessageControl then
 		if b then		
-			gl.Enable(gl.e.GL_DEBUG_OUTPUT_ARB)
-			gl.DebugMessageControl(gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, gl.e.GL_DONT_CARE, ffi.new("GLuint"), nil, true)
-			gl.Enable(gl.e.GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB)
+			gl.Enable("GL_DEBUG_OUTPUT")
+			gl.DebugMessageControl("GL_DONT_CARE", "GL_DONT_CARE", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
+			gl.Enable("GL_DEBUG_OUTPUT_SYNCHRONOUS")
 			
 			local buffer = ffi.new("char[1024]")
 			local length = ffi.sizeof(buffer)
@@ -116,7 +116,7 @@ function render.EnableDebug(b)
 				end
 			end, "return")
 		else
-			gl.Disable(gl.e.GL_DEBUG_OUTPUT_ARB)
+			gl.Disable("GL_DEBUG_OUTPUT")
 			debug.sethook()
 		end
 	else
