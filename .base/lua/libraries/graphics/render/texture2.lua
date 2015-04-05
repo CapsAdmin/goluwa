@@ -144,7 +144,11 @@ for k, v in pairs(parameters) do
 	end
 end
 
-function META:SetPath(path)
+function META:__copy()
+	return self
+end
+
+function META:SetPath(path, face)
 	self.Path = path	
 	
 	resource.Download(path, function(full_path)
@@ -156,7 +160,7 @@ function META:SetPath(path)
 				width = w,		
 				height = h,
 				format = "bgra",
-				face = self.face, -- todo
+				face = face, -- todo
 			})
 		end
 	end)
@@ -175,7 +179,6 @@ do -- todo
 	function META:LoadCubemap(path)
 		path = path:sub(0,-1)
 		for i, face in pairs(faces) do
-			self.face = i -- todo
 			self:SetPath(path .. face .. ".vtf", i)
 		end
 	end
@@ -190,6 +193,9 @@ function META:Upload(data)
 	data.format = data.format or "rgba"
 	data.type = data.type or "unsigned_byte"
 	data.internal_format = data.internal_format or "rgba8"
+	
+	--TODO
+	if data.GRR and self.last_storage_setup then self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper()) self.last_storage_setup = nil end
 	
 	if type(data.buffer) == "string" then 
 		data.buffer = ffi.cast("uint8_t *", data.buffer) 
@@ -334,9 +340,6 @@ function META:Download(mip_map_level)
 	local size = self.Size.w * self.Size.h * ffi.sizeof("rgba_pixel")
 	local buffer = ffi.new("rgba_pixel[?]", size)
 	
-	--gl.PixelStorei("GL_PACK_ALIGNMENT", 4)
-	--gl.PixelStorei("GL_UNPACK_ALIGNMENT", 4)
-			
 	self.gl_tex:GetImage(mip_map_level, "GL_RGBA", "GL_UNSIGNED_BYTE", size, buffer)
 	
 	return {
@@ -348,8 +351,125 @@ function META:Download(mip_map_level)
 		internal_format = "rgba8",
 		mip_map_level = mip_map_level,
 		length = (self.Size.w*self.Size.h) - 1, -- for i = 0, data.length do
+		GRR = true,
 	}
 end
+
+function META:GetPixelColor(x, y)
+	x = math.clamp(math.floor(x), 1, self.w)		
+	y = math.clamp(math.floor(y), 1, self.h)		
+	
+	y = self.h-y
+	
+	local i = y * self.w + x
+			
+	local image = self.downloaded_image or self:Download()
+	self.downloaded_image = image
+
+	local buffer = image.buffer
+	
+	if image.format == "bgra" then
+		return buffer[i].b, buffer[i].g, buffer[i].r, buffer[i].a
+	elseif image.format == "rgba" then
+		return buffer[i].r, buffer[i].b, buffer[i].g, buffer[i].a		
+	elseif image.format == "bgr" then
+		return buffer[i].b, buffer[i].g, buffer[i].r
+	elseif image.format == "rgb" then
+		return buffer[i].r, buffer[i].g, buffer[i].b
+	elseif image.format == "red" then
+		return buffer[i].r
+	end
+end
+
+function META:BeginWrite()
+	local fb = self.fb or render.CreateFrameBuffer(self.w, self.h, {texture = self})
+	self.fb = fb
+	
+	fb:Begin()
+	surface.PushMatrix()
+	surface.LoadIdentity()
+	surface.Scale(self.w, self.h)
+end
+
+function META:EndWrite()
+	surface.PopMatrix()
+	self.fb:End()
+end
+
+do
+	local template = [[
+		out vec4 out_color;
+		
+		vec4 shade()
+		{
+			%s
+		}
+		
+		void main()
+		{
+			out_color = shade();
+		}
+	]]
+	
+	function META:Shade(fragment_shader, vars, dont_blend)		
+		self.shaders = self.shaders or {}
+		
+		local name = "shade_texture_" .. self.id .. "_" .. crypto.CRC32(fragment_shader)
+		local shader = self.shaders[name]
+		
+		
+		if not self.shaders[name] then
+			local data = {
+				name = name,
+				shared = {
+					variables = vars,
+				},
+				
+				vertex = {
+					mesh_layout = {
+						{pos = "vec3"},
+						{uv = "vec2"},
+					},	
+					source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);"
+				},
+				
+				fragment = { 
+					variables = {
+						self = self,
+						size = self:GetSize(),
+					},		
+					mesh_layout = {
+						{uv = "vec2"},
+					},			
+					source = template:format(fragment_shader),
+				} 
+			} 
+				
+			shader = render.CreateShader(data)
+			
+			self.shaders[name] = shader
+		end
+		
+		
+		self:BeginWrite()
+			if vars then
+				for k,v in pairs(vars) do
+					shader[k] = v
+				end				
+			end
+		
+			if not dont_blend then 
+				render.SetBlendMode("src_alpha", "one_minus_src_alpha")
+			end
+			
+			render.SetShaderOverride(shader)
+			surface.rect_mesh:Draw()
+			render.SetShaderOverride()
+		self:EndWrite()
+	end
+
+end
+
 
 function META:Bind(location)
 	gl.BindTextureUnit(location, self.gl_tex.id)
@@ -365,19 +485,22 @@ local function Texture(storage_type)
 	return self
 end
 
+
+
+
+
+
+
+
+
+
+
+
+
 local tex = Texture("2d")
 
-tex:SetPath("http://members.jcom.home.ne.jp/i-am-a-student-boy/soft/032.png")
+tex:LoadCubemap("materials/skybox/sky_borealis01")
 
-local data = tex:Download()
-
-for i = 0, data.length do
-	data.buffer[i].r = 0
-end
-
-local tex = Texture("2d") -- what
-
-tex:Upload(data)
 
 local shader = render.CreateShader({
 	name = "test",
@@ -393,11 +516,13 @@ local shader = render.CreateShader({
 			#extension GL_NV_shadow_samplers_cube:enable
 			
 			layout(binding = 0) uniform sampler2D tex1;
+			//layout(binding = 0) uniform samplerCube tex1;
 			out highp vec4 frag_color;
 			
 			void main()
 			{	
 				vec4 tex_color = texture(tex1, uv); 
+				//vec4 tex_color = texture(tex1, cam_dir); 
 				
 				frag_color = tex_color;
 			}
