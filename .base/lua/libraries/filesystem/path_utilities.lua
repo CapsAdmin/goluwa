@@ -53,6 +53,22 @@ function vfs.ParseVariables(path)
 	return vfs.FixPath(path)
 end
 
+local illegal_characters = {
+	[":"] = "_semicolon_",
+	["*"] = "_star_",
+	["?"] = "_questionmark_",
+	["<"] = "_less_than_",
+	[">"] = "_greater_than_",
+	["|"] = "_line_",
+}
+
+function vfs.FixIllegalCharactersInPath(path)
+	for k,v in pairs(illegal_characters) do
+		path = path:gsub("%"..k, v)
+	end
+	return path
+end
+
 function vfs.FixPath(path)
 	return (path:gsub("\\", "/"):gsub("(/+)", "/"))
 end
