@@ -250,7 +250,7 @@ chatsounds.LegacyModifiers = {
 }
 
 do -- list parsing
-	function chatsounds.GetSoundData(file)
+	function chatsounds.GetSoundData(file, plaintext)
 		local out = {}
 		
 		-- TODO
@@ -265,6 +265,8 @@ do -- list parsing
 			
 			local content = file:ReadAll()
 			-- TODO
+			
+			if plaintext then return content:match("PLAINTEXT%s-{%s+(.-)%s-}") end
 			
 			out.plaintext = content:match("PLAINTEXT%s-{%s+(.-)%s-}")
 
@@ -291,6 +293,112 @@ do -- list parsing
 		end
 	end
 	
+	function chatsounds.BuildFromAutoadd()
+		local tree = {}
+		local list = {}
+		
+		for realm in vfs.Iterate("sounds/chatsounds/") do
+			tree[realm] = {}
+			for trigger in vfs.Iterate("sounds/chatsounds/" .. realm .. "/") do
+				local path = "sounds/chatsounds/" .. realm .. "/" .. trigger
+				
+				if vfs.IsFile(path) then
+					tree[realm][trigger:match("(.+)%.")] = {path}
+					list[trigger:match("(.+)%.")] = path
+				else
+					tree[realm][trigger] = {}
+					for file_name in vfs.Iterate(path .. "/") do
+						table.insert(tree[realm][trigger], path .. "/" .. file_name)
+						list[trigger] = path .. "/" .. file_name
+					end
+				end
+			end
+		end
+		
+		chatsounds.list = chatsounds.list or {}
+		table.merge(chatsounds.list, list)
+		
+		tree = chatsounds.TableToTree(tree)
+		chatsounds.tree = chatsounds.tree or {}
+		table.merge(chatsounds.tree, tree)
+	end
+
+	function chatsounds.BuildTreeFromAddon()
+		steam.MountAllSourceGames()
+
+		local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
+		local addon_dir = addons .. "chatsounds"
+
+		for dir in vfs.Iterate(addons, nil, true) do
+			if dir:lower():find("chatsound") then
+				addon_dir = dir
+				break
+			end
+		end
+
+		addon_dir = addon_dir .. "/"
+
+		local nosend = addon_dir .. "lua/chatsounds/lists_nosend/"
+		local send = addon_dir .. "lua/chatsounds/lists_send/"
+
+		local function parse(path)
+			local func = assert(loadfile(path))
+			local realm = path:match(".+/(.-)%.lua")
+
+			local L = list[realm] or {}
+
+			setfenv(func, {c = {StartList = function() end, EndList = function() end}, L = L})
+			func()
+
+			list[realm] = L
+		end
+
+		for dir in vfs.Iterate(send, nil, true) do
+			for path in vfs.Iterate(dir .. "/", nil, true) do
+				parse(path)
+			end
+		end
+
+		for path in vfs.Iterate(nosend, nil, true) do
+			parse(path)
+		end
+		
+
+		local tree = {}
+
+		for realm, sounds in pairs(list) do
+			if realm ~= "" then
+				for trigger, data in pairs(sounds) do
+					trigger = trigger:gsub("%p", "")
+
+					local words = {}
+					for word in (trigger .. " "):gmatch("(.-)%s+") do
+						table.insert(words, word)
+					end
+
+					local prev = tree
+					local max = #words
+					for i, word in ipairs(words) do
+						if not prev[word] then prev[word] = {} end
+
+						if i == max then
+							prev[word].SOUND_FOUND = true
+							prev[word].LEVEL = max
+							prev[word].data = prev[word].data or {trigger = trigger, realms = {}}
+
+							prev[word].data.realms[realm] = {sounds = data, realm = realm}
+						end
+
+						prev = prev[word]
+					end
+				end
+			end
+		end
+
+		chatsounds.list = list
+		chatsounds.tree = tree
+	end
+	
 	local function clean_sentence(sentence)
 
 		sentence = sentence:gsub("%u%l", " %1")
@@ -305,67 +413,6 @@ do -- list parsing
 		return sentence
 	end
 	
-	function chatsounds.TranslateSoundListsFromSoundInfo()
-		for i, path in pairs(vfs.Find("data/chatsounds/")) do
-			if path:find(".list", nil, true) then
-				local str = vfs.Read("data/chatsounds/" .. path)
-								
-				if str then
-					local sound_info = serializer.ReadFile("luadata", "data/chatsounds/"..path:match("(.+)%.").."_sound_info.lua")
-					
-					if not sound_info and vfs.IsFile("data/chatsounds/"..path:match("(.+)%.").."_sound_info_1.lua") then
-						sound_info = {}
-						for i = 1, 10 do 
-							local path = "data/chatsounds/"..path:match("(.+)%.").."_sound_info_"..i..".lua"
-							if not vfs.IsFile(path) then break end
-							table.merge(sound_info, serializer.ReadFile("luadata", path))
-						end
-					end
-					
-					if sound_info then					
-						local list = chatsounds.ListToTable(str)
-						local newlist = {}
-												
-						logn("translating ", path)
-						local found = 0
-						for realm, list in pairs(list) do
-							newlist[realm] = newlist[realm] or {}
-							for trigger, sounds in pairs(list) do
-								newlist[realm][trigger] = newlist[realm][trigger] or {}
-								for i, data in ipairs(sounds) do
-									local info = sound_info[data.path:lower()]
-									if info and info.name then
-										local text = clean_sentence(info.name)
-										
-										local sentence = data.path:match(".+/(.+)%.")
-										sentence = clean_sentence(sentence)
-										
-										if trigger == sentence and sentence ~= "textless" then
-											newlist[realm][text] = sounds
-											found = found + 1
-										else
-											newlist[realm][trigger] = sounds
-										end
-									else
-										newlist[realm][trigger] = sounds
-									end
-								end
-							end
-						end
-						logf("translated %i paths\n", found)
-
-						logn("saving ", path)
-						local game_list = chatsounds.TableToList(newlist)
-						
-						vfs.Write("data/chatsounds/" .. path .. ".new", game_list)
-						
-						--serializer.WriteFile("msgpack", "data/chatsounds/" .. path, chatsounds.TableToTree(list))
-					end
-				end
-			end
-		end
-	end
-
 	function chatsounds.BuildSoundInfo()
 		local thread = threads.CreateThread()
 		
@@ -513,6 +560,7 @@ do -- list parsing
 					end
 				end
 				
+				local out = {}
 				local max = table.count(sound_info)
 						
 				for sound_name, info in pairs(sound_info) do
@@ -577,15 +625,13 @@ do -- list parsing
 					end
 				end
 				
-				logn("saving data/chatsounds/"..game.."_sound_info.table")
-				serializer.WriteFile("msgpack", "data/chatsounds/"..game.."_sound_info.table", out)
+				logn("saving data/chatsounds/sound_info/"..game..".dat")
+				serializer.WriteFile("msgpack", "data/chatsounds/sound_info/"..game..".dat", out)
 				--serializer.WriteFile("luadata", "chatsounds/"..game.."_sound_info.lua", out)
 			end
 
 			logn("finished building the sound info table")
 			logf("found sound info for %i paths\n", table.count(out))
-			
-			chatsounds.TranslateSoundListsFromSoundInfo()
 		end
 
 		thread:Start()
@@ -595,17 +641,12 @@ do -- list parsing
 		local found = {}
 		
 		local thread = threads.CreateThread()
+		
+		thread.debug = true
 
 		function thread:OnStart()
 			vfs.Search("sound/", {"wav", "ogg", "mp3"}, function(path, userdata)
-
-				local data = vfs.Read(path)
-				if not data then logn(path) return end -- 0 bytes
-				local sentence = data:match("PLAINTEXT%s{%s(.-)%s}%s")
-			
-				if not sentence or sentence == "" then
-					sentence = path:match(".+/(.+)%.")
-				end
+				local sentence = path:match(".+/(.+)%.")
 
 				sentence = clean_sentence(sentence)
 
@@ -642,7 +683,7 @@ do -- list parsing
 
 				local game_list = table.concat(game, "")
 
-				vfs.Write("data/chatsounds/"..game_name..".list", game_list)
+				vfs.Write("data/chatsounds/lists/"..game_name..".dat", game_list)
 				--serializer.WriteFile("msgpack", "data/chatsounds/"..game_name..".tree", chatsounds.TableToTree(chatsounds.ListToTable(game_list)))
 			end
 		end
@@ -658,20 +699,111 @@ do -- list parsing
 			end
 
 			if wait(10) then
+				logn("saved")
 				self:Save()
 			end
 		end
 				
 		function thread:OnFinish()
 			self:Save()
-			chatsounds.BuildSoundInfo()
 		end
 		
 		thread:Start()
 		
 		chatsounds.build_info_thread = thread
 	end
+	
+	function chatsounds.TranslateSoundListsFromSoundInfo()
+		local thread = threads.CreateThread()
+		
+		thread.debug = true
 
+		function thread:OnStart()
+	
+			for i, path in pairs(vfs.Find("data/chatsounds/lists/")) do
+				if vfs.IsFile("data/chatsounds/sound_info/" .. path) then
+					local sound_info = serializer.ReadFile("msgpack", "data/chatsounds/sound_info/" .. path)
+					local list = chatsounds.ListToTable(vfs.Read("data/chatsounds/lists/" .. path))
+					
+					local phonemes = vfs.Read("scripts/game_sounds_vo_phonemes.txt")
+					
+					if phonemes then
+						local tbl = {}
+						local i = 0
+						for chunk in phonemes:gmatch("(%S-%s-%b{})") do
+							local path = chunk:match("(.-){"):trim():gsub("\\", "/")
+							tbl["sound/" .. path] = clean_sentence(chunk:match("PLAINTEXT%s-{%s+(.-)%s-}"))
+						end
+						phonemes = tbl
+					end
+					
+					local newlist = {}
+
+					logn("translating ", path)
+					local found = 0
+					
+					local max = 0
+					
+					for k,v in pairs(list) do 
+						for k,v in pairs(v) do 
+							for k,v in pairs(v) do 
+								max = max + 1 
+							end
+						end 
+					end
+					
+					for realm, list in pairs(list) do
+						newlist[realm] = newlist[realm] or {}
+						for trigger, sounds in pairs(list) do
+							newlist[realm][trigger] = newlist[realm][trigger] or {}
+							for i, data in ipairs(sounds) do
+							
+								self:ReportProgress("translating " .. path, max)
+								self:Sleep()
+	
+								if phonemes then 
+									trigger = phonemes[data.path] or trigger
+								else
+									local file = vfs.Open(data.path)
+									
+									if file then
+										local sentence = chatsounds.GetSoundData(file, true)
+										if sentence then 
+											sentence = clean_sentence(sentence)
+											trigger = sentence
+										end
+										file:Close()
+									else 
+										local info = sound_info[data.path:lower()]
+										if info and info.name then
+											trigger = info.name
+										end
+									end
+								end
+								
+								newlist[realm][trigger] = newlist[realm][trigger] or {}
+								
+								table.insert(newlist[realm][trigger], data)
+							end
+						end
+					end
+					logf("translated %i paths\n", found)
+
+					logn("saving ", path)
+					local game_list = chatsounds.TableToList(newlist)
+					
+					vfs.Write("data/chatsounds/lists/" .. path, game_list)
+					
+					--serializer.WriteFile("msgpack", "data/chatsounds/" .. path, chatsounds.TableToTree(list))
+				else
+					logn("sound data not found for ", path)
+				end
+			end
+		end
+		
+		thread:Start()
+	end
+	
 	function chatsounds.ListToTable(data)
 		local list = {}
 		local realm = "misc"
@@ -749,17 +881,29 @@ do -- list parsing
 		return tree
 	end
 
-	function chatsounds.BuildTreeFromCache(list_data, tree_data)
-		local list, tree
-
-		if not tree_data then
-			list = chatsounds.ListToTable(list_data)
+	function chatsounds.LoadData(name)
+		local list_path = "data/chatsounds/lists/"..name..".dat"
+		local tree_path = "data/chatsounds/trees/"..name..".dat"
+		
+		local list
+		local tree
+		
+		if vfs.Exists(list_path) then
+			list = chatsounds.ListToTable(vfs.Read(list_path))
+		end
+		
+		if vfs.Exists(tree_path) then
+			tree = serializer.ReadFile("msgpack", tree_path)
+		elseif list then
 			tree = chatsounds.TableToTree(list)
-		else
-			list = chatsounds.ListToTable(list_data)
-			tree = serializer.Decode("msgpack", tree_data)
+			serializer.WriteFile("msgpack", "data/chatsounds/trees/" .. name, tree)
 		end
 
+		if not list then
+			warning("chatsounds data for %s not found", name)
+			return
+		end
+		
 		chatsounds.list = chatsounds.list or {}
 
 		for k,v in pairs(list) do
@@ -768,125 +912,6 @@ do -- list parsing
 
 		chatsounds.tree = chatsounds.tree or {}
 		table.merge(chatsounds.tree, tree)
-	end
-
-	function chatsounds.BuildTree(name)
-		local list = "data/chatsounds/"..name..".list"
-		local tree = "data/chatsounds/"..name..".tree"
-
-		if vfs.Exists(list) and vfs.Exists(tree) then
-			chatsounds.BuildTreeFromCache(vfs.Read(list), vfs.Read(tree))
-		elseif vfs.Exists(list) then
-			chatsounds.BuildTreeFromCache(vfs.Read(list))
-		else
-			chatsounds.BuildTreeFromAddon()
-		end
-	end
-	
-	function chatsounds.BuildFromAutoadd()
-		local tree = {}
-		local list = {}
-		
-		for realm in vfs.Iterate("sounds/chatsounds/") do
-			tree[realm] = {}
-			for trigger in vfs.Iterate("sounds/chatsounds/" .. realm .. "/") do
-				local path = "sounds/chatsounds/" .. realm .. "/" .. trigger
-				
-				if vfs.IsFile(path) then
-					tree[realm][trigger:match("(.+)%.")] = {path}
-					list[trigger:match("(.+)%.")] = path
-				else
-					tree[realm][trigger] = {}
-					for file_name in vfs.Iterate(path .. "/") do
-						table.insert(tree[realm][trigger], path .. "/" .. file_name)
-						list[trigger] = path .. "/" .. file_name
-					end
-				end
-			end
-		end
-		
-		chatsounds.list = chatsounds.list or {}
-		table.merge(chatsounds.list, list)
-		
-		tree = chatsounds.TableToTree(tree)
-		chatsounds.tree = chatsounds.tree or {}
-		table.merge(chatsounds.tree, tree)
-	end
-
-	function chatsounds.BuildTreeFromAddon()
-		steam.MountAllSourceGames()
-
-		local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
-		local addon_dir = addons .. "chatsounds"
-
-		for dir in vfs.Iterate(addons, nil, true) do
-			if dir:lower():find("chatsound") then
-				addon_dir = dir
-				break
-			end
-		end
-
-		addon_dir = addon_dir .. "/"
-
-		local nosend = addon_dir .. "lua/chatsounds/lists_nosend/"
-		local send = addon_dir .. "lua/chatsounds/lists_send/"
-
-		local function parse(path)
-			local func = assert(loadfile(path))
-			local realm = path:match(".+/(.-)%.lua")
-
-			local L = list[realm] or {}
-
-			setfenv(func, {c = {StartList = function() end, EndList = function() end}, L = L})
-			func()
-
-			list[realm] = L
-		end
-
-		for dir in vfs.Iterate(send, nil, true) do
-			for path in vfs.Iterate(dir .. "/", nil, true) do
-				parse(path)
-			end
-		end
-
-		for path in vfs.Iterate(nosend, nil, true) do
-			parse(path)
-		end
-		
-
-		local tree = {}
-
-		for realm, sounds in pairs(list) do
-			if realm ~= "" then
-				for trigger, data in pairs(sounds) do
-					trigger = trigger:gsub("%p", "")
-
-					local words = {}
-					for word in (trigger .. " "):gmatch("(.-)%s+") do
-						table.insert(words, word)
-					end
-
-					local prev = tree
-					local max = #words
-					for i, word in ipairs(words) do
-						if not prev[word] then prev[word] = {} end
-
-						if i == max then
-							prev[word].SOUND_FOUND = true
-							prev[word].LEVEL = max
-							prev[word].data = prev[word].data or {trigger = trigger, realms = {}}
-
-							prev[word].data.realms[realm] = {sounds = data, realm = realm}
-						end
-
-						prev = prev[word]
-					end
-				end
-			end
-		end
-
-		chatsounds.list = list
-		chatsounds.tree = tree
 	end
 	
 	function chatsounds.AddSound(trigger, realm, ...)
@@ -1409,6 +1434,14 @@ function chatsounds.Say(client, str, seed)
 	chatsounds.PlayScript(script, client)
 end
 
+function chatsounds.GetLists()
+	local out = {}
+	for k,v in pairs(vfs.Find("data/chatsounds/lists/")) do
+		table.insert(out, v:sub(0,-5))
+	end
+	return out
+end
+
 function chatsounds.Initialize()
 	if chatsounds.tree then return end
 
@@ -1416,7 +1449,10 @@ function chatsounds.Initialize()
 	--chatsounds.BuildTree("game")
 	--chatsounds.BuildTree("custom")
 	
-	chatsounds.BuildFromAutoadd()
+	--chatsounds.BuildFromAutoadd()
+	for k,v in pairs(chatsounds.GetLists()) do
+		chatsounds.LoadData(v)
+	end
 
 	if autocomplete then
 		local list = {}
