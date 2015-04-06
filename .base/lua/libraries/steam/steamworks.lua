@@ -8,6 +8,14 @@ for k, v in pairs(steamworks) do
 	steam[k] = v
 end
 
+local active = utility.CreateWeakTable()
+
+function steam.GetFriendObjectFromSteamID(id)
+	active[tostring(id)] = active[tostring(id)] or setmetatable({id = id}, steam.steamid_meta)
+	
+	return active[tostring(id)]
+end
+
 function steam.GetFriends()
 	local out = {}
 	
@@ -68,20 +76,16 @@ do
 		return self:GetChatMessage(i - 1)
 	end
 	
-	--[[
-	local last = {}
-	
-	event.CreateTimer("steam_friends", 0.25, 0, function()
-		for i = 0, steam.friends.GetFriendCount(65535) - 1 do
-			local id = steam.friends.GetFriendByIndex(i, 65535)
-			local message = steam.GetLastChatMessage(id)
+	--[[[event.CreateTimer("steam_friends", 0.25, 0, function()
+		for i, friend in ipairs(steam.GetFriends()) do
+			local message = friend:GetLastChatMessage()
 			if message then
-				if last[tostring(id)] ~= message then
-					event.Call("SteamFriendsMessage", id, message)
+				if friend.last_message ~= message then
+					print(message)
+					event.Call("SteamFriendsMessage", friend, message)
 				end
-				last[tostring(id)] = message
+				friend.last_message = message
 			end
 		end
-	end)
-	]]
+	end)]]
 end
