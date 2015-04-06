@@ -1,9 +1,12 @@
 local autocomplete = _G.autocomplete or {}
 
+local env = {}
+
 do -- lists
 	autocomplete.lists = autocomplete.lists or {}
 
 	function autocomplete.RemoveList(id, list)
+		env[id] = nil
 		for i, v in ipairs(autocomplete.lists) do
 			if v.id == id then
 				table.remove(autocomplete.lists, 1)
@@ -74,7 +77,7 @@ function autocomplete.Search(str, id)
 			search(data.list, str, found)
 		end
 	end
-		
+	
 	return found
 end
  
@@ -106,8 +109,6 @@ end
 function autocomplete.ScrollFound(found, offset)
 	table.scroll(found, offset)
 end
-
-local env = {}
 
 function autocomplete.Query(id, str, scroll, list)
 	scroll = scroll or 0

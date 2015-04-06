@@ -159,6 +159,7 @@ function chat.GetPanel()
 	local edit = frame:CreatePanel("text_edit")
 	edit:SetMargin(Rect()+3)
 	edit:SetupLayout("bottom", "fill_x")
+	edit:AddEvent("PostDrawMenu")
 	frame.edit = edit
 	
 	local tab = frame:CreatePanel("tab")
@@ -310,9 +311,10 @@ function chat.GetPanel()
 	--	end)
 	end
 	
-	edit.OnPostDraw = function()
+	edit.OnPostDrawMenu = function()
 		if found_autocomplete and #found_autocomplete > 0 then
-			autocomplete.DrawFound(0, edit:GetHeight(), found_autocomplete, nil, 2) 
+			local pos = edit:GetWorldPosition()
+			autocomplete.DrawFound(pos.x, pos.y + edit:GetHeight(), found_autocomplete, nil, 2) 
 		end
 	end
 	
