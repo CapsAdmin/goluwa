@@ -19,6 +19,12 @@ function resource.AddProvider(provider)
 	end
 	
 	table.insert(resource.providers, provider)
+	
+	sockets.Download(provider .. "auto_download.txt", function(str)
+		for i,v in ipairs(serializer.Decode("newline", str)) do
+			resource.Download(v)
+		end
+	end)
 end
 
 local function download(from, to, callback, on_fail, on_header)
@@ -97,7 +103,6 @@ local cb = utility.CreateCallbackThing()
 
 function resource.Download(path, callback, on_fail, crc)
 	check(path, "string")
-	check(callback, "function")
 	on_fail = on_fail or logn
 		
 	local url
@@ -113,6 +118,15 @@ function resource.Download(path, callback, on_fail, crc)
 	if not path2 then
 		local path = R(path:lower())
 		if path then path2 = path end
+	end
+	
+	do
+		local old = callback
+		callback = function(path) 
+			if event.Call("ResourceDownloaded", path) ~= false then
+				if old then old(path) end
+			end
+		end
 	end
 
 	if path2 and vfs.IsFile(path2) then
