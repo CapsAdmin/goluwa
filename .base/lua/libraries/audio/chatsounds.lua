@@ -625,6 +625,8 @@ do -- list parsing
 					end
 				end
 				
+				game = vfs.FixIllegalCharactersInPath(game)
+				
 				logn("saving data/chatsounds/sound_info/"..game..".dat")
 				serializer.WriteFile("msgpack", "data/chatsounds/sound_info/"..game..".dat", out)
 				--serializer.WriteFile("luadata", "chatsounds/"..game.."_sound_info.lua", out)
@@ -682,6 +684,8 @@ do -- list parsing
 				end
 
 				local game_list = table.concat(game, "")
+				
+				game_name = vfs.FixIllegalCharactersInPath(game_name)
 
 				vfs.Write("data/chatsounds/lists/"..game_name..".dat", game_list)
 				--serializer.WriteFile("msgpack", "data/chatsounds/"..game_name..".tree", chatsounds.TableToTree(chatsounds.ListToTable(game_list)))
@@ -792,6 +796,8 @@ do -- list parsing
 					logn("saving ", path)
 					local game_list = chatsounds.TableToList(newlist)
 					
+					path = vfs.FixIllegalCharactersInPath(path)
+
 					vfs.Write("data/chatsounds/lists/" .. path, game_list)
 					
 					--serializer.WriteFile("msgpack", "data/chatsounds/" .. path, chatsounds.TableToTree(list))
@@ -885,33 +891,39 @@ do -- list parsing
 		local list_path = "data/chatsounds/lists/"..name..".dat"
 		local tree_path = "data/chatsounds/trees/"..name..".dat"
 		
-		local list
-		local tree
+		--resource.Download(list_path, function(list_path)
 		
-		if vfs.Exists(list_path) then
-			list = chatsounds.ListToTable(vfs.Read(list_path))
-		end
-		
-		if vfs.Exists(tree_path) then
-			tree = serializer.ReadFile("msgpack", tree_path)
-		elseif list then
-			tree = chatsounds.TableToTree(list)
-			serializer.WriteFile("msgpack", "data/chatsounds/trees/" .. name, tree)
-		end
+			steam.MountSourceGame(name)
+			
+			local list
+			local tree
+			
+			if vfs.Exists(list_path) then
+				list = chatsounds.ListToTable(vfs.Read(list_path))
+			end
+			
+			if vfs.Exists(tree_path) then
+				tree = serializer.ReadFile("msgpack", tree_path)
+			elseif list then
+				tree = chatsounds.TableToTree(list)
+				name = vfs.FixIllegalCharactersInPath(name)			
+				serializer.WriteFile("msgpack", "data/chatsounds/trees/" .. name, tree)
+			end
 
-		if not list then
-			warning("chatsounds data for %s not found", name)
-			return
-		end
-		
-		chatsounds.list = chatsounds.list or {}
+			if not list then
+				warning("chatsounds data for %s not found", name)
+				return
+			end
+			
+			chatsounds.list = chatsounds.list or {}
 
-		for k,v in pairs(list) do
-			chatsounds.list[k] = v
-		end
+			for k,v in pairs(list) do
+				chatsounds.list[k] = v
+			end
 
-		chatsounds.tree = chatsounds.tree or {}
-		table.merge(chatsounds.tree, tree)
+			chatsounds.tree = chatsounds.tree or {}
+			table.merge(chatsounds.tree, tree)
+--		end)
 	end
 	
 	function chatsounds.AddSound(trigger, realm, ...)
@@ -1451,7 +1463,7 @@ function chatsounds.Initialize()
 	
 	--chatsounds.BuildFromAutoadd()
 	for k,v in pairs(chatsounds.GetLists()) do
-		chatsounds.LoadData(v)
+		chatsounds.LoadData(vfs.FixIllegalCharactersInPath(v))
 	end
 
 	if autocomplete then
@@ -1479,5 +1491,11 @@ end
 --chatsounds.Say("1 2 3 4 | 5 6 7 8")
 --chatsounds.Say("if you need instructions on how to get through the hotels check out the enclosed instruction book")
 --chatsounds.Say("uh oh%50 uh oh%50 uh oh%50") 
+
+	
+event.AddListener("ConsoleLineEntered", "chatsounds", function(message)
+	chatsounds.Initialize()
+	chatsounds.Say(message)
+end)
 
 return chatsounds
