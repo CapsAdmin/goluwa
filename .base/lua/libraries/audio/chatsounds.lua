@@ -891,8 +891,7 @@ do -- list parsing
 		local list_path = "data/chatsounds/lists/"..name..".dat"
 		local tree_path = "data/chatsounds/trees/"..name..".dat"
 		
-		--resource.Download(list_path, function(list_path)
-		
+		resource.Download(list_path, function(list_path)		
 			steam.MountSourceGame(name)
 			
 			local list
@@ -923,7 +922,23 @@ do -- list parsing
 
 			chatsounds.tree = chatsounds.tree or {}
 			table.merge(chatsounds.tree, tree)
---		end)
+			
+			if autocomplete then
+				event.DeferExecution(function()
+					local list = {}
+
+					for key, val in pairs(chatsounds.list) do
+						for key, val in pairs(val) do
+							table.insert(list, key)
+						end
+					end
+
+					table.sort(list, function(a, b) return #a < #b end)
+
+					autocomplete.AddList("chatsounds", list)
+				end, nil, "chatsounds_autocomplete")
+			end
+		end)
 	end
 	
 	function chatsounds.AddSound(trigger, realm, ...)
@@ -1466,18 +1481,6 @@ function chatsounds.Initialize()
 		chatsounds.LoadData(vfs.FixIllegalCharactersInPath(v))
 	end
 
-	if autocomplete then
-		local list = {}
-
-		for key, val in pairs(chatsounds.list) do
-			table.insert(list, key)
-		end
-
-		table.sort(list, function(a, b) return #a < #b end)
-
-		autocomplete.AddList("chatsounds", list)
-	end
-
 	event.AddListener("Update", "chatsounds", chatsounds.Update)
 end
 
@@ -1492,10 +1495,10 @@ end
 --chatsounds.Say("if you need instructions on how to get through the hotels check out the enclosed instruction book")
 --chatsounds.Say("uh oh%50 uh oh%50 uh oh%50") 
 
-	
-event.AddListener("ConsoleLineEntered", "chatsounds", function(message)
-	chatsounds.Initialize()
-	chatsounds.Say(message)
+event.AddListener("ResourceDownloaded", function(path)
+	if path:find("chatsounds/lists/", nil, true) then
+		chatsounds.LoadData(path:match(".+/(.+)%.dat"))
+	end
 end)
 
 return chatsounds
