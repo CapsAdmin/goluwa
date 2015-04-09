@@ -1,5 +1,5 @@
 local audio = ... or _G.audio
-local soundfile = require("audio.ffi.libsoundfile") -- sound decoder
+local soundfile = require("audio.ffi.libsndfile") -- sound decoder
 
 -- googled: https://github.com/mkottman/lua-git/issues/13
 local function tmpname()
@@ -12,7 +12,7 @@ local function tmpname()
 	end
 end
 
-audio.AddDecoder("libsoundfile", function(data, path_hint)
+audio.AddDecoder("libsndfile", function(data, path_hint)
 	if type(length) == "number" and type(data) == "cdata" then
 		data = ffi.string(data, length)
 	end

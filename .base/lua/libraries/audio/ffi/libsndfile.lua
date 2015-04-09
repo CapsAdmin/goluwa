@@ -271,7 +271,7 @@ ffi.cdef(header)
 header = header:gsub("%s+", " ")
 header = header:gsub(";", "%1\n")
 
-local libsoundfile = {lib = lib, e = enums}
+local libsndfile = {lib = lib, e = enums}
 
 for line in header:gmatch("(.-)\n") do
 	if not line:find("typedef") then
@@ -284,16 +284,16 @@ for line in header:gmatch("(.-)\n") do
 			temp = temp:gsub("_readf", "_read_frames")
 			local friendly = ("_" .. temp):sub(4):gsub("(_%l)", function(char) return char:sub(2,2):upper() end)
 			
-			libsoundfile[friendly] = lib[func]
+			libsndfile[friendly] = lib[func]
 		end
 	end
 end 
 
 -- eek
-libsoundfile.ErrorString = libsoundfile.ErrorStr
-libsoundfile.ErrorStr = nil
+libsndfile.ErrorString = libsndfile.ErrorStr
+libsndfile.ErrorStr = nil
 
-libsoundfile.StringError = libsoundfile.Stringrror
-libsoundfile.Stringrror = nil 
+libsndfile.StringError = libsndfile.Stringrror
+libsndfile.Stringrror = nil 
 
-return libsoundfile
+return libsndfile
