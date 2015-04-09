@@ -118,33 +118,35 @@ function steam.GetSourceGames()
 					
 					tbl.game_dir = game_dir
 					
-					local asdf = false
-					
-					if tbl.filesystem and tbl.filesystem.steamappid then
-						for k,v in ipairs(found) do
-							if v.filesystem and v.filesystem.steamappid == tbl.filesystem.steamappid then
-								table.add(v.filesystem.searchpaths, tbl.filesystem.searchpaths)
-								asdf = true
-								break
-							end
-						end
-					end
-					
-					if not asdf then
-						for k,v in pairs(tbl.filesystem.searchpaths) do
-							for k,v in pairs(type(v) == "string" and {v} or v) do
-								local name = v:match(".+/(.+)/%.")
-								if name then
-									tbl.short_name = name
-									goto next
+					if tbl.filesystem then						
+						local asdf = false
+						
+						if tbl.filesystem.steamappid then
+							for k,v in ipairs(found) do
+								if v.filesystem and v.filesystem.steamappid == tbl.filesystem.steamappid then
+									table.add(v.filesystem.searchpaths, tbl.filesystem.searchpaths)
+									asdf = true
+									break
 								end
 							end
 						end
-						::next::
 						
-						tbl.short_name = tbl.short_name or "none"
-					
-						table.insert(found, tbl)
+						if not asdf then
+							for k,v in pairs(tbl.filesystem.searchpaths) do
+								for k,v in pairs(type(v) == "string" and {v} or v) do
+									local name = v:match(".+/(.+)/%.")
+									if name then
+										tbl.short_name = name
+										goto next
+									end
+								end
+							end
+							::next::
+							
+							tbl.short_name = tbl.short_name or "none"
+						
+							table.insert(found, tbl)
+						end
 					end
 				end
 			end
