@@ -6,6 +6,8 @@ local audio = ... or _G.audio
 
 audio.AddDecoder("lame", function(data, path_hint)
 	local file = assert(vfs.Open(path_hint))
+	
+	if data:sub(0,3) ~= "ID3" then return false, "unknown format" end
 
 	local lame = lib.lame_init()
 	local hip = lib.hip_decode_init()
@@ -54,10 +56,8 @@ audio.AddDecoder("lame", function(data, path_hint)
 		total_size = total_size + size]] 
 	end
 
-
-
-	logn("delay", " = ", enc_delay[0])
-	logn("padding", " = ", enc_padding[0])
+	--logn("delay", " = ", enc_delay[0])
+	--logn("padding", " = ", enc_padding[0])
 
 	lib.hip_decode_exit(hip)
 	lib.lame_close(lame)
