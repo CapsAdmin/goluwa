@@ -1,4 +1,6 @@
-return [[
+-- header stolen from https://code.google.com/p/lua-files!!
+
+local header = [[
 typedef enum {
         FT_FACE_FLAG_SCALABLE           = ( 1 <<  0 ),
         FT_FACE_FLAG_FIXED_SIZES        = ( 1 <<  1 ),
@@ -619,3 +621,141 @@ FT_Error FT_Library_SetLcdFilter(FT_Library library, FT_LcdFilter  filter);
 FT_Error FT_Library_SetLcdFilterWeights(FT_Library library, unsigned char* weights);
 
 ]]
+local errors = {
+	[0x01] = "Cannot Open Resource",
+	[0x02] = "Unknown File Format",
+	[0x03] = "Invalid File Format",
+	[0x04] = "Invalid Version",
+	[0x05] = "Lower Module Version",
+	[0x06] = "Invalid Argument",
+	[0x07] = "Unimplemented Feature",
+	[0x08] = "Invalid Table",
+	[0x09] = "Invalid Offset",
+	[0x0A] = "Array Too Large",
+	[0x10] = "Invalid Glyph Index",
+	[0x11] = "Invalid Character Code",
+	[0x12] = "Invalid Glyph Format",
+	[0x13] = "Cannot Render Glyph",
+	[0x14] = "Invalid Outline",
+	[0x15] = "Invalid Composite",
+	[0x16] = "Too Many Hints",
+	[0x17] = "Invalid Pixel Size",
+	[0x20] = "Invalid Handle",
+	[0x21] = "Invalid Library Handle",
+	[0x22] = "Invalid Driver Handle",
+	[0x23] = "Invalid Face Handle",
+	[0x24] = "Invalid Size Handle",
+	[0x25] = "Invalid Slot Handle",
+	[0x26] = "Invalid CharMap Handle",
+	[0x27] = "Invalid Cache Handle",
+	[0x28] = "Invalid Stream Handle",
+	[0x30] = "Too Many Drivers",
+	[0x31] = "Too Many Extensions",
+	[0x40] = "Out Of Memory",
+	[0x41] = "Unlisted Object",
+	[0x51] = "Cannot Open Stream",
+	[0x52] = "Invalid Stream Seek",
+	[0x53] = "Invalid Stream Skip",
+	[0x54] = "Invalid Stream Read",
+	[0x55] = "Invalid Stream Operation",
+	[0x56] = "Invalid Frame Operation",
+	[0x57] = "Nested Frame Access",
+	[0x58] = "Invalid Frame Read",
+	[0x60] = "Raster Uninitialized",
+	[0x61] = "Raster Corrupted",
+	[0x62] = "Raster Overflow",
+	[0x63] = "Raster Negative Height",
+	[0x70] = "Too Many Caches",
+	[0x80] = "Invalid Opcode",
+	[0x81] = "Too Few Arguments",
+	[0x82] = "Stack Overflow",
+	[0x83] = "Code Overflow",
+	[0x84] = "Bad Argument",
+	[0x85] = "Divide By Zero",
+	[0x86] = "Invalid Reference",
+	[0x87] = "Debug OpCode",
+	[0x88] = "ENDF In Exec Stream",
+	[0x89] = "Nested DEFS",
+	[0x8A] = "Invalid CodeRange",
+	[0x8B] = "Execution Too Long",
+	[0x8C] = "Too Many Function Defs",
+	[0x8D] = "Too Many Instruction Defs",
+	[0x8E] = "Table Missing",
+	[0x8F] = "Horiz Header Missing",
+	[0x90] = "Locations Missing",
+	[0x91] = "Name Table Missing",
+	[0x92] = "CMap Table Missing",
+	[0x93] = "Hmtx Table Missing",
+	[0x94] = "Post Table Missing",
+	[0x95] = "Invalid Horiz Metrics",
+	[0x96] = "Invalid CharMap Format",
+	[0x97] = "Invalid PPem",
+	[0x98] = "Invalid Vert Metrics",
+	[0x99] = "Could Not Find Context",
+	[0x9A] = "Invalid Post Table Format",
+	[0x9B] = "Invalid Post Table",
+	[0xA0] = "Syntax Error",
+	[0xA1] = "Stack Underflow",
+	[0xA2] = "Ignore",
+	[0xA3] = "No Unicode Glyph Name",
+	[0xB0] = "Missing Startfont Field",
+	[0xB1] = "Missing Font Field",
+	[0xB2] = "Missing Size Field",
+	[0xB3] = "Missing Fontboundingbox Field",
+	[0xB4] = "Missing Chars Field",
+	[0xB5] = "Missing Startchar Field",
+	[0xB6] = "Missing Encoding Field",
+	[0xB7] = "Missing Bbx Field",
+	[0xB8] = "Bbx Too Big",
+	[0xB9] = "Corrupted Font Header",
+	[0xBA] = "Corrupted Font Glyphs",
+}
+  
+ffi.cdef(header) 
+ 
+local lib = assert(ffi.load("freetype"))
+ 
+local freetype = {
+	lib = lib,
+}
+ 
+for line in header:gmatch("(.-)\n") do
+	if not line:find("typedef") and not line:find("=")  then
+		local name = line:match(" FT_(.-)%(")
+		
+			
+		if name then  
+			name = name:trim()
+			local return_type = line:match("^(.-)%sFT_")
+			local friendly_name = name:gsub("_", "")
+			local ok, func = pcall(function() return lib["FT_" .. name] end)
+			
+			if ok then
+				freetype[friendly_name] = function(...)
+					local val = func(...)
+					
+					if return_type == "FT_Error" and val ~= 0 then
+						local info = debug.getinfo(2)
+				
+						logf("[freetype] %q in function %s at %s:%i\n", errors[val] or ("unknonw error " .. val), info.name, info.source, info.currentline)
+					end
+					
+										
+					if freetype.logcalls then
+						setlogfile("freetype_calls")
+							logf("%s = FT_%s(%s)\n", serializer.GetLibrary("luadata").ToString(val), name, table.concat(tostring_args(...), ",\t"))
+						setlogfile()
+					end					
+					
+					return val
+				end
+			else
+				print(func)
+			end
+		end
+	end
+end
+
+freetype.lib = lib
+ 
+return freetype   

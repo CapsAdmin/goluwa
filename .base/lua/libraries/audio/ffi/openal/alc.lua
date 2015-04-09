@@ -65,6 +65,116 @@ if jit.os == "Windows" then
 else
 	header = header:gsub("ALC_APIENTRY", "")
 	header = header:gsub("ALC_API", "extern")
+end 
+local enums =  {
+	ALC_INVALID = 0,
+	ALC_VERSION_0_1 = 1,
+	ALC_FALSE = 0,
+	ALC_TRUE = 1,
+	ALC_FREQUENCY = 0x1007,
+	ALC_REFRESH = 0x1008,
+	ALC_SYNC = 0x1009,
+	ALC_MONO_SOURCES = 0x1010,
+	ALC_STEREO_SOURCES = 0x1011,
+	ALC_NO_ERROR = 0,
+	ALC_INVALID_DEVICE = 0xA001,
+	ALC_INVALID_CONTEXT = 0xA002,
+	ALC_INVALID_ENUM = 0xA003,
+	ALC_INVALID_VALUE = 0xA004,
+	ALC_OUT_OF_MEMORY = 0xA005,
+	ALC_DEFAULT_DEVICE_SPECIFIER = 0x1004,
+	ALC_DEVICE_SPECIFIER = 0x1005,
+	ALC_EXTENSIONS = 0x1006,
+	ALC_MAJOR_VERSION = 0x1000,
+	ALC_MINOR_VERSION = 0x1001,
+	ALC_ATTRIBUTES_SIZE = 0x1002,
+	ALC_ALL_ATTRIBUTES = 0x1003,
+	ALC_CAPTURE_DEVICE_SPECIFIER = 0x310,
+	ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER = 0x311,
+	ALC_CAPTURE_SAMPLES = 0x312,
+	
+	ALC_ALL_ATTRIBUTES = 4099,
+	ALC_ALL_DEVICES_SPECIFIER = 4115,
+	ALC_ATTRIBUTES_SIZE = 4098,
+	ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER = 785,
+	ALC_CAPTURE_DEVICE_SPECIFIER = 784,
+	ALC_CAPTURE_SAMPLES = 786,
+	ALC_DEFAULT_ALL_DEVICES_SPECIFIER = 4114,
+	ALC_DEFAULT_DEVICE_SPECIFIER = 4100,
+	ALC_DEVICE_SPECIFIER = 4101,
+	ALC_ENUMERATE_ALL_EXT = 1,
+	ALC_EXT_CAPTURE = 1,
+	ALC_EXTENSIONS = 4102,
+	ALC_FALSE = 0,
+	ALC_FREQUENCY = 4103,
+	ALC_INVALID = 0,
+	ALC_INVALID_CONTEXT = 40962,
+	ALC_INVALID_DEVICE = 40961,
+	ALC_INVALID_ENUM = 40963,
+	ALC_INVALID_VALUE = 40964,
+	ALC_MAJOR_VERSION = 4096,
+	ALC_MINOR_VERSION = 4097,
+	ALC_MONO_SOURCES = 4112,
+	ALC_NO_ERROR = 0,
+	ALC_OUT_OF_MEMORY = 40965,
+	ALC_REFRESH = 4104,
+	ALC_STEREO_SOURCES = 4113,
+	ALC_SYNC = 4105,
+	ALC_TRUE = 1,
+	ALC_VERSION_0_1 = 1,
+	
+	ALC_EFX_MAJOR_VERSION = 0x20001,
+	ALC_EFX_MINOR_VERSION = 0x20002,
+	ALC_MAX_AUXILIARY_SENDS = 0x20003,
+	
+	
+	
+	ALC_EXT_EFX_NAME = "ALC_EXT_EFX",
+	ALC_EFX_MAJOR_VERSION = 0x20001,
+	ALC_EFX_MINOR_VERSION = 0x20002,
+	ALC_MAX_AUXILIARY_SENDS = 0x20003,
+}
+
+local reverse_enums = {}
+for k,v in pairs(enums) do 
+	k = k:gsub("AL_", "")
+	k = k:gsub("_", " ")
+	k = k:lower()	
+
+	reverse_enums[v] = k 
 end
 
-return header
+ffi.cdef(header)
+
+local lib = assert(ffi.load(jit.os == "Windows" and "openal32" or "openal"))
+
+local alc = {
+	lib = lib, 
+	e = enums,
+}
+
+for line in header:gmatch("(.-)\n") do
+	local func_name = line:match(" (alc%u.-)%(")
+	if func_name then
+		local name = func_name:sub(4)
+		alc[name] = function(...) 
+		
+			if name ~= "GetError" and alc.debug and alc.device then
+			
+				local code = alc.GetError(alc.device)
+			
+				if code ~= 0 then
+					local str = reverse_enums[code] or "unkown error"
+					
+					local info = debug.getinfo(2)
+					
+					logf("[alc] %q in function %s at %s:%i\n", str, info.name, info.source, info.currentline)
+				end
+			end
+		
+			return lib[func_name](...)
+		end
+	end
+end
+
+return alc
