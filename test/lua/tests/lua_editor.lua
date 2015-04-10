@@ -78,6 +78,8 @@ do
   
   
 	function syntax_process(str, markup)
+		markup:Clear()
+		
 		local ls = lex_setup(reader.string(str), str)
 
 		local last_pos = 1
@@ -120,22 +122,20 @@ do
 end 
    
 local frame = utility.RemoveOldObject(gui.CreatePanel("frame"), "markup")
-frame:SetSize(1000, 1000)
-frame:RequestLayout(true) 
+frame:SetSize(Vec2(500, 500))
 
 local scroll = gui.CreatePanel("scroll", frame)
 scroll:SetupLayout("fill_x", "fill_y")
 
-local markup = scroll:SetPanel(gui.Create("text_input"))
-markup:SetMultiLine(true)
-markup:SetEditorMode(true)
-markup:SetWrap(false )
-markup.markup:SetFastMode(true)
+local edit = scroll:SetPanel(gui.CreatePanel("text_edit"))
+edit:SetStyle("frame2")
+edit:GetMarkup():SetSuperLightMode(true) 
 
-function markup:OnTextChanged()
-	self:SizeToContents()
+function edit:OnTextChanged()
+	syntax_process(self:GetText(), self:GetMarkup())
+	self:SizeToText()
 end    
  
-syntax_process(vfs.Read("lua/tests/bsp.lua") or "local hello = ''\n asdasdasd = 1234\n --[[it's a comment]] local test \n --it's really powerful\n", markup.markup)  
+syntax_process(vfs.Read("lua/tests/lua_editor.lua") or "local hello = ''\n asdasdasd = 1234\n --[[it's a comment]] local test \n --it's really powerful\n", edit:GetMarkup())  
 
-window.SetSize(Vec2(1680, 1050)) 
+edit:SizeToText()
