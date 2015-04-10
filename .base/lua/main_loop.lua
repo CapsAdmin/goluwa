@@ -87,9 +87,10 @@ local function main()
 	
 	if OnUpdate then
 		function OnUpdate()
-			local ok, err = pcall(update)
-			if not ok then 
-				logn(err) 
+			if update() == false or not system.run then 
+				event.Call("ShutDown")
+				OnUpdate = nil
+				--os.realexit(system.run)
 			end
 		end
 	else
@@ -102,5 +103,7 @@ local function main()
 end
 
 main()
-event.Call("ShutDown")
-os.realexit(system.run)
+if not OnUpdate then
+	event.Call("ShutDown")
+	os.realexit(system.run)
+end
