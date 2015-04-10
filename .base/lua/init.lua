@@ -252,7 +252,7 @@ do -- libraries
 	end
 
 	if GRAPHICS then
-		gui = include("lua/libraries/gui/gui.lua")
+		gui = include("lua/libraries/graphics/gui/gui.lua")
 	end
 	
 	-- include the filesystem again so it will include all the details such as zip file reading

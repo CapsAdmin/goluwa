@@ -329,7 +329,7 @@ do -- skin
 		gui.scale = skin.scale or gui.scale
 		
 		if reload_panels then 
-			include("lua/libraries/gui/panels/*", gui) 
+			include("lua/libraries/graphics/gui/panels/*", gui) 
 		end
 		
 		for panel in pairs(gui.panels) do
@@ -424,7 +424,7 @@ function gui.CreateWorld()
 end
 
 function gui.Initialize()
-	include("lua/libraries/gui/skins/*", gui)
+	include("lua/libraries/graphics/gui/skins/*", gui)
 	gui.SetSkin("gwen_dark")
 
 	gui.RemovePanel(gui.world)

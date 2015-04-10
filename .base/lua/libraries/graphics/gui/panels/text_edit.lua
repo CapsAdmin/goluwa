@@ -39,6 +39,10 @@ function PANEL:Initialize()
 	self:SetCursor("ibeam")
 end
 
+function PANEL:GetMarkup()
+	return self.label.markup
+end
+
 function PANEL:OnStyleChanged(skin)
 	self:SetCaretColor(skin.text_edit_color:Copy())
 	self:SetSelectionColor(skin.text_edit_color:Copy():SetAlpha(0.5))
