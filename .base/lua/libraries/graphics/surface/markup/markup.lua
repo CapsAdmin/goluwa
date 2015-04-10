@@ -76,6 +76,9 @@ end
 
 function META:Clear()
 	self.chunks = {}
+	self.remove_these = {}
+	self.started_tags = {}
+	
 	self:Invalidate()
 end
 
