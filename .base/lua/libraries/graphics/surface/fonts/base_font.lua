@@ -114,6 +114,20 @@ function META:DrawString(str, x, y, w)
 	end
 end
 
+function META:SetPolyChar(poly, i, x, y, char)
+	local ch = self.chars[char]
+	
+	if ch then
+		local x_,y_, w,h, sx,sy = self.texture_atlas:GetUV(char)
+		poly:SetUV(x_,y_, w,h, sx,sy)
+		
+		x = (x-self.Padding/2) * self.Scale.w 
+		y = ((y+self.Padding/2) * self.Scale.h) + (ch.h - ch.bitmap_top) + self.Size
+		
+		poly:SetRect(i, x, y, w * self.Scale.w, -h * self.Scale.h)
+	end
+end
+
 function META:CompileString(data)	
 	local size = 0
 	
@@ -194,16 +208,7 @@ function META:CompileString(data)
 						last_tex = texture
 					end
 					
-					local x,y, w,h, sx,sy = self.texture_atlas:GetUV(char)
-					poly:SetUV(x,y, w,h, sx,sy) 
-					
-					poly:SetRect(
-						i, 
-						(X-self.Padding/2) * self.Scale.w, 
-						((Y+self.Padding/2) * self.Scale.h) + (ch.h - ch.bitmap_top) + self.Size, 
-						w * self.Scale.w, 
-						-h * self.Scale.h
-					)
+					self:SetPolyChar(poly, i, X, Y, char)
 					
 					if self.Monospace then 
 						X = X + self.Spacing
