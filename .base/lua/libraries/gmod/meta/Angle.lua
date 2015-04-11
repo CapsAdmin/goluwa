@@ -15,7 +15,7 @@ function META:__index(key)
 end
 
 function META:__newindex(key, val)
-	self.v[key] = val
+	--self.q[key] = val
 end
 
 function META:__tostring()

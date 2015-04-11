@@ -216,6 +216,11 @@ end
 function META:SetWorldClicker()
 end
 
+-- html
+function META:IsLoading()
+	return true
+end
+
 
 function META:GetContentSize()
 	return self.__obj:GetSizeOfChildren():Unpack()
