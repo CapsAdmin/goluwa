@@ -60,7 +60,7 @@ function vgui.CreateX(class, parent, name)
 			self:PaintOver(obj:GetWidth(), obj:GetHeight()) 
 		end 
 	end
-	obj.OnRemove = function() if self.OnDeletion then self:OnDeletion() end end
+	obj:CallOnRemove(function() if self.OnDeletion then self:OnDeletion() end end)
 	obj.OnUpdate = function() if self.Think then self:Think() end end
 	obj.OnMouseMove = function(_, x, y) if self.OnCursorMoved then self:OnCursorMoved(x, y) end end
 	obj.OnMouseEnter = function() if self.OnMouseEnter then self:OnMouseEnter() end end

@@ -194,3 +194,11 @@ end
 function META:PaintManual(b)
 	self.__obj.draw_manual = b
 end
+
+function META:SetDrawOnTop(b)
+	self.__obj.draw_ontop = b
+end
+
+function META:GetContentSize()
+	return self.__obj:GetSizeOfChildren():Unpack()
+end
