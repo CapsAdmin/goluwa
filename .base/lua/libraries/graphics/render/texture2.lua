@@ -183,7 +183,7 @@ if not gl.CreateTextures then
 			bind(self) return gl.GetTexParameterfvEXT(self.id, target, pname, params)
 		end
 		function META:GenerateMipmap()
-			bind(self) return gl.GenerateTexMipmap(self.id)
+			bind(self) return gl.GenerateMipmap(self.target)
 		end
 		function META:CopyImage1D(target, level, internalformat, x, y, width, border)
 			bind(self) return gl.CopyTexImage1DEXT(self.id, target, level, internalformat, x, y, width, border)
@@ -225,7 +225,9 @@ if not gl.CreateTextures then
 			temp[0] = self.id
 			gl.DeleteTextures(1, temp)
 		end
+		META.not_dsa = true
 		function gl.CreateTexture(target)
+			local self = setmetatable({}, META)
 			self.id = gl.GenTexture()
 			self.target = target
 			return self
@@ -702,18 +704,23 @@ do
 
 end
 
-
 function META:Bind(location)
-	gl.BindTextureUnit(location, self.gl_tex.id)
+	if self.dsa then
+		gl.BindTextureUnit(location, self.gl_tex.id)
+	else
+		gl.BindTexture(self.gl_tex.target, self.gl_tex.id)
+	end
 end
 
 META:Register()
 
-local function Texture(storage_type)	
+local function render.CreateTexture2(storage_type)	
 	local self = prototype.CreateObject(META)
 	if storage_type then self:SetStorageType(storage_type) end
 	
 	self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
+	
+	self.dsa = not self.gl_tex.not_dsa
 	
 	return self
 end
@@ -730,9 +737,10 @@ end
 
 
 
-local tex = Texture("2d")
+local tex = render.CreateTexture2("2d")
 
-tex:LoadCubemap("materials/skybox/sky_borealis01")
+--tex:LoadCubemap("materials/skybox/sky_borealis01")
+tex:SetPath("https://i.ytimg.com/vi/YC4mDN7ltT0/default.jpg")
 
 
 local shader = render.CreateShader({
@@ -740,22 +748,24 @@ local shader = render.CreateShader({
 	fragment = {
 		variables = {
 			cam_dir = {vec3 = function() return render.camera_3d:GetAngles():GetForward() end},
+			tex = "sampler2D",
 		},
 		mesh_layout = {
 			{uv = "vec2"},
 		},			
 		source = [[
-			#version 420
-			#extension GL_NV_shadow_samplers_cube:enable
+			//#version 330
+			//#extension GL_NV_shadow_samplers_cube:enable
 			
-			layout(binding = 0) uniform sampler2D tex1;
-			//layout(binding = 0) uniform samplerCube tex1;
+			//layout(binding = 0) uniform sampler2D tex;
+			//layout(binding = 0) uniform samplerCube tex;
+
 			out highp vec4 frag_color;
 			
 			void main()
 			{	
-				vec4 tex_color = texture(tex1, uv); 
-				//vec4 tex_color = texture(tex1, cam_dir); 
+				vec4 tex_color = texture(tex, uv); 
+				//vec4 tex_color = texture(tex, cam_dir); 
 				
 				frag_color = tex_color;
 			}
@@ -766,7 +776,8 @@ local shader = render.CreateShader({
 gl.Enable("GL_TEXTURE_CUBE_MAP") 
 
 event.AddListener("PostDrawMenu", "lol", function()
-	tex:Bind(0)
+	--tex:Bind(0)
+	shader.tex = tex
 	surface.PushMatrix(0, 0, tex:GetSize():Unpack())
 		render.SetShaderOverride(shader)
 		surface.rect_mesh:Draw()
