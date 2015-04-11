@@ -69,7 +69,12 @@ do -- include
 	end
 	
 	function vfs.PopFromIncludeStack()
+		local path = include_stack[#include_stack]
 		table.remove(include_stack)
+	end
+	
+	function vfs.GetIncludeStack()
+		return include_stack
 	end
 	
 	local function not_found(err)
@@ -130,7 +135,7 @@ do -- include
 			
 			return
 		end
-						
+		
 		-- try direct first
 		local loaded_path = source
 			
@@ -199,6 +204,8 @@ do -- include
 		return false, err
 	end
 end
+
+include = vfs.include
 
 -- although vfs will add a loader for each mount, the module folder has to be an exception for modules only
 -- this loader should support more ways of loading than just adding ".lua"
