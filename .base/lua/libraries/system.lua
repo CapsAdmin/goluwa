@@ -764,6 +764,10 @@ do
 		suppress = false
 		logsection("lua error", false)
 	end
+
+	function system.pcall(func, ...)
+		return xpcall(func, system.OnError, ...)
+	end
 end
 
 do -- environment
@@ -840,7 +844,7 @@ do -- environment
 		function env:OnReceive(line)
 			local func, msg = loadstring(line)
 			if func then
-				local ok, msg = xpcall(func, system.OnError) 
+				local ok, msg = system.pcall(func) 
 				if not ok then
 					logn("runtime error:", client, msg)
 				end
@@ -898,7 +902,7 @@ do -- environment
 				local func, msg = loadstring(line)
 
 				if func then
-					local ok, msg = xpcall(func, system.OnError) 
+					local ok, msg = system.pcall(func) 
 					if not ok then
 						logn("runtime error:", client, msg)
 					end

@@ -108,7 +108,7 @@ do -- commands
 	end
 	
 	local function call(data, line, ...)
-		local a, b, c = xpcall(data, system.OnError, line, ...)
+		local a, b, c = system.pcall(data, line, ...)
 
 		if a and b ~= nil then
 			return b, c
@@ -334,7 +334,7 @@ do -- commands
 		
 		if not func then return func, err end
 		
-		local ret = {xpcall(func, system.OnError)}
+		local ret = {system.pcall(func)}
 		
 		if log_error and not ret[1] then
 			if ret[2] then logn(ret[2]) end

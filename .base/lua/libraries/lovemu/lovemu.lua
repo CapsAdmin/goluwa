@@ -219,8 +219,8 @@ function lovemu.RunGame(folder, ...)
 	setfenv(main, env)
 	setfenv(love.load, env)
 	
-	if not xpcall(main, system.OnError) then return end
-	if not xpcall(love.load, system.OnError, {}) then return end
+	if not system.pcall(main) then return end
+	if not system.pcall(love.load, {}) then return end
 			
 	
 	local id = "lovemu_" .. folder
@@ -247,7 +247,7 @@ function lovemu.RunGame(folder, ...)
 			
 			if not lovemu.errored then
 				surface.PushMatrix()
-				local err, msg = xpcall(run, system.OnError, dt)
+				local err, msg = system.pcall(run, dt)
 				surface.PopMatrix()
 				if not err then
 					warning(msg)

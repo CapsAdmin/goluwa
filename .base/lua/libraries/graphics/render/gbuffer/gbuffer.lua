@@ -473,7 +473,7 @@ event.AddListener("RenderContextInitialized", nil, function()
 		if not console.GetVariable("render_deferred") then return end
 		if table.count(entities.GetAll()) ~= 0 then return end
 	
-		local ok, err = xpcall(render.InitializeGBuffer, system.OnError)
+		local ok, err = system.pcall(render.InitializeGBuffer)
 		
 		if not ok then
 			warning("failed to initialize gbuffer: ", err)

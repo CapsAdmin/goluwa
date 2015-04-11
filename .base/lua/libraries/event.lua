@@ -238,7 +238,7 @@ do -- timers
 			return self.callback
 		end
 		function META:Call(...)
-			return xpcall(self.callback, system.OnError, ...)
+			return system.pcall(self.callback, ...)
 		end
 		function META:SetNextThink(num)
 			self.realtime = system.GetElapsedTime() + num
@@ -393,7 +393,7 @@ do -- timers
 					local time = 0
 					repeat
 						local start = system.GetTime()
-						local ok, res = xpcall(data.callback, system.OnError)
+						local ok, res = system.pcall(data.callback)
 						
 						if system.GetFrameTime() >= data.fps then break end
 						
@@ -413,7 +413,7 @@ do -- timers
 						local errored = false
 						
 						for i = 1, data.iterations + extra_iterations do
-							local ok, res = xpcall(data.callback, system.OnError)
+							local ok, res = system.pcall(data.callback)
 							if not ok or res ~= nil then
 								errored = true
 								break
@@ -431,9 +431,9 @@ do -- timers
 			elseif data.type == "delay" then
 				if data.realtime < cur then
 					if data.args then
-						xpcall(data.callback, system.OnError, unpack(data.args))
+						system.pcall(data.callback, unpack(data.args))
 					else
-						xpcall(data.callback, system.OnError)
+						system.pcall(data.callback)
 					end
 					table.insert(remove_these, i)
 					break

@@ -190,7 +190,7 @@ function META:CallTagFunction(chunk, name, ...)
 				table.insert(args, val)
 			end
 			
-			args = {xpcall(func, debug.Trace or system.OnError, unpack(args))}
+			args = {system.pcall(func, unpack(args))}
 
 			if not args[1] then
 				logf("tag error %s", args[2])

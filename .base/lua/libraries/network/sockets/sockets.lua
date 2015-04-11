@@ -35,7 +35,7 @@ end
 function sockets.Update()
 	for key, sock in pairs(sockets.active_sockets) do
 		if sock:IsValid() then
-			local ok, err = xpcall(sock.Think, system.OnError, sock)
+			local ok, err = system.pcall(sock.Think, sock)
 			if not ok then
 				logn(err)
 				sock:Remove()

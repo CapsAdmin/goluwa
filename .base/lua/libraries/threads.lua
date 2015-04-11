@@ -24,7 +24,7 @@ function META:Start(now)
 	self.run_me = nil
 	
 	local co = coroutine.create(function(...) 
-		return select(2, xpcall(self.OnStart, system.OnError, ...)) 
+		return select(2, system.pcall(self.OnStart, ...)) 
 	end)
 	
 	threads.coroutine_lookup[co] = self

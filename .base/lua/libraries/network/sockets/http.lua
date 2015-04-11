@@ -128,7 +128,7 @@ local function request(info)
 	local code_desc
 	
 	local function done(self)
-		if info.on_chunks then xpcall(info.callback, system.OnError) return end
+		if info.on_chunks then system.pcall(info.callback) return end
 		
 		local content = table.concat(content, "")
 		local length = header["content-length"]
@@ -139,9 +139,9 @@ local function request(info)
 		end
 		
 		if (not length and #content ~= 0) or (length and #content == length) or info.method == "HEAD" then
-			xpcall(info.callback, system.OnError, {content = content, header = header, protocol = protocol, code = code, code_desc = code_desc})
+			system.pcall(info.callback, {content = content, header = header, protocol = protocol, code = code, code_desc = code_desc})
 		elseif info.on_fail then
-			xpcall(info.on_fail, system.OnError, content)
+			system.pcall(info.on_fail, content)
 		end
 	end
 	
@@ -152,7 +152,7 @@ local function request(info)
 			
 			if info.code_callback and info.code_callback(code) == false then
 				if info.on_fail then
-					xpcall(info.on_fail, system.OnError, "bad code")
+					system.pcall(info.on_fail, "bad code")
 				end
 				self:Remove()
 				return

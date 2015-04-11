@@ -52,7 +52,7 @@ function vfs.dofile(path, ...)
 	local func, err = vfs.loadfile(path)
 	
 	if func then
-		local ok, err = xpcall(func, system.OnError, ...)
+		local ok, err = system.pcall(func, ...)
 		return ok, err, path
 	end
 	
@@ -117,7 +117,14 @@ do -- include
 						_G.FILE_PATH = full_path
 						_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
 						_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
-						local ok, err = xpcall(func, system and system.OnError or logn, ...)
+						local ok, err
+						
+						if system and system.pcall then
+							ok, err = system.pcall(func, ...)
+						else
+							ok, err = pcall(func, ...)
+						end
+						
 						_G.FILE_NAME = nil
 						_G.FILE_PATH = nil
 						_G.FILE_EXTENSION = nil
@@ -181,7 +188,14 @@ do -- include
 			_G.FILE_PATH = full_path
 			_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
 			_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
-			local res = {xpcall(func, system and system.OnError or logn, ...)}
+			
+			local res
+			if system and system.pcall then
+				res = {system.pcall(func, ...)}
+			else
+				res = {pcall(func, ...)}
+			end
+			
 			_G.FILE_PATH = nil
 			_G.FILE_NAME = nil
 			_G.FILE_EXTENSION = nil
