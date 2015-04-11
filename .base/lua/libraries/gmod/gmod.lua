@@ -111,10 +111,11 @@ end
 
 function gmod.Initialize()
 	if not gmod.init then
-		include("lua/libraries/gmod/environment.lua", gmod)
-		
 		steam.MountSourceGame("gmod")
-		
+		render.InitializeGBuffer() -- TODO
+	
+		include("lua/libraries/gmod/environment.lua", gmod)
+
 		gmod.dir = R("garrysmod_dir.vpk"):match("(.+/)")
 		
 		vfs.AddModuleDirectory(R"lua/includes/modules/")
@@ -150,7 +151,7 @@ function gmod.Initialize()
 		
 		include("lua/derma/init.lua")
 		
-		gmod.env.require("notification")
+		gmod.env.require("notification") -- this seems to be done in the engine somewhere
 		
 		gmod.gamemodes =  {}
 		
