@@ -55,9 +55,24 @@ local function move(x, y)
 		else
 			if x ~= 0 then
 				local dir = x > 0 and 1 or - 1
-				while true do
+				local i = 0
+				for _ = 1, 100 do
 					i = i + dir
-					
+					if get_char(caret_pos.x + i, caret_pos.y) then
+						x = i
+						break
+					end
+				end
+			end
+			if y ~= 0 then
+				local dir = y > 0 and 1 or - 1
+				local i = 0
+				for _ = 1, 100 do
+					i = i + dir
+					if get_char(caret_pos.x, caret_pos.y + i) then
+						y = i
+						break
+					end
 				end
 			end
 		end
@@ -106,7 +121,8 @@ event.AddListener("PostDrawMenu", "lol", function()
 	if select_start then
 		surface.SetWhiteTexture()
 		surface.SetColor(1,1,1,0.75)
-		surface.DrawRect(select_start.x * w, select_start.y * h, caret_pos.x * w - w, caret_pos.y * h)
+		local x,y,w,h = select_start.x * w, select_start.y * h, (caret_pos.x * w) + w, (caret_pos.y * h) + h
+		surface.DrawRect(x,y,w-x,h-y)
 		surface.SetColor(1,1,1,1)
 	end
 	
