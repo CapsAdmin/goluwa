@@ -15,6 +15,8 @@ function META:__index(key)
 	end
 end
 
+META.__eq = nil -- no need
+
 function META:SetParent(panel)
 	self.__obj:SetParent(panel and panel.__obj or NULL)
 end
@@ -183,7 +185,7 @@ function META:SetContentAlignment(num)
 	self.__obj.content_alignment = num 
 end
 function META:SetExpensiveShadow() end
-function META:Prepare() self.__obj:Layout(true) end
+function META:Prepare() end
 function META:SetPaintBorderEnabled() 
 
 end
@@ -198,6 +200,22 @@ end
 function META:SetDrawOnTop(b)
 	self.__obj.draw_ontop = b
 end
+
+function META:SetZPos(pos)
+	--self.__obj:BringToFront()
+end
+
+function META:ParentToHUD()
+	
+end
+
+function META:SetWrap(b)
+	-- text wrap
+end
+
+function META:SetWorldClicker()
+end
+
 
 function META:GetContentSize()
 	return self.__obj:GetSizeOfChildren():Unpack()

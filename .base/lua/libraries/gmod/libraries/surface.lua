@@ -64,6 +64,11 @@ function surface.CreateFont(name, tbl)
 	logn("gmod create font: ", tbl.font)
 	local tbl = table.copy(tbl)
 	tbl.path = tbl.font
+	
+	if tbl.path == "Roboto Bk" then
+		tbl.path = "resource/Roboto-Black.ttf"
+	end
+	
 	lib.CreateFont(name, tbl)
 end
 

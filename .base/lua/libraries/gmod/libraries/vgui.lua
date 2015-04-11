@@ -61,7 +61,7 @@ function vgui.CreateX(class, parent, name)
 		end 
 	end
 	obj:CallOnRemove(function() if self.OnDeletion then self:OnDeletion() end end)
-	obj.OnUpdate = function() if self.Think then self:Think() end end
+	obj.OnUpdate = function() if self.Think then self:Think() end if self.AnimationThink then self:AnimationThink() end end
 	obj.OnMouseMove = function(_, x, y) if self.OnCursorMoved then self:OnCursorMoved(x, y) end end
 	obj.OnMouseEnter = function() if self.OnMouseEnter then self:OnMouseEnter() end end
 	obj.OnCursorExited = function() if self.OnCursorExited then self:OnCursorExited() end end	
@@ -102,6 +102,10 @@ function vgui.CreateX(class, parent, name)
 				panel.text_offset.x = panel:GetWidth() - w - m.right
 				panel.text_offset.y = panel:GetHeight() - h - m.bottom
 			end
+		end
+	
+		if self.ApplySchemeSettings then 
+			self:ApplySchemeSettings()
 		end
 	
 		if self.PerformLayout then 

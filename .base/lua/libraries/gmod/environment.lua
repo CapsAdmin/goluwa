@@ -1,5 +1,59 @@
 local gmod = ... or _G.gmod
 
+gmod.hud_element_list = {
+	"CHudAmmo",
+	"CHudBattery",
+	"CHudChat",
+	"CHudCrosshair",
+	"CHudDamageIndicator",
+	"CHudDeathNotice",
+	"CHudGeiger",
+	"CHudGMod",
+	"CHudHealth",
+	"CHudHintDisplay",
+	"CHudMenu",
+	"CHudMessage",
+	"CHudPoisonDamageIndicator",
+	"CHudSecondaryAmmo",
+	"CHudSquadStatus",
+	"CHudTrain",
+	"CHudWeapon",
+	"CHudWeaponSelection",
+	"Hiding",
+	"CHudZoom",
+	"Only",
+	"NetGraph",
+	"CTargetID",
+	"CHudHistoryResource",
+	"CHudSuitPower",
+	"CHudCloseCaption",
+	"CHudLocator",
+	"CHudFlashlight",
+	"CAchievementNotificationPanel",
+	"CHudAnimationInfo",
+	"CHUDAutoAim",
+	"CHudBonusProgress",
+	"CHudCapturePanel",
+	"CHudCommentary",
+	"CHudControlPointIcons",
+	"CHudCredits",
+	"CHudVehicle",
+	"CHudVguiScreenCursor",
+	"CHudVoiceSelfStatus",
+	"CHudVoiceStatus",
+	"CHudVote",
+	"CMapOverview",
+	"CPDumpPanel",
+	"CReplayReminderPanel",
+	"CTeamPlayHud",
+	"CHudFilmDemo",
+	"CHudGameMessage",
+	"CHudHDRDemo",
+	"CHudHintKeyDisplay",
+	"CHudPosture",
+	"CHUDQuickInfo",
+}
+
 local env = {}
 env._R = {}
 env._G = env
@@ -74,7 +128,9 @@ do -- metatables
 		end
 		for func_name in pairs(functions) do
 			env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) error(("NYI: %s:%s(%s)\n"):format(meta_name, func_name, table.concat(tostring_args(...), ",")), 2) end
-		end	
+		end
+		
+		gmod.objects[meta_name] = gmod.objects[meta_name] or {}
 	end
 	
 	include("lua/libraries/gmod/meta/*")

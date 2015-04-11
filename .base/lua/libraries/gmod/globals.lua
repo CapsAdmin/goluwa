@@ -27,7 +27,7 @@ make_is("Panel")
 
 function globals.type(obj)
 	local t = type(obj)
-	
+		
 	if t == "table" and obj.MetaName then
 		return obj.MetaName
 	end
@@ -86,6 +86,7 @@ function globals.AddConsoleCommand(name)
 end
 
 function globals.RealTime() return system.GetElapsedTime() end
+function globals.FrameNumber() return tonumber(system.GetFrameNumber()) end
 function globals.FrameTime() return system.GetFrameTime() end
 function globals.VGUIFrameTime() return system.GetFrameTime() end
 function globals.CurTime() return system.GetElapsedTime() end --system.GetServerTime()
@@ -97,6 +98,7 @@ end
 
 function globals.Material(path)
 	local mat = render.CreateMaterial("model")
+	mat.gmod_name = path
 	if vfs.IsFile("materials/" .. path) then
 		steam.LoadMaterial("materials/" .. path, mat)
 	else
