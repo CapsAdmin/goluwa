@@ -470,6 +470,7 @@ end
 
 event.AddListener("RenderContextInitialized", nil, function() 
 	event.AddListener("EntityCreate", "gbuffer", function(ent)
+		if not console.GetVariable("render_deferred") then return end
 		if table.count(entities.GetAll()) ~= 0 then return end
 	
 		local ok, err = xpcall(render.InitializeGBuffer, system.OnError)
@@ -480,6 +481,7 @@ event.AddListener("RenderContextInitialized", nil, function()
 		end
 	end)
 	event.AddListener("EntityRemove", "gbuffer", function(ent)
+		if not console.GetVariable("render_deferred") then return end
 		if table.count(entities.GetAll()) ~= 0 then return end
 		
 		render.EnableGBuffer(false)
