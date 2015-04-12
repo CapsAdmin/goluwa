@@ -71,6 +71,14 @@ end
 function globals.ScrW() return render.GetWidth() end
 function globals.ScrH() return render.GetHeight() end
 
+function globals.HSVToColor(h,s,v)
+	return globals.Color(HSVToColor(h*360,s,v):Unpack())
+end
+
+function globals.ColorToHSV(c)
+	return ColorToHSV(c)
+end
+
 function globals.DisableClipping(b)
 
 end
@@ -79,7 +87,7 @@ function globals.ClientsideModel(path)
 	local ent = entities.CreateEntity("visual")
 	ent:SetModelPath(path)
 	local self = gmod.WrapObject(ent, "Entity")
-	self.__storable_table = {}
+	rawset(self, "__storable_table", {})
 	return self
 end
 

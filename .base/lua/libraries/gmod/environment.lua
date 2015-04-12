@@ -82,6 +82,8 @@ do -- copy standard libraries
 	add_lib_copy("bit")
 	add_lib_copy("io")
 	add_lib_copy("os")
+	
+	env.table.insert = function(t,...) table.insert(t,...) return #t end
 end
 
 do -- enums
@@ -127,7 +129,7 @@ do -- metatables
 			env._R[meta_name] = META
 		end
 		for func_name in pairs(functions) do
-			env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) error(("NYI: %s:%s(%s)\n"):format(meta_name, func_name, table.concat(tostring_args(...), ",")), 2) end
+			env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) logf(("NYI: %s:%s(%s)\n"):format(meta_name, func_name, table.concat(tostring_args(...), ",")), 2) end
 		end
 		
 		gmod.objects[meta_name] = gmod.objects[meta_name] or {}
@@ -141,7 +143,7 @@ do -- libraries
 		env[lib_name] = env[lib_name] or {}
 		
 		for func_name in pairs(functions) do
-			env[lib_name][func_name] = env[lib_name][func_name] or function(...) error(("NYI: %s.%s(%s)\n"):format(lib_name, func_name, table.concat(tostring_args(...), ",")), 2) end
+			env[lib_name][func_name] = env[lib_name][func_name] or function(...) logf(("NYI: %s.%s(%s)\n"):format(lib_name, func_name, table.concat(tostring_args(...), ",")), 2) end
 		end
 	end
 	

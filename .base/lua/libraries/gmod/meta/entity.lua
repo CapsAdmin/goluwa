@@ -17,3 +17,8 @@ end
 function ENT:GetTable()
 	return self.__storable_table
 end
+
+function ENT:SetNoDraw() end
+function ENT:SetAngles() end
+function ENT:LookupSequence() return -1 end
+function ENT:DrawModel() end

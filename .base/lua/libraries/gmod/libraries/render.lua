@@ -34,3 +34,35 @@ function render.PopRenderTarget()
 	
 	render.PopFramebuffer()
 end
+
+function render.SuppressEngineLighting(b)
+
+end
+
+function render.SetLightingOrigin()
+
+end
+
+function render.ResetModelLighting()
+
+end
+
+function render.SetColorModulation(r,g,b)
+	
+end
+
+function render.SetBlend()
+	
+end
+
+function render.SetModelLighting()
+
+end
+
+function render.SetScissorRect(x,y,w,h, b)
+	
+end
+
+function render.UpdateScreenEffectTexture()
+	
+end

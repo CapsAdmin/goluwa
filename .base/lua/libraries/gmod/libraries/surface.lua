@@ -35,6 +35,10 @@ function surface.SetMaterial(mat)
 	lib.SetTexture(mat.__obj.DiffuseTexture)
 end
 
+function surface.SetTexture(tex)
+	lib.SetTexture(tex)
+end
+
 function surface.DrawTexturedRectRotated(x,y,w,h,r)
 	lib.DrawRect(x,y,w,h,math.rad(r))
 end
@@ -49,6 +53,8 @@ function surface.DrawRect(x,y,w,h)
 	lib.DrawRect(x,y,w,h)
 	lib.bound_texture = old
 end
+
+surface.DrawRectOutlined = surface.DrawRect
 
 function surface.DrawTexturedRectUV(x,y,w,h, u1,v1, u2,v2)
 	lib.SetRectUV(u1,v1, u2-u1,v2-v1)
@@ -69,6 +75,8 @@ function surface.CreateFont(name, tbl)
 		tbl.path = "resource/fonts/Roboto-Black.ttf"
 	elseif tbl.path:lower() == "helvetica" then
 		tbl.path = "resource/fonts/coolvetica.ttf"
+	elseif tbl.path:lower() == "tahoma" then
+		tbl.path = "fonts/tahoma.ttf"
 	end
 	
 	logf("surface.CreateFont(%q, %q)\n", name, tbl.path)

@@ -24,13 +24,9 @@ function vgui.CreateX(class, parent, name)
 		
 	logn("vgui create ", class)
 		
-	local obj = gui.CreatePanel("base")
+	local obj = class == "textentry" and gui.CreatePanel("text_edit") or gui.CreatePanel("base")
 	if parent then obj:SetParent(parent.__obj) end
-	
-	if class == "editablepanel" then
-		--obj:SetResizable(true)
-	end
-	
+		
 	local self = gmod.WrapObject(obj, "Panel")
 	
 	obj.fg_color = Color(1,1,1,1)
@@ -44,7 +40,7 @@ function vgui.CreateX(class, parent, name)
 		local paint_rest = true
 		
 		if self.Paint then 
-			paint_rest = self:Paint(obj:GetWidth(), obj:GetHeight()) 
+			paint_rest = not self:Paint(obj:GetWidth(), obj:GetHeight()) 
 		end 
 		
 		if paint_rest and not obj.draw_manual and class == "label" then
@@ -52,7 +48,7 @@ function vgui.CreateX(class, parent, name)
 				surface.SetColor(obj.bg_color:Unpack())
 				surface.DrawRect(0,0,obj.Size.w,obj.Size.h)
 			end
-			
+						
 			if obj.text_internal and obj.text_internal ~= "" then
 				surface.SetColor(obj.fg_color:Unpack())
 				surface.SetTextPosition(obj.text_offset.x, obj.text_offset.y)
@@ -81,7 +77,7 @@ function vgui.CreateX(class, parent, name)
 			local m = panel:GetMargin()
 		
 			if panel.content_alignment == 5 then
-				panel.text_offset = (panel:GetSize() / 2) + (Vec2(w, h) / 2)
+				panel.text_offset = (panel:GetSize() / 2) - (Vec2(w, h) / 2)
 			elseif panel.content_alignment == 4 then
 				panel.text_offset.x = m.left
 				panel.text_offset.y = (panel:GetHeight() / 2) + (h / 2)
@@ -128,6 +124,8 @@ function vgui.CreateX(class, parent, name)
 					self:OnMouseReleased(translate_mouse[button]) 
 				end
 			end
+		else
+			logf("mouse button %q could not be translated!\n", button)
 		end
 	end
 	obj.OnKeyInput = function(_, key, press)
@@ -160,4 +158,8 @@ function vgui.FocusedHasParent(parent)
 	if gui.focus_panel:IsValid() then
 		return parent:HasChild(gui.focus_panel)
 	end
+end
+
+function vgui.GetKeyboardFocus()
+	return true
 end

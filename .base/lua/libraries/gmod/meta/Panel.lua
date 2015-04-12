@@ -12,6 +12,8 @@ function META:__index(key)
 		return self.__obj:GetSize().w
 	elseif key == "h" then
 		return self.__obj:GetSize().h
+	elseif key == "Hovered" then
+		return self.__obj:IsMouseOver()
 	end
 
 	local val = rawget(META, key)
@@ -25,6 +27,11 @@ function META:__index(key)
 		return rawget(base, key)
 	end
 end
+
+--function META:__newindex(key, val)
+	--if val == nil then debug.trace() end
+	--rawset(self, key, val)
+--end
 
 META.__eq = nil -- no need
 
@@ -68,6 +75,13 @@ function META:GetPos()
 	return self.__obj:GetPosition():Unpack()
 end
 
+function META:GetBounds()
+	local x,y = self:GetPos()
+	local w,h = self:GetSize()
+	
+	return x,y,w,h
+end
+
 function META:IsVisible()
 	return self.__obj:IsVisible()
 end
@@ -82,6 +96,10 @@ end
 
 function META:HasChildren()
 	return self.__obj:HasChildren()
+end
+
+function META:HasParent()
+	return self.__obj:HasParent()
 end
 
 function META:DockPadding(left, top, right, bottom)
@@ -124,6 +142,10 @@ function META:LocalToScreen(x, y)
 	return self.__obj:LocalToWorld(Vec2(x, y)):Unpack()
 end
 
+function META:ScreenToLocal(x, y)
+	return self.__obj:WorldToLocal(Vec2(x,y)):Unpack()
+end
+
 do
 	function META:SetFontInternal(font)
 		self.__obj.font_internal = font
@@ -145,26 +167,44 @@ function META:GetParent()
 		return gmod.WrapObject(parent, "Panel")
 	end
 	
-	return NULL
+	return nil
 end
 
 function META:InvalidateLayout(b)
 	self.__obj:Layout(b)
 end
 
+function META:GetContentSize() 
+	local panel = self.__obj
+
+	if panel.vgui_type == "label" then
+		return surface.GetFont(panel.font_internal):GetTextSize(panel.text_internal) 
+	end
+	
+	return 0, 0
+end
+
 function META:SizeToContents()
 	local panel = self.__obj
+
+	local w, h = self:GetContentSize()
 	
-	if panel.vgui_type == "label" then
-		local w, h = surface.GetFont(panel.font_internal):GetTextSize(panel.text_internal)
-		
+	if panel.vgui_type == "label" then		
 		panel:Layout(true)
-		
-		local size = panel.text_offset + Vec2(w, h)
-		panel:SetSize(size)
-		
+		panel:SetSize(Vec2(panel.Margin.x + w, panel.Margin.y + h))		
 		panel.LayoutSize = panel:GetSize():Copy()
 	end
+end
+
+function META:GetValue()
+	return self:GetText()
+end
+
+function META:GetText()
+	if self.__obj.vgui_type == "label" then
+		return self.__obj.text_internal
+	end
+	return ""
 end
 
 function META:SetTextInset(x, y)
@@ -226,16 +266,24 @@ do -- z pos stuff
 	end
 
 	function META:MoveToBack()
-		self.__obj:BringToFront()
+	
 	end
 
 	function META:MoveToFront()
-
+		self.__obj:BringToFront()
 	end
 	
 	function META:SetFocusTopLevel()
 	
 	end
+	
+	function META:MakePopup()
+		self.__obj:BringToFront()
+	end
+end
+
+function META:NoClipping(b)
+
 end
 
 function META:ParentToHUD()
@@ -244,6 +292,14 @@ end
 
 function META:DrawTextEntryText(text_color, highlight_color, cursor_color)
 	
+end
+
+function META:DrawFilledRect()
+	surface.DrawRect(0,0,self:GetSize())
+end
+
+function META:DrawOutlinedRect()
+	surface.DrawRect(0,0,self:GetSize())
 end
 
 function META:SetWrap(b)
@@ -274,6 +330,17 @@ do -- html
 	end
 end
 
+-- edit
+do
+	function META:GetCaretPos()
+		return 0
+	end
+	
+	function META:SetCaretPos(pos)
+	
+	end
+end
+
 function META:HasFocus()
 	return self.__obj:IsFocused()
 end
@@ -287,5 +354,4 @@ function META:HasHierarchicalFocus()
 	return false
 end
 
-function META:GetContentSize() return self.__obj:GetSizeOfChildren():Unpack() end
 function META:ChildrenSize() return self.__obj:GetSizeOfChildren():Unpack() end

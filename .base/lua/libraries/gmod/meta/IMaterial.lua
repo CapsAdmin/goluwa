@@ -17,3 +17,11 @@ end
 function META:GetShader()
 	return self.__obj.vmt and self.__obj.vmt.shader or "Loading"-- this isn't cased properly
 end
+
+function META:Recompute()
+
+end
+
+function META:SetFloat()
+
+end
