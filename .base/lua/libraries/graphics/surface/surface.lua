@@ -312,21 +312,15 @@ do
 				y = -y - h
 				
 				surface.rect_mesh.vertices[0].uv.A = x / sx
-				surface.rect_mesh.vertices[0].uv.B = (y + h) / sy
-				
-				surface.rect_mesh.vertices[1].uv.A = x / sx
 				surface.rect_mesh.vertices[1].uv.B = y / sy
-				
+				surface.rect_mesh.vertices[0].uv.B = (y + h) / sy
 				surface.rect_mesh.vertices[2].uv.A = (x + w) / sx
-				surface.rect_mesh.vertices[2].uv.B = y / sy
 				
-				--
-				
+				surface.rect_mesh.vertices[1].uv.A = surface.rect_mesh.vertices[0].uv.A
+				surface.rect_mesh.vertices[2].uv.B = surface.rect_mesh.vertices[1].uv.B
 				surface.rect_mesh.vertices[3].uv = surface.rect_mesh.vertices[2].uv
-				
-				surface.rect_mesh.vertices[4].uv.A = (x + w) / sx
-				surface.rect_mesh.vertices[4].uv.B = (y + h) / sy
-				
+				surface.rect_mesh.vertices[4].uv.A = surface.rect_mesh.vertices[2].uv.A
+				surface.rect_mesh.vertices[4].uv.B = surface.rect_mesh.vertices[0].uv.B
 				surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[0].uv	
 			end
 			
@@ -346,22 +340,18 @@ do
 		
 		function surface.SetRectUV2(u1,v1, u2,v2)
 			surface.rect_mesh.vertices[0].uv.A = u1
-			surface.rect_mesh.vertices[0].uv.B = v1
-			
-			surface.rect_mesh.vertices[1].uv.A = u1
 			surface.rect_mesh.vertices[1].uv.B = v1
+			surface.rect_mesh.vertices[0].uv.B = u2
+			surface.rect_mesh.vertices[2].uv.A = v2
 			
-			surface.rect_mesh.vertices[2].uv.A = u2
-			surface.rect_mesh.vertices[2].uv.B = v1
-			
-			--
-			
+			surface.rect_mesh.vertices[1].uv.A = surface.rect_mesh.vertices[0].uv.A
+			surface.rect_mesh.vertices[2].uv.B = surface.rect_mesh.vertices[1].uv.B
 			surface.rect_mesh.vertices[3].uv = surface.rect_mesh.vertices[2].uv
-			
-			surface.rect_mesh.vertices[4].uv.A = u2
-			surface.rect_mesh.vertices[4].uv.B = v2
-			
+			surface.rect_mesh.vertices[4].uv.A = surface.rect_mesh.vertices[2].uv.A
+			surface.rect_mesh.vertices[4].uv.B = surface.rect_mesh.vertices[0].uv.B
 			surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[0].uv	
+			
+			update_vbo()
 		end
 	end
 
