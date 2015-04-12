@@ -2,16 +2,8 @@ local gmod = ... or gmod
 
 local ENT = gmod.env.FindMetaTable("Entity")
 
-function ENT:__index(key)
-	if ENT[key] then
-		return ENT[key]
-	end
-	
-	local base = rawget(self, "BaseClass")
-	
-	if base and base[key] then
-		return base[key]
-	end
+function ENT:__newindex(k,v)
+	self.__storable_table[k] = v
 end
 
 function ENT:SetPos(vec)
@@ -20,4 +12,8 @@ end
 
 function ENT:GetPos()
 	return gmod.env.Vector(self.__obj:GetPosition():Unpack())
+end
+
+function ENT:GetTable()
+	return self.__storable_table
 end

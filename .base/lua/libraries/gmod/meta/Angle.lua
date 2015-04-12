@@ -26,6 +26,10 @@ function META.__eq(a, b)
 	return a.q == b.q
 end
 
+function META.__add(a, b)
+	return QuatDeg3((a.q:GetAngles() + b.q:GetAngles()):Unpack())
+end
+
 function META:Forward()
 	return gmod.env.Vector(self.q:Forward():Unpack())
 end

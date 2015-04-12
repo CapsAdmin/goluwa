@@ -22,10 +22,14 @@ function vgui.CreateX(class, parent, name)
 	
 	class = class:lower()
 		
-	--logn("vgui create ", class)
+	logn("vgui create ", class)
 		
 	local obj = gui.CreatePanel("base")
 	if parent then obj:SetParent(parent.__obj) end
+	
+	if class == "editablepanel" then
+		--obj:SetResizable(true)
+	end
 	
 	local self = gmod.WrapObject(obj, "Panel")
 	
@@ -34,6 +38,7 @@ function vgui.CreateX(class, parent, name)
 	obj.text_offset = Vec2()
 	obj.vgui_type = class
 	self:SetPaintBackgroundEnabled(true)
+	obj:SetSize(Vec2(250, 250))
 	
 	obj.OnDraw = function()
 		local paint_rest = true
@@ -149,4 +154,10 @@ end
 
 function vgui.GetHoveredPanel()
 	return gmod.WrapObject(gui.world, "Panel")
+end
+
+function vgui.FocusedHasParent(parent)
+	if gui.focus_panel:IsValid() then
+		return parent:HasChild(gui.focus_panel)
+	end
 end

@@ -2,7 +2,15 @@ local gmod = ... or gmod
 local gui = gmod.env.gui
 
 function gui.MousePos()
-	return surface.GetMousePosition()
+	return window.GetMousePosition():Unpack()
+end
+
+function gui.MouseX()
+	return window.GetMousePosition().x
+end
+
+function gui.MouseY()
+	return window.GetMousePosition().y
 end
 
 function gui.ScreenToVector(x, y)

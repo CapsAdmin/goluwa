@@ -71,6 +71,18 @@ end
 function globals.ScrW() return render.GetWidth() end
 function globals.ScrH() return render.GetHeight() end
 
+function globals.DisableClipping(b)
+
+end
+
+function globals.ClientsideModel(path)
+	local ent = entities.CreateEntity("visual")
+	ent:SetModelPath(path)
+	local self = gmod.WrapObject(ent, "Entity")
+	self.__storable_table = {}
+	return self
+end
+
 function globals.GetHostName()
 	return "TODO: hostname"
 end
@@ -99,11 +111,15 @@ end
 function globals.Material(path)
 	local mat = render.CreateMaterial("model")
 	mat.gmod_name = path
-	if vfs.IsFile("materials/" .. path) then
+	
+	if path:lower():endswith(".png") then
+		mat:SetDiffuseTexture(Texture("materials/" .. path))
+	elseif vfs.IsFile("materials/" .. path) then
 		steam.LoadMaterial("materials/" .. path, mat)
 	else
 		steam.LoadMaterial("materials/" .. path .. ".vmt", mat)
 	end
+	
 	return gmod.WrapObject(mat, "IMaterial")
 end
 

@@ -51,7 +51,7 @@ function surface.DrawRect(x,y,w,h)
 end
 
 function surface.DrawTexturedRectUV(x,y,w,h, u1,v1, u2,v2)
-	lib.SetRectUV2(u1,v1, u2,v2)
+	lib.SetRectUV(u1,v1, u2-u1,v2-v1)
 	lib.DrawRect(x,y,w,h)
 	lib.SetRectUV()
 end

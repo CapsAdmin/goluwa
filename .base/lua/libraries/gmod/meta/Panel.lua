@@ -120,6 +120,10 @@ function META:GetSize()
 	return self.__obj:GetSize():Unpack()
 end
 
+function META:LocalToScreen(x, y)
+	return self.__obj:LocalToWorld(Vec2(x, y)):Unpack()
+end
+
 do
 	function META:SetFontInternal(font)
 		self.__obj.font_internal = font
@@ -173,7 +177,7 @@ function META:SizeToChildren()
 end
 
 function META:SetVisible(b)
-	self.__obj:SetNoDraw(not b)
+	self.__obj:SetVisible(b)
 end
 
 function META:Dock(enum)
@@ -228,6 +232,10 @@ do -- z pos stuff
 	function META:MoveToFront()
 
 	end
+	
+	function META:SetFocusTopLevel()
+	
+	end
 end
 
 function META:ParentToHUD()
@@ -268,6 +276,15 @@ end
 
 function META:HasFocus()
 	return self.__obj:IsFocused()
+end
+
+function META:HasHierarchicalFocus()
+	for _, pnl in pairs(self.__obj:GetChildrenList()) do
+		if pnl:IsFocused() then
+			return true
+		end
+	end
+	return false
 end
 
 function META:GetContentSize() return self.__obj:GetSizeOfChildren():Unpack() end

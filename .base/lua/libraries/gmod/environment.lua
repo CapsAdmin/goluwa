@@ -94,7 +94,7 @@ end
 
 do -- global functions
 	for func_name in pairs(globals) do
-		env[func_name] = env[func_name] or function(...) error(("NYI: %s(%s)\n"):format(func_name, table.concat(tostring_args(...), ",")), 2) end
+		env[func_name] = env[func_name] or function(...) logf(("NYI: %s(%s)\n"):format(func_name, table.concat(tostring_args(...), ",")), 2) end
 	end
 	
 	include("lua/libraries/gmod/globals.lua", gmod)
