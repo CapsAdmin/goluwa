@@ -65,9 +65,13 @@ function surface.CreateFont(name, tbl)
 	local tbl = table.copy(tbl)
 	tbl.path = tbl.font
 	
-	if tbl.path == "Roboto Bk" then
-		tbl.path = "resource/Roboto-Black.ttf"
+	if tbl.path:lower() == "roboto bk" then
+		tbl.path = "resource/fonts/Roboto-Black.ttf"
+	elseif tbl.path:lower() == "helvetica" then
+		tbl.path = "resource/fonts/coolvetica.ttf"
 	end
+	
+	logf("surface.CreateFont(%q, %q)\n", name, tbl.path)
 	
 	lib.CreateFont(name, tbl)
 end

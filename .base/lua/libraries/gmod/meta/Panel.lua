@@ -3,6 +3,17 @@ local gmod = ... or gmod
 local META = gmod.env.FindMetaTable("Panel")
 
 function META:__index(key)
+	
+	if key == "x" then
+		return self.__obj:GetPosition().x
+	elseif key == "y" then
+		return self.__obj:GetPosition().y
+	elseif key == "w" then
+		return self.__obj:GetSize().w
+	elseif key == "h" then
+		return self.__obj:GetSize().h
+	end
+
 	local val = rawget(META, key)
 	if val then 
 		return val
@@ -29,6 +40,10 @@ function META:GetChildren()
 	end
 	
 	return children
+end
+
+function META:GetChild(idx)
+	return self:GetChildren()[idx - 1]
 end
 
 function META:SetFGColor(r,g,b,a)	
@@ -201,11 +216,25 @@ function META:SetDrawOnTop(b)
 	self.__obj.draw_ontop = b
 end
 
-function META:SetZPos(pos)
-	--self.__obj:BringToFront()
+do -- z pos stuff
+	function META:SetZPos(pos)
+		--self.__obj:BringToFront()
+	end
+
+	function META:MoveToBack()
+		self.__obj:BringToFront()
+	end
+
+	function META:MoveToFront()
+
+	end
 end
 
 function META:ParentToHUD()
+	
+end
+
+function META:DrawTextEntryText(text_color, highlight_color, cursor_color)
 	
 end
 
@@ -216,12 +245,30 @@ end
 function META:SetWorldClicker()
 end
 
--- html
-function META:IsLoading()
-	return true
-end
+function META:SetAllowNonAsciiCharacters() end
 
 
-function META:GetContentSize()
-	return self.__obj:GetSizeOfChildren():Unpack()
+do -- html
+	function META:IsLoading()
+		return true
+	end
+
+	function META:NewObject(obj)
+
+	end
+
+	function META:NewObjectCallback(obj, func)
+
+	end
+	
+	function META:OpenURL()
+	
+	end
 end
+
+function META:HasFocus()
+	return self.__obj:IsFocused()
+end
+
+function META:GetContentSize() return self.__obj:GetSizeOfChildren():Unpack() end
+function META:ChildrenSize() return self.__obj:GetSizeOfChildren():Unpack() end

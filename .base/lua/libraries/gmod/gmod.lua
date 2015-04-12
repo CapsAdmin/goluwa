@@ -96,8 +96,32 @@ gmod.objects = gmod.objects or {}
 function gmod.WrapObject(obj, meta)
 	gmod.objects[meta] = gmod.objects[meta] or {}
 	
-	if not gmod.objects[meta][obj] then
-		gmod.objects[meta][obj] = setmetatable({__obj = obj}, gmod.env.FindMetaTable(meta))
+	if not gmod.objects[meta][obj] then		
+		local tbl = table.copy(gmod.env.FindMetaTable(meta))
+		
+		local __index_func
+		local __index_tbl
+		
+		if type(tbl.__index) == "function" then
+			__index_func = tbl.__index
+		else
+			__index_tbl = tbl.__index
+		end
+		
+		function tbl:__index(key)
+			if key == "__obj" then
+				return obj
+			end
+			
+			if __index_func then
+				return __index_func(self, key)
+			elseif __index_tbl then
+				return __index_tbl[key]
+			end
+		end
+		
+		gmod.objects[meta][obj] = setmetatable({}, tbl)
+		
 		obj:CallOnRemove(function() 
 			if gmod.objects[meta] and gmod.objects[meta][obj] then 
 				prototype.MakeNULL(gmod.objects[meta][obj]) 
@@ -207,10 +231,12 @@ function gmod.Initialize()
 		if SERVER then include(gmod.dir .. "/lua/autorun/server/*") end
 		
 		--include("lua/postprocess/*")
-		include("lua/vgui/*")
+		include("lua/vgui/*")		
 		--include("lua/matproxy/*")
 		include("lua/skins/*")
 		
+		gmod.env.DCollapsibleCategory.LoadCookies = nil -- DUCT TAPE FIX
+
 		-- load_gamemode will also load entities as shown below
 		load_gamemode("sandbox")
 		
@@ -273,11 +299,9 @@ function gmod.Initialize()
 		gmod.env.hook.Call("PreDrawEffects", gmod.current_gamemode)
 		gmod.env.hook.Call("RenderScreenspaceEffects", gmod.current_gamemode)
 		gmod.env.hook.Call("PostDrawEffects", gmod.current_gamemode)
-		gmod.env.hook.Call("PreDrawHalos", gmod.current_gamemode)
 		gmod.env.hook.Call("PreDrawHUD", gmod.current_gamemode)
 		gmod.env.hook.Call("HUDPaintBackground", gmod.current_gamemode)
 		gmod.env.hook.Call("HUDPaint", gmod.current_gamemode)
-		gmod.env.hook.Call("DrawDeathNotice", gmod.current_gamemode, 0.85, 0.04)
 		gmod.env.hook.Call("HUDDrawScoreBoard", gmod.current_gamemode)
 		gmod.env.hook.Call("PostDrawHUD", gmod.current_gamemode)
 		gmod.env.hook.Call("DrawOverlay", gmod.current_gamemode)

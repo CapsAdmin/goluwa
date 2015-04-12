@@ -22,7 +22,7 @@ function vgui.CreateX(class, parent, name)
 	
 	class = class:lower()
 		
-	logn("vgui create ", class)
+	--logn("vgui create ", class)
 		
 	local obj = gui.CreatePanel("base")
 	if parent then obj:SetParent(parent.__obj) end

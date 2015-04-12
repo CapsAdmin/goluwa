@@ -6,6 +6,10 @@ function engine.ActiveGamemode()
 	return gmod.current_gamemode.FolderName
 end
 
+function engine.GetAddons()
+	return {}
+end
+
 function engine.GetGames()
 	return {
 		{
