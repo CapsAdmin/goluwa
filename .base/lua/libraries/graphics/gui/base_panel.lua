@@ -139,6 +139,10 @@ do -- focus
 			gui.focus_panel = NULL
 		end
 	end
+	
+	function PANEL:IsFocused()
+		return gui.focus_panel == self
+	end
 end
 
 do -- call on hide	
