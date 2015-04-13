@@ -86,14 +86,21 @@ function META:IsZero()
 	return self.v.x == 0 and self.v.y == 0 and self.v.z == 0
 end
 
+function gmod.env.LerpVector(alpha, a, b)
+	return a.v:GetLerped(alpha, b.v)
+end
+
 function gmod.env.Vector(x, y, z)
 	local self = {} 
+	
+	if type(x) == "string" then
+		x, y, z = x:match("(%S+)%s-(%S+)%s-(%S+)")
+		x = tonumber(x)
+		y = tonumber(y)
+		z = tonumber(z)
+	end
 	
 	self.v = Vec3(x or 0, y or 0, z or 0)
 	
 	return setmetatable(self, META)
-end
-
-function gmod.env.LerpVector(alpha, a, b)
-	return a.v:GetLerped(alpha, b.v)
 end

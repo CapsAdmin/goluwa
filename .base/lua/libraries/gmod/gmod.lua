@@ -260,6 +260,20 @@ function gmod.Initialize()
 	gmod.current_gamemode = gmod.gamemodes.sandbox
 	gmod.env.GAMEMODE = gmod.current_gamemode
 	
+	input.Bind("q", "+menu")
+	input.Bind("q", "-menu")
+	
+	input.Bind("c", "+menu_context")
+	input.Bind("c", "-menu_context")
+	
+	input.Bind("tab", "+score", function()
+		gmod.env.hook.Call("ScoreboardShow")
+	end)
+	
+	input.Bind("tab", "-score", function()
+		gmod.env.hook.Call("ScoreboardHide")
+	end)
+	
 	do
 		gmod.translation = {}
 		gmod.translation2 = {}

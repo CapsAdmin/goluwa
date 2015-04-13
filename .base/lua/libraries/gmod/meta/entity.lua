@@ -20,6 +20,9 @@ end
 
 function ENT:SetNoDraw() end
 function ENT:SetAngles() end
+function ENT:GetNumBodyGroups() return 1 end
+function ENT:GetBodygroupCount() return 1 end
+function ENT:SkinCount() return 1 end
 function ENT:LookupSequence() return -1 end
 function ENT:DrawModel() end
 

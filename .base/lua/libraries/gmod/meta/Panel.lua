@@ -121,7 +121,7 @@ function META:SetMouseInputEnabled(b)
 end
 
 function META:MouseCapture(b)
-	self:SetMouseInputEnabled(b)
+	--self:SetMouseInputEnabled(b)
 end
 
 function META:SetKeyboardInputEnabled(b)
@@ -260,9 +260,7 @@ function META:SetContentAlignment(num)
 end
 function META:SetExpensiveShadow() end
 function META:Prepare() end
-function META:SetPaintBorderEnabled() 
-
-end
+function META:SetPaintBorderEnabled() end
 function META:SetPaintBackgroundEnabled(b) 
 	self.__obj.paint_bg = b
 end
@@ -281,17 +279,17 @@ do -- z pos stuff
 	end
 
 	function META:MoveToBack()
-		self.__obj:Unfocus()
+		--self.__obj:Unfocus()
 	end
 
 	function META:MoveToFront()
-		self.__obj:BringToFront()
+		--self.__obj:BringToFront()
 	end
 	
 	--function META:SetFocusTopLevel() end
 	
 	function META:MakePopup()
-		self.__obj:BringToFront()
+	--	self.__obj:BringToFront()
 	end
 end
 

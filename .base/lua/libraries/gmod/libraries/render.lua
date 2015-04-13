@@ -52,8 +52,8 @@ function render.SetColorModulation(r,g,b)
 	
 end
 
-function render.SetBlend()
-	
+function render.SetBlend(a)
+	surface.SetAlphaMultiplier(a)
 end
 
 function render.SetModelLighting()
