@@ -55,6 +55,7 @@ function prototype.AddParentingTemplate(META)
 		
 		self.children_list = nil
 		self.parent_list = nil
+		obj.parent_list = nil
 		
 		return true
 	end
@@ -110,6 +111,7 @@ function prototype.AddParentingTemplate(META)
 				obj:Remove()
 			end
 		end
+		self.children_list = nil
 	end
 
 	function META:UnParent()
