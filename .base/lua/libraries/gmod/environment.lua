@@ -82,6 +82,7 @@ do -- copy standard libraries
 	add_lib_copy("bit")
 	add_lib_copy("io")
 	add_lib_copy("os")
+	add_lib_copy("jit")
 	
 	env.table.insert = function(t,...) table.insert(t,...) return #t end
 end
@@ -96,7 +97,7 @@ end
 
 do -- global functions
 	for func_name in pairs(globals) do
-		env[func_name] = env[func_name] or function(...) logf(("NYI: %s(%s)\n"):format(func_name, table.concat(tostring_args(...), ",")), 2) end
+		env[func_name] = env[func_name] or function(...) logf(("gmod NYI: %s(%s)\n"):format(func_name, table.concat(tostring_args(...), ","))) end
 	end
 	
 	include("lua/libraries/gmod/globals.lua", gmod)
@@ -122,14 +123,14 @@ do -- metatables
 			if functions.Remove then
 				function META:Remove()
 					self.__removed = true
-					prototype.SafeRemove(self.__obj)
+					event.Delay(0,function() prototype.SafeRemove(self.__obj) end)
 				end
 			end
 			
 			env._R[meta_name] = META
 		end
 		for func_name in pairs(functions) do
-			env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) logf(("NYI: %s:%s(%s)\n"):format(meta_name, func_name, table.concat(tostring_args(...), ",")), 2) end
+			env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) logf(("gmod NYI: %s:%s(%s)\n"):format(meta_name, func_name, table.concat(tostring_args(...), ","))) end
 		end
 		
 		gmod.objects[meta_name] = gmod.objects[meta_name] or {}
@@ -143,7 +144,7 @@ do -- libraries
 		env[lib_name] = env[lib_name] or {}
 		
 		for func_name in pairs(functions) do
-			env[lib_name][func_name] = env[lib_name][func_name] or function(...) logf(("NYI: %s.%s(%s)\n"):format(lib_name, func_name, table.concat(tostring_args(...), ",")), 2) end
+			env[lib_name][func_name] = env[lib_name][func_name] or function(...) logf(("gmod NYI: %s.%s(%s)\n"):format(lib_name, func_name, table.concat(tostring_args(...), ","))) end
 		end
 	end
 	

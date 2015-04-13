@@ -54,7 +54,7 @@ function surface.DrawRect(x,y,w,h)
 	lib.bound_texture = old
 end
 
-surface.DrawRectOutlined = surface.DrawRect
+surface.DrawOutlinedRect = surface.DrawRect
 
 function surface.DrawTexturedRectUV(x,y,w,h, u1,v1, u2,v2)
 	lib.SetRectUV(u1,v1, u2-u1,v2-v1)
@@ -79,6 +79,8 @@ function surface.CreateFont(name, tbl)
 		tbl.path = "fonts/tahoma.ttf"
 	end
 	
+	if tbl.size then tbl.size = math.ceil(tbl.size * 0.75) end
+	
 	logf("surface.CreateFont(%q, %q)\n", name, tbl.path)
 	
 	lib.CreateFont(name, tbl)
@@ -89,10 +91,12 @@ function surface.SetFont(name)
 end
 
 function surface.GetTextSize(str)
+	str = gmod.translation2[str] or str
 	return lib.GetTextSize(str) 
 end
 
 function surface.DrawText(str)
+	str = gmod.translation2[str] or str
 	local r,g,b,a = lib.SetColor(txt_r, txt_g, txt_b, txt_a)
 	lib.DrawText(str)
 	lib.SetColor(r,g,b,a)

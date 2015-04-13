@@ -22,10 +22,19 @@ function vgui.CreateX(class, parent, name)
 	
 	class = class:lower()
 		
-	logn("vgui create ", class)
+	--logn("vgui create ", class)
 		
-	local obj = class == "textentry" and gui.CreatePanel("text_edit") or gui.CreatePanel("base")
-	if parent then obj:SetParent(parent.__obj) end
+	local obj
+	
+	if class == "textentry" then 
+		obj = gui.CreatePanel("text_edit") 
+	else 
+		obj = gui.CreatePanel("base")
+	end
+	
+	if parent then 
+		obj:SetParent(parent.__obj) 
+	end
 		
 	local self = gmod.WrapObject(obj, "Panel")
 	
@@ -34,7 +43,9 @@ function vgui.CreateX(class, parent, name)
 	obj.text_offset = Vec2()
 	obj.vgui_type = class
 	self:SetPaintBackgroundEnabled(true)
-	obj:SetSize(Vec2(250, 250))
+	obj:SetSize(Vec2(64, 24))
+	obj:SetPadding(Rect())
+	obj:SetMargin(Rect())
 	
 	obj.OnDraw = function()
 		local paint_rest = true
@@ -70,12 +81,11 @@ function vgui.CreateX(class, parent, name)
 	obj.OnChildRemove = function(_, child) if self.OnChildRemoved then self:OnChildRemoved(gmod.WrapObject(child, "Panel")) end end	
 	obj.OnLayout = function() 
 		local panel = obj
-	
+
 		if panel.vgui_type == "label" then
 			local w, h = surface.GetFont(panel.font_internal):GetTextSize(panel.text_internal)
-			
 			local m = panel:GetMargin()
-		
+
 			if panel.content_alignment == 5 then
 				panel.text_offset = (panel:GetSize() / 2) - (Vec2(w, h) / 2)
 			elseif panel.content_alignment == 4 then
@@ -85,10 +95,10 @@ function vgui.CreateX(class, parent, name)
 				panel.text_offset.x = panel:GetWidth() - w - m.right
 				panel.text_offset.y = (panel:GetHeight() / 2) + (h / 2)
 			elseif panel.content_alignment == 2 then
-				panel.text_offset.x = (panel:GetWidth() / 2) + (w / 2)
+				panel.text_offset.x = (panel:GetWidth() / 2) - (w / 2)
 				panel.text_offset.y = panel:GetHeight() - h - m.bottom
 			elseif panel.content_alignment == 8 then
-				panel.text_offset.x = (panel:GetWidth() / 2) + (w / 2)
+				panel.text_offset.x = (panel:GetWidth() / 2) - (w / 2)
 				panel.text_offset.y = m.top
 			elseif panel.content_alignment == 7 then
 				panel.text_offset.x = m.left
@@ -113,7 +123,7 @@ function vgui.CreateX(class, parent, name)
 			self:PerformLayout(obj:GetWidth(), obj:GetHeight()) 
 		end
 	end	
-	obj.OnMouseInput = function(_, button, press) 
+	obj.OnMouseInput = function(_, button, press)
 		if translate_mouse[button] then
 			if press then
 				if self.OnMousePressed then
@@ -147,19 +157,38 @@ if not vgui.Create then
 end
 
 function vgui.GetHoveredPanel()
-	return gmod.WrapObject(gui.GetHoveringPanel(), "Panel")
-end
-
-function vgui.GetHoveredPanel()
-	return gmod.WrapObject(gui.world, "Panel")
+	local pnl = gui.GetHoveringPanel()
+	if pnl:IsValid() then
+		return gmod.WrapObject(gui.GetHoveringPanel(), "Panel")
+	end
 end
 
 function vgui.FocusedHasParent(parent)
-	if gui.focus_panel:IsValid() then
+	if gui.focus_panel:IsValid() and parent then
 		return parent:HasChild(gui.focus_panel)
 	end
 end
 
 function vgui.GetKeyboardFocus()
 	return true
+end
+
+if RELOAD then
+	gui.Panic()
+
+	local Frame = vgui.Create( "DFrame" )
+Frame:SetPos( 5, 5 )
+Frame:SetSize( 300, 150 )
+Frame:SetTitle( "Name window" )
+Frame:SetVisible( true )
+Frame:SetDraggable( true )
+Frame:SetSizable( true )
+Frame:ShowCloseButton( true )
+Frame:MakePopup()
+
+local lol = vgui.Create("DLabel", Frame)
+lol:SetText("qwwijwd ijaidjw")
+lol:SizeToContents()
+lol:SetContentAlignment(8)
+
 end

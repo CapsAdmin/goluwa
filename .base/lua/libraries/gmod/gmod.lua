@@ -136,7 +136,11 @@ end
 event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
 	if not gmod.dir or not path:startswith(gmod.dir) then return end
 		
-	return gmod.PreprocessLua(code)
+	code = gmod.PreprocessLua(code)
+	
+	if not loadstring(code) then vfs.Write("gmod_preprocess_error.lua", code) end
+	
+	return code
 end)
 
 event.AddListener("PostLoadString", "gmod_function_env", function(func, path)
@@ -147,7 +151,7 @@ end)
 
 local function load_entities(base_folder, global, register, create_table)
 	for file_name in vfs.Iterate(base_folder.."/") do
-		logn("gmod: registering ",base_folder," ", file_name)
+		--logn("gmod: registering ",base_folder," ", file_name)
 		if file_name:endswith(".lua") then
 			gmod.env[global] = create_table()
 			include(base_folder.."/" .. file_name)
@@ -255,6 +259,29 @@ function gmod.Initialize()
 	
 	gmod.current_gamemode = gmod.gamemodes.sandbox
 	gmod.env.GAMEMODE = gmod.current_gamemode
+	
+	do
+		gmod.translation = {}
+		gmod.translation2 = {}
+		
+		for path in vfs.Iterate("resource/localization/en/",nil,true) do
+			local str = vfs.Read(path)
+			for _, line in ipairs(str:explode("\n")) do
+				local key, val = line:match("(.-)=(.+)")
+				if key and val then
+					gmod.translation[key] = val:trim()
+					gmod.translation2["#" .. key] = gmod.translation[key]
+				end
+			end
+		end		
+	end
+	
+	for dir in vfs.Iterate("addons/") do
+		local dir = gmod.dir .. "addons/" ..  dir
+		include(dir .. "/lua/autorun/*")
+		if CLIENT then include(dir .. "/lua/autorun/client/*") end
+		if SERVER then include(dir .. "/lua/autorun/server/*") end
+	end
 	
 	gmod.env.hook.Call("CreateTeams", gmod.current_gamemode)
 	gmod.env.hook.Call("PreGamemodeLoaded", gmod.current_gamemode)

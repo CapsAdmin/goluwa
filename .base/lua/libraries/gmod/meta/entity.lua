@@ -22,3 +22,11 @@ function ENT:SetNoDraw() end
 function ENT:SetAngles() end
 function ENT:LookupSequence() return -1 end
 function ENT:DrawModel() end
+
+function gmod.env.ClientsideModel(path)
+	local ent = entities.CreateEntity("visual")
+	ent:SetModelPath(path)
+	local self = gmod.WrapObject(ent, "Entity")
+	rawset(self, "__storable_table", {})
+	return self
+end

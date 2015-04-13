@@ -93,3 +93,7 @@ function gmod.env.Vector(x, y, z)
 	
 	return setmetatable(self, META)
 end
+
+function gmod.env.LerpVector(alpha, a, b)
+	return a.v:GetLerped(alpha, b.v)
+end

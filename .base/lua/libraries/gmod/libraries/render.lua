@@ -1,4 +1,5 @@
 local gmod = ... or gmod
+local lib = render
 local render = gmod.env.render
 
 function render.GetBloomTex0() return _G.render.GetErrorTexture() end
@@ -65,4 +66,29 @@ end
 
 function render.UpdateScreenEffectTexture()
 	
+end
+
+local globals = gmod.env
+
+gmod.render_targets = gmod.render_targets or {}
+
+function globals.GetRenderTarget(name, w, h)
+	local fb = gmod.render_targets[name] or lib.CreateFrameBuffer(w, h)
+	gmod.render_targets[name] = fb
+	fb:GetTexture().fb = fb
+	return gmod.WrapObject(fb:GetTexture(), "ITexture")
+end
+
+function globals.GetRenderTargetEx(name, w, h, size_mode, depth_mode, texture_flags, rt_flags, image_format)
+	local fb = gmod.render_targets[name] or lib.CreateFrameBuffer(w, h)
+	gmod.render_targets[name] = fb
+	fb:GetTexture().fb = fb
+	return gmod.WrapObject(fb:GetTexture(), "ITexture")
+end
+
+function globals.ScrW() return lib.GetWidth() end
+function globals.ScrH() return lib.GetHeight() end
+
+function globals.DisableClipping(b)
+
 end

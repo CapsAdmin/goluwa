@@ -52,43 +52,12 @@ do
 	ADD("Bool")
 end
 
-gmod.render_targets = gmod.render_targets or {}
-
-function globals.GetRenderTarget(name, w, h)
-	local fb = gmod.render_targets[name] or render.CreateFrameBuffer(w, h)
-	gmod.render_targets[name] = fb
-	fb:GetTexture().fb = fb
-	return gmod.WrapObject(fb:GetTexture(), "ITexture")
-end
-
-function globals.GetRenderTargetEx(name, w, h, size_mode, depth_mode, texture_flags, rt_flags, image_format)
-	local fb = gmod.render_targets[name] or render.CreateFrameBuffer(w, h)
-	gmod.render_targets[name] = fb
-	fb:GetTexture().fb = fb
-	return gmod.WrapObject(fb:GetTexture(), "ITexture")
-end
-
-function globals.ScrW() return render.GetWidth() end
-function globals.ScrH() return render.GetHeight() end
-
 function globals.HSVToColor(h,s,v)
 	return globals.Color(HSVToColor(h*360,s,v):Unpack())
 end
 
 function globals.ColorToHSV(c)
 	return ColorToHSV(c)
-end
-
-function globals.DisableClipping(b)
-
-end
-
-function globals.ClientsideModel(path)
-	local ent = entities.CreateEntity("visual")
-	ent:SetModelPath(path)
-	local self = gmod.WrapObject(ent, "Entity")
-	rawset(self, "__storable_table", {})
-	return self
 end
 
 function globals.GetHostName()
@@ -103,6 +72,10 @@ function globals.AddConsoleCommand(name)
 	console.AddCommand(name, function(line, ...)
 		gmod.env.concommand.Run(NULL, name, {...}, line)
 	end)
+end
+
+function globals.RunConsoleCommand(...)
+	console.RunCommand(...)
 end
 
 function globals.RealTime() return system.GetElapsedTime() end
@@ -165,7 +138,7 @@ globals.include = function(path)
 end
 
 function globals.module(name, _ENV)
-	logn("gmod: module(",name,")")
+	--logn("gmod: module(",name,")")
 
 	local tbl = {}
 	
@@ -189,7 +162,7 @@ function globals.module(name, _ENV)
 end
 
 function globals.require(name, ...)
-	logn("gmod: require(",name,")")
+	--logn("gmod: require(",name,")")
 	
 	local func, err, path = require.load(name, gmod.dir, true) 
 				

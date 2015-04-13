@@ -28,10 +28,16 @@ function META:__index(key)
 	end
 end
 
---function META:__newindex(key, val)
-	--if val == nil then debug.trace() end
-	--rawset(self, key, val)
---end
+function META:__newindex(k, v)
+	
+	if k == "x" then
+		self.__obj:SetX(v)
+	elseif k == "y" then
+		self.__obj:SetY(v)
+	end
+	
+	rawset(self, k, v)
+end
 
 META.__eq = nil -- no need
 
@@ -103,11 +109,11 @@ function META:HasParent()
 end
 
 function META:DockPadding(left, top, right, bottom)
-	self.__obj:SetPadding(Rect(left, top, right, bottom))
+	self.__obj:SetMargin(Rect(left, bottom, right, top))
 end
 
 function META:DockMargin(left, top, right, bottom)
-	self.__obj:SetMargin(Rect(left, top, right, bottom))
+	self.__obj:SetPadding(Rect(left, bottom, right, top))
 end
 
 function META:SetMouseInputEnabled(b)
@@ -138,6 +144,10 @@ function META:GetSize()
 	return self.__obj:GetSize():Unpack()
 end
 
+function META:ChildrenSize() 
+	return self.__obj:GetSizeOfChildren():Unpack() 
+end
+
 function META:LocalToScreen(x, y)
 	return self.__obj:LocalToWorld(Vec2(x, y)):Unpack()
 end
@@ -152,7 +162,7 @@ do
 	end
 
 	function META:SetText(text)
-		self.__obj.text_internal = text
+		self.__obj.text_internal = gmod.translation2[text] or text
 	end
 end
 
@@ -234,6 +244,11 @@ function META:Dock(enum)
 	elseif enum == gmod.env.NODOCK then
 		self.__obj:SetupLayout()
 	end	
+	self.__obj.vgui_dock = enum
+end
+
+function META:GetDock()
+	return self.__obj.vgui_dock or gmod.env.NODOCK
 end
 
 function META:SetCursor(typ)
@@ -266,16 +281,14 @@ do -- z pos stuff
 	end
 
 	function META:MoveToBack()
-	
+		self.__obj:Unfocus()
 	end
 
 	function META:MoveToFront()
 		self.__obj:BringToFront()
 	end
 	
-	function META:SetFocusTopLevel()
-	
-	end
+	--function META:SetFocusTopLevel() end
 	
 	function META:MakePopup()
 		self.__obj:BringToFront()
@@ -306,8 +319,7 @@ function META:SetWrap(b)
 	-- text wrap
 end
 
-function META:SetWorldClicker()
-end
+--function META:SetWorldClicker() end
 
 function META:SetAllowNonAsciiCharacters() end
 
@@ -346,12 +358,10 @@ function META:HasFocus()
 end
 
 function META:HasHierarchicalFocus()
-	for _, pnl in pairs(self.__obj:GetChildrenList()) do
-		if pnl:IsFocused() then
+	for _, pnl in ipairs(self.__obj:GetChildrenList()) do
+		if pnl.IsFocused and pnl:IsFocused() then
 			return true
 		end
 	end
 	return false
 end
-
-function META:ChildrenSize() return self.__obj:GetSizeOfChildren():Unpack() end
