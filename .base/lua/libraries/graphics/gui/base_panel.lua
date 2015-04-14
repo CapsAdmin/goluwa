@@ -1258,6 +1258,10 @@ do -- mouse
 	function PANEL:IsMouseOver()
 		return self:IsDragging() or self:IsResizing() or self.mouse_over and gui.hovering_panel == self
 	end
+	
+	function PANEL:GlobalMouseCapture(b)
+		self.mouse_capture = b
+	end
 
 	function PANEL:GetMouseLocation(pos) -- rename this function
 		pos = pos or self:GetMousePosition()
@@ -1423,6 +1427,10 @@ do -- mouse
 			if self.mouse_hover_triggered then
 				self:OnMouseHoverTrigger(false, x, y)
 				self.mouse_hover_triggered = false
+			end
+			
+			if self.mouse_capture then
+				self:OnMouseMove(x, y)
 			end
 		end
 	end
@@ -1912,7 +1920,8 @@ do -- layout
 		function PANEL:CenterSimple()
 			local parent = self:GetParent()
 
-			self:SetPosition(parent:GetPosition() - (self:GetSize() / 2))
+			self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
+			self:SetY(parent:GetHeight() / 2 - self:GetHeight() / 2)
 			
 			self.laid_out = true
 		end
