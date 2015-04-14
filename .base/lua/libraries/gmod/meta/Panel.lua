@@ -29,14 +29,13 @@ function META:__index(key)
 end
 
 function META:__newindex(k, v)
-	
 	if k == "x" then
 		self.__obj:SetX(v)
 	elseif k == "y" then
 		self.__obj:SetY(v)
+	else
+		rawset(self, k, v)
 	end
-	
-	rawset(self, k, v)
 end
 
 META.__eq = nil -- no need
@@ -89,7 +88,7 @@ function META:GetBounds()
 end
 
 function META:IsVisible()
-	return self.__obj:IsVisible()
+	return self.__obj.Visible
 end
 
 function META:GetTable()
@@ -116,12 +115,23 @@ function META:DockMargin(left, top, right, bottom)
 	self.__obj:SetPadding(Rect(left, bottom, right, top))
 end
 
+local in_drawing
+
+function META:PaintAt(x,y,w,h)
+if in_drawing then return end
+in_drawing = true
+	surface.PushMatrix(x,y,w,h)
+	self.__obj:OnDraw()
+	surface.PopMatrix()
+in_drawing = false
+end
+
 function META:SetMouseInputEnabled(b)
 	self.__obj:SetIgnoreMouse(not b)
 end
 
 function META:MouseCapture(b)
-	--self:SetMouseInputEnabled(b)
+	self.__obj:GlobalMouseCapture(b)
 end
 
 function META:SetKeyboardInputEnabled(b)
@@ -201,7 +211,7 @@ function META:SizeToContents()
 	
 	if panel.vgui_type == "label" then		
 		panel:Layout(true)
-		panel:SetSize(Vec2(panel.Margin.x + w, panel.Margin.y + h))		
+		panel:SetSize(Vec2(panel.text_inset.x + panel.Margin.x + w, panel.text_inset.y + panel.Margin.y + h))		
 		panel.LayoutSize = panel:GetSize():Copy()
 	end
 end
@@ -218,12 +228,21 @@ function META:GetText()
 end
 
 function META:SetTextInset(x, y)
-	self.__obj.Margin.x = x
-	self.__obj.Margin.y = y
+	self.__obj.text_inset.x = x
+	self.__obj.text_inset.y = y
 end
 
-function META:SizeToChildren()
-	self.__obj:SetSize(self.__obj:GetSizeOfChildren())
+function META:SizeToChildren(size_w, size_h)
+	local size = self.__obj:GetSizeOfChildren()
+	if size_w == nil then size_w = true end
+	if size_h == nil then size_h = true end
+	
+	if size_w then
+		self.__obj:SetWidth(size.w)
+	end
+	if size_h then
+		self.__obj:SetHeight(size.h)
+	end
 end
 
 function META:SetVisible(b)
@@ -234,13 +253,13 @@ function META:Dock(enum)
 	if enum == gmod.env.FILL then
 		self.__obj:SetupLayout("center_simple", "fill")
 	elseif enum == gmod.env.LEFT then
-		self.__obj:SetupLayout("left", "fill_y")
+		self.__obj:SetupLayout("center_simple", "left", "fill_y")
 	elseif enum == gmod.env.RIGHT then
-		self.__obj:SetupLayout("right", "fill_y")
+		self.__obj:SetupLayout("center_simple", "right", "fill_y")
 	elseif enum == gmod.env.TOP then
-		self.__obj:SetupLayout("top", "fill_x")
+		self.__obj:SetupLayout("center_simple", "top", "fill_x")
 	elseif enum == gmod.env.BOTTOM then
-		self.__obj:SetupLayout("bottom", "fill_x")
+		self.__obj:SetupLayout("center_simple", "bottom", "fill_x")
 	elseif enum == gmod.env.NODOCK then
 		self.__obj:SetupLayout()
 	end	

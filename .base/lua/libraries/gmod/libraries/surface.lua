@@ -19,6 +19,10 @@ function surface.SetDrawColor(r,g,b,a)
 	lib.SetColor(r/255,g/255,b/255,a/255)
 end
 
+function surface.SetAlphaMultiplier(a)
+	lib.SetAlphaMultiplier(a)
+end
+
 local txt_r, txt_g, txt_b, txt_a = 0,0,0,0
 
 function surface.SetTextColor(r,g,b,a)

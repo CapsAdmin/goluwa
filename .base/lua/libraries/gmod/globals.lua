@@ -81,7 +81,7 @@ end
 function globals.RealTime() return system.GetElapsedTime() end
 function globals.FrameNumber() return tonumber(system.GetFrameNumber()) end
 function globals.FrameTime() return system.GetFrameTime() end
-function globals.VGUIFrameTime() return system.GetFrameTime() end
+function globals.VGUIFrameTime() return system.GetElapsedTime() end
 function globals.CurTime() return system.GetElapsedTime() end --system.GetServerTime()
 function globals.SysTime() return system.GetTime() end --system.GetServerTime()
 

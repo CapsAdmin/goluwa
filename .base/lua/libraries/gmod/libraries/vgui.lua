@@ -40,6 +40,7 @@ function vgui.CreateX(class, parent, name)
 	
 	obj.fg_color = Color(1,1,1,1)
 	obj.bg_color = Color(1,1,1,1)
+	obj.text_inset = Vec2()
 	obj.text_offset = Vec2()
 	obj.vgui_type = class
 	self:SetPaintBackgroundEnabled(true)
@@ -47,26 +48,30 @@ function vgui.CreateX(class, parent, name)
 	obj:SetPadding(Rect())
 	obj:SetMargin(Rect())
 	
+	obj.IsInsideParent = function() return true end -- :(
 	obj.OnDraw = function()
-		local paint_rest = true
+		local paint_bg
 		
 		if self.Paint then 
-			paint_rest = not self:Paint(obj:GetWidth(), obj:GetHeight()) 
+			paint_bg = self:Paint(obj:GetWidth(), obj:GetHeight())
 		end 
 		
-		if paint_rest and not obj.draw_manual and class == "label" then
-			if obj.paint_bg then
+		if not obj.draw_manual then 
+			if obj.paint_bg and paint_bg ~= nil then
+				surface.SetWhiteTexture()
 				surface.SetColor(obj.bg_color:Unpack())
 				surface.DrawRect(0,0,obj.Size.w,obj.Size.h)
 			end
-						
-			if obj.text_internal and obj.text_internal ~= "" then
-				surface.SetColor(obj.fg_color:Unpack())
-				surface.SetTextPosition(obj.text_offset.x, obj.text_offset.y)
-				surface.SetFont(obj.font_internal)
-				surface.DrawText(obj.text_internal)
+			
+			if class == "label" then						
+				if obj.text_internal and obj.text_internal ~= "" then
+					surface.SetColor(obj.fg_color:Unpack())
+					surface.SetTextPosition(obj.text_offset.x, obj.text_offset.y)
+					surface.SetFont(obj.font_internal)
+					surface.DrawText(obj.text_internal)
+				end
 			end
-		end
+		end	
 		
 		if self.PaintOver then 
 			self:PaintOver(obj:GetWidth(), obj:GetHeight()) 
@@ -113,6 +118,8 @@ function vgui.CreateX(class, parent, name)
 				panel.text_offset.x = panel:GetWidth() - w - m.right
 				panel.text_offset.y = panel:GetHeight() - h - m.bottom
 			end
+			
+			panel.text_offset = panel.text_offset + panel.text_inset
 		end
 	
 		if self.ApplySchemeSettings then 
@@ -123,6 +130,7 @@ function vgui.CreateX(class, parent, name)
 			self:PerformLayout(obj:GetWidth(), obj:GetHeight()) 
 		end
 	end	
+	
 	obj.OnMouseInput = function(_, button, press)
 		if translate_mouse[button] then
 			if press then
@@ -138,6 +146,9 @@ function vgui.CreateX(class, parent, name)
 			logf("mouse button %q could not be translated!\n", button)
 		end
 	end
+	
+	self:MouseCapture(false)
+	
 	obj.OnKeyInput = function(_, key, press)
 		if press and self.OnKeyCodePressed then
 			if translate_key[key] then
@@ -171,24 +182,4 @@ end
 
 function vgui.GetKeyboardFocus()
 	return true
-end
-
-if RELOAD then
-	gui.Panic()
-
-	local Frame = vgui.Create( "DFrame" )
-Frame:SetPos( 5, 5 )
-Frame:SetSize( 300, 150 )
-Frame:SetTitle( "Name window" )
-Frame:SetVisible( true )
-Frame:SetDraggable( true )
-Frame:SetSizable( true )
-Frame:ShowCloseButton( true )
-Frame:MakePopup()
-
-local lol = vgui.Create("DLabel", Frame)
-lol:SetText("qwwijwd ijaidjw")
-lol:SizeToContents()
-lol:SetContentAlignment(8)
-
 end
