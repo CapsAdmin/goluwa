@@ -2,10 +2,7 @@ local gl = require("graphics.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
 do -- current window
-	render.current_window = NULL
-
-	local last_w
-	local last_h
+	render.current_window = render.current_window or NULL
 
 	function render.SetWindow(window)
 		window:MakeContextCurrent()

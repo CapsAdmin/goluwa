@@ -1,5 +1,5 @@
-table.new = require("table.new") or function() return {} end
-table.clear = require("table.clear") or function(t) for k,v in pairs(t) do t[k] = nil end end
+table.new = desire("table.new") or function() return {} end
+table.clear = desire("table.clear") or function(t) for k,v in pairs(t) do t[k] = nil end end
 
 function table.shuffle(a, times)
 	times = times or 1

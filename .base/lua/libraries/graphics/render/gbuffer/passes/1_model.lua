@@ -75,9 +75,9 @@ PASS.Shader = {
 			NoCull = false,
 			
 			DiffuseTexture = render.GetErrorTexture(),
-			Diffuse2Texture = render.GetBlackTexture(),
+			Diffuse2Texture = "texture",
 			NormalTexture = render.GetBlackTexture(),
-			Normal2Texture = render.GetBlackTexture(),
+			Normal2Texture = "texture",
 			
 			MetallicTexture = render.GetBlackTexture(),
 			RoughnessTexture = render.GetGreyTexture(),
@@ -120,11 +120,9 @@ PASS.Shader = {
 				// diffuse
 				{
 					diffuse_buffer = texture(DiffuseTexture, uv);
-					
-					vec4 diffuse_blend = texture(Diffuse2Texture, uv);
-					
-					if (diffuse_blend != vec4(0))
-						diffuse_buffer = mix(diffuse_buffer, diffuse_blend, texture_blend);
+	
+					if (texture_blend != 0)
+						diffuse_buffer = mix(diffuse_buffer, texture(Diffuse2Texture, uv), texture_blend);
 					
 					if (lua[Translucent = false])
 					{
@@ -147,11 +145,9 @@ PASS.Shader = {
 					normal_buffer.xyz = normal;
 					
 					if (bump_detail != vec3(0))
-					{
-						vec3 bump_detail2 = texture(Normal2Texture, uv).xyz;
-						
-						if (bump_detail2 != vec3(0))
-							bump_detail = bump_detail + (bump_detail2 * texture_blend);
+					{						
+						if (texture_blend != 0)
+							bump_detail = bump_detail + (texture(Normal2Texture, uv).xyz * texture_blend);
 					
 						normal_buffer.xyz += ((2 * bump_detail - 1) * tangent_to_world);
 					}

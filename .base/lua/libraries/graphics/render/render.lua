@@ -44,6 +44,10 @@ function render.Initialize()
 	
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
 	
+	for i = 0, 15 do
+		render.ActiveTexture(i)
+	end
+	
 	include("lua/libraries/graphics/render/shader_builder.lua", render)
 	
 	surface.Initialize()
@@ -421,6 +425,7 @@ do
 	local override_
 
 	function render.SetCullMode(mode, override)
+		if mode == cull_mode then return end
 		if override == false then override_ = nil end
 		if override_ then return end
 		
@@ -485,7 +490,6 @@ uniform samplerXX iChannel0..3;          // input channel. XX = 2D/Cube
 uniform vec4      iDate;                 // (year, month, day, time in seconds)
 uniform float     iSampleRate;           // sound sample rate (i.e., 44100)]]
 
-render.SetGlobalShaderVariable("g_screen_size", function() return render.GetGBufferSize() end, "vec2")
 render.SetGlobalShaderVariable("iResolution", function() return Vec2(render.camera.w, render.camera.h, render.camera.ratio) end, "vec3")
 render.SetGlobalShaderVariable("iGlobalTime", function() return system.GetElapsedTime() end, "float")
 render.SetGlobalShaderVariable("iMouse", function() return Vec2(surface.GetMousePosition()) end, "float")

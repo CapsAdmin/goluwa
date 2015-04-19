@@ -3,7 +3,7 @@ local profiler = _G.profiler or {}
 profiler.data = profiler.data or {sections = {}, statistical = {}, trace_aborts = {}}
 profiler.raw_data = profiler.raw_data or {sections = {}, statistical = {}, trace_aborts = {}}
 
-local jit_profiler = require("jit.profile")
+local jit_profiler = desire("jit.profile")
 local jit_vmdef = require("jit.vmdef")
 local jit_util = require("jit.util")
 

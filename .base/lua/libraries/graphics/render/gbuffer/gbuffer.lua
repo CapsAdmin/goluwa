@@ -27,9 +27,13 @@ vec2 g_poisson_disk[4] = vec2[](
 	vec2( 0.34495938, 0.29387760 )
 );]], "g_poisson_disk")
 
-function render.GetGBufferSize()
-	return Vec2(render.gbuffer_width or render.GetWidth(), render.gbuffer_height or render.GetHeight())
+render.gbuffer_size = Vec2(1,1)
+
+function render.GetGBufferSize()	
+	return render.gbuffer_size
 end
+
+render.SetGlobalShaderVariable("g_screen_size", render.GetGBufferSize, "vec2") 
 
 render.gbuffer = render.gbuffer or NULL
 render.gbuffer_passes = render.gbuffer_passes or {}
@@ -221,7 +225,9 @@ function render.InitializeGBuffer(width, height)
 	height = height or render.GetHeight()
 	
 	render.camera_3d:SetViewport(Rect(0,0,width,height))
-
+	
+	render.gbuffer_size = Vec2(width, height)
+	
 	if w_cvar:Get() > 0 then width = w_cvar:Get() end
 	if h_cvar:Get() > 0 then height = h_cvar:Get() end
 	

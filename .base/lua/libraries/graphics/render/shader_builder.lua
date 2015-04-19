@@ -4,22 +4,15 @@ local BUILD_OUTPUT = false
 local gl = require("graphics.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
-render.Uniform4f = gl.Uniform4f
-render.Uniform3f = gl.Uniform3f
-render.Uniform2f = gl.Uniform2f
-render.Uniform1f = gl.Uniform1f
-render.Uniform1i = gl.Uniform1i
-render.UniformMatrix4fv = gl.UniformMatrix4fv or function(a,b,c,d) if not d then print("what the hell man!!!") debug.trace() return end gl.UniformMatrix4fv(a,b,c,d) end or gl.UniformMatrix4fv
-
 -- used to figure out how to upload types
 local unrolled_lines = {
-	bool = "render.Uniform1i(%i, val and 1 or 0)",
-	number = "render.Uniform1f(%i, val)",
-	vec2 = "render.Uniform2f(%i, val.x, val.y)",
-	vec3 = "render.Uniform3f(%i, val.x, val.y, val.z)",
-	color = "render.Uniform4f(%i, val.r, val.g, val.b, val.a)",
-	mat4 = "render.UniformMatrix4fv(%i, 1, 0, val.ptr)",
-	texture = "local channel = %i\n\trender.ActiveTexture(channel)\n\trender.BindTexture(val)\n\trender.Uniform1i(%i, channel)",
+	bool = "gl.Uniform1i(%i, val and 1 or 0)",
+	number = "gl.Uniform1f(%i, val)",
+	vec2 = "gl.Uniform2f(%i, val.x, val.y)",
+	vec3 = "gl.Uniform3f(%i, val.x, val.y, val.z)",
+	color = "gl.Uniform4f(%i, val.r, val.g, val.b, val.a)",
+	mat4 = "gl.UniformMatrix4fv(%i, 1, 0, val.ptr)",
+	texture = "render.BindTexture2(val, %i, %i)",
 }
 
 unrolled_lines.vec4 = unrolled_lines.color

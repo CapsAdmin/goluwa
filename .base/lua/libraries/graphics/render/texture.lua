@@ -5,9 +5,9 @@ local render = (...) or _G.render
 do -- texture binding
 	local last_texture
 	
+	local base = gl.e.GL_TEXTURE0 
+	local last
 	do
-		local base = gl.e.GL_TEXTURE0 
-		local last
 		function render.ActiveTexture(id)
 			if id ~= last then
 				gl.ActiveTexture(base + id)
@@ -24,6 +24,12 @@ do -- texture binding
 				last_texture = tex
 			end
 		end
+	end
+	
+	function render.BindTexture2(tex, channel, location)
+		gl.Uniform1i(location, channel)
+		gl.ActiveTexture(base + channel)
+		tex:Bind()
 	end
 end
 
