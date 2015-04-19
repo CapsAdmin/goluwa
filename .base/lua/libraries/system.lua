@@ -540,10 +540,10 @@ do
 		hotloop = 56*4, -- Number of iterations to detect a hot loop or hot call     default = 56
 		hotexit = 10, -- Number of taken exits to start a side trace                 default = 10
 		tryside = 4, -- Number of attempts to compile a side trace                  default = 4
-		instunroll = 4*0, -- Max. unroll factor for instable loops                  default = 4
-		loopunroll = 15*0, -- Max. unroll factor for loop ops in side traces         default = 15
-		callunroll = 3*0, -- Max. unroll factor for pseudo-recursive calls          default = 3
-		recunroll = 2*0, -- Min. unroll factor for true recursion                     default = 2
+		instunroll = 4*999, -- Max. unroll factor for instable loops                  default = 4
+		loopunroll = 15*999, -- Max. unroll factor for loop ops in side traces         default = 15
+		callunroll = 3*999, -- Max. unroll factor for pseudo-recursive calls          default = 3
+		recunroll = 2*999, -- Min. unroll factor for true recursion                     default = 2
 		--sizemcode = X64 and 64 or 32, -- Size of each machine code area in KBytes (Windows: 64K)
 		maxmcode = 512*4, -- Max. total size of all machine code areas in KBytes     default = 512
 	}
