@@ -10,7 +10,15 @@ function COMPONENT:OnAdd(ent)
 	self.sun:SetName("sun")
 	self.sun:SetHideFromEditor(false)
 	self.sun:SetProjectFromCamera(true)
-	self.sun:SetOrthoSize(150)
+	self.sun:SetOrthoSize(200)
+	
+	if GRAPHICS then
+		local gl = require("graphics.ffi.opengl")
+		local num = ffi.new("int[1]") 
+		gl.GetIntegerv("GL_MAX_TEXTURE_SIZE", num)
+		self.sun:SetShadowSize(tonumber(num[0]))
+	end
+	
 	self.sun:SetShadow(true)
 	
 	SUN = self.sun
