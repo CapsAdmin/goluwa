@@ -310,6 +310,10 @@ function render.InitializeGBuffer(width, height)
 		},
 	})
 	
+	if not RELOAD then
+		include("lua/libraries/graphics/render/gbuffer/post_process/*")
+	end
+	
 	for k,v in pairs(render.gbuffer_shaders_) do
 		if v.__init then
 			v:__init()
@@ -407,10 +411,6 @@ function render.InitializeGBuffer(width, height)
 		end)
 	end
 	
-	if not RELOAD then
-		include("lua/libraries/graphics/render/gbuffer/post_process/*")
-	end
-	
 	for k,v in pairs(render.gbuffer_values) do
 		render.SetGBufferValue(k,v)
 	end
@@ -419,7 +419,7 @@ function render.InitializeGBuffer(width, height)
 	
 	event.Call("GBufferInitialized")
 	
-	logn("render: gbuffer initialized")
+	logn("render: gbuffer initialized ", width, "x", height)
 end
 
 function render.ShutdownGBuffer()
