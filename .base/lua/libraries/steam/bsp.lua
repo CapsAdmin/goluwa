@@ -3,8 +3,8 @@ local steam = ... or _G.steam
 local scale = 0.0254
 
 local skyboxes = {
-	["gm_construct"] = {AABB(-400, -400, 255,   400, 400, 320) * (1/scale), 0.0025},
-	["gm_flatgrass"] = {AABB(-400, -400, -430,   400, 400, -360) * (1/scale), 0},
+	["gm_construct"] = {AABB(-400, -400, 255,   400, 400, 320) * (1/scale), 0.003},
+	["gm_flatgrass"] = {AABB(-400, -400, -430,   400, 400, -360) * (1/scale), 0.003},
 	["gm_bluehills_test3"] = {AABB(130, 130, 340,   340, 320, 380) * (1/scale), 0},
 }
 
