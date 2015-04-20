@@ -241,7 +241,7 @@ PASS.Shader = {
 					*/
 					
 					float HemisphereFactor = (dot(normal, vec3(0,-1,0)) + 1.0)/2.0;
-					out_color.rgb *= mix(vec3(0.8, 0.8, 1.0) * 1.25, vec3(1.0, 1.0, 0.8) * 1.25, HemisphereFactor);
+					out_color.rgb *= mix(vec3(0.9, 0.9, 1.0) * 1.25, vec3(0.95, 1.0, 0.95) * 1.25, HemisphereFactor);
 				}
 			
 				out_color.a = 1;

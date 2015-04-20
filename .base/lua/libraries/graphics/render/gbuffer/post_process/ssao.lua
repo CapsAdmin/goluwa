@@ -5,7 +5,7 @@ PASS.Default = true
 
 PASS.Source = [[	
 	float compare_depths( in float depth1, in float depth2 ) {
-		float diff = (depth2)-(depth1-0.0005);
+		float diff = (depth2)-(depth1-0.001);
 		diff = clamp(diff *= 30000, 0, 0.25);
 						
 		return diff;
@@ -23,7 +23,7 @@ PASS.Source = [[
 
 		float ao = 0;
 		
-		float aoscale = 2.2;
+		float aoscale = 1.2;
 		
 		pw /= aoscale;
 		ph /= aoscale;
@@ -41,7 +41,7 @@ PASS.Source = [[
 	 
 		ao/=16.0;
 	 
-		return 0.5+clamp(ao / 1.5, 0, 1)*0.5;
+		return 0.5+clamp(ao, 0, 1)*0.5;
 	}
 	out vec4 out_color;
 
