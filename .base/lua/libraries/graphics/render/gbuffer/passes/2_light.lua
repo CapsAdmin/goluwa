@@ -226,7 +226,7 @@ PASS.Shader = {
 						normalize(-view_pos), 
 						metallic, 
 						roughness
-					) * light_intensity * fade * 2;
+					) * light_intensity * fade;
 					
 					/*
 					float specular = cookTorranceSpecular(
@@ -237,8 +237,11 @@ PASS.Shader = {
 						metallic
 					);
 										
-					out_color.rgb += light_color.rgb + (light_color.rgb * specular) * (light_intensity * fade * 2);
+					out_color.rgb += light_color.rgb + (light_color.rgb * specular) * (light_intensity * fade);
 					*/
+					
+					float HemisphereFactor = (dot(normal, vec3(0,-1,0)) + 1.0)/2.0;
+					out_color.rgb *= mix(vec3(0.8, 0.8, 1.0) * 1.25, vec3(1.0, 1.0, 0.8) * 1.25, HemisphereFactor) * fade;
 				}
 			
 				out_color.a = 1;
