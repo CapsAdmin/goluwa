@@ -16,7 +16,7 @@ function COMPONENT:OnAdd(ent)
 		local gl = require("graphics.ffi.opengl")
 		local num = ffi.new("int[1]") 
 		gl.GetIntegerv("GL_MAX_TEXTURE_SIZE", num)
-		self.sun:SetShadowSize(tonumber(num[0]))
+		self.sun:SetShadowSize(tonumber(num[0])/2)
 	end
 	
 	self.sun:SetShadow(true)
