@@ -97,7 +97,7 @@ do -- mixer
 	
 	render.gbuffer_shaders_sorted = render.gbuffer_shaders_sorted or {}
 
-	function render.AddGBufferShader(PASS)
+	function render.AddGBufferShader(PASS, init_now)
 		local shader = {
 			name = PASS.Name,
 			vertex = {
@@ -186,7 +186,7 @@ do -- mixer
 						
 				console.CreateVariable("render_g_" .. pass.Name, default, function(val)
 					if val then
-						render.AddGBufferShader(pass)
+						render.AddGBufferShader(pass, true)
 					else
 						render.RemoveGBufferShader(pass.Name)
 					end
@@ -198,7 +198,7 @@ do -- mixer
 			end
 		end
 		
-		if RELOAD then PASS:__init() end
+		if init_now or RELOAD then PASS:__init() end
 	end
 	
 	function render.RemoveGBufferShader(name)
