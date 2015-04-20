@@ -2,6 +2,7 @@ local PASS = {}
 
 PASS.Name = FILE_NAME
 PASS.Position = 1
+PASS.Default = false
 
 PASS.Variables = {
 	num_samples = 16,

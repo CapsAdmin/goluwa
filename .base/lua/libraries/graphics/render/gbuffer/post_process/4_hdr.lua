@@ -1,8 +1,9 @@
 local PASS = {}
 
 PASS.Position, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
+PASS.Default = false
 
-local size = 8
+local size = 4
 local exposure = 1
 
 PASS.Variables = {
