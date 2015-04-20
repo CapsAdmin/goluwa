@@ -1,11 +1,11 @@
 local PASS = {}
 
 PASS.Name = FILE_NAME
-PASS.Default = false
+PASS.Default = true
 
 PASS.Source = [[	
 	float compare_depths( in float depth1, in float depth2 ) {
-		float diff = (depth2)-(depth1-0.000005);
+		float diff = (depth2)-(depth1-0.0005);
 		diff = clamp(diff *= 30000, 0, 0.25);
 						
 		return diff;
@@ -28,7 +28,7 @@ PASS.Source = [[
 		pw /= aoscale;
 		ph /= aoscale;
 		
-		for (int i = 1; i < 5; i++)
+		for (int i = 1; i < 16; i++)
 		{					
 			ao += compare_depths(depth, get_depth(vec2(uv.x+pw,uv.y+ph)));
 			ao += compare_depths(depth, get_depth(vec2(uv.x-pw,uv.y+ph)));
@@ -39,9 +39,9 @@ PASS.Source = [[
 			ph *= aoscale;
 		}			 
 	 
-		ao/=4.0;
+		ao/=16.0;
 	 
-		return 0.5+clamp(ao*2, 0, 1)*0.5;
+		return 0.5+clamp(ao / 1.5, 0, 1)*0.5;
 	}
 	out vec4 out_color;
 
