@@ -1,5 +1,5 @@
 local SOMETHING = false
-local BUILD_OUTPUT = false
+local BUILD_OUTPUT = true
 
 local gl = require("graphics.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
@@ -13,6 +13,7 @@ local unrolled_lines = {
 	color = "gl.Uniform4f(%i, val.r, val.g, val.b, val.a)",
 	mat4 = "gl.UniformMatrix4fv(%i, 1, 0, val.ptr)",
 	texture = "render.BindTexture2(val, %i, %i)",
+	texture2 = "val:Bind(%i)",
 }
 
 unrolled_lines.vec4 = unrolled_lines.color
@@ -195,8 +196,10 @@ end
 local function variables_to_string(type, variables, prepend, macro, array)
 	array = array or ""
 
+	local texture_channel = 0
+	
 	local out = {}
-
+	
 	for i, data in ipairs(translate_fields(variables)) do
 		if data.type == "variable_buffer" then
 			table.insert(out, "layout (std140) variables " .. data.name)
@@ -212,7 +215,12 @@ local function variables_to_string(type, variables, prepend, macro, array)
 				name = prepend .. name
 			end
 
-			table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array))
+			if data.type == "texture2" then
+				table.insert(out, ("layout(binding = %i) %s %s %s %s %s%s;"):format(texture_channel, data.varying, type, data.precision, "sampler2D", name, array):trim())
+				texture_channel = texture_channel + 1
+			else	
+				table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
+			end
 
 			if macro then
 				table.insert(out, ("#define %s %s"):format(data.name, name))
@@ -553,7 +561,14 @@ function render.CreateShader(data, vars)
 			local ok, shader = pcall(render.CreateGLShader, enum, data.source)
 
 			if not ok then
-				
+				local version = shader:match("requires \"(.-)\" or later")
+				if version then
+					data.source = data.source:gsub("(#version .-)\n", version)
+					ok, shader = pcall(render.CreateGLShader, enum, data.source)
+				end
+			end
+			
+			if not ok then
 				for i = 2, 20 do
 					local info = debug.getinfo(i)
 					
@@ -817,7 +832,7 @@ function render.CreateShader(data, vars)
 			elseif data.id > -1 then
 				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
-				if data.val.type == "texture" or data.val.type == "sampler2D" or data.val.type == "samplerCube" then
+				if data.val.type == "texture" or data.val.type == "texture2" or data.val.type == "sampler2D" or data.val.type == "samplerCube" then
 					line = line:format(texture_channel, data.id)
 					texture_channel = texture_channel + 1
 				else
