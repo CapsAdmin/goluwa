@@ -335,29 +335,30 @@ local texture_types = {
 }
 
 local parameters = {
-	DEPTH_STENCIL_TEXTURE_MODE = {friendly = "StencilTextureMode", type = "string"}, -- DEPTH_COMPONENT, STENCIL_INDEX
-	TEXTURE_BASE_LEVEL = {type = "int", default = 0}, -- any non-negative integer
-	TEXTURE_BORDER_COLOR = {type = "color", default = Color()}, --4 floats, any 4 values ints, or uints
-	TEXTURE_COMPARE_MODE = {type = "enum", default = "none"}, -- NONE, COMPARE_REF_TO_TEXTURE
-	TEXTURE_COMPARE_FUNC = {type = "enum", default = "never"}, -- LEQUAL, GEQUAL, LESS,GREATER, EQUAL, NOTEQUAL,ALWAYS, NEVER
-	TEXTURE_LOD_BIAS = {type = "float", default = 0}, -- any value
-	TEXTURE_MAG_FILTER = {type = "enum", default = "nearest"}, -- NEAREST, LINEAR
-	TEXTURE_MAX_LEVEL = {type = "int", default = 0}, -- any non-negative integer
-	TEXTURE_MAX_LOD = {type = "float", default = 0}, -- any value
-	TEXTURE_MIN_FILTER = {type = "enum", default = "nearest"}, -- NEAREST, LINEAR, NEAREST_MIPMAP_NEAREST, NEAREST_MIPMAP_LINEAR, LINEAR_MIPMAP_NEAREST, LINEAR_MIPMAP_LINEAR,
-	TEXTURE_MIN_LOD = {type = "float", default = 0}, -- any value
-	TEXTURE_SWIZZLE_R = {type = "enum", default = "zero"}, -- RED, GREEN, BLUE, ALPHA, ZERO, ONE
-	TEXTURE_SWIZZLE_G = {type = "enum", default = "zero"}, -- RED, GREEN, BLUE, ALPHA, ZERO, ONE
-	TEXTURE_SWIZZLE_B = {type = "enum", default = "zero"}, -- RED, GREEN, BLUE, ALPHA, ZERO, ONE
-	TEXTURE_SWIZZLE_A = {type = "enum", default = "zero"}, -- RED, GREEN, BLUE, ALPHA, ZERO, ONE
-	TEXTURE_SWIZZLE_RGBA = {type = "color", default = Color()}, --4 enums RED, GREEN, BLUE, ALPHA, ZERO, ONE
-	TEXTURE_WRAP_S = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
-	TEXTURE_WRAP_T = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
-	TEXTURE_WRAP_R = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
+	depth_stencil_texture_mode = {friendly = "StencilTextureMode", type = "string"}, -- DEPTH_COMPONENT, STENCIL_INDEX
+	texture_base_level = {type = "int", default = 0}, -- any non-negative integer
+	texture_border_color = {type = "color", default = Color()}, --4 floats, any 4 values ints, or uints
+	texture_compare_mode = {type = "enum", default = "none"}, -- NONE, COMPARE_REF_TO_TEXTURE
+	texture_compare_func = {type = "enum", default = "never"}, -- LEQUAL, GEQUAL, LESS,GREATER, EQUAL, NOTEQUAL,ALWAYS, NEVER
+	texture_lod_bias = {type = "float", default = 0}, -- any value
+	texture_mag_filter = {type = "enum", default = "nearest"}, -- NEAREST, LINEAR
+	texture_max_level = {type = "int", default = 0}, -- any non-negative integer
+	texture_max_lod = {type = "float", default = 0}, -- any value
+	texture_min_filter = {type = "enum", default = "nearest"}, -- NEAREST, LINEAR, NEAREST_MIPMAP_NEAREST, NEAREST_MIPMAP_LINEAR, LINEAR_MIPMAP_NEAREST, LINEAR_MIPMAP_LINEAR,
+	texture_min_lod = {type = "float", default = 0}, -- any value
+	texture_swizzle_r = {type = "enum", default = "zero"}, -- RED, GREEN, BLUE, ALPHA, ZERO, ONE
+	texture_swizzle_g = {type = "enum", default = "zero"}, -- RED, GREEN, BLUE, ALPHA, ZERO, ONE
+	texture_swizzle_b = {type = "enum", default = "zero"}, -- RED, GREEN, BLUE, ALPHA, ZERO, ONE
+	texture_swizzle_a = {type = "enum", default = "zero"}, -- RED, GREEN, BLUE, ALPHA, ZERO, ONE
+	texture_swizzle_rgba = {type = "color", default = Color()}, --4 enums RED, GREEN, BLUE, ALPHA, ZERO, ONE
+	texture_wrap_s = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
+	texture_wrap_t = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
+	texture_wrap_r = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
 }
 
 for k, v in pairs(parameters) do
-	local friendly = v.friendly or k:match("TEXTURE(_.+)"):gsub("_(.)", string.upper)
+	local friendly = v.friendly or k:match("texture(_.+)"):gsub("_(.)", string.upper)
+	print(friendly)
 	local info = META:GetSet(friendly, v.default)
 	local enum = "GL_" .. k
 	if v.type == "enum" or v.type == "int" then
@@ -714,13 +715,13 @@ end
 
 META:Register()
 
-local function render.CreateTexture2(storage_type)	
+function render.CreateTexture2(storage_type)
 	local self = prototype.CreateObject(META)
 	if storage_type then self:SetStorageType(storage_type) end
 	
 	self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
 	
-	self.dsa = not self.gl_tex.not_dsa
+	self.dsa = getmetatable(self.gl_tex) == "ffi"
 	
 	return self
 end
@@ -748,18 +749,12 @@ local shader = render.CreateShader({
 	fragment = {
 		variables = {
 			cam_dir = {vec3 = function() return render.camera_3d:GetAngles():GetForward() end},
-			tex = "sampler2D",
+			tex = tex,
 		},
 		mesh_layout = {
 			{uv = "vec2"},
 		},			
 		source = [[
-			//#version 330
-			//#extension GL_NV_shadow_samplers_cube:enable
-			
-			//layout(binding = 0) uniform sampler2D tex;
-			//layout(binding = 0) uniform samplerCube tex;
-
 			out highp vec4 frag_color;
 			
 			void main()
