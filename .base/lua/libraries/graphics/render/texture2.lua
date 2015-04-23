@@ -33,7 +33,7 @@ if not gl.CreateTextures then
 			bind(self) return gl.CopyTexSubImage1D(self.target, level, xoffset, x, y, width)
 		end
 		function META:GetImage(level, format, type, bufSize, pixels)
-			bind(self) return gl.GetTexImage(self.target, level, format, type, bufSize, pixels)
+			bind(self) return gl.GetTexImage(self.target, level, format, type, pixels)
 		end
 		function META:CopyImage2D(target, level, internalformat, x, y, width, height, border)
 			bind(self) return gl.CopyTexImage2DEXT(target, level, internalformat, x, y, width, height, border)
@@ -429,7 +429,11 @@ function META:Upload(data)
 	data.internal_format = data.internal_format or "rgba8"
 	
 	--TODO
-	if data.GRR and self.last_storage_setup then self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper()) self.last_storage_setup = nil end
+	if data.GRR and self.last_storage_setup then 
+		self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper()) 
+		self.last_storage_setup = nil 
+		self.id = self.gl_tex.id
+	end
 	
 	if type(data.buffer) == "string" then 
 		data.buffer = ffi.cast("uint8_t *", data.buffer) 
@@ -564,8 +568,16 @@ function META:Upload(data)
 	self.Size.h = data.height
 	self.w = self.Size.w
 	self.h = self.Size.h
+	self.upload_format = data.format
+	self.internal_format = data.internal_format
 	
 	self.last_storage_setup = true
+	
+	self.downloaded_image = nil
+end
+
+function META:MakeError()
+	self:Upload(render.GetErrorTexture():Download())
 end
 
 ffi.cdef("typedef struct {uint8_t r, g, b, a;} rgba_pixel;")
@@ -583,12 +595,69 @@ function META:Download(mip_map_level)
 		buffer = buffer,
 		width = self.Size.w,
 		height = self.Size.h,
-		format = "rgba",
+		format = self.upload_format or "rgba",
 		internal_format = "rgba8",
 		mip_map_level = mip_map_level,
-		length = (self.Size.w*self.Size.h) - 1, -- for i = 0, data.length do
+		length = (self.Size.w * self.Size.h) - 1, -- for i = 0, data.length do
 		GRR = true,
 	}
+end
+
+function META:Clear(mip_map_level)
+	local size = self.Size.w * self.Size.h * ffi.sizeof("rgba_pixel")
+	local buffer = ffi.new("rgba_pixel[?]", size)
+	
+	self:Upload({
+		buffer = buffer,
+		width = self.Size.w,
+		height = self.Size.h,
+		format = self.upload_format or "rgba",
+		internal_format = self.internal_format or "rgba8",
+		mip_map_level = mip_map_level,
+		GRR = true,
+	})
+end
+
+function META:Fill(callback)
+	check(callback, "function")
+		
+	local image = self:Download()
+	
+	local x = 0
+	local y = 0
+	local buffer = image.buffer
+
+	for i = 0, image.length do
+		if x >= image.width then
+			y = y + 1
+			x = 0
+		end
+		
+		local r,g,b,a
+		
+		if image.format == "bgra" then
+			r,g,b,a = callback(x, y, i, buffer[i].b, buffer[i].g, buffer[i].r, buffer[i].a)
+		elseif image.format == "rgba" then
+			r,g,b,a = callback(x, y, i, buffer[i].r, buffer[i].b, buffer[i].g, buffer[i].a)
+		elseif image.format == "bgr" then
+			b,g,r = callback(x, y, i, buffer[i].b, buffer[i].g, buffer[i].r)
+		elseif image.format == "rgb" then
+			r,g,b = callback(x, y, i, buffer[i].r, buffer[i].g, buffer[i].b)
+		elseif image.format == "red" then
+			r = callback(x, y, i, buffer[i].r)
+		end
+		
+		if r then buffer[i].r = r end
+		if g then buffer[i].g = g end
+		if b then buffer[i].b = b end
+		if a then buffer[i].a = a end
+		
+		x = x + 1
+	end
+	
+	self:Upload(image)
+	
+	return self
 end
 
 function META:GetPixelColor(x, y)
@@ -719,7 +788,38 @@ function render.CreateTexture2(storage_type)
 	return self
 end
 
+render.texture_decoders = render.texture_decoders or {}
 
+function render.AddTextureDecoder(id, callback)
+	render.RemoveTextureDecoder(id)
+	table.insert(render.texture_decoders, {id = id, callback = callback})
+end
+
+function render.RemoveTextureDecoder(id)
+	for k,v in pairs(render.texture_decoders) do
+		if v.id == id then
+			table.remove(render.texture_decoders)
+			return true
+		end
+	end
+end
+
+function render.DecodeTexture(data, path_hint)
+	for i, decoder in ipairs(render.texture_decoders) do
+		local ok, buffer, w, h, info = pcall(decoder.callback, data, path_hint)
+		if ok then 
+			if buffer and w then
+				return buffer, w, h, info or {}
+			elseif not w:find("unknown format") then
+				logf("[render] %s failed to decode %s: %s\n", decoder.id, path_hint or "", w)
+			end
+		else
+			logf("[render] decoder %q errored: %s\n", decoder.id, buffer)
+		end
+	end
+end
+
+Texture2 = render.CreateTexture2 -- reload!
 
 
 
@@ -802,14 +902,27 @@ local shader = render.CreateShader({
 	}
 })
 
-gl.Enable("GL_TEXTURE_CUBE_MAP") 
+serializer.WriteFile("msgpack", "lol.wtf", tex:Download())
+local info = serializer.ReadFile("msgpack", "lol.wtf")
+tex:Upload(info)
+local size = 16
+tex:Fill(function(x, y)
+		if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
+			return 255, 0, 255, 255
+		else
+			return 0, 0, 0, 255
+		end
+	end)
+	tex:Clear()
 
 event.AddListener("PostDrawMenu", "lol", function()
-	--tex:Bind(0)
-	shader.tex = tex
 	surface.PushMatrix(0, 0, tex:GetSize():Unpack())
 		render.SetShaderOverride(shader)
 		surface.rect_mesh:Draw()
 		render.SetShaderOverride()
 	surface.PopMatrix()
+	
+	surface.SetWhiteTexture()
+	surface.SetColor(ColorBytes(tex:GetPixelColor(surface.GetMousePosition())))
+	surface.DrawRect(50,50,50,50)
 end)
