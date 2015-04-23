@@ -358,9 +358,8 @@ local parameters = {
 
 for k, v in pairs(parameters) do
 	local friendly = v.friendly or k:match("texture(_.+)"):gsub("_(.)", string.upper)
-	print(friendly)
 	local info = META:GetSet(friendly, v.default)
-	local enum = "GL_" .. k
+	local enum = "GL_" .. k:upper()
 	if v.type == "enum" or v.type == "int" then
 		META[info.set_name] = function(self, val)
 			self[info.var_name] = val
@@ -563,6 +562,8 @@ function META:Upload(data)
 	
 	self.Size.w = data.width
 	self.Size.h = data.height
+	self.w = self.Size.w
+	self.h = self.Size.h
 	
 	self.last_storage_setup = true
 end
@@ -649,7 +650,7 @@ do
 	function META:Shade(fragment_shader, vars, dont_blend)		
 		self.shaders = self.shaders or {}
 		
-		local name = "shade_texture_" .. self.id .. "_" .. crypto.CRC32(fragment_shader)
+		local name = "shade_texture_" .. tostring(self.gl_tex.id) .. "_" .. crypto.CRC32(fragment_shader)
 		local shader = self.shaders[name]
 		
 		
@@ -659,15 +660,6 @@ do
 				shared = {
 					variables = vars,
 				},
-				
-				vertex = {
-					mesh_layout = {
-						{pos = "vec3"},
-						{uv = "vec2"},
-					},	
-					source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);"
-				},
-				
 				fragment = { 
 					variables = {
 						self = self,
@@ -720,6 +712,7 @@ function render.CreateTexture2(storage_type)
 	if storage_type then self:SetStorageType(storage_type) end
 	
 	self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
+	self.id = self.gl_tex.id -- backwards compatibility
 	
 	self.dsa = getmetatable(self.gl_tex) == "ffi"
 	
@@ -743,6 +736,47 @@ local tex = render.CreateTexture2("2d")
 --tex:LoadCubemap("materials/skybox/sky_borealis01")
 tex:SetPath("https://i.ytimg.com/vi/YC4mDN7ltT0/default.jpg")
 
+local function blur_texture(dir)
+	tex:Shade([[
+		//this will be our RGBA sum
+		vec4 sum = vec4(0.0);
+
+		//the amount to blur, i.e. how far off center to sample from 
+		//1.0 -> blur by one pixel
+		//2.0 -> blur by two pixels, etc.
+		float blur = radius/resolution; 
+
+		//the direction of our blur
+		//(1.0, 0.0) -> x-axis blur
+		//(0.0, 1.0) -> y-axis blur
+		float hstep = dir.x;
+		float vstep = dir.y;
+
+		//apply blurring, using a 9-tap filter with predefined gaussian weights
+
+		sum += texture(self, vec2(uv.x - 4.0*blur*hstep, uv.y - 4.0*blur*vstep)) * 0.0162162162;
+		sum += texture(self, vec2(uv.x - 3.0*blur*hstep, uv.y - 3.0*blur*vstep)) * 0.0540540541;
+		sum += texture(self, vec2(uv.x - 2.0*blur*hstep, uv.y - 2.0*blur*vstep)) * 0.1216216216;
+		sum += texture(self, vec2(uv.x - 1.0*blur*hstep, uv.y - 1.0*blur*vstep)) * 0.1945945946;
+
+		sum += texture(self, vec2(uv.x, uv.y)) * 0.2270270270;
+
+		sum += texture(self, vec2(uv.x + 1.0*blur*hstep, uv.y + 1.0*blur*vstep)) * 0.1945945946;
+		sum += texture(self, vec2(uv.x + 2.0*blur*hstep, uv.y + 2.0*blur*vstep)) * 0.1216216216;
+		sum += texture(self, vec2(uv.x + 3.0*blur*hstep, uv.y + 3.0*blur*vstep)) * 0.0540540541;
+		sum += texture(self, vec2(uv.x + 4.0*blur*hstep, uv.y + 4.0*blur*vstep)) * 0.0162162162;
+
+		sum.a = 1;
+		return sum;
+	]], { 
+		radius = 1, 
+		resolution = render.GetScreenSize(),
+		dir = dir,
+	})  
+end
+
+blur_texture(Vec2(0,5))
+blur_texture(Vec2(5,0))
 
 local shader = render.CreateShader({
 	name = "test",
