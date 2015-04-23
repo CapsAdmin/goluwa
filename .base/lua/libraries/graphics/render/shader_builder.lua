@@ -1,5 +1,5 @@
 local SOMETHING = false
-local BUILD_OUTPUT = true
+local BUILD_OUTPUT = false
 
 local gl = require("graphics.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
@@ -563,7 +563,11 @@ function render.CreateShader(data, vars)
 			if not ok then
 				local version = shader:match("requires \"(.-)\" or later")
 				if version then
-					data.source = data.source:gsub("(#version .-)\n", version)
+					data.source = data.source:gsub("(#version .-)\n", version .. "\n")
+					if BUILD_OUTPUT then
+						vfs.Write("data/shader_builder_output/" .. shader_id .. "/" .. shader .. ".c", data.source)
+					end
+					
 					ok, shader = pcall(render.CreateGLShader, enum, data.source)
 				end
 			end
