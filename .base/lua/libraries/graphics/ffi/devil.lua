@@ -486,7 +486,7 @@ ILboolean ilSaveData(ILconst_string FileName);
 
 ffi.cdef(header)
 
-local lib = assert(ffi.load("devil"))
+local lib = assert(ffi.load(LINUX and "IL" or "devil"))
 ffi.cdef("ILboolean iluFlipImage(void);")
 local util = ffi.load("ilu")
 

@@ -1,4 +1,4 @@
-local freeimage = require("graphics.ffi.freeimage") -- image decoder 
+local freeimage = desire("graphics.ffi.freeimage") -- image decoder 
 
 render.AddTextureDecoder("freeimage", function(data, path_hint)
 	local format

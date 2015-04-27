@@ -369,7 +369,6 @@ do -- dll paths
 	
 	if LINUX then
 		set = function(path)
-			warning("seting LD_LIBRARY_PATH to ", path)
 			os.setenv("LD_LIBRARY_PATH", path)
 		end
 		
