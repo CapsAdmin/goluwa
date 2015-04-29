@@ -129,9 +129,8 @@ do -- 3d 2d
 		scale = scale or Vec3(4, 4 * (self.Viewport.w / self.Viewport.h), 1)
 		
 		self:Set3D(true)
-		self:Rebuild()
-		
 		render.camera_2d:PushWorldEx(pos, ang, Vec3(scale.x / self.Viewport.w, scale.y / self.Viewport.h, 1))
+		self:Rebuild()
 	end
 
 	function META:Start3D2D(mat, dont_multiply)
@@ -152,7 +151,7 @@ do -- 3d 2d
 			x = ((x / render.GetWidth()) - 0.5) * 2
 			y = ((y / render.GetHeight()) - 0.5) * 2
 			
-			local m = (self.View * self:GetWorld()):GetInverse()
+			local m = (self:GetMatrices().view * self:GetMatrices().world):GetInverse()
 			
 			cursor_x, cursor_y, cursor_z = m:TransformVector(self:GetMatrices().projection_inverse:TransformVector(x, -y, 1))
 			local camera_x, camera_y, camera_z = m:TransformVector(0, 0, 0)

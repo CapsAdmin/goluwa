@@ -181,7 +181,7 @@ end
 do -- drawing
 
 	function PANEL:PreDraw(from_cache)
-		if self.ThreeDee then render.Start3D2DEx(self.ThreeDeePosition, self.ThreeDeeAngles, self.ThreeDeeScale) end
+		if self.ThreeDee then render.camera_2d:Start3D2DEx(self.ThreeDeePosition, self.ThreeDeeAngles, self.ThreeDeeScale) end
 		
 		local no_draw = self:HasParent() and self.Parent.draw_no_draw
 		
@@ -347,7 +347,7 @@ do -- drawing
 		end
 		
 		
-		if self.ThreeDee then render.End3D2D() end
+		if self.ThreeDee then render.camera_2d:End3D2D() end
 	end
 		
 	function PANEL:DrawRect(x, y, w, h)
