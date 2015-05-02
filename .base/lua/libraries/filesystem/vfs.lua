@@ -142,9 +142,11 @@ end
 do -- file systems
 	vfs.filesystems = vfs.filesystems or {}
 	
-	function vfs.RegisterFileSystem(META)
+	function vfs.RegisterFileSystem(META, is_base)
 		META.TypeBase = "base"
 		prototype.Register(META, "file_system", META.Name)
+		
+		if is_base then return end
 		
 		local context = prototype.CreateDerivedObject("file_system", META.Name)
 		
