@@ -519,5 +519,4 @@ end
 include("globals.lua", render)
 include("debug.lua", render)
 
-
 return render

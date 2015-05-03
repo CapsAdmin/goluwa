@@ -1,6 +1,8 @@
 local surface = ... or _G.surface
 
-local freetype = require("graphics.ffi.freetype")
+local freetype = desire("graphics.ffi.freetype")
+
+if not freetype then return end
 
 local META = {}
 

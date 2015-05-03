@@ -26,6 +26,11 @@ end
 function window.Open(...)  
 	if window.wnd:IsValid() then return end
 	
+	if not render.CreateWindow then	
+		warning("no window manager found")
+		return
+	end
+	
 	local wnd = render.CreateWindow(...)
 	
 	if not wnd:IsValid() then return end

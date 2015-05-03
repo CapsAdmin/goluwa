@@ -1,4 +1,6 @@
-local lib = require("network.ffi.enet")
+local lib = desire("network.ffi.enet")
+
+if not lib then return end
 
 lib.initialize()
 

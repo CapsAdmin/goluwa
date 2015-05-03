@@ -104,6 +104,11 @@ if CLIENT then
 			end
 		end
 		
+		if not enet then 
+			warning("unable to host connect: enet not found")
+			return
+		end
+		
 		local peer = enet.CreatePeer(ip, port)
 		
 		function peer:OnReceive(str, type)
@@ -162,6 +167,11 @@ if SERVER then
 		if network.IsHosting() then
 			network.CloseServer("already hosting")
 			event.Delay(1, function() network.Host(ip, port) end)
+			return
+		end
+		
+		if not enet then	
+			warning("unable to host server: enet not found")
 			return
 		end
 		

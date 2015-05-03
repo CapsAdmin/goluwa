@@ -194,20 +194,23 @@ do -- libraries
 	
 	-- network
 	sockets = include("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
-	enet = include("lua/libraries/network/enet.lua") -- low level udp library
 	
-	network = include("lua/libraries/network/network.lua") -- high level implementation of enet
-	packet = include("lua/libraries/network/packet.lua") -- medium (?) level communication between server and client
-	message = include("lua/libraries/network/message.lua") -- high level communication between server and client
-	
-	nvars = include("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
-	clients = include("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
-	chat = include("lua/libraries/network/chat.lua") -- in game chat
+	if sockets then
+		enet = include("lua/libraries/network/enet.lua") -- low level udp library
 		
-	resource = include("lua/libraries/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
-	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
-	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
-	
+		network = include("lua/libraries/network/network.lua") -- high level implementation of enet
+		packet = include("lua/libraries/network/packet.lua") -- medium (?) level communication between server and client
+		message = include("lua/libraries/network/message.lua") -- high level communication between server and client
+		
+		nvars = include("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
+		clients = include("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
+		chat = include("lua/libraries/network/chat.lua") -- in game chat
+			
+		resource = include("lua/libraries/network/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
+		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
+		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
+	end
+		
 	if CLIENT then
 		-- graphics
 		render = include("lua/libraries/graphics/render/render.lua") -- OpenGL abstraction
@@ -261,19 +264,21 @@ end
 
 console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
 
-sockets.Initialize()
+if sockets then
+	sockets.Initialize()
+end
 
 if audio then
 	audio.Initialize()
 end
 
-if not ZEROBRANE and not DISABLE_CURSES then
+if not ZEROBRANE and not DISABLE_CURSES and console.InitializeCurses then
 	console.InitializeCurses()
 end
 
 --steam.InitializeWebAPI()
 
-if CLIENT then
+if CLIENT and enet then
 	clients.local_client = clients.Create("unconnected")
 end
 

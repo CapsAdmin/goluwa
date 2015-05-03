@@ -1,5 +1,7 @@
-local gl = require("graphics.ffi.opengl") -- OpenGL
-local sdl = require("graphics.ffi.sdl") -- window manager
+local gl = desire("graphics.ffi.opengl") -- OpenGL
+local sdl = desire("graphics.ffi.sdl") -- window manager
+
+if not gl or not sdl then return end
 
 local render = (...) or _G.render
 

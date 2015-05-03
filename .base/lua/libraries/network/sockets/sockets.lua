@@ -1,7 +1,20 @@
 local ssl = desire("ssl")
 _G.ssl = nil -- grr
 
+local ok, luasocket = pcall(require, "socket")
+
+if not ok then
+	ok, luasocket = pcall(require, "socket.core")
+end
+
+if not ok then
+	warning("luasocket not found")
+	return
+end
+
 local sockets = _G.sockets or {}
+
+sockets.luasocket = luasocket
 
 sockets.active_sockets = sockets.active_sockets or {}
 
@@ -67,21 +80,6 @@ function sockets.Panic()
 end
 
 local function new_socket(override, META, typ, id)
-	
-	if not sockets.luasocket then
-		local ok, luasocket = pcall(function() return require("socket") end)
-
-		if not ok then
-			ok, luasocket = pcall(function() return require("socket.core") end)
-		end
-
-		if not ok then
-			error(luasocket)
-		end
-		
-		sockets.luasocket = luasocket
-	end
-		
 	typ = typ or "tcp"
 	typ = typ:lower()
 
