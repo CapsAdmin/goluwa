@@ -1029,6 +1029,12 @@ do -- animations
 	
 				animation.func(self, val)
 				
+				if (animation.var == "Size" or animation.var == "Position") and self:HasParent() then
+					self.Parent:Layout(true)
+				else
+					self:Layout(true)
+				end
+				
 				if alpha >= 1 then
 					if animation.callback then
 						if animation.callback(self) ~= false then
@@ -1040,7 +1046,6 @@ do -- animations
 
 					self.animations[key] = nil
 				else
-					self:Layout()
 					self:MarkCacheDirty()
 				end
 			end
@@ -1653,7 +1658,11 @@ do -- layout
 		for _, child in ipairs(self:GetChildren()) do
 			if child.layout_commands then
 				for i, cmd in ipairs(child.layout_commands) do
-					if cmd == "collide" then
+					if cmd == "layout_children" then
+						for _, child in ipairs(self:GetChildren()) do
+							child:Layout(true)
+						end
+					elseif cmd == "collide" then
 						child:Collide(true)
 					elseif cmd == "no_collide" then
 						child:Collide(false)
