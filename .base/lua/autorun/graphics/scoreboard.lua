@@ -12,12 +12,13 @@ input.Bind("tab", "-score", function()
 end)
 
 if not RELOAD then
-	score:SetVisible(false)
+	score:SetVisible(false) 
 end  
 
 score:SetSize(window.GetSize()/1.25)
---score:SetNoDraw(true)
+score:SetNoDraw(true)
 score:SetupLayout("layout_children", "size_to_height", "center_x_simple", "center_y_simple")
+--score:SetupLayout("center_x_simple", "center_y_simple")
 
 surface.CreateFont("scoreboard_title", {
 	path = "Oswald",
@@ -42,7 +43,7 @@ title.label:SetupLayout("left")
 
 do
 	local info = score:CreatePanel("base")
-	info:SetVisible(false)
+	info:SetVisible(false) 
 	info:SetHeight(30)
 	info:SetStyle("frame2")
 	info:SetupLayout("top", "fill_x")
@@ -63,39 +64,50 @@ do
 	end
 
 	local text = info:CreatePanel("text")
+	text:SetPadding(Rect(10,5,10,5))
 	text:SetText("gm_metrostroi_b47 with 3 players")
-	text:SetupLayout("left")
-	text:SetPadding(Rect()+30)
+	text:SetupLayout("left", "top")
 
 	local text = info:CreatePanel("text")
+	text:SetPadding(Rect(10,5,10,5))
 	text:SetText("tickrate: 67")
-	text:SetupLayout("right", "left")
-	text:SetPadding(Rect()+30)
+	text:SetupLayout("left", "top")
 
 	local text = info:CreatePanel("text")
+	text:SetPadding(Rect(10,5,10,5))
 	text:SetText("curtime 1:24h")
-	text:SetupLayout("right", "left")
-	text:SetPadding(Rect()+30)
+	text:SetupLayout("left", "top")
 end
+
+local team = score:CreatePanel("base")
+team:SetNoDraw(true)
+team:SetMargin(Rect(30,3,20,3))
+team:SetSize(score:GetSize())
+team:SetupLayout("layout_children", "top", "left", "size_to_height")
+
+local text = team:CreatePanel("text")
+text:SetText("players 3")
+text:SetPadding(Rect(0,0,0,5))
+text:SetupLayout("top", "left")
 
 local function add_player(avatar_path, name_str)
 
-	local player_info = score:CreatePanel("base")
+	local player_info = team:CreatePanel("base")
 	player_info:SetHeight(30)
-	player_info:SetupLayout("left", "top", "fill_x")
+	player_info:SetupLayout("top", "fill_x")
 	player_info:SetNoDraw(true)
 
 	local friend = player_info:CreatePanel("base")
 	friend:SetTexture(Texture("textures/silkicons/user.png"))
 	friend:SetSize(Vec2()+16)
 	friend:SetPadding(Rect()+5)
-	friend:SetupLayout("left")
+	friend:SetupLayout("left", "center_y_simple")
 
 	local avatar = player_info:CreatePanel("base")
 	avatar:SetTexture(Texture(avatar_path))
 	avatar:SetSize(Vec2()+30)
 	avatar:SetPadding(Rect()+5)
-	avatar:SetupLayout("left")
+	avatar:SetupLayout("left", "center_y_simple")
 
 	local info = player_info:CreatePanel("base")
 	info:SetHeight(30)
@@ -129,24 +141,24 @@ local function add_player(avatar_path, name_str)
 		icon:SetTexture(Texture("textures/silkicons/connect.png"))
 		icon:SetSize(Vec2()+16)
 		icon:SetPadding(Rect()+5)
-		icon:SetupLayout("left")
+		icon:SetupLayout("left", "center_y_simple")
 		
 		local text = ping:CreatePanel("text")
-		text:SetText(math.random(100, 200))
+		text:SetText(math.random(50, 200))
 		text:SetSize(Vec2()+16)
-		text:SetupLayout("left")
+		text:SetupLayout("left", "center_y_simple")
 	end
 
 	local name = info:CreatePanel("text")
 	name:SetPadding(Rect()+5)
 	name:SetText(name_str)
-	name:SetupLayout("left", "fill_x")
+	name:SetupLayout("left", "center_y_simple", "fill_x")
 
 	local tags = player_info:CreatePanel("base")
 	tags:SetHeight(30)
-	tags:SetWidth(200)
+	tags:SetWidth(400)
 	tags:SetupLayout("layout_children", "size_to_width", "center_x_simple")
-	--tags:SetNoDraw(true)
+	tags:SetNoDraw(true)
 
 	tags.OnMouseEnter = function()
 		for i, child in ipairs(tags:GetChildren()) do
@@ -172,14 +184,14 @@ local function add_player(avatar_path, name_str)
 		icon:SetSize(Vec2()+16)
 		icon:SetPadding(Rect()+5)
 		icon:SetIgnoreMouse(true)
-		icon:SetupLayout("right", "left")
+		icon:SetupLayout("left", "center_y_simple")
 
 		local text = tags:CreatePanel("text")
 		text:SetVisible(false)
+		text:SetPadding(Rect()+3)
 		text:SetText(str)
-		text:SetPadding(Rect()+10)
 		text:SetIgnoreMouse(true)
-		text:SetupLayout("right", "left", "size_parent_to_width")
+		text:SetupLayout("left", "center_y_simple")
 		
 		tags:Layout()
 	end
@@ -187,14 +199,6 @@ local function add_player(avatar_path, name_str)
 	add_tag("textures/silkicons/clock.png", "AFK")
 	add_tag("textures/silkicons/wrench.png", "Building")
 end
-
-local team = score:CreatePanel("text_button")
-team:SetStyle("property")
-team:SetText("players")
-team:SetMargin(Rect(30,3,20,3))
-team:SetPadding(Rect()+5)
-team:SizeToText()
-team:SetupLayout("top", "left")
 
 add_player("http://cdn.akamai.steamstatic.com/steamcommunity/public/images/avatars/78/78e60cd9f3178dd8a841b87c9bb8049ee65540e6_full.jpg", "CapsAdmin")
 add_player("http://cdn.akamai.steamstatic.com/steamcommunity/public/images/avatars/b8/b8ae62638fb03a5b9ec65c9c46f73a362a51382c_full.jpg", "Bubu")
@@ -204,7 +208,7 @@ local help = score:CreatePanel("text")
 help:SetFont("scoreboard_title")
 help:SetText("right click to show cursor")
 help:SetPadding(Rect()+10)
-help:SetupLayout("top")
+help:SetupLayout("top", "center_x_simple")
 
 score.OnShow = function() help:SetVisible(true) end
 
