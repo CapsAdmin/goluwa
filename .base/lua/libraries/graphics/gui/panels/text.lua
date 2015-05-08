@@ -22,8 +22,8 @@ function PANEL:Initialize()
 		self:MarkCacheDirty()
 		self:OnTextChanged(self.markup:GetText())
 			
-			self.Size.w = markup.width
-			self.Size.h = markup.height
+			self.Size.w = markup.width + self.Padding.left + self.Padding.right
+			self.Size.h = markup.height + self.Padding.top + self.Padding.bottom
 		
 			self.LayoutSize = self.Size
 		end
@@ -84,6 +84,7 @@ function PANEL:GetText()
 end
 
 function PANEL:OnPostDraw()
+	surface.Translate(self.Padding.left, self.Padding.top)
 	self.markup:Draw(self.ConcatenateTextToSize and (self.markup.cull_w - self.markup.cull_x))
 end
 
@@ -139,7 +140,7 @@ function PANEL:OnKeyInput(key, press)
 	end
 end
 
-function PANEL:OnCharInput(char)
+function PANEL:OnCharInput(char)	
 	self.markup:OnCharInput(char)
 end	
 
