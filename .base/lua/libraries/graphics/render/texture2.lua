@@ -1,3 +1,5 @@
+local render = ... or _G.render
+
 local TOENUM = function(str) return "GL_" .. str:upper() end
 
 local gl = require("graphics.ffi.opengl")
@@ -768,7 +770,7 @@ end
 
 function META:Bind(location)
 	if self.dsa then
-		gl.BindTextureUnit(location, self.gl_tex.id)
+		gl.BindTextureUnit(location or 0, self.gl_tex.id)
 	else
 		gl.BindTexture(self.gl_tex.target, self.gl_tex.id)
 	end
@@ -821,7 +823,7 @@ end
 
 Texture2 = render.CreateTexture2 -- reload!
 
-
+if not RELOAD then return end
 
 
 
