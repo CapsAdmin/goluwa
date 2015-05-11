@@ -159,16 +159,19 @@ function steam.InitializeWebAPI(force)
 
 	if not steam.supported then
 		steam.supported = serializer.ReadFile("luadata", "steam_webapi_supported.lua") or {}
-		for patch_key, patched_interface in pairs(patch) do
-			for _, interface in pairs(steam.supported.apilist.interfaces) do
-				if patched_interface.name == interface.name then
-					table.add(interface.methods, patched_interface.methods)
-					patch[patch_key] = nil
+		
+		if steam.supported.apilist then
+			for patch_key, patched_interface in pairs(patch) do
+				for _, interface in pairs(steam.supported.apilist.interfaces) do
+					if patched_interface.name == interface.name then
+						table.add(interface.methods, patched_interface.methods)
+						patch[patch_key] = nil
+					end
 				end
 			end
+			table.print(patch)
+			table.add(steam.supported.apilist.interfaces, patch)
 		end
-		table.print(patch)
-		table.add(steam.supported.apilist.interfaces, patch)
 	end
 	
 	if key == "" then
@@ -310,6 +313,12 @@ function steam.UpdateSupportedWebAPI(callback)
 		if data.content then
 			local tbl = serializer.Decode("json", data.content)
 			
+			if not tbl.apilist then
+				logn("[steam] could not fetch api, no apilist")
+				print(data.content)
+				return
+			end
+				
 			serializer.WriteFile("luadata", "steam_webapi_supported.lua", tbl)
 			steam.supported = tbl
 			
