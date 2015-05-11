@@ -3,7 +3,7 @@ local nvars = _G.nvars or {}
 nvars.Environments = nvars.Environments or {} 
 nvars.added_cvars = nvars.added_cvars or {}
 
-local function get_is_set(is, tbl, name, def, cvar)
+local function get_is_set(is, meta, name, default, cvar)
 	
 	local get = is and "Is" or "Get"
 	local set = "Set"
@@ -13,7 +13,7 @@ local function get_is_set(is, tbl, name, def, cvar)
 		nvars.added_cvars[cvar] = name
 		
 		if CLIENT then
-			console.CreateVariable(cvar, def, function(var)
+			console.CreateVariable(cvar, default, function(var)
 				if network.IsConnected() then
 					message.Send("ncv", cvar, var)
 				else
@@ -22,18 +22,20 @@ local function get_is_set(is, tbl, name, def, cvar)
 			end)
 		end
 	end
-
-    if type(def) == "number" then
-		tbl[set .. name] = tbl[set .. name] or function(self, var) self.nv[name] = tonumber(var) end
-		tbl[get .. name] = tbl[get .. name] or function(self, var) return tonumber(self.nv[name]) or def end
-	elseif type(def) == "string" then
-		tbl[set .. name] = tbl[set .. name] or function(self, var) self.nv[name] = tostring(var) end
-		tbl[get .. name] = tbl[get .. name] or function(self, var) return tostring(self.nv[name]) end
+	
+    if type(default) == "number" then
+		meta[set .. name] = function(self, var) self.nv[name] = tonumber(var) end
+		meta[get .. name] = function(self, var) return tonumber(self.nv[name]) or default end
+	elseif type(default) == "string" then
+		meta[set .. name] = function(self, var) self.nv[name] = tostring(var) end
+		meta[get .. name] = function(self, var) if self.nv[name] ~= nil then return tostring(self.nv[name]) end return default end
 	else
-		tbl[set .. name] = tbl[set .. name] or function(self, var) if var == nil then var = def end self.nv[name] = var end
-		tbl[get .. name] = tbl[get .. name] or function(self, var) if self.nv[name] ~= nil then return self.nv[name] end return def end
+		meta[set .. name] = function(self, var) if var == nil then var = default end self.nv[name] = var end
+		meta[get .. name] = function(self, var) if self.nv[name] ~= nil then return self.nv[name] end return default end
 	end
 	
+	-- this is important because it sets up property info for this object for editors and such to use
+	return is and prototype.IsSet(meta, name, default) or prototype.GetSet(meta, name, default)
 end
 
 nvars.GetSet = function(...) return get_is_set(false, ...) end
