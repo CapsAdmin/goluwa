@@ -36,7 +36,7 @@ function prototype.AddParentingTemplate(META)
 		return obj:AddChild(self)
 	end
 	
-	function META:AddChild(obj)		
+	function META:AddChild(obj, pos)
 		if self == obj or obj:HasChild(self) then 
 			return false 
 		end
@@ -47,7 +47,11 @@ function prototype.AddParentingTemplate(META)
 
 		if not self:HasChild(obj) then
 			self.Children2[obj] = obj
-			table.insert(self.Children, obj)
+			if pos then
+				table.insert(self.Children, pos, obj)
+			else
+				table.insert(self.Children, obj)
+			end
 		end
 		
 		obj:OnParent(self)
