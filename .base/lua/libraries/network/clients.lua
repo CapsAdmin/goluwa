@@ -48,6 +48,7 @@ function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
 	
 	if is_bot ~= nil then
 		self:SetBot(is_bot)
+		self:SetGroup("bots")
 	end
 	
 	if SERVER then
