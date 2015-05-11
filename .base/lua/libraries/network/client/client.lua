@@ -4,10 +4,12 @@ META.Name = "client"
 
 META.socket = NULL
 
-prototype.GetSet(META, "UniqueID", "???")
+META:GetSet("UniqueID", "???")
 
 nvars.IsSet(META, "Bot", false)
+nvars.GetSet(META, "Group", "player")
 nvars.GetSet(META, "Nick", e.USERNAME, "cl_nick")
+nvars.GetSet(META, "AvatarPath", "https://avatars2.githubusercontent.com/u/204157?v=3&s=460", "cl_avatar_path")
 
 function META:IsConnected()
 	return self.connected
