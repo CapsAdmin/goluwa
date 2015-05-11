@@ -74,12 +74,13 @@ function META:SetEditable(b)
 	self:Unselect()
 end
 
-function META:Clear()
-	self.chunks = {}
-	self.remove_these = {}
-	self.started_tags = {}
-	
-	self:Invalidate()
+function META:Clear(skip_invalidate)
+	table.clear(self.chunks)
+	table.clear(self.remove_these)
+	table.clear(self.started_tags)
+	if not skip_invalidate then
+		self:Invalidate()
+	end
 end
 
 function META:SetTable(tbl, tags)

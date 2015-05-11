@@ -18,13 +18,13 @@ function PANEL:Initialize()
 	self:SetLayoutWhenInvisible(false)
 	local markup = surface.CreateMarkup()
 	markup:SetEditable(false)
-	markup.OnInvalidate = function() 
+	markup.OnInvalidate = function()
 		self:MarkCacheDirty()
 		self:OnTextChanged(self.markup:GetText())
 			
 			self.Size.w = markup.width + self.Padding.left + self.Padding.right
 			self.Size.h = markup.height + self.Padding.top + self.Padding.bottom
-		
+
 			self.LayoutSize = self.Size
 		end
 	self.markup = markup
@@ -64,6 +64,8 @@ function PANEL:SetText(str)
 	
 	local markup = self.markup
 	
+	markup:SuppressLayout(true)
+	
 	markup:SetLightMode(self.LightMode)
 	markup:SetLineWrap(self.TextWrap)
 	markup:SetCopyTags(self.CopyTags)
@@ -72,11 +74,11 @@ function PANEL:SetText(str)
 	if self.Font then markup:AddFont(self.Font) end
 	if self.TextColor then markup:AddColor(self.TextColor:Copy()) end
 	markup:AddString(self.Text, self.ParseTags)
-	
-	markup:Invalidate()
 	markup:SetCaretPosition(0,0)
 	
-	self:Layout()
+	markup:SuppressLayout(false)
+	
+	markup:Invalidate()
 end
 
 function PANEL:GetText()

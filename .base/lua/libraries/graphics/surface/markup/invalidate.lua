@@ -607,8 +607,13 @@ local function align_y_axis(self, chunks)
 	end
 
 end
-		
+
+function META:SuppressLayout(b)
+	self.suppress_layout = b
+end
+
 function META:Invalidate()		
+	if self.suppress_layout then return end
 	local chunks = prepare_chunks(self)
 	chunks = split_by_space_and_punctation(self, chunks)
 	chunks = get_size_info(self, chunks)		
