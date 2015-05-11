@@ -8,41 +8,51 @@ for k, v in pairs(steamworks) do
 	steam[k] = v
 end
 
-local active = utility.CreateWeakTable()
-
-function steam.GetFriendObjectFromSteamID(id)
-	active[tostring(id)] = active[tostring(id)] or setmetatable({id = id}, steam.steamid_meta)
+do
+	local META = prototype.CreateTemplate("steam_friend")
 	
-	return active[tostring(id)]
-end
-
-function steam.GetFriends()
-	local out = {}
-	
-	for i = 0, steam.friends.GetFriendCount(65535) - 1 do
-		local id = steam.friends.GetFriendByIndex(i, 65535)
-		out[i+1] = steam.GetFriendObjectFromSteamID(id)
+	for k,v in pairs(steam.steamid_meta) do
+		META[k] = META[k] or v
 	end
 	
-	return out
-end
+	function META:CreateBot()
+		local bot = clients.Create(tostring(self.id), true)
+		bot:SetNick(self:GetPersonaName())
+		return bot
+	end
+	
+	function META:GetAvatarTexture()
+		self.avatar_texture = self.avatar_texture or render.CreateTexture2()
+		
+		if not self.requesting_avatar then
+			event.CreateThinker(function()
+				if not self:IsValid() then return false end
+				
+				local handle = self:GetLargeAvatar()
 
-function steam.FindFriend(nick)
-	for k, v in pairs(steam.GetFriends()) do
-		if v:GetPersonaName():find(nick) or v.id == nick then
-			return v
+				if handle > 0 then
+					local w = ffi.new("uint32_t[1]")
+					local h = ffi.new("uint32_t[1]")
+					steamworks.utils.GetImageSize(handle, w, h)
+
+					local size = w[0] * h[0] * 4
+					local buffer = ffi.new("uint8_t[?]", size)
+
+					steamworks.utils.GetImageRGBA(handle, buffer, size)
+
+					self.avatar_texture:Upload({
+						buffer = buffer,
+						width = w[0],
+						height = h[0],
+					})
+					return true
+				end
+			end)
+			self.requesting_avatar = true
 		end
+		
+		return self.avatar_texture
 	end
-end
-
-steam.client = steam.GetFriendObjectFromSteamID(steam.user.GetSteamID())
-
-function steam.GetClient()
-	return steam.client
-end
-
-do	
-	local META = steam.steamid_meta
 	
 	local str = ffi.new("char[2048]", 0)
 	local type = ffi.new("SteamWorks_EChatEntryType[1]")
@@ -88,4 +98,49 @@ do
 			end
 		end
 	end)]]
+	
+	prototype.Register(META)
+end
+
+local active = utility.CreateWeakTable()
+
+function steam.GetFriendObjectFromSteamID(id)
+	active[tostring(id)] = active[tostring(id)] or prototype.CreateObject("steam_friend", {id = id})
+	
+	return active[tostring(id)]
+end
+
+function steam.GetFriends()
+	local out = {}
+	
+	for i = 0, steam.friends.GetFriendCount(65535) - 1 do
+		local id = steam.friends.GetFriendByIndex(i, 65535)
+		out[i+1] = steam.GetFriendObjectFromSteamID(id)
+	end
+	
+	return out
+end
+
+function steam.FindFriend(nick)
+	for k, v in pairs(steam.GetFriends()) do
+		if v:GetPersonaName():find(nick) or v.id == nick then
+			return v
+		end
+	end
+end
+
+steam.client = steam.GetFriendObjectFromSteamID(steam.user.GetSteamID())
+
+function steam.GetClient()
+	return steam.client
+end
+
+if RELOAD then 
+	local tex = steam.GetFriends()[301]:GetAvatarTexture()
+		
+	event.AddListener("PostDrawMenu", "lol", function()
+		surface.SetTexture(tex)
+		surface.SetColor(1,1,1,1)
+		surface.DrawRect(50,50,tex.w,tex.h)
+	end)
 end
