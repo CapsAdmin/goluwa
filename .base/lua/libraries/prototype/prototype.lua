@@ -269,7 +269,7 @@ do
 					local info_a = obj_a.prototype_variables[field_a]
 					local info_b = obj_b.prototype_variables[field_b]
 									
-					if info_a then
+					if info_a and info_b then
 						if key_a and key_b then
 							local val = obj_a[info_a.get_name](obj_a)
 							
@@ -290,6 +290,9 @@ do
 						end
 					end
 				else
+					if not info_b then 
+						warning("unable to find property info for %s (%s)", field_b, obj_b)
+					end
 					table.remove(prototype.linked_objects, i)
 					break
 				end
