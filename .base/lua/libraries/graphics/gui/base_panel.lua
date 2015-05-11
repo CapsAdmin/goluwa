@@ -114,6 +114,15 @@ do -- focus
 			parent:AddChild(self)
 		end
 	end
+	
+	function PANEL:SendToBack()	
+		local parent = self:GetParent()
+
+		if parent:IsValid() then
+			self:SetParent()
+			parent:AddChild(self, 1)
+		end
+	end
 
 	function PANEL:RequestFocus()
 		if self.RedirectFocus:IsValid() then
@@ -974,6 +983,16 @@ do -- animations
 	prototype.GetSet(PANEL, "DrawColor", Color(0,0,0,0))
 	prototype.GetSet(PANEL, "DrawAlpha", 1)
 	
+	local parent_layout = {
+		DrawSizeOffset = true,
+		DrawScaleOffset = true,
+		DrawAngleOffset = true,
+		DrawPositionOffset = true,
+		Size = true,
+		Position = true,
+		Angle = true,
+	}
+	
 	local function lerp_values(values, alpha)
 		local tbl = {}
 
@@ -1029,7 +1048,7 @@ do -- animations
 	
 				animation.func(self, val)
 				
-				if (animation.var == "Size" or animation.var == "Position") and self:HasParent() then
+				if parent_layout[animation.var] and self:HasParent() then
 					self.Parent:Layout(true)
 				else
 					self:Layout(true)
@@ -1616,7 +1635,7 @@ do -- layout
 				
 			if dir_x < 0 then
 				y = panel:GetY()
-				x = x + child:GetWidth() + panel.Padding.right			
+				x = x + child:GetWidth() + panel.Padding.right	
 			elseif dir_x > 0 then
 				y = panel:GetY()
 				x = x - panel:GetWidth() - panel.Padding.left			
@@ -1625,18 +1644,25 @@ do -- layout
 				y = y + child:GetHeight() + panel.Padding.bottom
 			elseif dir_y > 0 then
 				x = panel:GetX()
-				y = y - panel:GetHeight() - panel.Padding.top			
+				y = y - panel:GetHeight() - panel.Padding.top
 			end
 		else
 			if dir_x < 0 then
-				x = x + self.Margin.right + panel.Padding.right		
+				x = x + panel.Padding.right
+				x = x + self.Margin.right				
 			elseif dir_x > 0 then                  
-				x = x - self.Margin.left - panel.Padding.left	
+				x = x - panel.Padding.left
+				x = x + self.Margin.left 
 			elseif dir_y < 0 then                  	
-				y = y + self.Margin.bottom + panel.Padding.bottom
+				y = y + panel.Padding.bottom
+				y = y + self.Margin.bottom
 			elseif dir_y > 0 then            
-				y = y - self.Margin.top - panel.Padding.top
-			end                                     
+				y = y + panel.Padding.top
+				y = y + self.Margin.top				
+			end            
+			
+			x = math.max(x, 0)
+			y = math.max(y, 0)
 		end
 				
 		return Vec2(x, y), found and found[1] and found[1].child
@@ -1800,7 +1826,7 @@ do -- layout
 
 			self:SetRectFast(ox,oy,ow,oh)
 
-			self:SetWidth(pos.x)
+			self:SetWidth(pos.x + self.Margin.right)
 			
 			self.laid_out = true
 		end
@@ -1970,7 +1996,7 @@ do -- layout
 			if not self.laid_out then
 				self:SetX(parent:GetWidth() == math.huge and 999999999999 or parent:GetWidth()) -- :(
 			end
-			
+
 			self:SetX(math.max(self:GetX(), 1))
 			self:SetX(parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, self.layout_collide).x)
 			
@@ -2208,6 +2234,7 @@ do -- skin
 	end
 	
 	function PANEL:SetupStyle(tbl)
+		tbl = table.copy(tbl)
 		tbl.texture_rect = tbl.texture_rect or self.NinePatchRect
 		tbl.corner_size = tbl.corner_size or self.NinePatchCornerSize
 		tbl.color = tbl.color or self.Color
