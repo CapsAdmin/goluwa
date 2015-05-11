@@ -42,7 +42,7 @@ function prototype.SetupProperty(info)
 		else
 			meta[set_name] = meta[set_name] or function(self, var) self[name] = tostring(var) end
 		end
-		meta[get_name] = meta[get_name] or function(self, var) return tostring(self[name]) end
+		meta[get_name] = meta[get_name] or function(self, var) if self[name] ~= nil then return tostring(self[name]) end return default end
 	else
 		if callback then
 			meta[set_name] = meta[set_name] or function(self, var) if var == nil then var = default end self[name] = var self[callback](self) end
