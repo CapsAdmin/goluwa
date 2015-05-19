@@ -330,6 +330,11 @@ do -- drawing
 			surface.DisableClipRect()
 			--render.PopViewport()
 		end
+		
+		if self.debug_flash and self.debug_flash > os.clock() then
+			surface.SetColor(1,0,0,(os.clock()*4)%1 > 0.5 and 0.5 or 0)
+			surface.DrawRect(0, 0, self.Size.w, self.Size.h)
+		end
 				
 		if gui.debug then
 			if self.updated_layout then
@@ -378,6 +383,10 @@ do -- drawing
 				surface.SetRectUV()
 			end
 		end
+	end
+	
+	function PANEL:DebugFlash()
+		self.debug_flash = os.clock() + 3
 	end
 end
 
