@@ -120,6 +120,7 @@ traceerr = {
 "trace too deep",
 "too many snapshots",
 "blacklisted",
+"retry recording",
 "NYI: bytecode %d",
 "leaving loop in root trace",
 "inner loop in root trace",
