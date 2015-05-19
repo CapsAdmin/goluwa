@@ -54,12 +54,12 @@ function prototype.AddParentingTemplate(META)
 			end
 		end
 		
-		obj:OnParent(self)
-		self:OnChildAdd(obj)
-		
 		self.children_list = nil
 		self.parent_list = nil
 		obj.parent_list = nil
+		
+		obj:OnParent(self)
+		self:OnChildAdd(obj)
 		
 		return true
 	end
