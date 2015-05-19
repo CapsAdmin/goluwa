@@ -1,6 +1,8 @@
 local gmod = ... or gmod
 local vgui = gmod.env.vgui
 
+gmod.gui_world = gmod.gui_world or NULL
+
 local translate_mouse = {
 	button_1 = gmod.env.MOUSE_LEFT,
 	button_2 = gmod.env.MOUSE_RIGHT,
@@ -20,9 +22,18 @@ end
 
 function vgui.CreateX(class, parent, name)
 	
+	if not gmod.gui_world:IsValid() then
+		gmod.gui_world = gui.CreatePanel("base")
+		gmod.gui_world:SetColor(Color(0,0,0,0))
+		gmod.gui_world.__class = "CGModBase"
+		function gmod.gui_world:OnUpdate()
+			local size = window.GetSize()
+			self.Size.w = size.w
+			self.Size.h = size.h
+		end
+	end
+	
 	class = class:lower()
-		
-	--logn("vgui create ", class)
 		
 	local obj
 	
@@ -32,12 +43,10 @@ function vgui.CreateX(class, parent, name)
 		obj = gui.CreatePanel("base")
 	end
 	
-	if parent then 
-		obj:SetParent(parent.__obj) 
-	end
-		
 	local self = gmod.WrapObject(obj, "Panel")
 	
+	self.__class = class
+		
 	obj.fg_color = Color(1,1,1,1)
 	obj.bg_color = Color(1,1,1,1)
 	obj.text_inset = Vec2()
@@ -82,8 +91,16 @@ function vgui.CreateX(class, parent, name)
 	obj.OnMouseMove = function(_, x, y) if self.OnCursorMoved then self:OnCursorMoved(x, y) end end
 	obj.OnMouseEnter = function() if self.OnMouseEnter then self:OnMouseEnter() end end
 	obj.OnCursorExited = function() if self.OnCursorExited then self:OnCursorExited() end end	
+	
+	-- OnChildAdd and such doesn't seem to be called in Init
+	
+	function obj:Prepare()
+	
 	obj.OnChildAdd = function(_, child) if self.OnChildAdded then self:OnChildAdded(gmod.WrapObject(child, "Panel")) end end	
 	obj.OnChildRemove = function(_, child) if self.OnChildRemoved then self:OnChildRemoved(gmod.WrapObject(child, "Panel")) end end	
+	
+	end
+	
 	obj.OnLayout = function() 
 		local panel = obj
 
@@ -158,7 +175,9 @@ function vgui.CreateX(class, parent, name)
 			end
 		end
 	end
-	
+
+	self:SetParent(parent)
+
 	return self
 end
 

@@ -2,6 +2,35 @@ local gmod = ... or gmod
 
 local META = gmod.env.FindMetaTable("Panel")
 
+function META:ActionSignal() end
+function META:AnimationThink() end
+function META:ApplySchemeSettings() end
+function META:FinishedURL() end
+function META:Init() end
+function META:OnChildAdded() end
+function META:OnChildRemoved() end
+function META:OnCursorEntered() end
+function META:OnCursorExited() end
+function META:OnCursorMoved() end
+function META:OnFocusChanged() end
+function META:OnKeyCodePressed() end
+function META:OnMousePressed() end
+function META:OnMouseReleased() end
+function META:OnMouseWheeled() end
+function META:OnRemove() end
+function META:OpeningURL() end
+function META:PageTitleChanged() end
+function META:Paint() end
+function META:PaintOver() end
+function META:PerformLayout() end
+function META:ResourceLoaded() end
+function META:StatusChanged() end
+function META:Think() end
+
+function META:__tostring()
+	return ("Panel: [name:Panel][class:%s][%s,%s,%s,%s]"):format(self.__class, self.x, self.y, self.w, self.h)
+end
+
 function META:__index(key)
 	
 	if key == "x" then
@@ -41,7 +70,11 @@ end
 META.__eq = nil -- no need
 
 function META:SetParent(panel)
-	self.__obj:SetParent(panel and panel.__obj or NULL)
+	if panel and panel.__obj and panel.__obj:IsValid() then
+		self.__obj:SetParent(panel.__obj)
+	else
+		self.__obj:SetParent(gmod.gui_world)
+	end
 end
 
 function META:GetChildren()
@@ -198,10 +231,16 @@ function META:GetContentSize()
 	local panel = self.__obj
 
 	if panel.vgui_type == "label" then
-		return surface.GetFont(panel.font_internal):GetTextSize(panel.text_internal) 
+		return self:GetTextSize()
 	end
 	
 	return 0, 0
+end
+
+function META:GetTextSize()
+	local panel = self.__obj
+
+	return surface.GetFont(panel.font_internal):GetTextSize(panel.text_internal) 
 end
 
 function META:SizeToContents()
