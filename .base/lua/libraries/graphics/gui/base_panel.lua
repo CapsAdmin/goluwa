@@ -41,8 +41,11 @@ function PANEL:GetSizeOfChildren()
 		return self.last_children_size
 	end
 	
+	for _, child in ipairs(self:GetChildren()) do
+		child:Layout(true)
+	end
 	self:Layout(true)
-	
+
 	local total_size = Vec2()
 
 	for k, v in ipairs(self:GetChildren()) do
@@ -62,6 +65,18 @@ function PANEL:GetSizeOfChildren()
 	self.last_children_size = total_size
 
 	return total_size
+end
+
+function PANEL:SizeToChildrenHeight()
+	self:SetHeight(math.huge)
+	self:SetSize(self:GetSizeOfChildren())
+	self.LayoutSize = self.Size:Copy()
+end
+
+function PANEL:SizeToChildrenWidth()
+	self:SetWidth(math.huge)
+	self:SetSize(self:GetSizeOfChildren())
+	self.LayoutSize = self.Size:Copy()
 end
 
 function PANEL:GetVisibleChildren()
@@ -653,7 +668,11 @@ do -- cached rendering
 		if self.CachedRendering then
 			self.cache_dirty = true
 
-			if (not self.cache_fb or self.cache_texture:GetSize() ~= self.Size) and self.Size.w ~= 0 and self.Size.h ~= 0 then
+			if 
+				(not self.cache_fb or self.cache_texture:GetSize() ~= self.Size) and
+				self.Size.w ~= 0 and self.Size.h ~= 0 and
+				self.Size.w ~= math.huge and self.Size.h ~= math.huge
+			then
 				self.cache_fb = render.CreateFrameBuffer(self.Size.w, self.Size.h, {
 					{
 						name = "color",
@@ -1733,14 +1752,36 @@ do -- layout
 						if child:CenterXFrame() then break end
 					elseif cmd == "center_y" then
 						child:CenterY()
-					elseif cmd == "top" then
+					elseif cmd == "top" or cmd == "up" then
 						child:MoveUp()
 					elseif cmd == "left" then
 						child:MoveLeft()
-					elseif cmd == "bottom" then
+					elseif cmd == "bottom" or cmd == "down" then
 						child:MoveDown()
 					elseif cmd == "right" then
 						child:MoveRight()
+					elseif cmd == "gmod_fill" then
+						child:CenterSimple() 
+						child:MoveUp()
+						child:MoveLeft()
+						child:FillX()
+						child:FillY()
+					elseif cmd == "gmod_left" then
+						child:CenterSimple()
+						child:MoveLeft()
+						child:FillY()
+					elseif cmd == "gmod_right" then
+						child:CenterSimple()
+						child:MoveRight()
+						child:FillY()
+					elseif cmd == "gmod_top" then
+						child:CenterSimple()
+						child:MoveUp()
+						child:FillX()
+					elseif cmd == "gmod_bottom" then
+						child:CenterSimple()
+						child:MoveDown()
+						child:FillX()
 					elseif typex(cmd) == "vec2" then
 						child:SetSize(cmd:Copy())
 					end
@@ -1751,27 +1792,28 @@ do -- layout
 	
 	function PANEL:Layout(now)
 		if now and (self.LayoutWhenInvisible or not self.draw_no_draw) then		
+			
 			if not self.in_layout then 
 				self.in_layout = true
-				
-					self:OnLayout(self:GetLayoutScale(), self:GetSkin())
-					self:ExecuteLayoutCommands()					
-					self:StackChildren()
-					
-					for _, v in ipairs(self:GetChildren()) do
-						v.layout_me = true
-					end
-					
-					self.updated_layout = true
-					self.layout_count = (self.layout_count or 0) + 1
-			
-					self.last_children_size = nil
-					self.layout_me = false				
-				
-					self:MarkCacheDirty()
-
+				self:OnLayout(self:GetLayoutScale(), self:GetSkin())
 				self.in_layout = false
 			end
+			
+			self:ExecuteLayoutCommands()					
+			self:StackChildren()
+			
+			for _, v in ipairs(self:GetChildren()) do
+				v.layout_me = true
+			end
+			
+			self.updated_layout = true
+			self.layout_count = (self.layout_count or 0) + 1
+	
+			self.last_children_size = nil			
+			
+			self:MarkCacheDirty()
+			
+			self.layout_me = false
 		else
 			self.layout_me = true
 		end
@@ -1964,10 +2006,19 @@ do -- layout
 		function PANEL:CenterSimple()
 			local parent = self:GetParent()
 
-			self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
-			self:SetY(parent:GetHeight() / 2 - self:GetHeight() / 2)
+			local laid_out
 			
-			self.laid_out = true
+			if parent:GetWidth() ~= math.huge then
+				self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
+				laid_out = true
+			end
+			
+			if parent:GetHeight() ~= math.huge then
+				self:SetY(parent:GetHeight() / 2 - self:GetHeight() / 2)
+				laid_out = true
+			end
+			
+			self.laid_out = laid_out
 		end
 
 		function PANEL:CenterXFrame()
