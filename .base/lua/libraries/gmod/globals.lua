@@ -35,6 +35,10 @@ function globals.type(obj)
 	return t
 end
 
+function globals.istable(obj) 
+	return globals.type(obj) == "table"
+end
+
 do
 	local nw_globals = {}
 

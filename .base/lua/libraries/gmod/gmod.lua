@@ -99,6 +99,8 @@ function gmod.WrapObject(obj, meta)
 	if not gmod.objects[meta][obj] then		
 		local tbl = table.copy(gmod.env.FindMetaTable(meta))
 		
+		tbl.Type = meta
+		
 		local __index_func
 		local __index_tbl
 		
