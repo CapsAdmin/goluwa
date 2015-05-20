@@ -271,16 +271,15 @@ function META:SetTextInset(x, y)
 	self.__obj.text_inset.y = y
 end
 
-function META:SizeToChildren(size_w, size_h)
-	local size = self.__obj:GetSizeOfChildren()
+function META:SizeToChildren(size_w, size_h)	
 	if size_w == nil then size_w = true end
 	if size_h == nil then size_h = true end
-	
+	print(self, size_w, size_h)
 	if size_w then
-		self.__obj:SetWidth(size.w)
+		self.__obj:SizeToChildrenWidth()
 	end
 	if size_h then
-		self.__obj:SetHeight(size.h)
+		self.__obj:SizeToChildrenHeight()
 	end
 end
 
@@ -317,7 +316,7 @@ function META:SetContentAlignment(num)
 	self.__obj.content_alignment = num 
 end
 function META:SetExpensiveShadow() end
-function META:Prepare() end
+function META:Prepare() self:__setup_events() end
 function META:SetPaintBorderEnabled() end
 function META:SetPaintBackgroundEnabled(b) 
 	self.__obj.paint_bg = b

@@ -57,6 +57,8 @@ function vgui.CreateX(class, parent, name)
 	obj:SetPadding(Rect())
 	obj:SetMargin(Rect())
 	
+	self:SetParent(parent)
+
 	obj.IsInsideParent = function() return true end -- :(
 	obj.OnDraw = function()
 		local paint_bg
@@ -94,14 +96,12 @@ function vgui.CreateX(class, parent, name)
 	
 	-- OnChildAdd and such doesn't seem to be called in Init
 	
-	function obj:Prepare()
-	
-	obj.OnChildAdd = function(_, child) if self.OnChildAdded then self:OnChildAdded(gmod.WrapObject(child, "Panel")) end end	
-	obj.OnChildRemove = function(_, child) if self.OnChildRemoved then self:OnChildRemoved(gmod.WrapObject(child, "Panel")) end end	
-	
+	function self:__setup_events()
+		obj.OnChildAdd = function(_, child) if self.OnChildAdded then self:OnChildAdded(gmod.WrapObject(child, "Panel")) end end	
+		obj.OnChildRemove = function(_, child) if self.OnChildRemoved then self:OnChildRemoved(gmod.WrapObject(child, "Panel")) end end	
 	end
 	
-	obj.OnLayout = function() 
+	obj.OnLayout = function()
 		local panel = obj
 
 		if panel.vgui_type == "label" then
@@ -175,8 +175,6 @@ function vgui.CreateX(class, parent, name)
 			end
 		end
 	end
-
-	self:SetParent(parent)
 
 	return self
 end
