@@ -15,7 +15,7 @@ prototype.GetSet(PANEL, "TrapChildren", false)
 prototype.GetSet(PANEL, "Texture", render.GetWhiteTexture())
 prototype.GetSet(PANEL, "RedirectFocus", NULL)
 prototype.GetSet(PANEL, "Padding", Rect(0, 0, 0, 0))
-prototype.GetSet(PANEL, "Margin", Rect(1, 1, 1, 1))
+prototype.GetSet(PANEL, "Margin", Rect(0, 0, 0, 0))
 prototype.GetSet(PANEL, "ObeyMargin", true)
 prototype.GetSet(PANEL, "BringToFrontOnClick", false)
 prototype.GetSet(PANEL, "LayoutParentOnLayout", false)
@@ -1680,13 +1680,13 @@ do -- layout
 				x = x + self.Margin.right				
 			elseif dir_x > 0 then                  
 				x = x - panel.Padding.left
-				x = x + self.Margin.left 
+				x = x - self.Margin.left 
 			elseif dir_y < 0 then                  	
 				y = y + panel.Padding.bottom
 				y = y + self.Margin.bottom
 			elseif dir_y > 0 then            
-				y = y + panel.Padding.top
-				y = y + self.Margin.top				
+				y = y - panel.Padding.top
+				y = y - self.Margin.top
 			end            
 			
 			x = math.max(x, 0)
@@ -1909,7 +1909,7 @@ do -- layout
 
 			local left = parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
 			local right = parent:RayCast(self, parent:GetWidth(), self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
-			right.x = right.x - left.x
+			right.x = right.x - left.x + 1
 
 			local x = left.x
 			local w = right.x
@@ -1938,7 +1938,7 @@ do -- layout
 
 			local top = parent:RayCast(self, self.Position.x, 0, self.Size.w, self.Size.h, self.layout_collide)
 			local bottom = parent:RayCast(self, self.Position.x, parent:GetHeight(), self.Size.w, self.Size.h, self.layout_collide)
-			bottom.y = bottom.y - top.y
+			bottom.y = bottom.y - top.y + 1
 
 			local y = top.y
 			local h = bottom.y
