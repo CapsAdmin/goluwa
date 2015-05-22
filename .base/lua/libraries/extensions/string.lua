@@ -1,5 +1,84 @@
 include("string_anime.lua")
 
+function string.randomtext(word_count)
+	word_count = word_count or 8
+	
+	local vowels = {
+		"e", 
+		"a", 
+		"o", 
+		"i", 
+		"u", 
+		"y"
+	}
+	
+	local consonants = {
+		"t", 
+		"n", 
+		"s", 
+		"h", 
+		"r", 
+		"d", 
+		"l", 
+		"c", 
+		"m", 
+		"w", 
+		"f", 
+		"g", 
+		"p", 
+		"b", 
+		"v", 
+		"k", 
+		"j", 
+		"x", 
+		"q", 
+		"z",
+	}
+	
+	local text = {}
+	
+	local last_punctation = 1
+	local capitalize = true
+	
+	for i = 1, word_count do
+		math.randomseed(i)
+		local word = {}
+		
+		local consonant_start = math.random() > 0.5 and 1 or 0
+		
+		for i = 1, math.ceil((math.random()^3)*8) + math.random(1, 3) do
+			if i%2 == consonant_start then
+				word[i] = consonants[math.floor((math.random()^3) * #consonants) + 1]
+			else
+				word[i] = vowels[math.floor((math.random()^3) * #vowels) + 1]
+			end
+			
+			if capitalize then
+				word[i] = word[i]:upper()
+				capitalize =  false
+			end
+		end
+		
+		text[i] = table.concat(word)
+		
+		last_punctation = last_punctation + 1
+		
+		if last_punctation > math.random(4,16) then
+			if math.random() > 0.9 then
+				text[i] = text[i] .. ","
+			else
+				text[i] = text[i] .. "."
+				capitalize = true
+			end
+			last_punctation = 1
+		end
+		
+		text[i] = text[i]  .. " "
+	end
+	
+	return table.concat(text)
+end
+
 function string.readablehex(str)
 	return (str:gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
 end
