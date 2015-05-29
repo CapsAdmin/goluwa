@@ -42,13 +42,20 @@ do -- window meta
 	
 	local x, y = ffi.new(sdl and "int[1]" or "double[1]"), ffi.new(sdl and "int[1]" or "double[1]")
 	
-	function META:GetMousePosition()
-		if self.global_mouse then
-			sdl.GetGlobalMouseState(x, y)
+	if sdl.GetGlobalMouseState then
+		function META:GetMousePosition()
+			if self.global_mouse then
+				sdl.GetGlobalMouseState(x, y)
+				return Vec2(x[0], y[0])
+			else
+				sdl.GetGlobalMouseState(x, y)
+				return Vec2(x[0], y[0]) - self:GetPosition()
+			end
+		end
+	else
+		function META:GetMousePosition()
+			sdl.GetMouseState(x, y)
 			return Vec2(x[0], y[0])
-		else
-			sdl.GetGlobalMouseState(x, y)
-			return Vec2(x[0], y[0]) - self:GetPosition()
 		end
 	end
 
@@ -243,6 +250,10 @@ do -- window meta
 			height, 
 			bit_flags
 		)
+
+		if ptr == nil then
+			error("sdl.CreateWindow failed: " .. ffi.string(sdl.GetError()), 2)
+		end
 		
 		if not render.gl_context then
 			local context = sdl.GL_CreateContext(ptr)
@@ -251,7 +262,12 @@ do -- window meta
 			
 			-- this needs to be initialized once after a context has been created
 			gl.GetProcAddress = sdl.GL_GetProcAddress
-			gl.Initialize()			
+
+			gl.Initialize()
+			
+			if not gl.GetString then
+				error("gl.Initialize failed! (gl.GetString not found)", 2)
+			end
 			
 			render.gl_context = context
 		end
