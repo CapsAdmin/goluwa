@@ -18,7 +18,7 @@ function META:Initialize()
 	if not surface.freetype_lib then
 		local lib = ffi.new("FT_Library[1]")
 		freetype.InitFreeType(lib)
-		freetype.LibrarySetLcdFilter(lib[0], 1)
+--		freetype.LibrarySetLcdFilter(lib[0], 1)
 		surface.freetype_lib = lib
 	end
 	
