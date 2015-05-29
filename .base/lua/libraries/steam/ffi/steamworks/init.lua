@@ -2360,6 +2360,8 @@ else
 	lib = ffi.load("libsteam_api")
 end
 
+assert(lib, "steam api not found")
+
 do
 	local file = io.open("steam_appid.txt")
 	if file then

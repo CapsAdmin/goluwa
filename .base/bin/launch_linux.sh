@@ -27,4 +27,6 @@ download
 
 cd ./linux_${ARCH}/
 
+export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
+
 /lib64/ld-linux-x86-64.so.2 ./luajit "../../lua/init.lua"
