@@ -78,7 +78,9 @@ function META:LoadFromFile(path)
 end
 
 function META:UnreferenceVertices()
-	self.mesh:UnreferenceMesh()
+	if self.mesh then
+		self.mesh:UnreferenceMesh()
+	end
 	self:Clear()
 end
 

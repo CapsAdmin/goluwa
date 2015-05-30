@@ -175,8 +175,12 @@ PASS.Shader = {
 
 render.RegisterGBufferPass(PASS)
 
-function render.CreateMesh(vertices, indices, is_valid_table)		
-	return render.gbuffer_model_shader:CreateVertexBuffer(vertices, indices, is_valid_table)
+function render.CreateMesh(vertices, indices, is_valid_table)
+	if render.IsGBufferReady() then
+		return render.gbuffer_model_shader:CreateVertexBuffer(vertices, indices, is_valid_table)
+	end
+	
+	return nil, "gbuffer not ready"
 end
 
 render.AddGlobalShaderCode([[
