@@ -124,6 +124,7 @@ function render.CreateFrameBuffer(width, height, format)
 			str = "missing read buffer"
 		end
 		
+		self:End()		
 		self:Remove()
 		error(str, 2)
 	end
