@@ -1,7 +1,7 @@
 local gl = require("graphics.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
-local META = prototype.CreateTemplate("framebuffer")
+local META = prototype.CreateTemplate("framebuffer2")
 
 function render.CreateFramebuffer2(...)
 	local self = prototype.CreateObject(META)
