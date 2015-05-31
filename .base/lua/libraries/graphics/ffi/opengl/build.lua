@@ -11,6 +11,29 @@ local enum_group_name_strip = {
 	texture = "texture",
 }
 
+local pseduo_objects = {
+	Texture = {
+		name = "Tex",
+		functions = {
+			GetTexImage = {
+				arg_line1 = "level, format, type, bufSize, pixels",
+				arg_line2 = "self.target, level, format, type, pixels",
+			},
+			
+			-- first argument must be GL_TEXTURE_BUFFER
+			TexBufferRange = {
+				static_arguments = {"GL_TEXTURE_BUFFER"}
+			},
+			TexBufferRangeEXT = {
+				static_arguments = {"GL_TEXTURE_BUFFER"}
+			},
+			TexBuffer = {
+				static_arguments = {"GL_TEXTURE_BUFFER"}
+			}
+		},
+	}
+}
+
 local enums = {}
 
 for value, enum in xml:gmatch("<enum value=\"(.-)\" name=\"(.-)\"") do 
@@ -260,35 +283,120 @@ for name, object_functions in pairs(objects) do
 		insert"\t\tlocal META = {}"
 		insert"\t\tMETA.__index = META"
 		
-		for friendly, info in pairs(object_functions) do
-			local arg_line = info.arg_line:match(".-, (.+)") or ""
-			insert("\t\tfunction META:" .. friendly .. "(" .. arg_line .. ")")
-				if arg_line ~= "" then arg_line = ", " .. arg_line end
-				insert("\t\t\treturn gl." .. info.name:sub(3) .. "(self.id" .. arg_line .. ")")
-			insert"\t\tend"
-		end
-		
-		
-		insert("\t\tlocal ctype = ffi.typeof('struct { int id; }')")
-		insert"\t\tffi.metatype(ctype, META)"
-		
-		insert("\t\tlocal temp = ffi.new('GLuint[1]')")
-		
-		insert"\t\tfunction META:Delete()"
-		insert"\t\t\ttemp[0] = self.id"
-		insert("\t\t\tgl." .. delete.name:sub(3) .. "(1, temp)")
+		insert("\t\tif gl.Create"..name.."s then")
+			for friendly, info in pairs(object_functions) do
+				local arg_line = info.arg_line:match(".-, (.+)") or ""
+				insert("\t\t\tfunction META:" .. friendly .. "(" .. arg_line .. ")")
+					if arg_line ~= "" then arg_line = ", " .. arg_line end
+					insert("\t\t\t\treturn gl." .. info.name:sub(3) .. "(self.id" .. arg_line .. ")")
+				insert"\t\t\tend"
+			end
+			
+			
+			insert("\t\t\tlocal ctype = ffi.typeof('struct { int id; }')")
+			insert"\t\t\tffi.metatype(ctype, META)"
+			
+			insert("\t\t\tlocal temp = ffi.new('GLuint[1]')")
+			
+			insert"\t\t\tfunction META:Delete()"
+			insert"\t\t\t\ttemp[0] = self.id"
+			insert("\t\t\t\tgl." .. delete.name:sub(3) .. "(1, temp)")
+			insert"\t\t\tend"
+			
+			local arg_line = create.arg_line:match("(.+),.-,+") or ""
+			
+			insert("\t\t\tfunction gl.Create" .. name .. "(" .. arg_line .. ")")
+			if arg_line ~= "" then arg_line = arg_line .. ", " end
+			insert("\t\t\t\tgl." .. create.name:sub(3) .. "(" .. arg_line .. "1, temp)")
+			insert"\t\t\t\tlocal self = ffi.new(ctype)"
+			insert"\t\t\t\tself.id = temp[0]"
+			insert"\t\t\t\treturn self"
+			insert"\t\t\tend"
+			
+		insert"\t\telse"
+			
+			local object_info = pseduo_objects[name] or {}
+			
+			insert"\t\t\tlocal bind"
+			
+			insert"\t\t\tdo"
+			insert"\t\t\t\tlocal last"
+			insert"\t\t\t\tfunction bind(self) "
+			insert"\t\t\t\t\tif self ~= last then"
+			if name == "Texture" then
+				insert"\t\t\t\t\t\tgl.BindTexture(self.target, self.id)"
+			else
+				insert("\t\t\t\t\t\tgl.Bind"..name.."(self.id)")
+			end
+			insert"\t\t\t\t\tend"
+			insert"\t\t\t\t\tlast = self"
+			insert"\t\t\t\tend"
+			insert"\t\t\tend"
+			
+			for friendly, info in pairs(object_functions) do
+				local func_name = info.name:sub(3)
+				if object_info.name then
+					local temp = func_name:replace(name, object_info.name)
+					
+					if not functions["gl"..temp] then
+						temp = func_name:replace(name, "")
+						if not functions["gl"..temp] then
+							temp = func_name
+						end
+					end
+					
+					func_name = temp
+				end
+				
+				if functions["gl"..func_name] then
+					local arg_line = functions["gl"..func_name].arg_line or ""
+					
+					local arg_line1 = arg_line
+					local arg_line2 = arg_line
+					
+					if name == "Texture" then
+						arg_line1 = arg_line:replace("target, ", ""):replace("target", "")
+						arg_line2 = arg_line:replace("target", "self.target")
+					end
+					
+					if object_info.functions then
+						local info = object_info.functions[func_name]
+						
+						if info then
+							if info.static_arguments then
+								local tbl = (arg_line2 .. ","):explode(",")
+								for i,v in ipairs(info.static_arguments) do
+									tbl[i] = serializer.GetLibrary("luadata").ToString(v)
+								end
+								arg_line2 = table.concat(tbl, ", "):sub(0,-3)
+								print(arg_line2)
+							end
+							arg_line1 = info.arg_line1 or arg_line1
+							arg_line2 = info.arg_line2 or arg_line2
+						end
+					end
+					
+					insert("\t\t\tfunction META:" .. friendly .. "(" .. arg_line1 .. ")")
+						insert("\t\t\t\tbind(self) return gl." .. func_name .. "(" .. arg_line2 .. ")")
+					insert"\t\t\tend"
+				end
+			end
+			
+			insert"\t\t\tlocal ctype = ffi.typeof('struct { int id, target; }')"
+			insert"\t\t\tffi.metatype(ctype, META)"
+			insert"\t\t\tlocal temp = ffi.new('GLuint[1]')"
+			insert"\t\t\tfunction META:Delete()"
+			insert"\t\t\t\ttemp[0] = self.id"
+			insert("\t\t\t\tgl.Delete"..name.."s(1, temp)")
+			insert"\t\t\tend"
+			insert"\t\t\tMETA.not_dsa = true"
+			insert("\t\t\tfunction gl.Create"..name.."(target)")
+			insert"\t\t\t\tlocal self = setmetatable({}, META)"
+			insert("\t\t\t\tself.id = gl.Gen"..name.."()")
+			insert"\t\t\t\tself.target = target"
+			insert"\t\t\t\treturn self"
+			insert"\t\t\tend"
 		insert"\t\tend"
-		
-		local arg_line = create.arg_line:match("(.+),.-,+") or ""
-		
-		insert("\t\tfunction gl.Create" .. name .. "(" .. arg_line .. ")")
-		if arg_line ~= "" then arg_line = arg_line .. ", " end
-		insert("\t\t\tgl." .. create.name:sub(3) .. "(" .. arg_line .. "1, temp)")
-		insert"\t\t\tlocal self = ffi.new(ctype)"
-		insert"\t\t\tself.id = temp[0]"
-		insert"\t\t\treturn self"
-		insert"\t\tend"
-		
 		insert"\tend"
 	end
 end
@@ -300,7 +408,7 @@ insert("gl.e = setmetatable({}, {__index = function(_, key) return tonumber(ffi.
 insert("return gl")
 --collectgarbage()
 local code = table.concat(lua, "\n")
-vfs.Write(R"lua/libraries/graphics/ffi/opengl/init.lua", code)
+vfs.Write("lua/libraries/graphics/ffi/opengl/init.lua", code)
 
-package.loaded["graphics.ffi.opengl"] = nil
-require("graphics.ffi.opengl")
+--package.loaded["graphics.ffi.opengl"] = nil
+--require("graphics.ffi.opengl")

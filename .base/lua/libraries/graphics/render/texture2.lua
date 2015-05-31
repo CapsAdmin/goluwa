@@ -4,240 +4,6 @@ local TOENUM = function(str) return "GL_" .. str:upper() end
 
 local gl = require("graphics.ffi.opengl")
 
-if not gl.CreateTextures then
-	do -- Texture
-		local META = {}
-		META.__index = META
-		
-		local bind
-		
-		do
-			local last
-			
-			function bind(self) 
-				if self ~= last then
-					gl.BindTexture(self.target, self.id)
-				end
-				last = self
-			end
-		end
-		
-		function META:SubImage1DEXT(target, level, xoffset, width, format, type, pixels)
-			bind(self) return gl.TexSubImage1DEXT(target, level, xoffset, width, format, type, pixels)
-		end
-		function META:GetImageEXT(target, level, format, type, pixels)
-			bind(self) return gl.GetTexImageEXT(target, level, format, type, pixels)
-		end
-		function META:Storage2DMultisampleEXT(target, samples, internalformat, width, height, fixedsamplelocations)
-			bind(self) return gl.TexStorage2DMultisampleEXT(self.id, target, samples, internalformat, width, height, fixedsamplelocations)
-		end
-		function META:CopySubImage1D(level, xoffset, x, y, width)
-			bind(self) return gl.CopyTexSubImage1D(self.target, level, xoffset, x, y, width)
-		end
-		function META:GetImage(level, format, type, bufSize, pixels)
-			bind(self) return gl.GetTexImage(self.target, level, format, type, pixels)
-		end
-		function META:CopyImage2D(target, level, internalformat, x, y, width, height, border)
-			bind(self) return gl.CopyTexImage2DEXT(target, level, internalformat, x, y, width, height, border)
-		end
-		function META:Storage1D(levels, internalformat, width)
-			bind(self) return gl.TexStorage1D(self.target, levels, internalformat, width)
-		end
-		function META:GetParameterIivEXT(target, pname, params)
-			bind(self) return gl.GetTexParameterIivEXT(target, pname, params)
-		end
-		function META:BufferRange(internalformat, offset, size)
-			bind(self) return gl.TexBufferRange("GL_TEXTURE_BUFFER", internalformat, self.id, offset, size)
-		end
-		function META:GetCompressedImage(level, bufSize, pixels)
-			bind(self) return gl.GetCompressedTexImage(self.target, level, bufSize, pixels)
-		end
-		function META:GetParameterIiv(pname, params)
-			bind(self) return gl.GetTexParameterIiv(self.target, pname, params)
-		end
-		function META:IsEXT()
-			return gl.IsTexEXT(self.id)
-		end
-		function META:Image1D(target, level, internalformat, width, border, format, type, pixels)
-			bind(self) return gl.TexImage1DEXT(target, level, internalformat, width, border, format, type, pixels)
-		end
-		function META:SetParameterIiv(target, pname, params)
-			bind(self) return gl.TexParameterIivEXT(target, pname, params)
-		end
-		function META:GetLevelParameterivEXT(target, level, pname, params)
-			bind(self) return gl.GetTexLevelParameterivEXT(target, level, pname, params)
-		end
-		function META:GetParameterivEXT(target, pname, params)
-			bind(self) return gl.GetTexParameterivEXT(target, pname, params)
-		end
-		function META:GetLevelParameterfv(target, level, pname, params)
-			bind(self) return gl.GetTexLevelParameterfv(target, level, pname, params)
-		end
-		function META:BufferRangeEXT(internalformat, offset, size)
-			bind(self) return gl.TexBufferRangeEXT("GL_TEXTURE_BUFFER", internalformat, self.id, offset, size)
-		end
-		function META:Image2D(target, level, internalformat, width, height, border, format, type, pixels)
-			bind(self) return gl.TexImage2DEXT(target, level, internalformat, width, height, border, format, type, pixels)
-		end
-		function META:CopySubImage3DEXT(target, level, xoffset, yoffset, zoffset, x, y, width, height)
-			bind(self) return gl.CopyTexSubImage3DEXT(target, level, xoffset, yoffset, zoffset, x, y, width, height)
-		end
-		function META:CompressedSubImage2D(level, xoffset, yoffset, width, height, format, imageSize, data)
-			bind(self) return gl.CompressedTexSubImage2D(self.target, level, xoffset, yoffset, width, height, format, imageSize, data)
-		end
-		function META:GetParameterIuiv(pname, params)
-			bind(self) return gl.GetTexParameterIuiv(self.target, pname, params)
-		end
-		function META:Image3D(target, level, internalformat, width, height, depth, border, format, type, pixels)
-			bind(self) return gl.TexImage3DEXT(target, level, internalformat, width, height, depth, border, format, type, pixels)
-		end
-		function META:CompressedImage2D(target, level, internalformat, width, height, border, imageSize, bits)
-			bind(self) return gl.CompressedTexImage2DEXT(target, level, internalformat, width, height, border, imageSize, bits)
-		end
-		function META:GetParameterIuivEXT(target, pname, params)
-			bind(self) return gl.GetTexParameterIuivEXT(target, pname, params)
-		end
-		function META:CompressedSubImage3D(level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data)
-			bind(self) return gl.CompressedTexSubImage3D(self.target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data)
-		end
-		function META:Buffer(internalformat)
-			bind(self) return gl.TexBuffer("GL_TEXTURE_BUFFER", internalformat, self.id)
-		end
-		function META:ParameteriEXT(target, pname, param)
-			bind(self) return gl.TexParameteriEXT(self.id, target, pname, param)
-		end
-		function META:Is()
-			bind(self) return gl.IsTex(self.id)
-		end
-		function META:SubImage3D(level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
-			bind(self) return gl.TexSubImage3D(self.target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
-		end
-		function META:CompressedSubImage2DEXT(target, level, xoffset, yoffset, width, height, format, imageSize, bits)
-			bind(self) return gl.CompressedTexSubImage2DEXT(self.id, target, level, xoffset, yoffset, width, height, format, imageSize, bits)
-		end
-		function META:CompressedImage3D(target, level, internalformat, width, height, depth, border, imageSize, bits)
-			bind(self) return gl.CompressedTexImage3DEXT(self.id, target, level, internalformat, width, height, depth, border, imageSize, bits)
-		end
-		function META:Renderbuffer(target, renderbuffer)
-			bind(self) return gl.TexRenderbufferEXT(self.id, target, renderbuffer)
-		end
-		function META:CompressedSubImage1DEXT(target, level, xoffset, width, format, imageSize, bits)
-			bind(self) return gl.CompressedTexSubImage1DEXT(self.id, target, level, xoffset, width, format, imageSize, bits)
-		end
-		function META:Storage3DMultisample(samples, internalformat, width, height, depth, fixedsamplelocations)
-			bind(self) return gl.TexStorage3DMultisample(self.id, samples, internalformat, width, height, depth, fixedsamplelocations)
-		end
-		function META:SetParameterf(pname, param)
-			bind(self) return gl.TexParameterf(self.id, pname, param)
-		end
-		function META:BindUnit(texture)
-			bind(self) return gl.BindTexUnit(self.id, texture)
-		end
-		function META:Storage3D(levels, internalformat, width, height, depth)
-			bind(self) return gl.TexStorage3D(self.target, levels, internalformat, width, height, depth)
-		end
-		function META:ParameterfEXT(target, pname, param)
-			bind(self) return gl.TexParameterfEXT(self.id, target, pname, param)
-		end
-		function META:CopySubImage2D(level, xoffset, yoffset, x, y, width, height)
-			bind(self) return gl.CopyTexSubImage2D(self.id, level, xoffset, yoffset, x, y, width, height)
-		end
-		function META:SetParameteriv(target, pname, params)
-			bind(self) return gl.TexParameterivEXT(self.id, target, pname, params)
-		end
-		function META:CopySubImage1DEXT(target, level, xoffset, x, y, width)
-			bind(self) return gl.CopyTexSubImage1DEXT(self.id, target, level, xoffset, x, y, width)
-		end
-		function META:BufferEXT(target, internalformat, buffer)
-			bind(self) return gl.TexBufferEXT(self.id, target, internalformat, buffer)
-		end
-		function META:GetLevelParameterfvEXT(target, level, pname, params)
-			bind(self) return gl.GetTexLevelParameterfvEXT(self.id, target, level, pname, params)
-		end
-		function META:SetParameterfv(target, pname, params)
-			bind(self) return gl.TexParameterfvEXT(self.id, target, pname, params)
-		end
-		function META:CompressedImage1D(target, level, internalformat, width, border, imageSize, bits)
-			bind(self) return gl.CompressedTexImage1DEXT(self.id, target, level, internalformat, width, border, imageSize, bits)
-		end
-		function META:SetParameteri(pname, param)
-			bind(self) return gl.TexParameteri(self.id, pname, param)
-		end
-		function META:GetParameteriv(pname, params)
-			bind(self) return gl.GetTexParameteriv(self.id, pname, params)
-		end
-		function META:CopySubImage2DEXT(target, level, xoffset, yoffset, x, y, width, height)
-			bind(self) return gl.CopyTexSubImage2DEXT(self.id, target, level, xoffset, yoffset, x, y, width, height)
-		end
-		function META:SetParameterIuiv(pname, params)
-			bind(self) return gl.TexParameterIuiv(self.id, pname, params)
-		end
-		function META:Storage2DMultisample(samples, internalformat, width, height, fixedsamplelocations)
-			bind(self) return gl.TexStorage2DMultisample(self.id, samples, internalformat, width, height, fixedsamplelocations)
-		end
-		function META:CompressedSubImage3DEXT(target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits)
-			bind(self) return gl.CompressedTexSubImage3DEXT(self.id, target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits)
-		end
-		function META:GenerateMipmapEXT(target)
-			bind(self) return gl.GenerateTexMipmapEXT(self.id, target)
-		end
-		function META:GetParameterfvEXT(target, pname, params)
-			bind(self) return gl.GetTexParameterfvEXT(self.id, target, pname, params)
-		end
-		function META:GenerateMipmap()
-			bind(self) return gl.GenerateMipmap(self.target)
-		end
-		function META:CopyImage1D(target, level, internalformat, x, y, width, border)
-			bind(self) return gl.CopyTexImage1DEXT(self.id, target, level, internalformat, x, y, width, border)
-		end
-		function META:GetParameterfv(pname, params)
-			bind(self) return gl.GetTexParameterfv(self.id, pname, params)
-		end
-		function META:CompressedSubImage1D(level, xoffset, width, format, imageSize, data)
-			bind(self) return gl.CompressedTexSubImage1D(self.id, level, xoffset, width, format, imageSize, data)
-		end
-		function META:SubImage1D(level, xoffset, width, format, type, pixels)
-			bind(self) return gl.TexSubImage1D(self.target, level, xoffset, width, format, type, pixels)
-		end
-		function META:CopySubImage3D(level, xoffset, yoffset, zoffset, x, y, width, height)
-			bind(self) return gl.CopyTexSubImage3D(self.target, level, xoffset, yoffset, zoffset, x, y, width, height)
-		end
-		function META:GetLevelParameteriv(level, pname, params)
-			bind(self) return gl.GetTexLevelParameteriv(self.target, level, pname, params)
-		end
-		function META:Storage2D(levels, internalformat, width, height)
-			bind(self) return gl.TexStorage2D(self.target, levels, internalformat, width, height)
-		end
-		function META:SubImage2DEXT(target, level, xoffset, yoffset, width, height, format, type, pixels)
-			bind(self) return gl.TexSubImage2DEXT(target, level, xoffset, yoffset, width, height, format, type, pixels)
-		end
-		function META:SubImage2D(level, xoffset, yoffset, width, height, format, type, pixels)
-			bind(self) return gl.TexSubImage2D(self.target, level, xoffset, yoffset, width, height, format, type, pixels)
-		end
-		function META:GetCompressedImageEXT(target, lod, img)
-			bind(self) return gl.GetCompressedTexImageEXT(target, lod, img)
-		end
-		function META:SubImage3DEXT(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
-			bind(self) return gl.TexSubImage3DEXT(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
-		end
-		local ctype = ffi.typeof('struct { int id, target; }')
-		ffi.metatype(ctype, META)
-		local temp = ffi.new('GLuint[1]')
-		function META:Delete()
-			temp[0] = self.id
-			gl.DeleteTextures(1, temp)
-		end
-		META.not_dsa = true
-		function gl.CreateTexture(target)
-			local self = setmetatable({}, META)
-			self.id = gl.GenTexture()
-			self.target = target
-			return self
-		end
-	end
-end
-
-
 local META = prototype.CreateTemplate("texture2")
 
 META:GetSet("StorageType", "2d")
@@ -836,7 +602,8 @@ if not RELOAD then return end
 local tex = render.CreateTexture2("2d")
 
 --tex:LoadCubemap("materials/skybox/sky_borealis01")
-tex:SetPath("https://i.ytimg.com/vi/YC4mDN7ltT0/default.jpg")
+--tex:SetPath("https://i.ytimg.com/vi/YC4mDN7ltT0/default.jpg")
+tex:SetPath("textures/greendog.png")
 
 local function blur_texture(dir)
 	tex:Shade([[
@@ -909,13 +676,13 @@ local info = serializer.ReadFile("msgpack", "lol.wtf")
 tex:Upload(info)
 local size = 16
 tex:Fill(function(x, y)
-		if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
-			return 255, 0, 255, 255
-		else
-			return 0, 0, 0, 255
-		end
-	end)
-	tex:Clear()
+	if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
+		return 255, 0, 255, 255
+	else
+		return 0, 0, 0, 255
+	end
+end)
+tex:Clear()
 
 event.AddListener("PostDrawMenu", "lol", function()
 	surface.PushMatrix(0, 0, tex:GetSize():Unpack())
