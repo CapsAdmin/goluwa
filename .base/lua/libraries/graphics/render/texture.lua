@@ -91,7 +91,7 @@ do -- texture object
 	
 	function render.CreateTexture(width, height, buffer, format)
 		if type(width) == "string" and not buffer and not format and (not height or type(height) == "table") then
-			return render.CreateTextureFromPath(width, height)
+			return render.CreateTextureFromPath(width, {path = width})
 		end
 										
 		local buffer_size
@@ -228,7 +228,7 @@ do -- texture object
 		gl.BindTexture(format.type, 0)
 						
 		if render.debug then
-			logf("creating texture w = %s h = %s buffer size = %s\n", self.w, self.h, utility.FormatFileSize(buffer and ffi.sizeof(buffer) or 0)) --The texture size was never broken... someone used two non-existant variables w,h
+			logf("creating texture %s w = %s h = %s buffer size = %s\n",  format.path or "no path", self.h, utility.FormatFileSize(buffer and ffi.sizeof(buffer) or 0)) --The texture size was never broken... someone used two non-existant variables w,h
 		end
 				
 		return self
@@ -624,9 +624,7 @@ function render.CreateTextureFromPath(path, format)
 					table.merge(self.format, info.format)
 					update_format(self)
 				end
-				
-				render.texture_path_cache[real_path] = self			
-				
+								
 				self:Replace(buffer, w, h)
 				
 				if self.OnLoad then
@@ -644,6 +642,8 @@ function render.CreateTextureFromPath(path, format)
 			self:MakeError() 
 		end
 	)
+	
+	render.texture_path_cache[real_path] = self
 	
 	return self
 end
