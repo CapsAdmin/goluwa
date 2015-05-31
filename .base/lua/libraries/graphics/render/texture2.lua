@@ -238,14 +238,37 @@ function META:Upload(data)
 		data.depth = data.depth or 1
 	end
 	
-	if data.buffer then		
-		if self.StorageType == "3d" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then		
-			data.x = data.x or 0
-			data.y = data.y or 0
-			data.z = data.z or 0
-			
-			if data.image_size then
-				self.gl_tex:CompressedSubImage3D(
+	-- clear if no buffer is provided
+	if not data.buffer then
+		local size = data.width * data.height * ffi.sizeof("rgba_pixel")
+		local buffer = ffi.new("rgba_pixel[?]", size)
+		
+		data = table.copy(data)		
+		data.format = "rgba"
+		data.buffer = buffer
+	end
+	
+	if self.StorageType == "3d" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then		
+		data.x = data.x or 0
+		data.y = data.y or 0
+		data.z = data.z or 0
+		
+		if data.image_size then
+			self.gl_tex:CompressedSubImage3D(
+			data.mip_map_level, 
+			data.x, 
+			data.y, 
+			data.z, 
+			data.width, 
+			data.height, 
+			data.depth, 
+			TOENUM(data.format), 
+			TOENUM(data.type), 
+			data.image_size, 
+			data.buffer
+		)
+		else
+			self.gl_tex:SubImage3D(
 				data.mip_map_level, 
 				data.x, 
 				data.y, 
@@ -255,84 +278,70 @@ function META:Upload(data)
 				data.depth, 
 				TOENUM(data.format), 
 				TOENUM(data.type), 
+				data.buffer
+			)
+		end		
+	elseif self.StorageType == "2d" or self.StorageType == "1d_array" or self.StorageType == "rectangle" then		
+		data.x = data.x or 0
+		data.y = data.y or 0
+	
+		if data.image_size then
+			self.gl_tex:CompressedSubImage2D(
+				data.mip_map_level, 
+				data.x, 
+				data.y, 
+				data.width, 
+				data.height, 
+				TOENUM(data.format), 
+				TOENUM(data.type), 
 				data.image_size, 
 				data.buffer
 			)
-			else
-				self.gl_tex:SubImage3D(
-					data.mip_map_level, 
-					data.x, 
-					data.y, 
-					data.z, 
-					data.width, 
-					data.height, 
-					data.depth, 
-					TOENUM(data.format), 
-					TOENUM(data.type), 
-					data.buffer
-				)
-			end		
-		elseif self.StorageType == "2d" or self.StorageType == "1d_array" or self.StorageType == "rectangle" then		
-			data.x = data.x or 0
-			data.y = data.y or 0
+		else
+			self.gl_tex:SubImage2D(
+				data.mip_map_level, 
+				data.x, 
+				data.y, 
+				data.width, 
+				data.height, 
+				TOENUM(data.format), 
+				TOENUM(data.type), 
+				data.buffer
+			)
+		end
+	elseif self.StorageType == "1d" then		
+		data.x = data.x or 0
 		
-			if data.image_size then
-				self.gl_tex:CompressedSubImage2D(
-					data.mip_map_level, 
-					data.x, 
-					data.y, 
-					data.width, 
-					data.height, 
-					TOENUM(data.format), 
-					TOENUM(data.type), 
-					data.image_size, 
-					data.buffer
-				)
-			else
-				self.gl_tex:SubImage2D(
-					data.mip_map_level, 
-					data.x, 
-					data.y, 
-					data.width, 
-					data.height, 
-					TOENUM(data.format), 
-					TOENUM(data.type), 
-					data.buffer
-				)
-			end
-		elseif self.StorageType == "1d" then		
-			data.x = data.x or 0
-			
-			if data.image_size then
-				self.gl_tex:CompressedSubImage1D(
-					data.mip_map_level, 
-					data.x, 
-					data.width, 
-					TOENUM(data.format), 
-					TOENUM(data.type), 
-					data.image_size, 
-					data.buffer
-				)
-			else
-				self.gl_tex:SubImage1D(
-					data.mip_map_level, 
-					data.x, 
-					data.width, 
-					TOENUM(data.format), 
-					TOENUM(data.type), 
-					data.buffer
-				)
-			end
-		elseif self.StorageType == "buffer" then
-			--self.gl_tex:Buffer(TOENUM(self.InternalFormat))
-			--self.gl_tex:BufferRange(TOENUM(self.InternalFormat), )
-			error("NYI", 2)
+		if data.image_size then
+			self.gl_tex:CompressedSubImage1D(
+				data.mip_map_level, 
+				data.x, 
+				data.width, 
+				TOENUM(data.format), 
+				TOENUM(data.type), 
+				data.image_size, 
+				data.buffer
+			)
+		else
+			self.gl_tex:SubImage1D(
+				data.mip_map_level, 
+				data.x, 
+				data.width, 
+				TOENUM(data.format), 
+				TOENUM(data.type), 
+				data.buffer
+			)
 		end
-
-		if self.MipMapLevels > 0 then
-			self.gl_tex:GenerateMipmap()
-		end
+	elseif self.StorageType == "buffer" then
+		--self.gl_tex:Buffer(TOENUM(self.InternalFormat))
+		--self.gl_tex:BufferRange(TOENUM(self.InternalFormat), )
+		error("NYI", 2)
 	end
+
+	if self.MipMapLevels > 0 then
+		self.gl_tex:GenerateMipmap()
+	end
+
 	
 	self.Size.w = data.width
 	self.Size.h = data.height
