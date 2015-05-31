@@ -5,6 +5,8 @@ local META = prototype.CreateTemplate("framebuffer")
 
 function render.CreateFrameBuffer(width, height, format)
 	if not render.CheckSupport("GenFramebuffer") then return NULL end
+		
+	local format_copy = table.copy(format)
 	
 	local self = prototype.CreateObject(META)
 
@@ -24,7 +26,7 @@ function render.CreateFrameBuffer(width, height, format)
 		format.name = format.name or "default"
 		format = {format} 
 	end
-		
+
 	local id = gl.GenFramebuffer()
 	self.id = id
 	self:Begin()
@@ -78,7 +80,7 @@ function render.CreateFrameBuffer(width, height, format)
 						
 			tex = render.CreateTexture(width, height, nil, tex_info)
 			id = tex.id
-		
+			print(info.name, width, height)
 			tex.framebuffer_name = info.name
 		else
 			id = gl.GenRenderbuffer()
@@ -102,8 +104,7 @@ function render.CreateFrameBuffer(width, height, format)
 	end
 		
 	self:SetDrawBuffers()
-	
-	local err = gl.CheckFramebufferStatus(gl.e.GL_FRAMEBUFFER)
+	local err = gl.CheckFramebufferStatus("GL_FRAMEBUFFER")
 	
 	if err ~= gl.e.GL_FRAMEBUFFER_COMPLETE then
 		local str = "Unknown error: " .. err
@@ -126,6 +127,7 @@ function render.CreateFrameBuffer(width, height, format)
 		
 		self:End()		
 		self:Remove()
+		table.print(format_copy)
 		error(str, 2)
 	end
 	

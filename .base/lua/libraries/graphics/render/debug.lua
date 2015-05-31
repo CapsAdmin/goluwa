@@ -90,12 +90,39 @@ local cb = function(source, type, id, severity, length, message, userdata)
 	render.OnError(source, type, id, severity, message)
 end
 
+function render.StartDebug()
+	gl.Enable("GL_DEBUG_OUTPUT")
+	gl.DebugMessageControl("GL_DONT_CARE", "GL_DONT_CARE", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
+	gl.Enable("GL_DEBUG_OUTPUT_SYNCHRONOUS")
+	
+	local int = ffi.new("int[1]")
+	gl.GetIntegerv("GL_DEBUG_LOGGED_MESSAGES", int)
+	print("asdasdASD:", int[0])
+end
+
+function render.StopDebug()
+	local buffer = ffi.new("char[1024]")
+	local length = ffi.sizeof(buffer)
+	
+	local int = ffi.new("int[1]")
+	gl.GetIntegerv("GL_DEBUG_LOGGED_MESSAGES", int)
+	print("asdasdASD:", int[0])
+	
+	gl.GetDebugMessageLog(1, length, nil, nil, nil, nil, nil, buffer)
+	
+	local str = ffi.string(buffer)
+	if str ~= "" then
+		warning(str, 2)
+	end
+	
+	gl.Disable("GL_DEBUG_OUTPUT")
+end
+
 function render.EnableDebug(b)
-	do return end
 	if gl.DebugMessageControl then
 		if b then		
 			gl.Enable("GL_DEBUG_OUTPUT")
-			gl.DebugMessageControl("GL_DONT_CARE", "GL_DONT_CARE", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
+			gl.DebugMessageControl("GL_DONT_CARE", "GL_DEBUG_TYPE_ERROR", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
 			gl.Enable("GL_DEBUG_OUTPUT_SYNCHRONOUS")
 			
 			local buffer = ffi.new("char[1024]")
