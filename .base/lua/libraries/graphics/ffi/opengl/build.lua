@@ -12,6 +12,9 @@ local enum_group_name_strip = {
 }
 
 local pseduo_objects = {
+	NamedFramebuffer = {
+		name = "Framebuffer",
+	},
 	Texture = {
 		name = "Tex",
 		functions = {
@@ -321,10 +324,16 @@ for name, object_functions in pairs(objects) do
 			
 			insert"\t\t\tdo"
 			insert"\t\t\t\tlocal last"
-			insert"\t\t\t\tfunction bind(self) "
+			if name == "Framebuffer" then
+				insert"\t\t\t\tfunction bind(self, target)"
+			else
+				insert"\t\t\t\tfunction bind(self)"
+			end
 			insert"\t\t\t\t\tif self ~= last then"
 			if name == "Texture" then
 				insert"\t\t\t\t\t\tgl.BindTexture(self.target, self.id)"
+			elseif name == "Framebuffer" then
+				insert("\t\t\t\t\t\tgl.Bind"..name.."(target, self.id)")
 			else
 				insert("\t\t\t\t\t\tgl.Bind"..name.."(self.id)")
 			end
@@ -335,6 +344,9 @@ for name, object_functions in pairs(objects) do
 			
 			for friendly, info in pairs(object_functions) do
 				local func_name = info.name:sub(3)
+				
+				func_name = func_name:replace("Named", "")
+				
 				if object_info.name then
 					local temp = func_name:replace(name, object_info.name)
 					
@@ -357,6 +369,9 @@ for name, object_functions in pairs(objects) do
 					if name == "Texture" then
 						arg_line1 = arg_line:replace("target, ", ""):replace("target", "")
 						arg_line2 = arg_line:replace("target", "self.target")
+					else
+						arg_line1 = arg_line1:replace(name:lower() .. ", ", "")
+						arg_line2 = arg_line2:replace(name:lower(), "self.id")
 					end
 					
 					if object_info.functions then
@@ -377,25 +392,49 @@ for name, object_functions in pairs(objects) do
 					end
 					
 					insert("\t\t\tfunction META:" .. friendly .. "(" .. arg_line1 .. ")")
-						insert("\t\t\t\tbind(self) return gl." .. func_name .. "(" .. arg_line2 .. ")")
+						if name == "Framebuffer" then
+							if arg_line2:find("target") then
+								insert("\t\t\t\tbind(self, target) return gl." .. func_name .. "(" .. arg_line2 .. ")")
+							else
+								insert("\t\t\t\tbind(self, \"GL_FRAMEBUFFER\") return gl." .. func_name .. "(" .. arg_line2 .. ")")
+							end
+						else
+							insert("\t\t\t\tbind(self) return gl." .. func_name .. "(" .. arg_line2 .. ")")
+						end
 					insert"\t\t\tend"
 				end
 			end
 			
-			insert"\t\t\tlocal ctype = ffi.typeof('struct { int id, target; }')"
-			insert"\t\t\tffi.metatype(ctype, META)"
-			insert"\t\t\tlocal temp = ffi.new('GLuint[1]')"
-			insert"\t\t\tfunction META:Delete()"
-			insert"\t\t\t\ttemp[0] = self.id"
-			insert("\t\t\t\tgl.Delete"..name.."s(1, temp)")
-			insert"\t\t\tend"
-			insert"\t\t\tMETA.not_dsa = true"
-			insert("\t\t\tfunction gl.Create"..name.."(target)")
-			insert"\t\t\t\tlocal self = setmetatable({}, META)"
-			insert("\t\t\t\tself.id = gl.Gen"..name.."()")
-			insert"\t\t\t\tself.target = target"
-			insert"\t\t\t\treturn self"
-			insert"\t\t\tend"
+			if name == "Texture" then
+				insert"\t\t\tlocal ctype = ffi.typeof('struct { int id, target; }')"
+				insert"\t\t\tffi.metatype(ctype, META)"
+				insert"\t\t\tlocal temp = ffi.new('GLuint[1]')"
+				insert"\t\t\tfunction META:Delete()"
+				insert"\t\t\t\ttemp[0] = self.id"
+				insert("\t\t\t\tgl.Delete"..name.."s(1, temp)")
+				insert"\t\t\tend"
+				insert"\t\t\tMETA.not_dsa = true"
+				insert("\t\t\tfunction gl.Create"..name.."(target)")
+				insert"\t\t\t\tlocal self = setmetatable({}, META)"
+				insert("\t\t\t\tself.id = gl.Gen"..name.."()")
+				insert"\t\t\t\tself.target = target"
+				insert"\t\t\t\treturn self"
+				insert"\t\t\tend"
+			else
+				insert"\t\t\tlocal ctype = ffi.typeof('struct { int id; }')"
+				insert"\t\t\tffi.metatype(ctype, META)"
+				insert"\t\t\tlocal temp = ffi.new('GLuint[1]')"
+				insert"\t\t\tfunction META:Delete()"
+				insert"\t\t\t\ttemp[0] = self.id"
+				insert("\t\t\t\tgl.Delete"..name.."s(1, temp)")
+				insert"\t\t\tend"
+				insert"\t\t\tMETA.not_dsa = true"
+				insert("\t\t\tfunction gl.Create"..name.."()")
+				insert"\t\t\t\tlocal self = setmetatable({}, META)"
+				insert("\t\t\t\tself.id = gl.Gen"..name.."()")
+				insert"\t\t\t\treturn self"
+				insert"\t\t\tend"
+			end
 		insert"\t\tend"
 		insert"\tend"
 	end

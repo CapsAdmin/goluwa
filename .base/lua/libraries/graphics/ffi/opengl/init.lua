@@ -33267,7 +33267,7 @@ function gl.Initialize(get_proc_address)
 			local bind
 			do
 				local last
-				function bind(self) 
+				function bind(self)
 					if self ~= last then
 						gl.BindVertexArray(self.id)
 					end
@@ -33313,7 +33313,7 @@ function gl.Initialize(get_proc_address)
 			function META:VertexBuffer(vaobj, bindingindex, buffer, offset, stride)
 				bind(self) return gl.VertexArrayVertexBuffer(vaobj, bindingindex, buffer, offset, stride)
 			end
-			local ctype = ffi.typeof('struct { int id, target; }')
+			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
 			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
@@ -33321,10 +33321,9 @@ function gl.Initialize(get_proc_address)
 				gl.DeleteVertexArrays(1, temp)
 			end
 			META.not_dsa = true
-			function gl.CreateVertexArray(target)
+			function gl.CreateVertexArray()
 				local self = setmetatable({}, META)
 				self.id = gl.GenVertexArray()
-				self.target = target
 				return self
 			end
 		end
@@ -33446,110 +33445,80 @@ function gl.Initialize(get_proc_address)
 			local bind
 			do
 				local last
-				function bind(self) 
+				function bind(self, target)
 					if self ~= last then
-						gl.BindFramebuffer(self.id)
+						gl.BindFramebuffer(target, self.id)
 					end
 					last = self
 				end
 			end
-			function META:ReadBuffer(framebuffer, src)
-				bind(self) return gl.NamedFramebufferReadBuffer(framebuffer, src)
+			function META:GetAttachmentParameteriv(target, attachment, pname, params)
+				bind(self, target) return gl.GetFramebufferAttachmentParameteriv(target, attachment, pname, params)
 			end
-			function META:DrawBuffers(framebuffer, n, bufs)
-				bind(self) return gl.NamedFramebufferDrawBuffers(framebuffer, n, bufs)
+			function META:Texture3D(target, attachment, textarget, texture, level, zoffset)
+				bind(self, target) return gl.FramebufferTexture3DEXT(target, attachment, textarget, texture, level, zoffset)
 			end
-			function META:GetAttachmentParameteriv(framebuffer, attachment, pname, params)
-				bind(self) return gl.GetNamedFramebufferAttachmentParameteriv(framebuffer, attachment, pname, params)
+			function META:CheckStatus(target)
+				bind(self, target) return gl.CheckFramebufferStatus(target)
 			end
-			function META:Clearfi(framebuffer, buffer, depth, stencil)
-				bind(self) return gl.ClearNamedFramebufferfi(framebuffer, buffer, depth, stencil)
+			function META:Blit(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
+				bind(self, "GL_FRAMEBUFFER") return gl.BlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
 			end
-			function META:Clearuiv(framebuffer, buffer, drawbuffer, value)
-				bind(self) return gl.ClearNamedFramebufferuiv(framebuffer, buffer, drawbuffer, value)
+			function META:CheckStatusEXT(target)
+				bind(self, target) return gl.CheckFramebufferStatusEXT(target)
 			end
-			function META:Texture3D(framebuffer, attachment, textarget, texture, level, zoffset)
-				bind(self) return gl.NamedFramebufferTexture3DEXT(framebuffer, attachment, textarget, texture, level, zoffset)
+			function META:RenderbufferEXT(target, attachment, renderbuffertarget, renderbuffer)
+				bind(self, target) return gl.FramebufferRenderbufferEXT(target, attachment, renderbuffertarget, renderbuffer)
 			end
-			function META:CheckStatus(framebuffer, target)
-				bind(self) return gl.CheckNamedFramebufferStatus(framebuffer, target)
+			function META:TextureLayer(target, attachment, texture, level, layer)
+				bind(self, target) return gl.FramebufferTextureLayer(target, attachment, texture, level, layer)
 			end
-			function META:Blit(readFramebuffer, drawFramebuffer, srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
-				bind(self) return gl.BlitNamedFramebuffer(readFramebuffer, drawFramebuffer, srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
+			function META:SetParameteri(target, pname, param)
+				bind(self, target) return gl.FramebufferParameteri(target, pname, param)
 			end
-			function META:Clearfv(framebuffer, buffer, drawbuffer, value)
-				bind(self) return gl.ClearNamedFramebufferfv(framebuffer, buffer, drawbuffer, value)
+			function META:Texture2D(target, attachment, textarget, texture, level)
+				bind(self, target) return gl.FramebufferTexture2DEXT(target, attachment, textarget, texture, level)
 			end
-			function META:CheckStatusEXT(framebuffer, target)
-				bind(self) return gl.CheckNamedFramebufferStatusEXT(framebuffer, target)
+			function META:DrawBuffersEXT(n, bufs)
+				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferDrawBuffersEXT(self.id, n, bufs)
 			end
-			function META:RenderbufferEXT(framebuffer, attachment, renderbuffertarget, renderbuffer)
-				bind(self) return gl.NamedFramebufferRenderbufferEXT(framebuffer, attachment, renderbuffertarget, renderbuffer)
+			function META:Texture(target, attachment, texture, level)
+				bind(self, target) return gl.FramebufferTexture(target, attachment, texture, level)
 			end
-			function META:TextureLayer(framebuffer, attachment, texture, level, layer)
-				bind(self) return gl.NamedFramebufferTextureLayer(framebuffer, attachment, texture, level, layer)
+			function META:GetParameterivEXT(pname, params)
+				bind(self, "GL_FRAMEBUFFER") return gl.GetFramebufferParameterivEXT(self.id, pname, params)
 			end
-			function META:SetParameteri(framebuffer, pname, param)
-				bind(self) return gl.NamedFramebufferParameteri(framebuffer, pname, param)
+			function META:GetAttachmentParameterivEXT(target, attachment, pname, params)
+				bind(self, target) return gl.GetFramebufferAttachmentParameterivEXT(target, attachment, pname, params)
 			end
-			function META:Texture2D(framebuffer, attachment, textarget, texture, level)
-				bind(self) return gl.NamedFramebufferTexture2DEXT(framebuffer, attachment, textarget, texture, level)
+			function META:ReadBufferEXT(mode)
+				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferReadBufferEXT(self.id, mode)
 			end
-			function META:DrawBuffersEXT(framebuffer, n, bufs)
-				bind(self) return gl.FramebufferDrawBuffersEXT(framebuffer, n, bufs)
+			function META:TextureFace(target, attachment, texture, level, face)
+				bind(self, target) return gl.FramebufferTextureFaceEXT(target, attachment, texture, level, face)
 			end
-			function META:Texture(framebuffer, attachment, texture, level)
-				bind(self) return gl.NamedFramebufferTexture(framebuffer, attachment, texture, level)
+			function META:TextureLayerEXT(target, attachment, texture, level, layer)
+				bind(self, target) return gl.FramebufferTextureLayerEXT(target, attachment, texture, level, layer)
 			end
-			function META:GetParameterivEXT(framebuffer, pname, params)
-				bind(self) return gl.GetFramebufferParameterivEXT(framebuffer, pname, params)
-			end
-			function META:ParameteriEXT(framebuffer, pname, param)
-				bind(self) return gl.NamedFramebufferParameteriEXT(framebuffer, pname, param)
-			end
-			function META:GetAttachmentParameterivEXT(framebuffer, attachment, pname, params)
-				bind(self) return gl.GetNamedFramebufferAttachmentParameterivEXT(framebuffer, attachment, pname, params)
-			end
-			function META:ReadBufferEXT(framebuffer, mode)
-				bind(self) return gl.FramebufferReadBufferEXT(framebuffer, mode)
-			end
-			function META:TextureFace(framebuffer, attachment, texture, level, face)
-				bind(self) return gl.NamedFramebufferTextureFaceEXT(framebuffer, attachment, texture, level, face)
-			end
-			function META:TextureLayerEXT(framebuffer, attachment, texture, level, layer)
-				bind(self) return gl.NamedFramebufferTextureLayerEXT(framebuffer, attachment, texture, level, layer)
-			end
-			function META:Renderbuffer(framebuffer, attachment, renderbuffertarget, renderbuffer)
-				bind(self) return gl.NamedFramebufferRenderbuffer(framebuffer, attachment, renderbuffertarget, renderbuffer)
+			function META:Renderbuffer(target, attachment, renderbuffertarget, renderbuffer)
+				bind(self, target) return gl.FramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer)
 			end
 			function META:CreateFramebuffers(n, framebuffers)
-				bind(self) return gl.CreateFramebuffers(n, framebuffers)
+				bind(self, "GL_FRAMEBUFFER") return gl.CreateFramebuffers(n, self.ids)
 			end
-			function META:Cleariv(framebuffer, buffer, drawbuffer, value)
-				bind(self) return gl.ClearNamedFramebufferiv(framebuffer, buffer, drawbuffer, value)
+			function META:Texture1D(target, attachment, textarget, texture, level)
+				bind(self, target) return gl.FramebufferTexture1DEXT(target, attachment, textarget, texture, level)
 			end
-			function META:InvalidateData(framebuffer, numAttachments, attachments)
-				bind(self) return gl.InvalidateNamedFramebufferData(framebuffer, numAttachments, attachments)
+			function META:GetParameteriv(target, pname, params)
+				bind(self, target) return gl.GetFramebufferParameteriv(target, pname, params)
 			end
-			function META:Texture1D(framebuffer, attachment, textarget, texture, level)
-				bind(self) return gl.NamedFramebufferTexture1DEXT(framebuffer, attachment, textarget, texture, level)
+			function META:TextureEXT(target, attachment, texture, level)
+				bind(self, target) return gl.FramebufferTextureEXT(target, attachment, texture, level)
 			end
-			function META:InvalidateSubData(framebuffer, numAttachments, attachments, x, y, width, height)
-				bind(self) return gl.InvalidateNamedFramebufferSubData(framebuffer, numAttachments, attachments, x, y, width, height)
+			function META:DrawBufferEXT(mode)
+				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferDrawBufferEXT(self.id, mode)
 			end
-			function META:DrawBuffer(framebuffer, buf)
-				bind(self) return gl.NamedFramebufferDrawBuffer(framebuffer, buf)
-			end
-			function META:GetParameteriv(framebuffer, pname, param)
-				bind(self) return gl.GetNamedFramebufferParameteriv(framebuffer, pname, param)
-			end
-			function META:TextureEXT(framebuffer, attachment, texture, level)
-				bind(self) return gl.NamedFramebufferTextureEXT(framebuffer, attachment, texture, level)
-			end
-			function META:DrawBufferEXT(framebuffer, mode)
-				bind(self) return gl.FramebufferDrawBufferEXT(framebuffer, mode)
-			end
-			local ctype = ffi.typeof('struct { int id, target; }')
+			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
 			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
@@ -33557,10 +33526,9 @@ function gl.Initialize(get_proc_address)
 				gl.DeleteFramebuffers(1, temp)
 			end
 			META.not_dsa = true
-			function gl.CreateFramebuffer(target)
+			function gl.CreateFramebuffer()
 				local self = setmetatable({}, META)
 				self.id = gl.GenFramebuffer()
-				self.target = target
 				return self
 			end
 		end
@@ -33631,7 +33599,7 @@ function gl.Initialize(get_proc_address)
 			local bind
 			do
 				local last
-				function bind(self) 
+				function bind(self)
 					if self ~= last then
 						gl.BindBuffer(self.id)
 					end
@@ -33639,51 +33607,51 @@ function gl.Initialize(get_proc_address)
 				end
 			end
 			function META:CreateBuffers(n, buffers)
-				bind(self) return gl.CreateBuffers(n, buffers)
+				bind(self) return gl.CreateBuffers(n, self.ids)
 			end
-			function META:ClearData(buffer, internalformat, format, type, data)
-				bind(self) return gl.ClearNamedBufferData(buffer, internalformat, format, type, data)
+			function META:ClearData(target, internalformat, format, type, data)
+				bind(self) return gl.ClearBufferData(target, internalformat, format, type, data)
 			end
-			function META:Data(buffer, size, data, usage)
-				bind(self) return gl.NamedBufferData(buffer, size, data, usage)
+			function META:Data(target, size, data, usage)
+				bind(self) return gl.BufferData(target, size, data, usage)
 			end
-			function META:Map(buffer, access)
-				bind(self) return gl.MapNamedBuffer(buffer, access)
+			function META:Map(target, access)
+				bind(self) return gl.MapBuffer(target, access)
 			end
-			function META:GetPointerv(buffer, pname, params)
-				bind(self) return gl.GetNamedBufferPointerv(buffer, pname, params)
+			function META:GetPointerv(target, pname, params)
+				bind(self) return gl.GetBufferPointerv(target, pname, params)
 			end
-			function META:SetSubData(buffer, offset, size, data)
-				bind(self) return gl.NamedBufferSubData(buffer, offset, size, data)
+			function META:SetSubData(target, offset, size, data)
+				bind(self) return gl.BufferSubData(target, offset, size, data)
 			end
-			function META:MapRange(buffer, offset, length, access)
-				bind(self) return gl.MapNamedBufferRange(buffer, offset, length, access)
+			function META:MapRange(target, offset, length, access)
+				bind(self) return gl.MapBufferRange(target, offset, length, access)
 			end
-			function META:GetParameteri64v(buffer, pname, params)
-				bind(self) return gl.GetNamedBufferParameteri64v(buffer, pname, params)
+			function META:GetParameteri64v(target, pname, params)
+				bind(self) return gl.GetBufferParameteri64v(target, pname, params)
 			end
-			function META:FlushMappedRange(buffer, offset, length)
-				bind(self) return gl.FlushMappedNamedBufferRange(buffer, offset, length)
+			function META:FlushMappedRange(target, offset, length)
+				bind(self) return gl.FlushMappedBufferRange(target, offset, length)
 			end
-			function META:GetSubData(buffer, offset, size, data)
-				bind(self) return gl.GetNamedBufferSubData(buffer, offset, size, data)
+			function META:GetSubData(target, offset, size, data)
+				bind(self) return gl.GetBufferSubData(target, offset, size, data)
 			end
-			function META:Storage(buffer, size, data, flags)
-				bind(self) return gl.NamedBufferStorage(buffer, size, data, flags)
+			function META:Storage(target, size, data, flags)
+				bind(self) return gl.BufferStorage(target, size, data, flags)
 			end
-			function META:CopySubData(readBuffer, writeBuffer, readOffset, writeOffset, size)
-				bind(self) return gl.CopyNamedBufferSubData(readBuffer, writeBuffer, readOffset, writeOffset, size)
+			function META:CopySubData(readTarget, writeTarget, readOffset, writeOffset, size)
+				bind(self) return gl.CopyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size)
 			end
-			function META:GetParameteriv(buffer, pname, params)
-				bind(self) return gl.GetNamedBufferParameteriv(buffer, pname, params)
+			function META:GetParameteriv(target, pname, params)
+				bind(self) return gl.GetBufferParameteriv(target, pname, params)
 			end
-			function META:ClearSubData(buffer, internalformat, offset, size, format, type, data)
-				bind(self) return gl.ClearNamedBufferSubData(buffer, internalformat, offset, size, format, type, data)
+			function META:ClearSubData(target, internalformat, offset, size, format, type, data)
+				bind(self) return gl.ClearBufferSubData(target, internalformat, offset, size, format, type, data)
 			end
-			function META:Unmap(buffer)
-				bind(self) return gl.UnmapNamedBuffer(buffer)
+			function META:Unmap(target)
+				bind(self) return gl.UnmapBuffer(target)
 			end
-			local ctype = ffi.typeof('struct { int id, target; }')
+			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
 			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
@@ -33691,10 +33659,9 @@ function gl.Initialize(get_proc_address)
 				gl.DeleteBuffers(1, temp)
 			end
 			META.not_dsa = true
-			function gl.CreateBuffer(target)
+			function gl.CreateBuffer()
 				local self = setmetatable({}, META)
 				self.id = gl.GenBuffer()
-				self.target = target
 				return self
 			end
 		end
@@ -33720,14 +33687,14 @@ function gl.Initialize(get_proc_address)
 			local bind
 			do
 				local last
-				function bind(self) 
+				function bind(self)
 					if self ~= last then
 						gl.BindProgramPipeline(self.id)
 					end
 					last = self
 				end
 			end
-			local ctype = ffi.typeof('struct { int id, target; }')
+			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
 			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
@@ -33735,10 +33702,9 @@ function gl.Initialize(get_proc_address)
 				gl.DeleteProgramPipelines(1, temp)
 			end
 			META.not_dsa = true
-			function gl.CreateProgramPipeline(target)
+			function gl.CreateProgramPipeline()
 				local self = setmetatable({}, META)
 				self.id = gl.GenProgramPipeline()
-				self.target = target
 				return self
 			end
 		end
@@ -33764,14 +33730,14 @@ function gl.Initialize(get_proc_address)
 			local bind
 			do
 				local last
-				function bind(self) 
+				function bind(self)
 					if self ~= last then
 						gl.BindSampler(self.id)
 					end
 					last = self
 				end
 			end
-			local ctype = ffi.typeof('struct { int id, target; }')
+			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
 			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
@@ -33779,10 +33745,9 @@ function gl.Initialize(get_proc_address)
 				gl.DeleteSamplers(1, temp)
 			end
 			META.not_dsa = true
-			function gl.CreateSampler(target)
+			function gl.CreateSampler()
 				local self = setmetatable({}, META)
 				self.id = gl.GenSampler()
-				self.target = target
 				return self
 			end
 		end
@@ -33832,38 +33797,35 @@ function gl.Initialize(get_proc_address)
 			local bind
 			do
 				local last
-				function bind(self) 
+				function bind(self)
 					if self ~= last then
 						gl.BindRenderbuffer(self.id)
 					end
 					last = self
 				end
 			end
-			function META:GetParameterivEXT(renderbuffer, pname, params)
-				bind(self) return gl.GetNamedRenderbufferParameterivEXT(renderbuffer, pname, params)
+			function META:GetParameterivEXT(target, pname, params)
+				bind(self) return gl.GetRenderbufferParameterivEXT(target, pname, params)
 			end
-			function META:StorageMultisample(renderbuffer, samples, internalformat, width, height)
-				bind(self) return gl.NamedRenderbufferStorageMultisample(renderbuffer, samples, internalformat, width, height)
+			function META:StorageMultisample(target, samples, internalformat, width, height)
+				bind(self) return gl.RenderbufferStorageMultisample(target, samples, internalformat, width, height)
 			end
-			function META:StorageEXT(renderbuffer, internalformat, width, height)
-				bind(self) return gl.NamedRenderbufferStorageEXT(renderbuffer, internalformat, width, height)
+			function META:StorageEXT(target, internalformat, width, height)
+				bind(self) return gl.RenderbufferStorageEXT(target, internalformat, width, height)
 			end
-			function META:Storage(renderbuffer, internalformat, width, height)
-				bind(self) return gl.NamedRenderbufferStorage(renderbuffer, internalformat, width, height)
+			function META:Storage(target, internalformat, width, height)
+				bind(self) return gl.RenderbufferStorage(target, internalformat, width, height)
 			end
-			function META:StorageMultisampleEXT(renderbuffer, samples, internalformat, width, height)
-				bind(self) return gl.NamedRenderbufferStorageMultisampleEXT(renderbuffer, samples, internalformat, width, height)
-			end
-			function META:StorageMultisampleCoverage(renderbuffer, coverageSamples, colorSamples, internalformat, width, height)
-				bind(self) return gl.NamedRenderbufferStorageMultisampleCoverageEXT(renderbuffer, coverageSamples, colorSamples, internalformat, width, height)
+			function META:StorageMultisampleEXT(target, samples, internalformat, width, height)
+				bind(self) return gl.RenderbufferStorageMultisampleEXT(target, samples, internalformat, width, height)
 			end
 			function META:CreateRenderbuffers(n, renderbuffers)
-				bind(self) return gl.CreateRenderbuffers(n, renderbuffers)
+				bind(self) return gl.CreateRenderbuffers(n, self.ids)
 			end
-			function META:GetParameteriv(renderbuffer, pname, params)
-				bind(self) return gl.GetNamedRenderbufferParameteriv(renderbuffer, pname, params)
+			function META:GetParameteriv(target, pname, params)
+				bind(self) return gl.GetRenderbufferParameteriv(target, pname, params)
 			end
-			local ctype = ffi.typeof('struct { int id, target; }')
+			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
 			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
@@ -33871,10 +33833,9 @@ function gl.Initialize(get_proc_address)
 				gl.DeleteRenderbuffers(1, temp)
 			end
 			META.not_dsa = true
-			function gl.CreateRenderbuffer(target)
+			function gl.CreateRenderbuffer()
 				local self = setmetatable({}, META)
 				self.id = gl.GenRenderbuffer()
-				self.target = target
 				return self
 			end
 		end
@@ -34098,7 +34059,7 @@ function gl.Initialize(get_proc_address)
 			local bind
 			do
 				local last
-				function bind(self) 
+				function bind(self)
 					if self ~= last then
 						gl.BindTexture(self.target, self.id)
 					end
