@@ -47,12 +47,15 @@ local char_translate =
 	
 	[3] = "KEY_COPY",
 	
+	["kRIT5"] = "CTL_RIGHT",
+	["kLFT5"] = "CTL_LEFT",
 	["\27[1;5D"] = "CTL_LEFT",
 	["\27[1;5C"] = "CTL_RIGHT",
 
 	["\27\79\72"] = "KEY_HOME",
 	["\27\79\70"] = "KEY_END",
 	["\27\91\51\59\53\126"] = "CTL_DEL",
+	["kDC5"] = "CTL_DEL",
 
 	KEY_SELECT = "KEY_HOME",
 	KEY_FIND = "KEY_END",
