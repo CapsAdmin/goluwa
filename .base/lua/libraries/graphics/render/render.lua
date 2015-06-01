@@ -268,8 +268,21 @@ function render.CheckSupport(func)
 	return true
 end
 
-function render.SetClearColor(r,g,b,a)
-	gl.ClearColor(r,g,b, a or 1)
+do
+	local R,G,B,A = 0,0,0,1
+	
+	function render.SetClearColor(r,g,b,a)
+		R = r
+		G = g
+		B = b
+		A = a or 1
+		
+		gl.ClearColor(R,G,B,A)
+	end
+
+	function render.GetClearColor()
+		return R,G,B,A
+	end
 end
 
 do
@@ -503,6 +516,7 @@ include("camera.lua", render)
 include("scene.lua", render)
 include("texture.lua", render)
 include("texture2.lua", render)
+include("framebuffer2.lua", render)
 include("framebuffer.lua", render)
 include("gbuffer/gbuffer.lua", render)
 include("vertex_buffer.lua", render)
