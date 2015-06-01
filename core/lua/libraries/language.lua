@@ -121,7 +121,7 @@ function language.Translate(to, nice)
 		print(res)
 		
 		local tbl = serializer.Decode("simple", res)
-		serializer.WriteFile("simple", "%ROOT%/.base/languages/" .. (nice or to), tbl)
+		serializer.WriteFile("simple", "%ROOT%/core/languages/" .. (nice or to), tbl)
 	end)
 	
 	return str

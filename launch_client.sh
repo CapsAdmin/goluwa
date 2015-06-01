@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd .base/bin
+cd core/bin
 bash launch_linux.sh
