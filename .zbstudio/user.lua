@@ -1,7 +1,6 @@
 (...).setfenv(1, ...)
 
 local print = DisplayOutputLn
-local root = "C:/goluwa/"
 
 do -- apply a dark style
 	ide.styles = loadfile('cfg/tomorrow.lua')('TomorrowNightEighties')
@@ -15,8 +14,7 @@ do -- config
 	
 	config.editor.usetabs = true
 	config.editor.tabwidth = 4
-	--config.path.wdir = root .. [[.base\bin\windows\x86\]]
-	--config.path.gslshell = root .. [[.base\bin\windows\x86\luajit.exe]]
+	config.editor.usewrap = false
 end
 
 function get_text()
@@ -46,7 +44,7 @@ function get_text()
 	return lt
 end
 
-local bin = ".base/bin/" .. jit.os:lower() ..	"_" .. "x86" .. "/"
+local bin = "core/bin/" .. jit.os:lower() ..	"_" .. "x64" .. "/"
 
 local sockets = require("socket")
 
@@ -71,7 +69,9 @@ local PLUGIN = {
 }
 
 function PLUGIN:onLineInput(str)
-	socket:send(str)
+	if connected then
+		socket:send(str)
+	end
 end
 
 function PLUGIN:onEditorCharAdded(editor, event)
@@ -140,17 +140,31 @@ function INTERPRETER:frun(wfile, run_debug)
 		wx.wxSetEnv("LUA_CPATH", cpath:gsub("/clibs/", "/clibs51/"))
 	end
 	
+	wx.wxSetEnv("LD_LIBRARY_PATH", ".:$LD_LIBRARY_PATH")
 	
 	--callback = function(...) CONSOLE_OUT(...) end
-	local fmt = "%q -e \"io.stdout:setvbuf('no')SERVER=true;DISABLE_CURSES=true;ARGS={'include[[%s]]%s'};dofile'%s'\""
-	local pid = ide:ExecuteCommand(
-		fmt:format(root .. bin .. "luajit", file_path, lua, root .. ".base/lua/init.lua"),
-		root .. bin,
-		function(s) CONSOLE_OUT(s) end,
-		function() if run_debug then wx.wxRemoveFile(temp_file) end connected = false ready = false end
+	local fmt = "%q -e \"io.stdout:setvbuf('no');DISABLE_CURSES=true;ZEROBRANE=true;ARGS={'include[[%s]]%s'};dofile'%s'\""
+	
+	local root = ide.config.path.projectdir .. "/"
+	
+	local file_path = ide:GetDocument(ide:GetEditor()):GetFilePath()
+	
+	local pid = CommandLineRun(
+			fmt:format(root .. bin .. "luajit", file_path, lua, root .. "core/lua/init.lua"),
+			root .. bin,
+			true,--tooutput,
+			true,--nohide,
+			function(s) CONSOLE_OUT(s) end,
+			nil,--uid,
+			function()
+				if run_debug then 
+					wx.wxRemoveFile(temp_file) 
+				end 
+				connected = false 
+				ready = false 
+			end
 	)
-	--callback = nil
-
+	
 	if cpath then
 		wx.wxSetEnv("LUA_CPATH", cpath)
 	end
@@ -165,7 +179,9 @@ function INTERPRETER:fprojdir(wfilename)
 end
 
 function INTERPRETER:fworkdir()
-	return ide.config.path.projectdir .. "/" .. bin
+	local root = ide.config.path.projectdir .. "/"
+
+	return root .. "/" .. bin
 end
 
 function INTERPRETER:fattachdebug() 
@@ -183,15 +199,12 @@ do
 	ide.frame.bottomnotebook:AddPage(shellbox, TR("Remote console"), false)
 	SetupKeywords(shellbox,"lua",nil,ide.config.stylesoutshell,ide.font.oNormal,ide.font.oItalic)
 		
-	-- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
+	-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 	-- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 	---------------------------------------------------------
 
 	local ide = ide
 	local unpack = table.unpack or unpack
-	--
-	-- shellbox - a lua testbed environment within the IDE
-	--
 
 	local bottomnotebook = ide.frame.bottomnotebook
 	local out = shellbox
@@ -228,315 +241,465 @@ do
 	SetupKeywords(out,"lua",nil,ide.config.stylesoutshell,ide.font.oNormal,ide.font.oItalic)
 
 	local function getPromptLine()
-		local totalLines = out:GetLineCount()
-		return out:MarkerPrevious(totalLines+1, PROMPT_MARKER_VALUE)
+	  local totalLines = out:GetLineCount()
+	  return out:MarkerPrevious(totalLines+1, PROMPT_MARKER_VALUE)
 	end
 
 	local function getPromptText()
-		local prompt = getPromptLine()
-		return out:GetTextRange(out:PositionFromLine(prompt), out:GetLength())
+	  local prompt = getPromptLine()
+	  return out:GetTextRange(out:PositionFromLine(prompt), out:GetLength())
 	end
 
 	local function setPromptText(text)
-		local length = out:GetLength()
-		out:SetTargetStart(length - string.len(getPromptText()))
-		out:SetTargetEnd(length)
-		out:ReplaceTarget(text)
-		-- refresh the output window to force recalculation of wrapped lines;
-		-- otherwise a wrapped part of the last line may not be visible.
-		out:Update(); out:Refresh()
-		out:GotoPosition(out:GetLength())
+	  local length = out:GetLength()
+	  out:SetTargetStart(length - string.len(getPromptText()))
+	  out:SetTargetEnd(length)
+	  out:ReplaceTarget(text)
+	  -- refresh the output window to force recalculation of wrapped lines;
+	  -- otherwise a wrapped part of the last line may not be visible.
+	  out:Update(); out:Refresh()
+	  out:GotoPos(out:GetLength())
 	end
 
 	local function positionInLine(line)
-		return out:GetCurrentPosition() - out:PositionFromLine(line)
+	  return out:GetCurrentPos() - out:PositionFromLine(line)
 	end
 
 	local function caretOnPromptLine(disallowLeftmost, line)
-		local promptLine = getPromptLine()
-		local currentLine = line or out:GetCurrentLine()
-		local boundary = disallowLeftmost and 0 or -1
-		return (currentLine > promptLine
-			or currentLine == promptLine and positionInLine(promptLine) > boundary)
+	  local promptLine = getPromptLine()
+	  local currentLine = line or out:GetCurrentLine()
+	  local boundary = disallowLeftmost and 0 or -1
+	  return (currentLine > promptLine
+		or currentLine == promptLine and positionInLine(promptLine) > boundary)
 	end
 
 	local function chomp(line)
-		return line:gsub("%s+$", "")
+	  return line:gsub("%s+$", "")
 	end
 
 	local function getInput(line)
-		local nextMarker = line
-		local count = out:GetLineCount()
+	  local nextMarker = line
+	  local count = out:GetLineCount()
 
-		repeat -- check until we find at least some marker
-			nextMarker = nextMarker+1
-		until out:MarkerGet(nextMarker) > 0 or nextMarker > count-1
-		return chomp(out:GetTextRange(out:PositionFromLine(line),
-																	out:PositionFromLine(nextMarker)))
+	  repeat -- check until we find at least some marker
+		nextMarker = nextMarker+1
+	  until out:MarkerGet(nextMarker) > 0 or nextMarker > count-1
+	  return chomp(out:GetTextRange(out:PositionFromLine(line),
+									out:PositionFromLine(nextMarker)))
 	end
 
 	local currentHistory
 	local function getNextHistoryLine(forward, promptText)
-		local count = out:GetLineCount()
-		if currentHistory == nil then currentHistory = count end
+	  local count = out:GetLineCount()
+	  if currentHistory == nil then currentHistory = count end
 
-		if forward then
-			currentHistory = out:MarkerNext(currentHistory+1, PROMPT_MARKER_VALUE)
-			if currentHistory == -1 then
-				currentHistory = count
-				return ""
-			end
-		else
-			currentHistory = out:MarkerPrevious(currentHistory-1, PROMPT_MARKER_VALUE)
-			if currentHistory == -1 then
-				return ""
-			end
+	  if forward then
+		currentHistory = out:MarkerNext(currentHistory+1, PROMPT_MARKER_VALUE)
+		if currentHistory == -1 then
+		  currentHistory = count
+		  return ""
 		end
-		-- need to skip the current prompt line
-		-- or skip repeated commands
-		if currentHistory == getPromptLine()
-		or getInput(currentHistory) == promptText then
-			return getNextHistoryLine(forward, promptText)
+	  else
+		currentHistory = out:MarkerPrevious(currentHistory-1, PROMPT_MARKER_VALUE)
+		if currentHistory == -1 then
+		  return ""
 		end
-		return getInput(currentHistory)
+	  end
+	  -- need to skip the current prompt line
+	  -- or skip repeated commands
+	  if currentHistory == getPromptLine()
+	  or getInput(currentHistory) == promptText then
+		return getNextHistoryLine(forward, promptText)
+	  end
+	  return getInput(currentHistory)
 	end
 
 	local function getNextHistoryMatch(promptText)
-		local count = out:GetLineCount()
-		if currentHistory == nil then currentHistory = count end
+	  local count = out:GetLineCount()
+	  if currentHistory == nil then currentHistory = count end
 
-		local current = currentHistory
-		while true do
-			currentHistory = out:MarkerPrevious(currentHistory-1, PROMPT_MARKER_VALUE)
-			if currentHistory == -1 then -- restart search from the last item
-				currentHistory = count
-			elseif currentHistory ~= getPromptLine() then -- skip current prompt
-				local input = getInput(currentHistory)
-				if input:find(promptText, 1, true) == 1 then return input end
-			end
-			-- couldn't find anything and made a loop; get out
-			if currentHistory == current then return end
+	  local current = currentHistory
+	  while true do
+		currentHistory = out:MarkerPrevious(currentHistory-1, PROMPT_MARKER_VALUE)
+		if currentHistory == -1 then -- restart search from the last item
+		  currentHistory = count
+		elseif currentHistory ~= getPromptLine() then -- skip current prompt
+		  local input = getInput(currentHistory)
+		  if input:find(promptText, 1, true) == 1 then return input end
 		end
+		-- couldn't find anything and made a loop; get out
+		if currentHistory == current then return end
+	  end
 
-		assert(false, "getNextHistoryMatch coudn't find a proper match")
+	  assert(false, "getNextHistoryMatch coudn't find a proper match")
 	end
 
 	local function shellPrint(marker, ...)
-		local cnt = select('#',...)
-		if cnt == 0 then return end -- return if nothing to print
+	  local cnt = select('#',...)
+	  if cnt == 0 then return end -- return if nothing to print
 
-		local isPrompt = marker and (getPromptLine() > -1)
+	  local isPrompt = marker and (getPromptLine() > -1)
 
-		local text = ''
-		for i=1,cnt do
-			local x = select(i,...)
-			text = text .. tostring(x)..(i < cnt and "\t" or "")
-		end
-		-- add "\n" if it is missing
-		if text then text = text:gsub("\n+$", "") .. "\n" end
+	  local text = ''
+	  for i=1,cnt do
+		local x = select(i,...)
+		text = text .. tostring(x)..(i < cnt and "\t" or "")
+	  end
 
-		local lines = out:GetLineCount()
-		local promptLine = isPrompt and getPromptLine() or nil
-		local insertLineAt = isPrompt and getPromptLine() or out:GetLineCount()-1
-		local insertAt = isPrompt and out:PositionFromLine(getPromptLine()) or out:GetLength()
-		out:InsertText(insertAt, FixUTF8(text, function (s) return '\\'..string.byte(s) end))
-		local linesAdded = out:GetLineCount() - lines
-
-		if marker then
-			if promptLine then out:MarkerDelete(promptLine, PROMPT_MARKER) end
-			for line = insertLineAt, insertLineAt + linesAdded - 1 do
-				out:MarkerAdd(line, marker)
+	  -- split the text into smaller chunks as one large line
+	  -- is difficult to handle for the editor
+	  local prev, maxlength = 0, ide.config.debugger.maxdatalength
+	  if #text > maxlength and not text:find("\n.") then
+		text = text:gsub("()(%s+)", function(p, s)
+			if p-prev >= maxlength then
+			  prev = p
+			  return "\n"
+			else
+			  return s
 			end
-			if promptLine then out:MarkerAdd(promptLine+linesAdded, PROMPT_MARKER) end
-		end
+		  end)
+	  end
 
-		out:EmptyUndoBuffer() -- don't allow the user to undo shell text
-		out:GotoPosition(out:GetLength())
-		out:EnsureVisibleEnforcePolicy(out:GetLineCount()-1)
+	  -- add "\n" if it is missing
+	  text = text:gsub("\n+$", "") .. "\n"
+
+	  local lines = out:GetLineCount()
+	  local promptLine = isPrompt and getPromptLine() or nil
+	  local insertLineAt = isPrompt and getPromptLine() or out:GetLineCount()-1
+	  local insertAt = isPrompt and out:PositionFromLine(getPromptLine()) or out:GetLength()
+	  out:InsertText(insertAt, FixUTF8(text, function (s) return '\\'..string.byte(s) end))
+	  local linesAdded = out:GetLineCount() - lines
+
+	  if marker then
+		if promptLine then out:MarkerDelete(promptLine, PROMPT_MARKER) end
+		for line = insertLineAt, insertLineAt + linesAdded - 1 do
+		  out:MarkerAdd(line, marker)
+		end
+		if promptLine then out:MarkerAdd(promptLine+linesAdded, PROMPT_MARKER) end
+	  end
+
+	  out:EmptyUndoBuffer() -- don't allow the user to undo shell text
+	  out:GotoPos(out:GetLength())
+	  out:EnsureVisibleEnforcePolicy(out:GetLineCount()-1)
 	end
 
 	local DisplayShell = function (...)
-		shellPrint(OUTPUT_MARKER, ...)
+	  shellPrint(OUTPUT_MARKER, ...)
 	end
 	local DisplayShellErr = function (...)
-		shellPrint(ERROR_MARKER, ...)
+	  shellPrint(ERROR_MARKER, ...)
 	end
 	local DisplayShellMsg = function (...)
-		shellPrint(MESSAGE_MARKER, ...)
+	  shellPrint(MESSAGE_MARKER, ...)
 	end
 	local DisplayShellDirect = function (...)
-		shellPrint(nil, ...)
+	  shellPrint(nil, ...)
 	end
 	local DisplayShellPrompt = function (...)
-		-- don't print anything; just mark the line with a prompt mark
-		out:MarkerAdd(out:GetLineCount()-1, PROMPT_MARKER)
+	  -- don't print anything; just mark the line with a prompt mark
+	  out:MarkerAdd(out:GetLineCount()-1, PROMPT_MARKER)
 	end
 	
 	CONSOLE_OUT = DisplayShell
-	
-	local function executeShellCode(tx)
-		if tx == nil or tx == '' then return end
 
-		DisplayShellPrompt('')
+	local function filterTraceError(err, addedret)
+	  local err = err:match("(.-:%d+:.-)\n[^\n]*\n[^\n]*\n[^\n]*src/editor/shellbox.lua:.*in function 'executeShellCode'")
+				  or err
+			err = err:gsub("stack traceback:.-\n[^\n]+\n?","")
+			if addedret then err = err:gsub('^%[string "return ', '[string "') end
+			err = err:match("(.*)\n[^\n]*%(tail call%): %?$") or err
+	  return err
+	end
+
+	local function createenv ()
+	  local env = {}
+	  setmetatable(env,{__index = _G})
+
+	  local function luafilename(level)
+		level = level and level + 1 or 2
+		local src
+		while (true) do
+		  src = debug.getinfo(level)
+		  if (src == nil) then return nil,level end
+		  if (string.byte(src.source) == string.byte("@")) then
+			return string.sub(src.source,2),level
+		  end
+		  level = level + 1
+		end
+	  end
+
+	  local function luafilepath(level)
+		local src,level = luafilename(level)
+		if (src == nil) then return src,level end
+		src = string.gsub(src,"[\\/][^\\//]*$","")
+		return src,level
+	  end
+
+	  local function relativeFilename(file)
+		assert(type(file)=='string',"String as filename expected")
+		local name = file
+		local level = 3
+		while (name) do
+		  if (wx.wxFileName(name):FileExists()) then return name end
+		  name,level = luafilepath(level)
+		  if (name == nil) then break end
+		  name = name .. "/" .. file
+		end
+
+		return file
+	  end
+
+	  local function relativeFilepath(file)
+		local name = luafilepath(3)
+		return (file and name) and name.."/"..file or file or name
+	  end
+
+	  local _loadfile = loadfile
+	  local function loadfile(file)
+		assert(type(file)=='string',"String as filename expected")
+		local name = relativeFilename(file)
+
+		return _loadfile(name)
+	  end
+
+	  local function dofile(file, ...)
+		assert(type(file) == 'string',"String as filename expected")
+		local fn,err = loadfile(file)
+		local args = {...}
+		if not fn then
+		  DisplayShellErr(err)
+		else
+		  setfenv(fn,env)
+		  return fn(unpack(args))
+		end
+	  end
+
+	  local os = { exit = function()
+		ide.frame:AddPendingEvent(wx.wxCommandEvent(
+		  wx.wxEVT_COMMAND_MENU_SELECTED, ID_EXIT))
+	  end }
+	  env.os = setmetatable(os, {__index = _G.os})
+	  env.print = DisplayShell
+	  env.dofile = dofile
+	  env.loadfile = loadfile
+	  env.RELFILE = relativeFilename
+	  env.RELPATH = relativeFilepath
+
+	  return env
+	end
+
+	local env = createenv()
+
+	function ShellSetAlias(alias, table)
+	  local value = env[alias]
+	  env[alias] = table
+	  return value
+	end
+
+	local function packResults(status, ...) return status, {...} end
+
+	local function executeShellCode(tx)
+	  if tx == nil or tx == '' then return end
+
+	  local forcelocalprefix = '^!'
+	  local forcelocal = tx:find(forcelocalprefix)
+	  tx = tx:gsub(forcelocalprefix, '')
+
+	  DisplayShellPrompt('')
 		
 		PLUGIN:onLineInput(tx)
 	end
 
+	function ShellSupportRemote(client)
+	  remotesend = client
+
+	  local index = bottomnotebook:GetPageIndex(out)
+	  if index then
+		bottomnotebook:SetPageText(index,
+		  client and TR("Remote console") or TR("Local console"))
+	  end
+	end
+
+	function ShellExecuteFile(wfilename)
+	  if (not wfilename) then return end
+	  local cmd = 'dofile([['..wfilename:GetFullPath()..']])'
+	  ShellExecuteCode(cmd)
+	end
+
+	ShellExecuteInline = executeShellCode
+	function ShellExecuteCode(code)
+	  local index = bottomnotebook:GetPageIndex(bottomnotebook.shellbox)
+	  if ide.config.activateoutput and bottomnotebook:GetSelection() ~= index then
+		bottomnotebook:SetSelection(index)
+	  end
+
+	  DisplayShellDirect(code)
+	  executeShellCode(code)
+	end
+
+	local function displayShellIntro()
+	  DisplayShellMsg(TR("Welcome to the interactive Lua interpreter.").." "
+		..TR("Enter Lua code and press Enter to run it.").."\n"
+		..TR("Use Shift-Enter for multiline code.").."  "
+		..TR("Use 'clear' to clear the shell output and the history.").."\n"
+		..TR("Prepend '=' to show complex values on multiple lines.").." "
+		..TR("Prepend '!' to force local execution."))
+	  DisplayShellPrompt('')
+	end
+
 	out:Connect(wx.wxEVT_KEY_DOWN,
-		function (event)
-			-- this loop is only needed to allow to get to the end of function easily
-			-- "return" aborts the processing and ignores the key
-			-- "break" aborts the processing and processes the key normally
-			while true do
-				local key = event:GetKeyCode()
-				if key == wx.WXK_UP or key == wx.WXK_NUMPAD_UP then
-					-- if we are below the prompt line, then allow to go up
-					-- through multiline entry
-					if out:GetCurrentLine() > getPromptLine() then break end
+	  function (event)
+		-- this loop is only needed to allow to get to the end of function easily
+		-- "return" aborts the processing and ignores the key
+		-- "break" aborts the processing and processes the key normally
+		while true do
+		  local key = event:GetKeyCode()
+		  if key == wx.WXK_UP or key == wx.WXK_NUMPAD_UP then
+			-- if we are below the prompt line, then allow to go up
+			-- through multiline entry
+			if out:GetCurrentLine() > getPromptLine() then break end
 
-					-- if we are not on the caret line, move normally
-					if not caretOnPromptLine() then break end
+			-- if we are not on the caret line, move normally
+			if not caretOnPromptLine() then break end
 
-					local promptText = getPromptText()
-					
-					setPromptText(getNextHistoryLine(false, promptText))
-					return
-				elseif key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_DOWN then
-					-- if we are above the last line, then allow to go down
-					-- through multiline entry
-					local totalLines = out:GetLineCount()-1
-					if out:GetCurrentLine() < totalLines then break end
+			local promptText = getPromptText()
+			setPromptText(getNextHistoryLine(false, promptText))
+			return
+		  elseif key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_DOWN then
+			-- if we are above the last line, then allow to go down
+			-- through multiline entry
+			local totalLines = out:GetLineCount()-1
+			if out:GetCurrentLine() < totalLines then break end
 
-					-- if we are not on the caret line, move normally
-					if not caretOnPromptLine() then break end
+			-- if we are not on the caret line, move normally
+			if not caretOnPromptLine() then break end
 
-					local promptText = getPromptText()
-					setPromptText(getNextHistoryLine(true, promptText))
-					return
-				elseif key == wx.WXK_TAB then
-					-- if we are above the prompt line, then don't move
-					local promptline = getPromptLine()
-					if out:GetCurrentLine() < promptline then return end
+			local promptText = getPromptText()
+			setPromptText(getNextHistoryLine(true, promptText))
+			return
+		  elseif key == wx.WXK_TAB then
+			-- if we are above the prompt line, then don't move
+			local promptline = getPromptLine()
+			if out:GetCurrentLine() < promptline then return end
 
-					local promptText = getPromptText()
-					-- save the position in the prompt text to restore
-					local pos = out:GetCurrentPosition()
-					local text = promptText:sub(1, positionInLine(promptline))
-					if #text == 0 then return end
+			local promptText = getPromptText()
+			-- save the position in the prompt text to restore
+			local pos = out:GetCurrentPos()
+			local text = promptText:sub(1, positionInLine(promptline))
+			if #text == 0 then return end
 
-					-- find the next match and set the prompt text
-					local match = getNextHistoryMatch(text)
-					if match then
-						setPromptText(match)
-						-- restore the position to make it easier to find the next match
-						out:GotoPosition(pos)
-					end
-					return
-				elseif key == wx.WXK_ESCAPE then
-					setPromptText("")
-					return
-				elseif key == wx.WXK_BACK then
-					if not caretOnPromptLine(true) then return end
-				elseif key == wx.WXK_DELETE or key == wx.WXK_NUMPAD_DELETE then
-					if not caretOnPromptLine()
-					or out:LineFromPosition(out:GetSelectionStart()) < getPromptLine() then
-						return
-					end
-				elseif key == wx.WXK_PAGEUP or key == wx.WXK_NUMPAD_PAGEUP
-						or key == wx.WXK_PAGEDOWN or key == wx.WXK_NUMPAD_PAGEDOWN
-						or key == wx.WXK_END or key == wx.WXK_NUMPAD_END
-						or key == wx.WXK_HOME or key == wx.WXK_NUMPAD_HOME
-						or key == wx.WXK_LEFT or key == wx.WXK_NUMPAD_LEFT
-						or key == wx.WXK_RIGHT or key == wx.WXK_NUMPAD_RIGHT
-						or key == wx.WXK_SHIFT or key == wx.WXK_CONTROL
-						or key == wx.WXK_ALT then
-					break
-				elseif key == wx.WXK_RETURN or key == wx.WXK_NUMPAD_ENTER then
-					if not caretOnPromptLine()
-					or out:LineFromPosition(out:GetSelectionStart()) < getPromptLine() then
-						return
-					end
-
-					-- allow multiline entry for shift+enter
-					if caretOnPromptLine(true) and event:ShiftDown() then break end
-
-					local promptText = getPromptText()
-					if #promptText == 0 then return end -- nothing to execute, exit
-					if promptText == 'clear' then
-						out:ClearAll()
-						displayShellIntro()
-					else
-						DisplayShellDirect('\n')
-						executeShellCode(promptText)
-					end
-					currentHistory = getPromptLine() -- reset history
-					return -- don't need to do anything else with return
-				else
-					-- move cursor to end if not already there
-					if not caretOnPromptLine() then
-						out:GotoPosition(out:GetLength())
-					-- check if the selection starts before the prompt line and reset it
-					elseif out:LineFromPosition(out:GetSelectionStart()) < getPromptLine() then
-						out:GotoPosition(out:GetLength())
-						out:SetSelection(out:GetSelectionEnd()+1,out:GetSelectionEnd())
-					end
-				end
-				break
+			-- find the next match and set the prompt text
+			local match = getNextHistoryMatch(text)
+			if match then
+			  setPromptText(match)
+			  -- restore the position to make it easier to find the next match
+			  out:GotoPos(pos)
 			end
-			event:Skip()
-		end)
+			return
+		  elseif key == wx.WXK_ESCAPE then
+			setPromptText("")
+			return
+		  elseif key == wx.WXK_BACK then
+			if not caretOnPromptLine(true) then return end
+		  elseif key == wx.WXK_DELETE or key == wx.WXK_NUMPAD_DELETE then
+			if not caretOnPromptLine()
+			or out:LineFromPosition(out:GetSelectionStart()) < getPromptLine() then
+			  return
+			end
+		  elseif key == wx.WXK_PAGEUP or key == wx.WXK_NUMPAD_PAGEUP
+			  or key == wx.WXK_PAGEDOWN or key == wx.WXK_NUMPAD_PAGEDOWN
+			  or key == wx.WXK_END or key == wx.WXK_NUMPAD_END
+			  or key == wx.WXK_HOME or key == wx.WXK_NUMPAD_HOME
+			  or key == wx.WXK_LEFT or key == wx.WXK_NUMPAD_LEFT
+			  or key == wx.WXK_RIGHT or key == wx.WXK_NUMPAD_RIGHT
+			  or key == wx.WXK_SHIFT or key == wx.WXK_CONTROL
+			  or key == wx.WXK_ALT then
+			break
+		  elseif key == wx.WXK_RETURN or key == wx.WXK_NUMPAD_ENTER then
+			if not caretOnPromptLine()
+			or out:LineFromPosition(out:GetSelectionStart()) < getPromptLine() then
+			  return
+			end
+
+			-- allow multiline entry for shift+enter
+			if caretOnPromptLine(true) and event:ShiftDown() then break end
+
+			local promptText = getPromptText()
+			if #promptText == 0 then return end -- nothing to execute, exit
+			if promptText == 'clear' then
+			  out:ClearAll()
+			  displayShellIntro()
+			else
+			  DisplayShellDirect('\n')
+			  executeShellCode(promptText)
+			end
+			currentHistory = getPromptLine() -- reset history
+			return -- don't need to do anything else with return
+		  else
+			-- move cursor to end if not already there
+			if not caretOnPromptLine() then
+			  out:GotoPos(out:GetLength())
+			-- check if the selection starts before the prompt line and reset it
+			elseif out:LineFromPosition(out:GetSelectionStart()) < getPromptLine() then
+			  out:GotoPos(out:GetLength())
+			  out:SetSelection(out:GetSelectionEnd()+1,out:GetSelectionEnd())
+			end
+		  end
+		  break
+		end
+		event:Skip()
+	  end)
 
 	local function inputEditable(line)
-		return caretOnPromptLine(false, line) and
-			not (out:LineFromPosition(out:GetSelectionStart()) < getPromptLine())
+	  return caretOnPromptLine(false, line) and
+		not (out:LineFromPosition(out:GetSelectionStart()) < getPromptLine())
 	end
 
 	-- new Scintilla (3.2.1) changed the way markers move when the text is updated
 	-- ticket: http://sourceforge.net/p/scintilla/bugs/939/
 	-- discussion: https://groups.google.com/forum/?hl=en&fromgroups#!topic/scintilla-interest/4giFiKG4VXo
 	if ide.wxver >= "2.9.5" then
-		-- this is a workaround that stores a position of the last prompt marker
-		-- before insert and restores the same position after (as the marker)
-		-- could have moved if the text is added at the beginning of the line.
-		local promptAt
-		out:Connect(wxstc.wxEVT_STC_MODIFIED,
-			function (event)
-				local evtype = event:GetModificationType()
-				if bit.band(evtype, wxstc.wxSTC_MOD_BEFOREINSERT) ~= 0 then
-					local promptLine = getPromptLine()
-					if promptLine and event:GetPosition() == out:PositionFromLine(promptLine)
-					then promptAt = promptLine end
-				end
-				if bit.band(evtype, wxstc.wxSTC_MOD_INSERTTEXT) ~= 0 then
-					local promptLine = getPromptLine()
-					if promptLine and promptAt then
-						out:MarkerDelete(promptLine, PROMPT_MARKER)
-						out:MarkerAdd(promptAt, PROMPT_MARKER)
-						promptAt = nil
-					end
-				end
-			end)
+	  -- this is a workaround that stores a position of the last prompt marker
+	  -- before insert and restores the same position after (as the marker)
+	  -- could have moved if the text is added at the beginning of the line.
+	  local promptAt
+	  out:Connect(wxstc.wxEVT_STC_MODIFIED,
+		function (event)
+		  local evtype = event:GetModificationType()
+		  if bit.band(evtype, wxstc.wxSTC_MOD_BEFOREINSERT) ~= 0 then
+			local promptLine = getPromptLine()
+			if promptLine and event:GetPosition() == out:PositionFromLine(promptLine)
+			then promptAt = promptLine end
+		  end
+		  if bit.band(evtype, wxstc.wxSTC_MOD_INSERTTEXT) ~= 0 then
+			local promptLine = getPromptLine()
+			if promptLine and promptAt then
+			  out:MarkerDelete(promptLine, PROMPT_MARKER)
+			  out:MarkerAdd(promptAt, PROMPT_MARKER)
+			  promptAt = nil
+			end
+		  end
+		end)
 	end
 
 	out:Connect(wxstc.wxEVT_STC_UPDATEUI,
-		function (event) out:SetReadOnly(not inputEditable()) end)
+	  function (event) out:SetReadOnly(not inputEditable()) end)
 
 	-- only allow copy/move text by dropping to the input line
 	out:Connect(wxstc.wxEVT_STC_DO_DROP,
-		function (event)
-			if not inputEditable(out:LineFromPosition(event:GetPosition())) then
-				event:SetDragResult(wx.wxDragNone)
-			end
-		end)
+	  function (event)
+		if not inputEditable(out:LineFromPosition(event:GetPosition())) then
+		  event:SetDragResult(wx.wxDragNone)
+		end
+	  end)
 
 	if ide.config.outputshell.nomousezoom then
-		-- disable zoom using mouse wheel as it triggers zooming when scrolling
-		-- on OSX with kinetic scroll and then pressing CMD.
-		out:Connect(wx.wxEVT_MOUSEWHEEL,
-			function (event)
-				if wx.wxGetKeyState(wx.WXK_CONTROL) then return end
-				event:Skip()
-			end)
+	  -- disable zoom using mouse wheel as it triggers zooming when scrolling
+	  -- on OSX with kinetic scroll and then pressing CMD.
+	  out:Connect(wx.wxEVT_MOUSEWHEEL,
+		function (event)
+		  if wx.wxGetKeyState(wx.WXK_CONTROL) then return end
+		  event:Skip()
+		end)
 	end
-
 end

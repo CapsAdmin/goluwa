@@ -1,5 +1,3 @@
-This requires the project setting plugin
+This requires the project_setting.lua package which should be placed in zerobrane/packages
 
-https://github.com/pkulchenko/ZeroBranePackage/blob/master/projectsettings.lua
-
-put it in ZeroBrane/packages/projectsettings.lua
+source: https://github.com/pkulchenko/ZeroBranePackage/blob/master/projectsettings.lua

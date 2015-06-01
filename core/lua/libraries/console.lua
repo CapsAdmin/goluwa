@@ -478,6 +478,7 @@ end
 do -- title
 	if not console.SetTitleRaw then
 		local set_title
+		
 		if WINDOWS then
 			ffi.cdef("int SetConsoleTitleA(const char* blah);")
 
@@ -486,7 +487,11 @@ do -- title
 			end
 		end
 
-		if LINUX then
+		if ZEROBRANE then
+			set_title = function()
+				-- hmmm
+			end
+		elseif LINUX then
 			local iowrite = _OLD_G.io.write
 			set_title = function(str)
 				return iowrite and iowrite('\27]0;', str, '\7') or nil
