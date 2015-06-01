@@ -673,21 +673,12 @@ do -- cached rendering
 				self.Size.w ~= 0 and self.Size.h ~= 0 and
 				self.Size.w ~= math.huge and self.Size.h ~= math.huge
 			then
-				self.cache_fb = render.CreateFrameBuffer(self.Size.w, self.Size.h, {
-					{
-						name = "color",
-						attach = "color1",
-
-						texture_format = {
-							internal_format = "RGBA8",
-						},
-					},
-					{
-						name = "stencil",
-						attach = "stencil",
-					}
-				})
-				self.cache_texture = self.cache_fb:GetTexture("color")
+				local fb = render.CreateFramebuffer2()
+				fb:SetTexture(1, render.CreateTexture2():Upload({internal_format = "RGBA8", size = self.Size}))
+				fb:SetTexture("stencil", {internal_format = "DEPTH_STENCIL", size = self.Size})
+				
+				self.cache_fb = fb
+				self.cache_texture = fb:GetTexture(1)
 			end
 		else
 			for k,v in ipairs(self:GetParentList()) do
