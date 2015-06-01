@@ -95,6 +95,9 @@ local function add(meta, name, default, extra_info, get)
 	}
 	
 	if extra_info then
+		if table.isarray(extra_info) and #extra_info > 1 then
+			extra_info = {enums = extra_info}
+		end
 		table.merge(info, extra_info)
 	end
 	
