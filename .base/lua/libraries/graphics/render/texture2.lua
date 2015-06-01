@@ -196,6 +196,13 @@ function META:Upload(data)
 	data.type = data.type or "unsigned_byte"
 	data.internal_format = data.internal_format or "rgba8"
 	
+	-- ASDF
+	if data.size then
+		data.width = data.size.w
+		data.height = data.size.h
+		data.size = nil
+	end
+		
 	--TODO
 	if data.GRR and self.last_storage_setup then 
 		self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper()) 

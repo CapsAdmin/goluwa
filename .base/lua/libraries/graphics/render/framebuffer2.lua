@@ -30,6 +30,7 @@ function render.CreateFramebuffer2(...)
 	local self = prototype.CreateObject(META)
 	self.fb = gl.CreateFramebuffer()
 	self.textures = {}
+	self.render_buffers = {}
 	
 	self:SetBindMode("read_write")
 	
@@ -101,23 +102,52 @@ function META:SetTexture(pos, tex, mode)
 	local pos_enum = attachment_to_enum(pos)
 	local mode_enum = bind_mode_to_enum(mode or "read_write")
 	
-	local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
+	if typex(tex) == "texture2" then
+		local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
 	
-	if tex.StorageType == "1d" then
-		self.fb:Texture1D("GL_FRAMEBUFFER", pos_enum, tex.gl_tex.target, id, 0)
-	elseif tex.StorageType == "2d" then
-		self.fb:Texture2D("GL_FRAMEBUFFER", pos_enum, tex.gl_tex.target, id, 0)
-	elseif tex.StorageType == "3d" then
-		self.fb:Texture3D("GL_FRAMEBUFFER", pos_enum, tex.gl_tex.target, id, 0, 0) -- TODO
-	elseif tex.StorageType == "render_buffer" then
-		self.fb:Renderbuffer("GL_FRAMEBUFFER", pos_enum, "GL_RENDERBUFFER", id)
-	end
+		if tex.StorageType == "1d" then
+			self.fb:Texture1D("GL_FRAMEBUFFER", pos_enum, tex.gl_tex.target, id, 0)
+		elseif tex.StorageType == "2d" then
+			self.fb:Texture2D("GL_FRAMEBUFFER", pos_enum, tex.gl_tex.target, id, 0)
+		elseif tex.StorageType == "3d" then
+			self.fb:Texture3D("GL_FRAMEBUFFER", pos_enum, tex.gl_tex.target, id, 0, 0) -- TODO
+		end
 	
-	if id ~= 0 then
-		self.textures[pos_enum] = {tex = tex, mode = mode_enum, pos = pos_enum}
-		self:SetSize(tex:GetSize():Copy())
+		if id ~= 0 then
+			self.textures[pos_enum] = {tex = tex, mode = mode_enum, pos = pos_enum}
+			self:SetSize(tex:GetSize():Copy())
+		else
+			self.textures[pos_enum] = nil
+		end
 	else
-		self.textures[pos_enum] = nil
+		if tex then
+			local rb = self.render_buffers[pos_enum] or gl.CreateRenderbuffer()
+		
+			-- ASDF
+			if tex.size then
+				tex.width = tex.size.w
+				tex.height = tex.size.h
+				tex.size = nil
+			end
+		
+			rb:StorageMultisample(
+				"GL_RENDERBUFFER",
+				0,				
+				"GL_" .. tex.internal_format:upper(),
+				tex.width, 
+				tex.height
+			)
+
+			self.fb:Renderbuffer("GL_FRAMEBUFFER", pos_enum, "GL_RENDERBUFFER", rb.id)
+		
+			self.render_buffers[pos_enum] = rb
+		else
+			if self.render_buffers[pos_enum] then
+				self.render_buffers[pos_enum]:Delete()
+			end
+			
+			self.render_buffers[pos_enum] = nil
+		end
 	end
 	
 	do
@@ -131,7 +161,18 @@ function META:SetTexture(pos, tex, mode)
 				--if self.read_buffer then
 				--	warning("more than one read buffer attached", 2)
 				--end
-				self.read_buffer = v.mode
+				--self.read_buffer = v.mode
+			end
+		end
+		
+		for k,v in pairs(self.render_buffers) do
+			if v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER" then
+				table.insert(draw_buffers, v.pos)
+			else
+				--if self.read_buffer then
+				--	warning("more than one read buffer attached", 2)
+				--end
+				--self.read_buffer = v.mode
 			end
 		end
 			
@@ -150,6 +191,45 @@ function META:SetWrite(pos, b)
 	if old ~= render.GetErrorTexture() then
 		self:SetTexture(pos, self:GetTexture(pos), b and "all" or "read")
 	end
+end
+
+function META:WriteOnly(pos)
+	local pos = attachment_to_enum(pos)
+	
+	for k,v in pairs(self.textures) do
+		v.old_mode = v.mode
+		
+		if v.pos == pos then
+			self:SetTexture(v.pos, v.tex, "write")	
+		else
+			self:SetTexture(v.pos, v.tex, "read")
+		end
+	end
+end
+
+function META:Clear(i, r,g,b,a)
+	i = i or 0
+		
+	self:Begin()
+		if type(i) == "number" then
+			if g and b then
+				r = Color(r, g, b, a or 0)
+			end
+		
+			if i == 0 then
+				r = r or Color()
+				gl.ClearColor(r.r, r.g, r.b, r.a)
+				gl.Clear(gl.e.GL_COLOR_BUFFER_BIT)
+				render.SetClearColor(render.GetClearColor())
+			else	
+				gl.ClearBufferfv("GL_COLOR", i - 1, r.ptr)
+			end
+		elseif i == "depth" then
+			gl.ClearDepth(r)
+		elseif i == "stencil" then
+			gl.ClearStencil(r)
+		end
+	self:End()
 end
 	
 prototype.Register(META)
@@ -180,6 +260,12 @@ tex:Upload({
 
 fb:SetTexture(2, tex, "read_write")
 
+fb:SetTexture("stencil", {
+	internal_format = "depth32f_stencil8",
+	width = 1024,
+	height = 1024,
+})
+
 fb:SetWrite(1, false)
 
 fb:Begin()
@@ -199,6 +285,8 @@ fb:Begin()
 fb:End()
 
 fb:SetWrite(2, true)
+
+fb:Clear(1, 1,0,0,0.5)
 
 event.AddListener("PostDrawMenu", "lol", function()
 	surface.SetTexture(fb:GetTexture(1))

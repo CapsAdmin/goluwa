@@ -33799,7 +33799,7 @@ function gl.Initialize(get_proc_address)
 				local last
 				function bind(self)
 					if self ~= last then
-						gl.BindRenderbuffer(self.id)
+						gl.BindRenderbuffer("GL_RENDERBUFFER", self.id)
 					end
 					last = self
 				end

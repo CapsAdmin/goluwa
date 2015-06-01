@@ -332,6 +332,8 @@ for name, object_functions in pairs(objects) do
 			insert"\t\t\t\t\tif self ~= last then"
 			if name == "Texture" then
 				insert"\t\t\t\t\t\tgl.BindTexture(self.target, self.id)"
+			elseif name == "Renderbuffer" then
+				insert("\t\t\t\t\t\tgl.Bind"..name.."(\"GL_RENDERBUFFER\", self.id)")
 			elseif name == "Framebuffer" then
 				insert("\t\t\t\t\t\tgl.Bind"..name.."(target, self.id)")
 			else
