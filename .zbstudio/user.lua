@@ -74,13 +74,8 @@ function PLUGIN:onLineInput(str)
 	end
 end
 
-function PLUGIN:onEditorCharAdded(editor, event)
-	local char = string.char(event:GetKey())
-	
-end
-
 function PLUGIN:onIdle()
-	if ready then 	
+	if ready then
 		if not connected and socket:connect("localhost", port) then
 			connected = true
 		end
@@ -103,21 +98,8 @@ local INTERPRETER = {
 }
 
 function INTERPRETER:frun(wfile, run_debug)
-
-	local file_path = wfile:GetFullPath()
 	local temp_file 
-	
-	-- if running on Windows and can't open the file, this may mean that
-	-- the file path includes unicode characters that need special handling
-	local fh = io.open(file_path, "r")
-	if fh then fh:close() end
-	if ide.osname == 'Windows' and pcall(require, "winapi") and wfile:FileExists() and not fh then
-		winapi.set_encoding(winapi.CP_UTF8)
-		file_path = winapi.short_path(file_path)
-	end
 
-	file_path = file_path:gsub("\\", "/")
-		
 	if run_debug then
 		DebuggerAttachDefault({startwith = file_path, allowediting = true})
 
@@ -150,19 +132,21 @@ function INTERPRETER:frun(wfile, run_debug)
 	local file_path = ide:GetDocument(ide:GetEditor()):GetFilePath()
 	
 	local pid = CommandLineRun(
-			fmt:format(root .. bin .. "luajit", file_path, lua, root .. "core/lua/init.lua"),
-			root .. bin,
-			true,--tooutput,
-			true,--nohide,
-			function(s) CONSOLE_OUT(s) end,
-			nil,--uid,
-			function()
-				if run_debug then 
-					wx.wxRemoveFile(temp_file) 
-				end 
-				connected = false 
-				ready = false 
-			end
+		fmt:format(root .. bin .. "luajit", file_path, lua, root .. "core/lua/init.lua"),
+		root .. bin,
+		true,--tooutput,
+		true,--nohide,
+		function(s) CONSOLE_OUT(s) end,
+		nil,--uid,
+		function()
+			if run_debug then 
+				wx.wxRemoveFile(temp_file) 
+			end 
+			connected = false 
+			ready = false 
+			socket = sockets.tcp()
+			socket:settimeout(0)
+		end
 	)
 	
 	if cpath then
