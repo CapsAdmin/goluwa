@@ -551,6 +551,7 @@ do
 		return current
 	end
 	
+	local sshh
 	local last = {}
 
 	function system.SetJITOption(option, num)
@@ -561,7 +562,9 @@ do
 		if last[option] ~= num then
 			local options = {}
 			
-			logn("jit option ", option, " = ", num)
+			if not sshh then
+				logn("jit option ", option, " = ", num)
+			end
 			
 			for k, v in pairs(current) do
 				table.insert(options, k .. "=" .. v)
@@ -573,10 +576,11 @@ do
 			last[option] = num
 		end
 	end
-
+	sshh = true
 	for k,v in pairs(current) do
 		system.SetJITOption(k, v)
 	end
+	sshh = nil
 end
 
 function system.Restart(run_on_launch)
