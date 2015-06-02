@@ -384,10 +384,12 @@ function chat.GetPanel()
 		end
 	end
 	
-	for i, v in pairs(console.history) do
-		text:OnConsolePrint(v)
+	if console.history then
+		for i, v in pairs(console.history) do
+			text:OnConsolePrint(v)
+		end
 	end
-	
+		
 	function text:OnLayout()
 	--	self.markup:SetMaxWidth(self.Parent:GetWidth())
 	end
