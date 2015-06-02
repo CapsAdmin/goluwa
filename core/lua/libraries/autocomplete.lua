@@ -5,9 +5,9 @@ local env = {}
 do -- lists
 	autocomplete.lists = autocomplete.lists or {}
 
-	function autocomplete.RemoveList(id, list)
+	function autocomplete.RemoveList(id)
 		env[id] = nil
-		for i, v in ipairs(autocomplete.lists) do
+		for _, v in ipairs(autocomplete.lists) do
 			if v.id == id then
 				table.remove(autocomplete.lists, 1)
 				return true
@@ -21,7 +21,7 @@ do -- lists
 	end
 	
 	function autocomplete.GetList(id)
-		for i, v in ipairs(autocomplete.lists) do
+		for _, v in ipairs(autocomplete.lists) do
 			if v.id == id then
 				local list = v.list
 				if type(list) == "function" then list = list() end
@@ -42,7 +42,7 @@ local function search(list, str, found, found_list)
 
 	if type(list) == "table" then
 		if str == "" then
-			for i = 1, 100 do
+			for _ = 1, 100 do
 				found[#found + 1] = list[math.random(#list)]
 			end			
 		else
@@ -73,7 +73,7 @@ function autocomplete.Search(str, id)
 	elseif type(id) == "table" then
 		search(id, str, found, true)
 	else
-		for i, data in ipairs(autocomplete.lists) do
+		for _, data in ipairs(autocomplete.lists) do
 			search(data.list, str, found)
 		end
 	end
@@ -94,7 +94,7 @@ function autocomplete.DrawFound(x, y, found, max, offset)
 			
 			if not v then break end
 			
-			local w, h = surface.GetTextSize(v)
+			local _, h = surface.GetTextSize(v)
 			local alpha = (-(i / max) + 1) ^ 15
 			
 			surface.SetAlphaMultiplier(alpha)
