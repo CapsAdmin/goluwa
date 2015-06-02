@@ -80,7 +80,6 @@ function render.CreateFrameBuffer(width, height, format)
 						
 			tex = render.CreateTexture(width, height, nil, tex_info)
 			id = tex.id
-			print(info.name, width, height)
 			tex.framebuffer_name = info.name
 		else
 			id = gl.GenRenderbuffer()
