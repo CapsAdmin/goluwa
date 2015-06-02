@@ -14,7 +14,7 @@ function PASS:Draw3D()
 	render.SetCullMode("front")
 	
 	render.gbuffer:Begin("light")
-		render.gbuffer:Clear(0,0,0,0, "light")
+		render.gbuffer:Clear("light", 0,0,0,0)
 		event.Call("Draw3DLights")
 	render.gbuffer:End() 	
 end

@@ -386,11 +386,14 @@ for name, object_functions in pairs(objects) do
 									tbl[i] = serializer.GetLibrary("luadata").ToString(v)
 								end
 								arg_line2 = table.concat(tbl, ", "):sub(0,-3)
-								print(arg_line2)
 							end
 							arg_line1 = info.arg_line1 or arg_line1
 							arg_line2 = info.arg_line2 or arg_line2
 						end
+					end
+					
+					if friendly == "Image2D" then 
+						print(func_name, arg_line2)
 					end
 					
 					insert("\t\t\tfunction META:" .. friendly .. "(" .. arg_line1 .. ")")

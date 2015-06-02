@@ -673,8 +673,8 @@ do -- cached rendering
 				self.Size.w ~= 0 and self.Size.h ~= 0 and
 				self.Size.w ~= math.huge and self.Size.h ~= math.huge
 			then
-				local fb = render.CreateFramebuffer2()
-				fb:SetTexture(1, render.CreateTexture2():Upload({internal_format = "RGBA8", size = self.Size}))
+				local fb = render.CreateFrameBuffer()
+				fb:SetTexture(1, Texture(self.Size))
 				fb:SetTexture("stencil", {internal_format = "DEPTH_STENCIL", size = self.Size})
 				
 				self.cache_fb = fb
@@ -1394,12 +1394,12 @@ do -- mouse
 			-- WHYYYYYYY
 			-- WHYYYYYYY
 			if not self.Texture.buffer_cache then
-				local buffer, length = self.Texture:Download()
+				local data = self.Texture:Download()
 
 				local tbl = {}
 
-				for i = 0, length - 1 do
-					tbl[i] = buffer[i]
+				for i = 0, data.length do
+					tbl[i] = data.buffer[i].a
 				end
 				self.Texture.buffer_cache = tbl
 			end
@@ -1416,9 +1416,9 @@ do -- mouse
 			x = math.clamp(math.floor(x), 1, self.Texture.w-1)		
 			y = math.clamp(math.floor(y), 1, self.Texture.h-1)		
 			
-			local i = (y * self.Texture.w + x) * self.Texture.format.stride
+			local i = (y * self.Texture.w + x)
 			
-			alpha = self.Texture.buffer_cache[i + 3] / 255
+			alpha = self.Texture.buffer_cache[i] / 255
 
 			--alpha = self.Texture:GetPixelColor(, self.Texture.buffer_cache).a
 		end

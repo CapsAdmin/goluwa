@@ -523,26 +523,24 @@ do -- image
 		else
 			local self = lovemu.CreateObject(Image)
 			
-			lovemu.textures[self] = Texture(path, {
-				mag_filter = FILTER_MAG,
-				min_filter = FILTER_MIN,
-				read_speed = math.huge,
-			}) 
+			local tex = Texture(path)
+			tex:SetMinFilter(FILTER_MIN)
+			tex:SetMagFilter(FILTER_MAG)
+			lovemu.textures[self] = tex
 			
 			return self
 		end
 	end
 	
 	function love.graphics.newImageData(path) -- partial
-		local obj = lovemu.CreateObject(Image)
+		local self = lovemu.CreateObject(Image)
 		
-		lovemu.textures[obj] = Texture(path, {
-			mag_filter = FILTER_MAG,
-			min_filter = FILTER_MIN,
-			read_speed = math.huge,
-		}) 
+		local tex = Texture(path)
+		tex:SetMinFilter(FILTER_MIN)
+		tex:SetMagFilter(FILTER_MAG)
+		lovemu.textures[self] = tex
 		
-		return obj
+		return self
 	end
 end
 

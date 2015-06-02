@@ -104,10 +104,10 @@ do -- image data
 
 		local self = lovemu.CreateObject(ImageData)
 		
-		local tex = Texture(w, h, buffer, {
-			mag_filter = FILTER,
-			min_filter = FILTER,
-		}) 
+		local tex = render.CreateTexture("2d")
+		tex:SetSize(Vec2(w, h))
+		tex:SetMinFilter(FILTER)
+		tex:SetMagFilter(FILTER)
 		
 		lovemu.textures[self] = tex
 		

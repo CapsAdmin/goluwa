@@ -135,7 +135,7 @@ function render.LoadModel(path, callback, callback2, on_fail)
 							
 							for _, path in ipairs(paths) do
 								if vfs.Exists(path) then
-									material:SetDiffuseTexture(render.CreateTexture(path))
+									material:SetDiffuseTexture(Texture(path))
 
 									do -- try to find normal map
 										local path = utility.FindTextureFromSuffix(path, "_n", "_ddn", "_nrm")

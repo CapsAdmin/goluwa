@@ -62,7 +62,7 @@ for i, sub_skin in ipairs(skins) do
 		end
 
 		-- FIX ME
-		if not texture.loading then
+		if not texture:IsLoading() then
 			texture:OnLoad()
 		end
 

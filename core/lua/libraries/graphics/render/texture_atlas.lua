@@ -45,7 +45,7 @@ local META = prototype.CreateTemplate("texture_atlas")
 
 prototype.GetSet(META, "Padding", 1)
 
-function render.CreateTextureAtlas(page_width, page_height, format)
+function render.CreateTextureAtlas(page_width, page_height, filtering)
 	page_height = page_height or page_width
 	return prototype.CreateObject(META, {
 		dirty_textures = {}, 
@@ -53,7 +53,7 @@ function render.CreateTextureAtlas(page_width, page_height, format)
 		textures = {}, 
 		width = page_width, 
 		height = page_height,
-		format = format,
+		filtering = filtering,
 	})
 end
 
@@ -73,10 +73,13 @@ function META:FindFreePage(w, h)
 	
 	if node then
 		local page = { 
-			texture = render.CreateTexture(self.width + self.Padding, self.height + self.Padding, nil, self.format), 
+			texture = Texture(self.width + self.Padding, self.height + self.Padding), 
 			textures = {}, 
 			tree = tree,
 		}
+		
+		page.texture:SetMinFilter(self.filtering)
+		page.texture:SetMagFilter(self.filtering)
 
 		table.insert(self.pages, page)
 		
@@ -118,15 +121,18 @@ function META:Build()
 			
 			for _, data in pairs(page.textures) do
 				if data.buffer then
-					data.format = data.format or {}
-					data.format.x = data.page_x
-					data.format.y = data.page_y
-					data.format.w = data.w
-					data.format.h = data.h
-
-					page.texture:Upload(data.buffer, data.format)
+					page.texture:Upload({
+						buffer = data.buffer,
+						x = data.page_x,
+						y = data.page_y,
+						width = data.w,
+						height = data.h,
+					})
 				else
-					page.texture:Upload(data, {x = data.page_x, y = data.page_y})
+					local data = data:Download()
+					data.x = data.page_x
+					data.y = data.page_y
+					page.texture:Upload(data)
 				end
 			end
 			

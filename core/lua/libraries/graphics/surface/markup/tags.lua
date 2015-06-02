@@ -283,11 +283,11 @@ META.tags.texture =
 	arguments = {"error", {default = 16, min = 4, max = 128}},
 
 	init = function(markup, self, path)
-		self.mat = render.CreateTexture(path)
+		self.mat = Texture(path)
 	end,
 
 	get_size = function(markup, self, path, size)
-		if not self.mat or not self.mat:IsValid() then self.mat = render.CreateTexture(path) end 
+		if not self.mat or not self.mat:IsValid() then self.mat = Texture(path) end 
 		if self.mat:IsLoading() then return 16, 16 end
 		return self.mat.w or size, self.mat.h or size
 	end,
@@ -304,7 +304,7 @@ META.tags.silkicon =
 	arguments = {"world", {default = 1}},
 
 	init = function(markup, self, path)
-		self.mat = render.CreateTexture("textures/silkicons/" .. path .. ".png")
+		self.mat = Texture("textures/silkicons/" .. path .. ".png")
 	end,
 
 	get_size = function(markup, self, path, size_mult)

@@ -94,28 +94,34 @@ function render.StartDebug()
 	gl.Enable("GL_DEBUG_OUTPUT")
 	gl.DebugMessageControl("GL_DONT_CARE", "GL_DONT_CARE", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
 	gl.Enable("GL_DEBUG_OUTPUT_SYNCHRONOUS")
-	
-	local int = ffi.new("int[1]")
-	gl.GetIntegerv("GL_DEBUG_LOGGED_MESSAGES", int)
-	print("asdasdASD:", int[0])
 end
 
 function render.StopDebug()
+	level = level or 0
+	
 	local buffer = ffi.new("char[1024]")
 	local length = ffi.sizeof(buffer)
 	
 	local int = ffi.new("int[1]")
 	gl.GetIntegerv("GL_DEBUG_LOGGED_MESSAGES", int)
-	print("asdasdASD:", int[0])
+		
+	local message
 	
-	gl.GetDebugMessageLog(1, length, nil, nil, nil, nil, nil, buffer)
-	
-	local str = ffi.string(buffer)
-	if str ~= "" then
-		warning(str, 2)
+	if int[0] ~= 0 then
+		message = {}
+		
+		for i = 0, int[0] do
+			if gl.GetDebugMessageLog(1, length, nil, nil, nil, nil, nil, buffer) ~= 0 then
+				table.insert(message, ffi.string(buffer))
+			end
+		end
+		
+		message = table.concat(message, "\n")
 	end
 	
 	gl.Disable("GL_DEBUG_OUTPUT")
+	
+	return message
 end
 
 function render.EnableDebug(b)

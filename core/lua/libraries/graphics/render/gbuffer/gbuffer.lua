@@ -248,7 +248,7 @@ function render.InitializeGBuffer(width, height)
 				draw_manual = true,
 				texture_format = {
 					internal_format = "DEPTH_COMPONENT32F",	 
-					depth_texture_mode = gl.e.GL_RED,
+					depth_texture_mode = "RED",
 				} 
 			},
 		}
@@ -479,7 +479,7 @@ event.AddListener("RenderContextInitialized", nil, function()
 		if not console.GetVariable("render_deferred") then return end
 		if table.count(entities.GetAll()) ~= 0 then return end
 	
-		local ok, err = pcall(render.InitializeGBuffer)
+		local ok, err = system.pcall(render.InitializeGBuffer)
 		
 		if not ok then
 			warning("failed to initialize gbuffer: ", err)

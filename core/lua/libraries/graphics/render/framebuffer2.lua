@@ -26,13 +26,42 @@ local META = prototype.CreateTemplate("framebuffer2")
 META:GetSet("BindMode", "all", {"all", "read", "write"})
 META:GetSet("Size", Vec2(128,128))
 
-function render.CreateFramebuffer2(...)
+function render.CreateFrameBuffer(width, height, textures)
 	local self = prototype.CreateObject(META)
 	self.fb = gl.CreateFramebuffer()
 	self.textures = {}
 	self.render_buffers = {}
 	
 	self:SetBindMode("read_write")
+	
+	if width and height then
+		self:SetSize(Vec2(width, height))
+	end
+	
+	if textures then
+		if not textures[1] then textures = {textures} end
+		for i, v in ipairs(textures) do
+			local attach = v.attach or "color"
+			if attach == "color" then
+				attach = i
+			end
+			
+			local tex = render.CreateTexture()
+			tex:SetSize(self:GetSize():Copy())
+			if v.internal_format then 
+				tex:SetInternalFormat(v.internal_format)
+			end
+			
+			if v.depth_texture_mode then
+				tex:SetDepthTextureMode(v.depth_texture_mode)
+			end
+			
+			self:SetTexture(attach, tex)
+			self.legacy_lookup = self.legacy_lookup or {}
+			self.legacy_lookup[v.name or "default"] = tex
+			tex.fb_lgc_atch = attach
+		end
+	end
 	
 	return self
 end
@@ -182,6 +211,18 @@ function META:SetTexture(pos, tex, mode)
 end
 
 function META:GetTexture(pos)
+	
+	if self.legacy_lookup then
+		if not pos and self.legacy_lookup.default then
+			return self.legacy_lookup.default
+		end
+		
+		if self.legacy_lookup[pos] then
+			return self.legacy_lookup[pos]
+		end
+	end
+	
+	pos = pos or 1
 	local pos = attachment_to_enum(pos)
 	return self.textures[pos] and self.textures[pos].tex or render.GetErrorTexture()
 end
@@ -209,7 +250,11 @@ end
 
 function META:Clear(i, r,g,b,a)
 	i = i or 0
-		
+	
+	if self.legacy_lookup and self.legacy_lookup[i] then
+		i = self.legacy_lookup[i].fb_lgc_atch
+	end
+			
 	self:Begin()
 		if type(i) == "number" then
 			if g and b then
@@ -234,11 +279,12 @@ end
 	
 prototype.Register(META)
 
+
 if not RELOAD then return end
 
-local fb = render.CreateFramebuffer2()
+local fb = render.CreateFrameBuffer()
 
-local tex = render.CreateTexture2("2d")
+local tex = render.CreateTexture("2d")
 
 tex:Upload({ 
 	width = 1024,
@@ -249,7 +295,7 @@ tex:Upload({
 
 fb:SetTexture(1, tex, "read_write")
 
-local tex = render.CreateTexture2("2d")
+local tex = render.CreateTexture("2d")
 
 tex:Upload({ 
 	width = 1024,

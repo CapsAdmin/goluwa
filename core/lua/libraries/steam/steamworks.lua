@@ -22,7 +22,7 @@ do
 	end
 	
 	function META:GetAvatarTexture()
-		self.avatar_texture = self.avatar_texture or render.CreateTexture2()
+		self.avatar_texture = self.avatar_texture or render.CreateTexture()
 		
 		if not self.requesting_avatar then
 			event.CreateThinker(function()
@@ -42,8 +42,7 @@ do
 
 					self.avatar_texture:Upload({
 						buffer = buffer,
-						width = w[0],
-						height = h[0],
+						size = Vec2(w[0], h[0])
 					})
 					return true
 				end

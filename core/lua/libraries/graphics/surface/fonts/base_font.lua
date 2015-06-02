@@ -22,11 +22,7 @@ function META:GetGlyphData(code)
 end
 
 function META:CreateTextureAtlas()
-	self.texture_atlas = render.CreateTextureAtlas(512, 512, {
-		min_filter = self.Filtering,
-		mag_filter = self.Filtering,
-	})
-	
+	self.texture_atlas = render.CreateTextureAtlas(512, 512, self.Filtering)
 	self.texture_atlas:SetPadding(self.Padding)
 
 	for code in pairs(self.chars) do

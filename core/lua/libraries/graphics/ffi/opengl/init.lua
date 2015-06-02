@@ -34120,8 +34120,8 @@ function gl.Initialize(get_proc_address)
 			function META:BufferRangeEXT(internalformat, buffer, offset, size)
 				bind(self) return gl.TexBufferRangeEXT("GL_TEXTURE_BUFFER",  internalformat,  buffer,  offset,  size)
 			end
-			function META:Image2D(texture, level, internalformat, width, height, border, format, type, pixels)
-				bind(self) return gl.TextureImage2DEXT(texture, self.target, level, internalformat, width, height, border, format, type, pixels)
+			function META:Image2D(target, level, internalformat, width, height, border, format, type, pixels)
+				bind(self) return gl.TexImage2D(target, level, internalformat, width, height, border, format, type, pixels)
 			end
 			function META:CopySubImage3DEXT(level, xoffset, yoffset, zoffset, x, y, width, height)
 				bind(self) return gl.CopyTexSubImage3DEXT(self.target, level, xoffset, yoffset, zoffset, x, y, width, height)
@@ -34132,8 +34132,8 @@ function gl.Initialize(get_proc_address)
 			function META:GetParameterIuiv(pname, params)
 				bind(self) return gl.GetTexParameterIuiv(self.target, pname, params)
 			end
-			function META:Image3D(level, internalformat, width, height, depth, border, format, type, pixels)
-				bind(self) return gl.TexImage3DEXT(self.target, level, internalformat, width, height, depth, border, format, type, pixels)
+			function META:Image3D(target, level, internalformat, width, height, depth, border, format, type, pixels)
+				bind(self) return gl.TexImage3D(target, level, internalformat, width, height, depth, border, format, type, pixels)
 			end
 			function META:CompressedImage2D(texture, level, internalformat, width, height, border, imageSize, bits)
 				bind(self) return gl.CompressedTextureImage2DEXT(texture, self.target, level, internalformat, width, height, border, imageSize, bits)

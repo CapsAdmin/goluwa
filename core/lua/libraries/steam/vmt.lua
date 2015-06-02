@@ -67,7 +67,7 @@ function steam.LoadMaterial(path, material)
 						new_path,
 						function(path)
 							vmt[field] = path
-							material["Set" .. key](material, render.CreateTexture(path, {mip_map_levels = 8, read_speed = math.huge}))
+							material["Set" .. key](material, Texture(path))
 						end
 					)
 				end

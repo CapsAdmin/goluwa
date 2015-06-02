@@ -138,22 +138,31 @@ if GRAPHICS then
 					mip_map_levels = 0,
 				}
 			}
+						
+			local shadow_map = render.CreateFrameBuffer()
+			shadow_map:SetSize(Vec2() + self.ShadowSize)
 			
-			local texture_2d = {
-				name = "depth",
-				attach = "depth",
-				draw_manual = true,
-				texture_format = {
-					internal_format = "DEPTH_COMPONENT32",	 
-					depth_texture_mode = gl.e.GL_RED,
-				} 
-			}
+			local tex = render.CreateTexture("2d")
+			tex:SetSize(Vec2() + self.ShadowSize)
+			tex:SetInternalFormat("depth_component32f")
+			tex:SetDepthTextureMode("red")
+			tex:SetupStorage()
 			
+			shadow_map:SetTexture("depth", tex)
+		
 			if self.ShadowCubemap then
-				self.shadow_map = render.CreateFrameBuffer(self.ShadowSize, self.ShadowSize, {texture_2d, texture_cube})
-			else
-				self.shadow_map = render.CreateFrameBuffer(self.ShadowSize, self.ShadowSize, texture_2d)
+				local tex = render.CreateTexture("cubemap")
+				tex:SetInternalFormat("r32f")
+				tex:SetWrapS("clamp_to_edge")
+				tex:SetWrapT("clamp_to_edge")
+				tex:SetWrapR("clamp_to_edge")
+				tex:SetMinFilter("linear")
+				tex:SetMipMapLevels(0)
+				tex:SetupStorage()				
+				shadow_map:SetTexture(1, tex)
 			end
+			
+			self.shadow_map = shadow_map
 			
 			render.shadow_maps[self] = self.shadow_map
 		end
