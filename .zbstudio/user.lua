@@ -2,19 +2,13 @@
 
 local print = DisplayOutputLn
 
-do -- apply a dark style
-	ide.styles = loadfile('cfg/tomorrow.lua')('TomorrowNightEighties')
-	ide.stylesoutshell = ide.styles -- apply the same scheme to Output/Console windows
-	ide.styles.auxwindow = ide.styles.text -- apply text colors to auxiliary windows
-	ide.styles.calltip = ide.styles.text -- apply text colors to tooltips
-end
-
 do -- config
 	local config = ide.config
 	
 	config.editor.usetabs = true
 	config.editor.tabwidth = 4
 	config.editor.usewrap = false
+	config.editor.fontsize = 9
 end
 
 function get_text()
@@ -154,6 +148,10 @@ function INTERPRETER:frun(wfile, run_debug)
 	end
 	
 	ready = true
+	
+	if SHELLBOX then
+		SHELLBOX:SetFocus()
+	end
 
 	return pid
 end
@@ -182,6 +180,8 @@ do
 	local shellbox = wxstc.wxStyledTextCtrl(ide.frame.bottomnotebook, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxBORDER_NONE)
 	ide.frame.bottomnotebook:AddPage(shellbox, TR("Remote console"), false)
 	SetupKeywords(shellbox,"lua",nil,ide.config.stylesoutshell,ide.font.oNormal,ide.font.oItalic)
+		
+	SHELLBOX = shellbox
 		
 	-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 	-- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
