@@ -264,6 +264,27 @@ function META:SetupStorage()
 		levels = math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2)) + 1
 	end]]
 	
+	local internal_format = TOENUM(self.InternalFormat)
+	
+	local upload_format = "GL_RGBA"
+	local upload_type = "GL_UNSIGNED_BYTE"
+	
+	do
+		local depth = internal_format:find("DEPTH", nil, true)
+		local stencil = internal_format:find("STENCIL", nil, true)
+		
+		if depth and stencil then
+			upload_format = "GL_DEPTH_STENCIL"
+			upload_type = "GL_UNSIGNED_INT_24_8"
+		elseif depth then
+			upload_format = "GL_DEPTH_COMPONENT"
+		elseif stencil then
+			upload_format = "GL_STENCIL_COMPONENTS"
+		end
+	end
+	
+	internal_format = gl.e[internal_format]
+	
 	if self.StorageType == "3d" then
 		--[[self.gl_tex:Storage3D(
 			levels,
@@ -275,13 +296,13 @@ function META:SetupStorage()
 		self.gl_tex:Image3D(
 			"GL_TEXTURE_3D",
 			self.MipMapLevels,
-			gl.e[TOENUM(self.InternalFormat)], 
+			internal_format, 
 			self.Size.w,
 			self.Size.h,
 			self.Depth,
 			0,
-			"GL_RGBA",
-			"GL_UNSIGNED_BYTE",
+			upload_format,
+			upload_type,
 			nil
 		)
 	elseif self.StorageType == "2d" or self.StorageType == "rectangle" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then		
@@ -294,12 +315,12 @@ function META:SetupStorage()
 		self.gl_tex:Image2D(
 			"GL_TEXTURE_2D",
 			self.MipMapLevels,
-			gl.e[TOENUM(self.InternalFormat)], 
+			internal_format, 
 			self.Size.w,
 			self.Size.h,
 			0,
-			"GL_RGBA",
-			"GL_UNSIGNED_BYTE",
+			upload_format,
+			upload_type,
 			nil
 			
 		)
@@ -312,11 +333,11 @@ function META:SetupStorage()
 		self.gl_tex:Image1D(
 			"GL_TEXTURE_1D",
 			self.MipMapLevels,
-			gl.e[TOENUM(self.InternalFormat)], 
+			internal_format, 
 			self.Size.w,
 			0,
-			"GL_RGBA",
-			"GL_UNSIGNED_BYTE",
+			upload_format,
+			upload_type,
 			nil
 		)
 	end
@@ -326,13 +347,7 @@ function META:SetupStorage()
 		logn("==================================")
 		logn(self, ":SetupStorage() failed")
 		logn("==================================")
-		logn("storage type = ", self.StorageType)
-		logn("internal format = ", TOENUM(self.InternalFormat))
-		logn("mip map levels = ", self.MipMapLevels)
-		logn("size = ", self.Size)		
-		if self.StorageType == "3d" then
-			logn("depth = ", self.Depth)
-		end
+		self:DumpInfo()
 		logn("==================================")
 		error("\n" .. msg, 2)
 	end
@@ -464,7 +479,14 @@ function META:Upload(data)
 	if msg then
 		logn("==================================")
 		logn(tostring(self) .. ":Upload() failed")
-		logn("==================================")
+		self:DumpInfo()
+		table.print(data)
+		error("\n" .. msg, 2)
+	end
+end
+
+function META:DumpInfo()
+	logn("==================================")
 		logn("storage type = ", self.StorageType)
 		logn("internal format = ", TOENUM(self.InternalFormat))
 		logn("mip map levels = ", self.MipMapLevels)
@@ -472,10 +494,7 @@ function META:Upload(data)
 		if self.StorageType == "3d" then
 			logn("depth = ", self.Depth)
 		end
-		table.print(data)
 		logn("==================================")
-		error("\n" .. msg, 2)
-	end
 end
 
 function META:MakeError()
@@ -519,7 +538,7 @@ function META:Clear(mip_map_level)
 		buffer = buffer,
 		width = self.Size.w,
 		height = self.Size.h,
-		format = self.upload_format or "rgba",
+		format = "rgba",
 		mip_map_level = mip_map_level,
 	})
 end

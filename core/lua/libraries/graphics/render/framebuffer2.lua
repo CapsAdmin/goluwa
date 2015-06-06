@@ -1,13 +1,21 @@
 local gl = require("graphics.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
-local function attachment_to_enum(str)
-	if type(str) == "number" then
-		return gl.e.GL_COLOR_ATTACHMENT0 + str - 1
-	elseif str:startswith("color") then
-		return gl.e.GL_COLOR_ATTACHMENT0 + (tonumber(str:match(".-(%d)")) or 0) - 1
-	else
-		return gl.e["GL_" .. str:upper() .. "_ATTACHMENT"]
+local function attachment_to_enum(self, var)
+	if not var then return end
+	
+	if self.textures[var] then
+		return var
+	elseif type(var) == "number" then
+		return gl.e.GL_COLOR_ATTACHMENT0 + var - 1
+	elseif var == "depth" then
+		return gl.e.GL_DEPTH_ATTACHMENT
+	elseif var == "stencil" then
+		return gl.e.GL_STENCIL_ATTACHMENT
+	elseif var == "depth_stencil" then
+		return gl.e.GL_DEPTH_STENCIL_ATTACHMENT
+	elseif var:startswith("color") then
+		return gl.e.GL_COLOR_ATTACHMENT0 + (tonumber(var:match(".-(%d)")) or 0) - 1
 	end
 end
 
@@ -21,6 +29,35 @@ local function bind_mode_to_enum(str)
 	end
 end
 
+local function generate_draw_buffers(self)
+	local draw_buffers = {}
+	--self.read_buffer = nil -- TODO
+
+	for k,v in pairs(self.textures) do
+		if v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER" and not v.tex.draw_manual then
+			table.insert(draw_buffers, v.pos)
+		else
+			--if self.read_buffer then
+			--	warning("more than one read buffer attached", 2)
+			--end
+			--self.read_buffer = v.mode
+		end
+	end
+	
+	for k,v in pairs(self.render_buffers) do
+		if v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER" then
+			table.insert(draw_buffers, v.pos)
+		else
+			--if self.read_buffer then
+			--	warning("more than one read buffer attached", 2)
+			--end
+			--self.read_buffer = v.mode
+		end
+	end
+
+	return ffi.new("GLenum["..#draw_buffers.."]", draw_buffers), #draw_buffers
+end
+
 local META = prototype.CreateTemplate("framebuffer2")
 
 META:GetSet("BindMode", "all", {"all", "read", "write"})
@@ -31,6 +68,7 @@ function render.CreateFrameBuffer(width, height, textures)
 	self.fb = gl.CreateFramebuffer()
 	self.textures = {}
 	self.render_buffers = {}
+	self.draw_buffers_cache = {}
 	
 	self:SetBindMode("read_write")
 	
@@ -40,6 +78,7 @@ function render.CreateFrameBuffer(width, height, textures)
 	
 	if textures then
 		if not textures[1] then textures = {textures} end
+		
 		for i, v in ipairs(textures) do
 			local attach = v.attach or "color"
 			if attach == "color" then
@@ -48,19 +87,27 @@ function render.CreateFrameBuffer(width, height, textures)
 			
 			local tex = render.CreateTexture()
 			tex:SetSize(self:GetSize():Copy())
-			if v.internal_format then 
-				tex:SetInternalFormat(v.internal_format)
+			
+			tex.draw_manual = v.draw_manual
+			
+			local info = v.texture_format
+			if info then
+				if info.internal_format then 
+					tex:SetInternalFormat(info.internal_format)
+				end
+				
+				if info.depth_texture_mode then
+					tex:SetDepthTextureMode(info.depth_texture_mode)
+				end
 			end
 			
-			if v.depth_texture_mode then
-				tex:SetDepthTextureMode(v.depth_texture_mode)
-			end
+			tex:SetupStorage()
+			tex:Clear()
 			
-			self:SetTexture(attach, tex)
-			self.legacy_lookup = self.legacy_lookup or {}
-			self.legacy_lookup[v.name or "default"] = tex
-			tex.fb_lgc_atch = attach
+			self:SetTexture(attach, tex, nil, v.name)
 		end
+		
+		self:CheckCompletness()
 	end
 	
 	return self
@@ -68,6 +115,37 @@ end
 
 function META:__tostring2()
 	return ("[%i]"):format(self.fb.id)
+end
+
+function META:CheckCompletness()
+	local err = self.fb:CheckStatus("GL_FRAMEBUFFER")
+	
+	if err ~= gl.e.GL_FRAMEBUFFER_COMPLETE then
+		local str = "Unknown error: " .. err
+		
+		if err == gl.e.GL_FRAMEBUFFER_UNSUPPORTED then
+			str = "format not supported"
+		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT then
+			str = "incomplete attachment"
+		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT then
+			str = "incomplete missing attachment"
+		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS then
+			str = "attached images must have same dimensions"
+		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_FORMATS then
+			str = "attached images must have same format"
+		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER then
+			str = "missing draw buffer"
+		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER then
+			str = "missing read buffer"
+		end
+		
+		for k, v in pairs(self.textures) do
+			logn(v.tex, " attached to ", v.pos)
+			v.tex:DumpInfo()
+		end
+		
+		error(str, 2)
+	end
 end
 
 function META:SetBindMode(str)
@@ -127,30 +205,34 @@ do -- binding
 	end
 end
 	
-function META:SetTexture(pos, tex, mode)		
-	local pos_enum = attachment_to_enum(pos)
-	local mode_enum = bind_mode_to_enum(mode or "read_write")
+function META:SetTexture(pos, tex, mode, uid)
+	pos = attachment_to_enum(self, pos)
+	mode = bind_mode_to_enum(mode or "read_write")
+	
+	if not uid then
+		uid = pos
+	end
 	
 	if typex(tex) == "texture2" then
 		local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
 	
 		if tex.StorageType == "1d" then
-			self.fb:Texture1D("GL_FRAMEBUFFER", pos_enum, tex.gl_tex.target, id, 0)
+			self.fb:Texture1D("GL_FRAMEBUFFER", pos, tex.gl_tex.target, id, 0)
 		elseif tex.StorageType == "2d" then
-			self.fb:Texture2D("GL_FRAMEBUFFER", pos_enum, tex.gl_tex.target, id, 0)
+			self.fb:Texture2D("GL_FRAMEBUFFER", pos, tex.gl_tex.target, id, 0)
 		elseif tex.StorageType == "3d" then
-			self.fb:Texture3D("GL_FRAMEBUFFER", pos_enum, tex.gl_tex.target, id, 0, 0) -- TODO
+			self.fb:Texture3D("GL_FRAMEBUFFER", pos, tex.gl_tex.target, id, 0, 0) -- TODO
 		end
 	
 		if id ~= 0 then
-			self.textures[pos_enum] = {tex = tex, mode = mode_enum, pos = pos_enum}
+			self.textures[uid] = {tex = tex, mode = mode, pos = pos, uid = uid}
 			self:SetSize(tex:GetSize():Copy())
 		else
-			self.textures[pos_enum] = nil
+			self.textures[uid] = nil
 		end
 	else
 		if tex then
-			local rb = self.render_buffers[pos_enum] or gl.CreateRenderbuffer()
+			local rb = self.render_buffers[uid] or gl.CreateRenderbuffer()
 		
 			-- ASDF
 			if tex.size then
@@ -167,93 +249,107 @@ function META:SetTexture(pos, tex, mode)
 				tex.height
 			)
 
-			self.fb:Renderbuffer("GL_FRAMEBUFFER", pos_enum, "GL_RENDERBUFFER", rb.id)
+			self.fb:Renderbuffer("GL_FRAMEBUFFER", pos, "GL_RENDERBUFFER", rb.id)
 		
-			self.render_buffers[pos_enum] = rb
+			self.render_buffers[uid] = rb
 		else
-			if self.render_buffers[pos_enum] then
-				self.render_buffers[pos_enum]:Delete()
+			if self.render_buffers[uid] then
+				self.render_buffers[uid]:Delete()
 			end
 			
-			self.render_buffers[pos_enum] = nil
+			self.render_buffers[uid] = nil
 		end
 	end
-	
-	do
-		local draw_buffers = {}
-		--self.read_buffer = nil -- TODO
-	
-		for k,v in pairs(self.textures) do
-			if v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER" then
-				table.insert(draw_buffers, v.pos)
-			else
-				--if self.read_buffer then
-				--	warning("more than one read buffer attached", 2)
-				--end
-				--self.read_buffer = v.mode
-			end
-		end
 		
-		for k,v in pairs(self.render_buffers) do
-			if v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER" then
-				table.insert(draw_buffers, v.pos)
-			else
-				--if self.read_buffer then
-				--	warning("more than one read buffer attached", 2)
-				--end
-				--self.read_buffer = v.mode
-			end
-		end
-			
-		self.draw_buffers_size = #draw_buffers
-		self.draw_buffers = ffi.new("GLenum["..self.draw_buffers_size.."]", draw_buffers)
-	end
+	self.draw_buffers, self.draw_buffers_size = generate_draw_buffers(self)
+	
 end
 
 function META:GetTexture(pos)
-	
-	if self.legacy_lookup then
-		if not pos and self.legacy_lookup.default then
-			return self.legacy_lookup.default
-		end
+	local uid = attachment_to_enum(self, pos or 1)
 		
-		if self.legacy_lookup[pos] then
-			return self.legacy_lookup[pos]
-		end
+	if not uid then
+		return render.GetErrorTexture()
 	end
 	
-	pos = pos or 1
-	local pos = attachment_to_enum(pos)
-	return self.textures[pos] and self.textures[pos].tex or render.GetErrorTexture()
+	return self.textures[uid] and self.textures[uid].tex or render.GetErrorTexture()
 end
 	
 function META:SetWrite(pos, b)
-	local old = self:GetTexture(pos)
-	if old ~= render.GetErrorTexture() then
-		self:SetTexture(pos, self:GetTexture(pos), b and "all" or "read")
+	pos = attachment_to_enum(self, pos)
+	if pos then
+		local val = self.textures[pos]
+		local mode = val.mode
+		
+		if b then
+			if mode == "GL_READ_FRAMEBUFFER" then
+				val.mode = "GL_FRAMEBUFFER"
+			end
+		else
+			if mode == "GL_FRAMEBUFFER" or mode == "GL_DRAW_FRAMEBUFFER" then
+				val.mode = "GL_READ_FRAMEBUFFER"
+			end
+		end
+		
+		if mode ~= val.mode then
+			self.draw_buffers, self.draw_buffers_size = generate_draw_buffers(self)
+		end
 	end
 end
 
-function META:WriteOnly(pos)
-	local pos = attachment_to_enum(pos)
+function META:SetRead(pos, b)
+	pos = attachment_to_enum(self, pos)
 	
-	for k,v in pairs(self.textures) do
-		v.old_mode = v.mode
+	if pos then
+		local val = self.textures[pos]
+		local mode = val.mode
 		
-		if v.pos == pos then
-			self:SetTexture(v.pos, v.tex, "write")	
+		if b then
+			if val.mode == "GL_DRAW_FRAMEBUFFER" then
+				val.mode = "GL_FRAMEBUFFER"
+				self.draw_buffers, self.draw_buffers_size = generate_draw_buffers(self)
+			end
 		else
-			self:SetTexture(v.pos, v.tex, "read")
+			if mode == "GL_FRAMEBUFFER" or mode == "GL_READ_FRAMEBUFFER" then
+				val.mode = "GL_DRAW_FRAMEBUFFER"
+			end
+		end
+		
+		if mode ~= val.mode then
+			self.draw_buffers, self.draw_buffers_size = generate_draw_buffers(self)
 		end
 	end
+end
+
+function META:WriteThese(str)
+	if not self.draw_buffers_cache[str] then
+		for pos in pairs(self.textures) do
+			self:SetWrite(pos, false)
+		end
+		
+		if str == "all" then
+			for pos in pairs(self.textures) do
+				self:SetWrite(pos, true)
+			end
+		elseif str == "none" then
+			for pos in pairs(self.textures) do
+				self:SetWrite(pos, false)
+			end
+		else
+			for _, pos in pairs(str:explode("|")) do
+				pos = tonumber(pos) or pos
+				self:SetWrite(pos, true)
+			end
+		end
+		
+		self.draw_buffers_cache[str] = {self.draw_buffers, self.draw_buffers_size}
+	end
+	
+	self.draw_buffers, self.draw_buffers_size = unpack(self.draw_buffers_cache[str])
 end
 
 function META:Clear(i, r,g,b,a)
 	i = i or 0
-	
-	if self.legacy_lookup and self.legacy_lookup[i] then
-		i = self.legacy_lookup[i].fb_lgc_atch
-	end
 			
 	self:Begin()
 		if type(i) == "number" then
@@ -285,32 +381,24 @@ if not RELOAD then return end
 local fb = render.CreateFrameBuffer()
 
 local tex = render.CreateTexture("2d")
-
-tex:Upload({ 
-	width = 1024,
-	height = 1024,
-	format = "rgba",
-	internal_format = "rgba8",
-})
+tex:SetSize(Vec2(1024, 1024))
+tex:SetInternalFormat("rgba8")
+tex:Clear()
 
 fb:SetTexture(1, tex, "read_write")
 
-local tex = render.CreateTexture("2d")
-
-tex:Upload({ 
-	width = 1024,
-	height = 1024,
-	format = "rgba",
-	internal_format = "rgba8",
-})
+local tex = render.CreateTexture("2d") 
+tex:SetSize(Vec2(1024, 1024))
+tex:SetInternalFormat("rgba8")
+tex:Clear()
 
 fb:SetTexture(2, tex, "read_write")
 
-fb:SetTexture("stencil", {
-	internal_format = "depth32f_stencil8",
-	width = 1024,
-	height = 1024,
-})
+local tex = render.CreateTexture("2d")
+tex:SetSize(Vec2(1024, 1024))
+tex:SetInternalFormat("depth24_stencil8")
+tex:SetupStorage()
+fb:SetTexture("stencil", tex)
 
 fb:SetWrite(1, false)
 
@@ -332,7 +420,17 @@ fb:End()
 
 fb:SetWrite(2, true)
 
-fb:Clear(1, 1,0,0,0.5)
+fb:WriteThese("stencil")
+ 
+fb:Begin()
+	surface.SetWhiteTexture()
+	surface.SetColor(0,1,0,0.5)
+	surface.DrawRect(20,20,50,50, 50)
+fb:End()
+
+fb:WriteThese("all")
+
+--fb:Clear(1, 1,0,0,0.5) 
 
 event.AddListener("PostDrawMenu", "lol", function()
 	surface.SetTexture(fb:GetTexture(1))

@@ -247,8 +247,8 @@ function render.InitializeGBuffer(width, height)
 				attach = "depth",
 				draw_manual = true,
 				texture_format = {
-					internal_format = "DEPTH_COMPONENT32F",	 
-					depth_texture_mode = "RED",
+					internal_format = "depth_component24",	 
+					depth_texture_mode = "red",
 				} 
 			},
 		}
@@ -272,7 +272,7 @@ function render.InitializeGBuffer(width, height)
 					local name, format, attach = unpack(args)
 					
 					attach = attach or "color"
-					format = format or "RGB16F"
+					format = format or "rgb16f"
 					
 					render.SetGlobalShaderVariable("tex_" .. name, function() return render.gbuffer:GetTexture(name) end, "texture")
 					
@@ -289,6 +289,7 @@ function render.InitializeGBuffer(width, height)
 			end
 		end
 	
+		table.print(render.gbuffer_buffers)
 		render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_buffers)  
 		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(width, height)  
 		
@@ -303,7 +304,7 @@ function render.InitializeGBuffer(width, height)
 			name = "screen_buffer",
 			attach = "color",
 			texture_format = {
-				internal_format = "RGB32F",
+				internal_format = "rgb32f",
 				--mag_filter = "nearest",
 				--min_filter = "nearest",
 			}
