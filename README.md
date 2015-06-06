@@ -1,8 +1,4 @@
-Goluwa is a framework made with LuaJIT that I use to make stuff/goluwa with. I try to make it so the code can be modified without the need to restart and have all assets loaded from the internet.
-
-There are lots of sub projects included such as the GUI, a wrapper for running Löve games, tools for reading and mounting source engine assets, midi and sf2 parsers, some async socket library based on luasocket, etc.
-
-I don't really have any big plans so I just code whatever I feel like coding. Because I'm interested in game engines and middleware for games Goluwa ends up being something that vaguely resembles a game engine. For these reasons I can't recommend using Goluwa to make a game or anything too serious.
+Goluwa is a framework coded entirely with LuaJIT that I use to satisfy my programming hobby and further develop goluwa with. I try to focus on the ability to prototype so the code can be reloaded without the need to restart, assets can be loaded from the internet, code can be added with minimal effort, real time lighting, etc. This style can maybe make things a little slow and even messy but I always enjoy trying to solve these issues. I don't really have any big plans so I just code whatever I feel like coding. Because I'm interested in game engines and middleware for games Goluwa ends up being something that vaguely resembles a game engine. For these reasons I can't recommend using Goluwa to make a game or anything too serious but I'd be happy if you find code to use or learn from.
 
 LuaJIT's FFI library is used to bind to the following shared libraries:
 
@@ -15,10 +11,12 @@ LuaJIT's FFI library is used to bind to the following shared libraries:
 * [DevIL](https://github.com/DentonW/DevIL/tree/master/DevIL) - image decoding
 * [PDCurses](http://www.projectpluto.com/win32a.htm) - console
 * [Assimp](https://github.com/assimp/assimp) - model decoding
-* [Bullet3](https://github.com/bulletphysics/bullet3) - physics engine
-* [ENet](https://github.com/lsalzman/enet) - udp library targeted at games
+* [Bullet3](https://github.com/bulletphysics/bullet3) - physics engine (needs a c wrapper)
+* [ENet](https://github.com/lsalzman/enet) - networking library targeted at games
 
 The rest is then made in LuaJIT.
+
+There are many sub projects here such as the GUI, a wrapper for running Löve games, tools for reading and mounting valve's source engine assets, midi and sf2 parsers, async socket library based on luasocket, etc.
 
 GUI:
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2015-01/2015-01-05_13-57-28.png)
