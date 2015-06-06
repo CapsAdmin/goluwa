@@ -204,29 +204,29 @@ do -- memory
 end
 
 do -- editors
-	local editors = {
-		{	
-			-- if you have sublime installed you most likely don't have any other editor installed
-			name = "sublime_text",
-			args = "%PATH%:%LINE%",
-		},
-		{
-			name = "notepad2",
-			args = "/g %LINE% %PATH%",
-		},
-		{
-			name = "notepad++",
-			args = "\"%PATH%\" -n%LINE%",
-		},
-		{
-			name = "notepad",
-			args = "/A %PATH%",
-		},
-	}
+	if WINDOWS then
+		local editors = {
+			{	
+				-- if you have sublime installed you most likely don't have any other editor installed
+				name = "sublime_text",
+				args = "%PATH%:%LINE%",
+			},
+			{
+				name = "notepad2",
+				args = "/g %LINE% %PATH%",
+			},
+			{
+				name = "notepad++",
+				args = "\"%PATH%\" -n%LINE%",
+			},
+			{
+				name = "notepad",
+				args = "/A %PATH%",
+			},
+		}
 
-	function system.FindFirstEditor(os_execute, with_args)
-		for k, v in pairs(editors) do
-			if WINDOWS then
+		function system.FindFirstEditor(os_execute, with_args)
+			for k, v in pairs(editors) do
 				local path = system.GetRegistryValue("ClassesRoot/Applications/"..v.name..".exe/shell/open/command/default")
 				
 				if path then
@@ -243,6 +243,64 @@ do -- editors
 					end
 					
 					return path
+				end
+			end
+		end
+	else
+		local editors = {
+			{
+				name = "atom",
+				args = "%PATH%:%LINE%",
+			},
+			{
+				name = "scite",
+				args = "%PATH% -goto:%LINE%",
+			},
+			{
+				name = "emacs",
+				args = "+%LINE% %PATH%",
+				terminal = true,
+			},
+			{
+				name = "vim",
+				args = "%PATH%:%LINE%",
+				terminal = true,
+			},
+			{
+				name = "kate",
+				args = "-l %LINE% %PATH%",
+			},
+			{
+				name = "gedit",
+				args = "+%LINE% %PATH%",
+			},
+			{
+				name = "nano",
+				args = "+%LINE% %PATH%",
+				terminal = true,
+			},
+		}
+		
+		function system.FindFirstEditor(os_execute, with_args)
+			for k, v in pairs(editors) do
+				
+				if io.popen("command -v " .. v.name):read() then
+					local cmd = v.name
+					
+					if v.terminal then
+						cmd = "x-terminal-emulator -e " .. cmd
+					end
+					
+					if with_args then
+						cmd = cmd .. " " .. v.args
+						
+					end
+					
+					if os_execute then
+						cmd = cmd .. " &"
+					end
+					
+					return cmd
 				end
 			end
 		end
