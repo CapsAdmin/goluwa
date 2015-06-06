@@ -1,6 +1,21 @@
-(...).setfenv(1, ...)
+if ... then (...).setfenv(1, ...) end
 
 local print = DisplayOutputLn
+local bin = "core/bin/" .. jit.os:lower() ..	"_" .. "x64" .. "/"
+local sockets = require("socket")
+local port = 16273
+
+local socket = sockets.tcp()
+socket:settimeout(0)
+local connected = false
+local ready = false
+
+local lua = ""..
+"ZEROBRANE_LINEINPUT=sockets.CreateServer([[tcp]],[[localhost]],"..port..")"..
+"ZEROBRANE_LINEINPUT.OnClientConnected=function(s,client)return\32true\32end;"..
+"ZEROBRANE_LINEINPUT.OnReceive=function(s,str)console.RunString(str)end;"..
+"zb=function(s)ZEROBRANE_LINEINPUT:Broadcast(s,true)end;"..
+"ZEROBRANE_LINEINPUT.debug=true"
 
 do -- config
 	local config = ide.config
@@ -11,170 +26,148 @@ do -- config
 	config.editor.fontsize = 9
 end
 
-function get_text()
-	local editor = GetEditor()
-	local pos = editor:GetCurrentPosition()
-	-- don't do auto-complete in comments or strings.
-	-- the current position and the previous one have default style (0),
-	-- so we need to check two positions back.
-	local style = pos >= 2 and bit.band(editor:GetStyleAt(pos-2),31) or 0
-	if editor.spec.iscomment[style] or editor.spec.isstring[style] then return end
+local PLUGIN
+local INTERPRETER
 
-	-- retrieve the current line and get a string to the current cursor position in the line
-	local line = editor:GetCurrentLine()
-	local linetx = editor:GetLine(line)
-	local linestart = editor:PositionFromLine(line)
-	local localpos = pos-linestart
+do -- custom plugin
+	PLUGIN = {
+		name = "Goluwa",
+		description = "",
+		author = "CapsAdmin",
+		version = 0.1,
+	}
 
-	local lt = linetx:sub(1,localpos)
-	lt = lt:gsub("%s*(["..editor.spec.sep.."])%s*", "%1")
-	-- strip closed brace scopes
-	lt = lt:gsub("%b()","")
-	lt = lt:gsub("%b{}","")
-	lt = lt:gsub("%b[]",".0")
-	-- match from starting brace
-	lt = lt:match("[^%[%(%{%s,]*$")
-
-	return lt
-end
-
-local bin = "core/bin/" .. jit.os:lower() ..	"_" .. "x64" .. "/"
-
-local sockets = require("socket")
-
-local port = 16273
-local socket = sockets.tcp()
-socket:settimeout(0)
-local connected = false
-local ready = false
-
-local lua = ""..
-"ZEROBRANE_LINEINPUT=sockets.CreateServer([[tcp]],[[localhost]],"..port..")"..
-"ZEROBRANE_LINEINPUT.OnClientConnected=function(s,client)return\32true\32end;"..
-"ZEROBRANE_LINEINPUT.OnReceive=function(s,str)console.RunString(str)end;"..
-"zb=function(s)ZEROBRANE_LINEINPUT:Broadcast(s)print(s)end;"..
-"ZEROBRANE_LINEINPUT.debug=true"
-
-local PLUGIN = {
-	name = "Goluwa",
-	description = "",
-	author = "CapsAdmin",
-	version = 0.1,
-}
-
-function PLUGIN:onLineInput(str)
-	if connected then
-		socket:send(str)
-	end
-end
-
-function PLUGIN:onIdle()
-	if ready then
-		if not connected and socket:connect("localhost", port) then
-			connected = true
+	function PLUGIN:onLineInput(str)
+		if connected then
+			socket:send(str)
 		end
 	end
 	
-	if not connected then return end
-	
-	local res = socket:receive("*a")
-	if res then print(res) end
-end
-
-ide.packages["goluwa"] = setmetatable(PLUGIN, ide.proto.Plugin)
-
-local INTERPRETER = {
-	name = "Goluwa",
-	description = "A game framework written in luajit",
-	hasdebugger = true,
-	api = {"baselib"},
-	unhideanywindow = true,
-}
-
-function INTERPRETER:frun(wfile, run_debug)
-	local temp_file 
-
-	if run_debug then
-		DebuggerAttachDefault({startwith = file_path, allowediting = true})
-
-		local temp = wx.wxFileName()
-		temp:AssignTempFileName(".")
-		temp_file = temp:GetFullPath()
-		local f = io.open(temp_file, "w")
-		if not f then
-			DisplayOutput("Can't open temporary file '"..temp_file.."' for writing\n")
-			return
+	function PLUGIN:onIdle()
+		if ready then
+			if not connected and socket:connect("localhost", port) then
+				connected = true
+			end
 		end
-		f:write(run_debug)
-		f:close()
-	end
-	
-	-- modify CPATH to work with other Lua versions
-	local _, cpath = wx.wxGetEnv("LUA_CPATH")
-	
-	if cpath then
-		wx.wxSetEnv("LUA_CPATH", cpath:gsub("/clibs/", "/clibs51/"))
-	end
-	
-	wx.wxSetEnv("LD_LIBRARY_PATH", ".:$LD_LIBRARY_PATH")
-	
-	--callback = function(...) CONSOLE_OUT(...) end
-	local fmt = "%q -e \"io.stdout:setvbuf('no');DISABLE_CURSES=true;ZEROBRANE=true;ARGS={'include[[%s]]%s'};dofile'%s'\""
-	
-	local root = ide.config.path.projectdir .. "/"
-	
-	local file_path = ide:GetDocument(ide:GetEditor()):GetFilePath()
-	
-	local pid = CommandLineRun(
-		fmt:format(root .. bin .. "luajit", file_path, lua, root .. "core/lua/init.lua"),
-		root .. bin,
-		true,--tooutput,
-		true,--nohide,
-		function(s) CONSOLE_OUT(s) end,
-		nil,--uid,
-		function()
-			if run_debug then 
-				wx.wxRemoveFile(temp_file) 
-			end 
-			connected = false 
-			ready = false 
-			socket = sockets.tcp()
-			socket:settimeout(0)
+		
+		if not connected then return end
+		
+		local res = socket:receive("*line")
+		
+		if res and res ~= "" then		
+			GetEditor():UserListShow(1, res)
+		else
+			--GetEditor():AutoCompCancel()
 		end
-	)
-	
-	if cpath then
-		wx.wxSetEnv("LUA_CPATH", cpath)
 	end
 	
-	ready = true
-	
-	if SHELLBOX then
-		SHELLBOX:SetFocus()
+	ide.packages["goluwa"] = setmetatable(PLUGIN, ide.proto.Plugin)
+end
+
+do -- custom intepreter
+	INTERPRETER = {
+		name = "Goluwa",
+		description = "A game framework written in luajit",
+		hasdebugger = true,
+		api = {"baselib", "goluwa"},
+		unhideanywindow = true,
+	}
+
+	function INTERPRETER:frun(wfile, run_debug)
+		local temp_file 
+
+		if run_debug then
+			DebuggerAttachDefault({startwith = file_path, allowediting = true})
+
+			local temp = wx.wxFileName()
+			temp:AssignTempFileName(".")
+			temp_file = temp:GetFullPath()
+			local f = io.open(temp_file, "w")
+			if not f then
+				DisplayOutput("Can't open temporary file '"..temp_file.."' for writing\n")
+				return
+			end
+			f:write(run_debug)
+			f:close()
+		end
+		
+		-- modify CPATH to work with other Lua versions
+		local _, cpath = wx.wxGetEnv("LUA_CPATH")
+		
+		if cpath then
+			wx.wxSetEnv("LUA_CPATH", cpath:gsub("/clibs/", "/clibs51/"))
+		end
+		
+		wx.wxSetEnv("LD_LIBRARY_PATH", ".:$LD_LIBRARY_PATH")
+		
+		--callback = function(...) CONSOLE_OUT(...) end
+		local fmt = "%q -e \"io.stdout:setvbuf('no');DISABLE_CURSES=true;ZEROBRANE=true;ARGS={'include[[%s]]%s'};dofile'%s'\""
+		
+		local root = ide.config.path.projectdir .. "/"
+		
+		local file_path = ide:GetDocument(ide:GetEditor()):GetFilePath()
+		
+		local pid = CommandLineRun(
+			fmt:format(root .. bin .. "luajit", file_path, lua, root .. "core/lua/init.lua"),
+			root .. bin,
+			true,--tooutput,
+			true,--nohide,
+			function(s) CONSOLE_OUT(s) end,
+			nil,--uid,
+			function()
+				if run_debug then 
+					wx.wxRemoveFile(temp_file) 
+				end 
+				connected = false 
+				ready = false 
+				socket = sockets.tcp()
+				socket:settimeout(0)
+			end
+		)
+		
+		if cpath then
+			wx.wxSetEnv("LUA_CPATH", cpath)
+		end
+		
+		ready = true
+		
+		if SHELLBOX then
+			SHELLBOX:SetFocus()
+		end
+
+		return pid
 	end
 
-	return pid
+	function INTERPRETER:fprojdir(wfilename)
+		return wfilename:GetPath(wx.wxPATH_GET_VOLUME)
+	end
+
+	function INTERPRETER:fworkdir()
+		local root = ide.config.path.projectdir .. "/"
+
+		return root .. "/" .. bin
+	end
+	
+	--[[ide:AddAPI("lua", "goluwa", {
+		surface = {
+			type = "lib",
+			description = "2d stuff",
+			childs = {
+				DrawText = {
+					type = "function",
+					description = "draw text",
+					returns = "(x, y)",
+					args = "(text, x, y)",
+				}
+			}
+		}
+	})]]
+	
+	ide:AddInterpreter("goluwa", INTERPRETER)
+	ProjectSetInterpreter("goluwa")
 end
 
-function INTERPRETER:fprojdir(wfilename)
-	return wfilename:GetPath(wx.wxPATH_GET_VOLUME)
-end
-
-function INTERPRETER:fworkdir()
-	local root = ide.config.path.projectdir .. "/"
-
-	return root .. "/" .. bin
-end
-
-function INTERPRETER:fattachdebug() 
-	DebuggerAttachDefault() 
-end
-
-ide:AddInterpreter("goluwa", INTERPRETER)
-
-ProjectSetInterpreter("goluwa")
-
-do
+do -- remote console shellbox
 	--ide.frame.bottomnotebook:RemovePage(0)
 
 	local shellbox = wxstc.wxStyledTextCtrl(ide.frame.bottomnotebook, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxBORDER_NONE)
@@ -520,17 +513,7 @@ do
 	  DisplayShellDirect(code)
 	  executeShellCode(code)
 	end
-
-	local function displayShellIntro()
-	  DisplayShellMsg(TR("Welcome to the interactive Lua interpreter.").." "
-		..TR("Enter Lua code and press Enter to run it.").."\n"
-		..TR("Use Shift-Enter for multiline code.").."  "
-		..TR("Use 'clear' to clear the shell output and the history.").."\n"
-		..TR("Prepend '=' to show complex values on multiple lines.").." "
-		..TR("Prepend '!' to force local execution."))
-	  DisplayShellPrompt('')
-	end
-
+	
 	out:Connect(wx.wxEVT_KEY_DOWN,
 	  function (event)
 		-- this loop is only needed to allow to get to the end of function easily
@@ -612,7 +595,6 @@ do
 			if #promptText == 0 then return end -- nothing to execute, exit
 			if promptText == 'clear' then
 			  out:ClearAll()
-			  displayShellIntro()
 			else
 			  DisplayShellDirect('\n')
 			  executeShellCode(promptText)
