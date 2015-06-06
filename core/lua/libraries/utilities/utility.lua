@@ -3,6 +3,64 @@ local utility = _G.utility or {}
 include("packed_rectangle.lua", utility)
 include("quickbms.lua", utility)
 
+function utility.LuaAutoComplete(text)	
+	local found = {}
+	local node = _G
+	
+	print(text)
+		
+	if text:find("(", nil, true) then
+		local ok, func = loadstring("return " .. text:match("(.+)%("))
+		if ok then
+			local ok, func = pcall(func)
+			if ok then
+				print(func)
+			end
+		end
+		
+	else		
+		local keys = text:explode(".")
+		local found_string = ""
+		
+		local current_func
+		
+		for i, index in ipairs(keys) do
+			if node[index] and type(node[index]) == "table" then			
+				last_node = node
+				node = node[index]
+			
+				--found_string  = found_string  .. index
+				
+				--if type(node) == "table" then
+				--	found_string = found_string .. "."
+				--end
+				
+			else
+				for key, val in pairs(node) do				
+					local str = tostring(key)
+					if current_func then
+						local params = debug.getparams(current_func)
+						--event.AddListener(
+					elseif str:find("^.-" .. index) then
+							
+						if type(val) == "table" then
+							str = str .. "."
+						elseif type(val) == "function" then
+							str = str .. "("
+						elseif type(val) == "number" then
+							str = str .. "["
+						end
+
+						table.insert(found, found_string .. str)
+					end
+				end
+			end
+		end
+	end
+		
+	return found
+end
+
 function utility.StripLuaCommentsAndStrings(code)
 	local singleline_comments = {}
 	local multiline_comments = {}
