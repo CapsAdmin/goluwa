@@ -28,11 +28,7 @@ function render.Initialize()
 		ATI = true
 		-- AMD = true grr cpus
 	end
-		
-	if render.debug then
-		render.EnableDebug(true)
-	end
-		
+	
 	render.GenerateTextures()
 	
 	include("lua/libraries/graphics/decoders/*")

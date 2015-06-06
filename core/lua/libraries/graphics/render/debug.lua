@@ -123,7 +123,7 @@ function render.StopDebug()
 	
 	return message
 end
-
+--[[
 function render.EnableDebug(b)
 	if gl.DebugMessageControl then
 		if b then		
@@ -155,7 +155,7 @@ function render.EnableDebug(b)
 	else
 		logn("[render] glDebugMessageControl is not availible")
 	end
-end
+end]]
 
 function render.OnError(source, type, id, severity, message)
 	event.Call("GLError", source, type, id, severity, message)
