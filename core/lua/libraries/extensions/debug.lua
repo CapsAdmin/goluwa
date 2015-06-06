@@ -95,6 +95,8 @@ do
 end
 
 function debug.openscript(lua_script, line)
+	if not console then return false end
+		
 	local path = console.GetVariable("editor_path")
 	
 	if not path then return false end

@@ -250,10 +250,6 @@ do -- libraries
 	love = lovemu.CreateLoveEnv() -- https://www.love2d.org/wiki/love
 	gmod = include("lua/libraries/gmod/gmod.lua") -- a gmod wrapper that lets you run gmod scripts
 
-	if not DISABLE_CURSES then
-		include("lua/libraries/extensions/console_curses.lua") -- high level implementation of curses extending _G.console	
-	end
-
 	if GRAPHICS then
 		gui = include("lua/libraries/graphics/gui/gui.lua")
 	end
