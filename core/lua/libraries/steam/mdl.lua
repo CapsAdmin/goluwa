@@ -210,7 +210,7 @@ local function load_mdl(path)
 
 		--threads.Report("reading " .. name)
 		
-		if _debug then logf("reading %i %ss (at %i)\n", count, name, offset) end
+		if _debug then llog("reading %i %ss (at %i)", count, name, offset) end
 
 		if _debug then profiler.StartTimer(name) end
 
@@ -733,7 +733,7 @@ function steam.LoadModel(path, sub_model_callback)
 	end)
 	
 	if not ok then 
-		logf("failed to decompile %s: %s\n", path, err)
+		llog("failed to decompile %s: %s", path, err)
 	end
 	
 	return models

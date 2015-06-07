@@ -346,7 +346,7 @@ function prototype.CreateDerivedObject(super_type, sub_type, override, skip_gc_c
     local meta = prototype.GetRegistered(super_type, sub_type)
 	
     if not meta then
-        logf("tried to create unknown %s %q!\n", super_type or "no type", sub_type or "no class")
+        llog("tried to create unknown %s %q!", super_type or "no type", sub_type or "no class")
         return
     end
 

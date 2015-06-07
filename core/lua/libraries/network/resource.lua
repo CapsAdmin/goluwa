@@ -37,7 +37,7 @@ local function download(from, to, callback, on_fail, on_header)
 			local full_path = R("data/download/" .. to)
 			if full_path then
 				callback(full_path)
-				logn("[resource] finished donwnloading ", from)
+				llog("finished donwnloading ", from)
 			else
 				warning("resource download error: %q not found!", "data/download/" .. to)
 				on_fail()
@@ -139,7 +139,7 @@ function resource.Download(path, callback, on_fail, crc)
 	cb:start(path, callback, {on_fail = on_fail})
 	
 	if url then	
-		logn("[resource] donwnloading ", url)
+		llog("donwnloading ", url)
 
 		download(
 			url, 
@@ -159,7 +159,7 @@ function resource.Download(path, callback, on_fail, crc)
 		)
 	else
 		if #resource.providers > 0 then
-			logn("[resource] donwnloading ", path)
+			llog("donwnloading ", path)
 		end
 		
 		download_from_providers(

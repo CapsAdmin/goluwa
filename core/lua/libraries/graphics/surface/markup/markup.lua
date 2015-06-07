@@ -145,7 +145,7 @@ function META:Add(var, tags)
 	elseif t == "table" and var.type and var.val then
 		table.insert(self.chunks, var)
 	elseif t ~= "cdata" then
-		logf("tried to parse unknown type %q", t)
+		llog("tried to parse unknown type %q", t)
 	end
 
 	self.need_layout = true
@@ -194,7 +194,7 @@ function META:CallTagFunction(chunk, name, ...)
 			args = {system.pcall(func, unpack(args))}
 
 			if not args[1] then
-				logf("tag error %s", args[2])
+				llog("tag error %s", args[2])
 			end
 
 			return unpack(args)

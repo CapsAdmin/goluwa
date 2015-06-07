@@ -429,8 +429,8 @@ function profiler.StopInstrumental(file_filter)
 			{key = "total_time", friendly = "total time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
 			{key = "average_garbage", friendly = "garbage", tostring = function(val) return utility.FormatFileSize(val) end},
 		}, 
-		function(a) return a.average_time > 0.0001 or (file_filter or a.times_called > 100) end,
-		function(a, b) return a.total_time < b.total_time end
+		function(a) return a.average_time > 0.5 or (file_filter or a.times_called > 100) end,
+		function(a, b) return a.average_time < b.average_time end
 	))
 	
 	profiler.EnableSectionProfiling(false, true)

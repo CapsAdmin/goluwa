@@ -1,9 +1,13 @@
-function debug.getprettysource(level, append_line)
+function debug.getprettysource(level, append_line, full_folder)
 	local info = debug.getinfo(level + 1)
 	local pretty_source
 	
 	if info.source:sub(1, 1) == "@" then
-		pretty_source = info.source:sub(2 + #e.ROOT_FOLDER):match(".-/(.+)") or info.source:sub(2)
+		if full_folder then
+			pretty_source = info.source:sub(2)
+		else
+			pretty_source = info.source:sub(2 + #e.ROOT_FOLDER):match(".-/(.+)") or info.source:sub(2)
+		end
 		
 		if append_line then
 			pretty_source = pretty_source .. ":" .. info.currentline
@@ -110,7 +114,7 @@ function debug.openscript(lua_script, line)
 	path = path:gsub("%%LINE%%", line or 0)
 	path = path:gsub("%%PATH%%", lua_script)
 	
-	logf("os.execute(%q)\n", path)
+	llog("os.execute(%q)", path)
 	
 	os.execute(path)
 	

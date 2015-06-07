@@ -5,16 +5,15 @@ if not gl then return end
 local render = _G.render or {}
 
 function render.Initialize()
-
 	if not gl then 
-		logn("cannot initialize render: ", err)
+		llog("cannot initialize : ", err)
 	return end
 	
 	if not render.context_created then error("a window must exist before the renderer can be initialized", 2) end
 
-	logf("opengl version: %s\n", render.GetVersion())
-	logf("glsl version: %s\n", render.GetShadingLanguageVersion())
-	logf("vendor: %s\n", render.GetVendor())
+	llog("opengl version: %s", render.GetVersion())
+	llog("glsl version: %s", render.GetShadingLanguageVersion())
+	llog("vendor: %s", render.GetVendor())
 	
 	if render.GetVersion():find("OpenGL ES") then
 		OPENGL_ES = true

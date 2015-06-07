@@ -258,7 +258,7 @@ do -- window meta
 		if not render.gl_context then
 			local context = sdl.GL_CreateContext(ptr)
 			sdl.GL_MakeCurrent(ptr, context) 
-			logn("sdl version: ", ffi.string(sdl.GetRevision()))	
+			llog("sdl version: %s", ffi.string(sdl.GetRevision()))	
 			
 			-- this needs to be initialized once after a context has been created
 			gl.GetProcAddress = sdl.GL_GetProcAddress

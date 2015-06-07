@@ -105,7 +105,7 @@ local function query_server(ip, port, query, callback)
 		buffer:WriteStructure(query.request)
 		
 		if steam.debug then
-			logf("sending %s to %s %i", buffer:GetDebugString(), ip, port)
+			llog("sending %s to %s %i", buffer:GetDebugString(), ip, port)
 		end
 		
 		socket:Send(buffer:GetString())
@@ -115,7 +115,7 @@ local function query_server(ip, port, query, callback)
 		local buffer = packet.CreateBuffer(str)
 		
 		if steam.debug then
-			logf("received %s to %s %i", buffer:GetDebugString(), ip, port)
+			llog("received %s to %s %i", buffer:GetDebugString(), ip, port)
 		end
 		
 		local header = buffer:ReadLong()
@@ -149,7 +149,7 @@ local function query_server(ip, port, query, callback)
 					buffer:WriteLong(challenge)
 					
 					if steam.debug then
-						logf("sending challenge %s to %s %i", buffer:GetDebugString(), ip, port)
+						llog("sending challenge %s to %s %i", buffer:GetDebugString(), ip, port)
 					end
 					
 					self:Send(buffer:GetString())

@@ -255,7 +255,7 @@ function steam.InitializeWebAPI(force)
 					local url = ("%s://api.steampowered.com/%s/%s/v%.4d/?"):format(interface.https and "https" or "http", interface.name, info.name, data.version or 1)
 					
 					if steam.debug then	
-						logf("[steam] http url: %s\n", url)
+						llog("http url: %s", url)
 					end	
 
 					local arguments = ""
@@ -287,7 +287,7 @@ function steam.InitializeWebAPI(force)
 							local tbl, err = serializer.Decode("json", data.content)
 							
 							if not tbl then
-								logf("failed to decode data from %s::%s\n", interface.name, info.name)
+								llog("failed to decode data from %s::%s", interface.name, info.name)
 								logn("\turl = ", url)
 								logn("\thtml = ", data.content:gsub("%b<>", "\n"):gsub("%s+", " "):trim())
 								return

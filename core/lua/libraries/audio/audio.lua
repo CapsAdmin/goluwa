@@ -19,13 +19,13 @@ function audio.Initialize(name)
 	end
 
 	if audio.debug then
-		logf("[audio] opening device %q for sound output\n", name)
+		llog("opening device %q for sound output", name)
 	end
 
 	local device = alc.OpenDevice(nil)
 
 	if device == nil then
-		logf("[audio] opening device failed\n")
+		llog("opening device failed")
 		return
 	end
 
@@ -894,7 +894,7 @@ do -- microphone
 			name = audio.GetAllInputDevices()[1]
 		end
 
-		logf("[audio] opening device %q for input\n", name)
+		llog("opening device %q for input", name)
 
 		local self = prototype.CreateObject(META)
 
@@ -931,10 +931,10 @@ function audio.Decode(data, path_hint)
 			if buffer and length then
 				return buffer, length, info or {}
 			elseif audio.debug or not length:find("unknown format") then
-				logf("[audio] %s failed to decode %s: %s\n", decoder.id, path_hint or "", length)
+				llog("%s failed to decode %s: %s, decoder.id, path_hint or "", length)
 			end
 		else
-			logf("[audio] decoder %q errored: %s\n", decoder.id, buffer)
+			llog("decoder %q errored: %s", decoder.id, buffer)
 		end
 	end
 end

@@ -737,7 +737,7 @@ for line in header:gmatch("(.-)\n") do
 					if return_type == "FT_Error" and val ~= 0 then
 						local info = debug.getinfo(2)
 				
-						logf("[freetype] %q in function %s at %s:%i\n", errors[val] or ("unknonw error " .. val), info.name, info.source, info.currentline)
+						llog("%q in function %s at %s:%i\n", errors[val] or ("unknonw error " .. val), info.name, info.source, info.currentline)
 					end
 					
 										

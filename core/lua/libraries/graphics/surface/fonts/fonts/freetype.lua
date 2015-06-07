@@ -133,7 +133,7 @@ function META:Initialize()
 				resource.Download(url, load, nil, crypto.CRC32(self.Path))
 			end
 		end, function()
-			logf("unable to find url for %s from google web fonts\n", self.Path)
+			llog("unable to find url for %s from google web fonts", self.Path)
 			
 			sockets.Download("http://dl.dafont.com/dl/?f=" .. self.Path:lower():gsub(" ", "_"), function(zip_content)
 				vfs.Write("data/temp_dafont.zip", zip_content)

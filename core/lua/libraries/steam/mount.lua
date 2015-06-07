@@ -2,12 +2,12 @@ local steam = ... or _G.steam
 
 console.AddCommand("mount", function(game)
 	local game_info = assert(steam.MountSourceGame(game))
-	logf("mounted %s %s\n", game_info.game, game_info.title2 or game_info.short_name)
+	llog("mounted %s %s", game_info.game, game_info.title2 or game_info.short_name)
 end)
 
 console.AddCommand("unmount", function(game)
 	local game_info = assert(steam.UnmountSourceGame(game))
-	logf("unmounted %s %s\n", game_info.game, game_info.title2 or game_info.title)
+	llog("unmounted %s %s", game_info.game, game_info.title2 or game_info.title)
 end)
 
 function steam.FindGamePaths(force_cache_update)
@@ -31,7 +31,7 @@ function steam.FindGamePaths(force_cache_update)
 							path = path:match("^(.-)/?[^/]*$")
 						}
 						
-						logf("found %s with appid %s\n", name, appid)
+						llog("found %s with appid %s", name, appid)
 												
 						--table.sort(steam.paths)
 
@@ -40,7 +40,7 @@ function steam.FindGamePaths(force_cache_update)
 				end
 			end
 			if wait(1) then
-				logf("found %i files..\n", count)
+				llog("found %i files..", count)
 			end
 		end)
 	end

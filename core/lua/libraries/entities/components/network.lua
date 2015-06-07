@@ -194,7 +194,7 @@ do -- synchronization server > client
 			
 			spawned_networked[id] = self
 			
-			logf("entity %s with id %s spawned from server\n", config, id)
+			if self.debug then logf("entity %s with id %s spawned from server\n", config, id) end
 		elseif self:IsValid() then 
 			if what == "entity_networked_remove" then
 				self:GetEntity():Remove() 
@@ -248,7 +248,7 @@ do -- synchronization server > client
 			if func then
 				var = func(component)
 			else
-				logf("%s: unable to find function %s\n", component, info.get_name)
+				llog("%s: unable to find function %s", component, info.get_name)
 			end
 			
 			if info.skip_default and var == getmetatable(component)[info.key] then return end
@@ -389,7 +389,7 @@ do -- call on client
 					if func then
 						func(ent, ...)
 					else
-						logf("call on client: function %s does not exist in entity\n", name)
+						llog("call on client: function %s does not exist in entity", name)
 						print(name, ...)
 					end
 				else
@@ -400,16 +400,16 @@ do -- call on client
 						if func then
 							func(obj, ...)
 						else
-							logf("call on client: function %s does not exist in component %s\n", name, component)
+							llog("call on client: function %s does not exist in component %s", name, component)
 							print(name, ...)
 						end
 					else
-						logf("call on client: component %s does not exist in entity (%s)\n", component, id)
+						llog("call on client: component %s does not exist in entity (%s)", component, id)
 						print(name, ...)
 					end
 				end
 			else
-				logf("call on client: entity (%s) is NULL\n", id)
+				llog("call on client: entity (%s) is NULL", id)
 				print(name, ...)
 			end
 		end)

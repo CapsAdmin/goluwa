@@ -208,7 +208,7 @@ do
 			
 			to_bullet(self)
 		end, function(err)
-			logf("%s failed to load physics model %q: %s\n", self, path, err)
+			llog("%s failed to load physics model %q: %s", self, path, err)
 			for k,v in pairs(self:GetEntity():GetChildren()) do
 				if v.physics_chunk then
 					v:Remove()

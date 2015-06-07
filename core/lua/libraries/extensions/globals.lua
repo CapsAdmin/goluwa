@@ -166,6 +166,19 @@ do -- logging
 	function logsection(type, b)
 		event.Call("LogSection", type, b)
 	end
+	
+	-- library log
+	function llog(fmt, ...)
+		local source = debug.getprettysource(2, false, true)
+		local main_category = source:match("lua/libraries/(.-)/")
+		local sub_category = source:match("lua/libraries/.-/(.-)/") or source:match(".+/(.-)%.lua")
+		
+		if not main_category or not sub_category or main_category == sub_category then
+			return logf("[%s] %s\n", main_category or sub_category, fmt:safeformat(...))
+		else
+			return logf("[%s][%s] %s\n", main_category, sub_category, fmt:safeformat(...))
+		end
+	end
 end
 
 do

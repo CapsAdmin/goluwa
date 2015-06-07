@@ -136,7 +136,7 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 
 					event.active[event_type][index] = nil
 					event.SortByPriority()
-					logf("event [%q][%q] removed because self is invalid\n", event_type, data.unique)
+					llog("[%q][%q] removed because self is invalid", event_type, data.unique)
 					return
 				end
 			else
@@ -151,7 +151,7 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 						data.on_error(a, event_type, data.id)
 					else
 						event.RemoveListener(event_type, data.id)
-						logf("event [%q][%q] removed\n", event_type, data.id)
+						llog("[%q][%q] removed", event_type, data.id)
 					end
 
 					event.errors[event_type] = event.errors[event_type] or {}

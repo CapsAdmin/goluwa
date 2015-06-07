@@ -15,7 +15,7 @@ function network.HandlePacket(str, peer, type)
 	end
 	
 	if network.debug == 2 then
-		logf("received %s packet (%s) from %s\n", type, utility.FormatFileSize(#str), peer)
+		llog("received %s packet (%s) from %s", type, utility.FormatFileSize(#str), peer)
 	end
 	
 	if SERVER and not client:IsValid() then 
@@ -90,7 +90,7 @@ if CLIENT then
 			event.Delay(3, function()
 				if not network.IsConnected() then
 					if network.debug then
-						logf("retrying %s:%s (%i retries left)..\n", ip, port, retries)
+						llog("retrying %s:%s (%i retries left)..", ip, port, retries)
 					end
 					network.Connect(ip, port, retries - 1)
 				end	
@@ -131,7 +131,7 @@ if CLIENT then
 			network.socket:Disconnect(1)
 			network.socket:Remove()
 			
-			logf("disconnected from server (%s)\n", reason or "unknown reason")
+			llog("disconnected from server (%s)", reason or "unknown reason")
 			network.just_disconnected = true
 			network.started = false
 			
@@ -188,14 +188,14 @@ if SERVER then
 			client.socket = peer
 
 			if network.debug then
-				logf("client %s connected\n", client)
+				llog("client %s connected", client)
 			end
 			
 			if event.Call("ClientConnect", client) ~= false then
 				nvars.Synchronize(client, function(client)
 					
 					if network.debug then
-						logf("client %s done synchronizing nvars\n", client)
+						llog("client %s done synchronizing nvars", client)
 					end
 				
 					event.Call("ClientEntered", client)
@@ -234,7 +234,7 @@ if SERVER then
 	end
 	
 	function network.CloseServer(reason)		
-		logf("server shutdown (%s)\n", reason or "unknown reason")
+		llog("server shutdown (%s)", reason or "unknown reason")
 		
 		network.socket:Remove()
 	end
@@ -310,7 +310,7 @@ do
 			client:Connect(network.server)	
 			client:Join(network.channel)
 
-			logf("joining %s:%s\n", network.server, network.channel)
+			llog("joining %s:%s", network.server, network.channel)
 			
 			network.irc_client = client
 		end

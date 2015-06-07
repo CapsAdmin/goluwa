@@ -977,8 +977,6 @@ if not DISABLE_CURSES then
 		curses.wnoutrefresh(c.input_window)
 		
 		dirty = true
-		
-		logf("console resized: %i %i\n", h, w)
 	end
 	
 	function console.GetSize()

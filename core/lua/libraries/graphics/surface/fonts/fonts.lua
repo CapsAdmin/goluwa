@@ -122,7 +122,7 @@ function surface.CreateFont(name, options, callback)
 		else
 			if err ~= false or surface.debug then
 				debug.trace()
-				logf("%s: failed to load font %s %q\n", class_name, name, err)
+				llog("%s: failed to load font %s %q", class_name, name, err)
 			end
 			
 			self:Remove()

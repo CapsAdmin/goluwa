@@ -205,16 +205,27 @@ else
 		S.mkdir(path, "rwxu")
 	end
 	
+	local cache = {}
+	
 	function fs.getattributes(path)
+		if cache[path] and cache[path].time < os.clock() then
+			return cache[path].info
+		end
+		
 		local info = S.stat(path)
+		
+		cache[path] = {time = os.clock() + 0.01}
+		
 		if info then
-			return {
+			local info = {
 				last_accessed = info.access,
 				last_changed = info.change,
 				last_modified = info.modification,
 				type = info.typename,
 				size = info.size,
 			}
+			cache[path].info = info
+			return info
 		end
 	end
 end
