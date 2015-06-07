@@ -316,7 +316,22 @@ system._CheckCreatedEnv()
 vfs.MonitorEverything(true)
 system.ExecuteArgs()
 
-logf("launched on %s by %s as %s\n", os.date(), e.USERNAME, CLIENT and "client" or "server")
-logf("launch time took %s seconds\n", os.clock() - profile_start_time)
+logf("[init] launched on %s by %s as %s\n", os.date(), e.USERNAME, CLIENT and "client" or "server")
+
+do
+	local time = os.clock() - profile_start_time
+	serializer.AppendToFile("simple", "data/launch_times.txt", time)
+	
+	local average = 0
+	local times = serializer.ReadFile("simple", "data/launch_times.txt")
+	
+	for i, time in ipairs(times) do
+		average = average + time
+	end
+	
+	average = average / #times
+	
+	logf("[init] launch time took %s seconds (average startup time is %s seconds) \n", time, average)
+end
 
 include("lua/main_loop.lua")
