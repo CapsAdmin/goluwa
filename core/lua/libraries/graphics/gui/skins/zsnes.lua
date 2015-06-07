@@ -30,7 +30,9 @@ function SKIN:Build()
 		filtering = "nearest",
 	}) 
 
-	local texture = Texture("textures/gui/skins/zsnes.png", {min_filter = "nearest", mag_filter = "nearest"})
+	local texture = Texture("textures/gui/skins/zsnes.png")
+	texture:SetMinFilter("nearest")
+	texture:SetMagFilter("nearest")
 
 	texture.OnLoad = function()
 		skin.property_background = ColorBytes(texture:GetPixelColor(28, 500))
