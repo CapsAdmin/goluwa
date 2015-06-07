@@ -931,7 +931,7 @@ function audio.Decode(data, path_hint)
 			if buffer and length then
 				return buffer, length, info or {}
 			elseif audio.debug or not length:find("unknown format") then
-				llog("%s failed to decode %s: %s, decoder.id, path_hint or "", length)
+				llog("%s failed to decode %s: %s", decoder.id, path_hint or "", length)
 			end
 		else
 			llog("decoder %q errored: %s", decoder.id, buffer)
