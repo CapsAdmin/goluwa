@@ -30,11 +30,11 @@ end, nil, function(arg, args)
 end)
 
 console.AddCommand("quit", function()
-	os.exit()
+	system.ShutDown()
 end)
 
 console.AddCommand("exit", function()
-	os.exit()
+	system.ShutDown()
 end)
 
 console.AddCommand("restart", function(startup_cmd)

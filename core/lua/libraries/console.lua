@@ -22,7 +22,7 @@ local arg_types = {
 
 if expression then
 	arg_types.e = function(str)
-		local ok, res = assert(expression.Compile(str))
+		local _, res = assert(expression.Compile(str))
 		return res()
 	end
 end
@@ -95,7 +95,7 @@ do -- commands
 		console.AddedCommands[cmd] = {callback = callback, help = help, autocomplete = autocomplete}
 	end
 
-	function console.RemoveCommand(cmd, callback)
+	function console.RemoveCommand(cmd)
 		cmd = cmd:lower()	
 		
 		console.AddedCommands[cmd] = nil
@@ -157,7 +157,7 @@ do -- commands
 			
 			local in_capture = false
 			
-			for i, char in ipairs(chars) do	
+			for _, char in ipairs(chars) do	
 				if escape then
 					table.insert(capture, char)
 					escape = false
@@ -220,7 +220,7 @@ do -- commands
 		end
 
 		local function parse_line(line)
-			for k,v in ipairs(start_symbols) do
+			for _, v in ipairs(start_symbols) do
 				local start, rest = line:match("^(" .. v .. ")(.+)")
 				if start then
 					local cmd, rest_ = rest:match("^(%S+)%s+(.+)$")
@@ -317,7 +317,7 @@ do -- commands
 		console.SetLuaEnvironmentVariable("findo", prototype.FindObject)	
 		local lua = ""
 		
-		for k, v in pairs(console.run_lua_environment) do
+		for k in pairs(console.run_lua_environment) do
 			lua = lua .. ("local %s = console.run_lua_environment.%s;"):format(k, k)
 		end
 		
@@ -501,7 +501,6 @@ do -- title
 	
 	local titles = {}
 	local str = ""
-	local last = 0
 	local last_title
 	
 	local lasttbl = {}
@@ -513,7 +512,7 @@ do -- title
 			if id then
 				titles[id] = title
 				str = "| "
-				for k,v in pairs(titles) do
+				for _, v in pairs(titles) do
 					str = str ..  v .. " | "
 				end
 				if str ~= last_title then
@@ -592,11 +591,15 @@ end)
 if not DISABLE_CURSES then
 	local curses = require("ffi.curses")
 
-	console.history = console.history or {}
+	local log_history = console.GetLogHistory and console.GetLogHistory() or {}
 	console.curses = console.curses or {}
+	console.input_height = 1
+	console.max_lines = 10000
+	
 	local c = console.curses
-	local history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt") or {}
+	local command_history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt") or {}
 	local hush
+	local dirty = false
 
 	local COLORPAIR_STATUS = 9
 
@@ -688,8 +691,9 @@ if not DISABLE_CURSES then
 		end
 		
 		c.markup = surface.CreateMarkup()
-		c.markup:SetMultiline(false)
 		c.markup:SetFixedSize(14)
+		
+		console.SetInputHeight(console.input_height)
 		
 		local last_w = curses.COLS
 		local last_h = curses.LINES
@@ -714,7 +718,7 @@ if not DISABLE_CURSES then
 			
 			if #key > 0 then
 				-- super hacks
-				for chars, key2 in pairs(char_translate) do
+				for chars in pairs(char_translate) do
 					if type(chars) == "string" then
 						if key:sub(1, #chars) == chars then
 							key = chars
@@ -722,7 +726,14 @@ if not DISABLE_CURSES then
 					end
 				end
 				
-				key = char_translate[key] or char_translate[key:byte()] or key
+				local temp = char_translate[key] or char_translate[key:byte()]
+				
+				if temp then
+					key = temp
+				--elseif #key > 1 and not (key:find("KEY_") or key:find("CTL_") or key:find("PAD")) then
+					--logn("unknown key pressed: ", key)
+					--return
+				end					
 				
 				--for char in key:gmatch("(.)") do print(char:byte()) end
 				--print(key)
@@ -737,15 +748,18 @@ if not DISABLE_CURSES then
 						console.HandleChar(key)
 					end
 				end
-				
-				curses.wmove(c.input_window, 0, math.max(c.markup:GetCaretSubPosition()-1, 0))
-				console.ClearInput(c.markup:GetText())
+								
+				console.SetInputText(c.markup:GetText())
 			end
 			
 			if last_w ~= curses.COLS or last_h ~= curses.LINES then
-				console.Resize(curses.COLS, curses.LINES)
+				console.SetSize(curses.COLS, curses.LINES)
 				last_w = curses.COLS
 				last_h = curses.LINES
+			end
+			
+			if dirty then
+				curses.doupdate()
 			end
 		end)
 		 
@@ -782,7 +796,6 @@ if not DISABLE_CURSES then
 		end
 		
 		curses.initscr() -- init curses
-		curses.wresize(curses.stdscr, 5000, curses.COLS)
 		
 		if WINDOWS and pdcurses_for_real_windows then
 			curses.resize_term(50, 150) 
@@ -791,14 +804,11 @@ if not DISABLE_CURSES then
 		curses.raw() -- raw input, disables ctrl-c and such
 		curses.noecho()
 		
-		c.log_window = curses.newpad(10000, curses.COLS)
+		c.log_window = curses.newpad(console.max_lines, curses.COLS)
+		
 		c.input_window = curses.newwin(1, curses.COLS, curses.LINES - 1, 0)
-		
 		curses.keypad(c.input_window, 1) -- enable arrows and other keys
-		
-		curses.nodelay(c.status_window, 1)
-		curses.nodelay(c.log_window, 1)
-		curses.nodelay(c.input_window, 1)
+		curses.nodelay(c.input_window, 1) -- don't wait for input
 		
 		curses.start_color()
 		curses.use_default_colors()
@@ -817,12 +827,12 @@ if not DISABLE_CURSES then
 			console.SetTitleRaw = curses.PDC_set_title
 			console.SetTitleRaw(console.GetTitle())
 		else
-			c.status_window = curses.newwin(8, 24, 0, curses.COLS - 24)
+			c.status_window = curses.newwin(1, curses.COLS, 0, 0)
 			
-			console.SetTitleRaw = console.ClearStatus
+			console.SetTitleRaw = console.SetStatusText
 		end
 		
-		console.Resize(curses.COLS, curses.LINES)
+		console.SetSize(curses.COLS, curses.LINES)
 		
 		--[[
 		
@@ -868,21 +878,23 @@ if not DISABLE_CURSES then
 		console.curses_init = true
 	end
 	
-	
-	c.y = c.y or 0
-	c.x = c.x or 0
-	
-	function console.SetScroll(y, x)
-		c.y = y or c.y
-		c.x = x or c.x 
+	do
+		c.y = c.y or 0
+		c.x = c.x or 0
 		
-		c.y = math.clamp(c.y, 0, #console.history - curses.LINES + 1)
+		function console.SetScroll(y, x)
+			c.y = y or c.y
+			c.x = x or c.x 
+			
+			c.y = math.clamp(c.y, 0, curses.getcury(c.log_window) - curses.LINES + console.input_height + 1)
+
+			curses.pnoutrefresh(c.log_window, c.y, c.x,    1,0,curses.LINES-console.input_height-1,curses.COLS)
+			dirty = true
+		end
 		
-		curses.prefresh(c.log_window, c.y, c.x,    0,0,curses.LINES-2,curses.COLS)
-	end
-	
-	function console.GetScroll()
-		return c.y, c.x
+		function console.GetScroll()
+			return c.y, c.x
+		end
 	end
 
 	do
@@ -914,34 +926,63 @@ if not DISABLE_CURSES then
 		end
 		console.SyntaxPrint(str, c.log_window)
 		
-		table.insert(console.history, str)
+		table.insert(log_history, str)
 		
-		console.SetScroll(#console.history,0)
+		console.SetScroll(math.huge,0)
 	end
 
 	function console.Clear()
-		table.clear(console.history)
+		table.clear(log_history)
 		curses.wclear(c.log_window)
 		console.SetScroll()
 		event.Call("ConsoleClear")
 	end
+	
+	function console.SetInputHeight(h)
+		h = math.max(h or 1, 1)
+		
+		local resize = h ~= console.input_height
+		
+		console.input_height = h
+		c.markup:SetMultiline(h > 1)		
+		
+		if resize then
+			console.SetSize(curses.COLS, curses.LINES)
+		end
+	end
+	
+	function console.GetInputHeight()
+		return console.input_height
+	end
 
-	function console.Resize(w, h)
-		c.log_window = curses.newpad(10000, w)
-		for k,v in pairs(console.history) do console.SyntaxPrint(v, c.log_window) end
+	function console.SetSize(w, h)
+		w = w or curses.COLS
+		h = h or curses.LINES
+		
+		curses.wresize(c.log_window, console.max_lines, w)
+		curses.werase(c.log_window)
+		for _, v in pairs(log_history) do
+			console.SyntaxPrint(v, c.log_window)
+		end
 		console.SetScroll()
-		
-		curses.mvwin(c.input_window, h - 1, 0)
-		curses.wresize(c.input_window, 1, w)
-		curses.wrefresh(c.input_window)
-		
+				
 		if c.status_window then
-			curses.mvwin(c.status_window, 0, w - w / 3)
-			curses.wresize(c.status_window, h / 3, w / 3 * 2)
-			curses.wrefresh(c.status_window)
+			curses.mvwin(c.status_window, 0, 0)
+			curses.wresize(c.status_window, 1, w)
+			curses.wnoutrefresh(c.status_window)
 		end
 		
+		curses.wresize(c.input_window, console.input_height, w)
+		curses.mvwin(c.input_window, h - 1, 0)
+		curses.wnoutrefresh(c.input_window)
+		
+		dirty = true
+		
 		logf("console resized: %i %i\n", h, w)
+	end
+	
+	function console.GetSize()
+		return curses.COLS, curses.LINES
 	end
 
 	function console.ShutdownCurses()
@@ -1022,6 +1063,8 @@ if not DISABLE_CURSES then
 		function console.SyntaxPrint(str, window)
 			window = window or c.log_window
 			
+			str = str:gsub("\t", "    ")
+			
 			--	profiler.StartTimer("console syntax parse")
 			local output, finds, types, a, b, c = {}, {}, {}, 0, 0, 0
 
@@ -1067,32 +1110,12 @@ if not DISABLE_CURSES then
 				curses.wattroff(window, attr)				
 			end
 			
-			curses.wrefresh(window)
+			curses.wnoutrefresh(window)
+			dirty = true
 			console.SetScroll()
 		end
 	end
 	
-	function console.GetCurrentText(offset)
-		offset = offset or 0
-		local out = {}
-		local lines = curses.LINES-1
-		local count = #console.history
-		
-		console.scroll_log_history = math.clamp(console.scroll_log_history - offset, 0, count - lines)
-		
-		for i = 1, lines  do
-			local str = console.history[i + console.scroll_log_history] or ""
-			
-			out[i] = str
-		end
-		
-		return table.concat(out, "")
-	end
-
-	function console.GetCurrentLine()
-		return c.markup:GetText()
-	end
-
 	function console.GetActiveKey()
 		local byte = curses.wgetch(c.input_window)
 		
@@ -1104,46 +1127,62 @@ if not DISABLE_CURSES then
 		return key
 	end
 
-	function console.ClearInput(str)
-		local y, x = curses.getcury(c.input_window), curses.getcurx(c.input_window)
+	function console.SetInputText(str)
+		if str then
+			local lines = str:count("\n")
+			
+			console.SetInputHeight(lines)
+		end
+		
+		local y = c.markup.caret_pos.y - 1
+		local x = c.markup.caret_pos.x - 0
 		
 		curses.werase(c.input_window)
 		
 		if str then
+			str = str:gsub("\t", " ")
 			console.SyntaxPrint(str, c.input_window)
-			x = #str - 5
 		else
 			x = 0
+			console.SetInputHeight(1)
 		end
 		
-		curses.wmove(c.input_window, y, x)	
+		curses.wmove(c.input_window, y, x)
 		
-		curses.wrefresh(c.input_window)
+		curses.wnoutrefresh(c.input_window)
+		dirty = true
+	end
+	
+	function console.GetTextInput()
+		return c.markup:GetText()
 	end
 
-	function console.ClearWindow()
-		curses.werase(c.log_window)
-	end
+	do
+		local last_status = ""
 
-	console.last_status = ""
-
-	function console.ClearStatus(str)
-		curses.werase(c.status_window)
+		function console.SetStatusText(str)
+			curses.werase(c.status_window)
+			
+			curses.wattron(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS))
+			curses.wbkgdset(c.status_window, COLORPAIR_STATUS)
+			curses.waddstr(c.status_window, str)
+			curses.wattroff(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS)) 	
+			
+			curses.mvwin(c.status_window, 0, (curses.COLS / 2) - (#str / 2))
+			
+			curses.wnoutrefresh(c.status_window)
+			dirty = true
+			last_status = str
+		end
 		
-		curses.wattron(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS))
-		curses.wbkgdset(c.status_window, COLORPAIR_STATUS) 	
-		
-		curses.waddstr(c.status_window, (str:gsub("|", "\n")))
-		
-		curses.wattroff(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS)) 	
-		
-		curses.wrefresh(c.status_window)
-		console.last_status = str
+		function console.GetStatusText()
+			return last_status
+		end
 	end
 
 	local function get_commands_for_autocomplete()
 		local cmds = {}
-		for k,v in pairs(console.GetCommands()) do 
+		for k in pairs(console.GetCommands()) do 
 			table.insert(cmds, k) 
 		end
 		return cmds
@@ -1166,7 +1205,7 @@ if not DISABLE_CURSES then
 		end
 
 		if key == "KEY_TAB" then
-			local line = console.GetCurrentLine()
+			local line = console.GetTextInput()
 			local cmd, rest = line:match("(%S+)%s+(.+)")
 			
 			if not cmd then cmd = line:match("(%S+)") end
@@ -1203,36 +1242,38 @@ if not DISABLE_CURSES then
 				end
 			end	
 		else
-			autocomplete.Query("console", console.GetCurrentLine())
+			autocomplete.Query("console", console.GetTextInput())
 		end
 	
-		if key == "KEY_UP" then
-			c.scroll_command_history = c.scroll_command_history - 1
-			c.markup:SetText(history[c.scroll_command_history%#history+1])
-			curses.wmove(c.input_window, 0, #c.markup:GetText())
-		elseif key == "KEY_DOWN" then
-			c.scroll_command_history = c.scroll_command_history + 1
-			c.markup:SetText(history[c.scroll_command_history%#history+1])
-			curses.wmove(c.input_window, 0, #c.markup:GetText())
+		if console.input_height == 1 or c.markup:GetText() == "" then
+			if key == "KEY_UP" then
+				c.scroll_command_history = c.scroll_command_history - 1
+				c.markup:SetText(command_history[c.scroll_command_history%#command_history+1])
+				c.markup:SetCaretPosition(math.huge, 0)
+			elseif key == "KEY_DOWN" then
+				c.scroll_command_history = c.scroll_command_history + 1
+				c.markup:SetText(command_history[c.scroll_command_history%#command_history+1])
+				c.markup:SetCaretPosition(math.huge, 0)
+			end
 		end
 			
 		-- enter
 		if key == "KEY_ENTER" then
-			console.ClearInput()
+			console.SetInputText()
 			local line = c.markup:GetText()
 			
 			if line ~= "" then			
-				for key, str in pairs(history) do
+				for key, str in pairs(command_history) do
 					if str == line then
-						table.remove(history, key)
+						table.remove(command_history, key)
 					end
 				end
 				
-				table.insert(history, line)
-				serializer.WriteFile("luadata", "%DATA%/cmd_history.txt", history)
+				table.insert(command_history, line)
+				serializer.WriteFile("luadata", "%DATA%/cmd_history.txt", command_history)
 
 				c.scroll_command_history = 0
-				console.ClearInput()
+				console.SetInputText()
 				
 				if event.Call("ConsoleLineEntered", line) ~= false then
 					logn("> ", line)

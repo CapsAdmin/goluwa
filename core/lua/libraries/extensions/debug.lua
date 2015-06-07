@@ -329,9 +329,7 @@ function debug.stepin()
 
 	local step
 	
-	step = function(mode, line)	
-		console.ClearWindow()
-		
+	step = function(mode, line)			
 		local ok = debug.dumpcall(2, line, curinfo)
 		
 		while ok do
