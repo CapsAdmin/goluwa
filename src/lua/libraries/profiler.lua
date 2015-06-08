@@ -274,7 +274,7 @@ function profiler.GetBenchmark(type, file, dump_line)
 					name = ("%s(%s)"):format(data.func_name, table.concat(debug.getparams(data.func), ", "))
 				else
 					local full_path = R(path) or path
-					full_path = full_path:replace("../../../", e.BASE_FOLDER)
+					full_path = full_path:replace("../../../", e.SRC_FOLDER)
 					full_path = full_path:lower():replace(e.ROOT_FOLDER:lower(), "")
 					name = full_path .. ":" .. line
 				end
@@ -334,7 +334,7 @@ function profiler.PrintTraceAborts(min_samples)
 		
 		if s[path] or not next(s) then			
 			local full_path = R(path) or path
-			full_path = full_path:replace("../../../", e.BASE_FOLDER)
+			full_path = full_path:replace("../../../", e.SRC_FOLDER)
 			full_path = full_path:lower():replace(e.ROOT_FOLDER:lower(), "")
 		
 			local temp = {}

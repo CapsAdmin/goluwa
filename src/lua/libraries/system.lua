@@ -852,7 +852,7 @@ do -- environment
 		
 		arg_line = arg_line:gsub('"', "'")
 		
-		local arg = ([[-e ARGS={%s}loadfile('%sinit.lua')()]]):format(arg_line, e.ROOT_FOLDER .. "/core/lua/")
+		local arg = ([[-e ARGS={%s}loadfile('%sinit.lua')()]]):format(arg_line, e.SRC_FOLDER .. "lua/")
 			
 		if WINDOWS then
 			os.execute([[start "" "luajit" "]] .. arg .. [["]])
@@ -892,7 +892,7 @@ do -- environment
 		end	
 		
 		arg = arg:gsub([["]], [[']])	
-		arg = ([[-e %sloadfile('%sinit.lua')()]]):format(arg, e.ROOT_FOLDER .. "/core/lua/")
+		arg = ([[-e %sloadfile('%sinit.lua')()]]):format(arg, e.SRC_FOLDER .. "lua/")
 			
 		if WINDOWS then
 			os.execute([[start "" "luajit" "]] .. arg .. [["]])

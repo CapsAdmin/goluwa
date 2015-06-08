@@ -85,8 +85,8 @@ do -- file system
 	-- remove them because we do it properly later on
 
 	e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
-	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 paths up (core/bin/os_arch)
-	e.BASE_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(2))
+	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 paths up (src/bin/os_arch)
+	e.SRC_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(2))
 	
 	-- the userdata folder
 	e.USERDATA_FOLDER = e.ROOT_FOLDER .. ".userdata/" .. e.USERNAME:lower() .. "/"
@@ -102,28 +102,28 @@ do -- file system
 		
 		ffi = require("ffi")
 
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/extensions/globals.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/extensions/debug.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/extensions/string.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/extensions/table.lua")
-		prototype = dofile(e.ROOT_FOLDER .. "core/lua/libraries/prototype/prototype.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/prototype/get_is_set.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/prototype/base_object.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/prototype/null.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/prototype/templates/buffer.lua")
-		utility = dofile(e.ROOT_FOLDER .. "core/lua/libraries/utilities/utility.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/globals.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/debug.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/string.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/table.lua")
+		prototype = dofile(e.SRC_FOLDER .. "lua/libraries/prototype/prototype.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/get_is_set.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/base_object.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/null.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/templates/buffer.lua")
+		utility = dofile(e.SRC_FOLDER .. "lua/libraries/utilities/utility.lua")
 		
-		vfs = dofile(e.ROOT_FOLDER .. "core/lua/libraries/filesystem/vfs.lua")
+		vfs = dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/vfs.lua")
 		
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/filesystem/path_utilities.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/filesystem/base_file.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/filesystem/find.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/filesystem/helpers.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/filesystem/lua_utilities.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/filesystem/addons.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/filesystem/monitoring.lua")
-		dofile(e.ROOT_FOLDER .. "core/lua/libraries/filesystem/files/os.lua")
-	--	dofile(e.ROOT_FOLDER .. "core/lua/libraries/filesystem/files/vpk.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/path_utilities.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/base_file.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/find.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/helpers.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/lua_utilities.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/addons.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/monitoring.lua")
+		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/files/os.lua")
+	--	dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/files/vpk.lua")
 
 		vfs.IsDir = vfs.IsFolder
 	end
@@ -132,7 +132,7 @@ do -- file system
 	vfs.Mount("os:" .. e.USERDATA_FOLDER, "data")
 	
 	-- mount the /core folder
-	vfs.MountAddon("os:" .. e.BASE_FOLDER)
+	vfs.MountAddon("os:" .. e.SRC_FOLDER)
 	
 	-- a nice global for loading resources externally from current dir
 	-- 

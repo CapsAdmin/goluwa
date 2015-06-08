@@ -2693,7 +2693,7 @@ function sdl.GenerateHeader()
 	content = content:gsub(";[^']", ";\n")
 	content = content:gsub("({.-})", function(str) return str:gsub(",[^']", ",\n") end)
 	
-	vfs.Write(e.ROOT_FOLDER .. "/core/lua/libraries/low_level/ffi_binds/sdl/header.lua", "return [[" .. content .. "]]") 
+	vfs.Write(e.SRC_FOLDER .. "lua/libraries/low_level/ffi_binds/sdl/header.lua", "return [[" .. content .. "]]") 
 	
 	-- eww
 	local enums = ""
@@ -2717,7 +2717,7 @@ function sdl.GenerateHeader()
 		end
 	end
  
-	vfs.Write(e.ROOT_FOLDER .. "/core/lua/libraries/low_level/sdl/enums.lua", "return {" .. enums .. "}") 
+	vfs.Write(e.SRC_FOLDER .. "lua/libraries/low_level/sdl/enums.lua", "return {" .. enums .. "}") 
 end
  
 sdl.events = {

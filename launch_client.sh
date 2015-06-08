@@ -3,5 +3,5 @@
 export SERVER=0
 export CLIENT=1
 
-cd core/bin
+cd src/bin
 bash launch_linux.sh

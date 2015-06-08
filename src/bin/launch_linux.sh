@@ -19,7 +19,7 @@ fi
 
 cd ./linux_${arch}/
 
-#lookup shared libraries in "goluwa/core/bin/linux_${arch}/" first
+#lookup shared libraries in "goluwa/src/bin/linux_${arch}/" first
 export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
 
 #i don't know if this is stupid or not but it's so i can execute luajt without 

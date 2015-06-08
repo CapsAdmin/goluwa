@@ -1,11 +1,11 @@
 .Sync*
 .userdata/
 *.!sync
-/core/bin/quickbms.exe
-/core/bin/temp_script.bms
-/core/bin/windows_x64
-/core/bin/windows_x86
-/core/bin/linux_x64
-/core/bin/linux_x86
+/src/bin/quickbms.exe
+/src/bin/temp_script.bms
+/src/bin/windows_x64
+/src/bin/windows_x86
+/src/bin/linux_x64
+/src/bin/linux_x86
 /goluwa_ffmpeg
 /.directory
