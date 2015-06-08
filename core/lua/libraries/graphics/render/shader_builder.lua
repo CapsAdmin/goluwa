@@ -329,15 +329,7 @@ function render.CreateShader(data, vars)
 				return ""
 			end)			
 		else
-			if OPENGL_ES then
-				source = "#version 300 es" .. source
-			else
-				if shader:find("tess") then
-					source = "#version 400" .. source
-				else
-					source = "#version 150" .. source
-				end
-			end
+			source = "#version " .. ffi.string(gl.GetString("GL_SHADING_LANGUAGE_VERSION")):gsub("%p", ""):match("(%d+)") .. "\n" .. source
 		end
 		
 		build_output[shader] = {source = source, original_source = info.source, out = {}}
@@ -559,16 +551,17 @@ function render.CreateShader(data, vars)
 			end
 
 			local ok, shader = pcall(render.CreateGLShader, enum, data.source)
-
+			
 			if not ok then
-				local version = shader:match("requires \"(.-)\" or later")
-				if version then
-					data.source = data.source:gsub("(#version .-)\n", version .. "\n")
-					if BUILD_OUTPUT then
-						vfs.Write("data/shader_builder_output/" .. shader_id .. "/" .. shader .. ".c", data.source)
-					end
-					
-					ok, shader = pcall(render.CreateGLShader, enum, data.source)
+				local extensions = {}
+				shader:gsub("#extension ([%w_]+)", function(extension)
+					table.insert(extensions, "#extension " .. extension .. ": enable")
+				end)
+				if #extensions > 0 then
+					local source = data.source:gsub("(#version.-\n)", function(str) 
+						return str .. table.concat(extensions, "\n") 
+					end)
+					ok, shader = pcall(render.CreateGLShader, enum, source)
 				end
 			end
 			
