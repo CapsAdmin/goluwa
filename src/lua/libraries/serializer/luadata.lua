@@ -26,8 +26,20 @@ luadata.SetModifier("cdata", function(var) return tostring(var) end)
 luadata.SetModifier("number", function(var) return ("%s"):format(var) end)
 luadata.SetModifier("string", function(var) return ("%q"):format(var) end)
 luadata.SetModifier("boolean", function(var) return var and "true" or "false" end)
+
 luadata.SetModifier("table", function(tbl, context)
 	local str
+		
+	if context.tab_limit and context.tab >= context.tab_limit then
+		return "{--[[tab limit reached]]}"
+	end
+	
+	if context.done then
+		if context.done[tbl] then
+			return ("{--[=[%s already serialized]=]}"):format(tostring(tbl))
+		end
+		context.done[tbl] = true
+	end
 	
 	context.tab = context.tab + 1
 	
@@ -38,17 +50,21 @@ luadata.SetModifier("table", function(tbl, context)
 	end
 	
 	if table.isarray(tbl) then
-		for i = 1, #tbl do
-			str[#str+1] = ("%s%s,\n"):format(("\t"):rep(context.tab), luadata.ToString(tbl[i], context))
-			
-			if context.thread then thread:Sleep() end
+		if #tbl == 0 then
+			str = {"{"} 
+		else
+			for i = 1, #tbl do
+				str[#str+1] = ("%s%s,\n"):format(("\t"):rep(context.tab), luadata.ToString(tbl[i], context))
+				
+				if context.thread then thread:Sleep() end
+			end
 		end
 	else
 		for key, value in pairs(tbl) do
 			value = luadata.ToString(value, context)
 			
-			if value then	
-				if type(key) == "string" and key:find("^%a[%w_]+$") then
+			if value then
+				if type(key) == "string" and key:find("^[%w_]+$") then
 					str[#str+1] = ("%s%s = %s,\n"):format(("\t"):rep(context.tab), key, value)
 				else
 					key = luadata.ToString(key, context)
@@ -66,7 +82,11 @@ luadata.SetModifier("table", function(tbl, context)
 	if context.tab == 0 then
 		str[#str+1] = "\n"
 	else
-		str[#str+1] = ("%s}"):format(("\t"):rep(context.tab))
+		if str[1] == "{" then
+			str[#str+1] = "}" -- empty table
+		else
+			str[#str+1] = ("%s}"):format(("\t"):rep(context.tab - 1))
+		end
 	end
 		
 	context.tab = context.tab - 1
@@ -92,6 +112,9 @@ function luadata.ToString(var, context)
 	context.out = context.out or {}
 	
 	local func = luadata.Types[luadata.Type(var)]
+	if not func and luadata.Types.fallback then
+		return luadata.Types.fallback(var, context)
+	end
 	return func and func(var, context)
 end
 
