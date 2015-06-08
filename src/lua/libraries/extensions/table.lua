@@ -148,58 +148,27 @@ function table.random(tbl)
 	end
 end
 
-do -- table logn
-	local dump
-	local done = {}
-	local indent = 0
-	local tab = "\t"
+function table.print(...)
+	local tbl = {...}
 	
-	local max_level = math.huge
+	local max_level
 	
-	dump = function(tbl)
-		for key, val in pairs(tbl) do
-			local t = typex(val)
-			
-			if t == "table" and not done[val] and indent < max_level then
-				logf("%s%s = table[%p]\n", tab:rep(indent), key, val)
-				logf("%s[\n", tab:rep(indent))
-				
-				done[val] = tostringx(val)
-				indent = indent + 1
-				dump(val)
-				indent = indent - 1
-				
-				logf("%s]\n", tab:rep(indent))
-			elseif t == "string" then
-				local str = tostringx(val)
-				if str:find("\n") then
-					logf("%s%s = %s,\n", tab:rep(indent), key, str)
-				else
-					logf("%s%s = %q,\n", tab:rep(indent), key, str)
-				end
-			else
-				logf("%s%s = %s,\n", tab:rep(indent), key, tostringx(val))
-			end
-		end 
+	if type(tbl[1]) == "table" and type(tbl[2]) == "number" and type(tbl[3]) == "nil" then
+		max_level = tbl[2]
+		tbl[2] = nil
 	end
 	
-	function table.print(...)
-		local tbl = {...}
-		
-		indent = 0
-		done = {}
-				
-		if type(tbl[1]) == "table" and type(tbl[2]) == "number" and type(tbl[3]) == "nil" then
-			max_level = tbl[2]
-			tbl[2] = nil
-		else
-			max_level = math.huge
-		end
-		
-		dump(tbl)
-		
-		done = nil
-	end
+	local luadata = serializer.GetLibrary("luadata")
+	luadata.SetModifier("function", function(var) 
+		return ("function(%s) --[==[ptr: %p    src: %s]==] end"):format(table.concat(debug.getparams(var), ", "), var, debug.getprettysource(var))
+	end)
+	luadata.SetModifier("fallback", function(var, context) 
+		return "--[==[  " .. tostringx(var) .. "  ]==]"
+	end)
+	
+	logn(luadata.ToString(tbl, {tab_limit = max_level, done = {}}))
+	
+	luadata.SetModifier("function", nil)
 end
 
 do -- table copy
