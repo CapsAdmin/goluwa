@@ -22,4 +22,10 @@ cd ./linux_${arch}/
 #lookup shared libraries in "goluwa/core/bin/linux_${arch}/" first
 export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
 
-./luajit ../../lua/init.lua
+#i don't know if this is stupid or not but it's so i can execute luajt without 
+#the need for execute permissions on a non ext filesystem (like on a usb stick with fat32)
+if [ -e "/lib64/ld-linux-x86-64.so.2" ]; then
+	/lib64/ld-linux-x86-64.so.2 ./luajit ../../lua/init.lua
+else
+	./luajit ../../lua/init.lua
+fi
