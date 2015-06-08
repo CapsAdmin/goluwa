@@ -1,5 +1,5 @@
 function debug.getprettysource(level, append_line, full_folder)
-	local info = debug.getinfo(level + 1)
+	local info = debug.getinfo(type(level) == "number" and (level + 1) or level)
 	local pretty_source
 	
 	if info.source:sub(1, 1) == "@" then
