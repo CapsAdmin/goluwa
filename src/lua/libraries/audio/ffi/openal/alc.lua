@@ -151,6 +151,7 @@ local lib = assert(ffi.load(jit.os == "Windows" and "openal32" or "openal"))
 local alc = {
 	lib = lib, 
 	e = enums,
+	re = reverse_enums,
 }
 
 for line in header:gmatch("(.-)\n") do

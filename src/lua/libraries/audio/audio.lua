@@ -11,7 +11,7 @@ alc.debug = true
 audio.effect_channels = audio.effect_channels or utility.CreateWeakTable()
 
 function audio.Initialize(name)	
-	os.setenv("ALSOFT_CONF", fs.getcd() .. "\\" .. "al_config.ini")
+	os.setenv("ALSOFT_CONF", "./al_config.ini")
 	audio.Shutdown()
 
 	if not name then
@@ -25,7 +25,7 @@ function audio.Initialize(name)
 	local device = alc.OpenDevice(nil)
 
 	if device == nil then
-		llog("opening device failed")
+		llog("opening device failed: ", alc.re[alc.GetError(device)])
 		return
 	end
 
@@ -65,7 +65,7 @@ end
 
 function audio.GetAllOutputDevices()
 	local list = ffi.cast("unsigned char *", alc.GetString(nil, alc.e.ALC_ALL_DEVICES_SPECIFIER))
-
+	
 	local devices = {}
 
 	local temp = {}
