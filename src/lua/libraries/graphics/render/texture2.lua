@@ -169,6 +169,17 @@ local parameters = {
 	texture_wrap_s = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
 	texture_wrap_t = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
 	texture_wrap_r = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
+	texture_max_anisotropy_ext = {friendly = "Anisotropy", type = "int", default = 0, translate = function(num) 
+		if not render.max_anisotropy then
+			local largest = ffi.new("float[1]")
+			gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
+			render.max_anisotropy = largest[0]
+		end
+		
+		if num == -1 or num > render.max_anisotropy then
+			return render.max_anisotropy
+		end
+	end}, -- TEXTURE_MAX_ANISOTROPY_EXT
 }
 
 for k, v in pairs(parameters) do
@@ -184,17 +195,17 @@ for k, v in pairs(parameters) do
 	elseif v.type == "int" then
 		META[info.set_name] = function(self, val)
 			self[info.var_name] = val
-			self.gl_tex:SetParameteri(enum, val)
+			self.gl_tex:SetParameteri(enum, v.translate and v.translate(val) or val)
 		end
 	elseif v.type == "float" then
 		META[info.set_name] = function(self, val)
 			self[info.var_name] = val
-			self.gl_tex:SetParameterf(enum, val)
+			self.gl_tex:SetParameterf(enum, v.translate and v.translate(val) or val)
 		end
 	elseif v.type == "color" then
 		META[info.set_name] = function(self, val)
 			self[info.var_name] = val
-			self.gl_tex:SetParameterfv(enum, val)
+			self.gl_tex:SetParameterfv(enum, v.translate and v.translate(val) or val)
 		end
 	end
 	
