@@ -1,5 +1,8 @@
 local start = 0.5
-local tex = Texture({width = render.GetWidth(), height = render.GetHeight(), min_filter = "nearest", mag_filter = "nearest"}):Fill(function() 
+local tex = Texture(render.GetHeight(), render.GetWidth())
+tex:SetMinFilter("nearest")
+tex:SetMagFilter("nearest")
+tex:Fill(function() 
 	return math.random()> start and 255 or 0,math.random()> start and 255 or 0,math.random()> start and 255 or 0,math.random()> start and 255 or 0
 end)
 

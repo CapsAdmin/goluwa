@@ -1,15 +1,12 @@
 local start = 0.5
 local scale = 1
  
-local tex = Texture({
-	format = "rgba32f",
-	width = render.GetWidth()/scale,
-	height = render.GetHeight()/scale,
-	mip_map_levels = 0,
-	anisotropy = 0,
-	min_filter = "nearest", 
-	mag_filter = "nearest"
-})
+local tex = Texture(render.GetWidth()/scale, render.GetHeight()/scale)
+tex:SetInternalFormat("rgba32f")
+tex:SetMipMapLevels(0)
+tex:SetMinFilter("nearest")
+tex:SetMagFilter("nearest")
+tex:SetAnisotropy(0)
 
 tex:Fill(function()
 	local c = math.random(255) return 255,255,255,c
