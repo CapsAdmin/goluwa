@@ -9,6 +9,9 @@ case $(uname -m) in
 	arm*)    arch=arm ;;
 esac
 
+# make sure we're in this bash's directory
+cd $( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
 #if we don't have binaries get them from github
 if [ ! -f "linux_${arch}/luajit" ]; then
 	wget "https://github.com/CapsAdmin/goluwa/releases/download/linux-binaries/${arch}.zip" -O temp.zip
