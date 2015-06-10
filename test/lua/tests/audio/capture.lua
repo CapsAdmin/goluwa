@@ -1,5 +1,5 @@
-debug.LogLibrary("al", {"GenBuffers", "GenSources", "GetError"}, true)
-debug.LogLibrary("alc", {"GenBuffers", "GenSources", "GetError"}, true)
+debug.loglibrary("al", {"GenBuffers", "GenSources", "GetError"}, true)
+debug.loglibrary("alc", {"GenBuffers", "GenSources", "GetError"}, true)
 
 local mic_out = utility.RemoveOldObject(audio.CreateSource())
 
@@ -17,7 +17,7 @@ mic_out:Play()
 
 event.Delay(0.1, function()
 
-debug.LogLibrary("al")
-debug.LogLibrary("alc")
+debug.loglibrary("al")
+debug.loglibrary("alc")
  
 end) 

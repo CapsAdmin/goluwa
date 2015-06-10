@@ -25,7 +25,7 @@ end
 do 
 	local started = {}	
 	
-	function debug.LogLibrary(library, filter, post_calls_only, lib_name) 
+	function debug.loglibrary(library, filter, post_calls_only, lib_name) 
 		lib_name = lib_name or ""
 		
 		if type(library) == "string" then
@@ -33,7 +33,25 @@ do
 			library = _G[library]
 		end
 		
+		if not lib_name then
+			for k,v in pairs(_G) do
+				if v == library then
+					lib_name = k
+				end
+			end
+			
+			if not lib_name then
+				for k,v in pairs(package.loaded) do
+					if v == library then
+						lib_name = k
+					end
+				end
+			end
+			lib_name = lib_name or "unknown"
+		end
+		
 		local log_name = lib_name .. "_calls"
+		local arg_line
 		
 		if started[library] then
 			for name, func in pairs(started[library]) do
@@ -52,18 +70,19 @@ do
 			
 			local function log_return(...)		
 				if not filter[name] then
-					if post_calls_only or post_calls_only == nil then
-						
+					if (post_calls_only or post_calls_only == nil) and arg_line then						
 						local ret = {}
 						for i = 1, select("#", ...) do 
 							table.insert(ret, serializer.GetLibrary("luadata").ToString((select(i, ...))):sub(0,20))
 						end
 						
-						if #ret == 0 then
-							logn()
+						if #ret ~= 0 then
+							logf("%s = %s\n", table.concat(ret, ", "), arg_line)
 						else
-							logn(table.concat(ret, ", "))
+							logn(arg_line)
 						end
+						
+						arg_line = nil
 					end
 				end
 				
@@ -73,7 +92,7 @@ do
 			end
 			
 			for name, func in pairs(library) do
-				if type(func) == "function" then
+				if type(func) == "function" or type(func) == "cdata" then
 					library[name] = function(...)
 						setlogfile(log_name)
 						
@@ -84,7 +103,7 @@ do
 								table.insert(args, serializer.GetLibrary("luadata").ToString((select(i, ...)))) 
 							end
 							
-							logf("%s.%s(%s) >> ", lib_name, name, table.concat(args, ", "):sub(0,20))
+							arg_line = ("%s.%s(%s) "):format(lib_name, name, table.concat(args, ", "):sub(0,100))
 						end
 
 						return log_return(func(...))
