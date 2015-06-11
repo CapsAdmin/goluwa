@@ -31,9 +31,9 @@ function window.Open(...)
 		return
 	end
 	
-	local wnd = render.CreateWindow(...)
-	
-	if not wnd:IsValid() then return end
+	local ok, wnd = pcall(render.CreateWindow, ...)
+		
+	if not ok then warning(wnd) return NULL end
 
 	-- don't draw anything until the everything has be
 	event.AddListener("RenderContextInitialized", "window_start_rendering", function()

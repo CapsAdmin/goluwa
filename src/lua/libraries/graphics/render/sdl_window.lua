@@ -219,9 +219,8 @@ do -- window meta
 		width = width or 800
 		height = height or 600
 		title = title or ""
-		
+				
 		if not render.gl_context then
-		
 			sdl.Init(sdl.e.SDL_INIT_VIDEO)
 			sdl.video_init = true
 
@@ -257,7 +256,13 @@ do -- window meta
 		
 		if not render.gl_context then
 			local context = sdl.GL_CreateContext(ptr)
-			sdl.GL_MakeCurrent(ptr, context) 
+			
+			if context == nil then
+				self:Remove()
+				error("sdl.GL_CreateContext failed: " .. ffi.string(sdl.GetError()), 2)
+			end
+			sdl.GL_MakeCurrent(ptr, context)
+			
 			llog("sdl version: %s", ffi.string(sdl.GetRevision()))	
 			
 			-- this needs to be initialized once after a context has been created
@@ -266,6 +271,7 @@ do -- window meta
 			gl.Initialize()
 			
 			if not gl.GetString then
+				self:Remove()
 				error("gl.Initialize failed! (gl.GetString not found)", 2)
 			end
 			
@@ -278,7 +284,6 @@ do -- window meta
 		self.mouse_delta = Vec2()
 		self.__ptr = ptr
 		
-			
 		render.sdl_windows = render.sdl_windows or {}
 		local id = sdl.GetWindowID(ptr)
 		self.sdl_window_id = id
