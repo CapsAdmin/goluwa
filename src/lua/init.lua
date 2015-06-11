@@ -1,3 +1,5 @@
+io.write(">> src/lua/init.lua\n")
+
 local profile_start_time = os.clock()
 
 -- check if this environment is compatible
@@ -36,8 +38,23 @@ do -- constants
 	if SERVER == nil and CLIENT == nil then
 		CLIENT = true
 	end
+	
 	if SOUND == nil then SOUND = true end
 	if GRAPHICS == nil then GRAPHICS = true end
+	
+	do -- write them to output
+		io.write("constants:\n")
+		
+		for k,v in pairs(_G) do
+			if k:upper() == k and k ~= _G then
+				io.write("\t_G.", k, " = ", tostring(v), "\n")
+			end
+		end
+		
+		for k,v in pairs(e) do
+			io.write("\te.", k, " = ", tostring(v), "\n")
+		end
+	end
 end
 
 -- put all c functions in a table so we can override them if needed 
@@ -222,7 +239,9 @@ do -- libraries
 			include("lua/libraries/graphics/particles.lua")
 					
 			if not SCITE then
+				io.write("opening window\n")
 				window.Open()
+				io.write("window opened!\n")
 			end
 		end
 		
