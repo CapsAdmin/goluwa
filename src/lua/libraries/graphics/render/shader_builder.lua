@@ -510,6 +510,19 @@ function render.CreateShader(data, vars)
 				-- if it's just a single line then wrap void mainx() {*line*} around it
 				template = replace_field(template, "SOURCE", ("void mainx()\n{\n\t%s\n}\n"):format(info.source))
 			end
+			
+			local extensions = {}
+			
+			template = template:gsub("(#extension%s-[%w_]+%s-:%s-%w+)", function(extension)
+				table.insert(extensions, extension)
+				return ""
+			end)
+			
+			if #extensions > 0 then
+				template = template:gsub("(#version.-\n)", function(str) 
+					return str .. table.concat(extensions, "\n") 
+				end)
+			end
 
 			-- get line numbers for errors
 			build_output[shader].line_start = select(2, template:match(".+__SOURCE_START"):gsub("\n", "")) + 2
@@ -554,18 +567,24 @@ function render.CreateShader(data, vars)
 			
 			if not ok then
 				local extensions = {}
-				shader:gsub("#extension ([%w_]+)", function(extension)
+				shader:gsub("#extension ([%w_]+%s-:%s-enable)", function(extension)
 					table.insert(extensions, "#extension " .. extension .. ": enable")
 				end)
 				if #extensions > 0 then
 					local source = data.source:gsub("(#version.-\n)", function(str) 
 						return str .. table.concat(extensions, "\n") 
 					end)
-					ok, shader = pcall(render.CreateGLShader, enum, source)
+					local ok, shader2 = pcall(render.CreateGLShader, enum, source)
+					data.source = source
+					if not ok then
+						shader = shader .. "\nshader_builder.lua attempted to add " .. table.concat(extensions, ", ") .. " but failed: \n" .. shader2
+					end
 				end
 			end
 			
 			if not ok then
+				vfs.Write("data/logs/last_shader_error.c", data.source)
+
 				for i = 2, 20 do
 					local info = debug.getinfo(i)
 					
