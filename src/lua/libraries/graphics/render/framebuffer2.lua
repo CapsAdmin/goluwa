@@ -216,14 +216,8 @@ function META:SetTexture(pos, tex, mode, uid)
 	if typex(tex) == "texture2" then
 		local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
 	
-		if tex.StorageType == "1d" then
-			self.fb:Texture1D("GL_FRAMEBUFFER", pos, tex.gl_tex.target, id, 0)
-		elseif tex.StorageType == "2d" then
-			self.fb:Texture2D("GL_FRAMEBUFFER", pos, tex.gl_tex.target, id, 0)
-		elseif tex.StorageType == "3d" then
-			self.fb:Texture3D("GL_FRAMEBUFFER", pos, tex.gl_tex.target, id, 0, 0) -- TODO
-		end
-	
+		self.fb:Texture("GL_FRAMEBUFFER", pos, id, 0)
+		
 		if id ~= 0 then
 			self.textures[uid] = {tex = tex, mode = mode, pos = pos, uid = uid}
 			self:SetSize(tex:GetSize():Copy())
