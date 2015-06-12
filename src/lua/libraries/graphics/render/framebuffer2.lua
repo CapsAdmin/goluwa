@@ -245,10 +245,10 @@ function META:SetTexture(pos, tex, mode, uid)
 
 			self.fb:Renderbuffer("GL_FRAMEBUFFER", pos, "GL_RENDERBUFFER", rb.id)
 		
-			self.render_buffers[uid] = rb
+			self.render_buffers[uid] = {rb = rb}
 		else
 			if self.render_buffers[uid] then
-				self.render_buffers[uid]:Delete()
+				self.render_buffers[uid].rb:Delete()
 			end
 			
 			self.render_buffers[uid] = nil
