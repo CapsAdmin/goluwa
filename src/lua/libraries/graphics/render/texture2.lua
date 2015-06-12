@@ -707,10 +707,10 @@ do
 end
 
 function META:Bind(location)
-	if self.dsa then
-		gl.BindTextureUnit(location or 0, self.gl_tex.id)
-	else
+	if self.not_dsa then
 		gl.BindTexture(self.gl_tex.target, self.gl_tex.id)
+	else
+		gl.BindTextureUnit(location or 0, self.gl_tex.id)
 	end
 end
 
@@ -726,7 +726,7 @@ function render.CreateTexture(type)
 	self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
 	self.id = self.gl_tex.id -- backwards compatibility
 	
-	self.not_dsa = not self.not_dsa -- ...
+	self.not_dsa = self.gl_tex.not_dsa -- ...
 		
 	return self
 end
