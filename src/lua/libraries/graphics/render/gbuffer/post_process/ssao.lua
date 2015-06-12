@@ -6,7 +6,7 @@ PASS.Default = true
 PASS.Source = [[	
 	float compare_depths( in float depth1, in float depth2 ) {
 		float diff = (depth2)-(depth1-0.000001);
-		diff = clamp(diff *= 2048.0, 0, 0.25);
+		diff = clamp(diff *= 2048.0, 0.0, 0.25);
 						
 		return diff;
 	}
