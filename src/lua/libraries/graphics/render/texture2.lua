@@ -317,24 +317,34 @@ function META:SetupStorage()
 			nil
 		)
 	elseif self.StorageType == "2d" or self.StorageType == "rectangle" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then		
-		--[[self.gl_tex:Storage2D(
-			levels,
-			TOENUM(self.InternalFormat), 
-			self.Size.w, 
-			self.Size.h
-		)]]
-		self.gl_tex:Image2D(
-			"GL_TEXTURE_2D",
-			self.MipMapLevels,
-			internal_format, 
-			self.Size.w,
-			self.Size.h,
-			0,
-			upload_format,
-			upload_type,
-			nil
+		if gl.TexStorage2D then
+			local levels = self.MipMapLevels
 			
-		)
+			if levels == 0 then
+				levels = math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2))
+			end
+			
+			--for i = 0, levels do
+				self.gl_tex:Storage2D(
+					levels,
+					internal_format, 
+					self.Size.w, 
+					self.Size.h
+				)
+			--end
+		else
+			self.gl_tex:Image2D(
+				"GL_TEXTURE_2D",
+				self.MipMapLevels,
+				internal_format, 
+				self.Size.w,
+				self.Size.h,
+				0,
+				upload_format,
+				upload_type,
+				nil			
+			)
+		end
 	elseif self.StorageType == "1d" or self.StorageType == "1d_array" then		
 		--[[self.gl_tex:Storage1D(
 			levels,

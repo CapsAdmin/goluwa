@@ -567,16 +567,19 @@ function render.CreateShader(data, vars)
 			
 			if not ok then
 				local extensions = {}
-				shader:gsub("#extension ([%w_]+%s-:%s-enable)", function(extension)
+				shader:gsub("#extension ([%w_]+)", function(extension)
 					table.insert(extensions, "#extension " .. extension .. ": enable")
 				end)
 				if #extensions > 0 then
 					local source = data.source:gsub("(#version.-\n)", function(str) 
 						return str .. table.concat(extensions, "\n") 
 					end)
-					local ok, shader2 = pcall(render.CreateGLShader, enum, source)
-					data.source = source
-					if not ok then
+					local ok2, shader2 = pcall(render.CreateGLShader, enum, source)
+					if ok2 then
+						ok = ok2
+						shader = shader2
+					else
+						data.source = source
 						shader = shader .. "\nshader_builder.lua attempted to add " .. table.concat(extensions, ", ") .. " but failed: \n" .. shader2
 					end
 				end
