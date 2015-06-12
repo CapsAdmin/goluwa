@@ -33759,7 +33759,7 @@ function gl.Initialize(get_proc_address)
 			function META:GetParameterivEXT(pname, params)
 				return gl.GetNamedRenderbufferParameterivEXT(self.id, pname, params)
 			end
-			function META:StorageMultisample(samples, internalformat, width, height)
+			function META:StorageMultisample(target, samples, internalformat, width, height)
 				return gl.NamedRenderbufferStorageMultisample(self.id, samples, internalformat, width, height)
 			end
 			function META:StorageEXT(internalformat, width, height)
