@@ -726,7 +726,7 @@ function render.CreateTexture(type)
 	self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
 	self.id = self.gl_tex.id -- backwards compatibility
 	
-	self.not_dsa = self.gl_tex.not_dsa -- ...
+	self.not_dsa = not gl.CreateTextures
 		
 	return self
 end
