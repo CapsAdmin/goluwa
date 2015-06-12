@@ -216,7 +216,7 @@ function META:SetTexture(pos, tex, mode, uid)
 	if typex(tex) == "texture2" then
 		local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
 	
-		self.fb:Texture("GL_FRAMEBUFFER", pos, id, 0)
+		self.fb:Texture(pos, id, 0, 0)
 		
 		if id ~= 0 then
 			self.textures[uid] = {tex = tex, mode = mode, pos = pos, uid = uid}
@@ -256,7 +256,6 @@ function META:SetTexture(pos, tex, mode, uid)
 	end
 		
 	self.draw_buffers, self.draw_buffers_size = generate_draw_buffers(self)
-	
 end
 
 function META:GetTexture(pos)

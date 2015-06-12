@@ -33482,8 +33482,8 @@ function gl.Initialize(get_proc_address)
 			function META:DrawBuffersEXT(n, bufs)
 				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferDrawBuffersEXT(self.id, n, bufs)
 			end
-			function META:Texture(target, attachment, texture, level)
-				bind(self, target) return gl.FramebufferTexture(target, attachment, texture, level)
+			function META:Texture(attachment, texture, level)
+				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferTexture("GL_FRAMEBUFFER", attachment, texture, level)
 			end
 			function META:GetParameterivEXT(pname, params)
 				bind(self, "GL_FRAMEBUFFER") return gl.GetFramebufferParameterivEXT(self.id, pname, params)

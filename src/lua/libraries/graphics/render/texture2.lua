@@ -505,7 +505,8 @@ function META:DumpInfo()
 		if self.StorageType == "3d" then
 			logn("depth = ", self.Depth)
 		end
-		logn("==================================")
+		log(self:GetDebugTrace())
+	logn("==================================")
 end
 
 function META:MakeError()
@@ -535,7 +536,7 @@ function META:Download(mip_map_level)
 		buffer = buffer,
 		width = self.Size.w,
 		height = self.Size.h,
-		format = self.upload_format or "rgba",
+		format = "rgba",
 		mip_map_level = mip_map_level,
 		length = (self.Size.w * self.Size.h) - 1, -- for i = 0, data.length do
 	}
