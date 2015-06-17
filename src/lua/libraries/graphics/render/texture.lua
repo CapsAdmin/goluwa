@@ -1,6 +1,5 @@
-local gl = require("graphics.ffi.opengl") -- OpenGL
-
-local render = (...) or _G.render
+local render = ... or _G.render
+local gl = require("graphics.ffi.opengl")
 
 do -- texture binding
 	local last_texture
@@ -33,618 +32,713 @@ do -- texture binding
 	end
 end
 
-local SUPPRESS_GC = false
-	
-local CHECK_FIELD = function(t, str) 
-	if type(str) == "number" then
-		return str
-	end
-	
-	return render.TranslateStringToEnum("texture", t, str, 5) 
+
+local TOENUM = function(str) 
+	return "GL_" .. str:upper() 
 end
 
-local function update_format(self)
-	local f = self.format	
+local META = prototype.CreateTemplate("texture")
+
+function META:__index2(key)
+	if key == "w" then
+		return self:GetSize().w
+	elseif key == "h" then
+		return self:GetSize().h
+	end
+end
+
+META:StartStorable()
+META:GetSet("StorageType", "2d")
+META:GetSet("Size", Vec2())
+META:GetSet("Depth", 0)
+META:GetSet("MipMapLevels", 0)
+META:GetSet("Path", "loading")
+META:IsSet("Loading", false)
+META:IsSet("InternalFormat", "rgba8")
+META:EndStorable()
+
+local texture_formats = {
+	r8 = {normalized = true, bits = {8}},
+	r8_snorm = {signed = true, normalized = true, bits = {8}},
+	r16 = {normalized = true, bits = {16}},
+	r16_snorm = {signed = true, normalized = true, bits = {16}},
+	rg8 = {normalized = true, bits = {8, 8}},
+	rg8_snorm = {signed = true, normalized = true, bits = {8, 8}},
+	rg16 = {normalized = true, bits = {16, 16}},
+	rg16_snorm = {signed = true, normalized = true, bits = {16, 16}},
+	r3_g3_b2 = {normalized = true, bits = {3, 3, 2}},
+	rgb4 = {normalized = true, bits = {4, 4, 4}},
+	rgb5 = {normalized = true, bits = {5, 5, 5}},
+	rgb8 = {normalized = true, bits = {8, 8, 8}},
+	rgb8_snorm = {signed = true, normalized = true, bits = {8, 8, 8}},
+	rgb10 = {normalized = true, bits = {10, 10, 10}},
+	rgb12 = {normalized = true, bits = {12, 12, 12}},
+	rgb16_snorm = {normalized = true, bits = {16, 16, 16}},
+	rgba2 = {normalized = true, bits = {2, 2, 2, 2}},
+	rgba4 = {normalized = true, bits = {4, 4, 4, 4}},
+	rgb5_a1 = {normalized = true, bits = {5, 5, 5, 1}},
+	rgba8 = {normalized = true, bits = {8, 8, 8, 8}},
+	rgba8_snorm = {signed = true, normalized = true, bits = {8, 8, 8, 8}},
+	rgb10_a2 = {normalized = true, bits = {10, 10, 10, 2}},
+	rgb10_a2ui = {unsigned = true, bits = {10, 10, 10, 2}},
+	rgba12 = {normalized = true, bits = {12, 12, 12, 12}},
+	rgba16 = {normalized = true, bits = {16, 16, 16, 16}},
+	srgb8 = {normalized = true, bits = {8, 8, 8}},
+	srgb8_alpha8 = {normalized = true, bits = {8, 8, 8, 8}},
+	r16f = {float = true, bits = {16}},
+	rg16f = {float = true, bits = {16, 16}},
+	rgb16f = {float = true, bits = {16, 16, 16}},
+	rgba16f = {float = true, bits = {16, 16, 16, 16}},
+	r32f = {float = true, bits = {32}},
+	rg32f = {float = true, bits = {32, 32}},
+	rgb32f = {float = true, bits = {32, 32, 32}},
+	rgba32f = {float = true, bits = {32, 32, 32, 32}},
+	r11f_g11f_b10f = {float = true, bits = {11, 11, 10}},
+	rgb9_e5 = {normalized = true, bits = {9, 9, 9}},
+	r8i = {signed = true, bits = {8}},
+	r8ui = {unsigned = true, bits = {8}},
+	r16i = {signed = true, bits = {16}},
+	r16ui = {unsigned = true, bits = {16}},
+	r32i = {signed = true, bits = {32}},
+	r32ui = {unsigned = true, bits = {32}},
+	rg8i = {signed = true, bits = {8, 8}},
+	rg8ui = {unsigned = true, bits = {8, 8}},
+	rg16i = {signed = true, bits = {16, 16}},
+	rg16ui = {unsigned = true, bits = {16, 16}},
+	rg32i = {signed = true, bits = {32, 32}},
+	rg32ui = {unsigned = true, bits = {32, 32}},
+	rgb8i = {signed = true, bits = {8, 8, 8}},
+	rgb8ui = {unsigned = true, bits = {8, 8, 8}},
+	rgb16i = {signed = true, bits = {16, 16, 16}},
+	rgb16ui = {unsigned = true, bits = {16, 16, 16}},
+	rgb32i = {signed = true, bits = {32, 32, 32}},
+	rgb32ui = {unsigned = true, bits = {32, 32, 32}},
+	rgba8i = {signed = true, bits = {8, 8, 8, 8}},
+	rgba8ui = {unsigned = true, bits = {8, 8, 8, 8}},
+	rgba16i = {signed = true, bits = {16, 16, 16, 16}},
+	rgba16ui = {unsigned = true, bits = {16, 16, 16, 16}},
+	rgba32i = {signed = true, bits = {32, 32, 32, 32}},
+	rgba32ui = {unsigned = true, bits = {32, 32, 32, 32}},
+}
+
+local texture_types = {
+	unsigned_byte = {type = "uint8_t", false, false},
+	byte = {type = "byte", special = false, float = false},
+	unsigned_short = {type = "uint16_t", special = false, float = false},
+	short = {type = "int16_t", special = false, float = false},
+	unsigned_int = {type = "uint32_t", special = false, float = false},
+	int = {type = "int32_t", special = false, float = false},
+	half_float = {type = "half", special = false, float = true},
+	float = {type = "float", special = false, float = true},
+	unsigned_byte_3_3_2 = {type = "uint8_t", special = true, float = false},
+	unsigned_byte_2_3_3_rev = {type = "uint8_t", special = true, float = false},
+	unsigned_short_5_6_5 = {type = "uint16_t", special = true, float = false},
+	unsigned_short_5_6_5_rev = {type = "uint16_t", special = true, float = false},
+	unsigned_short_4_4_4_4 = {type = "uint16_t", special = true, float = false},
+	unsigned_short_4_4_4_4_rev = {type = "uint16_t", special = true, float = false},
+	unsigned_short_5_5_5_1 = {type = "uint16_t", special = true, float = false},
+	unsigned_short_1_5_5_5_rev = {type = "uint16_t", special = true, float = false},
+	unsigned_int_8_8_8_8 = {type = "uint32_t", special = true, float = false},
+	unsigned_int_8_8_8_8_rev = {type = "uint32_t", special = true, float = false},
+	unsigned_int_10_10_10_2 = {type = "uint32_t", special = true, float = false},
+	unsigned_int_2_10_10_10_rev = {type = "uint32_t", special = true, float = false},
+	unsigned_int_24_8 = {type = "uint32_t", special = true, float = false},
+	unsigned_int_10f_11f_11f_rev = {type = "uint32_t", special = true, float = true},
+	unsigned_int_5_9_9_9_rev = {type = "uint32_t", special = true, float = true},
+	float_32_unsigned_int_24_8_rev = {type = "", special = true, float = false},
+}
+
+local parameters = {
+	depth_stencil_texture_mode = {friendly = "StencilTextureMode", type = "string"}, -- DEPTH_COMPONENT, STENCIL_INDEX
+	depth_texture_mode = {friendly = "DepthTextureMode", type = "string"}, -- red, green, blue, etc
+	texture_base_level = {type = "int", default = 0}, -- any non-negative integer
+	texture_border_color = {type = "color", default = Color()}, --4 floats, any 4 values ints, or uints
+	texture_compare_mode = {type = "enum", default = "none"}, -- NONE, COMPARE_REF_TO_TEXTURE
+	texture_compare_func = {type = "enum", default = "never"}, -- LEQUAL, GEQUAL, LESS,GREATER, EQUAL, NOTEQUAL,ALWAYS, NEVER
+	texture_lod_bias = {type = "float", default = 0}, -- any value
+	texture_mag_filter = {type = "enum", default = "nearest"}, -- NEAREST, LINEAR
+	texture_max_level = {type = "int", default = 0}, -- any non-negative integer
+	texture_max_lod = {type = "float", default = 0}, -- any value
+	texture_min_filter = {type = "enum", default = "nearest"}, -- NEAREST, LINEAR, NEAREST_MIPMAP_NEAREST, NEAREST_MIPMAP_LINEAR, LINEAR_MIPMAP_NEAREST, LINEAR_MIPMAP_LINEAR,
+	texture_min_lod = {type = "float", default = 0}, -- any value
+	texture_swizzle_r = {type = "enum", default = "zero"}, -- RED, GREEN, BLUE, ALPHA, ZERO, ONE
+	texture_swizzle_g = {type = "enum", default = "zero"}, -- RED, GREEN, BLUE, ALPHA, ZERO, ONE
+	texture_swizzle_b = {type = "enum", default = "zero"}, -- RED, GREEN, BLUE, ALPHA, ZERO, ONE
+	texture_swizzle_a = {type = "enum", default = "zero"}, -- RED, GREEN, BLUE, ALPHA, ZERO, ONE
+	texture_swizzle_rgba = {type = "color", default = Color()}, --4 enums RED, GREEN, BLUE, ALPHA, ZERO, ONE
+	texture_wrap_s = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
+	texture_wrap_t = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
+	texture_wrap_r = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
+	texture_max_anisotropy_ext = {friendly = "Anisotropy", type = "int", default = 0, translate = function(num) 
+		if not render.max_anisotropy then
+			local largest = ffi.new("float[1]")
+			gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
+			render.max_anisotropy = largest[0]
+		end
+		
+		if num == -1 or num > render.max_anisotropy then
+			return render.max_anisotropy
+		end
+	end}, -- TEXTURE_MAX_ANISOTROPY_EXT
+}
+
+for k, v in pairs(parameters) do
+	local friendly = v.friendly or k:match("texture(_.+)"):gsub("_(.)", string.upper)
+	local info = META:GetSet(friendly, v.default)
+	local enum = gl.e["GL_" .. k:upper()]
 	
-	f.min_filter = CHECK_FIELD("min_filter", f.min_filter) or gl.e.GL_LINEAR_MIPMAP_LINEAR
-	f.mag_filter = CHECK_FIELD("mag_filter", f.mag_filter) or gl.e.GL_LINEAR				
+	if v.type == "enum" then
+		META[info.set_name] = function(self, val)
+			self[info.var_name] = val
+			self.gl_tex:SetParameteri(enum, gl.e[TOENUM(val)])
+		end
+	elseif v.type == "int" then
+		META[info.set_name] = function(self, val)
+			self[info.var_name] = val
+			self.gl_tex:SetParameteri(enum, v.translate and v.translate(val) or val)
+		end
+	elseif v.type == "float" then
+		META[info.set_name] = function(self, val)
+			self[info.var_name] = val
+			self.gl_tex:SetParameterf(enum, v.translate and v.translate(val) or val)
+		end
+	elseif v.type == "color" then
+		META[info.set_name] = function(self, val)
+			self[info.var_name] = val
+			self.gl_tex:SetParameterfv(enum, v.translate and v.translate(val) or val)
+		end
+	end
 	
-	f.wrap_s = CHECK_FIELD("wrap", f.wrap_s) or gl.e.GL_REPEAT
-	f.wrap_t = CHECK_FIELD("wrap", f.wrap_t) or gl.e.GL_REPEAT
-	f.wrap_r = CHECK_FIELD("wrap", f.wrap_r) or gl.e.GL_REPEAT
+	v.getset_info = info
+end
+
+function META:__copy()
+	return self
+end
+
+function META:SetPath(path, face)
+	self.Path = path
+	
+	self.Loading = true
+	
+	resource.Download(path, function(full_path)
+		local buffer, w, h, info = render.DecodeTexture(vfs.Read(full_path), full_path)
+		
+		self:SetSize(Vec2(w, h))
+				
+		if buffer then			
+			self:Upload({
+				buffer = buffer,
+				width = w,		
+				height = h,
+				format = "bgra",
+				face = face, -- todo
+			})
+		end
+
+		self.Loading = false
+		
+		if self.OnLoad then 
+			self:OnLoad() 
+		end
+	end)
+end
+
+do -- todo
+	local faces = {
+		"bk",
+		"dn",
+		"ft",
+		"lf",
+		"rt",
+		"up",
+	}
+
+	function META:LoadCubemap(path)
+		path = path:sub(0,-1)
+		for i, face in pairs(faces) do
+			self:SetPath(path .. face .. ".vtf", i)
+		end
+	end
+end
+
+function META:OnRemove()
+	self.gl_tex:Delete()
+end
+
+function META:SetupStorage()
+	render.StartDebug()
+	
+	--[[local levels = self.MipMapLevels
+	
+	if levels == 0 then
+		levels = math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2)) + 1
+	end]]
+	
+	local internal_format = TOENUM(self.InternalFormat)
+	
+	local upload_format = "GL_RGBA"
+	local upload_type = "GL_UNSIGNED_BYTE"
 	
 	do
-		local largest = ffi.new("float[1]")
-		gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
-		f.anisotropy = CHECK_FIELD("anisotropy", f.anisotropy) or largest[0]
-	end
-	
-	if f.type == gl.e.GL_TEXTURE_3D then
-		f.wrap_r = CHECK_FIELD("wrap", f.wrap_r) or gl.e.GL_REPEAT
-	end
-
-	for k,v in pairs(render.GetAvaibleEnums("texture", "parameters")) do
-		if f[k:lower()] then
-			gl.TexParameterf(f.type, v, f[k:lower()])
-		end
-	end
-	
-	-- only really used for caching..
-	self.format_string = {}
-	for k,v in pairs(f) do
-		table.insert(self.format_string, tostring(k) .. " == " .. tostring(v))
-	end
-	self.format_string = table.concat(self.format_string, "\n")		
-end 
-
-do -- texture object
-	local META = prototype.CreateTemplate("texture")
-	
-	META:GetSet("TextureType", "2D")
-	META:GetSet("UploadFormat", "bgra")
-	META:GetSet("InternalFormat", "rgba8")
-	META:GetSet("FormatType", "unsigned_byte")
-	META:GetSet("Channel", 0)
-	META:GetSet("Filter", "linear")
-	META:GetSet("Size", Vec2())
-	META:GetSet("MipMapLevels", 3)
-	
-	function render.CreateTexture(width, height, buffer, format)
-		if type(width) == "string" and not buffer and not format and (not height or type(height) == "table") then
-			return render.CreateTextureFromPath(width, {path = width})
-		end
-										
-		local buffer_size
+		local depth = internal_format:find("DEPTH", nil, true)
+		local stencil = internal_format:find("STENCIL", nil, true)
 		
-		if type(width) == "table" then
-			if type(width[1]) == "string" and table.isarray(width) then
-				for k, v in ipairs(width) do
-					if vfs.Exists(v) then
-						return render.CreateTextureFromPath(v, height)
-					end
-				end
-			elseif not height and not buffer and not format then
-				format = width.parameters
-				buffer = width.buffer
-				height = width.height
-				buffer_size = width.size
-				width = width.width
-			end
+		if depth and stencil then
+			upload_format = "GL_DEPTH_STENCIL"
+			upload_type = "GL_UNSIGNED_INT_24_8"
+		elseif depth then
+			upload_format = "GL_DEPTH_COMPONENT"
+		elseif stencil then
+			upload_format = "GL_STENCIL_COMPONENTS"
 		end
-		
-		check(width, "number")
-		check(height, "number")
-		check(buffer, "nil", "cdata")
-		check(format, "table", "nil")
-				
-		if width == 0 or height == 0 then
-			errorf("bad texture size (w = %i, h = %i)", 2, width, height)
-		end
-				
-		format = format or {}
-
-		for k, v in pairs(format) do
-			format[k] = CHECK_FIELD(k, v) or v
-		end
-
-		format.type = format.type or gl.e.GL_TEXTURE_2D
-		format.upload_format = format.upload_format or gl.e.GL_BGRA
-		format.internal_format = format.internal_format or gl.e.GL_RGBA8
-		format.format_type = format.format_type or gl.e.GL_UNSIGNED_BYTE
-		format.filter = format.filter ~= nil
-		format.stride = format.stride or 4
-		format.buffer_type = format.buffer_type or "unsigned char"
-		format.channel = format.channel or 0
-
-		format.mip_map_levels = format.mip_map_levels or 3 --ATI doesn't like level under 3
-		
-		-- create a new texture
-		local id = gl.GenTexture()
-
-		local self = prototype.CreateObject(META, 
-			{
-				id = id, 
-				size = Vec2(width, height), 
-				format = format,
-				w = width,
-				h = height,
-			},
-			SUPPRESS_GC
+	end
+	
+	internal_format = gl.e[internal_format]
+	
+	if self.StorageType == "3d" then
+		--[[self.gl_tex:Storage3D(
+			levels,
+			TOENUM(self.InternalFormat), 
+			self.Size.w, 
+			self.Size.h, 
+			self.Depth
+		)]]
+		self.gl_tex:Image3D(
+			"GL_TEXTURE_3D",
+			self.MipMapLevels,
+			internal_format, 
+			self.Size.w,
+			self.Size.h,
+			self.Depth,
+			0,
+			upload_format,
+			upload_type,
+			nil
 		)
-		
-		self.texture_channel = gl.e.GL_TEXTURE0 + format.channel
-		self.texture_channel_uniform = format.channel
-		
-		gl.BindTexture(format.type, self.id)
-
-		update_format(self)
-		
-		if self.compressed then
-			gl.CompressedTexImage2D(
-				format.type, 
-				format.mip_map_levels, 
-				format.upload_format, 
-				self.size.w, 
-				self.size.h, 
-				0, 
-				buffer_size, 
-				buffer
-			)
-			buffer = nil
-		elseif gl.TexStorage2D then
-			if format.type == gl.e.GL_TEXTURE_CUBE_MAP then
-				for i = 0, 5 do
-					gl.TexStorage2D(
-						gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-						format.mip_map_levels, 
-						format.internal_format, 
-						self.size.w, 
-						self.size.h
-					)
-				end
-			else
-				gl.TexStorage2D(
-					format.type, 
-					format.mip_map_levels, 
-					format.internal_format, 
-					self.size.w, 
-					self.size.h
-				)
+	elseif self.StorageType == "2d" or self.StorageType == "rectangle" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then		
+		if gl.TexStorage2D then
+			local levels = self.MipMapLevels
+			
+			if levels == 0 then
+				levels = math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2))
 			end
+			
+			--for i = 0, levels do
+				self.gl_tex:Storage2D(
+					levels,
+					internal_format, 
+					self.Size.w, 
+					self.Size.h
+				)
+			--end
 		else
-			if format.type == gl.e.GL_TEXTURE_CUBE_MAP then
-				for i = 0, 5 do
-					gl.TexImage2D(
-						gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-						format.mip_map_levels,
-						format.internal_format,
-						self.size.w,
-						self.size.h,
-						0,
-						format.upload_format,
-						format.format_type,
-						nil
-					)
-				end
-			else
-				gl.TexImage2D(
-					format.type,
-					format.mip_map_levels,
-					format.internal_format,
-					self.size.w,
-					self.size.h,
-					0,
-					format.upload_format,
-					format.format_type,
-					nil
-				)
-			end				
+			self.gl_tex:Image2D(
+				"GL_TEXTURE_2D",
+				self.MipMapLevels,
+				internal_format, 
+				self.Size.w,
+				self.Size.h,
+				0,
+				upload_format,
+				upload_type,
+				nil			
+			)
 		end
-		
-		if buffer then	
-			self:Upload(buffer, {size = buffer_size})
-		end
-		
-		gl.BindTexture(format.type, 0)
-						
-		if render.debug then
-			logf("creating texture %s w = %s h = %s buffer size = %s\n",  format.path or "no path", self.h, utility.FormatFileSize(buffer and ffi.sizeof(buffer) or 0)) --The texture size was never broken... someone used two non-existant variables w,h
-		end
-				
-		return self
-	end
-	
-	function META:OnRemove()
-		if self.format.no_remove then return end
-		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
-	end
-	
-	function META:__tostring2()
-		if self.texture_path then
-			return ("[%s][%s]"):format(self.id, self.texture_path)
-		end
-		return ("[%s]"):format(self.id)
-	end
-	
-	function META:__copy()
-		return self
-	end
-	
-	function META:Bind()
-		gl.BindTexture(self.format.type, self.override_texture and self.override_texture.id or self.id)
-	end
-	
-	function META:GetSize()
-		return self.size
-	end
-
-	function META:Download(level, format)
-		local f = self.format
-		local buffer, length = self:CreateBuffer()
-
-		gl.BindTexture(f.type, self.id)
-			gl.PixelStorei("GL_PACK_ALIGNMENT", f.stride)
-			gl.PixelStorei("GL_UNPACK_ALIGNMENT", f.stride)
-			gl.GetTexImage(f.type, level or 0, f.upload_format, format or f.format_type, buffer)
-		gl.BindTexture(f.type, 0)
-
-		return buffer, length
-	end
-	
-	function META:CreateBuffer(buffer_type, stride)
-		buffer_type = self.BufferType or "unsigned char"
-		stride = self.Stride or 4
-		
-		local length = self.size.w * (self.size.h+1) * self.format.stride
-		local buffer = ffi.new(buffer_type.."[?]", length)
-		
-		return buffer, length
-	end
-	
-	function META:Clear(val, level)	
-		level = level or 0
-		local f = self.format
-		
-		local buffer, length = self:CreateBuffer()
-
-		ffi.fill(buffer, length, val)
-		
-		gl.BindTexture(f.type, self.id)			
-
-		gl.TexSubImage2D(
-			f.type, 
-			level, 
+	elseif self.StorageType == "1d" or self.StorageType == "1d_array" then		
+		--[[self.gl_tex:Storage1D(
+			levels,
+			TOENUM(self.InternalFormat), 
+			self.Size.w
+		)]]
+		self.gl_tex:Image1D(
+			"GL_TEXTURE_1D",
+			self.MipMapLevels,
+			internal_format, 
+			self.Size.w,
 			0,
-			0,
-			self.size.w,
-			self.size.h, 
-			f.upload_format, 
-			f.format_type, 
-			buffer
+			upload_format,
+			upload_type,
+			nil
 		)
-		
-		if f.mip_map_levels > 0 then
-			gl.GenerateMipmap(f.type)
-		end
-		
-		gl.BindTexture(f.type, 0)			
-				
-		return self
 	end
 	
-	function META:Upload(buffer, format_override)
-		local f = format_override or self.format		
-		local f2 = self.format
-		
-		local x, y = f.x or 0, f.y or 0
-		local w, h = f.w or self.w, f.h or self.h
-		
-		if typex(buffer) == "texture" then
-			f = buffer.format
-			w = buffer.w
-			h = buffer.h
-			buffer = buffer:Download()
-		end
-		
-		if format_override then
-			for k, v in pairs(format_override) do
-				format_override[k] = CHECK_FIELD(k, v) or v
-			end
-		end
-		
-		gl.BindTexture(f2.type, self.id)			
-	
-			gl.PixelStorei("GL_PACK_ALIGNMENT", f.stride or f2.stride)
-			gl.PixelStorei("GL_UNPACK_ALIGNMENT", f.stride or f2.stride)
-				
-			update_format(self)
-		
-			if f2.clear then
-				if f2.clear == true then
-					self:Clear(nil)
-				else
-					self:Clear(f2.clear)
-				end
-			end
-			
-			y = -y + self.h - h
-			
-			if self.compressed then
-				gl.CompressedTexSubImage2D(
-					f2.type, 
-					f.level or 0, 
-					x,
-					y,
-					w, 
-					h, 
-					f.upload_format or f2.upload_format, 
-					f.size, 
-					buffer
-				)
-			else
-				gl.TexSubImage2D(
-					f2.type, 
-					f.level or 0, 
-					x, 
-					y,
-					w,
-					h, 
-					f.upload_format or f2.upload_format, 
-					f.format_type or f2.format_type,
-					buffer
-				)
-			end
-			
-			if f2.mip_map_levels > 0 then
-				gl.GenerateMipmap(f2.type)
-			end
-			
-		gl.BindTexture(f2.type, 0)
-		
-		return self
-	end
-		
-	function META:GetPixelColor(x, y)
-		x = math.clamp(math.floor(x), 1, self.w)		
-		y = math.clamp(math.floor(y), 1, self.h)		
-		
-		y = self.h-y
-		
-		local i = (y * self.w + x) * self.format.stride
-				
-		local buffer = self.downloaded_buffer or self:Download()
-		
-		self.downloaded_buffer = buffer
-
-		if self.format.upload_format == gl.e.GL_BGRA then
-			return buffer[i+2], buffer[i+1], buffer[i+0], buffer[i+3]
-		elseif self.format.upload_format == gl.e.GL_RGBA then
-			return buffer[i+0], buffer[i+1], buffer[i+2], buffer[i+3]		
-		elseif self.format.upload_format == gl.e.GL_BGR then
-			return buffer[i+0], buffer[i+1], buffer[i+2]
-		elseif self.format.upload_format == gl.e.GL_RGB then
-			return buffer[i+2], buffer[i+1], buffer[i+0]
-		elseif self.format.upload_format == gl.e.GL_RED then
-			return buffer[i]
-		end
-	end
-
-	do
-		local colors = ffi.new("char[4]")
-		
-		function META:Fill(callback, write_only, read_only)
-			check(callback, "function")
-			
-			if write_only == nil then
-				write_only = true
-			end
-			
-			local width = self.size.w
-			local height = self.size.h		
-			local stride = self.format.stride
-			local x, y = 0, 0
-			
-
-			local buffer
-			
-			if write_only then
-				buffer = self:CreateBuffer()
-			else
-				buffer = self:Download()
-			end	
-		
-			for y = 0, height-1 do
-			for x = 0, width-1 do
-				local pos = (y * width + x) * stride
-				
-				if write_only then
-					colors[0], colors[1], colors[2], colors[3] = callback(x, y, pos)
-				else
-					local temp = {}
-					for i = 0, stride-1 do
-						temp[i+1] = buffer[pos+i]
-					end
-					if read_only then
-						if callback(x, y, pos, unpack(temp)) ~= nil then return end
-					else
-						colors[0], colors[1], colors[2], colors[3] = callback(x, y, pos, unpack(temp))
-					end
-				end
-			
-				if not read_only then
-					for i = 0, stride-1 do
-						buffer[pos+i] = colors[i]
-					end
-				end
-			end
-			end
-
-			if not read_only then
-				self:Upload(buffer)
-			end
-			
-			return self
-		end
+	local msg = render.StopDebug()
+	if msg then
+		logn("==================================")
+		logn(self, ":SetupStorage() failed")
+		logn("==================================")
+		self:DumpInfo()
+		logn("==================================")
+		warning("\n" .. msg)
 	end
 	
-	function META:BeginWrite()
-		local fb = self.fb or render.CreateFrameBuffer(self.w, self.h, {texture = self})
-		self.fb = fb
-		
-		fb:Begin()
-		surface.PushMatrix()
-		surface.LoadIdentity()
-		surface.Scale(self.w, self.h)
-	end
-	
-	function META:EndWrite()
-		surface.PopMatrix()
-		self.fb:End()
-	end
-	
-	do
-		local template = [[
-			out vec4 out_color;
-			
-			vec4 shade()
-			{
-				%s
-			}
-			
-			void main()
-			{
-				out_color = shade();
-			}
-		]]
-		
-		function META:Shade(fragment_shader, vars, dont_blend)		
-			self.shaders = self.shaders or {}
-			
-			local name = "shade_texture_" .. self.id .. "_" .. crypto.CRC32(fragment_shader)
-			local shader = self.shaders[name]
-			
-			
-			if not self.shaders[name] then
-				local data = {
-					name = name,
-					shared = {
-						variables = vars,
-					},
-					
-					vertex = {
-						mesh_layout = {
-							{pos = "vec3"},
-							{uv = "vec2"},
-						},	
-						source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);"
-					},
-					
-					fragment = { 
-						variables = {
-							self = self,
-							size = self:GetSize(),
-						},		
-						mesh_layout = {
-							{uv = "vec2"},
-						},			
-						source = template:format(fragment_shader),
-					} 
-				} 
-					
-				shader = render.CreateShader(data)
-				
-				self.shaders[name] = shader
-			end
-			
-			
-			self:BeginWrite()
-				if vars then
-					for k,v in pairs(vars) do
-						shader[k] = v
-					end				
-				end
-			
-				if not dont_blend then 
-					render.SetBlendMode("src_alpha", "one_minus_src_alpha")
-				end
-				
-				render.SetShaderOverride(shader)
-				surface.rect_mesh:Draw()
-				render.SetShaderOverride()
-			self:EndWrite()
-		end
-	
-	end
-	
-	function META:Replace(data, w, h)
-		gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
-		
-		SUPPRESS_GC = true
-		local new = render.CreateTexture(w, h, data, self.format)
-		SUPPRESS_GC = false
-		
-		for k, v in pairs(new) do
-			self[k] = v
-		end
-	end
-	
-	function META:IsLoading()
-		return self.loading
-	end
-	
-	function META:MakeError()
-		local err = render.GetErrorTexture()
-		buffer = err:Download()
-		w = err.w
-		h = err.h
-		self:Replace(buffer, w, h)
-		self.loading = nil
-		self.override_texture = nil
-	end
-	
-	prototype.Register(META)
+	self.storage_setup = true
 end
 
-render.texture_path_cache = {}
-
-function render.CreateTextureFromPath(path, format)
-	if render.texture_path_cache[path] then 
-		return render.texture_path_cache[path] 
-	end
-			
-	format = format or {}
-	
-	if path:endswith(".png") then
-		format.internal_format = format.internal_format or "rgba8"
-		format.upload_format = format.upload_format or "bgra"
-		format.stride = 4
+function META:Upload(data)	
+	if not self.storage_setup then
+		self:SetupStorage()
 	end
 	
-	local loading = render.GetLoadingTexture()
-	local self = render.CreateTexture(loading.w, loading.h, nil, format)
-
-	self.override_texture = loading
-	self.loading = true
-	self.texture_path = "loading"
-	local real_path = path
-	resource.Download(
-		path, 
-		function(path)
-			local data = vfs.Read(path)
-			
-			self.loading = false
-			self.override_texture = nil
-
-			local buffer, w, h, info = render.DecodeTexture(data, path)
-			if buffer == nil or w == 0 or h == 0 then
-				logf("error loading texture %s: %s\n", path, buffer or w or h or "unknown error")
-				self:MakeError()
-			else
-				if info.format then
-					table.merge(self.format, info.format)
-					update_format(self)
-				end
-								
-				self:Replace(buffer, w, h)
-				
-				if self.OnLoad then
-					self:OnLoad(w, h, info)
-				end
-				self.texture_path = real_path
-			end
-			self.decode_info = info
-		end, 
-		function(reason)
-			self.loading = false
-			self.override_texture = nil
+	render.StartDebug()
+	
+	data.mip_map_level = data.mip_map_level or 0
+	data.format = data.format or "rgba"
+	data.type = data.type or "unsigned_byte"
+	
+	if type(data.buffer) == "string" then 
+		data.buffer = ffi.cast("uint8_t *", data.buffer) 
+	end
+	
+	if self.StorageType == "cube_map" then
+		data.z = data.face or data.z
+		data.depth = data.depth or 1
+	end
+	
+	local y
+	
+	if data.y then
+		y = -data.y + self.Size.h - data.height
+	end
+	
+	if self.StorageType == "3d" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then		
+		data.x = data.x or 0
+		y = y or 0
+		data.z = data.z or 0
 		
-			logf("error loading texture %s: %s\n", path, reason) 
-			self:MakeError() 
+		if data.image_size then
+			self.gl_tex:CompressedSubImage3D(
+				data.mip_map_level, 
+				data.x, 
+				y, 
+				data.z, 
+				data.width, 
+				data.height, 
+				data.depth, 
+				TOENUM(data.format), 
+				TOENUM(data.type), 
+				data.image_size, 
+				data.buffer
+			)
+		else
+			self.gl_tex:SubImage3D(
+				data.mip_map_level, 
+				data.x, 
+				y, 
+				data.z, 
+				data.width, 
+				data.height, 
+				data.depth, 
+				TOENUM(data.format), 
+				TOENUM(data.type), 
+				data.buffer
+			)
+		end		
+	elseif self.StorageType == "2d" or self.StorageType == "1d_array" or self.StorageType == "rectangle" then		
+		data.x = data.x or 0
+		y = y or 0
+	
+		if data.image_size then
+			self.gl_tex:CompressedSubImage2D(
+				data.mip_map_level, 
+				data.x, 
+				y, 
+				data.width, 
+				data.height, 
+				TOENUM(data.format), 
+				TOENUM(data.type), 
+				data.image_size, 
+				data.buffer
+			)
+		else
+			self.gl_tex:SubImage2D(
+				data.mip_map_level, 
+				data.x, 
+				y, 
+				data.width, 
+				data.height, 
+				TOENUM(data.format), 
+				TOENUM(data.type), 
+				data.buffer
+			)
 		end
-	)
+	elseif self.StorageType == "1d" then		
+		data.x = data.x or 0
+		
+		if data.image_size then
+			self.gl_tex:CompressedSubImage1D(
+				data.mip_map_level, 
+				data.x, 
+				data.width, 
+				TOENUM(data.format), 
+				TOENUM(data.type), 
+				data.image_size, 
+				data.buffer
+			)
+		else
+			self.gl_tex:SubImage1D(
+				data.mip_map_level, 
+				data.x, 
+				data.width, 
+				TOENUM(data.format), 
+				TOENUM(data.type), 
+				data.buffer
+			)
+		end
+	elseif self.StorageType == "buffer" then
+		--self.gl_tex:Buffer(TOENUM(self.InternalFormat))
+		--self.gl_tex:BufferRange(TOENUM(self.InternalFormat), )
+		warning("NYI", 2)
+	end
+
+	self.gl_tex:GenerateMipmap()
+
+	self.downloaded_image = nil
 	
-	render.texture_path_cache[real_path] = self
+	local msg = render.StopDebug()
+	if msg then
+		logn("==================================")
+		logn(tostring(self) .. ":Upload() failed")
+		self:DumpInfo()
+		table.print(data)
+		warning("\n" .. msg, 2)
+	end
+end
+
+function META:DumpInfo()
+	logn("==================================")
+		logn("storage type = ", self.StorageType)
+		logn("internal format = ", TOENUM(self.InternalFormat))
+		logn("mip map levels = ", self.MipMapLevels)
+		logn("size = ", self.Size)		
+		if self.StorageType == "3d" then
+			logn("depth = ", self.Depth)
+		end
+		log(self:GetDebugTrace())
+	logn("==================================")
+end
+
+function META:MakeError()
+	self:Upload(render.GetErrorTexture():Download())
+end
+
+ffi.cdef("typedef struct {uint8_t r, g, b, a;} rgba_pixel;")
+
+function META:Download(mip_map_level)
+	render.StartDebug()
 	
+	mip_map_level = mip_map_level or 0
+	
+	local size = self.Size.w * self.Size.h * ffi.sizeof("rgba_pixel")
+	local buffer = ffi.new("rgba_pixel[?]", size)
+	
+	self.gl_tex:GetImage(mip_map_level, "GL_RGBA", "GL_UNSIGNED_BYTE", size, buffer)
+	
+	local msg = render.StopDebug()
+	if msg then
+		table.print(self:GetStorableTable())
+		warning(msg, 2)
+	end
+	
+	return {
+		type = "unsigned_byte",
+		buffer = buffer,
+		width = self.Size.w,
+		height = self.Size.h,
+		format = "rgba",
+		mip_map_level = mip_map_level,
+		length = (self.Size.w * self.Size.h) - 1, -- for i = 0, data.length do
+	}
+end
+
+function META:Clear(mip_map_level)
+	local size = self.Size.w * self.Size.h * ffi.sizeof("rgba_pixel")
+	local buffer = ffi.new("rgba_pixel[?]", size)
+	
+	self:Upload({
+		buffer = buffer,
+		width = self.Size.w,
+		height = self.Size.h,
+		format = "rgba",
+		mip_map_level = mip_map_level,
+	})
+end
+
+function META:Fill(callback)
+	check(callback, "function")
+		
+	local image = self:Download()
+	
+	local x = 0
+	local y = 0
+	local buffer = image.buffer
+
+	for i = 0, image.length do
+		if x >= image.width then
+			y = y + 1
+			x = 0
+		end
+		
+		local r,g,b,a
+		
+		if image.format == "bgra" then
+			r,g,b,a = callback(x, y, i, buffer[i].b, buffer[i].g, buffer[i].r, buffer[i].a)
+		elseif image.format == "rgba" then
+			r,g,b,a = callback(x, y, i, buffer[i].r, buffer[i].b, buffer[i].g, buffer[i].a)
+		elseif image.format == "bgr" then
+			b,g,r = callback(x, y, i, buffer[i].b, buffer[i].g, buffer[i].r)
+		elseif image.format == "rgb" then
+			r,g,b = callback(x, y, i, buffer[i].r, buffer[i].g, buffer[i].b)
+		elseif image.format == "red" then
+			r = callback(x, y, i, buffer[i].r)
+		end
+		
+		if r then buffer[i].r = r end
+		if g then buffer[i].g = g end
+		if b then buffer[i].b = b end
+		if a then buffer[i].a = a end
+		
+		x = x + 1
+	end
+	
+	self:Upload(image)
+	
+	return self
+end
+
+function META:GetPixelColor(x, y)
+	x = math.clamp(math.floor(x), 1, self.w)		
+	y = math.clamp(math.floor(y), 1, self.h)		
+	
+	y = self.h-y
+	
+	local i = y * self.w + x
+			
+	local image = self.downloaded_image or self:Download()
+	self.downloaded_image = image
+
+	local buffer = image.buffer
+	
+	if image.format == "bgra" then
+		return buffer[i].b, buffer[i].g, buffer[i].r, buffer[i].a
+	elseif image.format == "rgba" then
+		return buffer[i].r, buffer[i].b, buffer[i].g, buffer[i].a		
+	elseif image.format == "bgr" then
+		return buffer[i].b, buffer[i].g, buffer[i].r
+	elseif image.format == "rgb" then
+		return buffer[i].r, buffer[i].g, buffer[i].b
+	elseif image.format == "red" then
+		return buffer[i].r
+	end
+end
+
+function META:BeginWrite()
+	local fb = self.fb or render.CreateFrameBuffer()
+	fb:SetSize(self:GetSize():Copy())
+	fb:SetTexture(1, self)
+	self.fb = fb
+	
+	fb:Begin()
+	surface.PushMatrix()
+	surface.LoadIdentity()
+	surface.Scale(self.w, self.h)
+end
+
+function META:EndWrite()
+	surface.PopMatrix()
+	self.fb:End()
+end
+
+do
+	local template = [[
+		out vec4 out_color;
+		
+		vec4 shade()
+		{
+			%s
+		}
+		
+		void main()
+		{
+			out_color = shade();
+		}
+	]]
+	
+	function META:Shade(fragment_shader, vars, dont_blend)		
+		self.shaders = self.shaders or {}
+		
+		local name = "shade_texture_" .. tostring(self.gl_tex.id) .. "_" .. crypto.CRC32(fragment_shader)
+		local shader = self.shaders[name]
+		
+		
+		if not self.shaders[name] then
+			local data = {
+				name = name,
+				shared = {
+					variables = vars,
+				},
+				fragment = { 
+					variables = {
+						self = self,
+						size = self:GetSize(),
+					},		
+					mesh_layout = {
+						{uv = "vec2"},
+					},			
+					source = template:format(fragment_shader),
+				} 
+			} 
+				
+			shader = render.CreateShader(data)
+			
+			self.shaders[name] = shader
+		end
+		
+		
+		self:BeginWrite()
+			if vars then
+				for k,v in pairs(vars) do
+					shader[k] = v
+				end				
+			end
+		
+			if not dont_blend then 
+				render.SetBlendMode("src_alpha", "one_minus_src_alpha")
+			end
+			
+			render.SetShaderOverride(shader)
+			surface.rect_mesh:Draw()
+			render.SetShaderOverride()
+		self:EndWrite()
+		
+		return self
+	end
+
+end
+
+function META:Bind(location)
+	if self.not_dsa then
+		gl.BindTexture(self.gl_tex.target, self.gl_tex.id)
+	else
+		gl.BindTextureUnit(location or 0, self.gl_tex.id)
+	end
+end
+
+META:Register()
+
+function render.CreateTexture(type)
+	local self = prototype.CreateObject(META)
+	
+	if type then 
+		self.StorageType = type
+	end
+
+	self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
+	self.id = self.gl_tex.id -- backwards compatibility
+	
+	self.not_dsa = not gl.CreateTextures
+		
 	return self
 end
 
@@ -679,4 +773,159 @@ function render.DecodeTexture(data, path_hint)
 	end
 end
 
-Texture = render.CreateTexture -- reload!
+render.texture_path_cache = {}
+
+function Texture(...)
+	local path = ...
+	if type(path) == "string" then
+		if render.texture_path_cache[path] then 
+			return render.texture_path_cache[path] 
+		end
+		
+		local self = render.CreateTexture("2d")
+		self:SetPath(path)
+		
+		render.texture_path_cache[path] = self
+		
+		return self
+	end
+	
+	local w,h = ...
+	if type(w) == "number" and type(h) == "number" then
+		local self = render.CreateTexture("2d")
+		self:SetSize(Vec2(w, h))
+		self:SetupStorage()
+		self:Clear()
+		return self	
+	end
+	
+	local size = ...
+	if typex(size) == "vec2" then
+		local self = render.CreateTexture("2d")
+		self:SetSize(size:Copy())
+		self:SetupStorage()
+		self:Clear()
+		return self	
+	end
+	
+	return render.CreateTexture(...)
+end
+
+if not RELOAD then return end
+
+local tex = render.CreateTexture("2d")
+
+--tex:LoadCubemap("materials/skybox/sky_borealis01")
+--tex:SetPath("https://i.ytimg.com/vi/YC4mDN7ltT0/default.jpg")
+tex:SetPath("textures/greendog.png")
+
+local function blur_texture(dir)
+	tex:Shade([[
+		//this will be our RGBA sum
+		vec4 sum = vec4(0.0);
+
+		//the amount to blur, i.e. how far off center to sample from 
+		//1.0 -> blur by one pixel
+		//2.0 -> blur by two pixels, etc.
+		float blur = radius/resolution; 
+
+		//the direction of our blur
+		//(1.0, 0.0) -> x-axis blur
+		//(0.0, 1.0) -> y-axis blur
+		float hstep = dir.x;
+		float vstep = dir.y;
+
+		//apply blurring, using a 9-tap filter with predefined gaussian weights
+
+		sum += texture(self, vec2(uv.x - 4.0*blur*hstep, uv.y - 4.0*blur*vstep)) * 0.0162162162;
+		sum += texture(self, vec2(uv.x - 3.0*blur*hstep, uv.y - 3.0*blur*vstep)) * 0.0540540541;
+		sum += texture(self, vec2(uv.x - 2.0*blur*hstep, uv.y - 2.0*blur*vstep)) * 0.1216216216;
+		sum += texture(self, vec2(uv.x - 1.0*blur*hstep, uv.y - 1.0*blur*vstep)) * 0.1945945946;
+
+		sum += texture(self, vec2(uv.x, uv.y)) * 0.2270270270;
+
+		sum += texture(self, vec2(uv.x + 1.0*blur*hstep, uv.y + 1.0*blur*vstep)) * 0.1945945946;
+		sum += texture(self, vec2(uv.x + 2.0*blur*hstep, uv.y + 2.0*blur*vstep)) * 0.1216216216;
+		sum += texture(self, vec2(uv.x + 3.0*blur*hstep, uv.y + 3.0*blur*vstep)) * 0.0540540541;
+		sum += texture(self, vec2(uv.x + 4.0*blur*hstep, uv.y + 4.0*blur*vstep)) * 0.0162162162;
+
+		return sum;
+	]], { 
+		radius = 1, 
+		resolution = render.GetScreenSize(),
+		dir = dir,
+	})  
+end
+
+blur_texture(Vec2(0,5))
+blur_texture(Vec2(5,0))
+
+local shader = render.CreateShader({
+	name = "test",
+	fragment = {
+		variables = {
+			cam_dir = {vec3 = function() return render.camera_3d:GetAngles():GetForward() end},
+			tex = tex,
+		},
+		mesh_layout = {
+			{uv = "vec2"},
+		},			
+		source = [[
+			out highp vec4 frag_color;
+			
+			void main()
+			{	
+				vec4 tex_color = texture(tex, uv); 
+				//vec4 tex_color = texture(tex, cam_dir); 
+				
+				frag_color = tex_color;
+			}
+		]],
+	}
+})
+
+serializer.WriteFile("msgpack", "lol.wtf", tex:Download())
+local info = serializer.ReadFile("msgpack", "lol.wtf")
+tex:Upload(info)
+--[[local size = 16
+tex:Fill(function(x, y)
+	if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
+		return 255, 0, 255, 255
+	else
+		return 0, 0, 0, 255
+	end
+end)]]
+--tex:Clear()
+
+local tex = Texture(128, 128)
+local image = ffi.new("uint8_t[8][8][4]")
+for x = 0, 8 - 1 do
+for y = 0, 8 - 1 do
+	image[x][y][0] = math.random(255)
+	image[x][y][3] = 255
+end
+end
+
+tex:Upload({
+	x = 50,
+	y = 50,
+	buffer = image,
+	width = 8,
+	height = 8,
+})
+
+event.AddListener("PostDrawMenu", "lol", function()
+	--surface.PushMatrix(0, 0, tex:GetSize():Unpack())
+		--render.SetShaderOverride(shader)
+		--surface.rect_mesh:Draw()
+		--render.SetShaderOverride()
+	--surface.PopMatrix()
+	
+	surface.SetTexture(tex)
+	surface.SetColor(1,1,1,1)
+	surface.DrawRect(0,0,tex.w,tex.h)
+	
+	surface.SetWhiteTexture()
+	surface.SetColor(ColorBytes(tex:GetPixelColor(surface.GetMousePosition())))
+	surface.DrawRect(50,50,50,50)
+end)
