@@ -4,8 +4,6 @@ local parent = entities.CreateEntity("visual")
  
 LOL_PARENT = parent
 
-parent:SetColor(Color(1,1,1))
-parent:SetAlpha(1)
 parent:SetModelPath("models/cube.obj")
 parent:SetPosition(render.camera_3d:GetPosition())   
 parent:SetAngles(Ang3(0,0,0)) 
