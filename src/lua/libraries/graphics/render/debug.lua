@@ -116,7 +116,8 @@ function render.StopDebug()
 			message = {}
 			
 			for i = 0, int[0] do
-				if gl.GetDebugMessageLog(1, length, nil, nil, nil, nil, nil, buffer) ~= 0 then
+				local types = ffi.new("GLenum[1]")
+				if gl.GetDebugMessageLog(1, length, nil, types, nil, nil, nil, buffer) ~= 0 and types[0] == gl.e.GL_DEBUG_TYPE_ERROR then
 					table.insert(message, ffi.string(buffer))
 				end
 			end
