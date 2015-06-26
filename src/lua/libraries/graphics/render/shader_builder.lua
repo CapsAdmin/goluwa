@@ -215,7 +215,7 @@ local function variables_to_string(type, variables, prepend, macro, array)
 				name = prepend .. name
 			end
 
-			if data.type == "texture2" then
+			if data.type == "texture" then
 				table.insert(out, ("layout(binding = %i) %s %s %s %s %s%s;"):format(texture_channel, data.varying, type, data.precision, "sampler2D", name, array):trim())
 				texture_channel = texture_channel + 1
 			else	
@@ -851,7 +851,7 @@ function render.CreateShader(data, vars)
 			elseif data.id > -1 then
 				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
-				if data.val.type == "texture" or data.val.type == "texture2" or data.val.type == "sampler2D" or data.val.type == "samplerCube" then
+				if data.val.type == "texture" or data.val.type == "sampler2D" or data.val.type == "samplerCube" then
 					line = line:format(texture_channel, data.id)
 					texture_channel = texture_channel + 1
 				else
