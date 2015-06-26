@@ -673,7 +673,6 @@ if not DISABLE_CURSES then
 
 	function console.InitializeCurses()
 		if SERVER or not surface then
-			print("no!!!!!!!!!!!!!!!!!!!!", SERVER, CLIENT, surface)
 			-- the renderer might fail to load :( !
 			local hack = false
 			
@@ -735,9 +734,6 @@ if not DISABLE_CURSES then
 					--return
 				end					
 				
-				--for char in key:gmatch("(.)") do print(char:byte()) end
-				--print(key)
-
 				c.markup:SetControlDown(key:find("CTL_") ~= nil)
 				c.markup:SetShiftDown(key:find("KEY_S") ~= nil)
 			
@@ -798,7 +794,7 @@ if not DISABLE_CURSES then
 		curses.initscr() -- init curses
 		
 		if WINDOWS and pdcurses_for_real_windows then
-			curses.resize_term(50, 150) 
+		--	curses.resize_term(50, 150) 
 		end
 		
 		curses.raw() -- raw input, disables ctrl-c and such
@@ -834,47 +830,6 @@ if not DISABLE_CURSES then
 		
 		console.SetSize(curses.COLS, curses.LINES)
 		
-		--[[
-		
-		function io.write(...)
-			local str = table.concat({...}, "")
-
-			console.Print(str)
-		end
-			
-		local function override(file, prefix)
-			local meta = getmetatable(file)
-			if not meta then return file end
-			local copy = {}
-			for k, v in pairs(meta) do 
-				if k == "write" then
-					copy[k] = function(_, ...) 
-						io.write(...)
-						return v(file, prefix, ...)
-					end 
-				else
-					copy[k] = function(_, ...) 
-						return v(file, ...)
-					end 
-				end
-			end
-			copy.__index = copy
-			return setmetatable({}, copy)
-		end
-		
-		io.stderr = override(io.stderr, "io.stderr: ")
-		io.stdout = override(io.stdout, "io.stdout: ")
-
-		for _, line in ipairs(_G.LOG_BUFFER) do
-			hush = true
-			console.Print(line)
-			hush = false
-		end
-
-		_G.LOG_BUFFER = nil
-		
-		]]
-			
 		console.curses_init = true
 	end
 	
@@ -921,9 +876,6 @@ if not DISABLE_CURSES then
 	function console.Print(str)
 		if not console.CanPrint(str) then return end
 
-		if not hush then
-			--_OLD_G.io.write(str)
-		end
 		console.SyntaxPrint(str, c.log_window)
 		
 		table.insert(log_history, str)
@@ -1295,9 +1247,6 @@ if not DISABLE_CURSES then
 
 	if RELOAD then
 		console.InitializeCurses()
-		
-		--console.Print(vfs.Read([[C:\goluwa\.base\lua\libraries\extensions\console_curses.lua]]))  
-		--event.CreateTimer("lol", 1, 0, print)
 	end
 
 end

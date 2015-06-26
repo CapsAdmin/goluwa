@@ -289,7 +289,6 @@ function render.InitializeGBuffer(width, height)
 			end
 		end
 	
-		table.print(render.gbuffer_buffers)
 		render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_buffers)  
 		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(width, height)  
 		
