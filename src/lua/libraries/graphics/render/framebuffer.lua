@@ -74,6 +74,15 @@ function render.CreateFrameBuffer(width, height, textures)
 	
 	if width and height then
 		self:SetSize(Vec2(width, height))
+		
+		if not textures then
+			textures = {
+				attach = "color",
+				texture_format = {
+					internal_format = "rgba32f",
+				},
+			}
+		end
 	end
 	
 	if textures then
@@ -101,6 +110,7 @@ function render.CreateFrameBuffer(width, height, textures)
 				end
 			end
 			
+			tex:SetMipMapLevels(1)
 			tex:SetupStorage()
 			tex:Clear()
 			
@@ -369,7 +379,7 @@ end
 prototype.Register(META)
 
 
-if not RELOAD then return end
+if not RELOAD then return end 
 
 local fb = render.CreateFrameBuffer()
 
@@ -395,7 +405,7 @@ fb:SetTexture("stencil", tex)
 
 fb:SetWrite(1, false)
 
-fb:Begin()
+fb:Begin() 
 	surface.SetWhiteTexture()
 	surface.SetColor(1,0,0,1)
 	surface.DrawRect(30,30,50,50)
