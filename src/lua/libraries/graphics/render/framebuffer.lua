@@ -339,7 +339,7 @@ function META:WriteThese(str)
 				self:SetWrite(pos, false)
 			end
 		else
-			for _, pos in pairs(str:explode("|")) do
+			for _, pos in pairs(tostring(str):explode("|")) do
 				pos = tonumber(pos) or pos
 				self:SetWrite(pos, true)
 			end
@@ -373,6 +373,8 @@ function META:Clear(i, r,g,b,a)
 			gl.ClearDepth(r)
 		elseif i == "stencil" then
 			gl.ClearStencil(r)
+		elseif self.textures[i] then
+			self:Clear(self.textures[i].pos - gl.e.GL_COLOR_ATTACHMENT0 - 1, r,g,b,a)
 		end
 	self:End()
 end
@@ -405,58 +407,51 @@ do
 	fb:SetTexture(2, tex, "read_write")
 end
 
-do	-- write a pink square only to attachment 1
-	fb:SetWrite(1, false)
+do	
+	fb:WriteThese("2")
 
 	fb:Begin()
 		surface.SetColor(1,1,1,1)
 		surface.DrawText("YOU SHOULD SEE THIS", 150, 80)
 	fb:End()
-
-	fb:SetWrite(1, true)
 end
 
-
-do	-- write a pink square only to attachment 1
-	fb:SetWrite(2, false)
+do	
+	fb:WriteThese("1")
 
 	fb:Begin()
 		surface.SetColor(1,1,1,1)
 		surface.DrawText("YOU SHOULD NOT SEE THIS", 250, 50)
 	fb:End()
 
-	fb:SetWrite(2, true)
-	
-	fb:Clear(2)
+	fb:Clear(1)
 end
 
 do -- write a red square only to attachment 2
-	fb:SetWrite(1, false)
+	fb:WriteThese("2")
 
 	fb:Begin() 
 		surface.SetWhiteTexture()
 		surface.SetColor(1,0,0,1)
 		surface.DrawRect(30,30,50,50)
 	fb:End()
-
-	fb:SetWrite(1, true)
 end
 
 do	-- write a pink square only to attachment 1
-	fb:SetWrite(2, false)
+	fb:WriteThese("1")
 
 	fb:Begin()
 		surface.SetWhiteTexture()
 		surface.SetColor(1,0,1,1)
 		surface.DrawRect(100,30,50,50)
 	fb:End()
-
-	fb:SetWrite(2, true)
 end
 
 --fb:WriteThese("stencil")
  
 do -- write a rotated green rectangle to attachment 1 and 2
+	fb:WriteThese("1|2")
+	
 	fb:Begin()
 		surface.SetWhiteTexture()
 		surface.SetColor(0,1,0,0.5)
