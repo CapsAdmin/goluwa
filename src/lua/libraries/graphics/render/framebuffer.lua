@@ -356,16 +356,17 @@ function META:Clear(i, r,g,b,a)
 			
 	self:Begin()
 		if type(i) == "number" then
+			r = r or Color()
+			
 			if g and b then
 				r = Color(r, g, b, a or 0)
 			end
 		
 			if i == 0 then
-				r = r or Color()
 				gl.ClearColor(r.r, r.g, r.b, r.a)
 				gl.Clear(gl.e.GL_COLOR_BUFFER_BIT)
 				render.SetClearColor(render.GetClearColor())
-			else	
+			else
 				gl.ClearBufferfv("GL_COLOR", i - 1, r.ptr)
 			end
 		elseif i == "depth" then
@@ -380,60 +381,88 @@ prototype.Register(META)
 
 
 if not RELOAD then return end 
-
-local fb = render.CreateFrameBuffer()
-
-local tex = render.CreateTexture("2d")
-tex:SetSize(Vec2(1024, 1024))
-tex:SetInternalFormat("rgba8")
-tex:Clear()
-
-fb:SetTexture(1, tex, "read_write")
-
-local tex = render.CreateTexture("2d") 
-tex:SetSize(Vec2(1024, 1024))
-tex:SetInternalFormat("rgba8")
-tex:Clear()
-
-fb:SetTexture(2, tex, "read_write")
-
-local tex = render.CreateTexture("2d")
-tex:SetSize(Vec2(1024, 1024))
-tex:SetInternalFormat("depth24_stencil8")
-tex:SetupStorage()
-fb:SetTexture("stencil", tex)
-
-fb:SetWrite(1, false)
-
-fb:Begin() 
-	surface.SetWhiteTexture()
-	surface.SetColor(1,0,0,1)
-	surface.DrawRect(30,30,50,50)
-fb:End()
-
-fb:SetWrite(1, true)
-
-fb:SetWrite(2, false)
-
-fb:Begin()
-	surface.SetWhiteTexture()
-	surface.SetColor(1,0,1,1)
-	surface.DrawRect(30,30,50,50)
-fb:End()
-
-fb:SetWrite(2, true)
-
-fb:WriteThese("stencil")
  
-fb:Begin()
-	surface.SetWhiteTexture()
-	surface.SetColor(0,1,0,0.5)
-	surface.DrawRect(20,20,50,50, 50)
-fb:End()
 
-fb:WriteThese("all")
 
---fb:Clear(1, 1,0,0,0.5) 
+local fb = render.CreateFrameBuffer() 
+fb:SetSize(Vec2()+1024)
+
+do
+	local tex = render.CreateTexture("2d")
+	tex:SetSize(Vec2(1024, 1024))
+	tex:SetInternalFormat("rgba8")
+	tex:Clear()
+
+	fb:SetTexture(1, tex, "read_write")
+end
+
+do
+	local tex = render.CreateTexture("2d") 
+	tex:SetSize(Vec2(1024, 1024))
+	tex:SetInternalFormat("rgba8")
+	tex:Clear()
+
+	fb:SetTexture(2, tex, "read_write")
+end
+
+do	-- write a pink square only to attachment 1
+	fb:SetWrite(1, false)
+
+	fb:Begin()
+		surface.SetColor(1,1,1,1)
+		surface.DrawText("YOU SHOULD SEE THIS", 150, 80)
+	fb:End()
+
+	fb:SetWrite(1, true)
+end
+
+
+do	-- write a pink square only to attachment 1
+	fb:SetWrite(2, false)
+
+	fb:Begin()
+		surface.SetColor(1,1,1,1)
+		surface.DrawText("YOU SHOULD NOT SEE THIS", 250, 50)
+	fb:End()
+
+	fb:SetWrite(2, true)
+	
+	fb:Clear(2)
+end
+
+do -- write a red square only to attachment 2
+	fb:SetWrite(1, false)
+
+	fb:Begin() 
+		surface.SetWhiteTexture()
+		surface.SetColor(1,0,0,1)
+		surface.DrawRect(30,30,50,50)
+	fb:End()
+
+	fb:SetWrite(1, true)
+end
+
+do	-- write a pink square only to attachment 1
+	fb:SetWrite(2, false)
+
+	fb:Begin()
+		surface.SetWhiteTexture()
+		surface.SetColor(1,0,1,1)
+		surface.DrawRect(100,30,50,50)
+	fb:End()
+
+	fb:SetWrite(2, true)
+end
+
+--fb:WriteThese("stencil")
+ 
+do -- write a rotated green rectangle to attachment 1 and 2
+	fb:Begin()
+		surface.SetWhiteTexture()
+		surface.SetColor(0,1,0,0.5)
+		surface.DrawRect(20,20,50,50, 50)
+	fb:End()
+end
 
 event.AddListener("PostDrawMenu", "lol", function()
 	surface.SetTexture(fb:GetTexture(1))
@@ -442,5 +471,5 @@ event.AddListener("PostDrawMenu", "lol", function()
 	
 	surface.SetTexture(fb:GetTexture(2))
 	surface.SetColor(1, 1, 1, 1)
-	surface.DrawRect(100, 100, 1024, 1024)
+	surface.DrawRect(300, 300, 1024, 1024)
 end)
