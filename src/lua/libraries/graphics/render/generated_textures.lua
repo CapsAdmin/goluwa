@@ -25,8 +25,8 @@ function render.GenerateTextures()
 		local trail_duration = 7
 		local base_arm_brightness = 0.4
 		
-		local loading = render.CreateFrameBuffer()
-		loading:SetSize(Vec2()+256)
+		local loading = render.CreateFrameBuffer(256, 256)
+		--loading:SetSize(Vec2()+256)
 		
 		event.CreateTimer("update_loading_texture", 1/15, 0, function()
 			if not surface.IsReady() then return end

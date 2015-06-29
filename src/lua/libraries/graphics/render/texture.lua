@@ -861,6 +861,10 @@ do
 end
 
 function META:Bind(location)
+	if self.Loading then
+		self = render.GetLoadingTexture()
+	end
+	
 	if self.not_dsa then
 		gl.BindTexture(self.gl_tex.target, self.gl_tex.id)
 	else
