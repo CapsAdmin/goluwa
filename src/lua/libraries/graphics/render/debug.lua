@@ -81,16 +81,9 @@ local types = {
 	[0x8251] = "other",
 }
 
-local cb = function(source, type, id, severity, length, message, userdata)
-	source = sources[source]
-	type = types[type]
-	severity = severities[severity]
-	message = ffi.string(message, length)
-					
-	render.OnError(source, type, id, severity, message)
-end
-
 function render.StartDebug()
+	if render.verbose_debug then return end
+	
 	if gl.DebugMessageControl then
 		gl.Enable("GL_DEBUG_OUTPUT")
 		gl.DebugMessageControl("GL_DONT_CARE", "GL_DONT_CARE", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
@@ -101,6 +94,8 @@ function render.StartDebug()
 end
 
 function render.StopDebug()
+	if render.verbose_debug then return end
+	
 	if gl.DebugMessageControl then
 		level = level or 0
 		
@@ -132,8 +127,8 @@ function render.StopDebug()
 		-- todo
 	end
 end
---[[
-function render.EnableDebug(b)
+
+function render.EnableVerboseDebug(b)
 	if gl.DebugMessageControl then
 		if b then		
 			gl.Enable("GL_DEBUG_OUTPUT")
@@ -146,38 +141,40 @@ function render.EnableDebug(b)
 			debug.sethook(function() 
 				local info = debug.getinfo(2)
 				if info.source:find("opengl", nil, true) then
-					gl.GetDebugMessageLog(1, length, nil, nil, nil, nil, nil, buffer)
-					local str = ffi.string(buffer)
-					if str ~= "" then
-						if str:sub(0, 11) ~= "Buffer info" and not str:find("Texture 0") then
-							local info = debug.getinfo(3)
-							local source = info.source:match(".+render/(.+)")
-							logf("[render] %s:%i gl.%s: %s\n", source, info.currentline, info.name, str)
+					
+					local logged_count = ffi.new("int[1]")
+					gl.GetIntegerv("GL_DEBUG_LOGGED_MESSAGES", logged_count)
+					
+					if logged_count[0] ~= 0 then						
+						local info = debug.getinfo(3)
+						local source = info.source:match(".+render/(.+)")
+
+						local message
+
+						for i = 0, logged_count[0] do
+							local type = ffi.new("GLenum[1]")
+							if gl.GetDebugMessageLog(1, length, nil, type, nil, nil, nil, buffer) ~= 0 then
+								type = types[type[0]]
+								if type ~= "other" then
+									message = (message or "") .. "\t" .. type .. ": " .. ffi.string(buffer) .. "\n"
+								end
+							end
+						end
+						
+						if message then
+							logf("[render] %s:%i gl.%s:\n", source, info.currentline, info.name)
+							logn(message)
 						end
 					end
 				end
 			end, "return")
+			render.verbose_debug = true
 		else
 			gl.Disable("GL_DEBUG_OUTPUT")
 			debug.sethook()
+			render.verbose_debug = false
 		end
 	else
 		logn("[render] glDebugMessageControl is not availible")
 	end
-end]]
-
-function render.OnError(source, type, id, severity, message)
-	event.Call("GLError", source, type, id, severity, message)
-		
-	--debug.trace()
-	local info = debug.getinfo(5)				
-	
-	if info.name then 
-		info.name = "gl" .. info.name 
-	else
-		info.name = info.short_src
-	end
-	
-	logf("%s at %s:%i\n", info.name, info.short_src, info.currentline)
-	logn("\t", message, "\n")
 end
