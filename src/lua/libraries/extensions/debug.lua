@@ -25,9 +25,7 @@ end
 do 
 	local started = {}	
 	
-	function debug.loglibrary(library, filter, post_calls_only, lib_name) 
-		lib_name = lib_name or ""
-		
+	function debug.loglibrary(library, filter, post_calls_only, lib_name) 		
 		if type(library) == "string" then
 			lib_name = library
 			library = _G[library]
