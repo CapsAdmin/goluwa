@@ -136,13 +136,13 @@ function META:CheckCompletness()
 		if err == gl.e.GL_FRAMEBUFFER_UNSUPPORTED then
 			str = "format not supported"
 		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT then
-			str = "incomplete attachment"
+			str = "incomplete texture"
 		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT then
-			str = "incomplete missing attachment"
+			str = "missing texture"
 		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS then
-			str = "attached images must have same dimensions"
+			str = "attached textures must have same dimensions"
 		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_FORMATS then
-			str = "attached images must have same format"
+			str = "attached textures must have same format"
 		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER then
 			str = "missing draw buffer"
 		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER then
