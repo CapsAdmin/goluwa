@@ -12,8 +12,7 @@ local unrolled_lines = {
 	vec3 = "gl.Uniform3f(%i, val.x, val.y, val.z)",
 	color = "gl.Uniform4f(%i, val.r, val.g, val.b, val.a)",
 	mat4 = "gl.UniformMatrix4fv(%i, 1, 0, val.ptr)",
-	texture = "render.BindTexture2(val, %i, %i)",
-	texture2 = "val:Bind(%i)",
+	texture = "render.BindTexture(val, %i, %i)",
 }
 
 unrolled_lines.vec4 = unrolled_lines.color
@@ -615,7 +614,7 @@ function render.CreateShader(data, vars)
 						local err = "\n" .. shader_id .. "\n" .. shader
 						
 						if path then
-							err = path:match(".+/(.+)") .. ":" .. err
+							err = (path:match(".+/(.+)") or path) .. ":" .. err
 						end
 						
 						if line_offset then

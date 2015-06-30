@@ -1,35 +1,11 @@
 local render = ... or _G.render
 local gl = require("graphics.ffi.opengl")
-
-do -- texture binding
-	local last_texture
 	
-	local base = gl.e.GL_TEXTURE0 
-	local last
-	do
-		function render.ActiveTexture(id)
-			if id ~= last then
-				gl.ActiveTexture(base + id)
-				last = id
-				last_texture = nil
-			end
-		end
-	end
-
-	do		
-		function render.BindTexture(tex)
-			if tex ~= last_texture then
-				tex:Bind()
-				last_texture = tex
-			end
-		end
-	end
-	
-	function render.BindTexture2(tex, channel, location)
+function render.BindTexture(tex, channel, location)
+	if channel and location then
 		gl.Uniform1i(location, channel)
-		gl.ActiveTexture(base + channel)
-		tex:Bind()
 	end
+	tex:Bind(channel)
 end
 
 
@@ -312,7 +288,7 @@ do -- add get set functions based on parameters
 	for k, v in pairs(parameters) do
 		local friendly = v.friendly or k:match("texture(_.+)"):gsub("_(.)", string.upper)
 		local info = META:GetSet(friendly, v.default)
-		local enum = gl.e["GL_" .. k:upper()]
+		local enum = "GL_" .. k:upper()
 		
 		if v.type == "enum" then
 			META[info.set_name] = function(self, val)
@@ -404,7 +380,10 @@ function META:SetupStorage()
 	end]]
 	
 	local format = self:GetFormatInfo()
-	local internal_format = gl.e[TOENUM(self.InternalFormat)]
+	local internal_format = TOENUM(self.InternalFormat)
+	
+	self:SetMaxLevel(self.MipMapLevels)
+	self:SetBaseLevel(0)
 	
 	if self.StorageType == "3d" then
 		--[[self.gl_tex:Storage3D(
@@ -860,15 +839,20 @@ do
 
 end
 
-function META:Bind(location)
-	if self.Loading then
-		self = render.GetLoadingTexture()
-	end
-	
-	if self.not_dsa then
-		gl.BindTexture(self.gl_tex.target, self.gl_tex.id)
-	else
-		gl.BindTextureUnit(location or 0, self.gl_tex.id)
+do
+	local base = gl.e.GL_TEXTURE0 
+
+	function META:Bind(location)
+		if self.Loading then
+			self = render.GetLoadingTexture()
+		end
+		
+		if self.not_dsa then
+			gl.ActiveTexture(base + channel)
+			gl.BindTexture(self.gl_tex.target, self.gl_tex.id)
+		else
+			gl.BindTextureUnit(location or 0, self.gl_tex.id)
+		end
 	end
 end
 
@@ -885,7 +869,12 @@ function render.CreateTexture(type)
 	self.id = self.gl_tex.id -- backwards compatibility
 	
 	self.not_dsa = not gl.CreateTextures
-		
+
+	--self:SetWrapS("clamp_to_edge")
+	--self:SetWrapT("clamp_to_edge")
+	self:SetMagFilter("linear")
+	self:SetMinFilter("linear_mipmap_linear")
+
 	return self
 end
 
