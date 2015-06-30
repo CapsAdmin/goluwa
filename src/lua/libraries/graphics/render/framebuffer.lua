@@ -217,7 +217,7 @@ end
 	
 function META:SetTexture(pos, tex, mode, uid)
 	pos = attachment_to_enum(self, pos)
-	mode = bind_mode_to_enum(mode or "read_write")
+	mode = bind_mode_to_enum(mode or "write")
 	
 	if not uid then
 		uid = pos

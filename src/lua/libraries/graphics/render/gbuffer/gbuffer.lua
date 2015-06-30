@@ -75,25 +75,6 @@ do -- mixer
 	function render.GetGBufferValue(key)
 		return render.gbuffer_values[key]
 	end
-
-	function render.DrawGBufferShader(name)
-		local shader = render.gbuffer_shaders[name]
-		if shader then	
-			if shader.gbuffer_pass.Update then
-				shader.gbuffer_pass:Update()
-			end
-			render.gbuffer_mixer_buffer:Begin()
-				surface.PushMatrix(0, 0, render.gbuffer_width , render.gbuffer_height)
-					render.SetShaderOverride(shader)
-					surface.rect_mesh:Draw()
-					render.SetShaderOverride()
-				surface.PopMatrix()
-			render.gbuffer_mixer_buffer:End()	
-			if shader.gbuffer_pass.PostRender then
-				shader.gbuffer_pass:PostRender()
-			end
-		end
-	end
 	
 	render.gbuffer_shaders_sorted = render.gbuffer_shaders_sorted or {}
 
@@ -444,12 +425,15 @@ function render.DrawGBuffer()
 	gl.DepthMask(1)
 	render.EnableDepth(true)
 	render.SetBlendMode()
-		
+				
 	for i, pass in ipairs(render.gbuffer_passes) do
 		if pass.Draw3D then 
 			pass:Draw3D() 
+			break
 		end
 	end
+	
+	render.Draw3DScene() do return end
 	
 	-- gbuffer	
 	render.SetBlendMode("alpha")	
@@ -457,7 +441,21 @@ function render.DrawGBuffer()
 	render.EnableDepth(false)	
 
 	for i, shader in ipairs(render.gbuffer_shaders_sorted) do
-		render.DrawGBufferShader(shader.gbuffer_name)
+		if shader.gbuffer_pass.Update then
+			shader.gbuffer_pass:Update()
+		end
+		
+		render.gbuffer_mixer_buffer:Begin()
+			surface.PushMatrix(0, 0, render.gbuffer_width , render.gbuffer_height)
+				render.SetShaderOverride(shader)
+				surface.rect_mesh:Draw()
+				render.SetShaderOverride()
+			surface.PopMatrix()
+		render.gbuffer_mixer_buffer:End()
+		
+		if shader.gbuffer_pass.PostRender then
+			shader.gbuffer_pass:PostRender()
+		end
 	end
 		
 	surface.SetTexture(render.gbuffer_mixer_buffer:GetTexture())
@@ -493,3 +491,7 @@ event.AddListener("RenderContextInitialized", nil, function()
 		render.EnableGBuffer(false)
 	end)
 end)
+
+if RELOAD then
+	event.Delay(0.1, render.InitializeGBuffer)
+end
