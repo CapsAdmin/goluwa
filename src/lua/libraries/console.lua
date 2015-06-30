@@ -794,7 +794,7 @@ if not DISABLE_CURSES then
 		curses.initscr() -- init curses
 		
 		if WINDOWS and pdcurses_for_real_windows then
-		--	curses.resize_term(50, 150) 
+			curses.resize_term(50, 150) 
 		end
 		
 		curses.raw() -- raw input, disables ctrl-c and such

@@ -179,6 +179,10 @@ local function translate_fields(data)
 
 		local t, default, get = type_of_attribute(v)
 		
+    if type_ == "bool" or t == "bool" then
+        params.precision = ""
+    end
+    
 		table.insert(out, {
 			name = k, 
 			type = type_ or t, 
