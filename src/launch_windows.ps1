@@ -12,7 +12,7 @@ $hWnd = [Foo.ConsoleUtils]::GetConsoleWindow()
 
 if ($ENV:PROCESSOR_ARCHITECTURE -Match "64"){ $arch = "x64" } else { $arch = "x86" }
 $url = "https://github.com/CapsAdmin/goluwa/releases/download/windows-binaries/" + $arch + ".zip"
-$output_folder = $(PSScriptRoot) + "\windows_" + $arch
+$output_folder = [IO.Path]::GetFullPath($(PSScriptRoot) + "\..\data\bin\windows_" + $arch)
 
 if(!(Test-Path ($output_folder + "\luajit.exe")))
 {
@@ -62,12 +62,12 @@ if(!(Test-Path ($output_folder + "\luajit.exe")))
 }
 
 $pinfo = New-Object System.Diagnostics.ProcessStartInfo
-$pinfo.FileName = ($(PSScriptRoot) + "\windows_$arch\") + "luajit.exe"
-$pinfo.WorkingDirectory = ($(PSScriptRoot) + "\windows_$arch\")
+$pinfo.FileName = $output_folder + "\luajit.exe"
+$pinfo.WorkingDirectory = $output_folder + "\"
 $pinfo.RedirectStandardError = $true
 $pinfo.RedirectStandardOutput = $true
 $pinfo.UseShellExecute = $false
-$pinfo.Arguments = "../../lua/init.lua"
+$pinfo.Arguments = "../../../src/lua/init.lua"
 $p = New-Object System.Diagnostics.Process
 $p.StartInfo = $pinfo
 $p.Start() | Out-Null

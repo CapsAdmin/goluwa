@@ -93,23 +93,25 @@ end
 
 do -- file system
 
-	-- this is required because fs needs winapi and syscall
-	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../lua/modules/" .. name .. ".lua") end)
-	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../lua/modules/" .. name .. "/init.lua") end)
-	fs = dofile("../../lua/libraries/filesystem/intermediate.lua")
-	table.remove(package.loaders)
-	table.remove(package.loaders)
-	-- remove them because we do it properly later on
+	do
+		-- this is required because fs needs winapi and syscall
+		table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../src/lua/modules/" .. name .. ".lua") end)
+		table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../src/lua/modules/" .. name .. "/init.lua") end)
+		
+		fs = dofile("../../../src/lua/libraries/filesystem/intermediate.lua")
+		
+		-- remove them because we do it properly later on
+		table.remove(package.loaders)
+		table.remove(package.loaders)
+	end
 
 	e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
-	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 paths up (src/bin/os_arch)
-	e.SRC_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(2))
+	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 directories up (data/bin/os_arch)
+	e.SRC_FOLDER = e.ROOT_FOLDER .. "src/"
+	e.USERDATA_FOLDER = e.ROOT_FOLDER .. "data/users/" .. e.USERNAME:lower() .. "/"
 	
-	-- the userdata folder
-	e.USERDATA_FOLDER = e.ROOT_FOLDER .. ".userdata/" .. e.USERNAME:lower() .. "/"
-	
-	-- create them
-	fs.createdir(e.ROOT_FOLDER .. ".userdata/")
+	-- create ROOT/data/users/
+	fs.createdir(e.USERDATA_FOLDER:match("(.+/).-/"))
 	fs.createdir(e.USERDATA_FOLDER)
 
 	do -- this is ugly but it's because we haven't included the global extensions yet..
@@ -145,11 +147,9 @@ do -- file system
 		vfs.IsDir = vfs.IsFolder
 	end
 	
-	-- mount the /userdata/*username*/ folder
-	vfs.Mount("os:" .. e.USERDATA_FOLDER, "data")
-	
-	-- mount the /core folder
-	vfs.MountAddon("os:" .. e.SRC_FOLDER)
+	vfs.Mount("os:" .. e.USERDATA_FOLDER, "data") -- mount "ROOT/data/users/*username*/" to "/data/"
+	vfs.Mount("os:" .. e.BIN_FOLDER, "bin") -- mount "ROOT/data/bin" to "/bin/"
+	vfs.MountAddon("os:" .. e.SRC_FOLDER) -- mount "ROOT/src" to "/"
 	
 	-- a nice global for loading resources externally from current dir
 	-- 
@@ -160,7 +160,7 @@ do -- file system
 	
 	-- replace require with the pure lua version (lua/procure/init.lua)
 	-- this is needed for the file system and lovemu
-	_G.require = dofile("../../lua/libraries/require.lua")
+	_G.require = dofile(e.SRC_FOLDER .. "lua/libraries/require.lua")
 end
 
 do -- libraries
@@ -188,7 +188,7 @@ do -- libraries
 	structs = include("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
 	utf8 = include("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 	event = include("lua/libraries/event.lua") goluwa = event.events -- event handler
-	utility = include("lua/libraries/utilities/utility.lua") -- more like i-dont-know-where-these-functions-go
+	utility = include("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
 	crypto = include("lua/libraries/crypto.lua")
 	threads = include("lua/libraries/threads.lua")
 

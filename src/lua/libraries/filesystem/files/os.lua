@@ -14,7 +14,7 @@ end
 
 vfs.SetEnv("ROOT", "os:" .. e.ROOT_FOLDER)
 vfs.SetEnv("SRC", "os:" .. e.SRC_FOLDER)
-vfs.SetEnv("BIN", function() return "os:" .. fs.getcd() end)
+vfs.SetEnv("BIN", "os:" .. e.BIN_FOLDER)
 
 local CONTEXT = {}
 

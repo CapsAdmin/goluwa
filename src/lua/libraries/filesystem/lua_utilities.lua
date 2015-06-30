@@ -62,7 +62,8 @@ end
 do -- include
 	local base = fs.getcd()
 
-	local include_stack = {}
+	local include_stack = vfs.include_stack or {}
+	vfs.include_stack = include_stack
 	
 	function vfs.PushToIncludeStack(path)
 		table.insert(include_stack, path)
@@ -223,21 +224,32 @@ include = vfs.include
 
 -- although vfs will add a loader for each mount, the module folder has to be an exception for modules only
 -- this loader should support more ways of loading than just adding ".lua"
+
+local function add(func)
+	for i, v in ipairs(package.loaders) do
+		if v == func then
+			table.remove(package.loaders, i)
+			break
+		end
+	end
+	table.insert(package.loaders, func)
+end
+
 do -- full path
-	table.insert(package.loaders, function(path)
+	add(function(path)
 		return vfs.loadfile(path)
 	end)
 	
-	table.insert(package.loaders, function(path)
+	add(function(path)
 		return vfs.loadfile(path .. ".lua")
 	end)
 	
-	table.insert(package.loaders, function(path)
+	add(function(path)
 		path = path:gsub("(.)%.(.)", "%1/%2")
 		return vfs.loadfile(path .. ".lua")
 	end)
 	
-	table.insert(package.loaders, function(path)
+	add(function(path)
 		path = path:gsub("(.+/)(.+)", function(a, str) return a .. str:gsub("(.)%.(.)", "%1/%2") end)
 		return vfs.loadfile(path .. ".lua")
 	end)
@@ -245,40 +257,40 @@ end
 
 function vfs.AddModuleDirectory(dir)		
 	do -- relative path
-		table.insert(package.loaders, function(path)
+		add(function(path)
 			return vfs.loadfile(dir .. path)
 		end)
 		
-		table.insert(package.loaders, function(path)
+		add(function(path)
 			return vfs.loadfile(dir .. path .. ".lua")
 		end)
 					
-		table.insert(package.loaders, function(path)
+		add(function(path)
 			path = path:gsub("(.)%.(.)", "%1/%2")
 			return vfs.loadfile(dir .. path .. ".lua")
 		end)
 	end
 		
-	table.insert(package.loaders, function(path)
+	add(function(path)
 		return vfs.loadfile(dir .. path .. "/init.lua")
 	end)
 	
-	table.insert(package.loaders, function(path)
+	add(function(path)
 		return vfs.loadfile(dir .. path .. "/"..path..".lua")
 	end)
 	
 	-- again but with . replaced with /	
-	table.insert(package.loaders, function(path)
+	add(function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
 		return vfs.loadfile(dir .. path .. ".lua")
 	end)
 		
-	table.insert(package.loaders, function(path)
+	add(function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
 		return vfs.loadfile(dir .. path .. "/init.lua")
 	end)
 	
-	table.insert(package.loaders, function(path)
+	add(function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
 		return vfs.loadfile(dir .. path .. "/" .. path ..  ".lua")
 	end)

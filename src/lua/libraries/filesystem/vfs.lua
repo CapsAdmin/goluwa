@@ -110,10 +110,10 @@ do -- mounting/links
 end
 
 do -- env vars/path preprocessing
-	local env_override = {}
+	vfs.env_override = vfs.env_override or {}
 	
 	function vfs.GetEnv(key)
-		local val = env_override[key]
+		local val = vfs.env_override[key]
 		
 		if type(val) == "function" then
 			val = val()
@@ -123,7 +123,7 @@ do -- env vars/path preprocessing
 	end
 	
 	function vfs.SetEnv(key, val)
-		env_override[key] = val
+		vfs.env_override[key] = val
 	end
 	
 	function vfs.PreprocessPath(path)

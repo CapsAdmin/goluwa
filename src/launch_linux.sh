@@ -11,6 +11,7 @@ esac
 
 # make sure we're in this bash's directory
 cd $( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+cd ../data/bin
 
 #if we don't have binaries get them from github
 if [ ! -f "linux_${arch}/luajit" ]; then
@@ -22,13 +23,13 @@ fi
 
 cd ./linux_${arch}/
 
-#lookup shared libraries in "goluwa/src/bin/linux_${arch}/" first
+#lookup shared libraries in "goluwa/data/bin/linux_${arch}/" first
 export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
 
 #i don't know if this is stupid or not but it's so i can execute luajt without 
 #the need for execute permissions on a non ext filesystem (like on a usb stick with fat32)
 if [ -e "/lib64/ld-linux-x86-64.so.2" ]; then
-	/lib64/ld-linux-x86-64.so.2 ./luajit ../../lua/init.lua
+	/lib64/ld-linux-x86-64.so.2 ./luajit ../../../src/lua/init.lua
 else
-	./luajit ../../lua/init.lua
+	./luajit ../../../src/lua/init.lua
 fi

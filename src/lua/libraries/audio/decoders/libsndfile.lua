@@ -1,5 +1,7 @@
 local audio = ... or _G.audio
-local soundfile = require("audio.ffi.libsndfile") -- sound decoder
+local soundfile = desire("audio.ffi.libsndfile") -- sound decoder
+
+if not soundfile then return end
 
 -- googled: https://github.com/mkottman/lua-git/issues/13
 local function tmpname()
