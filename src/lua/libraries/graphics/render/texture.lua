@@ -848,7 +848,7 @@ do
 		end
 		
 		if self.not_dsa then
-			gl.ActiveTexture(base + channel)
+			gl.ActiveTexture(base + location)
 			gl.BindTexture(self.gl_tex.target, self.gl_tex.id)
 		else
 			gl.BindTextureUnit(location or 0, self.gl_tex.id)
