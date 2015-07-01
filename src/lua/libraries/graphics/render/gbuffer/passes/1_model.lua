@@ -27,10 +27,9 @@ local gl = require("graphics.ffi.opengl") -- OpenGL
 
 function PASS:Draw3D()
 	gl.DepthMask(1)
-	render.EnableDepth(true)
+	render.EnableDepth(false)
 	render.SetBlendMode()
 	
-	render.gbuffer:WriteThese("all")
 	render.gbuffer:Begin()
 		event.Call("PreGBufferModelPass")
 		render.Draw3DScene()
@@ -114,7 +113,7 @@ PASS.Shader = {
 			}
 			
 			void main()
-			{
+			{			
 				if (texture(tex_discard, get_screen_uv()).r > 0) discard;
 				
 				// diffuse

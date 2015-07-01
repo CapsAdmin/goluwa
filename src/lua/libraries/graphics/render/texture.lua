@@ -27,7 +27,7 @@ META:StartStorable()
 META:GetSet("StorageType", "2d")
 META:GetSet("Size", Vec2())
 META:GetSet("Depth", 0)
-META:GetSet("MipMapLevels", 0)
+META:GetSet("MipMapLevels", 3)
 META:GetSet("Path", "loading")
 META:IsSet("Loading", false)
 META:IsSet("InternalFormat", "rgba8")
@@ -870,11 +870,13 @@ function render.CreateTexture(type)
 	
 	self.not_dsa = not gl.CreateTextures
 
-	--self:SetWrapS("clamp_to_edge")
-	--self:SetWrapT("clamp_to_edge")
-	self:SetMagFilter("linear")
+	self:SetWrapS("repeat")
+	self:SetWrapT("repeat")
+	self:SetWrapR("repeat")
 	self:SetMinFilter("linear_mipmap_linear")
-
+	self:SetMagFilter("linear")
+	self:SetAnisotropy(100)
+	
 	return self
 end
 

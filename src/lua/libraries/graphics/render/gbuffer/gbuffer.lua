@@ -226,7 +226,6 @@ function render.InitializeGBuffer(width, height)
 			{
 				name = "depth",
 				attach = "depth",
-				draw_manual = true,
 				texture_format = {
 					internal_format = "depth_component24",	 
 					depth_texture_mode = "red",
@@ -422,24 +421,24 @@ end
 function render.DrawGBuffer()
 	if not gbuffer_enabled then return end
 
+	render.gbuffer:WriteThese("all")
+	render.gbuffer:Clear("all")
+
 	gl.DepthMask(1)
 	render.EnableDepth(true)
 	render.SetBlendMode()
 				
 	for i, pass in ipairs(render.gbuffer_passes) do
-		if pass.Draw3D then 
+		if pass.Draw3D then
 			pass:Draw3D() 
-			break
 		end
 	end
-	
-	render.Draw3DScene() do return end
-	
+		
 	-- gbuffer	
 	render.SetBlendMode("alpha")	
 	render.SetCullMode("back")
-	render.EnableDepth(false)	
-
+	render.EnableDepth(false)	 
+		
 	for i, shader in ipairs(render.gbuffer_shaders_sorted) do
 		if shader.gbuffer_pass.Update then
 			shader.gbuffer_pass:Update()

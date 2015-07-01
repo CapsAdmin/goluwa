@@ -34,27 +34,31 @@ local function generate_draw_buffers(self)
 	--self.read_buffer = nil -- TODO
 
 	for k,v in pairs(self.textures) do
-		if v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER" and not v.tex.draw_manual then
+		if (v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER") and not v.draw_manual then
 			table.insert(draw_buffers, v.pos)
 		else
 			--if self.read_buffer then
 			--	warning("more than one read buffer attached", 2)
 			--end
 			--self.read_buffer = v.mode
+			--table.insert(draw_buffers, 0)
 		end
 	end
 	
 	for k,v in pairs(self.render_buffers) do
-		if v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER" then
+		if (v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER") and not v.draw_manual then
 			table.insert(draw_buffers, v.pos)
 		else
 			--if self.read_buffer then
 			--	warning("more than one read buffer attached", 2)
 			--end
 			--self.read_buffer = v.mode
+			table.insert(draw_buffers, 0)
 		end
 	end
-
+	
+	table.sort(draw_buffers, function(a, b) return a < b end)
+	
 	return ffi.new("GLenum["..#draw_buffers.."]", draw_buffers), #draw_buffers
 end
 
@@ -97,8 +101,15 @@ function render.CreateFrameBuffer(width, height, textures)
 			local tex = render.CreateTexture()
 			tex:SetSize(self:GetSize():Copy())
 			
-			tex.draw_manual = v.draw_manual
+			if attach == "depth" then
+				tex:SetMagFilter("nearest")
+				tex:SetMinFilter("nearest")
+				tex:SetMipMapLevels(0)
+				tex:SetWrapS("clamp_to_edge")
+				tex:SetWrapT("clamp_to_edge")
+			end
 			
+				
 			local info = v.texture_format
 			if info then
 				if info.internal_format then 
@@ -110,9 +121,9 @@ function render.CreateFrameBuffer(width, height, textures)
 				end
 			end
 			
-			tex:SetMipMapLevels(1)
+			tex:SetMipMapLevels(0)
 			tex:SetupStorage()
-			tex:Clear()
+			--tex:Clear()
 			
 			self:SetTexture(attach, tex, nil, v.name)
 		end
@@ -226,10 +237,16 @@ function META:SetTexture(pos, tex, mode, uid)
 	if typex(tex) == "texture" then
 		local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
 	
-		self.fb:Texture(pos, id, 0, 0)
+		self.fb:Texture(pos, id, 0)
 		
-		if id ~= 0 then
-			self.textures[uid] = {tex = tex, mode = mode, pos = pos, uid = uid}
+		if id ~= 0 then			
+			self.textures[uid] = {
+				tex = tex, 
+				mode = mode, 
+				pos = pos, 
+				uid = uid, 
+				draw_manual = pos == gl.e.GL_DEPTH_ATTACHMENT or pos == gl.e.GL_STENCIL_ATTACHMENT or pos == gl.e.GL_DEPTH_STENCIL_ATTACHMENT
+			}
 			self:SetSize(tex:GetSize():Copy())
 		else
 			self.textures[uid] = nil
@@ -352,27 +369,37 @@ function META:WriteThese(str)
 end
 
 function META:Clear(i, r,g,b,a)
-	i = i or 0
+	i = i or "all"
 			
 	self:Begin()
-		if type(i) == "number" then
+		if i == "all" then
+			self:Clear("color", r,g,b,a)
+			self:Clear("depth")
+			self:Clear("stencil")
+		elseif i == "color" then
+			r = r or Color()
+			
+			if g and b then
+				r = Color(r, g, b, a or 0)
+			end
+			
+			gl.ClearColor(r.r, r.g, r.b, r.a)
+			gl.Clear(gl.e.GL_COLOR_BUFFER_BIT)
+			render.SetClearColor(render.GetClearColor())
+		elseif i == "depth" then
+			gl.ClearDepth(r or 0)
+			gl.Clear(gl.e.GL_DEPTH_BUFFER_BIT)
+		elseif i == "stencil" then
+			gl.ClearStencil(r or 0)
+			gl.Clear(gl.e.GL_STENCIL_BUFFER_BIT)
+		elseif type(i) == "number" then
 			r = r or Color()
 			
 			if g and b then
 				r = Color(r, g, b, a or 0)
 			end
 		
-			if i == 0 then
-				gl.ClearColor(r.r, r.g, r.b, r.a)
-				gl.Clear(gl.e.GL_COLOR_BUFFER_BIT)
-				render.SetClearColor(render.GetClearColor())
-			else
-				gl.ClearBufferfv("GL_COLOR", i - 1, r.ptr)
-			end
-		elseif i == "depth" then
-			gl.ClearDepth(r)
-		elseif i == "stencil" then
-			gl.ClearStencil(r)
+			gl.ClearBufferfv("GL_COLOR", i - 1, r.ptr)
 		elseif self.textures[i] then
 			self:Clear(self.textures[i].pos - gl.e.GL_COLOR_ATTACHMENT0 - 1, r,g,b,a)
 		end
