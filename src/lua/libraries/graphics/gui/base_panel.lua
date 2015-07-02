@@ -407,7 +407,7 @@ end
 
 do -- orientation
 	prototype.GetSet(PANEL, "Position", Vec2(0, 0))
-	prototype.GetSet(PANEL, "Size", Vec2(50, 50))
+	prototype.GetSet(PANEL, "Size", Vec2(4, 4))
 	prototype.GetSet(PANEL, "MinimumSize", Vec2(4, 4))
 	prototype.GetSet(PANEL, "Angle", 0)
 	prototype.GetSet(PANEL, "Order", 0)
