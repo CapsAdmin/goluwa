@@ -2,6 +2,7 @@
 	local COMPONENT = {}
 
 	COMPONENT.Name = "io"
+	COMPONENT.Icon = "textures/silkicons/computer.png"
 	COMPONENT.Events = {"Update"}
 
 	function COMPONENT:OnAdd(ent)

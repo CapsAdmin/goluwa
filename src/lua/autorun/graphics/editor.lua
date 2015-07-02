@@ -355,10 +355,10 @@ function editor.Open()
 			local meta = #info.components == 1 and prototype.GetRegistered("component", info.components[1])
 			
 			if meta and meta.Base then		
-				groups[meta.Base] = groups[meta.Base] or {configs = {}}
+				groups[meta.Base] = groups[meta.Base] or {configs = {}, icon = meta.Icon}
 				groups[meta.Base].configs[config_name] = info
 			else			
-				groups.default = groups.default or {configs = {}}
+				groups.default = groups.default or {configs = {}, icon = "textures/silkicons/shape_square.png"}
 				groups.default.configs[config_name] = info
 			end
 		end

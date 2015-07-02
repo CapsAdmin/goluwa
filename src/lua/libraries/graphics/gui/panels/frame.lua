@@ -183,9 +183,9 @@ function PANEL:SetIcon(str)
 	icon.OnRightClick = function()
 		local skins = gui.GetRegisteredSkins()
 		for i, name in ipairs(skins) do
-			skins[i] = {name, function() self:SetSkin(name) end}
+			skins[i] = {name, function() self:SetSkin(name) end, "textures/silkicons/paintbrush.png"}
 		end
-		gui.CreateMenu({{"skins", skins}}, self)
+		gui.CreateMenu({{"skins", skins, "textures/silkicons/palette.png"}}, self)
 	end
 	self.icon = icon
 end
