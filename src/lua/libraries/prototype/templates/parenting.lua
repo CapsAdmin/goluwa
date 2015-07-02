@@ -64,7 +64,14 @@ function prototype.AddParentingTemplate(META)
 		return true
 	end
 		
-	function META:HasParent()
+	function META:HasParent(obj)
+		if obj then
+			for i, v in ipairs(self:GetParentList()) do
+				if v == obj then
+					return true
+				end
+			end
+		end
 		return self.Parent:IsValid()
 	end
 
