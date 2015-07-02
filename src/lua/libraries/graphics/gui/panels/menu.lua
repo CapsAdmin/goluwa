@@ -7,7 +7,7 @@ do
 	function PANEL:Initialize()	
 		self.sub_menu = NULL
 		
-		self:SetStyle("frame")
+		self:SetStyle("button_inactive")
 		self:SetStack(true)
 		self:SetStackRight(false)
 		self:SetSizeStackToWidth(true)
@@ -77,7 +77,7 @@ do
 		self.menu = NULL
 		
 		self:SetNoDraw(true)
-		self:SetStyle("menu_select")
+		self:SetStyle("button_active")
 				
 		local img = self:CreatePanel("base", "image")
 		img:SetIgnoreMouse(true)

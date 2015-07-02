@@ -14,8 +14,6 @@ prototype.GetSet(PANEL, "Cursor", "arrow")
 prototype.GetSet(PANEL, "TrapChildren", false)
 prototype.GetSet(PANEL, "Texture", render.GetWhiteTexture())
 prototype.GetSet(PANEL, "RedirectFocus", NULL)
-prototype.GetSet(PANEL, "Padding", Rect(0, 0, 0, 0))
-prototype.GetSet(PANEL, "Margin", Rect(0, 0, 0, 0))
 prototype.GetSet(PANEL, "ObeyMargin", true)
 prototype.GetSet(PANEL, "BringToFrontOnClick", false)
 prototype.GetSet(PANEL, "LayoutParentOnLayout", false)
@@ -409,6 +407,8 @@ do -- orientation
 	prototype.GetSet(PANEL, "Position", Vec2(0, 0))
 	prototype.GetSet(PANEL, "Size", Vec2(4, 4))
 	prototype.GetSet(PANEL, "MinimumSize", Vec2(4, 4))
+	prototype.GetSet(PANEL, "Padding", Rect(0, 0, 0, 0))
+	prototype.GetSet(PANEL, "Margin", Rect(0, 0, 0, 0))
 	prototype.GetSet(PANEL, "Angle", 0)
 	prototype.GetSet(PANEL, "Order", 0)
 	
@@ -504,6 +504,16 @@ do -- orientation
 			
 			self:Layout()
 		end
+	end
+	
+	function PANEL:SetPadding(rect)
+		self.Padding = rect
+		self:Layout()
+	end
+	
+	function PANEL:SetMargin(rect)
+		self.Margin = rect
+		self:Layout()
 	end
 
 	function PANEL:WorldToLocal(wpos)
@@ -1769,7 +1779,7 @@ do -- layout
 						child:CenterX()
 					elseif cmd == "center_x_simple" then				
 						child:CenterXSimple()
-					elseif cmd == "center_y_simple" then				
+					elseif cmd == "center_y_simple" then
 						child:CenterYSimple()
 					elseif cmd == "center_x_frame" then
 						if child:CenterXFrame() then break end
@@ -1821,7 +1831,7 @@ do -- layout
 				self:OnLayout(self:GetLayoutScale(), self:GetSkin())
 				self.in_layout = false
 			end
-			
+
 			self:ExecuteLayoutCommands()					
 			self:StackChildren()
 			
@@ -2384,7 +2394,7 @@ do -- events
 
 	function PANEL:OnChildAdd(child)
 		gui.unrolled_draw = nil
-		--self:Layout()
+		self:Layout()
 		--child:Layout()
 	end
 

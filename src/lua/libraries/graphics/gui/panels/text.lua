@@ -18,16 +18,30 @@ function PANEL:Initialize()
 	self:SetLayoutWhenInvisible(false)
 	local markup = surface.CreateMarkup()
 	markup:SetEditable(false)
-	markup.OnInvalidate = function()
-		self:MarkCacheDirty()
-		self:OnTextChanged(self.markup:GetText())
-			
-			self.Size.w = markup.width + self.Padding.left + self.Padding.right
-			self.Size.h = markup.height + self.Padding.top + self.Padding.bottom
+	markup.OnInvalidate = function()			
+		self.Size.w = markup.width + self.Padding.left + self.Padding.right
+		self.Size.h = markup.height + self.Padding.top + self.Padding.bottom
 
-			self.LayoutSize = self.Size
+		self.LayoutSize = self.Size
+		
+		local str = self.markup:GetText(self.ParseTags)
+		if str ~= self.last_text then
+			self:OnTextChanged(str)		
+			self.last_text = str
 		end
+		
+		self:MarkCacheDirty()
+	end
 	self.markup = markup
+end
+
+function PANEL:SetPadding(rect)
+	self.Padding = rect
+	
+	self.Size.w = self.markup.width + self.Padding.left + self.Padding.right
+	self.Size.h = self.markup.height + self.Padding.top + self.Padding.bottom
+	
+	self:Layout()
 end
 
 function PANEL:SetFont(font)
@@ -85,6 +99,10 @@ function PANEL:GetText()
 	return self.markup:GetText(self.ParseTags)
 end
 
+function PANEL:OnLayout()
+	self.markup:Invalidate()
+end
+
 function PANEL:OnPostDraw()
 	surface.Translate(self.Padding.left, self.Padding.top)
 	self.markup:Draw(self.ConcatenateTextToSize and (self.markup.cull_w - self.markup.cull_x))
@@ -110,6 +128,7 @@ function PANEL:OnUpdate()
 	markup.cull_w = self.Parent.Size.w
 	markup.cull_h = self.Parent.Size.h
 	
+	markup.need_layout = nil
 	markup:Update()
 		
 	-- :(

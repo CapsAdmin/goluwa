@@ -179,7 +179,7 @@ function PANEL:SetIcon(str)
 	local icon = self.bar:CreatePanel("base", "icon") 
 	icon:SetTexture(Texture(str))
 	icon:SetSize(icon.Texture:GetSize())
-	icon:SetupLayout("center_x_simple", "left", "center_y_simple")
+	icon:SetupLayout("right", "left", "center_y_simple") 
 	icon.OnRightClick = function()
 		local skins = gui.GetRegisteredSkins()
 		for i, name in ipairs(skins) do
@@ -196,7 +196,7 @@ function PANEL:SetTitle(str)
 	local title = self.bar:CreatePanel("text", "title")
 	title:SetText(str)
 	title:SetNoDraw(true)
-	title:SetupLayout("center_x", "center_y_simple")
+	title:SetupLayout("center_y_simple", "center_x")
 	self.title = title
 	
 	if gui.task_bar:IsValid() then
@@ -215,7 +215,7 @@ function PANEL:OnMouseInput()
 end
 
 gui.RegisterPanel(PANEL)
-
+do return end
 if RELOAD then
 	local panel = gui.CreatePanel(PANEL.ClassName, nil, "test")
 	panel:SetSize(Vec2(300, 300))
