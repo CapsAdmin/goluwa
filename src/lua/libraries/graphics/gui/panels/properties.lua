@@ -17,6 +17,7 @@ do -- base property
 		self:SetInactiveStyle("property")
 		self:SetHighlightOnMouseEnter(false)
 		self:SetClicksToActivate(2)
+		self:SetMouseHoverTimeTrigger(0.25)
 	end
 	
 	function PANEL:SetSpecialCallback(callback)
@@ -132,6 +133,11 @@ do -- base property
 		--self:SizeToText()
 		self.label:SetupLayout("center_left")
 		self:Layout()
+		
+		local str = self:GetEncodedValue()
+		if str and #str > 10 then
+			self:SetTooltip(str)
+		end
 	end
 	
 	function PANEL:GetValue()
@@ -542,6 +548,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 	end
 	
 	local t = typex(default)
+	local property
 	
 	self.left_offset = 8
 			
@@ -549,8 +556,9 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 	left:SetStyle("property")
 	left.left_offset = self.left_offset	
 	left:SetInactiveStyle("property")
-	left:SetMode("toggle")
-	left.OnStateChanged = function(_, b) left:SetState(b) for i,v in ipairs(self.added_properties) do if v.left ~= left then v.left:SetState(false) end end end
+	left.MouseInput = function(_, ...) 
+		property:MouseInput(...)
+	end
 	
 	local exp
 	
@@ -572,9 +580,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 	local right = self.right:CreatePanel("base") 
 	right:SetMargin(Rect())
 	right:SetWidth(500)
-	
-	local property
-	
+		
 	if prototype.GetRegistered("panel2", t .. "_property") then
 		local panel = right:CreatePanel(t .. "_property", "property")
 					

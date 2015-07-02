@@ -856,7 +856,7 @@ do -- drag drop
 
 		if not input.IsMouseDown(self.drag_stop_button) then
 
-			self:SetPosition(drop_pos - self.drag_local_pos)
+			--self:SetPosition(drop_pos - self.drag_local_pos)
 			self:OnParentLand(panel)
 			panel:OnChildDrop(self, drop_pos)
 
@@ -1293,6 +1293,32 @@ do -- mouse
 	
 	prototype.GetSet(PANEL, "MouseHoverTime", 0)
 	prototype.GetSet(PANEL, "MouseHoverTimeTrigger", 1)
+	
+	do
+		gui.active_tooltip = NULL
+		
+		prototype.GetSet(PANEL, "Tooltip", "")
+		
+		function PANEL:ShowTooltip()			
+			local tooltip = gui.CreatePanel("text_button", nil, "gui_tooltip")
+			tooltip:SetSkin(self:GetSkin())
+			tooltip:SetPosition(self:GetWorldPosition())
+			tooltip:SetMargin(Rect()+4)
+			tooltip:SetText(self.Tooltip)
+			tooltip:SizeToText()
+			tooltip:SetIgnoreMouse(true)
+			self:CallOnRemove(function()
+				gui.RemovePanel(tooltip)
+			end)
+			gui.active_tooltip = tooltip
+			self.my_tooltip = tooltip
+		end
+				
+		function PANEL:CloseTooltip()
+			gui.RemovePanel(self.my_tooltip)
+		end
+	end
+	
 
 	function PANEL:BringMouse()
 		window.SetMousePosition(self:GetWorldPosition() + self:GetSize() / 2)
@@ -1451,6 +1477,9 @@ do -- mouse
 				if not self.mouse_hover_triggered then
 					self:OnMouseHoverTrigger(true, x, y)
 					self.mouse_hover_triggered = true
+					if self.Tooltip ~= "" then
+						self:ShowTooltip()
+					end
 				end
 			end
 			
@@ -1467,9 +1496,12 @@ do -- mouse
 				self.mouse_just_entered = false
 			end
 			
-			if self.mouse_hover_triggered then
+			if self.mouse_hover_triggered and not self:HasParent(gui.active_tooltip) then
 				self:OnMouseHoverTrigger(false, x, y)
 				self.mouse_hover_triggered = false
+				if self.Tooltip ~= "" then
+					self:CloseTooltip()
+				end
 			end
 			
 			if self.mouse_capture then

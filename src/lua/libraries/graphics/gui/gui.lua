@@ -125,7 +125,10 @@ do -- events
 	gui.keyboard_selected_panel = gui.keyboard_selected_panel or NULL
 	
 	function gui.MouseInput(button, press)
+		gui.RemovePanel(gui.active_tooltip)
+		
 		gui.UpdateMousePosition()
+		
 		local panel = gui.hovering_panel
 
 		if panel:IsValid() and panel:IsMouseOver() then
