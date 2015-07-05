@@ -37,11 +37,8 @@ end
 
 function PANEL:SetPadding(rect)
 	self.Padding = rect
-	
-	self.Size.w = self.markup.width + self.Padding.left + self.Padding.right
-	self.Size.h = self.markup.height + self.Padding.top + self.Padding.bottom
-	
-	self:Layout()
+
+	self.markup:Invalidate()
 end
 
 function PANEL:SetFont(font)
