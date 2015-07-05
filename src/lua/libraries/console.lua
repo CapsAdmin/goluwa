@@ -808,12 +808,17 @@ if not DISABLE_CURSES then
 		
 		curses.start_color()
 		curses.use_default_colors()
-	
-		for i = 1, 8 do
-			curses.init_pair(i, i - 1, -1)
+		--[[for i = 0, curses.COLORS-1 do
+			local r = bit.rshift(i, 5)
+			local g = bit.band(bit.rshift(i, 2), 0x7)
+			local b = bit.band(i, 0x7)
+			curses.init_color(i, r,g,b)
+			curses.init_pair(i+1, i, -1)
+		end]]
+			
+		for i = 0, curses.COLORS-1 do
+			curses.init_pair(i+1, i, -1)
 		end
-
-		curses.init_pair(COLORPAIR_STATUS, curses.COLOR_RED, curses.COLOR_WHITE + curses.A_DIM * 2 ^ 8)
 	
 		-- replace some functions
 		
@@ -823,6 +828,7 @@ if not DISABLE_CURSES then
 			console.SetTitleRaw = curses.PDC_set_title
 			console.SetTitleRaw(console.GetTitle())
 		else
+			curses.init_pair(COLORPAIR_STATUS, curses.COLOR_RED, curses.COLOR_WHITE + curses.A_DIM * 2 ^ 8)
 			c.status_window = curses.newwin(1, curses.COLS, 0, 0)
 			
 			console.SetTitleRaw = console.SetStatusText
@@ -879,6 +885,22 @@ if not DISABLE_CURSES then
 		console.SyntaxPrint(str, c.log_window)
 		
 		table.insert(log_history, str)
+		
+		console.SetScroll(math.huge,0)
+	end
+	
+	function console.ColorPrint(str, color, window)
+		window = window or c.log_window
+		
+		--local r,g,b = 255,255,255
+		--local attr = curses.COLOR_PAIR(16+r/48*36+g/48*6+b/48)
+		local attr = curses.COLOR_PAIR(color + 1)
+		curses.wattron(window, attr)
+		curses.waddstr(window, str)
+		curses.wattroff(window, attr)		
+		
+		curses.wnoutrefresh(window)
+		dirty = true
 		
 		console.SetScroll(math.huge,0)
 	end
@@ -1054,15 +1076,8 @@ if not DISABLE_CURSES then
 			for i = 1, #output / 2 do
 				local color, str = output[1 + (i - 1) * 2 + 0], output[1 + (i - 1) * 2 + 1]
 				
-				local attr = curses.COLOR_PAIR(color + 1)
-				curses.wattron(window, attr)
-				curses.waddstr(window, str)
-				curses.wattroff(window, attr)				
+				console.ColorPrint(str, color, window)
 			end
-			
-			curses.wnoutrefresh(window)
-			dirty = true
-			console.SetScroll()
 		end
 	end
 	
