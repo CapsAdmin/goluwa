@@ -902,7 +902,7 @@ if not DISABLE_CURSES then
 		curses.wnoutrefresh(window)
 		dirty = true
 		
-		console.SetScroll(math.huge,0)
+		console.SetScroll()
 	end
 
 	function console.Clear()
