@@ -1,5 +1,5 @@
 local cdef = vfs.Read("bullet_cdef")
-
+ 
 if not cdef then
 	cdef = {
 		"typedef float btScalar;",	
@@ -22,7 +22,7 @@ for i = 1, 500 do
 	if not ok then		
 		local t = err:match("expected near '(.-)'")
 		if t then
-			cdef = "typedef void* " .. t .. "; //" .. err .. "\n" .. cdef
+			cdef = "typedef struct {} " .. t .. ";\n" .. cdef
 		else
 			print(err, "!!!")
 			break
@@ -30,52 +30,55 @@ for i = 1, 500 do
 	else
 		print("success!")
 		break
-	end
-	
-	vfs.Write("bullet_cdef", cdef)
+	end	
 end
 
+vfs.Write("bullet_cdef", cdef)
 
 local lines = cdef:explode("\n")
 local objects = {}
 
 for i, line in ipairs(lines) do
 	if line:find("(", nil, true) then
-		if line:find("_new[%d?]%(") then
+		if line:find("_new%d%(") or line:find("_new(", nil, true) then
+			
 			local cfunc = line:match("(%S+)%(")
 			local object_name = cfunc:match("bt(.-)_new") or cfunc:match("(.-)_new")
+			local ctype = line:match("(.-)%*"):trim()
 			
-			objects[object_name] = objects[object_name] or {constructors = {}, functions = {}}
+			objects[object_name] = objects[object_name] or {constructors = {}, functions = {}, ctype = ctype}
 			
-			table.insert(objects[object_name].constructors, {
+			local function_name = object_name .. (cfunc:match(".+(%d)") or "")
+			
+			objects[object_name].constructors["Create" .. function_name] = {
 				cfunc = cfunc,
 				line = line,
-			})
+			}
+		end
+	end
+end
+
+for name, info in pairs(objects) do
+	local type = "bt" .. name
 			
-			local type = "bt" .. object_name
+	for i, line in ipairs(lines) do
+		if line:find(type .. "_", nil, true) and not line:find("_new", nil, true) then
+			local cfunc = line:match(".+%s(bt.-_.+)%(")
 			
-			for i, line in ipairs(lines) do
-				if line:find(type .. "_", nil, true) and not line:find("_new", nil, true) then
-					local cfunc = line:match(".+%s(bt.-_.+)%(")
-					
-					if cfunc and cfunc:match("(.+)_") == type then
-						
-						local function_name = cfunc:match(".+_(.+)")
-						function_name = function_name:gsub("^(.)", string.upper)
-						function_name = function_name:match("(.+)%d$") or function_name
-						
-						objects[object_name].functions[function_name] = objects[object_name].functions[function_name] or {}
-						
-						table.insert(objects[object_name].functions[function_name], {
-							cfunc = cfunc,
-							line = line,
-						})
-					end
-				end
+			if cfunc and cfunc:match("(.+)_") == type then
+				
+				local function_name = cfunc:match(".+_(.+)")
+				function_name = function_name:gsub("^(.)", string.upper)
+				
+				info.functions[function_name] = {
+					cfunc = cfunc,
+					line = line,	
+				}
 			end
 		end
 	end
 end
+
 
 local out = {}
 
@@ -94,15 +97,19 @@ for name, info in pairs(objects) do
 		a("\tlocal META = {}")
 		a("\tMETA.__index = META")
 		
-		for k,v in pairs(info.functions) do
-		a("\tfunction META:" .. k .. "(...)")
-			a("\t\tlib." .. v[1].cfunc .. "(self.__ptr, ...)")
-		a("\tend")
+		for name, info in pairs(info.functions) do
+			a("\tfunction META:" .. name .. "(...)")
+				a("\t\treturn lib." .. info.cfunc .. "(self, ...)")
+			a("\tend")
 		end
+		
+		a("\tffi.metatype('"..info.ctype.."', META)")
 	
-		a("\tfunction bullet.Create" .. name .. "(...)")
-			a("\t\treturn setmetatable({__ptr = lib."..info.constructors[1].cfunc.."(...)}, META)")
-		a("\tend")
+		for name, info in pairs(info.constructors) do
+			a("\tfunction bullet." .. name .. "(...)")
+				a("\t\treturn lib."..info.cfunc.."(...)")
+			a("\tend")
+		end
 	
 	a("end")
 end

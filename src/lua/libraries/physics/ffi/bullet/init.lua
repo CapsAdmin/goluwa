@@ -1,414 +1,414 @@
 ffi.cdef([[
-typedef void* HACD_Vec3_long; //declaration specifier expected near 'HACD_Vec3_long' at line 4228
-typedef void* HACD_Vec3_Real; //declaration specifier expected near 'HACD_Vec3_Real' at line 4227
-typedef void* HACD_CallBackFunction; //declaration specifier expected near 'HACD_CallBackFunction' at line 4225
-typedef void* HACD_HACD; //declaration specifier expected near 'HACD_HACD' at line 4216
-typedef void* btSoftBodyNodePtrArray; //declaration specifier expected near 'btSoftBodyNodePtrArray' at line 4204
-typedef void* btStridingMeshInterfaceData; //declaration specifier expected near 'btStridingMeshInterfaceData' at line 4169
-typedef void* btWorldImporter; //declaration specifier expected near 'btWorldImporter' at line 4140
-typedef void* btWheelInfo_RaycastInfo; //declaration specifier expected near 'btWheelInfo_RaycastInfo' at line 4068
-typedef void* btWheelInfoConstructionInfo; //declaration specifier expected near 'btWheelInfoConstructionInfo' at line 4041
-typedef void* btSubSimplexClosestResult; //declaration specifier expected near 'btSubSimplexClosestResult' at line 3984
-typedef void* btUsageBitfield; //declaration specifier expected near 'btUsageBitfield' at line 3964
-typedef void* btVehicleRaycaster_btVehicleRaycasterResult; //declaration specifier expected near 'btVehicleRaycaster_btVehicleRaycasterResult' at line 3953
-typedef void* btUniversalConstraint; //declaration specifier expected near 'btUniversalConstraint' at line 3943
-typedef void* btElement; //declaration specifier expected near 'btElement' at line 3924
-typedef void* btUniformScalingShape; //declaration specifier expected near 'btUniformScalingShape' at line 3920
-typedef void* btAngularLimit; //declaration specifier expected near 'btAngularLimit' at line 3901
-typedef void* btSolverBody; //declaration specifier expected near 'btSolverBody' at line 3898
-typedef void* btConstraintArray; //declaration specifier expected near 'btConstraintArray' at line 3893
-typedef void* btTypedConstraintType; //declaration specifier expected near 'btTypedConstraintType' at line 3865
-typedef void* btJointFeedback; //declaration specifier expected near 'btJointFeedback' at line 3813
-typedef void* btTriangleShape; //declaration specifier expected near 'btTriangleShape' at line 3806
-typedef void* btTriangleMesh; //declaration specifier expected near 'btTriangleMesh' at line 3793
-typedef void* btTriangleMeshShape; //declaration specifier expected near 'btTriangleMeshShape' at line 3786
-typedef void* btTriangleInfoMapData; //declaration specifier expected near 'btTriangleInfoMapData' at line 3771
-typedef void* btTriangleInfo; //declaration specifier expected near 'btTriangleInfo' at line 3758
-typedef void* btTriangleIndexVertexMaterialArray; //declaration specifier expected near 'btTriangleIndexVertexMaterialArray' at line 3749
-typedef void* btMaterialProperties; //declaration specifier expected near 'btMaterialProperties' at line 3730
-typedef void* IndexedMeshArray; //declaration specifier expected near 'IndexedMeshArray' at line 3728
-typedef void* pInternalTriangleIndexCallback_InternalProcessTriangleIndex; //declaration specifier expected near 'pInternalTriangleIndexCallback_InternalProcessTriangleIndex' at line 3703
-typedef void* btInternalTriangleIndexCallbackWrapper; //declaration specifier expected near 'btInternalTriangleIndexCallbackWrapper' at line 3702
-typedef void* pTriangleCallback_ProcessTriangle; //declaration specifier expected near 'pTriangleCallback_ProcessTriangle' at line 3699
-typedef void* btTriangleCallbackWrapper; //declaration specifier expected near 'btTriangleCallbackWrapper' at line 3698
-typedef void* btTriangleBuffer; //declaration specifier expected near 'btTriangleBuffer' at line 3693
-typedef void* btTriangle; //declaration specifier expected near 'btTriangle' at line 3680
-typedef void* btConvexSeparatingDistanceUtil; //declaration specifier expected near 'btConvexSeparatingDistanceUtil' at line 3674
-typedef void* btBU_Simplex1to4; //declaration specifier expected near 'btBU_Simplex1to4' at line 3660
-typedef void* btInternalTriangleIndexCallback; //declaration specifier expected near 'btInternalTriangleIndexCallback' at line 3650
-typedef void* btSphereTriangleCollisionAlgorithm; //declaration specifier expected near 'btSphereTriangleCollisionAlgorithm' at line 3634
-typedef void* btSphereTriangleCollisionAlgorithm_CreateFunc; //declaration specifier expected near 'btSphereTriangleCollisionAlgorithm_CreateFunc' at line 3632
-typedef void* btSphereSphereCollisionAlgorithm; //declaration specifier expected near 'btSphereSphereCollisionAlgorithm' at line 3629
-typedef void* btSphereSphereCollisionAlgorithm_CreateFunc; //declaration specifier expected near 'btSphereSphereCollisionAlgorithm_CreateFunc' at line 3627
-typedef void* btSphereShape; //declaration specifier expected near 'btSphereShape' at line 3623
-typedef void* btSphereBoxCollisionAlgorithm; //declaration specifier expected near 'btSphereBoxCollisionAlgorithm' at line 3619
-typedef void* btSphereBoxCollisionAlgorithm_CreateFunc; //declaration specifier expected near 'btSphereBoxCollisionAlgorithm_CreateFunc' at line 3617
-typedef void* btSoftSoftCollisionAlgorithm; //declaration specifier expected near 'btSoftSoftCollisionAlgorithm' at line 3605
-typedef void* btSoftSoftCollisionAlgorithm_CreateFunc; //declaration specifier expected near 'btSoftSoftCollisionAlgorithm_CreateFunc' at line 3603
-typedef void* btSoftBodyArray; //declaration specifier expected near 'btSoftBodyArray' at line 3598
-typedef void* btSoftRigidDynamicsWorld; //declaration specifier expected near 'btSoftRigidDynamicsWorld' at line 3591
-typedef void* btSoftRigidCollisionAlgorithm; //declaration specifier expected near 'btSoftRigidCollisionAlgorithm' at line 3589
-typedef void* btSoftRigidCollisionAlgorithm_CreateFunc; //declaration specifier expected near 'btSoftRigidCollisionAlgorithm_CreateFunc' at line 3587
-typedef void* btSoftBody_eSolverPresets; //declaration specifier expected near 'btSoftBody_eSolverPresets' at line 3550
-typedef void* btSoftBody_eVSolver; //declaration specifier expected near 'btSoftBody_eVSolver' at line 3510
-typedef void* btSoftBody_vsolver_t; //declaration specifier expected near 'btSoftBody_vsolver_t' at line 3509
-typedef void* btSoftBody_ePSolver; //declaration specifier expected near 'btSoftBody_ePSolver' at line 3507
-typedef void* btSoftBody_psolver_t; //declaration specifier expected near 'btSoftBody_psolver_t' at line 3506
-typedef void* btAlignedSoftBodySContactArray; //declaration specifier expected near 'btAlignedSoftBodySContactArray' at line 3503
-typedef void* btAlignedSoftBodyRContactArray; //declaration specifier expected near 'btAlignedSoftBodyRContactArray' at line 3500
-typedef void* btAlignedSoftBodyNoteArray; //declaration specifier expected near 'btAlignedSoftBodyNoteArray' at line 3497
-typedef void* btAlignedConstCollisionObjectArray; //declaration specifier expected near 'btAlignedConstCollisionObjectArray' at line 3486
-typedef void* btAlignedBoolArray; //declaration specifier expected near 'btAlignedBoolArray' at line 3483
-typedef void* btAlignedSoftBodyAnchorArray; //declaration specifier expected near 'btAlignedSoftBodyAnchorArray' at line 3477
-typedef void* btSoftBody_eFeature; //declaration specifier expected near 'btSoftBody_eFeature' at line 3378
-typedef void* btSoftBody_sRayCast; //declaration specifier expected near 'btSoftBody_sRayCast' at line 3375
-typedef void* btSoftBody_SolverState; //declaration specifier expected near 'btSoftBody_SolverState' at line 3362
-typedef void* btSoftBody_sMedium; //declaration specifier expected near 'btSoftBody_sMedium' at line 3353
-typedef void* btSoftBody_SContact; //declaration specifier expected near 'btSoftBody_SContact' at line 3329
-typedef void* btSoftBody_sCti; //declaration specifier expected near 'btSoftBody_sCti' at line 3319
-typedef void* btSoftBody_RContact; //declaration specifier expected near 'btSoftBody_RContact' at line 3312
-typedef void* btSoftBody_RayFromToCaster; //declaration specifier expected near 'btSoftBody_RayFromToCaster' at line 3296
-typedef void* btSoftBody_Pose; //declaration specifier expected near 'btSoftBody_Pose' at line 3277
-typedef void* btSoftBody_Note; //declaration specifier expected near 'btSoftBody_Note' at line 3267
-typedef void* btSoftBody_LJoint; //declaration specifier expected near 'btSoftBody_LJoint' at line 3236
-typedef void* btSoftBody_LJoint_Specs; //declaration specifier expected near 'btSoftBody_LJoint_Specs' at line 3232
-typedef void* btSoftBody_Joint_eType; //declaration specifier expected near 'btSoftBody_Joint_eType' at line 3214
-typedef void* btSoftBody_Joint_Specs; //declaration specifier expected near 'btSoftBody_Joint_Specs' at line 3186
-typedef void* pImplicitFn_Eval; //declaration specifier expected near 'pImplicitFn_Eval' at line 3170
-typedef void* btSoftBody_ImplicitFn; //declaration specifier expected near 'btSoftBody_ImplicitFn' at line 3169
-typedef void* btSoftBody_Feature; //declaration specifier expected near 'btSoftBody_Feature' at line 3165
-typedef void* btSoftBody_Element; //declaration specifier expected near 'btSoftBody_Element' at line 3152
-typedef void* btAlignedSoftBodyVSolverArray; //declaration specifier expected near 'btAlignedSoftBodyVSolverArray' at line 3123
-typedef void* btAlignedSoftBodyPSolverArray; //declaration specifier expected near 'btAlignedSoftBodyPSolverArray' at line 3098
-typedef void* btSoftBody_eAeroModel; //declaration specifier expected near 'btSoftBody_eAeroModel' at line 3093
-typedef void* btSoftBody_Config; //declaration specifier expected near 'btSoftBody_Config' at line 3091
-typedef void* btAlignedSoftBodyNodePtrArray; //declaration specifier expected near 'btAlignedSoftBodyNodePtrArray' at line 3064
-typedef void* btSoftBody_CJoint; //declaration specifier expected near 'btSoftBody_CJoint' at line 3031
-typedef void* btSoftBody_Impulse; //declaration specifier expected near 'btSoftBody_Impulse' at line 3011
-typedef void* btSoftBody_Body; //declaration specifier expected near 'btSoftBody_Body' at line 3004
-typedef void* btSoftBody_Anchor; //declaration specifier expected near 'btSoftBody_Anchor' at line 2987
-typedef void* btSoftBody_AJoint_Specs; //declaration specifier expected near 'btSoftBody_AJoint_Specs' at line 2977
-typedef void* btSoftBody_AJoint; //declaration specifier expected near 'btSoftBody_AJoint' at line 2973
-typedef void* btSoftBody_AJoint_IControlWrapper; //declaration specifier expected near 'btSoftBody_AJoint_IControlWrapper' at line 2968
-typedef void* pIControl_Speed; //declaration specifier expected near 'pIControl_Speed' at line 2966
-typedef void* pIControl_Prepare; //declaration specifier expected near 'pIControl_Prepare' at line 2965
-typedef void* btSoftBody_AJoint_IControl; //declaration specifier expected near 'btSoftBody_AJoint_IControl' at line 2964
-typedef void* btSparseSdf3; //declaration specifier expected near 'btSparseSdf3' at line 2950
-typedef void* btSoftBodySolverOutput; //declaration specifier expected near 'btSoftBodySolverOutput' at line 2941
-typedef void* btAlignedObjectArray; //declaration specifier expected near 'btAlignedObjectArray' at line 2930
-typedef void* SolverTypes; //declaration specifier expected near 'SolverTypes' at line 2927
-typedef void* btSoftBodySolver; //declaration specifier expected near 'btSoftBodySolver' at line 2921
-typedef void* btSoftBodyRigidBodyCollisionConfiguration; //declaration specifier expected near 'btSoftBodyRigidBodyCollisionConfiguration' at line 2918
-typedef void* btSoftBodyWorldInfo; //declaration specifier expected near 'btSoftBodyWorldInfo' at line 2893
-typedef void* btSoftBodyConcaveCollisionAlgorithm; //declaration specifier expected near 'btSoftBodyConcaveCollisionAlgorithm' at line 2889
-typedef void* btSoftBodyConcaveCollisionAlgorithm_SwappedCreateFunc; //declaration specifier expected near 'btSoftBodyConcaveCollisionAlgorithm_SwappedCreateFunc' at line 2887
-typedef void* btSoftBodyConcaveCollisionAlgorithm_CreateFunc; //declaration specifier expected near 'btSoftBodyConcaveCollisionAlgorithm_CreateFunc' at line 2885
-typedef void* btSoftBodyTriangleCallback; //declaration specifier expected near 'btSoftBodyTriangleCallback' at line 2877
-typedef void* btTriIndex; //declaration specifier expected near 'btTriIndex' at line 2867
-typedef void* btSliderConstraint; //declaration specifier expected near 'btSliderConstraint' at line 2787
-typedef void* btUnionFind; //declaration specifier expected near 'btUnionFind' at line 2780
-typedef void* btSimulationIslandManager_IslandCallback; //declaration specifier expected near 'btSimulationIslandManager_IslandCallback' at line 2773
-typedef void* btShapeHull; //declaration specifier expected near 'btShapeHull' at line 2764
-typedef void* btDefaultSerializer; //declaration specifier expected near 'btDefaultSerializer' at line 2759
-typedef void* btChunk; //declaration specifier expected near 'btChunk' at line 2745
-typedef void* btSequentialImpulseConstraintSolver; //declaration specifier expected near 'btSequentialImpulseConstraintSolver' at line 2739
-typedef void* btScaledBvhTriangleMeshShape; //declaration specifier expected near 'btScaledBvhTriangleMeshShape' at line 2736
-typedef void* btRigidBody_btRigidBodyConstructionInfo; //declaration specifier expected near 'btRigidBody_btRigidBodyConstructionInfo' at line 2626
-typedef void* btDefaultVehicleRaycaster; //declaration specifier expected near 'btDefaultVehicleRaycaster' at line 2624
-typedef void* btAlignedWheelInfoArray; //declaration specifier expected near 'btAlignedWheelInfoArray' at line 2606
-typedef void* btWheelInfo; //declaration specifier expected near 'btWheelInfo' at line 2591
-typedef void* btVehicleRaycaster; //declaration specifier expected near 'btVehicleRaycaster' at line 2589
-typedef void* btRaycastVehicle; //declaration specifier expected near 'btRaycastVehicle' at line 2588
-typedef void* btRaycastVehicle_btVehicleTuning; //declaration specifier expected near 'btRaycastVehicle_btVehicleTuning' at line 2573
-typedef void* btQuantizedBvh_btTraversalMode; //declaration specifier expected near 'btQuantizedBvh_btTraversalMode' at line 2569
-typedef void* BvhSubtreeInfoArray; //declaration specifier expected near 'BvhSubtreeInfoArray' at line 2557
-typedef void* QuantizedNodeArray; //declaration specifier expected near 'QuantizedNodeArray' at line 2554
-typedef void* btQuantizedBvhFloatData; //declaration specifier expected near 'btQuantizedBvhFloatData' at line 2550
-typedef void* btQuantizedBvhDoubleData; //declaration specifier expected near 'btQuantizedBvhDoubleData' at line 2548
-typedef void* btQuantizedBvh; //declaration specifier expected near 'btQuantizedBvh' at line 2543
-typedef void* btNodeOverlapCallback; //declaration specifier expected near 'btNodeOverlapCallback' at line 2540
-typedef void* btOptimizedBvhNode; //declaration specifier expected near 'btOptimizedBvhNode' at line 2526
-typedef void* btQuantizedBvhNode; //declaration specifier expected near 'btQuantizedBvhNode' at line 2515
-typedef void* btPolyhedralConvexAabbCachingShape; //declaration specifier expected near 'btPolyhedralConvexAabbCachingShape' at line 2512
-typedef void* btPolyhedralConvexShape; //declaration specifier expected near 'btPolyhedralConvexShape' at line 2501
-typedef void* btPolarDecomposition; //declaration specifier expected near 'btPolarDecomposition' at line 2494
-typedef void* btPointCollector; //declaration specifier expected near 'btPointCollector' at line 2484
-typedef void* btPoint2PointConstraint; //declaration specifier expected near 'btPoint2PointConstraint' at line 2471
-typedef void* btConstraintSetting; //declaration specifier expected near 'btConstraintSetting' at line 2462
-typedef void* btNullPairCache; //declaration specifier expected near 'btNullPairCache' at line 2429
-typedef void* btSortedOverlappingPairCache; //declaration specifier expected near 'btSortedOverlappingPairCache' at line 2425
-typedef void* btOverlapFilterCallback; //declaration specifier expected near 'btOverlapFilterCallback' at line 2407
-typedef void* btNNCGConstraintSolver; //declaration specifier expected near 'btNNCGConstraintSolver' at line 2394
-typedef void* btMaterial; //declaration specifier expected near 'btMaterial' at line 2392
-typedef void* btMultimaterialTriangleMeshShape; //declaration specifier expected near 'btMultimaterialTriangleMeshShape' at line 2387
-typedef void* btPositionAndRadius; //declaration specifier expected near 'btPositionAndRadius' at line 2380
-typedef void* btMultiSphereShape; //declaration specifier expected near 'btMultiSphereShape' at line 2374
-typedef void* btAlignedMatrix3x3Array; //declaration specifier expected near 'btAlignedMatrix3x3Array' at line 2282
-typedef void* btMultiBodySolverConstraint; //declaration specifier expected near 'btMultiBodySolverConstraint' at line 2204
-typedef void* btMultiBodyPoint2Point; //declaration specifier expected near 'btMultiBodyPoint2Point' at line 2199
-typedef void* eFeatherstoneJointType; //declaration specifier expected near 'eFeatherstoneJointType' at line 2166
-typedef void* btSpatialMotionVector; //declaration specifier expected near 'btSpatialMotionVector' at line 2146
-typedef void* btMultibodyLink; //declaration specifier expected near 'btMultibodyLink' at line 2144
-typedef void* btMultiBodyLinkCollider; //declaration specifier expected near 'btMultiBodyLinkCollider' at line 2137
-typedef void* btMultiBodyJointMotor; //declaration specifier expected near 'btMultiBodyJointMotor' at line 2133
-typedef void* btMultiBodyJointLimitConstraint; //declaration specifier expected near 'btMultiBodyJointLimitConstraint' at line 2131
-typedef void* btMultiBodyDynamicsWorld; //declaration specifier expected near 'btMultiBodyDynamicsWorld' at line 2121
-typedef void* btMultiBody; //declaration specifier expected near 'btMultiBody' at line 2110
-typedef void* btMultiBodyJacobianData; //declaration specifier expected near 'btMultiBodyJacobianData' at line 2104
-typedef void* btMultiBodyConstraintArray; //declaration specifier expected near 'btMultiBodyConstraintArray' at line 2103
-typedef void* btMultiBodyConstraint; //declaration specifier expected near 'btMultiBodyConstraint' at line 2101
-typedef void* btMultiBodyConstraintSolver; //declaration specifier expected near 'btMultiBodyConstraintSolver' at line 2098
-typedef void* btMotionState; //declaration specifier expected near 'btMotionState' at line 2094
-typedef void* pMotionState_SetWorldTransform; //declaration specifier expected near 'pMotionState_SetWorldTransform' at line 2092
-typedef void* pMotionState_GetWorldTransform; //declaration specifier expected near 'pMotionState_GetWorldTransform' at line 2091
-typedef void* btMotionStateWrapper; //declaration specifier expected near 'btMotionStateWrapper' at line 2090
-typedef void* btMinkowskiSumShape; //declaration specifier expected near 'btMinkowskiSumShape' at line 2082
-typedef void* btMinkowskiPenetrationDepthSolver; //declaration specifier expected near 'btMinkowskiPenetrationDepthSolver' at line 2080
-typedef void* ContactAddedCallback; //declaration specifier expected near 'ContactAddedCallback' at line 2064
-typedef void* btConstraintRow; //declaration specifier expected near 'btConstraintRow' at line 1994
-typedef void* btMLCPSolver; //declaration specifier expected near 'btMLCPSolver' at line 1987
-typedef void* btVectorXf; //declaration specifier expected near 'btVectorXf' at line 1983
-typedef void* btMatrixXf; //declaration specifier expected near 'btMatrixXf' at line 1982
-typedef void* btMLCPSolverInterface; //declaration specifier expected near 'btMLCPSolverInterface' at line 1981
-typedef void* btLemkeSolver; //declaration specifier expected near 'btLemkeSolver' at line 1971
-typedef void* btKinematicCharacterController; //declaration specifier expected near 'btKinematicCharacterController' at line 1958
-typedef void* btIDebugDrawWrapper; //declaration specifier expected near 'btIDebugDrawWrapper' at line 1955
-typedef void* btHingeAccumulatedAngleConstraint; //declaration specifier expected near 'btHingeAccumulatedAngleConstraint' at line 1944
-typedef void* btHingeConstraint; //declaration specifier expected near 'btHingeConstraint' at line 1900
-typedef void* btHinge2Constraint; //declaration specifier expected near 'btHinge2Constraint' at line 1890
-typedef void* btHeightfieldTerrainShape; //declaration specifier expected near 'btHeightfieldTerrainShape' at line 1883
-typedef void* btGjkPairDetector; //declaration specifier expected near 'btGjkPairDetector' at line 1862
-typedef void* btGjkEpaPenetrationDepthSolver; //declaration specifier expected near 'btGjkEpaPenetrationDepthSolver' at line 1860
-typedef void* btGjkConvexCast; //declaration specifier expected near 'btGjkConvexCast' at line 1858
-typedef void* btGhostPairCallback; //declaration specifier expected near 'btGhostPairCallback' at line 1856
-typedef void* btHashedOverlappingPairCache; //declaration specifier expected near 'btHashedOverlappingPairCache' at line 1854
-typedef void* btPairCachingGhostObject; //declaration specifier expected near 'btPairCachingGhostObject' at line 1852
-typedef void* btGhostObject; //declaration specifier expected near 'btGhostObject' at line 1839
-typedef void* btGeneric6DofSpringConstraint; //declaration specifier expected near 'btGeneric6DofSpringConstraint' at line 1825
-typedef void* RotateOrder; //declaration specifier expected near 'RotateOrder' at line 1779
-typedef void* btGeneric6DofSpring2Constraint; //declaration specifier expected near 'btGeneric6DofSpring2Constraint' at line 1777
-typedef void* btTranslationalLimitMotor2; //declaration specifier expected near 'btTranslationalLimitMotor2' at line 1735
-typedef void* btRotationalLimitMotor2; //declaration specifier expected near 'btRotationalLimitMotor2' at line 1689
-typedef void* btTranslationalLimitMotor; //declaration specifier expected near 'btTranslationalLimitMotor' at line 1617
-typedef void* btRotationalLimitMotor; //declaration specifier expected near 'btRotationalLimitMotor' at line 1577
-typedef void* btGearConstraint; //declaration specifier expected near 'btGearConstraint' at line 1568
-typedef void* btGImpactMeshShapePart; //declaration specifier expected near 'btGImpactMeshShapePart' at line 1557
-typedef void* PHY_ScalarType; //declaration specifier expected near 'PHY_ScalarType' at line 1530
-typedef void* btGImpactMeshShapePart_TrimeshPrimitiveManager; //declaration specifier expected near 'btGImpactMeshShapePart_TrimeshPrimitiveManager' at line 1520
-typedef void* btGImpactCompoundShape; //declaration specifier expected near 'btGImpactCompoundShape' at line 1510
-typedef void* btGImpactCompoundShape_CompoundPrimitiveManager; //declaration specifier expected near 'btGImpactCompoundShape_CompoundPrimitiveManager' at line 1508
-typedef void* eGIMPACT_SHAPE_TYPE; //declaration specifier expected near 'eGIMPACT_SHAPE_TYPE' at line 1492
-typedef void* btTriangleShapeEx; //declaration specifier expected near 'btTriangleShapeEx' at line 1487
-typedef void* btGImpactBoxSet; //declaration specifier expected near 'btGImpactBoxSet' at line 1484
-typedef void* btTetrahedronShapeEx; //declaration specifier expected near 'btTetrahedronShapeEx' at line 1480
-typedef void* btGImpactQuantizedBvh; //declaration specifier expected near 'btGImpactQuantizedBvh' at line 1454
-typedef void* btQuantizedBvhTree; //declaration specifier expected near 'btQuantizedBvhTree' at line 1437
-typedef void* GIM_QUANTIZED_BVH_NODE_ARRAY; //declaration specifier expected near 'GIM_QUANTIZED_BVH_NODE_ARRAY' at line 1435
-typedef void* BT_QUANTIZED_BVH_NODE; //declaration specifier expected near 'BT_QUANTIZED_BVH_NODE' at line 1422
-typedef void* btGImpactShapeInterface; //declaration specifier expected near 'btGImpactShapeInterface' at line 1411
-typedef void* btGImpactCollisionAlgorithm; //declaration specifier expected near 'btGImpactCollisionAlgorithm' at line 1405
-typedef void* btGImpactCollisionAlgorithm_CreateFunc; //declaration specifier expected near 'btGImpactCollisionAlgorithm_CreateFunc' at line 1403
-typedef void* btGImpactBvh; //declaration specifier expected near 'btGImpactBvh' at line 1377
-typedef void* btPrimitiveTriangle; //declaration specifier expected near 'btPrimitiveTriangle' at line 1373
-typedef void* btPrimitiveManagerBase; //declaration specifier expected near 'btPrimitiveManagerBase' at line 1370
-typedef void* btBvhTree; //declaration specifier expected near 'btBvhTree' at line 1355
-typedef void* GIM_BVH_TREE_NODE_ARRAY; //declaration specifier expected near 'GIM_BVH_TREE_NODE_ARRAY' at line 1353
-typedef void* GIM_BVH_DATA_ARRAY; //declaration specifier expected near 'GIM_BVH_DATA_ARRAY' at line 1351
-typedef void* GIM_BVH_TREE_NODE; //declaration specifier expected near 'GIM_BVH_TREE_NODE' at line 1341
-typedef void* GIM_BVH_DATA; //declaration specifier expected near 'GIM_BVH_DATA' at line 1334
-typedef void* btPairSet; //declaration specifier expected near 'btPairSet' at line 1330
-typedef void* GIM_PAIR; //declaration specifier expected near 'GIM_PAIR' at line 1321
-typedef void* btFixedConstraint; //declaration specifier expected near 'btFixedConstraint' at line 1319
-typedef void* btEmptyShape; //declaration specifier expected near 'btEmptyShape' at line 1317
-typedef void* btEmptyAlgorithm; //declaration specifier expected near 'btEmptyAlgorithm' at line 1315
-typedef void* btEmptyAlgorithm_CreateFunc; //declaration specifier expected near 'btEmptyAlgorithm_CreateFunc' at line 1313
-typedef void* btInternalTickCallback; //declaration specifier expected near 'btInternalTickCallback' at line 1304
-typedef void* btDynamicsWorldType; //declaration specifier expected near 'btDynamicsWorldType' at line 1296
-typedef void* btSimulationIslandManager; //declaration specifier expected near 'btSimulationIslandManager' at line 1235
-typedef void* btTypedConstraint; //declaration specifier expected near 'btTypedConstraint' at line 1230
-typedef void* btDiscreteDynamicsWorld; //declaration specifier expected near 'btDiscreteDynamicsWorld' at line 1227
-typedef void* btStorageResult; //declaration specifier expected near 'btStorageResult' at line 1219
-typedef void* btDiscreteCollisionDetectorInterface; //declaration specifier expected near 'btDiscreteCollisionDetectorInterface' at line 1215
-typedef void* btDiscreteCollisionDetectorInterface_Result; //declaration specifier expected near 'btDiscreteCollisionDetectorInterface_Result' at line 1210
-typedef void* btDiscreteCollisionDetectorInterface_ClosestPointInput; //declaration specifier expected near 'btDiscreteCollisionDetectorInterface_ClosestPointInput' at line 1201
-typedef void* btVertexBufferDescriptor; //declaration specifier expected near 'btVertexBufferDescriptor' at line 1199
-typedef void* btDefaultSoftBodySolver; //declaration specifier expected near 'btDefaultSoftBodySolver' at line 1197
-typedef void* btDefaultMotionState; //declaration specifier expected near 'btDefaultMotionState' at line 1185
-typedef void* btDefaultCollisionConfiguration; //declaration specifier expected near 'btDefaultCollisionConfiguration' at line 1175
-typedef void* btDefaultCollisionConstructionInfo; //declaration specifier expected near 'btDefaultCollisionConstructionInfo' at line 1160
-typedef void* btAlignedStkNNArray; //declaration specifier expected near 'btAlignedStkNNArray' at line 1135
-typedef void* btAlignedDbvtNodeArray; //declaration specifier expected near 'btAlignedDbvtNodeArray' at line 1127
-typedef void* btAlignedStkNpsArray; //declaration specifier expected near 'btAlignedStkNpsArray' at line 1110
-typedef void* btDbvt_sStkNPS; //declaration specifier expected near 'btDbvt_sStkNPS' at line 1099
-typedef void* btDbvt_sStkNP; //declaration specifier expected near 'btDbvt_sStkNP' at line 1092
-typedef void* btDbvt_sStkNN; //declaration specifier expected near 'btDbvt_sStkNN' at line 1084
-typedef void* btDbvt_sStkCLN; //declaration specifier expected near 'btDbvt_sStkCLN' at line 1077
-typedef void* btDbvt_IWriter; //declaration specifier expected near 'btDbvt_IWriter' at line 1072
-typedef void* btDbvt_ICollide; //declaration specifier expected near 'btDbvt_ICollide' at line 1064
-typedef void* btDbvt_IClone; //declaration specifier expected near 'btDbvt_IClone' at line 1060
-typedef void* btDbvtVolume; //declaration specifier expected near 'btDbvtVolume' at line 1052
-typedef void* btDbvtAabbMm; //declaration specifier expected near 'btDbvtAabbMm' at line 1027
-typedef void* btDbvtBroadphase; //declaration specifier expected near 'btDbvtBroadphase' at line 981
-typedef void* btDbvtProxy; //declaration specifier expected near 'btDbvtProxy' at line 974
-typedef void* btDantzigSolver; //declaration specifier expected near 'btDantzigSolver' at line 972
-typedef void* btCylinderShapeZ; //declaration specifier expected near 'btCylinderShapeZ' at line 969
-typedef void* btCylinderShapeX; //declaration specifier expected near 'btCylinderShapeX' at line 966
-typedef void* btCylinderShape; //declaration specifier expected near 'btCylinderShape' at line 959
-typedef void* btConvexTriangleMeshShape; //declaration specifier expected near 'btConvexTriangleMeshShape' at line 954
-typedef void* btAlignedFaceArray; //declaration specifier expected near 'btAlignedFaceArray' at line 926
-typedef void* btConvexPolyhedron; //declaration specifier expected near 'btConvexPolyhedron' at line 923
-typedef void* btAlignedIntArray; //declaration specifier expected near 'btAlignedIntArray' at line 919
-typedef void* btFace; //declaration specifier expected near 'btFace' at line 917
-typedef void* btConvexPointCloudShape; //declaration specifier expected near 'btConvexPointCloudShape' at line 907
-typedef void* btConvexPlaneCollisionAlgorithm; //declaration specifier expected near 'btConvexPlaneCollisionAlgorithm' at line 904
-typedef void* btConvexPlaneCollisionAlgorithm_CreateFunc; //declaration specifier expected near 'btConvexPlaneCollisionAlgorithm_CreateFunc' at line 898
-typedef void* btConvexInternalAabbCachingShape; //declaration specifier expected near 'btConvexInternalAabbCachingShape' at line 893
-typedef void* btConvexInternalShape; //declaration specifier expected near 'btConvexInternalShape' at line 883
-typedef void* btConvexHullShape; //declaration specifier expected near 'btConvexHullShape' at line 871
-typedef void* btConvexConvexAlgorithm; //declaration specifier expected near 'btConvexConvexAlgorithm' at line 867
-typedef void* btConvexConvexAlgorithm_CreateFunc; //declaration specifier expected near 'btConvexConvexAlgorithm_CreateFunc' at line 857
-typedef void* btConvexConcaveCollisionAlgorithm; //declaration specifier expected near 'btConvexConcaveCollisionAlgorithm' at line 854
-typedef void* btConvexConcaveCollisionAlgorithm_SwappedCreateFunc; //declaration specifier expected near 'btConvexConcaveCollisionAlgorithm_SwappedCreateFunc' at line 852
-typedef void* btConvexConcaveCollisionAlgorithm_CreateFunc; //declaration specifier expected near 'btConvexConcaveCollisionAlgorithm_CreateFunc' at line 850
-typedef void* btConvexTriangleCallback; //declaration specifier expected near 'btConvexTriangleCallback' at line 839
-typedef void* btConvexCast; //declaration specifier expected near 'btConvexCast' at line 836
-typedef void* btConvexCast_CastResult; //declaration specifier expected near 'btConvexCast_CastResult' at line 816
-typedef void* btConvex2dShape; //declaration specifier expected near 'btConvex2dShape' at line 813
-typedef void* btConvex2dConvex2dAlgorithm; //declaration specifier expected near 'btConvex2dConvex2dAlgorithm' at line 809
-typedef void* btConvex2dConvex2dAlgorithm_CreateFunc; //declaration specifier expected near 'btConvex2dConvex2dAlgorithm_CreateFunc' at line 799
-typedef void* btStaticPlaneShape; //declaration specifier expected near 'btStaticPlaneShape' at line 797
-typedef void* btConvexPenetrationDepthSolver; //declaration specifier expected near 'btConvexPenetrationDepthSolver' at line 795
-typedef void* btVoronoiSimplexSolver; //declaration specifier expected near 'btVoronoiSimplexSolver' at line 794
-typedef void* btContinuousConvexCollision; //declaration specifier expected near 'btContinuousConvexCollision' at line 793
-typedef void* btContactSolverInfoData; //declaration specifier expected near 'btContactSolverInfoData' at line 747
-typedef void* btContactConstraint; //declaration specifier expected near 'btContactConstraint' at line 744
-typedef void* btConstraintSolverType; //declaration specifier expected near 'btConstraintSolverType' at line 739
-typedef void* btContactSolverInfo; //declaration specifier expected near 'btContactSolverInfo' at line 737
-typedef void* btConstraintSolver; //declaration specifier expected near 'btConstraintSolver' at line 736
-typedef void* btTypedConstraint_btConstraintInfo2; //declaration specifier expected near 'btTypedConstraint_btConstraintInfo2' at line 711
-typedef void* btTypedConstraint_btConstraintInfo1; //declaration specifier expected near 'btTypedConstraint_btConstraintInfo1' at line 709
-typedef void* btConeTwistConstraint; //declaration specifier expected near 'btConeTwistConstraint' at line 698
-typedef void* btConeShapeZ; //declaration specifier expected near 'btConeShapeZ' at line 696
-typedef void* btConeShapeX; //declaration specifier expected near 'btConeShapeX' at line 694
-typedef void* btConeShape; //declaration specifier expected near 'btConeShape' at line 688
-typedef void* btConcaveShape; //declaration specifier expected near 'btConcaveShape' at line 686
-typedef void* btDbvt; //declaration specifier expected near 'btDbvt' at line 677
-typedef void* btDbvtNode; //declaration specifier expected near 'btDbvtNode' at line 660
-typedef void* btCompoundShapeChild; //declaration specifier expected near 'btCompoundShapeChild' at line 655
-typedef void* btGImpactMeshShape; //declaration specifier expected near 'btGImpactMeshShape' at line 653
-typedef void* btCompoundShape; //declaration specifier expected near 'btCompoundShape' at line 652
-typedef void* btCompoundCompoundCollisionAlgorithm; //declaration specifier expected near 'btCompoundCompoundCollisionAlgorithm' at line 650
-typedef void* btCompoundCompoundCollisionAlgorithm_SwappedCreateFunc; //declaration specifier expected near 'btCompoundCompoundCollisionAlgorithm_SwappedCreateFunc' at line 648
-typedef void* btCompoundCompoundCollisionAlgorithm_CreateFunc; //declaration specifier expected near 'btCompoundCompoundCollisionAlgorithm_CreateFunc' at line 646
-typedef void* btCompoundCollisionAlgorithm; //declaration specifier expected near 'btCompoundCollisionAlgorithm' at line 643
-typedef void* btCompoundCollisionAlgorithm_SwappedCreateFunc; //declaration specifier expected near 'btCompoundCollisionAlgorithm_SwappedCreateFunc' at line 641
-typedef void* btCompoundCollisionAlgorithm_CreateFunc; //declaration specifier expected near 'btCompoundCollisionAlgorithm_CreateFunc' at line 639
-typedef void* btCollisionObjectArray; //declaration specifier expected near 'btCollisionObjectArray' at line 617
-typedef void* btConvexShape; //declaration specifier expected near 'btConvexShape' at line 611
-typedef void* btCollisionWorld_RayResultCallback; //declaration specifier expected near 'btCollisionWorld_RayResultCallback' at line 589
-typedef void* pRayResultCallback_NeedsCollision; //declaration specifier expected near 'pRayResultCallback_NeedsCollision' at line 586
-typedef void* pRayResultCallback_AddSingleResult; //declaration specifier expected near 'pRayResultCallback_AddSingleResult' at line 585
-typedef void* btCollisionWorld_RayResultCallbackWrapper; //declaration specifier expected near 'btCollisionWorld_RayResultCallbackWrapper' at line 584
-typedef void* btCollisionWorld_LocalRayResult; //declaration specifier expected near 'btCollisionWorld_LocalRayResult' at line 567
-typedef void* btCollisionWorld_LocalShapeInfo; //declaration specifier expected near 'btCollisionWorld_LocalShapeInfo' at line 554
-typedef void* btCollisionWorld_LocalConvexResult; //declaration specifier expected near 'btCollisionWorld_LocalConvexResult' at line 543
-typedef void* btCollisionWorld_ConvexResultCallback; //declaration specifier expected near 'btCollisionWorld_ConvexResultCallback' at line 542
-typedef void* pConvexResultCallback_NeedsCollision; //declaration specifier expected near 'pConvexResultCallback_NeedsCollision' at line 539
-typedef void* pConvexResultCallback_AddSingleResult; //declaration specifier expected near 'pConvexResultCallback_AddSingleResult' at line 538
-typedef void* btCollisionWorld_ConvexResultCallbackWrapper; //declaration specifier expected near 'btCollisionWorld_ConvexResultCallbackWrapper' at line 537
-typedef void* btManifoldPoint; //declaration specifier expected near 'btManifoldPoint' at line 529
-typedef void* btCollisionWorld_ContactResultCallback; //declaration specifier expected near 'btCollisionWorld_ContactResultCallback' at line 528
-typedef void* pContactResultCallback_NeedsCollision; //declaration specifier expected near 'pContactResultCallback_NeedsCollision' at line 525
-typedef void* pContactResultCallback_AddSingleResult; //declaration specifier expected near 'pContactResultCallback_AddSingleResult' at line 524
-typedef void* btCollisionWorld_ContactResultCallbackWrapper; //declaration specifier expected near 'btCollisionWorld_ContactResultCallbackWrapper' at line 523
-typedef void* btCollisionWorld_ClosestRayResultCallback; //declaration specifier expected near 'btCollisionWorld_ClosestRayResultCallback' at line 513
-typedef void* btCollisionWorld_ClosestConvexResultCallback; //declaration specifier expected near 'btCollisionWorld_ClosestConvexResultCallback' at line 501
-typedef void* btAlignedVector3Array; //declaration specifier expected near 'btAlignedVector3Array' at line 494
-typedef void* btAlignedScalarArray; //declaration specifier expected near 'btAlignedScalarArray' at line 492
-typedef void* btCollisionWorld_AllHitsRayResultCallback; //declaration specifier expected near 'btCollisionWorld_AllHitsRayResultCallback' at line 489
-typedef void* btCollisionShape; //declaration specifier expected near 'btCollisionShape' at line 383
-typedef void* btNearCallback; //declaration specifier expected near 'btNearCallback' at line 376
-typedef void* btCollisionDispatcher; //declaration specifier expected near 'btCollisionDispatcher' at line 371
-typedef void* btPoolAllocator; //declaration specifier expected near 'btPoolAllocator' at line 362
-typedef void* btCollisionConfiguration; //declaration specifier expected near 'btCollisionConfiguration' at line 360
-typedef void* btCollisionAlgorithmCreateFunc; //declaration specifier expected near 'btCollisionAlgorithmCreateFunc' at line 359
-typedef void* btManifoldResult; //declaration specifier expected near 'btManifoldResult' at line 354
-typedef void* btDispatcherInfo; //declaration specifier expected near 'btDispatcherInfo' at line 353
-typedef void* btCharacterControllerInterface; //declaration specifier expected near 'btCharacterControllerInterface' at line 335
-typedef void* btCapsuleShapeZ; //declaration specifier expected near 'btCapsuleShapeZ' at line 333
-typedef void* btCapsuleShapeX; //declaration specifier expected near 'btCapsuleShapeX' at line 331
-typedef void* btCapsuleShape; //declaration specifier expected near 'btCapsuleShape' at line 326
-typedef void* btSerializer; //declaration specifier expected near 'btSerializer' at line 319
-typedef void* btTriangleCallback; //declaration specifier expected near 'btTriangleCallback' at line 315
-typedef void* btTriangleInfoMap; //declaration specifier expected near 'btTriangleInfoMap' at line 312
-typedef void* btOptimizedBvh; //declaration specifier expected near 'btOptimizedBvh' at line 309
-typedef void* btStridingMeshInterface; //declaration specifier expected near 'btStridingMeshInterface' at line 303
-typedef void* btBvhTriangleMeshShape; //declaration specifier expected near 'btBvhTriangleMeshShape' at line 302
-typedef void* btBulletXmlWorldImporter; //declaration specifier expected near 'btBulletXmlWorldImporter' at line 299
-typedef void* btDynamicsWorld; //declaration specifier expected near 'btDynamicsWorld' at line 292
-typedef void* btBulletWorldImporter; //declaration specifier expected near 'btBulletWorldImporter' at line 290
-typedef void* btAligendCharPtrArray; //declaration specifier expected near 'btAligendCharPtrArray' at line 283
-typedef void* btAlignedStructHandleArray; //declaration specifier expected near 'btAlignedStructHandleArray' at line 278
-typedef void* bParse_btBulletFile; //declaration specifier expected near 'bParse_btBulletFile' at line 273
-typedef void* btCollisionAlgorithm; //declaration specifier expected near 'btCollisionAlgorithm' at line 265
-typedef void* btBroadphaseInterface; //declaration specifier expected near 'btBroadphaseInterface' at line 220
-typedef void* btBroadphaseRayCallback; //declaration specifier expected near 'btBroadphaseRayCallback' at line 214
-typedef void* btBroadphaseRayCallbackWrapper; //declaration specifier expected near 'btBroadphaseRayCallbackWrapper' at line 212
-typedef void* btBroadphaseAabbCallback; //declaration specifier expected near 'btBroadphaseAabbCallback' at line 209
-typedef void* pBroadphaseAabbCallback_Process; //declaration specifier expected near 'pBroadphaseAabbCallback_Process' at line 207
-typedef void* btBroadphaseAabbCallbackWrapper; //declaration specifier expected near 'btBroadphaseAabbCallbackWrapper' at line 206
-typedef void* eBT_PLANE_INTERSECTION_TYPE; //declaration specifier expected near 'eBT_PLANE_INTERSECTION_TYPE' at line 194
-typedef void* btAABB; //declaration specifier expected near 'btAABB' at line 171
-typedef void* BT_BOX_BOX_TRANSFORM_CACHE; //declaration specifier expected near 'BT_BOX_BOX_TRANSFORM_CACHE' at line 158
-typedef void* btBoxShape; //declaration specifier expected near 'btBoxShape' at line 152
-typedef void* btBoxBoxDetector; //declaration specifier expected near 'btBoxBoxDetector' at line 151
-typedef void* btBoxBoxCollisionAlgorithm; //declaration specifier expected near 'btBoxBoxCollisionAlgorithm' at line 148
-typedef void* btBoxBoxCollisionAlgorithm_CreateFunc; //declaration specifier expected near 'btBoxBoxCollisionAlgorithm_CreateFunc' at line 146
-typedef void* btVector3; //declaration specifier expected near 'btVector3' at line 141
-typedef void* btBox2dShape; //declaration specifier expected near 'btBox2dShape' at line 134
-typedef void* btCollisionObjectWrapper; //declaration specifier expected near 'btCollisionObjectWrapper' at line 132
-typedef void* btCollisionAlgorithmConstructionInfo; //declaration specifier expected near 'btCollisionAlgorithmConstructionInfo' at line 130
-typedef void* btBox2dBox2dCollisionAlgorithm; //declaration specifier expected near 'btBox2dBox2dCollisionAlgorithm' at line 129
-typedef void* btBox2dBox2dCollisionAlgorithm_CreateFunc; //declaration specifier expected near 'btBox2dBox2dCollisionAlgorithm_CreateFunc' at line 127
-typedef void* bt32BitAxisSweep3_Handle; //declaration specifier expected near 'bt32BitAxisSweep3_Handle' at line 116
-typedef void* bt32BitAxisSweep3; //declaration specifier expected near 'bt32BitAxisSweep3' at line 110
-typedef void* btBroadphaseProxy; //declaration specifier expected near 'btBroadphaseProxy' at line 106
-typedef void* btOverlappingPairCallback; //declaration specifier expected near 'btOverlappingPairCallback' at line 100
-typedef void* btOverlapCallback; //declaration specifier expected near 'btOverlapCallback' at line 98
-typedef void* btAxisSweep3_Handle; //declaration specifier expected near 'btAxisSweep3_Handle' at line 96
-typedef void* btDispatcher; //declaration specifier expected near 'btDispatcher' at line 94
-typedef void* btOverlappingPairCache; //declaration specifier expected near 'btOverlappingPairCache' at line 91
-typedef void* btAxisSweep3; //declaration specifier expected near 'btAxisSweep3' at line 88
-typedef void* btAlignedSoftBodyTetraArray; //declaration specifier expected near 'btAlignedSoftBodyTetraArray' at line 83
-typedef void* btSoftBody_Tetra; //declaration specifier expected near 'btSoftBody_Tetra' at line 82
-typedef void* btAlignedSoftBodyNodeArray; //declaration specifier expected near 'btAlignedSoftBodyNodeArray' at line 76
-typedef void* btSoftBody_Node; //declaration specifier expected near 'btSoftBody_Node' at line 75
-typedef void* btAlignedSoftBodyMaterialArray; //declaration specifier expected near 'btAlignedSoftBodyMaterialArray' at line 70
-typedef void* btSoftBody_Material; //declaration specifier expected near 'btSoftBody_Material' at line 69
-typedef void* btAlignedSoftBodyLinkArray; //declaration specifier expected near 'btAlignedSoftBodyLinkArray' at line 63
-typedef void* btSoftBody_Link; //declaration specifier expected near 'btSoftBody_Link' at line 62
-typedef void* btAlignedSoftBodyJointArray; //declaration specifier expected near 'btAlignedSoftBodyJointArray' at line 57
-typedef void* btSoftBody_Joint; //declaration specifier expected near 'btSoftBody_Joint' at line 56
-typedef void* btAlignedSoftBodyFaceArray; //declaration specifier expected near 'btAlignedSoftBodyFaceArray' at line 51
-typedef void* btSoftBody_Face; //declaration specifier expected near 'btSoftBody_Face' at line 50
-typedef void* btAlignedSoftBodyClusterArray; //declaration specifier expected near 'btAlignedSoftBodyClusterArray' at line 45
-typedef void* btSoftBody_Cluster; //declaration specifier expected near 'btSoftBody_Cluster' at line 44
-typedef void* btAlignedSoftBodyArray; //declaration specifier expected near 'btAlignedSoftBodyArray' at line 39
-typedef void* btSoftBody; //declaration specifier expected near 'btSoftBody' at line 38
-typedef void* btPersistentManifold; //declaration specifier expected near 'btPersistentManifold' at line 32
-typedef void* btAlignedManifoldArray; //declaration specifier expected near 'btAlignedManifoldArray' at line 30
-typedef void* btAlignedIndexedMeshArray; //declaration specifier expected near 'btAlignedIndexedMeshArray' at line 25
-typedef void* btIndexedMesh; //declaration specifier expected near 'btIndexedMesh' at line 24
-typedef void* btAlignedCollisionObjectArray; //declaration specifier expected near 'btAlignedCollisionObjectArray' at line 19
-typedef void* btCollisionObject; //declaration specifier expected near 'btCollisionObject' at line 18
-typedef void* btAlignedBroadphasePairArray; //declaration specifier expected near 'btAlignedBroadphasePairArray' at line 13
-typedef void* btBroadphasePair; //declaration specifier expected near 'btBroadphasePair' at line 12
-typedef void* btCollisionWorld; //declaration specifier expected near 'btCollisionWorld' at line 9
-typedef void* btIDebugDraw; //declaration specifier expected near 'btIDebugDraw' at line 7
-typedef void* btActionInterface; //declaration specifier expected near 'btActionInterface' at line 6
-typedef void* pIAction_UpdateAction; //declaration specifier expected near 'pIAction_UpdateAction' at line 4
-typedef void* pIAction_DebugDraw; //declaration specifier expected near 'pIAction_DebugDraw' at line 3
-typedef void* btActionInterfaceWrapper; //declaration specifier expected near 'btActionInterfaceWrapper' at line 2
+typedef struct {} HACD_Vec3_long;
+typedef struct {} HACD_Vec3_Real;
+typedef struct {} HACD_CallBackFunction;
+typedef struct {} HACD_HACD;
+typedef struct {} btSoftBodyNodePtrArray;
+typedef struct {} btStridingMeshInterfaceData;
+typedef struct {} btWorldImporter;
+typedef struct {} btWheelInfo_RaycastInfo;
+typedef struct {} btWheelInfoConstructionInfo;
+typedef struct {} btSubSimplexClosestResult;
+typedef struct {} btUsageBitfield;
+typedef struct {} btVehicleRaycaster_btVehicleRaycasterResult;
+typedef struct {} btUniversalConstraint;
+typedef struct {} btElement;
+typedef struct {} btUniformScalingShape;
+typedef struct {} btAngularLimit;
+typedef struct {} btSolverBody;
+typedef struct {} btConstraintArray;
+typedef struct {} btTypedConstraintType;
+typedef struct {} btJointFeedback;
+typedef struct {} btTriangleShape;
+typedef struct {} btTriangleMesh;
+typedef struct {} btTriangleMeshShape;
+typedef struct {} btTriangleInfoMapData;
+typedef struct {} btTriangleInfo;
+typedef struct {} btTriangleIndexVertexMaterialArray;
+typedef struct {} btMaterialProperties;
+typedef struct {} IndexedMeshArray;
+typedef struct {} pInternalTriangleIndexCallback_InternalProcessTriangleIndex;
+typedef struct {} btInternalTriangleIndexCallbackWrapper;
+typedef struct {} pTriangleCallback_ProcessTriangle;
+typedef struct {} btTriangleCallbackWrapper;
+typedef struct {} btTriangleBuffer;
+typedef struct {} btTriangle;
+typedef struct {} btConvexSeparatingDistanceUtil;
+typedef struct {} btBU_Simplex1to4;
+typedef struct {} btInternalTriangleIndexCallback;
+typedef struct {} btSphereTriangleCollisionAlgorithm;
+typedef struct {} btSphereTriangleCollisionAlgorithm_CreateFunc;
+typedef struct {} btSphereSphereCollisionAlgorithm;
+typedef struct {} btSphereSphereCollisionAlgorithm_CreateFunc;
+typedef struct {} btSphereShape;
+typedef struct {} btSphereBoxCollisionAlgorithm;
+typedef struct {} btSphereBoxCollisionAlgorithm_CreateFunc;
+typedef struct {} btSoftSoftCollisionAlgorithm;
+typedef struct {} btSoftSoftCollisionAlgorithm_CreateFunc;
+typedef struct {} btSoftBodyArray;
+typedef struct {} btSoftRigidDynamicsWorld;
+typedef struct {} btSoftRigidCollisionAlgorithm;
+typedef struct {} btSoftRigidCollisionAlgorithm_CreateFunc;
+typedef struct {} btSoftBody_eSolverPresets;
+typedef struct {} btSoftBody_eVSolver;
+typedef struct {} btSoftBody_vsolver_t;
+typedef struct {} btSoftBody_ePSolver;
+typedef struct {} btSoftBody_psolver_t;
+typedef struct {} btAlignedSoftBodySContactArray;
+typedef struct {} btAlignedSoftBodyRContactArray;
+typedef struct {} btAlignedSoftBodyNoteArray;
+typedef struct {} btAlignedConstCollisionObjectArray;
+typedef struct {} btAlignedBoolArray;
+typedef struct {} btAlignedSoftBodyAnchorArray;
+typedef struct {} btSoftBody_eFeature;
+typedef struct {} btSoftBody_sRayCast;
+typedef struct {} btSoftBody_SolverState;
+typedef struct {} btSoftBody_sMedium;
+typedef struct {} btSoftBody_SContact;
+typedef struct {} btSoftBody_sCti;
+typedef struct {} btSoftBody_RContact;
+typedef struct {} btSoftBody_RayFromToCaster;
+typedef struct {} btSoftBody_Pose;
+typedef struct {} btSoftBody_Note;
+typedef struct {} btSoftBody_LJoint;
+typedef struct {} btSoftBody_LJoint_Specs;
+typedef struct {} btSoftBody_Joint_eType;
+typedef struct {} btSoftBody_Joint_Specs;
+typedef struct {} pImplicitFn_Eval;
+typedef struct {} btSoftBody_ImplicitFn;
+typedef struct {} btSoftBody_Feature;
+typedef struct {} btSoftBody_Element;
+typedef struct {} btAlignedSoftBodyVSolverArray;
+typedef struct {} btAlignedSoftBodyPSolverArray;
+typedef struct {} btSoftBody_eAeroModel;
+typedef struct {} btSoftBody_Config;
+typedef struct {} btAlignedSoftBodyNodePtrArray;
+typedef struct {} btSoftBody_CJoint;
+typedef struct {} btSoftBody_Impulse;
+typedef struct {} btSoftBody_Body;
+typedef struct {} btSoftBody_Anchor;
+typedef struct {} btSoftBody_AJoint_Specs;
+typedef struct {} btSoftBody_AJoint;
+typedef struct {} btSoftBody_AJoint_IControlWrapper;
+typedef struct {} pIControl_Speed;
+typedef struct {} pIControl_Prepare;
+typedef struct {} btSoftBody_AJoint_IControl;
+typedef struct {} btSparseSdf3;
+typedef struct {} btSoftBodySolverOutput;
+typedef struct {} btAlignedObjectArray;
+typedef struct {} SolverTypes;
+typedef struct {} btSoftBodySolver;
+typedef struct {} btSoftBodyRigidBodyCollisionConfiguration;
+typedef struct {} btSoftBodyWorldInfo;
+typedef struct {} btSoftBodyConcaveCollisionAlgorithm;
+typedef struct {} btSoftBodyConcaveCollisionAlgorithm_SwappedCreateFunc;
+typedef struct {} btSoftBodyConcaveCollisionAlgorithm_CreateFunc;
+typedef struct {} btSoftBodyTriangleCallback;
+typedef struct {} btTriIndex;
+typedef struct {} btSliderConstraint;
+typedef struct {} btUnionFind;
+typedef struct {} btSimulationIslandManager_IslandCallback;
+typedef struct {} btShapeHull;
+typedef struct {} btDefaultSerializer;
+typedef struct {} btChunk;
+typedef struct {} btSequentialImpulseConstraintSolver;
+typedef struct {} btScaledBvhTriangleMeshShape;
+typedef struct {} btRigidBody_btRigidBodyConstructionInfo;
+typedef struct {} btDefaultVehicleRaycaster;
+typedef struct {} btAlignedWheelInfoArray;
+typedef struct {} btWheelInfo;
+typedef struct {} btVehicleRaycaster;
+typedef struct {} btRaycastVehicle;
+typedef struct {} btRaycastVehicle_btVehicleTuning;
+typedef struct {} btQuantizedBvh_btTraversalMode;
+typedef struct {} BvhSubtreeInfoArray;
+typedef struct {} QuantizedNodeArray;
+typedef struct {} btQuantizedBvhFloatData;
+typedef struct {} btQuantizedBvhDoubleData;
+typedef struct {} btQuantizedBvh;
+typedef struct {} btNodeOverlapCallback;
+typedef struct {} btOptimizedBvhNode;
+typedef struct {} btQuantizedBvhNode;
+typedef struct {} btPolyhedralConvexAabbCachingShape;
+typedef struct {} btPolyhedralConvexShape;
+typedef struct {} btPolarDecomposition;
+typedef struct {} btPointCollector;
+typedef struct {} btPoint2PointConstraint;
+typedef struct {} btConstraintSetting;
+typedef struct {} btNullPairCache;
+typedef struct {} btSortedOverlappingPairCache;
+typedef struct {} btOverlapFilterCallback;
+typedef struct {} btNNCGConstraintSolver;
+typedef struct {} btMaterial;
+typedef struct {} btMultimaterialTriangleMeshShape;
+typedef struct {} btPositionAndRadius;
+typedef struct {} btMultiSphereShape;
+typedef struct {} btAlignedMatrix3x3Array;
+typedef struct {} btMultiBodySolverConstraint;
+typedef struct {} btMultiBodyPoint2Point;
+typedef struct {} eFeatherstoneJointType;
+typedef struct {} btSpatialMotionVector;
+typedef struct {} btMultibodyLink;
+typedef struct {} btMultiBodyLinkCollider;
+typedef struct {} btMultiBodyJointMotor;
+typedef struct {} btMultiBodyJointLimitConstraint;
+typedef struct {} btMultiBodyDynamicsWorld;
+typedef struct {} btMultiBody;
+typedef struct {} btMultiBodyJacobianData;
+typedef struct {} btMultiBodyConstraintArray;
+typedef struct {} btMultiBodyConstraint;
+typedef struct {} btMultiBodyConstraintSolver;
+typedef struct {} btMotionState;
+typedef struct {} pMotionState_SetWorldTransform;
+typedef struct {} pMotionState_GetWorldTransform;
+typedef struct {} btMotionStateWrapper;
+typedef struct {} btMinkowskiSumShape;
+typedef struct {} btMinkowskiPenetrationDepthSolver;
+typedef struct {} ContactAddedCallback;
+typedef struct {} btConstraintRow;
+typedef struct {} btMLCPSolver;
+typedef struct {} btVectorXf;
+typedef struct {} btMatrixXf;
+typedef struct {} btMLCPSolverInterface;
+typedef struct {} btLemkeSolver;
+typedef struct {} btKinematicCharacterController;
+typedef struct {} btIDebugDrawWrapper;
+typedef struct {} btHingeAccumulatedAngleConstraint;
+typedef struct {} btHingeConstraint;
+typedef struct {} btHinge2Constraint;
+typedef struct {} btHeightfieldTerrainShape;
+typedef struct {} btGjkPairDetector;
+typedef struct {} btGjkEpaPenetrationDepthSolver;
+typedef struct {} btGjkConvexCast;
+typedef struct {} btGhostPairCallback;
+typedef struct {} btHashedOverlappingPairCache;
+typedef struct {} btPairCachingGhostObject;
+typedef struct {} btGhostObject;
+typedef struct {} btGeneric6DofSpringConstraint;
+typedef struct {} RotateOrder;
+typedef struct {} btGeneric6DofSpring2Constraint;
+typedef struct {} btTranslationalLimitMotor2;
+typedef struct {} btRotationalLimitMotor2;
+typedef struct {} btTranslationalLimitMotor;
+typedef struct {} btRotationalLimitMotor;
+typedef struct {} btGearConstraint;
+typedef struct {} btGImpactMeshShapePart;
+typedef struct {} PHY_ScalarType;
+typedef struct {} btGImpactMeshShapePart_TrimeshPrimitiveManager;
+typedef struct {} btGImpactCompoundShape;
+typedef struct {} btGImpactCompoundShape_CompoundPrimitiveManager;
+typedef struct {} eGIMPACT_SHAPE_TYPE;
+typedef struct {} btTriangleShapeEx;
+typedef struct {} btGImpactBoxSet;
+typedef struct {} btTetrahedronShapeEx;
+typedef struct {} btGImpactQuantizedBvh;
+typedef struct {} btQuantizedBvhTree;
+typedef struct {} GIM_QUANTIZED_BVH_NODE_ARRAY;
+typedef struct {} BT_QUANTIZED_BVH_NODE;
+typedef struct {} btGImpactShapeInterface;
+typedef struct {} btGImpactCollisionAlgorithm;
+typedef struct {} btGImpactCollisionAlgorithm_CreateFunc;
+typedef struct {} btGImpactBvh;
+typedef struct {} btPrimitiveTriangle;
+typedef struct {} btPrimitiveManagerBase;
+typedef struct {} btBvhTree;
+typedef struct {} GIM_BVH_TREE_NODE_ARRAY;
+typedef struct {} GIM_BVH_DATA_ARRAY;
+typedef struct {} GIM_BVH_TREE_NODE;
+typedef struct {} GIM_BVH_DATA;
+typedef struct {} btPairSet;
+typedef struct {} GIM_PAIR;
+typedef struct {} btFixedConstraint;
+typedef struct {} btEmptyShape;
+typedef struct {} btEmptyAlgorithm;
+typedef struct {} btEmptyAlgorithm_CreateFunc;
+typedef struct {} btInternalTickCallback;
+typedef struct {} btDynamicsWorldType;
+typedef struct {} btSimulationIslandManager;
+typedef struct {} btTypedConstraint;
+typedef struct {} btDiscreteDynamicsWorld;
+typedef struct {} btStorageResult;
+typedef struct {} btDiscreteCollisionDetectorInterface;
+typedef struct {} btDiscreteCollisionDetectorInterface_Result;
+typedef struct {} btDiscreteCollisionDetectorInterface_ClosestPointInput;
+typedef struct {} btVertexBufferDescriptor;
+typedef struct {} btDefaultSoftBodySolver;
+typedef struct {} btDefaultMotionState;
+typedef struct {} btDefaultCollisionConfiguration;
+typedef struct {} btDefaultCollisionConstructionInfo;
+typedef struct {} btAlignedStkNNArray;
+typedef struct {} btAlignedDbvtNodeArray;
+typedef struct {} btAlignedStkNpsArray;
+typedef struct {} btDbvt_sStkNPS;
+typedef struct {} btDbvt_sStkNP;
+typedef struct {} btDbvt_sStkNN;
+typedef struct {} btDbvt_sStkCLN;
+typedef struct {} btDbvt_IWriter;
+typedef struct {} btDbvt_ICollide;
+typedef struct {} btDbvt_IClone;
+typedef struct {} btDbvtVolume;
+typedef struct {} btDbvtAabbMm;
+typedef struct {} btDbvtBroadphase;
+typedef struct {} btDbvtProxy;
+typedef struct {} btDantzigSolver;
+typedef struct {} btCylinderShapeZ;
+typedef struct {} btCylinderShapeX;
+typedef struct {} btCylinderShape;
+typedef struct {} btConvexTriangleMeshShape;
+typedef struct {} btAlignedFaceArray;
+typedef struct {} btConvexPolyhedron;
+typedef struct {} btAlignedIntArray;
+typedef struct {} btFace;
+typedef struct {} btConvexPointCloudShape;
+typedef struct {} btConvexPlaneCollisionAlgorithm;
+typedef struct {} btConvexPlaneCollisionAlgorithm_CreateFunc;
+typedef struct {} btConvexInternalAabbCachingShape;
+typedef struct {} btConvexInternalShape;
+typedef struct {} btConvexHullShape;
+typedef struct {} btConvexConvexAlgorithm;
+typedef struct {} btConvexConvexAlgorithm_CreateFunc;
+typedef struct {} btConvexConcaveCollisionAlgorithm;
+typedef struct {} btConvexConcaveCollisionAlgorithm_SwappedCreateFunc;
+typedef struct {} btConvexConcaveCollisionAlgorithm_CreateFunc;
+typedef struct {} btConvexTriangleCallback;
+typedef struct {} btConvexCast;
+typedef struct {} btConvexCast_CastResult;
+typedef struct {} btConvex2dShape;
+typedef struct {} btConvex2dConvex2dAlgorithm;
+typedef struct {} btConvex2dConvex2dAlgorithm_CreateFunc;
+typedef struct {} btStaticPlaneShape;
+typedef struct {} btConvexPenetrationDepthSolver;
+typedef struct {} btVoronoiSimplexSolver;
+typedef struct {} btContinuousConvexCollision;
+typedef struct {} btContactSolverInfoData;
+typedef struct {} btContactConstraint;
+typedef struct {} btConstraintSolverType;
+typedef struct {} btContactSolverInfo;
+typedef struct {} btConstraintSolver;
+typedef struct {} btTypedConstraint_btConstraintInfo2;
+typedef struct {} btTypedConstraint_btConstraintInfo1;
+typedef struct {} btConeTwistConstraint;
+typedef struct {} btConeShapeZ;
+typedef struct {} btConeShapeX;
+typedef struct {} btConeShape;
+typedef struct {} btConcaveShape;
+typedef struct {} btDbvt;
+typedef struct {} btDbvtNode;
+typedef struct {} btCompoundShapeChild;
+typedef struct {} btGImpactMeshShape;
+typedef struct {} btCompoundShape;
+typedef struct {} btCompoundCompoundCollisionAlgorithm;
+typedef struct {} btCompoundCompoundCollisionAlgorithm_SwappedCreateFunc;
+typedef struct {} btCompoundCompoundCollisionAlgorithm_CreateFunc;
+typedef struct {} btCompoundCollisionAlgorithm;
+typedef struct {} btCompoundCollisionAlgorithm_SwappedCreateFunc;
+typedef struct {} btCompoundCollisionAlgorithm_CreateFunc;
+typedef struct {} btCollisionObjectArray;
+typedef struct {} btConvexShape;
+typedef struct {} btCollisionWorld_RayResultCallback;
+typedef struct {} pRayResultCallback_NeedsCollision;
+typedef struct {} pRayResultCallback_AddSingleResult;
+typedef struct {} btCollisionWorld_RayResultCallbackWrapper;
+typedef struct {} btCollisionWorld_LocalRayResult;
+typedef struct {} btCollisionWorld_LocalShapeInfo;
+typedef struct {} btCollisionWorld_LocalConvexResult;
+typedef struct {} btCollisionWorld_ConvexResultCallback;
+typedef struct {} pConvexResultCallback_NeedsCollision;
+typedef struct {} pConvexResultCallback_AddSingleResult;
+typedef struct {} btCollisionWorld_ConvexResultCallbackWrapper;
+typedef struct {} btManifoldPoint;
+typedef struct {} btCollisionWorld_ContactResultCallback;
+typedef struct {} pContactResultCallback_NeedsCollision;
+typedef struct {} pContactResultCallback_AddSingleResult;
+typedef struct {} btCollisionWorld_ContactResultCallbackWrapper;
+typedef struct {} btCollisionWorld_ClosestRayResultCallback;
+typedef struct {} btCollisionWorld_ClosestConvexResultCallback;
+typedef struct {} btAlignedVector3Array;
+typedef struct {} btAlignedScalarArray;
+typedef struct {} btCollisionWorld_AllHitsRayResultCallback;
+typedef struct {} btCollisionShape;
+typedef struct {} btNearCallback;
+typedef struct {} btCollisionDispatcher;
+typedef struct {} btPoolAllocator;
+typedef struct {} btCollisionConfiguration;
+typedef struct {} btCollisionAlgorithmCreateFunc;
+typedef struct {} btManifoldResult;
+typedef struct {} btDispatcherInfo;
+typedef struct {} btCharacterControllerInterface;
+typedef struct {} btCapsuleShapeZ;
+typedef struct {} btCapsuleShapeX;
+typedef struct {} btCapsuleShape;
+typedef struct {} btSerializer;
+typedef struct {} btTriangleCallback;
+typedef struct {} btTriangleInfoMap;
+typedef struct {} btOptimizedBvh;
+typedef struct {} btStridingMeshInterface;
+typedef struct {} btBvhTriangleMeshShape;
+typedef struct {} btBulletXmlWorldImporter;
+typedef struct {} btDynamicsWorld;
+typedef struct {} btBulletWorldImporter;
+typedef struct {} btAligendCharPtrArray;
+typedef struct {} btAlignedStructHandleArray;
+typedef struct {} bParse_btBulletFile;
+typedef struct {} btCollisionAlgorithm;
+typedef struct {} btBroadphaseInterface;
+typedef struct {} btBroadphaseRayCallback;
+typedef struct {} btBroadphaseRayCallbackWrapper;
+typedef struct {} btBroadphaseAabbCallback;
+typedef struct {} pBroadphaseAabbCallback_Process;
+typedef struct {} btBroadphaseAabbCallbackWrapper;
+typedef struct {} eBT_PLANE_INTERSECTION_TYPE;
+typedef struct {} btAABB;
+typedef struct {} BT_BOX_BOX_TRANSFORM_CACHE;
+typedef struct {} btBoxShape;
+typedef struct {} btBoxBoxDetector;
+typedef struct {} btBoxBoxCollisionAlgorithm;
+typedef struct {} btBoxBoxCollisionAlgorithm_CreateFunc;
+typedef struct {} btVector3;
+typedef struct {} btBox2dShape;
+typedef struct {} btCollisionObjectWrapper;
+typedef struct {} btCollisionAlgorithmConstructionInfo;
+typedef struct {} btBox2dBox2dCollisionAlgorithm;
+typedef struct {} btBox2dBox2dCollisionAlgorithm_CreateFunc;
+typedef struct {} bt32BitAxisSweep3_Handle;
+typedef struct {} bt32BitAxisSweep3;
+typedef struct {} btBroadphaseProxy;
+typedef struct {} btOverlappingPairCallback;
+typedef struct {} btOverlapCallback;
+typedef struct {} btAxisSweep3_Handle;
+typedef struct {} btDispatcher;
+typedef struct {} btOverlappingPairCache;
+typedef struct {} btAxisSweep3;
+typedef struct {} btAlignedSoftBodyTetraArray;
+typedef struct {} btSoftBody_Tetra;
+typedef struct {} btAlignedSoftBodyNodeArray;
+typedef struct {} btSoftBody_Node;
+typedef struct {} btAlignedSoftBodyMaterialArray;
+typedef struct {} btSoftBody_Material;
+typedef struct {} btAlignedSoftBodyLinkArray;
+typedef struct {} btSoftBody_Link;
+typedef struct {} btAlignedSoftBodyJointArray;
+typedef struct {} btSoftBody_Joint;
+typedef struct {} btAlignedSoftBodyFaceArray;
+typedef struct {} btSoftBody_Face;
+typedef struct {} btAlignedSoftBodyClusterArray;
+typedef struct {} btSoftBody_Cluster;
+typedef struct {} btAlignedSoftBodyArray;
+typedef struct {} btSoftBody;
+typedef struct {} btPersistentManifold;
+typedef struct {} btAlignedManifoldArray;
+typedef struct {} btAlignedIndexedMeshArray;
+typedef struct {} btIndexedMesh;
+typedef struct {} btAlignedCollisionObjectArray;
+typedef struct {} btCollisionObject;
+typedef struct {} btAlignedBroadphasePairArray;
+typedef struct {} btBroadphasePair;
+typedef struct {} btCollisionWorld;
+typedef struct {} btIDebugDraw;
+typedef struct {} btActionInterface;
+typedef struct {} pIAction_UpdateAction;
+typedef struct {} pIAction_DebugDraw;
+typedef struct {} btActionInterfaceWrapper;
 typedef float btScalar;
 btActionInterfaceWrapper* btActionInterfaceWrapper_new(pIAction_DebugDraw debugDrawCallback, pIAction_UpdateAction updateActionCallback);
 void btActionInterface_debugDraw(btActionInterface* obj, btIDebugDraw* debugDrawer);
@@ -4264,3918 +4264,10933 @@ void HACD_delete(HACD_HACD* obj);
 ]])
 local lib = ffi.load('libbulletc')
 local bullet = {}
-do -- GImpactMeshShapePart
+do -- UniformScalingShape
 	local META = {}
 	META.__index = META
-	function META:GetPart(...)
-		lib.btGImpactMeshShapePart_getPart(self.__ptr, ...)
+	function META:GetUniformScalingFactor(...)
+		return lib.btUniformScalingShape_getUniformScalingFactor(self, ...)
 	end
-	function META:GetVertexCount(...)
-		lib.btGImpactMeshShapePart_getVertexCount(self.__ptr, ...)
+	function META:GetChildShape(...)
+		return lib.btUniformScalingShape_getChildShape(self, ...)
 	end
-	function META:GetVertex(...)
-		lib.btGImpactMeshShapePart_getVertex(self.__ptr, ...)
-	end
-	function META:GetTrimeshPrimitiveManager(...)
-		lib.btGImpactMeshShapePart_getTrimeshPrimitiveManager(self.__ptr, ...)
-	end
-	function bullet.CreateGImpactMeshShapePart(...)
-		return setmetatable({__ptr = lib.btGImpactMeshShapePart_new2(...)}, META)
+	ffi.metatype('btUniformScalingShape', META)
+	function bullet.CreateUniformScalingShape(...)
+		return lib.btUniformScalingShape_new(...)
 	end
 end
-do -- ContinuousConvexCollision
+do -- SoftBody_AJoint_IControlWrapper
 	local META = {}
 	META.__index = META
-	function bullet.CreateContinuousConvexCollision(...)
-		return setmetatable({__ptr = lib.btContinuousConvexCollision_new2(...)}, META)
+	function META:GetWrapperData(...)
+		return lib.btSoftBody_AJoint_IControlWrapper_getWrapperData(self, ...)
 	end
-end
-do -- TriangleIndexVertexMaterialArray
-	local META = {}
-	META.__index = META
-	function META:AddMaterialProperties(...)
-		lib.btTriangleIndexVertexMaterialArray_addMaterialProperties(self.__ptr, ...)
+	function META:SetWrapperData(...)
+		return lib.btSoftBody_AJoint_IControlWrapper_setWrapperData(self, ...)
 	end
-	function META:GetLockedReadOnlyMaterialBase(...)
-		lib.btTriangleIndexVertexMaterialArray_getLockedReadOnlyMaterialBase(self.__ptr, ...)
-	end
-	function META:GetLockedMaterialBase(...)
-		lib.btTriangleIndexVertexMaterialArray_getLockedMaterialBase(self.__ptr, ...)
-	end
-	function bullet.CreateTriangleIndexVertexMaterialArray(...)
-		return setmetatable({__ptr = lib.btTriangleIndexVertexMaterialArray_new2(...)}, META)
+	ffi.metatype('btSoftBody_AJoint_IControl', META)
+	function bullet.CreateSoftBody_AJoint_IControlWrapper(...)
+		return lib.btSoftBody_AJoint_IControlWrapper_new(...)
 	end
 end
 do -- BulletFile
 	local META = {}
 	META.__index = META
 	function META:GetBvhs(...)
-		lib.btBulletFile_getBvhs(self.__ptr, ...)
+		return lib.btBulletFile_getBvhs(self, ...)
 	end
 	function META:GetRigidBodies(...)
-		lib.btBulletFile_getRigidBodies(self.__ptr, ...)
+		return lib.btBulletFile_getRigidBodies(self, ...)
 	end
 	function META:GetDataBlocks(...)
-		lib.btBulletFile_getDataBlocks(self.__ptr, ...)
+		return lib.btBulletFile_getDataBlocks(self, ...)
 	end
 	function META:GetCollisionObjects(...)
-		lib.btBulletFile_getCollisionObjects(self.__ptr, ...)
+		return lib.btBulletFile_getCollisionObjects(self, ...)
 	end
 	function META:GetConstraints(...)
-		lib.btBulletFile_getConstraints(self.__ptr, ...)
+		return lib.btBulletFile_getConstraints(self, ...)
 	end
 	function META:GetDynamicsWorldInfo(...)
-		lib.btBulletFile_getDynamicsWorldInfo(self.__ptr, ...)
+		return lib.btBulletFile_getDynamicsWorldInfo(self, ...)
 	end
 	function META:GetCollisionShapes(...)
-		lib.btBulletFile_getCollisionShapes(self.__ptr, ...)
+		return lib.btBulletFile_getCollisionShapes(self, ...)
 	end
 	function META:GetSoftBodies(...)
-		lib.btBulletFile_getSoftBodies(self.__ptr, ...)
+		return lib.btBulletFile_getSoftBodies(self, ...)
 	end
 	function META:GetTriangleInfoMaps(...)
-		lib.btBulletFile_getTriangleInfoMaps(self.__ptr, ...)
+		return lib.btBulletFile_getTriangleInfoMaps(self, ...)
 	end
 	function META:ParseData(...)
-		lib.btBulletFile_parseData(self.__ptr, ...)
+		return lib.btBulletFile_parseData(self, ...)
 	end
 	function META:AddStruct(...)
-		lib.btBulletFile_addStruct(self.__ptr, ...)
+		return lib.btBulletFile_addStruct(self, ...)
 	end
+	ffi.metatype('bParse_btBulletFile', META)
 	function bullet.CreateBulletFile(...)
-		return setmetatable({__ptr = lib.btBulletFile_new2(...)}, META)
+		return lib.btBulletFile_new(...)
+	end
+	function bullet.CreateBulletFile2(...)
+		return lib.btBulletFile_new2(...)
+	end
+	function bullet.CreateBulletFile3(...)
+		return lib.btBulletFile_new3(...)
 	end
 end
 do -- ConeTwistConstraint
 	local META = {}
 	META.__index = META
 	function META:GetInfo2NonVirtual(...)
-		lib.btConeTwistConstraint_getInfo2NonVirtual(self.__ptr, ...)
+		return lib.btConeTwistConstraint_getInfo2NonVirtual(self, ...)
 	end
-	function META:SetDamping(...)
-		lib.btConeTwistConstraint_setDamping(self.__ptr, ...)
+	function META:SetLimit2(...)
+		return lib.btConeTwistConstraint_setLimit2(self, ...)
 	end
 	function META:GetFrameOffsetA(...)
-		lib.btConeTwistConstraint_getFrameOffsetA(self.__ptr, ...)
-	end
-	function META:GetSwingSpan(...)
-		lib.btConeTwistConstraint_getSwingSpan1(self.__ptr, ...)
+		return lib.btConeTwistConstraint_getFrameOffsetA(self, ...)
 	end
 	function META:GetInfo1NonVirtual(...)
-		lib.btConeTwistConstraint_getInfo1NonVirtual(self.__ptr, ...)
-	end
-	function META:SetLimit(...)
-		lib.btConeTwistConstraint_setLimit(self.__ptr, ...)
-	end
-	function META:GetFixThresh(...)
-		lib.btConeTwistConstraint_getFixThresh(self.__ptr, ...)
-	end
-	function META:UpdateRHS(...)
-		lib.btConeTwistConstraint_updateRHS(self.__ptr, ...)
-	end
-	function META:GetSolveTwistLimit(...)
-		lib.btConeTwistConstraint_getSolveTwistLimit(self.__ptr, ...)
-	end
-	function META:GetTwistAngle(...)
-		lib.btConeTwistConstraint_getTwistAngle(self.__ptr, ...)
-	end
-	function META:SetMotorTargetInConstraintSpace(...)
-		lib.btConeTwistConstraint_setMotorTargetInConstraintSpace(self.__ptr, ...)
-	end
-	function META:GetPointForAngle(...)
-		lib.btConeTwistConstraint_GetPointForAngle(self.__ptr, ...)
-	end
-	function META:GetFrameOffsetB(...)
-		lib.btConeTwistConstraint_getFrameOffsetB(self.__ptr, ...)
-	end
-	function META:GetTwistLimitSign(...)
-		lib.btConeTwistConstraint_getTwistLimitSign(self.__ptr, ...)
+		return lib.btConeTwistConstraint_getInfo1NonVirtual(self, ...)
 	end
 	function META:SetMaxMotorImpulseNormalized(...)
-		lib.btConeTwistConstraint_setMaxMotorImpulseNormalized(self.__ptr, ...)
-	end
-	function META:SetMaxMotorImpulse(...)
-		lib.btConeTwistConstraint_setMaxMotorImpulse(self.__ptr, ...)
-	end
-	function META:SetAngularOnly(...)
-		lib.btConeTwistConstraint_setAngularOnly(self.__ptr, ...)
-	end
-	function META:SetFrames(...)
-		lib.btConeTwistConstraint_setFrames(self.__ptr, ...)
-	end
-	function META:SetFixThresh(...)
-		lib.btConeTwistConstraint_setFixThresh(self.__ptr, ...)
+		return lib.btConeTwistConstraint_setMaxMotorImpulseNormalized(self, ...)
 	end
 	function META:EnableMotor(...)
-		lib.btConeTwistConstraint_enableMotor(self.__ptr, ...)
+		return lib.btConeTwistConstraint_enableMotor(self, ...)
+	end
+	function META:CalcAngleInfo2(...)
+		return lib.btConeTwistConstraint_calcAngleInfo2(self, ...)
+	end
+	function META:GetSwingSpan1(...)
+		return lib.btConeTwistConstraint_getSwingSpan1(self, ...)
 	end
 	function META:IsPastSwingLimit(...)
-		lib.btConeTwistConstraint_isPastSwingLimit(self.__ptr, ...)
+		return lib.btConeTwistConstraint_isPastSwingLimit(self, ...)
 	end
 	function META:GetTwistSpan(...)
-		lib.btConeTwistConstraint_getTwistSpan(self.__ptr, ...)
+		return lib.btConeTwistConstraint_getTwistSpan(self, ...)
 	end
 	function META:GetBFrame(...)
-		lib.btConeTwistConstraint_getBFrame(self.__ptr, ...)
+		return lib.btConeTwistConstraint_getBFrame(self, ...)
 	end
-	function META:GetSolveSwingLimit(...)
-		lib.btConeTwistConstraint_getSolveSwingLimit(self.__ptr, ...)
-	end
-	function META:CalcAngleInfo(...)
-		lib.btConeTwistConstraint_calcAngleInfo(self.__ptr, ...)
+	function META:SetFixThresh(...)
+		return lib.btConeTwistConstraint_setFixThresh(self, ...)
 	end
 	function META:GetAFrame(...)
-		lib.btConeTwistConstraint_getAFrame(self.__ptr, ...)
+		return lib.btConeTwistConstraint_getAFrame(self, ...)
+	end
+	function META:SetDamping(...)
+		return lib.btConeTwistConstraint_setDamping(self, ...)
+	end
+	function META:GetSwingSpan2(...)
+		return lib.btConeTwistConstraint_getSwingSpan2(self, ...)
+	end
+	function META:GetPointForAngle(...)
+		return lib.btConeTwistConstraint_GetPointForAngle(self, ...)
+	end
+	function META:SetLimit(...)
+		return lib.btConeTwistConstraint_setLimit(self, ...)
+	end
+	function META:SetLimit3(...)
+		return lib.btConeTwistConstraint_setLimit3(self, ...)
+	end
+	function META:UpdateRHS(...)
+		return lib.btConeTwistConstraint_updateRHS(self, ...)
+	end
+	function META:GetSolveTwistLimit(...)
+		return lib.btConeTwistConstraint_getSolveTwistLimit(self, ...)
+	end
+	function META:GetTwistAngle(...)
+		return lib.btConeTwistConstraint_getTwistAngle(self, ...)
+	end
+	function META:SetMotorTargetInConstraintSpace(...)
+		return lib.btConeTwistConstraint_setMotorTargetInConstraintSpace(self, ...)
+	end
+	function META:GetFrameOffsetB(...)
+		return lib.btConeTwistConstraint_getFrameOffsetB(self, ...)
+	end
+	function META:GetTwistLimitSign(...)
+		return lib.btConeTwistConstraint_getTwistLimitSign(self, ...)
+	end
+	function META:SetMaxMotorImpulse(...)
+		return lib.btConeTwistConstraint_setMaxMotorImpulse(self, ...)
+	end
+	function META:SetAngularOnly(...)
+		return lib.btConeTwistConstraint_setAngularOnly(self, ...)
+	end
+	function META:GetFixThresh(...)
+		return lib.btConeTwistConstraint_getFixThresh(self, ...)
+	end
+	function META:CalcAngleInfo(...)
+		return lib.btConeTwistConstraint_calcAngleInfo(self, ...)
+	end
+	function META:SetFrames(...)
+		return lib.btConeTwistConstraint_setFrames(self, ...)
+	end
+	function META:GetSolveSwingLimit(...)
+		return lib.btConeTwistConstraint_getSolveSwingLimit(self, ...)
+	end
+	function META:SetLimit4(...)
+		return lib.btConeTwistConstraint_setLimit4(self, ...)
+	end
+	function META:SetLimit5(...)
+		return lib.btConeTwistConstraint_setLimit5(self, ...)
 	end
 	function META:SetMotorTarget(...)
-		lib.btConeTwistConstraint_setMotorTarget(self.__ptr, ...)
+		return lib.btConeTwistConstraint_setMotorTarget(self, ...)
+	end
+	ffi.metatype('btConeTwistConstraint', META)
+	function bullet.CreateConeTwistConstraint2(...)
+		return lib.btConeTwistConstraint_new2(...)
 	end
 	function bullet.CreateConeTwistConstraint(...)
-		return setmetatable({__ptr = lib.btConeTwistConstraint_new2(...)}, META)
+		return lib.btConeTwistConstraint_new(...)
 	end
 end
 do -- BvhTriangleMeshShape
 	local META = {}
 	META.__index = META
 	function META:GetTriangleInfoMap(...)
-		lib.btBvhTriangleMeshShape_getTriangleInfoMap(self.__ptr, ...)
+		return lib.btBvhTriangleMeshShape_getTriangleInfoMap(self, ...)
 	end
 	function META:PerformRaycast(...)
-		lib.btBvhTriangleMeshShape_performRaycast(self.__ptr, ...)
+		return lib.btBvhTriangleMeshShape_performRaycast(self, ...)
 	end
 	function META:UsesQuantizedAabbCompression(...)
-		lib.btBvhTriangleMeshShape_usesQuantizedAabbCompression(self.__ptr, ...)
+		return lib.btBvhTriangleMeshShape_usesQuantizedAabbCompression(self, ...)
 	end
 	function META:RefitTree(...)
-		lib.btBvhTriangleMeshShape_refitTree(self.__ptr, ...)
+		return lib.btBvhTriangleMeshShape_refitTree(self, ...)
 	end
 	function META:PerformConvexcast(...)
-		lib.btBvhTriangleMeshShape_performConvexcast(self.__ptr, ...)
+		return lib.btBvhTriangleMeshShape_performConvexcast(self, ...)
 	end
 	function META:SerializeSingleTriangleInfoMap(...)
-		lib.btBvhTriangleMeshShape_serializeSingleTriangleInfoMap(self.__ptr, ...)
+		return lib.btBvhTriangleMeshShape_serializeSingleTriangleInfoMap(self, ...)
 	end
 	function META:PartialRefitTree(...)
-		lib.btBvhTriangleMeshShape_partialRefitTree(self.__ptr, ...)
+		return lib.btBvhTriangleMeshShape_partialRefitTree(self, ...)
 	end
 	function META:SetOptimizedBvh(...)
-		lib.btBvhTriangleMeshShape_setOptimizedBvh(self.__ptr, ...)
-	end
-	function META:GetOptimizedBvh(...)
-		lib.btBvhTriangleMeshShape_getOptimizedBvh(self.__ptr, ...)
-	end
-	function META:SetTriangleInfoMap(...)
-		lib.btBvhTriangleMeshShape_setTriangleInfoMap(self.__ptr, ...)
+		return lib.btBvhTriangleMeshShape_setOptimizedBvh(self, ...)
 	end
 	function META:SerializeSingleBvh(...)
-		lib.btBvhTriangleMeshShape_serializeSingleBvh(self.__ptr, ...)
+		return lib.btBvhTriangleMeshShape_serializeSingleBvh(self, ...)
+	end
+	function META:GetOptimizedBvh(...)
+		return lib.btBvhTriangleMeshShape_getOptimizedBvh(self, ...)
+	end
+	function META:SetTriangleInfoMap(...)
+		return lib.btBvhTriangleMeshShape_setTriangleInfoMap(self, ...)
+	end
+	function META:SetOptimizedBvh2(...)
+		return lib.btBvhTriangleMeshShape_setOptimizedBvh2(self, ...)
 	end
 	function META:GetOwnsBvh(...)
-		lib.btBvhTriangleMeshShape_getOwnsBvh(self.__ptr, ...)
+		return lib.btBvhTriangleMeshShape_getOwnsBvh(self, ...)
 	end
 	function META:BuildOptimizedBvh(...)
-		lib.btBvhTriangleMeshShape_buildOptimizedBvh(self.__ptr, ...)
+		return lib.btBvhTriangleMeshShape_buildOptimizedBvh(self, ...)
+	end
+	ffi.metatype('btBvhTriangleMeshShape', META)
+	function bullet.CreateBvhTriangleMeshShape3(...)
+		return lib.btBvhTriangleMeshShape_new3(...)
 	end
 	function bullet.CreateBvhTriangleMeshShape(...)
-		return setmetatable({__ptr = lib.btBvhTriangleMeshShape_new2(...)}, META)
+		return lib.btBvhTriangleMeshShape_new(...)
+	end
+	function bullet.CreateBvhTriangleMeshShape2(...)
+		return lib.btBvhTriangleMeshShape_new2(...)
+	end
+	function bullet.CreateBvhTriangleMeshShape4(...)
+		return lib.btBvhTriangleMeshShape_new4(...)
+	end
+end
+do -- MultibodyLink
+	local META = {}
+	META.__index = META
+	function META:SetCollider(...)
+		return lib.btMultibodyLink_setCollider(self, ...)
+	end
+	function META:GetInertiaLocal(...)
+		return lib.btMultibodyLink_getInertiaLocal(self, ...)
+	end
+	function META:GetCachedRotParentToThis(...)
+		return lib.btMultibodyLink_getCachedRotParentToThis(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btMultibodyLink_delete(self, ...)
+	end
+	function META:GetAbsFrameLocVelocity(...)
+		return lib.btMultibodyLink_getAbsFrameLocVelocity(self, ...)
+	end
+	function META:SetDofOffset(...)
+		return lib.btMultibodyLink_setDofOffset(self, ...)
+	end
+	function META:SetAxisTop(...)
+		return lib.btMultibodyLink_setAxisTop(self, ...)
+	end
+	function META:GetCfgOffset(...)
+		return lib.btMultibodyLink_getCfgOffset(self, ...)
+	end
+	function META:GetPosVarCount(...)
+		return lib.btMultibodyLink_getPosVarCount(self, ...)
+	end
+	function META:GetJointType(...)
+		return lib.btMultibodyLink_getJointType(self, ...)
+	end
+	function META:GetDVector(...)
+		return lib.btMultibodyLink_getDVector(self, ...)
+	end
+	function META:SetAppliedTorque(...)
+		return lib.btMultibodyLink_setAppliedTorque(self, ...)
+	end
+	function META:SetAxisBottom2(...)
+		return lib.btMultibodyLink_setAxisBottom2(self, ...)
+	end
+	function META:SetPosVarCount(...)
+		return lib.btMultibodyLink_setPosVarCount(self, ...)
+	end
+	function META:SetFlags(...)
+		return lib.btMultibodyLink_setFlags(self, ...)
+	end
+	function META:UpdateCacheMultiDof(...)
+		return lib.btMultibodyLink_updateCacheMultiDof(self, ...)
+	end
+	function META:SetZeroRotParentToThis(...)
+		return lib.btMultibodyLink_setZeroRotParentToThis(self, ...)
+	end
+	function META:UpdateCache(...)
+		return lib.btMultibodyLink_updateCache(self, ...)
+	end
+	function META:SetJointType(...)
+		return lib.btMultibodyLink_setJointType(self, ...)
+	end
+	function META:GetAbsFrameTotVelocity(...)
+		return lib.btMultibodyLink_getAbsFrameTotVelocity(self, ...)
+	end
+	function META:GetAppliedForce(...)
+		return lib.btMultibodyLink_getAppliedForce(self, ...)
+	end
+	function META:UpdateCacheMultiDof2(...)
+		return lib.btMultibodyLink_updateCacheMultiDof2(self, ...)
+	end
+	function META:SetEVector(...)
+		return lib.btMultibodyLink_setEVector(self, ...)
+	end
+	function META:SetAxisBottom(...)
+		return lib.btMultibodyLink_setAxisBottom(self, ...)
+	end
+	function META:SetMass(...)
+		return lib.btMultibodyLink_setMass(self, ...)
+	end
+	function META:SetInertiaLocal(...)
+		return lib.btMultibodyLink_setInertiaLocal(self, ...)
+	end
+	function META:SetAxisTop2(...)
+		return lib.btMultibodyLink_setAxisTop2(self, ...)
+	end
+	function META:GetMass(...)
+		return lib.btMultibodyLink_getMass(self, ...)
+	end
+	function META:SetParent(...)
+		return lib.btMultibodyLink_setParent(self, ...)
+	end
+	function META:SetDVector(...)
+		return lib.btMultibodyLink_setDVector(self, ...)
+	end
+	function META:GetEVector(...)
+		return lib.btMultibodyLink_getEVector(self, ...)
+	end
+	function META:SetAbsFrameLocVelocity(...)
+		return lib.btMultibodyLink_setAbsFrameLocVelocity(self, ...)
+	end
+	function META:SetCfgOffset(...)
+		return lib.btMultibodyLink_setCfgOffset(self, ...)
+	end
+	function META:SetDofCount(...)
+		return lib.btMultibodyLink_setDofCount(self, ...)
+	end
+	function META:GetAxisBottom(...)
+		return lib.btMultibodyLink_getAxisBottom(self, ...)
+	end
+	function META:SetCachedRotParentToThis(...)
+		return lib.btMultibodyLink_setCachedRotParentToThis(self, ...)
+	end
+	function META:GetZeroRotParentToThis(...)
+		return lib.btMultibodyLink_getZeroRotParentToThis(self, ...)
+	end
+	function META:GetDofCount(...)
+		return lib.btMultibodyLink_getDofCount(self, ...)
+	end
+	function META:GetAppliedTorque(...)
+		return lib.btMultibodyLink_getAppliedTorque(self, ...)
+	end
+	function META:GetJointPos(...)
+		return lib.btMultibodyLink_getJointPos(self, ...)
+	end
+	function META:SetAppliedForce(...)
+		return lib.btMultibodyLink_setAppliedForce(self, ...)
+	end
+	function META:GetCollider(...)
+		return lib.btMultibodyLink_getCollider(self, ...)
+	end
+	function META:GetAxisTop(...)
+		return lib.btMultibodyLink_getAxisTop(self, ...)
+	end
+	function META:SetAbsFrameTotVelocity(...)
+		return lib.btMultibodyLink_setAbsFrameTotVelocity(self, ...)
+	end
+	function META:GetFlags(...)
+		return lib.btMultibodyLink_getFlags(self, ...)
+	end
+	function META:GetJointTorque(...)
+		return lib.btMultibodyLink_getJointTorque(self, ...)
+	end
+	function META:SetCachedRVector(...)
+		return lib.btMultibodyLink_setCachedRVector(self, ...)
+	end
+	function META:GetAxes(...)
+		return lib.btMultibodyLink_getAxes(self, ...)
+	end
+	function META:GetParent(...)
+		return lib.btMultibodyLink_getParent(self, ...)
+	end
+	function META:GetDofOffset(...)
+		return lib.btMultibodyLink_getDofOffset(self, ...)
+	end
+	function META:GetCachedRVector(...)
+		return lib.btMultibodyLink_getCachedRVector(self, ...)
+	end
+	ffi.metatype('btMultibodyLink', META)
+	function bullet.CreateMultibodyLink(...)
+		return lib.btMultibodyLink_new(...)
+	end
+end
+do -- CollisionWorld_LocalConvexResult
+	local META = {}
+	META.__index = META
+	function META:GetHitCollisionObject(...)
+		return lib.btCollisionWorld_LocalConvexResult_getHitCollisionObject(self, ...)
+	end
+	function META:SetHitNormalLocal(...)
+		return lib.btCollisionWorld_LocalConvexResult_setHitNormalLocal(self, ...)
+	end
+	function META:SetHitFraction(...)
+		return lib.btCollisionWorld_LocalConvexResult_setHitFraction(self, ...)
+	end
+	function META:SetHitCollisionObject(...)
+		return lib.btCollisionWorld_LocalConvexResult_setHitCollisionObject(self, ...)
+	end
+	function META:GetLocalShapeInfo(...)
+		return lib.btCollisionWorld_LocalConvexResult_getLocalShapeInfo(self, ...)
+	end
+	function META:SetHitPointLocal(...)
+		return lib.btCollisionWorld_LocalConvexResult_setHitPointLocal(self, ...)
+	end
+	function META:GetHitFraction(...)
+		return lib.btCollisionWorld_LocalConvexResult_getHitFraction(self, ...)
+	end
+	function META:SetLocalShapeInfo(...)
+		return lib.btCollisionWorld_LocalConvexResult_setLocalShapeInfo(self, ...)
+	end
+	function META:GetHitPointLocal(...)
+		return lib.btCollisionWorld_LocalConvexResult_getHitPointLocal(self, ...)
+	end
+	function META:GetHitNormalLocal(...)
+		return lib.btCollisionWorld_LocalConvexResult_getHitNormalLocal(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btCollisionWorld_LocalConvexResult_delete(self, ...)
+	end
+	ffi.metatype('btCollisionWorld_LocalConvexResult', META)
+	function bullet.CreateCollisionWorld_LocalConvexResult(...)
+		return lib.btCollisionWorld_LocalConvexResult_new(...)
+	end
+end
+do -- GIM_BVH_TREE_NODE_ARRAY
+	local META = {}
+	META.__index = META
+	ffi.metatype('GIM_BVH_TREE_NODE_ARRAY', META)
+	function bullet.CreateGIM_BVH_TREE_NODE_ARRAY(...)
+		return lib.GIM_BVH_TREE_NODE_ARRAY_new(...)
 	end
 end
 do -- DbvtBroadphase
 	local META = {}
 	META.__index = META
 	function META:GetNewpairs(...)
-		lib.btDbvtBroadphase_getNewpairs(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getNewpairs(self, ...)
 	end
 	function META:SetNeedcleanup(...)
-		lib.btDbvtBroadphase_setNeedcleanup(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setNeedcleanup(self, ...)
 	end
 	function META:Optimize(...)
-		lib.btDbvtBroadphase_optimize(self.__ptr, ...)
+		return lib.btDbvtBroadphase_optimize(self, ...)
 	end
 	function META:GetDupdates(...)
-		lib.btDbvtBroadphase_getDupdates(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getDupdates(self, ...)
 	end
 	function META:SetFupdates(...)
-		lib.btDbvtBroadphase_setFupdates(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setFupdates(self, ...)
 	end
 	function META:GetDeferedcollide(...)
-		lib.btDbvtBroadphase_getDeferedcollide(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getDeferedcollide(self, ...)
 	end
 	function META:GetFupdates(...)
-		lib.btDbvtBroadphase_getFupdates(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getFupdates(self, ...)
 	end
 	function META:Collide(...)
-		lib.btDbvtBroadphase_collide(self.__ptr, ...)
+		return lib.btDbvtBroadphase_collide(self, ...)
 	end
 	function META:SetGid(...)
-		lib.btDbvtBroadphase_setGid(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setGid(self, ...)
 	end
 	function META:SetStageCurrent(...)
-		lib.btDbvtBroadphase_setStageCurrent(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setStageCurrent(self, ...)
 	end
 	function META:SetAabbForceUpdate(...)
-		lib.btDbvtBroadphase_setAabbForceUpdate(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setAabbForceUpdate(self, ...)
 	end
 	function META:GetNeedcleanup(...)
-		lib.btDbvtBroadphase_getNeedcleanup(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getNeedcleanup(self, ...)
 	end
 	function META:SetDupdates(...)
-		lib.btDbvtBroadphase_setDupdates(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setDupdates(self, ...)
 	end
 	function META:GetVelocityPrediction(...)
-		lib.btDbvtBroadphase_getVelocityPrediction(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getVelocityPrediction(self, ...)
 	end
 	function META:SetPrediction(...)
-		lib.btDbvtBroadphase_setPrediction(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setPrediction(self, ...)
 	end
 	function META:GetStageRoots(...)
-		lib.btDbvtBroadphase_getStageRoots(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getStageRoots(self, ...)
 	end
 	function META:SetDeferedcollide(...)
-		lib.btDbvtBroadphase_setDeferedcollide(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setDeferedcollide(self, ...)
 	end
 	function META:SetVelocityPrediction(...)
-		lib.btDbvtBroadphase_setVelocityPrediction(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setVelocityPrediction(self, ...)
 	end
 	function META:GetSets(...)
-		lib.btDbvtBroadphase_getSets(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getSets(self, ...)
 	end
 	function META:GetCupdates(...)
-		lib.btDbvtBroadphase_getCupdates(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getCupdates(self, ...)
 	end
 	function META:GetPrediction(...)
-		lib.btDbvtBroadphase_getPrediction(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getPrediction(self, ...)
 	end
 	function META:SetPid(...)
-		lib.btDbvtBroadphase_setPid(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setPid(self, ...)
 	end
 	function META:GetGid(...)
-		lib.btDbvtBroadphase_getGid(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getGid(self, ...)
 	end
 	function META:GetReleasepaircache(...)
-		lib.btDbvtBroadphase_getReleasepaircache(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getReleasepaircache(self, ...)
 	end
 	function META:SetNewpairs(...)
-		lib.btDbvtBroadphase_setNewpairs(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setNewpairs(self, ...)
 	end
 	function META:GetStageCurrent(...)
-		lib.btDbvtBroadphase_getStageCurrent(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getStageCurrent(self, ...)
 	end
 	function META:PerformDeferredRemoval(...)
-		lib.btDbvtBroadphase_performDeferredRemoval(self.__ptr, ...)
+		return lib.btDbvtBroadphase_performDeferredRemoval(self, ...)
 	end
 	function META:Benchmark(...)
-		lib.btDbvtBroadphase_benchmark(self.__ptr, ...)
+		return lib.btDbvtBroadphase_benchmark(self, ...)
 	end
 	function META:GetPaircache(...)
-		lib.btDbvtBroadphase_getPaircache(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getPaircache(self, ...)
 	end
 	function META:GetPid(...)
-		lib.btDbvtBroadphase_getPid(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getPid(self, ...)
 	end
 	function META:SetReleasepaircache(...)
-		lib.btDbvtBroadphase_setReleasepaircache(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setReleasepaircache(self, ...)
 	end
 	function META:GetFixedleft(...)
-		lib.btDbvtBroadphase_getFixedleft(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getFixedleft(self, ...)
 	end
 	function META:SetPaircache(...)
-		lib.btDbvtBroadphase_setPaircache(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setPaircache(self, ...)
 	end
 	function META:SetCid(...)
-		lib.btDbvtBroadphase_setCid(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setCid(self, ...)
 	end
 	function META:SetCupdates(...)
-		lib.btDbvtBroadphase_setCupdates(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setCupdates(self, ...)
 	end
 	function META:GetCid(...)
-		lib.btDbvtBroadphase_getCid(self.__ptr, ...)
+		return lib.btDbvtBroadphase_getCid(self, ...)
 	end
 	function META:SetFixedleft(...)
-		lib.btDbvtBroadphase_setFixedleft(self.__ptr, ...)
+		return lib.btDbvtBroadphase_setFixedleft(self, ...)
 	end
+	ffi.metatype('btDbvtBroadphase', META)
 	function bullet.CreateDbvtBroadphase(...)
-		return setmetatable({__ptr = lib.btDbvtBroadphase_new2(...)}, META)
+		return lib.btDbvtBroadphase_new(...)
+	end
+	function bullet.CreateDbvtBroadphase2(...)
+		return lib.btDbvtBroadphase_new2(...)
 	end
 end
 do -- Generic6DofSpringConstraint
 	local META = {}
 	META.__index = META
-	function META:EnableSpring(...)
-		lib.btGeneric6DofSpringConstraint_enableSpring(self.__ptr, ...)
-	end
 	function META:SetDamping(...)
-		lib.btGeneric6DofSpringConstraint_setDamping(self.__ptr, ...)
-	end
-	function META:SetStiffness(...)
-		lib.btGeneric6DofSpringConstraint_setStiffness(self.__ptr, ...)
+		return lib.btGeneric6DofSpringConstraint_setDamping(self, ...)
 	end
 	function META:SetEquilibriumPoint(...)
-		lib.btGeneric6DofSpringConstraint_setEquilibriumPoint(self.__ptr, ...)
+		return lib.btGeneric6DofSpringConstraint_setEquilibriumPoint(self, ...)
 	end
-	function bullet.CreateGeneric6DofSpringConstraint(...)
-		return setmetatable({__ptr = lib.btGeneric6DofSpringConstraint_new2(...)}, META)
+	function META:SetEquilibriumPoint3(...)
+		return lib.btGeneric6DofSpringConstraint_setEquilibriumPoint3(self, ...)
+	end
+	function META:EnableSpring(...)
+		return lib.btGeneric6DofSpringConstraint_enableSpring(self, ...)
+	end
+	function META:SetStiffness(...)
+		return lib.btGeneric6DofSpringConstraint_setStiffness(self, ...)
+	end
+	function META:SetEquilibriumPoint2(...)
+		return lib.btGeneric6DofSpringConstraint_setEquilibriumPoint2(self, ...)
+	end
+	ffi.metatype('btGeneric6DofSpringConstraint', META)
+	function bullet.CreateGeneric6DofSpringConstraint2(...)
+		return lib.btGeneric6DofSpringConstraint_new2(...)
+	end
+	function bullet.CreateGeneric6DofSpringConstraint6(...)
+		return lib.btGeneric6DofSpringConstraint_new(...)
 	end
 end
 do -- RotationalLimitMotor2
 	local META = {}
 	META.__index = META
 	function META:SetTargetVelocity(...)
-		lib.btRotationalLimitMotor2_setTargetVelocity(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setTargetVelocity(self, ...)
 	end
 	function META:GetLoLimit(...)
-		lib.btRotationalLimitMotor2_getLoLimit(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getLoLimit(self, ...)
 	end
 	function META:GetCurrentLimit(...)
-		lib.btRotationalLimitMotor2_getCurrentLimit(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getCurrentLimit(self, ...)
 	end
 	function META:GetEquilibriumPoint(...)
-		lib.btRotationalLimitMotor2_getEquilibriumPoint(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getEquilibriumPoint(self, ...)
 	end
 	function META:SetCurrentPosition(...)
-		lib.btRotationalLimitMotor2_setCurrentPosition(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setCurrentPosition(self, ...)
 	end
 	function META:GetEnableSpring(...)
-		lib.btRotationalLimitMotor2_getEnableSpring(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getEnableSpring(self, ...)
 	end
 	function META:SetEnableMotor(...)
-		lib.btRotationalLimitMotor2_setEnableMotor(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setEnableMotor(self, ...)
 	end
 	function META:SetCurrentLimitErrorHi(...)
-		lib.btRotationalLimitMotor2_setCurrentLimitErrorHi(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setCurrentLimitErrorHi(self, ...)
 	end
 	function META:SetEquilibriumPoint(...)
-		lib.btRotationalLimitMotor2_setEquilibriumPoint(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setEquilibriumPoint(self, ...)
 	end
 	function META:IsLimited(...)
-		lib.btRotationalLimitMotor2_isLimited(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_isLimited(self, ...)
 	end
 	function META:SetCurrentLimit(...)
-		lib.btRotationalLimitMotor2_setCurrentLimit(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setCurrentLimit(self, ...)
 	end
 	function META:SetServoMotor(...)
-		lib.btRotationalLimitMotor2_setServoMotor(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setServoMotor(self, ...)
 	end
 	function META:GetSpringDamping(...)
-		lib.btRotationalLimitMotor2_getSpringDamping(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getSpringDamping(self, ...)
 	end
 	function META:SetMotorERP(...)
-		lib.btRotationalLimitMotor2_setMotorERP(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setMotorERP(self, ...)
 	end
 	function META:GetServoMotor(...)
-		lib.btRotationalLimitMotor2_getServoMotor(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getServoMotor(self, ...)
 	end
 	function META:GetTargetVelocity(...)
-		lib.btRotationalLimitMotor2_getTargetVelocity(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getTargetVelocity(self, ...)
 	end
 	function META:Delete(...)
-		lib.btRotationalLimitMotor2_delete(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_delete(self, ...)
 	end
 	function META:TestLimitValue(...)
-		lib.btRotationalLimitMotor2_testLimitValue(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_testLimitValue(self, ...)
 	end
 	function META:SetStopERP(...)
-		lib.btRotationalLimitMotor2_setStopERP(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setStopERP(self, ...)
 	end
 	function META:GetMotorCFM(...)
-		lib.btRotationalLimitMotor2_getMotorCFM(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getMotorCFM(self, ...)
 	end
 	function META:SetStopCFM(...)
-		lib.btRotationalLimitMotor2_setStopCFM(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setStopCFM(self, ...)
 	end
 	function META:GetEnableMotor(...)
-		lib.btRotationalLimitMotor2_getEnableMotor(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getEnableMotor(self, ...)
 	end
 	function META:GetServoTarget(...)
-		lib.btRotationalLimitMotor2_getServoTarget(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getServoTarget(self, ...)
 	end
 	function META:SetSpringStiffness(...)
-		lib.btRotationalLimitMotor2_setSpringStiffness(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setSpringStiffness(self, ...)
 	end
 	function META:GetStopERP(...)
-		lib.btRotationalLimitMotor2_getStopERP(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getStopERP(self, ...)
 	end
 	function META:SetSpringDamping(...)
-		lib.btRotationalLimitMotor2_setSpringDamping(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setSpringDamping(self, ...)
 	end
 	function META:GetCurrentPosition(...)
-		lib.btRotationalLimitMotor2_getCurrentPosition(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getCurrentPosition(self, ...)
 	end
 	function META:SetServoTarget(...)
-		lib.btRotationalLimitMotor2_setServoTarget(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setServoTarget(self, ...)
 	end
 	function META:SetLoLimit(...)
-		lib.btRotationalLimitMotor2_setLoLimit(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setLoLimit(self, ...)
 	end
 	function META:SetMotorCFM(...)
-		lib.btRotationalLimitMotor2_setMotorCFM(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setMotorCFM(self, ...)
 	end
 	function META:GetCurrentLimitError(...)
-		lib.btRotationalLimitMotor2_getCurrentLimitError(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getCurrentLimitError(self, ...)
 	end
 	function META:GetMotorERP(...)
-		lib.btRotationalLimitMotor2_getMotorERP(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getMotorERP(self, ...)
 	end
 	function META:GetBounce(...)
-		lib.btRotationalLimitMotor2_getBounce(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getBounce(self, ...)
 	end
 	function META:GetStopCFM(...)
-		lib.btRotationalLimitMotor2_getStopCFM(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getStopCFM(self, ...)
 	end
 	function META:GetHiLimit(...)
-		lib.btRotationalLimitMotor2_getHiLimit(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getHiLimit(self, ...)
 	end
 	function META:SetBounce(...)
-		lib.btRotationalLimitMotor2_setBounce(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setBounce(self, ...)
 	end
 	function META:GetSpringStiffness(...)
-		lib.btRotationalLimitMotor2_getSpringStiffness(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getSpringStiffness(self, ...)
 	end
 	function META:SetCurrentLimitError(...)
-		lib.btRotationalLimitMotor2_setCurrentLimitError(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setCurrentLimitError(self, ...)
 	end
 	function META:SetMaxMotorForce(...)
-		lib.btRotationalLimitMotor2_setMaxMotorForce(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setMaxMotorForce(self, ...)
 	end
 	function META:SetHiLimit(...)
-		lib.btRotationalLimitMotor2_setHiLimit(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setHiLimit(self, ...)
 	end
 	function META:GetMaxMotorForce(...)
-		lib.btRotationalLimitMotor2_getMaxMotorForce(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getMaxMotorForce(self, ...)
 	end
 	function META:SetEnableSpring(...)
-		lib.btRotationalLimitMotor2_setEnableSpring(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_setEnableSpring(self, ...)
 	end
 	function META:GetCurrentLimitErrorHi(...)
-		lib.btRotationalLimitMotor2_getCurrentLimitErrorHi(self.__ptr, ...)
+		return lib.btRotationalLimitMotor2_getCurrentLimitErrorHi(self, ...)
 	end
-	function bullet.CreateRotationalLimitMotor2(...)
-		return setmetatable({__ptr = lib.btRotationalLimitMotor2_new2(...)}, META)
+	ffi.metatype('btRotationalLimitMotor2', META)
+	function bullet.CreateRotationalLimitMotor22(...)
+		return lib.btRotationalLimitMotor2_new2(...)
 	end
 end
-do -- SoftBodyRigidBodyCollisionConfiguration
+do -- ConstraintSetting
 	local META = {}
 	META.__index = META
-	function bullet.CreateSoftBodyRigidBodyCollisionConfiguration(...)
-		return setmetatable({__ptr = lib.btSoftBodyRigidBodyCollisionConfiguration_new2(...)}, META)
+	function META:GetTau(...)
+		return lib.btConstraintSetting_getTau(self, ...)
+	end
+	function META:SetDamping(...)
+		return lib.btConstraintSetting_setDamping(self, ...)
+	end
+	function META:GetImpulseClamp(...)
+		return lib.btConstraintSetting_getImpulseClamp(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btConstraintSetting_delete(self, ...)
+	end
+	function META:GetDamping(...)
+		return lib.btConstraintSetting_getDamping(self, ...)
+	end
+	function META:SetTau(...)
+		return lib.btConstraintSetting_setTau(self, ...)
+	end
+	function META:SetImpulseClamp(...)
+		return lib.btConstraintSetting_setImpulseClamp(self, ...)
+	end
+	ffi.metatype('btConstraintSetting', META)
+	function bullet.CreateConstraintSetting(...)
+		return lib.btConstraintSetting_new(...)
+	end
+end
+do -- CollisionAlgorithmConstructionInfo
+	local META = {}
+	META.__index = META
+	function META:GetDispatcher1(...)
+		return lib.btCollisionAlgorithmConstructionInfo_getDispatcher1(self, ...)
+	end
+	function META:SetManifold(...)
+		return lib.btCollisionAlgorithmConstructionInfo_setManifold(self, ...)
+	end
+	function META:SetDispatcher1(...)
+		return lib.btCollisionAlgorithmConstructionInfo_setDispatcher1(self, ...)
+	end
+	function META:GetManifold(...)
+		return lib.btCollisionAlgorithmConstructionInfo_getManifold(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btCollisionAlgorithmConstructionInfo_delete(self, ...)
+	end
+	ffi.metatype('btCollisionAlgorithmConstructionInfo', META)
+	function bullet.CreateCollisionAlgorithmConstructionInfo(...)
+		return lib.btCollisionAlgorithmConstructionInfo_new(...)
+	end
+	function bullet.CreateCollisionAlgorithmConstructionInfo2(...)
+		return lib.btCollisionAlgorithmConstructionInfo_new2(...)
 	end
 end
 do -- BulletWorldImporter
 	local META = {}
 	META.__index = META
-	function META:ConvertAllObjects(...)
-		lib.btBulletWorldImporter_convertAllObjects(self.__ptr, ...)
-	end
-	function META:LoadFile(...)
-		lib.btBulletWorldImporter_loadFile(self.__ptr, ...)
+	function META:LoadFile2(...)
+		return lib.btBulletWorldImporter_loadFile2(self, ...)
 	end
 	function META:LoadFileFromMemory(...)
-		lib.btBulletWorldImporter_loadFileFromMemory(self.__ptr, ...)
+		return lib.btBulletWorldImporter_loadFileFromMemory(self, ...)
+	end
+	function META:LoadFileFromMemory2(...)
+		return lib.btBulletWorldImporter_loadFileFromMemory2(self, ...)
+	end
+	function META:ConvertAllObjects(...)
+		return lib.btBulletWorldImporter_convertAllObjects(self, ...)
+	end
+	function META:LoadFile(...)
+		return lib.btBulletWorldImporter_loadFile(self, ...)
+	end
+	ffi.metatype('btBulletWorldImporter', META)
+	function bullet.CreateBulletWorldImporter2(...)
+		return lib.btBulletWorldImporter_new2(...)
 	end
 	function bullet.CreateBulletWorldImporter(...)
-		return setmetatable({__ptr = lib.btBulletWorldImporter_new2(...)}, META)
+		return lib.btBulletWorldImporter_new(...)
 	end
 end
 do -- Box2dShape
 	local META = {}
 	META.__index = META
 	function META:GetVertexCount(...)
-		lib.btBox2dShape_getVertexCount(self.__ptr, ...)
+		return lib.btBox2dShape_getVertexCount(self, ...)
 	end
 	function META:GetVertices(...)
-		lib.btBox2dShape_getVertices(self.__ptr, ...)
+		return lib.btBox2dShape_getVertices(self, ...)
 	end
 	function META:GetNormals(...)
-		lib.btBox2dShape_getNormals(self.__ptr, ...)
+		return lib.btBox2dShape_getNormals(self, ...)
 	end
 	function META:GetPlaneEquation(...)
-		lib.btBox2dShape_getPlaneEquation(self.__ptr, ...)
+		return lib.btBox2dShape_getPlaneEquation(self, ...)
 	end
 	function META:GetCentroid(...)
-		lib.btBox2dShape_getCentroid(self.__ptr, ...)
+		return lib.btBox2dShape_getCentroid(self, ...)
 	end
 	function META:GetHalfExtentsWithMargin(...)
-		lib.btBox2dShape_getHalfExtentsWithMargin(self.__ptr, ...)
+		return lib.btBox2dShape_getHalfExtentsWithMargin(self, ...)
 	end
 	function META:GetHalfExtentsWithoutMargin(...)
-		lib.btBox2dShape_getHalfExtentsWithoutMargin(self.__ptr, ...)
+		return lib.btBox2dShape_getHalfExtentsWithoutMargin(self, ...)
 	end
-	function bullet.CreateBox2dShape(...)
-		return setmetatable({__ptr = lib.btBox2dShape_new2(...)}, META)
+	ffi.metatype('btBox2dShape', META)
+	function bullet.CreateBox2dShape2(...)
+		return lib.btBox2dShape_new2(...)
 	end
-end
-do -- Dbvt_sStkNPS
-	local META = {}
-	META.__index = META
-	function META:SetValue(...)
-		lib.btDbvt_sStkNPS_setValue(self.__ptr, ...)
-	end
-	function META:Delete(...)
-		lib.btDbvt_sStkNPS_delete(self.__ptr, ...)
-	end
-	function META:SetNode(...)
-		lib.btDbvt_sStkNPS_setNode(self.__ptr, ...)
-	end
-	function META:GetValue(...)
-		lib.btDbvt_sStkNPS_getValue(self.__ptr, ...)
-	end
-	function META:GetMask(...)
-		lib.btDbvt_sStkNPS_getMask(self.__ptr, ...)
-	end
-	function META:GetNode(...)
-		lib.btDbvt_sStkNPS_getNode(self.__ptr, ...)
-	end
-	function META:SetMask(...)
-		lib.btDbvt_sStkNPS_setMask(self.__ptr, ...)
-	end
-	function bullet.CreateDbvt_sStkNPS(...)
-		return setmetatable({__ptr = lib.btDbvt_sStkNPS_new2(...)}, META)
+	function bullet.CreateBox2dShape3(...)
+		return lib.btBox2dShape_new3(...)
 	end
 end
 do -- MultiBody
 	local META = {}
 	META.__index = META
 	function META:FillContactJacobianMultiDof(...)
-		lib.btMultiBody_fillContactJacobianMultiDof(self.__ptr, ...)
+		return lib.btMultiBody_fillContactJacobianMultiDof(self, ...)
 	end
 	function META:GetBasePos(...)
-		lib.btMultiBody_getBasePos(self.__ptr, ...)
+		return lib.btMultiBody_getBasePos(self, ...)
 	end
 	function META:GetBaseMass(...)
-		lib.btMultiBody_getBaseMass(self.__ptr, ...)
+		return lib.btMultiBody_getBaseMass(self, ...)
 	end
 	function META:IsUsingGlobalVelocities(...)
-		lib.btMultiBody_isUsingGlobalVelocities(self.__ptr, ...)
+		return lib.btMultiBody_isUsingGlobalVelocities(self, ...)
 	end
 	function META:GetWorldToBaseRot(...)
-		lib.btMultiBody_getWorldToBaseRot(self.__ptr, ...)
+		return lib.btMultiBody_getWorldToBaseRot(self, ...)
 	end
 	function META:SetJointVel(...)
-		lib.btMultiBody_setJointVel(self.__ptr, ...)
+		return lib.btMultiBody_setJointVel(self, ...)
 	end
 	function META:GetKineticEnergy(...)
-		lib.btMultiBody_getKineticEnergy(self.__ptr, ...)
+		return lib.btMultiBody_getKineticEnergy(self, ...)
 	end
 	function META:SetupSpherical(...)
-		lib.btMultiBody_setupSpherical(self.__ptr, ...)
+		return lib.btMultiBody_setupSpherical(self, ...)
 	end
 	function META:GetJointVelMultiDof(...)
-		lib.btMultiBody_getJointVelMultiDof(self.__ptr, ...)
+		return lib.btMultiBody_getJointVelMultiDof(self, ...)
 	end
 	function META:FillContactJacobian(...)
-		lib.btMultiBody_fillContactJacobian(self.__ptr, ...)
+		return lib.btMultiBody_fillContactJacobian(self, ...)
 	end
 	function META:SetWorldToBaseRot(...)
-		lib.btMultiBody_setWorldToBaseRot(self.__ptr, ...)
+		return lib.btMultiBody_setWorldToBaseRot(self, ...)
 	end
 	function META:AddJointTorque(...)
-		lib.btMultiBody_addJointTorque(self.__ptr, ...)
+		return lib.btMultiBody_addJointTorque(self, ...)
 	end
-	function META:GetNumPosVars(...)
-		lib.btMultiBody_getNumPosVars(self.__ptr, ...)
+	function META:AddJointTorqueMultiDof2(...)
+		return lib.btMultiBody_addJointTorqueMultiDof2(self, ...)
 	end
 	function META:GetBaseOmega(...)
-		lib.btMultiBody_getBaseOmega(self.__ptr, ...)
+		return lib.btMultiBody_getBaseOmega(self, ...)
 	end
 	function META:ClearForcesAndTorques(...)
-		lib.btMultiBody_clearForcesAndTorques(self.__ptr, ...)
+		return lib.btMultiBody_clearForcesAndTorques(self, ...)
 	end
 	function META:StepVelocitiesMultiDof(...)
-		lib.btMultiBody_stepVelocitiesMultiDof(self.__ptr, ...)
+		return lib.btMultiBody_stepVelocitiesMultiDof(self, ...)
 	end
 	function META:AddJointTorqueMultiDof(...)
-		lib.btMultiBody_addJointTorqueMultiDof(self.__ptr, ...)
+		return lib.btMultiBody_addJointTorqueMultiDof(self, ...)
 	end
 	function META:GetBaseVel(...)
-		lib.btMultiBody_getBaseVel(self.__ptr, ...)
+		return lib.btMultiBody_getBaseVel(self, ...)
 	end
 	function META:GetParentToLocalRot(...)
-		lib.btMultiBody_getParentToLocalRot(self.__ptr, ...)
+		return lib.btMultiBody_getParentToLocalRot(self, ...)
 	end
 	function META:CheckMotionAndSleepIfRequired(...)
-		lib.btMultiBody_checkMotionAndSleepIfRequired(self.__ptr, ...)
+		return lib.btMultiBody_checkMotionAndSleepIfRequired(self, ...)
 	end
 	function META:SetupPlanar(...)
-		lib.btMultiBody_setupPlanar(self.__ptr, ...)
+		return lib.btMultiBody_setupPlanar(self, ...)
 	end
 	function META:SetJointPosMultiDof(...)
-		lib.btMultiBody_setJointPosMultiDof(self.__ptr, ...)
+		return lib.btMultiBody_setJointPosMultiDof(self, ...)
 	end
 	function META:IsPosUpdated(...)
-		lib.btMultiBody_isPosUpdated(self.__ptr, ...)
+		return lib.btMultiBody_isPosUpdated(self, ...)
 	end
 	function META:GetNumLinks(...)
-		lib.btMultiBody_getNumLinks(self.__ptr, ...)
+		return lib.btMultiBody_getNumLinks(self, ...)
 	end
 	function META:SetUseGyroTerm(...)
-		lib.btMultiBody_setUseGyroTerm(self.__ptr, ...)
+		return lib.btMultiBody_setUseGyroTerm(self, ...)
 	end
 	function META:GetRVector(...)
-		lib.btMultiBody_getRVector(self.__ptr, ...)
-	end
-	function META:GetJointPosMultiDof(...)
-		lib.btMultiBody_getJointPosMultiDof(self.__ptr, ...)
-	end
-	function META:GetLink(...)
-		lib.btMultiBody_getLink(self.__ptr, ...)
-	end
-	function META:GetMaxAppliedImpulse(...)
-		lib.btMultiBody_getMaxAppliedImpulse(self.__ptr, ...)
-	end
-	function META:AddBaseTorque(...)
-		lib.btMultiBody_addBaseTorque(self.__ptr, ...)
-	end
-	function META:GetJointTorque(...)
-		lib.btMultiBody_getJointTorque(self.__ptr, ...)
-	end
-	function META:WakeUp(...)
-		lib.btMultiBody_wakeUp(self.__ptr, ...)
-	end
-	function META:GetParent(...)
-		lib.btMultiBody_getParent(self.__ptr, ...)
-	end
-	function META:GetAngularDamping(...)
-		lib.btMultiBody_getAngularDamping(self.__ptr, ...)
-	end
-	function META:ApplyDeltaVee(...)
-		lib.btMultiBody_applyDeltaVee(self.__ptr, ...)
-	end
-	function META:WorldDirToLocal(...)
-		lib.btMultiBody_worldDirToLocal(self.__ptr, ...)
-	end
-	function META:SetBaseMass(...)
-		lib.btMultiBody_setBaseMass(self.__ptr, ...)
-	end
-	function META:GetJointVel(...)
-		lib.btMultiBody_getJointVel(self.__ptr, ...)
-	end
-	function META:CalcAccelerationDeltasMultiDof(...)
-		lib.btMultiBody_calcAccelerationDeltasMultiDof(self.__ptr, ...)
-	end
-	function META:SetBaseVel(...)
-		lib.btMultiBody_setBaseVel(self.__ptr, ...)
-	end
-	function META:GetCompanionId(...)
-		lib.btMultiBody_getCompanionId(self.__ptr, ...)
-	end
-	function META:GetLinkTorque(...)
-		lib.btMultiBody_getLinkTorque(self.__ptr, ...)
-	end
-	function META:Delete(...)
-		lib.btMultiBody_delete(self.__ptr, ...)
-	end
-	function META:UseRK4Integration(...)
-		lib.btMultiBody_useRK4Integration(self.__ptr, ...)
-	end
-	function META:UseGlobalVelocities(...)
-		lib.btMultiBody_useGlobalVelocities(self.__ptr, ...)
-	end
-	function META:SetBaseOmega(...)
-		lib.btMultiBody_setBaseOmega(self.__ptr, ...)
-	end
-	function META:StepVelocities(...)
-		lib.btMultiBody_stepVelocities(self.__ptr, ...)
-	end
-	function META:GoToSleep(...)
-		lib.btMultiBody_goToSleep(self.__ptr, ...)
-	end
-	function META:StepPositionsMultiDof(...)
-		lib.btMultiBody_stepPositionsMultiDof(self.__ptr, ...)
-	end
-	function META:SetupRevolute(...)
-		lib.btMultiBody_setupRevolute(self.__ptr, ...)
+		return lib.btMultiBody_getRVector(self, ...)
 	end
 	function META:StepPositions(...)
-		lib.btMultiBody_stepPositions(self.__ptr, ...)
-	end
-	function META:SetupPrismatic(...)
-		lib.btMultiBody_setupPrismatic(self.__ptr, ...)
-	end
-	function META:SetupFixed(...)
-		lib.btMultiBody_setupFixed(self.__ptr, ...)
-	end
-	function META:SetPosUpdated(...)
-		lib.btMultiBody_setPosUpdated(self.__ptr, ...)
+		return lib.btMultiBody_stepPositions(self, ...)
 	end
 	function META:SetBaseCollider(...)
-		lib.btMultiBody_setBaseCollider(self.__ptr, ...)
+		return lib.btMultiBody_setBaseCollider(self, ...)
 	end
-	function META:SetMaxCoordinateVelocity(...)
-		lib.btMultiBody_setMaxCoordinateVelocity(self.__ptr, ...)
+	function META:GetJointPosMultiDof(...)
+		return lib.btMultiBody_getJointPosMultiDof(self, ...)
 	end
-	function META:SetNumLinks(...)
-		lib.btMultiBody_setNumLinks(self.__ptr, ...)
+	function META:WorldDirToLocal(...)
+		return lib.btMultiBody_worldDirToLocal(self, ...)
 	end
-	function META:AddLinkTorque(...)
-		lib.btMultiBody_addLinkTorque(self.__ptr, ...)
+	function META:StepVelocities(...)
+		return lib.btMultiBody_stepVelocities(self, ...)
 	end
-	function META:GetBaseCollider(...)
-		lib.btMultiBody_getBaseCollider(self.__ptr, ...)
+	function META:GetLink(...)
+		return lib.btMultiBody_getLink(self, ...)
 	end
-	function META:SetJointVelMultiDof(...)
-		lib.btMultiBody_setJointVelMultiDof(self.__ptr, ...)
+	function META:UseRK4Integration(...)
+		return lib.btMultiBody_useRK4Integration(self, ...)
 	end
-	function META:LocalDirToWorld(...)
-		lib.btMultiBody_localDirToWorld(self.__ptr, ...)
+	function META:UseGlobalVelocities(...)
+		return lib.btMultiBody_useGlobalVelocities(self, ...)
 	end
-	function META:SetJointPos(...)
-		lib.btMultiBody_setJointPos(self.__ptr, ...)
+	function META:GetMaxAppliedImpulse(...)
+		return lib.btMultiBody_getMaxAppliedImpulse(self, ...)
 	end
-	function META:ApplyDeltaVeeMultiDof(...)
-		lib.btMultiBody_applyDeltaVeeMultiDof(self.__ptr, ...)
+	function META:AddBaseTorque(...)
+		return lib.btMultiBody_addBaseTorque(self, ...)
 	end
-	function META:HasFixedBase(...)
-		lib.btMultiBody_hasFixedBase(self.__ptr, ...)
+	function META:GetJointTorque(...)
+		return lib.btMultiBody_getJointTorque(self, ...)
 	end
-	function META:SetHasSelfCollision(...)
-		lib.btMultiBody_setHasSelfCollision(self.__ptr, ...)
+	function META:WakeUp(...)
+		return lib.btMultiBody_wakeUp(self, ...)
 	end
-	function META:SetCompanionId(...)
-		lib.btMultiBody_setCompanionId(self.__ptr, ...)
+	function META:StepPositionsMultiDof3(...)
+		return lib.btMultiBody_stepPositionsMultiDof3(self, ...)
 	end
-	function META:GetLinkForce(...)
-		lib.btMultiBody_getLinkForce(self.__ptr, ...)
+	function META:GetParent(...)
+		return lib.btMultiBody_getParent(self, ...)
 	end
-	function META:SetCanSleep(...)
-		lib.btMultiBody_setCanSleep(self.__ptr, ...)
+	function META:GetAngularDamping(...)
+		return lib.btMultiBody_getAngularDamping(self, ...)
 	end
-	function META:SetBasePos(...)
-		lib.btMultiBody_setBasePos(self.__ptr, ...)
+	function META:ApplyDeltaVee(...)
+		return lib.btMultiBody_applyDeltaVee(self, ...)
 	end
-	function META:WorldPosToLocal(...)
-		lib.btMultiBody_worldPosToLocal(self.__ptr, ...)
+	function META:StepPositionsMultiDof2(...)
+		return lib.btMultiBody_stepPositionsMultiDof2(self, ...)
 	end
-	function META:GetAngularMomentum(...)
-		lib.btMultiBody_getAngularMomentum(self.__ptr, ...)
+	function META:StepPositionsMultiDof(...)
+		return lib.btMultiBody_stepPositionsMultiDof(self, ...)
 	end
-	function META:SetMaxAppliedImpulse(...)
-		lib.btMultiBody_setMaxAppliedImpulse(self.__ptr, ...)
+	function META:GetJointVel(...)
+		return lib.btMultiBody_getJointVel(self, ...)
 	end
-	function META:HasSelfCollision(...)
-		lib.btMultiBody_hasSelfCollision(self.__ptr, ...)
+	function META:CalcAccelerationDeltasMultiDof(...)
+		return lib.btMultiBody_calcAccelerationDeltasMultiDof(self, ...)
 	end
-	function META:ClearVelocities(...)
-		lib.btMultiBody_clearVelocities(self.__ptr, ...)
+	function META:SetBaseVel(...)
+		return lib.btMultiBody_setBaseVel(self, ...)
 	end
-	function META:CalcAccelerationDeltas(...)
-		lib.btMultiBody_calcAccelerationDeltas(self.__ptr, ...)
+	function META:GetCompanionId(...)
+		return lib.btMultiBody_getCompanionId(self, ...)
 	end
-	function META:IsMultiDof(...)
-		lib.btMultiBody_isMultiDof(self.__ptr, ...)
-	end
-	function META:IsUsingRK4Integration(...)
-		lib.btMultiBody_isUsingRK4Integration(self.__ptr, ...)
-	end
-	function META:LocalPosToWorld(...)
-		lib.btMultiBody_localPosToWorld(self.__ptr, ...)
-	end
-	function META:AddLinkForce(...)
-		lib.btMultiBody_addLinkForce(self.__ptr, ...)
-	end
-	function META:FinalizeMultiDof(...)
-		lib.btMultiBody_finalizeMultiDof(self.__ptr, ...)
-	end
-	function META:GetBaseForce(...)
-		lib.btMultiBody_getBaseForce(self.__ptr, ...)
-	end
-	function META:GetCanSleep(...)
-		lib.btMultiBody_getCanSleep(self.__ptr, ...)
-	end
-	function META:GetMaxCoordinateVelocity(...)
-		lib.btMultiBody_getMaxCoordinateVelocity(self.__ptr, ...)
-	end
-	function META:GetBaseTorque(...)
-		lib.btMultiBody_getBaseTorque(self.__ptr, ...)
-	end
-	function META:SetLinearDamping(...)
-		lib.btMultiBody_setLinearDamping(self.__ptr, ...)
-	end
-	function META:GetLinkMass(...)
-		lib.btMultiBody_getLinkMass(self.__ptr, ...)
-	end
-	function META:GetJointTorqueMultiDof(...)
-		lib.btMultiBody_getJointTorqueMultiDof(self.__ptr, ...)
-	end
-	function META:GetJointPos(...)
-		lib.btMultiBody_getJointPos(self.__ptr, ...)
-	end
-	function META:GetLinearDamping(...)
-		lib.btMultiBody_getLinearDamping(self.__ptr, ...)
-	end
-	function META:GetBaseInertia(...)
-		lib.btMultiBody_getBaseInertia(self.__ptr, ...)
-	end
-	function META:AddBaseForce(...)
-		lib.btMultiBody_addBaseForce(self.__ptr, ...)
-	end
-	function META:GetLinkInertia(...)
-		lib.btMultiBody_getLinkInertia(self.__ptr, ...)
-	end
-	function META:IsAwake(...)
-		lib.btMultiBody_isAwake(self.__ptr, ...)
-	end
-	function META:SetBaseInertia(...)
-		lib.btMultiBody_setBaseInertia(self.__ptr, ...)
-	end
-	function META:GetUseGyroTerm(...)
-		lib.btMultiBody_getUseGyroTerm(self.__ptr, ...)
-	end
-	function META:GetNumDofs(...)
-		lib.btMultiBody_getNumDofs(self.__ptr, ...)
-	end
-	function META:GetVelocityVector(...)
-		lib.btMultiBody_getVelocityVector(self.__ptr, ...)
-	end
-	function META:FilConstraintJacobianMultiDof(...)
-		lib.btMultiBody_filConstraintJacobianMultiDof(self.__ptr, ...)
-	end
-	function META:SetAngularDamping(...)
-		lib.btMultiBody_setAngularDamping(self.__ptr, ...)
-	end
-	function bullet.CreateMultiBody(...)
-		return setmetatable({__ptr = lib.btMultiBody_new2(...)}, META)
-	end
-end
-do -- SphereTriangleCollisionAlgorithm
-	local META = {}
-	META.__index = META
-	function bullet.CreateSphereTriangleCollisionAlgorithm(...)
-		return setmetatable({__ptr = lib.btSphereTriangleCollisionAlgorithm_new2(...)}, META)
-	end
-end
-do -- ConvexHullShape
-	local META = {}
-	META.__index = META
-	function META:AddPoint(...)
-		lib.btConvexHullShape_addPoint(self.__ptr, ...)
-	end
-	function META:GetScaledPoint(...)
-		lib.btConvexHullShape_getScaledPoint(self.__ptr, ...)
-	end
-	function META:GetNumPoints(...)
-		lib.btConvexHullShape_getNumPoints(self.__ptr, ...)
-	end
-	function META:GetUnscaledPoints(...)
-		lib.btConvexHullShape_getUnscaledPoints(self.__ptr, ...)
-	end
-	function META:GetPoints(...)
-		lib.btConvexHullShape_getPoints(self.__ptr, ...)
-	end
-	function META:Project(...)
-		lib.btConvexHullShape_project(self.__ptr, ...)
-	end
-	function bullet.CreateConvexHullShape(...)
-		return setmetatable({__ptr = lib.btConvexHullShape_new2(...)}, META)
-	end
-end
-do -- Dbvt_sStkNN
-	local META = {}
-	META.__index = META
-	function META:GetA(...)
-		lib.btDbvt_sStkNN_getA(self.__ptr, ...)
-	end
-	function META:GetB(...)
-		lib.btDbvt_sStkNN_getB(self.__ptr, ...)
-	end
-	function META:SetA(...)
-		lib.btDbvt_sStkNN_setA(self.__ptr, ...)
-	end
-	function META:SetB(...)
-		lib.btDbvt_sStkNN_setB(self.__ptr, ...)
+	function META:GetLinkTorque(...)
+		return lib.btMultiBody_getLinkTorque(self, ...)
 	end
 	function META:Delete(...)
-		lib.btDbvt_sStkNN_delete(self.__ptr, ...)
+		return lib.btMultiBody_delete(self, ...)
 	end
-	function bullet.CreateDbvt_sStkNN(...)
-		return setmetatable({__ptr = lib.btDbvt_sStkNN_new2(...)}, META)
+	function META:SetupSpherical2(...)
+		return lib.btMultiBody_setupSpherical2(self, ...)
+	end
+	function META:SetupRevolute2(...)
+		return lib.btMultiBody_setupRevolute2(self, ...)
+	end
+	function META:SetBaseOmega(...)
+		return lib.btMultiBody_setBaseOmega(self, ...)
+	end
+	function META:SetupPlanar2(...)
+		return lib.btMultiBody_setupPlanar2(self, ...)
+	end
+	function META:GoToSleep(...)
+		return lib.btMultiBody_goToSleep(self, ...)
+	end
+	function META:SetupPrismatic(...)
+		return lib.btMultiBody_setupPrismatic(self, ...)
+	end
+	function META:SetupRevolute(...)
+		return lib.btMultiBody_setupRevolute(self, ...)
+	end
+	function META:SetupFixed(...)
+		return lib.btMultiBody_setupFixed(self, ...)
+	end
+	function META:SetPosUpdated(...)
+		return lib.btMultiBody_setPosUpdated(self, ...)
+	end
+	function META:SetJointVelMultiDof(...)
+		return lib.btMultiBody_setJointVelMultiDof(self, ...)
+	end
+	function META:SetMaxCoordinateVelocity(...)
+		return lib.btMultiBody_setMaxCoordinateVelocity(self, ...)
+	end
+	function META:LocalPosToWorld(...)
+		return lib.btMultiBody_localPosToWorld(self, ...)
+	end
+	function META:FilConstraintJacobianMultiDof(...)
+		return lib.btMultiBody_filConstraintJacobianMultiDof(self, ...)
+	end
+	function META:SetNumLinks(...)
+		return lib.btMultiBody_setNumLinks(self, ...)
+	end
+	function META:SetJointPos(...)
+		return lib.btMultiBody_setJointPos(self, ...)
+	end
+	function META:GetBaseCollider(...)
+		return lib.btMultiBody_getBaseCollider(self, ...)
+	end
+	function META:SetHasSelfCollision(...)
+		return lib.btMultiBody_setHasSelfCollision(self, ...)
+	end
+	function META:LocalDirToWorld(...)
+		return lib.btMultiBody_localDirToWorld(self, ...)
+	end
+	function META:SetCompanionId(...)
+		return lib.btMultiBody_setCompanionId(self, ...)
+	end
+	function META:ApplyDeltaVeeMultiDof(...)
+		return lib.btMultiBody_applyDeltaVeeMultiDof(self, ...)
+	end
+	function META:HasFixedBase(...)
+		return lib.btMultiBody_hasFixedBase(self, ...)
+	end
+	function META:SetCanSleep(...)
+		return lib.btMultiBody_setCanSleep(self, ...)
+	end
+	function META:SetBasePos(...)
+		return lib.btMultiBody_setBasePos(self, ...)
+	end
+	function META:GetLinkForce(...)
+		return lib.btMultiBody_getLinkForce(self, ...)
+	end
+	function META:SetBaseMass(...)
+		return lib.btMultiBody_setBaseMass(self, ...)
+	end
+	function META:GetAngularMomentum(...)
+		return lib.btMultiBody_getAngularMomentum(self, ...)
+	end
+	function META:WorldPosToLocal(...)
+		return lib.btMultiBody_worldPosToLocal(self, ...)
+	end
+	function META:SetAngularDamping(...)
+		return lib.btMultiBody_setAngularDamping(self, ...)
+	end
+	function META:SetMaxAppliedImpulse(...)
+		return lib.btMultiBody_setMaxAppliedImpulse(self, ...)
+	end
+	function META:HasSelfCollision(...)
+		return lib.btMultiBody_hasSelfCollision(self, ...)
+	end
+	function META:ClearVelocities(...)
+		return lib.btMultiBody_clearVelocities(self, ...)
+	end
+	function META:CalcAccelerationDeltas(...)
+		return lib.btMultiBody_calcAccelerationDeltas(self, ...)
+	end
+	function META:IsMultiDof(...)
+		return lib.btMultiBody_isMultiDof(self, ...)
+	end
+	function META:IsUsingRK4Integration(...)
+		return lib.btMultiBody_isUsingRK4Integration(self, ...)
+	end
+	function META:IsAwake(...)
+		return lib.btMultiBody_isAwake(self, ...)
+	end
+	function META:AddLinkForce(...)
+		return lib.btMultiBody_addLinkForce(self, ...)
+	end
+	function META:FinalizeMultiDof(...)
+		return lib.btMultiBody_finalizeMultiDof(self, ...)
+	end
+	function META:GetBaseForce(...)
+		return lib.btMultiBody_getBaseForce(self, ...)
+	end
+	function META:AddLinkTorque(...)
+		return lib.btMultiBody_addLinkTorque(self, ...)
+	end
+	function META:GetMaxCoordinateVelocity(...)
+		return lib.btMultiBody_getMaxCoordinateVelocity(self, ...)
+	end
+	function META:GetBaseTorque(...)
+		return lib.btMultiBody_getBaseTorque(self, ...)
+	end
+	function META:SetLinearDamping(...)
+		return lib.btMultiBody_setLinearDamping(self, ...)
+	end
+	function META:GetLinkMass(...)
+		return lib.btMultiBody_getLinkMass(self, ...)
+	end
+	function META:ApplyDeltaVee2(...)
+		return lib.btMultiBody_applyDeltaVee2(self, ...)
+	end
+	function META:GetJointPos(...)
+		return lib.btMultiBody_getJointPos(self, ...)
+	end
+	function META:GetLinearDamping(...)
+		return lib.btMultiBody_getLinearDamping(self, ...)
+	end
+	function META:GetBaseInertia(...)
+		return lib.btMultiBody_getBaseInertia(self, ...)
+	end
+	function META:AddBaseForce(...)
+		return lib.btMultiBody_addBaseForce(self, ...)
+	end
+	function META:GetJointTorqueMultiDof(...)
+		return lib.btMultiBody_getJointTorqueMultiDof(self, ...)
+	end
+	function META:GetCanSleep(...)
+		return lib.btMultiBody_getCanSleep(self, ...)
+	end
+	function META:SetBaseInertia(...)
+		return lib.btMultiBody_setBaseInertia(self, ...)
+	end
+	function META:GetNumPosVars(...)
+		return lib.btMultiBody_getNumPosVars(self, ...)
+	end
+	function META:GetNumDofs(...)
+		return lib.btMultiBody_getNumDofs(self, ...)
+	end
+	function META:GetUseGyroTerm(...)
+		return lib.btMultiBody_getUseGyroTerm(self, ...)
+	end
+	function META:GetVelocityVector(...)
+		return lib.btMultiBody_getVelocityVector(self, ...)
+	end
+	function META:GetLinkInertia(...)
+		return lib.btMultiBody_getLinkInertia(self, ...)
+	end
+	ffi.metatype('btMultiBody', META)
+	function bullet.CreateMultiBody(...)
+		return lib.btMultiBody_new(...)
+	end
+	function bullet.CreateMultiBody2(...)
+		return lib.btMultiBody_new2(...)
 	end
 end
-do -- Generic6DofSpring2Constraint
+do -- TetrahedronShapeEx
 	local META = {}
 	META.__index = META
-	function META:SetTargetVelocity(...)
-		lib.btGeneric6DofSpring2Constraint_setTargetVelocity(self.__ptr, ...)
+	function META:SetVertices(...)
+		return lib.btTetrahedronShapeEx_setVertices(self, ...)
 	end
-	function META:GetFrameOffsetA(...)
-		lib.btGeneric6DofSpring2Constraint_getFrameOffsetA(self.__ptr, ...)
-	end
-	function META:CalculateTransforms(...)
-		lib.btGeneric6DofSpring2Constraint_calculateTransforms(self.__ptr, ...)
-	end
-	function META:SetStiffness(...)
-		lib.btGeneric6DofSpring2Constraint_setStiffness(self.__ptr, ...)
-	end
-	function META:SetAngularLowerLimitReversed(...)
-		lib.btGeneric6DofSpring2Constraint_setAngularLowerLimitReversed(self.__ptr, ...)
-	end
-	function META:SetAngularLowerLimit(...)
-		lib.btGeneric6DofSpring2Constraint_setAngularLowerLimit(self.__ptr, ...)
-	end
-	function META:SetFrames(...)
-		lib.btGeneric6DofSpring2Constraint_setFrames(self.__ptr, ...)
-	end
-	function META:EnableMotor(...)
-		lib.btGeneric6DofSpring2Constraint_enableMotor(self.__ptr, ...)
-	end
-	function META:GetTranslationalLimitMotor(...)
-		lib.btGeneric6DofSpring2Constraint_getTranslationalLimitMotor(self.__ptr, ...)
-	end
-	function META:SetRotationOrder(...)
-		lib.btGeneric6DofSpring2Constraint_setRotationOrder(self.__ptr, ...)
-	end
-	function META:SetEquilibriumPoint(...)
-		lib.btGeneric6DofSpring2Constraint_setEquilibriumPoint(self.__ptr, ...)
-	end
-	function META:GetAngularUpperLimit(...)
-		lib.btGeneric6DofSpring2Constraint_getAngularUpperLimit(self.__ptr, ...)
-	end
-	function META:GetCalculatedTransformA(...)
-		lib.btGeneric6DofSpring2Constraint_getCalculatedTransformA(self.__ptr, ...)
-	end
-	function META:GetAngularUpperLimitReversed(...)
-		lib.btGeneric6DofSpring2Constraint_getAngularUpperLimitReversed(self.__ptr, ...)
-	end
-	function META:SetAngularUpperLimit(...)
-		lib.btGeneric6DofSpring2Constraint_setAngularUpperLimit(self.__ptr, ...)
-	end
-	function META:SetAngularUpperLimitReversed(...)
-		lib.btGeneric6DofSpring2Constraint_setAngularUpperLimitReversed(self.__ptr, ...)
-	end
-	function META:GetCalculatedTransformB(...)
-		lib.btGeneric6DofSpring2Constraint_getCalculatedTransformB(self.__ptr, ...)
-	end
-	function META:SetDamping(...)
-		lib.btGeneric6DofSpring2Constraint_setDamping(self.__ptr, ...)
-	end
-	function META:SetLimitReversed(...)
-		lib.btGeneric6DofSpring2Constraint_setLimitReversed(self.__ptr, ...)
-	end
-	function META:GetRotationOrder(...)
-		lib.btGeneric6DofSpring2Constraint_getRotationOrder(self.__ptr, ...)
-	end
-	function META:SetLimit(...)
-		lib.btGeneric6DofSpring2Constraint_setLimit(self.__ptr, ...)
-	end
-	function META:GetLinearLowerLimit(...)
-		lib.btGeneric6DofSpring2Constraint_getLinearLowerLimit(self.__ptr, ...)
-	end
-	function META:GetRelativePivotPosition(...)
-		lib.btGeneric6DofSpring2Constraint_getRelativePivotPosition(self.__ptr, ...)
-	end
-	function META:SetBounce(...)
-		lib.btGeneric6DofSpring2Constraint_setBounce(self.__ptr, ...)
-	end
-	function META:GetRotationalLimitMotor(...)
-		lib.btGeneric6DofSpring2Constraint_getRotationalLimitMotor(self.__ptr, ...)
-	end
-	function META:GetFrameOffsetB(...)
-		lib.btGeneric6DofSpring2Constraint_getFrameOffsetB(self.__ptr, ...)
-	end
-	function META:GetAngularLowerLimitReversed(...)
-		lib.btGeneric6DofSpring2Constraint_getAngularLowerLimitReversed(self.__ptr, ...)
-	end
-	function META:SetLinearUpperLimit(...)
-		lib.btGeneric6DofSpring2Constraint_setLinearUpperLimit(self.__ptr, ...)
-	end
-	function META:GetAngularLowerLimit(...)
-		lib.btGeneric6DofSpring2Constraint_getAngularLowerLimit(self.__ptr, ...)
-	end
-	function META:SetServoTarget(...)
-		lib.btGeneric6DofSpring2Constraint_setServoTarget(self.__ptr, ...)
-	end
-	function META:SetServo(...)
-		lib.btGeneric6DofSpring2Constraint_setServo(self.__ptr, ...)
-	end
-	function META:IsLimited(...)
-		lib.btGeneric6DofSpring2Constraint_isLimited(self.__ptr, ...)
-	end
-	function META:GetAngle(...)
-		lib.btGeneric6DofSpring2Constraint_getAngle(self.__ptr, ...)
-	end
-	function META:GetLinearUpperLimit(...)
-		lib.btGeneric6DofSpring2Constraint_getLinearUpperLimit(self.__ptr, ...)
-	end
-	function META:SetMaxMotorForce(...)
-		lib.btGeneric6DofSpring2Constraint_setMaxMotorForce(self.__ptr, ...)
-	end
-	function META:SetLinearLowerLimit(...)
-		lib.btGeneric6DofSpring2Constraint_setLinearLowerLimit(self.__ptr, ...)
-	end
-	function META:EnableSpring(...)
-		lib.btGeneric6DofSpring2Constraint_enableSpring(self.__ptr, ...)
-	end
-	function META:GetAxis(...)
-		lib.btGeneric6DofSpring2Constraint_getAxis(self.__ptr, ...)
-	end
-	function META:SetAxis(...)
-		lib.btGeneric6DofSpring2Constraint_setAxis(self.__ptr, ...)
-	end
-	function bullet.CreateGeneric6DofSpring2Constraint(...)
-		return setmetatable({__ptr = lib.btGeneric6DofSpring2Constraint_new2(...)}, META)
+	ffi.metatype('btTetrahedronShapeEx', META)
+	function bullet.CreateTetrahedronShapeEx(...)
+		return lib.btTetrahedronShapeEx_new(...)
 	end
 end
-do -- ManifoldResult
+do -- SoftBodyConcaveCollisionAlgorithm_SwappedCreateFunc
 	local META = {}
 	META.__index = META
-	function META:GetBody1Internal(...)
-		lib.btManifoldResult_getBody1Internal(self.__ptr, ...)
-	end
-	function META:SetBody1Wrap(...)
-		lib.btManifoldResult_setBody1Wrap(self.__ptr, ...)
-	end
-	function META:GetBody0Wrap(...)
-		lib.btManifoldResult_getBody0Wrap(self.__ptr, ...)
-	end
-	function META:GetBody1Wrap(...)
-		lib.btManifoldResult_getBody1Wrap(self.__ptr, ...)
-	end
-	function META:CalculateCombinedRestitution(...)
-		lib.btManifoldResult_calculateCombinedRestitution(self.__ptr, ...)
-	end
-	function META:GetBody0Internal(...)
-		lib.btManifoldResult_getBody0Internal(self.__ptr, ...)
-	end
-	function META:SetPersistentManifold(...)
-		lib.btManifoldResult_setPersistentManifold(self.__ptr, ...)
-	end
-	function META:CalculateCombinedFriction(...)
-		lib.btManifoldResult_calculateCombinedFriction(self.__ptr, ...)
-	end
-	function META:RefreshContactPoints(...)
-		lib.btManifoldResult_refreshContactPoints(self.__ptr, ...)
-	end
-	function META:SetBody0Wrap(...)
-		lib.btManifoldResult_setBody0Wrap(self.__ptr, ...)
-	end
-	function META:GetPersistentManifold(...)
-		lib.btManifoldResult_getPersistentManifold(self.__ptr, ...)
-	end
-	function bullet.CreateManifoldResult(...)
-		return setmetatable({__ptr = lib.btManifoldResult_new2(...)}, META)
+	ffi.metatype('btSoftBodyConcaveCollisionAlgorithm_SwappedCreateFunc', META)
+	function bullet.CreateSoftBodyConcaveCollisionAlgorithm_SwappedCreateFunc(...)
+		return lib.btSoftBodyConcaveCollisionAlgorithm_SwappedCreateFunc_new(...)
 	end
 end
-do -- MultiBodyJointMotor
+do -- MotionStateWrapper
 	local META = {}
 	META.__index = META
-	function META:SetVelocityTarget(...)
-		lib.btMultiBodyJointMotor_setVelocityTarget(self.__ptr, ...)
-	end
-	function bullet.CreateMultiBodyJointMotor(...)
-		return setmetatable({__ptr = lib.btMultiBodyJointMotor_new2(...)}, META)
+	ffi.metatype('btMotionStateWrapper', META)
+	function bullet.CreateMotionStateWrapper(...)
+		return lib.btMotionStateWrapper_new(...)
 	end
 end
 do -- MultimaterialTriangleMeshShape
 	local META = {}
 	META.__index = META
 	function META:GetMaterialProperties(...)
-		lib.btMultimaterialTriangleMeshShape_getMaterialProperties(self.__ptr, ...)
+		return lib.btMultimaterialTriangleMeshShape_getMaterialProperties(self, ...)
 	end
+	ffi.metatype('btMultimaterialTriangleMeshShape', META)
 	function bullet.CreateMultimaterialTriangleMeshShape(...)
-		return setmetatable({__ptr = lib.btMultimaterialTriangleMeshShape_new2(...)}, META)
+		return lib.btMultimaterialTriangleMeshShape_new(...)
+	end
+	function bullet.CreateMultimaterialTriangleMeshShape3(...)
+		return lib.btMultimaterialTriangleMeshShape_new3(...)
+	end
+	function bullet.CreateMultimaterialTriangleMeshShape4(...)
+		return lib.btMultimaterialTriangleMeshShape_new4(...)
+	end
+	function bullet.CreateMultimaterialTriangleMeshShape2(...)
+		return lib.btMultimaterialTriangleMeshShape_new2(...)
 	end
 end
-do -- BoxBoxCollisionAlgorithm
+do -- GIM_QUANTIZED_BVH_NODE_ARRAY
 	local META = {}
 	META.__index = META
-	function bullet.CreateBoxBoxCollisionAlgorithm(...)
-		return setmetatable({__ptr = lib.btBoxBoxCollisionAlgorithm_new2(...)}, META)
+	ffi.metatype('GIM_QUANTIZED_BVH_NODE_ARRAY', META)
+	function bullet.CreateGIM_QUANTIZED_BVH_NODE_ARRAY(...)
+		return lib.GIM_QUANTIZED_BVH_NODE_ARRAY_new(...)
 	end
 end
-do -- Generic6DofConstraint
+do -- RaycastVehicle
 	local META = {}
 	META.__index = META
-	function META:GetCalculatedTransformB(...)
-		lib.btGeneric6DofConstraint_getCalculatedTransformB(self.__ptr, ...)
+	function META:SetCoordinateSystem(...)
+		return lib.btRaycastVehicle_setCoordinateSystem(self, ...)
 	end
-	function META:SetLinearLowerLimit(...)
-		lib.btGeneric6DofConstraint_setLinearLowerLimit(self.__ptr, ...)
+	function META:GetNumWheels(...)
+		return lib.btRaycastVehicle_getNumWheels(self, ...)
 	end
-	function META:GetFrameOffsetA(...)
-		lib.btGeneric6DofConstraint_getFrameOffsetA(self.__ptr, ...)
+	function META:UpdateWheelTransformsWS2(...)
+		return lib.btRaycastVehicle_updateWheelTransformsWS2(self, ...)
 	end
-	function META:CalculateTransforms(...)
-		lib.btGeneric6DofConstraint_calculateTransforms(self.__ptr, ...)
+	function META:UpdateWheelTransform(...)
+		return lib.btRaycastVehicle_updateWheelTransform(self, ...)
 	end
-	function META:TestAngularLimitMotor(...)
-		lib.btGeneric6DofConstraint_testAngularLimitMotor(self.__ptr, ...)
+	function META:GetUserConstraintType(...)
+		return lib.btRaycastVehicle_getUserConstraintType(self, ...)
 	end
-	function META:GetInfo1NonVirtual(...)
-		lib.btGeneric6DofConstraint_getInfo1NonVirtual(self.__ptr, ...)
+	function META:UpdateWheelTransform2(...)
+		return lib.btRaycastVehicle_updateWheelTransform2(self, ...)
 	end
-	function META:SetLimit(...)
-		lib.btGeneric6DofConstraint_setLimit(self.__ptr, ...)
+	function META:GetWheelInfo(...)
+		return lib.btRaycastVehicle_getWheelInfo(self, ...)
 	end
-	function META:GetLinearLowerLimit(...)
-		lib.btGeneric6DofConstraint_getLinearLowerLimit(self.__ptr, ...)
+	function META:GetWheelInfo2(...)
+		return lib.btRaycastVehicle_getWheelInfo2(self, ...)
 	end
-	function META:SetAngularLowerLimit(...)
-		lib.btGeneric6DofConstraint_setAngularLowerLimit(self.__ptr, ...)
+	function META:UpdateWheelTransformsWS(...)
+		return lib.btRaycastVehicle_updateWheelTransformsWS(self, ...)
 	end
-	function META:UpdateRHS(...)
-		lib.btGeneric6DofConstraint_updateRHS(self.__ptr, ...)
+	function META:UpdateVehicle(...)
+		return lib.btRaycastVehicle_updateVehicle(self, ...)
 	end
-	function META:SetUseFrameOffset(...)
-		lib.btGeneric6DofConstraint_setUseFrameOffset(self.__ptr, ...)
+	function META:ApplyEngineForce(...)
+		return lib.btRaycastVehicle_applyEngineForce(self, ...)
 	end
-	function META:GetRelativePivotPosition(...)
-		lib.btGeneric6DofConstraint_getRelativePivotPosition(self.__ptr, ...)
+	function META:ResetSuspension(...)
+		return lib.btRaycastVehicle_resetSuspension(self, ...)
 	end
-	function META:SetFrames(...)
-		lib.btGeneric6DofConstraint_setFrames(self.__ptr, ...)
+	function META:AddWheel(...)
+		return lib.btRaycastVehicle_addWheel(self, ...)
 	end
-	function META:GetAngularUpperLimit(...)
-		lib.btGeneric6DofConstraint_getAngularUpperLimit(self.__ptr, ...)
+	function META:GetWheelTransformWS(...)
+		return lib.btRaycastVehicle_getWheelTransformWS(self, ...)
 	end
-	function META:GetRotationalLimitMotor(...)
-		lib.btGeneric6DofConstraint_getRotationalLimitMotor(self.__ptr, ...)
+	function META:GetRightAxis(...)
+		return lib.btRaycastVehicle_getRightAxis(self, ...)
 	end
-	function META:SetUseSolveConstraintObsolete(...)
-		lib.btGeneric6DofConstraint_setUseSolveConstraintObsolete(self.__ptr, ...)
+	function META:SetBrake(...)
+		return lib.btRaycastVehicle_setBrake(self, ...)
 	end
-	function META:GetFrameOffsetB(...)
-		lib.btGeneric6DofConstraint_getFrameOffsetB(self.__ptr, ...)
+	function META:SetPitchControl(...)
+		return lib.btRaycastVehicle_setPitchControl(self, ...)
 	end
-	function META:SetAxis(...)
-		lib.btGeneric6DofConstraint_setAxis(self.__ptr, ...)
+	function META:SetUserConstraintType(...)
+		return lib.btRaycastVehicle_setUserConstraintType(self, ...)
 	end
-	function META:GetAxis(...)
-		lib.btGeneric6DofConstraint_getAxis(self.__ptr, ...)
+	function META:GetCurrentSpeedKmHour(...)
+		return lib.btRaycastVehicle_getCurrentSpeedKmHour(self, ...)
 	end
-	function META:SetLinearUpperLimit(...)
-		lib.btGeneric6DofConstraint_setLinearUpperLimit(self.__ptr, ...)
+	function META:GetRigidBody(...)
+		return lib.btRaycastVehicle_getRigidBody(self, ...)
 	end
-	function META:GetAngularLowerLimit(...)
-		lib.btGeneric6DofConstraint_getAngularLowerLimit(self.__ptr, ...)
+	function META:SetUserConstraintId(...)
+		return lib.btRaycastVehicle_setUserConstraintId(self, ...)
 	end
-	function META:IsLimited(...)
-		lib.btGeneric6DofConstraint_isLimited(self.__ptr, ...)
+	function META:SetSteeringValue(...)
+		return lib.btRaycastVehicle_setSteeringValue(self, ...)
 	end
-	function META:GetUseSolveConstraintObsolete(...)
-		lib.btGeneric6DofConstraint_getUseSolveConstraintObsolete(self.__ptr, ...)
+	function META:UpdateFriction(...)
+		return lib.btRaycastVehicle_updateFriction(self, ...)
 	end
-	function META:CalcAnchorPos(...)
-		lib.btGeneric6DofConstraint_calcAnchorPos(self.__ptr, ...)
+	function META:GetSteeringValue(...)
+		return lib.btRaycastVehicle_getSteeringValue(self, ...)
 	end
-	function META:GetAngle(...)
-		lib.btGeneric6DofConstraint_getAngle(self.__ptr, ...)
+	function META:RayCast(...)
+		return lib.btRaycastVehicle_rayCast(self, ...)
 	end
-	function META:GetCalculatedTransformA(...)
-		lib.btGeneric6DofConstraint_getCalculatedTransformA(self.__ptr, ...)
+	function META:GetForwardAxis(...)
+		return lib.btRaycastVehicle_getForwardAxis(self, ...)
 	end
-	function META:GetTranslationalLimitMotor(...)
-		lib.btGeneric6DofConstraint_getTranslationalLimitMotor(self.__ptr, ...)
+	function META:GetUpAxis(...)
+		return lib.btRaycastVehicle_getUpAxis(self, ...)
 	end
-	function META:GetUseFrameOffset(...)
-		lib.btGeneric6DofConstraint_getUseFrameOffset(self.__ptr, ...)
+	function META:UpdateSuspension(...)
+		return lib.btRaycastVehicle_updateSuspension(self, ...)
 	end
-	function META:SetAngularUpperLimit(...)
-		lib.btGeneric6DofConstraint_setAngularUpperLimit(self.__ptr, ...)
+	function META:GetChassisWorldTransform(...)
+		return lib.btRaycastVehicle_getChassisWorldTransform(self, ...)
 	end
-	function META:GetLinearUpperLimit(...)
-		lib.btGeneric6DofConstraint_getLinearUpperLimit(self.__ptr, ...)
+	function META:GetForwardVector(...)
+		return lib.btRaycastVehicle_getForwardVector(self, ...)
 	end
-	function META:GetInfo2NonVirtual(...)
-		lib.btGeneric6DofConstraint_getInfo2NonVirtual(self.__ptr, ...)
+	function META:GetUserConstraintId(...)
+		return lib.btRaycastVehicle_getUserConstraintId(self, ...)
 	end
-	function bullet.CreateGeneric6DofConstraint(...)
-		return setmetatable({__ptr = lib.btGeneric6DofConstraint_new2(...)}, META)
+	ffi.metatype('btRaycastVehicle', META)
+	function bullet.CreateRaycastVehicle(...)
+		return lib.btRaycastVehicle_new(...)
 	end
 end
 do -- RigidBody_btRigidBodyConstructionInfo
 	local META = {}
 	META.__index = META
 	function META:SetAngularDamping(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setAngularDamping(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setAngularDamping(self, ...)
 	end
 	function META:GetCollisionShape(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getCollisionShape(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getCollisionShape(self, ...)
 	end
 	function META:Delete(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_delete(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_delete(self, ...)
 	end
 	function META:SetAdditionalDamping(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setAdditionalDamping(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setAdditionalDamping(self, ...)
 	end
 	function META:SetMotionState(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setMotionState(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setMotionState(self, ...)
 	end
 	function META:SetAdditionalAngularDampingFactor(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setAdditionalAngularDampingFactor(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setAdditionalAngularDampingFactor(self, ...)
 	end
 	function META:SetRestitution(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setRestitution(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setRestitution(self, ...)
 	end
 	function META:GetAdditionalDampingFactor(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getAdditionalDampingFactor(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getAdditionalDampingFactor(self, ...)
 	end
 	function META:SetLocalInertia(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setLocalInertia(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setLocalInertia(self, ...)
 	end
 	function META:SetAdditionalDampingFactor(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setAdditionalDampingFactor(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setAdditionalDampingFactor(self, ...)
 	end
 	function META:GetAdditionalDamping(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getAdditionalDamping(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getAdditionalDamping(self, ...)
 	end
 	function META:GetFriction(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getFriction(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getFriction(self, ...)
 	end
 	function META:GetLocalInertia(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getLocalInertia(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getLocalInertia(self, ...)
 	end
 	function META:GetStartWorldTransform(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getStartWorldTransform(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getStartWorldTransform(self, ...)
 	end
 	function META:SetAdditionalLinearDampingThresholdSqr(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setAdditionalLinearDampingThresholdSqr(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setAdditionalLinearDampingThresholdSqr(self, ...)
 	end
 	function META:SetLinearSleepingThreshold(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setLinearSleepingThreshold(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setLinearSleepingThreshold(self, ...)
 	end
 	function META:GetAdditionalLinearDampingThresholdSqr(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getAdditionalLinearDampingThresholdSqr(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getAdditionalLinearDampingThresholdSqr(self, ...)
 	end
 	function META:SetMass(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setMass(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setMass(self, ...)
 	end
 	function META:SetStartWorldTransform(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setStartWorldTransform(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setStartWorldTransform(self, ...)
 	end
 	function META:SetRollingFriction(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setRollingFriction(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setRollingFriction(self, ...)
 	end
 	function META:GetRollingFriction(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getRollingFriction(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getRollingFriction(self, ...)
 	end
 	function META:SetLinearDamping(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setLinearDamping(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setLinearDamping(self, ...)
 	end
 	function META:SetFriction(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setFriction(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setFriction(self, ...)
 	end
 	function META:GetAngularSleepingThreshold(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getAngularSleepingThreshold(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getAngularSleepingThreshold(self, ...)
 	end
 	function META:GetLinearDamping(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getLinearDamping(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getLinearDamping(self, ...)
 	end
 	function META:GetAngularDamping(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getAngularDamping(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getAngularDamping(self, ...)
 	end
 	function META:SetAngularSleepingThreshold(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setAngularSleepingThreshold(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setAngularSleepingThreshold(self, ...)
 	end
 	function META:GetLinearSleepingThreshold(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getLinearSleepingThreshold(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getLinearSleepingThreshold(self, ...)
 	end
 	function META:GetRestitution(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getRestitution(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getRestitution(self, ...)
 	end
 	function META:SetCollisionShape(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setCollisionShape(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setCollisionShape(self, ...)
 	end
 	function META:SetAdditionalAngularDampingThresholdSqr(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_setAdditionalAngularDampingThresholdSqr(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_setAdditionalAngularDampingThresholdSqr(self, ...)
 	end
 	function META:GetAdditionalAngularDampingThresholdSqr(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getAdditionalAngularDampingThresholdSqr(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getAdditionalAngularDampingThresholdSqr(self, ...)
 	end
 	function META:GetMotionState(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getMotionState(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getMotionState(self, ...)
 	end
 	function META:GetAdditionalAngularDampingFactor(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getAdditionalAngularDampingFactor(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getAdditionalAngularDampingFactor(self, ...)
 	end
 	function META:GetMass(...)
-		lib.btRigidBody_btRigidBodyConstructionInfo_getMass(self.__ptr, ...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_getMass(self, ...)
+	end
+	ffi.metatype('btRigidBody_btRigidBodyConstructionInfo', META)
+	function bullet.CreateRigidBody_btRigidBodyConstructionInfo2(...)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_new2(...)
 	end
 	function bullet.CreateRigidBody_btRigidBodyConstructionInfo(...)
-		return setmetatable({__ptr = lib.btRigidBody_btRigidBodyConstructionInfo_new2(...)}, META)
+		return lib.btRigidBody_btRigidBodyConstructionInfo_new(...)
 	end
 end
-do -- SoftBody_Body
+do -- GImpactCollisionAlgorithm_CreateFunc
 	local META = {}
 	META.__index = META
-	function META:Velocity(...)
-		lib.btSoftBody_Body_velocity(self.__ptr, ...)
-	end
-	function META:ApplyDCImpulse(...)
-		lib.btSoftBody_Body_applyDCImpulse(self.__ptr, ...)
-	end
-	function META:ApplyDImpulse(...)
-		lib.btSoftBody_Body_applyDImpulse(self.__ptr, ...)
-	end
-	function META:GetCollisionObject(...)
-		lib.btSoftBody_Body_getCollisionObject(self.__ptr, ...)
-	end
-	function META:GetSoft(...)
-		lib.btSoftBody_Body_getSoft(self.__ptr, ...)
-	end
-	function META:ApplyVImpulse(...)
-		lib.btSoftBody_Body_applyVImpulse(self.__ptr, ...)
-	end
-	function META:SetCollisionObject(...)
-		lib.btSoftBody_Body_setCollisionObject(self.__ptr, ...)
-	end
-	function META:Activate(...)
-		lib.btSoftBody_Body_activate(self.__ptr, ...)
-	end
-	function META:SetRigid(...)
-		lib.btSoftBody_Body_setRigid(self.__ptr, ...)
-	end
-	function META:Xform(...)
-		lib.btSoftBody_Body_xform(self.__ptr, ...)
-	end
-	function META:InvWorldInertia(...)
-		lib.btSoftBody_Body_invWorldInertia(self.__ptr, ...)
-	end
-	function META:LinearVelocity(...)
-		lib.btSoftBody_Body_linearVelocity(self.__ptr, ...)
-	end
-	function META:GetRigid(...)
-		lib.btSoftBody_Body_getRigid(self.__ptr, ...)
-	end
-	function META:ApplyVAImpulse(...)
-		lib.btSoftBody_Body_applyVAImpulse(self.__ptr, ...)
-	end
-	function META:Delete(...)
-		lib.btSoftBody_Body_delete(self.__ptr, ...)
-	end
-	function META:ApplyDAImpulse(...)
-		lib.btSoftBody_Body_applyDAImpulse(self.__ptr, ...)
-	end
-	function META:SetSoft(...)
-		lib.btSoftBody_Body_setSoft(self.__ptr, ...)
-	end
-	function META:InvMass(...)
-		lib.btSoftBody_Body_invMass(self.__ptr, ...)
-	end
-	function META:ApplyImpulse(...)
-		lib.btSoftBody_Body_applyImpulse(self.__ptr, ...)
-	end
-	function META:AngularVelocity(...)
-		lib.btSoftBody_Body_angularVelocity(self.__ptr, ...)
-	end
-	function META:ApplyAImpulse(...)
-		lib.btSoftBody_Body_applyAImpulse(self.__ptr, ...)
-	end
-	function bullet.CreateSoftBody_Body(...)
-		return setmetatable({__ptr = lib.btSoftBody_Body_new2(...)}, META)
-	end
-end
-do -- SoftBody_Link
-	local META = {}
-	META.__index = META
-	function META:GetBbending(...)
-		lib.btSoftBody_Link_getBbending(self.__ptr, ...)
-	end
-	function META:SetRl(...)
-		lib.btSoftBody_Link_setRl(self.__ptr, ...)
-	end
-	function META:SetC(...)
-		lib.btSoftBody_Link_setC0(self.__ptr, ...)
-	end
-	function META:SetBbending(...)
-		lib.btSoftBody_Link_setBbending(self.__ptr, ...)
-	end
-	function META:GetN(...)
-		lib.btSoftBody_Link_getN(self.__ptr, ...)
-	end
-	function META:GetC(...)
-		lib.btSoftBody_Link_getC0(self.__ptr, ...)
-	end
-	function META:GetRl(...)
-		lib.btSoftBody_Link_getRl(self.__ptr, ...)
-	end
-	function bullet.CreateSoftBody_Link(...)
-		return setmetatable({__ptr = lib.btSoftBody_Link_new2(...)}, META)
-	end
-end
-do -- AABB
-	local META = {}
-	META.__index = META
-	function META:GetMax(...)
-		lib.btAABB_getMax(self.__ptr, ...)
-	end
-	function META:Invalidate(...)
-		lib.btAABB_invalidate(self.__ptr, ...)
-	end
-	function META:Delete(...)
-		lib.btAABB_delete(self.__ptr, ...)
-	end
-	function META:SetMin(...)
-		lib.btAABB_setMin(self.__ptr, ...)
-	end
-	function META:SetMax(...)
-		lib.btAABB_setMax(self.__ptr, ...)
-	end
-	function META:Merge(...)
-		lib.btAABB_merge(self.__ptr, ...)
-	end
-	function META:GetMin(...)
-		lib.btAABB_getMin(self.__ptr, ...)
-	end
-	function bullet.CreateAABB(...)
-		return setmetatable({__ptr = lib.btAABB_new2(...)}, META)
+	ffi.metatype('btGImpactCollisionAlgorithm_CreateFunc', META)
+	function bullet.CreateGImpactCollisionAlgorithm_CreateFunc(...)
+		return lib.btGImpactCollisionAlgorithm_CreateFunc_new(...)
 	end
 end
 do -- HeightfieldTerrainShape
 	local META = {}
 	META.__index = META
 	function META:SetUseZigzagSubdivision(...)
-		lib.btHeightfieldTerrainShape_setUseZigzagSubdivision(self.__ptr, ...)
+		return lib.btHeightfieldTerrainShape_setUseZigzagSubdivision(self, ...)
+	end
+	function META:SetUseZigzagSubdivision2(...)
+		return lib.btHeightfieldTerrainShape_setUseZigzagSubdivision2(self, ...)
 	end
 	function META:SetUseDiamondSubdivision(...)
-		lib.btHeightfieldTerrainShape_setUseDiamondSubdivision(self.__ptr, ...)
+		return lib.btHeightfieldTerrainShape_setUseDiamondSubdivision(self, ...)
+	end
+	function META:SetUseDiamondSubdivision2(...)
+		return lib.btHeightfieldTerrainShape_setUseDiamondSubdivision2(self, ...)
+	end
+	ffi.metatype('btHeightfieldTerrainShape', META)
+	function bullet.CreateHeightfieldTerrainShape2(...)
+		return lib.btHeightfieldTerrainShape_new2(...)
 	end
 	function bullet.CreateHeightfieldTerrainShape(...)
-		return setmetatable({__ptr = lib.btHeightfieldTerrainShape_new2(...)}, META)
+		return lib.btHeightfieldTerrainShape_new(...)
 	end
 end
-do -- SliderConstraint
+do -- SphereBoxCollisionAlgorithm_CreateFunc
 	local META = {}
 	META.__index = META
-	function META:SetLowerLinLimit(...)
-		lib.btSliderConstraint_setLowerLinLimit(self.__ptr, ...)
-	end
-	function META:GetUseLinearReferenceFrameA(...)
-		lib.btSliderConstraint_getUseLinearReferenceFrameA(self.__ptr, ...)
-	end
-	function META:GetSoftnessDirAng(...)
-		lib.btSliderConstraint_getSoftnessDirAng(self.__ptr, ...)
-	end
-	function META:GetFrameOffsetA(...)
-		lib.btSliderConstraint_getFrameOffsetA(self.__ptr, ...)
-	end
-	function META:CalculateTransforms(...)
-		lib.btSliderConstraint_calculateTransforms(self.__ptr, ...)
-	end
-	function META:GetInfo1NonVirtual(...)
-		lib.btSliderConstraint_getInfo1NonVirtual(self.__ptr, ...)
-	end
-	function META:SetDampingDirLin(...)
-		lib.btSliderConstraint_setDampingDirLin(self.__ptr, ...)
-	end
-	function META:GetAncorInA(...)
-		lib.btSliderConstraint_getAncorInA(self.__ptr, ...)
-	end
-	function META:GetLinearPos(...)
-		lib.btSliderConstraint_getLinearPos(self.__ptr, ...)
-	end
-	function META:GetRestitutionDirAng(...)
-		lib.btSliderConstraint_getRestitutionDirAng(self.__ptr, ...)
-	end
-	function META:SetDampingDirAng(...)
-		lib.btSliderConstraint_setDampingDirAng(self.__ptr, ...)
-	end
-	function META:GetDampingLimLin(...)
-		lib.btSliderConstraint_getDampingLimLin(self.__ptr, ...)
-	end
-	function META:GetSoftnessOrthoLin(...)
-		lib.btSliderConstraint_getSoftnessOrthoLin(self.__ptr, ...)
-	end
-	function META:GetDampingDirAng(...)
-		lib.btSliderConstraint_getDampingDirAng(self.__ptr, ...)
-	end
-	function META:GetSolveAngLimit(...)
-		lib.btSliderConstraint_getSolveAngLimit(self.__ptr, ...)
-	end
-	function META:GetDampingDirLin(...)
-		lib.btSliderConstraint_getDampingDirLin(self.__ptr, ...)
-	end
-	function META:GetLinDepth(...)
-		lib.btSliderConstraint_getLinDepth(self.__ptr, ...)
-	end
-	function META:SetUseFrameOffset(...)
-		lib.btSliderConstraint_setUseFrameOffset(self.__ptr, ...)
-	end
-	function META:GetSolveLinLimit(...)
-		lib.btSliderConstraint_getSolveLinLimit(self.__ptr, ...)
-	end
-	function META:SetRestitutionOrthoLin(...)
-		lib.btSliderConstraint_setRestitutionOrthoLin(self.__ptr, ...)
-	end
-	function META:SetSoftnessOrthoLin(...)
-		lib.btSliderConstraint_setSoftnessOrthoLin(self.__ptr, ...)
-	end
-	function META:GetMaxLinMotorForce(...)
-		lib.btSliderConstraint_getMaxLinMotorForce(self.__ptr, ...)
-	end
-	function META:SetMaxLinMotorForce(...)
-		lib.btSliderConstraint_setMaxLinMotorForce(self.__ptr, ...)
-	end
-	function META:SetUpperAngLimit(...)
-		lib.btSliderConstraint_setUpperAngLimit(self.__ptr, ...)
-	end
-	function META:SetRestitutionDirLin(...)
-		lib.btSliderConstraint_setRestitutionDirLin(self.__ptr, ...)
-	end
-	function META:GetUpperLinLimit(...)
-		lib.btSliderConstraint_getUpperLinLimit(self.__ptr, ...)
-	end
-	function META:GetInfo2NonVirtual(...)
-		lib.btSliderConstraint_getInfo2NonVirtual(self.__ptr, ...)
-	end
-	function META:GetRestitutionOrthoLin(...)
-		lib.btSliderConstraint_getRestitutionOrthoLin(self.__ptr, ...)
-	end
-	function META:GetTargetAngMotorVelocity(...)
-		lib.btSliderConstraint_getTargetAngMotorVelocity(self.__ptr, ...)
-	end
-	function META:SetFrames(...)
-		lib.btSliderConstraint_setFrames(self.__ptr, ...)
-	end
-	function META:GetAncorInB(...)
-		lib.btSliderConstraint_getAncorInB(self.__ptr, ...)
-	end
-	function META:GetRestitutionLimAng(...)
-		lib.btSliderConstraint_getRestitutionLimAng(self.__ptr, ...)
-	end
-	function META:SetTargetAngMotorVelocity(...)
-		lib.btSliderConstraint_setTargetAngMotorVelocity(self.__ptr, ...)
-	end
-	function META:GetTargetLinMotorVelocity(...)
-		lib.btSliderConstraint_getTargetLinMotorVelocity(self.__ptr, ...)
-	end
-	function META:SetTargetLinMotorVelocity(...)
-		lib.btSliderConstraint_setTargetLinMotorVelocity(self.__ptr, ...)
-	end
-	function META:SetPoweredLinMotor(...)
-		lib.btSliderConstraint_setPoweredLinMotor(self.__ptr, ...)
-	end
-	function META:GetRestitutionLimLin(...)
-		lib.btSliderConstraint_getRestitutionLimLin(self.__ptr, ...)
-	end
-	function META:SetDampingLimLin(...)
-		lib.btSliderConstraint_setDampingLimLin(self.__ptr, ...)
-	end
-	function META:GetAngularPos(...)
-		lib.btSliderConstraint_getAngularPos(self.__ptr, ...)
-	end
-	function META:GetCalculatedTransformA(...)
-		lib.btSliderConstraint_getCalculatedTransformA(self.__ptr, ...)
-	end
-	function META:SetUpperLinLimit(...)
-		lib.btSliderConstraint_setUpperLinLimit(self.__ptr, ...)
-	end
-	function META:TestAngLimits(...)
-		lib.btSliderConstraint_testAngLimits(self.__ptr, ...)
-	end
-	function META:SetSoftnessOrthoAng(...)
-		lib.btSliderConstraint_setSoftnessOrthoAng(self.__ptr, ...)
-	end
-	function META:SetSoftnessLimLin(...)
-		lib.btSliderConstraint_setSoftnessLimLin(self.__ptr, ...)
-	end
-	function META:SetLowerAngLimit(...)
-		lib.btSliderConstraint_setLowerAngLimit(self.__ptr, ...)
-	end
-	function META:GetCalculatedTransformB(...)
-		lib.btSliderConstraint_getCalculatedTransformB(self.__ptr, ...)
-	end
-	function META:SetSoftnessLimAng(...)
-		lib.btSliderConstraint_setSoftnessLimAng(self.__ptr, ...)
-	end
-	function META:SetSoftnessDirLin(...)
-		lib.btSliderConstraint_setSoftnessDirLin(self.__ptr, ...)
-	end
-	function META:SetPoweredAngMotor(...)
-		lib.btSliderConstraint_setPoweredAngMotor(self.__ptr, ...)
-	end
-	function META:SetMaxAngMotorForce(...)
-		lib.btSliderConstraint_setMaxAngMotorForce(self.__ptr, ...)
-	end
-	function META:GetSoftnessDirLin(...)
-		lib.btSliderConstraint_getSoftnessDirLin(self.__ptr, ...)
-	end
-	function META:GetDampingOrthoAng(...)
-		lib.btSliderConstraint_getDampingOrthoAng(self.__ptr, ...)
-	end
-	function META:GetPoweredAngMotor(...)
-		lib.btSliderConstraint_getPoweredAngMotor(self.__ptr, ...)
-	end
-	function META:GetMaxAngMotorForce(...)
-		lib.btSliderConstraint_getMaxAngMotorForce(self.__ptr, ...)
-	end
-	function META:GetAngDepth(...)
-		lib.btSliderConstraint_getAngDepth(self.__ptr, ...)
-	end
-	function META:SetDampingOrthoAng(...)
-		lib.btSliderConstraint_setDampingOrthoAng(self.__ptr, ...)
-	end
-	function META:SetSoftnessDirAng(...)
-		lib.btSliderConstraint_setSoftnessDirAng(self.__ptr, ...)
-	end
-	function META:GetDampingLimAng(...)
-		lib.btSliderConstraint_getDampingLimAng(self.__ptr, ...)
-	end
-	function META:GetLowerLinLimit(...)
-		lib.btSliderConstraint_getLowerLinLimit(self.__ptr, ...)
-	end
-	function META:GetDampingOrthoLin(...)
-		lib.btSliderConstraint_getDampingOrthoLin(self.__ptr, ...)
-	end
-	function META:GetFrameOffsetB(...)
-		lib.btSliderConstraint_getFrameOffsetB(self.__ptr, ...)
-	end
-	function META:GetSoftnessLimLin(...)
-		lib.btSliderConstraint_getSoftnessLimLin(self.__ptr, ...)
-	end
-	function META:GetRestitutionDirLin(...)
-		lib.btSliderConstraint_getRestitutionDirLin(self.__ptr, ...)
-	end
-	function META:GetSoftnessLimAng(...)
-		lib.btSliderConstraint_getSoftnessLimAng(self.__ptr, ...)
-	end
-	function META:SetRestitutionLimLin(...)
-		lib.btSliderConstraint_setRestitutionLimLin(self.__ptr, ...)
-	end
-	function META:GetSoftnessOrthoAng(...)
-		lib.btSliderConstraint_getSoftnessOrthoAng(self.__ptr, ...)
-	end
-	function META:GetLowerAngLimit(...)
-		lib.btSliderConstraint_getLowerAngLimit(self.__ptr, ...)
-	end
-	function META:GetPoweredLinMotor(...)
-		lib.btSliderConstraint_getPoweredLinMotor(self.__ptr, ...)
-	end
-	function META:SetDampingLimAng(...)
-		lib.btSliderConstraint_setDampingLimAng(self.__ptr, ...)
-	end
-	function META:TestLinLimits(...)
-		lib.btSliderConstraint_testLinLimits(self.__ptr, ...)
-	end
-	function META:SetDampingOrthoLin(...)
-		lib.btSliderConstraint_setDampingOrthoLin(self.__ptr, ...)
-	end
-	function META:SetRestitutionOrthoAng(...)
-		lib.btSliderConstraint_setRestitutionOrthoAng(self.__ptr, ...)
-	end
-	function META:GetUpperAngLimit(...)
-		lib.btSliderConstraint_getUpperAngLimit(self.__ptr, ...)
-	end
-	function META:GetUseFrameOffset(...)
-		lib.btSliderConstraint_getUseFrameOffset(self.__ptr, ...)
-	end
-	function META:SetRestitutionDirAng(...)
-		lib.btSliderConstraint_setRestitutionDirAng(self.__ptr, ...)
-	end
-	function META:GetRestitutionOrthoAng(...)
-		lib.btSliderConstraint_getRestitutionOrthoAng(self.__ptr, ...)
-	end
-	function META:SetRestitutionLimAng(...)
-		lib.btSliderConstraint_setRestitutionLimAng(self.__ptr, ...)
-	end
-	function bullet.CreateSliderConstraint(...)
-		return setmetatable({__ptr = lib.btSliderConstraint_new2(...)}, META)
+	ffi.metatype('btSphereBoxCollisionAlgorithm_CreateFunc', META)
+	function bullet.CreateSphereBoxCollisionAlgorithm_CreateFunc(...)
+		return lib.btSphereBoxCollisionAlgorithm_CreateFunc_new(...)
 	end
 end
-do -- GIM_PAIR
+do -- ConvexCast_CastResult
 	local META = {}
 	META.__index = META
-	function bullet.CreateGIM_PAIR(...)
-		return setmetatable({__ptr = lib.GIM_PAIR_new2(...)}, META)
+	function META:GetHitTransformA(...)
+		return lib.btConvexCast_CastResult_getHitTransformA(self, ...)
+	end
+	function META:SetHitPoint(...)
+		return lib.btConvexCast_CastResult_setHitPoint(self, ...)
+	end
+	function META:GetHitTransformB(...)
+		return lib.btConvexCast_CastResult_getHitTransformB(self, ...)
+	end
+	function META:GetFraction(...)
+		return lib.btConvexCast_CastResult_getFraction(self, ...)
+	end
+	function META:ReportFailure(...)
+		return lib.btConvexCast_CastResult_reportFailure(self, ...)
+	end
+	function META:GetAllowedPenetration(...)
+		return lib.btConvexCast_CastResult_getAllowedPenetration(self, ...)
+	end
+	function META:GetHitPoint(...)
+		return lib.btConvexCast_CastResult_getHitPoint(self, ...)
+	end
+	function META:GetDebugDrawer(...)
+		return lib.btConvexCast_CastResult_getDebugDrawer(self, ...)
+	end
+	function META:SetAllowedPenetration(...)
+		return lib.btConvexCast_CastResult_setAllowedPenetration(self, ...)
+	end
+	function META:SetHitTransformA(...)
+		return lib.btConvexCast_CastResult_setHitTransformA(self, ...)
+	end
+	function META:SetHitTransformB(...)
+		return lib.btConvexCast_CastResult_setHitTransformB(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btConvexCast_CastResult_delete(self, ...)
+	end
+	function META:SetNormal(...)
+		return lib.btConvexCast_CastResult_setNormal(self, ...)
+	end
+	function META:GetNormal(...)
+		return lib.btConvexCast_CastResult_getNormal(self, ...)
+	end
+	function META:SetFraction(...)
+		return lib.btConvexCast_CastResult_setFraction(self, ...)
+	end
+	function META:SetDebugDrawer(...)
+		return lib.btConvexCast_CastResult_setDebugDrawer(self, ...)
+	end
+	function META:DrawCoordSystem(...)
+		return lib.btConvexCast_CastResult_drawCoordSystem(self, ...)
+	end
+	function META:DebugDraw(...)
+		return lib.btConvexCast_CastResult_DebugDraw(self, ...)
+	end
+	ffi.metatype('btConvexCast_CastResult', META)
+	function bullet.CreateConvexCast_CastResult(...)
+		return lib.btConvexCast_CastResult_new(...)
 	end
 end
-do -- Point2PointConstraint
+do -- ConvexInternalShape
 	local META = {}
 	META.__index = META
-	function META:GetInfo2NonVirtual(...)
-		lib.btPoint2PointConstraint_getInfo2NonVirtual(self.__ptr, ...)
+	function META:SetSafeMargin3(...)
+		return lib.btConvexInternalShape_setSafeMargin3(self, ...)
 	end
-	function META:GetUseSolveConstraintObsolete(...)
-		lib.btPoint2PointConstraint_getUseSolveConstraintObsolete(self.__ptr, ...)
+	function META:SetImplicitShapeDimensions(...)
+		return lib.btConvexInternalShape_setImplicitShapeDimensions(self, ...)
 	end
-	function META:GetPivotInA(...)
-		lib.btPoint2PointConstraint_getPivotInA(self.__ptr, ...)
+	function META:SetSafeMargin(...)
+		return lib.btConvexInternalShape_setSafeMargin(self, ...)
 	end
-	function META:GetInfo1NonVirtual(...)
-		lib.btPoint2PointConstraint_getInfo1NonVirtual(self.__ptr, ...)
+	function META:SetSafeMargin4(...)
+		return lib.btConvexInternalShape_setSafeMargin4(self, ...)
 	end
-	function META:UpdateRHS(...)
-		lib.btPoint2PointConstraint_updateRHS(self.__ptr, ...)
+	function META:GetLocalScalingNV(...)
+		return lib.btConvexInternalShape_getLocalScalingNV(self, ...)
 	end
-	function META:GetPivotInB(...)
-		lib.btPoint2PointConstraint_getPivotInB(self.__ptr, ...)
+	function META:GetImplicitShapeDimensions(...)
+		return lib.btConvexInternalShape_getImplicitShapeDimensions(self, ...)
 	end
-	function META:SetPivotA(...)
-		lib.btPoint2PointConstraint_setPivotA(self.__ptr, ...)
+	function META:SetSafeMargin2(...)
+		return lib.btConvexInternalShape_setSafeMargin2(self, ...)
 	end
-	function META:SetUseSolveConstraintObsolete(...)
-		lib.btPoint2PointConstraint_setUseSolveConstraintObsolete(self.__ptr, ...)
+	function META:GetMarginNV(...)
+		return lib.btConvexInternalShape_getMarginNV(self, ...)
 	end
-	function META:SetPivotB(...)
-		lib.btPoint2PointConstraint_setPivotB(self.__ptr, ...)
+	ffi.metatype('btConvexInternalShape', META)
+	function bullet.CreateConvexInternalShape(...)
+		return lib.btConvexInternalShape_new(...)
 	end
-	function META:GetSetting(...)
-		lib.btPoint2PointConstraint_getSetting(self.__ptr, ...)
+end
+do -- RaycastVehicle_btVehicleTuning
+	local META = {}
+	META.__index = META
+	function META:GetFrictionSlip(...)
+		return lib.btRaycastVehicle_btVehicleTuning_getFrictionSlip(self, ...)
 	end
-	function bullet.CreatePoint2PointConstraint(...)
-		return setmetatable({__ptr = lib.btPoint2PointConstraint_new2(...)}, META)
+	function META:GetMaxSuspensionTravelCm(...)
+		return lib.btRaycastVehicle_btVehicleTuning_getMaxSuspensionTravelCm(self, ...)
+	end
+	function META:SetSuspensionDamping(...)
+		return lib.btRaycastVehicle_btVehicleTuning_setSuspensionDamping(self, ...)
+	end
+	function META:GetSuspensionCompression(...)
+		return lib.btRaycastVehicle_btVehicleTuning_getSuspensionCompression(self, ...)
+	end
+	function META:SetFrictionSlip(...)
+		return lib.btRaycastVehicle_btVehicleTuning_setFrictionSlip(self, ...)
+	end
+	function META:SetMaxSuspensionTravelCm(...)
+		return lib.btRaycastVehicle_btVehicleTuning_setMaxSuspensionTravelCm(self, ...)
+	end
+	function META:GetSuspensionDamping(...)
+		return lib.btRaycastVehicle_btVehicleTuning_getSuspensionDamping(self, ...)
+	end
+	function META:SetSuspensionCompression(...)
+		return lib.btRaycastVehicle_btVehicleTuning_setSuspensionCompression(self, ...)
+	end
+	function META:SetSuspensionStiffness(...)
+		return lib.btRaycastVehicle_btVehicleTuning_setSuspensionStiffness(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btRaycastVehicle_btVehicleTuning_delete(self, ...)
+	end
+	function META:GetMaxSuspensionForce(...)
+		return lib.btRaycastVehicle_btVehicleTuning_getMaxSuspensionForce(self, ...)
+	end
+	function META:GetSuspensionStiffness(...)
+		return lib.btRaycastVehicle_btVehicleTuning_getSuspensionStiffness(self, ...)
+	end
+	function META:SetMaxSuspensionForce(...)
+		return lib.btRaycastVehicle_btVehicleTuning_setMaxSuspensionForce(self, ...)
+	end
+	ffi.metatype('btRaycastVehicle_btVehicleTuning', META)
+	function bullet.CreateRaycastVehicle_btVehicleTuning(...)
+		return lib.btRaycastVehicle_btVehicleTuning_new(...)
+	end
+end
+do -- SoftBodyWorldInfo
+	local META = {}
+	META.__index = META
+	function META:SetBroadphase(...)
+		return lib.btSoftBodyWorldInfo_setBroadphase(self, ...)
+	end
+	function META:GetMaxDisplacement(...)
+		return lib.btSoftBodyWorldInfo_getMaxDisplacement(self, ...)
+	end
+	function META:GetDispatcher(...)
+		return lib.btSoftBodyWorldInfo_getDispatcher(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBodyWorldInfo_delete(self, ...)
+	end
+	function META:SetMaxDisplacement(...)
+		return lib.btSoftBodyWorldInfo_setMaxDisplacement(self, ...)
+	end
+	function META:SetDispatcher(...)
+		return lib.btSoftBodyWorldInfo_setDispatcher(self, ...)
+	end
+	function META:GetGravity(...)
+		return lib.btSoftBodyWorldInfo_getGravity(self, ...)
+	end
+	function META:GetBroadphase(...)
+		return lib.btSoftBodyWorldInfo_getBroadphase(self, ...)
+	end
+	function META:GetSparsesdf(...)
+		return lib.btSoftBodyWorldInfo_getSparsesdf(self, ...)
+	end
+	function META:SetGravity(...)
+		return lib.btSoftBodyWorldInfo_setGravity(self, ...)
+	end
+	ffi.metatype('btSoftBodyWorldInfo', META)
+	function bullet.CreateSoftBodyWorldInfo(...)
+		return lib.btSoftBodyWorldInfo_new(...)
+	end
+end
+do -- CollisionWorld_ClosestConvexResultCallback
+	local META = {}
+	META.__index = META
+	function META:GetHitCollisionObject(...)
+		return lib.btCollisionWorld_ClosestConvexResultCallback_getHitCollisionObject(self, ...)
+	end
+	function META:SetHitPointWorld(...)
+		return lib.btCollisionWorld_ClosestConvexResultCallback_setHitPointWorld(self, ...)
+	end
+	function META:SetHitCollisionObject(...)
+		return lib.btCollisionWorld_ClosestConvexResultCallback_setHitCollisionObject(self, ...)
+	end
+	function META:GetHitNormalWorld(...)
+		return lib.btCollisionWorld_ClosestConvexResultCallback_getHitNormalWorld(self, ...)
+	end
+	function META:GetHitPointWorld(...)
+		return lib.btCollisionWorld_ClosestConvexResultCallback_getHitPointWorld(self, ...)
+	end
+	function META:SetConvexToWorld(...)
+		return lib.btCollisionWorld_ClosestConvexResultCallback_setConvexToWorld(self, ...)
+	end
+	function META:GetConvexFromWorld(...)
+		return lib.btCollisionWorld_ClosestConvexResultCallback_getConvexFromWorld(self, ...)
+	end
+	function META:GetConvexToWorld(...)
+		return lib.btCollisionWorld_ClosestConvexResultCallback_getConvexToWorld(self, ...)
+	end
+	function META:SetHitNormalWorld(...)
+		return lib.btCollisionWorld_ClosestConvexResultCallback_setHitNormalWorld(self, ...)
+	end
+	function META:SetConvexFromWorld(...)
+		return lib.btCollisionWorld_ClosestConvexResultCallback_setConvexFromWorld(self, ...)
+	end
+	ffi.metatype('btCollisionWorld_ClosestConvexResultCallback', META)
+	function bullet.CreateCollisionWorld_ClosestConvexResultCallback(...)
+		return lib.btCollisionWorld_ClosestConvexResultCallback_new(...)
 	end
 end
 do -- TriangleMesh
 	local META = {}
 	META.__index = META
-	function META:AddTriangle(...)
-		lib.btTriangleMesh_addTriangle(self.__ptr, ...)
-	end
 	function META:GetUse4componentVertices(...)
-		lib.btTriangleMesh_getUse4componentVertices(self.__ptr, ...)
+		return lib.btTriangleMesh_getUse4componentVertices(self, ...)
+	end
+	function META:AddTriangle(...)
+		return lib.btTriangleMesh_addTriangle(self, ...)
 	end
 	function META:FindOrAddVertex(...)
-		lib.btTriangleMesh_findOrAddVertex(self.__ptr, ...)
-	end
-	function META:SetWeldingThreshold(...)
-		lib.btTriangleMesh_setWeldingThreshold(self.__ptr, ...)
-	end
-	function META:AddIndex(...)
-		lib.btTriangleMesh_addIndex(self.__ptr, ...)
-	end
-	function META:GetUse32bitIndices(...)
-		lib.btTriangleMesh_getUse32bitIndices(self.__ptr, ...)
+		return lib.btTriangleMesh_findOrAddVertex(self, ...)
 	end
 	function META:GetNumTriangles(...)
-		lib.btTriangleMesh_getNumTriangles(self.__ptr, ...)
+		return lib.btTriangleMesh_getNumTriangles(self, ...)
+	end
+	function META:SetWeldingThreshold(...)
+		return lib.btTriangleMesh_setWeldingThreshold(self, ...)
+	end
+	function META:AddTriangle2(...)
+		return lib.btTriangleMesh_addTriangle2(self, ...)
+	end
+	function META:GetUse32bitIndices(...)
+		return lib.btTriangleMesh_getUse32bitIndices(self, ...)
+	end
+	function META:AddIndex(...)
+		return lib.btTriangleMesh_addIndex(self, ...)
 	end
 	function META:GetWeldingThreshold(...)
-		lib.btTriangleMesh_getWeldingThreshold(self.__ptr, ...)
+		return lib.btTriangleMesh_getWeldingThreshold(self, ...)
+	end
+	ffi.metatype('btTriangleMesh', META)
+	function bullet.CreateTriangleMesh2(...)
+		return lib.btTriangleMesh_new2(...)
+	end
+	function bullet.CreateTriangleMesh3(...)
+		return lib.btTriangleMesh_new3(...)
 	end
 	function bullet.CreateTriangleMesh(...)
-		return setmetatable({__ptr = lib.btTriangleMesh_new2(...)}, META)
-	end
-end
-do -- RigidBody
-	local META = {}
-	META.__index = META
-	function META:SaveKinematicState(...)
-		lib.btRigidBody_saveKinematicState(self.__ptr, ...)
-	end
-	function META:GetLinearVelocity(...)
-		lib.btRigidBody_getLinearVelocity(self.__ptr, ...)
-	end
-	function META:SetContactSolverType(...)
-		lib.btRigidBody_setContactSolverType(self.__ptr, ...)
-	end
-	function META:GetVelocityInLocalPoint(...)
-		lib.btRigidBody_getVelocityInLocalPoint(self.__ptr, ...)
-	end
-	function META:ComputeGyroscopicForceExplicit(...)
-		lib.btRigidBody_computeGyroscopicForceExplicit(self.__ptr, ...)
-	end
-	function META:GetCenterOfMassTransform(...)
-		lib.btRigidBody_getCenterOfMassTransform(self.__ptr, ...)
-	end
-	function META:SetCenterOfMassTransform(...)
-		lib.btRigidBody_setCenterOfMassTransform(self.__ptr, ...)
-	end
-	function META:GetLinearFactor(...)
-		lib.btRigidBody_getLinearFactor(self.__ptr, ...)
-	end
-	function META:RemoveConstraintRef(...)
-		lib.btRigidBody_removeConstraintRef(self.__ptr, ...)
-	end
-	function META:GetAabb(...)
-		lib.btRigidBody_getAabb(self.__ptr, ...)
-	end
-	function META:GetAngularVelocity(...)
-		lib.btRigidBody_getAngularVelocity(self.__ptr, ...)
-	end
-	function META:IsInWorld(...)
-		lib.btRigidBody_isInWorld(self.__ptr, ...)
-	end
-	function META:ApplyForce(...)
-		lib.btRigidBody_applyForce(self.__ptr, ...)
-	end
-	function META:ProceedToTransform(...)
-		lib.btRigidBody_proceedToTransform(self.__ptr, ...)
-	end
-	function META:GetBroadphaseProxy(...)
-		lib.btRigidBody_getBroadphaseProxy(self.__ptr, ...)
-	end
-	function META:ApplyCentralForce(...)
-		lib.btRigidBody_applyCentralForce(self.__ptr, ...)
-	end
-	function META:ApplyImpulse(...)
-		lib.btRigidBody_applyImpulse(self.__ptr, ...)
-	end
-	function META:UpdateInertiaTensor(...)
-		lib.btRigidBody_updateInertiaTensor(self.__ptr, ...)
-	end
-	function META:GetConstraintRef(...)
-		lib.btRigidBody_getConstraintRef(self.__ptr, ...)
-	end
-	function META:GetFlags(...)
-		lib.btRigidBody_getFlags(self.__ptr, ...)
-	end
-	function META:ApplyTorque(...)
-		lib.btRigidBody_applyTorque(self.__ptr, ...)
-	end
-	function META:Upcast(...)
-		lib.btRigidBody_upcast(self.__ptr, ...)
-	end
-	function META:GetFrictionSolverType(...)
-		lib.btRigidBody_getFrictionSolverType(self.__ptr, ...)
-	end
-	function META:GetGravity(...)
-		lib.btRigidBody_getGravity(self.__ptr, ...)
-	end
-	function META:ApplyDamping(...)
-		lib.btRigidBody_applyDamping(self.__ptr, ...)
-	end
-	function META:GetAngularDamping(...)
-		lib.btRigidBody_getAngularDamping(self.__ptr, ...)
-	end
-	function META:ApplyGravity(...)
-		lib.btRigidBody_applyGravity(self.__ptr, ...)
-	end
-	function META:SetMassProps(...)
-		lib.btRigidBody_setMassProps(self.__ptr, ...)
-	end
-	function META:SetMotionState(...)
-		lib.btRigidBody_setMotionState(self.__ptr, ...)
-	end
-	function META:SetLinearFactor(...)
-		lib.btRigidBody_setLinearFactor(self.__ptr, ...)
-	end
-	function META:GetTotalForce(...)
-		lib.btRigidBody_getTotalForce(self.__ptr, ...)
-	end
-	function META:SetNewBroadphaseProxy(...)
-		lib.btRigidBody_setNewBroadphaseProxy(self.__ptr, ...)
-	end
-	function META:GetInvInertiaTensorWorld(...)
-		lib.btRigidBody_getInvInertiaTensorWorld(self.__ptr, ...)
-	end
-	function META:IntegrateVelocities(...)
-		lib.btRigidBody_integrateVelocities(self.__ptr, ...)
-	end
-	function META:ApplyCentralImpulse(...)
-		lib.btRigidBody_applyCentralImpulse(self.__ptr, ...)
-	end
-	function META:SetDamping(...)
-		lib.btRigidBody_setDamping(self.__ptr, ...)
-	end
-	function META:WantsSleeping(...)
-		lib.btRigidBody_wantsSleeping(self.__ptr, ...)
-	end
-	function META:GetInvMass(...)
-		lib.btRigidBody_getInvMass(self.__ptr, ...)
-	end
-	function META:SetFrictionSolverType(...)
-		lib.btRigidBody_setFrictionSolverType(self.__ptr, ...)
-	end
-	function META:ClearForces(...)
-		lib.btRigidBody_clearForces(self.__ptr, ...)
-	end
-	function META:ComputeAngularImpulseDenominator(...)
-		lib.btRigidBody_computeAngularImpulseDenominator(self.__ptr, ...)
-	end
-	function META:GetLinearSleepingThreshold(...)
-		lib.btRigidBody_getLinearSleepingThreshold(self.__ptr, ...)
-	end
-	function META:ComputeImpulseDenominator(...)
-		lib.btRigidBody_computeImpulseDenominator(self.__ptr, ...)
-	end
-	function META:GetOrientation(...)
-		lib.btRigidBody_getOrientation(self.__ptr, ...)
-	end
-	function META:GetAngularFactor(...)
-		lib.btRigidBody_getAngularFactor(self.__ptr, ...)
-	end
-	function META:GetCenterOfMassPosition(...)
-		lib.btRigidBody_getCenterOfMassPosition(self.__ptr, ...)
-	end
-	function META:GetAngularSleepingThreshold(...)
-		lib.btRigidBody_getAngularSleepingThreshold(self.__ptr, ...)
-	end
-	function META:AddConstraintRef(...)
-		lib.btRigidBody_addConstraintRef(self.__ptr, ...)
-	end
-	function META:ApplyTorqueImpulse(...)
-		lib.btRigidBody_applyTorqueImpulse(self.__ptr, ...)
-	end
-	function META:SetGravity(...)
-		lib.btRigidBody_setGravity(self.__ptr, ...)
-	end
-	function META:GetInvInertiaDiagLocal(...)
-		lib.btRigidBody_getInvInertiaDiagLocal(self.__ptr, ...)
-	end
-	function META:GetNumConstraintRefs(...)
-		lib.btRigidBody_getNumConstraintRefs(self.__ptr, ...)
-	end
-	function META:GetLocalInertia(...)
-		lib.btRigidBody_getLocalInertia(self.__ptr, ...)
-	end
-	function META:GetMotionState(...)
-		lib.btRigidBody_getMotionState(self.__ptr, ...)
-	end
-	function META:Translate(...)
-		lib.btRigidBody_translate(self.__ptr, ...)
-	end
-	function META:GetLinearDamping(...)
-		lib.btRigidBody_getLinearDamping(self.__ptr, ...)
-	end
-	function META:GetTotalTorque(...)
-		lib.btRigidBody_getTotalTorque(self.__ptr, ...)
-	end
-	function META:PredictIntegratedTransform(...)
-		lib.btRigidBody_predictIntegratedTransform(self.__ptr, ...)
-	end
-	function META:GetContactSolverType(...)
-		lib.btRigidBody_getContactSolverType(self.__ptr, ...)
-	end
-	function META:SetAngularVelocity(...)
-		lib.btRigidBody_setAngularVelocity(self.__ptr, ...)
-	end
-	function META:SetInvInertiaDiagLocal(...)
-		lib.btRigidBody_setInvInertiaDiagLocal(self.__ptr, ...)
-	end
-	function META:SetFlags(...)
-		lib.btRigidBody_setFlags(self.__ptr, ...)
-	end
-	function META:SetLinearVelocity(...)
-		lib.btRigidBody_setLinearVelocity(self.__ptr, ...)
-	end
-	function META:UpdateDeactivation(...)
-		lib.btRigidBody_updateDeactivation(self.__ptr, ...)
-	end
-	function META:SetAngularFactor(...)
-		lib.btRigidBody_setAngularFactor(self.__ptr, ...)
-	end
-	function META:SetSleepingThresholds(...)
-		lib.btRigidBody_setSleepingThresholds(self.__ptr, ...)
-	end
-	function bullet.CreateRigidBody(...)
-		return setmetatable({__ptr = lib.btRigidBody_new2(...)}, META)
-	end
-end
-do -- 32BitAxisSweep3
-	local META = {}
-	META.__index = META
-	function META:AddHandle(...)
-		lib.bt32BitAxisSweep3_addHandle(self.__ptr, ...)
-	end
-	function META:Quantize(...)
-		lib.bt32BitAxisSweep3_quantize(self.__ptr, ...)
-	end
-	function META:TestAabbOverlap(...)
-		lib.bt32BitAxisSweep3_testAabbOverlap(self.__ptr, ...)
-	end
-	function META:GetNumHandles(...)
-		lib.bt32BitAxisSweep3_getNumHandles(self.__ptr, ...)
-	end
-	function META:UnQuantize(...)
-		lib.bt32BitAxisSweep3_unQuantize(self.__ptr, ...)
-	end
-	function META:RemoveHandle(...)
-		lib.bt32BitAxisSweep3_removeHandle(self.__ptr, ...)
-	end
-	function META:SetOverlappingPairUserCallback(...)
-		lib.bt32BitAxisSweep3_setOverlappingPairUserCallback(self.__ptr, ...)
-	end
-	function META:GetHandle(...)
-		lib.bt32BitAxisSweep3_getHandle(self.__ptr, ...)
-	end
-	function META:ProcessAllOverlappingPairs(...)
-		lib.bt32BitAxisSweep3_processAllOverlappingPairs(self.__ptr, ...)
-	end
-	function META:UpdateHandle(...)
-		lib.bt32BitAxisSweep3_updateHandle(self.__ptr, ...)
-	end
-	function META:GetOverlappingPairCache(...)
-		lib.bt32BitAxisSweep3_getOverlappingPairCache(self.__ptr, ...)
-	end
-	function bullet.Create32BitAxisSweep3(...)
-		return setmetatable({__ptr = lib.bt32BitAxisSweep3_new2(...)}, META)
+		return lib.btTriangleMesh_new(...)
 	end
 end
 do -- GjkPairDetector
 	local META = {}
 	META.__index = META
 	function META:GetLastUsedMethod(...)
-		lib.btGjkPairDetector_getLastUsedMethod(self.__ptr, ...)
+		return lib.btGjkPairDetector_getLastUsedMethod(self, ...)
 	end
 	function META:GetClosestPointsNonVirtual(...)
-		lib.btGjkPairDetector_getClosestPointsNonVirtual(self.__ptr, ...)
+		return lib.btGjkPairDetector_getClosestPointsNonVirtual(self, ...)
 	end
 	function META:SetMinkowskiA(...)
-		lib.btGjkPairDetector_setMinkowskiA(self.__ptr, ...)
+		return lib.btGjkPairDetector_setMinkowskiA(self, ...)
 	end
 	function META:GetCurIter(...)
-		lib.btGjkPairDetector_getCurIter(self.__ptr, ...)
+		return lib.btGjkPairDetector_getCurIter(self, ...)
 	end
 	function META:SetIgnoreMargin(...)
-		lib.btGjkPairDetector_setIgnoreMargin(self.__ptr, ...)
+		return lib.btGjkPairDetector_setIgnoreMargin(self, ...)
 	end
 	function META:SetCurIter(...)
-		lib.btGjkPairDetector_setCurIter(self.__ptr, ...)
+		return lib.btGjkPairDetector_setCurIter(self, ...)
 	end
 	function META:SetLastUsedMethod(...)
-		lib.btGjkPairDetector_setLastUsedMethod(self.__ptr, ...)
+		return lib.btGjkPairDetector_setLastUsedMethod(self, ...)
 	end
 	function META:GetCachedSeparatingAxis(...)
-		lib.btGjkPairDetector_getCachedSeparatingAxis(self.__ptr, ...)
+		return lib.btGjkPairDetector_getCachedSeparatingAxis(self, ...)
 	end
 	function META:GetFixContactNormalDirection(...)
-		lib.btGjkPairDetector_getFixContactNormalDirection(self.__ptr, ...)
+		return lib.btGjkPairDetector_getFixContactNormalDirection(self, ...)
 	end
 	function META:GetCachedSeparatingDistance(...)
-		lib.btGjkPairDetector_getCachedSeparatingDistance(self.__ptr, ...)
+		return lib.btGjkPairDetector_getCachedSeparatingDistance(self, ...)
 	end
 	function META:SetMinkowskiB(...)
-		lib.btGjkPairDetector_setMinkowskiB(self.__ptr, ...)
+		return lib.btGjkPairDetector_setMinkowskiB(self, ...)
 	end
 	function META:SetFixContactNormalDirection(...)
-		lib.btGjkPairDetector_setFixContactNormalDirection(self.__ptr, ...)
+		return lib.btGjkPairDetector_setFixContactNormalDirection(self, ...)
 	end
 	function META:SetPenetrationDepthSolver(...)
-		lib.btGjkPairDetector_setPenetrationDepthSolver(self.__ptr, ...)
+		return lib.btGjkPairDetector_setPenetrationDepthSolver(self, ...)
 	end
 	function META:GetCatchDegeneracies(...)
-		lib.btGjkPairDetector_getCatchDegeneracies(self.__ptr, ...)
+		return lib.btGjkPairDetector_getCatchDegeneracies(self, ...)
 	end
 	function META:SetCachedSeparatingAxis(...)
-		lib.btGjkPairDetector_setCachedSeparatingAxis(self.__ptr, ...)
+		return lib.btGjkPairDetector_setCachedSeparatingAxis(self, ...)
 	end
 	function META:SetCatchDegeneracies(...)
-		lib.btGjkPairDetector_setCatchDegeneracies(self.__ptr, ...)
+		return lib.btGjkPairDetector_setCatchDegeneracies(self, ...)
 	end
 	function META:GetDegenerateSimplex(...)
-		lib.btGjkPairDetector_getDegenerateSimplex(self.__ptr, ...)
+		return lib.btGjkPairDetector_getDegenerateSimplex(self, ...)
 	end
 	function META:SetDegenerateSimplex(...)
-		lib.btGjkPairDetector_setDegenerateSimplex(self.__ptr, ...)
+		return lib.btGjkPairDetector_setDegenerateSimplex(self, ...)
+	end
+	ffi.metatype('btGjkPairDetector', META)
+	function bullet.CreateGjkPairDetector2(...)
+		return lib.btGjkPairDetector_new2(...)
 	end
 	function bullet.CreateGjkPairDetector(...)
-		return setmetatable({__ptr = lib.btGjkPairDetector_new2(...)}, META)
+		return lib.btGjkPairDetector_new(...)
+	end
+end
+do -- BroadphaseRayCallbackWrapper
+	local META = {}
+	META.__index = META
+	ffi.metatype('btBroadphaseRayCallbackWrapper', META)
+	function bullet.CreateBroadphaseRayCallbackWrapper(...)
+		return lib.btBroadphaseRayCallbackWrapper_new(...)
 	end
 end
 do -- TriangleIndexVertexArray
 	local META = {}
 	META.__index = META
+	function META:AddIndexedMesh2(...)
+		return lib.btTriangleIndexVertexArray_addIndexedMesh2(self, ...)
+	end
 	function META:GetIndexedMeshArray(...)
-		lib.btTriangleIndexVertexArray_getIndexedMeshArray(self.__ptr, ...)
+		return lib.btTriangleIndexVertexArray_getIndexedMeshArray(self, ...)
 	end
 	function META:AddIndexedMesh(...)
-		lib.btTriangleIndexVertexArray_addIndexedMesh(self.__ptr, ...)
+		return lib.btTriangleIndexVertexArray_addIndexedMesh(self, ...)
 	end
+	ffi.metatype('btTriangleIndexVertexArray', META)
 	function bullet.CreateTriangleIndexVertexArray(...)
-		return setmetatable({__ptr = lib.btTriangleIndexVertexArray_new2(...)}, META)
+		return lib.btTriangleIndexVertexArray_new(...)
+	end
+	function bullet.CreateTriangleIndexVertexArray2(...)
+		return lib.btTriangleIndexVertexArray_new2(...)
 	end
 end
 do -- BroadphasePair
 	local META = {}
 	META.__index = META
-	function META:SetPProxy(...)
-		lib.btBroadphasePair_setPProxy0(self.__ptr, ...)
-	end
-	function META:Delete(...)
-		lib.btBroadphasePair_delete(self.__ptr, ...)
+	function META:SetPProxy1(...)
+		return lib.btBroadphasePair_setPProxy1(self, ...)
 	end
 	function META:GetAlgorithm(...)
-		lib.btBroadphasePair_getAlgorithm(self.__ptr, ...)
+		return lib.btBroadphasePair_getAlgorithm(self, ...)
+	end
+	function META:GetPProxy0(...)
+		return lib.btBroadphasePair_getPProxy0(self, ...)
+	end
+	function META:GetPProxy1(...)
+		return lib.btBroadphasePair_getPProxy1(self, ...)
+	end
+	function META:SetPProxy0(...)
+		return lib.btBroadphasePair_setPProxy0(self, ...)
 	end
 	function META:SetAlgorithm(...)
-		lib.btBroadphasePair_setAlgorithm(self.__ptr, ...)
+		return lib.btBroadphasePair_setAlgorithm(self, ...)
 	end
-	function META:GetPProxy(...)
-		lib.btBroadphasePair_getPProxy0(self.__ptr, ...)
+	function META:Delete(...)
+		return lib.btBroadphasePair_delete(self, ...)
+	end
+	ffi.metatype('btBroadphasePair', META)
+	function bullet.CreateBroadphasePair3(...)
+		return lib.btBroadphasePair_new3(...)
 	end
 	function bullet.CreateBroadphasePair(...)
-		return setmetatable({__ptr = lib.btBroadphasePair_new2(...)}, META)
+		return lib.btBroadphasePair_new(...)
+	end
+	function bullet.CreateBroadphasePair2(...)
+		return lib.btBroadphasePair_new2(...)
 	end
 end
-do -- GImpactCompoundShape_CompoundPrimitiveManager
+do -- MinkowskiSumShape
 	local META = {}
 	META.__index = META
-	function META:GetCompoundShape(...)
-		lib.btGImpactCompoundShape_CompoundPrimitiveManager_getCompoundShape(self.__ptr, ...)
+	function META:GetShapeA(...)
+		return lib.btMinkowskiSumShape_getShapeA(self, ...)
 	end
-	function META:SetCompoundShape(...)
-		lib.btGImpactCompoundShape_CompoundPrimitiveManager_setCompoundShape(self.__ptr, ...)
+	function META:SetTransformB(...)
+		return lib.btMinkowskiSumShape_setTransformB(self, ...)
 	end
-	function bullet.CreateGImpactCompoundShape_CompoundPrimitiveManager(...)
-		return setmetatable({__ptr = lib.btGImpactCompoundShape_CompoundPrimitiveManager_new2(...)}, META)
+	function META:GetShapeB(...)
+		return lib.btMinkowskiSumShape_getShapeB(self, ...)
+	end
+	function META:SetTransformA(...)
+		return lib.btMinkowskiSumShape_setTransformA(self, ...)
+	end
+	function META:GetTransformB(...)
+		return lib.btMinkowskiSumShape_GetTransformB(self, ...)
+	end
+	function META:GetTransformA(...)
+		return lib.btMinkowskiSumShape_getTransformA(self, ...)
+	end
+	ffi.metatype('btMinkowskiSumShape', META)
+	function bullet.CreateMinkowskiSumShape(...)
+		return lib.btMinkowskiSumShape_new(...)
 	end
 end
-do -- PolarDecomposition
+do -- TriangleCallbackWrapper
 	local META = {}
 	META.__index = META
-	function META:MaxIterations(...)
-		lib.btPolarDecomposition_maxIterations(self.__ptr, ...)
-	end
-	function META:Delete(...)
-		lib.btPolarDecomposition_delete(self.__ptr, ...)
-	end
-	function META:Decompose(...)
-		lib.btPolarDecomposition_decompose(self.__ptr, ...)
-	end
-	function bullet.CreatePolarDecomposition(...)
-		return setmetatable({__ptr = lib.btPolarDecomposition_new2(...)}, META)
+	ffi.metatype('btTriangleCallbackWrapper', META)
+	function bullet.CreateTriangleCallbackWrapper(...)
+		return lib.btTriangleCallbackWrapper_new(...)
 	end
 end
-do -- Box2dBox2dCollisionAlgorithm
+do -- Triangle
 	local META = {}
 	META.__index = META
-	function bullet.CreateBox2dBox2dCollisionAlgorithm(...)
-		return setmetatable({__ptr = lib.btBox2dBox2dCollisionAlgorithm_new2(...)}, META)
+	function META:GetVertex2(...)
+		return lib.btTriangle_getVertex2(self, ...)
 	end
-end
-do -- ManifoldPoint
-	local META = {}
-	META.__index = META
-	function META:SetLateralFrictionInitialized(...)
-		lib.btManifoldPoint_setLateralFrictionInitialized(self.__ptr, ...)
+	function META:SetVertex1(...)
+		return lib.btTriangle_setVertex1(self, ...)
 	end
-	function META:GetDistance(...)
-		lib.btManifoldPoint_getDistance(self.__ptr, ...)
-	end
-	function META:GetLocalPointB(...)
-		lib.btManifoldPoint_getLocalPointB(self.__ptr, ...)
-	end
-	function META:GetPartId(...)
-		lib.btManifoldPoint_getPartId0(self.__ptr, ...)
-	end
-	function META:GetCombinedRestitution(...)
-		lib.btManifoldPoint_getCombinedRestitution(self.__ptr, ...)
-	end
-	function META:GetLateralFrictionDir(...)
-		lib.btManifoldPoint_getLateralFrictionDir1(self.__ptr, ...)
-	end
-	function META:SetAppliedImpulse(...)
-		lib.btManifoldPoint_setAppliedImpulse(self.__ptr, ...)
-	end
-	function META:GetLifeTime(...)
-		lib.btManifoldPoint_getLifeTime(self.__ptr, ...)
-	end
-	function META:SetUserPersistentData(...)
-		lib.btManifoldPoint_setUserPersistentData(self.__ptr, ...)
-	end
-	function META:SetNormalWorldOnB(...)
-		lib.btManifoldPoint_setNormalWorldOnB(self.__ptr, ...)
-	end
-	function META:GetContactMotion(...)
-		lib.btManifoldPoint_getContactMotion1(self.__ptr, ...)
-	end
-	function META:SetLateralFrictionDir(...)
-		lib.btManifoldPoint_setLateralFrictionDir1(self.__ptr, ...)
-	end
-	function META:SetPositionWorldOnB(...)
-		lib.btManifoldPoint_setPositionWorldOnB(self.__ptr, ...)
-	end
-	function META:GetContactCFM(...)
-		lib.btManifoldPoint_getContactCFM1(self.__ptr, ...)
-	end
-	function META:SetAppliedImpulseLateral(...)
-		lib.btManifoldPoint_setAppliedImpulseLateral1(self.__ptr, ...)
-	end
-	function META:GetUserPersistentData(...)
-		lib.btManifoldPoint_getUserPersistentData(self.__ptr, ...)
-	end
-	function META:Delete(...)
-		lib.btManifoldPoint_delete(self.__ptr, ...)
-	end
-	function META:SetPositionWorldOnA(...)
-		lib.btManifoldPoint_setPositionWorldOnA(self.__ptr, ...)
-	end
-	function META:GetIndex(...)
-		lib.btManifoldPoint_getIndex0(self.__ptr, ...)
-	end
-	function META:SetLifeTime(...)
-		lib.btManifoldPoint_setLifeTime(self.__ptr, ...)
-	end
-	function META:SetContactCFM(...)
-		lib.btManifoldPoint_setContactCFM1(self.__ptr, ...)
-	end
-	function META:GetPositionWorldOnB(...)
-		lib.btManifoldPoint_getPositionWorldOnB(self.__ptr, ...)
-	end
-	function META:SetCombinedRestitution(...)
-		lib.btManifoldPoint_setCombinedRestitution(self.__ptr, ...)
-	end
-	function META:SetCombinedRollingFriction(...)
-		lib.btManifoldPoint_setCombinedRollingFriction(self.__ptr, ...)
-	end
-	function META:SetLocalPointA(...)
-		lib.btManifoldPoint_setLocalPointA(self.__ptr, ...)
-	end
-	function META:GetCombinedFriction(...)
-		lib.btManifoldPoint_getCombinedFriction(self.__ptr, ...)
-	end
-	function META:GetLocalPointA(...)
-		lib.btManifoldPoint_getLocalPointA(self.__ptr, ...)
-	end
-	function META:GetLateralFrictionInitialized(...)
-		lib.btManifoldPoint_getLateralFrictionInitialized(self.__ptr, ...)
+	function META:GetVertex0(...)
+		return lib.btTriangle_getVertex0(self, ...)
 	end
 	function META:SetPartId(...)
-		lib.btManifoldPoint_setPartId0(self.__ptr, ...)
+		return lib.btTriangle_setPartId(self, ...)
 	end
-	function META:GetAppliedImpulseLateral(...)
-		lib.btManifoldPoint_getAppliedImpulseLateral1(self.__ptr, ...)
+	function META:SetVertex0(...)
+		return lib.btTriangle_setVertex0(self, ...)
 	end
-	function META:GetAppliedImpulse(...)
-		lib.btManifoldPoint_getAppliedImpulse(self.__ptr, ...)
+	function META:SetTriangleIndex(...)
+		return lib.btTriangle_setTriangleIndex(self, ...)
 	end
-	function META:GetNormalWorldOnB(...)
-		lib.btManifoldPoint_getNormalWorldOnB(self.__ptr, ...)
+	function META:GetPartId(...)
+		return lib.btTriangle_getPartId(self, ...)
 	end
-	function META:GetPositionWorldOnA(...)
-		lib.btManifoldPoint_getPositionWorldOnA(self.__ptr, ...)
+	function META:SetVertex2(...)
+		return lib.btTriangle_setVertex2(self, ...)
 	end
-	function META:SetContactMotion(...)
-		lib.btManifoldPoint_setContactMotion1(self.__ptr, ...)
+	function META:Delete(...)
+		return lib.btTriangle_delete(self, ...)
 	end
-	function META:SetLocalPointB(...)
-		lib.btManifoldPoint_setLocalPointB(self.__ptr, ...)
+	function META:GetVertex1(...)
+		return lib.btTriangle_getVertex1(self, ...)
 	end
-	function META:GetCombinedRollingFriction(...)
-		lib.btManifoldPoint_getCombinedRollingFriction(self.__ptr, ...)
+	function META:GetTriangleIndex(...)
+		return lib.btTriangle_getTriangleIndex(self, ...)
 	end
-	function META:SetCombinedFriction(...)
-		lib.btManifoldPoint_setCombinedFriction(self.__ptr, ...)
-	end
-	function META:SetIndex(...)
-		lib.btManifoldPoint_setIndex0(self.__ptr, ...)
-	end
-	function META:SetDistance(...)
-		lib.btManifoldPoint_setDistance(self.__ptr, ...)
-	end
-	function bullet.CreateManifoldPoint(...)
-		return setmetatable({__ptr = lib.btManifoldPoint_new2(...)}, META)
+	ffi.metatype('btTriangle', META)
+	function bullet.CreateTriangle(...)
+		return lib.btTriangle_new(...)
 	end
 end
-do -- GImpactMeshShapePart_TrimeshPrimitiveManager
+do -- SoftBodyConcaveCollisionAlgorithm_CreateFunc
 	local META = {}
 	META.__index = META
-	function META:GetPart(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getPart(self.__ptr, ...)
-	end
-	function META:GetIndicestype(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getIndicestype(self.__ptr, ...)
-	end
-	function META:SetScale(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setScale(self.__ptr, ...)
-	end
-	function META:GetMargin(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getMargin(self.__ptr, ...)
-	end
-	function META:GetType(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getType(self.__ptr, ...)
-	end
-	function META:GetScale(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getScale(self.__ptr, ...)
-	end
-	function META:GetIndexbase(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getIndexbase(self.__ptr, ...)
-	end
-	function META:SetNumfaces(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setNumfaces(self.__ptr, ...)
-	end
-	function META:SetMargin(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setMargin(self.__ptr, ...)
-	end
-	function META:GetVertexbase(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getVertexbase(self.__ptr, ...)
-	end
-	function META:SetVertexbase(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setVertexbase(self.__ptr, ...)
-	end
-	function META:SetMeshInterface(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setMeshInterface(self.__ptr, ...)
-	end
-	function META:SetType(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setType(self.__ptr, ...)
-	end
-	function META:GetIndexstride(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getIndexstride(self.__ptr, ...)
-	end
-	function META:GetStride(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getStride(self.__ptr, ...)
-	end
-	function META:SetIndexbase(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setIndexbase(self.__ptr, ...)
-	end
-	function META:SetStride(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setStride(self.__ptr, ...)
-	end
-	function META:SetPart(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setPart(self.__ptr, ...)
-	end
-	function META:SetNumverts(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setNumverts(self.__ptr, ...)
-	end
-	function META:Unlock(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_unlock(self.__ptr, ...)
-	end
-	function META:GetNumfaces(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getNumfaces(self.__ptr, ...)
-	end
-	function META:GetNumverts(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getNumverts(self.__ptr, ...)
-	end
-	function META:Lock(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_lock(self.__ptr, ...)
-	end
-	function META:GetMeshInterface(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getMeshInterface(self.__ptr, ...)
-	end
-	function META:SetIndicestype(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setIndicestype(self.__ptr, ...)
-	end
-	function META:SetIndexstride(...)
-		lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setIndexstride(self.__ptr, ...)
-	end
-	function bullet.CreateGImpactMeshShapePart_TrimeshPrimitiveManager(...)
-		return setmetatable({__ptr = lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_new2(...)}, META)
+	ffi.metatype('btSoftBodyConcaveCollisionAlgorithm_CreateFunc', META)
+	function bullet.CreateSoftBodyConcaveCollisionAlgorithm_CreateFunc(...)
+		return lib.btSoftBodyConcaveCollisionAlgorithm_CreateFunc_new(...)
 	end
 end
 do -- CylinderShapeX
 	local META = {}
 	META.__index = META
+	ffi.metatype('btCylinderShapeX', META)
 	function bullet.CreateCylinderShapeX(...)
-		return setmetatable({__ptr = lib.btCylinderShapeX_new2(...)}, META)
+		return lib.btCylinderShapeX_new(...)
+	end
+	function bullet.CreateCylinderShapeX2(...)
+		return lib.btCylinderShapeX_new2(...)
 	end
 end
-do -- SoftBody
+do -- SphereShape
 	local META = {}
 	META.__index = META
-	function META:SetBUpdateRtCst(...)
-		lib.btSoftBody_setBUpdateRtCst(self.__ptr, ...)
-	end
-	function META:GetVolume(...)
-		lib.btSoftBody_getVolume(self.__ptr, ...)
-	end
-	function META:AppendTetra(...)
-		lib.btSoftBody_appendTetra(self.__ptr, ...)
-	end
-	function META:ClusterCount(...)
-		lib.btSoftBody_clusterCount(self.__ptr, ...)
-	end
-	function META:GetRestLengthScale(...)
-		lib.btSoftBody_getRestLengthScale(self.__ptr, ...)
-	end
-	function META:GetAnchors(...)
-		lib.btSoftBody_getAnchors(self.__ptr, ...)
-	end
-	function META:GetNodes(...)
-		lib.btSoftBody_getNodes(self.__ptr, ...)
-	end
-	function META:ClusterVelocity(...)
-		lib.btSoftBody_clusterVelocity(self.__ptr, ...)
-	end
-	function META:GetFaces(...)
-		lib.btSoftBody_getFaces(self.__ptr, ...)
-	end
-	function META:SetInitialWorldTransform(...)
-		lib.btSoftBody_setInitialWorldTransform(self.__ptr, ...)
-	end
-	function META:DampClusters(...)
-		lib.btSoftBody_dampClusters(self.__ptr, ...)
-	end
-	function META:GetNotes(...)
-		lib.btSoftBody_getNotes(self.__ptr, ...)
-	end
-	function META:GetTetraVertexNormalData(...)
-		lib.btSoftBody_getTetraVertexNormalData(self.__ptr, ...)
-	end
-	function META:ClusterDCImpulse(...)
-		lib.btSoftBody_clusterDCImpulse(self.__ptr, ...)
-	end
-	function META:GetAabb(...)
-		lib.btSoftBody_getAabb(self.__ptr, ...)
-	end
-	function META:GetTetraVertexData(...)
-		lib.btSoftBody_getTetraVertexData(self.__ptr, ...)
-	end
-	function META:GenerateClusters(...)
-		lib.btSoftBody_generateClusters(self.__ptr, ...)
-	end
-	function META:SetSoftBodySolver(...)
-		lib.btSoftBody_setSoftBodySolver(self.__ptr, ...)
-	end
-	function META:GetLinkVertexNormalData(...)
-		lib.btSoftBody_getLinkVertexNormalData(self.__ptr, ...)
-	end
-	function META:GetLinkVertexData(...)
-		lib.btSoftBody_getLinkVertexData(self.__ptr, ...)
-	end
-	function META:GetWorldInfo(...)
-		lib.btSoftBody_getWorldInfo(self.__ptr, ...)
-	end
-	function META:SetVolumeDensity(...)
-		lib.btSoftBody_setVolumeDensity(self.__ptr, ...)
-	end
-	function META:Rotate(...)
-		lib.btSoftBody_rotate(self.__ptr, ...)
-	end
-	function META:UpdateBounds(...)
-		lib.btSoftBody_updateBounds(self.__ptr, ...)
-	end
-	function META:CheckFace(...)
-		lib.btSoftBody_checkFace(self.__ptr, ...)
-	end
-	function META:GetPose(...)
-		lib.btSoftBody_getPose(self.__ptr, ...)
-	end
-	function META:UpdatePose(...)
-		lib.btSoftBody_updatePose(self.__ptr, ...)
-	end
-	function META:GetJoints(...)
-		lib.btSoftBody_getJoints(self.__ptr, ...)
-	end
-	function META:UpdateNormals(...)
-		lib.btSoftBody_updateNormals(self.__ptr, ...)
-	end
-	function META:GetLinks(...)
-		lib.btSoftBody_getLinks(self.__ptr, ...)
-	end
-	function META:GetClusterConnectivity(...)
-		lib.btSoftBody_getClusterConnectivity(self.__ptr, ...)
-	end
-	function META:GetWindVelocity(...)
-		lib.btSoftBody_getWindVelocity(self.__ptr, ...)
-	end
-	function META:UpdateConstants(...)
-		lib.btSoftBody_updateConstants(self.__ptr, ...)
-	end
-	function META:ClusterDImpulse(...)
-		lib.btSoftBody_clusterDImpulse(self.__ptr, ...)
-	end
-	function META:GetMass(...)
-		lib.btSoftBody_getMass(self.__ptr, ...)
-	end
-	function META:AddForce(...)
-		lib.btSoftBody_addForce(self.__ptr, ...)
-	end
-	function META:GetFaceVertexNormalData(...)
-		lib.btSoftBody_getFaceVertexNormalData(self.__ptr, ...)
-	end
-	function META:RandomizeConstraints(...)
-		lib.btSoftBody_randomizeConstraints(self.__ptr, ...)
-	end
-	function META:ApplyClusters(...)
-		lib.btSoftBody_applyClusters(self.__ptr, ...)
-	end
-	function META:UpdateArea(...)
-		lib.btSoftBody_updateArea(self.__ptr, ...)
-	end
-	function META:Upcast(...)
-		lib.btSoftBody_upcast(self.__ptr, ...)
-	end
-	function META:AppendLinearJoint(...)
-		lib.btSoftBody_appendLinearJoint(self.__ptr, ...)
-	end
-	function META:GetBounds(...)
-		lib.btSoftBody_getBounds(self.__ptr, ...)
-	end
-	function META:Transform(...)
-		lib.btSoftBody_transform(self.__ptr, ...)
-	end
-	function META:RayTest(...)
-		lib.btSoftBody_rayTest(self.__ptr, ...)
-	end
-	function META:InitDefaults(...)
-		lib.btSoftBody_initDefaults(self.__ptr, ...)
-	end
-	function META:GetSoftBodySolver(...)
-		lib.btSoftBody_getSoftBodySolver(self.__ptr, ...)
-	end
-	function META:StaticSolve(...)
-		lib.btSoftBody_staticSolve(self.__ptr, ...)
-	end
-	function META:IndicesToPointers(...)
-		lib.btSoftBody_indicesToPointers(self.__ptr, ...)
-	end
-	function META:GenerateBendingConstraints(...)
-		lib.btSoftBody_generateBendingConstraints(self.__ptr, ...)
-	end
-	function META:GetCollisionDisabledObjects(...)
-		lib.btSoftBody_getCollisionDisabledObjects(self.__ptr, ...)
-	end
-	function META:CleanupClusters(...)
-		lib.btSoftBody_cleanupClusters(self.__ptr, ...)
-	end
-	function META:GetTetras(...)
-		lib.btSoftBody_getTetras(self.__ptr, ...)
-	end
-	function META:SolveCommonConstraints(...)
-		lib.btSoftBody_solveCommonConstraints(self.__ptr, ...)
-	end
-	function META:SolveClusters(...)
-		lib.btSoftBody_solveClusters(self.__ptr, ...)
-	end
-	function META:ClusterImpulse(...)
-		lib.btSoftBody_clusterImpulse(self.__ptr, ...)
-	end
-	function META:UpdateLinkConstants(...)
-		lib.btSoftBody_updateLinkConstants(self.__ptr, ...)
-	end
-	function META:DefaultCollisionHandler(...)
-		lib.btSoftBody_defaultCollisionHandler(self.__ptr, ...)
-	end
-	function META:GetTotalMass(...)
-		lib.btSoftBody_getTotalMass(self.__ptr, ...)
-	end
-	function META:ReleaseCluster(...)
-		lib.btSoftBody_releaseCluster(self.__ptr, ...)
-	end
-	function META:AddAeroForceToNode(...)
-		lib.btSoftBody_addAeroForceToNode(self.__ptr, ...)
-	end
-	function META:ClusterCom(...)
-		lib.btSoftBody_clusterCom(self.__ptr, ...)
-	end
-	function META:SetWindVelocity(...)
-		lib.btSoftBody_setWindVelocity(self.__ptr, ...)
-	end
-	function META:SetVelocity(...)
-		lib.btSoftBody_setVelocity(self.__ptr, ...)
-	end
-	function META:GetSolver(...)
-		lib.btSoftBody_getSolver(self.__ptr, ...)
-	end
-	function META:ReleaseClusters(...)
-		lib.btSoftBody_releaseClusters(self.__ptr, ...)
-	end
-	function META:ClusterVAImpulse(...)
-		lib.btSoftBody_clusterVAImpulse(self.__ptr, ...)
-	end
-	function META:SetTimeacc(...)
-		lib.btSoftBody_setTimeacc(self.__ptr, ...)
-	end
-	function META:PointersToIndices(...)
-		lib.btSoftBody_pointersToIndices(self.__ptr, ...)
-	end
-	function META:SetSolver(...)
-		lib.btSoftBody_setSolver(self.__ptr, ...)
-	end
-	function META:AddVelocity(...)
-		lib.btSoftBody_addVelocity(self.__ptr, ...)
-	end
-	function META:GetSst(...)
-		lib.btSoftBody_getSst(self.__ptr, ...)
-	end
-	function META:ClusterVImpulse(...)
-		lib.btSoftBody_clusterVImpulse(self.__ptr, ...)
-	end
-	function META:SetRestLengthScale(...)
-		lib.btSoftBody_setRestLengthScale(self.__ptr, ...)
-	end
-	function META:GetScontacts(...)
-		lib.btSoftBody_getScontacts(self.__ptr, ...)
-	end
-	function META:SetPose(...)
-		lib.btSoftBody_setPose(self.__ptr, ...)
-	end
-	function META:GetRcontacts(...)
-		lib.btSoftBody_getRcontacts(self.__ptr, ...)
-	end
-	function META:SetNdbvt(...)
-		lib.btSoftBody_setNdbvt(self.__ptr, ...)
-	end
-	function META:SetMass(...)
-		lib.btSoftBody_setMass(self.__ptr, ...)
-	end
-	function META:Scale(...)
-		lib.btSoftBody_scale(self.__ptr, ...)
-	end
-	function META:ResetLinkRestLengths(...)
-		lib.btSoftBody_resetLinkRestLengths(self.__ptr, ...)
-	end
-	function META:SetTotalDensity(...)
-		lib.btSoftBody_setTotalDensity(self.__ptr, ...)
-	end
-	function META:PredictMotion(...)
-		lib.btSoftBody_predictMotion(self.__ptr, ...)
-	end
-	function META:Refine(...)
-		lib.btSoftBody_refine(self.__ptr, ...)
-	end
-	function META:CutLink(...)
-		lib.btSoftBody_cutLink(self.__ptr, ...)
-	end
-	function META:AppendAngularJoint(...)
-		lib.btSoftBody_appendAngularJoint(self.__ptr, ...)
-	end
-	function META:AppendLink(...)
-		lib.btSoftBody_appendLink(self.__ptr, ...)
-	end
-	function META:AddAeroForceToFace(...)
-		lib.btSoftBody_addAeroForceToFace(self.__ptr, ...)
-	end
-	function META:InitializeClusters(...)
-		lib.btSoftBody_initializeClusters(self.__ptr, ...)
-	end
-	function META:SetTag(...)
-		lib.btSoftBody_setTag(self.__ptr, ...)
-	end
-	function META:ApplyForces(...)
-		lib.btSoftBody_applyForces(self.__ptr, ...)
-	end
-	function META:IntegrateMotion(...)
-		lib.btSoftBody_integrateMotion(self.__ptr, ...)
-	end
-	function META:GetClusters(...)
-		lib.btSoftBody_getClusters(self.__ptr, ...)
-	end
-	function META:InitializeFaceTree(...)
-		lib.btSoftBody_initializeFaceTree(self.__ptr, ...)
-	end
-	function META:GetTimeacc(...)
-		lib.btSoftBody_getTimeacc(self.__ptr, ...)
-	end
-	function META:PrepareClusters(...)
-		lib.btSoftBody_prepareClusters(self.__ptr, ...)
-	end
-	function META:SetWorldInfo(...)
-		lib.btSoftBody_setWorldInfo(self.__ptr, ...)
-	end
-	function META:GetUserIndexMapping(...)
-		lib.btSoftBody_getUserIndexMapping(self.__ptr, ...)
-	end
-	function META:AppendNote(...)
-		lib.btSoftBody_appendNote(self.__ptr, ...)
-	end
-	function META:AppendMaterial(...)
-		lib.btSoftBody_appendMaterial(self.__ptr, ...)
-	end
-	function META:ClusterAImpulse(...)
-		lib.btSoftBody_clusterAImpulse(self.__ptr, ...)
-	end
-	function META:UpdateClusters(...)
-		lib.btSoftBody_updateClusters(self.__ptr, ...)
-	end
-	function META:GetBUpdateRtCst(...)
-		lib.btSoftBody_getBUpdateRtCst(self.__ptr, ...)
-	end
-	function META:GetFaceVertexData(...)
-		lib.btSoftBody_getFaceVertexData(self.__ptr, ...)
-	end
-	function META:GetFdbvt(...)
-		lib.btSoftBody_getFdbvt(self.__ptr, ...)
-	end
-	function META:GetNdbvt(...)
-		lib.btSoftBody_getNdbvt(self.__ptr, ...)
-	end
-	function META:AppendNode(...)
-		lib.btSoftBody_appendNode(self.__ptr, ...)
-	end
-	function META:ClusterDAImpulse(...)
-		lib.btSoftBody_clusterDAImpulse(self.__ptr, ...)
-	end
-	function META:CheckLink(...)
-		lib.btSoftBody_checkLink(self.__ptr, ...)
-	end
-	function META:AppendAnchor(...)
-		lib.btSoftBody_appendAnchor(self.__ptr, ...)
-	end
-	function META:Translate(...)
-		lib.btSoftBody_translate(self.__ptr, ...)
-	end
-	function META:GetCdbvt(...)
-		lib.btSoftBody_getCdbvt(self.__ptr, ...)
-	end
-	function META:AppendFace(...)
-		lib.btSoftBody_appendFace(self.__ptr, ...)
-	end
-	function META:GetCfg(...)
-		lib.btSoftBody_getCfg(self.__ptr, ...)
-	end
-	function META:SolveConstraints(...)
-		lib.btSoftBody_solveConstraints(self.__ptr, ...)
-	end
-	function META:CheckContact(...)
-		lib.btSoftBody_checkContact(self.__ptr, ...)
-	end
-	function META:SetVolumeMass(...)
-		lib.btSoftBody_setVolumeMass(self.__ptr, ...)
-	end
-	function META:GetInitialWorldTransform(...)
-		lib.btSoftBody_getInitialWorldTransform(self.__ptr, ...)
-	end
-	function META:SetTotalMass(...)
-		lib.btSoftBody_setTotalMass(self.__ptr, ...)
-	end
-	function META:EvaluateCom(...)
-		lib.btSoftBody_evaluateCom(self.__ptr, ...)
-	end
-	function META:GetMaterials(...)
-		lib.btSoftBody_getMaterials(self.__ptr, ...)
-	end
-	function META:GetTag(...)
-		lib.btSoftBody_getTag(self.__ptr, ...)
-	end
-	function bullet.CreateSoftBody(...)
-		return setmetatable({__ptr = lib.btSoftBody_new2(...)}, META)
+	function META:GetRadius(...)
+		return lib.btSphereShape_getRadius(self, ...)
+	end
+	function META:SetUnscaledRadius(...)
+		return lib.btSphereShape_setUnscaledRadius(self, ...)
+	end
+	ffi.metatype('btSphereShape', META)
+	function bullet.CreateSphereShape(...)
+		return lib.btSphereShape_new(...)
 	end
 end
 do -- CylinderShape
 	local META = {}
 	META.__index = META
 	function META:GetUpAxis(...)
-		lib.btCylinderShape_getUpAxis(self.__ptr, ...)
+		return lib.btCylinderShape_getUpAxis(self, ...)
 	end
 	function META:GetRadius(...)
-		lib.btCylinderShape_getRadius(self.__ptr, ...)
+		return lib.btCylinderShape_getRadius(self, ...)
 	end
 	function META:GetHalfExtentsWithMargin(...)
-		lib.btCylinderShape_getHalfExtentsWithMargin(self.__ptr, ...)
+		return lib.btCylinderShape_getHalfExtentsWithMargin(self, ...)
 	end
 	function META:GetHalfExtentsWithoutMargin(...)
-		lib.btCylinderShape_getHalfExtentsWithoutMargin(self.__ptr, ...)
+		return lib.btCylinderShape_getHalfExtentsWithoutMargin(self, ...)
+	end
+	ffi.metatype('btCylinderShape', META)
+	function bullet.CreateCylinderShape2(...)
+		return lib.btCylinderShape_new2(...)
 	end
 	function bullet.CreateCylinderShape(...)
-		return setmetatable({__ptr = lib.btCylinderShape_new2(...)}, META)
+		return lib.btCylinderShape_new(...)
 	end
 end
-do -- SoftRigidDynamicsWorld
+do -- TriIndex
 	local META = {}
 	META.__index = META
-	function META:GetWorldInfo(...)
-		lib.btSoftRigidDynamicsWorld_getWorldInfo(self.__ptr, ...)
+	function META:Delete(...)
+		return lib.btTriIndex_delete(self, ...)
 	end
-	function META:SetDrawFlags(...)
-		lib.btSoftRigidDynamicsWorld_setDrawFlags(self.__ptr, ...)
+	function META:GetPartId(...)
+		return lib.btTriIndex_getPartId(self, ...)
 	end
-	function META:GetSoftBodyArray(...)
-		lib.btSoftRigidDynamicsWorld_getSoftBodyArray(self.__ptr, ...)
+	function META:SetPartIdTriangleIndex(...)
+		return lib.btTriIndex_setPartIdTriangleIndex(self, ...)
 	end
-	function META:AddSoftBody(...)
-		lib.btSoftRigidDynamicsWorld_addSoftBody(self.__ptr, ...)
+	function META:GetUid(...)
+		return lib.btTriIndex_getUid(self, ...)
 	end
-	function META:GetDrawFlags(...)
-		lib.btSoftRigidDynamicsWorld_getDrawFlags(self.__ptr, ...)
+	function META:SetChildShape(...)
+		return lib.btTriIndex_setChildShape(self, ...)
 	end
-	function META:RemoveSoftBody(...)
-		lib.btSoftRigidDynamicsWorld_removeSoftBody(self.__ptr, ...)
+	function META:GetTriangleIndex(...)
+		return lib.btTriIndex_getTriangleIndex(self, ...)
 	end
-	function bullet.CreateSoftRigidDynamicsWorld(...)
-		return setmetatable({__ptr = lib.btSoftRigidDynamicsWorld_new2(...)}, META)
+	function META:GetChildShape(...)
+		return lib.btTriIndex_getChildShape(self, ...)
+	end
+	function META:GetPartIdTriangleIndex(...)
+		return lib.btTriIndex_getPartIdTriangleIndex(self, ...)
+	end
+	ffi.metatype('btTriIndex', META)
+	function bullet.CreateTriIndex(...)
+		return lib.btTriIndex_new(...)
 	end
 end
-do -- BU_Simplex1to4
+do -- Element
 	local META = {}
 	META.__index = META
-	function META:GetIndex(...)
-		lib.btBU_Simplex1to4_getIndex(self.__ptr, ...)
+	function META:GetSz(...)
+		return lib.btElement_getSz(self, ...)
 	end
-	function META:AddVertex(...)
-		lib.btBU_Simplex1to4_addVertex(self.__ptr, ...)
+	function META:GetId(...)
+		return lib.btElement_getId(self, ...)
 	end
-	function META:Reset(...)
-		lib.btBU_Simplex1to4_reset(self.__ptr, ...)
+	function META:SetSz(...)
+		return lib.btElement_setSz(self, ...)
 	end
-	function bullet.CreateBU_Simplex1to4(...)
-		return setmetatable({__ptr = lib.btBU_Simplex1to4_new2(...)}, META)
-	end
-end
-do -- BoxShape
-	local META = {}
-	META.__index = META
-	function META:GetPlaneEquation(...)
-		lib.btBoxShape_getPlaneEquation(self.__ptr, ...)
-	end
-	function META:GetHalfExtentsWithMargin(...)
-		lib.btBoxShape_getHalfExtentsWithMargin(self.__ptr, ...)
-	end
-	function META:GetHalfExtentsWithoutMargin(...)
-		lib.btBoxShape_getHalfExtentsWithoutMargin(self.__ptr, ...)
-	end
-	function bullet.CreateBoxShape(...)
-		return setmetatable({__ptr = lib.btBoxShape_new2(...)}, META)
-	end
-end
-do -- SphereSphereCollisionAlgorithm
-	local META = {}
-	META.__index = META
-	function bullet.CreateSphereSphereCollisionAlgorithm(...)
-		return setmetatable({__ptr = lib.btSphereSphereCollisionAlgorithm_new2(...)}, META)
-	end
-end
-do -- GImpactCompoundShape
-	local META = {}
-	META.__index = META
-	function META:AddChildShape(...)
-		lib.btGImpactCompoundShape_addChildShape(self.__ptr, ...)
-	end
-	function META:GetCompoundPrimitiveManager(...)
-		lib.btGImpactCompoundShape_getCompoundPrimitiveManager(self.__ptr, ...)
-	end
-	function bullet.CreateGImpactCompoundShape(...)
-		return setmetatable({__ptr = lib.btGImpactCompoundShape_new2(...)}, META)
-	end
-end
-do -- TranslationalLimitMotor2
-	local META = {}
-	META.__index = META
-	function META:SetTargetVelocity(...)
-		lib.btTranslationalLimitMotor2_setTargetVelocity(self.__ptr, ...)
-	end
-	function META:SetLowerLimit(...)
-		lib.btTranslationalLimitMotor2_setLowerLimit(self.__ptr, ...)
-	end
-	function META:GetCurrentLimit(...)
-		lib.btTranslationalLimitMotor2_getCurrentLimit(self.__ptr, ...)
-	end
-	function META:GetEquilibriumPoint(...)
-		lib.btTranslationalLimitMotor2_getEquilibriumPoint(self.__ptr, ...)
-	end
-	function META:GetEnableSpring(...)
-		lib.btTranslationalLimitMotor2_getEnableSpring(self.__ptr, ...)
-	end
-	function META:GetMaxMotorForce(...)
-		lib.btTranslationalLimitMotor2_getMaxMotorForce(self.__ptr, ...)
-	end
-	function META:GetBounce(...)
-		lib.btTranslationalLimitMotor2_getBounce(self.__ptr, ...)
-	end
-	function META:SetSpringDamping(...)
-		lib.btTranslationalLimitMotor2_setSpringDamping(self.__ptr, ...)
-	end
-	function META:IsLimited(...)
-		lib.btTranslationalLimitMotor2_isLimited(self.__ptr, ...)
-	end
-	function META:SetStopCFM(...)
-		lib.btTranslationalLimitMotor2_setStopCFM(self.__ptr, ...)
-	end
-	function META:GetSpringDamping(...)
-		lib.btTranslationalLimitMotor2_getSpringDamping(self.__ptr, ...)
-	end
-	function META:SetMotorERP(...)
-		lib.btTranslationalLimitMotor2_setMotorERP(self.__ptr, ...)
-	end
-	function META:GetServoMotor(...)
-		lib.btTranslationalLimitMotor2_getServoMotor(self.__ptr, ...)
-	end
-	function META:GetCurrentLinearDiff(...)
-		lib.btTranslationalLimitMotor2_getCurrentLinearDiff(self.__ptr, ...)
-	end
-	function META:GetCurrentLimitErrorHi(...)
-		lib.btTranslationalLimitMotor2_getCurrentLimitErrorHi(self.__ptr, ...)
-	end
-	function META:GetUpperLimit(...)
-		lib.btTranslationalLimitMotor2_getUpperLimit(self.__ptr, ...)
-	end
-	function META:GetMotorCFM(...)
-		lib.btTranslationalLimitMotor2_getMotorCFM(self.__ptr, ...)
-	end
-	function META:GetEnableMotor(...)
-		lib.btTranslationalLimitMotor2_getEnableMotor(self.__ptr, ...)
-	end
-	function META:GetServoTarget(...)
-		lib.btTranslationalLimitMotor2_getServoTarget(self.__ptr, ...)
+	function META:SetId(...)
+		return lib.btElement_setId(self, ...)
 	end
 	function META:Delete(...)
-		lib.btTranslationalLimitMotor2_delete(self.__ptr, ...)
+		return lib.btElement_delete(self, ...)
 	end
-	function META:SetBounce(...)
-		lib.btTranslationalLimitMotor2_setBounce(self.__ptr, ...)
+	ffi.metatype('btElement', META)
+	function bullet.CreateElement(...)
+		return lib.btElement_new(...)
 	end
-	function META:SetCurrentLinearDiff(...)
-		lib.btTranslationalLimitMotor2_setCurrentLinearDiff(self.__ptr, ...)
+end
+do -- WheelInfo_RaycastInfo
+	local META = {}
+	META.__index = META
+	function META:SetContactNormalWS(...)
+		return lib.btWheelInfo_RaycastInfo_setContactNormalWS(self, ...)
 	end
-	function META:SetServoTarget(...)
-		lib.btTranslationalLimitMotor2_setServoTarget(self.__ptr, ...)
+	function META:GetContactPointWS(...)
+		return lib.btWheelInfo_RaycastInfo_getContactPointWS(self, ...)
 	end
-	function META:TestLimitValue(...)
-		lib.btTranslationalLimitMotor2_testLimitValue(self.__ptr, ...)
+	function META:SetGroundObject(...)
+		return lib.btWheelInfo_RaycastInfo_setGroundObject(self, ...)
 	end
-	function META:GetStopCFM(...)
-		lib.btTranslationalLimitMotor2_getStopCFM(self.__ptr, ...)
+	function META:Delete(...)
+		return lib.btWheelInfo_RaycastInfo_delete(self, ...)
 	end
-	function META:SetUpperLimit(...)
-		lib.btTranslationalLimitMotor2_setUpperLimit(self.__ptr, ...)
+	function META:SetSuspensionLength(...)
+		return lib.btWheelInfo_RaycastInfo_setSuspensionLength(self, ...)
 	end
-	function META:SetStopERP(...)
-		lib.btTranslationalLimitMotor2_setStopERP(self.__ptr, ...)
+	function META:GetIsInContact(...)
+		return lib.btWheelInfo_RaycastInfo_getIsInContact(self, ...)
 	end
-	function META:SetMotorCFM(...)
-		lib.btTranslationalLimitMotor2_setMotorCFM(self.__ptr, ...)
+	function META:SetWheelDirectionWS(...)
+		return lib.btWheelInfo_RaycastInfo_setWheelDirectionWS(self, ...)
 	end
-	function META:SetSpringStiffness(...)
-		lib.btTranslationalLimitMotor2_setSpringStiffness(self.__ptr, ...)
+	function META:SetWheelAxleWS(...)
+		return lib.btWheelInfo_RaycastInfo_setWheelAxleWS(self, ...)
 	end
-	function META:GetLowerLimit(...)
-		lib.btTranslationalLimitMotor2_getLowerLimit(self.__ptr, ...)
+	function META:GetWheelAxleWS(...)
+		return lib.btWheelInfo_RaycastInfo_getWheelAxleWS(self, ...)
 	end
-	function META:GetCurrentLimitError(...)
-		lib.btTranslationalLimitMotor2_getCurrentLimitError(self.__ptr, ...)
+	function META:SetContactPointWS(...)
+		return lib.btWheelInfo_RaycastInfo_setContactPointWS(self, ...)
 	end
-	function META:GetStopERP(...)
-		lib.btTranslationalLimitMotor2_getStopERP(self.__ptr, ...)
+	function META:SetHardPointWS(...)
+		return lib.btWheelInfo_RaycastInfo_setHardPointWS(self, ...)
 	end
-	function META:GetSpringStiffness(...)
-		lib.btTranslationalLimitMotor2_getSpringStiffness(self.__ptr, ...)
+	function META:GetGroundObject(...)
+		return lib.btWheelInfo_RaycastInfo_getGroundObject(self, ...)
 	end
-	function META:SetCurrentLimitError(...)
-		lib.btTranslationalLimitMotor2_setCurrentLimitError(self.__ptr, ...)
+	function META:GetHardPointWS(...)
+		return lib.btWheelInfo_RaycastInfo_getHardPointWS(self, ...)
 	end
-	function META:SetMaxMotorForce(...)
-		lib.btTranslationalLimitMotor2_setMaxMotorForce(self.__ptr, ...)
+	function META:GetSuspensionLength(...)
+		return lib.btWheelInfo_RaycastInfo_getSuspensionLength(self, ...)
 	end
-	function META:SetCurrentLimitErrorHi(...)
-		lib.btTranslationalLimitMotor2_setCurrentLimitErrorHi(self.__ptr, ...)
+	function META:SetIsInContact(...)
+		return lib.btWheelInfo_RaycastInfo_setIsInContact(self, ...)
 	end
-	function META:GetMotorERP(...)
-		lib.btTranslationalLimitMotor2_getMotorERP(self.__ptr, ...)
+	function META:GetContactNormalWS(...)
+		return lib.btWheelInfo_RaycastInfo_getContactNormalWS(self, ...)
 	end
-	function META:SetEquilibriumPoint(...)
-		lib.btTranslationalLimitMotor2_setEquilibriumPoint(self.__ptr, ...)
+	function META:GetWheelDirectionWS(...)
+		return lib.btWheelInfo_RaycastInfo_getWheelDirectionWS(self, ...)
 	end
-	function META:GetTargetVelocity(...)
-		lib.btTranslationalLimitMotor2_getTargetVelocity(self.__ptr, ...)
+	ffi.metatype('btWheelInfo_RaycastInfo', META)
+	function bullet.CreateWheelInfo_RaycastInfo(...)
+		return lib.btWheelInfo_RaycastInfo_new(...)
 	end
-	function bullet.CreateTranslationalLimitMotor2(...)
-		return setmetatable({__ptr = lib.btTranslationalLimitMotor2_new2(...)}, META)
+end
+do -- IndexedMesh
+	local META = {}
+	META.__index = META
+	function META:SetNumTriangles(...)
+		return lib.btIndexedMesh_setNumTriangles(self, ...)
+	end
+	function META:GetTriangleIndexBase(...)
+		return lib.btIndexedMesh_getTriangleIndexBase(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btIndexedMesh_delete(self, ...)
+	end
+	function META:GetTriangleIndexStride(...)
+		return lib.btIndexedMesh_getTriangleIndexStride(self, ...)
+	end
+	function META:SetVertexType(...)
+		return lib.btIndexedMesh_setVertexType(self, ...)
+	end
+	function META:GetVertexBase(...)
+		return lib.btIndexedMesh_getVertexBase(self, ...)
+	end
+	function META:SetVertexBase(...)
+		return lib.btIndexedMesh_setVertexBase(self, ...)
+	end
+	function META:GetVertexType(...)
+		return lib.btIndexedMesh_getVertexType(self, ...)
+	end
+	function META:GetNumVertices(...)
+		return lib.btIndexedMesh_getNumVertices(self, ...)
+	end
+	function META:GetIndexType(...)
+		return lib.btIndexedMesh_getIndexType(self, ...)
+	end
+	function META:GetNumTriangles(...)
+		return lib.btIndexedMesh_getNumTriangles(self, ...)
+	end
+	function META:GetVertexStride(...)
+		return lib.btIndexedMesh_getVertexStride(self, ...)
+	end
+	function META:SetIndexType(...)
+		return lib.btIndexedMesh_setIndexType(self, ...)
+	end
+	function META:SetVertexStride(...)
+		return lib.btIndexedMesh_setVertexStride(self, ...)
+	end
+	function META:SetNumVertices(...)
+		return lib.btIndexedMesh_setNumVertices(self, ...)
+	end
+	function META:SetTriangleIndexStride(...)
+		return lib.btIndexedMesh_setTriangleIndexStride(self, ...)
+	end
+	function META:SetTriangleIndexBase(...)
+		return lib.btIndexedMesh_setTriangleIndexBase(self, ...)
+	end
+	ffi.metatype('btIndexedMesh', META)
+	function bullet.CreateIndexedMesh(...)
+		return lib.btIndexedMesh_new(...)
 	end
 end
 do -- CylinderShapeZ
 	local META = {}
 	META.__index = META
+	ffi.metatype('btCylinderShapeZ', META)
 	function bullet.CreateCylinderShapeZ(...)
-		return setmetatable({__ptr = lib.btCylinderShapeZ_new2(...)}, META)
+		return lib.btCylinderShapeZ_new(...)
+	end
+	function bullet.CreateCylinderShapeZ2(...)
+		return lib.btCylinderShapeZ_new2(...)
+	end
+end
+do -- ConvexConvexAlgorithm
+	local META = {}
+	META.__index = META
+	function META:GetManifold(...)
+		return lib.btConvexConvexAlgorithm_getManifold(self, ...)
+	end
+	function META:SetLowLevelOfDetail(...)
+		return lib.btConvexConvexAlgorithm_setLowLevelOfDetail(self, ...)
+	end
+	ffi.metatype('btConvexConvexAlgorithm', META)
+	function bullet.CreateConvexConvexAlgorithm(...)
+		return lib.btConvexConvexAlgorithm_new(...)
+	end
+end
+do -- ConvexTriangleCallback
+	local META = {}
+	META.__index = META
+	function META:GetTriangleCount(...)
+		return lib.btConvexTriangleCallback_getTriangleCount(self, ...)
+	end
+	function META:ClearWrapperData(...)
+		return lib.btConvexTriangleCallback_clearWrapperData(self, ...)
+	end
+	function META:SetTriangleCount(...)
+		return lib.btConvexTriangleCallback_setTriangleCount(self, ...)
+	end
+	function META:GetAabbMax(...)
+		return lib.btConvexTriangleCallback_getAabbMax(self, ...)
+	end
+	function META:SetManifoldPtr(...)
+		return lib.btConvexTriangleCallback_setManifoldPtr(self, ...)
+	end
+	function META:SetTimeStepAndCounters(...)
+		return lib.btConvexTriangleCallback_setTimeStepAndCounters(self, ...)
+	end
+	function META:GetAabbMin(...)
+		return lib.btConvexTriangleCallback_getAabbMin(self, ...)
+	end
+	function META:GetManifoldPtr(...)
+		return lib.btConvexTriangleCallback_getManifoldPtr(self, ...)
+	end
+	function META:ClearCache(...)
+		return lib.btConvexTriangleCallback_clearCache(self, ...)
+	end
+	ffi.metatype('btConvexTriangleCallback', META)
+	function bullet.CreateConvexTriangleCallback(...)
+		return lib.btConvexTriangleCallback_new(...)
+	end
+end
+do -- SoftBody_Node
+	local META = {}
+	META.__index = META
+	function META:SetBattach(...)
+		return lib.btSoftBody_Node_setBattach(self, ...)
+	end
+	function META:GetX(...)
+		return lib.btSoftBody_Node_getX(self, ...)
+	end
+	function META:GetN(...)
+		return lib.btSoftBody_Node_getN(self, ...)
+	end
+	function META:SetV(...)
+		return lib.btSoftBody_Node_setV(self, ...)
+	end
+	function META:SetX(...)
+		return lib.btSoftBody_Node_setX(self, ...)
+	end
+	function META:SetN(...)
+		return lib.btSoftBody_Node_setN(self, ...)
+	end
+	function META:SetQ(...)
+		return lib.btSoftBody_Node_setQ(self, ...)
+	end
+	function META:GetV(...)
+		return lib.btSoftBody_Node_getV(self, ...)
+	end
+	function META:GetLeaf(...)
+		return lib.btSoftBody_Node_getLeaf(self, ...)
+	end
+	function META:GetArea(...)
+		return lib.btSoftBody_Node_getArea(self, ...)
+	end
+	function META:GetQ(...)
+		return lib.btSoftBody_Node_getQ(self, ...)
+	end
+	function META:GetF(...)
+		return lib.btSoftBody_Node_getF(self, ...)
+	end
+	function META:GetIm(...)
+		return lib.btSoftBody_Node_getIm(self, ...)
+	end
+	function META:SetArea(...)
+		return lib.btSoftBody_Node_setArea(self, ...)
+	end
+	function META:SetF(...)
+		return lib.btSoftBody_Node_setF(self, ...)
+	end
+	function META:GetBattach(...)
+		return lib.btSoftBody_Node_getBattach(self, ...)
+	end
+	function META:SetIm(...)
+		return lib.btSoftBody_Node_setIm(self, ...)
+	end
+	function META:SetLeaf(...)
+		return lib.btSoftBody_Node_setLeaf(self, ...)
+	end
+	ffi.metatype('btSoftBody_Node', META)
+	function bullet.CreateSoftBody_Node(...)
+		return lib.btSoftBody_Node_new(...)
 	end
 end
 do -- TriangleShape
 	local META = {}
 	META.__index = META
 	function META:GetVertexPtr(...)
-		lib.btTriangleShape_getVertexPtr(self.__ptr, ...)
+		return lib.btTriangleShape_getVertexPtr(self, ...)
 	end
 	function META:CalcNormal(...)
-		lib.btTriangleShape_calcNormal(self.__ptr, ...)
+		return lib.btTriangleShape_calcNormal(self, ...)
 	end
 	function META:GetPlaneEquation(...)
-		lib.btTriangleShape_getPlaneEquation(self.__ptr, ...)
+		return lib.btTriangleShape_getPlaneEquation(self, ...)
 	end
-	function META:GetVertices(...)
-		lib.btTriangleShape_getVertices1(self.__ptr, ...)
+	function META:GetVertices1(...)
+		return lib.btTriangleShape_getVertices1(self, ...)
 	end
+	ffi.metatype('btTriangleShape', META)
 	function bullet.CreateTriangleShape(...)
-		return setmetatable({__ptr = lib.btTriangleShape_new2(...)}, META)
+		return lib.btTriangleShape_new(...)
+	end
+	function bullet.CreateTriangleShape2(...)
+		return lib.btTriangleShape_new2(...)
 	end
 end
-do -- RotationalLimitMotor
+do -- GjkConvexCast
 	local META = {}
 	META.__index = META
-	function META:SetTargetVelocity(...)
-		lib.btRotationalLimitMotor_setTargetVelocity(self.__ptr, ...)
-	end
-	function META:GetAccumulatedImpulse(...)
-		lib.btRotationalLimitMotor_getAccumulatedImpulse(self.__ptr, ...)
-	end
-	function META:GetLoLimit(...)
-		lib.btRotationalLimitMotor_getLoLimit(self.__ptr, ...)
-	end
-	function META:SetCurrentLimitError(...)
-		lib.btRotationalLimitMotor_setCurrentLimitError(self.__ptr, ...)
-	end
-	function META:SetLimitSoftness(...)
-		lib.btRotationalLimitMotor_setLimitSoftness(self.__ptr, ...)
-	end
-	function META:SetCurrentPosition(...)
-		lib.btRotationalLimitMotor_setCurrentPosition(self.__ptr, ...)
-	end
-	function META:SetMaxLimitForce(...)
-		lib.btRotationalLimitMotor_setMaxLimitForce(self.__ptr, ...)
-	end
-	function META:GetMaxMotorForce(...)
-		lib.btRotationalLimitMotor_getMaxMotorForce(self.__ptr, ...)
-	end
-	function META:GetBounce(...)
-		lib.btRotationalLimitMotor_getBounce(self.__ptr, ...)
-	end
-	function META:GetLimitSoftness(...)
-		lib.btRotationalLimitMotor_getLimitSoftness(self.__ptr, ...)
-	end
-	function META:SetNormalCFM(...)
-		lib.btRotationalLimitMotor_setNormalCFM(self.__ptr, ...)
-	end
-	function META:GetDamping(...)
-		lib.btRotationalLimitMotor_getDamping(self.__ptr, ...)
-	end
-	function META:IsLimited(...)
-		lib.btRotationalLimitMotor_isLimited(self.__ptr, ...)
-	end
-	function META:SetCurrentLimit(...)
-		lib.btRotationalLimitMotor_setCurrentLimit(self.__ptr, ...)
-	end
-	function META:SetStopCFM(...)
-		lib.btRotationalLimitMotor_setStopCFM(self.__ptr, ...)
-	end
-	function META:SetDamping(...)
-		lib.btRotationalLimitMotor_setDamping(self.__ptr, ...)
-	end
-	function META:GetTargetVelocity(...)
-		lib.btRotationalLimitMotor_getTargetVelocity(self.__ptr, ...)
-	end
-	function META:SetAccumulatedImpulse(...)
-		lib.btRotationalLimitMotor_setAccumulatedImpulse(self.__ptr, ...)
-	end
-	function META:GetStopERP(...)
-		lib.btRotationalLimitMotor_getStopERP(self.__ptr, ...)
-	end
-	function META:Delete(...)
-		lib.btRotationalLimitMotor_delete(self.__ptr, ...)
-	end
-	function META:GetCurrentPosition(...)
-		lib.btRotationalLimitMotor_getCurrentPosition(self.__ptr, ...)
-	end
-	function META:GetMaxLimitForce(...)
-		lib.btRotationalLimitMotor_getMaxLimitForce(self.__ptr, ...)
-	end
-	function META:SetLoLimit(...)
-		lib.btRotationalLimitMotor_setLoLimit(self.__ptr, ...)
-	end
-	function META:TestLimitValue(...)
-		lib.btRotationalLimitMotor_testLimitValue(self.__ptr, ...)
-	end
-	function META:SolveAngularLimits(...)
-		lib.btRotationalLimitMotor_solveAngularLimits(self.__ptr, ...)
-	end
-	function META:SetEnableMotor(...)
-		lib.btRotationalLimitMotor_setEnableMotor(self.__ptr, ...)
-	end
-	function META:GetCurrentLimitError(...)
-		lib.btRotationalLimitMotor_getCurrentLimitError(self.__ptr, ...)
-	end
-	function META:GetStopCFM(...)
-		lib.btRotationalLimitMotor_getStopCFM(self.__ptr, ...)
-	end
-	function META:GetHiLimit(...)
-		lib.btRotationalLimitMotor_getHiLimit(self.__ptr, ...)
-	end
-	function META:GetNormalCFM(...)
-		lib.btRotationalLimitMotor_getNormalCFM(self.__ptr, ...)
-	end
-	function META:SetStopERP(...)
-		lib.btRotationalLimitMotor_setStopERP(self.__ptr, ...)
-	end
-	function META:SetBounce(...)
-		lib.btRotationalLimitMotor_setBounce(self.__ptr, ...)
-	end
-	function META:SetMaxMotorForce(...)
-		lib.btRotationalLimitMotor_setMaxMotorForce(self.__ptr, ...)
-	end
-	function META:SetHiLimit(...)
-		lib.btRotationalLimitMotor_setHiLimit(self.__ptr, ...)
-	end
-	function META:NeedApplyTorques(...)
-		lib.btRotationalLimitMotor_needApplyTorques(self.__ptr, ...)
-	end
-	function META:GetEnableMotor(...)
-		lib.btRotationalLimitMotor_getEnableMotor(self.__ptr, ...)
-	end
-	function META:GetCurrentLimit(...)
-		lib.btRotationalLimitMotor_getCurrentLimit(self.__ptr, ...)
-	end
-	function bullet.CreateRotationalLimitMotor(...)
-		return setmetatable({__ptr = lib.btRotationalLimitMotor_new2(...)}, META)
+	ffi.metatype('btGjkConvexCast', META)
+	function bullet.CreateGjkConvexCast(...)
+		return lib.btGjkConvexCast_new(...)
 	end
 end
-do -- CompoundShape
+do -- ActionInterfaceWrapper
 	local META = {}
 	META.__index = META
-	function META:UpdateChildTransform(...)
-		lib.btCompoundShape_updateChildTransform(self.__ptr, ...)
-	end
-	function META:CreateAabbTreeFromChildren(...)
-		lib.btCompoundShape_createAabbTreeFromChildren(self.__ptr, ...)
-	end
-	function META:RemoveChildShape(...)
-		lib.btCompoundShape_removeChildShape(self.__ptr, ...)
-	end
-	function META:GetDynamicAabbTree(...)
-		lib.btCompoundShape_getDynamicAabbTree(self.__ptr, ...)
-	end
-	function META:GetChildTransform(...)
-		lib.btCompoundShape_getChildTransform(self.__ptr, ...)
-	end
-	function META:RemoveChildShapeByIndex(...)
-		lib.btCompoundShape_removeChildShapeByIndex(self.__ptr, ...)
-	end
-	function META:GetChildList(...)
-		lib.btCompoundShape_getChildList(self.__ptr, ...)
-	end
-	function META:RecalculateLocalAabb(...)
-		lib.btCompoundShape_recalculateLocalAabb(self.__ptr, ...)
-	end
-	function META:GetUpdateRevision(...)
-		lib.btCompoundShape_getUpdateRevision(self.__ptr, ...)
-	end
-	function META:GetNumChildShapes(...)
-		lib.btCompoundShape_getNumChildShapes(self.__ptr, ...)
-	end
-	function META:GetChildShape(...)
-		lib.btCompoundShape_getChildShape(self.__ptr, ...)
-	end
-	function META:CalculatePrincipalAxisTransform(...)
-		lib.btCompoundShape_calculatePrincipalAxisTransform(self.__ptr, ...)
-	end
-	function META:AddChildShape(...)
-		lib.btCompoundShape_addChildShape(self.__ptr, ...)
-	end
-	function bullet.CreateCompoundShape(...)
-		return setmetatable({__ptr = lib.btCompoundShape_new2(...)}, META)
+	ffi.metatype('btActionInterfaceWrapper', META)
+	function bullet.CreateActionInterfaceWrapper(...)
+		return lib.btActionInterfaceWrapper_new(...)
 	end
 end
-do -- ConvexTriangleMeshShape
+do -- SphereSphereCollisionAlgorithm_CreateFunc
 	local META = {}
 	META.__index = META
-	function META:GetMeshInterface(...)
-		lib.btConvexTriangleMeshShape_getMeshInterface(self.__ptr, ...)
-	end
-	function META:CalculatePrincipalAxisTransform(...)
-		lib.btConvexTriangleMeshShape_calculatePrincipalAxisTransform(self.__ptr, ...)
-	end
-	function bullet.CreateConvexTriangleMeshShape(...)
-		return setmetatable({__ptr = lib.btConvexTriangleMeshShape_new2(...)}, META)
-	end
-end
-do -- GImpactBvh
-	local META = {}
-	META.__index = META
-	function META:GetNodeBound(...)
-		lib.btGImpactBvh_getNodeBound(self.__ptr, ...)
-	end
-	function META:SetPrimitiveManager(...)
-		lib.btGImpactBvh_setPrimitiveManager(self.__ptr, ...)
-	end
-	function META:BoxQuery(...)
-		lib.btGImpactBvh_boxQuery(self.__ptr, ...)
-	end
-	function META:RayQuery(...)
-		lib.btGImpactBvh_rayQuery(self.__ptr, ...)
-	end
-	function META:GetEscapeNodeIndex(...)
-		lib.btGImpactBvh_getEscapeNodeIndex(self.__ptr, ...)
-	end
-	function META:HasHierarchy(...)
-		lib.btGImpactBvh_hasHierarchy(self.__ptr, ...)
-	end
-	function META:IsLeafNode(...)
-		lib.btGImpactBvh_isLeafNode(self.__ptr, ...)
-	end
-	function META:SetNodeBound(...)
-		lib.btGImpactBvh_setNodeBound(self.__ptr, ...)
-	end
-	function META:GetNodeTriangle(...)
-		lib.btGImpactBvh_getNodeTriangle(self.__ptr, ...)
-	end
-	function META:Update(...)
-		lib.btGImpactBvh_update(self.__ptr, ...)
-	end
-	function META:GetNodeCount(...)
-		lib.btGImpactBvh_getNodeCount(self.__ptr, ...)
-	end
-	function META:BuildSet(...)
-		lib.btGImpactBvh_buildSet(self.__ptr, ...)
-	end
-	function META:GetPrimitiveManager(...)
-		lib.btGImpactBvh_getPrimitiveManager(self.__ptr, ...)
-	end
-	function META:GetNodeData(...)
-		lib.btGImpactBvh_getNodeData(self.__ptr, ...)
-	end
-	function META:GetLeftNode(...)
-		lib.btGImpactBvh_getLeftNode(self.__ptr, ...)
-	end
-	function META:Delete(...)
-		lib.btGImpactBvh_delete(self.__ptr, ...)
-	end
-	function META:IsTrimesh(...)
-		lib.btGImpactBvh_isTrimesh(self.__ptr, ...)
-	end
-	function META:GetRightNode(...)
-		lib.btGImpactBvh_getRightNode(self.__ptr, ...)
-	end
-	function META:BoxQueryTrans(...)
-		lib.btGImpactBvh_boxQueryTrans(self.__ptr, ...)
-	end
-	function META:GetGlobalBox(...)
-		lib.btGImpactBvh_getGlobalBox(self.__ptr, ...)
-	end
-	function bullet.CreateGImpactBvh(...)
-		return setmetatable({__ptr = lib.btGImpactBvh_new2(...)}, META)
-	end
-end
-do -- DefaultCollisionConfiguration
-	local META = {}
-	META.__index = META
-	function META:GetSimplexSolver(...)
-		lib.btDefaultCollisionConfiguration_getSimplexSolver(self.__ptr, ...)
-	end
-	function META:SetConvexConvexMultipointIterations(...)
-		lib.btDefaultCollisionConfiguration_setConvexConvexMultipointIterations(self.__ptr, ...)
-	end
-	function META:SetPlaneConvexMultipointIterations(...)
-		lib.btDefaultCollisionConfiguration_setPlaneConvexMultipointIterations(self.__ptr, ...)
-	end
-	function bullet.CreateDefaultCollisionConfiguration(...)
-		return setmetatable({__ptr = lib.btDefaultCollisionConfiguration_new2(...)}, META)
+	ffi.metatype('btSphereSphereCollisionAlgorithm_CreateFunc', META)
+	function bullet.CreateSphereSphereCollisionAlgorithm_CreateFunc(...)
+		return lib.btSphereSphereCollisionAlgorithm_CreateFunc_new(...)
 	end
 end
 do -- TranslationalLimitMotor
 	local META = {}
 	META.__index = META
 	function META:SetTargetVelocity(...)
-		lib.btTranslationalLimitMotor_setTargetVelocity(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_setTargetVelocity(self, ...)
 	end
 	function META:GetAccumulatedImpulse(...)
-		lib.btTranslationalLimitMotor_getAccumulatedImpulse(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getAccumulatedImpulse(self, ...)
 	end
 	function META:SetLowerLimit(...)
-		lib.btTranslationalLimitMotor_setLowerLimit(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_setLowerLimit(self, ...)
 	end
 	function META:GetCurrentLimit(...)
-		lib.btTranslationalLimitMotor_getCurrentLimit(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getCurrentLimit(self, ...)
 	end
 	function META:SetLimitSoftness(...)
-		lib.btTranslationalLimitMotor_setLimitSoftness(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_setLimitSoftness(self, ...)
 	end
 	function META:SetRestitution(...)
-		lib.btTranslationalLimitMotor_setRestitution(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_setRestitution(self, ...)
 	end
 	function META:GetMaxMotorForce(...)
-		lib.btTranslationalLimitMotor_getMaxMotorForce(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getMaxMotorForce(self, ...)
 	end
 	function META:GetLimitSoftness(...)
-		lib.btTranslationalLimitMotor_getLimitSoftness(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getLimitSoftness(self, ...)
 	end
 	function META:SetNormalCFM(...)
-		lib.btTranslationalLimitMotor_setNormalCFM(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_setNormalCFM(self, ...)
 	end
 	function META:GetDamping(...)
-		lib.btTranslationalLimitMotor_getDamping(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getDamping(self, ...)
 	end
 	function META:IsLimited(...)
-		lib.btTranslationalLimitMotor_isLimited(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_isLimited(self, ...)
 	end
 	function META:SetStopCFM(...)
-		lib.btTranslationalLimitMotor_setStopCFM(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_setStopCFM(self, ...)
 	end
 	function META:SetDamping(...)
-		lib.btTranslationalLimitMotor_setDamping(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_setDamping(self, ...)
 	end
 	function META:GetCurrentLinearDiff(...)
-		lib.btTranslationalLimitMotor_getCurrentLinearDiff(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getCurrentLinearDiff(self, ...)
 	end
 	function META:GetTargetVelocity(...)
-		lib.btTranslationalLimitMotor_getTargetVelocity(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getTargetVelocity(self, ...)
 	end
 	function META:GetUpperLimit(...)
-		lib.btTranslationalLimitMotor_getUpperLimit(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getUpperLimit(self, ...)
 	end
 	function META:GetEnableMotor(...)
-		lib.btTranslationalLimitMotor_getEnableMotor(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getEnableMotor(self, ...)
 	end
 	function META:GetStopERP(...)
-		lib.btTranslationalLimitMotor_getStopERP(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getStopERP(self, ...)
 	end
 	function META:NeedApplyForce(...)
-		lib.btTranslationalLimitMotor_needApplyForce(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_needApplyForce(self, ...)
 	end
 	function META:GetCurrentLimitError(...)
-		lib.btTranslationalLimitMotor_getCurrentLimitError(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getCurrentLimitError(self, ...)
 	end
 	function META:GetStopCFM(...)
-		lib.btTranslationalLimitMotor_getStopCFM(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getStopCFM(self, ...)
 	end
 	function META:Delete(...)
-		lib.btTranslationalLimitMotor_delete(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_delete(self, ...)
 	end
 	function META:GetLowerLimit(...)
-		lib.btTranslationalLimitMotor_getLowerLimit(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getLowerLimit(self, ...)
 	end
 	function META:GetRestitution(...)
-		lib.btTranslationalLimitMotor_getRestitution(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getRestitution(self, ...)
 	end
 	function META:SetAccumulatedImpulse(...)
-		lib.btTranslationalLimitMotor_setAccumulatedImpulse(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_setAccumulatedImpulse(self, ...)
 	end
 	function META:GetNormalCFM(...)
-		lib.btTranslationalLimitMotor_getNormalCFM(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_getNormalCFM(self, ...)
 	end
 	function META:SetUpperLimit(...)
-		lib.btTranslationalLimitMotor_setUpperLimit(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_setUpperLimit(self, ...)
 	end
 	function META:SetMaxMotorForce(...)
-		lib.btTranslationalLimitMotor_setMaxMotorForce(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_setMaxMotorForce(self, ...)
 	end
 	function META:TestLimitValue(...)
-		lib.btTranslationalLimitMotor_testLimitValue(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_testLimitValue(self, ...)
 	end
 	function META:SetCurrentLinearDiff(...)
-		lib.btTranslationalLimitMotor_setCurrentLinearDiff(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_setCurrentLinearDiff(self, ...)
 	end
 	function META:SolveLinearAxis(...)
-		lib.btTranslationalLimitMotor_solveLinearAxis(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_solveLinearAxis(self, ...)
 	end
 	function META:SetCurrentLimitError(...)
-		lib.btTranslationalLimitMotor_setCurrentLimitError(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_setCurrentLimitError(self, ...)
 	end
 	function META:SetStopERP(...)
-		lib.btTranslationalLimitMotor_setStopERP(self.__ptr, ...)
+		return lib.btTranslationalLimitMotor_setStopERP(self, ...)
 	end
+	ffi.metatype('btTranslationalLimitMotor', META)
 	function bullet.CreateTranslationalLimitMotor(...)
-		return setmetatable({__ptr = lib.btTranslationalLimitMotor_new2(...)}, META)
+		return lib.btTranslationalLimitMotor_new(...)
+	end
+	function bullet.CreateTranslationalLimitMotor2(...)
+		return lib.btTranslationalLimitMotor_new2(...)
 	end
 end
-do -- DefaultSerializer
+do -- SoftBody_sCti
 	local META = {}
 	META.__index = META
-	function META:WriteHeader(...)
-		lib.btDefaultSerializer_writeHeader(self.__ptr, ...)
+	function META:GetNormal(...)
+		return lib.btSoftBody_sCti_getNormal(self, ...)
 	end
-	function META:InternalAlloc(...)
-		lib.btDefaultSerializer_internalAlloc(self.__ptr, ...)
+	function META:GetOffset(...)
+		return lib.btSoftBody_sCti_getOffset(self, ...)
 	end
-	function bullet.CreateDefaultSerializer(...)
-		return setmetatable({__ptr = lib.btDefaultSerializer_new2(...)}, META)
+	function META:SetNormal(...)
+		return lib.btSoftBody_sCti_setNormal(self, ...)
 	end
-end
-do -- HingeConstraint
-	local META = {}
-	META.__index = META
-	function META:GetMaxMotorImpulse(...)
-		lib.btHingeConstraint_getMaxMotorImpulse(self.__ptr, ...)
+	function META:GetColObj(...)
+		return lib.btSoftBody_sCti_getColObj(self, ...)
 	end
-	function META:GetFrameOffsetA(...)
-		lib.btHingeConstraint_getFrameOffsetA(self.__ptr, ...)
+	function META:SetColObj(...)
+		return lib.btSoftBody_sCti_setColObj(self, ...)
 	end
-	function META:TestLimit(...)
-		lib.btHingeConstraint_testLimit(self.__ptr, ...)
-	end
-	function META:GetUpperLimit(...)
-		lib.btHingeConstraint_getUpperLimit(self.__ptr, ...)
-	end
-	function META:GetInfo1NonVirtual(...)
-		lib.btHingeConstraint_getInfo1NonVirtual(self.__ptr, ...)
-	end
-	function META:HasLimit(...)
-		lib.btHingeConstraint_hasLimit(self.__ptr, ...)
-	end
-	function META:GetMotorTargetVelosity(...)
-		lib.btHingeConstraint_getMotorTargetVelosity(self.__ptr, ...)
-	end
-	function META:GetAngularOnly(...)
-		lib.btHingeConstraint_getAngularOnly(self.__ptr, ...)
-	end
-	function META:UpdateRHS(...)
-		lib.btHingeConstraint_updateRHS(self.__ptr, ...)
-	end
-	function META:SetUseFrameOffset(...)
-		lib.btHingeConstraint_setUseFrameOffset(self.__ptr, ...)
-	end
-	function META:GetInfo2NonVirtual(...)
-		lib.btHingeConstraint_getInfo2NonVirtual(self.__ptr, ...)
-	end
-	function META:GetInfo2InternalUsingFrameOffset(...)
-		lib.btHingeConstraint_getInfo2InternalUsingFrameOffset(self.__ptr, ...)
-	end
-	function META:GetLimitSign(...)
-		lib.btHingeConstraint_getLimitSign(self.__ptr, ...)
-	end
-	function META:GetSolveLimit(...)
-		lib.btHingeConstraint_getSolveLimit(self.__ptr, ...)
-	end
-	function META:GetHingeAngle(...)
-		lib.btHingeConstraint_getHingeAngle(self.__ptr, ...)
-	end
-	function META:GetFrameOffsetB(...)
-		lib.btHingeConstraint_getFrameOffsetB(self.__ptr, ...)
-	end
-	function META:SetLimit(...)
-		lib.btHingeConstraint_setLimit(self.__ptr, ...)
-	end
-	function META:SetAxis(...)
-		lib.btHingeConstraint_setAxis(self.__ptr, ...)
-	end
-	function META:SetMaxMotorImpulse(...)
-		lib.btHingeConstraint_setMaxMotorImpulse(self.__ptr, ...)
-	end
-	function META:SetAngularOnly(...)
-		lib.btHingeConstraint_setAngularOnly(self.__ptr, ...)
-	end
-	function META:SetFrames(...)
-		lib.btHingeConstraint_setFrames(self.__ptr, ...)
-	end
-	function META:EnableMotor(...)
-		lib.btHingeConstraint_enableMotor(self.__ptr, ...)
-	end
-	function META:GetEnableAngularMotor(...)
-		lib.btHingeConstraint_getEnableAngularMotor(self.__ptr, ...)
-	end
-	function META:GetLowerLimit(...)
-		lib.btHingeConstraint_getLowerLimit(self.__ptr, ...)
-	end
-	function META:GetInfo2Internal(...)
-		lib.btHingeConstraint_getInfo2Internal(self.__ptr, ...)
-	end
-	function META:GetBFrame(...)
-		lib.btHingeConstraint_getBFrame(self.__ptr, ...)
-	end
-	function META:GetUseFrameOffset(...)
-		lib.btHingeConstraint_getUseFrameOffset(self.__ptr, ...)
-	end
-	function META:EnableAngularMotor(...)
-		lib.btHingeConstraint_enableAngularMotor(self.__ptr, ...)
-	end
-	function META:GetAFrame(...)
-		lib.btHingeConstraint_getAFrame(self.__ptr, ...)
-	end
-	function META:SetMotorTarget(...)
-		lib.btHingeConstraint_setMotorTarget(self.__ptr, ...)
-	end
-	function bullet.CreateHingeConstraint(...)
-		return setmetatable({__ptr = lib.btHingeConstraint_new2(...)}, META)
-	end
-end
-do -- CollisionAlgorithmConstructionInfo
-	local META = {}
-	META.__index = META
-	function META:GetManifold(...)
-		lib.btCollisionAlgorithmConstructionInfo_getManifold(self.__ptr, ...)
-	end
-	function META:SetDispatcher(...)
-		lib.btCollisionAlgorithmConstructionInfo_setDispatcher1(self.__ptr, ...)
-	end
-	function META:SetManifold(...)
-		lib.btCollisionAlgorithmConstructionInfo_setManifold(self.__ptr, ...)
-	end
-	function META:GetDispatcher(...)
-		lib.btCollisionAlgorithmConstructionInfo_getDispatcher1(self.__ptr, ...)
+	function META:SetOffset(...)
+		return lib.btSoftBody_sCti_setOffset(self, ...)
 	end
 	function META:Delete(...)
-		lib.btCollisionAlgorithmConstructionInfo_delete(self.__ptr, ...)
+		return lib.btSoftBody_sCti_delete(self, ...)
 	end
-	function bullet.CreateCollisionAlgorithmConstructionInfo(...)
-		return setmetatable({__ptr = lib.btCollisionAlgorithmConstructionInfo_new2(...)}, META)
+	ffi.metatype('btSoftBody_sCti', META)
+	function bullet.CreateSoftBody_sCti(...)
+		return lib.btSoftBody_sCti_new(...)
+	end
+end
+do -- MultiBodyJointLimitConstraint
+	local META = {}
+	META.__index = META
+	ffi.metatype('btMultiBodyJointLimitConstraint', META)
+	function bullet.CreateMultiBodyJointLimitConstraint(...)
+		return lib.btMultiBodyJointLimitConstraint_new(...)
+	end
+end
+do -- TypedConstraint_btConstraintInfo2
+	local META = {}
+	META.__index = META
+	function META:GetJ1angularAxis(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getJ1angularAxis(self, ...)
+	end
+	function META:GetErp(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getErp(self, ...)
+	end
+	function META:GetRowskip(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getRowskip(self, ...)
+	end
+	function META:GetNumIterations(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getNumIterations(self, ...)
+	end
+	function META:GetUpperLimit(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getUpperLimit(self, ...)
+	end
+	function META:SetRowskip(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setRowskip(self, ...)
+	end
+	function META:SetNumIterations(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setNumIterations(self, ...)
+	end
+	function META:GetConstraintError(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getConstraintError(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btTypedConstraint_btConstraintInfo2_delete(self, ...)
+	end
+	function META:SetUpperLimit(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setUpperLimit(self, ...)
+	end
+	function META:GetFindex(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getFindex(self, ...)
+	end
+	function META:SetLowerLimit(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setLowerLimit(self, ...)
+	end
+	function META:SetJ2angularAxis(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setJ2angularAxis(self, ...)
+	end
+	function META:SetJ2linearAxis(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setJ2linearAxis(self, ...)
+	end
+	function META:GetFps(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getFps(self, ...)
+	end
+	function META:GetCfm(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getCfm(self, ...)
+	end
+	function META:SetJ1linearAxis(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setJ1linearAxis(self, ...)
+	end
+	function META:GetJ2linearAxis(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getJ2linearAxis(self, ...)
+	end
+	function META:GetDamping(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getDamping(self, ...)
+	end
+	function META:SetFps(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setFps(self, ...)
+	end
+	function META:GetJ1linearAxis(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getJ1linearAxis(self, ...)
+	end
+	function META:SetFindex(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setFindex(self, ...)
+	end
+	function META:GetLowerLimit(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getLowerLimit(self, ...)
+	end
+	function META:SetErp(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setErp(self, ...)
+	end
+	function META:SetDamping(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setDamping(self, ...)
+	end
+	function META:SetJ1angularAxis(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setJ1angularAxis(self, ...)
+	end
+	function META:SetConstraintError(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setConstraintError(self, ...)
+	end
+	function META:GetJ2angularAxis(...)
+		return lib.btTypedConstraint_btConstraintInfo2_getJ2angularAxis(self, ...)
+	end
+	function META:SetCfm(...)
+		return lib.btTypedConstraint_btConstraintInfo2_setCfm(self, ...)
+	end
+	ffi.metatype('btTypedConstraint_btConstraintInfo2', META)
+	function bullet.CreateTypedConstraint_btConstraintInfo22(...)
+		return lib.btTypedConstraint_btConstraintInfo2_new(...)
+	end
+end
+do -- NNCGConstraintSolver
+	local META = {}
+	META.__index = META
+	function META:SetOnlyForNoneContact(...)
+		return lib.btNNCGConstraintSolver_setOnlyForNoneContact(self, ...)
+	end
+	function META:GetOnlyForNoneContact(...)
+		return lib.btNNCGConstraintSolver_getOnlyForNoneContact(self, ...)
+	end
+	ffi.metatype('btNNCGConstraintSolver', META)
+	function bullet.CreateNNCGConstraintSolver(...)
+		return lib.btNNCGConstraintSolver_new(...)
+	end
+end
+do -- MaterialProperties
+	local META = {}
+	META.__index = META
+	function META:SetMaterialType(...)
+		return lib.btMaterialProperties_setMaterialType(self, ...)
+	end
+	function META:SetTriangleMaterialsBase(...)
+		return lib.btMaterialProperties_setTriangleMaterialsBase(self, ...)
+	end
+	function META:SetNumTriangles(...)
+		return lib.btMaterialProperties_setNumTriangles(self, ...)
+	end
+	function META:SetMaterialStride(...)
+		return lib.btMaterialProperties_setMaterialStride(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btMaterialProperties_delete(self, ...)
+	end
+	function META:GetTriangleMaterialStride(...)
+		return lib.btMaterialProperties_getTriangleMaterialStride(self, ...)
+	end
+	function META:GetTriangleMaterialsBase(...)
+		return lib.btMaterialProperties_getTriangleMaterialsBase(self, ...)
+	end
+	function META:GetNumMaterials(...)
+		return lib.btMaterialProperties_getNumMaterials(self, ...)
+	end
+	function META:GetTriangleType(...)
+		return lib.btMaterialProperties_getTriangleType(self, ...)
+	end
+	function META:SetMaterialBase(...)
+		return lib.btMaterialProperties_setMaterialBase(self, ...)
+	end
+	function META:GetMaterialType(...)
+		return lib.btMaterialProperties_getMaterialType(self, ...)
+	end
+	function META:SetTriangleType(...)
+		return lib.btMaterialProperties_setTriangleType(self, ...)
+	end
+	function META:GetNumTriangles(...)
+		return lib.btMaterialProperties_getNumTriangles(self, ...)
+	end
+	function META:GetMaterialStride(...)
+		return lib.btMaterialProperties_getMaterialStride(self, ...)
+	end
+	function META:SetNumMaterials(...)
+		return lib.btMaterialProperties_setNumMaterials(self, ...)
+	end
+	function META:SetTriangleMaterialStride(...)
+		return lib.btMaterialProperties_setTriangleMaterialStride(self, ...)
+	end
+	function META:GetMaterialBase(...)
+		return lib.btMaterialProperties_getMaterialBase(self, ...)
+	end
+	ffi.metatype('btMaterialProperties', META)
+	function bullet.CreateMaterialProperties(...)
+		return lib.btMaterialProperties_new(...)
+	end
+end
+do -- MultiBodyDynamicsWorld
+	local META = {}
+	META.__index = META
+	function META:DebugDrawMultiBodyConstraint(...)
+		return lib.btMultiBodyDynamicsWorld_debugDrawMultiBodyConstraint(self, ...)
+	end
+	function META:AddMultiBody(...)
+		return lib.btMultiBodyDynamicsWorld_addMultiBody(self, ...)
+	end
+	function META:AddMultiBody2(...)
+		return lib.btMultiBodyDynamicsWorld_addMultiBody2(self, ...)
+	end
+	function META:RemoveMultiBodyConstraint(...)
+		return lib.btMultiBodyDynamicsWorld_removeMultiBodyConstraint(self, ...)
+	end
+	function META:RemoveMultiBody(...)
+		return lib.btMultiBodyDynamicsWorld_removeMultiBody(self, ...)
+	end
+	function META:AddMultiBodyConstraint(...)
+		return lib.btMultiBodyDynamicsWorld_addMultiBodyConstraint(self, ...)
+	end
+	function META:IntegrateTransforms(...)
+		return lib.btMultiBodyDynamicsWorld_integrateTransforms(self, ...)
+	end
+	function META:AddMultiBody3(...)
+		return lib.btMultiBodyDynamicsWorld_addMultiBody3(self, ...)
+	end
+	ffi.metatype('btMultiBodyDynamicsWorld', META)
+	function bullet.CreateMultiBodyDynamicsWorld(...)
+		return lib.btMultiBodyDynamicsWorld_new(...)
+	end
+end
+do -- ConvexPlaneCollisionAlgorithm
+	local META = {}
+	META.__index = META
+	function META:CollideSingleContact(...)
+		return lib.btConvexPlaneCollisionAlgorithm_collideSingleContact(self, ...)
+	end
+	ffi.metatype('btConvexPlaneCollisionAlgorithm', META)
+	function bullet.CreateConvexPlaneCollisionAlgorithm(...)
+		return lib.btConvexPlaneCollisionAlgorithm_new(...)
+	end
+end
+do -- ConvexPlaneCollisionAlgorithm_CreateFunc
+	local META = {}
+	META.__index = META
+	function META:SetNumPerturbationIterations(...)
+		return lib.btConvexPlaneCollisionAlgorithm_CreateFunc_setNumPerturbationIterations(self, ...)
+	end
+	function META:GetNumPerturbationIterations(...)
+		return lib.btConvexPlaneCollisionAlgorithm_CreateFunc_getNumPerturbationIterations(self, ...)
+	end
+	function META:GetMinimumPointsPerturbationThreshold(...)
+		return lib.btConvexPlaneCollisionAlgorithm_CreateFunc_getMinimumPointsPerturbationThreshold(self, ...)
+	end
+	function META:SetMinimumPointsPerturbationThreshold(...)
+		return lib.btConvexPlaneCollisionAlgorithm_CreateFunc_setMinimumPointsPerturbationThreshold(self, ...)
+	end
+	ffi.metatype('btConvexPlaneCollisionAlgorithm_CreateFunc', META)
+	function bullet.CreateConvexPlaneCollisionAlgorithm_CreateFunc(...)
+		return lib.btConvexPlaneCollisionAlgorithm_CreateFunc_new(...)
+	end
+end
+do -- BT_BOX_BOX_TRANSFORM_CACHE
+	local META = {}
+	META.__index = META
+	ffi.metatype('BT_BOX_BOX_TRANSFORM_CACHE', META)
+	function bullet.CreateBT_BOX_BOX_TRANSFORM_CACHE(...)
+		return lib.BT_BOX_BOX_TRANSFORM_CACHE_new(...)
+	end
+end
+do -- Dbvt_ICollide
+	local META = {}
+	META.__index = META
+	function META:AllLeaves(...)
+		return lib.btDbvt_ICollide_AllLeaves(self, ...)
+	end
+	function META:Descent(...)
+		return lib.btDbvt_ICollide_Descent(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btDbvt_ICollide_delete(self, ...)
+	end
+	function META:Process2(...)
+		return lib.btDbvt_ICollide_Process2(self, ...)
+	end
+	function META:Process(...)
+		return lib.btDbvt_ICollide_Process(self, ...)
+	end
+	function META:Process3(...)
+		return lib.btDbvt_ICollide_Process3(self, ...)
+	end
+	ffi.metatype('btDbvt_ICollide', META)
+	function bullet.CreateDbvt_ICollide(...)
+		return lib.btDbvt_ICollide_new(...)
+	end
+end
+do -- GjkEpaPenetrationDepthSolver
+	local META = {}
+	META.__index = META
+	ffi.metatype('btGjkEpaPenetrationDepthSolver', META)
+	function bullet.CreateGjkEpaPenetrationDepthSolver(...)
+		return lib.btGjkEpaPenetrationDepthSolver_new(...)
+	end
+end
+do -- SphereTriangleCollisionAlgorithm
+	local META = {}
+	META.__index = META
+	ffi.metatype('btSphereTriangleCollisionAlgorithm', META)
+	function bullet.CreateSphereTriangleCollisionAlgorithm(...)
+		return lib.btSphereTriangleCollisionAlgorithm_new(...)
+	end
+	function bullet.CreateSphereTriangleCollisionAlgorithm2(...)
+		return lib.btSphereTriangleCollisionAlgorithm_new2(...)
+	end
+end
+do -- GImpactMeshShape
+	local META = {}
+	META.__index = META
+	function META:GetMeshInterface(...)
+		return lib.btGImpactMeshShape_getMeshInterface(self, ...)
+	end
+	function META:GetMeshPartCount(...)
+		return lib.btGImpactMeshShape_getMeshPartCount(self, ...)
+	end
+	function META:GetMeshPart(...)
+		return lib.btGImpactMeshShape_getMeshPart(self, ...)
+	end
+	ffi.metatype('btGImpactMeshShape', META)
+	function bullet.CreateGImpactMeshShape(...)
+		return lib.btGImpactMeshShape_new(...)
+	end
+end
+do -- QuantizedBvh
+	local META = {}
+	META.__index = META
+	function META:ReportRayOverlappingNodex(...)
+		return lib.btQuantizedBvh_reportRayOverlappingNodex(self, ...)
+	end
+	function META:CalculateSerializeBufferSizeNew(...)
+		return lib.btQuantizedBvh_calculateSerializeBufferSizeNew(self, ...)
+	end
+	function META:GetAlignmentSerializationPadding(...)
+		return lib.btQuantizedBvh_getAlignmentSerializationPadding(self, ...)
+	end
+	function META:GetLeafNodeArray(...)
+		return lib.btQuantizedBvh_getLeafNodeArray(self, ...)
+	end
+	function META:Serialize2(...)
+		return lib.btQuantizedBvh_serialize2(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btQuantizedBvh_delete(self, ...)
+	end
+	function META:Quantize(...)
+		return lib.btQuantizedBvh_quantize(self, ...)
+	end
+	function META:QuantizeWithClamp(...)
+		return lib.btQuantizedBvh_quantizeWithClamp(self, ...)
+	end
+	function META:ReportBoxCastOverlappingNodex(...)
+		return lib.btQuantizedBvh_reportBoxCastOverlappingNodex(self, ...)
+	end
+	function META:UnQuantize(...)
+		return lib.btQuantizedBvh_unQuantize(self, ...)
+	end
+	function META:ReportAabbOverlappingNodex(...)
+		return lib.btQuantizedBvh_reportAabbOverlappingNodex(self, ...)
+	end
+	function META:CalculateSerializeBufferSize(...)
+		return lib.btQuantizedBvh_calculateSerializeBufferSize(self, ...)
+	end
+	function META:SetTraversalMode(...)
+		return lib.btQuantizedBvh_setTraversalMode(self, ...)
+	end
+	function META:SetQuantizationValues(...)
+		return lib.btQuantizedBvh_setQuantizationValues(self, ...)
+	end
+	function META:GetSubtreeInfoArray(...)
+		return lib.btQuantizedBvh_getSubtreeInfoArray(self, ...)
+	end
+	function META:BuildInternal(...)
+		return lib.btQuantizedBvh_buildInternal(self, ...)
+	end
+	function META:SetQuantizationValues2(...)
+		return lib.btQuantizedBvh_setQuantizationValues2(self, ...)
+	end
+	function META:Serialize(...)
+		return lib.btQuantizedBvh_serialize(self, ...)
+	end
+	function META:DeSerializeFloat(...)
+		return lib.btQuantizedBvh_deSerializeFloat(self, ...)
+	end
+	function META:GetQuantizedNodeArray(...)
+		return lib.btQuantizedBvh_getQuantizedNodeArray(self, ...)
+	end
+	function META:DeSerializeInPlace(...)
+		return lib.btQuantizedBvh_deSerializeInPlace(self, ...)
+	end
+	function META:IsQuantized(...)
+		return lib.btQuantizedBvh_isQuantized(self, ...)
+	end
+	function META:DeSerializeDouble(...)
+		return lib.btQuantizedBvh_deSerializeDouble(self, ...)
+	end
+	ffi.metatype('btQuantizedBvh', META)
+	function bullet.CreateQuantizedBvh(...)
+		return lib.btQuantizedBvh_new(...)
+	end
+end
+do -- SoftBody_CJoint
+	local META = {}
+	META.__index = META
+	function META:GetLife(...)
+		return lib.btSoftBody_CJoint_getLife(self, ...)
+	end
+	function META:SetFriction(...)
+		return lib.btSoftBody_CJoint_setFriction(self, ...)
+	end
+	function META:SetNormal(...)
+		return lib.btSoftBody_CJoint_setNormal(self, ...)
+	end
+	function META:GetFriction(...)
+		return lib.btSoftBody_CJoint_getFriction(self, ...)
+	end
+	function META:GetNormal(...)
+		return lib.btSoftBody_CJoint_getNormal(self, ...)
+	end
+	function META:GetRpos(...)
+		return lib.btSoftBody_CJoint_getRpos(self, ...)
+	end
+	function META:GetMaxlife(...)
+		return lib.btSoftBody_CJoint_getMaxlife(self, ...)
+	end
+	function META:SetLife(...)
+		return lib.btSoftBody_CJoint_setLife(self, ...)
+	end
+	function META:SetMaxlife(...)
+		return lib.btSoftBody_CJoint_setMaxlife(self, ...)
+	end
+	ffi.metatype('btSoftBody_CJoint', META)
+	function bullet.CreateSoftBody_CJoint(...)
+		return lib.btSoftBody_CJoint_new(...)
+	end
+end
+do -- BoxBoxCollisionAlgorithm
+	local META = {}
+	META.__index = META
+	ffi.metatype('btBoxBoxCollisionAlgorithm', META)
+	function bullet.CreateBoxBoxCollisionAlgorithm(...)
+		return lib.btBoxBoxCollisionAlgorithm_new(...)
+	end
+	function bullet.CreateBoxBoxCollisionAlgorithm2(...)
+		return lib.btBoxBoxCollisionAlgorithm_new2(...)
+	end
+end
+do -- VehicleRaycaster_btVehicleRaycasterResult
+	local META = {}
+	META.__index = META
+	function META:SetHitNormalInWorld(...)
+		return lib.btVehicleRaycaster_btVehicleRaycasterResult_setHitNormalInWorld(self, ...)
+	end
+	function META:GetDistFraction(...)
+		return lib.btVehicleRaycaster_btVehicleRaycasterResult_getDistFraction(self, ...)
+	end
+	function META:SetHitPointInWorld(...)
+		return lib.btVehicleRaycaster_btVehicleRaycasterResult_setHitPointInWorld(self, ...)
+	end
+	function META:GetHitNormalInWorld(...)
+		return lib.btVehicleRaycaster_btVehicleRaycasterResult_getHitNormalInWorld(self, ...)
+	end
+	function META:GetHitPointInWorld(...)
+		return lib.btVehicleRaycaster_btVehicleRaycasterResult_getHitPointInWorld(self, ...)
+	end
+	function META:SetDistFraction(...)
+		return lib.btVehicleRaycaster_btVehicleRaycasterResult_setDistFraction(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btVehicleRaycaster_btVehicleRaycasterResult_delete(self, ...)
+	end
+	ffi.metatype('btVehicleRaycaster_btVehicleRaycasterResult', META)
+	function bullet.CreateVehicleRaycaster_btVehicleRaycasterResult(...)
+		return lib.btVehicleRaycaster_btVehicleRaycasterResult_new(...)
+	end
+end
+do -- SoftBody_Body
+	local META = {}
+	META.__index = META
+	function META:Velocity(...)
+		return lib.btSoftBody_Body_velocity(self, ...)
+	end
+	function META:ApplyDCImpulse(...)
+		return lib.btSoftBody_Body_applyDCImpulse(self, ...)
+	end
+	function META:ApplyDImpulse(...)
+		return lib.btSoftBody_Body_applyDImpulse(self, ...)
+	end
+	function META:GetCollisionObject(...)
+		return lib.btSoftBody_Body_getCollisionObject(self, ...)
+	end
+	function META:ApplyImpulse(...)
+		return lib.btSoftBody_Body_applyImpulse(self, ...)
+	end
+	function META:ApplyVImpulse(...)
+		return lib.btSoftBody_Body_applyVImpulse(self, ...)
+	end
+	function META:SetCollisionObject(...)
+		return lib.btSoftBody_Body_setCollisionObject(self, ...)
+	end
+	function META:Activate(...)
+		return lib.btSoftBody_Body_activate(self, ...)
+	end
+	function META:AngularVelocity2(...)
+		return lib.btSoftBody_Body_angularVelocity2(self, ...)
+	end
+	function META:SetRigid(...)
+		return lib.btSoftBody_Body_setRigid(self, ...)
+	end
+	function META:Xform(...)
+		return lib.btSoftBody_Body_xform(self, ...)
+	end
+	function META:InvWorldInertia(...)
+		return lib.btSoftBody_Body_invWorldInertia(self, ...)
+	end
+	function META:LinearVelocity(...)
+		return lib.btSoftBody_Body_linearVelocity(self, ...)
+	end
+	function META:GetRigid(...)
+		return lib.btSoftBody_Body_getRigid(self, ...)
+	end
+	function META:ApplyVAImpulse(...)
+		return lib.btSoftBody_Body_applyVAImpulse(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBody_Body_delete(self, ...)
+	end
+	function META:ApplyDAImpulse(...)
+		return lib.btSoftBody_Body_applyDAImpulse(self, ...)
+	end
+	function META:SetSoft(...)
+		return lib.btSoftBody_Body_setSoft(self, ...)
+	end
+	function META:InvMass(...)
+		return lib.btSoftBody_Body_invMass(self, ...)
+	end
+	function META:ApplyAImpulse(...)
+		return lib.btSoftBody_Body_applyAImpulse(self, ...)
+	end
+	function META:AngularVelocity(...)
+		return lib.btSoftBody_Body_angularVelocity(self, ...)
+	end
+	function META:GetSoft(...)
+		return lib.btSoftBody_Body_getSoft(self, ...)
+	end
+	ffi.metatype('btSoftBody_Body', META)
+	function bullet.CreateSoftBody_Body(...)
+		return lib.btSoftBody_Body_new(...)
+	end
+	function bullet.CreateSoftBody_Body2(...)
+		return lib.btSoftBody_Body_new2(...)
+	end
+	function bullet.CreateSoftBody_Body3(...)
+		return lib.btSoftBody_Body_new3(...)
+	end
+end
+do -- LemkeSolver
+	local META = {}
+	META.__index = META
+	function META:SetUseLoHighBounds(...)
+		return lib.btLemkeSolver_setUseLoHighBounds(self, ...)
+	end
+	function META:GetMaxValue(...)
+		return lib.btLemkeSolver_getMaxValue(self, ...)
+	end
+	function META:SetMaxValue(...)
+		return lib.btLemkeSolver_setMaxValue(self, ...)
+	end
+	function META:SetDebugLevel(...)
+		return lib.btLemkeSolver_setDebugLevel(self, ...)
+	end
+	function META:SetMaxLoops(...)
+		return lib.btLemkeSolver_setMaxLoops(self, ...)
+	end
+	function META:GetMaxLoops(...)
+		return lib.btLemkeSolver_getMaxLoops(self, ...)
+	end
+	function META:GetUseLoHighBounds(...)
+		return lib.btLemkeSolver_getUseLoHighBounds(self, ...)
+	end
+	function META:GetDebugLevel(...)
+		return lib.btLemkeSolver_getDebugLevel(self, ...)
+	end
+	ffi.metatype('btLemkeSolver', META)
+	function bullet.CreateLemkeSolver(...)
+		return lib.btLemkeSolver_new(...)
+	end
+end
+do -- SoftBody_Link
+	local META = {}
+	META.__index = META
+	function META:GetBbending(...)
+		return lib.btSoftBody_Link_getBbending(self, ...)
+	end
+	function META:GetC0(...)
+		return lib.btSoftBody_Link_getC0(self, ...)
+	end
+	function META:SetBbending(...)
+		return lib.btSoftBody_Link_setBbending(self, ...)
+	end
+	function META:GetN(...)
+		return lib.btSoftBody_Link_getN(self, ...)
+	end
+	function META:GetC2(...)
+		return lib.btSoftBody_Link_getC2(self, ...)
+	end
+	function META:GetRl(...)
+		return lib.btSoftBody_Link_getRl(self, ...)
+	end
+	function META:SetRl(...)
+		return lib.btSoftBody_Link_setRl(self, ...)
+	end
+	function META:SetC1(...)
+		return lib.btSoftBody_Link_setC1(self, ...)
+	end
+	function META:SetC0(...)
+		return lib.btSoftBody_Link_setC0(self, ...)
+	end
+	function META:GetC1(...)
+		return lib.btSoftBody_Link_getC1(self, ...)
+	end
+	function META:SetC2(...)
+		return lib.btSoftBody_Link_setC2(self, ...)
+	end
+	function META:SetC3(...)
+		return lib.btSoftBody_Link_setC3(self, ...)
+	end
+	function META:GetC3(...)
+		return lib.btSoftBody_Link_getC3(self, ...)
+	end
+	ffi.metatype('btSoftBody_Link', META)
+	function bullet.CreateSoftBody_Link2(...)
+		return lib.btSoftBody_Link_new2(...)
+	end
+	function bullet.CreateSoftBody_Link(...)
+		return lib.btSoftBody_Link_new(...)
+	end
+end
+do -- SoftBodyConcaveCollisionAlgorithm
+	local META = {}
+	META.__index = META
+	function META:ClearCache(...)
+		return lib.btSoftBodyConcaveCollisionAlgorithm_clearCache(self, ...)
+	end
+	ffi.metatype('btSoftBodyConcaveCollisionAlgorithm', META)
+	function bullet.CreateSoftBodyConcaveCollisionAlgorithm(...)
+		return lib.btSoftBodyConcaveCollisionAlgorithm_new(...)
+	end
+end
+do -- CollisionWorld_LocalRayResult
+	local META = {}
+	META.__index = META
+	function META:SetHitNormalLocal(...)
+		return lib.btCollisionWorld_LocalRayResult_setHitNormalLocal(self, ...)
+	end
+	function META:SetHitFraction(...)
+		return lib.btCollisionWorld_LocalRayResult_setHitFraction(self, ...)
+	end
+	function META:GetCollisionObject(...)
+		return lib.btCollisionWorld_LocalRayResult_getCollisionObject(self, ...)
+	end
+	function META:GetLocalShapeInfo(...)
+		return lib.btCollisionWorld_LocalRayResult_getLocalShapeInfo(self, ...)
+	end
+	function META:GetHitFraction(...)
+		return lib.btCollisionWorld_LocalRayResult_getHitFraction(self, ...)
+	end
+	function META:SetCollisionObject(...)
+		return lib.btCollisionWorld_LocalRayResult_setCollisionObject(self, ...)
+	end
+	function META:SetLocalShapeInfo(...)
+		return lib.btCollisionWorld_LocalRayResult_setLocalShapeInfo(self, ...)
+	end
+	function META:GetHitNormalLocal(...)
+		return lib.btCollisionWorld_LocalRayResult_getHitNormalLocal(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btCollisionWorld_LocalRayResult_delete(self, ...)
+	end
+	ffi.metatype('btCollisionWorld_LocalRayResult', META)
+	function bullet.CreateCollisionWorld_LocalRayResult(...)
+		return lib.btCollisionWorld_LocalRayResult_new(...)
+	end
+end
+do -- BvhTree
+	local META = {}
+	META.__index = META
+	function META:GetNodeBound(...)
+		return lib.btBvhTree_getNodeBound(self, ...)
+	end
+	function META:GetRightNode(...)
+		return lib.btBvhTree_getRightNode(self, ...)
+	end
+	function META:GetEscapeNodeIndex(...)
+		return lib.btBvhTree_getEscapeNodeIndex(self, ...)
+	end
+	function META:GetLeftNode(...)
+		return lib.btBvhTree_getLeftNode(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btBvhTree_delete(self, ...)
+	end
+	function META:IsLeafNode(...)
+		return lib.btBvhTree_isLeafNode(self, ...)
+	end
+	function META:SetNodeBound(...)
+		return lib.btBvhTree_setNodeBound(self, ...)
+	end
+	function META:GetNodeCount(...)
+		return lib.btBvhTree_getNodeCount(self, ...)
+	end
+	function META:GetNodeData(...)
+		return lib.btBvhTree_getNodeData(self, ...)
+	end
+	function META:ClearNodes(...)
+		return lib.btBvhTree_clearNodes(self, ...)
+	end
+	ffi.metatype('btBvhTree', META)
+	function bullet.CreateBvhTree(...)
+		return lib.btBvhTree_new(...)
+	end
+end
+do -- OptimizedBvhNode
+	local META = {}
+	META.__index = META
+	function META:GetEscapeIndex(...)
+		return lib.btOptimizedBvhNode_getEscapeIndex(self, ...)
+	end
+	function META:GetPadding(...)
+		return lib.btOptimizedBvhNode_getPadding(self, ...)
+	end
+	function META:GetTriangleIndex(...)
+		return lib.btOptimizedBvhNode_getTriangleIndex(self, ...)
+	end
+	function META:SetSubPart(...)
+		return lib.btOptimizedBvhNode_setSubPart(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btOptimizedBvhNode_delete(self, ...)
+	end
+	function META:SetTriangleIndex(...)
+		return lib.btOptimizedBvhNode_setTriangleIndex(self, ...)
+	end
+	function META:SetAabbMaxOrg(...)
+		return lib.btOptimizedBvhNode_setAabbMaxOrg(self, ...)
+	end
+	function META:GetAabbMinOrg(...)
+		return lib.btOptimizedBvhNode_getAabbMinOrg(self, ...)
+	end
+	function META:GetSubPart(...)
+		return lib.btOptimizedBvhNode_getSubPart(self, ...)
+	end
+	function META:SetEscapeIndex(...)
+		return lib.btOptimizedBvhNode_setEscapeIndex(self, ...)
+	end
+	function META:SetAabbMinOrg(...)
+		return lib.btOptimizedBvhNode_setAabbMinOrg(self, ...)
+	end
+	function META:GetAabbMaxOrg(...)
+		return lib.btOptimizedBvhNode_getAabbMaxOrg(self, ...)
+	end
+	ffi.metatype('btOptimizedBvhNode', META)
+	function bullet.CreateOptimizedBvhNode(...)
+		return lib.btOptimizedBvhNode_new(...)
+	end
+end
+do -- SphereBoxCollisionAlgorithm
+	local META = {}
+	META.__index = META
+	function META:GetSphereDistance(...)
+		return lib.btSphereBoxCollisionAlgorithm_getSphereDistance(self, ...)
+	end
+	function META:GetSpherePenetration(...)
+		return lib.btSphereBoxCollisionAlgorithm_getSpherePenetration(self, ...)
+	end
+	ffi.metatype('btSphereBoxCollisionAlgorithm', META)
+	function bullet.CreateSphereBoxCollisionAlgorithm(...)
+		return lib.btSphereBoxCollisionAlgorithm_new(...)
+	end
+end
+do -- AngularLimit
+	local META = {}
+	META.__index = META
+	function META:Set4(...)
+		return lib.btAngularLimit_set4(self, ...)
+	end
+	function META:GetRelaxationFactor(...)
+		return lib.btAngularLimit_getRelaxationFactor(self, ...)
+	end
+	function META:IsLimit(...)
+		return lib.btAngularLimit_isLimit(self, ...)
+	end
+	function META:GetBiasFactor(...)
+		return lib.btAngularLimit_getBiasFactor(self, ...)
+	end
+	function META:GetSign(...)
+		return lib.btAngularLimit_getSign(self, ...)
+	end
+	function META:GetHigh(...)
+		return lib.btAngularLimit_getHigh(self, ...)
+	end
+	function META:Set(...)
+		return lib.btAngularLimit_set(self, ...)
+	end
+	function META:Set2(...)
+		return lib.btAngularLimit_set2(self, ...)
+	end
+	function META:Set3(...)
+		return lib.btAngularLimit_set3(self, ...)
+	end
+	function META:GetLow(...)
+		return lib.btAngularLimit_getLow(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btAngularLimit_delete(self, ...)
+	end
+	function META:GetSoftness(...)
+		return lib.btAngularLimit_getSoftness(self, ...)
+	end
+	function META:Fit(...)
+		return lib.btAngularLimit_fit(self, ...)
+	end
+	function META:GetError(...)
+		return lib.btAngularLimit_getError(self, ...)
+	end
+	function META:Test(...)
+		return lib.btAngularLimit_test(self, ...)
+	end
+	function META:GetCorrection(...)
+		return lib.btAngularLimit_getCorrection(self, ...)
+	end
+	function META:GetHalfRange(...)
+		return lib.btAngularLimit_getHalfRange(self, ...)
+	end
+	ffi.metatype('btAngularLimit', META)
+	function bullet.CreateAngularLimit(...)
+		return lib.btAngularLimit_new(...)
+	end
+end
+do -- CollisionWorld_AllHitsRayResultCallback
+	local META = {}
+	META.__index = META
+	function META:SetRayToWorld(...)
+		return lib.btCollisionWorld_AllHitsRayResultCallback_setRayToWorld(self, ...)
+	end
+	function META:GetRayFromWorld(...)
+		return lib.btCollisionWorld_AllHitsRayResultCallback_getRayFromWorld(self, ...)
+	end
+	function META:SetRayFromWorld(...)
+		return lib.btCollisionWorld_AllHitsRayResultCallback_setRayFromWorld(self, ...)
+	end
+	function META:GetRayToWorld(...)
+		return lib.btCollisionWorld_AllHitsRayResultCallback_getRayToWorld(self, ...)
+	end
+	function META:GetHitFractions(...)
+		return lib.btCollisionWorld_AllHitsRayResultCallback_getHitFractions(self, ...)
+	end
+	function META:GetHitNormalWorld(...)
+		return lib.btCollisionWorld_AllHitsRayResultCallback_getHitNormalWorld(self, ...)
+	end
+	function META:GetHitPointWorld(...)
+		return lib.btCollisionWorld_AllHitsRayResultCallback_getHitPointWorld(self, ...)
+	end
+	function META:GetCollisionObjects(...)
+		return lib.btCollisionWorld_AllHitsRayResultCallback_getCollisionObjects(self, ...)
+	end
+	ffi.metatype('btCollisionWorld_AllHitsRayResultCallback', META)
+	function bullet.CreateCollisionWorld_AllHitsRayResultCallback(...)
+		return lib.btCollisionWorld_AllHitsRayResultCallback_new(...)
+	end
+end
+do -- Convex2dShape
+	local META = {}
+	META.__index = META
+	function META:GetChildShape(...)
+		return lib.btConvex2dShape_getChildShape(self, ...)
+	end
+	ffi.metatype('btConvex2dShape', META)
+	function bullet.CreateConvex2dShape2(...)
+		return lib.btConvex2dShape_new(...)
+	end
+end
+do -- PolarDecomposition
+	local META = {}
+	META.__index = META
+	function META:MaxIterations(...)
+		return lib.btPolarDecomposition_maxIterations(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btPolarDecomposition_delete(self, ...)
+	end
+	function META:Decompose(...)
+		return lib.btPolarDecomposition_decompose(self, ...)
+	end
+	ffi.metatype('btPolarDecomposition', META)
+	function bullet.CreatePolarDecomposition3(...)
+		return lib.btPolarDecomposition_new3(...)
+	end
+	function bullet.CreatePolarDecomposition(...)
+		return lib.btPolarDecomposition_new(...)
+	end
+	function bullet.CreatePolarDecomposition2(...)
+		return lib.btPolarDecomposition_new2(...)
+	end
+end
+do -- SimulationIslandManager
+	local META = {}
+	META.__index = META
+	function META:FindUnions(...)
+		return lib.btSimulationIslandManager_findUnions(self, ...)
+	end
+	function META:BuildIslands(...)
+		return lib.btSimulationIslandManager_buildIslands(self, ...)
+	end
+	function META:InitUnionFind(...)
+		return lib.btSimulationIslandManager_initUnionFind(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSimulationIslandManager_delete(self, ...)
+	end
+	function META:SetSplitIslands(...)
+		return lib.btSimulationIslandManager_setSplitIslands(self, ...)
+	end
+	function META:GetUnionFind(...)
+		return lib.btSimulationIslandManager_getUnionFind(self, ...)
+	end
+	function META:GetSplitIslands(...)
+		return lib.btSimulationIslandManager_getSplitIslands(self, ...)
+	end
+	function META:BuildAndProcessIslands(...)
+		return lib.btSimulationIslandManager_buildAndProcessIslands(self, ...)
+	end
+	function META:UpdateActivationState(...)
+		return lib.btSimulationIslandManager_updateActivationState(self, ...)
+	end
+	function META:StoreIslandActivationState(...)
+		return lib.btSimulationIslandManager_storeIslandActivationState(self, ...)
+	end
+	ffi.metatype('btSimulationIslandManager', META)
+	function bullet.CreateSimulationIslandManager(...)
+		return lib.btSimulationIslandManager_new(...)
+	end
+end
+do -- TriangleInfoMap
+	local META = {}
+	META.__index = META
+	function META:SetEdgeDistanceThreshold(...)
+		return lib.btTriangleInfoMap_setEdgeDistanceThreshold(self, ...)
+	end
+	function META:GetConvexEpsilon(...)
+		return lib.btTriangleInfoMap_getConvexEpsilon(self, ...)
+	end
+	function META:GetEdgeDistanceThreshold(...)
+		return lib.btTriangleInfoMap_getEdgeDistanceThreshold(self, ...)
+	end
+	function META:Serialize(...)
+		return lib.btTriangleInfoMap_serialize(self, ...)
+	end
+	function META:SetPlanarEpsilon(...)
+		return lib.btTriangleInfoMap_setPlanarEpsilon(self, ...)
+	end
+	function META:GetZeroAreaThreshold(...)
+		return lib.btTriangleInfoMap_getZeroAreaThreshold(self, ...)
+	end
+	function META:SetMaxEdgeAngleThreshold(...)
+		return lib.btTriangleInfoMap_setMaxEdgeAngleThreshold(self, ...)
+	end
+	function META:SetEqualVertexThreshold(...)
+		return lib.btTriangleInfoMap_setEqualVertexThreshold(self, ...)
+	end
+	function META:GetPlanarEpsilon(...)
+		return lib.btTriangleInfoMap_getPlanarEpsilon(self, ...)
+	end
+	function META:SetZeroAreaThreshold(...)
+		return lib.btTriangleInfoMap_setZeroAreaThreshold(self, ...)
+	end
+	function META:DeSerialize(...)
+		return lib.btTriangleInfoMap_deSerialize(self, ...)
+	end
+	function META:GetEqualVertexThreshold(...)
+		return lib.btTriangleInfoMap_getEqualVertexThreshold(self, ...)
+	end
+	function META:GetMaxEdgeAngleThreshold(...)
+		return lib.btTriangleInfoMap_getMaxEdgeAngleThreshold(self, ...)
+	end
+	function META:SetConvexEpsilon(...)
+		return lib.btTriangleInfoMap_setConvexEpsilon(self, ...)
+	end
+	function META:CalculateSerializeBufferSize(...)
+		return lib.btTriangleInfoMap_calculateSerializeBufferSize(self, ...)
+	end
+	ffi.metatype('btTriangleInfoMap', META)
+	function bullet.CreateTriangleInfoMap(...)
+		return lib.btTriangleInfoMap_new(...)
+	end
+end
+do -- CompoundCompoundCollisionAlgorithm_CreateFunc
+	local META = {}
+	META.__index = META
+	ffi.metatype('btCompoundCompoundCollisionAlgorithm_CreateFunc', META)
+	function bullet.CreateCompoundCompoundCollisionAlgorithm_CreateFunc(...)
+		return lib.btCompoundCompoundCollisionAlgorithm_CreateFunc_new(...)
+	end
+end
+do -- CollisionWorld_ClosestRayResultCallback
+	local META = {}
+	META.__index = META
+	function META:SetRayToWorld(...)
+		return lib.btCollisionWorld_ClosestRayResultCallback_setRayToWorld(self, ...)
+	end
+	function META:GetRayToWorld(...)
+		return lib.btCollisionWorld_ClosestRayResultCallback_getRayToWorld(self, ...)
+	end
+	function META:SetHitPointWorld(...)
+		return lib.btCollisionWorld_ClosestRayResultCallback_setHitPointWorld(self, ...)
+	end
+	function META:SetRayFromWorld(...)
+		return lib.btCollisionWorld_ClosestRayResultCallback_setRayFromWorld(self, ...)
+	end
+	function META:SetHitNormalWorld(...)
+		return lib.btCollisionWorld_ClosestRayResultCallback_setHitNormalWorld(self, ...)
+	end
+	function META:GetHitNormalWorld(...)
+		return lib.btCollisionWorld_ClosestRayResultCallback_getHitNormalWorld(self, ...)
+	end
+	function META:GetHitPointWorld(...)
+		return lib.btCollisionWorld_ClosestRayResultCallback_getHitPointWorld(self, ...)
+	end
+	function META:GetRayFromWorld(...)
+		return lib.btCollisionWorld_ClosestRayResultCallback_getRayFromWorld(self, ...)
+	end
+	ffi.metatype('btCollisionWorld_ClosestRayResultCallback', META)
+	function bullet.CreateCollisionWorld_ClosestRayResultCallback(...)
+		return lib.btCollisionWorld_ClosestRayResultCallback_new(...)
+	end
+end
+do -- ShapeHull
+	local META = {}
+	META.__index = META
+	function META:NumVertices(...)
+		return lib.btShapeHull_numVertices(self, ...)
+	end
+	function META:NumIndices(...)
+		return lib.btShapeHull_numIndices(self, ...)
+	end
+	function META:BuildHull(...)
+		return lib.btShapeHull_buildHull(self, ...)
+	end
+	function META:GetIndexPointer(...)
+		return lib.btShapeHull_getIndexPointer(self, ...)
+	end
+	function META:GetVertexPointer(...)
+		return lib.btShapeHull_getVertexPointer(self, ...)
+	end
+	function META:NumTriangles(...)
+		return lib.btShapeHull_numTriangles(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btShapeHull_delete(self, ...)
+	end
+	ffi.metatype('btShapeHull', META)
+	function bullet.CreateShapeHull(...)
+		return lib.btShapeHull_new(...)
+	end
+end
+do -- SoftBody_sMedium
+	local META = {}
+	META.__index = META
+	function META:SetPressure(...)
+		return lib.btSoftBody_sMedium_setPressure(self, ...)
+	end
+	function META:GetDensity(...)
+		return lib.btSoftBody_sMedium_getDensity(self, ...)
+	end
+	function META:SetVelocity(...)
+		return lib.btSoftBody_sMedium_setVelocity(self, ...)
+	end
+	function META:GetPressure(...)
+		return lib.btSoftBody_sMedium_getPressure(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBody_sMedium_delete(self, ...)
+	end
+	function META:SetDensity(...)
+		return lib.btSoftBody_sMedium_setDensity(self, ...)
+	end
+	function META:GetVelocity(...)
+		return lib.btSoftBody_sMedium_getVelocity(self, ...)
+	end
+	ffi.metatype('btSoftBody_sMedium', META)
+	function bullet.CreateSoftBody_sMedium(...)
+		return lib.btSoftBody_sMedium_new(...)
+	end
+end
+do -- JointFeedback
+	local META = {}
+	META.__index = META
+	function META:SetAppliedForceBodyB(...)
+		return lib.btJointFeedback_setAppliedForceBodyB(self, ...)
+	end
+	function META:SetAppliedTorqueBodyB(...)
+		return lib.btJointFeedback_setAppliedTorqueBodyB(self, ...)
+	end
+	function META:GetAppliedForceBodyA(...)
+		return lib.btJointFeedback_getAppliedForceBodyA(self, ...)
+	end
+	function META:GetAppliedTorqueBodyA(...)
+		return lib.btJointFeedback_getAppliedTorqueBodyA(self, ...)
+	end
+	function META:SetAppliedForceBodyA(...)
+		return lib.btJointFeedback_setAppliedForceBodyA(self, ...)
+	end
+	function META:SetAppliedTorqueBodyA(...)
+		return lib.btJointFeedback_setAppliedTorqueBodyA(self, ...)
+	end
+	function META:GetAppliedForceBodyB(...)
+		return lib.btJointFeedback_getAppliedForceBodyB(self, ...)
+	end
+	function META:GetAppliedTorqueBodyB(...)
+		return lib.btJointFeedback_getAppliedTorqueBodyB(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btJointFeedback_delete(self, ...)
+	end
+	ffi.metatype('btJointFeedback', META)
+	function bullet.CreateJointFeedback(...)
+		return lib.btJointFeedback_new(...)
+	end
+end
+do -- GImpactCompoundShape
+	local META = {}
+	META.__index = META
+	function META:AddChildShape(...)
+		return lib.btGImpactCompoundShape_addChildShape(self, ...)
+	end
+	function META:GetCompoundPrimitiveManager(...)
+		return lib.btGImpactCompoundShape_getCompoundPrimitiveManager(self, ...)
+	end
+	function META:AddChildShape2(...)
+		return lib.btGImpactCompoundShape_addChildShape2(self, ...)
+	end
+	ffi.metatype('btGImpactCompoundShape', META)
+	function bullet.CreateGImpactCompoundShape(...)
+		return lib.btGImpactCompoundShape_new(...)
+	end
+	function bullet.CreateGImpactCompoundShape2(...)
+		return lib.btGImpactCompoundShape_new2(...)
+	end
+end
+do -- TranslationalLimitMotor2
+	local META = {}
+	META.__index = META
+	function META:SetTargetVelocity(...)
+		return lib.btTranslationalLimitMotor2_setTargetVelocity(self, ...)
+	end
+	function META:SetLowerLimit(...)
+		return lib.btTranslationalLimitMotor2_setLowerLimit(self, ...)
+	end
+	function META:GetCurrentLimit(...)
+		return lib.btTranslationalLimitMotor2_getCurrentLimit(self, ...)
+	end
+	function META:GetEquilibriumPoint(...)
+		return lib.btTranslationalLimitMotor2_getEquilibriumPoint(self, ...)
+	end
+	function META:GetEnableSpring(...)
+		return lib.btTranslationalLimitMotor2_getEnableSpring(self, ...)
+	end
+	function META:GetMaxMotorForce(...)
+		return lib.btTranslationalLimitMotor2_getMaxMotorForce(self, ...)
+	end
+	function META:GetBounce(...)
+		return lib.btTranslationalLimitMotor2_getBounce(self, ...)
+	end
+	function META:SetSpringDamping(...)
+		return lib.btTranslationalLimitMotor2_setSpringDamping(self, ...)
+	end
+	function META:IsLimited(...)
+		return lib.btTranslationalLimitMotor2_isLimited(self, ...)
+	end
+	function META:SetStopCFM(...)
+		return lib.btTranslationalLimitMotor2_setStopCFM(self, ...)
+	end
+	function META:GetSpringDamping(...)
+		return lib.btTranslationalLimitMotor2_getSpringDamping(self, ...)
+	end
+	function META:SetMotorERP(...)
+		return lib.btTranslationalLimitMotor2_setMotorERP(self, ...)
+	end
+	function META:GetServoMotor(...)
+		return lib.btTranslationalLimitMotor2_getServoMotor(self, ...)
+	end
+	function META:GetCurrentLinearDiff(...)
+		return lib.btTranslationalLimitMotor2_getCurrentLinearDiff(self, ...)
+	end
+	function META:GetCurrentLimitErrorHi(...)
+		return lib.btTranslationalLimitMotor2_getCurrentLimitErrorHi(self, ...)
+	end
+	function META:GetUpperLimit(...)
+		return lib.btTranslationalLimitMotor2_getUpperLimit(self, ...)
+	end
+	function META:GetMotorCFM(...)
+		return lib.btTranslationalLimitMotor2_getMotorCFM(self, ...)
+	end
+	function META:GetEnableMotor(...)
+		return lib.btTranslationalLimitMotor2_getEnableMotor(self, ...)
+	end
+	function META:GetServoTarget(...)
+		return lib.btTranslationalLimitMotor2_getServoTarget(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btTranslationalLimitMotor2_delete(self, ...)
+	end
+	function META:SetBounce(...)
+		return lib.btTranslationalLimitMotor2_setBounce(self, ...)
+	end
+	function META:SetCurrentLinearDiff(...)
+		return lib.btTranslationalLimitMotor2_setCurrentLinearDiff(self, ...)
+	end
+	function META:SetServoTarget(...)
+		return lib.btTranslationalLimitMotor2_setServoTarget(self, ...)
+	end
+	function META:TestLimitValue(...)
+		return lib.btTranslationalLimitMotor2_testLimitValue(self, ...)
+	end
+	function META:GetStopCFM(...)
+		return lib.btTranslationalLimitMotor2_getStopCFM(self, ...)
+	end
+	function META:SetUpperLimit(...)
+		return lib.btTranslationalLimitMotor2_setUpperLimit(self, ...)
+	end
+	function META:SetStopERP(...)
+		return lib.btTranslationalLimitMotor2_setStopERP(self, ...)
+	end
+	function META:SetMotorCFM(...)
+		return lib.btTranslationalLimitMotor2_setMotorCFM(self, ...)
+	end
+	function META:SetSpringStiffness(...)
+		return lib.btTranslationalLimitMotor2_setSpringStiffness(self, ...)
+	end
+	function META:GetLowerLimit(...)
+		return lib.btTranslationalLimitMotor2_getLowerLimit(self, ...)
+	end
+	function META:GetCurrentLimitError(...)
+		return lib.btTranslationalLimitMotor2_getCurrentLimitError(self, ...)
+	end
+	function META:GetStopERP(...)
+		return lib.btTranslationalLimitMotor2_getStopERP(self, ...)
+	end
+	function META:GetSpringStiffness(...)
+		return lib.btTranslationalLimitMotor2_getSpringStiffness(self, ...)
+	end
+	function META:SetCurrentLimitError(...)
+		return lib.btTranslationalLimitMotor2_setCurrentLimitError(self, ...)
+	end
+	function META:SetMaxMotorForce(...)
+		return lib.btTranslationalLimitMotor2_setMaxMotorForce(self, ...)
+	end
+	function META:SetCurrentLimitErrorHi(...)
+		return lib.btTranslationalLimitMotor2_setCurrentLimitErrorHi(self, ...)
+	end
+	function META:GetMotorERP(...)
+		return lib.btTranslationalLimitMotor2_getMotorERP(self, ...)
+	end
+	function META:SetEquilibriumPoint(...)
+		return lib.btTranslationalLimitMotor2_setEquilibriumPoint(self, ...)
+	end
+	function META:GetTargetVelocity(...)
+		return lib.btTranslationalLimitMotor2_getTargetVelocity(self, ...)
+	end
+	ffi.metatype('btTranslationalLimitMotor2', META)
+	function bullet.CreateTranslationalLimitMotor22(...)
+		return lib.btTranslationalLimitMotor2_new2(...)
+	end
+end
+do -- ConeShape
+	local META = {}
+	META.__index = META
+	function META:GetConeUpIndex(...)
+		return lib.btConeShape_getConeUpIndex(self, ...)
+	end
+	function META:SetConeUpIndex(...)
+		return lib.btConeShape_setConeUpIndex(self, ...)
+	end
+	function META:GetRadius(...)
+		return lib.btConeShape_getRadius(self, ...)
+	end
+	function META:GetHeight(...)
+		return lib.btConeShape_getHeight(self, ...)
+	end
+	ffi.metatype('btConeShape', META)
+	function bullet.CreateConeShape(...)
+		return lib.btConeShape_new(...)
+	end
+end
+do -- TriangleBuffer
+	local META = {}
+	META.__index = META
+	function META:GetTriangle(...)
+		return lib.btTriangleBuffer_getTriangle(self, ...)
+	end
+	function META:ClearBuffer(...)
+		return lib.btTriangleBuffer_clearBuffer(self, ...)
+	end
+	function META:GetNumTriangles(...)
+		return lib.btTriangleBuffer_getNumTriangles(self, ...)
+	end
+	ffi.metatype('btTriangleBuffer', META)
+	function bullet.CreateTriangleBuffer(...)
+		return lib.btTriangleBuffer_new(...)
+	end
+end
+do -- SoftBody_SolverState
+	local META = {}
+	META.__index = META
+	function META:SetUpdmrg(...)
+		return lib.btSoftBody_SolverState_setUpdmrg(self, ...)
+	end
+	function META:GetRadmrg(...)
+		return lib.btSoftBody_SolverState_getRadmrg(self, ...)
+	end
+	function META:SetSdt(...)
+		return lib.btSoftBody_SolverState_setSdt(self, ...)
+	end
+	function META:GetUpdmrg(...)
+		return lib.btSoftBody_SolverState_getUpdmrg(self, ...)
+	end
+	function META:SetVelmrg(...)
+		return lib.btSoftBody_SolverState_setVelmrg(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBody_SolverState_delete(self, ...)
+	end
+	function META:GetVelmrg(...)
+		return lib.btSoftBody_SolverState_getVelmrg(self, ...)
+	end
+	function META:SetIsdt(...)
+		return lib.btSoftBody_SolverState_setIsdt(self, ...)
+	end
+	function META:GetSdt(...)
+		return lib.btSoftBody_SolverState_getSdt(self, ...)
+	end
+	function META:SetRadmrg(...)
+		return lib.btSoftBody_SolverState_setRadmrg(self, ...)
+	end
+	function META:GetIsdt(...)
+		return lib.btSoftBody_SolverState_getIsdt(self, ...)
+	end
+	ffi.metatype('btSoftBody_SolverState', META)
+	function bullet.CreateSoftBody_SolverState(...)
+		return lib.btSoftBody_SolverState_new(...)
+	end
+end
+do -- SoftBody_Joint_Specs
+	local META = {}
+	META.__index = META
+	function META:GetErp(...)
+		return lib.btSoftBody_Joint_Specs_getErp(self, ...)
+	end
+	function META:SetCfm(...)
+		return lib.btSoftBody_Joint_Specs_setCfm(self, ...)
+	end
+	function META:GetCfm(...)
+		return lib.btSoftBody_Joint_Specs_getCfm(self, ...)
+	end
+	function META:SetSplit(...)
+		return lib.btSoftBody_Joint_Specs_setSplit(self, ...)
+	end
+	function META:SetErp(...)
+		return lib.btSoftBody_Joint_Specs_setErp(self, ...)
+	end
+	function META:GetSplit(...)
+		return lib.btSoftBody_Joint_Specs_getSplit(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBody_Joint_Specs_delete(self, ...)
+	end
+	ffi.metatype('btSoftBody_Joint_Specs', META)
+	function bullet.CreateSoftBody_Joint_Specs(...)
+		return lib.btSoftBody_Joint_Specs_new(...)
 	end
 end
 do -- HingeAccumulatedAngleConstraint
 	local META = {}
 	META.__index = META
 	function META:SetAccumulatedHingeAngle(...)
-		lib.btHingeAccumulatedAngleConstraint_setAccumulatedHingeAngle(self.__ptr, ...)
+		return lib.btHingeAccumulatedAngleConstraint_setAccumulatedHingeAngle(self, ...)
 	end
 	function META:GetAccumulatedHingeAngle(...)
-		lib.btHingeAccumulatedAngleConstraint_getAccumulatedHingeAngle(self.__ptr, ...)
+		return lib.btHingeAccumulatedAngleConstraint_getAccumulatedHingeAngle(self, ...)
+	end
+	ffi.metatype('btHingeAccumulatedAngleConstraint', META)
+	function bullet.CreateHingeAccumulatedAngleConstraint8(...)
+		return lib.btHingeAccumulatedAngleConstraint_new8(...)
+	end
+	function bullet.CreateHingeAccumulatedAngleConstraint3(...)
+		return lib.btHingeAccumulatedAngleConstraint_new3(...)
+	end
+	function bullet.CreateHingeAccumulatedAngleConstraint7(...)
+		return lib.btHingeAccumulatedAngleConstraint_new7(...)
+	end
+	function bullet.CreateHingeAccumulatedAngleConstraint4(...)
+		return lib.btHingeAccumulatedAngleConstraint_new4(...)
+	end
+	function bullet.CreateHingeAccumulatedAngleConstraint6(...)
+		return lib.btHingeAccumulatedAngleConstraint_new6(...)
 	end
 	function bullet.CreateHingeAccumulatedAngleConstraint(...)
-		return setmetatable({__ptr = lib.btHingeAccumulatedAngleConstraint_new2(...)}, META)
+		return lib.btHingeAccumulatedAngleConstraint_new(...)
+	end
+	function bullet.CreateHingeAccumulatedAngleConstraint5(...)
+		return lib.btHingeAccumulatedAngleConstraint_new5(...)
+	end
+	function bullet.CreateHingeAccumulatedAngleConstraint2(...)
+		return lib.btHingeAccumulatedAngleConstraint_new2(...)
 	end
 end
 do -- GImpactQuantizedBvh
 	local META = {}
 	META.__index = META
 	function META:GetNodeBound(...)
-		lib.btGImpactQuantizedBvh_getNodeBound(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_getNodeBound(self, ...)
 	end
 	function META:SetPrimitiveManager(...)
-		lib.btGImpactQuantizedBvh_setPrimitiveManager(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_setPrimitiveManager(self, ...)
 	end
 	function META:BoxQuery(...)
-		lib.btGImpactQuantizedBvh_boxQuery(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_boxQuery(self, ...)
 	end
 	function META:RayQuery(...)
-		lib.btGImpactQuantizedBvh_rayQuery(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_rayQuery(self, ...)
 	end
 	function META:GetEscapeNodeIndex(...)
-		lib.btGImpactQuantizedBvh_getEscapeNodeIndex(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_getEscapeNodeIndex(self, ...)
 	end
 	function META:HasHierarchy(...)
-		lib.btGImpactQuantizedBvh_hasHierarchy(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_hasHierarchy(self, ...)
 	end
 	function META:IsLeafNode(...)
-		lib.btGImpactQuantizedBvh_isLeafNode(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_isLeafNode(self, ...)
 	end
 	function META:SetNodeBound(...)
-		lib.btGImpactQuantizedBvh_setNodeBound(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_setNodeBound(self, ...)
 	end
 	function META:GetNodeTriangle(...)
-		lib.btGImpactQuantizedBvh_getNodeTriangle(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_getNodeTriangle(self, ...)
 	end
 	function META:Update(...)
-		lib.btGImpactQuantizedBvh_update(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_update(self, ...)
 	end
 	function META:GetNodeCount(...)
-		lib.btGImpactQuantizedBvh_getNodeCount(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_getNodeCount(self, ...)
 	end
 	function META:BuildSet(...)
-		lib.btGImpactQuantizedBvh_buildSet(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_buildSet(self, ...)
 	end
 	function META:GetPrimitiveManager(...)
-		lib.btGImpactQuantizedBvh_getPrimitiveManager(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_getPrimitiveManager(self, ...)
 	end
 	function META:GetNodeData(...)
-		lib.btGImpactQuantizedBvh_getNodeData(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_getNodeData(self, ...)
 	end
 	function META:GetLeftNode(...)
-		lib.btGImpactQuantizedBvh_getLeftNode(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_getLeftNode(self, ...)
 	end
 	function META:Delete(...)
-		lib.btGImpactQuantizedBvh_delete(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_delete(self, ...)
 	end
 	function META:IsTrimesh(...)
-		lib.btGImpactQuantizedBvh_isTrimesh(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_isTrimesh(self, ...)
 	end
 	function META:GetRightNode(...)
-		lib.btGImpactQuantizedBvh_getRightNode(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_getRightNode(self, ...)
 	end
 	function META:BoxQueryTrans(...)
-		lib.btGImpactQuantizedBvh_boxQueryTrans(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_boxQueryTrans(self, ...)
 	end
 	function META:GetGlobalBox(...)
-		lib.btGImpactQuantizedBvh_getGlobalBox(self.__ptr, ...)
+		return lib.btGImpactQuantizedBvh_getGlobalBox(self, ...)
 	end
+	ffi.metatype('btGImpactQuantizedBvh', META)
 	function bullet.CreateGImpactQuantizedBvh(...)
-		return setmetatable({__ptr = lib.btGImpactQuantizedBvh_new2(...)}, META)
+		return lib.btGImpactQuantizedBvh_new(...)
 	end
-end
-do -- SoftSoftCollisionAlgorithm
-	local META = {}
-	META.__index = META
-	function bullet.CreateSoftSoftCollisionAlgorithm(...)
-		return setmetatable({__ptr = lib.btSoftSoftCollisionAlgorithm_new2(...)}, META)
-	end
-end
-do -- BroadphaseProxy
-	local META = {}
-	META.__index = META
-	function META:SetMultiSapParentProxy(...)
-		lib.btBroadphaseProxy_setMultiSapParentProxy(self.__ptr, ...)
-	end
-	function META:GetUid(...)
-		lib.btBroadphaseProxy_getUid(self.__ptr, ...)
-	end
-	function META:IsConvex2d(...)
-		lib.btBroadphaseProxy_isConvex2d(self.__ptr, ...)
-	end
-	function META:IsConvex(...)
-		lib.btBroadphaseProxy_isConvex(self.__ptr, ...)
-	end
-	function META:IsSoftBody(...)
-		lib.btBroadphaseProxy_isSoftBody(self.__ptr, ...)
-	end
-	function META:SetCollisionFilterGroup(...)
-		lib.btBroadphaseProxy_setCollisionFilterGroup(self.__ptr, ...)
-	end
-	function META:GetMultiSapParentProxy(...)
-		lib.btBroadphaseProxy_getMultiSapParentProxy(self.__ptr, ...)
-	end
-	function META:IsCompound(...)
-		lib.btBroadphaseProxy_isCompound(self.__ptr, ...)
-	end
-	function META:Delete(...)
-		lib.btBroadphaseProxy_delete(self.__ptr, ...)
-	end
-	function META:IsConcave(...)
-		lib.btBroadphaseProxy_isConcave(self.__ptr, ...)
-	end
-	function META:SetCollisionFilterMask(...)
-		lib.btBroadphaseProxy_setCollisionFilterMask(self.__ptr, ...)
-	end
-	function META:SetAabbMin(...)
-		lib.btBroadphaseProxy_setAabbMin(self.__ptr, ...)
-	end
-	function META:IsInfinite(...)
-		lib.btBroadphaseProxy_isInfinite(self.__ptr, ...)
-	end
-	function META:SetClientObject(...)
-		lib.btBroadphaseProxy_setClientObject(self.__ptr, ...)
-	end
-	function META:GetAabbMax(...)
-		lib.btBroadphaseProxy_getAabbMax(self.__ptr, ...)
-	end
-	function META:SetAabbMax(...)
-		lib.btBroadphaseProxy_setAabbMax(self.__ptr, ...)
-	end
-	function META:IsNonMoving(...)
-		lib.btBroadphaseProxy_isNonMoving(self.__ptr, ...)
-	end
-	function META:SetUniqueId(...)
-		lib.btBroadphaseProxy_setUniqueId(self.__ptr, ...)
-	end
-	function META:IsPolyhedral(...)
-		lib.btBroadphaseProxy_isPolyhedral(self.__ptr, ...)
-	end
-	function META:GetUniqueId(...)
-		lib.btBroadphaseProxy_getUniqueId(self.__ptr, ...)
-	end
-	function META:GetCollisionFilterMask(...)
-		lib.btBroadphaseProxy_getCollisionFilterMask(self.__ptr, ...)
-	end
-	function META:GetCollisionFilterGroup(...)
-		lib.btBroadphaseProxy_getCollisionFilterGroup(self.__ptr, ...)
-	end
-	function META:GetClientObject(...)
-		lib.btBroadphaseProxy_getClientObject(self.__ptr, ...)
-	end
-	function META:GetAabbMin(...)
-		lib.btBroadphaseProxy_getAabbMin(self.__ptr, ...)
-	end
-	function bullet.CreateBroadphaseProxy(...)
-		return setmetatable({__ptr = lib.btBroadphaseProxy_new2(...)}, META)
-	end
-end
-do -- DefaultMotionState
-	local META = {}
-	META.__index = META
-	function META:GetUserPointer(...)
-		lib.btDefaultMotionState_getUserPointer(self.__ptr, ...)
-	end
-	function META:SetGraphicsWorldTrans(...)
-		lib.btDefaultMotionState_setGraphicsWorldTrans(self.__ptr, ...)
-	end
-	function META:SetStartWorldTrans(...)
-		lib.btDefaultMotionState_setStartWorldTrans(self.__ptr, ...)
-	end
-	function META:GetCenterOfMassOffset(...)
-		lib.btDefaultMotionState_getCenterOfMassOffset(self.__ptr, ...)
-	end
-	function META:SetUserPointer(...)
-		lib.btDefaultMotionState_setUserPointer(self.__ptr, ...)
-	end
-	function META:SetCenterOfMassOffset(...)
-		lib.btDefaultMotionState_setCenterOfMassOffset(self.__ptr, ...)
-	end
-	function META:GetGraphicsWorldTrans(...)
-		lib.btDefaultMotionState_getGraphicsWorldTrans(self.__ptr, ...)
-	end
-	function META:GetStartWorldTrans(...)
-		lib.btDefaultMotionState_getStartWorldTrans(self.__ptr, ...)
-	end
-	function bullet.CreateDefaultMotionState(...)
-		return setmetatable({__ptr = lib.btDefaultMotionState_new2(...)}, META)
-	end
-end
-do -- GearConstraint
-	local META = {}
-	META.__index = META
-	function META:SetAxisA(...)
-		lib.btGearConstraint_setAxisA(self.__ptr, ...)
-	end
-	function META:GetRatio(...)
-		lib.btGearConstraint_getRatio(self.__ptr, ...)
-	end
-	function META:GetAxisA(...)
-		lib.btGearConstraint_getAxisA(self.__ptr, ...)
-	end
-	function META:SetRatio(...)
-		lib.btGearConstraint_setRatio(self.__ptr, ...)
-	end
-	function META:GetAxisB(...)
-		lib.btGearConstraint_getAxisB(self.__ptr, ...)
-	end
-	function META:SetAxisB(...)
-		lib.btGearConstraint_setAxisB(self.__ptr, ...)
-	end
-	function bullet.CreateGearConstraint(...)
-		return setmetatable({__ptr = lib.btGearConstraint_new2(...)}, META)
+	function bullet.CreateGImpactQuantizedBvh2(...)
+		return lib.btGImpactQuantizedBvh_new2(...)
 	end
 end
 do -- AxisSweep3
 	local META = {}
 	META.__index = META
 	function META:AddHandle(...)
-		lib.btAxisSweep3_addHandle(self.__ptr, ...)
+		return lib.btAxisSweep3_addHandle(self, ...)
 	end
 	function META:ProcessAllOverlappingPairs(...)
-		lib.btAxisSweep3_processAllOverlappingPairs(self.__ptr, ...)
+		return lib.btAxisSweep3_processAllOverlappingPairs(self, ...)
 	end
 	function META:TestAabbOverlap(...)
-		lib.btAxisSweep3_testAabbOverlap(self.__ptr, ...)
+		return lib.btAxisSweep3_testAabbOverlap(self, ...)
 	end
 	function META:GetNumHandles(...)
-		lib.btAxisSweep3_getNumHandles(self.__ptr, ...)
+		return lib.btAxisSweep3_getNumHandles(self, ...)
 	end
 	function META:UnQuantize(...)
-		lib.btAxisSweep3_unQuantize(self.__ptr, ...)
+		return lib.btAxisSweep3_unQuantize(self, ...)
 	end
 	function META:RemoveHandle(...)
-		lib.btAxisSweep3_removeHandle(self.__ptr, ...)
+		return lib.btAxisSweep3_removeHandle(self, ...)
 	end
 	function META:SetOverlappingPairUserCallback(...)
-		lib.btAxisSweep3_setOverlappingPairUserCallback(self.__ptr, ...)
+		return lib.btAxisSweep3_setOverlappingPairUserCallback(self, ...)
 	end
 	function META:GetHandle(...)
-		lib.btAxisSweep3_getHandle(self.__ptr, ...)
+		return lib.btAxisSweep3_getHandle(self, ...)
 	end
 	function META:Quantize(...)
-		lib.btAxisSweep3_quantize(self.__ptr, ...)
+		return lib.btAxisSweep3_quantize(self, ...)
 	end
 	function META:UpdateHandle(...)
-		lib.btAxisSweep3_updateHandle(self.__ptr, ...)
+		return lib.btAxisSweep3_updateHandle(self, ...)
 	end
 	function META:GetOverlappingPairUserCallback(...)
-		lib.btAxisSweep3_getOverlappingPairUserCallback(self.__ptr, ...)
+		return lib.btAxisSweep3_getOverlappingPairUserCallback(self, ...)
 	end
-	function bullet.CreateAxisSweep3(...)
-		return setmetatable({__ptr = lib.btAxisSweep3_new2(...)}, META)
+	ffi.metatype('btAxisSweep3', META)
+	function bullet.CreateAxisSweep33(...)
+		return lib.btAxisSweep3_new3(...)
 	end
-end
-do -- MultiSphereShape
-	local META = {}
-	META.__index = META
-	function META:GetSphereCount(...)
-		lib.btMultiSphereShape_getSphereCount(self.__ptr, ...)
+	function bullet.CreateAxisSweep32(...)
+		return lib.btAxisSweep3_new2(...)
 	end
-	function META:GetSphereRadius(...)
-		lib.btMultiSphereShape_getSphereRadius(self.__ptr, ...)
-	end
-	function META:GetSpherePosition(...)
-		lib.btMultiSphereShape_getSpherePosition(self.__ptr, ...)
-	end
-	function bullet.CreateMultiSphereShape(...)
-		return setmetatable({__ptr = lib.btMultiSphereShape_new2(...)}, META)
+	function bullet.CreateAxisSweep34(...)
+		return lib.btAxisSweep3_new4(...)
 	end
 end
 do -- KinematicCharacterController
 	local META = {}
 	META.__index = META
 	function META:SetUpAxis(...)
-		lib.btKinematicCharacterController_setUpAxis(self.__ptr, ...)
+		return lib.btKinematicCharacterController_setUpAxis(self, ...)
 	end
 	function META:SetUseGhostSweepTest(...)
-		lib.btKinematicCharacterController_setUseGhostSweepTest(self.__ptr, ...)
+		return lib.btKinematicCharacterController_setUseGhostSweepTest(self, ...)
 	end
 	function META:SetFallSpeed(...)
-		lib.btKinematicCharacterController_setFallSpeed(self.__ptr, ...)
+		return lib.btKinematicCharacterController_setFallSpeed(self, ...)
 	end
 	function META:SetMaxSlope(...)
-		lib.btKinematicCharacterController_setMaxSlope(self.__ptr, ...)
+		return lib.btKinematicCharacterController_setMaxSlope(self, ...)
 	end
 	function META:GetGhostObject(...)
-		lib.btKinematicCharacterController_getGhostObject(self.__ptr, ...)
+		return lib.btKinematicCharacterController_getGhostObject(self, ...)
 	end
 	function META:GetGravity(...)
-		lib.btKinematicCharacterController_getGravity(self.__ptr, ...)
+		return lib.btKinematicCharacterController_getGravity(self, ...)
 	end
 	function META:GetMaxSlope(...)
-		lib.btKinematicCharacterController_getMaxSlope(self.__ptr, ...)
+		return lib.btKinematicCharacterController_getMaxSlope(self, ...)
 	end
 	function META:SetMaxJumpHeight(...)
-		lib.btKinematicCharacterController_setMaxJumpHeight(self.__ptr, ...)
+		return lib.btKinematicCharacterController_setMaxJumpHeight(self, ...)
 	end
 	function META:SetJumpSpeed(...)
-		lib.btKinematicCharacterController_setJumpSpeed(self.__ptr, ...)
+		return lib.btKinematicCharacterController_setJumpSpeed(self, ...)
 	end
 	function META:SetGravity(...)
-		lib.btKinematicCharacterController_setGravity(self.__ptr, ...)
+		return lib.btKinematicCharacterController_setGravity(self, ...)
+	end
+	ffi.metatype('btKinematicCharacterController', META)
+	function bullet.CreateKinematicCharacterController2(...)
+		return lib.btKinematicCharacterController_new2(...)
 	end
 	function bullet.CreateKinematicCharacterController(...)
-		return setmetatable({__ptr = lib.btKinematicCharacterController_new2(...)}, META)
+		return lib.btKinematicCharacterController_new(...)
 	end
 end
 do -- MultiBodyPoint2Point
 	local META = {}
 	META.__index = META
 	function META:SetPivotInB(...)
-		lib.btMultiBodyPoint2Point_setPivotInB(self.__ptr, ...)
+		return lib.btMultiBodyPoint2Point_setPivotInB(self, ...)
 	end
 	function META:GetPivotInB(...)
-		lib.btMultiBodyPoint2Point_getPivotInB(self.__ptr, ...)
+		return lib.btMultiBodyPoint2Point_getPivotInB(self, ...)
 	end
-	function bullet.CreateMultiBodyPoint2Point(...)
-		return setmetatable({__ptr = lib.btMultiBodyPoint2Point_new2(...)}, META)
+	ffi.metatype('btMultiBodyPoint2Point', META)
+	function bullet.CreateMultiBodyPoint2Point2(...)
+		return lib.btMultiBodyPoint2Point_new2(...)
+	end
+end
+do -- DefaultCollisionConfiguration
+	local META = {}
+	META.__index = META
+	function META:GetSimplexSolver(...)
+		return lib.btDefaultCollisionConfiguration_getSimplexSolver(self, ...)
+	end
+	function META:SetConvexConvexMultipointIterations2(...)
+		return lib.btDefaultCollisionConfiguration_setConvexConvexMultipointIterations2(self, ...)
+	end
+	function META:SetPlaneConvexMultipointIterations3(...)
+		return lib.btDefaultCollisionConfiguration_setPlaneConvexMultipointIterations3(self, ...)
+	end
+	function META:SetPlaneConvexMultipointIterations(...)
+		return lib.btDefaultCollisionConfiguration_setPlaneConvexMultipointIterations(self, ...)
+	end
+	function META:SetPlaneConvexMultipointIterations2(...)
+		return lib.btDefaultCollisionConfiguration_setPlaneConvexMultipointIterations2(self, ...)
+	end
+	function META:SetConvexConvexMultipointIterations(...)
+		return lib.btDefaultCollisionConfiguration_setConvexConvexMultipointIterations(self, ...)
+	end
+	function META:SetConvexConvexMultipointIterations3(...)
+		return lib.btDefaultCollisionConfiguration_setConvexConvexMultipointIterations3(self, ...)
+	end
+	ffi.metatype('btDefaultCollisionConfiguration', META)
+	function bullet.CreateDefaultCollisionConfiguration(...)
+		return lib.btDefaultCollisionConfiguration_new(...)
+	end
+	function bullet.CreateDefaultCollisionConfiguration2(...)
+		return lib.btDefaultCollisionConfiguration_new2(...)
+	end
+end
+do -- GImpactMeshShapePart
+	local META = {}
+	META.__index = META
+	function META:GetPart(...)
+		return lib.btGImpactMeshShapePart_getPart(self, ...)
+	end
+	function META:GetVertexCount(...)
+		return lib.btGImpactMeshShapePart_getVertexCount(self, ...)
+	end
+	function META:GetVertex(...)
+		return lib.btGImpactMeshShapePart_getVertex(self, ...)
+	end
+	function META:GetTrimeshPrimitiveManager(...)
+		return lib.btGImpactMeshShapePart_getTrimeshPrimitiveManager(self, ...)
+	end
+	ffi.metatype('btGImpactMeshShapePart', META)
+	function bullet.CreateGImpactMeshShapePart(...)
+		return lib.btGImpactMeshShapePart_new(...)
+	end
+	function bullet.CreateGImpactMeshShapePart2(...)
+		return lib.btGImpactMeshShapePart_new2(...)
+	end
+end
+do -- ScaledBvhTriangleMeshShape
+	local META = {}
+	META.__index = META
+	function META:GetChildShape(...)
+		return lib.btScaledBvhTriangleMeshShape_getChildShape(self, ...)
+	end
+	ffi.metatype('btScaledBvhTriangleMeshShape', META)
+	function bullet.CreateScaledBvhTriangleMeshShape(...)
+		return lib.btScaledBvhTriangleMeshShape_new(...)
+	end
+end
+do -- Hinge2Constraint
+	local META = {}
+	META.__index = META
+	function META:GetAngle2(...)
+		return lib.btHinge2Constraint_getAngle2(self, ...)
+	end
+	function META:GetAxis2(...)
+		return lib.btHinge2Constraint_getAxis2(self, ...)
+	end
+	function META:SetUpperLimit(...)
+		return lib.btHinge2Constraint_setUpperLimit(self, ...)
+	end
+	function META:GetAnchor2(...)
+		return lib.btHinge2Constraint_getAnchor2(self, ...)
+	end
+	function META:GetAxis1(...)
+		return lib.btHinge2Constraint_getAxis1(self, ...)
+	end
+	function META:SetLowerLimit(...)
+		return lib.btHinge2Constraint_setLowerLimit(self, ...)
+	end
+	function META:GetAngle1(...)
+		return lib.btHinge2Constraint_getAngle1(self, ...)
+	end
+	function META:GetAnchor(...)
+		return lib.btHinge2Constraint_getAnchor(self, ...)
+	end
+	ffi.metatype('btHinge2Constraint', META)
+	function bullet.CreateHinge2Constraint2(...)
+		return lib.btHinge2Constraint_new(...)
+	end
+end
+do -- InternalTriangleIndexCallbackWrapper
+	local META = {}
+	META.__index = META
+	ffi.metatype('btInternalTriangleIndexCallbackWrapper', META)
+	function bullet.CreateInternalTriangleIndexCallbackWrapper(...)
+		return lib.btInternalTriangleIndexCallbackWrapper_new(...)
+	end
+end
+do -- DbvtAabbMm
+	local META = {}
+	META.__index = META
+	function META:Extents(...)
+		return lib.btDbvtAabbMm_Extents(self, ...)
+	end
+	function META:Expand(...)
+		return lib.btDbvtAabbMm_Expand(self, ...)
+	end
+	function META:Contain(...)
+		return lib.btDbvtAabbMm_Contain(self, ...)
+	end
+	function META:Lengths(...)
+		return lib.btDbvtAabbMm_Lengths(self, ...)
+	end
+	function META:SignedExpand(...)
+		return lib.btDbvtAabbMm_SignedExpand(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btDbvtAabbMm_delete(self, ...)
+	end
+	function META:FromPoints2(...)
+		return lib.btDbvtAabbMm_FromPoints2(self, ...)
+	end
+	function META:ProjectMinimum(...)
+		return lib.btDbvtAabbMm_ProjectMinimum(self, ...)
+	end
+	function META:Maxs(...)
+		return lib.btDbvtAabbMm_Maxs(self, ...)
+	end
+	function META:Center(...)
+		return lib.btDbvtAabbMm_Center(self, ...)
+	end
+	function META:Mins(...)
+		return lib.btDbvtAabbMm_Mins(self, ...)
+	end
+	function META:FromCR(...)
+		return lib.btDbvtAabbMm_FromCR(self, ...)
+	end
+	function META:Classify(...)
+		return lib.btDbvtAabbMm_Classify(self, ...)
+	end
+	function META:FromCE(...)
+		return lib.btDbvtAabbMm_FromCE(self, ...)
+	end
+	function META:TMins(...)
+		return lib.btDbvtAabbMm_tMins(self, ...)
+	end
+	function META:TMaxs(...)
+		return lib.btDbvtAabbMm_tMaxs(self, ...)
+	end
+	function META:FromPoints(...)
+		return lib.btDbvtAabbMm_FromPoints(self, ...)
+	end
+	function META:FromMM(...)
+		return lib.btDbvtAabbMm_FromMM(self, ...)
+	end
+	ffi.metatype('btDbvtAabbMm', META)
+	function bullet.CreateDbvtAabbMm(...)
+		return lib.btDbvtAabbMm_new(...)
+	end
+end
+do -- QuantizedBvhNode
+	local META = {}
+	META.__index = META
+	function META:GetEscapeIndex(...)
+		return lib.btQuantizedBvhNode_getEscapeIndex(self, ...)
+	end
+	function META:SetEscapeIndexOrTriangleIndex(...)
+		return lib.btQuantizedBvhNode_setEscapeIndexOrTriangleIndex(self, ...)
+	end
+	function META:GetTriangleIndex(...)
+		return lib.btQuantizedBvhNode_getTriangleIndex(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btQuantizedBvhNode_delete(self, ...)
+	end
+	function META:GetQuantizedAabbMax(...)
+		return lib.btQuantizedBvhNode_getQuantizedAabbMax(self, ...)
+	end
+	function META:GetPartId(...)
+		return lib.btQuantizedBvhNode_getPartId(self, ...)
+	end
+	function META:IsLeafNode(...)
+		return lib.btQuantizedBvhNode_isLeafNode(self, ...)
+	end
+	function META:GetQuantizedAabbMin(...)
+		return lib.btQuantizedBvhNode_getQuantizedAabbMin(self, ...)
+	end
+	function META:GetEscapeIndexOrTriangleIndex(...)
+		return lib.btQuantizedBvhNode_getEscapeIndexOrTriangleIndex(self, ...)
+	end
+	ffi.metatype('btQuantizedBvhNode', META)
+	function bullet.CreateQuantizedBvhNode(...)
+		return lib.btQuantizedBvhNode_new(...)
+	end
+end
+do -- DbvtNode
+	local META = {}
+	META.__index = META
+	function META:Isinternal(...)
+		return lib.btDbvtNode_isinternal(self, ...)
+	end
+	function META:GetVolume(...)
+		return lib.btDbvtNode_getVolume(self, ...)
+	end
+	function META:SetDataAsInt(...)
+		return lib.btDbvtNode_setDataAsInt(self, ...)
+	end
+	function META:SetData(...)
+		return lib.btDbvtNode_setData(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btDbvtNode_delete(self, ...)
+	end
+	function META:SetParent(...)
+		return lib.btDbvtNode_setParent(self, ...)
+	end
+	function META:GetChilds(...)
+		return lib.btDbvtNode_getChilds(self, ...)
+	end
+	function META:GetData(...)
+		return lib.btDbvtNode_getData(self, ...)
+	end
+	function META:GetParent(...)
+		return lib.btDbvtNode_getParent(self, ...)
+	end
+	function META:GetDataAsInt(...)
+		return lib.btDbvtNode_getDataAsInt(self, ...)
+	end
+	function META:Isleaf(...)
+		return lib.btDbvtNode_isleaf(self, ...)
+	end
+	ffi.metatype('btDbvtNode', META)
+	function bullet.CreateDbvtNode(...)
+		return lib.btDbvtNode_new(...)
+	end
+end
+do -- WorldImporter
+	local META = {}
+	META.__index = META
+	function META:CreateConeTwistConstraint(...)
+		return lib.btWorldImporter_createConeTwistConstraint(self, ...)
+	end
+	function META:CreateCollisionObject(...)
+		return lib.btWorldImporter_createCollisionObject(self, ...)
+	end
+	function META:CreateGeneric6DofConstraint2(...)
+		return lib.btWorldImporter_createGeneric6DofConstraint2(self, ...)
+	end
+	function META:CreatePoint2PointConstraint(...)
+		return lib.btWorldImporter_createPoint2PointConstraint(self, ...)
+	end
+	function META:CreateSphereShape(...)
+		return lib.btWorldImporter_createSphereShape(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btWorldImporter_delete(self, ...)
+	end
+	function META:CreateCompoundShape(...)
+		return lib.btWorldImporter_createCompoundShape(self, ...)
+	end
+	function META:GetNumTriangleInfoMaps(...)
+		return lib.btWorldImporter_getNumTriangleInfoMaps(self, ...)
+	end
+	function META:SetVerboseMode(...)
+		return lib.btWorldImporter_setVerboseMode(self, ...)
+	end
+	function META:CreatePoint2PointConstraint2(...)
+		return lib.btWorldImporter_createPoint2PointConstraint2(self, ...)
+	end
+	function META:CreateRigidBody(...)
+		return lib.btWorldImporter_createRigidBody(self, ...)
+	end
+	function META:SetDynamicsWorldInfo(...)
+		return lib.btWorldImporter_setDynamicsWorldInfo(self, ...)
+	end
+	function META:CreateConeShapeY(...)
+		return lib.btWorldImporter_createConeShapeY(self, ...)
+	end
+	function META:GetNumRigidBodies(...)
+		return lib.btWorldImporter_getNumRigidBodies(self, ...)
+	end
+	function META:GetNumConstraints(...)
+		return lib.btWorldImporter_getNumConstraints(self, ...)
+	end
+	function META:GetConstraintByIndex(...)
+		return lib.btWorldImporter_getConstraintByIndex(self, ...)
+	end
+	function META:GetTriangleInfoMapByIndex(...)
+		return lib.btWorldImporter_getTriangleInfoMapByIndex(self, ...)
+	end
+	function META:CreateConvexTriangleMeshShape(...)
+		return lib.btWorldImporter_createConvexTriangleMeshShape(self, ...)
+	end
+	function META:GetRigidBodyByName(...)
+		return lib.btWorldImporter_getRigidBodyByName(self, ...)
+	end
+	function META:CreateMultiSphereShape(...)
+		return lib.btWorldImporter_createMultiSphereShape(self, ...)
+	end
+	function META:GetVerboseMode(...)
+		return lib.btWorldImporter_getVerboseMode(self, ...)
+	end
+	function META:CreateGimpactShape(...)
+		return lib.btWorldImporter_createGimpactShape(self, ...)
+	end
+	function META:GetRigidBodyByIndex(...)
+		return lib.btWorldImporter_getRigidBodyByIndex(self, ...)
+	end
+	function META:GetNumCollisionShapes(...)
+		return lib.btWorldImporter_getNumCollisionShapes(self, ...)
+	end
+	function META:CreateMeshInterface(...)
+		return lib.btWorldImporter_createMeshInterface(self, ...)
+	end
+	function META:CreateOptimizedBvh(...)
+		return lib.btWorldImporter_createOptimizedBvh(self, ...)
+	end
+	function META:CreateGeneric6DofConstraint(...)
+		return lib.btWorldImporter_createGeneric6DofConstraint(self, ...)
+	end
+	function META:GetNameForPointer(...)
+		return lib.btWorldImporter_getNameForPointer(self, ...)
+	end
+	function META:CreateTriangleMeshContainer(...)
+		return lib.btWorldImporter_createTriangleMeshContainer(self, ...)
+	end
+	function META:CreateBvhTriangleMeshShape(...)
+		return lib.btWorldImporter_createBvhTriangleMeshShape(self, ...)
+	end
+	function META:CreateCapsuleShapeX(...)
+		return lib.btWorldImporter_createCapsuleShapeX(self, ...)
+	end
+	function META:GetCollisionShapeByName(...)
+		return lib.btWorldImporter_getCollisionShapeByName(self, ...)
+	end
+	function META:CreateCapsuleShapeY(...)
+		return lib.btWorldImporter_createCapsuleShapeY(self, ...)
+	end
+	function META:GetCollisionShapeByIndex(...)
+		return lib.btWorldImporter_getCollisionShapeByIndex(self, ...)
+	end
+	function META:CreateConeShapeX(...)
+		return lib.btWorldImporter_createConeShapeX(self, ...)
+	end
+	function META:GetBvhByIndex(...)
+		return lib.btWorldImporter_getBvhByIndex(self, ...)
+	end
+	function META:CreateCylinderShapeX(...)
+		return lib.btWorldImporter_createCylinderShapeX(self, ...)
+	end
+	function META:DeleteAllData(...)
+		return lib.btWorldImporter_deleteAllData(self, ...)
+	end
+	function META:GetConstraintByName(...)
+		return lib.btWorldImporter_getConstraintByName(self, ...)
+	end
+	function META:CreateGearConstraint(...)
+		return lib.btWorldImporter_createGearConstraint(self, ...)
+	end
+	function META:CreateTriangleInfoMap(...)
+		return lib.btWorldImporter_createTriangleInfoMap(self, ...)
+	end
+	function META:CreateHingeConstraint(...)
+		return lib.btWorldImporter_createHingeConstraint(self, ...)
+	end
+	function META:CreateConeTwistConstraint2(...)
+		return lib.btWorldImporter_createConeTwistConstraint2(self, ...)
+	end
+	function META:CreateCapsuleShapeZ(...)
+		return lib.btWorldImporter_createCapsuleShapeZ(self, ...)
+	end
+	function META:CreateCylinderShapeZ(...)
+		return lib.btWorldImporter_createCylinderShapeZ(self, ...)
+	end
+	function META:CreateConvexHullShape(...)
+		return lib.btWorldImporter_createConvexHullShape(self, ...)
+	end
+	function META:CreateBoxShape(...)
+		return lib.btWorldImporter_createBoxShape(self, ...)
+	end
+	function META:CreateSliderConstraint(...)
+		return lib.btWorldImporter_createSliderConstraint(self, ...)
+	end
+	function META:CreateHingeConstraint3(...)
+		return lib.btWorldImporter_createHingeConstraint3(self, ...)
+	end
+	function META:CreateScaledTrangleMeshShape(...)
+		return lib.btWorldImporter_createScaledTrangleMeshShape(self, ...)
+	end
+	function META:CreateCylinderShapeY(...)
+		return lib.btWorldImporter_createCylinderShapeY(self, ...)
+	end
+	function META:CreateSliderConstraint2(...)
+		return lib.btWorldImporter_createSliderConstraint2(self, ...)
+	end
+	function META:CreateGeneric6DofSpringConstraint(...)
+		return lib.btWorldImporter_createGeneric6DofSpringConstraint(self, ...)
+	end
+	function META:CreateConeShapeZ(...)
+		return lib.btWorldImporter_createConeShapeZ(self, ...)
+	end
+	function META:CreateStridingMeshInterfaceData(...)
+		return lib.btWorldImporter_createStridingMeshInterfaceData(self, ...)
+	end
+	function META:GetNumBvhs(...)
+		return lib.btWorldImporter_getNumBvhs(self, ...)
+	end
+	function META:CreateGeneric6DofSpring2Constraint(...)
+		return lib.btWorldImporter_createGeneric6DofSpring2Constraint(self, ...)
+	end
+	function META:CreatePlaneShape(...)
+		return lib.btWorldImporter_createPlaneShape(self, ...)
+	end
+	function META:CreateHingeConstraint2(...)
+		return lib.btWorldImporter_createHingeConstraint2(self, ...)
+	end
+	function META:CreateHingeConstraint4(...)
+		return lib.btWorldImporter_createHingeConstraint4(self, ...)
+	end
+	ffi.metatype('btWorldImporter', META)
+	function bullet.CreateWorldImporter(...)
+		return lib.btWorldImporter_new(...)
+	end
+end
+do -- ConvexConcaveCollisionAlgorithm_SwappedCreateFunc
+	local META = {}
+	META.__index = META
+	ffi.metatype('btConvexConcaveCollisionAlgorithm_SwappedCreateFunc', META)
+	function bullet.CreateConvexConcaveCollisionAlgorithm_SwappedCreateFunc(...)
+		return lib.btConvexConcaveCollisionAlgorithm_SwappedCreateFunc_new(...)
+	end
+end
+do -- ConvexPointCloudShape
+	local META = {}
+	META.__index = META
+	function META:GetNumPoints(...)
+		return lib.btConvexPointCloudShape_getNumPoints(self, ...)
+	end
+	function META:SetPoints2(...)
+		return lib.btConvexPointCloudShape_setPoints2(self, ...)
+	end
+	function META:SetPoints3(...)
+		return lib.btConvexPointCloudShape_setPoints3(self, ...)
+	end
+	function META:GetUnscaledPoints(...)
+		return lib.btConvexPointCloudShape_getUnscaledPoints(self, ...)
+	end
+	function META:SetPoints(...)
+		return lib.btConvexPointCloudShape_setPoints(self, ...)
+	end
+	function META:GetScaledPoint(...)
+		return lib.btConvexPointCloudShape_getScaledPoint(self, ...)
+	end
+	ffi.metatype('btConvexPointCloudShape', META)
+	function bullet.CreateConvexPointCloudShape3(...)
+		return lib.btConvexPointCloudShape_new3(...)
+	end
+	function bullet.CreateConvexPointCloudShape(...)
+		return lib.btConvexPointCloudShape_new(...)
+	end
+	function bullet.CreateConvexPointCloudShape2(...)
+		return lib.btConvexPointCloudShape_new2(...)
+	end
+end
+do -- CollisionDispatcher
+	local META = {}
+	META.__index = META
+	function META:GetNearCallback(...)
+		return lib.btCollisionDispatcher_getNearCallback(self, ...)
+	end
+	function META:GetCollisionConfiguration(...)
+		return lib.btCollisionDispatcher_getCollisionConfiguration(self, ...)
+	end
+	function META:GetDispatcherFlags(...)
+		return lib.btCollisionDispatcher_getDispatcherFlags(self, ...)
+	end
+	function META:SetCollisionConfiguration(...)
+		return lib.btCollisionDispatcher_setCollisionConfiguration(self, ...)
+	end
+	function META:SetNearCallback(...)
+		return lib.btCollisionDispatcher_setNearCallback(self, ...)
+	end
+	function META:RegisterCollisionCreateFunc(...)
+		return lib.btCollisionDispatcher_registerCollisionCreateFunc(self, ...)
+	end
+	function META:SetDispatcherFlags(...)
+		return lib.btCollisionDispatcher_setDispatcherFlags(self, ...)
+	end
+	function META:DefaultNearCallback(...)
+		return lib.btCollisionDispatcher_defaultNearCallback(self, ...)
+	end
+	ffi.metatype('btCollisionDispatcher', META)
+	function bullet.CreateCollisionDispatcher(...)
+		return lib.btCollisionDispatcher_new(...)
+	end
+end
+do -- SoftBody_RContact
+	local META = {}
+	META.__index = META
+	function META:GetC3(...)
+		return lib.btSoftBody_RContact_getC3(self, ...)
+	end
+	function META:GetC0(...)
+		return lib.btSoftBody_RContact_getC0(self, ...)
+	end
+	function META:SetC2(...)
+		return lib.btSoftBody_RContact_setC2(self, ...)
+	end
+	function META:SetNode(...)
+		return lib.btSoftBody_RContact_setNode(self, ...)
+	end
+	function META:GetNode(...)
+		return lib.btSoftBody_RContact_getNode(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBody_RContact_delete(self, ...)
+	end
+	function META:SetC4(...)
+		return lib.btSoftBody_RContact_setC4(self, ...)
+	end
+	function META:GetCti(...)
+		return lib.btSoftBody_RContact_getCti(self, ...)
+	end
+	function META:GetC4(...)
+		return lib.btSoftBody_RContact_getC4(self, ...)
+	end
+	function META:SetC1(...)
+		return lib.btSoftBody_RContact_setC1(self, ...)
+	end
+	function META:GetC1(...)
+		return lib.btSoftBody_RContact_getC1(self, ...)
+	end
+	function META:GetC2(...)
+		return lib.btSoftBody_RContact_getC2(self, ...)
+	end
+	function META:SetC3(...)
+		return lib.btSoftBody_RContact_setC3(self, ...)
+	end
+	function META:SetC0(...)
+		return lib.btSoftBody_RContact_setC0(self, ...)
+	end
+	ffi.metatype('btSoftBody_RContact', META)
+	function bullet.CreateSoftBody_RContact(...)
+		return lib.btSoftBody_RContact_new(...)
+	end
+end
+do -- MultiBodyConstraintSolver
+	local META = {}
+	META.__index = META
+	function META:SolveMultiBodyGroup(...)
+		return lib.btMultiBodyConstraintSolver_solveMultiBodyGroup(self, ...)
+	end
+	function META:SolveGroupCacheFriendlyFinish(...)
+		return lib.btMultiBodyConstraintSolver_solveGroupCacheFriendlyFinish(self, ...)
+	end
+	ffi.metatype('btMultiBodyConstraintSolver', META)
+	function bullet.CreateMultiBodyConstraintSolver(...)
+		return lib.btMultiBodyConstraintSolver_new(...)
+	end
+end
+do -- Dbvt_sStkNPS
+	local META = {}
+	META.__index = META
+	function META:SetValue(...)
+		return lib.btDbvt_sStkNPS_setValue(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btDbvt_sStkNPS_delete(self, ...)
+	end
+	function META:SetNode(...)
+		return lib.btDbvt_sStkNPS_setNode(self, ...)
+	end
+	function META:GetValue(...)
+		return lib.btDbvt_sStkNPS_getValue(self, ...)
+	end
+	function META:GetMask(...)
+		return lib.btDbvt_sStkNPS_getMask(self, ...)
+	end
+	function META:GetNode(...)
+		return lib.btDbvt_sStkNPS_getNode(self, ...)
+	end
+	function META:SetMask(...)
+		return lib.btDbvt_sStkNPS_setMask(self, ...)
+	end
+	ffi.metatype('btDbvt_sStkNPS', META)
+	function bullet.CreateDbvt_sStkNPS2(...)
+		return lib.btDbvt_sStkNPS_new2(...)
+	end
+	function bullet.CreateDbvt_sStkNPS(...)
+		return lib.btDbvt_sStkNPS_new(...)
+	end
+end
+do -- UsageBitfield
+	local META = {}
+	META.__index = META
+	function META:SetUsedVertexC(...)
+		return lib.btUsageBitfield_setUsedVertexC(self, ...)
+	end
+	function META:GetUsedVertexB(...)
+		return lib.btUsageBitfield_getUsedVertexB(self, ...)
+	end
+	function META:GetUsedVertexC(...)
+		return lib.btUsageBitfield_getUsedVertexC(self, ...)
+	end
+	function META:SetUnused1(...)
+		return lib.btUsageBitfield_setUnused1(self, ...)
+	end
+	function META:SetUnused2(...)
+		return lib.btUsageBitfield_setUnused2(self, ...)
+	end
+	function META:GetUnused1(...)
+		return lib.btUsageBitfield_getUnused1(self, ...)
+	end
+	function META:GetUnused2(...)
+		return lib.btUsageBitfield_getUnused2(self, ...)
+	end
+	function META:SetUnused3(...)
+		return lib.btUsageBitfield_setUnused3(self, ...)
+	end
+	function META:SetUnused4(...)
+		return lib.btUsageBitfield_setUnused4(self, ...)
+	end
+	function META:GetUnused3(...)
+		return lib.btUsageBitfield_getUnused3(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btUsageBitfield_delete(self, ...)
+	end
+	function META:GetUnused4(...)
+		return lib.btUsageBitfield_getUnused4(self, ...)
+	end
+	function META:SetUsedVertexD(...)
+		return lib.btUsageBitfield_setUsedVertexD(self, ...)
+	end
+	function META:GetUsedVertexA(...)
+		return lib.btUsageBitfield_getUsedVertexA(self, ...)
+	end
+	function META:Reset(...)
+		return lib.btUsageBitfield_reset(self, ...)
+	end
+	function META:SetUsedVertexA(...)
+		return lib.btUsageBitfield_setUsedVertexA(self, ...)
+	end
+	function META:GetUsedVertexD(...)
+		return lib.btUsageBitfield_getUsedVertexD(self, ...)
+	end
+	function META:SetUsedVertexB(...)
+		return lib.btUsageBitfield_setUsedVertexB(self, ...)
+	end
+	ffi.metatype('btUsageBitfield', META)
+	function bullet.CreateUsageBitfield(...)
+		return lib.btUsageBitfield_new(...)
+	end
+end
+do -- BoxBoxCollisionAlgorithm_CreateFunc
+	local META = {}
+	META.__index = META
+	ffi.metatype('btBoxBoxCollisionAlgorithm_CreateFunc', META)
+	function bullet.CreateBoxBoxCollisionAlgorithm_CreateFunc(...)
+		return lib.btBoxBoxCollisionAlgorithm_CreateFunc_new(...)
+	end
+end
+do -- PairCachingGhostObject
+	local META = {}
+	META.__index = META
+	function META:GetOverlappingPairCache(...)
+		return lib.btPairCachingGhostObject_getOverlappingPairCache(self, ...)
+	end
+	ffi.metatype('btPairCachingGhostObject', META)
+	function bullet.CreatePairCachingGhostObject(...)
+		return lib.btPairCachingGhostObject_new(...)
+	end
+end
+do -- SoftBody_Note
+	local META = {}
+	META.__index = META
+	function META:GetRank(...)
+		return lib.btSoftBody_Note_getRank(self, ...)
+	end
+	function META:GetOffset(...)
+		return lib.btSoftBody_Note_getOffset(self, ...)
+	end
+	function META:SetText(...)
+		return lib.btSoftBody_Note_setText(self, ...)
+	end
+	function META:GetCoords(...)
+		return lib.btSoftBody_Note_getCoords(self, ...)
+	end
+	function META:GetText(...)
+		return lib.btSoftBody_Note_getText(self, ...)
+	end
+	function META:SetOffset(...)
+		return lib.btSoftBody_Note_setOffset(self, ...)
+	end
+	function META:SetRank(...)
+		return lib.btSoftBody_Note_setRank(self, ...)
+	end
+	function META:GetNodes(...)
+		return lib.btSoftBody_Note_getNodes(self, ...)
+	end
+	ffi.metatype('btSoftBody_Note', META)
+	function bullet.CreateSoftBody_Note(...)
+		return lib.btSoftBody_Note_new(...)
+	end
+end
+do -- ConvexHullShape
+	local META = {}
+	META.__index = META
+	function META:AddPoint(...)
+		return lib.btConvexHullShape_addPoint(self, ...)
+	end
+	function META:GetPoints(...)
+		return lib.btConvexHullShape_getPoints(self, ...)
+	end
+	function META:GetNumPoints(...)
+		return lib.btConvexHullShape_getNumPoints(self, ...)
+	end
+	function META:GetScaledPoint(...)
+		return lib.btConvexHullShape_getScaledPoint(self, ...)
+	end
+	function META:GetUnscaledPoints(...)
+		return lib.btConvexHullShape_getUnscaledPoints(self, ...)
+	end
+	function META:AddPoint2(...)
+		return lib.btConvexHullShape_addPoint2(self, ...)
+	end
+	function META:Project(...)
+		return lib.btConvexHullShape_project(self, ...)
+	end
+	ffi.metatype('btConvexHullShape', META)
+	function bullet.CreateConvexHullShape4(...)
+		return lib.btConvexHullShape_new4(...)
+	end
+	function bullet.CreateConvexHullShape2(...)
+		return lib.btConvexHullShape_new2(...)
+	end
+	function bullet.CreateConvexHullShape(...)
+		return lib.btConvexHullShape_new(...)
+	end
+	function bullet.CreateConvexHullShape3(...)
+		return lib.btConvexHullShape_new3(...)
+	end
+end
+do -- Dbvt_sStkNN
+	local META = {}
+	META.__index = META
+	function META:GetA(...)
+		return lib.btDbvt_sStkNN_getA(self, ...)
+	end
+	function META:GetB(...)
+		return lib.btDbvt_sStkNN_getB(self, ...)
+	end
+	function META:SetA(...)
+		return lib.btDbvt_sStkNN_setA(self, ...)
+	end
+	function META:SetB(...)
+		return lib.btDbvt_sStkNN_setB(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btDbvt_sStkNN_delete(self, ...)
+	end
+	ffi.metatype('btDbvt_sStkNN', META)
+	function bullet.CreateDbvt_sStkNN(...)
+		return lib.btDbvt_sStkNN_new(...)
+	end
+	function bullet.CreateDbvt_sStkNN2(...)
+		return lib.btDbvt_sStkNN_new2(...)
+	end
+end
+do -- SoftBody_sRayCast
+	local META = {}
+	META.__index = META
+	function META:SetIndex(...)
+		return lib.btSoftBody_sRayCast_setIndex(self, ...)
+	end
+	function META:SetFraction(...)
+		return lib.btSoftBody_sRayCast_setFraction(self, ...)
+	end
+	function META:GetIndex(...)
+		return lib.btSoftBody_sRayCast_getIndex(self, ...)
+	end
+	function META:GetFraction(...)
+		return lib.btSoftBody_sRayCast_getFraction(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBody_sRayCast_delete(self, ...)
+	end
+	function META:GetBody(...)
+		return lib.btSoftBody_sRayCast_getBody(self, ...)
+	end
+	function META:GetFeature(...)
+		return lib.btSoftBody_sRayCast_getFeature(self, ...)
+	end
+	function META:SetFeature(...)
+		return lib.btSoftBody_sRayCast_setFeature(self, ...)
+	end
+	function META:SetBody(...)
+		return lib.btSoftBody_sRayCast_setBody(self, ...)
+	end
+	ffi.metatype('btSoftBody_sRayCast', META)
+	function bullet.CreateSoftBody_sRayCast(...)
+		return lib.btSoftBody_sRayCast_new(...)
+	end
+end
+do -- CompoundCompoundCollisionAlgorithm_SwappedCreateFunc
+	local META = {}
+	META.__index = META
+	ffi.metatype('btCompoundCompoundCollisionAlgorithm_SwappedCreateFunc', META)
+	function bullet.CreateCompoundCompoundCollisionAlgorithm_SwappedCreateFunc(...)
+		return lib.btCompoundCompoundCollisionAlgorithm_SwappedCreateFunc_new(...)
+	end
+end
+do -- Generic6DofSpring2Constraint
+	local META = {}
+	META.__index = META
+	function META:SetTargetVelocity(...)
+		return lib.btGeneric6DofSpring2Constraint_setTargetVelocity(self, ...)
+	end
+	function META:GetFrameOffsetA(...)
+		return lib.btGeneric6DofSpring2Constraint_getFrameOffsetA(self, ...)
+	end
+	function META:CalculateTransforms(...)
+		return lib.btGeneric6DofSpring2Constraint_calculateTransforms(self, ...)
+	end
+	function META:SetStiffness(...)
+		return lib.btGeneric6DofSpring2Constraint_setStiffness(self, ...)
+	end
+	function META:SetAngularLowerLimitReversed(...)
+		return lib.btGeneric6DofSpring2Constraint_setAngularLowerLimitReversed(self, ...)
+	end
+	function META:SetAngularLowerLimit(...)
+		return lib.btGeneric6DofSpring2Constraint_setAngularLowerLimit(self, ...)
+	end
+	function META:SetFrames(...)
+		return lib.btGeneric6DofSpring2Constraint_setFrames(self, ...)
+	end
+	function META:EnableMotor(...)
+		return lib.btGeneric6DofSpring2Constraint_enableMotor(self, ...)
+	end
+	function META:GetTranslationalLimitMotor(...)
+		return lib.btGeneric6DofSpring2Constraint_getTranslationalLimitMotor(self, ...)
+	end
+	function META:SetRotationOrder(...)
+		return lib.btGeneric6DofSpring2Constraint_setRotationOrder(self, ...)
+	end
+	function META:SetEquilibriumPoint(...)
+		return lib.btGeneric6DofSpring2Constraint_setEquilibriumPoint(self, ...)
+	end
+	function META:IsLimited(...)
+		return lib.btGeneric6DofSpring2Constraint_isLimited(self, ...)
+	end
+	function META:GetCalculatedTransformA(...)
+		return lib.btGeneric6DofSpring2Constraint_getCalculatedTransformA(self, ...)
+	end
+	function META:GetAngularUpperLimitReversed(...)
+		return lib.btGeneric6DofSpring2Constraint_getAngularUpperLimitReversed(self, ...)
+	end
+	function META:SetAngularUpperLimit(...)
+		return lib.btGeneric6DofSpring2Constraint_setAngularUpperLimit(self, ...)
+	end
+	function META:SetAngularUpperLimitReversed(...)
+		return lib.btGeneric6DofSpring2Constraint_setAngularUpperLimitReversed(self, ...)
+	end
+	function META:GetCalculatedTransformB(...)
+		return lib.btGeneric6DofSpring2Constraint_getCalculatedTransformB(self, ...)
+	end
+	function META:SetDamping(...)
+		return lib.btGeneric6DofSpring2Constraint_setDamping(self, ...)
+	end
+	function META:SetLimitReversed(...)
+		return lib.btGeneric6DofSpring2Constraint_setLimitReversed(self, ...)
+	end
+	function META:GetRotationOrder(...)
+		return lib.btGeneric6DofSpring2Constraint_getRotationOrder(self, ...)
+	end
+	function META:SetEquilibriumPoint2(...)
+		return lib.btGeneric6DofSpring2Constraint_setEquilibriumPoint2(self, ...)
+	end
+	function META:GetLinearLowerLimit(...)
+		return lib.btGeneric6DofSpring2Constraint_getLinearLowerLimit(self, ...)
+	end
+	function META:SetEquilibriumPoint3(...)
+		return lib.btGeneric6DofSpring2Constraint_setEquilibriumPoint3(self, ...)
+	end
+	function META:GetRelativePivotPosition(...)
+		return lib.btGeneric6DofSpring2Constraint_getRelativePivotPosition(self, ...)
+	end
+	function META:SetBounce(...)
+		return lib.btGeneric6DofSpring2Constraint_setBounce(self, ...)
+	end
+	function META:GetRotationalLimitMotor(...)
+		return lib.btGeneric6DofSpring2Constraint_getRotationalLimitMotor(self, ...)
+	end
+	function META:SetServoTarget(...)
+		return lib.btGeneric6DofSpring2Constraint_setServoTarget(self, ...)
+	end
+	function META:GetFrameOffsetB(...)
+		return lib.btGeneric6DofSpring2Constraint_getFrameOffsetB(self, ...)
+	end
+	function META:SetServo(...)
+		return lib.btGeneric6DofSpring2Constraint_setServo(self, ...)
+	end
+	function META:GetAngularLowerLimitReversed(...)
+		return lib.btGeneric6DofSpring2Constraint_getAngularLowerLimitReversed(self, ...)
+	end
+	function META:SetLinearUpperLimit(...)
+		return lib.btGeneric6DofSpring2Constraint_setLinearUpperLimit(self, ...)
+	end
+	function META:GetAngularLowerLimit(...)
+		return lib.btGeneric6DofSpring2Constraint_getAngularLowerLimit(self, ...)
+	end
+	function META:GetAngularUpperLimit(...)
+		return lib.btGeneric6DofSpring2Constraint_getAngularUpperLimit(self, ...)
+	end
+	function META:GetAngle(...)
+		return lib.btGeneric6DofSpring2Constraint_getAngle(self, ...)
+	end
+	function META:SetLimit(...)
+		return lib.btGeneric6DofSpring2Constraint_setLimit(self, ...)
+	end
+	function META:CalculateTransforms2(...)
+		return lib.btGeneric6DofSpring2Constraint_calculateTransforms2(self, ...)
+	end
+	function META:GetAxis(...)
+		return lib.btGeneric6DofSpring2Constraint_getAxis(self, ...)
+	end
+	function META:SetMaxMotorForce(...)
+		return lib.btGeneric6DofSpring2Constraint_setMaxMotorForce(self, ...)
+	end
+	function META:SetLinearLowerLimit(...)
+		return lib.btGeneric6DofSpring2Constraint_setLinearLowerLimit(self, ...)
+	end
+	function META:EnableSpring(...)
+		return lib.btGeneric6DofSpring2Constraint_enableSpring(self, ...)
+	end
+	function META:GetLinearUpperLimit(...)
+		return lib.btGeneric6DofSpring2Constraint_getLinearUpperLimit(self, ...)
+	end
+	function META:SetAxis(...)
+		return lib.btGeneric6DofSpring2Constraint_setAxis(self, ...)
+	end
+	ffi.metatype('btGeneric6DofSpring2Constraint', META)
+	function bullet.CreateGeneric6DofSpring2Constraint3(...)
+		return lib.btGeneric6DofSpring2Constraint_new3(...)
+	end
+	function bullet.CreateGeneric6DofSpring2Constraint4(...)
+		return lib.btGeneric6DofSpring2Constraint_new4(...)
+	end
+	function bullet.CreateGeneric6DofSpring2Constraint2(...)
+		return lib.btGeneric6DofSpring2Constraint_new2(...)
+	end
+end
+do -- CollisionAlgorithmCreateFunc
+	local META = {}
+	META.__index = META
+	function META:Delete(...)
+		return lib.btCollisionAlgorithmCreateFunc_delete(self, ...)
+	end
+	function META:CreateCollisionAlgorithm(...)
+		return lib.btCollisionAlgorithmCreateFunc_CreateCollisionAlgorithm(self, ...)
+	end
+	function META:SetSwapped(...)
+		return lib.btCollisionAlgorithmCreateFunc_setSwapped(self, ...)
+	end
+	function META:GetSwapped(...)
+		return lib.btCollisionAlgorithmCreateFunc_getSwapped(self, ...)
+	end
+	ffi.metatype('btCollisionAlgorithmCreateFunc', META)
+	function bullet.CreateCollisionAlgorithmCreateFunc(...)
+		return lib.btCollisionAlgorithmCreateFunc_new(...)
+	end
+end
+do -- MultiBodyJointMotor
+	local META = {}
+	META.__index = META
+	function META:SetVelocityTarget(...)
+		return lib.btMultiBodyJointMotor_setVelocityTarget(self, ...)
+	end
+	ffi.metatype('btMultiBodyJointMotor', META)
+	function bullet.CreateMultiBodyJointMotor2(...)
+		return lib.btMultiBodyJointMotor_new2(...)
+	end
+	function bullet.CreateMultiBodyJointMotor(...)
+		return lib.btMultiBodyJointMotor_new(...)
+	end
+end
+do -- GearConstraint
+	local META = {}
+	META.__index = META
+	function META:SetAxisA(...)
+		return lib.btGearConstraint_setAxisA(self, ...)
+	end
+	function META:GetRatio(...)
+		return lib.btGearConstraint_getRatio(self, ...)
+	end
+	function META:GetAxisA(...)
+		return lib.btGearConstraint_getAxisA(self, ...)
+	end
+	function META:SetRatio(...)
+		return lib.btGearConstraint_setRatio(self, ...)
+	end
+	function META:GetAxisB(...)
+		return lib.btGearConstraint_getAxisB(self, ...)
+	end
+	function META:SetAxisB(...)
+		return lib.btGearConstraint_setAxisB(self, ...)
+	end
+	ffi.metatype('btGearConstraint', META)
+	function bullet.CreateGearConstraint2(...)
+		return lib.btGearConstraint_new2(...)
+	end
+	function bullet.CreateGearConstraint(...)
+		return lib.btGearConstraint_new(...)
+	end
+end
+do -- DefaultMotionState
+	local META = {}
+	META.__index = META
+	function META:GetUserPointer(...)
+		return lib.btDefaultMotionState_getUserPointer(self, ...)
+	end
+	function META:SetGraphicsWorldTrans(...)
+		return lib.btDefaultMotionState_setGraphicsWorldTrans(self, ...)
+	end
+	function META:SetStartWorldTrans(...)
+		return lib.btDefaultMotionState_setStartWorldTrans(self, ...)
+	end
+	function META:GetCenterOfMassOffset(...)
+		return lib.btDefaultMotionState_getCenterOfMassOffset(self, ...)
+	end
+	function META:SetUserPointer(...)
+		return lib.btDefaultMotionState_setUserPointer(self, ...)
+	end
+	function META:SetCenterOfMassOffset(...)
+		return lib.btDefaultMotionState_setCenterOfMassOffset(self, ...)
+	end
+	function META:GetGraphicsWorldTrans(...)
+		return lib.btDefaultMotionState_getGraphicsWorldTrans(self, ...)
+	end
+	function META:GetStartWorldTrans(...)
+		return lib.btDefaultMotionState_getStartWorldTrans(self, ...)
+	end
+	ffi.metatype('btDefaultMotionState', META)
+	function bullet.CreateDefaultMotionState2(...)
+		return lib.btDefaultMotionState_new2(...)
+	end
+	function bullet.CreateDefaultMotionState3(...)
+		return lib.btDefaultMotionState_new3(...)
+	end
+	function bullet.CreateDefaultMotionState(...)
+		return lib.btDefaultMotionState_new(...)
+	end
+end
+do -- GImpactCollisionAlgorithm
+	local META = {}
+	META.__index = META
+	function META:GetPart1(...)
+		return lib.btGImpactCollisionAlgorithm_getPart1(self, ...)
+	end
+	function META:SetFace1(...)
+		return lib.btGImpactCollisionAlgorithm_setFace1(self, ...)
+	end
+	function META:GetFace1(...)
+		return lib.btGImpactCollisionAlgorithm_getFace1(self, ...)
+	end
+	function META:GetPart0(...)
+		return lib.btGImpactCollisionAlgorithm_getPart0(self, ...)
+	end
+	function META:RegisterAlgorithm(...)
+		return lib.btGImpactCollisionAlgorithm_registerAlgorithm(self, ...)
+	end
+	function META:SetPart1(...)
+		return lib.btGImpactCollisionAlgorithm_setPart1(self, ...)
+	end
+	function META:SetFace0(...)
+		return lib.btGImpactCollisionAlgorithm_setFace0(self, ...)
+	end
+	function META:SetPart0(...)
+		return lib.btGImpactCollisionAlgorithm_setPart0(self, ...)
+	end
+	function META:GetFace0(...)
+		return lib.btGImpactCollisionAlgorithm_getFace0(self, ...)
+	end
+	function META:InternalGetResultOut(...)
+		return lib.btGImpactCollisionAlgorithm_internalGetResultOut(self, ...)
+	end
+	ffi.metatype('btGImpactCollisionAlgorithm', META)
+	function bullet.CreateGImpactCollisionAlgorithm(...)
+		return lib.btGImpactCollisionAlgorithm_new(...)
+	end
+end
+do -- DefaultSerializer
+	local META = {}
+	META.__index = META
+	function META:WriteHeader(...)
+		return lib.btDefaultSerializer_writeHeader(self, ...)
+	end
+	function META:InternalAlloc(...)
+		return lib.btDefaultSerializer_internalAlloc(self, ...)
+	end
+	ffi.metatype('btDefaultSerializer', META)
+	function bullet.CreateDefaultSerializer2(...)
+		return lib.btDefaultSerializer_new2(...)
+	end
+	function bullet.CreateDefaultSerializer(...)
+		return lib.btDefaultSerializer_new(...)
+	end
+end
+do -- CollisionWorld_RayResultCallbackWrapper
+	local META = {}
+	META.__index = META
+	function META:NeedsCollision(...)
+		return lib.btCollisionWorld_RayResultCallbackWrapper_needsCollision(self, ...)
+	end
+	ffi.metatype('btCollisionWorld_RayResultCallbackWrapper', META)
+	function bullet.CreateCollisionWorld_RayResultCallbackWrapper(...)
+		return lib.btCollisionWorld_RayResultCallbackWrapper_new(...)
+	end
+end
+do -- BroadphaseAabbCallbackWrapper
+	local META = {}
+	META.__index = META
+	ffi.metatype('btBroadphaseAabbCallbackWrapper', META)
+	function bullet.CreateBroadphaseAabbCallbackWrapper(...)
+		return lib.btBroadphaseAabbCallbackWrapper_new(...)
+	end
+end
+do -- MultiSphereShape
+	local META = {}
+	META.__index = META
+	function META:GetSphereCount(...)
+		return lib.btMultiSphereShape_getSphereCount(self, ...)
+	end
+	function META:GetSphereRadius(...)
+		return lib.btMultiSphereShape_getSphereRadius(self, ...)
+	end
+	function META:GetSpherePosition(...)
+		return lib.btMultiSphereShape_getSpherePosition(self, ...)
+	end
+	ffi.metatype('btMultiSphereShape', META)
+	function bullet.CreateMultiSphereShape2(...)
+		return lib.btMultiSphereShape_new2(...)
+	end
+	function bullet.CreateMultiSphereShape(...)
+		return lib.btMultiSphereShape_new(...)
+	end
+end
+do -- SoftBody_LJoint_Specs
+	local META = {}
+	META.__index = META
+	function META:SetPosition(...)
+		return lib.btSoftBody_LJoint_Specs_setPosition(self, ...)
+	end
+	function META:GetPosition(...)
+		return lib.btSoftBody_LJoint_Specs_getPosition(self, ...)
+	end
+	ffi.metatype('btSoftBody_LJoint_Specs', META)
+	function bullet.CreateSoftBody_LJoint_Specs(...)
+		return lib.btSoftBody_LJoint_Specs_new(...)
+	end
+end
+do -- FixedConstraint
+	local META = {}
+	META.__index = META
+	ffi.metatype('btFixedConstraint', META)
+	function bullet.CreateFixedConstraint(...)
+		return lib.btFixedConstraint_new(...)
+	end
+end
+do -- ConeShapeZ
+	local META = {}
+	META.__index = META
+	ffi.metatype('btConeShapeZ', META)
+	function bullet.CreateConeShapeZ(...)
+		return lib.btConeShapeZ_new(...)
+	end
+end
+do -- SoftBody_SContact
+	local META = {}
+	META.__index = META
+	function META:SetWeights(...)
+		return lib.btSoftBody_SContact_setWeights(self, ...)
+	end
+	function META:GetCfm(...)
+		return lib.btSoftBody_SContact_getCfm(self, ...)
+	end
+	function META:SetNormal(...)
+		return lib.btSoftBody_SContact_setNormal(self, ...)
+	end
+	function META:SetNode(...)
+		return lib.btSoftBody_SContact_setNode(self, ...)
+	end
+	function META:GetNode(...)
+		return lib.btSoftBody_SContact_getNode(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBody_SContact_delete(self, ...)
+	end
+	function META:GetNormal(...)
+		return lib.btSoftBody_SContact_getNormal(self, ...)
+	end
+	function META:SetMargin(...)
+		return lib.btSoftBody_SContact_setMargin(self, ...)
+	end
+	function META:SetFriction(...)
+		return lib.btSoftBody_SContact_setFriction(self, ...)
+	end
+	function META:SetFace(...)
+		return lib.btSoftBody_SContact_setFace(self, ...)
+	end
+	function META:GetFriction(...)
+		return lib.btSoftBody_SContact_getFriction(self, ...)
+	end
+	function META:GetWeights(...)
+		return lib.btSoftBody_SContact_getWeights(self, ...)
+	end
+	function META:GetMargin(...)
+		return lib.btSoftBody_SContact_getMargin(self, ...)
+	end
+	function META:GetFace(...)
+		return lib.btSoftBody_SContact_getFace(self, ...)
+	end
+	ffi.metatype('btSoftBody_SContact', META)
+	function bullet.CreateSoftBody_SContact(...)
+		return lib.btSoftBody_SContact_new(...)
+	end
+end
+do -- HashedOverlappingPairCache
+	local META = {}
+	META.__index = META
+	function META:GetOverlapFilterCallback(...)
+		return lib.btHashedOverlappingPairCache_getOverlapFilterCallback(self, ...)
+	end
+	function META:GetCount(...)
+		return lib.btHashedOverlappingPairCache_GetCount(self, ...)
+	end
+	function META:NeedsBroadphaseCollision(...)
+		return lib.btHashedOverlappingPairCache_needsBroadphaseCollision(self, ...)
+	end
+	ffi.metatype('btHashedOverlappingPairCache', META)
+	function bullet.CreateHashedOverlappingPairCache(...)
+		return lib.btHashedOverlappingPairCache_new(...)
+	end
+end
+do -- GIM_PAIR
+	local META = {}
+	META.__index = META
+	ffi.metatype('GIM_PAIR', META)
+	function bullet.CreateGIM_PAIR3(...)
+		return lib.GIM_PAIR_new3(...)
+	end
+	function bullet.CreateGIM_PAIR(...)
+		return lib.GIM_PAIR_new(...)
+	end
+	function bullet.CreateGIM_PAIR2(...)
+		return lib.GIM_PAIR_new2(...)
+	end
+end
+do -- EmptyAlgorithm
+	local META = {}
+	META.__index = META
+	ffi.metatype('btEmptyAlgorithm', META)
+	function bullet.CreateEmptyAlgorithm(...)
+		return lib.btEmptyAlgorithm_new(...)
+	end
+end
+do -- SoftBody_AJoint_IControl
+	local META = {}
+	META.__index = META
+	function META:Prepare(...)
+		return lib.btSoftBody_AJoint_IControl_Prepare(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBody_AJoint_IControl_delete(self, ...)
+	end
+	function META:Speed(...)
+		return lib.btSoftBody_AJoint_IControl_Speed(self, ...)
+	end
+	function META:Default(...)
+		return lib.btSoftBody_AJoint_IControl_Default(self, ...)
+	end
+	ffi.metatype('btSoftBody_AJoint_IControl', META)
+	function bullet.CreateSoftBody_AJoint_IControl(...)
+		return lib.btSoftBody_AJoint_IControl_new(...)
+	end
+end
+do -- SoftRigidCollisionAlgorithm
+	local META = {}
+	META.__index = META
+	ffi.metatype('btSoftRigidCollisionAlgorithm', META)
+	function bullet.CreateSoftRigidCollisionAlgorithm(...)
+		return lib.btSoftRigidCollisionAlgorithm_new(...)
+	end
+end
+do -- 32BitAxisSweep3
+	local META = {}
+	META.__index = META
+	function META:AddHandle(...)
+		return lib.bt32BitAxisSweep3_addHandle(self, ...)
+	end
+	function META:Quantize(...)
+		return lib.bt32BitAxisSweep3_quantize(self, ...)
+	end
+	function META:TestAabbOverlap(...)
+		return lib.bt32BitAxisSweep3_testAabbOverlap(self, ...)
+	end
+	function META:GetNumHandles(...)
+		return lib.bt32BitAxisSweep3_getNumHandles(self, ...)
+	end
+	function META:UnQuantize(...)
+		return lib.bt32BitAxisSweep3_unQuantize(self, ...)
+	end
+	function META:RemoveHandle(...)
+		return lib.bt32BitAxisSweep3_removeHandle(self, ...)
+	end
+	function META:SetOverlappingPairUserCallback(...)
+		return lib.bt32BitAxisSweep3_setOverlappingPairUserCallback(self, ...)
+	end
+	function META:GetHandle(...)
+		return lib.bt32BitAxisSweep3_getHandle(self, ...)
+	end
+	function META:ProcessAllOverlappingPairs(...)
+		return lib.bt32BitAxisSweep3_processAllOverlappingPairs(self, ...)
+	end
+	function META:UpdateHandle(...)
+		return lib.bt32BitAxisSweep3_updateHandle(self, ...)
+	end
+	function META:GetOverlappingPairCache(...)
+		return lib.bt32BitAxisSweep3_getOverlappingPairCache(self, ...)
+	end
+	ffi.metatype('bt32BitAxisSweep3', META)
+	function bullet.Create32BitAxisSweep33(...)
+		return lib.bt32BitAxisSweep3_new3(...)
+	end
+	function bullet.Create32BitAxisSweep34(...)
+		return lib.bt32BitAxisSweep3_new4(...)
+	end
+	function bullet.Create32BitAxisSweep32(...)
+		return lib.bt32BitAxisSweep3_new2(...)
+	end
+end
+do -- CompoundCollisionAlgorithm_SwappedCreateFunc
+	local META = {}
+	META.__index = META
+	ffi.metatype('btCompoundCollisionAlgorithm_SwappedCreateFunc', META)
+	function bullet.CreateCompoundCollisionAlgorithm_SwappedCreateFunc(...)
+		return lib.btCompoundCollisionAlgorithm_SwappedCreateFunc_new(...)
+	end
+end
+do -- DiscreteDynamicsWorld
+	local META = {}
+	META.__index = META
+	function META:GetSimulationIslandManager(...)
+		return lib.btDiscreteDynamicsWorld_getSimulationIslandManager(self, ...)
+	end
+	function META:GetSynchronizeAllMotionStates(...)
+		return lib.btDiscreteDynamicsWorld_getSynchronizeAllMotionStates(self, ...)
+	end
+	function META:ApplyGravity(...)
+		return lib.btDiscreteDynamicsWorld_applyGravity(self, ...)
+	end
+	function META:GetApplySpeculativeContactRestitution(...)
+		return lib.btDiscreteDynamicsWorld_getApplySpeculativeContactRestitution(self, ...)
+	end
+	function META:GetLatencyMotionStateInterpolation(...)
+		return lib.btDiscreteDynamicsWorld_getLatencyMotionStateInterpolation(self, ...)
+	end
+	function META:GetCollisionWorld(...)
+		return lib.btDiscreteDynamicsWorld_getCollisionWorld(self, ...)
+	end
+	function META:SetApplySpeculativeContactRestitution(...)
+		return lib.btDiscreteDynamicsWorld_setApplySpeculativeContactRestitution(self, ...)
+	end
+	function META:SynchronizeSingleMotionState(...)
+		return lib.btDiscreteDynamicsWorld_synchronizeSingleMotionState(self, ...)
+	end
+	function META:SetLatencyMotionStateInterpolation(...)
+		return lib.btDiscreteDynamicsWorld_setLatencyMotionStateInterpolation(self, ...)
+	end
+	function META:UpdateVehicles(...)
+		return lib.btDiscreteDynamicsWorld_updateVehicles(self, ...)
+	end
+	function META:SetSynchronizeAllMotionStates(...)
+		return lib.btDiscreteDynamicsWorld_setSynchronizeAllMotionStates(self, ...)
+	end
+	function META:SetNumTasks(...)
+		return lib.btDiscreteDynamicsWorld_setNumTasks(self, ...)
+	end
+	function META:DebugDrawConstraint(...)
+		return lib.btDiscreteDynamicsWorld_debugDrawConstraint(self, ...)
+	end
+	ffi.metatype('btDiscreteDynamicsWorld', META)
+	function bullet.CreateDiscreteDynamicsWorld(...)
+		return lib.btDiscreteDynamicsWorld_new(...)
+	end
+end
+do -- Dbvt_sStkCLN
+	local META = {}
+	META.__index = META
+	function META:SetParent(...)
+		return lib.btDbvt_sStkCLN_setParent(self, ...)
+	end
+	function META:SetNode(...)
+		return lib.btDbvt_sStkCLN_setNode(self, ...)
+	end
+	function META:GetParent(...)
+		return lib.btDbvt_sStkCLN_getParent(self, ...)
+	end
+	function META:GetNode(...)
+		return lib.btDbvt_sStkCLN_getNode(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btDbvt_sStkCLN_delete(self, ...)
+	end
+	ffi.metatype('btDbvt_sStkCLN', META)
+	function bullet.CreateDbvt_sStkCLN(...)
+		return lib.btDbvt_sStkCLN_new(...)
+	end
+end
+do -- CollisionWorld
+	local META = {}
+	META.__index = META
+	function META:RayTestSingle(...)
+		return lib.btCollisionWorld_rayTestSingle(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btCollisionWorld_delete(self, ...)
+	end
+	function META:GetForceUpdateAllAabbs(...)
+		return lib.btCollisionWorld_getForceUpdateAllAabbs(self, ...)
+	end
+	function META:UpdateSingleAabb(...)
+		return lib.btCollisionWorld_updateSingleAabb(self, ...)
+	end
+	function META:SetDebugDrawer(...)
+		return lib.btCollisionWorld_setDebugDrawer(self, ...)
+	end
+	function META:AddCollisionObject2(...)
+		return lib.btCollisionWorld_addCollisionObject2(self, ...)
+	end
+	function META:UpdateAabbs(...)
+		return lib.btCollisionWorld_updateAabbs(self, ...)
+	end
+	function META:ContactTest(...)
+		return lib.btCollisionWorld_contactTest(self, ...)
+	end
+	function META:GetCollisionObjectArray(...)
+		return lib.btCollisionWorld_getCollisionObjectArray(self, ...)
+	end
+	function META:ConvexSweepTest2(...)
+		return lib.btCollisionWorld_convexSweepTest2(self, ...)
+	end
+	function META:SetBroadphase(...)
+		return lib.btCollisionWorld_setBroadphase(self, ...)
+	end
+	function META:Serialize(...)
+		return lib.btCollisionWorld_serialize(self, ...)
+	end
+	function META:GetBroadphase(...)
+		return lib.btCollisionWorld_getBroadphase(self, ...)
+	end
+	function META:RemoveCollisionObject(...)
+		return lib.btCollisionWorld_removeCollisionObject(self, ...)
+	end
+	function META:ConvexSweepTest(...)
+		return lib.btCollisionWorld_convexSweepTest(self, ...)
+	end
+	function META:ComputeOverlappingPairs(...)
+		return lib.btCollisionWorld_computeOverlappingPairs(self, ...)
+	end
+	function META:GetDebugDrawer(...)
+		return lib.btCollisionWorld_getDebugDrawer(self, ...)
+	end
+	function META:GetPairCache(...)
+		return lib.btCollisionWorld_getPairCache(self, ...)
+	end
+	function META:RayTest(...)
+		return lib.btCollisionWorld_rayTest(self, ...)
+	end
+	function META:PerformDiscreteCollisionDetection(...)
+		return lib.btCollisionWorld_performDiscreteCollisionDetection(self, ...)
+	end
+	function META:GetNumCollisionObjects(...)
+		return lib.btCollisionWorld_getNumCollisionObjects(self, ...)
+	end
+	function META:GetDispatcher(...)
+		return lib.btCollisionWorld_getDispatcher(self, ...)
+	end
+	function META:SetForceUpdateAllAabbs(...)
+		return lib.btCollisionWorld_setForceUpdateAllAabbs(self, ...)
+	end
+	function META:GetDispatchInfo(...)
+		return lib.btCollisionWorld_getDispatchInfo(self, ...)
+	end
+	function META:ObjectQuerySingle(...)
+		return lib.btCollisionWorld_objectQuerySingle(self, ...)
+	end
+	function META:RayTestSingleInternal(...)
+		return lib.btCollisionWorld_rayTestSingleInternal(self, ...)
+	end
+	function META:ObjectQuerySingleInternal(...)
+		return lib.btCollisionWorld_objectQuerySingleInternal(self, ...)
+	end
+	function META:AddCollisionObject(...)
+		return lib.btCollisionWorld_addCollisionObject(self, ...)
+	end
+	function META:ContactPairTest(...)
+		return lib.btCollisionWorld_contactPairTest(self, ...)
+	end
+	function META:DebugDrawObject(...)
+		return lib.btCollisionWorld_debugDrawObject(self, ...)
+	end
+	function META:DebugDrawWorld(...)
+		return lib.btCollisionWorld_debugDrawWorld(self, ...)
+	end
+	function META:AddCollisionObject3(...)
+		return lib.btCollisionWorld_addCollisionObject3(self, ...)
+	end
+	ffi.metatype('btCollisionWorld', META)
+	function bullet.CreateCollisionWorld(...)
+		return lib.btCollisionWorld_new(...)
+	end
+end
+do -- CompoundCollisionAlgorithm
+	local META = {}
+	META.__index = META
+	function META:GetChildAlgorithm(...)
+		return lib.btCompoundCollisionAlgorithm_getChildAlgorithm(self, ...)
+	end
+	ffi.metatype('btCompoundCollisionAlgorithm', META)
+	function bullet.CreateCompoundCollisionAlgorithm(...)
+		return lib.btCompoundCollisionAlgorithm_new(...)
+	end
+end
+do -- DantzigSolver
+	local META = {}
+	META.__index = META
+	ffi.metatype('btDantzigSolver', META)
+	function bullet.CreateDantzigSolver(...)
+		return lib.btDantzigSolver_new(...)
+	end
+end
+do -- PointCollector
+	local META = {}
+	META.__index = META
+	function META:GetNormalOnBInWorld(...)
+		return lib.btPointCollector_getNormalOnBInWorld(self, ...)
+	end
+	function META:SetDistance(...)
+		return lib.btPointCollector_setDistance(self, ...)
+	end
+	function META:SetPointInWorld(...)
+		return lib.btPointCollector_setPointInWorld(self, ...)
+	end
+	function META:GetHasResult(...)
+		return lib.btPointCollector_getHasResult(self, ...)
+	end
+	function META:SetNormalOnBInWorld(...)
+		return lib.btPointCollector_setNormalOnBInWorld(self, ...)
+	end
+	function META:GetDistance(...)
+		return lib.btPointCollector_getDistance(self, ...)
+	end
+	function META:SetHasResult(...)
+		return lib.btPointCollector_setHasResult(self, ...)
+	end
+	function META:GetPointInWorld(...)
+		return lib.btPointCollector_getPointInWorld(self, ...)
+	end
+	ffi.metatype('btPointCollector', META)
+	function bullet.CreatePointCollector(...)
+		return lib.btPointCollector_new(...)
+	end
+end
+do -- PositionAndRadius
+	local META = {}
+	META.__index = META
+	function META:SetRadius(...)
+		return lib.btPositionAndRadius_setRadius(self, ...)
+	end
+	function META:SetPos(...)
+		return lib.btPositionAndRadius_setPos(self, ...)
+	end
+	function META:GetPos(...)
+		return lib.btPositionAndRadius_getPos(self, ...)
+	end
+	function META:GetRadius(...)
+		return lib.btPositionAndRadius_getRadius(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btPositionAndRadius_delete(self, ...)
+	end
+	ffi.metatype('btPositionAndRadius', META)
+	function bullet.CreatePositionAndRadius(...)
+		return lib.btPositionAndRadius_new(...)
+	end
+end
+do -- BU_Simplex1to4
+	local META = {}
+	META.__index = META
+	function META:GetIndex(...)
+		return lib.btBU_Simplex1to4_getIndex(self, ...)
+	end
+	function META:AddVertex(...)
+		return lib.btBU_Simplex1to4_addVertex(self, ...)
+	end
+	function META:Reset(...)
+		return lib.btBU_Simplex1to4_reset(self, ...)
+	end
+	ffi.metatype('btBU_Simplex1to4', META)
+	function bullet.CreateBU_Simplex1to45(...)
+		return lib.btBU_Simplex1to4_new5(...)
+	end
+	function bullet.CreateBU_Simplex1to43(...)
+		return lib.btBU_Simplex1to4_new3(...)
+	end
+	function bullet.CreateBU_Simplex1to44(...)
+		return lib.btBU_Simplex1to4_new4(...)
+	end
+	function bullet.CreateBU_Simplex1to42(...)
+		return lib.btBU_Simplex1to4_new2(...)
+	end
+end
+do -- SphereSphereCollisionAlgorithm
+	local META = {}
+	META.__index = META
+	ffi.metatype('btSphereSphereCollisionAlgorithm', META)
+	function bullet.CreateSphereSphereCollisionAlgorithm(...)
+		return lib.btSphereSphereCollisionAlgorithm_new(...)
+	end
+	function bullet.CreateSphereSphereCollisionAlgorithm2(...)
+		return lib.btSphereSphereCollisionAlgorithm_new2(...)
+	end
+end
+do -- CollisionWorld_ContactResultCallbackWrapper
+	local META = {}
+	META.__index = META
+	function META:NeedsCollision(...)
+		return lib.btCollisionWorld_ContactResultCallbackWrapper_needsCollision(self, ...)
+	end
+	ffi.metatype('btCollisionWorld_ContactResultCallbackWrapper', META)
+	function bullet.CreateCollisionWorld_ContactResultCallbackWrapper(...)
+		return lib.btCollisionWorld_ContactResultCallbackWrapper_new(...)
+	end
+end
+do -- CapsuleShapeX
+	local META = {}
+	META.__index = META
+	ffi.metatype('btCapsuleShapeX', META)
+	function bullet.CreateCapsuleShapeX(...)
+		return lib.btCapsuleShapeX_new(...)
+	end
+end
+do -- CompoundShape
+	local META = {}
+	META.__index = META
+	function META:UpdateChildTransform(...)
+		return lib.btCompoundShape_updateChildTransform(self, ...)
+	end
+	function META:CreateAabbTreeFromChildren(...)
+		return lib.btCompoundShape_createAabbTreeFromChildren(self, ...)
+	end
+	function META:RemoveChildShape(...)
+		return lib.btCompoundShape_removeChildShape(self, ...)
+	end
+	function META:GetDynamicAabbTree(...)
+		return lib.btCompoundShape_getDynamicAabbTree(self, ...)
+	end
+	function META:GetChildTransform(...)
+		return lib.btCompoundShape_getChildTransform(self, ...)
+	end
+	function META:UpdateChildTransform2(...)
+		return lib.btCompoundShape_updateChildTransform2(self, ...)
+	end
+	function META:RemoveChildShapeByIndex(...)
+		return lib.btCompoundShape_removeChildShapeByIndex(self, ...)
+	end
+	function META:GetChildList(...)
+		return lib.btCompoundShape_getChildList(self, ...)
+	end
+	function META:RecalculateLocalAabb(...)
+		return lib.btCompoundShape_recalculateLocalAabb(self, ...)
+	end
+	function META:GetUpdateRevision(...)
+		return lib.btCompoundShape_getUpdateRevision(self, ...)
+	end
+	function META:GetNumChildShapes(...)
+		return lib.btCompoundShape_getNumChildShapes(self, ...)
+	end
+	function META:GetChildShape(...)
+		return lib.btCompoundShape_getChildShape(self, ...)
+	end
+	function META:CalculatePrincipalAxisTransform(...)
+		return lib.btCompoundShape_calculatePrincipalAxisTransform(self, ...)
+	end
+	function META:AddChildShape(...)
+		return lib.btCompoundShape_addChildShape(self, ...)
+	end
+	ffi.metatype('btCompoundShape', META)
+	function bullet.CreateCompoundShape(...)
+		return lib.btCompoundShape_new(...)
+	end
+	function bullet.CreateCompoundShape2(...)
+		return lib.btCompoundShape_new2(...)
+	end
+end
+do -- GImpactBvh
+	local META = {}
+	META.__index = META
+	function META:GetNodeBound(...)
+		return lib.btGImpactBvh_getNodeBound(self, ...)
+	end
+	function META:SetPrimitiveManager(...)
+		return lib.btGImpactBvh_setPrimitiveManager(self, ...)
+	end
+	function META:BoxQuery(...)
+		return lib.btGImpactBvh_boxQuery(self, ...)
+	end
+	function META:RayQuery(...)
+		return lib.btGImpactBvh_rayQuery(self, ...)
+	end
+	function META:GetEscapeNodeIndex(...)
+		return lib.btGImpactBvh_getEscapeNodeIndex(self, ...)
+	end
+	function META:HasHierarchy(...)
+		return lib.btGImpactBvh_hasHierarchy(self, ...)
+	end
+	function META:IsLeafNode(...)
+		return lib.btGImpactBvh_isLeafNode(self, ...)
+	end
+	function META:SetNodeBound(...)
+		return lib.btGImpactBvh_setNodeBound(self, ...)
+	end
+	function META:GetNodeTriangle(...)
+		return lib.btGImpactBvh_getNodeTriangle(self, ...)
+	end
+	function META:Update(...)
+		return lib.btGImpactBvh_update(self, ...)
+	end
+	function META:GetNodeCount(...)
+		return lib.btGImpactBvh_getNodeCount(self, ...)
+	end
+	function META:BuildSet(...)
+		return lib.btGImpactBvh_buildSet(self, ...)
+	end
+	function META:GetPrimitiveManager(...)
+		return lib.btGImpactBvh_getPrimitiveManager(self, ...)
+	end
+	function META:GetNodeData(...)
+		return lib.btGImpactBvh_getNodeData(self, ...)
+	end
+	function META:GetLeftNode(...)
+		return lib.btGImpactBvh_getLeftNode(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btGImpactBvh_delete(self, ...)
+	end
+	function META:IsTrimesh(...)
+		return lib.btGImpactBvh_isTrimesh(self, ...)
+	end
+	function META:GetRightNode(...)
+		return lib.btGImpactBvh_getRightNode(self, ...)
+	end
+	function META:BoxQueryTrans(...)
+		return lib.btGImpactBvh_boxQueryTrans(self, ...)
+	end
+	function META:GetGlobalBox(...)
+		return lib.btGImpactBvh_getGlobalBox(self, ...)
+	end
+	ffi.metatype('btGImpactBvh', META)
+	function bullet.CreateGImpactBvh2(...)
+		return lib.btGImpactBvh_new2(...)
+	end
+	function bullet.CreateGImpactBvh(...)
+		return lib.btGImpactBvh_new(...)
+	end
+end
+do -- CollisionObject
+	local META = {}
+	META.__index = META
+	function META:SetActivationState(...)
+		return lib.btCollisionObject_setActivationState(self, ...)
+	end
+	function META:SetCompanionId(...)
+		return lib.btCollisionObject_setCompanionId(self, ...)
+	end
+	function META:GetCcdSquareMotionThreshold(...)
+		return lib.btCollisionObject_getCcdSquareMotionThreshold(self, ...)
+	end
+	function META:GetCollisionShape(...)
+		return lib.btCollisionObject_getCollisionShape(self, ...)
+	end
+	function META:CheckCollideWith(...)
+		return lib.btCollisionObject_checkCollideWith(self, ...)
+	end
+	function META:SetRestitution(...)
+		return lib.btCollisionObject_setRestitution(self, ...)
+	end
+	function META:GetAnisotropicFriction(...)
+		return lib.btCollisionObject_getAnisotropicFriction(self, ...)
+	end
+	function META:GetCollisionFlags(...)
+		return lib.btCollisionObject_getCollisionFlags(self, ...)
+	end
+	function META:GetFriction(...)
+		return lib.btCollisionObject_getFriction(self, ...)
+	end
+	function META:GetCcdSweptSphereRadius(...)
+		return lib.btCollisionObject_getCcdSweptSphereRadius(self, ...)
+	end
+	function META:SetInterpolationWorldTransform(...)
+		return lib.btCollisionObject_setInterpolationWorldTransform(self, ...)
+	end
+	function META:GetHitFraction(...)
+		return lib.btCollisionObject_getHitFraction(self, ...)
+	end
+	function META:GetInterpolationLinearVelocity(...)
+		return lib.btCollisionObject_getInterpolationLinearVelocity(self, ...)
+	end
+	function META:SetContactProcessingThreshold(...)
+		return lib.btCollisionObject_setContactProcessingThreshold(self, ...)
+	end
+	function META:SetAnisotropicFriction(...)
+		return lib.btCollisionObject_setAnisotropicFriction(self, ...)
+	end
+	function META:SetInterpolationLinearVelocity(...)
+		return lib.btCollisionObject_setInterpolationLinearVelocity(self, ...)
+	end
+	function META:GetInterpolationWorldTransform(...)
+		return lib.btCollisionObject_getInterpolationWorldTransform(self, ...)
+	end
+	function META:Activate2(...)
+		return lib.btCollisionObject_activate2(self, ...)
+	end
+	function META:SetCollisionFlags(...)
+		return lib.btCollisionObject_setCollisionFlags(self, ...)
+	end
+	function META:HasAnisotropicFriction2(...)
+		return lib.btCollisionObject_hasAnisotropicFriction2(self, ...)
+	end
+	function META:GetDeactivationTime(...)
+		return lib.btCollisionObject_getDeactivationTime(self, ...)
+	end
+	function META:GetActivationState(...)
+		return lib.btCollisionObject_getActivationState(self, ...)
+	end
+	function META:CalculateSerializeBufferSize(...)
+		return lib.btCollisionObject_calculateSerializeBufferSize(self, ...)
+	end
+	function META:IsStaticObject(...)
+		return lib.btCollisionObject_isStaticObject(self, ...)
+	end
+	function META:SetAnisotropicFriction2(...)
+		return lib.btCollisionObject_setAnisotropicFriction2(self, ...)
+	end
+	function META:GetUserPointer(...)
+		return lib.btCollisionObject_getUserPointer(self, ...)
+	end
+	function META:SetCcdSweptSphereRadius(...)
+		return lib.btCollisionObject_setCcdSweptSphereRadius(self, ...)
+	end
+	function META:GetWorldTransform(...)
+		return lib.btCollisionObject_getWorldTransform(self, ...)
+	end
+	function META:GetUserIndex(...)
+		return lib.btCollisionObject_getUserIndex(self, ...)
+	end
+	function META:IsStaticOrKinematicObject(...)
+		return lib.btCollisionObject_isStaticOrKinematicObject(self, ...)
+	end
+	function META:SetUserIndex(...)
+		return lib.btCollisionObject_setUserIndex(self, ...)
+	end
+	function META:HasAnisotropicFriction(...)
+		return lib.btCollisionObject_hasAnisotropicFriction(self, ...)
+	end
+	function META:GetInterpolationAngularVelocity(...)
+		return lib.btCollisionObject_getInterpolationAngularVelocity(self, ...)
+	end
+	function META:Activate(...)
+		return lib.btCollisionObject_activate(self, ...)
+	end
+	function META:GetContactProcessingThreshold(...)
+		return lib.btCollisionObject_getContactProcessingThreshold(self, ...)
+	end
+	function META:SetWorldTransform(...)
+		return lib.btCollisionObject_setWorldTransform(self, ...)
+	end
+	function META:SetDeactivationTime(...)
+		return lib.btCollisionObject_setDeactivationTime(self, ...)
+	end
+	function META:SetUserPointer(...)
+		return lib.btCollisionObject_setUserPointer(self, ...)
+	end
+	function META:InternalGetExtensionPointer(...)
+		return lib.btCollisionObject_internalGetExtensionPointer(self, ...)
+	end
+	function META:SetInterpolationAngularVelocity(...)
+		return lib.btCollisionObject_setInterpolationAngularVelocity(self, ...)
+	end
+	function META:Serialize(...)
+		return lib.btCollisionObject_serialize(self, ...)
+	end
+	function META:GetBroadphaseHandle(...)
+		return lib.btCollisionObject_getBroadphaseHandle(self, ...)
+	end
+	function META:GetCcdMotionThreshold(...)
+		return lib.btCollisionObject_getCcdMotionThreshold(self, ...)
+	end
+	function META:IsKinematicObject(...)
+		return lib.btCollisionObject_isKinematicObject(self, ...)
+	end
+	function META:SetCcdMotionThreshold(...)
+		return lib.btCollisionObject_setCcdMotionThreshold(self, ...)
+	end
+	function META:SetRollingFriction(...)
+		return lib.btCollisionObject_setRollingFriction(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btCollisionObject_delete(self, ...)
+	end
+	function META:ForceActivationState(...)
+		return lib.btCollisionObject_forceActivationState(self, ...)
+	end
+	function META:SerializeSingleObject(...)
+		return lib.btCollisionObject_serializeSingleObject(self, ...)
+	end
+	function META:GetRollingFriction(...)
+		return lib.btCollisionObject_getRollingFriction(self, ...)
+	end
+	function META:GetIslandTag(...)
+		return lib.btCollisionObject_getIslandTag(self, ...)
+	end
+	function META:SetFriction(...)
+		return lib.btCollisionObject_setFriction(self, ...)
+	end
+	function META:SetIgnoreCollisionCheck(...)
+		return lib.btCollisionObject_setIgnoreCollisionCheck(self, ...)
+	end
+	function META:GetCompanionId(...)
+		return lib.btCollisionObject_getCompanionId(self, ...)
+	end
+	function META:IsActive(...)
+		return lib.btCollisionObject_isActive(self, ...)
+	end
+	function META:GetRestitution(...)
+		return lib.btCollisionObject_getRestitution(self, ...)
+	end
+	function META:InternalSetExtensionPointer(...)
+		return lib.btCollisionObject_internalSetExtensionPointer(self, ...)
+	end
+	function META:SetBroadphaseHandle(...)
+		return lib.btCollisionObject_setBroadphaseHandle(self, ...)
+	end
+	function META:SetIslandTag(...)
+		return lib.btCollisionObject_setIslandTag(self, ...)
+	end
+	function META:SetCollisionShape(...)
+		return lib.btCollisionObject_setCollisionShape(self, ...)
+	end
+	function META:CheckCollideWithOverride(...)
+		return lib.btCollisionObject_checkCollideWithOverride(self, ...)
+	end
+	function META:HasContactResponse(...)
+		return lib.btCollisionObject_hasContactResponse(self, ...)
+	end
+	function META:MergesSimulationIslands(...)
+		return lib.btCollisionObject_mergesSimulationIslands(self, ...)
+	end
+	function META:GetInternalType(...)
+		return lib.btCollisionObject_getInternalType(self, ...)
+	end
+	function META:SetHitFraction(...)
+		return lib.btCollisionObject_setHitFraction(self, ...)
+	end
+	ffi.metatype('btCollisionObject', META)
+	function bullet.CreateCollisionObject(...)
+		return lib.btCollisionObject_new(...)
+	end
+end
+do -- SortedOverlappingPairCache
+	local META = {}
+	META.__index = META
+	function META:GetOverlapFilterCallback(...)
+		return lib.btSortedOverlappingPairCache_getOverlapFilterCallback(self, ...)
+	end
+	function META:NeedsBroadphaseCollision(...)
+		return lib.btSortedOverlappingPairCache_needsBroadphaseCollision(self, ...)
+	end
+	ffi.metatype('btSortedOverlappingPairCache', META)
+	function bullet.CreateSortedOverlappingPairCache(...)
+		return lib.btSortedOverlappingPairCache_new(...)
+	end
+end
+do -- SoftSoftCollisionAlgorithm
+	local META = {}
+	META.__index = META
+	ffi.metatype('btSoftSoftCollisionAlgorithm', META)
+	function bullet.CreateSoftSoftCollisionAlgorithm(...)
+		return lib.btSoftSoftCollisionAlgorithm_new(...)
+	end
+	function bullet.CreateSoftSoftCollisionAlgorithm2(...)
+		return lib.btSoftSoftCollisionAlgorithm_new2(...)
+	end
+end
+do -- CapsuleShapeZ
+	local META = {}
+	META.__index = META
+	ffi.metatype('btCapsuleShapeZ', META)
+	function bullet.CreateCapsuleShapeZ(...)
+		return lib.btCapsuleShapeZ_new(...)
+	end
+end
+do -- ContinuousConvexCollision
+	local META = {}
+	META.__index = META
+	ffi.metatype('btContinuousConvexCollision', META)
+	function bullet.CreateContinuousConvexCollision2(...)
+		return lib.btContinuousConvexCollision_new2(...)
+	end
+	function bullet.CreateContinuousConvexCollision(...)
+		return lib.btContinuousConvexCollision_new(...)
+	end
+end
+do -- SoftBody_Pose
+	local META = {}
+	META.__index = META
+	function META:GetVolume(...)
+		return lib.btSoftBody_Pose_getVolume(self, ...)
+	end
+	function META:GetPos(...)
+		return lib.btSoftBody_Pose_getPos(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBody_Pose_delete(self, ...)
+	end
+	function META:GetBvolume(...)
+		return lib.btSoftBody_Pose_getBvolume(self, ...)
+	end
+	function META:SetVolume(...)
+		return lib.btSoftBody_Pose_setVolume(self, ...)
+	end
+	function META:GetCom(...)
+		return lib.btSoftBody_Pose_getCom(self, ...)
+	end
+	function META:GetAqq(...)
+		return lib.btSoftBody_Pose_getAqq(self, ...)
+	end
+	function META:GetWgh(...)
+		return lib.btSoftBody_Pose_getWgh(self, ...)
+	end
+	function META:GetRot(...)
+		return lib.btSoftBody_Pose_getRot(self, ...)
+	end
+	function META:GetScl(...)
+		return lib.btSoftBody_Pose_getScl(self, ...)
+	end
+	function META:SetScl(...)
+		return lib.btSoftBody_Pose_setScl(self, ...)
+	end
+	function META:GetBframe(...)
+		return lib.btSoftBody_Pose_getBframe(self, ...)
+	end
+	function META:SetRot(...)
+		return lib.btSoftBody_Pose_setRot(self, ...)
+	end
+	function META:SetBframe(...)
+		return lib.btSoftBody_Pose_setBframe(self, ...)
+	end
+	function META:SetAqq(...)
+		return lib.btSoftBody_Pose_setAqq(self, ...)
+	end
+	function META:SetCom(...)
+		return lib.btSoftBody_Pose_setCom(self, ...)
+	end
+	function META:SetBvolume(...)
+		return lib.btSoftBody_Pose_setBvolume(self, ...)
+	end
+	ffi.metatype('btSoftBody_Pose', META)
+	function bullet.CreateSoftBody_Pose(...)
+		return lib.btSoftBody_Pose_new(...)
+	end
+end
+do -- TypedConstraint_btConstraintInfo1
+	local META = {}
+	META.__index = META
+	function META:SetNumConstraintRows(...)
+		return lib.btTypedConstraint_btConstraintInfo1_setNumConstraintRows(self, ...)
+	end
+	function META:SetNub(...)
+		return lib.btTypedConstraint_btConstraintInfo1_setNub(self, ...)
+	end
+	function META:GetNub(...)
+		return lib.btTypedConstraint_btConstraintInfo1_getNub(self, ...)
+	end
+	function META:GetNumConstraintRows(...)
+		return lib.btTypedConstraint_btConstraintInfo1_getNumConstraintRows(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btTypedConstraint_btConstraintInfo1_delete(self, ...)
+	end
+	ffi.metatype('btTypedConstraint_btConstraintInfo1', META)
+	function bullet.CreateTypedConstraint_btConstraintInfo11(...)
+		return lib.btTypedConstraint_btConstraintInfo1_new(...)
+	end
+end
+do -- ConvexConcaveCollisionAlgorithm
+	local META = {}
+	META.__index = META
+	function META:ClearCache(...)
+		return lib.btConvexConcaveCollisionAlgorithm_clearCache(self, ...)
+	end
+	ffi.metatype('btConvexConcaveCollisionAlgorithm', META)
+	function bullet.CreateConvexConcaveCollisionAlgorithm(...)
+		return lib.btConvexConcaveCollisionAlgorithm_new(...)
+	end
+end
+do -- SoftBody_Impulse
+	local META = {}
+	META.__index = META
+	function META:SetAsVelocity(...)
+		return lib.btSoftBody_Impulse_setAsVelocity(self, ...)
+	end
+	function META:SetVelocity(...)
+		return lib.btSoftBody_Impulse_setVelocity(self, ...)
+	end
+	function META:GetVelocity(...)
+		return lib.btSoftBody_Impulse_getVelocity(self, ...)
+	end
+	function META:SetDrift(...)
+		return lib.btSoftBody_Impulse_setDrift(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBody_Impulse_delete(self, ...)
+	end
+	function META:GetAsVelocity(...)
+		return lib.btSoftBody_Impulse_getAsVelocity(self, ...)
+	end
+	function META:GetDrift(...)
+		return lib.btSoftBody_Impulse_getDrift(self, ...)
+	end
+	function META:SetAsDrift(...)
+		return lib.btSoftBody_Impulse_setAsDrift(self, ...)
+	end
+	function META:GetAsDrift(...)
+		return lib.btSoftBody_Impulse_getAsDrift(self, ...)
+	end
+	ffi.metatype('btSoftBody_Impulse', META)
+	function bullet.CreateSoftBody_Impulse(...)
+		return lib.btSoftBody_Impulse_new(...)
+	end
+end
+do -- CollisionWorld_ConvexResultCallbackWrapper
+	local META = {}
+	META.__index = META
+	function META:NeedsCollision(...)
+		return lib.btCollisionWorld_ConvexResultCallbackWrapper_needsCollision(self, ...)
+	end
+	ffi.metatype('btCollisionWorld_ConvexResultCallbackWrapper', META)
+	function bullet.CreateCollisionWorld_ConvexResultCallbackWrapper(...)
+		return lib.btCollisionWorld_ConvexResultCallbackWrapper_new(...)
+	end
+end
+do -- SphereTriangleCollisionAlgorithm_CreateFunc
+	local META = {}
+	META.__index = META
+	ffi.metatype('btSphereTriangleCollisionAlgorithm_CreateFunc', META)
+	function bullet.CreateSphereTriangleCollisionAlgorithm_CreateFunc(...)
+		return lib.btSphereTriangleCollisionAlgorithm_CreateFunc_new(...)
+	end
+end
+do -- SoftBody_ImplicitFnWrapper
+	local META = {}
+	META.__index = META
+	ffi.metatype('btSoftBody_ImplicitFn', META)
+	function bullet.CreateSoftBody_ImplicitFnWrapper(...)
+		return lib.btSoftBody_ImplicitFnWrapper_new(...)
+	end
+end
+do -- SoftBody_Cluster
+	local META = {}
+	META.__index = META
+	function META:GetClusterIndex(...)
+		return lib.btSoftBody_Cluster_getClusterIndex(self, ...)
+	end
+	function META:SetCollide(...)
+		return lib.btSoftBody_Cluster_setCollide(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBody_Cluster_delete(self, ...)
+	end
+	function META:SetContainsAnchor(...)
+		return lib.btSoftBody_Cluster_setContainsAnchor(self, ...)
+	end
+	function META:GetNodes(...)
+		return lib.btSoftBody_Cluster_getNodes(self, ...)
+	end
+	function META:SetFramexform(...)
+		return lib.btSoftBody_Cluster_setFramexform(self, ...)
+	end
+	function META:SetClusterIndex(...)
+		return lib.btSoftBody_Cluster_setClusterIndex(self, ...)
+	end
+	function META:GetCom(...)
+		return lib.btSoftBody_Cluster_getCom(self, ...)
+	end
+	function META:SetNdamping(...)
+		return lib.btSoftBody_Cluster_setNdamping(self, ...)
+	end
+	function META:GetImass(...)
+		return lib.btSoftBody_Cluster_getImass(self, ...)
+	end
+	function META:GetDimpulses(...)
+		return lib.btSoftBody_Cluster_getDimpulses(self, ...)
+	end
+	function META:SetMatching(...)
+		return lib.btSoftBody_Cluster_setMatching(self, ...)
+	end
+	function META:GetSelfCollisionImpulseFactor(...)
+		return lib.btSoftBody_Cluster_getSelfCollisionImpulseFactor(self, ...)
+	end
+	function META:SetMaxSelfCollisionImpulse(...)
+		return lib.btSoftBody_Cluster_setMaxSelfCollisionImpulse(self, ...)
+	end
+	function META:SetInvwi(...)
+		return lib.btSoftBody_Cluster_setInvwi(self, ...)
+	end
+	function META:SetSelfCollisionImpulseFactor(...)
+		return lib.btSoftBody_Cluster_setSelfCollisionImpulseFactor(self, ...)
+	end
+	function META:SetAv(...)
+		return lib.btSoftBody_Cluster_setAv(self, ...)
+	end
+	function META:SetNvimpulses(...)
+		return lib.btSoftBody_Cluster_setNvimpulses(self, ...)
+	end
+	function META:GetNvimpulses(...)
+		return lib.btSoftBody_Cluster_getNvimpulses(self, ...)
+	end
+	function META:SetLdamping(...)
+		return lib.btSoftBody_Cluster_setLdamping(self, ...)
+	end
+	function META:GetContainsAnchor(...)
+		return lib.btSoftBody_Cluster_getContainsAnchor(self, ...)
+	end
+	function META:GetNdamping(...)
+		return lib.btSoftBody_Cluster_getNdamping(self, ...)
+	end
+	function META:SetVimpulses(...)
+		return lib.btSoftBody_Cluster_setVimpulses(self, ...)
+	end
+	function META:SetLv(...)
+		return lib.btSoftBody_Cluster_setLv(self, ...)
+	end
+	function META:GetLv(...)
+		return lib.btSoftBody_Cluster_getLv(self, ...)
+	end
+	function META:GetLocii(...)
+		return lib.btSoftBody_Cluster_getLocii(self, ...)
+	end
+	function META:SetLocii(...)
+		return lib.btSoftBody_Cluster_setLocii(self, ...)
+	end
+	function META:GetMasses(...)
+		return lib.btSoftBody_Cluster_getMasses(self, ...)
+	end
+	function META:GetMatching(...)
+		return lib.btSoftBody_Cluster_getMatching(self, ...)
+	end
+	function META:SetLeaf(...)
+		return lib.btSoftBody_Cluster_setLeaf(self, ...)
+	end
+	function META:SetNdimpulses(...)
+		return lib.btSoftBody_Cluster_setNdimpulses(self, ...)
+	end
+	function META:SetCom(...)
+		return lib.btSoftBody_Cluster_setCom(self, ...)
+	end
+	function META:SetAdamping(...)
+		return lib.btSoftBody_Cluster_setAdamping(self, ...)
+	end
+	function META:SetIdmass(...)
+		return lib.btSoftBody_Cluster_setIdmass(self, ...)
+	end
+	function META:GetVimpulses(...)
+		return lib.btSoftBody_Cluster_getVimpulses(self, ...)
+	end
+	function META:GetLeaf(...)
+		return lib.btSoftBody_Cluster_getLeaf(self, ...)
+	end
+	function META:GetCollide(...)
+		return lib.btSoftBody_Cluster_getCollide(self, ...)
+	end
+	function META:GetMaxSelfCollisionImpulse(...)
+		return lib.btSoftBody_Cluster_getMaxSelfCollisionImpulse(self, ...)
+	end
+	function META:GetAdamping(...)
+		return lib.btSoftBody_Cluster_getAdamping(self, ...)
+	end
+	function META:GetFramexform(...)
+		return lib.btSoftBody_Cluster_getFramexform(self, ...)
+	end
+	function META:GetFramerefs(...)
+		return lib.btSoftBody_Cluster_getFramerefs(self, ...)
+	end
+	function META:GetLdamping(...)
+		return lib.btSoftBody_Cluster_getLdamping(self, ...)
+	end
+	function META:GetAv(...)
+		return lib.btSoftBody_Cluster_getAv(self, ...)
+	end
+	function META:GetNdimpulses(...)
+		return lib.btSoftBody_Cluster_getNdimpulses(self, ...)
+	end
+	function META:GetInvwi(...)
+		return lib.btSoftBody_Cluster_getInvwi(self, ...)
+	end
+	function META:GetIdmass(...)
+		return lib.btSoftBody_Cluster_getIdmass(self, ...)
+	end
+	function META:SetImass(...)
+		return lib.btSoftBody_Cluster_setImass(self, ...)
+	end
+	ffi.metatype('btSoftBody_Cluster', META)
+	function bullet.CreateSoftBody_Cluster(...)
+		return lib.btSoftBody_Cluster_new(...)
+	end
+end
+do -- OptimizedBvh
+	local META = {}
+	META.__index = META
+	function META:Build(...)
+		return lib.btOptimizedBvh_build(self, ...)
+	end
+	function META:SerializeInPlace(...)
+		return lib.btOptimizedBvh_serializeInPlace(self, ...)
+	end
+	function META:UpdateBvhNodes(...)
+		return lib.btOptimizedBvh_updateBvhNodes(self, ...)
+	end
+	function META:DeSerializeInPlace(...)
+		return lib.btOptimizedBvh_deSerializeInPlace(self, ...)
+	end
+	function META:Refit(...)
+		return lib.btOptimizedBvh_refit(self, ...)
+	end
+	function META:RefitPartial(...)
+		return lib.btOptimizedBvh_refitPartial(self, ...)
+	end
+	ffi.metatype('btOptimizedBvh', META)
+	function bullet.CreateOptimizedBvh(...)
+		return lib.btOptimizedBvh_new(...)
+	end
+end
+do -- GIM_BVH_DATA
+	local META = {}
+	META.__index = META
+	ffi.metatype('GIM_BVH_DATA', META)
+	function bullet.CreateGIM_BVH_DATA(...)
+		return lib.GIM_BVH_DATA_new(...)
+	end
+end
+do -- TriangleInfo
+	local META = {}
+	META.__index = META
+	function META:GetEdgeV0V1Angle(...)
+		return lib.btTriangleInfo_getEdgeV0V1Angle(self, ...)
+	end
+	function META:SetEdgeV2V0Angle(...)
+		return lib.btTriangleInfo_setEdgeV2V0Angle(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btTriangleInfo_delete(self, ...)
+	end
+	function META:GetEdgeV2V0Angle(...)
+		return lib.btTriangleInfo_getEdgeV2V0Angle(self, ...)
+	end
+	function META:SetFlags(...)
+		return lib.btTriangleInfo_setFlags(self, ...)
+	end
+	function META:SetEdgeV0V1Angle(...)
+		return lib.btTriangleInfo_setEdgeV0V1Angle(self, ...)
+	end
+	function META:GetFlags(...)
+		return lib.btTriangleInfo_getFlags(self, ...)
+	end
+	function META:SetEdgeV1V2Angle(...)
+		return lib.btTriangleInfo_setEdgeV1V2Angle(self, ...)
+	end
+	function META:GetEdgeV1V2Angle(...)
+		return lib.btTriangleInfo_getEdgeV1V2Angle(self, ...)
+	end
+	ffi.metatype('btTriangleInfo', META)
+	function bullet.CreateTriangleInfo(...)
+		return lib.btTriangleInfo_new(...)
+	end
+end
+do -- Chunk
+	local META = {}
+	META.__index = META
+	function META:SetOldPtr(...)
+		return lib.btChunk_setOldPtr(self, ...)
+	end
+	function META:GetChunkCode(...)
+		return lib.btChunk_getChunkCode(self, ...)
+	end
+	function META:GetLength(...)
+		return lib.btChunk_getLength(self, ...)
+	end
+	function META:GetOldPtr(...)
+		return lib.btChunk_getOldPtr(self, ...)
+	end
+	function META:SetNumber(...)
+		return lib.btChunk_setNumber(self, ...)
+	end
+	function META:SetChunkCode(...)
+		return lib.btChunk_setChunkCode(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btChunk_delete(self, ...)
+	end
+	function META:GetNumber(...)
+		return lib.btChunk_getNumber(self, ...)
+	end
+	function META:SetLength(...)
+		return lib.btChunk_setLength(self, ...)
+	end
+	ffi.metatype('btChunk', META)
+	function bullet.CreateChunk(...)
+		return lib.btChunk_new(...)
+	end
+end
+do -- HACD
+	local META = {}
+	META.__index = META
+	ffi.metatype('HACD_HACD', META)
+	function bullet.CreateHACD(...)
+		return lib.HACD_new(...)
+	end
+end
+do -- AlignedVector3Array
+	local META = {}
+	META.__index = META
+	function META:Delete(...)
+		return lib.btAlignedVector3Array_delete(self, ...)
+	end
+	function META:At(...)
+		return lib.btAlignedVector3Array_at(self, ...)
+	end
+	function META:Size(...)
+		return lib.btAlignedVector3Array_size(self, ...)
+	end
+	function META:Set(...)
+		return lib.btAlignedVector3Array_set(self, ...)
+	end
+	ffi.metatype('btAlignedVector3Array', META)
+	function bullet.CreateAlignedVector3Array3(...)
+		return lib.btAlignedVector3Array_new(...)
+	end
+end
+do -- WheelInfo
+	local META = {}
+	META.__index = META
+	function META:SetClippedInvContactDotSuspension(...)
+		return lib.btWheelInfo_setClippedInvContactDotSuspension(self, ...)
+	end
+	function META:GetRollInfluence(...)
+		return lib.btWheelInfo_getRollInfluence(self, ...)
+	end
+	function META:GetWorldTransform(...)
+		return lib.btWheelInfo_getWorldTransform(self, ...)
+	end
+	function META:GetClientInfo(...)
+		return lib.btWheelInfo_getClientInfo(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btWheelInfo_delete(self, ...)
+	end
+	function META:GetSuspensionRelativeVelocity(...)
+		return lib.btWheelInfo_getSuspensionRelativeVelocity(self, ...)
+	end
+	function META:SetSuspensionStiffness(...)
+		return lib.btWheelInfo_setSuspensionStiffness(self, ...)
+	end
+	function META:SetWheelAxleCS(...)
+		return lib.btWheelInfo_setWheelAxleCS(self, ...)
+	end
+	function META:GetClippedInvContactDotSuspension(...)
+		return lib.btWheelInfo_getClippedInvContactDotSuspension(self, ...)
+	end
+	function META:GetMaxSuspensionForce(...)
+		return lib.btWheelInfo_getMaxSuspensionForce(self, ...)
+	end
+	function META:SetSteering(...)
+		return lib.btWheelInfo_setSteering(self, ...)
+	end
+	function META:SetWorldTransform(...)
+		return lib.btWheelInfo_setWorldTransform(self, ...)
+	end
+	function META:SetClientInfo(...)
+		return lib.btWheelInfo_setClientInfo(self, ...)
+	end
+	function META:GetWheelsSuspensionForce(...)
+		return lib.btWheelInfo_getWheelsSuspensionForce(self, ...)
+	end
+	function META:GetBrake(...)
+		return lib.btWheelInfo_getBrake(self, ...)
+	end
+	function META:SetWheelsDampingCompression(...)
+		return lib.btWheelInfo_setWheelsDampingCompression(self, ...)
+	end
+	function META:GetWheelDirectionCS(...)
+		return lib.btWheelInfo_getWheelDirectionCS(self, ...)
+	end
+	function META:GetWheelsDampingCompression(...)
+		return lib.btWheelInfo_getWheelsDampingCompression(self, ...)
+	end
+	function META:SetBIsFrontWheel(...)
+		return lib.btWheelInfo_setBIsFrontWheel(self, ...)
+	end
+	function META:UpdateWheel(...)
+		return lib.btWheelInfo_updateWheel(self, ...)
+	end
+	function META:SetDeltaRotation(...)
+		return lib.btWheelInfo_setDeltaRotation(self, ...)
+	end
+	function META:SetSkidInfo(...)
+		return lib.btWheelInfo_setSkidInfo(self, ...)
+	end
+	function META:GetDeltaRotation(...)
+		return lib.btWheelInfo_getDeltaRotation(self, ...)
+	end
+	function META:GetEngineForce(...)
+		return lib.btWheelInfo_getEngineForce(self, ...)
+	end
+	function META:GetSteering(...)
+		return lib.btWheelInfo_getSteering(self, ...)
+	end
+	function META:SetMaxSuspensionTravelCm(...)
+		return lib.btWheelInfo_setMaxSuspensionTravelCm(self, ...)
+	end
+	function META:SetWheelsSuspensionForce(...)
+		return lib.btWheelInfo_setWheelsSuspensionForce(self, ...)
+	end
+	function META:SetWheelsRadius(...)
+		return lib.btWheelInfo_setWheelsRadius(self, ...)
+	end
+	function META:GetRaycastInfo(...)
+		return lib.btWheelInfo_getRaycastInfo(self, ...)
+	end
+	function META:SetWheelDirectionCS(...)
+		return lib.btWheelInfo_setWheelDirectionCS(self, ...)
+	end
+	function META:SetChassisConnectionPointCS(...)
+		return lib.btWheelInfo_setChassisConnectionPointCS(self, ...)
+	end
+	function META:SetSuspensionRestLength1(...)
+		return lib.btWheelInfo_setSuspensionRestLength1(self, ...)
+	end
+	function META:SetSuspensionRelativeVelocity(...)
+		return lib.btWheelInfo_setSuspensionRelativeVelocity(self, ...)
+	end
+	function META:GetSuspensionRestLength(...)
+		return lib.btWheelInfo_getSuspensionRestLength(self, ...)
+	end
+	function META:GetWheelAxleCS(...)
+		return lib.btWheelInfo_getWheelAxleCS(self, ...)
+	end
+	function META:SetRotation(...)
+		return lib.btWheelInfo_setRotation(self, ...)
+	end
+	function META:SetBrake(...)
+		return lib.btWheelInfo_setBrake(self, ...)
+	end
+	function META:GetMaxSuspensionTravelCm(...)
+		return lib.btWheelInfo_getMaxSuspensionTravelCm(self, ...)
+	end
+	function META:SetWheelsDampingRelaxation(...)
+		return lib.btWheelInfo_setWheelsDampingRelaxation(self, ...)
+	end
+	function META:SetMaxSuspensionForce(...)
+		return lib.btWheelInfo_setMaxSuspensionForce(self, ...)
+	end
+	function META:SetFrictionSlip(...)
+		return lib.btWheelInfo_setFrictionSlip(self, ...)
+	end
+	function META:GetWheelsRadius(...)
+		return lib.btWheelInfo_getWheelsRadius(self, ...)
+	end
+	function META:GetRotation(...)
+		return lib.btWheelInfo_getRotation(self, ...)
+	end
+	function META:SetRollInfluence(...)
+		return lib.btWheelInfo_setRollInfluence(self, ...)
+	end
+	function META:GetSkidInfo(...)
+		return lib.btWheelInfo_getSkidInfo(self, ...)
+	end
+	function META:GetChassisConnectionPointCS(...)
+		return lib.btWheelInfo_getChassisConnectionPointCS(self, ...)
+	end
+	function META:GetSuspensionRestLength1(...)
+		return lib.btWheelInfo_getSuspensionRestLength1(self, ...)
+	end
+	function META:GetSuspensionStiffness(...)
+		return lib.btWheelInfo_getSuspensionStiffness(self, ...)
+	end
+	function META:GetFrictionSlip(...)
+		return lib.btWheelInfo_getFrictionSlip(self, ...)
+	end
+	function META:GetWheelsDampingRelaxation(...)
+		return lib.btWheelInfo_getWheelsDampingRelaxation(self, ...)
+	end
+	function META:GetBIsFrontWheel(...)
+		return lib.btWheelInfo_getBIsFrontWheel(self, ...)
+	end
+	function META:SetEngineForce(...)
+		return lib.btWheelInfo_setEngineForce(self, ...)
+	end
+	ffi.metatype('btWheelInfo', META)
+	function bullet.CreateWheelInfo(...)
+		return lib.btWheelInfo_new(...)
+	end
+end
+do -- CompoundShapeChild
+	local META = {}
+	META.__index = META
+	function META:GetChildShapeType(...)
+		return lib.btCompoundShapeChild_getChildShapeType(self, ...)
+	end
+	function META:SetChildShapeType(...)
+		return lib.btCompoundShapeChild_setChildShapeType(self, ...)
+	end
+	function META:GetNode(...)
+		return lib.btCompoundShapeChild_getNode(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btCompoundShapeChild_delete(self, ...)
+	end
+	function META:SetTransform(...)
+		return lib.btCompoundShapeChild_setTransform(self, ...)
+	end
+	function META:GetChildMargin(...)
+		return lib.btCompoundShapeChild_getChildMargin(self, ...)
+	end
+	function META:SetNode(...)
+		return lib.btCompoundShapeChild_setNode(self, ...)
+	end
+	function META:GetTransform(...)
+		return lib.btCompoundShapeChild_getTransform(self, ...)
+	end
+	function META:GetChildShape(...)
+		return lib.btCompoundShapeChild_getChildShape(self, ...)
+	end
+	function META:SetChildMargin(...)
+		return lib.btCompoundShapeChild_setChildMargin(self, ...)
+	end
+	function META:SetChildShape(...)
+		return lib.btCompoundShapeChild_setChildShape(self, ...)
+	end
+	ffi.metatype('btCompoundShapeChild', META)
+	function bullet.CreateCompoundShapeChild(...)
+		return lib.btCompoundShapeChild_new(...)
+	end
+end
+do -- WheelInfoConstructionInfo
+	local META = {}
+	META.__index = META
+	function META:GetChassisConnectionCS(...)
+		return lib.btWheelInfoConstructionInfo_getChassisConnectionCS(self, ...)
+	end
+	function META:SetMaxSuspensionTravelCm(...)
+		return lib.btWheelInfoConstructionInfo_setMaxSuspensionTravelCm(self, ...)
+	end
+	function META:GetWheelsDampingRelaxation(...)
+		return lib.btWheelInfoConstructionInfo_getWheelsDampingRelaxation(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btWheelInfoConstructionInfo_delete(self, ...)
+	end
+	function META:SetSuspensionStiffness(...)
+		return lib.btWheelInfoConstructionInfo_setSuspensionStiffness(self, ...)
+	end
+	function META:SetWheelAxleCS(...)
+		return lib.btWheelInfoConstructionInfo_setWheelAxleCS(self, ...)
+	end
+	function META:GetMaxSuspensionForce(...)
+		return lib.btWheelInfoConstructionInfo_getMaxSuspensionForce(self, ...)
+	end
+	function META:GetWheelAxleCS(...)
+		return lib.btWheelInfoConstructionInfo_getWheelAxleCS(self, ...)
+	end
+	function META:SetWheelRadius(...)
+		return lib.btWheelInfoConstructionInfo_setWheelRadius(self, ...)
+	end
+	function META:GetFrictionSlip(...)
+		return lib.btWheelInfoConstructionInfo_getFrictionSlip(self, ...)
+	end
+	function META:GetMaxSuspensionTravelCm(...)
+		return lib.btWheelInfoConstructionInfo_getMaxSuspensionTravelCm(self, ...)
+	end
+	function META:SetWheelsDampingRelaxation(...)
+		return lib.btWheelInfoConstructionInfo_setWheelsDampingRelaxation(self, ...)
+	end
+	function META:SetWheelDirectionCS(...)
+		return lib.btWheelInfoConstructionInfo_setWheelDirectionCS(self, ...)
+	end
+	function META:SetFrictionSlip(...)
+		return lib.btWheelInfoConstructionInfo_setFrictionSlip(self, ...)
+	end
+	function META:SetWheelsDampingCompression(...)
+		return lib.btWheelInfoConstructionInfo_setWheelsDampingCompression(self, ...)
+	end
+	function META:SetSuspensionRestLength(...)
+		return lib.btWheelInfoConstructionInfo_setSuspensionRestLength(self, ...)
+	end
+	function META:GetWheelDirectionCS(...)
+		return lib.btWheelInfoConstructionInfo_getWheelDirectionCS(self, ...)
+	end
+	function META:GetSuspensionRestLength(...)
+		return lib.btWheelInfoConstructionInfo_getSuspensionRestLength(self, ...)
+	end
+	function META:GetWheelsDampingCompression(...)
+		return lib.btWheelInfoConstructionInfo_getWheelsDampingCompression(self, ...)
+	end
+	function META:SetBIsFrontWheel(...)
+		return lib.btWheelInfoConstructionInfo_setBIsFrontWheel(self, ...)
+	end
+	function META:GetSuspensionStiffness(...)
+		return lib.btWheelInfoConstructionInfo_getSuspensionStiffness(self, ...)
+	end
+	function META:SetChassisConnectionCS(...)
+		return lib.btWheelInfoConstructionInfo_setChassisConnectionCS(self, ...)
+	end
+	function META:GetWheelRadius(...)
+		return lib.btWheelInfoConstructionInfo_getWheelRadius(self, ...)
+	end
+	function META:GetBIsFrontWheel(...)
+		return lib.btWheelInfoConstructionInfo_getBIsFrontWheel(self, ...)
+	end
+	function META:SetMaxSuspensionForce(...)
+		return lib.btWheelInfoConstructionInfo_setMaxSuspensionForce(self, ...)
+	end
+	ffi.metatype('btWheelInfoConstructionInfo', META)
+	function bullet.CreateWheelInfoConstructionInfo(...)
+		return lib.btWheelInfoConstructionInfo_new(...)
+	end
+end
+do -- VoronoiSimplexSolver
+	local META = {}
+	META.__index = META
+	function META:SetLastW(...)
+		return lib.btVoronoiSimplexSolver_setLastW(self, ...)
+	end
+	function META:GetSimplex(...)
+		return lib.btVoronoiSimplexSolver_getSimplex(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btVoronoiSimplexSolver_delete(self, ...)
+	end
+	function META:GetNeedsUpdate(...)
+		return lib.btVoronoiSimplexSolver_getNeedsUpdate(self, ...)
+	end
+	function META:SetCachedV(...)
+		return lib.btVoronoiSimplexSolver_setCachedV(self, ...)
+	end
+	function META:RemoveVertex(...)
+		return lib.btVoronoiSimplexSolver_removeVertex(self, ...)
+	end
+	function META:SetCachedP1(...)
+		return lib.btVoronoiSimplexSolver_setCachedP1(self, ...)
+	end
+	function META:FullSimplex(...)
+		return lib.btVoronoiSimplexSolver_fullSimplex(self, ...)
+	end
+	function META:GetCachedP1(...)
+		return lib.btVoronoiSimplexSolver_getCachedP1(self, ...)
+	end
+	function META:SetCachedP2(...)
+		return lib.btVoronoiSimplexSolver_setCachedP2(self, ...)
+	end
+	function META:GetLastW(...)
+		return lib.btVoronoiSimplexSolver_getLastW(self, ...)
+	end
+	function META:SetNumVertices(...)
+		return lib.btVoronoiSimplexSolver_setNumVertices(self, ...)
+	end
+	function META:GetCachedV(...)
+		return lib.btVoronoiSimplexSolver_getCachedV(self, ...)
+	end
+	function META:InSimplex(...)
+		return lib.btVoronoiSimplexSolver_inSimplex(self, ...)
+	end
+	function META:Reset(...)
+		return lib.btVoronoiSimplexSolver_reset(self, ...)
+	end
+	function META:SetCachedValidClosest(...)
+		return lib.btVoronoiSimplexSolver_setCachedValidClosest(self, ...)
+	end
+	function META:UpdateClosestVectorAndPoints(...)
+		return lib.btVoronoiSimplexSolver_updateClosestVectorAndPoints(self, ...)
+	end
+	function META:SetNeedsUpdate(...)
+		return lib.btVoronoiSimplexSolver_setNeedsUpdate(self, ...)
+	end
+	function META:ClosestPtPointTriangle(...)
+		return lib.btVoronoiSimplexSolver_closestPtPointTriangle(self, ...)
+	end
+	function META:GetCachedBC(...)
+		return lib.btVoronoiSimplexSolver_getCachedBC(self, ...)
+	end
+	function META:NumVertices(...)
+		return lib.btVoronoiSimplexSolver_numVertices(self, ...)
+	end
+	function META:SetEqualVertexThreshold(...)
+		return lib.btVoronoiSimplexSolver_setEqualVertexThreshold(self, ...)
+	end
+	function META:GetCachedP2(...)
+		return lib.btVoronoiSimplexSolver_getCachedP2(self, ...)
+	end
+	function META:GetSimplexPointsQ(...)
+		return lib.btVoronoiSimplexSolver_getSimplexPointsQ(self, ...)
+	end
+	function META:AddVertex(...)
+		return lib.btVoronoiSimplexSolver_addVertex(self, ...)
+	end
+	function META:GetSimplexVectorW(...)
+		return lib.btVoronoiSimplexSolver_getSimplexVectorW(self, ...)
+	end
+	function META:GetCachedValidClosest(...)
+		return lib.btVoronoiSimplexSolver_getCachedValidClosest(self, ...)
+	end
+	function META:GetNumVertices(...)
+		return lib.btVoronoiSimplexSolver_getNumVertices(self, ...)
+	end
+	function META:Closest(...)
+		return lib.btVoronoiSimplexSolver_closest(self, ...)
+	end
+	function META:SetCachedBC(...)
+		return lib.btVoronoiSimplexSolver_setCachedBC(self, ...)
+	end
+	function META:EmptySimplex(...)
+		return lib.btVoronoiSimplexSolver_emptySimplex(self, ...)
+	end
+	function META:ReduceVertices(...)
+		return lib.btVoronoiSimplexSolver_reduceVertices(self, ...)
+	end
+	function META:MaxVertex(...)
+		return lib.btVoronoiSimplexSolver_maxVertex(self, ...)
+	end
+	function META:GetSimplexPointsP(...)
+		return lib.btVoronoiSimplexSolver_getSimplexPointsP(self, ...)
+	end
+	function META:PointOutsideOfPlane(...)
+		return lib.btVoronoiSimplexSolver_pointOutsideOfPlane(self, ...)
+	end
+	function META:GetEqualVertexThreshold(...)
+		return lib.btVoronoiSimplexSolver_getEqualVertexThreshold(self, ...)
+	end
+	function META:ClosestPtPointTetrahedron(...)
+		return lib.btVoronoiSimplexSolver_closestPtPointTetrahedron(self, ...)
+	end
+	ffi.metatype('btVoronoiSimplexSolver', META)
+	function bullet.CreateVoronoiSimplexSolver(...)
+		return lib.btVoronoiSimplexSolver_new(...)
+	end
+end
+do -- SubSimplexClosestResult
+	local META = {}
+	META.__index = META
+	function META:SetClosestPointOnSimplex(...)
+		return lib.btSubSimplexClosestResult_setClosestPointOnSimplex(self, ...)
+	end
+	function META:SetBarycentricCoordinates(...)
+		return lib.btSubSimplexClosestResult_setBarycentricCoordinates(self, ...)
+	end
+	function META:SetDegenerate(...)
+		return lib.btSubSimplexClosestResult_setDegenerate(self, ...)
+	end
+	function META:SetBarycentricCoordinates4(...)
+		return lib.btSubSimplexClosestResult_setBarycentricCoordinates4(self, ...)
+	end
+	function META:Reset(...)
+		return lib.btSubSimplexClosestResult_reset(self, ...)
+	end
+	function META:SetBarycentricCoordinates3(...)
+		return lib.btSubSimplexClosestResult_setBarycentricCoordinates3(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSubSimplexClosestResult_delete(self, ...)
+	end
+	function META:SetBarycentricCoordinates2(...)
+		return lib.btSubSimplexClosestResult_setBarycentricCoordinates2(self, ...)
+	end
+	function META:SetUsedVertices(...)
+		return lib.btSubSimplexClosestResult_setUsedVertices(self, ...)
+	end
+	function META:SetBarycentricCoordinates5(...)
+		return lib.btSubSimplexClosestResult_setBarycentricCoordinates5(self, ...)
+	end
+	function META:GetClosestPointOnSimplex(...)
+		return lib.btSubSimplexClosestResult_getClosestPointOnSimplex(self, ...)
+	end
+	function META:GetDegenerate(...)
+		return lib.btSubSimplexClosestResult_getDegenerate(self, ...)
+	end
+	function META:GetUsedVertices(...)
+		return lib.btSubSimplexClosestResult_getUsedVertices(self, ...)
+	end
+	function META:GetBarycentricCoords(...)
+		return lib.btSubSimplexClosestResult_getBarycentricCoords(self, ...)
+	end
+	function META:IsValid(...)
+		return lib.btSubSimplexClosestResult_isValid(self, ...)
+	end
+	ffi.metatype('btSubSimplexClosestResult', META)
+	function bullet.CreateSubSimplexClosestResult(...)
+		return lib.btSubSimplexClosestResult_new(...)
+	end
+end
+do -- ManifoldResult
+	local META = {}
+	META.__index = META
+	function META:GetBody1Internal(...)
+		return lib.btManifoldResult_getBody1Internal(self, ...)
+	end
+	function META:SetBody1Wrap(...)
+		return lib.btManifoldResult_setBody1Wrap(self, ...)
+	end
+	function META:GetBody0Wrap(...)
+		return lib.btManifoldResult_getBody0Wrap(self, ...)
+	end
+	function META:GetBody1Wrap(...)
+		return lib.btManifoldResult_getBody1Wrap(self, ...)
+	end
+	function META:CalculateCombinedRestitution(...)
+		return lib.btManifoldResult_calculateCombinedRestitution(self, ...)
+	end
+	function META:GetBody0Internal(...)
+		return lib.btManifoldResult_getBody0Internal(self, ...)
+	end
+	function META:SetPersistentManifold(...)
+		return lib.btManifoldResult_setPersistentManifold(self, ...)
+	end
+	function META:CalculateCombinedFriction(...)
+		return lib.btManifoldResult_calculateCombinedFriction(self, ...)
+	end
+	function META:RefreshContactPoints(...)
+		return lib.btManifoldResult_refreshContactPoints(self, ...)
+	end
+	function META:SetBody0Wrap(...)
+		return lib.btManifoldResult_setBody0Wrap(self, ...)
+	end
+	function META:GetPersistentManifold(...)
+		return lib.btManifoldResult_getPersistentManifold(self, ...)
+	end
+	ffi.metatype('btManifoldResult', META)
+	function bullet.CreateManifoldResult(...)
+		return lib.btManifoldResult_new(...)
+	end
+	function bullet.CreateManifoldResult2(...)
+		return lib.btManifoldResult_new2(...)
+	end
+end
+do -- SliderConstraint
+	local META = {}
+	META.__index = META
+	function META:SetLowerLinLimit(...)
+		return lib.btSliderConstraint_setLowerLinLimit(self, ...)
+	end
+	function META:GetUseLinearReferenceFrameA(...)
+		return lib.btSliderConstraint_getUseLinearReferenceFrameA(self, ...)
+	end
+	function META:GetSoftnessDirAng(...)
+		return lib.btSliderConstraint_getSoftnessDirAng(self, ...)
+	end
+	function META:GetFrameOffsetA(...)
+		return lib.btSliderConstraint_getFrameOffsetA(self, ...)
+	end
+	function META:CalculateTransforms(...)
+		return lib.btSliderConstraint_calculateTransforms(self, ...)
+	end
+	function META:GetInfo1NonVirtual(...)
+		return lib.btSliderConstraint_getInfo1NonVirtual(self, ...)
+	end
+	function META:SetDampingDirLin(...)
+		return lib.btSliderConstraint_setDampingDirLin(self, ...)
+	end
+	function META:GetAncorInA(...)
+		return lib.btSliderConstraint_getAncorInA(self, ...)
+	end
+	function META:GetLinearPos(...)
+		return lib.btSliderConstraint_getLinearPos(self, ...)
+	end
+	function META:GetRestitutionDirAng(...)
+		return lib.btSliderConstraint_getRestitutionDirAng(self, ...)
+	end
+	function META:SetDampingDirAng(...)
+		return lib.btSliderConstraint_setDampingDirAng(self, ...)
+	end
+	function META:GetDampingLimLin(...)
+		return lib.btSliderConstraint_getDampingLimLin(self, ...)
+	end
+	function META:GetSoftnessOrthoLin(...)
+		return lib.btSliderConstraint_getSoftnessOrthoLin(self, ...)
+	end
+	function META:GetDampingDirAng(...)
+		return lib.btSliderConstraint_getDampingDirAng(self, ...)
+	end
+	function META:GetSolveAngLimit(...)
+		return lib.btSliderConstraint_getSolveAngLimit(self, ...)
+	end
+	function META:GetDampingDirLin(...)
+		return lib.btSliderConstraint_getDampingDirLin(self, ...)
+	end
+	function META:GetLinDepth(...)
+		return lib.btSliderConstraint_getLinDepth(self, ...)
+	end
+	function META:SetUseFrameOffset(...)
+		return lib.btSliderConstraint_setUseFrameOffset(self, ...)
+	end
+	function META:GetSolveLinLimit(...)
+		return lib.btSliderConstraint_getSolveLinLimit(self, ...)
+	end
+	function META:SetRestitutionOrthoLin(...)
+		return lib.btSliderConstraint_setRestitutionOrthoLin(self, ...)
+	end
+	function META:SetSoftnessOrthoLin(...)
+		return lib.btSliderConstraint_setSoftnessOrthoLin(self, ...)
+	end
+	function META:GetMaxLinMotorForce(...)
+		return lib.btSliderConstraint_getMaxLinMotorForce(self, ...)
+	end
+	function META:SetMaxLinMotorForce(...)
+		return lib.btSliderConstraint_setMaxLinMotorForce(self, ...)
+	end
+	function META:SetUpperAngLimit(...)
+		return lib.btSliderConstraint_setUpperAngLimit(self, ...)
+	end
+	function META:SetRestitutionDirLin(...)
+		return lib.btSliderConstraint_setRestitutionDirLin(self, ...)
+	end
+	function META:GetUpperLinLimit(...)
+		return lib.btSliderConstraint_getUpperLinLimit(self, ...)
+	end
+	function META:GetInfo2NonVirtual(...)
+		return lib.btSliderConstraint_getInfo2NonVirtual(self, ...)
+	end
+	function META:GetRestitutionOrthoLin(...)
+		return lib.btSliderConstraint_getRestitutionOrthoLin(self, ...)
+	end
+	function META:GetTargetAngMotorVelocity(...)
+		return lib.btSliderConstraint_getTargetAngMotorVelocity(self, ...)
+	end
+	function META:SetFrames(...)
+		return lib.btSliderConstraint_setFrames(self, ...)
+	end
+	function META:GetAncorInB(...)
+		return lib.btSliderConstraint_getAncorInB(self, ...)
+	end
+	function META:GetRestitutionLimAng(...)
+		return lib.btSliderConstraint_getRestitutionLimAng(self, ...)
+	end
+	function META:SetTargetAngMotorVelocity(...)
+		return lib.btSliderConstraint_setTargetAngMotorVelocity(self, ...)
+	end
+	function META:GetTargetLinMotorVelocity(...)
+		return lib.btSliderConstraint_getTargetLinMotorVelocity(self, ...)
+	end
+	function META:SetTargetLinMotorVelocity(...)
+		return lib.btSliderConstraint_setTargetLinMotorVelocity(self, ...)
+	end
+	function META:SetPoweredLinMotor(...)
+		return lib.btSliderConstraint_setPoweredLinMotor(self, ...)
+	end
+	function META:GetRestitutionLimLin(...)
+		return lib.btSliderConstraint_getRestitutionLimLin(self, ...)
+	end
+	function META:SetDampingLimLin(...)
+		return lib.btSliderConstraint_setDampingLimLin(self, ...)
+	end
+	function META:GetAngularPos(...)
+		return lib.btSliderConstraint_getAngularPos(self, ...)
+	end
+	function META:GetCalculatedTransformA(...)
+		return lib.btSliderConstraint_getCalculatedTransformA(self, ...)
+	end
+	function META:SetUpperLinLimit(...)
+		return lib.btSliderConstraint_setUpperLinLimit(self, ...)
+	end
+	function META:TestAngLimits(...)
+		return lib.btSliderConstraint_testAngLimits(self, ...)
+	end
+	function META:SetSoftnessOrthoAng(...)
+		return lib.btSliderConstraint_setSoftnessOrthoAng(self, ...)
+	end
+	function META:SetSoftnessLimLin(...)
+		return lib.btSliderConstraint_setSoftnessLimLin(self, ...)
+	end
+	function META:SetLowerAngLimit(...)
+		return lib.btSliderConstraint_setLowerAngLimit(self, ...)
+	end
+	function META:GetCalculatedTransformB(...)
+		return lib.btSliderConstraint_getCalculatedTransformB(self, ...)
+	end
+	function META:SetSoftnessLimAng(...)
+		return lib.btSliderConstraint_setSoftnessLimAng(self, ...)
+	end
+	function META:SetSoftnessDirLin(...)
+		return lib.btSliderConstraint_setSoftnessDirLin(self, ...)
+	end
+	function META:SetPoweredAngMotor(...)
+		return lib.btSliderConstraint_setPoweredAngMotor(self, ...)
+	end
+	function META:SetMaxAngMotorForce(...)
+		return lib.btSliderConstraint_setMaxAngMotorForce(self, ...)
+	end
+	function META:GetSoftnessDirLin(...)
+		return lib.btSliderConstraint_getSoftnessDirLin(self, ...)
+	end
+	function META:GetDampingOrthoAng(...)
+		return lib.btSliderConstraint_getDampingOrthoAng(self, ...)
+	end
+	function META:GetPoweredAngMotor(...)
+		return lib.btSliderConstraint_getPoweredAngMotor(self, ...)
+	end
+	function META:GetMaxAngMotorForce(...)
+		return lib.btSliderConstraint_getMaxAngMotorForce(self, ...)
+	end
+	function META:GetAngDepth(...)
+		return lib.btSliderConstraint_getAngDepth(self, ...)
+	end
+	function META:SetDampingOrthoAng(...)
+		return lib.btSliderConstraint_setDampingOrthoAng(self, ...)
+	end
+	function META:SetSoftnessDirAng(...)
+		return lib.btSliderConstraint_setSoftnessDirAng(self, ...)
+	end
+	function META:GetDampingLimAng(...)
+		return lib.btSliderConstraint_getDampingLimAng(self, ...)
+	end
+	function META:GetLowerLinLimit(...)
+		return lib.btSliderConstraint_getLowerLinLimit(self, ...)
+	end
+	function META:GetDampingOrthoLin(...)
+		return lib.btSliderConstraint_getDampingOrthoLin(self, ...)
+	end
+	function META:GetFrameOffsetB(...)
+		return lib.btSliderConstraint_getFrameOffsetB(self, ...)
+	end
+	function META:GetSoftnessLimLin(...)
+		return lib.btSliderConstraint_getSoftnessLimLin(self, ...)
+	end
+	function META:GetRestitutionDirLin(...)
+		return lib.btSliderConstraint_getRestitutionDirLin(self, ...)
+	end
+	function META:GetSoftnessLimAng(...)
+		return lib.btSliderConstraint_getSoftnessLimAng(self, ...)
+	end
+	function META:SetRestitutionLimLin(...)
+		return lib.btSliderConstraint_setRestitutionLimLin(self, ...)
+	end
+	function META:GetSoftnessOrthoAng(...)
+		return lib.btSliderConstraint_getSoftnessOrthoAng(self, ...)
+	end
+	function META:GetLowerAngLimit(...)
+		return lib.btSliderConstraint_getLowerAngLimit(self, ...)
+	end
+	function META:GetPoweredLinMotor(...)
+		return lib.btSliderConstraint_getPoweredLinMotor(self, ...)
+	end
+	function META:SetDampingLimAng(...)
+		return lib.btSliderConstraint_setDampingLimAng(self, ...)
+	end
+	function META:TestLinLimits(...)
+		return lib.btSliderConstraint_testLinLimits(self, ...)
+	end
+	function META:SetDampingOrthoLin(...)
+		return lib.btSliderConstraint_setDampingOrthoLin(self, ...)
+	end
+	function META:SetRestitutionOrthoAng(...)
+		return lib.btSliderConstraint_setRestitutionOrthoAng(self, ...)
+	end
+	function META:GetUpperAngLimit(...)
+		return lib.btSliderConstraint_getUpperAngLimit(self, ...)
+	end
+	function META:GetUseFrameOffset(...)
+		return lib.btSliderConstraint_getUseFrameOffset(self, ...)
+	end
+	function META:SetRestitutionDirAng(...)
+		return lib.btSliderConstraint_setRestitutionDirAng(self, ...)
+	end
+	function META:GetRestitutionOrthoAng(...)
+		return lib.btSliderConstraint_getRestitutionOrthoAng(self, ...)
+	end
+	function META:SetRestitutionLimAng(...)
+		return lib.btSliderConstraint_setRestitutionLimAng(self, ...)
+	end
+	ffi.metatype('btSliderConstraint', META)
+	function bullet.CreateSliderConstraint(...)
+		return lib.btSliderConstraint_new(...)
+	end
+	function bullet.CreateSliderConstraint2(...)
+		return lib.btSliderConstraint_new2(...)
+	end
+end
+do -- EmptyShape
+	local META = {}
+	META.__index = META
+	ffi.metatype('btEmptyShape', META)
+	function bullet.CreateEmptyShape(...)
+		return lib.btEmptyShape_new(...)
+	end
+end
+do -- Dbvt_IClone
+	local META = {}
+	META.__index = META
+	function META:CloneLeaf(...)
+		return lib.btDbvt_IClone_CloneLeaf(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btDbvt_IClone_delete(self, ...)
+	end
+	ffi.metatype('btDbvt_IClone', META)
+	function bullet.CreateDbvt_IClone(...)
+		return lib.btDbvt_IClone_new(...)
+	end
+end
+do -- DispatcherInfo
+	local META = {}
+	META.__index = META
+	function META:SetUseConvexConservativeDistanceUtil(...)
+		return lib.btDispatcherInfo_setUseConvexConservativeDistanceUtil(self, ...)
+	end
+	function META:GetEnableSPU(...)
+		return lib.btDispatcherInfo_getEnableSPU(self, ...)
+	end
+	function META:GetUseConvexConservativeDistanceUtil(...)
+		return lib.btDispatcherInfo_getUseConvexConservativeDistanceUtil(self, ...)
+	end
+	function META:GetEnableSatConvex(...)
+		return lib.btDispatcherInfo_getEnableSatConvex(self, ...)
+	end
+	function META:SetUseEpa(...)
+		return lib.btDispatcherInfo_setUseEpa(self, ...)
+	end
+	function META:GetConvexConservativeDistanceThreshold(...)
+		return lib.btDispatcherInfo_getConvexConservativeDistanceThreshold(self, ...)
+	end
+	function META:GetUseEpa(...)
+		return lib.btDispatcherInfo_getUseEpa(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btDispatcherInfo_delete(self, ...)
+	end
+	function META:GetDebugDraw(...)
+		return lib.btDispatcherInfo_getDebugDraw(self, ...)
+	end
+	function META:GetTimeStep(...)
+		return lib.btDispatcherInfo_getTimeStep(self, ...)
+	end
+	function META:GetTimeOfImpact(...)
+		return lib.btDispatcherInfo_getTimeOfImpact(self, ...)
+	end
+	function META:SetTimeOfImpact(...)
+		return lib.btDispatcherInfo_setTimeOfImpact(self, ...)
+	end
+	function META:SetEnableSatConvex(...)
+		return lib.btDispatcherInfo_setEnableSatConvex(self, ...)
+	end
+	function META:GetAllowedCcdPenetration(...)
+		return lib.btDispatcherInfo_getAllowedCcdPenetration(self, ...)
+	end
+	function META:GetStepCount(...)
+		return lib.btDispatcherInfo_getStepCount(self, ...)
+	end
+	function META:SetEnableSPU(...)
+		return lib.btDispatcherInfo_setEnableSPU(self, ...)
+	end
+	function META:GetDispatchFunc(...)
+		return lib.btDispatcherInfo_getDispatchFunc(self, ...)
+	end
+	function META:SetDispatchFunc(...)
+		return lib.btDispatcherInfo_setDispatchFunc(self, ...)
+	end
+	function META:SetTimeStep(...)
+		return lib.btDispatcherInfo_setTimeStep(self, ...)
+	end
+	function META:SetStepCount(...)
+		return lib.btDispatcherInfo_setStepCount(self, ...)
+	end
+	function META:SetDebugDraw(...)
+		return lib.btDispatcherInfo_setDebugDraw(self, ...)
+	end
+	function META:GetUseContinuous(...)
+		return lib.btDispatcherInfo_getUseContinuous(self, ...)
+	end
+	function META:SetConvexConservativeDistanceThreshold(...)
+		return lib.btDispatcherInfo_setConvexConservativeDistanceThreshold(self, ...)
+	end
+	function META:SetAllowedCcdPenetration(...)
+		return lib.btDispatcherInfo_setAllowedCcdPenetration(self, ...)
+	end
+	function META:SetUseContinuous(...)
+		return lib.btDispatcherInfo_setUseContinuous(self, ...)
+	end
+	ffi.metatype('btDispatcherInfo', META)
+	function bullet.CreateDispatcherInfo(...)
+		return lib.btDispatcherInfo_new(...)
+	end
+end
+do -- MultiBodySolverConstraint
+	local META = {}
+	META.__index = META
+	function META:GetRhs(...)
+		return lib.btMultiBodySolverConstraint_getRhs(self, ...)
+	end
+	function META:GetContactNormal2(...)
+		return lib.btMultiBodySolverConstraint_getContactNormal2(self, ...)
+	end
+	function META:SetDeltaVelAindex(...)
+		return lib.btMultiBodySolverConstraint_setDeltaVelAindex(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btMultiBodySolverConstraint_delete(self, ...)
+	end
+	function META:GetFrictionIndex(...)
+		return lib.btMultiBodySolverConstraint_getFrictionIndex(self, ...)
+	end
+	function META:SetUnusedPadding4(...)
+		return lib.btMultiBodySolverConstraint_setUnusedPadding4(self, ...)
+	end
+	function META:SetUpperLimit(...)
+		return lib.btMultiBodySolverConstraint_setUpperLimit(self, ...)
+	end
+	function META:GetJacDiagABInv(...)
+		return lib.btMultiBodySolverConstraint_getJacDiagABInv(self, ...)
+	end
+	function META:SetSolverBodyIdB(...)
+		return lib.btMultiBodySolverConstraint_setSolverBodyIdB(self, ...)
+	end
+	function META:SetRelpos1CrossNormal(...)
+		return lib.btMultiBodySolverConstraint_setRelpos1CrossNormal(self, ...)
+	end
+	function META:SetAppliedImpulse(...)
+		return lib.btMultiBodySolverConstraint_setAppliedImpulse(self, ...)
+	end
+	function META:GetLinkB(...)
+		return lib.btMultiBodySolverConstraint_getLinkB(self, ...)
+	end
+	function META:SetSolverBodyIdA(...)
+		return lib.btMultiBodySolverConstraint_setSolverBodyIdA(self, ...)
+	end
+	function META:SetCfm(...)
+		return lib.btMultiBodySolverConstraint_setCfm(self, ...)
+	end
+	function META:SetJacDiagABInv(...)
+		return lib.btMultiBodySolverConstraint_setJacDiagABInv(self, ...)
+	end
+	function META:SetRhs(...)
+		return lib.btMultiBodySolverConstraint_setRhs(self, ...)
+	end
+	function META:SetFrictionIndex(...)
+		return lib.btMultiBodySolverConstraint_setFrictionIndex(self, ...)
+	end
+	function META:GetAngularComponentA(...)
+		return lib.btMultiBodySolverConstraint_getAngularComponentA(self, ...)
+	end
+	function META:SetRelpos2CrossNormal(...)
+		return lib.btMultiBodySolverConstraint_setRelpos2CrossNormal(self, ...)
+	end
+	function META:GetAppliedPushImpulse(...)
+		return lib.btMultiBodySolverConstraint_getAppliedPushImpulse(self, ...)
+	end
+	function META:GetLowerLimit(...)
+		return lib.btMultiBodySolverConstraint_getLowerLimit(self, ...)
+	end
+	function META:SetContactNormal2(...)
+		return lib.btMultiBodySolverConstraint_setContactNormal2(self, ...)
+	end
+	function META:SetOriginalContactPoint(...)
+		return lib.btMultiBodySolverConstraint_setOriginalContactPoint(self, ...)
+	end
+	function META:SetMultiBodyB(...)
+		return lib.btMultiBodySolverConstraint_setMultiBodyB(self, ...)
+	end
+	function META:SetMultiBodyA(...)
+		return lib.btMultiBodySolverConstraint_setMultiBodyA(self, ...)
+	end
+	function META:SetLowerLimit(...)
+		return lib.btMultiBodySolverConstraint_setLowerLimit(self, ...)
+	end
+	function META:SetLinkB(...)
+		return lib.btMultiBodySolverConstraint_setLinkB(self, ...)
+	end
+	function META:SetJacBindex(...)
+		return lib.btMultiBodySolverConstraint_setJacBindex(self, ...)
+	end
+	function META:SetLinkA(...)
+		return lib.btMultiBodySolverConstraint_setLinkA(self, ...)
+	end
+	function META:GetRelpos1CrossNormal(...)
+		return lib.btMultiBodySolverConstraint_getRelpos1CrossNormal(self, ...)
+	end
+	function META:GetRelpos2CrossNormal(...)
+		return lib.btMultiBodySolverConstraint_getRelpos2CrossNormal(self, ...)
+	end
+	function META:GetMultiBodyB(...)
+		return lib.btMultiBodySolverConstraint_getMultiBodyB(self, ...)
+	end
+	function META:GetUpperLimit(...)
+		return lib.btMultiBodySolverConstraint_getUpperLimit(self, ...)
+	end
+	function META:SetRhsPenetration(...)
+		return lib.btMultiBodySolverConstraint_setRhsPenetration(self, ...)
+	end
+	function META:SetJacAindex(...)
+		return lib.btMultiBodySolverConstraint_setJacAindex(self, ...)
+	end
+	function META:GetOriginalContactPoint(...)
+		return lib.btMultiBodySolverConstraint_getOriginalContactPoint(self, ...)
+	end
+	function META:SetAngularComponentA(...)
+		return lib.btMultiBodySolverConstraint_setAngularComponentA(self, ...)
+	end
+	function META:GetDeltaVelBindex(...)
+		return lib.btMultiBodySolverConstraint_getDeltaVelBindex(self, ...)
+	end
+	function META:SetFriction(...)
+		return lib.btMultiBodySolverConstraint_setFriction(self, ...)
+	end
+	function META:SetDeltaVelBindex(...)
+		return lib.btMultiBodySolverConstraint_setDeltaVelBindex(self, ...)
+	end
+	function META:SetOverrideNumSolverIterations(...)
+		return lib.btMultiBodySolverConstraint_setOverrideNumSolverIterations(self, ...)
+	end
+	function META:GetUnusedPadding4(...)
+		return lib.btMultiBodySolverConstraint_getUnusedPadding4(self, ...)
+	end
+	function META:GetAngularComponentB(...)
+		return lib.btMultiBodySolverConstraint_getAngularComponentB(self, ...)
+	end
+	function META:GetSolverBodyIdB(...)
+		return lib.btMultiBodySolverConstraint_getSolverBodyIdB(self, ...)
+	end
+	function META:SetAppliedPushImpulse(...)
+		return lib.btMultiBodySolverConstraint_setAppliedPushImpulse(self, ...)
+	end
+	function META:GetCfm(...)
+		return lib.btMultiBodySolverConstraint_getCfm(self, ...)
+	end
+	function META:SetContactNormal1(...)
+		return lib.btMultiBodySolverConstraint_setContactNormal1(self, ...)
+	end
+	function META:GetDeltaVelAindex(...)
+		return lib.btMultiBodySolverConstraint_getDeltaVelAindex(self, ...)
+	end
+	function META:GetJacAindex(...)
+		return lib.btMultiBodySolverConstraint_getJacAindex(self, ...)
+	end
+	function META:GetFriction(...)
+		return lib.btMultiBodySolverConstraint_getFriction(self, ...)
+	end
+	function META:GetOverrideNumSolverIterations(...)
+		return lib.btMultiBodySolverConstraint_getOverrideNumSolverIterations(self, ...)
+	end
+	function META:GetContactNormal1(...)
+		return lib.btMultiBodySolverConstraint_getContactNormal1(self, ...)
+	end
+	function META:GetSolverBodyIdA(...)
+		return lib.btMultiBodySolverConstraint_getSolverBodyIdA(self, ...)
+	end
+	function META:GetAppliedImpulse(...)
+		return lib.btMultiBodySolverConstraint_getAppliedImpulse(self, ...)
+	end
+	function META:GetMultiBodyA(...)
+		return lib.btMultiBodySolverConstraint_getMultiBodyA(self, ...)
+	end
+	function META:GetJacBindex(...)
+		return lib.btMultiBodySolverConstraint_getJacBindex(self, ...)
+	end
+	function META:GetRhsPenetration(...)
+		return lib.btMultiBodySolverConstraint_getRhsPenetration(self, ...)
+	end
+	function META:GetLinkA(...)
+		return lib.btMultiBodySolverConstraint_getLinkA(self, ...)
+	end
+	function META:SetAngularComponentB(...)
+		return lib.btMultiBodySolverConstraint_setAngularComponentB(self, ...)
+	end
+	ffi.metatype('btMultiBodySolverConstraint', META)
+	function bullet.CreateMultiBodySolverConstraint(...)
+		return lib.btMultiBodySolverConstraint_new(...)
+	end
+end
+do -- AlignedManifoldArray
+	local META = {}
+	META.__index = META
+	function META:Delete(...)
+		return lib.btAlignedManifoldArray_delete(self, ...)
+	end
+	function META:Size(...)
+		return lib.btAlignedManifoldArray_size(self, ...)
+	end
+	function META:ResizeNoInitialize(...)
+		return lib.btAlignedManifoldArray_resizeNoInitialize(self, ...)
+	end
+	function META:At(...)
+		return lib.btAlignedManifoldArray_at(self, ...)
+	end
+	ffi.metatype('btAlignedManifoldArray', META)
+	function bullet.CreateAlignedManifoldArray(...)
+		return lib.btAlignedManifoldArray_new(...)
+	end
+end
+do -- StorageResult
+	local META = {}
+	META.__index = META
+	function META:GetClosestPointInB(...)
+		return lib.btStorageResult_getClosestPointInB(self, ...)
+	end
+	function META:SetDistance(...)
+		return lib.btStorageResult_setDistance(self, ...)
+	end
+	function META:GetNormalOnSurfaceB(...)
+		return lib.btStorageResult_getNormalOnSurfaceB(self, ...)
+	end
+	function META:GetDistance(...)
+		return lib.btStorageResult_getDistance(self, ...)
+	end
+	function META:SetNormalOnSurfaceB(...)
+		return lib.btStorageResult_setNormalOnSurfaceB(self, ...)
+	end
+	function META:SetClosestPointInB(...)
+		return lib.btStorageResult_setClosestPointInB(self, ...)
+	end
+	ffi.metatype('btStorageResult', META)
+	function bullet.CreateStorageResult(...)
+		return lib.btStorageResult_new(...)
+	end
+end
+do -- SoftBody_Anchor
+	local META = {}
+	META.__index = META
+	function META:SetC0(...)
+		return lib.btSoftBody_Anchor_setC0(self, ...)
+	end
+	function META:GetC0(...)
+		return lib.btSoftBody_Anchor_getC0(self, ...)
+	end
+	function META:GetInfluence(...)
+		return lib.btSoftBody_Anchor_getInfluence(self, ...)
+	end
+	function META:GetLocal(...)
+		return lib.btSoftBody_Anchor_getLocal(self, ...)
+	end
+	function META:SetNode(...)
+		return lib.btSoftBody_Anchor_setNode(self, ...)
+	end
+	function META:GetNode(...)
+		return lib.btSoftBody_Anchor_getNode(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBody_Anchor_delete(self, ...)
+	end
+	function META:SetLocal(...)
+		return lib.btSoftBody_Anchor_setLocal(self, ...)
+	end
+	function META:GetBody(...)
+		return lib.btSoftBody_Anchor_getBody(self, ...)
+	end
+	function META:SetBody(...)
+		return lib.btSoftBody_Anchor_setBody(self, ...)
+	end
+	function META:SetC2(...)
+		return lib.btSoftBody_Anchor_setC2(self, ...)
+	end
+	function META:GetC1(...)
+		return lib.btSoftBody_Anchor_getC1(self, ...)
+	end
+	function META:SetC1(...)
+		return lib.btSoftBody_Anchor_setC1(self, ...)
+	end
+	function META:GetC2(...)
+		return lib.btSoftBody_Anchor_getC2(self, ...)
+	end
+	function META:SetInfluence(...)
+		return lib.btSoftBody_Anchor_setInfluence(self, ...)
+	end
+	ffi.metatype('btSoftBody_Anchor', META)
+	function bullet.CreateSoftBody_Anchor(...)
+		return lib.btSoftBody_Anchor_new(...)
+	end
+end
+do -- Generic6DofConstraint
+	local META = {}
+	META.__index = META
+	function META:GetCalculatedTransformB(...)
+		return lib.btGeneric6DofConstraint_getCalculatedTransformB(self, ...)
+	end
+	function META:SetUseFrameOffset(...)
+		return lib.btGeneric6DofConstraint_setUseFrameOffset(self, ...)
+	end
+	function META:TestAngularLimitMotor(...)
+		return lib.btGeneric6DofConstraint_testAngularLimitMotor(self, ...)
+	end
+	function META:GetFrameOffsetA(...)
+		return lib.btGeneric6DofConstraint_getFrameOffsetA(self, ...)
+	end
+	function META:CalculateTransforms(...)
+		return lib.btGeneric6DofConstraint_calculateTransforms(self, ...)
+	end
+	function META:SetAxis(...)
+		return lib.btGeneric6DofConstraint_setAxis(self, ...)
+	end
+	function META:GetInfo1NonVirtual(...)
+		return lib.btGeneric6DofConstraint_getInfo1NonVirtual(self, ...)
+	end
+	function META:SetLimit(...)
+		return lib.btGeneric6DofConstraint_setLimit(self, ...)
+	end
+	function META:GetLinearLowerLimit(...)
+		return lib.btGeneric6DofConstraint_getLinearLowerLimit(self, ...)
+	end
+	function META:SetAngularLowerLimit(...)
+		return lib.btGeneric6DofConstraint_setAngularLowerLimit(self, ...)
+	end
+	function META:UpdateRHS(...)
+		return lib.btGeneric6DofConstraint_updateRHS(self, ...)
+	end
+	function META:IsLimited(...)
+		return lib.btGeneric6DofConstraint_isLimited(self, ...)
+	end
+	function META:GetRelativePivotPosition(...)
+		return lib.btGeneric6DofConstraint_getRelativePivotPosition(self, ...)
+	end
+	function META:SetFrames(...)
+		return lib.btGeneric6DofConstraint_setFrames(self, ...)
+	end
+	function META:SetLinearLowerLimit(...)
+		return lib.btGeneric6DofConstraint_setLinearLowerLimit(self, ...)
+	end
+	function META:CalcAnchorPos(...)
+		return lib.btGeneric6DofConstraint_calcAnchorPos(self, ...)
+	end
+	function META:SetUseSolveConstraintObsolete(...)
+		return lib.btGeneric6DofConstraint_setUseSolveConstraintObsolete(self, ...)
+	end
+	function META:GetFrameOffsetB(...)
+		return lib.btGeneric6DofConstraint_getFrameOffsetB(self, ...)
+	end
+	function META:CalculateTransforms2(...)
+		return lib.btGeneric6DofConstraint_calculateTransforms2(self, ...)
+	end
+	function META:GetAxis(...)
+		return lib.btGeneric6DofConstraint_getAxis(self, ...)
+	end
+	function META:SetLinearUpperLimit(...)
+		return lib.btGeneric6DofConstraint_setLinearUpperLimit(self, ...)
+	end
+	function META:GetAngularLowerLimit(...)
+		return lib.btGeneric6DofConstraint_getAngularLowerLimit(self, ...)
+	end
+	function META:GetUseSolveConstraintObsolete(...)
+		return lib.btGeneric6DofConstraint_getUseSolveConstraintObsolete(self, ...)
+	end
+	function META:GetAngle(...)
+		return lib.btGeneric6DofConstraint_getAngle(self, ...)
+	end
+	function META:GetTranslationalLimitMotor(...)
+		return lib.btGeneric6DofConstraint_getTranslationalLimitMotor(self, ...)
+	end
+	function META:GetAngularUpperLimit(...)
+		return lib.btGeneric6DofConstraint_getAngularUpperLimit(self, ...)
+	end
+	function META:GetCalculatedTransformA(...)
+		return lib.btGeneric6DofConstraint_getCalculatedTransformA(self, ...)
+	end
+	function META:GetRotationalLimitMotor(...)
+		return lib.btGeneric6DofConstraint_getRotationalLimitMotor(self, ...)
+	end
+	function META:GetUseFrameOffset(...)
+		return lib.btGeneric6DofConstraint_getUseFrameOffset(self, ...)
+	end
+	function META:SetAngularUpperLimit(...)
+		return lib.btGeneric6DofConstraint_setAngularUpperLimit(self, ...)
+	end
+	function META:GetInfo2NonVirtual(...)
+		return lib.btGeneric6DofConstraint_getInfo2NonVirtual(self, ...)
+	end
+	function META:GetLinearUpperLimit(...)
+		return lib.btGeneric6DofConstraint_getLinearUpperLimit(self, ...)
+	end
+	ffi.metatype('btGeneric6DofConstraint', META)
+	function bullet.CreateGeneric6DofConstraint2(...)
+		return lib.btGeneric6DofConstraint_new2(...)
+	end
+	function bullet.CreateGeneric6DofConstraint6(...)
+		return lib.btGeneric6DofConstraint_new(...)
+	end
+end
+do -- Box2dBox2dCollisionAlgorithm_CreateFunc
+	local META = {}
+	META.__index = META
+	ffi.metatype('btBox2dBox2dCollisionAlgorithm_CreateFunc', META)
+	function bullet.CreateBox2dBox2dCollisionAlgorithm_CreateFunc2(...)
+		return lib.btBox2dBox2dCollisionAlgorithm_CreateFunc_new(...)
+	end
+end
+do -- RotationalLimitMotor
+	local META = {}
+	META.__index = META
+	function META:SetTargetVelocity(...)
+		return lib.btRotationalLimitMotor_setTargetVelocity(self, ...)
+	end
+	function META:GetAccumulatedImpulse(...)
+		return lib.btRotationalLimitMotor_getAccumulatedImpulse(self, ...)
+	end
+	function META:GetLoLimit(...)
+		return lib.btRotationalLimitMotor_getLoLimit(self, ...)
+	end
+	function META:SetCurrentLimitError(...)
+		return lib.btRotationalLimitMotor_setCurrentLimitError(self, ...)
+	end
+	function META:SetLimitSoftness(...)
+		return lib.btRotationalLimitMotor_setLimitSoftness(self, ...)
+	end
+	function META:SetCurrentPosition(...)
+		return lib.btRotationalLimitMotor_setCurrentPosition(self, ...)
+	end
+	function META:SetMaxLimitForce(...)
+		return lib.btRotationalLimitMotor_setMaxLimitForce(self, ...)
+	end
+	function META:GetMaxMotorForce(...)
+		return lib.btRotationalLimitMotor_getMaxMotorForce(self, ...)
+	end
+	function META:GetBounce(...)
+		return lib.btRotationalLimitMotor_getBounce(self, ...)
+	end
+	function META:GetLimitSoftness(...)
+		return lib.btRotationalLimitMotor_getLimitSoftness(self, ...)
+	end
+	function META:SetNormalCFM(...)
+		return lib.btRotationalLimitMotor_setNormalCFM(self, ...)
+	end
+	function META:GetDamping(...)
+		return lib.btRotationalLimitMotor_getDamping(self, ...)
+	end
+	function META:IsLimited(...)
+		return lib.btRotationalLimitMotor_isLimited(self, ...)
+	end
+	function META:SetCurrentLimit(...)
+		return lib.btRotationalLimitMotor_setCurrentLimit(self, ...)
+	end
+	function META:SetStopCFM(...)
+		return lib.btRotationalLimitMotor_setStopCFM(self, ...)
+	end
+	function META:SetDamping(...)
+		return lib.btRotationalLimitMotor_setDamping(self, ...)
+	end
+	function META:GetTargetVelocity(...)
+		return lib.btRotationalLimitMotor_getTargetVelocity(self, ...)
+	end
+	function META:SetAccumulatedImpulse(...)
+		return lib.btRotationalLimitMotor_setAccumulatedImpulse(self, ...)
+	end
+	function META:GetStopERP(...)
+		return lib.btRotationalLimitMotor_getStopERP(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btRotationalLimitMotor_delete(self, ...)
+	end
+	function META:GetCurrentPosition(...)
+		return lib.btRotationalLimitMotor_getCurrentPosition(self, ...)
+	end
+	function META:GetMaxLimitForce(...)
+		return lib.btRotationalLimitMotor_getMaxLimitForce(self, ...)
+	end
+	function META:SetLoLimit(...)
+		return lib.btRotationalLimitMotor_setLoLimit(self, ...)
+	end
+	function META:TestLimitValue(...)
+		return lib.btRotationalLimitMotor_testLimitValue(self, ...)
+	end
+	function META:SolveAngularLimits(...)
+		return lib.btRotationalLimitMotor_solveAngularLimits(self, ...)
+	end
+	function META:SetEnableMotor(...)
+		return lib.btRotationalLimitMotor_setEnableMotor(self, ...)
+	end
+	function META:GetCurrentLimitError(...)
+		return lib.btRotationalLimitMotor_getCurrentLimitError(self, ...)
+	end
+	function META:GetStopCFM(...)
+		return lib.btRotationalLimitMotor_getStopCFM(self, ...)
+	end
+	function META:GetHiLimit(...)
+		return lib.btRotationalLimitMotor_getHiLimit(self, ...)
+	end
+	function META:GetNormalCFM(...)
+		return lib.btRotationalLimitMotor_getNormalCFM(self, ...)
+	end
+	function META:SetStopERP(...)
+		return lib.btRotationalLimitMotor_setStopERP(self, ...)
+	end
+	function META:SetBounce(...)
+		return lib.btRotationalLimitMotor_setBounce(self, ...)
+	end
+	function META:SetMaxMotorForce(...)
+		return lib.btRotationalLimitMotor_setMaxMotorForce(self, ...)
+	end
+	function META:SetHiLimit(...)
+		return lib.btRotationalLimitMotor_setHiLimit(self, ...)
+	end
+	function META:NeedApplyTorques(...)
+		return lib.btRotationalLimitMotor_needApplyTorques(self, ...)
+	end
+	function META:GetEnableMotor(...)
+		return lib.btRotationalLimitMotor_getEnableMotor(self, ...)
+	end
+	function META:GetCurrentLimit(...)
+		return lib.btRotationalLimitMotor_getCurrentLimit(self, ...)
+	end
+	ffi.metatype('btRotationalLimitMotor', META)
+	function bullet.CreateRotationalLimitMotor2(...)
+		return lib.btRotationalLimitMotor_new2(...)
+	end
+	function bullet.CreateRotationalLimitMotor(...)
+		return lib.btRotationalLimitMotor_new(...)
+	end
+end
+do -- MultiBodyLinkCollider
+	local META = {}
+	META.__index = META
+	function META:GetMultiBody(...)
+		return lib.btMultiBodyLinkCollider_getMultiBody(self, ...)
+	end
+	function META:GetLink(...)
+		return lib.btMultiBodyLinkCollider_getLink(self, ...)
+	end
+	function META:SetMultiBody(...)
+		return lib.btMultiBodyLinkCollider_setMultiBody(self, ...)
+	end
+	function META:Upcast(...)
+		return lib.btMultiBodyLinkCollider_upcast(self, ...)
+	end
+	function META:SetLink(...)
+		return lib.btMultiBodyLinkCollider_setLink(self, ...)
+	end
+	ffi.metatype('btMultiBodyLinkCollider', META)
+	function bullet.CreateMultiBodyLinkCollider(...)
+		return lib.btMultiBodyLinkCollider_new(...)
+	end
+end
+do -- SoftRigidDynamicsWorld
+	local META = {}
+	META.__index = META
+	function META:AddSoftBody2(...)
+		return lib.btSoftRigidDynamicsWorld_addSoftBody2(self, ...)
+	end
+	function META:SetDrawFlags(...)
+		return lib.btSoftRigidDynamicsWorld_setDrawFlags(self, ...)
+	end
+	function META:AddSoftBody(...)
+		return lib.btSoftRigidDynamicsWorld_addSoftBody(self, ...)
+	end
+	function META:AddSoftBody3(...)
+		return lib.btSoftRigidDynamicsWorld_addSoftBody3(self, ...)
+	end
+	function META:GetSoftBodyArray(...)
+		return lib.btSoftRigidDynamicsWorld_getSoftBodyArray(self, ...)
+	end
+	function META:GetWorldInfo(...)
+		return lib.btSoftRigidDynamicsWorld_getWorldInfo(self, ...)
+	end
+	function META:GetDrawFlags(...)
+		return lib.btSoftRigidDynamicsWorld_getDrawFlags(self, ...)
+	end
+	function META:RemoveSoftBody(...)
+		return lib.btSoftRigidDynamicsWorld_removeSoftBody(self, ...)
+	end
+	ffi.metatype('btSoftRigidDynamicsWorld', META)
+	function bullet.CreateSoftRigidDynamicsWorld2(...)
+		return lib.btSoftRigidDynamicsWorld_new2(...)
+	end
+	function bullet.CreateSoftRigidDynamicsWorld(...)
+		return lib.btSoftRigidDynamicsWorld_new(...)
+	end
+end
+do -- SoftBody_LJoint
+	local META = {}
+	META.__index = META
+	function META:GetRpos(...)
+		return lib.btSoftBody_LJoint_getRpos(self, ...)
+	end
+	ffi.metatype('btSoftBody_LJoint', META)
+	function bullet.CreateSoftBody_LJoint(...)
+		return lib.btSoftBody_LJoint_new(...)
+	end
+end
+do -- Convex2dConvex2dAlgorithm_CreateFunc
+	local META = {}
+	META.__index = META
+	function META:GetSimplexSolver(...)
+		return lib.btConvex2dConvex2dAlgorithm_CreateFunc_getSimplexSolver(self, ...)
+	end
+	function META:GetNumPerturbationIterations(...)
+		return lib.btConvex2dConvex2dAlgorithm_CreateFunc_getNumPerturbationIterations(self, ...)
+	end
+	function META:SetMinimumPointsPerturbationThreshold(...)
+		return lib.btConvex2dConvex2dAlgorithm_CreateFunc_setMinimumPointsPerturbationThreshold(self, ...)
+	end
+	function META:SetPdSolver(...)
+		return lib.btConvex2dConvex2dAlgorithm_CreateFunc_setPdSolver(self, ...)
+	end
+	function META:SetSimplexSolver(...)
+		return lib.btConvex2dConvex2dAlgorithm_CreateFunc_setSimplexSolver(self, ...)
+	end
+	function META:SetNumPerturbationIterations(...)
+		return lib.btConvex2dConvex2dAlgorithm_CreateFunc_setNumPerturbationIterations(self, ...)
+	end
+	function META:GetMinimumPointsPerturbationThreshold(...)
+		return lib.btConvex2dConvex2dAlgorithm_CreateFunc_getMinimumPointsPerturbationThreshold(self, ...)
+	end
+	function META:GetPdSolver(...)
+		return lib.btConvex2dConvex2dAlgorithm_CreateFunc_getPdSolver(self, ...)
+	end
+	ffi.metatype('btConvex2dConvex2dAlgorithm_CreateFunc', META)
+	function bullet.CreateConvex2dConvex2dAlgorithm_CreateFunc2(...)
+		return lib.btConvex2dConvex2dAlgorithm_CreateFunc_new(...)
+	end
+end
+do -- SoftBodyRigidBodyCollisionConfiguration
+	local META = {}
+	META.__index = META
+	ffi.metatype('btSoftBodyRigidBodyCollisionConfiguration', META)
+	function bullet.CreateSoftBodyRigidBodyCollisionConfiguration(...)
+		return lib.btSoftBodyRigidBodyCollisionConfiguration_new(...)
+	end
+	function bullet.CreateSoftBodyRigidBodyCollisionConfiguration2(...)
+		return lib.btSoftBodyRigidBodyCollisionConfiguration_new2(...)
+	end
+end
+do -- ConvexSeparatingDistanceUtil
+	local META = {}
+	META.__index = META
+	function META:InitSeparatingDistance(...)
+		return lib.btConvexSeparatingDistanceUtil_initSeparatingDistance(self, ...)
+	end
+	function META:GetConservativeSeparatingDistance(...)
+		return lib.btConvexSeparatingDistanceUtil_getConservativeSeparatingDistance(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btConvexSeparatingDistanceUtil_delete(self, ...)
+	end
+	function META:UpdateSeparatingDistance(...)
+		return lib.btConvexSeparatingDistanceUtil_updateSeparatingDistance(self, ...)
+	end
+	ffi.metatype('btConvexSeparatingDistanceUtil', META)
+	function bullet.CreateConvexSeparatingDistanceUtil(...)
+		return lib.btConvexSeparatingDistanceUtil_new(...)
+	end
+end
+do -- DbvtProxy
+	local META = {}
+	META.__index = META
+	function META:GetStage(...)
+		return lib.btDbvtProxy_getStage(self, ...)
+	end
+	function META:SetLeaf(...)
+		return lib.btDbvtProxy_setLeaf(self, ...)
+	end
+	function META:SetStage(...)
+		return lib.btDbvtProxy_setStage(self, ...)
+	end
+	function META:GetLinks(...)
+		return lib.btDbvtProxy_getLinks(self, ...)
+	end
+	function META:GetLeaf(...)
+		return lib.btDbvtProxy_getLeaf(self, ...)
+	end
+	ffi.metatype('btDbvtProxy', META)
+	function bullet.CreateDbvtProxy(...)
+		return lib.btDbvtProxy_new(...)
+	end
+end
+do -- UniversalConstraint
+	local META = {}
+	META.__index = META
+	function META:GetAngle2(...)
+		return lib.btUniversalConstraint_getAngle2(self, ...)
+	end
+	function META:GetAxis2(...)
+		return lib.btUniversalConstraint_getAxis2(self, ...)
+	end
+	function META:SetUpperLimit(...)
+		return lib.btUniversalConstraint_setUpperLimit(self, ...)
+	end
+	function META:GetAnchor2(...)
+		return lib.btUniversalConstraint_getAnchor2(self, ...)
+	end
+	function META:GetAxis1(...)
+		return lib.btUniversalConstraint_getAxis1(self, ...)
+	end
+	function META:SetLowerLimit(...)
+		return lib.btUniversalConstraint_setLowerLimit(self, ...)
+	end
+	function META:GetAngle1(...)
+		return lib.btUniversalConstraint_getAngle1(self, ...)
+	end
+	function META:GetAnchor(...)
+		return lib.btUniversalConstraint_getAnchor(self, ...)
+	end
+	ffi.metatype('btUniversalConstraint', META)
+	function bullet.CreateUniversalConstraint(...)
+		return lib.btUniversalConstraint_new(...)
+	end
+end
+do -- ConvexInternalAabbCachingShape
+	local META = {}
+	META.__index = META
+	function META:RecalcLocalAabb(...)
+		return lib.btConvexInternalAabbCachingShape_recalcLocalAabb(self, ...)
+	end
+	ffi.metatype('btConvexInternalAabbCachingShape', META)
+	function bullet.CreateConvexInternalAabbCachingShape(...)
+		return lib.btConvexInternalAabbCachingShape_new(...)
+	end
+end
+do -- ConvexPolyhedron
+	local META = {}
+	META.__index = META
+	function META:GetLocalCenter(...)
+		return lib.btConvexPolyhedron_getLocalCenter(self, ...)
+	end
+	function META:TestContainment(...)
+		return lib.btConvexPolyhedron_testContainment(self, ...)
+	end
+	function META:Initialize(...)
+		return lib.btConvexPolyhedron_initialize(self, ...)
+	end
+	function META:SetMC(...)
+		return lib.btConvexPolyhedron_setMC(self, ...)
+	end
+	function META:SetME(...)
+		return lib.btConvexPolyhedron_setME(self, ...)
+	end
+	function META:GetFaces(...)
+		return lib.btConvexPolyhedron_getFaces(self, ...)
+	end
+	function META:GetExtents(...)
+		return lib.btConvexPolyhedron_getExtents(self, ...)
+	end
+	function META:SetLocalCenter(...)
+		return lib.btConvexPolyhedron_setLocalCenter(self, ...)
+	end
+	function META:Project(...)
+		return lib.btConvexPolyhedron_project(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btConvexPolyhedron_delete(self, ...)
+	end
+	function META:SetRadius(...)
+		return lib.btConvexPolyhedron_setRadius(self, ...)
+	end
+	function META:GetRadius(...)
+		return lib.btConvexPolyhedron_getRadius(self, ...)
+	end
+	function META:SetExtents(...)
+		return lib.btConvexPolyhedron_setExtents(self, ...)
+	end
+	function META:GetME(...)
+		return lib.btConvexPolyhedron_getME(self, ...)
+	end
+	function META:GetUniqueEdges(...)
+		return lib.btConvexPolyhedron_getUniqueEdges(self, ...)
+	end
+	function META:GetVertices(...)
+		return lib.btConvexPolyhedron_getVertices(self, ...)
+	end
+	function META:GetMC(...)
+		return lib.btConvexPolyhedron_getMC(self, ...)
+	end
+	ffi.metatype('btConvexPolyhedron', META)
+	function bullet.CreateConvexPolyhedron(...)
+		return lib.btConvexPolyhedron_new(...)
+	end
+end
+do -- GhostObject
+	local META = {}
+	META.__index = META
+	function META:GetOverlappingPairs(...)
+		return lib.btGhostObject_getOverlappingPairs(self, ...)
+	end
+	function META:ConvexSweepTest2(...)
+		return lib.btGhostObject_convexSweepTest2(self, ...)
+	end
+	function META:RemoveOverlappingObjectInternal(...)
+		return lib.btGhostObject_removeOverlappingObjectInternal(self, ...)
+	end
+	function META:AddOverlappingObjectInternal(...)
+		return lib.btGhostObject_addOverlappingObjectInternal(self, ...)
+	end
+	function META:Upcast(...)
+		return lib.btGhostObject_upcast(self, ...)
+	end
+	function META:GetNumOverlappingObjects(...)
+		return lib.btGhostObject_getNumOverlappingObjects(self, ...)
+	end
+	function META:GetOverlappingObject(...)
+		return lib.btGhostObject_getOverlappingObject(self, ...)
+	end
+	function META:RemoveOverlappingObjectInternal2(...)
+		return lib.btGhostObject_removeOverlappingObjectInternal2(self, ...)
+	end
+	function META:AddOverlappingObjectInternal2(...)
+		return lib.btGhostObject_addOverlappingObjectInternal2(self, ...)
+	end
+	function META:ConvexSweepTest(...)
+		return lib.btGhostObject_convexSweepTest(self, ...)
+	end
+	function META:RayTest(...)
+		return lib.btGhostObject_rayTest(self, ...)
+	end
+	ffi.metatype('btGhostObject', META)
+	function bullet.CreateGhostObject(...)
+		return lib.btGhostObject_new(...)
+	end
+end
+do -- ConvexTriangleMeshShape
+	local META = {}
+	META.__index = META
+	function META:GetMeshInterface(...)
+		return lib.btConvexTriangleMeshShape_getMeshInterface(self, ...)
+	end
+	function META:CalculatePrincipalAxisTransform(...)
+		return lib.btConvexTriangleMeshShape_calculatePrincipalAxisTransform(self, ...)
+	end
+	ffi.metatype('btConvexTriangleMeshShape', META)
+	function bullet.CreateConvexTriangleMeshShape2(...)
+		return lib.btConvexTriangleMeshShape_new2(...)
+	end
+	function bullet.CreateConvexTriangleMeshShape(...)
+		return lib.btConvexTriangleMeshShape_new(...)
+	end
+end
+do -- GhostPairCallback
+	local META = {}
+	META.__index = META
+	ffi.metatype('btGhostPairCallback', META)
+	function bullet.CreateGhostPairCallback(...)
+		return lib.btGhostPairCallback_new(...)
+	end
+end
+do -- ConvexConcaveCollisionAlgorithm_CreateFunc
+	local META = {}
+	META.__index = META
+	ffi.metatype('btConvexConcaveCollisionAlgorithm_CreateFunc', META)
+	function bullet.CreateConvexConcaveCollisionAlgorithm_CreateFunc(...)
+		return lib.btConvexConcaveCollisionAlgorithm_CreateFunc_new(...)
+	end
+end
+do -- SoftRigidCollisionAlgorithm_CreateFunc
+	local META = {}
+	META.__index = META
+	ffi.metatype('btSoftRigidCollisionAlgorithm_CreateFunc', META)
+	function bullet.CreateSoftRigidCollisionAlgorithm_CreateFunc(...)
+		return lib.btSoftRigidCollisionAlgorithm_CreateFunc_new(...)
+	end
+end
+do -- CapsuleShape
+	local META = {}
+	META.__index = META
+	function META:GetHalfHeight(...)
+		return lib.btCapsuleShape_getHalfHeight(self, ...)
+	end
+	function META:GetRadius(...)
+		return lib.btCapsuleShape_getRadius(self, ...)
+	end
+	function META:GetUpAxis(...)
+		return lib.btCapsuleShape_getUpAxis(self, ...)
+	end
+	ffi.metatype('btCapsuleShape', META)
+	function bullet.CreateCapsuleShape(...)
+		return lib.btCapsuleShape_new(...)
+	end
+end
+do -- AABB
+	local META = {}
+	META.__index = META
+	function META:GetMax(...)
+		return lib.btAABB_getMax(self, ...)
+	end
+	function META:Invalidate(...)
+		return lib.btAABB_invalidate(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btAABB_delete(self, ...)
+	end
+	function META:SetMin(...)
+		return lib.btAABB_setMin(self, ...)
+	end
+	function META:SetMax(...)
+		return lib.btAABB_setMax(self, ...)
+	end
+	function META:Merge(...)
+		return lib.btAABB_merge(self, ...)
+	end
+	function META:GetMin(...)
+		return lib.btAABB_getMin(self, ...)
+	end
+	ffi.metatype('btAABB', META)
+	function bullet.CreateAABB4(...)
+		return lib.btAABB_new4(...)
+	end
+	function bullet.CreateAABB5(...)
+		return lib.btAABB_new5(...)
+	end
+	function bullet.CreateAABB(...)
+		return lib.btAABB_new(...)
+	end
+	function bullet.CreateAABB2(...)
+		return lib.btAABB_new2(...)
+	end
+	function bullet.CreateAABB3(...)
+		return lib.btAABB_new3(...)
+	end
+end
+do -- CompoundCollisionAlgorithm_CreateFunc
+	local META = {}
+	META.__index = META
+	ffi.metatype('btCompoundCollisionAlgorithm_CreateFunc', META)
+	function bullet.CreateCompoundCollisionAlgorithm_CreateFunc(...)
+		return lib.btCompoundCollisionAlgorithm_CreateFunc_new(...)
+	end
+end
+do -- GImpactMeshShapePart_TrimeshPrimitiveManager
+	local META = {}
+	META.__index = META
+	function META:GetPart(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getPart(self, ...)
+	end
+	function META:GetIndicestype(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getIndicestype(self, ...)
+	end
+	function META:SetScale(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setScale(self, ...)
+	end
+	function META:GetMargin(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getMargin(self, ...)
+	end
+	function META:GetType(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getType(self, ...)
+	end
+	function META:GetScale(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getScale(self, ...)
+	end
+	function META:GetIndexbase(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getIndexbase(self, ...)
+	end
+	function META:SetNumfaces(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setNumfaces(self, ...)
+	end
+	function META:SetMargin(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setMargin(self, ...)
+	end
+	function META:GetVertexbase(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getVertexbase(self, ...)
+	end
+	function META:SetVertexbase(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setVertexbase(self, ...)
+	end
+	function META:SetMeshInterface(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setMeshInterface(self, ...)
+	end
+	function META:SetType(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setType(self, ...)
+	end
+	function META:GetIndexstride(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getIndexstride(self, ...)
+	end
+	function META:GetStride(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getStride(self, ...)
+	end
+	function META:SetIndexbase(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setIndexbase(self, ...)
+	end
+	function META:SetStride(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setStride(self, ...)
+	end
+	function META:SetPart(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setPart(self, ...)
+	end
+	function META:SetNumverts(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setNumverts(self, ...)
+	end
+	function META:Unlock(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_unlock(self, ...)
+	end
+	function META:GetNumfaces(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getNumfaces(self, ...)
+	end
+	function META:GetNumverts(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getNumverts(self, ...)
+	end
+	function META:Lock(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_lock(self, ...)
+	end
+	function META:GetMeshInterface(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_getMeshInterface(self, ...)
+	end
+	function META:SetIndicestype(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setIndicestype(self, ...)
+	end
+	function META:SetIndexstride(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_setIndexstride(self, ...)
+	end
+	ffi.metatype('btGImpactMeshShapePart_TrimeshPrimitiveManager', META)
+	function bullet.CreateGImpactMeshShapePart_TrimeshPrimitiveManager3(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_new3(...)
+	end
+	function bullet.CreateGImpactMeshShapePart_TrimeshPrimitiveManager2(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_new2(...)
+	end
+	function bullet.CreateGImpactMeshShapePart_TrimeshPrimitiveManager(...)
+		return lib.btGImpactMeshShapePart_TrimeshPrimitiveManager_new(...)
+	end
+end
+do -- DefaultCollisionConstructionInfo
+	local META = {}
+	META.__index = META
+	function META:GetDefaultMaxPersistentManifoldPoolSize(...)
+		return lib.btDefaultCollisionConstructionInfo_getDefaultMaxPersistentManifoldPoolSize(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btDefaultCollisionConstructionInfo_delete(self, ...)
+	end
+	function META:SetDefaultMaxPersistentManifoldPoolSize(...)
+		return lib.btDefaultCollisionConstructionInfo_setDefaultMaxPersistentManifoldPoolSize(self, ...)
+	end
+	function META:GetCustomCollisionAlgorithmMaxElementSize(...)
+		return lib.btDefaultCollisionConstructionInfo_getCustomCollisionAlgorithmMaxElementSize(self, ...)
+	end
+	function META:SetCollisionAlgorithmPool(...)
+		return lib.btDefaultCollisionConstructionInfo_setCollisionAlgorithmPool(self, ...)
+	end
+	function META:SetPersistentManifoldPool(...)
+		return lib.btDefaultCollisionConstructionInfo_setPersistentManifoldPool(self, ...)
+	end
+	function META:SetUseEpaPenetrationAlgorithm(...)
+		return lib.btDefaultCollisionConstructionInfo_setUseEpaPenetrationAlgorithm(self, ...)
+	end
+	function META:SetCustomCollisionAlgorithmMaxElementSize(...)
+		return lib.btDefaultCollisionConstructionInfo_setCustomCollisionAlgorithmMaxElementSize(self, ...)
+	end
+	function META:GetCollisionAlgorithmPool(...)
+		return lib.btDefaultCollisionConstructionInfo_getCollisionAlgorithmPool(self, ...)
+	end
+	function META:GetDefaultMaxCollisionAlgorithmPoolSize(...)
+		return lib.btDefaultCollisionConstructionInfo_getDefaultMaxCollisionAlgorithmPoolSize(self, ...)
+	end
+	function META:GetUseEpaPenetrationAlgorithm(...)
+		return lib.btDefaultCollisionConstructionInfo_getUseEpaPenetrationAlgorithm(self, ...)
+	end
+	function META:GetPersistentManifoldPool(...)
+		return lib.btDefaultCollisionConstructionInfo_getPersistentManifoldPool(self, ...)
+	end
+	function META:SetDefaultMaxCollisionAlgorithmPoolSize(...)
+		return lib.btDefaultCollisionConstructionInfo_setDefaultMaxCollisionAlgorithmPoolSize(self, ...)
+	end
+	ffi.metatype('btDefaultCollisionConstructionInfo', META)
+	function bullet.CreateDefaultCollisionConstructionInfo(...)
+		return lib.btDefaultCollisionConstructionInfo_new(...)
+	end
+end
+do -- DefaultSoftBodySolver
+	local META = {}
+	META.__index = META
+	function META:CopySoftBodyToVertexBuffer(...)
+		return lib.btDefaultSoftBodySolver_copySoftBodyToVertexBuffer(self, ...)
+	end
+	ffi.metatype('btDefaultSoftBodySolver', META)
+	function bullet.CreateDefaultSoftBodySolver(...)
+		return lib.btDefaultSoftBodySolver_new(...)
+	end
+end
+do -- RigidBody
+	local META = {}
+	META.__index = META
+	function META:SaveKinematicState(...)
+		return lib.btRigidBody_saveKinematicState(self, ...)
+	end
+	function META:GetLinearVelocity(...)
+		return lib.btRigidBody_getLinearVelocity(self, ...)
+	end
+	function META:SetContactSolverType(...)
+		return lib.btRigidBody_setContactSolverType(self, ...)
+	end
+	function META:GetVelocityInLocalPoint(...)
+		return lib.btRigidBody_getVelocityInLocalPoint(self, ...)
+	end
+	function META:ComputeGyroscopicForceExplicit(...)
+		return lib.btRigidBody_computeGyroscopicForceExplicit(self, ...)
+	end
+	function META:GetCenterOfMassTransform(...)
+		return lib.btRigidBody_getCenterOfMassTransform(self, ...)
+	end
+	function META:SetCenterOfMassTransform(...)
+		return lib.btRigidBody_setCenterOfMassTransform(self, ...)
+	end
+	function META:GetLinearFactor(...)
+		return lib.btRigidBody_getLinearFactor(self, ...)
+	end
+	function META:RemoveConstraintRef(...)
+		return lib.btRigidBody_removeConstraintRef(self, ...)
+	end
+	function META:GetAabb(...)
+		return lib.btRigidBody_getAabb(self, ...)
+	end
+	function META:GetAngularVelocity(...)
+		return lib.btRigidBody_getAngularVelocity(self, ...)
+	end
+	function META:IsInWorld(...)
+		return lib.btRigidBody_isInWorld(self, ...)
+	end
+	function META:SetFlags(...)
+		return lib.btRigidBody_setFlags(self, ...)
+	end
+	function META:ProceedToTransform(...)
+		return lib.btRigidBody_proceedToTransform(self, ...)
+	end
+	function META:GetBroadphaseProxy(...)
+		return lib.btRigidBody_getBroadphaseProxy(self, ...)
+	end
+	function META:ApplyCentralForce(...)
+		return lib.btRigidBody_applyCentralForce(self, ...)
+	end
+	function META:ApplyImpulse(...)
+		return lib.btRigidBody_applyImpulse(self, ...)
+	end
+	function META:UpdateInertiaTensor(...)
+		return lib.btRigidBody_updateInertiaTensor(self, ...)
+	end
+	function META:GetConstraintRef(...)
+		return lib.btRigidBody_getConstraintRef(self, ...)
+	end
+	function META:SetAngularFactor2(...)
+		return lib.btRigidBody_setAngularFactor2(self, ...)
+	end
+	function META:GetFlags(...)
+		return lib.btRigidBody_getFlags(self, ...)
+	end
+	function META:ApplyTorque(...)
+		return lib.btRigidBody_applyTorque(self, ...)
+	end
+	function META:Upcast(...)
+		return lib.btRigidBody_upcast(self, ...)
+	end
+	function META:GetFrictionSolverType(...)
+		return lib.btRigidBody_getFrictionSolverType(self, ...)
+	end
+	function META:GetGravity(...)
+		return lib.btRigidBody_getGravity(self, ...)
+	end
+	function META:ApplyDamping(...)
+		return lib.btRigidBody_applyDamping(self, ...)
+	end
+	function META:GetAngularDamping(...)
+		return lib.btRigidBody_getAngularDamping(self, ...)
+	end
+	function META:ApplyGravity(...)
+		return lib.btRigidBody_applyGravity(self, ...)
+	end
+	function META:SetMassProps(...)
+		return lib.btRigidBody_setMassProps(self, ...)
+	end
+	function META:SetMotionState(...)
+		return lib.btRigidBody_setMotionState(self, ...)
+	end
+	function META:SetLinearFactor(...)
+		return lib.btRigidBody_setLinearFactor(self, ...)
+	end
+	function META:GetTotalForce(...)
+		return lib.btRigidBody_getTotalForce(self, ...)
+	end
+	function META:SetNewBroadphaseProxy(...)
+		return lib.btRigidBody_setNewBroadphaseProxy(self, ...)
+	end
+	function META:GetInvInertiaTensorWorld(...)
+		return lib.btRigidBody_getInvInertiaTensorWorld(self, ...)
+	end
+	function META:IntegrateVelocities(...)
+		return lib.btRigidBody_integrateVelocities(self, ...)
+	end
+	function META:ApplyCentralImpulse(...)
+		return lib.btRigidBody_applyCentralImpulse(self, ...)
+	end
+	function META:SetDamping(...)
+		return lib.btRigidBody_setDamping(self, ...)
+	end
+	function META:WantsSleeping(...)
+		return lib.btRigidBody_wantsSleeping(self, ...)
+	end
+	function META:UpdateDeactivation(...)
+		return lib.btRigidBody_updateDeactivation(self, ...)
+	end
+	function META:SetFrictionSolverType(...)
+		return lib.btRigidBody_setFrictionSolverType(self, ...)
+	end
+	function META:GetInvMass(...)
+		return lib.btRigidBody_getInvMass(self, ...)
+	end
+	function META:ClearForces(...)
+		return lib.btRigidBody_clearForces(self, ...)
+	end
+	function META:ComputeAngularImpulseDenominator(...)
+		return lib.btRigidBody_computeAngularImpulseDenominator(self, ...)
+	end
+	function META:GetLinearSleepingThreshold(...)
+		return lib.btRigidBody_getLinearSleepingThreshold(self, ...)
+	end
+	function META:ComputeImpulseDenominator(...)
+		return lib.btRigidBody_computeImpulseDenominator(self, ...)
+	end
+	function META:GetAngularFactor(...)
+		return lib.btRigidBody_getAngularFactor(self, ...)
+	end
+	function META:GetCenterOfMassPosition(...)
+		return lib.btRigidBody_getCenterOfMassPosition(self, ...)
+	end
+	function META:GetOrientation(...)
+		return lib.btRigidBody_getOrientation(self, ...)
+	end
+	function META:GetAngularSleepingThreshold(...)
+		return lib.btRigidBody_getAngularSleepingThreshold(self, ...)
+	end
+	function META:AddConstraintRef(...)
+		return lib.btRigidBody_addConstraintRef(self, ...)
+	end
+	function META:SetGravity(...)
+		return lib.btRigidBody_setGravity(self, ...)
+	end
+	function META:ApplyTorqueImpulse(...)
+		return lib.btRigidBody_applyTorqueImpulse(self, ...)
+	end
+	function META:GetNumConstraintRefs(...)
+		return lib.btRigidBody_getNumConstraintRefs(self, ...)
+	end
+	function META:GetInvInertiaDiagLocal(...)
+		return lib.btRigidBody_getInvInertiaDiagLocal(self, ...)
+	end
+	function META:ApplyForce(...)
+		return lib.btRigidBody_applyForce(self, ...)
+	end
+	function META:Translate(...)
+		return lib.btRigidBody_translate(self, ...)
+	end
+	function META:GetLinearDamping(...)
+		return lib.btRigidBody_getLinearDamping(self, ...)
+	end
+	function META:GetTotalTorque(...)
+		return lib.btRigidBody_getTotalTorque(self, ...)
+	end
+	function META:PredictIntegratedTransform(...)
+		return lib.btRigidBody_predictIntegratedTransform(self, ...)
+	end
+	function META:GetContactSolverType(...)
+		return lib.btRigidBody_getContactSolverType(self, ...)
+	end
+	function META:GetLocalInertia(...)
+		return lib.btRigidBody_getLocalInertia(self, ...)
+	end
+	function META:SetAngularVelocity(...)
+		return lib.btRigidBody_setAngularVelocity(self, ...)
+	end
+	function META:SetInvInertiaDiagLocal(...)
+		return lib.btRigidBody_setInvInertiaDiagLocal(self, ...)
+	end
+	function META:SetLinearVelocity(...)
+		return lib.btRigidBody_setLinearVelocity(self, ...)
+	end
+	function META:GetMotionState(...)
+		return lib.btRigidBody_getMotionState(self, ...)
+	end
+	function META:SetAngularFactor(...)
+		return lib.btRigidBody_setAngularFactor(self, ...)
+	end
+	function META:SetSleepingThresholds(...)
+		return lib.btRigidBody_setSleepingThresholds(self, ...)
+	end
+	ffi.metatype('btRigidBody', META)
+	function bullet.CreateRigidBody2(...)
+		return lib.btRigidBody_new2(...)
+	end
+	function bullet.CreateRigidBody(...)
+		return lib.btRigidBody_new(...)
+	end
+	function bullet.CreateRigidBody3(...)
+		return lib.btRigidBody_new3(...)
+	end
+end
+do -- Box2dBox2dCollisionAlgorithm
+	local META = {}
+	META.__index = META
+	ffi.metatype('btBox2dBox2dCollisionAlgorithm', META)
+	function bullet.CreateBox2dBox2dCollisionAlgorithm2(...)
+		return lib.btBox2dBox2dCollisionAlgorithm_new2(...)
+	end
+end
+do -- GIM_BVH_TREE_NODE
+	local META = {}
+	META.__index = META
+	ffi.metatype('GIM_BVH_TREE_NODE', META)
+	function bullet.CreateGIM_BVH_TREE_NODE(...)
+		return lib.GIM_BVH_TREE_NODE_new(...)
+	end
+end
+do -- EmptyAlgorithm_CreateFunc
+	local META = {}
+	META.__index = META
+	ffi.metatype('btEmptyAlgorithm_CreateFunc', META)
+	function bullet.CreateEmptyAlgorithm_CreateFunc(...)
+		return lib.btEmptyAlgorithm_CreateFunc_new(...)
+	end
+end
+do -- BulletXmlWorldImporter
+	local META = {}
+	META.__index = META
+	function META:LoadFile(...)
+		return lib.btBulletXmlWorldImporter_loadFile(self, ...)
+	end
+	ffi.metatype('btBulletXmlWorldImporter', META)
+	function bullet.CreateBulletXmlWorldImporter(...)
+		return lib.btBulletXmlWorldImporter_new(...)
+	end
+end
+do -- CompoundCompoundCollisionAlgorithm
+	local META = {}
+	META.__index = META
+	ffi.metatype('btCompoundCompoundCollisionAlgorithm', META)
+	function bullet.CreateCompoundCompoundCollisionAlgorithm(...)
+		return lib.btCompoundCompoundCollisionAlgorithm_new(...)
+	end
+end
+do -- SoftBodyTriangleCallback
+	local META = {}
+	META.__index = META
+	function META:GetTriangleCount(...)
+		return lib.btSoftBodyTriangleCallback_getTriangleCount(self, ...)
+	end
+	function META:ClearCache(...)
+		return lib.btSoftBodyTriangleCallback_clearCache(self, ...)
+	end
+	function META:SetTimeStepAndCounters(...)
+		return lib.btSoftBodyTriangleCallback_setTimeStepAndCounters(self, ...)
+	end
+	function META:SetTriangleCount(...)
+		return lib.btSoftBodyTriangleCallback_setTriangleCount(self, ...)
+	end
+	function META:GetAabbMax(...)
+		return lib.btSoftBodyTriangleCallback_getAabbMax(self, ...)
+	end
+	function META:GetAabbMin(...)
+		return lib.btSoftBodyTriangleCallback_getAabbMin(self, ...)
+	end
+	ffi.metatype('btSoftBodyTriangleCallback', META)
+	function bullet.CreateSoftBodyTriangleCallback(...)
+		return lib.btSoftBodyTriangleCallback_new(...)
+	end
+end
+do -- GImpactCompoundShape_CompoundPrimitiveManager
+	local META = {}
+	META.__index = META
+	function META:GetCompoundShape(...)
+		return lib.btGImpactCompoundShape_CompoundPrimitiveManager_getCompoundShape(self, ...)
+	end
+	function META:SetCompoundShape(...)
+		return lib.btGImpactCompoundShape_CompoundPrimitiveManager_setCompoundShape(self, ...)
+	end
+	ffi.metatype('btGImpactCompoundShape_CompoundPrimitiveManager', META)
+	function bullet.CreateGImpactCompoundShape_CompoundPrimitiveManager3(...)
+		return lib.btGImpactCompoundShape_CompoundPrimitiveManager_new3(...)
+	end
+	function bullet.CreateGImpactCompoundShape_CompoundPrimitiveManager2(...)
+		return lib.btGImpactCompoundShape_CompoundPrimitiveManager_new2(...)
+	end
+	function bullet.CreateGImpactCompoundShape_CompoundPrimitiveManager(...)
+		return lib.btGImpactCompoundShape_CompoundPrimitiveManager_new(...)
+	end
+end
+do -- GIM_BVH_DATA_ARRAY
+	local META = {}
+	META.__index = META
+	ffi.metatype('GIM_BVH_DATA_ARRAY', META)
+	function bullet.CreateGIM_BVH_DATA_ARRAY(...)
+		return lib.GIM_BVH_DATA_ARRAY_new(...)
+	end
+end
+do -- ConeShapeX
+	local META = {}
+	META.__index = META
+	ffi.metatype('btConeShapeX', META)
+	function bullet.CreateConeShapeX(...)
+		return lib.btConeShapeX_new(...)
+	end
+end
+do -- HingeConstraint
+	local META = {}
+	META.__index = META
+	function META:GetInfo2NonVirtual(...)
+		return lib.btHingeConstraint_getInfo2NonVirtual(self, ...)
+	end
+	function META:SetMotorTarget2(...)
+		return lib.btHingeConstraint_setMotorTarget2(self, ...)
+	end
+	function META:SetLimit2(...)
+		return lib.btHingeConstraint_setLimit2(self, ...)
+	end
+	function META:GetFrameOffsetA(...)
+		return lib.btHingeConstraint_getFrameOffsetA(self, ...)
+	end
+	function META:GetInfo1NonVirtual(...)
+		return lib.btHingeConstraint_getInfo1NonVirtual(self, ...)
+	end
+	function META:GetMotorTargetVelosity(...)
+		return lib.btHingeConstraint_getMotorTargetVelosity(self, ...)
+	end
+	function META:GetAngularOnly(...)
+		return lib.btHingeConstraint_getAngularOnly(self, ...)
+	end
+	function META:SetFrames(...)
+		return lib.btHingeConstraint_setFrames(self, ...)
+	end
+	function META:EnableMotor(...)
+		return lib.btHingeConstraint_enableMotor(self, ...)
+	end
+	function META:GetSolveLimit(...)
+		return lib.btHingeConstraint_getSolveLimit(self, ...)
+	end
+	function META:SetAxis(...)
+		return lib.btHingeConstraint_setAxis(self, ...)
+	end
+	function META:GetLowerLimit(...)
+		return lib.btHingeConstraint_getLowerLimit(self, ...)
+	end
+	function META:GetBFrame(...)
+		return lib.btHingeConstraint_getBFrame(self, ...)
+	end
+	function META:GetAFrame(...)
+		return lib.btHingeConstraint_getAFrame(self, ...)
+	end
+	function META:GetUpperLimit(...)
+		return lib.btHingeConstraint_getUpperLimit(self, ...)
+	end
+	function META:HasLimit(...)
+		return lib.btHingeConstraint_hasLimit(self, ...)
+	end
+	function META:SetLimit3(...)
+		return lib.btHingeConstraint_setLimit3(self, ...)
+	end
+	function META:UpdateRHS(...)
+		return lib.btHingeConstraint_updateRHS(self, ...)
+	end
+	function META:EnableAngularMotor(...)
+		return lib.btHingeConstraint_enableAngularMotor(self, ...)
+	end
+	function META:GetLimitSign(...)
+		return lib.btHingeConstraint_getLimitSign(self, ...)
+	end
+	function META:GetHingeAngle(...)
+		return lib.btHingeConstraint_getHingeAngle(self, ...)
+	end
+	function META:GetHingeAngle2(...)
+		return lib.btHingeConstraint_getHingeAngle2(self, ...)
+	end
+	function META:TestLimit(...)
+		return lib.btHingeConstraint_testLimit(self, ...)
+	end
+	function META:SetMaxMotorImpulse(...)
+		return lib.btHingeConstraint_setMaxMotorImpulse(self, ...)
+	end
+	function META:SetAngularOnly(...)
+		return lib.btHingeConstraint_setAngularOnly(self, ...)
+	end
+	function META:SetUseFrameOffset(...)
+		return lib.btHingeConstraint_setUseFrameOffset(self, ...)
+	end
+	function META:SetLimit4(...)
+		return lib.btHingeConstraint_setLimit4(self, ...)
+	end
+	function META:SetLimit(...)
+		return lib.btHingeConstraint_setLimit(self, ...)
+	end
+	function META:GetMaxMotorImpulse(...)
+		return lib.btHingeConstraint_getMaxMotorImpulse(self, ...)
+	end
+	function META:GetInfo2Internal(...)
+		return lib.btHingeConstraint_getInfo2Internal(self, ...)
+	end
+	function META:GetEnableAngularMotor(...)
+		return lib.btHingeConstraint_getEnableAngularMotor(self, ...)
+	end
+	function META:GetUseFrameOffset(...)
+		return lib.btHingeConstraint_getUseFrameOffset(self, ...)
+	end
+	function META:GetFrameOffsetB(...)
+		return lib.btHingeConstraint_getFrameOffsetB(self, ...)
+	end
+	function META:GetInfo2InternalUsingFrameOffset(...)
+		return lib.btHingeConstraint_getInfo2InternalUsingFrameOffset(self, ...)
+	end
+	function META:SetMotorTarget(...)
+		return lib.btHingeConstraint_setMotorTarget(self, ...)
+	end
+	ffi.metatype('btHingeConstraint', META)
+	function bullet.CreateHingeConstraint8(...)
+		return lib.btHingeConstraint_new8(...)
+	end
+	function bullet.CreateHingeConstraint6(...)
+		return lib.btHingeConstraint_new6(...)
+	end
+	function bullet.CreateHingeConstraint2(...)
+		return lib.btHingeConstraint_new2(...)
+	end
+	function bullet.CreateHingeConstraint7(...)
+		return lib.btHingeConstraint_new7(...)
+	end
+	function bullet.CreateHingeConstraint3(...)
+		return lib.btHingeConstraint_new3(...)
+	end
+	function bullet.CreateHingeConstraint(...)
+		return lib.btHingeConstraint_new(...)
+	end
+	function bullet.CreateHingeConstraint4(...)
+		return lib.btHingeConstraint_new4(...)
+	end
+	function bullet.CreateHingeConstraint5(...)
+		return lib.btHingeConstraint_new5(...)
+	end
+end
+do -- MLCPSolver
+	local META = {}
+	META.__index = META
+	function META:SetMLCPSolver(...)
+		return lib.btMLCPSolver_setMLCPSolver(self, ...)
+	end
+	function META:SetCfm(...)
+		return lib.btMLCPSolver_setCfm(self, ...)
+	end
+	function META:GetNumFallbacks(...)
+		return lib.btMLCPSolver_getNumFallbacks(self, ...)
+	end
+	function META:GetCfm(...)
+		return lib.btMLCPSolver_getCfm(self, ...)
+	end
+	function META:SetNumFallbacks(...)
+		return lib.btMLCPSolver_setNumFallbacks(self, ...)
+	end
+	ffi.metatype('btMLCPSolver', META)
+	function bullet.CreateMLCPSolver(...)
+		return lib.btMLCPSolver_new(...)
+	end
+end
+do -- QuantizedBvhTree
+	local META = {}
+	META.__index = META
+	function META:GetNodeBound(...)
+		return lib.btQuantizedBvhTree_getNodeBound(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btQuantizedBvhTree_delete(self, ...)
+	end
+	function META:GetRightNode(...)
+		return lib.btQuantizedBvhTree_getRightNode(self, ...)
+	end
+	function META:GetEscapeNodeIndex(...)
+		return lib.btQuantizedBvhTree_getEscapeNodeIndex(self, ...)
+	end
+	function META:GetLeftNode(...)
+		return lib.btQuantizedBvhTree_getLeftNode(self, ...)
+	end
+	function META:TestQuantizedBoxOverlapp(...)
+		return lib.btQuantizedBvhTree_testQuantizedBoxOverlapp(self, ...)
+	end
+	function META:GetNodeData(...)
+		return lib.btQuantizedBvhTree_getNodeData(self, ...)
+	end
+	function META:IsLeafNode(...)
+		return lib.btQuantizedBvhTree_isLeafNode(self, ...)
+	end
+	function META:SetNodeBound(...)
+		return lib.btQuantizedBvhTree_setNodeBound(self, ...)
+	end
+	function META:GetNodeCount(...)
+		return lib.btQuantizedBvhTree_getNodeCount(self, ...)
+	end
+	function META:QuantizePoint(...)
+		return lib.btQuantizedBvhTree_quantizePoint(self, ...)
+	end
+	function META:ClearNodes(...)
+		return lib.btQuantizedBvhTree_clearNodes(self, ...)
+	end
+	ffi.metatype('btQuantizedBvhTree', META)
+	function bullet.CreateQuantizedBvhTree(...)
+		return lib.btQuantizedBvhTree_new(...)
+	end
+end
+do -- ContactSolverInfoData
+	local META = {}
+	META.__index = META
+	function META:GetSolverMode(...)
+		return lib.btContactSolverInfoData_getSolverMode(self, ...)
+	end
+	function META:SetGlobalCfm(...)
+		return lib.btContactSolverInfoData_setGlobalCfm(self, ...)
+	end
+	function META:SetLinearSlop(...)
+		return lib.btContactSolverInfoData_setLinearSlop(self, ...)
+	end
+	function META:GetNumIterations(...)
+		return lib.btContactSolverInfoData_getNumIterations(self, ...)
+	end
+	function META:GetGlobalCfm(...)
+		return lib.btContactSolverInfoData_getGlobalCfm(self, ...)
+	end
+	function META:SetSplitImpulseTurnErp(...)
+		return lib.btContactSolverInfoData_setSplitImpulseTurnErp(self, ...)
+	end
+	function META:SetMaxGyroscopicForce(...)
+		return lib.btContactSolverInfoData_setMaxGyroscopicForce(self, ...)
+	end
+	function META:SetSolverMode(...)
+		return lib.btContactSolverInfoData_setSolverMode(self, ...)
+	end
+	function META:SetRestitution(...)
+		return lib.btContactSolverInfoData_setRestitution(self, ...)
+	end
+	function META:GetLinearSlop(...)
+		return lib.btContactSolverInfoData_getLinearSlop(self, ...)
+	end
+	function META:GetSplitImpulseTurnErp(...)
+		return lib.btContactSolverInfoData_getSplitImpulseTurnErp(self, ...)
+	end
+	function META:GetDamping(...)
+		return lib.btContactSolverInfoData_getDamping(self, ...)
+	end
+	function META:GetFriction(...)
+		return lib.btContactSolverInfoData_getFriction(self, ...)
+	end
+	function META:SetWarmstartingFactor(...)
+		return lib.btContactSolverInfoData_setWarmstartingFactor(self, ...)
+	end
+	function META:GetTimeStep(...)
+		return lib.btContactSolverInfoData_getTimeStep(self, ...)
+	end
+	function META:GetMaxGyroscopicForce(...)
+		return lib.btContactSolverInfoData_getMaxGyroscopicForce(self, ...)
+	end
+	function META:GetTau(...)
+		return lib.btContactSolverInfoData_getTau(self, ...)
+	end
+	function META:GetErp(...)
+		return lib.btContactSolverInfoData_getErp(self, ...)
+	end
+	function META:GetSplitImpulse(...)
+		return lib.btContactSolverInfoData_getSplitImpulse(self, ...)
+	end
+	function META:SetNumIterations(...)
+		return lib.btContactSolverInfoData_setNumIterations(self, ...)
+	end
+	function META:GetWarmstartingFactor(...)
+		return lib.btContactSolverInfoData_getWarmstartingFactor(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btContactSolverInfoData_delete(self, ...)
+	end
+	function META:SetTimeStep(...)
+		return lib.btContactSolverInfoData_setTimeStep(self, ...)
+	end
+	function META:SetTau(...)
+		return lib.btContactSolverInfoData_setTau(self, ...)
+	end
+	function META:GetSplitImpulsePenetrationThreshold(...)
+		return lib.btContactSolverInfoData_getSplitImpulsePenetrationThreshold(self, ...)
+	end
+	function META:SetSor(...)
+		return lib.btContactSolverInfoData_setSor(self, ...)
+	end
+	function META:SetSplitImpulse(...)
+		return lib.btContactSolverInfoData_setSplitImpulse(self, ...)
+	end
+	function META:SetMinimumSolverBatchSize(...)
+		return lib.btContactSolverInfoData_setMinimumSolverBatchSize(self, ...)
+	end
+	function META:SetSplitImpulsePenetrationThreshold(...)
+		return lib.btContactSolverInfoData_setSplitImpulsePenetrationThreshold(self, ...)
+	end
+	function META:SetFriction(...)
+		return lib.btContactSolverInfoData_setFriction(self, ...)
+	end
+	function META:SetSingleAxisRollingFrictionThreshold(...)
+		return lib.btContactSolverInfoData_setSingleAxisRollingFrictionThreshold(self, ...)
+	end
+	function META:SetErp2(...)
+		return lib.btContactSolverInfoData_setErp2(self, ...)
+	end
+	function META:GetErp2(...)
+		return lib.btContactSolverInfoData_getErp2(self, ...)
+	end
+	function META:GetSingleAxisRollingFrictionThreshold(...)
+		return lib.btContactSolverInfoData_getSingleAxisRollingFrictionThreshold(self, ...)
+	end
+	function META:GetMinimumSolverBatchSize(...)
+		return lib.btContactSolverInfoData_getMinimumSolverBatchSize(self, ...)
+	end
+	function META:SetMaxErrorReduction(...)
+		return lib.btContactSolverInfoData_setMaxErrorReduction(self, ...)
+	end
+	function META:GetRestitution(...)
+		return lib.btContactSolverInfoData_getRestitution(self, ...)
+	end
+	function META:GetSor(...)
+		return lib.btContactSolverInfoData_getSor(self, ...)
+	end
+	function META:GetRestingContactRestitutionThreshold(...)
+		return lib.btContactSolverInfoData_getRestingContactRestitutionThreshold(self, ...)
+	end
+	function META:GetMaxErrorReduction(...)
+		return lib.btContactSolverInfoData_getMaxErrorReduction(self, ...)
+	end
+	function META:SetErp(...)
+		return lib.btContactSolverInfoData_setErp(self, ...)
+	end
+	function META:SetDamping(...)
+		return lib.btContactSolverInfoData_setDamping(self, ...)
+	end
+	function META:SetRestingContactRestitutionThreshold(...)
+		return lib.btContactSolverInfoData_setRestingContactRestitutionThreshold(self, ...)
+	end
+	ffi.metatype('btContactSolverInfoData', META)
+	function bullet.CreateContactSolverInfoData(...)
+		return lib.btContactSolverInfoData_new(...)
+	end
+end
+do -- Point2PointConstraint
+	local META = {}
+	META.__index = META
+	function META:GetInfo2NonVirtual(...)
+		return lib.btPoint2PointConstraint_getInfo2NonVirtual(self, ...)
+	end
+	function META:GetUseSolveConstraintObsolete(...)
+		return lib.btPoint2PointConstraint_getUseSolveConstraintObsolete(self, ...)
+	end
+	function META:GetPivotInA(...)
+		return lib.btPoint2PointConstraint_getPivotInA(self, ...)
+	end
+	function META:GetInfo1NonVirtual(...)
+		return lib.btPoint2PointConstraint_getInfo1NonVirtual(self, ...)
+	end
+	function META:UpdateRHS(...)
+		return lib.btPoint2PointConstraint_updateRHS(self, ...)
+	end
+	function META:GetPivotInB(...)
+		return lib.btPoint2PointConstraint_getPivotInB(self, ...)
+	end
+	function META:SetPivotA(...)
+		return lib.btPoint2PointConstraint_setPivotA(self, ...)
+	end
+	function META:SetUseSolveConstraintObsolete(...)
+		return lib.btPoint2PointConstraint_setUseSolveConstraintObsolete(self, ...)
+	end
+	function META:SetPivotB(...)
+		return lib.btPoint2PointConstraint_setPivotB(self, ...)
+	end
+	function META:GetSetting(...)
+		return lib.btPoint2PointConstraint_getSetting(self, ...)
+	end
+	ffi.metatype('btPoint2PointConstraint', META)
+	function bullet.CreatePoint2PointConstraint2(...)
+		return lib.btPoint2PointConstraint_new2(...)
+	end
+end
+do -- Face
+	local META = {}
+	META.__index = META
+	function META:GetIndices(...)
+		return lib.btFace_getIndices(self, ...)
+	end
+	function META:GetPlane(...)
+		return lib.btFace_getPlane(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btFace_delete(self, ...)
+	end
+	ffi.metatype('btFace', META)
+	function bullet.CreateFace(...)
+		return lib.btFace_new(...)
+	end
+end
+do -- ConstraintRow
+	local META = {}
+	META.__index = META
+	function META:SetJacDiagInv(...)
+		return lib.btConstraintRow_setJacDiagInv(self, ...)
+	end
+	function META:SetNormal(...)
+		return lib.btConstraintRow_setNormal(self, ...)
+	end
+	function META:GetUpperLimit(...)
+		return lib.btConstraintRow_getUpperLimit(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btConstraintRow_delete(self, ...)
+	end
+	function META:GetAccumImpulse(...)
+		return lib.btConstraintRow_getAccumImpulse(self, ...)
+	end
+	function META:GetNormal(...)
+		return lib.btConstraintRow_getNormal(self, ...)
+	end
+	function META:GetLowerLimit(...)
+		return lib.btConstraintRow_getLowerLimit(self, ...)
+	end
+	function META:SetUpperLimit(...)
+		return lib.btConstraintRow_setUpperLimit(self, ...)
+	end
+	function META:SetRhs(...)
+		return lib.btConstraintRow_setRhs(self, ...)
+	end
+	function META:GetJacDiagInv(...)
+		return lib.btConstraintRow_getJacDiagInv(self, ...)
+	end
+	function META:SetLowerLimit(...)
+		return lib.btConstraintRow_setLowerLimit(self, ...)
+	end
+	function META:GetRhs(...)
+		return lib.btConstraintRow_getRhs(self, ...)
+	end
+	function META:SetAccumImpulse(...)
+		return lib.btConstraintRow_setAccumImpulse(self, ...)
+	end
+	ffi.metatype('btConstraintRow', META)
+	function bullet.CreateConstraintRow(...)
+		return lib.btConstraintRow_new(...)
+	end
+end
+do -- SoftBody
+	local META = {}
+	META.__index = META
+	function META:SetBUpdateRtCst(...)
+		return lib.btSoftBody_setBUpdateRtCst(self, ...)
+	end
+	function META:GetVolume(...)
+		return lib.btSoftBody_getVolume(self, ...)
+	end
+	function META:AppendFace5(...)
+		return lib.btSoftBody_appendFace5(self, ...)
+	end
+	function META:AppendTetra(...)
+		return lib.btSoftBody_appendTetra(self, ...)
+	end
+	function META:GetTetraVertexNormalData2(...)
+		return lib.btSoftBody_getTetraVertexNormalData2(self, ...)
+	end
+	function META:AppendFace3(...)
+		return lib.btSoftBody_appendFace3(self, ...)
+	end
+	function META:GenerateBendingConstraints2(...)
+		return lib.btSoftBody_generateBendingConstraints2(self, ...)
+	end
+	function META:GetAnchors(...)
+		return lib.btSoftBody_getAnchors(self, ...)
+	end
+	function META:GetNodes(...)
+		return lib.btSoftBody_getNodes(self, ...)
+	end
+	function META:CheckLink(...)
+		return lib.btSoftBody_checkLink(self, ...)
+	end
+	function META:SetInitialWorldTransform(...)
+		return lib.btSoftBody_setInitialWorldTransform(self, ...)
+	end
+	function META:AppendFace2(...)
+		return lib.btSoftBody_appendFace2(self, ...)
+	end
+	function META:GetNotes(...)
+		return lib.btSoftBody_getNotes(self, ...)
+	end
+	function META:ClusterDCImpulse(...)
+		return lib.btSoftBody_clusterDCImpulse(self, ...)
+	end
+	function META:Rotate(...)
+		return lib.btSoftBody_rotate(self, ...)
+	end
+	function META:AppendLink7(...)
+		return lib.btSoftBody_appendLink7(self, ...)
+	end
+	function META:GetLinks(...)
+		return lib.btSoftBody_getLinks(self, ...)
+	end
+	function META:AppendAnchor2(...)
+		return lib.btSoftBody_appendAnchor2(self, ...)
+	end
+	function META:ReleaseClusters(...)
+		return lib.btSoftBody_releaseClusters(self, ...)
+	end
+	function META:SetNdbvt(...)
+		return lib.btSoftBody_setNdbvt(self, ...)
+	end
+	function META:AppendLinearJoint(...)
+		return lib.btSoftBody_appendLinearJoint(self, ...)
+	end
+	function META:AppendAnchor5(...)
+		return lib.btSoftBody_appendAnchor5(self, ...)
+	end
+	function META:RayTest(...)
+		return lib.btSoftBody_rayTest(self, ...)
+	end
+	function META:InitDefaults(...)
+		return lib.btSoftBody_initDefaults(self, ...)
+	end
+	function META:AppendNote7(...)
+		return lib.btSoftBody_appendNote7(self, ...)
+	end
+	function META:Upcast(...)
+		return lib.btSoftBody_upcast(self, ...)
+	end
+	function META:AppendLinearJoint4(...)
+		return lib.btSoftBody_appendLinearJoint4(self, ...)
+	end
+	function META:PointersToIndices(...)
+		return lib.btSoftBody_pointersToIndices(self, ...)
+	end
+	function META:GetTetras(...)
+		return lib.btSoftBody_getTetras(self, ...)
+	end
+	function META:AppendLink6(...)
+		return lib.btSoftBody_appendLink6(self, ...)
+	end
+	function META:ClusterImpulse(...)
+		return lib.btSoftBody_clusterImpulse(self, ...)
+	end
+	function META:ClusterCom(...)
+		return lib.btSoftBody_clusterCom(self, ...)
+	end
+	function META:GetFaceVertexNormalData2(...)
+		return lib.btSoftBody_getFaceVertexNormalData2(self, ...)
+	end
+	function META:GetBounds(...)
+		return lib.btSoftBody_getBounds(self, ...)
+	end
+	function META:GetSolver2(...)
+		return lib.btSoftBody_getSolver2(self, ...)
+	end
+	function META:AppendFace4(...)
+		return lib.btSoftBody_appendFace4(self, ...)
+	end
+	function META:AddVelocity(...)
+		return lib.btSoftBody_addVelocity(self, ...)
+	end
+	function META:GetSst(...)
+		return lib.btSoftBody_getSst(self, ...)
+	end
+	function META:ResetLinkRestLengths(...)
+		return lib.btSoftBody_resetLinkRestLengths(self, ...)
+	end
+	function META:AppendAngularJoint4(...)
+		return lib.btSoftBody_appendAngularJoint4(self, ...)
+	end
+	function META:SolveClusters(...)
+		return lib.btSoftBody_solveClusters(self, ...)
+	end
+	function META:AppendAnchor3(...)
+		return lib.btSoftBody_appendAnchor3(self, ...)
+	end
+	function META:DefaultCollisionHandler2(...)
+		return lib.btSoftBody_defaultCollisionHandler2(self, ...)
+	end
+	function META:AppendTetra3(...)
+		return lib.btSoftBody_appendTetra3(self, ...)
+	end
+	function META:Refine(...)
+		return lib.btSoftBody_refine(self, ...)
+	end
+	function META:AppendLink(...)
+		return lib.btSoftBody_appendLink(self, ...)
+	end
+	function META:SolveCommonConstraints(...)
+		return lib.btSoftBody_solveCommonConstraints(self, ...)
+	end
+	function META:SolveClusters2(...)
+		return lib.btSoftBody_solveClusters2(self, ...)
+	end
+	function META:GetClusters(...)
+		return lib.btSoftBody_getClusters(self, ...)
+	end
+	function META:GetSolver(...)
+		return lib.btSoftBody_getSolver(self, ...)
+	end
+	function META:AppendTetra2(...)
+		return lib.btSoftBody_appendTetra2(self, ...)
+	end
+	function META:AddForce2(...)
+		return lib.btSoftBody_addForce2(self, ...)
+	end
+	function META:AddVelocity2(...)
+		return lib.btSoftBody_addVelocity2(self, ...)
+	end
+	function META:AppendMaterial(...)
+		return lib.btSoftBody_appendMaterial(self, ...)
+	end
+	function META:ClusterAImpulse(...)
+		return lib.btSoftBody_clusterAImpulse(self, ...)
+	end
+	function META:UpdateClusters(...)
+		return lib.btSoftBody_updateClusters(self, ...)
+	end
+	function META:GetFaceVertexData(...)
+		return lib.btSoftBody_getFaceVertexData(self, ...)
+	end
+	function META:GetTetraVertexNormalData(...)
+		return lib.btSoftBody_getTetraVertexNormalData(self, ...)
+	end
+	function META:Translate(...)
+		return lib.btSoftBody_translate(self, ...)
+	end
+	function META:GetCdbvt(...)
+		return lib.btSoftBody_getCdbvt(self, ...)
+	end
+	function META:AppendLink9(...)
+		return lib.btSoftBody_appendLink9(self, ...)
+	end
+	function META:GetCfg(...)
+		return lib.btSoftBody_getCfg(self, ...)
+	end
+	function META:InitializeClusters(...)
+		return lib.btSoftBody_initializeClusters(self, ...)
+	end
+	function META:SetVolumeMass(...)
+		return lib.btSoftBody_setVolumeMass(self, ...)
+	end
+	function META:AppendLinearJoint3(...)
+		return lib.btSoftBody_appendLinearJoint3(self, ...)
+	end
+	function META:GetMaterials(...)
+		return lib.btSoftBody_getMaterials(self, ...)
+	end
+	function META:GetTag(...)
+		return lib.btSoftBody_getTag(self, ...)
+	end
+	function META:SetSolver(...)
+		return lib.btSoftBody_setSolver(self, ...)
+	end
+	function META:UpdateConstants(...)
+		return lib.btSoftBody_updateConstants(self, ...)
+	end
+	function META:ClusterCount(...)
+		return lib.btSoftBody_clusterCount(self, ...)
+	end
+	function META:AppendLink5(...)
+		return lib.btSoftBody_appendLink5(self, ...)
+	end
+	function META:CheckFace(...)
+		return lib.btSoftBody_checkFace(self, ...)
+	end
+	function META:AppendAngularJoint3(...)
+		return lib.btSoftBody_appendAngularJoint3(self, ...)
+	end
+	function META:GetAabb(...)
+		return lib.btSoftBody_getAabb(self, ...)
+	end
+	function META:GenerateClusters(...)
+		return lib.btSoftBody_generateClusters(self, ...)
+	end
+	function META:SetSoftBodySolver(...)
+		return lib.btSoftBody_setSoftBodySolver(self, ...)
+	end
+	function META:GetWorldInfo(...)
+		return lib.btSoftBody_getWorldInfo(self, ...)
+	end
+	function META:SetVolumeDensity(...)
+		return lib.btSoftBody_setVolumeDensity(self, ...)
+	end
+	function META:GetPose(...)
+		return lib.btSoftBody_getPose(self, ...)
+	end
+	function META:DefaultCollisionHandler(...)
+		return lib.btSoftBody_defaultCollisionHandler(self, ...)
+	end
+	function META:SetVelocity(...)
+		return lib.btSoftBody_setVelocity(self, ...)
+	end
+	function META:GetClusterConnectivity(...)
+		return lib.btSoftBody_getClusterConnectivity(self, ...)
+	end
+	function META:GetTetraVertexData(...)
+		return lib.btSoftBody_getTetraVertexData(self, ...)
+	end
+	function META:GetMass(...)
+		return lib.btSoftBody_getMass(self, ...)
+	end
+	function META:AddForce(...)
+		return lib.btSoftBody_addForce(self, ...)
+	end
+	function META:GetFaceVertexNormalData(...)
+		return lib.btSoftBody_getFaceVertexNormalData(self, ...)
+	end
+	function META:RandomizeConstraints(...)
+		return lib.btSoftBody_randomizeConstraints(self, ...)
+	end
+	function META:ApplyClusters(...)
+		return lib.btSoftBody_applyClusters(self, ...)
+	end
+	function META:GetLinkVertexNormalData(...)
+		return lib.btSoftBody_getLinkVertexNormalData(self, ...)
+	end
+	function META:GetLinkVertexData(...)
+		return lib.btSoftBody_getLinkVertexData(self, ...)
+	end
+	function META:GetInitialWorldTransform(...)
+		return lib.btSoftBody_getInitialWorldTransform(self, ...)
+	end
+	function META:AppendNote9(...)
+		return lib.btSoftBody_appendNote9(self, ...)
+	end
+	function META:UpdateNormals(...)
+		return lib.btSoftBody_updateNormals(self, ...)
+	end
+	function META:AppendNote5(...)
+		return lib.btSoftBody_appendNote5(self, ...)
+	end
+	function META:UpdateBounds(...)
+		return lib.btSoftBody_updateBounds(self, ...)
+	end
+	function META:UpdateArea2(...)
+		return lib.btSoftBody_updateArea2(self, ...)
+	end
+	function META:UpdateArea(...)
+		return lib.btSoftBody_updateArea(self, ...)
+	end
+	function META:IndicesToPointers(...)
+		return lib.btSoftBody_indicesToPointers(self, ...)
+	end
+	function META:GenerateBendingConstraints(...)
+		return lib.btSoftBody_generateBendingConstraints(self, ...)
+	end
+	function META:Transform(...)
+		return lib.btSoftBody_transform(self, ...)
+	end
+	function META:StaticSolve(...)
+		return lib.btSoftBody_staticSolve(self, ...)
+	end
+	function META:GetSoftBodySolver(...)
+		return lib.btSoftBody_getSoftBodySolver(self, ...)
+	end
+	function META:SetWorldInfo(...)
+		return lib.btSoftBody_setWorldInfo(self, ...)
+	end
+	function META:AppendAngularJoint2(...)
+		return lib.btSoftBody_appendAngularJoint2(self, ...)
+	end
+	function META:AppendLink8(...)
+		return lib.btSoftBody_appendLink8(self, ...)
+	end
+	function META:UpdateLinkConstants(...)
+		return lib.btSoftBody_updateLinkConstants(self, ...)
+	end
+	function META:AppendAnchor4(...)
+		return lib.btSoftBody_appendAnchor4(self, ...)
+	end
+	function META:GetTotalMass(...)
+		return lib.btSoftBody_getTotalMass(self, ...)
+	end
+	function META:ReleaseCluster(...)
+		return lib.btSoftBody_releaseCluster(self, ...)
+	end
+	function META:AddAeroForceToNode(...)
+		return lib.btSoftBody_addAeroForceToNode(self, ...)
+	end
+	function META:GetFdbvt(...)
+		return lib.btSoftBody_getFdbvt(self, ...)
+	end
+	function META:SetTotalDensity(...)
+		return lib.btSoftBody_setTotalDensity(self, ...)
+	end
+	function META:CheckLink2(...)
+		return lib.btSoftBody_checkLink2(self, ...)
+	end
+	function META:AppendNote2(...)
+		return lib.btSoftBody_appendNote2(self, ...)
+	end
+	function META:SetTimeacc(...)
+		return lib.btSoftBody_setTimeacc(self, ...)
+	end
+	function META:ClusterVAImpulse(...)
+		return lib.btSoftBody_clusterVAImpulse(self, ...)
+	end
+	function META:ClusterVelocity(...)
+		return lib.btSoftBody_clusterVelocity(self, ...)
+	end
+	function META:AppendNote8(...)
+		return lib.btSoftBody_appendNote8(self, ...)
+	end
+	function META:SetRestLengthScale(...)
+		return lib.btSoftBody_setRestLengthScale(self, ...)
+	end
+	function META:SetPose(...)
+		return lib.btSoftBody_setPose(self, ...)
+	end
+	function META:EvaluateCom(...)
+		return lib.btSoftBody_evaluateCom(self, ...)
+	end
+	function META:ClusterVImpulse(...)
+		return lib.btSoftBody_clusterVImpulse(self, ...)
+	end
+	function META:SetMass(...)
+		return lib.btSoftBody_setMass(self, ...)
+	end
+	function META:GetScontacts(...)
+		return lib.btSoftBody_getScontacts(self, ...)
+	end
+	function META:Scale(...)
+		return lib.btSoftBody_scale(self, ...)
+	end
+	function META:GetRcontacts(...)
+		return lib.btSoftBody_getRcontacts(self, ...)
+	end
+	function META:AppendFace(...)
+		return lib.btSoftBody_appendFace(self, ...)
+	end
+	function META:ClusterDImpulse(...)
+		return lib.btSoftBody_clusterDImpulse(self, ...)
+	end
+	function META:AppendNote6(...)
+		return lib.btSoftBody_appendNote6(self, ...)
+	end
+	function META:RayTest2(...)
+		return lib.btSoftBody_rayTest2(self, ...)
+	end
+	function META:AppendLink4(...)
+		return lib.btSoftBody_appendLink4(self, ...)
+	end
+	function META:PredictMotion(...)
+		return lib.btSoftBody_predictMotion(self, ...)
+	end
+	function META:SetWindVelocity(...)
+		return lib.btSoftBody_setWindVelocity(self, ...)
+	end
+	function META:AppendLink3(...)
+		return lib.btSoftBody_appendLink3(self, ...)
+	end
+	function META:AppendAngularJoint(...)
+		return lib.btSoftBody_appendAngularJoint(self, ...)
+	end
+	function META:CheckContact(...)
+		return lib.btSoftBody_checkContact(self, ...)
+	end
+	function META:AddAeroForceToFace(...)
+		return lib.btSoftBody_addAeroForceToFace(self, ...)
+	end
+	function META:IndicesToPointers2(...)
+		return lib.btSoftBody_indicesToPointers2(self, ...)
+	end
+	function META:SetTag(...)
+		return lib.btSoftBody_setTag(self, ...)
+	end
+	function META:ApplyForces(...)
+		return lib.btSoftBody_applyForces(self, ...)
+	end
+	function META:GetFaces(...)
+		return lib.btSoftBody_getFaces(self, ...)
+	end
+	function META:IntegrateMotion(...)
+		return lib.btSoftBody_integrateMotion(self, ...)
+	end
+	function META:SetTotalMass2(...)
+		return lib.btSoftBody_setTotalMass2(self, ...)
+	end
+	function META:GetTimeacc(...)
+		return lib.btSoftBody_getTimeacc(self, ...)
+	end
+	function META:PrepareClusters(...)
+		return lib.btSoftBody_prepareClusters(self, ...)
+	end
+	function META:AppendLinearJoint2(...)
+		return lib.btSoftBody_appendLinearJoint2(self, ...)
+	end
+	function META:AppendAnchor(...)
+		return lib.btSoftBody_appendAnchor(self, ...)
+	end
+	function META:AppendNode(...)
+		return lib.btSoftBody_appendNode(self, ...)
+	end
+	function META:GetUserIndexMapping(...)
+		return lib.btSoftBody_getUserIndexMapping(self, ...)
+	end
+	function META:DampClusters(...)
+		return lib.btSoftBody_dampClusters(self, ...)
+	end
+	function META:CutLink(...)
+		return lib.btSoftBody_cutLink(self, ...)
+	end
+	function META:GetBUpdateRtCst(...)
+		return lib.btSoftBody_getBUpdateRtCst(self, ...)
+	end
+	function META:CutLink2(...)
+		return lib.btSoftBody_cutLink2(self, ...)
+	end
+	function META:AppendNote3(...)
+		return lib.btSoftBody_appendNote3(self, ...)
+	end
+	function META:GetNdbvt(...)
+		return lib.btSoftBody_getNdbvt(self, ...)
+	end
+	function META:InitializeFaceTree(...)
+		return lib.btSoftBody_initializeFaceTree(self, ...)
+	end
+	function META:AppendNote4(...)
+		return lib.btSoftBody_appendNote4(self, ...)
+	end
+	function META:AppendAnchor6(...)
+		return lib.btSoftBody_appendAnchor6(self, ...)
+	end
+	function META:GetCollisionDisabledObjects(...)
+		return lib.btSoftBody_getCollisionDisabledObjects(self, ...)
+	end
+	function META:AppendLink2(...)
+		return lib.btSoftBody_appendLink2(self, ...)
+	end
+	function META:UpdatePose(...)
+		return lib.btSoftBody_updatePose(self, ...)
+	end
+	function META:GetJoints(...)
+		return lib.btSoftBody_getJoints(self, ...)
+	end
+	function META:ClusterDAImpulse(...)
+		return lib.btSoftBody_clusterDAImpulse(self, ...)
+	end
+	function META:SolveConstraints(...)
+		return lib.btSoftBody_solveConstraints(self, ...)
+	end
+	function META:GetRestLengthScale(...)
+		return lib.btSoftBody_getRestLengthScale(self, ...)
+	end
+	function META:ClusterCom2(...)
+		return lib.btSoftBody_clusterCom2(self, ...)
+	end
+	function META:CleanupClusters(...)
+		return lib.btSoftBody_cleanupClusters(self, ...)
+	end
+	function META:SetTotalMass(...)
+		return lib.btSoftBody_setTotalMass(self, ...)
+	end
+	function META:GenerateClusters2(...)
+		return lib.btSoftBody_generateClusters2(self, ...)
+	end
+	function META:GetWindVelocity(...)
+		return lib.btSoftBody_getWindVelocity(self, ...)
+	end
+	function META:AppendNote(...)
+		return lib.btSoftBody_appendNote(self, ...)
+	end
+	ffi.metatype('btSoftBody', META)
+	function bullet.CreateSoftBody2(...)
+		return lib.btSoftBody_new2(...)
+	end
+	function bullet.CreateSoftBody(...)
+		return lib.btSoftBody_new(...)
+	end
+end
+do -- ManifoldPoint
+	local META = {}
+	META.__index = META
+	function META:GetContactMotion1(...)
+		return lib.btManifoldPoint_getContactMotion1(self, ...)
+	end
+	function META:SetLateralFrictionInitialized(...)
+		return lib.btManifoldPoint_setLateralFrictionInitialized(self, ...)
+	end
+	function META:SetContactMotion1(...)
+		return lib.btManifoldPoint_setContactMotion1(self, ...)
+	end
+	function META:GetDistance(...)
+		return lib.btManifoldPoint_getDistance(self, ...)
+	end
+	function META:GetLocalPointB(...)
+		return lib.btManifoldPoint_getLocalPointB(self, ...)
+	end
+	function META:GetCombinedFriction(...)
+		return lib.btManifoldPoint_getCombinedFriction(self, ...)
+	end
+	function META:GetIndex0(...)
+		return lib.btManifoldPoint_getIndex0(self, ...)
+	end
+	function META:SetAppliedImpulse(...)
+		return lib.btManifoldPoint_setAppliedImpulse(self, ...)
+	end
+	function META:GetLifeTime(...)
+		return lib.btManifoldPoint_getLifeTime(self, ...)
+	end
+	function META:SetLateralFrictionDir2(...)
+		return lib.btManifoldPoint_setLateralFrictionDir2(self, ...)
+	end
+	function META:SetNormalWorldOnB(...)
+		return lib.btManifoldPoint_setNormalWorldOnB(self, ...)
+	end
+	function META:GetContactMotion2(...)
+		return lib.btManifoldPoint_getContactMotion2(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btManifoldPoint_delete(self, ...)
+	end
+	function META:SetUserPersistentData(...)
+		return lib.btManifoldPoint_setUserPersistentData(self, ...)
+	end
+	function META:GetNormalWorldOnB(...)
+		return lib.btManifoldPoint_getNormalWorldOnB(self, ...)
+	end
+	function META:SetPartId0(...)
+		return lib.btManifoldPoint_setPartId0(self, ...)
+	end
+	function META:SetPositionWorldOnA(...)
+		return lib.btManifoldPoint_setPositionWorldOnA(self, ...)
+	end
+	function META:SetContactMotion2(...)
+		return lib.btManifoldPoint_setContactMotion2(self, ...)
+	end
+	function META:SetPositionWorldOnB(...)
+		return lib.btManifoldPoint_setPositionWorldOnB(self, ...)
+	end
+	function META:SetLocalPointB(...)
+		return lib.btManifoldPoint_setLocalPointB(self, ...)
+	end
+	function META:SetAppliedImpulseLateral1(...)
+		return lib.btManifoldPoint_setAppliedImpulseLateral1(self, ...)
+	end
+	function META:GetAppliedImpulseLateral2(...)
+		return lib.btManifoldPoint_getAppliedImpulseLateral2(self, ...)
+	end
+	function META:SetDistance(...)
+		return lib.btManifoldPoint_setDistance(self, ...)
+	end
+	function META:GetContactCFM1(...)
+		return lib.btManifoldPoint_getContactCFM1(self, ...)
+	end
+	function META:GetAppliedImpulseLateral1(...)
+		return lib.btManifoldPoint_getAppliedImpulseLateral1(self, ...)
+	end
+	function META:SetLateralFrictionDir1(...)
+		return lib.btManifoldPoint_setLateralFrictionDir1(self, ...)
+	end
+	function META:SetIndex1(...)
+		return lib.btManifoldPoint_setIndex1(self, ...)
+	end
+	function META:GetUserPersistentData(...)
+		return lib.btManifoldPoint_getUserPersistentData(self, ...)
+	end
+	function META:SetIndex0(...)
+		return lib.btManifoldPoint_setIndex0(self, ...)
+	end
+	function META:SetDistance1(...)
+		return lib.btManifoldPoint_setDistance1(self, ...)
+	end
+	function META:SetPartId1(...)
+		return lib.btManifoldPoint_setPartId1(self, ...)
+	end
+	function META:SetContactCFM2(...)
+		return lib.btManifoldPoint_setContactCFM2(self, ...)
+	end
+	function META:SetContactCFM1(...)
+		return lib.btManifoldPoint_setContactCFM1(self, ...)
+	end
+	function META:SetLifeTime(...)
+		return lib.btManifoldPoint_setLifeTime(self, ...)
+	end
+	function META:GetLateralFrictionInitialized(...)
+		return lib.btManifoldPoint_getLateralFrictionInitialized(self, ...)
+	end
+	function META:GetPositionWorldOnB(...)
+		return lib.btManifoldPoint_getPositionWorldOnB(self, ...)
+	end
+	function META:SetCombinedRestitution(...)
+		return lib.btManifoldPoint_setCombinedRestitution(self, ...)
+	end
+	function META:SetCombinedRollingFriction(...)
+		return lib.btManifoldPoint_setCombinedRollingFriction(self, ...)
+	end
+	function META:SetLocalPointA(...)
+		return lib.btManifoldPoint_setLocalPointA(self, ...)
+	end
+	function META:GetLateralFrictionDir1(...)
+		return lib.btManifoldPoint_getLateralFrictionDir1(self, ...)
+	end
+	function META:GetCombinedRestitution(...)
+		return lib.btManifoldPoint_getCombinedRestitution(self, ...)
+	end
+	function META:GetLocalPointA(...)
+		return lib.btManifoldPoint_getLocalPointA(self, ...)
+	end
+	function META:GetPartId1(...)
+		return lib.btManifoldPoint_getPartId1(self, ...)
+	end
+	function META:GetContactCFM2(...)
+		return lib.btManifoldPoint_getContactCFM2(self, ...)
+	end
+	function META:GetDistance1(...)
+		return lib.btManifoldPoint_getDistance1(self, ...)
+	end
+	function META:GetIndex1(...)
+		return lib.btManifoldPoint_getIndex1(self, ...)
+	end
+	function META:SetAppliedImpulseLateral2(...)
+		return lib.btManifoldPoint_setAppliedImpulseLateral2(self, ...)
+	end
+	function META:GetAppliedImpulse(...)
+		return lib.btManifoldPoint_getAppliedImpulse(self, ...)
+	end
+	function META:GetPartId0(...)
+		return lib.btManifoldPoint_getPartId0(self, ...)
+	end
+	function META:GetCombinedRollingFriction(...)
+		return lib.btManifoldPoint_getCombinedRollingFriction(self, ...)
+	end
+	function META:SetCombinedFriction(...)
+		return lib.btManifoldPoint_setCombinedFriction(self, ...)
+	end
+	function META:GetLateralFrictionDir2(...)
+		return lib.btManifoldPoint_getLateralFrictionDir2(self, ...)
+	end
+	function META:GetPositionWorldOnA(...)
+		return lib.btManifoldPoint_getPositionWorldOnA(self, ...)
+	end
+	ffi.metatype('btManifoldPoint', META)
+	function bullet.CreateManifoldPoint2(...)
+		return lib.btManifoldPoint_new2(...)
+	end
+	function bullet.CreateManifoldPoint(...)
+		return lib.btManifoldPoint_new(...)
+	end
+end
+do -- MinkowskiPenetrationDepthSolver
+	local META = {}
+	META.__index = META
+	ffi.metatype('btMinkowskiPenetrationDepthSolver', META)
+	function bullet.CreateMinkowskiPenetrationDepthSolver(...)
+		return lib.btMinkowskiPenetrationDepthSolver_new(...)
+	end
+end
+do -- SoftBody_Element
+	local META = {}
+	META.__index = META
+	function META:Delete(...)
+		return lib.btSoftBody_Element_delete(self, ...)
+	end
+	function META:GetTag(...)
+		return lib.btSoftBody_Element_getTag(self, ...)
+	end
+	function META:SetTag(...)
+		return lib.btSoftBody_Element_setTag(self, ...)
+	end
+	ffi.metatype('btSoftBody_Element', META)
+	function bullet.CreateSoftBody_Element(...)
+		return lib.btSoftBody_Element_new(...)
+	end
+end
+do -- BoxShape
+	local META = {}
+	META.__index = META
+	function META:GetPlaneEquation(...)
+		return lib.btBoxShape_getPlaneEquation(self, ...)
+	end
+	function META:GetHalfExtentsWithMargin(...)
+		return lib.btBoxShape_getHalfExtentsWithMargin(self, ...)
+	end
+	function META:GetHalfExtentsWithoutMargin(...)
+		return lib.btBoxShape_getHalfExtentsWithoutMargin(self, ...)
+	end
+	ffi.metatype('btBoxShape', META)
+	function bullet.CreateBoxShape2(...)
+		return lib.btBoxShape_new2(...)
+	end
+	function bullet.CreateBoxShape(...)
+		return lib.btBoxShape_new(...)
+	end
+	function bullet.CreateBoxShape3(...)
+		return lib.btBoxShape_new3(...)
+	end
+end
+do -- SequentialImpulseConstraintSolver
+	local META = {}
+	META.__index = META
+	function META:BtRand2(...)
+		return lib.btSequentialImpulseConstraintSolver_btRand2(self, ...)
+	end
+	function META:BtRandInt2(...)
+		return lib.btSequentialImpulseConstraintSolver_btRandInt2(self, ...)
+	end
+	function META:GetRandSeed(...)
+		return lib.btSequentialImpulseConstraintSolver_getRandSeed(self, ...)
+	end
+	function META:SetRandSeed(...)
+		return lib.btSequentialImpulseConstraintSolver_setRandSeed(self, ...)
+	end
+	ffi.metatype('btSequentialImpulseConstraintSolver', META)
+	function bullet.CreateSequentialImpulseConstraintSolver(...)
+		return lib.btSequentialImpulseConstraintSolver_new(...)
+	end
+end
+do -- BroadphaseProxy
+	local META = {}
+	META.__index = META
+	function META:SetMultiSapParentProxy(...)
+		return lib.btBroadphaseProxy_setMultiSapParentProxy(self, ...)
+	end
+	function META:GetUid(...)
+		return lib.btBroadphaseProxy_getUid(self, ...)
+	end
+	function META:IsConvex2d(...)
+		return lib.btBroadphaseProxy_isConvex2d(self, ...)
+	end
+	function META:IsConvex(...)
+		return lib.btBroadphaseProxy_isConvex(self, ...)
+	end
+	function META:IsSoftBody(...)
+		return lib.btBroadphaseProxy_isSoftBody(self, ...)
+	end
+	function META:SetCollisionFilterGroup(...)
+		return lib.btBroadphaseProxy_setCollisionFilterGroup(self, ...)
+	end
+	function META:GetMultiSapParentProxy(...)
+		return lib.btBroadphaseProxy_getMultiSapParentProxy(self, ...)
+	end
+	function META:IsCompound(...)
+		return lib.btBroadphaseProxy_isCompound(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btBroadphaseProxy_delete(self, ...)
+	end
+	function META:IsConcave(...)
+		return lib.btBroadphaseProxy_isConcave(self, ...)
+	end
+	function META:SetCollisionFilterMask(...)
+		return lib.btBroadphaseProxy_setCollisionFilterMask(self, ...)
+	end
+	function META:SetAabbMin(...)
+		return lib.btBroadphaseProxy_setAabbMin(self, ...)
+	end
+	function META:IsInfinite(...)
+		return lib.btBroadphaseProxy_isInfinite(self, ...)
+	end
+	function META:SetClientObject(...)
+		return lib.btBroadphaseProxy_setClientObject(self, ...)
+	end
+	function META:GetAabbMax(...)
+		return lib.btBroadphaseProxy_getAabbMax(self, ...)
+	end
+	function META:SetAabbMax(...)
+		return lib.btBroadphaseProxy_setAabbMax(self, ...)
+	end
+	function META:IsNonMoving(...)
+		return lib.btBroadphaseProxy_isNonMoving(self, ...)
+	end
+	function META:SetUniqueId(...)
+		return lib.btBroadphaseProxy_setUniqueId(self, ...)
+	end
+	function META:IsPolyhedral(...)
+		return lib.btBroadphaseProxy_isPolyhedral(self, ...)
+	end
+	function META:GetUniqueId(...)
+		return lib.btBroadphaseProxy_getUniqueId(self, ...)
+	end
+	function META:GetCollisionFilterMask(...)
+		return lib.btBroadphaseProxy_getCollisionFilterMask(self, ...)
+	end
+	function META:GetCollisionFilterGroup(...)
+		return lib.btBroadphaseProxy_getCollisionFilterGroup(self, ...)
+	end
+	function META:GetClientObject(...)
+		return lib.btBroadphaseProxy_getClientObject(self, ...)
+	end
+	function META:GetAabbMin(...)
+		return lib.btBroadphaseProxy_getAabbMin(self, ...)
+	end
+	ffi.metatype('btBroadphaseProxy', META)
+	function bullet.CreateBroadphaseProxy(...)
+		return lib.btBroadphaseProxy_new(...)
+	end
+	function bullet.CreateBroadphaseProxy2(...)
+		return lib.btBroadphaseProxy_new2(...)
+	end
+	function bullet.CreateBroadphaseProxy3(...)
+		return lib.btBroadphaseProxy_new3(...)
+	end
+end
+do -- NullPairCache
+	local META = {}
+	META.__index = META
+	ffi.metatype('btNullPairCache', META)
+	function bullet.CreateNullPairCache(...)
+		return lib.btNullPairCache_new(...)
+	end
+end
+do -- SoftBody_AJoint
+	local META = {}
+	META.__index = META
+	function META:GetAxis(...)
+		return lib.btSoftBody_AJoint_getAxis(self, ...)
+	end
+	function META:SetIcontrol(...)
+		return lib.btSoftBody_AJoint_setIcontrol(self, ...)
+	end
+	function META:GetIcontrol(...)
+		return lib.btSoftBody_AJoint_getIcontrol(self, ...)
+	end
+	ffi.metatype('btSoftBody_AJoint', META)
+	function bullet.CreateSoftBody_AJoint(...)
+		return lib.btSoftBody_AJoint_new(...)
+	end
+end
+do -- DefaultVehicleRaycaster
+	local META = {}
+	META.__index = META
+	ffi.metatype('btDefaultVehicleRaycaster', META)
+	function bullet.CreateDefaultVehicleRaycaster(...)
+		return lib.btDefaultVehicleRaycaster_new(...)
+	end
+end
+do -- PairSet
+	local META = {}
+	META.__index = META
+	ffi.metatype('btPairSet', META)
+	function bullet.CreatePairSet(...)
+		return lib.btPairSet_new(...)
+	end
+end
+do -- ContactSolverInfo
+	local META = {}
+	META.__index = META
+	ffi.metatype('btContactSolverInfo', META)
+	function bullet.CreateContactSolverInfo(...)
+		return lib.btContactSolverInfo_new(...)
+	end
+end
+do -- ConvexConvexAlgorithm_CreateFunc
+	local META = {}
+	META.__index = META
+	function META:GetSimplexSolver(...)
+		return lib.btConvexConvexAlgorithm_CreateFunc_getSimplexSolver(self, ...)
+	end
+	function META:GetNumPerturbationIterations(...)
+		return lib.btConvexConvexAlgorithm_CreateFunc_getNumPerturbationIterations(self, ...)
+	end
+	function META:SetMinimumPointsPerturbationThreshold(...)
+		return lib.btConvexConvexAlgorithm_CreateFunc_setMinimumPointsPerturbationThreshold(self, ...)
+	end
+	function META:SetPdSolver(...)
+		return lib.btConvexConvexAlgorithm_CreateFunc_setPdSolver(self, ...)
+	end
+	function META:SetSimplexSolver(...)
+		return lib.btConvexConvexAlgorithm_CreateFunc_setSimplexSolver(self, ...)
+	end
+	function META:SetNumPerturbationIterations(...)
+		return lib.btConvexConvexAlgorithm_CreateFunc_setNumPerturbationIterations(self, ...)
+	end
+	function META:GetMinimumPointsPerturbationThreshold(...)
+		return lib.btConvexConvexAlgorithm_CreateFunc_getMinimumPointsPerturbationThreshold(self, ...)
+	end
+	function META:GetPdSolver(...)
+		return lib.btConvexConvexAlgorithm_CreateFunc_getPdSolver(self, ...)
+	end
+	ffi.metatype('btConvexConvexAlgorithm_CreateFunc', META)
+	function bullet.CreateConvexConvexAlgorithm_CreateFunc(...)
+		return lib.btConvexConvexAlgorithm_CreateFunc_new(...)
+	end
+end
+do -- Convex2dConvex2dAlgorithm
+	local META = {}
+	META.__index = META
+	function META:GetManifold(...)
+		return lib.btConvex2dConvex2dAlgorithm_getManifold(self, ...)
+	end
+	function META:SetLowLevelOfDetail(...)
+		return lib.btConvex2dConvex2dAlgorithm_setLowLevelOfDetail(self, ...)
+	end
+	ffi.metatype('btConvex2dConvex2dAlgorithm', META)
+	function bullet.CreateConvex2dConvex2dAlgorithm2(...)
+		return lib.btConvex2dConvex2dAlgorithm_new(...)
+	end
+end
+do -- SoftBody_AJoint_Specs
+	local META = {}
+	META.__index = META
+	function META:GetAxis(...)
+		return lib.btSoftBody_AJoint_Specs_getAxis(self, ...)
+	end
+	function META:SetAxis(...)
+		return lib.btSoftBody_AJoint_Specs_setAxis(self, ...)
+	end
+	function META:SetIcontrol(...)
+		return lib.btSoftBody_AJoint_Specs_setIcontrol(self, ...)
+	end
+	function META:GetIcontrol(...)
+		return lib.btSoftBody_AJoint_Specs_getIcontrol(self, ...)
+	end
+	ffi.metatype('btSoftBody_AJoint_Specs', META)
+	function bullet.CreateSoftBody_AJoint_Specs(...)
+		return lib.btSoftBody_AJoint_Specs_new(...)
+	end
+end
+do -- SoftBody_Config
+	local META = {}
+	META.__index = META
+	function META:GetKVC(...)
+		return lib.btSoftBody_Config_getKVC(self, ...)
+	end
+	function META:GetKPR(...)
+		return lib.btSoftBody_Config_getKPR(self, ...)
+	end
+	function META:GetPsequence(...)
+		return lib.btSoftBody_Config_getPsequence(self, ...)
+	end
+	function META:SetKLF(...)
+		return lib.btSoftBody_Config_setKLF(self, ...)
+	end
+	function META:GetCiterations(...)
+		return lib.btSoftBody_Config_getCiterations(self, ...)
+	end
+	function META:GetDiterations(...)
+		return lib.btSoftBody_Config_getDiterations(self, ...)
+	end
+	function META:GetKDG(...)
+		return lib.btSoftBody_Config_getKDG(self, ...)
+	end
+	function META:SetKDP(...)
+		return lib.btSoftBody_Config_setKDP(self, ...)
+	end
+	function META:GetKMT(...)
+		return lib.btSoftBody_Config_getKMT(self, ...)
+	end
+	function META:SetCiterations(...)
+		return lib.btSoftBody_Config_setCiterations(self, ...)
+	end
+	function META:SetDiterations(...)
+		return lib.btSoftBody_Config_setDiterations(self, ...)
+	end
+	function META:SetAeromodel(...)
+		return lib.btSoftBody_Config_setAeromodel(self, ...)
+	end
+	function META:SetKCHR(...)
+		return lib.btSoftBody_Config_setKCHR(self, ...)
+	end
+	function META:GetDsequence(...)
+		return lib.btSoftBody_Config_getDsequence(self, ...)
+	end
+	function META:SetKAHR(...)
+		return lib.btSoftBody_Config_setKAHR(self, ...)
+	end
+	function META:GetPiterations(...)
+		return lib.btSoftBody_Config_getPiterations(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btSoftBody_Config_delete(self, ...)
+	end
+	function META:SetKPR(...)
+		return lib.btSoftBody_Config_setKPR(self, ...)
+	end
+	function META:GetKKHR(...)
+		return lib.btSoftBody_Config_getKKHR(self, ...)
+	end
+	function META:GetKLF(...)
+		return lib.btSoftBody_Config_getKLF(self, ...)
+	end
+	function META:SetKDF(...)
+		return lib.btSoftBody_Config_setKDF(self, ...)
+	end
+	function META:GetCollisions(...)
+		return lib.btSoftBody_Config_getCollisions(self, ...)
+	end
+	function META:SetViterations(...)
+		return lib.btSoftBody_Config_setViterations(self, ...)
+	end
+	function META:SetTimescale(...)
+		return lib.btSoftBody_Config_setTimescale(self, ...)
+	end
+	function META:GetAeromodel(...)
+		return lib.btSoftBody_Config_getAeromodel(self, ...)
+	end
+	function META:SetPiterations(...)
+		return lib.btSoftBody_Config_setPiterations(self, ...)
+	end
+	function META:SetKDG(...)
+		return lib.btSoftBody_Config_setKDG(self, ...)
+	end
+	function META:SetMaxvolume(...)
+		return lib.btSoftBody_Config_setMaxvolume(self, ...)
+	end
+	function META:SetKVCF(...)
+		return lib.btSoftBody_Config_setKVCF(self, ...)
+	end
+	function META:SetKVC(...)
+		return lib.btSoftBody_Config_setKVC(self, ...)
+	end
+	function META:SetKSHR(...)
+		return lib.btSoftBody_Config_setKSHR(self, ...)
+	end
+	function META:SetKMT(...)
+		return lib.btSoftBody_Config_setKMT(self, ...)
+	end
+	function META:GetKSHR(...)
+		return lib.btSoftBody_Config_getKSHR(self, ...)
+	end
+	function META:SetKKHR(...)
+		return lib.btSoftBody_Config_setKKHR(self, ...)
+	end
+	function META:SetCollisions(...)
+		return lib.btSoftBody_Config_setCollisions(self, ...)
+	end
+	function META:GetKDP(...)
+		return lib.btSoftBody_Config_getKDP(self, ...)
+	end
+	function META:GetKDF(...)
+		return lib.btSoftBody_Config_getKDF(self, ...)
+	end
+	function META:GetKVCF(...)
+		return lib.btSoftBody_Config_getKVCF(self, ...)
+	end
+	function META:GetVsequence(...)
+		return lib.btSoftBody_Config_getVsequence(self, ...)
+	end
+	function META:GetMaxvolume(...)
+		return lib.btSoftBody_Config_getMaxvolume(self, ...)
+	end
+	function META:GetKCHR(...)
+		return lib.btSoftBody_Config_getKCHR(self, ...)
+	end
+	function META:GetViterations(...)
+		return lib.btSoftBody_Config_getViterations(self, ...)
+	end
+	function META:GetTimescale(...)
+		return lib.btSoftBody_Config_getTimescale(self, ...)
+	end
+	function META:GetKAHR(...)
+		return lib.btSoftBody_Config_getKAHR(self, ...)
+	end
+	ffi.metatype('btSoftBody_Config', META)
+	function bullet.CreateSoftBody_Config(...)
+		return lib.btSoftBody_Config_new(...)
+	end
+end
+do -- CollisionWorld_LocalShapeInfo
+	local META = {}
+	META.__index = META
+	function META:SetTriangleIndex(...)
+		return lib.btCollisionWorld_LocalShapeInfo_setTriangleIndex(self, ...)
+	end
+	function META:SetShapePart(...)
+		return lib.btCollisionWorld_LocalShapeInfo_setShapePart(self, ...)
+	end
+	function META:GetTriangleIndex(...)
+		return lib.btCollisionWorld_LocalShapeInfo_getTriangleIndex(self, ...)
+	end
+	function META:GetShapePart(...)
+		return lib.btCollisionWorld_LocalShapeInfo_getShapePart(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btCollisionWorld_LocalShapeInfo_delete(self, ...)
+	end
+	ffi.metatype('btCollisionWorld_LocalShapeInfo', META)
+	function bullet.CreateCollisionWorld_LocalShapeInfo(...)
+		return lib.btCollisionWorld_LocalShapeInfo_new(...)
+	end
+end
+do -- SoftBody_Feature
+	local META = {}
+	META.__index = META
+	function META:SetMaterial(...)
+		return lib.btSoftBody_Feature_setMaterial(self, ...)
+	end
+	function META:GetMaterial(...)
+		return lib.btSoftBody_Feature_getMaterial(self, ...)
+	end
+	ffi.metatype('btSoftBody_Feature', META)
+	function bullet.CreateSoftBody_Feature(...)
+		return lib.btSoftBody_Feature_new(...)
+	end
+end
+do -- BT_QUANTIZED_BVH_NODE
+	local META = {}
+	META.__index = META
+	ffi.metatype('BT_QUANTIZED_BVH_NODE', META)
+	function bullet.CreateBT_QUANTIZED_BVH_NODE(...)
+		return lib.BT_QUANTIZED_BVH_NODE_new(...)
 	end
 end
 do -- PersistentManifold
 	local META = {}
 	META.__index = META
 	function META:ClearUserCache(...)
-		lib.btPersistentManifold_clearUserCache(self.__ptr, ...)
+		return lib.btPersistentManifold_clearUserCache(self, ...)
 	end
 	function META:ReplaceContactPoint(...)
-		lib.btPersistentManifold_replaceContactPoint(self.__ptr, ...)
+		return lib.btPersistentManifold_replaceContactPoint(self, ...)
 	end
 	function META:RemoveContactPoint(...)
-		lib.btPersistentManifold_removeContactPoint(self.__ptr, ...)
+		return lib.btPersistentManifold_removeContactPoint(self, ...)
 	end
 	function META:GetContactPoint(...)
-		lib.btPersistentManifold_getContactPoint(self.__ptr, ...)
+		return lib.btPersistentManifold_getContactPoint(self, ...)
+	end
+	function META:GetBody0(...)
+		return lib.btPersistentManifold_getBody0(self, ...)
 	end
 	function META:AddManifoldPoint(...)
-		lib.btPersistentManifold_addManifoldPoint(self.__ptr, ...)
+		return lib.btPersistentManifold_addManifoldPoint(self, ...)
 	end
-	function META:GetBody(...)
-		lib.btPersistentManifold_getBody0(self.__ptr, ...)
+	function META:GetBody1(...)
+		return lib.btPersistentManifold_getBody1(self, ...)
 	end
 	function META:GetCacheEntry(...)
-		lib.btPersistentManifold_getCacheEntry(self.__ptr, ...)
+		return lib.btPersistentManifold_getCacheEntry(self, ...)
 	end
 	function META:GetContactProcessingThreshold(...)
-		lib.btPersistentManifold_getContactProcessingThreshold(self.__ptr, ...)
-	end
-	function META:GetCompanionIdA(...)
-		lib.btPersistentManifold_getCompanionIdA(self.__ptr, ...)
-	end
-	function META:GetNumContacts(...)
-		lib.btPersistentManifold_getNumContacts(self.__ptr, ...)
+		return lib.btPersistentManifold_getContactProcessingThreshold(self, ...)
 	end
 	function META:ValidContactDistance(...)
-		lib.btPersistentManifold_validContactDistance(self.__ptr, ...)
+		return lib.btPersistentManifold_validContactDistance(self, ...)
 	end
-	function META:GetIndex1a(...)
-		lib.btPersistentManifold_getIndex1a(self.__ptr, ...)
+	function META:GetCompanionIdA(...)
+		return lib.btPersistentManifold_getCompanionIdA(self, ...)
 	end
-	function META:SetIndex1a(...)
-		lib.btPersistentManifold_setIndex1a(self.__ptr, ...)
+	function META:GetNumContacts(...)
+		return lib.btPersistentManifold_getNumContacts(self, ...)
 	end
-	function META:ClearManifold(...)
-		lib.btPersistentManifold_clearManifold(self.__ptr, ...)
-	end
-	function META:SetBodies(...)
-		lib.btPersistentManifold_setBodies(self.__ptr, ...)
+	function META:AddManifoldPoint2(...)
+		return lib.btPersistentManifold_addManifoldPoint2(self, ...)
 	end
 	function META:GetContactBreakingThreshold(...)
-		lib.btPersistentManifold_getContactBreakingThreshold(self.__ptr, ...)
+		return lib.btPersistentManifold_getContactBreakingThreshold(self, ...)
+	end
+	function META:SetIndex1a(...)
+		return lib.btPersistentManifold_setIndex1a(self, ...)
+	end
+	function META:ClearManifold(...)
+		return lib.btPersistentManifold_clearManifold(self, ...)
+	end
+	function META:SetBodies(...)
+		return lib.btPersistentManifold_setBodies(self, ...)
+	end
+	function META:GetIndex1a(...)
+		return lib.btPersistentManifold_getIndex1a(self, ...)
 	end
 	function META:SetCompanionIdB(...)
-		lib.btPersistentManifold_setCompanionIdB(self.__ptr, ...)
+		return lib.btPersistentManifold_setCompanionIdB(self, ...)
 	end
 	function META:SetCompanionIdA(...)
-		lib.btPersistentManifold_setCompanionIdA(self.__ptr, ...)
+		return lib.btPersistentManifold_setCompanionIdA(self, ...)
 	end
 	function META:SetContactProcessingThreshold(...)
-		lib.btPersistentManifold_setContactProcessingThreshold(self.__ptr, ...)
+		return lib.btPersistentManifold_setContactProcessingThreshold(self, ...)
 	end
 	function META:SetContactBreakingThreshold(...)
-		lib.btPersistentManifold_setContactBreakingThreshold(self.__ptr, ...)
+		return lib.btPersistentManifold_setContactBreakingThreshold(self, ...)
 	end
 	function META:RefreshContactPoints(...)
-		lib.btPersistentManifold_refreshContactPoints(self.__ptr, ...)
+		return lib.btPersistentManifold_refreshContactPoints(self, ...)
 	end
 	function META:SetNumContacts(...)
-		lib.btPersistentManifold_setNumContacts(self.__ptr, ...)
+		return lib.btPersistentManifold_setNumContacts(self, ...)
 	end
 	function META:GetCompanionIdB(...)
-		lib.btPersistentManifold_getCompanionIdB(self.__ptr, ...)
+		return lib.btPersistentManifold_getCompanionIdB(self, ...)
+	end
+	ffi.metatype('btPersistentManifold', META)
+	function bullet.CreatePersistentManifold2(...)
+		return lib.btPersistentManifold_new2(...)
 	end
 	function bullet.CreatePersistentManifold(...)
-		return setmetatable({__ptr = lib.btPersistentManifold_new2(...)}, META)
+		return lib.btPersistentManifold_new(...)
 	end
 end
-do -- ConvexPointCloudShape
+do -- DiscreteCollisionDetectorInterface_ClosestPointInput
 	local META = {}
 	META.__index = META
-	function META:SetPoints(...)
-		lib.btConvexPointCloudShape_setPoints(self.__ptr, ...)
+	function META:SetMaximumDistanceSquared(...)
+		return lib.btDiscreteCollisionDetectorInterface_ClosestPointInput_setMaximumDistanceSquared(self, ...)
 	end
-	function META:GetUnscaledPoints(...)
-		lib.btConvexPointCloudShape_getUnscaledPoints(self.__ptr, ...)
+	function META:Delete(...)
+		return lib.btDiscreteCollisionDetectorInterface_ClosestPointInput_delete(self, ...)
 	end
-	function META:GetNumPoints(...)
-		lib.btConvexPointCloudShape_getNumPoints(self.__ptr, ...)
+	function META:SetTransformA(...)
+		return lib.btDiscreteCollisionDetectorInterface_ClosestPointInput_setTransformA(self, ...)
 	end
-	function META:GetScaledPoint(...)
-		lib.btConvexPointCloudShape_getScaledPoint(self.__ptr, ...)
+	function META:SetTransformB(...)
+		return lib.btDiscreteCollisionDetectorInterface_ClosestPointInput_setTransformB(self, ...)
 	end
-	function bullet.CreateConvexPointCloudShape(...)
-		return setmetatable({__ptr = lib.btConvexPointCloudShape_new2(...)}, META)
+	function META:GetMaximumDistanceSquared(...)
+		return lib.btDiscreteCollisionDetectorInterface_ClosestPointInput_getMaximumDistanceSquared(self, ...)
+	end
+	function META:GetTransformB(...)
+		return lib.btDiscreteCollisionDetectorInterface_ClosestPointInput_getTransformB(self, ...)
+	end
+	function META:GetTransformA(...)
+		return lib.btDiscreteCollisionDetectorInterface_ClosestPointInput_getTransformA(self, ...)
+	end
+	ffi.metatype('btDiscreteCollisionDetectorInterface_ClosestPointInput', META)
+	function bullet.CreateDiscreteCollisionDetectorInterface_ClosestPointInput(...)
+		return lib.btDiscreteCollisionDetectorInterface_ClosestPointInput_new(...)
+	end
+end
+do -- SoftBody_RayFromToCaster
+	local META = {}
+	META.__index = META
+	function META:GetMint(...)
+		return lib.btSoftBody_RayFromToCaster_getMint(self, ...)
+	end
+	function META:RayFromToTriangle(...)
+		return lib.btSoftBody_RayFromToCaster_rayFromToTriangle(self, ...)
+	end
+	function META:GetRayFrom(...)
+		return lib.btSoftBody_RayFromToCaster_getRayFrom(self, ...)
+	end
+	function META:GetRayNormalizedDirection(...)
+		return lib.btSoftBody_RayFromToCaster_getRayNormalizedDirection(self, ...)
+	end
+	function META:SetRayFrom(...)
+		return lib.btSoftBody_RayFromToCaster_setRayFrom(self, ...)
+	end
+	function META:SetTests(...)
+		return lib.btSoftBody_RayFromToCaster_setTests(self, ...)
+	end
+	function META:SetRayTo(...)
+		return lib.btSoftBody_RayFromToCaster_setRayTo(self, ...)
+	end
+	function META:SetRayNormalizedDirection(...)
+		return lib.btSoftBody_RayFromToCaster_setRayNormalizedDirection(self, ...)
+	end
+	function META:SetMint(...)
+		return lib.btSoftBody_RayFromToCaster_setMint(self, ...)
+	end
+	function META:GetFace(...)
+		return lib.btSoftBody_RayFromToCaster_getFace(self, ...)
+	end
+	function META:SetFace(...)
+		return lib.btSoftBody_RayFromToCaster_setFace(self, ...)
+	end
+	function META:GetTests(...)
+		return lib.btSoftBody_RayFromToCaster_getTests(self, ...)
+	end
+	function META:RayFromToTriangle2(...)
+		return lib.btSoftBody_RayFromToCaster_rayFromToTriangle2(self, ...)
+	end
+	function META:GetRayTo(...)
+		return lib.btSoftBody_RayFromToCaster_getRayTo(self, ...)
+	end
+	ffi.metatype('btSoftBody_RayFromToCaster', META)
+	function bullet.CreateSoftBody_RayFromToCaster(...)
+		return lib.btSoftBody_RayFromToCaster_new(...)
+	end
+end
+do -- SoftBody_Tetra
+	local META = {}
+	META.__index = META
+	function META:GetC0(...)
+		return lib.btSoftBody_Tetra_getC0(self, ...)
+	end
+	function META:GetLeaf(...)
+		return lib.btSoftBody_Tetra_getLeaf(self, ...)
+	end
+	function META:SetC2(...)
+		return lib.btSoftBody_Tetra_setC2(self, ...)
+	end
+	function META:GetN(...)
+		return lib.btSoftBody_Tetra_getN(self, ...)
+	end
+	function META:GetC2(...)
+		return lib.btSoftBody_Tetra_getC2(self, ...)
+	end
+	function META:SetRv(...)
+		return lib.btSoftBody_Tetra_setRv(self, ...)
+	end
+	function META:SetC1(...)
+		return lib.btSoftBody_Tetra_setC1(self, ...)
+	end
+	function META:GetC1(...)
+		return lib.btSoftBody_Tetra_getC1(self, ...)
+	end
+	function META:SetLeaf(...)
+		return lib.btSoftBody_Tetra_setLeaf(self, ...)
+	end
+	function META:GetRv(...)
+		return lib.btSoftBody_Tetra_getRv(self, ...)
+	end
+	ffi.metatype('btSoftBody_Tetra', META)
+	function bullet.CreateSoftBody_Tetra(...)
+		return lib.btSoftBody_Tetra_new(...)
+	end
+end
+do -- SoftSoftCollisionAlgorithm_CreateFunc
+	local META = {}
+	META.__index = META
+	ffi.metatype('btSoftSoftCollisionAlgorithm_CreateFunc', META)
+	function bullet.CreateSoftSoftCollisionAlgorithm_CreateFunc(...)
+		return lib.btSoftSoftCollisionAlgorithm_CreateFunc_new(...)
+	end
+end
+do -- StaticPlaneShape
+	local META = {}
+	META.__index = META
+	function META:GetPlaneConstant(...)
+		return lib.btStaticPlaneShape_getPlaneConstant(self, ...)
+	end
+	function META:GetPlaneNormal(...)
+		return lib.btStaticPlaneShape_getPlaneNormal(self, ...)
+	end
+	ffi.metatype('btStaticPlaneShape', META)
+	function bullet.CreateStaticPlaneShape(...)
+		return lib.btStaticPlaneShape_new(...)
+	end
+end
+do -- UnionFind
+	local META = {}
+	META.__index = META
+	function META:Unite(...)
+		return lib.btUnionFind_unite(self, ...)
+	end
+	function META:Find2(...)
+		return lib.btUnionFind_find2(self, ...)
+	end
+	function META:Allocate(...)
+		return lib.btUnionFind_allocate(self, ...)
+	end
+	function META:GetNumElements(...)
+		return lib.btUnionFind_getNumElements(self, ...)
+	end
+	function META:Find(...)
+		return lib.btUnionFind_find(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btUnionFind_delete(self, ...)
+	end
+	function META:IsRoot(...)
+		return lib.btUnionFind_isRoot(self, ...)
+	end
+	function META:GetElement(...)
+		return lib.btUnionFind_getElement(self, ...)
+	end
+	function META:Free(...)
+		return lib.btUnionFind_Free(self, ...)
+	end
+	function META:SortIslands(...)
+		return lib.btUnionFind_sortIslands(self, ...)
+	end
+	function META:Reset(...)
+		return lib.btUnionFind_reset(self, ...)
+	end
+	ffi.metatype('btUnionFind', META)
+	function bullet.CreateUnionFind(...)
+		return lib.btUnionFind_new(...)
+	end
+end
+do -- SparseSdf
+	local META = {}
+	META.__index = META
+	function META:Delete(...)
+		return lib.btSparseSdf_delete(self, ...)
+	end
+	ffi.metatype('btSparseSdf3', META)
+	function bullet.CreateSparseSdf(...)
+		return lib.btSparseSdf_new(...)
+	end
+end
+do -- Dbvt_sStkNP
+	local META = {}
+	META.__index = META
+	function META:Delete(...)
+		return lib.btDbvt_sStkNP_delete(self, ...)
+	end
+	function META:GetMask(...)
+		return lib.btDbvt_sStkNP_getMask(self, ...)
+	end
+	function META:GetNode(...)
+		return lib.btDbvt_sStkNP_getNode(self, ...)
+	end
+	function META:SetNode(...)
+		return lib.btDbvt_sStkNP_setNode(self, ...)
+	end
+	function META:SetMask(...)
+		return lib.btDbvt_sStkNP_setMask(self, ...)
+	end
+	ffi.metatype('btDbvt_sStkNP', META)
+	function bullet.CreateDbvt_sStkNP(...)
+		return lib.btDbvt_sStkNP_new(...)
+	end
+end
+do -- BoxBoxDetector
+	local META = {}
+	META.__index = META
+	function META:SetBox2(...)
+		return lib.btBoxBoxDetector_setBox2(self, ...)
+	end
+	function META:GetBox1(...)
+		return lib.btBoxBoxDetector_getBox1(self, ...)
+	end
+	function META:SetBox1(...)
+		return lib.btBoxBoxDetector_setBox1(self, ...)
+	end
+	function META:GetBox2(...)
+		return lib.btBoxBoxDetector_getBox2(self, ...)
+	end
+	ffi.metatype('btBoxBoxDetector', META)
+	function bullet.CreateBoxBoxDetector(...)
+		return lib.btBoxBoxDetector_new(...)
+	end
+end
+do -- Dbvt
+	local META = {}
+	META.__index = META
+	function META:Empty(...)
+		return lib.btDbvt_empty(self, ...)
+	end
+	function META:CollideOCL(...)
+		return lib.btDbvt_collideOCL(self, ...)
+	end
+	function META:CollideOCL2(...)
+		return lib.btDbvt_collideOCL2(self, ...)
+	end
+	function META:Update2(...)
+		return lib.btDbvt_update2(self, ...)
+	end
+	function META:ExtractLeaves(...)
+		return lib.btDbvt_extractLeaves(self, ...)
+	end
+	function META:CountLeaves(...)
+		return lib.btDbvt_countLeaves(self, ...)
+	end
+	function META:CollideTV(...)
+		return lib.btDbvt_collideTV(self, ...)
+	end
+	function META:GetRoot(...)
+		return lib.btDbvt_getRoot(self, ...)
+	end
+	function META:SetOpath(...)
+		return lib.btDbvt_setOpath(self, ...)
+	end
+	function META:EnumLeaves(...)
+		return lib.btDbvt_enumLeaves(self, ...)
+	end
+	function META:Update(...)
+		return lib.btDbvt_update(self, ...)
+	end
+	function META:Nearest(...)
+		return lib.btDbvt_nearest(self, ...)
+	end
+	function META:OptimizeTopDown(...)
+		return lib.btDbvt_optimizeTopDown(self, ...)
+	end
+	function META:OptimizeIncremental(...)
+		return lib.btDbvt_optimizeIncremental(self, ...)
+	end
+	function META:SetLkhd(...)
+		return lib.btDbvt_setLkhd(self, ...)
+	end
+	function META:GetOpath(...)
+		return lib.btDbvt_getOpath(self, ...)
+	end
+	function META:Delete(...)
+		return lib.btDbvt_delete(self, ...)
+	end
+	function META:Write(...)
+		return lib.btDbvt_write(self, ...)
+	end
+	function META:Update6(...)
+		return lib.btDbvt_update6(self, ...)
+	end
+	function META:Update5(...)
+		return lib.btDbvt_update5(self, ...)
+	end
+	function META:Update4(...)
+		return lib.btDbvt_update4(self, ...)
+	end
+	function META:Update3(...)
+		return lib.btDbvt_update3(self, ...)
+	end
+	function META:SetRoot(...)
+		return lib.btDbvt_setRoot(self, ...)
+	end
+	function META:OptimizeTopDown2(...)
+		return lib.btDbvt_optimizeTopDown2(self, ...)
+	end
+	function META:CollideKDOP(...)
+		return lib.btDbvt_collideKDOP(self, ...)
+	end
+	function META:SetLeaves(...)
+		return lib.btDbvt_setLeaves(self, ...)
+	end
+	function META:EnumNodes(...)
+		return lib.btDbvt_enumNodes(self, ...)
+	end
+	function META:SetFree(...)
+		return lib.btDbvt_setFree(self, ...)
+	end
+	function META:Clone(...)
+		return lib.btDbvt_clone(self, ...)
+	end
+	function META:GetStkStack(...)
+		return lib.btDbvt_getStkStack(self, ...)
+	end
+	function META:Insert(...)
+		return lib.btDbvt_insert(self, ...)
+	end
+	function META:RayTestInternal(...)
+		return lib.btDbvt_rayTestInternal(self, ...)
+	end
+	function META:Clear(...)
+		return lib.btDbvt_clear(self, ...)
+	end
+	function META:RayTest(...)
+		return lib.btDbvt_rayTest(self, ...)
+	end
+	function META:CollideTT(...)
+		return lib.btDbvt_collideTT(self, ...)
+	end
+	function META:Maxdepth(...)
+		return lib.btDbvt_maxdepth(self, ...)
+	end
+	function META:Allocate(...)
+		return lib.btDbvt_allocate(self, ...)
+	end
+	function META:Benchmark(...)
+		return lib.btDbvt_benchmark(self, ...)
+	end
+	function META:GetFree(...)
+		return lib.btDbvt_getFree(self, ...)
+	end
+	function META:Clone2(...)
+		return lib.btDbvt_clone2(self, ...)
+	end
+	function META:GetRayTestStack(...)
+		return lib.btDbvt_getRayTestStack(self, ...)
+	end
+	function META:Remove(...)
+		return lib.btDbvt_remove(self, ...)
+	end
+	function META:CollideTTpersistentStack(...)
+		return lib.btDbvt_collideTTpersistentStack(self, ...)
+	end
+	function META:GetLkhd(...)
+		return lib.btDbvt_getLkhd(self, ...)
+	end
+	function META:CollideTU(...)
+		return lib.btDbvt_collideTU(self, ...)
+	end
+	function META:OptimizeBottomUp(...)
+		return lib.btDbvt_optimizeBottomUp(self, ...)
+	end
+	function META:GetLeaves(...)
+		return lib.btDbvt_getLeaves(self, ...)
+	end
+	ffi.metatype('btDbvt', META)
+	function bullet.CreateDbvt(...)
+		return lib.btDbvt_new(...)
+	end
+end
+do -- SoftBody_Material
+	local META = {}
+	META.__index = META
+	function META:GetKAST(...)
+		return lib.btSoftBody_Material_getKAST(self, ...)
+	end
+	function META:SetKVST(...)
+		return lib.btSoftBody_Material_setKVST(self, ...)
+	end
+	function META:SetKLST(...)
+		return lib.btSoftBody_Material_setKLST(self, ...)
+	end
+	function META:SetFlags(...)
+		return lib.btSoftBody_Material_setFlags(self, ...)
+	end
+	function META:GetKVST(...)
+		return lib.btSoftBody_Material_getKVST(self, ...)
+	end
+	function META:GetKLST(...)
+		return lib.btSoftBody_Material_getKLST(self, ...)
+	end
+	function META:SetKAST(...)
+		return lib.btSoftBody_Material_setKAST(self, ...)
+	end
+	function META:GetFlags(...)
+		return lib.btSoftBody_Material_getFlags(self, ...)
+	end
+	ffi.metatype('btSoftBody_Material', META)
+	function bullet.CreateSoftBody_Material(...)
+		return lib.btSoftBody_Material_new(...)
+	end
+end
+do -- TriangleIndexVertexMaterialArray
+	local META = {}
+	META.__index = META
+	function META:GetLockedReadOnlyMaterialBase(...)
+		return lib.btTriangleIndexVertexMaterialArray_getLockedReadOnlyMaterialBase(self, ...)
+	end
+	function META:GetLockedMaterialBase(...)
+		return lib.btTriangleIndexVertexMaterialArray_getLockedMaterialBase(self, ...)
+	end
+	function META:AddMaterialProperties(...)
+		return lib.btTriangleIndexVertexMaterialArray_addMaterialProperties(self, ...)
+	end
+	function META:GetLockedReadOnlyMaterialBase2(...)
+		return lib.btTriangleIndexVertexMaterialArray_getLockedReadOnlyMaterialBase2(self, ...)
+	end
+	function META:GetLockedMaterialBase2(...)
+		return lib.btTriangleIndexVertexMaterialArray_getLockedMaterialBase2(self, ...)
+	end
+	function META:AddMaterialProperties2(...)
+		return lib.btTriangleIndexVertexMaterialArray_addMaterialProperties2(self, ...)
+	end
+	ffi.metatype('btTriangleIndexVertexMaterialArray', META)
+	function bullet.CreateTriangleIndexVertexMaterialArray2(...)
+		return lib.btTriangleIndexVertexMaterialArray_new2(...)
+	end
+	function bullet.CreateTriangleIndexVertexMaterialArray(...)
+		return lib.btTriangleIndexVertexMaterialArray_new(...)
+	end
+end
+do -- SoftBody_Face
+	local META = {}
+	META.__index = META
+	function META:GetNormal(...)
+		return lib.btSoftBody_Face_getNormal(self, ...)
+	end
+	function META:GetRa(...)
+		return lib.btSoftBody_Face_getRa(self, ...)
+	end
+	function META:SetRa(...)
+		return lib.btSoftBody_Face_setRa(self, ...)
+	end
+	function META:GetLeaf(...)
+		return lib.btSoftBody_Face_getLeaf(self, ...)
+	end
+	function META:SetNormal(...)
+		return lib.btSoftBody_Face_setNormal(self, ...)
+	end
+	function META:GetN(...)
+		return lib.btSoftBody_Face_getN(self, ...)
+	end
+	function META:SetLeaf(...)
+		return lib.btSoftBody_Face_setLeaf(self, ...)
+	end
+	ffi.metatype('btSoftBody_Face', META)
+	function bullet.CreateSoftBody_Face(...)
+		return lib.btSoftBody_Face_new(...)
 	end
 end
 return bullet
