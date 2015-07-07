@@ -26,7 +26,6 @@ end
 local gl = require("graphics.ffi.opengl") -- OpenGL
 
 function PASS:Draw3D()
-	gl.DepthMask(1)
 	render.EnableDepth(false)
 	render.SetBlendMode()
 	

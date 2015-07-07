@@ -9,11 +9,11 @@ local function attachment_to_enum(self, var)
 	elseif type(var) == "number" then
 		return gl.e.GL_COLOR_ATTACHMENT0 + var - 1
 	elseif var == "depth" then
-		return gl.e.GL_DEPTH_ATTACHMENT
+		return "GL_DEPTH_ATTACHMENT"
 	elseif var == "stencil" then
-		return gl.e.GL_STENCIL_ATTACHMENT
+		return "GL_STENCIL_ATTACHMENT"
 	elseif var == "depth_stencil" then
-		return gl.e.GL_DEPTH_STENCIL_ATTACHMENT
+		return "GL_DEPTH_STENCIL_ATTACHMENT"
 	elseif var:startswith("color") then
 		return gl.e.GL_COLOR_ATTACHMENT0 + (tonumber(var:match(".-(%d)")) or 0) - 1
 	end
@@ -187,7 +187,7 @@ do -- binding
 			self:Bind()
 			
 			if self.draw_buffers_size then
-				gl.DrawBuffers(self.draw_buffers_size, self.draw_buffers)
+				self.fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers)
 			end
 			
 			--if fb.read_buffer then
@@ -245,7 +245,7 @@ function META:SetTexture(pos, tex, mode, uid)
 				mode = mode, 
 				pos = pos, 
 				uid = uid, 
-				draw_manual = pos == gl.e.GL_DEPTH_ATTACHMENT or pos == gl.e.GL_STENCIL_ATTACHMENT or pos == gl.e.GL_DEPTH_STENCIL_ATTACHMENT
+				draw_manual = pos == "GL_DEPTH_ATTACHMENT" or pos == "GL_STENCIL_ATTACHMENT" or pos == "GL_DEPTH_STENCIL_ATTACHMENT"
 			}
 			self:SetSize(tex:GetSize():Copy())
 		else
@@ -368,14 +368,20 @@ function META:WriteThese(str)
 	self.draw_buffers, self.draw_buffers_size = unpack(self.draw_buffers_cache[str])
 end
 
-function META:Clear(i, r,g,b,a)
-	i = i or "all"
+do
+	local temp_color = ffi.new("float[4]")
+	local temp_colori = ffi.new("int[4]")
+
+	function META:Clear(i, r,g,b,a)
+		if self.draw_buffers_size then
+			self.fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers)
+		end
+		
+		i = i or "all"
 			
-	self:Begin()
 		if i == "all" then
 			self:Clear("color", r,g,b,a)
-			self:Clear("depth")
-			self:Clear("stencil")
+			self:Clear("depth_stencil")
 		elseif i == "color" then
 			r = r or Color()
 			
@@ -383,15 +389,17 @@ function META:Clear(i, r,g,b,a)
 				r = Color(r, g, b, a or 0)
 			end
 			
-			gl.ClearColor(r.r, r.g, r.b, r.a)
-			gl.Clear(gl.e.GL_COLOR_BUFFER_BIT)
-			render.SetClearColor(render.GetClearColor())
+			for i = 0, self.draw_buffers_size do
+				self.fb:Clearfv("GL_COLOR", i, r.ptr)
+			end
 		elseif i == "depth" then
-			gl.ClearDepth(r or 0)
-			gl.Clear(gl.e.GL_DEPTH_BUFFER_BIT)
+			temp_color[0] = r or 0
+			self.fb:Clearfv("GL_DEPTH", 0, temp_color)
 		elseif i == "stencil" then
-			gl.ClearStencil(r or 0)
-			gl.Clear(gl.e.GL_STENCIL_BUFFER_BIT)
+			temp_colori[0] = r or 0
+			self.fb:Cleariv("GL_STENCIL", 0, temp_colori)
+		elseif i == "depth_stencil" then
+			self.fb:Clearfi("GL_DEPTH_STENCIL", 0, r or 0, g or 0)
 		elseif type(i) == "number" then
 			r = r or Color()
 			
@@ -399,11 +407,11 @@ function META:Clear(i, r,g,b,a)
 				r = Color(r, g, b, a or 0)
 			end
 		
-			gl.ClearBufferfv("GL_COLOR", i - 1, r.ptr)
+			self.fb:Clearfv("GL_COLOR", i - 1, r.ptr)
 		elseif self.textures[i] then
 			self:Clear(self.textures[i].pos - gl.e.GL_COLOR_ATTACHMENT0 - 1, r,g,b,a)
 		end
-	self:End()
+	end
 end
 	
 prototype.Register(META)

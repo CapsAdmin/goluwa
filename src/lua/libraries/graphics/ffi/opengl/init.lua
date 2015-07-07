@@ -33332,6 +33332,9 @@ function gl.Initialize(get_proc_address)
 		local META = {}
 		META.__index = META
 		if gl.CreateFramebuffers then
+			function META:Bind(target)
+				return gl.BindFramebuffer(target, self.id)
+			end
 			function META:ReadBuffer(src)
 				return gl.NamedFramebufferReadBuffer(self.id, src)
 			end
@@ -33463,6 +33466,9 @@ function gl.Initialize(get_proc_address)
 			function META:Bind(target, unbind)
 				bind(self, target)
 			end
+			function META:DrawBuffers(n, bufs)
+				bind(self, "GL_FRAMEBUFFER") gl.DrawBuffers(n, bufs)
+			end
 			function META:GetAttachmentParameteriv(target, attachment, pname, params)
 				bind(self, target) return gl.GetFramebufferAttachmentParameteriv(target, attachment, pname, params)
 			end
@@ -33528,6 +33534,18 @@ function gl.Initialize(get_proc_address)
 			end
 			function META:DrawBufferEXT(mode)
 				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferDrawBufferEXT(self.id, mode)
+			end
+			function META:Cleariv(buffer, drawbuffer, value)
+				bind(self, "GL_FRAMEBUFFER") gl.ClearBufferiv(buffer, drawbuffer, value)
+			end
+			function META:Clearuiv(buffer, drawbuffer, value)
+				bind(self, "GL_FRAMEBUFFER") gl.ClearBufferuiv(buffer, drawbuffer, value)
+			end
+			function META:Clearfv(buffer, drawbuffer, value)
+				bind(self, "GL_FRAMEBUFFER") gl.ClearBufferfv(buffer, drawbuffer, value)
+			end
+			function META:Clearfi(buffer, drawbuffer, depth, stencil)
+				bind(self, "GL_FRAMEBUFFER") gl.ClearBufferfi(buffer, drawbuffer, depth, stencil)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
