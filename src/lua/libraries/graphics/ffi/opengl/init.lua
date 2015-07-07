@@ -33445,12 +33445,23 @@ function gl.Initialize(get_proc_address)
 			local bind
 			do
 				local last
+				local last_target
 				function bind(self, target)
-					if self ~= last then
+					if self ~= last or target ~= last_target then
 						gl.BindFramebuffer(target, self.id)
 					end
 					last = self
+					last_target = target
 				end
+				local func = gl.BindFramebuffer
+				function gl.BindFramebuffer(target, id)
+					func(target, id)
+					last = nil
+					last_target = nil
+				end
+			end
+			function META:Bind(target, unbind)
+				bind(self, target)
 			end
 			function META:GetAttachmentParameteriv(target, attachment, pname, params)
 				bind(self, target) return gl.GetFramebufferAttachmentParameteriv(target, attachment, pname, params)
@@ -33844,6 +33855,9 @@ function gl.Initialize(get_proc_address)
 		local META = {}
 		META.__index = META
 		if gl.CreateTextures then
+			function META:Bind(location)
+				return gl.BindTextureUnit(location, self.id)
+			end
 			function META:SubImage1DEXT(target, level, xoffset, width, format, type, pixels)
 				return gl.TextureSubImage1DEXT(self.id, target, level, xoffset, width, format, type, pixels)
 			end
@@ -34065,6 +34079,14 @@ function gl.Initialize(get_proc_address)
 					end
 					last = self
 				end
+				local func = gl.BindTexture
+				function gl.BindTexture(target, id)
+					func(target, id)
+					last = nil
+				end
+			end
+			function META:Bind()
+				bind(self)
 			end
 			function META:SubImage1DEXT(level, xoffset, width, format, type, pixels)
 				bind(self) return gl.TexSubImage1DEXT(self.target, level, xoffset, width, format, type, pixels)

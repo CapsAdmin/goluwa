@@ -272,7 +272,7 @@ do -- add get set functions based on parameters
 		texture_wrap_s = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
 		texture_wrap_t = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
 		texture_wrap_r = {type = "enum", default = "repeat"}, -- CLAMP_TO_EDGE, REPEAT, CLAMP_TO_BORDER, MIRRORED_REPEAT, MIRROR_CLAMP_TO_EDGE
-		texture_max_anisotropy_ext = {friendly = "Anisotropy", type = "int", default = 0, translate = function(num) 
+		texture_max_anisotropy_ext = {friendly = "Anisotropy", type = "int", default = -1, translate = function(num) 
 			if not render.max_anisotropy then
 				local largest = ffi.new("float[1]")
 				gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
@@ -425,7 +425,7 @@ function META:SetupStorage()
 			self.gl_tex:Image2D(
 				"GL_TEXTURE_2D",
 				self.MipMapLevels,
-				internal_format, 
+				gl.e[internal_format], 
 				self.Size.w,
 				self.Size.h,
 				0,
@@ -849,10 +849,9 @@ do
 		
 		if self.not_dsa then
 			gl.ActiveTexture(base + location)
-			gl.BindTexture(self.gl_tex.target, self.gl_tex.id)
-		else
-			gl.BindTextureUnit(location or 0, self.gl_tex.id)
 		end
+		
+		self.gl_tex:Bind(location or 0)
 	end
 end
 

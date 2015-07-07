@@ -218,7 +218,7 @@ do -- binding
 	end
 
 	function META:Bind()
-		gl.BindFramebuffer(self.enum_bind_mode, self.fb.id)
+		self.fb:Bind(self.enum_bind_mode)
 	end
 	
 	function META:Unbind()
