@@ -501,7 +501,6 @@ render.SetGlobalShaderVariable("iDate", function() return Color(os.date("%y"), o
 
 if RELOAD then return end
 
-include("enum_translate.lua", render)
 include("generated_textures.lua", render)
 include("camera.lua", render)
 include("scene.lua", render)
