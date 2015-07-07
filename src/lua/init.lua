@@ -26,6 +26,7 @@ do -- constants
 		"SOUND",
 		"DEBUG",
 		"DISABLE_CURSES",
+		"CODEXL",
 	}
 	
 	for _, key in pairs(env_vars) do

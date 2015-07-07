@@ -1,4 +1,6 @@
-local steam = ... or steam 
+local steam = ... or steam
+
+if CODEXL then return end
 
 local steamworks = desire("steam.ffi.steamworks")
 

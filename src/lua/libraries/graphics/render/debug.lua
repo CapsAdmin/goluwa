@@ -82,6 +82,7 @@ local types = {
 }
 
 function render.StartDebug()
+	if CODEXL then return end
 	if render.verbose_debug then return end
 	
 	if gl.DebugMessageControl then
@@ -94,6 +95,7 @@ function render.StartDebug()
 end
 
 function render.StopDebug()
+	if CODEXL then return end
 	if render.verbose_debug then return end
 	
 	if gl.DebugMessageControl then
