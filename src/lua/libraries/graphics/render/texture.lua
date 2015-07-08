@@ -27,7 +27,7 @@ META:StartStorable()
 META:GetSet("StorageType", "2d")
 META:GetSet("Size", Vec2())
 META:GetSet("Depth", 0)
-META:GetSet("MipMapLevels", 3)
+META:GetSet("MipMapLevels", -1)
 META:GetSet("Path", "loading")
 META:IsSet("Loading", false)
 META:IsSet("InternalFormat", "rgba8")
@@ -373,18 +373,18 @@ end
 function META:SetupStorage()
 	render.StartDebug()
 	
-	--[[local levels = self.MipMapLevels
-	
-	if levels == 0 then
-		levels = math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2)) + 1
-	end]]
-	
 	local format = self:GetFormatInfo()
 	local internal_format = TOENUM(self.InternalFormat)
 	
-	self:SetMaxLevel(self.MipMapLevels)
-	self:SetBaseLevel(0)
+	local mip_map_levels = self.MipMapLevels
 	
+	if mip_map_levels <= 0 then
+		mip_map_levels = math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2))
+	end
+	
+	self:SetMaxLevel(mip_map_levels)
+	self:SetBaseLevel(0)
+		
 	if self.StorageType == "3d" then
 		--[[self.gl_tex:Storage3D(
 			levels,
@@ -395,7 +395,7 @@ function META:SetupStorage()
 		)]]
 		self.gl_tex:Image3D(
 			"GL_TEXTURE_3D",
-			self.MipMapLevels,
+			mip_map_levels,
 			internal_format, 
 			self.Size.w,
 			self.Size.h,
@@ -407,15 +407,9 @@ function META:SetupStorage()
 		)
 	elseif self.StorageType == "2d" or self.StorageType == "rectangle" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then		
 		if gl.TexStorage2D then
-			local levels = self.MipMapLevels
-			
-			if levels == 0 then
-				levels = math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2))
-			end
-			
 			--for i = 0, levels do
 				self.gl_tex:Storage2D(
-					levels,
+					mip_map_levels,
 					internal_format, 
 					self.Size.w, 
 					self.Size.h
@@ -424,7 +418,7 @@ function META:SetupStorage()
 		else
 			self.gl_tex:Image2D(
 				"GL_TEXTURE_2D",
-				self.MipMapLevels,
+				mip_map_levels,
 				gl.e[internal_format], 
 				self.Size.w,
 				self.Size.h,
@@ -442,7 +436,7 @@ function META:SetupStorage()
 		)]]
 		self.gl_tex:Image1D(
 			"GL_TEXTURE_1D",
-			self.MipMapLevels,
+			mip_map_levels,
 			internal_format, 
 			self.Size.w,
 			0,
@@ -601,7 +595,11 @@ function META:DumpInfo()
 	logn("==================================")
 		logn("storage type = ", self.StorageType)
 		logn("internal format = ", TOENUM(self.InternalFormat))
-		logn("mip map levels = ", self.MipMapLevels)
+		if self.MipMapLevels < 0 then
+			logn("mip map levels = ", self.MipMapLevels)
+		else
+			logn("mip map levels = ", math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2)))
+		end
 		logn("size = ", self.Size)		
 		if self.StorageType == "3d" then
 			logn("depth = ", self.Depth)
