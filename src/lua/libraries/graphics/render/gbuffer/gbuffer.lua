@@ -226,10 +226,8 @@ function render.InitializeGBuffer(width, height)
 			{
 				name = "depth",
 				attach = "depth",
-				texture_format = {
-					internal_format = "depth_component24",	 
-					depth_texture_mode = "red",
-				} 
+				internal_format = "depth_component24",	 
+				depth_texture_mode = "red",
 			},
 		}
 		
@@ -237,9 +235,7 @@ function render.InitializeGBuffer(width, height)
 			width, 
 			height, 
 			{
-				texture_format = {
-					internal_format = "r8",
-				},
+				internal_format = "r8",
 			}
 		)
 		
@@ -259,11 +255,9 @@ function render.InitializeGBuffer(width, height)
 					table.insert(render.gbuffer_buffers, #render.gbuffer_buffers, {
 						name = name,
 						attach = attach,
-						texture_format = {
-							internal_format = format,
-							--mag_filter = "nearest",
-							--min_filter = "nearest",
-						},
+						internal_format = format,
+						mag_filter = "nearest",
+						min_filter = "nearest",
 					})
 				end
 			end
@@ -277,18 +271,6 @@ function render.InitializeGBuffer(width, height)
 			return
 		end
 	end
-	
-	render.screen_buffer = render.CreateFrameBuffer(width, height, {
-		{
-			name = "screen_buffer",
-			attach = "color",
-			texture_format = {
-				internal_format = "rgb32f",
-				--mag_filter = "nearest",
-				--min_filter = "nearest",
-			}
-		},
-	})
 	
 	if not RELOAD then
 		include("lua/libraries/graphics/render/gbuffer/post_process/*")
@@ -423,11 +405,7 @@ function render.DrawGBuffer()
 
 	render.gbuffer:WriteThese("all")
 	render.gbuffer:Clear("all")
-
-	gl.DepthMask(1)
-	render.EnableDepth(true)
-	render.SetBlendMode()
-				
+	
 	for i, pass in ipairs(render.gbuffer_passes) do
 		if pass.Draw3D then
 			pass:Draw3D() 

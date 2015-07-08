@@ -8,11 +8,9 @@ end
 
 local fb = render.CreateFrameBuffer(window.GetSize().w, window.GetSize().h, {
 	attach = "color1",
-	texture_format = {
-		internal_format = "RGBA8",
-		--mag_filter = "nearest",
-		--min_filter = "nearest",
-	}
+	internal_format = "RGBA8",
+	--mag_filter = "nearest",
+	--min_filter = "nearest",
 })
 
 local W, H = fb:GetTexture():GetSize():Unpack()

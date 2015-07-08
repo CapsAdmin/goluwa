@@ -2,9 +2,7 @@ window.Open()
 
 local fb = render.CreateFrameBuffer(512, 512, {
 	attach = "color1",
-	texture_format = {
-		internal_format = "RGB32F",
-	}
+	internal_format = "RGB32F",
 })
 
 local brush = Texture(128, 128):Fill(function(x, y) 

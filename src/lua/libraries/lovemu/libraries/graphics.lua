@@ -463,10 +463,10 @@ do -- canvas
 				
 		local self = lovemu.CreateObject(Canvas)
 		
-		self.fb = render.CreateFrameBuffer(w, h, {texture_format = {
+		self.fb = render.CreateFrameBuffer(w, h, {
 			mag_filter = FILTER_MAG,
 			min_filter = FILTER_MIN,
-		}})
+		})
 		
 		lovemu.textures[self] = self.fb:GetTexture()
 		

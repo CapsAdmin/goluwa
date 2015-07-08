@@ -8,9 +8,7 @@ local last_y = 0
 
 local fb = render.CreateFrameBuffer(W, H, {
 	attach = "color1",
-	texture_format = {
-		internal_format = "RGB32F",
-	}
+	internal_format = "RGB32F",
 })
 
 -- last argument stores this socket with the specified id and destroys previous socket with that id if called again

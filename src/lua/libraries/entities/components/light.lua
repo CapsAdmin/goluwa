@@ -127,16 +127,14 @@ if GRAPHICS then
 			local cube_texture = {
 				name = "cubemap",
 				attach = "color0",
-				texture_format = {
-					type = "cubemap",
-					internal_format = "r32f",
-					upload_format = "red",
-					min_filter = "linear",
-					wrap_s = "clamp_to_edge",
-					wrap_t = "clamp_to_edge",
-					wrap_r = "clamp_to_edge",
-					mip_map_levels = 0,
-				}
+				type = "cubemap",
+				internal_format = "r32f",
+				upload_format = "red",
+				min_filter = "linear",
+				wrap_s = "clamp_to_edge",
+				wrap_t = "clamp_to_edge",
+				wrap_r = "clamp_to_edge",
+				mip_map_levels = 0,
 			}
 						
 			local shadow_map = render.CreateFrameBuffer()

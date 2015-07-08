@@ -97,9 +97,7 @@ function render.CreateFrameBuffer(width, height, textures)
 		if not textures then
 			textures = {
 				attach = "color",
-				texture_format = {
-					internal_format = "rgba32f",
-				},
+				internal_format = "rgba32f",
 			}
 		end
 	end
@@ -109,9 +107,12 @@ function render.CreateFrameBuffer(width, height, textures)
 		
 		for i, v in ipairs(textures) do
 			local attach = v.attach or "color"
+			
 			if attach == "color" then
 				attach = i
 			end
+			
+			local name = v.name or attach
 			
 			local tex = render.CreateTexture()
 			tex:SetSize(self:GetSize():Copy())
@@ -119,28 +120,23 @@ function render.CreateFrameBuffer(width, height, textures)
 			if attach == "depth" then
 				tex:SetMagFilter("nearest")
 				tex:SetMinFilter("nearest")
-				tex:SetMipMapLevels(0)
 				tex:SetWrapS("clamp_to_edge")
 				tex:SetWrapT("clamp_to_edge")
 			end
+				
+			if v.internal_format then 
+				tex:SetInternalFormat(v.internal_format)
+			end
 			
-				
-			local info = v.texture_format
-			if info then
-				if info.internal_format then 
-					tex:SetInternalFormat(info.internal_format)
-				end
-				
-				if info.depth_texture_mode then
-					tex:SetDepthTextureMode(info.depth_texture_mode)
-				end
+			if v.depth_texture_mode then
+				tex:SetDepthTextureMode(v.depth_texture_mode)
 			end
 			
 			tex:SetMipMapLevels(0)
 			tex:SetupStorage()
 			--tex:Clear()
 			
-			self:SetTexture(attach, tex, nil, v.name)
+			self:SetTexture(attach, tex, nil, name)
 		end
 		
 		self:CheckCompletness()

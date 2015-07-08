@@ -1,9 +1,7 @@
 local fb = render.CreateFrameBuffer(256, 256, {
 	attach = "color1",
-	texture_format = {
-		internal_format = "RGB32F",
-		min_filter = "nearest",
-	}
+	internal_format = "RGB32F",
+	min_filter = "nearest",
 })
 
 local tex = fb:GetTexture()

@@ -1,9 +1,7 @@
 local fb = render.CreateFrameBuffer(512, 512, {
 	attach = "color1",
-	texture_format = {
-		internal_format = "RGB32F",
-		min_filter = "nearest",
-	}
+	internal_format = "RGB32F",
+	min_filter = "nearest",
 })
 
 event.CreateTimer("fb_update", 0, 0, function()
