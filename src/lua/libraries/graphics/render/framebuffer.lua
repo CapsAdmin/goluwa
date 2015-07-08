@@ -383,7 +383,7 @@ do
 	local temp_color = ffi.new("float[4]")
 	local temp_colori = ffi.new("int[4]")
 
-	function META:Clear(i, r,g,b,a)
+	function META:Clear(i, r,g,b,a, d,s)
 		if self.draw_buffers_size then
 			self.fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers)
 		end
@@ -392,7 +392,13 @@ do
 			
 		if i == "all" then
 			self:Clear("color", r,g,b,a)
-			self:Clear("depth_stencil")
+			d = d or 1
+			
+			self:Clear("depth", d)
+
+			if s then
+				self:Clear("stencil", s)
+			end
 		elseif i == "color" then
 			r = r or Color()
 			

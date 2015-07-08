@@ -404,7 +404,6 @@ function render.DrawGBuffer()
 	if not gbuffer_enabled then return end
 
 	render.gbuffer:WriteThese("all")
-	render.gbuffer:Clear("all")
 	
 	for i, pass in ipairs(render.gbuffer_passes) do
 		if pass.Draw3D then

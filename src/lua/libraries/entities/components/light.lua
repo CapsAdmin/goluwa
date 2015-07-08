@@ -143,6 +143,10 @@ if GRAPHICS then
 			local tex = render.CreateTexture("2d")
 			tex:SetSize(Vec2() + self.ShadowSize)
 			tex:SetInternalFormat("depth_component32f")
+			tex:SetWrapS("clamp_to_edge")
+			tex:SetWrapT("clamp_to_edge")
+			tex:SetWrapR("clamp_to_edge")
+			tex:SetMinFilter("linear")
 			tex:SetDepthTextureMode("red")
 			tex:SetupStorage()
 			
@@ -175,7 +179,7 @@ if GRAPHICS then
 		local rot = transform:GetRotation()
 		
 		self.shadow_map:Begin()
-		self.shadow_map:Clear()
+		self.shadow_map:Clear("depth", 1)
 				
 		---self.shadow_map:SetWriteBuffer("depth")
 		

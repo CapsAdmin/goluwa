@@ -26,8 +26,10 @@ end
 local gl = require("graphics.ffi.opengl") -- OpenGL
 
 function PASS:Draw3D()
-	render.EnableDepth(false)
+	render.EnableDepth(true)
 	render.SetBlendMode()
+	
+	render.gbuffer:Clear("all", 0,0,0,0,  1)
 	
 	render.gbuffer:Begin()
 		event.Call("PreGBufferModelPass")
