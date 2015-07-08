@@ -75,6 +75,7 @@ function render.GetScreenFrameBuffer()
 		self.render_buffers = {}
 		self.draw_buffers_cache = {}
 		self:SetSize(render.GetScreenSize())
+		self:SetBindMode("read_write")
 		
 		render.screen_buffer = self
 	end
@@ -426,7 +427,7 @@ do
 		
 			self.fb:Clearfv("GL_COLOR", i - 1, r.ptr)
 		elseif self.textures[i] then
-			self:Clear(self.textures[i].pos - gl.e.GL_COLOR_ATTACHMENT0 - 1, r,g,b,a)
+			self:Clear(self.textures[i].pos - gl.e.GL_COLOR_ATTACHMENT0 - 1, r,g,b,a, d,s)
 		end
 	end
 end

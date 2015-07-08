@@ -33469,8 +33469,8 @@ function gl.Initialize(get_proc_address)
 					last_target = nil
 				end
 			end
-			function META:Bind(target, unbind)
-				bind(self, target)
+			function META:Bind(target)
+				gl.BindFramebuffer(target, self.id)
 			end
 			function META:DrawBuffers(n, bufs)
 				bind(self, "GL_FRAMEBUFFER") gl.DrawBuffers(n, bufs)
@@ -33561,9 +33561,9 @@ function gl.Initialize(get_proc_address)
 				gl.DeleteFramebuffers(1, temp)
 			end
 			META.not_dsa = true
-			function gl.CreateFramebuffer()
+			function gl.CreateFramebuffer(id)
 				local self = setmetatable({}, META)
-				self.id = gl.GenFramebuffer()
+				self.id = id or gl.GenFramebuffer()
 				return self
 			end
 		end

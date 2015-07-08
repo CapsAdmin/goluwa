@@ -75,7 +75,8 @@ local deferred = console.CreateVariable("render_deferred", true, "whether or not
 
 function render.DrawScene(skip_2d)	
 	render.GetScreenFrameBuffer():Clear()
-
+	render.GetScreenFrameBuffer():Bind()
+	
 	if deferred:Get() and render.IsGBufferReady() then
 		render.DrawGBuffer()
 	else
@@ -87,6 +88,8 @@ function render.DrawScene(skip_2d)
 	end
 	
 	if skip_2d then return end
+	
+	render.GetScreenFrameBuffer():Bind()
 	
 	render.EnableDepth(false)	
 	render.SetBlendMode("alpha")	
