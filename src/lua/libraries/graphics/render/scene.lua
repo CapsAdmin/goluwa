@@ -74,6 +74,8 @@ console.CreateVariable("render_accum", 0)
 local deferred = console.CreateVariable("render_deferred", true, "whether or not deferred rendering is enabled.")
 
 function render.DrawScene(skip_2d)	
+	render.GetScreenFrameBuffer():Clear()
+
 	if deferred:Get() and render.IsGBufferReady() then
 		render.DrawGBuffer()
 	else

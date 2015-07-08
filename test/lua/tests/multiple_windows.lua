@@ -2,7 +2,7 @@ local wnd = utility.RemoveOldObject(render.CreateWindow(512, 512),"lol")
 
 function wnd:OnUpdate(dt)	
 	render.PushWindow(self)
-		render.Clear("color", "depth")
+		render.GetScreenFrameBuffer():Clear()
 		
 		surface.SetWhiteTexture()
 		surface.SetColor(Color():GetRandom())

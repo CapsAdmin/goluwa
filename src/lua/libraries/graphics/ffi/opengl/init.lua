@@ -33438,11 +33438,17 @@ function gl.Initialize(get_proc_address)
 				temp[0] = self.id
 				gl.DeleteFramebuffers(1, temp)
 			end
-			function gl.CreateFramebuffer()
-				gl.CreateFramebuffers(1, temp)
-				local self = ffi.new(ctype)
-				self.id = temp[0]
-				return self
+			function gl.CreateFramebuffer(id)
+				if id then
+					local self = ffi.new(ctype)
+					self.id = id
+					return self
+				else
+					gl.CreateFramebuffers(1, temp)
+					local self = ffi.new(ctype)
+					self.id = temp[0]
+					return self
+				end
 			end
 		else
 			local bind

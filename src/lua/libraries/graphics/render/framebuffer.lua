@@ -67,6 +67,21 @@ local META = prototype.CreateTemplate("framebuffer")
 META:GetSet("BindMode", "all", {"all", "read", "write"})
 META:GetSet("Size", Vec2(128,128))
 
+function render.GetScreenFrameBuffer()
+	if not render.screen_buffer then
+		local self = prototype.CreateObject(META)
+		self.fb = gl.CreateFramebuffer(0)
+		self.textures = {}
+		self.render_buffers = {}
+		self.draw_buffers_cache = {}
+		self:SetSize(render.GetScreenSize())
+		
+		render.screen_buffer = self
+	end
+	
+	return render.screen_buffer
+end
+
 function render.CreateFrameBuffer(width, height, textures)
 	local self = prototype.CreateObject(META)
 	self.fb = gl.CreateFramebuffer()
@@ -389,7 +404,7 @@ do
 				r = Color(r, g, b, a or 0)
 			end
 			
-			for i = 0, self.draw_buffers_size do
+			for i = 0, self.draw_buffers_size or 1 do
 				self.fb:Clearfv("GL_COLOR", i, r.ptr)
 			end
 		elseif i == "depth" then
