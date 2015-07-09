@@ -256,15 +256,16 @@ function render.InitializeGBuffer(width, height)
 						name = name,
 						attach = attach,
 						internal_format = format,
-						mag_filter = "nearest",
-						min_filter = "nearest",
+						filter = "nearest",
 					})
 				end
 			end
 		end
 	
 		render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_buffers)  
-		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(width, height)  
+		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(width, height, {
+			filter = "nearest",
+		})
 		
 		if not render.gbuffer:IsValid() then
 			warning("failed to initialize gbuffer")

@@ -130,7 +130,7 @@ if GRAPHICS then
 				type = "cubemap",
 				internal_format = "r32f",
 				upload_format = "red",
-				min_filter = "linear",
+				filter = "linear",
 				wrap_s = "clamp_to_edge",
 				wrap_t = "clamp_to_edge",
 				wrap_r = "clamp_to_edge",

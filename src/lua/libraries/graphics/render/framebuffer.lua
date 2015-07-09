@@ -123,6 +123,11 @@ function render.CreateFrameBuffer(width, height, textures)
 				tex:SetMinFilter("nearest")
 				tex:SetWrapS("clamp_to_edge")
 				tex:SetWrapT("clamp_to_edge")
+			else
+				if v.filter == "nearest" then
+					tex:SetMinFilter("nearest")
+					tex:SetMagFilter("nearest")
+				end
 			end
 				
 			if v.internal_format then 
