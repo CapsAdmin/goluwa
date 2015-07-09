@@ -67,11 +67,7 @@ end
 function TMPL:GetMatrix()
 	self:RebuildMatrix()
 			
-	if self.temp_scale.x == 1 and self.temp_scale.y == 1 and self.temp_scale.z == 1 then
-		return self.TRMatrix 
-	end
-	
-	return self.ScaleMatrix * self.TRMatrix 
+	return self.TRMatrix 
 end
 
 function TMPL:SetScale(vec3) 
@@ -110,8 +106,15 @@ function TMPL:InvalidateTRMatrix()
 	self.rebuild_tr_matrix = true
 end
 
-function TMPL:RebuildMatrix()	
-	if not self.SkipRebuild and self.rebuild_tr_matrix then				
+function TMPL:RebuildMatrix()
+	if self.rebuild_scale_matrix and self.temp_scale.x ~= 1 or self.temp_scale.y ~= 1 or self.temp_scale.z ~= 1 then
+		self.ScaleMatrix:Identity()
+		self.ScaleMatrix:Scale(self.temp_scale.y, self.temp_scale.x, self.temp_scale.z)
+		--self.ScaleMatrix:Shear(self.Shear)
+		self.rebuild_scale_matrix = false
+	end
+	
+	if self.rebuild_tr_matrix and not self.SkipRebuild then				
 		local pos = self.Position
 		local rot = self.Rotation
 		
@@ -147,15 +150,11 @@ function TMPL:RebuildMatrix()
 			end
 		end
 		
-		self.rebuild_tr_matrix = false
-	end
-
-	if self.rebuild_scale_matrix and not (self.temp_scale.x == 1 and self.temp_scale.y == 1 and self.temp_scale.z == 1) then
-		self.ScaleMatrix:Identity()
-		self.ScaleMatrix:Scale(self.temp_scale.y, self.temp_scale.x, self.temp_scale.z)
-		--self.ScaleMatrix:Shear(self.Shear)
+		if self.temp_scale.x ~= 1 or self.temp_scale.y ~= 1 or self.temp_scale.z ~= 1 then
+			self.TRMatrix = self.ScaleMatrix * self.TRMatrix
+		end
 		
-		self.rebuild_scale_matrix = false
+		self.rebuild_tr_matrix = false
 	end
 end
 

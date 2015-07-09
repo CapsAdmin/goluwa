@@ -203,16 +203,18 @@ do -- shaders
 	
 	do
 		local last
+		local last2
 
-		function render.BindVertexArray(id)
-			if last ~= id then
+		function render.BindVertexArray(id, id2)
+			if last ~= id or last2 ~= id2 then
 				gl.BindVertexArray(id)
 				last = id
 				
-				return true
+				if id2 then
+					gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", id2)
+					last2 = id2
+				end
 			end
-			
-			return false
 		end
 	end
 end

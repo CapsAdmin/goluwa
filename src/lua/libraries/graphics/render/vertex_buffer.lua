@@ -59,9 +59,9 @@ function META:Draw(count)
 		self.Shader:Bind()	
 	end
 	
-	render.BindVertexArray(self.vao_id)
+	render.BindVertexArray(self.vao_id, self.indices_id)
 	--render.BindArrayBuffer(self.vertices_id)	
-	gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
+	--gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
 	gl.DrawElements(self.gl_mode, count or self.indices_count, "GL_UNSIGNED_INT", nil)
 end
 

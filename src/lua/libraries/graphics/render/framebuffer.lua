@@ -392,23 +392,18 @@ do
 		i = i or "all"
 			
 		if i == "all" then
-			self:Clear("color", r,g,b,a)
-			d = d or 1
-			
-			self:Clear("depth", d)
-
-			if s then
-				self:Clear("stencil", s)
-			end
+			self:Clear("color", r,g,b,a)			
+			self:Clear("depth", d or 1)
+			if s then self:Clear("stencil", s) end
 		elseif i == "color" then
-			r = r or Color()
 			
-			if g and b then
-				r = Color(r, g, b, a or 0)
-			end
+			temp_color[0] = r or 0
+			temp_color[1] = g or 0
+			temp_color[2] = b or 0
+			temp_color[3] = a or 0
 			
 			for i = 0, self.draw_buffers_size or 1 do
-				self.fb:Clearfv("GL_COLOR", i, r.ptr)
+				self.fb:Clearfv("GL_COLOR", i, temp_color)
 			end
 		elseif i == "depth" then
 			temp_color[0] = r or 0
@@ -419,13 +414,13 @@ do
 		elseif i == "depth_stencil" then
 			self.fb:Clearfi("GL_DEPTH_STENCIL", 0, r or 0, g or 0)
 		elseif type(i) == "number" then
-			r = r or Color()
 			
-			if g and b then
-				r = Color(r, g, b, a or 0)
-			end
-		
-			self.fb:Clearfv("GL_COLOR", i - 1, r.ptr)
+			temp_color[0] = r or 0
+			temp_color[1] = g or 0
+			temp_color[2] = b or 0
+			temp_color[3] = a or 0
+			
+			self.fb:Clearfv("GL_COLOR", i - 1, temp_color)
 		elseif self.textures[i] then
 			self:Clear(self.textures[i].pos - gl.e.GL_COLOR_ATTACHMENT0 - 1, r,g,b,a, d,s)
 		end
