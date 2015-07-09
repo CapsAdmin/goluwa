@@ -257,36 +257,6 @@ console.AddCommand("debug", function(line, lib)
 	end
 end)
 
-console.AddCommand("profile_start", function()	
-	profiler.EnableSectionProfiling(true)
-	profiler.EnableTraceAbortLogging(true)
-	profiler.EnableStatisticalProfiling(true)
-end)
-
-console.AddCommand("profile_stop", function()	
-	profiler.EnableSectionProfiling(false)
-	profiler.EnableTraceAbortLogging(false)
-	profiler.EnableStatisticalProfiling(false)
-end)
-
-console.AddCommand("profile_dump", function(line)
-	if line == "" or line == "st" or line == "s" then
-		profiler.PrintStatistical()
-	end
-	
-	if line == "" or line == "se" then
-		profiler.PrintSections()
-	end
-	
-	if line == "" or line == "ab" or line == "a" then
-		profiler.PrintTraceAborts()
-	end
-end)
-
-console.AddCommand("profile", function(line, time, file_filter)
-	profiler.MeasureInstrumental(tonumber(time) or 5, file_filter)
-end)
-
 console.AddCommand("find", function(line, ...)
 	local data = utility.FindValue(...)
 	

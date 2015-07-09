@@ -57,63 +57,39 @@ function profiler.EnableTraceAbortLogging(b)
 	end
 end
 
+local cache = {}
+
 local function statistical_callback(thread, samples, vmstate)
-	local str = jit_profiler.dumpstack(thread, "pl\n", 10)
-	table.insert(profiler.raw_data.statistical, {str, samples})
-end
-
-local function parse_raw_statistical_data()
-	local data = profiler.data.statistical
-
-	for i = 1, #profiler.raw_data.statistical do
-		local args = table.remove(profiler.raw_data.statistical)
-		local str, samples = args[1], args[2]
-		local children = {}
+	local node = profiler.raw_data.statistical_tree
+	local lines = jit_profiler.dumpstack(thread, "pl\n", 10):explode("\n")
+	
+	for i = #lines, 1, -1 do
+		local line = lines[i]
 		
-		for line in str:gmatch("(.-)\n") do
-			local path, line_number = line:match("(.+):(%d+)")
-			
-			if not path and not line_number then
-				line = line:gsub("%[builtin#(%d+)%]", function(x)
-				  return jit_vmdef.ffnames[tonumber(x)]
-				end)
-								
-				table.insert(children, {name = line or -1, external_function = true})
-			else
-				table.insert(children, {path = path, line = tonumber(line_number) or -1, external_function = false})
-			end
+		line = line:gsub("%[builtin#(%d+)%]", function(x)
+			return jit_vmdef.ffnames[tonumber(x)]
+		end)
+	
+		local path, num = line:match("(.+):(.+)")
+		
+		path = path or line
+		num = num or 0
+	
+		
+		if not cache[path] then 
+			cache[path] = R(path) or path
 		end
 		
-		local info = children[#children]
-		table.remove(children, #children)
+		path = cache[path]
 		
-		local path = info.path or info.name
-		local line = tonumber(info.line) or -1
-				
-		data[path] = data[path] or {}
-		data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path}
+		line = path .. ":" .. num
 		
-		data[path][line].samples = data[path][line].samples + samples
-		data[path][line].start_time = data[path][line].start_time or system.GetTime()	
+		node[line] = node[line] or {}
 		
-		local parent = data[path][line]
-				
-		for _, info in ipairs(children) do
-			local path = info.path or info.name
-			local line = tonumber(info.line) or -1
-				
-			data[path] = data[path] or {}
-			data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path}
-			
-			data[path][line].samples = data[path][line].samples + samples
-			data[path][line].start_time = data[path][line].start_time or system.GetTime()	
-			
-			data[path][line].parents[tostring(parent)] = parent
-			parent.children[tostring(data[path][line])] = data[path][line]
-			
-			--table.insert(data[path][line].parents, parent)
-			--table.insert(parent.children, data[path][line])
-		end
+		node[line].children = node[line].children or {}
+		node[line].samples = (node[line].samples or 0) + samples
+		
+		node = node[line].children
 	end
 end
 
@@ -123,7 +99,7 @@ function profiler.EnableStatisticalProfiling(b)
 			local ok, err = xpcall(statistical_callback, system.OnError, ...)
 			if not ok then
 				logn(err)
-				profiler.StopStatisticalProfiling()
+				profiler.EnableStatisticalProfiling(false)
 			end
 		end)	
 	else
@@ -133,7 +109,7 @@ end
 
 function profiler.Restart()
 	profiler.data = {sections = {}, statistical = {}, trace_aborts = {}}
-	profiler.raw_data = {sections = {}, statistical = {}, trace_aborts = {}}
+	profiler.raw_data = {sections = {}, statistical = {}, trace_aborts = {}, statistical_tree = {}}
 end
 
 do
@@ -235,11 +211,6 @@ do -- timer
 end
 
 function profiler.GetBenchmark(type, file, dump_line)	
-	
-	if type == "statistical" then
-	 	parse_raw_statistical_data()
-	end
-
 	local out = {}
 
 	for path, lines in pairs(profiler.data[type]) do
@@ -322,7 +293,6 @@ end
 function profiler.PrintTraceAborts(min_samples)
 	min_samples = min_samples or 500
 	
-	parse_raw_statistical_data()
 	parse_raw_trace_abort_data()
 	
 	logn("trace abort reasons for functions that were sampled by the profiler more than ", min_samples, " times:")
@@ -383,18 +353,31 @@ function profiler.PrintSections()
 	))
 end
 
-function profiler.PrintStatistical()
-	log(utility.TableToColumns(
-		"statistical",
-		profiler.GetBenchmark("statistical"), 
-		{
-			{key = "name"}, 
-			{key = "times_called", friendly = "percent", tostring = function(val, column, columns)  return math.round((val / columns[#columns].val.times_called) * 100, 2) end},
-		}, 
-		function(a) return a.name and a.times_called > 100 end,
-		function(a, b) return a.times_called < b.times_called end
-	))
-end 
+function profiler.PrintStatistical(filter, min)
+	min = min or 1
+	local path, root = next(profiler.raw_data.statistical_tree)
+	
+	local level = 0
+	
+	local function dump(path, node)		
+		local percent = math.round((node.samples / root.samples) * 100, 3)
+		if percent > min then
+			if not filter or path:find(filter) then
+				logf("%s%s (%s) %s\n", ("\t"):rep(level), percent, node.samples, path)
+			else
+				logf("%s%s\n", ("\t"):rep(level), "...")
+			end
+		
+			for path, child in pairs(node.children) do
+				level = level + 1	
+				dump(path, child)
+				level = level - 1
+			end		
+		end
+	end
+	
+	dump(path, root)
+end
 
 function profiler.StartInstrumental(file_filter)	
 	profiler.EnableSectionProfiling(true, true)
@@ -443,5 +426,57 @@ function profiler.MeasureInstrumental(time, file_filter)
 		profiler.StopInstrumental(file_filter)
 	end)
 end
+
+profiler.Restart()
+
+console.AddCommand("profile_start", function(line)	
+	if line == "" or line == "st" or line == "s" then
+		profiler.EnableStatisticalProfiling(true)
+	end
+	
+	if line == "" or line == "se" then
+		profiler.EnableSectionProfiling(true)
+	end
+	
+	if line == "" or line == "ab" or line == "a" then
+		profiler.EnableTraceAbortLogging(true)
+	end
+end)
+
+console.AddCommand("profile_stop", function()	
+	if line == "" or line == "st" or line == "s" then
+		profiler.EnableStatisticalProfiling(false)
+	end
+	
+	if line == "" or line == "se" then
+		profiler.EnableSectionProfiling(false)
+	end
+	
+	if line == "" or line == "ab" or line == "a" then
+		profiler.EnableTraceAbortLogging(false)
+	end
+end)
+
+console.AddCommand("profile_restart", function()
+	profiler.Restart()
+end)
+
+console.AddCommand("profile_dump", function(line, a, b, c)
+	if a == "" or a == "st" or a == "s" then
+		profiler.PrintStatistical(b, tonumber(c))
+	end
+	
+	if a == "" or a == "se" then
+		profiler.PrintSections()
+	end
+	
+	if a == "" or a == "ab" or a == "a" then
+		profiler.PrintTraceAborts()
+	end
+end)
+
+console.AddCommand("profile", function(line, time, file_filter)
+	profiler.MeasureInstrumental(tonumber(time) or 5, file_filter)
+end)
 
 return profiler
