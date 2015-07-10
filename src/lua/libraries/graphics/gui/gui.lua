@@ -329,7 +329,6 @@ do -- skin
 		end
 		
 		gui.skin = skin
-		gui.scale = skin.scale or gui.scale
 		
 		if reload_panels then 
 			include("lua/libraries/graphics/gui/panels/*", gui) 
@@ -352,7 +351,8 @@ do -- skin
 			
 			if not tbl.skin then
 				local skin = tbl:Build()
-				skin.name = tbl.Name	
+				skin.name = tbl.Name
+				skin.GetScale = tbl.GetScale
 				tbl.skin = skin
 			end
 			
@@ -376,10 +376,11 @@ do -- skin
 	function gui.RegisterSkin(tbl)
 		gui.registered_skins[tbl.Name] = tbl
 				
-		if RELOAD then
+		if RELOAD or gui.force_reload then
 			if not tbl.skin then
 				local skin = tbl:Build()
-				skin.name = tbl.Name	
+				skin.name = tbl.Name
+				skin.GetScale = tbl.GetScale
 				tbl.skin = skin
 			end
 		
@@ -393,20 +394,26 @@ do -- skin
 end
 
 do -- gui scaling
-	gui.scale = 1
+	gui.scale_multiplier = 1
 
 	function gui.SetScale(scale)
-		gui.scale = scale
+		scale = scale or 1
+		
+		gui.scale_multiplier = scale
 		for panel in pairs(gui.panels) do
 			if panel.GetText then
 				panel:SetText(panel:GetText())
 			end
 			panel:Layout()
 		end
+		
+		gui.force_reload = true
+			include("lua/libraries/graphics/gui/skins/*", gui)
+		gui.force_reload = nil
 	end
 
-	function gui.GetScale(scale)
-		return gui.scale
+	function gui.GetScale()
+		return gui.scale_multiplier
 	end
 end
 
@@ -454,7 +461,7 @@ function gui.Initialize()
 	
 	-- should this be here?	
 	do -- task bar (well frame bar is more appropriate since the frame control adds itself to this)
-		local S = gui.skin.scale
+		local S = gui.skin:GetScale()
 		
 		local bar = gui.CreatePanel("base") 
 		bar:SetStyle("gradient")

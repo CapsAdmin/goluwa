@@ -39,7 +39,7 @@ local function create_vertical_divider(self)
 end
 
 function PANEL:Initialize()
-	self.DividerWidth = gui.skin.scale*2
+	self.DividerWidth = gui.skin:GetScale()*2
 	self:SetNoDraw(true)
 	self.top = NULL
 	self.bottom = NULL

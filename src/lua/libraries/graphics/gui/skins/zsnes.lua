@@ -3,12 +3,15 @@ local gui = ... or _G.gui
 local SKIN = {}
 
 SKIN.Name = "zsnes"
-SKIN.Scale = 2
+
+function SKIN:GetScale()
+	return 2 * gui.GetScale()
+end
 
 function SKIN:Build()
 	local skin = {}
 
-	local S = self.Scale
+	local S = self:GetScale()
 	
 	local ninepatch_size = 32
 	local ninepatch_corner_size = 4
@@ -145,7 +148,6 @@ function SKIN:Build()
 
 	skin.scroll_width = 20
 	skin.default_font = "zsnes_gui_font"
-	skin.scale = scale
 	skin.pixel_scale = S
 
 	skin.background = Color(0.5, 0.5, 0.5)

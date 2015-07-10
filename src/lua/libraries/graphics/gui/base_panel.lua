@@ -2250,7 +2250,7 @@ do -- skin
 	end
 	
 	function PANEL:GetLayoutScale()
-		return self.LayoutScale or gui.scale
+		return self.LayoutScale or self:GetSkin():GetScale()
 	end
 	
 	function PANEL:HasSkin(name)
@@ -2265,12 +2265,12 @@ do -- skin
 		self.Skin = skin
 		
 		if skin then
-			self.LayoutScale = skin.scale
+			self.LayoutScale = skin:GetScale()
 			self:ReloadStyle()
 			self:OnStyleChanged(skin)
 			
 			for i,v in ipairs(self:GetChildrenList()) do
-				v.LayoutScale = skin.scale
+				v.LayoutScale = skin:GetScale()
 				v.Skin = skin
 				v:ReloadStyle()
 				v:OnStyleChanged(skin)
@@ -2289,23 +2289,21 @@ do -- skin
 		
 		if name == "nodraw" then
 			self.style_nodraw = true
-			return
 		elseif name == "none" then
 			self:SetNinePatch(false)
 			self:SetNinePatchRect(Rect(0, 0, 0, 0))
 			self:SetNinePatchCornerSize(4)
 			self:SetStyleSize(Vec2(0, 0))
 			self:SetTexture(render.GetWhiteTexture())
-			return
-		end
-		
-		self.style_translation = self.style_translation or {}
-		name = self.style_translation[name] or name
-		
-		local skin = self:GetSkin()
-		
-		if skin[name] then
-			self:SetupStyle(skin[name])
+		else
+			self.style_translation = self.style_translation or {}
+			name = self.style_translation[name] or name
+			
+			local skin = self:GetSkin()
+			
+			if skin[name] then
+				self:SetupStyle(skin[name])
+			end
 		end
 	end
 		
@@ -2327,7 +2325,7 @@ do -- skin
 	end
 	
 	function PANEL:SetupStyle(tbl)
-		tbl = table.copy(tbl)
+		tbl = table.copy(tbl or {})
 		tbl.texture_rect = tbl.texture_rect or self.NinePatchRect
 		tbl.corner_size = tbl.corner_size or self.NinePatchCornerSize
 		tbl.color = tbl.color or self.Color
@@ -2346,6 +2344,7 @@ do -- skin
 		if skin.pixel_scale then
 			scale = scale * skin.pixel_scale
 		end
+		
 		self:SetStyleSize(scale)
 	end
 

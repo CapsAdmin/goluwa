@@ -24,22 +24,19 @@ for i, sub_skin in ipairs(skins) do
 
 	SKIN.Name = "gwen_" .. sub_skin:match("(.+)%.")
 
+	function SKIN:GetScale()
+		return 2 * gui.GetScale()
+	end
+
 	function SKIN:Build()
 		local skin = {}
 
-		local scale = 2
-		local ninepatch_size = 32
-		local ninepatch_corner_size = 4
-		local ninepatch_pixel_border = scale
-
-		local S = scale
-
-		local text_size = 5*S 
+		local scale = self:GetScale()
 
 		surface.CreateFont("snow_font", {
 			path = "Roboto",
 			fallback = "default",
-			size = S*5.5,
+			size = 5.5*scale,
 		})
 		
 		local texture = Texture("textures/gui/skins/" .. sub_skin)
@@ -155,7 +152,6 @@ for i, sub_skin in ipairs(skins) do
 		skin.tab_inactive_text_color = Color(0.5,0.5,0.5, 1)
 
 		skin.default_font = "snow_font"
-		skin.scale = scale
 		skin.text_list_font = "snow_font"
 
 		skin.background = Color(0.5, 0.5, 0.5, 1)

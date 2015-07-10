@@ -1,4 +1,4 @@
-local S = gui.skin.scale
+local S = gui.skin:GetScale()
 local skin = include("lua/libraries/graphics/gui/skins/zsnes.lua")
 
 if false then -- frame

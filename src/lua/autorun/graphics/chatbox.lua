@@ -154,7 +154,7 @@ function chat.GetPanel()
 	
 	frame:CallOnRemove(chat.Close)
 	
-	local S = gui.skin.scale
+	local S = gui.skin:GetScale()
 	
 	local edit = frame:CreatePanel("text_edit")
 	edit:SetMargin(Rect()+3)

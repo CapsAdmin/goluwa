@@ -710,11 +710,11 @@ function PANEL:OnLayout(S)
 		end
 		
 		if left.left_offset then
-			left:SetDrawPositionOffset(Vec2(left.left_offset*S, 0))	
+			left:SetDrawPositionOffset(Vec2(left.left_offset*S+S, 0))	
 		end
 		
 		if left.expand then
-			left.expand:SetPadding(Rect()+S)
+			left.expand:SetPadding(Rect()+S*4)
 		end
 		
 		left.label:SetPadding(Rect(S*2,S*2,left.label.label_offset or S*2,S*2))

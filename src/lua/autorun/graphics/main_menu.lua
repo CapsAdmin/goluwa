@@ -87,26 +87,23 @@ function menu.RenderBackground(dt)
 	emitter:Draw()
 end
 
-local skin = gui.GetRegisteredSkin("zsnes")
-local S = skin.Scale
-local skin = skin.skin
-
 function menu.CreateTopBar()
-	local padding = 5 * S
-
+	local skin = gui.GetRegisteredSkin("zsnes").skin
+	local S = skin:GetScale()
+	
 	local bar = gui.CreatePanel("base", gui.world, "main_menu_bar") 
 	bar:SetSkin(skin)
 	bar:SetStyle("gradient")
 	bar:SetDraggable(true)
-	bar:SetHeight(15*S)
+	
 	bar:SetCachedRendering(true)
 	
 	bar:MoveLeft()
 	bar:MoveUp()
-	
-	bar:SetPadding(Rect()+S*4)
-	
-	function bar:OnLayout()
+		
+	function bar:OnLayout(S)
+		bar:SetHeight(15*S)
+		bar:SetPadding(Rect()+S*4)
 		self:SetWidth(window.GetSize().w)
 	end
 	
