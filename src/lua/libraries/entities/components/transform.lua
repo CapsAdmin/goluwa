@@ -88,10 +88,12 @@ function TMPL:InvalidateScaleMatrix()
 			local v = v.Components[TMPL.Name]
 			if v then
 				v.rebuild_scale_matrix = true
+				v.rebuild_tr_matrix = true
 			end
 		end
 	end
 	self.rebuild_scale_matrix = true
+	self.rebuild_tr_matrix = true
 end
 
 function TMPL:InvalidateTRMatrix()
