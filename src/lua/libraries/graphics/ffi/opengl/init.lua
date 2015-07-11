@@ -33475,6 +33475,12 @@ function gl.Initialize(get_proc_address)
 			function META:DrawBuffers(n, bufs)
 				bind(self, "GL_FRAMEBUFFER") gl.DrawBuffers(n, bufs)
 			end
+			function META:DrawBuffer(mode)
+				bind(self, "GL_FRAMEBUFFER") gl.DrawBuffer(mode)
+			end
+			function META:ReadBuffer(mode)
+				bind(self, "GL_FRAMEBUFFER") gl.ReadBuffer(mode)
+			end
 			function META:GetAttachmentParameteriv(target, attachment, pname, params)
 				bind(self, target) return gl.GetFramebufferAttachmentParameteriv(target, attachment, pname, params)
 			end

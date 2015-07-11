@@ -65,27 +65,27 @@ PASS.Shader = {
 		source = [[			
 			out vec4 out_color;
 			
-			//#define EPSILON 0.00001			
-			//#extension GL_NV_shadow_samplers_cube:enable
+			#define EPSILON 0.00001			
+			#extension GL_NV_shadow_samplers_cube:enable
 			
 			float get_shadow(vec2 uv)    
 			{
 				float visibility = 0;
 			
-				/*if (lua[light_point_shadow = false])
+				if (lua[light_point_shadow = false])
 				{
 					vec3 light_dir = get_view_pos(uv) - light_view_pos;
 				
-					float SampledDistance = textureCube(lua[tex_shadow_map_cube = "samplerCube"], light_dir).r;
+					float SampledDistance = texture(lua[tex_shadow_map_cube = "samplerCube"], light_dir).r;
 
 					float Distance = length(light_dir);
 
 					if (Distance <= SampledDistance + EPSILON)
-						return 1.0;
+						return 100.0;
 					else
-						return 0;
+						return SampledDistance;
 				}
-				else*/
+				else
 				{
 					vec4 temp = light_projection_view * g_projection_view_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
 					vec3 shadow_coord = (temp.xyz / temp.w);

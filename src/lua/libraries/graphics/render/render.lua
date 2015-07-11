@@ -28,6 +28,8 @@ function render.Initialize()
 		-- AMD = true grr cpus
 	end
 	
+	gl.Enable("GL_TEXTURE_CUBE_MAP")
+	
 	render.GenerateTextures()
 	
 	include("lua/libraries/graphics/decoders/*")

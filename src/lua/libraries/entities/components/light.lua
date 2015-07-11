@@ -74,12 +74,12 @@ if GRAPHICS then
 	end
 
 	local directions = {
-		{e = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X, rot = QuatDeg3(0,90,0)},
-		{e = gl.e.GL_TEXTURE_CUBE_MAP_NEGATIVE_X, rot = QuatDeg3(0,-90,0)},
-		{e = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_Y, rot = QuatDeg3(90,0,0)},
-		{e = gl.e.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, rot = QuatDeg3(-90,0,0)},
-		{e = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_Z, rot = QuatDeg3(0,0,0)},
-		{e = gl.e.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, rot = QuatDeg3(180,0,0)},
+		QuatDeg3(0,90,0),
+		QuatDeg3(0,-90,0),
+		QuatDeg3(90,0,0),
+		QuatDeg3(-90,0,0),
+		QuatDeg3(0,0,0),
+		QuatDeg3(180,0,0),
 	}
 	
 	render.shadow_map_shader = nil
@@ -122,24 +122,11 @@ if GRAPHICS then
 				},
 			})
 		end
-			
+	
+		render.EnableDepth(true)	
+
 		if not render.shadow_maps[self] then
-			local cube_texture = {
-				name = "cubemap",
-				attach = "color0",
-				type = "cubemap",
-				internal_format = "r32f",
-				upload_format = "red",
-				filter = "linear",
-				wrap_s = "clamp_to_edge",
-				wrap_t = "clamp_to_edge",
-				wrap_r = "clamp_to_edge",
-				mip_map_levels = 0,
-			}
-						
-			local shadow_map = render.CreateFrameBuffer()
-			shadow_map:SetSize(Vec2() + self.ShadowSize)
-			
+		
 			local tex = render.CreateTexture("2d")
 			tex:SetSize(Vec2() + self.ShadowSize)
 			tex:SetInternalFormat("depth_component32f")
@@ -149,27 +136,30 @@ if GRAPHICS then
 			tex:SetMinFilter("linear")
 			tex:SetDepthTextureMode("red")
 			tex:SetupStorage()
-			
-			shadow_map:SetTexture("depth", tex)
-		
+	
 			if self.ShadowCubemap then
-				local tex = render.CreateTexture("cubemap")
+				local tex = render.CreateTexture("cube_map")
+				tex:SetSize(Vec2() + self.ShadowSize)
 				tex:SetInternalFormat("r32f")
 				tex:SetWrapS("clamp_to_edge")
 				tex:SetWrapT("clamp_to_edge")
 				tex:SetWrapR("clamp_to_edge")
 				tex:SetMinFilter("linear")
-				tex:SetMipMapLevels(0)
-				tex:SetupStorage()				
-				shadow_map:SetTexture(1, tex)
+				--tex:SetDepthTextureMode("red")
+				tex:SetupStorage()
+				self.shadow_cubemap_texture = tex
 			end
-			
+						
+			local shadow_map = render.CreateFrameBuffer()
+			shadow_map:SetSize(Vec2() + self.ShadowSize)
+			shadow_map:SetTexture("depth", tex)			
+			shadow_map.fb:DrawBuffer("GL_NONE")
+			shadow_map.fb:ReadBuffer("GL_NONE")			
 			self.shadow_map = shadow_map
 			
 			render.shadow_maps[self] = self.shadow_map
 		end
 		
-		render.EnableDepth(true)	
 		--render.SetBlendMode("additive")
 		render.SetBlendMode("one", "one")
 		render.SetCullMode("front")
@@ -178,50 +168,54 @@ if GRAPHICS then
 		local pos = transform:GetPosition()
 		local rot = transform:GetRotation()
 		
-		self.shadow_map:Begin()
-		self.shadow_map:Clear("depth", 1)
-				
-		---self.shadow_map:SetWriteBuffer("depth")
+		self.shadow_map:Begin()				
 		
 		render.SetCullMode("front", true)
 		render.SetShaderOverride(render.shadow_map_shader)
-				
-		for i, info in ipairs(directions) do
-			if self.ShadowCubemap then
-				self.shadow_map:SetReadBuffer("depth")
-				self.shadow_map:SetWriteBuffer("cubemap", info.e)
-			end
-			
-			-- setup the view matrix
-			local view = Matrix44()
-			
-			if self.ShadowCubemap then
-				view:SetRotation(info.rot)
-			else
-				view:SetRotation(rot)
-			end
+	
+		local old_view = render.camera_3d:GetView()
+		local old_projection = render.camera_3d:GetProjection()
 
-			if self.ProjectFromCamera then
-				pos = render.camera_3d:GetPosition()
-				view:Translate(pos.y, pos.x, pos.z)
-			else
-				view:Translate(pos.y, pos.x, pos.z)			
-			end
 		
-			-- setup the projection matrix
-			local projection = Matrix44()
-			
+		local projection = Matrix44()
+		
+		do -- setup the view matrix
 			if self.OrthoSize == 0 then
 				projection:Perspective(math.rad(self.FOV), render.camera_3d.FarZ, render.camera_3d.NearZ, render.camera_3d.Viewport.w / render.camera_3d.Viewport.h) 
 			else
 				local size = self.OrthoSize * (ortho_divider or 1)
 				projection:Ortho(-size, size, -size, size, size, -size) 
 			end
+		end
+		
+		
+		for i, rot_dir in ipairs(directions) do
+			self.shadow_map:Clear("depth", 1)
 			
-			local old_view = render.camera_3d:GetView()
-			local old_projection = render.camera_3d:GetProjection()
+			if self.ShadowCubemap then
+				self.shadow_map:SetCubemapTexture(1, i, self.shadow_cubemap_texture)
+				self.shadow_map.fb:DrawBuffer("GL_COLOR_ATTACHMENT0")
+			end
 			
-			render.camera_3d:SetView(view)
+			do -- setup the view matrix
+				local view = Matrix44()
+				
+				if self.ShadowCubemap then
+					view:SetRotation(rot_dir)
+				else
+					view:SetRotation(rot)
+				end
+
+				if self.ProjectFromCamera then
+					pos = render.camera_3d:GetPosition()
+					view:Translate(pos.y, pos.x, pos.z)
+				else
+					view:Translate(pos.y, pos.x, pos.z)			
+				end
+				
+				render.camera_3d:SetView(view)
+			end
+		
 			render.camera_3d:SetProjection(projection)
 			
 			render.gbuffer_light_shader.light_projection_view = render.camera_3d:GetMatrices().projection_view
@@ -230,22 +224,25 @@ if GRAPHICS then
 			
 			render.Draw3DScene()
 			
-			render.camera_3d:SetView(old_view)
-			render.camera_3d:SetProjection(old_projection)
+			
 			
 			if not self.ShadowCubemap then 
 				break 
 			end
 		end
 		
+		render.camera_3d:SetView(old_view)
+		render.camera_3d:SetProjection(old_projection)
+		
 		render.SetShaderOverride()
 		render.SetCullMode(nil, false)
 		
-		render.gbuffer_light_shader.cascade_pass = i
-		render.gbuffer_light_shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
+		--render.gbuffer_light_shader.cascade_pass = i
 		
 		if self.ShadowCubemap then 	
-			render.gbuffer_light_shader.tex_shadow_map_cube = self.shadow_map:GetTexture("cubemap")
+			render.gbuffer_light_shader.tex_shadow_map_cube = self.shadow_map:GetTexture("depth")
+		else
+			render.gbuffer_light_shader.tex_shadow_map = self.shadow_map:GetTexture("depth")
 		end
 		
 		render.EnableDepth(false)

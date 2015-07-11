@@ -242,6 +242,11 @@ do -- binding
 		gl.BindFramebuffer(self.enum_bind_mode, 0) -- uh
 	end
 end
+
+function META:SetCubemapTexture(pos, i, tex)
+	pos = attachment_to_enum(self, pos)
+	self.fb:Texture2D(pos, gl.e[GL_TEXTURE_CUBE_MAP_POSITIVE_X] + i - 1, tex and tex.gl_tex.id or 0, 0)
+end
 	
 function META:SetTexture(pos, tex, mode, uid)
 	pos = attachment_to_enum(self, pos)
