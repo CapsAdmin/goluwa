@@ -265,6 +265,7 @@ function render.InitializeGBuffer(width, height)
 		render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_buffers)  
 		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(width, height, {
 			filter = "nearest",
+			internal_format = "rgba32f"
 		})
 		
 		if not render.gbuffer:IsValid() then
