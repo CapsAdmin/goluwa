@@ -6,3 +6,6 @@ Leandro Fonseca (https://github.com/Shell64)
 	
 Somepotato (https://github.com/Someguynamedpie) 
 	started proper font support (mainly using a font atlas)
+	
+
+The source engine mdl decoding code was based on http://steamcommunity.com/groups/CrowbarTool
