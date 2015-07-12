@@ -680,8 +680,11 @@ do -- cached rendering
 
 			if 
 				(not self.cache_fb or self.cache_texture:GetSize() ~= self.Size) and
-				self.Size.w ~= 0 and self.Size.h ~= 0 and
-				self.Size.w ~= math.huge and self.Size.h ~= math.huge
+				
+				self.Size.w > 1 and 
+				self.Size.h > 1 and
+				self.Size.w < 4096 and 
+				self.Size.h < 4096
 			then
 				local fb = render.CreateFrameBuffer()
 				fb:SetTexture(1, Texture(self.Size))
