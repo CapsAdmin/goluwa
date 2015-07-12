@@ -379,7 +379,7 @@ function META:SetupStorage()
 	local mip_map_levels = self.MipMapLevels
 	
 	if mip_map_levels <= 0 then
-		mip_map_levels = math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2))
+		mip_map_levels = math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2)) + 1
 	end
 	
 	self:SetMaxLevel(mip_map_levels)
@@ -407,26 +407,30 @@ function META:SetupStorage()
 		)
 	elseif self.StorageType == "2d" or self.StorageType == "rectangle" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then		
 		if gl.TexStorage2D then
-			--for i = 0, levels do
-				self.gl_tex:Storage2D(
-					mip_map_levels,
-					internal_format, 
-					self.Size.w, 
-					self.Size.h
-				)
-			--end
-		else
-			self.gl_tex:Image2D(
-				"GL_TEXTURE_2D",
+			self.gl_tex:Storage2D(
 				mip_map_levels,
-				gl.e[internal_format], 
-				self.Size.w,
-				self.Size.h,
-				0,
-				TOENUM(format.preferred_upload_format),
-				TOENUM(format.preferred_upload_type),
-				nil			
+				internal_format, 
+				self.Size.w, 
+				self.Size.h
 			)
+		else
+			if self.StorageType == "cube_map" then
+				for i = 0, 5 do 
+					
+				end
+			else
+				self.gl_tex:Image2D(
+					"GL_TEXTURE_2D",
+					mip_map_levels,
+					gl.e[internal_format], 
+					self.Size.w,
+					self.Size.h,
+					0,
+					TOENUM(format.preferred_upload_format),
+					TOENUM(format.preferred_upload_type),
+					nil			
+				)
+			end
 		end
 	elseif self.StorageType == "1d" or self.StorageType == "1d_array" then		
 		--[[self.gl_tex:Storage1D(
@@ -595,10 +599,10 @@ function META:DumpInfo()
 	logn("==================================")
 		logn("storage type = ", self.StorageType)
 		logn("internal format = ", TOENUM(self.InternalFormat))
-		if self.MipMapLevels < 0 then
+		if self.MipMapLevels > 0 then
 			logn("mip map levels = ", self.MipMapLevels)
 		else
-			logn("mip map levels = ", math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2)))
+			logn("mip map levels = ", math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2)) + 1, "(", self, ".MipMapLevels = ", self.MipMapLevels ,")")
 		end
 		logn("size = ", self.Size)		
 		if self.StorageType == "3d" then
