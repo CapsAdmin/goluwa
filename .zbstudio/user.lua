@@ -61,6 +61,93 @@ do -- custom plugin
 		end
 	end
 	
+	do -- profiling
+		function PLUGIN:MarkLine(editor, line, intensity)
+			local id = ide:GetMarker("heatmap_" .. math.floor(intensity*self.max_marker)) or self.max_marker
+			editor:MarkerAdd(line-1, id)
+		end
+
+		function PLUGIN:AnnotateLine(editor, line, text)
+			editor:AnnotationSetText(line-1, text)
+			editor:AnnotationSetVisible(true)
+		end
+
+		function PLUGIN:onEditorLoad(editor)
+			if not self.initialized then
+				self.markers_setup = {}
+				do
+					local content = io.open("C:/goluwa/goluwa/data/users/caps/zerobrane_statistical.lua", "r"):read("*all")
+					
+					if content then
+						local tree = assert(loadstring("return {" .. content .. "}"))()
+						local _, root = next(tree)
+						
+						local list = {}
+						
+						local function parse(node)
+							for k,v in pairs(node.children) do
+								local path, line = k:match("(.+):(.+)")
+								if path and line then
+									path = path:lower()
+									list[path] = list[path] or {}
+									list[path][line] = v.samples / root.samples
+								end
+								parse(v)
+							end
+						end
+						
+						parse(root)
+						
+						self.profile_list = list
+					end
+					
+					local content = io.open("C:/goluwa/goluwa/data/users/caps/zerobrane_trace_aborts.lua", "r"):read("*all")
+					
+					if content then
+						self.trace_abort_list = assert(loadstring("return {" .. content .. "}"))()
+					end
+					
+					self.initialized = true
+				end
+			end
+
+			if not self.markers_setup[editor] then
+				local r,g,b = unpack(ide:GetConfig().styles.text.bg)
+				
+				local max_markers = 10
+				
+				for i = 0, max_markers do
+					r = r + math.ceil(i/max_markers * 50)
+					local marker = ide:AddMarker("heatmap_" .. i, wxstc.wxSTC_MARK_BACKGROUND, {0,0,0,0}, {r,g,b})
+					if not marker or i == max_markers then 
+						self.max_marker = i-2
+						break 
+					end
+					editor:MarkerDefine(ide:GetMarker("heatmap_" .. i))
+				end
+				self.markers_setup[editor] = true
+			end
+			
+			local path = ide:GetDocument(editor).filePath:lower():gsub("\\", "/")
+			
+			if self.profile_list and self.profile_list[path] then
+				for line, intensity in pairs(self.profile_list[path]) do
+					self:MarkLine(editor, line, intensity ^ 0.2)
+				end
+			end
+			
+			if self.trace_abort_list and self.trace_abort_list[path] then
+				for line, reasons in pairs(self.trace_abort_list[path]) do
+					local str = {}
+					for k,v in pairs(reasons) do
+						table.insert(str, line .. ": " .. k .. " ("..v..")")
+					end
+					self:AnnotateLine(editor, line, table.concat(str, "\n"))
+				end
+			end
+		end
+	end
+	
 	ide.packages["goluwa"] = setmetatable(PLUGIN, ide.proto.Plugin)
 end
 

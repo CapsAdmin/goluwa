@@ -41,7 +41,7 @@ local function parse_raw_trace_abort_data()
 				
 			local path = info.source
 			local line = info.currentline or info.linedefined
-								
+		
 			data[path] = data[path] or {}
 			data[path][line] = data[path][line] or {}
 			data[path][line][reason] = (data[path][line][reason] or 0) + 1	
@@ -51,52 +51,82 @@ end
 
 function profiler.EnableTraceAbortLogging(b)
 	if b then
-		jit.attach(trace_dump_callback, "trace")
+		jit.attach(function(...)
+			local ok, err = xpcall(type(b) == "function" and b or trace_dump_callback, system.OnError, ...)
+			if not ok then
+				logn(err)
+				profiler.EnableTraceAbortLogging(false)
+			end	
+		end, "trace")
 	else
 		jit.attach(trace_dump_callback)
 	end
 end
 
-local cache = {}
-
 local function statistical_callback(thread, samples, vmstate)
-	local node = profiler.raw_data.statistical_tree
-	local lines = jit_profiler.dumpstack(thread, "pl\n", 10):explode("\n")
+	local str = jit_profiler.dumpstack(thread, "pl\n", 10)
+	table.insert(profiler.raw_data.statistical, {str, samples})
+end
+
+local function parse_raw_statistical_data()
+	local data = profiler.data.statistical
+
+	for i = 1, #profiler.raw_data.statistical do
+		local args = table.remove(profiler.raw_data.statistical)
+		local str, samples = args[1], args[2]
+		local children = {}
 	
-	for i = #lines, 1, -1 do
-		local line = lines[i]
+		for line in str:gmatch("(.-)\n") do
+			local path, line_number = line:match("(.+):(%d+)")
 		
+			if not path and not line_number then
 		line = line:gsub("%[builtin#(%d+)%]", function(x)
 			return jit_vmdef.ffnames[tonumber(x)]
 		end)
 	
-		local path, num = line:match("(.+):(.+)")
-		
-		path = path or line
-		num = num or 0
-	
-		
-		if not cache[path] then 
-			cache[path] = R(path) or path
+				table.insert(children, {name = line or -1, external_function = true})
+			else
+				table.insert(children, {path = path, line = tonumber(line_number) or -1, external_function = false})
+			end
 		end
 		
-		path = cache[path]
+		local info = children[#children]
+		table.remove(children, #children)
+	
+		local path = info.path or info.name
+		local line = tonumber(info.line) or -1
 		
-		line = path .. ":" .. num
+		data[path] = data[path] or {}
+		data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path}
 		
-		node[line] = node[line] or {}
+		data[path][line].samples = data[path][line].samples + samples
+		data[path][line].start_time = data[path][line].start_time or system.GetTime()	
 		
-		node[line].children = node[line].children or {}
-		node[line].samples = (node[line].samples or 0) + samples
+		local parent = data[path][line]
 		
-		node = node[line].children
+		for _, info in ipairs(children) do
+			local path = info.path or info.name
+			local line = tonumber(info.line) or -1
+		
+			data[path] = data[path] or {}
+			data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path}
+		
+			data[path][line].samples = data[path][line].samples + samples
+			data[path][line].start_time = data[path][line].start_time or system.GetTime()	
+			
+			data[path][line].parents[tostring(parent)] = parent
+			parent.children[tostring(data[path][line])] = data[path][line]
+			
+			--table.insert(data[path][line].parents, parent)
+			--table.insert(parent.children, data[path][line])
+	end
 	end
 end
 
-function profiler.EnableStatisticalProfiling(b)		
+function profiler.EnableStatisticalProfiling(b)
 	if b then	
 		jit_profiler.start("l", function(...) 
-			local ok, err = xpcall(statistical_callback, system.OnError, ...)
+			local ok, err = xpcall(type(b) == "function" and b or statistical_callback, system.OnError, ...)
 			if not ok then
 				logn(err)
 				profiler.EnableStatisticalProfiling(false)
@@ -109,7 +139,7 @@ end
 
 function profiler.Restart()
 	profiler.data = {sections = {}, statistical = {}, trace_aborts = {}}
-	profiler.raw_data = {sections = {}, statistical = {}, trace_aborts = {}, statistical_tree = {}}
+	profiler.raw_data = {sections = {}, statistical = {}, trace_aborts = {}}
 end
 
 do
@@ -211,6 +241,11 @@ do -- timer
 end
 
 function profiler.GetBenchmark(type, file, dump_line)	
+	
+	if type == "statistical" then
+	 	parse_raw_statistical_data()
+	end
+
 	local out = {}
 
 	for path, lines in pairs(profiler.data[type]) do
@@ -293,6 +328,7 @@ end
 function profiler.PrintTraceAborts(min_samples)
 	min_samples = min_samples or 500
 	
+	parse_raw_statistical_data()
 	parse_raw_trace_abort_data()
 	
 	logn("trace abort reasons for functions that were sampled by the profiler more than ", min_samples, " times:")
@@ -353,31 +389,18 @@ function profiler.PrintSections()
 	))
 end
 
-function profiler.PrintStatistical(filter, min)
-	min = min or 1
-	local path, root = next(profiler.raw_data.statistical_tree)
-	
-	local level = 0
-	
-	local function dump(path, node)		
-		local percent = math.round((node.samples / root.samples) * 100, 3)
-		if percent > min then
-			if not filter or path:find(filter) then
-				logf("%s%s (%s) %s\n", ("\t"):rep(level), percent, node.samples, path)
-			else
-				logf("%s%s\n", ("\t"):rep(level), "...")
-			end
-		
-			for path, child in pairs(node.children) do
-				level = level + 1	
-				dump(path, child)
-				level = level - 1
-			end		
-		end
-	end
-	
-	dump(path, root)
-end
+function profiler.PrintStatistical()
+	log(utility.TableToColumns(
+		"statistical",
+		profiler.GetBenchmark("statistical"), 
+		{
+			{key = "name"}, 
+			{key = "times_called", friendly = "percent", tostring = function(val, column, columns)  return math.round((val / columns[#columns].val.times_called) * 100, 2) end},
+		}, 
+		function(a) return a.name and a.times_called > 100 end,
+		function(a, b) return a.times_called < b.times_called end
+	))
+end 
 
 function profiler.StartInstrumental(file_filter)	
 	profiler.EnableSectionProfiling(true, true)
@@ -425,6 +448,139 @@ function profiler.MeasureInstrumental(time, file_filter)
 	event.Delay(time, function() 
 		profiler.StopInstrumental(file_filter)
 	end)
+end
+
+function profiler.EnableProfilingForZerobrane(b)
+	system.SetJITOption("minstitch", 0)
+	
+	if not b then
+		profiler.EnableTraceAbortLogging(false)
+		profiler.EnableStatisticalProfiling(false)
+	else
+		local statistical = {}
+		local trace_aborts = {}
+		
+		profiler.EnableTraceAbortLogging(function(what, trace_id, func, pc, trace_error_id, trace_error_arg)
+			if what == "abort" then
+				local info = jit_util.funcinfo(func, pc)
+				table.insert(trace_aborts, {info, trace_error_id, trace_error_arg})		
+			end
+		end)
+
+		profiler.EnableStatisticalProfiling(function(thread, samples, vmstate)
+			local str = jit_profiler.dumpstack(thread, "pl\n", 10)
+			table.insert(statistical, {str, samples})
+		end)
+	
+		local path_cache = {}
+	
+		local function get_full_path(path)
+			if not path_cache[path] then 
+				path_cache[path] = R(path) or path
+			end
+				
+			return path_cache[path]
+		end
+		
+		event.CreateTimer("save_zerobrane_profiling", 1, 0, function()
+			do -- trace abort
+				local data = serializer.ReadFile("luadata", "zerobrane_trace_aborts.lua") or {}
+				
+				for i, v in ipairs(trace_aborts) do
+					local info, trace_error_id, trace_error_arg = v[1], v[2], v[3]
+					
+					local reason = jit_vmdef.traceerr[trace_error_id]
+					
+					if not blacklist[reason] then		
+						if type(trace_error_arg) == "number" and reason:find("bytecode") then
+							trace_error_arg = string.sub(jit_vmdef.bcnames, trace_error_arg*6+1, trace_error_arg*6+6)
+							reason = reason:gsub("(%%d)", "%%s")
+						end
+						
+						reason = reason:format(trace_error_arg)
+							
+						local path = get_full_path(info.source:sub(2))
+						local line = info.currentline or info.linedefined
+					
+						path = path:lower()
+					
+						data[path] = data[path] or {}
+						data[path][line] = data[path][line] or {}
+						data[path][line][reason] = (data[path][line][reason] or 0) + 1
+					end
+				end
+				
+				table.clear(trace_aborts)
+				
+				serializer.WriteFile("luadata", "zerobrane_trace_aborts.lua", data)
+			end
+			
+			do -- statistical
+				local tree = serializer.ReadFile("luadata", "zerobrane_statistical.lua") or {}
+				
+				for i, v in ipairs(statistical) do
+					local str, samples = v[1], v[2]
+					local lines = str:explode("\n")
+					
+					local node = tree
+										
+					for i = #lines, 1, -1 do
+						local line = lines[i]
+					
+						line = line:gsub("%[builtin#(%d+)%]", function(x)
+							return jit_vmdef.ffnames[tonumber(x)]
+						end)
+					
+						local path, num = line:match("(.+):(.+)")
+						
+						path = path or line
+						num = num or 0
+					
+						path = get_full_path(path)
+						
+						line = path .. ":" .. num
+						
+						node[line] = node[line] or {}
+						
+						node[line].children = node[line].children or {}
+						node[line].samples = (node[line].samples or 0) + samples
+						
+						node = node[line].children
+					end
+				end
+				
+				table.clear(statistical)
+				
+				serializer.WriteFile("luadata", "zerobrane_statistical.lua", tree)
+			end
+		end)
+	end
+end
+
+function profiler.DumpZerobraneProfileTree()
+	min = min or 1
+	local path, root = next(serializer.ReadFile("luadata", "zerobrane_statistical.lua"))
+	
+	local level = 0
+	
+	local function dump(path, node)		
+		local percent = math.round((node.samples / root.samples) * 100, 3)
+		if percent > min then
+			if not filter or path:find(filter) then
+				logf("%s%s (%s) %s\n", ("\t"):rep(level), percent, node.samples, path)
+			else
+				logf("%s%s\n", ("\t"):rep(level), "...")
+			end
+		
+			for path, child in pairs(node.children) do
+				level = level + 1	
+				dump(path, child)
+				level = level - 1
+			end		
+		end
+	end
+	
+	dump(path, root)
 end
 
 profiler.Restart()
