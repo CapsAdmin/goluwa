@@ -295,7 +295,7 @@ console.AddCommand("source", function(line, path, line_number, ...)
 
 	for i, try in pairs(tries) do
 		local path = try:gsub("?", path)
-		if vfs.Exists(path) then
+		if vfs.Exists(path) and vfs.GetLoadedLuaFiles()[R(path)] then
 			debug.openscript(path, tonumber(line_number) or 0)
 			return
 		end
