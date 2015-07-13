@@ -99,9 +99,9 @@ function render.DrawScene(skip_2d)
 	
 	local blur_amt = console.GetVariable("render_accum") or 0
 	if blur_amt ~= 0 then			
-		gl.Accum(gl.e.GL_ACCUM, 1)
-		gl.Accum(gl.e.GL_RETURN, 1-blur_amt)
-		gl.Accum(gl.e.GL_MULT, blur_amt)
+		gl.Accum("GL_ACCUM", 1)
+		gl.Accum("GL_RETURN", 1-blur_amt)
+		gl.Accum("GL_MULT", blur_amt)
 	end
 	
 	event.Call("PostDrawScene")

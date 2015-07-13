@@ -698,6 +698,8 @@ if not DISABLE_CURSES then
 		local last_h = curses.LINES
 
 		event.CreateTimer("curses", 1/30, 0, function()
+			if GRAPHICS and window.IsFocused() then return end
+			
 			local key = {}
 			
 			for i = 1, math.huge do

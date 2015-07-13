@@ -1,13 +1,15 @@
 local gl = require("graphics.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
+local base_color = gl.e.GL_COLOR_ATTACHMENT0
+
 local function attachment_to_enum(self, var)
 	if not var then return end
 	
 	if self.textures[var] then
 		return var
 	elseif type(var) == "number" then
-		return gl.e.GL_COLOR_ATTACHMENT0 + var - 1
+		return base_color + var - 1
 	elseif var == "depth" then
 		return "GL_DEPTH_ATTACHMENT"
 	elseif var == "stencil" then
@@ -15,7 +17,7 @@ local function attachment_to_enum(self, var)
 	elseif var == "depth_stencil" then
 		return "GL_DEPTH_STENCIL_ATTACHMENT"
 	elseif var:startswith("color") then
-		return gl.e.GL_COLOR_ATTACHMENT0 + (tonumber(var:match(".-(%d)")) or 0) - 1
+		return base_color + (tonumber(var:match(".-(%d)")) or 0) - 1
 	end
 end
 
@@ -243,9 +245,13 @@ do -- binding
 	end
 end
 
-function META:SetCubemapTexture(pos, i, tex)
-	pos = attachment_to_enum(self, pos)
-	self.fb:Texture2D(pos, gl.e[GL_TEXTURE_CUBE_MAP_POSITIVE_X] + i - 1, tex and tex.gl_tex.id or 0, 0)
+do
+	local base = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X
+
+	function META:SetCubemapTexture(pos, i, tex)
+		pos = attachment_to_enum(self, pos)
+		self.fb:Texture2D(pos, base + i - 1, tex and tex.gl_tex.id or 0, 0)
+	end
 end
 	
 function META:SetTexture(pos, tex, mode, uid)
@@ -387,7 +393,7 @@ function META:WriteThese(str)
 		self.draw_buffers_cache[str] = {self.draw_buffers, self.draw_buffers_size}
 	end
 	
-	self.draw_buffers, self.draw_buffers_size = unpack(self.draw_buffers_cache[str])
+	self.draw_buffers, self.draw_buffers_size = self.draw_buffers_cache[str][1], self.draw_buffers_cache[str][2]
 end
 
 do
@@ -432,7 +438,7 @@ do
 			
 			self.fb:Clearfv("GL_COLOR", i - 1, temp_color)
 		elseif self.textures[i] then
-			self:Clear(self.textures[i].pos - gl.e.GL_COLOR_ATTACHMENT0 - 1, r,g,b,a, d,s)
+			self:Clear(self.textures[i].pos - base_color - 1, r,g,b,a, d,s)
 		end
 	end
 end

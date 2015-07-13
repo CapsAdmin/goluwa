@@ -773,9 +773,9 @@ function render.CreateShader(data, vars)
 						local struct = ffi.new(val.struct_type, init_table)
 						
 						local buffer_id = gl.GenBuffer()
-						gl.BindBuffer(gl.e.GL_UNIFORM_BUFFER, buffer_id)
-							gl.BufferData(gl.e.GL_UNIFORM_BUFFER, ffi.sizeof(struct), struct, gl.e.GL_DYNAMIC_DRAW)
-						gl.BindBuffer(gl.e.GL_UNIFORM_BUFFER, 0)
+						gl.BindBuffer("GL_UNIFORM_BUFFER", buffer_id)
+							gl.BufferData("GL_UNIFORM_BUFFER", ffi.sizeof(struct), struct, "GL_DYNAMIC_DRAW")
+						gl.BindBuffer("GL_UNIFORM_BUFFER", 0)
 						
 						self[val.name .. "_ufb_struct"] = struct
 						
@@ -829,7 +829,7 @@ function render.CreateShader(data, vars)
 				lua = lua:sub(0, -5) .. "\n"
 				
 				lua = lua .. "then \n"
-				lua = lua .. "\tlocal ptr = ffi.cast(self."..data.key.."_ufb_type, gl.MapBuffer(gl.e.GL_UNIFORM_BUFFER, gl.e.GL_WRITE_ONLY));\n\n"
+				lua = lua .. "\tlocal ptr = ffi.cast(self."..data.key.."_ufb_type, gl.MapBuffer(\"GL_UNIFORM_BUFFER\", \"GL_WRITE_ONLY\"));\n\n"
 				lua = lua .. "\tif ptr ~= nil then \n"
 				for k, v in pairs(data.val.default) do
 					if type(v) == "number" then
@@ -847,10 +847,10 @@ function render.CreateShader(data, vars)
 				
 				lua = lua .. "\tend\n\n"
 				
-				lua = lua .. "\tgl.UnmapBuffer(gl.e.GL_UNIFORM_BUFFER)\n"
+				lua = lua .. "\tgl.UnmapBuffer(\"GL_UNIFORM_BUFFER\")\n"
 				lua = lua .. "end\n"
 				
-				lua = lua .. "gl.BindBufferBase(gl.e.GL_UNIFORM_BUFFER, "..data.id..", "..data.buffer_id..")\n\n"
+				lua = lua .. "gl.BindBufferBase(\"GL_UNIFORM_BUFFER\", "..data.id..", "..data.buffer_id..")\n\n"
 			elseif data.id > -1 then
 				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 

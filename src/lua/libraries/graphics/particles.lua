@@ -25,7 +25,7 @@ prototype.GetSet(PARTICLE, "Color", Color(1,1,1,1))
 
 function PARTICLE:SetLifeTime(n)
 	self.LifeTime = n
-	self.life_end = os.clock() + n
+	self.life_end = system.GetElapsedTime() + n
 end
 
 prototype.Register(PARTICLE)
@@ -60,7 +60,7 @@ function ParticleEmitter(max)
 end
  
 function EMITTER:Update(dt)
-	local time = os.clock()
+	local time = system.GetElapsedTime()
 	
 	if self.Rate == 0 then
 		self:Emit()

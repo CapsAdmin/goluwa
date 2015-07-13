@@ -451,17 +451,17 @@ do
 	    stencil_debug_tex = stencil_debug_tex or Texture(render.GetWidth(), render.GetHeight())
 	    
 		local stencilStateArray = ffi.new("GLboolean[1]", 0)
-		gl.GetBooleanv(gl.e.GL_STENCIL_TEST, stencilStateArray)
+		gl.GetBooleanv("GL_STENCIL_TEST", stencilStateArray)
 		
 		--if wait(0.25) then
 			
-			gl.Enable(gl.e.GL_STENCIL_TEST)
+			gl.Enable("GL_STENCIL_TEST")
 			
 			local stencilWidth = render.GetWidth()
 			local stencilHeight = render.GetHeight()
 			local stencilSize = stencilWidth*stencilHeight
 			local stencilData = ffi.new("unsigned char[?]", stencilSize)
-			gl.ReadPixels(0, 0, stencilWidth, stencilHeight, gl.e.GL_STENCIL_INDEX, gl.e.GL_UNSIGNED_BYTE, stencilData)
+			gl.ReadPixels(0, 0, stencilWidth, stencilHeight, "GL_STENCIL_INDEX", "GL_UNSIGNED_BYTE", stencilData)
 			
 			--[[for y = 0, stencilHeight-1 do
 				for x = 0, stencilWidth-1 do
@@ -494,13 +494,13 @@ do
 		surface.LoadIdentity()
     		surface.SetColor(1,1,1,1)
     		surface.SetTexture(stencil_debug_tex)
-    		gl.Disable(gl.e.GL_STENCIL_TEST)
+    		gl.Disable("GL_STENCIL_TEST")
     		surface.DrawRect(64,64,128,128)
-    		gl.Enable(gl.e.GL_STENCIL_TEST)
+    		gl.Enable("GL_STENCIL_TEST")
 		surface.PopMatrix()
 		
 		if stencilStateArray[0] == 0 then
-		    gl.Disable(gl.e.GL_STENCIL_TEST)
+		    gl.Disable("GL_STENCIL_TEST")
 	    end
     end
 	
@@ -510,29 +510,29 @@ do
 		-- that means the stack should not be emptied, in case you want to disobey clipping?
 		
 		-- Don't consider depth buffer while stenciling or drawing
-		gl.DepthMask(gl.e.GL_FALSE)
-		gl.DepthFunc(gl.e.GL_ALWAYS)
+		gl.DepthMask(0)
+		gl.DepthFunc("GL_ALWAYS")
 		
 		-- Enable stencil test
-		gl.Enable(gl.e.GL_STENCIL_TEST)
+		gl.Enable("GL_STENCIL_TEST")
 	    
 		-- Write to all stencil bits
 		gl.StencilMask(0xFF)
 		
 		-- Don't consider stencil buffer while clearing it
-		gl.StencilFunc(gl.e.GL_ALWAYS, 0, 0xFF)
+		gl.StencilFunc("GL_ALWAYS", 0, 0xFF)
 		
 		-- Clear the stencil buffer to zero
 		gl.ClearStencil(0)
-		gl.Clear(gl.e.GL_STENCIL_BUFFER_BIT)
+		gl.Clear("GL_STENCIL_BUFFER_BIT")
 	    
 		-- Stop writing to stencil
-		gl.StencilMask(gl.e.GL_FALSE)
+		gl.StencilMask("GL_FALSE")
 	end
 
 	function surface.DisableStencilClipping()
 		-- disable stencil completely, how2
-		gl.Disable(gl.e.GL_STENCIL_TEST)
+		gl.Disable("GL_STENCIL_TEST")
 	end
     
     --[[
@@ -556,7 +556,7 @@ do
         pop frame; depth = 0
         00000000000000000000000000
         
-        gl.StencilFunc(gl.e.GL_EQUAL, depth, 0xFF)
+        gl.StencilFunc("GL_EQUAL", depth, 0xFF)
         means
         only draw if stencil == current depth
 	]]
@@ -567,23 +567,23 @@ do
 		gl.StencilMask(0xFF)
 		
 		-- For each object on the stack, increment/decrement any pixel it touches by 1
-		gl.DepthMask(gl.e.GL_FALSE) -- Don't write to depth buffer
-		gl.StencilFunc(gl.e.GL_NEVER, 0, 0xFF) -- Update stencil regardless of current value 
+		gl.DepthMask(0) -- Don't write to depth buffer
+		gl.StencilFunc("GL_NEVER", 0, 0xFF) -- Update stencil regardless of current value 
 		gl.StencilOp(
 			mode, -- For each pixel white pixel, increment/decrement
-			gl.e.GL_REPLACE, -- Ignore depth buffer
-			gl.e.GL_REPLACE -- Ignore depth buffer
+			"GL_REPLACE", -- Ignore depth buffer
+			"GL_REPLACE" -- Ignore depth buffer
 		)
 		
 		local data = stack[depth] 
 		data.func(unpack(data.args))
 	    
 		-- Stop writing to stencil
-		gl.StencilMask(gl.e.GL_FALSE)
+		gl.StencilMask("GL_FALSE")
 		
 		-- Now make future drawing obey stencil buffer
-		gl.DepthMask(gl.e.GL_TRUE) -- Write to depth buffer
-		gl.StencilFunc(gl.e.GL_EQUAL, depth-1, 0xFF) -- Pass test if stencil value is equal to depth
+		gl.DepthMask(1) -- Write to depth buffer
+		gl.StencilFunc("GL_EQUAL", depth-1, 0xFF) -- Pass test if stencil value is equal to depth
 	end
 
 	function surface.PushClipFunction(draw_func, ...)
@@ -591,11 +591,11 @@ do
 	    
 		stack[depth] = {func = draw_func, args = {...}}
 		
-		update_stencil_buffer(gl.e.GL_INCR)
+		update_stencil_buffer("GL_INCR")
 	end
 
 	function surface.PopClipFunction()
-		update_stencil_buffer(gl.e.GL_DECR)
+		update_stencil_buffer("GL_DECR")
 		
 		stack[depth] = nil
 		depth = depth-1
@@ -608,15 +608,15 @@ end
 
 do
 	local X, Y, W, H
-
+	local stencil_flag = gl.e.GL_STENCIL_BUFFER_BIT
 	function surface.EnableClipRect(x, y, w, h)
-		gl.Enable(gl.e.GL_STENCIL_TEST)
+		gl.Enable("GL_STENCIL_TEST")
 		
-		gl.StencilFunc(gl.e.GL_ALWAYS, 1, 0xFF) -- Set any stencil to 1
-		gl.StencilOp(gl.e.GL_KEEP, gl.e.GL_KEEP, gl.e.GL_REPLACE)
+		gl.StencilFunc("GL_ALWAYS", 1, 0xFF) -- Set any stencil to 1
+		gl.StencilOp("GL_KEEP", "GL_KEEP", "GL_REPLACE")
 		gl.StencilMask(0xFF) -- Write to stencil buffer
-		gl.DepthMask(gl.e.GL_FALSE) -- Don't write to depth buffer
-		gl.Clear(gl.e.GL_STENCIL_BUFFER_BIT) -- Clear stencil buffer (0 by default)
+		gl.DepthMask(0) -- Don't write to depth buffer
+		gl.Clear(stencil_flag) -- Clear stencil buffer (0 by default)
 		
 		--local tex = surface.GetTexture()
 		--surface.SetWhiteTexture()
@@ -625,9 +625,9 @@ do
 		surface.SetColor(r,g,b,a)
 		--surface.SetTexture(tex)
 		
-		gl.StencilFunc(gl.e.GL_EQUAL, 1, 0xFF) -- Pass test if stencil value is 1
+		gl.StencilFunc("GL_EQUAL", 1, 0xFF) -- Pass test if stencil value is 1
 		gl.StencilMask(0x00) -- Don't write anything to stencil buffer
-		gl.DepthMask(gl.e.GL_TRUE) -- Write to depth buffer	
+		gl.DepthMask(1) -- Write to depth buffer	
 		
 		x = X
 		y = Y
@@ -640,7 +640,7 @@ do
 	end
 
 	function surface.DisableClipRect()
-		gl.Disable(gl.e.GL_STENCIL_TEST)
+		gl.Disable("GL_STENCIL_TEST")
 	end
 end
 
@@ -680,9 +680,9 @@ do -- points
 
 	function surface.SetPointStyle(style)
 		if style == "smooth" then
-			gl.Enable(gl.e.GL_POINT_SMOOTH)
+			gl.Enable("GL_POINT_SMOOTH")
 		else
-			gl.Disable(gl.e.GL_POINT_SMOOTH)
+			gl.Disable("GL_POINT_SMOOTH")
 		end
 		
 		STYLE = style
@@ -702,8 +702,8 @@ do -- points
 	end
 	
 	function surface.DrawPoint(x, y)
-		gl.Disable(gl.e.GL_TEXTURE_2D)
-		gl.Begin(gl.e.GL_POINTS)
+		gl.Disable("GL_TEXTURE_2D")
+		gl.Begin("GL_POINTS")
 			gl.Vertex2f(x, y)
 		gl.End()
 	end
