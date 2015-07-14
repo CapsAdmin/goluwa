@@ -1,7 +1,7 @@
 if ... then (...).setfenv(1, ...) end
 
 local print = DisplayOutputLn
-local bin = "core/bin/" .. jit.os:lower() ..	"_" .. "x64" .. "/"
+local bin = "data/bin/" .. jit.os:lower() ..	"_" .. "x64" .. "/"
 local sockets = require("socket")
 local port = 16273
 
@@ -74,9 +74,15 @@ do -- custom plugin
 
 		function PLUGIN:onEditorLoad(editor)
 			if not self.initialized then
+				local msgpack = assert(loadfile(ide.config.path.projectdir .. "\\src\\lua\\modules\\luajit-msgpack-pure\\luajit-msgpack-pure.lua"))()
+				
+				local function load(path)
+					return unpack(select(2, msgpack.unpack(assert(io.open(ide.config.path.projectdir .. path, "r")):read("*all"))))
+				end
+				
 				self.markers_setup = {}
 				do
-					local content = io.open("C:/goluwa/goluwa/data/users/caps/zerobrane_statistical.lua", "r"):read("*all")
+					local content = load("/data/users/caps/zerobrane_statistical.msgpack")
 					
 					if content then
 						local tree = assert(loadstring("return {" .. content .. "}"))()
@@ -101,7 +107,7 @@ do -- custom plugin
 						self.profile_list = list
 					end
 					
-					local content = io.open("C:/goluwa/goluwa/data/users/caps/zerobrane_trace_aborts.lua", "r"):read("*all")
+					local content = load("/data/users/caps/zerobrane_trace_aborts.msgpack")
 					
 					if content then
 						self.trace_abort_list = assert(loadstring("return {" .. content .. "}"))()

@@ -482,9 +482,12 @@ function profiler.EnableProfilingForZerobrane(b)
 			return path_cache[path]
 		end
 		
-		event.CreateTimer("save_zerobrane_profiling", 1, 0, function()
+		local saved_tree = serializer.ReadFile("msgpack", "zerobrane_statistical.msgpack") or {}
+		local saved_trace_aborts = serializer.ReadFile("msgpack", "zerobrane_trace_aborts.msgpack") or {}
+		
+		event.CreateTimer("save_zerobrane_profiling", 3, 0, function()
 			do -- trace abort
-				local data = serializer.ReadFile("luadata", "zerobrane_trace_aborts.lua") or {}
+				local data = saved_trace_aborts
 				
 				for i, v in ipairs(trace_aborts) do
 					local info, trace_error_id, trace_error_arg = v[1], v[2], v[3]
@@ -512,18 +515,18 @@ function profiler.EnableProfilingForZerobrane(b)
 				
 				table.clear(trace_aborts)
 				
-				serializer.WriteFile("luadata", "zerobrane_trace_aborts.lua", data)
+				serializer.WriteFile("msgpack", "zerobrane_trace_aborts.msgpack", data)
 			end
 			
 			do -- statistical
-				local tree = serializer.ReadFile("luadata", "zerobrane_statistical.lua") or {}
+				local data = saved_tree
 				
 				for i, v in ipairs(statistical) do
 					local str, samples = v[1], v[2]
 					local lines = str:explode("\n")
 					
-					local node = tree
-										
+					local node = data
+
 					for i = #lines, 1, -1 do
 						local line = lines[i]
 					
@@ -551,7 +554,7 @@ function profiler.EnableProfilingForZerobrane(b)
 				
 				table.clear(statistical)
 				
-				serializer.WriteFile("luadata", "zerobrane_statistical.lua", tree)
+				serializer.WriteFile("msgpack", "zerobrane_statistical.msgpack", data)
 			end
 		end)
 	end
