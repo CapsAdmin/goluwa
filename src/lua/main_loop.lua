@@ -9,7 +9,7 @@ local function calc_fps(dt)
 	
 	avg_fps = avg_fps + ((fps - avg_fps) * dt)
 	
-	if wait(1/30) then
+	if wait(0.25) then
 		console.SetTitle(("FPS: %i"):format(avg_fps), "fps")
 		
 		if utility and utility.FormatFileSize then
