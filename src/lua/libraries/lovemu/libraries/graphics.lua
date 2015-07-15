@@ -25,7 +25,7 @@ local function ADD_FILTER(obj)
 end
 
 local FILTER_MIN = "linear"
-local FILTER_MIN = "linear"
+local FILTER_MAG = "linear"
 local FILTER_ANISOTROPY = 1
 
 do -- filter	
