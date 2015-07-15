@@ -450,119 +450,9 @@ function profiler.MeasureInstrumental(time, file_filter)
 	end)
 end
 
-function profiler.EnableProfilingForZerobrane(b)
-	system.SetJITOption("minstitch", 0)
-	
-	if not b then
-		profiler.EnableTraceAbortLogging(false)
-		profiler.EnableStatisticalProfiling(false)
-	else
-		local statistical = {}
-		local trace_aborts = {}
-		
-		profiler.EnableTraceAbortLogging(function(what, trace_id, func, pc, trace_error_id, trace_error_arg)
-			if what == "abort" then
-				local info = jit_util.funcinfo(func, pc)
-				table.insert(trace_aborts, {info, trace_error_id, trace_error_arg})		
-			end
-		end)
-
-		profiler.EnableStatisticalProfiling(function(thread, samples, vmstate)
-			local str = jit_profiler.dumpstack(thread, "pl\n", 10)
-			table.insert(statistical, {str, samples})
-		end)
-	
-		local path_cache = {}
-	
-		local function get_full_path(path)
-			if not path_cache[path] then 
-				path_cache[path] = R(path) or path
-			end
-				
-			return path_cache[path]
-		end
-		
-		local saved_tree = serializer.ReadFile("msgpack", "zerobrane_statistical.msgpack") or {}
-		local saved_trace_aborts = serializer.ReadFile("msgpack", "zerobrane_trace_aborts.msgpack") or {}
-		
-		event.CreateTimer("save_zerobrane_profiling", 3, 0, function()
-			do -- trace abort
-				local data = saved_trace_aborts
-				
-				for i, v in ipairs(trace_aborts) do
-					local info, trace_error_id, trace_error_arg = v[1], v[2], v[3]
-					
-					local reason = jit_vmdef.traceerr[trace_error_id]
-					
-					if not blacklist[reason] then		
-						if type(trace_error_arg) == "number" and reason:find("bytecode") then
-							trace_error_arg = string.sub(jit_vmdef.bcnames, trace_error_arg*6+1, trace_error_arg*6+6)
-							reason = reason:gsub("(%%d)", "%%s")
-						end
-						
-						reason = reason:format(trace_error_arg)
-							
-						local path = get_full_path(info.source:sub(2))
-						local line = info.currentline or info.linedefined
-					
-						path = path:lower()
-					
-						data[path] = data[path] or {}
-						data[path][line] = data[path][line] or {}
-						data[path][line][reason] = (data[path][line][reason] or 0) + 1
-					end
-				end
-				
-				table.clear(trace_aborts)
-				
-				serializer.WriteFile("msgpack", "zerobrane_trace_aborts.msgpack", data)
-			end
-			
-			do -- statistical
-				local data = saved_tree
-				
-				for i, v in ipairs(statistical) do
-					local str, samples = v[1], v[2]
-					local lines = str:explode("\n")
-					
-					local node = data
-
-					for i = #lines, 1, -1 do
-						local line = lines[i]
-					
-						line = line:gsub("%[builtin#(%d+)%]", function(x)
-							return jit_vmdef.ffnames[tonumber(x)]
-						end)
-					
-						local path, num = line:match("(.+):(.+)")
-						
-						path = path or line
-						num = num or 0
-					
-						path = get_full_path(path)
-						
-						line = path .. ":" .. num
-						
-						node[line] = node[line] or {}
-						
-						node[line].children = node[line].children or {}
-						node[line].samples = (node[line].samples or 0) + samples
-						
-						node = node[line].children
-					end
-				end
-				
-				table.clear(statistical)
-				
-				serializer.WriteFile("msgpack", "zerobrane_statistical.msgpack", data)
-			end
-		end)
-	end
-end
-
-function profiler.DumpZerobraneProfileTree()
+function profiler.DumpZerobraneProfileTree(min, filter)
 	min = min or 1
-	local path, root = next(serializer.ReadFile("luadata", "zerobrane_statistical.lua"))
+	local path, root = next(serializer.ReadFile("msgpack", "zerobrane_statistical.msgpack"))
 	
 	local level = 0
 	
@@ -636,6 +526,12 @@ end)
 
 console.AddCommand("profile", function(line, time, file_filter)
 	profiler.MeasureInstrumental(tonumber(time) or 5, file_filter)
+end)
+
+console.AddCommand("zbprofile", function()
+	local prf = require("zbprofiler")
+	prf.start()
+	event.CreateTimer("zbprofiler_save", 3, 0, function() prf.save(0) end)
 end)
 
 return profiler
