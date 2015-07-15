@@ -37,7 +37,7 @@ function vfs.loadfile(path)
 		-- prepend "@" in front of the path so it will be treated as a lua file and not a string by lua internally
 		-- for nicer error messages and debug
 		if event then res = event.Call("PreLoadString", res, full_path) or res end
-		local res, err = loadstring(res, "@" .. path) 
+		local res, err = loadstring(res, "@" .. full_path:gsub(e.ROOT_FOLDER, ""))
 		if event and res then res = event.Call("PostLoadString", res, full_path) or res end
 				
 		return res, err, full_path
