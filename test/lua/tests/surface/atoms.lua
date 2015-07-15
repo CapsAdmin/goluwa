@@ -7,32 +7,14 @@ if fps == math.huge then
 end
 
 local fb = render.CreateFrameBuffer(window.GetSize().w, window.GetSize().h, {
-	attach = "color1",
 	internal_format = "RGBA8",
-	--mag_filter = "nearest",
-	--min_filter = "nearest",
+	--filter = "nearest",
 })
 
 local W, H = fb:GetTexture():GetSize():Unpack()
 
 local shader = render.CreateShader({
-	name = "test",
-	shared = {
-		variables = {
-			time = {number =  system.GetTime},
-		},
-	},
-	vertex = {
-		variables = {
-			pwm_matrix = {mat4 = render.GetProjectionViewWorldMatrix}
-		},			
-		mesh_layout = {
-			{pos = "vec2"},
-			{uv = "vec2"},
-		},	
-		source = "gl_Position = pwm_matrix * vec4(pos, 0, 1);"
-	},
-	
+	name = "test",	
 	fragment = { 
 		variables = {
 			size = {vec2 = function() return fb:GetTexture():GetSize() end},
@@ -47,11 +29,6 @@ local shader = render.CreateShader({
 
 			float pi = 3.14159265358979323846264338327950288419716939937510582097494459230781640;
 			float pi2 = pi/2;
-			
-			float random(vec2 seed)
-			{
-				return fract(sin(dot(seed, vec2(12.9898, 78.233))) * 43758.5453);
-			}
 			
 			void main()
 			{
