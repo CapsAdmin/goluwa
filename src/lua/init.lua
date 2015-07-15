@@ -182,13 +182,14 @@ do -- libraries
 	include("lua/libraries/extensions/string.lua")
 	include("lua/libraries/extensions/table.lua")
 	include("lua/libraries/extensions/os.lua")
+	include("lua/libraries/extensions/function.lua") -- meta
 
 	-- libraries
 	prototype = include("lua/libraries/prototype/prototype.lua")
 	math3d = include("lua/libraries/math3d.lua") -- 3d math functions
 	structs = include("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
 	utf8 = include("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
-	event = include("lua/libraries/event.lua") goluwa = event.events -- event handler
+	event = include("lua/libraries/event.lua") _G.goluwa = event.events -- event handler
 	utility = include("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
 	crypto = include("lua/libraries/crypto.lua")
 	threads = include("lua/libraries/threads.lua")
@@ -203,12 +204,7 @@ do -- libraries
 	expression = include("lua/libraries/expression.lua")
 	autocomplete = include("lua/libraries/autocomplete.lua")
 	input = include("lua/libraries/input.lua")
-	
-	language = include("lua/libraries/language.lua")
-	_G.L = language.LanguageString
-	
-	-- meta
-	include("lua/libraries/extensions/function.lua")
+	language = include("lua/libraries/language.lua") _G.L = language.LanguageString
 	
 	-- network
 	sockets = include("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
