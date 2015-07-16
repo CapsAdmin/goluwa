@@ -111,21 +111,21 @@ function META:SetRect(i, x,y,w,h, r, ox,oy)
 	self.X = x or 0
 	self.Y = y or 0
 	self.ROT = r or 0
-	OX = ox or 0
-	OY = oy or 0
+	self.OX = ox or 0
+	self.OY = oy or 0
 	
 	i = i - 1
 	i = i * 6
 		
 	set_uv(self, i, self.U1, self.V1, self.U2, self.V2, self.UVSW, self.UVSH)
 
-	self:SetVertex(i + 0, self.X + OX, self.Y + OY)
-	self:SetVertex(i + 1, self.X + OX, self.Y + h + OY)
-	self:SetVertex(i + 2, self.X + w + OX, self.Y + h + OY)
+	self:SetVertex(i + 0, self.X + self.OX, self.Y + self.OY)
+	self:SetVertex(i + 1, self.X + self.OX, self.Y + h + self.OY)
+	self:SetVertex(i + 2, self.X + w + self.OX, self.Y + h + self.OY)
 
-	self:SetVertex(i + 3, self.X + w + OX, self.Y + h + OY)
-	self:SetVertex(i + 4, self.X + w + OX, self.Y + OY)
-	self:SetVertex(i + 5, self.X + OX, self.Y + OY)
+	self:SetVertex(i + 3, self.X + w + self.OX, self.Y + h + self.OY)
+	self:SetVertex(i + 4, self.X + w + self.OX, self.Y + self.OY)
+	self:SetVertex(i + 5, self.X + self.OX, self.Y + self.OY)
 end
 
 function META:DrawLine(i, x1, y1, x2, y2, w)

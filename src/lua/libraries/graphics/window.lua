@@ -29,11 +29,11 @@ function window.Open(...)
 		function wnd:OnUpdate(dt)
 			render.PushWindow(self)
 				render.DrawScene()			
-			render.SwapBuffers()
+				self:SwapBuffers()
 			render.PopWindow()
 		end
 		return e.EVENT_DESTROY
-	end, {priority = -100000})
+	end, {priority = -math.huge})
 
 	function wnd:OnCursorPosition()
 		if system then system.SetCursor(system.GetCursor()) end

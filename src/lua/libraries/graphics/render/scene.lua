@@ -22,12 +22,6 @@ do -- current window
 		return render.current_window
 	end
 
-	function render.SwapBuffers()		
-		if render.current_window:IsValid() then
-			render.current_window:SwapBuffers()
-		end
-	end
-
 	utility.MakePushPopFunction(render, "Window", render.SetWindow, render.GetWindow, reset)
 	
 	function render.GetWidth()
