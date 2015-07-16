@@ -108,6 +108,8 @@ do -- time in ms
 	if WINDOWS then
 		require("winapi.time")
 		
+		local winapi = require("winapi")
+		
 		local freq = tonumber(winapi.QueryPerformanceFrequency().QuadPart)
 		local start_time = winapi.QueryPerformanceCounter()
 		
@@ -120,6 +122,8 @@ do -- time in ms
 	end
 	
 	if LINUX then
+		local posix = require("syscall")
+
 		local ts = posix.t.timespec()
 		
 		get = function() 
@@ -312,6 +316,7 @@ do -- message box
 	
 	if WINDOWS then	
 		require("winapi.messagebox")
+		local winapi = require("winapi")
 		
 		set = function(title, message)
 			winapi.MessageBox(message, title)
@@ -327,6 +332,7 @@ do -- cursor
 
 	if WINDOWS then
 		require("winapi.cursor")
+		local winapi = require("winapi")
 				
 		local lib = ffi.load("user32.dll")
 		local cache = {}

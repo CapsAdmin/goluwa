@@ -169,12 +169,6 @@ do -- libraries
 		
 	include("lua/libraries/extensions/ffi.lua")
 
-	if WINDOWS then
-		winapi = require("winapi")
-	else
-		posix = require("syscall")
-	end
-
 	-- standard library extensions
 	include("lua/libraries/extensions/globals.lua")
 	include("lua/libraries/extensions/debug.lua")

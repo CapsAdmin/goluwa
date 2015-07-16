@@ -2,25 +2,14 @@ local window = _G.window or {}
 
 window.wnd = window.wnd or NULL
 
-do
-	local func
-	local ptr
-	
-	local function aux(...)
-		return func(ptr, ...)
-	end
+local meta = prototype.GetRegistered("render_window")
 
-	setmetatable(window, {
-		__index = function(s, key)
-			if s.wnd[key] then
-				func = s.wnd[key]
-				ptr = s.wnd
-				return aux
-			else
-				error("the key \"" .. key .. "\" does not exist in _G.window", 2)
-			end
-		end,
-	})
+for k,v in pairs(meta) do
+	if type(v) == "function" then
+		window[k] = function(...)
+			return window.wnd[k](window.wnd, ...)
+		end
+	end
 end
 
 function window.Open(...)  
@@ -69,7 +58,6 @@ function window.Open(...)
 	ADD_EVENT("WindowKeyInput", key_trigger)
 	ADD_EVENT("WindowMouseInput", mouse_trigger)
 	ADD_EVENT("WindowKeyInputRepeat")
-	
 	
 	local mouse_trigger = function(key, press) mouse_trigger(key, press) event.Call("MouseInput", key, press) end
 	
