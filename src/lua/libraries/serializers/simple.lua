@@ -1,3 +1,5 @@
+local serializer = ...
+
 local simple = {}
 
 function simple.Encode(tbl)
@@ -23,4 +25,4 @@ function simple.Decode(str)
 	return out
 end
 
-return simple
+serializer.AddLibrary("simple", function(...) return simple.Encode(...) end, function(...) return simple.Decode(...) end, simple)

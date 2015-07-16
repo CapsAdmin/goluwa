@@ -1,0 +1,3 @@
+local serializer = ...
+local msgpack = require("luajit-msgpack-pure")
+serializer.AddLibrary("msgpack", function(...) return msgpack.pack({...}) end, function(var) return unpack(select(2, msgpack.unpack(var))) end, msgpack)

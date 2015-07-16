@@ -193,9 +193,7 @@ do -- libraries
 	utility = include("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
 	crypto = include("lua/libraries/crypto.lua")
 	threads = include("lua/libraries/threads.lua")
-
-	-- serializer
-	serializer = include("lua/libraries/serializer/serializer.lua")
+	serializer = include("lua/libraries/serializer.lua")
 
 	system = include("lua/libraries/system.lua")
 	console = include("lua/libraries/console.lua")

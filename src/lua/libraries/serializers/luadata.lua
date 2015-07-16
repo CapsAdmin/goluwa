@@ -1,3 +1,4 @@
+local serializer = ...
 local luadata = _G.luadata or {}
 local encode_table
 
@@ -202,4 +203,4 @@ do -- vfs extension
 
 end
 
-return luadata
+serializer.AddLibrary("luadata", function(...) return luadata.Encode(...) end, function(...) return luadata.Decode(...) end, luadata)

@@ -1,3 +1,4 @@
+local serializer = ...
 local newline = {}
 
 function newline.Encode(tbl)
@@ -22,4 +23,4 @@ function newline.Decode(str)
 	return out
 end
 
-return newline
+serializer.AddLibrary("newline", function(...) return newline.Encode(...) end, function(...) return newline.Decode(...) end, newline)

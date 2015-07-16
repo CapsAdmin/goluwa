@@ -1,3 +1,4 @@
+local serializer = ...
 local sigh = _G.sigh or {}
 
 sigh.END = "\1"
@@ -154,4 +155,4 @@ function sigh.Decode(str)
 	return args
 end
 
-return sigh
+serializer.AddLibrary("sigh", function(...) return sigh.Encode(...) end, function(...) return sigh.Decode(...) end, sigh)
