@@ -11,6 +11,7 @@ esac
 
 # make sure we're in this bash's directory
 cd $( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+mkdir ../data/bin
 cd ../data/bin
 
 #if we don't have binaries get them from github
