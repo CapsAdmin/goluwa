@@ -4,13 +4,10 @@ do
 	local ffi = require "ffi"
 	local bit = require "bit"
 	local band = bit.band
-	local bor = bit.bor
 	local bxor = bit.bxor
 	local bnot = bit.bnot
 
 	local rshift = bit.rshift
-	local lshift = bit.lshift
-
 
 	-- Karl Malbrain's compact CRC-32.
 	-- See "A compact CCITT crc16 and crc32 C implementation that balances processor cache usage against speed":
@@ -22,31 +19,10 @@ do
 		0x76dc4190, 0x6b6b51f4, 0x4db26158, 0x5005713c,
 		0xedb88320, 0xf00f9344, 0xd6d6a3e8, 0xcb61b38c,
 		0x9b64c2b0, 0x86d3d2d4, 0xa00ae278, 0xbdbdf21c
-		});
+	});
 
-	local MZ_CRC32_INIT = 0
-
-	function mz_crc32(buff, buf_len, crc)
-		crc = crc or 0
-		local crcu32 = crc;
-		local ptr = ffi.cast("const uint8_t *", buff);
-
-		if (ptr == nil) then
-			return 0;
-		end
-
-		crcu32 = bnot(crcu32);
-
-		while (buf_len>0) do
-			local b = ptr[0];
-			crcu32 = bxor(rshift(crcu32, 4), s_crc32[bxor(band(crcu32, 0xF), band(b, 0xF))]);
-			crcu32 = bxor(rshift(crcu32, 4), s_crc32[bxor(band(crcu32, 0xF), rshift(b, 4))]);
-
-			ptr = ptr + 1
-			buf_len = buf_len - 1
-		end
-
-		return bnot(crcu32);
+	function mz_crc32(buff, buf_len)
+		
 	end
 
 	function crypto.CRC32(src, len)
@@ -61,7 +37,28 @@ do
 		
 		if not len then return nil end
 
-		return mz_crc32(src, len)
+		local crcu32 = 0ULL
+		local ptr = ffi.cast("const uint8_t *", src)
+
+		if ptr == nil then
+			return 0
+		end
+
+		crcu32 = bnot(crcu32);
+
+		while len > 0 do
+			local b = ptr[0];
+			
+			crcu32 = bxor(rshift(crcu32, 4), s_crc32[bxor(band(crcu32, 0xF), band(b, 0xF))])
+			crcu32 = bxor(rshift(crcu32, 4), s_crc32[bxor(band(crcu32, 0xF), rshift(b, 4))])
+
+			ptr = ptr + 1
+			len = len - 1
+		end
+
+		crcu32 = bnot(crcu32)
+
+		return tostring(crcu32):sub(0, -4) -- asdf
 	end
 end
 
