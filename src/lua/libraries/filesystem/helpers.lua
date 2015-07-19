@@ -23,7 +23,7 @@ local function add_helper(name, func, mode, cb)
 	vfs[name] = function(path, ...)
 		check(path, "string")
 		
-		if cb then cb(path) end
+		if cb then cb(path, ...) end
 		
 		local file, err = vfs.Open(path, mode)
 		
@@ -40,7 +40,14 @@ local function add_helper(name, func, mode, cb)
 end
 
 add_helper("Read", "ReadAll", "read")
-add_helper("Write", "WriteBytes", "write", function(path) 
+add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
+	path = path:gsub("(.+/)(.+)", function(folder, file_name) 
+		for i, char in ipairs({--[['\\', '/', ]]':', '%*', '%?', '"', '<', '>', '|'}) do
+			file_name = file_name:gsub(char, "_il" .. char:byte() .. "_")
+		end
+		return folder .. file_name
+	end)
+		
 	if path:startswith("data/") then
 		local fs = vfs.GetFileSystem("os")
 		if fs then
@@ -52,6 +59,13 @@ add_helper("Write", "WriteBytes", "write", function(path)
 				fs:CreateFolder({full_path = base .. dir:sub(#"data/"+1)})
 			end
 		end
+	end
+	
+	if on_change then
+		vfs.MonitorFile(path, function(file_path) 
+			on_change(vfs.Read(file_path), file_path)
+		end)
+		on_change(content)
 	end
 end)
 add_helper("GetLastModified", "GetLastModified", "read")
