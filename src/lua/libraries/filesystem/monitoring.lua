@@ -4,14 +4,14 @@ function vfs.MonitorFile(file_path, callback)
 	check(file_path, "string")
 	check(callback, "function")
 
-	local last = vfs.GetAttributes(file_path)
+	local last = vfs.GetLastModified(file_path)
+	local first = true
 	
 	if last then
-		last = last.last_modified 
-		event.CreateTimer(file_path, 0, 0, function()
-			local time = vfs.GetAttributes(file_path)
+		event.CreateTimer(file_path, 1, 0, function()
+			local time = vfs.GetLastModified(file_path)
 			if time then
-				time = time.last_modified
+				if first then first = nil return end
 				if last ~= time then
 					logf("[vfs monitor] %s changed!\n", file_path)
 					last = time
