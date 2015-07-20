@@ -2174,60 +2174,63 @@ do -- stacking
 		local pad = self:GetPadding()
 			
 		for _, pnl in ipairs(self:GetChildren()) do
-			if not pnl:IsStackable() then goto NEXT end
-			local siz = pnl:GetSize()
-			
-			if self.ForcedStackSize.w ~= 0 then
-				siz.w = self.ForcedStackSize.w
-			end
-			
-			if self.ForcedStackSize.h ~= 0 then
-				siz.h = self.ForcedStackSize.h
-			end
-			
-			siz = siz + self.Padding:GetSize()
+			if pnl:IsStackable() then
+				local siz = pnl:GetSize():Copy()
+				
+				if self.ForcedStackSize.w ~= 0 then
+					siz.w = self.ForcedStackSize.w
+				end
+				
+				if self.ForcedStackSize.h ~= 0 then
+					siz.h = self.ForcedStackSize.h
+				end
+				
+				siz.x = siz.x + self.Padding.w
+				siz.y = siz.y + self.Padding.h
 
-			if self.StackRight then
-				h = h or siz.h
-				w = w + siz.w
+				if self.StackRight then
+					h = h or siz.h
+					w = w + siz.w
 
-				if self.StackDown and w > self:GetWidth() then
+					if self.StackDown and w > self:GetWidth() then
+						h = h + siz.h
+						w = siz.w
+					end
+					
+					pnl.Position.x = w + pad.w - siz.w
+					pnl.Position.y = h + pad.h - siz.h
+				else
+					h = h or 0
 					h = h + siz.h
-					w = siz.w
+					w = siz.w > w and siz.w or w
+					
+					--pnl:SetPosition(Vec2(pad.x, h + pad.y - siz.h))
+					pnl.Position.x = pad.x
+					pnl.Position.y = h + pad.y - siz.h
 				end
 				
-				pnl:SetPosition(Vec2(w + pad.w, h + pad.h) - siz)
-			else
-				h = h or 0
-				h = h + siz.h
-				w = siz.w > w and siz.w or w
-				
-				pnl:SetPosition(Vec2(pad.x, h + pad.y - siz.h))
-			end
-			
-			if not self.ForcedStackSize:IsZero() then
-				local siz = self.ForcedStackSize
-				
-				if self.SizeStackToWidth then
-					siz.w = self:GetWidth()
-				end
-				
-				if self.SizeStackToHeight then
-					siz.w = self:GetHeight()
-				end
+				if not self.ForcedStackSize:IsZero() then
+					local siz = self.ForcedStackSize
+					
+					if self.SizeStackToWidth then
+						siz.w = self:GetWidth()
+					end
+					
+					if self.SizeStackToHeight then
+						siz.w = self:GetHeight()
+					end
 
-				pnl:SetSize(Vec2(siz.w - pad.h * 2, siz.h))
-			else
-				if self.SizeStackToWidth then
-					pnl:SetWidth(self:GetWidth() - pad.w * 2)
-				end
-				
-				if self.SizeStackToHeight then
-					pnl:SetHeight(self:GetHeight() - pad.h * 2)
+					pnl:SetSize(Vec2(siz.w - pad.h * 2, siz.h))
+				else
+					if self.SizeStackToWidth then
+						pnl:SetWidth(self:GetWidth() - pad.w * 2)
+					end
+					
+					if self.SizeStackToHeight then
+						pnl:SetHeight(self:GetHeight() - pad.h * 2)
+					end
 				end
 			end
-			
-			::NEXT::
 		end
 		
 		if self.SizeStackToWidth then
@@ -2371,12 +2374,14 @@ end
 do -- events
 	function PANEL:OnDraw()
 		if self.NoDraw or self.style_nodraw then return end
-		
-		local r,g,b,a = self.Color:Unpack()
-		local mr,mg,mb,ma = self.DrawColor:Unpack()
-		
+				
 		surface.SetAlphaMultiplier(self.DrawAlpha)
-		surface.SetColor(r+mr,g+mg,b+mb,a+ma)
+		surface.SetColor(
+			self.Color.r + self.DrawColor.r,
+			self.Color.g + self.DrawColor.g,
+			self.Color.b + self.DrawColor.b,
+			self.Color.a + self.DrawColor.a
+		)
 		surface.SetTexture(self.Texture)
 		
 		self:DrawRect()

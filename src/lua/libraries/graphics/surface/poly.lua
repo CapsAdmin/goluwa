@@ -144,8 +144,8 @@ function META:Draw(count)
 		self.mesh:UpdateBuffer()
 		self.dirty = false
 	end
-	surface.mesh_2d_shader.tex = surface.GetTexture()
-	surface.mesh_2d_shader.global_color = surface.GetColor(true)
+	surface.mesh_2d_shader.tex = surface.bound_texture--surface.GetTexture()
+	--surface.mesh_2d_shader.global_color = surface.GetColor(true)
 	self.mesh:Draw(count)
 end
 
