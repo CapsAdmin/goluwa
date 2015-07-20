@@ -83,8 +83,6 @@ function render.DrawScene(skip_2d)
 	
 	if skip_2d then return end
 	
-	render.GetScreenFrameBuffer():Bind()
-	
 	render.EnableDepth(false)	
 	render.SetBlendMode("alpha")	
 	render.SetCullMode("back")

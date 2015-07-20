@@ -414,20 +414,19 @@ function render.DrawGBuffer()
 	end
 		
 	-- gbuffer	
-	render.SetBlendMode("alpha")	
+	render.SetBlendMode("alpha")
 	render.SetCullMode("back")
 	render.EnableDepth(false)	 
-		
+			
 	for i, shader in ipairs(render.gbuffer_shaders_sorted) do
 		if shader.gbuffer_pass.Update then
 			shader.gbuffer_pass:Update()
 		end
 		
 		render.gbuffer_mixer_buffer:Begin()
-			surface.PushMatrix(0, 0, render.gbuffer_width , render.gbuffer_height)
+			surface.PushMatrix(0, 0, render.gbuffer_size.w, render.gbuffer_size.h)
 				render.SetShaderOverride(shader)
 				surface.rect_mesh:Draw()
-				render.SetShaderOverride()
 			surface.PopMatrix()
 		render.gbuffer_mixer_buffer:End()
 		
@@ -435,7 +434,9 @@ function render.DrawGBuffer()
 			shader.gbuffer_pass:PostRender()
 		end
 	end
-		
+	
+	render.SetShaderOverride()
+	
 	surface.SetTexture(render.gbuffer_mixer_buffer:GetTexture())
 	surface.SetColor(1,1,1,1)
 	surface.DrawRect(0, 0, surface.GetSize())
