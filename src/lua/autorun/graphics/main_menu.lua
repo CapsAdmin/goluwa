@@ -74,6 +74,7 @@ function menu.UpdateBackground()
 end
 
 local background = ColorBytes(64, 44, 128, 255)
+background = background + Color(0.25, 0.222, 0.20) -- hack fix  because the background is black
 
 function menu.RenderBackground(dt)		
 	emitter:Update(dt)
@@ -96,7 +97,7 @@ function menu.CreateTopBar()
 	bar:SetStyle("gradient")
 	bar:SetDraggable(true)
 	
-	bar:SetCachedRendering(true)
+	--bar:SetCachedRendering(true)
 	
 	bar:MoveLeft()
 	bar:MoveUp()
@@ -105,6 +106,12 @@ function menu.CreateTopBar()
 		bar:SetHeight(15*S)
 		bar:SetPadding(Rect()+S*4)
 		self:SetWidth(window.GetSize().w)
+	end
+	
+	function bar:OnPreDraw()
+		surface.SetWhiteTexture()
+		surface.SetColor(0,0,0,0.25)
+		surface.DrawRect(11, 11, self.Size.w, self.Size.h)
 	end
 	
 	menu.panel = bar
@@ -120,6 +127,11 @@ function menu.CreateTopBar()
 		
 		button.OnPress = function()
 			local menu = gui.CreateMenu(options, bar)
+			function menu:OnPreDraw()
+				surface.SetWhiteTexture()
+				surface.SetColor(0,0,0,0.25)
+				surface.DrawRect(11, 11, self.Size.w, self.Size.h)
+			end
 			menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*S), options)
 			menu:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)
 			menu:SetVisible(true)

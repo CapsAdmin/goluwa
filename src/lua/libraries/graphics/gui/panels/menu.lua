@@ -77,7 +77,7 @@ do
 		self.menu = NULL
 		
 		self:SetNoDraw(true)
-		self:SetStyle("button_active")
+		self:SetStyle("menu_select")
 				
 		local img = self:CreatePanel("base", "image")
 		img:SetIgnoreMouse(true)
