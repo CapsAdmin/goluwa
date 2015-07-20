@@ -28,6 +28,9 @@ TMPL.Network = {
 function TMPL:Initialize()
 	self.temp_scale = Vec3(1, 1, 1)
 	self.visible_matrix_cache = {}
+	for i = 1, 8 do
+		self.visible_matrix_cache[i] = Matrix44()
+	end
 end
 
 function TMPL:GetTRPosition()
@@ -109,7 +112,7 @@ function TMPL:InvalidateTRMatrix()
 end
 
 function TMPL:RebuildMatrix()
-	if self.rebuild_scale_matrix and self.temp_scale.x ~= 1 or self.temp_scale.y ~= 1 or self.temp_scale.z ~= 1 then
+	if self.rebuild_scale_matrix and (self.temp_scale.x ~= 1 or self.temp_scale.y ~= 1 or self.temp_scale.z ~= 1) then
 		self.ScaleMatrix:Identity()
 		self.ScaleMatrix:Scale(self.temp_scale.y, self.temp_scale.x, self.temp_scale.z)
 		--self.ScaleMatrix:Shear(self.Shear)
@@ -170,9 +173,7 @@ do
 		
 		local matrix = self:GetMatrix()
 
-		for i, pos in ipairs(points) do
-			self.visible_matrix_cache[i] = self.visible_matrix_cache[i] or Matrix44()
-			
+		for i, pos in ipairs(points) do			
 			self.visible_matrix_cache[i]:Identity()
 			self.visible_matrix_cache[i]:Translate(pos.x, pos.y, pos.z)
 

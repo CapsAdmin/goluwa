@@ -171,7 +171,6 @@ do -- 3d 2d
 end
 
 function META:Rebuild(type)
-	self.shader_variables = self.shader_variables or {}
 	local vars = self.shader_variables
 	
 	if type == nil or type == "projection" then
@@ -284,6 +283,7 @@ META:Register()
 function render.CreateCamera()
 	local self = prototype.CreateObject("camera")
 	self.matrix_stack = {}
+	self.shader_variables = {}
 	self:Rebuild()
 	return self
 end
