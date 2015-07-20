@@ -205,14 +205,14 @@ function render.InitializeGBuffer(width, height)
 	width = width or render.GetWidth()
 	height = height or render.GetHeight()
 	
-	render.camera_3d:SetViewport(Rect(0,0,width,height))
-	
-	render.gbuffer_size = Vec2(width, height)
-	
 	if w_cvar:Get() > 0 then width = w_cvar:Get() end
 	if h_cvar:Get() > 0 then height = h_cvar:Get() end
 	
 	if width == 0 or height == 0 then return end
+	
+	render.camera_3d:SetViewport(Rect(0,0,width,height))
+	
+	render.gbuffer_size = Vec2(width, height)
 		
 	render.gbuffer_width = width
 	render.gbuffer_height = height
