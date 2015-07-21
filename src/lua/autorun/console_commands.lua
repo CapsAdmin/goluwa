@@ -272,8 +272,8 @@ console.AddCommand("lfind", function(line)
 			local str = info.str
 			str = str:gsub("\t", " ")
 			--str = str:sub(0, info.start-1) ..  ">>>" .. str:sub(info.start, info.stop) .. "<<<" .. str:sub(info.stop+1)
-			logf("\t%d: %s", info.line, str)
-			logn((" "):rep(#tostring(info.line) + 9 + info.start), ("^"):rep(info.stop - info.start + 1))
+			logf("\t%d: %s\n", info.line, str)
+			logn((" "):rep(#tostring(info.line) + 5 + info.start), ("^"):rep(info.stop - info.start + 1))
 		end
 	end
 end)

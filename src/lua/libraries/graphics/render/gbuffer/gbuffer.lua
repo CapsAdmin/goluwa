@@ -157,7 +157,7 @@ do -- mixer
 				end
 			end
 
-			if not console.IsVariableAdded("render_g_" .. PASS.Name) then			
+			if not console.IsVariableAdded("render_pp_" .. PASS.Name) then			
 				local pass = table.copy(PASS)
 				local default = PASS.Default
 				
@@ -165,7 +165,7 @@ do -- mixer
 					default = true
 				end
 						
-				console.CreateVariable("render_g_" .. pass.Name, default, function(val)
+				console.CreateVariable("render_pp_" .. pass.Name, default, function(val)
 					if val then
 						render.AddGBufferShader(pass, true)
 					else
@@ -174,7 +174,7 @@ do -- mixer
 				end)
 			end
 			
-			if not console.GetVariable("render_g_" .. PASS.Name) then
+			if not console.GetVariable("render_pp_" .. PASS.Name) then
 				render.RemoveGBufferShader(PASS.Name)
 			end
 		end

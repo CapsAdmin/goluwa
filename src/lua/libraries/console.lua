@@ -399,8 +399,7 @@ do -- console vars
 					value = ("%q"):format(value)
 				end
 				
-				logf("%s == %s\n", name, luadata.ToString(value))
-				logn("default == ", luadata.ToString(def))
+				logf("%s = %s (default = %s)\n", name, luadata.ToString(value), luadata.ToString(def))
 				local help = console.GetCommands()[name].help
 				if help then
 					if type(help) == "function" then

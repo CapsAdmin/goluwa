@@ -1,26 +1,4 @@
-local rate_cvar = console.CreateVariable("max_fps", 0, "-1\t=\trun as fast as possible\n0\t=\tvsync\n+1\t=\t/try/ to run at this framerate (using sleep)")
-
-local fps_cvar = console.CreateVariable("show_fps", true)
-
-local avg_fps = 1
-
-local function calc_fps(dt)	
-	local fps = 1/dt
-	
-	avg_fps = avg_fps + ((fps - avg_fps) * dt)
-	
-	if wait(0.25) then
-		console.SetTitle(("FPS: %i"):format(avg_fps), "fps")
-		
-		if utility and utility.FormatFileSize then
-			console.SetTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
-		end
-		
-		if GRAPHICS then
-			window.SetTitle(console.GetTitle())
-		end
-	end
-end
+local rate_cvar = console.CreateVariable("system_fps_max", 0, "-1\t=\trun as fast as possible\n 0\t=\tvsync\n+1\t=\t/try/ to run at this framerate (using sleep)")
 
 -- main loop
 
@@ -65,9 +43,7 @@ local function main()
 	
 		last_time = time
 		
-		if fps_cvar:Get() then
-			calc_fps(dt)
-		end
+		system.UpdateTitlebarFPS(dt)
 		
 		if rate > 0 then
 			system.Sleep(math.floor(1/rate * 1000))

@@ -21,6 +21,31 @@ do
 	end
 end
 
+do
+	local show = console.CreateVariable("system_fps_show", true, "show fps in titlebar")
+	local avg_fps = 1
+
+	function system.UpdateTitlebarFPS(dt)	
+		if not show:Get() then return end
+		
+		local fps = 1/dt
+		
+		avg_fps = avg_fps + ((fps - avg_fps) * dt)
+		
+		if wait(0.25) then
+			console.SetTitle(("FPS: %i"):format(avg_fps), "fps")
+			
+			if utility and utility.FormatFileSize then
+				console.SetTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
+			end
+			
+			if GRAPHICS then
+				window.SetTitle(console.GetTitle())
+			end
+		end
+	end
+end
+
 local function not_implemented() debug.trace() logn("this function is not yet implemented!") end
 
 function system.ExecuteArgs(args)

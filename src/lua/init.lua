@@ -189,8 +189,8 @@ do -- libraries
 	threads = include("lua/libraries/threads.lua")
 	serializer = include("lua/libraries/serializer.lua")
 
-	system = include("lua/libraries/system.lua")
 	console = include("lua/libraries/console.lua")
+	system = include("lua/libraries/system.lua")
 	profiler = include("lua/libraries/profiler.lua")
 	cookies = include("lua/libraries/cookies.lua")
 	expression = include("lua/libraries/expression.lua")

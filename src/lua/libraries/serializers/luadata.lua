@@ -162,7 +162,7 @@ function luadata.Decode(str, skip_error)
 	local ok, err
 	
 	if not skip_error then 
-		ok, err = xpcall(func, system.OnError)
+		ok, err = xpcall(func, system and system.OnError or print)
 	else 
 		ok, err = pcall(func)
 	end
