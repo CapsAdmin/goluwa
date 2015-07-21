@@ -15,9 +15,9 @@ function PASS:Draw3D()
 	
 	render.gbuffer:WriteThese("light")
 	render.gbuffer:Clear("light")
-	render.gbuffer:Begin()
+	render.gbuffer:Push()
 		event.Call("Draw3DLights")
-	render.gbuffer:End() 	
+	render.gbuffer:Pop() 	
 end
 
 function PASS:DrawDebug(i,x,y,w,h,size)

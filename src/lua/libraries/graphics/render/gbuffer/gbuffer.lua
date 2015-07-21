@@ -423,12 +423,12 @@ function render.DrawGBuffer()
 			shader.gbuffer_pass:Update()
 		end
 		
-		render.gbuffer_mixer_buffer:Begin()
+		render.gbuffer_mixer_buffer:Push()
 			surface.PushMatrix(0, 0, render.gbuffer_size.w, render.gbuffer_size.h)
 				render.SetShaderOverride(shader)
 				surface.rect_mesh:Draw()
 			surface.PopMatrix()
-		render.gbuffer_mixer_buffer:End()
+		render.gbuffer_mixer_buffer:Pop()
 		
 		if shader.gbuffer_pass.PostRender then
 			shader.gbuffer_pass:PostRender()

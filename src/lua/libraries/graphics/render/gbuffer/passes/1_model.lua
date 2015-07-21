@@ -31,11 +31,11 @@ function PASS:Draw3D()
 	
 	render.gbuffer:Clear("all", 0,0,0,0,  1)
 	
-	render.gbuffer:Begin()
+	render.gbuffer:Push()
 		event.Call("PreGBufferModelPass")
 		render.Draw3DScene()
 		event.Call("PostGBufferModelPass")
-	render.gbuffer:End()
+	render.gbuffer:Pop()
 end
 
 PASS.Shader = {
