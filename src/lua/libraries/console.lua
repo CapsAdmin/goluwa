@@ -848,7 +848,7 @@ if not DISABLE_CURSES then
 			c.y = y or c.y
 			c.x = x or c.x 
 			
-			c.y = math.clamp(c.y, 0, curses.getcury(c.log_window) - curses.LINES + console.input_height + 1)
+			c.y = math.clamp(c.y, 0, math.max(curses.getcury(c.log_window) - curses.LINES + console.input_height + 1, 0))
 
 			curses.pnoutrefresh(c.log_window, c.y, c.x,    1,0,curses.LINES-console.input_height-1,curses.COLS)
 			dirty = true

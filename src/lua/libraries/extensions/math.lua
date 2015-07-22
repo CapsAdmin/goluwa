@@ -40,7 +40,10 @@ function math.randomf(min, max)
 end
 
 function math.clamp(self, min, max)
-	return math.max(math.min(self, max),min)
+	return 
+		self <= min and min or 
+		self >= max and max or 
+		self
 end
 
 function math.lerp(m, a, b)
