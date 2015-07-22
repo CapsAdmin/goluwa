@@ -745,7 +745,7 @@ local function parse_scene(scene, path, callback)
 			table.insert(sub_model.vertices, data)
 			
 			if callback then
-				coroutine.yield()
+				threads.Sleep()
 			end
 		end
 		
@@ -792,7 +792,7 @@ local function parse_scene(scene, path, callback)
 		
 		if callback then
 			callback(sub_model, i+1, scene.mNumMeshes)
-			coroutine.yield()
+			threads.Sleep()
 		end
 	end	
 	

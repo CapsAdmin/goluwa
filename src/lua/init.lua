@@ -342,4 +342,6 @@ do
 	logf("[init] launch time took %s seconds (average startup time is %s seconds) \n", time, average)
 end
 
+event.Call("Initialize")
+
 include("lua/main_loop.lua")

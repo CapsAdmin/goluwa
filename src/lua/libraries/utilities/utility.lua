@@ -3,6 +3,35 @@ local utility = _G.utility or {}
 include("packed_rectangle.lua", utility)
 include("quickbms.lua", utility)
 
+function utility.CreateDeferredLibrary(name)
+	return setmetatable(
+		{
+			queue = {},
+			Start = function(self)
+				_G[name] = self
+			end,
+			Stop = function()
+				_G[name] = nil
+			end,
+			Call = function(self, lib)
+				for i, v in ipairs(self.queue) do
+					if not lib[v.key] then error(v.key .. " was not found", 2) end
+					print(self, lib)
+					lib[v.key](unpack(v.args))
+				end
+				return lib
+			end,
+		}, 
+		{
+			__index = function(self, key)
+				return function(...)
+					table.insert(self.queue, {key = key, args = {...}})
+				end
+			end,
+		}
+	)
+end
+
 function utility.LuaAutoComplete(text)	
 	local found = {}
 	local node = _G

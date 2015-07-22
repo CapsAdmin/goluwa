@@ -5,6 +5,8 @@ threads.max = 4
 threads.coroutine_lookup = threads.coroutine_lookup or utility.CreateWeakTable()
 threads.created = threads.created or {}
 
+local enabled event.AddListener("Initialize", function() enabled = console.CreateVariable("threads_enable", true) end)
+
 local META = prototype.CreateTemplate("thread")
 
 prototype.GetSet(META, "Frequency", 0)
@@ -15,6 +17,12 @@ prototype.IsSet(META, "Running", false)
 META.wait = 0
  
 function META:Start(now)
+	
+	if not enabled:Get() then
+		event.Delay(0, function() self:OnStart() end)
+		return
+	end
+	
 	if not now then
 		self.run_me = true
 		return
@@ -94,6 +102,7 @@ function META:Start(now)
 end
  
 function META:Sleep(sec)
+	if not enabled:Get() then return end
 	if sec then self.wait = system.GetElapsedTime() + sec end
 	coroutine.yield()
 end
