@@ -92,12 +92,6 @@ function CONTEXT:IsFile(path_info)
 end
 
 function CONTEXT:IsFolder(path_info)
-		
-	-- gma files are folders
-	if path_info.folder_name:find("^.+%."..self.Extension.."$") then
-	--	return true
-	end
-
 	local archive_path, relative = self:SplitPath(path_info)
 	local tree = self:GetFileTree(archive_path)
 	local entry = tree:GetEntry(relative)
