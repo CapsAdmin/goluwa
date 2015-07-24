@@ -16,7 +16,7 @@ PASS.Source = [[
 
 		float depth = get_depth(uv);
 		
-		if (depth > 1.0) return 1;
+		if (depth > 1.0) return 1.0;
 		
 		float pw = 1.0 / g_screen_size.x;
 		float ph = 1.0 / g_screen_size.y;

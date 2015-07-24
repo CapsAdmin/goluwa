@@ -66,7 +66,6 @@ PASS.Shader = {
 			out vec4 out_color;
 			
 			#define EPSILON 0.00001			
-			#extension GL_NV_shadow_samplers_cube:enable
 			
 			float get_shadow(vec2 uv)    
 			{
@@ -90,7 +89,7 @@ PASS.Shader = {
 					vec4 temp = light_projection_view * g_projection_view_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
 					vec3 shadow_coord = (temp.xyz / temp.w);
 					
-					//if (shadow_coord.z < -1) return 0;
+					//if (shadow_coord.z < -1) return 0.0;
 					
 					if (shadow_coord.x > -1 && shadow_coord.x < 1 && shadow_coord.y > -1 && shadow_coord.y < 1 && shadow_coord.z > -1 && shadow_coord.z < 1)
 					{	
@@ -111,7 +110,7 @@ PASS.Shader = {
 						
 			float get_attenuation(vec3 view_pos, vec2 uv)
 			{												
-				if (project_from_camera) return 1;
+				if (project_from_camera) return 1.0;
 				
 				float distance = length(light_view_pos - view_pos);
 				distance = distance / lua[light_radius = 1000];
