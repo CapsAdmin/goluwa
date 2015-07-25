@@ -235,43 +235,28 @@ end
 do -- editors
 	if WINDOWS then
 		local editors = {
-			{	
-				-- if you have sublime installed you most likely don't have any other editor installed
-				name = "sublime_text",
-				args = "%PATH%:%LINE%",
-			},
-			{
-				name = "notepad2",
-				args = "/g %LINE% %PATH%",
-			},
-			{
-				name = "notepad++",
-				args = "\"%PATH%\" -n%LINE%",
-			},
-			{
-				name = "notepad",
-				args = "/A %PATH%",
-			},
+			["ZeroBrane.Studio"] = "%PATH%:%LINE%",
+			["notepad++.exe"] = "\"%PATH%\" -n%LINE%",
+			["notepad2.exe"] = "/g %LINE% %PATH%",
+			["sublime_text.exe"] = "%PATH%:%LINE%",
+			["notepad.exe"] = "/A %PATH%",
 		}
 
 		function system.FindFirstEditor(os_execute, with_args)
-			for k, v in pairs(editors) do
-				local path = system.GetRegistryValue("ClassesRoot/Applications/"..v.name..".exe/shell/open/command/default")
-				
+			local app = system.GetRegistryValue("ClassesRoot/.lua/default")
+			if app then
+				local path = system.GetRegistryValue("ClassesRoot/" .. app .. "/shell/edit/command/default")
+				path = path and path:match("(.-) %%") or path:match("(.-) \"%%")
 				if path then
-					if os_execute then 
-						path = path:match([[(".-")]]) or path:match("(.-) %%")
-						if not path then return end
+					if os_execute then
 						path = "start \"\" " .. path
-					else
-						path = path:match([["(.-)"]])
 					end
 					
-					if with_args and v.args then 
-						path = path .. " " .. v.args
+					if with_args and editors[app] then 
+						path = path .. " " .. editors[app]
 					end
 					
-					return path
+					return path					
 				end
 			end
 		end
