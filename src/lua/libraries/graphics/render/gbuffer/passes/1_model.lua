@@ -203,6 +203,12 @@ vec3 get_world_normal(vec2 uv)
 }]], "get_world_normal")
 
 render.AddGlobalShaderCode([[
+float get_diffuse(vec2 uv)
+{
+	return texture(tex_diffuse, uv).rgb;
+}]], "get_diffuse")
+
+render.AddGlobalShaderCode([[
 float get_metallic(vec2 uv)
 {
 	return texture(tex_normal, uv).a;

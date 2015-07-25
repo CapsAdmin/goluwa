@@ -33456,17 +33456,19 @@ function gl.Initialize(get_proc_address)
 				local last
 				local last_target
 				function bind(self, target)
-					if self ~= last or target ~= last_target then
+					if self.id ~= last or target ~= last_target then
 						gl.BindFramebuffer(target, self.id)
 					end
-					last = self
+					last = self.id
 					last_target = target
 				end
 				local func = gl.BindFramebuffer
 				function gl.BindFramebuffer(target, id)
-					func(target, id)
-					last = nil
-					last_target = nil
+					if id ~= last or target ~= last_target then
+						func(target, id)
+					end
+					last = id
+					last_target = target
 				end
 			end
 			function META:Bind(target)

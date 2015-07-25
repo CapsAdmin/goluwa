@@ -251,3 +251,9 @@ PASS.Shader = {
 }
 
 render.RegisterGBufferPass(PASS)
+
+render.AddGlobalShaderCode([[
+vec3 get_light(vec2 uv)
+{
+	return texture(tex_light, uv).rgb;
+}]], "get_light")
