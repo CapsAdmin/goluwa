@@ -34116,10 +34116,16 @@ function gl.Initialize(get_proc_address)
 					func(target, id)
 					last = nil
 				end
+			
+				local base = gl.e.GL_TEXTURE0
+
+				function META:Bind(location)
+					last = nil
+					gl.ActiveTexture(base + location)
+					bind(self)
+				end			
 			end
-			function META:Bind()
-				bind(self)
-			end
+			
 			function META:SubImage1DEXT(level, xoffset, width, format, type, pixels)
 				bind(self) return gl.TexSubImage1DEXT(self.target, level, xoffset, width, format, type, pixels)
 			end

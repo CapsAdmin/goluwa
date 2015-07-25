@@ -841,20 +841,12 @@ do
 
 end
 
-do
-	local base = gl.e.GL_TEXTURE0 
-
-	function META:Bind(location)
-		if self.Loading then
-			self = render.GetLoadingTexture()
-		end
-		
-		if self.not_dsa then
-			gl.ActiveTexture(base + location)
-		end
-		
-		self.gl_tex:Bind(location or 0)
+function META:Bind(location)
+	if self.Loading then
+		self = render.GetLoadingTexture()
 	end
+
+	self.gl_tex:Bind(location or 0)
 end
 
 META:Register()
