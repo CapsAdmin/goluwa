@@ -224,6 +224,7 @@ function META:Rebuild(type)
 		if type == nil or type == "projection" or type == "view" then
 			vars.projection_inverse = vars.projection:GetInverse()
 			vars.view_inverse = vars.view:GetInverse()
+
 			vars.projection_view = vars.view * vars.projection
 			vars.projection_view_inverse = vars.projection_view:GetInverse()
 		end
@@ -232,12 +233,12 @@ function META:Rebuild(type)
 			vars.world = self.World
 			vars.view_world =  vars.world * vars.view
 			vars.view_world_inverse = vars.view_world:GetInverse()
-			vars.normal_matrix = vars.view_world:GetInverse():GetTranspose()
+			vars.normal_matrix = vars.view_world_inverse:GetTranspose()
 		end
 	
 		
 		if type == nil or type == "world" then
-			vars.world_inverse = vars.world:GetInverse()
+			--vars.world_inverse = vars.world:GetInverse()
 		end		
 	else
 		vars.world = self.World

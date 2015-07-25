@@ -123,24 +123,24 @@ function META:GetInverse(out)
 	out.m32 = -self.m00*self.m11*self.m32 + self.m00*self.m31*self.m12 + self.m01*self.m10*self.m32 - self.m01*self.m30*self.m12 - self.m02*self.m10*self.m31 + self.m02*self.m30*self.m11
 	out.m33 = self.m00*self.m11*self.m22 - self.m00*self.m21*self.m12 - self.m01*self.m10*self.m22 + self.m01*self.m20 *self.m12 + self.m02*self.m10*self.m21 - self.m02*self.m20 *self.m11
 
-	local det = self.m00*out.m00 + self.m01*out.m10 + self.m02*out.m20 + self.m03*out.m30
+	local det = 1 / (self.m00*out.m00 + self.m01*out.m10 + self.m02*out.m20 + self.m03*out.m30)
 	
-	out.m00 = out.m00 / det 
-	out.m01 = out.m01 / det 
-	out.m02 = out.m02 / det 
-	out.m03 = out.m03 / det 
-	out.m10 = out.m10 / det 
-	out.m11 = out.m11 / det 
-	out.m12 = out.m12 / det 
-	out.m13 = out.m13 / det 
-	out.m20 = out.m20 / det 
-	out.m21 = out.m21 / det 
-	out.m22 = out.m22 / det 
-	out.m23 = out.m23 / det 
-	out.m30 = out.m30 / det 
-	out.m31 = out.m31 / det 
-	out.m32 = out.m32 / det 
-	out.m33 = out.m33 / det 
+	out.m00 = out.m00 * det 
+	out.m01 = out.m01 * det 
+	out.m02 = out.m02 * det 
+	out.m03 = out.m03 * det 
+	out.m10 = out.m10 * det 
+	out.m11 = out.m11 * det 
+	out.m12 = out.m12 * det 
+	out.m13 = out.m13 * det 
+	out.m20 = out.m20 * det 
+	out.m21 = out.m21 * det 
+	out.m22 = out.m22 * det 
+	out.m23 = out.m23 * det 
+	out.m30 = out.m30 * det 
+	out.m31 = out.m31 * det 
+	out.m32 = out.m32 * det 
+	out.m33 = out.m33 * det 
 	
 	return out
 end
@@ -523,10 +523,9 @@ ffi.cdef[[
 } Matrix44;]]
 
 local meta = ffi.metatype("Matrix44", META)
-light_ctor = function() return meta():Identity() end
+light_ctor = function() return meta(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1) end
 function Matrix44()
-	local self = meta()
-	self:Identity()		
+	local self = meta(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 	return self
 end
 
