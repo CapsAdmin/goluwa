@@ -144,7 +144,7 @@ function debug.openfunction(func, line)
 		if info.source:sub(1, 1) == "@" then
 			info.source = info.source:sub(2)
 		end
-		return debug.openscript(info.source, line or info.linedefined)
+		return debug.openscript(e.ROOT_FOLDER .. info.source, line or info.linedefined)
 	end
 end
 
