@@ -21,6 +21,7 @@ COMPONENT.Network = {
 if GRAPHICS then 
 	function COMPONENT:Initialize()
 		self.sub_models = {}
+		self.next_visible = 0
 		self:SetModelPath(self.ModelPath)
 	end
 
@@ -122,7 +123,11 @@ if GRAPHICS then
 		render.camera_3d:SetWorld(self:GetComponent("transform"):GetMatrix())
 
 		if self.corners then
-			self.visible = self:GetComponent("transform"):IsPointsVisible(self.corners, render.camera_3d:GetMatrices().projection_view)
+			local time = system.GetElapsedTime()
+			if self.next_visible < time then
+				self.visible = self:GetComponent("transform"):IsPointsVisible(self.corners, render.camera_3d:GetMatrices().projection_view)
+				self.next_visible = time + (1/15)
+			end
 		end
 
 		if not self.Cull or self.visible == nil or self.visible == true then

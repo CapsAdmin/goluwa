@@ -524,8 +524,8 @@ ffi.cdef[[
 
 local meta = ffi.metatype("Matrix44", META)
 light_ctor = function() return meta(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1) end
-function Matrix44()
-	local self = meta(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+function Matrix44(x, y, z)
+	local self = meta(1,0,0,0, 0,1,0,0, 0,0,1,0, x or 0, y or 0, z or 0,1)
 	return self
 end
 

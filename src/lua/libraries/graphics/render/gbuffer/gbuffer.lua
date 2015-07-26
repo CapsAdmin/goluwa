@@ -265,7 +265,7 @@ function render.InitializeGBuffer(width, height)
 		render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_buffers)  
 		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(width, height, {
 			filter = "nearest",
-			internal_format = "rgba32f"
+			internal_format = "rgba16f"
 		})
 		
 		if not render.gbuffer:IsValid() then
@@ -423,12 +423,12 @@ function render.DrawGBuffer()
 			shader.gbuffer_pass:Update()
 		end
 		
-		render.gbuffer_mixer_buffer:Push()
+		render.gbuffer_mixer_buffer:Begin()
 			surface.PushMatrix(0, 0, render.gbuffer_size.w, render.gbuffer_size.h)
 				render.SetShaderOverride(shader)
 				surface.rect_mesh:Draw()
 			surface.PopMatrix()
-		render.gbuffer_mixer_buffer:Pop()
+		render.gbuffer_mixer_buffer:End()
 		
 		if shader.gbuffer_pass.PostRender then
 			shader.gbuffer_pass:PostRender()

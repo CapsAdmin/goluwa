@@ -31,11 +31,11 @@ function PASS:Draw3D()
 	
 	render.gbuffer:Clear("all", 0,0,0,0,  1)
 	
-	render.gbuffer:Push()
+	render.gbuffer:Begin()
 		event.Call("PreGBufferModelPass")
 		render.Draw3DScene()
 		event.Call("PostGBufferModelPass")
-	render.gbuffer:Pop()
+	render.gbuffer:End()
 end
 
 PASS.Shader = {
@@ -115,7 +115,7 @@ PASS.Shader = {
 			
 			void main()
 			{			
-				if (texture(tex_discard, get_screen_uv()).r > 0) discard;
+				//if (texture(tex_discard, get_screen_uv()).r > 0) discard;
 				
 				// diffuse
 				{
