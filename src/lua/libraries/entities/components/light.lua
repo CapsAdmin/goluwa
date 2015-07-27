@@ -133,7 +133,7 @@ if GRAPHICS then
 			tex:SetWrapS("clamp_to_edge")
 			tex:SetWrapT("clamp_to_edge")
 			tex:SetWrapR("clamp_to_edge")
-			tex:SetMinFilter("linear")
+			--tex:SetMinFilter("linear")
 			tex:SetDepthTextureMode("red")
 			tex:SetupStorage()
 	
@@ -144,7 +144,7 @@ if GRAPHICS then
 				tex:SetWrapS("clamp_to_edge")
 				tex:SetWrapT("clamp_to_edge")
 				tex:SetWrapR("clamp_to_edge")
-				tex:SetMinFilter("linear")
+				--tex:SetMinFilter("linear")
 				--tex:SetDepthTextureMode("red")
 				tex:SetupStorage()
 				self.shadow_cubemap_texture = tex
@@ -170,7 +170,7 @@ if GRAPHICS then
 		
 		self.shadow_map:Begin()				
 		
-		render.SetCullMode("front", true)
+		--render.SetCullMode("front", true)
 		render.SetShaderOverride(render.shadow_map_shader)
 	
 		local old_view = render.camera_3d:GetView()
@@ -235,7 +235,7 @@ if GRAPHICS then
 		render.camera_3d:SetProjection(old_projection)
 		
 		render.SetShaderOverride()
-		render.SetCullMode(nil, false)
+		--render.SetCullMode(nil, false)
 		
 		--render.gbuffer_light_shader.cascade_pass = i
 		

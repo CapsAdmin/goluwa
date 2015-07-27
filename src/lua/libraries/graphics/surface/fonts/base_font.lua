@@ -69,7 +69,7 @@ function META:LoadGlyph(code)
 		end
 	end
 	
-	if buffer then		
+	if buffer then
 		self.texture_atlas:Insert(code, {		
 			w = char.w, 
 			h = char.h, 
@@ -237,9 +237,7 @@ function META:CompileString(data)
 		surface.PushMatrix(x, y)
 		for i, v in ipairs(out) do
 			surface.SetTexture(v.texture)
-			render.SetCullMode("front")
 			v.poly:Draw(width_cache[w])
-			render.SetCullMode("back")
 		end	
 		surface.PopMatrix()
 	end

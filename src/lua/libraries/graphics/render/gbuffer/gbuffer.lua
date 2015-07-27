@@ -415,7 +415,6 @@ function render.DrawGBuffer()
 		
 	-- gbuffer	
 	render.SetBlendMode("alpha")
-	render.SetCullMode("back")
 	render.EnableDepth(false)	 
 			
 	for i, shader in ipairs(render.gbuffer_shaders_sorted) do

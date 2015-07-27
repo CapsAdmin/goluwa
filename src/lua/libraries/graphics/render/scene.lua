@@ -76,7 +76,7 @@ function render.DrawScene(skip_2d)
 	else
 		render.EnableDepth(true)
 		render.SetBlendMode("alpha")	
-		render.SetCullMode("back")
+		render.SetCullMode("front")
 
 		render.Draw3DScene()
 	end
@@ -85,7 +85,7 @@ function render.DrawScene(skip_2d)
 	
 	render.EnableDepth(false)	
 	render.SetBlendMode("alpha")	
-	render.SetCullMode("back")
+	render.SetCullMode("front")
 	
 	event.Call("Draw2D", system.GetFrameTime())
 	

@@ -264,9 +264,7 @@ do -- events
 		end
 	end
 	
-	function gui.Draw2D(dt)
-		render.SetCullMode("none")
-		
+	function gui.Draw2D(dt)		
 		event.Call("DrawHUD", dt)
 		event.Call("PreDrawMenu", dt)
 		

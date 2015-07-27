@@ -236,7 +236,6 @@ function lovemu.RunGame(folder, ...)
 		
 	event.AddListener("Draw2D", id, function(dt)
 		for i = 1, lovemu.speed do
-			render.SetCullMode("none")
 			surface.SetFont("lovemu")
 			lovemu.delta = dt
 			surface.SetWhiteTexture()
