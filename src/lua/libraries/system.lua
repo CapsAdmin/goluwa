@@ -246,17 +246,19 @@ do -- editors
 			local app = system.GetRegistryValue("ClassesRoot/.lua/default")
 			if app then
 				local path = system.GetRegistryValue("ClassesRoot/" .. app .. "/shell/edit/command/default")
-				path = path and path:match("(.-) %%") or path:match("(.-) \"%%")
 				if path then
-					if os_execute then
-						path = "start \"\" " .. path
+					path = path and path:match("(.-) %%") or path:match("(.-) \"%%")
+					if path then
+						if os_execute then
+							path = "start \"\" " .. path
+						end
+						
+						if with_args and editors[app] then 
+							path = path .. " " .. editors[app]
+						end
+						
+						return path					
 					end
-					
-					if with_args and editors[app] then 
-						path = path .. " " .. editors[app]
-					end
-					
-					return path					
 				end
 			end
 		end
