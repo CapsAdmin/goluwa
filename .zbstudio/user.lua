@@ -111,21 +111,21 @@ do -- profiler plugin
 		if not self.initialized then
 			local tree = load("zerobrane_statistical.msgpack")
 			
-			if tree then
-				local _, root = next(tree)
-				
+			if tree then				
 				local list = {}
 				
-				local function parse(node)
+				local function parse(node, root)
 					for k,v in pairs(node.children) do
 						local path, line = k:match("(.+):(.+)")
 						list[path] = list[path] or {}
 						list[path][line] = v.samples / root.samples
-						parse(v)
+						parse(v, root)
 					end
 				end
 				
-				parse(root)
+				for k,v in pairs(tree) do
+					parse(v, v)
+				end
 				
 				self.profile_list = list
 			end
@@ -218,14 +218,13 @@ do -- custom intepreter
 		wx.wxSetEnv("LD_LIBRARY_PATH", ".:$LD_LIBRARY_PATH")
 		
 		--callback = function(...) CONSOLE_OUT(...) end
-		local fmt = "%q -e \"io.stdout:setvbuf('no');DISABLE_CURSES=true;ZEROBRANE=true;ARGS={'include[[%s]]%s'};dofile'%s'\""
+		local fmt = "%q -e \"io.stdout:setvbuf('no');DISABLE_CURSES=true;ZEROBRANE=true;ARGS={[==[include[[%s]]%s]==]};dofile[[%s]]\""
 		
 		local root = ide.config.path.projectdir .. "/"
 		
 		local file_path = ide:GetDocument(ide:GetEditor()):GetFilePath()
-		
 		local pid = CommandLineRun(
-			fmt:format(root .. bin .. "luajit", file_path, lua, root .. "core/lua/init.lua"),
+			fmt:format(root .. bin .. "luajit", file_path, lua, root .. "src/lua/init.lua"),
 			root .. bin,
 			true,--tooutput,
 			true,--nohide,
