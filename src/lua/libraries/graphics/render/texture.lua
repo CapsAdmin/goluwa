@@ -327,10 +327,10 @@ function META:SetPath(path, face)
 	
 	resource.Download(path, function(full_path)
 		local buffer, w, h, info = render.DecodeTexture(vfs.Read(full_path), full_path)
-		
-		self:SetSize(Vec2(w, h))
-				
+						
 		if buffer then			
+			self:SetSize(Vec2(w, h))
+
 			self:Upload({
 				buffer = buffer,
 				width = w,		
