@@ -410,7 +410,7 @@ do
 end
 
 do	
-	local cull_mode = "front"
+	local cull_mode
 	local override_
 
 	function render.SetCullMode(mode, override)

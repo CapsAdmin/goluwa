@@ -74,6 +74,7 @@ function META:LoadGlyph(code)
 			w = char.w, 
 			h = char.h, 
 			buffer = buffer,
+			flip_y = true,
 		})
 		
 		self.chars[code] = char
@@ -117,10 +118,15 @@ function META:SetPolyChar(poly, i, x, y, char)
 		local x_,y_, w,h, sx,sy = self.texture_atlas:GetUV(char)
 		poly:SetUV(x_,y_, w,h, sx,sy)
 		
-		x = (x-self.Padding/2) * self.Scale.w 
-		y = ((y+self.Padding/2) * self.Scale.h) + (ch.h - ch.bitmap_top) + self.Size
+		x = x - self.Padding / 2
+		y = y - self.Padding * 2
 		
-		poly:SetRect(i, x, y, w * self.Scale.w, -h * self.Scale.h)
+		x = x * self.Scale.w
+		y = y * self.Scale.h
+		
+		y = y - ch.bitmap_top + self.Size + (0.5 * self.Scale.h)
+		
+		poly:SetRect(i, x, y, w * self.Scale.w, h * self.Scale.h)
 	end
 end
 
@@ -314,8 +320,13 @@ end
 prototype.Register(META)
 
 if RELOAD then
+	for k,v in pairs(surface.registered_fonts) do
+		surface.RegisterFont(v)
+	end
 	for k,v in pairs(surface.fonts) do
 		v.string_cache = {}
 		v.total_strings_stored = 0
+		v:CreateTextureAtlas()
+		v:Rebuild()
 	end
 end

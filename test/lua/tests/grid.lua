@@ -105,7 +105,7 @@ local function draw()
 		--surface.SetTexture(render.GetErrorTexture())
 		render.SetCullMode("front")
 		poly:Draw()
-		render.SetCullMode("back")
+		render.SetCullMode("front")
 	end
 end
 

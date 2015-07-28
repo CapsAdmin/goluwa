@@ -259,7 +259,7 @@ function lovemu.RunGame(folder, ...)
 			else
 				love.errhand(lovemu.error_msg)
 			end
-			render.SetCullMode("back")
+			render.SetCullMode("front")
 		end
 	end, {priority = math.huge}) -- draw this first
 end

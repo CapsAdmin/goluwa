@@ -30,21 +30,21 @@ end
 	
 local function set_uv(self, i, x,y, w,h, sx,sy)
 	if not x then
-		self.vertices[i + 0].uv.A = 0
-		self.vertices[i + 0].uv.B = 1
-		
 		self.vertices[i + 1].uv.A = 0
-		self.vertices[i + 1].uv.B = 0
+		self.vertices[i + 1].uv.B = 1
+		
+		self.vertices[i + 0].uv.A = 0
+		self.vertices[i + 0].uv.B = 0
 		
 		self.vertices[i + 2].uv.A = 1
 		self.vertices[i + 2].uv.B = 0
 		
 		--
 		
-		self.vertices[i + 3].uv = self.vertices[i + 2].uv
+		self.vertices[i + 4].uv = self.vertices[i + 2].uv
 		
-		self.vertices[i + 4].uv.A = 1
-		self.vertices[i + 4].uv.B = 1
+		self.vertices[i + 3].uv.A = 1
+		self.vertices[i + 3].uv.B = 1
 		
 		self.vertices[i + 5].uv = self.vertices[i + 0].uv	
 	else			
@@ -53,23 +53,23 @@ local function set_uv(self, i, x,y, w,h, sx,sy)
 		
 		y = -y - h
 		
-		self.vertices[i + 0].uv.A = x / sx
-		self.vertices[i + 0].uv.B = (y + h) / sy
-		
 		self.vertices[i + 1].uv.A = x / sx
-		self.vertices[i + 1].uv.B = y / sy
+		self.vertices[i + 1].uv.B = (y + h) / sy
+		
+		self.vertices[i + 0].uv.A = x / sx
+		self.vertices[i + 0].uv.B = y / sy
 		
 		self.vertices[i + 2].uv.A = (x + w) / sx
 		self.vertices[i + 2].uv.B = y / sy
 		
 		--
 		
-		self.vertices[i + 3].uv = self.vertices[i + 2].uv
+		self.vertices[i + 4].uv = self.vertices[i + 2].uv
 		
-		self.vertices[i + 4].uv.A = (x + w) / sx
-		self.vertices[i + 4].uv.B = (y + h) / sy
+		self.vertices[i + 3].uv.A = (x + w) / sx
+		self.vertices[i + 3].uv.B = (y + h) / sy
 		
-		self.vertices[i + 5].uv = self.vertices[i + 0].uv	
+		self.vertices[i + 5].uv = self.vertices[i + 1].uv	
 	end
 end
 
@@ -119,12 +119,12 @@ function META:SetRect(i, x,y,w,h, r, ox,oy)
 		
 	set_uv(self, i, self.U1, self.V1, self.U2, self.V2, self.UVSW, self.UVSH)
 
-	self:SetVertex(i + 0, self.X + self.OX, self.Y + self.OY)
-	self:SetVertex(i + 1, self.X + self.OX, self.Y + h + self.OY)
+	self:SetVertex(i + 0, self.X + self.OX, self.Y + h + self.OY)
+	self:SetVertex(i + 1, self.X + self.OX, self.Y + self.OY)
 	self:SetVertex(i + 2, self.X + w + self.OX, self.Y + h + self.OY)
 
-	self:SetVertex(i + 3, self.X + w + self.OX, self.Y + h + self.OY)
-	self:SetVertex(i + 4, self.X + w + self.OX, self.Y + self.OY)
+	self:SetVertex(i + 3, self.X + w + self.OX, self.Y + self.OY)
+	self:SetVertex(i + 4, self.X + w + self.OX, self.Y + h + self.OY)
 	self:SetVertex(i + 5, self.X + self.OX, self.Y + self.OY)
 end
 

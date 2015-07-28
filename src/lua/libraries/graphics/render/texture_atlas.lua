@@ -127,6 +127,8 @@ function META:Build()
 						y = data.page_y,
 						width = data.w,
 						height = data.h,
+						flip_x = data.flip_x,
+						flip_y = data.flip_y,
 					})
 				else
 					local data = data:Download()

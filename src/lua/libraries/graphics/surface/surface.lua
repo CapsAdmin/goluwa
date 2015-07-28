@@ -38,11 +38,11 @@ local SHADER = {
 }
 
 local RECT = {
-	{pos = {0, 0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 	{pos = {0, 1, 0}, uv = {0, 0}, color = {1,1,1,1}},
-	{pos = {1, 1, 0}, uv = {1, 0}, color = {1,1,1,1}},
+	{pos = {0, 0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 	{pos = {1, 1, 0}, uv = {1, 0}, color = {1,1,1,1}},
 	{pos = {1, 0, 0}, uv = {1, 1}, color = {1,1,1,1}},
+	{pos = {1, 1, 0}, uv = {1, 0}, color = {1,1,1,1}},
 	{pos = {0, 0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 }
 
@@ -249,38 +249,38 @@ do
 	local function update_vbo()
 		
 		if 
-			last_xtl ~= surface.rect_mesh.vertices[1].uv.A or
-			last_ytl ~= surface.rect_mesh.vertices[1].uv.B or
-			last_xtr ~= surface.rect_mesh.vertices[3].uv.A or
-			last_ytr ~= surface.rect_mesh.vertices[3].uv.B or
+			last_xtl ~= surface.rect_mesh.vertices[0].uv.A or
+			last_ytl ~= surface.rect_mesh.vertices[0].uv.B or
+			last_xtr ~= surface.rect_mesh.vertices[4].uv.A or
+			last_ytr ~= surface.rect_mesh.vertices[4].uv.B or
 			
-			last_xbl ~= surface.rect_mesh.vertices[0].uv.A or
-			last_ybl ~= surface.rect_mesh.vertices[1].uv.B or
-			last_xbr ~= surface.rect_mesh.vertices[4].uv.A or
-			last_ybr ~= surface.rect_mesh.vertices[4].uv.B or
+			last_xbl ~= surface.rect_mesh.vertices[1].uv.A or
+			last_ybl ~= surface.rect_mesh.vertices[0].uv.B or
+			last_xbr ~= surface.rect_mesh.vertices[3].uv.A or
+			last_ybr ~= surface.rect_mesh.vertices[3].uv.B or
 			
-			last_color_bottom_left ~= surface.rect_mesh.vertices[0].color or
-			last_color_top_left ~= surface.rect_mesh.vertices[1].color or
+			last_color_bottom_left ~= surface.rect_mesh.vertices[1].color or
+			last_color_top_left ~= surface.rect_mesh.vertices[0].color or
 			last_color_top_right ~= surface.rect_mesh.vertices[2].color or
-			last_color_bottom_right ~= surface.rect_mesh.vertices[4].color
+			last_color_bottom_right ~= surface.rect_mesh.vertices[3].color
 		then
 		
 			surface.rect_mesh:UpdateBuffer()
 			
-			last_xtl = surface.rect_mesh.vertices[1].uv.A
-			last_ytl = surface.rect_mesh.vertices[1].uv.B
-			last_xtr = surface.rect_mesh.vertices[3].uv.A
-			last_ytr = surface.rect_mesh.vertices[3].uv.B
+			last_xtl = surface.rect_mesh.vertices[0].uv.A
+			last_ytl = surface.rect_mesh.vertices[0].uv.B
+			last_xtr = surface.rect_mesh.vertices[4].uv.A
+			last_ytr = surface.rect_mesh.vertices[4].uv.B
 			           
-			last_xbl = surface.rect_mesh.vertices[0].uv.A
-			last_ybl = surface.rect_mesh.vertices[1].uv.B
-			last_xbr = surface.rect_mesh.vertices[4].uv.A
-			last_ybr = surface.rect_mesh.vertices[4].uv.B
+			last_xbl = surface.rect_mesh.vertices[1].uv.A
+			last_ybl = surface.rect_mesh.vertices[0].uv.B
+			last_xbr = surface.rect_mesh.vertices[3].uv.A
+			last_ybr = surface.rect_mesh.vertices[3].uv.B
 			
-			last_color_bottom_left = surface.rect_mesh.vertices[0].color
-			last_color_top_left = surface.rect_mesh.vertices[1].color
+			last_color_bottom_left = surface.rect_mesh.vertices[1].color
+			last_color_top_left = surface.rect_mesh.vertices[0].color
 			last_color_top_right = surface.rect_mesh.vertices[2].color
-			last_color_bottom_right = surface.rect_mesh.vertices[4].color	
+			last_color_bottom_right = surface.rect_mesh.vertices[3].color	
 		end		
 	end
 
@@ -289,40 +289,40 @@ do
 		
 		function surface.SetRectUV(x,y, w,h, sx,sy)
 			if not x then
-				surface.rect_mesh.vertices[0].uv.A = 0
-				surface.rect_mesh.vertices[0].uv.B = 1
-				
 				surface.rect_mesh.vertices[1].uv.A = 0
-				surface.rect_mesh.vertices[1].uv.B = 0
+				surface.rect_mesh.vertices[1].uv.B = 1
+				
+				surface.rect_mesh.vertices[0].uv.A = 0
+				surface.rect_mesh.vertices[0].uv.B = 0
 				
 				surface.rect_mesh.vertices[2].uv.A = 1
 				surface.rect_mesh.vertices[2].uv.B = 0
 				
 				--
 				
-				surface.rect_mesh.vertices[3].uv = surface.rect_mesh.vertices[2].uv
+				surface.rect_mesh.vertices[4].uv = surface.rect_mesh.vertices[2].uv
 				
-				surface.rect_mesh.vertices[4].uv.A = 1
-				surface.rect_mesh.vertices[4].uv.B = 1
+				surface.rect_mesh.vertices[3].uv.A = 1
+				surface.rect_mesh.vertices[3].uv.B = 1
 				
-				surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[0].uv	
+				surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[1].uv	
 			else			
 				sx = sx or 1
 				sy = sy or 1
 				
 				y = -y - h
 				
-				surface.rect_mesh.vertices[0].uv.A = x / sx
-				surface.rect_mesh.vertices[1].uv.B = y / sy
-				surface.rect_mesh.vertices[0].uv.B = (y + h) / sy
+				surface.rect_mesh.vertices[1].uv.A = x / sx
+				surface.rect_mesh.vertices[0].uv.B = y / sy
+				surface.rect_mesh.vertices[1].uv.B = (y + h) / sy
 				surface.rect_mesh.vertices[2].uv.A = (x + w) / sx
 				
-				surface.rect_mesh.vertices[1].uv.A = surface.rect_mesh.vertices[0].uv.A
-				surface.rect_mesh.vertices[2].uv.B = surface.rect_mesh.vertices[1].uv.B
-				surface.rect_mesh.vertices[3].uv = surface.rect_mesh.vertices[2].uv
-				surface.rect_mesh.vertices[4].uv.A = surface.rect_mesh.vertices[2].uv.A
-				surface.rect_mesh.vertices[4].uv.B = surface.rect_mesh.vertices[0].uv.B
-				surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[0].uv	
+				surface.rect_mesh.vertices[0].uv.A = surface.rect_mesh.vertices[1].uv.A
+				surface.rect_mesh.vertices[2].uv.B = surface.rect_mesh.vertices[0].uv.B
+				surface.rect_mesh.vertices[4].uv = surface.rect_mesh.vertices[2].uv
+				surface.rect_mesh.vertices[3].uv.A = surface.rect_mesh.vertices[2].uv.A
+				surface.rect_mesh.vertices[3].uv.B = surface.rect_mesh.vertices[1].uv.B
+				surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[1].uv	
 			end
 			
 			update_vbo()
@@ -340,17 +340,17 @@ do
 		end
 		
 		function surface.SetRectUV2(u1,v1, u2,v2)
-			surface.rect_mesh.vertices[0].uv.A = u1
-			surface.rect_mesh.vertices[1].uv.B = v1
-			surface.rect_mesh.vertices[0].uv.B = u2
+			surface.rect_mesh.vertices[1].uv.A = u1
+			surface.rect_mesh.vertices[0].uv.B = v1
+			surface.rect_mesh.vertices[1].uv.B = u2
 			surface.rect_mesh.vertices[2].uv.A = v2
 			
-			surface.rect_mesh.vertices[1].uv.A = surface.rect_mesh.vertices[0].uv.A
-			surface.rect_mesh.vertices[2].uv.B = surface.rect_mesh.vertices[1].uv.B
-			surface.rect_mesh.vertices[3].uv = surface.rect_mesh.vertices[2].uv
-			surface.rect_mesh.vertices[4].uv.A = surface.rect_mesh.vertices[2].uv.A
-			surface.rect_mesh.vertices[4].uv.B = surface.rect_mesh.vertices[0].uv.B
-			surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[0].uv	
+			surface.rect_mesh.vertices[0].uv.A = surface.rect_mesh.vertices[1].uv.A
+			surface.rect_mesh.vertices[2].uv.B = surface.rect_mesh.vertices[0].uv.B
+			surface.rect_mesh.vertices[4].uv = surface.rect_mesh.vertices[2].uv
+			surface.rect_mesh.vertices[3].uv.A = surface.rect_mesh.vertices[2].uv.A
+			surface.rect_mesh.vertices[3].uv.B = surface.rect_mesh.vertices[1].uv.B
+			surface.rect_mesh.vertices[5].uv = surface.rect_mesh.vertices[1].uv	
 			
 			update_vbo()
 		end
@@ -364,12 +364,12 @@ do
 				surface.rect_mesh.vertices[i].color = white_t
 			end
 		else
-			surface.rect_mesh.vertices[0].color = {cbl:Unpack()}
-			surface.rect_mesh.vertices[1].color = {ctl:Unpack()}
+			surface.rect_mesh.vertices[1].color = {cbl:Unpack()}
+			surface.rect_mesh.vertices[0].color = {ctl:Unpack()}
 			surface.rect_mesh.vertices[2].color = {ctr:Unpack()}
-			surface.rect_mesh.vertices[3].color = surface.rect_mesh.vertices[2].color
-			surface.rect_mesh.vertices[4].color = {cbr:Unpack()}
-			surface.rect_mesh.vertices[5].color = surface.rect_mesh.vertices[1]
+			surface.rect_mesh.vertices[4].color = surface.rect_mesh.vertices[2].color
+			surface.rect_mesh.vertices[3].color = {cbr:Unpack()}
+			surface.rect_mesh.vertices[5].color = surface.rect_mesh.vertices[0]
 		end
 		
 		update_vbo()

@@ -28,6 +28,7 @@ local gl = require("graphics.ffi.opengl") -- OpenGL
 function PASS:Draw3D()
 	render.EnableDepth(true)
 	render.SetBlendMode()
+	render.SetCullMode("front")
 	
 	render.gbuffer:Clear("all", 0,0,0,0,  1)
 	
