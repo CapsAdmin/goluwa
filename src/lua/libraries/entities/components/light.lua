@@ -133,7 +133,7 @@ if GRAPHICS then
 			tex:SetWrapS("clamp_to_edge")
 			tex:SetWrapT("clamp_to_edge")
 			tex:SetWrapR("clamp_to_edge")
-			--tex:SetMinFilter("linear")
+			tex:SetMinFilter("linear")
 			tex:SetDepthTextureMode("red")
 			tex:SetupStorage()
 	
@@ -144,7 +144,7 @@ if GRAPHICS then
 				tex:SetWrapS("clamp_to_edge")
 				tex:SetWrapT("clamp_to_edge")
 				tex:SetWrapR("clamp_to_edge")
-				--tex:SetMinFilter("linear")
+				tex:SetMinFilter("linear")
 				--tex:SetDepthTextureMode("red")
 				tex:SetupStorage()
 				self.shadow_cubemap_texture = tex
