@@ -421,6 +421,15 @@ function prototype.UpdateObjects(meta)
 					obj[k] = v
 				end
 			end
+		elseif obj.Type == meta.Type and obj.TypeBase == meta.ClassName then
+			local meta = prototype.GetRegistered(obj.Type, obj.ClassName)
+			for k, v in pairs(meta) do
+				-- update entity functions only
+				-- updating variables might mess things up
+				if type(v) == "function" then
+					obj[k] = v
+				end
+			end
 		end
 	end	
 end
