@@ -491,6 +491,55 @@ function META:Upload(data)
 		y = -data.y + self.Size.h - data.height
 	end
 	
+	if data.flip_y or data.flip_x then
+		local stride
+		
+		if data.format == "rgba" or data.format == "bgra" then
+			stride = 4
+		elseif data.format == "rgb" or data.format == "bgr" then
+			stride = 3
+		else
+			stride = 1
+		end
+	
+		local buffer = ffi.cast("uint8_t *", data.buffer)
+		local new_buffer = ffi.new("uint8_t[?]", data.width * data.height * stride)
+		
+		if data.flip_y and data.flip_x then
+			for s = 0, stride - 1 do
+			for x = 0, data.width - 1 do
+			for y = 0, data.height - 1 do
+				local i1 = (y * stride * data.width + x * stride) + s
+				local i2 = ((-y+data.height-1) * stride * data.width + (-x+data.width-1) * stride) + s
+				new_buffer[i1] = buffer[i2]
+			end
+			end
+			end
+		elseif data.flip_y then				
+			for s = 0, stride - 1 do
+			for x = 0, data.width - 1 do
+			for y = 0, data.height - 1 do
+				local i1 = (y * stride * data.width + x * stride) + s
+				local i2 = ((-y+data.height-1) * stride * data.width + x * stride) + s
+				new_buffer[i1] = buffer[i2]
+			end
+			end
+			end
+		elseif data.flip_x then
+			for s = 0, stride - 1 do
+			for x = 0, data.width - 1 do
+			for y = 0, data.height - 1 do
+				local i1 = (y * stride * data.width + x * stride) + s
+				local i2 = (y * stride * data.width + (-x+data.width-1) * stride) + s
+				new_buffer[i1] = buffer[i2]
+			end
+			end
+			end
+		end
+		
+		data.buffer = new_buffer
+	end
+	
 	if self.StorageType == "3d" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then		
 		data.x = data.x or 0
 		y = y or 0
@@ -1017,6 +1066,8 @@ local shader = render.CreateShader({
 
 serializer.WriteFile("msgpack", "lol.wtf", tex:Download())
 local info = serializer.ReadFile("msgpack", "lol.wtf")
+info.flip_y = true
+info.flip_x = true
 tex:Upload(info)
 --[[local size = 16
 tex:Fill(function(x, y)
@@ -1029,14 +1080,13 @@ end)
 --tex:Clear()
 ]]
 
-
-tex:Upload({
+--[[tex:Upload({
 	x = 50,
 	y = 50,
 	buffer = image,
 	width = 8,
 	height = 8,
-})
+})]]
 
 event.AddListener("PostDrawMenu", "lol", function()
 	--surface.PushMatrix(0, 0, tex:GetSize():Unpack())
