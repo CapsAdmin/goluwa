@@ -70,6 +70,7 @@ META:GetSet("BindMode", "all", {"all", "read", "write"})
 META:GetSet("Size", Vec2(128,128))
 
 function render.GetScreenFrameBuffer()
+	if not gl.GenFramebuffer then return end
 	if not render.screen_buffer then
 		local self = prototype.CreateObject(META)
 		self.fb = gl.CreateFramebuffer(0)

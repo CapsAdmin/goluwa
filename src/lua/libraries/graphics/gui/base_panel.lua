@@ -671,6 +671,10 @@ do -- cached rendering
 		self.CachedRendering = b
 		--if USE_MATRIX then self.CachedRendering = false end
 
+		if not render.CheckSupport("GenFramebuffer") then
+			self.CachedRendering = false
+		end
+
 		self:MarkCacheDirty()
 	end
 
