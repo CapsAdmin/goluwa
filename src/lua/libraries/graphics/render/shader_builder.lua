@@ -326,6 +326,11 @@ function render.CreateShader(data, vars)
 	for shader, info in pairs(data) do
 		local source = source_template
 		
+		if not info.source:find("\n") and info.source:find(".", nil, true) and vfs.IsFile(info.source) then
+			info.source_path = info.source
+			info.source = vfs.Read(info.source)
+		end
+		
 		if info.source and info.source:find("#version") then
 			info.source = info.source:gsub("(#version.-\n)", function(line)
 				source = line .. source
@@ -650,6 +655,14 @@ function render.CreateShader(data, vars)
 	end
 	
 	local self = prototype.CreateObject(META)
+	
+	for _, info in pairs(data) do
+		if info.source_path then
+			vfs.MonitorFile(info.source_path, function(path)
+				self:Rebuild()
+			end)
+		end
+	end
 
 	local ok, prog = pcall(render.CreateGLProgram, function(prog) 
 		local vertex_attributes = {}
@@ -1034,17 +1047,19 @@ do -- create data for vertex buffer
 		return vtx
 	end
 	
+	function META:Rebuild()
+		table.clear(self)
+		prototype.OverrideCreateObjectTable(self)
+		render.CreateShader(self.original_data)
+		prototype.OverrideCreateObjectTable()
+	end
+	
 	prototype.Register(META)
 end
 
 function render.RebuildShaders()
-	for k,v in pairs(render.active_shaders) do
-		local shader = render.CreateShader(v.original_data)
-		for k,_ in pairs(v) do
-			if type(shader[k]) == "function" then
-				v[k] = shader[k]
-			end
-		end
+	for _, shader in pairs(render.active_shaders) do
+		shader:Rebuild()
 	end
 end
 
