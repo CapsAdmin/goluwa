@@ -221,8 +221,12 @@ local function remove_callback(self)
 	prototype.created_objects[self] = nil
 end
 
+function prototype.OverrideCreateObjectTable(obj)
+	prototype.override_object = obj
+end
+
 function prototype.CreateObject(meta, override, skip_gc_callback)
-	override = override or {}
+	override = override or prototype.override_object or {}
 	
 	if type(meta) == "string" then
 		meta = prototype.GetRegistered(meta)
