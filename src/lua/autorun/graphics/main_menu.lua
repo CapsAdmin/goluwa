@@ -96,17 +96,8 @@ function menu.CreateTopBar()
 	bar:SetSkin(skin)
 	bar:SetStyle("gradient")
 	bar:SetDraggable(true)
-	
-	--bar:SetCachedRendering(true)
-	
-	bar:MoveLeft()
-	bar:MoveUp()
-		
-	function bar:OnLayout(S)
-		bar:SetHeight(15*S)
-		bar:SetPadding(Rect()+S*4)
-		self:SetWidth(window.GetSize().w)
-	end
+	bar:SetSize(window.GetSize()*1)
+	bar:SetupLayout("layout_children", "size_to_width", "size_to_height")
 	
 	function bar:OnPreDraw()
 		surface.SetWhiteTexture()
@@ -117,13 +108,13 @@ function menu.CreateTopBar()
 	menu.panel = bar
 
 	local function create_button(text, options)
-		local button = gui.CreatePanel("text_button", bar)
+		local button = bar:CreatePanel("text_button")
 		button:SetSizeToTextOnLayout(true)
 		button:SetText(text)
 		button:SetMargin(Rect(S*3, S*3, S*3, S*2+1))
-		button:SetPadding(Rect()+S*4)
+		button:SetPadding(Rect(S*4, S*2, S*4, S*2))
 		button:SetMode("toggle")
-		button:SetupLayout("left", "center_y_simple")
+		button:SetupLayout("left", "top")
 		
 		button.OnPress = function()
 			local menu = gui.CreateMenu(options, bar)
@@ -338,6 +329,9 @@ function menu.CreateTopBar()
 		{},
 		{L"about"},
 	})
+
+	
+--	bar:SetupLayout("left", "up", "fill_x", "size_to_width")
 end
  
 menu.Open()

@@ -439,32 +439,27 @@ function PANEL:Initialize()
 	self:SetStackRight(false) 
 	self:SetSizeStackToWidth(true)  
 	--self:SetStyle("property")
-	self:SetMargin(Rect())
 	
 	self:AddEvent("PanelMouseInput")
 	
 	local divider = self:CreatePanel("divider", "divider")
-	divider:SetMargin(Rect())
 	divider:SetHideDivider(true)
 	divider:SetupLayout("fill")
 	
 	local left = self.divider:SetLeft(gui.CreatePanel("base"))
 	left:SetStack(true)
-	left:SetPadding(Rect(0,0,0,-1))
 	left:SetStackRight(false)
 	left:SetSizeStackToWidth(true)
 	--left:SetupLayout("fill")
-	left:SetNoDraw(true)  
+	left:SetNoDraw(true) 
 	self.left = left
 	
 	local right = self.divider:SetRight(gui.CreatePanel("base"))
 	right:SetStack(true)
-	right:SetPadding(Rect(0,0,0,-1))
 	right:SetStackRight(false)
 	right:SetSizeStackToWidth(true)
 	--right:SetupLayout("fill")
 	right:SetNoDraw(true)
-	right:SetMargin(Rect())
 	self.right = right
 end
 
@@ -578,7 +573,6 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 	label:SetupLayout("center_left")
 	
 	local right = self.right:CreatePanel("base") 
-	right:SetMargin(Rect())
 	right:SetWidth(500)
 		
 	if prototype.GetRegistered("panel2", t .. "_property") then

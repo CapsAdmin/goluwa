@@ -61,7 +61,7 @@ do
 			end
 		end
 		
-		self:SetHeight(self:StackChildren().h)
+		self:SetHeight(self:StackChildren().h + self:GetMargin().bottom)
 		self:SetWidth(w + self:GetMargin().right)
 	end
 	

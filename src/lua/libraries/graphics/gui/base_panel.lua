@@ -1840,7 +1840,9 @@ do -- layout
 			end
 
 			self:ExecuteLayoutCommands()					
-			self:StackChildren()
+			if self.Stack then
+				self:StackChildren()
+			end
 			
 			for _, v in ipairs(self:GetChildren()) do
 				v.layout_me = true
@@ -1913,11 +1915,11 @@ do -- layout
 			self:SetX(parent:GetWidth())
 			self:SetY(0)
 
-			local pos = self:RayCast(self, 1, self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
+			local pos, pnl = self:RayCast(self, 1, self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
 
 			self:SetRectFast(ox,oy,ow,oh)
 
-			self:SetWidth(pos.x + self.Margin.right)
+			self:SetWidth(pos.x + self.Margin.right + (pnl and pnl.Padding.right or 0))
 			
 			self.laid_out = true
 		end
@@ -1932,12 +1934,12 @@ do -- layout
 			self:SetY(parent:GetHeight())
 			self:SetX(0)
 
-			local pos = self:RayCast(self, self.Position.x, 1, self.Size.w, self.Size.h, self.layout_collide)
+			local pos, pnl = self:RayCast(self, self.Position.x, 1, self.Size.w, self.Size.h, self.layout_collide)
 
 			self:SetRectFast(ox,oy,ow,oh)
 
 			--self:SetHeight(left.y)
-			self:SetHeight(pos.y + self.Margin.y)
+			self:SetHeight(pos.y + self.Margin.y + (pnl and pnl.Padding.bottom or 0))
 			
 			self.laid_out = true
 		end
@@ -2170,13 +2172,11 @@ do -- stacking
 	prototype.IsSet(PANEL, "Stackable", true)
 	prototype.IsSet(PANEL, "Stack", false)
 	 
-	function PANEL:StackChildren()
-		if not self.Stack then return end
-		
+	function PANEL:StackChildren()		
 		local w = 0
 		local h
-		local pad = self:GetPadding()
-			
+		local pad = self:GetMargin()
+					
 		for _, pnl in ipairs(self:GetChildren()) do
 			if pnl:IsStackable() then
 				local siz = pnl:GetSize():Copy()
@@ -2189,8 +2189,8 @@ do -- stacking
 					siz.h = self.ForcedStackSize.h
 				end
 				
-				siz.x = siz.x + self.Padding.w
-				siz.y = siz.y + self.Padding.h
+				siz.x = siz.x + pnl.Padding.w
+				siz.y = siz.y + pnl.Padding.h
 
 				if self.StackRight then
 					h = h or siz.h
@@ -2201,16 +2201,16 @@ do -- stacking
 						w = siz.w
 					end
 					
-					pnl.Position.x = w + pad.w - siz.w
-					pnl.Position.y = h + pad.h - siz.h
+					pnl.Position.x = w + pad.w - siz.w + pnl.Padding.x
+					pnl.Position.y = h + pad.h - siz.h + pnl.Padding.y
 				else
 					h = h or 0
 					h = h + siz.h
+					
 					w = siz.w > w and siz.w or w
 					
-					--pnl:SetPosition(Vec2(pad.x, h + pad.y - siz.h))
-					pnl.Position.x = pad.x
-					pnl.Position.y = h + pad.y - siz.h
+					pnl.Position.x = pad.x + pnl.Padding.x
+					pnl.Position.y = h + pad.y - siz.h + pnl.Padding.y
 				end
 				
 				if not self.ForcedStackSize:IsZero() then
