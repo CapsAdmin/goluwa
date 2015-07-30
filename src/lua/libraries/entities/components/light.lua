@@ -69,6 +69,7 @@ if GRAPHICS then
 		render.gbuffer_light_shader.light_radius = transform:GetSize()		
 		
 		render.SetShaderOverride(render.gbuffer_light_shader)
+		render.SetCullMode("front")
 		self.light_mesh:Draw()
 		render.SetShaderOverride()
 	end
@@ -223,8 +224,6 @@ if GRAPHICS then
 			-- render the scene with this matrix
 			
 			render.Draw3DScene()
-			
-			
 			
 			if not self.ShadowCubemap then 
 				break 
