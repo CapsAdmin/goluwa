@@ -99,6 +99,9 @@ do -- base property
 		local edit = self:CreatePanel("text_edit", "edit")
 		edit:SetText(self:GetEncodedValue())
 		edit:SetSize(self:GetSize())
+		edit.OnLayout = function(self, S)
+			self.label:SetPadding(Rect()+S)
+		end
 		edit.OnEnter = function() 
 			self:StopEditing()
 		end
@@ -438,7 +441,7 @@ function PANEL:Initialize()
 	self:SetStack(true)
 	self:SetStackRight(false) 
 	self:SetSizeStackToWidth(true)  
-	--self:SetStyle("property")
+	self:SetStyle("frame")
 	
 	self:AddEvent("PanelMouseInput")
 	
@@ -688,11 +691,8 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 	return left, right
 end
 
-function PANEL:OnStyleChanged(skin)
-	self:SetColor(skin.property_background)
-end
-
-function PANEL:OnLayout(S)	
+function PANEL:OnLayout(S)
+	self:SetMargin(Rect()+S*2) -- TODO
 	self.left_max_width = self.left_max_width or 0
 	self.right_max_width = self.right_max_width or 0
 	
@@ -704,11 +704,12 @@ function PANEL:OnLayout(S)
 		end
 		
 		if left.left_offset then
-			left:SetDrawPositionOffset(Vec2(left.left_offset*S+S, 0))	
+			left:SetDrawPositionOffset(Vec2(left.left_offset*S, 0))	
+			left:SetDrawSizeOffset(Vec2(0, 1)) -- TODO
 		end
 		
 		if left.expand then
-			left.expand:SetPadding(Rect()+S*4)
+			left.expand:SetPadding(Rect()+S*2)
 		end
 		
 		left.label:SetPadding(Rect(S*2,S*2,left.label.label_offset or S*2,S*2))
@@ -736,7 +737,7 @@ function PANEL:OnLayout(S)
 		self.divider:SetDividerPosition(self.left_max_width)
 	end
 	
-	local h = self.left:GetSizeOfChildren().h
+	local h = self.left:GetSizeOfChildren().h + self.Margin.bottom + S*2 -- TODO
 	self.divider:SetSize(Vec2(self.left_max_width + self.right_max_width, h))
 	self:SetWidth(self.left_max_width + self.right_max_width)
 	self:SetHeight(h)
