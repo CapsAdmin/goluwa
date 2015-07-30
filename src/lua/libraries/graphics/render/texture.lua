@@ -476,6 +476,17 @@ function META:Upload(data)
 	
 	if type(data.buffer) == "string" then 
 		data.buffer = ffi.cast("uint8_t *", data.buffer) 
+	elseif type(data.buffer) == "table" and typex(data.buffer[1]) == "color" then
+		local numbers = {}
+		local i2 = 0
+		for i = 1, #data.buffer do
+			numbers[i2] = data.buffer[i].r * 255 i2 = i2 + 1
+			numbers[i2] = data.buffer[i].g * 255 i2 = i2 + 1
+			numbers[i2] = data.buffer[i].b * 255 i2 = i2 + 1
+			numbers[i2] = data.buffer[i].a * 255 i2 = i2 + 1
+		end
+		data.buffer = ffi.new("uint8_t[".. (data.width * data.height) * 4 .."]", numbers)
+		data.flip_y = true
 	end
 	
 	check(data.buffer, "cdata")
@@ -1088,6 +1099,26 @@ end)
 	height = 8,
 })]]
 
+local d = ColorBytes(178, 179, 175)
+local m = ColorBytes(203, 203, 202)
+local l = ColorBytes(226, 227, 225)
+
+local grad = Texture()
+grad:SetSize(Vec2(5, 5))
+--grad:SetMinFilter("nearest")
+grad:SetMagFilter("nearest")
+grad:Upload({
+	width = 5,
+	height = 5,
+	buffer = {
+		d, d, d, d, m,
+		d, d, d, m, m,
+		d, d, m, m, m,
+		d, m, m, m, l,
+		m, m, m, l, l,
+	},
+})
+
 event.AddListener("PostDrawMenu", "lol", function()
 	--surface.PushMatrix(0, 0, tex:GetSize():Unpack())
 		--render.SetShaderOverride(shader)
@@ -1095,11 +1126,17 @@ event.AddListener("PostDrawMenu", "lol", function()
 		--render.SetShaderOverride()
 	--surface.PopMatrix()
 	
-	surface.SetTexture(tex)
-	surface.SetColor(1,1,1,1)
-	surface.DrawRect(0,0,tex.w,tex.h)
+	surface.SetFont("zsnes_gui_font")
+	surface.DrawText("p", 64, 64)
 	
-	surface.SetWhiteTexture()
-	surface.SetColor(ColorBytes(tex:GetPixelColor(surface.GetMousePosition())))
-	surface.DrawRect(50,50,50,50)
+	--surface.SetTexture(grad)
+	--surface.SetColor(1,1,1,1)
+	--surface.DrawRect(64,64,grad.w*32,grad.h*32)
+	
+	--surface.SetTexture(tex)
+	--surface.DrawRect(0,0,tex.w,tex.h)
+	
+	--surface.SetWhiteTexture()
+	--surface.SetColor(ColorBytes(tex:GetPixelColor(surface.GetMousePosition())))
+	--surface.DrawRect(50,50,50,50)
 end)

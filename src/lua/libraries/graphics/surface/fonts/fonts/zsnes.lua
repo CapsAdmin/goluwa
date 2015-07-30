@@ -75,6 +75,9 @@ local translate = {
 	["shw fullstop"] = "．",
 }
 
+local dark = ColorBytes(168, 164, 160) * 1.15
+local light = ColorBytes(232, 228, 224) * 1.15
+
 function META:Initialize()
 	if not self.Path:endswith(".txt") then
 		return false, "not a valid font"
@@ -102,12 +105,14 @@ function META:Initialize()
 				local copy = ffi.new("unsigned char["..width.."]["..height.."][4]")
 				
 				local i = 0
+				local length = math.sqrt(width*width + height*height)
 				for x = 0, width - 1 do
 					for y = 0, height - 1 do
-						copy[x][y][0] = 255
-						copy[x][y][1] = 255
-						copy[x][y][2] = 255
-						copy[x][y][3] = buffer[i] 
+						local color = dark:GetLerped(math.sqrt(x*x + y*y) / length, light) * 255
+						copy[x][y][0] = color.r
+						copy[x][y][1] = color.g
+						copy[x][y][2] = color.b
+						copy[x][y][3] = buffer[i]
 						i = i + 1
 					end
 				end
