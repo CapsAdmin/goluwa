@@ -75,8 +75,8 @@ local translate = {
 	["shw fullstop"] = "．",
 }
 
-local dark = ColorBytes(168, 164, 160) * 1.15
-local light = ColorBytes(232, 228, 224) * 1.15
+local dark = ColorBytes(168, 164, 160)
+local light = ColorBytes(232, 228, 224)
 
 function META:Initialize()
 	if not self.Path:endswith(".txt") then

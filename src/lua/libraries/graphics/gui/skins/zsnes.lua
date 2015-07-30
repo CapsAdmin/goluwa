@@ -26,7 +26,7 @@ function SKIN:Build()
 		fallback = "default_gui_zsnes",
 		shadow = 1,
 		padding = 2,
-		shadow_color = Color(0.6,0.6,0.6,0.8),
+		shadow_color = Color(0.2,0.2,0.2,0.9),
 		size = 5*S,
 		scale = S,
 		--shade = "vec4(sin(uv.x*130)+cos(uv.y*50))*texture(self, uv).a;",
@@ -140,7 +140,7 @@ function SKIN:Build()
 	skin.tab_active_text_color = Color(0.25,0.25,0.25)
 	skin.tab_inactive_text_color = Color(0.5,0.5,0.5)
 
-	skin.text_color = Color(0.8, 0.8, 0.8, 1)-- ColorBytes(168, 168, 224, 255)
+	skin.text_color = Color(1, 1, 1, 1)-- ColorBytes(168, 168, 224, 255)
 	skin.text_color_inactive = skin.text_color * 0.80
 
 	skin.text_list_color = Color(0,1,0,1)
