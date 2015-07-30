@@ -74,7 +74,7 @@ function menu.UpdateBackground()
 end
 
 local background = ColorBytes(64, 44, 128, 255)
-background = background + Color(0.25, 0.222, 0.20) -- hack fix  because the background is black
+background = background + Color(0.25, 0.25, 0.20) -- hack fix  because the background is black
 
 function menu.RenderBackground(dt)		
 	emitter:Update(dt)
