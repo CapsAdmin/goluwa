@@ -62,7 +62,7 @@ function surface.CreateFont(name, options, callback)
 	local shadow_color = options.shadow_color or Color(0,0,0,0.25)
 
 	if shadow and type(shadow) ~= "number" then
-		shadow = size / 10 --???
+		shadow = size * scale --???
 	end
 	
 	if shadow then
@@ -70,7 +70,7 @@ function surface.CreateFont(name, options, callback)
 		table.insert(shader, {
 			source = "return texture(self, uv + dir / size) * vec4(shadow_color.rgb, shadow_color.a) - texture(self, uv);",
 			vars = {
-				dir = Vec2()-shadow,
+				dir = Vec2(-shadow, shadow),
 				shadow_color = shadow_color,
 			},
 		})
