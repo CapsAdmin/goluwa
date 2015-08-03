@@ -29,6 +29,7 @@ end
 include("physics_body.lua", physics)
 
 function physics.Initialize()
+	if LINUX then return end
 	
 	if not RELOAD then
 		for k,v in pairs(physics.bodies) do 
