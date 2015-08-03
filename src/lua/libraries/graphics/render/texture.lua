@@ -337,6 +337,7 @@ function META:SetPath(path, face)
 				height = h,
 				format = "bgra",
 				face = face, -- todo
+				flip_y = not full_path:endswith(".vtf"),
 			})
 		end
 

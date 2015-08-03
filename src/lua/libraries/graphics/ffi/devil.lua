@@ -488,13 +488,12 @@ ffi.cdef(header)
 
 local lib = assert(ffi.load(LINUX and "IL" or "devil"))
 ffi.cdef("ILboolean iluFlipImage(void);")
-local util = ffi.load("ilu")
 
 local devil = {
 	lib = lib, 
 }
  
-function devil.LoadImage(data, flip)
+function devil.LoadImage(data)
 	local buffer = ffi.cast("const unsigned char *const ", data)
 
 	local id = ffi.new("ILuint[1]")
@@ -504,7 +503,6 @@ function devil.LoadImage(data, flip)
 	local width, height
 	
 	if lib.ilLoadL("IL_TYPE_UNKNOWN", buffer, #data) ~= 0 then
-		if flip and util then util.iluFlipImage() end
 		lib.ilConvertImage("IL_BGRA", "IL_UNSIGNED_BYTE")
 		
 		local size = lib.ilGetInteger("IL_IMAGE_SIZE_OF_DATA")
