@@ -38,17 +38,17 @@ do
 					
 		-- source engine style world orientation
 		if pos then
-			render.camera_2d:TranslateWorld(-pos.y, -pos.x, -pos.z) -- Vec3(left/right, back/forth, down/up)	
+			self:TranslateWorld(-pos.y, -pos.x, -pos.z) -- Vec3(left/right, back/forth, down/up)	
 		end
 		
 		if ang then
-			render.camera_2d:RotateWorld(-ang.y, 0, 0, 1)
-			render.camera_2d:RotateWorld(-ang.r, 0, 1, 0)
-			render.camera_2d:RotateWorld(-ang.p, 1, 0, 0) 
+			self:RotateWorld(-ang.y, 0, 0, 1)
+			self:RotateWorld(-ang.r, 0, 1, 0)
+			self:RotateWorld(-ang.p, 1, 0, 0) 
 		end
 		
 		if scale then 
-			render.camera_2d:ScaleWorld(scale.x, scale.y, scale.z) 
+			self:ScaleWorld(scale.x, scale.y, scale.z) 
 		end
 
 		self.matrix_stack_i = self.matrix_stack_i + 1
@@ -129,20 +129,27 @@ do -- 3d 2d
 		scale = scale or Vec3(4, 4 * (self.Viewport.w / self.Viewport.h), 1)
 		
 		self:Set3D(true)
-		render.camera_2d:PushWorldEx(pos, ang, Vec3(scale.x / self.Viewport.w, scale.y / self.Viewport.h, 1))
+		self.oldpos, self.oldang, self.oldfov = self:GetPosition(), self:GetAngles(), self:GetFOV()
+		self:SetPosition(render.camera_3d:GetPosition())
+		self:SetAngles(render.camera_3d:GetAngles())
+		self:SetFOV(render.camera_3d:GetFOV())
+		self:PushWorldEx(pos, ang, Vec3(scale.x / self.Viewport.w, scale.y / self.Viewport.h, 1))
 		self:Rebuild()
 	end
 
 	function META:Start3D2D(mat, dont_multiply)
-		self:Set3D(true)
+		--self:Set3D(true)
 		self:Rebuild()
 		
-		render.camera_2d:PushWorld(mat, dont_multiply)
+		self:PushWorld(mat, dont_multiply)
 	end
 
 	function META:End3D2D()
-		render.camera_2d:PopWorld()	
+		self:PopWorld()	
 		self:Set3D(false)
+		self:SetPosition(self.oldpos)
+		self:SetAngles(self.oldang)
+		self:SetFOV(self.oldfov)
 		self:Rebuild()
 	end
 
