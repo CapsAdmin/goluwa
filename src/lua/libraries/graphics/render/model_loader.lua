@@ -135,32 +135,23 @@ function render.LoadModel(path, callback, callback2, on_fail)
 						
 						if diffuse_path then
 							diffuse_path = find(diffuse_path)
-							material:SetDiffuseTexture(diffuse_path)
+							material:SetDiffuseTexture(Texture(diffuse_path))
+						end
+
+						local function try_set(method, texture_path, ...)
+							if not texture_path then
+								texture_path = utility.FindTextureFromSuffix(path, ...)
+							end
+							
+							if texture_path then
+								texture_path = find(texture_path)
+								material["Set"..method .. "Texture"](material, Texture(texture_path))
+							end
 						end
 						
-						if not normal_path then
-							normal_path = utility.FindTextureFromSuffix(diffuse_path, "_n", "_ddn", "_nrm", "_Normal")										
-						end
-						
-						if not metallic_path then
-							metallic_path = utility.FindTextureFromSuffix(diffuse_path,  "_m", "_Metallic")
-						end
-						
-						if not roughness_path then
-							roughness_path = utility.FindTextureFromSuffix(diffuse_path, "_s", "_spec", "_Rougness")
-						end
-						
-						if normal_path then
-							material:SetNormalTexture(normal_path)
-						end
-						
-						if metallic_path then
-							material:SetMetallicTexture(metallic_path)
-						end
-						
-						if roughness_path then
-							material:SetRoughnessTexture(roughness_path)
-						end						
+						try_set("Normal", normal_path, "_n", "_ddn", "_nrm", "_Normal")
+						try_set("Roughness", roughness_path, "_s", "_spec", "_Rougness")
+						try_set("Metallic", metallic_path, "_m", "_Metallic")
 					end					
 					
 					mesh:SetName(model_data.name)
