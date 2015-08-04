@@ -92,7 +92,13 @@ function META.GetDot(a, b)
 	end
 
 function META:Normalize()
-	local inverted_length = 1/math.sqrt(self:GetLengthSquared())
+	local length = self:GetLengthSquared()
+	if length == 0 then
+		self.x = 0
+		self.y = 0
+		return self
+	end
+	local inverted_length = 1/math.sqrt(length)
 	
 	self.x = self.x * inverted_length
 	self.y = self.y * inverted_length
