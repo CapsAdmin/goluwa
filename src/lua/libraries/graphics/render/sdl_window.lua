@@ -420,9 +420,11 @@ do -- window meta
 					call(window, "OnTextEditing", ffi.string(event.text.text))
 				elseif event.type == sdl.e.SDL_MOUSEMOTION then
 					local window = render.sdl_windows[event.motion.windowID]
-					self.mouse_delta.x = event.motion.xrel
-					self.mouse_delta.y = event.motion.yrel
-					call(window, "OnCursorPosition", event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, event.motion.state, event.motion.which)
+					if window then
+						self.mouse_delta.x = event.motion.xrel
+						self.mouse_delta.y = event.motion.yrel
+						call(window, "OnCursorPosition", event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, event.motion.state, event.motion.which)
+					end
 				elseif event.type == sdl.e.SDL_MOUSEBUTTONDOWN or event.type == sdl.e.SDL_MOUSEBUTTONUP then
 					local window = render.sdl_windows[event.button.windowID]
 					call(window, "OnMouseInput", mbutton_translate[event.button.button], event.type == sdl.e.SDL_MOUSEBUTTONDOWN, event.button.x, event.button.y)

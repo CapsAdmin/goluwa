@@ -91,6 +91,7 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	if network.IsConnected() then return end
 	if not window.IsOpen() then return end		
 	if not window.GetMouseTrapped() then return end
+	if not window.HasFocus() then return end
 		
 	local cam_pos = render.camera_3d:GetPosition()
 	local cam_ang = render.camera_3d:GetAngles()
