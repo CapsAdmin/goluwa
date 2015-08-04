@@ -7,7 +7,9 @@ local meta = prototype.GetRegistered("render_window")
 for k,v in pairs(meta) do
 	if type(v) == "function" then
 		window[k] = function(...)
-			return window.wnd[k](window.wnd, ...)
+			if window.wnd:IsValid() then
+				return window.wnd[k](window.wnd, ...)
+			end
 		end
 	end
 end

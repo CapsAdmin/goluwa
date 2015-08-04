@@ -61,14 +61,14 @@ end
 function steam.GetLibraryFolders()
 	local base = steam.GetInstallPath()
 	
-	local tbl = {base .. "/SteamApps/"}
+	local tbl = {base .. "/steamapps/"}
 		
 	local config = steam.VDFToTable(assert(vfs.Read(base .. "/config/config.vdf", "r")))
 
 	for key, path in pairs(config.InstallConfigStore.Software.Valve.Steam) do
 		
 		if key:find("BaseInstallFolder_") then
-			table.insert(tbl, vfs.FixPath(path) .. "/SteamApps/")
+			table.insert(tbl, vfs.FixPath(path) .. "/steamapps/")
 		end
 	end
 	
@@ -189,15 +189,16 @@ function steam.MountSourceGame(game_info)
 			
 			if not vfs.IsDir(path) then
 				path = game_info.game_dir .. path .. "/"
-			end
+			end						
 			
-			path = path:gsub("/%.", "/")
+			if path:endswith("/.") then
+				path = path:sub(0, -2)
+			end
 			
 			if not done[path] and vfs.Exists(path) then
 				if not vfs.GetMounts()[path] then
 					vfs.Mount(path, nil, game_info)
 				end
-									
 				
 				if vfs.IsDir(path .. "addons/") then
 					for k, v in pairs(vfs.Find(path .. "addons/")) do

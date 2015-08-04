@@ -114,50 +114,54 @@ function render.LoadModel(path, callback, callback2, on_fail)
 					
 					local mesh = render.CreateMeshBuilder()
 					
-					if model_data.material and model_data.material.path then
+					if model_data.material then
 						local material = render.CreateMaterial("model")
 						
 						mesh.material = material
 						
-						local path = model_data.material.path
+						local diffuse_path = model_data.material.diffuse
+						local normal_path = model_data.material.normal
+						local metallic_path = model_data.material.metallic
+						local roughness_path = model_data.material.roughness
 						
-						-- this is kind of ue4 specific
-						if model_data.material.name and model_data.material.name:sub(1, 1) == "/" then
-							local ext = path:match("^.+(%..+)$")
-							local path = model_data.material.name
-							path = model_data.material.directory .. path:sub(2)
-							
-							material:SetDiffuseTexture(path .. "_D" .. ext)
-							material:SetNormalTexture(path .. "_N" .. ext)
-							material:SetRoughnessTexture(path .. "_S" .. ext)
-						else	
-							local paths = {path, model_data.material.directory .. path}
-							
-							for _, path in ipairs(paths) do
-								if vfs.Exists(path) then
-									material:SetDiffuseTexture(Texture(path))
-
-									do -- try to find normal map
-										local path = utility.FindTextureFromSuffix(path, "_n", "_ddn", "_nrm")
-
-										if path then
-											material:SetNormalTexture(path)
-										end
-									end
-
-									do -- try to find specular map
-										local path = utility.FindTextureFromSuffix(path, "_s", "_spec")
-
-										if path then
-											material:SetRoughnessTexture(path)
-										end
-									end
-									break
+						local function find(path)
+							for _, path in ipairs({path, full_path:match("(.+/)") .. path}) do
+								if vfs.IsFile(path) then
+									return path
 								end
 							end
+							return path
 						end
-					end
-					
+						
+						if diffuse_path then
+							diffuse_path = find(diffuse_path)
+							material:SetDiffuseTexture(diffuse_path)
+						end
+						
+						if not normal_path then
+							normal_path = utility.FindTextureFromSuffix(diffuse_path, "_n", "_ddn", "_nrm", "_Normal")										
+						end
+						
+						if not metallic_path then
+							metallic_path = utility.FindTextureFromSuffix(diffuse_path,  "_m", "_Metallic")
+						end
+						
+						if not roughness_path then
+							roughness_path = utility.FindTextureFromSuffix(diffuse_path, "_s", "_spec", "_Rougness")
+						end
+						
+						if normal_path then
+							material:SetNormalTexture(normal_path)
+						end
+						
+						if metallic_path then
+							material:SetMetallicTexture(metallic_path)
+						end
+						
+						if roughness_path then
+							material:SetRoughnessTexture(roughness_path)
+						end						
+					end					
 					
 					mesh:SetName(model_data.name)
 					mesh:SetVertices(model_data.vertices)

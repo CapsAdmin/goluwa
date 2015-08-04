@@ -1,15 +1,7 @@
-local ssl = desire("ssl")
-_G.ssl = nil -- grr
+local luasocket = desire("socket")
 
-local ok, luasocket = pcall(require, "socket")
-
-if not ok then
-	ok, luasocket = pcall(require, "socket.core")
-end
-
-if not ok then
-	warning("luasocket not found")
-	return
+if not luasocket then
+	luasocket = desire("socket.core")
 end
 
 local sockets = _G.sockets or {}
@@ -169,6 +161,8 @@ do -- tcp socket meta
 			}
 			
 			function CLIENT:SetSSLParams(params)
+				local ssl = desire("ssl") _G.ssl = nil -- grr
+
 				if not ssl then warning("cannot use ssl parameters: luasec not found!") return end
 
 				if not params or params == "https" then
@@ -254,6 +248,7 @@ do -- tcp socket meta
 					self:DebugPrintf("connected to %s:%s", res, msg)
 
 					if self.SSLParams then
+						local ssl = desire("ssl") _G.ssl = nil -- grr
 						self.old_socket = sock
 						sock = assert(ssl.wrap(sock, self.SSLParams))						
 						assert(sock:settimeout(0, "t"))
