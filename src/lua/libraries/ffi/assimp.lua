@@ -764,6 +764,7 @@ local function parse_scene(scene, path, callback)
 		if mesh.mMaterialIndex > 0 then
 			local mat = scene.mMaterials[mesh.mMaterialIndex]
 			sub_model.material = {}
+			local tex_i = 1
 			for i = 0, mat.mNumProperties-1 do
 				local property = mat.mProperties[i]
 				local key = ffi.string(property.mKey.data, property.mKey.length)
@@ -779,11 +780,25 @@ local function parse_scene(scene, path, callback)
 				end
 				
 				if key == "tex.file" and val then
-					if val:sub(1,1) == "." then
-						sub_model.material.path = fix_path(dir .. val:sub(2))
+					local path = val
+					if path:sub(1, 1) == "." then
+						path = fix_path(dir .. val:sub(2))
 					else
-						sub_model.material.path = fix_path(val)
+						path = fix_path(val)
 					end
+					
+					if tex_i == 1 then
+						sub_model.material.path = path
+						sub_model.material.diffuse = path
+					elseif tex_i == 2 then
+						sub_model.material.metallic = path
+					elseif tex_i == 3 then
+						sub_model.material.normal = path
+					elseif tex_i == 4 then
+						sub_model.material.roughness = path
+					end
+					
+					tex_i = tex_i + 1
 				end
 			end
 		end
