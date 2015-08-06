@@ -7,14 +7,14 @@ local ent = entities.CreateEntity("visual")
 ent:SetModelPath("models/cube.obj")
 ent:SetSize(-1)
 
-local max = 5
+local max = 20
 local lights = {}
 
 for i = 1, max do
 	local light = entities.CreateEntity("light")
 	light:SetColor(HSVToColor(i/max, 0.5, 1))
-	light:SetSize(1)
-	light:SetIntensity(2.5)
+	light:SetSize(0.5)
+	light:SetIntensity(1)
 	light.seed = math.random()*math.pi
 	table.insert(lights, light)
 end
@@ -25,7 +25,7 @@ event.AddListener("Update", "test", function()
 		i = i / max
 		i = i * math.pi * 2
 		time = time + light.seed
-		light:SetPosition(Vec3(1.05, math.sin(time + i) * math.cos(time/2), math.cos(time + i) * math.sin(time/2)))
+		light:SetPosition(Vec3(1.1, math.sin(time + i) * math.cos(time/2), math.cos(time + i) * math.sin(time/2)))
 	end
 	--ent:SetAngles(Ang3(time,time,0))
 end)

@@ -10,29 +10,17 @@ ent:SetSize(-0.05)
 ent:SetPosition(Vec3(2,0,0))
 ent:SetCull(false)
 
-local max = 8
-local lights = {}
+local max = 4
 
 for i = 1, max do
 	local light = entities.CreateEntity("light")
-	light:SetColor(HSVToColor(i/max, 0.5, 1))
-	light:SetSize(4)
+	light:SetSize(10)
 	light:SetIntensity(2.5)
 	light.seed = math.random()*math.pi
 	light.dir = Vec3():GetRandom()
-	table.insert(lights, light)
+	light:SetPosition((light.dir:GetRotated(Vec3(1,0,0), math.cos(light.seed)) + light.dir:GetRotated(Vec3(0,1,0), math.sin(light.seed))) * 5)
 end
 
-event.AddListener("Update", "test", function()
-	local time = system.GetElapsedTime() 
-	for i, light in ipairs(lights) do
-		i = i / max
-		i = i * math.pi * 2
-		time = time + light.seed
-		light:SetPosition((light.dir:GetRotated(Vec3(1,0,0), math.cos(time)) + light.dir:GetRotated(Vec3(0,1,0), math.sin(time))) * 4)
-	end
-	--ent:SetAngles(Ang3(time,time,0))
-end)
 
 local mat = render.CreateMaterial("model")
 mat:SetDiffuseTexture(Texture("textures/Cerberus_A.tga"))
