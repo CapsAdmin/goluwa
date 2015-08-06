@@ -721,7 +721,6 @@ function steam.SpawnMapEntities(path, parent)
 					
 					local p, y = info.pitch, info.angles.y
 					parent.world_params:SetSunAngles(Deg3(p, y+180, 0))
-					parent.world_params:SetSunIntensity(0.75)
 					
 					info._light.a = 1
 					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
@@ -733,8 +732,8 @@ function steam.SpawnMapEntities(path, parent)
 					ent:SetHideFromEditor(true)
 					
 					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
-					ent:SetSize(math.max(info._light.a, 15))
-					ent:SetIntensity(math.clamp(info._light.a/30, 0.1, 1))
+					ent:SetSize(math.max(info._light.a*3, 10))
+					ent:SetIntensity(math.clamp(info._light.a, 0.1, 1))
 					ent.spawned_from_bsp = true
 				elseif info.classname == "env_fog_controller" then
 					parent.world_params:SetFogColor(Color(info.fogcolor.r, info.fogcolor.g, info.fogcolor.b, info.fogcolor.a * (info.fogmaxdensity or 1)/4))
@@ -743,7 +742,7 @@ function steam.SpawnMapEntities(path, parent)
 				end
 			end
 		
-			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
+			if false and info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
 				if vfs.IsFile(info.model) then
 					local ent = entities.CreateEntity("visual", parent)
 					ent:SetName(info.classname .. "_" .. i)

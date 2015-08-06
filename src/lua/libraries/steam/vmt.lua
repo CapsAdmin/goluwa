@@ -9,7 +9,7 @@ local path_translate = {
 }
 
 local property_translate = {
-	IlluminationColor = {"selfillumtint"},
+	--IlluminationColor = {"selfillumtint"},
 	DetailScale = {"detailscale"},
 	DetailBlendFactor = {"detailblendfactor"},
 	NoCull = {"nocull"},
@@ -71,6 +71,10 @@ function steam.LoadMaterial(path, material)
 						end
 					)
 				end
+			end
+			
+			if material:GetMetallicMultiplier() == 0 then
+				material:SetMetallicMultiplier(0.25)
 			end
 			
 			material.vmt = vmt	
