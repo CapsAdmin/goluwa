@@ -5,8 +5,8 @@ local PASS = {}
 PASS.Stage, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 
 PASS.Buffers = {
-	{"diffuse", "RGBA8"},
-	{"normal", "RGBA8_SNORM"},
+	{"diffuse", "rgba8"},
+	{"normal", "rgba8_snorm"},
 }
 
 function PASS:Initialize()
@@ -50,22 +50,14 @@ PASS.Shader = {
 			{texture_blend = "float"},
 		},
 		source = [[
-			out mat3 tangent_to_world;
+			out vec3 view_normal;
 		
 			void main()
 			{				
-				out_normal =  mat3(g_view_world) * normal;
-				
-				vec3 tangent = normalize(mat3(g_normal_matrix) * out_normal);
-				vec3 binormal = -normalize(cross(out_normal, tangent));
-
-				tangent_to_world = mat3(
-					binormal.x, tangent.x, out_normal.x,
-					binormal.y, tangent.y, out_normal.y,
-					binormal.z, tangent.z, out_normal.z
-				);
-
 				gl_Position = g_projection_view_world * vec4(pos, 1.0);
+				
+				out_normal = mat3(g_normal_matrix) * normal;
+				view_normal = mat3(g_view_world) * pos;
 			}
 		]]
 	},
@@ -96,7 +88,7 @@ PASS.Shader = {
 		source = [[
 			#extension GL_ARB_arrays_of_arrays: enable
 			
-			in mat3 tangent_to_world;
+			in vec3 view_normal;
 		
 			out vec4 diffuse_buffer;
 			out vec4 normal_buffer;					
@@ -112,6 +104,26 @@ PASS.Shader = {
 				float d = m.x+m.y+m.z+m.w;
 				
 				return (alpha + d) < 0.9;
+			}
+			
+			// http://www.geeks3d.com/20130122/normal-mapping-without-precomputed-tangent-space-vectors/
+			mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
+			{
+				// get edge vectors of the pixel triangle
+				vec3 dp1 = dFdx( p );
+				vec3 dp2 = dFdy( p );
+				vec2 duv1 = dFdx( uv );
+				vec2 duv2 = dFdy( uv );
+			 
+				// solve the linear system
+				vec3 dp2perp = cross( dp2, N );
+				vec3 dp1perp = cross( N, dp1 );
+				vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
+				vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
+			 
+				// construct a scale-invariant frame 
+				float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );
+				return mat3( T * invmax, B * invmax, N );
 			}
 			
 			void main()
@@ -141,16 +153,16 @@ PASS.Shader = {
 				
 				// normals
 				{				
-					vec3 bump_detail = texture(NormalTexture, uv).xyz;
-
-					normal_buffer.xyz = normal;
+					vec3 normal_detail = texture(NormalTexture, uv).xyz;
 					
-					if (bump_detail != vec3(0))
+					if (normal_detail != vec3(0))
 					{						
 						if (texture_blend != 0)
-							bump_detail = bump_detail + (texture(Normal2Texture, uv).xyz * texture_blend);
-					
-						normal_buffer.xyz += ((2 * bump_detail - 1) * tangent_to_world);
+							normal_detail = normal_detail + (texture(Normal2Texture, uv).xyz * texture_blend);
+						
+						normalize(normal_detail);
+						
+						normal_buffer.xyz = cotangent_frame(normal, view_normal, uv) * (normal_detail * 2 - 1);
 					}
 					
 					normal_buffer.xyz = normalize(normal_buffer.xyz);
