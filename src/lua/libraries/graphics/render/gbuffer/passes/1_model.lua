@@ -160,7 +160,6 @@ PASS.Shader = {
 						if (texture_blend != 0)
 							normal_detail = normal_detail + (texture(Normal2Texture, uv).xyz * texture_blend);
 						
-						normalize(normal_detail);
 						
 						normal_buffer.xyz = cotangent_frame(normal, view_normal, uv) * (normal_detail * 2 - 1);
 					}

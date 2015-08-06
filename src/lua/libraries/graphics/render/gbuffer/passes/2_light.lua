@@ -122,48 +122,7 @@ PASS.Shader = {
 			
 			const float e = 2.71828182845904523536028747135;
 			const float pi = 3.1415926535897932384626433832;
-
-			
-			float beckmannDistribution(float x, float roughness) {
-			  float NdotH = max(x, 0.0001);
-			  float cos2Alpha = NdotH * NdotH;
-			  float tan2Alpha = (cos2Alpha - 1.0) / cos2Alpha;
-			  float roughness2 = roughness * roughness;
-			  float denom = 3.141592653589793 * roughness2 * cos2Alpha * cos2Alpha;
-			  return exp(tan2Alpha / roughness2) / denom;
-			}
-			
-			float cookTorranceSpecular(
-			  vec3 lightDirection,
-			  vec3 viewDirection,
-			  vec3 surfaceNormal,
-			  float roughness,
-			  float fresnel) {
-
-			  float VdotN = max(dot(viewDirection, surfaceNormal), 0.0);
-			  float LdotN = max(dot(lightDirection, surfaceNormal), 0.0);
-
-			  //Half angle vector
-			  vec3 H = normalize(lightDirection + viewDirection);
-
-			  //Geometric term
-			  float NdotH = max(dot(surfaceNormal, H), 0.0);
-			  float VdotH = max(dot(viewDirection, H), 0.000001);
-			  float LdotH = max(dot(lightDirection, H), 0.000001);
-			  float G1 = (2.0 * NdotH * VdotN) / VdotH;
-			  float G2 = (2.0 * NdotH * LdotN) / LdotH;
-			  float G = min(1.0, min(G1, G2));
-			  
-			  //Distribution term
-			  float D = beckmannDistribution(NdotH, roughness);
-			  
-			  //Fresnel term
-			  float F = pow(1.0 - VdotN, fresnel);
-
-			  //Multiply terms and done
-			  return  G * F * D / max(3.14159265 * VdotN, 0.000001);
-			}
-						
+									
 			vec3 CookTorrance2(vec3 direction, vec3 surface_normal, vec3 eye_dir, float metallic, float roughness)
 			{
 				float normalDotLight = dot(surface_normal, direction);
@@ -186,7 +145,7 @@ PASS.Shader = {
 				float CookTorrance = (D*F*G) / (normalDotEye * pi);
 				
 				vec3 diffuse_ = light_color.rgb * max(0.0, normalDotLight);
-				vec3 specular_ = light_color.rgb * max(max(0.0, CookTorrance) * metallic * 5, normalDotLight);
+				vec3 specular_ = light_color.rgb * max(max(0.0, CookTorrance) * metallic, normalDotLight);
 				
 				return diffuse_ + specular_;
 			} 
@@ -199,9 +158,7 @@ PASS.Shader = {
 				vec3 view_pos = get_view_pos(uv);
 
 				float fade = get_attenuation(view_pos, uv);
-				
-				//{out_color.rgb = vec3(fade); out_color.a = 1; return;}
-						
+										
 				if (lua[light_shadow = false])
 				{
 					float shadow = get_shadow(uv);
@@ -227,21 +184,6 @@ PASS.Shader = {
 						metallic, 
 						roughness
 					) * light_intensity * fade;
-					
-					/*
-					float specular = cookTorranceSpecular(
-						normalize(-light_view_pos), 
-						normal, 
-						normalize(-view_pos), 
-						roughness*2,
-						metallic
-					);
-										
-					out_color.rgb += light_color.rgb + (light_color.rgb * specular) * (light_intensity * fade);
-					*/
-					
-					float HemisphereFactor = (dot(normal, vec3(0,-1,0)) + 1.0)/2.0;
-					out_color.rgb *= mix(vec3(0.9, 0.9, 1.0) * 1.25, vec3(0.95, 1.0, 0.95) * 1.25, HemisphereFactor);
 				}
 			
 				out_color.a = 1;
