@@ -125,7 +125,15 @@ function render.LoadModel(path, callback, callback2, on_fail)
 						local roughness_path = model_data.material.roughness
 						
 						local function find(path)
-							for _, path in ipairs({path, full_path:match("(.+/)") .. path}) do
+							local tries = {path, full_path:match("(.+/)") .. path}
+														
+							-- ue4
+							if model_data.material.name:startswith("/") then
+								table.insert(tries, 1, full_path:match("(.+)/") .. model_data.material.name:match("(.+/)") .. path)
+								print(tries[1])
+							end
+							
+							for _, path in ipairs(tries) do
 								if vfs.IsFile(path) then
 									return path
 								end
