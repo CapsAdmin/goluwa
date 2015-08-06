@@ -141,7 +141,7 @@ function render.CreateFrameBuffer(width, height, textures)
 				tex:SetDepthTextureMode(v.depth_texture_mode)
 			end
 			
-			tex:SetMipMapLevels(0)
+			tex:SetMipMapLevels(1)
 			tex:SetupStorage()
 			--tex:Clear()
 			
