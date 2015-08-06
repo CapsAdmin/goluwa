@@ -1,7 +1,7 @@
 local PASS = {}
 
 PASS.Position, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
-PASS.Default = true
+PASS.Default = false
 
 local size = 4
 local exposure = 1
@@ -50,7 +50,7 @@ PASS.Source = [[
 		prev_exposure = (-prev_exposure + 1) * 2;
 		
 		out_color.rgb = vec3(1.0, 1.0, 1.0) - exp2(-prev_exposure * texture(self, uv).rgb);
-		out_color.rgb += out_color.rgb * out_color.rgb;
+		out_color.rgb += out_color.rgb;
 		out_color.a = 1;
 		
 	}

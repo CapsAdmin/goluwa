@@ -6,7 +6,7 @@ PASS.Stage, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 
 PASS.Buffers = {
 	{"diffuse", "rgba8"},
-	{"normal", "rgba8_snorm"},
+	{"normal", "rgba16f"},
 }
 
 function PASS:Initialize()
@@ -158,10 +158,13 @@ PASS.Shader = {
 					if (normal_detail != vec3(0))
 					{						
 						if (texture_blend != 0)
-							normal_detail = normal_detail + (texture(Normal2Texture, uv).xyz * texture_blend);
+							normal_detail = normal_detail + ((texture(Normal2Texture, uv).xyz * 2 - 1) * texture_blend);
 						
-						
-						normal_buffer.xyz = cotangent_frame(normal, view_normal, uv) * (normal_detail * 2 - 1);
+						normal_buffer.xyz = cotangent_frame(normal, view_normal, uv) * normalize(normal_detail * 2 - 1);
+					}
+					else
+					{
+						normal_buffer.xyz = normal;
 					}
 					
 					normal_buffer.xyz = normalize(normal_buffer.xyz);

@@ -122,32 +122,54 @@ PASS.Shader = {
 			
 			const float e = 2.71828182845904523536028747135;
 			const float pi = 3.1415926535897932384626433832;
+			
+			float beckmannDistribution(float x, float roughness) {
+			  float NdotH = max(x, 0.0001);
+			  float cos2Alpha = NdotH * NdotH;
+			  float tan2Alpha = (cos2Alpha - 1.0) / cos2Alpha;
+			  float roughness2 = roughness * roughness;
+			  float denom = 3.141592653589793 * roughness2 * cos2Alpha * cos2Alpha;
+			  return exp(tan2Alpha / roughness2) / denom;
+			}
+			
+			float cookTorranceSpecular(
+			  vec3 lightDirection,
+			  vec3 viewDirection,
+			  vec3 surfaceNormal,
+			  float roughness,
+			  float fresnel) {
+
+			  float VdotN = max(dot(viewDirection, surfaceNormal), 0.0);
+			  float LdotN = max(dot(lightDirection, surfaceNormal), 0.0);
+
+			  //Half angle vector
+			  vec3 H = normalize(lightDirection + viewDirection);
+
+			  //Geometric term
+			  float NdotH = max(dot(surfaceNormal, H), 0.0);
+			  float VdotH = max(dot(viewDirection, H), 0.000001);
+			  float LdotH = max(dot(lightDirection, H), 0.000001);
+			  float G1 = (2.0 * NdotH * VdotN) / VdotH;
+			  float G2 = (2.0 * NdotH * LdotN) / LdotH;
+			  float G = min(1.0, min(G1, G2));
+			  
+			  //Distribution term
+			  float D = beckmannDistribution(NdotH, roughness);
+
+			  //Fresnel term
+			  float F = (1.0 - VdotN) * fresnel*4;
+
+			  //Multiply terms and done
+			  return  G * F * D / max(3.14159265 * VdotN, 0.000001);
+			}
 									
 			vec3 CookTorrance2(vec3 direction, vec3 surface_normal, vec3 eye_dir, float metallic, float roughness)
 			{
 				float normalDotLight = dot(surface_normal, direction);
 						
-				vec3 cHalf = normalize(direction + eye_dir);					
-				float normalDotHalf = dot(surface_normal, cHalf);
-								
-				float normalDotEye = dot(surface_normal, eye_dir);					
-				float normalDotHalf2 = normalDotHalf * normalDotHalf;
-				
-				float roughness2 = roughness*roughness;
-				float exponent = -(1.0 - normalDotHalf2) / (normalDotHalf2 * roughness2);
-				
-				float D = pow(e, exponent) / (roughness2 * normalDotHalf2 * normalDotHalf2);
-				float F = mix(pow(1.0 - normalDotEye, 5.0), 1.0, 0.5);															
-				float X = 2.0 * normalDotHalf / dot(eye_dir, cHalf);
-				float G = min(1.0, min(X * normalDotLight, X * normalDotEye));
-				
-				// Compute final Cook-Torrance specular term, load textures, mix them
-				float CookTorrance = (D*F*G) / (normalDotEye * pi);
-				
-				vec3 diffuse_ = light_color.rgb * max(0.0, normalDotLight);
-				vec3 specular_ = light_color.rgb * max(max(0.0, CookTorrance) * metallic, normalDotLight);
-				
-				return diffuse_ + specular_;
+				float CookTorrance = cookTorranceSpecular(direction, eye_dir, surface_normal, roughness, metallic);
+	
+				return (light_color.rgb + (light_color.rgb*vec3(max(CookTorrance, 0)))) * max(normalDotLight, 0);
 			} 
 						
 			void main()
@@ -178,9 +200,9 @@ PASS.Shader = {
 					float roughness = get_roughness(uv);
 
 					out_color.rgb += CookTorrance2(
-						normalize(light_view_pos - view_pos), 
-						normal, 
-						normalize(-view_pos), 
+						normalize(view_pos - light_view_pos), 
+						-normal, 
+						normalize(view_pos), 
 						metallic, 
 						roughness
 					) * light_intensity * fade;

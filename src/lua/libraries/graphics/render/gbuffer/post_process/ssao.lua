@@ -21,14 +21,14 @@ PASS.Source = [[
 		float pw = 1.0 / g_screen_size.x;
 		float ph = 1.0 / g_screen_size.y;
 
-		float ao = 8.0;
+		float ao = 1.0;
 		
 		float aoscale = 1.1;
 		
 		pw /= aoscale;
 		ph /= aoscale;
 		
-		for (int i = 1; i < 48; i++)
+		for (int i = 1; i < 32; i++)
 		{					
 			ao += compare_depths(depth, get_depth(vec2(uv.x+pw,uv.y+ph)));
 			ao += compare_depths(depth, get_depth(vec2(uv.x-pw,uv.y+ph)));
@@ -39,9 +39,9 @@ PASS.Source = [[
 			ph *= aoscale;
 		}			 
 	 
-		ao/=48.0;
+		ao/=10.0;
 	 
-		return 0.5+clamp(ao, 0.0, 1.0)*0.5;
+		return 0.75+clamp(ao, 0.0, 1.0)*0.25;
 	}
 	out vec4 out_color;
 
