@@ -742,7 +742,7 @@ function steam.SpawnMapEntities(path, parent)
 				end
 			end
 		
-			if false and info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
+			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
 				if vfs.IsFile(info.model) then
 					local ent = entities.CreateEntity("visual", parent)
 					ent:SetName(info.classname .. "_" .. i)
