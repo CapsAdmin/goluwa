@@ -283,7 +283,7 @@ function vfs.Open(path, mode, sub_mode)
 		end
 	end
 
-	return false, err or "no such file exists"
+	return false, "no such file exists"
 end
 
 include("path_utilities.lua", vfs)

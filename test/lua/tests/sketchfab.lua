@@ -1,5 +1,5 @@
 local id = "e8eabe00779a4f5bb8ca8a4c7190f436"
-local output_folder = "data/download/models/sketchfab/" .. id .. "/"
+local output_folder = "downloads/models/sketchfab/" .. id .. "/"
 
 local function parse_scene(id)
 
@@ -61,7 +61,7 @@ local function parse_scene(id)
 								for i = 1, info.Size do
 									indices[i] = file:ReadVarInt()
 								end
-								
+								header_callback
 								table.print(indices)
 							end
 							--do return end

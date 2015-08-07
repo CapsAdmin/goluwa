@@ -109,7 +109,8 @@ do -- file system
 	e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
 	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 directories up (data/bin/os_arch)
 	e.SRC_FOLDER = e.ROOT_FOLDER .. "src/"
-	e.USERDATA_FOLDER = e.ROOT_FOLDER .. "data/users/" .. e.USERNAME:lower() .. "/"
+	e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"
+	e.USERDATA_FOLDER = e.DATA_FOLDER .. "users/" .. e.USERNAME:lower() .. "/"
 	
 	-- create ROOT/data/users/
 	fs.createdir(e.USERDATA_FOLDER:match("(.+/).-/"))

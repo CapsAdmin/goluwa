@@ -82,12 +82,10 @@ end
 function vfs.CreateFolders(fs, path)
 	local fs = vfs.GetFileSystem(fs)
 	if fs then
-		local dir = ""
-		local base
+		local folder_path = ""
 		for folder in path:gmatch("(.-/)") do
-			dir = dir .. folder
-			base = base or vfs.GetAbsolutePath(dir)
-			fs:CreateFolder({full_path = base .. dir:sub(#"data/"+1)})
+			folder_path = folder_path .. folder
+			fs:CreateFolder({full_path = folder_path})
 		end
 	end
 end

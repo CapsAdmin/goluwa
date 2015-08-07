@@ -7,8 +7,10 @@ resource.async_readers = {}
 resource.downloading = {}
 resource.providers = {}
 
-vfs.CreateFolder("data/download/")
-vfs.Mount(R("data/download/"))
+e.DOWNLOAD_FOLDER = e.DATA_FOLDER .. "downloads/"
+
+vfs.CreateFolder(e.DOWNLOAD_FOLDER)
+vfs.Mount("os:" .. e.DOWNLOAD_FOLDER, "downloads")
 
 function resource.AddProvider(provider)
 	for i,v in ipairs(resource.providers) do 
@@ -34,12 +36,12 @@ local function download(from, to, callback, on_fail, on_header)
 		from, 
 		function()			
 			file:Close()
-			local full_path = R("data/download/" .. to)
+			local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to)
 			if full_path then
 				callback(full_path)
 				llog("finished donwnloading ", from)
 			else
-				warning("resource download error: %q not found!", "data/download/" .. to)
+				warning("resource download error: %q not found!", "data/downloads/" .. to)
 				on_fail()
 			end
 		end, 
@@ -50,9 +52,9 @@ local function download(from, to, callback, on_fail, on_header)
 			file:Write(chunk)
 		end,
 		function(header)			
-			vfs.CreateFolders("os", "data/download/" .. to)
-			file, err = vfs.Open("data/download/" .. to, "write")
-							
+			vfs.CreateFolders("os", e.DOWNLOAD_FOLDER .. to)
+			file, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to, "write")
+
 			if not file then
 				warning("resource download error: ", err)
 				on_fail()
@@ -113,10 +115,10 @@ function resource.Download(path, callback, on_fail, crc)
 		path = "cache/" .. (crc or crypto.CRC32(path)) .. ext
 	end
 	
-	local path2 = R(path)
+	local path2 = R("os:" .. path)
 	
 	if not path2 then
-		local path = R(path:lower())
+		local path = R("os:" .. path:lower())
 		if path then path2 = path end
 	end
 	
@@ -129,7 +131,7 @@ function resource.Download(path, callback, on_fail, crc)
 		end
 	end
 
-	if path2 and vfs.IsFile(path2) then
+	if path2 and vfs.IsFile("os:" .. path2) then
 		callback(path2)
 		return true
 	end
@@ -153,7 +155,7 @@ function resource.Download(path, callback, on_fail, crc)
 				cb:uncache(path)
 			end, 
 			function()
-				-- check file crc stuff here
+				-- check file crc stuff here/
 				return true
 			end
 		)

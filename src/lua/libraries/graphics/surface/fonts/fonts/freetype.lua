@@ -141,7 +141,7 @@ function META:Initialize()
 				for i,v in pairs(vfs.Find(base .. "/")) do
 					if v:find(".ttf") then
 						local ext = v:match(".+(%.%a+)") or ".dat"
-						vfs.Write("download/cache/" .. crypto.CRC32(self.Path) .. ext, vfs.Read(base .."/".. v))
+						vfs.Write("downloads/cache/" .. crypto.CRC32(self.Path) .. ext, vfs.Read(base .."/".. v))
 					end
 				end
 			end)		

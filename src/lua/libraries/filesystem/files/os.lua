@@ -21,7 +21,9 @@ local CONTEXT = {}
 CONTEXT.Name = "os"
 
 function CONTEXT:CreateFolder(path_info)
-	fs.createdir(path_info.full_path)
+	if path_info.full_path:startswith(e.ROOT_FOLDER) then
+		fs.createdir(path_info.full_path)
+	end
 end
 
 function CONTEXT:GetFiles(path_info)
