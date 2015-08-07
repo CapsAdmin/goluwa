@@ -9,7 +9,7 @@ function META:Initialize(options)
 		return false, "missing glyphs field"
 	end
 
-	local tex, err = options.texture or render.CreateTextureFromPath(self.Path)
+	local tex, err = options.texture or Texture(self.Path)
 	
 	if not tex then return false, err end
 	
