@@ -1477,6 +1477,13 @@ function chatsounds.Initialize()
 	--chatsounds.BuildTree("custom")
 	
 	--chatsounds.BuildFromAutoadd()
+        
+        event.AddListener("ResourceDownloaded", function(path)
+                if path:find("chatsounds/lists/", nil, true) then
+                        chatsounds.LoadData(path:match(".+/(.+)%.dat"))
+                end
+        end)
+        
 	for k,v in pairs(chatsounds.GetLists()) do
 		chatsounds.LoadData(vfs.FixIllegalCharactersInPath(v))
 	end
@@ -1494,11 +1501,5 @@ end
 --chatsounds.Say("1 2 3 4 | 5 6 7 8")
 --chatsounds.Say("if you need instructions on how to get through the hotels check out the enclosed instruction book")
 --chatsounds.Say("uh oh%50 uh oh%50 uh oh%50") 
-
-event.AddListener("ResourceDownloaded", function(path)
-	if path:find("chatsounds/lists/", nil, true) then
-		chatsounds.LoadData(path:match(".+/(.+)%.dat"))
-	end
-end)
 
 return chatsounds
