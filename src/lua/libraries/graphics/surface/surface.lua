@@ -81,7 +81,7 @@ local X, Y = 0, 0
 local W, H = 0, 0
 local R,G,B,A,A2 = 1,1,1,1,1
 
-include("fonts/fonts.lua", surface)
+include("fonts.lua", surface)
 
 do -- render world matrix helpers
 	function surface.Translate(x, y, z)	
