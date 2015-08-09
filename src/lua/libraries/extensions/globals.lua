@@ -96,7 +96,7 @@ do -- logging
 	fs.createdir(base_log_dir)
 		
 	local function raw_log(args, sep, append)	
-		local line = table.concat(args, sep)
+		local line = type(args) == "string" and args or table.concat(args, sep)
 	
 		if append then
 			line = line .. append
