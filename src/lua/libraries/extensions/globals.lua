@@ -106,7 +106,7 @@ do -- logging
 			if not log_file then
 				setlogfile()
 			end
-							
+			
 			if line == last_line then
 				if count > 0 then
 					local count_str = ("[%i x] "):format(count)
@@ -142,6 +142,7 @@ do -- logging
 		
 	function log(...)
 		raw_log(tostring_args(...), "")
+		return ...
 	end
 	
 	function logn(...)
@@ -155,7 +156,7 @@ do -- logging
 	end
 
 	function logf(str, ...)
-		log(formatx(str, ...))
+		raw_log(formatx(str, ...), "")
 		return ...
 	end
 
@@ -178,6 +179,7 @@ do -- logging
 		else
 			return logf("[%s][%s] %s\n", main_category, sub_category, fmt:safeformat(...))
 		end
+		return ...
 	end
 end
 
@@ -433,6 +435,10 @@ pretty_prints.table = function(t)
 	
 	
 	return str
+end
+
+pretty_prints["function"] = function(self)
+	return ("function[%p][%s](%s)"):format(self, debug.getprettysource(self, true), table.concat(debug.getparams(self), ", "))
 end
 
 function tostringx(val)
