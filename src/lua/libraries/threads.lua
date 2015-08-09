@@ -182,8 +182,18 @@ function threads.Report(what)
 	end
 end
 
+function threads.IsBusy()
+	return threads.busy
+end
+
 event.CreateTimer("threads", 0.25, 0, function()	
 	local i = 0
+	
+	if next(threads.created) then
+		threads.busy = true
+	else
+		threads.busy = false
+	end
 	
 	for thread in pairs(threads.created) do
 		if thread:IsRunning() then
