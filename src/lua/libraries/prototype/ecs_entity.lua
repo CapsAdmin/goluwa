@@ -6,7 +6,7 @@ function META:__tostring2()
 	return ("[%s][%s]"):format(self.config, self:GetName())
 end
 
-prototype.AddParentingTemplate(META)
+include("lua/libraries/templates/parenting.lua", META)
 prototype.GetSet(META, "Components", {})
 
 local DEFER_COMPONENT_CHECKS_AND_EVENTS

@@ -104,6 +104,6 @@ function CONTEXT:Flush()
 	error(self.Name .. ": not implemented")
 end
 
-prototype.AddBufferTemplate(CONTEXT)
+include("lua/libraries/templates/buffer.lua", CONTEXT)
 
 prototype.Register(CONTEXT, "file_system", CONTEXT.Name)

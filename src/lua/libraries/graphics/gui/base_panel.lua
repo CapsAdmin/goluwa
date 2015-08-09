@@ -4,7 +4,7 @@ local USE_MATRIX = false
 
 local PANEL = prototype.CreateTemplate("panel2", "base")
 
-prototype.AddParentingTemplate(PANEL)
+include("lua/libraries/templates/parenting.lua", PANEL)
 
 prototype.GetSet(PANEL, "MousePosition", Vec2(0, 0))
 prototype.IsSet(PANEL, "Visible", true)

@@ -131,7 +131,6 @@ do -- file system
 		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/get_is_set.lua")
 		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/base_object.lua")
 		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/null.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/templates/buffer.lua")
 		utility = dofile(e.SRC_FOLDER .. "lua/libraries/utilities/utility.lua")
 		
 		vfs = dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/vfs.lua")
