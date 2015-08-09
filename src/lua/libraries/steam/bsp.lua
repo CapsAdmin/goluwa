@@ -9,13 +9,13 @@ local skyboxes = {
 	["gm_atomic"] = {AABB(-210, -210, 40,   210, 210, 210) * (1/scale), 0},
 }
 
-console.AddCommand("map", function(path)	
+function steam.SetMap(name)
 	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical")
-	steam.bsp_world:SetName(path)
+	steam.bsp_world:SetName(name)
 	steam.bsp_world:SetCull(false)
-	steam.bsp_world:SetModelPath("maps/" .. path .. ".bsp")
-	steam.bsp_world:SetPhysicsModelPath("maps/" .. path .. ".bsp")
-end)
+	steam.bsp_world:SetModelPath("maps/" .. name .. ".bsp")
+	steam.bsp_world:SetPhysicsModelPath("maps/" .. name .. ".bsp")
+end
 
 local function read_lump_data(thread, what, bsp_file, header, index, size, struct)
 	local out = {}
