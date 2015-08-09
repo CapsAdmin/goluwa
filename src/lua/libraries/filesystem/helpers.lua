@@ -1,5 +1,25 @@
 local vfs = (...) or _G.vfs
 
+
+do
+	vfs.SetWorkingDirectory = fs.setcd
+	vfs.GetWorkingDirectory = fs.getcd
+
+	local stack = {}
+	
+	function vfs.PushWorkingDirectory(dir)
+		table.insert(stack, vfs.GetWorkingDirectory())
+		vfs.SetWorkingDirectory(dir)
+	end
+	
+	function vfs.PopWorkingDirectory()
+		local old = table.remove(stack)
+		if old then
+			vfs.SetWorkingDirectory(old)
+		end
+	end
+end
+
 function vfs.Delete(path, ...)
 	check(path, "string")
 	local abs_path = vfs.GetAbsolutePath(path, ...)

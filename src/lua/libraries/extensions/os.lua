@@ -13,25 +13,6 @@ else
 	end
 end
 
-do
-	os.setcd = fs.setcd
-	os.getcd = fs.getcd
-
-	local stack = {}
-	
-	function os.pushcd(dir)
-		table.insert(stack, os.getcd())
-		os.setcd(dir)
-	end
-	
-	function os.popcd()
-		local old = table.remove(stack)
-		if old then
-			os.setcd(old)
-		end
-	end
-end
-
 do -- by Python1320
 	local dd=60*60*24
 	local hh=60*60

@@ -16,9 +16,9 @@ function utility.QuickBMSGetFiles(archive_path, script)
 		last_written = script
 	end
 	
-	os.pushcd(quickbms_location)
+	vfs.PushWorkingDirectory(quickbms_location)
 		local list = io.popen(("quickbms -R -l temp_script.bms %q"):format(archive_path), "r")
-	os.popcd()
+	vfs.PopWorkingDirectory()
 
 	local files = {}
 
@@ -41,9 +41,9 @@ function utility.QuickBMSOpenFile(archive_path, file_path, script)
 
 	fs.createdir(temp_dir)
 	
-	os.pushcd(quickbms_location)	
+	vfs.PushWorkingDirectory(quickbms_location)	
 		os.execute(("quickbms -R -f %q temp_script.bms %q %q"):format(file_path, archive_path, temp_dir))
-	os.popcd()
+	vfs.PopWorkingDirectory()
 	
 	local file, err = vfs.Open(temp_dir .. file_path)
 	
