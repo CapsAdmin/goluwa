@@ -723,17 +723,24 @@ function steam.SpawnMapEntities(path, parent)
 					parent.world_params:SetSunAngles(Deg3(p, y+180, 0))
 					
 					info._light.a = 1
-					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
-					parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b, 1))
+					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b)*info._light.a)
+					parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b, 1)*info._ambient.a*0.5)
+										
 				elseif info.classname:lower():find("light") and info._light then		
 					local ent = entities.CreateEntity("light", parent)
 					ent:SetName(info.classname .. "_" .. i)
 					ent:SetPosition(info.origin * 0.0254)
 					ent:SetHideFromEditor(true)
 					
-					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
-					ent:SetSize(math.max(info._light.a*3, 10))
-					ent:SetIntensity(math.clamp(info._light.a, 0.1, 1))
+					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1)^2)
+					ent:SetSize(math.max(info._light.a, 25))
+					ent:SetIntensity(math.clamp(info._light.a, 0.25, 3))
+					
+					if info._zero_percent_distance then
+						ent:SetSize(ent:GetSize() + info._zero_percent_distance*0.02)
+					end
+					
+					if ent:GetPosition():Distance(render.camera_3d:GetPosition()) < 1 then table.print(info) end
 					ent.spawned_from_bsp = true
 				elseif info.classname == "env_fog_controller" then
 					parent.world_params:SetFogColor(Color(info.fogcolor.r, info.fogcolor.g, info.fogcolor.b, info.fogcolor.a * (info.fogmaxdensity or 1)/4))

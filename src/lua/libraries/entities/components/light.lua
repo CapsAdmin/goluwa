@@ -8,6 +8,7 @@ COMPONENT.Events = {"Draw3DLights", "DrawShadowMaps"}
 
 prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1))
+	prototype.GetSet(COMPONENT, "AmbientColor", Color(0, 0, 0))
 	
 	-- automate this!!
 	prototype.GetSet(COMPONENT, "Intensity", 0.5)
@@ -53,6 +54,7 @@ if GRAPHICS then
 		end
 		
 		-- automate this!!
+		render.gbuffer_light_shader.light_ambient_color = self.AmbientColor
 		render.gbuffer_light_shader.light_color = self.Color
 		render.gbuffer_light_shader.light_intensity = self.Intensity
 		render.gbuffer_light_shader.light_shadow = self.Shadow

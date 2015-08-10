@@ -19,14 +19,14 @@ PASS.Variables = {
 	
 	Kr = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131),
 	rayleigh_brightness = 2,
-	mie_brightness = 0.05,
+	mie_brightness = 0.025,
 	spot_brightness = 0.5,
 	scatter_strength = 0.028,
 	rayleigh_strength = 0.139,
 	mie_strength = 0.264,
-	rayleigh_collection_power = 0.5,
+	rayleigh_collection_power = 0.65,
 	mie_collection_power = 0.39,
-	mie_distribution = 0.5,
+	mie_distribution = 0.6,
 }
 
 PASS.Source = [[	    
@@ -145,8 +145,7 @@ PASS.Source = [[
 		{
 			vec3 color = vec3(spot*mie_collected + mie_factor*mie_collected + rayleigh_factor*rayleigh_collected)*abs(data.w);
 
-			out_color = vec4(normalize(color)+vec3(0.3), sqrt(length(color))/16.0);
-			out_color *= 1;
+			out_color = vec4(color/200+vec3(0.3), 1);
 		}
     }
 ]]

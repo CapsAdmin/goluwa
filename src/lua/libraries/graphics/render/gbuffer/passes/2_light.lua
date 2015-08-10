@@ -107,17 +107,30 @@ PASS.Shader = {
 				
 				return visibility;
 			}  
-						
-			float get_attenuation(vec3 view_pos, vec2 uv)
-			{												
-				if (project_from_camera) return 1.0;
-				
-				float distance = length(light_view_pos - view_pos);
-				distance = distance / lua[light_radius = 1000];
-				distance = -distance + 1;
-				float fade = clamp(distance, 0, 1);
-	
-				return fade;
+									
+			vec3 get_attenuation(vec3 P, vec3 N, float cutoff)
+			{
+				if (project_from_camera) return vec3(light_color.rgb);
+
+				// calculate normalized light vector and distance to sphere light surface
+				float r = lua[light_radius = 1000]/10;
+				vec3 L = light_view_pos - P;
+				float distance = length(L);
+				float d = max(distance - r, 0);
+				L /= distance;
+				 
+				// calculate basic attenuation
+				float denom = d/r + 1;
+				float attenuation = 1 / (denom*denom);
+				 
+				// scale and bias attenuation such that:
+				//   attenuation == 0 at extent of max influence
+				//   attenuation == 1 when d == 0
+				attenuation = (attenuation - cutoff) / (1 - cutoff);
+				attenuation = max(attenuation, 0);
+				 
+				float dot = max(dot(L, N), 0);
+				return light_color.rgb * dot * attenuation;
 			}
 			
 			const float e = 2.71828182845904523536028747135;
@@ -132,13 +145,8 @@ PASS.Shader = {
 			  return exp(tan2Alpha / roughness2) / denom;
 			}
 			
-			float cookTorranceSpecular(
-			  vec3 lightDirection,
-			  vec3 viewDirection,
-			  vec3 surfaceNormal,
-			  float roughness,
-			  float fresnel) {
-
+			float get_specular(vec3 lightDirection, vec3 viewDirection, vec3 surfaceNormal, float roughness, float fresnel) 
+			{
 			  float VdotN = max(dot(viewDirection, surfaceNormal), 0.0);
 			  float LdotN = max(dot(lightDirection, surfaceNormal), 0.0);
 
@@ -162,50 +170,50 @@ PASS.Shader = {
 			  //Multiply terms and done
 			  return  G * F * D / max(3.14159265 * VdotN, 0.000001);
 			}
-									
-			vec3 CookTorrance2(vec3 direction, vec3 surface_normal, vec3 eye_dir, float metallic, float roughness)
-			{
-				float normalDotLight = dot(surface_normal, direction);
-						
-				float CookTorrance = cookTorranceSpecular(direction, eye_dir, surface_normal, roughness, metallic);
-	
-				return (light_color.rgb + (light_color.rgb*vec3(max(CookTorrance, 0)))) * max(normalDotLight, 0);
-			} 
-						
-			void main()
-			{
-				out_color.rgb = vec3(0);
 			
+			void main()
+			{				
 				vec2 uv = get_screen_uv();					
 				vec3 view_pos = get_view_pos(uv);
+				vec3 normal = get_view_normal(uv);
+				
+				vec3 ambient = lua[light_ambient_color = Color(0,0,0)].rgb;
+				
+				if (ambient == vec3(0))
+				{
+					ambient = light_color.rgb*0.5;
+				}
+				
+				ambient *= light_intensity;
 
-				float fade = get_attenuation(view_pos, uv);
-										
+				vec3 attenuate = get_attenuation(view_pos, normal, 0.0001);
+				
 				if (lua[light_shadow = false])
 				{
 					float shadow = get_shadow(uv);
 					
-					if (shadow <= 1)
+					if (shadow < 1.0)
 					{
-						out_color.rgb += normalize(light_color.rgb) * light_intensity * fade;
+						out_color.rgb = ambient;
+						attenuate = vec3(0);
 					}
-					
-					fade *= shadow;
 				}
 				
-				if (fade > 0)
+				if (attenuate != vec3(0,0,0))
 				{							
-					vec3 normal = get_view_normal(uv);
 					float metallic = get_metallic(uv);
 					float roughness = get_roughness(uv);
-
-					out_color.rgb += CookTorrance2(
+					float specular = get_specular(
 						normalize(view_pos - light_view_pos), 
-						-normal, 
 						normalize(view_pos), 
-						metallic, 
-						roughness
-					) * light_intensity * fade;
+						-normal, 
+						roughness,
+						metallic
+					);
+					
+					out_color.rgb = attenuate;
+					out_color.rgb += (vec3(specular) * light_color.rgb) * attenuate;
+					out_color.rgb *= light_intensity;
 				}
 			
 				out_color.a = 1;
