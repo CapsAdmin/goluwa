@@ -30,25 +30,22 @@ local tries = {
 }
 
 console.AddCommand("map", function(name)
-	if vfs.IsFile("maps/" .. name .. ".bsp") then
-		return steam.SetMap(name)
-	else
-		for _, info in pairs(tries) do
-			local path = info.path:gsub("__MAPNAME__", name)
-			if vfs.IsFile(path) then
-				OBJ_WORLD = OBJ_WORLD or entities.CreateEntity("visual")
-				OBJ_WORLD:SetName(name)
-				OBJ_WORLD:SetCull(false)
-				OBJ_WORLD:SetModelPath(path)
-				OBJ_WORLD.world = OBJ_WORLD.world or entities.CreateEntity("world")
-				if info.callback then
-					info.callback(OBJ_WORLD)
-				end
-				return
+	for _, info in pairs(tries) do
+		local path = info.path:gsub("__MAPNAME__", name)
+		if vfs.IsFile(path) then
+			OBJ_WORLD = OBJ_WORLD or entities.CreateEntity("visual")
+			OBJ_WORLD:SetName(name)
+			OBJ_WORLD:SetCull(false)
+			OBJ_WORLD:SetModelPath(path)
+			OBJ_WORLD.world = OBJ_WORLD.world or entities.CreateEntity("world")
+			if info.callback then
+				info.callback(OBJ_WORLD)
 			end
+			return
 		end
 	end
-	return false, "map not found"
+	
+	steam.SetMap(name)
 end)
 
 console.AddCommand("dump_object_count", function()
