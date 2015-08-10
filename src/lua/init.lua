@@ -176,7 +176,6 @@ do -- libraries
 	include("lua/libraries/extensions/string.lua")
 	include("lua/libraries/extensions/table.lua")
 	include("lua/libraries/extensions/os.lua")
-	include("lua/libraries/extensions/function.lua") -- meta
 
 	-- libraries
 	prototype = include("lua/libraries/prototype/prototype.lua")
