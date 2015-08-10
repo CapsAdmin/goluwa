@@ -311,6 +311,7 @@ do -- events
 		end
 
 		--surface.DisableStencilClipping()
+		surface.SetWorldMatrix()
 
 		if gui.threedee then 
 			render.camera_2d:End3D2D()

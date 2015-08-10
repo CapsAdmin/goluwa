@@ -126,7 +126,7 @@ do -- 3d 2d
 		
 		pos = pos or Vec3(0, 0, 0)
 		ang = ang or Ang3(0, 0, 0)
-		scale = scale or Vec3(4, 4 * (self.Viewport.w / self.Viewport.h), 1)
+		scale = scale or Vec3(4 * (self.Viewport.w / self.Viewport.h), 4 * (self.Viewport.w / self.Viewport.h), 1)
 		
 		self:Set3D(true)
 		self.oldpos, self.oldang, self.oldfov = self:GetPosition(), self:GetAngles(), self:GetFOV()
@@ -155,8 +155,8 @@ do -- 3d 2d
 
 	function META:ScreenToWorld(x, y)
 		if self:Get3D() then
-			x = ((x / render.GetWidth()) - 0.5) * 2
-			y = ((y / render.GetHeight()) - 0.5) * 2
+			x = ((x / self.Viewport.w) - 0.5) * 2
+			y = ((y / self.Viewport.h) - 0.5) * 2
 			
 			local m = (self:GetMatrices().view * self:GetMatrices().world):GetInverse()
 			

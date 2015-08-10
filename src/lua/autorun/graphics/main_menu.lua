@@ -97,6 +97,7 @@ function menu.CreateTopBar()
 	bar:SetStyle("gradient")
 	bar:SetDraggable(true)
 	bar:SetSize(window.GetSize()*1)
+	bar:SetCachedRendering(true)
 	bar:SetupLayout("layout_children", "size_to_width", "size_to_height")
 	
 	function bar:OnPreDraw()
