@@ -180,7 +180,7 @@ do -- helpers
 			self.Vertices[ci].tangent = tangent
 			self.Vertices[ci].binormal = binormal]]
 			
-			threads.Sleep()
+			tasks.Wait()
 		end
 	end
 
@@ -217,7 +217,7 @@ do -- helpers
 					for _, vertex in pairs(z) do				
 						vertex.normal = normal
 					end
-					threads.Sleep()
+					tasks.Wait()
 				end
 			end
 		end
@@ -243,8 +243,8 @@ do -- helpers
 			local parts = line:gsub("%s+", " "):trim():explode(" ")
 
 			table.insert(lines, parts)
-			threads.ReportProgress("inserting lines", math.huge)
-			threads.Sleep()
+			tasks.ReportProgress("inserting lines", math.huge)
+			tasks.Wait()
 			i = i + 1
 		end
 	
@@ -260,7 +260,7 @@ do -- helpers
 			end
 			
 			self:ReportProgress("parsing lines", vert_count)
-			self:Sleep()
+			self:Wait()
 		end
 				
 		for i, parts in pairs(lines) do
@@ -306,8 +306,8 @@ do -- helpers
 				end
 			end
 			
-			threads.ReportProgress("solving indices", vert_count)
-			threads.Sleep()
+			tasks.ReportProgress("solving indices", vert_count)
+			tasks.Wait()
 		end
 		
 		if generate_normals then
@@ -325,8 +325,8 @@ do -- helpers
 
 				vertex_normals[c.pos_index] = vertex_normals[c.pos_index] or Vec3()
 				vertex_normals[c.pos_index] = (vertex_normals[c.pos_index] + normal)
-				threads.ReportProgress("generating normals", count)
-				threads.Sleep()
+				tasks.ReportProgress("generating normals", count)
+				tasks.Wait()
 			end
 			
 			local default_normal = Vec3(0, 0, -1)
@@ -337,8 +337,8 @@ do -- helpers
 				n:Normalize()
 				normals[i] = n
 				output[i].normal = n
-				threads.ReportProgress("smoothing normals", count)
-				threads.Sleep()
+				tasks.ReportProgress("smoothing normals", count)
+				tasks.Wait()
 			end
 		end
 		
@@ -662,7 +662,7 @@ do -- helpers
 					b4.normal = normal
 					c4.normal = normal
 					
-					threads.Sleep()
+					tasks.Wait()
 				end
 			end
 		end

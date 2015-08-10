@@ -84,7 +84,7 @@ function render.LoadModel(path, callback, callback2, on_fail)
 	resource.Download(path, function(full_path)			
 		local out = {}
 
-		local thread = threads.CreateThread()
+		local thread = tasks.CreateTask()
 		thread.debug = true
 		
 		function thread:OnStart()							

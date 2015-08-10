@@ -414,7 +414,7 @@ do -- list parsing
 	end
 	
 	function chatsounds.BuildSoundInfo()
-		local thread = threads.CreateThread()
+		local thread = tasks.CreateTask()
 		
 		thread.debug = true
 		
@@ -428,7 +428,7 @@ do -- list parsing
 			
 			for _, data in ipairs(files) do
 				self:ReportProgress("reading scripts/*", max)
-				self:Sleep()
+				self:Wait()
 				
 				if data.userdata and data.userdata.game then
 					local path = data.full_path
@@ -465,7 +465,7 @@ do -- list parsing
 			
 			for _, data in pairs(files) do
 				self:ReportProgress("reading resource/*", max)
-				self:Sleep()
+				self:Wait()
 				
 				if data.userdata and data.userdata.game then
 					local path = data.full_path
@@ -501,7 +501,7 @@ do -- list parsing
 					
 					for sound_name, text in pairs(captions[game]) do
 						self:ReportProgress("parsing "..game.." captions", max)
-						self:Sleep()
+						self:Wait()
 						
 						if not sound_info[sound_name] and sound_name:sub(1,1) == "#" then
 							sound_name = sound_name:lower()
@@ -565,7 +565,7 @@ do -- list parsing
 						
 				for sound_name, info in pairs(sound_info) do
 					self:ReportProgress("parsing "..game.." sound info", max)
-					self:Sleep()
+					self:Wait()
 					
 					local paths
 
@@ -642,7 +642,7 @@ do -- list parsing
 	function chatsounds.BuildSoundLists()
 		local found = {}
 		
-		local thread = threads.CreateThread()
+		local thread = tasks.CreateTask()
 		
 		thread.debug = true
 
@@ -668,7 +668,7 @@ do -- list parsing
 				
 				table.insert(found[game][realm], path:lower() .. "=" .. sentence)
 			
-				self:Sleep()
+				self:Wait()
 			end)
 		end		
 		
@@ -718,7 +718,7 @@ do -- list parsing
 	end
 	
 	function chatsounds.TranslateSoundListsFromSoundInfo()
-		local thread = threads.CreateThread()
+		local thread = tasks.CreateTask()
 		
 		thread.debug = true
 
@@ -763,7 +763,7 @@ do -- list parsing
 							for i, data in ipairs(sounds) do
 							
 								self:ReportProgress("translating " .. path, max)
-								self:Sleep()
+								self:Wait()
 	
 								if phonemes then 
 									trigger = phonemes[data.path] or trigger

@@ -745,7 +745,7 @@ local function parse_scene(scene, path, callback)
 			table.insert(sub_model.vertices, data)
 			
 			if callback then
-				threads.Sleep()
+				tasks.Wait()
 			end
 		end
 		
@@ -807,7 +807,7 @@ local function parse_scene(scene, path, callback)
 		
 		if callback then
 			callback(sub_model, i+1, scene.mNumMeshes)
-			threads.Sleep()
+			tasks.Wait()
 		end
 	end	
 	

@@ -208,7 +208,7 @@ local function load_mdl(path)
 		local count = header[name .. "_count"]
 		local offset = header[name .. "_offset"]
 
-		--threads.Report("reading " .. name)
+		--tasks.Report("reading " .. name)
 		
 		if _debug then llog("reading %i %ss (at %i)", count, name, offset) end
 
@@ -224,7 +224,7 @@ local function load_mdl(path)
 					out[i] = data
 				end
 				
-				threads.Sleep()
+				tasks.Wait()
 			end
 
 			buffer:PopPosition()
@@ -521,7 +521,7 @@ local function load_vtx(path)
 								vertex.boneId[i] = buffer:ReadByte()
 							end
 							vertices[i] = vertex
-							threads.Sleep()
+							tasks.Wait()
 						end
 						buffer:PopPosition()
 						
@@ -550,12 +550,12 @@ local function load_vtx(path)
 							strip.vertices = vertices
 
 							strips[i] = strip
-							threads.Sleep()
+							tasks.Wait()
 						end
 						buffer:PopPosition()
 
 						strip_group.strips = strips
-						threads.Sleep()
+						tasks.Wait()
 					end
 					buffer:PopPosition()
 				end
@@ -615,7 +615,7 @@ local function load_vvd(path)
 			vertex.uv = buffer:ReadVec2()
 
 			vvd.vertices[i] = vertex
-			threads.Sleep()
+			tasks.Wait()
 		end
 	end
 
@@ -646,7 +646,7 @@ local function load_vvd(path)
 					if fixup.lod_index >= lod_index then
 						for i = 1, fixup.vertices_count do
 							table.insert(vvd.fixed_vertices_by_lod[lod_index], vvd.vertices[fixup.vertex_index + i - 1])
-							threads.Sleep()
+							tasks.Wait()
 						end
 					end
 				end

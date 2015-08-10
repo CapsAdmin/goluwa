@@ -31,14 +31,14 @@ local function read_lump_data(thread, what, bsp_file, header, index, size, struc
 	if type(struct) == "function" then
 		for i = 1, length do
 			out[i] = struct()
-			threads.ReportProgress(what, length)
-			threads.Sleep()
+			tasks.ReportProgress(what, length)
+			tasks.Wait()
 		end
 	else
 		for i = 1, length do
 			out[i] = bsp_file:ReadStructure(struct)
-			threads.ReportProgress(what, length)
-			threads.Sleep()
+			tasks.ReportProgress(what, length)
+			tasks.Wait()
 		end
 	end
 				
@@ -93,8 +93,8 @@ function steam.LoadMap(path)
 
 		for i = 1, 64 do
 			header.lumps[i] = bsp_file:ReadStructure(struct) 
-			threads.ReportProgress("reading lumps", 64)
-			threads.Sleep()
+			tasks.ReportProgress("reading lumps", 64)
+			tasks.Wait()
 		end
 		
 	end 
@@ -108,8 +108,8 @@ function steam.LoadMap(path)
 	end
 	
 	do	
-		threads.Sleep()
-		threads.Report("mounting pak")-- pak
+		tasks.Wait()
+		tasks.Report("mounting pak")-- pak
 		local lump = header.lumps[41]
 		local length = lump.filelen
 
@@ -124,7 +124,7 @@ function steam.LoadMap(path)
 	end
 
 	do
-		threads.Sleep()
+		tasks.Wait()
 		local function unpack_numbers(str)
 			str = str:gsub("%s+", " ")
 			local t = str:explode(" ")
@@ -154,15 +154,15 @@ function steam.LoadMap(path)
 			entities[i] = ent
 			i = i + 1  
 			
-			threads.Sleep()
+			tasks.Wait()
 		end
 		bsp_file:PopPosition()
 		header.entities = entities
 	end
 		
 	do
-		threads.Sleep()
-		threads.Report("reading game lump")
+		tasks.Wait()
+		tasks.Report("reading game lump")
 		
 		local lump = header.lumps[36]
 		
@@ -233,8 +233,8 @@ function steam.LoadMap(path)
 					
 					table.insert(header.entities, lump)
 					
-					threads.Sleep()
-					threads.ReportProgress("reading static props", count)
+					tasks.Wait()
+					tasks.ReportProgress("reading static props", count)
 				end
 								
 				bsp_file:PopPosition()
@@ -338,7 +338,7 @@ function steam.LoadMap(path)
 	for i = 1, #texdatastringtable do
 		bsp_file:SetPosition(lump.fileofs + texdatastringtable[i])
 		header.texdatastringdata[i] = bsp_file:ReadString()
-		threads.Sleep()
+		tasks.Wait()
 	end
 
 	do 
@@ -389,8 +389,8 @@ function steam.LoadMap(path)
 			
 			header.displacements[i] = data
 			
-			threads.ReportProgress("reading displacements", length)
-			threads.Sleep()
+			tasks.ReportProgress("reading displacements", length)
+			tasks.Wait()
 		end
 		
 	end
@@ -584,8 +584,8 @@ function steam.LoadMap(path)
 				end
 				
 				::continue::
-				threads.ReportProgress("building meshes", model.numfaces)
-				threads.Sleep()
+				tasks.ReportProgress("building meshes", model.numfaces)
+				tasks.Wait()
 			end
 			
 			-- only world needed
@@ -597,23 +597,23 @@ function steam.LoadMap(path)
 	if GRAPHICS then			
 		for i, mesh in ipairs(models) do
 			mesh:BuildNormals(thread)
-			threads.ReportProgress("generating normals", #models)
-			threads.Sleep()
+			tasks.ReportProgress("generating normals", #models)
+			tasks.Wait()
 		end 		
 
 		for i, mesh in ipairs(models) do
 			if mesh.displacement then
 				mesh:SmoothNormals(thread)
 			end
-			threads.Report("smoothing displacements", #models)
-			threads.Sleep()
+			tasks.Report("smoothing displacements", #models)
+			tasks.Wait()
 		end 
 					
 		for i, mesh in ipairs(models) do
 			mesh:BuildBoundingBox()
 			mesh:Upload(true)
-			threads.ReportProgress("creating meshes", #models)
-			threads.Sleep()
+			tasks.ReportProgress("creating meshes", #models)
+			tasks.Wait()
 		end
 	end
 	
@@ -663,8 +663,8 @@ function steam.LoadMap(path)
 		
 		physics_meshes[i_] = mesh
 
-		threads.Sleep()
-		threads.ReportProgress("building physics meshes", count)
+		tasks.Wait()
+		tasks.ReportProgress("building physics meshes", count)
 	end
 	
 	if GRAPHICS then
@@ -681,7 +681,7 @@ function steam.LoadMap(path)
 		physics_meshes = physics_meshes,
 	}
 
-	threads.ReportProgress("finished reading " .. path)
+	tasks.ReportProgress("finished reading " .. path)
 	return steam.bsp_cache[path]
 end
 
@@ -689,7 +689,7 @@ function steam.SpawnMapEntities(path, parent)
 	path = R(path)	
 	local data = steam.bsp_cache[path]
 	
-	local thread = threads.CreateThread()
+	local thread = tasks.CreateTask()
 	thread.debug = true
 	
 	logn("spawning map entities: ", path)
@@ -754,8 +754,8 @@ function steam.SpawnMapEntities(path, parent)
 					ent.spawned_from_bsp = true
 				end
 			end
-			threads.ReportProgress("spawning entities", count)
-			threads.Sleep()
+			tasks.ReportProgress("spawning entities", count)
+			tasks.Wait()
 		end	
 	end
 	

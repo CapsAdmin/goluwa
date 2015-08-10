@@ -185,7 +185,7 @@ do -- libraries
 	event = include("lua/libraries/event.lua") _G.goluwa = event.events -- event handler
 	utility = include("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
 	crypto = include("lua/libraries/crypto.lua")
-	threads = include("lua/libraries/threads.lua")
+	tasks = include("lua/libraries/tasks.lua")
 	serializer = include("lua/libraries/serializer.lua")
 
 	console = include("lua/libraries/console.lua")
