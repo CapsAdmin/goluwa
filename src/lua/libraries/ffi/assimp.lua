@@ -720,26 +720,26 @@ local function parse_scene(scene, path, callback)
 			local data = {}
 		
 			local val = mesh.mVertices[i]
-			data.pos = Vec3(val.x, val.y, val.z)
+			data.pos = Vec3(val.x, -val.y, val.z)
 
 			if mesh.mNormals ~= nil then
 				local val = mesh.mNormals[i]
-				data.normal = Vec3(val.x, val.y, val.z)
+				data.normal = Vec3(val.x, -val.y, val.z)
 			end
-
+			
 			if mesh.mTangents ~= nil then
 				local val = mesh.mTangents[i]
-				data.tangent = Vec3(val.x, val.y, val.z)
+				data.tangent = Vec3(val.x, -val.y, val.z)
 			end	
 
 			if mesh.mBitangents ~= nil then
 				local val = mesh.mBitangents[i]
-				data.bitangent = Vec3(val.x, val.y, val.z)
+				data.bitangent = Vec3(val.x, -val.y, val.z)
 			end	
 						
 			if mesh.mTextureCoords ~= nil and mesh.mTextureCoords[0] ~= nil then
 				local val = mesh.mTextureCoords[0][i]
-				data.uv = Vec3(val.x, -val.y)
+				data.uv = Vec3(val.x, val.y)
 			end
 			
 			table.insert(sub_model.vertices, data)
@@ -823,6 +823,10 @@ end
 
 function assimp.ImportFileEx(path, flags, callback, custom_io)		
 	local scene
+	
+	flags = flags or 0
+	flags = bit.bor(flags, enums.aiProcess_ConvertToLeftHanded)
+	flags = bit.bor(flags, enums.aiProcessPreset_TargetRealtime_MaxQuality)
 	
 	if custom_io then
 		local file_io_data = ffi.new("aiFileIO", {

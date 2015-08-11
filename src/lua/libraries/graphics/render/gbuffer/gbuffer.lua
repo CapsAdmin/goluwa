@@ -297,7 +297,9 @@ function render.InitializeGBuffer(width, height)
 	end
 				
 	event.AddListener("WindowFramebufferResized", "gbuffer", function(window, w, h)
-		render.InitializeGBuffer(w, h)
+		if render.GetGBufferSize() ~= Vec2(w,h) then
+			render.InitializeGBuffer(w, h)
+		end
 	end)
 	
 	do -- eww

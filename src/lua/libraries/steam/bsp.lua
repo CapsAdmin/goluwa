@@ -632,15 +632,15 @@ function steam.LoadMap(path)
 		
 		local i = 0
 		
-		if not GRAPHICS then
+		--FIX ME
+		local _, huh = next(vertices_tbl)
+		if type(huh.pos) == "cdata" then
 			for j, data in ipairs(vertices_tbl) do 
 				vertices[i] = data.pos.x i = i + 1		
 				vertices[i] = data.pos.y i = i + 1		
 				vertices[i] = data.pos.z i = i + 1		
 			end	
-		end
-		
-		if GRAPHICS then
+		else
 			for j, data in ipairs(vertices_tbl) do 
 				vertices[i] = data.pos[1] i = i + 1		
 				vertices[i] = data.pos[2] i = i + 1		
@@ -725,6 +725,7 @@ function steam.SpawnMapEntities(path, parent)
 					info._light.a = 1
 					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b)*info._light.a)
 					parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b, 1)*info._ambient.a*0.5)
+					parent.world_params:SetSunIntensity(1)
 										
 				elseif info.classname:lower():find("light") and info._light then		
 					local ent = entities.CreateEntity("light", parent)

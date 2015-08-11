@@ -165,7 +165,7 @@ if GRAPHICS then
 		
 		--render.SetBlendMode("additive")
 		render.SetBlendMode("one", "one")
-		render.SetCullMode("front")
+		render.SetCullMode("front", true)
 	
 		local transform = self:GetComponent("transform")
 		local pos = transform:GetPosition()
@@ -173,7 +173,7 @@ if GRAPHICS then
 		
 		self.shadow_map:Begin()				
 		
-		--render.SetCullMode("front", true)
+		render.SetCullMode("back", true)
 		render.SetShaderOverride(render.shadow_map_shader)
 	
 		local old_view = render.camera_3d:GetView()
@@ -187,7 +187,7 @@ if GRAPHICS then
 				projection:Perspective(math.rad(self.FOV), render.camera_3d.FarZ, render.camera_3d.NearZ, render.camera_3d.Viewport.w / render.camera_3d.Viewport.h) 
 			else
 				local size = self.OrthoSize * (ortho_divider or 1)
-				projection:Ortho(-size, size, -size, size, size, -size) 
+				projection:Ortho(-size, size, -size, size, size/1.5, -size/1.5) 
 			end
 		end
 		
@@ -236,7 +236,7 @@ if GRAPHICS then
 		render.camera_3d:SetProjection(old_projection)
 		
 		render.SetShaderOverride()
-		--render.SetCullMode(nil, false)
+		render.SetCullMode("front", false)
 		
 		--render.gbuffer_light_shader.cascade_pass = i
 		
