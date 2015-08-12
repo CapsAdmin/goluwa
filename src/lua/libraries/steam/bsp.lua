@@ -120,7 +120,19 @@ function steam.LoadMap(path)
 		
 		vfs.Write(name, pak)
 		
-		vfs.Mount(R(name))			
+		--FIX ME
+		
+		if LINUX then
+			local dir = R(name):match("(.+)%.zip")
+			os.execute("rm -f " .. dir)
+			os.execute("mkdir " .. dir)
+			vfs.PushWorkingDirectory(dir)
+				os.execute("unzip ../temp_bsp.zip")
+			vfs.PopWorkingDirectory()
+			vfs.Mount(dir)
+		else
+			vfs.Mount(R(name))			
+		end
 	end
 
 	do
@@ -494,7 +506,7 @@ function steam.LoadMap(path)
 							
 				local texinfo = header.texinfos[1 + face.texinfo]
 				local texdata = texinfo and header.texdatas[1 + texinfo.texdata]
-				local texname = header.texdatastringdata[1 + texdata.nameStringTableID]:lower()
+				local texname = header.texdatastringdata[1 + texdata.nameStringTableID]
 							
 				if texname:sub(0, 5) == "maps/" then
 					texname = texname:gsub("maps/.-/(.+)_.-_.-_.+", "%1")
