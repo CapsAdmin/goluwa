@@ -86,7 +86,7 @@ end
 function render.GetCubemapTexture()
 	if not render.cubemap_texture then
 		local tex = render.CreateTexture("cube_map")
-		tex:LoadCubemap("textures/skybox/sky56")
+		tex:LoadCubemap("textures/skybox/bluesky")
 		render.cubemap_texture = tex
 	end
 	return render.cubemap_texture
