@@ -11,6 +11,10 @@ CONTEXT.Name = "zip"
 local function split_path(path_info)		
 	local archive_path, relative = path_info.full_path:match("(.+%..-)/(.*)")
 		
+	if not archive_path and not relative then
+		error("not a valid archive path", 2)
+	end
+		
 	if archive_path:endswith("/") then
 		archive_path = archive_path:sub(0, -2)
 	end
