@@ -33,28 +33,7 @@ prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "Position", Vec3(0, 0, 0))
 	prototype.GetSet(COMPONENT, "Rotation", Quat(0, 0, 0, 1))
 	prototype.GetSet(COMPONENT, "PhysicsModelPath", "")
-	
-	do		
-		for _, info in pairs(prototype.GetRegistered("physics_body").prototype_variables) do
-			prototype.GetSet(COMPONENT, info.var_name, info.default)
-			
-			COMPONENT[info.set_name] = function(self, var)
-				self[info.var_name] = var
-				
-				if self.rigid_body:IsValid() then
-					self.rigid_body[info.set_name](self.rigid_body, var)
-				end
-			end
-		
-			COMPONENT[info.get_name] = function(self)			
-				if self.rigid_body:IsValid() then
-					return self.rigid_body[info.get_name](self.rigid_body)
-				end
-				
-				return self[info.var_name]
-			end
-		end
-	end
+	prototype.DelegateProperties(COMPONENT, prototype.GetRegistered("physics_body"), "rigid_body")
 	
 prototype.EndStorable()
 
