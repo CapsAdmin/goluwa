@@ -512,8 +512,8 @@ function steam.LoadMap(path)
 					texname = texname:gsub("maps/.-/(.+)_.-_.-_.+", "%1")
 				end
 				
-				if texname:find("skyb", nil, true) then goto continue end
-				if texname:find("water", nil, true) then goto continue end
+				if texname:lower():find("skyb", nil, true) then goto continue end
+				if texname:lower():find("water", nil, true) then goto continue end
 									
 				-- split the world up into sub models by texture
 				if not meshes[texname] then				
