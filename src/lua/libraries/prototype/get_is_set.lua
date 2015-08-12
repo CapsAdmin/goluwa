@@ -19,28 +19,30 @@ end
 
 function prototype.DelegateProperties(meta, from, var_name)	
 	for _, info in pairs(prototype.GetStorableVariables(from)) do
-		 prototype.SetupProperty({
-			meta = meta, 
-			var_name = info.var_name, 
-			default = info.default,
-			set_name = info.set_name,
-			get_name = info.get_name,
-		})
+		if not meta[info.var_name] then
+			 prototype.SetupProperty({
+				meta = meta, 
+				var_name = info.var_name, 
+				default = info.default,
+				set_name = info.set_name,
+				get_name = info.get_name,
+			})
+			
+			meta[info.set_name] = function(self, var)
+				self[info.var_name] = var
+				
+				if self[var_name]:IsValid() then
+					self[var_name][info.set_name](self[var_name], var)
+				end
+			end
 		
-		meta[info.set_name] = function(self, var)
-			self[info.var_name] = var
-			
-			if self[var_name]:IsValid() then
-				self[var_name][info.set_name](self[var_name], var)
+			meta[info.get_name] = function(self)			
+				if self[var_name]:IsValid() then
+					return self[var_name][info.get_name](self[var_name])
+				end
+				
+				return self[info.var_name]
 			end
-		end
-	
-		meta[info.get_name] = function(self)			
-			if self[var_name]:IsValid() then
-				return self[var_name][info.get_name](self[var_name])
-			end
-			
-			return self[info.var_name]
 		end
 	end
 end
