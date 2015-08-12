@@ -6,6 +6,8 @@ local META = prototype.CreateTemplate("physics_body")
 local vec3_from_bullet = physics.Vec3FromBullet
 local vec3_to_bullet = physics.Vec3ToBullet
 
+prototype.StartStorable()
+
 do -- damping
 	META:GetSet("LinearDamping", 0)
 	META:GetSet("AngularDamping", 0)
@@ -253,6 +255,8 @@ do -- generic get set
 	GET_SET("LinearSleepingThreshold", 0)
 	GET_SET("AngularSleepingThreshold", 0)
 end
+
+prototype.EndStorable()
 
 function META:IsPhysicsValid()
 	return self.body ~= nil
