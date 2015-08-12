@@ -60,7 +60,8 @@ function physics.Initialize()
 	
 	physics.SetGravity(Vec3(0, 0, -9.8))
 	physics.sub_steps = 1
-	physics.fixed_time_step = 1/120	
+	physics.fixed_time_step = 1/120
+	physics.init = true
 end
 
 function physics.EnableDebug(draw_line, contact_point, _3d_text, report_error_warning)
