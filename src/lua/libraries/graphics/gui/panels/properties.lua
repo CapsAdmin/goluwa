@@ -432,6 +432,59 @@ do -- color
 	gui.RegisterPanel(PANEL)
 end
 
+do -- color
+	local PANEL = {}
+	
+	PANEL.Base = "base_property"
+	PANEL.ClassName = "texture_property"
+	
+	function PANEL:Initialize()
+		local panel = self:CreatePanel("button", "panel")
+		panel:SetStyle("none")
+		panel:SetActiveStyle("none")
+		panel:SetInactiveStyle("none")
+		panel:SetHighlightOnMouseEnter(false)
+		panel:SetupLayout("center_left")
+		
+		panel.OnPress = function()
+			local frame = gui.CreatePanel("frame")
+			frame:SetSize(Vec2(300, 300))
+			frame:SetTitle("color picker")
+			
+			local image = frame:CreatePanel("base")
+			image:SetTexture(self:GetValue())
+			image:SetupLayout("fill")
+			
+			panel:CallOnRemove(function() gui.RemovePanel(frame) end)
+			
+			frame:SetupLayout("center")
+		end
+		
+		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
+	end
+		
+	function PANEL:OnValueChangedInternal(val)
+		self.panel:SetTexture(val)
+	end
+	
+	function PANEL:Decode(str)
+		return Texture(str)
+	end
+	
+	function PANEL:Encode(tex)
+		return tex:GetPath()
+	end
+	
+	function PANEL:OnLayout(S)
+		prototype.GetRegistered(self.Type, PANEL.Base).OnLayout(self, S)
+		
+		self.panel:SetLayoutSize(Vec2(S*8, S*8) - S*2)
+		self.panel:SetPadding(Rect()+S)
+	end
+	
+	gui.RegisterPanel(PANEL)
+end
+
 local PANEL = {}
 
 PANEL.ClassName = "properties"
