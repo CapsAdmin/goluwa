@@ -57,7 +57,7 @@ luadata.SetModifier("table", function(tbl, context)
 			for i = 1, #tbl do
 				str[#str+1] = ("%s%s,\n"):format(("\t"):rep(context.tab), luadata.ToString(tbl[i], context))
 				
-				if context.thread then thread:Sleep() end
+				if context.thread then thread:Wait() end
 			end
 		end
 	else
@@ -76,7 +76,7 @@ luadata.SetModifier("table", function(tbl, context)
 				end
 			end
 
-			if context.thread then thread:Sleep() end
+			if context.thread then thread:Wait() end
 		end
 	end
 	
@@ -127,7 +127,7 @@ end
 
 function luadata.Encode(tbl, callback)
 	if callback then
-		local thread = threads.CreateThread()
+		local thread = tasks.CreateTask()
 		
 		function thread:OnStart()
 			return luadata.ToString(tbl, {thread = self})

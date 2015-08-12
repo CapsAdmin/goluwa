@@ -120,7 +120,7 @@ do -- render world matrix helpers
 		render.camera_2d:SetWorld(mat)
 	end
 	
-	function surface.GetWorldMatrix(mat)
+	function surface.GetWorldMatrix()
 		return render.camera_2d:GetWorld()
 	end
 	
@@ -129,17 +129,11 @@ do -- render world matrix helpers
 	end
 	
 	function surface.Start3D2D(pos, ang, scale)
-		render.camera_2d:Set3D(true)
-		render.camera_2d:SetProjection(render.camera_3d:GetMatrices().projection)
-		render.camera_2d:SetView(render.camera_3d:GetMatrices().view)
-		render.camera_2d:PushWorldEx(pos, ang, scale)
+		render.camera_2d:Start3D2DEx(pos, ang, scale)
 	end
 	
 	function surface.End3D2D()
-		render.camera_2d:PopWorld()
-		render.camera_2d:SetView()
-		render.camera_2d:SetProjection()
-		render.camera_2d:Set3D(false)
+		render.camera_2d:End3D2D()
 	end
 end
 
@@ -377,8 +371,10 @@ do
 end
 
 function surface.DrawRect(x,y, w,h, a, ox,oy)
-	surface.PushMatrix()			
-		surface.Translate(x, y)
+	surface.PushMatrix()
+		if x and y then
+			surface.Translate(x, y)
+		end
 		
 		if a then
 			surface.Rotate(a)
@@ -387,8 +383,10 @@ function surface.DrawRect(x,y, w,h, a, ox,oy)
 		if ox then
 			surface.Translate(-ox, -oy)
 		end
-				
-		surface.Scale(w, h)
+		
+		if w and h then
+			surface.Scale(w, h)
+		end
 		
 		surface.mesh_2d_shader.tex = surface.bound_texture
 		surface.rect_mesh:Draw()

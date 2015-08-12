@@ -414,7 +414,7 @@ do -- list parsing
 	end
 	
 	function chatsounds.BuildSoundInfo()
-		local thread = threads.CreateThread()
+		local thread = tasks.CreateTask()
 		
 		thread.debug = true
 		
@@ -428,7 +428,7 @@ do -- list parsing
 			
 			for _, data in ipairs(files) do
 				self:ReportProgress("reading scripts/*", max)
-				self:Sleep()
+				self:Wait()
 				
 				if data.userdata and data.userdata.game then
 					local path = data.full_path
@@ -465,7 +465,7 @@ do -- list parsing
 			
 			for _, data in pairs(files) do
 				self:ReportProgress("reading resource/*", max)
-				self:Sleep()
+				self:Wait()
 				
 				if data.userdata and data.userdata.game then
 					local path = data.full_path
@@ -501,7 +501,7 @@ do -- list parsing
 					
 					for sound_name, text in pairs(captions[game]) do
 						self:ReportProgress("parsing "..game.." captions", max)
-						self:Sleep()
+						self:Wait()
 						
 						if not sound_info[sound_name] and sound_name:sub(1,1) == "#" then
 							sound_name = sound_name:lower()
@@ -565,7 +565,7 @@ do -- list parsing
 						
 				for sound_name, info in pairs(sound_info) do
 					self:ReportProgress("parsing "..game.." sound info", max)
-					self:Sleep()
+					self:Wait()
 					
 					local paths
 
@@ -642,7 +642,7 @@ do -- list parsing
 	function chatsounds.BuildSoundLists()
 		local found = {}
 		
-		local thread = threads.CreateThread()
+		local thread = tasks.CreateTask()
 		
 		thread.debug = true
 
@@ -668,7 +668,7 @@ do -- list parsing
 				
 				table.insert(found[game][realm], path:lower() .. "=" .. sentence)
 			
-				self:Sleep()
+				self:Wait()
 			end)
 		end		
 		
@@ -718,7 +718,7 @@ do -- list parsing
 	end
 	
 	function chatsounds.TranslateSoundListsFromSoundInfo()
-		local thread = threads.CreateThread()
+		local thread = tasks.CreateTask()
 		
 		thread.debug = true
 
@@ -763,7 +763,7 @@ do -- list parsing
 							for i, data in ipairs(sounds) do
 							
 								self:ReportProgress("translating " .. path, max)
-								self:Sleep()
+								self:Wait()
 	
 								if phonemes then 
 									trigger = phonemes[data.path] or trigger
@@ -1484,6 +1484,13 @@ function chatsounds.Initialize()
 	--chatsounds.BuildTree("custom")
 	
 	--chatsounds.BuildFromAutoadd()
+        
+        event.AddListener("ResourceDownloaded", function(path)
+                if path:find("chatsounds/lists/", nil, true) then
+                        chatsounds.LoadData(path:match(".+/(.+)%.dat"))
+                end
+        end)
+        
 	for k,v in pairs(chatsounds.GetLists()) do
 		chatsounds.LoadData(vfs.FixIllegalCharactersInPath(v))
 	end
@@ -1501,11 +1508,5 @@ end
 --chatsounds.Say("1 2 3 4 | 5 6 7 8")
 --chatsounds.Say("if you need instructions on how to get through the hotels check out the enclosed instruction book")
 --chatsounds.Say("uh oh%50 uh oh%50 uh oh%50") 
-
-event.AddListener("ResourceDownloaded", function(path)
-	if path:find("chatsounds/lists/", nil, true) then
-		chatsounds.LoadData(path:match(".+/(.+)%.dat"))
-	end
-end)
 
 return chatsounds

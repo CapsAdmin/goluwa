@@ -9,13 +9,13 @@ local skyboxes = {
 	["gm_atomic"] = {AABB(-210, -210, 40,   210, 210, 210) * (1/scale), 0},
 }
 
-console.AddCommand("map", function(path)	
+function steam.SetMap(name)
 	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical")
-	steam.bsp_world:SetName(path)
+	steam.bsp_world:SetName(name)
 	steam.bsp_world:SetCull(false)
-	steam.bsp_world:SetModelPath("maps/" .. path .. ".bsp")
-	steam.bsp_world:SetPhysicsModelPath("maps/" .. path .. ".bsp")
-end)
+	steam.bsp_world:SetModelPath("maps/" .. name .. ".bsp")
+	steam.bsp_world:SetPhysicsModelPath("maps/" .. name .. ".bsp")
+end
 
 local function read_lump_data(thread, what, bsp_file, header, index, size, struct)
 	local out = {}
@@ -31,14 +31,14 @@ local function read_lump_data(thread, what, bsp_file, header, index, size, struc
 	if type(struct) == "function" then
 		for i = 1, length do
 			out[i] = struct()
-			threads.ReportProgress(what, length)
-			threads.Sleep()
+			tasks.ReportProgress(what, length)
+			tasks.Wait()
 		end
 	else
 		for i = 1, length do
 			out[i] = bsp_file:ReadStructure(struct)
-			threads.ReportProgress(what, length)
-			threads.Sleep()
+			tasks.ReportProgress(what, length)
+			tasks.Wait()
 		end
 	end
 				
@@ -93,8 +93,8 @@ function steam.LoadMap(path)
 
 		for i = 1, 64 do
 			header.lumps[i] = bsp_file:ReadStructure(struct) 
-			threads.ReportProgress("reading lumps", 64)
-			threads.Sleep()
+			tasks.ReportProgress("reading lumps", 64)
+			tasks.Wait()
 		end
 		
 	end 
@@ -108,8 +108,8 @@ function steam.LoadMap(path)
 	end
 	
 	do	
-		threads.Sleep()
-		threads.Report("mounting pak")-- pak
+		tasks.Wait()
+		tasks.Report("mounting pak")-- pak
 		local lump = header.lumps[41]
 		local length = lump.filelen
 
@@ -124,7 +124,7 @@ function steam.LoadMap(path)
 	end
 
 	do
-		threads.Sleep()
+		tasks.Wait()
 		local function unpack_numbers(str)
 			str = str:gsub("%s+", " ")
 			local t = str:explode(" ")
@@ -154,15 +154,15 @@ function steam.LoadMap(path)
 			entities[i] = ent
 			i = i + 1  
 			
-			threads.Sleep()
+			tasks.Wait()
 		end
 		bsp_file:PopPosition()
 		header.entities = entities
 	end
 		
 	do
-		threads.Sleep()
-		threads.Report("reading game lump")
+		tasks.Wait()
+		tasks.Report("reading game lump")
 		
 		local lump = header.lumps[36]
 		
@@ -233,8 +233,8 @@ function steam.LoadMap(path)
 					
 					table.insert(header.entities, lump)
 					
-					threads.Sleep()
-					threads.ReportProgress("reading static props", count)
+					tasks.Wait()
+					tasks.ReportProgress("reading static props", count)
 				end
 								
 				bsp_file:PopPosition()
@@ -338,7 +338,7 @@ function steam.LoadMap(path)
 	for i = 1, #texdatastringtable do
 		bsp_file:SetPosition(lump.fileofs + texdatastringtable[i])
 		header.texdatastringdata[i] = bsp_file:ReadString()
-		threads.Sleep()
+		tasks.Wait()
 	end
 
 	do 
@@ -389,8 +389,8 @@ function steam.LoadMap(path)
 			
 			header.displacements[i] = data
 			
-			threads.ReportProgress("reading displacements", length)
-			threads.Sleep()
+			tasks.ReportProgress("reading displacements", length)
+			tasks.Wait()
 		end
 		
 	end
@@ -584,8 +584,8 @@ function steam.LoadMap(path)
 				end
 				
 				::continue::
-				threads.ReportProgress("building meshes", model.numfaces)
-				threads.Sleep()
+				tasks.ReportProgress("building meshes", model.numfaces)
+				tasks.Wait()
 			end
 			
 			-- only world needed
@@ -597,23 +597,23 @@ function steam.LoadMap(path)
 	if GRAPHICS then			
 		for i, mesh in ipairs(models) do
 			mesh:BuildNormals(thread)
-			threads.ReportProgress("generating normals", #models)
-			threads.Sleep()
+			tasks.ReportProgress("generating normals", #models)
+			tasks.Wait()
 		end 		
 
 		for i, mesh in ipairs(models) do
 			if mesh.displacement then
 				mesh:SmoothNormals(thread)
 			end
-			threads.Report("smoothing displacements", #models)
-			threads.Sleep()
+			tasks.Report("smoothing displacements", #models)
+			tasks.Wait()
 		end 
 					
 		for i, mesh in ipairs(models) do
 			mesh:BuildBoundingBox()
 			mesh:Upload(true)
-			threads.ReportProgress("creating meshes", #models)
-			threads.Sleep()
+			tasks.ReportProgress("creating meshes", #models)
+			tasks.Wait()
 		end
 	end
 	
@@ -632,15 +632,15 @@ function steam.LoadMap(path)
 		
 		local i = 0
 		
-		if not GRAPHICS then
+		--FIX ME
+		local _, huh = next(vertices_tbl)
+		if type(huh.pos) == "cdata" then
 			for j, data in ipairs(vertices_tbl) do 
 				vertices[i] = data.pos.x i = i + 1		
 				vertices[i] = data.pos.y i = i + 1		
 				vertices[i] = data.pos.z i = i + 1		
 			end	
-		end
-		
-		if GRAPHICS then
+		else
 			for j, data in ipairs(vertices_tbl) do 
 				vertices[i] = data.pos[1] i = i + 1		
 				vertices[i] = data.pos[2] i = i + 1		
@@ -663,8 +663,8 @@ function steam.LoadMap(path)
 		
 		physics_meshes[i_] = mesh
 
-		threads.Sleep()
-		threads.ReportProgress("building physics meshes", count)
+		tasks.Wait()
+		tasks.ReportProgress("building physics meshes", count)
 	end
 	
 	if GRAPHICS then
@@ -681,7 +681,7 @@ function steam.LoadMap(path)
 		physics_meshes = physics_meshes,
 	}
 
-	threads.ReportProgress("finished reading " .. path)
+	tasks.ReportProgress("finished reading " .. path)
 	return steam.bsp_cache[path]
 end
 
@@ -689,7 +689,7 @@ function steam.SpawnMapEntities(path, parent)
 	path = R(path)	
 	local data = steam.bsp_cache[path]
 	
-	local thread = threads.CreateThread()
+	local thread = tasks.CreateTask()
 	thread.debug = true
 	
 	logn("spawning map entities: ", path)
@@ -723,17 +723,25 @@ function steam.SpawnMapEntities(path, parent)
 					parent.world_params:SetSunAngles(Deg3(p, y+180, 0))
 					
 					info._light.a = 1
-					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
-					parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b, 1))
+					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b)*info._light.a)
+					parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b, 1)*info._ambient.a*0.5)
+					parent.world_params:SetSunIntensity(1)
+										
 				elseif info.classname:lower():find("light") and info._light then		
 					local ent = entities.CreateEntity("light", parent)
 					ent:SetName(info.classname .. "_" .. i)
 					ent:SetPosition(info.origin * 0.0254)
 					ent:SetHideFromEditor(true)
 					
-					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
-					ent:SetSize(math.max(info._light.a*3, 10))
-					ent:SetIntensity(math.clamp(info._light.a, 0.1, 1))
+					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1)^2)
+					ent:SetSize(math.max(info._light.a, 25))
+					ent:SetIntensity(math.clamp(info._light.a, 0.25, 3))
+					
+					if info._zero_percent_distance then
+						ent:SetSize(ent:GetSize() + info._zero_percent_distance*0.02)
+					end
+					
+					if ent:GetPosition():Distance(render.camera_3d:GetPosition()) < 1 then table.print(info) end
 					ent.spawned_from_bsp = true
 				elseif info.classname == "env_fog_controller" then
 					parent.world_params:SetFogColor(Color(info.fogcolor.r, info.fogcolor.g, info.fogcolor.b, info.fogcolor.a * (info.fogmaxdensity or 1)/4))
@@ -742,7 +750,7 @@ function steam.SpawnMapEntities(path, parent)
 				end
 			end
 		
-			if false and info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
+			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
 				if vfs.IsFile(info.model) then
 					local ent = entities.CreateEntity("visual", parent)
 					ent:SetName(info.classname .. "_" .. i)
@@ -754,8 +762,8 @@ function steam.SpawnMapEntities(path, parent)
 					ent.spawned_from_bsp = true
 				end
 			end
-			threads.ReportProgress("spawning entities", count)
-			threads.Sleep()
+			tasks.ReportProgress("spawning entities", count)
+			tasks.Wait()
 		end	
 	end
 	

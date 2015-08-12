@@ -11,7 +11,6 @@ PASS.Buffers = {
 function PASS:Draw3D()
 	render.EnableDepth(false)	
 	render.SetBlendMode("one", "one")
-	render.SetCullMode("front")
 	
 	render.gbuffer:WriteThese("light")
 	render.gbuffer:Clear("light")
@@ -53,7 +52,7 @@ PASS.Shader = {
 		mesh_layout = {
 			{pos = "vec3"},
 		},	
-		source = "gl_Position = g_projection_view_world * vec4(pos, 1);"
+		source = "gl_Position = g_projection_view_world * vec4(-pos, 1);"
 	},
 	fragment = { 
 		variables = {			
@@ -61,13 +60,14 @@ PASS.Shader = {
 			light_color = Color(1,1,1,1),				
 			light_intensity = 0.5,
 			light_projection_view = "mat4",
+			tex_shadow_map = "sampler2D",
 		},  
 		source = [[			
 			out vec4 out_color;
 			
 			#define EPSILON 0.00001			
 			
-			float get_shadow(vec2 uv)    
+			float get_shadow(vec2 uv, float bias)    
 			{
 				float visibility = 0;
 			
@@ -88,16 +88,21 @@ PASS.Shader = {
 				{
 					vec4 temp = light_projection_view * g_projection_view_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
 					vec3 shadow_coord = (temp.xyz / temp.w);
-					
-					//if (shadow_coord.z < -1) return 0.0;
-					
+										
 					if (shadow_coord.x > -1 && shadow_coord.x < 1 && shadow_coord.y > -1 && shadow_coord.y < 1 && shadow_coord.z > -1 && shadow_coord.z < 1)
-					{	
-						for (int i=0;i<4;i++)
+					{		
+						vec2 projCoords =  0.5 * shadow_coord.xy + vec2(0.5);
+						vec2 texelSize = 1.0 / textureSize(tex_shadow_map, 0);
+						
+						for(int x = -1; x <= 1; ++x)
 						{
-							if (texture(lua[tex_shadow_map = "sampler2D"], 0.5 * shadow_coord.xy + vec2(0.5) + (g_poisson_disk[i]/5000.0)).r > ((0.5 * shadow_coord.z + 0.5)))
-								visibility += 0.25;
+							for(int y = -1; y <= 1; ++y)
+							{
+								float pcfDepth = texture(tex_shadow_map, projCoords.xy + vec2(x, y) * texelSize).r; 
+								visibility += (0.5 * shadow_coord.z + 0.5) - bias < pcfDepth ? 1.0 : 0.0;        
+							}    
 						}
+						visibility /= 9.0;
 					}
 					else if(lua[project_from_camera = false])
 					{
@@ -107,17 +112,51 @@ PASS.Shader = {
 				
 				return visibility;
 			}  
-						
-			float get_attenuation(vec3 view_pos, vec2 uv)
-			{												
-				if (project_from_camera) return 1.0;
+									
+			vec3 get_attenuation(vec2 uv, vec3 P, vec3 N, float cutoff)
+			{
+				float attenuation = 1;
+			
+				if (!project_from_camera)
+				{
+					// calculate normalized light vector and distance to sphere light surface
+					float r = lua[light_radius = 1000]/10;
+					vec3 L = light_view_pos - P;
+					float distance = length(L);
+					float d = max(distance - r, 0);
+					L /= distance;
+					 
+					// calculate basic attenuation
+					float denom = d/r + 1;
+					attenuation = 1 / (denom*denom);
+					 
+					// scale and bias attenuation such that:
+					//   attenuation == 0 at extent of max influence
+					//   attenuation == 1 when d == 0
+					attenuation = (attenuation - cutoff) / (1 - cutoff);
+					attenuation = max(attenuation, 0);
+					 
+					float dot = max(dot(L, N), 0);
+					attenuation *= dot;
+				}
 				
-				float distance = length(light_view_pos - view_pos);
-				distance = distance / lua[light_radius = 1000];
-				distance = -distance + 1;
-				float fade = clamp(distance, 0, 1);
-	
-				return fade;
+				if (lua[light_shadow = false])
+				{					
+					attenuation *= get_shadow(uv, attenuation*-0.001);
+					
+					vec3 ambient = lua[light_ambient_color = Color(0,0,0)].rgb * light_intensity;
+					
+					if (ambient == vec3(0,0,0))
+					{
+						ambient = light_color.rgb * 0.75 * light_intensity;
+					}
+
+					return ambient + (light_color.rgb * attenuation);
+				}
+				else
+				{
+					return light_color.rgb * attenuation;
+				}
 			}
 			
 			const float e = 2.71828182845904523536028747135;
@@ -132,13 +171,8 @@ PASS.Shader = {
 			  return exp(tan2Alpha / roughness2) / denom;
 			}
 			
-			float cookTorranceSpecular(
-			  vec3 lightDirection,
-			  vec3 viewDirection,
-			  vec3 surfaceNormal,
-			  float roughness,
-			  float fresnel) {
-
+			float get_specular(vec3 lightDirection, vec3 viewDirection, vec3 surfaceNormal, float roughness, float fresnel) 
+			{
 			  float VdotN = max(dot(viewDirection, surfaceNormal), 0.0);
 			  float LdotN = max(dot(lightDirection, surfaceNormal), 0.0);
 
@@ -162,51 +196,22 @@ PASS.Shader = {
 			  //Multiply terms and done
 			  return  G * F * D / max(3.14159265 * VdotN, 0.000001);
 			}
-									
-			vec3 CookTorrance2(vec3 direction, vec3 surface_normal, vec3 eye_dir, float metallic, float roughness)
-			{
-				float normalDotLight = dot(surface_normal, direction);
-						
-				float CookTorrance = cookTorranceSpecular(direction, eye_dir, surface_normal, roughness, metallic);
-	
-				return (light_color.rgb + (light_color.rgb*vec3(max(CookTorrance, 0)))) * max(normalDotLight, 0);
-			} 
-						
+				
 			void main()
-			{
-				out_color.rgb = vec3(0);
-			
+			{				
 				vec2 uv = get_screen_uv();					
 				vec3 view_pos = get_view_pos(uv);
-
-				float fade = get_attenuation(view_pos, uv);
-										
-				if (lua[light_shadow = false])
-				{
-					float shadow = get_shadow(uv);
-					
-					if (shadow <= 1)
-					{
-						out_color.rgb += normalize(light_color.rgb) * light_intensity * fade;
-					}
-					
-					fade *= shadow;
-				}
+				vec3 normal = get_view_normal(uv);				
 				
-				if (fade > 0)
-				{							
-					vec3 normal = get_view_normal(uv);
-					float metallic = get_metallic(uv);
-					float roughness = get_roughness(uv);
-
-					out_color.rgb += CookTorrance2(
-						normalize(view_pos - light_view_pos), 
-						-normal, 
-						normalize(view_pos), 
-						metallic, 
-						roughness
-					) * light_intensity * fade;
-				}
+				vec3 attenuate = get_attenuation(uv, view_pos, normal, 0.005);
+				float metallic = get_metallic(uv);
+				float roughness = get_roughness(uv)+0.05;
+				vec3 reflection = texture(tex_reflection, uv).rgb * metallic;				
+				float specular = get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, roughness, metallic);
+				
+				out_color.rgb = attenuate;
+				out_color.rgb += (reflection + vec3(specular) * light_color.rgb) * attenuate;
+				out_color.rgb *= light_intensity;				
 			
 				out_color.a = 1;
 			}

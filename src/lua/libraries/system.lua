@@ -661,7 +661,7 @@ end
 
 function system.Restart(run_on_launch)
 	run_on_launch = run_on_launch or ""
-	os.setcd("../../../") 
+	vfs.SetWorkingDirectory("../../../") 
 		
 	if LINUX then
 		if CLIENT then

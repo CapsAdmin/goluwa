@@ -1,13 +1,13 @@
-local threads = _G.threads or {}
+local tasks = _G.tasks or {}
 
-threads.max = 4
+tasks.max = 4
 
-threads.coroutine_lookup = threads.coroutine_lookup or utility.CreateWeakTable()
-threads.created = threads.created or {}
+tasks.coroutine_lookup = tasks.coroutine_lookup or utility.CreateWeakTable()
+tasks.created = tasks.created or {}
 
-local enabled event.AddListener("Initialize", function() enabled = console.CreateVariable("threads_enable", true) end)
+local enabled event.AddListener("Initialize", function() enabled = console.CreateVariable("tasks_enable", true) end)
 
-local META = prototype.CreateTemplate("thread")
+local META = prototype.CreateTemplate("task")
 
 prototype.GetSet(META, "Frequency", 0)
 prototype.GetSet(META, "IterationsPerTick", 1)
@@ -35,7 +35,7 @@ function META:Start(now)
 		return select(2, system.pcall(self.OnStart, ...)) 
 	end)
 	
-	threads.coroutine_lookup[co] = self
+	tasks.coroutine_lookup[co] = self
 	self.co = co
 	
 	self.progress = {}
@@ -66,7 +66,7 @@ function META:Start(now)
 			
 			if coroutine.status(co) == "dead" then
 				self.Running = false
-				threads.created[self] = nil
+				tasks.created[self] = nil
 				self:OnUpdate()
 				self:OnFinish(res)
 				return false
@@ -101,7 +101,7 @@ function META:Start(now)
 	end
 end
  
-function META:Sleep(sec)
+function META:Wait(sec)
 	if not enabled:Get() then return end
 	if sec then self.wait = system.GetElapsedTime() + sec end
 	coroutine.yield()
@@ -143,12 +143,12 @@ function META:GetProgress(what)
 end
 
 function META:OnRemove()
-	threads.created[self] = nil
+	tasks.created[self] = nil
 end
 
 prototype.Register(META)
 
-function threads.CreateThread(on_start, on_finish)
+function tasks.CreateTask(on_start, on_finish)
 	local self = prototype.CreateObject(META)
 	
 	if on_start then self.OnStart = function(_, ...) return on_start(...) end end
@@ -156,54 +156,58 @@ function threads.CreateThread(on_start, on_finish)
 	
 	if on_start then self:Start() end
 	
-	threads.created[self] = self
+	tasks.created[self] = self
 
 	return self
 end
 
-function threads.Sleep(time)
-	local thread = threads.coroutine_lookup[coroutine.running()]
+function tasks.Wait(time)
+	local thread = tasks.coroutine_lookup[coroutine.running()]
 	if thread then
-		thread:Sleep(time)
+		thread:Wait(time)
 	end
 end
 
-function threads.ReportProgress(what, max)
-	local thread = threads.coroutine_lookup[coroutine.running()]
+function tasks.ReportProgress(what, max)
+	local thread = tasks.coroutine_lookup[coroutine.running()]
 	if thread then
 		thread:ReportProgress(what, max)
 	end
 end
 
-function threads.Report(what)
-	local thread = threads.coroutine_lookup[coroutine.running()]
+function tasks.Report(what)
+	local thread = tasks.coroutine_lookup[coroutine.running()]
 	if thread then
 		thread:Report(what)
 	end
 end
 
-event.CreateTimer("threads", 0.25, 0, function()	
+function tasks.IsBusy()
+	return tasks.busy
+end
+
+event.CreateTimer("tasks", 0.25, 0, function()	
 	local i = 0
 	
-	for thread in pairs(threads.created) do
+	if next(tasks.created) then
+		tasks.busy = true
+	else
+		tasks.busy = false
+	end
+	
+	for thread in pairs(tasks.created) do
 		if thread:IsRunning() then
 			i = i + 1
 		end
 		
-		if i >= threads.max then return end
+		if i >= tasks.max then return end
 	end
-	
-	if i == 0 then
-		system.SetJITOption("minstitch", 0)
-	else
-		system.SetJITOption("minstitch", 100000)
-	end
-	
-	for thread in pairs(threads.created) do
+		
+	for thread in pairs(tasks.created) do
 		if thread.run_me then
 			thread:Start(true)
 		end
 	end
 end)
 
-return threads
+return tasks

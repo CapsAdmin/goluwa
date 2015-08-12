@@ -101,8 +101,11 @@ function PANEL:OnLayout()
 end
 
 function PANEL:OnPostDraw()
-	surface.Translate(self.Padding.left, self.Padding.top)
 	self.markup:Draw(self.ConcatenateTextToSize and (self.markup.cull_w - self.markup.cull_x))
+end
+
+function PANEL:OnPostMatrixBuild()
+	self.Matrix:Translate(self.Padding.left, self.Padding.top, 0)
 end
 
 function PANEL:OnMouseMove(x, y)

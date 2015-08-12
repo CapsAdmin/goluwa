@@ -78,6 +78,20 @@ function render.GetNoiseTexture()
 	return render.noise_texture
 end
 
+function render.GetNoiseTexture2()	
+	render.noise_texture2 = render.noise_texture2 or Texture(Vec2()+4096):Fill(function() return math.random(255), math.random(255), math.random(255), math.random(255) end)
+	return render.noise_texture2
+end
+
+function render.GetCubemapTexture()
+	if not render.cubemap_texture then
+		local tex = render.CreateTexture("cube_map")
+		tex:LoadCubemap("textures/skybox/sky56")
+		render.cubemap_texture = tex
+	end
+	return render.cubemap_texture
+end
+
 if RELOAD then
 	render.GenerateTextures()
 end

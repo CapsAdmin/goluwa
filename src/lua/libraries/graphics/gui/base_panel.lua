@@ -1,10 +1,8 @@
 local gui = ... or _G.gui
 
-local USE_MATRIX = false
-
 local PANEL = prototype.CreateTemplate("panel2", "base")
 
-prototype.AddParentingTemplate(PANEL)
+include("lua/libraries/templates/parenting.lua", PANEL)
 
 prototype.GetSet(PANEL, "MousePosition", Vec2(0, 0))
 prototype.IsSet(PANEL, "Visible", true)
@@ -203,80 +201,33 @@ end
 do -- drawing
 
 	function PANEL:PreDraw(from_cache)
-		if self.ThreeDee then render.camera_2d:Start3D2DEx(self.ThreeDeePosition, self.ThreeDeeAngles, self.ThreeDeeScale) end
+		if self.ThreeDee then surface.Start3D2D() end
 		
 		local no_draw = self:HasParent() and self.Parent.draw_no_draw
 		
 		self:InvalidateMatrix()
-	
-		if USE_MATRIX then	
-			self:RebuildMatrix()
-			render.camera_2d:SetWorld(self.Matrix)
-			
-			if not from_cache then
-				self:CalcMouse()
-			
-				self:CalcDragging()
-				self:CalcScrolling()
-			end
-		else
-			surface.PushMatrix()
-			surface.Translate(self.Position.x, self.Position.y)
-			
-			local w = (self.Size.w)/2
-			local h = (self.Size.h)/2
+		self:RebuildMatrix()
 
-			surface.Translatef(w, h, 0)
-			surface.Rotate(self.Angle)
-			surface.Translatef(-w, -h, 0)
-			
-			if not from_cache then
-				self:CalcMouse()
-			
-				self:CalcDragging()
-				self:CalcScrolling()
-			end
-			
-			if 
-				from_cache or 
-				not no_draw or
-				not (self:HasParent() and 
-				not self.Parent:IsWorld() and 
-				not self.Parent.mouse_over and 
-				not self:IsDragging() and 
-				not self.AlwaysCalcMouse)
-			then
-				if not self.DrawPositionOffset:IsZero() then
-					surface.Translatef(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
-				end
-				
-				if self.DrawScaleOffset.x ~= 1 or self.DrawScaleOffset.y ~= 1 then
-					surface.Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y)
-				end
-				
-				if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
-					local w = (self.Size.w + self.DrawSizeOffset.w)/2
-					local h = (self.Size.h + self.DrawSizeOffset.h)/2
-
-					surface.Translatef(w, h, 0)
-					render.camera_2d:RotateWorld(self.DrawAngleOffset.p, 0, 0, 1)
-					render.camera_2d:RotateWorld(self.DrawAngleOffset.y, 0, 1, 0)
-					render.camera_2d:RotateWorld(self.DrawAngleOffset.r, 1, 0, 0)
-					surface.Translatef(-w, -h, 0)
-				end
-			end
+		surface.SetWorldMatrix(self.Matrix)
+		
+		if not from_cache then
+			self:CalcMouse()
+		
+			self:CalcDragging()
+			self:CalcScrolling()
 		end
-
+	
 		self:CalcAnimations()
 		self:CalcLayout()
 
 		if self.CachedRendering and not gui.debug then
+			self:BuildCache()
 			self:DrawCache()
 			no_draw = true
 		end
 		
 		self:OnUpdate()
-			
+		
 		if from_cache or not no_draw then
 			if self:IsDragging() or self:IsWorld() or self:IsInsideParent() then
 				self:OnPreDraw()
@@ -302,10 +253,6 @@ do -- drawing
 		if --[[true or]] not no_draw and self.Clipping then
 			--surface.PushClipFunction(self.DrawClippingStencil, self)
 			surface.EnableClipRect(0,0,self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
-		end
-		
-		if not USE_MATRIX then
-			surface.Translate(-self.Scroll.x, -self.Scroll.y, 0)
 		end
 		
 		if from_cache then
@@ -366,19 +313,12 @@ do -- drawing
 				end
 			end
 		end
-		
-		if USE_MATRIX then
-			--render.camera_2d:PopWorld()
-		else
-			surface.PopMatrix()
-		end
-		
-		
-		if self.ThreeDee then render.camera_2d:End3D2D() end
+				
+		if self.ThreeDee then surface.End3D2D() end
 	end
 		
 	function PANEL:DrawRect(x, y, w, h)
-		if self.NinePatch then			
+		if self.NinePatch then
 			surface.DrawNinePatch(
 				x or 0, y or 0, 
 				w or (self.Size.w + self.DrawSizeOffset.w), h or (self.Size.h + self.DrawSizeOffset.h),
@@ -435,13 +375,32 @@ do -- orientation
 				self.rebuild_matrix = false
 
 				self.Matrix:Identity()
+								
+				self:OnPreMatrixBuild()
 				
-				--if not self.DrawCache then
+				if self.ThreeDee then
+					local pos, ang, scale = self.ThreeDeePosition, self.ThreeDeeAngles, self.ThreeDeeScale
+					if pos then
+						self.Matrix:Translate(-pos.y, -pos.x, -pos.z) -- Vec3(left/right, back/forth, down/up)	
+					end
+					
+					if ang then
+						self.Matrix:Rotate(-ang.y, 0, 0, 1)
+						self.Matrix:Rotate(-ang.r, 0, 1, 0)
+						self.Matrix:Rotate(-ang.p, 1, 0, 0) 
+					end
+					
+					if scale then 
+						local w,h = surface.GetSize()
+						local scale2d = (w/h) / 100
+						self.Matrix:Scale(scale.x * scale2d, scale.y * scale2d, scale.z) 
+					end
+				end
+				
 				self.temp_matrix = self.temp_matrix or Matrix44()				
 				self.Matrix:Multiply(self.Parent.Matrix, self.temp_matrix)
 				self.Matrix, self.temp_matrix = self.temp_matrix, self.Matrix
 				
-				--end
 				self.Matrix:Translate(math.ceil(self.Position.x), math.ceil(self.Position.y), 0)
 				
 				if self.Angle ~= 0 then
@@ -475,6 +434,8 @@ do -- orientation
 				end
 				
 				self.Matrix:Translate(math.ceil(-self.Parent.Scroll.x), math.ceil(-self.Parent.Scroll.y), 0)
+				
+				self:OnPostMatrixBuild()
 				
 				self.rebuild_matrix = false
 			end
@@ -526,43 +487,20 @@ do -- orientation
 		end
 		return lpos
 	end
-	
-	if USE_MATRIX then
-		function PANEL:GetWorldPosition()
-			local x, y = self.Matrix:GetTranslation()
-			return Vec2(x, y)
-		end
 
-		function PANEL:SetWorldPosition(wpos)
-			self.Matrix:SetTranslation(wpos.x, wpos.y, 0)
-		end
+	function PANEL:GetWorldPosition()
+		local x, y = self.Matrix:GetTranslation()
+		return Vec2(x, y)
+	end
 
-		function PANEL:LocalToWorld(lpos)
-			local x, y = self.Matrix:GetTranslation()
-			
-			return Vec2(x + lpos.x, y + lpos.y)
-		end
-	else
-		function PANEL:GetWorldPosition()
-			return self:LocalToWorld(self:GetPosition())
-		end
+	function PANEL:SetWorldPosition(wpos)
+		self.Matrix:SetTranslation(wpos.x, wpos.y, 0)
+	end
 
-		function PANEL:SetWorldPosition(wpos)
-			self:SetPosition(self:WorldToLocal(wpos))
-		end
+	function PANEL:LocalToWorld(lpos)
+		local x, y = self.Matrix:GetTranslation()
 		
-		function PANEL:LocalToWorld(lpos)
-			local wpos = lpos
-			for k, v in npairs(self:GetParentList()) do
-				if v:IsValid() then
-					wpos = wpos + v:GetPosition()
-					if v:HasParent() then
-						wpos = wpos - v.Parent:GetScroll()
-					end
-				end
-			end
-			return wpos
-		end	
+		return Vec2(x + lpos.x, y + lpos.y)
 	end
 
 	local sorter = function(a,b)
@@ -669,7 +607,6 @@ do -- cached rendering
 
 	function PANEL:SetCachedRendering(b)
 		self.CachedRendering = b
-		--if USE_MATRIX then self.CachedRendering = false end
 
 		if not render.CheckSupport("GenFramebuffer") then
 			self.CachedRendering = false
@@ -712,29 +649,24 @@ do -- cached rendering
 	end
 
 	function PANEL:DrawCache()
+		self:OnPreDraw()
+		surface.SetColor(1, 1, 1, 1)
+		surface.SetTexture(self.cache_texture)
+		surface.DrawRect(0, 0, self.Size.w, self.Size.h)
+		self:OnPostDraw()
+	end
+
+	function PANEL:BuildCache()
 		if self:IsCacheDirty() then
 			self.cache_fb:Begin()
 			self.cache_fb:Clear()
 			
-			if USE_MATRIX then
-				--self:InvalidateMatrix()
-				self:RebuildMatrix()
-				surface.SetWorldMatrix(self.Matrix)
-			else
-				surface.PushMatrix()
-				
-				-- this matrix needs to be reset so it will draw
-				-- from the origin of the framebuffer
-				-- the framebuffer itself is drawn at the correct position
-				surface.LoadIdentity()
-				
-				--surface.Scale(1, self.Size.h/2)
-			end
-				
+			local x,y = self.Matrix:GetTranslation()
+			self.Matrix:Translate(-x, -y, 0)
+			surface.PushMatrix(nil, true)
+			
 			if self:IsDragging() or self:IsInsideParent() then
-				self:OnPreDraw()
 				self:OnDraw()
-				self:OnPostDraw()
 			end
 			
 			--surface.Translate(-self.Scroll.x, -self.Scroll.y)
@@ -745,22 +677,14 @@ do -- cached rendering
 				end
 			end
 
-			self.cache_dirty = false
-		
-			if USE_MATRIX then
-
-			else
-				surface.PopMatrix()
-			end
+			surface.PopMatrix()
 			
+			self.Matrix:Translate(x, y, 0)
 			self.cache_fb:End()
 			
+			self.cache_dirty = false
 			self.updated_cache = true
 		end
-		
-		surface.SetColor(1, 1, 1, 1)
-		surface.SetTexture(self.cache_texture)
-		surface.DrawRect(0, 0, self.Size.w, self.Size.h)
 	end
 end
 	
@@ -2424,6 +2348,9 @@ do -- events
 	
 	function PANEL:OnPreDraw() end
 	function PANEL:OnPostDraw() end
+	
+	function PANEL:OnPostMatrixBuild() end
+	function PANEL:OnPreMatrixBuild() end
 	
 	function PANEL:OnFocus() end
 	function PANEL:OnUnfocus() end

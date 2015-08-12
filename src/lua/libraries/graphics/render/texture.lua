@@ -351,14 +351,22 @@ end
 
 do -- todo
 	local faces = {
-		"bk",
-		"dn",
 		"ft",
-		"lf",
-		"rt",
+		"bk",
 		"up",
+		"dn",
+		"rt",
+		"lf",
 	}
-
+--[[	
+"FRONT",
+"BACK",
+"LEFT",
+"RIGHT",
+"TOP",
+"BOTTOM",
+]]
+	
 	function META:LoadCubemap(path)
 		path = path:sub(0,-1)
 		for i, face in pairs(faces) do
@@ -493,7 +501,9 @@ function META:Upload(data)
 	check(data.buffer, "cdata")
 	
 	if self.StorageType == "cube_map" then
-		data.z = data.face or data.z
+		if data.face then
+			data.z = data.face - 1
+		end
 		data.depth = data.depth or 1
 	end
 	

@@ -131,7 +131,6 @@ do -- file system
 		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/get_is_set.lua")
 		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/base_object.lua")
 		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/null.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/templates/buffer.lua")
 		utility = dofile(e.SRC_FOLDER .. "lua/libraries/utilities/utility.lua")
 		
 		vfs = dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/vfs.lua")
@@ -177,7 +176,6 @@ do -- libraries
 	include("lua/libraries/extensions/string.lua")
 	include("lua/libraries/extensions/table.lua")
 	include("lua/libraries/extensions/os.lua")
-	include("lua/libraries/extensions/function.lua") -- meta
 
 	-- libraries
 	prototype = include("lua/libraries/prototype/prototype.lua")
@@ -187,7 +185,7 @@ do -- libraries
 	event = include("lua/libraries/event.lua") _G.goluwa = event.events -- event handler
 	utility = include("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
 	crypto = include("lua/libraries/crypto.lua")
-	threads = include("lua/libraries/threads.lua")
+	tasks = include("lua/libraries/tasks.lua")
 	serializer = include("lua/libraries/serializer.lua")
 
 	console = include("lua/libraries/console.lua")

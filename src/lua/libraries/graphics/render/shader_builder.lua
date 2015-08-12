@@ -159,8 +159,12 @@ local function type_of_attribute(var)
 			t = "variable_buffer"
 		end
 	end
-
+	
 	t = type_translate[t] or t
+		
+	if typex(var) == "texture" and var.StorageType == "cube_map" then
+		t = "samplerCube"
+	end
 
 	return t, def, get
 end
@@ -179,13 +183,13 @@ local function translate_fields(data)
 
 		local t, default, get = type_of_attribute(v)
 		
-    if type_ == "bool" or t == "bool" then
-        params.precision = ""
-    end
+		if t == "bool" or t == "sampler2D" or t == "samplerCube" or t == "texture" then
+			params.precision = ""
+		end
     
 		table.insert(out, {
 			name = k, 
-			type = type_ or t, 
+			type = t, 
 			default = default, 
 			precision = params.precision or "highp",
 			varying = params.varying and "varying" or "",
@@ -218,8 +222,8 @@ local function variables_to_string(type, variables, prepend, macro, array)
 				name = prepend .. name
 			end
 
-			if data.type == "texture" then
-				table.insert(out, ("layout(binding = %i) %s %s %s %s %s%s;"):format(texture_channel, data.varying, type, data.precision, "sampler2D", name, array):trim())
+			if data.type == "sampler2D" or data.type == "samplerCube" then
+				table.insert(out, ("layout(binding = %i) %s %s %s %s %s%s;"):format(texture_channel, data.varying, type, data.precision, data.type, name, array):trim())
 				texture_channel = texture_channel + 1
 			else	
 				table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())

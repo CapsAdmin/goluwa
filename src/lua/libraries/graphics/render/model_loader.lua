@@ -84,7 +84,7 @@ function render.LoadModel(path, callback, callback2, on_fail)
 	resource.Download(path, function(full_path)			
 		local out = {}
 
-		local thread = threads.CreateThread()
+		local thread = tasks.CreateTask()
 		thread.debug = true
 		
 		function thread:OnStart()							
@@ -124,13 +124,15 @@ function render.LoadModel(path, callback, callback2, on_fail)
 						local metallic_path = model_data.material.metallic
 						local roughness_path = model_data.material.roughness
 						
+						local potentially_ue4 = false
+						
 						local function find(path)
 							local tries = {path, full_path:match("(.+/)") .. path}
 														
 							-- ue4
 							if model_data.material.name:startswith("/") then
 								table.insert(tries, 1, full_path:match("(.+)/") .. model_data.material.name:match("(.+/)") .. path)
-								print(tries[1])
+								potentially_ue4 = true
 							end
 							
 							for _, path in ipairs(tries) do
@@ -144,6 +146,12 @@ function render.LoadModel(path, callback, callback2, on_fail)
 						if diffuse_path then
 							diffuse_path = find(diffuse_path)
 							material:SetDiffuseTexture(Texture(diffuse_path))
+							
+							if potentially_ue4 and material:GetDiffuseTexture():GetSize() == Vec2(1, 1) then
+								material:Remove()
+								mesh:Remove()
+								return
+							end
 						end
 
 						local function try_set(method, texture_path, ...)

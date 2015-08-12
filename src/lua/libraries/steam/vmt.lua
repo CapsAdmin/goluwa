@@ -5,6 +5,7 @@ local path_translate = {
 	Diffuse2Texture = "basetexture2",
 	NormalTexture = "bumpmap",
 	Normal2Texture = "bumpmap2",
+	MetallicTexture = "envmapmask",
 	RoughnessTexture = "envmapmask",
 }
 
@@ -14,7 +15,8 @@ local property_translate = {
 	DetailBlendFactor = {"detailblendfactor"},
 	NoCull = {"nocull"},
 	Translucent = {"alphatest", "translucent", function(num) return num == 1 end},
-	AlphaSpecular = {"normalmapalphaenvmapmask", "basealphaenvmapmask", function(num) return num == 1 end},
+	NormalAlphaMetallic = {"normalmapalphaenvmapmask", function(num) return num == 1 end},
+	DiffuseAlphaMetallic = {"basealphaenvmapmask", function(num) return num == 1 end},
 	RoughnessMultiplier = {"phongexponent", function(num) return num/255 end},
 	MetallicMultiplier = {"phongboost", function(num) return num/100 end},
 }
@@ -74,8 +76,10 @@ function steam.LoadMaterial(path, material)
 			end
 			
 			if material:GetMetallicMultiplier() == 0 then
-				material:SetMetallicMultiplier(0.25)
+				material:SetMetallicMultiplier(0.1)
 			end
+			
+			material:SetNormalMapScale(Vec3(1,-1,1))
 			
 			material.vmt = vmt	
 		end, 

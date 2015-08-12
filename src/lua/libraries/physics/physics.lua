@@ -144,7 +144,7 @@ do -- physcs models
 		cb:start(path, callback, {on_fail = on_fail})
 		
 		resource.Download(path, function(full_path)
-			local thread = threads.CreateThread()
+			local thread = tasks.CreateTask()
 			thread.debug = true
 			
 			function thread:OnStart()
@@ -152,9 +152,9 @@ do -- physcs models
 				
 					-- :(
 					if GRAPHICS and render.model_loader_cb and render.model_loader_cb:get(path) and render.model_loader_cb:get(path).callback then
-						threads.Report("waiting for render mesh to finish loading")
+						tasks.Report("waiting for render mesh to finish loading")
 						repeat 
-							threads.Sleep()
+							tasks.Wait()
 						until not render.model_loader_cb:get(path) or not render.model_loader_cb:get(path).callback
 					end
 					-- :(

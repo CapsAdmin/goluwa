@@ -7,6 +7,7 @@ PASS.Stage, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 PASS.Buffers = {
 	{"diffuse", "rgba8"},
 	{"normal", "rgba16f"},
+	{"reflection", "rgb8"},
 }
 
 function PASS:Initialize()
@@ -45,53 +46,49 @@ PASS.Shader = {
 			{pos = "vec3"},
 			{uv = "vec2"},
 			{normal = "vec3"},
-			--[[{tangent = "vec3"},
-			{binormal = "vec3"},]]
+			{tangent = "vec3"},
+			{binormal = "vec3"},
 			{texture_blend = "float"},
 		},
 		source = [[
 			out vec3 view_normal;
+			out float dist;
 		
 			void main()
 			{				
 				gl_Position = g_projection_view_world * vec4(pos, 1.0);
 				
-				out_normal = mat3(g_normal_matrix) * normal;
+				out_normal = normalize(g_normal_matrix * vec4(normal, 1)).xyz;
+				out_binormal = normalize(g_normal_matrix * vec4(binormal, 1)).xyz;
+				out_tangent = normalize(g_normal_matrix * vec4(tangent, 1)).xyz;
+				
 				view_normal = mat3(g_view_world) * pos;
+				
+				dist = (g_view_world * vec4(pos, 1.0)).z;
 			}
 		]]
 	},
 	fragment = {
 		variables = {	
-			--illumination_color = Color(1,1,1,1),
-			AlphaSpecular = false,
 			NoCull = false,
-			
-			DiffuseTexture = render.GetErrorTexture(),
-			Diffuse2Texture = "texture",
-			NormalTexture = render.GetBlackTexture(),
-			Normal2Texture = "texture",
-			
-			MetallicTexture = render.GetBlackTexture(),
-			RoughnessTexture = render.GetGreyTexture(),
-			-- source engine specific
-			--IlluminationTexture = render.GetBlackTexture(),
-			--DetailTexture = render.GetBlackTexture(),
 		},
 		mesh_layout = {
+			{pos = "vec3"},
 			{uv = "vec2"},
 			{normal = "vec3"},
-			--[[{tangent = "vec3"},
-			{binormal = "vec3"},]]
+			{tangent = "vec3"},
+			{binormal = "vec3"},
 			{texture_blend = "float"},
 		},
 		source = [[
 			#extension GL_ARB_arrays_of_arrays: enable
 			
 			in vec3 view_normal;
+			in float dist;
 		
 			out vec4 diffuse_buffer;
 			out vec4 normal_buffer;					
+			out vec4 reflection_buffer;					
 
 			// https://www.shadertoy.com/view/MslGR8
 			bool dither(vec2 uv, float alpha)
@@ -125,17 +122,18 @@ PASS.Shader = {
 				float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );
 				return mat3( T * invmax, B * invmax, N );
 			}
-			
+						
 			void main()
-			{			
+			{
+						
 				//if (texture(tex_discard, get_screen_uv()).r > 0) discard;
 				
 				// diffuse
 				{
-					diffuse_buffer = texture(DiffuseTexture, uv);
+					diffuse_buffer = texture(lua[DiffuseTexture = render.GetErrorTexture()], uv);
 	
 					if (texture_blend != 0)
-						diffuse_buffer = mix(diffuse_buffer, texture(Diffuse2Texture, uv), texture_blend);
+						diffuse_buffer = mix(diffuse_buffer, texture(lua[Diffuse2Texture = "texture"], uv), texture_blend);
 					
 					if (lua[Translucent = false])
 					{
@@ -153,36 +151,53 @@ PASS.Shader = {
 				
 				// normals
 				{				
-					vec3 normal_detail = texture(NormalTexture, uv).xyz;
+					vec4 normal_detail = texture(lua[NormalTexture = render.GetBlackTexture()], uv);
 					
-					if (normal_detail != vec3(0))
+					if (normal_detail.xyz != vec3(0))
 					{						
 						if (texture_blend != 0)
-							normal_detail = normal_detail + ((texture(Normal2Texture, uv).xyz * 2 - 1) * texture_blend);
+						{
+							normal_detail = mix(normal_detail, texture(lua[Normal2Texture = "texture"], uv), texture_blend);
+						}
 						
-						normal_buffer.xyz = cotangent_frame(normal, view_normal, uv) * normalize(normal_detail * 2 - 1);
+						normal_buffer.xyz = cotangent_frame(normalize(normal), view_normal, uv) * ((normal_detail.xyz * 2 - 1).xyz * lua[NormalMapScale = Vec3(1,1,1)]);
 					}
 					else
 					{
 						normal_buffer.xyz = normal;
 					}
 					
+					
 					normal_buffer.xyz = normalize(normal_buffer.xyz);
+					normal_buffer.a = normal_detail.a;
 				}
 
-				if (AlphaSpecular)
+				if (lua[DiffuseAlphaMetallic = false])
 				{
 					normal_buffer.a = -diffuse_buffer.a+1;
 				}
+				else if (lua[NormalAlphaMetallic = false])
+				{
+					normal_buffer.a = -normal_buffer.a+1;
+				}
 				else
 				{
-					normal_buffer.a = texture(MetallicTexture, uv).r;
+					normal_buffer.a = texture(lua[MetallicTexture = render.GetBlackTexture()], uv).r;
 				}
 				
-				diffuse_buffer.a = texture(RoughnessTexture, uv).r;
+				diffuse_buffer.a = texture(lua[RoughnessTexture = render.GetGreyTexture()], uv).r;
 				
 				normal_buffer.a += lua[MetallicMultiplier = 0];
 				diffuse_buffer.a += lua[RoughnessMultiplier = 0];
+				
+				{				
+					vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture2()], get_screen_uv()).xyz * 2 - 1) * ((-(dist/(-min(diffuse_buffer.a, 0.9)+1))+1)-1)/10;
+					
+					reflection_buffer = texture(lua[CubeTexture = render.GetCubemapTexture()], noise + -(mat3(g_view_inverse) * reflect((g_view_world * vec4(pos, 1)).xyz, normal_buffer.xyz)).yzx);
+		
+					reflection_buffer.a = 1;
+				}
+		
 			}
 		]]
 	}

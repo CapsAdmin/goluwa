@@ -13,8 +13,8 @@ local lights = {}
 for i = 1, max do
 	local light = entities.CreateEntity("light")
 	light:SetColor(HSVToColor(i/max, 0.5, 1))
-	light:SetSize(0.5)
-	light:SetIntensity(1)
+	light:SetSize(1)
+	light:SetIntensity(2)
 	light.seed = math.random()*math.pi
 	table.insert(lights, light)
 end

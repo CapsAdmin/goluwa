@@ -451,7 +451,6 @@ end
 
 include("base_object.lua", prototype)
 include("get_is_set.lua", prototype)
-include("templates/*", prototype)
 include("null.lua", prototype)
 include("ecs_entity.lua", prototype)
 include("base_ecs_component.lua", prototype)
