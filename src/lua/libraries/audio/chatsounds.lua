@@ -914,6 +914,13 @@ do -- list parsing
 				return
 			end
 			
+			local v = table.random(table.random(table.random(list))).path
+			
+			if name ~= "HALF-LIFE 2" and not vfs.IsFile(v) then
+				warning("chatsounds data for %s not found: %s doesn't exist", name, v)
+				return
+			end
+			
 			chatsounds.list = chatsounds.list or {}
 
 			for k,v in pairs(list) do

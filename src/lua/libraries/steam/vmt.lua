@@ -22,9 +22,6 @@ local property_translate = {
 }
 
 function steam.LoadMaterial(path, material)
-	local fail = 0
-	local errors = {}
-	
 	resource.Download(
 		path,  
 		function(path)

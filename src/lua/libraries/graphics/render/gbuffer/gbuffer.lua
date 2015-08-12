@@ -456,7 +456,7 @@ event.AddListener("RenderContextInitialized", nil, function()
 	event.AddListener("EntityCreate", "gbuffer", function(ent)
 		if not console.GetVariable("render_deferred") then return end
 		if table.count(entities.GetAll()) ~= 0 then return end
-	
+		if gbuffer_enabled then return end
 		local ok, err = system.pcall(render.InitializeGBuffer)
 		
 		if not ok then

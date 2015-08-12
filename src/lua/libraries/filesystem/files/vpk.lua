@@ -20,7 +20,7 @@ function CONTEXT:OnParseArchive(file, archive_path)
 
 	for extension in file:IterateStrings() do		
 		for directory in file:IterateStrings() do
-			directory = directory:lower()
+			directory = directory
 			for name in file:IterateStrings() do
 			
 				local entry = file:ReadStructure([[
@@ -34,7 +34,7 @@ function CONTEXT:OnParseArchive(file, archive_path)
 				]])
 				
 				entry.file_name = name .. "." .. extension
-				entry.file_name = entry.file_name:lower()
+				entry.file_name = entry.file_name
 				entry.full_path = directory .. "/" .. entry.file_name
 
 				if entry.archive_index == 0x7FFF then

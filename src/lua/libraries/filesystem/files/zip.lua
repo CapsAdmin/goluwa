@@ -1,3 +1,5 @@
+if LINUX then return end
+
 local vfs = (...) or _G.vfs
 
 local zip = require("minizip.init")
@@ -46,7 +48,7 @@ function CONTEXT:IsFile(path_info)
 	local archive = zip.open(archive_path, "r")
 	
 	for info in archive:files() do				
-		if info.filename:lower() == relative then
+		if info.filename == relative then
 			archive:close()
 			return true
 		end
@@ -60,7 +62,7 @@ function CONTEXT:IsFolder(path_info)
 	local archive = zip.open(archive_path, "r")
 
 	for info in archive:files() do
-		if info.filename:lower():find(relative, nil, true) then
+		if info.filename:find(relative, nil, true) then
 			archive:close()
 			return true
 		end
@@ -80,7 +82,8 @@ function CONTEXT:GetFiles(path_info)
 	local done = {}
 			
 	for info in archive:files() do
-		local path = info.filename:lower()
+		table.print(info)
+		local path = info.filename
 				
 		if path:endswith("/") then
 			path = path:sub(0, -2)
@@ -115,7 +118,7 @@ function CONTEXT:Open(path_info, mode, ...)
 			
 		local found = false
 		for info in archive:files() do				
-			if info.filename:lower() == relative then
+			if info.filename == relative then
 				found = true
 				break
 			end
