@@ -29,9 +29,7 @@ function render.Initialize()
 	end
 	
 	gl.Enable("GL_TEXTURE_CUBE_MAP")
-	
-	render.GenerateTextures()
-	
+		
 	include("lua/libraries/graphics/decoders/*")
 	
 	render.frame = 0
@@ -44,6 +42,8 @@ function render.Initialize()
 	include("lua/libraries/graphics/render/shader_builder.lua", render)
 	
 	surface.Initialize()
+	
+	render.GenerateTextures()
 	
 	event.Delay(function()
 		event.Call("RenderContextInitialized")	

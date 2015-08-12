@@ -122,9 +122,59 @@ PASS.Shader = {
 				float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );
 				return mat3( T * invmax, B * invmax, N );
 			}
+			
+			vec2 steep_parallax(vec2 uv, float bumpScale, vec3 _tsE)
+			{
+				/**
+				 SteepParallax.glsl.vrt
+				 Morgan McGuire 2005 morgan@cs.brown.edu
+				 */
+
+				// We are at height bumpScale.  March forward until we hit a hair or the 
+				// base surface.  Instead of dropping down discrete y-voxels we should be
+				// marching in texels and dropping our y-value accordingly (TODO: fix)
+				float height = 1.0;
+
+				// Number of height divisions
+				float numSteps = 5;
+
+				/** Texture coordinate marched forward to intersection point */
+				vec2 offsetCoord = uv.xy;
+				float NB = texture2D(lua[HeightTexture = Texture("textures/sofa/sofa_OCC.png")], offsetCoord).r;
+
+				vec3 tsE = normalize(_tsE);
+
+				// Increase steps at oblique angles
+				// Note: tsE.z = N dot V
+				numSteps = mix(numSteps*2, numSteps, tsE.z);
+
+				// We have to negate tsE because we're walking away from the eye.
+				//vec2 delta = vec2(-_tsE.x, _tsE.y) * bumpScale / (_tsE.z * numSteps);
+				float step;
+				vec2 delta;
+
+
+				// Constant in z
+				step = 1.0 / numSteps;
+				delta = vec2(-_tsE.x, _tsE.y) * bumpScale / (_tsE.z * numSteps);
+
+				// Can also step along constant in xy; the results are essentially
+				// the same in each case.
+				// delta = 1.0 / (25.6 * numSteps) * vec2(-tsE.x, tsE.y);
+				// step = tsE.z * bumpScale * (25.6 * numSteps) / (length(tsE.xy) * 400);
+
+				while (NB < height) {
+					height -= step;
+					offsetCoord += delta;
+					NB = texture2D(HeightTexture, offsetCoord).r;
+				}
+				
+				return offsetCoord;
+			}
 						
 			void main()
 			{
+				//vec2 uv = steep_parallax(uv, 0.01, -view_normal);
 						
 				//if (texture(tex_discard, get_screen_uv()).r > 0) discard;
 				
@@ -191,7 +241,7 @@ PASS.Shader = {
 				diffuse_buffer.a += lua[RoughnessMultiplier = 0];
 				
 				{				
-					vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture2()], get_screen_uv()).xyz * 2 - 1) * ((-(dist/(-min(diffuse_buffer.a, 0.9)+1))+1)-1)/10;
+					vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture()], get_screen_uv()).xyz * 2 - 1) * ((-(dist/(-min(diffuse_buffer.a, 0.9)+1))+1)-1)/10;
 					
 					reflection_buffer = texture(lua[CubeTexture = render.GetCubemapTexture()], noise + -(mat3(g_view_inverse) * reflect((g_view_world * vec4(pos, 1)).xyz, normal_buffer.xyz)).yzx);
 		

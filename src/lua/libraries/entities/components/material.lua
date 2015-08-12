@@ -16,7 +16,7 @@ function COMPONENT:OnAdd(ent)
 end
 
 function COMPONENT:OnRemove(ent)
-	local ent = ent:GetParent()
+	local ent = self:GetParent()
 	if ent:IsValid() then
 		if self.prev_mat then
 			local mdl = ent:GetComponent("model")

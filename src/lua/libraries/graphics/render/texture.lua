@@ -652,7 +652,7 @@ function META:Upload(data)
 		warning("NYI", 2)
 	end
 
-	self.gl_tex:GenerateMipmap()
+	self:GenerateMipMap()
 
 	self.downloaded_image = nil
 	
@@ -664,6 +664,14 @@ function META:Upload(data)
 		table.print(data)
 		warning("\n" .. msg, 2)
 	end
+	
+	return self
+end
+
+function META:GenerateMipMap()
+	self.gl_tex:GenerateMipmap()
+	
+	return self
 end
 
 function META:DumpInfo()
@@ -860,7 +868,7 @@ do
 		}
 	]]
 	
-	function META:Shade(fragment_shader, vars, dont_blend)		
+	function META:Shade(fragment_shader, vars)		
 		self.shaders = self.shaders or {}
 		
 		local name = "shade_texture_" .. tostring(self.gl_tex.id) .. "_" .. crypto.CRC32(fragment_shader)
@@ -898,10 +906,6 @@ do
 				end				
 			end
 		
-			if not dont_blend then 
-				render.SetBlendMode("src_alpha", "one_minus_src_alpha")
-			end
-			
 			render.SetShaderOverride(shader)
 			surface.rect_mesh:Draw()
 			render.SetShaderOverride()
@@ -992,21 +996,37 @@ function Texture(...)
 		return self
 	end
 	
-	local w,h = ...
+	local w,h,shade = ...
 	if type(w) == "number" and type(h) == "number" then
 		local self = render.CreateTexture("2d")
 		self:SetSize(Vec2(w, h))
 		self:SetupStorage()
 		self:Clear()
+		
+		if shade then
+			self:Shade(shade)
+			self:GenerateMipMap()
+			self.fb = nil
+			self.shaders = nil
+		end
+		
 		return self	
 	end
 	
-	local size = ...
+	local size, shade = ...
 	if typex(size) == "vec2" then
 		local self = render.CreateTexture("2d")
 		self:SetSize(size:Copy())
 		self:SetupStorage()
 		self:Clear()
+		
+		if shade then
+			self:Shade(shade)
+			self:GenerateMipMap()
+			self.fb = nil
+			self.shaders = nil
+		end
+		
 		return self	
 	end
 	

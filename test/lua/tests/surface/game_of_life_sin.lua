@@ -17,7 +17,9 @@ tex:Fill(function()
 end)
  
 event.CreateTimer("update_cells", 0, 0, function()
-	render.SetBlendMode("src_color", "src_color", "add")
+	--render.SetBlendMode("src_color", "src_color", "add")
+	render.SetBlendMode()
+			
 	tex:Shade([[
 		float pi = 3.14159265358979323846264338327950288419716939937510582097494459230781640;
 		float pi2 = pi/2;
@@ -52,7 +54,7 @@ event.CreateTimer("update_cells", 0, 0, function()
 		}
 			
 		return color;
-	]], nil, true)
+	]])
 end)
 
 event.AddListener("Draw2D", "fb", function()

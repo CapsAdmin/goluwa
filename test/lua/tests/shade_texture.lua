@@ -38,7 +38,7 @@ local function blur_texture(dir)
 		radius = 1, 
 		resolution = render.GetScreenSize(),
 		dir = dir,
-	})  
+	})
 end
 
 blur_texture(Vec2(0,5))

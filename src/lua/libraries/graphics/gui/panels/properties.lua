@@ -432,7 +432,7 @@ do -- color
 	gui.RegisterPanel(PANEL)
 end
 
-do -- color
+do -- texture
 	local PANEL = {}
 	
 	PANEL.Base = "base_property"
@@ -449,7 +449,7 @@ do -- color
 		panel.OnPress = function()
 			local frame = gui.CreatePanel("frame")
 			frame:SetSize(Vec2(300, 300))
-			frame:SetTitle("color picker")
+			frame:SetTitle("texture")
 			
 			local image = frame:CreatePanel("base")
 			image:SetTexture(self:GetValue())
@@ -457,7 +457,7 @@ do -- color
 			
 			panel:CallOnRemove(function() gui.RemovePanel(frame) end)
 			
-			frame:SetupLayout("center")
+			frame:CenterSimple()
 		end
 		
 		prototype.GetRegistered(self.Type, "base_property").Initialize(self)

@@ -4,17 +4,26 @@ function render.GenerateTextures()
 	render.white_texture = Texture(Vec2()+8):Fill(function() return 255,255,255,255 end)
 	render.black_texture = Texture(Vec2()+8):Fill(function() return 0,0,0,255 end)
 	render.grey_texture = Texture(Vec2()+8):Fill(function() return 127,127,127,255 end)
-	render.noise_texture = Texture(Vec2()+512):Fill(function() return math.random(255), math.random(255), math.random(255), math.random(255) end)
-	render.error_tex = Texture(Vec2()+256)
+	render.noise_texture = Texture(Vec2() + 4096, "return vec4(random(uv*1), random(uv*2), random(uv*3), random(uv*4));")
 	
-	local size = 16
-	render.error_tex:Fill(function(x, y)
-		if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
-			return 255, 0, 255, 255
-		else
-			return 0, 0, 0, 255
-		end
-	end)
+	if not render.cubemap_texture then
+		local tex = render.CreateTexture("cube_map")
+		tex:LoadCubemap("textures/skybox/bluesky")
+		render.cubemap_texture = tex
+	end
+	
+	do
+		render.error_tex = Texture(Vec2() + 256)
+		
+		local size = 16
+		render.error_tex:Fill(function(x, y)
+			if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
+				return 255, 0, 255, 255
+			else
+				return 0, 0, 0, 255
+			end
+		end)
+	end
 	
 	do
 		local center_size = 70
@@ -78,17 +87,7 @@ function render.GetNoiseTexture()
 	return render.noise_texture
 end
 
-function render.GetNoiseTexture2()	
-	render.noise_texture2 = render.noise_texture2 or Texture(Vec2()+4096):Fill(function() return math.random(255), math.random(255), math.random(255), math.random(255) end)
-	return render.noise_texture2
-end
-
 function render.GetCubemapTexture()
-	if not render.cubemap_texture then
-		local tex = render.CreateTexture("cube_map")
-		tex:LoadCubemap("textures/skybox/bluesky")
-		render.cubemap_texture = tex
-	end
 	return render.cubemap_texture
 end
 
