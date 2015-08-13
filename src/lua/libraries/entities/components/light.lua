@@ -133,9 +133,10 @@ if GRAPHICS then
 			local tex = render.CreateTexture("2d")
 			tex:SetSize(Vec2() + self.ShadowSize)
 			tex:SetInternalFormat("depth_component32f")
-			tex:SetWrapS("clamp_to_edge")
-			tex:SetWrapT("clamp_to_edge")
-			tex:SetWrapR("clamp_to_edge")
+			tex:SetWrapS("clamp_to_border")
+			tex:SetWrapT("clamp_to_border")
+			tex:SetWrapR("clamp_to_border")
+			tex:SetBorderColor(Color(1,1,1,1))
 			tex:SetMinFilter("linear")
 			tex:SetDepthTextureMode("red")
 			tex:SetupStorage()
@@ -165,16 +166,14 @@ if GRAPHICS then
 		
 		--render.SetBlendMode("additive")
 		render.SetBlendMode("one", "one")
-		render.SetCullMode("front", true)
 	
 		local transform = self:GetComponent("transform")
 		local pos = transform:GetPosition()
 		local rot = transform:GetRotation()
 		
 		self.shadow_map:Begin()				
-		
-		render.SetCullMode("back", true)
 		render.SetShaderOverride(render.shadow_map_shader)
+		render.SetCullMode("none", true)
 	
 		local old_view = render.camera_3d:GetView()
 		local old_projection = render.camera_3d:GetProjection()
@@ -187,7 +186,7 @@ if GRAPHICS then
 				projection:Perspective(math.rad(self.FOV), render.camera_3d.FarZ, render.camera_3d.NearZ, render.camera_3d.Viewport.w / render.camera_3d.Viewport.h) 
 			else
 				local size = self.OrthoSize * (ortho_divider or 1)
-				projection:Ortho(-size, size, -size, size, size/1.5, -size/1.5) 
+				projection:Ortho(-size, size, -size, size, size, -size) 
 			end
 		end
 		
@@ -236,7 +235,6 @@ if GRAPHICS then
 		render.camera_3d:SetProjection(old_projection)
 		
 		render.SetShaderOverride()
-		render.SetCullMode("front", false)
 		
 		--render.gbuffer_light_shader.cascade_pass = i
 		
@@ -247,6 +245,7 @@ if GRAPHICS then
 		end
 		
 		render.EnableDepth(false)
+		render.SetCullMode("front", false)
 		
 		self.shadow_map:End()
 	end

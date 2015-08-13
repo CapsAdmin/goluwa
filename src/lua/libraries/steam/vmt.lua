@@ -76,7 +76,7 @@ function steam.LoadMaterial(path, material)
 				material:SetMetallicMultiplier(0.1)
 			end
 			
-			material:SetNormalMapScale(Vec3(1,-1,1))
+			material:SetNormalMapScale(Vec3(1,1,1))
 			
 			material.vmt = vmt	
 		end, 

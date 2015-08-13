@@ -29,7 +29,6 @@ local gl = require("graphics.ffi.opengl") -- OpenGL
 function PASS:Draw3D()
 	render.EnableDepth(true)
 	render.SetBlendMode()
-	render.SetCullMode("front")
 	
 	render.gbuffer:Clear("all", 0,0,0,0,  1)
 	
@@ -210,7 +209,7 @@ PASS.Shader = {
 							normal_detail = mix(normal_detail, texture(lua[Normal2Texture = "texture"], uv), texture_blend);
 						}
 						
-						normal_buffer.xyz = cotangent_frame(normalize(normal), view_normal, uv) * ((normal_detail.xyz * 2 - 1).xyz * lua[NormalMapScale = Vec3(1,1,1)]);
+						normal_buffer.xyz = cotangent_frame(normalize(normal), view_normal, uv) * ((normal_detail.xyz * 2 - 1).xyz * lua[NormalMapScale = Vec3(1,-1,1)]);
 					}
 					else
 					{

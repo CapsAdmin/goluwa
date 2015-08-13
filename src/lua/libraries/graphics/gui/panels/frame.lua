@@ -82,7 +82,6 @@ function PANEL:ToWindow()
 			render.GetScreenFrameBuffer():Clear()
 			render.EnableDepth(false)	
 			render.SetBlendMode("alpha")	
-			render.SetCullMode("front")
 			
 			local x,y = pnl:GetPosition():Unpack()
 			render.camera_2d:TranslateWorld(-x,-y, 0)

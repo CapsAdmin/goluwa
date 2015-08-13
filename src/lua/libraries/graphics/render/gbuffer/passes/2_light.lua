@@ -87,21 +87,21 @@ PASS.Shader = {
 				else
 				{
 					vec4 temp = light_projection_view * g_projection_view_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
-					vec3 shadow_coord = (temp.xyz / temp.w);
-										
+					vec3 shadow_coord = temp.xyz / temp.w;
+
 					if (shadow_coord.x > -1 && shadow_coord.x < 1 && shadow_coord.y > -1 && shadow_coord.y < 1 && shadow_coord.z > -1 && shadow_coord.z < 1)
-					{		
-						vec2 projCoords =  0.5 * shadow_coord.xy + vec2(0.5);
+					{						
+						shadow_coord = 0.5 * shadow_coord + 0.5;
 						vec2 texelSize = 1.0 / textureSize(tex_shadow_map, 0);
 						
 						for(int x = -1; x <= 1; ++x)
 						{
 							for(int y = -1; y <= 1; ++y)
 							{
-								float pcfDepth = texture(tex_shadow_map, projCoords.xy + vec2(x, y) * texelSize).r; 
-								visibility += (0.5 * shadow_coord.z + 0.5) - bias < pcfDepth ? 1.0 : 0.0;        
+								visibility += shadow_coord.z- bias < texture(tex_shadow_map, shadow_coord.xy + vec2(x, y) * texelSize).r ? 1.0 : 0.0;        
 							}    
 						}
+						
 						visibility /= 9.0;
 					}
 					else if(lua[project_from_camera = false])
@@ -114,38 +114,41 @@ PASS.Shader = {
 			}  
 									
 			vec3 get_attenuation(vec2 uv, vec3 P, vec3 N, float cutoff)
-			{
+			{			
+				// calculate normalized light vector and distance to sphere light surface
+				float r = lua[light_radius = 1000]/10;
+				vec3 L = light_view_pos - P;
+				float distance = length(L);
+				float d = max(distance - r, 0);
+				L /= distance;
+				 
 				float attenuation = 1;
-			
-				if (!project_from_camera)
+				
+				// calculate basic attenuation
+				if (!lua[project_from_camera = false])
 				{
-					// calculate normalized light vector and distance to sphere light surface
-					float r = lua[light_radius = 1000]/10;
-					vec3 L = light_view_pos - P;
-					float distance = length(L);
-					float d = max(distance - r, 0);
-					L /= distance;
-					 
-					// calculate basic attenuation
 					float denom = d/r + 1;
 					attenuation = 1 / (denom*denom);
-					 
-					// scale and bias attenuation such that:
-					//   attenuation == 0 at extent of max influence
-					//   attenuation == 1 when d == 0
-					attenuation = (attenuation - cutoff) / (1 - cutoff);
-					attenuation = max(attenuation, 0);
-					 
-					float dot = max(dot(L, N), 0);
-					attenuation *= dot;
 				}
+				 
+				// scale and bias attenuation such that:
+				//   attenuation == 0 at extent of max influence
+				//   attenuation == 1 when d == 0
+				attenuation = (attenuation - cutoff) / (1 - cutoff);
+				attenuation = max(attenuation, 0);
+				 
+				float dot = max(dot(L, N), 0);
+				attenuation *= dot;
 				
 				if (lua[light_shadow = false])
 				{					
-					attenuation *= get_shadow(uv, attenuation*-0.001);
-					
+					attenuation *= get_shadow(uv, attenuation*0.0005);
+				}
+				
+				if (lua[project_from_camera = false])
+				{
 					vec3 ambient = lua[light_ambient_color = Color(0,0,0)].rgb * light_intensity;
-					
+						
 					if (ambient == vec3(0,0,0))
 					{
 						ambient = light_color.rgb * 0.75 * light_intensity;
@@ -153,10 +156,8 @@ PASS.Shader = {
 
 					return ambient + (light_color.rgb * attenuation);
 				}
-				else
-				{
-					return light_color.rgb * attenuation;
-				}
+				
+				return light_color.rgb * attenuation * light_intensity;
 			}
 			
 			const float e = 2.71828182845904523536028747135;
