@@ -86,7 +86,6 @@ function CONTEXT:GetFiles(path_info)
 	local done = {}
 			
 	for info in archive:files() do
-		table.print(info)
 		local path = info.filename
 				
 		if path:endswith("/") then
