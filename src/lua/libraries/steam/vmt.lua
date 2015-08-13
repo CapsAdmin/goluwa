@@ -22,6 +22,8 @@ local property_translate = {
 }
 
 function steam.LoadMaterial(path, material)
+	material:SetName(path)
+		
 	resource.Download(
 		path,  
 		function(path)
@@ -33,10 +35,36 @@ function steam.LoadMaterial(path, material)
 			end
 			
 			local k,v = next(vmt)
-			
+						
 			if type(k) ~= "string" or type(v) ~= "table" then
 				material:SetError("bad material " .. path)
 				return
+			end
+			
+			if k == "patch" then
+				if not vfs.IsFile(v.include) then
+					v.include = v.include:lower()
+				end
+				
+				local vmt2, err2 = steam.VDFToTable(vfs.Read(v.include), function(key) return (key:lower():gsub("%$", "")) end)
+				
+				if err2 then	
+					material:SetError(err2)
+					return
+				end
+				
+				local k2,v2 = next(vmt2)
+							
+				if type(k2) ~= "string" or type(v2) ~= "table" then
+					material:SetError("bad material " .. path)
+					return
+				end
+				
+				table.merge(vmt2, v.replace)
+				
+				vmt = vmt2
+				v = v2
+				k = k2
 			end
 			
 			vmt = v
@@ -55,9 +83,9 @@ function steam.LoadMaterial(path, material)
 					end
 				end
 			end
-
+			
 			for key, field in pairs(path_translate) do
-				if vmt[field] then 					
+				if vmt[field] then
 					local new_path = vfs.FixPath("materials/" .. vmt[field])
 					if not new_path:endswith(".vtf") then
 						new_path = new_path .. ".vtf"
@@ -65,7 +93,7 @@ function steam.LoadMaterial(path, material)
 					resource.Download(
 						new_path,
 						function(path)
-							vmt[field] = path
+							--vmt[field] = path
 							material["Set" .. key](material, Texture(path))
 						end
 					)

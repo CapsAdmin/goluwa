@@ -23,12 +23,20 @@ function META:__index2(key)
 	end
 end
 
+function META:__tostring2()
+	if self.error_reason then
+		return ("[error: %s][%s]"):format(self.error_reason, self:GetPath())
+	else
+		return ("[%s]"):format(self:GetPath())
+	end
+end
+
 META:StartStorable()
 META:GetSet("StorageType", "2d")
 META:GetSet("Size", Vec2())
 META:GetSet("Depth", 0)
 META:GetSet("MipMapLevels", -1)
-META:GetSet("Path", "loading")
+META:GetSet("Path", "")
 META:IsSet("Loading", false)
 META:IsSet("InternalFormat", "rgba8")
 META:EndStorable()
@@ -331,14 +339,24 @@ function META:SetPath(path, face)
 		if buffer then			
 			self:SetSize(Vec2(w, h))
 
+			if info.internal_format then
+				self:SetInternalFormat(info.internal_format)
+				self:SetupStorage()
+			end
+
 			self:Upload({
 				buffer = buffer,
 				width = w,		
 				height = h,
-				format = "bgra",
+				format = info.format or "bgra",
 				face = face, -- todo
 				flip_y = not full_path:endswith(".vtf"),
 			})
+		else
+			local reason = w or "unknown"
+			reason = "decoding failed: " .. reason
+			self:MakeError(reason)
+			logf("[%s] unable to find %s: %s\n", self, path, reason)
 		end
 
 		self.Loading = false
@@ -346,6 +364,10 @@ function META:SetPath(path, face)
 		if self.OnLoad then 
 			self:OnLoad() 
 		end
+	end, function(reason)
+		logf("[%s] unable to find %s: %s\n", self, path, reason)
+		self.Loading = false
+		self:MakeError(reason)
 	end)
 end
 
@@ -691,8 +713,9 @@ function META:DumpInfo()
 	logn("==================================")
 end
 
-function META:MakeError()
-	self:Upload(render.GetErrorTexture():Download())
+function META:MakeError(reason)
+	self.gl_tex = render.GetErrorTexture().gl_tex
+	self.error_reason = reason
 end
 
 function META:GetFormatInfo()

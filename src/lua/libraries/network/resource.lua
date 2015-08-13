@@ -119,7 +119,9 @@ function resource.Download(path, callback, on_fail, crc)
 	
 	if not path2 then
 		local path = R(path:lower())
-		if path then path2 = path end
+		if path then 
+			path2 = path 
+		end
 	end
 	
 	do
@@ -131,7 +133,7 @@ function resource.Download(path, callback, on_fail, crc)
 		end
 	end
 
-	if path2 and vfs.IsFile(path2) then
+	if path2 then
 		callback(path2)
 		return true
 	end

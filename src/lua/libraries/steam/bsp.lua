@@ -507,11 +507,7 @@ function steam.LoadMap(path)
 				local texinfo = header.texinfos[1 + face.texinfo]
 				local texdata = texinfo and header.texdatas[1 + texinfo.texdata]
 				local texname = header.texdatastringdata[1 + texdata.nameStringTableID]
-							
-				if texname:sub(0, 5) == "maps/" then
-					texname = texname:gsub("maps/.-/(.+)_.-_.-_.+", "%1")
-				end
-				
+												
 				if texname:lower():find("skyb", nil, true) then goto continue end
 				if texname:lower():find("water", nil, true) then goto continue end
 									
@@ -732,7 +728,7 @@ function steam.SpawnMapEntities(path, parent)
 				if info.classname and info.classname:find("light_environment") then
 					
 					local p, y = info.pitch, info.angles.y
-					parent.world_params:SetSunAngles(Deg3(p, y+180, 0))
+					parent.world_params:SetSunAngles(Deg3(p or 0, y+180, 0))
 					
 					--info._light.a = 1
 					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b)*info._light.a)
