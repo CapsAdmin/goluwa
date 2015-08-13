@@ -126,52 +126,59 @@ function CONTEXT:Open(path_info, mode, ...)
 	local file
 		
 	if self:GetMode() == "read" then
-		local file_info = tree:GetEntry(relative)				
+		local file_info = tree:GetEntry(relative)
 		local file = assert(vfs.Open(self:TranslateArchivePath(file_info, archive_path)))
-		file:SetPosition(file_info.offset)		
-		self.file = file
+		file:SetPosition(file_info.offset)
 		self.position = 0
 		self.file_info = file_info
+		
+		if file_info.preload_data then
+			self.data = file_info.preload_data .. file:ReadBytes(file_info.size-#file_info.preload_data)
+			file:Close()
+		else
+			self.file = file
+		end
 	elseif self:GetMode() == "write" then
 		error("not implemented")
 	end
 end
 
-function CONTEXT:Write(str)
-	--return self.file:Write(str)
-end
-
-function CONTEXT:Read(bytes)
-	return self.file:Read(bytes)
-end
-
-function CONTEXT:WriteByte(byte)
-	--self.file:WriteByte(byte)
-end
-
-function CONTEXT:ReadByte()					
-	self.file:SetPosition(self.file_info.offset + self.position)
-	local byte = self.file:ReadByte(1)	
-	self.position = math.clamp(self.position + 1, 0, self.file_info.size)
-	
-	return byte
-end
-
-function CONTEXT:WriteBytes(str)
-	--return self.file:WriteBytes(str)
+function CONTEXT:ReadByte()
+	if self.file_info.preload_data then
+		local byte = self.data:sub(self.position+1, self.position+1)
+		self.position = math.clamp(self.position + 1, 0, self.file_info.size)
+		return byte:byte()
+	else
+		self.file:SetPosition(self.file_info.offset + self.position)
+		local byte = self.file:ReadByte(1)	
+		self.position = math.clamp(self.position + 1, 0, self.file_info.size)
+		
+		return byte
+	end
 end
 
 function CONTEXT:ReadBytes(bytes)
 	if bytes == math.huge then bytes = self:GetSize() end
-	bytes = math.min(bytes, self.file_info.size - self.position)
+	
+	if self.file_info.preload_data then
+		local str = {}
+		for i = 1, bytes do
+			local byte = self:ReadByte()
+			if not byte then return table.concat(str, "") end
+			str[i] = string.char(byte)
+		end
+		return table.concat(str, "")
+	else
+		bytes = math.min(bytes, self.file_info.size - self.position)
 
-	self.file:SetPosition(self.file_info.offset + self.position)
-	local str = self.file:ReadBytes(bytes)	
-	self.position = math.clamp(self.position + bytes, 0, self.file_info.size)
-	
-	if str == "" then str = nil end
-	
-	return str
+		self.file:SetPosition(self.file_info.offset + self.position)
+		local str = self.file:ReadBytes(bytes)	
+		self.position = math.clamp(self.position + bytes, 0, self.file_info.size)
+		
+		if str == "" then str = nil end
+		
+		return str
+	end
 end
 
 function CONTEXT:SetPosition(pos)
@@ -184,7 +191,7 @@ function CONTEXT:GetPosition()
 end
 
 function CONTEXT:Close()
-	self.file:Close()
+	if self.file and self.file:IsValid() then self.file:Close() end
 	self:Remove()
 end
 

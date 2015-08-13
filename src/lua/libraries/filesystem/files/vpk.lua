@@ -20,7 +20,6 @@ function CONTEXT:OnParseArchive(file, archive_path)
 
 	for extension in file:IterateStrings() do		
 		for directory in file:IterateStrings() do
-			directory = directory
 			for name in file:IterateStrings() do
 			
 				local entry = file:ReadStructure([[
@@ -42,12 +41,9 @@ function CONTEXT:OnParseArchive(file, archive_path)
 					entry.offset = entry.preload_offset
 				end
 			
-				file:SetPosition(file:GetPosition() + entry.preload_length)
-				
-				if file:GetPosition() ~= entry.preload_offset + entry.preload_length then	
-					file:Close()
-				end
-				
+				entry.preload_data = file:ReadBytes(entry.preload_length)
+				entry.size = entry.size + entry.preload_length
+								
 				-- remove these because we don't need them and they will take up memory and blow up the size of the cache
 				entry.preload_offset = nil
 				entry.preload_length = nil
