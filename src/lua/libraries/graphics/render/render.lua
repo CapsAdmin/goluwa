@@ -410,22 +410,21 @@ do
 	local override_
 
 	function render.SetCullMode(mode, override)
-		if mode == cull_mode then return end
-		if override == false then override_ = nil end
-		if override_ then return end
+		if mode == cull_mode and override ~= true then return end
+		if override_ and override ~= false then return end
 		
 		if mode == "none" then
 			gl.Disable("GL_CULL_FACE")
 		else
 			gl.Enable("GL_CULL_FACE")
-		end
-	
-		if mode == "front" then
-			gl.CullFace("GL_FRONT")
-		elseif mode == "back" then
-			gl.CullFace("GL_BACK")
-		elseif mode == "front_and_back" then
-			gl.CullFace("GL_FRONT_AND_BACK")
+				
+			if mode == "front" then
+				gl.CullFace("GL_FRONT")
+			elseif mode == "back" then
+				gl.CullFace("GL_BACK")
+			elseif mode == "front_and_back" then
+				gl.CullFace("GL_FRONT_AND_BACK")
+			end
 		end
 		
 		cull_mode = mode

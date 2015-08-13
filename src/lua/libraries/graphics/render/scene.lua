@@ -57,8 +57,6 @@ function render.Draw3DScene()
 			
 	end)]]
 	
-	--render.SetCullMode("none")
-	
 	for i, model in ipairs(render.scene_3d) do
 		model:Draw()
 	end
@@ -76,7 +74,6 @@ function render.DrawScene(skip_2d)
 	else
 		render.EnableDepth(true)
 		render.SetBlendMode("alpha")	
-		render.SetCullMode("front")
 
 		render.Draw3DScene()
 	end
@@ -85,7 +82,6 @@ function render.DrawScene(skip_2d)
 	
 	render.EnableDepth(false)	
 	render.SetBlendMode("alpha")	
-	render.SetCullMode("front")
 	
 	event.Call("Draw2D", system.GetFrameTime())
 	

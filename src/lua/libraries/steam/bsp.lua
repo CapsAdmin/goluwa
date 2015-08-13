@@ -734,10 +734,10 @@ function steam.SpawnMapEntities(path, parent)
 					local p, y = info.pitch, info.angles.y
 					parent.world_params:SetSunAngles(Deg3(p, y+180, 0))
 					
-					info._light.a = 1
+					--info._light.a = 1
 					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b)*info._light.a)
-					parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b, 1)*info._ambient.a*0.5)
-					parent.world_params:SetSunIntensity(1)
+					parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b, 0))
+					parent.world_params:SetSunIntensity(0.75)
 										
 				elseif info.classname:lower():find("light") and info._light then		
 					local ent = entities.CreateEntity("light", parent)
