@@ -34022,8 +34022,8 @@ function gl.Initialize(get_proc_address)
 			function META:GetLevelParameterfvEXT(target, level, pname, params)
 				return gl.GetTextureLevelParameterfvEXT(self.id, target, level, pname, params)
 			end
-			function META:SetParameterfv(target, pname, params)
-				return gl.TextureParameterfvEXT(self.id, target, pname, params)
+			function META:SetParameterfv(pname, params)
+				return gl.TextureParameterfv(self.id, pname, params)
 			end
 			function META:CompressedImage1D(target, level, internalformat, width, border, imageSize, bits)
 				return gl.CompressedTextureImage1DEXT(self.id, target, level, internalformat, width, border, imageSize, bits)
@@ -34258,8 +34258,8 @@ function gl.Initialize(get_proc_address)
 			function META:GetLevelParameterfvEXT(texture, level, pname, params)
 				bind(self) return gl.GetTextureLevelParameterfvEXT(texture, self.target, level, pname, params)
 			end
-			function META:SetParameterfv(texture, pname, params)
-				bind(self) return gl.TextureParameterfvEXT(texture, self.target, pname, params)
+			function META:SetParameterfv(pname, param)
+				bind(self) return gl.TexParameterfv(self.target, pname, param)
 			end
 			function META:CompressedImage1D(texture, level, internalformat, width, border, imageSize, bits)
 				bind(self) return gl.CompressedTextureImage1DEXT(texture, self.target, level, internalformat, width, border, imageSize, bits)
