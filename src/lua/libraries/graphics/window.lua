@@ -26,16 +26,12 @@ function window.Open(...)
 		
 	if not ok then warning(wnd) return NULL end
 
-	-- don't draw anything until the everything has be
-	event.AddListener("RenderContextInitialized", "window_start_rendering", function()
-		function wnd:OnUpdate(dt)
-			render.PushWindow(self)
-				render.DrawScene()			
-				self:SwapBuffers()
-			render.PopWindow()
-		end
-		return e.EVENT_DESTROY
-	end, {priority = -math.huge})
+	function wnd:OnUpdate(dt)
+		render.PushWindow(self)
+			render.DrawScene()			
+			self:SwapBuffers()
+		render.PopWindow()
+	end
 
 	function wnd:OnCursorPosition()
 		if system then system.SetCursor(system.GetCursor()) end

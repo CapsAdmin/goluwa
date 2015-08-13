@@ -312,7 +312,7 @@ if SOUND then
 end
 
 if GRAPHICS then
-	event.AddListener("RenderContextInitialized", function() vfs.AutorunAddons("graphics/") end)
+	vfs.AutorunAddons("graphics/")
 end
 
 -- execute /.userdata/*USERNAME*/cfg/autoexec.lua

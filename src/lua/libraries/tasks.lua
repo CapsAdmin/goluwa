@@ -19,7 +19,8 @@ META.wait = 0
 function META:Start(now)
 	
 	if not enabled:Get() then
-		event.Delay(0, function() self:OnStart() end)
+		self:OnStart() 
+		self:Remove()
 		return
 	end
 	

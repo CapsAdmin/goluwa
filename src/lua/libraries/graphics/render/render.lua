@@ -40,14 +40,10 @@ function render.Initialize()
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
 	
 	include("lua/libraries/graphics/render/shader_builder.lua", render)
-	
-	surface.Initialize()
-	
+		
 	render.GenerateTextures()
 	
-	event.Delay(function()
-		event.Call("RenderContextInitialized")	
-	end)
+	event.Call("RenderContextInitialized")
 end
 
 function render.Shutdown()

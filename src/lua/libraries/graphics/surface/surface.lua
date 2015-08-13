@@ -67,6 +67,7 @@ function surface.Initialize()
 	surface.InitializeFonts()
 	
 	surface.ready = true
+	event.Call("SurfaceInitialized")
 end
 
 function surface.IsReady()

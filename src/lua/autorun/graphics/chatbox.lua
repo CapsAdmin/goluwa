@@ -302,13 +302,9 @@ function chat.GetPanel()
 		
 	edit.OnTextChanged = function(_, str)
 		event.Call("ChatTextChanged", str)
-	--	event.Delay(0, function()
-		--	if frame:IsValid() then
-				edit:SizeToText()
-				edit:SetupLayout("bottom", "fill_x")
-				frame:Layout()
-		--	end
-	--	end)
+		edit:SizeToText()
+		edit:SetupLayout("bottom", "fill_x")
+		frame:Layout()
 	end
 	
 	edit.OnPostDrawMenu = function()

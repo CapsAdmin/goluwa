@@ -868,7 +868,14 @@ do
 		}
 	]]
 	
-	function META:Shade(fragment_shader, vars)		
+	function META:Shade(fragment_shader, vars)
+		if not surface.IsReady() then
+			event.AddListener("SurfaceInitialized", self, function()
+				self:Shade(fragment_shader, vars)
+			end, {remove_after_one_call = true})
+			return
+		end
+		
 		self.shaders = self.shaders or {}
 		
 		local name = "shade_texture_" .. tostring(self.gl_tex.id) .. "_" .. crypto.CRC32(fragment_shader)

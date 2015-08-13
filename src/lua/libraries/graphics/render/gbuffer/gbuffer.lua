@@ -197,7 +197,46 @@ local gbuffer_enabled = false
 local w_cvar = console.CreateVariable("render_width", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 local h_cvar = console.CreateVariable("render_height", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 
-function render.InitializeGBuffer(width, height)
+function render.DrawGBuffer()
+	if not gbuffer_enabled then return end
+
+	render.gbuffer:WriteThese("all")
+	
+	for i, pass in ipairs(render.gbuffer_passes) do
+		if pass.Draw3D then
+			pass:Draw3D() 
+		end
+	end
+		
+	-- gbuffer	
+	render.SetBlendMode("alpha")
+	render.EnableDepth(false)	 
+			
+	for i, shader in ipairs(render.gbuffer_shaders_sorted) do
+		if shader.gbuffer_pass.Update then
+			shader.gbuffer_pass:Update()
+		end
+		
+		render.gbuffer_mixer_buffer:Begin()
+			surface.PushMatrix(0, 0, render.gbuffer_size.w, render.gbuffer_size.h)
+				render.SetShaderOverride(shader)
+				surface.rect_mesh:Draw()
+			surface.PopMatrix()
+		render.gbuffer_mixer_buffer:End()
+		
+		if shader.gbuffer_pass.PostRender then
+			shader.gbuffer_pass:PostRender()
+		end
+	end
+	
+	render.SetShaderOverride()
+	
+	surface.SetTexture(render.gbuffer_mixer_buffer:GetTexture())
+	surface.SetColor(1,1,1,1)
+	surface.DrawRect(0, 0, surface.GetSize())
+end
+
+local function init(width, height)
 	if not RELOAD then
 		include("lua/libraries/graphics/render/gbuffer/passes/*")
 	end
@@ -388,6 +427,13 @@ function render.InitializeGBuffer(width, height)
 	logn("render: gbuffer initialized ", width, "x", height)
 end
 
+function render.InitializeGBuffer(width, height)
+	local ok, err = system.pcall(init, width, height)
+	if not ok then
+		warning("failed to initialize gbuffer: ", err)
+	end
+end
+
 function render.ShutdownGBuffer()
 	event.RemoveListener("PreDisplay", "gbuffer")
 	event.RemoveListener("PostDisplay", "gbuffer")
@@ -404,45 +450,6 @@ function render.IsGBufferReady()
 	return gbuffer_enabled
 end
 
-function render.DrawGBuffer()
-	if not gbuffer_enabled then return end
-
-	render.gbuffer:WriteThese("all")
-	
-	for i, pass in ipairs(render.gbuffer_passes) do
-		if pass.Draw3D then
-			pass:Draw3D() 
-		end
-	end
-		
-	-- gbuffer	
-	render.SetBlendMode("alpha")
-	render.EnableDepth(false)	 
-			
-	for i, shader in ipairs(render.gbuffer_shaders_sorted) do
-		if shader.gbuffer_pass.Update then
-			shader.gbuffer_pass:Update()
-		end
-		
-		render.gbuffer_mixer_buffer:Begin()
-			surface.PushMatrix(0, 0, render.gbuffer_size.w, render.gbuffer_size.h)
-				render.SetShaderOverride(shader)
-				surface.rect_mesh:Draw()
-			surface.PopMatrix()
-		render.gbuffer_mixer_buffer:End()
-		
-		if shader.gbuffer_pass.PostRender then
-			shader.gbuffer_pass:PostRender()
-		end
-	end
-	
-	render.SetShaderOverride()
-	
-	surface.SetTexture(render.gbuffer_mixer_buffer:GetTexture())
-	surface.SetColor(1,1,1,1)
-	surface.DrawRect(0, 0, surface.GetSize())
-end
-
 function render.EnableGBuffer(b)
 	gbuffer_enabled = b
 	if b then 
@@ -452,26 +459,24 @@ function render.EnableGBuffer(b)
 	end
 end
 
-event.AddListener("RenderContextInitialized", nil, function() 
-	event.AddListener("EntityCreate", "gbuffer", function(ent)
-		if not console.GetVariable("render_deferred") then return end
-		if table.count(entities.GetAll()) ~= 0 then return end
-		if gbuffer_enabled then return end
-		local ok, err = system.pcall(render.InitializeGBuffer)
-		
-		if not ok then
-			warning("failed to initialize gbuffer: ", err)
-			render.EnableGBuffer(false)
-		end
-	end)
-	event.AddListener("EntityRemove", "gbuffer", function(ent)
-		if not console.GetVariable("render_deferred") then return end
-		if table.count(entities.GetAll()) ~= 0 then return end
-		
-		render.EnableGBuffer(false)
-	end)
+event.AddListener("EntityCreate", "gbuffer", function()
+	if gbuffer_enabled then return end
+
+	if not console.GetVariable("render_deferred") then return end
+	if table.count(entities.GetAll()) ~= 0 then return end
+	
+	render.InitializeGBuffer()
+end)
+
+event.AddListener("EntityRemove", "gbuffer", function(ent)
+	if gbuffer_enabled then return end
+
+	if not console.GetVariable("render_deferred") then return end
+	if table.count(entities.GetAll()) ~= 0 then return end
+	
+	render.ShutdownGBuffer()
 end)
 
 if RELOAD then
-	event.Delay(0.1, render.InitializeGBuffer)
+	render.InitializeGBuffer()
 end

@@ -178,6 +178,8 @@ function prototype.GetConfigurations()
 end
 
 function prototype.CreateEntity(config, parent, info)
+	event.Call("EntityCreate", config, parent, info)
+		
 	local self = prototype.CreateObject(META)
 	
 	if parent then
@@ -223,8 +225,6 @@ function prototype.CreateEntity(config, parent, info)
 		
 		self:SetPropertyIcon(prototype.component_configurations[config].icon)
 	end
-	
-	event.Call("EntityCreate", self)
 	
 	return self
 end
