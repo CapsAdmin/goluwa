@@ -11,6 +11,7 @@ local path_translate = {
 
 local property_translate = {
 	--IlluminationColor = {"selfillumtint"},
+	SSBump = {"ssbump", function(num) return num == 1 end},
 	DetailScale = {"detailscale"},
 	DetailBlendFactor = {"detailblendfactor"},
 	NoCull = {"nocull"},

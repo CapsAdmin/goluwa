@@ -57,11 +57,11 @@ PASS.Shader = {
 			{				
 				gl_Position = g_projection_view_world * vec4(pos, 1.0);
 				
-				out_normal = normalize(g_normal_matrix * vec4(normal, 1)).xyz;
+				out_normal = (g_normal_matrix * vec4(normal, 1)).xyz;
 				out_binormal = normalize(g_normal_matrix * vec4(binormal, 1)).xyz;
 				out_tangent = normalize(g_normal_matrix * vec4(tangent, 1)).xyz;
 				
-				view_normal = mat3(g_view_world) * pos;
+				view_normal = (mat3(g_view_world) * pos);
 				
 				dist = (g_view_world * vec4(pos, 1.0)).z;
 			}
@@ -209,7 +209,15 @@ PASS.Shader = {
 							normal_detail = mix(normal_detail, texture(lua[Normal2Texture = "texture"], uv), texture_blend);
 						}
 						
-						normal_buffer.xyz = cotangent_frame(normalize(normal), view_normal, uv) * ((normal_detail.xyz * 2 - 1).xyz * lua[NormalMapScale = Vec3(1,-1,1)]);
+						if (lua[SSBump = false])
+						{
+							// this is so wrong
+							normal_detail.xyz = normalize(normal_detail.xyz*0.5 + vec3(0,0,0.25*0.5));
+						}
+						
+						normal_detail.xyz = normalize(normal_detail.xyz * 2 - 1).xyz;
+					
+						normal_buffer.xyz = cotangent_frame(normalize(normal), normalize(view_normal), uv) * normal_detail.xyz * lua[NormalMapScale = Vec3(1,-1,1)];
 					}
 					else
 					{
@@ -217,7 +225,7 @@ PASS.Shader = {
 					}
 					
 					
-					normal_buffer.xyz = normalize(normal_buffer.xyz);
+					//normal_buffer.xyz = normalize(normal_buffer.xyz);
 					normal_buffer.a = normal_detail.a;
 				}
 
