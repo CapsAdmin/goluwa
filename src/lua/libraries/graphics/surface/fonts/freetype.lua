@@ -132,8 +132,8 @@ function META:Initialize()
 				local format = data:match("format%('(.-)'%)")
 				resource.Download(url, load, nil, crypto.CRC32(self.Path))
 			end
-		end, function()
-			llog("unable to find url for %s from google web fonts", self.Path)
+		end, function(reason)
+			llog("unable to download %s from google web fonts: %s", self.Path, reason)
 			
 			sockets.Download("http://dl.dafont.com/dl/?f=" .. self.Path:lower():gsub(" ", "_"), function(zip_content)
 				vfs.Write("data/temp_dafont.zip", zip_content)
@@ -144,7 +144,11 @@ function META:Initialize()
 						vfs.Write("downloads/cache/" .. crypto.CRC32(self.Path) .. ext, vfs.Read(base .."/".. v))
 					end
 				end
-			end)		
+			end, function(reason)
+				llog("unable to download %s from dafont: %s", self.Path, reason)
+				llog("loading default font instead")
+				load(surface.default_font_path)
+			end)
 		end)
 	end)
 end

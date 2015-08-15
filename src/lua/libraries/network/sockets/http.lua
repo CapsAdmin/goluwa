@@ -90,6 +90,13 @@ local function request(info)
 	
 	local socket = sockets.CreateClient("tcp")
 	socket.debug = info.debug
+	
+	function socket:OnError(reason)
+		if info.error_callback then
+			info.error_callback(reason)
+		end
+	end
+	
 	socket:SetTimeout(info.timeout)
 	
 	if info.ssl_parameters then 
@@ -286,7 +293,12 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 			end 
 			
 			if sockets.debug_download then logn("[sockets] downloading ", url) end
-		end
+		end,
+		error_callback = function(reason)
+			if on_fail then
+				on_fail(reason)
+			end
+		end,
 	})
 	
 	return true
