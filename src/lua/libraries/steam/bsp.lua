@@ -127,7 +127,7 @@ function steam.LoadMap(path)
 			os.execute("rm -f " .. dir)
 			os.execute("mkdir " .. dir)
 			vfs.PushWorkingDirectory(dir)
-				os.execute("unzip ../temp_bsp.zip")
+				os.execute("unzip -o ../temp_bsp.zip")
 			vfs.PopWorkingDirectory()
 			vfs.Mount(dir)
 		else

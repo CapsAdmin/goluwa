@@ -62,30 +62,26 @@ function META:Draw(count)
 	render.BindVertexArray(self.vao_id)
 	--render.BindArrayBuffer(self.vertices_id)	
 	gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
-	gl.DrawElements(self.gl_mode, count or self.indices_count, "GL_UNSIGNED_INT", nil)
+	gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
 end
 
-function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
+function META:UpdateBuffer(vertices, indices)
 	vertices = vertices or self.vertices
 	indices = indices or self.indices
 	
 	if vertices then
 		self.vertices = vertices
-		self.vertices_size = vertices_size or ffi.sizeof(vertices)
 		
 		render.BindArrayBuffer(self.vertices_id)
-		gl.BufferData("GL_ARRAY_BUFFER", self.vertices_size, vertices, "GL_STATIC_DRAW")
+		gl.BufferData("GL_ARRAY_BUFFER", self.vertices:GetSize(), vertices:GetPointer(), "GL_STATIC_DRAW")
 	end
 	
-	if indices and self.UpdateIndices then
-		indices_size = indices_size or ffi.sizeof(self.indices)
-		
+	if indices and self.UpdateIndices then		
 		self.indices = indices
-		self.indices_size = indices_size
-		self.indices_count = indices_size / ffi.sizeof("unsigned int")
+		self.indices_length = indices:GetLength() -- needed for drawing
 		
 		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
-		gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices_size, indices, "GL_STATIC_DRAW")
+		gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices:GetSize(), indices:GetPointer(), "GL_STATIC_DRAW")
 	end
 	
 	if not self.setup_vao then
@@ -101,7 +97,7 @@ function META:UpdateBuffer(vertices, indices, vertices_size, indices_size)
 	--logf("[render] updated %s with %s amount of data\n", self, utility.FormatFileSize(self.vertices_size + self.indices_size))
 end
 
-function META:UnreferenceMesh()
+function META:UnreferenceMesh()	
 	self.vertices = nil
 	self.indices = nil
 	collectgarbage("step")
