@@ -92,7 +92,10 @@ PASS.Shader = {
 			// https://www.shadertoy.com/view/MslGR8
 			bool dither(vec2 uv, float alpha)
 			{			
-				//{return alpha < 0.5;}
+				if (lua[AlphaTest = false])
+				{
+					return alpha*alpha < 0.5;
+				}
 			
 				vec2 ij = floor(mod( gl_FragCoord.xy, vec2(2.0)));
 				float idx = ij.x + 2.0*ij.y;
