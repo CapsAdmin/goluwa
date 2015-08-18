@@ -728,6 +728,7 @@ function steam.LoadModel(path, sub_model_callback)
 						for _, strip_group in ipairs(mesh_data.strip_groups) do
 							for _, strip in ipairs(strip_group.strips) do
 								for _, index in ipairs(strip.indices) do
+									WHAT = math.max(WHAT, strip.vertices[index].mesh_vertex_index + 1)
 									table.insert(indices, strip.vertices[index].mesh_vertex_index + WHAT2)
 								end
 							end
