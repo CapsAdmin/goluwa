@@ -196,8 +196,31 @@ local header = [[
 	int linear_bone_offset;
 ]]
 
+local function find_file(path, ...)
+	local extensions = {...}
+	local ok, err
+
+	for _, ext in ipairs(extensions) do
+		ok, err = vfs.Open(path .. ext)
+		if ok then return ok end
+	end
+	if not ok then
+		for k,v in pairs(vfs.Find(path:match("(.+/)"), nil, true)) do
+			if v:match(".+/(.+)%."):lower() == path:match(".+/(.+)"):lower() then
+				for _, ext in ipairs(extensions) do
+					if v:endswith(ext) then
+						return vfs.Open(v)
+					end
+				end
+			end
+		end
+	end
+	
+	return assert(ok, err)
+end
+
 local function load_mdl(path)
-	local buffer = assert(vfs.Open(path .. ".mdl"))
+	local buffer = find_file(path, ".mdl")
 
 	local header = buffer:ReadStructure(header)
 	header.name = "models/" .. header.name:removepadding():gsub("\\", "/")
@@ -430,7 +453,7 @@ end
 local function load_vtx(path)
 	local MAX_NUM_BONES_PER_VERT = 3
 
-	local buffer = vfs.Open(path .. ".dx90.vtx") or vfs.Open(path .. ".dx80.vtx") or vfs.Open(path .. ".sw.vtx") 
+	local buffer = find_file(path, ".dx90.vtx", ".dx80.vtx", ".sw.vtx")
 
 	local vtx = buffer:ReadStructure([[
 		long version;
@@ -574,7 +597,7 @@ local function load_vvd(path)
 	local MAX_NUM_LODS = 8
 	local MAX_NUM_BONES_PER_VERT = 3
 
-	local buffer = vfs.Open(path .. ".vvd")
+	local buffer = find_file(path, ".vvd")
 
 	local vvd = {lod_vertices_count = {}}
 
@@ -705,7 +728,6 @@ function steam.LoadModel(path, sub_model_callback)
 						for _, strip_group in ipairs(mesh_data.strip_groups) do
 							for _, strip in ipairs(strip_group.strips) do
 								for _, index in ipairs(strip.indices) do
-									WHAT = math.max(WHAT, strip.vertices[index].mesh_vertex_index + 1)
 									table.insert(indices, strip.vertices[index].mesh_vertex_index + WHAT2)
 								end
 							end
