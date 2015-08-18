@@ -68,7 +68,7 @@ function steam.LoadMaterial(path, material)
 				v = v2
 				k = k2
 			end
-			
+						
 			vmt = v
 			vmt.shader = k
 			vmt.fullpath = path
@@ -86,6 +86,26 @@ function steam.LoadMaterial(path, material)
 				end
 			end
 			
+			if not vmt.bumpmap and vmt.basetexture then
+				local new_path = vfs.FixPath(vmt.basetexture)
+				if not new_path:endswith(".vtf") then
+					new_path = new_path .. ".vtf"
+				end
+				new_path = new_path:gsub("%.vtf", "_normal.vtf")
+				if vfs.IsFile("materials/" .. new_path) then
+					vmt.bumpmap = new_path
+				else
+					new_path = new_path:lower()
+					if vfs.IsFile("materials/" .. new_path) then
+						vmt.bumpmap = new_path
+					end
+				end
+				
+				if vmt.bumpmap then
+					logf("normal map not defined in %s. using %s as normal map instead\n", material:GetName(), vmt.bumpmap)
+				end
+			end
+			
 			for key, field in pairs(path_translate) do
 				if vmt[field] then
 					local new_path = vfs.FixPath("materials/" .. vmt[field])
@@ -95,7 +115,6 @@ function steam.LoadMaterial(path, material)
 					resource.Download(
 						new_path,
 						function(path)
-							--vmt[field] = path
 							material["Set" .. key](material, Texture(path))
 						end
 					)
