@@ -126,29 +126,37 @@ function META:Initialize()
 			end
 		end
 	
-		sockets.Download("http://fonts.googleapis.com/css?family=" .. self.Path:gsub("%s", "+"), function(data)
-			local url = data:match("url%((.-)%)")
-			if url then
-				local format = data:match("format%('(.-)'%)")
-				resource.Download(url, load, nil, crypto.CRC32(self.Path))
-			end
-		end, function(reason)
-			llog("unable to download %s from google web fonts: %s", self.Path, reason)
-			
-			sockets.Download("http://dl.dafont.com/dl/?f=" .. self.Path:lower():gsub(" ", "_"), function(zip_content)
-				vfs.Write("data/temp_dafont.zip", zip_content)
-				local base = R("data/temp_dafont.zip") -- FIX ME
-				for i,v in pairs(vfs.Find(base .. "/")) do
-					if v:find(".ttf") then
-						local ext = v:match(".+(%.%a+)") or ".dat"
-						vfs.Write("downloads/cache/" .. crypto.CRC32(self.Path) .. ext, vfs.Read(base .."/".. v))
-					end
+		sockets.Download(
+			"http://fonts.googleapis.com/css?family=" .. self.Path:gsub("%s", "+"), 
+			function(data)
+				local url = data:match("url%((.-)%)")
+				if url then
+					local format = data:match("format%('(.-)'%)")
+					resource.Download(url, load, nil, crypto.CRC32(self.Path))
 				end
-			end, function(reason)
-				llog("unable to download %s from dafont: %s", self.Path, reason)
-				llog("loading default font instead")
-				load(surface.default_font_path)
-			end)
+			end, 
+			function(reason)
+				llog("unable to download %s from google web fonts: %s", self.Path, reason)
+				
+				sockets.Download(
+					"http://dl.dafont.com/dl/?f=" .. self.Path:lower():gsub(" ", "_"), 
+					function(zip_content)
+						vfs.Write("data/temp_dafont.zip", zip_content)
+						local base = R("data/temp_dafont.zip") -- FIX ME
+						for i,v in pairs(vfs.Find(base .. "/")) do
+							if v:find(".ttf") then
+								local ext = v:match(".+(%.%a+)") or ".dat"
+								vfs.Write("downloads/cache/" .. crypto.CRC32(self.Path) .. ext, vfs.Read(base .."/".. v))
+							end
+						end
+					end, 
+					function(reason)
+						llog("unable to download %s from dafont: %s", self.Path, reason)
+						llog("loading default font instead")
+						load(surface.default_font_path)
+					end,
+					crypto.CRC32(self.Path)
+				)
 		end)
 	end)
 end
