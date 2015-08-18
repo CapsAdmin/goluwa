@@ -45,8 +45,8 @@ PASS.Shader = {
 			{pos = "vec3"},
 			{uv = "vec2"},
 			{normal = "vec3"},
-			{tangent = "vec3"},
-			{binormal = "vec3"},
+			--{tangent = "vec3"},
+			--{binormal = "vec3"},
 			{texture_blend = "float"},
 		},
 		source = [[
@@ -58,8 +58,8 @@ PASS.Shader = {
 				gl_Position = g_projection_view_world * vec4(pos, 1.0);
 				
 				out_normal = (g_normal_matrix * vec4(normal, 1)).xyz;
-				out_binormal = normalize(g_normal_matrix * vec4(binormal, 1)).xyz;
-				out_tangent = normalize(g_normal_matrix * vec4(tangent, 1)).xyz;
+				//out_binormal = normalize(g_normal_matrix * vec4(binormal, 1)).xyz;
+				//out_tangent = normalize(g_normal_matrix * vec4(tangent, 1)).xyz;
 				
 				view_normal = (mat3(g_view_world) * pos);
 				
@@ -75,8 +75,8 @@ PASS.Shader = {
 			{pos = "vec3"},
 			{uv = "vec2"},
 			{normal = "vec3"},
-			{tangent = "vec3"},
-			{binormal = "vec3"},
+			--{tangent = "vec3"},
+			--{binormal = "vec3"},
 			{texture_blend = "float"},
 		},
 		source = [[
@@ -236,11 +236,7 @@ PASS.Shader = {
 				{
 					normal_buffer.a = -diffuse_buffer.a+1;
 				}
-				else if (lua[NormalAlphaMetallic = false])
-				{
-					normal_buffer.a = -normal_buffer.a+1;
-				}
-				else
+				else if (!lua[NormalAlphaMetallic = false])
 				{
 					normal_buffer.a = texture(lua[MetallicTexture = render.GetBlackTexture()], uv).r;
 				}
@@ -254,7 +250,7 @@ PASS.Shader = {
 					vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture()], get_screen_uv()).xyz * 2 - 1) * ((-(dist/(-min(diffuse_buffer.a, 0.9)+1))+1)-1)/10;
 					
 					reflection_buffer = texture(lua[CubeTexture = render.GetCubemapTexture()], noise + -(mat3(g_view_inverse) * reflect((g_view_world * vec4(pos, 1)).xyz, normal_buffer.xyz)).yzx);
-		
+
 					reflection_buffer.a = 1;
 				}
 		
