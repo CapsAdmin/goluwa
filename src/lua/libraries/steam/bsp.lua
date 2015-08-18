@@ -732,8 +732,14 @@ function steam.SpawnMapEntities(path, parent)
 					
 					--info._light.a = 1
 					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b)*info._light.a)
-					parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b, 0))
-					parent.world_params:SetSunIntensity(0.75)
+					parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b, 0)*0.25)
+					parent.world_params:SetSunIntensity(0.7)
+					
+					if path:find("esther") then
+					--	parent.world_params:SetSunIntensity(0)
+						parent.world_params:GetChildren()[1]:SetShadow(false)
+						parent.world_params:SetAmbientLighting(parent.world_params:GetAmbientLighting()*0.25)
+					end
 										
 				elseif info.classname:lower():find("light") and info._light then		
 					local ent = entities.CreateEntity("light", parent)
@@ -741,9 +747,9 @@ function steam.SpawnMapEntities(path, parent)
 					ent:SetPosition(info.origin * 0.0254)
 					ent:SetHideFromEditor(true)
 					
-					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1)^2)
+					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1)^1.5)
 					ent:SetSize(math.max(info._light.a, 25))
-					ent:SetIntensity(math.clamp(info._light.a, 0.25, 3))
+					ent:SetIntensity(math.clamp(info._light.a/15, 0.5, 3))
 					
 					if info._zero_percent_distance then
 						ent:SetSize(ent:GetSize() + info._zero_percent_distance*0.02)

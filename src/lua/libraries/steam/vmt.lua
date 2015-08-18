@@ -6,7 +6,7 @@ local path_translate = {
 	NormalTexture = "bumpmap",
 	Normal2Texture = "bumpmap2",
 	MetallicTexture = "envmapmask",
-	RoughnessTexture = "envmapmask",
+	RoughnessTexture = "phongexponenttexture",
 }
 
 local property_translate = {
@@ -19,8 +19,8 @@ local property_translate = {
 	Translucent = {"alphatest", "translucent", function(num) return num == 1 end},
 	NormalAlphaMetallic = {"normalmapalphaenvmapmask", function(num) return num == 1 end},
 	DiffuseAlphaMetallic = {"basealphaenvmapmask", function(num) return num == 1 end},
-	RoughnessMultiplier = {"phongexponent", function(num) return num/255 end},
-	MetallicMultiplier = {"phongboost", function(num) return num/100 end},
+	RoughnessMultiplier = {"phongexponent", function(num) return num/150 end},
+	MetallicMultiplier = {"phongboost", function(num) return num/30 end},
 }
 
 function steam.LoadMaterial(path, material)
@@ -106,6 +106,9 @@ function steam.LoadMaterial(path, material)
 				end
 			end
 			
+			material:SetRoughnessTexture(render.GetGreyTexture())
+			--aterial:SetMetallicTexture(render.GetBlackTexture())
+			
 			for key, field in pairs(path_translate) do
 				if vmt[field] then
 					local new_path = vfs.FixPath("materials/" .. vmt[field])
@@ -121,9 +124,8 @@ function steam.LoadMaterial(path, material)
 				end
 			end
 			
-			if material:GetMetallicMultiplier() == 0 then
-				material:SetMetallicMultiplier(0.1)
-			end
+			--material:SetRoughnessTexture(math.clamp(material:GetRoughnessTexture(), 0.05, 0.95))
+			
 			
 			material:SetNormalMapScale(Vec3(1,1,1))
 			

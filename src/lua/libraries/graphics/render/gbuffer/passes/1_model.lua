@@ -94,7 +94,7 @@ PASS.Shader = {
 			{			
 				if (lua[AlphaTest = false])
 				{
-					return alpha*alpha < 0.5;
+					return alpha*alpha < 0.25;
 				}
 			
 				vec2 ij = floor(mod( gl_FragCoord.xy, vec2(2.0)));
@@ -220,7 +220,7 @@ PASS.Shader = {
 						
 						normal_detail.xyz = normalize(normal_detail.xyz * 2 - 1).xyz;
 					
-						normal_buffer.xyz = cotangent_frame(normalize(normal), normalize(view_normal), uv) * normal_detail.xyz * lua[NormalMapScale = Vec3(1,-1,1)];
+						normal_buffer.xyz = cotangent_frame(normal, view_normal, uv) * normal_detail.xyz * lua[NormalMapScale = Vec3(1,-1,1)];
 					}
 					else
 					{
@@ -228,23 +228,26 @@ PASS.Shader = {
 					}
 					
 					
-					//normal_buffer.xyz = normalize(normal_buffer.xyz);
-					normal_buffer.a = normal_detail.a;
-				}
-
-				if (lua[DiffuseAlphaMetallic = false])
-				{
-					normal_buffer.a = -diffuse_buffer.a+1;
-				}
-				else if (!lua[NormalAlphaMetallic = false])
-				{
-					normal_buffer.a = texture(lua[MetallicTexture = render.GetBlackTexture()], uv).r;
+					normal_buffer.xyz = normalize(normal_buffer.xyz);
+					
+					if (lua[NormalAlphaMetallic = false])
+					{ 
+						normal_buffer.a = normal_detail.a*3;
+					}
+					else if (lua[DiffuseAlphaMetallic = false])
+					{
+						normal_buffer.a = diffuse_buffer.a;
+					}
+					else
+					{
+						normal_buffer.a = texture(lua[MetallicTexture = render.GetBlackTexture()], uv).r;
+					}
 				}
 				
 				diffuse_buffer.a = texture(lua[RoughnessTexture = render.GetGreyTexture()], uv).r;
-				
-				normal_buffer.a += lua[MetallicMultiplier = 0];
-				diffuse_buffer.a += lua[RoughnessMultiplier = 0];
+								
+				normal_buffer.a *= lua[MetallicMultiplier = 1];
+				diffuse_buffer.a *= lua[RoughnessMultiplier = 1];
 				
 				{				
 					vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture()], get_screen_uv()).xyz * 2 - 1) * ((-(dist/(-min(diffuse_buffer.a, 0.9)+1))+1)-1)/10;
