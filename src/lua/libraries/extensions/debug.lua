@@ -240,8 +240,8 @@ end
 function debug.dumpcall(level, line, info_match)
 	level = level + 1
 	local info = debug.getinfo(level)
-	local path = info.source:sub(2)
-	local currentline = info.currentline
+	local path = e.ROOT_FOLDER .. info.source:sub(2)
+	local currentline = line or info.currentline
 	
 	if info_match and info.func ~= info_match.func then 
 		return 
@@ -345,20 +345,17 @@ function debug.stepin()
 	
 	debug.debugging = true
 	
-	local first_time = true
-	local curinfo
-
 	local step
 	
-	step = function(mode, line)			
-		local ok = debug.dumpcall(2, line, curinfo)
+	local curses = require("ffi.curses")
 		
-		while ok do
-			if first_time then
-				first_time = false
-				break
-			end
-					
+	step = function(mode, line)		
+		console.Clear()
+		
+		debug.dumpcall(2, line)				
+		curses.doupdate()
+		
+		while debug.debugging do
 			local key = console.GetActiveKey()			
 			
 			if key == "KEY_SPACE" then
@@ -367,22 +364,18 @@ function debug.stepin()
 				console.ScrollLogHistory(1)
 				break
 			elseif key == "KEY_ENTER" then
-				curinfo = nil
 				debug.sethook(step, "r")
 				break
 			elseif key == "KEY_LEFT" then
 				debug.sethook(step, "r")
 				break
 			elseif key == "KEY_RIGHT" then
-				curinfo = nil
 				debug.sethook(step, "l")
 				break
 			elseif key == "KEY_NPAGE" then
-				curinfo = nil
 				debug.sethook(step, "c")
 				break
 			elseif key == "KEY_DOWN" then
-				curinfo = debug.getinfo(2) 
 				debug.sethook(step, "l")				
 				break
 			end
