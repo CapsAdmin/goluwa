@@ -26,7 +26,7 @@ function sockets.Shutdown()
 end
 
 function sockets.DebugPrint(self, ...)
-	if (self and self.debug) or sockets.debug then
+	if sockets.debug or (self and self.debug) then
 		local tbl = {}
 
 		for i = 1, select("#", ...) do

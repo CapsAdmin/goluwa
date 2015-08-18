@@ -45,8 +45,8 @@ local function download(from, to, callback, on_fail, on_header)
 				on_fail()
 			end
 		end, 
-		function()
-			on_fail()			
+		function(...)
+			on_fail(...)			
 		end, 
 		function(chunk)
 			file:Write(chunk)
@@ -83,10 +83,10 @@ local function download_from_providers(path, callback, on_fail)
 			provider .. path, 
 			path, 
 			callback,
-			function()
+			function(...)
 				failed = failed + 1
 				if failed == #resource.providers then
-					on_fail()
+					on_fail(...)
 				end
 			end,
 			function() 
@@ -112,7 +112,7 @@ function resource.Download(path, callback, on_fail, crc)
 	if path:find("^(.-)://") then 
 		url = path
 		local ext = url:match(".+(%.%a+)") or ".dat"
-		path = "os:cache/" .. (crc or crypto.CRC32(path)) .. ext
+		path = "cache/" .. (crc or crypto.CRC32(path)) .. ext
 	end
 	
 	local path2 = R(path)
@@ -152,8 +152,8 @@ function resource.Download(path, callback, on_fail, crc)
 				cb:stop(path, ...)
 				cb:uncache(path)
 			end, 
-			function(...) 
-				cb:callextra(path, "on_fail", path .. " not found")
+			function(...)
+				cb:callextra(path, "on_fail", ... or path .. " not found")
 				cb:uncache(path)
 			end, 
 			function()
@@ -172,8 +172,8 @@ function resource.Download(path, callback, on_fail, crc)
 				cb:stop(path, ...)
 				cb:uncache(path)
 			end,
-			function()
-				cb:callextra(path, "on_fail", path .. " not found")
+			function(...)
+				cb:callextra(path, "on_fail", ... or path .. " not found")
 				cb:uncache(path)
 			end
 		)
