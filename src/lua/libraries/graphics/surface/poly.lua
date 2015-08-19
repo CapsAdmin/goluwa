@@ -30,46 +30,46 @@ end
 	
 local function set_uv(self, i, x,y, w,h, sx,sy)
 	if not x then
-		self.vertices[i + 1].uv.A = 0
-		self.vertices[i + 1].uv.B = 1
+		self.Vertices[i + 1].uv.A = 0
+		self.Vertices[i + 1].uv.B = 1
 		
-		self.vertices[i + 0].uv.A = 0
-		self.vertices[i + 0].uv.B = 0
+		self.Vertices[i + 0].uv.A = 0
+		self.Vertices[i + 0].uv.B = 0
 		
-		self.vertices[i + 2].uv.A = 1
-		self.vertices[i + 2].uv.B = 0
+		self.Vertices[i + 2].uv.A = 1
+		self.Vertices[i + 2].uv.B = 0
 		
 		--
 		
-		self.vertices[i + 4].uv = self.vertices[i + 2].uv
+		self.Vertices[i + 4].uv = self.Vertices[i + 2].uv
 		
-		self.vertices[i + 3].uv.A = 1
-		self.vertices[i + 3].uv.B = 1
+		self.Vertices[i + 3].uv.A = 1
+		self.Vertices[i + 3].uv.B = 1
 		
-		self.vertices[i + 5].uv = self.vertices[i + 0].uv	
+		self.Vertices[i + 5].uv = self.Vertices[i + 0].uv	
 	else			
 		sx = sx or 1
 		sy = sy or 1
 		
 		y = -y - h
 		
-		self.vertices[i + 1].uv.A = x / sx
-		self.vertices[i + 1].uv.B = (y + h) / sy
+		self.Vertices[i + 1].uv.A = x / sx
+		self.Vertices[i + 1].uv.B = (y + h) / sy
 		
-		self.vertices[i + 0].uv.A = x / sx
-		self.vertices[i + 0].uv.B = y / sy
+		self.Vertices[i + 0].uv.A = x / sx
+		self.Vertices[i + 0].uv.B = y / sy
 		
-		self.vertices[i + 2].uv.A = (x + w) / sx
-		self.vertices[i + 2].uv.B = y / sy
+		self.Vertices[i + 2].uv.A = (x + w) / sx
+		self.Vertices[i + 2].uv.B = y / sy
 		
 		--
 		
-		self.vertices[i + 4].uv = self.vertices[i + 2].uv
+		self.Vertices[i + 4].uv = self.Vertices[i + 2].uv
 		
-		self.vertices[i + 3].uv.A = (x + w) / sx
-		self.vertices[i + 3].uv.B = (y + h) / sy
+		self.Vertices[i + 3].uv.A = (x + w) / sx
+		self.Vertices[i + 3].uv.B = (y + h) / sy
 		
-		self.vertices[i + 5].uv = self.vertices[i + 1].uv	
+		self.Vertices[i + 5].uv = self.Vertices[i + 1].uv	
 	end
 end
 
@@ -90,17 +90,17 @@ function META:SetVertex(i, x,y, u,v)
 		y = new_y + self.Y				
 	end
 		
-	self.vertices[i].pos.A = x
-	self.vertices[i].pos.B = y
+	self.Vertices[i].pos.A = x
+	self.Vertices[i].pos.B = y
 	
-	self.vertices[i].color.A = self.R
-	self.vertices[i].color.B = self.G
-	self.vertices[i].color.C = self.B
-	self.vertices[i].color.D = self.A
+	self.Vertices[i].color.A = self.R
+	self.Vertices[i].color.B = self.G
+	self.Vertices[i].color.C = self.B
+	self.Vertices[i].color.D = self.A
 	
 	if u and v then
-		self.vertices[i].uv.A = u
-		self.vertices[i].uv.B = v
+		self.Vertices[i].uv.A = u
+		self.Vertices[i].uv.B = v
 	end
 	
 	self.dirty = true
@@ -318,7 +318,7 @@ function surface.CreatePoly(size)
 
 	self.mesh = mesh
 	self.size = size
-	self.vertices = mesh.vertices
+	self.Vertices = mesh.Vertices
 
 	return self
 end

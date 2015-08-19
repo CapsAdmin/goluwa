@@ -3,9 +3,13 @@ local render = (...) or _G.render
 
 local META = prototype.CreateTemplate("vertex_buffer")
 
+prototype.StartStorable()
 prototype.GetSet(META, "UpdateIndices", true)
 prototype.GetSet(META, "Mode", "triangles")
 prototype.GetSet(META, "Shader")
+prototype.GetSet(META, "Vertices")
+prototype.GetSet(META, "Indices")
+prototype.EndStorable()
 
 local translate = {
 	points = "GL_POINTS", --Draws points on screen. Every vertex specified is a point.
@@ -42,7 +46,7 @@ function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
 	if vertices then
 		self:UpdateBuffer(shader:CreateBuffersFromTable(vertices, indices, is_valid_table))
 	end
-				
+	
 	return self
 end 
 
@@ -65,27 +69,10 @@ function META:Draw(count)
 	gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
 end
 
-function META:UpdateBuffer(vertices, indices)
-	vertices = vertices or self.vertices
-	indices = indices or self.indices
-	
-	if vertices then
-		self.vertices = vertices
-		
-		render.BindArrayBuffer(self.vertices_id)
-		gl.BufferData("GL_ARRAY_BUFFER", self.vertices:GetSize(), vertices:GetPointer(), "GL_STATIC_DRAW")
-	end
-	
-	if indices and self.UpdateIndices then		
-		self.indices = indices
-		self.indices_length = indices:GetLength() -- needed for drawing
-		
-		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
-		gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices:GetSize(), indices:GetPointer(), "GL_STATIC_DRAW")
-	end
-	
-	if not self.setup_vao then
-		render.BindVertexArray(self.vao_id)		
+local function setup_vertex_array(self)
+	if not self.setup_vao and self.Indices and self.Vertices then
+		gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
+		render.BindVertexArray(self.vao_id)
 			for _, data in ipairs(self.vertex_attributes) do
 				gl.EnableVertexAttribArray(data.location)
 				gl.VertexAttribPointer(data.location, data.arg_count, data.enum, false, data.stride, data.type_stride)
@@ -93,13 +80,46 @@ function META:UpdateBuffer(vertices, indices)
 		render.BindVertexArray(0)
 		self.setup_vao = true
 	end
+end
+
+function META:SetVertices(vertices)
+	self.Vertices = vertices
 	
-	--logf("[render] updated %s with %s amount of data\n", self, utility.FormatFileSize(self.vertices_size + self.indices_size))
+	gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
+	gl.BufferData("GL_ARRAY_BUFFER", vertices:GetSize(), vertices:GetPointer(), "GL_STATIC_DRAW")
+	gl.BindBuffer("GL_ARRAY_BUFFER", 0)
+	
+	setup_vertex_array(self)
+end
+
+function META:SetIndices(indices)
+	self.Indices = indices
+	
+	self.indices_length = indices:GetLength() -- needed for drawing
+	
+	gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
+	gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices:GetSize(), indices:GetPointer(), "GL_STATIC_DRAW")
+	gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", 0)
+	
+	setup_vertex_array(self)
+end
+
+function META:UpdateBuffer(vertices, indices)
+	vertices = vertices or self.Vertices
+	indices = indices or self.Indices
+	
+	if vertices then
+		self:SetVertices(vertices)
+	end
+	
+	if indices and self.UpdateIndices then		
+		self:SetIndices(indices)
+	end
 end
 
 function META:UnreferenceMesh()	
-	self.vertices = nil
-	self.indices = nil
+	self.Vertices = nil
+	self.Indices = nil
 	collectgarbage("step")
 end
 

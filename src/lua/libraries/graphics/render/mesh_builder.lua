@@ -35,46 +35,9 @@ function META:Upload(skip_unref)
 	self.mesh = render.CreateMesh(self.Vertices, self.Indices)
 		
 	-- don't store the geometry on the lua side
-	if not skip_unref then
+	if not skip_unref then		
 		self:UnreferenceVertices()
 	end
-end
-
-function META:SaveToFile(path)
-	--self.mesh = render.CreateMesh()
-	--self.mesh:UpdateBuffer(vertices, indices, vertices_size, indices_size)
-			
-	self.mesh = render.CreateMesh(self.Vertices, self.Indices)
-	
-	local vtx_count = #self.Vertices
-	local vtx = ffi.string(self.mesh.vertices, self.mesh.vertices_size) .. ffi.string(ffi.cast("uint32_t", vtx_count), ffi.sizeof("uint32_t"))
-	vfs.Write(path .. ".vtx", vtx)
-	
-	if self.Indices then
-		local idx_count = #self.Indices
-		local idx = ffi.string(self.mesh.indices, self.mesh.indices_size) .. ffi.string(ffi.cast("uint32_t", idx_count), ffi.sizeof("uint32_t"))
-		vfs.Write(path .. ".idx", idx)
-	end
-end
-
-function META:LoadFromFile(path)
-	self.mesh = render.CreateMesh(self.Vertices, self.Indices)
-	
-	local vtx = vfs.Read(path .. ".vtx")
-	local vtx_count = ffi.cast("uint32_t", vtx:sub(-ffi.sizeof("uint32_t")))
-	vtx = vtx:sub(ffi.sizeof("uint32_t") + 1)
-	
-	local idx = vfs.Read(path .. ".idx")
-	local idx_count
-	if idx then
-		idx_count = ffi.cast("uint32_t", idx:sub(-ffi.sizeof("uint32_t")))
-		idx = idx:sub(ffi.sizeof("uint32_t") + 1)
-	end
-	
-	print(vtx_count, idx_count, #vtx, idx and #idx)
-	
-	self.mesh = render.CreateMesh(vtx_count, idx_count)
-	self.mesh:UpdateBuffer(ffi.cast(self.mesh.vertices, vtx), idx and ffi.cast(self.mesh.indices, idx), #vtx, idx and #idx)
 end
 
 function META:UnreferenceVertices()
