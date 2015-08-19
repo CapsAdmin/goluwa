@@ -248,8 +248,8 @@ PASS.Shader = {
 				
 				if (normal_buffer.a == 0) 
 				{
-					normal_buffer.a = 0.25;
-					diffuse_buffer.a = 0.75;
+					normal_buffer.a = 0.05;
+					diffuse_buffer.a = 1;
 				}
 				
 								

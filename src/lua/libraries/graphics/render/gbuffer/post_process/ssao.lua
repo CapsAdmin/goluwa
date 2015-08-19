@@ -6,7 +6,7 @@ PASS.Default = true
 PASS.Source = [[	
 	float compare_depths( in float depth1, in float depth2 ) 
 	{
-		float diff = (depth2-(depth1-0.00001)) * 10000;
+		float diff = (depth2-(depth1-0.000001)) * 55000;
 		
 		return clamp(diff, 0.025, 0.1);
 	}
@@ -23,7 +23,7 @@ PASS.Source = [[
 
 		float ao = 0.0;
 		
-		float aoscale = 1.2;
+		float aoscale = 1.25;
 				
 		for (int i = 1; i < 16; i++)
 		{					
@@ -44,7 +44,7 @@ PASS.Source = [[
 
 	void main() 
 	{ 
-		out_color.rgb = texture(self, uv).rgb + (vec3(ssao()-1) / 4);
+		out_color.rgb = texture(self, uv).rgb * vec3(ssao());
 		out_color.a = 1; 
 	}
 ]]

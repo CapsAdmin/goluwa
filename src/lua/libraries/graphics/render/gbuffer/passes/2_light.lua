@@ -205,15 +205,14 @@ PASS.Shader = {
 				vec3 normal = get_view_normal(uv);				
 				
 				vec3 attenuate = get_attenuation(uv, view_pos, normal, 0.005);
-				float metallic = get_metallic(uv);
-				float roughness = get_roughness(uv)+0.05;
+				float metallic = get_metallic(uv)+0.01;
+				float roughness = get_roughness(uv)+0.1;
 				
-				vec3 reflection = texture(tex_reflection, uv).rgb * metallic*2;				
-				vec3 specular = vec3(get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, roughness, metallic))*2;
-				vec3 light = light_color.rgb * light_intensity;
+				vec3 reflection = texture(tex_reflection, uv).rgb;
+				vec3 specular = vec3(get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, roughness, metallic));
 				
-				out_color.rgb = texture(tex_diffuse, uv).rgb;
-				out_color.rgb += reflection * (specular + vec3(metallic));
+				out_color.rgb = mix(texture(tex_diffuse, uv).rgb, reflection, vec3(metallic));
+				out_color.rgb += specular;
 				out_color.rgb *= attenuate;
 			
 				out_color.a = 1;

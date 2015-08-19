@@ -749,7 +749,7 @@ function steam.SpawnMapEntities(path, parent)
 					
 					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1)^1.5)
 					ent:SetSize(math.max(info._light.a, 25))
-					ent:SetIntensity(math.clamp(info._light.a/15, 0.5, 3))
+					ent:SetIntensity(math.clamp(info._light.a/7, 0.5, 3))
 					
 					if info._zero_percent_distance then
 						ent:SetSize(ent:GetSize() + info._zero_percent_distance*0.02)
