@@ -220,23 +220,22 @@ PASS.Shader = {
 						
 						normal_detail.xyz = normalize(normal_detail.xyz * 2 - 1).xyz;
 					
-						normal_buffer.xyz = cotangent_frame(normal, view_normal, uv) * normal_detail.xyz * lua[NormalMapScale = Vec3(1,-1,1)];
+						normal_buffer.xyz = cotangent_frame(normalize(normal), normalize(view_normal), uv) * (normal_detail.xyz * lua[NormalMapScale = Vec3(1,-1,1)]);
 					}
 					else
 					{
 						normal_buffer.xyz = normal;
 					}
 					
-					
 					normal_buffer.xyz = normalize(normal_buffer.xyz);
 					
 					if (lua[NormalAlphaMetallic = false])
 					{ 
-						normal_buffer.a = normal_detail.a*3;
+						normal_buffer.a = normal_detail.a;
 					}
 					else if (lua[DiffuseAlphaMetallic = false])
 					{
-						normal_buffer.a = diffuse_buffer.a;
+						normal_buffer.a = -diffuse_buffer.a+1;
 					}
 					else
 					{
@@ -246,11 +245,19 @@ PASS.Shader = {
 				
 				diffuse_buffer.a = texture(lua[RoughnessTexture = render.GetGreyTexture()], uv).r;
 								
+				
+				if (normal_buffer.a == 0) 
+				{
+					normal_buffer.a = 0.25;
+					diffuse_buffer.a = 0.75;
+				}
+				
+								
 				normal_buffer.a *= lua[MetallicMultiplier = 1];
 				diffuse_buffer.a *= lua[RoughnessMultiplier = 1];
 				
 				{				
-					vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture()], get_screen_uv()).xyz * 2 - 1) * ((-(dist/(-min(diffuse_buffer.a, 0.9)+1))+1)-1)/10;
+					vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture()], get_screen_uv()).xyz * 2 - 1) * (dist * diffuse_buffer.a * diffuse_buffer.a);
 					
 					reflection_buffer = texture(lua[CubeTexture = render.GetCubemapTexture()], noise + -(mat3(g_view_inverse) * reflect((g_view_world * vec4(pos, 1)).xyz, normal_buffer.xyz)).yzx);
 

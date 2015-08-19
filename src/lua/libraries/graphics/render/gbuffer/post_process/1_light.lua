@@ -7,7 +7,8 @@ PASS.Source = [[
 		
 	void main()
 	{		
-		out_color = vec4(get_diffuse(uv) * get_light(uv), 1);
+		out_color.rgb = get_light(uv);
+		out_color.a = 1;
 	}
 ]]
 

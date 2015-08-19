@@ -31,7 +31,7 @@ for y = max-1, 0, -1 do
 	local ent = entities.CreateEntity("visual")
 	ent:SetModelPath("models/sphere.obj")
 	ent:SetPosition(Vec3():GetRandom(-0.2,0.2) + Vec3(x, y, 0)/1.8)
-	ent:SetSize(0.05 * math.randomf(1,1.45))
+	ent:SetSize(0.06 * math.randomf(1,1.45))
 	ent:SetAngles(Ang3(90,0,0):GetRandom())
 	ent:SetCull(false)
 	

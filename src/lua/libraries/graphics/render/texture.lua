@@ -328,7 +328,7 @@ function META:__copy()
 	return self
 end
 
-function META:SetPath(path, face)
+function META:SetPath(path, face, flip_y)
 	self.Path = path
 	
 	self.Loading = true
@@ -343,6 +343,10 @@ function META:SetPath(path, face)
 				self:SetInternalFormat(info.internal_format)
 				self:SetupStorage()
 			end
+			
+			if flip_y == nil then
+				flip_y = not full_path:endswith(".vtf")
+			end
 
 			self:Upload({
 				buffer = buffer,
@@ -350,7 +354,7 @@ function META:SetPath(path, face)
 				height = h,
 				format = info.format or "bgra",
 				face = face, -- todo
-				flip_y = not full_path:endswith(".vtf"),
+				flip_y = flip_y,
 			})
 		else
 			local reason = w or "unknown"
@@ -392,7 +396,7 @@ do -- todo
 	function META:LoadCubemap(path)
 		path = path:sub(0,-1)
 		for i, face in pairs(faces) do
-			self:SetPath(path .. face .. ".vtf", i)
+			self:SetPath(path:gsub("(%..+)", function(rest) return face .. rest end), i, false)
 		end
 	end
 end
