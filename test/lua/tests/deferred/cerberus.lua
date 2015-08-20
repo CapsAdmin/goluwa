@@ -241,6 +241,8 @@ for _,ent in pairs(ent:GetChildren()) do
 		mat:SetNormalTexture(Texture("textures/Cerberus_N.tga")) 
 		mat:SetRoughnessTexture(Texture("textures/Cerberus_R.tga"))
 		mat:SetMetallicTexture(Texture("textures/Cerberus_M.tga"))
+		mat:SetMetallicMultiplier(1)
+		mat:SetRoughnessMultiplier(1)
 
 		ent:SetMaterialOverride(mat)
 	end

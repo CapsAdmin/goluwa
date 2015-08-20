@@ -179,6 +179,7 @@ PASS.Shader = {
 						
 			void main()
 			{
+				//{diffuse_buffer = texture(DiffuseTexture, uv); return;}
 				//vec2 uv = steep_parallax(uv, 0.01, -view_normal);
 						
 				//if (texture(tex_discard, get_screen_uv()).r > 0) discard;
@@ -223,7 +224,7 @@ PASS.Shader = {
 						
 						normal_detail.xyz = normalize(normal_detail.xyz * 2 - 1).xyz;
 					
-						normal_buffer.xyz = cotangent_frame(normal, normalize(view_normal), uv) * (normal_detail.xyz * lua[NormalMapScale = Vec3(1,-1,1)]);
+						normal_buffer.xyz = cotangent_frame(normalize(normal), normalize(view_normal), uv) * (normal_detail.xyz * lua[NormalMapScale = Vec3(1,-1,1)]);
 					}
 					else
 					{
@@ -251,14 +252,14 @@ PASS.Shader = {
 				
 				if (normal_buffer.a == 0) 
 				{
-					normal_buffer.a = 0.05;
+					normal_buffer.a = 0.015;
 					diffuse_buffer.a = 1;
 				}
 				
 				normal_buffer.a *= lua[MetallicMultiplier = 1];
 				diffuse_buffer.a *= lua[RoughnessMultiplier = 1];
-								
-				vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture()], uv).xyz * vec3(2) - vec3(1)) * (dist * diffuse_buffer.a * diffuse_buffer.a * diffuse_buffer.a)*75;
+												
+				vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture()], uv).xyz * vec3(2) - vec3(1)) * (dist * diffuse_buffer.a * diffuse_buffer.a * diffuse_buffer.a)*5;
 				
 				reflection_buffer = texture(lua[CubeTexture = render.GetCubemapTexture()], (mat3(g_view_inverse) * reflect(reflect_dir, normal_buffer.xyz)).yzx + noise);
 				

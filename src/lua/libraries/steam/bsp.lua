@@ -732,8 +732,8 @@ function steam.SpawnMapEntities(path, parent)
 					
 					--info._light.a = 1
 					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b)*info._light.a)
-					parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b, 0)*0.25)
-					parent.world_params:SetSunIntensity(0.7)
+					--parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b, 0)*0.25)
+					parent.world_params:SetSunIntensity(1)
 					
 					if path:find("esther") then
 					--	parent.world_params:SetSunIntensity(0)

@@ -7,7 +7,7 @@ PASS.Source = [[
 		
 	void main()
 	{		
-		const float gamma = 0.5;
+		const float gamma = 0.75;
 		const float exposure = 2;
 				
 		// Exposure tone mapping

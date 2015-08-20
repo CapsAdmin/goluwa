@@ -26,7 +26,7 @@ console.AddCommand("clear", console.Clear)
 local tries = {
 	{path = "__MAPNAME__"},
 	{path = "maps/__MAPNAME__.obj"},
-	{path = "__MAPNAME__/__MAPNAME__.obj", callback =  function(ent) ent:SetSize(-0.01) ent:SetRotation(Quat(-1,0,0,1)) end},
+	{path = "__MAPNAME__/__MAPNAME__.obj", callback =  function(ent) ent:SetSize(0.01) ent:SetRotation(Quat(-1,0,0,1)) end},
 }
 
 console.AddCommand("map", function(name)

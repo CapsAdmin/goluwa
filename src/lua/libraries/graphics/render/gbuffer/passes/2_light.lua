@@ -145,6 +145,11 @@ PASS.Shader = {
 					attenuation *= get_shadow(uv, attenuation*0.0005);
 				}
 				
+				return light_color.rgb * attenuation * light_intensity;
+			}
+			
+			vec3 get_ambient()
+			{
 				if (lua[project_from_camera = false])
 				{
 					vec3 ambient = lua[light_ambient_color = Color(0,0,0)].rgb * light_intensity;
@@ -154,10 +159,8 @@ PASS.Shader = {
 						ambient = light_color.rgb * 0.75 * light_intensity;
 					}
 
-					return ambient + (light_color.rgb * attenuation);
+					return ambient;
 				}
-				
-				return light_color.rgb * attenuation * light_intensity;
 			}
 			
 			const float e = 2.71828182845904523536028747135;
@@ -199,21 +202,27 @@ PASS.Shader = {
 			}
 				
 			void main()
-			{				
+			{		
+				//{out_color.rgb = vec3(1); return;}
+			
 				vec2 uv = get_screen_uv();					
 				vec3 view_pos = get_view_pos(uv);
 				vec3 normal = get_view_normal(uv);				
 				
 				vec3 attenuate = get_attenuation(uv, view_pos, normal, 0.005);
+				vec3 ambient = get_ambient();
+				vec3 diffuse = texture(tex_diffuse, uv).rgb;
 				float metallic = get_metallic(uv)+0.025;
-				float roughness = get_roughness(uv)+0.01;
+				float roughness = get_roughness(uv);
 				
 				vec3 reflection = texture(tex_reflection, uv).rgb;
 				vec3 specular = vec3(get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, (pow(roughness, 3)) + 0.0005, metallic));
 				
-				out_color.rgb = mix(texture(tex_diffuse, uv).rgb, reflection, vec3(metallic));
-				out_color.rgb += specular;
-				out_color.rgb *= attenuate;
+				
+				out_color.rgb = diffuse * mix(vec3(1,1,1), reflection, metallic);
+				out_color.rgb += specular * attenuate;
+				out_color.rgb *= ambient + attenuate;
+			
 			
 				out_color.a = 1;
 			}
