@@ -167,7 +167,7 @@ PASS.Shader = {
 			  float NdotH = max(x, 0.0001);
 			  float cos2Alpha = NdotH * NdotH;
 			  float tan2Alpha = (cos2Alpha - 1.0) / cos2Alpha;
-			  float roughness2 = roughness * roughness;
+			  float roughness2 = roughness;
 			  float denom = 3.141592653589793 * roughness2 * cos2Alpha * cos2Alpha;
 			  return exp(tan2Alpha / roughness2) / denom;
 			}
@@ -205,11 +205,11 @@ PASS.Shader = {
 				vec3 normal = get_view_normal(uv);				
 				
 				vec3 attenuate = get_attenuation(uv, view_pos, normal, 0.005);
-				float metallic = get_metallic(uv)+0.01;
-				float roughness = get_roughness(uv)+0.1;
+				float metallic = get_metallic(uv)+0.025;
+				float roughness = get_roughness(uv)+0.01;
 				
 				vec3 reflection = texture(tex_reflection, uv).rgb;
-				vec3 specular = vec3(get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, roughness, metallic));
+				vec3 specular = vec3(get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, (pow(roughness, 3)) + 0.0005, metallic));
 				
 				out_color.rgb = mix(texture(tex_diffuse, uv).rgb, reflection, vec3(metallic));
 				out_color.rgb += specular;

@@ -256,6 +256,12 @@ local function init(width, height)
 	render.gbuffer_width = width
 	render.gbuffer_height = height
 	
+	local noise_size = Vec2() + math.pow2ceil(width)
+	if render.noise_texture:GetSize() ~= noise_size then
+		render.noise_texture = Texture(noise_size, "return vec4(random(uv*1), random(uv*2), random(uv*3), random(uv*4));")
+		render.noise_texture:SetMinFilter("nearest")
+	end
+	
 	if render.debug then
 		warning("initializing gbuffer: ", width, " ", height)
 	end 
