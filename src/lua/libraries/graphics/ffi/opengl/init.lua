@@ -34214,7 +34214,11 @@ function gl.Initialize(get_proc_address)
 				bind(self) return gl.IsTexture(texture)
 			end
 			function META:SubImage3D(level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
-				bind(self) return gl.TexSubImage3D(self.target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
+				bind(self)
+				if self.target == "GL_TEXTURE_CUBE_MAP" then
+					return gl.TexSubImage2D(gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + zoffset, level, xoffset, yoffset, width, height, format, type, pixels)
+				end
+				return gl.TexSubImage3D(self.target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
 			end
 			function META:CompressedSubImage2DEXT(texture, level, xoffset, yoffset, width, height, format, imageSize, bits)
 				bind(self) return gl.CompressedTextureSubImage2DEXT(texture, self.target, level, xoffset, yoffset, width, height, format, imageSize, bits)

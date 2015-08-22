@@ -686,8 +686,12 @@ function META:Upload(data)
 	if msg then
 		logn("==================================")
 		logn(tostring(self) .. ":Upload() failed")
+		logf("format = %s\n", TOENUM(data.format))
+		logf("type = %s\n", TOENUM(data.type))
+		logf("x,y,z = %s, %s, %s\n", data.x, y or 0, data.z or 0)
+		logf("w,h,d = %s, %s\n", data.width, data.height or 0, data.depth or 0)
+		logf("buffer = %s\n", data.buffer)
 		self:DumpInfo()
-		table.print(data)
 		warning("\n" .. msg, 2)
 	end
 	
@@ -971,13 +975,23 @@ function render.CreateTexture(type)
 	self.id = self.gl_tex.id -- backwards compatibility
 	
 	self.not_dsa = not gl.CreateTextures
-
-	self:SetWrapS("repeat")
-	self:SetWrapT("repeat")
-	self:SetWrapR("repeat")
-	self:SetMinFilter("linear_mipmap_linear")
-	self:SetMagFilter("linear")
-	self:SetAnisotropy(100)
+	
+	if type == "cube_map" then
+		self:SetWrapS("clamp_to_edge")
+		self:SetWrapT("clamp_to_edge")
+		self:SetWrapR("clamp_to_edge")
+		self:SetMinFilter("linear")
+		self:SetMagFilter("linear")
+		self:SetBaseLevel(0)
+		self:SetMaxLevel(0)
+	else
+		self:SetWrapS("repeat")
+		self:SetWrapT("repeat")
+		self:SetWrapR("repeat")
+		self:SetMinFilter("linear_mipmap_linear")
+		self:SetMagFilter("linear")
+		self:SetAnisotropy(100)
+	end
 	
 	return self
 end
