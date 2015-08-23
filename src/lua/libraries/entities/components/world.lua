@@ -6,7 +6,6 @@ function COMPONENT:OnAdd(ent)
 	prototype.SafeRemove(self.sun)
 	
 	self.sun = entities.CreateEntity("light", ent)
-	self.sun:SetLensFlare(true)
 	self.sun:SetName("sun")
 	self.sun:SetHideFromEditor(false)
 	self.sun:SetProjectFromCamera(true)
@@ -16,7 +15,7 @@ function COMPONENT:OnAdd(ent)
 		local gl = require("graphics.ffi.opengl")
 		local num = ffi.new("int[1]") 
 		gl.GetIntegerv("GL_MAX_TEXTURE_SIZE", num)
-		self.sun:SetShadowSize(tonumber(num[0])/2)
+		self.sun:SetShadowSize(math.min(tonumber(num[0])/2, 2048))
 	end
 	
 	self.sun:SetShadow(true)

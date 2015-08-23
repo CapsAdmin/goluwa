@@ -299,6 +299,7 @@ function render.CreateShader(data, vars)
 
 	-- these arent actually shaders
 	local shader_id = data.name data.name = nil
+	local force_bind = data.force data.force = nil
 	local base = data.base data.base = nil
 	local shared = data.shared data.shared = nil
 
@@ -878,7 +879,7 @@ function render.CreateShader(data, vars)
 					line = line:format(data.id)
 				end
 				
-				lua = lua .. "if render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self) and "
+				lua = lua .. "if render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self or self.force) and "
 				lua = lua .. "render.current_material."..data.key.." ~= nil then\n \tlocal val = render.current_material." .. data.key .. "\n\t" .. line .. "\nelse"
 				lua = lua .. "if self."..data.key.." ~= nil then\n\tlocal val = self."..data.key.."\n\tif val == nil then\n\t\tval = self.defaults."..data.key.."\n\tend\n\tif type(val) == 'function' then\n\t\tval = val()\n\tend\n\t"..line.."\nend\n\n"
 			end
@@ -908,6 +909,7 @@ function render.CreateShader(data, vars)
 	self.program_id = prog
 	self.shader_id = shader_id
 	self.build_output = build_output
+	self.force_bind = force_bind
 	
 	render.active_shaders[shader_id] = self
 	

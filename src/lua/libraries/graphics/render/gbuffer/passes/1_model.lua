@@ -215,7 +215,7 @@ PASS.Shader = {
 						{
 							normal_detail = mix(normal_detail, texture(lua[Normal2Texture = "texture"], uv), texture_blend);
 						}
-						
+ 
 						if (lua[SSBump = false])
 						{
 							// this is so wrong
@@ -228,7 +228,7 @@ PASS.Shader = {
 					}
 					else
 					{
-						normal_buffer.xyz = normal;
+						normal_buffer.xyz = normalize(normal);
 					}
 					
 					normal_buffer.xyz = normalize(normal_buffer.xyz);

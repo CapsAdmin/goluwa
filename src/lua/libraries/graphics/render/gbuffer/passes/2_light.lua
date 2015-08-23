@@ -10,7 +10,6 @@ PASS.Buffers = {
 
 function PASS:Draw3D()
 	render.EnableDepth(false)	
-	render.SetBlendMode("one", "one")
 	
 	render.gbuffer:WriteThese("light")
 	render.gbuffer:Clear("light")
@@ -20,7 +19,7 @@ function PASS:Draw3D()
 end
 
 function PASS:DrawDebug(i,x,y,w,h,size)
-	for name, map in pairs(render.shadow_maps) do
+	for name, map in pairs(prototype.GetCreated(true, "shadow_map")) do
 		local tex = map:GetTexture("depth")
 	
 		surface.SetWhiteTexture()
@@ -77,12 +76,8 @@ PASS.Shader = {
 				
 					float SampledDistance = texture(lua[tex_shadow_map_cube = "samplerCube"], light_dir).r;
 
-					float Distance = length(light_dir);
 
-					if (Distance <= SampledDistance + EPSILON)
-						return 100.0;
-					else
-						return SampledDistance;
+					visibility = SampledDistance;
 				}
 				else
 				{
@@ -92,7 +87,7 @@ PASS.Shader = {
 					if (shadow_coord.x > -1 && shadow_coord.x < 1 && shadow_coord.y > -1 && shadow_coord.y < 1 && shadow_coord.z > -1 && shadow_coord.z < 1)
 					{						
 						shadow_coord = 0.5 * shadow_coord + 0.5;
-						vec2 texelSize = 1.0 / textureSize(tex_shadow_map, 0);
+						vec2 texelSize = 1.0 / textureSize(tex_shadow_map, 0) / 2;
 						
 						for(int x = -1; x <= 1; ++x)
 						{
@@ -142,7 +137,7 @@ PASS.Shader = {
 				
 				if (lua[light_shadow = false])
 				{					
-					attenuation *= get_shadow(uv, attenuation*0.0005);
+					attenuation *= get_shadow(uv, attenuation*0.0025);
 				}
 				
 				return light_color.rgb * attenuation * light_intensity;

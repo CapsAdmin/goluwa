@@ -33507,8 +33507,8 @@ function gl.Initialize(get_proc_address)
 			function META:SetParameteri(target, pname, param)
 				bind(self, target) return gl.FramebufferParameteri(target, pname, param)
 			end
-			function META:Texture2D(target, attachment, textarget, texture, level)
-				bind(self, target) return gl.FramebufferTexture2DEXT(target, attachment, textarget, texture, level)
+			function META:Texture2D(attachment, textarget, texture, level)
+				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferTexture2DEXT("GL_FRAMEBUFFER", attachment, textarget, texture, level)
 			end
 			function META:DrawBuffersEXT(n, bufs)
 				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferDrawBuffersEXT(self.id, n, bufs)
