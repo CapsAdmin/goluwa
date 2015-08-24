@@ -196,6 +196,7 @@ end
 local gbuffer_enabled = false
 local w_cvar = console.CreateVariable("render_width", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 local h_cvar = console.CreateVariable("render_height", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
+local mult_cvar = console.CreateVariable("render_ss_multiplier", 1, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 
 function render.DrawGBuffer()
 	if not gbuffer_enabled then return end
@@ -248,6 +249,9 @@ local function init(width, height)
 	if h_cvar:Get() > 0 then height = h_cvar:Get() end
 	
 	if width == 0 or height == 0 then return end
+	
+	width = width * mult_cvar:Get()
+	height = height * mult_cvar:Get()
 	
 	render.camera_3d:SetViewport(Rect(0,0,width,height))
 	
