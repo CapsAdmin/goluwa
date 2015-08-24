@@ -228,7 +228,7 @@ PASS.Shader = {
 					}
 					else
 					{
-						normal_buffer.xyz = normalize(normal);
+						normal_buffer.xyz = normal;
 					}
 					
 					normal_buffer.xyz = normalize(normal_buffer.xyz);

@@ -239,7 +239,7 @@ end
 
 local function init(width, height)
 	if not RELOAD then
-		include("lua/libraries/graphics/render/gbuffer/passes/*")
+		include("lua/libraries/graphics/render/passes/*")
 	end
 
 	width = width or render.GetWidth()
@@ -324,7 +324,7 @@ local function init(width, height)
 	end
 	
 	if not RELOAD then
-		include("lua/libraries/graphics/render/gbuffer/post_process/*")
+		include("lua/libraries/graphics/render/post_process/*")
 	end
 	
 	for k,v in pairs(render.gbuffer_shaders_) do

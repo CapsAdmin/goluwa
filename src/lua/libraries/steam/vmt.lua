@@ -118,7 +118,11 @@ function steam.LoadMaterial(path, material)
 					resource.Download(
 						new_path,
 						function(path)
-							material["Set" .. key](material, Texture(path))
+							if key == "basetexture" or key == "basetexture2" then
+								material["Set" .. key](material, Texture(path))
+							else
+								material["Set" .. key](material, Texture(path, false)) -- not srgb
+							end
 						end
 					)
 				end

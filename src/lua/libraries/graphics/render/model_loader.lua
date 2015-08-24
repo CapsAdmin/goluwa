@@ -161,7 +161,7 @@ function render.LoadModel(path, callback, callback2, on_fail)
 							
 							if texture_path then
 								texture_path = find(texture_path)
-								material["Set"..method .. "Texture"](material, Texture(texture_path))
+								material["Set"..method .. "Texture"](material, Texture(texture_path, false))
 							end
 						end
 						

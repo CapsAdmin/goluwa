@@ -29,6 +29,7 @@ function render.Initialize()
 	end
 	
 	gl.Enable("GL_TEXTURE_CUBE_MAP")
+	gl.Enable("GL_FRAMEBUFFER_SRGB")
 		
 	include("lua/libraries/graphics/decoders/*")
 	
@@ -486,7 +487,7 @@ include("camera.lua", render)
 include("scene.lua", render)
 include("texture.lua", render)
 include("framebuffer.lua", render)
-include("gbuffer/gbuffer.lua", render)
+include("gbuffer.lua", render)
 include("vertex_buffer.lua", render)
 include("texture_atlas.lua", render)
 include("mesh_builder.lua", render)

@@ -39,6 +39,7 @@ META:GetSet("MipMapLevels", -1)
 META:GetSet("Path", "")
 META:IsSet("Loading", false)
 META:IsSet("InternalFormat", "rgba8")
+META:IsSet("SRGB", true)
 META:EndStorable()
 
 local texture_formats = {
@@ -419,6 +420,14 @@ function META:SetupStorage()
 	
 	self:SetMaxLevel(mip_map_levels)
 	self:SetBaseLevel(0)
+	
+	if self.SRGB then
+		if internal_format == "GL_RGB8" then
+			internal_format = "GL_SRGB8"
+		elseif internal_format == "GL_RGBA8" then
+			internal_format = "GL_SRGB8_ALPHA8"
+		end
+	end
 		
 	if self.StorageType == "3d" then
 		--[[self.gl_tex:Storage3D(
@@ -449,23 +458,17 @@ function META:SetupStorage()
 				self.Size.h
 			)
 		else
-			if self.StorageType == "cube_map" then
-				for i = 0, 5 do 
-					
-				end
-			else
-				self.gl_tex:Image2D(
-					"GL_TEXTURE_2D",
-					mip_map_levels,
-					gl.e[internal_format], 
-					self.Size.w,
-					self.Size.h,
-					0,
-					TOENUM(format.preferred_upload_format),
-					TOENUM(format.preferred_upload_type),
-					nil			
-				)
-			end
+			self.gl_tex:Image2D(
+				"GL_TEXTURE_2D",
+				mip_map_levels,
+				internal_format, 
+				self.Size.w,
+				self.Size.h,
+				0,
+				TOENUM(format.preferred_upload_format),
+				TOENUM(format.preferred_upload_type),
+				nil			
+			)
 		end
 	elseif self.StorageType == "1d" or self.StorageType == "1d_array" then		
 		--[[self.gl_tex:Storage1D(
@@ -1030,13 +1033,16 @@ end
 render.texture_path_cache = {}
 
 function Texture(...)
-	local path = ...
+	local path, srgb = ...
 	if type(path) == "string" then
 		if render.texture_path_cache[path] then 
 			return render.texture_path_cache[path] 
 		end
 		
 		local self = render.CreateTexture("2d")
+		if srgb ~= nil then 
+			self:SetSRGB(srgb) 
+		end
 		self:SetPath(path)
 		
 		render.texture_path_cache[path] = self

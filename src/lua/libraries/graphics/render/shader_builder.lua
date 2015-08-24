@@ -10,7 +10,7 @@ local unrolled_lines = {
 	number = "gl.Uniform1f(%i, val)",
 	vec2 = "gl.Uniform2f(%i, val.x, val.y)",
 	vec3 = "gl.Uniform3f(%i, val.x, val.y, val.z)",
-	color = "gl.Uniform4f(%i, val.r, val.g, val.b, val.a)",
+	color = "gl.Uniform4f(%i, val.r ^ 2.2, val.g ^ 2.2, val.b ^ 2.2, val.a)",
 	mat4 = "gl.UniformMatrix4fv(%i, 1, 0, val.ptr)",
 	texture = "render.BindTexture(val, %i, %i)",
 }

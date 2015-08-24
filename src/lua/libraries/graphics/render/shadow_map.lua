@@ -19,25 +19,10 @@ local SHADER = {
 		},
 		source = [[
 			out float depth;
-			
-			bool dither(vec2 uv, float alpha)
-			{			
-				if (lua[AlphaTest = false])
-				{
-					return alpha*alpha < 0.25;
-				}
-			
-				vec2 ij = floor(mod( gl_FragCoord.xy, vec2(2.0)));
-				float idx = ij.x + 2.0*ij.y;
-				vec4 m = step( abs(vec4(idx)-vec4(0,1,2,3)), vec4(0.5)) * vec4(0.75,0.25,0.00,0.50);
-				float d = m.x+m.y+m.z+m.w;
 				
-				return (alpha + d) < 0.9;
-			}
-			
 			void main()
 			{			
-				if (lua[Translucent = false] && dither(uv, texture(lua[DiffuseTexture = "sampler2D"], uv).r))
+				if ((lua[Translucent = false] || lua[AlphaTest = false]) && texture(lua[DiffuseTexture = "sampler2D"], uv).r < 0.5)
 				{
 					discard;
 				}
