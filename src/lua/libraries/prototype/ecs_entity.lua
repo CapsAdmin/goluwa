@@ -33,6 +33,7 @@ function META:AddComponent(name, ...)
 	end
 	
 	self.Components[name] = component
+	self[name] = component
 	
 	if not DEFER_COMPONENT_CHECKS_AND_EVENTS then
 		component:OnAdd(self, ...)
@@ -59,6 +60,9 @@ function META:RemoveComponent(name)
 		component:OnRemove(self)
 		component:Remove()
 	end
+	
+	self.Components[name] = nil
+	self[name] = nil
 end
 
 function META:GetComponent(name)		

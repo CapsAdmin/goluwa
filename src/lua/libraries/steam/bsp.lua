@@ -731,7 +731,7 @@ function steam.SpawnMapEntities(path, parent)
 					parent.world_params:SetSunAngles(Deg3(p or 0, y+180, 0))
 					
 					--info._light.a = 1
-					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b)*info._light.a)
+					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
 					--parent.world_params:SetAmbientLighting(Color(info._ambient.r, info._ambient.g, info._ambient.b, 0)*0.25)
 					parent.world_params:SetSunIntensity(1)
 					
@@ -787,7 +787,7 @@ end
 
 for k,v in pairs(entities.GetAll()) do 
 	if v:HasComponent("model") then 
-		local mesh = v:GetComponent("model").sub_models[1]
+		local mesh = v.model.sub_models[1]
 		if mesh and mesh.bump2 then
 			print(mesh.bump2) 
 		end

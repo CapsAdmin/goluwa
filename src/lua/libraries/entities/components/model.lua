@@ -21,7 +21,8 @@ COMPONENT.Network = {
 if GRAPHICS then 
 	function COMPONENT:Initialize()
 		self.sub_models = {}
-		self.next_visible = 0
+		self.next_visible = {}
+		self.visible = {}
 		self:SetModelPath(self.ModelPath)
 	end
 
@@ -119,18 +120,22 @@ if GRAPHICS then
 		end
 	end
 
-	function COMPONENT:Draw()	
-		render.camera_3d:SetWorld(self:GetComponent("transform"):GetMatrix())
+	function COMPONENT:Draw(what)	
+		local tr = self:GetComponent("transform")
+		render.camera_3d:SetWorld(tr:GetMatrix())
 
 		if self.corners then
 			local time = system.GetElapsedTime()
-			if self.next_visible < time then
-				self.visible = self:GetComponent("transform"):IsPointsVisible(self.corners, render.camera_3d:GetMatrices().projection_view)
-				self.next_visible = time + (1/15)
+			self.next_visible[what] = self.next_visible[what] or 0
+			self.visible[what] = self.visible[what] or {}
+			
+			if self.next_visible[what] < time then
+				self.visible[what] = tr:IsPointsVisible(self.corners, render.camera_3d:GetMatrices().projection_view)
+				self.next_visible[what] = time + (1/15)
 			end
 		end
 
-		if not self.Cull or self.visible == nil or self.visible == true then
+		if not self.Cull or self.visible[what] == nil or self.visible[what] == true then
 			if self.MaterialOverride then render.SetMaterial(self.MaterialOverride) end
 			for i, model in ipairs(self.sub_models) do				
 				if not self.MaterialOverride then render.SetMaterial(model.material) end

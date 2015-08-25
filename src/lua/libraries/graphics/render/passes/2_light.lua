@@ -5,7 +5,7 @@ local PASS = {}
 PASS.Stage, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 
 PASS.Buffers = {
-	{"light", "RGB16F"},
+	{"light", "rgb16f"},
 }
 
 function PASS:Draw3D()
@@ -198,7 +198,7 @@ PASS.Shader = {
 				
 			void main()
 			{		
-				//{out_color.rgb = vec3(1); return;}
+				//{out_color.rgb = vec3(0.1); out_color.a = 1; return;}
 			
 				vec2 uv = get_screen_uv();					
 				vec3 view_pos = get_view_pos(uv);

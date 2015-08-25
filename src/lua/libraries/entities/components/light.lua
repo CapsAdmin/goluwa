@@ -70,9 +70,10 @@ if GRAPHICS then
 		render.gbuffer_light_shader.light_radius = transform:GetSize()		
 		
 		render.SetShaderOverride(render.gbuffer_light_shader)
-		render.SetCullMode("front")
+		--render.SetCullMode("back")
 		render.SetBlendMode("one", "one")
 		self.light_mesh:Draw()
+		--render.SetCullMode("front")
 	end
 	
 	function COMPONENT:DrawScene(projection, rot, pos)
@@ -94,7 +95,7 @@ if GRAPHICS then
 		-- render the scene with this matrix
 		render.camera_3d:SetProjection(projection)
 		render.gbuffer_light_shader.light_projection_view = render.camera_3d:GetMatrices().projection_view
-		render.Draw3DScene()
+		render.Draw3DScene("shadows")
 	end
 
 	function COMPONENT:DrawShadowMap(ortho_divider)

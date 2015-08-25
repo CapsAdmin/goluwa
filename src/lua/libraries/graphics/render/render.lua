@@ -369,12 +369,20 @@ do
 		max = gl.e.GL_MAX,
 	} or {}
 
+	local enabled
+
 	function render.SetBlendMode(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
 
 		if src_color then
-			gl.Enable("GL_BLEND")
+			if not enabled then
+				gl.Enable("GL_BLEND")
+				enabled = true
+			end
 		else
-			gl.Disable("GL_BLEND")
+			if enabled then
+				gl.Disable("GL_BLEND")
+				enabled = false
+			end
 			return
 		end
 		

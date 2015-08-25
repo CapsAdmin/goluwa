@@ -47,7 +47,7 @@ end
 
 render.scene_3d = render.scene_3d or {}
 
-function render.Draw3DScene()
+function render.Draw3DScene(what)
 	--[[local cam_pos = render.camera_3d:GetPosition()
 	
 	table.sort(render.scene_3d, function(a, b)
@@ -58,7 +58,7 @@ function render.Draw3DScene()
 	end)]]
 	
 	for i, model in ipairs(render.scene_3d) do
-		model:Draw()
+		model:Draw(what)
 	end
 end
 
@@ -75,7 +75,7 @@ function render.DrawScene(skip_2d)
 		render.EnableDepth(true)
 		render.SetBlendMode("alpha")	
 
-		render.Draw3DScene()
+		render.Draw3DScene("models")
 	end
 	
 	if skip_2d then return end

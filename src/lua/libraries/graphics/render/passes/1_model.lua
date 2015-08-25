@@ -34,7 +34,7 @@ function PASS:Draw3D()
 	
 	render.gbuffer:Begin()
 		event.Call("PreGBufferModelPass")
-		render.Draw3DScene()
+		render.Draw3DScene("models")
 		event.Call("PostGBufferModelPass")
 	render.gbuffer:End()
 end
