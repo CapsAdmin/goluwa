@@ -409,7 +409,6 @@ end
 function META:SetupStorage()
 	render.StartDebug()
 	
-	local format = self:GetFormatInfo()
 	local internal_format = TOENUM(self.InternalFormat)
 	
 	local mip_map_levels = self.MipMapLevels
@@ -437,25 +436,29 @@ function META:SetupStorage()
 	end
 		
 	if self.StorageType == "3d" then
-		--[[self.gl_tex:Storage3D(
-			levels,
-			TOENUM(self.InternalFormat), 
-			self.Size.w, 
-			self.Size.h, 
-			self.Depth
-		)]]
-		self.gl_tex:Image3D(
-			"GL_TEXTURE_3D",
-			mip_map_levels,
-			internal_format, 
-			self.Size.w,
-			self.Size.h,
-			self.Depth,
-			0,
-			TOENUM(format.preferred_upload_format),
-			TOENUM(format.preferred_upload_type),
-			nil
-		)
+		if gl.TexStorage3D then
+			self.gl_tex:Storage3D(
+				levels,
+				TOENUM(self.InternalFormat), 
+				self.Size.w, 
+				self.Size.h, 
+				self.Depth
+			)
+		else
+			local format = self:GetFormatInfo()
+			self.gl_tex:Image3D(
+				"GL_TEXTURE_3D",
+				mip_map_levels,
+				internal_format, 
+				self.Size.w,
+				self.Size.h,
+				self.Depth,
+				0,
+				TOENUM(format.preferred_upload_format),
+				TOENUM(format.preferred_upload_type),
+				nil
+			)
+		end
 	elseif self.StorageType == "2d" or self.StorageType == "rectangle" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then		
 		if gl.TexStorage2D then
 			self.gl_tex:Storage2D(
@@ -465,6 +468,7 @@ function META:SetupStorage()
 				self.Size.h
 			)
 		else
+			local format = self:GetFormatInfo()
 			self.gl_tex:Image2D(
 				"GL_TEXTURE_2D",
 				mip_map_levels,
@@ -478,21 +482,25 @@ function META:SetupStorage()
 			)
 		end
 	elseif self.StorageType == "1d" or self.StorageType == "1d_array" then		
-		--[[self.gl_tex:Storage1D(
-			levels,
-			TOENUM(self.InternalFormat), 
-			self.Size.w
-		)]]
-		self.gl_tex:Image1D(
-			"GL_TEXTURE_1D",
-			mip_map_levels,
-			internal_format, 
-			self.Size.w,
-			0,
-			TOENUM(format.preferred_upload_format),
-			TOENUM(format.preferred_upload_type),
-			nil
-		)
+		if gl.TexStorage1D then			
+			self.gl_tex:Storage1D(
+				levels,
+				TOENUM(self.InternalFormat), 
+				self.Size.w
+			)
+		else
+			local format = self:GetFormatInfo()
+			self.gl_tex:Image1D(
+				"GL_TEXTURE_1D",
+				mip_map_levels,
+				internal_format, 
+				self.Size.w,
+				0,
+				TOENUM(format.preferred_upload_format),
+				TOENUM(format.preferred_upload_type),
+				nil
+			)
+		end
 	end
 	
 	local msg = render.StopDebug()
@@ -518,6 +526,8 @@ function META:Upload(data)
 	data.mip_map_level = data.mip_map_level or 0
 	data.format = data.format or "rgba"
 	data.type = data.type or "unsigned_byte"
+	data.width = data.width or self:GetSize().w
+	data.height = data.height or self:GetSize().h
 	
 	if type(data.buffer) == "string" then 
 		data.buffer = ffi.cast("uint8_t *", data.buffer) 
@@ -660,7 +670,6 @@ function META:Upload(data)
 				data.width, 
 				data.height, 
 				TOENUM(data.format), 
-				TOENUM(data.type), 
 				data.image_size, 
 				data.buffer
 			)

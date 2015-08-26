@@ -34220,8 +34220,8 @@ function gl.Initialize(get_proc_address)
 				end
 				return gl.TexSubImage3D(self.target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
 			end
-			function META:CompressedSubImage2DEXT(texture, level, xoffset, yoffset, width, height, format, imageSize, bits)
-				bind(self) return gl.CompressedTextureSubImage2DEXT(texture, self.target, level, xoffset, yoffset, width, height, format, imageSize, bits)
+			function META:CompressedSubImage2D(level, xoffset, yoffset, width, height, format, imageSize, bits)
+				bind(self) return gl.CompressedTexSubImage2D(self.target, level, xoffset, yoffset, width, height, format, imageSize, bits)
 			end
 			function META:CompressedImage3D(texture, level, internalformat, width, height, depth, border, imageSize, bits)
 				bind(self) return gl.CompressedTextureImage3DEXT(texture, self.target, level, internalformat, width, height, depth, border, imageSize, bits)
