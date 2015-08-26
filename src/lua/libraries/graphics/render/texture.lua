@@ -421,12 +421,19 @@ function META:SetupStorage()
 	self:SetMaxLevel(mip_map_levels)
 	self:SetBaseLevel(0)
 	
-	if self.SRGB then
+	if self.SRGB and SRGB then
 		if internal_format == "GL_RGB8" then
 			internal_format = "GL_SRGB8"
 		elseif internal_format == "GL_RGBA8" then
 			internal_format = "GL_SRGB8_ALPHA8"
 		end
+	end
+	
+	if MESA and (internal_format:endswith("16F") or internal_format:endswith("32F")) and not internal_format:endswith("DEPTH_COMPONENT32F") then
+		local old = internal_format
+		internal_format = internal_format:gsub("16F", "8_SNORM")
+		internal_format = internal_format:gsub("32F", "8_SNORM")
+		llog("translating %q to %q", old, internal_format)
 	end
 		
 	if self.StorageType == "3d" then
@@ -611,18 +618,35 @@ function META:Upload(data)
 				data.buffer
 			)
 		else
-			self.gl_tex:SubImage3D(
-				data.mip_map_level, 
-				data.x, 
-				y, 
-				data.z, 
-				data.width, 
-				data.height, 
-				data.depth, 
-				TOENUM(data.format), 
-				TOENUM(data.type), 
-				data.buffer
-			)
+			if MESA then
+				print(
+					"self.gl_tex:SubImage3D(",
+					data.mip_map_level, 
+					data.x, 
+					y, 
+					data.z, 
+					data.width, 
+					data.height, 
+					data.depth, 
+					TOENUM(data.format), 
+					TOENUM(data.type), 
+					data.buffer,
+					")"
+				)					
+			else
+				self.gl_tex:SubImage3D(
+					data.mip_map_level, 
+					data.x, 
+					y, 
+					data.z, 
+					data.width, 
+					data.height, 
+					data.depth, 
+					TOENUM(data.format), 
+					TOENUM(data.type), 
+					data.buffer
+				)
+			end
 		end		
 	elseif self.StorageType == "2d" or self.StorageType == "1d_array" or self.StorageType == "rectangle" then		
 		data.x = data.x or 0
@@ -695,7 +719,7 @@ function META:Upload(data)
 		logf("w,h,d = %s, %s\n", data.width, data.height or 0, data.depth or 0)
 		logf("buffer = %s\n", data.buffer)
 		self:DumpInfo()
-		warning("\n" .. msg, 2)
+		warning("\n" .. msg)
 	end
 	
 	return self

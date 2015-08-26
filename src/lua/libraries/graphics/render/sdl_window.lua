@@ -223,12 +223,11 @@ do -- window meta
 		if not render.gl_context then
 			sdl.Init(sdl.e.SDL_INIT_VIDEO)
 			sdl.video_init = true
-
-		--	sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MAJOR_VERSION, 4)
-		--	sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MINOR_VERSION, 4)
+			--sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MAJOR_VERSION, 3)
+			--sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MINOR_VERSION, 3)
 			
 			sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_FLAGS, sdl.e.SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG)
-			sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_PROFILE_MASK, sdl.e.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY)
+			--sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_PROFILE_MASK, sdl.e.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY)
 		end
 		
 		local bit_flags = bit.bor(sdl.e.SDL_WINDOW_OPENGL, sdl.e.SDL_WINDOW_SHOWN, sdl.e.SDL_WINDOW_RESIZABLE)
@@ -258,7 +257,6 @@ do -- window meta
 			local context = sdl.GL_CreateContext(ptr)
 			
 			if context == nil then
-				self:Remove()
 				error("sdl.GL_CreateContext failed: " .. ffi.string(sdl.GetError()), 2)
 			end
 			sdl.GL_MakeCurrent(ptr, context)
@@ -271,7 +269,6 @@ do -- window meta
 			gl.Initialize()
 			
 			if not gl.GetString then
-				self:Remove()
 				error("gl.Initialize failed! (gl.GetString not found)", 2)
 			end
 			

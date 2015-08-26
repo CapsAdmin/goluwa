@@ -1,6 +1,6 @@
 local steam = ... or steam
 
-if CODEXL then return end
+if EXTERNAL_OPENGL_DEBUGGER then return end
 
 local steamworks = desire("steam.ffi.steamworks")
 

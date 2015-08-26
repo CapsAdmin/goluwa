@@ -26,13 +26,21 @@ do -- constants
 		"SOUND",
 		"DEBUG",
 		"DISABLE_CURSES",
-		"CODEXL",
+		"SRGB",
 	}
 	
 	for _, key in pairs(env_vars) do
-		if os.getenv(key) == "1" and _G[key] == nil then
-			_G[key] = true
+		if  _G[key] == nil  then
+			if os.getenv(key) == "0" then
+				_G[key] = false
+			elseif os.getenv(key) == "1" then
+				_G[key] = true
+			end
 		end
+	end
+	
+	if os.getenv("CODEXL") == "1" or os.getenv("MESA_DEBUG") == "1" then
+		EXTERNAL_OPENGL_DEBUGGER = true
 	end
 	
 	-- assume client if nothing was provided
@@ -42,6 +50,7 @@ do -- constants
 	
 	if SOUND == nil then SOUND = true end
 	if GRAPHICS == nil then GRAPHICS = true end
+	if SRGB == nil then SRGB = true end
 	
 	do -- write them to output
 		io.write("constants:\n")

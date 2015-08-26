@@ -101,7 +101,7 @@ function render.CreateFrameBuffer(width, height, textures)
 		if not textures then
 			textures = {
 				attach = "color",
-				internal_format = "rgba32f",
+				internal_format = "rgba8",
 			}
 		end
 	end
@@ -185,7 +185,7 @@ function META:CheckCompletness()
 			v.tex:DumpInfo()
 		end
 		
-		error(str, 2)
+		warning(str)
 	end
 end
 
@@ -266,7 +266,11 @@ function META:SetTexture(pos, tex, mode, uid)
 	if typex(tex) == "texture" then
 		local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
 	
-		self.fb:Texture(pos, id, 0)
+		if MESA then
+			self.fb:Texture2D(pos, "GL_TEXTURE_2D", id, 0)
+		else
+			self.fb:Texture(pos, id, 0)
+		end
 		
 		if id ~= 0 then			
 			self.textures[uid] = {

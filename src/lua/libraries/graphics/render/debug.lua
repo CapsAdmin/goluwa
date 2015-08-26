@@ -82,7 +82,7 @@ local types = {
 }
 
 function render.StartDebug()
-	if CODEXL then return end
+	if EXTERNAL_OPENGL_DEBUGGER then return end
 	if render.verbose_debug then return end
 	
 	if gl.DebugMessageControl then
@@ -95,7 +95,7 @@ function render.StartDebug()
 end
 
 function render.StopDebug()
-	if CODEXL then return end
+	if EXTERNAL_OPENGL_DEBUGGER then return end
 	if render.verbose_debug then return end
 	
 	if gl.DebugMessageControl then
@@ -115,15 +115,18 @@ function render.StopDebug()
 			for i = 0, int[0] do
 				local types = ffi.new("GLenum[1]")
 				if gl.GetDebugMessageLog(1, length, nil, types, nil, nil, nil, buffer) ~= 0 and types[0] == gl.e.GL_DEBUG_TYPE_ERROR then
-					table.insert(message, ffi.string(buffer))
+					local str = ffi.string(buffer)
+					table.insert(message, str)
 				end
 			end
 			
 			message = table.concat(message, "\n")
+			
+			if message == "" then message = nil end
 		end
 		
 		gl.Disable("GL_DEBUG_OUTPUT")
-		
+				
 		return message
 	else
 		-- todo

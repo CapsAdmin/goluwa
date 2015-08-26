@@ -19,17 +19,20 @@ function render.Initialize()
 		OPENGL_ES = true
 	end
 	
-	local vendor = render.GetVendor()
-	
-	if vendor:lower():find("nvidia") then
-		NVIDIA = true
-	elseif vendor:lower():find("ati") or vendor:lower():find("amd") then
-		ATI = true
-		-- AMD = true grr cpus
+	do
+		local vendor = render.GetVendor():lower()
+		if vendor:find("nvidia") then NVIDIA = true end
+		if vendor:find("ati") then ATI = true end
+		if vendor:find("amd") then AMD = true end
+		if vendor:find("mesa") or vendor:find("open source technology center") then MESA = true end
+		if vendor:find("intel") then INTEL = true end
 	end
 	
 	gl.Enable("GL_TEXTURE_CUBE_MAP")
-	gl.Enable("GL_FRAMEBUFFER_SRGB")
+	
+	if SRGB then
+		gl.Enable("GL_FRAMEBUFFER_SRGB")
+	end
 		
 	include("lua/libraries/graphics/decoders/*")
 	

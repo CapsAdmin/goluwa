@@ -10,10 +10,14 @@ local unrolled_lines = {
 	number = "gl.Uniform1f(%i, val)",
 	vec2 = "gl.Uniform2f(%i, val.x, val.y)",
 	vec3 = "gl.Uniform3f(%i, val.x, val.y, val.z)",
-	color = "gl.Uniform4f(%i, val.r ^ 2.2, val.g ^ 2.2, val.b ^ 2.2, val.a)",
+	color = "gl.Uniform4f(%i, val.r, val.g, val.b, val.a)",
 	mat4 = "gl.UniformMatrix4fv(%i, 1, 0, val.ptr)",
 	texture = "render.BindTexture(val, %i, %i)",
 }
+
+if SRGB then
+	unrolled_lines.color = "gl.Uniform4f(%i, val.r ^ 2.2, val.g ^ 2.2, val.b ^ 2.2, val.a)"
+end
 
 unrolled_lines.vec4 = unrolled_lines.color
 unrolled_lines.sampler2D = unrolled_lines.texture
@@ -223,7 +227,13 @@ local function variables_to_string(type, variables, prepend, macro, array)
 			end
 
 			if data.type == "sampler2D" or data.type == "samplerCube" then
-				table.insert(out, ("layout(binding = %i) %s %s %s %s %s%s;"):format(texture_channel, data.varying, type, data.precision, data.type, name, array):trim())
+				local layout = ("layout(binding = %i)"):format(texture_channel)
+				
+				if tonumber(render.GetShadingLanguageVersion():match("(.-) ")) <= 3.3 then
+					layout = ""
+				end
+				
+				table.insert(out, ("%s %s %s %s %s %s%s;"):format(layout, data.varying, type, data.precision, data.type, name, array):trim())
 				texture_channel = texture_channel + 1
 			else	
 				table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
