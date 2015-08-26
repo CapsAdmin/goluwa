@@ -403,10 +403,7 @@ unsigned char	lowResImageWidth;	// Low resolution image width.
 unsigned char	lowResImageHeight;	// Low resolution image height.
 ]]
 
-steam.MountSourceGame("Half-Life 2")
-
-local vmt = steam.LoadMaterial("nature/blenddirtgrass001a")
-local buffer = vfs.Open(vmt.basetexture)
+local buffer = vfs.Open("materials/nature/grassfloor002a.vtf")
 local vtf = buffer:ReadStructure(vtf_header_structure)
 
 local version = vtf.version[1] * 10 + vtf.version[2]
@@ -549,16 +546,13 @@ vtf.lowResImageFormat = nil
 buffer:SetPosition(vtf.headerSize)
   
 for k,v in pairs(vtf.textures) do
-	v.tex = Texture{
-		mip_map_levels = 0,
-		width = v.width,
-		height = v.height, 
-		buffer = v.buffer, 
-		size = v.size,  
-		parameters = {
-			upload_format = "compressed_rgb_s3tc_dxt1",
-		}
-	}
+	local tex = render.CreateTexture("2d")
+	tex:SetSize(Vec2(v.width, v.height))
+	tex:SetInternalFormat("compressed_rgb_s3tc_dxt1_ext")
+	tex:Upload({
+		image_size = v.size,
+		buffer = v.buffer,
+	})
 end  
  
 event.AddListener("Draw2D", "vtf", function()
