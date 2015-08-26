@@ -442,6 +442,6 @@ input.Bind("y", "show_chat", function()
 	chat.Open()
 end)
 
-input.Bind("`", "show_chat_console", function()
+input.Bind("|", "show_chat_console", function()
 	chat.Open("console")
 end)
