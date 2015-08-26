@@ -247,7 +247,6 @@ do -- generic get set
 	
 	GET_SET("Velocity", Vec3())
 	GET_SET("AngularVelocity", Vec3())
-	GET_SET("InvInertiaDiagLocal", Vec3())
 	
 	GET_SET("AngularFactor", Vec3())
 	GET_SET("LinearFactor", Vec3())
