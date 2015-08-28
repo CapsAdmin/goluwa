@@ -4,6 +4,10 @@ function META:SetCaretPosition(x, y)
 	self.caret_pos = self:CaretFromPosition(x, y)
 end
 
+function META:GetCaretPosition()
+	return self.caret_pos
+end
+
 function META:GetCaretSubPosition()
 	local caret = self.caret_pos
 	return self:GetSubPosFromPosition(caret.x, caret.y)

@@ -661,6 +661,7 @@ if not DISABLE_CURSES then
 		
 		CTL_DEL = "delete",
 		CTL_BACKSPACE = "backspace",
+		CTL_ENTER = "enter",
 		
 		KEY_PAGEUP = "page_up",
 		KEY_PAGEDOWN = "page_down",
@@ -919,7 +920,6 @@ if not DISABLE_CURSES then
 		local resize = h ~= console.input_height
 		
 		console.input_height = h
-		c.markup:SetMultiline(h > 1)		
 		
 		if resize then
 			console.SetSize(curses.COLS, curses.LINES)
@@ -936,11 +936,11 @@ if not DISABLE_CURSES then
 		
 		curses.wresize(c.log_window, console.max_lines, w)
 		curses.werase(c.log_window)
+		
 		for _, v in pairs(log_history) do
 			console.SyntaxPrint(v, c.log_window)
 		end
-		console.SetScroll()
-				
+
 		if c.status_window then
 			curses.mvwin(c.status_window, 0, 0)
 			curses.wresize(c.status_window, 1, w)
@@ -948,7 +948,7 @@ if not DISABLE_CURSES then
 		end
 		
 		curses.wresize(c.input_window, console.input_height, w)
-		curses.mvwin(c.input_window, h - 1, 0)
+		curses.mvwin(c.input_window, h - console.input_height, 0)
 		curses.wnoutrefresh(c.input_window)
 		
 		dirty = true
@@ -1100,20 +1100,17 @@ if not DISABLE_CURSES then
 			console.SetInputHeight(lines)
 		end
 		
-		local y = c.markup.caret_pos.y - 1
-		local x = c.markup.caret_pos.x - 0
-		
 		curses.werase(c.input_window)
 		
 		if str then
 			str = str:gsub("\t", " ")
 			console.SyntaxPrint(str, c.input_window)
-		else
-			x = 0
-			console.SetInputHeight(1)
 		end
 		
-		curses.wmove(c.input_window, y, x)
+		local y = c.markup:GetCaretPosition().y
+		local x = c.markup:GetCaretPosition().x
+		
+		curses.wmove(c.input_window, y-1, x)
 		
 		curses.wnoutrefresh(c.input_window)
 		dirty = true
@@ -1155,6 +1152,8 @@ if not DISABLE_CURSES then
 	end
 
 	c.scroll_command_history = c.scroll_command_history or 0
+	
+	local last_key
 
 	function console.HandleKey(key)
 		
@@ -1222,9 +1221,9 @@ if not DISABLE_CURSES then
 				c.markup:SetCaretPosition(math.huge, 0)
 			end
 		end
-			
-		-- enter
-		if key == "KEY_ENTER" then
+		
+
+		if key == "KEY_ENTER" and last_key ~= "CTL_ENTER" then
 			console.SetInputText()
 			local line = c.markup:GetText()
 			
@@ -1251,10 +1250,12 @@ if not DISABLE_CURSES then
 				c.markup:SetText("")
 			end
 		end
-
+		
 		if markup_translate[key] then
 			c.markup:OnKeyInput(markup_translate[key])
 		end
+		
+		last_key = key
 	end
 
 	function console.HandleChar(char)
