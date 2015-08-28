@@ -27,9 +27,7 @@ function render.Initialize()
 		if vendor:find("mesa") or vendor:find("open source technology center") then MESA = true end
 		if vendor:find("intel") then INTEL = true end
 	end
-	
-	gl.Enable("GL_TEXTURE_CUBE_MAP")
-	
+		
 	if SRGB then
 		gl.Enable("GL_FRAMEBUFFER_SRGB")
 	end
@@ -389,9 +387,7 @@ do
 			return
 		end
 		
-		if src_color == "alpha" then
-			gl.AlphaFunc("GL_GEQUAL", 0)
-			
+		if src_color == "alpha" then			
 			gl.BlendFuncSeparate(	
 				"GL_SRC_ALPHA", "GL_ONE_MINUS_SRC_ALPHA", 
 				"GL_ONE", "GL_ONE_MINUS_SRC_ALPHA"

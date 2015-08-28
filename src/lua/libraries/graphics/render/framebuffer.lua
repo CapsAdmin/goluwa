@@ -178,6 +178,8 @@ function META:CheckCompletness()
 			str = "missing draw buffer"
 		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER then
 			str = "missing read buffer"
+		elseif err == 0 then
+			str = "invalid framebuffer target"
 		end
 		
 		for k, v in pairs(self.textures) do
@@ -266,11 +268,11 @@ function META:SetTexture(pos, tex, mode, uid)
 	if typex(tex) == "texture" then
 		local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
 	
-		if MESA then
-			self.fb:Texture2D(pos, "GL_TEXTURE_2D", id, 0)
-		else
+		--if MESA and not gl.CreateFramebuffers then
+		--	self.fb:Texture2D(pos, "GL_TEXTURE_2D", id, 0)
+		--else
 			self.fb:Texture(pos, id, 0)
-		end
+		--end
 		
 		if id ~= 0 then			
 			self.textures[uid] = {

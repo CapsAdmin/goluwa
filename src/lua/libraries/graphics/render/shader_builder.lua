@@ -229,7 +229,7 @@ local function variables_to_string(type, variables, prepend, macro, array)
 			if data.type == "sampler2D" or data.type == "samplerCube" then
 				local layout = ("layout(binding = %i)"):format(texture_channel)
 				
-				if tonumber(render.GetShadingLanguageVersion():match("(.-) ")) <= 3.3 then
+				if tonumber(render.GetShadingLanguageVersion():match("(.-) ") or render.GetShadingLanguageVersion()) <= 3.3 then
 					layout = ""
 				end
 				
@@ -585,7 +585,7 @@ function render.CreateShader(data, vars)
 			if BUILD_OUTPUT then
 				vfs.Write("data/shader_builder_output/" .. shader_id .. "/" .. shader .. ".c", data.source)
 			end
-
+			
 			local ok, shader = pcall(render.CreateGLShader, enum, data.source)
 			
 			if not ok then

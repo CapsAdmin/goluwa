@@ -291,6 +291,10 @@ do -- add get set functions based on parameters
 			if num == -1 or num > render.max_anisotropy then
 				return render.max_anisotropy
 			end
+			
+			if num == 0 then
+				return 1
+			end
 		end}, -- TEXTURE_MAX_ANISOTROPY_EXT
 	}
 
@@ -322,6 +326,34 @@ do -- add get set functions based on parameters
 		end
 		
 		v.getset_info = info
+	end
+	
+	local old = META.SetMinFilter
+	
+	function META:SetMinFilter(val)
+		if val == "nearest" then
+			self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", 1)
+		end
+		return old(self, val)
+	end
+	
+	local old = META.SetMagFilter
+	
+	function META:SetMagFilter(val)
+		if val == "nearest" then
+			self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", 1)
+		end
+		return old(self, val)
+	end
+	
+	local old = META.SetAnisotropy
+	
+	function META:SetAnisotropy(val)
+		if self.MinFilter == "nearest" or self.MagFilter == "nearest" then
+			self.Anisotropy = val
+			return
+		end
+		return old(self, val)
 	end
 end
 
@@ -428,12 +460,12 @@ function META:SetupStorage()
 		end
 	end
 	
-	if MESA and (internal_format:endswith("16F") or internal_format:endswith("32F")) and not internal_format:endswith("DEPTH_COMPONENT32F") then
+	--[[if MESA and (internal_format:endswith("16F") or internal_format:endswith("32F")) and not internal_format:endswith("DEPTH_COMPONENT32F") then
 		local old = internal_format
 		internal_format = internal_format:gsub("16F", "8_SNORM")
 		internal_format = internal_format:gsub("32F", "8_SNORM")
 		llog("translating %q to %q", old, internal_format)
-	end
+	end]]
 		
 	if self.StorageType == "3d" then
 		if gl.TexStorage3D then
@@ -628,21 +660,20 @@ function META:Upload(data)
 				data.buffer
 			)
 		else
-			if MESA then
-				print(
-					"self.gl_tex:SubImage3D(",
+			if MESA and self.StorageType == "cube_map" then
+				--[[gl.BindTexture("GL_TEXTURE_CUBE_MAP", self.gl_tex.id)
+				gl.TexSubImage2D(
+					gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + data.z, 
 					data.mip_map_level, 
 					data.x, 
 					y, 
-					data.z, 
 					data.width, 
 					data.height, 
-					data.depth, 
 					TOENUM(data.format), 
 					TOENUM(data.type), 
-					data.buffer,
-					")"
-				)					
+					data.buffer
+				)
+				gl.BindTexture("GL_TEXTURE_CUBE_MAP", 0)]]
 			else
 				self.gl_tex:SubImage3D(
 					data.mip_map_level, 

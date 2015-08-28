@@ -3934,7 +3934,7 @@ typedef enum GL_LUA_ENUMS {
 	GL_HALF_BIAS_NORMAL_NV = 34106, 
 	GL_READ_FRAMEBUFFER_BINDING_NV = 36010, 
 	GL_PROGRAM_TARGET_NV = 34374, 
-	GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT = 36058, 
+	GL_FRAMEBUFFER_INCOMPLETE_FORMATS = 36058, 
 	GL_UNIFORM_BUFFER_BINDING = 35368, 
 	GL_VERTEX_ARRAY_RANGE_LENGTH_APPLE = 34078, 
 	GL_PROGRAM_NATIVE_ADDRESS_REGISTERS_ARB = 34994, 
@@ -33375,7 +33375,7 @@ function gl.Initialize(get_proc_address)
 				return gl.NamedFramebufferParameteri(self.id, pname, param)
 			end
 			function META:Texture2D(attachment, textarget, texture, level)
-				return gl.NamedFramebufferTexture2DEXT(self.id, attachment, textarget, texture, level)
+				return gl.NamedFramebufferTexture2D(self.id, attachment, textarget, texture, level)
 			end
 			function META:DrawBuffersEXT(n, bufs)
 				return gl.FramebufferDrawBuffersEXT(self.id, n, bufs)
@@ -34345,5 +34345,13 @@ function gl.Initialize(get_proc_address)
 		end
 	end
 end
-gl.e = setmetatable({}, {__index = function(_, key) return tonumber(ffi.cast("GL_LUA_ENUMS", key)) end})
+gl.e = setmetatable({}, {__index = function(_, key)
+	local ok, res = pcall(ffi.cast, "GL_LUA_ENUMS", key)
+	
+	if not ok then
+		error(key .. "is not a valid enum", 2)
+	end
+	
+	return tonumber(res)
+end})
 return gl
