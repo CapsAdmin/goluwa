@@ -11,8 +11,7 @@ function PASS:Initialize()
 	self.fb = render.CreateFrameBuffer(render.GetWidth()/2, render.GetHeight()/2)
 		
 	self.extract = render.CreateShader([[		
-		uniform vec3 points[] =
-		{
+		const vec3 points[32] = vec3[](
 			vec3(-0.134, 0.044, -0.825),
 			vec3(0.045, -0.431, -0.529),
 			vec3(-0.537, 0.195, -0.371),
@@ -44,17 +43,8 @@ function PASS:Initialize()
 			vec3(-0.009, 0.493, -0.038),
 			vec3(-0.322, 0.147, -0.105),
 			vec3(-0.554, -0.725, 0.289),
-			vec3(0.534, 0.157, -0.250),
-		
-			/*vec3(-0.134, 0.044, -0.825),			
-			vec3(0.895, 0.302, 0.139),					
-			vec3(0.376, 0.009, 0.193),
-			vec3(0.526, -0.183, 0.424),			
-			vec3(-0.689, -0.222, -0.192),			
-			vec3(-0.255, 0.958, 0.099),			
-			vec3(-0.663, 0.230, -0.634),			
-			vec3(-0.322, 0.147, -0.105),*/
-		};
+			vec3(0.534, 0.157, -0.250)	
+		);
 		
 		vec3 dssdo()
 		{				

@@ -81,9 +81,7 @@ PASS.Shader = {
 			--{binormal = "vec3"},
 			{texture_blend = "float"},
 		},
-		source = [[
-			#extension GL_ARB_arrays_of_arrays: enable
-			
+		source = [[			
 			in vec3 view_normal;
 			in float dist;
 			in vec3 reflect_dir;					
