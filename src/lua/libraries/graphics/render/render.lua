@@ -252,6 +252,10 @@ function render.GetVendor()
 	return ffi.string(gl.GetString("GL_VENDOR"))
 end
 
+function render.IsExtensionSupported()
+	return false
+end
+
 function render.CheckSupport(func)
 	if not gl[func] then
 		logf("%s: the function gl.%s does not exist\n", debug.getinfo(2).func:name(), func)

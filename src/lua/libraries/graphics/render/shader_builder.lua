@@ -229,7 +229,7 @@ local function variables_to_string(type, variables, prepend, macro, array)
 			if data.type == "sampler2D" or data.type == "samplerCube" then
 				local layout = ("layout(binding = %i)"):format(texture_channel)
 				
-				if tonumber(render.GetShadingLanguageVersion():match("(.-) ") or render.GetShadingLanguageVersion()) <= 3.3 then
+				if not render.IsExtensionSupported("ARB_enhanced_layouts") then
 					layout = ""
 				end
 				

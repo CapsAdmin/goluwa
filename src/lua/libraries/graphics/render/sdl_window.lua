@@ -498,3 +498,7 @@ do
 	end
 
 end
+
+function render.IsExtensionSupported(str)
+	return sdl.GL_ExtensionSupported(str) == 1
+end
