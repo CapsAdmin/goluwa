@@ -53,6 +53,9 @@ function steam.GetInstallPath()
 		path = system.GetRegistryValue("CurrentUser/Software/Valve/Steam/SteamPath") or (X64 and "C:\\Program Files (x86)\\Steam" or "C:\\Program Files\\Steam")
 	elseif LINUX then
 		path = os.getenv("HOME") .. "/.local/share/Steam"
+		if not vfs.IsFolder(path) then
+			path = os.getenv("HOME") .. "/.steam/steam"
+		end
 	end
 
 	return path --lfs.symlinkattributes(path, "mode") and path or nil
@@ -62,7 +65,7 @@ function steam.GetLibraryFolders()
 	local base = steam.GetInstallPath()
 	
 	local tbl = {base .. "/steamapps/"}
-		
+	
 	local config = steam.VDFToTable(assert(vfs.Read(base .. "/config/config.vdf", "r")))
 
 	for key, path in pairs(config.InstallConfigStore.Software.Valve.Steam) do
@@ -168,7 +171,7 @@ function steam.MountSourceGame(game_info)
 
 	if type(game_info) == "string" then 
 		str_game_info = game_info
-		game_info = steam.FindSourceGame(game_info) 
+		game_info = steam.FindSourceGame(str_game_info)
 	end
 	
 	if not game_info then return nil, "could not find " .. str_game_info end
