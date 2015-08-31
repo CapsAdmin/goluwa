@@ -227,10 +227,10 @@ local function variables_to_string(type, variables, prepend, macro, array)
 			end
 
 			if data.type == "sampler2D" or data.type == "samplerCube" then
-				local layout = ("layout(binding = %i)"):format(texture_channel)
-				
-				if not render.IsExtensionSupported("GL_ARB_enhanced_layouts") then
-					layout = ""
+				local layout = ""
+
+				if render.IsExtensionSupported("GL_ARB_enhanced_layouts") or render.IsExtensionSupported("GL_ARB_shading_language_420pack") then
+					layout = ("layout(binding = %i)"):format(texture_channel)
 				end
 				
 				table.insert(out, ("%s %s %s %s %s %s%s;"):format(layout, data.varying, type, data.precision, data.type, name, array):trim())
@@ -535,6 +535,10 @@ function render.CreateShader(data, vars)
 			end
 			
 			local extensions = {}
+			
+			if render.IsExtensionSupported("GL_ARB_shading_language_420pack") then
+				table.insert(extensions, "#extension GL_ARB_shading_language_420pack : enable")
+			end
 			
 			template = template:gsub("(#extension%s-[%w_]+%s-:%s-%w+)", function(extension)
 				table.insert(extensions, extension)
