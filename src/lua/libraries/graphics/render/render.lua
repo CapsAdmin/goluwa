@@ -61,6 +61,9 @@ end
 render.global_shader_code = render.global_shader_code or {}
 
 function render.AddGlobalShaderCode(glsl_code, require)
+	if not require then
+		require = glsl_code:match("%s([a-zA-Z0-9_]-)%(")
+	end
 	for i,v in ipairs(render.global_shader_code) do
 		if v.require == require then
 			table.remove(render.global_shader_code, i)

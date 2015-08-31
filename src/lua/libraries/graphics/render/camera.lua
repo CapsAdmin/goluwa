@@ -333,4 +333,4 @@ render.AddGlobalShaderCode([[
 float get_depth(vec2 uv) 
 {
 	return (2.0 * g_cam_nearz) / (g_cam_farz + g_cam_nearz - texture(tex_depth, uv).r * (g_cam_farz - g_cam_nearz));
-}]], "get_depth")
+}]])

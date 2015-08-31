@@ -5,19 +5,19 @@ render.AddGlobalShaderCode([[
 float random(vec2 co)
 {
 	return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}]], "random")
+}]])
 
 render.AddGlobalShaderCode([[
 vec4 get_noise(vec2 uv)
 {
 	return texture(lua[(sampler2D)render.GetNoiseTexture], uv);
-}]], "get_noise")
+}]])
 
 render.AddGlobalShaderCode([[
 vec2 get_screen_uv()
 {
 	return gl_FragCoord.xy / g_screen_size;
-}]], "get_screen_uv")
+}]])
  
 render.AddGlobalShaderCode([[
 vec2 g_poisson_disk[4] = vec2[](
@@ -25,7 +25,7 @@ vec2 g_poisson_disk[4] = vec2[](
 	vec2( 0.94558609, -0.76890725 ),
 	vec2( -0.094184101, -0.92938870 ),
 	vec2( 0.34495938, 0.29387760 )
-);]], "g_poisson_disk")
+);]])
 
 render.gbuffer_size = Vec2(1,1)
 

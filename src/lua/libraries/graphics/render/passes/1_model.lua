@@ -282,41 +282,41 @@ vec3 get_view_pos(vec2 uv)
 {
 	vec4 pos = g_projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
 	return pos.xyz / pos.w;
-}]], "get_view_pos")
+}]])
 
 render.AddGlobalShaderCode([[
 vec3 get_view_normal(vec2 uv)
 {
 	return texture(tex_normal, uv).xyz;
-}]], "get_view_normal")
+}]])
 
 render.AddGlobalShaderCode([[
 vec3 get_world_normal(vec2 uv)
 {
 	return normalize(-texture(tex_normal, uv).xyz * mat3(g_normal_matrix));
-}]], "get_world_normal")
+}]])
 
 render.AddGlobalShaderCode([[
 vec3 get_diffuse(vec2 uv)
 {
 	return texture(tex_diffuse, uv).rgb;
-}]], "get_diffuse")
+}]])
 
 render.AddGlobalShaderCode([[
 float get_metallic(vec2 uv)
 {
 	return texture(tex_normal, uv).a;
-}]], "get_metallic")
+}]])
 
 render.AddGlobalShaderCode([[
 float get_roughness(vec2 uv)
 {
 	return texture(tex_diffuse, uv).a;
-}]], "get_roughness")
+}]])
  
 render.AddGlobalShaderCode([[
 vec3 get_world_pos(vec2 uv)
 {
 	vec4 pos = g_view_inverse * g_projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
 	return pos.xyz / pos.w;
-}]], "get_world_pos")
+}]])
