@@ -350,6 +350,8 @@ function META:SetWrite(pos, b)
 			self.draw_buffers, self.draw_buffers_size = generate_draw_buffers(self)
 		end
 	end
+	
+	if self.draw_buffers then self.fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers) end
 end
 
 function META:SetRead(pos, b)
@@ -401,32 +403,37 @@ function META:WriteThese(str)
 	end
 	
 	self.draw_buffers, self.draw_buffers_size = self.draw_buffers_cache[str][1], self.draw_buffers_cache[str][2]
+	
+	if self.draw_buffers then self.fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers) end
 end
 
 do
 	local temp_color = ffi.new("float[4]")
 	local temp_colori = ffi.new("int[4]")
 
-	function META:Clear(i, r,g,b,a, d,s)
-		if self.draw_buffers_size then
-			self.fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers)
-		end
-		
+	function META:Clear(i, r,g,b,a, d,s)		
 		i = i or "all"
+		
+		temp_color[0] = r or 0
+		temp_color[1] = g or 0
+		temp_color[2] = b or 0
+		temp_color[3] = a or 0
 			
 		if i == "all" then
 			self:Clear("color", r,g,b,a)			
 			self:Clear("depth", d or 1)
 			if s then self:Clear("stencil", s) end
-		elseif i == "color" then
-			
-			temp_color[0] = r or 0
-			temp_color[1] = g or 0
-			temp_color[2] = b or 0
-			temp_color[3] = a or 0
+		elseif i == "color" then			
+			local x,y = self.draw_buffers, self.draw_buffers_size
+			self:WriteThese("all")
 			
 			for i = 0, self.draw_buffers_size or 1 do
 				self.fb:Clearfv("GL_COLOR", i, temp_color)
+			end
+			
+			if x then 
+				self.draw_buffers, self.draw_buffers_size = x,y 
+				self.fb:DrawBuffers(y, x)
 			end
 		elseif i == "depth" then
 			temp_color[0] = r or 0
@@ -437,15 +444,21 @@ do
 		elseif i == "depth_stencil" then
 			self.fb:Clearfi("GL_DEPTH_STENCIL", 0, r or 0, g or 0)
 		elseif type(i) == "number" then
-			
-			temp_color[0] = r or 0
-			temp_color[1] = g or 0
-			temp_color[2] = b or 0
-			temp_color[3] = a or 0
-			
-			self.fb:Clearfv("GL_COLOR", i - 1, temp_color)
+			local x,y = self.draw_buffers, self.draw_buffers_size
+			self:WriteThese(i)
+			self.fb:Clearfv("GL_COLOR", 0, temp_color)
+			if x then 
+				self.draw_buffers, self.draw_buffers_size = x,y 
+				self.fb:DrawBuffers(y, x)
+			end
 		elseif self.textures[i] then
-			self:Clear(self.textures[i].pos - base_color - 1, r,g,b,a, d,s)
+			local x,y = self.draw_buffers, self.draw_buffers_size
+			self:WriteThese(i)
+			self.fb:Clearfv("GL_COLOR", self.textures[i].pos - base_color, temp_color)
+			if x then 
+				self.draw_buffers, self.draw_buffers_size = x,y 
+				self.fb:DrawBuffers(y, x)
+			end
 		end
 	end
 end
@@ -494,7 +507,9 @@ do
 		surface.SetColor(1,1,1,1)
 		surface.DrawText("YOU SHOULD NOT SEE THIS", 250, 50)
 	fb:End()
-
+	
+	fb:WriteThese("all")
+	
 	fb:Clear(1)
 end
 
@@ -530,12 +545,47 @@ do -- write a rotated green rectangle to attachment 1 and 2
 	fb:End()
 end
 
-event.AddListener("PostDrawMenu", "lol", function()
-	surface.SetTexture(fb:GetTexture(1))
-	surface.SetColor(1, 1, 1, 1)
-	surface.DrawRect(0, 0, 1024, 1024)
+local fb = render.CreateFrameBuffer() 
+fb:SetSize(Vec2()+128)
+
+for i = 1, 3 do
+	local tex = render.CreateTexture("2d") 
+	tex:SetSize(Vec2(128, 128))
+	tex:SetInternalFormat("rgba8")
+	tex:Clear()
+
+	fb:SetTexture(i, tex, "read_write")
 	
-	surface.SetTexture(fb:GetTexture(2))
-	surface.SetColor(1, 1, 1, 1)
-	surface.DrawRect(300, 300, 1024, 1024)
+	fb:WriteThese(tostring(i))
+
+	fb:Begin()
+		surface.SetWhiteTexture()
+		if i == 1 then
+			surface.SetColor(1,0,0,0.5)
+		elseif i == 2 then
+			surface.SetColor(0,1,0,0.5)
+		elseif i == 3 then
+			surface.SetColor(0,0,1,0.5)
+		end
+		surface.DrawRect(i * 20, 20,50,50, 50)
+	fb:End()	 
+end
+
+event.CreateTimer("lol", 1, 4, function(i)
+	if i == 1 then
+		fb:Clear(i,1,0,0,0.25)
+	elseif i == 2 then
+		fb:Clear(i,0,1,0,0.25)
+	elseif i == 3 then
+		fb:Clear(i,0,0,1,0.25)
+	end
+end)
+
+
+event.AddListener("PostDrawMenu", "lol", function()
+	for i = 1, 3 do
+		surface.SetTexture(fb:GetTexture(i))
+		surface.SetColor(1, 1, 1, 1)
+		surface.DrawRect(i*50, i*50, 128, 128)
+	end
 end)
