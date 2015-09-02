@@ -156,6 +156,8 @@ PASS.Shader = {
 
 					return ambient;
 				}
+				
+				return vec3(0,0,0);
 			}
 			
 			const float e = 2.71828182845904523536028747135;
