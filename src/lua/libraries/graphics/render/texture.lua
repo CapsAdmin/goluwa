@@ -460,13 +460,6 @@ function META:SetupStorage()
 		end
 	end
 	
-	--[[if MESA and (internal_format:endswith("16F") or internal_format:endswith("32F")) and not internal_format:endswith("DEPTH_COMPONENT32F") then
-		local old = internal_format
-		internal_format = internal_format:gsub("16F", "8_SNORM")
-		internal_format = internal_format:gsub("32F", "8_SNORM")
-		llog("translating %q to %q", old, internal_format)
-	end]]
-		
 	if self.StorageType == "3d" then
 		if gl.TexStorage3D then
 			self.gl_tex:Storage3D(
@@ -660,34 +653,18 @@ function META:Upload(data)
 				data.buffer
 			)
 		else
-			if MESA and self.StorageType == "cube_map" then
-				--[[gl.BindTexture("GL_TEXTURE_CUBE_MAP", self.gl_tex.id)
-				gl.TexSubImage2D(
-					gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + data.z, 
-					data.mip_map_level, 
-					data.x, 
-					y, 
-					data.width, 
-					data.height, 
-					TOENUM(data.format), 
-					TOENUM(data.type), 
-					data.buffer
-				)
-				gl.BindTexture("GL_TEXTURE_CUBE_MAP", 0)]]
-			else
-				self.gl_tex:SubImage3D(
-					data.mip_map_level, 
-					data.x, 
-					y, 
-					data.z, 
-					data.width, 
-					data.height, 
-					data.depth, 
-					TOENUM(data.format), 
-					TOENUM(data.type), 
-					data.buffer
-				)
-			end
+			self.gl_tex:SubImage3D(
+				data.mip_map_level, 
+				data.x, 
+				y, 
+				data.z, 
+				data.width, 
+				data.height, 
+				data.depth, 
+				TOENUM(data.format), 
+				TOENUM(data.type), 
+				data.buffer
+			)
 		end		
 	elseif self.StorageType == "2d" or self.StorageType == "1d_array" or self.StorageType == "rectangle" then		
 		data.x = data.x or 0
@@ -1038,10 +1015,14 @@ function render.CreateTexture(type)
 		self.StorageType = type
 	end
 
-	self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
+	if MESA and type == "cube_map" then
+		self.gl_tex = gl.CreateTextureNODSA("GL_TEXTURE_" .. self.StorageType:upper())
+		self.not_dsa = true
+	else
+		self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
+		self.not_dsa = not gl.CreateTextures
+	end
 	self.id = self.gl_tex.id -- backwards compatibility
-	
-	self.not_dsa = not gl.CreateTextures
 	
 	if type == "cube_map" then
 		self:SetWrapS("clamp_to_edge")

@@ -33884,9 +33884,10 @@ function gl.Initialize(get_proc_address)
 		end
 	end
 	do -- Texture
-		local META = {}
-		META.__index = META
 		if gl.CreateTextures then
+			local META = {}
+			META.__index = META
+			
 			function META:Bind(location)
 				return gl.BindTextureUnit(location, self.id)
 			end
@@ -34053,6 +34054,7 @@ function gl.Initialize(get_proc_address)
 				return gl.GetTextureParameterfvEXT(self.id, target, pname, params)
 			end
 			function META:GenerateMipmap()
+				if MESA then gl.ActiveTexture("GL_TEXTURE1") end
 				return gl.GenerateTextureMipmap(self.id)
 			end
 			function META:CopyImage1D(target, level, internalformat, x, y, width, border)
@@ -34101,7 +34103,12 @@ function gl.Initialize(get_proc_address)
 				self.id = temp[0]
 				return self
 			end
-		else
+		end
+		
+		do
+			local META = {}
+			META.__index = META
+			
 			local bind
 			do
 				local last
@@ -34215,7 +34222,7 @@ function gl.Initialize(get_proc_address)
 			end
 			function META:SubImage3D(level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
 				bind(self)
-				if self.target == "GL_TEXTURE_CUBE_MAP" then
+				if self.target == "GL_TEXTURE_CUBE_MAP" and MESA then
 					return gl.TexSubImage2D(gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + zoffset, level, xoffset, yoffset, width, height, format, type, pixels)
 				end
 				return gl.TexSubImage3D(self.target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
@@ -34336,11 +34343,16 @@ function gl.Initialize(get_proc_address)
 				gl.DeleteTextures(1, temp)
 			end
 			META.not_dsa = true
-			function gl.CreateTexture(target)
+			
+			function gl.CreateTextureNODSA(target)
 				local self = setmetatable({}, META)
 				self.id = gl.GenTexture()
 				self.target = target
 				return self
+			end
+			
+			if not gl.CreateTexture then
+				gl.CreateTexture = gl.CreateTextureNODSA
 			end
 		end
 	end

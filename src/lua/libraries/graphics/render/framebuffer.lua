@@ -268,11 +268,7 @@ function META:SetTexture(pos, tex, mode, uid)
 	if typex(tex) == "texture" then
 		local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
 	
-		--if MESA and not gl.CreateFramebuffers then
-		--	self.fb:Texture2D(pos, "GL_TEXTURE_2D", id, 0)
-		--else
-			self.fb:Texture(pos, id, 0)
-		--end
+		self.fb:Texture(pos, id, 0)
 		
 		if id ~= 0 then			
 			self.textures[uid] = {
