@@ -6,17 +6,17 @@ local render = (...) or _G.render
 
 -- used to figure out how to upload types
 local unrolled_lines = {
-	bool = "gl.Uniform1i(%i, val and 1 or 0)",
-	number = "gl.Uniform1f(%i, val)",
-	vec2 = "gl.Uniform2f(%i, val.x, val.y)",
-	vec3 = "gl.Uniform3f(%i, val.x, val.y, val.z)",
-	color = "gl.Uniform4f(%i, val.r, val.g, val.b, val.a)",
-	mat4 = "gl.UniformMatrix4fv(%i, 1, 0, val.ptr)",
+	bool = "gl.ProgramUniform1i(render.current_program, %i, val and 1 or 0)",
+	number = "gl.ProgramUniform1f(render.current_program, %i, val)",
+	vec2 = "gl.ProgramUniform2f(render.current_program, %i, val.x, val.y)",
+	vec3 = "gl.ProgramUniform3f(render.current_program, %i, val.x, val.y, val.z)",
+	color = "gl.ProgramUniform4f(render.current_program, %i, val.r, val.g, val.b, val.a)",
+	mat4 = "gl.ProgramUniformMatrix4fv(render.current_program, %i, 1, 0, val.ptr)",
 	texture = "render.BindTexture(val, %i, %i)",
 }
 
 if SRGB then
-	unrolled_lines.color = "gl.Uniform4f(%i, val.r ^ 2.2, val.g ^ 2.2, val.b ^ 2.2, val.a)"
+	unrolled_lines.color = "gl.ProgramUniform4f(render.current_program, %i, val.r ^ 2.2, val.g ^ 2.2, val.b ^ 2.2, val.a)"
 end
 
 unrolled_lines.vec4 = unrolled_lines.color
@@ -35,14 +35,10 @@ local type_info =  {
 }
 
 do -- extend typeinfo
-	local type_to_enum = {
-		float = gl.e.GL_FLOAT,
-	}
-
 	-- add some extra information
 	for k,v in pairs(type_info) do
 		v.size = ffi.sizeof(v.type)
-		v.enum_type = type_to_enum[v.type]
+		v.enum_type = gl.e["GL_" .. v.type:upper()]
 		v.real_type = "glw_glsl_" ..k
 	end
 
@@ -68,29 +64,6 @@ local type_translate = {
 	number = "float",
 	texture = "sampler2D",
 	matrix44 = "mat4",
-}
-
-local variable_translate =
-{
-	int = render.Uniform1i,
-	bool = function(location, b) render.Uniform1i(location, b and 1 or 0) end,
-	float = render.Uniform1f,
-	vec2 = render.Uniform2f,
-	vec3 = render.Uniform3f,
-	vec4 = render.Uniform4f,
-	mat4 = function(location, ptr) if type(ptr) == "table" then ptr = ptr.m end render.UniformMatrix4fv(location, 1, 0, ptr) end,
-	sampler2D = render.Uniform1i,
-	samplerCube = render.Uniform1i,
-	not_implemented = function() end,
-}
-
--- this will be extended after the render context has been initialized (see bottom of this script)
-local shader_translate = {
-	vertex = gl.e.GL_VERTEX_SHADER,
-	fragment = gl.e.GL_FRAGMENT_SHADER,
-	geometry = gl.e.GL_GEOMETRY_SHADER,
-	tess_eval = gl.e.GL_TESS_EVALUATION_SHADER,
-	tess_control = gl.e.GL_TESS_CONTROL_SHADER,
 }
 
 -- used because of some reserved keywords
@@ -130,20 +103,6 @@ local lazy_template = [[
 		out_color = shade();
 	}
 ]]
-
-local function rebuild_info()
-	-- grab all valid shaders from enums
-	for k,v in pairs(gl.e) do
-		local name = k:match("GL_(.+)_SHADER")
-
-		if name then
-			shader_translate[name] = v
-			shader_translate[k] = v
-			shader_translate[v] = v
-		end
-
-	end
-end
 
 local function type_of_attribute(var)
 	local t = typex(var)
@@ -294,13 +253,6 @@ function render.CreateShader(data, vars)
 
 	if not render.CheckSupport("CreateShader") then
 		return NULL
-	end
-	
-	-- rebuild the type info when creating the first shader to ensure
-	-- we have all the enums and functions nessceary to build it
-	if rebuild_info then
-		rebuild_info()
-		rebuild_info = nil
 	end
 
 	-- make a copy of the data since we're going to modify it
@@ -580,7 +532,7 @@ function render.CreateShader(data, vars)
 	local shaders = {}
 
 	for shader, data in pairs(build_output) do
-		local enum = shader_translate[shader]
+		local enum = gl.e["GL_" .. shader:upper() .. "_SHADER"]
 
 		if enum then
 			-- strip data that wasnt found from the source_template

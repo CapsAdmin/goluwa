@@ -3,7 +3,7 @@ local gl = require("graphics.ffi.opengl")
 	
 function render.BindTexture(tex, channel, location)
 	if channel and location then
-		gl.Uniform1i(location, channel)
+		gl.ProgramUniform1i(render.current_program, location, channel)
 	end
 	tex:Bind(channel)
 end
@@ -766,7 +766,7 @@ function META:DumpInfo()
 end
 
 function META:MakeError(reason)
-	self.gl_tex = render.GetErrorTexture().gl_tex
+	if render.GetErrorTexture() then self.gl_tex = render.GetErrorTexture().gl_tex end -- :(
 	self.error_reason = reason
 end
 
