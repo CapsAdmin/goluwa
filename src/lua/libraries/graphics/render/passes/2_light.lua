@@ -162,9 +162,10 @@ PASS.Shader = {
 						
 			float get_specular(vec3 lightDirection, vec3 viewDirection, vec3 surfaceNormal, float roughness, float fresnel) 
 			{			
-				float VdotN = max(dot(viewDirection, surfaceNormal), 0.0);
 				vec3 H = normalize(lightDirection + viewDirection);
+				
 				float NdotH = max(dot(surfaceNormal, H), 0.0001);
+				float VdotN = max(dot(viewDirection, surfaceNormal), 0.0);
 			  
 				float cos2Alpha = NdotH * NdotH;
 				float beck_dist = exp((cos2Alpha - 1.0) / cos2Alpha / roughness) / (3.141592653589793 * roughness * cos2Alpha);
@@ -178,9 +179,8 @@ PASS.Shader = {
 						max(dot(lightDirection, H), 0.000001)
 					)
 				) * 
-				(1.0 - VdotN) * 
+				(VdotN) * 
 				fresnel * 
-				4 * 
 				beck_dist / 
 				max(3.14159265 * VdotN, 0.000001);
 			}
@@ -205,8 +205,6 @@ PASS.Shader = {
 				out_color.rgb = diffuse * mix(vec3(1,1,1), reflection, metallic);
 				out_color.rgb += specular.rrr * attenuate;
 				out_color.rgb *= ambient + attenuate;
-				
-			
 			
 				out_color.a = 1;
 			}
