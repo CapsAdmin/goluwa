@@ -18,6 +18,10 @@ function love.mouse.getY()
 	return window.GetMousePosition().y
 end
 
+function love.mouse.setRelativeMode(b)
+	
+end
+
 local Cursor = {}
 Cursor.Type = "Cursor"
 
@@ -65,7 +69,9 @@ local mouse_keymap = {
 	button_2 = "r",
 	button_3 = "m",
 	button_4 = "x1",
-	button_5 = "x2"
+	button_5 = "x2",
+	mwheel_up = "wd",
+	mwheel_down = "wu",
 }
 
 function love.mouse.isDown(key)

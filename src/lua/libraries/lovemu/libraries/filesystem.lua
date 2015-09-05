@@ -57,7 +57,7 @@ function love.filesystem.lines(path)
 		return ok:Lines()
 	end
 	
-	local file = assert(vfs.Open(path))
+	local file = assert(vfs.Open("data/lovemu/" .. IDENTITY .. "/" .. path))
 	
 	return file:Lines()
 end
@@ -115,7 +115,8 @@ function love.filesystem.getIdentity()
 end
 
 function love.filesystem.write(path, data)
-	vfs.Write("data/lovemu/" .. path, data)
+	vfs.Write("data/lovemu/" .. IDENTITY .. "/" .. path, data)
+	return true
 end
 
 function love.filesystem.isFused() -- partial

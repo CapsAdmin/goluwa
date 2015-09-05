@@ -11,11 +11,9 @@ love.graphics = {}
 local function ADD_FILTER(obj)
 	obj.setFilter = function(s, min, mag, anistropy) 
 		
-		lovemu.textures[s].format.min_filter = min 
-		lovemu.textures[s].format.mag_filter = mag
-				
-		lovemu.textures[s]:UpdateFormat()
-		
+		lovemu.textures[s]:SetMinFilter(min)
+		lovemu.textures[s]:SetMagFilter(mag)
+						
 		s.filter_min = min
 		s.filter_mag = mag
 		s.filter_anistropy = anistropy
@@ -268,6 +266,10 @@ do -- font
 		return self.filter
 	end
 	
+	function Font:setFallbacks(...)
+		
+	end
+	
 	local i = 0
 	
 	local function create_font(path, size, glyphs, texture)
@@ -408,11 +410,16 @@ do -- line
 		return WIDTH
 	end
 
-	function love.graphics.line(x1, y1, x2, y2, ...)
-		surface.DrawLine(x1, y1, x2, y2, WIDTH, false)
-		if ... then
-			for i = 1, select("#", ...), 4 do
-				local x1, y1, x2, y2 = select(i, ...)
+	function love.graphics.line(...)
+		local tbl = {...}
+		
+		if type(tbl[1]) == "table" then
+			tbl = tbl[1]
+		end
+		
+		for i = 1, #tbl, 4 do
+			local x1, y1, x2, y2 = tbl[i+0], tbl[i+2], tbl[i+2], tbl[i+3]
+			if x1 and y1 and x2 and y2 then
 				surface.DrawLine(x1, y1, x2, y2, WIDTH, false)
 			end
 		end
@@ -481,10 +488,10 @@ do -- canvas
 		CANVAS = canvas
 		
 		if canvas then
-			gl.BindFramebuffer("GL_FRAMEBUFFER", canvas.fb.id)
+			canvas.fb:Bind()
 			render.SetViewport(0, 0, canvas.fb:GetTexture().w, canvas.fb:GetTexture().h)
 		else
-			gl.BindFramebuffer("GL_FRAMEBUFFER", 0)
+			render.GetScreenFrameBuffer():Bind()
 			render.SetViewport(0, 0, window.GetSize():Unpack())
 		end
 	end
@@ -499,11 +506,19 @@ do -- image
 	
 	Image.Type = "Image"
 	
-	function Image:getWidth(s) 
+	function Image:getWidth() 
 		return lovemu.textures[self].w 
 	end
 	
-	function Image:getHeight(s) 
+	function Image:getHeight() 
+		return lovemu.textures[self].h 
+	end
+	
+	function Image:getDimensions() 
+		return lovemu.textures[self].w, lovemu.textures[self].h
+	end
+	
+	function Image:getHeight() 
 		return lovemu.textures[self].h 
 	end
 	
@@ -534,7 +549,7 @@ do -- image
 	
 	function love.graphics.newImageData(path) -- partial
 		local self = lovemu.CreateObject(Image)
-		
+				
 		local tex = Texture(path)
 		tex:SetMinFilter(FILTER_MIN)
 		tex:SetMagFilter(FILTER_MAG)
@@ -545,12 +560,26 @@ do -- image
 end
 
 do -- stencil
+	local STENCIL = false
+	
 	function love.graphics.newStencil(func) --partial
 	
 	end 
 
 	function love.graphics.setStencil(func) --partial
 	
+	end
+
+	function love.graphics.setStencilTest(b)
+		STENCIL = b
+	end
+	
+	function love.graphics.getStencilTest()
+		return STENCIL
+	end
+
+	function love.graphics.stencil(stencilfunction, keepbuffer)
+		
 	end
 end
 

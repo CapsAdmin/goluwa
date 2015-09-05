@@ -111,8 +111,6 @@ function lovemu.CreateLoveEnv()
 
 	include("lua/libraries/lovemu/libraries/*", love)
 	
-	love.math = math
-	
 	return love
 end
 
@@ -142,6 +140,8 @@ function lovemu.RunGame(folder, ...)
 		love = love,
 		require = function(name, ...)
 			logn("[lovemu] requre: ", name)
+			
+			name = name:gsub("[%.]+", ".")
 			
 			if name:startswith("love.") and love[name:match(".+%.(.+)")] then
 				return love[name:match(".+%.(.+)")]

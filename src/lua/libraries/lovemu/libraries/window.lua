@@ -18,6 +18,10 @@ function love.window.getHeight()
 	return window.GetSize().h
 end
 
+function love.window.getDimensions()
+	return window.GetSize():Unpack()
+end
+
 local vec = Vec2()
 
 function love.window.setMode(x,y)

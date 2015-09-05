@@ -25,6 +25,10 @@ function love.conf(t) --partial
 
 end
 
+function love.getVersion()
+	return 0, 9, 1, "goluwa"
+end
+
 do -- error screen
 	function love.errhand(msg)
 		love.graphics.setFont()

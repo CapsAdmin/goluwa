@@ -24,6 +24,10 @@ do -- image data
 		return self.tex.h
 	end
 	
+	function ImageData:getDimensions() 
+		return self.tex.w, self.tex.h
+	end
+	
 	function ImageData:setFilter() 
 	
 	end
