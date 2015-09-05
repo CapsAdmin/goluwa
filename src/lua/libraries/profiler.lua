@@ -211,7 +211,6 @@ do
 	end
 	
 	function profiler.EnableSectionProfiling(b, reset)
-		data = profiler.data.sections
 		enabled = b
 		if reset then table.clear(data) end
 		table.clear(stack)
@@ -403,73 +402,44 @@ function profiler.PrintStatistical()
 	))
 end 
 
+function profiler.StartInstrumental(file_filter)	
+	profiler.EnableSectionProfiling(true, true)
 
-do
-	local data = {}
-	local last
-
-	function profiler.StartInstrumental()	
-		debug.sethook(function(what)
-			if what == "call" then
-				table.insert(data, {start = system.GetTime(), trace = debug.traceback()})
-			elseif what == "return" then
-				if #data > 0 then
-					data[#data].stop = system.GetTime()
-				end
-			end
-		end, "cr")
-	end
-
-	function profiler.StopInstrumental(file_filter)	
-		debug.sethook()
-		
-		local tree = {}
-		
-		for i, info in ipairs(data) do
-			if info.stop then
-				local lines = info.trace:explode("\n")
-				table.remove(lines, 1)
-				
-				local node = tree
-
-				for i, line in npairs(lines) do
-					local source = (line:match("%s*(.+): in ") or line):trim()
-					if source ~= "[C]" and source ~= "..." then
-						node[source] = node[source] or {}
-						
-						node[source].children = node[source].children or {}
-						node[source].time = (node[source].time or 0) +  (info.stop - info.start)
-						
-						node = node[source].children
-					end
-				end
-			end
-		end
-		
-		local path, root = next(tree)
-		
-		local min = 0
-		
-		local function dump(path, node)		
-			local percent = math.round((node.time / root.time) * 100, 3)
-			if percent > min then
-				if not filter or path:find(filter) then
-					logf("%s%s (%s) %s\n", ("\t"):rep(level), percent, math.round(node.time, 5), path)
-				else
-					logf("%s%s\n", ("\t"):rep(level), "...")
-				end
+	debug.sethook(function(what) 
+		local info = debug.getinfo(2)
 			
-				for path, child in pairs(node.children) do
-					level = level + 1	
-					dump(path, child)
-					level = level - 1
-				end		
-			end
+		if info.linedefined <= 0 or info.source:endswith("profiler.lua") then return end
+		
+		if file_filter and not info.source:find(file_filter, nil, true) then 
+			return
 		end
-		
-		dump(path, root)
-		
-	end
+				
+		if what == "call" then
+			profiler.PushSection(info.source .. ":" .. info.linedefined)
+		elseif what == "return" then
+			profiler.PopSection()
+		end
+	end, "cr")
+end
+
+function profiler.StopInstrumental(file_filter)	
+	debug.sethook()
+	
+	log(utility.TableToColumns(
+		"instrumental",
+		profiler.GetBenchmark("sections"), 
+		{
+			{key = "times_called", friendly = "calls"},
+			{key = "section_name"}, 
+			{key = "average_time", friendly = "time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
+			{key = "total_time", friendly = "total time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
+			{key = "average_garbage", friendly = "garbage", tostring = function(val) return utility.FormatFileSize(val) end},
+		}, 
+		function(a) return a.average_time > 0.5 or (file_filter or a.times_called > 100) end,
+		function(a, b) return a.average_time < b.average_time end
+	))
+	
+	profiler.EnableSectionProfiling(false, true)
 end
 
 function profiler.MeasureInstrumental(time, file_filter)
@@ -478,25 +448,6 @@ function profiler.MeasureInstrumental(time, file_filter)
 	event.Delay(time, function() 
 		profiler.StopInstrumental(file_filter)
 	end)
-end
-
-do
-	local started = false
-	_G.P = function()
-		if not started then
-			local info = debug.getinfo(2)
-			if info.source:startswith("@") then
-				info = info.source
-			else
-				info = nil
-			end
-			profiler.StartInstrumental(info)
-			started = true
-		else
-			profiler.StopInstrumental(0)
-			started = false
-		end
-	end
 end
 
 function profiler.DumpZerobraneProfileTree(min, filter)
