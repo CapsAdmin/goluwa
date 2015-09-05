@@ -142,9 +142,7 @@ function profiler.Restart()
 	profiler.raw_data = {sections = {}, statistical = {}, trace_aborts = {}}
 end
 
-do
-	local data = profiler.data.sections
-	
+do	
 	local base_garbage = 0
 	local stack = {}
 	local enabled = false
@@ -157,8 +155,6 @@ do
 		local start_gc = collectgarbage("count")
 		local start_time = system.GetTime()
 				
-		info.source = info.source:sub(2)
-		
 		table.insert(stack, {	
 			section_name = section_name,
 			start_gc = start_gc, 
@@ -191,6 +187,8 @@ do
 			return
 		end
 		
+		local data = profiler.data.sections
+		
 		data[path] = data[path] or {}
 		data[path][line] = data[path][line] or {total_time = 0, samples = 0, total_garbage = 0, name = res.section_name, section_name = res.section_name, instrumental = true, section = true}
 	
@@ -207,12 +205,12 @@ do
 	end
 	
 	function profiler.RemoveSection(name)
-		data[name] = nil
+		profiler.data.sections[name] = nil
 	end
 	
 	function profiler.EnableSectionProfiling(b, reset)
 		enabled = b
-		if reset then table.clear(data) end
+		if reset then table.clear(profiler.data.sections) end
 		table.clear(stack)
 	end
 	
@@ -249,6 +247,7 @@ function profiler.GetBenchmark(type, file, dump_line)
 	local out = {}
 
 	for path, lines in pairs(profiler.data[type]) do
+		path = path:sub(1)
 		if not file or path:find(file) then
 			for line, data in pairs(lines) do
 				
