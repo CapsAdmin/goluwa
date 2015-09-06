@@ -462,6 +462,19 @@ function system.GetClipboard()
 end
 
 do
+	local freq = tonumber(sdl.GetPerformanceFrequency())
+	local start_time = sdl.GetPerformanceCounter()
+	
+	function system.GetTime()
+		local time = sdl.GetPerformanceCounter()
+		
+		time = time - start_time
+		
+		return tonumber(time) / freq
+	end	
+end
+
+do
 
 	local enums = {	
 		arrow = sdl.e.SDL_SYSTEM_CURSOR_ARROW,
