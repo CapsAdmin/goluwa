@@ -803,38 +803,41 @@ function render.CreateShader(data, vars)
 		local texture_channel = 0
 		local lua = ""
 		
+		lua = lua .. "local gl = require(\"graphics.ffi.opengl\")\n"
+		lua = lua .. "local function update(self)\n"
+		
 		for i, data in ipairs(temp) do
 			if data.variable_buffer then
-				lua = lua .. "if \n"
+				lua = lua .. "\tif \n"
 				for k, v in pairs(data.val.default) do
 					lua = lua .. "\tself."..k.." ~= self.last_" .. k .. " or \n"
 				end
 				
 				lua = lua:sub(0, -5) .. "\n"
 				
-				lua = lua .. "then \n"
-				lua = lua .. "\tlocal ptr = ffi.cast(self."..data.key.."_ufb_type, gl.MapBuffer(\"GL_UNIFORM_BUFFER\", \"GL_WRITE_ONLY\"));\n\n"
-				lua = lua .. "\tif ptr ~= nil then \n"
+				lua = lua .. "\tthen \n"
+				lua = lua .. "\t\tlocal ptr = ffi.cast(self."..data.key.."_ufb_type, gl.MapBuffer(\"GL_UNIFORM_BUFFER\", \"GL_WRITE_ONLY\"));\n\n"
+				lua = lua .. "\t\tif ptr ~= nil then \n"
 				for k, v in pairs(data.val.default) do
 					if type(v) == "number" then
-						lua = lua .. "\t\tptr." .. k .. " = self."..k.."\n"
-						lua = lua .. "\t\tself.last_" .. k .. " = self."..k.." \n"
+						lua = lua .. "\t\t\tptr." .. k .. " = self."..k.."\n"
+						lua = lua .. "\t\t\tself.last_" .. k .. " = self."..k.." \n"
 					else
 						if typex(v) == "matrix44" then
-							lua = lua .. "\t\tffi.copy(ptr." .. k .. ", self."..k..".m, "..ffi.sizeof(self[data.val.name .. "_ufb_struct"][k])..") \n"
+							lua = lua .. "\t\t\tffi.copy(ptr." .. k .. ", self."..k..".m, "..ffi.sizeof(self[data.val.name .. "_ufb_struct"][k])..") \n"
 						else
-							lua = lua .. "\t\tffi.copy(ptr." .. k .. ", self."..k..", "..ffi.sizeof(self[data.val.name .. "_ufb_struct"][k])..") \n"
+							lua = lua .. "\t\t\tffi.copy(ptr." .. k .. ", self."..k..", "..ffi.sizeof(self[data.val.name .. "_ufb_struct"][k])..") \n"
 						end
-						lua = lua .. "\t\tself.last_" .. k .. " = self."..k..":Copy() \n"
+						lua = lua .. "\t\t\tself.last_" .. k .. " = self."..k..":Copy() \n"
 					end
 				end
 				
-				lua = lua .. "\tend\n\n"
+				lua = lua .. "\t\tend\n\n"
 				
-				lua = lua .. "\tgl.UnmapBuffer(\"GL_UNIFORM_BUFFER\")\n"
-				lua = lua .. "end\n"
+				lua = lua .. "\t\tgl.UnmapBuffer(\"GL_UNIFORM_BUFFER\")\n"
+				lua = lua .. "\tend\n"
 				
-				lua = lua .. "gl.BindBufferBase(\"GL_UNIFORM_BUFFER\", "..data.id..", "..data.buffer_id..")\n\n"
+				lua = lua .. "\tgl.BindBufferBase(\"GL_UNIFORM_BUFFER\", "..data.id..", "..data.buffer_id..")\n\n"
 			elseif data.id > -1 then
 				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
@@ -845,26 +848,24 @@ function render.CreateShader(data, vars)
 					line = line:format(data.id)
 				end
 				
-				lua = lua .. "if render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self or self.force) and "
-				lua = lua .. "render.current_material."..data.key.." ~= nil then\n \tlocal val = render.current_material." .. data.key .. "\n\t" .. line .. "\nelse"
-				lua = lua .. "if self."..data.key.." ~= nil then\n\tlocal val = self."..data.key.."\n\tif val == nil then\n\t\tval = self.defaults."..data.key.."\n\tend\n\tif type(val) == 'function' then\n\t\tval = val()\n\tend\n\t"..line.."\nend\n\n"
+				lua = lua .. "\tif render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self or self.force) and "
+				lua = lua .. "\trender.current_material."..data.key.." ~= nil then\n \t\tlocal val = render.current_material." .. data.key .. "\n\t" .. line .. "\n\telse"
+				lua = lua .. "if self."..data.key.." ~= nil then\n\t\tlocal val = self."..data.key.."\n\t\tif val == nil then\n\t\t\tval = self.defaults."..data.key.."\n\tend\n\t\tif type(val) == 'function' then\n\t\t\tval = val()\n\tend\n\t\t"..line.."\n\tend\n\n"
 			end
 		end
+		
+		lua = lua .. "end\n"
+		lua = lua .. "if RELOAD then\n\trender.active_shaders[\""..shader_id.."\"].unrolled_bind_func = update\nend\n"
+		lua = lua .. "return update"
 
 		if BUILD_OUTPUT then
 			vfs.Write("data/shader_builder_output/" .. shader_id .. "/unrolled_lines.lua", lua)
 			serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/variables.lua", variables)
 		end
-
-		local func, err = loadstring(lua, shader_id)
-
-		if not func then
-			error(err, 2)
-		end
-
-		setfenv(func, {gl = gl, self = self, loc = prog, type = type, render = render, logn = logn, tprint = table.print, ffi = ffi})
-
-		self.unrolled_bind_func = func
+		
+		local path = "data/shader_builder/" .. shader_id .. "_unrolled.lua"
+		vfs.Write(path, lua)
+		self.unrolled_bind_func = assert(vfs.dofile(path))
 	end
 	
 	self.original_data = original_data
@@ -894,7 +895,7 @@ end
 
 function META:Bind()
 	render.UseProgram(self.program_id)
-	self.unrolled_bind_func()
+	self.unrolled_bind_func(self)
 end
 
 function META:CreateMaterialTemplate(name)
@@ -990,5 +991,5 @@ function render.RebuildShaders()
 end
 
 if RELOAD then
-	render.RebuildShaders()
+	--render.RebuildShaders()
 end  
