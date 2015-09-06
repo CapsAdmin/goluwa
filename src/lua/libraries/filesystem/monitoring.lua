@@ -46,6 +46,7 @@ function vfs.MonitorEverything(b)
 
 	event.CreateTimer("vfs_monitor_everything", 0.1, 0, function()
 		if GRAPHICS and window.IsFocused() then return end
+		if profiler.IsBusy() then return end -- I already know this is slow so it's just in the way
 		for path, data in pairs(vfs.GetLoadedLuaFiles()) do
 			local info = fs.getattributes(path)
 			

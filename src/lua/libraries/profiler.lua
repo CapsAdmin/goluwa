@@ -124,6 +124,7 @@ local function parse_raw_statistical_data()
 end
 
 function profiler.EnableStatisticalProfiling(b)
+	profiler.busy = b
 	if b then	
 		jit_profiler.start("l", function(...) 
 			local ok, err = xpcall(type(b) == "function" and b or statistical_callback, system.OnError, ...)
@@ -403,7 +404,7 @@ end
 
 function profiler.StartInstrumental(file_filter)	
 	profiler.EnableSectionProfiling(true, true)
-
+	profiler.busy = true
 	debug.sethook(function(what) 
 		local info = debug.getinfo(2)
 			
@@ -422,6 +423,7 @@ function profiler.StartInstrumental(file_filter)
 end
 
 function profiler.StopInstrumental(file_filter)	
+	profiler.busy = false
 	debug.sethook()
 	
 	log(utility.TableToColumns(
@@ -473,6 +475,10 @@ function profiler.DumpZerobraneProfileTree(min, filter)
 	end
 	
 	dump(path, root)
+end
+
+function profiler.IsBusy()
+	return profiler.busy
 end
 
 profiler.Restart()
