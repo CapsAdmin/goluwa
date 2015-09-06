@@ -64,6 +64,13 @@ local function generate_draw_buffers(self)
 	return ffi.new("GLenum["..#draw_buffers.."]", draw_buffers), #draw_buffers
 end
 
+local function update_drawbuffers(self)
+	if self.draw_buffers ~= self.last_draw_buffers then
+		self.fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers) 
+		self.last_draw_buffers = self.draw_buffers
+	end
+end
+
 local META = prototype.CreateTemplate("framebuffer")
 
 META:GetSet("BindMode", "all", {"all", "read", "write"})
@@ -208,9 +215,7 @@ do -- binding
 		
 			self:Bind()
 			
-			if self.draw_buffers_size then
-				self.fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers)
-			end
+			update_drawbuffers(self)
 			
 			--if fb.read_buffer then
 			--	gl.ReadBuffer(fb.read_buffer)
@@ -347,7 +352,7 @@ function META:SetWrite(pos, b)
 		end
 	end
 	
-	if self.draw_buffers then self.fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers) end
+	update_drawbuffers(self)
 end
 
 function META:SetRead(pos, b)
@@ -400,7 +405,7 @@ function META:WriteThese(str)
 	
 	self.draw_buffers, self.draw_buffers_size = self.draw_buffers_cache[str][1], self.draw_buffers_cache[str][2]
 	
-	if self.draw_buffers then self.fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers) end
+	update_drawbuffers(self)
 end
 
 do
@@ -429,7 +434,7 @@ do
 			
 			if x then 
 				self.draw_buffers, self.draw_buffers_size = x,y 
-				self.fb:DrawBuffers(y, x)
+				update_drawbuffers(self)
 			end
 		elseif i == "depth" then
 			temp_color[0] = r or 0
@@ -445,7 +450,7 @@ do
 			self.fb:Clearfv("GL_COLOR", 0, temp_color)
 			if x then 
 				self.draw_buffers, self.draw_buffers_size = x,y 
-				self.fb:DrawBuffers(y, x)
+				update_drawbuffers(self)
 			end
 		elseif self.textures[i] then
 			local x,y = self.draw_buffers, self.draw_buffers_size
@@ -453,7 +458,7 @@ do
 			self.fb:Clearfv("GL_COLOR", self.textures[i].pos - base_color, temp_color)
 			if x then 
 				self.draw_buffers, self.draw_buffers_size = x,y 
-				self.fb:DrawBuffers(y, x)
+				update_drawbuffers(self)
 			end
 		end
 	end
