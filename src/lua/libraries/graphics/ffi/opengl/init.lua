@@ -34222,7 +34222,7 @@ function gl.Initialize(get_proc_address)
 			end
 			function META:SubImage3D(level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
 				bind(self)
-				if self.target == "GL_TEXTURE_CUBE_MAP" and MESA then
+				if self.target == "GL_TEXTURE_CUBE_MAP" then
 					return gl.TexSubImage2D(gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + zoffset, level, xoffset, yoffset, width, height, format, type, pixels)
 				end
 				return gl.TexSubImage3D(self.target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
