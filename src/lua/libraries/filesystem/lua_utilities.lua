@@ -52,14 +52,9 @@ end
 function vfs.dofile(path, ...)
 	check(path, "string")
 	
-	local func, err = vfs.loadfile(path)
+	local func = assert(vfs.loadfile(path))
 	
-	if func then
-		local ok, err = system.pcall(func, ...)
-		return ok, err, path
-	end
-	
-	return func, err
+	return func(...)
 end
 
 do -- include
