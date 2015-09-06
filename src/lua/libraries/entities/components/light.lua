@@ -24,7 +24,7 @@ prototype.EndStorable()
 
 if GRAPHICS then
 	function COMPONENT:OnAdd(ent)
-		render.LoadModel("models/cube.obj", function(meshes)
+		render.LoadModel("models/low-poly-sphere.obj", function(meshes)
 			self.light_mesh = meshes[1]
 		end)
 	end
@@ -44,7 +44,9 @@ if GRAPHICS then
 		-- automate this!!
 		
 		if self.Shadow then
+			render.SetCullMode("front")
 			self:DrawShadowMap()
+			render.SetCullMode("back")
 			
 			if self.ShadowCubemap then
 				render.gbuffer_light_shader.tex_shadow_map_cube = self.shadow_map:GetTexture()
@@ -70,10 +72,8 @@ if GRAPHICS then
 		render.gbuffer_light_shader.light_radius = transform:GetSize()		
 		
 		render.SetShaderOverride(render.gbuffer_light_shader)
-		--render.SetCullMode("back")
 		render.SetBlendMode("one", "one")
 		self.light_mesh:Draw()
-		--render.SetCullMode("front")
 	end
 	
 	function COMPONENT:DrawScene(projection, rot, pos)

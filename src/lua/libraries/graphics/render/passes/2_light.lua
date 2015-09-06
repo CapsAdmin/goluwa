@@ -11,11 +11,13 @@ PASS.Buffers = {
 function PASS:Draw3D()
 	render.EnableDepth(false)	
 	
+	render.SetCullMode("back")
 	render.gbuffer:WriteThese("light")
 	render.gbuffer:Clear("light")
 	render.gbuffer:Begin()
 		event.Call("Draw3DLights")
 	render.gbuffer:End() 	
+	render.SetCullMode("front")
 end
 
 function PASS:DrawDebug(i,x,y,w,h,size)
@@ -51,7 +53,7 @@ PASS.Shader = {
 		mesh_layout = {
 			{pos = "vec3"},
 		},	
-		source = "gl_Position = g_projection_view_world * vec4(-pos, 1);"
+		source = "gl_Position = g_projection_view_world * vec4(pos*0.5, 1);"
 	},
 	fragment = { 
 		variables = {			
@@ -187,13 +189,13 @@ PASS.Shader = {
 			
 			void main()
 			{		
-				//{out_color.rgb = vec3(0.01); out_color.a = 1; return;}
+				//{out_color.rgb = vec3(1); out_color.a = 1; return;}
 			
 				vec2 uv = get_screen_uv();					
 				vec3 view_pos = get_view_pos(uv);
 				vec3 normal = get_view_normal(uv);				
 				
-				vec3 attenuate = get_attenuation(uv, view_pos, normal, 0.005);
+				vec3 attenuate = get_attenuation(uv, view_pos, normal, 0.175);
 				vec3 ambient = get_ambient();
 				vec3 diffuse = texture(tex_diffuse, uv).rgb;
 				float metallic = get_metallic(uv)+0.025;
@@ -205,6 +207,8 @@ PASS.Shader = {
 				out_color.rgb = diffuse * mix(vec3(1,1,1), reflection, metallic);
 				out_color.rgb += specular.rrr * attenuate;
 				out_color.rgb *= ambient + attenuate;
+				
+				//out_color.rgb += vec3(0.1);
 			
 				out_color.a = 1;
 			}
