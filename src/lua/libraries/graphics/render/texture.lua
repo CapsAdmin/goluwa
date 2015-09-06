@@ -1,13 +1,5 @@
 local render = ... or _G.render
 local gl = require("graphics.ffi.opengl")
-	
-function render.BindTexture(tex, channel, location)
-	if channel and location then
-		gl.ProgramUniform1i(render.current_program, location, channel)
-	end
-	tex:Bind(channel)
-end
-
 
 local TOENUM = function(str) 
 	return "GL_" .. str:upper() 

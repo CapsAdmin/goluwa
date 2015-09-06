@@ -6,17 +6,17 @@ local render = (...) or _G.render
 
 -- used to figure out how to upload types
 local unrolled_lines = {
-	bool = "gl.ProgramUniform1i(render.current_program, %i, val and 1 or 0)",
-	number = "gl.ProgramUniform1f(render.current_program, %i, val)",
-	vec2 = "gl.ProgramUniform2f(render.current_program, %i, val.x, val.y)",
-	vec3 = "gl.ProgramUniform3f(render.current_program, %i, val.x, val.y, val.z)",
-	color = "gl.ProgramUniform4f(render.current_program, %i, val.r, val.g, val.b, val.a)",
-	mat4 = "gl.ProgramUniformMatrix4fv(render.current_program, %i, 1, 0, val.ptr)",
-	texture = "render.BindTexture(val, %i, %i)",
+	bool = "gl.ProgramUniform1i(self.program_id, %i, val and 1 or 0)",
+	number = "gl.ProgramUniform1f(self.program_id, %i, val)",
+	vec2 = "gl.ProgramUniform2f(self.program_id, %i, val.x, val.y)",
+	vec3 = "gl.ProgramUniform3f(self.program_id, %i, val.x, val.y, val.z)",
+	color = "gl.ProgramUniform4f(self.program_id, %i, val.r, val.g, val.b, val.a)",
+	mat4 = "gl.ProgramUniformMatrix4fv(self.program_id, %i, 1, 0, val.ptr)",
+	texture = "gl.ProgramUniform1i(self.program_id, %i, %i) val:Bind(%i)",
 }
 
 if SRGB then
-	unrolled_lines.color = "gl.ProgramUniform4f(render.current_program, %i, val.r ^ 2.2, val.g ^ 2.2, val.b ^ 2.2, val.a)"
+	unrolled_lines.color = "gl.ProgramUniform4f(self.program_id, %i, val.r ^ 2.2, val.g ^ 2.2, val.b ^ 2.2, val.a)"
 end
 
 unrolled_lines.vec4 = unrolled_lines.color
@@ -842,7 +842,7 @@ function render.CreateShader(data, vars)
 				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
 				if data.val.type == "texture" or data.val.type == "sampler2D" or data.val.type == "samplerCube" then
-					line = line:format(texture_channel, data.id)
+					line = line:format(data.id, texture_channel, texture_channel)
 					texture_channel = texture_channel + 1
 				else
 					line = line:format(data.id)
