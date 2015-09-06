@@ -407,7 +407,6 @@ function render.CreateShader(data, vars)
 				
 				info.variables = info.variables or {}
 				info.variables[key] = default
-				if type(default) == "table" then table.print(default) end
 				
 				return key
 			else
