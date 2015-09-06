@@ -80,7 +80,7 @@ do -- mixer
 
 	function render.AddGBufferShader(PASS, init_now)
 		local shader = {
-			name = PASS.Name,
+			name = "pp_" .. PASS.Name,
 			vertex = {
 				mesh_layout = {
 					{pos = "vec3"},
