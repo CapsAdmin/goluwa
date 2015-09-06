@@ -181,24 +181,19 @@ end
 
 do -- events
 	local events = {}
-	local ref_count = {}
 
 	function META:AddEvent(event_type)
 		self.added_events = self.added_events or {}
 		if self.added_events[event_type] then return end
-		
-		ref_count[event_type] = (ref_count[event_type] or 0) + 1
-		
+				
 		local func_name = "On" .. event_type
 		
 		events[event_type] = events[event_type] or utility.CreateWeakTable()		
 		table.insert(events[event_type], self)
-		
+
 		event.AddListener(event_type, "prototype_events", function(a_, b_, c_) 
 			for name, self in ipairs(events[event_type]) do
-				if self[func_name] then
-					self[func_name](self, a_, b_, c_)
-				end
+				self[func_name](self, a_, b_, c_)
 			end
 		end, {on_error = function(str)
 			logn(str)
@@ -211,8 +206,6 @@ do -- events
 	function META:RemoveEvent(event_type)
 		self.added_events = self.added_events or {}
 		if not self.added_events[event_type] then return end
-
-		ref_count[event_type] = (ref_count[event_type] or 0) - 1
 
 		events[event_type] = events[event_type] or utility.CreateWeakTable()
 		
@@ -227,10 +220,12 @@ do -- events
 		
 		self.added_events[event_type] = nil
 		
-		if ref_count[event_type] <= 0 then
+		if #events[event_type] <= 0 then
 			event.RemoveListener(event_type, "prototype_events")
 		end
 	end
+	
+	prototype.added_events = events
 end
 
 prototype.base_metatable = META
