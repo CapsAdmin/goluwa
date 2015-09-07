@@ -60,8 +60,6 @@ PASS.Shader = {
 			light_view_pos = Vec3(0,0,0),
 			light_color = Color(1,1,1,1),				
 			light_intensity = 0.5,
-			light_projection_view = "mat4",
-			tex_shadow_map = "sampler2D",
 		},  
 		source = [[			
 			out vec4 out_color;
@@ -83,28 +81,46 @@ PASS.Shader = {
 				}
 				else
 				{
-					vec4 temp = light_projection_view * g_projection_view_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
-					vec3 shadow_coord = temp.xyz / temp.w;
+					vec4 proj_inv = g_projection_view_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
+					
+						]] .. (function()
+							local code = ""
+							for i = 1, render.csm_count do
+								local str = [[
+								{
+									vec4 temp = light_projection_view * proj_inv;
+									vec3 shadow_coord = temp.xyz / temp.w;
 
-					if (shadow_coord.x > -1 && shadow_coord.x < 1 && shadow_coord.y > -1 && shadow_coord.y < 1 && shadow_coord.z > -1 && shadow_coord.z < 1)
-					{						
-						shadow_coord = 0.5 * shadow_coord + 0.5;
-						vec2 texelSize = 1.0 / textureSize(tex_shadow_map, 0) / 2;
-						
-						for(int x = -1; x <= 1; ++x)
-						{
-							for(int y = -1; y <= 1; ++y)
-							{
-								visibility += shadow_coord.z- bias < texture(tex_shadow_map, shadow_coord.xy + vec2(x, y) * texelSize).r ? 1.0 : 0.0;        
-							}    
-						}
-						
-						visibility /= 9.0;
-					}
-					else if(lua[project_from_camera = false])
-					{
-						visibility = 1;
-					}
+									if (
+										shadow_coord.x >= -0.9 && 
+										shadow_coord.x <= 0.9 && 
+										shadow_coord.y >= -0.9 && 
+										shadow_coord.y <= 0.9 && 
+										shadow_coord.z >= -0.9 && 
+										shadow_coord.z <= 0.9
+									)
+									{						
+										shadow_coord = 0.5 * shadow_coord + 0.5;
+									
+										visibility = shadow_coord.z - bias < texture(tex_shadow_map, shadow_coord.xy).r ? 1.0 : 0.0;
+									}
+									]]..(function()										
+										if i == 1 then
+											return [[else if(lua[project_from_camera = false])
+											{
+												visibility = 1;
+											}]]
+										end										
+										return ""									
+									end)()..[[
+								}
+								]]
+								str = str:gsub("tex_shadow_map", "lua[tex_shadow_map_" .. i .." = \"sampler2D\"]")
+								str = str:gsub("light_projection_view", "lua[light_projection_view_" .. i .. " = \"mat4\"]")
+								code = code .. str
+							end
+							return code
+						end)() .. [[
 				}
 				
 				return visibility;

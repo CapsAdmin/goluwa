@@ -35,6 +35,50 @@ local SHADER = {
 	},
 }
 
+local function setup(self)
+	local tex
+	
+	if self.cubemap then
+		tex = render.CreateTexture("cube_map")
+	else
+		tex = render.CreateTexture("2d")
+	end
+	
+	tex:SetSize(Vec2() + self.ShadowSize)
+	tex:SetInternalFormat("r16f")
+	tex:SetBaseLevel(0)
+	tex:SetMaxLevel(0)
+	tex:SetWrapS("clamp_to_border")
+	tex:SetWrapT("clamp_to_border")
+	tex:SetWrapR("clamp_to_border")
+	tex:SetBorderColor(Color(1,1,1,1))
+	tex:SetMinFilter("linear")
+	tex:SetupStorage()
+	
+	local depth = render.CreateTexture("2d")
+	depth:SetSize(Vec2() + self.ShadowSize)
+	depth:SetInternalFormat("depth_component16")
+	depth:SetMagFilter("nearest")
+	depth:SetWrapS("clamp_to_edge")
+	depth:SetWrapT("clamp_to_edge")
+	depth:SetWrapR("clamp_to_edge")
+	depth:SetupStorage()
+	
+	local fb = render.CreateFrameBuffer()
+	fb:SetSize(Vec2() + self.ShadowSize)
+	fb:SetTexture("depth", depth or {
+		size = Vec2() + self.ShadowSize,
+		internal_format = "depth_component16",
+	})
+	fb:SetTexture(1, tex)
+	--fb:CheckCompletness()
+	fb.fb:DrawBuffer("GL_COLOR_ATTACHMENT0")
+	--fb.fb:ReadBuffer("GL_NONE")	
+	
+	self.fb = fb
+	self.tex = tex
+end
+
 local directions = {
 	QuatDeg3(0,0,0),
 	QuatDeg3(180,0,0),
@@ -46,7 +90,12 @@ local directions = {
 
 local META = prototype.CreateTemplate("shadow_map")
 
-META:GetSet("ShadowSize", 2048)
+META:GetSet("ShadowSize", 256)
+
+function META:SetShadowSize(size)
+	self.ShadowSize = size
+	setup(self)
+end
 
 function META:Begin()
 	render.SetCullMode("none", true)
@@ -89,48 +138,9 @@ function render.CreateShadowMap(cubemap)
 		render.shadow_map_shader = render.CreateShader(SHADER)
 	end
 	
-	local tex
+	self.cubemap = cubemap
 	
-	if cubemap then
-		tex = render.CreateTexture("cube_map")
-		self.cubemap = true
-	else
-		tex = render.CreateTexture("2d")
-	end
-	
-	tex:SetSize(Vec2() + self.ShadowSize)
-	tex:SetInternalFormat("r32f")
-	tex:SetBaseLevel(0)
-	tex:SetMaxLevel(0)
-	tex:SetWrapS("clamp_to_border")
-	tex:SetWrapT("clamp_to_border")
-	tex:SetWrapR("clamp_to_border")
-	tex:SetBorderColor(Color(1,1,1,1))
-	tex:SetMinFilter("linear")
-	tex:SetupStorage()
-	
-	local depth = render.CreateTexture("2d")
-	depth:SetSize(Vec2() + self.ShadowSize)
-	depth:SetInternalFormat("depth_component32f")
-	depth:SetMagFilter("nearest")
-	depth:SetWrapS("clamp_to_edge")
-	depth:SetWrapT("clamp_to_edge")
-	depth:SetWrapR("clamp_to_edge")
-	depth:SetupStorage()
-	
-	local fb = render.CreateFrameBuffer()
-	fb:SetSize(Vec2() + self.ShadowSize)
-	fb:SetTexture("depth", depth or {
-		size = Vec2() + self.ShadowSize,
-		internal_format = "depth_component16",
-	})
-	fb:SetTexture(1, tex)
-	--fb:CheckCompletness()
-	fb.fb:DrawBuffer("GL_COLOR_ATTACHMENT0")
-	--fb.fb:ReadBuffer("GL_NONE")	
-	
-	self.fb = fb
-	self.tex = tex
+	setup(self)
 	
 	return self
 end

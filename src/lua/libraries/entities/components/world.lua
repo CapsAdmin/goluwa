@@ -9,14 +9,8 @@ function COMPONENT:OnAdd(ent)
 	self.sun:SetName("sun")
 	self.sun:SetHideFromEditor(false)
 	self.sun:SetProjectFromCamera(true)
-	self.sun:SetOrthoSize(200)
-	
-	if GRAPHICS then
-		local gl = require("graphics.ffi.opengl")
-		local num = ffi.new("int[1]") 
-		gl.GetIntegerv("GL_MAX_TEXTURE_SIZE", num)
-		self.sun:SetShadowSize(math.min(tonumber(num[0])/2, 2048))
-	end
+	self.sun:SetOrthoSize(400)
+	self.sun:SetShadowSize(512)
 	
 	self.sun:SetShadow(true)
 	
@@ -74,7 +68,7 @@ do -- sun
 		self.sun:SetSize(size)
 	end)
 
-	ADD("sun_size", 10000, "sun_angles") 
+	ADD("sun_size", 50000, "sun_angles") 
 	ADD("sun_color", Color(1, 0.95, 0.8), function(self, var) self.sun:SetColor(var) end)
 	ADD("sun_intensity", 1, function(self, var) self.sun:SetIntensity(var) end)
 	ADD("ambient_lighting", Color(1, 0.95, 0.8) * 0.6, function(self, var) self.sun:SetAmbientColor(var) end)

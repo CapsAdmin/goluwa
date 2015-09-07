@@ -1,5 +1,7 @@
 if not render then return end
 
+render.csm_count = 4
+
 local COMPONENT = {}
 
 COMPONENT.Name = "light"
@@ -14,7 +16,7 @@ prototype.StartStorable()
 
 	prototype.GetSet(COMPONENT, "Shadow", false)
 	prototype.GetSet(COMPONENT, "ShadowCubemap", false)
-	prototype.GetSet(COMPONENT, "ShadowSize", 1024)
+	prototype.GetSet(COMPONENT, "ShadowSize", 256)
 	prototype.GetSet(COMPONENT, "FOV", 90, {editor_min = 0, editor_max = 180})
 	prototype.GetSet(COMPONENT, "NearZ", 1)
 	prototype.GetSet(COMPONENT, "FarZ", 32000)
@@ -24,6 +26,7 @@ prototype.EndStorable()
 
 if GRAPHICS then
 	function COMPONENT:OnAdd(ent)
+		self.shadow_maps = {}
 		render.LoadModel("models/low-poly-sphere.obj", function(meshes)
 			self.light_mesh = meshes[1]
 		end)
@@ -32,9 +35,23 @@ if GRAPHICS then
 	function COMPONENT:SetShadow(b)
 		self.Shadow = b
 		if b then
-			self.shadow_map = render.CreateShadowMap(self.ShadowCubemap)
+			for i = 1, render.csm_count do
+				local shadow_map = render.CreateShadowMap(self.ShadowCubemap)
+				shadow_map:SetShadowSize(self.ShadowSize)
+				self.shadow_maps[i] = shadow_map
+			end
 		else
-			self.shadow_map:Remove()
+			for _, shadow_map in pairs(self.shadow_maps) do
+				shadow_map:Remove()
+			end
+			table.clear(self.shadow_maps)
+		end
+	end
+	
+	function COMPONENT:SetShadowSize(size)
+		self.ShadowSize = size
+		for _, shadow_map in pairs(self.shadow_maps) do
+			shadow_map:SetShadowSize(size)
 		end
 	end
 	
@@ -44,15 +61,7 @@ if GRAPHICS then
 		-- automate this!!
 		
 		if self.Shadow then
-			render.SetCullMode("front")
 			self:DrawShadowMap()
-			render.SetCullMode("back")
-			
-			if self.ShadowCubemap then
-				render.gbuffer_light_shader.tex_shadow_map_cube = self.shadow_map:GetTexture()
-			else
-				render.gbuffer_light_shader.tex_shadow_map = self.shadow_map:GetTexture()
-			end
 		end
 		
 		render.gbuffer_light_shader.light_ambient_color = self.AmbientColor
@@ -76,7 +85,7 @@ if GRAPHICS then
 		self.light_mesh:Draw()
 	end
 	
-	function COMPONENT:DrawScene(projection, rot, pos)
+	function COMPONENT:DrawScene(projection, rot, pos, i)
 		do -- setup the view matrix
 			local view = Matrix44()
 			
@@ -94,46 +103,56 @@ if GRAPHICS then
 	
 		-- render the scene with this matrix
 		render.camera_3d:SetProjection(projection)
-		render.gbuffer_light_shader.light_projection_view = render.camera_3d:GetMatrices().projection_view
+		render.gbuffer_light_shader["light_projection_view_" .. i] = render.camera_3d:GetMatrices().projection_view
 		render.Draw3DScene("shadows")
 	end
 
-	function COMPONENT:DrawShadowMap(ortho_divider)
-		self.shadow_map:Begin()
+	function COMPONENT:DrawShadowMap()
+		render.SetCullMode("front")
+		for i, shadow_map in ipairs(self.shadow_maps) do		
+			shadow_map:Begin()
 
-		local transform = self:GetComponent("transform")
-		local pos = transform:GetPosition()
-		local rot = transform:GetRotation()
-			
-		local old_view = render.camera_3d:GetView()
-		local old_projection = render.camera_3d:GetProjection()
-
-		local projection = Matrix44()
-		
-		do -- setup the view matrix
-			if self.OrthoSize == 0 then
-				projection:Perspective(math.rad(self.FOV), render.camera_3d.FarZ, render.camera_3d.NearZ, render.camera_3d.Viewport.w / render.camera_3d.Viewport.h) 
-			else
-				local size = self.OrthoSize * (ortho_divider or 1)
-				projection:Ortho(-size, size, -size, size, size, -size) 
-			end
-		end		
+			local transform = self:GetComponent("transform")
+			local pos = transform:GetPosition()
+			local rot = transform:GetRotation()
 				
-		if self.ShadowCubemap then
-			for i, rot in ipairs(self.shadow_map:GetDirections()) do
-				self.shadow_map:SetupCube(i)
-				self.shadow_map:Clear()
-				self:DrawScene(projection, rot, pos)
-			end	
-		else
-			self.shadow_map:Clear()
-			self:DrawScene(projection, rot, pos)
+			local old_view = render.camera_3d:GetView()
+			local old_projection = render.camera_3d:GetProjection()
+
+			local projection = Matrix44()
+			
+			do -- setup the view matrix
+				if self.OrthoSize == 0 then
+					projection:Perspective(math.rad(self.FOV), render.camera_3d.FarZ, render.camera_3d.NearZ, render.camera_3d.Viewport.w / render.camera_3d.Viewport.h) 
+				else
+					local size = self.OrthoSize / (i*i)
+					projection:Ortho(-size, size, -size, size, size+100, -size) 
+				end
+			end		
+					
+			if self.ShadowCubemap then
+				for i, rot in ipairs(shadow_map:GetDirections()) do
+					shadow_map:SetupCube(i)
+					shadow_map:Clear()
+					self:DrawScene(projection, rot, pos, i)
+				end	
+			else
+				shadow_map:Clear()
+				self:DrawScene(projection, rot, pos, i)
+			end
+			
+			render.camera_3d:SetView(old_view)
+			render.camera_3d:SetProjection(old_projection)
+			
+			shadow_map:End()
+					
+			if self.ShadowCubemap then
+				render.gbuffer_light_shader["tex_shadow_map_cube_" .. i] = shadow_map:GetTexture()
+			else
+				render.gbuffer_light_shader["tex_shadow_map_" .. i] = shadow_map:GetTexture()
+			end			
 		end
-		
-		render.camera_3d:SetView(old_view)
-		render.camera_3d:SetProjection(old_projection)
-		
-		self.shadow_map:End()
+		render.SetCullMode("back")
 	end
 end
 
