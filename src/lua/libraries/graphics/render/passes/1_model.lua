@@ -220,9 +220,19 @@ PASS.Shader = {
 							normal_detail.xyz = normalize(normal_detail.xyz*0.5 + vec3(0,0,0.25*0.5));
 						}
 						
+						if (lua[FlipYNormal = false])
+						{
+							normal_detail.rgb = normal_detail.rgb * vec3(1, -1, 1) + vec3(0, 1, 0);
+						}
+						
+						if (lua[FlipXNormal = false])
+						{
+							normal_detail.rgb = normal_detail.rgb * vec3(-1, 1, 1) + vec3(1, 0, 0);
+						}
+						
 						normal_detail.xyz = normalize(normal_detail.xyz * 2 - 1).xyz;
 					
-						normal_buffer.xyz = cotangent_frame(normalize(normal), normalize(view_normal), uv) * (normal_detail.xyz * lua[NormalMapScale = Vec3(1,-1,1)]);
+						normal_buffer.xyz = cotangent_frame(normalize(normal), view_normal, uv) * normal_detail.xyz;
 					}
 					else
 					{
@@ -246,20 +256,13 @@ PASS.Shader = {
 				}
 				
 				diffuse_buffer.a = texture(lua[RoughnessTexture = render.GetGreyTexture()], uv).r;
-								
-				
-				if (normal_buffer.a == 0) 
-				{
-					normal_buffer.a = 0.15;
-					diffuse_buffer.a = 1;
-				}
 				
 				normal_buffer.a *= lua[MetallicMultiplier = 1];
 				diffuse_buffer.a *= lua[RoughnessMultiplier = 1];
 												
-				vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture()], uv).xyz * vec3(2) - vec3(1)) * (dist * diffuse_buffer.a * diffuse_buffer.a * diffuse_buffer.a)*5;
-				
-				reflection_buffer = texture(lua[CubeTexture = render.GetCubemapTexture()], (mat3(g_view_inverse) * reflect(reflect_dir, normal_buffer.xyz)).yzx + noise);
+				//vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture()], uv).xyz * vec3(2) - vec3(1)) * (dist * diffuse_buffer.a * diffuse_buffer.a * diffuse_buffer.a)*2.5;
+				//reflection_buffer = texture(lua[CubeTexture = render.GetCubemapTexture()], (mat3(g_view_inverse) * reflect(reflect_dir, normal_buffer.xyz)).yzx + noise);
+				reflection_buffer = textureLod(lua[CubeTexture = render.GetCubemapTexture()], (mat3(g_view_inverse) * reflect(reflect_dir, normal_buffer.xyz)).yzx, diffuse_buffer.a*10);
 				
 				reflection_buffer.a = 1;
 			}
