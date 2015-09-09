@@ -106,7 +106,7 @@ function steam.LoadMaterial(path, material)
 				end
 			end
 			
-			material:SetRoughnessTexture(render.GetGreyTexture())
+			material:SetRoughnessTexture(render.GetWhiteTexture())
 			--aterial:SetMetallicTexture(render.GetBlackTexture())
 			
 			for key, field in pairs(path_translate) do

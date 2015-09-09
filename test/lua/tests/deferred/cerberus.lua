@@ -17,7 +17,7 @@ ent:SetStorableTable({children = {
 				Rotation = Quat(0.000000, 0.000000, 0.000000, 1.000000),
 				Position = Vec3(3.209000, 0.004000, 0.373000),
 				Shear = Vec3(0.000000, 0.000000, 0.000000),
-				Size = 1.1,
+				Size = 2,
 				GUID = "3bcab96434835c018306186ed35100",
 				SkipRebuild = false,
 			},
@@ -55,7 +55,7 @@ ent:SetStorableTable({children = {
 				Rotation = Quat(0.000000, 0.000000, 0.000000, 1.000000),
 				Position = Vec3(6.458000, 1.990000, 3.973000),
 				Shear = Vec3(0.000000, 0.000000, 0.000000),
-				Size = 19.9,
+				Size = 30,
 				GUID = "6e90bf0d815bdc0a02dca61df5fa00",
 				SkipRebuild = false,
 			},
@@ -100,7 +100,7 @@ ent:SetStorableTable({children = {
 			model = {
 				BBMin = Vec3(-19.993124, -130.268967, -47.208714),
 				BBMax = Vec3(12.520315, 25.837120, 18.778801),
-				ModelPath = "models/cerebus/Cerberus_LP.FBX",
+				ModelPath = "models/Cerberus_LP.FBX",
 				Cull = false,
 				GUID = "6b5a156c5e99f801d88544f94690a0",
 			},
@@ -123,7 +123,7 @@ ent:SetStorableTable({children = {
 				Rotation = Quat(0.000000, 0.000000, 0.000000, 1.000000),
 				Position = Vec3(3.186000, 0.205397, 0.054610),
 				Shear = Vec3(0.000000, 0.000000, 0.000000),
-				Size = 1.1,
+				Size = 2,
 				GUID = "3bcab96434835c018306186ed35100",
 				SkipRebuild = false,
 			},
@@ -161,7 +161,7 @@ ent:SetStorableTable({children = {
 				Rotation = Quat(0.000000, 0.000000, 0.000000, 1.000000),
 				Position = Vec3(3.195611, -0.205639, 0.043706),
 				Shear = Vec3(0.000000, 0.000000, 0.000000),
-				Size = 1.1,
+				Size = 2,
 				GUID = "3bcab96434835c018306186ed35100",
 				SkipRebuild = false,
 			},
@@ -199,7 +199,7 @@ ent:SetStorableTable({children = {
 				Rotation = Quat(0.000000, 0.000000, 0.000000, 1.000000),
 				Position = Vec3(-1.006920, 4.538877, 3.987376),
 				Shear = Vec3(0.000000, 0.000000, 0.000000),
-				Size = 29.1,
+				Size = 60,
 				GUID = "c013d3d3f6b8d8057f2c109f629800",
 				SkipRebuild = false,
 			},
@@ -243,7 +243,28 @@ for _,ent in pairs(ent:GetChildren()) do
 		mat:SetMetallicTexture(Texture("textures/Cerberus_M.tga"))
 		mat:SetMetallicMultiplier(1)
 		mat:SetRoughnessMultiplier(1)
+		mat:SetFlipYNormal(true)
 
 		ent:SetMaterialOverride(mat)
 	end
 end
+
+
+local ent = entities.CreateEntity("visual")
+ent:SetModelPath("models/cube.obj")
+ent:SetSize(40)
+ent:SetScale(Vec3(1,0.01,1))
+ent:SetPosition(Vec3(0,-2,0))
+ent:SetCull(false)
+local mat = render.CreateMaterial("model")		
+mat:SetDiffuseTexture(render.GetWhiteTexture())
+mat:SetMetallicTexture(render.GetWhiteTexture())
+mat:SetRoughnessTexture(render.GetBlackTexture())
+ent:SetMaterialOverride(mat)
+
+local tex = render.CreateTexture("cube_map")
+for i, v in pairs({"posx", "negx", "posy", "negy", "posz", "negz"}) do
+	tex:SetPath("textures/skyboxes/1SaintLazarusChurch/"..v..".jpg", i, false)
+end
+render.cubemap_texture.gl_tex = tex.gl_tex
+render.cubemap_texture.lol = tex

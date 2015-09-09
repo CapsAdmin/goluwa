@@ -58,11 +58,11 @@ PASS.Shader = {
 			{				
 				gl_Position = g_projection_view_world * vec4(pos, 1.0);
 				
-				out_normal = (g_normal_matrix * vec4(normal, 1)).xyz;
+				out_normal = normalize(g_normal_matrix * vec4(normal, 1)).xyz;
 				//out_binormal = normalize(g_normal_matrix * vec4(binormal, 1)).xyz;
 				//out_tangent = normalize(g_normal_matrix * vec4(tangent, 1)).xyz;
 				
-				view_normal = (mat3(g_view_world) * pos);
+				view_normal = (g_view_world * vec4(pos, 1)).xyz;
 				
 				dist = (g_view_world * vec4(pos, 1.0)).z;
 				reflect_dir = -(g_view_world * vec4(pos, 1)).xyz;
@@ -230,7 +230,7 @@ PASS.Shader = {
 							normal_detail.rgb = normal_detail.rgb * vec3(-1, 1, 1) + vec3(1, 0, 0);
 						}
 						
-						normal_detail.xyz = normalize(normal_detail.xyz * 2 - 1).xyz;
+						normal_detail.xyz = /*normalize*/(normal_detail.xyz * 2 - 1).xyz;
 					
 						normal_buffer.xyz = cotangent_frame(normalize(normal), view_normal, uv) * normal_detail.xyz;
 					}
@@ -259,7 +259,7 @@ PASS.Shader = {
 				
 				normal_buffer.a *= lua[MetallicMultiplier = 1];
 				diffuse_buffer.a *= lua[RoughnessMultiplier = 1];
-												
+																
 				//vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture()], uv).xyz * vec3(2) - vec3(1)) * (dist * diffuse_buffer.a * diffuse_buffer.a * diffuse_buffer.a)*2.5;
 				//reflection_buffer = texture(lua[CubeTexture = render.GetCubemapTexture()], (mat3(g_view_inverse) * reflect(reflect_dir, normal_buffer.xyz)).yzx + noise);
 				reflection_buffer = textureLod(lua[CubeTexture = render.GetCubemapTexture()], (mat3(g_view_inverse) * reflect(reflect_dir, normal_buffer.xyz)).yzx, diffuse_buffer.a*10);

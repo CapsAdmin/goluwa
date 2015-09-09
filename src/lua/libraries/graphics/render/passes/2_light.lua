@@ -61,7 +61,7 @@ PASS.Shader = {
 			light_color = Color(1,1,1,1),				
 			light_intensity = 0.5,
 		},  
-		source = [[			
+		source = [[		
 			out vec4 out_color;
 			
 			#define EPSILON 0.00001			
@@ -221,12 +221,12 @@ PASS.Shader = {
 				vec3 attenuate = get_attenuation(uv, view_pos, normal, 0.175);
 				vec3 ambient = get_ambient();
 				vec3 diffuse = texture(tex_diffuse, uv).rgb;
-				float metallic = get_metallic(uv)+0.025;
+				float metallic = get_metallic(uv);
 				float roughness = get_roughness(uv);
-				
+								
 				vec3 reflection = texture(tex_reflection, uv).rgb;
-				float specular = get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, roughness+0.05, metallic);
-				
+				float specular = get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, roughness, 0.25);
+								
 				out_color.rgb = diffuse * mix(vec3(1), reflection, metallic);
 				out_color.rgb += specular.rrr * attenuate;
 				out_color.rgb *= ambient + attenuate;
