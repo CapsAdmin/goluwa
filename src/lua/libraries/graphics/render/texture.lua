@@ -366,7 +366,9 @@ function META:SetPath(path, face, flip_y)
 
 			if info.internal_format then
 				self:SetInternalFormat(info.internal_format)
-				self:SetupStorage()
+				if not self.storage_setup then
+					self:SetupStorage()
+				end
 			end
 			
 			if flip_y == nil then
@@ -1020,10 +1022,10 @@ function render.CreateTexture(type)
 		self:SetWrapS("clamp_to_edge")
 		self:SetWrapT("clamp_to_edge")
 		self:SetWrapR("clamp_to_edge")
-		self:SetMinFilter("linear")
+		self:SetMinFilter("linear_mipmap_linear")
 		self:SetMagFilter("linear")
-		self:SetBaseLevel(0)
-		self:SetMaxLevel(0)
+		--self:SetBaseLevel(0)
+		--self:SetMaxLevel(0)
 	else
 		self:SetWrapS("repeat")
 		self:SetWrapT("repeat")
