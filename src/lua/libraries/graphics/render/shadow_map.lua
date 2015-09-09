@@ -22,7 +22,7 @@ local SHADER = {
 				
 			void main()
 			{			
-				if ((lua[Translucent = false] || lua[AlphaTest = false]) && texture(lua[DiffuseTexture = "sampler2D"], uv).r < 0.5)
+				if ((lua[Translucent = false] || lua[AlphaTest = false]) && !lua[DiffuseAlphaMetallic = false] && texture(lua[DiffuseTexture = "sampler2D"], uv).r < 0.5)
 				{
 					discard;
 				}

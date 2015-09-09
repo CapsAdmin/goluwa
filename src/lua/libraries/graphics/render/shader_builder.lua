@@ -6,17 +6,18 @@ local render = (...) or _G.render
 
 -- used to figure out how to upload types
 local unrolled_lines = {
-	bool = "gl.ProgramUniform1i(self.program_id, %i, val and 1 or 0)",
-	number = "gl.ProgramUniform1f(self.program_id, %i, val)",
-	vec2 = "gl.ProgramUniform2f(self.program_id, %i, val.x, val.y)",
-	vec3 = "gl.ProgramUniform3f(self.program_id, %i, val.x, val.y, val.z)",
-	color = "gl.ProgramUniform4f(self.program_id, %i, val.r, val.g, val.b, val.a)",
-	mat4 = "gl.ProgramUniformMatrix4fv(self.program_id, %i, 1, 0, val.ptr)",
-	texture = "gl.ProgramUniform1i(self.program_id, %i, %i) val:Bind(%i)",
+	bool = "gl.ProgramUniform1i(render.current_program, %i, val and 1 or 0)",
+	number = "gl.ProgramUniform1f(render.current_program, %i, val)",
+	int = "gl.ProgramUniform1i(render.current_program, %i, val)",
+	vec2 = "gl.ProgramUniform2f(render.current_program, %i, val.x, val.y)",
+	vec3 = "gl.ProgramUniform3f(render.current_program, %i, val.x, val.y, val.z)",
+	color = "gl.ProgramUniform4f(render.current_program, %i, val.r, val.g, val.b, val.a)",
+	mat4 = "gl.ProgramUniformMatrix4fv(render.current_program, %i, 1, 0, val.ptr)",
+	texture = "gl.ProgramUniform1i(render.current_program, %i, %i) val:Bind(%i)",
 }
 
 if SRGB then
-	unrolled_lines.color = "gl.ProgramUniform4f(self.program_id, %i, val.r ^ 2.2, val.g ^ 2.2, val.b ^ 2.2, val.a)"
+	unrolled_lines.color = "gl.ProgramUniform4f(render.current_program, %i, val.r ^ 2.2, val.g ^ 2.2, val.b ^ 2.2, val.a)"
 end
 
 unrolled_lines.vec4 = unrolled_lines.color
@@ -847,9 +848,9 @@ function render.CreateShader(data, vars)
 					line = line:format(data.id)
 				end
 				
-				lua = lua .. "\tif render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self or self.force) and "
-				lua = lua .. "\trender.current_material."..data.key.." ~= nil then\n \t\tlocal val = render.current_material." .. data.key .. "\n\t" .. line .. "\n\telse"
-				lua = lua .. "if self."..data.key.." ~= nil then\n\t\tlocal val = self."..data.key.."\n\t\tif val == nil then\n\t\t\tval = self.defaults."..data.key.."\n\tend\n\t\tif type(val) == 'function' then\n\t\t\tval = val()\n\tend\n\t\t"..line.."\n\tend\n\n"
+				lua = lua .. "\tif render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self or self.force_bind) and "
+				lua = lua .. "\trender.current_material."..data.key.." ~= nil then\n \t\tlocal val = render.current_material." .. data.key .. "\n\t\t" .. line .. "\n\telse"
+				lua = lua .. "if self."..data.key.." ~= nil then\n\t\tlocal val = self."..data.key.."\n\t\tif val == nil then\n\t\t\tval = self.defaults."..data.key.."\n\t\tend\n\t\tif type(val) == 'function' then\n\t\t\tval = val()\n\t\tend\n\t\t"..line.."\n\tend\n\n"
 			end
 		end
 		
@@ -864,7 +865,11 @@ function render.CreateShader(data, vars)
 		
 		local path = "data/shader_builder/" .. shader_id .. "_unrolled.lua"
 		vfs.Write(path, lua)
+		
+		local RELOAD = _G.RELOAD
+		if RELOAD then _G.RELOAD = nil end
 		self.unrolled_bind_func = assert(vfs.dofile(path))
+		if RELOAD then _G.RELOAD = RELOAD end
 	end
 	
 	self.original_data = original_data
