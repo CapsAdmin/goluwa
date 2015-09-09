@@ -329,6 +329,9 @@ end
 render.SetGlobalShaderVariable("g_cam_nearz", function() return render.camera_3d.NearZ end, "float")
 render.SetGlobalShaderVariable("g_cam_farz", function() return render.camera_3d.FarZ end, "float")
 
+render.SetGlobalShaderVariable("g_cam_pos", function() return render.camera_3d:GetPosition() end, "vec3")
+render.SetGlobalShaderVariable("g_cam_normal", function() return render.camera_3d:GetAngles():GetForward() end, "vec3")
+
 render.AddGlobalShaderCode([[
 float get_depth(vec2 uv) 
 {
