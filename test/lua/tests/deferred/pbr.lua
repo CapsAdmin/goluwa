@@ -25,11 +25,16 @@ for x = -max/2, max/2 do
 		local y = y/max*2
 		
 		local ent = entities.CreateEntity("visual")
-		ent:SetModelPath("models/sphere.obj")
 		ent:SetPosition(Vec3(x*3.25, y*3.25, z))
+		
+		ent:SetModelPath("models/sphere.obj")
 		ent:SetSize(0.05)
-		ent:SetAngles(Ang3():GetRandom())
 		ent:SetAngles(Ang3(90,0,0))
+		
+		--ent:SetModelPath("models/mitsuba-sphere.obj")
+		--ent:SetSize(0.2)
+		--ent:SetAngles(Ang3(-math.pi/2,math.pi/4,0))
+		
 		ent:SetCull(false)
 		
 		local mat = render.CreateMaterial("model")
@@ -37,7 +42,8 @@ for x = -max/2, max/2 do
 		mat:SetDiffuseTexture(render.GetWhiteTexture())
 		mat:SetMetallicTexture(render.GetWhiteTexture())
 		mat:SetRoughnessTexture(render.GetWhiteTexture())
-		mat:SetColor(Color(1,1,1, 1))
+		--mat:SetColor(Color(1,1,1, 1))
+		mat:SetColor(HSVToColor(1,0.5,1))
 		
 		mat:SetRoughnessMultiplier((x+1) / 2)
 		mat:SetMetallicMultiplier(-(y+1) / 2+1)
@@ -45,3 +51,22 @@ for x = -max/2, max/2 do
 		ent:SetMaterialOverride(mat)
 	end
 end
+
+local ent = entities.CreateEntity("visual")
+ent:SetModelPath("models/sphere.obj")
+ent:SetSize(-5)
+ent:SetPosition(Vec3(0,0,z))
+ent:SetCull(false)
+local mat = render.CreateMaterial("model")		
+mat:SetDiffuseTexture(render.GetWhiteTexture())
+mat:SetMetallicTexture(render.GetWhiteTexture())
+mat:SetRoughnessTexture(render.GetBlackTexture())
+ent:SetMaterialOverride(mat)
+
+local tex = render.CreateTexture("cube_map")
+for i, v in pairs({"posx", "negx", "posy", "negy", "posz", "negz"}) do
+	tex:SetPath("textures/skyboxes/LancellottiChapel/"..v..".jpg", i, false)
+end
+render.cubemap_texture.gl_tex = tex.gl_tex
+render.cubemap_texture.lol = tex
+
