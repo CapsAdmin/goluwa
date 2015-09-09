@@ -177,30 +177,37 @@ PASS.Shader = {
 				
 				return vec3(0,0,0);
 			}
-						
-			float get_specular(vec3 lightDirection, vec3 viewDirection, vec3 surfaceNormal, float roughness, float fresnel) 
-			{			
-				vec3 H = normalize(lightDirection + viewDirection);
-				
-				float NdotH = max(dot(surfaceNormal, H), 0.0001);
-				float VdotN = max(dot(viewDirection, surfaceNormal), 0.0);
-			  
-				float cos2Alpha = NdotH * NdotH;
-				float beck_dist = exp((cos2Alpha - 1.0) / cos2Alpha / roughness) / (3.141592653589793 * roughness * cos2Alpha);
 			
-				return 
-				min(
-					1.0, 
-					min(
-						(2.0 * NdotH * VdotN) / max(dot(viewDirection, H), 0.000001), 
-						(2.0 * NdotH * max(dot(lightDirection, surfaceNormal), 0.0)) / 
-						max(dot(lightDirection, H), 0.000001)
-					)
-				) * 
-				(VdotN) * 
-				fresnel * 
-				beck_dist / 
-				max(3.14159265 * VdotN, 0.000001);
+			float get_specular(vec3 L, vec3 V, vec3 N, float roughness, float F0)
+			{
+				float alpha = roughness*roughness;
+
+				vec3 H = normalize(V+L);
+
+				float dotNL = clamp(dot(N,L), 0, 1);
+
+				float dotLH = clamp(dot(L,H), 0, 1);
+				float dotNH = clamp(dot(N,H), 0, 1);
+
+				float F, D, vis;
+
+				// D
+				float alphaSqr = alpha*alpha;
+				float pi = 3.14159f;
+				float denom = dotNH * dotNH *(alphaSqr-1.0) + 1.0f;
+				D = alphaSqr/(pi * denom * denom);
+
+				// F
+				float dotLH5 = pow(1.0f-dotLH,5);
+				F = F0 + (1.0-F0)*(dotLH5);
+
+				// V
+				float k = alpha/2.0f;
+				float k2 = k*k;
+				float invK2 = 1.0f-k2;
+				vis = (dotLH*dotLH*invK2 + k2);
+
+				return dotNL * D * F * vis;
 			}
 			
 			void main()
@@ -218,13 +225,11 @@ PASS.Shader = {
 				float roughness = get_roughness(uv);
 				
 				vec3 reflection = texture(tex_reflection, uv).rgb;
-				float specular = get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, (roughness * roughness * roughness) + 0.0005, metallic);
+				float specular = get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, roughness+0.05, metallic);
 				
-				out_color.rgb = diffuse * mix(vec3(1,1,1), reflection, metallic);
+				out_color.rgb = diffuse * mix(vec3(1), reflection, metallic);
 				out_color.rgb += specular.rrr * attenuate;
 				out_color.rgb *= ambient + attenuate;
-				
-				//out_color.rgb += vec3(0.1);
 			
 				out_color.a = 1;
 			}
