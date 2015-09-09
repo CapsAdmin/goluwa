@@ -130,8 +130,6 @@ function steam.LoadMaterial(path, material)
 			
 			--material:SetRoughnessTexture(math.clamp(material:GetRoughnessTexture(), 0.05, 0.95))
 			
-			material:SetNormalMapScale(Vec3(1,1,1))
-			
 			material.vmt = vmt	
 		end, 
 		function()
