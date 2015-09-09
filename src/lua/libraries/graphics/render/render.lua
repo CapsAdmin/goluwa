@@ -31,6 +31,8 @@ function render.Initialize()
 	if SRGB then
 		gl.Enable("GL_FRAMEBUFFER_SRGB")
 	end
+	
+	gl.Enable("GL_TEXTURE_CUBE_MAP_SEAMLESS")
 		
 	include("lua/libraries/graphics/decoders/*")
 	
