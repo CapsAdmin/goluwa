@@ -23,29 +23,6 @@ local mount_info = {
 	["achievement_apg_r11b"] = {"half-life 2", "team fortress 2"},
 }
 
-local function mount_needed(path)
-	local name = path:match("maps/(.+)%.bsp")
-
-	if name then
-		local mounts = mount_info[name]
-		
-		if not mounts then
-			for k,v in pairs(mount_info) do
-				if name:find(k) then
-					mounts = v
-					break
-				end
-			end
-		end
-		
-		if mounts then
-			for _, mount in ipairs(mounts) do
-				steam.MountSourceGame(mount)
-			end
-		end
-	end
-end
-
 render.model_cache = {}
 
 local assimp = desire("ffi.assimp") -- model decoder
