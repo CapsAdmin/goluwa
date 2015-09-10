@@ -109,16 +109,16 @@ if GRAPHICS then
 
 	function COMPONENT:DrawShadowMap()
 		render.SetCullMode("front")
+		local transform = self:GetComponent("transform")
+		local pos = transform:GetPosition()
+		local rot = transform:GetRotation()
+			
+		local old_view = render.camera_3d:GetView()
+		local old_projection = render.camera_3d:GetProjection()
+		
 		for i, shadow_map in ipairs(self.shadow_maps) do		
 			shadow_map:Begin()
-
-			local transform = self:GetComponent("transform")
-			local pos = transform:GetPosition()
-			local rot = transform:GetRotation()
-				
-			local old_view = render.camera_3d:GetView()
-			local old_projection = render.camera_3d:GetProjection()
-
+			
 			local projection = Matrix44()
 			
 			do -- setup the view matrix
@@ -140,10 +140,7 @@ if GRAPHICS then
 				shadow_map:Clear()
 				self:DrawScene(projection, rot, pos, i)
 			end
-			
-			render.camera_3d:SetView(old_view)
-			render.camera_3d:SetProjection(old_projection)
-			
+						
 			shadow_map:End()
 					
 			if self.ShadowCubemap then
@@ -152,6 +149,10 @@ if GRAPHICS then
 				render.gbuffer_light_shader["tex_shadow_map_" .. i] = shadow_map:GetTexture()
 			end			
 		end
+		
+		render.camera_3d:SetView(old_view)
+		render.camera_3d:SetProjection(old_projection)
+		
 		render.SetCullMode("back")
 	end
 end
