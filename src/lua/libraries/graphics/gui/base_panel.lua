@@ -1357,25 +1357,8 @@ do -- mouse
 		local alpha = 1
 
 		if not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
-			-- WHYYYYYYY
-			-- WHYYYYYYY
-			-- WHYYYYYYY
-			if not self.Texture.buffer_cache then
-				local data = self.Texture:Download()
-
-				local tbl = {}
-
-				for i = 0, data.length do
-					tbl[i] = data.buffer[i].a
-				end
-				self.Texture.buffer_cache = tbl
-			end
-			-- WHYYYYYYY
-			-- WHYYYYYYY
-			-- WHYYYYYYY
-
 			local x = (x / self.Size.w)
-			local y = -(y / self.Size.h)  +  1
+			local y = (y / self.Size.h)
 			
 			x = x * self.Texture.w
 			y = y * self.Texture.h
@@ -1383,11 +1366,7 @@ do -- mouse
 			x = math.clamp(math.floor(x), 1, self.Texture.w-1)		
 			y = math.clamp(math.floor(y), 1, self.Texture.h-1)		
 			
-			local i = (y * self.Texture.w + x)
-			
-			alpha = self.Texture.buffer_cache[i] / 255
-
-			--alpha = self.Texture:GetPixelColor(, self.Texture.buffer_cache).a
+			alpha = select(4, self.Texture:GetPixelColor(x, y)) / 255
 		end
 
 		if x > 0 and x < self.Size.w and y > 0 and y < self.Size.h and alpha > 0 then
