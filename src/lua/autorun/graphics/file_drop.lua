@@ -1,3 +1,5 @@
 event.AddListener("WindowFileDrop", "file_drop", function(wnd, path)
-	console.RunString("open " .. path)
+	if vfs.IsFile(path) and path:endswith(".lua") then
+		console.RunString("open " .. path)
+	end
 end)

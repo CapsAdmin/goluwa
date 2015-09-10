@@ -1683,6 +1683,9 @@ do -- layout
 					elseif cmd == "center_left" then
 						child:MoveLeft()
 						child:CenterYSimple()
+					elseif cmd == "center_right" then
+						child:MoveRight()
+						child:CenterYSimple()
 					elseif cmd == "center_simple" then
 						child:CenterSimple()
 					elseif cmd == "center_x" then				
@@ -2324,6 +2327,8 @@ do -- events
 		-- this is important!!
 		self:UnParent()
 	end
+	
+	function PANEL:OnSystemFileDrop(path) end
 	
 	function PANEL:OnPreDraw() end
 	function PANEL:OnPostDraw() end

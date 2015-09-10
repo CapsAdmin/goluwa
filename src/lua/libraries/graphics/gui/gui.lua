@@ -124,6 +124,15 @@ do -- events
 	gui.focus_panel = gui.focus_panel or NULL
 	gui.keyboard_selected_panel = gui.keyboard_selected_panel or NULL
 	
+	function gui.SystemFileDrop(wnd, path)
+		print(wnd, path)
+		gui.UpdateMousePosition()
+		local panel = gui.hovering_panel
+		if panel:IsValid() and panel:IsMouseOver() then
+			panel:OnSystemFileDrop(path)
+		end
+	end
+	
 	function gui.MouseInput(button, press)
 		gui.RemovePanel(gui.active_tooltip)
 		
@@ -450,6 +459,7 @@ function gui.Initialize()
 	event.AddListener("MouseInput", "gui", gui.MouseInput, {on_error = system.OnError})
 	event.AddListener("KeyInputRepeat", "gui", gui.KeyInput, {on_error = system.OnError})
 	event.AddListener("CharInput", "gui", gui.CharInput, {on_error = system.OnError})
+	event.AddListener("WindowFileDrop", "gui", gui.SystemFileDrop, {on_error = system.OnError})
 	local window = render.GetWindow()
 	event.AddListener("WindowFramebufferResized", "gui", function(wnd, w,h) 
 		if window == wnd then

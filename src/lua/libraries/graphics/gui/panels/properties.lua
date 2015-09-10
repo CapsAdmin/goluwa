@@ -23,19 +23,15 @@ do -- base property
 	function PANEL:SetSpecialCallback(callback)
 		prototype.SafeRemove(self.special)
 		local special = self:CreatePanel("text_button", "special")
-		special:SetText("...")		
+		special:SetText("...")
+		special:SizeToText()
+		special:SetupLayout("center_right")
 		special:SetMode("toggle")
 		special.OnStateChanged = function(_, b) callback(b) end
 	end
 	
 	function PANEL:OnLayout(S)
 		self.label:SetPadding(Rect()+S)
-		
-		if self.special:IsValid() then
-			self.special:SetX(self:GetWidth() - self.special:GetWidth())
-			self.special:SetSize(Vec2()+self:GetHeight())
-			self.special:CenterText()
-		end
 	end
 	
 	function PANEL:OnUpdate()
@@ -194,6 +190,10 @@ do -- string
 		prototype.GetRegistered(self.Type, PANEL.Base).Initialize(self)
 		
 		self:SetClicksToActivate(1)
+	end
+	
+	function PANEL:OnSystemFileDrop(path)
+		self:SetValue(path)
 	end
 	
 	gui.RegisterPanel(PANEL)
@@ -403,7 +403,7 @@ do -- color
 			
 			panel:CallOnRemove(function() gui.RemovePanel(frame) end)
 			
-			frame:SetupLayout("center")
+			frame:CenterSimple()
 		end
 		
 		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
@@ -461,6 +461,10 @@ do -- texture
 		end
 		
 		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
+	end
+	
+	function PANEL:OnSystemFileDrop(path)
+		self:SetValue(Texture(path))
 	end
 		
 	function PANEL:OnValueChangedInternal(val)
