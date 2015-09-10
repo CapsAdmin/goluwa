@@ -9,6 +9,7 @@ prototype.StartStorable()
 	prototype.GetSet(COMPONENT, "ModelPath", "models/cube.obj")
 	prototype.GetSet(COMPONENT, "BBMin", Vec3())
 	prototype.GetSet(COMPONENT, "BBMax", Vec3())
+	prototype.IsSet(COMPONENT, "Loading", false)
 prototype.EndStorable()
 
 prototype.GetSet(COMPONENT, "Model", nil)
@@ -23,7 +24,6 @@ if GRAPHICS then
 		self.sub_models = {}
 		self.next_visible = {}
 		self.visible = {}
-		self:SetModelPath(self.ModelPath)
 	end
 
 	function COMPONENT:OnAdd(ent)
@@ -36,8 +36,10 @@ if GRAPHICS then
 
 	function COMPONENT:SetModelPath(path)
 		self:RemoveMeshes()
+
+		self.ModelPath = path		
 		
-		self.ModelPath = path
+		self:SetLoading(true)
 		
 		render.LoadModel(
 			path, 
@@ -45,6 +47,7 @@ if GRAPHICS then
 				if steam.LoadMap and path:endswith(".bsp") then
 					steam.SpawnMapEntities(path, self:GetEntity())
 				end
+				self:SetLoading(false)
 			end, 
 			function(mesh)
 				self:AddMesh(mesh)
@@ -52,9 +55,15 @@ if GRAPHICS then
 			end,
 			function(err)
 				logf("%s failed to load model %q: %s\n", self, path, err)
-				self:RemoveMeshes()
+				self:MakeError()
 			end
 		)
+	end
+	
+	function COMPONENT:MakeError()
+		self:RemoveMeshes()
+		self:SetLoading(false)
+		self:SetModelPath("models/error.mdl")
 	end
 	
 	do		
