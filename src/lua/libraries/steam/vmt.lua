@@ -13,8 +13,6 @@ local property_translate = {
 	--IlluminationColor = {"selfillumtint"},
 	AlphaTest = {"alphatest", function(num) return num == 1 end},
 	SSBump = {"ssbump", function(num) return num == 1 end},
-	DetailScale = {"detailscale"},
-	DetailBlendFactor = {"detailblendfactor"},
 	NoCull = {"nocull"},
 	Translucent = {"alphatest", "translucent", function(num) return num == 1 end},
 	NormalAlphaMetallic = {"normalmapalphaenvmapmask", function(num) return num == 1 end},
