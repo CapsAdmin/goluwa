@@ -53,7 +53,10 @@ function video.CreateGif(path)
 			if frame.w > w then w = frame.w end
 			if frame.h > h then h = frame.h end
 			
-			frames[i] = Texture(frame.w, frame.h, frame.data)
+			local tex = Texture(frame.w, frame.h)
+			tex:Upload({buffer = frame.data})
+			
+			frames[i] = tex
 			frames[i].x = frame.x
 			frames[i].y = frame.y
 			frames[i].ms = frame.ms
