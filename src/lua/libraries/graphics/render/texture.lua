@@ -773,15 +773,20 @@ function META:GetFormatInfo()
 	return format
 end
 
+function META:CreateBuffer()
+	local format = self:GetFormatInfo()	
+	local size = self.Size.w * self.Size.h * ffi.sizeof(format.ctype)
+	local buffer = ffi.new(format.tdef .. "[?]", size)
+	
+	return buffer, size, format
+end
+
 function META:Download(mip_map_level)
 	render.StartDebug()
 	
 	mip_map_level = mip_map_level or 0
-	
-	local format = self:GetFormatInfo()
-	
-	local size = self.Size.w * self.Size.h * ffi.sizeof(format.ctype)
-	local buffer = ffi.new(format.tdef .. "[?]", size)
+	        
+	local buffer, size, format = self:CreateBuffer()
 			
 	self.gl_tex:GetImage(mip_map_level, TOENUM(format.preferred_upload_format), format.number_type.enum, size, buffer)
 	
