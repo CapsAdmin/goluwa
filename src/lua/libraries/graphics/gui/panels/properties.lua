@@ -261,7 +261,7 @@ do -- number
 		end
 		
 		if input.IsMouseDown("button_1") then			
-			local pos = self:GetMousePosition()
+			local pos = window.GetMousePosition()
 			
 			self.base_value = self.base_value or self:GetValue()
 			self.real_base_value = self.real_base_value or self.base_value
@@ -279,18 +279,17 @@ do -- number
 			do
 				for i, parent in ipairs(self:GetParentList()) do
 					if parent.ClassName == "properties" then
-						local ppos = self:LocalToWorld(pos)
-						if ppos.y > render.GetHeight() then
+						if pos.y > render.GetHeight() - 4 then
 							local mpos = window.GetMousePosition()
-							mpos.y = 4
+							mpos.y = 8
 							window.SetMousePosition(mpos)
 							
 							self.base_value = nil
 							self.drag_y_pos = nil
 							return
-						elseif ppos.y < 0 then
+						elseif pos.y < 4 then
 							local mpos = window.GetMousePosition()
-							mpos.y = render.GetHeight()-4
+							mpos.y = render.GetHeight() - 8
 							window.SetMousePosition(mpos)
 							
 							self.base_value = nil
