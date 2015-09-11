@@ -595,19 +595,14 @@ do
 		gl.StencilFunc("GL_ALWAYS", 1, 0xFF) -- Set any stencil to 1
 		gl.StencilOp("GL_KEEP", "GL_KEEP", "GL_REPLACE")
 		gl.StencilMask(0xFF) -- Write to stencil buffer
-		gl.DepthMask(0) -- Don't write to depth buffer
-		gl.Clear(stencil_flag) -- Clear stencil buffer (0 by default)
+		render.GetActiveFramebuffer():Clear("stencil",0xFF) -- Clear stencil buffer (0 by default)
 		
-		--local tex = surface.GetTexture()
-		--surface.SetWhiteTexture()
 		local r,g,b,a = surface.SetColor(0,0,0,0)
 		surface.DrawRect(x, y, w, h)
 		surface.SetColor(r,g,b,a)
-		--surface.SetTexture(tex)
 		
 		gl.StencilFunc("GL_EQUAL", 1, 0xFF) -- Pass test if stencil value is 1
 		gl.StencilMask(0x00) -- Don't write anything to stencil buffer
-		gl.DepthMask(1) -- Write to depth buffer	
 		
 		x = X
 		y = Y

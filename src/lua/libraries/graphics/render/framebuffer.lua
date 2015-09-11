@@ -46,19 +46,7 @@ local function generate_draw_buffers(self)
 			--table.insert(draw_buffers, 0)
 		end
 	end
-	
-	for k,v in pairs(self.render_buffers) do
-		if (v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER") and not v.draw_manual then
-			table.insert(draw_buffers, v.pos)
-		else
-			--if self.read_buffer then
-			--	warning("more than one read buffer attached", 2)
-			--end
-			--self.read_buffer = v.mode
-			table.insert(draw_buffers, 0)
-		end
-	end
-	
+		
 	table.sort(draw_buffers, function(a, b) return a < b end)
 	
 	return ffi.new("GLenum["..#draw_buffers.."]", draw_buffers), #draw_buffers
@@ -246,10 +234,16 @@ do -- binding
 
 	function META:Bind()
 		self.fb:Bind(self.enum_bind_mode)
+		render.active_framebuffer = self
 	end
 	
 	function META:Unbind()
 		gl.BindFramebuffer(self.enum_bind_mode, 0) -- uh
+		render.active_framebuffer = render.GetScreenFrameBuffer()
+	end
+	
+	function render.GetActiveFramebuffer()
+		return render.active_framebuffer
 	end
 end
 
@@ -287,35 +281,23 @@ function META:SetTexture(pos, tex, mode, uid)
 		else
 			self.textures[uid] = nil
 		end
-	else
-		if tex then
-			local rb = self.render_buffers[uid] or gl.CreateRenderbuffer()
-		
-			-- ASDF
-			if tex.size then
-				tex.width = tex.size.w
-				tex.height = tex.size.h
-				tex.size = nil
-			end
-		
-			rb:StorageMultisample(
-				"GL_RENDERBUFFER",
-				0,				
-				"GL_" .. tex.internal_format:upper(),
-				tex.width, 
-				tex.height
-			)
-
-			self.fb:Renderbuffer("GL_FRAMEBUFFER", pos, "GL_RENDERBUFFER", rb.id)
-		
-			self.render_buffers[uid] = {rb = rb}
-		else
-			if self.render_buffers[uid] then
-				self.render_buffers[uid].rb:Delete()
-			end
-			
-			self.render_buffers[uid] = nil
+	elseif tex then
+		local rb = self.render_buffers[uid] or gl.CreateRenderbuffer()
+	
+		-- ASDF
+		if tex.size then
+			tex.width = tex.size.w
+			tex.height = tex.size.h
+			tex.size = nil
 		end
+	
+		rb:Storage("GL_" .. tex.internal_format:upper(), tex.width, tex.height)
+		self.fb:Renderbuffer(pos, rb.id)
+			
+		self.render_buffers[uid] = {rb = rb}
+	elseif self.render_buffers[uid] then
+		self.render_buffers[uid].rb:Delete()
+		self.render_buffers[uid] = nil
 	end
 		
 	self.draw_buffers, self.draw_buffers_size = generate_draw_buffers(self)

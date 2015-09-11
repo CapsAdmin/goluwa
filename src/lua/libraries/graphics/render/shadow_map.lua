@@ -22,7 +22,7 @@ local SHADER = {
 				
 			void main()
 			{			
-				if ((lua[Translucent = false] || lua[AlphaTest = false]) && !lua[DiffuseAlphaMetallic = false] && texture(lua[DiffuseTexture = "sampler2D"], uv).r < 0.5)
+				if ((lua[Translucent = false] || lua[AlphaTest = false]) && !lua[DiffuseAlphaMetallic = false] && texture(lua[DiffuseTexture = "sampler2D"], uv).a < 0.5)
 				{
 					discard;
 				}
@@ -54,25 +54,16 @@ local function setup(self)
 	tex:SetBorderColor(Color(1,1,1,1))
 	tex:SetMinFilter("linear")
 	tex:SetupStorage()
-	
-	local depth = render.CreateTexture("2d")
-	depth:SetSize(Vec2() + self.ShadowSize)
-	depth:SetInternalFormat("depth_component16")
-	depth:SetMagFilter("nearest")
-	depth:SetWrapS("clamp_to_edge")
-	depth:SetWrapT("clamp_to_edge")
-	depth:SetWrapR("clamp_to_edge")
-	depth:SetupStorage()
-	
+
 	local fb = render.CreateFrameBuffer()
 	fb:SetSize(Vec2() + self.ShadowSize)
-	fb:SetTexture("depth", depth or {
+	fb:SetTexture("depth", {
 		size = Vec2() + self.ShadowSize,
 		internal_format = "depth_component16",
 	})
 	fb:SetTexture(1, tex)
 	--fb:CheckCompletness()
-	fb.fb:DrawBuffer("GL_COLOR_ATTACHMENT0")
+	fb:WriteThese(1)
 	--fb.fb:ReadBuffer("GL_NONE")	
 	
 	self.fb = fb
