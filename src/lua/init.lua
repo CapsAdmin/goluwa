@@ -7,6 +7,18 @@ if not require("ffi") then
 	error("goluwa requires ffi to run!")
 end
 
+do -- force the current directory
+	local path = debug.getinfo(1).source
+	if path:sub(1, 1) == "@" then
+		path = path:gsub("\\", "/")
+		local dir = path:match("@(.+/)src/lua/init.lua")
+		
+		local ffi = require("ffi")
+		ffi.cdef("int chdir(const char *);")
+		ffi.C.chdir(dir .. "data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/")
+	end
+end
+
 do -- constants
 	-- if WINDOWS and X86 then blah blah end
 	_G[jit.os:upper()] = true
