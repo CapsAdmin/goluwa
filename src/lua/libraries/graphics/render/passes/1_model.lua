@@ -97,13 +97,11 @@ PASS.Shader = {
 				{
 					return alpha*alpha < 0.25;
 				}
-			
-				vec2 ij = floor(mod( gl_FragCoord.xy, vec2(2.0)));
-				float idx = ij.x + 2.0*ij.y;
-				vec4 m = step( abs(vec4(idx)-vec4(0,1,2,3)), vec4(0.5)) * vec4(0.75,0.25,0.00,0.50);
-				float d = m.x+m.y+m.z+m.w;
 				
-				return (alpha + d) < 0.9;
+				const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
+				float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) );
+				
+				return (alpha + lol) < 1;
 			}
 			
 			// http://www.geeks3d.com/20130122/normal-mapping-without-precomputed-tangent-space-vectors/
@@ -189,6 +187,8 @@ PASS.Shader = {
 					if (texture_blend != 0)
 						diffuse_buffer = mix(diffuse_buffer, texture(lua[Diffuse2Texture = "texture"], uv), texture_blend);
 					
+					diffuse_buffer *= lua[Color = Color(1,1,1,1)];
+					
 					if (lua[Translucent = false])
 					{
 						if (dither(uv, diffuse_buffer.a))
@@ -196,11 +196,6 @@ PASS.Shader = {
 							discard;
 						}
 					}
-					
-					//if (lua[DetailBlendFactor = 0] > 0)
-						//diffuse_buffer.rgb = (diffuse_buffer.rgb - texture(DetailTexture, uv * lua[DetailScale = 1]*10).rgb);
-						
-					diffuse_buffer *= lua[Color = Color(1,1,1,1)];
 				}
 								
 				// normals
