@@ -17,7 +17,8 @@ function prototype.GetStorableVariables(meta)
 	return meta.storable_variables or {}
 end
 
-function prototype.DelegateProperties(meta, from, var_name)	
+function prototype.DelegateProperties(meta, from, var_name)
+        meta[var_name] = NULL
 	for _, info in pairs(prototype.GetStorableVariables(from)) do
 		if not meta[info.var_name] then
 			 prototype.SetupProperty({

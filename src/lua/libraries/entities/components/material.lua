@@ -15,17 +15,19 @@ function COMPONENT:OnAdd(ent)
 	end
 end
 
-function COMPONENT:OnRemove(ent)
-	local ent = self:GetParent()
+function COMPONENT:OnRemove()
+	local ent = self:GetEntity():GetParent()
 	if ent:IsValid() then
-		if self.prev_mat then
+		if self.prev_mat and self.prev_mat:IsValid() then
 			local mdl = ent:GetComponent("model")
 			if mdl:IsValid() then
 				mdl:SetMaterialOverride(self.prev_mat)
 			end
 			self.prev_mat = nil
+		else
+			mdl:SetMaterialOverride()
+			self.mat:Remove()
 		end
-		self.mat:Remove()
 	end
 end
 
