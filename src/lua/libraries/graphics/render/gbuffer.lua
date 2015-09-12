@@ -79,46 +79,78 @@ do -- mixer
 	render.gbuffer_shaders_sorted = render.gbuffer_shaders_sorted or {}
 
 	function render.AddGBufferShader(PASS, init_now)
-		local shader = {
-			name = "pp_" .. PASS.Name,
-			vertex = {
-				mesh_layout = {
-					{pos = "vec3"},
-					{uv = "vec2"},
-				},	
-				source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);"
-			},
-			
-			fragment = { 
-				variables = {
-					cam_nearz = {float = function() return render.camera_3d.NearZ end},
-					cam_farz = {float = function() return render.camera_3d.FarZ end},
-					self = {texture = function() return render.gbuffer_mixer_buffer:GetTexture() end},
-				},
-				mesh_layout = {
-					{uv = "vec2"},
-				},			
-				source = PASS.Source
-			}
-		}
-		
-		for i, info in ipairs(render.gbuffer_buffers) do
-			local name = "tex_" .. info.name
-			if PASS.Source:find(name) then
-				shader.fragment.variables[name] = {texture = function() return render.gbuffer:GetTexture(info.name) end}
-			end
-		end
-			
-		if PASS.Variables then
-			table.merge(shader.fragment.variables, PASS.Variables)
-		end
-		
 		render.gbuffer_shaders_[PASS.Name] = PASS
+		
+		local stages = PASS.Source
+		
+		if type(stages) == "string" then
+			stages = {{source = stages}}
+		end
+				
+		for i, stage in ipairs(stages) do			
+			local shader = {
+				name = "pp_" .. PASS.Name .. "_" .. i,
+				vertex = {
+					mesh_layout = {
+						{pos = "vec3"},
+						{uv = "vec2"},
+					},	
+					source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);"
+				},				
+				fragment = { 
+					variables = {
+						self = {texture = function() return render.gbuffer_mixer_buffer:GetTexture() end},
+					},
+					mesh_layout = {
+						{uv = "vec2"},
+					},			
+					source = stage.source
+				}
+			}
+			
+			for i, info in ipairs(render.gbuffer_buffers) do
+				local name = "tex_" .. info.name
+				if stage.source:find(name) then
+					shader.fragment.variables[name] = {texture = function() return render.gbuffer:GetTexture(info.name) end}
+				end
+			end
+			
+			if PASS.Variables then
+				table.merge(shader.fragment.variables, PASS.Variables)
+			end
+			
+			stage.shader = shader
+		end
 		
 		function PASS:__init()
 			self.__init = nil
 			
-			local shader = render.CreateShader(shader)
+			local shader = {}
+			
+			shader.shaders = {}
+			
+			for i, stage in ipairs(stages) do
+				local size = render.gbuffer_size
+				local fb
+				
+				if stage.buffer then
+					if stage.buffer.size_divider then
+						size = size / stage.buffer.size_divider
+					else
+						size = stage.buffer.size or size
+					end
+					fb = render.CreateFrameBuffer(size.w, size.h, stage.buffer or {internal_format = "rgba8"})
+					for _, stage in ipairs(stages) do
+						stage.shader.fragment.variables["tex_stage_" .. i] = fb:GetTexture()
+					end
+				end
+				
+				local obj = render.CreateShader(stage.shader)
+				obj.size = size
+				obj.fb = fb
+				obj.blend_mode = stage.blend_mode
+				shader.shaders[i] = obj
+			end
 			
 			render.gbuffer_shaders[PASS.Name] = shader
 
@@ -212,23 +244,28 @@ function render.DrawGBuffer()
 	-- gbuffer	
 	render.SetBlendMode("alpha")
 	render.EnableDepth(false)	 
-			
+	
+	render.gbuffer_mixer_buffer:Begin()
 	for i, shader in ipairs(render.gbuffer_shaders_sorted) do
 		if shader.gbuffer_pass.Update then
 			shader.gbuffer_pass:Update()
 		end
-		
-		render.gbuffer_mixer_buffer:Begin()
-			surface.PushMatrix(0, 0, render.gbuffer_size.w, render.gbuffer_size.h)
+	
+		for i, shader in ipairs(shader.shaders) do
+			if shader.fb then shader.fb:Begin() end
+			render.SetBlendMode(shader.blend_mode)
+			surface.PushMatrix(0, 0, shader.size.w, shader.size.h)
 				render.SetShaderOverride(shader)
 				surface.rect_mesh:Draw()
 			surface.PopMatrix()
-		render.gbuffer_mixer_buffer:End()
-		
+			if shader.fb then shader.fb:End() end
+		end
+	
 		if shader.gbuffer_pass.PostRender then
 			shader.gbuffer_pass:PostRender()
 		end
 	end
+	render.gbuffer_mixer_buffer:End()
 	
 	render.SetShaderOverride()
 	
