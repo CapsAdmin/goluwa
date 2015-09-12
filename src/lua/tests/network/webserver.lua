@@ -1,4 +1,4 @@
-sockets.debug = false
+sockets.debug = true
 
 server = utility.RemoveOldObject(sockets.CreateServer())
 
@@ -104,4 +104,8 @@ end
 
 server:Host("*", server.port) 
 
-os.execute("explorer http://localhost:" .. server.port)
+if WINDOWS then
+	os.execute("explorer http://localhost:" .. server.port)
+else
+	os.execute("firefox http://localhost:" .. server.port)
+end
