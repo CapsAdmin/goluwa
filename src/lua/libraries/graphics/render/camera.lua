@@ -160,7 +160,7 @@ do -- 3d 2d
 			
 			local m = (self:GetMatrices().view * self:GetMatrices().world):GetInverse()
 			
-			cursor_x, cursor_y, cursor_z = m:TransformVector(self:GetMatrices().projection_inverse:TransformVector(x, -y, 1))
+			local cursor_x, cursor_y, cursor_z = m:TransformVector(self:GetMatrices().projection_inverse:TransformVector(x, -y, 1))
 			local camera_x, camera_y, camera_z = m:TransformVector(0, 0, 0)
 
 			--local intersect = camera + ( camera.z / ( camera.z - cursor.z ) ) * ( cursor - camera )
@@ -210,14 +210,16 @@ function META:Rebuild(type)
 
 				view:Translate(self.Position.y, self.Position.x, self.Position.z)
 			else
-				local x, y = self.Viewport.w/2, self.Viewport.h/2
+				local x, y
+				
+				x, y = self.Viewport.w/2, self.Viewport.h/2
 				view:Translate(x, y, 0)
 				view:Rotate(self.Angles.y, 0, 0, 1)
 				view:Translate(-x, -y, 0)
 				
 				view:Translate(self.Position.x, self.Position.y, 0)
 				
-				local x, y = self.Viewport.w/2, self.Viewport.h/2
+				x, y = self.Viewport.w/2, self.Viewport.h/2
 				view:Translate(x, y, 0)
 				view:Scale(self.Zoom, self.Zoom, 1)
 				view:Translate(-x, -y, 0)
@@ -321,7 +323,7 @@ local variables = {
 	"normal_matrix",
 }
 
-for i, v in pairs(variables) do
+for _, v in pairs(variables) do
 	render.SetGlobalShaderVariable("g_" .. v .. "_2d", function() return render.camera_2d:GetMatrices()[v] end, "mat4")
 	render.SetGlobalShaderVariable("g_" .. v, function() return render.camera_3d:GetMatrices()[v] end, "mat4")
 end
