@@ -12,9 +12,9 @@ local function fill_discard(invert)
 	render.gbuffer_discard:Begin()
 	
 		if invert then
-			render.gbuffer_discard:Clear(1,1,1,1)
+			render.gbuffer_discard:Clear("color", 1,1,1,1)
 		else
-			render.gbuffer_discard:Clear(0,0,0,0)
+			render.gbuffer_discard:Clear("color", 0,0,0,0)
 		end
 
 		surface.Start3D2D(pos_a, ang_a)
@@ -42,6 +42,6 @@ event.AddListener("PostGBufferModelPass", "portal", function()
 	fill_discard(true)
 	
 	render.camera_3d:SetView(portal_a_cam:GetMatrices().view)
-		render.Draw3DScene()	
+		render.Draw3DScene("portal")	
 	render.camera_3d:SetView()
 end)
