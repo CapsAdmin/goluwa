@@ -247,15 +247,11 @@ do -- binding
 	end
 end
 
-do
-	local base = gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X
-
-	function META:SetCubemapTexture(pos, i, tex)
-		pos = attachment_to_enum(self, pos)
-		self.fb:Texture2D(pos, base + i - 1, tex and tex.gl_tex.id or 0, 0)
-	end
+function META:SetCubemapTexture(pos, i, tex)
+	pos = attachment_to_enum(self, pos)
+	self.fb:TextureFace(pos, tex and tex.gl_tex.id or 0, 0, i - 1)
 end
-	
+
 function META:SetTexture(pos, tex, mode, uid)
 	pos = attachment_to_enum(self, pos)
 	mode = bind_mode_to_enum(mode or "write")
