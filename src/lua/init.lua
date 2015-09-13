@@ -14,8 +14,13 @@ do -- force the current directory
 		local dir = path:match("@(.+/)src/lua/init.lua")
 		
 		local ffi = require("ffi")
-		ffi.cdef("int chdir(const char *);")
-		ffi.C.chdir(dir .. "data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/")
+		if jit.os == "Windows" then
+			ffi.cdef("int SetCurrentDirectoryA(const char *);")
+			ffi.C.SetCurrentDirectoryA(dir .. "data/bin/windows_" .. jit.arch:lower() .. "/")
+		else
+			ffi.cdef("int chdir(const char *);")
+			ffi.C.chdir(dir .. "data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/")
+		end
 	end
 end
 
