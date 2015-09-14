@@ -3,7 +3,7 @@ local PASS = {}
 PASS.Position, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 
 PASS.Source = [[
-	out vec4 out_color;
+	out vec3 out_color;
 			
 	//
 	//FXAA
@@ -73,8 +73,7 @@ PASS.Source = [[
 
 	void main() 
 	{ 
-		out_color.rgb = FxaaPixelShader(posPos, self);
-		out_color.a = 1;
+		out_color = FxaaPixelShader(posPos, self);
 	}
 ]]
 

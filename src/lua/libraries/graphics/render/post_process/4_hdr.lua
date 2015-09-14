@@ -25,7 +25,7 @@ function PASS:PostRender()
 end
 
 PASS.Source = [[
-	out vec4 out_color;
+	out vec3 out_color;
 		
 	void main() 
 	{ 	
@@ -49,9 +49,7 @@ PASS.Source = [[
 		
 		prev_exposure = (-prev_exposure + 1) * 2;
 		
-		out_color.rgb = vec3(1.0, 1.0, 1.0) - exp2(-prev_exposure * texture(self, uv).rgb);
-		out_color.rgb += out_color.rgb;
-		out_color.a = 1;
+		out_color = vec3(1.0, 1.0, 1.0) - exp2(-prev_exposure * texture(self, uv).rgb);
 		
 	}
 ]]

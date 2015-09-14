@@ -103,7 +103,7 @@ PASS.Source = [[
 		return color;
 	}
 
-	out vec4 out_color;
+	out vec3 out_color;
 	
     void main(void)
 	{
@@ -138,14 +138,13 @@ PASS.Source = [[
 		
 		if (texture(tex_depth, uv).r != 1)
 		{
-			out_color.rgb =  mix_fog(texture(self, uv).rgb, vec4(Kr, 1));
-			out_color.a = fog_color.a;
+			out_color = mix_fog(texture(self, uv).rgb, vec4(Kr, 1));
 		}
 		else
 		{
 			vec3 color = vec3(spot*mie_collected + mie_factor*mie_collected + rayleigh_factor*rayleigh_collected)*abs(data.w);
 
-			out_color = vec4(color/200+vec3(0.3), 1);
+			out_color = color/200+vec3(0.3);
 		}
     }
 ]]

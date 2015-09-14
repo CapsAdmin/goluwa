@@ -62,7 +62,7 @@ PASS.Shader = {
 			light_intensity = 0.5,
 		},  
 		source = [[		
-			out vec4 out_color;
+			out vec3 out_color;
 			
 			#define EPSILON 0.00001			
 			
@@ -70,16 +70,13 @@ PASS.Shader = {
 			{
 				float visibility = 0;
 			
-				if (lua[light_point_shadow = false])
+				/*if (lua[light_point_shadow = false])
 				{
 					vec3 light_dir = get_view_pos(uv) - light_view_pos;
-				
-					float SampledDistance = texture(lua[tex_shadow_map_cube = "samplerCube"], light_dir).r;
 
-
-					visibility = SampledDistance;
+					visibility = texture(lua[tex_shadow_map_cube = "samplerCube"], light_dir).r;
 				}
-				else
+				else*/
 				{
 					vec4 proj_inv = g_projection_view_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
 					
@@ -212,7 +209,7 @@ PASS.Shader = {
 			
 			void main()
 			{		
-				//{out_color.rgb = vec3(1); out_color.a = 1; return;}
+				//{out_color = vec3(1); return;}
 			
 				vec2 uv = get_screen_uv();					
 				vec3 view_pos = get_view_pos(uv);
@@ -227,11 +224,9 @@ PASS.Shader = {
 				vec3 reflection = texture(tex_reflection, uv).rgb;
 				float specular = get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, roughness, 0.25);
 								
-				out_color.rgb = diffuse * mix(vec3(1), reflection, metallic);
-				out_color.rgb += specular.rrr * attenuate;
-				out_color.rgb *= ambient + attenuate;
-			
-				out_color.a = 1;
+				out_color = diffuse * mix(vec3(1), reflection, metallic);
+				out_color += specular.rrr * attenuate;
+				out_color *= ambient + attenuate;
 			}
 		]]  
 	}

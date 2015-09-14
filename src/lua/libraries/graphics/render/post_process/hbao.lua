@@ -125,12 +125,11 @@ PASS.Source = {
 	},
 	{
 		source = [[
-			out vec4 out_color;
+			out vec3 out_color;
 			
 			void main()
 			{
-				out_color.rgb = texture(self, uv).rgb * vec3(texture(tex_stage_2, uv).r);
-				out_color.a = 1;
+				out_color = texture(self, uv).rgb * vec3(texture(tex_stage_2, uv).r);
 			}
 		]]
 	}
