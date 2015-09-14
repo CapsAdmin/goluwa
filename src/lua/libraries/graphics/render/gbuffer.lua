@@ -230,6 +230,8 @@ local w_cvar = console.CreateVariable("render_width", 0, function() if gbuffer_e
 local h_cvar = console.CreateVariable("render_height", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 local mult_cvar = console.CreateVariable("render_ss_multiplier", 1, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 
+local barrier
+
 function render.DrawGBuffer()
 	if not gbuffer_enabled then return end
 
@@ -240,38 +242,43 @@ function render.DrawGBuffer()
 			pass:Draw3D() 
 		end
 	end
-		
+	
+	surface.PushMatrix()
+	
 	-- gbuffer	
-	render.SetBlendMode("alpha")
-	render.EnableDepth(false)	 
+	render.EnableDepth(false)
 	
 	render.gbuffer_mixer_buffer:Begin()
 	for i, shader in ipairs(render.gbuffer_shaders_sorted) do
 		if shader.gbuffer_pass.Update then
 			shader.gbuffer_pass:Update()
 		end
-	
+			
 		for i, shader in ipairs(shader.shaders) do
-			if shader.fb then shader.fb:Begin() end
 			render.SetBlendMode(shader.blend_mode)
+			if shader.fb then shader.fb:Begin() end
 			surface.PushMatrix(0, 0, shader.size.w, shader.size.h)
 				render.SetShaderOverride(shader)
 				surface.rect_mesh:Draw()
 			surface.PopMatrix()
 			if shader.fb then shader.fb:End() end
 		end
+		
+		if barrier then barrier() end
 	
 		if shader.gbuffer_pass.PostRender then
 			shader.gbuffer_pass:PostRender()
 		end
 	end
 	render.gbuffer_mixer_buffer:End()
-	
-	render.SetShaderOverride()
-	
-	surface.SetTexture(render.gbuffer_mixer_buffer:GetTexture())
+		
 	surface.SetColor(1,1,1,1)
+	surface.SetTexture(render.gbuffer_mixer_buffer:GetTexture())
+	render.SetBlendMode()
+	render.SetShaderOverride()
 	surface.DrawRect(0, 0, surface.GetSize())
+	
+	surface.PopMatrix()
 end
 
 local function init(width, height)
@@ -350,8 +357,7 @@ local function init(width, height)
 	
 		render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_buffers)  
 		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(width, height, {
-			filter = "nearest",
-			internal_format = "rgba16f"
+			internal_format = "rgb16f"
 		})
 		
 		if not render.gbuffer:IsValid() then
@@ -470,6 +476,8 @@ local function init(width, height)
 	gbuffer_enabled = true
 	
 	event.Call("GBufferInitialized")
+	
+	barrier = gl.TextureBarrierNV or gl.TextureBarrier
 	
 	logn("render: gbuffer initialized ", width, "x", height)
 end
