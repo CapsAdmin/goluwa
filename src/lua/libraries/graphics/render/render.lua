@@ -24,7 +24,7 @@ function render.Initialize()
 		if vendor:find("nvidia") then NVIDIA = true end
 		if vendor:find("ati") then ATI = true end
 		if vendor:find("amd") then AMD = true end
-		if vendor:find("mesa") or vendor:find("open source technology center") then MESA = true end
+		if vendor:find("mesa") or vendor:find("open source technology center") or render.GetVersion():lower():find("mesa") then MESA = true end
 		if vendor:find("intel") then INTEL = true end
 	end
 		
