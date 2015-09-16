@@ -17,8 +17,8 @@ local property_translate = {
 	Translucent = {"alphatest", "translucent", function(num) return num == 1 end},
 	NormalAlphaMetallic = {"normalmapalphaenvmapmask", function(num) return num == 1 end},
 	DiffuseAlphaMetallic = {"basealphaenvmapmask", function(num) return num == 1 end},
-	RoughnessMultiplier = {"phongexponent", function(num) return num/150 end},
-	MetallicMultiplier = {"phongboost", function(num) return num/30 end},
+	RoughnessMultiplier = {"phongexponent", function(num) return 1/(-num+1)^3 end},
+	MetallicMultiplier = {"envmaptint", function(num) return num:GetLength() end},
 }
 
 function steam.LoadMaterial(path, material)
@@ -71,6 +71,8 @@ function steam.LoadMaterial(path, material)
 			vmt.shader = k
 			vmt.fullpath = path
 			
+			local old_roughness = material:GetRoughnessMultiplier()
+			
 			for key, info in pairs(property_translate) do
 				for i,v in ipairs(info) do
 					local val = vmt[v]
@@ -105,7 +107,8 @@ function steam.LoadMaterial(path, material)
 			end
 			
 			material:SetRoughnessTexture(render.GetWhiteTexture())
-			--aterial:SetMetallicTexture(render.GetBlackTexture())
+			material:SetMetallicTexture(render.GetGreyTexture())
+			material:SetRoughnessMetallicInvert(true)
 			
 			for key, field in pairs(path_translate) do
 				if vmt[field] then
@@ -134,4 +137,12 @@ function steam.LoadMaterial(path, material)
 			material:SetError("material "..path.." not found")
 		end
 	)
+end
+
+if RELOAD then
+	for k,v in pairs(prototype.GetCreated()) do
+		if v.Type == "material" and v.ClassName == "model" and v.vmt then
+			v:SetRoughnessMetallicInvert(true)
+		end
+	end
 end

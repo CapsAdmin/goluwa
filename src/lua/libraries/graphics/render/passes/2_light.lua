@@ -224,7 +224,7 @@ PASS.Shader = {
 				vec3 reflection = texture(tex_reflection, uv).rgb;
 				float specular = get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, roughness, 0.25);
 								
-				out_color = diffuse * mix(vec3(1), reflection, metallic);
+				out_color = diffuse * mix(vec3(1), reflection, min(metallic, 1));
 				out_color += specular.rrr * attenuate;
 				out_color *= ambient + attenuate;
 			}
