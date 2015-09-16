@@ -122,12 +122,12 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 					elseif val:lower() ==  "true" then
 						val =  true
 					elseif val:find("%b{}") then
-						local values = val:match("{(.+)}"):explode(" ")
+						local values = val:match("{(.+)}"):trim():explode(" ")
 						if #values == 3 or #values == 4 then
 							val = ColorBytes(tonumber(values[1]), tonumber(values[2]), tonumber(values[3]), values[4] or 255)
 						end
 					elseif val:find("%b[]") then
-						local values = val:match("%[(.+)%]"):explode(" ")
+						local values = val:match("%[(.+)%]"):trim():explode(" ")
 						if #values == 3 and tonumber(values[1]) and tonumber(values[2]) and tonumber(values[3]) then
 							val = Vec3(tonumber(values[1]), tonumber(values[2]), tonumber(values[3]))
 						end
