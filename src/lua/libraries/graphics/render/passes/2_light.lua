@@ -86,7 +86,7 @@ PASS.Shader = {
 								local str = [[
 								{
 									vec4 temp = light_projection_view * proj_inv;
-									vec3 shadow_coord = temp.xyz / temp.w;
+									vec3 shadow_coord = temp.xyz / temp.w * 0.998;
 
 									if (
 										shadow_coord.x >= -0.9 && 
@@ -166,7 +166,7 @@ PASS.Shader = {
 						
 					if (ambient == vec3(0,0,0))
 					{
-						ambient = light_color.rgb * 0.75 * light_intensity;
+						ambient = light_color.rgb * 0.25 * light_intensity;
 					}
 
 					return ambient;
@@ -218,15 +218,12 @@ PASS.Shader = {
 				vec3 attenuate = get_attenuation(uv, view_pos, normal, 0.175);
 				vec3 ambient = get_ambient();
 				vec3 diffuse = texture(tex_diffuse, uv).rgb;
-				float metallic = get_metallic(uv);
 				float roughness = get_roughness(uv);
 								
-				vec3 reflection = texture(tex_reflection, uv).rgb;
 				float specular = get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, roughness, 0.25);
 								
-				out_color = diffuse * mix(vec3(1), reflection, min(metallic, 1));
-				out_color += specular.rrr * attenuate;
-				out_color *= ambient + attenuate;
+				out_color = specular.rrr * attenuate;
+				out_color += ambient + attenuate;
 			}
 		]]  
 	}
