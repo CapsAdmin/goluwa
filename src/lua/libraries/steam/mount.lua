@@ -2,7 +2,7 @@ local steam = ... or _G.steam
 
 console.AddCommand("mount", function(game)
 	local game_info = assert(steam.MountSourceGame(game))
-	llog("mounted %s %s", game_info.game, game_info.title2 or game_info.short_name)
+	llog("mounted %s %s", game_info.game, game_info.title2)
 end)
 
 console.AddCommand("unmount", function(game)
@@ -113,43 +113,35 @@ function steam.GetSourceGames()
 		for i, folder in ipairs(vfs.Find("os:" .. game_dir, nil, true)) do
 			local path = folder .. "/gameinfo.txt"
 			local str = vfs.Read("os:" .. path)
+			local dir = path:match("(.+/).+/")
 			
 			if str then				
-				local tbl = steam.VDFToTable(str, true, {gameinfo_path = path:match("(.+/)"), all_source_engine_paths = path:match("(.+/).+/")})
+				local tbl = steam.VDFToTable(str, true)
 				if tbl and tbl.gameinfo and tbl.gameinfo.game then
 					tbl = tbl.gameinfo
 					
 					tbl.game_dir = game_dir
 					
-					if tbl.filesystem then						
-						local asdf = false
+					if tbl.filesystem then		
+						local fixed = {}
 						
-						if tbl.filesystem.steamappid then
-							for k,v in ipairs(found) do
-								if v.filesystem and v.filesystem.steamappid == tbl.filesystem.steamappid then
-									table.add(v.filesystem.searchpaths, tbl.filesystem.searchpaths)
-									asdf = true
-									break
+						for k,v in pairs(tbl.filesystem.searchpaths) do
+							for k,v in pairs(type(v) == "string" and {v} or v) do
+								if v:find("|gameinfo_path|") then
+									v = v:gsub("|gameinfo_path|", path:match("(.+/)"))
+								elseif v:find("|all_source_engine_paths|") then
+									v = v:gsub("|all_source_engine_paths|", dir)
+								else
+									v = dir .. v
 								end
+								
+								table.insert(fixed, v)
 							end
 						end
 						
-						if not asdf then
-							for k,v in pairs(tbl.filesystem.searchpaths) do
-								for k,v in pairs(type(v) == "string" and {v} or v) do
-									local name = v:match(".+/(.+)/%.")
-									if name then
-										tbl.short_name = name
-										goto next
-									end
-								end
-							end
-							::next::
-							
-							tbl.short_name = tbl.short_name or "none"
+						tbl.filesystem.searchpaths = fixed
 						
-							table.insert(found, tbl)
-						end
+						table.insert(found, tbl)
 					end
 				end
 			end
@@ -179,74 +171,60 @@ function steam.MountSourceGame(game_info)
 	steam.UnmountSourceGame(game_info)
 	
 	local done = {}
+		
+	for i, path in pairs(game_info.filesystem.searchpaths) do		
+		local path = "os:" .. path
 	
-	for i, paths in pairs(game_info.filesystem.searchpaths) do
-		if type(paths) == "string" then 
-			paths = {paths} 
+		if path:endswith("/.") then
+			path = path:sub(0, -2)
 		end
-				
-		for i, path in pairs(paths) do				
-			
-			local path = "os:" .. path
-			
-			
-			if not vfs.IsDir(path) then
-				path = game_info.game_dir .. path .. "/"
-			end						
-			
-			if path:endswith("/.") then
-				path = path:sub(0, -2)
+		
+		if not done[path] and vfs.Exists(path) then
+			if not vfs.GetMounts()[path] then
+				vfs.Mount(path, nil, game_info)
 			end
 			
-			if not done[path] and vfs.Exists(path) then
-				if not vfs.GetMounts()[path] then
-					vfs.Mount(path, nil, game_info)
+			if vfs.IsDir(path .. "addons/") then
+				for k, v in pairs(vfs.Find(path .. "addons/")) do
+					if vfs.IsDir(path .. "addons/" .. v) then
+						logn("[vfs] also mounting addon ", v)
+						vfs.Mount(path .. "addons/" .. v, nil, game_info)
+					elseif v:endswith(".gma") then
+						logn("[vfs] also mounting addon ", v)
+						vfs.Mount(path .. "addons/" .. v, nil, game_info)
+					end
 				end
-				
-				if vfs.IsDir(path .. "addons/") then
-					for k, v in pairs(vfs.Find(path .. "addons/")) do
-						if vfs.IsDir(path .. "addons/" .. v) then
-							logn("[vfs] also mounting addon ", v)
-							vfs.Mount(path .. "addons/" .. v, nil, game_info)
-						elseif v:endswith(".gma") then
-							logn("[vfs] also mounting addon ", v)
-							vfs.Mount(path .. "addons/" .. v, nil, game_info)
+			end
+						
+			-- garry's mod exceptions..
+			if game_info.filesystem.steamappid == 4000 then
+				for k, v in pairs(vfs.Find(game_info.game_dir .. "sourceengine/")) do
+					if not done[v] then
+						if v:find("%.vpk") and v:find("_dir") and not vfs.GetMounts()[game_info.game_dir .. v .. "/"] then
+							vfs.Mount(game_info.game_dir .. "sourceengine/" .. v .. "/", nil, game_info)
 						end
+						done[v] = true
 					end
 				end
-							
-				-- garry's mod exceptions..
-				if game_info.filesystem.steamappid == 4000 then
-					for k, v in pairs(vfs.Find(game_info.game_dir .. "sourceengine/")) do
-						if not done[v] then
-							if v:find("%.vpk") and v:find("_dir") and not vfs.GetMounts()[game_info.game_dir .. v .. "/"] then
-								vfs.Mount(game_info.game_dir .. "sourceengine/" .. v .. "/", nil, game_info)
-							end
-							done[v] = true
-						end
-					end
+			end
+			
+			if vfs.IsDir(path) then
+				if not path:endswith("/") then
+					path = path .. "/"
 				end
-				
-				if vfs.IsDir(path) then
-					if not path:endswith("/") then
-						path = path .. "/"
-					end
 
-					if vfs.IsDir(path .. "download/") and not vfs.GetMounts()[path .. "download/"] then
-						vfs.Mount(path .. "download/", nil, game_info)
-					end				
-					
-					for k, v in pairs(vfs.Find(path)) do
-						if not done[path .. v] then
-							if v:find("%.vpk") and v:find("_dir") and not vfs.GetMounts()[path .. v .. "/"] then
-								vfs.Mount(path:sub(4) .. v .. "/", nil, game_info)
-							end
-							done[path .. v] = true
+				if vfs.IsDir(path .. "download/") and not vfs.GetMounts()[path .. "download/"] then
+					vfs.Mount(path .. "download/", nil, game_info)
+				end				
+				
+				for k, v in pairs(vfs.Find(path)) do
+					if not done[path .. v] then
+						if v:find("%.vpk") and v:find("_dir") and not vfs.GetMounts()[path .. v .. "/"] then
+							vfs.Mount(path:sub(4) .. v .. "/", nil, game_info)
 						end
+						done[path .. v] = true
 					end
 				end
-				
-				done[path] = true
 			end
 		end
 	end
@@ -287,6 +265,7 @@ local translate = {
 	["half-life: source"] = 280,
 	["day of defeat: source"] = 300,
 	["half-life 2: deathmatch"] = 320,
+	["hl2dm"] = 320,
 	["half-life 2: lost coast"] = 220,
 	["half-life deathmatch: source"] = 360,
 	["half-life 2: episode one"] = 380,
@@ -337,13 +316,7 @@ function steam.FindSourceGame(name)
 				return game_info
 			end
 		end
-		
-		for i, game_info in ipairs(games) do
-			if game_info.short_name == (name_translate[name] or name) then 
-				return game_info
-			end
-		end
-	
+			
 		for i, game_info in ipairs(games) do
 			if game_info.game:compare(name) then 
 				return game_info

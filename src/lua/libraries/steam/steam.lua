@@ -142,7 +142,11 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 					else
 						if key:find("+", nil, true) then
 							for i, key in ipairs(key:explode("+")) do
-								current[key] = val
+								if type(current[key]) == "table" then
+									table.insert(current[key], val)
+								elseif current[key] then
+									current[key] = {current[key], val}
+								end
 							end
 						else
 							current[key] = val
