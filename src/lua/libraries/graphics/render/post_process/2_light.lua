@@ -12,7 +12,7 @@ PASS.Source = [[
 		vec3 diffuse = texture(tex_diffuse, uv).rgb;
 		vec3 specular = get_light(uv);
 		
-		out_color = diffuse * mix(vec3(1), reflection, min(get_metallic(uv),1)) * specular;
+		out_color = diffuse * mix(vec3(1), reflection, min(get_metallic(uv), 1)) * specular;
 		//out_color = reflection;
 	}
 ]]

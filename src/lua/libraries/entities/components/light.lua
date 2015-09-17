@@ -125,7 +125,7 @@ if GRAPHICS then
 				if self.OrthoSize == 0 then
 					projection:Perspective(math.rad(self.FOV), render.camera_3d.FarZ, render.camera_3d.NearZ, render.camera_3d.Viewport.w / render.camera_3d.Viewport.h) 
 				else
-					local size = self.OrthoSize / (i*i)
+					local size = 2 * self.OrthoSize / (i^3)
 					projection:Ortho(-size, size, -size, size, size+100, -size) 
 				end
 			end		

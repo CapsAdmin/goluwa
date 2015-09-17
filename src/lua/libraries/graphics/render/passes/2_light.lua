@@ -86,7 +86,7 @@ PASS.Shader = {
 								local str = [[
 								{
 									vec4 temp = light_projection_view * proj_inv;
-									vec3 shadow_coord = temp.xyz / temp.w * 0.998;
+									vec3 shadow_coord = temp.xyz / temp.w;
 
 									if (
 										shadow_coord.x >= -0.9 && 
@@ -152,7 +152,7 @@ PASS.Shader = {
 				
 				if (lua[light_shadow = false])
 				{					
-					attenuation *= get_shadow(uv, attenuation*0.0025);
+					attenuation *= get_shadow(uv, 0.00075);
 				}
 				
 				return light_color.rgb * attenuation * light_intensity;

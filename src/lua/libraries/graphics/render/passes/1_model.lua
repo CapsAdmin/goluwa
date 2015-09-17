@@ -14,7 +14,7 @@ function PASS:Initialize()
 	local META = self.shader:CreateMaterialTemplate(PASS.Name)
 	
 	function META:OnBind()
-		if self.NoCull then
+		if self.NoCull or self.Translucent then
 			render.SetCullMode("none") 
 		else
 			render.SetCullMode("front") 
@@ -250,16 +250,34 @@ PASS.Shader = {
 					}
 				}
 				
-				diffuse_buffer.a = texture(lua[RoughnessTexture = render.GetGreyTexture()], uv).r;
+				diffuse_buffer.a = texture(lua[RoughnessTexture = render.GetBlackTexture()], uv).r;
+								
+				{
+					// hmmm
+					
+					if (diffuse_buffer.a == 0)
+					{
+						if (normal_buffer.a != 0)
+						{
+							diffuse_buffer.a = pow(-normal_buffer.a+1, 1);
+						}
+						else
+						{
+							diffuse_buffer.a = -length(diffuse_buffer.rgb)+0.8;
+						}
+					}
+					
+					if (normal_buffer.a == 0)
+					{
+						normal_buffer.a = pow(length(diffuse_buffer.rgb), 0.5)*0.3;
+					}
+					
+				}
+				
 				
 				normal_buffer.a *= lua[MetallicMultiplier = 1];
 				diffuse_buffer.a *= lua[RoughnessMultiplier = 1];
-				
-				if (lua[RoughnessMetallicInvert = false])
-				{
-					diffuse_buffer.a = pow(-normal_buffer.a+1, 1);
-				}
-																
+							
 				//vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture()], uv).xyz * vec3(2) - vec3(1)) * (dist * diffuse_buffer.a * diffuse_buffer.a * diffuse_buffer.a)*2.5;
 				//reflection_buffer = texture(lua[CubeTexture = render.GetCubemapTexture()], (mat3(g_view_inverse) * reflect(reflect_dir, normal_buffer.xyz)).yzx + noise);
 				reflection_buffer = textureLod(lua[CubeTexture = render.GetCubemapTexture()], (mat3(g_view_inverse) * reflect(reflect_dir, normal_buffer.xyz)).yzx, diffuse_buffer.a*10);

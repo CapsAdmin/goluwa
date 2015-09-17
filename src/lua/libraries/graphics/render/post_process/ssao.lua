@@ -1,50 +1,49 @@
 local PASS = {}
 
 PASS.Name = FILE_NAME
-PASS.Default = true
+PASS.Default = false
 
 PASS.Source = [[	
-	float compare_depths( in float depth1, in float depth2 ) 
+	float compare_depths(vec3 origin, vec3 pos) 
 	{
-		float diff = (depth2-(depth1-0.000001)) * 55000;
+		vec3 dir = origin-pos;
 		
-		return clamp(diff, 0.025, 0.1);
+		if (dir.z < -0.5) return -dir.z/400;
+		
+		return clamp(dir.z, 0, 0.01);
 	}
 	
 	float ssao()
 	{
 
-		float depth = get_depth(uv);
+		vec3 origin = get_view_pos(uv)*0.996;
 		
-		if (depth > 1.0) return 1.0;
-		
-		float pw = 1.0 / g_screen_size.x;
-		float ph = 1.0 / g_screen_size.y;
+		vec2 p = vec2(1.0) / g_screen_size;
 
 		float ao = 0.0;
 		
-		float aoscale = 1.25;
+		float aoscale = 1.125;
 				
-		for (int i = 1; i < 16; i++)
-		{					
-			ao += compare_depths(depth, get_depth(vec2(uv.x + pw, uv.y + ph)));
-			ao += compare_depths(depth, get_depth(vec2(uv.x - pw, uv.y + ph)));
-			ao += compare_depths(depth, get_depth(vec2(uv.x + pw, uv.y - ph)));
-			ao += compare_depths(depth, get_depth(vec2(uv.x - pw, uv.y - ph)));
+		for (int i = 1; i < 32; i++)
+		{		
+			ao += compare_depths(origin, get_view_pos(vec2(uv.x + p.x, uv.y + p.y)));
+			ao += compare_depths(origin, get_view_pos(vec2(uv.x - p.x, uv.y + p.y)));
+			ao += compare_depths(origin, get_view_pos(vec2(uv.x + p.x, uv.y - p.y)));
+			ao += compare_depths(origin, get_view_pos(vec2(uv.x - p.x, uv.y - p.y)));
 		 
-			pw *= aoscale;
-			ph *= aoscale;
+			p *= aoscale;
 		}			 
-	 
-		ao/=4.0;
-	 
-		return clamp(pow(ao+0.1, 2), 0, 1);
+	 	
+		 
+		return clamp(pow(ao/2 + 0.68, 7), 0, 1);
 	}
 	out vec3 out_color;
 
 	void main() 
 	{ 
-		out_color = texture(self, uv).rgb * vec3(ssao());
+		out_color = 
+			texture(self, uv).rgb * 
+			vec3(ssao());
 	}
 ]]
 

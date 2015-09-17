@@ -144,7 +144,7 @@ PASS.Source = [[
 		{
 			vec3 color = vec3(spot*mie_collected + mie_factor*mie_collected + rayleigh_factor*rayleigh_collected)*abs(data.w);
 
-			out_color = pow(color/600+vec3(0.3), vec3(1.5));
+			out_color = pow(color/600+vec3(0.3), vec3(2.2));
 		}
     }
 ]]

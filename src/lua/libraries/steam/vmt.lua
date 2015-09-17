@@ -18,7 +18,7 @@ local property_translate = {
 	NormalAlphaMetallic = {"normalmapalphaenvmapmask", function(num) return num == 1 end},
 	DiffuseAlphaMetallic = {"basealphaenvmapmask", function(num) return num == 1 end},
 	RoughnessMultiplier = {"phongexponent", function(num) return 1/(-num+1)^3 end},
-	MetallicMultiplier = {"envmaptint", function(num) return num:GetLength() end},
+	MetallicMultiplier = {"envmaptint", function(num) return type(num) == "number" and num or num.ptr[0] end},
 }
 
 function steam.LoadMaterial(path, material)
@@ -106,9 +106,9 @@ function steam.LoadMaterial(path, material)
 				end
 			end
 			
-			material:SetRoughnessTexture(render.GetWhiteTexture())
-			material:SetMetallicTexture(render.GetGreyTexture())
-			material:SetRoughnessMetallicInvert(true)
+			--material:SetRoughnessTexture(render.GetWhiteTexture())
+			--material:SetMetallicTexture(render.GetGreyTexture())
+			--material:SetRoughnessMetallicInvert(true)
 			
 			for key, field in pairs(path_translate) do
 				if vmt[field] then
@@ -119,7 +119,7 @@ function steam.LoadMaterial(path, material)
 					resource.Download(
 						new_path,
 						function(path)
-							if key == "basetexture" or key == "basetexture2" then
+							if key == "DiffuseTexture" or key == "Diffuse2Texture" then
 								material["Set" .. key](material, Texture(path))
 							else
 								material["Set" .. key](material, Texture(path, false)) -- not srgb
@@ -142,7 +142,7 @@ end
 if RELOAD then
 	for k,v in pairs(prototype.GetCreated()) do
 		if v.Type == "material" and v.ClassName == "model" and v.vmt then
-			v:SetRoughnessMetallicInvert(true)
+			--v:SetMetallicMultiplier(v:GetMetallicMultiplier()/3)
 		end
 	end
 end

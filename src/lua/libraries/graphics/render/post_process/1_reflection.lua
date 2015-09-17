@@ -32,7 +32,7 @@ table.insert(PASS.Source, {
 		{
 			hitCoord += dir;
 				  
-			float depth = hitCoord.z - get_view_pos(project(hitCoord)).z + (random(uv) * get_roughness(uv));
+			float depth = hitCoord.z - get_view_pos(project(hitCoord)).z + (random(uv) * pow(get_roughness(uv)*2, 4));
 			 	 
 			if(depth < 0.0 && depth > -1)
 			{
@@ -62,7 +62,7 @@ table.insert(PASS.Source, {
 		
 		float fade = screenEdgefactor *  clamp((searchDist - length(viewPos - hitPos)) * searchDistInv, 0.0, 1.0) * coords.w;
 	 	
-		vec3 reflection = mix(texture(tex_reflection, uv).rgb, texture(tex_diffuse, coords.xy).rgb * pow(get_light(uv), vec3(1)), pow(fade, 0.15));
+		vec3 reflection = mix(texture(tex_reflection, uv).rgb, texture(tex_diffuse, coords.xy).rgb * get_light(coords.xy), pow(fade, 0.5));
 	 
 		out_color =	reflection;
 	}
