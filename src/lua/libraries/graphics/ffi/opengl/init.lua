@@ -33531,8 +33531,8 @@ function gl.Initialize(get_proc_address)
 			function META:TextureLayerEXT(target, attachment, texture, level, layer)
 				bind(self, target) return gl.FramebufferTextureLayerEXT(target, attachment, texture, level, layer)
 			end
-			function META:Renderbuffer(target, attachment, renderbuffertarget, renderbuffer)
-				bind(self, target) return gl.FramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer)
+			function META:Renderbuffer(attachment, renderbuffer)
+				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferRenderbuffer("GL_FRAMEBUFFER", attachment, "GL_RENDERBUFFER", renderbuffer)
 			end
 			function META:CreateFramebuffers(n, framebuffers)
 				bind(self, "GL_FRAMEBUFFER") return gl.CreateFramebuffers(n, self.ids)
@@ -33856,8 +33856,8 @@ function gl.Initialize(get_proc_address)
 			function META:StorageEXT(target, internalformat, width, height)
 				bind(self) return gl.RenderbufferStorageEXT(target, internalformat, width, height)
 			end
-			function META:Storage(target, internalformat, width, height)
-				bind(self) return gl.RenderbufferStorage(target, internalformat, width, height)
+			function META:Storage(internalformat, width, height)
+				bind(self) return gl.RenderbufferStorage("GL_RENDERBUFFER", internalformat, width, height)
 			end
 			function META:StorageMultisampleEXT(target, samples, internalformat, width, height)
 				bind(self) return gl.RenderbufferStorageMultisampleEXT(target, samples, internalformat, width, height)
