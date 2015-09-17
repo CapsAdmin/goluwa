@@ -19,9 +19,9 @@ function render.GenerateTextures()
 		local size = 16
 		render.error_tex:Fill(function(x, y)
 			if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
-				return 255, 0, 255, 255
+				return 255, 255, 255, 255
 			else
-				return 0, 0, 0, 255
+				return 255, 0, 0, 255
 			end
 		end)
 	end
