@@ -22,6 +22,7 @@ end
 
 unrolled_lines.vec4 = unrolled_lines.color
 unrolled_lines.sampler2D = unrolled_lines.texture
+unrolled_lines.sampler2DMS = unrolled_lines.texture
 unrolled_lines.samplerCube = unrolled_lines.texture
 unrolled_lines.float = unrolled_lines.number
 unrolled_lines.boolean = unrolled_lines.bool
@@ -147,7 +148,7 @@ local function translate_fields(data)
 
 		local t, default, get = type_of_attribute(v)
 		
-		if t == "bool" or t == "sampler2D" or t == "samplerCube" or t == "texture" then
+		if t == "bool" or t:find("sampler") or t == "texture" then
 			params.precision = ""
 		end
     
@@ -186,7 +187,7 @@ local function variables_to_string(type, variables, prepend, macro, array)
 				name = prepend .. name
 			end
 
-			if data.type == "sampler2D" or data.type == "samplerCube" then
+			if data.type:find("sampler") then
 				local layout = ""
 
 				if render.IsExtensionSupported("GL_ARB_enhanced_layouts") or render.IsExtensionSupported("GL_ARB_shading_language_420pack") then
@@ -788,7 +789,7 @@ function render.CreateShader(data, vars)
 							self[val.name] = val.get
 						end
 
-						if render.debug and id < 0 and val.type ~= "sampler2D" then
+						if render.debug and id < 0 and not val.type:find("sampler") then
 							logf("%s: variables in %s %s %s is not being used (variables location < 0)\n", shader_id, shader, val.name, val.type)
 						end
 					end
@@ -841,7 +842,7 @@ function render.CreateShader(data, vars)
 			elseif data.id > -1 then
 				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
-				if data.val.type == "texture" or data.val.type == "sampler2D" or data.val.type == "samplerCube" then
+				if data.val.type == "texture" or data.val.type:find("sampler") then
 					line = line:format(data.id, texture_channel, texture_channel)
 					texture_channel = texture_channel + 1
 				else

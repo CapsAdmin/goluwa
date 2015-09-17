@@ -29,6 +29,7 @@ META:GetSet("Size", Vec2())
 META:GetSet("Depth", 0)
 META:GetSet("MipMapLevels", -1)
 META:GetSet("Path", "")
+META:GetSet("Multisample", 0)
 META:IsSet("Loading", false)
 META:IsSet("InternalFormat", "rgba8")
 META:IsSet("SRGB", true)
@@ -480,12 +481,23 @@ function META:SetupStorage()
 		end
 	elseif self.StorageType == "2d" or self.StorageType == "rectangle" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then		
 		if gl.TexStorage2D then
-			self.gl_tex:Storage2D(
-				mip_map_levels,
-				internal_format, 
-				self.Size.w, 
-				self.Size.h
-			)
+			if self.Multisample > 0 then
+				self.gl_tex:Storage2DMultisample(
+					self.Multisample,
+					mip_map_levels,
+					internal_format, 
+					self.Size.w, 
+					self.Size.h,
+					1
+				)
+			else
+				self.gl_tex:Storage2D(
+					mip_map_levels,
+					internal_format, 
+					self.Size.w, 
+					self.Size.h
+				)
+			end
 		else
 			local format = self:GetFormatInfo()
 			self.gl_tex:Image2D(
