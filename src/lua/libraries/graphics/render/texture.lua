@@ -314,7 +314,7 @@ do -- add get set functions based on parameters
 		elseif v.type == "color" then
 			META[info.set_name] = function(self, val)
 				self[info.var_name] = val
-				self.gl_tex:SetParameterfv(enum, (v.translate and v.translate(val) or val).ptr)
+				self.gl_tex:SetParameterfv(enum, ffi.cast("const float *", (v.translate and v.translate(val) or val)))
 			end
 		end
 		

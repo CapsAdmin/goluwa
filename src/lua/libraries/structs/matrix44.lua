@@ -24,38 +24,19 @@ META.Args = {
 	"m30", "m31", "m32", "m33",
 }
 
-function META.__eq(a, b)
-	return
-		getmetatable(b) == META and
-		a.ptr[0] == b.ptr[0] and
-		a.ptr[1] == b.ptr[1] and
-		a.ptr[2] == b.ptr[2] and
-		a.ptr[3] == b.ptr[3] and
-		a.ptr[4] == b.ptr[4] and
-		a.ptr[5] == b.ptr[5] and
-		a.ptr[6] == b.ptr[6] and
-		a.ptr[7] == b.ptr[7] and
-		a.ptr[8] == b.ptr[8] and
-		a.ptr[9] == b.ptr[9] and
-		a.ptr[10] == b.ptr[10] and
-		a.ptr[11] == b.ptr[11] and
-		a.ptr[12] == b.ptr[12] and
-		a.ptr[13] == b.ptr[13] and
-		a.ptr[14] == b.ptr[14] and
-		a.ptr[15] == b.ptr[15]
-end
+structs.AddOperator(META, "==")
 
 local size = ffi.sizeof("float") * 16
 
 function META:Copy(matrix)
 	if matrix then
-		ffi.copy(self.ptr, matrix.ptr, 16)
+		ffi.copy(self, matrix, 16)
 		
 		return self
 	else
 		local result = light_ctor()
 		
-		ffi.copy(result.ptr, self.ptr, size)
+		ffi.copy(result, self, size)
 		
 		return result
 	end

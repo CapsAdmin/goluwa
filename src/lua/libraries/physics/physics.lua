@@ -94,8 +94,6 @@ do
 			tbl.hit_pos.ptr = out[0].hit_pos
 			tbl.hit_normal.ptr = out[0].hit_normal
 			
-
-			
 			if out[0].body ~= nil then
 				local body = physics.BodyToLua(out[0].body)
 				if body then

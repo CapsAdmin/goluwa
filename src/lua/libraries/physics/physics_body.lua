@@ -78,7 +78,7 @@ do -- init sphere options
 		if rad then self:SetPhysicsSphereRadius(rad) end
 		
 		if physics.init then
-			self.body = bullet.CreateRigidBodySphere(self:GetMass(), self:GetMatrix().ptr, self:GetPhysicsSphereRadius())
+			self.body = bullet.CreateRigidBodySphere(self:GetMass(), ffi.cast("float *", self:GetMatrix()), self:GetPhysicsSphereRadius())
 			physics.StoreBodyPointer(self.body, self)
 		end
 		
@@ -93,7 +93,7 @@ do -- init box options
 		if scale then self:SetPhysicsBoxScale(scale) end
 		
 		if physics.init then
-			self.body = bullet.CreateRigidBodyBox(self:GetMass(), self:GetMatrix().ptr, vec3_to_bullet(self:GetPhysicsBoxScale():Unpack()))
+			self.body = bullet.CreateRigidBodyBox(self:GetMass(), ffi.cast("float *", self:GetMatrix()), vec3_to_bullet(self:GetPhysicsBoxScale():Unpack()))
 			physics.StoreBodyPointer(self.body, self)
 		end
 		
@@ -108,7 +108,7 @@ do -- init capsule options
 	
 	function META:InitPhysicsCapsuleZ()	
 		if physics.init then
-			self.body = bullet.CreateCapsuleZ(self:GetMass(), self:GetMatrix().ptr, self:GetPhysicsCapsuleZRadius(), self:GetPhysicsCapsuleZHeight())
+			self.body = bullet.CreateCapsuleZ(self:GetMass(), ffi.cast("float *", self:GetMatrix()), self:GetPhysicsCapsuleZRadius(), self:GetPhysicsCapsuleZHeight())
 			physics.StoreBodyPointer(self.body, self)		
 		end
 		
@@ -128,7 +128,7 @@ do -- mesh init options
 		self.mesh = tbl
 		
 		if physics.init then
-			self.body = bullet.CreateRigidBodyConvexHull(self:GetMass(), self:GetMatrix().ptr, mesh)
+			self.body = bullet.CreateRigidBodyConvexHull(self:GetMass(), ffi.cast("float *", self:GetMatrix()), mesh)
 			physics.StoreBodyPointer(self.body, self)
 		end
 		
@@ -153,7 +153,7 @@ do -- mesh init options
 		self.mesh = tbl
 		
 		if physics.init then
-			self.body = bullet.CreateRigidBodyConvexTriangleMesh(self:GetMass(), self:GetMatrix().ptr, mesh)
+			self.body = bullet.CreateRigidBodyConvexTriangleMesh(self:GetMass(), ffi.cast("float *", self:GetMatrix()), mesh)
 			physics.StoreBodyPointer(self.body, self)
 		end
 		
@@ -178,7 +178,7 @@ do -- mesh init options
 		self.mesh = tbl
 
 		if physics.init then
-			self.body = bullet.CreateRigidBodyTriangleMesh(self:GetMass(), self:GetMatrix().ptr, mesh, not not quantized_aabb_compression)
+			self.body = bullet.CreateRigidBodyTriangleMesh(self:GetMass(), ffi.cast("float *", self:GetMatrix()), mesh, not not quantized_aabb_compression)
 			physics.StoreBodyPointer(self.body, self)
 		end
 		

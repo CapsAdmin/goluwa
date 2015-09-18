@@ -12,7 +12,7 @@ local unrolled_lines = {
 	vec2 = "gl.ProgramUniform2f(render.current_program, %i, val.x, val.y)",
 	vec3 = "gl.ProgramUniform3f(render.current_program, %i, val.x, val.y, val.z)",
 	color = "gl.ProgramUniform4f(render.current_program, %i, val.r, val.g, val.b, val.a)",
-	mat4 = "gl.ProgramUniformMatrix4fv(render.current_program, %i, 1, 0, val.ptr)",
+	mat4 = "gl.ProgramUniformMatrix4fv(render.current_program, %i, 1, 0, ffi.cast('const float *', val))",
 	texture = "gl.ProgramUniform1i(render.current_program, %i, %i) val:Bind(%i)",
 }
 
