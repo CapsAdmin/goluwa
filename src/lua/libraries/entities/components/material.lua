@@ -25,7 +25,10 @@ function COMPONENT:OnRemove()
 			end
 			self.prev_mat = nil
 		else
-			mdl:SetMaterialOverride()
+			local mdl = ent:GetComponent("model")
+			if mdl:IsValid() then
+				mdl:SetMaterialOverride()
+			end
 			self.mat:Remove()
 		end
 	end
