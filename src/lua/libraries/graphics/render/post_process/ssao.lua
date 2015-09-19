@@ -10,7 +10,7 @@ PASS.Source = [[
 		
 		if (dir.z < -0.5) return -dir.z/400;
 		
-		return clamp(dir.z, 0, 0.01);
+		return clamp(dir.z, 0.0, 0.01);
 	}
 	
 	float ssao()
