@@ -71,7 +71,6 @@ do -- sun
 	ADD("sun_size", 50000, "sun_angles") 
 	ADD("sun_color", Color(1, 0.95, 0.8), function(self, var) self.sun:SetColor(var) end)
 	ADD("sun_intensity", 1, function(self, var) self.sun:SetIntensity(var) end)
-	ADD("ambient_lighting", Color(1, 0.95, 0.8) * 0.6, function(self, var) self.sun:SetAmbientColor(var) end)
 end
 
 do -- fog 
