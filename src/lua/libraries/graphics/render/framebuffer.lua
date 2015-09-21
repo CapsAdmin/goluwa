@@ -119,14 +119,15 @@ function render.CreateFrameBuffer(width, height, textures)
 			if attach == "depth" then
 				tex:SetMagFilter("nearest")
 				--tex:SetMinFilter("nearest")
-				tex:SetWrapS("clamp_to_edge")
-				tex:SetWrapT("clamp_to_edge")
 			else
 				if v.filter == "nearest" then
 					--tex:SetMinFilter("nearest")
 					tex:SetMagFilter("nearest")
 				end
 			end
+			
+			tex:SetWrapS("clamp_to_edge")
+			tex:SetWrapT("clamp_to_edge")
 				
 			if v.internal_format then 
 				tex:SetInternalFormat(v.internal_format)
