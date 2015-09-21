@@ -9,6 +9,7 @@ function render.GenerateTextures()
 	
 	if not render.cubemap_texture then
 		local tex = render.CreateTexture("cube_map")
+		tex:SetMipMapLevels(1)
 		tex:LoadCubemap("textures/skybox/bluesky.png")
 		render.cubemap_texture = tex
 	end

@@ -12,9 +12,11 @@ PASS.Source = [[
 		vec3 diffuse = texture(tex_diffuse, uv).rgb;
 		vec3 specular = get_light(uv);
 		float metallic = get_metallic(uv);
-		float roughness = get_metallic(uv);
 		
-		specular += vec3(0.01) + normalize(reflection) * pow(length(reflection), metallic*roughness) / 5;
+		specular += reflection * metallic;		
+		specular = mix(specular, reflection, metallic);
+		
+		specular += diffuse * texture(tex_reflection, uv).a;
 		
 		out_color = diffuse * specular;
 	}

@@ -100,7 +100,7 @@ ent:SetStorableTable({children = {
 			model = {
 				BBMin = Vec3(-19.993124, -130.268967, -47.208714),
 				BBMax = Vec3(12.520315, 25.837120, 18.778801),
-				ModelPath = "models/Cerberus_LP.FBX",
+				ModelPath = "models/cerebus/Cerberus_LP.FBX",
 				Cull = false,
 				GUID = "6b5a156c5e99f801d88544f94690a0",
 			},
@@ -248,23 +248,3 @@ for _,ent in pairs(ent:GetChildren()) do
 		ent:SetMaterialOverride(mat)
 	end
 end
-
-
-local ent = entities.CreateEntity("visual")
-ent:SetModelPath("models/cube.obj")
-ent:SetSize(40)
-ent:SetScale(Vec3(1,0.01,1))
-ent:SetPosition(Vec3(0,-2,0))
-ent:SetCull(false)
-local mat = render.CreateMaterial("model")		
-mat:SetDiffuseTexture(render.GetWhiteTexture())
-mat:SetMetallicTexture(render.GetWhiteTexture())
-mat:SetRoughnessTexture(render.GetBlackTexture())
-ent:SetMaterialOverride(mat)
-
-local tex = render.CreateTexture("cube_map")
-for i, v in pairs({"posx", "negx", "posy", "negy", "posz", "negz"}) do
-	tex:SetPath("textures/skyboxes/1SaintLazarusChurch/"..v..".jpg", i, false)
-end
-render.cubemap_texture.gl_tex = tex.gl_tex
-render.cubemap_texture.lol = tex

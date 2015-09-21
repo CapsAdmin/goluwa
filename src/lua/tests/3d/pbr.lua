@@ -51,22 +51,3 @@ for x = -max/2, max/2 do
 		ent:SetMaterialOverride(mat)
 	end
 end
-
-local ent = entities.CreateEntity("visual")
-ent:SetModelPath("models/sphere.obj")
-ent:SetSize(-5)
-ent:SetPosition(Vec3(0,0,z))
-ent:SetCull(false)
-local mat = render.CreateMaterial("model")		
-mat:SetDiffuseTexture(render.GetWhiteTexture())
-mat:SetMetallicTexture(render.GetWhiteTexture())
-mat:SetRoughnessTexture(render.GetBlackTexture())
-ent:SetMaterialOverride(mat)
-
-local tex = render.CreateTexture("cube_map")
-for i, v in pairs({"posx", "negx", "posy", "negy", "posz", "negz"}) do
-	tex:SetPath("textures/skyboxes/LancellottiChapel/"..v..".jpg", i, false)
-end
-render.cubemap_texture.gl_tex = tex.gl_tex
-render.cubemap_texture.lol = tex
-

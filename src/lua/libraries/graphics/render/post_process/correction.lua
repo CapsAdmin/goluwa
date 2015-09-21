@@ -10,7 +10,7 @@ PASS.Source = [[
 	void main()
 	{		
 		const float gamma = 0.8;
-		const float exposure = 3;
+		const float exposure = 4;
 				
 		// Exposure tone mapping
 		vec3 mapped = vec3(1.0) - exp(-texture(self, uv).rgb * exposure);

@@ -10,7 +10,7 @@ float random(vec2 co)
 render.AddGlobalShaderCode([[
 vec4 get_noise(vec2 uv)
 {
-	return texture(lua[(sampler2D)render.GetNoiseTexture], uv);
+	return texture(g_noise_texture, uv);
 }]])
 
 render.AddGlobalShaderCode([[
@@ -34,6 +34,7 @@ function render.GetGBufferSize()
 end
 
 render.SetGlobalShaderVariable("g_screen_size", render.GetGBufferSize, "vec2") 
+render.SetGlobalShaderVariable("g_noise_texture", render.GetNoiseTexture, "sampler2D") 
 
 render.gbuffer = render.gbuffer or NULL
 render.gbuffer_passes = render.gbuffer_passes or {}

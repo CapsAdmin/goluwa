@@ -1,30 +1,96 @@
+local render = ... or _G.render
+
 local PASS = {}
 
-PASS.Position, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
+PASS.Stage, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 
-PASS.Variables = {
-	sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131),
-	sun_direction = {vec3 = function()
-		if SUN and SUN:IsValid() then
-			local dir = SUN:GetTRPosition():GetNormalized()
-			
-			return Vec3(-dir.y, dir.z, -dir.x)
-		end
-		
-		return Vec3()
-	end},
-	rayleigh_brightness = 2,
-	mie_brightness = 0.99,
-	spot_brightness = 1,
-	scatter_strength = 0.1,
-	rayleigh_strength = 0.839,
-	mie_strength = 0.964,
-	rayleigh_collection_power = 0.65,
-	mie_collection_power = 0.8,
-	mie_distribution = 0.26,	
+local directions = {
+	QuatDeg3(0,-90,-90), -- back
+	QuatDeg3(0,90,90), -- front
+	
+	QuatDeg3(0,0,0), -- up
+	QuatDeg3(180,0,0), -- down
+	
+	QuatDeg3(90,0,0), -- left
+	QuatDeg3(-90,180,0), -- right
 }
 
-PASS.Source = [[	    
+function PASS:Initialize()
+	local size = Vec2() + 512
+		
+	local fb = render.CreateFrameBuffer()
+	fb:SetTexture(1, render.GetCubemapTexture(), "write", nil, 1)	
+	fb:CheckCompletness()
+
+	fb:WriteThese(1)
+	
+	self.fb = fb
+end
+
+function PASS:Draw3D()
+	render.EnableDepth(false)
+	render.SetBlendMode()
+	
+	render.SetShaderOverride(render.gbuffer_sky_shader)
+	local old_view = render.camera_3d:GetView()
+	local old_projection = render.camera_3d:GetProjection()
+	local old_pos = render.camera_3d:GetPosition()
+	
+	local projection = Matrix44()
+	projection:Perspective(math.rad(90), render.camera_3d.FarZ, render.camera_3d.NearZ, render.GetCubemapTexture().w / render.GetCubemapTexture().h) 
+	
+	
+	render.camera_3d:SetPosition(old_pos)
+	
+	self.fb:Begin()	
+		for i, rot in ipairs(directions) do
+			self.fb:SetTexture(1, render.GetCubemapTexture(), nil, nil, i)
+			self.fb:Clear()			
+			
+			local view = Matrix44()
+			view:SetRotation(rot)
+			render.camera_3d:SetView(view)
+			render.camera_3d:SetProjection(projection)
+
+			surface.DrawRect(0,0,surface.GetSize())
+		end
+	self.fb:End()
+	
+	render.camera_3d:SetView(old_view)
+	render.camera_3d:SetProjection(old_projection)
+	render.camera_3d:SetPosition(old_pos)
+	render.SetShaderOverride()
+	
+end
+
+PASS.Shader = {
+	fragment = {
+		variables = {	
+			sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131),
+			sun_direction = {vec3 = function()
+				if SUN and SUN:IsValid() then
+					local dir = SUN:GetTRPosition():GetNormalized()
+					
+					return Vec3(-dir.y, dir.z, -dir.x)
+				end
+				
+				return Vec3()
+			end},
+			rayleigh_brightness = 2,
+			mie_brightness = 0.99,
+			spot_brightness = 1,
+			scatter_strength = 0.1,
+			rayleigh_strength = 0.839,
+			mie_strength = 0.964,
+			rayleigh_collection_power = 0.65,
+			mie_collection_power = 0.8,
+			mie_distribution = 0.26,	
+		},
+		mesh_layout = {
+			{pos = "vec3"},
+			{uv = "vec2"},
+		},
+		source = [[    
 
 const float surface_height = 0.95;
 const float intensity = 5;
@@ -39,7 +105,7 @@ float atmospheric_depth(vec3 position, vec3 dir)
     float detSqrt = sqrt(det);
     float q = (-b - detSqrt)/2.0;
     float t1 = c/q;
-    return t1 * pow(get_depth(uv)/2, 2.5);
+    return t1/2;
 }
 
 float phase(float alpha, float g) 
@@ -93,7 +159,7 @@ vec4 get_world_normal2()
 
 float get_stars(vec3 dir)
 {
-	return pow(get_noise((dir.xz+sun_direction.xy)/3).x, 15) * 0.25;
+	return pow(get_noise((dir.xz+sun_direction.xy)/2).x, 15) * 0.25;
 }
 
 void main(void) 
@@ -105,9 +171,8 @@ void main(void)
     float rayleigh_factor = phase(alpha, -0.01) * rayleigh_brightness * ldir.y;
     float mie_factor = phase(alpha - 0.5, mie_distribution) * mie_brightness * (1.0 - ldir.y);
 	
-	float sky_mult = pow(get_depth(uv), 100);
-    float spot = smoothstep(0.0, 100.0, phase(alpha, 0.9995)) * spot_brightness*sky_mult;
-	float stars = get_stars(ray)*sky_mult;
+    float spot = smoothstep(0.0, 100.0, phase(alpha, 0.9995)) * spot_brightness;
+	float stars = get_stars(ray);
 
     vec3 eye_position = min(vec3(0,surface_height,0) + (vec3(-g_cam_pos.x, g_cam_pos.z, g_cam_pos.y) / 100010000), vec3(0.999999));
     float eye_depth = atmospheric_depth(eye_position, ray);
@@ -133,9 +198,11 @@ void main(void)
     mie_collected = (mie_collected * pow(eye_depth, mie_collection_power)) / float(step_count);
     vec3 color = stars + vec3(spot) + clamp(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0), vec3(1));
 
-	out_color = clamp(texture(self, uv).rgb, vec3(0,0,0), vec3(1,1,1)) + color;
+	out_color = color;
 }
 
-]]
+		]]
+	}
+}
 
-render.AddGBufferShader(PASS)
+render.RegisterGBufferPass(PASS)
