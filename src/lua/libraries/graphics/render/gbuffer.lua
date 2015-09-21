@@ -140,6 +140,13 @@ do -- mixer
 					else
 						size = stage.buffer.size or size
 					end
+					
+					if stage.buffer.max_size then
+						size = size:Copy()
+						size.w = math.min(size.w, stage.buffer.max_size.w)
+						size.h = math.min(size.h, stage.buffer.max_size.h)
+					end
+					
 					fb = render.CreateFrameBuffer(size.w, size.h, stage.buffer or {internal_format = "rgba8"})
 					for _, stage in ipairs(stages) do
 						stage.shader.fragment.variables["tex_stage_" .. i] = fb:GetTexture()
