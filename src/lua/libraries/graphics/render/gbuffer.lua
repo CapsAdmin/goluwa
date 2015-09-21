@@ -174,7 +174,7 @@ do -- mixer
 				render.SetGBufferValue(k,v)
 			end
 
-			for k,v in pairs(render.gbuffer_shaders_sorted) do
+			for k,v in ipairs(render.gbuffer_shaders_sorted) do
 				if v.gbuffer_name == PASS.Name then
 					table.remove(render.gbuffer_shaders_sorted, k)
 					break
@@ -224,7 +224,7 @@ do -- mixer
 	
 	function render.RemoveGBufferShader(name)
 		render.gbuffer_shaders[name] = nil
-		for k,v in pairs(render.gbuffer_shaders_sorted) do
+		for k,v in ipairs(render.gbuffer_shaders_sorted) do
 			if v.gbuffer_name == name then
 				table.remove(render.gbuffer_shaders_sorted, k)
 				break

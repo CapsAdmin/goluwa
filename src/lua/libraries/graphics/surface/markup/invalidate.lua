@@ -494,7 +494,7 @@ local function store_tag_info(self, chunks)
 			if chunk.type == "string" then
 				chunk:build_chars()
 
-				for i2, char in pairs(chunk.chars) do
+				for _, char in ipairs(chunk.chars) do
 					table.insert(self.chars, {
 						chunk = chunk,
 						i = i,

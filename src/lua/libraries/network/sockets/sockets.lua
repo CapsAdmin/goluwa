@@ -38,7 +38,7 @@ function sockets.DebugPrint(self, ...)
 end
 
 function sockets.Update()
-	for key, sock in pairs(sockets.active_sockets) do
+	for i, sock in ipairs(sockets.active_sockets) do
 		if sock:IsValid() then
 			local ok, err = system.pcall(sock.Think, sock)
 			if not ok then
@@ -51,7 +51,8 @@ function sockets.Update()
 				prototype.MakeNULL(sock)
 			end
 		else
-			sockets.active_sockets[key] = nil
+			table.remove(sockets.active_sockets, i)
+			break
 		end
 	end
 end
@@ -65,10 +66,10 @@ function sockets.Panic()
 		if sock:IsValid() then
 			sock:DebugPrintf("removed from sockets.Panic()")
 			sock:Remove()
-		else
-			table.remove(sockets.active_sockets, key)
 		end
 	end
+	
+	table.clear(sockets.active_sockets)
 end
 
 local function new_socket(override, META, typ, id)
