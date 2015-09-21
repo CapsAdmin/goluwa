@@ -279,12 +279,10 @@ PASS.Shader = {
 				normal_buffer.a *= lua[MetallicMultiplier = 1];
 				diffuse_buffer.a *= lua[RoughnessMultiplier = 1];
 				
-				//vec3 noise = (texture(lua[NoiseTexture = render.GetNoiseTexture()], uv).xyz * vec3(2) - vec3(1)) * (dist * diffuse_buffer.a * diffuse_buffer.a * diffuse_buffer.a)*2.5;
-				
 				reflection_buffer = texture(lua[CubeTexture = render.GetCubemapTexture()], (mat3(g_view_inverse) * reflect(reflect_dir, normal_buffer.xyz)).yzx);
 				reflection_buffer.rgb += vec3(0.001);
 				
-				reflection_buffer.a = lua[SelfIllumination = 0]; 
+				reflection_buffer.a = texture(lua[SelfIlluminationTexture = render.GetBlackTexture()], uv).r * lua[SelfIllumination = 0]; 
 			}
 		]]
 	}
