@@ -13,9 +13,9 @@ table.insert(PASS.Source, {
 		internal_format = "rgb8",
 	},
 	source = [[	 
-	const float rayStep = 0.02;
-	const float minRayStep = 20;
-	const float maxSteps = 20;
+	const float rayStep = 0.002;
+	const float minRayStep = 50;
+	const float maxSteps = 50;
 		
 	vec2 project(vec3 coord)
 	{
@@ -33,11 +33,8 @@ table.insert(PASS.Source, {
 				  
 			float depth = hitCoord.z - get_view_pos(project(hitCoord)).z;
 			 	 
-			if(depth < 0.0 && depth > -1)
-			{
-				dir *= 0.5;
-				hitCoord -= dir;
-				
+			if(depth < 0.0 && depth > -0.3)
+			{				
 				return vec4(project(hitCoord).xy, depth, 1);
 			}
 		}
@@ -59,7 +56,7 @@ table.insert(PASS.Source, {
 		vec2 dCoords = abs(vec2(0.5, 0.5) - coords.xy);
 		float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
 		
-		float dist = texture(tex_depth, uv).r * 15;
+		float dist = texture(tex_depth, uv).r*20;
 		
 		float fade = screenEdgefactor * pow(clamp((dist - length(viewPos - hitPos)) * 1/dist, 0.0, 1.0) * coords.w * 1.025, 5);
 		
@@ -67,7 +64,7 @@ table.insert(PASS.Source, {
 		vec3 diffuse = texture(tex_diffuse, coords.xy).rgb;
 		vec3 light = diffuse * (get_light(coords.xy) + (sky.rgb * get_metallic(uv)) + (diffuse * diffuse * diffuse * texture(tex_reflection, coords.xy).a * 10));
 		
-		vec3 reflection = mix(sky.rgb, light, pow(fade, 0.5));
+		vec3 reflection = mix(sky.rgb, light, fade);
 	 
 		out_color =	reflection;
 	}
