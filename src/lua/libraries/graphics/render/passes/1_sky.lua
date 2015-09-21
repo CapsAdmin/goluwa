@@ -72,7 +72,7 @@ float sky_atmospheric_depth(vec3 position, vec3 dir, float depth)
     float detSqrt = sqrt(det);
     float q = (-b - detSqrt)/2.0;
     float t1 = c/q;
-    return t1 * pow(depth, 2.5) / 2;
+    return t1 * pow(depth, 2.5) / 7;
 }
 
 float sky_phase(float alpha, float g) 
