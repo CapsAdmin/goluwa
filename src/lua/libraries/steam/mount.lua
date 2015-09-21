@@ -186,13 +186,16 @@ function steam.MountSourceGame(game_info)
 			
 			if vfs.IsDir(path .. "addons/") then
 				for k, v in pairs(vfs.Find(path .. "addons/")) do
-					if vfs.IsDir(path .. "addons/" .. v) then
-						logn("[vfs] also mounting addon ", v)
-						vfs.Mount(path .. "addons/" .. v, nil, game_info)
-					elseif v:endswith(".gma") then
+					if vfs.IsDir(path .. "addons/" .. v) or v:endswith(".gma") then
 						logn("[vfs] also mounting addon ", v)
 						vfs.Mount(path .. "addons/" .. v, nil, game_info)
 					end
+				end
+			end
+			
+			if vfs.IsDir(path .. "maps/workshop/") then
+				for k, v in pairs(vfs.Find(path .. "maps/workshop/")) do
+					vfs.Mount(path .. "maps/workshop/" .. v, "maps/", game_info)
 				end
 			end
 						
@@ -263,12 +266,17 @@ local translate = {
 	["counter-strike: source"] = 240,
 	["css"] = 240,
 	["half-life: source"] = 280,
+	["hls"] = 280,
 	["day of defeat: source"] = 300,
+	["dods"] = 300,
 	["half-life 2: deathmatch"] = 320,
 	["hl2dm"] = 320,
 	["half-life 2: lost coast"] = 220,
+	["hl2lc"] = 220,
 	["half-life deathmatch: source"] = 360,
+	["hldm"] = 360,
 	["half-life 2: episode one"] = 380,
+	["hl2e1"] = 380,
 	["portal"] = 400,
 	["half-life 2: episode two"] = 420,
 	["hl2ep2"] = 420,
