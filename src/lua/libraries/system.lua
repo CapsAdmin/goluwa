@@ -606,13 +606,13 @@ end
 
 do
 	local current = {
-		maxtrace = 1000*5, -- Max. number of traces in the cache						default = 1000						
+		maxtrace = 1000*10, -- Max. number of traces in the cache						default = 1000		min = 1	 max = 65535				
 		maxrecord = 4000*5, -- Max. number of recorded IR instructions                default = 4000
 		maxirconst = 500*5, -- Max. number of IR constants of a trace                default = 500
 		maxside = 100, -- Max. number of side traces of a root trace                default = 100
-		maxsnap = 500, -- Max. number of snapshots for a trace                     default = 500
+		maxsnap = 500*8, -- Max. number of snapshots for a trace                     default = 500
 		minstitch = 0, -- Min. # of IR ins for a stitched trace.					default = 0
-		hotloop = 56, -- Number of iterations to detect a hot loop or hot call     default = 56
+		hotloop = 56*10, -- Number of iterations to detect a hot loop or hot call     default = 56
 		hotexit = 10, -- Number of taken exits to start a side trace                 default = 10
 		tryside = 4, -- Number of attempts to compile a side trace                  default = 4
 		instunroll = 4*999, -- Max. unroll factor for instable loops                  default = 4
@@ -620,7 +620,7 @@ do
 		callunroll = 3*999, -- Max. unroll factor for pseudo-recursive calls          default = 3
 		recunroll = 2*0, -- Min. unroll factor for true recursion                     default = 2
 		--sizemcode = X64 and 64 or 32, -- Size of each machine code area in KBytes (Windows: 64K)
-		maxmcode = 512*32, -- Max. total size of all machine code areas in KBytes     default = 512
+		maxmcode = 512*16, -- Max. total size of all machine code areas in KBytes     default = 512
 	}
 	
 	function system.GetJITOptions()
