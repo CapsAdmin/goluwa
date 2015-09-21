@@ -3,7 +3,7 @@ do -- source engine
 		local pos = render.camera_3d:GetPosition() * (1/0.0254)
 		local ang = render.camera_3d:GetAngles():GetDeg()
 		
-		logf("setpos %f %f %f;setang %f %f %f", pos.x, pos.y, pos.z, ang.p, ang.y, ang.r)
+		logf("setpos %f %f %f;setang %f %f %f", pos.x, pos.y, pos.z, ang.x, ang.y, ang.z)
 	end)
 	
 	console.AddCommand("setpos", function(line)

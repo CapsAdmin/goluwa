@@ -9,9 +9,9 @@ local META = prototype.CreateTemplate("texture")
 
 function META:__index2(key)
 	if key == "w" then
-		return self:GetSize().w
+		return self:GetSize().x
 	elseif key == "h" then
-		return self:GetSize().h
+		return self:GetSize().y
 	end
 end
 
@@ -441,7 +441,7 @@ function META:SetupStorage()
 	local mip_map_levels = self.MipMapLevels
 	
 	if mip_map_levels <= 0 then
-		mip_map_levels = math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2)) + 1
+		mip_map_levels = math.floor(math.log(math.max(self.Size.x, self.Size.y)) / math.log(2)) + 1
 	end
 	
 	self:SetMaxLevel(mip_map_levels)
@@ -460,8 +460,8 @@ function META:SetupStorage()
 			self.gl_tex:Storage3D(
 				levels,
 				TOENUM(self.InternalFormat), 
-				self.Size.w, 
-				self.Size.h, 
+				self.Size.x, 
+				self.Size.y, 
 				self.Depth
 			)
 		else
@@ -470,8 +470,8 @@ function META:SetupStorage()
 				"GL_TEXTURE_3D",
 				mip_map_levels,
 				internal_format, 
-				self.Size.w,
-				self.Size.h,
+				self.Size.x,
+				self.Size.y,
 				self.Depth,
 				0,
 				TOENUM(format.preferred_upload_format),
@@ -486,16 +486,16 @@ function META:SetupStorage()
 					self.Multisample,
 					mip_map_levels,
 					internal_format, 
-					self.Size.w, 
-					self.Size.h,
+					self.Size.x, 
+					self.Size.y,
 					1
 				)
 			else
 				self.gl_tex:Storage2D(
 					mip_map_levels,
 					internal_format, 
-					self.Size.w, 
-					self.Size.h
+					self.Size.x, 
+					self.Size.y
 				)
 			end
 		else
@@ -504,8 +504,8 @@ function META:SetupStorage()
 				"GL_TEXTURE_2D",
 				mip_map_levels,
 				internal_format, 
-				self.Size.w,
-				self.Size.h,
+				self.Size.x,
+				self.Size.y,
 				0,
 				TOENUM(format.preferred_upload_format),
 				TOENUM(format.preferred_upload_type),
@@ -517,7 +517,7 @@ function META:SetupStorage()
 			self.gl_tex:Storage1D(
 				levels,
 				TOENUM(self.InternalFormat), 
-				self.Size.w
+				self.Size.x
 			)
 		else
 			local format = self:GetFormatInfo()
@@ -525,7 +525,7 @@ function META:SetupStorage()
 				"GL_TEXTURE_1D",
 				mip_map_levels,
 				internal_format, 
-				self.Size.w,
+				self.Size.x,
 				0,
 				TOENUM(format.preferred_upload_format),
 				TOENUM(format.preferred_upload_type),
@@ -557,8 +557,8 @@ function META:Upload(data)
 	data.mip_map_level = data.mip_map_level or 0
 	data.format = data.format or "rgba"
 	data.type = data.type or "unsigned_byte"
-	data.width = data.width or self:GetSize().w
-	data.height = data.height or self:GetSize().h
+	data.width = data.width or self:GetSize().x
+	data.height = data.height or self:GetSize().y
 	
 	if type(data.buffer) == "string" then 
 		data.buffer = ffi.cast("uint8_t *", data.buffer) 
@@ -587,7 +587,7 @@ function META:Upload(data)
 	local y
 	
 	if data.y then
-		y = -data.y + self.Size.h - data.height
+		y = -data.y + self.Size.y - data.height
 	end
 	
 	if data.flip_y or data.flip_x then
@@ -761,7 +761,7 @@ function META:DumpInfo()
 		if self.MipMapLevels > 0 then
 			logn("mip map levels = ", self.MipMapLevels)
 		else
-			logn("mip map levels = ", math.floor(math.log(math.max(self.Size.w, self.Size.h)) / math.log(2)) + 1, "(", self, ".MipMapLevels = ", self.MipMapLevels ,")")
+			logn("mip map levels = ", math.floor(math.log(math.max(self.Size.x, self.Size.y)) / math.log(2)) + 1, "(", self, ".MipMapLevels = ", self.MipMapLevels ,")")
 		end
 		logn("size = ", self.Size)		
 		if self.StorageType == "3d" then
@@ -787,7 +787,7 @@ end
 
 function META:CreateBuffer()
 	local format = self:GetFormatInfo()	
-	local size = self.Size.w * self.Size.h * ffi.sizeof(format.ctype)
+	local size = self.Size.x * self.Size.y * ffi.sizeof(format.ctype)
 	local buffer = ffi.new(format.tdef .. "[?]", size)
 	
 	return buffer, size, format
@@ -814,12 +814,12 @@ function META:Download(mip_map_level)
 	return {
 		type = format.number_type.friendly,
 		buffer = buffer,
-		width = self.Size.w,
-		height = self.Size.h,
+		width = self.Size.x,
+		height = self.Size.y,
 		format = format.preferred_upload_format,
 		mip_map_level = mip_map_level,
 		
-		length = (self.Size.w * self.Size.h) - 1, -- for i = 0, data.length do
+		length = (self.Size.x * self.Size.y) - 1, -- for i = 0, data.length do
 		channels = #format.bits,
 	}
 end

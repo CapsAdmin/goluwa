@@ -9,6 +9,11 @@ META.Args = {{"x", "left"}, {"y", "top"}, {"w", "right"}, {"h", "bottom"}}
 
 structs.AddAllOperators(META)
 
+function META:GetLeft() return self.x end
+function META:GetTop() return self.y end
+function META:GetRight() return self.w end
+function META:GetBottom() return self.h end
+
 function META:Shrink(amt)
 
 	self.x = self.x + amt

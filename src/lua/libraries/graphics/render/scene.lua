@@ -26,7 +26,7 @@ do -- current window
 	
 	function render.GetWidth()
 		if render.current_window:IsValid() then
-			return render.current_window:GetSize().w
+			return render.current_window:GetSize().x
 		end
 		
 		return 0
@@ -34,7 +34,7 @@ do -- current window
 
 	function render.GetHeight()
 		if render.current_window:IsValid() then
-			return render.current_window:GetSize().h
+			return render.current_window:GetSize().y
 		end
 		
 		return 0

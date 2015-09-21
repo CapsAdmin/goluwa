@@ -143,11 +143,11 @@ do -- mixer
 					
 					if stage.buffer.max_size then
 						size = size:Copy()
-						size.w = math.min(size.w, stage.buffer.max_size.w)
-						size.h = math.min(size.h, stage.buffer.max_size.h)
+						size.x = math.min(size.x, stage.buffer.max_size.x)
+						size.y = math.min(size.y, stage.buffer.max_size.y)
 					end
 					
-					fb = render.CreateFrameBuffer(size.w, size.h, stage.buffer or {internal_format = "rgba8"})
+					fb = render.CreateFrameBuffer(size.x, size.y, stage.buffer or {internal_format = "rgba8"})
 					for _, stage in ipairs(stages) do
 						stage.shader.fragment.variables["tex_stage_" .. i] = fb:GetTexture()
 					end
@@ -265,7 +265,7 @@ function render.DrawGBuffer()
 		for i, shader in ipairs(shader.shaders) do
 			render.SetBlendMode(shader.blend_mode)
 			if shader.fb then shader.fb:Begin() end
-			surface.PushMatrix(0, 0, shader.size.w, shader.size.h)
+			surface.PushMatrix(0, 0, shader.size.x, shader.size.y)
 				render.SetShaderOverride(shader)
 				surface.rect_mesh:Draw()
 			surface.PopMatrix()

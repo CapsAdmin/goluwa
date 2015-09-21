@@ -103,7 +103,7 @@ function menu.CreateTopBar()
 	function bar:OnPreDraw()
 		surface.SetWhiteTexture()
 		surface.SetColor(0,0,0,0.25)
-		surface.DrawRect(11, 11, self.Size.w, self.Size.h)
+		surface.DrawRect(11, 11, self.Size.x, self.Size.y)
 	end
 	
 	menu.panel = bar
@@ -122,7 +122,7 @@ function menu.CreateTopBar()
 			function menu:OnPreDraw()
 				surface.SetWhiteTexture()
 				surface.SetColor(0,0,0,0.25)
-				surface.DrawRect(11, 11, self.Size.w, self.Size.h)
+				surface.DrawRect(11, 11, self.Size.x, self.Size.y)
 			end
 			menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*S), options)
 			menu:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)

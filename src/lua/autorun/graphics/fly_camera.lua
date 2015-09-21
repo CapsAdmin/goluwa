@@ -4,7 +4,7 @@ function CalcMovement(dt, cam_ang, cam_fov)
 
 	local delta = window.GetMouseDelta() / 5
 
-	local r = cam_ang.r
+	local r = cam_ang.z
 	local cs = math.cos(r)
 	local sn = math.sin(r)
 	local x = delta.x * cs - delta.y * sn
@@ -16,7 +16,7 @@ function CalcMovement(dt, cam_ang, cam_fov)
 	delta.y = y
 	
 	if input.IsKeyDown("r") then
-		cam_ang.r = 0
+		cam_ang.z = 0
 		cam_fov = math.rad(75)
 	end
 	
@@ -43,10 +43,10 @@ function CalcMovement(dt, cam_ang, cam_fov)
 	end
 		
 	if input.IsMouseDown("button_2") then
-		cam_ang.r = cam_ang.r + original_delta.x / 100
+		cam_ang.z = cam_ang.z + original_delta.x / 100
 		cam_fov = math.clamp(cam_fov + original_delta.y / 100 * (cam_fov/math.pi), math.rad(0.1), math.rad(175))
 	else	
-		cam_ang.p = math.clamp(cam_ang.p + delta.y, -math.pi/2, math.pi/2)
+		cam_ang.x = math.clamp(cam_ang.x + delta.y, -math.pi/2, math.pi/2)
 		cam_ang.y = cam_ang.y - delta.x
 	end
 	
@@ -75,7 +75,7 @@ function CalcMovement(dt, cam_ang, cam_fov)
 	end
 
 	if input.IsKeyDown("left_alt") then
-		cam_ang.r = math.rad(math.round(math.deg(cam_ang.r) / 45) * 45)
+		cam_ang.z = math.rad(math.round(math.deg(cam_ang.z) / 45) * 45)
 	end
 	
 	if cam_fov > math.rad(90) then

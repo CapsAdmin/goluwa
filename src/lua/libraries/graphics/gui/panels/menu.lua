@@ -57,12 +57,12 @@ do
 			else
 				v:SetHeight(S*10)
 				v:Layout(true)
-				w = math.max(w, v.label:GetX() + v.label:GetWidth() + v.label:GetPadding().right*8)
+				w = math.max(w, v.label:GetX() + v.label:GetWidth() + v.label:GetPadding():GetRight()*8)
 			end
 		end
 		
-		self:SetHeight(self:StackChildren().h + self:GetMargin().bottom)
-		self:SetWidth(w + self:GetMargin().right)
+		self:SetHeight(self:StackChildren().y + self:GetMargin():GetBottom())
+		self:SetWidth(w + self:GetMargin():GetRight())
 	end
 	
 	gui.RegisterPanel(PANEL)

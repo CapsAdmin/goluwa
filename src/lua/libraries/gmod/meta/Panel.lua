@@ -38,9 +38,9 @@ function META:__index(key)
 	elseif key == "y" then
 		return self.__obj:GetPosition().y
 	elseif key == "w" then
-		return self.__obj:GetSize().w
+		return self.__obj:GetSize().x
 	elseif key == "h" then
-		return self.__obj:GetSize().h
+		return self.__obj:GetSize().y
 	elseif key == "Hovered" then
 		return self.__obj:IsMouseOver()
 	end

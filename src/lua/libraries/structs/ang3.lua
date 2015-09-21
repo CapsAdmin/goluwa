@@ -9,7 +9,7 @@ function Deg3(p, y, r)
 end
 
 META.NumberType = "float"
-META.Args = {{"p", "x", "pitch"}, {"y", "yaw"}, {"r", "z", "roll"}}
+META.Args = {{"x", "p", "pitch"}, {"y", "yaw"}, {"z", "r", "roll"}}
 
 structs.AddAllOperators(META)
 
@@ -43,9 +43,9 @@ local function normalize(a, b)
 end
 
 function META:Normalize()
-	self.p = normalize(self.p)
+	self.x = normalize(self.x)
 	self.y = normalize(self.y)
-	self.r = normalize(self.r)
+	self.z = normalize(self.z)
 	
 	return self
 end 
@@ -53,13 +53,13 @@ end
 structs.AddGetFunc(META, "Normalize", "Normalized")
 
 function META.AngleDifference(a, b)
-	a.p = normalize(a.p - b.p)
+	a.x = normalize(a.x - b.x)
 	a.y = normalize(a.y - b.y)
-	a.r = normalize(a.r - b.r)
+	a.z = normalize(a.z - b.z)
 	
-	a.p = a.p < PI2 and a.p or a.p - PI2
+	a.x = a.x < PI2 and a.x or a.x - PI2
 	a.y = a.y < PI2 and a.y or a.y - PI2
-	a.r = a.r < PI2 and a.r or a.r - PI2
+	a.z = a.z < PI2 and a.z or a.z - PI2
 	
 	return a
 end
@@ -80,9 +80,9 @@ end
 structs.AddGetFunc(META, "Lerp", "Lerped")
 
 function META:Rad()
-	self.p = math.rad(self.p)
+	self.x = math.rad(self.x)
 	self.y = math.rad(self.y)
-	self.r = math.rad(self.r)
+	self.z = math.rad(self.z)
 	
 	return self
 end
@@ -90,9 +90,9 @@ end
 structs.AddGetFunc(META, "Rad")
 
 function META:Deg()
-	self.p = math.deg(self.p)
+	self.x = math.deg(self.x)
 	self.y = math.deg(self.y)
-	self.r = math.deg(self.r)
+	self.z = math.deg(self.z)
 	
 	return self
 end

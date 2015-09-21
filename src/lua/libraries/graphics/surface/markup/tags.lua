@@ -203,7 +203,7 @@ META.tags.physics =
 
 		local W, H = markup.width, markup.height
 		W = W - self.x
-		H = H - self.y + part.siz.h
+		H = H - self.y + part.siz.y
 
 		--local xvel = (self.last_world_x or markup.current_x) - markup.current_x
 		--local yvel = (self.last_world_y or markup.current_y) - markup.current_y
@@ -224,23 +224,23 @@ META.tags.physics =
 		part.vel.y = part.vel.y * part.drag
 
 		-- collision
-		if part.pos.x + part.siz.w < 0 then
-			part.pos.x = -part.siz.w
+		if part.pos.x + part.siz.x < 0 then
+			part.pos.x = -part.siz.x
 			part.vel.x = part.vel.x * -part.drag
 		end
 
-		if part.pos.x + part.siz.w > W then
-			part.pos.x = W - part.siz.w
+		if part.pos.x + part.siz.x > W then
+			part.pos.x = W - part.siz.x
 			part.vel.x = part.vel.x * -part.drag
 		end
 
-		if part.pos.y + part.siz.h < 0 then
-			part.pos.y = -part.siz.h
+		if part.pos.y + part.siz.y < 0 then
+			part.pos.y = -part.siz.y
 			part.vel.y = part.vel.y * -part.drag
 		end
 
-		if part.pos.y + part.siz.h > H then
-			part.pos.y = H - part.siz.h
+		if part.pos.y + part.siz.y > H then
+			part.pos.y = H - part.siz.y
 			part.vel.y = part.vel.y * -part.drag
 		end
 		

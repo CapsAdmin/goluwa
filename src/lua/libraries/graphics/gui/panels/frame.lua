@@ -66,7 +66,7 @@ end
 
 function PANEL:ToWindow()
 	local gl = require("graphics.ffi.opengl")
-	local window = render.CreateWindow(self:GetSize().w, self:GetSize().h, nil, {"borderless"})
+	local window = render.CreateWindow(self:GetSize().x, self:GetSize().y, nil, {"borderless"})
 	local world = gui.CreateWorld()
 	
 	world:SetSize(Vec2(1680*2,1050))

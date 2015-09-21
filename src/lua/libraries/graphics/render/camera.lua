@@ -43,8 +43,8 @@ do
 		
 		if ang then
 			self:RotateWorld(-ang.y, 0, 0, 1)
-			self:RotateWorld(-ang.r, 0, 1, 0)
-			self:RotateWorld(-ang.p, 1, 0, 0) 
+			self:RotateWorld(-ang.z, 0, 1, 0)
+			self:RotateWorld(-ang.x, 1, 0, 0) 
 		end
 		
 		if scale then 
@@ -204,8 +204,8 @@ function META:Rebuild(type)
 			
 			if self:Get3D() then
 				-- source engine style camera angles
-				view:Rotate(self.Angles.r, 0, 0, 1)
-				view:Rotate(self.Angles.p + math.pi/2, 1, 0, 0)
+				view:Rotate(self.Angles.z, 0, 0, 1)
+				view:Rotate(self.Angles.x + math.pi/2, 1, 0, 0)
 				view:Rotate(self.Angles.y, 0, 0, 1)
 
 				view:Translate(self.Position.y, self.Position.x, self.Position.z)

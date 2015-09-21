@@ -55,7 +55,7 @@ function render.GenerateTextures()
 					
 					local ang = math.rad(deg * i)
 					local X, Y = math.sin(ang), math.cos(ang)
-					local W2, H2 = loading:GetSize().w/2, loading:GetSize().h/2
+					local W2, H2 = loading:GetSize().x/2, loading:GetSize().y/2
 					
 					surface.DrawLine(X*center_size+W2, Y*center_size+H2, X*outter_size*W2 + W2, Y*outter_size*H2 + H2, width)
 				end

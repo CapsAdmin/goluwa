@@ -223,7 +223,7 @@ do -- binding
 		
 		function META:Begin(...)
 			self:Push(...)
-			render.PushViewport(0, 0, self.Size.w, self.Size.h)
+			render.PushViewport(0, 0, self.Size.x, self.Size.y)
 		end
 
 		function META:End()
@@ -286,8 +286,8 @@ function META:SetTexture(pos, tex, mode, uid, face)
 	
 		-- ASDF
 		if tex.size then
-			tex.width = tex.size.w
-			tex.height = tex.size.h
+			tex.width = tex.size.x
+			tex.height = tex.size.y
 			tex.size = nil
 		end
 	

@@ -208,7 +208,7 @@ do -- events
 				end
 			elseif button == "right" then
 				local x, y = window.GetMousePosition():Unpack()
-				for i = x, window.GetSize().w, 16 do
+				for i = x, window.GetSize().x, 16 do
 					window.SetMousePosition(Vec2(i, y))
 					gui.UpdateMousePosition()
 					gui.world:Draw()
@@ -221,7 +221,7 @@ do -- events
 				end
 			elseif button == "down" then
 				local x, y = window.GetMousePosition():Unpack()
-				for i = y, window.GetSize().h, 16 do
+				for i = y, window.GetSize().y, 16 do
 					window.SetMousePosition(Vec2(x, i))
 					gui.UpdateMousePosition()
 					gui.world:Draw()

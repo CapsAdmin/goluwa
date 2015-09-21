@@ -413,7 +413,7 @@ function chat.Open(tab)
 		panel:FillX()
 	elseif tab == "chat" then
 		panel:SetSize(Vec2(400, 250))
-		panel:SetPosition(Vec2(50, window.GetSize().h - panel:GetHeight() - 50))
+		panel:SetPosition(Vec2(50, window.GetSize().y - panel:GetHeight() - 50))
 	end
 	
 	panel:Minimize(true)

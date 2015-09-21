@@ -19,8 +19,8 @@ function PANEL:Initialize()
 	local markup = surface.CreateMarkup()
 	markup:SetEditable(false)
 	markup.OnInvalidate = function()			
-		self.Size.w = markup.width + self.Padding.left + self.Padding.right
-		self.Size.h = markup.height + self.Padding.top + self.Padding.bottom
+		self.Size.x = markup.width + self.Padding:GetLeft() + self.Padding:GetRight()
+		self.Size.y = markup.height + self.Padding:GetTop() + self.Padding:GetBottom()
 
 		self.LayoutSize = self.Size
 		
@@ -105,7 +105,7 @@ function PANEL:OnPostDraw()
 end
 
 function PANEL:OnPostMatrixBuild()
-	self.Matrix:Translate(self.Padding.left, self.Padding.top, 0)
+	self.Matrix:Translate(self.Padding:GetLeft(), self.Padding:GetTop(), 0)
 end
 
 function PANEL:OnMouseMove(x, y)
@@ -125,8 +125,8 @@ function PANEL:OnUpdate()
 	
 	markup.cull_x = self.Parent.Scroll.x
 	markup.cull_y = self.Parent.Scroll.y
-	markup.cull_w = self.Parent.Size.w
-	markup.cull_h = self.Parent.Size.h
+	markup.cull_w = self.Parent.Size.x
+	markup.cull_h = self.Parent.Size.y
 	
 	markup.need_layout = nil
 	markup:Update()

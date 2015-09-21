@@ -60,7 +60,7 @@ do -- sun
 		local sun_pos = vec * size/10
 		
 		local grr = Matrix44()
-		grr:Rotate(-var.p-math.pi/2, -1,0,0)
+		grr:Rotate(-var.x-math.pi/2, -1,0,0)
 		grr:Rotate(var.y, 0,0,1)
 		
 		self.sun:SetRotation(grr:GetRotation())

@@ -596,7 +596,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 			if type(fields[1]) == "table" then
 				local temp = {}
 				for i,v in ipairs(fields) do
-					temp[i] = v[2] or v[1]
+					temp[i] = v[1]
 				end
 				fields = temp
 			end
@@ -774,7 +774,7 @@ function PANEL:OnLayout(S)
 		
 		if self.first_time then
 			left:Layout(true)
-			self.left_max_width = math.max(self.left_max_width, left.label:GetWidth() + left.label:GetX() + (self.left_offset*S) + left.label:GetPadding().right)
+			self.left_max_width = math.max(self.left_max_width, left.label:GetWidth() + left.label:GetX() + (self.left_offset*S) + left.label:GetPadding():GetRight())
 		end
 	end
 	
@@ -795,7 +795,7 @@ function PANEL:OnLayout(S)
 		self.divider:SetDividerPosition(self.left_max_width)
 	end
 	
-	local h = self.left:GetSizeOfChildren().h + self.Margin.bottom + S*2 -- TODO
+	local h = self.left:GetSizeOfChildren().y + self.Margin:GetBottom() + S*2 -- TODO
 	self.divider:SetSize(Vec2(self.left_max_width + self.right_max_width, h))
 	self:SetWidth(self.left_max_width + self.right_max_width)
 	self:SetHeight(h)

@@ -349,7 +349,7 @@ function profiler.PrintTraceAborts(min_samples)
 				if not next(s) or s[path][line] and s[path][line].samples > min_samples then
 					local str = "unknown line"
 					
-					local content, err = vfs.Read(path)
+					local content, err = vfs.Read(e.ROOT_FOLDER .. path)
 					
 					if content then
 						local lines = content:explode("\n")

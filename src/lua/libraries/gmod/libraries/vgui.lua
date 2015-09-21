@@ -28,8 +28,8 @@ function vgui.CreateX(class, parent, name)
 		gmod.gui_world.__class = "CGModBase"
 		function gmod.gui_world:OnUpdate()
 			local size = window.GetSize()
-			self.Size.w = size.w
-			self.Size.h = size.h
+			self.Size.x = size.x
+			self.Size.y = size.y
 		end
 	end
 	
@@ -71,7 +71,7 @@ function vgui.CreateX(class, parent, name)
 			if obj.paint_bg and paint_bg ~= nil then
 				surface.SetWhiteTexture()
 				surface.SetColor(obj.bg_color:Unpack())
-				surface.DrawRect(0,0,obj.Size.w,obj.Size.h)
+				surface.DrawRect(0,0,obj.Size.x,obj.Size.y)
 			end
 			
 			if class == "label" then						

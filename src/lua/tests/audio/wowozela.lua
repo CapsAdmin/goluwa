@@ -91,7 +91,7 @@ event.AddListener("Draw2D", "wowozela", function(dt)
 	smooth_pitch = smooth_pitch + ((pitch - smooth_pitch) * dt * 10)
 	
 	sound:SetPitch(smooth_pitch)
-	sound:SetPosition(pos.x / size.w,0,(-volume+1)^10*100)   
+	sound:SetPosition(pos.x / size.x,0,(-volume+1)^10*100)   
 	
 --	render.SetupView2D(-pos + size*0.5, 0)
 end) 

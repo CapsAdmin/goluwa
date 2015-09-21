@@ -11,11 +11,11 @@ function love.window.setCaption(title)
 end
 
 function love.window.getWidth()
-	return window.GetSize().w
+	return window.GetSize().x
 end
 
 function love.window.getHeight()
-	return window.GetSize().h
+	return window.GetSize().y
 end
 
 function love.window.getDimensions()

@@ -227,16 +227,16 @@ do -- generic get set
 			META["Set" .. name] = function(self, var)
 				self[name] = var
 				if not self.body then return end
-				set_func(self.body, var.ptr)
+				set_func(self.body, ffi.cast("float * ", var))
 			end
 			
 			local out = Matrix44()
 
 			META["Get" .. name] = function(self)
 				if not self.body then return self[name] end
-				get_func(self.body, out.ptr)
+				get_func(self.body, ffi.cast("float *", out))
 				local mat = Matrix44()
-				mat.ptr = out.ptr
+				ffi.copy(mat, out, ffi.sizeof(mat))
 				return mat
 			end
 		end

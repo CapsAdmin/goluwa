@@ -139,12 +139,12 @@ structs.AddGetFunc(META, "Normalize", "Normalized")
 -- https://github.com/grrrwaaa/gct753/blob/master/modules/quat.lua#L193
 
 function META:SetAngles(ang)
-	local c1 = math.cos(ang.r * 0.5)
-	local c2 = math.cos(ang.p * 0.5)
+	local c1 = math.cos(ang.z * 0.5)
+	local c2 = math.cos(ang.x * 0.5)
 	local c3 = math.cos(ang.y * 0.5)
 	
-	local s1 = math.sin(ang.r * 0.5)
-	local s2 = math.sin(ang.p * 0.5)
+	local s1 = math.sin(ang.z * 0.5)
+	local s2 = math.sin(ang.x * 0.5)
 	local s3 = math.sin(ang.y * 0.5)
 	
 	-- equiv Q1 = Qy * Qx; -- since many terms are zero

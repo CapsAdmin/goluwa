@@ -56,7 +56,7 @@ function structs.Register(META)
 			while pcall(ffi.typeof, type_name) do
 				type_name = type_name .. "_" 
 			end
-			ffi.cdef("typedef union " .. type_name .. " {\n" .. table.concat(arg_lines, "\n") .. "\n} " .. type_name .. ";")
+			ffi.cdef("typedef struct " .. type_name .. " {\n" .. arg_lines[1] .. "\n} " .. type_name .. ";")
 			obj = assert(ffi.metatype(type_name, META))
 		end
 			

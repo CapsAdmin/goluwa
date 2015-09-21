@@ -121,12 +121,12 @@ function META:SetPolyChar(poly, i, x, y, char)
 		x = x - self.Padding / 2
 		y = y - self.Padding * 2
 		
-		x = x * self.Scale.w
-		y = y * self.Scale.h
+		x = x * self.Scale.x
+		y = y * self.Scale.y
 		
-		y = y - ch.bitmap_top + self.Size + (0.5 * self.Scale.h)
+		y = y - ch.bitmap_top + self.Size + (0.5 * self.Scale.y)
 		
-		poly:SetRect(i, x, y, w * self.Scale.w, h * self.Scale.h)
+		poly:SetRect(i, x, y, w * self.Scale.x, h * self.Scale.y)
 	end
 end
 
@@ -185,7 +185,7 @@ function META:CompileString(data)
 						if self.Monospace then 
 							X = X + self.Spacing * 4
 						else
-							X = X + ((ch.x_advance + self.Spacing) * self.Scale.w) * 4
+							X = X + ((ch.x_advance + self.Spacing) * self.Scale.x) * 4
 						end
 					else
 						X = X + self.Size * 4
@@ -197,7 +197,7 @@ function META:CompileString(data)
 						if self.Monospace then 
 							X = X + self.Spacing
 						else
-							X = X + (ch.x_advance + self.Spacing) * self.Scale.w
+							X = X + (ch.x_advance + self.Spacing) * self.Scale.x
 						end
 					else
 						X = X + self.Size
@@ -278,14 +278,14 @@ function META:GetTextSize(str)
 		local char = utf8.sub(str, i,i)
 		local ch = self.chars[char] 
 		if char == "\n" then
-			Y = Y + self.Size * self.Scale.h
+			Y = Y + self.Size * self.Scale.y
 		elseif char == "\t" then
 			local ch = self.chars[" "]
 			if ch then
 				if self.Monospace then 
 					X = X + self.Spacing * 4
 				else
-					X = X + ((ch.x_advance + self.Spacing) * self.Scale.w) * 4
+					X = X + ((ch.x_advance + self.Spacing) * self.Scale.x) * 4
 				end
 			else
 				X = X + self.Size * 4
@@ -297,7 +297,7 @@ function META:GetTextSize(str)
 				if self.Monospace then 
 					X = X + self.Spacing
 				else
-					X = X + (ch.x_advance + self.Spacing) * self.Scale.w
+					X = X + (ch.x_advance + self.Spacing) * self.Scale.x
 				end
 			else
 				X = X + self.Size
@@ -306,7 +306,7 @@ function META:GetTextSize(str)
 			if self.Monospace then 
 				X = X + self.Spacing
 			else
-				X = X + (ch.x_advance + self.Spacing) * self.Scale.w
+				X = X + (ch.x_advance + self.Spacing) * self.Scale.x
 			end
 		end
 	end

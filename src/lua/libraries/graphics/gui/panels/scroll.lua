@@ -42,7 +42,7 @@ function PANEL:SetXScrollBar(b)
 		x_handle.OnPositionChanged = function(_, pos)
 			if not area:IsValid() then return end
 			
-			local w = area:GetSizeOfChildren().w / (area:GetSizeOfChildren().w / area:GetWidth())
+			local w = area:GetSizeOfChildren().x / (area:GetSizeOfChildren().x / area:GetWidth())
 			local frac = math.clamp(pos.x / w, 0, 1)
 			area:SetScrollFraction(Vec2(frac, area:GetScrollFraction().y))
 
@@ -78,7 +78,7 @@ function PANEL:SetXScrollBar(b)
 		y_handle.OnPositionChanged = function(_, pos)
 			if not area:IsValid() then return end
 			
-			local h = area:GetSizeOfChildren().h  / (area:GetSizeOfChildren().h / area:GetHeight())
+			local h = area:GetSizeOfChildren().y  / (area:GetSizeOfChildren().y / area:GetHeight())
 			local frac = math.clamp(pos.y / h, 0, 1)
 			area:SetScrollFraction(Vec2(area:GetScrollFraction().x, frac))
 	 
@@ -165,18 +165,18 @@ function PANEL:OnLayout(S)
 				
 	local y_offset = 0
 	
-	if self.x_track and self.x_track:IsVisible() and children_size.h < children_size.w then
+	if self.x_track and self.x_track:IsVisible() and children_size.y < children_size.x then
 		y_offset = self.ScrollWidth
 	end
 		
 	local x_offset = 0
 
-	if self.y_track and self.y_track:IsVisible() and children_size.w < children_size.h then
+	if self.y_track and self.y_track:IsVisible() and children_size.x < children_size.y then
 		x_offset = self.ScrollWidth
 	end	
 	
 	if self.y_track then
-		if self.scroll_area:GetHeight() > children_size.h + self.ScrollWidth then
+		if self.scroll_area:GetHeight() > children_size.y + self.ScrollWidth then
 			self.y_track:SetVisible(false)
 		else
 			self.y_track:SetVisible(true)
@@ -184,7 +184,7 @@ function PANEL:OnLayout(S)
 	end
 	
 	if self.x_track then					
-		if self.scroll_area:GetWidth() > children_size.w + self.ScrollWidth then
+		if self.scroll_area:GetWidth() > children_size.x + self.ScrollWidth then
 			self.x_track:SetVisible(false)
 		else
 			self.x_track:SetVisible(true)
@@ -195,14 +195,14 @@ function PANEL:OnLayout(S)
 		self.y_track:SetHeight(self:GetHeight() - y_offset)
 		self.y_track:SetX(self:GetWidth() - self.y_track:GetWidth())
 		
-		self.y_handle:SetHeight(math.clamp(-(children_size.h - self.y_track:GetHeight()) + self.y_track:GetHeight(), self.ScrollWidth*2, self.y_track:GetHeight()))
+		self.y_handle:SetHeight(math.clamp(-(children_size.y - self.y_track:GetHeight()) + self.y_track:GetHeight(), self.ScrollWidth*2, self.y_track:GetHeight()))
 	end
 	
 	if self.x_track then	
 		self.x_track:SetWidth(self:GetWidth() - x_offset)
 		self.x_track:SetY(self:GetHeight() - self.x_track:GetHeight())
 
-		self.x_handle:SetWidth(math.clamp(-(children_size.w - self.y_track:GetWidth()) + self.x_track:GetWidth(), self.ScrollWidth*2, self.x_track:GetWidth()))
+		self.x_handle:SetWidth(math.clamp(-(children_size.x - self.y_track:GetWidth()) + self.x_track:GetWidth(), self.ScrollWidth*2, self.x_track:GetWidth()))
 	end
 	
 	if self.y_track and self.y_track:IsVisible() then

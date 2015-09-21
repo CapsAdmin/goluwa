@@ -18,16 +18,16 @@ local tile_size = Vec2() + 40
 function PANEL:DrawTile(tile_x, tile_y, rot)
 	tile_x = tile_x or 0
 	tile_y = tile_y or 0
-	tile_x = tile_x * tile_size.w
-	tile_y = tile_y * tile_size.h
+	tile_x = tile_x * tile_size.x
+	tile_y = tile_y * tile_size.y
 	
-	local w, h = tile_size.w, tile_size.h
+	local w, h = tile_size.x, tile_size.y
 	
 	if tile_x < 0 then tile_x = -tile_x w = -w end
 	if tile_y < 0 then tile_y = -tile_y h = -h end
 	
 	surface.SetRectUV(tile_x, tile_y, w, h, surface.GetTexture().w, surface.GetTexture().h)
-	surface.DrawRect(self.Size.w/2, self.Size.h/2, self.Size.w, self.Size.h, rot or 0, self.Size.w/2, self.Size.h/2)
+	surface.DrawRect(self.Size.x/2, self.Size.y/2, self.Size.x, self.Size.y, rot or 0, self.Size.x/2, self.Size.y/2)
 end
 
 function PANEL:DrawAnimation(animation, frame, rot, flip_x, relative)
@@ -66,7 +66,7 @@ function PANEL:CheckCollision()
 
 	self.on_ground = false
 	
-	local pos, found = self.Parent:RayCast(self, self.Position.x, h - self.Size.h, self.Size.w, self.Size.h, true, true)
+	local pos, found = self.Parent:RayCast(self, self.Position.x, h - self.Size.y, self.Size.x, self.Size.y, true, true)
 	
 	if self.Position.y > pos.y - 2 then
 		self.on_ground = true
@@ -80,7 +80,7 @@ function PANEL:CheckCollision()
 		return
 	end
 	
-	local pos, found = self.Parent:RayCast(self, self.Position.x, 1, self.Size.w, self.Size.h, true, true)
+	local pos, found = self.Parent:RayCast(self, self.Position.x, 1, self.Size.x, self.Size.y, true, true)
 	
 	if self.Position.y < pos.y then
 		if length> faint_vel then self.faint_time = length/5  self.faint = system.GetElapsedTime() + self.faint_time end
@@ -90,7 +90,7 @@ function PANEL:CheckCollision()
 		return
 	end
 	
-	local pos, found = self.Parent:RayCast(self, w - self.Size.w, self.Position.y, self.Size.w, self.Size.h, true, true)
+	local pos, found = self.Parent:RayCast(self, w - self.Size.x, self.Position.y, self.Size.x, self.Size.y, true, true)
 		
 	if self.Position.x > pos.x - 4 then
 		if length> faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end
@@ -100,7 +100,7 @@ function PANEL:CheckCollision()
 		return 
 	end
 	
-	local pos, found = self.Parent:RayCast(self, 1, self.Position.y, self.Size.w, self.Size.h, true, true)
+	local pos, found = self.Parent:RayCast(self, 1, self.Position.y, self.Size.x, self.Size.y, true, true)
 	
 	if self.Position.x < pos.x + 4 then
 		if length> faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end
@@ -124,7 +124,7 @@ function PANEL:OnUpdate()
 		
 	else
 		if self.on_ground then
-			if math.abs(mpos.x - self.Size.w/2) > self.Size:GetLength() then
+			if math.abs(mpos.x - self.Size.x/2) > self.Size:GetLength() then
 				self.Velocity.x = self.Velocity.x + mpos.x * dt * 0.25
 			else
 				self.Velocity:Set(0,0)

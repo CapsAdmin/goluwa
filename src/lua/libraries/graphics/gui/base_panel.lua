@@ -24,7 +24,7 @@ function PANEL:CreatePanel(name, store_in_self)
 end
 
 function PANEL:__tostring2()
-	return ("[%s %s %s %s][%s]"):format(self.Position.x, self.Position.y, self.Size.w, self.Size.h, self.layout_count)
+	return ("[%s %s %s %s][%s]"):format(self.Position.x, self.Position.y, self.Size.x, self.Size.y, self.layout_count)
 end
 
 function PANEL:IsWorld()
@@ -101,10 +101,10 @@ function PANEL:IsInsideParent()
 	end
 		
 	if 
-		self.Position.x - override.Scroll.x < override.Size.w and
-		self.Position.y - override.Scroll.y < override.Size.h and
-		self.Position.x + self.Size.w - override.Scroll.x > 0 and
-		self.Position.y + self.Size.h - override.Scroll.y > 0
+		self.Position.x - override.Scroll.x < override.Size.x and
+		self.Position.y - override.Scroll.y < override.Size.y and
+		self.Position.x + self.Size.x - override.Scroll.x > 0 and
+		self.Position.y + self.Size.y - override.Scroll.y > 0
 	then
 		return true
 	end
@@ -238,7 +238,7 @@ do -- drawing
 					render.SetBlendMode("additive")
 					surface.SetColor(1, 1, 1, 0.5)
 					surface.SetWhiteTexture()
-					surface.DrawRect(0, 0, self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
+					surface.DrawRect(0, 0, self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
 					render.SetBlendMode("alpha")
 				end
 				
@@ -252,7 +252,7 @@ do -- drawing
 		
 		if --[[true or]] not no_draw and self.Clipping then
 			--surface.PushClipFunction(self.DrawClippingStencil, self)
-			surface.EnableClipRect(0,0,self.Size.w + self.DrawSizeOffset.w, self.Size.h + self.DrawSizeOffset.h)
+			surface.EnableClipRect(0,0,self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
 		end
 		
 		if from_cache then
@@ -293,7 +293,7 @@ do -- drawing
 		
 		if self.debug_flash and self.debug_flash > os.clock() then
 			surface.SetColor(1,0,0,(os.clock()*4)%1 > 0.5 and 0.5 or 0)
-			surface.DrawRect(0, 0, self.Size.w, self.Size.h)
+			surface.DrawRect(0, 0, self.Size.x, self.Size.y)
 		end
 				
 		if gui.debug then
@@ -301,14 +301,14 @@ do -- drawing
 				render.SetBlendMode("additive")
 				surface.SetColor(1, 0, 0, 0.1)
 				surface.SetWhiteTexture(self.cache_texture)
-				surface.DrawRect(self.Scroll.x, self.Scroll.y, self.Size.w, self.Size.h)
+				surface.DrawRect(self.Scroll.x, self.Scroll.y, self.Size.x, self.Size.y)
 				self.updated_layout = false
 				render.SetBlendMode("alpha")
 			else
 				if self.updated_cache then
 					surface.SetColor(0, 1, 0, 0.1)
 					surface.SetWhiteTexture(self.cache_texture)
-					surface.DrawRect(0, 0, self.Size.w, self.Size.h)
+					surface.DrawRect(0, 0, self.Size.x, self.Size.y)
 					self.updated_cache = false
 				end
 			end
@@ -321,7 +321,7 @@ do -- drawing
 		if self.NinePatch then
 			surface.DrawNinePatch(
 				x or 0, y or 0, 
-				w or (self.Size.w + self.DrawSizeOffset.w), h or (self.Size.h + self.DrawSizeOffset.h),
+				w or (self.Size.x + self.DrawSizeOffset.x), h or (self.Size.y + self.DrawSizeOffset.y),
 				self.NinePatchRect.w, self.NinePatchRect.h, 
 				self.NinePatchCornerSize, 
 				self.NinePatchRect.x, self.NinePatchRect.y,
@@ -331,7 +331,7 @@ do -- drawing
 			if not self.NinePatchRect:IsZero() then
 				surface.SetRectUV(self.NinePatchRect.x, self.NinePatchRect.y, self.NinePatchRect.w, self.NinePatchRect.h, self.Texture.w, self.Texture.h)
 			end
-			surface.DrawRect(x or 0, y or 0, w or (self.Size.w + self.DrawSizeOffset.w), h or (self.Size.h + self.DrawSizeOffset.h))
+			surface.DrawRect(x or 0, y or 0, w or (self.Size.x + self.DrawSizeOffset.x), h or (self.Size.y + self.DrawSizeOffset.y))
 			if not self.NinePatchRect:IsZero() then
 				surface.SetRectUV()
 			end
@@ -386,8 +386,8 @@ do -- orientation
 					
 					if ang then
 						self.Matrix:Rotate(-ang.y, 0, 0, 1)
-						self.Matrix:Rotate(-ang.r, 0, 1, 0)
-						self.Matrix:Rotate(-ang.p, 1, 0, 0) 
+						self.Matrix:Rotate(-ang.z, 0, 1, 0)
+						self.Matrix:Rotate(-ang.x, 1, 0, 0) 
 					end
 					
 					if scale then 
@@ -404,8 +404,8 @@ do -- orientation
 				self.Matrix:Translate(math.ceil(self.Position.x), math.ceil(self.Position.y), 0)
 				
 				if self.Angle ~= 0 then
-					local w = (self.Size.w)/2
-					local h = (self.Size.h)/2
+					local w = (self.Size.x)/2
+					local h = (self.Size.y)/2
 				
 					self.Matrix:Translate(w, h, 0)
 						self.Matrix:SetRotation(Quat():SetAngles(Ang3(0,self.Angle,0)))
@@ -421,14 +421,14 @@ do -- orientation
 				end
 				
 				if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
-					local w = (self.Size.w + self.DrawSizeOffset.w)/2
-					local h = (self.Size.h + self.DrawSizeOffset.h)/2
+					local w = (self.Size.x + self.DrawSizeOffset.x)/2
+					local h = (self.Size.y + self.DrawSizeOffset.y)/2
 
 					self.Matrix:Translate(w, h, 0)
 					
-					self.Matrix:Rotate(self.DrawAngleOffset.p, 0, 0, 1)
+					self.Matrix:Rotate(self.DrawAngleOffset.x, 0, 0, 1)
 					self.Matrix:Rotate(self.DrawAngleOffset.y, 0, 1, 0)
-					self.Matrix:Rotate(self.DrawAngleOffset.r, 1, 0, 0)
+					self.Matrix:Rotate(self.DrawAngleOffset.z, 1, 0, 0)
 				
 					self.Matrix:Translate(-w, -h, 0)
 				end
@@ -458,8 +458,8 @@ do -- orientation
 
 	function PANEL:SetSize(size)
 		if self.StyleSize:IsZero() then
-			size.x = math.max(size.x, self.MinimumSize.w)
-			size.y = math.max(size.y, self.MinimumSize.h)
+			size.x = math.max(size.x, self.MinimumSize.x)
+			size.y = math.max(size.y, self.MinimumSize.y)
 
 			self.Size = size
 			
@@ -533,19 +533,19 @@ do -- orientation
 	end
 
 	function PANEL:SetWidth(w)
-		self.Size.w = w
+		self.Size.x = w
 		self:Layout()
 	end
 	function PANEL:GetWidth()
-		return self.Size.w
+		return self.Size.x
 	end
 
 	function PANEL:SetHeight(h)
-		self.Size.h = h
+		self.Size.y = h
 		self:Layout()
 	end
 	function PANEL:GetHeight()
-		return self.Size.h
+		return self.Size.y
 	end
 	
 	PANEL.SetW = PANEL.SetWidth
@@ -560,22 +560,22 @@ do -- orientation
 	end
 	
 	function PANEL:GetRect()
-		return Rect(self.Position.x, self.Position.y, self.Size.w, self.Size.h)
+		return Rect(self.Position.x, self.Position.y, self.Size.x, self.Size.y)
 	end
 	
 	function PANEL:SetRectFast(x,y,w,h)
 		self.Position.x = x
 		self.Position.y = y
-		self.Size.w = w
-		self.Size.h = h
+		self.Size.x = w
+		self.Size.y = h
 	end
 	
 	function PANEL:GetRectFast()
-		return self.Position.x, self.Position.y, self.Size.w, self.Size.h
+		return self.Position.x, self.Position.y, self.Size.x, self.Size.y
 	end
 	
 	function PANEL:GetWorldRect()
-		local rect = Rect(self.Position.x, self.Position.y, self.Size.w, self.Size.h)
+		local rect = Rect(self.Position.x, self.Position.y, self.Size.x, self.Size.y)
 		
 		-- convert to world
 		rect.w = rect.x + rect.w
@@ -585,7 +585,7 @@ do -- orientation
 	end
 	
 	function PANEL:GetWorldRectFast()
-		return self.Position.x, self.Position.y, self.Position.x + self.Size.w, self.Position.y + self.Size.h
+		return self.Position.x, self.Position.y, self.Position.x + self.Size.x, self.Position.y + self.Size.y
 	end
 	
 	function PANEL:CenterX()
@@ -622,10 +622,10 @@ do -- cached rendering
 			if 
 				(not self.cache_fb or self.cache_texture:GetSize() ~= self.Size) and
 				
-				self.Size.w > 1 and 
-				self.Size.h > 1 and
-				self.Size.w < 4096 and 
-				self.Size.h < 4096
+				self.Size.x > 1 and 
+				self.Size.y > 1 and
+				self.Size.x < 4096 and 
+				self.Size.y < 4096
 			then
 				local fb = render.CreateFrameBuffer()
 				fb:SetTexture(1, Texture(self.Size))
@@ -653,7 +653,7 @@ do -- cached rendering
 		self:OnPreDraw()
 		surface.SetColor(1, 1, 1, 1)
 		surface.SetTexture(self.cache_texture)
-		surface.DrawRect(0, 0, self.Size.w, self.Size.h)
+		surface.DrawRect(0, 0, self.Size.x, self.Size.y)
 		self:OnPostDraw()
 	end
 
@@ -1191,19 +1191,19 @@ do -- resizing
 			local prev_pos = self.resize_prev_pos:Copy()
 
 			if loc == "right" or loc == "top_right" then
-				prev_size.w = prev_size.w + diff.x
+				prev_size.x = prev_size.x + diff.x
 			elseif loc == "bottom" or loc == "bottom_left" then
-				prev_size.h = prev_size.h + diff.y
+				prev_size.y = prev_size.y + diff.y
 			elseif loc == "bottom_right" then
 				prev_size = prev_size + diff
 			end
 
 			if loc == "top" or loc == "top_right" then
-				prev_pos.y = prev_pos.y + math.min(diff_world.y, prev_size.h - self.MinimumSize.h)
-				prev_size.h = prev_size.h - diff_world.y
+				prev_pos.y = prev_pos.y + math.min(diff_world.y, prev_size.y - self.MinimumSize.y)
+				prev_size.y = prev_size.y - diff_world.y
 			elseif loc == "left" or loc == "bottom_left" then
-				prev_pos.x = prev_pos.x + math.min(diff_world.x, prev_size.w - self.MinimumSize.w)
-				prev_size.w = prev_size.w - diff_world.x
+				prev_pos.x = prev_pos.x + math.min(diff_world.x, prev_size.x - self.MinimumSize.x)
+				prev_size.x = prev_size.x - diff_world.x
 			elseif loc == "top_left" then
 				prev_pos = prev_pos + diff_world
 				prev_size = prev_size - diff_world
@@ -1213,8 +1213,8 @@ do -- resizing
 				prev_pos.x = math.max(prev_pos.x, 0)
 				prev_pos.y = math.max(prev_pos.y, 0)
 
-				prev_size.w = math.min(prev_size.w, self.Parent.Size.w - prev_pos.x)
-				prev_size.h = math.min(prev_size.h, self.Parent.Size.h - prev_pos.y)
+				prev_size.x = math.min(prev_size.x, self.Parent.Size.x - prev_pos.x)
+				prev_size.y = math.min(prev_size.y, self.Parent.Size.y - prev_pos.y)
 			end
 
 			self:SetPosition(prev_pos)
@@ -1289,22 +1289,22 @@ do -- mouse
 
 		if
 			(pos.y > 0 and pos.y < offset.h) and -- top
-			(pos.x > siz.w - offset.w and pos.x < siz.w) -- right
+			(pos.x > siz.x - offset.w and pos.x < siz.x) -- right
 		then
 			return "top_right"
 		end
 
 
 		if
-			(pos.y > siz.h - offset.h and pos.y < siz.h) and -- bottom
+			(pos.y > siz.y - offset.h and pos.y < siz.y) and -- bottom
 			(pos.x > 0 and pos.x < offset.w) -- left
 		then
 			return "bottom_left"
 		end
 
 		if
-			(pos.y > siz.h - offset.h and pos.y < siz.h) and -- bottom
-			(pos.x > siz.w - offset.w and pos.x < siz.w) --right
+			(pos.y > siz.y - offset.h and pos.y < siz.y) and -- bottom
+			(pos.x > siz.x - offset.w and pos.x < siz.x) --right
 		then
 			return "bottom_right"
 		end
@@ -1315,11 +1315,11 @@ do -- mouse
 			return "left"
 		end
 
-		if pos.x > siz.w - offset.w and pos.x < siz.w then
+		if pos.x > siz.x - offset.w and pos.x < siz.x then
 			return "right"
 		end
 
-		if pos.y > siz.h - offset.h and pos.y < siz.h then
+		if pos.y > siz.y - offset.h and pos.y < siz.y then
 			return "bottom"
 		end
 
@@ -1358,8 +1358,8 @@ do -- mouse
 		local alpha = 1
 
 		if not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
-			local x = (x / self.Size.w)
-			local y = (y / self.Size.h)
+			local x = (x / self.Size.x)
+			local y = (y / self.Size.y)
 			
 			x = x * self.Texture.w
 			y = y * self.Texture.h
@@ -1370,7 +1370,7 @@ do -- mouse
 			alpha = select(4, self.Texture:GetPixelColor(x, y)) / 255
 		end
 
-		if x > 0 and x < self.Size.w and y > 0 and y < self.Size.h and alpha > 0 then
+		if x > 0 and x < self.Size.x and y > 0 and y < self.Size.y and alpha > 0 then
 			if self:HasParent() and (self:GetParent():IsWorld() or self:GetParent().mouse_over) then
 				self.mouse_over = true
 			else
@@ -1607,30 +1607,30 @@ do -- layout
 				
 			if dir_x < 0 then
 				y = panel:GetY()
-				x = x + child:GetWidth() + panel.Padding.right	
+				x = x + child:GetWidth() + panel.Padding:GetRight()	
 			elseif dir_x > 0 then
 				y = panel:GetY()
-				x = x - panel:GetWidth() - panel.Padding.left			
+				x = x - panel:GetWidth() - panel.Padding:GetLeft()			
 			elseif dir_y < 0 then
 				x = panel:GetX()
-				y = y + child:GetHeight() + panel.Padding.bottom
+				y = y + child:GetHeight() + panel.Padding:GetBottom()
 			elseif dir_y > 0 then
 				x = panel:GetX()
-				y = y - panel:GetHeight() - panel.Padding.top
+				y = y - panel:GetHeight() - panel.Padding:GetTop()
 			end
 		else
 			if dir_x < 0 then
-				x = x + panel.Padding.right
-				x = x + self.Margin.right				
+				x = x + panel.Padding:GetRight()
+				x = x + self.Margin:GetRight()				
 			elseif dir_x > 0 then                  
-				x = x - panel.Padding.left
-				x = x - self.Margin.left 
+				x = x - panel.Padding:GetLeft()
+				x = x - self.Margin:GetLeft() 
 			elseif dir_y < 0 then                  	
-				y = y + panel.Padding.bottom
-				y = y + self.Margin.bottom
+				y = y + panel.Padding:GetBottom()
+				y = y + self.Margin:GetBottom()
 			elseif dir_y > 0 then            
-				y = y - panel.Padding.top
-				y = y - self.Margin.top
+				y = y - panel.Padding:GetTop()
+				y = y - self.Margin:GetTop()
 			end            
 			
 			x = math.max(x, 0)
@@ -1822,11 +1822,11 @@ do -- layout
 			self:SetX(parent:GetWidth())
 			self:SetY(0)
 
-			local pos, pnl = self:RayCast(self, 1, self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
+			local pos, pnl = self:RayCast(self, 1, self.Position.y, self.Size.x, self.Size.y, self.layout_collide)
 
 			self:SetRectFast(ox,oy,ow,oh)
 
-			self:SetWidth(pos.x + self.Margin.right + (pnl and pnl.Padding.right or 0))
+			self:SetWidth(pos.x + self.Margin:GetRight() + (pnl and pnl.Padding:GetRight() or 0))
 			
 			self.laid_out = true
 		end
@@ -1841,12 +1841,12 @@ do -- layout
 			self:SetY(parent:GetHeight())
 			self:SetX(0)
 
-			local pos, pnl = self:RayCast(self, self.Position.x, 1, self.Size.w, self.Size.h, self.layout_collide)
+			local pos, pnl = self:RayCast(self, self.Position.x, 1, self.Size.x, self.Size.y, self.layout_collide)
 
 			self:SetRectFast(ox,oy,ow,oh)
 
 			--self:SetHeight(left.y)
-			self:SetHeight(pos.y + self.Margin.y + (pnl and pnl.Padding.bottom or 0))
+			self:SetHeight(pos.y + self.Margin.y + (pnl and pnl.Padding:GetBottom() or 0))
 			
 			self.laid_out = true
 		end
@@ -1856,14 +1856,14 @@ do -- layout
 
 			self:SetWidth(1)
 
-			local left = parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
-			local right = parent:RayCast(self, parent:GetWidth(), self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
+			local left = parent:RayCast(self, 0, self.Position.y, self.Size.x, self.Size.y, self.layout_collide)
+			local right = parent:RayCast(self, parent:GetWidth(), self.Position.y, self.Size.x, self.Size.y, self.layout_collide)
 			right.x = right.x - left.x + 1
 
 			local x = left.x
 			local w = right.x
 
-			local min_width = self.MinimumSize.w
+			local min_width = self.MinimumSize.x
 
 			if percent then
 				x = math.max(math.lerp(percent*0.5, left.x, right.x + self:GetWidth()), min_width) - min_width + left.x
@@ -1885,14 +1885,14 @@ do -- layout
 
 			self:SetHeight(1)
 
-			local top = parent:RayCast(self, self.Position.x, 0, self.Size.w, self.Size.h, self.layout_collide)
-			local bottom = parent:RayCast(self, self.Position.x, parent:GetHeight(), self.Size.w, self.Size.h, self.layout_collide)
+			local top = parent:RayCast(self, self.Position.x, 0, self.Size.x, self.Size.y, self.layout_collide)
+			local bottom = parent:RayCast(self, self.Position.x, parent:GetHeight(), self.Size.x, self.Size.y, self.layout_collide)
 			bottom.y = bottom.y - top.y + 1
 
 			local y = top.y
 			local h = bottom.y
 
-			local min_height = self.MinimumSize.h
+			local min_height = self.MinimumSize.y
 
 			if percent then
 				y = math.max(math.lerp(percent, top.y, bottom.y + self:GetHeight()), min_height/2) - min_height/2 + top.y
@@ -1917,8 +1917,8 @@ do -- layout
 		function PANEL:CenterX()
 			local parent = self:GetParent()
 
-			local left = parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
-			local right = parent:RayCast(self, parent.Size.w, left.y, self.Size.w, self.Size.h, self.layout_collide)
+			local left = parent:RayCast(self, 0, self.Position.y, self.Size.x, self.Size.y, self.layout_collide)
+			local right = parent:RayCast(self, parent.Size.x, left.y, self.Size.x, self.Size.y, self.layout_collide)
 
 			self:SetX(math.lerp(0.5, left.x, right.x))
 			
@@ -1928,9 +1928,9 @@ do -- layout
 		function PANEL:CenterY()
 			local parent = self:GetParent()
 
-			local top = parent:RayCast(self, self.Position.x, 0, self.Size.w, self.Size.h, self.layout_collide)
-			local bottom = parent:RayCast(self, top.x, parent:GetHeight(), self.Size.w, self.Size.h, self.layout_collide)
-			self:SetY(top.y + (bottom.y/2 - self:GetHeight()/2) - self.Padding.top + self.Padding.bottom)
+			local top = parent:RayCast(self, self.Position.x, 0, self.Size.x, self.Size.y, self.layout_collide)
+			local bottom = parent:RayCast(self, top.x, parent:GetHeight(), self.Size.x, self.Size.y, self.layout_collide)
+			self:SetY(top.y + (bottom.y/2 - self:GetHeight()/2) - self.Padding:GetTop() + self.Padding:GetBottom())
 			
 			self.laid_out = true
 		end
@@ -1973,11 +1973,11 @@ do -- layout
 		function PANEL:CenterXFrame()
 			local parent = self:GetParent()
 
-			local left = parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, self.layout_collide)
-			local right = parent:RayCast(self, parent:GetWidth(), left.y, self.Size.w, self.Size.h, self.layout_collide)
+			local left = parent:RayCast(self, 0, self.Position.y, self.Size.x, self.Size.y, self.layout_collide)
+			local right = parent:RayCast(self, parent:GetWidth(), left.y, self.Size.x, self.Size.y, self.layout_collide)
 
 			if
-				self:GetX()+self:GetWidth()+self.Padding.right < right.x+self:GetWidth()-self.Padding.right and
+				self:GetX()+self:GetWidth()+self.Padding:GetRight() < right.x+self:GetWidth()-self.Padding:GetRight() and
 				self:GetX()-self.Padding.x > left.x
 			then
 				self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
@@ -1994,7 +1994,7 @@ do -- layout
 			end
 			
 			self:SetY(math.max(self:GetY(), 1))
-			self:SetY(parent:RayCast(self, self.Position.x, 0, self.Size.w, self.Size.h, self.layout_collide).y)
+			self:SetY(parent:RayCast(self, self.Position.x, 0, self.Size.x, self.Size.y, self.layout_collide).y)
 			
 			self.laid_out = true
 		end
@@ -2007,7 +2007,7 @@ do -- layout
 			end
 
 			self:SetX(math.max(self:GetX(), 1))
-			self:SetX(parent:RayCast(self, 0, self.Position.y, self.Size.w, self.Size.h, self.layout_collide).x)
+			self:SetX(parent:RayCast(self, 0, self.Position.y, self.Size.x, self.Size.y, self.layout_collide).x)
 			
 			self.laid_out = true
 		end
@@ -2020,7 +2020,7 @@ do -- layout
 			end
 			
 			self:SetY(math.max(self:GetY(), 1))
-			self:SetY(parent:RayCast(self, self.Position.x, parent:GetHeight() - self:GetHeight(), self.Size.w, self.Size.h, self.layout_collide).y)
+			self:SetY(parent:RayCast(self, self.Position.x, parent:GetHeight() - self:GetHeight(), self.Size.x, self.Size.y, self.layout_collide).y)
 			
 			self.laid_out = true
 		end
@@ -2033,7 +2033,7 @@ do -- layout
 			end
 			
 			self:SetX(math.max(self:GetX(), 1))
-			self:SetX(parent:RayCast(self, parent:GetWidth() - self:GetWidth(), self.Position.y, self.Size.w, self.Size.h, self.layout_collide).x)
+			self:SetX(parent:RayCast(self, parent:GetWidth() - self:GetWidth(), self.Position.y, self.Size.x, self.Size.y, self.layout_collide).x)
 			
 			self.laid_out = true
 		end
@@ -2088,64 +2088,64 @@ do -- stacking
 			if pnl:IsStackable() then
 				local siz = pnl:GetSize():Copy()
 				
-				if self.ForcedStackSize.w ~= 0 then
-					siz.w = self.ForcedStackSize.w
+				if self.ForcedStackSize.x ~= 0 then
+					siz.x = self.ForcedStackSize.x
 				end
 				
-				if self.ForcedStackSize.h ~= 0 then
-					siz.h = self.ForcedStackSize.h
+				if self.ForcedStackSize.y ~= 0 then
+					siz.y = self.ForcedStackSize.y
 				end
 				
 				siz.x = siz.x + pnl.Padding.w
 				siz.y = siz.y + pnl.Padding.h
 
 				if self.StackRight then
-					h = h or siz.h
-					w = w + siz.w
+					h = h or siz.y
+					w = w + siz.x
 
 					if self.StackDown and w > self:GetWidth() then
-						h = h + siz.h
-						w = siz.w
+						h = h + siz.y
+						w = siz.x
 					end
 					
-					pnl.Position.x = w + pad.w - siz.w + pnl.Padding.x
-					pnl.Position.y = h + pad.h - siz.h + pnl.Padding.y
+					pnl.Position.x = w + pad.x - siz.x + pnl.Padding.x
+					pnl.Position.y = h + pad.y - siz.y + pnl.Padding.y
 				else
 					h = h or 0
-					h = h + siz.h
+					h = h + siz.y
 					
-					w = siz.w > w and siz.w or w
+					w = siz.x > w and siz.x or w
 					
 					pnl.Position.x = pad.x + pnl.Padding.x
-					pnl.Position.y = h + pad.y - siz.h + pnl.Padding.y
+					pnl.Position.y = h + pad.y - siz.y + pnl.Padding.y
 				end
 				
 				if not self.ForcedStackSize:IsZero() then
 					local siz = self.ForcedStackSize
 					
 					if self.SizeStackToWidth then
-						siz.w = self:GetWidth()
+						siz.x = self:GetWidth()
 					end
 					
 					if self.SizeStackToHeight then
-						siz.w = self:GetHeight()
+						siz.x = self:GetHeight()
 					end
 
-					pnl:SetSize(Vec2(siz.w - pad.h * 2, siz.h))
+					pnl:SetSize(Vec2(siz.x - pad.y * 2, siz.y))
 				else
 					if self.SizeStackToWidth then
-						pnl:SetWidth(self:GetWidth() - pad.w * 2)
+						pnl:SetWidth(self:GetWidth() - pad.x * 2)
 					end
 					
 					if self.SizeStackToHeight then
-						pnl:SetHeight(self:GetHeight() - pad.h * 2)
+						pnl:SetHeight(self:GetHeight() - pad.y * 2)
 					end
 				end
 			end
 		end
 		
 		if self.SizeStackToWidth then
-			w = self:GetWidth() - pad.w * 2
+			w = self:GetWidth() - pad.x * 2
 		end
 		
 		h = h or 0
