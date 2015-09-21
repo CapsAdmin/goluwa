@@ -19,7 +19,7 @@ local property_translate = {
 	NormalAlphaMetallic = {"normalmapalphaenvmapmask", function(num) return num == 1 end},
 	DiffuseAlphaMetallic = {"basealphaenvmapmask", function(num) return num == 1 end},
 	RoughnessMultiplier = {"phongexponent", function(num) return 1/(-num+1)^3 end},
-	MetallicMultiplier = {"envmaptint", function(num) return type(num) == "number" and num or num.x end},
+	MetallicMultiplier = {"envmaptint", function(num) return type(num) == "number" and num or typex(num) == "vec3" and num.x or typex(num) == "color" and num.r end},
 	SelfIllumination = {"selfillum", function(num) return num end},
 }
 
