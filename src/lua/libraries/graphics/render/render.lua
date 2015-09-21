@@ -55,38 +55,57 @@ function render.Shutdown()
 	
 end
 
-render.global_shader_variables = render.global_shader_variables or {}
+do
+	render.global_shader_variables = render.global_shader_variables or {}
 
-function render.SetGlobalShaderVariable(key, val, type)
-	render.global_shader_variables[key] = {[type] = val, global_variable = true}
-end
-
-render.global_shader_code = render.global_shader_code or {}
-
-function render.AddGlobalShaderCode(glsl_code, require)
-	if not require then
-		require = glsl_code:match("%s([a-zA-Z0-9_]-)%(")
+	function render.SetGlobalShaderVariable(key, val, type)
+		render.global_shader_variables[key] = {[type] = val, global_variable = true}
 	end
-	for i,v in ipairs(render.global_shader_code) do
-		if v.require == require then
-			table.remove(render.global_shader_code, i)
-			break
+
+	render.global_shader_code = render.global_shader_code or {}
+
+	function render.AddGlobalShaderCode(glsl_code, require)
+		if not require then
+			require = glsl_code:match("%s([a-zA-Z0-9_]-)%(")
 		end
-	end
-	
-	table.insert(render.global_shader_code, {code = glsl_code, require = require})
-end
-
-function render.GetGlobalShaderCode(code)
-	local out = {}
-	
-	for i, v in ipairs(render.global_shader_code) do
-		if not code or (v.require and code:find(v.require, nil, true)) then
-			table.insert(out, v.code)
+		for i,v in ipairs(render.global_shader_code) do
+			if v.require == require then
+				table.remove(render.global_shader_code, i)
+				break
+			end
 		end
+		
+		table.insert(render.global_shader_code, {code = glsl_code, require = require})
 	end
-	
-	return table.concat(out, "\n\n")
+
+	function render.GetGlobalShaderCode(code)
+		
+		local done = {}
+		local out = {}
+		
+		for _, info in ipairs(render.global_shader_code) do
+			if not code or (info.require and code:find(info.require, nil, true)) then
+				table.insert(out, info.code)
+				done[info.require] = true
+			end
+		end
+		
+		-- ASHDJUIASHDUAWSD TODO
+		local out2 = {}
+		for _, new_code in pairs(out) do
+			for _, info in ipairs(render.global_shader_code) do
+				if not done[info.require] and info.require and new_code:find(info.require, nil, true) then
+					table.insert(out2, info.code)
+					done[info.require] = true
+				end
+			end
+		end
+		for _, str in pairs(out2) do 
+			table.insert(out, 1, str) 
+		end
+		
+		return table.concat(out, "\n\n")
+	end
 end
 
 do -- occlusion query
