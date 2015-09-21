@@ -19,7 +19,7 @@ out vec3 out_color;
 
 void main(void) 
 {
-	out_color = clamp(texture(self, uv).rgb, vec3(0,0,0), vec3(1,1,1)) + get_sky(uv, sun_direction, get_depth(uv));
+	out_color = texture(self, uv).rgb + get_sky(uv, sun_direction, get_depth(uv));
 }
 ]]
 

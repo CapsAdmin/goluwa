@@ -13,7 +13,7 @@ void main()
     const float greenAberration =0.0;
     const float blueAberration = -10.0;
 
-    float pctEffect = (uv.x - 0.5) * 2.0;
+    float pctEffect = (uv.x - 0.5) * 0.5;
 
     vec3 aberration = vec3(redAberration / g_screen_size.x, greenAberration / g_screen_size.x, blueAberration / g_screen_size.x);
     aberration *= pctEffect;

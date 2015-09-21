@@ -264,7 +264,7 @@ PASS.Shader = {
 						}
 						else
 						{
-							diffuse_buffer.a = clamp(pow(-length(diffuse_buffer.rgb)+1, 0.5)*2,0.5, 1);
+							diffuse_buffer.a = clamp(pow(-length(diffuse_buffer.rgb)+0.3, 0.5)*2,0.1, 1);
 						}
 					}
 					
@@ -274,7 +274,6 @@ PASS.Shader = {
 					}
 					
 				}
-				
 				
 				normal_buffer.a *= lua[MetallicMultiplier = 1];
 				diffuse_buffer.a *= lua[RoughnessMultiplier = 1];

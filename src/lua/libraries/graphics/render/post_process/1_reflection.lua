@@ -25,7 +25,7 @@ table.insert(PASS.Source, {
 	 
 	vec4 ray_cast(vec3 dir, inout vec3 hitCoord)
 	{
-		dir *= rayStep;
+		dir *= rayStep + get_depth(uv);
 	  	 
 		for(int i = 0; i < maxSteps; i++)
 		{
@@ -34,7 +34,10 @@ table.insert(PASS.Source, {
 			float depth = hitCoord.z - get_view_pos(project(hitCoord)).z;
 			 	 
 			if(depth < 0.0 && depth > -0.3)
-			{				
+			{
+				dir *= 0.5;
+				hitCoord -= dir;
+				
 				return vec4(project(hitCoord).xy, depth, 1);
 			}
 		}
@@ -58,7 +61,7 @@ table.insert(PASS.Source, {
 		
 		float dist = texture(tex_depth, uv).r*20;
 		
-		float fade = screenEdgefactor * pow(clamp((dist - length(viewPos - hitPos)) * 1/dist, 0.0, 1.0) * coords.w * 1.025, 5);
+		float fade = screenEdgefactor * pow(clamp((dist - length(viewPos - hitPos)) * 1/dist, 0.0, 1.0) * coords.w , 5);
 		
 		vec4 sky = texture(tex_reflection, uv);
 		vec3 diffuse = texture(tex_diffuse, coords.xy).rgb;
@@ -161,7 +164,7 @@ else
 						end)()..[[
 	
 						float total_weight = 1.0;
-						float discard_threshold = 0.2;
+						float discard_threshold = 0.1;
 	
 						int i;
 	
