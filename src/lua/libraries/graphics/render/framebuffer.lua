@@ -252,7 +252,7 @@ function META:SetCubemapTexture(pos, i, tex)
 	self.fb:TextureFace(pos, tex and tex.gl_tex.id or 0, 0, i - 1)
 end
 
-function META:SetTexture(pos, tex, mode, uid)
+function META:SetTexture(pos, tex, mode, uid, face)
 	pos = attachment_to_enum(self, pos)
 	mode = bind_mode_to_enum(mode or "write")
 	
@@ -263,7 +263,11 @@ function META:SetTexture(pos, tex, mode, uid)
 	if typex(tex) == "texture" then
 		local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
 	
-		self.fb:Texture(pos, id, 0)
+		if face then
+			self.fb:TextureLayer(pos, tex and tex.gl_tex.id or 0, 0, face - 1)
+		else
+			self.fb:Texture(pos, id, 0)
+		end
 		
 		if id ~= 0 then			
 			self.textures[uid] = {
