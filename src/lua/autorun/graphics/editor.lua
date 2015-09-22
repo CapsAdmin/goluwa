@@ -120,7 +120,7 @@ do -- PUT ME IN TRANSFORM
 					diffang:RotateAroundAxis(right, math.rad(180))
 					
 					local _, localang = math3d.WorldToLocal(nil, diffang, nil, ang)
-					local _, newang = math3d.LocalToWorld(nil, Ang3(localang.p + localang.y, 0, 0):Normalize(), nil, ang)
+					local _, newang = math3d.LocalToWorld(nil, Ang3(localang.x + localang.y, 0, 0):Normalize(), nil, ang)
 					final = get_target_angles(nil, newang)
 				end
 			elseif axis == AXIS_Y then
@@ -130,7 +130,7 @@ do -- PUT ME IN TRANSFORM
 					diffang:RotateAroundAxis(up, math.rad(90))
 
 					local _, localang = math3d.WorldToLocal(nil, diffang, nil, ang)
-					local _, newang = math3d.LocalToWorld(nil, Ang3(0, localang.p + localang.y, 0):Normalize(), nil, ang)
+					local _, newang = math3d.LocalToWorld(nil, Ang3(0, localang.x + localang.y, 0):Normalize(), nil, ang)
 
 					final = get_target_angles(nil, newang)
 				end
@@ -142,7 +142,7 @@ do -- PUT ME IN TRANSFORM
 					diffang:RotateAroundAxis(forward, math.rad(-90))
 
 					local _, localang = math3d.WorldToLocal(nil, diffang, nil, ang)
-					local _, newang = math3d.LocalToWorld(nil, Ang3(0, 0, localang.p):Normalize(), nil, ang)
+					local _, newang = math3d.LocalToWorld(nil, Ang3(0, 0, localang.x):Normalize(), nil, ang)
 
 					final = get_target_angles(nil, newang)
 				end
