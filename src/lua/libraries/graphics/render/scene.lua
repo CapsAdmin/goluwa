@@ -47,7 +47,7 @@ end
 
 render.scene_3d = render.scene_3d or {}
 
-function render.Draw3DScene(what)
+function render.Draw3DScene(what, dist)
 	--[[local cam_pos = render.camera_3d:GetPosition()
 	
 	table.sort(render.scene_3d, function(a, b)
@@ -58,7 +58,7 @@ function render.Draw3DScene(what)
 	end)]]
 	
 	for i, model in ipairs(render.scene_3d) do
-		model:Draw(what)
+		model:Draw(what, dist)
 	end
 end
 

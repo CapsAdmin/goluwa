@@ -129,22 +129,28 @@ if GRAPHICS then
 		end
 	end
 
-	function COMPONENT:Draw(what)	
+	function COMPONENT:Draw(what, dist)	
 		local tr = self:GetComponent("transform")
 		render.camera_3d:SetWorld(tr:GetMatrix())
 
-		if self.corners then
+		if self.corners and what then
 			local time = system.GetElapsedTime()
 			self.next_visible[what] = self.next_visible[what] or 0
 			self.visible[what] = self.visible[what] or {}
 			
 			if self.next_visible[what] < time then
-				self.visible[what] = tr:IsPointsVisible(self.corners, render.camera_3d:GetMatrices().projection_view)
+				if dist then
+					self.visible[what] = tr:GetPosition():Distance(render.camera_3d:GetPosition()) < dist
+				else
+					self.visible[what] = tr:IsPointsVisible(self.corners, render.camera_3d:GetMatrices().projection_view)
+				end
 				self.next_visible[what] = time + (1/15)
 			end
 		end
+		
 		render.SetBlendMode()
-		if not self.Cull or self.visible[what] == nil or self.visible[what] == true then
+		
+		if (not self.Cull or not what) or self.visible[what] == nil or self.visible[what] == true then
 			if self.MaterialOverride then render.SetMaterial(self.MaterialOverride) end
 			for i, model in ipairs(self.sub_models) do				
 				if not self.MaterialOverride then render.SetMaterial(model.material) end

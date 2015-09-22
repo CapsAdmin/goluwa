@@ -59,6 +59,8 @@ function PASS:Draw3D()
 	render.camera_3d:SetView(old_view)
 	render.camera_3d:SetProjection(old_projection)
 	render.camera_3d:SetPosition(old_pos)
+	render.camera_3d:Rebuild()
+	
 	render.SetShaderOverride()
 end
 

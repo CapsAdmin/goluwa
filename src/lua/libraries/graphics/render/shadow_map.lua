@@ -9,7 +9,7 @@ local SHADER = {
 			{normal = "vec3"},
 			{uv = "vec2"},
 		},	
-		source = "gl_Position = g_projection_view_world * vec4(pos, 1); out_pos.z = gl_Position.z;"
+		source = "gl_Position = g_projection_view_world * vec4(pos, 1); out_pos.z = (gl_Position.z) * 0.5 + 0.5;"
 	},
 	fragment = {
 		mesh_layout = {
@@ -28,7 +28,7 @@ local SHADER = {
 				}
 				else
 				{
-					depth = 0.5 * pos.z + 0.5;
+					depth = pos.z;
 				}
 			}
 		]],
@@ -36,7 +36,7 @@ local SHADER = {
 }
 
 local function setup(self)
-	local tex
+	local tex = render.CreateTexture("2d")
 	
 	if self.cubemap then
 		tex = render.CreateTexture("cube_map")
@@ -48,10 +48,11 @@ local function setup(self)
 	tex:SetInternalFormat("r16f")
 	tex:SetBaseLevel(0)
 	tex:SetMaxLevel(0)
-	tex:SetWrapS("clamp_to_border")
+	--[[tex:SetWrapS("clamp_to_border")
 	tex:SetWrapT("clamp_to_border")
 	tex:SetWrapR("clamp_to_border")
 	tex:SetBorderColor(Color(1,1,1,1))
+	]]
 	tex:SetMinFilter("linear")
 	tex:SetupStorage()
 
@@ -71,12 +72,14 @@ local function setup(self)
 end
 
 local directions = {
-	QuatDeg3(0,0,0),
-	QuatDeg3(180,0,0),
-	QuatDeg3(0,90,0),
-	QuatDeg3(0,-90,0),
-	QuatDeg3(90,0,0),
-	QuatDeg3(-90,0,0),
+	QuatDeg3(0,-90,-90), -- back
+	QuatDeg3(0,90,90), -- front
+	
+	QuatDeg3(0,0,0), -- up
+	QuatDeg3(180,0,0), -- down
+	
+	QuatDeg3(90,0,0), -- left
+	QuatDeg3(-90,180,0), -- right
 }
 
 local META = prototype.CreateTemplate("shadow_map")
@@ -116,7 +119,7 @@ end
 
 function META:SetupCube(i)
 	if self.cubemap then
-		self.fb:SetCubemapTexture(1, i, self.tex)
+		self.fb:SetTexture(1, self.tex, nil, nil, i)
 	end
 end
 

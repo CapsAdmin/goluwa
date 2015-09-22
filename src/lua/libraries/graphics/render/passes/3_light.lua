@@ -70,13 +70,18 @@ PASS.Shader = {
 			{
 				float visibility = 0;
 			
-				/*if (lua[light_point_shadow = false])
+				if (lua[light_point_shadow = false])
 				{
-					vec3 light_dir = get_view_pos(uv) - light_view_pos;
-
-					visibility = texture(lua[tex_shadow_map_cube = "samplerCube"], light_dir).r;
+					vec3 light_dir = (get_view_pos(uv)*0.5+0.5) - (light_view_pos*0.5+0.5);
+					vec3 dir = normalize(light_dir) * mat3(g_view);
+					dir.z = -dir.z;
+					
+					
+					float shadow_view = texture(lua[tex_shadow_map_cube = render.GetCubemapTexture()], dir.xzy).r;
+									
+					visibility = shadow_view < 1 ? 0: 1;
 				}
-				else*/
+				else
 				{
 					vec4 proj_inv = g_projection_view_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 -1, 1.0);
 					
