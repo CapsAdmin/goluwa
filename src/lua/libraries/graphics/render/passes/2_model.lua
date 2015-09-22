@@ -213,7 +213,7 @@ PASS.Shader = {
 						if (lua[SSBump = false])
 						{
 							// this is so wrong
-							normal_detail.xyz = normalize(normal_detail.xyz*0.5 + vec3(0,0,0.25*0.5));
+							normal_detail.xyz = normalize(pow((normal_detail.xyz*0.5 + vec3(0,0,1)), vec3(0.2)));
 						}
 						
 						if (lua[FlipYNormal = false])
@@ -254,23 +254,23 @@ PASS.Shader = {
 				diffuse_buffer.a = texture(lua[RoughnessTexture = render.GetBlackTexture()], uv).r;
 								
 				{
-					// hmmm
-					
+					// roughness
 					if (diffuse_buffer.a == 0)
 					{
 						if (normal_buffer.a != 0)
 						{
-							diffuse_buffer.a = pow(-normal_buffer.a+1, 1);
+							diffuse_buffer.a = -normal_buffer.a+1;
 						}
 						else
 						{
-							diffuse_buffer.a = clamp(pow(-length(diffuse_buffer.rgb)+0.3, 0.5)*2,0.1, 1);
+							diffuse_buffer.a = pow(- (length(diffuse_buffer.rgb)/3) + 1, 5);
+							diffuse_buffer.rgb *= pow(diffuse_buffer.a, 0.5); 
+						}						
+						
+						if (normal_buffer.a == 0)
+						{
+							normal_buffer.a = (-diffuse_buffer.a+1)/10;
 						}
-					}
-					
-					if (normal_buffer.a == 0)
-					{
-						normal_buffer.a = clamp(pow(length(diffuse_buffer.rgb), 0.5)*0.3, 0.1, 1);
 					}
 					
 				}
