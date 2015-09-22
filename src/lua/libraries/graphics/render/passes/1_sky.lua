@@ -115,7 +115,7 @@ vec3 sky_absorb(vec3 sky_color, float dist, vec3 color, float factor)
 vec3 get_sky(vec2 uv, vec3 sun_direction, float depth) 
 {
 	const float surface_height = 0.95;
-	const float intensity = 5;
+	const float intensity = 15;
 	const int step_count = 8;
 	
 	const vec3 sky_color = vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131);

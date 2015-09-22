@@ -12,9 +12,9 @@ PASS.Source = [[
 		vec3 specular = get_light(uv);
 		float metallic = get_metallic(uv);
 		
-		specular += reflection * metallic;		
 		specular = mix(specular, reflection, metallic);
 		
+		// self illumination
 		specular += diffuse * texture(tex_reflection, uv).a;
 		
 		out_color = diffuse * specular;

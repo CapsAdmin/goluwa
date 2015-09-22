@@ -15,7 +15,7 @@ table.insert(PASS.Source, {
 					
 		void main() 
 		{ 
-			out_color = pow(texture(self, uv).rgb*5, vec3(10));
+			out_color = pow(texture(self, uv).rgb, vec3(5));
 		}
 	]]
 })
@@ -67,10 +67,10 @@ table.insert(PASS.Source, {
 	source = [[
 		out vec3 out_color;
 		
-		const float gamma = 0.75;
+		const float gamma = 0.8;
 		float exposure = 1.75;
 		float bloomFactor = 0.01;
-		float brightMax = 0.5;
+		float brightMax = 1.5;
 		
 		void main() 
 		{ 
@@ -83,7 +83,8 @@ table.insert(PASS.Source, {
 			color *= exposure * (exposure/brightMax + 1.0) / (exposure + 1.0);
 			vec3 mapped = vec3(1.0) - exp(-color * exposure);
 			mapped = pow(mapped, vec3(1.0 / gamma));
-
+			
+		
 
 			out_color = mapped;
 		}
