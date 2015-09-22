@@ -332,7 +332,9 @@ render.SetGlobalShaderVariable("g_cam_nearz", function() return render.camera_3d
 render.SetGlobalShaderVariable("g_cam_farz", function() return render.camera_3d.FarZ end, "float")
 
 render.SetGlobalShaderVariable("g_cam_pos", function() return render.camera_3d:GetPosition() end, "vec3")
-render.SetGlobalShaderVariable("g_cam_normal", function() return render.camera_3d:GetAngles():GetForward() end, "vec3")
+render.SetGlobalShaderVariable("g_cam_up", function() return render.camera_3d:GetAngles():GetUp() end, "vec3")
+render.SetGlobalShaderVariable("g_cam_forward", function() return render.camera_3d:GetAngles():GetForward() end, "vec3")
+render.SetGlobalShaderVariable("g_cam_right", function() return render.camera_3d:GetAngles():GetRight() end, "vec3")
 
 render.AddGlobalShaderCode([[
 float get_depth(vec2 uv) 
