@@ -6,30 +6,51 @@ local SHADER = {
 	vertex = {
 		mesh_layout = {
 			{pos = "vec3"},
-			{normal = "vec3"},
 			{uv = "vec2"},
+			{normal = "vec3"},
 		},	
 		source = "gl_Position = g_projection_view_world * vec4(pos, 1); out_pos.z = (gl_Position.z) * 0.5 + 0.5;"
 	},
 	fragment = {
 		mesh_layout = {
 			{pos = "vec3"},
-			{normal = "vec3"},
 			{uv = "vec2"},
+			{normal = "vec3"},
 		},
 		source = [[
 			out float depth;
-				
-			void main()
+						
+			// https://www.shadertoy.com/view/MslGR8
+			bool dither(vec2 uv, float alpha)
 			{			
-				if ((lua[Translucent = false] || lua[AlphaTest = false]) && !lua[DiffuseAlphaMetallic = false] && texture(lua[DiffuseTexture = "sampler2D"], uv).a < 0.5)
+				if (lua[AlphaTest = false])
 				{
-					discard;
+					return alpha*alpha < 0.25;
 				}
-				else
+				
+				const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
+				float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) );
+				
+				return (alpha + lol) < 1;
+			}
+			
+			void main()
+			{		
+				if (!lua[DiffuseAlphaMetallic = false])
 				{
-					depth = pos.z;
+					float alpha = texture(lua[DiffuseTexture = "sampler2D"], uv).a * lua[Color = Color(1,1,1,1)].a;
+				
+					if 
+					(
+						(lua[Translucent = false] && dither(uv, alpha)) || 
+						(lua[AlphaTest = false] && alpha < 0.5)
+					)
+					{
+						discard;
+					}				
 				}
+				
+				depth = pos.z;
 			}
 		]],
 	},
@@ -60,7 +81,7 @@ local function setup(self)
 	fb:SetSize(Vec2() + self.ShadowSize)
 	fb:SetTexture("depth", {
 		size = Vec2() + self.ShadowSize,
-		internal_format = "depth_component16",
+		internal_format = "depth_component32",
 	})
 	fb:SetTexture(1, tex)
 	--fb:CheckCompletness()
