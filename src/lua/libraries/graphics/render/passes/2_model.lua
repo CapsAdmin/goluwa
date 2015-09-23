@@ -19,7 +19,9 @@ function PASS:Initialize()
 		else
 			render.SetCullMode("front") 
 		end
-		self.CubeTexture = render.GetCubemapTexture()
+		self.SkyTexture = render.GetSkyTexture()
+		self.EnvironmentProbeTexture = render.GetEnvironmentProbeTexture()
+		--self.EnvironmentProbePosition = render.GetEnvironmentProbeTexture().probe:GetPosition()
 	end
 
 	META:Register()
@@ -27,7 +29,7 @@ end
 
 local gl = require("graphics.ffi.opengl") -- OpenGL
 
-function PASS:Draw3D()
+function PASS:Draw3D(what, dist)
 	render.EnableDepth(true)
 	render.SetBlendMode()
 	
@@ -35,7 +37,7 @@ function PASS:Draw3D()
 	
 	render.gbuffer:Begin()
 		event.Call("PreGBufferModelPass")
-		render.Draw3DScene("models")
+		render.Draw3DScene(what or "models", dist)
 		event.Call("PostGBufferModelPass")
 	render.gbuffer:End()
 end
@@ -54,6 +56,11 @@ PASS.Shader = {
 			out vec3 view_normal;
 			out float dist;
 			out vec3 reflect_dir;
+			
+			/*out vec3 viewDirInWorld;
+			out vec3 normalInWorld;
+			out vec3 vertexInWorld;*/
+			
 		
 			void main()
 			{				
@@ -67,6 +74,10 @@ PASS.Shader = {
 				
 				dist = (g_view_world * vec4(pos, 1.0)).z;
 				reflect_dir = -(g_view_world * vec4(pos, 1)).xyz;
+				
+				/*vertexInWorld = (g_world * vec4(pos, 1.0)).xyz;
+				normalInWorld = (g_world * vec4(normal, 1.0)).xyz;
+				viewDirInWorld = vertexInWorld.xyz - (-g_cam_pos.yxz);*/
 			}
 		]]
 	},
@@ -86,6 +97,10 @@ PASS.Shader = {
 			in vec3 view_normal;
 			in float dist;
 			in vec3 reflect_dir;					
+		
+			/*in vec3 viewDirInWorld;
+			in vec3 normalInWorld;
+			in vec3 vertexInWorld;*/
 		
 			out vec4 diffuse_buffer;
 			out vec4 normal_buffer;					
@@ -263,13 +278,13 @@ PASS.Shader = {
 						}
 						else
 						{
-							diffuse_buffer.a = pow(- (length(diffuse_buffer.rgb)/3) + 1, 5);
+							diffuse_buffer.a = max(pow((-(length(diffuse_buffer.rgb)/3) + 1), 5), 0.9);
 							diffuse_buffer.rgb *= pow(diffuse_buffer.a, 0.5); 
 						}						
 						
 						if (normal_buffer.a == 0)
 						{
-							normal_buffer.a = (-diffuse_buffer.a+1)/10;
+							normal_buffer.a = (-diffuse_buffer.a+1)/1.5;
 						}
 					}
 					
@@ -278,7 +293,64 @@ PASS.Shader = {
 				normal_buffer.a *= lua[MetallicMultiplier = 1];
 				diffuse_buffer.a *= lua[RoughnessMultiplier = 1];
 				
-				reflection_buffer = texture(lua[CubeTexture = render.GetCubemapTexture()], (mat3(g_view_inverse) * reflect(reflect_dir, normal_buffer.xyz)).yzx);
+				
+				// reflection
+				{					
+					vec3 dir = (mat3(g_view_inverse) * reflect(reflect_dir, normal_buffer.xyz)).yzx;
+				
+					reflection_buffer.rgb = texture(EnvironmentProbeTexture, dir * vec3(-1,1,1)).rgb;
+					if (reflection_buffer.rgb == vec3(0))
+						reflection_buffer.rgb = texture(lua[SkyTexture = render.GetSkyTexture()], dir).rgb;
+								
+				
+					/*
+					vec3 _EnviCubeMapPos = lua[EnvironmentProbePosition = Vec3(0,0,0)];
+					_EnviCubeMapPos = -_EnviCubeMapPos.yxz;
+					
+					vec3 _BBoxMin = vec3(-8);
+					_BBoxMin = -_BBoxMin.yxz;
+					
+					vec3 _BBoxMax = vec3(8);
+					_BBoxMax = -_BBoxMax.yxz;
+					
+					_BBoxMin += _EnviCubeMapPos;
+					_BBoxMax += _EnviCubeMapPos;
+					
+				
+					// Find reflected vector in WS.
+					vec3 viewDirWS = normalize(viewDirInWorld);
+					vec3 normalWS = normalize(mat3(g_view_inverse) * normal);
+					vec3 reflDirWS = reflect(viewDirWS, normalWS);
+										
+					// Working in World Coordinate System.
+					vec3 localPosWS = vertexInWorld;
+					vec3 intersectMaxPointPlanes = (_BBoxMax - localPosWS) / reflDirWS;
+					vec3 intersectMinPointPlanes = (_BBoxMin - localPosWS) / reflDirWS;
+					
+					// Looking only for intersections in the forward direction of the ray.
+					vec3 largestRayParams = max(intersectMaxPointPlanes, intersectMinPointPlanes);
+					
+					// Smallest value of the ray parameters gives us the intersection.
+					float distToIntersect = min(min(largestRayParams.x, largestRayParams.y), largestRayParams.z);
+					
+					// Find the position of the intersection point.
+					vec3 intersectPositionWS = localPosWS + reflDirWS * distToIntersect;
+					
+					// Get local corrected reflection vector.
+					reflDirWS = intersectPositionWS - _EnviCubeMapPos;
+										
+					// Lookup the environment reflection texture with the right vector.
+					vec3 dir = -reflDirWS.yzx;
+					
+					reflection_buffer.rgb = texture(lua[EnvironmentProbeTexture = render.GetEnvironmentProbeTexture()], dir * vec3(-1,1,1)).rgb;
+					
+					if (reflection_buffer.rgb == vec3(0))
+					{
+						reflection_buffer.rgb = texture(lua[SkyTexture = render.GetSkyTexture()], dir).rgb;
+					}
+					*/
+				}
+				
 				reflection_buffer.rgb += vec3(0.001);
 				
 				reflection_buffer.a = texture(lua[SelfIlluminationTexture = render.GetBlackTexture()], uv).r * lua[SelfIllumination = 0]; 

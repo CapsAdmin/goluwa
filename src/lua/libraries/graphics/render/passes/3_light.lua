@@ -77,7 +77,7 @@ PASS.Shader = {
 					dir.z = -dir.z;
 					
 					
-					float shadow_view = texture(lua[tex_shadow_map_cube = render.GetCubemapTexture()], dir.xzy).r;
+					float shadow_view = texture(lua[tex_shadow_map_cube = render.GetSkyTexture()], dir.xzy).r;
 									
 					visibility = shadow_view < 1 ? 0: 1;
 				}

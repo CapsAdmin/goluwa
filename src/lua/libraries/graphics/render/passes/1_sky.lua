@@ -19,7 +19,7 @@ function PASS:Initialize()
 	local size = Vec2() + 512
 		
 	local fb = render.CreateFrameBuffer()
-	fb:SetTexture(1, render.GetCubemapTexture(), "write", nil, 1)	
+	fb:SetTexture(1, render.GetSkyTexture(), "write", nil, 1)	
 	fb:CheckCompletness()
 
 	fb:WriteThese(1)
@@ -36,11 +36,11 @@ function PASS:Draw3D()
 	local old_projection = render.camera_3d:GetProjection()
 	
 	local projection = Matrix44()
-	projection:Perspective(math.rad(90), render.camera_3d.FarZ, render.camera_3d.NearZ, render.GetCubemapTexture().w / render.GetCubemapTexture().h) 
+	projection:Perspective(math.rad(90), render.camera_3d.FarZ, render.camera_3d.NearZ, render.GetSkyTexture().w / render.GetSkyTexture().h) 
 		
 	self.fb:Begin()	
 		for i, rot in ipairs(directions) do
-			self.fb:SetTexture(1, render.GetCubemapTexture(), nil, nil, i)
+			self.fb:SetTexture(1, render.GetSkyTexture(), nil, nil, i)
 			self.fb:Clear()			
 			
 			local view = Matrix44()

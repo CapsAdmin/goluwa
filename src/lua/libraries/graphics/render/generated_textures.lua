@@ -14,6 +14,13 @@ function render.GenerateTextures()
 		render.cubemap_texture = tex
 	end
 	
+	if not render.environment_probe_texture then
+		local tex = render.CreateTexture("cube_map")
+		tex:SetMipMapLevels(1)
+		
+		render.environment_probe_texture = tex
+	end
+	
 	do
 		render.error_tex = Texture(Vec2() + 256)
 		
@@ -89,9 +96,14 @@ function render.GetNoiseTexture()
 	return render.noise_texture
 end
 
-function render.GetCubemapTexture()
+function render.GetSkyTexture()
 	return render.cubemap_texture
 end
+
+function render.GetEnvironmentProbeTexture()
+	return render.environment_probe_texture
+end
+
 
 if RELOAD then
 	render.GenerateTextures()

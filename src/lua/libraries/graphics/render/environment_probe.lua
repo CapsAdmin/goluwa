@@ -52,13 +52,12 @@ function META:Capture()
 			render.camera_3d:SetProjection(projection)
 			render.camera_3d:SetView(view)
 
-			render.Draw3DScene(self) 
+			render.Draw3DScene("no_cull_only")
 		end
 	self.fb:End()
 
 	render.camera_3d:SetView(old_view)
 	render.camera_3d:SetProjection(old_projection)
-	render.camera_3d:Rebuild()
 end
 
 function META:SetPreview(b)
@@ -69,7 +68,7 @@ function META:SetPreview(b)
 		ent:SetSize(0.25)
 		
 		local mat = render.CreateMaterial("model")
-		mat:SetCubeTexture(self.tex)
+		mat:SetSkyTexture(self.tex)
 		mat:SetDiffuseTexture(render.GetWhiteTexture())
 		mat:SetRoughnessTexture(render.GetWhiteTexture())
 		mat:SetMetallicTexture(render.GetWhiteTexture())
@@ -93,4 +92,12 @@ function render.CreateEnvironmentProbe()
 	local self = prototype.CreateObject(META)
 	self:CreateTexture()
 	return self
-end 
+end
+
+if RELOAD then
+	for k,v in pairs(prototype.GetCreated()) do
+		if v.Type == META.Type then
+			v:Capture()
+		end
+	end
+end
