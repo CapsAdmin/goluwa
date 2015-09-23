@@ -552,6 +552,7 @@ include("mesh_builder.lua", render)
 include("material.lua", render)
 include("model_loader.lua", render)
 include("shadow_map.lua", render)
+include("environment_probe.lua", render)
 
 if USE_GLFW then
 	include("glfw_window.lua", render)
