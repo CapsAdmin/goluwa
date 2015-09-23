@@ -34,14 +34,10 @@ function PASS:Draw3D()
 	render.SetShaderOverride(render.gbuffer_sky_shader)
 	local old_view = render.camera_3d:GetView()
 	local old_projection = render.camera_3d:GetProjection()
-	local old_pos = render.camera_3d:GetPosition()
 	
 	local projection = Matrix44()
 	projection:Perspective(math.rad(90), render.camera_3d.FarZ, render.camera_3d.NearZ, render.GetCubemapTexture().w / render.GetCubemapTexture().h) 
-	
-	
-	render.camera_3d:SetPosition(old_pos)
-	
+		
 	self.fb:Begin()	
 		for i, rot in ipairs(directions) do
 			self.fb:SetTexture(1, render.GetCubemapTexture(), nil, nil, i)
@@ -58,8 +54,6 @@ function PASS:Draw3D()
 	
 	render.camera_3d:SetView(old_view)
 	render.camera_3d:SetProjection(old_projection)
-	render.camera_3d:SetPosition(old_pos)
-	render.camera_3d:Rebuild()
 	
 	render.SetShaderOverride()
 end
