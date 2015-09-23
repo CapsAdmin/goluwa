@@ -147,10 +147,13 @@ if GRAPHICS then
 				self.next_visible[what] = time + (1/15)
 			end
 		end
-		
-		render.SetBlendMode()
-		
-		if (not self.Cull or not what) or self.visible[what] == nil or self.visible[what] == true then
+				
+		if 
+			(what == "no_cull_only" and not self.Cull) or 
+			(not self.Cull or not what) or 
+			self.visible[what] == nil or self.visible[what] == true 
+		then
+			render.SetBlendMode()
 			if self.MaterialOverride then render.SetMaterial(self.MaterialOverride) end
 			for i, model in ipairs(self.sub_models) do				
 				if not self.MaterialOverride then render.SetMaterial(model.material) end
