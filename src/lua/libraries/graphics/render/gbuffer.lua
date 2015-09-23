@@ -240,14 +240,14 @@ local mult_cvar = console.CreateVariable("render_ss_multiplier", 1, function() i
 
 local barrier
 
-function render.DrawGBuffer()
+function render.DrawGBuffer(what, dist)
 	if not gbuffer_enabled then return end
 
 	render.gbuffer:WriteThese("all")
 	
 	for i, pass in ipairs(render.gbuffer_passes) do
 		if pass.Draw3D then
-			pass:Draw3D() 
+			pass:Draw3D(what, dist) 
 		end
 	end
 	
@@ -357,7 +357,7 @@ local function init(width, height)
 						name = name,
 						attach = attach,
 						internal_format = format,
-						filter = "nearest",
+						filter = "linear",
 					})
 				end
 			end
