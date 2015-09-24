@@ -421,12 +421,16 @@ do
 			end
 		elseif i == "depth" then
 			temp_color[0] = r or 0
+			local old = render.EnableDepth(true)
 			self.fb:Clearfv("GL_DEPTH", 0, temp_color)
+			render.EnableDepth(old)			
 		elseif i == "stencil" then
 			temp_colori[0] = r or 0
 			self.fb:Cleariv("GL_STENCIL", 0, temp_colori)
 		elseif i == "depth_stencil" then
+			local old = render.EnableDepth(true)
 			self.fb:Clearfi("GL_DEPTH_STENCIL", 0, r or 0, g or 0)
+			render.EnableDepth(old)
 		elseif type(i) == "number" then
 			local x,y = self.draw_buffers, self.draw_buffers_size
 			self:WriteThese(i)
@@ -438,7 +442,7 @@ do
 		elseif self.textures[i] then
 			local x,y = self.draw_buffers, self.draw_buffers_size
 			self:WriteThese(i)
-			self.fb:Clearfv("GL_COLOR", self.textures[i].pos - base_color, temp_color)
+			self.fb:Clearfv("GL_COLOR", 0, temp_color)
 			if x then 
 				self.draw_buffers, self.draw_buffers_size = x,y 
 				update_drawbuffers(self)

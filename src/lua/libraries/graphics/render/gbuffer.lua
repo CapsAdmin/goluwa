@@ -244,13 +244,14 @@ function render.DrawGBuffer(what, dist)
 	if not gbuffer_enabled then return end
 
 	render.gbuffer:WriteThese("all")
-	
+	render.gbuffer:Clear("all", 0,0,0,0, 1)
+
 	for i, pass in ipairs(render.gbuffer_passes) do
 		if pass.Draw3D then
 			pass:Draw3D(what, dist) 
 		end
 	end
-	
+		
 	surface.PushMatrix()
 	
 	-- gbuffer	
@@ -287,6 +288,11 @@ function render.DrawGBuffer(what, dist)
 	surface.DrawRect(0, 0, surface.GetSize())
 	
 	surface.PopMatrix()
+	
+	render.SetBlendMode("alpha")
+	if render.debug then
+		render.DrawGBufferDebugOverlay()
+	end
 end
 
 local function init(width, height)
@@ -402,16 +408,16 @@ local function init(width, height)
 		end
 	end)
 	
-	do -- eww
-		local size = 4
+	do -- AUTOMATE THIS
+		local size = 6
 		local x,y,w,h,i
 		
 		local function draw_buffer(name, tex, bg)
-			if name == "diffuse" or name == "normal" then surface.mesh_2d_shader.color_override.a = 1 end
+			if name == "diffuse" or name == "normal" or name == "light" then surface.mesh_2d_shader.color_override.a = 1 end
 			surface.SetColor(1,1,1,1)
 			surface.SetTexture(tex)
 			surface.DrawRect(x, y, w, h)
-			if name == "diffuse" or name == "normal" then surface.mesh_2d_shader.color_override.a = 0 end
+			if name == "diffuse" or name == "normal" or name == "light" then surface.mesh_2d_shader.color_override.a = 0 end
 			
 			surface.SetTextPosition(x, y + 5)
 			surface.DrawText(name)
@@ -426,55 +432,63 @@ local function init(width, height)
 			i = i  + 1
 		end
 		
-		event.AddListener("DrawHUD", "gbuffer_debug", function()
-			if render.debug then
-				w, h = surface.GetSize()
-				w = w / size
-				h = h / size
-				
-				x = 0
-				y = 0
-				i = 1
-				
-				local grey = 0.5 + math.sin(os.clock() * 10) / 10
-				surface.SetFont("default")
+		function render.DrawGBufferDebugOverlay()
+			w, h = surface.GetSize()
+			w = w / size
+			h = h / size
+			
+			x = 0
+			y = 0
+			i = 1
+			
+			local grey = 0.5 + math.sin(os.clock() * 10) / 10
+			surface.SetFont("default")
+						
+			for _, data in pairs(render.gbuffer_buffers) do
+				draw_buffer(data.name, render.gbuffer:GetTexture(data.name))
+			end
+			
+			surface.SetColor(0,0,0,1)
+			surface.SetTexture(tex)
+			surface.DrawRect(x, y, w, h)
+			surface.mesh_2d_shader.color_override.r = 1
+			surface.mesh_2d_shader.color_override.g = 1
+			surface.mesh_2d_shader.color_override.b = 1				
+			draw_buffer("self illumination", render.gbuffer:GetTexture("light"), true)
+			surface.mesh_2d_shader.color_override.r = 0
+			surface.mesh_2d_shader.color_override.g = 0
+			surface.mesh_2d_shader.color_override.b = 0				
+			
+			surface.SetColor(0,0,0,1)
+			surface.SetTexture(tex)
+			surface.DrawRect(x, y, w, h)
+			surface.mesh_2d_shader.color_override.r = 1
+			surface.mesh_2d_shader.color_override.g = 1
+			surface.mesh_2d_shader.color_override.b = 1				
+			draw_buffer("roughness", render.gbuffer:GetTexture("diffuse"), true)
+			surface.mesh_2d_shader.color_override.r = 0
+			surface.mesh_2d_shader.color_override.g = 0
+			surface.mesh_2d_shader.color_override.b = 0
+			
+			surface.SetColor(0,0,0,1)
+			surface.SetTexture(tex)
+			surface.DrawRect(x, y, w, h)
+			surface.mesh_2d_shader.color_override.r = 1
+			surface.mesh_2d_shader.color_override.g = 1
+			surface.mesh_2d_shader.color_override.b = 1				
+			draw_buffer("metallic", render.gbuffer:GetTexture("normal"), true)
+			surface.mesh_2d_shader.color_override.r = 0
+			surface.mesh_2d_shader.color_override.g = 0
+			surface.mesh_2d_shader.color_override.b = 0
+			
+			draw_buffer("discard", render.gbuffer_discard:GetTexture())
 							
-				for _, data in pairs(render.gbuffer_buffers) do
-					draw_buffer(data.name, render.gbuffer:GetTexture(data.name))
-				end
-				
-				
-				surface.SetColor(0,0,0,1)
-				surface.SetTexture(tex)
-				surface.DrawRect(x, y, w, h)
-				surface.mesh_2d_shader.color_override.r = 1
-				surface.mesh_2d_shader.color_override.g = 1
-				surface.mesh_2d_shader.color_override.b = 1				
-				draw_buffer("roughness", render.gbuffer:GetTexture("diffuse"), true)
-				surface.mesh_2d_shader.color_override.r = 0
-				surface.mesh_2d_shader.color_override.g = 0
-				surface.mesh_2d_shader.color_override.b = 0
-				
-				surface.SetColor(0,0,0,1)
-				surface.SetTexture(tex)
-				surface.DrawRect(x, y, w, h)
-				surface.mesh_2d_shader.color_override.r = 1
-				surface.mesh_2d_shader.color_override.g = 1
-				surface.mesh_2d_shader.color_override.b = 1				
-				draw_buffer("metallic", render.gbuffer:GetTexture("normal"), true)
-				surface.mesh_2d_shader.color_override.r = 0
-				surface.mesh_2d_shader.color_override.g = 0
-				surface.mesh_2d_shader.color_override.b = 0
-				
-				draw_buffer("discard", render.gbuffer_discard:GetTexture())
-								
-				for _, pass in ipairs(render.gbuffer_passes) do
-					if pass.DrawDebug then 
-						i,x,y,w,h = pass:DrawDebug(i,x,y,w,h,size) 
-					end
+			for _, pass in ipairs(render.gbuffer_passes) do
+				if pass.DrawDebug then 
+					i,x,y,w,h = pass:DrawDebug(i,x,y,w,h,size) 
 				end
 			end
-		end)
+		end
 	end
 	
 	for k,v in pairs(render.gbuffer_values) do
@@ -541,5 +555,5 @@ event.AddListener("EntityRemove", "gbuffer", function(ent)
 end)
 
 if RELOAD then
-	render.InitializeGBuffer()
+	event.Delay(0.01, render.InitializeGBuffer)
 end

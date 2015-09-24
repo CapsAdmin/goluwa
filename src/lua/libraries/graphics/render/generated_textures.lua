@@ -6,14 +6,7 @@ function render.GenerateTextures()
 	render.grey_texture = Texture(Vec2()+8):Fill(function() return 127,127,127,255 end)
 	render.noise_texture = Texture(Vec2()+2048, "return vec4(random(uv*1), random(uv*2), random(uv*3), random(uv*4));")
 	render.noise_texture:SetMinFilter("nearest")
-	
-	if not render.cubemap_texture then
-		local tex = render.CreateTexture("cube_map")
-		tex:SetMipMapLevels(1)
-		tex:LoadCubemap("textures/skybox/bluesky.png")
-		render.cubemap_texture = tex
-	end
-	
+		
 	if not render.environment_probe_texture then
 		local tex = render.CreateTexture("cube_map")
 		tex:SetMipMapLevels(1)
@@ -96,14 +89,9 @@ function render.GetNoiseTexture()
 	return render.noise_texture
 end
 
-function render.GetSkyTexture()
-	return render.cubemap_texture
-end
-
 function render.GetEnvironmentProbeTexture()
 	return render.environment_probe_texture
 end
-
 
 if RELOAD then
 	render.GenerateTextures()

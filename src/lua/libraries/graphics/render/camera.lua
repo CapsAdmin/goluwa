@@ -342,3 +342,10 @@ float get_depth(vec2 uv)
 {
 	return (2.0 * g_cam_nearz) / (g_cam_farz + g_cam_nearz - texture(tex_depth, uv).r * (g_cam_farz - g_cam_nearz));
 }]])
+
+render.AddGlobalShaderCode([[
+vec3 get_camera_dir(vec2 uv)
+{
+	return (g_projection_view_inverse * vec4(uv * 2 - 1, 1, 1)).xyz;
+}]])
+

@@ -59,6 +59,8 @@ local function main()
 				render.SetVSync(false)
 			end
 		end
+		
+		collectgarbage("step", 30)
 	end
 	
 	if OnUpdate then

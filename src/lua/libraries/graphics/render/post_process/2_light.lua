@@ -8,14 +8,14 @@ PASS.Source = [[
 	void main()
 	{			
 		vec3 reflection = texture(self, uv).rgb;
-		vec3 diffuse = texture(tex_diffuse, uv).rgb;
+		vec3 diffuse = get_diffuse(uv);
 		vec3 specular = get_light(uv);
 		float metallic = get_metallic(uv);
 		
 		specular = mix(specular, reflection, metallic);
 		
 		// self illumination
-		specular += diffuse * texture(tex_reflection, uv).a;
+		specular += diffuse * get_self_illumination(uv)/200;
 		
 		out_color = diffuse * specular;
 	}

@@ -508,15 +508,24 @@ do
 	end
 end
 
-function render.EnableDepth(b)
-	if b then
-		gl.Enable("GL_DEPTH_TEST")
-		gl.DepthMask(1)
-		gl.DepthFunc("GL_LESS")
-	else
-		gl.Disable("GL_DEPTH_TEST")
-		gl.DepthMask(0)
-		--gl.DepthFunc("GL_ALWAYS")
+do
+	local enabled = false
+
+	function render.EnableDepth(b)
+		local prev = enabled
+		enabled = b
+		
+		if b then
+			gl.Enable("GL_DEPTH_TEST")
+			gl.DepthMask(1)
+			gl.DepthFunc("GL_LESS")
+		else
+			gl.Disable("GL_DEPTH_TEST")
+			gl.DepthMask(0)
+			--gl.DepthFunc("GL_ALWAYS")
+		end
+		
+		return prev
 	end
 end
 
@@ -552,6 +561,7 @@ include("mesh_builder.lua", render)
 include("material.lua", render)
 include("model_loader.lua", render)
 include("shadow_map.lua", render)
+include("sky.lua", render)
 include("environment_probe.lua", render)
 
 if USE_GLFW then

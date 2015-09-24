@@ -5,18 +5,17 @@ local PASS = {}
 PASS.Stage, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 
 PASS.Buffers = {
-	{"light", "rgb16f"},
+	{"light", "rgba16f"},
 }
 
 function PASS:Draw3D()
 	render.EnableDepth(false)	
 	
-	render.SetCullMode("back")
-	render.gbuffer:WriteThese("light")
-	render.gbuffer:Clear("light")
-	render.gbuffer:Begin()
-		event.Call("Draw3DLights")
-	render.gbuffer:End() 	
+	render.SetCullMode("back")	
+		render.gbuffer:WriteThese("light")
+		render.gbuffer:Begin()
+			event.Call("Draw3DLights")
+		render.gbuffer:End()	
 	render.SetCullMode("front")
 end
 
@@ -199,16 +198,14 @@ PASS.Shader = {
 			{		
 				//{out_color = vec3(1); return;}
 			
-				vec2 uv = get_screen_uv();					
-				vec3 view_pos = get_view_pos(uv);
-				vec3 normal = get_view_normal(uv);				
+				vec2 uv = get_screen_uv();
 				
-				vec3 attenuate = get_attenuation(uv, view_pos, normal, 0.175);
-				vec3 diffuse = texture(tex_diffuse, uv).rgb;
+				vec3 pos = get_view_pos(uv);
+				vec3 normal = get_view_normal(uv);				
 				float roughness = get_roughness(uv);
-								
-				float specular = get_specular(normalize(view_pos - light_view_pos), normalize(view_pos), -normal, roughness, 0.25);
-								
+				vec3 attenuate = get_attenuation(uv, pos, normal, 0.175);
+				float specular = get_specular(normalize(pos - light_view_pos), normalize(pos), -normal, roughness, 0.25);
+				
 				out_color = specular.rrr * attenuate + attenuate;
 			}
 		]]  

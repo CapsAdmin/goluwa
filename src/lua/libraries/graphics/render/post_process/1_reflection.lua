@@ -63,13 +63,11 @@ table.insert(PASS.Source, {
 		
 		float fade = screenEdgefactor * pow(clamp((dist - length(viewPos - hitPos)) * 1/dist, 0.0, 1.0) * coords.w , 5);
 		
-		vec4 sky = texture(tex_reflection, uv);
-		vec3 diffuse = texture(tex_diffuse, coords.xy).rgb;
-		vec3 light = diffuse * (get_light(coords.xy) + (sky.rgb * get_metallic(uv)) + (diffuse * diffuse * diffuse * texture(tex_reflection, coords.xy).a * 10));
-		
-		vec3 reflection = mix(sky.rgb, light, fade);
-	 
-		out_color =	reflection;
+		vec3 sky = texture(lua[sky_tex = render.GetSkyTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
+		vec3 diffuse = get_diffuse(coords.xy);
+		vec3 light = diffuse * (get_light(coords.xy) + (sky * get_metallic(uv)) + (diffuse * diffuse * diffuse * get_self_illumination(coords.xy)));
+
+		out_color =	mix(sky, light, fade);
 	}
 ]]
 })
