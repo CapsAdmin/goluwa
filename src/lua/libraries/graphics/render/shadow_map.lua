@@ -81,7 +81,7 @@ local function setup(self)
 	fb:SetSize(Vec2() + self.ShadowSize)
 	fb:SetTexture("depth", {
 		size = Vec2() + self.ShadowSize,
-		internal_format = "depth_component32",
+		internal_format = "depth_component16",
 	})
 	fb:SetTexture(1, tex)
 	--fb:CheckCompletness()

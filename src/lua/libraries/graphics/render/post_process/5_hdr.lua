@@ -22,7 +22,7 @@ table.insert(PASS.Source, {
 
 for x = -1, 1 do
 	for y = -1, 1 do
-		if x == 0 and y == 0 then goto continue end
+		if x == 0 or y == 0 then goto continue end
 		
 		local weights = {}
 		

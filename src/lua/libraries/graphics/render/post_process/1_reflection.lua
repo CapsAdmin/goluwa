@@ -9,7 +9,7 @@ local FAST_BLUR = false
 
 table.insert(PASS.Source, {
 	buffer = {
-		max_size = Vec2() + 1024,
+		max_size = Vec2() + 512,
 		internal_format = "rgb8",
 	},
 	source = [[	 
@@ -23,7 +23,7 @@ table.insert(PASS.Source, {
 		return (res.xy / res.w) * 0.5 + 0.5;
 	}
 	 
-	vec4 ray_cast(vec3 dir, inout vec3 hitCoord)
+	vec2 ray_cast(vec3 dir, vec3 hitCoord)
 	{
 		dir *= rayStep + get_depth(uv);
 	  	 
@@ -35,14 +35,11 @@ table.insert(PASS.Source, {
 			 	 
 			if(depth < 0.0 && depth > -0.3)
 			{
-				dir *= 0.5;
-				hitCoord -= dir;
-				
-				return vec4(project(hitCoord).xy, depth, 1);
+				return project(hitCoord).xy;
 			}
 		}
 	 
-		return vec4(0.0, 0.0, 0.0, 0.0);
+		return vec2(0.0, 0.0);
 	}
 
 	out vec3 out_color;
@@ -54,18 +51,24 @@ table.insert(PASS.Source, {
 		vec3 reflected = normalize(reflect(normalize(viewPos), normalize(viewNormal)));
 		
 		vec3 hitPos = viewPos;
-		vec4 coords = ray_cast(reflected * max(minRayStep, viewPos.z), hitPos);
-		
-		vec2 dCoords = abs(vec2(0.5, 0.5) - coords.xy);
-		float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
-		
-		float dist = texture(tex_depth, uv).r*20;
-		
-		float fade = screenEdgefactor * pow(clamp((dist - length(viewPos - hitPos)) * 1/dist, 0.0, 1.0) * coords.w , 5);
+		vec2 coords = ray_cast(reflected * max(minRayStep, viewPos.z), hitPos);
 		
 		vec3 sky = texture(lua[sky_tex = render.GetSkyTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
+		
+		if (coords == vec2(0.0))
+		{
+			out_color = sky;
+			return;
+		}
+		
+		//vec3 probe = texture(lua[probe_tex = render.GetEnvironmentProbeTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
 		vec3 diffuse = get_diffuse(coords.xy);
-		vec3 light = diffuse * (get_light(coords.xy) + (sky * get_metallic(uv)) + (diffuse * diffuse * diffuse * get_self_illumination(coords.xy)));
+		vec3 light = diffuse * (sky + get_light(uv)) + (diffuse * diffuse * diffuse * get_self_illumination(coords.xy));
+
+		vec2 dCoords = abs(vec2(0.5, 0.5) - coords.xy);
+		float fade = clamp(1.0 - (dCoords.x + dCoords.y)*1.5, 0.0, 1.0);
+		fade -= pow(fade, 1.5)/1.75;
+		fade *= 2;
 
 		out_color =	mix(sky, light, fade);
 	}
@@ -120,10 +123,10 @@ if FAST_BLUR then
 else	
 	for x = -1, 1 do
 		for y = -1, 1 do
-			if x == 0 and y == 0 then goto continue end
+			if x == 0 or y == 0 then goto continue end
 			table.insert(PASS.Source, {
 				buffer = {
-					max_size = Vec2() + 512,
+					max_size = Vec2() + 1024,
 					internal_format = "rgb8",
 				},
 				source = [[
@@ -162,7 +165,7 @@ else
 						end)()..[[
 	
 						float total_weight = 1.0;
-						float discard_threshold = 0.1;
+						float discard_threshold = 0.4;
 	
 						int i;
 	
@@ -185,13 +188,13 @@ else
 						}
 	
 						res /= total_weight;
-	
+						
 						return res;
 					}
 					
 					void main()
 					{					 
-						out_color = blur(uv, vec2(]]..x..","..y..[[) * pow(get_roughness(uv) * 1.75, 4));
+						out_color = blur(uv, vec2(]]..x..","..y..[[) * min((get_roughness(uv) * 5 / g_cam_fov) / (texture(tex_depth, uv).r/1.5), 4));
 					}
 				]]
 			})
@@ -206,7 +209,9 @@ table.insert(PASS.Source, {
 		
 		void main()
 		{			
-			out_color = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
+			vec3 color = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;		
+			vec3 lol = (texture(tex_stage_1, uv).rgb * 2 - 1) * clamp(-pow(length(color)*5, 1)+1, 0, 1);
+			out_color = color;
 		}
 	]]
 })
