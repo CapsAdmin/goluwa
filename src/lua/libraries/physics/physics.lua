@@ -91,8 +91,8 @@ do
 				body = NULL,
 			}
 			
-			tbl.hit_pos.ptr = out[0].hit_pos
-			tbl.hit_normal.ptr = out[0].hit_normal
+			ffi.copy(tbl.hit_pos, out[0].hit_pos, ffi.sizeof("float")*3)
+			ffi.copy(tbl.hit_normal, out[0].hit_normal, ffi.sizeof("float")*3)
 			
 			if out[0].body ~= nil then
 				local body = physics.BodyToLua(out[0].body)

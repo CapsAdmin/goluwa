@@ -15,7 +15,7 @@ prototype.EndStorable()
 prototype.GetSet(COMPONENT, "Model", nil)
 
 COMPONENT.Network = {
-	ModelPath = {"string", 1/5, "reliable", true},
+	ModelPath = {"string", 1/5, "reliable"},
 	Cull = {"boolean", 1/5},
 }
 

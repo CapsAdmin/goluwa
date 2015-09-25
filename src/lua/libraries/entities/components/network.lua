@@ -364,7 +364,7 @@ end
 packet.ExtendBuffer(
 	"Entity", 
 	function(buffer, ent)
-		if ent:IsValid() then
+		if ent:IsValid() and ent.GetNetworkId then
 			buffer:WriteLong(ent:GetNetworkId())
 		end
 	end,

@@ -10,8 +10,13 @@ local skyboxes = {
 }
 
 function steam.SetMap(name)
-	if not render.gbuffer:IsValid() then
-		render.InitializeGBuffer()
+	if GRAPHICS then
+		if not render.gbuffer:IsValid() then
+			render.InitializeGBuffer()
+		end
+	end
+	
+	if not entities.world then
 		entities.world = entities.CreateEntity("world")
 	end
 	

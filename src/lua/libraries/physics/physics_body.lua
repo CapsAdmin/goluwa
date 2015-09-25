@@ -268,8 +268,9 @@ function META:OnRemove()
 			break 
 		end 
 	end 
-	
-	bullet.RemoveBody(self.body) 
+	if self.body then
+		bullet.RemoveBody(self.body) 
+	end
 end
 
 prototype.Register(META)

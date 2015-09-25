@@ -436,9 +436,9 @@ do -- extended
 	
 	-- ang3
 	function META:WriteAng3(v)
-		self:WriteFloat(v.p)
+		self:WriteFloat(v.x)
 		self:WriteFloat(v.y)
-		self:WriteFloat(v.r)
+		self:WriteFloat(v.z)
 		return self
 	end
 	
