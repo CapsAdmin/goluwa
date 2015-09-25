@@ -1026,13 +1026,8 @@ function render.CreateTexture(type)
 		self.StorageType = type
 	end
 
-	if MESA and type == "cube_map" then
-		self.gl_tex = gl.CreateTextureNODSA("GL_TEXTURE_" .. self.StorageType:upper())
-		self.not_dsa = true
-	else
-		self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
-		self.not_dsa = not gl.CreateTextures
-	end
+	self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
+	self.not_dsa = not gl.CreateTextures
 	self.id = self.gl_tex.id -- backwards compatibility
 	
 	if type == "cube_map" then

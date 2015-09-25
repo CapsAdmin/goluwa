@@ -34054,7 +34054,6 @@ function gl.Initialize(get_proc_address)
 				return gl.GetTextureParameterfvEXT(self.id, target, pname, params)
 			end
 			function META:GenerateMipmap()
-				if MESA then gl.ActiveTexture("GL_TEXTURE1") end
 				return gl.GenerateTextureMipmap(self.id)
 			end
 			function META:CopyImage1D(target, level, internalformat, x, y, width, border)
