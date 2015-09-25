@@ -61,7 +61,7 @@ PASS.Shader = {
 			light_intensity = 0.5,
 		},  
 		source = [[		
-			out vec3 out_color;
+			out vec4 out_color;
 			
 			#define EPSILON 0.00001			
 			
@@ -206,7 +206,8 @@ PASS.Shader = {
 				vec3 attenuate = get_attenuation(uv, pos, normal, 0.175);
 				float specular = get_specular(normalize(pos - light_view_pos), normalize(pos), -normal, roughness, 0.25);
 				
-				out_color = specular.rrr * attenuate + attenuate;
+				out_color.rgb = specular.rrr * attenuate + attenuate;
+				out_color.a = 0;
 			}
 		]]  
 	}
