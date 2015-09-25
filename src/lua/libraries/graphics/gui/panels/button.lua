@@ -52,7 +52,7 @@ function PANEL:SetState(press, button)
 		end
 		
 		return true
-	elseif self.button_down[button] then		
+	else--if self.button_down[button] then		
 		self.button_down[button] = nil
 		
 		if button == "button_1" then

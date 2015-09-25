@@ -1,5 +1,7 @@
 local gui = ... or _G.gui
 
+local expand_memory = {}
+
 do -- base property
 	local PANEL = {}
 	
@@ -525,49 +527,39 @@ end
 function PANEL:AddGroup(name)
 	local left = self.left:CreatePanel("base")
 	left:SetNoDraw(true)
-	left.group = true
+	left.is_group = true
 	--left:SetStyle("property")
 	
 	local exp = left:CreatePanel("button", "expand")
-	exp:SetStyle("-")
-	exp:SetStyleTranslation("button_active", "+")
-	exp:SetStyleTranslation("button_inactive", "-")
+	exp:SetState(true)
 	exp:SetMode("toggle")
+	exp:SetStyleTranslation("button_active", "-")
+	exp:SetStyleTranslation("button_inactive", "+")
 	exp:SetupLayout("center_left")
+	exp.state_key = name
 	exp.OnStateChanged = function(_, b)
-		local found = false
 		for i, panel in ipairs(self.left:GetChildren()) do
-			if found then
-				if panel.group then break end
-				
-				self.right:GetChildren()[i]:SetVisible(not b)
-				self.right:GetChildren()[i]:SetStackable(not b)
-				panel:SetStackable(not b)
-				panel:SetVisible(not b)
+			if panel.group == left then
+				self.right:GetChildren()[i]:SetVisible(b)
+				self.right:GetChildren()[i]:SetStackable(b)
+				panel:SetStackable(b)
+				panel:SetVisible(b)
 
 				self:Layout()
 			end
-		
-			if panel == left then
-				found = true
-			end
 		end
 		
-		found = false
-		
-		for i, panel in ipairs(self.left:GetChildren()) do	
-			if found then
-			
-				if panel.expand and not b then
-					panel.expand:OnStateChanged(panel.expand:GetState())
+		if b then
+			for i, panel in ipairs(self.left:GetChildren()) do
+				if panel.group == left and panel.expand then
+					local b = panel.expand:GetState()
+					panel.expand:SetState(b)
+					panel.expand:OnStateChanged(b)
 				end
-				
-			end
-			
-			if panel == left then
-				found = true
 			end
 		end
+		
+		expand_memory[exp.state_key] = b
 	end
 	
 	local label = left:CreatePanel("text", "label")
@@ -575,8 +567,10 @@ function PANEL:AddGroup(name)
 	label:SetupLayout("center_left")
 	
 	local right = self.right:CreatePanel("base")
-	right.group = true
+	right.is_group = true
 	right:SetNoDraw(true)
+	
+	self.current_group = left
 end
 
 function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
@@ -616,15 +610,18 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 		property:MouseInput(...)
 	end
 	
+	left.group = self.current_group
+	
 	local exp
 	
 	if fields then
 		exp = left:CreatePanel("button", "expand")
-		exp:SetStyleTranslation("button_active", "+")
-		exp:SetStyleTranslation("button_inactive", "-")
-		exp:SetState(true)
+		exp:SetState(false)
 		exp:SetMode("toggle")
+		exp:SetStyleTranslation("button_active", "-")
+		exp:SetStyleTranslation("button_inactive", "+")
 		exp:SetupLayout("center_left")
+		exp.state_key = name
 	end
 	
 	local label = left:CreatePanel("text", "label")
@@ -695,14 +692,14 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 		
 		exp.OnStateChanged = function(_, b)
 			for i, panel in ipairs(panels) do
-				panel.right:SetVisible(not b)
-				panel.right:SetStackable(not b)
+				panel.right:SetVisible(b)
+				panel.right:SetStackable(b)
 				
-				panel.left:SetStackable(not b)
-				panel.left:SetVisible(not b)
-					
+				panel.left:SetStackable(b)
+				panel.left:SetVisible(b)
 			end
 			self:Layout()
+			expand_memory[exp.state_key] = b
 		end
 		
 		for i, key in ipairs(fields) do
@@ -755,7 +752,7 @@ function PANEL:OnLayout(S)
 	self.right_max_width = self.right_max_width or 0
 	
 	for i, left in ipairs(self.left:GetChildren()) do
-		if left.group then
+		if left.is_group then
 			left:SetHeight(S*10)
 		else
 			left:SetHeight(S*8)
@@ -779,7 +776,7 @@ function PANEL:OnLayout(S)
 	end
 	
 	for i, right in ipairs(self.right:GetChildren()) do
-		if right.group then
+		if right.is_group then
 			right:SetHeight(S*10)
 		else
 			right:SetHeight(S*8)
@@ -845,6 +842,35 @@ function PANEL:AddPropertiesFromObject(obj)
 			info,
 			obj
 		)
+	end
+		
+	-- expand non groups first
+	for k, v in pairs(self.left:GetChildren()) do 
+		if v.expand and not v.is_group then
+			if expand_memory[v.expand.state_key] ~= nil then
+				local b = expand_memory[v.expand.state_key]
+				v.expand:SetState(b)
+				v.expand:OnStateChanged(b)
+			else
+				local b = v.expand:GetState()
+				v.expand:SetState(b)
+				v.expand:OnStateChanged(b)
+			end
+		end
+	end
+	
+	for k, v in pairs(self.left:GetChildren()) do 
+		if v.expand and v.is_group then
+			if expand_memory[v.expand.state_key] ~= nil then
+				local b = expand_memory[v.expand.state_key]
+				v.expand:SetState(b)
+				v.expand:OnStateChanged(b)
+			else
+				local b = v.expand:GetState()
+				v.expand:SetState(b)
+				v.expand:OnStateChanged(b)
+			end
+		end
 	end
 end
 
