@@ -82,7 +82,7 @@ function META:OnRemove()
 	end
 	
 	for k,v in pairs(self:GetChildrenList()) do
-		v:Remove(a)
+		v:Remove()
 	end
 		
 	-- this is important!!
@@ -100,7 +100,9 @@ do -- serializing
 		
 		if not skip_remove then			
 			for k,v in pairs(self:GetChildrenList()) do
-				v:Remove(a)
+				if not v.HideFromEditor then
+					v:Remove()
+				end
 			end
 		end
 

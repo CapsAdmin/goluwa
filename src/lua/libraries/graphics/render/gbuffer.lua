@@ -66,15 +66,32 @@ do -- mixer
 	function render.SetGBufferValue(key, var)
 		render.gbuffer_values[key] = var
 		
-		for k, shader in pairs(render.gbuffer_shaders) do
-			if shader[key] then
-				shader[key] = var
+		for _, pass in pairs(render.gbuffer_shaders) do
+			for _, shader in pairs(pass.shaders) do
+				if shader[key] then
+					shader[key] = var
+				end
 			end
 		end
 	end
 
 	function render.GetGBufferValue(key)
 		return render.gbuffer_values[key]
+	end
+	
+	function render.GetGBufferValues()
+		local out = {}
+		for name, pass in pairs(render.gbuffer_shaders) do
+			for _, shader in pairs(pass.shaders) do
+				for k, v in pairs(shader.defaults) do
+					if type(v) == "function" then
+						v = v()
+					end
+					out[name .. "_" .. k] = {k = k, v = v}
+				end
+			end
+		end
+		return out
 	end
 	
 	render.gbuffer_shaders_sorted = render.gbuffer_shaders_sorted or {}

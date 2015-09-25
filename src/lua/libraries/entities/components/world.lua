@@ -1,3 +1,5 @@
+event.AddListener("GBufferInitialized", function()
+
 local COMPONENT = {}
 
 COMPONENT.Name = "world"
@@ -6,14 +8,9 @@ function COMPONENT:OnAdd(ent)
 	prototype.SafeRemove(self.sun)
 	
 	self.sun = entities.CreateEntity("light", ent)
-	self.sun:SetName("sun")
-	self.sun:SetHideFromEditor(false)
+	self.sun:SetHideFromEditor(true)
 	self.sun:SetProjectFromCamera(true)
-	self.sun:SetOrthoSize(400)
-	self.sun:SetShadowSize(512)
-	
-	self.sun:SetShadow(true)
-	
+		
 	SUN = self.sun
 	
 	for _, info in ipairs(prototype.GetStorableVariables(self)) do		
@@ -45,54 +42,50 @@ local function ADD(name, default, callback)
 		if callback_set_name then
 			self[callback_set_name](self, self[callback_get_name](self))
 		elseif callback then
-			callback(self, var) 
+			if self.sun:IsValid() then
+				callback(self, var) 
+			end
 		else
-			render.SetGBufferValue(name, var)
+			render.SetGBufferValue("world_" .. name, var)
 		end
 	end
 end
 
 prototype.StartStorable(COMPONENT)
-do -- sun
-	ADD("sun_angles", Deg3(-45,-45,0), function(self, var)
-		local vec = var:GetForward()
-		local size = self:GetSunSize()
-		local sun_pos = vec * size/10
-		
-		local grr = Matrix44()
-		grr:Rotate(-var.x-math.pi/2, -1,0,0)
-		grr:Rotate(var.y, 0,0,1)
-		
-		self.sun:SetRotation(grr:GetRotation())
-		self.sun:SetPosition(sun_pos)
-		self.sun:SetSize(size)
-	end)
+	do -- sun
+		ADD("sun_angles", Deg3(-45,-45,0), function(self, var)
+			local vec = var:GetForward()
+			local size = 50000
+			local sun_pos = vec * size/10
+			
+			local grr = Matrix44()
+			grr:Rotate(-var.x-math.pi/2, -1,0,0)
+			grr:Rotate(var.y, 0,0,1)
+			
+			self.sun:SetRotation(grr:GetRotation())
+			self.sun:SetPosition(sun_pos)
+			self.sun:SetSize(size)
+		end)
 
-	ADD("sun_size", 50000, "sun_angles") 
-	ADD("sun_color", Color(1, 0.95, 0.8), function(self, var) self.sun:SetColor(var) end)
-	ADD("sun_intensity", 1, function(self, var) self.sun:SetIntensity(var) end)
-end
+		ADD("sun_color", Color(1, 0.95, 0.8), function(self, var) self.sun:SetColor(var) end)
+		ADD("sun_intensity", 1, function(self, var) self.sun:SetIntensity(var) end)
+		ADD("sun_shadow", true, function(self, var) self.sun:SetShadow(var) end)
+		ADD("sun_shadow_suze", CAPS and 2048 or 512, function(self, var) self.sun:SetShadowSize(var) end)
+		ADD("sun_ortho_size", 400, function(self, var) self.sun:SetOrthoSize(var) end)
+	end
 
-do -- fog 
-	ADD("fog_color", Color(0.18867780436772762, 0.4978442963618773, 0.6616065586417131, 1))
-	ADD("fog_intensity", 1)
-	ADD("fog_start", 1)
-	ADD("fog_end", 4000)
-end
-
-do -- ao
-	ADD("ao_amount", 0)
-	ADD("ao_cap", 1)
-	ADD("ao_multiplier", 1)
-	ADD("ao_depthtolerance", 0.0)
-	ADD("ao_range", 100000)
-	ADD("ao_scale", 2.75)
-end
-
-do -- gamma
-	ADD("gamma", 1)
-end
-
+	for _, info in pairs(render.GetGBufferValues()) do
+		if info.k:startswith("world_") then
+			ADD(info.k:sub(7), info.v)
+		end
+	end
 prototype.EndStorable()
 
 prototype.RegisterComponent(COMPONENT)
+prototype.SetupComponents("world", {"world", "network"}, "textures/silkicons/world.png")
+
+end)
+
+if RELOAD then
+	-- CALL LAST ADDED EVENT?
+end

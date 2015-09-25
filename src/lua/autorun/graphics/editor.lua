@@ -280,6 +280,11 @@ editor.properties = editor.properties or NULL
 editor.selected_ent = editor.selected_ent or NULL
 
 function editor.Open()
+	if not render.gbuffer:IsValid() then
+		render.InitializeGBuffer()
+		entities.world = entities.CreateEntity("world")
+	end
+	
 	gui.RemovePanel(editor.frame)
 	
 	local frame = gui.CreatePanel("frame")
@@ -342,9 +347,9 @@ function editor.Open()
 					render.camera_3d:SetPosition(node.ent:GetPosition())
 				end, "textures/silkicons/brick_go.png")
 			end
+			add()
 		end
 		
-		add()
 		
 		
 		local groups = {}
@@ -378,6 +383,12 @@ function editor.Open()
 	
 		add()
 		--add("help", nil, frame:GetSkin().icons.help)
+		add(L"paste", function()
+			local data = assert(serializer.Decode("luadata", system.GetClipboard()))
+			assert(data.config)
+			local ent = entities.CreateEntity(data.config)
+			ent:SetStorableTable(data)
+		end, frame:GetSkin().icons.paste)
 		add(L"save", nil, frame:GetSkin().icons.save)
 		add(L"load", nil, frame:GetSkin().icons.load)
 		

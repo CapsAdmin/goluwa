@@ -10,7 +10,12 @@ local skyboxes = {
 }
 
 function steam.SetMap(name)
-	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical")
+	if not render.gbuffer:IsValid() then
+		render.InitializeGBuffer()
+		entities.world = entities.CreateEntity("world")
+	end
+	
+	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical", entities.world)
 	steam.bsp_world:SetName(name)
 	steam.bsp_world:SetCull(false)
 	steam.bsp_world:SetModelPath("maps/" .. name .. ".bsp")
@@ -710,11 +715,7 @@ function steam.SpawnMapEntities(path, parent)
 			end
 		end
 
-		if GRAPHICS then		
-			prototype.SafeRemove(parent.world_params)
-			parent.world_params = entities.CreateEntity("world", parent)
-			parent.world_params.spawned_from_bsp = true
-			
+		if GRAPHICS then			
 			parent:RemoveMeshes()
 			
 			for i, model in ipairs(data.render_meshes) do
@@ -728,16 +729,11 @@ function steam.SpawnMapEntities(path, parent)
 				if info.classname and info.classname:find("light_environment") then
 					
 					local p, y = info.pitch, info.angles.y
-					parent.world_params:SetSunAngles(Deg3(p or 0, y+180, 0))
+					--parent.world_params:SetSunAngles(Deg3(p or 0, y+180, 0))
 					
 					--info._light.a = 1
-					parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
-					parent.world_params:SetSunIntensity(1)
-					
-					if path:find("esther") then
-						parent.world_params:SetSunIntensity(0)
-						parent.world_params:GetChildren()[1]:SetShadow(false)
-					end
+					--parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
+					--parent.world_params:SetSunIntensity(1)
 										
 				elseif info.classname:lower():find("light") and info._light then		
 					local ent = entities.CreateEntity("light", parent)
@@ -756,9 +752,9 @@ function steam.SpawnMapEntities(path, parent)
 					if ent:GetPosition():Distance(render.camera_3d:GetPosition()) < 1 then table.print(info) end
 					ent.spawned_from_bsp = true
 				elseif info.classname == "env_fog_controller" then
-					parent.world_params:SetFogColor(Color(info.fogcolor.r, info.fogcolor.g, info.fogcolor.b, info.fogcolor.a * (info.fogmaxdensity or 1)/4))
-					parent.world_params:SetFogStart(info.fogstart* scale)
-					parent.world_params:SetFogEnd(info.fogend * scale)
+					--parent.world_params:SetFogColor(Color(info.fogcolor.r, info.fogcolor.g, info.fogcolor.b, info.fogcolor.a * (info.fogmaxdensity or 1)/4))
+					--parent.world_params:SetFogStart(info.fogstart* scale)
+					--parent.world_params:SetFogEnd(info.fogend * scale)
 				end
 			end
 		

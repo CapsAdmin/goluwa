@@ -438,7 +438,7 @@ do -- window meta
 					system.ShutDown()
 				else print("unknown event", event.type) end
 			end
-		end, {on_error = function(...) system.OnError(...) self:Remove() end})
+		end, {on_error = function(...) system.OnError(...) end})
 		
 		if not render.current_window:IsValid() then
 			render.current_window = self

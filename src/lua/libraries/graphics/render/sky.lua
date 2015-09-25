@@ -52,11 +52,12 @@ vec3 sky_absorb(vec3 sky_color, float dist, vec3 color, float factor)
 
 vec3 get_sky(vec2 uv, vec3 sun_direction, float depth) 
 {
+	float intensity = lua[world_sky_intensity = 10];
+	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
+	
 	const float surface_height = 0.95;
-	const float intensity = 10;
 	const int step_count = 8;
 	
-	const vec3 sky_color = vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131);
 	
 	const float rayleigh_brightness = 2;
 	const float mie_brightness = 0.99;
@@ -127,6 +128,7 @@ local shader
 
 local function init()
 	tex = render.CreateTexture("cube_map")
+	tex:SetInternalFormat("rgb16f")
 	tex:SetMipMapLevels(1)
 	tex:LoadCubemap("textures/skybox/bluesky.png")
 	

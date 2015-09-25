@@ -5,7 +5,6 @@ prototype.SetupComponents("group", {}, "textures/silkicons/world.png")
 prototype.SetupComponents("light", {"transform", "light", "network"}, "textures/silkicons/lightbulb.png")
 prototype.SetupComponents("visual", {"transform", "model", "network"}, "textures/silkicons/shape_square.png")
 prototype.SetupComponents("physical", {"physics", "transform", "model", "network"}, "textures/silkicons/shape_handles.png")
-prototype.SetupComponents("world", {"world", "network"}, "textures/silkicons/world.png")
 
 local entities = _G.entities or {}
 

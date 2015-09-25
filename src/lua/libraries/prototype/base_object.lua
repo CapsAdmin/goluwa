@@ -87,7 +87,7 @@ do -- serializing
 		end
 		
 		for _, info in ipairs(prototype.GetStorableVariables(self)) do
-			if tbl[info.var_name] then
+			if tbl[info.var_name] ~= nil then
 				self[info.set_name](self, tbl[info.var_name])
 			end
 		end
