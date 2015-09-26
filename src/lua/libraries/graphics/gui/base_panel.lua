@@ -698,8 +698,11 @@ do -- scrolling
 		local size = self:GetSizeOfChildren()
 		
 		self.Scroll = vec:GetClamped(Vec2(0), size - self.Size)
-		self.ScrollFraction = self.Scroll / (size + self.Scroll - self.Size) * 2
 		
+		if size.x < self.Size.x then self.Scroll.x = 0 end
+		if size.y < self.Size.y then self.Scroll.y = 0 end
+		
+		self.ScrollFraction = self.Scroll / (size - self.Size)
 		self:OnScroll(self.ScrollFraction)
 		
 		self:MarkCacheDirty()
@@ -733,6 +736,10 @@ do -- scrolling
 	
 	function PANEL:CalcScrolling()
 		if not self:IsScrolling() then return end
+		
+		local size = self:GetSizeOfChildren()
+
+		if size.x < self.Size.x and size.y < self.Size.y then self:StopScrolling() return end
 		
 		if input.IsMouseDown(self.scroll_button) then
 			self:SetScroll(self.scroll_drag_pos - self:GetMousePosition())

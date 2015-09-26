@@ -39,12 +39,23 @@ function PANEL:SetXScrollBar(b)
 		x_handle:SetStyleTranslation("button_active", "scroll_horizontal_handle_active")
 		x_handle:SetStyleTranslation("button_inactive", "scroll_horizontal_handle_inactive")
 		
+		x_handle.OnMouseInput = function(_, button, press)
+			if button == "mwheel_down" then
+				area:SetScroll(area:GetScroll() + Vec2(10, 0))
+			elseif button == "mwheel_up" then
+				area:SetScroll(area:GetScroll() + Vec2(-10, 0))
+			end
+		end
+		x_track.OnMouseInput = x_handle.OnMouseInput
+		
 		x_handle.OnPositionChanged = function(_, pos)
 			if not area:IsValid() then return end
 			
-			local w = area:GetSizeOfChildren().x / (area:GetSizeOfChildren().x / area:GetWidth())
+			local w = area:GetSizeOfChildren().x / (area:GetWidth() / x_handle:GetWidth())
 			local frac = math.clamp(pos.x / w, 0, 1)
+			self.scrolling = true
 			area:SetScrollFraction(Vec2(frac, area:GetScrollFraction().y))
+			self.scrolling = false
 
 			pos.x = math.clamp(pos.x, 0, x_track:GetWidth() - x_handle:GetWidth())
 			pos.y = x_handle.Parent:GetHeight() - x_handle:GetHeight()
@@ -60,7 +71,7 @@ function PANEL:SetXScrollBar(b)
 	end		
 end
 
-function PANEL:SetXScrollBar(b)
+function PANEL:SetYScrollBar(b)
 	self.YScrollBar = b
 	
 	if b then
@@ -74,13 +85,24 @@ function PANEL:SetXScrollBar(b)
 		y_handle:SetStyle("scroll_vertical_handle_inactive")
 		y_handle:SetStyleTranslation("button_active", "scroll_vertical_handle_active")
 		y_handle:SetStyleTranslation("button_inactive", "scroll_vertical_handle_inactive")
+		
+		y_handle.OnMouseInput = function(_, button, press)
+			if button == "mwheel_down" then
+				area:SetScroll(area:GetScroll() + Vec2(0, 10))
+			elseif button == "mwheel_up" then
+				area:SetScroll(area:GetScroll() + Vec2(0, -10))
+			end
+		end
+		y_track.OnMouseInput = y_handle.OnMouseInput
 				
 		y_handle.OnPositionChanged = function(_, pos)
 			if not area:IsValid() then return end
 			
-			local h = area:GetSizeOfChildren().y  / (area:GetSizeOfChildren().y / area:GetHeight())
-			local frac = math.clamp(pos.y / h, 0, 1)
+			local h = area:GetSizeOfChildren().y / (area:GetHeight() / y_handle:GetHeight())
+			local frac = pos.y / h
+			self.scrolling = true
 			area:SetScrollFraction(Vec2(area:GetScrollFraction().x, frac))
+			self.scrolling = false
 	 
 			pos.x = y_handle.Parent:GetWidth() - y_handle:GetWidth()
 			pos.y = math.clamp(pos.y, 0, y_handle.Parent:GetHeight() - y_handle:GetHeight())
@@ -106,19 +128,17 @@ function PANEL:SetPanel(panel)
 	
 	self:SetYScrollBar(self:GetYScrollBar())
 	self:SetXScrollBar(self:GetXScrollBar())
-			
+	
 	area.OnScroll = function(_, frac)
-		--area.scrolling = true
+		if self.scrolling then return end
 		if self.y_track then
-			self.y_handle:SetY(math.clamp(frac.y * (self.y_track:GetHeight()), 0, self.scroll_area:GetHeight()-self.y_handle:GetHeight()))
+			self.y_handle:SetY(frac.y * (self.y_track:GetHeight() - self.y_handle:GetHeight()))
 		end
 		if self.x_track then
-			self.x_handle:SetX(math.clamp(frac.x * (self.x_track:GetWidth()), 0, self.scroll_area:GetWidth()-self.x_handle:GetWidth()))
+			self.x_handle:SetX(frac.x * (self.x_track:GetWidth() - self.x_handle:GetWidth()))
 		end
-		--self:Layout(true)
-		--area.scrolling = false
 	end
-	
+		
 	self:SetScrollWidth(self:GetSkin().scroll_width or self.ScrollWidth)
 	self:Layout()
 	
@@ -157,21 +177,20 @@ function PANEL:OnLayout(S)
 	
 	self.scroll_area.scrolling = true
 	
-	if self.x_track then self.x_handle:SetPosition(self.x_handle:GetPosition()) end
-	if self.y_track then self.y_handle:SetPosition(self.y_handle:GetPosition()) end
-		
 	local children_size = self.scroll_area:GetSizeOfChildren()
 --	panel:SetSize(children_size)
 				
 	local y_offset = 0
 	
-	if self.x_track and self.x_track:IsVisible() and children_size.y < children_size.x then
+	self.scroll_area:SetScroll(self.scroll_area:GetScroll())
+	
+	if self.x_track and self.x_track:IsVisible() then
 		y_offset = self.ScrollWidth
 	end
 		
 	local x_offset = 0
 
-	if self.y_track and self.y_track:IsVisible() and children_size.x < children_size.y then
+	if self.y_track and self.y_track:IsVisible() then
 		x_offset = self.ScrollWidth
 	end	
 	
@@ -195,20 +214,20 @@ function PANEL:OnLayout(S)
 		self.y_track:SetHeight(self:GetHeight() - y_offset)
 		self.y_track:SetX(self:GetWidth() - self.y_track:GetWidth())
 		
-		self.y_handle:SetHeight(math.clamp(-(children_size.y - self.y_track:GetHeight()) + self.y_track:GetHeight(), self.ScrollWidth*2, self.y_track:GetHeight()))
+		self.y_handle:SetHeight((self.y_track:GetHeight() / self.scroll_area:GetSizeOfChildren().y) * self.y_track:GetHeight())
 	end
 	
 	if self.x_track then	
 		self.x_track:SetWidth(self:GetWidth() - x_offset)
 		self.x_track:SetY(self:GetHeight() - self.x_track:GetHeight())
 
-		self.x_handle:SetWidth(math.clamp(-(children_size.x - self.y_track:GetWidth()) + self.x_track:GetWidth(), self.ScrollWidth*2, self.x_track:GetWidth()))
+		self.x_handle:SetWidth((self.x_track:GetWidth() / self.scroll_area:GetSizeOfChildren().x) * self.x_track:GetWidth())
 	end
 	
 	if self.y_track and self.y_track:IsVisible() then
 		x_offset = self.ScrollWidth
 	end
-
+	
 	self.scroll_area:SetWidth(self:GetWidth() - x_offset)
 	self.scroll_area:SetHeight(self:GetHeight() - y_offset)
 	
@@ -216,3 +235,23 @@ function PANEL:OnLayout(S)
 end
 	
 gui.RegisterPanel(PANEL) 
+
+if RELOAD then
+	local panel = gui.CreatePanel("base", nil, "lol")
+	panel:SetSize(Vec2() + 300)
+	panel:SetStyle("frame")
+	panel:CenterSimple()
+	panel:SetResizable(true)
+	
+	local scroll = gui.CreatePanel("scroll", panel)
+	scroll:SetXScrollBar(true)
+	scroll:SetYScrollBar(true)
+	scroll:SetupLayout("fill")
+	scroll:SetPadding(Rect()+4)
+	
+	
+	local lol = gui.CreatePanel("base")
+	lol:SetSize(Vec2() + 250)
+	lol:SetColor(Color(1,0,0,0.5))
+	scroll:SetPanel(lol)
+end
