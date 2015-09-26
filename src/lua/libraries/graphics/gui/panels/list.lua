@@ -88,7 +88,7 @@ end
 
 function PANEL:SizeColumnsToFit()
 	for i, column in ipairs(self.columns) do
-		column.div:SetDividerPosition(column:GetTextSize().w + column.icon:GetWidth() * 2)
+		column.div:SetDividerPosition(column:GetTextSize().x + column.icon:GetWidth() * 2)
 	end
 end
 
