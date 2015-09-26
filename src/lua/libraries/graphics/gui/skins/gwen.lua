@@ -40,8 +40,7 @@ for i, sub_skin in ipairs(skins) do
 		})
 
 		local texture = Texture("textures/gui/skins/" .. sub_skin)
-		--texture:SetMinFilter("nearest")
-		texture:SetMagFilter("nearest")
+		texture:SetMinFilter("nearest")
 
 		texture.OnLoad = function()
 			skin.text_color = ColorBytes(texture:GetPixelColor(187, 504))
